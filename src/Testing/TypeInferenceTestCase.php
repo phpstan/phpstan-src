@@ -7,6 +7,8 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\ExpressionResultFactory;
+use PHPStan\Analyser\Generics\TemplateArgumentObserver;
+use PHPStan\Analyser\Generics\TemplateArgumentResolver;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\PerFileAnalysisResettable;
@@ -63,6 +65,8 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 
 		return new NodeScopeResolver(
 			$container,
+			$container->getByType(TemplateArgumentObserver::class),
+			$container->getByType(TemplateArgumentResolver::class),
 			$reflectionProvider,
 			$container->getExtensionsCollection(FunctionParameterOutTypeExtension::class),
 			$container->getExtensionsCollection(MethodParameterOutTypeExtension::class),
@@ -81,6 +85,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			$container->getParameter('exceptions')['implicitThrows'],
 			$container->getParameter('treatPhpDocTypesAsCertain'),
 			$container->getByType(ExpressionResultFactory::class),
+			$container->getParameter('featureToggles')['unresolvedTemplateArguments'],
 		);
 	}
 

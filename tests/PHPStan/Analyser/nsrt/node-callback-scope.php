@@ -450,7 +450,7 @@ class FooGeneric
 
 function (): void {
 	$foo = new FooGeneric(5);
-	assertType('NodeCallbackScope\\FooGeneric<int>', $foo);
+	assertType('NodeCallbackScope\\FooGeneric<5>', $foo);
 };
 
 function (): void {

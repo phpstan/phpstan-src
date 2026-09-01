@@ -258,7 +258,7 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 				14,
 			],
 			[
-				'PHPDoc tag @var with type stdClass is not subtype of native type SplObjectStorage<object, mixed>.',
+				'PHPDoc tag @var with type stdClass is not subtype of native type SplObjectStorage<object, *NEVER*>.',
 				23,
 			],
 			[
@@ -315,7 +315,7 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 				14,
 			],
 			[
-				'PHPDoc tag @var with type stdClass is not subtype of native type SplObjectStorage<object, mixed>.',
+				'PHPDoc tag @var with type stdClass is not subtype of native type SplObjectStorage<object, *NEVER*>.',
 				23,
 			],
 			[
@@ -406,7 +406,7 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 				14,
 			],
 			[
-				'PHPDoc tag @var with type stdClass is not subtype of native type SplObjectStorage<object, mixed>.',
+				'PHPDoc tag @var with type stdClass is not subtype of native type SplObjectStorage<object, *NEVER*>.',
 				23,
 			],
 			[

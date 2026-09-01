@@ -73,8 +73,8 @@ class Baz
 
 	public function doFoo()
 	{
-		assertType('GenericsEmptyArray\\ArrayCollection2<(int|string), mixed>', new ArrayCollection2());
-		assertType('GenericsEmptyArray\\ArrayCollection2<(int|string), mixed>', new ArrayCollection2([]));
+		assertType('GenericsEmptyArray\\ArrayCollection2<(int|string), *NEVER*>', new ArrayCollection2());
+		assertType('GenericsEmptyArray\\ArrayCollection2<(int|string), *NEVER*>', new ArrayCollection2([]));
 	}
 
 }

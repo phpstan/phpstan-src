@@ -1,0 +1,211 @@
+<?php declare(strict_types = 1);
+
+namespace PHPStan\Analyser\Generics;
+
+use PhpParser\Node\Expr;
+use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
+use PHPStan\Type\NeverType;
+use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeTraverser;
+use function array_key_exists;
+use function array_keys;
+use function count;
+use function spl_object_id;
+
+/** A single solve's memoization; never retained by a scope or a type callback. */
+final class TemplateArgumentSolver
+{
+
+	/** @var array<string, Type> */
+	private array $resolutions = [];
+
+	/** @param array<string, array{marker: UnresolvedTemplateArgumentType, initial: Type|null, sends: list<array{Type, TemplateTypeVariance}>, lowerBounds: list<Type>, unconstrainingSend: bool}> $observations */
+	public function __construct(
+		private array $observations,
+		private ?TemplateArgumentFrame $parent,
+	)
+	{
+	}
+
+	/** @return array<string, Type> */
+	public function solve(): array
+	{
+		foreach (array_keys($this->observations) as $key) {
+			$this->resolveKey($key);
+		}
+
+		return $this->resolutions;
+	}
+
+	/** @var array<string, true> */
+	private array $resolving = [];
+
+	private function resolveKey(string $key): Type
+	{
+		if (array_key_exists($key, $this->resolutions)) {
+			return $this->resolutions[$key];
+		}
+		$observation = $this->observations[$key];
+		if (isset($this->resolving[$key])) {
+			// a site whose inferred argument refers back to itself through another
+			// site (wrap($x = new Foo($x))): the inferred type stands
+			return $observation['marker']->getDelegate();
+		}
+
+		$this->resolving[$key] = true;
+		try {
+			return $this->resolutions[$key] = $this->resolveObservation($observation);
+		} finally {
+			unset($this->resolving[$key]);
+		}
+	}
+
+	/**
+	 * Replaces the markers of observed sites inside a type by their
+	 * resolutions - a resolution never contains a marker, and a send must be
+	 * checked against what the inferred argument resolves to, not against the
+	 * opaque marker (wrap(new Foo(1)) sent to Bar<Foo<int>> resolves the outer
+	 * site to Foo<int> only once the inner one is int).
+	 */
+	private function substituteResolutions(Type $type): Type
+	{
+		if ($type instanceof UnresolvedTemplateArgumentType) {
+			return $this->substituteMarker($type);
+		}
+
+		return TypeTraverser::map($type, function (Type $type, callable $traverse): Type {
+			if ($type instanceof UnresolvedTemplateArgumentType) {
+				return $this->substituteMarker($type);
+			}
+
+			return $traverse($type);
+		});
+	}
+
+	private function substituteMarker(UnresolvedTemplateArgumentType $marker): Type
+	{
+		$key = self::key($marker->getSite(), $marker->getTemplateName());
+		if (array_key_exists($key, $this->observations)) {
+			return $this->resolveKey($key);
+		}
+
+		$resolved = $this->parent !== null ? $this->parent->resolve($marker->getSite(), $marker->getTemplateName()) : null;
+
+		return $resolved ?? $this->substituteResolutions($marker->getDelegate());
+	}
+
+	/**
+	 * @param array{
+	 *     marker: UnresolvedTemplateArgumentType,
+	 *     initial: Type|null,
+	 *     sends: list<array{Type, TemplateTypeVariance}>,
+	 *     lowerBounds: list<Type>,
+	 *     unconstrainingSend: bool,
+	 * } $observation
+	 */
+	private function resolveObservation(array $observation): Type
+	{
+		$initial = $observation['initial'] !== null ? $this->substituteResolutions($observation['initial']) : null;
+		$lowerBounds = [];
+		foreach ($observation['lowerBounds'] as $lowerBound) {
+			$lowerBounds[] = $this->substituteResolutions($lowerBound);
+		}
+		$templateVariance = $observation['marker']->getTemplate()->getVariance();
+
+		// nothing inferred, or never (an empty array): every send accepts it
+		$acceptsAnything = $initial === null || $initial instanceof NeverType;
+		// a covariant template already accepts every subtype - a known initial
+		// type is never clamped
+		if (!$templateVariance->covariant() || $acceptsAnything) {
+			$covariantFallback = null;
+			foreach ($observation['sends'] as [$sent, $variance]) {
+				if ($variance->contravariant()) {
+					// Foo<contravariant int> accepts Foo<X> for every X wider than int
+					$lowerBounds[] = $sent;
+					continue;
+				}
+				if ($variance->covariant()) {
+					// an upper bound; with nothing inferred it is the best information there is
+					if ($acceptsAnything) {
+						$covariantFallback ??= $sent;
+					}
+					continue;
+				}
+				if (!$variance->invariant()) {
+					continue;
+				}
+				// invariant: the first send that accepts what was inferred resolves the
+				// argument; a later incompatible send is reported by the second pass
+				if (!$acceptsAnything && !$sent->isSuperTypeOf($initial)->yes()) {
+					continue;
+				}
+
+				if (TemplateArgumentStats::$enabled) {
+					TemplateArgumentStats::increment('resolvedBySend');
+				}
+				return $sent;
+			}
+
+			if ($covariantFallback !== null) {
+				if (TemplateArgumentStats::$enabled) {
+					TemplateArgumentStats::increment('resolvedBySend');
+				}
+				return $covariantFallback;
+			}
+		}
+
+		$parts = $lowerBounds;
+		// a never initial adds nothing to a union and would otherwise hide the
+		// "nothing was inferred" case below
+		if ($initial !== null && !$initial instanceof NeverType) {
+			$parts[] = $initial;
+		}
+		if (count($parts) === 0) {
+			if ($observation['unconstrainingSend']) {
+				// sent to a target that accepts anything: the object is in use, so
+				// the template's bound is what is known about the argument - never
+				// would make every later read of it an error
+				return $observation['marker']->getTemplate()->getBound();
+			}
+			if ($initial instanceof NeverType) {
+				return $initial;
+			}
+			if (TemplateArgumentStats::$enabled) {
+				TemplateArgumentStats::increment('resolvedUnconstrained');
+			}
+
+			return TemplateArgumentFrame::resolveUnconstrained($observation['marker']->getSite(), $observation['marker']->getTemplate(), $this->resolve(...));
+		}
+
+		if (TemplateArgumentStats::$enabled) {
+			TemplateArgumentStats::increment(count($lowerBounds) > 0 ? 'resolvedWithLowerBounds' : 'resolvedToInitial');
+		}
+		return TypeCombinator::union(...$parts);
+	}
+
+	/**
+	 * The resolved type of a template argument of the site, or null for a site
+	 * this solve and its parent context never observed.
+	 */
+	private function resolve(Expr $site, string $templateName): ?Type
+	{
+		$key = self::key($site, $templateName);
+		if (array_key_exists($key, $this->resolutions)) {
+			return $this->resolutions[$key];
+		}
+
+		if ($this->parent !== null) {
+			return $this->parent->resolve($site, $templateName);
+		}
+
+		return null;
+	}
+
+	private static function key(Expr $site, string $templateName): string
+	{
+		return spl_object_id($site) . '#' . $templateName;
+	}
+
+}

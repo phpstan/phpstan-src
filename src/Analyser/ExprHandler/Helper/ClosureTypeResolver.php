@@ -413,7 +413,13 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 			$parts[] = $parameter->getType()->describe(VerbosityLevel::cache());
 		}
 
-		return $scope->getClosureScopeCacheKey($this->freeVariableRoots($expr)) . '/' . implode('|', $parts) . ($scope->nativeTypesPromoted ? '/native' : '/phpdoc');
+		// a closure whose body creates an unresolved template argument has the
+		// same key in both passes of the enclosing body; the resolutions installed
+		// for the second pass change its type
+		$frame = $scope->getCurrentTemplateArgumentFrame();
+
+		return $scope->getClosureScopeCacheKey($this->freeVariableRoots($expr)) . '/' . implode('|', $parts) . ($scope->nativeTypesPromoted ? '/native' : '/phpdoc')
+			. ($frame !== null ? $frame->getResolutionCacheKeySuffix() : '');
 	}
 
 	/**

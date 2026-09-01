@@ -58,6 +58,7 @@ parameters:
 		switchConditionAlwaysFalse: false
 		checkImportedClassNameCase: false
 		sortWithoutEffect: false
+		unresolvedTemplateArguments: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false

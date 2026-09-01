@@ -69,7 +69,7 @@ class OffsetAccessAssignmentRuleTest extends RuleTestCase
 					68,
 				],
 				[
-					'Cannot assign offset array{1, 2, 3} to SplObjectStorage<object, mixed>.',
+					'Cannot assign offset array{1, 2, 3} to SplObjectStorage<object, *NEVER*>.',
 					72,
 				],
 				[
@@ -111,7 +111,7 @@ class OffsetAccessAssignmentRuleTest extends RuleTestCase
 					68,
 				],
 				[
-					'Cannot assign offset array{1, 2, 3} to SplObjectStorage<object, mixed>.',
+					'Cannot assign offset array{1, 2, 3} to SplObjectStorage<object, *NEVER*>.',
 					72,
 				],
 				[

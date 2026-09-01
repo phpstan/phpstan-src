@@ -76,7 +76,7 @@ class Bar
 
 function (): void {
 	$and = (new AndSpecificationValidator([new TestSpecification()]));
-	assertType('Bug6993\AndSpecificationValidator<Bug6993\TestSpecification, Bug6993\Foo>', $and);
+	assertType('Bug6993\AndSpecificationValidator<Bug6993\TestSpecification, Bug6993\Bar|Bug6993\Foo>', $and);
 	$and->isSatisfiedBy(new Foo());
 	$and->isSatisfiedBy(new Bar());
 };

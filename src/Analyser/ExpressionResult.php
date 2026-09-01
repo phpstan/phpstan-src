@@ -141,6 +141,18 @@ final class ExpressionResult
 		return $this->scope;
 	}
 
+	public function withScope(MutatingScope $scope): self
+	{
+		if ($scope === $this->scope) {
+			return $this;
+		}
+		$result = clone $this;
+		$result->scope = $scope;
+		$result->truthyScope = null;
+		$result->falseyScope = null;
+		return $result;
+	}
+
 	public function getBeforeScope(): MutatingScope
 	{
 		return $this->beforeScope;

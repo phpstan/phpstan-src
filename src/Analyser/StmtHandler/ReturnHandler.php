@@ -42,10 +42,10 @@ final class ReturnHandler implements StmtHandler
 			// the @var-changed-type node fires now that the expression is stored
 			// on the scope BEFORE the @var tag re-typed the expression, so the rule
 			// compares the tag against the expression's walked type
-			$nodeScopeResolver->emitVarTagChangedNode($scope, $storage, $stmt, $stmt->expr, $nodeCallback);
+			$varConstraints = $nodeScopeResolver->emitVarTagChangedNode($scope, $storage, $stmt, $stmt->expr, $nodeCallback);
 			$throwPoints = $result->getThrowPoints();
 			$impurePoints = $result->getImpurePoints();
-			$scope = $result->getScope();
+			$scope = $result->getScope()->addTemplateArgumentConstraints($varConstraints)->addTemplateArgumentConstraints($nodeScopeResolver->collectReturnSend($stmtScope, $result));
 			$hasYield = $result->hasYield();
 		} else {
 			$hasYield = false;

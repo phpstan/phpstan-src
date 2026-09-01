@@ -75,6 +75,8 @@ final class NodeCallbackScope extends MutatingScope
 			$this->afterExtractCall,
 			$this->getParentScope(),
 			$this->nativeTypesPromoted,
+			$this->templateArgumentFrame,
+			$this->templateArgumentConstraints,
 		);
 	}
 

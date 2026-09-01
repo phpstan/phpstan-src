@@ -20,6 +20,7 @@ use PHPStan\Analyser\ExprHandler\Helper\DynamicReturnTypeStoragePrimer;
 use PHPStan\Analyser\ExprHandler\Helper\EarlyTerminatingCallHelper;
 use PHPStan\Analyser\ExprHandler\Helper\MethodCallReturnTypeHelper;
 use PHPStan\Analyser\ExprHandler\Helper\MethodThrowPointHelper;
+use PHPStan\Analyser\Generics\TemplateArgumentFrame;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
@@ -392,7 +393,7 @@ final class StaticCallHandler implements ExprHandler
 			$acceptorForGenerics = $resolvedParametersAcceptor ?? $parametersAcceptor;
 			$scope = $scope->assignExpression(
 				new PossiblyImpureCallExpr($normalizedExpr, new Variable('this'), sprintf('%s::%s()', $methodReflection->getDeclaringClass()->getDisplayName(), $methodReflection->getName())),
-				$acceptorForGenerics->getReturnType(),
+				TemplateArgumentFrame::returnTypeOfCall($acceptorForGenerics, $scope, $expr),
 				new MixedType(),
 			);
 		}

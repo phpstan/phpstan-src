@@ -143,8 +143,8 @@ class Service
 }
 
 function (?int $nullOrInt, int $int, Service $service): void {
-	assertType('Bug8441\Collection<mixed>', new Collection());
-	assertType('Bug8441\Collection<mixed>', new Collection(null));
+	assertType('Bug8441\Collection<*NEVER*>', new Collection());
+	assertType('Bug8441\Collection<*NEVER*>', new Collection(null));
 	assertType('Bug8441\Collection<int>', new Collection($nullOrInt));
 	assertType('Bug8441\Collection<int>', new Collection($int));
 	assertType('Bug8441\CollectionWithNonNullableParam<null>', new CollectionWithNonNullableParam());

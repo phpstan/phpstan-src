@@ -2,6 +2,8 @@
 
 namespace PHPStan\Reflection;
 
+use PhpParser\Node\Expr;
+use PHPStan\Analyser\Generics\TemplateArgumentFrame;
 use PHPStan\Node\InvalidateExprNode;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
@@ -68,6 +70,11 @@ final class ResolvedFunctionVariantWithCallable implements ResolvedFunctionVaria
 	public function getReturnTypeWithUnresolvableTemplateTypes(): Type
 	{
 		return $this->parametersAcceptor->getReturnTypeWithUnresolvableTemplateTypes();
+	}
+
+	public function getReturnTypeWithUnresolvedTemplateArguments(Expr $site, TemplateArgumentFrame $frame, bool $allowUnresolved): Type
+	{
+		return $this->parametersAcceptor->getReturnTypeWithUnresolvedTemplateArguments($site, $frame, $allowUnresolved);
 	}
 
 	public function getReturnType(): Type

@@ -76,8 +76,8 @@ class b extends a {
 function () {
 	$i = new a(123);
 	// OK - $i is a<123>
-	assertType('SelfOut\\a<int>', $i);
-	assertType('null', $i->test());
+	assertType('SelfOut\\a<123>', $i);
+	assertType('never', $i->test());
 
 	$i->addData(321);
 	// OK - $i is a<123|321>
@@ -92,13 +92,13 @@ function () {
 
 function () {
 	$i = new b(123);
-	assertType('SelfOut\\b<int>', $i);
+	assertType('SelfOut\\b<123>', $i);
 
 	$i->addData(321);
-	assertType('SelfOut\\a<int>', $i);
+	assertType('SelfOut\\a<123|321>', $i);
 
 	$i->addData(random_bytes(3));
-	assertType('SelfOut\\a<int|non-empty-string>', $i);
+	assertType('SelfOut\\a<123|321|non-empty-string>', $i);
 
 	$i->setData(true);
 	assertType('SelfOut\\a<true>', $i);

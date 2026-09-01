@@ -46,6 +46,7 @@ use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
+use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
 use PHPStan\Type\Traits\MaybeIterableTypeTrait;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
@@ -1202,6 +1203,10 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		$type = $activeTemplateTypeMap->getType($templateTypeName);
 		if ($type === null) {
 			return new ErrorType();
+		}
+		if ($type instanceof UnresolvedTemplateArgumentType) {
+			// read out of the object as a derived value - see TemplateTypeHelper::resolveTemplateTypes()
+			return $type->getDelegate();
 		}
 		if ($type instanceof ErrorType) {
 			$templateTypeMap = $ancestorClassReflection->getTemplateTypeMap();

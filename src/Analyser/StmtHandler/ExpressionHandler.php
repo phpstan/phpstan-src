@@ -68,7 +68,7 @@ final class ExpressionHandler implements StmtHandler
 			$result = $nodeScopeResolver->processExprNode($stmt, $stmt->expr, $scope, $storage, $nodeCallback, ExpressionContext::createTopLevel());
 			if ($stmt->expr instanceof Expr\Throw_) {
 				// the @var-changed-type node fires now that the thrown expression is stored
-				$nodeScopeResolver->emitVarTagChangedNode($preAnnotationScope, $storage, $stmt, $stmt->expr->expr, $nodeCallback);
+				$result = $result->withScope($result->getScope()->addTemplateArgumentConstraints($nodeScopeResolver->emitVarTagChangedNode($preAnnotationScope, $storage, $stmt, $stmt->expr->expr, $nodeCallback)));
 			}
 		} finally {
 			$nodeScopeResolver->popNodeGatherer();

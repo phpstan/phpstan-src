@@ -35,6 +35,7 @@ use PHPStan\Analyser\ExprHandler\Helper\IdenticalNarrowingHelper;
 use PHPStan\Analyser\ExprHandler\Helper\MethodThrowPointHelper;
 use PHPStan\Analyser\ExprHandler\Helper\NonNullabilityHelper;
 use PHPStan\Analyser\ExprHandler\Helper\VirtualExprResultHelper;
+use PHPStan\Analyser\Generics\TemplateArgumentObserver;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
@@ -102,6 +103,7 @@ final class AssignHandler implements ExprHandler
 {
 
 	public function __construct(
+		private TemplateArgumentObserver $templateArgumentObserver,
 		private VarAnnotationProcessor $varAnnotationProcessor,
 		private PhpVersion $phpVersion,
 		private ExprPrinter $exprPrinter,
@@ -238,6 +240,17 @@ final class AssignHandler implements ExprHandler
 			$scope = $this->varAnnotationProcessor->processVarAnnotation($scope, $vars, $stmt, $varChangedScope);
 			if (!$varChangedScope) {
 				$scope = $nodeScopeResolver->processStmtVarAnnotation($scope, $storage, $stmt, null, $nodeCallback);
+			} else {
+				// the @var tag is a declared type the assigned value flows into
+				$templateArgumentFrame = $nodeScopeResolver->observingTemplateArgumentFrame($scope);
+				if ($templateArgumentFrame !== null) {
+					foreach ($vars as $var) {
+						if ($scope->hasVariableType($var)->no()) {
+							continue;
+						}
+						$scope = $scope->addTemplateArgumentConstraints($this->templateArgumentObserver->collectSend($scope->getVariableType($var), $assignedExprResult->getType()));
+					}
+				}
 			}
 		}
 
@@ -1257,6 +1270,9 @@ final class AssignHandler implements ExprHandler
 			$nativeScopeBeforeAssignEval = $scopeBeforeAssignEval->doNotTreatPhpDocTypesAsCertain();
 			$valueToWrite = $this->readAssignedValueType($nodeScopeResolver, $storedValueResult, $assignedExpr, $scopeBeforeAssignEval);
 			$nativeValueToWrite = $this->readAssignedValueType($nodeScopeResolver, $storedValueResult, $assignedExpr, $nativeScopeBeforeAssignEval);
+			// the value the write puts in, before the chain walk below rebuilds
+			// $valueToWrite into the containers of the enclosing dimensions
+			$writtenValueType = $valueToWrite;
 
 			[$varType, $varNativeType] = $this->resolveContainerTypesAfterAssignedExprEval($nodeScopeResolver, $var, $varResult, $scope, $scopeBeforeAssignEval, $storage);
 
@@ -1349,6 +1365,12 @@ final class AssignHandler implements ExprHandler
 				&& !$setVarType->isArray()->yes()
 				&& !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($setVarType)->no()
 			) {
+				$scope = $scope->addTemplateArgumentConstraints($nodeScopeResolver->collectOffsetSetUsage(
+					$scope,
+					$setVarType,
+					count($offsetTypes) > 0 ? $offsetTypes[count($offsetTypes) - 1][0] : null,
+					$writtenValueType,
+				));
 				$throwPoints = array_merge($throwPoints, $this->methodThrowPointHelper->getThrowPointsForCallOnType(
 					$scope,
 					$context,
@@ -1378,6 +1400,10 @@ final class AssignHandler implements ExprHandler
 			if ($propertyName !== null && $propertyHolderType->hasInstanceProperty($propertyName)->yes()) {
 				$propertyReflection = $propertyHolderType->getInstanceProperty($propertyName, $scope);
 				$assignedExprType = $this->readAssignedValueType($nodeScopeResolver, $assignedValueResult, $assignedExpr, $scope);
+				$templateArgumentFrame = $nodeScopeResolver->observingTemplateArgumentFrame($scope);
+				if ($templateArgumentFrame !== null) {
+					$scope = $scope->addTemplateArgumentConstraints($this->templateArgumentObserver->collectSend($propertyReflection->getWritableType(), $assignedExprType));
+				}
 				$nodeScopeResolver->callNodeCallback($nodeCallback, new PropertyAssignNode($var, $assignedExpr, $isAssignOp), $scopeBeforeAssignEval, $storage);
 				if ($propertyReflection->canChangeTypeAfterAssignment()) {
 					if ($propertyReflection->hasNativeType()) {
@@ -1469,6 +1495,12 @@ final class AssignHandler implements ExprHandler
 			if ($propertyName !== null) {
 				$propertyReflection = $scope->getStaticPropertyReflection($propertyHolderType, $propertyName);
 				$assignedExprType = $this->readAssignedValueType($nodeScopeResolver, $assignedValueResult, $assignedExpr, $scope);
+				if ($propertyReflection !== null) {
+					$templateArgumentFrame = $nodeScopeResolver->observingTemplateArgumentFrame($scope);
+					if ($templateArgumentFrame !== null) {
+						$scope = $scope->addTemplateArgumentConstraints($this->templateArgumentObserver->collectSend($propertyReflection->getWritableType(), $assignedExprType));
+					}
+				}
 				$nodeScopeResolver->callNodeCallback($nodeCallback, new PropertyAssignNode($var, $assignedExpr, $isAssignOp), $scopeBeforeAssignEval, $storage);
 				if ($propertyReflection !== null && $propertyReflection->canChangeTypeAfterAssignment()) {
 					if ($propertyReflection->hasNativeType()) {

@@ -18,6 +18,8 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.finiteTypesInHaystack%
 	PHPStan\Rules\Comparison\SwitchConditionRule:
 		phpstan.rules.rule: %featureToggles.switchConditionAlwaysFalse%
+	PHPStan\Rules\DeadCode\UnusedVariableRule:
+		phpstan.rules.rule: %featureToggles.unusedVariable%
 
 parameters:
 	checkAdvancedIsset: true
@@ -49,3 +51,6 @@ services:
 		class: PHPStan\Rules\Comparison\SwitchConditionRule
 		arguments:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+
+	-
+		class: PHPStan\Rules\DeadCode\UnusedVariableRule

@@ -62,6 +62,9 @@ final class TurboProcessRestarter
 
 	private const OPCACHE_MAX_ACCELERATED_FILES_LIMIT = 20000;
 
+	/** PHP's default opcache.optimization_level, pinned so the optimizer (and the extension's pass in it) always runs */
+	private const OPCACHE_OPTIMIZATION_LEVEL = '0x7FFEBFFF';
+
 	/** The php.ini directives resolveOpcacheArgs() reacts to */
 	private const OPCACHE_INI_INPUTS = [
 		'opcache.file_cache_only',
@@ -296,6 +299,10 @@ final class TurboProcessRestarter
 	 * - opcache.save_comments is pinned on: stripping doc comments (a common
 	 *   web tuning) breaks annotation readers in the project code the
 	 *   extensions bootstrap, which worked with OPcache dormant.
+	 * - opcache.optimization_level is pinned to PHP's default: the
+	 *   extension's pass dropping PHPStan's own type checks
+	 *   (TurboExtensionEnabler::trustOwnTypesIfSuitable()) runs inside the
+	 *   optimizer, which a php.ini can switch off entirely.
 	 *
 	 * Two configurations are left alone entirely — no OPcache entries at all,
 	 * so the restarted process runs with what the php.ini says, as before:
@@ -336,6 +343,7 @@ final class TurboProcessRestarter
 			'opcache.max_file_size=0',
 			'opcache.file_cache=',
 			'opcache.save_comments=1',
+			'opcache.optimization_level=' . self::OPCACHE_OPTIMIZATION_LEVEL,
 			'opcache.memory_consumption=' . $memory,
 			'opcache.interned_strings_buffer=' . $internedStrings,
 			'opcache.max_accelerated_files=' . $files,

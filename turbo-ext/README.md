@@ -88,6 +88,20 @@ their threads, so PHP's full teardown can wedge in a fork-unsafe extension's
 module shutdown (ext-grpc without `grpc.enable_fork_support`); a forked child
 that does not exec() must `_exit()` instead.
 
+`Runtime::trustTypesUnder()` is the one entry point that changes how PHPStan's
+own code runs rather than replacing it: it arms an opcache optimizer pass
+(`TrustedTypes.cpp`) that drops the engine's argument and return type checks
+from scripts compiled under the given prefix — the running phar, passed by
+`TurboExtensionEnabler::trustOwnTypesIfSuitable()`. PHPStan's code is verified
+by PHPStan, so those checks re-check what analysis proved, at about 8% of the
+analysis CPU. Nothing outside the prefix is touched, and a check sits in the
+callee, so extensions and bootstrapped code keep checking what PHPStan hands
+them; what goes is the TypeError at the boundary when *they* pass PHPStan a
+wrong value — a `--debug` run keeps the checks for exactly that. Float-coercing
+signatures, typed variadics and typed property writes stay checked
+(`TrustedTypes.cpp` explains each); `tests/trusted-types.php` pins the
+behaviour.
+
 The extension is version-pinned (`TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION`);
 a mismatched extension is ignored. There is no runtime kill switch — the only
 way to run without it is not to load it.

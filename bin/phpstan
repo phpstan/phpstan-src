@@ -30,6 +30,7 @@ use Symfony\Component\Console\Helper\ProgressBar;
 	require_once __DIR__ . '/../src/Turbo/TurboProcessRestarter.php';
 	TurboProcessRestarter::restartIfSuitable($_SERVER['argv']);
 	TurboExtensionEnabler::enableIfLoaded();
+	TurboExtensionEnabler::trustOwnTypesIfSuitable($_SERVER['argv']);
 
 	$analysisStartTime = microtime(true);
 

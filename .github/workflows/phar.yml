@@ -303,6 +303,9 @@ jobs:
       - name: "Forked-worker exit (exitImmediately() ends a child whose teardown would wedge)"
         run: php -d extension="$RUNNER_TEMP/turbo-ext/modules/phpstan_turbo.so" turbo-ext/tests/exit-immediately.php
 
+      - name: "Trusted types (the optimizer pass drops type checks under the prefix only)"
+        run: php -d extension="$RUNNER_TEMP/turbo-ext/modules/phpstan_turbo.so" -d opcache.enable_cli=1 turbo-ext/tests/trusted-types.php
+
       - name: "Signature parity (reflect native classes against the PHP twins)"
         run: php -d extension="$RUNNER_TEMP/turbo-ext/modules/phpstan_turbo.so" turbo-ext/tests/signature-parity.php
 
@@ -494,6 +497,9 @@ jobs:
       - name: "Forked-worker exit (exitImmediately() ends a child whose teardown would wedge)"
         run: php -d extension="$PWD/turbo-ext/phpstan_turbo.so" turbo-ext/tests/exit-immediately.php
 
+      - name: "Trusted types (the optimizer pass drops type checks under the prefix only)"
+        run: php -d extension="$PWD/turbo-ext/phpstan_turbo.so" -d opcache.enable_cli=1 turbo-ext/tests/trusted-types.php
+
       - name: "Signature parity (reflect native classes against the PHP twins)"
         run: php -d extension="$PWD/turbo-ext/phpstan_turbo.so" turbo-ext/tests/signature-parity.php
 
@@ -606,6 +612,9 @@ jobs:
 
       - name: "Forked-worker exit (exitImmediately() ends a child whose teardown would wedge)"
         run: docker exec alpine-build php -d extension=/work/turbo-ext/phpstan_turbo.so turbo-ext/tests/exit-immediately.php
+
+      - name: "Trusted types (the optimizer pass drops type checks under the prefix only)"
+        run: docker exec alpine-build php -d extension=/work/turbo-ext/phpstan_turbo.so -d opcache.enable_cli=1 turbo-ext/tests/trusted-types.php
 
       - name: "Signature parity (reflect native classes against the PHP twins)"
         run: docker exec alpine-build php -d extension=/work/turbo-ext/phpstan_turbo.so turbo-ext/tests/signature-parity.php
@@ -947,6 +956,10 @@ jobs:
       - name: "Forked-worker exit (exitImmediately() ends a child whose teardown would wedge)"
         shell: bash
         run: php -d extension="$TURBO_DLL" turbo-ext/tests/exit-immediately.php
+
+      - name: "Trusted types (the optimizer pass drops type checks under the prefix only)"
+        shell: bash
+        run: php -d extension="$TURBO_DLL" -d opcache.enable_cli=1 turbo-ext/tests/trusted-types.php
 
       - name: "Signature parity (reflect native classes against the PHP twins)"
         shell: bash

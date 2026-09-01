@@ -117,6 +117,10 @@ struct pt_globals_t {
 	zval verbosity_precise;
 	bool verbosity_inited;
 	pt_class_ref class_refs[PT_CLASS_COUNT];
+	/* TrustedTypes.cpp: the filename prefix armed by Runtime::trustTypesUnder()
+	 * (empty = off) */
+	size_t trusted_types_prefix_len;
+	char trusted_types_prefix[MAXPATHLEN + 16];
 };
 
 extern pt_globals_t pt_globals;
@@ -167,6 +171,12 @@ void pt_arena_mshutdown();
  * in pcntl_fork()ed children via pthread_atfork (see PharForkGuard.cpp);
  * a no-op on Windows */
 void pt_phar_fork_guard_register(zend_string *path);
+
+/* Runtime::trustTypesUnder() — arms the optimizer pass that drops the
+ * engine's argument and return type checks from scripts under the prefix
+ * (see TrustedTypes.cpp); false when opcache's pass registration is not
+ * available */
+bool pt_trusted_types_set_prefix(zend_string *prefix);
 
 /* }}} */
 

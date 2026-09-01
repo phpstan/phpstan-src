@@ -20,6 +20,7 @@ final class TurboProcessRestarterTest extends PHPStanTestCase
 		'opcache.max_file_size=0',
 		'opcache.file_cache=',
 		'opcache.save_comments=1',
+		'opcache.optimization_level=0x7FFEBFFF',
 		'opcache.memory_consumption=256',
 		'opcache.interned_strings_buffer=64',
 		'opcache.max_accelerated_files=20000',
@@ -101,9 +102,9 @@ final class TurboProcessRestarterTest extends PHPStanTestCase
 	private static function withSizes(int $memory, int $interned, int $files): array
 	{
 		$args = self::STOCK_ARGS;
-		$args[9] = 'opcache.memory_consumption=' . $memory;
-		$args[10] = 'opcache.interned_strings_buffer=' . $interned;
-		$args[11] = 'opcache.max_accelerated_files=' . $files;
+		$args[10] = 'opcache.memory_consumption=' . $memory;
+		$args[11] = 'opcache.interned_strings_buffer=' . $interned;
+		$args[12] = 'opcache.max_accelerated_files=' . $files;
 
 		return $args;
 	}
@@ -124,12 +125,20 @@ final class TurboProcessRestarterTest extends PHPStanTestCase
 			'opcache.max_file_size' => '0',
 			'opcache.file_cache' => '',
 			'opcache.save_comments' => '1',
+			'opcache.optimization_level' => '0x7FFEBFFF',
 			'opcache.memory_consumption' => '256',
 			'opcache.interned_strings_buffer' => '64',
 			'opcache.max_accelerated_files' => '20000',
 		];
 
 		yield 'already in effect' => [$inEffect, false];
+
+		// the optimizer switched off in php.ini would also switch off the
+		// extension's trusted-types pass, which runs inside it
+		yield 'optimizer disabled' => [
+			['opcache.optimization_level' => '0'] + $inEffect,
+			true,
+		];
 
 		// php.ini spellings the ini parser leaves as-is versus its "1"/"" for booleans
 		yield 'already in effect, php.ini spellings' => [

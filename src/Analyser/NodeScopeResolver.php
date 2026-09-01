@@ -80,6 +80,7 @@ use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\FunctionParameterClosureThisExtension;
 use PHPStan\Type\FunctionParameterClosureTypeExtension;
 use PHPStan\Type\FunctionParameterOutTypeExtension;
+use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\MethodParameterClosureThisExtension;
 use PHPStan\Type\MethodParameterClosureTypeExtension;
 use PHPStan\Type\MethodParameterOutTypeExtension;
@@ -1444,6 +1445,24 @@ class NodeScopeResolver
 	}
 
 	/**
+	 * An object created empty - like `new ArrayObject()` - has `never` generic type
+	 * arguments. After it might have been mutated they no longer describe its contents,
+	 * so they're widened to the bounds of the class' template types.
+	 */
+	public function widenNeverTypeArguments(MutatingScope $scope, Expr $expr): MutatingScope
+	{
+		$type = $scope->getType($expr);
+		$widenedType = TemplateTypeHelper::widenNeverTypeArguments($type);
+		if ($widenedType === $type) {
+			return $scope;
+		}
+
+		$nativeType = $scope->getNativeType($expr);
+
+		return $scope->assignExpression($expr, $widenedType, TemplateTypeHelper::widenNeverTypeArguments($nativeType));
+	}
+
+	/**
 	 * @param InvalidateExprNode[] $invalidatedExpressions
 	 * @param string[] $uses
 	 */
@@ -2307,6 +2326,7 @@ class NodeScopeResolver
 					}
 				} elseif ($calleeReflection !== null && $calleeReflection->hasSideEffects()->yes()) {
 					$argType = $scope->getType($arg->value);
+					$mayMutate = true;
 					if (!$argType->isObject()->no()) {
 						$nakedReturnType = null;
 						if ($nakedMethodReflection !== null) {
@@ -2319,17 +2339,21 @@ class NodeScopeResolver
 							);
 							$nakedReturnType = $nakedParametersAcceptor->getReturnType();
 						}
-						if (
-							$nakedReturnType === null
+						$mayMutate = $nakedReturnType === null
 							|| !(new ThisType($nakedMethodReflection->getDeclaringClass()))->isSuperTypeOf($nakedReturnType)->yes()
-							|| $nakedMethodReflection->isPure()->no()
-						) {
+							|| $nakedMethodReflection->isPure()->no();
+						if ($mayMutate) {
 							$this->callNodeCallback($nodeCallback, new InvalidateExprNode($arg->value), $scope, $storage);
 							$scope = $scope->invalidateExpression($arg->value, true);
 						}
 					} elseif (!(new ResourceType())->isSuperTypeOf($argType)->no()) {
 						$this->callNodeCallback($nodeCallback, new InvalidateExprNode($arg->value), $scope, $storage);
 						$scope = $scope->invalidateExpression($arg->value, true);
+					}
+
+					if ($mayMutate) {
+						// objects reachable from the argument might have been filled in by the callee
+						$scope = $this->widenNeverTypeArguments($scope, $arg->value);
 					}
 				}
 			}

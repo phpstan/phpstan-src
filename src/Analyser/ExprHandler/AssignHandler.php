@@ -1099,6 +1099,9 @@ final class AssignHandler implements ExprHandler
 						$scope = $scope->assignInitializedProperty($scope->getType($var->var), $var->name->toString());
 					}
 				}
+
+				// offsetSet() filled the ArrayAccess object, so its `never` generics no longer hold
+				$scope = $nodeScopeResolver->widenNeverTypeArguments($scope, $var);
 			}
 
 			foreach ($additionalExpressions as $k => $additionalExpression) {

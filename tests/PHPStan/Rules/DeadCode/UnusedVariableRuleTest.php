@@ -159,4 +159,38 @@ class UnusedVariableRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug12789(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12789.php'], [
+			[
+				'Value assigned to variable $RetVal is never read.',
+				12,
+			],
+		]);
+	}
+
+	public function testBug13472(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13472.php'], [
+			[
+				'Value assigned to variable $v is never read.',
+				14,
+			],
+			[
+				'Value assigned to variable $item is never read.',
+				41,
+			],
+		]);
+	}
+
+	public function testBug14258(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14258.php'], [
+			[
+				'Value assigned to variable $cutsomerId is never read.',
+				15,
+			],
+		]);
+	}
+
 }

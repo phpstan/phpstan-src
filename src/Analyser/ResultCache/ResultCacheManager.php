@@ -47,6 +47,7 @@ use function fwrite;
 use function get_loaded_extensions;
 use function hash_file;
 use function implode;
+use function in_array;
 use function is_array;
 use function is_dir;
 use function is_file;
@@ -68,6 +69,16 @@ use const PHP_VERSION_ID;
 #[GenerateFactory(interface: ResultCacheManagerFactory::class)]
 final class ResultCacheManager
 {
+
+	/**
+	 * Loaded PHP extensions that cannot change the analysis result, so switching them on or off
+	 * must not invalidate the whole cache. Profilers do not take part in the analysis at all, and
+	 * phpstan_turbo only replaces PHPStan's own classes with native implementations that behave
+	 * identically, so it cannot change what the cache holds. Keeping it here would make every
+	 * cache built where the extension is available useless everywhere it is not: Windows, a PHP
+	 * version with no distributed binary, or a libc the binaries are not built for.
+	 */
+	private const EXTENSIONS_NOT_INVALIDATING_CACHE = ['xdebug', 'blackfire', 'phpstan_turbo'];
 
 	private const CACHE_VERSION = 'v14-relativePaths';
 
@@ -1456,7 +1467,7 @@ return [
 	 */
 	private function getMeta(array $allAnalysedFiles, ?array $projectConfigArray): array
 	{
-		$extensions = array_values(array_filter(get_loaded_extensions(), static fn (string $extension): bool => $extension !== 'xdebug' && $extension !== 'blackfire'));
+		$extensions = array_values(array_filter(get_loaded_extensions(), static fn (string $extension): bool => !in_array($extension, self::EXTENSIONS_NOT_INVALIDATING_CACHE, true)));
 		sort($extensions);
 
 		if ($projectConfigArray !== null) {

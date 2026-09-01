@@ -24,6 +24,7 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\NodeFinder;
 use PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver;
+use PHPStan\Analyser\Generics\TemplateArgumentFrame;
 use PHPStan\Analyser\Traverser\TransformStaticTypeTraverser;
 use PHPStan\Collectors\Collector;
 use PHPStan\DependencyInjection\Container;
@@ -1439,6 +1440,33 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	public function getCurrentExpressionResultStorage(): ?ExpressionResultStorage
 	{
 		return $this->expressionResultStorageStack->getCurrent();
+	}
+
+	/**
+	 * Makes the frame answer for the unresolved template arguments of the
+	 * function body being walked, on this scope and every scope sharing its
+	 * ExpressionResultStorageStack. The caller must pop in a finally block.
+	 */
+	public function pushTemplateArgumentFrame(TemplateArgumentFrame $frame): void
+	{
+		$this->expressionResultStorageStack->pushTemplateArgumentFrame($frame);
+	}
+
+	public function popTemplateArgumentFrame(): void
+	{
+		$this->expressionResultStorageStack->popTemplateArgumentFrame();
+	}
+
+	/**
+	 * Null outside a two-pass body walk (feature toggle off, file top level,
+	 * an on-demand walk started outside any body): producers then take the
+	 * legacy path.
+	 *
+	 * @internal
+	 */
+	public function getCurrentTemplateArgumentFrame(): ?TemplateArgumentFrame
+	{
+		return $this->expressionResultStorageStack->getCurrentTemplateArgumentFrame();
 	}
 
 	/** @api */

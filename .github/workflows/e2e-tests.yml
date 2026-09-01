@@ -260,6 +260,21 @@ jobs:
               ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
               ../bashunit -a contains 'Foo.php:10:Call to method doDep() on an unknown class ResultCacheE2EScanned2\Dep.' "$OUTPUT"
           - script: |
+              cd e2e/result-cache-scanned-new-file
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'UsesNew.php:10:Instantiated class ResultCacheE2EScannedNewFile\NewlyScanned not found.' "$OUTPUT"
+              # A file that newly appears in a scanDirectories directory may define a symbol that was
+              # reported as unknown somewhere, so the files with errors are re-analysed too - the same
+              # way a new analysed file makes them re-analysed. src/Foo.php is still left alone.
+              mv new-file/NewlyScanned.php scanned/NewlyScanned.php
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Scanned files changed (1); re-analysing only the files depending on them.' "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit -a not_contains 'Instantiated class ResultCacheE2EScannedNewFile\NewlyScanned not found.' "$OUTPUT"
+              ../bashunit -a contains 'UsesNew.php:10:Method ResultCacheE2EScannedNewFile\UsesNew::doUsesNew() should return int but returns string.' "$OUTPUT"
+          - script: |
               cd e2e/result-cache-scanned-trait
               ../../bin/phpstan analyse
               # A trait living in a scanned file is tracked the same way, including through the

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser\Generics;
 
+use function array_keys;
 use function array_sum;
 use function file_put_contents;
 use function fwrite;
@@ -69,6 +70,19 @@ final class TemplateArgumentStats
 	public static function increment(string $counter, int $by = 1): void
 	{
 		self::$counters[$counter] += $by;
+	}
+
+	/** @return array<string, int> */
+	public static function getCounters(): array
+	{
+		return self::$counters;
+	}
+
+	public static function reset(): void
+	{
+		foreach (array_keys(self::$counters) as $name) {
+			self::$counters[$name] = 0;
+		}
 	}
 
 	private static function dump(): void

@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
 use Override;
+use ParseError;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
@@ -343,7 +344,13 @@ final class AutoloadSourceLocator implements SourceLocator
 					}
 
 					foreach ($functions as $preExistingAutoloader) {
-						$preExistingAutoloader($className);
+						try {
+							$preExistingAutoloader($className);
+						} catch (ParseError) {
+							// the trap served a parse error instead of the empty
+							// script, see FileReadTrapStreamWrapper::stream_read();
+							// the file was recorded before the include compiled it
+						}
 
 						/**
 						 * This static variable is populated by the side-effect of the stream wrapper
@@ -367,6 +374,9 @@ final class AutoloadSourceLocator implements SourceLocator
 				return $result;
 			}
 
+			// the trap's empty script got compiled - and cached, with OPcache
+			// active. Where this call cannot reach the entry, the trap served a
+			// parse error instead, see FileReadTrapStreamWrapper::stream_read()
 			foreach ($result[0] as $file) {
 				opcache_invalidate($file, true);
 			}

@@ -3,13 +3,17 @@
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
 use PHPStan\ShouldNotHappenException;
+use function function_exists;
 use function is_dir;
 use function is_file;
+use function opcache_get_status;
 use function stat;
 use function stream_resolve_include_path;
 use function stream_wrapper_register;
 use function stream_wrapper_restore;
 use function stream_wrapper_unregister;
+use function strpos;
+use const PHP_VERSION_ID;
 use const SEEK_CUR;
 use const SEEK_END;
 use const SEEK_SET;
@@ -40,9 +44,21 @@ final class FileReadTrapStreamWrapper
 	/** @var string[] */
 	public static array $autoloadLocatedFiles = [];
 
+	/**
+	 * Served instead of the empty script where OPcache would keep that empty
+	 * script, see servesParseError(). A parse error compiles to nothing, so
+	 * OPcache stores nothing, and it reaches AutoloadSourceLocator as the
+	 * ParseError it catches.
+	 */
+	private const PARSE_ERROR_SCRIPT = "<?php\n// PHPStan's autoload trap: deliberately not valid PHP, see FileReadTrapStreamWrapper\n}\n";
+
+	private static ?bool $opcacheEnabled = null;
+
 	private bool $readFromFile = false;
 
 	private int $seekPosition = 0;
+
+	private string $path = '';
 
 	/**
 	 * @param string[] $streamWrapperProtocols
@@ -102,6 +118,7 @@ final class FileReadTrapStreamWrapper
 		if ($exists) {
 			self::$autoloadLocatedFiles[] = $path;
 		}
+		$this->path = $path;
 		$this->readFromFile = false;
 		$this->seekPosition = 0;
 
@@ -119,10 +136,53 @@ final class FileReadTrapStreamWrapper
 	{
 		$this->readFromFile = true;
 
+		if (self::servesParseError($this->path)) {
+			return self::PARSE_ERROR_SCRIPT;
+		}
+
 		// Dummy return value that is also valid PHP for require(). We'll read
 		// and process the file elsewhere, so it's OK to provide dummy data for
 		// this read.
 		return '';
+	}
+
+	/**
+	 * Whether the empty script served for this path would stay in OPcache and
+	 * shadow the real file for the rest of the process.
+	 *
+	 * OPcache caches what an include compiles under the path the include was
+	 * given - the empty script this wrapper serves too. AutoloadSourceLocator
+	 * undoes that with opcache_invalidate() on the trapped files, except that
+	 * on PHP < 8.1 the call fails for the path of any stream wrapper other
+	 * than file://: zend_accel_invalidate() resolves the path first, and
+	 * php_resolve_path() refuses such URLs (PHP >= 8.1 falls back to the name
+	 * as given). The poisoned entry then serves the empty script to every
+	 * later include of the same path, so a class in that file is never
+	 * declared - "Class not found" on its first cold use. PHPStan's own
+	 * classes that preload.php leaves to the autoloader are exactly such
+	 * files when running from the phar, autoloaded as
+	 * phar://.../vendor/composer/../../src/....
+	 */
+	private static function servesParseError(string $path): bool
+	{
+		if (self::$opcacheEnabled === null) {
+			self::$opcacheEnabled = false;
+			if (function_exists('opcache_get_status')) {
+				$status = opcache_get_status(false);
+				self::$opcacheEnabled = $status !== false && ($status['opcache_enabled'] ?? false) === true;
+			}
+		}
+
+		return self::resolveServesParseError(PHP_VERSION_ID, self::$opcacheEnabled, $path);
+	}
+
+	public static function resolveServesParseError(int $phpVersionId, bool $opcacheEnabled, string $path): bool
+	{
+		if (!$opcacheEnabled || $phpVersionId >= 80100) {
+			return false;
+		}
+
+		return strpos($path, '://') !== false && strpos($path, 'file://') !== 0;
 	}
 
 	/**

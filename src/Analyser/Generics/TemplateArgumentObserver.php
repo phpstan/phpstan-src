@@ -5,6 +5,7 @@ namespace PHPStan\Analyser\Generics;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use function count;
@@ -42,6 +43,10 @@ final class TemplateArgumentObserver
 		}
 		if ($actual instanceof UnresolvedTemplateArgumentType) {
 			// a bare marker is a derived value (Foo<T>::get()) and never constrains
+			return;
+		}
+		if ($actual instanceof NeverType) {
+			// never holds no markers, and is its own iterable key and value type
 			return;
 		}
 
@@ -122,6 +127,10 @@ final class TemplateArgumentObserver
 	{
 		if ($parameterType instanceof UnresolvedTemplateArgumentType) {
 			$frame->recordLowerBound($parameterType, $argumentType);
+			return;
+		}
+		if ($parameterType instanceof NeverType) {
+			// never is its own iterable key and value type
 			return;
 		}
 		if ($parameterType instanceof TemplateType || $parameterType->isCallable()->yes()) {

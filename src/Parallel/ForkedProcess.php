@@ -13,6 +13,7 @@ use Symfony\Component\Console\Output\StreamOutput;
 use Throwable;
 use function fclose;
 use function function_exists;
+use function ini_set;
 use function pcntl_fork;
 use function pcntl_waitpid;
 use function pcntl_wexitstatus;
@@ -101,6 +102,23 @@ final class ForkedProcess extends ProcessBase
 			// Child: drop the inherited listening socket immediately, then run
 			// the worker on its own fresh event loop and never return.
 			$this->server->close();
+			// Leave the shared OPcache alone from here on. What the parent
+			// loaded before forking keeps running from shared memory; this
+			// worker neither stores what it compiles from now on nor loads
+			// what its siblings store. Concurrent population by forked
+			// siblings races on the per-process map_ptr slot table: a process
+			// linking classes privately (once the shared memory is full, or
+			// for any class whose parent is not shared) takes slot offsets
+			// from its own counter, a sibling storing a script takes the same
+			// offsets for the shared copy, and loading that script only ever
+			// bumps the counter upwards - the shared method then runs with a
+			// foreign run-time cache and segfaults on its first cache slot
+			// (intermittent SIGSEGV in workers, 3 of 10 slevomat runs).
+			// Disabling takes effect immediately and is the one OPcache switch
+			// that can be flipped at run time. It costs the sharing of classes
+			// loaded after the fork (0-2% CPU, worker heaps between the
+			// no-OPcache and fully-shared numbers), not the parent's cache.
+			ini_set('opcache.enable', '0');
 			// memory_get_peak_usage() carries over into the child, so without this a
 			// worker would report the main process's peak instead of its own - on an
 			// incremental run, the spike taken while loading the result cache, which

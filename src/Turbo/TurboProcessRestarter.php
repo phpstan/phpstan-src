@@ -7,6 +7,7 @@ use function function_exists;
 use function get_cfg_var;
 use function ini_get;
 use function is_string;
+use function max;
 use function pcntl_exec;
 use function php_ini_loaded_file;
 use const PHP_BINARY;
@@ -28,7 +29,7 @@ use const PHP_BINARY;
  *
  * The restarted process also gets OPcache activated — with JIT pinned off,
  * whatever the user's ini says — so forked workers share the parent's warm
- * opcode cache (see getOpcacheArgs()).
+ * opcode cache (see resolveOpcacheArgs()).
  *
  * The restart carries a marker ini entry with the extension path. It doubles
  * as the retry stop (a binary that failed to load leaves the extension
@@ -41,13 +42,22 @@ final class TurboProcessRestarter
 
 	public const EXTENSION_PATH_INI = 'phpstan.turboExtensionPath';
 
-	/** Shared memory reserved (not touched) for the opcode cache, in MB — see getOpcacheArgs() for the sizing */
+	/** Shared memory reserved (not touched) for the opcode cache, in MB — see resolveOpcacheArgs() for the sizing */
 	private const OPCACHE_MEMORY_CONSUMPTION_MB_LIMIT = 256;
 
 	/** Carved out of the memory above for interned strings, in MB */
 	private const OPCACHE_INTERNED_STRINGS_BUFFER_MB_LIMIT = 64;
 
 	private const OPCACHE_MAX_ACCELERATED_FILES_LIMIT = 20000;
+
+	/** The php.ini directives resolveOpcacheArgs() reacts to */
+	private const OPCACHE_INI_INPUTS = [
+		'opcache.file_cache_only',
+		'opcache.preload',
+		'opcache.memory_consumption',
+		'opcache.interned_strings_buffer',
+		'opcache.max_accelerated_files',
+	];
 
 	/**
 	 * The extension path this process was restarted with, null when the
@@ -120,7 +130,35 @@ final class TurboProcessRestarter
 	}
 
 	/**
-	 * OPcache directives for the restarted process, as `name=value` ini entries.
+	 * `-d` entries activating OPcache for the restarted process — see
+	 * resolveOpcacheArgs() for the reasoning behind each of them.
+	 *
+	 * Nothing is added when OPcache is not loaded at all — real on PHP <= 8.4,
+	 * gone on 8.5+ (always built in and loaded). Loading it from here is not
+	 * worth it: -d zend_extension=opcache emits a startup warning on builds
+	 * without the shared object, and on 8.5+ always.
+	 *
+	 * @return list<string>
+	 */
+	private static function getOpcacheArgs(): array
+	{
+		if (!extension_loaded('Zend OPcache')) {
+			return [];
+		}
+
+		$ini = [];
+		foreach (self::OPCACHE_INI_INPUTS as $name) {
+			$ini[$name] = ini_get($name);
+		}
+
+		return self::resolveOpcacheArgs($ini);
+	}
+
+	/**
+	 * OPcache directives for the restarted process, as `name=value` ini
+	 * entries, given the current values of the OPCACHE_INI_INPUTS directives
+	 * (the restarted process loads the same php.ini, so they are what it
+	 * would otherwise run with).
 	 *
 	 * The exec is paid for anyway, so it doubles as the chance to activate
 	 * OPcache, usually dormant on CLI (opcache.enable_cli defaults to off):
@@ -144,40 +182,72 @@ final class TurboProcessRestarter
 	 *
 	 * Timestamp checks are switched off, or nothing of PHPStan itself would be
 	 * cached: opcache_compile_file() refuses any file whose mtime it reads as
-	 * 0, and the members of the distributed phar carry exactly that (the
-	 * build normalizes them for reproducibility). It reads the mtime whenever
-	 * opcache.validate_timestamps *or* opcache.file_update_protection is on,
-	 * so both go — for a private cache that dies with the process they
-	 * revalidate nothing anyway, and skipping them also drops a stat() per
-	 * include. The uncached state is what made OPcache *slower* than no
-	 * OPcache for phar runs: code compiled under an active OPcache but not
-	 * persisted never gets its strings interned into SHM, so its type names
-	 * have no class-entry cache slot and every class-typed parameter, return
-	 * and property check falls back to a lowercased-copy class-table lookup
-	 * (measured at +27% CPU on slevomat).
+	 * 0, which is what every member of the distributed phar carried until the
+	 * build started stamping them (phar.yml). It reads the mtime whenever
+	 * opcache.validate_timestamps, opcache.file_update_protection or
+	 * opcache.max_file_size is on, so all three go — for a private cache that
+	 * dies with the process they revalidate nothing anyway, and skipping them
+	 * also drops a stat() per include. The uncached state is what made
+	 * OPcache *slower* than no OPcache for phar runs: code compiled under an
+	 * active OPcache but not persisted never gets its strings interned into
+	 * SHM, so its type names have no class-entry cache slot and every
+	 * class-typed parameter, return and property check falls back to a
+	 * lowercased-copy class-table lookup (measured at +27% CPU on slevomat).
 	 *
 	 * The buffers are raised above the stock 128M/8M/10000 for the same
 	 * reason: once any of them is exhausted, everything compiled afterwards
-	 * lands in that same uncached, uninterned state. PHPStan's own phar needs
-	 * about 35M of code; project bootstraps loaded by extensions (a Doctrine
-	 * objectManagerLoader booting the whole app, say) add hundreds of MB, and
-	 * the shared memory is only reserved, not touched, until used. It is not
-	 * sized for the largest possible project, though — an SHM reservation that
-	 * cannot be satisfied is fatal (exit code 254) in the restarted process,
-	 * with no parent left to fall back to.
+	 * lands in that same uncached, uninterned state — the stock 8M of interned
+	 * strings run out during PHPStan's own boot already, which alone costs the
+	 * whole gain. PHPStan's phar needs about 35M of code; project bootstraps
+	 * loaded by extensions (a Doctrine objectManagerLoader booting the whole
+	 * app, say) add hundreds of MB, and the shared memory is only reserved,
+	 * not touched, until used. It is not sized for the largest possible
+	 * project, though — an SHM reservation that cannot be satisfied is fatal
+	 * (exit code 254) in the restarted process, with no parent left to fall
+	 * back to. Sizes the php.ini already grants are never lowered, and the
+	 * interned strings buffer is kept below the memory it is carved out of
+	 * (another fatal startup error otherwise).
 	 *
-	 * The only case adding nothing is OPcache not being loaded at all — real
-	 * on PHP <= 8.4, gone on 8.5+ (always built in and loaded). Loading it
-	 * from here is not worth it: -d zend_extension=opcache emits a startup
-	 * warning on builds without the shared object, and on 8.5+ always.
+	 * That private cache must neither outlive the process nor reach outside
+	 * it, which is what the remaining entries guard against in a php.ini tuned
+	 * for the web server rather than for us:
+	 * - opcache.file_cache is blanked. A file cache is validated by the PHP
+	 *   build id and (only with opcache.validate_timestamps) the mtime — so
+	 *   with the checks off it would keep serving the previous PHPStan's
+	 *   opcodes after an update, the phar path being the same, and it would
+	 *   fill the web server's cache directory with this run's scripts.
+	 * - opcache.save_comments is pinned on: stripping doc comments (a common
+	 *   web tuning) breaks annotation readers in the project code the
+	 *   extensions bootstrap, which worked with OPcache dormant.
 	 *
+	 * Two configurations are left alone entirely — no OPcache entries at all,
+	 * so the restarted process runs with what the php.ini says, as before:
+	 * - opcache.file_cache_only: blanking the file cache would be a fatal
+	 *   startup error, and it usually means shared memory is unavailable on
+	 *   that host on purpose.
+	 * - opcache.preload: the application's preload script would run inside
+	 *   PHPStan (there is no CLI exemption), and it cannot be blanked with -d
+	 *   (the directive rejects an empty value).
+	 *
+	 * @param array<string, string|false> $ini
 	 * @return list<string>
 	 */
-	private static function getOpcacheArgs(): array
+	public static function resolveOpcacheArgs(array $ini): array
 	{
-		if (!extension_loaded('Zend OPcache')) {
+		if (self::isIniOn($ini['opcache.file_cache_only'] ?? false)) {
 			return [];
 		}
+		$preload = $ini['opcache.preload'] ?? false;
+		if ($preload !== false && $preload !== '') {
+			return [];
+		}
+
+		$memory = max(self::OPCACHE_MEMORY_CONSUMPTION_MB_LIMIT, self::iniInt($ini['opcache.memory_consumption'] ?? false));
+		$internedStrings = max(self::OPCACHE_INTERNED_STRINGS_BUFFER_MB_LIMIT, self::iniInt($ini['opcache.interned_strings_buffer'] ?? false));
+		if ($internedStrings >= $memory) {
+			$memory = $internedStrings + self::OPCACHE_MEMORY_CONSUMPTION_MB_LIMIT - self::OPCACHE_INTERNED_STRINGS_BUFFER_MB_LIMIT;
+		}
+		$files = max(self::OPCACHE_MAX_ACCELERATED_FILES_LIMIT, self::iniInt($ini['opcache.max_accelerated_files'] ?? false));
 
 		return [
 			'opcache.enable=1',
@@ -186,10 +256,23 @@ final class TurboProcessRestarter
 			'opcache.jit_buffer_size=0',
 			'opcache.validate_timestamps=0',
 			'opcache.file_update_protection=0',
-			'opcache.memory_consumption=' . self::OPCACHE_MEMORY_CONSUMPTION_MB_LIMIT,
-			'opcache.interned_strings_buffer=' . self::OPCACHE_INTERNED_STRINGS_BUFFER_MB_LIMIT,
-			'opcache.max_accelerated_files=' . self::OPCACHE_MAX_ACCELERATED_FILES_LIMIT,
+			'opcache.max_file_size=0',
+			'opcache.file_cache=',
+			'opcache.save_comments=1',
+			'opcache.memory_consumption=' . $memory,
+			'opcache.interned_strings_buffer=' . $internedStrings,
+			'opcache.max_accelerated_files=' . $files,
 		];
+	}
+
+	private static function isIniOn(string|false $value): bool
+	{
+		return $value !== false && $value !== '' && $value !== '0';
+	}
+
+	private static function iniInt(string|false $value): int
+	{
+		return $value === false ? 0 : (int) $value;
 	}
 
 }

@@ -23,7 +23,7 @@ final class TemplateArgumentObserver
 	 */
 	public static function observeSend(TemplateArgumentFrame $frame, Type $declared, Type $actual): void
 	{
-		if ($declared instanceof TemplateType) {
+		if ($declared instanceof TemplateType || !$frame->hasSites()) {
 			return;
 		}
 		if ($actual instanceof UnionType) {
@@ -111,6 +111,9 @@ final class TemplateArgumentObserver
 	 */
 	public static function observeArgument(TemplateArgumentFrame $frame, Type $parameterType, Type $argumentType): void
 	{
+		if (!$frame->hasSites()) {
+			return;
+		}
 		self::observeSend($frame, $parameterType, $argumentType);
 		self::observeLowerBound($frame, $parameterType, $argumentType);
 	}

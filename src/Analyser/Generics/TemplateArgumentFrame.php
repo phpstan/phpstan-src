@@ -41,6 +41,15 @@ use function sprintf;
 final class TemplateArgumentFrame
 {
 
+	/**
+	 * Set on the synthetic nodes handlers build for an on-demand pricing (the
+	 * parent constructor's `new`, a fabricated offsetGet()/__toString() call):
+	 * a fresh node every walk, so it can never be a site the second pass finds
+	 * again. Markers keyed by such a node are re-keyed by the handler that
+	 * built it or stay unobserved.
+	 */
+	public const SYNTHETIC_SITE_ATTRIBUTE = 'templateArgumentSyntheticSite';
+
 	private bool $observing = true;
 
 	/** @var array<int, array{Expr, int}> site object id => [site, statement index] */
@@ -93,6 +102,9 @@ final class TemplateArgumentFrame
 	public function noteSite(UnresolvedTemplateArgumentType $marker): void
 	{
 		$site = $marker->getSite();
+		if ($site->getAttribute(self::SYNTHETIC_SITE_ATTRIBUTE) === true) {
+			return;
+		}
 		$siteId = spl_object_id($site);
 		if (!array_key_exists($siteId, $this->sites)) {
 			$statementIndex = $this->locateStatement($site->getStartTokenPos());
@@ -176,7 +188,7 @@ final class TemplateArgumentFrame
 		}
 
 		$initial = $marker->getInitialType();
-		if ($initial !== null && !$initial instanceof NeverType) {
+		if ($initial !== null) {
 			// a loop may re-produce the marker with a widened initial type: the
 			// initial to clamp against is everything the site was ever seen with
 			$this->observations[$key]['initial'] = $this->observations[$key]['initial'] === null
@@ -270,9 +282,11 @@ final class TemplateArgumentFrame
 		}
 		$templateVariance = $observation['marker']->getTemplate()->getVariance();
 
+		// nothing inferred, or never (an empty array): every send accepts it
+		$acceptsAnything = $initial === null || $initial instanceof NeverType;
 		// a covariant template already accepts every subtype - a known initial
 		// type is never clamped
-		if (!$templateVariance->covariant() || $initial === null) {
+		if (!$templateVariance->covariant() || $acceptsAnything) {
 			$covariantFallback = null;
 			foreach ($observation['sends'] as [$sent, $variance]) {
 				if ($variance->contravariant()) {
@@ -282,7 +296,7 @@ final class TemplateArgumentFrame
 				}
 				if ($variance->covariant()) {
 					// an upper bound; with nothing inferred it is the best information there is
-					if ($initial === null) {
+					if ($acceptsAnything) {
 						$covariantFallback ??= $sent;
 					}
 					continue;
@@ -292,7 +306,7 @@ final class TemplateArgumentFrame
 				}
 				// invariant: the first send that accepts what was inferred resolves the
 				// argument; a later incompatible send is reported by the second pass
-				if ($initial === null || $sent->isSuperTypeOf($initial)->yes()) {
+				if ($acceptsAnything || $sent->isSuperTypeOf($initial)->yes()) {
 					return $sent;
 				}
 			}
@@ -307,10 +321,53 @@ final class TemplateArgumentFrame
 			$parts[] = $initial;
 		}
 		if (count($parts) === 0) {
-			return new NeverType();
+			return $this->resolveUnconstrained($observation['marker']);
 		}
 
 		return TypeCombinator::union(...$parts);
+	}
+
+	/**
+	 * The resolution of the site's template argument, or - for a site this
+	 * frame never observed (never asked during the observation pass, a native
+	 * flavour) - what an unconstrained argument resolves to.
+	 */
+	public function resolveOrUnconstrained(Expr $site, TemplateType $template): Type
+	{
+		return $this->resolve($site, $template->getName()) ?? $this->resolveUnconstrained(new UnresolvedTemplateArgumentType($site, $template, null));
+	}
+
+	/**
+	 * Nothing was inferred, sent or passed in: the template's default, else
+	 * its bound when it says something (`T of Foo`, `U of T` - resolved
+	 * against the sibling arguments), else never - the object holds nothing.
+	 */
+	private function resolveUnconstrained(UnresolvedTemplateArgumentType $marker): Type
+	{
+		$template = $marker->getTemplate();
+		$default = $template->getDefault();
+		if ($default !== null) {
+			return $default;
+		}
+
+		$bound = $template->getBound();
+		if ($bound instanceof MixedType && !$bound instanceof TemplateType) {
+			return new NeverType();
+		}
+		if (!$bound->hasTemplateOrLateResolvableType()) {
+			return $bound;
+		}
+
+		$site = $marker->getSite();
+		$scope = $template->getScope();
+
+		return TypeTraverser::map($bound, function (Type $type, callable $traverse) use ($site, $scope): Type {
+			if ($type instanceof TemplateType && $type->getScope()->equals($scope)) {
+				return $this->resolve($site, $type->getName()) ?? $type->getDefault() ?? $traverse($type->getBound());
+			}
+
+			return $traverse($type);
+		});
 	}
 
 	/**

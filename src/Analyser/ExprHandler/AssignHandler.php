@@ -35,6 +35,7 @@ use PHPStan\Analyser\ExprHandler\Helper\IdenticalNarrowingHelper;
 use PHPStan\Analyser\ExprHandler\Helper\MethodThrowPointHelper;
 use PHPStan\Analyser\ExprHandler\Helper\NonNullabilityHelper;
 use PHPStan\Analyser\ExprHandler\Helper\VirtualExprResultHelper;
+use PHPStan\Analyser\Generics\TemplateArgumentObserver;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
@@ -238,6 +239,17 @@ final class AssignHandler implements ExprHandler
 			$scope = $this->varAnnotationProcessor->processVarAnnotation($scope, $vars, $stmt, $varChangedScope);
 			if (!$varChangedScope) {
 				$scope = $nodeScopeResolver->processStmtVarAnnotation($scope, $storage, $stmt, null, $nodeCallback);
+			} else {
+				// the @var tag is a declared type the assigned value flows into
+				$templateArgumentFrame = $nodeScopeResolver->observingTemplateArgumentFrame($scope);
+				if ($templateArgumentFrame !== null) {
+					foreach ($vars as $var) {
+						if ($scope->hasVariableType($var)->no()) {
+							continue;
+						}
+						TemplateArgumentObserver::observeSend($templateArgumentFrame, $scope->getVariableType($var), $assignedExprResult->getType());
+					}
+				}
 			}
 		}
 
@@ -1378,6 +1390,10 @@ final class AssignHandler implements ExprHandler
 			if ($propertyName !== null && $propertyHolderType->hasInstanceProperty($propertyName)->yes()) {
 				$propertyReflection = $propertyHolderType->getInstanceProperty($propertyName, $scope);
 				$assignedExprType = $this->readAssignedValueType($nodeScopeResolver, $assignedValueResult, $assignedExpr, $scope);
+				$templateArgumentFrame = $nodeScopeResolver->observingTemplateArgumentFrame($scope);
+				if ($templateArgumentFrame !== null) {
+					TemplateArgumentObserver::observeSend($templateArgumentFrame, $propertyReflection->getWritableType(), $assignedExprType);
+				}
 				$nodeScopeResolver->callNodeCallback($nodeCallback, new PropertyAssignNode($var, $assignedExpr, $isAssignOp), $scopeBeforeAssignEval, $storage);
 				if ($propertyReflection->canChangeTypeAfterAssignment()) {
 					if ($propertyReflection->hasNativeType()) {
@@ -1469,6 +1485,12 @@ final class AssignHandler implements ExprHandler
 			if ($propertyName !== null) {
 				$propertyReflection = $scope->getStaticPropertyReflection($propertyHolderType, $propertyName);
 				$assignedExprType = $this->readAssignedValueType($nodeScopeResolver, $assignedValueResult, $assignedExpr, $scope);
+				if ($propertyReflection !== null) {
+					$templateArgumentFrame = $nodeScopeResolver->observingTemplateArgumentFrame($scope);
+					if ($templateArgumentFrame !== null) {
+						TemplateArgumentObserver::observeSend($templateArgumentFrame, $propertyReflection->getWritableType(), $assignedExprType);
+					}
+				}
 				$nodeScopeResolver->callNodeCallback($nodeCallback, new PropertyAssignNode($var, $assignedExpr, $isAssignOp), $scopeBeforeAssignEval, $storage);
 				if ($propertyReflection !== null && $propertyReflection->canChangeTypeAfterAssignment()) {
 					if ($propertyReflection->hasNativeType()) {

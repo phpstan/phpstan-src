@@ -22,6 +22,8 @@ use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeTraverser;
+use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function spl_object_id;
 use function sprintf;
@@ -92,6 +94,55 @@ final class UnresolvedTemplateArgumentType implements CompoundType
 	public function withInitialType(?Type $initialType): self
 	{
 		return new self($this->site, $this->templateType, $initialType);
+	}
+
+	/** Re-keys a marker produced by a synthetic node onto the real site and its template. */
+	public function withSite(Expr $site, TemplateType $templateType): self
+	{
+		return new self($site, $templateType, $this->initialType);
+	}
+
+	/**
+	 * Replaces the markers standing bare in $type - not inside an object's
+	 * arguments - by their delegates: a value read out of the object
+	 * (`Foo<T>::get(): T`, or a union of such reads) is derived, it never
+	 * constrains the site, and it must not look like the object's own argument
+	 * to the code reading it. Objects keep their arguments: `Foo<T>::self(): self`
+	 * still carries the site.
+	 */
+	public static function unwrapBare(Type $type): Type
+	{
+		if ($type instanceof self) {
+			return self::unwrapBare($type->getDelegate());
+		}
+		if ($type->isObject()->yes() || !$type->hasTemplateOrLateResolvableType() && !self::containsBareMarkerShallow($type)) {
+			return $type;
+		}
+
+		return TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
+			if ($type instanceof self) {
+				return self::unwrapBare($type->getDelegate());
+			}
+			if ($type->isObject()->yes()) {
+				return $type;
+			}
+
+			return $traverse($type);
+		});
+	}
+
+	private static function containsBareMarkerShallow(Type $type): bool
+	{
+		if ($type instanceof UnionType) {
+			foreach ($type->getTypes() as $member) {
+				if ($member instanceof self) {
+					return true;
+				}
+			}
+		}
+
+		return $type->isIterable()->yes() && !$type->isObject()->yes()
+			&& ($type->getIterableValueType() instanceof self || $type->getIterableKeyType() instanceof self);
 	}
 
 	public function equals(Type $type): bool

@@ -11,6 +11,9 @@ class LruCacheTest extends PHPStanTestCase
 
 	public function testMissingEntry(): void
 	{
+		// nothing ever put in: without a declared value type the cache is
+		// LruCache<never> and get() is statically null
+		/** @var LruCache<string> $cache */
 		$cache = new LruCache();
 
 		$this->assertNull($cache->get('a'));

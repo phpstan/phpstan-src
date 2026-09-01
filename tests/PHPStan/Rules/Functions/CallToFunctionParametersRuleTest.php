@@ -3107,4 +3107,14 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug6732(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6732.php'], [
+			[
+				'Parameter #1 $strings of function Bug6732Functions\takeStrings expects Bug6732Functions\Collection<string>, Bug6732Functions\Collection<int> given.',
+				29,
+			],
+		]);
+	}
+
 }

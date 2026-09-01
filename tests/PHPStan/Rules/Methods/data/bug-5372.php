@@ -57,10 +57,10 @@ class Foo
 	public function doFoo(string $classString)
 	{
 		$col = new Collection(['foo', 'bar']);
-		assertType('Bug5372\Collection<int, string>', $col);
+		assertType('Bug5372\Collection<int, \'bar\'|\'foo\'>', $col);
 
 		$newCol = $col->map(static fn(string $var): string => $var . 'bar');
-		assertType('Bug5372\Collection<int, non-falsy-string>', $newCol);
+		assertType('Bug5372\Collection<int, string>', $newCol);
 		$this->takesStrings($newCol);
 
 		$newCol = $col->map(static fn(string $var): string => $classString);

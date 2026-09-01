@@ -12,6 +12,7 @@ use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
+use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
 use PHPStan\Type\NonAcceptingNeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
@@ -266,6 +267,12 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 						$variance = $reference->getPositionVariance();
 						break;
 					}
+				}
+
+				if ($variance->covariant()) {
+					// an unresolved template argument inferred from a generic argument
+					// and returned bare is a derived value - see TemplateTypeHelper::resolveTemplateTypes()
+					$newType = UnresolvedTemplateArgumentType::unwrapBare($newType);
 				}
 
 				$callSiteVariance = $this->callSiteVarianceMap->getVariance($type->getName());

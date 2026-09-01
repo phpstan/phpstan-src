@@ -35,6 +35,7 @@ use PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver;
 use PHPStan\Analyser\ExprHandler\Helper\NonNullabilityHelper;
 use PHPStan\Analyser\ExprHandler\Helper\VirtualExprResultHelper;
 use PHPStan\Analyser\Generics\TemplateArgumentFrame;
+use PHPStan\Analyser\Generics\TemplateArgumentObserver;
 use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -77,6 +78,7 @@ use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Reflection\ResolvedFunctionVariant;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
@@ -86,6 +88,9 @@ use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\FunctionParameterClosureThisExtension;
 use PHPStan\Type\FunctionParameterClosureTypeExtension;
 use PHPStan\Type\FunctionParameterOutTypeExtension;
+use PHPStan\Type\Generic\TemplateTypeHelper;
+use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\MethodParameterClosureThisExtension;
 use PHPStan\Type\MethodParameterClosureTypeExtension;
 use PHPStan\Type\MethodParameterOutTypeExtension;
@@ -114,6 +119,7 @@ use function array_values;
 use function count;
 use function get_class;
 use function getenv;
+use function implode;
 use function in_array;
 use function is_array;
 use function is_int;
@@ -162,6 +168,9 @@ class NodeScopeResolver
 
 	/** Whether the PHPSTAN_GUARD_NW diagnostic is enabled (cached from the env). */
 	public static bool $guardNewWorld = false;
+
+	/** PHPSTAN_TEMPLATE_ARGUMENTS_DEBUG=1 prints every second-pass re-walk/replay decision. */
+	private static bool $debugTemplateArguments = false;
 
 	/**
 	 * spl_object_id => true of every Expr in the file's parsed AST. Populated
@@ -235,6 +244,7 @@ class NodeScopeResolver
 	)
 	{
 		self::$guardNewWorld = getenv('PHPSTAN_GUARD_NW') === '1';
+		self::$debugTemplateArguments = getenv('PHPSTAN_TEMPLATE_ARGUMENTS_DEBUG') === '1';
 	}
 
 	/**
@@ -848,23 +858,231 @@ class NodeScopeResolver
 		try {
 			$recording = new RecordingNodeCallback();
 			$state = new StatementListWalkState($scope);
+			/** @var list<array{StatementListWalkState, int}> $entries the state and recording offset before each statement, plus the final ones */
+			$entries = [];
 			$suspendedGatherers = $this->nodeGatherers;
 			$this->nodeGatherers = [];
 			try {
 				foreach ($stmts as $i => $stmt) {
 					$frame->setCurrentStatementIndex($i);
+					$entries[$i] = [clone $state, $recording->count()];
 					$this->processStatementStep($parentNode, $stmts, $i, $stmt, $state, $storage, $recording, $context, true);
 				}
 			} finally {
 				$this->nodeGatherers = $suspendedGatherers;
 			}
 			$frame->finishObserving();
+			$stmtCount = count($stmts);
+			$entries[$stmtCount] = [clone $state, $recording->count()];
 
-			$this->replayRecordingRange($recording, 0, $recording->count(), $nodeCallback, $storage, $scope);
+			$firstSiteStatementIndex = $frame->firstSiteStatementIndex();
+			if ($firstSiteStatementIndex === null) {
+				$this->replayRecordingRange($recording, 0, $recording->count(), $nodeCallback, $storage, $scope);
+
+				return $state->toResult();
+			}
+
+			// the second pass: the statements before the first site stand as
+			// recorded; from there on a statement is re-walked only when it
+			// created a site or mentions a variable whose tracked state the
+			// resolutions changed - the rest replay their recording and carry
+			// their recorded effect onto the re-walked scope
+			$this->replayRecordingRange($recording, 0, $entries[$firstSiteStatementIndex][1], $nodeCallback, $storage, $scope);
+			$hasLabels = false;
+			foreach ($stmts as $stmt) {
+				if (!$stmt instanceof Node\Stmt\Label && $stmt->getAttribute(GotoLabelVisitor::NESTED_BACKWARD_GOTO_LABELS_ATTRIBUTE) === null) {
+					continue;
+				}
+				$hasLabels = true;
+				break;
+			}
+			$state = clone $entries[$firstSiteStatementIndex][0];
+			$state->scope = $state->scope->withoutMemoizedTypes();
+			for ($i = $firstSiteStatementIndex; $i < $stmtCount; $i++) {
+				[$recordedEntry, $offset] = $entries[$i];
+				[$recordedExit, $nextOffset] = $entries[$i + 1];
+				$differingRoots = $state->alreadyTerminated === $recordedEntry->alreadyTerminated
+					? $state->scope->getDifferingVariableRoots($recordedEntry->scope)
+					: null;
+				if ($differingRoots === [] && !$frame->hasSiteAtOrAfter($i)) {
+					// converged with the observation pass: the rest of its recording stands
+					$this->replayRecordingRange($recording, $offset, $recording->count(), $nodeCallback, $storage, $scope);
+					$this->appendRecordedStatementResults($state, $recordedEntry, $entries[$stmtCount][0]);
+					$state->scope = $entries[$stmtCount][0]->scope;
+
+					return $state->toResult();
+				}
+
+				$stmt = $stmts[$i];
+				$reWalk = $differingRoots === null
+					|| $hasLabels
+					|| $frame->ownsSiteInStatement($i)
+					|| $this->statementMentionsAnyVariable($stmt, $differingRoots);
+				if (self::$debugTemplateArguments) {
+					echo sprintf(
+						"[template-arguments] %s:%d statement %d: %s (differing: %s)\n",
+						$scope->getFile(),
+						$stmt->getStartLine(),
+						$i,
+						$reWalk ? 're-walk' : 'replay',
+						$differingRoots === null ? 'non-variable key' : implode(', ', $differingRoots),
+					);
+				}
+				if ($reWalk) {
+					$this->processStatementStep($parentNode, $stmts, $i, $stmt, $state, $storage, $nodeCallback, $context, true);
+					continue;
+				}
+
+				$this->replayRecordingRange($recording, $offset, $nextOffset, $nodeCallback, $storage, $scope);
+				$this->appendRecordedStatementResults($state, $recordedEntry, $recordedExit);
+				$state->scope = $state->scope->withRecordedStatementDelta($recordedEntry->scope, $recordedExit->scope);
+			}
 
 			return $state->toResult();
 		} finally {
 			$scope->popTemplateArgumentFrame();
+		}
+	}
+
+	/**
+	 * The parameter type an argument is observed against: the declared one with
+	 * the template types the call already decided substituted - the receiver's
+	 * class-level arguments, a template an earlier argument inferred - while a
+	 * template still open (ErrorType in the resolved map, typically the one this
+	 * very argument decides) stays a TemplateType, which the observer ignores.
+	 * The resolved parameter type would carry such a template's bound instead.
+	 */
+	private function findOriginalParameterType(ParametersAcceptor $acceptor, ParameterReflection $parameter): ?Type
+	{
+		if (!$acceptor instanceof ResolvedFunctionVariant) {
+			return $parameter->getType();
+		}
+		$originalParameters = $acceptor->getOriginalParametersAcceptor()->getParameters();
+		foreach ($acceptor->getParameters() as $index => $resolvedParameter) {
+			if ($resolvedParameter !== $parameter) {
+				continue;
+			}
+			if (!isset($originalParameters[$index])) {
+				return null;
+			}
+			$originalType = $originalParameters[$index]->getType();
+			if (!$originalType->hasTemplateOrLateResolvableType()) {
+				return $originalType;
+			}
+			$decided = [];
+			foreach ($acceptor->getResolvedTemplateTypeMap()->getTypes() as $name => $type) {
+				if ($type instanceof ErrorType) {
+					continue;
+				}
+				$decided[$name] = $type;
+			}
+
+			return TemplateTypeHelper::resolveTemplateTypes(
+				$originalType,
+				new TemplateTypeMap($decided),
+				$acceptor->getCallSiteVarianceMap(),
+				TemplateTypeVariance::createContravariant(),
+			);
+		}
+
+		return null;
+	}
+
+	/** Carries what the recorded walk from $from to $to added onto $state. */
+	private function appendRecordedStatementResults(StatementListWalkState $state, StatementListWalkState $from, StatementListWalkState $to): void
+	{
+		$state->hasYield = $state->hasYield || ($to->hasYield && !$from->hasYield);
+		$state->alreadyTerminated = $state->alreadyTerminated || ($to->alreadyTerminated && !$from->alreadyTerminated);
+		$state->exitPoints = array_merge($state->exitPoints, array_slice($to->exitPoints, count($from->exitPoints)));
+		$state->throwPoints = array_merge($state->throwPoints, array_slice($to->throwPoints, count($from->throwPoints)));
+		$state->impurePoints = array_merge($state->impurePoints, array_slice($to->impurePoints, count($from->impurePoints)));
+	}
+
+	private const MENTIONED_VARIABLES_ATTRIBUTE = 'templateArgumentMentionedVariables';
+
+	/**
+	 * @param list<string> $variableNames
+	 */
+	private function statementMentionsAnyVariable(Node\Stmt $stmt, array $variableNames): bool
+	{
+		/** @var array{array<string, true>, bool}|null $mentions */
+		$mentions = $stmt->getAttribute(self::MENTIONED_VARIABLES_ATTRIBUTE);
+		if ($mentions === null) {
+			$names = [];
+			$mentionsEverything = false;
+			$this->collectMentionedVariables($stmt, $names, $mentionsEverything);
+			$mentions = [$names, $mentionsEverything];
+			$stmt->setAttribute(self::MENTIONED_VARIABLES_ATTRIBUTE, $mentions);
+		}
+		[$names, $mentionsEverything] = $mentions;
+		if ($mentionsEverything) {
+			return true;
+		}
+		foreach ($variableNames as $variableName) {
+			if (isset($names[$variableName])) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Every variable the statement can read or write - syntactically, so
+	 * reads and writes alike - with `$this`; a closure body lives in its own
+	 * scope, so only its use() clause (and its bound `$this`) count, an arrow
+	 * function captures implicitly and is traversed. Dynamic access
+	 * (`$$name`, compact(), extract(), get_defined_vars(), eval, include)
+	 * mentions everything.
+	 *
+	 * @param array<string, true> $names
+	 */
+	private function collectMentionedVariables(Node $node, array &$names, bool &$mentionsEverything): void
+	{
+		if ($node instanceof Expr\Variable) {
+			if (!is_string($node->name)) {
+				$mentionsEverything = true;
+				return;
+			}
+			$names[$node->name] = true;
+			return;
+		}
+		if ($node instanceof Expr\Closure) {
+			if (!$node->static) {
+				$names['this'] = true;
+			}
+			foreach ($node->uses as $use) {
+				if (!is_string($use->var->name)) {
+					$mentionsEverything = true;
+					continue;
+				}
+				$names[$use->var->name] = true;
+			}
+
+			return;
+		}
+		if ($node instanceof Expr\Eval_ || $node instanceof Expr\Include_) {
+			$mentionsEverything = true;
+		} elseif (
+			$node instanceof Expr\FuncCall
+			&& $node->name instanceof Name
+			&& in_array($node->name->toLowerString(), ['compact', 'extract', 'get_defined_vars'], true)
+		) {
+			$mentionsEverything = true;
+		}
+
+		foreach ($node->getSubNodeNames() as $subNodeName) {
+			$subNode = $node->$subNodeName;
+			if ($subNode instanceof Node) {
+				$this->collectMentionedVariables($subNode, $names, $mentionsEverything);
+			} elseif (is_array($subNode)) {
+				foreach ($subNode as $item) {
+					if (!$item instanceof Node) {
+						continue;
+					}
+					$this->collectMentionedVariables($item, $names, $mentionsEverything);
+				}
+			}
 		}
 	}
 
@@ -2055,6 +2273,7 @@ class NodeScopeResolver
 		} finally {
 			$this->popNodeGatherer();
 		}
+		$this->observeReturnSend($arrowFunctionScope, $exprResult);
 
 		$closureTypeThrowPoints = array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->toPublic(), $exprResult->getThrowPoints());
 		$closureTypeImpurePoints = array_merge($arrowFunctionImpurePoints, $exprResult->getImpurePoints());
@@ -2862,6 +3081,19 @@ class NodeScopeResolver
 
 				$gatheredArgTypeByIndex[$i] = $exprResult->getType();
 				$this->addGatheredArgType($gatheredTypes, $gatheredUnpack, $gatheredHasName, $originalArg, $i, $gatheredArgTypeByIndex[$i]);
+				$templateArgumentFrame = $this->observingTemplateArgumentFrame($scope);
+				if ($templateArgumentFrame !== null && $parameter !== null && $argMetadataAcceptor !== null) {
+					// the metadata acceptor is resolved against the arguments gathered
+					// before this one, so a template this argument itself decides is
+					// still its bound there - observe the declared parameter type,
+					// where such a template is uninformative and the receiver's
+					// class-level arguments are already in place
+					TemplateArgumentObserver::observeArgument(
+						$templateArgumentFrame,
+						$this->findOriginalParameterType($argMetadataAcceptor, $parameter) ?? $parameter->getType(),
+						$gatheredArgTypeByIndex[$i],
+					);
+				}
 			}
 
 			if ($assignByReference && $lookForUnset) {
@@ -3441,6 +3673,10 @@ class NodeScopeResolver
 				if (!$originalType->equals($varTag->getType())) {
 					$this->callNodeCallback($nodeCallback, new VarTagChangedExpressionTypeNode($varTag, $variableNode), $scope, $storage);
 				}
+				$templateArgumentFrame = $this->observingTemplateArgumentFrame($scope);
+				if ($templateArgumentFrame !== null) {
+					TemplateArgumentObserver::observeSend($templateArgumentFrame, $varTag->getType(), $originalType);
+				}
 
 				$nativeScope = $scope->doNotTreatPhpDocTypesAsCertain();
 				$scope = $scope->assignVariable(
@@ -3512,6 +3748,53 @@ class NodeScopeResolver
 		}
 
 		$this->callNodeCallback($nodeCallback, new VarTagChangedExpressionTypeNode($varTag, $defaultExpr), $scope, $storage);
+		$templateArgumentFrame = $this->observingTemplateArgumentFrame($scope);
+		if ($templateArgumentFrame === null) {
+			return;
+		}
+		$defaultExprResult = $storage->findExpressionResult($defaultExpr);
+		if ($defaultExprResult === null) {
+			return;
+		}
+		TemplateArgumentObserver::observeSend($templateArgumentFrame, $varTag->getType(), $defaultExprResult->getType());
+	}
+
+	/**
+	 * The template argument frame of the body being walked while it observes
+	 * a body that created unresolved template arguments - null otherwise, so
+	 * every observation hook costs a null check outside the observation pass.
+	 */
+	public function observingTemplateArgumentFrame(MutatingScope $scope): ?TemplateArgumentFrame
+	{
+		$frame = $scope->getCurrentTemplateArgumentFrame();
+		if ($frame === null || !$frame->isObserving()) {
+			return null;
+		}
+
+		// whether the body created a site is checked by the observer, after the
+		// hook asked for the type it observes - the ask is what creates the site
+		// of a lazily typed result (`return new Foo(1);`)
+		return $frame;
+	}
+
+	/**
+	 * A value leaves the function: the declared return type is a send target for
+	 * the unresolved template arguments it carries.
+	 */
+	public function observeReturnSend(MutatingScope $scope, ExpressionResult $returnedResult): void
+	{
+		$frame = $this->observingTemplateArgumentFrame($scope);
+		if ($frame === null) {
+			return;
+		}
+		$declaredReturnType = $scope->isInAnonymousFunction()
+			? $scope->getAnonymousFunctionReturnType()
+			: $scope->getFunction()?->getReturnType();
+		if ($declaredReturnType === null) {
+			return;
+		}
+
+		TemplateArgumentObserver::observeSend($frame, $declaredReturnType, $returnedResult->getType());
 	}
 
 	/**

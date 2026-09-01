@@ -89,6 +89,11 @@ final class ResultCacheManager
 	/**
 	 * Metadata keys whose change does not invalidate the whole result cache: the analysed files they
 	 * affect can be pinpointed and re-analysed on their own. See restore().
+	 *
+	 * The scannedFiles entry covers scanFiles, scanDirectories and the files excluded from the
+	 * analysis but living in an analysed directory - see getScannedFiles(). The bootstrapFiles are
+	 * deliberately not here: they are executed, not just read, so a change in one of them can affect
+	 * anything about the analysis. They stay in the fully invalidating executedFilesHashes entry.
 	 */
 	private const PARTIALLY_INVALIDATING_META_KEYS = ['composerLocks', 'composerInstalled', 'scannedFiles'];
 

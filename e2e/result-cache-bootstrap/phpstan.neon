@@ -1,0 +1,7 @@
+parameters:
+	level: 8
+	tmpDir: tmp
+	paths:
+		- src
+	bootstrapFiles:
+		- bootstrap.php

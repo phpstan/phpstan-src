@@ -16,6 +16,7 @@ use PHPStan\Command\Symfony\SymfonyStyle;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Rules\Registry as RuleRegistry;
+use PHPStan\Turbo\TurboExtensionEnabler;
 use React\EventLoop\StreamSelectLoop;
 use React\Socket\ConnectionInterface;
 use React\Socket\TcpConnector;
@@ -30,7 +31,9 @@ use function array_merge;
 use function array_unshift;
 use function array_values;
 use function defined;
+use function function_exists;
 use function memory_get_peak_usage;
+use function opcache_get_status;
 use function sprintf;
 
 /**
@@ -58,6 +61,25 @@ final class WorkerRunner
 		private int $decoderBufferSize,
 	)
 	{
+	}
+
+	/**
+	 * Whether this process compiles into an opcode cache. Off in a forked
+	 * worker by design (see ForkedProcess), which is why ParallelAnalyser
+	 * reports spawned workers only.
+	 */
+	private function isOpcacheEnabled(): bool
+	{
+		if (!function_exists('opcache_get_status')) {
+			return false;
+		}
+
+		$status = opcache_get_status(false);
+		if ($status === false) {
+			return false;
+		}
+
+		return ($status['opcache_enabled'] ?? false) === true;
 	}
 
 	/**
@@ -100,7 +122,16 @@ final class WorkerRunner
 			// phpcs:enable
 			$out = new Encoder($connection, $jsonInvalidUtf8Ignore);
 			$in = new Decoder($connection, true, options: $jsonInvalidUtf8Ignore, maxlength: $this->decoderBufferSize);
-			$out->write(['action' => 'hello', 'identifier' => $identifier]);
+			$out->write([
+				'action' => 'hello',
+				'identifier' => $identifier,
+				// what this worker actually runs with, for the -vvv report of
+				// a spawning ParallelAnalyser: its command line asks for these
+				// (see ProcessHelper), this is whether they took effect
+				'turbo' => TurboExtensionEnabler::isActive(),
+				'opcache' => $this->isOpcacheEnabled(),
+				'trustedTypes' => TurboExtensionEnabler::isTrustingOwnTypes(),
+			]);
 			$this->runWorker($out, $in, $output, $analysedFiles, $tmpFile, $insteadOfFile, $errorCount);
 		});
 

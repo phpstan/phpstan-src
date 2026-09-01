@@ -2,3 +2,9 @@ parameters:
 	level: 8
 	paths:
 		- src
+	parallel:
+		# always two workers: the phar.yml phar-run jobs assert on what
+		# each one reports at -vvv (see ParallelAnalyser)
+		jobSize: 1
+		minimumNumberOfJobsPerProcess: 1
+		maximumNumberOfProcesses: 2

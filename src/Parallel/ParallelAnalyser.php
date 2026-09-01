@@ -11,6 +11,7 @@ use PHPStan\Analyser\Error;
 use PHPStan\Analyser\InternalError;
 use PHPStan\Cache\ArenaCache;
 use PHPStan\Command\CommandHelper;
+use PHPStan\Command\Output;
 use PHPStan\Dependency\RootExportedNode;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -67,6 +68,7 @@ final class ParallelAnalyser
 	 * @param string[] $allAnalysedFiles
 	 * @param Closure(int, list<string>=): void|null $postFileCallback
 	 * @param (callable(list<Error>, list<Error>, string[]): void)|null $onFileAnalysisHandler
+	 * @param Output|null $errorOutput where spawned workers report what they run with at -vvv; null when nobody is listening
 	 * @return PromiseInterface<AnalyserResult>
 	 */
 	public function analyse(
@@ -80,6 +82,7 @@ final class ParallelAnalyser
 		?string $insteadOfFile,
 		InputInterface $input,
 		?callable $onFileAnalysisHandler,
+		?Output $errorOutput,
 	): PromiseInterface
 	{
 		$jobs = array_reverse($schedule->getJobs());
@@ -127,6 +130,8 @@ final class ParallelAnalyser
 		/** @var Deferred<AnalyserResult> $deferred */
 		$deferred = new Deferred();
 
+		$useFork = $this->forkParallelChecker->isSupported();
+
 		$server = new TcpServer('127.0.0.1:0', $loop);
 		$this->processPool = new ProcessPool($server, static function () use ($deferred, &$jobs, &$internalErrors, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, &$errors, &$filteredPhpErrors, &$allPhpErrors, &$locallyIgnoredErrors, &$linesToIgnore, &$unmatchedLineIgnores, &$collectedData, &$dependencies, &$usedTraitDependencies, &$packageDependencies, &$exportedNodes, &$peakMemoryUsages, &$allProcessedFiles, $arenaName): void {
 			if ($arenaName !== null) {
@@ -166,13 +171,13 @@ final class ParallelAnalyser
 				workerCount: count($peakMemoryUsages),
 			));
 		});
-		$server->on('connection', function (ConnectionInterface $connection) use (&$jobs, $arenaName, $expectedWorkerCount, &$helloCount): void {
+		$server->on('connection', function (ConnectionInterface $connection) use (&$jobs, $arenaName, $expectedWorkerCount, &$helloCount, $errorOutput, $useFork): void {
 			// phpcs:disable SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly
 			$jsonInvalidUtf8Ignore = defined('JSON_INVALID_UTF8_IGNORE') ? JSON_INVALID_UTF8_IGNORE : 0;
 			// phpcs:enable
 			$decoder = new Decoder($connection, true, options: $jsonInvalidUtf8Ignore, maxlength: $this->decoderBufferSize);
 			$encoder = new Encoder($connection, $jsonInvalidUtf8Ignore);
-			$decoder->on('data', function (array $data) use (&$jobs, $decoder, $encoder, $arenaName, $expectedWorkerCount, &$helloCount): void {
+			$decoder->on('data', function (array $data) use (&$jobs, $decoder, $encoder, $arenaName, $expectedWorkerCount, &$helloCount, $errorOutput, $useFork): void {
 				if ($data['action'] !== 'hello') {
 					return;
 				}
@@ -184,6 +189,19 @@ final class ParallelAnalyser
 				$helloCount++;
 				if ($arenaName !== null && $helloCount === $expectedWorkerCount) {
 					ArenaCache::unlinkName();
+				}
+				if ($errorOutput !== null && $errorOutput->isVeryVerbose() && !$useFork) {
+					// the spawn command line asks for these (see ProcessHelper);
+					// this is whether they took effect. A forked worker inherits
+					// the main process and has nothing of its own to report.
+					$errorOutput->writeLineFormatted(sprintf(
+						'Spawned worker %d/%d checked in: turbo %s, OPcache %s, trusted types %s',
+						$helloCount,
+						$expectedWorkerCount,
+						($data['turbo'] ?? false) === true ? 'on' : 'off',
+						($data['opcache'] ?? false) === true ? 'on' : 'off',
+						($data['trustedTypes'] ?? false) === true ? 'on' : 'off',
+					));
 				}
 
 				$identifier = $data['identifier'];
@@ -216,8 +234,6 @@ final class ParallelAnalyser
 			$reachedInternalErrorsCountLimit = true;
 			$this->processPool->quitAll();
 		};
-
-		$useFork = $this->forkParallelChecker->isSupported();
 
 		if ($useFork && $numberOfProcesses > 1) {
 			// Build the directory symbol indexes here, in the parent, so the

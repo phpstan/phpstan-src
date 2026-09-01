@@ -53,8 +53,9 @@ final class TurboExtensionSelector
 		if (TurboExtensionEnabler::isLoaded()) {
 			$restartPath = TurboProcessRestarter::getRestartExtensionPath();
 			if ($restartPath !== null) {
-				// loaded through the restart's own -d flag (see
-				// TurboProcessRestarter) — spawned workers do not inherit
+				// loaded through a -d flag — the restart's own, or the one
+				// ProcessHelper gave this process when spawning it as a worker
+				// (see TurboProcessRestarter): spawned workers do not inherit
 				// command-line -d flags, so they need it passed explicitly
 				return $restartPath;
 			}

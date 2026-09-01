@@ -7,6 +7,7 @@ use PhpParser\Node\Identifier;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
+use PHPStan\Analyser\Generics\TemplateArgumentFrame;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\SpecifiedTypes;
@@ -74,7 +75,7 @@ final class ImplicitToStringCallHelper
 			// the __toString() call's return type resolves directly (the receiver
 			// type is already in hand); the fabricated node is only the payload
 			// dynamic extensions receive - nothing walks it
-			$toStringCall = new Expr\MethodCall($expr, new Identifier('__toString'));
+			$toStringCall = new Expr\MethodCall($expr, new Identifier('__toString'), attributes: [TemplateArgumentFrame::SYNTHETIC_SITE_ATTRIBUTE => true]);
 			if ($scope->nativeTypesPromoted) {
 				$toStringReturnType = ParametersAcceptorSelector::combineAcceptors($toStringMethod->getVariants())->getNativeReturnType();
 			} else {

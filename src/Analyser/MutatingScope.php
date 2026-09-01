@@ -3516,7 +3516,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			// resolves it (Collection::first()'s TFirstDefault -> null)
 			$variant = ParametersAcceptorSelector::selectFromArgs($this, [], $methodReflection->getVariants(), $methodReflection->getNamedArgumentsVariants());
 
-			return $native && $variant instanceof ExtendedParametersAcceptor ? $variant->getNativeReturnType() : $variant->getReturnType();
+			return $native && $variant instanceof ExtendedParametersAcceptor ? $variant->getNativeReturnType() : TemplateArgumentFrame::returnTypeOfCall($variant, $this, $expr, true);
 		}
 
 		// position-independent constant expressions (isset()/?? dimensions and

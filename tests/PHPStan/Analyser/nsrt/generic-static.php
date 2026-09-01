@@ -54,7 +54,7 @@ class FooImpl implements Foo
 
 	public function doFoo(): void
 	{
-		assertType('static(GenericStatic\FooImpl<T (class GenericStatic\FooImpl, argument), int>)', $this->map(function () {
+		assertType('static(GenericStatic\FooImpl<T (class GenericStatic\FooImpl, argument), 1>)', $this->map(function () {
 			return 1;
 		}));
 
@@ -68,7 +68,7 @@ class FooImpl implements Foo
 	 */
 	public function doBar(self $s): void
 	{
-		assertType('GenericStatic\\FooImpl<string, int>', $s->map(function () {
+		assertType('GenericStatic\\FooImpl<string, 1>', $s->map(function () {
 			return 1;
 		}));
 

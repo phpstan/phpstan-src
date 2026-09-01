@@ -2354,28 +2354,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->analyse([__DIR__ . '/data/bug-5372.php'], [
-			[
-				'Parameter #1 $list of method Bug5372\Foo::takesStrings() expects Bug5372\Collection<int, string>, Bug5372\Collection<int, class-string> given.',
-				68,
-				'Template type T on class Bug5372\Collection is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
-			],
-			[
-				'Parameter #1 $list of method Bug5372\Foo::takesStrings() expects Bug5372\Collection<int, string>, Bug5372\Collection<int, class-string> given.',
-				72,
-				'Template type T on class Bug5372\Collection is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
-			],
-			[
-				'Parameter #1 $list of method Bug5372\Foo::takesStrings() expects Bug5372\Collection<int, string>, Bug5372\Collection<int, literal-string> given.',
-				81,
-				'Template type T on class Bug5372\Collection is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
-			],
-			[
-				'Parameter #1 $list of method Bug5372\Foo::takesStrings() expects Bug5372\Collection<int, string>, Bug5372\Collection<int, literal-string> given.',
-				85,
-				'Template type T on class Bug5372\Collection is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
-			],
-		]);
+		$this->analyse([__DIR__ . '/data/bug-5372.php'], []);
 	}
 
 	public function testLiteralString(): void
@@ -4353,7 +4332,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkUnionTypes = true;
 		$this->analyse([__DIR__ . '/data/bug-8441.php'], [
 			[
-				'Parameter #1 $c of method Bug8441Methods\\Consumer::takeInts() expects Bug8441Methods\\Collection<int>, Bug8441Methods\\Collection<string> given.',
+				'Parameter #1 $c of method Bug8441Methods\\Consumer::takeInts() expects Bug8441Methods\\Collection<int>, Bug8441Methods\\Collection<\'foo\'> given.',
 				77,
 			],
 			[
@@ -4375,7 +4354,7 @@ class CallMethodsRuleTest extends RuleTestCase
 				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
 			],
 			[
-				'Parameter #1 $c of method Bug8441Methods\\Consumer::takeInts() expects Bug8441Methods\\Collection<int>, Bug8441Methods\\Collection<string> given.',
+				'Parameter #1 $c of method Bug8441Methods\\Consumer::takeInts() expects Bug8441Methods\\Collection<int>, Bug8441Methods\\Collection<\'foo\'> given.',
 				86,
 			],
 			[

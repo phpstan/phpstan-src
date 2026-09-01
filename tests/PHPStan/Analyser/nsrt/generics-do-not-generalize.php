@@ -39,7 +39,7 @@ class Foo
 
 function (): void {
 	assertType('array<1>', test(1));
-	assertType('GenericsDoNotGeneralize\Foo<int>', test2(1));
+	assertType('GenericsDoNotGeneralize\Foo<1>', test2(1));
 	assertType('GenericsDoNotGeneralize\Foo<1>', new Foo(1));
 };
 
@@ -115,7 +115,7 @@ function (): void {
 	/** @var list<string> $a */
 	$a = doFoo();
 
-	assertType('ArrayIterator<int, string>', createArrayIterator($a));
+	assertType('ArrayIterator<int<0, max>, string>', createArrayIterator($a));
 };
 
 /** @template T */

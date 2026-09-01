@@ -3,6 +3,9 @@
 namespace PHPStan\Analyser\Generics;
 
 use PhpParser\Node\Expr;
+use PHPStan\Analyser\MutatingScope;
+use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\ResolvedFunctionVariant;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
@@ -49,6 +52,32 @@ final class TemplateArgumentFrame
 	 * built it or stay unobserved.
 	 */
 	public const SYNTHETIC_SITE_ATTRIBUTE = 'templateArgumentSyntheticSite';
+
+	/**
+	 * Set on a node a handler builds in place of the real one (the nullsafe
+	 * call's plain twin) to the real node, which is the site.
+	 */
+	public const ORIGINAL_SITE_ATTRIBUTE = 'templateArgumentOriginalSite';
+
+	/**
+	 * The return type of a call the analyser walks: the variant's return type
+	 * with the inferred template arguments unresolved/resolved under the
+	 * scope's frame, the legacy (generalizing) one otherwise.
+	 */
+	public static function returnTypeOfCall(ParametersAcceptor $acceptor, MutatingScope $scope, Expr $site, ?bool $allowUnresolved = null): Type
+	{
+		$frame = $scope->getCurrentTemplateArgumentFrame();
+		if ($frame === null || !$acceptor instanceof ResolvedFunctionVariant) {
+			return $acceptor->getReturnType();
+		}
+		$originalSite = $site->getAttribute(self::ORIGINAL_SITE_ATTRIBUTE);
+
+		return $acceptor->getReturnTypeWithUnresolvedTemplateArguments(
+			$originalSite instanceof Expr ? $originalSite : $site,
+			$frame,
+			$allowUnresolved ?? !$scope->nativeTypesPromoted,
+		);
+	}
 
 	private bool $observing = true;
 

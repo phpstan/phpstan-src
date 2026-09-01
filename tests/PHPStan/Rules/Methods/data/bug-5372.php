@@ -64,11 +64,11 @@ class Foo
 		$this->takesStrings($newCol);
 
 		$newCol = $col->map(static fn(string $var): string => $classString);
-		assertType('Bug5372\Collection<int, class-string>', $newCol);
+		assertType('Bug5372\Collection<int, string>', $newCol);
 		$this->takesStrings($newCol);
 
 		$newCol = $col->map2(static fn(string $var): string => $classString);
-		assertType('Bug5372\Collection<int, class-string>', $newCol);
+		assertType('Bug5372\Collection<int, string>', $newCol);
 		$this->takesStrings($newCol);
 	}
 
@@ -77,11 +77,11 @@ class Foo
 	{
 		$col = new Collection(['foo', 'bar']);
 		$newCol = $col->map(static fn(string $var): string => $literalString);
-		assertType('Bug5372\Collection<int, literal-string>', $newCol);
+		assertType('Bug5372\Collection<int, string>', $newCol);
 		$this->takesStrings($newCol);
 
 		$newCol = $col->map2(static fn(string $var): string => $literalString);
-		assertType('Bug5372\Collection<int, literal-string>', $newCol);
+		assertType('Bug5372\Collection<int, string>', $newCol);
 		$this->takesStrings($newCol);
 	}
 

@@ -53,5 +53,5 @@ function (): void {
 		return $category;
 	})->all();
 
-	assertType('array<0|1, string>', $result);
+	assertType('array<0|1, \'book\'|\'cars\'>', $result);
 };

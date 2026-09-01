@@ -268,7 +268,7 @@ function (): void {
 	$c = make(1);
 	takeInts($c);
 	assertType('Bug6732\Collection<int>', $c);
-	assertType('Bug6732\Collection<int>', make(2));
+	assertType('Bug6732\Collection<2>', make(2));
 };
 
 function (): void {

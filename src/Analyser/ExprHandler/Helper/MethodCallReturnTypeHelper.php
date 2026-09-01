@@ -6,6 +6,7 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\ArgsResult;
 use PHPStan\Analyser\ArgumentsNormalizer;
+use PHPStan\Analyser\Generics\TemplateArgumentFrame;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ParametersAcceptor;
@@ -54,7 +55,7 @@ final class MethodCallReturnTypeHelper
 			$normalizedMethodCall = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $methodCall);
 		}
 		if ($normalizedMethodCall === null) {
-			return $parametersAcceptor->getReturnType();
+			return TemplateArgumentFrame::returnTypeOfCall($parametersAcceptor, $scope, $methodCall);
 		}
 
 		// re-expose the already-processed arguments so an extension's
@@ -116,7 +117,7 @@ final class MethodCallReturnTypeHelper
 							$remainingMethod->getVariants(),
 							$remainingMethod->getNamedArgumentsVariants(),
 						);
-						$resolvedTypes[] = $remainingParametersAcceptor->getReturnType();
+						$resolvedTypes[] = TemplateArgumentFrame::returnTypeOfCall($remainingParametersAcceptor, $scope, $methodCall);
 					}
 				}
 
@@ -126,7 +127,7 @@ final class MethodCallReturnTypeHelper
 			$popPrimedStorage();
 		}
 
-		return $parametersAcceptor->getReturnType();
+		return TemplateArgumentFrame::returnTypeOfCall($parametersAcceptor, $scope, $methodCall);
 	}
 
 }

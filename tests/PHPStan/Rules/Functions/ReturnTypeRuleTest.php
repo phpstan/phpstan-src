@@ -515,4 +515,11 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5741.php'], []);
 	}
 
+	public function testBug8031(): void
+	{
+		$this->checkNullables = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-8031.php'], []);
+	}
+
 }

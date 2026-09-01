@@ -86,6 +86,7 @@ final class GlobalHandler implements StmtHandler
 			}
 
 			$varType = $this->getGlobalVariableType($var->name);
+			$nodeScopeResolver->markVariableUntracked($var->name);
 			$scope = $scope->assignVariable($var->name, $varType, $varType, TrinaryLogic::createYes());
 			$vars[] = $var->name;
 		}

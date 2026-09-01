@@ -44,6 +44,8 @@ final class EvalHandler implements ExprHandler
 	{
 		$beforeScope = $scope;
 		$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
+		// the evaluated code may read any variable
+		$nodeScopeResolver->markAllReachingVariablesRead($exprResult->getScope());
 		$scope = $exprResult->getScope()->invalidateVolatileExpressions();
 
 		return $this->expressionResultFactory->create(

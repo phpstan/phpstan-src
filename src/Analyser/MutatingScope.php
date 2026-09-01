@@ -39,8 +39,10 @@ use PHPStan\Node\Expr\ParameterVariableOriginalValueExpr;
 use PHPStan\Node\Expr\PossiblyImpureCallExpr;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
+use PHPStan\Node\Expr\VariableWrittenExpr;
 use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
+use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\Node\VirtualNode;
 use PHPStan\Parser\Parser;
 use PHPStan\Php\PhpVersion;
@@ -2759,7 +2761,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		return $this->assignExpression($condExpr, $type, $nativeType);
 	}
 
-	public function enterForeach(self $originalScope, Expr $iteratee, Type $iterateeType, Type $nativeIterateeType, string $valueName, ?string $keyName, bool $valueByRef): self
+	/**
+	 * @param list<Expr> $valueSupersededMarkerExprs
+	 * @param list<Expr> $keySupersededMarkerExprs
+	 */
+	public function enterForeach(self $originalScope, Expr $iteratee, Type $iterateeType, Type $nativeIterateeType, string $valueName, ?string $keyName, bool $valueByRef, ?VariableWrite $valueWrite = null, array $valueSupersededMarkerExprs = [], ?VariableWrite $keyWrite = null, array $keySupersededMarkerExprs = []): self
 	{
 		$valueType = $originalScope->getIterableValueType($iterateeType);
 		$nativeValueType = $originalScope->getIterableValueType($nativeIterateeType);
@@ -2768,6 +2774,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$valueType,
 			$nativeValueType,
 			TrinaryLogic::createYes(),
+			write: $valueWrite,
+			supersededMarkerExprs: $valueSupersededMarkerExprs,
 		);
 		// Track the original foreach value so narrowings applied to the value
 		// variable (e.g. is_string($type)) can later be projected back onto the
@@ -2793,7 +2801,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			);
 		}
 		if ($keyName !== null) {
-			$scope = $scope->enterForeachKey($originalScope, $iteratee, $iterateeType, $nativeIterateeType, $keyName);
+			$scope = $scope->enterForeachKey($originalScope, $iteratee, $iterateeType, $nativeIterateeType, $keyName, $keyWrite, $keySupersededMarkerExprs);
 
 			if ($valueByRef && $iterateeType->isArray()->yes() && $iterateeType->isConstantArray()->no()) {
 				$scope = $scope->assignExpression(
@@ -2807,7 +2815,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		return $scope;
 	}
 
-	public function enterForeachKey(self $originalScope, Expr $iteratee, Type $iterateeType, Type $nativeIterateeType, string $keyName): self
+	/**
+	 * @param list<Expr> $supersededMarkerExprs
+	 */
+	public function enterForeachKey(self $originalScope, Expr $iteratee, Type $iterateeType, Type $nativeIterateeType, string $keyName, ?VariableWrite $write = null, array $supersededMarkerExprs = []): self
 	{
 		$keyType = $originalScope->getIterableKeyType($iterateeType);
 		$nativeKeyType = $originalScope->getIterableKeyType($nativeIterateeType);
@@ -2817,6 +2828,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$keyType,
 			$nativeKeyType,
 			TrinaryLogic::createYes(),
+			write: $write,
+			supersededMarkerExprs: $supersededMarkerExprs,
 		);
 
 		$originalForeachKeyExpr = new OriginalForeachKeyExpr($keyName);
@@ -2832,7 +2845,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		return $scope;
 	}
 
-	public function enterCatchType(Type $catchType, ?string $variableName): self
+	/**
+	 * @param list<Expr> $supersededMarkerExprs
+	 */
+	public function enterCatchType(Type $catchType, ?string $variableName, ?VariableWrite $write = null, array $supersededMarkerExprs = []): self
 	{
 		if ($variableName === null) {
 			return $this;
@@ -2843,6 +2859,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			TypeCombinator::intersect($catchType, new ObjectType(Throwable::class)),
 			TypeCombinator::intersect($catchType, new ObjectType(Throwable::class)),
 			TrinaryLogic::createYes(),
+			write: $write,
+			supersededMarkerExprs: $supersededMarkerExprs,
 		);
 	}
 
@@ -3003,9 +3021,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	}
 
 	/**
+	 * A write site ($write) plants its VariableWrittenExpr marker and kills the
+	 * markers of the variable's earlier write sites ($supersededMarkerExprs) -
+	 * the scope is told what to kill, it never consults engine state. Writes
+	 * that are not source-level sites leave the markers alone.
+	 *
 	 * @param list<string> $intertwinedPropagatedFrom
+	 * @param list<Expr> $supersededMarkerExprs
 	 */
-	public function assignVariable(string $variableName, Type $type, Type $nativeType, TrinaryLogic $certainty, array $intertwinedPropagatedFrom = []): self
+	public function assignVariable(string $variableName, Type $type, Type $nativeType, TrinaryLogic $certainty, array $intertwinedPropagatedFrom = [], ?VariableWrite $write = null, array $supersededMarkerExprs = []): self
 	{
 		$node = new Variable($variableName);
 		$scope = $this->assignExpression($node, $type, $nativeType);
@@ -3015,6 +3039,16 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$exprString = '$' . $variableName;
 			$scope->expressionTypes[$exprString] = new ExpressionTypeHolder($node, $type, $certainty);
 			$scope->nativeExpressionTypes[$exprString] = new ExpressionTypeHolder($node, $nativeType, $certainty);
+		}
+		if ($write !== null) {
+			foreach ($supersededMarkerExprs as $supersededMarkerExpr) {
+				$supersededMarkerKey = $this->getNodeKey($supersededMarkerExpr);
+				unset($scope->expressionTypes[$supersededMarkerKey], $scope->nativeExpressionTypes[$supersededMarkerKey]);
+			}
+			$markerHolder = ExpressionTypeHolder::createYes($write->getMarkerExpr(), new MixedType());
+			$markerKey = $this->getNodeKey($write->getMarkerExpr());
+			$scope->expressionTypes[$markerKey] = $markerHolder;
+			$scope->nativeExpressionTypes[$markerKey] = $markerHolder;
 		}
 
 		foreach ($scope->expressionTypes as $exprString => $expressionType) {
@@ -4564,6 +4598,19 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				$generalizedType,
 				$variableTypeHolder->getCertainty(),
 			);
+		}
+
+		// a write marker planted only by the newer pass (its branch was dead in the
+		// previous pass) must survive the generalization, or the next pass's reads
+		// never see that write reaching the loop head
+		foreach ($otherVariableTypeHolders as $variableExprString => $otherVariableTypeHolder) {
+			if (isset($variableTypeHolders[$variableExprString])) {
+				continue;
+			}
+			if (!$otherVariableTypeHolder->getExpr() instanceof VariableWrittenExpr) {
+				continue;
+			}
+			$newVariableTypeHolders[$variableExprString] = ExpressionTypeHolder::createMaybe($otherVariableTypeHolder->getExpr(), $otherVariableTypeHolder->getType());
 		}
 
 		return $newVariableTypeHolders;

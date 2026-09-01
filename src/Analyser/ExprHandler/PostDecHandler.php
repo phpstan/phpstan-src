@@ -18,6 +18,7 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\Type\Type;
 
 /**
@@ -74,6 +75,7 @@ final class PostDecHandler implements ExprHandler
 				$virtualExpr,
 				$nodeCallback,
 				$virtualExprResult,
+				VariableWrite::KIND_INC_DEC,
 			)->getScope(),
 			beforeScope: $scope,
 			expr: $expr,

@@ -41,10 +41,12 @@ class DebugScopeRuleTest extends RuleTestCase
 					'$b (Yes): int',
 					'$debug (Yes): bool',
 					'$c (Maybe): 1',
+					'__phpstanVariableWritten($c, 1) (Maybe): mixed',
 					'native $a (Yes): int',
 					'native $b (Yes): int',
 					'native $debug (Yes): bool',
 					'native $c (Maybe): 1',
+					'native __phpstanVariableWritten($c, 1) (Maybe): mixed',
 					'condition about $c #1: if $debug=false then $c is *ERROR* (No)',
 					'condition about $c #2: if $debug=true then $c is 1 (Yes)',
 				]),
@@ -59,7 +61,9 @@ class DebugScopeRuleTest extends RuleTestCase
 			[
 				implode("\n", [
 					"\$result (Yes): 'no matches!'",
+					'__phpstanVariableWritten($result, 1) (Yes): mixed',
 					"native \$result (Yes): 'no matches!'",
+					'native __phpstanVariableWritten($result, 1) (Yes): mixed',
 				]),
 				11,
 			],

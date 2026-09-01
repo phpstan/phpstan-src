@@ -150,7 +150,18 @@ final class VariableHandler implements ExprHandler
 			if (in_array($expr->name, Scope::SUPERGLOBAL_VARIABLES, true)) {
 				$impurePoints[] = new ImpurePoint($scope, $expr, 'superglobal', 'access to superglobal variable', true);
 			}
+			// the one place a source-level variable read is priced - record it
+			// for the unused-variable check
+			$nodeScopeResolver->markVariableRead($expr->name, $beforeScope);
 		} elseif ($nameResult !== null) {
+			$nameConstantStrings = $nameResult->getType()->getConstantStrings();
+			if (count($nameConstantStrings) > 0) {
+				foreach ($nameConstantStrings as $nameConstantString) {
+					$nodeScopeResolver->markVariableRead($nameConstantString->getValue(), $beforeScope);
+				}
+			} else {
+				$nodeScopeResolver->markAllReachingVariablesRead($beforeScope);
+			}
 			$hasYield = $nameResult->hasYield();
 			$throwPoints = $nameResult->getThrowPoints();
 			$impurePoints = $nameResult->getImpurePoints();

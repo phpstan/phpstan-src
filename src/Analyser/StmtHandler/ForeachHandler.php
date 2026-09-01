@@ -43,6 +43,7 @@ use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\Expr\OriginalForeachKeyExpr;
 use PHPStan\Node\Expr\OriginalForeachValueExpr;
 use PHPStan\Node\InForeachNode;
+use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\Node\VariableAssignNode;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\BooleanType;
@@ -492,6 +493,12 @@ final class ForeachHandler implements StmtHandler
 			&& ($stmt->keyVar === null || ($stmt->keyVar instanceof Variable && is_string($stmt->keyVar->name)))
 		) {
 			$keyVarName = $stmt->keyVar instanceof Variable ? $stmt->keyVar->name : null;
+			if ($stmt->byRef) {
+				// the value variable aliases the iteratee's elements - its writes escape
+				$nodeScopeResolver->markVariableUntracked($stmt->valueVar->name);
+			}
+			$valueWrite = $nodeScopeResolver->recordVariableWrite($stmt->valueVar, VariableWrite::KIND_FOREACH_VALUE);
+			$keyWrite = $stmt->keyVar instanceof Variable ? $nodeScopeResolver->recordVariableWrite($stmt->keyVar, VariableWrite::KIND_FOREACH_KEY) : null;
 			$scope = $scope->enterForeach(
 				$originalScope,
 				$stmt->expr,
@@ -500,6 +507,10 @@ final class ForeachHandler implements StmtHandler
 				$stmt->valueVar->name,
 				$keyVarName,
 				$stmt->byRef,
+				$valueWrite,
+				$valueWrite !== null ? $nodeScopeResolver->getVariableWriteMarkersToKill($stmt->valueVar->name) : [],
+				$keyWrite,
+				$keyWrite !== null && $keyVarName !== null ? $nodeScopeResolver->getVariableWriteMarkersToKill($keyVarName) : [],
 			);
 			$vars = [$stmt->valueVar->name];
 			if ($keyVarName !== null) {
@@ -516,12 +527,14 @@ final class ForeachHandler implements StmtHandler
 					$originalScope->getIterableValueType($nativeIterateeType),
 				),
 				$nodeCallback,
+				writeSiteKind: VariableWrite::KIND_FOREACH_VALUE,
 			)->getScope();
 			$vars = $nodeScopeResolver->getAssignedVariables($stmt->valueVar);
 			if (
 				$stmt->keyVar instanceof Variable && is_string($stmt->keyVar->name)
 			) {
-				$scope = $scope->enterForeachKey($originalScope, $stmt->expr, $iterateeType, $nativeIterateeType, $stmt->keyVar->name);
+				$keyWrite = $nodeScopeResolver->recordVariableWrite($stmt->keyVar, VariableWrite::KIND_FOREACH_KEY);
+				$scope = $scope->enterForeachKey($originalScope, $stmt->expr, $iterateeType, $nativeIterateeType, $stmt->keyVar->name, $keyWrite, $keyWrite !== null ? $nodeScopeResolver->getVariableWriteMarkersToKill($stmt->keyVar->name) : []);
 				$vars[] = $stmt->keyVar->name;
 			} elseif ($stmt->keyVar !== null) {
 				$scope = $nodeScopeResolver->processVirtualAssign(
@@ -534,6 +547,7 @@ final class ForeachHandler implements StmtHandler
 						$originalScope->getIterableKeyType($nativeIterateeType),
 					),
 					$nodeCallback,
+					writeSiteKind: VariableWrite::KIND_FOREACH_KEY,
 				)->getScope();
 				$vars = array_merge($vars, $nodeScopeResolver->getAssignedVariables($stmt->keyVar));
 			}
@@ -658,6 +672,8 @@ final class ForeachHandler implements StmtHandler
 
 		$valueVarName = $stmt->valueVar->name;
 		$keyVarName = $stmt->keyVar instanceof Variable ? $stmt->keyVar->name : null;
+		$valueWrite = $nodeScopeResolver->recordVariableWrite($stmt->valueVar, VariableWrite::KIND_FOREACH_VALUE);
+		$keyWrite = $stmt->keyVar instanceof Variable ? $nodeScopeResolver->recordVariableWrite($stmt->keyVar, VariableWrite::KIND_FOREACH_KEY) : null;
 
 		$allBodyScopes = [];
 		$allChainScopes = [];
@@ -694,6 +710,8 @@ final class ForeachHandler implements StmtHandler
 					$valueType,
 					$nativeValueType,
 					TrinaryLogic::createYes(),
+					write: $valueWrite,
+					supersededMarkerExprs: $valueWrite !== null ? $nodeScopeResolver->getVariableWriteMarkersToKill($valueVarName) : [],
 				);
 				$iterScope = $iterScope->assignExpression(
 					new OriginalForeachValueExpr($valueVarName),
@@ -706,6 +724,8 @@ final class ForeachHandler implements StmtHandler
 						$keyType,
 						$nativeKeyType,
 						TrinaryLogic::createYes(),
+						write: $keyWrite,
+						supersededMarkerExprs: $keyWrite !== null ? $nodeScopeResolver->getVariableWriteMarkersToKill($keyVarName) : [],
 					);
 					$iterScope = $iterScope->assignExpression(
 						new OriginalForeachKeyExpr($keyVarName),

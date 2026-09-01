@@ -17,6 +17,7 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Node\Variable\VariableWrite;
 
 /**
  * @implements ExprHandler<PreInc>
@@ -76,6 +77,7 @@ final class PreIncHandler implements ExprHandler
 				$expr,
 				$nodeCallback,
 				$incDecValueResult,
+				VariableWrite::KIND_INC_DEC,
 			)->getScope(),
 			beforeScope: $scope,
 			expr: $expr,

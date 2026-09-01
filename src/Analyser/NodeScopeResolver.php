@@ -57,6 +57,7 @@ use PHPStan\Node\ReturnStatement;
 use PHPStan\Node\StaticMethodCallableNode;
 use PHPStan\Node\StaticMethodCallExpressionNode;
 use PHPStan\Node\UnreachableStatementNode;
+use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\Node\VarTagChangedExpressionTypeNode;
 use PHPStan\Parser\ArrowFunctionArgVisitor;
 use PHPStan\Parser\ClosureArgVisitor;
@@ -145,6 +146,18 @@ class NodeScopeResolver
 	 * re-processing - node callbacks fired during the original walk.
 	 */
 	private bool $consumeStoredExpressionResults = false;
+
+	/**
+	 * Local-variable write tracking (unused-variable check): one immutable
+	 * VariableWritesFrame per function-like body being walked, innermost last;
+	 * the top frame is swapped after every transition. Arrow functions share
+	 * the enclosing frame; top-level code has none.
+	 *
+	 * @var list<VariableWritesFrame>
+	 */
+	private array $variableWritesFrames = [];
+
+	private int $variableWriteIdCounter = 0;
 
 	private ?NonNullabilityHelper $nonNullabilityHelper = null;
 
@@ -292,10 +305,18 @@ class NodeScopeResolver
 		// interrupted walk's gatherer frames (see processStmtNodes())
 		$gatherers = $this->nodeGatherers;
 		$this->nodeGatherers = [];
+		$variableWritesFrames = $this->variableWritesFrames;
+		$this->variableWritesFrames = [];
+		// write ids restart per walk so a file's markers (visible in debugScope())
+		// do not depend on what was analysed before it
+		$variableWriteIdCounter = $this->variableWriteIdCounter;
+		$this->variableWriteIdCounter = 0;
 		try {
 			$this->processNodesWithStorage($nodes, $scope, $expressionResultStorage, $nodeCallback);
 		} finally {
 			$this->nodeGatherers = $gatherers;
+			$this->variableWritesFrames = $variableWritesFrames;
+			$this->variableWriteIdCounter = $variableWriteIdCounter;
 			$scope->popExpressionResultStorage();
 		}
 	}
@@ -1455,6 +1476,169 @@ class NodeScopeResolver
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
 	/**
+	 * Opens the write-tracking frame of a function-like body. By-ref parameters
+	 * and by-ref closure uses alias slots outside the body, so their writes are
+	 * never reported.
+	 *
+	 * @param Node\Param[] $params
+	 * @param Node\ClosureUse[] $byRefUses
+	 */
+	public function pushVariableWritesFrame(array $params, array $byRefUses = []): void
+	{
+		$frame = VariableWritesFrame::create();
+		foreach ($params as $param) {
+			if (!$param->byRef || !$param->var instanceof Variable || !is_string($param->var->name)) {
+				continue;
+			}
+			$frame = $frame->withUntracked($param->var->name);
+		}
+		foreach ($byRefUses as $use) {
+			if (!is_string($use->var->name)) {
+				continue;
+			}
+			$frame = $frame->withUntracked($use->var->name);
+		}
+		$this->variableWritesFrames[] = $frame;
+	}
+
+	public function popVariableWritesFrame(): VariableWritesFrame
+	{
+		$frame = array_pop($this->variableWritesFrames);
+		if ($frame === null) {
+			throw new ShouldNotHappenException();
+		}
+
+		return $frame;
+	}
+
+	private function getVariableWritesFrame(): ?VariableWritesFrame
+	{
+		$count = count($this->variableWritesFrames);
+		if ($count === 0) {
+			return null;
+		}
+
+		return $this->variableWritesFrames[$count - 1];
+	}
+
+	private function replaceVariableWritesFrame(VariableWritesFrame $frame): void
+	{
+		array_pop($this->variableWritesFrames);
+		$this->variableWritesFrames[] = $frame;
+	}
+
+	/**
+	 * Synthetic nodes priced on demand re-read real variables outside their
+	 * own walk - those reads (and writes) never count.
+	 */
+	private function isProcessingOnDemand(): bool
+	{
+		return $this->returnStoredExpressionResults || $this->consumeStoredExpressionResults;
+	}
+
+	/**
+	 * Registers a source-level write site of a local variable; null outside a
+	 * function-like body, on demand, or for a variable that is not tracked.
+	 *
+	 * @param VariableWrite::KIND_* $kind
+	 */
+	public function recordVariableWrite(Variable $variable, int $kind): ?VariableWrite
+	{
+		$frame = $this->getVariableWritesFrame();
+		if ($frame === null || $this->isProcessingOnDemand()) {
+			return null;
+		}
+		$newFrame = $frame->withWrite($variable, $kind, ++$this->variableWriteIdCounter);
+		if ($newFrame !== $frame) {
+			$this->replaceVariableWritesFrame($newFrame);
+		}
+
+		return $newFrame->getWrite($variable);
+	}
+
+	/**
+	 * The markers a new write of the variable kills - see
+	 * MutatingScope::assignVariable().
+	 *
+	 * @return list<Expr>
+	 */
+	public function getVariableWriteMarkersToKill(string $variableName): array
+	{
+		$frame = $this->getVariableWritesFrame();
+		if ($frame === null) {
+			return [];
+		}
+
+		return $frame->getMarkerExprsForName($variableName);
+	}
+
+	/**
+	 * A source-level read of the variable on $scope: every write whose marker
+	 * still reaches $scope has now been read.
+	 */
+	public function markVariableRead(string $variableName, MutatingScope $scope): void
+	{
+		$frame = $this->getVariableWritesFrame();
+		if ($frame === null || $this->isProcessingOnDemand()) {
+			return;
+		}
+		$newFrame = $frame->withReadsFor($variableName, $scope);
+		if ($newFrame === $frame) {
+			return;
+		}
+		$this->replaceVariableWritesFrame($newFrame);
+	}
+
+	/**
+	 * A read of every variable (get_defined_vars(), include, eval, $$name).
+	 */
+	public function markAllReachingVariablesRead(MutatingScope $scope): void
+	{
+		$frame = $this->getVariableWritesFrame();
+		if ($frame === null || $this->isProcessingOnDemand()) {
+			return;
+		}
+		$newFrame = $frame->withAllReachingRead($scope);
+		if ($newFrame === $frame) {
+			return;
+		}
+		$this->replaceVariableWritesFrame($newFrame);
+	}
+
+	/**
+	 * The variable's writes escape the body (global, static, reference alias):
+	 * none of them is ever reported.
+	 */
+	public function markVariableUntracked(string $variableName): void
+	{
+		$frame = $this->getVariableWritesFrame();
+		if ($frame === null) {
+			return;
+		}
+		$newFrame = $frame->withUntracked($variableName);
+		if ($newFrame === $frame) {
+			return;
+		}
+		$this->replaceVariableWritesFrame($newFrame);
+	}
+
+	/**
+	 * The body's control flow defeats reaching-write tracking (goto).
+	 */
+	public function markVariableWritesOpaque(): void
+	{
+		$frame = $this->getVariableWritesFrame();
+		if ($frame === null) {
+			return;
+		}
+		$newFrame = $frame->withOpaque();
+		if ($newFrame === $frame) {
+			return;
+		}
+		$this->replaceVariableWritesFrame($newFrame);
+	}
+
+	/**
 	 * Opens an engine-feeding gatherer frame for the duration of a body walk.
 	 * The caller closes it in a finally block via popNodeGatherer().
 	 *
@@ -1592,6 +1776,11 @@ class NodeScopeResolver
 		foreach ($expr->uses as $use) {
 			if ($use->byRef) {
 				$byRefUses[] = $use;
+				if (is_string($use->var->name)) {
+					// the closure may write the aliased slot later - the outer
+					// function's writes to it are never dead
+					$this->markVariableUntracked($use->var->name);
+				}
 				$useScope = $useScope->enterExpressionAssign($use->var);
 
 				$inAssignRightSideVariableName = $context->getInAssignRightSideVariableName();
@@ -1691,6 +1880,10 @@ class NodeScopeResolver
 			$gatheredReturnStatementsWithScope[] = [$node, $scope];
 		};
 
+		// one frame across the by-ref convergence passes and the final walk:
+		// a write site is identified by its node, so every pass maps onto the
+		// same writes and the read set only grows
+		$this->pushVariableWritesFrame($expr->params, $byRefUses);
 		if (count($byRefUses) === 0) {
 			$this->pushNodeGatherer($closureStmtsGatherer);
 			try {
@@ -1708,6 +1901,7 @@ class NodeScopeResolver
 				$executionEnds,
 				array_merge($publicStatementResult->getImpurePoints(), $closureImpurePoints),
 			), $closureReturnStatementsNodeScope, $storage);
+			$this->callNodeCallback($nodeCallback, $this->popVariableWritesFrame()->createNode($expr), $closureReturnStatementsNodeScope, $storage);
 
 			return new ProcessClosureResult(
 				$scope,
@@ -1808,6 +2002,7 @@ class NodeScopeResolver
 			$executionEnds,
 			array_merge($publicStatementResult->getImpurePoints(), $closureImpurePoints),
 		), $closureReturnStatementsNodeScope, $storage);
+		$this->callNodeCallback($nodeCallback, $this->popVariableWritesFrame()->createNode($expr), $closureReturnStatementsNodeScope, $storage);
 
 		return new ProcessClosureResult(
 			$scope,
@@ -3230,8 +3425,9 @@ class NodeScopeResolver
 
 	/**
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 * @param VariableWrite::KIND_*|null $writeSiteKind
 	 */
-	public function processVirtualAssign(MutatingScope $scope, ExpressionResultStorage $storage, Node\Stmt $stmt, Expr $var, Expr $assignedExpr, callable $nodeCallback, ?ExpressionResult $assignedExprResult = null): ExpressionResult
+	public function processVirtualAssign(MutatingScope $scope, ExpressionResultStorage $storage, Node\Stmt $stmt, Expr $var, Expr $assignedExpr, callable $nodeCallback, ?ExpressionResult $assignedExprResult = null, ?int $writeSiteKind = null): ExpressionResult
 	{
 		// work off an available result for the assigned expr: passed by the
 		// caller, or fabricated from a type-carrying virtual node - threaded
@@ -3257,7 +3453,7 @@ class NodeScopeResolver
 			$assignedExpr,
 			$virtualAssignNodeCallback,
 			ExpressionContext::createDeep(),
-			AssignTargetWalkMode::virtualAssign(),
+			AssignTargetWalkMode::virtualAssign($writeSiteKind),
 		);
 
 		return $assignHandler->applyWrite(

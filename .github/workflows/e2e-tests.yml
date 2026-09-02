@@ -543,38 +543,6 @@ jobs:
               ../bashunit -a contains 'Composer metadata changed but no package versions changed; keeping the result cache.' "$OUTPUT"
               ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
           - script: |
-              cd e2e/result-cache-composer-meta
-              # Composer records install_path with '.'/'..' segments (__DIR__ . '/../phpstan-e2e/dep'),
-              # so the meta held a path that absolutizePath() - which normalizes - can never hand back
-              # unchanged. composerInstalled then differed on every single run: harmless on its own,
-              # but combined with any other meta difference it discards the whole cache.
-              composer install
-              ../../bin/phpstan analyse
-              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv")
-              echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
-              if echo "$OUTPUT" | grep -q 'Composer metadata changed'; then
-                echo 'unchanged Composer metadata read as changed'; exit 1
-              fi
-          - script: |
-              cd e2e/result-cache-phar-bootstrap
-              # A bootstrapFile living inside a phar is hashed into executedFilesHashes under its
-              # phar:// URL, and PHPStan registers its own runtime stubs exactly like that inside
-              # phpstan.phar. Only the path after the scheme may be relativized: dropping the scheme
-              # leaves absolutizePath() unable to reconstruct the URL, so the restored key never
-              # matches and the cache is discarded on every run.
-              php -d phar.readonly=0 build-boot-phar.php
-              ../../bin/phpstan analyse
-              # Every stored reference to the bootstrap file must keep its scheme. Grepping for
-              # 'phar://' alone would also match the Neon-encoded projectConfig, so assert the
-              # negative: no scheme-less key pointing at boot.phar/boot.php.
-              if grep -oE "'[^']*boot\.phar/boot\.php'" tmp/resultCache.php | grep -v 'phar://'; then
-                echo 'bootstrap path stored without its phar:// scheme'; exit 1
-              fi
-              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv")
-              echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
-          - script: |
               cd e2e/result-cache-relative-path
               # Cold run: paths are stored relative to the phpstan install (the anchor), so the cache
               # no longer embeds the absolute checkout path anywhere - not in the error/dependency
@@ -810,6 +778,88 @@ jobs:
 
       - name: "Test"
         run: "${{ matrix.script }}"
+
+  result-cache-path-e2e-tests:
+    name: "Result cache path E2E tests"
+    runs-on: ${{ matrix.operating-system }}
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # These scenarios are about the shape the paths have when they enter the result cache
+        # meta, and that shape is platform-specific: the phar:// round trip was broken on Windows
+        # only (https://github.com/phpstan/phpstan/issues/15152), because the path behind the
+        # scheme was rewritten with the platform separator. So unlike the rest of the result cache
+        # E2E tests they run on every platform PHPStan supports, not on Linux alone.
+        operating-system: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+
+      - name: "Checkout"
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240" # 2.37.2
+        with:
+          coverage: "none"
+          php-version: "8.2"
+          extensions: mbstring
+          ini-values: memory_limit=256M
+
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
+
+      # bashunit is not used in this job: its assertions run the command through a shell of their
+      # own, which does not behave the same in Git Bash on Windows.
+      - name: "Composer metadata round trip"
+        shell: bash
+        working-directory: e2e/result-cache-composer-meta
+        # Composer records install_path with '.'/'..' segments (__DIR__ . '/../phpstan-e2e/dep')
+        # and, on Windows, joins '/' onto an OS-separated directory, so the meta held paths that
+        # absolutizePath() - which normalizes - can never hand back unchanged. composerInstalled
+        # then differed on every single run: harmless on its own, but combined with any other meta
+        # difference it discards the whole cache.
+        run: |
+          composer install
+          php ../../bin/phpstan analyse
+          # the progress and result cache messages go to stderr
+          OUTPUT=$(php ../../bin/phpstan analyse -vv 2>&1)
+          echo "$OUTPUT"
+          if ! printf '%s' "$OUTPUT" | grep -qF 'Result cache restored. 0 files will be reanalysed.'; then
+            echo 'the unchanged run did not reuse the whole cache'; exit 1
+          fi
+          if printf '%s' "$OUTPUT" | grep -qF 'Composer metadata changed'; then
+            echo 'unchanged Composer metadata read as changed'; exit 1
+          fi
+
+      - name: "phar:// bootstrap file round trip"
+        shell: bash
+        working-directory: e2e/result-cache-phar-bootstrap
+        # A bootstrapFile living inside a phar is hashed into executedFilesHashes under its
+        # phar:// URL, and PHPStan registers its own runtime stubs exactly like that inside
+        # phpstan.phar. Only the path after the scheme may be relativized: dropping the scheme
+        # leaves absolutizePath() unable to reconstruct the URL. And the path behind the scheme
+        # stays '/'-separated on Windows too, because that is the form PHP itself uses - otherwise
+        # the restored key never matches and the cache is discarded on every run.
+        run: |
+          php -d phar.readonly=0 build-boot-phar.php
+          php ../../bin/phpstan analyse
+          # Every stored reference to the bootstrap file must keep its scheme. Grepping for
+          # 'phar://' alone would also match the Neon-encoded projectConfig, so assert the
+          # negative: no scheme-less key pointing at boot.phar/boot.php.
+          if grep -oE "'[^']*boot\.phar/boot\.php'" tmp/resultCache.php | grep -v 'phar://'; then
+            echo 'bootstrap path stored without its phar:// scheme'; exit 1
+          fi
+          # the progress and result cache messages go to stderr
+          OUTPUT=$(php ../../bin/phpstan analyse -vv 2>&1)
+          echo "$OUTPUT"
+          if ! printf '%s' "$OUTPUT" | grep -qF 'Result cache restored. 0 files will be reanalysed.'; then
+            echo 'the unchanged run did not reuse the whole cache'; exit 1
+          fi
 
   e2e-tests:
     name: "E2E tests"

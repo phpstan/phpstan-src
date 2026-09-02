@@ -245,7 +245,7 @@ jobs:
               patch -b src/Generated/Foo.php < patch.patch
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Scanned files changed (1); re-analysing only the files depending on them.' "$OUTPUT"
+              ../bashunit -a contains 'Scanned files with changed symbols (1); re-analysing the files affected by them.' "$OUTPUT"
               ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
               ../bashunit -a contains 'Instantiated class ResultCacheE2EGenerated\Foo not found.' "$OUTPUT"
           - script: |
@@ -308,7 +308,7 @@ jobs:
               mv new-file/NewlyScanned.php scanned/NewlyScanned.php
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Scanned files changed (1); re-analysing only the files depending on them.' "$OUTPUT"
+              ../bashunit -a contains 'Scanned files with changed symbols (1); re-analysing the files affected by them.' "$OUTPUT"
               ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
               ../bashunit -a not_contains 'Instantiated class ResultCacheE2EScannedNewFile\NewlyScanned not found.' "$OUTPUT"
               ../bashunit -a contains 'UsesNew.php:10:Method ResultCacheE2EScannedNewFile\UsesNew::doUsesNew() should return int but returns string.' "$OUTPUT"
@@ -326,10 +326,11 @@ jobs:
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
               ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+              ../bashunit -a not_contains 'Scanned files with changed symbols' "$OUTPUT"
               # The new contents are recorded: the next run has nothing to notice.
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a not_contains 'Scanned files changed' "$OUTPUT"
+              ../bashunit -a not_contains 'Scanned files with changed symbols' "$OUTPUT"
               ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
               # A changed return type is an exported node change: the file depending on it is
               # re-analysed. A changed signature cannot make a new symbol available, so the file with

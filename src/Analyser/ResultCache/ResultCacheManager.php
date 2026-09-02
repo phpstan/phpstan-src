@@ -331,6 +331,10 @@ final class ResultCacheManager
 		$packageDependencies = $data['packageDependencies'];
 		$packageSeededFiles = [];
 		$notAnalysedFileSymbolsChanged = false;
+		// Scanned files whose exported nodes differ from the ones the cache holds - the only ones that
+		// make anything be re-analysed. A scanned file can change without any of its symbols changing,
+		// and then nothing here has to happen at all.
+		$scannedFilesWithChangedSymbols = [];
 		if ($this->isMetaDifferent($data['meta'], $meta)) {
 			$diffs = $this->getMetaKeyDifferences($data['meta'], $meta);
 
@@ -353,12 +357,13 @@ final class ResultCacheManager
 				// (NodeDependencies::getNonAnalysedDependencies()) along with their exported nodes, so the
 				// loop over the not-analysed files below treats an edited one the way the loop above
 				// treats an analysed file: the files depending on it are re-analysed only when its
-				// exported nodes changed. What is left for the metadata to notice is a file the
-				// dependency graph does not know: one that appeared, or an edited one nothing depends
-				// on. Either may define a symbol that was reported as unknown somewhere - if it declares
-				// any symbol at all - so the files with errors are re-analysed the same way a new
-				// analysed file makes them re-analysed. The previous nodes of a file nothing depends on
-				// are not kept, so for it "declares a symbol" stands in for "declares a new symbol".
+				// exported nodes changed, and it is that loop which counts it as changed. What is left
+				// for the metadata to notice is a file the dependency graph does not know: one that
+				// appeared, or an edited one nothing depends on. Either may define a symbol that was
+				// reported as unknown somewhere - if it declares any symbol at all - so the files with
+				// errors are re-analysed the same way a new analysed file makes them re-analysed. The
+				// previous nodes of a file nothing depends on are not kept, so for it "declares a symbol"
+				// stands in for "declares a new symbol".
 				$changedScannedFiles = $this->getChangedScannedFiles($data['meta'], $meta);
 				foreach ($changedScannedFiles as $changedScannedFile => $change) {
 					// The scanned files getNonAnalysedDependencies() leaves out: nothing would
@@ -392,14 +397,8 @@ final class ResultCacheManager
 						continue;
 					}
 
+					$scannedFilesWithChangedSymbols[$changedScannedFile] = true;
 					$notAnalysedFileSymbolsChanged = true;
-				}
-
-				if ($output->isVeryVerbose()) {
-					$output->writeLineFormatted(sprintf(
-						'Scanned files changed (%d); re-analysing only the files depending on them.',
-						count($changedScannedFiles),
-					));
 				}
 			}
 
@@ -647,6 +646,8 @@ final class ResultCacheManager
 			}
 		}
 
+		// the freshly computed metadata, so a file that stopped being scanned is not counted
+		$scannedFiles = is_array($meta['scannedFiles'] ?? null) ? $meta['scannedFiles'] : [];
 		foreach (array_keys($notAnalysedFiles) as $notAnalysedFile) {
 			if (!array_key_exists($notAnalysedFile, $invertedDependencies)) {
 				continue;
@@ -697,6 +698,10 @@ final class ResultCacheManager
 					continue;
 				}
 
+				if (array_key_exists($notAnalysedFile, $scannedFiles)) {
+					$scannedFilesWithChangedSymbols[$notAnalysedFile] = true;
+				}
+
 				if ($exportedNodesChanged) {
 					// A symbol appeared or disappeared. The dependents are not enough then: a file that
 					// reported the symbol as unknown - or referenced this file while it had a syntax error
@@ -727,6 +732,13 @@ final class ResultCacheManager
 				continue;
 			}
 			$filesToAnalyse[] = $packageSeededFile;
+		}
+
+		if (count($scannedFilesWithChangedSymbols) > 0 && $output->isVeryVerbose()) {
+			$output->writeLineFormatted(sprintf(
+				'Scanned files with changed symbols (%d); re-analysing the files affected by them.',
+				count($scannedFilesWithChangedSymbols),
+			));
 		}
 
 		$filesToAnalyse = array_unique($filesToAnalyse);

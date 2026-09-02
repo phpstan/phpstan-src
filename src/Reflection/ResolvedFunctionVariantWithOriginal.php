@@ -12,6 +12,7 @@ use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
+use PHPStan\Type\NarrowedSubjectType;
 use PHPStan\Type\NonAcceptingNeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
@@ -209,6 +210,7 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 		$objectCb = function (Type $type, callable $traverse) use ($references): Type {
 			if (
 				$type instanceof TemplateType
+				&& !$type instanceof NarrowedSubjectType
 				&& !$type->isArgument()
 				&& $type->getScope()->getFunctionName() !== null
 			) {
@@ -252,7 +254,7 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 				return TypeTraverser::map($type, $objectCb);
 			}
 
-			if ($type instanceof TemplateType && !$type->isArgument()) {
+			if ($type instanceof TemplateType && !$type instanceof NarrowedSubjectType && !$type->isArgument()) {
 				$newType = $this->resolvedTemplateTypeMap->getType($type->getName());
 				if ($newType === null || $newType instanceof ErrorType) {
 					return $traverse($type);

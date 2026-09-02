@@ -5,6 +5,7 @@ namespace PHPStan\Type\Generic;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\GeneralizePrecision;
+use PHPStan\Type\NarrowedSubjectType;
 use PHPStan\Type\NonAcceptingNeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
@@ -31,7 +32,7 @@ final class TemplateTypeHelper
 		$references = $type->getReferencedTemplateTypes($positionVariance);
 
 		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($standins, $references, $callSiteVariances, $keepErrorTypes): Type {
-			if ($type instanceof TemplateType && !$type->isArgument()) {
+			if ($type instanceof TemplateType && !$type instanceof NarrowedSubjectType && !$type->isArgument()) {
 				$newType = $standins->getType($type->getName());
 
 				$variance = TemplateTypeVariance::createInvariant();

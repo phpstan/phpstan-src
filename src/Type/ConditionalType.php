@@ -4,6 +4,7 @@ namespace PHPStan\Type;
 
 use PHPStan\PhpDocParser\Ast\Type\ConditionalTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\LateResolvableTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
@@ -195,32 +196,43 @@ final class ConditionalType implements CompoundType, LateResolvableType
 
 	private function getNormalizedIf(): Type
 	{
-		return $this->normalizedIf ??= TypeTraverser::map(
-			$this->if,
-			fn (Type $type, callable $traverse) => $type === $this->subject
-				? (!$this->negated ? $this->getSubjectWithTargetIntersectedType() : $this->getSubjectWithTargetRemovedType())
-				: $traverse($type),
-		);
+		return $this->normalizedIf ??= $this->narrowSubjectIn($this->if, !$this->negated);
 	}
 
 	private function getNormalizedElse(): Type
 	{
-		return $this->normalizedElse ??= TypeTraverser::map(
-			$this->else,
-			fn (Type $type, callable $traverse) => $type === $this->subject
-				? (!$this->negated ? $this->getSubjectWithTargetRemovedType() : $this->getSubjectWithTargetIntersectedType())
+		return $this->normalizedElse ??= $this->narrowSubjectIn($this->else, $this->negated);
+	}
+
+	/**
+	 * Replaces the references to the subject in a branch with what the branch knows about
+	 * it: `subject & target` where the condition holds, `subject ~ target` where it does not
+	 * (see NarrowedSubjectType).
+	 *
+	 * A branch can only reference the subject while it is a template type. Once the subject
+	 * resolves to a concrete type, an equal type inside the branch is not a mention of it -
+	 * the `mixed` value type of an `array` branch has nothing to do with a `mixed` subject -
+	 * so nothing is narrowed here; the references narrowed earlier follow the resolution on
+	 * their own. Matching by identity instead would still hit such unrelated types whenever
+	 * they happen to share an instance, which interned types always do.
+	 */
+	private function narrowSubjectIn(Type $branch, bool $conditionHolds): Type
+	{
+		$subject = $this->subject;
+		if (!$subject instanceof TemplateType) {
+			return $branch;
+		}
+
+		$narrowedSubject = $conditionHolds
+			? ($this->subjectWithTargetIntersectedType ??= NarrowedSubjectType::create($subject, $this->target, true))
+			: ($this->subjectWithTargetRemovedType ??= NarrowedSubjectType::create($subject, $this->target, false));
+
+		return TypeTraverser::map(
+			$branch,
+			static fn (Type $type, callable $traverse) => $subject->equals($type)
+				? $narrowedSubject
 				: $traverse($type),
 		);
-	}
-
-	private function getSubjectWithTargetIntersectedType(): Type
-	{
-		return $this->subjectWithTargetIntersectedType ??= TypeCombinator::intersect($this->subject, $this->target);
-	}
-
-	private function getSubjectWithTargetRemovedType(): Type
-	{
-		return $this->subjectWithTargetRemovedType ??= TypeCombinator::remove($this->subject, $this->target);
 	}
 
 }

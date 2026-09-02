@@ -1,0 +1,9 @@
+parameters:
+	level: 8
+	tmpDir: tmp
+	paths:
+		- %currentWorkingDirectory%/src
+	scanFiles:
+		- %currentWorkingDirectory%/scanned/Bar.php
+	bootstrapFiles:
+		- %currentWorkingDirectory%/bootstrap.php

@@ -1187,6 +1187,15 @@ jobs:
           grep -F "Spawned worker 1/2 checked in: turbo off, OPcache $OPCACHE, trusted types off" output.txt
           grep -F "Spawned worker 2/2 checked in: turbo off, OPcache $OPCACHE, trusted types off" output.txt
 
+      - name: "Reuse the result cache"
+        # Control for the same step of phar-run-windows, see
+        # https://github.com/phpstan/phpstan/issues/15152: a second run of the unchanged
+        # project must restore the cache the first run wrote.
+        run: |
+          cd e2e/phar-run
+          php ../../tmp/phpstan.phar analyse -vv 2>&1 | tee output-warm.txt
+          grep -F "Result cache restored. 0 files will be reanalysed." output-warm.txt
+
   phar-run-windows:
     name: "Run PHAR on Windows, PHP ${{ matrix.php-version }}"
     needs:
@@ -1275,6 +1284,51 @@ jobs:
           php ../../tmp/phpstan.phar analyse -vvv --no-ansi 2>&1 | tee output.txt
           grep -F "Spawned worker 1/2 checked in: turbo $TURBO, OPcache on, trusted types $TURBO" output.txt
           grep -F "Spawned worker 2/2 checked in: turbo $TURBO, OPcache on, trusted types $TURBO" output.txt
+
+      - name: "Reuse the result cache"
+        # https://github.com/phpstan/phpstan/issues/15152: since 2.2.9 a second run of an
+        # unchanged project on Windows is reported to discard the cache with "metadata do not
+        # match: ... executedFilesHashes" - the phar:// URLs of the runtime stubs registered as
+        # bootstrapFiles. Every invocation form is tried and all of them are reported before
+        # the step fails.
+        run: |
+          cd e2e/phar-run
+          FAILED=0
+          check() {
+            if grep -qF "Result cache restored. 0 files will be reanalysed." "$1"; then
+              echo "OK: $2"
+            else
+              echo "::error::$2: the result cache was not reused"
+              grep -F "Result cache" "$1" || true
+              FAILED=1
+            fi
+          }
+
+          echo "::group::Second run through the relative path"
+          php ../../tmp/phpstan.phar analyse -vv --no-ansi 2>&1 | tee output-relative.txt
+          echo "::endgroup::"
+          check output-relative.txt "relative invocation after the first run"
+
+          # the invocation form the issue describes
+          PHAR="$(cygpath -w "$GITHUB_WORKSPACE/tmp/phpstan.phar")"
+          echo "::group::Runs through the absolute path $PHAR"
+          php "$PHAR" analyse -vv --no-ansi 2>&1 | tee output-absolute-1.txt
+          php "$PHAR" analyse -vv --no-ansi 2>&1 | tee output-absolute-2.txt
+          echo "::endgroup::"
+          check output-absolute-1.txt "absolute invocation after the relative ones"
+          check output-absolute-2.txt "absolute invocation after an absolute one"
+
+          # vendor/phpstan/phpstan/phpstan, the entry point of a Composer install, maps the
+          # archive under its alias and requires bin/phpstan through it
+          printf '%s\n' '<?php' "Phar::loadPhar(__DIR__ . '/phpstan.phar', 'phpstan.phar');" "require 'phar://phpstan.phar/bin/phpstan';" > ../../tmp/phpstan
+          echo "::group::Runs through a Composer-style wrapper"
+          php ../../tmp/phpstan analyse -vv --no-ansi 2>&1 | tee output-wrapper-1.txt
+          php ../../tmp/phpstan analyse -vv --no-ansi 2>&1 | tee output-wrapper-2.txt
+          echo "::endgroup::"
+          check output-wrapper-1.txt "wrapper invocation after the direct ones"
+          check output-wrapper-2.txt "wrapper invocation after a wrapper one"
+
+          exit "$FAILED"
 
   integration-tests:
     if: github.event_name == 'pull_request'

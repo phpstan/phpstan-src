@@ -812,6 +812,90 @@ jobs:
       - name: "Test"
         run: "${{ matrix.script }}"
 
+  result-cache-e2e-tests-windows:
+    name: "Result cache E2E tests on Windows (${{ matrix.name }})"
+    # https://github.com/phpstan/phpstan/issues/15152: since 2.2.9 the result cache stores its
+    # paths relative to the PHPStan install, and on Windows it is reported to be discarded on
+    # every run ("metadata do not match: ... executedFilesHashes"). Each scenario analyses an
+    # unchanged project twice and asserts the warm run restores the cache.
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    defaults:
+      run:
+        shell: bash
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: "plain project"
+            script: |
+              cd e2e/result-cache-1
+              echo -n > phpstan-baseline.neon
+              php ../../bin/phpstan analyse --no-ansi
+              php ../../bin/phpstan analyse -vv --no-ansi 2>&1 | tee output.txt
+              grep -F "Result cache restored. 0 files will be reanalysed." output.txt
+          - name: "excluded files hashed as scannedFiles"
+            script: |
+              cd e2e/result-cache-scanned
+              php ../../bin/phpstan analyse --no-ansi
+              php ../../bin/phpstan analyse -vv --no-ansi 2>&1 | tee output.txt
+              grep -F "Result cache restored. 0 files will be reanalysed." output.txt
+          - name: "phar bootstrap file"
+            script: |
+              cd e2e/result-cache-phar-bootstrap
+              # PHPStan registers its own runtime stubs as bootstrapFiles under their phar:// URL
+              # in a phar install; this reproduces that without a compiled phpstan.phar.
+              php -d phar.readonly=0 build-boot-phar.php
+              php ../../bin/phpstan analyse --no-ansi
+              if grep -oE "'[^']*boot\.phar/boot\.php'" tmp/resultCache.php | grep -v 'phar://'; then
+                echo 'bootstrap path stored without its phar:// scheme'; exit 1
+              fi
+              php ../../bin/phpstan analyse -vv --no-ansi 2>&1 | tee output.txt
+              grep -F "Result cache restored. 0 files will be reanalysed." output.txt
+          - name: "relative paths"
+            script: |
+              cd e2e/result-cache-relative-path
+              php ../../bin/phpstan analyse --no-ansi
+              # The cache stores forward slashes, so the checkout prefix to look for is the
+              # D:/a/... spelling of the workspace.
+              PREFIX="$(cygpath -m "$GITHUB_WORKSPACE")/"
+              if grep -qF "$PREFIX" tmp/resultCache.php; then
+                echo "cache still holds absolute paths under the checkout ($PREFIX):"
+                grep -nF "$PREFIX" tmp/resultCache.php | head -20
+                exit 1
+              fi
+              php ../../bin/phpstan analyse -vv --no-ansi 2>&1 | tee output.txt
+              grep -F "Result cache restored. 0 files will be reanalysed." output.txt
+          - name: "paths through the currentWorkingDirectory placeholder"
+            script: |
+              cd e2e/result-cache-placeholder-paths
+              # paths, scanFiles and bootstrapFiles written with %currentWorkingDirectory% - the
+              # three meta keys the issue reports as differing (analysedPaths, scannedFiles,
+              # executedFilesHashes). Values carrying a placeholder skip the path normalisation
+              # the Neon loader applies to plain relative paths.
+              php ../../bin/phpstan analyse --no-ansi
+              php ../../bin/phpstan analyse -vv --no-ansi 2>&1 | tee output.txt
+              grep -F "Result cache restored. 0 files will be reanalysed." output.txt
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240" # 2.37.2
+        with:
+          coverage: "none"
+          php-version: "8.2"
+          extensions: mbstring
+          ini-values: memory_limit=256M
+
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
+
+      - name: "Test"
+        run: "${{ matrix.script }}"
+
   e2e-tests:
     name: "E2E tests"
     runs-on: "ubuntu-latest"

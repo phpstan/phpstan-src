@@ -1,0 +1,7 @@
+parameters:
+	level: 8
+	tmpDir: tmp
+	paths:
+		- src
+	scanFiles:
+		- %currentWorkingDirectory%/../bug-15125/vendor/autoload.php

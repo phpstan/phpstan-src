@@ -21,7 +21,7 @@ use function array_map;
 use function count;
 
 /** @api */
-class GenericStaticType extends StaticType
+class GenericStaticType extends StaticType implements TraversableWithVariance
 {
 
 	private ?ObjectType $staticObjectType = null;
@@ -157,12 +157,31 @@ class GenericStaticType extends StaticType
 
 	public function traverse(callable $cb): Type
 	{
-		$subtractedType = $this->getSubtractedType() !== null ? $cb($this->getSubtractedType()) : null;
+		return $this->traverseParts($cb, static fn (Type $type): Type => $cb($type));
+	}
+
+	public function traverseWithVariance(TemplateTypeVariance $positionVariance, callable $cb): Type
+	{
+		$variances = GenericObjectType::argumentPositionVariances($this->classReflection, array_keys($this->types), $this->variances, $positionVariance);
+
+		return $this->traverseParts(
+			static fn (Type $type): Type => $cb($type, $positionVariance),
+			static fn (Type $type, int $i): Type => $cb($type, $variances[$i]),
+		);
+	}
+
+	/**
+	 * @param callable(Type): Type $subtractedTypeCb
+	 * @param callable(Type, int): Type $argumentCb
+	 */
+	private function traverseParts(callable $subtractedTypeCb, callable $argumentCb): Type
+	{
+		$subtractedType = $this->getSubtractedType() !== null ? $subtractedTypeCb($this->getSubtractedType()) : null;
 
 		$typesChanged = false;
 		$types = [];
-		foreach ($this->types as $type) {
-			$newType = $cb($type);
+		foreach ($this->types as $i => $type) {
+			$newType = $argumentCb($type, $i);
 			$types[] = $newType;
 			if ($newType === $type) {
 				continue;

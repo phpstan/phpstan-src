@@ -29,22 +29,9 @@ final class TemplateTypeHelper
 			return $type;
 		}
 
-		$references = $type->getReferencedTemplateTypes($positionVariance);
-
-		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($standins, $references, $callSiteVariances, $keepErrorTypes): Type {
+		return TypeTraverser::mapWithVariance($type, $positionVariance, static function (Type $type, TemplateTypeVariance $variance, callable $traverse) use ($standins, $callSiteVariances, $keepErrorTypes): Type {
 			if ($type instanceof TemplateType && !$type instanceof NarrowedSubjectType && !$type->isArgument()) {
 				$newType = $standins->getType($type->getName());
-
-				$variance = TemplateTypeVariance::createInvariant();
-				foreach ($references as $reference) {
-					// this uses identity to distinguish between different occurrences of the same template type
-					// see https://github.com/phpstan/phpstan-src/pull/2485#discussion_r1328555397 for details
-					if ($reference->getType() === $type) {
-						$variance = $reference->getPositionVariance();
-						break;
-					}
-				}
-
 				if ($newType === null) {
 					return $traverse($type);
 				}

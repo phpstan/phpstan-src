@@ -43,6 +43,7 @@ use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
+use PHPStan\Type\Generic\TraversableWithVariance;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
@@ -55,7 +56,7 @@ use function array_merge;
 use function count;
 
 /** @api */
-class ClosureType implements TypeWithClassName, CallableParametersAcceptor
+class ClosureType implements TypeWithClassName, CallableParametersAcceptor, TraversableWithVariance
 {
 
 	use NonArrayTypeTrait;
@@ -725,23 +726,43 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 
 	public function traverse(callable $cb): Type
 	{
+		return $this->traverseParts($cb, $cb);
+	}
+
+	public function traverseWithVariance(TemplateTypeVariance $positionVariance, callable $cb): Type
+	{
+		$parameterVariance = $positionVariance->compose(TemplateTypeVariance::createContravariant());
+		$returnVariance = $positionVariance->compose(TemplateTypeVariance::createCovariant());
+
+		return $this->traverseParts(
+			static fn (Type $type): Type => $cb($type, $parameterVariance),
+			static fn (Type $type): Type => $cb($type, $returnVariance),
+		);
+	}
+
+	/**
+	 * @param callable(Type): Type $parameterCb
+	 * @param callable(Type): Type $returnCb Maps the return type and the assertions
+	 */
+	private function traverseParts(callable $parameterCb, callable $returnCb): Type
+	{
 		if ($this->isCommonCallable) {
 			return $this;
 		}
 
 		return new self(
-			array_map(static function (ParameterReflection $param) use ($cb): NativeParameterReflection {
+			array_map(static function (ParameterReflection $param) use ($parameterCb): NativeParameterReflection {
 				$defaultValue = $param->getDefaultValue();
 				return new NativeParameterReflection(
 					$param->getName(),
 					$param->isOptional(),
-					$cb($param->getType()),
+					$parameterCb($param->getType()),
 					$param->passedByReference(),
 					$param->isVariadic(),
-					$defaultValue !== null ? $cb($defaultValue) : null,
+					$defaultValue !== null ? $parameterCb($defaultValue) : null,
 				);
 			}, $this->getParameters()),
-			$cb($this->getReturnType()),
+			$returnCb($this->getReturnType()),
 			$this->isVariadic(),
 			$this->templateTypeMap,
 			$this->resolvedTemplateTypeMap,
@@ -753,7 +774,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 			$this->usedVariables,
 			$this->acceptsNamedArguments,
 			$this->mustUseReturnValue,
-			$this->assertions->mapTypes($cb),
+			$this->assertions->mapTypes($returnCb),
 			$this->isStatic,
 		);
 	}

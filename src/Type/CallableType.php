@@ -33,6 +33,7 @@ use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
+use PHPStan\Type\Generic\TraversableWithVariance;
 use PHPStan\Type\Traits\MaybeArrayTypeTrait;
 use PHPStan\Type\Traits\MaybeIterableTypeTrait;
 use PHPStan\Type\Traits\MaybeObjectTypeTrait;
@@ -48,7 +49,7 @@ use function count;
 
 /** @api */
 #[InstanceofDeprecated(insteadUse: 'Type::isCallable() and Type::getCallableParametersAcceptors()')]
-class CallableType implements CompoundType, CallableParametersAcceptor
+class CallableType implements CompoundType, CallableParametersAcceptor, TraversableWithVariance
 {
 
 	use MaybeArrayTypeTrait;
@@ -581,31 +582,51 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 
 	public function traverse(callable $cb): Type
 	{
+		return $this->traverseParts($cb, $cb);
+	}
+
+	public function traverseWithVariance(TemplateTypeVariance $positionVariance, callable $cb): Type
+	{
+		$parameterVariance = $positionVariance->compose(TemplateTypeVariance::createContravariant());
+		$returnVariance = $positionVariance->compose(TemplateTypeVariance::createCovariant());
+
+		return $this->traverseParts(
+			static fn (Type $type): Type => $cb($type, $parameterVariance),
+			static fn (Type $type): Type => $cb($type, $returnVariance),
+		);
+	}
+
+	/**
+	 * @param callable(Type): Type $parameterCb
+	 * @param callable(Type): Type $returnCb Maps the return type and the assertions
+	 */
+	private function traverseParts(callable $parameterCb, callable $returnCb): Type
+	{
 		if ($this->isCommonCallable) {
 			return $this;
 		}
 
-		$parameters = array_map(static function (ParameterReflection $param) use ($cb): NativeParameterReflection {
+		$parameters = array_map(static function (ParameterReflection $param) use ($parameterCb): NativeParameterReflection {
 			$defaultValue = $param->getDefaultValue();
 			return new NativeParameterReflection(
 				$param->getName(),
 				$param->isOptional(),
-				$cb($param->getType()),
+				$parameterCb($param->getType()),
 				$param->passedByReference(),
 				$param->isVariadic(),
-				$defaultValue !== null ? $cb($defaultValue) : null,
+				$defaultValue !== null ? $parameterCb($defaultValue) : null,
 			);
 		}, $this->getParameters());
 
 		return new self(
 			$parameters,
-			$cb($this->getReturnType()),
+			$returnCb($this->getReturnType()),
 			$this->isVariadic(),
 			$this->templateTypeMap,
 			$this->resolvedTemplateTypeMap,
 			$this->templateTags,
 			$this->isPure,
-			$this->assertions->mapTypes($cb),
+			$this->assertions->mapTypes($returnCb),
 		);
 	}
 

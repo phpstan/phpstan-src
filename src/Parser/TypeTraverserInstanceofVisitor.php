@@ -6,6 +6,7 @@ use Override;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\DependencyInjection\AutowiredService;
+use function in_array;
 
 #[AutowiredService]
 final class TypeTraverserInstanceofVisitor extends NodeVisitorAbstract
@@ -35,7 +36,7 @@ final class TypeTraverserInstanceofVisitor extends NodeVisitorAbstract
 			&& $node->class instanceof Node\Name
 			&& $node->class->toLowerString() === 'phpstan\\type\\typetraverser'
 			&& $node->name instanceof Node\Identifier
-			&& $node->name->toLowerString() === 'map'
+			&& in_array($node->name->toLowerString(), ['map', 'mapwithvariance'], true)
 		) {
 			$this->depth++;
 		}
@@ -51,7 +52,7 @@ final class TypeTraverserInstanceofVisitor extends NodeVisitorAbstract
 			&& $node->class instanceof Node\Name
 			&& $node->class->toLowerString() === 'phpstan\\type\\typetraverser'
 			&& $node->name instanceof Node\Identifier
-			&& $node->name->toLowerString() === 'map'
+			&& in_array($node->name->toLowerString(), ['map', 'mapwithvariance'], true)
 		) {
 			$this->depth--;
 		}

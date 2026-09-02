@@ -211,9 +211,7 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 
 	private function resolveResolvableTemplateTypes(Type $type, TemplateTypeVariance $positionVariance): Type
 	{
-		$references = $type->getReferencedTemplateTypes($positionVariance);
-
-		$objectCb = function (Type $type, callable $traverse) use ($references): Type {
+		$objectCb = function (Type $type, TemplateTypeVariance $variance, callable $traverse): Type {
 			if (
 				$type instanceof TemplateType
 				&& !$type instanceof NarrowedSubjectType
@@ -226,15 +224,6 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 				}
 
 				$newType = TemplateTypeHelper::generalizeInferredTemplateType($type, $newType);
-				$variance = TemplateTypeVariance::createInvariant();
-				foreach ($references as $reference) {
-					// this uses identity to distinguish between different occurrences of the same template type
-					// see https://github.com/phpstan/phpstan-src/pull/2485#discussion_r1328555397 for details
-					if ($reference->getType() === $type) {
-						$variance = $reference->getPositionVariance();
-						break;
-					}
-				}
 
 				$callSiteVariance = $this->callSiteVarianceMap->getVariance($type->getName());
 				if ($callSiteVariance === null || $callSiteVariance->invariant()) {
@@ -255,25 +244,15 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 			return $traverse($type);
 		};
 
-		return TypeTraverser::map($type, function (Type $type, callable $traverse) use ($references, $objectCb): Type {
+		return TypeTraverser::mapWithVariance($type, $positionVariance, function (Type $type, TemplateTypeVariance $variance, callable $traverse) use ($objectCb): Type {
 			if ($type instanceof GenericObjectType || $type instanceof GenericStaticType) {
-				return TypeTraverser::map($type, $objectCb);
+				return TypeTraverser::mapWithVariance($type, $variance, $objectCb);
 			}
 
 			if ($type instanceof TemplateType && !$type instanceof NarrowedSubjectType && !$type->isArgument()) {
 				$newType = $this->resolvedTemplateTypeMap->getType($type->getName());
 				if ($newType === null || $newType instanceof ErrorType) {
 					return $traverse($type);
-				}
-
-				$variance = TemplateTypeVariance::createInvariant();
-				foreach ($references as $reference) {
-					// this uses identity to distinguish between different occurrences of the same template type
-					// see https://github.com/phpstan/phpstan-src/pull/2485#discussion_r1328555397 for details
-					if ($reference->getType() === $type) {
-						$variance = $reference->getPositionVariance();
-						break;
-					}
 				}
 
 				$callSiteVariance = $this->callSiteVarianceMap->getVariance($type->getName());

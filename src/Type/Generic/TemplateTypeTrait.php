@@ -354,6 +354,18 @@ trait TemplateTypeTrait
 		return $this->strategy;
 	}
 
+	/**
+	 * The bound and the default are parts of the template type standing in its own
+	 * variance - overrides what a base class with parts of its own (GenericObjectType)
+	 * would hand out.
+	 *
+	 * @param callable(Type, TemplateTypeVariance): Type $cb
+	 */
+	public function traverseWithVariance(TemplateTypeVariance $positionVariance, callable $cb): Type
+	{
+		return $this->traverse(static fn (Type $type): Type => $cb($type, $positionVariance));
+	}
+
 	public function traverse(callable $cb): Type
 	{
 		$bound = $cb($this->getBound());

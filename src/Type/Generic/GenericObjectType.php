@@ -25,6 +25,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function array_keys;
 use function array_map;
 use function count;
 use function implode;
@@ -32,7 +33,7 @@ use function sprintf;
 
 /** @api */
 #[InstanceofDeprecated]
-class GenericObjectType extends ObjectType
+class GenericObjectType extends ObjectType implements TraversableWithVariance
 {
 
 	/**
@@ -308,23 +309,11 @@ class GenericObjectType extends ObjectType
 
 	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array
 	{
-		$classReflection = $this->getClassReflection();
-		if ($classReflection !== null) {
-			$typeList = $classReflection->typeMapToList($classReflection->getTemplateTypeMap());
-		} else {
-			$typeList = [];
-		}
-
+		$variances = $this->getArgumentPositionVariances($positionVariance);
 		$references = [];
 
 		foreach ($this->types as $i => $type) {
-			$effectiveVariance = $this->variances[$i] ?? TemplateTypeVariance::createInvariant();
-			if ($effectiveVariance->invariant() && isset($typeList[$i]) && $typeList[$i] instanceof TemplateType) {
-				$effectiveVariance = $typeList[$i]->getVariance();
-			}
-
-			$variance = $positionVariance->compose($effectiveVariance);
-			foreach ($type->getReferencedTemplateTypes($variance) as $reference) {
+			foreach ($type->getReferencedTemplateTypes($variances[$i]) as $reference) {
 				$references[] = $reference;
 			}
 		}
@@ -332,14 +321,77 @@ class GenericObjectType extends ObjectType
 		return $references;
 	}
 
+	/**
+	 * The variance each type argument stands in when the type itself stands in
+	 * $positionVariance: the one projected onto the argument (`Foo<covariant Bar>`) or,
+	 * without a projection, the one declared for the class template type.
+	 *
+	 * @return array<int, TemplateTypeVariance>
+	 */
+	public function getArgumentPositionVariances(TemplateTypeVariance $positionVariance): array
+	{
+		return self::argumentPositionVariances($this->getClassReflection(), array_keys($this->types), $this->variances, $positionVariance);
+	}
+
+	/**
+	 * @internal Shared with GenericStaticType, see getArgumentPositionVariances()
+	 * @param list<int> $argumentIndexes
+	 * @param array<int, TemplateTypeVariance> $projectedVariances
+	 * @return array<int, TemplateTypeVariance>
+	 */
+	public static function argumentPositionVariances(
+		?ClassReflection $classReflection,
+		array $argumentIndexes,
+		array $projectedVariances,
+		TemplateTypeVariance $positionVariance,
+	): array
+	{
+		if ($classReflection !== null) {
+			$typeList = $classReflection->typeMapToList($classReflection->getTemplateTypeMap());
+		} else {
+			$typeList = [];
+		}
+
+		$variances = [];
+		foreach ($argumentIndexes as $i) {
+			$effectiveVariance = $projectedVariances[$i] ?? TemplateTypeVariance::createInvariant();
+			if ($effectiveVariance->invariant() && isset($typeList[$i]) && $typeList[$i] instanceof TemplateType) {
+				$effectiveVariance = $typeList[$i]->getVariance();
+			}
+
+			$variances[$i] = $positionVariance->compose($effectiveVariance);
+		}
+
+		return $variances;
+	}
+
 	public function traverse(callable $cb): Type
 	{
-		$subtractedType = $this->getSubtractedType() !== null ? $cb($this->getSubtractedType()) : null;
+		return $this->traverseParts($cb, static fn (Type $type): Type => $cb($type));
+	}
+
+	public function traverseWithVariance(TemplateTypeVariance $positionVariance, callable $cb): Type
+	{
+		$variances = $this->getArgumentPositionVariances($positionVariance);
+
+		return $this->traverseParts(
+			static fn (Type $type): Type => $cb($type, $positionVariance),
+			static fn (Type $type, int $i): Type => $cb($type, $variances[$i]),
+		);
+	}
+
+	/**
+	 * @param callable(Type): Type $subtractedTypeCb
+	 * @param callable(Type, int): Type $argumentCb
+	 */
+	private function traverseParts(callable $subtractedTypeCb, callable $argumentCb): Type
+	{
+		$subtractedType = $this->getSubtractedType() !== null ? $subtractedTypeCb($this->getSubtractedType()) : null;
 
 		$typesChanged = false;
 		$types = [];
-		foreach ($this->types as $type) {
-			$newType = $cb($type);
+		foreach ($this->types as $i => $type) {
+			$newType = $argumentCb($type, $i);
 			$types[] = $newType;
 			if ($newType === $type) {
 				continue;

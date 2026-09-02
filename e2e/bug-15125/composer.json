@@ -1,0 +1,15 @@
+{
+	"name": "phpstan/bug-15125-e2e",
+	"repositories": [
+		{
+			"type": "path",
+			"url": "./logger",
+			"options": {
+				"symlink": false
+			}
+		}
+	],
+	"require": {
+		"test/logger": "*"
+	}
+}

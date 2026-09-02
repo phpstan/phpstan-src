@@ -229,6 +229,21 @@ jobs:
               ../bashunit -a contains 'Result cache not used because the metadata do not match: scannedFiles' "$OUTPUT"
               ../bashunit -a contains 'Instantiated class ResultCacheE2EGenerated\Foo not found.' "$OUTPUT"
           - script: |
+              cd e2e/bug-15125
+              composer install
+              # scanFiles points at vendor/autoload.php through a parent-directory segment in the
+              # middle of an absolute path (%rootDir%/../../../vendor/autoload.php in the issue), and
+              # Composer records every install_path in vendor/composer/installed.php the same way.
+              # Both paths go through the cache normalized while the freshly computed ones keep their
+              # "..", so a second run without any change must still restore the whole cache without
+              # reporting a metadata mismatch.
+              ../../bin/phpstan analyse
+              OUTPUT=$(../../bin/phpstan analyse -vvv 2>&1)
+              echo "$OUTPUT"
+              ../bashunit -a not_contains 'Result cache not used because the metadata do not match' "$OUTPUT"
+              ../bashunit -a not_contains 'Composer metadata changed but no package versions changed' "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+          - script: |
               cd e2e/result-cache-traits
               ../../bin/phpstan analyse
               patch -b src/FooTrait.php < renameFooTraitMethod.patch

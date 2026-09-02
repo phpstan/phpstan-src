@@ -2,6 +2,8 @@
 
 namespace PHPStan\Dependency;
 
+use Nette\Utils\Json;
+use Nette\Utils\JsonException;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\FileHelper;
@@ -9,6 +11,7 @@ use PHPStan\Internal\ComposerHelper;
 use function array_key_exists;
 use function array_keys;
 use function array_values;
+use function file_get_contents;
 use function is_array;
 use function is_file;
 use function is_string;
@@ -35,6 +38,9 @@ final class PackageDependencyResolver
 	/** @var array<string, string|null> file => resolved package (or null for none) */
 	private array $resolvedPackages = [];
 
+	/** @var array<string, true>|null names of the installed packages that came from a path repository */
+	private ?array $pathPackages = null;
+
 	/** @param string[] $composerAutoloaderProjectPaths */
 	public function __construct(
 		#[AutowiredParameter]
@@ -55,6 +61,21 @@ final class PackageDependencyResolver
 		}
 
 		return $this->resolvedPackages[$file] = $this->doResolvePackage($file);
+	}
+
+	/**
+	 * Whether the package was installed from a path repository: Composer symlinked or copied it out
+	 * of a directory belonging to the project itself.
+	 *
+	 * Such a package is edited in place - directly through the symlink, or in its source directory
+	 * followed by a reinstall - while its recorded version and reference stay as they are, so the
+	 * files of one are tracked one by one like the project's own non-analysed files on top of being
+	 * tracked as a package. Everything else in vendor/ changes only through Composer, which always
+	 * moves the version or the reference with it.
+	 */
+	public function isPathPackage(string $package): bool
+	{
+		return array_key_exists($package, $this->getPathPackages());
 	}
 
 	private function doResolvePackage(string $file): ?string
@@ -137,18 +158,49 @@ final class PackageDependencyResolver
 	/** @return array<string, string> */
 	private function getInstallPathToPackage(): array
 	{
-		if ($this->installPathToPackage !== null) {
-			return $this->installPathToPackage;
+		$this->resolveInstalledPackages();
+
+		return $this->installPathToPackage;
+	}
+
+	/** @return array<string, true> */
+	private function getPathPackages(): array
+	{
+		$this->resolveInstalledPackages();
+
+		return $this->pathPackages;
+	}
+
+	/**
+	 * Reads what Composer recorded about the installed packages, once: which directory each package
+	 * lives in, from installed.php, and which of them came from a path repository, from installed.json
+	 * next to it. installed.php does not say - a path package looks there exactly like a downloaded
+	 * one - and the two files are read together so the vendor directory is resolved a single time.
+	 *
+	 * @phpstan-assert !null $this->installPathToPackage
+	 * @phpstan-assert !null $this->pathPackages
+	 */
+	private function resolveInstalledPackages(): void
+	{
+		if ($this->installPathToPackage !== null && $this->pathPackages !== null) {
+			return;
 		}
 
 		$map = [];
+		$pathPackages = [];
 		foreach ($this->composerAutoloaderProjectPaths as $autoloadPath) {
 			$composer = ComposerHelper::getComposerConfig($autoloadPath);
 			if ($composer === null) {
 				continue;
 			}
 
-			$installedPhp = ComposerHelper::getVendorDirFromComposerConfig($autoloadPath, $composer) . '/composer/installed.php';
+			$composerDirectory = ComposerHelper::getVendorDirFromComposerConfig($autoloadPath, $composer) . '/composer';
+
+			foreach ($this->readPathPackageNames($composerDirectory . '/installed.json') as $pathPackage) {
+				$pathPackages[$pathPackage] = true;
+			}
+
+			$installedPhp = $composerDirectory . '/installed.php';
 			if (!is_file($installedPhp)) {
 				continue;
 			}
@@ -176,7 +228,47 @@ final class PackageDependencyResolver
 		// Longest install path first, so a package nested under another package's directory matches first.
 		uksort($map, static fn (string $a, string $b): int => strlen($b) <=> strlen($a));
 
-		return $this->installPathToPackage = $map;
+		$this->installPathToPackage = $map;
+		$this->pathPackages = $pathPackages;
+	}
+
+	/**
+	 * @return list<string>
+	 */
+	private function readPathPackageNames(string $installedJson): array
+	{
+		if (!is_file($installedJson)) {
+			return [];
+		}
+
+		$contents = file_get_contents($installedJson);
+		if ($contents === false) {
+			return [];
+		}
+
+		try {
+			$decoded = Json::decode($contents, Json::FORCE_ARRAY);
+		} catch (JsonException) {
+			return [];
+		}
+
+		if (!is_array($decoded) || !isset($decoded['packages']) || !is_array($decoded['packages'])) {
+			return [];
+		}
+
+		$names = [];
+		foreach ($decoded['packages'] as $package) {
+			if (!is_array($package) || !isset($package['name']) || !is_string($package['name'])) {
+				continue;
+			}
+			if (($package['dist']['type'] ?? null) !== 'path') {
+				continue;
+			}
+
+			$names[] = $package['name'];
+		}
+
+		return $names;
 	}
 
 }

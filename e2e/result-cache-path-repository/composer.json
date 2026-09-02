@@ -1,0 +1,24 @@
+{
+	"name": "phpstan/result-cache-path-repository-e2e",
+	"repositories": [
+		{
+			"type": "path",
+			"url": "./symlinked-lib"
+		},
+		{
+			"type": "path",
+			"url": "./copied-lib",
+			"options": {
+				"symlink": false
+			}
+		}
+	],
+	"require": {
+		"psr/log": "3.0.1",
+		"test/symlinked-lib": "*",
+		"test/copied-lib": "*"
+	},
+	"autoload": {
+		"classmap": ["src"]
+	}
+}

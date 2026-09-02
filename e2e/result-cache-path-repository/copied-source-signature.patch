@@ -1,0 +1,14 @@
+--- copied-lib/src/CopiedDep.php
++++ copied-lib/src/CopiedDep.php
+@@ -5,9 +5,9 @@
+ class CopiedDep
+ {
+ 
+-	public function doDep(): int
++	public function doDep(): string
+ 	{
+-		return 1;
++		return 'foo';
+ 	}
+ 
+ }

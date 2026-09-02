@@ -344,7 +344,7 @@ class InstantiationRuleTest extends RuleTestCase
 			],
 			[
 				'Instantiated class Bug4471\Foo is abstract.',
-				24,
+				19,
 			],
 			[
 				'Cannot instantiate interface Bug4471\Bar.',
@@ -438,7 +438,7 @@ class InstantiationRuleTest extends RuleTestCase
 			],
 			[
 				'Missing parameter $start (string) in call to DatePeriod constructor.',
-				24,
+				19,
 			],
 			[
 				'Parameter #3 $end of class DatePeriod constructor expects int|TEnd of DateTimeInterface, string given.',
@@ -462,7 +462,7 @@ class InstantiationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3311a.php'], [
 			[
 				'Parameter #1 $bar of class Bug3311a\Foo constructor expects list<string>, array{1: \'baz\'} given.',
-				24,
+				19,
 				"array{1: 'baz'} is not a list.",
 			],
 		]);
@@ -759,7 +759,7 @@ class InstantiationRuleTest extends RuleTestCase
 		if ($checkImportedClassNameCase) {
 			$expectedErrors[] = [
 				'Class Bug12827Classes\Post referenced with incorrect case: Bug12827Classes\POST.',
-				24,
+				19,
 			];
 		}
 

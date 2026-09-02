@@ -475,18 +475,22 @@ final class ParallelAnalyser
 			$this->processPool->attachProcess($processIdentifier, $process);
 		}
 
-		$childPids = [];
-		foreach ($this->processPool->getAttachedProcesses() as $attachedProcess) {
-			$childPid = $attachedProcess->getPid();
-			if ($childPid === null) {
-				continue;
+		// the sampled number only ever prints at -v and above; a quiet run
+		// should not pay for reading 20 smaps_rollup files twice a second
+		if ($errorOutput !== null && $errorOutput->isVerbose()) {
+			$childPids = [];
+			foreach ($this->processPool->getAttachedProcesses() as $attachedProcess) {
+				$childPid = $attachedProcess->getPid();
+				if ($childPid === null) {
+					continue;
+				}
+
+				$childPids[] = $childPid;
 			}
 
-			$childPids[] = $childPid;
-		}
-
-		if ($childPids !== []) {
-			$this->processTreeMemoryTracker->start($loop, $childPids);
+			if ($childPids !== []) {
+				$this->processTreeMemoryTracker->start($loop, $childPids);
+			}
 		}
 
 		return $deferred->promise();

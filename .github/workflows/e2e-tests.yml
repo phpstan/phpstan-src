@@ -141,6 +141,16 @@ jobs:
               echo "$OUTPUT"
               ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
           - script: |
+              cd e2e/result-cache-11
+              echo -n > phpstan-baseline.neon
+              ../../bin/phpstan -vvv
+              patch -b src/Coll.php < patch-1.patch
+              cat baseline-1.neon > phpstan-baseline.neon
+              ../../bin/phpstan -vvv
+              mv src/Coll.php.orig src/Coll.php
+              echo -n > phpstan-baseline.neon
+              ../../bin/phpstan -vvv
+          - script: |
               cd e2e/bug-14514
               composer install
               ../../bin/phpstan analyze bug-14515.php

@@ -319,4 +319,35 @@ class CommandHelperTest extends TestCase
 		}
 	}
 
+	/**
+	 * --autoload-file lands in the result cache meta (executedFilesHashes) and --configuration in
+	 * additionalConfigFiles; both are normalized like every other path given on the command line, so
+	 * './' and '../' segments never reach the container.
+	 *
+	 * @throws InceptionNotSuccessfulException
+	 */
+	public function testAutoloadFileAndConfigurationAreNormalized(): void
+	{
+		$result = CommandHelper::begin(
+			new StringInput(''),
+			new NullOutput(),
+			[__DIR__],
+			null,
+			__DIR__ . '/relative-paths/nested/../here.php',
+			[],
+			__DIR__ . '/relative-paths/nested/../root.neon',
+			null,
+			'0',
+			false,
+			false,
+			null,
+			null,
+			false,
+		);
+		$parameters = $result->getContainer()->getParameters();
+		$relativePaths = __DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR;
+		$this->assertSame($relativePaths . 'here.php', $parameters['cliAutoloadFile']);
+		$this->assertContains($relativePaths . 'root.neon', $parameters['additionalConfigFiles']);
+	}
+
 }

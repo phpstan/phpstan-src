@@ -243,6 +243,13 @@ jobs:
               ../bashunit -a not_contains 'Result cache not used because the metadata do not match' "$OUTPUT"
               ../bashunit -a not_contains 'Composer metadata changed but no package versions changed' "$OUTPUT"
               ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+              # --autoload-file is recorded in executedFilesHashes under the path it was given with;
+              # a './' segment must not keep the cache from being reused either.
+              ../../bin/phpstan analyse -a ./vendor/autoload.php
+              OUTPUT=$(../../bin/phpstan analyse -a ./vendor/autoload.php -vvv 2>&1)
+              echo "$OUTPUT"
+              ../bashunit -a not_contains 'Result cache not used because the metadata do not match' "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
           - script: |
               cd e2e/result-cache-traits
               ../../bin/phpstan analyse

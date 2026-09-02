@@ -34,7 +34,6 @@ use function array_fill_keys;
 use function array_filter;
 use function array_key_exists;
 use function array_keys;
-use function array_map;
 use function array_merge;
 use function array_unique;
 use function array_values;
@@ -1469,7 +1468,14 @@ return [
 			ksort($projectConfigArray);
 		}
 
-		return [
+		// The cached meta comes back through absolutizeMeta(), which normalizes every path, and
+		// isMetaDifferent() compares with !==. The paths below are spelled by their sources, not by
+		// PHPStan: a config entry through a %placeholder% NeonAdapter could not expand keeps its '..'
+		// segments (and mixes separators on Windows), Composer records install_path as
+		// __DIR__ . '/../x', --autoload-file may be given as ./vendor/autoload.php. Normalizing them
+		// here makes the comparison one of paths, not of spellings - otherwise such an entry reads
+		// as a metadata change on every run and the whole cache is discarded every time.
+		return $this->getPathTransformer()->normalizeMeta([
 			'cacheVersion' => self::CACHE_VERSION,
 			'phpstanVersion' => ComposerHelper::getPhpStanVersion(),
 			'metaExtensions' => $this->getMetaFromPhpStanExtensions(),
@@ -1486,9 +1492,9 @@ return [
 			// extensions may only run after the bootstrapFiles. This entry catches a changed
 			// list in any config file, including the included ones that are not part of the
 			// projectConfig entry above.
-			'configStubFiles' => array_map(fn (string $stubFile): string => $this->fileHelper->normalizePath($stubFile), $this->configStubFiles),
+			'configStubFiles' => $this->configStubFiles,
 			'level' => $this->usedLevel,
-		];
+		]);
 	}
 
 	private function getFileHash(string $path): string

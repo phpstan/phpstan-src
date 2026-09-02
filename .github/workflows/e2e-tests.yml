@@ -35,6 +35,22 @@ jobs:
       matrix:
         include:
           - script: |
+              cd e2e/result-cache-atomic-save
+              ../../bin/phpstan
+              INODE=$(ls -i tmp/resultCache.php | awk '{print $1}')
+              ../../bin/phpstan
+              # The cache is written next to its final path and renamed into place, so saving it
+              # again replaces the file rather than truncating and rewriting the one the next run
+              # reads. That is what keeps a run killed mid-save from leaving a partial cache behind.
+              REPLACED=$([ "$INODE" != "$(ls -i tmp/resultCache.php | awk '{print $1}')" ] && echo replaced || echo 'written in place')
+              ../bashunit -a equals 'replaced' "$REPLACED"
+              # A completed save leaves nothing next to the cache file.
+              LEFTOVERS=$(ls tmp/ | grep -c '\.tmp$' || true)
+              ../bashunit -a equals '0' "$LEFTOVERS"
+              OUTPUT=$(../../bin/phpstan -vvv 2>&1)
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+          - script: |
               cd e2e/result-cache-1
               echo -n > phpstan-baseline.neon
               ../../bin/phpstan -vvv

@@ -17,3 +17,4 @@ e2e/bashunit
 /.phpbench
 /e2e/turbo-arena/tmp
 /e2e/fork-unsafe-extension/tmp
+/e2e/result-cache-atomic-save/tmp

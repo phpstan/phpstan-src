@@ -2,22 +2,34 @@
 
 namespace PHPStan\Type\Php;
 
+use PHPStan\Analyser\ResultCache\ResultCacheMetaExtension;
 use PHPStan\DependencyInjection\AutowiredService;
 use function array_filter;
 use function array_map;
 use function array_values;
 use function function_exists;
+use function implode;
 use function in_array;
 use function openssl_cipher_iv_length;
 use function openssl_get_cipher_methods;
+use function sha1;
+use function sort;
 use function strtolower;
 
 #[AutowiredService]
-final class OpenSslCipherMethodsProvider
+final class OpenSslCipherMethodsProvider implements ResultCacheMetaExtension
 {
 
-	/** @var list<string>|null */
-	private ?array $supportedCipherMethods = null;
+	/**
+	 * @param list<string>|null $supportedCipherMethods Overridable so tests do not depend on the
+	 *                                                  OpenSSL the suite happens to run against;
+	 *                                                  null means read it from the runtime.
+	 */
+	public function __construct(
+		private ?array $supportedCipherMethods = null,
+	)
+	{
+	}
 
 	/**
 	 * Returns supported cipher methods in lowercase.
@@ -27,7 +39,7 @@ final class OpenSslCipherMethodsProvider
 	 *
 	 * @return list<string>
 	 */
-	public function getSupportedCipherMethods(): array
+	private function getSupportedCipherMethods(): array
 	{
 		if ($this->supportedCipherMethods !== null) {
 			return $this->supportedCipherMethods;
@@ -52,6 +64,25 @@ final class OpenSslCipherMethodsProvider
 	public function isSupportedCipherMethod(string $method): bool
 	{
 		return in_array(strtolower($method), $this->getSupportedCipherMethods(), true);
+	}
+
+	public function getKey(): string
+	{
+		return 'openSslCipherMethods';
+	}
+
+	/**
+	 * The supported ciphers are read out of the runtime, and the inferred type of
+	 * openssl_cipher_iv_length() and friends follows them, so a host offering a different set has to
+	 * invalidate the cache. The set is a property of the PHP build rather than of the PHP version:
+	 * PHP 8.4.25 reports 212 methods on ubuntu-latest and 208 on macos-latest.
+	 */
+	public function getHash(): string
+	{
+		$methods = $this->getSupportedCipherMethods();
+		sort($methods);
+
+		return sha1(implode(',', $methods));
 	}
 
 }

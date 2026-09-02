@@ -73,7 +73,8 @@ final class NodeDependencies
 	 * - "files": the remaining project files - listed in scanFiles/scanDirectories, excluded from the
 	 *   analysis but living in an analysed directory, or simply reached through the autoloader -
 	 *   recorded as regular file dependencies, so that editing one of them re-analyses only the files
-	 *   depending on it instead of invalidating the whole result cache.
+	 *   depending on it instead of invalidating the whole result cache. A package installed from a
+	 *   path repository is in both: it is the project's own code, edited without Composer noticing.
 	 *
 	 * Files inside a PHAR belong to the running PHPStan itself and cannot change without its version
 	 * changing, so they are left out of both.
@@ -110,7 +111,15 @@ final class NodeDependencies
 			$package = $packageDependencyResolver->resolvePackage($dependencyFile);
 			if ($package !== null) {
 				$packages[$package] = $package;
-				continue;
+
+				// A package installed from a path repository is the project's own code: Composer
+				// symlinked or copied it out of a directory next to the project, and it is edited in
+				// place without its recorded version or reference moving. Tracking the file as well as
+				// the package is what notices those edits - the package entry alone only reacts to a
+				// composer.lock change.
+				if (!$packageDependencyResolver->isPathPackage($package)) {
+					continue;
+				}
 			}
 
 			$files[$dependencyFile] = $dependencyFile;

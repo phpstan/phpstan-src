@@ -1,0 +1,14 @@
+--- symlinked-lib/src/SymlinkedDep.php
++++ symlinked-lib/src/SymlinkedDep.php
+@@ -5,9 +5,9 @@
+ class SymlinkedDep
+ {
+ 
+-	public function doDep(): int
++	public function doDep(): string
+ 	{
+-		return 1;
++		return 'foo';
+ 	}
+ 
+ }

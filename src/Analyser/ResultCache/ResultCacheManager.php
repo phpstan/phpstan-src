@@ -326,7 +326,7 @@ final class ResultCacheManager
 		// absolutized above, so it is always present here
 		$packageDependencies = $data['packageDependencies'];
 		$packageSeededFiles = [];
-		$scannedFileAddedOrEdited = false;
+		$notAnalysedFileAddedOrEdited = false;
 		if ($this->isMetaDifferent($data['meta'], $meta)) {
 			$diffs = $this->getMetaKeyDifferences($data['meta'], $meta);
 
@@ -376,7 +376,7 @@ final class ResultCacheManager
 						continue;
 					}
 
-					$scannedFileAddedOrEdited = true;
+					$notAnalysedFileAddedOrEdited = true;
 				}
 
 				if ($output->isVeryVerbose()) {
@@ -662,6 +662,12 @@ final class ResultCacheManager
 					continue;
 				}
 
+				// The dependents are not enough: a file that referenced this one while it was broken (a
+				// syntax error, a missing symbol) reported an error and recorded no edge to it, so an edge
+				// here cannot bring it back once the file is fixed. The files with errors are re-analysed
+				// the same way as for a new file - for a scanned file the scannedFiles metadata above does
+				// it too, but a file reached only through the autoloader is listed nowhere else.
+				$notAnalysedFileAddedOrEdited = true;
 				$dependentFiles = array_merge($dependentFiles, $usedTraitDependentFiles);
 			}
 
@@ -673,7 +679,7 @@ final class ResultCacheManager
 			}
 		}
 
-		if ($newFileAppeared || $scannedFileAddedOrEdited) {
+		if ($newFileAppeared || $notAnalysedFileAddedOrEdited) {
 			foreach (array_keys($filteredErrors) as $fileWithError) {
 				$filesToAnalyse[] = $fileWithError;
 			}

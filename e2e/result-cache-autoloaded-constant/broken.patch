@@ -1,0 +1,10 @@
+--- other/Dep.php
++++ other/Dep.php
+@@ -7,6 +7,6 @@
+ 
+ 	public const EXISTING = 'existing';
+ 
+-	public const CON = 1;
++	public const = 1;
+ 
+ }

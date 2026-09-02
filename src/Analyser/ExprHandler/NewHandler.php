@@ -23,7 +23,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\ThrowPoint;
-use PHPStan\Analyser\Traverser\ConstructorClassTemplateTraverser;
 use PHPStan\Analyser\Traverser\GenericTypeTemplateTraverser;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
@@ -63,6 +62,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use Throwable;
 use function array_key_exists;
+use function array_keys;
 use function array_map;
 use function array_merge;
 use function count;
@@ -452,20 +452,23 @@ final class NewHandler implements ExprHandler
 		if ($assignedToProperty !== null) {
 			$constructorVariants = $constructorMethod->getVariants();
 			if (count($constructorVariants) === 1) {
-				$constructorVariant = $constructorVariants[0];
-				$classTemplateTypes = $classReflection->getTemplateTypeMap()->getTypes();
-				$originalClassTemplateTypes = $classTemplateTypes;
-
-				$traverser = new ConstructorClassTemplateTraverser($classTemplateTypes);
-				foreach ($constructorVariant->getParameters() as $parameter) {
-					if (!$parameter->getType()->hasTemplateOrLateResolvableType()) {
+				// When the arguments resolve none of the class template types,
+				// the declared type of the assigned property is the only source
+				// of the type arguments - whether the constructor never mentions
+				// them or the passed arguments (T|null receiving null) say nothing.
+				$resolvedTemplateTypeMap = $parametersAcceptor->getResolvedTemplateTypeMap();
+				$hasResolvedClassTemplateType = false;
+				foreach (array_keys($classReflection->getTemplateTypeMap()->getTypes()) as $classTemplateTypeName) {
+					$resolvedType = $resolvedTemplateTypeMap->getType($classTemplateTypeName);
+					if ($resolvedType === null || $resolvedType instanceof ErrorType) {
 						continue;
 					}
-					TypeTraverser::map($parameter->getType(), $traverser);
-				}
-				$classTemplateTypes = $traverser->getClassTemplateTypes();
 
-				if (count($classTemplateTypes) === count($originalClassTemplateTypes)) {
+					$hasResolvedClassTemplateType = true;
+					break;
+				}
+
+				if (!$hasResolvedClassTemplateType) {
 					$foundProperty = $this->propertyReflectionFinder->findPropertyReflectionFromNode($assignedToProperty, $scope);
 					if ($foundProperty !== null) {
 						$nonFinalObjectType = $isStatic ? new StaticType($nonFinalClassReflection) : new ObjectType($resolvedClassName, classReflection: $nonFinalClassReflection);

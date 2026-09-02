@@ -426,10 +426,6 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/generic-object-unspecified-template-types.php'], [
 			[
-				'Property GenericObjectUnspecifiedTemplateTypes\Foo::$obj (GenericObjectUnspecifiedTemplateTypes\MyObject<int, string>) does not accept GenericObjectUnspecifiedTemplateTypes\MyObject<(int|string), mixed>.',
-				13,
-			],
-			[
 				'Property GenericObjectUnspecifiedTemplateTypes\Bar::$ints (GenericObjectUnspecifiedTemplateTypes\ArrayCollection<int, int>) does not accept GenericObjectUnspecifiedTemplateTypes\ArrayCollection<int, string>.',
 				67,
 			],
@@ -1084,6 +1080,19 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 				'Property Bug13114Property\\Holder::$implicit (non-empty-list&callable(): mixed) does not accept 42.',
 				22,
 				"\u{2022} 42 is not a list.\n\u{2022} 42 is empty.",
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug8441(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-8441.php'], [
+			[
+				'Property Bug8441Properties\\TestNonNullableParam::$collection (Bug8441Properties\\CollectionWithNonNullableParam<int>) does not accept Bug8441Properties\\CollectionWithNonNullableParam<null>.',
+				44,
 			],
 		]);
 	}

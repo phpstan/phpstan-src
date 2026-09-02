@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - "2.2.x"
+      - "2.3.x"
     paths:
       - 'src/**'
       - 'composer.lock'
@@ -15,7 +15,7 @@ on:
       - '.github/workflows/apiref.yml'
 
 env:
-  COMPOSER_ROOT_VERSION: "2.2.x-dev"
+  COMPOSER_ROOT_VERSION: "2.3.x-dev"
 
 concurrency:
   group: apigen-${{ github.ref }} # will be canceled on subsequent pushes in branch

@@ -5,7 +5,7 @@ name: Close issues from merged PRs
 on:
   pull_request_target:
     branches:
-      - "2.1.x"
+      - "2.2.x"
     types:
       - closed
 

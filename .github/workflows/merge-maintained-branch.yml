@@ -5,7 +5,7 @@ name: Merge maintained branch
 on:
   push:
     branches:
-      - "2.1.x"
+      - "2.2.x"
 
 jobs:
   merge:
@@ -22,11 +22,11 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           fetch-depth: 0
-          ref: '2.2.x'
+          ref: '2.3.x'
           token: "${{ secrets.PHPSTAN_BOT_TOKEN }}"
       - name: "Merge branch"
         run: |
           git config --global user.name "phpstan-bot"
           git config --global user.email "ondrej+phpstanbot@mirtes.cz"
-          git merge --strategy=ort origin/${{ github.ref_name }} -m "Merge branch ${{ github.ref_name }} into 2.2.x"
+          git merge --strategy=ort origin/${{ github.ref_name }} -m "Merge branch ${{ github.ref_name }} into 2.3.x"
           git push

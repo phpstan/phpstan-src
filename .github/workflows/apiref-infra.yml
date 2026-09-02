@@ -10,7 +10,7 @@ on:
       - 'apigen/infra/**'
   push:
     branches:
-      - "2.2.x"
+      - "2.3.x"
     paths:
       - '.github/workflows/apiref-infra.yml'
       - 'apigen/infra/**'
@@ -60,7 +60,7 @@ jobs:
     name: "Deploy"
     runs-on: "ubuntu-latest"
     needs: test
-    if: "github.event_name == 'push' && github.ref == 'refs/heads/2.2.x'"
+    if: "github.event_name == 'push' && github.ref == 'refs/heads/2.3.x'"
     permissions:
       id-token: write
       contents: read

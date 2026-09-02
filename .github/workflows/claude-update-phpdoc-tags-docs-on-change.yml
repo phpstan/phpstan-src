@@ -3,7 +3,7 @@ name: "Claude Update PHPDoc Tags Docs On Change"
 on:
   push:
     branches:
-      - "2.2.x"
+      - "2.3.x"
     paths:
       - '.github/workflows/claude-update-phpdoc-tags-docs-on-change.yml'
       - 'src/PhpDoc/PhpDocNodeResolver.php'

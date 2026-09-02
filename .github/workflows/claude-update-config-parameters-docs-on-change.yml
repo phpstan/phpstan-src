@@ -3,7 +3,7 @@ name: "Claude Update Config Parameters Docs On Change"
 on:
   push:
     branches:
-      - "2.2.x"
+      - "2.3.x"
     paths:
       - '.github/workflows/claude-update-config-parameters-docs-on-change.yml'
       - 'conf/parametersSchema.neon'

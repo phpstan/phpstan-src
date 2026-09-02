@@ -3,7 +3,7 @@ name: "Claude Update PHPDoc Types Docs On Change"
 on:
   push:
     branches:
-      - "2.2.x"
+      - "2.3.x"
     paths:
       - '.github/workflows/claude-update-phpdoc-types-docs-on-change.yml'
       - 'src/PhpDoc/TypeNodeResolver.php'

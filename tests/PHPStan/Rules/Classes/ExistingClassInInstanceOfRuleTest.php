@@ -67,6 +67,16 @@ class ExistingClassInInstanceOfRuleTest extends RuleTestCase
 		);
 	}
 
+	public function testBug12827(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12827-instanceof.php'], [
+			[
+				'Class Bug12827InstanceOf\Post referenced with incorrect case: Bug12827InstanceOf\POST.',
+				15,
+			],
+		]);
+	}
+
 	public function testClassExists(): void
 	{
 		$this->analyse([__DIR__ . '/data/instanceof-class-exists.php'], []);

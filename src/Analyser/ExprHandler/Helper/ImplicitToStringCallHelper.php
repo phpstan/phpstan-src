@@ -9,8 +9,12 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\MutatingScope;
+use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Type\ErrorType;
+use PHPStan\Type\MixedType;
 use function sprintf;
 
 #[AutowiredService]
@@ -20,17 +24,23 @@ final class ImplicitToStringCallHelper
 	public function __construct(
 		private PhpVersion $phpVersion,
 		private MethodThrowPointHelper $methodThrowPointHelper,
+		private MethodCallReturnTypeHelper $methodCallReturnTypeHelper,
 		private ExpressionResultFactory $expressionResultFactory,
 	)
 	{
 	}
 
-	public function processImplicitToStringCall(Expr $expr, MutatingScope $scope): ExpressionResult
+	/**
+	 * @param ExpressionResult $exprResult the already-computed result of $expr -
+	 *     every caller processed it on $scope, so this helper reads its type
+	 *     directly instead of re-walking via Scope::getType()
+	 */
+	public function processImplicitToStringCall(Expr $expr, MutatingScope $scope, ExpressionResult $exprResult): ExpressionResult
 	{
 		$throwPoints = [];
 		$impurePoints = [];
 
-		$exprType = $scope->getType($expr);
+		$exprType = $exprResult->getTypeOnScope($scope, $scope->nativeTypesPromoted);
 
 		$toStringMethod = null;
 		if (!$exprType->isObject()->no()) {
@@ -45,6 +55,8 @@ final class ImplicitToStringCallHelper
 				isAlwaysTerminating: false,
 				throwPoints: [],
 				impurePoints: [],
+				typeCallback: static fn () => new MixedType(),
+				specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
 			);
 		}
 
@@ -59,12 +71,22 @@ final class ImplicitToStringCallHelper
 		}
 
 		if ($this->phpVersion->throwsOnStringCast()) {
+			// the __toString() call's return type resolves directly (the receiver
+			// type is already in hand); the fabricated node is only the payload
+			// dynamic extensions receive - nothing walks it
+			$toStringCall = new Expr\MethodCall($expr, new Identifier('__toString'));
+			if ($scope->nativeTypesPromoted) {
+				$toStringReturnType = ParametersAcceptorSelector::combineAcceptors($toStringMethod->getVariants())->getNativeReturnType();
+			} else {
+				$toStringReturnType = $this->methodCallReturnTypeHelper->methodCallReturnType($scope, $exprType, '__toString', $toStringCall) ?? new ErrorType();
+			}
 			$throwPoint = $this->methodThrowPointHelper->getThrowPoint(
 				$toStringMethod,
 				$toStringMethod->getOnlyVariant(),
-				new Expr\MethodCall($expr, new Identifier('__toString')),
+				$toStringCall,
 				$scope,
 				ExpressionContext::createDeep(),
+				$toStringReturnType,
 			);
 			if ($throwPoint !== null) {
 				$throwPoints[] = $throwPoint;
@@ -79,6 +101,8 @@ final class ImplicitToStringCallHelper
 			isAlwaysTerminating: false,
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
+			typeCallback: static fn () => new MixedType(),
+			specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
 		);
 	}
 

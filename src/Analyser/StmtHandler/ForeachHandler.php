@@ -23,6 +23,7 @@ use PHPStan\Analyser\ConditionalExpressionHolder;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExpressionTypeHolder;
+use PHPStan\Analyser\ExprHandler\Helper\IdenticalNarrowingHelper;
 use PHPStan\Analyser\InternalStatementResult;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
@@ -32,9 +33,11 @@ use PHPStan\Analyser\RecordingNodeCallback;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
+use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VarAnnotationProcessor;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\DependencyInjection\Container;
 use PHPStan\Node\Expr\ForeachValueByRefExpr;
 use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\Expr\OriginalForeachKeyExpr;
@@ -42,6 +45,9 @@ use PHPStan\Node\Expr\OriginalForeachValueExpr;
 use PHPStan\Node\InForeachNode;
 use PHPStan\Node\VariableAssignNode;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\BooleanType;
+use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\MixedType;
@@ -69,9 +75,10 @@ final class ForeachHandler implements StmtHandler
 	private const FOREACH_UNROLL_NESTED_LIMIT = 8;
 
 	public function __construct(
-		private VarAnnotationProcessor $varAnnotationProcessor,
+		private Container $container,
 		#[AutowiredParameter(ref: '%exceptions.implicitThrows%')]
 		private bool $implicitThrows,
+		private VarAnnotationProcessor $varAnnotationProcessor,
 	)
 	{
 	}
@@ -107,8 +114,8 @@ final class ForeachHandler implements StmtHandler
 		$originalScope = $scope;
 		$bodyScope = $scope;
 
-		$foreachIterateeType = $originalScope->getType($stmt->expr);
-		$foreachNativeIterateeType = $originalScope->getNativeType($stmt->expr);
+		$foreachIterateeType = $condResult->getType();
+		$foreachNativeIterateeType = $condResult->getNativeType();
 
 		if ($stmt->keyVar instanceof Variable) {
 			$keyTypeExpr = new NativeTypeExpr(
@@ -133,7 +140,38 @@ final class ForeachHandler implements StmtHandler
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $virtualAssign, $scope, $storage);
 		}
 
-		$iterateeScope = $nodeScopeResolver->shouldPolluteScopeWithAlwaysIterableForeach() ? $scope->filterByTruthyValue($arrayComparisonExpr) : $scope;
+		// the "iteratee !== []" narrowing every loop pass merges in - composed
+		// once from the iteratee's result (the same sentinel comparison the
+		// walked synthetic would delegate to); the walk is the composition's
+		// miss seam
+		$nonEmptyIterateeScope = $scope;
+		if ($nodeScopeResolver->shouldPolluteScopeWithAlwaysIterableForeach()) {
+			$identicalNarrowingHelper = $this->container->getByType(IdenticalNarrowingHelper::class);
+			$emptyArrayType = new ConstantArrayType([], []);
+			$nonEmptyTypes = $identicalNarrowingHelper->specifyIdenticalAgainstType(
+				$stmt->expr,
+				$condResult,
+				$arrayComparisonExpr->right,
+				$emptyArrayType,
+				TypeSpecifierContext::createFalse(),
+				$scope,
+				$identicalNarrowingHelper->captureFirstArgResult($stmt->expr, $storage),
+				static function () use ($condResult, $emptyArrayType): Type {
+					$iterateeType = $condResult->getType();
+					if ($iterateeType->equals($emptyArrayType)) {
+						return new ConstantBooleanType(true);
+					}
+					if ($emptyArrayType->isSuperTypeOf($iterateeType)->no()) {
+						return new ConstantBooleanType(false);
+					}
+
+					return new BooleanType();
+				},
+			);
+			$nonEmptyIterateeScope = $nonEmptyTypes !== null
+				? $scope->applySpecifiedTypes($nonEmptyTypes)
+				: $nodeScopeResolver->narrowScopeWithCondition($scope, $arrayComparisonExpr, TypeSpecifierContext::createTruthy());
+		}
 
 		$originalStorage = $storage;
 		$replayBodyRecording = null;
@@ -145,22 +183,39 @@ final class ForeachHandler implements StmtHandler
 		if ($context->isTopLevel()) {
 			$storage = $originalStorage->duplicate();
 
-			$originalScope = $iterateeScope;
-			$foreachIterateeType = $originalScope->getType($stmt->expr);
-			$foreachNativeIterateeType = $originalScope->getNativeType($stmt->expr);
+			$originalScope = $nonEmptyIterateeScope;
+			// $originalScope may narrow the iteratee to a non-empty array - a genuinely
+			// different scope than its own. The narrowing is tracked by the scope
+			// (getTypeOnScope's authoritative read), so the iteratee only needs
+			// reprocessing there when the scope neither owns nor matches its state.
+			if ($condResult->answersOnScope($originalScope, false) && $condResult->answersOnScope($originalScope, true)) {
+				$foreachIterateeType = $condResult->getTypeOnScope($originalScope, false);
+				$foreachNativeIterateeType = $condResult->getTypeOnScope($originalScope, true);
+			} else {
+				// the duplicate lets subresults whose state matches answer from
+				// the already-processed iteratee instead of being re-priced
+				$iterateeResult = $nodeScopeResolver->processExprOnDemand($stmt->expr, $originalScope, $originalStorage->duplicate());
+				$foreachIterateeType = $iterateeResult->getType();
+				$foreachNativeIterateeType = $iterateeResult->getNativeType();
+			}
 			$unrolledResult = $this->tryProcessUnrolledConstantArrayForeach($nodeScopeResolver, $stmt, $originalScope, $originalStorage, $context, $foreachIterateeType, $foreachNativeIterateeType);
 			if ($unrolledResult !== null) {
 				$bodyScope = $unrolledResult['bodyScope'];
 				$unrolledEndScope = $unrolledResult['endScope'];
 				$unrolledTotalKeys = $unrolledResult['totalKeys'];
 			} else {
-				$bodyScope = $this->enterForeach($nodeScopeResolver, $originalScope, $storage, $originalScope, $stmt, $foreachIterateeType, $foreachNativeIterateeType, $nodeCallback);
+				$scope->pushExpressionResultStorage($storage);
+				try {
+					$bodyScope = $this->enterForeach($nodeScopeResolver, $originalScope, $storage, $originalScope, $stmt, $foreachIterateeType, $foreachNativeIterateeType, $nodeCallback);
+				} finally {
+					$scope->popExpressionResultStorage();
+				}
 				$count = 0;
 				$prevEntryScope = null;
 				$bodyIsReplayable = $nodeScopeResolver->isReplayableConvergenceBody($stmt, $stmt->stmts);
 				do {
 					$prevScope = $bodyScope;
-					$bodyScope = $bodyScope->mergeWith($iterateeScope);
+					$bodyScope = $bodyScope->mergeWith($nonEmptyIterateeScope);
 					if ($prevEntryScope !== null && $bodyScope->equals($prevEntryScope)) {
 						// walking is deterministic in the entry scope - an unchanged entry
 						// reproduces the previous pass's exit, so the verification walk is skipped
@@ -169,12 +224,17 @@ final class ForeachHandler implements StmtHandler
 					}
 					$prevEntryScope = $bodyScope;
 					$storage = $originalStorage->duplicate();
-					$bodyScope = $this->enterForeach($nodeScopeResolver, $bodyScope, $storage, $originalScope, $stmt, $foreachIterateeType, $foreachNativeIterateeType, $nodeCallback);
 					$bodyRecording = $bodyIsReplayable ? new RecordingNodeCallback() : new NoopNodeCallback();
-					$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $bodyRecording, $context->enterDeep())->filterOutLoopExitPoints();
-					$bodyScope = $bodyScopeResult->getScope();
-					foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
-						$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
+					$scope->pushExpressionResultStorage($storage);
+					try {
+						$bodyScope = $this->enterForeach($nodeScopeResolver, $bodyScope, $storage, $originalScope, $stmt, $foreachIterateeType, $foreachNativeIterateeType, $nodeCallback);
+						$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $bodyRecording, $context->enterDeep())->filterOutLoopExitPoints();
+						$bodyScope = $bodyScopeResult->getScope();
+						foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
+							$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
+						}
+					} finally {
+						$scope->popExpressionResultStorage();
 					}
 					// the candidate to replace the final walk when this pass's
 					// entry turns out to be the fixpoint
@@ -196,7 +256,7 @@ final class ForeachHandler implements StmtHandler
 			}
 		}
 
-		$bodyScope = $bodyScope->mergeWith($iterateeScope);
+		$bodyScope = $bodyScope->mergeWith($nonEmptyIterateeScope);
 		$finalEntryScope = $bodyScope;
 		$storage = $originalStorage;
 		$bodyScope = $this->enterForeach($nodeScopeResolver, $bodyScope, $storage, $originalScope, $stmt, $foreachIterateeType, $foreachNativeIterateeType, $nodeCallback);
@@ -209,7 +269,7 @@ final class ForeachHandler implements StmtHandler
 			// (same entry scope, deterministic walk) - adopt the pass's results
 			// and replay its emissions through the real callback instead
 			$originalStorage->mergeResults($replayPassStorage);
-			$nodeScopeResolver->replayRecording($replayBodyRecording, $nodeCallback, $originalStorage);
+			$nodeScopeResolver->replayRecording($replayBodyRecording, $nodeCallback, $originalStorage, $scope);
 			$finalScopeResult = $replayPassResult;
 		} else {
 			$finalPassContext = $unrolledTotalKeys !== null ? $context->enterUnrolledForeach($unrolledTotalKeys) : $context;
@@ -266,7 +326,14 @@ final class ForeachHandler implements StmtHandler
 		// (e.g. $arr[] = ...). A tracked iteratee reads the modified type off the
 		// scope (getTypeOnScope's authoritative read); only an untracked one whose
 		// inputs the body changed needs reprocessing there to observe it.
-		$exprType = $scope->getType($stmt->expr);
+		if ($condResult->answersOnScope($scope, false) && $condResult->answersOnScope($scope, true)) {
+			$exprType = $condResult->getTypeOnScope($scope, false);
+			$exprNativeType = $condResult->getTypeOnScope($scope, true);
+		} else {
+			$postLoopIterateeResult = $nodeScopeResolver->processExprOnDemand($stmt->expr, $scope, new ExpressionResultStorage());
+			$exprType = $postLoopIterateeResult->getType();
+			$exprNativeType = $postLoopIterateeResult->getNativeType();
+		}
 		$hasExpr = $scope->hasExpressionType($stmt->expr);
 		if (
 			count($breakExitPoints) === 0
@@ -286,8 +353,8 @@ final class ForeachHandler implements StmtHandler
 					$arrayExprDimFetch = new ArrayDimFetch($stmt->expr, $keyVarExpr);
 					// enterForeach tracks this exact dim fetch - the tracked-holder
 					// fast path answers without pricing the synthetic node
-					$dimFetchType = $scopeWithIterableValueType->getType($arrayExprDimFetch);
-					$dimFetchNativeType = $scopeWithIterableValueType->getNativeType($arrayExprDimFetch);
+					$dimFetchType = $nodeScopeResolver->readScopeStateOrSyntheticType($arrayExprDimFetch, $scopeWithIterableValueType);
+					$dimFetchNativeType = $nodeScopeResolver->readScopeStateOrSyntheticType($arrayExprDimFetch, $scopeWithIterableValueType->doNotTreatPhpDocTypesAsCertain());
 					// Condition-based narrowings like `is_string($type)` apply to the value
 					// variable but not automatically to the array dim fetch, even though the
 					// two describe the same element for a given iteration. If the value var
@@ -304,20 +371,20 @@ final class ForeachHandler implements StmtHandler
 						if ($dimFetchType->isSuperTypeOf($valueVarType)->yes()) {
 							$dimFetchType = $valueVarType;
 						}
-						$valueVarNativeType = $scopeWithIterableValueType->getNativeType($stmt->valueVar);
+						$valueVarNativeType = $scopeWithIterableValueType->doNotTreatPhpDocTypesAsCertain()->getVariableType($stmt->valueVar->name);
 						if ($dimFetchNativeType->isSuperTypeOf($valueVarNativeType)->yes()) {
 							$dimFetchNativeType = $valueVarNativeType;
 						}
 					}
-					$keyLoopTypes[] = $scopeWithIterableValueType->getType($keyVarExpr);
-					$keyLoopNativeTypes[] = $scopeWithIterableValueType->getNativeType($keyVarExpr);
+					$keyLoopTypes[] = $nodeScopeResolver->readScopeStateOrSyntheticType($keyVarExpr, $scopeWithIterableValueType);
+					$keyLoopNativeTypes[] = $nodeScopeResolver->readScopeStateOrSyntheticType($keyVarExpr, $scopeWithIterableValueType);
 				} else {
 					// No key variable: the narrowed value var is the array element type
 					// directly. Read it by name (assigned, not processExprNode-processed);
 					// no key var implies $originalValueExpr !== null, so the value var is
 					// a string-named Variable.
 					$dimFetchType = $scopeWithIterableValueType->getVariableType($stmt->valueVar->name);
-					$dimFetchNativeType = $scopeWithIterableValueType->getNativeType($stmt->valueVar);
+					$dimFetchNativeType = $scopeWithIterableValueType->doNotTreatPhpDocTypesAsCertain()->getVariableType($stmt->valueVar->name);
 				}
 				$arrayDimFetchLoopTypes[] = $dimFetchType;
 				$arrayDimFetchLoopNativeTypes[] = $dimFetchNativeType;
@@ -329,7 +396,7 @@ final class ForeachHandler implements StmtHandler
 			$valueTypeChanged = !$arrayDimFetchLoopType->equals($exprType->getIterableValueType());
 			$keyTypeChanged = false;
 			$keyLoopType = $exprType->getIterableKeyType();
-			$keyLoopNativeType = $scope->getNativeType($stmt->expr)->getIterableKeyType();
+			$keyLoopNativeType = $exprNativeType->getIterableKeyType();
 			if ($keyVarExpr !== null) {
 				$keyLoopType = TypeCombinator::union(...$keyLoopTypes);
 				$keyLoopNativeType = TypeCombinator::union(...$keyLoopNativeTypes);
@@ -345,7 +412,7 @@ final class ForeachHandler implements StmtHandler
 					$newExprType = $newExprType->mapKeyType(static fn (Type $type): Type => $keyLoopType);
 				}
 
-				$nativeExprType = $scope->getNativeType($stmt->expr);
+				$nativeExprType = $exprNativeType;
 				$newExprNativeType = $nativeExprType;
 				if ($valueTypeChanged) {
 					$newExprNativeType = $newExprNativeType->mapValueType(static fn (Type $type): Type => $arrayDimFetchLoopNativeType);
@@ -373,7 +440,7 @@ final class ForeachHandler implements StmtHandler
 
 		$isIterableAtLeastOnce = $exprType->isIterableAtLeastOnce();
 		if ($isIterableAtLeastOnce->maybe() || $exprType->isIterable()->no()) {
-			$finalScope = $finalScope->mergeWith($scope->filterByTruthyValue(new BooleanOr(
+			$finalScope = $finalScope->mergeWith($nodeScopeResolver->narrowScopeWithCondition($scope, new BooleanOr(
 				new BinaryOp\Identical(
 					$stmt->expr,
 					new Array_([]),
@@ -381,7 +448,7 @@ final class ForeachHandler implements StmtHandler
 				new FuncCall(new Name\FullyQualified('is_object'), [
 					new Arg($stmt->expr),
 				]),
-			)));
+			), TypeSpecifierContext::createTruthy()));
 		} elseif ($isIterableAtLeastOnce->no() || $finalScopeResult->isAlwaysTerminating()) {
 			$finalScope = $scope;
 		} elseif (!$nodeScopeResolver->shouldPolluteScopeWithAlwaysIterableForeach()) {
@@ -393,7 +460,7 @@ final class ForeachHandler implements StmtHandler
 			$throwPoints = array_merge($throwPoints, $finalScopeResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $finalScopeResult->getImpurePoints());
 		}
-		$traversableThrowPoint = $this->getTraversableForeachThrowPoint($scope, $stmt->expr);
+		$traversableThrowPoint = $this->getTraversableForeachThrowPoint($scope, $stmt->expr, $exprType);
 		if ($traversableThrowPoint !== null) {
 			$throwPoints[] = $traversableThrowPoint;
 		}
@@ -529,8 +596,8 @@ final class ForeachHandler implements StmtHandler
 				$arrayArg = $args[0]->value;
 				$scope = $scope->assignExpression(
 					new ArrayDimFetch($arrayArg, $stmt->valueVar),
-					$scope->getType($arrayArg)->getIterableValueType(),
-					$scope->getNativeType($arrayArg)->getIterableValueType(),
+					$nodeScopeResolver->readStoredResult($arrayArg, $storage)->getTypeOnScope($scope, false)->getIterableValueType(),
+					$nodeScopeResolver->readStoredResult($arrayArg, $storage)->getTypeOnScope($scope, true)->getIterableValueType(),
 				);
 			}
 		}
@@ -746,9 +813,8 @@ final class ForeachHandler implements StmtHandler
 		return ['bodyScope' => $bodyScope, 'endScope' => $endScope, 'totalKeys' => $totalKeys];
 	}
 
-	private function getTraversableForeachThrowPoint(MutatingScope $scope, Expr $iteratee): ?InternalThrowPoint
+	private function getTraversableForeachThrowPoint(MutatingScope $scope, Expr $iteratee, Type $exprType): ?InternalThrowPoint
 	{
-		$exprType = $scope->getType($iteratee);
 		$traversableType = new ObjectType(Traversable::class);
 
 		if ($traversableType->isSuperTypeOf($exprType)->no()) {

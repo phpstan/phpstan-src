@@ -13,14 +13,10 @@ use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
-use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
-use PHPStan\Analyser\TypeSpecifier;
-use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
-use PHPStan\Type\Type;
 
 /**
  * @implements ExprHandler<Scalar>
@@ -43,6 +39,10 @@ final class ScalarHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
+		// a literal's type and its initializer context (file/namespace/class) are
+		// lexical - identical on every scope - so build the context once here.
+		$initializerExprContext = InitializerExprContext::fromScope($scope);
+
 		return $this->expressionResultFactory->create(
 			$scope,
 			beforeScope: $scope,
@@ -51,17 +51,9 @@ final class ScalarHandler implements ExprHandler
 			isAlwaysTerminating: false,
 			throwPoints: [],
 			impurePoints: [],
+			typeCallback: fn () => $this->initializerExprTypeResolver->getType($expr, $initializerExprContext),
+			specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
 		);
-	}
-
-	public function resolveType(MutatingScope $scope, Expr $expr): Type
-	{
-		return $this->initializerExprTypeResolver->getType($expr, InitializerExprContext::fromScope($scope));
-	}
-
-	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
-	{
-		return $typeSpecifier->specifyDefaultTypes($scope, $expr, $context);
 	}
 
 }

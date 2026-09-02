@@ -12,6 +12,7 @@ use PhpParser\Node\Stmt\Unset_;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler\Helper\MethodThrowPointHelper;
+use PHPStan\Analyser\ExprHandler\Helper\VirtualExprResultHelper;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalStatementResult;
 use PHPStan\Analyser\MutatingScope;
@@ -65,7 +66,7 @@ final class UnsetHandler implements StmtHandler
 			$throwPoints = array_merge($throwPoints, $exprResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $exprResult->getImpurePoints());
 			if ($var instanceof ArrayDimFetch && $var->dim !== null) {
-				$varType = $scope->getType($var->var);
+				$varType = $nodeScopeResolver->readStoredResult($var->var, $storage)->getTypeOnScope($scope, false);
 				if (!$varType->isArray()->yes() && !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->no()) {
 					$throwPoints = array_merge($throwPoints, $this->container->getByType(MethodThrowPointHelper::class)->getThrowPointsForCallOnType(
 						$scope,
@@ -88,7 +89,23 @@ final class UnsetHandler implements StmtHandler
 						$node->dim,
 					);
 				};
-				$scope = $nodeScopeResolver->processVirtualAssign($scope, $storage, $stmt, $buildExistingChain($var->var), new UnsetOffsetExpr($var->var, $var->dim), $nodeCallback)->getScope();
+				$clonedVar = $buildExistingChain($var->var);
+				$unsetOffsetExpr = new UnsetOffsetExpr($var->var, $var->dim);
+				$scope = $nodeScopeResolver->processVirtualAssign(
+					$scope,
+					$storage,
+					$stmt,
+					$clonedVar,
+					$unsetOffsetExpr,
+					$nodeCallback,
+					// composed from the chain results the unset target's walk just stored
+					$this->container->getByType(VirtualExprResultHelper::class)->createUnsetOffsetExprResult(
+						$scope,
+						$unsetOffsetExpr,
+						$nodeScopeResolver->readStoredResult($var->var, $storage),
+						$nodeScopeResolver->readStoredResult($var->dim, $storage),
+					),
+				)->getScope();
 			} elseif ($var instanceof PropertyFetch) {
 				$scope = $scope->invalidateExpression($var);
 				$impurePoints[] = new ImpurePoint(

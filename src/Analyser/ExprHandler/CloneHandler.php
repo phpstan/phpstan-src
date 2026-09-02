@@ -10,12 +10,10 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
-use PHPStan\Analyser\Scope;
-use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\Traverser\CloneTypeTraverser;
-use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\ObjectWithoutClassType;
@@ -30,8 +28,17 @@ use PHPStan\Type\TypeTraverser;
 final class CloneHandler implements ExprHandler
 {
 
-	public function __construct(private ExpressionResultFactory $expressionResultFactory)
+	public function __construct(
+		private ExpressionResultFactory $expressionResultFactory,
+		private DefaultNarrowingHelper $defaultNarrowingHelper,
+	)
 	{
+	}
+
+	/** The type `clone $expr` produces for an operand of the given type. */
+	public static function resolveCloneType(Type $exprType): Type
+	{
+		return TypeTraverser::map(TypeCombinator::intersect($exprType, new ObjectWithoutClassType()), new CloneTypeTraverser());
 	}
 
 	public function supports(Expr $expr): bool
@@ -51,18 +58,9 @@ final class CloneHandler implements ExprHandler
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
 			throwPoints: $exprResult->getThrowPoints(),
 			impurePoints: $exprResult->getImpurePoints(),
+			typeCallback: static fn (bool $nativeTypesPromoted): Type => self::resolveCloneType($nativeTypesPromoted ? $exprResult->getNativeType() : $exprResult->getType()),
+			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
 		);
-	}
-
-	public function resolveType(MutatingScope $scope, Expr $expr): Type
-	{
-		$cloneType = TypeCombinator::intersect($scope->getType($expr->expr), new ObjectWithoutClassType());
-		return TypeTraverser::map($cloneType, new CloneTypeTraverser());
-	}
-
-	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
-	{
-		return $typeSpecifier->specifyDefaultTypes($scope, $expr, $context);
 	}
 
 }

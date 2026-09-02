@@ -4,54 +4,46 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node\Expr;
 use PHPStan\Turbo\ShadowedByTurboExtension;
-use function spl_object_id;
+use SplObjectStorage;
 
 #[ShadowedByTurboExtension(turboClass: 'PHPStanTurbo\ExpressionResultStorage', implementation: __DIR__ . '/../../turbo-ext/src/ExpressionResultStorage.cpp')]
 final class ExpressionResultStorage
 {
 
-	/**
-	 * Keeps every stored Expr alive so its spl_object_id() cannot be reused
-	 * by another node while $scopesById still maps it.
-	 *
-	 * @var array<int, Expr>
-	 */
-	private array $exprsById = [];
+	/** @var SplObjectStorage<Expr, ExpressionResult> */
+	private SplObjectStorage $exprResults;
 
-	/** @var array<int, Scope> */
-	private array $scopesById = [];
+	/**
+	 * Read-only fallback - writes never reach it. Makes duplicate() O(1)
+	 * instead of copying all stored results.
+	 */
+	private ?self $fallback = null;
+
+	public function __construct()
+	{
+		$this->exprResults = new SplObjectStorage();
+	}
 
 	public function duplicate(): self
 	{
 		$new = new self();
-		$new->exprsById = $this->exprsById;
-		$new->scopesById = $this->scopesById;
+		$new->fallback = $this;
 		return $new;
 	}
 
-	public function storeBeforeScope(Expr $expr, Scope $scope): void
-	{
-		$id = spl_object_id($expr);
-		$this->exprsById[$id] = $expr;
-		$this->scopesById[$id] = $scope;
-	}
-
-	public function findBeforeScope(Expr $expr): ?Scope
-	{
-		return $this->scopesById[spl_object_id($expr)] ?? null;
-	}
-
-	/**
-	 * Adopts every before-scope the other storage stored - a finished
-	 * convergence pass's stores answer for the final walk its replay
-	 * replaces.
-	 */
 	public function mergeResults(self $other): void
 	{
-		foreach ($other->exprsById as $id => $expr) {
-			$this->exprsById[$id] = $expr;
-			$this->scopesById[$id] = $other->scopesById[$id];
-		}
+		$this->exprResults->addAll($other->exprResults);
+	}
+
+	public function storeExpressionResult(Expr $expr, ExpressionResult $expressionResult): void
+	{
+		$this->exprResults[$expr] = $expressionResult;
+	}
+
+	public function findExpressionResult(Expr $expr): ?ExpressionResult
+	{
+		return $this->exprResults[$expr] ?? ($this->fallback !== null ? $this->fallback->findExpressionResult($expr) : null);
 	}
 
 }

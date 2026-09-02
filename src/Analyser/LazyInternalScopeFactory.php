@@ -42,6 +42,8 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 
 	private ?ConstantResolver $constantResolver = null;
 
+	private ExpressionResultStorageStack $expressionResultStorageStack;
+
 	private ?PhpVersion $phpVersionType = null;
 
 	private ?AttributeReflectionFactory $attributeReflectionFactory = null;
@@ -58,10 +60,12 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 		private Container $container,
 		private $nodeCallback,
 		private bool $createsNodeCallbackScopes = false,
+		?ExpressionResultStorageStack $expressionResultStorageStack = null,
 	)
 	{
 		$this->phpVersion = $this->container->getParameter('phpVersion');
 		$this->currentSimpleVersionParser = $this->container->getService('currentPhpVersionSimpleParser');
+		$this->expressionResultStorageStack = $expressionResultStorageStack ?? new ExpressionResultStorageStack();
 	}
 
 	public function create(
@@ -111,6 +115,7 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 			$this->propertyReflectionFinder,
 			$this->currentSimpleVersionParser,
 			$this->constantResolver,
+			$this->expressionResultStorageStack,
 			$context,
 			$this->phpVersionType,
 			$this->attributeReflectionFactory,
@@ -169,7 +174,7 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 			}
 		}
 
-		$this->twin = new self($this->container, $this->nodeCallback, !$this->createsNodeCallbackScopes);
+		$this->twin = new self($this->container, $this->nodeCallback, !$this->createsNodeCallbackScopes, $this->expressionResultStorageStack);
 		$this->twin->origin = WeakReference::create($this);
 
 		return $this->twin;

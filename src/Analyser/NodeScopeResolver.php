@@ -32,6 +32,8 @@ use PhpParser\Node\Stmt\Switch_;
 use PhpParser\NodeFinder;
 use PHPStan\Analyser\ExprHandler\AssignHandler;
 use PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver;
+use PHPStan\Analyser\ExprHandler\Helper\NonNullabilityHelper;
+use PHPStan\Analyser\ExprHandler\Helper\VirtualExprResultHelper;
 use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -39,6 +41,7 @@ use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Node\ExecutionEndNode;
+use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\FunctionCallableNode;
 use PHPStan\Node\FunctionCallExpressionNode;
@@ -59,6 +62,7 @@ use PHPStan\Parser\ArrowFunctionArgVisitor;
 use PHPStan\Parser\ClosureArgVisitor;
 use PHPStan\Parser\GotoLabelVisitor;
 use PHPStan\Parser\ImmediatelyInvokedClosureVisitor;
+use PHPStan\PhpDoc\Tag\VarTag;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\Callables\SimpleThrowPoint;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -76,6 +80,7 @@ use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ClosureType;
+use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\FunctionParameterClosureThisExtension;
 use PHPStan\Type\FunctionParameterClosureTypeExtension;
@@ -106,11 +111,15 @@ use function array_pop;
 use function array_slice;
 use function array_values;
 use function count;
+use function get_class;
+use function getenv;
 use function in_array;
 use function is_array;
 use function is_int;
 use function is_string;
 use function max;
+use function spl_object_id;
+use function sprintf;
 use function usort;
 
 #[AutowiredService]
@@ -123,21 +132,54 @@ class NodeScopeResolver
 	/** @var array<string, true> filePath(string) => bool(true) */
 	private array $analysedFiles = [];
 
-	private ?ExpressionResultStorageStack $expressionResultStorageStack = null;
+	/**
+	 * When processing a synthetic node on demand, real AST
+	 * nodes contained in it were already processed and must not be processed again.
+	 */
+	protected bool $returnStoredExpressionResults = false;
+
+	/**
+	 * Consume-stored mode: a walk that deliberately re-enters an
+	 * already-walked subtree (the nullsafe plain twin re-walking its
+	 * receiver) consumes stored results unconditionally instead of
+	 * re-processing - node callbacks fired during the original walk.
+	 */
+	private bool $consumeStoredExpressionResults = false;
+
+	private ?NonNullabilityHelper $nonNullabilityHelper = null;
 
 	/**
 	 * Engine-feeding gatherer frames (return statements, execution ends,
 	 * impure points, ...), innermost last. callNodeCallback() feeds every
 	 * frame the raw walk scope at the emission position - gatherers are
 	 * engine code and never ask about types, and their arrays are read as
-	 * soon as the enclosing body walk returns. Frames replace the former
-	 * GatheringNodeCallback wrapper chain: gatherers no longer ride the
-	 * node-callback channel, so callback filters (VirtualAssignNodeCallback)
-	 * cannot accidentally starve them.
+	 * soon as the enclosing body walk returns.
 	 *
 	 * @var list<callable(Node, Scope): void>
 	 */
 	private array $nodeGatherers = [];
+
+	/** Whether the PHPSTAN_GUARD_NW diagnostic is enabled (cached from the env). */
+	public static bool $guardNewWorld = false;
+
+	/**
+	 * spl_object_id => true of every Expr in the file's parsed AST. Populated
+	 * only when the PHPSTAN_GUARD_NW diagnostic is enabled, so the guards can
+	 * tell a real AST node from a node a rule built during analysis (which
+	 * legitimately resolves on demand). Static so MutatingScope can read it.
+	 *
+	 * @var array<int, true>
+	 */
+	public static array $guardRealExprIds = [];
+
+	/**
+	 * spl_object_id => true of every Expr already processed by processExprNode
+	 * in the current file. Used by the MutatingScope::getType guard to detect a
+	 * real AST node whose type is asked before it was processed.
+	 *
+	 * @var array<int, true>
+	 */
+	public static array $guardProcessedExprIds = [];
 
 	/**
 	 * @param ExtensionsCollection<FunctionParameterOutTypeExtension> $functionParameterOutTypeExtensions
@@ -153,7 +195,7 @@ class NodeScopeResolver
 	 * @param ExtensionsCollection<PerFileAnalysisResettable> $perFileAnalysisResettables
 	 */
 	public function __construct(
-		protected readonly Container $container,
+		private readonly Container $container,
 		private readonly ReflectionProvider $reflectionProvider,
 		#[AutowiredExtensions(of: FunctionParameterOutTypeExtension::class)]
 		private readonly ExtensionsCollection $functionParameterOutTypeExtensions,
@@ -186,9 +228,10 @@ class NodeScopeResolver
 		private readonly bool $implicitThrows,
 		#[AutowiredParameter]
 		private readonly bool $treatPhpDocTypesAsCertain,
-		protected readonly ExpressionResultFactory $expressionResultFactory,
+		private readonly ExpressionResultFactory $expressionResultFactory,
 	)
 	{
+		self::$guardNewWorld = getenv('PHPSTAN_GUARD_NW') === '1';
 	}
 
 	/**
@@ -211,6 +254,11 @@ class NodeScopeResolver
 	 * wiping the per-file caches there forces the outer file to rebuild them -
 	 * closure types re-converge, narrowing memos recompute.
 	 */
+	private function getNonNullabilityHelper(): NonNullabilityHelper
+	{
+		return $this->nonNullabilityHelper ??= $this->container->getByType(NonNullabilityHelper::class);
+	}
+
 	public function resetPerFileAnalysisState(): void
 	{
 		foreach ($this->perFileAnalysisResettables->getAll() as $resettableService) {
@@ -230,8 +278,41 @@ class NodeScopeResolver
 	): void
 	{
 		$scope = $scope->toWalkScope();
+		if (self::$guardNewWorld) {
+			self::$guardRealExprIds = [];
+			self::$guardProcessedExprIds = [];
+			foreach ((new NodeFinder())->findInstanceOf($nodes, Expr::class) as $realExpr) {
+				self::$guardRealExprIds[spl_object_id($realExpr)] = true;
+			}
+		}
 
 		$expressionResultStorage = new ExpressionResultStorage();
+		$scope->pushExpressionResultStorage($expressionResultStorage);
+		// a fresh walk an extension starts mid-analysis must not feed the
+		// interrupted walk's gatherer frames (see processStmtNodes())
+		$gatherers = $this->nodeGatherers;
+		$this->nodeGatherers = [];
+		try {
+			$this->processNodesWithStorage($nodes, $scope, $expressionResultStorage, $nodeCallback);
+		} finally {
+			$this->nodeGatherers = $gatherers;
+			$scope->popExpressionResultStorage();
+		}
+	}
+
+	/**
+	 * @param Node[] $nodes
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	private function processNodesWithStorage(
+		array $nodes,
+		MutatingScope $scope,
+		ExpressionResultStorage $expressionResultStorage,
+		callable $nodeCallback,
+	): void
+	{
+		$alreadyTerminated = false;
+		$exitPoints = [];
 
 		$stmts = [];
 		$stmtToNodeIndex = [];
@@ -244,34 +325,6 @@ class NodeScopeResolver
 			$stmts[] = $node;
 		}
 
-		// a fresh walk an extension starts mid-analysis must not feed the
-		// interrupted walk's gatherer frames (see processStmtNodes())
-		$gatherers = $this->nodeGatherers;
-		$this->nodeGatherers = [];
-		try {
-			$this->processNodesStatements($nodes, $stmts, $stmtToNodeIndex, $scope, $expressionResultStorage, $nodeCallback);
-		} finally {
-			$this->nodeGatherers = $gatherers;
-		}
-	}
-
-	/**
-	 * @param Node[] $nodes
-	 * @param Node\Stmt[] $stmts
-	 * @param array<int, int> $stmtToNodeIndex
-	 * @param callable(Node $node, Scope $scope): void $nodeCallback
-	 */
-	private function processNodesStatements(
-		array $nodes,
-		array $stmts,
-		array $stmtToNodeIndex,
-		MutatingScope $scope,
-		ExpressionResultStorage $expressionResultStorage,
-		callable $nodeCallback,
-	): void
-	{
-		$alreadyTerminated = false;
-		$exitPoints = [];
 		$dummyParent = new Node\Stmt\Nop();
 		foreach ($stmts as $si => $node) {
 			if ($alreadyTerminated && !($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassLike || $node instanceof Node\Stmt\Label)) {
@@ -333,14 +386,53 @@ class NodeScopeResolver
 		}
 	}
 
+	/** The stored result an outside asker may consume. */
+	public function findSettledExpressionResult(ExpressionResultStorage $storage, Expr $expr): ?ExpressionResult
+	{
+		return $storage->findExpressionResult($expr);
+	}
+
+	/** An effect-free result carrying eagerly known types, positioned at the given scope. */
+	protected function createEagerExpressionResult(MutatingScope $scope, Expr $expr, Type $type, Type $nativeType): ExpressionResult
+	{
+		return $this->expressionResultFactory->create(
+			$scope,
+			beforeScope: $scope,
+			expr: $expr,
+			hasYield: false,
+			isAlwaysTerminating: false,
+			throwPoints: [],
+			impurePoints: [],
+			typeCallback: null,
+			specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
+			type: $type,
+			nativeType: $nativeType,
+		);
+	}
+
 	public function storeExpressionResult(ExpressionResultStorage $storage, Expr $expr, ExpressionResult $expressionResult): void
 	{
-		// The storage only ever answers type questions from NodeCallbackScope, which
-		// resolves them from the before-scope. Storing just the before-scope
-		// keeps the storage from pinning throw points, impure points, scope
-		// callbacks and the after-scope of every expression until the end of
-		// the file.
-		$storage->storeBeforeScope($expr, $expressionResult->getBeforeScope());
+		if (self::$guardNewWorld) {
+			self::$guardProcessedExprIds[spl_object_id($expr)] = true;
+		}
+		// handlers are answered from stored results in both worlds
+		$storage->storeExpressionResult($expr, $expressionResult);
+	}
+
+	/**
+	 * @param Node\Stmt[] $bodyStmts
+	 * @param Closure(string): bool $gotoNameMatcher
+	 */
+	/**
+	 * Narrows a scope by a (often synthetic) control-flow condition the new-world
+	 * way: resolve its narrowing through the scope's on-demand dispatcher and apply
+	 * it via applySpecifiedTypes, instead of the old-world filterBy*Value().
+	 */
+	public function narrowScopeWithCondition(MutatingScope $scope, Expr $expr, TypeSpecifierContext $context): MutatingScope
+	{
+		$specifiedTypes = $scope->specifyTypesOfNewWorldHandlerNode($expr, $context);
+
+		return $scope->applySpecifiedTypes($specifiedTypes);
 	}
 
 	/**
@@ -367,8 +459,7 @@ class NodeScopeResolver
 			}
 			if ($prevEntryScope !== null && $bodyScope->equals($prevEntryScope)) {
 				// walking is deterministic in the entry scope - an unchanged entry
-				// reproduces the previous pass's exit, so the verification walk is
-				// skipped
+				// reproduces the previous pass's exit, so the verification walk is skipped
 				$bodyScope = $prevScope;
 				break;
 			}
@@ -487,6 +578,7 @@ class NodeScopeResolver
 		// rule-facing ask paths
 		$scope = $scope->toWalkScope();
 		$storage = new ExpressionResultStorage();
+		$scope->pushExpressionResultStorage($storage);
 		// a fresh walk an extension starts mid-analysis must not feed the
 		// interrupted walk's gatherer frames - they describe the body walk
 		// that was interrupted, not the nested one
@@ -503,6 +595,7 @@ class NodeScopeResolver
 			)->toPublic();
 		} finally {
 			$this->nodeGatherers = $gatherers;
+			$scope->popExpressionResultStorage();
 		}
 	}
 
@@ -519,7 +612,23 @@ class NodeScopeResolver
 		StatementContext $context,
 	): InternalStatementResult
 	{
-		return $this->doProcessStmtNodes($parentNode, $stmts, $scope, $storage, $nodeCallback, $context);
+		// make the storage this walk writes into scope-visible: loop-convergence
+		// passes (including the closure by-ref convergence, which calls this
+		// method directly) thread a throwaway duplicate that would otherwise
+		// never reach the storage stack, so every in-pass ask
+		// (applySpecifiedTypes pricing, rules via Scope::getType) would miss the
+		// pass's own results and re-process real nodes on demand
+		$pushStorage = $scope->getCurrentExpressionResultStorage() !== $storage;
+		if ($pushStorage) {
+			$scope->pushExpressionResultStorage($storage);
+		}
+		try {
+			return $this->doProcessStmtNodes($parentNode, $stmts, $scope, $storage, $nodeCallback, $context);
+		} finally {
+			if ($pushStorage) {
+				$scope->popExpressionResultStorage();
+			}
+		}
 	}
 
 	/**
@@ -619,6 +728,7 @@ class NodeScopeResolver
 								$endStatementResult->getImpurePoints(),
 							))->toPublic(),
 							$parentNode->getReturnType() !== null,
+							$this->readEndStatementExprResult($endStatement->getStatement(), $storage),
 						), $endStatementResult->getScope(), $storage);
 					}
 				} else {
@@ -633,6 +743,7 @@ class NodeScopeResolver
 							$statementResult->getImpurePoints(),
 						))->toPublic(),
 						$parentNode->getReturnType() !== null,
+						$this->readEndStatementExprResult($stmt, $storage),
 					), $scope, $storage);
 				}
 			}
@@ -656,6 +767,8 @@ class NodeScopeResolver
 			if ($parentNode instanceof Expr\Closure) {
 				$parentNode = new Node\Stmt\Expression($parentNode, $parentNode->getAttributes());
 			}
+			// the body is empty - the statement above is a synthetic wrapper around
+			// the closure, not an expression statement that was processed
 			$this->callNodeCallback($nodeCallback, new ExecutionEndNode(
 				$parentNode,
 				$statementResult->toPublic(),
@@ -695,6 +808,8 @@ class NodeScopeResolver
 		}
 
 		if ($stmt instanceof Node\Stmt\ClassMethod) {
+			// a trait method the using class overrides is not analysed here at all -
+			// decided before the node callback is emitted
 			if (!$scope->isInClass()) {
 				throw new ShouldNotHappenException();
 			}
@@ -715,14 +830,6 @@ class NodeScopeResolver
 			}
 		}
 
-		$stmtScope = $scope;
-		if ($stmt instanceof Node\Stmt\Expression && $stmt->expr instanceof Expr\Throw_) {
-			$stmtScope = $this->processStmtVarAnnotation($scope, $storage, $stmt, $stmt->expr->expr, $nodeCallback);
-		}
-		if ($stmt instanceof Return_) {
-			$stmtScope = $this->processStmtVarAnnotation($scope, $storage, $stmt, $stmt->expr, $nodeCallback);
-		}
-
 		// Statements whose work is processing their expressions emit their node
 		// callback AFTER that processing, inside their branches below, with the
 		// entry scope - a synchronously invoked rule (the plain resolver,
@@ -734,12 +841,12 @@ class NodeScopeResolver
 			|| $stmt instanceof Node\Stmt\Const_ || $stmt instanceof Node\Stmt\While_
 			|| $stmt instanceof Node\Stmt\Do_;
 		if (!$deferredStmtCallback) {
-			$this->callNodeCallback($nodeCallback, $stmt, $stmtScope, $storage);
+			$this->callNodeCallback($nodeCallback, $stmt, $scope, $storage);
 		}
 
 		$stmtHandler = StmtHandlerRegistry::resolve($stmt, $this->container);
 		if ($stmtHandler !== null) {
-			$stmtResult = $stmtHandler->processStmt($this, $stmt, $stmtScope, $storage, $nodeCallback, $context);
+			$stmtResult = $stmtHandler->processStmt($this, $stmt, $scope, $storage, $nodeCallback, $context);
 			if ($overridingThrowPoints !== null) {
 				return new InternalStatementResult(
 					$stmtResult->getScope(),
@@ -857,9 +964,318 @@ class NodeScopeResolver
 	}
 
 	/**
+	 * Processes an expression outside the normal AST traversal - e.g. a synthetic
+	 * node a rule or extension asks about. Real AST nodes contained in it return
+	 * their already-stored results instead of being processed again. New results
+	 * are stored into the given storage - pass a duplicate to keep them isolated.
+	 */
+	/**
+	 * Processes an expression whose already-walked subtrees must be CONSUMED
+	 * from their stored results instead of re-walked: the nullsafe handlers
+	 * process the receiver once (real callbacks) and then walk the plain twin,
+	 * whose receiver subtree answers from storage, re-anchored to the twin's
+	 * (ensured) scope.
+	 *
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	public function processExprNodeConsumingStored(Node\Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	{
+		$previous = $this->consumeStoredExpressionResults;
+		$this->consumeStoredExpressionResults = true;
+		try {
+			return $this->processExprNode($stmt, $expr, $scope, $storage, $nodeCallback, $context);
+		} finally {
+			$this->consumeStoredExpressionResults = $previous;
+		}
+	}
+
+	public function processExprOnDemand(Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage): ExpressionResult
+	{
+		// A node no handler supports - a virtual node (BooleanOrNode, ...) a
+		// rule asked the type of - degrades to mixed, mirroring
+		// MutatingScope::resolveType()'s fallback. The main walk's unhandled
+		// throw stays: real source nodes must have a handler.
+		if (
+			ExprHandlerRegistry::resolve($expr, $this->container) === null
+			&& !($expr instanceof Expr\CallLike && $expr->isFirstClassCallable())
+		) {
+			return $this->createEagerExpressionResult($scope, $expr, new MixedType(), new MixedType());
+		}
+
+		// save/restore, never reset: on-demand walks nest (a typeCallback
+		// evaluated mid-walk prices another synthetic node) and a hard reset
+		// would turn stored-result consumption off for the rest of the outer
+		// walk - re-processing every remaining subtree and bypassing the
+		// closure-argument consume guards in processArgs()
+		$previous = $this->returnStoredExpressionResults;
+		$this->returnStoredExpressionResults = true;
+		$scope->pushExpressionResultStorage($storage);
+		try {
+			return $this->processExprNode(
+				new Node\Stmt\Expression($expr),
+				$expr,
+				$scope,
+				$storage,
+				new NoopNodeCallback(),
+				ExpressionContext::createTopLevel(),
+			);
+		} finally {
+			$scope->popExpressionResultStorage();
+			$this->returnStoredExpressionResults = $previous;
+		}
+	}
+
+	/**
+	 * Processes an expression for an independent analysis pass - a reflection-
+	 * level lazy computation that builds its own scope from scratch (e.g.
+	 * private property type inference from constructor assignments). Such a
+	 * pass legitimately prices real AST nodes outside the file's main walk,
+	 * on a fresh storage of its own.
+	 */
+	public function processIndependentPassExpr(Expr $expr, MutatingScope $scope): ExpressionResult
+	{
+		return $this->processExprOnDemand($expr, $scope, new ExpressionResultStorage());
+	}
+
+	/**
+	 * The stored ExpressionResult of a node processExprNode() already processed
+	 * into the given storage - the caller asserts the processing order by
+	 * holding the very storage it processed the node into (a scope-based lookup
+	 * would miss loop-convergence storages, which are never scope-visible).
+	 * Throws when the node has no stored result.
+	 */
+	public function readStoredResult(Expr $expr, ExpressionResultStorage $storage): ExpressionResult
+	{
+		$result = $storage->findExpressionResult($expr);
+		if ($result === null) {
+			throw new ShouldNotHappenException(sprintf(
+				'%s on line %d has no stored ExpressionResult - it was not processed by processExprNode().',
+				get_class($expr),
+				$expr->getStartLine(),
+			));
+		}
+
+		return $result;
+	}
+
+	/**
+	 * The result of the expression an ending statement evaluated, for
+	 * ExecutionEndNode. Null when the statement is not an expression statement,
+	 * and when its expression was not processed into this storage - an end
+	 * statement is collected from wherever execution ended, which can be a
+	 * nested walk whose results never reach the frame the end node is built in.
+	 */
+	private function readEndStatementExprResult(Node\Stmt $stmt, ExpressionResultStorage $storage): ?ExpressionResult
+	{
+		if (!$stmt instanceof Node\Stmt\Expression) {
+			return null;
+		}
+
+		return $storage->findExpressionResult($stmt->expr);
+	}
+
+	/**
+	 * The result processArgs() captured for a call argument. Unlike the storage
+	 * lookup this reads the argument's authoritative result: a closure/arrow
+	 * function argument's captured result is the properly-typed one, not the
+	 * placeholder its body walk stored.
+	 *
+	 * @param array<int, ExpressionResult> $argResults
+	 */
+	private function readArgResult(array $argResults, Expr $argValue): ExpressionResult
+	{
+		$result = $argResults[spl_object_id($argValue)] ?? null;
+		if ($result === null) {
+			throw new ShouldNotHappenException(sprintf(
+				'%s on line %d has no captured ExpressionResult - it was not processed as an argument by processArgs().',
+				get_class($argValue),
+				$argValue->getStartLine(),
+			));
+		}
+
+		return $result;
+	}
+
+	/**
+	 * The type, on the given scope, of a node that may or may not have a stored
+	 * ExpressionResult. Every call site of this method is UNDECIDED about whether
+	 * the node was already analysed - each should eventually either consume the
+	 * node's ExpressionResult where it was processed or be a synthetic node
+	 * (processSyntheticOnDemand()).
+	 */
+	public function readTypeOfMaybeStored(Expr $expr, MutatingScope $scope): Type
+	{
+		$storage = $scope->getCurrentExpressionResultStorage();
+		$result = $storage !== null ? $storage->findExpressionResult($expr) : null;
+		if ($result !== null) {
+			return $result->getTypeOnScope($scope, $scope->nativeTypesPromoted);
+		}
+
+		return $this->readScopeStateOrSyntheticType($expr, $scope);
+	}
+
+	/**
+	 * The type the scope itself knows for the expression, without any node
+	 * processing: a string-named variable read is scope state (mirrors
+	 * VariableHandler's typeCallback), and a type tracked for the whole
+	 * expression answers directly - an on-demand walk would return that very
+	 * holder anyway (the fresh result's beforeScope is the asking scope),
+	 * after paying the walk. Null when the scope has no answer; the caller
+	 * decides whether that means a synthetic walk (processSyntheticOnDemand())
+	 * or an invariant violation.
+	 */
+	public function findScopeStateType(Expr $expr, MutatingScope $scope): ?Type
+	{
+		if ($expr instanceof Expr\Variable && is_string($expr->name)) {
+			if ($scope->hasVariableType($expr->name)->no()) {
+				return new ErrorType();
+			}
+
+			return $scope->getVariableType($expr->name);
+		}
+
+		// a literal is position-independent: the scope prices it without a walk,
+		// so an argument the walk reaches only later (an IIFE's or a pipe's
+		// operand) never has to be processed ahead of its turn
+		if ($expr instanceof Node\Scalar\String_ || $expr instanceof Node\Scalar\Int_ || $expr instanceof Node\Scalar\Float_) {
+			return $scope->getStateType($expr);
+		}
+
+		// A variable whose name is an expression ($$name) never reaches the read
+		// above, and the scope tracks it like any other expression - so it belongs
+		// here rather than falling through to a walk.
+		if (
+			!$expr instanceof Expr\Closure
+			&& !$expr instanceof Expr\ArrowFunction
+			&& $scope->hasExpressionType($expr)->yes()
+		) {
+			return TypeUtils::resolveLateResolvableTypes($scope->getTrackedExpressionType($expr));
+		}
+
+		return null;
+	}
+
+	/**
+	 * The type, on the given scope, of a node the caller knows has no stored
+	 * ExpressionResult in its walk: scope state (variable read / tracked
+	 * holder) answers without a walk, anything else is priced as a synthetic
+	 * node.
+	 */
+	public function readScopeStateOrSyntheticType(Expr $expr, MutatingScope $scope): Type
+	{
+		return $this->findScopeStateType($expr, $scope) ?? $this->processSyntheticOnDemand($expr, $scope)->getTypeOnScope($scope, $scope->nativeTypesPromoted);
+	}
+
+	/**
+	 * The type the scope knows for an expression the caller has already pinned as
+	 * tracked there (hasExpressionType() yes, or a string-named variable). Unlike
+	 * readScopeStateOrSyntheticType() this never falls back to a synthetic walk -
+	 * the caller decided that the scope answers.
+	 */
+	public function requireScopeStateType(Expr $expr, MutatingScope $scope): Type
+	{
+		$type = $this->findScopeStateType($expr, $scope);
+		if ($type === null) {
+			throw new ShouldNotHappenException(sprintf(
+				'%s on line %d is not tracked on the scope it was pinned as tracked on.',
+				get_class($expr),
+				$expr->getStartLine(),
+			));
+		}
+
+		return $type;
+	}
+
+	/**
+	 * Fires the PHPSTAN_GUARD_NW diagnostic when a real (non-synthetic) AST node
+	 * reaches an on-demand pricing path without having been processed and stored
+	 * by processExprNode() first. Mirrors the guard in MutatingScope::getType():
+	 * such a node should be answered from its stored ExpressionResult, never
+	 * re-priced as if it were synthetic. Dormant unless PHPSTAN_GUARD_NW=1.
+	 */
+	private function guardAgainstUnprocessedRealNode(Expr $expr, string $caller): void
+	{
+		if (
+			!self::$guardNewWorld
+			|| !isset(self::$guardRealExprIds[spl_object_id($expr)])
+			|| isset(self::$guardProcessedExprIds[spl_object_id($expr)])
+		) {
+			return;
+		}
+
+		throw new ShouldNotHappenException(sprintf(
+			'%s() asked about non-synthetic %s on line %d before it was processed by processExprNode() - it should consume the node\'s ExpressionResult instead.',
+			$caller,
+			get_class($expr),
+			$expr->getStartLine(),
+		));
+	}
+
+	/**
+	 * Processes a synthetic node (one an ExprHandler built itself) on a duplicate
+	 * of the storage of the analysis currently in progress, mirroring
+	 * MutatingScope::resolveTypeOfNewWorldHandlerNode(): the duplicate isolates
+	 * the synthetic node's own stored result from the live storage while its real
+	 * subnodes still resolve from the fallback.
+	 */
+	public function processSyntheticOnDemand(Expr $expr, MutatingScope $scope): ExpressionResult
+	{
+		$this->guardAgainstUnprocessedRealNode($expr, __FUNCTION__);
+		$current = $scope->getCurrentExpressionResultStorage() ?? new ExpressionResultStorage();
+
+		return $this->processExprOnDemand($expr, $scope, $current->duplicate());
+	}
+
+	/**
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
 	public function processExprNode(
+		Node\Stmt $stmt,
+		Expr $expr,
+		MutatingScope $scope,
+		ExpressionResultStorage $storage,
+		callable $nodeCallback,
+		ExpressionContext $context,
+	): ExpressionResult
+	{
+		if ($this->returnStoredExpressionResults || $this->consumeStoredExpressionResults) {
+			$storedResult = $storage->findExpressionResult($expr);
+			// a stored result only answers when the current scope agrees with its
+			// evaluation position on the variables the expression reads - a
+			// counterfactual walk (an extension re-binding a variable and pricing
+			// a real subtree, e.g. array_filter's per-element callback evaluation)
+			// re-processes the node on its own scope instead. In CONSUME mode the
+			// divergence is intentional (an ensured-non-null device) and the
+			// stored result is consumed unconditionally, re-anchored below.
+			if ($storedResult !== null && ($this->consumeStoredExpressionResults || $storedResult->askScopeVariableStateMatches($scope, $scope->nativeTypesPromoted))) {
+				// a foreign-position answer must not thread its original walk
+				// scopes into THIS walk - re-anchor it to the asking position so
+				// subsequent operands keep evaluating on the asking scope
+				if ($storedResult->getBeforeScope() === $scope) {
+					return $storedResult;
+				}
+
+				$reanchored = $storedResult->atAskPosition($scope);
+				if ($this->consumeStoredExpressionResults) {
+					// the re-anchored view IS this walk's result for the node
+					// (the nullsafe twin's receiver at the ensured position) -
+					// store it so later asks (rules' storage reads) see the same
+					// result the twin walk itself consumed, exactly like the
+					// receiver walked inside the twin used to be stored
+					$this->storeExpressionResult($storage, $expr, $reanchored);
+				}
+
+				return $reanchored;
+			}
+		}
+
+		return $this->processExprNodeInternal($stmt, $expr, $scope, $storage, $nodeCallback, $context);
+	}
+
+	/**
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	private function processExprNodeInternal(
 		Node\Stmt $stmt,
 		Expr $expr,
 		MutatingScope $scope,
@@ -890,6 +1306,10 @@ class NodeScopeResolver
 				isAlwaysTerminating: $newExprResult->isAlwaysTerminating(),
 				throwPoints: $newExprResult->getThrowPoints(),
 				impurePoints: $newExprResult->getImpurePoints(),
+				// the first-class callable closure type lives on the *CallableNode
+				// result; delegate so getType() of the original CallLike answers from it
+				typeCallback: static fn (bool $nativeTypesPromoted): Type => ($nativeTypesPromoted ? $newExprResult->getNativeType() : $newExprResult->getType()),
+				specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
 			);
 			$this->storeExpressionResult($storage, $expr, $expressionResult);
 			return $expressionResult;
@@ -898,40 +1318,33 @@ class NodeScopeResolver
 		$exprHandler = ExprHandlerRegistry::resolve($expr, $this->container);
 		if ($exprHandler !== null) {
 			$expressionResult = $exprHandler->processExpr($this, $stmt, $expr, $scope, $storage, $nodeCallback, $context);
+			// a chain link an enclosing isset/empty/?? could not device ahead
+			// of its walk (an untracked call) is deviced now, from the type
+			// the walk produced
+			$expressionResult = $this->getNonNullabilityHelper()->applyPendingEnsure($expr, $expressionResult);
 			$this->storeExpressionResult($storage, $expr, $expressionResult);
 			// The node's own callback fires AFTER its result is stored, with the
 			// scope captured before processing. Rules observe the same (scope,
-			// answer) pair as at a pre-order emission - under fibers a pre-order
+			// answer) pair as at a pre-order emission - previously a pre-order
 			// rule parks on its first ask and resumes at this store anyway - but
 			// a synchronously invoked rule (the plain resolver, PHP < 8.1) now
 			// finds the node's and its subtree's results in the storage instead
 			// of re-walking them on demand.
 			$this->callNodeCallbackWithExpression($nodeCallback, $expr, $scope, $storage, $context);
 			// the call is now processed and stored; emit a virtual node so
-			// impossible-check rules run on the fully processed call instead of
-			// asking the scope before the call node itself is processed
+			// impossible-check rules read its specified types from the result
+			// instead of asking the scope before the call node is processed
 			if ($expr instanceof FuncCall) {
-				$this->callNodeCallbackWithExpression($nodeCallback, new FunctionCallExpressionNode($expr), $scope, $storage, $context);
+				$this->callNodeCallbackWithExpression($nodeCallback, new FunctionCallExpressionNode($expr, $expressionResult, $expressionResult->getArgsResult()), $scope, $storage, $context);
 			} elseif ($expr instanceof MethodCall) {
-				$this->callNodeCallbackWithExpression($nodeCallback, new MethodCallExpressionNode($expr), $scope, $storage, $context);
+				$this->callNodeCallbackWithExpression($nodeCallback, new MethodCallExpressionNode($expr, $expressionResult, $expressionResult->getArgsResult()), $scope, $storage, $context);
 			} elseif ($expr instanceof StaticCall) {
-				$this->callNodeCallbackWithExpression($nodeCallback, new StaticMethodCallExpressionNode($expr), $scope, $storage, $context);
+				$this->callNodeCallbackWithExpression($nodeCallback, new StaticMethodCallExpressionNode($expr, $expressionResult, $expressionResult->getArgsResult()), $scope, $storage, $context);
 			}
 			return $expressionResult;
 		}
 
-		$expressionResult = $this->expressionResultFactory->create(
-			$scope,
-			beforeScope: $scope,
-			expr: $expr,
-			hasYield: false,
-			isAlwaysTerminating: false,
-			throwPoints: [],
-			impurePoints: [],
-		);
-		$this->storeExpressionResult($storage, $expr, $expressionResult);
-
-		return $expressionResult;
+		throw new ShouldNotHappenException(sprintf('Unhandled expr: %s', get_class($expr)));
 	}
 
 	/**
@@ -1060,24 +1473,23 @@ class NodeScopeResolver
 	/**
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
-	public function replayRecording(RecordingNodeCallback $recording, callable $nodeCallback, ExpressionResultStorage $storage): void
+	public function replayRecording(RecordingNodeCallback $recording, callable $nodeCallback, ExpressionResultStorage $storage, MutatingScope $scope): void
 	{
-		$stack = $this->getExpressionResultStorageStack();
-		$stack->push($storage);
+		$scope->pushExpressionResultStorage($storage);
 		try {
-			foreach ($recording->getPairs() as [$node, $scope]) {
-				if (!$scope instanceof MutatingScope) {
+			foreach ($recording->getPairs() as [$node, $pairScope]) {
+				if (!$pairScope instanceof MutatingScope) {
 					throw new ShouldNotHappenException();
 				}
 				// gatherer frames observe replayed emissions exactly like live
 				// ones - with the raw walk scope
 				foreach ($this->nodeGatherers as $gatherer) {
-					$gatherer($node, $scope);
+					$gatherer($node, $pairScope);
 				}
-				$nodeCallback($node, $scope->toNodeCallbackScope());
+				$nodeCallback($node, $pairScope->toNodeCallbackScope());
 			}
 		} finally {
-			$stack->pop();
+			$scope->popExpressionResultStorage();
 		}
 	}
 
@@ -1131,26 +1543,31 @@ class NodeScopeResolver
 
 		// post-order emission means the node's own result and every subnode
 		// result are already stored when the callback fires - NodeCallbackScope
-		// answers every ask synchronously from the storage; the emitting
-		// walk's storage is bound for the duration of the callback
-		$stack = $this->getExpressionResultStorageStack();
-		$stack->push($storage);
-		try {
-			$nodeCallback($node, $scope->toNodeCallbackScope());
-		} finally {
-			$stack->pop();
-		}
-	}
-
-	private function getExpressionResultStorageStack(): ExpressionResultStorageStack
-	{
-		return $this->expressionResultStorageStack ??= $this->container->getByType(ExpressionResultStorageStack::class);
+		// answers every ask synchronously from the storage
+		$nodeCallback($node, $scope->toNodeCallbackScope());
 	}
 
 	/**
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
 	public function processClosureNode(
+		Node\Stmt $stmt,
+		Expr\Closure $expr,
+		MutatingScope $scope,
+		ExpressionResultStorage $storage,
+		callable $nodeCallback,
+		ExpressionContext $context,
+		?Type $passedToType,
+		?Type $nativePassedToType = null,
+	): ProcessClosureResult
+	{
+		return $this->processClosureNodeInternal($stmt, $expr, $scope, $storage, $nodeCallback, $context, $passedToType, $nativePassedToType);
+	}
+
+	/**
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	private function processClosureNodeInternal(
 		Node\Stmt $stmt,
 		Expr\Closure $expr,
 		MutatingScope $scope,
@@ -1183,7 +1600,10 @@ class NodeScopeResolver
 					$inAssignRightSideVariableName === $use->var->name
 					&& $inAssignRightSideExpr !== null
 				) {
-					$inAssignRightSideType = $scope->getType($inAssignRightSideExpr);
+					// a call's type is carried by the context (see
+					// ExpressionContext::enterAssignRightSideCallArgs()); a closure
+					// right side resolves through the closure type resolver
+					$inAssignRightSideType = $context->getInAssignRightSideType() ?? $this->resolveCallableTypeForScope($inAssignRightSideExpr, $scope);
 					if ($inAssignRightSideType instanceof ClosureType) {
 						$variableType = $inAssignRightSideType;
 					} else {
@@ -1194,7 +1614,7 @@ class NodeScopeResolver
 							$variableType = TypeCombinator::union($scope->getVariableType($inAssignRightSideVariableName), $inAssignRightSideType);
 						}
 					}
-					$inAssignRightSideNativeType = $scope->getNativeType($inAssignRightSideExpr);
+					$inAssignRightSideNativeType = $context->getInAssignRightSideNativeType() ?? $this->resolveCallableTypeForScope($inAssignRightSideExpr, $scope->doNotTreatPhpDocTypesAsCertain());
 					if ($inAssignRightSideNativeType instanceof ClosureType) {
 						$variableNativeType = $inAssignRightSideNativeType;
 					} else {
@@ -1279,7 +1699,7 @@ class NodeScopeResolver
 				$this->popNodeGatherer();
 			}
 			$publicStatementResult = $statementResult->toPublic();
-			$closureReturnStatementsNodeScope = $this->refineClosureNodeScope($closureScope, $scope, $expr, $gatheredReturnStatementsWithScope, $gatheredYieldStatementsWithScope, $executionEnds, $statementResult->getThrowPoints(), array_merge($closureImpurePoints, $statementResult->getImpurePoints()), $invalidateExpressions);
+			$closureReturnStatementsNodeScope = $this->refineClosureNodeScope($closureScope, $scope, $expr, $gatheredReturnStatementsWithScope, $gatheredYieldStatementsWithScope, $executionEnds, $statementResult->getThrowPoints(), array_merge($closureImpurePoints, $statementResult->getImpurePoints()), $invalidateExpressions, $storage);
 			$this->callNodeCallback($nodeCallback, new ClosureReturnStatementsNode(
 				$expr,
 				$gatheredReturnStatements,
@@ -1370,7 +1790,7 @@ class NodeScopeResolver
 				// compares by identity (the state is equals-identical anyway).
 				$closureScope = $replayEntryScope;
 				$originalStorage->mergeResults($replayPassStorage);
-				$this->replayRecording($replayBodyRecording, $nodeCallback, $originalStorage);
+				$this->replayRecording($replayBodyRecording, $nodeCallback, $originalStorage, $closureScope);
 				$statementResult = $replayPassResult;
 			} else {
 				$statementResult = $this->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, $nodeCallback, StatementContext::createTopLevel());
@@ -1379,7 +1799,7 @@ class NodeScopeResolver
 			$this->popNodeGatherer();
 		}
 		$publicStatementResult = $statementResult->toPublic();
-		$closureReturnStatementsNodeScope = $this->refineClosureNodeScope($closureScope, $scope, $expr, $gatheredReturnStatementsWithScope, $gatheredYieldStatementsWithScope, $executionEnds, $statementResult->getThrowPoints(), array_merge($closureImpurePoints, $statementResult->getImpurePoints()), $invalidateExpressions);
+		$closureReturnStatementsNodeScope = $this->refineClosureNodeScope($closureScope, $scope, $expr, $gatheredReturnStatementsWithScope, $gatheredYieldStatementsWithScope, $executionEnds, $statementResult->getThrowPoints(), array_merge($closureImpurePoints, $statementResult->getImpurePoints()), $invalidateExpressions, $storage);
 		$this->callNodeCallback($nodeCallback, new ClosureReturnStatementsNode(
 			$expr,
 			$gatheredReturnStatements,
@@ -1404,11 +1824,14 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * The refined closure type built from the single body walk, swapped onto the
-	 * closure scope so ClosureReturnStatementsNode's rules see the refined
-	 * expected return instead of the shallow entry reflection.
+	 * The closure scope was entered with a shallow reflection (parameters +
+	 * declared return, no body walk - see ClosureTypeResolver::getClosureType()
+	 * with $shallow). Now that the single body walk has gathered the returns,
+	 * build the refined ClosureType from them (no second walk) and swap it onto
+	 * the scope the ClosureReturnStatementsNode fires with, so the return-type
+	 * rules see the refined expected return (e.g. Bar&Foo, not just Foo).
 	 *
-	 * @param list<array{Node\Stmt\Return_, Scope}> $gatheredReturnStatementsWithScope
+	 * @param list<array{Return_, Scope}> $gatheredReturnStatementsWithScope
 	 * @param list<array{Expr\Yield_|Expr\YieldFrom, Scope}> $gatheredYieldStatementsWithScope
 	 * @param list<ExecutionEndNode> $executionEnds
 	 * @param InternalThrowPoint[] $throwPoints
@@ -1425,6 +1848,7 @@ class NodeScopeResolver
 		array $throwPoints,
 		array $impurePoints,
 		array $invalidateExpressions,
+		ExpressionResultStorage $storage,
 	): MutatingScope
 	{
 		$refinedClosureType = $this->container->getByType(ClosureTypeResolver::class)->buildClosureTypeForClosure(
@@ -1437,7 +1861,7 @@ class NodeScopeResolver
 			$impurePoints,
 			$invalidateExpressions,
 			false,
-			false,
+			$storage,
 		);
 
 		return $closureScope->withAnonymousFunctionReflection($refinedClosureType);
@@ -1537,12 +1961,9 @@ class NodeScopeResolver
 
 		// The arrow scope was entered with a shallow reflection (parameters +
 		// declared return, no body walk). Now that the single body walk above has
-		// run, build the refined arrow function type from the walked body (no
-		// second walk) and fire InArrowFunctionNode with it, so the node and the
-		// return-type rules see the refined expected return. The build must not
-		// write the type cache: its values reflect this call's (possibly
-		// extension-overridden) parameter typing while its key would match a
-		// plain pricing ask.
+		// run, build the refined arrow function type from the body expression's
+		// stored type (no second walk) and fire InArrowFunctionNode with it, so the
+		// node and the return-type rules see the refined expected return.
 		$refinedArrowFunctionType = $this->container->getByType(ClosureTypeResolver::class)->buildClosureTypeForArrowFunction(
 			$scope,
 			$expr,
@@ -1551,13 +1972,23 @@ class NodeScopeResolver
 			$closureTypeImpurePoints,
 			$invalidateExpressions,
 			false,
-			false,
+			$storage,
 		);
 		$refinedArrowFunctionScope = $arrowFunctionScope->withAnonymousFunctionReflection($refinedArrowFunctionType);
 		$this->callNodeCallback($nodeCallback, new InArrowFunctionNode($refinedArrowFunctionType, $expr), $refinedArrowFunctionScope, $storage);
 
 		return new ProcessArrowFunctionResult(
-			$this->expressionResultFactory->create($scope, beforeScope: $scope, expr: $expr, hasYield: false, isAlwaysTerminating: $exprResult->isAlwaysTerminating(), throwPoints: $exprResult->getThrowPoints(), impurePoints: $exprResult->getImpurePoints()),
+			$this->expressionResultFactory->create(
+				$scope,
+				beforeScope: $scope,
+				expr: $expr,
+				hasYield: false,
+				isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
+				throwPoints: $exprResult->getThrowPoints(),
+				impurePoints: $exprResult->getImpurePoints(),
+				typeCallback: static fn () => new MixedType(),
+				specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
+			),
 			$arrowFunctionScope,
 			$closureTypeThrowPoints,
 			$closureTypeImpurePoints,
@@ -1569,26 +2000,44 @@ class NodeScopeResolver
 	 * @param Node\Arg[]|null $args
 	 * @return ParameterReflection[]|null
 	 */
-	public function createCallableParameters(Scope $scope, Expr $closureExpr, ?array $args, ?Type $passedToType): ?array
+	public function createCallableParameters(MutatingScope $scope, Expr $closureExpr, ?array $args, ?Type $passedToType): ?array
 	{
-		return $this->doCreateCallableParameters($scope, $closureExpr, $args, $passedToType, static fn (Scope $s, Expr $e) => $s->getType($e));
+		return $this->doCreateCallableParameters($scope, $closureExpr, $args, $passedToType, fn (MutatingScope $s, Expr $e): Type => $this->resolveCallableTypeForScope($e, $s));
 	}
 
 	/**
 	 * @param Node\Arg[]|null $args
 	 * @return ParameterReflection[]|null
 	 */
-	public function createNativeCallableParameters(Scope $scope, Expr $closureExpr, ?array $args, ?Type $nativePassedToType): ?array
+	public function createNativeCallableParameters(MutatingScope $scope, Expr $closureExpr, ?array $args, ?Type $nativePassedToType): ?array
 	{
-		return $this->doCreateCallableParameters($scope, $closureExpr, $args, $nativePassedToType, static fn (Scope $s, Expr $e) => $s->getNativeType($e));
+		return $this->doCreateCallableParameters($scope, $closureExpr, $args, $nativePassedToType, fn (MutatingScope $s, Expr $e): Type => $this->resolveCallableTypeForScope($e, $s->doNotTreatPhpDocTypesAsCertain()));
+	}
+
+	/**
+	 * Resolves the type of an expression a callable parameter is derived from -
+	 * either the closure/arrow function whose acceptors describe the parameters,
+	 * or a call argument refining them. A closure/arrow function is resolved
+	 * directly through ClosureTypeResolver (as Scope::getType() would), not by
+	 * processing it on demand: createCallableParameters() runs while that very
+	 * closure is being processed, so on-demand processing would re-enter
+	 * processClosureNodeInternal() endlessly.
+	 */
+	private function resolveCallableTypeForScope(Expr $expr, MutatingScope $scope): Type
+	{
+		if ($expr instanceof Expr\Closure || $expr instanceof Expr\ArrowFunction) {
+			return $this->container->getByType(ClosureTypeResolver::class)->getClosureType($scope, $expr, false, $scope->getCurrentExpressionResultStorage());
+		}
+
+		return $this->readTypeOfMaybeStored($expr, $scope);
 	}
 
 	/**
 	 * @param Node\Arg[]|null $args
-	 * @param Closure(Scope, Expr): Type $typeGetter
+	 * @param Closure(MutatingScope, Expr): Type $typeGetter
 	 * @return ParameterReflection[]|null
 	 */
-	private function doCreateCallableParameters(Scope $scope, Expr $closureExpr, ?array $args, ?Type $passedToType, Closure $typeGetter): ?array
+	private function doCreateCallableParameters(MutatingScope $scope, Expr $closureExpr, ?array $args, ?Type $passedToType, Closure $typeGetter): ?array
 	{
 		$callableParameters = null;
 		if ($args !== null) {
@@ -1821,23 +2270,6 @@ class NodeScopeResolver
 		$gatheredHasName = false;
 		$gatheredArgTypeByIndex = [];
 
-		// The intrinsic argument overrides (array_map/filter/walk/find, curl_setopt,
-		// implode, Closure::bind) rewrite a callback parameter's type from its
-		// sibling arguments. Apply them up front on the entry scope - the parameter
-		// pushed on the in-function-call stack while each argument is processed (and
-		// priced, e.g. a closure's inferred return type) must be the overridden one,
-		// exactly as when the caller pre-selected via selectFromArgs().
-		$parametersAcceptors = ParametersAcceptorSelector::applyIntrinsicArgOverrides(
-			$args,
-			$parametersAcceptors,
-			$namedArgumentsVariants,
-			$scope,
-			static fn (Expr $e): Type => $scope->getType($e),
-			static fn (Expr $e): Type => $scope->getNativeType($e),
-			static fn (Type $t): Type => $scope->getIterableValueType($t),
-			static fn (Type $t): Type => $scope->getIterableKeyType($t),
-		);
-
 		// Metadata acceptor base - NO forward read. The per-argument resolution below picks the
 		// count-correct variant (the by-ref/variadic STRUCTURE is variant-stable except where it is
 		// keyed off the argument count, e.g. sscanf - and the count is known structurally) and
@@ -1845,22 +2277,21 @@ class NodeScopeResolver
 		// comes from the post-loop resolved acceptor.
 		$metadataAcceptor = $parametersAcceptors[0] ?? null;
 
-		// Both predicates are hoisted out of the per-argument loop - they traverse
-		// the acceptor's parameter/return types.
-		$hasTemplateParameterType = $metadataAcceptor !== null
-			&& ParametersAcceptorSelector::hasAcceptorTemplateOrLateResolvableParameterType($metadataAcceptor);
-		$argMetadataIsTypeDriven = count($parametersAcceptors) > 1 || $hasTemplateParameterType;
-
 		// Whether selecting an acceptor is type-driven at all: multiple variants to
 		// choose between, templates or conditionals to resolve from the arg types,
 		// or named-argument variants. When it is not, the gathered arg types can
 		// never influence the selected acceptor, so the faithful-return gather walk
 		// of a closure/arrow argument (gatherClosureArgType()) would be pure waste -
-		// a plain mixed keeps the count/name bookkeeping correct.
+		// its signature-only shallow type keeps the count/name bookkeeping correct.
 		$typeDrivenAcceptorSelection = count($parametersAcceptors) > 1
 			|| $namedArgumentsVariants !== null
-			|| $hasTemplateParameterType
-			|| ($metadataAcceptor !== null && $metadataAcceptor->getReturnType()->hasTemplateOrLateResolvableType());
+			|| ($metadataAcceptor !== null && ParametersAcceptorSelector::hasAcceptorTemplateOrLateResolvableType($metadataAcceptor));
+
+		// Both predicates are hoisted out of the per-argument loop - they traverse
+		// the acceptor's parameter types.
+		$hasTemplateParameterType = $metadataAcceptor !== null
+			&& ParametersAcceptorSelector::hasAcceptorTemplateOrLateResolvableParameterType($metadataAcceptor);
+		$argMetadataIsTypeDriven = count($parametersAcceptors) > 1 || $hasTemplateParameterType;
 
 		$hasYield = false;
 		$throwPoints = [];
@@ -1900,6 +2331,7 @@ class NodeScopeResolver
 			return $aOriginal->getStartTokenPos() <=> $bOriginal->getStartTokenPos();
 		});
 
+		$argResults = [];
 		$countStableMetadataAcceptor = null;
 		foreach ($processingOrder as $i) {
 			$arg = $args[$i];
@@ -1914,7 +2346,7 @@ class NodeScopeResolver
 				$originalArgForGather = $arg->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE) ?? $arg;
 				$gatheredArgTypeByIndex[$i] = $typeDrivenAcceptorSelection
 					? $this->gatherClosureArgType($parametersAcceptors, $i, $arg->value, $scope)
-					: new MixedType();
+					: $this->container->getByType(ClosureTypeResolver::class)->getClosureType($scope, $arg->value, true, $storage);
 				$this->addGatheredArgType($gatheredTypes, $gatheredUnpack, $gatheredHasName, $originalArgForGather, $i, $gatheredArgTypeByIndex[$i]);
 			}
 
@@ -2027,155 +2459,281 @@ class NodeScopeResolver
 
 			if ($arg->value instanceof Expr\Closure) {
 
-				$restoreThisScope = null;
-				if (
-					$closureBindScopeFactory === null
-					&& $parameter instanceof ExtendedParameterReflection
-					&& !$arg->value->static
-				) {
-					$closureThisType = $this->resolveClosureThisType($callLike, $calleeReflection, $parameter, $scopeToPass);
-					if ($closureThisType !== null) {
-						$restoreThisScope = $scopeToPass;
-						$scopeToPass = $scopeToPass->assignVariable('this', $closureThisType, new ObjectWithoutClassType(), TrinaryLogic::createYes())
-							->withClosureBindScopeClasses($closureThisType->getObjectClassNames());
+				$storedClosureArgResult = null;
+				if ($this->returnStoredExpressionResults || $this->consumeStoredExpressionResults) {
+					// an on-demand re-walk of the enclosing call must not re-run the
+					// closure's whole by-ref convergence: consume the main walk's
+					// stored result, or (when the body release already dropped it)
+					// price the closure through getClosureType's per-node cache -
+					// a single body walk on miss, none on repeat asks
+					$storedClosureArgResult = $storage->findExpressionResult($arg->value);
+					// consume mode alone (the nullsafe call's plain-twin walk) is the
+					// FIRST and only walk of these arguments - nothing stored them, so
+					// a miss means "walk it", not "price it silently": pricing skips
+					// the body walk and never fires the closure's node callbacks
+					if ($storedClosureArgResult === null && $this->returnStoredExpressionResults) {
+						$closureTypeResolver = $this->container->getByType(ClosureTypeResolver::class);
+						$storedClosureArgResult = $this->expressionResultFactory->create(
+							$scopeToPass,
+							beforeScope: $scopeToPass,
+							expr: $arg->value,
+							hasYield: false,
+							isAlwaysTerminating: false,
+							throwPoints: [],
+							impurePoints: [],
+							type: $closureTypeResolver->getClosureType($scopeToPass, $arg->value, false, $storage),
+							nativeType: $closureTypeResolver->getClosureType($scopeToPass->doNotTreatPhpDocTypesAsCertain(), $arg->value, false, $storage),
+							typeCallback: null,
+							specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
+						);
+						$this->storeExpressionResult($storage, $arg->value, $storedClosureArgResult);
 					}
 				}
-
-				if ($parameter !== null) {
-					$overwritingParameterType = $this->getParameterTypeFromParameterClosureTypeExtension($callLike, $calleeReflection, $parameter, $scopeToPass);
-
-					if ($overwritingParameterType !== null) {
-						$parameterType = $overwritingParameterType;
-
-						// resolve the native flavour through the same extension on the
-						// natively-promoted scope, so the closure parameters keep
-						// their native precision too
-						$overwritingParameterNativeType = $this->getParameterTypeFromParameterClosureTypeExtension($callLike, $calleeReflection, $parameter, $scopeToPass->doNotTreatPhpDocTypesAsCertain());
-						if ($overwritingParameterNativeType !== null) {
-							$parameterNativeType = $overwritingParameterNativeType;
+				if ($storedClosureArgResult !== null) {
+					$argResults[spl_object_id($arg->value)] = $storedClosureArgResult;
+				} else {
+					$restoreThisScope = null;
+					if (
+						$closureBindScopeFactory === null
+						&& $parameter instanceof ExtendedParameterReflection
+						&& !$arg->value->static
+					) {
+						$closureThisType = $this->resolveClosureThisType($callLike, $calleeReflection, $parameter, $scopeToPass);
+						if ($closureThisType !== null) {
+							$restoreThisScope = $scopeToPass;
+							$scopeToPass = $scopeToPass->assignVariable('this', $closureThisType, new ObjectWithoutClassType(), TrinaryLogic::createYes())
+								->withClosureBindScopeClasses($closureThisType->getObjectClassNames());
 						}
 					}
-				}
 
-				$closureResult = $this->processClosureNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $context, $parameterType, $parameterNativeType);
-				// the preferred ClosureType read below now answers from this seed
-				// instead of walking the body again (unless a parked fiber may
-				// still complete the gathered data - then it keeps re-walking)
-				$this->container->getByType(ClosureTypeResolver::class)->seedCacheFromClosureWalk($scopeToPass, $arg->value, $closureResult);
-				if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
-					$throwPoints = array_merge($throwPoints, array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $closureResult->getThrowPoints()));
-					$impurePoints = array_merge($impurePoints, $closureResult->getImpurePoints());
-				}
+					if ($parameter !== null) {
+						$overwritingParameterType = $this->getParameterTypeFromParameterClosureTypeExtension($callLike, $calleeReflection, $parameter, $scopeToPass);
 
-				$this->storeExpressionResult($storage, $arg->value, $this->expressionResultFactory->create(
-					$closureResult->getScope(),
-					$scopeToPass,
-					$arg->value,
-					hasYield: false,
-					isAlwaysTerminating: false,
-					throwPoints: [],
-					impurePoints: [],
-				));
-				// the closure node's own callback fires after its result is
-				// stored, mirroring processExprNodeInternal() - callback-side
-				// getType() answers from the stored result
-				$this->callNodeCallbackWithExpression($nodeCallback, $arg->value, $scopeToPass, $storage, $context);
+						if ($overwritingParameterType !== null) {
+							$parameterType = $overwritingParameterType;
 
-				$uses = [];
-				foreach ($arg->value->uses as $use) {
-					if (!is_string($use->var->name)) {
-						continue;
+							// resolve the native flavour through the same extension on the
+							// natively-promoted scope, so the closure parameters keep
+							// their native precision too
+							$overwritingParameterNativeType = $this->getParameterTypeFromParameterClosureTypeExtension($callLike, $calleeReflection, $parameter, $scopeToPass->doNotTreatPhpDocTypesAsCertain());
+							if ($overwritingParameterNativeType !== null) {
+								$parameterNativeType = $overwritingParameterNativeType;
+							}
+						}
 					}
 
-					$uses[] = $use->var->name;
-				}
+					$closureResult = $this->processClosureNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $context, $parameterType, $parameterNativeType);
+					if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
+						$throwPoints = array_merge($throwPoints, array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $closureResult->getThrowPoints()));
+						$impurePoints = array_merge($impurePoints, $closureResult->getImpurePoints());
+					}
 
-				$scope = $closureResult->getScope();
-				$deferredByRefClosureResults[] = $closureResult;
-				// Prefer the invalidate expressions collected on the ClosureType: those
-				// are gathered with the closure's pending fibers flushed, so they also
-				// cover writes that go through a parked fiber (e.g. $this->prop[] = ...),
-				// unlike $closureResult->getInvalidateExpressions().
-				$closureExprType = $scope->getType($arg->value);
-				$invalidateExpressions = $closureExprType instanceof ClosureType
-					? $closureExprType->getInvalidateExpressions()
-					: $closureResult->getInvalidateExpressions();
-				if ($restoreThisScope !== null) {
-					$nodeFinder = new NodeFinder();
-					$cb = static fn ($expr) => $expr instanceof Variable && $expr->name === 'this';
-					foreach ($invalidateExpressions as $j => $invalidateExprNode) {
-						$foundThis = $nodeFinder->findFirst([$invalidateExprNode->getExpr()], $cb);
-						if ($foundThis === null) {
+					$closureTypeResolver = $this->container->getByType(ClosureTypeResolver::class);
+					$storedClosureResult = $this->expressionResultFactory->create(
+						$closureResult->getScope(),
+						$scopeToPass,
+						$arg->value,
+						hasYield: false,
+						isAlwaysTerminating: false,
+						throwPoints: [],
+						impurePoints: [],
+						type: $closureTypeResolver->buildClosureTypeForClosure(
+							$scopeToPass,
+							$arg->value,
+							$closureResult->getGatheredReturnStatements(),
+							$closureResult->getGatheredYieldStatements(),
+							$closureResult->getExecutionEnds(),
+							$closureResult->getThrowPoints(),
+							$closureResult->getClosureTypeImpurePoints(),
+							$closureResult->getInvalidateExpressions(),
+							false,
+							$storage,
+						),
+						// the native flavour reads the stored native types off the same
+						// single body walk - no second walk on the promoted scope
+						nativeType: $closureTypeResolver->buildClosureTypeForClosure(
+							$scopeToPass,
+							$arg->value,
+							$closureResult->getGatheredReturnStatements(),
+							$closureResult->getGatheredYieldStatements(),
+							$closureResult->getExecutionEnds(),
+							$closureResult->getThrowPoints(),
+							$closureResult->getClosureTypeImpurePoints(),
+							$closureResult->getInvalidateExpressions(),
+							true,
+							$storage,
+						),
+						typeCallback: null,
+						specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
+					);
+					$this->storeExpressionResult($storage, $arg->value, $storedClosureResult);
+					// the closure node's own callback fires after its result is
+					// stored, mirroring processExprNodeInternal() - callback-side
+					// getType() answers from the stored result
+					$this->callNodeCallbackWithExpression($nodeCallback, $arg->value, $scopeToPass, $storage, $context);
+					// the arg result must be the properly-typed stored result -
+					// ArgsResult readers price array_push() & co. from it
+					$argResults[spl_object_id($arg->value)] = $storedClosureResult;
+
+					$uses = [];
+					foreach ($arg->value->uses as $use) {
+						if (!is_string($use->var->name)) {
 							continue;
 						}
 
-						unset($invalidateExpressions[$j]);
+						$uses[] = $use->var->name;
 					}
-					$invalidateExpressions = array_values($invalidateExpressions);
-					$scope = $scope->restoreThis($restoreThisScope);
-				}
 
-				if ($this->shouldInvalidateCallbackExpressions($parameter)) {
-					$deferredInvalidateExpressions[] = [$invalidateExpressions, $uses];
+					$scope = $closureResult->getScope();
+					$deferredByRefClosureResults[] = $closureResult;
+					// Prefer the invalidate expressions collected on the ClosureType -
+					// they also cover writes the closure's own body walk observed,
+					// unlike $closureResult->getInvalidateExpressions().
+					$closureExprType = $storedClosureResult->getType();
+					$invalidateExpressions = $closureExprType instanceof ClosureType
+						? $closureExprType->getInvalidateExpressions()
+						: $closureResult->getInvalidateExpressions();
+					if ($restoreThisScope !== null) {
+						$nodeFinder = new NodeFinder();
+						$cb = static fn ($expr) => $expr instanceof Variable && $expr->name === 'this';
+						foreach ($invalidateExpressions as $j => $invalidateExprNode) {
+							$foundThis = $nodeFinder->findFirst([$invalidateExprNode->getExpr()], $cb);
+							if ($foundThis === null) {
+								continue;
+							}
+
+							unset($invalidateExpressions[$j]);
+						}
+						$invalidateExpressions = array_values($invalidateExpressions);
+						$scope = $scope->restoreThis($restoreThisScope);
+					}
+
+					if ($this->shouldInvalidateCallbackExpressions($parameter)) {
+						$deferredInvalidateExpressions[] = [$invalidateExpressions, $uses];
+					}
 				}
 			} elseif ($arg->value instanceof Expr\ArrowFunction) {
 
-				if (
-					$closureBindScopeFactory === null
-					&& $parameter instanceof ExtendedParameterReflection
-					&& !$arg->value->static
-				) {
-					$closureThisType = $this->resolveClosureThisType($callLike, $calleeReflection, $parameter, $scopeToPass);
-					if ($closureThisType !== null) {
-						$scopeToPass = $scopeToPass->assignVariable('this', $closureThisType, new ObjectWithoutClassType(), TrinaryLogic::createYes())
-							->withClosureBindScopeClasses($closureThisType->getObjectClassNames());
+				$storedClosureArgResult = null;
+				if ($this->returnStoredExpressionResults || $this->consumeStoredExpressionResults) {
+					// see the Closure branch above - consume or price via the cache
+					$storedClosureArgResult = $storage->findExpressionResult($arg->value);
+					// consume mode alone (the nullsafe call's plain-twin walk) is the
+					// first and only walk of the argument - a miss means walk it
+					if ($storedClosureArgResult === null && $this->returnStoredExpressionResults) {
+						$closureTypeResolver = $this->container->getByType(ClosureTypeResolver::class);
+						$storedClosureArgResult = $this->expressionResultFactory->create(
+							$scopeToPass,
+							beforeScope: $scopeToPass,
+							expr: $arg->value,
+							hasYield: false,
+							isAlwaysTerminating: false,
+							throwPoints: [],
+							impurePoints: [],
+							type: $closureTypeResolver->getClosureType($scopeToPass, $arg->value, false, $storage),
+							nativeType: $closureTypeResolver->getClosureType($scopeToPass->doNotTreatPhpDocTypesAsCertain(), $arg->value, false, $storage),
+							typeCallback: null,
+							specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
+						);
+						$this->storeExpressionResult($storage, $arg->value, $storedClosureArgResult);
 					}
 				}
-
-				if ($parameter !== null) {
-					$overwritingParameterType = $this->getParameterTypeFromParameterClosureTypeExtension($callLike, $calleeReflection, $parameter, $scopeToPass);
-
-					if ($overwritingParameterType !== null) {
-						$parameterType = $overwritingParameterType;
-
-						// resolve the native flavour through the same extension on the
-						// natively-promoted scope, so the closure parameters keep
-						// their native precision too
-						$overwritingParameterNativeType = $this->getParameterTypeFromParameterClosureTypeExtension($callLike, $calleeReflection, $parameter, $scopeToPass->doNotTreatPhpDocTypesAsCertain());
-						if ($overwritingParameterNativeType !== null) {
-							$parameterNativeType = $overwritingParameterNativeType;
+				if ($storedClosureArgResult !== null) {
+					$argResults[spl_object_id($arg->value)] = $storedClosureArgResult;
+				} else {
+					if (
+						$closureBindScopeFactory === null
+						&& $parameter instanceof ExtendedParameterReflection
+						&& !$arg->value->static
+					) {
+						$closureThisType = $this->resolveClosureThisType($callLike, $calleeReflection, $parameter, $scopeToPass);
+						if ($closureThisType !== null) {
+							$scopeToPass = $scopeToPass->assignVariable('this', $closureThisType, new ObjectWithoutClassType(), TrinaryLogic::createYes())
+								->withClosureBindScopeClasses($closureThisType->getObjectClassNames());
 						}
 					}
-				}
 
-				$processArrowFunctionResult = $this->processArrowFunctionNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $parameterType, $parameterNativeType);
-				// the invalidation read below now answers from this seed instead
-				// of walking the body again (unless a parked fiber may still
-				// complete the gathered data - then it keeps re-walking)
-				$this->container->getByType(ClosureTypeResolver::class)->seedCacheFromArrowFunctionWalk($scopeToPass, $arg->value, $processArrowFunctionResult);
-				$arrowFunctionResult = $processArrowFunctionResult->getExpressionResult();
-				if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
-					$throwPoints = array_merge($throwPoints, array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $arrowFunctionResult->getThrowPoints()));
-					$impurePoints = array_merge($impurePoints, $arrowFunctionResult->getImpurePoints());
-				}
-				if ($this->shouldInvalidateCallbackExpressions($parameter)) {
-					$arrowFunctionType = $scope->getType($arg->value);
-					if ($arrowFunctionType instanceof ClosureType) {
+					if ($parameter !== null) {
+						$overwritingParameterType = $this->getParameterTypeFromParameterClosureTypeExtension($callLike, $calleeReflection, $parameter, $scopeToPass);
+
+						if ($overwritingParameterType !== null) {
+							$parameterType = $overwritingParameterType;
+
+							// resolve the native flavour through the same extension on the
+							// natively-promoted scope, so the closure parameters keep
+							// their native precision too
+							$overwritingParameterNativeType = $this->getParameterTypeFromParameterClosureTypeExtension($callLike, $calleeReflection, $parameter, $scopeToPass->doNotTreatPhpDocTypesAsCertain());
+							if ($overwritingParameterNativeType !== null) {
+								$parameterNativeType = $overwritingParameterNativeType;
+							}
+						}
+					}
+
+					$arrowFunctionResult = $this->processArrowFunctionNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $parameterType, $parameterNativeType);
+					$arrowFunctionExprResult = $arrowFunctionResult->getExpressionResult();
+					if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
+						$throwPoints = array_merge($throwPoints, array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $arrowFunctionExprResult->getThrowPoints()));
+						$impurePoints = array_merge($impurePoints, $arrowFunctionExprResult->getImpurePoints());
+					}
+					$arrowFunctionClosureTypeResolver = $this->container->getByType(ClosureTypeResolver::class);
+					$arrowFunctionScope = $arrowFunctionResult->getArrowFunctionScope();
+					// both flavours are built from the single body walk (see
+					// ArrowFunctionHandler); the built type also answers the
+					// invalidate-expressions read below without re-walking the
+					// still-unstored node through Scope::getType()
+					$arrowFunctionType = $arrowFunctionClosureTypeResolver->buildClosureTypeForArrowFunction(
+						$scopeToPass,
+						$arg->value,
+						$arrowFunctionScope,
+						$arrowFunctionResult->getClosureTypeThrowPoints(),
+						$arrowFunctionResult->getClosureTypeImpurePoints(),
+						$arrowFunctionResult->getInvalidateExpressions(),
+						false,
+						$storage,
+					);
+					$storedArrowResult = $this->expressionResultFactory->create(
+						$arrowFunctionExprResult->getScope(),
+						beforeScope: $scopeToPass,
+						expr: $arg->value,
+						hasYield: $arrowFunctionExprResult->hasYield(),
+						isAlwaysTerminating: $arrowFunctionExprResult->isAlwaysTerminating(),
+						throwPoints: $arrowFunctionExprResult->getThrowPoints(),
+						impurePoints: $arrowFunctionExprResult->getImpurePoints(),
+						type: $arrowFunctionType,
+						nativeType: $arrowFunctionClosureTypeResolver->buildClosureTypeForArrowFunction(
+							$scopeToPass,
+							$arg->value,
+							$arrowFunctionScope,
+							$arrowFunctionResult->getClosureTypeThrowPoints(),
+							$arrowFunctionResult->getClosureTypeImpurePoints(),
+							$arrowFunctionResult->getInvalidateExpressions(),
+							true,
+							$storage,
+						),
+						typeCallback: null,
+						specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
+					);
+					$this->storeExpressionResult($storage, $arg->value, $storedArrowResult);
+					// the arrow function node's own callback fires after its result
+					// is stored, mirroring processExprNodeInternal() - callback-side
+					// getType() answers from the stored result
+					$this->callNodeCallbackWithExpression($nodeCallback, $arg->value, $scopeToPass, $storage, $context);
+					// the arg result must be the properly-typed stored result, not
+					// the body walk's placeholder (whose typeCallback answers mixed) -
+					// ArgsResult readers price array_push() & co. from it
+					$argResults[spl_object_id($arg->value)] = $storedArrowResult;
+					if ($this->shouldInvalidateCallbackExpressions($parameter)) {
 						$deferredInvalidateExpressions[] = [$arrowFunctionType->getInvalidateExpressions(), $arrowFunctionType->getUsedVariables()];
 					}
 				}
-				$this->storeExpressionResult($storage, $arg->value, $arrowFunctionResult);
-				// the arrow function node's own callback fires after its result
-				// is stored, mirroring processExprNodeInternal() - callback-side
-				// getType() answers from the stored result
-				$this->callNodeCallbackWithExpression($nodeCallback, $arg->value, $scopeToPass, $storage, $context);
 			} else {
-				$exprType = $scope->getType($arg->value);
 				$enterExpressionAssignForByRef = $assignByReference && $arg->value instanceof ArrayDimFetch && $arg->value->dim === null;
 				if ($enterExpressionAssignForByRef) {
 					$scopeToPass = $scopeToPass->enterExpressionAssign($arg->value);
 				}
 				$exprResult = $this->processExprNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $context->enterDeep());
+				$argResults[spl_object_id($arg->value)] = $exprResult;
+				$exprType = $exprResult->getType();
 				$throwPoints = array_merge($throwPoints, $exprResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $exprResult->getImpurePoints());
 				$isAlwaysTerminating = $isAlwaysTerminating || $exprResult->isAlwaysTerminating();
@@ -2202,7 +2760,7 @@ class NodeScopeResolver
 					}
 				}
 
-				$gatheredArgTypeByIndex[$i] = $exprType;
+				$gatheredArgTypeByIndex[$i] = $exprResult->getType();
 				$this->addGatheredArgType($gatheredTypes, $gatheredUnpack, $gatheredHasName, $originalArg, $i, $gatheredArgTypeByIndex[$i]);
 			}
 
@@ -2232,9 +2790,9 @@ class NodeScopeResolver
 		// Type-driven resolved acceptor: the arg types gathered on the evolving
 		// scope select (and generic-resolve) the acceptor that drives the call's
 		// return type. Intrinsic overrides are applied on the final scope,
-		// mirroring the original selectFromArgs(). When the selection is not
-		// type-driven, the single (already-overridden) acceptor IS the resolved
-		// acceptor - the fast path selectFromArgs() used to take.
+		// mirroring the original selectFromArgs().
+		// When the selection is not type-driven, the single acceptor IS the
+		// resolved acceptor - the fast path selectFromArgs() used to take.
 		$resolvedAcceptor = null;
 		if ($parametersAcceptors !== []) {
 			$resolvedAcceptor = $typeDrivenAcceptorSelection
@@ -2248,7 +2806,10 @@ class NodeScopeResolver
 		// now-complete gathered arg types - the post-loop $resolvedAcceptor is exactly
 		// that (same variant, resolved); otherwise the metadata acceptor is already resolved.
 		$writebackAcceptor = $metadataAcceptor;
-		if ($metadataAcceptor !== null && $argMetadataIsTypeDriven) {
+		if (
+			$metadataAcceptor !== null
+			&& $argMetadataIsTypeDriven
+		) {
 			$writebackAcceptor = $resolvedAcceptor;
 		}
 		$writebackParameters = $writebackAcceptor !== null ? $writebackAcceptor->getParameters() : null;
@@ -2306,7 +2867,7 @@ class NodeScopeResolver
 						$scope = $this->lookForUnsetAllowedUndefinedExpressions($scope, $argValue);
 					}
 				} elseif ($calleeReflection !== null && $calleeReflection->hasSideEffects()->yes()) {
-					$argType = $scope->getType($arg->value);
+					$argType = $this->readArgResult($argResults, $arg->value)->getTypeOnScope($scope, false);
 					if (!$argType->isObject()->no()) {
 						$nakedReturnType = null;
 						if ($nakedMethodReflection !== null) {
@@ -2337,49 +2898,20 @@ class NodeScopeResolver
 
 		// not storing this, it's scope after processing all args
 		return new ArgsResult(
-			$this->expressionResultFactory->create($scope, $scope, $callLike, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints),
+			$this->expressionResultFactory->create(
+				$scope,
+				$scope,
+				$callLike,
+				$hasYield,
+				$isAlwaysTerminating,
+				$throwPoints,
+				$impurePoints,
+				typeCallback: static fn () => new MixedType(),
+				specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
+			),
 			$resolvedAcceptor,
+			$argResults,
 		);
-	}
-
-	/**
-	 * Applies the intrinsic argument overrides (array_map/filter/walk/find,
-	 * curl_setopt, implode, Closure::bind) on the arg-to-arg evolved scope,
-	 * then type-selects the metadata acceptor over
-	 * the arg types gathered so far. The overrides read sibling arg types - which
-	 * closures-last ordering keeps in scope/$gatheredTypes before any closure.
-	 *
-	 * @param Node\Arg[] $args
-	 * @param array<int|string, Type> $gatheredTypes
-	 * @param ParametersAcceptor[] $parametersAcceptors
-	 * @param ParametersAcceptor[]|null $namedArgumentsVariants
-	 */
-	private function selectArgsMetadataAcceptor(array $args, array $gatheredTypes, array $parametersAcceptors, ?array $namedArgumentsVariants, bool $hasName, bool $unpack, MutatingScope $scope): ParametersAcceptor
-	{
-		$overridden = ParametersAcceptorSelector::applyIntrinsicArgOverrides(
-			$args,
-			$parametersAcceptors,
-			$namedArgumentsVariants,
-			$scope,
-			static fn (Expr $e): Type => $scope->getType($e),
-			static fn (Expr $e): Type => $scope->getNativeType($e),
-			static fn (Type $t): Type => $scope->getIterableValueType($t),
-			static fn (Type $t): Type => $scope->getIterableKeyType($t),
-		);
-
-		return $this->selectArgsAcceptor($gatheredTypes, $overridden, $namedArgumentsVariants, $hasName, $unpack);
-	}
-
-	/**
-	 * @param array<int|string, Type> $types
-	 * @param ParametersAcceptor[] $parametersAcceptors
-	 * @param ParametersAcceptor[]|null $namedArgumentsVariants
-	 */
-	private function selectArgsAcceptor(array $types, array $parametersAcceptors, ?array $namedArgumentsVariants, bool $hasName, bool $unpack): ParametersAcceptor
-	{
-		return $hasName && $namedArgumentsVariants !== null
-			? ParametersAcceptorSelector::selectFromTypes($types, $namedArgumentsVariants, $unpack)
-			: ParametersAcceptorSelector::selectFromTypes($types, $parametersAcceptors, $unpack);
 	}
 
 	/**
@@ -2428,36 +2960,6 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * Resolves the type of a closure/arrow function argument for the generic
-	 * gather, mirroring ParametersAcceptorSelector::selectFromArgs(): the closure
-	 * type is read with the RAW (un-generic-resolved) acceptor parameter pushed
-	 * onto the in-function-call stack, so its body sees the template parameter
-	 * (effectively mixed for an untyped param) rather than a parameter already
-	 * resolved from sibling args. That keeps the inferred return type (the U in
-	 * callable(T): U) faithful to the closure's own declaration.
-	 *
-	 * @param ParametersAcceptor[] $parametersAcceptors
-	 */
-	private function gatherClosureArgType(array $parametersAcceptors, int $i, Expr $closureExpr, MutatingScope $scope): Type
-	{
-		$rawParameter = null;
-		if (count($parametersAcceptors) === 1) {
-			$rawParameters = $parametersAcceptors[0]->getParameters();
-			if (isset($rawParameters[$i])) {
-				$rawParameter = $rawParameters[$i];
-			} elseif (count($rawParameters) > 0 && $parametersAcceptors[0]->isVariadic()) {
-				$rawParameter = array_last($rawParameters);
-			}
-		}
-
-		if ($rawParameter !== null) {
-			$scope = $scope->pushInFunctionCall(null, $rawParameter, false);
-		}
-
-		return $scope->getType($closureExpr);
-	}
-
-	/**
 	 * Whether processing this argument consumes the generic-RESOLVED parameter
 	 * type: a closure/arrow function does - its parameters and body scope are
 	 * typed from the resolved callable(T) - whether it IS the argument or is
@@ -2484,6 +2986,111 @@ class NodeScopeResolver
 		$value->setAttribute('phpstanArgContainsClosure', $contains);
 
 		return $contains;
+	}
+
+	/**
+	 * Resolves the type of a closure/arrow function argument for the generic
+	 * gather, mirroring ParametersAcceptorSelector::selectFromArgs(): the closure
+	 * type is read with the RAW (un-generic-resolved) acceptor parameter pushed
+	 * onto the in-function-call stack, so its body sees the template parameter
+	 * (effectively mixed for an untyped param) rather than a parameter already
+	 * resolved from sibling args. That keeps the inferred return type (the U in
+	 * callable(T): U) faithful to the closure's own declaration.
+	 *
+	 * @param ParametersAcceptor[] $parametersAcceptors
+	 */
+	private function gatherClosureArgType(array $parametersAcceptors, int $i, Expr $closureExpr, MutatingScope $scope): Type
+	{
+		$rawParameter = null;
+		if (count($parametersAcceptors) === 1) {
+			$rawParameters = $parametersAcceptors[0]->getParameters();
+			if (isset($rawParameters[$i])) {
+				$rawParameter = $rawParameters[$i];
+			} elseif (count($rawParameters) > 0 && $parametersAcceptors[0]->isVariadic()) {
+				$rawParameter = array_last($rawParameters);
+			}
+		}
+
+		if ($rawParameter !== null) {
+			$scope = $scope->pushInFunctionCall(null, $rawParameter, false);
+		}
+
+		return $this->resolveCallableTypeForScope($closureExpr, $scope);
+	}
+
+	/**
+	 * @param array<int|string, Type> $types
+	 * @param ParametersAcceptor[] $parametersAcceptors
+	 * @param ParametersAcceptor[]|null $namedArgumentsVariants
+	 */
+	private function selectArgsAcceptor(array $types, array $parametersAcceptors, ?array $namedArgumentsVariants, bool $hasName, bool $unpack): ParametersAcceptor
+	{
+		return $hasName && $namedArgumentsVariants !== null
+			? ParametersAcceptorSelector::selectFromTypes($types, $namedArgumentsVariants, $unpack)
+			: ParametersAcceptorSelector::selectFromTypes($types, $parametersAcceptors, $unpack);
+	}
+
+	/**
+	 * Applies the intrinsic argument overrides (array_map/filter/walk/find,
+	 * curl_setopt, implode, Closure::bind) on the arg-to-arg evolved scope via
+	 * the non-reprocessing readers, then type-selects the metadata acceptor over
+	 * the arg types gathered so far. The overrides read sibling arg types - which
+	 * closures-last ordering keeps in scope/$gatheredTypes before any closure.
+	 *
+	 * @param Node\Arg[] $args
+	 * @param array<int|string, Type> $gatheredTypes
+	 * @param ParametersAcceptor[] $parametersAcceptors
+	 * @param ParametersAcceptor[]|null $namedArgumentsVariants
+	 */
+	private function selectArgsMetadataAcceptor(array $args, array $gatheredTypes, array $parametersAcceptors, ?array $namedArgumentsVariants, bool $hasName, bool $unpack, MutatingScope $scope): ParametersAcceptor
+	{
+		$overridden = ParametersAcceptorSelector::applyIntrinsicArgOverrides(
+			$args,
+			$parametersAcceptors,
+			$namedArgumentsVariants,
+			$scope,
+			fn (Expr $e): Type => $this->readTypeOfMaybeStored($e, $scope),
+			fn (Expr $e): Type => $this->readTypeOfMaybeStored($e, $scope->doNotTreatPhpDocTypesAsCertain()),
+			static fn (Type $t): Type => $scope->getIterableValueType($t),
+			static fn (Type $t): Type => $scope->getIterableKeyType($t),
+		);
+
+		return $this->selectArgsAcceptor($gatheredTypes, $overridden, $namedArgumentsVariants, $hasName, $unpack);
+	}
+
+	/**
+	 * Arguments normalization (reordering, default-filling) can drop an original
+	 * argument from the call processArgs() iterates - duplicate, unknown-named or
+	 * extra arguments in an invalid call. The parameters check still asks their
+	 * types to report the error, so process them too (their result is stored).
+	 * A NoopNodeCallback keeps the dropped arguments out of rule processing,
+	 * matching the behaviour when this guard is off.
+	 */
+	public function processDroppedArgs(
+		Node\Stmt $stmt,
+		CallLike $originalCall,
+		CallLike $normalizedCall,
+		MutatingScope $scope,
+		ExpressionResultStorage $storage,
+		ExpressionContext $context,
+	): void
+	{
+		if ($originalCall === $normalizedCall) {
+			return;
+		}
+
+		$keptValueIds = [];
+		foreach ($normalizedCall->getArgs() as $normalizedArg) {
+			$keptValueIds[spl_object_id($normalizedArg->value)] = true;
+		}
+
+		foreach ($originalCall->getArgs() as $originalArg) {
+			if (isset($keptValueIds[spl_object_id($originalArg->value)])) {
+				continue;
+			}
+
+			$this->processExprNode($stmt, $originalArg->value, $scope, $storage, new NoopNodeCallback(), $context->enterDeep());
+		}
 	}
 
 	/**
@@ -2624,8 +3231,21 @@ class NodeScopeResolver
 	/**
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
-	public function processVirtualAssign(MutatingScope $scope, ExpressionResultStorage $storage, Node\Stmt $stmt, Expr $var, Expr $assignedExpr, callable $nodeCallback): ExpressionResult
+	public function processVirtualAssign(MutatingScope $scope, ExpressionResultStorage $storage, Node\Stmt $stmt, Expr $var, Expr $assignedExpr, callable $nodeCallback, ?ExpressionResult $assignedExprResult = null): ExpressionResult
 	{
+		// work off an available result for the assigned expr: passed by the
+		// caller, or fabricated from a type-carrying virtual node - threaded
+		// straight into applyWrite() so its reads compose instead of falling
+		// back to on-demand pricing of the type, the truthy/falsey narrowing,
+		// and the synthetic sentinel comparisons
+		if (
+			$assignedExprResult === null
+			&& ($assignedExpr instanceof TypeExpr || $assignedExpr instanceof NativeTypeExpr)
+			&& $storage->findExpressionResult($assignedExpr) === null
+		) {
+			$assignedExprResult = $this->container->getByType(VirtualExprResultHelper::class)->createTypeExprResult($scope, $assignedExpr);
+		}
+
 		$assignHandler = $this->container->getByType(AssignHandler::class);
 		$virtualAssignNodeCallback = VirtualAssignNodeCallback::create($nodeCallback);
 		$target = $assignHandler->prepareTarget(
@@ -2643,7 +3263,18 @@ class NodeScopeResolver
 		return $assignHandler->applyWrite(
 			$this,
 			$target,
-			$this->expressionResultFactory->create($target->getScope(), beforeScope: $target->getScope(), expr: $assignedExpr, hasYield: false, isAlwaysTerminating: false, throwPoints: [], impurePoints: []),
+			$this->expressionResultFactory->create(
+				$target->getScope(),
+				beforeScope: $target->getScope(),
+				expr: $assignedExpr,
+				hasYield: false,
+				isAlwaysTerminating: false,
+				throwPoints: [],
+				impurePoints: [],
+				typeCallback: static fn () => new MixedType(),
+				specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
+			),
+			$assignedExprResult,
 			$stmt,
 			$storage,
 			$virtualAssignNodeCallback,
@@ -2711,25 +3342,76 @@ class NodeScopeResolver
 					$this->callNodeCallback($nodeCallback, new VarTagChangedExpressionTypeNode($varTag, $variableNode), $scope, $storage);
 				}
 
+				$nativeScope = $scope->doNotTreatPhpDocTypesAsCertain();
 				$scope = $scope->assignVariable(
 					$name,
 					$varTag->getType(),
-					$scope->getNativeType($variableNode),
+					// a plain variable read is scope state
+					$nativeScope->hasVariableType($name)->no() ? new ErrorType() : $nativeScope->getVariableType($name),
 					$certainty,
 				);
 			}
 		}
 
 		if (count($variableLessTags) === 1 && $defaultExpr !== null) {
-			$originalType = $scope->getType($defaultExpr);
-			$varTag = $variableLessTags[0];
-			if (!$originalType->equals($varTag->getType())) {
-				$this->callNodeCallback($nodeCallback, new VarTagChangedExpressionTypeNode($varTag, $defaultExpr), $scope, $storage);
-			}
-			$scope = $scope->assignExpression($defaultExpr, $varTag->getType(), new MixedType());
+			// only the scope effect here: the changed-type node is emitted by the
+			// statement handler AFTER it walked the expression (emitVarTagChangedNode),
+			// so the rule prices the expression from its stored result rather than
+			// asking the scope about a node not processed yet
+			$scope = $scope->assignExpression($defaultExpr, $variableLessTags[0]->getType(), new MixedType());
 		}
 
 		return $scope;
+	}
+
+	/**
+	 * The single variable-less @var tag on the statement's doc comment, or null
+	 * when there is none or more than one - the shape processStmtVarAnnotation()
+	 * applies to $defaultExpr and emitVarTagChangedNode() reports on.
+	 */
+	private function findSingleVariableLessVarTag(MutatingScope $scope, Node\Stmt $stmt): ?VarTag
+	{
+		$function = $scope->getFunction();
+		$variableLessTags = [];
+		foreach ($stmt->getComments() as $comment) {
+			if (!$comment instanceof Doc) {
+				continue;
+			}
+
+			$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
+				$scope->getFile(),
+				$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
+				$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
+				$function !== null ? $function->getName() : null,
+				$comment->getText(),
+			);
+			foreach ($resolvedPhpDoc->getVarTags() as $name => $varTag) {
+				if (!is_int($name)) {
+					continue;
+				}
+
+				$variableLessTags[] = $varTag;
+			}
+		}
+
+		return count($variableLessTags) === 1 ? $variableLessTags[0] : null;
+	}
+
+	/**
+	 * Emits the node the @var-changed-type rule listens to, for a statement with
+	 * a single variable-less @var tag over $defaultExpr - called by the handler
+	 * once the expression has been walked (see processStmtVarAnnotation()).
+	 *
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	public function emitVarTagChangedNode(MutatingScope $scope, ExpressionResultStorage $storage, Node\Stmt $stmt, Expr $defaultExpr, callable $nodeCallback): void
+	{
+		$varTag = $this->findSingleVariableLessVarTag($scope, $stmt);
+		if ($varTag === null) {
+			return;
+		}
+
+		$this->callNodeCallback($nodeCallback, new VarTagChangedExpressionTypeNode($varTag, $defaultExpr), $scope, $storage);
 	}
 
 	/**

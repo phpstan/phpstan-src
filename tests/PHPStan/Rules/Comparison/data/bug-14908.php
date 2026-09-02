@@ -1,8 +1,8 @@
-<?php declare(strict_types = 1); // lint >= 8.1
+<?php // lint >= 8.1
+
+declare(strict_types = 1);
 
 namespace Bug14908;
-
-use function in_array;
 
 enum Grade { case One; case Two; case Three; }
 enum Kind { case K1; case K2; case K3; }

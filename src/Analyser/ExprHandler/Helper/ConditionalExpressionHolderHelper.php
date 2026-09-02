@@ -9,23 +9,24 @@ use PhpParser\Node\Expr\BinaryOp\LogicalAnd;
 use PhpParser\Node\Expr\BinaryOp\LogicalOr;
 use PHPStan\Analyser\ConditionalExpressionHolderRecipe;
 use PHPStan\Analyser\DisjunctionBranchUnionAugment;
+use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\MutatingScope;
+use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\SpecifiedTypes;
-use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\DependencyInjection\AutowiredService;
 use function is_string;
 
 /**
- * Builds the conditional expression holders used to project narrowings of
- * boolean operands (`&&`, `||`) into later scopes. Shared by BooleanAndHandler
- * and BooleanOrHandler.
+ * Builds the conditional-expression-holder recipes used to project narrowings
+ * of boolean operands (`&&`, `||`) into later scopes. Shared by
+ * BooleanAndHandler and BooleanOrHandler.
  */
 #[AutowiredService]
 final class ConditionalExpressionHolderHelper
 {
 
 	public function __construct(
-		private TypeSpecifier $typeSpecifier,
+		private DefaultNarrowingHelper $defaultNarrowingHelper,
 	)
 	{
 	}
@@ -44,6 +45,7 @@ final class ConditionalExpressionHolderHelper
 	 * @param callable(): MutatingScope $rightFilteredScope
 	 */
 	public function buildBranchUnionAugment(
+		NodeScopeResolver $nodeScopeResolver,
 		SpecifiedTypes $leftTypes,
 		SpecifiedTypes $rightTypes,
 		callable $leftFilteredScope,
@@ -83,6 +85,12 @@ final class ConditionalExpressionHolderHelper
 				// union for this expression, deferred to the application point
 				continue;
 			}
+			// the exact either-branch merge already constrains this expression
+			// (an alternative-form entry) - the branch-scope union recovery
+			// would only add a weaker entry on top
+			if (isset($existingAlternativeTypes[$exprString])) {
+				continue;
+			}
 			$leftScope ??= $leftFilteredScope();
 			$rightScope ??= $rightFilteredScope();
 			if (!$leftScope->hasExpressionType($targetExpr)->yes()) {
@@ -96,8 +104,8 @@ final class ConditionalExpressionHolderHelper
 			// scopes - scope state answers without a walk
 			$candidates[] = [
 				$targetExpr,
-				$leftScope->getType($targetExpr),
-				$rightScope->getType($targetExpr),
+				$nodeScopeResolver->requireScopeStateType($targetExpr, $leftScope),
+				$nodeScopeResolver->requireScopeStateType($targetExpr, $rightScope),
 			];
 		}
 
@@ -105,7 +113,7 @@ final class ConditionalExpressionHolderHelper
 			return null;
 		}
 
-		return new DisjunctionBranchUnionAugment($this->typeSpecifier, $candidates);
+		return new DisjunctionBranchUnionAugment($nodeScopeResolver, $this->defaultNarrowingHelper, $candidates);
 	}
 
 	/**
@@ -125,7 +133,7 @@ final class ConditionalExpressionHolderHelper
 	 *        holder targets were tracked on; their types are pinned from it at compose
 	 *        time (null = read every target from the applying scope)
 	 */
-	public function buildConditionalHolderRecipe(SpecifiedTypes $conditionSpecifiedTypes, SpecifiedTypes $holderSpecifiedTypes, bool $holdersFromSureTypes, bool $holderSideIsNegated, ?MutatingScope $nonVariableTargetScope, ?Expr $holderSideExpr = null): ?ConditionalExpressionHolderRecipe
+	public function buildConditionalHolderRecipe(MutatingScope $composeScope, SpecifiedTypes $conditionSpecifiedTypes, SpecifiedTypes $holderSpecifiedTypes, bool $holdersFromSureTypes, bool $holderSideIsNegated, ?MutatingScope $nonVariableTargetScope, ?Expr $holderSideExpr = null): ?ConditionalExpressionHolderRecipe
 	{
 		// an alternative-form entry (a cross-kind either-branch merge) has no
 		// single condition type; dropping it from the condition set would let
@@ -153,14 +161,14 @@ final class ConditionalExpressionHolderHelper
 				continue;
 			}
 
-			$conditionEntries[] = [$exprString, $expr, true, $type];
+			$conditionEntries[] = [(string) $exprString, $expr, true, $type, $this->findConditionResult($composeScope, $expr)];
 		}
 		foreach ($conditionSpecifiedTypes->getSureNotTypes() as $exprString => [$expr, $type]) {
 			if (!$this->isTrackableExpression($expr)) {
 				continue;
 			}
 
-			$conditionEntries[] = [$exprString, $expr, false, $type];
+			$conditionEntries[] = [(string) $exprString, $expr, false, $type, $this->findConditionResult($composeScope, $expr)];
 		}
 
 		if ($conditionEntries === []) {
@@ -175,9 +183,9 @@ final class ConditionalExpressionHolderHelper
 			}
 
 			$pinnedTargetType = !$expr instanceof Expr\Variable && $nonVariableTargetScope !== null
-				? $nonVariableTargetScope->getType($expr)
+				? $nonVariableTargetScope->getStateType($expr)
 				: null;
-			$holderEntries[] = [$exprString, $expr, $type, $pinnedTargetType];
+			$holderEntries[] = [(string) $exprString, $expr, $type, $pinnedTargetType];
 		}
 
 		if ($holderEntries === []) {
@@ -185,6 +193,20 @@ final class ConditionalExpressionHolderHelper
 		}
 
 		return new ConditionalExpressionHolderRecipe($conditionEntries, $holderEntries, $holdersFromSureTypes);
+	}
+
+	/**
+	 * The result of the operand walk that produced this narrowing subject, so the
+	 * recipe reads the subject's type through its own result. Null for a subject no
+	 * walk produced - a narrowing extension is free to specify a type for an
+	 * expression the source never evaluated on its own (the receiver of an offset
+	 * check, a property an assertion names).
+	 */
+	private function findConditionResult(MutatingScope $composeScope, Expr $expr): ?ExpressionResult
+	{
+		$storage = $composeScope->getCurrentExpressionResultStorage();
+
+		return $storage !== null ? $storage->findExpressionResult($expr) : null;
 	}
 
 	/**

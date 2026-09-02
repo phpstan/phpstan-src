@@ -9,23 +9,21 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
-use PHPStan\Analyser\Scope;
-use PHPStan\Analyser\SpecifiedTypes;
-use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\IssetExpr;
 use PHPStan\Type\Type;
 
 /**
- * IssetExpr is a certainty marker wrapped around an isset-tested expression so
- * a type specification can reduce that expression's existence certainty (to
- * maybe / unset) instead of narrowing its type. The specifications carrying it
- * read only its certainty, never its type - so the marker just reports its
- * inner expression's type, which lets it be priced like any other node rather
- * than being a special case in the resolution paths.
+ * IssetExpr is a certainty marker IssetHandler wraps around the isset-tested
+ * expression so a type specification can reduce that expression's existence
+ * certainty (to maybe / unset) instead of narrowing its type. The specifications
+ * carrying it read only its certainty, never its type - so the marker just
+ * reports its inner expression's type, which lets it be priced like any other
+ * node rather than being a special case in the resolution paths.
  *
  * @implements ExprHandler<IssetExpr>
  */
@@ -33,7 +31,10 @@ use PHPStan\Type\Type;
 final class IssetExprHandler implements ExprHandler
 {
 
-	public function __construct(private ExpressionResultFactory $expressionResultFactory)
+	public function __construct(
+		private ExpressionResultFactory $expressionResultFactory,
+		private DefaultNarrowingHelper $defaultNarrowingHelper,
+	)
 	{
 	}
 
@@ -44,8 +45,8 @@ final class IssetExprHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		// a virtual node handler - the caller will only be interested in the
-		// type; the inner expr is not processed, its type is just reported
+		// because this is a virtual node handler, the caller will only be interested
+		// in the type - we don't process the inner expr, just report its type
 
 		return $this->expressionResultFactory->create(
 			$scope,
@@ -55,17 +56,9 @@ final class IssetExprHandler implements ExprHandler
 			isAlwaysTerminating: false,
 			throwPoints: [],
 			impurePoints: [],
+			typeCallback: static fn (bool $nativeTypesPromoted): Type => $nodeScopeResolver->readScopeStateOrSyntheticType($expr->getExpr(), $nativeTypesPromoted ? $scope->doNotTreatPhpDocTypesAsCertain() : $scope),
+			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
 		);
-	}
-
-	public function resolveType(MutatingScope $scope, Expr $expr): Type
-	{
-		return $scope->getType($expr->getExpr());
-	}
-
-	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
-	{
-		return $typeSpecifier->specifyDefaultTypes($scope, $expr, $context);
 	}
 
 }

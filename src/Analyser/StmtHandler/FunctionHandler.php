@@ -99,6 +99,12 @@ final class FunctionHandler implements StmtHandler
 		$gatheredYieldStatements = [];
 		$executionEnds = [];
 		$functionImpurePoints = [];
+		// the body's results live in a per-body storage released right after
+		// the FunctionReturnStatementsNode rules ran - see the ClassMethod
+		// branch for the reasoning
+		$bodyStorage = $storage->duplicate();
+		$scope->pushExpressionResultStorage($bodyStorage);
+		try {
 			$nodeScopeResolver->pushNodeGatherer(static function (Node $node, Scope $scope) use ($functionScope, &$gatheredReturnStatements, &$gatheredYieldStatements, &$executionEnds, &$functionImpurePoints): void {
 				if ($scope->getFunction() !== $functionScope->getFunction()) {
 					return;
@@ -129,21 +135,24 @@ final class FunctionHandler implements StmtHandler
 
 				$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
 			});
-		try {
-			$statementResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $functionScope, $storage, $nodeCallback, StatementContext::createTopLevel())->toPublic();
-		} finally {
-			$nodeScopeResolver->popNodeGatherer();
-		}
+			try {
+				$statementResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $functionScope, $bodyStorage, $nodeCallback, StatementContext::createTopLevel())->toPublic();
+			} finally {
+				$nodeScopeResolver->popNodeGatherer();
+			}
 
-		$nodeScopeResolver->callNodeCallback($nodeCallback, new FunctionReturnStatementsNode(
-			$stmt,
-			$gatheredReturnStatements,
-			$gatheredYieldStatements,
-			$statementResult,
-			$executionEnds,
-			array_merge($statementResult->getImpurePoints(), $functionImpurePoints),
-			$functionReflection,
-		), $functionScope, $storage);
+			$nodeScopeResolver->callNodeCallback($nodeCallback, new FunctionReturnStatementsNode(
+				$stmt,
+				$gatheredReturnStatements,
+				$gatheredYieldStatements,
+				$statementResult,
+				$executionEnds,
+				array_merge($statementResult->getImpurePoints(), $functionImpurePoints),
+				$functionReflection,
+			), $functionScope, $bodyStorage);
+		} finally {
+			$scope->popExpressionResultStorage();
+		}
 
 		// declaring the function defines it in global state, so a negative
 		// function_exists() narrowing that may refer to that function must be forgotten

@@ -6,23 +6,27 @@
  * instances of the object's own class (the stub), so userland type hints
  * keep working without a configured Impl entry.
  *
- * The before-scope table is two id-keyed arrays in private property slots,
- * exactly like the PHP twin: exprsById pins each stored Expr so its object
- * handle cannot be reused while scopesById still maps it. duplicate() copies
- * the two array zvals by refcount (copy-on-write) — the eager per-entry copy
- * of the twin's former SplObjectStorage is what made this worth porting.
+ * The result table is two id-keyed arrays in private property slots:
+ * exprsById pins each stored Expr so its object handle cannot be reused
+ * while resultsById still maps it — the PHP twin's SplObjectStorage pins its
+ * keys the same way. duplicate() copies nothing: the new storage carries the
+ * source as its read-only fallback (writes never reach it), mirroring the
+ * twin's O(1) duplicate(); findExpressionResult() walks the fallback chain
+ * on a miss. mergeResults() unions the other storage's own entries (not its
+ * fallback chain) into this one, like the twin's SplObjectStorage::addAll().
  */
 
 #include "support.h"
 #include "zv.h"
 
 #define PT_ERS_PROP_EXPRS 0
-#define PT_ERS_PROP_SCOPES 1
+#define PT_ERS_PROP_RESULTS 1
+#define PT_ERS_PROP_FALLBACK 2
 
 namespace phpstanturbo {
 
 /* Mirrors PHPStan\Analyser\ExpressionResultStorage. State lives in the PHP
- * object's exprsById/scopesById properties. */
+ * object's exprsById/resultsById/fallback properties. */
 class ExpressionResultStorage
 {
 public:
@@ -34,46 +38,49 @@ public:
 		if (UNEXPECTED(object_init_ex(&newObj, Z_OBJCE_P(self)) != SUCCESS)) {
 			return zv::Val();
 		}
-		zv::ObjRef src(self);
-		zv::ObjRef dst(&newObj);
-		dst.propAtWrite(PT_ERS_PROP_EXPRS, zv::Val::copyOf(src.propAt(PT_ERS_PROP_EXPRS)));
-		dst.propAtWrite(PT_ERS_PROP_SCOPES, zv::Val::copyOf(src.propAt(PT_ERS_PROP_SCOPES)));
+		zv::ObjRef(&newObj).propAtWrite(PT_ERS_PROP_FALLBACK, zv::Val::copyOf(zv::Ref(self)));
 		return zv::Val::adopt(newObj);
-	}
-
-	void storeBeforeScope(zval *expr, zval *scope)
-	{
-		zend_ulong id = Z_OBJ_HANDLE_P(expr);
-		zv::ObjRef obj(self);
-		zv::ArrRef(obj.propAt(PT_ERS_PROP_EXPRS).raw()).setIndex(id, zv::Ref(expr));
-		zv::ArrRef(obj.propAt(PT_ERS_PROP_SCOPES).raw()).setIndex(id, zv::Ref(scope));
-	}
-
-	zv::Val findBeforeScope(zval *expr) const
-	{
-		zv::Ref found = zv::ArrRef(zv::ObjRef(self).propAt(PT_ERS_PROP_SCOPES).raw()).findIndex(Z_OBJ_HANDLE_P(expr));
-		if (found.raw() == NULL) {
-			return zv::Val::null();
-		}
-		return zv::Val::copyOf(found);
 	}
 
 	void mergeResults(zval *other)
 	{
-		zv::ObjRef dst(self);
 		zv::ObjRef src(other);
+		zv::ObjRef dst(self);
 		zv::ArrRef dstExprs(dst.propAt(PT_ERS_PROP_EXPRS).raw());
-		zv::ArrRef dstScopes(dst.propAt(PT_ERS_PROP_SCOPES).raw());
-		zv::ArrRef srcScopes(src.propAt(PT_ERS_PROP_SCOPES).raw());
-		zend_ulong id;
-		zval *exprZv;
-		ZEND_HASH_FOREACH_NUM_KEY_VAL(Z_ARRVAL_P(src.propAt(PT_ERS_PROP_EXPRS).raw()), id, exprZv) {
-			dstExprs.setIndex(id, zv::Ref(exprZv));
-			zv::Ref scopeRef = srcScopes.findIndex(id);
-			if (scopeRef.raw() != NULL) {
-				dstScopes.setIndex(id, scopeRef);
+		zv::ArrRef dstResults(dst.propAt(PT_ERS_PROP_RESULTS).raw());
+		for (auto entry : zv::ArrRef(src.propAt(PT_ERS_PROP_EXPRS).raw())) {
+			dstExprs.setIndex(entry.indexKey(), entry.value());
+		}
+		for (auto entry : zv::ArrRef(src.propAt(PT_ERS_PROP_RESULTS).raw())) {
+			dstResults.setIndex(entry.indexKey(), entry.value());
+		}
+	}
+
+	void storeExpressionResult(zval *expr, zval *expressionResult)
+	{
+		zend_ulong id = Z_OBJ_HANDLE_P(expr);
+		zv::ObjRef obj(self);
+		zv::ArrRef(obj.propAt(PT_ERS_PROP_EXPRS).raw()).setIndex(id, zv::Ref(expr));
+		zv::ArrRef(obj.propAt(PT_ERS_PROP_RESULTS).raw()).setIndex(id, zv::Ref(expressionResult));
+	}
+
+	zv::Val findExpressionResult(zval *expr) const
+	{
+		zend_ulong id = Z_OBJ_HANDLE_P(expr);
+		zval *cur = self;
+		for (;;) {
+			zv::ObjRef obj(cur);
+			zv::Ref found = zv::ArrRef(obj.propAt(PT_ERS_PROP_RESULTS).raw()).findIndex(id);
+			if (found.raw() != NULL) {
+				return zv::Val::copyOf(found);
 			}
-		} ZEND_HASH_FOREACH_END();
+			/* the twin recurses into ?self $fallback; iterate the chain */
+			zval *fallback = obj.propAt(PT_ERS_PROP_FALLBACK).raw();
+			if (Z_TYPE_P(fallback) != IS_OBJECT) {
+				return zv::Val::null();
+			}
+			cur = fallback;
+		}
 	}
 
 private:
@@ -91,10 +98,17 @@ using phpstanturbo::ExpressionResultStorage;
 void pt_register_expression_result_storage()
 {
 	reg::Class cls("PHPStanTurbo\\ExpressionResultStorage");
-	/* not final: a PHP stub subclass extends this class; exprsById/scopesById
-	 * must stay in this order (OBJ_PROP_NUM slots) */
+	/* not final: a PHP stub subclass extends this class; exprsById/resultsById/
+	 * fallback must stay in this order (OBJ_PROP_NUM slots) */
 	cls.privateArrayProperty("exprsById");
-	cls.privateArrayProperty("scopesById");
+	cls.privateArrayProperty("resultsById");
+	cls.privateNullProperty("fallback");
+
+	/* the twin's constructor only initialized its SplObjectStorage; the
+	 * native property defaults already cover that */
+	cls.method("__construct", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+	});
 
 	cls.method("duplicate", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
@@ -105,29 +119,29 @@ void pt_register_expression_result_storage()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("storeBeforeScope", reg::Public, 2, { reg::any("expr"), reg::any("scope") }, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *expr, *scope;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(expr)
-			Z_PARAM_OBJECT(scope)
-		ZEND_PARSE_PARAMETERS_END();
-		ExpressionResultStorage(ZEND_THIS).storeBeforeScope(expr, scope);
-	});
-
-	cls.method("findBeforeScope", reg::Public, 1, { reg::any("expr") }, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *expr;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(expr)
-		ZEND_PARSE_PARAMETERS_END();
-		ExpressionResultStorage(ZEND_THIS).findBeforeScope(expr).intoReturnValue(return_value);
-	});
-
 	cls.method("mergeResults", reg::Public, 1, { reg::any("other") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *other;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_OBJECT(other)
 		ZEND_PARSE_PARAMETERS_END();
 		ExpressionResultStorage(ZEND_THIS).mergeResults(other);
+	});
+
+	cls.method("storeExpressionResult", reg::Public, 2, { reg::any("expr"), reg::any("expressionResult") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *expr, *expressionResult;
+		ZEND_PARSE_PARAMETERS_START(2, 2)
+			Z_PARAM_OBJECT(expr)
+			Z_PARAM_OBJECT(expressionResult)
+		ZEND_PARSE_PARAMETERS_END();
+		ExpressionResultStorage(ZEND_THIS).storeExpressionResult(expr, expressionResult);
+	});
+
+	cls.method("findExpressionResult", reg::Public, 1, { reg::any("expr") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *expr;
+		ZEND_PARSE_PARAMETERS_START(1, 1)
+			Z_PARAM_OBJECT(expr)
+		ZEND_PARSE_PARAMETERS_END();
+		ExpressionResultStorage(ZEND_THIS).findExpressionResult(expr).intoReturnValue(return_value);
 	});
 
 	cls.register_();

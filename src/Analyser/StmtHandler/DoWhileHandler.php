@@ -68,24 +68,29 @@ final class DoWhileHandler implements StmtHandler
 				$prevEntryScope = $bodyScope;
 				$storage = $originalStorage->duplicate();
 				$bodyRecording = $bodyIsReplayable ? new RecordingNodeCallback() : new NoopNodeCallback();
-				$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $bodyRecording, $context->enterDeep())->filterOutLoopExitPoints();
-				$alwaysTerminating = $bodyScopeResult->isAlwaysTerminating();
-				$bodyScope = $bodyScopeResult->getScope();
-				foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
-					$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
+				$scope->pushExpressionResultStorage($storage);
+				try {
+					$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $bodyRecording, $context->enterDeep())->filterOutLoopExitPoints();
+					$alwaysTerminating = $bodyScopeResult->isAlwaysTerminating();
+					$bodyScope = $bodyScopeResult->getScope();
+					foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
+						$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
+					}
+					$finalScope = $alwaysTerminating ? $finalScope : $bodyScope->mergeWith($finalScope);
+					foreach ($bodyScopeResult->getExitPointsByType(Break_::class) as $breakExitPoint) {
+						$finalScope = $breakExitPoint->getScope()->mergeWith($finalScope);
+					}
+					// the candidate to replace the final body walk when this pass's
+					// entry turns out to be the fixpoint
+					if ($bodyRecording instanceof RecordingNodeCallback) {
+						$replayBodyRecording = $bodyRecording;
+						$replayPassStorage = $storage;
+						$replayPassResult = $bodyScopeResult;
+					}
+					$bodyScope = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep())->getTruthyScope();
+				} finally {
+					$scope->popExpressionResultStorage();
 				}
-				$finalScope = $alwaysTerminating ? $finalScope : $bodyScope->mergeWith($finalScope);
-				foreach ($bodyScopeResult->getExitPointsByType(Break_::class) as $breakExitPoint) {
-					$finalScope = $breakExitPoint->getScope()->mergeWith($finalScope);
-				}
-				// the candidate to replace the final body walk when this pass's
-				// entry turns out to be the fixpoint
-				if ($bodyRecording instanceof RecordingNodeCallback) {
-					$replayBodyRecording = $bodyRecording;
-					$replayPassStorage = $storage;
-					$replayPassResult = $bodyScopeResult;
-				}
-				$bodyScope = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep())->getTruthyScope();
 				if ($bodyScope->equals($prevScope)) {
 					break;
 				}
@@ -109,7 +114,7 @@ final class DoWhileHandler implements StmtHandler
 			// and replay its emissions through the real callback instead; the
 			// condition walks below stay real
 			$originalStorage->mergeResults($replayPassStorage);
-			$nodeScopeResolver->replayRecording($replayBodyRecording, $nodeCallback, $originalStorage);
+			$nodeScopeResolver->replayRecording($replayBodyRecording, $nodeCallback, $originalStorage, $scope);
 			$bodyScopeResult = $replayPassResult;
 		} else {
 			$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context)->filterOutLoopExitPoints();
@@ -119,9 +124,16 @@ final class DoWhileHandler implements StmtHandler
 			$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
 		}
 
+		// the condition is processed once on the post-body scope; its result
+		// answers both the always-iterates check below and the falsey post-loop
+		// scope - the previous scope-based read here was a guaranteed storage
+		// miss (the condition was only ever stored into discarded convergence
+		// duplicates) that re-priced the condition on demand before this walk
+		$condResult = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep());
+
 		$alwaysIterates = false;
 		if ($context->isTopLevel()) {
-			$condBooleanType = ($nodeScopeResolver->shouldTreatPhpDocTypesAsCertain() ? $bodyScope->getType($stmt->cond) : $bodyScope->getNativeType($stmt->cond))->toBoolean();
+			$condBooleanType = ($nodeScopeResolver->shouldTreatPhpDocTypesAsCertain() ? $condResult->getType() : $condResult->getNativeType())->toBoolean();
 			$alwaysIterates = $condBooleanType->isTrue()->yes();
 		}
 
@@ -135,13 +147,10 @@ final class DoWhileHandler implements StmtHandler
 			$finalScope = $scope;
 		}
 		if (!$alwaysTerminating) {
-			$condResult = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep());
 			$hasYield = $condResult->hasYield();
 			$throwPoints = $condResult->getThrowPoints();
 			$impurePoints = $condResult->getImpurePoints();
 			$finalScope = $condResult->getFalseyScope();
-		} else {
-			$nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep());
 		}
 
 		// both emissions fire after the condition's final walk stored its

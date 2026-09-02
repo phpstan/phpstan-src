@@ -10,6 +10,7 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Type;
 use PHPStan\Type\TypeResult;
 use function is_string;
 
@@ -27,7 +28,7 @@ final class RicherScopeGetTypeHelper
 	/**
 	 * @return TypeResult<BooleanType>
 	 */
-	public function getIdenticalResult(Scope $scope, Identical $expr): TypeResult
+	public function getIdenticalResult(Scope $scope, Identical $expr, ?NodeScopeResolver $nodeScopeResolver = null, ?Type $leftType = null, ?Type $rightType = null): TypeResult
 	{
 		if (
 			$expr->left instanceof Variable
@@ -39,8 +40,16 @@ final class RicherScopeGetTypeHelper
 			return new TypeResult(new ConstantBooleanType(true), []);
 		}
 
-		$leftType = $scope->getType($expr->left);
-		$rightType = $scope->getType($expr->right);
+		// operand types passed from inside-out callbacks (e.g. BinaryOp's
+		// typeCallback) come from the already computed ExpressionResults;
+		// $nodeScopeResolver reads them from storage instead of Scope::getType();
+		// rules call this with neither (BC).
+		$leftType ??= $nodeScopeResolver !== null
+			? $nodeScopeResolver->readTypeOfMaybeStored($expr->left, $scope->toWalkScope())
+			: $scope->getType($expr->left);
+		$rightType ??= $nodeScopeResolver !== null
+			? $nodeScopeResolver->readTypeOfMaybeStored($expr->right, $scope->toWalkScope())
+			: $scope->getType($expr->right);
 
 		if (
 			(
@@ -78,9 +87,9 @@ final class RicherScopeGetTypeHelper
 	/**
 	 * @return TypeResult<BooleanType>
 	 */
-	public function getNotIdenticalResult(Scope $scope, Node\Expr\BinaryOp\NotIdentical $expr): TypeResult
+	public function getNotIdenticalResult(Scope $scope, Node\Expr\BinaryOp\NotIdentical $expr, ?NodeScopeResolver $nodeScopeResolver = null, ?Type $leftType = null, ?Type $rightType = null): TypeResult
 	{
-		$identicalResult = $this->getIdenticalResult($scope, new Identical($expr->left, $expr->right));
+		$identicalResult = $this->getIdenticalResult($scope, new Identical($expr->left, $expr->right), $nodeScopeResolver, $leftType, $rightType);
 		$identicalType = $identicalResult->type;
 		if ($identicalType instanceof ConstantBooleanType) {
 			return new TypeResult(new ConstantBooleanType(!$identicalType->getValue()), $identicalResult->reasons);

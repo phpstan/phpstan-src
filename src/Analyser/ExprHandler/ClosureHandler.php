@@ -11,14 +11,11 @@ use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver;
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
-use PHPStan\Analyser\Scope;
-use PHPStan\Analyser\SpecifiedTypes;
-use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Type\Type;
 
 /**
  * @implements ExprHandler<Closure>
@@ -30,6 +27,7 @@ final class ClosureHandler implements ExprHandler
 	public function __construct(
 		private ClosureTypeResolver $closureTypeResolver,
 		private ExpressionResultFactory $expressionResultFactory,
+		private DefaultNarrowingHelper $defaultNarrowingHelper,
 	)
 	{
 	}
@@ -42,7 +40,33 @@ final class ClosureHandler implements ExprHandler
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
 		$processClosureResult = $nodeScopeResolver->processClosureNode($stmt, $expr, $scope, $storage, $nodeCallback, $context, null);
-		$this->closureTypeResolver->seedCacheFromClosureWalk($scope, $expr, $processClosureResult);
+
+		// A plain typeCallback recursing through getClosureType() would re-walk
+		// the body each getType() ask before the cache populates and hang;
+		// ExpressionResult excludes closures from its tracked-type early return.
+		// Compute the ClosureType once here and store it as an eager value.
+		//
+		// The phpdoc flavour is built from the returns/yields the single body walk
+		// in processClosureNode() already gathered, without a second walk.
+		//
+		// A closure carries no @param/@return of its own, and its native type
+		// resolves the body the same way its phpdoc type does (a closure's native
+		// type equals its phpdoc type - e.g. a closure returning a positive-int
+		// method is Closure(): int<1, max> in both flavours). So the native
+		// flavour reuses the phpdoc ClosureType - no native walk.
+		$type = $this->closureTypeResolver->buildClosureTypeForClosure(
+			$scope,
+			$expr,
+			$processClosureResult->getGatheredReturnStatements(),
+			$processClosureResult->getGatheredYieldStatements(),
+			$processClosureResult->getExecutionEnds(),
+			$processClosureResult->getThrowPoints(),
+			$processClosureResult->getClosureTypeImpurePoints(),
+			$processClosureResult->getInvalidateExpressions(),
+			false,
+			$storage,
+		);
+		$nativeType = $type;
 
 		return $this->expressionResultFactory->create(
 			$processClosureResult->applyByRefUseScope($processClosureResult->getScope()),
@@ -52,17 +76,11 @@ final class ClosureHandler implements ExprHandler
 			isAlwaysTerminating: false,
 			throwPoints: [],
 			impurePoints: [],
+			specifyTypesCallback: fn (TypeSpecifierContext $c, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $c),
+			type: $type,
+			nativeType: $nativeType,
+			typeCallback: null,
 		);
-	}
-
-	public function resolveType(MutatingScope $scope, Expr $expr): Type
-	{
-		return $this->closureTypeResolver->getClosureType($scope, $expr);
-	}
-
-	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
-	{
-		return $typeSpecifier->specifyDefaultTypes($scope, $expr, $context);
 	}
 
 }

@@ -19,3 +19,11 @@ class WhateverClass3 {
 assertType('bool', (new WhateverClass)->methodReturningBoolNoMatterTheCallerUnlessReturnsString());
 assertType('bool', (new WhateverClass2)->methodReturningBoolNoMatterTheCallerUnlessReturnsString());
 assertType('string', (new WhateverClass3)->methodReturningBoolNoMatterTheCallerUnlessReturnsString());
+
+// the extension's answer must survive into the assigned variable's holder
+$assigned = (new WhateverClass)->methodReturningBoolNoMatterTheCallerUnlessReturnsString();
+assertType('bool', $assigned);
+
+$closure = static function () use ($assigned): void {
+	assertType('bool', $assigned);
+};

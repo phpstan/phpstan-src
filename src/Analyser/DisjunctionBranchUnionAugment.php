@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node\Expr;
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
@@ -23,7 +24,8 @@ final class DisjunctionBranchUnionAugment implements DeferredSpecifiedTypesAugme
 	 * @param list<array{Expr, Type, Type}> $candidates [target expr, left branch type, right branch type]
 	 */
 	public function __construct(
-		private TypeSpecifier $typeSpecifier,
+		private NodeScopeResolver $nodeScopeResolver,
+		private DefaultNarrowingHelper $defaultNarrowingHelper,
 		private array $candidates,
 	)
 	{
@@ -38,7 +40,7 @@ final class DisjunctionBranchUnionAugment implements DeferredSpecifiedTypesAugme
 			}
 
 			// the guard above pins the target as tracked on the applying scope
-			$originalType = $scope->getType($targetExpr);
+			$originalType = $this->nodeScopeResolver->requireScopeStateType($targetExpr, $scope);
 			// re-pinning eagerly priced branch forms of a template-typed subject
 			// stacks the template inside its own bound (`T of T of ...` - the
 			// pin intersects with the declared template); its narrowing already
@@ -62,7 +64,7 @@ final class DisjunctionBranchUnionAugment implements DeferredSpecifiedTypesAugme
 				continue;
 			}
 
-			$created = $this->typeSpecifier->create($targetExpr, $unionType, TypeSpecifierContext::createTrue(), $scope);
+			$created = $this->defaultNarrowingHelper->createForSubject($targetExpr, $unionType, TypeSpecifierContext::createTrue(), $scope);
 			$result = $result === null ? $created : $result->unionWith($created);
 		}
 

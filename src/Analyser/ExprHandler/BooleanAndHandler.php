@@ -4,35 +4,25 @@ namespace PHPStan\Analyser\ExprHandler;
 
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\BinaryOp\BooleanAnd;
-use PhpParser\Node\Expr\BinaryOp\BooleanOr;
 use PhpParser\Node\Expr\BinaryOp\LogicalAnd;
-use PhpParser\Node\Expr\BinaryOp\LogicalOr;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
-use PHPStan\Analyser\ExprHandler\Helper\ConditionalExpressionHolderHelper;
+use PHPStan\Analyser\ExprHandler\Helper\BooleanNarrowingHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
-use PHPStan\Analyser\NoopNodeCallback;
-use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
-use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\BooleanAndNode;
-use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
-use function array_filter;
 use function array_merge;
-use function array_reverse;
-use function array_values;
-use function is_string;
 
 /**
  * @implements ExprHandler<BooleanAnd|LogicalAnd>
@@ -41,11 +31,8 @@ use function is_string;
 final class BooleanAndHandler implements ExprHandler
 {
 
-	private const BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH = 4;
-
 	public function __construct(
-		private NodeScopeResolver $nodeScopeResolver,
-		private ConditionalExpressionHolderHelper $conditionalExpressionHolderHelper,
+		private BooleanNarrowingHelper $booleanNarrowingHelper,
 		private ExpressionResultFactory $expressionResultFactory,
 	)
 	{
@@ -54,213 +41,6 @@ final class BooleanAndHandler implements ExprHandler
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof BooleanAnd || $expr instanceof LogicalAnd;
-	}
-
-	public function resolveType(MutatingScope $scope, Expr $expr): Type
-	{
-		$leftBooleanType = $scope->getType($expr->left)->toBoolean();
-		if ($leftBooleanType->isFalse()->yes()) {
-			return new ConstantBooleanType(false);
-		}
-
-		if (self::getBooleanExpressionDepth($expr->left) <= self::BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH) {
-			$leftResult = $this->nodeScopeResolver->processExprNode(new Stmt\Expression($expr->left), $expr->left, $scope, new ExpressionResultStorage(), new NoopNodeCallback(), ExpressionContext::createDeep());
-			$rightBooleanType = $leftResult->getTruthyScope()->getType($expr->right)->toBoolean();
-		} else {
-			$rightBooleanType = $scope->filterByTruthyValue($expr->left)->getType($expr->right)->toBoolean();
-		}
-
-		if ($rightBooleanType->isFalse()->yes()) {
-			return new ConstantBooleanType(false);
-		}
-
-		if (
-			$leftBooleanType->isTrue()->yes()
-			&& $rightBooleanType->isTrue()->yes()
-		) {
-			return new ConstantBooleanType(true);
-		}
-
-		return new BooleanType();
-	}
-
-	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
-	{
-		if (!$scope instanceof MutatingScope) {
-			throw new ShouldNotHappenException();
-		}
-
-		// For deep BooleanAnd chains in truthy context, flatten and
-		// process all arms at once to avoid O(N²) recursive
-		// filterByTruthyValue calls.
-		if (
-			$context->true()
-			&& self::getBooleanExpressionDepth($expr) > self::BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH
-		) {
-			return $this->specifyTypesForFlattenedBooleanAnd($typeSpecifier, $scope, $expr, $context);
-		}
-
-		$leftTypes = $typeSpecifier->specifyTypesInCondition($scope, $expr->left, $context)->setRootExpr($expr);
-		$rightScope = $scope->filterByTruthyValue($expr->left);
-		$rightTypes = $typeSpecifier->specifyTypesInCondition($rightScope, $expr->right, $context)->setRootExpr($expr);
-		if ($context->true()) {
-			$types = $leftTypes->unionWith($rightTypes);
-		} else {
-			$types = $leftTypes->intersectWith($rightTypes);
-			$branchUnionAugment = $this->conditionalExpressionHolderHelper->buildBranchUnionAugment(
-				$leftTypes,
-				$rightTypes,
-				static fn (): MutatingScope => $scope->filterByFalseyValue($expr->left),
-				static fn (): MutatingScope => $rightScope->filterByFalseyValue($expr->right),
-				$types,
-			);
-			if ($branchUnionAugment !== null) {
-				$types = $types->withDeferredAugment($branchUnionAugment);
-			}
-		}
-		if ($context->false()) {
-			// Consequent (holder) narrowings projected by each holder: these must be
-			// the genuine falsey narrowing of the arm. When that is empty, the arm
-			// has no sound falsey narrowing and must not contribute a consequent.
-			$leftHolderTypes = $leftTypes;
-			$rightHolderTypes = $rightTypes;
-			// In a mixed truthy-and-false context, re-derive empty holders from the falsey narrowing.
-			if ($context->truthy()) {
-				if ($leftHolderTypes->getSureTypes() === [] && $leftHolderTypes->getSureNotTypes() === []) {
-					$leftHolderTypes = $typeSpecifier->specifyTypesInCondition($scope, $expr->left, TypeSpecifierContext::createFalsey())->setRootExpr($expr);
-				}
-				if ($rightHolderTypes->getSureTypes() === [] && $rightHolderTypes->getSureNotTypes() === []) {
-					$rightHolderTypes = $typeSpecifier->specifyTypesInCondition($rightScope, $expr->right, TypeSpecifierContext::createFalsey())->setRootExpr($expr);
-				}
-			}
-			// Condition (antecedent) narrowings: when an arm has no falsey narrowing
-			// (e.g. isset() on an array dim fetch), derive the condition from the truthy
-			// narrowing by swapping sure/sureNot types. This swap is only sound for the
-			// antecedent — the holder-recipe evaluation inverts it back to the truthy
-			// narrowing. It must NOT feed the consequent: inverting a comparison's truthy
-			// narrowing (e.g. `$a === $b` narrowing `$a` to `$b`'s broad type) would
-			// over-narrow the consequent (see regression for `$x === $nonConstantString`).
-			//
-			// The inverted narrowing stands in for "this side is TRUE", so the
-			// side's truthy narrowing must be EQUIVALENT to its truth, not just
-			// implied by it. isset() qualifies: it is exactly the offset's
-			// non-nullness. A call like non-strict in_array($x, $a) does not -
-			// its truthy narrowing ($a non-empty) can hold while the call is
-			// false, and a holder conditioned on it would unsoundly narrow the
-			// other side (e.g. $x !== null && in_array($x, $a) pinning $x to
-			// null in a sibling branch where only $a !== [] is known).
-			$leftCondTypes = $leftHolderTypes;
-			$rightCondTypes = $rightHolderTypes;
-			if ($leftCondTypes->getSureTypes() === [] && $leftCondTypes->getSureNotTypes() === [] && $this->truthinessImpliedByTruthyNarrowing($expr->left)) {
-				$truthyLeftTypes = $typeSpecifier->specifyTypesInCondition($scope, $expr->left, TypeSpecifierContext::createTruthy());
-				if ($this->allExpressionsTrackable($truthyLeftTypes)) {
-					$leftCondTypes = new SpecifiedTypes($truthyLeftTypes->getSureNotTypes(), $truthyLeftTypes->getSureTypes());
-				}
-			}
-			if ($rightCondTypes->getSureTypes() === [] && $rightCondTypes->getSureNotTypes() === [] && $this->truthinessImpliedByTruthyNarrowing($expr->right)) {
-				$truthyRightTypes = $typeSpecifier->specifyTypesInCondition($rightScope, $expr->right, TypeSpecifierContext::createTruthy());
-				if ($this->allExpressionsTrackable($truthyRightTypes)) {
-					$rightCondTypes = new SpecifiedTypes($truthyRightTypes->getSureNotTypes(), $truthyRightTypes->getSureTypes());
-				}
-			}
-			$result = $types->withoutConditionalExpressionHolders();
-			$recipes = [
-				$this->conditionalExpressionHolderHelper->buildConditionalHolderRecipe($leftCondTypes, $rightHolderTypes, false, true, $rightScope, $expr->right),
-				$this->conditionalExpressionHolderHelper->buildConditionalHolderRecipe($rightCondTypes, $leftHolderTypes, false, true, null, $expr->left),
-				$this->conditionalExpressionHolderHelper->buildConditionalHolderRecipe($leftCondTypes, $rightHolderTypes, true, true, $rightScope, $expr->right),
-				$this->conditionalExpressionHolderHelper->buildConditionalHolderRecipe($rightCondTypes, $leftHolderTypes, true, true, null, $expr->left),
-			];
-			return $result->setConditionalExpressionHolderRecipes(array_values(array_filter($recipes)))->setRootExpr($expr);
-		}
-
-		return $types;
-	}
-
-	public static function getBooleanExpressionDepth(Expr $expr): int
-	{
-		$depth = 0;
-		while (
-			$expr instanceof BooleanOr ||
-			$expr instanceof LogicalOr ||
-			$expr instanceof BooleanAnd ||
-			$expr instanceof LogicalAnd
-		) {
-			$depth++;
-			$expr = $expr->left;
-		}
-		return $depth;
-	}
-
-	/**
-	 * Flatten a deep BooleanAnd chain into leaf expressions and process them
-	 * without recursive filterByTruthyValue calls.
-	 *
-	 * @param BooleanAnd|LogicalAnd $expr
-	 */
-	private function specifyTypesForFlattenedBooleanAnd(
-		TypeSpecifier $typeSpecifier,
-		MutatingScope $scope,
-		Expr $expr,
-		TypeSpecifierContext $context,
-	): SpecifiedTypes
-	{
-		$arms = [];
-		$current = $expr;
-		while ($current instanceof BooleanAnd || $current instanceof LogicalAnd) {
-			$arms[] = $current->right;
-			$current = $current->left;
-		}
-		$arms[] = $current;
-		$arms = array_reverse($arms);
-
-		// Truthy: all arms are true → the same merge unionWith() does for the
-		// recursive path, applied to all arms at once
-		$armTypes = [];
-		foreach ($arms as $arm) {
-			$armTypes[] = $typeSpecifier->specifyTypesInCondition($scope, $arm, $context);
-		}
-
-		return SpecifiedTypes::unionAll($armTypes)->setRootExpr($expr);
-	}
-
-	/**
-	 * Whether the side's truthy narrowing is EQUIVALENT to the side being
-	 * true - the requirement for using its inversion as a holder antecedent.
-	 * isset() qualifies: it is exactly the offset's non-nullness. Anything
-	 * else reaching the antecedent-swap fallback (e.g. a non-strict
-	 * in_array() call, whose truthy narrowing only implies a non-empty
-	 * haystack) must not stand in for its own truth.
-	 */
-	private function truthinessImpliedByTruthyNarrowing(Expr $side): bool
-	{
-		return $side instanceof Expr\Isset_;
-	}
-
-	private function allExpressionsTrackable(SpecifiedTypes $types): bool
-	{
-		foreach ($types->getSureTypes() as [$expr]) {
-			if (!$this->isTrackableExpression($expr)) {
-				return false;
-			}
-		}
-		foreach ($types->getSureNotTypes() as [$expr]) {
-			if (!$this->isTrackableExpression($expr)) {
-				return false;
-			}
-		}
-
-		return $types->getSureTypes() !== [] || $types->getSureNotTypes() !== [];
-	}
-
-	private function isTrackableExpression(Expr $expr): bool
-	{
-		if ($expr instanceof Expr\Variable) {
-			return is_string($expr->name);
-		}
-
-		return $expr instanceof Expr\PropertyFetch
-			|| $expr instanceof Expr\ArrayDimFetch
-			|| $expr instanceof Expr\StaticPropertyFetch;
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
@@ -283,8 +63,49 @@ final class BooleanAndHandler implements ExprHandler
 			isAlwaysTerminating: $leftResult->isAlwaysTerminating(),
 			throwPoints: array_merge($leftResult->getThrowPoints(), $rightResult->getThrowPoints()),
 			impurePoints: array_merge($leftResult->getImpurePoints(), $rightResult->getImpurePoints()),
-			truthyScopeCallback: static fn (): MutatingScope => $rightResult->getScope()->filterByTruthyValue($expr->right),
-			falseyScopeCallback: static fn (): MutatingScope => $leftMergedWithRightScope->filterByFalseyValue($expr),
+			// && is truthy only when the right side was evaluated (on the left-truthy
+			// scope) and is itself truthy - that is exactly the right operand's truthy
+			// scope: it carries the left narrowing and the right's by-ref/side-effect
+			// definitions, and does not re-apply the left narrowing over a variable the
+			// right operand reassigned (bug-9400).
+			truthyScopeOverrideResult: $rightResult,
+			typeCallback: static function (bool $nativeTypesPromoted) use ($leftResult, $rightResult): Type {
+				$leftBooleanType = ($nativeTypesPromoted ? $leftResult->getNativeType() : $leftResult->getType())->toBoolean();
+				if ($leftBooleanType->isFalse()->yes()) {
+					return new ConstantBooleanType(false);
+				}
+
+				// the right side was processed on the left-truthy scope including
+				// the left's side effects (assignments, by-ref writes) - that
+				// captured scope is the evaluation point, no re-walk and no
+				// depth cap needed
+				$rightBooleanType = ($nativeTypesPromoted ? $rightResult->getNativeType() : $rightResult->getType())->toBoolean();
+				if ($rightBooleanType->isFalse()->yes()) {
+					return new ConstantBooleanType(false);
+				}
+
+				if (
+					$leftBooleanType->isTrue()->yes()
+					&& $rightBooleanType->isTrue()->yes()
+				) {
+					return new ConstantBooleanType(true);
+				}
+
+				return new BooleanType();
+			},
+			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => $this->booleanNarrowingHelper->specifyConjunction(
+				$nodeScopeResolver,
+				$nativeTypesPromoted ? $scope->doNotTreatPhpDocTypesAsCertain() : $scope,
+				$context,
+				$expr,
+				$expr->left,
+				static fn (MutatingScope $scope, TypeSpecifierContext $ctx): SpecifiedTypes => $leftResult->getSpecifiedTypesForScope($scope, $ctx),
+				static fn (): MutatingScope => $leftResult->getTruthyScope(),
+				static fn (): MutatingScope => $leftResult->getFalseyScope(),
+				$expr->right,
+				static fn (MutatingScope $scope, TypeSpecifierContext $ctx): SpecifiedTypes => $rightResult->getSpecifiedTypesForScope($scope, $ctx),
+				static fn (): MutatingScope => $rightResult->getFalseyScope(),
+			),
 		);
 		// store before emitting the virtual node: its rules ask about the raw
 		// expression, and a synchronously invoked rule (the plain resolver,

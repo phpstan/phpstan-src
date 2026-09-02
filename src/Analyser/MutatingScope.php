@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Arg;
 use PhpParser\Node\ComplexType;
 use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\FuncCall;
@@ -53,12 +54,14 @@ use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
+use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
+use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Reflection\PropertyReflection;
@@ -122,12 +125,14 @@ use function assert;
 use function count;
 use function ctype_alnum;
 use function explode;
+use function get_class;
 use function implode;
 use function in_array;
 use function is_array;
 use function is_string;
 use function ltrim;
 use function md5;
+use function spl_object_id;
 use function sprintf;
 use function str_starts_with;
 use function strlen;
@@ -141,7 +146,6 @@ use const PHP_INT_MIN;
 class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 {
 
-	public const KEEP_VOID_ATTRIBUTE_NAME = 'keepVoid';
 	private const COMPLEX_UNION_TYPE_MEMBER_LIMIT = 8;
 
 	/** Magic methods that let the author decide which properties survive a serialize()/unserialize() round trip. */
@@ -152,12 +156,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	 * @var array<string, Type>
 	 */
 	public array $resolvedTypes = [];
-
-	/** @var array<string, static> */
-	private array $truthyScopes = [];
-
-	/** @var array<string, static> */
-	private array $falseyScopes = [];
 
 	private ?self $nodeCallbackScope = null;
 
@@ -181,7 +179,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	 * @param ExtensionsCollection<ExpressionTypeResolverExtension> $expressionTypeResolverExtensions
 	 */
 	public function __construct(
-		protected Container $container,
+		private Container $container,
 		protected InternalScopeFactory $scopeFactory,
 		private ReflectionProvider $reflectionProvider,
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
@@ -191,6 +189,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		private PropertyReflectionFinder $propertyReflectionFinder,
 		private Parser $parser,
 		private ConstantResolver $constantResolver,
+		private ExpressionResultStorageStack $expressionResultStorageStack,
 		protected ScopeContext $context,
 		private PhpVersion $phpVersion,
 		private AttributeReflectionFactory $attributeReflectionFactory,
@@ -226,7 +225,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			return $this->nodeCallbackScope;
 		}
 
-		return $this->nodeCallbackScope = $this->scopeFactory->toNodeCallbackScopeFactory()->create(
+		$nodeCallbackScope = $this->scopeFactory->toNodeCallbackScopeFactory()->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
 			$this->getFunction(),
@@ -244,6 +243,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->parentScope,
 			$this->nativeTypesPromoted,
 		);
+		if ($nodeCallbackScope instanceof NodeCallbackScope) {
+			$nodeCallbackScope->seedWalkScope($this);
+		}
+
+		return $this->nodeCallbackScope = $nodeCallbackScope;
 	}
 
 	public function toWalkScope(): self
@@ -981,8 +985,18 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		return $this->anonymousFunctionReflection;
 	}
 
+	/** @api */
+	public function getAnonymousFunctionReturnType(): ?Type
+	{
+		if ($this->anonymousFunctionReflection === null) {
+			return null;
+		}
+
+		return $this->anonymousFunctionReflection->getReturnType();
+	}
+
 	/**
-	 * A copy of this scope with only the anonymous-function
+	 * Returns a scope identical to this one but with the anonymous function
 	 * reflection replaced. The scope entered at a closure/arrow carries only a
 	 * shallow reflection (parameters + declared return); once the single body
 	 * walk has gathered the returns, the engine builds the refined ClosureType and
@@ -1012,18 +1026,27 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	}
 
 	/** @api */
-	public function getAnonymousFunctionReturnType(): ?Type
-	{
-		if ($this->anonymousFunctionReflection === null) {
-			return null;
-		}
-
-		return $this->anonymousFunctionReflection->getReturnType();
-	}
-
-	/** @api */
 	public function getType(Expr $node): Type
 	{
+		// a variable read is scope state and a literal is a constant - neither
+		// needs the node walked, so asking about them ahead of the walk is not
+		// the on-demand pricing the guard exists to catch
+		if (
+			NodeScopeResolver::$guardNewWorld
+			&& isset(NodeScopeResolver::$guardRealExprIds[spl_object_id($node)])
+			&& !isset(NodeScopeResolver::$guardProcessedExprIds[spl_object_id($node)])
+			&& !($node instanceof Variable && is_string($node->name))
+			&& !$node instanceof Node\Scalar\String_
+			&& !$node instanceof Node\Scalar\Int_
+			&& !$node instanceof Node\Scalar\Float_
+		) {
+			throw new ShouldNotHappenException(sprintf(
+				'getType() asked about non-synthetic %s on line %d before it was processed by processExprNode() - it should consume the node\'s ExpressionResult instead.',
+				get_class($node),
+				$node->getStartLine(),
+			));
+		}
+
 		$type = ScopeOps::getTypeFromCache($this, $node, $key);
 		if ($type !== null) {
 			return $type;
@@ -1132,9 +1155,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		return md5(implode("\n", $parts));
 	}
 
-	/**
-	 * @param list<string> $roots
-	 */
+	/** @param list<string> $roots */
 	private static function exprStringIsRootedIn(string $exprString, array $roots): bool
 	{
 		foreach ($roots as $root) {
@@ -1168,181 +1189,256 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			return $expressionType;
 		}
 
+		// NodeScopeResolver intercepts a first-class callable CallLike before the
+		// ExprHandler dispatch - no handler supports the original node, its closure
+		// type lives on the stored result's typeCallback (see the *CallableNode
+		// handlers), mirroring TypeSpecifier::specifyTypesInCondition().
+		if ($node instanceof Expr\CallLike && $node->isFirstClassCallable()) {
+			return $this->resolveTypeOfNewWorldHandlerNode($node);
+		}
+
 		$exprHandler = ExprHandlerRegistry::resolve($node, $this->container);
 		if ($exprHandler !== null) {
-			return $exprHandler->resolveType($this, $node);
+			return $this->resolveTypeOfNewWorldHandlerNode($node);
 		}
 
 		return new MixedType();
 	}
 
 	/**
-	 * @param callable(Type): ?bool $typeCallback
+	 * Resolves the type of a node whose ExprHandler produced an ExpressionResult.
+	 * The answer comes from the ExpressionResult stored during the analysis
+	 * currently in progress (its eager type or typeCallback), or from processing
+	 * the node on demand (synthetic nodes, or no analysis in progress at all).
+	 *
+	 * The scope deliberately does not reference the storage - that would create
+	 * a reference cycle that never gets collected (see ExpressionResultStorageStack).
 	 */
-	public function issetCheck(Expr $expr, callable $typeCallback, ?bool $result = null): ?bool
+	private function resolveTypeOfNewWorldHandlerNode(Expr $node): Type
 	{
-		// mirrored in PHPStan\Rules\IssetCheck
-		if ($expr instanceof Node\Expr\Variable && is_string($expr->name)) {
-			$hasVariable = $this->hasVariableType($expr->name);
-			if ($hasVariable->maybe()) {
-				return null;
-			}
-
-			if ($result === null) {
-				if ($hasVariable->yes()) {
-					if ($expr->name === '_SESSION') {
-						return null;
-					}
-
-					return $typeCallback($this->getVariableType($expr->name));
-				}
-
-				return false;
-			}
-
-			return $result;
-		} elseif ($expr instanceof Node\Expr\ArrayDimFetch && $expr->dim !== null) {
-			$type = $this->getType($expr->var);
-			if (!$type->isOffsetAccessible()->yes()) {
-				return $result ?? $this->issetCheckUndefined($expr->var);
-			}
-
-			$dimType = $this->getType($expr->dim);
-			$hasOffsetValue = $type->hasOffsetValueType($dimType);
-			if ($hasOffsetValue->no()) {
-				return false;
-			}
-
-			// If offset cannot be null, store this error message and see if one of the earlier offsets is.
-			// E.g. $array['a']['b']['c'] ?? null; is a valid coalesce if a OR b or C might be null.
-			if ($hasOffsetValue->yes()) {
-				$result = $typeCallback($type->getOffsetValueType($dimType));
-
-				if ($result !== null) {
-					return $this->issetCheck($expr->var, $typeCallback, $result);
+		// the hooks are the boundary between the rule-facing world and the
+		// engine - a rule's NodeCallbackScope must not flow into result
+		// callbacks or on-demand processing
+		$scope = $this->toWalkScope();
+		$storage = $this->expressionResultStorageStack->getCurrent();
+		$counterfactualAsk = false;
+		if ($storage !== null) {
+			$result = $storage->findExpressionResult($node);
+			if ($result !== null && $result->canResolveOwnType()) {
+				// a counterfactual ask (the asking scope re-binds a variable the
+				// expression reads, e.g. array_filter pricing its callback body
+				// per constant element) must re-price the node on that scope -
+				// the memoized walk-position type answers a different question
+				$counterfactualAsk = !$result->askScopeVariableStateMatches($scope, $scope->nativeTypesPromoted);
+				if (!$counterfactualAsk) {
+					return $result->getTypeOnScope($scope, $scope->nativeTypesPromoted);
 				}
 			}
-
-			// Has offset, it is nullable
-			return null;
-
-		} elseif ($expr instanceof Node\Expr\PropertyFetch || $expr instanceof Node\Expr\StaticPropertyFetch) {
-
-			$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $this);
-
-			if ($propertyReflection === null) {
-				if ($expr instanceof Node\Expr\PropertyFetch) {
-					return $this->issetCheckUndefined($expr->var);
-				}
-
-				if ($expr->class instanceof Expr) {
-					return $this->issetCheckUndefined($expr->class);
-				}
-
-				return null;
-			}
-
-			if (!$propertyReflection->isNative()) {
-				if ($expr instanceof Node\Expr\PropertyFetch) {
-					return $this->issetCheckUndefined($expr->var);
-				}
-
-				if ($expr->class instanceof Expr) {
-					return $this->issetCheckUndefined($expr->class);
-				}
-
-				return null;
-			}
-
-			if ($propertyReflection->hasNativeType() && !$propertyReflection->isVirtual()->yes()) {
-				if (!$this->hasExpressionType($expr)->yes()) {
-					$nativeReflection = $propertyReflection->getNativeReflection();
-					if (
-						($nativeReflection === null || !$nativeReflection->getNativeReflection()->hasDefaultValue())
-						&& ($nativeReflection === null || !$nativeReflection->isPromoted() || (!$nativeReflection->isReadOnly() && !$nativeReflection->isHooked()))
-					) {
-						if ($expr instanceof Node\Expr\PropertyFetch) {
-							return $this->issetCheckUndefined($expr->var);
-						}
-
-						if ($expr->class instanceof Expr) {
-							return $this->issetCheckUndefined($expr->class);
-						}
-
-						return null;
-					}
-				}
-			}
-
-			if ($result !== null) {
-				if ($expr instanceof Node\Expr\PropertyFetch) {
-					return $this->issetCheck($expr->var, $typeCallback, $result);
-				}
-
-				if ($expr->class instanceof Expr) {
-					return $this->issetCheck($expr->class, $typeCallback, $result);
-				}
-
-				return $result;
-			}
-
-			$result = $typeCallback($propertyReflection->getWritableType());
-			if ($result !== null) {
-				if ($expr instanceof Node\Expr\PropertyFetch) {
-					return $this->issetCheck($expr->var, $typeCallback, $result);
-				}
-
-				if ($expr->class instanceof Expr) {
-					return $this->issetCheck($expr->class, $typeCallback, $result);
-				}
-			}
-
-			return $result;
 		}
 
-		if ($result !== null) {
-			return $result;
+		// A closure/arrow function type is computed directly (as
+		// resolveCallableTypeForScope() also does) - never by processing it on
+		// demand, which would re-enter ClosureHandler::processExpr() endlessly.
+		// This answers both a closure whose result is not stored yet (its own
+		// body walk asks for its type, and a callable parameter is derived from
+		// it while it is being processed) and a closure passed as a call argument,
+		// whose result NodeScopeResolver stores without an eager type.
+		// getClosureType()'s own depth guard answers the self-by-ref ask.
+		if ($node instanceof Expr\Closure || $node instanceof Expr\ArrowFunction) {
+			return $this->container->getByType(ClosureTypeResolver::class)->getClosureType($scope, $node, false, $storage);
 		}
 
-		return $typeCallback($this->getType($expr));
+		if (!$counterfactualAsk && $storage !== null && $storage->findExpressionResult($node) !== null) {
+			throw new ShouldNotHappenException(sprintf(
+				'ExpressionResult of %s cannot resolve its own type (no eager type, no typeCallback).',
+				get_class($node),
+			));
+		}
+
+		// a synthetic node, or no analysis in progress
+		$onDemandResult = $this->container->getByType(NodeScopeResolver::class)->processExprOnDemand(
+			$node,
+			$scope,
+			$storage !== null ? $storage->duplicate() : new ExpressionResultStorage(),
+		);
+
+		return $onDemandResult->getTypeOnScope($scope, $scope->nativeTypesPromoted);
 	}
 
-	private function issetCheckUndefined(Expr $expr): ?bool
+	/**
+	 * Prices the current (phpdoc, native) type pair of an expression that
+	 * applySpecifiedTypes() needs to intersect with or subtract from but that
+	 * is not tracked in the scope. Old-world filterBySpecifiedTypes() asked
+	 * Scope::getType() here; pricing from the stored ExpressionResult answers
+	 * through the typeCallback for converted handlers. A synthetic node the
+	 * analysis never processed - e.g. the plain-chain variant a nullsafe
+	 * narrowing emits ($a->b() alongside $a?->b()) - is priced on demand,
+	 * mirroring resolveTypeOfNewWorldHandlerNode(); its real subnodes answer
+	 * from stored results so the on-demand walk terminates. Returns null only
+	 * when there is no analysis in progress to price against.
+	 *
+	 * @return array{Type, Type}|null
+	 */
+	private function getCurrentTypesOfSpecifiedExpr(Expr $expr): ?array
 	{
-		if ($expr instanceof Node\Expr\Variable && is_string($expr->name)) {
-			$hasVariable = $this->hasVariableType($expr->name);
-			if (!$hasVariable->no()) {
-				return null;
+		$storage = $this->expressionResultStorageStack->getCurrent();
+		if ($storage === null) {
+			return null;
+		}
+
+		// a narrowable expression's scope-view type is derived from tracked
+		// state - the application-point semantics this method exists for. The
+		// stored result must NOT win here: a narrowing entry's node sits inside
+		// the condition (the \$a of `'' !== \$a`, walked on a truthy branch), so
+		// its walk-position type carries branch narrowing that would poison the
+		// base the narrowing is applied to. A nullsafe-containing chain is the
+		// exception: deriving it from tracked state re-prices its links on
+		// receiver state an active isset/?? ensure devices non-null, losing the
+		// short-circuit's null - its stored result keeps it.
+		$exprResult = $storage->findExpressionResult($expr);
+		if (
+			(
+				($expr instanceof Expr\Variable && is_string($expr->name))
+				|| $expr instanceof PropertyFetch
+				|| $expr instanceof Expr\ArrayDimFetch
+				|| $expr instanceof Expr\StaticPropertyFetch
+				// argument-less instance calls: the shape @phpstan-assert subjects
+				// take (synthetic per-build nodes, never stored - a walk per
+				// application otherwise)
+				|| ($expr instanceof Expr\MethodCall && $expr->name instanceof Identifier && !$expr->isFirstClassCallable() && $expr->getArgs() === [])
+			)
+			&& ($exprResult === null || !$exprResult->containsNullsafe())
+		) {
+			return [
+				$this->resolveScopeStateType($expr, $this->nativeTypesPromoted),
+				$this->resolveScopeStateType($expr, true),
+			];
+		}
+
+		$result = $exprResult;
+		if ($result === null) {
+			// a call subject (or a synthetic plain-chain variant) is priced on
+			// demand: one walk answers both flavours. Not memoized - a census
+			// showed repeat asks for the same unstored subject on one scope
+			// never happen (0 hits across corpora)
+			$scope = $this->toWalkScope();
+			$result = $this->container->getByType(NodeScopeResolver::class)->processExprOnDemand(
+				$expr,
+				$scope,
+				$storage->duplicate(),
+			);
+
+			return [
+				$result->getTypeOnScope($scope, $scope->nativeTypesPromoted),
+				$result->getTypeOnScope($scope, true),
+			];
+		}
+
+		// a type tracked for the whole expression on the asking scope wins over
+		// the stored result's own type: a handler (e.g. isset/empty via
+		// NonNullabilityHelper) may have processed the inner expression on a
+		// scope that strips null, so the result's type would be stale for the
+		// narrowing the caller is applying
+		return [
+			$result->getTypeOnScope($this, $this->nativeTypesPromoted),
+			$result->getTypeOnScope($this, true),
+		];
+	}
+
+	/**
+	 * Narrowing counterpart of resolveTypeOfNewWorldHandlerNode() - the old-world
+	 * TypeSpecifier dispatcher asks here for a node's narrowing. Returns null when
+	 * the ExpressionResult carries no specifyTypesCallback - the dispatcher falls
+	 * back to default truthy/falsey narrowing.
+	 *
+	 * @internal
+	 */
+	public function specifyTypesOfNewWorldHandlerNode(Expr $node, TypeSpecifierContext $context): SpecifiedTypes
+	{
+		return $this->obtainResultForNode($node)->getSpecifiedTypesForScope($this->toWalkScope(), $context);
+	}
+
+	/**
+	 * Obtains the ExpressionResult of a node so its narrowing/type can be asked
+	 * (getSpecifiedTypesForScope()/getTypeOnScope()): the stored result of an
+	 * already-processed node, or - for a synthetic node (or with no analysis in
+	 * progress) - the result of processing it on demand against a duplicate of
+	 * the current storage, so the throwaway walk never pollutes the live one.
+	 */
+	public function obtainResultForNode(Expr $node): ExpressionResult
+	{
+		// see resolveTypeOfNewWorldHandlerNode() - rules ask the dispatcher
+		// with their NodeCallbackScope (e.g. ImpossibleCheckTypeHelper), the engine
+		// side of the boundary works with the mutating flavor
+		$scope = $this->toWalkScope();
+		$storage = $this->expressionResultStorageStack->getCurrent();
+		if ($storage !== null) {
+			$result = $storage->findExpressionResult($node);
+			if ($result !== null) {
+				return $result;
 			}
-
-			return false;
 		}
 
-		if ($expr instanceof Node\Expr\ArrayDimFetch && $expr->dim !== null) {
-			$type = $this->getType($expr->var);
-			if (!$type->isOffsetAccessible()->yes()) {
-				return $this->issetCheckUndefined($expr->var);
-			}
-
-			$dimType = $this->getType($expr->dim);
-			$hasOffsetValue = $type->hasOffsetValueType($dimType);
-
-			if (!$hasOffsetValue->no()) {
-				return $this->issetCheckUndefined($expr->var);
-			}
-
-			return false;
+		if (
+			NodeScopeResolver::$guardNewWorld
+			&& isset(NodeScopeResolver::$guardRealExprIds[spl_object_id($node)])
+			&& !isset(NodeScopeResolver::$guardProcessedExprIds[spl_object_id($node)])
+		) {
+			throw new ShouldNotHappenException(sprintf(
+				'obtainResultForNode() asked about non-synthetic %s on line %d before it was processed by processExprNode() - it should consume the node\'s ExpressionResult instead.',
+				get_class($node),
+				$node->getStartLine(),
+			));
 		}
 
-		if ($expr instanceof Expr\PropertyFetch) {
-			return $this->issetCheckUndefined($expr->var);
+		// a synthetic node, or no analysis in progress
+		return $this->container->getByType(NodeScopeResolver::class)->processExprOnDemand(
+			$node,
+			$scope,
+			$storage !== null ? $storage->duplicate() : new ExpressionResultStorage(),
+		);
+	}
+
+	/**
+	 * Makes the storage answer type questions asked on this scope (and every
+	 * scope sharing its ExpressionResultStorageStack) for the duration of an
+	 * analysis. The caller must pop in a finally block.
+	 */
+	public function pushExpressionResultStorage(ExpressionResultStorage $storage): void
+	{
+		$this->expressionResultStorageStack->push($storage);
+	}
+
+	public function popExpressionResultStorage(): void
+	{
+		$this->expressionResultStorageStack->pop();
+	}
+
+	/**
+	 * The ExpressionResultStorage of the analysis currently in progress, the one
+	 * resolveTypeOfNewWorldHandlerNode() prices synthetic nodes against. A handler
+	 * pricing a synthetic node from a lazily-invoked typeCallback must use this
+	 * (not a storage captured at processExpr() time): a later re-evaluation
+	 * (e.g. findEarlyTerminatingExpr()) runs under a different current storage,
+	 * and the captured one would resolve the synthetic node's real subnodes from
+	 * stale stored results.
+	 *
+	 * @internal
+	 */
+	/** The settled stored result of the current storage - NodeCallbackScope's no-switch fast path. */
+	protected function findSettledStoredResult(Expr $node): ?ExpressionResult
+	{
+		$storage = $this->expressionResultStorageStack->getCurrent();
+		if ($storage === null) {
+			return null;
 		}
 
-		if ($expr instanceof Expr\StaticPropertyFetch && $expr->class instanceof Expr) {
-			return $this->issetCheckUndefined($expr->class);
-		}
+		return $this->container->getByType(NodeScopeResolver::class)->findSettledExpressionResult($storage, $node);
+	}
 
-		return null;
+	public function getCurrentExpressionResultStorage(): ?ExpressionResultStorage
+	{
+		return $this->expressionResultStorageStack->getCurrent();
 	}
 
 	/** @api */
@@ -1355,6 +1451,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	{
 		if (
 			!$node instanceof Match_
+			&& !$node instanceof Expr\Yield_
+			&& !$node instanceof Expr\YieldFrom
 			&& (
 				(
 					!$node instanceof FuncCall
@@ -1364,18 +1462,30 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				) || $node->isFirstClassCallable()
 			)
 		) {
-			return $this->getType($node);
+			return $this->getScopeStateType($node);
 		}
 
-		$originalType = $this->getType($node);
+		$originalType = $this->getScopeStateType($node);
 		if (!TypeCombinator::containsNull($originalType)) {
 			return $originalType;
 		}
 
-		$clonedNode = clone $node;
-		$clonedNode->setAttribute(self::KEEP_VOID_ATTRIBUTE_NAME, true);
+		// the null may be a projected void: read the call's/match's raw
+		// (void-kept) own type. A result already stored in the current frame is
+		// read directly; a node evaluated on a different scope - e.g. an arrow
+		// body typed on the closure scope - is processed on demand there, its
+		// raw own type keeping void without any keep-void marker on the node.
+		$storage = $this->expressionResultStorageStack->getCurrent();
+		$result = $storage !== null ? $storage->findExpressionResult($node) : null;
+		if ($result === null) {
+			$result = $this->container->getByType(NodeScopeResolver::class)->processExprOnDemand(
+				$node,
+				$this->toWalkScope(),
+				$storage !== null ? $storage->duplicate() : new ExpressionResultStorage(),
+			);
+		}
 
-		return $this->getType($clonedNode);
+		return $result->getKeepVoidType($this->nativeTypesPromoted);
 	}
 
 	public function doNotTreatPhpDocTypesAsCertain(): self
@@ -1483,6 +1593,19 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	public function hasExpressionType(Expr $node): TrinaryLogic
 	{
 		return ScopeOps::hasExpressionType($this, $node, $this->exprPrinter);
+	}
+
+	/**
+	 * Reads the type tracked for an expression straight from its holder, skipping
+	 * the extension/dispatch/cache machinery that getType() runs. Only valid when
+	 * hasExpressionType($node) is yes - mirrors resolveType()'s tracked-holder
+	 * early return and is what ExpressionResult uses on its tracked-holder path.
+	 *
+	 * @internal
+	 */
+	public function getTrackedExpressionType(Expr $node): Type
+	{
+		return $this->expressionTypes[$this->getNodeKey($node)]->getType();
 	}
 
 	/**
@@ -1847,7 +1970,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			if (!$parameter->var instanceof Variable || !is_string($parameter->var->name)) {
 				throw new ShouldNotHappenException();
 			}
-			$realParameterDefaultValues[$parameter->var->name] = $this->getType($parameter->default);
+			$realParameterDefaultValues[$parameter->var->name] = $this->initializerExprTypeResolver->getType($parameter->default, InitializerExprContext::fromScope($this));
 		}
 
 		return $realParameterDefaultValues;
@@ -2197,7 +2320,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		?array $nativeCallableParameters = null,
 	): self
 	{
-		$anonymousFunctionReflection = $this->container->getByType(ClosureTypeResolver::class)->getClosureType($this, $closure, true);
+		$anonymousFunctionReflection = $this->container->getByType(ClosureTypeResolver::class)->getClosureType($this, $closure, true, $this->getCurrentExpressionResultStorage());
 
 		$scope = $this->enterAnonymousFunctionWithoutReflection($closure, $callableParameters, $nativeCallableParameters);
 
@@ -2271,7 +2394,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				$variableNativeType = new ErrorType();
 			} else {
 				$variableType = $this->getVariableType($variableName);
-				$variableNativeType = $this->getNativeType($use->var);
+				// a plain variable read is scope state - never priced via the
+				// node, which may not have been processed yet
+				$nativeScope = $this->doNotTreatPhpDocTypesAsCertain();
+				$variableNativeType = $nativeScope->hasVariableType($variableName)->no() ? new ErrorType() : $nativeScope->getVariableType($variableName);
 			}
 			$expressionTypes[$paramExprString] = ExpressionTypeHolder::createYes($use->var, $variableType);
 			$nativeTypes[$paramExprString] = ExpressionTypeHolder::createYes($use->var, $variableNativeType);
@@ -2385,7 +2511,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				true,
 			)
 			&& isset($expr->getArgs()[0])
-			&& count($this->getType($expr->getArgs()[0]->value)->getConstantStrings()) === 1
+			&& count($this->getScopeStateType($expr->getArgs()[0]->value)->getConstantStrings()) === 1
 			&& $type->isTrue()->yes();
 	}
 
@@ -2417,7 +2543,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	 */
 	public function enterArrowFunction(Expr\ArrowFunction $arrowFunction, ?array $callableParameters, ?array $nativeCallableParameters = null): self
 	{
-		$anonymousFunctionReflection = $this->container->getByType(ClosureTypeResolver::class)->getClosureType($this, $arrowFunction, true);
+		$anonymousFunctionReflection = $this->container->getByType(ClosureTypeResolver::class)->getClosureType($this, $arrowFunction, true, $this->getCurrentExpressionResultStorage());
 
 		$scope = $this->enterArrowFunctionWithoutReflection($arrowFunction, $callableParameters, $nativeCallableParameters);
 
@@ -2649,6 +2775,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		// ($type = 'foo' invalidates this expression, same as OriginalForeachKeyExpr).
 		$scope = $scope->assignExpression(new OriginalForeachValueExpr($valueName), $valueType, $nativeValueType);
 		if ($valueByRef && $iterateeType->isArray()->yes() && $iterateeType->isConstantArray()->no()) {
+			// the write-through rebuilds the iteratee AT FOREACH ENTRY with the
+			// value variable's latest type - captured here, not read live: a
+			// live read would union the transient mid-iteration value states
+			// into the array (the loop convergence owns cross-iteration merging)
 			$scope = $scope->assignExpression(
 				new IntertwinedVariableByReferenceWithExpr($valueName, $iteratee, new SetExistingOffsetValueTypeExpr(
 					new NativeTypeExpr($iterateeType, $nativeIterateeType),
@@ -2741,8 +2871,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->nativeTypesPromoted,
 		);
 		$scope->resolvedTypes = $this->resolvedTypes;
-		$scope->truthyScopes = $this->truthyScopes;
-		$scope->falseyScopes = $this->falseyScopes;
 
 		return $scope;
 	}
@@ -2772,8 +2900,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->nativeTypesPromoted,
 		);
 		$scope->resolvedTypes = $this->resolvedTypes;
-		$scope->truthyScopes = $this->truthyScopes;
-		$scope->falseyScopes = $this->falseyScopes;
 
 		return $scope;
 	}
@@ -2833,8 +2959,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->nativeTypesPromoted,
 		);
 		$scope->resolvedTypes = $this->resolvedTypes;
-		$scope->truthyScopes = $this->truthyScopes;
-		$scope->falseyScopes = $this->falseyScopes;
 
 		return $scope;
 	}
@@ -2864,8 +2988,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->nativeTypesPromoted,
 		);
 		$scope->resolvedTypes = $this->resolvedTypes;
-		$scope->truthyScopes = $this->truthyScopes;
-		$scope->falseyScopes = $this->falseyScopes;
 
 		return $scope;
 	}
@@ -3043,10 +3165,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	{
 		$scope = $this;
 		if ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
-			$exprVarType = $scope->getType($expr->var);
+			$exprVarType = $scope->getScopeStateType($expr->var);
 			$dimType = $scope->getType($expr->dim);
 			$unsetType = $exprVarType->unsetOffset($dimType);
-			$exprVarNativeType = $scope->getNativeType($expr->var);
+			$exprVarNativeType = $scope->getScopeStateNativeType($expr->var);
 			$dimNativeType = $scope->getNativeType($expr->dim);
 			$unsetNativeType = $exprVarNativeType->unsetOffset($dimNativeType);
 			$scope = $scope->assignExpression($expr->var, $unsetType, $unsetNativeType)->invalidateExpression(
@@ -3064,17 +3186,181 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 					$expr->var->var,
 					$this->getType($expr->var->var)->setOffsetValueType(
 						$scope->getType($expr->var->dim),
-						$scope->getType($expr->var),
+						$scope->getScopeStateType($expr->var),
 					),
 					$this->getNativeType($expr->var->var)->setOffsetValueType(
 						$scope->getNativeType($expr->var->dim),
-						$scope->getNativeType($expr->var),
+						$scope->getScopeStateNativeType($expr->var),
 					),
 				);
 			}
 		}
 
 		return $scope->invalidateExpression($expr);
+	}
+
+	/**
+	 * A narrowable expression's current type as this scope sees it, derived
+	 * from tracked state (recursing into operands via reflection/offset reads)
+	 * - never by processing the node. The flavour follows the scope: a
+	 * native-promoted scope answers native types. Non-narrowable expressions
+	 * (calls, constants) fall back to getType().
+	 */
+	public function getStateType(Expr $expr): Type
+	{
+		return $this->resolveScopeStateType($expr, $this->nativeTypesPromoted);
+	}
+
+	private function getScopeStateType(Expr $expr): Type
+	{
+		return $this->resolveScopeStateType($expr, false);
+	}
+
+	private function getScopeStateNativeType(Expr $expr): Type
+	{
+		return $this->resolveScopeStateType($expr, true);
+	}
+
+	/**
+	 * Reads a narrowable expression's current type from the scope's tracked
+	 * state (recursing into its operands), instead of routing through the stored
+	 * ExpressionResult callbacks - so it reflects narrowings and assignments
+	 * applied to this scope rather than the expression's original evaluation
+	 * point (where Variable callbacks would read their captured beforeScope).
+	 */
+	private function resolveScopeStateType(Expr $expr, bool $native): Type
+	{
+		if (!$expr instanceof Variable && $this->hasExpressionType($expr)->yes()) {
+			// mirror resolveType()'s tracked-holder lookup without pricing the
+			// node - the tracked type IS scope state (the extension hook is
+			// deliberately skipped, like the getVariableType() read below)
+			$askScope = $native ? $this->doNotTreatPhpDocTypesAsCertain() : $this;
+			$trackedType = ScopeOps::expressionTypeByKey($askScope, $expr, $askScope->getNodeKey($expr));
+			if ($trackedType !== null) {
+				return TypeUtils::resolveLateResolvableTypes($trackedType);
+			}
+
+			return $native ? $this->getNativeType($expr) : $this->getType($expr);
+		}
+
+		if ($expr instanceof Variable && is_string($expr->name)) {
+			$scope = $native ? $this->doNotTreatPhpDocTypesAsCertain() : $this;
+
+			return $scope->hasVariableType($expr->name)->no() ? new ErrorType() : $scope->getVariableType($expr->name);
+		}
+
+		if ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
+			$varStateType = $this->resolveScopeStateType($expr->var, $native);
+			if ($varStateType instanceof NeverType) {
+				// real pricing of an offset read on never yields ErrorType (a
+				// benevolent mixed), never NeverType - mirror it, or a narrowing
+				// applied in a dead branch intersects its type against never and
+				// loses it (e.g. is_object($x[0]) no longer tracks $x[0] as object,
+				// silencing rules that read the narrowed type)
+				return new ErrorType();
+			}
+
+			return $varStateType->getOffsetValueType($this->resolveScopeStateType($expr->dim, $native));
+		}
+
+		if ($expr instanceof PropertyFetch && $expr->name instanceof Identifier) {
+			$propertyReflection = $this->getInstancePropertyReflection(
+				$this->resolveScopeStateType($expr->var, $native),
+				$expr->name->toString(),
+			);
+			if ($propertyReflection === null) {
+				return new ErrorType();
+			}
+
+			if ($native) {
+				return $propertyReflection->hasNativeType() ? $propertyReflection->getNativeType() : new MixedType();
+			}
+
+			return $propertyReflection->getReadableType();
+		}
+
+		if ($expr instanceof Expr\StaticPropertyFetch && $expr->name instanceof Node\VarLikeIdentifier) {
+			$fetchedOnType = $expr->class instanceof Name
+				? $this->resolveTypeByName($expr->class)
+				: TypeCombinator::removeNull($this->resolveScopeStateType($expr->class, $native))->getObjectTypeOrClassStringObjectType();
+			$propertyReflection = $this->getStaticPropertyReflection($fetchedOnType, $expr->name->toString());
+			if ($propertyReflection === null) {
+				return new ErrorType();
+			}
+
+			if ($native) {
+				return $propertyReflection->hasNativeType() ? $propertyReflection->getNativeType() : new MixedType();
+			}
+
+			return $propertyReflection->getReadableType();
+		}
+
+		// a nullsafe link of a chain being ensured non-null ahead of its walk
+		// (isset()/empty()/?? over `$a?->b()?->c`): its state is the plain
+		// link's state on the receiver's state, plus the short-circuit null -
+		// the same reflection-derived read as the plain fetch/call arms below,
+		// never a walk of the still-unprocessed node
+		if ($expr instanceof Expr\NullsafePropertyFetch && $expr->name instanceof Identifier) {
+			return TypeCombinator::addNull($this->resolveScopeStateType(new PropertyFetch($expr->var, $expr->name), $native));
+		}
+		if (
+			$expr instanceof Expr\NullsafeMethodCall
+			&& $expr->name instanceof Identifier
+			&& !$expr->isFirstClassCallable()
+			&& $expr->getArgs() === []
+		) {
+			return TypeCombinator::addNull($this->resolveScopeStateType(new Expr\MethodCall($expr->var, $expr->name, attributes: $expr->getAttributes()), $native));
+		}
+
+		// an argument-less instance call - the shape @phpstan-assert subjects
+		// take (synthetic nodes built fresh from the assert tag, never stored):
+		// its declared return type on the receiver's state is the narrowing
+		// base, derived from reflection instead of walking the synthetic node.
+		// A call the walk did store answers from that result: the declared
+		// return type lacks what the walk resolved against the arguments (a
+		// conditional return type, a template, a dynamic return type extension)
+		if (
+			$expr instanceof Expr\MethodCall
+			&& $expr->name instanceof Identifier
+			&& !$expr->isFirstClassCallable()
+			&& $expr->getArgs() === []
+		) {
+			$storage = $this->expressionResultStorageStack->getCurrent();
+			if ($storage !== null && $storage->findExpressionResult($expr) !== null) {
+				return $native ? $this->getNativeType($expr) : $this->getType($expr);
+			}
+
+			$methodReflection = $this->getMethodReflection(
+				$this->resolveScopeStateType($expr->var, $native),
+				$expr->name->toString(),
+			);
+			if ($methodReflection === null) {
+				return new ErrorType();
+			}
+
+			// resolved against the (empty) argument list so a template inferred
+			// from an omitted parameter's default resolves the way a walk
+			// resolves it (Collection::first()'s TFirstDefault -> null)
+			$variant = ParametersAcceptorSelector::selectFromArgs($this, [], $methodReflection->getVariants(), $methodReflection->getNamedArgumentsVariants());
+
+			return $native && $variant instanceof ExtendedParametersAcceptor ? $variant->getNativeReturnType() : $variant->getReturnType();
+		}
+
+		// position-independent constant expressions (isset()/?? dimensions and
+		// narrowing subjects like self::KEY) are priced without walking the node
+		if (
+			$expr instanceof Node\Scalar\String_
+			|| $expr instanceof Node\Scalar\Int_
+			|| $expr instanceof Node\Scalar\Float_
+			|| ($expr instanceof Expr\ClassConstFetch && $expr->class instanceof Name && $expr->name instanceof Identifier)
+			|| $expr instanceof ConstFetch
+		) {
+			return $this->initializerExprTypeResolver->getType($expr, InitializerExprContext::fromScope($this));
+		}
+
+		// genuinely non-narrowed expressions (calls, ...) have no
+		// variable-callback hazard, so read them normally.
+		return $native ? $this->getNativeType($expr) : $this->getType($expr);
 	}
 
 	public function specifyExpressionType(Expr $expr, Type $type, Type $nativeType, TrinaryLogic $certainty): self
@@ -3092,17 +3378,23 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	/** An unpublished copy of this scope that in-place specification may mutate. */
 	private function openSpecificationScope(): self
 	{
-		/** @var static */
-		return ScopeOps::scopeWith(
-			$this,
+		return $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->getFunction(),
+			$this->getNamespace(),
 			$this->expressionTypes,
 			$this->nativeExpressionTypes,
 			$this->conditionalExpressions,
+			$this->inClosureBindScopeClasses,
+			$this->anonymousFunctionReflection,
+			$this->inFirstLevelStatement,
 			$this->currentlyAssignedExpressions,
 			$this->currentlyAllowedUndefinedExpressions,
 			$this->inFunctionCallsStack,
-			$this->inFirstLevelStatement,
 			$this->afterExtractCall,
+			$this->parentScope,
+			$this->nativeTypesPromoted,
 		);
 	}
 
@@ -3153,9 +3445,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			&& !$expr->dim instanceof Expr\PostDec
 			&& !$expr->dim instanceof Expr\PostInc
 		) {
-			$dimType = $this->getType($expr->dim)->toArrayKey();
+			$dimType = $this->getScopeStateType($expr->dim)->toArrayKey();
 			if ($dimType->isInteger()->yes() || $dimType->isString()->yes()) {
-				$exprVarType = $this->getType($expr->var);
+				$exprVarType = $this->getScopeStateType($expr->var);
 				$isArray = $exprVarType->isArray();
 				if (!$exprVarType instanceof MixedType && !$isArray->no()) {
 					$varType = $exprVarType;
@@ -3179,7 +3471,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 					$this->specifyExpressionTypeInPlace(
 						$expr->var,
 						$varType,
-						$this->getNativeType($expr->var),
+						$this->getScopeStateNativeType($expr->var),
 						$certainty,
 					);
 				}
@@ -3193,15 +3485,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		$exprString = $this->getNodeKey($expr);
 		$this->expressionTypes[$exprString] = new ExpressionTypeHolder($expr, $type, $certainty);
 		$this->nativeExpressionTypes[$exprString] = new ExpressionTypeHolder($expr, $nativeType, $certainty);
-		// the writes invalidate every lazily-derived view of this scope; reset
-		// them to their fresh-constructor defaults, exactly as deriving a new
-		// scope per specification did
-		$this->resolvedTypes = [];
-		$this->truthyScopes = [];
-		$this->falseyScopes = [];
-		$this->nodeCallbackScope = null;
-		$this->scopeOutOfFirstLevelStatement = null;
-		$this->scopeWithPromotedNativeTypes = null;
 
 		if (!($expr instanceof AlwaysRememberedExpr)) {
 			return;
@@ -3394,12 +3677,12 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 
 	public function addTypeToExpression(Expr $expr, Type $type): self
 	{
-		$originalExprType = $this->getType($expr);
+		$originalExprType = $this->getScopeStateType($expr);
 		if ($this->isComplexUnionType($originalExprType)) {
 			return $this;
 		}
 
-		$nativeType = $this->getNativeType($expr);
+		$nativeType = $this->getScopeStateNativeType($expr);
 
 		if ($originalExprType->equals($nativeType)) {
 			$newType = TypeCombinator::intersect($type, $originalExprType);
@@ -3420,7 +3703,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			return $this;
 		}
 
-		$exprType = $this->getType($expr);
+		$exprType = $this->getScopeStateType($expr);
 		if ($exprType instanceof NeverType) {
 			return $this;
 		}
@@ -3432,7 +3715,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		return $this->specifyExpressionType(
 			$expr,
 			TypeCombinator::remove($exprType, $typeToRemove),
-			TypeCombinator::remove($this->getNativeType($expr), $typeToRemove),
+			TypeCombinator::remove($this->getScopeStateNativeType($expr), $typeToRemove),
 			TrinaryLogic::createYes(),
 		);
 	}
@@ -3442,16 +3725,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	 */
 	public function filterByTruthyValue(Expr $expr): self
 	{
-		$exprString = $this->getNodeKey($expr);
-		if (array_key_exists($exprString, $this->truthyScopes)) {
-			return $this->truthyScopes[$exprString];
-		}
-
 		$specifiedTypes = $this->typeSpecifier->specifyTypesInCondition($this, $expr, TypeSpecifierContext::createTruthy());
-		$scope = $this->applySpecifiedTypes($specifiedTypes);
-		$this->truthyScopes[$exprString] = $scope;
 
-		return $scope;
+		return $this->applySpecifiedTypes($specifiedTypes);
 	}
 
 	/**
@@ -3459,20 +3735,18 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	 */
 	public function filterByFalseyValue(Expr $expr): self
 	{
-		$exprString = $this->getNodeKey($expr);
-		if (array_key_exists($exprString, $this->falseyScopes)) {
-			return $this->falseyScopes[$exprString];
-		}
-
 		$specifiedTypes = $this->typeSpecifier->specifyTypesInCondition($this, $expr, TypeSpecifierContext::createFalsey());
-		$scope = $this->applySpecifiedTypes($specifiedTypes);
-		$this->falseyScopes[$exprString] = $scope;
 
-		return $scope;
+		return $this->applySpecifiedTypes($specifiedTypes);
 	}
 
 	/**
 	 * Applies computed narrowing to this scope.
+	 *
+	 * The types inside SpecifiedTypes were already computed from ExpressionResults
+	 * by the specifyTypesCallback of an ExprHandler. This method must never call
+	 * Scope::getType() - it only combines the given types with already-tracked
+	 * expression type holders.
 	 *
 	 * @return static
 	 */
@@ -3496,34 +3770,34 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 
 		$typeSpecifications = [];
 		foreach ($specifiedTypes->getSureTypes() as $exprString => [$expr, $type]) {
-			if ($expr instanceof Node\Scalar || $expr instanceof Expr\Array_ || $expr instanceof Expr\UnaryMinus && $expr->expr instanceof Node\Scalar) {
+			if ($expr instanceof Node\Scalar || $expr instanceof Array_ || $expr instanceof Expr\UnaryMinus && $expr->expr instanceof Node\Scalar) {
 				continue;
 			}
 			$typeSpecifications[] = [
 				'sure' => true,
-				'exprString' => $exprString,
+				'exprString' => (string) $exprString,
 				'expr' => $expr,
 				'type' => $type,
 			];
 		}
 		foreach ($specifiedTypes->getSureNotTypes() as $exprString => [$expr, $type]) {
-			if ($expr instanceof Node\Scalar || $expr instanceof Expr\Array_ || $expr instanceof Expr\UnaryMinus && $expr->expr instanceof Node\Scalar) {
+			if ($expr instanceof Node\Scalar || $expr instanceof Array_ || $expr instanceof Expr\UnaryMinus && $expr->expr instanceof Node\Scalar) {
 				continue;
 			}
 			$typeSpecifications[] = [
 				'sure' => false,
-				'exprString' => $exprString,
+				'exprString' => (string) $exprString,
 				'expr' => $expr,
 				'type' => $type,
 			];
 		}
 		foreach ($specifiedTypes->getAlternativeTypes() as $exprString => [$expr, $terms]) {
-			if ($expr instanceof Node\Scalar || $expr instanceof Expr\Array_ || $expr instanceof Expr\UnaryMinus && $expr->expr instanceof Node\Scalar) {
+			if ($expr instanceof Node\Scalar || $expr instanceof Array_ || $expr instanceof Expr\UnaryMinus && $expr->expr instanceof Node\Scalar) {
 				continue;
 			}
 			$typeSpecifications[] = [
 				'sure' => true,
-				'exprString' => $exprString,
+				'exprString' => (string) $exprString,
 				'expr' => $expr,
 				'terms' => $terms,
 			];
@@ -3546,6 +3820,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		$specifiedExpressions = [];
 		foreach ($typeSpecifications as $typeSpecification) {
 			$expr = $typeSpecification['expr'];
+			$exprString = $typeSpecification['exprString'];
 
 			if ($expr instanceof IssetExpr) {
 				$issetExpr = $expr;
@@ -3575,35 +3850,80 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				continue;
 			}
 
+			// only Yes-certainty holders hold the current type of the expression -
+			// a Maybe-certainty holder holds the when-defined type (e.g. after
+			// merging a branch where the expression was never assigned), which
+			// the certainty-aware Scope::getType() of the old world never returned
+			$trackedType = null;
+			$trackedNativeType = null;
+			if (
+				array_key_exists($exprString, $scope->expressionTypes)
+				&& $scope->expressionTypes[$exprString]->getCertainty()->yes()
+			) {
+				$trackedType = $scope->expressionTypes[$exprString]->getType();
+			}
+			if (
+				array_key_exists($exprString, $scope->nativeExpressionTypes)
+				&& $scope->nativeExpressionTypes[$exprString]->getCertainty()->yes()
+			) {
+				$trackedNativeType = $scope->nativeExpressionTypes[$exprString]->getType();
+			}
+			if ($trackedType === null) {
+				$currentTypes = $scope->getCurrentTypesOfSpecifiedExpr($expr);
+				if ($currentTypes !== null) {
+					if ($scope->isComplexUnionType($currentTypes[0])) {
+						continue;
+					}
+
+					$trackedType = $currentTypes[0];
+					$trackedNativeType ??= $currentTypes[1];
+				}
+			} elseif (!$specifiedTypes->shouldOverwrite() && $scope->isComplexUnionType($trackedType)) {
+				// mirrors addTypeToExpression()/removeTypeFromExpression(): narrowing
+				// a combinatorially-grown offset union doubles it with every isset()-
+				// style check and gets skipped (overwrites assign, they never narrow)
+				continue;
+			}
+
 			if (isset($typeSpecification['terms'])) {
 				// an alternative-form entry: the union over its terms of
 				// `(sure ?? current) minus subtract`, evaluated here at the
 				// application point - the deferred descendant of the old
 				// SpecifiedTypes::normalize()
-				$evaluate = static function (Type $current) use ($typeSpecification): Type {
+				$evaluate = static function (?Type $current) use ($typeSpecification): ?Type {
 					$parts = [];
 					foreach ($typeSpecification['terms'] as [$sure, $subtract]) {
 						$base = $sure ?? $current;
+						if ($base === null) {
+							return null;
+						}
 						$parts[] = $subtract !== null ? TypeCombinator::remove($base, $subtract) : $base;
 					}
 
 					return TypeCombinator::union(...$parts);
 				};
-				$originalExprType = $scope->getType($expr);
-				if (!$scope->isComplexUnionType($originalExprType)) {
-					$nativeType = $scope->getNativeType($expr);
-					$newType = TypeCombinator::intersect($evaluate($originalExprType), $originalExprType);
-					$newNativeType = TypeCombinator::intersect($evaluate($nativeType), $nativeType);
-					if (!$this->isSpecifyExpressionTypeNoop($expr, $newType)) {
-						if (!$scopeIsWorkingCopy) {
-							$scope = $scope->openSpecificationScope();
-							$scopeIsWorkingCopy = true;
-						}
-						$scope->specifyExpressionTypeInPlace($expr, $newType, $newNativeType, TrinaryLogic::createYes());
+				$evaluated = $evaluate($trackedType);
+				if ($evaluated === null) {
+					// a current-type-dependent term with no known current type -
+					// nothing sound to specify (mirrors the sure-not behaviour)
+					continue;
+				}
+				$evaluatedNative = $evaluate($trackedNativeType ?? $trackedType) ?? $evaluated;
+
+				$newType = $trackedType !== null ? TypeCombinator::intersect($evaluated, $trackedType) : $evaluated;
+				$newNativeType = $trackedNativeType !== null ? TypeCombinator::intersect($evaluatedNative, $trackedNativeType) : $evaluatedNative;
+				if (!$this->isSpecifyExpressionTypeNoop($expr, $newType)) {
+					if (!$scopeIsWorkingCopy) {
+						$scope = $scope->openSpecificationScope();
+						$scopeIsWorkingCopy = true;
 					}
-					$specifiedExpressions[$typeSpecification['exprString']] = ExpressionTypeHolder::createYes($expr, $scope->getScopeType($expr));
+					$scope->specifyExpressionTypeInPlace($expr, $newType, $newNativeType, TrinaryLogic::createYes());
 				}
 
+				$holderType = array_key_exists($exprString, $scope->expressionTypes)
+					? $scope->expressionTypes[$exprString]->getType()
+					: $newType;
+				$specifiedExpressions[$exprString] = ExpressionTypeHolder::createYes($expr, $holderType);
 				continue;
 			}
 
@@ -3613,27 +3933,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 					$scope = $scope->assignExpression($expr, $type, $type);
 					$scopeIsWorkingCopy = false;
 				} else {
-					// addTypeToExpression(), writing into the working copy
-					$originalExprType = $scope->getType($expr);
-					if (!$scope->isComplexUnionType($originalExprType)) {
-						$nativeType = $scope->getNativeType($expr);
-						$newType = TypeCombinator::intersect($type, $originalExprType);
-						$newNativeType = $originalExprType->equals($nativeType) ? $newType : TypeCombinator::intersect($type, $nativeType);
-						if (!$this->isSpecifyExpressionTypeNoop($expr, $newType)) {
-							if (!$scopeIsWorkingCopy) {
-								$scope = $scope->openSpecificationScope();
-								$scopeIsWorkingCopy = true;
-							}
-							$scope->specifyExpressionTypeInPlace($expr, $newType, $newNativeType, TrinaryLogic::createYes());
-						}
-					}
-				}
-			} elseif (!$type instanceof NeverType) {
-				// removeTypeFromExpression(), writing into the working copy
-				$exprType = $scope->getType($expr);
-				if (!$exprType instanceof NeverType && !$scope->isComplexUnionType($exprType)) {
-					$newType = TypeCombinator::remove($exprType, $type);
-					$newNativeType = TypeCombinator::remove($scope->getNativeType($expr), $type);
+					$newType = $trackedType !== null ? TypeCombinator::intersect($type, $trackedType) : $type;
+					$newNativeType = $trackedNativeType !== null ? TypeCombinator::intersect($type, $trackedNativeType) : $type;
 					if (!$this->isSpecifyExpressionTypeNoop($expr, $newType)) {
 						if (!$scopeIsWorkingCopy) {
 							$scope = $scope->openSpecificationScope();
@@ -3642,8 +3943,29 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 						$scope->specifyExpressionTypeInPlace($expr, $newType, $newNativeType, TrinaryLogic::createYes());
 					}
 				}
+			} else {
+				if ($type instanceof NeverType || $trackedType instanceof NeverType) {
+					continue;
+				}
+				$newType = $trackedType !== null ? TypeCombinator::remove($trackedType, $type) : null;
+				if ($newType === null) {
+					// the expression is not tracked - there is nothing to subtract from
+					continue;
+				}
+				$newNativeType = $trackedNativeType !== null ? TypeCombinator::remove($trackedNativeType, $type) : $newType;
+				if (!$this->isSpecifyExpressionTypeNoop($expr, $newType)) {
+					if (!$scopeIsWorkingCopy) {
+						$scope = $scope->openSpecificationScope();
+						$scopeIsWorkingCopy = true;
+					}
+					$scope->specifyExpressionTypeInPlace($expr, $newType, $newNativeType, TrinaryLogic::createYes());
+				}
 			}
-			$specifiedExpressions[$typeSpecification['exprString']] = ExpressionTypeHolder::createYes($expr, $scope->getScopeType($expr));
+
+			$holderType = array_key_exists($exprString, $scope->expressionTypes)
+				? $scope->expressionTypes[$exprString]->getType()
+				: $type;
+			$specifiedExpressions[$exprString] = ExpressionTypeHolder::createYes($expr, $holderType);
 		}
 
 		$scope = $scope->processConditionalExpressionsAfterSpecifying($specifiedExpressions);
@@ -3652,24 +3974,31 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		foreach ($specifiedTypes->getConditionalExpressionHolderRecipes() as $recipe) {
 			// the recipes' state-dependent math runs here, against this scope's
 			// pre-application state - the application point of the narrowing
-			foreach ($recipe->evaluate($this) as $recipeExprString => $recipeHolders) {
+			foreach ($recipe->evaluate($this) as $exprString => $recipeHolders) {
 				foreach ($recipeHolders as $key => $holder) {
-					$newConditionalExpressionHolders[$recipeExprString][$key] = $holder;
+					$newConditionalExpressionHolders[$exprString][$key] = $holder;
 				}
 			}
 		}
 
 		/** @var static */
-		return ScopeOps::scopeWith(
-			$scope,
+		return $scope->scopeFactory->create(
+			$scope->context,
+			$scope->isDeclareStrictTypes(),
+			$scope->getFunction(),
+			$scope->getNamespace(),
 			$scope->expressionTypes,
 			$scope->nativeExpressionTypes,
 			$this->mergeConditionalExpressions($newConditionalExpressionHolders, $scope->conditionalExpressions),
+			$scope->inClosureBindScopeClasses,
+			$scope->anonymousFunctionReflection,
+			$scope->inFirstLevelStatement,
 			$scope->currentlyAssignedExpressions,
 			$scope->currentlyAllowedUndefinedExpressions,
 			$scope->inFunctionCallsStack,
-			$scope->inFirstLevelStatement,
 			$scope->afterExtractCall,
+			$scope->parentScope,
+			$scope->nativeTypesPromoted,
 		);
 	}
 
@@ -3776,8 +4105,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->afterExtractCall,
 		);
 		$scope->resolvedTypes = $this->resolvedTypes;
-		$scope->truthyScopes = $this->truthyScopes;
-		$scope->falseyScopes = $this->falseyScopes;
 		$this->scopeOutOfFirstLevelStatement = $scope;
 
 		return $scope;
@@ -4899,7 +5226,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			if ($typeWithProperty instanceof NeverType) {
 				return null;
 			}
-		} elseif (!$typeWithProperty->hasInstanceProperty($propertyName)->yes()) {
+		}
+		if (!$typeWithProperty->hasInstanceProperty($propertyName)->yes()) {
 			return null;
 		}
 
@@ -4914,7 +5242,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			if ($typeWithProperty instanceof NeverType) {
 				return null;
 			}
-		} elseif (!$typeWithProperty->hasStaticProperty($propertyName)->yes()) {
+		}
+		if (!$typeWithProperty->hasStaticProperty($propertyName)->yes()) {
 			return null;
 		}
 

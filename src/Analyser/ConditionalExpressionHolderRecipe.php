@@ -22,7 +22,7 @@ final class ConditionalExpressionHolderRecipe
 {
 
 	/**
-	 * @param list<array{string, Expr, bool, Type}> $conditionEntries [exprString, expr, fromSureTypes, type]
+	 * @param list<array{string, Expr, bool, Type, ?ExpressionResult}> $conditionEntries [exprString, expr, fromSureTypes, type, the operand walk's result for the expr]
 	 * @param list<array{string, Expr, Type, ?Type}> $holderEntries [exprString, expr, type, target type pinned at compose time (null = read the applying scope)]
 	 */
 	public function __construct(
@@ -43,8 +43,15 @@ final class ConditionalExpressionHolderRecipe
 		// the unnarrowed type of each condition expression, for the
 		// dropped-self-condition complement below
 		$conditionOriginalTypes = [];
-		foreach ($this->conditionEntries as [$exprString, $expr, $fromSureTypes, $type]) {
-			$scopeType = $scope->getType($expr);
+		foreach ($this->conditionEntries as [$exprString, $expr, $fromSureTypes, $type, $conditionResult]) {
+			// through the expression's own result, which answers from the applying
+			// scope's state where that scope owns the expression - a narrowing
+			// subject no walk produced (an extension is free to specify a type for
+			// an expression the source never evaluated on its own) has no result
+			// and is read from the scope state directly
+			$scopeType = $conditionResult !== null
+				? $conditionResult->getTypeOnScope($scope, $scope->nativeTypesPromoted)
+				: $scope->getStateType($expr);
 			$conditionType = $fromSureTypes
 				? TypeCombinator::remove($scopeType, $type)
 				: TypeCombinator::intersect($scopeType, $type);
@@ -81,7 +88,7 @@ final class ConditionalExpressionHolderRecipe
 				continue;
 			}
 
-			$targetType = $pinnedTargetType ?? $scope->getType($expr);
+			$targetType = $pinnedTargetType ?? $scope->getStateType($expr);
 			$holderType = $this->holdersFromSureTypes
 				? TypeCombinator::intersect($targetType, $type)
 				: TypeCombinator::remove($targetType, $type);

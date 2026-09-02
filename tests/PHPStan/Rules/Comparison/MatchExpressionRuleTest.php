@@ -31,7 +31,6 @@ class MatchExpressionRuleTest extends RuleTestCase
 			new ImpossibleCheckTypeFunctionCallRule(
 				new ImpossibleCheckTypeHelper(
 					self::createReflectionProvider(),
-					$this->getTypeSpecifier(),
 					$this->treatPhpDocTypesAsCertain,
 				),
 				new PossiblyImpureTipHelper(true),
@@ -44,7 +43,6 @@ class MatchExpressionRuleTest extends RuleTestCase
 			new ImpossibleCheckTypeMethodCallRule(
 				new ImpossibleCheckTypeHelper(
 					self::createReflectionProvider(),
-					$this->getTypeSpecifier(),
 					$this->treatPhpDocTypesAsCertain,
 				),
 				new PossiblyImpureTipHelper(true),
@@ -57,7 +55,6 @@ class MatchExpressionRuleTest extends RuleTestCase
 			new ImpossibleCheckTypeStaticMethodCallRule(
 				new ImpossibleCheckTypeHelper(
 					self::createReflectionProvider(),
-					$this->getTypeSpecifier(),
 					$this->treatPhpDocTypesAsCertain,
 				),
 				new PossiblyImpureTipHelper(true),
@@ -531,6 +528,14 @@ class MatchExpressionRuleTest extends RuleTestCase
 	public function testBug10128(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-10128.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testNullInMultiConditionArm(): void
+	{
+		// every case is handled - a condition after null in the same arm must
+		// still be subtracted from the subject
+		$this->analyse([__DIR__ . '/data/match-null-in-multi-condition-arm.php'], []);
 	}
 
 	#[RequiresPhp('>= 8.0.0')]

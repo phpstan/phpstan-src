@@ -35,9 +35,14 @@ final class ReturnHandler implements StmtHandler
 		StatementContext $context,
 	): InternalStatementResult
 	{
-		$entryScope = $scope;
+		$stmtScope = $nodeScopeResolver->processStmtVarAnnotation($scope, $storage, $stmt, $stmt->expr, $nodeCallback);
+
 		if ($stmt->expr !== null) {
-			$result = $nodeScopeResolver->processExprNode($stmt, $stmt->expr, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			$result = $nodeScopeResolver->processExprNode($stmt, $stmt->expr, $stmtScope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			// the @var-changed-type node fires now that the expression is stored
+			// on the scope BEFORE the @var tag re-typed the expression, so the rule
+			// compares the tag against the expression's walked type
+			$nodeScopeResolver->emitVarTagChangedNode($scope, $storage, $stmt, $stmt->expr, $nodeCallback);
 			$throwPoints = $result->getThrowPoints();
 			$impurePoints = $result->getImpurePoints();
 			$scope = $result->getScope();
@@ -48,7 +53,7 @@ final class ReturnHandler implements StmtHandler
 			$impurePoints = [];
 		}
 
-		$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $entryScope, $storage);
+		$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $stmtScope, $storage);
 
 		return new InternalStatementResult($scope, hasYield: $hasYield, isAlwaysTerminating: true, exitPoints: [
 			new InternalStatementExitPoint($stmt, $scope),

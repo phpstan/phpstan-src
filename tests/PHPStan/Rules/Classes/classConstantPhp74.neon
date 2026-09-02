@@ -1,0 +1,5 @@
+includes:
+	- ../../../../conf/bleedingEdge.neon
+
+parameters:
+	phpVersion: 70400 # PHP 7.4

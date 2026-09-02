@@ -2,24 +2,74 @@
 
 namespace PHPStan\Analyser;
 
+use PhpParser\Node\Expr;
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\ShouldNotHappenException;
+use function get_class;
+use function spl_object_id;
+use function sprintf;
 
 /**
  * Result of NodeScopeResolver::processArgs(): the scope/throw/impure state after
  * processing all arguments (wrapped ExpressionResult) plus the ParametersAcceptor
  * resolved from the arg types gathered on the arg-to-arg evolving scope. The
  * resolved acceptor is type-driven (selectFromTypes) so its generics are resolved
- * against the actual argument types - callers wire it into the call's return
- * type. Null when the call had no variants (dynamic callee).
+ * against the actual argument types - callers wire it into the call expression's
+ * stored return type. Null when the call had no variants (dynamic callee).
  */
 final class ArgsResult
 {
 
+	/**
+	 * @param array<int, ExpressionResult> $argResults keyed by spl_object_id of each argument's value expression
+	 */
 	public function __construct(
 		private ExpressionResult $expressionResult,
 		private ?ParametersAcceptor $resolvedParametersAcceptor,
+		private array $argResults,
 	)
 	{
+	}
+
+	/**
+	 * Membership query: the ExpressionResult of the given expression if it is one of
+	 * the call's processed arguments. Null means the expression is not such an
+	 * argument - either it is a different expression altogether (the callee name, a
+	 * synthetic node, a narrowed subexpression), or it is a default-value argument
+	 * ArgumentsNormalizer synthesized for an omitted optional parameter, which has no
+	 * source code behind it and so was never processed. Call sites holding an actual
+	 * argument of the call use requireArgResult() instead.
+	 */
+	public function findArgResult(Expr $argValue): ?ExpressionResult
+	{
+		return $this->argResults[spl_object_id($argValue)] ?? null;
+	}
+
+	/**
+	 * @return array<int, ExpressionResult> keyed by spl_object_id of each argument's value expression
+	 */
+	public function getArgResults(): array
+	{
+		return $this->argResults;
+	}
+
+	/**
+	 * The stored ExpressionResult of a call argument's value expression; the
+	 * argument must have been processed by processArgs() - engine code reads
+	 * argument types through this instead of re-asking the scope.
+	 */
+	public function requireArgResult(Expr $argValue): ExpressionResult
+	{
+		$result = $this->argResults[spl_object_id($argValue)] ?? null;
+		if ($result === null) {
+			throw new ShouldNotHappenException(sprintf(
+				'No stored ExpressionResult for a %s argument on line %d.',
+				get_class($argValue),
+				$argValue->getStartLine(),
+			));
+		}
+
+		return $result;
 	}
 
 	public function getScope(): MutatingScope
@@ -51,6 +101,19 @@ final class ArgsResult
 	public function getImpurePoints(): array
 	{
 		return $this->expressionResult->getImpurePoints();
+	}
+
+	/**
+	 * The same processed arguments under another acceptor: an immediately
+	 * invoked closure's arguments are walked on its declared signature, the
+	 * acceptor the call resolves from is the walked closure's.
+	 */
+	public function withResolvedParametersAcceptor(?ParametersAcceptor $resolvedParametersAcceptor): self
+	{
+		$clone = clone $this;
+		$clone->resolvedParametersAcceptor = $resolvedParametersAcceptor;
+
+		return $clone;
 	}
 
 	public function getResolvedParametersAcceptor(): ?ParametersAcceptor

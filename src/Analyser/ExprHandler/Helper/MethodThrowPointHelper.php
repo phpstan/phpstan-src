@@ -45,12 +45,19 @@ final class MethodThrowPointHelper
 	{
 	}
 
+	/**
+	 * @param Type $methodCallReturnType the resolved return type of $normalizedMethodCall;
+	 *     passed in by the caller so this helper never asks Scope::getType() itself
+	 *     (the old-world call handlers resolve it directly, the new-world toString
+	 *     path prices the synthetic call on demand)
+	 */
 	public function getThrowPoint(
 		MethodReflection $methodReflection,
 		ParametersAcceptor $parametersAcceptor,
 		MethodCall|StaticCall $normalizedMethodCall,
 		MutatingScope $scope,
 		ExpressionContext $context,
+		Type $methodCallReturnType,
 	): ?InternalThrowPoint
 	{
 		if ($normalizedMethodCall instanceof MethodCall) {
@@ -91,8 +98,7 @@ final class MethodThrowPointHelper
 
 		$throwType = $methodReflection->getThrowType();
 		if ($throwType === null) {
-			$returnType = $scope->getType($normalizedMethodCall);
-			if ($returnType instanceof NeverType && $returnType->isExplicit()) {
+			if ($methodCallReturnType instanceof NeverType && $methodCallReturnType->isExplicit()) {
 				$throwType = new ObjectType(Throwable::class);
 			}
 		}
@@ -102,8 +108,7 @@ final class MethodThrowPointHelper
 				return InternalThrowPoint::createExplicit($scope, $throwType, $normalizedMethodCall, true);
 			}
 		} elseif ($this->implicitThrows) {
-			$methodReturnedType = $scope->getType($normalizedMethodCall);
-			if (!$context->isInThrow() || !(new ObjectType(Throwable::class))->isSuperTypeOf($methodReturnedType)->yes()) {
+			if (!$context->isInThrow() || !(new ObjectType(Throwable::class))->isSuperTypeOf($methodCallReturnType)->yes()) {
 				return InternalThrowPoint::createImplicit($scope, $normalizedMethodCall);
 			}
 		}
@@ -130,7 +135,8 @@ final class MethodThrowPointHelper
 			return [InternalThrowPoint::createImplicit($scope, $methodCall)];
 		}
 
-		$throwPoint = $this->getThrowPoint($methodReflection, ParametersAcceptorSelector::combineAcceptors($methodReflection->getVariants()), $methodCall, $scope, $context);
+		$parametersAcceptor = ParametersAcceptorSelector::combineVariantsForNormalization($methodCall->getArgs(), $methodReflection->getVariants(), $methodReflection->getNamedArgumentsVariants());
+		$throwPoint = $this->getThrowPoint($methodReflection, $parametersAcceptor, $methodCall, $scope, $context, $parametersAcceptor->getReturnType());
 		if ($throwPoint === null) {
 			return [];
 		}

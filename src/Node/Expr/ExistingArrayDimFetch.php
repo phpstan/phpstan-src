@@ -6,6 +6,12 @@ use Override;
 use PhpParser\Node\Expr;
 use PHPStan\Node\VirtualNode;
 
+/**
+ * The chain links reference the original, already-processed AST nodes, so
+ * consumers read their stored results instead of re-walking. No results are
+ * carried here: these wrappers end up inside scope-held synthetic expressions,
+ * and a carried result would pin its whole scope graph.
+ */
 final class ExistingArrayDimFetch extends Expr implements VirtualNode
 {
 

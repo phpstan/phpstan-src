@@ -12,11 +12,9 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
-use PHPStan\Analyser\Scope;
-use PHPStan\Analyser\SpecifiedTypes;
-use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -35,6 +33,7 @@ final class ConstFetchHandler implements ExprHandler
 	public function __construct(
 		private ConstantResolver $constantResolver,
 		private ExpressionResultFactory $expressionResultFactory,
+		private DefaultNarrowingHelper $defaultNarrowingHelper,
 	)
 	{
 	}
@@ -56,51 +55,45 @@ final class ConstFetchHandler implements ExprHandler
 			isAlwaysTerminating: false,
 			throwPoints: [],
 			impurePoints: [],
+			typeCallback: function (bool $nativeTypesPromoted) use ($expr, $scope): Type {
+				$constName = (string) $expr->name;
+				$loweredConstName = strtolower($constName);
+				if ($loweredConstName === 'true') {
+					return new ConstantBooleanType(true);
+				} elseif ($loweredConstName === 'false') {
+					return new ConstantBooleanType(false);
+				} elseif ($loweredConstName === 'null') {
+					return new NullType();
+				}
+
+				$namespacedName = null;
+				if (!$expr->name->isFullyQualified() && $scope->getNamespace() !== null) {
+					$namespacedName = new FullyQualified([$scope->getNamespace(), $expr->name->toString()]);
+				}
+				$globalName = new FullyQualified($expr->name->toString());
+
+				foreach ([$namespacedName, $globalName] as $name) {
+					if ($name === null) {
+						continue;
+					}
+					$constFetch = new ConstFetch($name);
+					if ($scope->hasExpressionType($constFetch)->yes()) {
+						return $this->constantResolver->resolveConstantType(
+							$name->toString(),
+							$scope->expressionTypes[$scope->getNodeKey($constFetch)]->getType(),
+						);
+					}
+				}
+
+				$constantType = $this->constantResolver->resolveConstant($expr->name, $scope);
+				if ($constantType !== null) {
+					return $constantType;
+				}
+
+				return new ErrorType();
+			},
+			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
 		);
-	}
-
-	public function resolveType(MutatingScope $scope, Expr $expr): Type
-	{
-		$constName = (string) $expr->name;
-		$loweredConstName = strtolower($constName);
-		if ($loweredConstName === 'true') {
-			return new ConstantBooleanType(true);
-		} elseif ($loweredConstName === 'false') {
-			return new ConstantBooleanType(false);
-		} elseif ($loweredConstName === 'null') {
-			return new NullType();
-		}
-
-		$namespacedName = null;
-		if (!$expr->name->isFullyQualified() && $scope->getNamespace() !== null) {
-			$namespacedName = new FullyQualified([$scope->getNamespace(), $expr->name->toString()]);
-		}
-		$globalName = new FullyQualified($expr->name->toString());
-
-		foreach ([$namespacedName, $globalName] as $name) {
-			if ($name === null) {
-				continue;
-			}
-			$constFetch = new ConstFetch($name);
-			if ($scope->hasExpressionType($constFetch)->yes()) {
-				return $this->constantResolver->resolveConstantType(
-					$name->toString(),
-					$scope->expressionTypes[$scope->getNodeKey($constFetch)]->getType(),
-				);
-			}
-		}
-
-		$constantType = $this->constantResolver->resolveConstant($expr->name, $scope);
-		if ($constantType !== null) {
-			return $constantType;
-		}
-
-		return new ErrorType();
-	}
-
-	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
-	{
-		return $typeSpecifier->specifyDefaultTypes($scope, $expr, $context);
 	}
 
 }

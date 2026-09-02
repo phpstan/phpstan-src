@@ -31,7 +31,6 @@ class LogicalXorConstantConditionRuleTest extends RuleTestCase
 			new ImpossibleCheckTypeFunctionCallRule(
 				new ImpossibleCheckTypeHelper(
 					self::createReflectionProvider(),
-					$this->getTypeSpecifier(),
 					$this->shouldTreatPhpDocTypesAsCertain(),
 				),
 				new PossiblyImpureTipHelper(true),
@@ -44,7 +43,6 @@ class LogicalXorConstantConditionRuleTest extends RuleTestCase
 			new ImpossibleCheckTypeMethodCallRule(
 				new ImpossibleCheckTypeHelper(
 					self::createReflectionProvider(),
-					$this->getTypeSpecifier(),
 					$this->shouldTreatPhpDocTypesAsCertain(),
 				),
 				new PossiblyImpureTipHelper(true),
@@ -57,7 +55,6 @@ class LogicalXorConstantConditionRuleTest extends RuleTestCase
 			new ImpossibleCheckTypeStaticMethodCallRule(
 				new ImpossibleCheckTypeHelper(
 					self::createReflectionProvider(),
-					$this->getTypeSpecifier(),
 					$this->shouldTreatPhpDocTypesAsCertain(),
 				),
 				new PossiblyImpureTipHelper(true),

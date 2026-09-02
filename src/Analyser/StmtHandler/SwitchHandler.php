@@ -10,12 +10,15 @@ use PhpParser\Node\Stmt\Continue_;
 use PhpParser\Node\Stmt\Switch_;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResultStorage;
+use PHPStan\Analyser\ExprHandler\Helper\IdenticalNarrowingHelper;
 use PHPStan\Analyser\InternalStatementResult;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
+use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\DependencyInjection\Container;
 use PHPStan\Node\SwitchConditionArm;
 use PHPStan\Node\SwitchConditionNode;
 use PHPStan\Type\NeverType;
@@ -31,6 +34,10 @@ final class SwitchHandler implements StmtHandler
 	public function supports(Stmt $stmt): bool
 	{
 		return $stmt instanceof Switch_;
+	}
+
+	public function __construct(private Container $container)
+	{
 	}
 
 	public function processStmt(
@@ -79,7 +86,23 @@ final class SwitchHandler implements StmtHandler
 					$caseNode->cond->getStartLine(),
 					$caseKey === $lastNonDefaultCaseKey,
 				);
-				$branchScope = $caseResult->getScope()->filterByTruthyValue($condExpr);
+				// the == narrowing composed from the subject's and the case's
+				// results (what the walked synthetic delegates to); the walk is
+				// the composition's miss seam
+				$caseEqualTypes = $this->container->getByType(IdenticalNarrowingHelper::class)->specifyEqual(
+					$nodeScopeResolver,
+					$stmt->cond,
+					$caseNode->cond,
+					$condResult,
+					$caseResult,
+					TypeSpecifierContext::createTruthy(),
+					$caseResult->getScope(),
+					null,
+					null,
+				);
+				$branchScope = $caseEqualTypes !== null
+					? $caseResult->getScope()->applySpecifiedTypes($caseEqualTypes->setRootExpr($condExpr))
+					: $nodeScopeResolver->narrowScopeWithCondition($caseResult->getScope(), $condExpr, TypeSpecifierContext::createTruthy());
 			} else {
 				$hasDefaultCase = true;
 				$fullCondExpr = null;
@@ -105,7 +128,7 @@ final class SwitchHandler implements StmtHandler
 				$alwaysTerminating = $alwaysTerminating && $branchFinalScopeResult->isAlwaysTerminating();
 				$prevScope = null;
 				if (isset($fullCondExpr)) {
-					$scopeForBranches = $scopeForBranches->filterByFalseyValue($fullCondExpr);
+					$scopeForBranches = $nodeScopeResolver->narrowScopeWithCondition($scopeForBranches, $fullCondExpr, TypeSpecifierContext::createFalsey());
 					$fullCondExpr = null;
 				}
 				if (!$branchFinalScopeResult->isAlwaysTerminating()) {
@@ -128,7 +151,10 @@ final class SwitchHandler implements StmtHandler
 		// $scopeForBranches is the subject narrowed by "none of the cases
 		// matched". The narrowing is tracked by the scope (getTypeOnScope's
 		// authoritative read); only an untracked subject needs reprocessing there.
-		$exhaustive = $scopeForBranches->getType($stmt->cond) instanceof NeverType;
+		$remainingCaseType = $condResult->answersOnScope($scopeForBranches, false)
+			? $condResult->getTypeOnScope($scopeForBranches, false)
+			: $nodeScopeResolver->processExprOnDemand($stmt->cond, $scopeForBranches, new ExpressionResultStorage())->getType();
+		$exhaustive = $remainingCaseType instanceof NeverType;
 
 		if (!$hasDefaultCase && !$exhaustive) {
 			$alwaysTerminating = false;

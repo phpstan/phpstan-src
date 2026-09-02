@@ -19,16 +19,19 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
+use PHPStan\Analyser\ExprHandler\Helper\IdenticalNarrowingHelper;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
-use PHPStan\Analyser\Scope;
+use PHPStan\Analyser\PerFileAnalysisResettable;
+use PHPStan\Analyser\RicherScopeGetTypeHelper;
 use PHPStan\Analyser\SpecifiedTypes;
-use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
+use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\MatchExpressionArm;
 use PHPStan\Node\MatchExpressionArmBody;
 use PHPStan\Node\MatchExpressionArmCondition;
@@ -45,6 +48,7 @@ use function array_merge;
 use function array_values;
 use function count;
 use function ksort;
+use function spl_object_id;
 use function strtolower;
 use const SORT_NUMERIC;
 
@@ -52,13 +56,30 @@ use const SORT_NUMERIC;
  * @implements ExprHandler<Match_>
  */
 #[AutowiredService]
-final class MatchHandler implements ExprHandler
+final class MatchHandler implements ExprHandler, PerFileAnalysisResettable
 {
+
+	/**
+	 * Keyed by the match node's spl_object_id() - see
+	 * TernaryHandler::$capturedResults for the lifetime/collision reasoning;
+	 * the entry pins the node it was captured for.
+	 *
+	 * @var array<int, array{Match_, list<array{ExpressionResult, MutatingScope, Expr}>}>
+	 */
+	private array $capturedArmResults = [];
+
+	public function resetFileAnalysisState(): void
+	{
+		$this->capturedArmResults = [];
+	}
 
 	public function __construct(
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 		private ExpressionResultFactory $expressionResultFactory,
+		private DefaultNarrowingHelper $defaultNarrowingHelper,
+		private IdenticalNarrowingHelper $identicalNarrowingHelper,
+		private RicherScopeGetTypeHelper $richerScopeGetTypeHelper,
 	)
 	{
 	}
@@ -68,143 +89,30 @@ final class MatchHandler implements ExprHandler
 		return $expr instanceof Match_;
 	}
 
-	public function resolveType(MutatingScope $scope, Expr $expr): Type
-	{
-		$types = [];
-		foreach ($this->getArmScopesAndTypes($scope, $expr) as [, $armType]) {
-			$types[] = $armType;
-		}
-
-		return TypeCombinator::union(...$types);
-	}
-
 	/**
-	 * For each reachable match arm, returns the arm's body type together with the
-	 * scope in which the match subject is narrowed to that arm's condition. This
-	 * lets callers reconstruct the relationship between the match result and the
+	 * For each reachable arm of an already-processed match, the arm's body type
+	 * together with the scope in which the subject is narrowed to that arm's
+	 * condition - the pairs captured during processExpr()'s single walk. Lets
+	 * callers reconstruct the relationship between the match result and the
 	 * narrowed subject (e.g. to project a later narrowing of the assigned result
-	 * back onto the subject).
+	 * back onto the subject) without re-walking the arms. Null when the node was
+	 * never processed.
 	 *
-	 * @return list<array{MutatingScope, Type}>
+	 * @return list<array{MutatingScope, Type}>|null
 	 */
-	public function getArmScopesAndTypes(MutatingScope $scope, Match_ $expr): array
+	public function getCapturedArmScopesAndTypes(Match_ $expr): ?array
 	{
-		$cond = $expr->cond;
-		$condType = $scope->getType($cond);
-		$armScopesAndTypes = [];
-
-		$matchScope = $scope;
-		$arms = $expr->arms;
-		if ($condType->isEnum()->yes()) {
-			// enum match analysis would work even without this if branch
-			// but would be much slower
-			// this avoids using ObjectType::$subtractedType which is slow for huge enums
-			// because of repeated union type normalization
-			$enumCases = $condType->getEnumCases();
-			if (count($enumCases) > 0) {
-				$indexedEnumCases = [];
-				foreach ($enumCases as $enumCase) {
-					$indexedEnumCases[strtolower($enumCase->getClassName())][$enumCase->getEnumCaseName()] = $enumCase;
-				}
-				$unusedIndexedEnumCases = $indexedEnumCases;
-
-				foreach ($arms as $i => $arm) {
-					if ($arm->conds === null) {
-						continue;
-					}
-
-					$conditionCases = [];
-					foreach ($arm->conds as $armCond) {
-						if (!$armCond instanceof Expr\ClassConstFetch) {
-							continue 2;
-						}
-						if (!$armCond->class instanceof Name) {
-							continue 2;
-						}
-						if (!$armCond->name instanceof Identifier) {
-							continue 2;
-						}
-						$fetchedClassName = $scope->resolveName($armCond->class);
-						$loweredFetchedClassName = strtolower($fetchedClassName);
-						if (!array_key_exists($loweredFetchedClassName, $indexedEnumCases)) {
-							continue 2;
-						}
-
-						$caseName = $armCond->name->toString();
-						if (!array_key_exists($caseName, $indexedEnumCases[$loweredFetchedClassName])) {
-							continue 2;
-						}
-
-						$conditionCases[] = $indexedEnumCases[$loweredFetchedClassName][$caseName];
-						unset($unusedIndexedEnumCases[$loweredFetchedClassName][$caseName]);
-					}
-
-					$conditionCasesCount = count($conditionCases);
-					if ($conditionCasesCount === 0) {
-						throw new ShouldNotHappenException();
-					} elseif ($conditionCasesCount === 1) {
-						$conditionCaseType = $conditionCases[0];
-					} else {
-						$conditionCaseType = new UnionType($conditionCases);
-					}
-
-					$armScope = $matchScope->addTypeToExpression(
-						$cond,
-						$conditionCaseType,
-					);
-					$armScopesAndTypes[] = [$armScope, $armScope->getType($arm->body)];
-					unset($arms[$i]);
-				}
-
-				$remainingCases = [];
-				foreach ($unusedIndexedEnumCases as $cases) {
-					foreach ($cases as $case) {
-						$remainingCases[] = $case;
-					}
-				}
-
-				$remainingCasesCount = count($remainingCases);
-				if ($remainingCasesCount === 0) {
-					$remainingType = new NeverType();
-				} elseif ($remainingCasesCount === 1) {
-					$remainingType = $remainingCases[0];
-				} else {
-					$remainingType = new UnionType($remainingCases);
-				}
-
-				$matchScope = $matchScope->addTypeToExpression($cond, $remainingType);
-			}
+		$entry = $this->capturedArmResults[spl_object_id($expr)] ?? null;
+		if ($entry === null || $entry[0] !== $expr) {
+			return null;
 		}
 
-		foreach ($arms as $arm) {
-			if ($arm->conds === null) {
-				if ($expr->hasAttribute(MutatingScope::KEEP_VOID_ATTRIBUTE_NAME)) {
-					$arm->body->setAttribute(MutatingScope::KEEP_VOID_ATTRIBUTE_NAME, $expr->getAttribute(MutatingScope::KEEP_VOID_ATTRIBUTE_NAME));
-				}
-				$armScopesAndTypes[] = [$matchScope, $matchScope->getType($arm->body)];
-				continue;
-			}
-
-			if (count($arm->conds) === 0) {
-				throw new ShouldNotHappenException();
-			}
-
-			$filteringExpr = $this->getFilteringExprForMatchArm($expr, $arm->conds);
-
-			$filteringExprType = $matchScope->getType($filteringExpr);
-
-			if (!$filteringExprType->isFalse()->yes()) {
-				$truthyScope = $matchScope->filterByTruthyValue($filteringExpr);
-				if ($expr->hasAttribute(MutatingScope::KEEP_VOID_ATTRIBUTE_NAME)) {
-					$arm->body->setAttribute(MutatingScope::KEEP_VOID_ATTRIBUTE_NAME, $expr->getAttribute(MutatingScope::KEEP_VOID_ATTRIBUTE_NAME));
-				}
-				$armScopesAndTypes[] = [$truthyScope, $truthyScope->getType($arm->body)];
-			}
-
-			$matchScope = $matchScope->filterByFalseyValue($filteringExpr);
+		$pairs = [];
+		foreach ($entry[1] as [$armResult, $bodyScope]) {
+			$pairs[] = [$bodyScope, $armResult->getType()];
 		}
 
-		return $armScopesAndTypes;
+		return $pairs;
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
@@ -212,6 +120,8 @@ final class MatchHandler implements ExprHandler
 		$beforeScope = $scope;
 		$deepContext = $context->enterDeep();
 		$condResult = $nodeScopeResolver->processExprNode($stmt, $expr->cond, $scope, $storage, $nodeCallback, $deepContext);
+		// the subject was just processed on this scope; read its result instead of
+		// re-walking via Scope::getType().
 		$condType = $condResult->getType();
 		$condNativeType = $condResult->getNativeType();
 		$scope = $condResult->getScope();
@@ -226,6 +136,16 @@ final class MatchHandler implements ExprHandler
 		$arms = $expr->arms;
 		$armCondsToSkip = [];
 		$armBodyScopes = [];
+		// Capture, for each reachable arm, the body's already-computed
+		// ExpressionResult together with the scope it was processed on and the
+		// body node itself. The typeCallback unions these inside-out instead of
+		// re-walking the arms (which getArmScopesAndTypes/the old resolveType
+		// did). The set of contributing arms mirrors getArmScopesAndTypes
+		// exactly. The body node is kept so the keepVoid projection (the only
+		// caller is getKeepVoidType, via a synthetic clone of the match) can be
+		// computed for it.
+		/** @var list<array{ExpressionResult, MutatingScope, Expr}> $armTypeResults */
+		$armTypeResults = [];
 		if ($condType->isEnum()->yes()) {
 			// enum match analysis would work even without this if branch
 			// but would be much slower
@@ -345,10 +265,13 @@ final class MatchHandler implements ExprHandler
 					}
 
 					$filteringExpr = $this->getFilteringExprForMatchArm($expr, $conditionExprs);
-					$matchArmBodyScope = $matchScope->addTypeToExpression(
+					$condNarrowedScope = $matchScope->addTypeToExpression(
 						$expr->cond,
 						$conditionCaseType,
-					)->filterByTruthyValue($filteringExpr);
+					);
+					$matchArmBodyScope = $condNarrowedScope->applySpecifiedTypes(
+						$nodeScopeResolver->processSyntheticOnDemand($filteringExpr, $condNarrowedScope)->getSpecifiedTypesForScope($condNarrowedScope, TypeSpecifierContext::createTruthy()),
+					);
 					$matchArmBody = new MatchExpressionArmBody($matchArmBodyScope, $arm->body);
 					$armNodes[$i] = new MatchExpressionArm($matchArmBody, $condNodes, $arm->getStartLine());
 
@@ -367,6 +290,7 @@ final class MatchHandler implements ExprHandler
 					$hasYield = $hasYield || $armResult->hasYield();
 					$throwPoints = array_merge($throwPoints, $armResult->getThrowPoints());
 					$impurePoints = array_merge($impurePoints, $armResult->getImpurePoints());
+					$armTypeResults[] = [$armResult, $matchArmBodyScope, $arm->body];
 
 					unset($arms[$i]);
 				}
@@ -393,6 +317,7 @@ final class MatchHandler implements ExprHandler
 		foreach ($arms as $i => $arm) {
 			if ($arm->conds === null) {
 				$hasDefaultCond = true;
+				$defaultArmBodyScope = $matchScope;
 				$matchArmBody = new MatchExpressionArmBody($matchScope, $arm->body);
 				$armNodes[$i] = new MatchExpressionArm($matchArmBody, [], $arm->getStartLine());
 				$armResult = $nodeScopeResolver->processExprNode($stmt, $arm->body, $matchScope, $storage, $nodeCallback, ExpressionContext::createTopLevel());
@@ -403,6 +328,7 @@ final class MatchHandler implements ExprHandler
 				if (!$armResult->isAlwaysTerminating()) {
 					$armBodyScopes[] = $matchScope;
 				}
+				$armTypeResults[] = [$armResult, $defaultArmBodyScope, $arm->body];
 				continue;
 			}
 
@@ -411,10 +337,12 @@ final class MatchHandler implements ExprHandler
 			}
 
 			$filteringExprs = [];
+			$filteringCondData = [];
 			$armCondScope = $matchScope;
 			$condNodes = [];
 			$armCondResultScope = $matchScope;
 			$bodyScope = null;
+			$condArgResult = $this->identicalNarrowingHelper->captureFirstArgResult($expr->cond, $storage);
 			foreach ($arm->conds as $j => $armCond) {
 				if (isset($armCondsToSkip[$i][$j])) {
 					continue;
@@ -426,21 +354,70 @@ final class MatchHandler implements ExprHandler
 				$impurePoints = array_merge($impurePoints, $armCondResult->getImpurePoints());
 				$armCondExpr = new BinaryOp\Identical($expr->cond, $armCond);
 				$armCondResultScope = $armCondResult->getScope();
-				$armCondType = $this->treatPhpDocTypesAsCertain ? $armCondResultScope->getType($armCondExpr) : $armCondResultScope->getNativeType($armCondExpr);
+				// the `subject === cond` verdict and both narrowing contexts,
+				// composed from the subject's THREADED per-arm state (carrying
+				// the previous arms' subtractions) and the condition's walk
+				// result - no synthetic Identical walk
+				$armSubjectType = $armCondResultScope->getStateType($expr->cond);
+				$armCondType = $this->treatPhpDocTypesAsCertain
+					? $this->richerScopeGetTypeHelper->getIdenticalResult($armCondResultScope, $armCondExpr, $nodeScopeResolver, $armSubjectType, $armCondResult->getType())->type
+					: $this->richerScopeGetTypeHelper->getIdenticalResult($armCondResultScope->doNotTreatPhpDocTypesAsCertain(), $armCondExpr, $nodeScopeResolver, $armCondResultScope->doNotTreatPhpDocTypesAsCertain()->getStateType($expr->cond), $armCondResult->getNativeType())->type;
 				if ($armCondType->isTrue()->yes()) {
 					$hasAlwaysTrueCond = true;
 				}
-				$armCondScope = $armCondResultScope->filterByFalseyValue($armCondExpr);
+				$armCondArgResult = $this->identicalNarrowingHelper->captureFirstArgResult($armCond, $storage);
+				$specifyArmCond = fn (TypeSpecifierContext $specifyContext): SpecifiedTypes => ($this->identicalNarrowingHelper->specifyIdentical(
+					$nodeScopeResolver,
+					$expr->cond,
+					$armCond,
+					$condResult,
+					$armCondResult,
+					$specifyContext,
+					$armCondResultScope,
+					$condArgResult,
+					$armCondArgResult,
+					fn (): Type => $this->richerScopeGetTypeHelper->getIdenticalResult($armCondResultScope, $armCondExpr, $nodeScopeResolver, $armCondResultScope->getStateType($expr->cond), $armCondResult->getType())->type,
+				) ?? $this->defaultNarrowingHelper->specifyDefaultTypes($armCondExpr, $specifyContext))->setRootExpr($armCondExpr);
+				$armCondScope = $armCondResultScope->applySpecifiedTypes($specifyArmCond(TypeSpecifierContext::createFalsey()));
+				$armCondTruthyScope = $armCondResultScope->applySpecifiedTypes($specifyArmCond(TypeSpecifierContext::createTruthy()));
 				if ($bodyScope === null) {
-					$bodyScope = $armCondResultScope->filterByTruthyValue($armCondExpr);
+					$bodyScope = $armCondTruthyScope;
 				} else {
-					$bodyScope = $bodyScope->mergeWith($armCondResultScope->filterByTruthyValue($armCondExpr));
+					$bodyScope = $bodyScope->mergeWith($armCondTruthyScope);
 				}
 				$filteringExprs[] = $armCond;
+				$filteringCondData[] = [$armCond, $armCondResult];
 			}
 
-			$filteringExpr = $this->getFilteringExprForMatchArm($expr, $filteringExprs);
-			$bodyScope ??= $matchScope->filterByTruthyValue($filteringExpr);
+			if (count($filteringCondData) === 1) {
+				// single-condition arm: the filtering expression is the same
+				// subject === cond comparison - compose its verdict from the
+				// walk results instead of pricing a synthetic node ($bodyScope
+				// is always set here, so the multi-cond branch's ??= has no
+				// single-cond counterpart)
+				if ($bodyScope === null) {
+					throw new ShouldNotHappenException();
+				}
+				[$filteringCond, $filteringCondResult] = $filteringCondData[0];
+				$filteringIdentical = new BinaryOp\Identical($expr->cond, $filteringCond);
+				$filteringExprType = $this->richerScopeGetTypeHelper->getIdenticalResult($matchScope, $filteringIdentical, $nodeScopeResolver, $matchScope->getStateType($expr->cond), $filteringCondResult->getType())->type;
+				// the falsey narrowing stays a synthetic walk: the walk re-prices
+				// the subject on the arm-narrowed scope, and that progressive
+				// narrowing (each arm sees the subject minus the previous arms'
+				// values) is what lets the last arm decide exhaustiveness -
+				// composing from the original subject result loses it (bug-6064)
+				$filteringFalseyTypes = $nodeScopeResolver->processSyntheticOnDemand($filteringIdentical, $armCondScope)->getSpecifiedTypesForScope($armCondScope, TypeSpecifierContext::createFalsey());
+			} else {
+				// multi-condition arms compose through in_array so the narrowing
+				// stays owned by the in_array type-specifying extension; arms
+				// whose conditions were all skipped keep the empty in_array
+				// (always false)
+				$filteringExpr = $this->getFilteringExprForMatchArm($expr, $filteringExprs, $filteringCondData);
+				$filteringExprResult = $nodeScopeResolver->processSyntheticOnDemand($filteringExpr, $matchScope);
+				$bodyScope ??= $matchScope->applySpecifiedTypes($filteringExprResult->getSpecifiedTypesForScope($matchScope, TypeSpecifierContext::createTruthy()));
+				$filteringExprType = $filteringExprResult->getTypeOnScope($matchScope, false);
+				$filteringFalseyTypes = $nodeScopeResolver->processSyntheticOnDemand($filteringExpr, $armCondScope)->getSpecifiedTypesForScope($armCondScope, TypeSpecifierContext::createFalsey());
+			}
 			$matchArmBody = new MatchExpressionArmBody($bodyScope, $arm->body);
 			$armNodes[$i] = new MatchExpressionArm($matchArmBody, $condNodes, $arm->getStartLine());
 
@@ -459,7 +436,13 @@ final class MatchHandler implements ExprHandler
 			$hasYield = $hasYield || $armResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $armResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $armResult->getImpurePoints());
-			$matchScope = $armCondScope->filterByFalseyValue($filteringExpr);
+			// Mirror getArmScopesAndTypes: an arm whose filtering expression is
+			// always false is unreachable and does not contribute to the result
+			// type.
+			if (!$filteringExprType->isFalse()->yes()) {
+				$armTypeResults[] = [$armResult, $bodyScope, $arm->body];
+			}
+			$matchScope = $armCondScope->applySpecifiedTypes($filteringFalseyTypes);
 		}
 
 		if (!$hasDefaultCond && !$hasAlwaysTrueCond && $condType->isBoolean()->yes() && $condType->isConstantScalarValue()->yes()) {
@@ -473,7 +456,12 @@ final class MatchHandler implements ExprHandler
 
 		$isExhaustive = $hasDefaultCond || $hasAlwaysTrueCond;
 		if (!$isExhaustive) {
-			$remainingType = $matchScope->getType($expr->cond);
+			// $matchScope is the subject narrowed by "no arm matched". The arm
+			// narrowing is tracked by the scope (getTypeOnScope's authoritative
+			// read); only an untracked subject needs reprocessing there.
+			$remainingType = $condResult->answersOnScope($matchScope, false)
+				? $condResult->getTypeOnScope($matchScope, false)
+				: $nodeScopeResolver->processExprOnDemand($expr->cond, $matchScope, new ExpressionResultStorage())->getType();
 			if ($remainingType instanceof NeverType) {
 				$isExhaustive = true;
 			}
@@ -504,6 +492,8 @@ final class MatchHandler implements ExprHandler
 			$expr->cond = $expr->cond->getExpr();
 		}
 
+		$this->capturedArmResults[spl_object_id($expr)] = [$expr, $armTypeResults];
+
 		return $this->expressionResultFactory->create(
 			$scope,
 			beforeScope: $beforeScope,
@@ -512,21 +502,46 @@ final class MatchHandler implements ExprHandler
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
+			// Each arm body was already processed on the scope where the subject
+			// is narrowed to that arm's condition - those captured scopes are the
+			// evaluation points, so the result type is just the union of the arm
+			// body types, no re-walk of the arms needed.
+			typeCallback: static function (bool $nativeTypesPromoted) use ($armTypeResults): Type {
+				// the union keeps void in the arm bodies (the raw type);
+				// ExpressionResult projects void->null for value reads and
+				// getKeepVoidType() keeps it, so UsageOfVoidMatchExpressionRule
+				// still sees a void arm
+				$types = [];
+				foreach ($armTypeResults as [$armResult]) {
+					$types[] = $armResult->getKeepVoidType($nativeTypesPromoted);
+				}
+
+				return TypeCombinator::union(...$types);
+			},
+			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
 		);
 	}
 
 	/**
 	 * @param Expr[] $conditions
+	 * @param list<array{Expr, ExpressionResult}> $condData the conditions' walk results, keyed like $conditions
 	 */
-	private function getFilteringExprForMatchArm(Match_ $expr, array $conditions): BinaryOp\Identical|FuncCall
+	private function getFilteringExprForMatchArm(Match_ $expr, array $conditions, array $condData = []): BinaryOp\Identical|FuncCall
 	{
 		if (count($conditions) === 1) {
 			return new BinaryOp\Identical($expr->cond, $conditions[0]);
 		}
 
+		// The haystack carries the conditions' walked types, not their nodes: a
+		// condition node is narrowed to never on the arm's own falsey scope
+		// ($subject === $cond specifies both sides), so re-pricing it there would
+		// collapse every condition after the first and stop the arm subtracting.
 		$items = [];
-		foreach ($conditions as $filteringExpr) {
-			$items[] = new Node\ArrayItem($filteringExpr);
+		foreach ($conditions as $i => $filteringExpr) {
+			$condResult = $condData[$i][1] ?? null;
+			$items[] = new Node\ArrayItem(
+				$condResult !== null ? new TypeExpr($condResult->getType()) : $filteringExpr,
+			);
 		}
 
 		return new FuncCall(
@@ -558,14 +573,16 @@ final class MatchHandler implements ExprHandler
 		// Check if any boolean variable's both truth values lead to contradictions
 		foreach ($boolVars as $varName) {
 			$varExpr = new Variable($varName);
+			// a walked Variable's specify callback is exactly the default
+			// narrowing - no need to price the synthetic node on demand
 
-			$truthyScope = $scope->filterByTruthyValue($varExpr);
+			$truthyScope = $scope->applySpecifiedTypes($this->defaultNarrowingHelper->specifyDefaultTypes($varExpr, TypeSpecifierContext::createTruthy()));
 			$truthyContradiction = $this->scopeHasNeverVariable($truthyScope, $boolVars);
 			if (!$truthyContradiction) {
 				continue;
 			}
 
-			$falseyScope = $scope->filterByFalseyValue($varExpr);
+			$falseyScope = $scope->applySpecifiedTypes($this->defaultNarrowingHelper->specifyDefaultTypes($varExpr, TypeSpecifierContext::createFalsey()));
 			$falseyContradiction = $this->scopeHasNeverVariable($falseyScope, $boolVars);
 			if ($falseyContradiction) {
 				return true;
@@ -588,11 +605,6 @@ final class MatchHandler implements ExprHandler
 		}
 
 		return false;
-	}
-
-	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
-	{
-		return $typeSpecifier->specifyDefaultTypes($scope, $expr, $context);
 	}
 
 }

@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\PhpDoc;
 
 use PHPStan\PhpDoc\TypeNodeResolver;
+use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\FileTypeMapper;
@@ -22,6 +23,7 @@ class VarTagChangedExpressionTypeRuleTest extends RuleTestCase
 			self::createReflectionProvider(),
 			true,
 			true,
+			self::getContainer()->getByType(InitializerExprTypeResolver::class),
 		));
 	}
 

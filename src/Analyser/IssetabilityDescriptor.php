@@ -73,7 +73,7 @@ final class IssetabilityDescriptor
 	 * ExpressionResult::getIssetabilityResolution); $useNativeTypes selects native
 	 * vs phpdoc types (the rule's treatPhpDocTypesAsCertain).
 	 */
-	public function resolve(MutatingScope $scope, bool $useNativeTypes, Expr $expr): IssetabilityResolution
+	public function resolve(MutatingScope $scope, bool $useNativeTypes, Expr $expr, bool $reprocessUntrackedLinks = false): IssetabilityResolution
 	{
 		if ($this->kind === self::KIND_VARIABLE) {
 			$variableName = $this->variableName;
@@ -96,7 +96,16 @@ final class IssetabilityDescriptor
 				throw new ShouldNotHappenException();
 			}
 
-			$varType = $varResult->getTypeOnScope($scope, $useNativeTypes);
+			// A rule-facing resolution re-prices untracked links on the asking
+			// scope: the stored results were priced under the coalesce walk's
+			// ensured non-nullability (NonNullabilityHelper), so their own types
+			// have null already stripped - folding the isset verdict from them
+			// would be circular. Engine-side folds keep the stored reads (their
+			// scopes track the ensured links; re-pricing there would walk).
+			$reprocessVar = $reprocessUntrackedLinks && !$scope->hasExpressionType($varResult->getExpr())->yes();
+			$varType = $reprocessVar
+				? ($useNativeTypes ? $scope->doNotTreatPhpDocTypesAsCertain()->getNativeType($varResult->getExpr()) : $scope->getType($varResult->getExpr()))
+				: $varResult->getTypeOnScope($scope, $useNativeTypes);
 			$dimType = $dimResult->getTypeOnScope($scope, $useNativeTypes);
 			$hasOffsetValue = $varType->hasOffsetValueType($dimType);
 			$valueType = $hasOffsetValue->no() ? new NeverType() : $varType->getOffsetValueType($dimType);
@@ -110,7 +119,7 @@ final class IssetabilityDescriptor
 					$dimType,
 					$valueType,
 				),
-				$varResult->getIssetabilityResolution($scope, $useNativeTypes),
+				$varResult->getIssetabilityResolution($scope, $useNativeTypes, $reprocessUntrackedLinks),
 			);
 		}
 
@@ -120,7 +129,7 @@ final class IssetabilityDescriptor
 			throw new ShouldNotHappenException();
 		}
 
-		$inner = $this->innerResult !== null ? $this->innerResult->getIssetabilityResolution($scope, $useNativeTypes) : null;
+		$inner = $this->innerResult !== null ? $this->innerResult->getIssetabilityResolution($scope, $useNativeTypes, $reprocessUntrackedLinks) : null;
 
 		$propertyReflection = $reflectionResolver($scope);
 		if ($propertyReflection === null) {

@@ -15,7 +15,6 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
-use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\NoopExpressionNode;
@@ -32,12 +31,6 @@ use function count;
 final class ExpressionHandler implements StmtHandler
 {
 
-	public function __construct(
-		private TypeSpecifier $typeSpecifier,
-	)
-	{
-	}
-
 	public function supports(Stmt $stmt): bool
 	{
 		return $stmt instanceof Expression;
@@ -52,7 +45,12 @@ final class ExpressionHandler implements StmtHandler
 		StatementContext $context,
 	): InternalStatementResult
 	{
-		$entryScope = $scope;
+		$preAnnotationScope = $scope;
+		$stmtScope = $scope;
+		if ($stmt->expr instanceof Expr\Throw_) {
+			$stmtScope = $nodeScopeResolver->processStmtVarAnnotation($scope, $storage, $stmt, $stmt->expr->expr, $nodeCallback);
+			$scope = $stmtScope;
+		}
 		$hasAssign = false;
 		$currentScope = $scope;
 		$nodeScopeResolver->pushNodeGatherer(static function (Node $node, Scope $scope) use ($currentScope, &$hasAssign): void {
@@ -68,11 +66,15 @@ final class ExpressionHandler implements StmtHandler
 		});
 		try {
 			$result = $nodeScopeResolver->processExprNode($stmt, $stmt->expr, $scope, $storage, $nodeCallback, ExpressionContext::createTopLevel());
+			if ($stmt->expr instanceof Expr\Throw_) {
+				// the @var-changed-type node fires now that the thrown expression is stored
+				$nodeScopeResolver->emitVarTagChangedNode($preAnnotationScope, $storage, $stmt, $stmt->expr->expr, $nodeCallback);
+			}
 		} finally {
 			$nodeScopeResolver->popNodeGatherer();
 		}
 
-		$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $entryScope, $storage);
+		$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $stmtScope, $storage);
 		$throwPoints = array_filter($result->getThrowPoints(), static fn ($throwPoint) => $throwPoint->isExplicit());
 		if (
 			count($result->getImpurePoints()) === 0
@@ -87,11 +89,7 @@ final class ExpressionHandler implements StmtHandler
 		$scope = $result->getScope();
 		// the expression statement was just processed; read its narrowing from
 		// the result instead of re-resolving it via specifyTypesInCondition().
-		$scope = $scope->applySpecifiedTypes($this->typeSpecifier->specifyTypesInCondition(
-			$scope,
-			$stmt->expr,
-			TypeSpecifierContext::createNull(),
-		));
+		$scope = $scope->applySpecifiedTypes($result->getSpecifiedTypesForScope($scope, TypeSpecifierContext::createNull()));
 		$hasYield = $result->hasYield();
 		$throwPoints = $result->getThrowPoints();
 		$impurePoints = $result->getImpurePoints();
@@ -100,7 +98,7 @@ final class ExpressionHandler implements StmtHandler
 		// The expression statement is an exit point when its value type is an
 		// explicit never: exit/die/throw, a never-returning call, or a call
 		// configured as early-terminating (the call handlers give those never).
-		$statementType = $currentScope->getType($stmt->expr);
+		$statementType = $result->getType();
 		if ($statementType instanceof NeverType && $statementType->isExplicit()) {
 			return new InternalStatementResult($scope, hasYield: $hasYield, isAlwaysTerminating: true, exitPoints: [
 				new InternalStatementExitPoint($stmt, $scope),

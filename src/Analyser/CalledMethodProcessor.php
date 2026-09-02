@@ -87,9 +87,10 @@ final class CalledMethodProcessor
 		if ($returnStatement !== null) {
 			foreach ($returnStatement->getExecutionEnds() as $executionEnd) {
 				$statementResult = $executionEnd->getStatementResult();
-				$endNode = $executionEnd->getNode();
-				if ($endNode instanceof Node\Stmt\Expression) {
-					$exprType = $statementResult->getScope()->getType($endNode->expr);
+				$endExprResult = $executionEnd->getExprResult();
+				if ($endExprResult !== null) {
+					$walkScope = $statementResult->getScope()->toWalkScope();
+					$exprType = $endExprResult->getTypeOnScope($walkScope, $walkScope->nativeTypesPromoted);
 					if ($exprType instanceof NeverType && $exprType->isExplicit()) {
 						continue;
 					}

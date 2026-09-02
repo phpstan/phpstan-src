@@ -9,11 +9,10 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
-use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
-use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
@@ -26,7 +25,10 @@ use PHPStan\Type\Type;
 final class AlwaysRememberedExprHandler implements ExprHandler
 {
 
-	public function __construct(private ExpressionResultFactory $expressionResultFactory)
+	public function __construct(
+		private ExpressionResultFactory $expressionResultFactory,
+		private DefaultNarrowingHelper $defaultNarrowingHelper,
+	)
 	{
 	}
 
@@ -58,17 +60,26 @@ final class AlwaysRememberedExprHandler implements ExprHandler
 			isAlwaysTerminating: $innerResult->isAlwaysTerminating(),
 			throwPoints: $innerResult->getThrowPoints(),
 			impurePoints: $innerResult->getImpurePoints(),
+			typeCallback: static fn (bool $nativeTypesPromoted): Type => $nativeTypesPromoted ? $expr->getNativeExprType() : $expr->getExprType(),
+			// Narrowing by the remembered wrapper is narrowing by the inner
+			// expression (TypeSpecifier unwrapped it and specified both keys);
+			// the wrapper node itself keeps the default truthy/falsey entry.
+			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context)->unionWith(
+				$innerResult->getSpecifiedTypes($context, $nativeTypesPromoted),
+			),
+			// A type constraint on the remembered wrapper constrains both the wrapper
+			// node (under its __phpstanRemembered(...) key) and the inner expression -
+			// what TypeSpecifier::create() recovered by fanning the AlwaysRememberedExpr
+			// out into wrapper + inner. The inner composes through its own child result;
+			// raw-Expr callers still go through create()->createForExpr.
+			createTypesCallback: function (Type $type, TypeSpecifierContext $context, bool $nativeTypesPromoted) use ($expr, $innerExpr, $innerResult, $beforeScope): SpecifiedTypes {
+				$s = $nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope;
+
+				return $this->defaultNarrowingHelper->createSubjectTypes($s, $expr, null, $type, $context)->unionWith(
+					$this->defaultNarrowingHelper->createSubjectTypes($s, $innerExpr, $innerResult, $type, $context),
+				);
+			},
 		);
-	}
-
-	public function resolveType(MutatingScope $scope, Expr $expr): Type
-	{
-		return $scope->nativeTypesPromoted ? $expr->getNativeExprType() : $expr->getExprType();
-	}
-
-	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
-	{
-		return $typeSpecifier->specifyDefaultTypes($scope, $expr, $context);
 	}
 
 }

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Functions;
 
+use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\UnusedFunctionParametersCheck;
 use PHPStan\Testing\RuleTestCase;
@@ -14,7 +15,7 @@ class UnusedClosureUsesRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new UnusedClosureUsesRule(new UnusedFunctionParametersCheck(self::createReflectionProvider(), true));
+		return new UnusedClosureUsesRule(new UnusedFunctionParametersCheck(self::createReflectionProvider(), self::getContainer()->getByType(InitializerExprTypeResolver::class), true));
 	}
 
 	public function testUnusedClosureUses(): void

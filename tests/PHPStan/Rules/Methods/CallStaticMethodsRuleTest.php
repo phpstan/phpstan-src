@@ -1067,4 +1067,15 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-15002.php'], []);
 	}
 
+	public function testBug12827(): void
+	{
+		$this->checkThisOnly = false;
+		$this->analyse([__DIR__ . '/data/bug-12827-static-call.php'], [
+			[
+				'Class Bug12827StaticCall\Post referenced with incorrect case: Bug12827StaticCall\POST.',
+				22,
+			],
+		]);
+	}
+
 }

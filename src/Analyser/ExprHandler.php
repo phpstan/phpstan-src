@@ -6,16 +6,13 @@ use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt;
 use PHPStan\DependencyInjection\ExtensionInterface;
-use PHPStan\Type\Type;
 
 /**
  * @template T of Expr
  */
-#[ExtensionInterface(tag: self::EXTENSION_TAG)]
+#[ExtensionInterface(tag: 'phpstan.exprHandler')]
 interface ExprHandler
 {
-
-	public const EXTENSION_TAG = 'phpstan.exprHandler';
 
 	/** @phpstan-assert-if-true T $expr */
 	public function supports(Expr $expr): bool;
@@ -33,20 +30,5 @@ interface ExprHandler
 		callable $nodeCallback,
 		ExpressionContext $context,
 	): ExpressionResult;
-
-	/**
-	 * @param T $expr
-	 */
-	public function resolveType(MutatingScope $scope, Expr $expr): Type;
-
-	/**
-	 * @param T $expr
-	 */
-	public function specifyTypes(
-		TypeSpecifier $typeSpecifier,
-		Scope $scope,
-		Expr $expr,
-		TypeSpecifierContext $context,
-	): SpecifiedTypes;
 
 }

@@ -987,6 +987,23 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14720.php'], []);
 	}
 
+	public function testVoidConditionalReturnType(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/void-conditional-return-type.php'], [
+			[
+				'Result of method VoidConditionalReturnType\Wormhole::seconds() (void) is used.',
+				34,
+			],
+			[
+				'Result of method VoidConditionalReturnType\Wormhole::seconds() (void) is used.',
+				37,
+			],
+		]);
+	}
+
 	public function testClosureBind(): void
 	{
 		$this->checkThisOnly = false;

@@ -10,11 +10,10 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
-use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
-use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\BooleanType;
@@ -28,7 +27,10 @@ use PHPStan\Type\Type;
 final class BooleanNotHandler implements ExprHandler
 {
 
-	public function __construct(private ExpressionResultFactory $expressionResultFactory)
+	public function __construct(
+		private ExpressionResultFactory $expressionResultFactory,
+		private DefaultNarrowingHelper $defaultNarrowingHelper,
+	)
 	{
 	}
 
@@ -51,26 +53,27 @@ final class BooleanNotHandler implements ExprHandler
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
 			throwPoints: $exprResult->getThrowPoints(),
 			impurePoints: $exprResult->getImpurePoints(),
+			typeCallback: static function (bool $nativeTypesPromoted) use ($exprResult): Type {
+				$exprBooleanType = ($nativeTypesPromoted ? $exprResult->getNativeType() : $exprResult->getType())->toBoolean();
+				if ($exprBooleanType->isTrue()->yes()) {
+					return new ConstantBooleanType(false);
+				}
+				if ($exprBooleanType->isFalse()->yes()) {
+					return new ConstantBooleanType(true);
+				}
+
+				return new BooleanType();
+			},
+			specifyTypesCallback: function (TypeSpecifierContext $context, bool $nativeTypesPromoted) use ($expr, $exprResult): SpecifiedTypes {
+				if ($context->null()) {
+					return $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context);
+				}
+
+				// The negated operand was processed above; compose its narrowing
+				// directly from its result rather than re-resolving the node.
+				return $exprResult->getSpecifiedTypes($context->negate(), $nativeTypesPromoted)->setRootExpr($expr);
+			},
 		);
-	}
-
-	public function resolveType(MutatingScope $scope, Expr $expr): Type
-	{
-		$exprBooleanType = $scope->getType($expr->expr)->toBoolean();
-		if ($exprBooleanType instanceof ConstantBooleanType) {
-			return new ConstantBooleanType(!$exprBooleanType->getValue());
-		}
-
-		return new BooleanType();
-	}
-
-	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
-	{
-		if ($context->null()) {
-			return $typeSpecifier->specifyDefaultTypes($scope, $expr, $context);
-		}
-
-		return $typeSpecifier->specifyTypesInCondition($scope, $expr->expr, $context->negate())->setRootExpr($expr);
 	}
 
 }

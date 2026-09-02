@@ -14,14 +14,16 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
-use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
-use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Node\FunctionCallableNode;
+use PHPStan\Node\MethodCallableNode;
 use PHPStan\Node\Printer\ExprPrinter;
+use PHPStan\Node\StaticMethodCallableNode;
 use PHPStan\Parser\ReversePipeTransformerVisitor;
 use PHPStan\Type\Type;
 use function array_merge;
@@ -33,7 +35,10 @@ use function array_merge;
 final class PipeHandler implements ExprHandler
 {
 
-	public function __construct(private ExpressionResultFactory $expressionResultFactory)
+	public function __construct(
+		private ExpressionResultFactory $expressionResultFactory,
+		private DefaultNarrowingHelper $defaultNarrowingHelper,
+	)
 	{
 	}
 
@@ -42,59 +47,40 @@ final class PipeHandler implements ExprHandler
 		return $expr instanceof Pipe;
 	}
 
-	public function resolveType(MutatingScope $scope, Expr $expr): Type
-	{
-		if ($expr->right instanceof FuncCall && $expr->right->isFirstClassCallable()) {
-			return $scope->getType(new FuncCall($expr->right->name, [
-				new Arg($expr->left),
-			]));
-		} elseif ($expr->right instanceof MethodCall && $expr->right->isFirstClassCallable()) {
-			return $scope->getType(new MethodCall($expr->right->var, $expr->right->name, [
-				new Arg($expr->left),
-			]));
-		} elseif ($expr->right instanceof StaticCall && $expr->right->isFirstClassCallable()) {
-			return $scope->getType(new StaticCall($expr->right->class, $expr->right->name, [
-				new Arg($expr->left),
-			]));
-		}
-
-		return $scope->getType(new FuncCall($expr->right, [
-			new Arg($expr->left),
-		]));
-	}
-
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
 		$rightAttributes = array_merge($expr->right->getAttributes(), ['virtualPipeOperatorCall' => true]);
 		unset($rightAttributes[ExprPrinter::ATTRIBUTE_CACHE_KEY]);
 		$argAttributes = $expr->getAttribute(ReversePipeTransformerVisitor::ARG_ATTRIBUTES_NAME, []);
 
-		$isRightFirstClassCallable = false;
+		$firstClassCallableNode = null;
 		if ($expr->right instanceof FuncCall && $expr->right->isFirstClassCallable()) {
 			$callExpr = new FuncCall($expr->right->name, [
 				new Arg($expr->left, attributes: $argAttributes),
 			], $rightAttributes);
-			$isRightFirstClassCallable = true;
+			$firstClassCallableNode = new FunctionCallableNode($expr->right->name, $expr->right);
 		} elseif ($expr->right instanceof MethodCall && $expr->right->isFirstClassCallable()) {
 			$callExpr = new MethodCall($expr->right->var, $expr->right->name, [
 				new Arg($expr->left, attributes: $argAttributes),
 			], $rightAttributes);
-			$isRightFirstClassCallable = true;
+			$firstClassCallableNode = new MethodCallableNode($expr->right->var, $expr->right->name, $expr->right);
 		} elseif ($expr->right instanceof StaticCall && $expr->right->isFirstClassCallable()) {
 			$callExpr = new StaticCall($expr->right->class, $expr->right->name, [
 				new Arg($expr->left, attributes: $argAttributes),
 			], $rightAttributes);
-			$isRightFirstClassCallable = true;
+			$firstClassCallableNode = new StaticMethodCallableNode($expr->right->class, $expr->right->name, $expr->right);
 		} else {
 			$callExpr = new FuncCall($expr->right, [
 				new Arg($expr->left, attributes: $argAttributes),
 			], $rightAttributes);
 		}
 
-		if ($isRightFirstClassCallable) {
-			// the original first-class callable node is not processed through
-			// processExprNode - store its result so that node callbacks asking
-			// about its type can be resumed
+		if ($firstClassCallableNode !== null) {
+			// store a result for $expr->right so node callbacks asking about its
+			// type can be resumed. Its closure type lives on the matching
+			// *CallableNode, processed here (storage is available, so the result -
+			// not the storage - is captured) and read back in the typeCallback.
+			$callableNodeResult = $nodeScopeResolver->processExprOnDemand($firstClassCallableNode, $scope, $storage);
 			$nodeScopeResolver->storeExpressionResult($storage, $expr->right, $this->expressionResultFactory->create(
 				$scope,
 				beforeScope: $scope,
@@ -103,6 +89,8 @@ final class PipeHandler implements ExprHandler
 				isAlwaysTerminating: false,
 				throwPoints: [],
 				impurePoints: [],
+				typeCallback: static fn (bool $nativeTypesPromoted): Type => ($nativeTypesPromoted ? $callableNodeResult->getNativeType() : $callableNodeResult->getType()),
+				specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
 			));
 		}
 
@@ -116,12 +104,10 @@ final class PipeHandler implements ExprHandler
 			isAlwaysTerminating: $callResult->isAlwaysTerminating(),
 			throwPoints: $callResult->getThrowPoints(),
 			impurePoints: $callResult->getImpurePoints(),
+			// the pipe evaluates to its rewritten call - read that child's result
+			typeCallback: static fn (bool $nativeTypesPromoted): Type => ($nativeTypesPromoted ? $callResult->getNativeType() : $callResult->getType()),
+			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
 		);
-	}
-
-	public function specifyTypes(TypeSpecifier $typeSpecifier, Scope $scope, Expr $expr, TypeSpecifierContext $context): SpecifiedTypes
-	{
-		return $typeSpecifier->specifyDefaultTypes($scope, $expr, $context);
 	}
 
 }

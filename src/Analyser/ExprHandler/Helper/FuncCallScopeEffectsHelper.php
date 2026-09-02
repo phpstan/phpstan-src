@@ -9,6 +9,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
+use PHPStan\Analyser\ArgsResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
@@ -47,7 +48,7 @@ use function str_starts_with;
  * The scope-only side effects of a function call, applied after the call's
  * arguments were processed: by-ref array function results (array_pop(),
  * sort(), array_splice(), ...), invalidation of paired reads
- * (json_last_error(), file_get_contents()), extract(), possibly-impure value
+ * (json_last_error(), file_get_contents()), possibly-impure value
  * remembering, output-buffer level tracking and volatile-expression
  * invalidation. Extracted from FuncCallHandler::processExpr() so the hot
  * per-call frame stays small; nothing here touches the call's own result
@@ -58,6 +59,7 @@ final class FuncCallScopeEffectsHelper
 {
 
 	public function __construct(
+		private OutputBufferHelper $outputBufferHelper,
 		#[AutowiredParameter]
 		private bool $rememberPossiblyImpureFunctionValues,
 	)
@@ -68,21 +70,24 @@ final class FuncCallScopeEffectsHelper
 	 * @param array{Type, Type} $arrayWalkValueTypes
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
-	public function applyArrayWalkResult(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $arrayWalkArrayArg, array $arrayWalkValueTypes, Type $arrayWalkOriginalArrayType, Type $arrayWalkOriginalArrayNativeType, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback): MutatingScope
+	public function applyArrayWalkResult(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $arrayWalkArrayArg, array $arrayWalkValueTypes, ArgsResult $argsResult, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback): MutatingScope
 	{
-			$arrayWalkValueType = $arrayWalkValueTypes[0];
-			$arrayWalkValueNativeType = $arrayWalkValueTypes[1];
-			$newArrayType = $arrayWalkOriginalArrayType->mapValueType(static fn (Type $type): Type => $arrayWalkValueType);
-			$newArrayNativeType = $arrayWalkOriginalArrayNativeType->mapValueType(static fn (Type $type): Type => $arrayWalkValueNativeType);
+		$arrayWalkArrayArgResult = $argsResult->requireArgResult($arrayWalkArrayArg);
+		$arrayWalkOriginalArrayType = $arrayWalkArrayArgResult->getTypeOnScope($scope, false);
+		$arrayWalkOriginalArrayNativeType = $arrayWalkArrayArgResult->getTypeOnScope($scope, true);
+		$arrayWalkValueType = $arrayWalkValueTypes[0];
+		$arrayWalkValueNativeType = $arrayWalkValueTypes[1];
+		$newArrayType = $arrayWalkOriginalArrayType->mapValueType(static fn (Type $type): Type => $arrayWalkValueType);
+		$newArrayNativeType = $arrayWalkOriginalArrayNativeType->mapValueType(static fn (Type $type): Type => $arrayWalkValueNativeType);
 
-			$scope = $nodeScopeResolver->processVirtualAssign(
-				$scope,
-				$storage,
-				$stmt,
-				$arrayWalkArrayArg,
-				new NativeTypeExpr($newArrayType, $newArrayNativeType),
-				$nodeCallback,
-			)->getScope();
+		$scope = $nodeScopeResolver->processVirtualAssign(
+			$scope,
+			$storage,
+			$stmt,
+			$arrayWalkArrayArg,
+			new NativeTypeExpr($newArrayType, $newArrayNativeType),
+			$nodeCallback,
+		)->getScope();
 
 		return $scope;
 	}
@@ -90,7 +95,7 @@ final class FuncCallScopeEffectsHelper
 	/**
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
-	public function applyCallScopeEffects(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, FuncCall $normalizedExpr, ?FunctionReflection $functionReflection, ?ParametersAcceptor $parametersAcceptor, MutatingScope $scope, MutatingScope $scopeBeforeArgs, ExpressionResultStorage $storage, callable $nodeCallback): MutatingScope
+	public function applyCallScopeEffects(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, FuncCall $normalizedExpr, ?FunctionReflection $functionReflection, ?ParametersAcceptor $parametersAcceptor, ArgsResult $argsResult, MutatingScope $scope, MutatingScope $scopeBeforeArgs, ExpressionResultStorage $storage, callable $nodeCallback): MutatingScope
 	{
 		if (
 			$parametersAcceptor instanceof ClosureType && count($parametersAcceptor->getImpurePoints()) > 0
@@ -139,8 +144,9 @@ final class FuncCallScopeEffectsHelper
 		) {
 			$arrayArg = $normalizedExpr->getArgs()[0]->value;
 
-			$arrayArgType = $scope->getType($arrayArg);
-			$arrayArgNativeType = $scope->getNativeType($arrayArg);
+			$arrayArgResult = $argsResult->requireArgResult($arrayArg);
+			$arrayArgType = $arrayArgResult->getTypeOnScope($scope, false);
+			$arrayArgNativeType = $arrayArgResult->getTypeOnScope($scope, true);
 			$isArrayPop = $functionReflection->getName() === 'array_pop';
 
 			$scope = $nodeScopeResolver->processVirtualAssign(
@@ -169,8 +175,8 @@ final class FuncCallScopeEffectsHelper
 				$stmt,
 				$arrayArg,
 				new NativeTypeExpr(
-					$this->getArrayFunctionAppendingType($functionReflection, $scopeBeforeArgs, $normalizedExpr),
-					$this->getArrayFunctionAppendingType($functionReflection, $scopeBeforeArgs->doNotTreatPhpDocTypesAsCertain(), $normalizedExpr),
+					$this->getArrayFunctionAppendingType($functionReflection, $scopeBeforeArgs, $normalizedExpr, $argsResult),
+					$this->getArrayFunctionAppendingType($functionReflection, $scopeBeforeArgs->doNotTreatPhpDocTypesAsCertain(), $normalizedExpr, $argsResult),
 				),
 				$nodeCallback,
 			)->getScope();
@@ -194,7 +200,7 @@ final class FuncCallScopeEffectsHelper
 				$storage,
 				$stmt,
 				$arrayArg,
-				new NativeTypeExpr($scope->getType($arrayArg)->shuffleArray(), $scope->getNativeType($arrayArg)->shuffleArray()),
+				new NativeTypeExpr($argsResult->requireArgResult($arrayArg)->getTypeOnScope($scope, false)->shuffleArray(), $argsResult->requireArgResult($arrayArg)->getTypeOnScope($scope, true)->shuffleArray()),
 				$nodeCallback,
 			)->getScope();
 		}
@@ -205,21 +211,25 @@ final class FuncCallScopeEffectsHelper
 			&& count($normalizedExpr->getArgs()) >= 2
 		) {
 			$arrayArg = $normalizedExpr->getArgs()[0]->value;
-			$arrayArgType = $scope->getType($arrayArg);
-			$arrayArgNativeType = $scope->getNativeType($arrayArg);
+			$arrayArgResult = $argsResult->requireArgResult($arrayArg);
+			$arrayArgType = $arrayArgResult->getType();
+			$arrayArgNativeType = $arrayArgResult->getNativeType();
 
-			$offsetType = $scopeBeforeArgs->getType($normalizedExpr->getArgs()[1]->value);
+			$offsetArg = $normalizedExpr->getArgs()[1]->value;
+			$offsetType = $argsResult->requireArgResult($offsetArg)->getType();
 
 			if (isset($normalizedExpr->getArgs()[2])) {
-				$lengthType = $scopeBeforeArgs->getType($normalizedExpr->getArgs()[2]->value);
+				$lengthArg = $normalizedExpr->getArgs()[2]->value;
+				$lengthType = $argsResult->requireArgResult($lengthArg)->getType();
 			} else {
 				$lengthType = new NullType();
 			}
 
 			if (isset($normalizedExpr->getArgs()[3])) {
 				$replacementArg = $normalizedExpr->getArgs()[3]->value;
-				$replacementType = $scopeBeforeArgs->getType($replacementArg);
-				$replacementNativeType = $scopeBeforeArgs->getNativeType($replacementArg);
+				$replacementArgResult = $argsResult->requireArgResult($replacementArg);
+				$replacementType = $replacementArgResult->getType();
+				$replacementNativeType = $replacementArgResult->getNativeType();
 			} else {
 				$replacementType = new ConstantArrayType([], []);
 				$replacementNativeType = new ConstantArrayType([], []);
@@ -250,7 +260,7 @@ final class FuncCallScopeEffectsHelper
 				$storage,
 				$stmt,
 				$arrayArg,
-				new NativeTypeExpr($scope->getType($arrayArg)->shuffleArray(), $scope->getNativeType($arrayArg)->shuffleArray()),
+				new NativeTypeExpr($argsResult->requireArgResult($arrayArg)->getTypeOnScope($scope, false)->shuffleArray(), $argsResult->requireArgResult($arrayArg)->getTypeOnScope($scope, true)->shuffleArray()),
 				$nodeCallback,
 			)->getScope();
 		}
@@ -267,7 +277,7 @@ final class FuncCallScopeEffectsHelper
 				$storage,
 				$stmt,
 				$arrayArg,
-				new NativeTypeExpr($scope->getType($arrayArg)->makeListMaybe(), $scope->getNativeType($arrayArg)->makeListMaybe()),
+				new NativeTypeExpr($argsResult->requireArgResult($arrayArg)->getTypeOnScope($scope, false)->makeListMaybe(), $argsResult->requireArgResult($arrayArg)->getTypeOnScope($scope, true)->makeListMaybe()),
 				$nodeCallback,
 			)->getScope();
 		}
@@ -277,7 +287,7 @@ final class FuncCallScopeEffectsHelper
 			&& $functionReflection->getName() === 'extract'
 		) {
 			$extractedArg = $normalizedExpr->getArgs()[0]->value;
-			$extractedType = $scope->getType($extractedArg);
+			$extractedType = $argsResult->requireArgResult($extractedArg)->getTypeOnScope($scope, false);
 			$constantArrays = $extractedType->getConstantArrays();
 			if (count($constantArrays) > 0) {
 				$properties = [];
@@ -337,9 +347,9 @@ final class FuncCallScopeEffectsHelper
 			$scope = $scope->afterOpenSslCall($functionReflection->getName());
 		}
 
-		$outputBufferDelta = $functionReflection !== null ? OutputBufferHelper::getLevelDelta($functionReflection->getName()) : 0;
+		$outputBufferDelta = $functionReflection !== null ? $this->outputBufferHelper->getLevelDelta($functionReflection->getName()) : 0;
 		if ($outputBufferDelta !== 0) {
-			$scope = OutputBufferHelper::applyLevelDelta($scope, $outputBufferDelta);
+			$scope = $this->outputBufferHelper->applyLevelDelta($nodeScopeResolver, $scope, $outputBufferDelta);
 		}
 
 		$pureCallable = $parametersAcceptor instanceof CallableParametersAcceptor
@@ -350,23 +360,22 @@ final class FuncCallScopeEffectsHelper
 		) {
 			$scope = $scope->invalidateVolatileExpressions();
 		}
-
 		return $scope;
 	}
 
-	private function getArrayFunctionAppendingType(FunctionReflection $functionReflection, Scope $scope, FuncCall $expr): Type
+	private function getArrayFunctionAppendingType(FunctionReflection $functionReflection, Scope $scope, FuncCall $expr, ArgsResult $argsResult): Type
 	{
 		$arrayArg = $expr->getArgs()[0]->value;
-		$arrayType = $scope->getType($arrayArg);
+		$arrayType = $argsResult->requireArgResult($arrayArg)->getTypeOnScope($scope->toWalkScope(), $scope->toWalkScope()->nativeTypesPromoted);
 		$callArgs = array_slice($expr->getArgs(), 1);
 
 		/**
 		 * @param Arg[] $callArgs
 		 * @param callable(?Type, Type, bool): void $setOffsetValueType
 		 */
-		$setOffsetValueTypes = static function (Scope $scope, array $callArgs, callable $setOffsetValueType, ?bool &$nonConstantArrayWasUnpacked = null): void {
+		$setOffsetValueTypes = static function (Scope $scope, array $callArgs, callable $setOffsetValueType, ?bool &$nonConstantArrayWasUnpacked = null) use ($argsResult): void {
 			foreach ($callArgs as $callArg) {
-				$callArgType = $scope->getType($callArg->value);
+				$callArgType = $argsResult->requireArgResult($callArg->value)->getTypeOnScope($scope->toWalkScope(), $scope->toWalkScope()->nativeTypesPromoted);
 				if ($callArg->unpack) {
 					$constantArrays = $callArgType->getConstantArrays();
 					if (count($constantArrays) === 1) {

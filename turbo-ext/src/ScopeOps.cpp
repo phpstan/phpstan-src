@@ -38,9 +38,9 @@ typedef struct _pt_scope_offsets {
 	int32_t scope_out_of_first_level;
 	int32_t scope_with_promoted_native;
 	int32_t walk_scope;          /* NodeCallbackScope */
-	int32_t scope_ops;           /* NodeCallbackScope */
-	int32_t asked_types;         /* NodeCallbackScope */
-	int32_t asked_native_types;  /* NodeCallbackScope */
+	int32_t seeded_walk_scope;   /* NodeCallbackScope */
+	int32_t truthy_value_exprs;  /* NodeCallbackScope */
+	int32_t falsey_value_exprs;  /* NodeCallbackScope */
 } pt_scope_offsets;
 
 static HashTable pt_scope_offsets_cache;
@@ -80,9 +80,9 @@ static pt_scope_offsets *pt_scope_offsets_for(zend_class_entry *ce)
 	off->scope_out_of_first_level = pt_instance_prop_offset(ce, "scopeOutOfFirstLevelStatement", sizeof("scopeOutOfFirstLevelStatement") - 1);
 	off->scope_with_promoted_native = pt_instance_prop_offset(ce, "scopeWithPromotedNativeTypes", sizeof("scopeWithPromotedNativeTypes") - 1);
 	off->walk_scope = pt_instance_prop_offset(ce, "walkScope", sizeof("walkScope") - 1);
-	off->scope_ops = pt_instance_prop_offset(ce, "scopeOps", sizeof("scopeOps") - 1);
-	off->asked_types = pt_instance_prop_offset(ce, "askedTypes", sizeof("askedTypes") - 1);
-	off->asked_native_types = pt_instance_prop_offset(ce, "askedNativeTypes", sizeof("askedNativeTypes") - 1);
+	off->seeded_walk_scope = pt_instance_prop_offset(ce, "seededWalkScope", sizeof("seededWalkScope") - 1);
+	off->truthy_value_exprs = pt_instance_prop_offset(ce, "truthyValueExprs", sizeof("truthyValueExprs") - 1);
+	off->falsey_value_exprs = pt_instance_prop_offset(ce, "falseyValueExprs", sizeof("falseyValueExprs") - 1);
 
 	zend_hash_add_ptr(&pt_scope_offsets_cache, ce->name, off);
 	return off;
@@ -305,9 +305,9 @@ public:
 		resetToNull(cloneObj, off->scope_out_of_first_level);
 		resetToNull(cloneObj, off->scope_with_promoted_native);
 		resetToNull(cloneObj, off->walk_scope);
-		resetToEmptyArray(cloneObj, off->scope_ops);
-		resetToEmptyArray(cloneObj, off->asked_types);
-		resetToEmptyArray(cloneObj, off->asked_native_types);
+		resetToNull(cloneObj, off->seeded_walk_scope);
+		resetToEmptyArray(cloneObj, off->truthy_value_exprs);
+		resetToEmptyArray(cloneObj, off->falsey_value_exprs);
 
 		zval out;
 		ZVAL_OBJ(&out, clone);
@@ -767,6 +767,78 @@ public:
 	}
 
 	/*
+	 * Mirrors ScopeOps::invalidateMethodsOnExpression(): drops tracked
+	 * MethodCall expressions whose var matches the invalidated key. Returns
+	 * null when nothing changed.
+	 */
+	static zv::Val invalidateMethodsOnExpression(zval *exprPrinter, zend_string *exprStringToInvalidate, zv::TableRef expressionTypes, zv::TableRef nativeExpressionTypes)
+	{
+		zend_class_entry *methodCallCe = pt_class(PT_CLASS_METHOD_CALL);
+		if (UNEXPECTED(methodCallCe == NULL)) {
+			return zv::Val();
+		}
+
+		bool invalidated = false;
+		zv::Arr resultExpr, resultNative; /* stay UNDEF until the first hit */
+
+		/* Same compositional-key shortcut as in invalidateExpressionEntries(): a
+		 * method call's key embeds its receiver's key verbatim, so when the
+		 * invalidated key does not occur in the entry's key, the receiver cannot
+		 * match and the entry can be kept without re-printing the receiver. */
+		const bool canUseKeyPrefilter = !keyMayHideSubExpressions(exprStringToInvalidate)
+			&& !strContains(exprStringToInvalidate, "/*", 2);
+
+		for (auto entry : expressionTypes) {
+			zend_string *entryKey = entry.stringKeyOrNull();
+			if (canUseKeyPrefilter && entryKey != NULL
+				&& !strContainsStr(entryKey, exprStringToInvalidate)
+				&& !keyMayHideSubExpressions(entryKey)) {
+				continue;
+			}
+			zv::Ref holder = entry.value().deref();
+			if (UNEXPECTED(!pt_check_holder(holder.raw()))) {
+				return zv::Val();
+			}
+			zend_object *expr = holderExpr(holder);
+			if (!instanceof_function(expr->ce, methodCallCe)) {
+				continue;
+			}
+			int32_t varOffset = pt_instance_prop_offset(expr->ce, "var", sizeof("var") - 1);
+			if (varOffset < 0) {
+				continue;
+			}
+			zv::Ref var = zv::ObjRef(expr).propAtOffset((uint32_t) varOffset).deref();
+			if (!var.isObject()) {
+				continue;
+			}
+			zv::Str varKey = zv::Str::adopt(pt_node_key(var.asObject(), exprPrinter));
+			if (UNEXPECTED(varKey.isNull())) {
+				return zv::Val();
+			}
+			if (!zend_string_equals(varKey.get(), exprStringToInvalidate)) {
+				continue;
+			}
+
+			if (resultExpr.isUndef()) {
+				resultExpr = zv::Arr::adoptTable(zend_array_dup(expressionTypes.table()));
+				resultNative = zv::Arr::adoptTable(zend_array_dup(nativeExpressionTypes.table()));
+			}
+			pt_ht_del(resultExpr.table(), entry.stringKeyOrNull(), entry.indexKey());
+			pt_ht_del(resultNative.table(), entry.stringKeyOrNull(), entry.indexKey());
+			invalidated = true;
+		}
+
+		if (!invalidated) {
+			return zv::Val::null();
+		}
+
+		zv::Arr result = zv::Arr::create(2);
+		result.push(std::move(resultExpr));
+		result.push(std::move(resultNative));
+		return zv::Val(std::move(result));
+	}
+
+	/*
 	 * Mirrors ScopeOps::invalidateExpressionEntries(). Returns
 	 * [expressionTypes, nativeExpressionTypes, conditionalExpressions] with
 	 * the invalidated entries removed, or null when nothing changed; the
@@ -855,13 +927,9 @@ public:
 				continue;
 			}
 
-			/* first holder's type-holder expr decides whole-group invalidation;
-			 * entries are keyed by the printed form of their target expression
-			 * (see the ConditionalExpressionHolder creation sites), so the key
-			 * doubles as the target's node key: it feeds the same substring
-			 * gate as a prefilter and there is no need to re-print the
-			 * expression for the full check */
-			if (!canUseKeyPrefilter || key == NULL
+			/* first holder's type-holder expr decides whole-group invalidation */
+			if (!canUseKeyPrefilter
+				|| key == NULL
 				|| strContainsStr(key, exprStringToInvalidate)
 				|| keyMayHideSubExpressions(key)) {
 				zv::Ref firstHolder = (*holdersTable.begin()).value().deref();
@@ -869,13 +937,17 @@ public:
 					zend_type_error("phpstan_turbo: expected ConditionalExpressionHolder");
 					return zv::Val();
 				}
-				zend_object *firstExpr = holderExpr(zv::ObjRef(firstHolder.asObject()).propAt(PT_CEH_PROP_TYPEHOLDER));
-				zend_string *entryKey = key != NULL ? key : zend_long_to_str((zend_long) idx);
-				bool failed = false;
-				bool drop = shouldInvalidate(query, entryKey, firstExpr, requireMoreCharacters, &failed);
-				if (key == NULL) {
-					zend_string_release(entryKey);
+				zv::Ref firstTypeHolder = zv::ObjRef(firstHolder.asObject()).propAt(PT_CEH_PROP_TYPEHOLDER).deref();
+				if (UNEXPECTED(!pt_check_holder(firstTypeHolder.raw()))) {
+					return zv::Val();
 				}
+				zend_object *firstExpr = holderExpr(firstTypeHolder);
+				zv::Str firstKey = zv::Str::adopt(pt_node_key(firstExpr, exprPrinter));
+				if (UNEXPECTED(firstKey.isNull())) {
+					return zv::Val();
+				}
+				bool failed = false;
+				bool drop = shouldInvalidate(query, firstKey.get(), firstExpr, requireMoreCharacters, &failed);
 				if (UNEXPECTED(failed)) {
 					return zv::Val();
 				}
@@ -987,78 +1059,6 @@ public:
 		result.push(std::move(resultExpr));
 		result.push(std::move(resultNative));
 		result.push(std::move(resultConditional));
-		return zv::Val(std::move(result));
-	}
-
-	/*
-	 * Mirrors ScopeOps::invalidateMethodsOnExpression(): drops tracked
-	 * MethodCall expressions whose var matches the invalidated key. Returns
-	 * null when nothing changed.
-	 */
-	static zv::Val invalidateMethodsOnExpression(zval *exprPrinter, zend_string *exprStringToInvalidate, zv::TableRef expressionTypes, zv::TableRef nativeExpressionTypes)
-	{
-		zend_class_entry *methodCallCe = pt_class(PT_CLASS_METHOD_CALL);
-		if (UNEXPECTED(methodCallCe == NULL)) {
-			return zv::Val();
-		}
-
-		bool invalidated = false;
-		zv::Arr resultExpr, resultNative; /* stay UNDEF until the first hit */
-
-		/* Same compositional-key shortcut as in invalidateExpressionEntries(): a
-		 * method call's key embeds its receiver's key verbatim, so when the
-		 * invalidated key does not occur in the entry's key, the receiver cannot
-		 * match and the entry can be kept without re-printing the receiver. */
-		const bool canUseKeyPrefilter = !keyMayHideSubExpressions(exprStringToInvalidate)
-			&& !strContains(exprStringToInvalidate, "/*", 2);
-
-		for (auto entry : expressionTypes) {
-			zend_string *entryKey = entry.stringKeyOrNull();
-			if (canUseKeyPrefilter && entryKey != NULL
-				&& !strContainsStr(entryKey, exprStringToInvalidate)
-				&& !keyMayHideSubExpressions(entryKey)) {
-				continue;
-			}
-			zv::Ref holder = entry.value().deref();
-			if (UNEXPECTED(!pt_check_holder(holder.raw()))) {
-				return zv::Val();
-			}
-			zend_object *expr = holderExpr(holder);
-			if (!instanceof_function(expr->ce, methodCallCe)) {
-				continue;
-			}
-			int32_t varOffset = pt_instance_prop_offset(expr->ce, "var", sizeof("var") - 1);
-			if (varOffset < 0) {
-				continue;
-			}
-			zv::Ref var = zv::ObjRef(expr).propAtOffset((uint32_t) varOffset).deref();
-			if (!var.isObject()) {
-				continue;
-			}
-			zv::Str varKey = zv::Str::adopt(pt_node_key(var.asObject(), exprPrinter));
-			if (UNEXPECTED(varKey.isNull())) {
-				return zv::Val();
-			}
-			if (!zend_string_equals(varKey.get(), exprStringToInvalidate)) {
-				continue;
-			}
-
-			if (resultExpr.isUndef()) {
-				resultExpr = zv::Arr::adoptTable(zend_array_dup(expressionTypes.table()));
-				resultNative = zv::Arr::adoptTable(zend_array_dup(nativeExpressionTypes.table()));
-			}
-			pt_ht_del(resultExpr.table(), entry.stringKeyOrNull(), entry.indexKey());
-			pt_ht_del(resultNative.table(), entry.stringKeyOrNull(), entry.indexKey());
-			invalidated = true;
-		}
-
-		if (!invalidated) {
-			return zv::Val::null();
-		}
-
-		zv::Arr result = zv::Arr::create(2);
-		result.push(std::move(resultExpr));
-		result.push(std::move(resultNative));
 		return zv::Val(std::move(result));
 	}
 
@@ -1232,17 +1232,6 @@ public:
 	}
 
 private:
-	/* Everything shouldInvalidate() needs to know about one invalidation. */
-	struct InvalidationQuery
-	{
-		zval *scope;
-		zval *exprPrinter;
-		zend_string *exprStringToInvalidate;
-		zval *expressionToInvalidate;
-		zval *invalidatingClass; /* may be NULL */
-		bool isThis;
-	};
-
 	static zv::Val trinarySingleton(zend_long value)
 	{
 		return zv::Val::copyOf(zv::Ref(pt_trinary_singleton(value)));
@@ -1597,6 +1586,17 @@ private:
 		return true;
 	}
 
+	/* Everything shouldInvalidate() needs to know about one invalidation. */
+	struct InvalidationQuery
+	{
+		zval *scope;
+		zval *exprPrinter;
+		zend_string *exprStringToInvalidate;
+		zval *expressionToInvalidate;
+		zval *invalidatingClass; /* may be NULL */
+		bool isThis;
+	};
+
 	static bool strContains(zend_string *haystack, const char *needle, size_t len)
 	{
 		return zend_memnstr(ZSTR_VAL(haystack), needle, len, ZSTR_VAL(haystack) + ZSTR_LEN(haystack)) != NULL;
@@ -1646,41 +1646,6 @@ private:
 	{
 		return ZSTR_LEN(needle) <= ZSTR_LEN(haystack)
 			&& zend_memnstr(ZSTR_VAL(haystack), ZSTR_VAL(needle), ZSTR_LEN(needle), ZSTR_VAL(haystack) + ZSTR_LEN(haystack)) != NULL;
-	}
-
-	/* getIntertwinedRefRootVariableName()'s walk; returns a borrowed string */
-	static zend_string *intertwinedRootVariableName(zend_object *expr)
-	{
-		zend_class_entry *variableCe = pt_class(PT_CLASS_VARIABLE);
-		zend_class_entry *arrayDimFetchCe = pt_class(PT_CLASS_ARRAY_DIM_FETCH);
-
-		if (UNEXPECTED(variableCe == NULL || arrayDimFetchCe == NULL)) {
-			return NULL;
-		}
-
-		for (;;) {
-			if (instanceof_function(expr->ce, variableCe)) {
-				pt_node_class_info *info = pt_get_node_class_info(expr->ce);
-				if (info == NULL || info->name_offset < 0) {
-					return NULL;
-				}
-				zv::Ref name = zv::ObjRef(expr).propAtOffset((uint32_t) info->name_offset).deref();
-				return name.isString() ? name.asString() : NULL; /* borrowed */
-			}
-			if (instanceof_function(expr->ce, arrayDimFetchCe)) {
-				int32_t varOffset = pt_instance_prop_offset(expr->ce, "var", sizeof("var") - 1);
-				if (varOffset < 0) {
-					return NULL;
-				}
-				zv::Ref var = zv::ObjRef(expr).propAtOffset((uint32_t) varOffset).deref();
-				if (!var.isObject()) {
-					return NULL;
-				}
-				expr = var.asObject();
-				continue;
-			}
-			return NULL;
-		}
 	}
 
 	/* shouldInvalidate()'s per-node callback for pt_find_first_recursive() */
@@ -1930,6 +1895,41 @@ private:
 		}
 
 		return true;
+	}
+
+	/* getIntertwinedRefRootVariableName()'s walk; returns a borrowed string */
+	static zend_string *intertwinedRootVariableName(zend_object *expr)
+	{
+		zend_class_entry *variableCe = pt_class(PT_CLASS_VARIABLE);
+		zend_class_entry *arrayDimFetchCe = pt_class(PT_CLASS_ARRAY_DIM_FETCH);
+
+		if (UNEXPECTED(variableCe == NULL || arrayDimFetchCe == NULL)) {
+			return NULL;
+		}
+
+		for (;;) {
+			if (instanceof_function(expr->ce, variableCe)) {
+				pt_node_class_info *info = pt_get_node_class_info(expr->ce);
+				if (info == NULL || info->name_offset < 0) {
+					return NULL;
+				}
+				zv::Ref name = zv::ObjRef(expr).propAtOffset((uint32_t) info->name_offset).deref();
+				return name.isString() ? name.asString() : NULL; /* borrowed */
+			}
+			if (instanceof_function(expr->ce, arrayDimFetchCe)) {
+				int32_t varOffset = pt_instance_prop_offset(expr->ce, "var", sizeof("var") - 1);
+				if (varOffset < 0) {
+					return NULL;
+				}
+				zv::Ref var = zv::ObjRef(expr).propAtOffset((uint32_t) varOffset).deref();
+				if (!var.isObject()) {
+					return NULL;
+				}
+				expr = var.asObject();
+				continue;
+			}
+			return NULL;
+		}
 	}
 
 	/*

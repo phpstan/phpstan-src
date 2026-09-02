@@ -143,7 +143,7 @@ Output identity: `--error-format=raw` runs in both modes must diff empty.
   is worker processes, not threads) — but only EG()/CG() access is truly
   thread-aware (via the TSRMLS cache in `main.cpp`), so never introduce
   actual multi-threaded use.
-- Fibers can suspend from internal frames — native code may be re-entered.
+- Node callbacks run nested walks — native code may be re-entered.
 - Cloned scopes must reset per-instance memo properties to constructor
   defaults, and native factories must instantiate the `…Impl` stub classes.
 

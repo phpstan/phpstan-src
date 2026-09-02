@@ -258,6 +258,11 @@ class NullCoalesceRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5009.php'], []);
 	}
 
+	public function testNullableArrayReceiver(): void
+	{
+		$this->analyse([__DIR__ . '/data/null-coalesce-nullable-array-receiver.php'], []);
+	}
+
 	public function testBug5933(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-5933.php'], []);
@@ -662,6 +667,22 @@ class NullCoalesceRuleTest extends RuleTestCase
 			[
 				'Variable $s on left side of ?? always exists and is not nullable.',
 				119,
+			],
+		]);
+	}
+
+	public function testBug12780(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12780.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.2.0')]
+	public function testReadonlyPropertyOnNullableReceiver(): void
+	{
+		$this->analyse([__DIR__ . '/data/null-coalesce-readonly-property-nullable-receiver.php'], [
+			[
+				'Property NullCoalesceReadonlyPropertyNullableReceiver\PluginMapping::$snippetName (string) on left side of ?? is not nullable.',
+				57,
 			],
 		]);
 	}

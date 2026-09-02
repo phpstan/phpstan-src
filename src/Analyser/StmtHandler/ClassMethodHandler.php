@@ -168,7 +168,16 @@ final class ClassMethodHandler implements StmtHandler
 			$gatheredYieldStatements = [];
 			$executionEnds = [];
 			$methodImpurePoints = [];
-				$nodeScopeResolver->pushNodeGatherer(static function (Node $node, Scope $scope) use ($methodScope, &$gatheredReturnStatements, &$gatheredYieldStatements, &$executionEnds, &$methodImpurePoints): void {
+			// the body's results live in a per-body storage released right
+			// after the MethodReturnStatementsNode rules ran: later asks about
+			// body expressions (e.g. class-level rules pricing gathered nodes)
+			// go through the on-demand bridge, so keeping the results for the
+			// rest of the file would only pin the body's whole result graph
+			// (callbacks, scopes, types) at no benefit
+			$bodyStorage = $storage->duplicate();
+			$scope->pushExpressionResultStorage($bodyStorage);
+			try {
+				$nodeScopeResolver->pushNodeGatherer(static function (Node $node, Scope $scope) use ($nodeScopeResolver, $methodScope, &$gatheredReturnStatements, &$gatheredYieldStatements, &$executionEnds, &$methodImpurePoints): void {
 					if ($scope->getFunction() !== $methodScope->getFunction()) {
 						return;
 					}
@@ -177,11 +186,11 @@ final class ClassMethodHandler implements StmtHandler
 					}
 					if ($node instanceof PropertyAssignNode) {
 						if (
-						$node->getPropertyFetch() instanceof Expr\PropertyFetch
-						&& $scope->getFunction() instanceof PhpMethodFromParserNodeReflection
-						&& $scope->getFunction()->getDeclaringClass()->hasConstructor()
-						&& $scope->getFunction()->getDeclaringClass()->getConstructor()->getName() === $scope->getFunction()->getName()
-						&& TypeUtils::findThisType($scope->getType($node->getPropertyFetch()->var)) !== null
+							$node->getPropertyFetch() instanceof Expr\PropertyFetch
+							&& $scope->getFunction() instanceof PhpMethodFromParserNodeReflection
+							&& $scope->getFunction()->getDeclaringClass()->hasConstructor()
+							&& $scope->getFunction()->getDeclaringClass()->getConstructor()->getName() === $scope->getFunction()->getName()
+							&& TypeUtils::findThisType($nodeScopeResolver->readScopeStateOrSyntheticType($node->getPropertyFetch()->var, $scope->toWalkScope())) !== null
 						) {
 							return;
 						}
@@ -207,27 +216,30 @@ final class ClassMethodHandler implements StmtHandler
 
 					$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
 				});
-			try {
-				$statementResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $methodScope, $storage, $nodeCallback, StatementContext::createTopLevel())->toPublic();
+				try {
+					$statementResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $methodScope, $bodyStorage, $nodeCallback, StatementContext::createTopLevel())->toPublic();
+				} finally {
+					$nodeScopeResolver->popNodeGatherer();
+				}
+
+				$methodReflection = $methodScope->getFunction();
+				if (!$methodReflection instanceof PhpMethodFromParserNodeReflection) {
+					throw new ShouldNotHappenException();
+				}
+
+				$nodeScopeResolver->callNodeCallback($nodeCallback, new MethodReturnStatementsNode(
+					$stmt,
+					$gatheredReturnStatements,
+					$gatheredYieldStatements,
+					$statementResult,
+					$executionEnds,
+					array_merge($statementResult->getImpurePoints(), $methodImpurePoints),
+					$classReflection,
+					$methodReflection,
+				), $methodScope, $bodyStorage);
 			} finally {
-				$nodeScopeResolver->popNodeGatherer();
+				$scope->popExpressionResultStorage();
 			}
-
-			$methodReflection = $methodScope->getFunction();
-			if (!$methodReflection instanceof PhpMethodFromParserNodeReflection) {
-				throw new ShouldNotHappenException();
-			}
-
-			$nodeScopeResolver->callNodeCallback($nodeCallback, new MethodReturnStatementsNode(
-				$stmt,
-				$gatheredReturnStatements,
-				$gatheredYieldStatements,
-				$statementResult,
-				$executionEnds,
-				array_merge($statementResult->getImpurePoints(), $methodImpurePoints),
-				$classReflection,
-				$methodReflection,
-			), $methodScope, $storage);
 
 			if ($isConstructor) {
 				$finalScope = null;

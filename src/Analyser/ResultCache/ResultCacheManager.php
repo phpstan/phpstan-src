@@ -84,7 +84,11 @@ final class ResultCacheManager
 	 */
 	private const EXTENSIONS_NOT_INVALIDATING_CACHE = ['xdebug', 'blackfire', 'phpstan_turbo'];
 
-	private const CACHE_VERSION = 'v15-scannedFileDependencies';
+	private const CACHE_VERSION = 'v16-nonAnalysedExportedNodes';
+
+	private const SCANNED_FILE_APPEARED = 'appeared';
+	private const SCANNED_FILE_EDITED = 'edited';
+	private const SCANNED_FILE_GONE = 'gone';
 
 	/**
 	 * Metadata keys whose change does not invalidate the whole result cache: the analysed files they
@@ -326,7 +330,7 @@ final class ResultCacheManager
 		// absolutized above, so it is always present here
 		$packageDependencies = $data['packageDependencies'];
 		$packageSeededFiles = [];
-		$notAnalysedFileAddedOrEdited = false;
+		$notAnalysedFileSymbolsChanged = false;
 		if ($this->isMetaDifferent($data['meta'], $meta)) {
 			$diffs = $this->getMetaKeyDifferences($data['meta'], $meta);
 
@@ -346,13 +350,17 @@ final class ResultCacheManager
 
 			if (in_array('scannedFiles', $diffs, true)) {
 				// Files that are scanned but not analysed are recorded as regular file dependencies
-				// (NodeDependencies::getNonAnalysedDependencies()), so the incremental loop below
-				// re-analyses the files depending on the edited ones. Only a scanned file that appeared
-				// or was edited needs anything extra: it may define a symbol that was reported as unknown
-				// somewhere, so the files with errors are re-analysed the same way a new analysed file
-				// makes them re-analysed.
+				// (NodeDependencies::getNonAnalysedDependencies()) along with their exported nodes, so the
+				// loop over the not-analysed files below treats an edited one the way the loop above
+				// treats an analysed file: the files depending on it are re-analysed only when its
+				// exported nodes changed. What is left for the metadata to notice is a file the
+				// dependency graph does not know: one that appeared, or an edited one nothing depends
+				// on. Either may define a symbol that was reported as unknown somewhere - if it declares
+				// any symbol at all - so the files with errors are re-analysed the same way a new
+				// analysed file makes them re-analysed. The previous nodes of a file nothing depends on
+				// are not kept, so for it "declares a symbol" stands in for "declares a new symbol".
 				$changedScannedFiles = $this->getChangedScannedFiles($data['meta'], $meta);
-				foreach ($changedScannedFiles as $changedScannedFile => $stillScanned) {
+				foreach ($changedScannedFiles as $changedScannedFile => $change) {
 					// The scanned files getNonAnalysedDependencies() leaves out: nothing would
 					// re-analyse the files depending on them, so the whole cache has to go.
 					$notTrackedReason = null;
@@ -372,11 +380,19 @@ final class ResultCacheManager
 						);
 					}
 
-					if (!$stillScanned) {
+					if ($change === self::SCANNED_FILE_GONE) {
 						continue;
 					}
 
-					$notAnalysedFileAddedOrEdited = true;
+					if ($change === self::SCANNED_FILE_EDITED && array_key_exists($changedScannedFile, $data['dependencies'])) {
+						continue;
+					}
+
+					if ($this->exportedNodeFetcher->fetchNodes($changedScannedFile) === []) {
+						continue;
+					}
+
+					$notAnalysedFileSymbolsChanged = true;
 				}
 
 				if ($output->isVeryVerbose()) {
@@ -601,15 +617,7 @@ final class ResultCacheManager
 				if (count($cachedFileExportedNodes) === 0) {
 					continue;
 				}
-				$hasTraitNode = false;
-				foreach ($cachedFileExportedNodes as $exportedNode) {
-					if ($exportedNode instanceof ExportedTraitNode) {
-						$hasTraitNode = true;
-						break;
-					}
-				}
-
-				if (!$hasTraitNode) {
+				if (!$this->hasTraitNode($cachedFileExportedNodes)) {
 					continue;
 				}
 
@@ -650,24 +658,53 @@ final class ResultCacheManager
 
 			if (is_file($notAnalysedFile)) {
 				// Not analysed but still on disk: a scanned file, or another project file the analysed
-				// code depends on. Its edges are not carried over by the loop above (that one only walks
-				// the analysed files), so they are preserved here - and its dependents are re-analysed
-				// only when its contents actually changed.
+				// code depends on. Its edges and exported nodes are not carried over by the loop above
+				// (that one only walks the analysed files), so they are preserved here.
 				$invertedDependenciesToReturn[$notAnalysedFile] = $dependentFiles;
 				if (count($usedTraitDependentFiles) > 0) {
 					$invertedUsedTraitDependenciesToReturn[$notAnalysedFile] = $usedTraitDependentFiles;
 				}
 
+				$cachedFileExportedNodes = $exportedNodes[$notAnalysedFile] ?? null;
 				if ($this->getFileHash($notAnalysedFile) === $notAnalysedFileData['fileHash']) {
+					if ($cachedFileExportedNodes !== null) {
+						$filteredExportedNodes[$notAnalysedFile] = $cachedFileExportedNodes;
+					}
 					continue;
 				}
 
-				// The dependents are not enough: a file that referenced this one while it was broken (a
-				// syntax error, a missing symbol) reported an error and recorded no edge to it, so an edge
-				// here cannot bring it back once the file is fixed. The files with errors are re-analysed
-				// the same way as for a new file - for a scanned file the scannedFiles metadata above does
-				// it too, but a file reached only through the autoloader is listed nowhere else.
-				$notAnalysedFileAddedOrEdited = true;
+				// Edited: the same rule as for an analysed file. Nothing the files depending on it can
+				// see changed unless its exported nodes did, so a body-only edit re-analyses nothing -
+				// except the classes using a trait declared here, whose body is analysed in their
+				// context. The fresh nodes replace the cached ones: the file is never analysed, so this is
+				// the only place they come from once the file is in the graph.
+				$fileExportedNodes = $this->exportedNodeFetcher->fetchNodes($notAnalysedFile);
+				$filteredExportedNodes[$notAnalysedFile] = $fileExportedNodes;
+				$exportedNodesChanged = $cachedFileExportedNodes !== null
+					? $this->compareExportedNodes($cachedFileExportedNodes, $fileExportedNodes)
+					: true;
+				if ($exportedNodesChanged === null) {
+					if (!$this->hasTraitNode($fileExportedNodes)) {
+						continue;
+					}
+
+					foreach ($usedTraitDependentFiles as $usedTraitDependentFile) {
+						if (!is_file($usedTraitDependentFile)) {
+							continue;
+						}
+						$filesToAnalyse[] = $usedTraitDependentFile;
+					}
+					continue;
+				}
+
+				if ($exportedNodesChanged) {
+					// A symbol appeared or disappeared. The dependents are not enough then: a file that
+					// reported the symbol as unknown - or referenced this file while it had a syntax error
+					// and no symbols at all - recorded no edge to it, so only the files with errors can
+					// bring it back, the same way a new analysed file makes them re-analysed.
+					$notAnalysedFileSymbolsChanged = true;
+				}
+
 				$dependentFiles = array_merge($dependentFiles, $usedTraitDependentFiles);
 			}
 
@@ -679,7 +716,7 @@ final class ResultCacheManager
 			}
 		}
 
-		if ($newFileAppeared || $notAnalysedFileAddedOrEdited) {
+		if ($newFileAppeared || $notAnalysedFileSymbolsChanged) {
 			foreach (array_keys($filteredErrors) as $fileWithError) {
 				$filesToAnalyse[] = $fileWithError;
 			}
@@ -797,8 +834,17 @@ final class ResultCacheManager
 		if (array_key_exists($analysedFile, $this->fileReplacements)) {
 			$analysedFile = $this->fileReplacements[$analysedFile];
 		}
-		$fileExportedNodes = $this->exportedNodeFetcher->fetchNodes($analysedFile);
 
+		return $this->compareExportedNodes($cachedFileExportedNodes, $this->exportedNodeFetcher->fetchNodes($analysedFile));
+	}
+
+	/**
+	 * @param array<int, RootExportedNode> $cachedFileExportedNodes
+	 * @param array<int, RootExportedNode> $fileExportedNodes
+	 * @return bool|null null means nothing changed, true means new root symbol appeared, false means nested node changed
+	 */
+	private function compareExportedNodes(array $cachedFileExportedNodes, array $fileExportedNodes): ?bool
+	{
 		$cachedSymbols = [];
 		foreach ($cachedFileExportedNodes as $cachedFileExportedNode) {
 			$cachedSymbols[$cachedFileExportedNode->getType()][] = $cachedFileExportedNode->getName();
@@ -918,7 +964,7 @@ final class ResultCacheManager
 				if ($analyserResult->getDependencies() !== null) {
 					$projectExtensionFiles = $this->getProjectExtensionFiles($projectConfigArray, $analyserResult->getDependencies());
 				}
-				$saved = $doSave($freshErrorsByFile, $freshLocallyIgnoredErrorsByFile, $analyserResult->getLinesToIgnore(), $analyserResult->getUnmatchedLineIgnores(), $freshCollectedDataByFile, $analyserResult->getDependencies(), $analyserResult->getUsedTraitDependencies(), $analyserResult->getPackageDependencies(), $analyserResult->getExportedNodes(), $projectExtensionFiles);
+				$saved = $doSave($freshErrorsByFile, $freshLocallyIgnoredErrorsByFile, $analyserResult->getLinesToIgnore(), $analyserResult->getUnmatchedLineIgnores(), $freshCollectedDataByFile, $analyserResult->getDependencies(), $analyserResult->getUsedTraitDependencies(), $analyserResult->getPackageDependencies(), $this->addNonAnalysedExportedNodes($analyserResult->getExportedNodes(), $analyserResult->getDependencies(), $analyserResult->getUsedTraitDependencies()), $projectExtensionFiles);
 			} else {
 				if ($output->isVeryVerbose()) {
 					$output->writeLineFormatted('Result cache was not saved because it was not requested.');
@@ -934,7 +980,7 @@ final class ResultCacheManager
 		$dependencies = $this->mergeDependencies($resultCache->getDependencies(), $resultCache->getFilesToAnalyse(), $analyserResult->getDependencies());
 		$usedTraitDependencies = $this->mergeDependencies($resultCache->getUsedTraitDependencies(), $resultCache->getFilesToAnalyse(), $analyserResult->getUsedTraitDependencies());
 		$packageDependencies = $this->mergePackageDependencies($resultCache->getPackageDependencies(), $resultCache->getFilesToAnalyse(), $analyserResult->getPackageDependencies());
-		$exportedNodes = $this->mergeExportedNodes($resultCache, $analyserResult->getExportedNodes());
+		$exportedNodes = $this->addNonAnalysedExportedNodes($this->mergeExportedNodes($resultCache, $analyserResult->getExportedNodes()), $dependencies, $usedTraitDependencies);
 		$linesToIgnore = $this->mergeLinesToIgnore($resultCache, $analyserResult->getLinesToIgnore());
 		$unmatchedLineIgnores = $this->mergeUnmatchedLineIgnores($resultCache, $analyserResult->getUnmatchedLineIgnores());
 
@@ -1589,12 +1635,11 @@ return [
 	}
 
 	/**
-	 * Scanned files that differ between two metadata snapshots, each mapped to whether it is still
-	 * scanned now (a file that appeared or was edited) or not (a file that is gone).
+	 * Scanned files that differ between two metadata snapshots, each mapped to what happened to it.
 	 *
 	 * @param mixed[] $cachedMeta
 	 * @param mixed[] $currentMeta
-	 * @return array<string, bool>
+	 * @return array<string, self::SCANNED_FILE_*>
 	 */
 	private function getChangedScannedFiles(array $cachedMeta, array $currentMeta): array
 	{
@@ -1603,21 +1648,78 @@ return [
 
 		$changed = [];
 		foreach ($current as $file => $hash) {
-			if (array_key_exists($file, $cached) && $cached[$file] === $hash) {
+			if (!array_key_exists($file, $cached)) {
+				$changed[$file] = self::SCANNED_FILE_APPEARED;
 				continue;
 			}
 
-			$changed[$file] = true;
+			if ($cached[$file] === $hash) {
+				continue;
+			}
+
+			$changed[$file] = self::SCANNED_FILE_EDITED;
 		}
 		foreach (array_keys($cached) as $file) {
 			if (array_key_exists($file, $current)) {
 				continue;
 			}
 
-			$changed[$file] = false;
+			$changed[$file] = self::SCANNED_FILE_GONE;
 		}
 
 		return $changed;
+	}
+
+	/**
+	 * @param array<RootExportedNode> $exportedNodes
+	 */
+	private function hasTraitNode(array $exportedNodes): bool
+	{
+		foreach ($exportedNodes as $exportedNode) {
+			if ($exportedNode instanceof ExportedTraitNode) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Exported nodes of the files the analysed code depends on without them being analysed - scanned
+	 * files, other project files reached through the autoloader. Nothing analyses them, so their nodes
+	 * are fetched here, and restore() compares them with the file's current nodes the same way it does
+	 * for an analysed file. Only the files without an entry are fetched: restore() refreshes the entry
+	 * of an edited file and drops the entry of a deleted one, the rest is unchanged since the last run.
+	 *
+	 * @param array<string, array<RootExportedNode>> $exportedNodes
+	 * @param array<string, array<string>>|null $dependencies
+	 * @param array<string, array<string>>|null $usedTraitDependencies
+	 * @return array<string, array<RootExportedNode>>
+	 */
+	private function addNonAnalysedExportedNodes(array $exportedNodes, ?array $dependencies, ?array $usedTraitDependencies): array
+	{
+		if ($dependencies === null || $usedTraitDependencies === null) {
+			return $exportedNodes;
+		}
+
+		// every analysed file is a key; a file that only ever appears as a value is not analysed
+		foreach ([$dependencies, $usedTraitDependencies] as $graph) {
+			foreach ($graph as $fileDependencies) {
+				foreach ($fileDependencies as $dependencyFile) {
+					if (
+						array_key_exists($dependencyFile, $dependencies)
+						|| array_key_exists($dependencyFile, $exportedNodes)
+						|| !is_file($dependencyFile)
+					) {
+						continue;
+					}
+
+					$exportedNodes[$dependencyFile] = $this->exportedNodeFetcher->fetchNodes($dependencyFile);
+				}
+			}
+		}
+
+		return $exportedNodes;
 	}
 
 	/**

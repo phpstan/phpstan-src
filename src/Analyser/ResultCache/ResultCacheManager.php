@@ -30,6 +30,7 @@ use PHPStan\PhpDoc\StubFilesProvider;
 use PHPStan\ShouldNotHappenException;
 use ReflectionClass;
 use ReflectionException;
+use RuntimeException;
 use Throwable;
 use function array_diff;
 use function array_fill_keys;
@@ -45,7 +46,12 @@ use function count;
 use function error_get_last;
 use function explode;
 use function fclose;
+use function fgets;
 use function fopen;
+use function fread;
+use function fseek;
+use function fstat;
+use function ftell;
 use function fwrite;
 use function get_loaded_extensions;
 use function getmypid;
@@ -58,15 +64,20 @@ use function is_file;
 use function ksort;
 use function microtime;
 use function rename;
+use function rtrim;
+use function serialize;
 use function sort;
 use function sprintf;
+use function str_ends_with;
 use function str_starts_with;
+use function strlen;
 use function substr;
 use function time;
 use function uniqid;
 use function unlink;
-use function var_export;
+use function unserialize;
 use const PHP_VERSION_ID;
+use const SEEK_CUR;
 
 /**
  * @phpstan-import-type LinesToIgnore from FileAnalyserResult
@@ -109,6 +120,22 @@ final class ResultCacheManager
 	 * anything about the analysis. They stay in the fully invalidating executedFilesHashes entry.
 	 */
 	private const PARTIALLY_INVALIDATING_META_KEYS = ['composerLocks', 'composerInstalled', 'scannedFiles'];
+
+	/**
+	 * The cache file is serialize() output, but an older PHPStan reading it would
+	 * include it as PHP and echo the whole multi-megabyte content to stdout as
+	 * inline text before discarding it. This prefix makes such an include return
+	 * null immediately (the text after ?> is never reached), so a downgrade
+	 * degrades to a silent full analysis instead.
+	 */
+	private const SERIALIZED_FILE_PREFIX = '<?php return; ?>';
+
+	/**
+	 * Sections restore() hands back as callbacks instead of arrays, so a run that never asks for them
+	 * never pays for decoding them. Each is a whole array frame in the file, so the reader only has to
+	 * remember where it starts and walk past its entries.
+	 */
+	private const LAZY_SECTIONS = ['errors', 'locallyIgnoredErrors', 'collectedData', 'exportedNodes'];
 
 	/** @var array<string, string> */
 	private array $fileHashes = [];
@@ -274,7 +301,12 @@ final class ResultCacheManager
 		}
 
 		try {
-			$data = require $cacheFilePath;
+			// The cache used to be a var_export'd PHP file loaded via include. Including a
+			// multi-megabyte PHP source retains its compiled op_arrays and interned strings
+			// for the process lifetime; unserialize() produces only the values. A cache file
+			// in the old PHP format fails to unserialize and is discarded below like any
+			// other corrupted file, so no cache version bump is needed for the transition.
+			$data = $this->readCacheFile($cacheFilePath);
 		} catch (Throwable $e) {
 			@unlink($cacheFilePath);
 
@@ -1448,9 +1480,11 @@ final class ResultCacheManager
 		$pid = getmypid();
 		$temporaryFile = sprintf('%s.%s.tmp', $file, $pid === false ? uniqid() : $pid);
 
-		// streamed to the file section by section - building the whole
-		// var_export()ed contents in memory at once would take up roughly
-		// twice the size of the resulting file in the main process
+		// Written frame by frame, and the array sections entry by entry, so the peak cost of saving is
+		// one entry rather than the whole cache. Serializing the payload in one call would hold the
+		// entire cache in memory twice over - on one project that is 53 MB serialized, 39 MB of it
+		// exportedNodes alone - which is the same trap the var_export writer this replaces avoided by
+		// streaming.
 		$handle = @fopen($temporaryFile, 'w');
 		if ($handle === false) {
 			$error = error_get_last();
@@ -1461,38 +1495,18 @@ final class ResultCacheManager
 		$renamed = false;
 
 		try {
-			$this->writeToHandle($handle, $file, "<?php declare(strict_types = 1);
-
-return [
-	'lastFullAnalysisTime' => " . var_export($lastFullAnalysisTime, true) . ",
-	'meta' => " . var_export($meta, true) . ",
-	'projectExtensionFiles' => " . var_export($projectExtensionFiles, true) . ",
-	'errorsCallback' => static function (): array { return ");
-			$this->streamArrayVarExportToHandle($handle, $file, $errors);
-			$this->writeToHandle($handle, $file, "; },
-	'locallyIgnoredErrorsCallback' => static function (): array { return ");
-			$this->streamArrayVarExportToHandle($handle, $file, $locallyIgnoredErrors);
-			$this->writeToHandle($handle, $file, "; },
-	'linesToIgnore' => ");
-			$this->streamArrayVarExportToHandle($handle, $file, $linesToIgnore);
-			$this->writeToHandle($handle, $file, ",
-	'unmatchedLineIgnores' => ");
-			$this->streamArrayVarExportToHandle($handle, $file, $unmatchedLineIgnores);
-			$this->writeToHandle($handle, $file, ",
-	'collectedDataCallback' => static function (): array { return ");
-			$this->streamArrayVarExportToHandle($handle, $file, $collectedData);
-			$this->writeToHandle($handle, $file, "; },
-	'dependencies' => ");
-			$this->streamArrayVarExportToHandle($handle, $file, $invertedDependencies);
-			$this->writeToHandle($handle, $file, ",
-	'packageDependencies' => ");
-			$this->streamArrayVarExportToHandle($handle, $file, $packageDependencies);
-			$this->writeToHandle($handle, $file, ",
-	'exportedNodesCallback' => static function (): array { return ");
-			$this->streamArrayVarExportToHandle($handle, $file, $exportedNodes);
-			$this->writeToHandle($handle, $file, '; },
-];
-');
+			$this->writeToHandle($handle, $file, self::SERIALIZED_FILE_PREFIX . "\n");
+			$this->writeValueFrame($handle, $file, 'lastFullAnalysisTime', $lastFullAnalysisTime);
+			$this->writeValueFrame($handle, $file, 'meta', $meta);
+			$this->writeValueFrame($handle, $file, 'projectExtensionFiles', $projectExtensionFiles);
+			$this->writeArrayFrame($handle, $file, 'errors', $errors);
+			$this->writeArrayFrame($handle, $file, 'locallyIgnoredErrors', $locallyIgnoredErrors);
+			$this->writeArrayFrame($handle, $file, 'linesToIgnore', $linesToIgnore);
+			$this->writeArrayFrame($handle, $file, 'unmatchedLineIgnores', $unmatchedLineIgnores);
+			$this->writeArrayFrame($handle, $file, 'collectedData', $collectedData);
+			$this->writeArrayFrame($handle, $file, 'dependencies', $invertedDependencies);
+			$this->writeArrayFrame($handle, $file, 'packageDependencies', $packageDependencies);
+			$this->writeArrayFrame($handle, $file, 'exportedNodes', $exportedNodes);
 			fclose($handle);
 			$closed = true;
 
@@ -1525,30 +1539,227 @@ return [
 	}
 
 	/**
-	 * Streams the var_export() representation of an array to the file entry
-	 * by entry, producing output byte-identical to var_export($values, true).
+	 * A single value, as `name length\n` followed by that many bytes.
 	 *
-	 * var_export() builds the whole export in memory even when told to print it,
-	 * so exporting a big section in one call would take up as much memory
-	 * as the resulting file section itself.
+	 * @param resource $handle
+	 */
+	private function writeValueFrame($handle, string $file, string $name, mixed $value): void
+	{
+		$blob = serialize($value);
+		$this->writeToHandle($handle, $file, $name . ' ' . strlen($blob) . "\n");
+		$this->writeToHandle($handle, $file, $blob);
+	}
+
+	/**
+	 * An array, as `name* count\n` followed by one length-prefixed frame per entry.
 	 *
-	 * Each entry is exported wrapped in a single-entry array whose "array (\n"
-	 * prefix and "\n)" suffix are stripped, yielding the same bytes (including
-	 * indentation) the entry would get inside the full export. Indenting the lines
-	 * of a standalone value export would corrupt multi-line string contents instead.
+	 * Each entry is serialized as a single-element array so its key travels with it, which keeps string
+	 * and integer keys distinct without a second frame for the key.
 	 *
 	 * @param resource $handle
 	 * @param array<mixed> $values
 	 */
-	private function streamArrayVarExportToHandle($handle, string $file, array $values): void
+	private function writeArrayFrame($handle, string $file, string $name, array $values): void
 	{
-		$this->writeToHandle($handle, $file, 'array (');
+		$this->writeToHandle($handle, $file, $name . '* ' . count($values) . "\n");
 		foreach ($values as $key => $value) {
-			$entry = var_export([$key => $value], true);
-			$this->writeToHandle($handle, $file, "\n" . substr($entry, 8, -2));
+			$blob = serialize([$key => $value]);
+			$this->writeToHandle($handle, $file, strlen($blob) . "\n");
+			$this->writeToHandle($handle, $file, $blob);
+		}
+	}
+
+	/**
+	 * Read a framed cache file back, one frame at a time.
+	 *
+	 * Returns null for anything that is not this format, which is how a cache written by an older
+	 * PHPStan is detected: the caller discards it and analyses everything, exactly as it does for a
+	 * corrupted file.
+	 *
+	 * @return array<string, mixed>|null
+	 */
+	private function readCacheFile(string $cacheFilePath): ?array
+	{
+		$handle = @fopen($cacheFilePath, 'r');
+		if ($handle === false) {
+			return null;
 		}
 
-		$this->writeToHandle($handle, $file, "\n)");
+		$stat = fstat($handle);
+		$fileSize = $stat === false ? 0 : $stat['size'];
+		$closeHandle = true;
+
+		try {
+			if (rtrim((string) fgets($handle), "\n") !== self::SERIALIZED_FILE_PREFIX) {
+				return null;
+			}
+
+			$data = [];
+			$lazy = array_fill_keys(self::LAZY_SECTIONS, false);
+			while (($header = fgets($handle)) !== false) {
+				$header = rtrim($header, "\n");
+				if ($header === '') {
+					continue;
+				}
+
+				$parts = explode(' ', $header, 2);
+				if (count($parts) !== 2) {
+					throw new RuntimeException(sprintf('Malformed frame header "%s".', $header));
+				}
+
+				[$name, $size] = $parts;
+				if (!str_ends_with($name, '*')) {
+					$data[$name] = $this->readFrame($handle, (int) $size);
+
+					continue;
+				}
+
+				$name = substr($name, 0, -1);
+				$count = (int) $size;
+				if (!array_key_exists($name, $lazy)) {
+					$data[$name] = $this->readEntryFrames($handle, $count);
+
+					continue;
+				}
+
+				// The entries are walked rather than decoded: that validates the framing of the whole
+				// file up front, so a damaged cache is still discarded by restore() instead of failing
+				// later inside the callback, and leaves the payloads to be unserialized on demand.
+				$offset = ftell($handle);
+				if ($offset === false) {
+					throw new RuntimeException(sprintf('Cannot tell the position of section "%s".', $name));
+				}
+
+				$this->skipEntryFrames($handle, $count, $fileSize, $name);
+				$lazy[$name] = true;
+				$data[$name . 'Callback'] = fn (): array => $this->readEntryFramesAt($handle, $offset, $count, $name);
+			}
+
+			foreach ($lazy as $name => $seen) {
+				if ($seen) {
+					continue;
+				}
+
+				$data[$name . 'Callback'] = static fn (): array => [];
+			}
+
+			$closeHandle = false;
+
+			return $data;
+		} finally {
+			if ($closeHandle) {
+				fclose($handle);
+			}
+		}
+	}
+
+	/**
+	 * Walks past an array frame's entries without unserializing them, checking as it goes that the
+	 * file really holds them.
+	 *
+	 * @param resource $handle
+	 */
+	private function skipEntryFrames($handle, int $count, int $fileSize, string $name): void
+	{
+		for ($i = 0; $i < $count; $i++) {
+			$length = fgets($handle);
+			if ($length === false) {
+				throw new RuntimeException(sprintf('Section "%s" ended after %d of %d entries.', $name, $i, $count));
+			}
+
+			$length = (int) rtrim($length, "\n");
+			if ($length <= 0) {
+				throw new RuntimeException(sprintf('Frame length %d is not positive.', $length));
+			}
+
+			// fseek() past the end of a file succeeds, so the position is what catches a section the
+			// file does not actually hold.
+			if (fseek($handle, $length, SEEK_CUR) !== 0) {
+				throw new RuntimeException(sprintf('Cannot skip entry %d of section "%s".', $i, $name));
+			}
+
+			$position = ftell($handle);
+			if ($position === false || $position > $fileSize) {
+				throw new RuntimeException(sprintf('Section "%s" is truncated at entry %d of %d.', $name, $i, $count));
+			}
+		}
+	}
+
+	/**
+	 * @param resource $handle
+	 * @return array<mixed>
+	 */
+	private function readEntryFramesAt($handle, int $offset, int $count, string $name): array
+	{
+		if (fseek($handle, $offset) !== 0) {
+			throw new RuntimeException(sprintf('Cannot seek to section "%s".', $name));
+		}
+
+		return $this->readEntryFrames($handle, $count);
+	}
+
+	/**
+	 * @param resource $handle
+	 * @return array<mixed>
+	 */
+	private function readEntryFrames($handle, int $count): array
+	{
+		$entries = [];
+		for ($i = 0; $i < $count; $i++) {
+			$length = fgets($handle);
+			if ($length === false) {
+				throw new RuntimeException(sprintf('Cache file ended after %d of %d entries.', $i, $count));
+			}
+
+			$entry = $this->readFrame($handle, (int) rtrim($length, "\n"));
+			if (!is_array($entry)) {
+				throw new RuntimeException('An entry frame did not contain an array.');
+			}
+
+			foreach ($entry as $key => $value) {
+				$entries[$key] = $value;
+			}
+		}
+
+		return $entries;
+	}
+
+	/**
+	 * A frame's payload, or an exception when the file does not hold one.
+	 *
+	 * Every failure here means a cache file that is this format but damaged: a CI cache artifact
+	 * archived or restored half way, an interrupted copy, a disk that filled up. restore() turns
+	 * the exception into a discarded cache and a full analysis, the same way it handles the parse
+	 * error an incomplete var_export'd file used to produce. Returning a value instead would
+	 * hand a half-read cache to the caller, where the missing pieces surface as type errors far
+	 * from the cause.
+	 *
+	 * false is treated as failure because unserialize() reports failure that way and no value in
+	 * the cache is a bare false: the sections are arrays and lastFullAnalysisTime is an int.
+	 *
+	 * @param resource $handle
+	 */
+	private function readFrame($handle, int $length): mixed
+	{
+		if ($length <= 0) {
+			throw new RuntimeException(sprintf('Frame length %d is not positive.', $length));
+		}
+
+		$blob = fread($handle, $length);
+		if ($blob === false || strlen($blob) !== $length) {
+			throw new RuntimeException(sprintf(
+				'Expected a %d byte frame, read %d bytes.',
+				$length,
+				$blob === false ? 0 : strlen($blob),
+			));
+		}
+
+		$value = @unserialize($blob);
+		if ($value === false) {
+			throw new RuntimeException(sprintf('A %d byte frame could not be unserialized.', $length));
+		}
+
+		return $value;
 	}
 
 	/**

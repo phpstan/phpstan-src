@@ -1,0 +1,7 @@
+includes:
+	- phpstan.neon
+
+parameters:
+	# The same analysis, reading the cache from somewhere else. Where the cache is stored cannot
+	# change what it holds, so tmpDir is in parametersNotInvalidatingCache and this must reuse it.
+	tmpDir: tmp-b

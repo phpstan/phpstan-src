@@ -1,0 +1,5 @@
+parameters:
+	level: 8
+	tmpDir: tmp-a
+	paths:
+		- src

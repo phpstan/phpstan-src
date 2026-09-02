@@ -589,7 +589,15 @@ class ClassConstantRuleTest extends RuleTestCase
 		if ($checkImportedClassNameCase) {
 			$expectedErrors[] = [
 				'Class Bug12827Classes\Post referenced with incorrect case: Bug12827Classes\POST.',
-				25,
+				34,
+			];
+			$expectedErrors[] = [
+				'Class Bug12827Classes\Post referenced with incorrect case: Bug12827Classes\POST.',
+				44,
+			];
+			$expectedErrors[] = [
+				'Enum Bug12827Classes\Suit referenced with incorrect case: Bug12827Classes\SUIT.',
+				54,
 			];
 		}
 

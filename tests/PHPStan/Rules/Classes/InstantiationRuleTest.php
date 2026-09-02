@@ -759,7 +759,7 @@ class InstantiationRuleTest extends RuleTestCase
 		if ($checkImportedClassNameCase) {
 			$expectedErrors[] = [
 				'Class Bug12827Classes\Post referenced with incorrect case: Bug12827Classes\POST.',
-				15,
+				24,
 			];
 		}
 

@@ -1,7 +1,11 @@
 <?php declare(strict_types = 1);
 
 namespace Bug12827Classes {
-	class Post {}
+	class Post {
+
+		public const FOO = 'foo';
+
+	}
 }
 
 namespace Bug12827ClassesConsumer {
@@ -28,6 +32,16 @@ namespace Bug12827ClassesConsumer {
 		public function doLorem(): string
 		{
 			return Post::class;
+		}
+
+		public function doIpsum(): string
+		{
+			return POST::FOO;
+		}
+
+		public function doDolor(): string
+		{
+			return Post::FOO;
 		}
 
 	}

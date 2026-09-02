@@ -589,11 +589,33 @@ class ClassConstantRuleTest extends RuleTestCase
 		if ($checkImportedClassNameCase) {
 			$expectedErrors[] = [
 				'Class Bug12827Classes\Post referenced with incorrect case: Bug12827Classes\POST.',
-				25,
+				29,
+			];
+			$expectedErrors[] = [
+				'Class Bug12827Classes\Post referenced with incorrect case: Bug12827Classes\POST.',
+				39,
 			];
 		}
 
 		$this->analyse([__DIR__ . '/data/bug-12827.php'], $expectedErrors);
+	}
+
+	#[DataProvider('dataBug12827')]
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug12827Enum(bool $checkImportedClassNameCase): void
+	{
+		$this->phpVersion = PHP_VERSION_ID;
+		$this->checkImportedClassNameCase = $checkImportedClassNameCase;
+
+		$expectedErrors = [];
+		if ($checkImportedClassNameCase) {
+			$expectedErrors[] = [
+				'Enum Bug12827Enum\Suit referenced with incorrect case: Bug12827Enum\SUIT.',
+				17,
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-12827-enum.php'], $expectedErrors);
 	}
 
 }

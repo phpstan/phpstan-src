@@ -15,6 +15,7 @@ use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\Cache\Cache;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\File\FileHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadFunctionsSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator;
@@ -28,6 +29,7 @@ use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceL
 use PHPStan\Reflection\BetterReflection\SourceLocator\PhpVersionBlacklistSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\ReflectionClassSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\RewriteClassAliasSourceLocator;
+use PHPStan\Reflection\BetterReflection\SourceLocator\SkipBundledPolyfillSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\SkipClassAliasSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\SkipPolyfillSourceLocator;
 use PHPStan\Turbo\TurboExtensionEnabler;
@@ -56,6 +58,7 @@ final class BetterReflectionSourceLocatorFactory
 		#[AutowiredParameter(ref: '@php8PhpParser')]
 		private Parser $php8Parser,
 		private Cache $cache,
+		private FileHelper $fileHelper,
 		private PhpVersion $phpVersion,
 		private PhpStormStubsSourceStubber $phpstormStubsSourceStubber,
 		private ReflectionSourceStubber $reflectionSourceStubber,
@@ -98,13 +101,13 @@ final class BetterReflectionSourceLocatorFactory
 			}
 
 			$astLocator = new Locator($this->parser);
-			$locators[] = new AutoloadFunctionsSourceLocator(
+			$locators[] = $this->skipBundledPolyfills(new AutoloadFunctionsSourceLocator(
 				new AutoloadSourceLocator($this->fileNodesFetcher, false),
 				new ReflectionClassSourceLocator(
 					$astLocator,
 					$this->reflectionSourceStubber,
 				),
-			);
+			));
 
 			$analysedDirectories = [];
 			$analysedFiles = [];
@@ -184,7 +187,7 @@ final class BetterReflectionSourceLocatorFactory
 				$this->phpVersion,
 			));
 
-			$locators[] = new AutoloadSourceLocator($this->fileNodesFetcher, true);
+			$locators[] = $this->skipBundledPolyfills(new AutoloadSourceLocator($this->fileNodesFetcher, true));
 			$locators[] = new PhpVersionBlacklistSourceLocator(new PhpInternalSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);
 			$locators[] = new PhpVersionBlacklistSourceLocator(new EvaledCodeSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);
 
@@ -194,6 +197,23 @@ final class BetterReflectionSourceLocatorFactory
 		// no MemoizingSourceLocator here - located reflections are already memoized
 		// by MemoizingReflector, a second cache layer would only pin them in memory twice
 		return new LazySourceLocator($initializer);
+	}
+
+	/**
+	 * Symbols of the polyfills bundled with PHPStan are declared in the PHPStan process,
+	 * but they aren't part of the analysed project.
+	 */
+	private function skipBundledPolyfills(SourceLocator $sourceLocator): SourceLocator
+	{
+		$phpstanDirectories = [__DIR__ . '/../../..'];
+		if (extension_loaded('phar')) {
+			$pharProtocolPath = Phar::running();
+			if ($pharProtocolPath !== '') {
+				$phpstanDirectories[] = $pharProtocolPath;
+			}
+		}
+
+		return new SkipBundledPolyfillSourceLocator($sourceLocator, $this->fileHelper, $phpstanDirectories);
 	}
 
 }

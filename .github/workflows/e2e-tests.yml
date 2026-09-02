@@ -180,6 +180,22 @@ jobs:
               echo "$OUTPUT"
               ../bashunit -a contains 'Result cache restored.' "$OUTPUT"
           - script: |
+              cd e2e/result-cache-stale-objects
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan -vvv")
+              echo "$OUTPUT"
+              # Renaming a property inside the cache file is what a cache written by a PHPStan whose
+              # classes have changed since looks like: the payload does not carry the property the class
+              # now declares, so reconstructing the object leaves it uninitialized and reading it throws.
+              php rename-property.php
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan -vvv")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'could not be read back' "$OUTPUT"
+              ../bashunit -a contains 'Result cache is saved.' "$OUTPUT"
+              # The cache written in its place is usable again.
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan -vvv")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored.' "$OUTPUT"
+          - script: |
               cd e2e/bug-14514
               composer install
               ../../bin/phpstan analyze bug-14515.php

@@ -134,6 +134,12 @@ final class ResultCacheManager
 	 * Sections restore() hands back as callbacks instead of arrays, so a run that never asks for them
 	 * never pays for decoding them. Each is a whole array frame in the file, so the reader only has to
 	 * remember where it starts and walk past its entries.
+	 *
+	 * Nothing closure-shaped is written: a frame holds the plain serialized payload
+	 * (`a:1:{s:9:"file.php";a:1:{i:0;O:22:"PHPStan\Analyser\Error"...`), and readCacheFile() builds
+	 * the callback in PHP around the open handle and that offset, which is only the shape restore()
+	 * expects. The var_export format writes a real `static function (): array` into the file instead,
+	 * and PHP still compiles the array literal inside it.
 	 */
 	private const LAZY_SECTIONS = ['errors', 'locallyIgnoredErrors', 'collectedData', 'exportedNodes'];
 
@@ -593,12 +599,31 @@ final class ResultCacheManager
 		$filesToAnalyse = [];
 		$invertedDependenciesToReturn = [];
 		$invertedUsedTraitDependenciesToReturn = [];
-		$errors = $data['errorsCallback']();
-		$locallyIgnoredErrors = $data['locallyIgnoredErrorsCallback']();
 		$linesToIgnore = $data['linesToIgnore'];
 		$unmatchedLineIgnores = $data['unmatchedLineIgnores'];
-		$collectedData = $data['collectedDataCallback']();
-		$exportedNodes = $data['exportedNodesCallback']();
+
+		try {
+			// The cached objects are reconstructed here, and a cache written by a PHPStan whose classes
+			// have since changed can fail at it: a property the payload does not carry stays
+			// uninitialized, and reading it throws. The cacheVersion and phpstanVersion in the metadata
+			// keep a released version away from another release's objects, but a source checkout keeps
+			// one phpstanVersion across every edit of these classes, so this is reachable there. A cache
+			// that cannot be reconstructed is discarded like any other unusable one.
+			$errors = $data['errorsCallback']();
+			$locallyIgnoredErrors = $data['locallyIgnoredErrorsCallback']();
+			$collectedData = $data['collectedDataCallback']();
+			$exportedNodes = $data['exportedNodesCallback']();
+		} catch (Throwable $e) {
+			@unlink($cacheFilePath);
+
+			return $this->fullAnalysis(
+				sprintf('Result cache not used because the cached results could not be read back: %s', $e->getMessage()),
+				$allAnalysedFiles,
+				$meta,
+				$currentFileHashes,
+				$output,
+			);
+		}
 		$filteredErrors = [];
 		$filteredLocallyIgnoredErrors = [];
 		$filteredLinesToIgnore = [];

@@ -20,3 +20,4 @@ e2e/bashunit
 /e2e/result-cache-atomic-save/tmp
 /e2e/result-cache-moved-tmpdir/tmp-a
 /e2e/result-cache-moved-tmpdir/tmp-b
+/e2e/result-cache-truncated/tmp

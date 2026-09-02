@@ -8,11 +8,11 @@ use function array_filter;
 use function array_map;
 use function array_values;
 use function function_exists;
+use function hash;
 use function implode;
 use function in_array;
 use function openssl_cipher_iv_length;
 use function openssl_get_cipher_methods;
-use function sha1;
 use function sort;
 use function strtolower;
 
@@ -82,7 +82,7 @@ final class OpenSslCipherMethodsProvider implements ResultCacheMetaExtension
 		$methods = $this->getSupportedCipherMethods();
 		sort($methods);
 
-		return sha1(implode(',', $methods));
+		return hash('sha256', implode(',', $methods));
 	}
 
 }

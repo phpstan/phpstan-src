@@ -45,6 +45,7 @@ use function fclose;
 use function fopen;
 use function fwrite;
 use function get_loaded_extensions;
+use function getmypid;
 use function hash_file;
 use function implode;
 use function in_array;
@@ -53,11 +54,13 @@ use function is_dir;
 use function is_file;
 use function ksort;
 use function microtime;
+use function rename;
 use function sort;
 use function sprintf;
 use function str_starts_with;
 use function substr;
 use function time;
+use function uniqid;
 use function unlink;
 use function var_export;
 use const PHP_VERSION_ID;
@@ -1238,14 +1241,26 @@ final class ResultCacheManager
 
 		$file = $this->cacheFilePath;
 
+		// Written to a sibling of the final path and renamed into place, so a run that dies while
+		// saving - or is killed by a CI timeout - leaves the previous cache untouched instead of a
+		// half-written one at the path the next run reads. rename() within a directory is atomic, so
+		// a concurrent run either reads the whole old cache or the whole new one.
+		// Named after the process so two runs sharing a tmpDir cannot write the same temporary file,
+		// and so a leftover from a run that was killed is reused rather than accumulating.
+		$pid = getmypid();
+		$temporaryFile = sprintf('%s.%s.tmp', $file, $pid === false ? uniqid() : $pid);
+
 		// streamed to the file section by section - building the whole
 		// var_export()ed contents in memory at once would take up roughly
 		// twice the size of the resulting file in the main process
-		$handle = @fopen($file, 'w');
+		$handle = @fopen($temporaryFile, 'w');
 		if ($handle === false) {
 			$error = error_get_last();
-			throw new CouldNotWriteFileException($file, $error !== null ? $error['message'] : 'unknown cause');
+			throw new CouldNotWriteFileException($temporaryFile, $error !== null ? $error['message'] : 'unknown cause');
 		}
+
+		$closed = false;
+		$renamed = false;
 
 		try {
 			$this->writeToHandle($handle, $file, "<?php declare(strict_types = 1);
@@ -1280,8 +1295,23 @@ return [
 			$this->writeToHandle($handle, $file, '; },
 ];
 ');
-		} finally {
 			fclose($handle);
+			$closed = true;
+
+			if (!@rename($temporaryFile, $file)) {
+				$error = error_get_last();
+				throw new CouldNotWriteFileException($file, $error !== null ? $error['message'] : 'unknown cause');
+			}
+
+			$renamed = true;
+		} finally {
+			if (!$closed) {
+				fclose($handle);
+			}
+
+			if (!$renamed) {
+				@unlink($temporaryFile);
+			}
 		}
 	}
 

@@ -125,6 +125,22 @@ jobs:
               echo -n > phpstan-baseline.neon
               ../../bin/phpstan -vvv
           - script: |
+              cd e2e/result-cache-atomic-save
+              ../../bin/phpstan
+              INODE=$(ls -i tmp/resultCache.php | awk '{print $1}')
+              ../../bin/phpstan
+              # The cache is written next to its final path and renamed into place, so saving it
+              # again replaces the file rather than truncating and rewriting the one the next run
+              # reads. That is what keeps a run killed mid-save from leaving a partial cache behind.
+              REPLACED=$([ "$INODE" != "$(ls -i tmp/resultCache.php | awk '{print $1}')" ] && echo replaced || echo 'written in place')
+              ../bashunit -a equals 'replaced' "$REPLACED"
+              # A completed save leaves nothing next to the cache file.
+              LEFTOVERS=$(ls tmp/ | grep -c '\.tmp$' || true)
+              ../bashunit -a equals '0' "$LEFTOVERS"
+              OUTPUT=$(../../bin/phpstan -vvv 2>&1)
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+          - script: |
               cd e2e/bug-14514
               composer install
               ../../bin/phpstan analyze bug-14515.php
@@ -788,6 +804,19 @@ jobs:
               /tmp/phpstan-install-1/bin/phpstan analyse -l 8 -vvv test.php
               mv /tmp/phpstan-install-1 /tmp/phpstan-install-2
               /tmp/phpstan-install-2/bin/phpstan analyse -l 8 -vvv test.php
+          - script: |
+              # PHPStan bundles symfony/polyfill-php85 for its own runtime, so array_first()
+              # and other PHP 8.5 symbols are declared in the PHPStan process. A project
+              # analysed with PHP 8.4 must not see them
+              # (https://github.com/phpstan/phpstan/issues/15150).
+              cd e2e/bug-15150
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --error-format=raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'test.php:11:Function array_first not found.' "$OUTPUT"
+              ../bashunit -a contains 'test.php:12:Function array_last not found.' "$OUTPUT"
+              ../bashunit -a contains 'test.php:21:Instantiated class Filter\FilterException not found.' "$OUTPUT"
+              # array_find() exists in the analysed PHP version, PhpStorm stubs describe it
+              ../bashunit -a not_contains 'array_find' "$OUTPUT"
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -1152,6 +1181,23 @@ jobs:
           OUTPUT=$(PHPSTAN_TURBO=0 php bin/phpstan diagnose -c e2e/turbo-arena/phpstan.neon)
           echo "$OUTPUT"
           e2e/bashunit -a contains 'Turbo extension: enabled' "$OUTPUT"
+
+      - name: "Verify conditional types leave interned types equal to a resolved subject alone"
+        # With the extension active TypeCombinator's results are interned, so equal
+        # types share one instance. ConditionalType used to narrow the types in its
+        # branches identical to the subject even once the subject had resolved to a
+        # concrete type, and interning made that hit unrelated types - the `mixed`
+        # value type of an `array` branch for a `mixed` subject -
+        # https://github.com/phpstan/phpstan/issues/15151
+        run: |
+          cd e2e/bug-15151
+          OUTPUT=$(php ../../bin/phpstan analyse --no-progress --error-format=raw 2>&1 || true)
+          echo "$OUTPUT"
+          ../bashunit -a contains 'reception_formulaire.php:20:Dumped type: mixed' "$OUTPUT"
+          ../bashunit -a contains 'webservice.php:25:Dumped type: mixed' "$OUTPUT"
+          ../bashunit -a not_contains 'Dumped type: array' "$OUTPUT"
+          # the two dumps are the only errors: count the file:line:message lines
+          ../bashunit -a equals '2' "$(echo "$OUTPUT" | grep -Ec '^/.+:[0-9]+:')"
 
       - name: "Test"
         # The arena is a per-run POSIX shared-memory object: shm_open() plus an

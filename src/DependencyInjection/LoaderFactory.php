@@ -24,16 +24,19 @@ final class LoaderFactory
 
 	public function createLoader(): Loader
 	{
-		$neonAdapter = new NeonCachedFileReader($this->expandRelativePaths);
+		// known before the container is compiled, so the adapter can expand them in path entries
+		// and the loader in included file names
+		$parameters = [
+			'rootDir' => $this->rootDir,
+			'currentWorkingDirectory' => $this->currentWorkingDirectory,
+			'env' => Environment::getCleanedArray(),
+		];
+		$neonAdapter = new NeonCachedFileReader($this->expandRelativePaths, $parameters);
 
 		$loader = new NeonLoader($this->fileHelper, $this->generateBaselineFile);
 		$loader->addAdapter('dist', $neonAdapter);
 		$loader->addAdapter('neon', $neonAdapter);
-		$loader->setParameters([
-			'rootDir' => $this->rootDir,
-			'currentWorkingDirectory' => $this->currentWorkingDirectory,
-			'env' => Environment::getCleanedArray(),
-		]);
+		$loader->setParameters($parameters);
 
 		return $loader;
 	}

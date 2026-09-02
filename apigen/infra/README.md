@@ -6,7 +6,7 @@ with OAC, CloudFront distribution, CloudFront Function 2.0 for per-version
 landing-page redirects, Response Headers Policy, ACM cert, and the IAM role
 assumed by `apiref.yml` via OIDC.
 
-Same shape as the main-site infra at [`phpstan-dist`/website/infra](https://github.com/phpstan/phpstan/tree/2.2.x/website/infra).
+Same shape as the main-site infra at [`phpstan-dist`/website/infra](https://github.com/phpstan/phpstan/tree/2.3.x/website/infra).
 
 ## Stacks
 
@@ -57,5 +57,5 @@ npm run synth     # cdk synth --all
 npm run diff      # cdk diff --all (needs AWS creds for the target account)
 ```
 
-Changes merged to `2.2.x` under `apigen/infra/**` are deployed automatically by
+Changes merged to `2.3.x` under `apigen/infra/**` are deployed automatically by
 `.github/workflows/apiref-infra.yml`.

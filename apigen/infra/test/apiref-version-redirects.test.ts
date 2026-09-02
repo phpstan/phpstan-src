@@ -17,6 +17,8 @@ describe('apiref-version-redirects handler', () => {
 	describe('version landing-page redirects', () => {
 		const cases: Array<[string, string]> = [
 			['/', '/2.2.x/namespace-PHPStan.html'],
+			['/2.3.x', '/2.3.x/namespace-PHPStan.html'],
+			['/2.3.x/', '/2.3.x/namespace-PHPStan.html'],
 			['/2.2.x', '/2.2.x/namespace-PHPStan.html'],
 			['/2.2.x/', '/2.2.x/namespace-PHPStan.html'],
 			['/2.1.x', '/2.1.x/namespace-PHPStan.html'],

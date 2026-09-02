@@ -9,7 +9,7 @@ cert, and the IAM roles that GitHub Actions assumes via OIDC.
 See `README.md` for the bootstrap, cutover, and cleanup runbook.
 
 This stack mirrors the main-site infra at
-[`phpstan-dist`/website/infra](https://github.com/phpstan/phpstan/tree/2.2.x/website/infra)
+[`phpstan-dist`/website/infra](https://github.com/phpstan/phpstan/tree/2.3.x/website/infra)
 — same patterns, same conventions; reach for that repo first when looking for
 prior art.
 
@@ -113,7 +113,7 @@ site's `website-infra.yml`):
 
 1. `test` — `npm ci && npm run check && npm test && npx cdk synth --all` (no AWS creds).
 2. `diff` (needs: `test`) — assumes `APIREF_INFRA_DEPLOY_ROLE_ARN` via OIDC, runs `cdk diff --all`, posts a sticky PR comment.
-3. `deploy` (needs: `[test, diff]`, only on push to `2.2.x`) — assumes the same role, runs `cdk deploy --all --require-approval never`.
+3. `deploy` (needs: `[test, diff]`, only on push to `2.3.x`) — assumes the same role, runs `cdk deploy --all --require-approval never`.
 
 The `apiref.yml` workflow (the actual content deploy) uses `paths-ignore` via the inline `!apigen/infra/**` form so infra-only edits don't kick off a (slow) ApiGen rebuild.
 

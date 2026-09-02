@@ -11,7 +11,7 @@ const env = { account, region };
 
 const githubOrg = 'phpstan';
 const githubRepo = 'phpstan-src';
-const deployBranch = '2.2.x';
+const deployBranch = '2.3.x';
 
 // Account-wide OIDC provider, created originally in the phpstan-dist repo's
 // CDK app. We reference it by ARN — never instantiate a new one, IAM rejects

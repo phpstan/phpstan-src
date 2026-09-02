@@ -16,7 +16,7 @@ function event(uri: string): CfEvent {
 describe('apiref-version-redirects handler', () => {
 	describe('version landing-page redirects', () => {
 		const cases: Array<[string, string]> = [
-			['/', '/2.2.x/namespace-PHPStan.html'],
+			['/', '/2.3.x/namespace-PHPStan.html'],
 			['/2.3.x', '/2.3.x/namespace-PHPStan.html'],
 			['/2.3.x/', '/2.3.x/namespace-PHPStan.html'],
 			['/2.2.x', '/2.2.x/namespace-PHPStan.html'],
@@ -45,12 +45,12 @@ describe('apiref-version-redirects handler', () => {
 		}
 
 		it('exposes the same lookup table to tests via module.exports', () => {
-			expect(VERSION_REDIRECTS['/']).toBe('/2.2.x/namespace-PHPStan.html');
+			expect(VERSION_REDIRECTS['/']).toBe('/2.3.x/namespace-PHPStan.html');
 			expect(Object.keys(VERSION_REDIRECTS)).toHaveLength(cases.length);
 		});
 
-		it('latest mapping points to 2.2.x (the post-migration default)', () => {
-			expect(VERSION_REDIRECTS['/']).toBe(VERSION_REDIRECTS['/2.2.x']);
+		it('latest mapping points to 2.3.x', () => {
+			expect(VERSION_REDIRECTS['/']).toBe(VERSION_REDIRECTS['/2.3.x']);
 		});
 	});
 

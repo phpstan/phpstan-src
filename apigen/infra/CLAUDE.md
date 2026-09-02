@@ -46,7 +46,7 @@ state. Same pattern as apex/www on the main site.
 It's a lookup-table version of the legacy `apiref-phpstan-org-viewer-request`
 JS 1.0 function — same job: 301-redirect bare version URIs (e.g. `/2.2.x` or
 `/2.2.x/`) to that version's landing page (`<version>/namespace-PHPStan.html`),
-and `/` to the current "latest" (2.2.x in this migration).
+and `/` to the current "latest" (2.3.x).
 
 302 → 301 was an intentional change to match the main site's redirects.
 

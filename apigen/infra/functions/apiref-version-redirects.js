@@ -14,7 +14,7 @@
 // defined, so the export is silently skipped.
 
 var VERSION_REDIRECTS = {
-	'/':         '/2.2.x/namespace-PHPStan.html',
+	'/':         '/2.3.x/namespace-PHPStan.html',
 	'/2.3.x':    '/2.3.x/namespace-PHPStan.html',
 	'/2.3.x/':   '/2.3.x/namespace-PHPStan.html',
 	'/2.2.x':    '/2.2.x/namespace-PHPStan.html',

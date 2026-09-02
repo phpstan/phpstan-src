@@ -26,7 +26,11 @@ use const DIRECTORY_SEPARATOR;
  *
  * Only paths under (or reachable from) the anchor become relative; a path with no shared prefix is
  * left absolute, following ccache's CCACHE_BASEDIR rule. absolutizePath() is the inverse: an already
- * absolute path is passed through unchanged, so relative and absolute entries can coexist in one cache.
+ * absolute path resolves to itself, so relative and absolute entries can coexist in one cache.
+ *
+ * absolutizePath() hands back a normalized path, so the round trip relativizePath() -> absolutizePath()
+ * only returns what went in when that was normalized to begin with. normalizeMeta() puts a freshly
+ * computed meta into that form before ResultCacheManager compares it against the restored one.
  *
  * @phpstan-import-type CollectorData from CollectedData
  */
@@ -60,7 +64,18 @@ final class ResultCachePathTransformer
 	{
 		[$scheme, $filesystemPath] = $this->splitScheme($path);
 
-		return $scheme . $this->anchorFileHelper->normalizePath($this->anchorFileHelper->absolutizePath($filesystemPath));
+		return $this->normalizePath($scheme . $this->anchorFileHelper->absolutizePath($filesystemPath));
+	}
+
+	/**
+	 * The canonical spelling of a path - the form absolutizePath() hands back for it: '.' and '..'
+	 * segments collapsed, the platform separator throughout. A path built by concatenation (Composer
+	 * records install_path as __DIR__ . '/../x', a %placeholder%/dir mixes separators on Windows)
+	 * equals its restored twin only after going through this.
+	 */
+	public function normalizePath(string $path): string
+	{
+		return $this->anchorFileHelper->normalizePath($path);
 	}
 
 	/**
@@ -263,7 +278,7 @@ final class ResultCachePathTransformer
 	 */
 	public function relativizeMeta(array $meta): array
 	{
-		return $this->transformMeta($meta, false);
+		return $this->transformMeta($meta, fn (string $path): string => $this->relativizePath($path));
 	}
 
 	/**
@@ -272,7 +287,21 @@ final class ResultCachePathTransformer
 	 */
 	public function absolutizeMeta(array $meta): array
 	{
-		return $this->transformMeta($meta, true);
+		return $this->transformMeta($meta, fn (string $path): string => $this->absolutizePath($path));
+	}
+
+	/**
+	 * Puts every path of a freshly computed meta into the canonical form absolutizePath() produces, so
+	 * comparing it against a restored meta compares paths, not the accidental shape their sources built
+	 * them in. Without it a restored key can never equal a non-canonical current one, and the cache is
+	 * discarded on every run.
+	 *
+	 * @param mixed[] $meta
+	 * @return mixed[]
+	 */
+	public function normalizeMeta(array $meta): array
+	{
+		return $this->transformMeta($meta, fn (string $path): string => $this->normalizePath($path));
 	}
 
 	/**
@@ -303,26 +332,27 @@ final class ResultCachePathTransformer
 
 	/**
 	 * @param mixed[] $meta
+	 * @param callable(string): string $transformPath
 	 * @return mixed[]
 	 */
-	private function transformMeta(array $meta, bool $absolutize): array
+	private function transformMeta(array $meta, callable $transformPath): array
 	{
 		foreach (['analysedPaths', 'configStubFiles'] as $listKey) {
 			if (!array_key_exists($listKey, $meta) || !is_array($meta[$listKey])) {
 				continue;
 			}
-			$meta[$listKey] = $this->transformList($meta[$listKey], $absolutize);
+			$meta[$listKey] = $this->transformList($meta[$listKey], $transformPath);
 		}
 
 		foreach (['scannedFiles', 'composerLocks', 'executedFilesHashes', 'stubFiles'] as $key) {
 			if (!array_key_exists($key, $meta) || !is_array($meta[$key])) {
 				continue;
 			}
-			$meta[$key] = $this->transformKeys($meta[$key], $absolutize);
+			$meta[$key] = $this->transformKeys($meta[$key], $transformPath);
 		}
 
 		if (array_key_exists('composerInstalled', $meta) && is_array($meta['composerInstalled'])) {
-			$meta['composerInstalled'] = $this->transformComposerInstalled($meta['composerInstalled'], $absolutize);
+			$meta['composerInstalled'] = $this->transformComposerInstalled($meta['composerInstalled'], $transformPath);
 		}
 
 		return $meta;
@@ -330,9 +360,10 @@ final class ResultCachePathTransformer
 
 	/**
 	 * @param mixed[] $composerInstalled
+	 * @param callable(string): string $transformPath
 	 * @return array<string, mixed>
 	 */
-	private function transformComposerInstalled(array $composerInstalled, bool $absolutize): array
+	private function transformComposerInstalled(array $composerInstalled, callable $transformPath): array
 	{
 		$result = [];
 		foreach ($composerInstalled as $file => $installed) {
@@ -341,29 +372,25 @@ final class ResultCachePathTransformer
 					if (!is_array($packageData) || !array_key_exists('install_path', $packageData) || !is_string($packageData['install_path'])) {
 						continue;
 					}
-					$installed['versions'][$package]['install_path'] = $this->transformPath($packageData['install_path'], $absolutize);
+					$installed['versions'][$package]['install_path'] = $transformPath($packageData['install_path']);
 				}
 			}
-			$result[$this->transformPath((string) $file, $absolutize)] = $installed;
+			$result[$transformPath((string) $file)] = $installed;
 		}
 
 		return $result;
 	}
 
-	private function transformPath(string $path, bool $absolutize): string
-	{
-		return $absolutize ? $this->absolutizePath($path) : $this->relativizePath($path);
-	}
-
 	/**
 	 * @param mixed[] $paths
+	 * @param callable(string): string $transformPath
 	 * @return list<string>
 	 */
-	private function transformList(array $paths, bool $absolutize): array
+	private function transformList(array $paths, callable $transformPath): array
 	{
 		$result = [];
 		foreach ($paths as $path) {
-			$result[] = $this->transformPath((string) $path, $absolutize);
+			$result[] = $transformPath((string) $path);
 		}
 
 		return $result;
@@ -375,7 +402,7 @@ final class ResultCachePathTransformer
 	 */
 	private function relativizeList(array $paths): array
 	{
-		return $this->transformList($paths, false);
+		return $this->transformList($paths, fn (string $path): string => $this->relativizePath($path));
 	}
 
 	/**
@@ -384,18 +411,19 @@ final class ResultCachePathTransformer
 	 */
 	private function absolutizeList(array $paths): array
 	{
-		return $this->transformList($paths, true);
+		return $this->transformList($paths, fn (string $path): string => $this->absolutizePath($path));
 	}
 
 	/**
 	 * @param mixed[] $byKey
+	 * @param callable(string): string $transformPath
 	 * @return array<string, mixed>
 	 */
-	private function transformKeys(array $byKey, bool $absolutize): array
+	private function transformKeys(array $byKey, callable $transformPath): array
 	{
 		$result = [];
 		foreach ($byKey as $key => $value) {
-			$result[$this->transformPath((string) $key, $absolutize)] = $value;
+			$result[$transformPath((string) $key)] = $value;
 		}
 
 		return $result;

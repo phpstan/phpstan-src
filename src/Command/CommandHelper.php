@@ -181,7 +181,7 @@ final class CommandHelper
 		$autoloadFunctionsBefore = spl_autoload_functions();
 
 		if ($autoloadFile !== null) {
-			$autoloadFile = $currentWorkingDirectoryFileHelper->absolutizePath($autoloadFile);
+			$autoloadFile = $currentWorkingDirectoryFileHelper->normalizePath($currentWorkingDirectoryFileHelper->absolutizePath($autoloadFile));
 			if (!is_file($autoloadFile)) {
 				$errorOutput->writeLineFormatted(sprintf('Autoload file "%s" not found.', $autoloadFile));
 				throw new InceptionNotSuccessfulException();
@@ -209,7 +209,7 @@ final class CommandHelper
 				}
 			}
 		} else {
-			$projectConfigFile = $currentWorkingDirectoryFileHelper->absolutizePath($projectConfigFile);
+			$projectConfigFile = $currentWorkingDirectoryFileHelper->normalizePath($currentWorkingDirectoryFileHelper->absolutizePath($projectConfigFile));
 		}
 
 		if ($generateBaselineFile !== null) {

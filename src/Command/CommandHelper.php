@@ -181,7 +181,10 @@ final class CommandHelper
 		$autoloadFunctionsBefore = spl_autoload_functions();
 
 		if ($autoloadFile !== null) {
-			$autoloadFile = $currentWorkingDirectoryFileHelper->absolutizePath($autoloadFile);
+			// normalized like every other path coming from the command line: it is recorded in the
+			// result cache meta (executedFilesHashes), where a path built with mixed separators would
+			// not match the one restored from the cache
+			$autoloadFile = $currentWorkingDirectoryFileHelper->normalizePath($currentWorkingDirectoryFileHelper->absolutizePath($autoloadFile));
 			if (!is_file($autoloadFile)) {
 				$errorOutput->writeLineFormatted(sprintf('Autoload file "%s" not found.', $autoloadFile));
 				throw new InceptionNotSuccessfulException();

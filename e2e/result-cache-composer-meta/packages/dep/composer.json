@@ -1,0 +1,9 @@
+{
+	"name": "phpstan-e2e/dep",
+	"version": "1.0.0",
+	"autoload": {
+		"psr-4": {
+			"ResultCacheComposerMetaDep\\": "src/"
+		}
+	}
+}

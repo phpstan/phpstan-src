@@ -1,0 +1,17 @@
+{
+	"name": "phpstan/result-cache-composer-meta-e2e",
+	"repositories": [
+		{
+			"type": "path",
+			"url": "packages/dep"
+		}
+	],
+	"require": {
+		"phpstan-e2e/dep": "*"
+	},
+	"autoload": {
+		"psr-4": {
+			"ResultCacheComposerMeta\\": "src/"
+		}
+	}
+}

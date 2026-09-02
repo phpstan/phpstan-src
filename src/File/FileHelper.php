@@ -91,7 +91,7 @@ final class FileHelper
 		}
 
 		$path = $this->normalizeSeparator($path);
-		$pathRoot = str_starts_with($path, '/') ? $directorySeparator : '';
+		$hasRoot = str_starts_with($path, '/');
 		$pathParts = explode('/', trim($path, '/'));
 
 		$normalizedPathParts = [];
@@ -109,7 +109,13 @@ final class FileHelper
 			}
 		}
 
-		return self::$normalizedPathsCache[$originalPath][$directorySeparator] = ($scheme !== null ? $scheme . '://' : '') . $pathRoot . implode($directorySeparator, $normalizedPathParts);
+		// The path behind a stream-wrapper scheme is a URL, not a filesystem path: PHP itself
+		// hands out '/'-separated phar:// paths even on Windows (__DIR__ inside a phar,
+		// Phar::running()), so rewriting it with the platform separator would produce a path
+		// that never equals the one PHP produces for the same file.
+		$separator = $scheme !== null ? '/' : $directorySeparator;
+
+		return self::$normalizedPathsCache[$originalPath][$directorySeparator] = ($scheme !== null ? $scheme . '://' : '') . ($hasRoot ? $separator : '') . implode($separator, $normalizedPathParts);
 	}
 
 	public function normalizeSeparator(string $path): string

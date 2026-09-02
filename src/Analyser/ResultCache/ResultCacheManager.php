@@ -34,7 +34,6 @@ use function array_fill_keys;
 use function array_filter;
 use function array_key_exists;
 use function array_keys;
-use function array_map;
 use function array_merge;
 use function array_unique;
 use function array_values;
@@ -1469,7 +1468,10 @@ return [
 			ksort($projectConfigArray);
 		}
 
-		return [
+		// Every path is normalized so it matches the form a restored path comes back in
+		// (absolutizePath() normalizes) - otherwise a path that is merely built differently, not
+		// pointing somewhere else, reads as a metadata change and discards the whole cache.
+		return $this->getPathTransformer()->normalizeMeta([
 			'cacheVersion' => self::CACHE_VERSION,
 			'phpstanVersion' => ComposerHelper::getPhpStanVersion(),
 			'metaExtensions' => $this->getMetaFromPhpStanExtensions(),
@@ -1486,9 +1488,9 @@ return [
 			// extensions may only run after the bootstrapFiles. This entry catches a changed
 			// list in any config file, including the included ones that are not part of the
 			// projectConfig entry above.
-			'configStubFiles' => array_map(fn (string $stubFile): string => $this->fileHelper->normalizePath($stubFile), $this->configStubFiles),
+			'configStubFiles' => $this->configStubFiles,
 			'level' => $this->usedLevel,
-		];
+		]);
 	}
 
 	private function getFileHash(string $path): string
@@ -1621,7 +1623,9 @@ return [
 	{
 		$stubFiles = [];
 		foreach ($this->stubFilesProvider->getProjectStubFiles() as $stubFile) {
-			$stubFiles[$stubFile] = $this->getFileHash($stubFile);
+			// normalized like every other meta path (see getMeta()): this entry is added after
+			// getMeta() has run, so it is not covered by the normalizeMeta() call there
+			$stubFiles[$this->getPathTransformer()->normalizePath($stubFile)] = $this->getFileHash($stubFile);
 		}
 
 		ksort($stubFiles);

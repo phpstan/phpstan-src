@@ -74,7 +74,12 @@ class FileHelperTest extends PHPStanTestCase
 			['/home/users/./phpstan', '\home\users\phpstan'],
 			['/home/users/../../phpstan/', '\phpstan'],
 			['./phpstan/', 'phpstan'],
-			['vFs-v1.0://a/b', 'vfs-v1.0://a\b'],
+			// the path behind a scheme is a URL, so it keeps '/' even on Windows
+			['vFs-v1.0://a/b', 'vfs-v1.0://a/b'],
+			['phar://C:/php/phpstan.phar/stubs/runtime/Attribute85.php', 'phar://C:/php/phpstan.phar/stubs/runtime/Attribute85.php'],
+			['phar://C:\\php\\phpstan.phar\\stubs\\runtime\\Attribute85.php', 'phar://C:/php/phpstan.phar/stubs/runtime/Attribute85.php'],
+			// a '..' climbing out of the phar drops the scheme, so the platform separator is back
+			['phar://C:/php/phpstan.phar/..', 'C:\php'],
 		];
 	}
 
@@ -109,6 +114,33 @@ class FileHelperTest extends PHPStanTestCase
 	{
 		$this->skipIfNotOnUnix();
 		$this->assertSame($normalizedPath, self::getContainer()->getByType(FileHelper::class)->normalizePath($path));
+	}
+
+	/**
+	 * The path behind a stream-wrapper scheme is a URL: PHP hands out '/'-separated phar:// paths on
+	 * every platform, so normalizing must not rewrite it with the platform separator. Covered with an
+	 * explicit separator so the Windows behaviour is asserted everywhere.
+	 *
+	 * @return string[][]
+	 */
+	public static function dataNormalizePathWithDirectorySeparator(): array
+	{
+		return [
+			['phar://C:/php/phpstan.phar/stubs/runtime/Attribute85.php', '\\', 'phar://C:/php/phpstan.phar/stubs/runtime/Attribute85.php'],
+			['phar://C:\\php\\phpstan.phar\\stubs\\runtime\\Attribute85.php', '\\', 'phar://C:/php/phpstan.phar/stubs/runtime/Attribute85.php'],
+			['phar:///usr/local/bin/phpstan.phar/stubs/runtime/Attribute85.php', '\\', 'phar:///usr/local/bin/phpstan.phar/stubs/runtime/Attribute85.php'],
+			['phar://C:/php/phpstan.phar/conf/../stubs/Foo.php', '\\', 'phar://C:/php/phpstan.phar/stubs/Foo.php'],
+			// '..' climbing out of the phar drops the scheme: a plain filesystem path again
+			['phar://C:/php/phpstan.phar/..', '\\', 'C:\\php'],
+			['C:\\php\\stubs\\Foo.php', '\\', 'C:\\php\\stubs\\Foo.php'],
+			['C:/php/stubs/Foo.php', '\\', 'C:\\php\\stubs\\Foo.php'],
+		];
+	}
+
+	#[DataProvider('dataNormalizePathWithDirectorySeparator')]
+	public function testNormalizePathWithDirectorySeparator(string $path, string $directorySeparator, string $normalizedPath): void
+	{
+		$this->assertSame($normalizedPath, self::getContainer()->getByType(FileHelper::class)->normalizePath($path, $directorySeparator));
 	}
 
 }

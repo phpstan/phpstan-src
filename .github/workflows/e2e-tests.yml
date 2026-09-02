@@ -543,6 +543,20 @@ jobs:
               ../bashunit -a contains 'Composer metadata changed but no package versions changed; keeping the result cache.' "$OUTPUT"
               ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
           - script: |
+              cd e2e/result-cache-composer-meta
+              # Composer records install_path with '.'/'..' segments (__DIR__ . '/../phpstan-e2e/dep'),
+              # so the meta held a path that absolutizePath() - which normalizes - can never hand back
+              # unchanged. composerInstalled then differed on every single run: harmless on its own,
+              # but combined with any other meta difference it discards the whole cache.
+              composer install
+              ../../bin/phpstan analyse
+              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+              if echo "$OUTPUT" | grep -q 'Composer metadata changed'; then
+                echo 'unchanged Composer metadata read as changed'; exit 1
+              fi
+          - script: |
               cd e2e/result-cache-phar-bootstrap
               # A bootstrapFile living inside a phar is hashed into executedFilesHashes under its
               # phar:// URL, and PHPStan registers its own runtime stubs exactly like that inside

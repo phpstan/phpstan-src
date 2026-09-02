@@ -788,6 +788,19 @@ jobs:
               /tmp/phpstan-install-1/bin/phpstan analyse -l 8 -vvv test.php
               mv /tmp/phpstan-install-1 /tmp/phpstan-install-2
               /tmp/phpstan-install-2/bin/phpstan analyse -l 8 -vvv test.php
+          - script: |
+              # PHPStan bundles symfony/polyfill-php85 for its own runtime, so array_first()
+              # and other PHP 8.5 symbols are declared in the PHPStan process. A project
+              # analysed with PHP 8.4 must not see them
+              # (https://github.com/phpstan/phpstan/issues/15150).
+              cd e2e/bug-15150
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --error-format=raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'test.php:11:Function array_first not found.' "$OUTPUT"
+              ../bashunit -a contains 'test.php:12:Function array_last not found.' "$OUTPUT"
+              ../bashunit -a contains 'test.php:21:Instantiated class Filter\FilterException not found.' "$OUTPUT"
+              # array_find() exists in the analysed PHP version, PhpStorm stubs describe it
+              ../bashunit -a not_contains 'array_find' "$OUTPUT"
 
     steps:
       - name: Harden the runner (Audit all outbound calls)

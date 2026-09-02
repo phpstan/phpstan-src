@@ -535,4 +535,18 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug12827(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12827.php'], [
+			[
+				'Class Bug12827Functions\Post referenced with incorrect case: Bug12827Functions\POST.',
+				10,
+			],
+			[
+				'Class Bug12827Functions\Post referenced with incorrect case: Bug12827Functions\POST.',
+				10,
+			],
+		]);
+	}
+
 }

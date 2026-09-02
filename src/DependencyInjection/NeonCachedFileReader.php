@@ -19,10 +19,11 @@ final class NeonCachedFileReader implements Adapter
 
 	/**
 	 * @param list<string> $expandRelativePaths
+	 * @param array<string, mixed> $parameters
 	 */
-	public function __construct(private array $expandRelativePaths)
+	public function __construct(private array $expandRelativePaths, array $parameters = [])
 	{
-		$this->adapter = new NeonAdapter($this->expandRelativePaths);
+		$this->adapter = new NeonAdapter($this->expandRelativePaths, $parameters);
 	}
 
 	/**

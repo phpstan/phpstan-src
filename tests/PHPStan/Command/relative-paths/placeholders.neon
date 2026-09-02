@@ -1,0 +1,22 @@
+parameters:
+	bootstrapFiles:
+		- %rootDir%/tests/PHPStan/Command/relative-paths/nested/../here.php
+	scanFiles:
+		- %rootDir%/tests/PHPStan/Command/relative-paths/./test/there.php
+		- %rootDir%/tests/PHPStan/Command/relative-paths/../up.php
+	scanDirectories:
+		- %rootDir%/tests/PHPStan/Command/relative-paths/src/..
+	paths:
+		- %rootDir%/tests/PHPStan/Command/relative-paths/nested/../src
+	excludePaths:
+		- %rootDir%/tests/PHPStan/Command/relative-paths/nested/../src/*/data
+		- %rootDir%/tests/PHPStan/Command/relative-paths/nested/../nonexistent (?)
+	reportUnmatchedIgnoredErrors: false
+	ignoreErrors:
+		-
+			message: '#aaa#'
+			path: %rootDir%/tests/PHPStan/Command/relative-paths/nested/../nested/src/aaa.php
+		-
+			message: '#bbb#'
+			paths:
+				- %rootDir%/tests/PHPStan/Command/relative-paths/src/../src/aaa.php

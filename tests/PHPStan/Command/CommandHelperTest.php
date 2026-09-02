@@ -179,7 +179,7 @@ class CommandHelperTest extends TestCase
 					'scanDirectories' => [
 						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'src',
 						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths',
-						realpath(__DIR__ . '/../../../') . '/conf',
+						realpath(__DIR__ . '/../../../') . DIRECTORY_SEPARATOR . 'conf',
 					],
 					'paths' => [
 						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'src',
@@ -213,6 +213,49 @@ class CommandHelperTest extends TestCase
 							'paths' => [
 								__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'aaa.php',
 								__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'nested' . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'bbb.php',
+							],
+						],
+					],
+				],
+			],
+			[
+				// every path written through %rootDir% and a '.' or '..' segment: NeonAdapter expands the
+				// placeholder itself and normalizes the result like a plain relative entry
+				__DIR__ . '/relative-paths/placeholders.neon',
+				[
+					'bootstrapFiles' => [
+						realpath(__DIR__ . '/../../../stubs/runtime/ReflectionUnionType.php'),
+						realpath(__DIR__ . '/../../../stubs/runtime/ReflectionAttribute.php'),
+						realpath(__DIR__ . '/../../../stubs/runtime/Attribute85.php'),
+						realpath(__DIR__ . '/../../../stubs/runtime/ReflectionIntersectionType.php'),
+						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'here.php',
+					],
+					'scanFiles' => [
+						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'test' . DIRECTORY_SEPARATOR . 'there.php',
+						__DIR__ . DIRECTORY_SEPARATOR . 'up.php',
+					],
+					'scanDirectories' => [
+						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths',
+					],
+					'paths' => [
+						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'src',
+					],
+					'excludePaths' => [
+						'analyseAndScan' => [
+							__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . '*' . DIRECTORY_SEPARATOR . 'data',
+							__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'nonexistent',
+						],
+						'analyse' => [],
+					],
+					'ignoreErrors' => [
+						[
+							'message' => '#aaa#',
+							'path' => __DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'nested' . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'aaa.php',
+						],
+						[
+							'message' => '#bbb#',
+							'paths' => [
+								__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'aaa.php',
 							],
 						],
 					],

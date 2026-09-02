@@ -150,6 +150,17 @@ final class AnalyserResult
 	}
 
 	/**
+	 * @param CollectorData $collectedData
+	 */
+	public function withCollectedData(array $collectedData): self
+	{
+		$self = clone $this;
+		$self->collectedData = $collectedData;
+
+		return $self;
+	}
+
+	/**
 	 * @return array<string, array<string>>|null
 	 */
 	public function getDependencies(): ?array

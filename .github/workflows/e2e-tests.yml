@@ -500,6 +500,134 @@ jobs:
               ../bashunit -a matches "Note: Using configuration file .+phpstan.neon." "$OUTPUT"
               ../bashunit -a contains 'Result cache not used because the metadata do not match: metaExtensions' "$OUTPUT"
           - script: |
+              cd e2e/result-cache-dependency
+              composer install
+              ../../bin/phpstan clear-result-cache
+              mkdir -p tmp
+              : > tmp/hash-calls.log
+              : > tmp/rule-pids.log
+              : > tmp/collected-data.log
+              set +e
+              ../../bin/phpstan analyse -vv --error-format raw > tmp/analysis-output.log 2>&1 &
+              PHPSTAN_MAIN_PID=$!
+              wait "$PHPSTAN_MAIN_PID"
+              STATUS=$?
+              set -e
+              ../bashunit -a equals "0" "$STATUS"
+              OUTPUT=$(cat tmp/analysis-output.log)
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache is saved.' "$OUTPUT"
+              ../bashunit -a equals 'hashed=0 unhashed=6' "$(cat tmp/collected-data.log)"
+              php assert-hash-calls.php cold "$PHPSTAN_MAIN_PID"
+              php assert-result-cache-dependencies.php
+              : > tmp/hash-calls.log
+              : > tmp/rule-pids.log
+              : > tmp/collected-data.log
+              set +e
+              ../../bin/phpstan analyse -vv --error-format raw > tmp/analysis-output.log 2>&1 &
+              PHPSTAN_MAIN_PID=$!
+              wait "$PHPSTAN_MAIN_PID"
+              STATUS=$?
+              set -e
+              ../bashunit -a equals "0" "$STATUS"
+              OUTPUT=$(cat tmp/analysis-output.log)
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+              ../bashunit -a equals 'hashed=0 unhashed=6' "$(cat tmp/collected-data.log)"
+              php assert-hash-calls.php warm "$PHPSTAN_MAIN_PID"
+              php assert-result-cache-dependencies.php
+              # Duplicate provider keys are rejected before analysis.
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -c duplicate-provider.neon -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Duplicate ResultCacheDependencyExtension with key' "$OUTPUT"
+              ../bashunit -a contains 'ConfigTypeRegistry" found.' "$OUTPUT"
+              ../bashunit -a not_contains '100%' "$OUTPUT"
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -c duplicate-provider.neon --debug --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Duplicate ResultCacheDependencyExtension with key' "$OUTPUT"
+              ../bashunit -a not_contains 'src/Consumer.php' "$OUTPUT"
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -c duplicate-provider.neon src/Consumer.php -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Duplicate ResultCacheDependencyExtension with key' "$OUTPUT"
+              ../bashunit -a not_contains '100%' "$OUTPUT"
+              # The same dependency key in different provider namespaces must not collide.
+              sed -i 's/"checkout.label": "string"/"checkout.label": "int"/' tenant-config-types.json
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit -a contains 'TenantConsumer.php:7:Parameter #1 $string of function strlen expects string, int given.' "$OUTPUT"
+              # Changing a key shared by two consumers invalidates both files.
+              sed -i 's/"checkout.label": "string"/"checkout.label": "int"/' config-types.json
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 2 files will be reanalysed.' "$OUTPUT"
+              ../bashunit -a contains 'Consumer.php:11:Parameter #1 $string of function strlen expects string, int given.' "$OUTPUT"
+              ../bashunit -a contains 'SecondConsumer.php:7:Parameter #1 $string of function strlen expects string, int given.' "$OUTPUT"
+              # Changing an unused key invalidates no files.
+              sed -i 's/"unused": "string"/"unused": "int"/' config-types.json
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+              ../bashunit -a contains 'Consumer.php:11:Parameter #1 $string of function strlen expects string, int given.' "$OUTPUT"
+              # Changing a key used by one consumer invalidates only that file.
+              sed -i 's/"profile.name": "string"/"profile.name": "int"/' config-types.json
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit -a contains 'Consumer.php:16:Parameter #1 $string of function strlen expects string, int given.' "$OUTPUT"
+              # A source-invalidated file does not need its obsolete dependency hashes.
+              sed -i 's/"profile.name": "int"/"profile.name": "throw"/' config-types.json
+              sed -i "s/configValue('profile.name')/configValue('replacement')/" src/Consumer.php
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit -a not_contains 'boom from dependency getHash' "$OUTPUT"
+              ../bashunit -a not_contains 'Consumer.php:16:Parameter #1 $string of function strlen expects string, int given.' "$OUTPUT"
+              sed -i 's/"profile.name": "throw"/"profile.name": "string"/' config-types.json
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+              sed -i 's/"replacement": "string"/"replacement": "int"/' config-types.json
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit -a contains 'Consumer.php:16:Parameter #1 $string of function strlen expects string, int given.' "$OUTPUT"
+              # A selector change invalidates the file before its old selected key is hashed.
+              sed -i 's/"database.default": "legacy"/"database.default": "modern"/' config-types.json
+              sed -i 's/"database.connection.legacy": "string"/"database.connection.legacy": "throw"/' config-types.json
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit -a not_contains 'boom from dependency getHash' "$OUTPUT"
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+              ../bashunit -a not_contains 'boom from dependency getHash' "$OUTPUT"
+              sed -i 's/"database.connection.modern": "string"/"database.connection.modern": "int"/' config-types.json
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit -a contains 'Consumer.php:21:Parameter #1 $string of function strlen expects string, int given.' "$OUTPUT"
+              # Malformed or unknown persisted records invalidate their emitting files.
+              php mutate-result-cache.php unknown-provider
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 2 files will be reanalysed.' "$OUTPUT"
+              php mutate-result-cache.php malformed-record
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              php mutate-result-cache.php malformed-payload
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              # Provider exceptions propagate instead of being treated as cache misses.
+              sed -i 's/"replacement": "int"/"replacement": "throw"/' config-types.json
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'boom from dependency getHash' "$OUTPUT"
+              ../bashunit -a not_contains 'Swallowed by global exception handler' "$OUTPUT"
+          - script: |
               cd e2e/result-cache-meta-extension-throw
               composer install
               # https://github.com/phpstan/phpstan/issues/14805

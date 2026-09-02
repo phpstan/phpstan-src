@@ -1,0 +1,11 @@
+includes:
+	- phpstan.neon
+
+parameters:
+	tmpDir: tmp/duplicate
+
+services:
+	-
+		class: ResultCacheE2E\Dependency\DuplicateResultCacheDependencyExtension
+		tags:
+			- phpstan.resultCacheDependencyExtension

@@ -1,0 +1,9 @@
+{
+    "checkout.label": "string",
+    "profile.name": "string",
+    "unused": "string",
+    "replacement": "string",
+    "database.default": "legacy",
+    "database.connection.legacy": "string",
+    "database.connection.modern": "string"
+}

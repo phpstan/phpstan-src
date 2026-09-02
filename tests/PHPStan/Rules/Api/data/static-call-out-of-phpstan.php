@@ -44,3 +44,13 @@ class Baz extends ObjectType
 	}
 
 }
+
+class ResultCacheDependencyUser
+{
+
+	public function createData(\PHPStan\Analyser\ResultCache\ResultCacheDependencyExtension $extension): void
+	{
+		\PHPStan\Collectors\ResultCacheDependencyCollector::createData($extension, 'dependency');
+	}
+
+}

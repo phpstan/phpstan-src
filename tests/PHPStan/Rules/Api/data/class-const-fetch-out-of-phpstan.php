@@ -21,3 +21,13 @@ class Foo
 	}
 
 }
+
+class ResultCacheDependencyUser
+{
+
+	public function doFoo()
+	{
+		echo \PHPStan\Collectors\ResultCacheDependencyCollector::class;
+	}
+
+}

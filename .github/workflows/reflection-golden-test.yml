@@ -11,7 +11,7 @@ on:
       - 'issue-bot/**'
   push:
     branches:
-      - "2.2.x"
+      - "2.3.x"
     paths-ignore:
       - 'compiler/**'
       - 'apigen/**'

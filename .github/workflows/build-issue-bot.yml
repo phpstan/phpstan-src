@@ -9,7 +9,7 @@ on:
       - '.github/workflows/build-issue-bot.yml'
   push:
     branches:
-      - "2.2.x"
+      - "2.3.x"
     paths:
       - 'issue-bot/**'
       - '.github/workflows/build-issue-bot.yml'

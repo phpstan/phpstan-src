@@ -15,14 +15,14 @@
 # git subtree split is not used because it walks the entire monorepo history
 # on every run, which takes tens of minutes at this repository's size.
 #
-# Tag pushes (2.2.*) first bring the split branch up to date and then tag
+# Tag pushes (2.3.*) first bring the split branch up to date and then tag
 # the split commit replayed from the last turbo-ext-touching commit at or
 # before the tagged monorepo commit. Packagist picks the tag up as a
 # phpstan/turbo release, and the release workflow in phpstan/phpstan
 # attaches the PIE binary assets to a phpstan/turbo-ext release of the same
 # name.
 #
-# When a new maintained branch (2.3.x, ...) starts, update the triggers
+# When a new maintained branch (2.4.x, ...) starts, update the triggers
 # below (like phar.yml) and create the same-named branch in phpstan/turbo-ext
 # from the previous branch's head — that head's trailer keeps the replay
 # incremental across the branch point.
@@ -33,9 +33,9 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - "2.2.x"
+      - "2.3.x"
     tags:
-      - "2.2.*"
+      - "2.3.*"
 
 # The replay chain builds on the split branch's current head; two runs
 # building on the same head would race each other, so queue them instead.
@@ -71,7 +71,7 @@ jobs:
         run: |
           PREFIX="turbo-ext"
 
-          # A tag lives on its maintained branch (2.2.8 → 2.2.x). The replay
+          # A tag lives on its maintained branch (2.3.8 → 2.3.x). The replay
           # always follows the branch — a tag run just also marks the split
           # commit corresponding to the tagged monorepo commit afterwards.
           if [ "$REF_TYPE" = "tag" ]; then

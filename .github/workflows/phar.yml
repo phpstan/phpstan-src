@@ -6,9 +6,9 @@ on:
   pull_request:
   push:
     branches:
-      - "2.2.x"
+      - "2.3.x"
     tags:
-      - '2.2.*'
+      - '2.3.*'
 
 concurrency:
   group: phar-${{ github.ref }} # will be canceled on subsequent pushes in both branches and pull requests
@@ -127,7 +127,7 @@ jobs:
 
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
         env:
-          COMPOSER_ROOT_VERSION: "2.2.x-dev"
+          COMPOSER_ROOT_VERSION: "2.3.x-dev"
         with:
           ignore-cache: true
 
@@ -136,7 +136,7 @@ jobs:
         run: "php ../box/vendor/bin/box compile --no-parallel --sort-compiled-files"
         env:
           PHAR_CHECKSUM: "1"
-          COMPOSER_ROOT_VERSION: "2.2.x-dev"
+          COMPOSER_ROOT_VERSION: "2.3.x-dev"
 
       - name: "Re-sign PHAR"
         run: "php compiler/build/resign.php tmp/phpstan.phar"
@@ -1335,9 +1335,9 @@ jobs:
     needs:
       - compiler-tests
       - turbo-artifact
-    uses: phpstan/phpstan/.github/workflows/integration-tests.yml@2.2.x
+    uses: phpstan/phpstan/.github/workflows/integration-tests.yml@2.3.x
     with:
-      ref: 2.2.x
+      ref: 2.3.x
       phar-checksum: ${{needs.compiler-tests.outputs.checksum}}
 
   extension-tests:
@@ -1345,9 +1345,9 @@ jobs:
     needs:
       - compiler-tests
       - turbo-artifact
-    uses: phpstan/phpstan/.github/workflows/extension-tests.yml@2.2.x
+    uses: phpstan/phpstan/.github/workflows/extension-tests.yml@2.3.x
     with:
-      ref: 2.2.x
+      ref: 2.3.x
       phar-checksum: ${{needs.compiler-tests.outputs.checksum}}
 
   other-tests:
@@ -1355,9 +1355,9 @@ jobs:
     needs:
       - compiler-tests
       - turbo-artifact
-    uses: phpstan/phpstan/.github/workflows/other-tests.yml@2.2.x
+    uses: phpstan/phpstan/.github/workflows/other-tests.yml@2.3.x
     with:
-      ref: 2.2.x
+      ref: 2.3.x
       phar-checksum: ${{needs.compiler-tests.outputs.checksum}}
 
   download-base-sha-phar:
@@ -1520,7 +1520,7 @@ jobs:
 
   commit:
     name: "Commit PHAR"
-    if: "github.repository_owner == 'phpstan' && (github.ref == 'refs/heads/2.2.x' || startsWith(github.ref, 'refs/tags/'))"
+    if: "github.repository_owner == 'phpstan' && (github.ref == 'refs/heads/2.3.x' || startsWith(github.ref, 'refs/tags/'))"
     # Gated on every job that produces or validates the committed bits: the
     # compile jobs build the staged binaries (and run the differential test
     # batteries per leg), turbo-version guards the version constant the
@@ -1565,7 +1565,7 @@ jobs:
           repository: phpstan/phpstan
           path: phpstan-dist
           token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
-          ref: 2.2.x
+          ref: 2.3.x
           # deliberately persisted: the push steps below authenticate with
           # this bot token
           persist-credentials: true

@@ -1182,6 +1182,23 @@ jobs:
           echo "$OUTPUT"
           e2e/bashunit -a contains 'Turbo extension: enabled' "$OUTPUT"
 
+      - name: "Verify conditional types leave interned types equal to a resolved subject alone"
+        # With the extension active TypeCombinator's results are interned, so equal
+        # types share one instance. ConditionalType used to narrow the types in its
+        # branches identical to the subject even once the subject had resolved to a
+        # concrete type, and interning made that hit unrelated types - the `mixed`
+        # value type of an `array` branch for a `mixed` subject -
+        # https://github.com/phpstan/phpstan/issues/15151
+        run: |
+          cd e2e/bug-15151
+          OUTPUT=$(php ../../bin/phpstan analyse --no-progress --error-format=raw 2>&1 || true)
+          echo "$OUTPUT"
+          ../bashunit -a contains 'reception_formulaire.php:20:Dumped type: mixed' "$OUTPUT"
+          ../bashunit -a contains 'webservice.php:25:Dumped type: mixed' "$OUTPUT"
+          ../bashunit -a not_contains 'Dumped type: array' "$OUTPUT"
+          # the two dumps are the only errors: count the file:line:message lines
+          ../bashunit -a equals '2' "$(echo "$OUTPUT" | grep -Ec '^/.+:[0-9]+:')"
+
       - name: "Test"
         # The arena is a per-run POSIX shared-memory object: shm_open() plus an
         # ftruncate() to 256 MB that tmpfs honours sparsely, committing pages on

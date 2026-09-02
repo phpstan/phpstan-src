@@ -3807,9 +3807,12 @@ class NodeScopeResolver
 		if ($frame === null) {
 			return;
 		}
-		$declaredReturnType = $scope->isInAnonymousFunction()
-			? $scope->getAnonymousFunctionReturnType()
-			: $scope->getFunction()?->getReturnType();
+		if ($scope->isInAnonymousFunction()) {
+			$declaredReturnType = $scope->getAnonymousFunctionReturnType();
+		} else {
+			$function = $scope->getFunction();
+			$declaredReturnType = $function !== null ? $function->getReturnType() : null;
+		}
 		if ($declaredReturnType === null) {
 			return;
 		}

@@ -416,8 +416,10 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		// a closure whose body creates an unresolved template argument has the
 		// same key in both passes of the enclosing body; the resolutions installed
 		// for the second pass change its type
+		$frame = $scope->getCurrentTemplateArgumentFrame();
+
 		return $scope->getClosureScopeCacheKey($this->freeVariableRoots($expr)) . '/' . implode('|', $parts) . ($scope->nativeTypesPromoted ? '/native' : '/phpdoc')
-			. ($scope->getCurrentTemplateArgumentFrame()?->getResolutionCacheKeySuffix() ?? '');
+			. ($frame !== null ? $frame->getResolutionCacheKeySuffix() : '');
 	}
 
 	/**

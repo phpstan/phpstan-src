@@ -57,7 +57,7 @@ class TemplateArgumentFrameTest extends PHPStanTestCase
 
 	private static function describe(?Type $type): ?string
 	{
-		return $type?->describe(VerbosityLevel::precise());
+		return $type !== null ? $type->describe(VerbosityLevel::precise()) : null;
 	}
 
 	public function testInvariantSendResolvesToTheFirstAcceptingSend(): void

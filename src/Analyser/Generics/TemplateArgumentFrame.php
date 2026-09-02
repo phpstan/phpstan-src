@@ -292,7 +292,7 @@ final class TemplateArgumentFrame
 			return $this->resolveKey($key);
 		}
 
-		$resolved = $this->parent?->resolve($marker->getSite(), $marker->getTemplateName());
+		$resolved = $this->parent !== null ? $this->parent->resolve($marker->getSite(), $marker->getTemplateName()) : null;
 
 		return $resolved ?? $this->substituteResolutions($marker->getDelegate());
 	}

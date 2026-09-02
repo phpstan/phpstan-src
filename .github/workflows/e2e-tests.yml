@@ -151,6 +151,17 @@ jobs:
               echo -n > phpstan-baseline.neon
               ../../bin/phpstan -vvv
           - script: |
+              cd e2e/result-cache-moved-tmpdir
+              ../../bin/phpstan
+              # Where the cache is stored cannot change what it holds, so moving it has to keep it
+              # usable: same project, same analysis, cache read from a different tmpDir.
+              mkdir -p tmp-b
+              cp tmp-a/resultCache.php tmp-b/resultCache.php
+              OUTPUT=$(../../bin/phpstan analyse -c moved.neon -vv 2>&1)
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+              ../bashunit -a not_contains 'metadata do not match' "$OUTPUT"
+          - script: |
               cd e2e/bug-14514
               composer install
               ../../bin/phpstan analyze bug-14515.php

@@ -1354,6 +1354,17 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14908.php'], []);
 	}
 
+	public function testBug15153(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-15153.php'], [
+			[
+				'Call to function is_null() with string will always evaluate to false.',
+				22,
+			],
+		]);
+	}
+
 	public function testBug6211(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

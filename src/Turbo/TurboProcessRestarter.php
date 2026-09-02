@@ -170,6 +170,9 @@ final class TurboProcessRestarter
 	{
 		foreach ($opcacheArgs as $opcacheArg) {
 			[$name, $value] = explode('=', $opcacheArg, 2);
+			if ($value === null) {
+				continue;
+			}
 			$current = $currentIniValues[$name] ?? false;
 			if ($current === false) {
 				// unknown directive on this PHP (opcache.jit before 8.0) — nothing a restart could change

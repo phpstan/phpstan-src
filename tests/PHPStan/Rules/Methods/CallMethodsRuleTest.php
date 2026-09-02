@@ -2575,7 +2575,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkUnionTypes = true;
 		$this->analyse([__DIR__ . '/data/rector-do-while-var-issue.php'], [
 			[
-				'Parameter #1 $cls of method RectorDoWhileVarIssue\Foo::processCharacterClass() expects string, int|string given.',
+				'Parameter #1 $cls of method RectorDoWhileVarIssue\Foo::processCharacterClass() expects string, int|string|null given.',
 				24,
 			],
 		]);

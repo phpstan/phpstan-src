@@ -4345,4 +4345,44 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-15002.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug8441(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-8441.php'], [
+			[
+				'Parameter #1 $c of method Bug8441Methods\\Consumer::takeInts() expects Bug8441Methods\\Collection<int>, Bug8441Methods\\Collection<string> given.',
+				77,
+			],
+			[
+				'Parameter #1 $c of method Bug8441Methods\\Consumer::takeIntsNonNullableParam() expects Bug8441Methods\\CollectionWithNonNullableParam<int>, Bug8441Methods\\CollectionWithNonNullableParam<null> given.',
+				79,
+			],
+			[
+				'Parameter #1 $c of method Bug8441Methods\\Consumer::takeIntsNonNullableParam() expects Bug8441Methods\\CollectionWithNonNullableParam<int>, Bug8441Methods\\CollectionWithNonNullableParam<null> given.',
+				80,
+			],
+			[
+				'Unable to resolve the template type T in call to method Bug8441Methods\\Service::collection()',
+				83,
+				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
+			],
+			[
+				'Unable to resolve the template type T in call to method Bug8441Methods\\Service::collection()',
+				84,
+				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
+			],
+			[
+				'Parameter #1 $c of method Bug8441Methods\\Consumer::takeInts() expects Bug8441Methods\\Collection<int>, Bug8441Methods\\Collection<string> given.',
+				86,
+			],
+			[
+				'Parameter #1 $i of method Bug8441Methods\\Consumer::takeInt() expects int, string given.',
+				90,
+			],
+		]);
+	}
+
 }

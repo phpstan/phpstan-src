@@ -54,9 +54,9 @@ class Foo
 
 		assertType('string|null', $this->doBar($nullableString));
 
-		assertType('1', $this->doBaz(1));
+		assertType('mixed', $this->doBaz(1));
 		assertType('\'foo\'', $this->doBaz('foo'));
-		assertType('1.2', $this->doBaz(1.2));
+		assertType('mixed', $this->doBaz(1.2));
 		assertType('string', $this->doBaz($stringOrInt));
 	}
 

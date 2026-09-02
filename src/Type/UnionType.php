@@ -1371,29 +1371,30 @@ class UnionType implements CompoundType
 			$receivedType = $receivedType->toArrayOrTraversable();
 		}
 
+		// A received type that one of the members definitely accepts is
+		// absorbed by that member: it tells nothing about the other members,
+		// so T|null receiving null must not bind T. Only what no member
+		// absorbs is inferred against the remaining members below.
 		$types = TemplateTypeMap::createEmpty();
-		if ($receivedType instanceof UnionType) {
-			$myTypes = [];
-			$remainingReceivedTypes = [];
-			foreach ($receivedType->getTypes() as $receivedInnerType) {
-				foreach ($this->types as $type) {
-					if ($type->isSuperTypeOf($receivedInnerType)->yes()) {
-						$types = $types->union($type->inferTemplateTypes($receivedInnerType));
-						continue 2;
-					}
-					$myTypes[] = $type;
+		$receivedTypes = $receivedType instanceof UnionType ? $receivedType->getTypes() : [$receivedType];
+		$remainingReceivedTypes = [];
+		foreach ($receivedTypes as $receivedInnerType) {
+			foreach ($this->types as $type) {
+				if ($type->isSuperTypeOf($receivedInnerType)->yes()) {
+					$types = $types->union($type->inferTemplateTypes($receivedInnerType));
+					continue 2;
 				}
-				$remainingReceivedTypes[] = $receivedInnerType;
 			}
-			if (count($remainingReceivedTypes) === 0) {
-				return $types;
-			}
+			$remainingReceivedTypes[] = $receivedInnerType;
+		}
+		if (count($remainingReceivedTypes) === 0) {
+			return $types;
+		}
+		if (count($remainingReceivedTypes) !== count($receivedTypes)) {
 			$receivedType = TypeCombinator::union(...$remainingReceivedTypes);
-		} else {
-			$myTypes = $this->types;
 		}
 
-		foreach ($myTypes as $type) {
+		foreach ($this->types as $type) {
 			if ($type instanceof TemplateType || ($type instanceof GenericClassStringType && $type->getGenericType() instanceof TemplateType)) {
 				continue;
 			}
@@ -1404,7 +1405,7 @@ class UnionType implements CompoundType
 			return $types;
 		}
 
-		foreach ($myTypes as $type) {
+		foreach ($this->types as $type) {
 			$types = $types->union($type->inferTemplateTypes($receivedType));
 		}
 

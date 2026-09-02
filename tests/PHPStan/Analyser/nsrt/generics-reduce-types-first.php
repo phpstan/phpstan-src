@@ -29,7 +29,7 @@ class Foo
 		assertType('array<string>', $this->doFoo($a));
 		assertType('array<string>', $this->doFoo($b));
 		assertType('array<string>', $this->doFoo($c));
-		assertType('string', $this->doFoo($d));
+		assertType('mixed', $this->doFoo($d));
 	}
 
 }

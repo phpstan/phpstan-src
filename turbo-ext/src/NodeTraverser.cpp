@@ -360,6 +360,22 @@ private:
 			if (value.isArray()) {
 				/* separate so we can mutate in place */
 				SEPARATE_ARRAY(value.raw());
+				/* Hold a reference to the table for the whole traversal, the
+				 * way the PHP twin's `$subNode = $node->$name` local does.
+				 * traverseArray() walks the buckets in place while the visitor
+				 * hooks in between run arbitrary PHP, and that code can reach
+				 * this very property: PHPStan resolves a PHPDoc from inside
+				 * enterNode(), which re-enters the parser for the file being
+				 * traversed. With the array owned by the property alone,
+				 * assigning to the property - or dropping the node's last
+				 * reference - frees the table under the loop, and a write into
+				 * it reallocates the buckets the iterator holds; the traversal
+				 * then reads freed memory, which surfaces as "Invalid node
+				 * structure: Contains nested arrays" or a segfault. A reference
+				 * of our own keeps the table alive, and being shared it makes
+				 * any writer separate first, so the iteration always sees the
+				 * array it started with. */
+				zv::Val arrayGuard = zv::Val::copyOf(zv::Ref(value.raw()));
 				zv::Arr replacement = traverseArray(zv::ArrRef(value.raw()));
 				if (UNEXPECTED(failed)) {
 					return;

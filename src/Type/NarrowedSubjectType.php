@@ -51,6 +51,22 @@ final class NarrowedSubjectType implements TemplateType, LateResolvableType
 		return new self($subject, $target, $conditionHolds, $narrowed);
 	}
 
+	/**
+	 * Replaces the references to $subject in a branch of a conditional type on it with the
+	 * subject as the branch knows it.
+	 */
+	public static function narrowReferences(Type $branch, TemplateType $subject, Type $target, bool $conditionHolds): Type
+	{
+		$narrowedSubject = self::create($subject, $target, $conditionHolds);
+
+		return TypeTraverser::map(
+			$branch,
+			static fn (Type $type, callable $traverse): Type => $subject->equals($type)
+				? $narrowedSubject
+				: $traverse($type),
+		);
+	}
+
 	private static function narrow(Type $subject, Type $target, bool $conditionHolds): Type
 	{
 		if ($conditionHolds) {

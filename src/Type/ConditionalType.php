@@ -22,10 +22,6 @@ final class ConditionalType implements CompoundType, LateResolvableType
 
 	private ?Type $normalizedElse = null;
 
-	private ?Type $subjectWithTargetIntersectedType = null;
-
-	private ?Type $subjectWithTargetRemovedType = null;
-
 	public function __construct(
 		private Type $subject,
 		private Type $target,
@@ -218,21 +214,11 @@ final class ConditionalType implements CompoundType, LateResolvableType
 	 */
 	private function narrowSubjectIn(Type $branch, bool $conditionHolds): Type
 	{
-		$subject = $this->subject;
-		if (!$subject instanceof TemplateType) {
+		if (!$this->subject instanceof TemplateType) {
 			return $branch;
 		}
 
-		$narrowedSubject = $conditionHolds
-			? ($this->subjectWithTargetIntersectedType ??= NarrowedSubjectType::create($subject, $this->target, true))
-			: ($this->subjectWithTargetRemovedType ??= NarrowedSubjectType::create($subject, $this->target, false));
-
-		return TypeTraverser::map(
-			$branch,
-			static fn (Type $type, callable $traverse) => $subject->equals($type)
-				? $narrowedSubject
-				: $traverse($type),
-		);
+		return NarrowedSubjectType::narrowReferences($branch, $this->subject, $this->target, $conditionHolds);
 	}
 
 }

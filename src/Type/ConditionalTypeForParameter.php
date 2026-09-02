@@ -4,6 +4,7 @@ namespace PHPStan\Type;
 
 use PHPStan\PhpDocParser\Ast\Type\ConditionalTypeForParameterNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\LateResolvableTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
@@ -16,6 +17,12 @@ final class ConditionalTypeForParameter implements CompoundType, LateResolvableT
 
 	use LateResolvableTypeTrait;
 	use NonGeneralizableTypeTrait;
+
+	private ?TemplateType $parameterTemplateType = null;
+
+	private ?Type $normalizedIf = null;
+
+	private ?Type $normalizedElse = null;
 
 	public function __construct(
 		private string $parameterName,
@@ -54,13 +61,36 @@ final class ConditionalTypeForParameter implements CompoundType, LateResolvableT
 
 	public function changeParameterName(string $parameterName): self
 	{
-		return new self(
+		$type = new self(
 			$parameterName,
 			$this->target,
 			$this->if,
 			$this->else,
 			$this->negated,
 		);
+		$type->parameterTemplateType = $this->parameterTemplateType;
+
+		return $type;
+	}
+
+	/**
+	 * Narrows the references to the template type the parameter is declared with along with
+	 * the parameter: `@param T $param` makes `($param is X ? A : B)` narrow T to `T & X` in A
+	 * and to `T ~ X` in B, the way `(T is X ? A : B)` does (see NarrowedSubjectType). Only
+	 * sound when nothing but the parameter binds T.
+	 */
+	public function narrowTemplateType(TemplateType $templateType): self
+	{
+		$type = new self(
+			$this->parameterName,
+			$this->target,
+			$this->if,
+			$this->else,
+			$this->negated,
+		);
+		$type->parameterTemplateType = $templateType;
+
+		return $type;
 	}
 
 	public function toConditional(Type $subject): Type
@@ -68,8 +98,8 @@ final class ConditionalTypeForParameter implements CompoundType, LateResolvableT
 		return new ConditionalType(
 			$subject,
 			$this->target,
-			$this->if,
-			$this->else,
+			$this->getNormalizedIf(),
+			$this->getNormalizedElse(),
 			$this->negated,
 		);
 	}
@@ -130,16 +160,20 @@ final class ConditionalTypeForParameter implements CompoundType, LateResolvableT
 
 	protected function getResult(): Type
 	{
-		return TypeCombinator::union($this->if, $this->else);
+		return TypeCombinator::union($this->getNormalizedIf(), $this->getNormalizedElse());
 	}
 
 	public function traverse(callable $cb): Type
 	{
 		$target = $cb($this->target);
-		$if = $cb($this->if);
-		$else = $cb($this->else);
+		$if = $cb($this->getNormalizedIf());
+		$else = $cb($this->getNormalizedElse());
 
-		if ($this->target === $target && $this->if === $if && $this->else === $else) {
+		if (
+			$this->target === $target
+			&& $this->getNormalizedIf() === $if
+			&& $this->getNormalizedElse() === $else
+		) {
 			return $this;
 		}
 
@@ -153,14 +187,32 @@ final class ConditionalTypeForParameter implements CompoundType, LateResolvableT
 		}
 
 		$target = $cb($this->target, $right->target);
-		$if = $cb($this->if, $right->if);
-		$else = $cb($this->else, $right->else);
+		$if = $cb($this->getNormalizedIf(), $right->getNormalizedIf());
+		$else = $cb($this->getNormalizedElse(), $right->getNormalizedElse());
 
-		if ($this->target === $target && $this->if === $if && $this->else === $else) {
+		if (
+			$this->target === $target
+			&& $this->getNormalizedIf() === $if
+			&& $this->getNormalizedElse() === $else
+		) {
 			return $this;
 		}
 
 		return new self($this->parameterName, $target, $if, $else, $this->negated);
+	}
+
+	private function getNormalizedIf(): Type
+	{
+		return $this->normalizedIf ??= $this->parameterTemplateType === null
+			? $this->if
+			: NarrowedSubjectType::narrowReferences($this->if, $this->parameterTemplateType, $this->target, !$this->negated);
+	}
+
+	private function getNormalizedElse(): Type
+	{
+		return $this->normalizedElse ??= $this->parameterTemplateType === null
+			? $this->else
+			: NarrowedSubjectType::narrowReferences($this->else, $this->parameterTemplateType, $this->target, $this->negated);
 	}
 
 	public function toPhpDocNode(): TypeNode

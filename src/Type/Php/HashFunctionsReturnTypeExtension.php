@@ -83,12 +83,11 @@ final class HashFunctionsReturnTypeExtension implements DynamicFunctionReturnTyp
 		'xxh128',
 	];
 
-	/** @var array<int, non-empty-string> */
-	private array $hashAlgorithms;
+	/** @var array<int, non-empty-string>|null */
+	private ?array $hashAlgorithms = null;
 
 	public function __construct(private PhpVersion $phpVersion)
 	{
-		$this->hashAlgorithms = hash_algos();
 	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
@@ -143,7 +142,8 @@ final class HashFunctionsReturnTypeExtension implements DynamicFunctionReturnTyp
 		$returnTypes = array_map(
 			function (ConstantStringType $type) use ($functionData, $stringReturnType, $invalidAlgorithmType) {
 				$algorithm = strtolower($type->getValue());
-				if (!in_array($algorithm, $this->hashAlgorithms, true)) {
+				$algos = $this->hashAlgorithms ??= hash_algos();
+				if (!in_array($algorithm, $algos, true)) {
 					return $invalidAlgorithmType;
 				}
 				if ($functionData['cryptographic'] && in_array($algorithm, self::NON_CRYPTOGRAPHIC_ALGORITHMS, true)) {

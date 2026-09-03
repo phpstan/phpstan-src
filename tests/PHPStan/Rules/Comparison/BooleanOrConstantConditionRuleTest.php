@@ -441,4 +441,24 @@ class BooleanOrConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14473.php'], []);
 	}
 
+	public function testBug15169(): void
+	{
+		$this->treatPhpDocTypesAsCertain = false;
+
+		$this->analyse([__DIR__ . '/../DeadCode/data/bug-15169.php'], []);
+	}
+
+	public function testBug15169TreatPhpDocTypesAsCertain(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+
+		$this->analyse([__DIR__ . '/../DeadCode/data/bug-15169.php'], [
+			[
+				'Result of || is always true.',
+				50,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+		]);
+	}
+
 }

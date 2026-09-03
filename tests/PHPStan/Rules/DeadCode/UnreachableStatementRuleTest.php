@@ -434,4 +434,82 @@ class UnreachableStatementRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug15169(): void
+	{
+		$this->treatPhpDocTypesAsCertain = false;
+		$this->analyse([__DIR__ . '/data/bug-15169.php'], []);
+	}
+
+	public function testBug15169TreatPhpDocTypesAsCertain(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-15169.php'], [
+			[
+				'Unreachable statement - code above always terminates.',
+				27,
+			],
+			[
+				'Unreachable statement - code above always terminates.',
+				36,
+			],
+			[
+				'Unreachable statement - code above always terminates.',
+				45,
+			],
+			[
+				'Unreachable statement - code above always terminates.',
+				54,
+			],
+			[
+				'Unreachable statement - code above always terminates.',
+				66,
+			],
+			[
+				'Unreachable statement - code above always terminates.',
+				76,
+			],
+		]);
+	}
+
+	public function testBug15169Analogous(): void
+	{
+		$this->treatPhpDocTypesAsCertain = false;
+		$this->analyse([__DIR__ . '/data/bug-15169b.php'], []);
+	}
+
+	public function testBug15169AnalogousTreatPhpDocTypesAsCertain(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-15169b.php'], [
+			[
+				'Unreachable statement - code above always terminates.',
+				40,
+			],
+			[
+				'Unreachable statement - code above always terminates.',
+				49,
+			],
+			[
+				'Unreachable statement - code above always terminates.',
+				66,
+			],
+			[
+				'Unreachable statement - code above always terminates.',
+				75,
+			],
+			[
+				'Unreachable statement - code above always terminates.',
+				84,
+			],
+			[
+				'Unreachable statement - code above always terminates.',
+				93,
+			],
+			[
+				'Unreachable statement - code above always terminates.',
+				102,
+			],
+		]);
+	}
+
 }

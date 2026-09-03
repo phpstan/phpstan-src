@@ -902,6 +902,21 @@ jobs:
               ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
               ../bashunit -a contains 'UsesCopied.php:16:Method ResultCacheE2EPathRepository\UsesCopied::doUsesCopied() should return int but returns string.' "$OUTPUT"
           - script: |
+              cd e2e/result-cache-collector-sweep
+              # Two errors: one from an ordinary rule, one from a rule built on collected data.
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'PlainCaller.php:8:Method ResultCacheE2ECollectorSweep\PlainCaller::doPlainCaller() has invalid return type ResultCacheE2ECollectorSweep\Missing.' "$OUTPUT"
+              ../bashunit -a contains 'Caller.php:7:Call to function resultCacheE2ECollectorHelper() on a separate line has no effect.' "$OUTPUT"
+              # One new file defines both missing symbols. The files with errors are re-analysed - but
+              # the errors of the collector-backed rule are produced after the cache is written, so the
+              # file holding one is not in the cached error map and never gets swept.
+              cp appears/nsfns.php src/nsfns.php
+              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a not_contains 'has invalid return type' "$OUTPUT"
+              ../bashunit -a not_contains 'on a separate line has no effect' "$OUTPUT"
+          - script: |
               cd e2e/result-cache-extension-update
               composer install
               # cold run populates the cache; the shipped rule reports an error, so ignore the exit code

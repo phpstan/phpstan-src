@@ -16,6 +16,7 @@ use PHPStan\Node\EmitCollectedDataNode;
 use PHPStan\Node\InClassNode;
 use PHPStan\Node\InTraitNode;
 use PHPStan\Parser\Parser;
+use PHPStan\Rules\FileDependenciesRuleError;
 use PHPStan\Rules\Registry as RuleRegistry;
 use function array_keys;
 use function get_class;
@@ -160,6 +161,14 @@ final class FileAnalyserCallback
 			}
 
 			foreach ($ruleErrors as $ruleError) {
+				if ($ruleError instanceof FileDependenciesRuleError) {
+					// The rule says its verdict depends on files the dependency graph cannot know about,
+					// because they hold no symbol PHPStan reflects - a path named in the code, for one.
+					foreach ($ruleError->getFileDependencies() as $fileDependency) {
+						$this->fileDependencies[] = $fileDependency;
+					}
+				}
+
 				$error = $this->ruleErrorTransformer->transform($ruleError, $scope, $parserNodes, $node);
 
 				if ($error->canBeIgnored()) {
@@ -218,6 +227,9 @@ final class FileAnalyserCallback
 		try {
 			$dependencies = $this->dependencyResolver->resolveDependencies($node, $scope);
 			foreach ($dependencies->getFileDependencies($scope->getFile(), $this->analysedFiles) as $dependentFile) {
+				$this->fileDependencies[] = $dependentFile;
+			}
+			foreach ($dependencies->getFilePaths() as $dependentFile) {
 				$this->fileDependencies[] = $dependentFile;
 			}
 			$nonAnalysedDependencies = $dependencies->getNonAnalysedDependencies($scope->getFile(), $this->analysedFiles, $this->packageDependencyResolver);

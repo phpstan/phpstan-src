@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Keywords;
 
 use PHPStan\File\FileHelper;
+use PHPStan\File\IncludedFilePathResolver;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
@@ -23,10 +24,13 @@ class RequireFileExistsRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new RequireFileExistsRule(
-			$this->currentWorkingDirectory,
 			self::getContainer()->getByType(ExprPrinter::class),
 			true,
 			self::getContainer()->getByType(FileHelper::class),
+			new IncludedFilePathResolver(
+				$this->currentWorkingDirectory,
+				self::getContainer()->getByType(FileHelper::class),
+			),
 		);
 	}
 

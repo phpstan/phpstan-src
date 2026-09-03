@@ -12,19 +12,16 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\File\FileHelper;
+use PHPStan\File\IncludedFilePathResolver;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantStringType;
-use function array_merge;
 use function dirname;
-use function explode;
-use function get_include_path;
 use function is_file;
 use function sprintf;
-use const PATH_SEPARATOR;
 
 /**
  * @implements Rule<Include_>
@@ -47,12 +44,11 @@ final class RequireFileExistsRule implements Rule
 	];
 
 	public function __construct(
-		#[AutowiredParameter]
-		private string $currentWorkingDirectory,
 		private ExprPrinter $exprPrinter,
 		#[AutowiredParameter(ref: '%featureToggles.magicDirInInclude%')]
 		private bool $checkMagicDirInInclude,
 		private FileHelper $fileHelper,
+		private IncludedFilePathResolver $includedFilePathResolver,
 	)
 	{
 	}
@@ -85,7 +81,7 @@ final class RequireFileExistsRule implements Rule
 				$pathExpr = '"' . $path . '"';
 			}
 
-			$errors[] = $this->getErrorMessage($node, $pathExpr);
+			$errors[] = $this->getErrorMessage($node, $pathExpr, $this->includedFilePathResolver->resolve($path, $scope));
 		}
 
 		return $errors;
@@ -101,14 +97,8 @@ final class RequireFileExistsRule implements Rule
 	 */
 	private function doesFileExist(string $path, Scope $scope): bool
 	{
-		$directories = array_merge(
-			[$this->currentWorkingDirectory],
-			explode(PATH_SEPARATOR, get_include_path()),
-			[dirname($this->getScopeFile($scope))],
-		);
-
-		foreach ($directories as $directory) {
-			if ($this->doesFileExistForDirectory($path, $directory)) {
+		foreach ($this->includedFilePathResolver->resolve($path, $scope) as $candidatePath) {
+			if (is_file($candidatePath)) {
 				return true;
 			}
 		}
@@ -134,15 +124,10 @@ final class RequireFileExistsRule implements Rule
 		return $scope->getFile();
 	}
 
-	private function doesFileExistForDirectory(string $path, string $workingDirectory): bool
-	{
-		$fileHelper = new FileHelper($workingDirectory);
-		$absolutePath = $fileHelper->absolutizePath($path);
-
-		return is_file($absolutePath);
-	}
-
-	private function getErrorMessage(Include_ $node, string $filePath): IdentifierRuleError
+	/**
+	 * @param list<string> $candidatePaths
+	 */
+	private function getErrorMessage(Include_ $node, string $filePath, array $candidatePaths): IdentifierRuleError
 	{
 		$message = 'Path in %s() %s is not a file or it does not exist.';
 
@@ -169,13 +154,21 @@ final class RequireFileExistsRule implements Rule
 
 		$identifier = sprintf('%s.fileNotFound', $identifierType);
 
-		return RuleErrorBuilder::message(
+		$builder = RuleErrorBuilder::message(
 			sprintf(
 				$message,
 				$type,
 				$filePath,
 			),
-		)->identifier($identifier)->build();
+		)->identifier($identifier);
+
+		// The error is about a path, and a path is nothing the dependency graph tracks. Declaring the
+		// paths makes the result cache re-analyse this file when one of them is created.
+		foreach ($candidatePaths as $candidatePath) {
+			$builder->fileDependency($candidatePath);
+		}
+
+		return $builder->build();
 	}
 
 	/**

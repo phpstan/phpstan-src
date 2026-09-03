@@ -902,6 +902,70 @@ jobs:
               ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
               ../bashunit -a contains 'UsesCopied.php:16:Method ResultCacheE2EPathRepository\UsesCopied::doUsesCopied() should return int but returns string.' "$OUTPUT"
           - script: |
+              cd e2e/result-cache-composer-json
+              composer install
+              ../../bin/phpstan analyse
+              # composer.json decides which PHP version the analysis targets (config.platform.php) and
+              # which symbols the autoloader can reach, but its contents are hashed nowhere in the cache
+              # metadata - composerLocks and composerInstalled cover composer.lock and installed.php, and
+              # neither of those moves when only composer.json changes.
+              patch -p0 < platform.patch
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Foo.php:10:Function str_contains not found.' "$OUTPUT"
+          - script: |
+              cd e2e/result-cache-empty-file-gains-symbol
+              # src/script.php declares no symbol, so the cache holds no exported nodes entry for it at
+              # all, and src/user.php uses a class that does not exist yet.
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'user.php:7:Instantiated class ResultCacheE2EEmptyFileGainsSymbol\Thing not found.' "$OUTPUT"
+              # That file now declares a class. A root symbol appeared, so the files with errors have to
+              # be re-analysed, the same way a brand new file makes them re-analysed - the missing
+              # exported nodes entry must not be read as "nothing changed".
+              mv gains/script.php src/script.php
+              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a not_contains 'Instantiated class ResultCacheE2EEmptyFileGainsSymbol\Thing not found.' "$OUTPUT"
+          - script: |
+              cd e2e/result-cache-string-class
+              ../../bin/phpstan analyse
+              # The instantiated class is named by a constant string, so it is resolved through the type
+              # system rather than through a name node, and the dependency graph records no edge from
+              # Thing.php to Factory.php. Deleting the class still has to be noticed.
+              rm src/Thing.php
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Factory.php:12:Instantiated class ResultCacheE2EStringClass\Thing not found.' "$OUTPUT"
+          - script: |
+              cd e2e/result-cache-import-type-deleted
+              ../../bin/phpstan analyse
+              # Deleting the class an imported type alias comes from makes the PHPDoc of Base.php
+              # unresolvable, and a file whose PHPDoc cannot be resolved records no dependencies at all -
+              # the edge to User.php is dropped. The next edit of Base.php must still reach User.php.
+              rm src/Aliases.php
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              patch -b -p0 < signature.patch
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'User.php:10:Method ResultCacheE2EImportType\User::doUser() should return int but returns string.' "$OUTPUT"
+          - script: |
+              cd e2e/result-cache-require-deleted
+              ../../bin/phpstan analyse
+              # The file named in require() is not analysed, not scanned and not autoloadable, so no hash
+              # of it exists anywhere in the cache. Deleting it has to be noticed all the same: the rule
+              # that checks the path reports an error the moment it is gone.
+              rm config/app.php
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Foo.php:10:Path in require() "config/app.php" is not a file or it does not exist.' "$OUTPUT"
+              # And putting it back has to clear the error again.
+              printf '<?php declare(strict_types = 1);\n\nreturn [];\n' > config/app.php
+              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a not_contains 'is not a file or it does not exist' "$OUTPUT"
+          - script: |
               cd e2e/result-cache-extension-update
               composer install
               # cold run populates the cache; the shipped rule reports an error, so ignore the exit code

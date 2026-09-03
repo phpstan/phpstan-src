@@ -13,6 +13,7 @@ use PHPStan\Broker\ClassNotFoundException;
 use PHPStan\Broker\FunctionNotFoundException;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\FileHelper;
+use PHPStan\File\IncludedFilePathResolver;
 use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Node\FunctionCallableNode;
 use PHPStan\Node\InClassMethodNode;
@@ -35,6 +36,7 @@ use function array_key_exists;
 use function array_merge;
 use function count;
 use function in_array;
+use function is_file;
 
 #[AutowiredService]
 final class DependencyResolver
@@ -45,6 +47,7 @@ final class DependencyResolver
 
 	public function __construct(
 		private FileHelper $fileHelper,
+		private IncludedFilePathResolver $includedFilePathResolver,
 		private ReflectionProvider $reflectionProvider,
 		private ExportedNodeResolver $exportedNodeResolver,
 		private FileTypeMapper $fileTypeMapper,
@@ -55,6 +58,7 @@ final class DependencyResolver
 	public function resolveDependencies(Node $node, Scope $scope): NodeDependencies
 	{
 		$dependenciesReflections = [];
+		$dependenciesFilePaths = [];
 
 		if ($node instanceof Node\Stmt\Class_) {
 			if (isset($node->namespacedName)) {
@@ -407,11 +411,21 @@ final class DependencyResolver
 					}
 				}
 			}
-		} elseif (
-			$node instanceof Node\Expr\New_
-			&& $node->class instanceof Node\Name
-		) {
-			$this->addClassToDependencies($scope->resolveName($node->class), $dependenciesReflections);
+		} elseif ($node instanceof Node\Expr\New_) {
+			if ($node->class instanceof Node\Name) {
+				$this->addClassToDependencies($scope->resolveName($node->class), $dependenciesReflections);
+			} elseif ($node->class instanceof Node\Expr) {
+				// new $class(), where the class is named by a string the type system resolved and no name
+				// node exists to read it from - the same shape StaticCall and ClassConstFetch already
+				// handle. The type of the whole expression is the instantiated class.
+				foreach ($scope->getType($node)->getReferencedClasses() as $referencedClass) {
+					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+				}
+
+				foreach ($this->getClassNamesFromClassString($scope->getType($node->class)) as $referencedClass) {
+					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+				}
+			}
 		} elseif ($node instanceof Node\Stmt\Trait_ && $node->namespacedName !== null) {
 			try {
 				$classReflection = $this->reflectionProvider->getClass($node->namespacedName->toString());
@@ -451,6 +465,23 @@ final class DependencyResolver
 		} elseif ($node instanceof Node\Expr\Instanceof_) {
 			if ($node->class instanceof Name) {
 				$this->addClassToDependencies($scope->resolveName($node->class), $dependenciesReflections);
+			} else {
+				// $x instanceof $class - the same string-named class as in the New_ arm above
+				foreach ($this->getClassNamesFromClassString($scope->getType($node->class)) as $referencedClass) {
+					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+				}
+			}
+		} elseif ($node instanceof Node\Expr\Include_) {
+			// An included file is a dependency with no symbol to reflect: nothing in it has to be
+			// declared for the including file's analysis to change when it is deleted.
+			foreach ($scope->getType($node->expr)->getConstantStrings() as $constantString) {
+				foreach ($this->includedFilePathResolver->resolve($constantString->getValue(), $scope) as $candidatePath) {
+					if (!is_file($candidatePath)) {
+						continue;
+					}
+
+					$dependenciesFilePaths[] = $candidatePath;
+				}
 			}
 		} elseif ($node instanceof Node\Stmt\Catch_) {
 			foreach ($node->types as $type) {
@@ -506,7 +537,7 @@ final class DependencyResolver
 			}
 		}
 
-		return new NodeDependencies($this->fileHelper, $dependenciesReflections, $this->exportedNodeResolver->resolve($scope->getFile(), $node));
+		return new NodeDependencies($this->fileHelper, $dependenciesReflections, $this->exportedNodeResolver->resolve($scope->getFile(), $node), $dependenciesFilePaths);
 	}
 
 	public function resolveUsedTraitDependencies(InClassNode $inClassNode): NodeDependencies
@@ -528,6 +559,25 @@ final class DependencyResolver
 
 		$itemType = $scope->getType($items[0]->value);
 		return $itemType->isClassString()->yes();
+	}
+
+	/**
+	 * The classes a string naming a class points at, so that `new $class()` and `$x instanceof $class`
+	 * record an edge to the file declaring it, the way a written-out class name does.
+	 *
+	 * @return list<string>
+	 */
+	private function getClassNamesFromClassString(Type $type): array
+	{
+		$classNames = [];
+		foreach ($type->getConstantStrings() as $constantString) {
+			$objectType = $constantString->getClassStringObjectType();
+			foreach ($objectType->getObjectClassNames() as $className) {
+				$classNames[] = $className;
+			}
+		}
+
+		return $classNames;
 	}
 
 	/**
@@ -681,7 +731,14 @@ final class DependencyResolver
 			$phpDoc = $classReflection->getResolvedPhpDoc();
 			if ($phpDoc !== null) {
 				foreach ($phpDoc->getTypeAliasImportTags() as $importTag) {
-					$dependencies[] = $this->reflectionProvider->getClass($importTag->getImportedFrom());
+					// guarded like every other tag above: the class an alias is imported from can be gone,
+					// and asking for it then throws out of the whole walk - the file would record no
+					// dependency at all, not even the parent class it extends
+					$importedFrom = $importTag->getImportedFrom();
+					if (!$this->reflectionProvider->hasClass($importedFrom)) {
+						continue;
+					}
+					$dependencies[] = $this->reflectionProvider->getClass($importedFrom);
 				}
 			}
 

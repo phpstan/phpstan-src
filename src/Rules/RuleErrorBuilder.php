@@ -27,6 +27,7 @@ final class RuleErrorBuilder
 	private const TYPE_METADATA = 32;
 	private const TYPE_NON_IGNORABLE = 64;
 	private const TYPE_FIXABLE_NODE = 128;
+	private const TYPE_FILE_DEPENDENCIES = 256;
 
 	private int $type;
 
@@ -132,6 +133,16 @@ final class RuleErrorBuilder
 					],
 				],
 			],
+			self::TYPE_FILE_DEPENDENCIES => [
+				FileDependenciesRuleError::class,
+				[
+					[
+						'fileDependencies',
+						'array',
+						'list<string>',
+					],
+				],
+			],
 		];
 	}
 
@@ -167,6 +178,26 @@ final class RuleErrorBuilder
 		$this->properties['file'] = $file;
 		$this->properties['fileDescription'] = $fileDescription ?? $file;
 		$this->type |= self::TYPE_FILE;
+
+		return $this;
+	}
+
+	/**
+	 * Declares that this error depends on the contents of another file, so that the result cache
+	 * re-analyses the file the error is reported in when that file appears, changes or is deleted.
+	 * The path must be absolute; it does not have to exist.
+	 *
+	 * @api
+	 * @phpstan-this-out self<T&FileDependenciesRuleError>
+	 * @return self<T&FileDependenciesRuleError>
+	 */
+	public function fileDependency(string $file): self
+	{
+		/** @var list<string> $fileDependencies */
+		$fileDependencies = $this->properties['fileDependencies'] ?? [];
+		$fileDependencies[] = $file;
+		$this->properties['fileDependencies'] = $fileDependencies;
+		$this->type |= self::TYPE_FILE_DEPENDENCIES;
 
 		return $this;
 	}

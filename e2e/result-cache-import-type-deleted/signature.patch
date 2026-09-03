@@ -1,0 +1,14 @@
+--- src/Base.php
++++ src/Base.php
+@@ -8,9 +8,9 @@
+ class Base
+ {
+ 
+-	public function doBase(): int
++	public function doBase(): string
+ 	{
+-		return 1;
++		return 'x';
+ 	}
+ 
+ }

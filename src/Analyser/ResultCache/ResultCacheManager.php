@@ -24,6 +24,8 @@ use PHPStan\File\FileFinder;
 use PHPStan\File\FileHelper;
 use PHPStan\Internal\ArrayHelper;
 use PHPStan\Internal\ComposerHelper;
+use PHPStan\Php\ComposerPhpVersionFactory;
+use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\StubFilesProvider;
 use PHPStan\ShouldNotHappenException;
 use ReflectionClass;
@@ -84,7 +86,14 @@ final class ResultCacheManager
 	 */
 	private const EXTENSIONS_NOT_INVALIDATING_CACHE = ['xdebug', 'blackfire', 'phpstan_turbo'];
 
-	private const CACHE_VERSION = 'v16-nonAnalysedExportedNodes';
+	private const CACHE_VERSION = 'v18-missingFileDependencies';
+
+	/**
+	 * The recorded hash of a dependency that does not exist. A rule can depend on a path rather than on
+	 * a symbol - the file named in a require() - and such a dependency has to be watched while it is
+	 * missing, so that creating it re-analyses the file that named it. No real hash is empty.
+	 */
+	private const MISSING_FILE_HASH = '';
 
 	private const SCANNED_FILE_APPEARED = 'appeared';
 	private const SCANNED_FILE_EDITED = 'edited';
@@ -159,6 +168,8 @@ final class ResultCacheManager
 		private int $skipResultCacheIfOlderThanDays,
 		#[AutowiredParameter(ref: '%rootDir%')]
 		private string $anchorDirectory,
+		private PhpVersion $phpVersion,
+		private ComposerPhpVersionFactory $composerPhpVersionFactory,
 	)
 	{
 	}
@@ -606,11 +617,12 @@ final class ResultCacheManager
 			}
 
 			$filesToAnalyse[] = $analysedFile;
-			if (!array_key_exists($analysedFile, $filteredExportedNodes)) {
-				continue;
-			}
-
-			$cachedFileExportedNodes = $filteredExportedNodes[$analysedFile];
+			// A file that declared nothing has no entry at all - save() only writes one for a file with
+			// at least one exported node - and a missing entry is not the same as nothing to propagate:
+			// the file may have gained its first symbol, which is exactly what the files with errors are
+			// waiting for. Comparing against an empty list says so, and says nothing changed when the
+			// file still declares nothing.
+			$cachedFileExportedNodes = $filteredExportedNodes[$analysedFile] ?? [];
 			$exportedNodesChanged = $this->exportedNodesChanged($analysedFile, $cachedFileExportedNodes);
 			if ($exportedNodesChanged === null) {
 				if (count($cachedFileExportedNodes) === 0) {
@@ -657,7 +669,28 @@ final class ResultCacheManager
 			$dependentFiles = $notAnalysedFileData['dependentFiles'];
 			$usedTraitDependentFiles = $notAnalysedFileData['usedTraitDependentFiles'] ?? [];
 
-			if (is_file($notAnalysedFile)) {
+			$wasMissing = $notAnalysedFileData['fileHash'] === self::MISSING_FILE_HASH;
+			if (!is_file($notAnalysedFile) && $wasMissing) {
+				// A path that was already missing when the cache was written, and still is: nothing
+				// changed, but it stays watched so that creating it re-analyses the files naming it.
+				$invertedDependenciesToReturn[$notAnalysedFile] = $dependentFiles;
+				if (count($usedTraitDependentFiles) > 0) {
+					$invertedUsedTraitDependenciesToReturn[$notAnalysedFile] = $usedTraitDependentFiles;
+				}
+
+				continue;
+			}
+
+			if (is_file($notAnalysedFile) && $wasMissing) {
+				// It exists now. Whether it holds any symbol is beside the point - a file that was named
+				// and was not there is now there, and that alone changes what the analysis says.
+				$invertedDependenciesToReturn[$notAnalysedFile] = $dependentFiles;
+				if (count($usedTraitDependentFiles) > 0) {
+					$invertedUsedTraitDependenciesToReturn[$notAnalysedFile] = $usedTraitDependentFiles;
+				}
+
+				$dependentFiles = array_merge($dependentFiles, $usedTraitDependentFiles);
+			} elseif (is_file($notAnalysedFile)) {
 				// Not analysed but still on disk: a scanned file, or another project file the analysed
 				// code depends on. Its edges and exported nodes are not carried over by the loop above
 				// (that one only walks the analysed files), so they are preserved here.
@@ -1309,7 +1342,7 @@ final class ResultCacheManager
 			foreach ($fileDependencies as $fileDep) {
 				if (!array_key_exists($fileDep, $invertedDependencies)) {
 					$invertedDependencies[$fileDep] = [
-						'fileHash' => $currentFileHashes[$fileDep] ?? $this->getFileHash($fileDep),
+						'fileHash' => $currentFileHashes[$fileDep] ?? $this->getDependencyFileHash($fileDep),
 						'dependentFiles' => [],
 					];
 					unset($filesNoOneIsDependingOn[$fileDep]);
@@ -1322,7 +1355,7 @@ final class ResultCacheManager
 			foreach ($fileUsedTraitDependencies as $usedTraitFileDep) {
 				if (!array_key_exists($usedTraitFileDep, $invertedDependencies)) {
 					$invertedDependencies[$usedTraitFileDep] = [
-						'fileHash' => $currentFileHashes[$usedTraitFileDep] ?? $this->getFileHash($usedTraitFileDep),
+						'fileHash' => $currentFileHashes[$usedTraitFileDep] ?? $this->getDependencyFileHash($usedTraitFileDep),
 						'dependentFiles' => [],
 						'usedTraitDependentFiles' => [],
 					];
@@ -1760,11 +1793,24 @@ return [
 		// __DIR__ . '/../x', --autoload-file may be given as ./vendor/autoload.php. Normalizing them
 		// here makes the comparison one of paths, not of spellings - otherwise such an entry reads
 		// as a metadata change on every run and the whole cache is discarded every time.
+		$composerMinPhpVersion = $this->composerPhpVersionFactory->getMinVersion();
+		$composerMaxPhpVersion = $this->composerPhpVersionFactory->getMaxVersion();
+
 		return $this->getPathTransformer()->normalizeMeta([
 			'cacheVersion' => self::CACHE_VERSION,
 			'phpstanVersion' => ComposerHelper::getPhpStanVersion(),
 			'metaExtensions' => $this->getMetaFromPhpStanExtensions(),
 			'phpVersion' => PHP_VERSION_ID,
+			// The version the analysis targets, which is not the one PHPStan runs on: it can come from
+			// the phpVersion parameter, or from config.platform.php in composer.json. The parameter is
+			// part of projectConfig, but composer.json is hashed nowhere - and the two version ranges
+			// below come from its require section, which is not in composer.lock's content hash either,
+			// so a composer update need not move anything else in this metadata.
+			'phpVersionForAnalysis' => [$this->phpVersion->getVersionId(), $this->phpVersion->getSource()],
+			'composerPhpVersionRange' => [
+				$composerMinPhpVersion !== null ? $composerMinPhpVersion->getVersionId() : null,
+				$composerMaxPhpVersion !== null ? $composerMaxPhpVersion->getVersionId() : null,
+			],
 			'projectConfig' => $projectConfigArray,
 			'analysedPaths' => $this->analysedPaths,
 			'scannedFiles' => $this->getScannedFiles($allAnalysedFiles),
@@ -1780,6 +1826,18 @@ return [
 			'configStubFiles' => $this->configStubFiles,
 			'level' => $this->usedLevel,
 		]);
+	}
+
+	/**
+	 * The hash of a file that is depended on, which is allowed not to exist - see MISSING_FILE_HASH.
+	 */
+	private function getDependencyFileHash(string $path): string
+	{
+		if (!is_file($path)) {
+			return self::MISSING_FILE_HASH;
+		}
+
+		return $this->getFileHash($path);
 	}
 
 	private function getFileHash(string $path): string

@@ -463,10 +463,18 @@ final class ResultCacheManager
 
 				if ($output->isVeryVerbose()) {
 					$output->writeLineFormatted(sprintf(
-						'Composer packages changed (%s); re-analysing only the files depending on them.',
+						'Composer packages changed (%s); re-analysing the files depending on them and the files with errors.',
 						implode(', ', $changedPackages),
 					));
 				}
+
+				// The files depending on a changed package are seeded below, but a file whose error is
+				// that a class does not exist depends on nothing: there was no file to record an edge to.
+				// An installed package is exactly where such a class tends to arrive from - Composer
+				// unpacking a new version, or a plugin writing into vendor/ while it does - so the files
+				// with errors are re-analysed too, the same way a new analysed file makes them.
+				$notAnalysedFileSymbolsChanged = true;
+
 				foreach ($packageDependencies as $packageDependentFile => $filePackages) {
 					foreach ($filePackages as $filePackage) {
 						if (isset($changedPackagesLookup[$filePackage])) {

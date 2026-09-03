@@ -41,16 +41,7 @@ final class ConstantConditionInTraitHelper
 		Expr $expr,
 	): void
 	{
-		if (!$scope->isInTrait()) {
-			return;
-		}
-
-		$scope->emitCollectedData(ConstantConditionInTraitCollector::class, [
-			$ruleName,
-			$scope->getTraitReflection()->getName(),
-			$this->exprString($expr),
-			null,
-		]);
+		$this->emitNoErrorForKey($ruleName, $scope, $this->exprString($expr));
 	}
 
 	/**
@@ -60,6 +51,48 @@ final class ConstantConditionInTraitHelper
 		string $ruleName,
 		Scope&NodeCallbackInvoker&CollectedDataEmitter $scope,
 		Expr $expr,
+		bool $value,
+		RuleError $ruleError,
+	): void
+	{
+		$this->emitErrorForKey($ruleName, $scope, $expr, $this->exprString($expr), $value, $ruleError);
+	}
+
+	/**
+	 * Like emitNoError(), but for callers that cannot key their check by a single Expr
+	 * (e.g. one Rule node covering several distinct checks at the same location).
+	 *
+	 * @param class-string<Rule<covariant Node>> $ruleName
+	 */
+	public function emitNoErrorForKey(
+		string $ruleName,
+		Scope&NodeCallbackInvoker&CollectedDataEmitter $scope,
+		string $key,
+	): void
+	{
+		if (!$scope->isInTrait()) {
+			return;
+		}
+
+		$scope->emitCollectedData(ConstantConditionInTraitCollector::class, [
+			$ruleName,
+			$scope->getTraitReflection()->getName(),
+			$key,
+			null,
+		]);
+	}
+
+	/**
+	 * Like emitError(), but for callers that cannot key their check by a single Expr
+	 * (e.g. one Rule node covering several distinct checks at the same location).
+	 *
+	 * @param class-string<Rule<covariant Node>> $ruleName
+	 */
+	public function emitErrorForKey(
+		string $ruleName,
+		Scope&NodeCallbackInvoker&CollectedDataEmitter $scope,
+		Node $node,
+		string $key,
 		bool $value,
 		RuleError $ruleError,
 	): void
@@ -75,9 +108,9 @@ final class ConstantConditionInTraitHelper
 		$scope->emitCollectedData(ConstantConditionInTraitCollector::class, [
 			$ruleName,
 			$scope->getTraitReflection()->getName(),
-			$this->exprString($expr),
+			$key,
 			$value,
-			$this->ruleErrorTransformer->transform($ruleError, $scope, [], $expr),
+			$this->ruleErrorTransformer->transform($ruleError, $scope, [], $node),
 		]);
 	}
 

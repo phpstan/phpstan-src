@@ -22,8 +22,6 @@ use function fclose;
 use function feof;
 use function fgets;
 use function fopen;
-use function hash_file;
-use function is_file;
 use function memory_get_peak_usage;
 use function microtime;
 use function sprintf;
@@ -88,7 +86,6 @@ final class AnalyseApplication
 			if ($errorOutput->isVeryVerbose()) {
 				$errorOutput->writeLineFormatted('Result cache was not saved because of ignoredErrorHelperResult errors.');
 			}
-			$changedProjectExtensionFilesOutsideOfAnalysedPaths = [];
 		} else {
 			$resultCache = $resultCacheManager->restore($files, $debug, $onlyFiles, $projectConfigArray, $errorOutput);
 			$intermediateAnalyserResult = $this->runAnalyser(

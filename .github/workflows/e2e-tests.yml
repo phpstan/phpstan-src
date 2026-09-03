@@ -951,6 +951,36 @@ jobs:
               echo "$OUTPUT"
               ../bashunit -a contains 'User.php:10:Method ResultCacheE2EImportType\User::doUser() should return int but returns string.' "$OUTPUT"
           - script: |
+              cd e2e/result-cache-collected-data
+              # The only error of src/Caller.php comes from a rule built on collected data, and so does
+              # the one reported in src/ConditionTrait.php - deduplicated into the trait out of the data
+              # collected in src/UsesTrait.php. src/PlainCaller.php has an ordinary error, so that the
+              # sweep over the files with errors can be seen to run at all.
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Caller.php:7:Call to function resultCacheE2ECollectedDataHelper() on a separate line has no effect.' "$OUTPUT"
+              ../bashunit -a contains 'ConditionTrait.php:10:If condition is always true.' "$OUTPUT"
+              # The new file defines everything the three errors are about: a namespaced function the
+              # unqualified calls now resolve to, and the missing class. The errors of the rules built on
+              # collected data are never in the cache, so nothing would sweep the files they are reported
+              # in and their collected data would stay as it was.
+              mv gains/nsfns.php src/nsfns.php
+              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a not_contains 'has no effect' "$OUTPUT"
+              ../bashunit -a not_contains 'If condition is always true' "$OUTPUT"
+          - script: |
+              cd e2e/result-cache-collected-data-ignored
+              # The error of the rule built on collected data is ignored on the line it is reported on,
+              # so the file has no error at all - the ignore has to be watched all the same.
+              ../../bin/phpstan analyse
+              # The unqualified call now resolves to an impure namespaced function, so there is nothing
+              # left to ignore and the unmatched ignore has to be reported.
+              mv gains/nsfns.php src/nsfns.php
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'IgnoringCaller.php:8:No error with identifier function.resultUnused is reported on line 8.' "$OUTPUT"
+          - script: |
               cd e2e/result-cache-require-deleted
               ../../bin/phpstan analyse
               # The file named in require() is not analysed, not scanned and not autoloadable, so no hash

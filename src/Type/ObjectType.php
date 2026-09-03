@@ -1763,6 +1763,23 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return $this->changeSubtractedType(null);
 	}
 
+	/**
+	 * Drops the "this is exactly this class" flavour that ClassReflection::asFinal()
+	 * puts on the type of a `new Foo()` expression.
+	 */
+	public function withoutFinalByKeywordOverride(): Type
+	{
+		if ($this->classReflection === null || !$this->classReflection->hasFinalByKeywordOverride()) {
+			return $this;
+		}
+
+		return new self(
+			$this->className,
+			$this->subtractedType,
+			$this->classReflection->withoutFinalByKeywordOverride(),
+		);
+	}
+
 	public function changeSubtractedType(?Type $subtractedType): Type
 	{
 		if ($subtractedType !== null) {

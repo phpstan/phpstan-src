@@ -413,6 +413,21 @@ class GenericObjectType extends ObjectType
 		return $this->recreate($this->getClassName(), $this->getTypes(), $this->getSubtractedType(), $variances);
 	}
 
+	public function withoutFinalByKeywordOverride(): Type
+	{
+		if ($this->classReflection === null || !$this->classReflection->hasFinalByKeywordOverride()) {
+			return $this;
+		}
+
+		return new self(
+			$this->getClassName(),
+			$this->types,
+			$this->getSubtractedType(),
+			$this->classReflection->withoutFinalByKeywordOverride(),
+			$this->variances,
+		);
+	}
+
 	public function changeSubtractedType(?Type $subtractedType): Type
 	{
 		$result = parent::changeSubtractedType($subtractedType);

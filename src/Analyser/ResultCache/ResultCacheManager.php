@@ -610,11 +610,12 @@ final class ResultCacheManager
 			}
 
 			$filesToAnalyse[] = $analysedFile;
-			if (!array_key_exists($analysedFile, $filteredExportedNodes)) {
-				continue;
-			}
-
-			$cachedFileExportedNodes = $filteredExportedNodes[$analysedFile];
+			// A file that declared nothing has no entry at all - save() only writes one for a file with
+			// at least one exported node - and a missing entry is not the same as nothing to propagate:
+			// the file may have gained its first symbol, which is exactly what the files with errors are
+			// waiting for. Comparing against an empty list says so, and says nothing changed when the
+			// file still declares nothing.
+			$cachedFileExportedNodes = $filteredExportedNodes[$analysedFile] ?? [];
 			$exportedNodesChanged = $this->exportedNodesChanged($analysedFile, $cachedFileExportedNodes);
 			if ($exportedNodesChanged === null) {
 				if (count($cachedFileExportedNodes) === 0) {

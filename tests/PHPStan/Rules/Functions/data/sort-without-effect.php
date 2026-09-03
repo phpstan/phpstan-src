@@ -266,3 +266,15 @@ function ksortMixed($mixed): void
 {
 	ksort($mixed);
 }
+
+/** @param array{foo?: int} $optional */
+function ksortOptionalKey(array $optional): void
+{
+	ksort($optional);
+}
+
+/** @param array{0?: int} $optionalList */
+function sortOptionalKeyList(array $optionalList): void
+{
+	sort($optionalList);
+}

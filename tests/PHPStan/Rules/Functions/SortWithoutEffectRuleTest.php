@@ -158,6 +158,16 @@ class SortWithoutEffectRuleTest extends RuleTestCase
 				262,
 				$tipText,
 			],
+			[
+				'Parameter #1 $array (array{foo?: int}) of function ksort has at most 1 element, call has no effect.',
+				273,
+				$tipText,
+			],
+			[
+				'Parameter #1 $array (array{0?: int}) of function sort has at most 1 element, call has no effect.',
+				279,
+				$tipText,
+			],
 		]);
 	}
 

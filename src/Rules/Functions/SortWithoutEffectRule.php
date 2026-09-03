@@ -155,7 +155,7 @@ final class SortWithoutEffectRule implements Rule
 			return null;
 		}
 
-		if (IntegerRangeType::fromInterval(2, null)->isSuperTypeOf($arrayType->getArraySize())->no()) {
+		if (IntegerRangeType::fromInterval(0, 1)->isSuperTypeOf($arrayType->getArraySize())->yes()) {
 			return 'singleElement';
 		}
 

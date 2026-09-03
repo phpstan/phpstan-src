@@ -23,7 +23,6 @@ final class AnalysisResult
 	 * @param list<InternalError> $internalErrors
 	 * @param list<string> $warnings
 	 * @param list<CollectedData> $collectedData
-	 * @param array<string, string> $changedProjectExtensionFilesOutsideOfAnalysedPaths
 	 * @param list<string> $processedFiles
 	 */
 	public function __construct(
@@ -37,7 +36,6 @@ final class AnalysisResult
 		private bool $savedResultCache,
 		private int $peakMemoryUsageBytes,
 		private bool $isResultCacheUsed,
-		private array $changedProjectExtensionFilesOutsideOfAnalysedPaths,
 		private array $processedFiles = [],
 		private bool $resultCacheExisted = true,
 		private int $workerCount = 0,
@@ -163,13 +161,6 @@ final class AnalysisResult
 		return $this->resultCacheExisted;
 	}
 
-	/**
-	 * @return array<string, string>
-	 */
-	public function getChangedProjectExtensionFilesOutsideOfAnalysedPaths(): array
-	{
-		return $this->changedProjectExtensionFilesOutsideOfAnalysedPaths;
-	}
 
 	/**
 	 * @return list<string>
@@ -196,7 +187,6 @@ final class AnalysisResult
 			$this->savedResultCache,
 			$this->peakMemoryUsageBytes,
 			$this->isResultCacheUsed,
-			$this->changedProjectExtensionFilesOutsideOfAnalysedPaths,
 			$this->processedFiles,
 			$this->resultCacheExisted,
 		);

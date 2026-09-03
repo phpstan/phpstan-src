@@ -517,7 +517,6 @@ final class AnalyseCommand extends Command
 				$analysisResult->isResultCacheSaved(),
 				$analysisResult->getPeakMemoryUsageBytes(),
 				$analysisResult->isResultCacheUsed(),
-				$analysisResult->getChangedProjectExtensionFilesOutsideOfAnalysedPaths(),
 				$analysisResult->getProcessedFiles(),
 				$analysisResult->resultCacheExisted(),
 			);
@@ -630,51 +629,6 @@ final class AnalyseCommand extends Command
 
 		if ($exitCode === 0 && $failWithoutResultCache && !$analysisResult->isResultCacheUsed()) {
 			$exitCode = 2;
-		}
-
-		if (
-			$analysisResult->isResultCacheUsed()
-			&& $analysisResult->isResultCacheSaved()
-			&& !$onlyFiles
-			&& $inceptionResult->getProjectConfigArray() !== null
-		) {
-			$projectServicesNotInAnalysedPaths = array_values(array_unique($analysisResult->getChangedProjectExtensionFilesOutsideOfAnalysedPaths()));
-			$projectServiceFileNamesNotInAnalysedPaths = array_keys($analysisResult->getChangedProjectExtensionFilesOutsideOfAnalysedPaths());
-
-			if (count($projectServicesNotInAnalysedPaths) > 0) {
-				$one = count($projectServicesNotInAnalysedPaths) === 1;
-				$errorOutput->writeLineFormatted('<comment>Result cache might not behave correctly.</comment>');
-				$errorOutput->writeLineFormatted(sprintf('You\'re using custom %s in your project config', $one ? 'extension' : 'extensions'));
-				$errorOutput->writeLineFormatted(sprintf('but %s not part of analysed paths:', $one ? 'this extension is' : 'these extensions are'));
-				$errorOutput->writeLineFormatted('');
-				foreach ($projectServicesNotInAnalysedPaths as $service) {
-					$errorOutput->writeLineFormatted(sprintf('- %s', $service));
-				}
-
-				$errorOutput->writeLineFormatted('');
-
-				$errorOutput->writeLineFormatted('When you edit them and re-run PHPStan, the result cache will get stale.');
-
-				$directoriesToAdd = [];
-				foreach ($projectServiceFileNamesNotInAnalysedPaths as $path) {
-					$directoriesToAdd[] = dirname($relativePathHelper->getRelativePath($path));
-				}
-
-				$directoriesToAdd = array_unique($directoriesToAdd);
-				$oneDirectory = count($directoriesToAdd) === 1;
-
-				$errorOutput->writeLineFormatted(sprintf('Add %s to your analysed paths to get rid of this problem:', $oneDirectory ? 'this directory' : 'these directories'));
-
-				$errorOutput->writeLineFormatted('');
-
-				foreach ($directoriesToAdd as $directory) {
-					$errorOutput->writeLineFormatted(sprintf('- %s', $directory));
-				}
-
-				$errorOutput->writeLineFormatted('');
-
-				return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime, $analysisResult->getWorkerCount());
-			}
 		}
 
 		$this->reportMissingResultCacheInCi($errorOutput, $analysisResult, $onlyFiles);

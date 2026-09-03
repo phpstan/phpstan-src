@@ -1,0 +1,11 @@
+parameters:
+	level: 0
+	tmpDir: tmp
+	paths:
+		- src
+
+services:
+	-
+		class: Test\RuleLib\MyRule
+		tags:
+			- phpstan.rules.rule

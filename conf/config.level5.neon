@@ -5,24 +5,6 @@ parameters:
 	checkFunctionArgumentTypes: true
 	checkArgumentsPassedByReference: true
 
-conditionalTags:
-	PHPStan\Rules\Functions\ParameterCastableToNumberRule:
-		phpstan.rules.rule: %featureToggles.checkParameterCastableToNumberFunctions%
-	PHPStan\Rules\Functions\PrintfParameterTypeRule:
-		phpstan.rules.rule: %featureToggles.checkPrintfParameterTypes%
-	PHPStan\Rules\DateIntervalInstantiationRule:
-		phpstan.rules.rule: %featureToggles.checkDateIntervalConstructor%
-
 autowiredAttributeServices:
 	# registers rules with #[RegisteredRule] attribute
 	level: 5
-
-services:
-	-
-		class: PHPStan\Rules\Functions\ParameterCastableToNumberRule
-	-
-		class: PHPStan\Rules\Functions\PrintfParameterTypeRule
-		arguments:
-			checkStrictPrintfPlaceholderTypes: %checkStrictPrintfPlaceholderTypes%
-	-
-		class: PHPStan\Rules\DateIntervalInstantiationRule

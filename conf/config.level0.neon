@@ -12,13 +12,8 @@ conditionalTags:
 		phpstan.restrictedClassNameUsageExtension: %featureToggles.internalTag%
 	PHPStan\Rules\InternalTag\RestrictedInternalFunctionUsageExtension:
 		phpstan.restrictedFunctionUsageExtension: %featureToggles.internalTag%
-	PHPStan\Rules\Classes\NewStaticInAbstractClassStaticMethodRule:
-		phpstan.rules.rule: %featureToggles.newStaticInAbstractClassStaticMethod%
 
 services:
-	-
-		class: PHPStan\Rules\Classes\NewStaticInAbstractClassStaticMethodRule
-
 	-
 		class: PHPStan\Rules\InternalTag\RestrictedInternalClassConstantUsageExtension
 

@@ -7,6 +7,8 @@ use PhpParser\Node\Expr\BinaryOp\Equal;
 use PHPStan\Analyser\CollectedDataEmitter;
 use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\SwitchConditionNode;
 use PHPStan\Php\PhpVersion;
@@ -20,6 +22,7 @@ use function sprintf;
 /**
  * @implements Rule<SwitchConditionNode>
  */
+#[RegisteredRule(level: 4, enabledBy: '%featureToggles.switchConditionAlwaysFalse%')]
 final class SwitchConditionRule implements Rule
 {
 
@@ -29,6 +32,7 @@ final class SwitchConditionRule implements Rule
 		private ConstantConditionInTraitHelper $constantConditionInTraitHelper,
 		private ExprPrinter $exprPrinter,
 		private PhpVersion $phpVersion,
+		#[AutowiredParameter(ref: '%treatPhpDocTypesAsCertain%')]
 		private bool $treatPhpDocTypesAsCertain,
 	)
 	{

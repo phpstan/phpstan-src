@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Classes;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -13,6 +14,7 @@ use function strtolower;
 /**
  * @implements Rule<Node\Expr\New_>
  */
+#[RegisteredRule(level: 0, enabledBy: '%featureToggles.newStaticInAbstractClassStaticMethod%')]
 final class NewStaticInAbstractClassStaticMethodRule implements Rule
 {
 

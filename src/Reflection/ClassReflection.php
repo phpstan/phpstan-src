@@ -2002,6 +2002,29 @@ final class ClassReflection
 		);
 	}
 
+	/**
+	 * Back to the finality the class declares. Unlike removeFinalKeywordOverride(),
+	 * which asserts non-finality, this drops the override altogether - a type holding
+	 * such a reflection stops claiming to be exactly this class.
+	 */
+	public function withoutFinalByKeywordOverride(): self
+	{
+		if ($this->finalByKeywordOverride === null) {
+			return $this;
+		}
+
+		return $this->classReflectionFactory->create(
+			$this->displayName,
+			$this->reflection,
+			$this->anonymousFilename,
+			$this->resolvedTemplateTypeMap,
+			$this->stubPhpDocBlockCallback,
+			null,
+			$this->resolvedCallSiteVarianceMap,
+			null,
+		);
+	}
+
 	public function removeFinalKeywordOverride(): self
 	{
 		if ($this->getNativeReflection()->isFinal()) {

@@ -509,6 +509,41 @@ class UnreachableStatementRuleTest extends RuleTestCase
 				'Unreachable statement - code above always terminates.',
 				102,
 			],
+			[
+				'Unreachable statement - code above always terminates.',
+				127,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug15169FirstClassCallables(): void
+	{
+		$this->treatPhpDocTypesAsCertain = false;
+		$this->analyse([__DIR__ . '/data/bug-15169c.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug15169FirstClassCallablesTreatPhpDocTypesAsCertain(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-15169c.php'], [
+			[
+				'Unreachable statement - code above always terminates.',
+				45,
+			],
+			[
+				'Unreachable statement - code above always terminates.',
+				55,
+			],
+			[
+				'Unreachable statement - code above always terminates.',
+				65,
+			],
+			[
+				'Unreachable statement - code above always terminates.',
+				75,
+			],
 		]);
 	}
 

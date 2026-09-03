@@ -118,7 +118,7 @@ final class SortWithoutEffectRule implements Rule
 			self::REASON_MESSAGES[$reason],
 			$arrayType->describe(VerbosityLevel::value()),
 			$functionName,
-		))->identifier(sprintf('%s.%s', $functionName, $reason));
+		))->identifier(sprintf('sortArray.%s', $reason));
 
 		if ($this->treatPhpDocTypesAsCertain && $this->treatPhpDocTypesAsCertainTip) {
 			$nativeArrayType = $scope->getNativeType($args[0]->value);
@@ -156,7 +156,7 @@ final class SortWithoutEffectRule implements Rule
 		}
 
 		if (IntegerRangeType::fromInterval(0, 1)->isSuperTypeOf($arrayType->getArraySize())->yes()) {
-			return 'singleElement';
+			return 'noop';
 		}
 
 		return null;

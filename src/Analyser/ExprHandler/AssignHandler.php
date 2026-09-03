@@ -1306,7 +1306,7 @@ final class AssignHandler implements ExprHandler
 				} else {
 					$dimExpr = $arrayItem->key;
 				}
-				$getOffsetValueTypeExpr = new TypeExpr($scope->getType($assignedExpr)->getOffsetValueType($scope->getType($dimExpr)));
+				$getOffsetValueTypeExpr = new TypeExpr($this->getDestructuredOffsetValueType($scope->getType($assignedExpr), $scope->getType($dimExpr)));
 				$itemTarget = $this->prepareTarget(
 					$nodeScopeResolver,
 					$scope,
@@ -1391,6 +1391,31 @@ final class AssignHandler implements ExprHandler
 
 		// stored where processAssignVar is called
 		return $this->expressionResultFactory->create($scope, $beforeScope, $var, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints);
+	}
+
+	/**
+	 * Array destructuring reads an offset that does not have to be there. Unlike
+	 * a plain offset read, which PHPStan optimistically assumes to exist, the
+	 * missing offset assigns null to a variable that outlives the read, so the
+	 * null has to be part of its type. ArrayAccess offsets are left alone -
+	 * there offsetGet() describes the result.
+	 */
+	private function getDestructuredOffsetValueType(Type $arrayType, Type $dimType): Type
+	{
+		$offsetValueType = $arrayType->getOffsetValueType($dimType);
+		if ($arrayType->isArray()->no()) {
+			return $offsetValueType;
+		}
+
+		if ($arrayType->hasOffsetValueType($dimType)->yes()) {
+			return $offsetValueType;
+		}
+
+		if ($offsetValueType instanceof ErrorType) {
+			return $offsetValueType;
+		}
+
+		return TypeCombinator::addNull($offsetValueType);
 	}
 
 	private function createArrayDimFetchConditionalExpressionHolder(

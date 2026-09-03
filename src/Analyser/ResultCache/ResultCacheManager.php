@@ -498,13 +498,14 @@ final class ResultCacheManager
 		}
 
 		/**
+		 * An extension file is code that runs during the analysis, so a change in one can change any
+		 * result. That holds whether or not the file is part of the analysed paths - a file outside them
+		 * used to only earn a "the result cache will get stale" warning, which was true and left the user
+		 * to do something about it.
+		 *
 		 * @var string $fileHash
-		 * @var bool $isAnalysed
 		 */
-		foreach ($data['projectExtensionFiles'] as $extensionFile => [$fileHash, $isAnalysed]) {
-			if (!$isAnalysed) {
-				continue;
-			}
+		foreach ($data['projectExtensionFiles'] as $extensionFile => [$fileHash]) {
 			if (!is_file($extensionFile)) {
 				return $this->fullAnalysis(
 					sprintf('Result cache not used because extension file %s was not found.', $extensionFile),

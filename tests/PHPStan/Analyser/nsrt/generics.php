@@ -717,9 +717,9 @@ class Factory
 function testClasses()
 {
 	$a = new A(1);
-	assertType('PHPStan\Generics\FunctionsAssertType\A<int>', $a);
-	assertType('int', $a->get());
-	assertType('int', $a->b);
+	assertType('PHPStan\Generics\FunctionsAssertType\A<1>', $a);
+	assertType('1', $a->get());
+	assertType('1', $a->b);
 
 	$a = new AOfDateTime();
 	assertType('PHPStan\Generics\FunctionsAssertType\AOfDateTime', $a);
@@ -727,9 +727,9 @@ function testClasses()
 	assertType('DateTime', $a->b);
 
 	$b = new B(1);
-	assertType('PHPStan\Generics\FunctionsAssertType\B<int>', $b);
-	assertType('int', $b->get());
-	assertType('int', $b->b);
+	assertType('PHPStan\Generics\FunctionsAssertType\B<1>', $b);
+	assertType('1', $b->get());
+	assertType('1', $b->b);
 
 	$c = new CofI();
 	assertType('PHPStan\Generics\FunctionsAssertType\CofI', $c);
@@ -741,7 +741,7 @@ function testClasses()
 	assertType('DateTime', $ab->getB(new \DateTime()));
 
 	$noConstructor = new NoConstructor(1);
-	assertType('PHPStan\Generics\FunctionsAssertType\NoConstructor<int>', $noConstructor);
+	assertType('PHPStan\Generics\FunctionsAssertType\NoConstructor<1>', $noConstructor);
 
 	assertType('stdClass', acceptsClassString(\stdClass::class));
 	assertType('class-string<stdClass>', returnsClassString(new \stdClass()));
@@ -763,7 +763,7 @@ function testClasses()
 
 	$factory = new Factory(new \DateTime(), new A(1));
 	assertType(
-		'array{DateTime, PHPStan\\Generics\\FunctionsAssertType\\A<int>, \'\', PHPStan\\Generics\\FunctionsAssertType\\A<DateTime>}',
+		'array{DateTime, PHPStan\\Generics\\FunctionsAssertType\\A<1>, \'\', PHPStan\\Generics\\FunctionsAssertType\\A<DateTime>}',
 		$factory->create(new \DateTime(), '', new A(new \DateTime()))
 	);
 }
@@ -887,9 +887,9 @@ function cache1($t): void {
 }
 
 function newHandling(): void {
-	assertType('PHPStan\Generics\FunctionsAssertType\C<mixed>', new C());
+	assertType('PHPStan\Generics\FunctionsAssertType\C<*NEVER*>', new C());
 	assertType('PHPStan\Generics\FunctionsAssertType\A<stdClass>', new A(new \stdClass()));
-	assertType('PHPStan\Generics\FunctionsAssertType\A<mixed>', new A());
+	assertType('PHPStan\Generics\FunctionsAssertType\A<*NEVER*>', new A());
 }
 
 /**
@@ -934,9 +934,9 @@ function () {
 	assertType('array{}', $stdEmpty->getAll());
 
 	$std = new StdClassCollection([new \stdClass()]);
-	assertType('PHPStan\Generics\FunctionsAssertType\StdClassCollection<int, stdClass>', $std);
-	assertType('PHPStan\Generics\FunctionsAssertType\StdClassCollection<int, stdClass>', $std->returnStatic());
-	assertType('array<int, stdClass>', $std->getAll());
+	assertType('PHPStan\Generics\FunctionsAssertType\StdClassCollection<0, stdClass>', $std);
+	assertType('PHPStan\Generics\FunctionsAssertType\StdClassCollection<0, stdClass>', $std->returnStatic());
+	assertType('array<0, stdClass>', $std->getAll());
 };
 
 class ClassWithMethodCachingIssue

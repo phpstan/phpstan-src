@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node;
+use function count;
 
 /**
  * Records every (node, scope) emission of a convergence pass in order. When
@@ -33,6 +34,11 @@ final class RecordingNodeCallback
 	public function getPairs(): array
 	{
 		return $this->pairs;
+	}
+
+	public function count(): int
+	{
+		return count($this->pairs);
 	}
 
 }

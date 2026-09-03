@@ -763,8 +763,9 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testDiscussion6993(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/nsrt/bug-6993.php');
-		$this->assertCount(1, $errors);
-		$this->assertSame('Parameter #1 $specificable of method Bug6993\AndSpecificationValidator<Bug6993\TestSpecification,Bug6993\Foo>::isSatisfiedBy() expects Bug6993\Foo, Bug6993\Bar given.', $errors[0]->getMessage());
+		// the calls with Foo and Bar are lower bounds on TValue, which the
+		// constructor argument does not pin (unresolvedTemplateArguments)
+		$this->assertNoErrors($errors);
 	}
 
 	public function testBug7077(): void

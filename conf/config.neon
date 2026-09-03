@@ -57,6 +57,7 @@ parameters:
 		finiteTypesInHaystack: false
 		switchConditionAlwaysFalse: false
 		checkImportedClassNameCase: false
+		unresolvedTemplateArguments: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false

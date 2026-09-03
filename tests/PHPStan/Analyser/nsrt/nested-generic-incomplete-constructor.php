@@ -30,6 +30,6 @@ class Foo
 function (): void {
 	$foo = new Foo(1);
 	//assertType('NestedGenericIncompleteConstructor\Foo<int, int>', $foo);
-	assertType('int', $foo->t);
-	assertType('int', $foo->u);
+	assertType('1', $foo->t);
+	assertType('1', $foo->u);
 };

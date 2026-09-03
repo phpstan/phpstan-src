@@ -217,11 +217,7 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 				95,
 			],
 			[
-				'Property Bug3777\Ipsum2::$lorem2 (Bug3777\Lorem2<stdClass, Exception>) does not accept Bug3777\Lorem2<stdClass, object>.',
-				129,
-			],
-			[
-				'Property Bug3777\Ipsum2::$ipsum2 (Bug3777\Lorem2<stdClass, Exception>) does not accept Bug3777\Lorem2<Exception, object>.',
+				'Property Bug3777\Ipsum2::$ipsum2 (Bug3777\Lorem2<stdClass, Exception>) does not accept Bug3777\Lorem2<Exception, Exception>.',
 				131,
 			],
 			[
@@ -240,11 +236,7 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 				95,
 			],
 			[
-				'Static property Bug3777Static\Ipsum2::$lorem2 (Bug3777Static\Lorem2<stdClass, Exception>) does not accept Bug3777Static\Lorem2<stdClass, object>.',
-				129,
-			],
-			[
-				'Static property Bug3777Static\Ipsum2::$ipsum2 (Bug3777Static\Lorem2<stdClass, Exception>) does not accept Bug3777Static\Lorem2<Exception, object>.',
+				'Static property Bug3777Static\Ipsum2::$ipsum2 (Bug3777Static\Lorem2<stdClass, Exception>) does not accept Bug3777Static\Lorem2<Exception, Exception>.',
 				131,
 			],
 			[
@@ -426,7 +418,7 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/generic-object-unspecified-template-types.php'], [
 			[
-				'Property GenericObjectUnspecifiedTemplateTypes\Bar::$ints (GenericObjectUnspecifiedTemplateTypes\ArrayCollection<int, int>) does not accept GenericObjectUnspecifiedTemplateTypes\ArrayCollection<int, string>.',
+				'Property GenericObjectUnspecifiedTemplateTypes\Bar::$ints (GenericObjectUnspecifiedTemplateTypes\ArrayCollection<int, int>) does not accept GenericObjectUnspecifiedTemplateTypes\ArrayCollection<int, \'bar\'|\'foo\'>.',
 				67,
 			],
 		]);
@@ -437,7 +429,7 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		$this->checkExplicitMixed = false;
 		$this->analyse([__DIR__ . '/data/generic-object-unspecified-template-types.php'], [
 			[
-				'Property GenericObjectUnspecifiedTemplateTypes\Bar::$ints (GenericObjectUnspecifiedTemplateTypes\ArrayCollection<int, int>) does not accept GenericObjectUnspecifiedTemplateTypes\ArrayCollection<int, string>.',
+				'Property GenericObjectUnspecifiedTemplateTypes\Bar::$ints (GenericObjectUnspecifiedTemplateTypes\ArrayCollection<int, int>) does not accept GenericObjectUnspecifiedTemplateTypes\ArrayCollection<int, \'bar\'|\'foo\'>.',
 				67,
 			],
 		]);
@@ -1095,6 +1087,24 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 				44,
 			],
 		]);
+	}
+
+	public function testBug6732(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6732.php'], [
+			[
+				'Property Bug6732\Foo::$strings (Bug6732\ArrayCollection<int, string>) does not accept Bug6732\ArrayCollection<int, int>.',
+				37,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.2.0')]
+	public function testBug13431(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-13431.php'], []);
 	}
 
 }

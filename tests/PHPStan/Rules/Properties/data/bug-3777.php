@@ -127,9 +127,9 @@ class Ipsum2
 	public function __construct()
 	{
 		$this->lorem2 = new Lorem2(new \stdClass);
-		assertType('Bug3777\Lorem2<stdClass, object>', $this->lorem2);
+		assertType('Bug3777\Lorem2<stdClass, Exception>', $this->lorem2);
 		$this->ipsum2 = new Lorem2(new \Exception());
-		assertType('Bug3777\Lorem2<Exception, object>', $this->ipsum2);
+		assertType('Bug3777\Lorem2<Exception, Exception>', $this->ipsum2);
 	}
 
 }

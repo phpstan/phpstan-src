@@ -34,6 +34,9 @@ use PHPStan\Analyser\ExprHandler\AssignHandler;
 use PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver;
 use PHPStan\Analyser\ExprHandler\Helper\NonNullabilityHelper;
 use PHPStan\Analyser\ExprHandler\Helper\VirtualExprResultHelper;
+use PHPStan\Analyser\Generics\TemplateArgumentFrame;
+use PHPStan\Analyser\Generics\TemplateArgumentObserver;
+use PHPStan\Analyser\Generics\TemplateArgumentStats;
 use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -76,6 +79,7 @@ use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Reflection\ResolvedFunctionVariant;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
@@ -85,6 +89,9 @@ use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\FunctionParameterClosureThisExtension;
 use PHPStan\Type\FunctionParameterClosureTypeExtension;
 use PHPStan\Type\FunctionParameterOutTypeExtension;
+use PHPStan\Type\Generic\TemplateTypeHelper;
+use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\MethodParameterClosureThisExtension;
 use PHPStan\Type\MethodParameterClosureTypeExtension;
 use PHPStan\Type\MethodParameterOutTypeExtension;
@@ -113,6 +120,7 @@ use function array_values;
 use function count;
 use function get_class;
 use function getenv;
+use function implode;
 use function in_array;
 use function is_array;
 use function is_int;
@@ -161,6 +169,9 @@ class NodeScopeResolver
 
 	/** Whether the PHPSTAN_GUARD_NW diagnostic is enabled (cached from the env). */
 	public static bool $guardNewWorld = false;
+
+	/** PHPSTAN_TEMPLATE_ARGUMENTS_DEBUG=1 prints every second-pass re-walk/replay decision. */
+	private static bool $debugTemplateArguments = false;
 
 	/**
 	 * spl_object_id => true of every Expr in the file's parsed AST. Populated
@@ -229,9 +240,13 @@ class NodeScopeResolver
 		#[AutowiredParameter]
 		private readonly bool $treatPhpDocTypesAsCertain,
 		private readonly ExpressionResultFactory $expressionResultFactory,
+		#[AutowiredParameter(ref: '%featureToggles.unresolvedTemplateArguments%')]
+		private readonly bool $unresolvedTemplateArguments,
 	)
 	{
 		self::$guardNewWorld = getenv('PHPSTAN_GUARD_NW') === '1';
+		self::$debugTemplateArguments = getenv('PHPSTAN_TEMPLATE_ARGUMENTS_DEBUG') === '1';
+		TemplateArgumentStats::enableFromEnvironment();
 	}
 
 	/**
@@ -644,124 +659,28 @@ class NodeScopeResolver
 		StatementContext $context,
 	): InternalStatementResult
 	{
-		$exitPoints = [];
-		$throwPoints = [];
-		$impurePoints = [];
-		$alreadyTerminated = false;
-		$hasYield = false;
 		$stmtCount = count($stmts);
 		$shouldCheckLastStatement = $parentNode instanceof Node\Stmt\Function_
 			|| $parentNode instanceof Node\Stmt\ClassMethod
 			|| $parentNode instanceof PropertyHookStatementNode
 			|| $parentNode instanceof Expr\Closure;
 
-		foreach ($stmts as $i => $stmt) {
-			if ($alreadyTerminated && !($stmt instanceof Node\Stmt\Function_ || $stmt instanceof Node\Stmt\ClassLike || $stmt instanceof Node\Stmt\Label)) {
-				continue;
-			}
-
-			$isLast = $i === $stmtCount - 1;
-
-			$nestedLabelNames = $stmt->getAttribute(GotoLabelVisitor::NESTED_BACKWARD_GOTO_LABELS_ATTRIBUTE);
-			if ($nestedLabelNames !== null && $context->isTopLevel()) {
-				$scope = $this->resolveBackwardGotoScope(
-					$parentNode,
-					[$stmt],
-					$scope,
-					$storage,
-					$context->enterDeep(),
-					static fn (string $name): bool => isset($nestedLabelNames[$name]),
-					false,
-				);
-			}
-
-			$statementResult = $this->processStmtNode(
-				$stmt,
-				$scope,
-				$storage,
-				$nodeCallback,
-				$context,
-			);
-			$scope = $statementResult->getScope();
-			$hasYield = $hasYield || $statementResult->hasYield();
-
-			if ($stmt instanceof Node\Stmt\Label) {
-				$labelName = $stmt->name->toString();
-
-				[$scope, $alreadyTerminated, $exitPoints] = $this->mergeForwardGotoExitPoints(
-					$labelName,
-					$scope,
-					$alreadyTerminated,
-					$exitPoints,
-				);
-
-				if ($alreadyTerminated) {
-					continue;
-				}
-
-				if ($stmt->getAttribute(GotoLabelVisitor::HAS_BACKWARD_GOTO_ATTRIBUTE) === true && $context->isTopLevel()) {
-					$scope = $this->resolveBackwardGotoScope(
-						$parentNode,
-						array_slice($stmts, $i + 1),
-						$scope,
-						$storage,
-						$context->enterDeep(),
-						static fn (string $name): bool => $name === $labelName,
-						true,
-					);
-				}
-			}
-
-			if ($shouldCheckLastStatement && $isLast) {
-				$endStatements = $statementResult->getEndStatements();
-				if (count($endStatements) > 0) {
-					foreach ($endStatements as $endStatement) {
-						$endStatementResult = $endStatement->getResult();
-						$this->callNodeCallback($nodeCallback, new ExecutionEndNode(
-							$endStatement->getStatement(),
-							(new InternalStatementResult(
-								$endStatementResult->getScope(),
-								$hasYield,
-								$endStatementResult->isAlwaysTerminating(),
-								$endStatementResult->getExitPoints(),
-								$endStatementResult->getThrowPoints(),
-								$endStatementResult->getImpurePoints(),
-							))->toPublic(),
-							$parentNode->getReturnType() !== null,
-							$this->readEndStatementExprResult($endStatement->getStatement(), $storage),
-						), $endStatementResult->getScope(), $storage);
-					}
-				} else {
-					$this->callNodeCallback($nodeCallback, new ExecutionEndNode(
-						$stmt,
-						(new InternalStatementResult(
-							$scope,
-							$hasYield,
-							$statementResult->isAlwaysTerminating(),
-							$statementResult->getExitPoints(),
-							$statementResult->getThrowPoints(),
-							$statementResult->getImpurePoints(),
-						))->toPublic(),
-						$parentNode->getReturnType() !== null,
-						$this->readEndStatementExprResult($stmt, $storage),
-					), $scope, $storage);
-				}
-			}
-
-			$exitPoints = array_merge($exitPoints, $statementResult->getExitPoints());
-			$throwPoints = array_merge($throwPoints, $statementResult->getThrowPoints());
-			$impurePoints = array_merge($impurePoints, $statementResult->getImpurePoints());
-
-			if ($alreadyTerminated || !$statementResult->isAlwaysTerminating()) {
-				continue;
-			}
-
-			$alreadyTerminated = true;
-			$nextStmts = $this->getNextUnreachableStatements(array_slice($stmts, $i + 1), $parentNode instanceof Node\Stmt\Namespace_);
-			$this->processUnreachableStatement($nextStmts, $scope, $storage, $nodeCallback);
+		if (
+			$shouldCheckLastStatement
+			&& $stmtCount > 0
+			&& $this->unresolvedTemplateArguments
+			&& !$nodeCallback instanceof RecordingNodeCallback
+			&& !$nodeCallback instanceof NoopNodeCallback
+		) {
+			return $this->processBodyStmtNodesTwoPass($parentNode, $stmts, $scope, $storage, $nodeCallback, $context);
 		}
 
-		$statementResult = new InternalStatementResult($scope, $hasYield, $alreadyTerminated, $exitPoints, $throwPoints, $impurePoints);
+		$state = new StatementListWalkState($scope);
+		foreach ($stmts as $i => $stmt) {
+			$this->processStatementStep($parentNode, $stmts, $i, $stmt, $state, $storage, $nodeCallback, $context, $shouldCheckLastStatement);
+		}
+
+		$statementResult = $state->toResult();
 		if ($stmtCount === 0 && $shouldCheckLastStatement) {
 			$returnTypeNode = $parentNode->getReturnType();
 			if ($parentNode instanceof Expr\Closure) {
@@ -777,6 +696,414 @@ class NodeScopeResolver
 		}
 
 		return $statementResult;
+	}
+
+	/**
+	 * One statement of a statement list, advancing $state past it.
+	 *
+	 * @param Node\Stmt[] $stmts
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	private function processStatementStep(
+		Node $parentNode,
+		array $stmts,
+		int $i,
+		Node\Stmt $stmt,
+		StatementListWalkState $state,
+		ExpressionResultStorage $storage,
+		callable $nodeCallback,
+		StatementContext $context,
+		bool $shouldCheckLastStatement,
+	): void
+	{
+		if ($state->alreadyTerminated && !($stmt instanceof Node\Stmt\Function_ || $stmt instanceof Node\Stmt\ClassLike || $stmt instanceof Node\Stmt\Label)) {
+			return;
+		}
+
+		$isLast = $i === count($stmts) - 1;
+
+		$nestedLabelNames = $stmt->getAttribute(GotoLabelVisitor::NESTED_BACKWARD_GOTO_LABELS_ATTRIBUTE);
+		if ($nestedLabelNames !== null && $context->isTopLevel()) {
+			$state->scope = $this->resolveBackwardGotoScope(
+				$parentNode,
+				[$stmt],
+				$state->scope,
+				$storage,
+				$context->enterDeep(),
+				static fn (string $name): bool => isset($nestedLabelNames[$name]),
+				false,
+			);
+		}
+
+		$statementResult = $this->processStmtNode(
+			$stmt,
+			$state->scope,
+			$storage,
+			$nodeCallback,
+			$context,
+		);
+		$state->scope = $statementResult->getScope();
+		$state->hasYield = $state->hasYield || $statementResult->hasYield();
+
+		if ($stmt instanceof Node\Stmt\Label) {
+			$labelName = $stmt->name->toString();
+
+			[$state->scope, $state->alreadyTerminated, $state->exitPoints] = $this->mergeForwardGotoExitPoints(
+				$labelName,
+				$state->scope,
+				$state->alreadyTerminated,
+				$state->exitPoints,
+			);
+
+			if ($state->alreadyTerminated) {
+				return;
+			}
+
+			if ($stmt->getAttribute(GotoLabelVisitor::HAS_BACKWARD_GOTO_ATTRIBUTE) === true && $context->isTopLevel()) {
+				$state->scope = $this->resolveBackwardGotoScope(
+					$parentNode,
+					array_slice($stmts, $i + 1),
+					$state->scope,
+					$storage,
+					$context->enterDeep(),
+					static fn (string $name): bool => $name === $labelName,
+					true,
+				);
+			}
+		}
+
+		if ($shouldCheckLastStatement && $isLast) {
+			$hasDeclaredReturnType = ($parentNode instanceof Node\FunctionLike || $parentNode instanceof PropertyHookStatementNode)
+				&& $parentNode->getReturnType() !== null;
+			$endStatements = $statementResult->getEndStatements();
+			if (count($endStatements) > 0) {
+				foreach ($endStatements as $endStatement) {
+					$endStatementResult = $endStatement->getResult();
+					$this->callNodeCallback($nodeCallback, new ExecutionEndNode(
+						$endStatement->getStatement(),
+						(new InternalStatementResult(
+							$endStatementResult->getScope(),
+							$state->hasYield,
+							$endStatementResult->isAlwaysTerminating(),
+							$endStatementResult->getExitPoints(),
+							$endStatementResult->getThrowPoints(),
+							$endStatementResult->getImpurePoints(),
+						))->toPublic(),
+						$hasDeclaredReturnType,
+						$this->readEndStatementExprResult($endStatement->getStatement(), $storage),
+					), $endStatementResult->getScope(), $storage);
+				}
+			} else {
+				$this->callNodeCallback($nodeCallback, new ExecutionEndNode(
+					$stmt,
+					(new InternalStatementResult(
+						$state->scope,
+						$state->hasYield,
+						$statementResult->isAlwaysTerminating(),
+						$statementResult->getExitPoints(),
+						$statementResult->getThrowPoints(),
+						$statementResult->getImpurePoints(),
+					))->toPublic(),
+					$hasDeclaredReturnType,
+					$this->readEndStatementExprResult($stmt, $storage),
+				), $state->scope, $storage);
+			}
+		}
+
+		$state->exitPoints = array_merge($state->exitPoints, $statementResult->getExitPoints());
+		$state->throwPoints = array_merge($state->throwPoints, $statementResult->getThrowPoints());
+		$state->impurePoints = array_merge($state->impurePoints, $statementResult->getImpurePoints());
+
+		if ($state->alreadyTerminated || !$statementResult->isAlwaysTerminating()) {
+			return;
+		}
+
+		$state->alreadyTerminated = true;
+		$nextStmts = $this->getNextUnreachableStatements(array_slice($stmts, $i + 1), $parentNode instanceof Node\Stmt\Namespace_);
+		$this->processUnreachableStatement($nextStmts, $state->scope, $storage, $nodeCallback);
+	}
+
+	/**
+	 * A function-like body under the unresolvedTemplateArguments toggle is
+	 * walked in two passes. The observation pass walks every statement
+	 * recording the rule-facing emissions instead of firing them, with a
+	 * TemplateArgumentFrame collecting what the body does with the generic
+	 * objects it creates (see the frame). A body that created no unresolved
+	 * template argument - the common case - then just replays the recording
+	 * through the real callback: the recorded scopes are what the walk
+	 * produced. Otherwise the frame resolves its observations and the second
+	 * pass re-walks, with the real callback, only the statements the
+	 * resolutions can influence.
+	 *
+	 * The outer gatherer frames (the method's return statements, execution
+	 * ends, impure points) are suspended during the observation pass and fed
+	 * by the replay and the re-walk, so each emission reaches them once.
+	 *
+	 * @param Node\Stmt[] $stmts
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	private function processBodyStmtNodesTwoPass(
+		Node $parentNode,
+		array $stmts,
+		MutatingScope $scope,
+		ExpressionResultStorage $storage,
+		callable $nodeCallback,
+		StatementContext $context,
+	): InternalStatementResult
+	{
+		$statementStartTokenPositions = [];
+		foreach ($stmts as $stmt) {
+			$statementStartTokenPositions[] = $stmt->getStartTokenPos();
+		}
+		$frame = new TemplateArgumentFrame($scope->getCurrentTemplateArgumentFrame(), $statementStartTokenPositions);
+		if (TemplateArgumentStats::$enabled) {
+			TemplateArgumentStats::increment('bodiesWalked');
+			TemplateArgumentStats::increment('statementsTotal', count($stmts));
+		}
+		$scope->pushTemplateArgumentFrame($frame);
+		try {
+			$recording = new RecordingNodeCallback();
+			$state = new StatementListWalkState($scope);
+			/** @var list<array{StatementListWalkState, int}> $entries the state and recording offset before each statement, plus the final ones */
+			$entries = [];
+			$suspendedGatherers = $this->nodeGatherers;
+			$this->nodeGatherers = [];
+			try {
+				foreach ($stmts as $i => $stmt) {
+					$frame->setCurrentStatementIndex($i);
+					$entries[$i] = [clone $state, $recording->count()];
+					$this->processStatementStep($parentNode, $stmts, $i, $stmt, $state, $storage, $recording, $context, true);
+				}
+			} finally {
+				$this->nodeGatherers = $suspendedGatherers;
+			}
+			$frame->finishObserving();
+			$stmtCount = count($stmts);
+			$entries[$stmtCount] = [clone $state, $recording->count()];
+
+			$firstSiteStatementIndex = $frame->firstSiteStatementIndex();
+			if ($firstSiteStatementIndex === null) {
+				$this->replayRecordingRange($recording, 0, $recording->count(), $nodeCallback, $storage, $scope);
+
+				return $state->toResult();
+			}
+
+			if (TemplateArgumentStats::$enabled) {
+				TemplateArgumentStats::increment('bodiesWithSites');
+				TemplateArgumentStats::increment('statementsReplayed', $firstSiteStatementIndex);
+			}
+			// the second pass: the statements before the first site stand as
+			// recorded; from there on a statement is re-walked only when it
+			// created a site or mentions a variable whose tracked state the
+			// resolutions changed - the rest replay their recording and carry
+			// their recorded effect onto the re-walked scope
+			$this->replayRecordingRange($recording, 0, $entries[$firstSiteStatementIndex][1], $nodeCallback, $storage, $scope);
+			$hasLabels = false;
+			foreach ($stmts as $stmt) {
+				if (!$stmt instanceof Node\Stmt\Label && $stmt->getAttribute(GotoLabelVisitor::NESTED_BACKWARD_GOTO_LABELS_ATTRIBUTE) === null) {
+					continue;
+				}
+				$hasLabels = true;
+				break;
+			}
+			$state = clone $entries[$firstSiteStatementIndex][0];
+			$state->scope = $state->scope->withoutMemoizedTypes();
+			for ($i = $firstSiteStatementIndex; $i < $stmtCount; $i++) {
+				[$recordedEntry, $offset] = $entries[$i];
+				[$recordedExit, $nextOffset] = $entries[$i + 1];
+				$differingRoots = $state->alreadyTerminated === $recordedEntry->alreadyTerminated
+					? $state->scope->getDifferingVariableRoots($recordedEntry->scope)
+					: null;
+				if ($differingRoots === [] && !$frame->hasSiteAtOrAfter($i)) {
+					// converged with the observation pass: the rest of its recording stands
+					if (TemplateArgumentStats::$enabled) {
+						TemplateArgumentStats::increment('earlyExits');
+						TemplateArgumentStats::increment('statementsReplayed', $stmtCount - $i);
+					}
+					$this->replayRecordingRange($recording, $offset, $recording->count(), $nodeCallback, $storage, $scope);
+					$this->appendRecordedStatementResults($state, $recordedEntry, $entries[$stmtCount][0]);
+					$state->scope = $entries[$stmtCount][0]->scope;
+
+					return $state->toResult();
+				}
+
+				$stmt = $stmts[$i];
+				$reWalk = $differingRoots === null
+					|| $hasLabels
+					|| $frame->ownsSiteInStatement($i)
+					|| $this->statementMentionsAnyVariable($stmt, $differingRoots);
+				if (self::$debugTemplateArguments) {
+					echo sprintf(
+						"[template-arguments] %s:%d statement %d: %s (differing: %s)\n",
+						$scope->getFile(),
+						$stmt->getStartLine(),
+						$i,
+						$reWalk ? 're-walk' : 'replay',
+						$differingRoots === null ? 'non-variable key' : implode(', ', $differingRoots),
+					);
+				}
+				if ($reWalk) {
+					if (TemplateArgumentStats::$enabled) {
+						TemplateArgumentStats::increment('statementsReWalked');
+					}
+					$this->processStatementStep($parentNode, $stmts, $i, $stmt, $state, $storage, $nodeCallback, $context, true);
+					continue;
+				}
+
+				if (TemplateArgumentStats::$enabled) {
+					TemplateArgumentStats::increment('statementsReplayed');
+				}
+				$this->replayRecordingRange($recording, $offset, $nextOffset, $nodeCallback, $storage, $scope);
+				$this->appendRecordedStatementResults($state, $recordedEntry, $recordedExit);
+				$state->scope = $state->scope->withRecordedStatementDelta($recordedEntry->scope, $recordedExit->scope);
+			}
+
+			return $state->toResult();
+		} finally {
+			$scope->popTemplateArgumentFrame();
+		}
+	}
+
+	/**
+	 * The parameter type an argument is observed against: the declared one with
+	 * the template types the call already decided substituted - the receiver's
+	 * class-level arguments, a template an earlier argument inferred - while a
+	 * template still open (ErrorType in the resolved map, typically the one this
+	 * very argument decides) stays a TemplateType, which the observer ignores.
+	 * The resolved parameter type would carry such a template's bound instead.
+	 */
+	private function findOriginalParameterType(ParametersAcceptor $acceptor, ParameterReflection $parameter): ?Type
+	{
+		if (!$acceptor instanceof ResolvedFunctionVariant) {
+			return $parameter->getType();
+		}
+		$originalParameters = $acceptor->getOriginalParametersAcceptor()->getParameters();
+		foreach ($acceptor->getParameters() as $index => $resolvedParameter) {
+			if ($resolvedParameter !== $parameter) {
+				continue;
+			}
+			if (!isset($originalParameters[$index])) {
+				return null;
+			}
+			$originalType = $originalParameters[$index]->getType();
+			if (!$originalType->hasTemplateOrLateResolvableType()) {
+				return $originalType;
+			}
+			$decided = [];
+			foreach ($acceptor->getResolvedTemplateTypeMap()->getTypes() as $name => $type) {
+				if ($type instanceof ErrorType) {
+					continue;
+				}
+				$decided[$name] = $type;
+			}
+
+			return TemplateTypeHelper::resolveTemplateTypes(
+				$originalType,
+				new TemplateTypeMap($decided),
+				$acceptor->getCallSiteVarianceMap(),
+				TemplateTypeVariance::createContravariant(),
+			);
+		}
+
+		return null;
+	}
+
+	/** Carries what the recorded walk from $from to $to added onto $state. */
+	private function appendRecordedStatementResults(StatementListWalkState $state, StatementListWalkState $from, StatementListWalkState $to): void
+	{
+		$state->hasYield = $state->hasYield || ($to->hasYield && !$from->hasYield);
+		$state->alreadyTerminated = $state->alreadyTerminated || ($to->alreadyTerminated && !$from->alreadyTerminated);
+		$state->exitPoints = array_merge($state->exitPoints, array_slice($to->exitPoints, count($from->exitPoints)));
+		$state->throwPoints = array_merge($state->throwPoints, array_slice($to->throwPoints, count($from->throwPoints)));
+		$state->impurePoints = array_merge($state->impurePoints, array_slice($to->impurePoints, count($from->impurePoints)));
+	}
+
+	private const MENTIONED_VARIABLES_ATTRIBUTE = 'templateArgumentMentionedVariables';
+
+	/**
+	 * @param list<string> $variableNames
+	 */
+	private function statementMentionsAnyVariable(Node\Stmt $stmt, array $variableNames): bool
+	{
+		/** @var array{array<string, true>, bool}|null $mentions */
+		$mentions = $stmt->getAttribute(self::MENTIONED_VARIABLES_ATTRIBUTE);
+		if ($mentions === null) {
+			$names = [];
+			$mentionsEverything = false;
+			$this->collectMentionedVariables($stmt, $names, $mentionsEverything);
+			$mentions = [$names, $mentionsEverything];
+			$stmt->setAttribute(self::MENTIONED_VARIABLES_ATTRIBUTE, $mentions);
+		}
+		[$names, $mentionsEverything] = $mentions;
+		if ($mentionsEverything) {
+			return true;
+		}
+		foreach ($variableNames as $variableName) {
+			if (isset($names[$variableName])) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Every variable the statement can read or write - syntactically, so
+	 * reads and writes alike - with `$this`; a closure body lives in its own
+	 * scope, so only its use() clause (and its bound `$this`) count, an arrow
+	 * function captures implicitly and is traversed. Dynamic access
+	 * (`$$name`, compact(), extract(), get_defined_vars(), eval, include)
+	 * mentions everything.
+	 *
+	 * @param array<string, true> $names
+	 */
+	private function collectMentionedVariables(Node $node, array &$names, bool &$mentionsEverything): void
+	{
+		if ($node instanceof Expr\Variable) {
+			if (!is_string($node->name)) {
+				$mentionsEverything = true;
+				return;
+			}
+			$names[$node->name] = true;
+			return;
+		}
+		if ($node instanceof Expr\Closure) {
+			if (!$node->static) {
+				$names['this'] = true;
+			}
+			foreach ($node->uses as $use) {
+				if (!is_string($use->var->name)) {
+					$mentionsEverything = true;
+					continue;
+				}
+				$names[$use->var->name] = true;
+			}
+
+			return;
+		}
+		if ($node instanceof Expr\Eval_ || $node instanceof Expr\Include_) {
+			$mentionsEverything = true;
+		} elseif (
+			$node instanceof Expr\FuncCall
+			&& $node->name instanceof Name
+			&& in_array($node->name->toLowerString(), ['compact', 'extract', 'get_defined_vars'], true)
+		) {
+			$mentionsEverything = true;
+		}
+
+		foreach ($node->getSubNodeNames() as $subNodeName) {
+			$subNode = $node->$subNodeName;
+			if ($subNode instanceof Node) {
+				$this->collectMentionedVariables($subNode, $names, $mentionsEverything);
+			} elseif (is_array($subNode)) {
+				foreach ($subNode as $item) {
+					if (!$item instanceof Node) {
+						continue;
+					}
+					$this->collectMentionedVariables($item, $names, $mentionsEverything);
+				}
+			}
+		}
 	}
 
 	/**
@@ -1475,18 +1802,29 @@ class NodeScopeResolver
 	 */
 	public function replayRecording(RecordingNodeCallback $recording, callable $nodeCallback, ExpressionResultStorage $storage, MutatingScope $scope): void
 	{
+		$this->replayRecordingRange($recording, 0, $recording->count(), $nodeCallback, $storage, $scope);
+	}
+
+	/**
+	 * Replays the recorded pairs [$from, $to) the way callNodeCallback() would
+	 * have emitted them: gatherer frames observe them exactly like live ones
+	 * (with the raw walk scope), a real callback gets the callback scope - and
+	 * a recording callback records them again (a loop's fixpoint replay running
+	 * inside a body's observation pass).
+	 *
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	public function replayRecordingRange(RecordingNodeCallback $recording, int $from, int $to, callable $nodeCallback, ExpressionResultStorage $storage, MutatingScope $scope): void
+	{
+		$pairs = $recording->getPairs();
 		$scope->pushExpressionResultStorage($storage);
 		try {
-			foreach ($recording->getPairs() as [$node, $pairScope]) {
+			for ($i = $from; $i < $to; $i++) {
+				[$node, $pairScope] = $pairs[$i];
 				if (!$pairScope instanceof MutatingScope) {
 					throw new ShouldNotHappenException();
 				}
-				// gatherer frames observe replayed emissions exactly like live
-				// ones - with the raw walk scope
-				foreach ($this->nodeGatherers as $gatherer) {
-					$gatherer($node, $pairScope);
-				}
-				$nodeCallback($node, $pairScope->toNodeCallbackScope());
+				$this->callNodeCallback($nodeCallback, $node, $pairScope, $storage);
 			}
 		} finally {
 			$scope->popExpressionResultStorage();
@@ -1955,6 +2293,7 @@ class NodeScopeResolver
 		} finally {
 			$this->popNodeGatherer();
 		}
+		$this->observeReturnSend($arrowFunctionScope, $exprResult);
 
 		$closureTypeThrowPoints = array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->toPublic(), $exprResult->getThrowPoints());
 		$closureTypeImpurePoints = array_merge($arrowFunctionImpurePoints, $exprResult->getImpurePoints());
@@ -2762,6 +3101,19 @@ class NodeScopeResolver
 
 				$gatheredArgTypeByIndex[$i] = $exprResult->getType();
 				$this->addGatheredArgType($gatheredTypes, $gatheredUnpack, $gatheredHasName, $originalArg, $i, $gatheredArgTypeByIndex[$i]);
+				$templateArgumentFrame = $this->observingTemplateArgumentFrame($scope);
+				if ($templateArgumentFrame !== null && $parameter !== null && $argMetadataAcceptor !== null) {
+					// the metadata acceptor is resolved against the arguments gathered
+					// before this one, so a template this argument itself decides is
+					// still its bound there - observe the declared parameter type,
+					// where such a template is uninformative and the receiver's
+					// class-level arguments are already in place
+					TemplateArgumentObserver::observeArgument(
+						$templateArgumentFrame,
+						$this->findOriginalParameterType($argMetadataAcceptor, $parameter) ?? $parameter->getType(),
+						$gatheredArgTypeByIndex[$i],
+					);
+				}
 			}
 
 			if ($assignByReference && $lookForUnset) {
@@ -3341,6 +3693,10 @@ class NodeScopeResolver
 				if (!$originalType->equals($varTag->getType())) {
 					$this->callNodeCallback($nodeCallback, new VarTagChangedExpressionTypeNode($varTag, $variableNode), $scope, $storage);
 				}
+				$templateArgumentFrame = $this->observingTemplateArgumentFrame($scope);
+				if ($templateArgumentFrame !== null) {
+					TemplateArgumentObserver::observeSend($templateArgumentFrame, $varTag->getType(), $originalType);
+				}
 
 				$nativeScope = $scope->doNotTreatPhpDocTypesAsCertain();
 				$scope = $scope->assignVariable(
@@ -3412,6 +3768,56 @@ class NodeScopeResolver
 		}
 
 		$this->callNodeCallback($nodeCallback, new VarTagChangedExpressionTypeNode($varTag, $defaultExpr), $scope, $storage);
+		$templateArgumentFrame = $this->observingTemplateArgumentFrame($scope);
+		if ($templateArgumentFrame === null) {
+			return;
+		}
+		$defaultExprResult = $storage->findExpressionResult($defaultExpr);
+		if ($defaultExprResult === null) {
+			return;
+		}
+		TemplateArgumentObserver::observeSend($templateArgumentFrame, $varTag->getType(), $defaultExprResult->getType());
+	}
+
+	/**
+	 * The template argument frame of the body being walked while it observes
+	 * a body that created unresolved template arguments - null otherwise, so
+	 * every observation hook costs a null check outside the observation pass.
+	 */
+	public function observingTemplateArgumentFrame(MutatingScope $scope): ?TemplateArgumentFrame
+	{
+		$frame = $scope->getCurrentTemplateArgumentFrame();
+		if ($frame === null || !$frame->isObserving()) {
+			return null;
+		}
+
+		// whether the body created a site is checked by the observer, after the
+		// hook asked for the type it observes - the ask is what creates the site
+		// of a lazily typed result (`return new Foo(1);`)
+		return $frame;
+	}
+
+	/**
+	 * A value leaves the function: the declared return type is a send target for
+	 * the unresolved template arguments it carries.
+	 */
+	public function observeReturnSend(MutatingScope $scope, ExpressionResult $returnedResult): void
+	{
+		$frame = $this->observingTemplateArgumentFrame($scope);
+		if ($frame === null) {
+			return;
+		}
+		if ($scope->isInAnonymousFunction()) {
+			$declaredReturnType = $scope->getAnonymousFunctionReturnType();
+		} else {
+			$function = $scope->getFunction();
+			$declaredReturnType = $function !== null ? $function->getReturnType() : null;
+		}
+		if ($declaredReturnType === null) {
+			return;
+		}
+
+		TemplateArgumentObserver::observeSend($frame, $declaredReturnType, $returnedResult->getType());
 	}
 
 	/**

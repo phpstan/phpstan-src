@@ -831,6 +831,7 @@ class AnalyserTest extends PHPStanTestCase
 			true,
 			$this->shouldTreatPhpDocTypesAsCertain(),
 			$container->getByType(ExpressionResultFactory::class),
+			$container->getParameter('featureToggles')['unresolvedTemplateArguments'],
 		);
 		$lexer = new Lexer();
 		$fileAnalyser = new FileAnalyser(

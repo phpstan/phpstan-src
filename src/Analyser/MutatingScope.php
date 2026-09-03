@@ -24,6 +24,7 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\NodeFinder;
 use PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver;
+use PHPStan\Analyser\Generics\TemplateArgumentFrame;
 use PHPStan\Analyser\Traverser\TransformStaticTypeTraverser;
 use PHPStan\Collectors\Collector;
 use PHPStan\DependencyInjection\Container;
@@ -132,6 +133,7 @@ use function is_array;
 use function is_string;
 use function ltrim;
 use function md5;
+use function preg_match;
 use function spl_object_id;
 use function sprintf;
 use function str_starts_with;
@@ -1439,6 +1441,177 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	public function getCurrentExpressionResultStorage(): ?ExpressionResultStorage
 	{
 		return $this->expressionResultStorageStack->getCurrent();
+	}
+
+	/**
+	 * Makes the frame answer for the unresolved template arguments of the
+	 * function body being walked, on this scope and every scope sharing its
+	 * ExpressionResultStorageStack. The caller must pop in a finally block.
+	 */
+	public function pushTemplateArgumentFrame(TemplateArgumentFrame $frame): void
+	{
+		$this->expressionResultStorageStack->pushTemplateArgumentFrame($frame);
+	}
+
+	public function popTemplateArgumentFrame(): void
+	{
+		$this->expressionResultStorageStack->popTemplateArgumentFrame();
+	}
+
+	/**
+	 * Null outside a two-pass body walk (feature toggle off, file top level,
+	 * an on-demand walk started outside any body): producers then take the
+	 * legacy path.
+	 *
+	 * @internal
+	 */
+	public function getCurrentTemplateArgumentFrame(): ?TemplateArgumentFrame
+	{
+		return $this->expressionResultStorageStack->getCurrentTemplateArgumentFrame();
+	}
+
+	/**
+	 * A copy of this scope without its memoized type answers: the recorded
+	 * entry scope of a statement the second pass re-walks answered questions
+	 * during the observation pass with unresolved template arguments in them.
+	 */
+	public function withoutMemoizedTypes(): self
+	{
+		return $this->duplicateWith(
+			$this->expressionTypes,
+			$this->nativeExpressionTypes,
+			$this->conditionalExpressions,
+			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
+			$this->inFunctionCallsStack,
+			$this->inFirstLevelStatement,
+			$this->afterExtractCall,
+		);
+	}
+
+	/**
+	 * The variables rooting the tracked expressions whose state differs between
+	 * this scope and $other - a statement mentioning none of them walks the same
+	 * on both - or null when a differing entry has no variable root (a static
+	 * property, a class constant fetch).
+	 *
+	 * @return list<string>|null
+	 */
+	public function getDifferingVariableRoots(self $other): ?array
+	{
+		$roots = [];
+		$tables = [
+			[$this->expressionTypes, $other->expressionTypes],
+			[$this->nativeExpressionTypes, $other->nativeExpressionTypes],
+		];
+		foreach ($tables as [$ours, $theirs]) {
+			foreach ($ours as $key => $holder) {
+				$theirHolder = $theirs[$key] ?? null;
+				if ($theirHolder !== null && ($theirHolder === $holder || $holder->equals($theirHolder))) {
+					continue;
+				}
+				$root = self::getVariableRootOfExpressionKey($key);
+				if ($root === null) {
+					return null;
+				}
+				$roots[$root] = true;
+			}
+			foreach ($theirs as $key => $holder) {
+				if (isset($ours[$key])) {
+					continue;
+				}
+				$root = self::getVariableRootOfExpressionKey($key);
+				if ($root === null) {
+					return null;
+				}
+				$roots[$root] = true;
+			}
+		}
+		$conditionalTables = [
+			[$this->conditionalExpressions, $other->conditionalExpressions],
+			[$other->conditionalExpressions, $this->conditionalExpressions],
+		];
+		foreach ($conditionalTables as [$ours, $theirs]) {
+			foreach ($ours as $key => $holders) {
+				if (isset($theirs[$key]) && $theirs[$key] === $holders) {
+					continue;
+				}
+				$root = self::getVariableRootOfExpressionKey($key);
+				if ($root === null) {
+					return null;
+				}
+				$roots[$root] = true;
+			}
+		}
+
+		return array_keys($roots);
+	}
+
+	private static function getVariableRootOfExpressionKey(string $key): ?string
+	{
+		if (preg_match('/^\$([a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*)/', $key, $matches) !== 1) {
+			return null;
+		}
+
+		return $matches[1];
+	}
+
+	/**
+	 * This scope after a statement whose recorded walk stands: the entries the
+	 * statement changed or removed between its recorded entry and exit scopes
+	 * are carried over, everything else keeps this scope's state.
+	 */
+	public function withRecordedStatementDelta(self $recordedEntry, self $recordedExit): self
+	{
+		$conditionalExpressions = $this->conditionalExpressions;
+		foreach ($recordedExit->conditionalExpressions as $key => $holders) {
+			if (isset($recordedEntry->conditionalExpressions[$key]) && $recordedEntry->conditionalExpressions[$key] === $holders) {
+				continue;
+			}
+			$conditionalExpressions[$key] = $holders;
+		}
+		foreach (array_keys($recordedEntry->conditionalExpressions) as $key) {
+			if (isset($recordedExit->conditionalExpressions[$key])) {
+				continue;
+			}
+			unset($conditionalExpressions[$key]);
+		}
+
+		return $this->duplicateWith(
+			self::applyRecordedHolderDelta($this->expressionTypes, $recordedEntry->expressionTypes, $recordedExit->expressionTypes),
+			self::applyRecordedHolderDelta($this->nativeExpressionTypes, $recordedEntry->nativeExpressionTypes, $recordedExit->nativeExpressionTypes),
+			$conditionalExpressions,
+			[],
+			[],
+			[],
+			$this->inFirstLevelStatement,
+			$recordedExit->afterExtractCall,
+		);
+	}
+
+	/**
+	 * @param array<string, ExpressionTypeHolder> $current
+	 * @param array<string, ExpressionTypeHolder> $recordedEntry
+	 * @param array<string, ExpressionTypeHolder> $recordedExit
+	 * @return array<string, ExpressionTypeHolder>
+	 */
+	private static function applyRecordedHolderDelta(array $current, array $recordedEntry, array $recordedExit): array
+	{
+		foreach ($recordedExit as $key => $holder) {
+			$entryHolder = $recordedEntry[$key] ?? null;
+			if ($entryHolder !== null && ($entryHolder === $holder || $entryHolder->equals($holder))) {
+				continue;
+			}
+			$current[$key] = $holder;
+		}
+		foreach (array_keys($recordedEntry) as $key) {
+			if (isset($recordedExit[$key])) {
+				continue;
+			}
+			unset($current[$key]);
+		}
+
+		return $current;
 	}
 
 	/** @api */
@@ -3343,7 +3516,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			// resolves it (Collection::first()'s TFirstDefault -> null)
 			$variant = ParametersAcceptorSelector::selectFromArgs($this, [], $methodReflection->getVariants(), $methodReflection->getNamedArgumentsVariants());
 
-			return $native && $variant instanceof ExtendedParametersAcceptor ? $variant->getNativeReturnType() : $variant->getReturnType();
+			return $native && $variant instanceof ExtendedParametersAcceptor ? $variant->getNativeReturnType() : TemplateArgumentFrame::returnTypeOfCall($variant, $this, $expr, true);
 		}
 
 		// position-independent constant expressions (isset()/?? dimensions and

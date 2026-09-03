@@ -24,6 +24,7 @@ use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\ExprHandler\Helper\DynamicReturnTypeStoragePrimer;
 use PHPStan\Analyser\ExprHandler\Helper\EarlyTerminatingCallHelper;
 use PHPStan\Analyser\ExprHandler\Helper\FuncCallScopeEffectsHelper;
+use PHPStan\Analyser\Generics\TemplateArgumentFrame;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
@@ -653,7 +654,7 @@ final class FuncCallHandler implements ExprHandler
 				}
 			}
 
-			return $parametersAcceptor->getReturnType();
+			return TemplateArgumentFrame::returnTypeOfCall($parametersAcceptor, $reflectionScope, $expr);
 		}
 
 		if (!$this->reflectionProvider->hasFunction($expr->name, $reflectionScope)) {
@@ -725,7 +726,7 @@ final class FuncCallHandler implements ExprHandler
 
 		// the typeCallback keeps void; ExpressionResult projects void->null for
 		// value reads, getKeepVoidType() keeps it
-		return $parametersAcceptor->getReturnType();
+		return TemplateArgumentFrame::returnTypeOfCall($parametersAcceptor, $reflectionScope, $expr);
 	}
 
 	/**

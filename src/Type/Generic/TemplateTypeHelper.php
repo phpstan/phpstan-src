@@ -52,6 +52,12 @@ final class TemplateTypeHelper
 					return $traverse($type->getDefault() ?? $type->getBound());
 				}
 
+				if ($variance->covariant()) {
+					// a bare unresolved argument read out of the object (Foo<T>::get(): T)
+					// is a derived value - see UnresolvedTemplateArgumentType::unwrapBare()
+					$newType = UnresolvedTemplateArgumentType::unwrapBare($newType);
+				}
+
 				$callSiteVariance = $callSiteVariances->getVariance($type->getName());
 				if ($callSiteVariance === null || $callSiteVariance->invariant()) {
 					return $newType;

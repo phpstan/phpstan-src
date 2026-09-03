@@ -33,10 +33,10 @@ class HelloWorld {
 
 function () {
 	$a = new HelloWorld(123);
-	assertType('AssertClassType\\HelloWorld<int>', $a);
+	assertType('AssertClassType\\HelloWorld<123>', $a);
 
 	$b = $_GET['value'];
 	$a->assert($b);
 
-	assertType('int', $b);
+	assertType('123', $b);
 };

@@ -81,6 +81,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			$container->getParameter('exceptions')['implicitThrows'],
 			$container->getParameter('treatPhpDocTypesAsCertain'),
 			$container->getByType(ExpressionResultFactory::class),
+			$container->getParameter('featureToggles')['unresolvedTemplateArguments'],
 		);
 	}
 

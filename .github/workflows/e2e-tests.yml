@@ -162,6 +162,40 @@ jobs:
               ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
               ../bashunit -a not_contains 'metadata do not match' "$OUTPUT"
           - script: |
+              cd e2e/result-cache-truncated
+              ../../bin/phpstan -vvv
+              # Cut inside the first section's payload: the cache is damaged, not merely stale, so
+              # it has to be discarded rather than read as far as it goes.
+              php truncate.php
+              OUTPUT=$(../../bin/phpstan -vvv 2>&1)
+              echo "$OUTPUT"
+              ../bashunit -a contains 'an error occurred while loading the cache file' "$OUTPUT"
+              ../bashunit -a contains 'Result cache is saved.' "$OUTPUT"
+              # And once more inside a section that is read lazily, which is a different code path.
+              php truncate-lazy.php
+              OUTPUT=$(../../bin/phpstan -vvv 2>&1)
+              echo "$OUTPUT"
+              ../bashunit -a contains 'is truncated at entry' "$OUTPUT"
+              OUTPUT=$(../../bin/phpstan -vvv 2>&1)
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored.' "$OUTPUT"
+          - script: |
+              cd e2e/result-cache-stale-objects
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan -vvv")
+              echo "$OUTPUT"
+              # Renaming a property inside the cache file is what a cache written by a PHPStan whose
+              # classes have changed since looks like: the payload does not carry the property the class
+              # now declares, so reconstructing the object leaves it uninitialized and reading it throws.
+              php rename-property.php
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan -vvv")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'could not be read back' "$OUTPUT"
+              ../bashunit -a contains 'Result cache is saved.' "$OUTPUT"
+              # The cache written in its place is usable again.
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan -vvv")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored.' "$OUTPUT"
+          - script: |
               cd e2e/bug-14514
               composer install
               ../../bin/phpstan analyze bug-14515.php

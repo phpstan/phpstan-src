@@ -141,7 +141,7 @@ final class TemplateTypeMap
 
 		foreach ($other->types as $name => $type) {
 			if (isset($result[$name])) {
-				$result[$name] = TypeCombinator::union($result[$name], $type);
+				$result[$name] = self::combine($result[$name], $type, static fn (Type $a, Type $b): Type => TypeCombinator::union($a, $b));
 			} else {
 				$result[$name] = $type;
 			}
@@ -169,7 +169,7 @@ final class TemplateTypeMap
 
 		foreach ($other->types as $name => $type) {
 			if (isset($result[$name])) {
-				$result[$name] = TypeUtils::toBenevolentUnion(TypeCombinator::union($result[$name], $type));
+				$result[$name] = self::combine($result[$name], $type, static fn (Type $a, Type $b): Type => TypeUtils::toBenevolentUnion(TypeCombinator::union($a, $b)));
 			} else {
 				$result[$name] = $type;
 			}
@@ -189,6 +189,24 @@ final class TemplateTypeMap
 		}
 
 		return new self($result, $resultLowerBoundTypes);
+	}
+
+	/**
+	 * A template left unresolved on purpose by one occurrence of the parameter type carries
+	 * no type at all, so any type another occurrence did infer wins over it outright.
+	 *
+	 * @param callable(Type, Type): Type $cb
+	 */
+	private static function combine(Type $a, Type $b, callable $cb): Type
+	{
+		if ($a instanceof AbsorbedTemplateArgumentType) {
+			return $b;
+		}
+		if ($b instanceof AbsorbedTemplateArgumentType) {
+			return $a;
+		}
+
+		return $cb($a, $b);
 	}
 
 	public function intersect(self $other): self

@@ -26,6 +26,7 @@ use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Enum\EnumCaseObjectType;
+use PHPStan\Type\Generic\AbsorbedTemplateArgumentType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateIterableType;
 use PHPStan\Type\Generic\TemplateMixedType;
@@ -1388,14 +1389,14 @@ class UnionType implements CompoundType
 			$remainingReceivedTypes[] = $receivedInnerType;
 		}
 		if (count($remainingReceivedTypes) === 0) {
-			return $types;
+			return $types->union($this->getAbsorbedTemplateTypes($types));
 		}
 		if (count($remainingReceivedTypes) !== count($receivedTypes)) {
 			$receivedType = TypeCombinator::union(...$remainingReceivedTypes);
 		}
 
 		foreach ($this->types as $type) {
-			if ($type instanceof TemplateType || ($type instanceof GenericClassStringType && $type->getGenericType() instanceof TemplateType)) {
+			if (self::getNakedTemplateType($type) !== null) {
 				continue;
 			}
 			$types = $types->union($type->inferTemplateTypes($receivedType));
@@ -1410,6 +1411,49 @@ class UnionType implements CompoundType
 		}
 
 		return $types;
+	}
+
+	private static function getNakedTemplateType(Type $type): ?TemplateType
+	{
+		if ($type instanceof TemplateType) {
+			return $type;
+		}
+
+		if ($type instanceof GenericClassStringType) {
+			$genericType = $type->getGenericType();
+			if ($genericType instanceof TemplateType) {
+				return $genericType;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Naked template members that the absorption above left without a type were not
+	 * forgotten - the parameter type declares them next to a member that took the
+	 * whole argument, so there was nothing for them to infer from.
+	 */
+	private function getAbsorbedTemplateTypes(TemplateTypeMap $inferred): TemplateTypeMap
+	{
+		$absorbed = [];
+		foreach ($this->types as $type) {
+			$templateType = self::getNakedTemplateType($type);
+			if ($templateType === null) {
+				continue;
+			}
+			if ($inferred->hasType($templateType->getName())) {
+				continue;
+			}
+
+			$absorbed[$templateType->getName()] = new AbsorbedTemplateArgumentType();
+		}
+
+		if (count($absorbed) === 0) {
+			return TemplateTypeMap::createEmpty();
+		}
+
+		return new TemplateTypeMap($absorbed);
 	}
 
 	public function inferTemplateTypesOn(Type $templateType): TemplateTypeMap

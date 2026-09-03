@@ -2036,8 +2036,15 @@ class NodeScopeResolver
 					$closureThisType = $this->resolveClosureThisType($callLike, $calleeReflection, $parameter, $scopeToPass);
 					if ($closureThisType !== null) {
 						$restoreThisScope = $scopeToPass;
-						$scopeToPass = $scopeToPass->assignVariable('this', $closureThisType, new ObjectWithoutClassType(), TrinaryLogic::createYes())
-							->withClosureBindScopeClasses($closureThisType->getObjectClassNames());
+						if ($closureThisType->isNull()->yes()) {
+							$scopeToPass = $scopeToPass->withoutThis()
+								->withClosureBindScopeClasses([]);
+						} else {
+							$isOptionalBinding = $closureThisType->isNull()->maybe();
+							$objectThisType = TypeCombinator::removeNull($closureThisType);
+							$scopeToPass = $scopeToPass->assignVariable('this', $objectThisType, new ObjectWithoutClassType(), $isOptionalBinding ? TrinaryLogic::createMaybe() : TrinaryLogic::createYes())
+								->withClosureBindScopeClasses($objectThisType->getObjectClassNames());
+						}
 					}
 				}
 

@@ -317,6 +317,43 @@ class ImplicitInheritanceMoreComplicated extends Foo
 
 }
 
+class WithOptionalThis
+{
+
+	/**
+	 * @param-closure-this ?Foo $cb
+	 */
+	public function runOptional(callable $cb): void
+	{
+
+	}
+
+	/**
+	 * @param-closure-this never $cb
+	 */
+	public function runUnbound(callable $cb): void
+	{
+
+	}
+
+}
+
+function testOptionalClosureThis(WithOptionalThis $o): void
+{
+	$o->runOptional(function () {
+		if (isset($this)) {
+			assertType(Foo::class, $this);
+		}
+	});
+}
+
+function testUnboundClosureThis(WithOptionalThis $o): void
+{
+	$o->runUnbound(function () {
+		assertType('never', $this);
+	});
+}
+
 class FooParent
 {
 

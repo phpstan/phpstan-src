@@ -2186,6 +2186,33 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		);
 	}
 
+	public function withoutThis(): self
+	{
+		$expressionTypes = $this->expressionTypes;
+		$nativeExpressionTypes = $this->nativeExpressionTypes;
+		unset($expressionTypes['$this']);
+		unset($nativeExpressionTypes['$this']);
+
+		return $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->getFunction(),
+			$this->getNamespace(),
+			$expressionTypes,
+			$nativeExpressionTypes,
+			$this->conditionalExpressions,
+			$this->inClosureBindScopeClasses,
+			$this->anonymousFunctionReflection,
+			$this->isInFirstLevelStatement(),
+			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
+			$this->inFunctionCallsStack,
+			$this->afterExtractCall,
+			$this->parentScope,
+			$this->nativeTypesPromoted,
+		);
+	}
+
 	/**
 	 * @api
 	 * @param ParameterReflection[]|null $callableParameters
@@ -2302,25 +2329,32 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$expressionTypes[$exprString] = $typeHolder;
 		}
 
-		if ($this->hasVariableType('this')->yes() && !$closure->static) {
+		if (isset($this->expressionTypes['$this']) && !$closure->static) {
 			$node = new Variable('this');
-			$expressionTypes['$this'] = ExpressionTypeHolder::createYes($node, $this->getType($node));
-			$nativeTypes['$this'] = ExpressionTypeHolder::createYes($node, $this->getNativeType($node));
+			$thisType = $this->getType($node);
+			$thisCertainty = $this->expressionTypes['$this']->getCertainty();
+			if ($thisCertainty->yes()) {
+				$expressionTypes['$this'] = ExpressionTypeHolder::createYes($node, $thisType);
+				$nativeTypes['$this'] = ExpressionTypeHolder::createYes($node, $this->getNativeType($node));
 
-			if ($this->phpVersion->supportsReadOnlyProperties()) {
-				foreach ($nonStaticExpressions as $exprString => $typeHolder) {
-					$expr = $typeHolder->getExpr();
+				if ($this->phpVersion->supportsReadOnlyProperties()) {
+					foreach ($nonStaticExpressions as $exprString => $typeHolder) {
+						$expr = $typeHolder->getExpr();
 
-					if (!$expr instanceof PropertyFetch) {
-						continue;
+						if (!$expr instanceof PropertyFetch) {
+							continue;
+						}
+
+						if (!$this->isReadonlyPropertyFetch($expr, true)) {
+							continue;
+						}
+
+						$expressionTypes[$exprString] = $typeHolder;
 					}
-
-					if (!$this->isReadonlyPropertyFetch($expr, true)) {
-						continue;
-					}
-
-					$expressionTypes[$exprString] = $typeHolder;
 				}
+			} else {
+				$expressionTypes['$this'] = ExpressionTypeHolder::createMaybe($node, $thisType);
+				$nativeTypes['$this'] = ExpressionTypeHolder::createMaybe($node, $this->getNativeType($node));
 			}
 		}
 

@@ -162,6 +162,15 @@ final class AnalysisResult
 	}
 
 	/**
+	 * @deprecated
+	 * @return array<string, string>
+	 */
+	public function getChangedProjectExtensionFilesOutsideOfAnalysedPaths(): array
+	{
+		return [];
+	}
+
+	/**
 	 * @return list<string>
 	 */
 	public function getProcessedFiles(): array

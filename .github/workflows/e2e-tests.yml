@@ -951,6 +951,21 @@ jobs:
               echo "$OUTPUT"
               ../bashunit -a contains 'User.php:10:Method ResultCacheE2EImportType\User::doUser() should return int but returns string.' "$OUTPUT"
           - script: |
+              cd e2e/result-cache-require-deleted
+              ../../bin/phpstan analyse
+              # The file named in require() is not analysed, not scanned and not autoloadable, so no hash
+              # of it exists anywhere in the cache. Deleting it has to be noticed all the same: the rule
+              # that checks the path reports an error the moment it is gone.
+              rm config/app.php
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Foo.php:10:Path in require() "config/app.php" is not a file or it does not exist.' "$OUTPUT"
+              # And putting it back has to clear the error again.
+              printf '<?php declare(strict_types = 1);\n\nreturn [];\n' > config/app.php
+              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a not_contains 'is not a file or it does not exist' "$OUTPUT"
+          - script: |
               cd e2e/result-cache-extension-update
               composer install
               # cold run populates the cache; the shipped rule reports an error, so ignore the exit code

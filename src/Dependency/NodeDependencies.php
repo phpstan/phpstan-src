@@ -14,13 +14,26 @@ final class NodeDependencies
 
 	/**
 	 * @param array<int, ClassReflection|FunctionReflection|ConstantReflection> $reflections
+	 * @param list<string> $filePaths files depended on directly, by path rather than through a symbol
 	 */
 	public function __construct(
 		private FileHelper $fileHelper,
 		private array $reflections,
 		private ?RootExportedNode $exportedNode,
+		private array $filePaths = [],
 	)
 	{
+	}
+
+	/**
+	 * Files this node depends on by path: an included file holds no symbol to reflect, but deleting it
+	 * changes what the analysis says about the file including it.
+	 *
+	 * @return list<string>
+	 */
+	public function getFilePaths(): array
+	{
+		return $this->filePaths;
 	}
 
 	/**

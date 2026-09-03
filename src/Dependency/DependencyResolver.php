@@ -13,6 +13,7 @@ use PHPStan\Broker\ClassNotFoundException;
 use PHPStan\Broker\FunctionNotFoundException;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\FileHelper;
+use PHPStan\File\IncludedFilePathResolver;
 use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Node\FunctionCallableNode;
 use PHPStan\Node\InClassMethodNode;
@@ -35,6 +36,7 @@ use function array_key_exists;
 use function array_merge;
 use function count;
 use function in_array;
+use function is_file;
 
 #[AutowiredService]
 final class DependencyResolver
@@ -45,6 +47,7 @@ final class DependencyResolver
 
 	public function __construct(
 		private FileHelper $fileHelper,
+		private IncludedFilePathResolver $includedFilePathResolver,
 		private ReflectionProvider $reflectionProvider,
 		private ExportedNodeResolver $exportedNodeResolver,
 		private FileTypeMapper $fileTypeMapper,
@@ -55,6 +58,7 @@ final class DependencyResolver
 	public function resolveDependencies(Node $node, Scope $scope): NodeDependencies
 	{
 		$dependenciesReflections = [];
+		$dependenciesFilePaths = [];
 
 		if ($node instanceof Node\Stmt\Class_) {
 			if (isset($node->namespacedName)) {
@@ -467,6 +471,18 @@ final class DependencyResolver
 					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 				}
 			}
+		} elseif ($node instanceof Node\Expr\Include_) {
+			// An included file is a dependency with no symbol to reflect: nothing in it has to be
+			// declared for the including file's analysis to change when it is deleted.
+			foreach ($scope->getType($node->expr)->getConstantStrings() as $constantString) {
+				foreach ($this->includedFilePathResolver->resolve($constantString->getValue(), $scope) as $candidatePath) {
+					if (!is_file($candidatePath)) {
+						continue;
+					}
+
+					$dependenciesFilePaths[] = $candidatePath;
+				}
+			}
 		} elseif ($node instanceof Node\Stmt\Catch_) {
 			foreach ($node->types as $type) {
 				$this->addClassToDependencies($scope->resolveName($type), $dependenciesReflections);
@@ -521,7 +537,7 @@ final class DependencyResolver
 			}
 		}
 
-		return new NodeDependencies($this->fileHelper, $dependenciesReflections, $this->exportedNodeResolver->resolve($scope->getFile(), $node));
+		return new NodeDependencies($this->fileHelper, $dependenciesReflections, $this->exportedNodeResolver->resolve($scope->getFile(), $node), $dependenciesFilePaths);
 	}
 
 	public function resolveUsedTraitDependencies(InClassNode $inClassNode): NodeDependencies

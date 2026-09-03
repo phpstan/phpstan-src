@@ -1,0 +1,11 @@
+--- composer.json
++++ composer.json
+@@ -14,7 +14,7 @@
+ 		}
+ 	],
+ 	"require": {
+-		"psr/log": "3.0.1",
++		"psr/log": "3.0.2",
+ 		"test/symlinked-lib": "*",
+ 		"test/copied-lib": "*"
+ 	},

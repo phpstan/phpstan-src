@@ -239,10 +239,14 @@ jobs:
           - script: |
               cd e2e/result-cache-scanned
               ../../bin/phpstan
+              # A file that is scanned but not analysed (excluded from the analysis, but living in an
+              # analysed directory) is tracked as a file dependency: editing it re-analyses just the
+              # files depending on it instead of invalidating the whole result cache.
               patch -b src/Generated/Foo.php < patch.patch
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache not used because the metadata do not match: scannedFiles' "$OUTPUT"
+              ../bashunit -a contains 'Scanned files with changed symbols (1); re-analysing the files affected by them.' "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
               ../bashunit -a contains 'Instantiated class ResultCacheE2EGenerated\Foo not found.' "$OUTPUT"
           - script: |
               cd e2e/bug-15125
@@ -266,6 +270,188 @@ jobs:
               echo "$OUTPUT"
               ../bashunit -a not_contains 'Result cache not used because the metadata do not match' "$OUTPUT"
               ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+          - script: |
+              cd e2e/result-cache-scanned-2
+              ../../bin/phpstan analyse
+              # Editing a file from scanDirectories re-analyses only the files depending on it -
+              # src/Unrelated.php and src/UsesExtra.php are left alone.
+              patch -b scanned/Dep.php < patch.patch
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit -a contains 'Foo.php:10:Method ResultCacheE2EScanned2\Foo::doFoo() should return int but returns string.' "$OUTPUT"
+              # Undoing the edit makes the error go away again.
+              mv scanned/Dep.php.orig scanned/Dep.php
+              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              # The same for a file listed in scanFiles.
+              patch -b scan-file/Extra.php < patch-2.patch
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit -a contains 'UsesExtra.php:10:Method ResultCacheE2EScanned2\UsesExtra::doUsesExtra() should return int but returns string.' "$OUTPUT"
+              # Deleting a scanned file re-analyses the files depending on it.
+              rm scanned/Dep.php
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit -a contains 'Foo.php:10:Call to method doDep() on an unknown class ResultCacheE2EScanned2\Dep.' "$OUTPUT"
+          - script: |
+              cd e2e/result-cache-scanned-new-file
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'UsesNew.php:10:Instantiated class ResultCacheE2EScannedNewFile\NewlyScanned not found.' "$OUTPUT"
+              # A file that newly appears in a scanDirectories directory may define a symbol that was
+              # reported as unknown somewhere, so the files with errors are re-analysed too - the same
+              # way a new analysed file makes them re-analysed. src/Foo.php is still left alone.
+              mv new-file/NewlyScanned.php scanned/NewlyScanned.php
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Scanned files with changed symbols (1); re-analysing the files affected by them.' "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit -a not_contains 'Instantiated class ResultCacheE2EScannedNewFile\NewlyScanned not found.' "$OUTPUT"
+              ../bashunit -a contains 'UsesNew.php:10:Method ResultCacheE2EScannedNewFile\UsesNew::doUsesNew() should return int but returns string.' "$OUTPUT"
+          - script: |
+              cd e2e/result-cache-scanned-exported-nodes
+              # src/Bar.php refers to a class that does not exist yet, so it has an error from the start.
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Bar.php:10:Instantiated class ResultCacheE2EScannedExportedNodes\NewDep not found.' "$OUTPUT"
+              # An edit inside a method body of a scanned file changes nothing the files depending on it
+              # can see, so nothing is re-analysed - not the file depending on it, and not the file
+              # with the error either. The same as for an analysed file, where only a change in the
+              # exported nodes (a signature, a PHPDoc, a visibility) reaches the dependents.
+              patch -b scanned/Dep.php < body.patch
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+              ../bashunit -a not_contains 'Scanned files with changed symbols' "$OUTPUT"
+              # The new contents are recorded: the next run has nothing to notice.
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a not_contains 'Scanned files with changed symbols' "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+              # A changed return type is an exported node change: the file depending on it is
+              # re-analysed. A changed signature cannot make a new symbol available, so the file with
+              # the error is left alone.
+              mv scanned/Dep.php.orig scanned/Dep.php
+              patch -b scanned/Dep.php < signature.patch
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit -a contains 'Foo.php:10:Method ResultCacheE2EScannedExportedNodes\Foo::doFoo() should return int but returns string.' "$OUTPUT"
+              ../bashunit -a contains 'Bar.php:10:Instantiated class ResultCacheE2EScannedExportedNodes\NewDep not found.' "$OUTPUT"
+              # A file without any exported nodes appearing in the scanned directory cannot define the
+              # missing symbol: nothing is re-analysed.
+              mv new-file/NoSymbols.php scanned/NoSymbols.php
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+              ../bashunit -a contains 'Bar.php:10:Instantiated class ResultCacheE2EScannedExportedNodes\NewDep not found.' "$OUTPUT"
+              # A file declaring a class may define a symbol reported as unknown, so the files with
+              # errors are re-analysed - both of them - and the error about the class is gone.
+              mv new-file/NewDep.php scanned/NewDep.php
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 2 files will be reanalysed.' "$OUTPUT"
+              ../bashunit -a not_contains 'Bar.php:10:Instantiated class ResultCacheE2EScannedExportedNodes\NewDep not found.' "$OUTPUT"
+              ../bashunit -a contains 'Foo.php:10:Method ResultCacheE2EScannedExportedNodes\Foo::doFoo() should return int but returns string.' "$OUTPUT"
+          - script: |
+              cd e2e/result-cache-scanned-trait
+              ../../bin/phpstan analyse
+              # A trait living in a scanned file is tracked the same way, including through the
+              # used-trait dependencies.
+              patch -b scanned/DepTrait.php < patch.patch
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit -a contains 'UsesTrait.php:12:Method ResultCacheE2EScannedTrait\UsesTrait::doIt() should return int but returns string.' "$OUTPUT"
+          - script: |
+              cd e2e/result-cache-autoloaded
+              composer install
+              ../../bin/phpstan analyse
+              # A project file that is not analysed and not scanned either - it is only reachable
+              # through the Composer autoloader - is tracked as a file dependency too, so editing it
+              # re-analyses the files depending on it instead of leaving stale results behind.
+              patch -b other/Dep.php < patch.patch
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit -a contains 'Foo.php:12:Method ResultCacheE2EAutoloaded\Foo::doFoo() should return int but returns string.' "$OUTPUT"
+          - script: |
+              cd e2e/result-cache-autoloaded-constant
+              composer install
+              # The same sequence on a project file that is neither analysed nor scanned - it is only
+              # reachable through the Composer autoloader, so it is tracked through the dependency graph
+              # alone.
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Foo.php:10:Dumped type: 1' "$OUTPUT"
+              # The constant is renamed to one the class already declares. The file is invalid PHP, but
+              # the class still reflects, so the file using the constant is re-analysed through its
+              # dependency edge.
+              patch -b other/Dep.php < duplicate.patch
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit -a contains 'Foo.php:10:Access to undefined constant ResultCacheE2EAutoloadedConstant\Dep::CON.' "$OUTPUT"
+              # Renamed to something else instead.
+              mv other/Dep.php.orig other/Dep.php
+              patch -b other/Dep.php < renamed.patch
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit -a contains 'Foo.php:10:Access to undefined constant ResultCacheE2EAutoloadedConstant\Dep::CON.' "$OUTPUT"
+              # Broken the same way again.
+              mv other/Dep.php.orig other/Dep.php
+              patch -b other/Dep.php < duplicate.patch
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit -a contains 'Foo.php:10:Access to undefined constant ResultCacheE2EAutoloadedConstant\Dep::CON.' "$OUTPUT"
+              # And put back the way it was.
+              mv other/Dep.php.orig other/Dep.php
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit -a contains 'Foo.php:10:Dumped type: 1' "$OUTPUT"
+              # A syntax error makes the class disappear altogether: the file using it reports an unknown
+              # class and records no dependency edge to the file, so nothing but the file being fixed can
+              # bring the file using it back - it must be re-analysed once the class is there again.
+              patch -b other/Dep.php < broken.patch
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit -a contains 'Foo.php:10:Access to constant CON on an unknown class ResultCacheE2EAutoloadedConstant\Dep.' "$OUTPUT"
+              mv other/Dep.php.orig other/Dep.php
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit -a contains 'Foo.php:10:Dumped type: 1' "$OUTPUT"
+          - script: |
+              cd e2e/result-cache-scanned-vendor
+              composer install
+              ../../bin/phpstan analyse
+              # A scanned file that belongs to an installed Composer package is not tracked as a file
+              # dependency - packages are tracked at package granularity - so editing it still has to
+              # invalidate the whole result cache instead of leaving stale results behind.
+              patch -b vendor/test/scanned-lib/src/Dep.php < patch.patch
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'changed and belongs to a Composer package.' "$OUTPUT"
+              ../bashunit -a contains 'Foo.php:12:Method ResultCacheE2EScannedVendor\Foo::doFoo() should return int but returns string.' "$OUTPUT"
+          - script: |
+              cd e2e/result-cache-bootstrap
+              ../../bin/phpstan analyse
+              # A bootstrapFile is executed, not just read, so it can change anything about the
+              # analysis. It stays part of the executedFilesHashes metadata and keeps invalidating the
+              # whole result cache - the scanned file tracking does not apply to it.
+              patch -b bootstrap.php < patch.patch
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache not used because the metadata do not match: executedFilesHashes' "$OUTPUT"
+              ../bashunit -a contains 'Foo.php:10:Method ResultCacheE2EBootstrap\Foo::doFoo() should return int but returns string.' "$OUTPUT"
           - script: |
               cd e2e/result-cache-traits
               ../../bin/phpstan analyse
@@ -658,6 +844,63 @@ jobs:
               echo "$OUTPUT"
               ../bashunit -a contains 'Composer packages changed (test/logger); re-analysing only the files depending on them.' "$OUTPUT"
               ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+          - script: |
+              cd e2e/result-cache-path-repository
+              composer install
+              ../../bin/phpstan analyse
+              # Updating an installed package re-analyses only the files depending on it.
+              patch -p0 < updatePsrLog.patch
+              composer update psr/log --no-cache
+              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Composer packages changed (psr/log); re-analysing only the files depending on them.' "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              # Editing a file of an installed package is not a valid thing to do - the next Composer
+              # command overwrites it - so PHPStan does not track it and keeps the cached results, even
+              # though this edit takes away a method the analysed code calls.
+              php -r '$f = "vendor/psr/log/src/LoggerInterface.php"; file_put_contents($f, str_replace("public function info(", "public function renamedInfo(", file_get_contents($f)));'
+              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+              ../bashunit -a not_contains 'Call to an undefined method' "$OUTPUT"
+              # A package from a path repository is the opposite case: it is the project's own code,
+              # edited in place without any Composer command noticing, so its files are tracked like the
+              # project's other non-analysed files. Symlinked, the installed package is the source
+              # directory - an edit inside a method body changes nothing the files using it can see.
+              patch -b -p0 < symlinked-body.patch
+              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+              # A changed return type does reach them.
+              mv symlinked-lib/src/SymlinkedDep.php.orig symlinked-lib/src/SymlinkedDep.php
+              patch -b -p0 < symlinked-signature.patch
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit -a contains 'UsesSymlinked.php:16:Method ResultCacheE2EPathRepository\UsesSymlinked::doUsesSymlinked() should return int but returns string.' "$OUTPUT"
+              # Undoing it clears the error again.
+              mv symlinked-lib/src/SymlinkedDep.php.orig symlinked-lib/src/SymlinkedDep.php
+              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              # Copied instead of symlinked, the analysis reads the installed copy, so editing the
+              # directory Composer copied from is not something PHPStan can see at all.
+              patch -b -p0 < copied-source-signature.patch
+              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+              mv copied-lib/src/CopiedDep.php.orig copied-lib/src/CopiedDep.php
+              # The installed copy is tracked the same way the symlinked package is.
+              patch -b -p0 < copied-body.patch
+              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+              mv vendor/test/copied-lib/src/CopiedDep.php.orig vendor/test/copied-lib/src/CopiedDep.php
+              patch -b -p0 < copied-signature.patch
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit -a contains 'UsesCopied.php:16:Method ResultCacheE2EPathRepository\UsesCopied::doUsesCopied() should return int but returns string.' "$OUTPUT"
           - script: |
               cd e2e/result-cache-extension-update
               composer install

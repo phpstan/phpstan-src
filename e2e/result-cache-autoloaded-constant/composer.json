@@ -1,0 +1,8 @@
+{
+	"name": "phpstan/result-cache-autoloaded-constant-e2e",
+	"autoload": {
+		"psr-4": {
+			"ResultCacheE2EAutoloadedConstant\\": ["src/", "other/"]
+		}
+	}
+}

@@ -1,0 +1,14 @@
+--- scanned/Dep.php
++++ scanned/Dep.php
+@@ -5,9 +5,9 @@
+ class Dep
+ {
+ 
+-	public function doDep(): int
++	public function doDep(): string
+ 	{
+-		return 1;
++		return 'foo';
+ 	}
+ 
+ }

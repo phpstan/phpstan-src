@@ -1,0 +1,9 @@
+parameters:
+	level: 8
+	tmpDir: tmp
+	paths:
+		- src
+	scanFiles:
+		- scanned/Dep.php
+	scanDirectories:
+		- scanned

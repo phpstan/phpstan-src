@@ -1,0 +1,13 @@
+--- scanned/Dep.php
++++ scanned/Dep.php
+@@ -7,7 +7,9 @@
+ 
+ 	public function doDep(): int
+ 	{
+-		return 1;
++		$result = 1;
++
++		return $result;
+ 	}
+ 
+ }

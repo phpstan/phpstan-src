@@ -1,0 +1,14 @@
+--- scan-file/Extra.php	2026-09-01 10:00:00
++++ scan-file/Extra.php	2026-09-01 10:01:00
+@@ -5,9 +5,9 @@
+ class Extra
+ {
+ 
+-	public function doExtra(): int
++	public function doExtra(): string
+ 	{
+-		return 1;
++		return 'foo';
+ 	}
+ 
+ }

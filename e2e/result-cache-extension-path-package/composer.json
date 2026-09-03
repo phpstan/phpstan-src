@@ -1,0 +1,15 @@
+{
+	"name": "phpstan/result-cache-extension-path-package-e2e",
+	"repositories": [
+		{
+			"type": "path",
+			"url": "./rule-lib"
+		}
+	],
+	"require": {
+		"test/rule-lib": "*"
+	},
+	"autoload": {
+		"classmap": ["src"]
+	}
+}

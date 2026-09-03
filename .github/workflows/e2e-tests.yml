@@ -1006,6 +1006,65 @@ jobs:
               ../bashunit -a contains 'Composer packages changed (psr/log); re-analysing the files depending on them and the files with errors.' "$OUTPUT"
               ../bashunit -a not_contains 'has invalid type Psr\Log\PluginProvidedLogger' "$OUTPUT"
           - script: |
+              cd e2e/result-cache-extension-path-package
+              composer install
+              # The rule comes from a package Composer symlinked out of the project, so the file the
+              # class reflects to is the source directory, outside vendor/ and outside the analysed
+              # paths. Editing it has to invalidate the cache: the rule decides what every file reports.
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'the rule says one thing' "$OUTPUT"
+              patch -p0 < patch.patch
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache not used because extension file' "$OUTPUT"
+              ../bashunit -a contains 'the rule says another thing' "$OUTPUT"
+              ../bashunit -a not_contains 'the rule says one thing' "$OUTPUT"
+          - script: |
+              cd e2e/result-cache-extension-autoload-dev
+              composer install
+              # The rule lives in a directory that is only in autoload-dev and is not analysed, so
+              # nothing in the dependency graph points at it. Editing it still has to invalidate.
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'the rule says one thing' "$OUTPUT"
+              patch -p0 < patch.patch
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache not used because extension file' "$OUTPUT"
+              ../bashunit -a contains 'the rule says another thing' "$OUTPUT"
+              ../bashunit -a not_contains 'the rule says one thing' "$OUTPUT"
+          - script: |
+              cd e2e/result-cache-extension-copied-package
+              composer install
+              # The rule comes from a path repository Composer copies rather than symlinks, so the
+              # installed file really is inside vendor/. It is still the project's own code, edited in
+              # place - unlike a downloaded package, which only ever changes through Composer.
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'the rule says one thing' "$OUTPUT"
+              patch -p0 < patch.patch
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache not used because extension file' "$OUTPUT"
+              ../bashunit -a contains 'the rule says another thing' "$OUTPUT"
+              ../bashunit -a not_contains 'the rule says one thing' "$OUTPUT"
+          - script: |
+              cd e2e/result-cache-extension-path-package-update
+              composer install
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'the rule says one thing' "$OUTPUT"
+              # Only the package's version moves - the rule file stays byte-identical, so its hash says
+              # nothing. The package is symlinked, so the rule's class reflects to the source directory
+              # rather than to anything under vendor/; the package it belongs to has to be recognised
+              # through the link, or a new version of an extension goes unnoticed.
+              patch -p0 < updatePackage.patch
+              composer update test/rule-lib --no-cache
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'register a class in the container; re-analysing everything.' "$OUTPUT"
+          - script: |
               cd e2e/result-cache-extension-update
               composer install
               # cold run populates the cache; the shipped rule reports an error, so ignore the exit code

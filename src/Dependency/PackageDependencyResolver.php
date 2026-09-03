@@ -15,6 +15,7 @@ use function file_get_contents;
 use function is_array;
 use function is_file;
 use function is_string;
+use function realpath;
 use function str_starts_with;
 use function strlen;
 use function uksort;
@@ -221,7 +222,24 @@ final class PackageDependencyResolver
 					continue;
 				}
 
-				$map[$this->fileHelper->normalizePath($info['install_path'], '/')] = $package;
+				$installPath = $this->fileHelper->normalizePath($info['install_path'], '/');
+				$map[$installPath] = $package;
+
+				// A package Composer symlinked from a path repository is installed at a link, and a class
+				// loaded through it reflects to the directory the link points at - reflection resolves
+				// symlinks. Both spellings map to the package, or a file of it would belong to no package
+				// at all and a new version of it would go unnoticed.
+				$realInstallPath = realpath($info['install_path']);
+				if ($realInstallPath === false) {
+					continue;
+				}
+
+				$realInstallPath = $this->fileHelper->normalizePath($realInstallPath, '/');
+				if ($realInstallPath === $installPath) {
+					continue;
+				}
+
+				$map[$realInstallPath] = $package;
 			}
 		}
 

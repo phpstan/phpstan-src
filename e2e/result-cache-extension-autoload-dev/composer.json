@@ -1,0 +1,11 @@
+{
+	"name": "phpstan/result-cache-extension-autoload-dev-e2e",
+	"autoload": {
+		"classmap": ["src"]
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"ResultCacheE2EExtensionDev\\": "dev/"
+		}
+	}
+}

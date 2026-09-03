@@ -498,13 +498,14 @@ final class ResultCacheManager
 		}
 
 		/**
+		 * An extension file is code that runs during the analysis, so a change in one can change any
+		 * result. That holds whether or not the file is part of the analysed paths - a file outside them
+		 * used to only earn a "the result cache will get stale" warning, which was true and left the user
+		 * to do something about it.
+		 *
 		 * @var string $fileHash
-		 * @var bool $isAnalysed
 		 */
-		foreach ($data['projectExtensionFiles'] as $extensionFile => [$fileHash, $isAnalysed]) {
-			if (!$isAnalysed) {
-				continue;
-			}
+		foreach ($data['projectExtensionFiles'] as $extensionFile => [$fileHash]) {
 			if (!is_file($extensionFile)) {
 				return $this->fullAnalysis(
 					sprintf('Result cache not used because extension file %s was not found.', $extensionFile),
@@ -1635,12 +1636,10 @@ return [
 
 				$allServiceFiles = $this->getAllDependencies($fileName, $dependencies);
 				if (count($allServiceFiles) === 0) {
-					$normalizedFileName = $this->fileHelper->normalizePath($fileName);
-					foreach ($vendorDirs as $vendorDir) {
-						if (str_starts_with($normalizedFileName, $vendorDir)) {
-							continue 2;
-						}
+					if ($this->isFileOfInstalledPackage($this->fileHelper->normalizePath($fileName), $vendorDirs)) {
+						continue;
 					}
+
 					$projectExtensionFiles[$fileName] = [$this->getFileHash($fileName), false, $class];
 					continue;
 				}
@@ -1656,6 +1655,29 @@ return [
 		}
 
 		return $projectExtensionFiles;
+	}
+
+	/**
+	 * Whether the file belongs to a package Composer installed, which only changes when Composer
+	 * changes it - editing one is not a thing to do, and a version change is noticed through the
+	 * metadata instead. A package from a path repository is the exception: it is the project's own
+	 * code, sitting in vendor/ because Composer copied it there, and it is edited in place.
+	 *
+	 * @param list<string> $vendorDirs
+	 */
+	private function isFileOfInstalledPackage(string $normalizedFileName, array $vendorDirs): bool
+	{
+		foreach ($vendorDirs as $vendorDir) {
+			if (!str_starts_with($normalizedFileName, $vendorDir)) {
+				continue;
+			}
+
+			$package = $this->packageDependencyResolver->resolvePackage($normalizedFileName);
+
+			return $package === null || !$this->packageDependencyResolver->isPathPackage($package);
+		}
+
+		return false;
 	}
 
 	/**

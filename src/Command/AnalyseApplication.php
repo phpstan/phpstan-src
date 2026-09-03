@@ -150,32 +150,6 @@ final class AnalyseApplication
 			$workerCount = $analyserResult->getWorkerCount();
 			$isResultCacheUsed = !$resultCache->isFullAnalysis();
 
-			$changedProjectExtensionFilesOutsideOfAnalysedPaths = [];
-			if (
-				$isResultCacheUsed
-				&& $resultCacheResult->isSaved()
-				&& !$onlyFiles
-				&& $projectConfigArray !== null
-			) {
-				foreach ($resultCache->getProjectExtensionFiles() as $file => [$hash, $isAnalysed, $className]) {
-					if ($isAnalysed) {
-						continue;
-					}
-
-					if (!is_file($file)) {
-						$changedProjectExtensionFilesOutsideOfAnalysedPaths[$file] = $className;
-						continue;
-					}
-
-					$newHash = hash_file('sha256', $file);
-					if ($newHash === $hash) {
-						continue;
-					}
-
-					$changedProjectExtensionFilesOutsideOfAnalysedPaths[$file] = $className;
-				}
-			}
-
 			$ignoredErrorHelperProcessedResult = $ignoredErrorHelperResult->process($errors, $onlyFiles, $files, $hasInternalErrors);
 			$fileSpecificErrors = $ignoredErrorHelperProcessedResult->getNotIgnoredErrors();
 			$notFileSpecificErrors = $ignoredErrorHelperProcessedResult->getOtherIgnoreMessages();
@@ -194,7 +168,6 @@ final class AnalyseApplication
 			$savedResultCache,
 			$memoryUsageBytes,
 			$isResultCacheUsed,
-			$changedProjectExtensionFilesOutsideOfAnalysedPaths,
 			$processedFiles,
 			$resultCacheExisted,
 			$workerCount,

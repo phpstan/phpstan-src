@@ -1,0 +1,11 @@
+parameters:
+	level: 0
+	tmpDir: tmp
+	paths:
+		- src
+
+services:
+	-
+		class: ResultCacheE2EExtensionDev\MyRule
+		tags:
+			- phpstan.rules.rule

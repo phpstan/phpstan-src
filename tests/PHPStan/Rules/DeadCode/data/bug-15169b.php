@@ -101,3 +101,28 @@ function viaStaticPropertyEmpty(): string
 
 	return 'G';
 }
+
+/** @template T */
+class Generic
+{
+
+	/** @var T */
+	public $value;
+
+	/** @param T $value */
+	public function __construct($value)
+	{
+		$this->value = $value;
+	}
+
+}
+
+function viaNewGeneric(): string
+{
+	$g = new Generic(['a' => 1]);
+	if (!isset($g->value['zzz'])) {
+		return 'early';
+	}
+
+	return 'H';
+}

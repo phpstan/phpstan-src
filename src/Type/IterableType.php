@@ -449,7 +449,10 @@ class IterableType implements CompoundType
 			return $receivedType->inferTemplateTypesOn($this);
 		}
 
-		if (!$receivedType->isIterable()->yes()) {
+		// never is iterable, but taking its key and value type apart would bind
+		// the templates to an implicit never that is later read as unresolved.
+		// ArrayType and Traversable<T> infer nothing from never either.
+		if (!$receivedType->isIterable()->yes() || $receivedType instanceof NeverType) {
 			return TemplateTypeMap::createEmpty();
 		}
 

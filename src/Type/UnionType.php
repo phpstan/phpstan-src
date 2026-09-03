@@ -1376,10 +1376,16 @@ class UnionType implements CompoundType
 		// absorbed by that member: it tells nothing about the other members,
 		// so T|null receiving null must not bind T. Only what no member
 		// absorbs is inferred against the remaining members below.
+		// never is the exception: every member is its supertype, so which
+		// member absorbs it is meaningless - it always has to be inferred.
 		$types = TemplateTypeMap::createEmpty();
 		$receivedTypes = $receivedType instanceof UnionType ? $receivedType->getTypes() : [$receivedType];
 		$remainingReceivedTypes = [];
 		foreach ($receivedTypes as $receivedInnerType) {
+			if ($receivedInnerType instanceof NeverType) {
+				$remainingReceivedTypes[] = $receivedInnerType;
+				continue;
+			}
 			foreach ($this->types as $type) {
 				if ($type->isSuperTypeOf($receivedInnerType)->yes()) {
 					$types = $types->union($type->inferTemplateTypes($receivedInnerType));

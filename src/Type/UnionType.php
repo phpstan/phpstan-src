@@ -26,6 +26,7 @@ use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Enum\EnumCaseObjectType;
+use PHPStan\Type\Generic\AbsorbedTemplateArgumentType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateIterableType;
 use PHPStan\Type\Generic\TemplateMixedType;
@@ -1375,10 +1376,16 @@ class UnionType implements CompoundType
 		// absorbed by that member: it tells nothing about the other members,
 		// so T|null receiving null must not bind T. Only what no member
 		// absorbs is inferred against the remaining members below.
+		// never is the exception: every member is its supertype, so which
+		// member absorbs it is meaningless - it always has to be inferred.
 		$types = TemplateTypeMap::createEmpty();
 		$receivedTypes = $receivedType instanceof UnionType ? $receivedType->getTypes() : [$receivedType];
 		$remainingReceivedTypes = [];
 		foreach ($receivedTypes as $receivedInnerType) {
+			if ($receivedInnerType instanceof NeverType) {
+				$remainingReceivedTypes[] = $receivedInnerType;
+				continue;
+			}
 			foreach ($this->types as $type) {
 				if ($type->isSuperTypeOf($receivedInnerType)->yes()) {
 					$types = $types->union($type->inferTemplateTypes($receivedInnerType));
@@ -1388,14 +1395,14 @@ class UnionType implements CompoundType
 			$remainingReceivedTypes[] = $receivedInnerType;
 		}
 		if (count($remainingReceivedTypes) === 0) {
-			return $types;
+			return $types->union($this->getAbsorbedTemplateTypes($types));
 		}
 		if (count($remainingReceivedTypes) !== count($receivedTypes)) {
 			$receivedType = TypeCombinator::union(...$remainingReceivedTypes);
 		}
 
 		foreach ($this->types as $type) {
-			if ($type instanceof TemplateType || ($type instanceof GenericClassStringType && $type->getGenericType() instanceof TemplateType)) {
+			if (self::getNakedTemplateType($type) !== null) {
 				continue;
 			}
 			$types = $types->union($type->inferTemplateTypes($receivedType));
@@ -1410,6 +1417,49 @@ class UnionType implements CompoundType
 		}
 
 		return $types;
+	}
+
+	private static function getNakedTemplateType(Type $type): ?TemplateType
+	{
+		if ($type instanceof TemplateType) {
+			return $type;
+		}
+
+		if ($type instanceof GenericClassStringType) {
+			$genericType = $type->getGenericType();
+			if ($genericType instanceof TemplateType) {
+				return $genericType;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Naked template members that the absorption above left without a type were not
+	 * forgotten - the parameter type declares them next to a member that took the
+	 * whole argument, so there was nothing for them to infer from.
+	 */
+	private function getAbsorbedTemplateTypes(TemplateTypeMap $inferred): TemplateTypeMap
+	{
+		$absorbed = [];
+		foreach ($this->types as $type) {
+			$templateType = self::getNakedTemplateType($type);
+			if ($templateType === null) {
+				continue;
+			}
+			if ($inferred->hasType($templateType->getName())) {
+				continue;
+			}
+
+			$absorbed[$templateType->getName()] = new AbsorbedTemplateArgumentType();
+		}
+
+		if (count($absorbed) === 0) {
+			return TemplateTypeMap::createEmpty();
+		}
+
+		return new TemplateTypeMap($absorbed);
 	}
 
 	public function inferTemplateTypesOn(Type $templateType): TemplateTypeMap

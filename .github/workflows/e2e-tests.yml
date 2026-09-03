@@ -141,6 +141,16 @@ jobs:
               echo "$OUTPUT"
               ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
           - script: |
+              cd e2e/result-cache-11
+              echo -n > phpstan-baseline.neon
+              ../../bin/phpstan -vvv
+              patch -b src/Coll.php < patch-1.patch
+              cat baseline-1.neon > phpstan-baseline.neon
+              ../../bin/phpstan -vvv
+              mv src/Coll.php.orig src/Coll.php
+              echo -n > phpstan-baseline.neon
+              ../../bin/phpstan -vvv
+          - script: |
               cd e2e/bug-14514
               composer install
               ../../bin/phpstan analyze bug-14515.php
@@ -842,7 +852,7 @@ jobs:
               composer update test/logger --no-cache
               OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Composer packages changed (test/logger); re-analysing only the files depending on them.' "$OUTPUT"
+              ../bashunit -a contains 'Composer packages changed (test/logger); re-analysing the files depending on them and the files with errors.' "$OUTPUT"
               ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
           - script: |
               cd e2e/result-cache-path-repository
@@ -853,7 +863,7 @@ jobs:
               composer update psr/log --no-cache
               OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Composer packages changed (psr/log); re-analysing only the files depending on them.' "$OUTPUT"
+              ../bashunit -a contains 'Composer packages changed (psr/log); re-analysing the files depending on them and the files with errors.' "$OUTPUT"
               ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
               # Editing a file of an installed package is not a valid thing to do - the next Composer
               # command overwrites it - so PHPStan does not track it and keeps the cached results, even
@@ -965,6 +975,25 @@ jobs:
               OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
               ../bashunit -a not_contains 'is not a file or it does not exist' "$OUTPUT"
+          - script: |
+              cd e2e/result-cache-vendor-class-appears
+              composer install
+              # The class does not exist yet, and an error about a class that does not exist records no
+              # dependency on anything - there is no file to point at.
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Foo.php:10:Parameter $logger of method ResultCacheE2EVendorClassAppears\Foo::doFoo() has invalid type Psr\Log\PluginProvidedLogger.' "$OUTPUT"
+              # Composer updates the package, and a plugin writes the class into it on the way - which is
+              # what phpstan/phpstan#15164 is about. Nothing the cache knows about points at that file,
+              # so the files with errors have to be re-analysed on a package change; otherwise the error
+              # stands while a run from a cleared cache reports nothing.
+              patch -p0 < updatePsrLog.patch
+              composer update psr/log --no-cache
+              cp plugin-writes/PluginProvidedLogger.php vendor/psr/log/src/PluginProvidedLogger.php
+              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Composer packages changed (psr/log); re-analysing the files depending on them and the files with errors.' "$OUTPUT"
+              ../bashunit -a not_contains 'has invalid type Psr\Log\PluginProvidedLogger' "$OUTPUT"
           - script: |
               cd e2e/result-cache-extension-update
               composer install

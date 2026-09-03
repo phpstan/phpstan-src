@@ -24,6 +24,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\ConditionalType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\Generic\AbsorbedTemplateArgumentType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\NeverType;
@@ -616,6 +617,12 @@ final class FunctionCallParametersCheck
 							|| $type->isExplicit()
 						)
 					) {
+						continue;
+					}
+
+					// The parameter type declares the template next to a member that accepts
+					// the given argument on its own, so the caller has nothing to fix.
+					if ($type instanceof AbsorbedTemplateArgumentType) {
 						continue;
 					}
 

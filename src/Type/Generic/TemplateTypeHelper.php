@@ -6,6 +6,7 @@ use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\NonAcceptingNeverType;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
@@ -138,6 +139,24 @@ final class TemplateTypeHelper
 				}
 
 				return $traverse($type->toArgument());
+			}
+
+			return $traverse($type);
+		});
+	}
+
+	/**
+	 * Drops the "exactly this class" flavour of `new Foo()` from every object type inside $type.
+	 *
+	 * An inferred template argument is substituted into written PHPDoc types and compared
+	 * against them. No written type can carry the flavour, so an argument that kept it would
+	 * never match one - https://github.com/phpstan/phpstan/issues/15166.
+	 */
+	public static function removeFinalByKeywordOverrides(Type $type): Type
+	{
+		return TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
+			if ($type instanceof ObjectType) {
+				$type = $type->withoutFinalByKeywordOverride();
 			}
 
 			return $traverse($type);

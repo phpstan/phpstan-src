@@ -1,0 +1,9 @@
+{
+	"name": "phpstan/result-cache-vendor-class-appears-e2e",
+	"require": {
+		"psr/log": "3.0.1"
+	},
+	"autoload": {
+		"classmap": ["src"]
+	}
+}

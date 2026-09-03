@@ -296,6 +296,8 @@ trait TemplateTypeTrait
 
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap
 	{
+		$receivedType = TemplateTypeHelper::removeFinalByKeywordOverrides($receivedType);
+
 		if (
 			$receivedType instanceof TemplateType
 			&& $this->getBound()->isSuperTypeOf($receivedType->getBound())->yes()

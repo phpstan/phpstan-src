@@ -55,6 +55,7 @@ parametersSchema:
 		finiteTypesInHaystack: bool()
 		switchConditionAlwaysFalse: bool()
 		checkImportedClassNameCase: bool()
+		sortWithoutEffect: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

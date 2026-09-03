@@ -12,6 +12,8 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.checkPrintfParameterTypes%
 	PHPStan\Rules\DateIntervalInstantiationRule:
 		phpstan.rules.rule: %featureToggles.checkDateIntervalConstructor%
+	PHPStan\Rules\Functions\SortWithoutEffectRule:
+		phpstan.rules.rule: %featureToggles.sortWithoutEffect%
 
 autowiredAttributeServices:
 	# registers rules with #[RegisteredRule] attribute
@@ -26,3 +28,8 @@ services:
 			checkStrictPrintfPlaceholderTypes: %checkStrictPrintfPlaceholderTypes%
 	-
 		class: PHPStan\Rules\DateIntervalInstantiationRule
+	-
+		class: PHPStan\Rules\Functions\SortWithoutEffectRule
+		arguments:
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+			treatPhpDocTypesAsCertainTip: %tips.treatPhpDocTypesAsCertain%

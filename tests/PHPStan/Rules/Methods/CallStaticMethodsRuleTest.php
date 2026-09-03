@@ -1067,6 +1067,12 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-15002.php'], []);
 	}
 
+	public function testBug15168(): void
+	{
+		$this->checkThisOnly = false;
+		$this->analyse([__DIR__ . '/data/bug-15168.php'], []);
+	}
+
 	public function testBug12827(): void
 	{
 		$this->checkThisOnly = false;

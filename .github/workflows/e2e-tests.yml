@@ -1050,6 +1050,21 @@ jobs:
               ../bashunit -a contains 'the rule says another thing' "$OUTPUT"
               ../bashunit -a not_contains 'the rule says one thing' "$OUTPUT"
           - script: |
+              cd e2e/result-cache-extension-path-package-update
+              composer install
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'the rule says one thing' "$OUTPUT"
+              # Only the package's version moves - the rule file stays byte-identical, so its hash says
+              # nothing. The package is symlinked, so the rule's class reflects to the source directory
+              # rather than to anything under vendor/; the package it belongs to has to be recognised
+              # through the link, or a new version of an extension goes unnoticed.
+              patch -p0 < updatePackage.patch
+              composer update test/rule-lib --no-cache
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'register a class in the container; re-analysing everything.' "$OUTPUT"
+          - script: |
               cd e2e/result-cache-extension-update
               composer install
               # cold run populates the cache; the shipped rule reports an error, so ignore the exit code

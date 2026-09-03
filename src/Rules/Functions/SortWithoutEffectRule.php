@@ -50,7 +50,7 @@ final class SortWithoutEffectRule implements Rule
 	private const REASON_MESSAGES = [
 		'empty' => 'Parameter #1 $array (%s) of function %s is empty, call has no effect.',
 		'list' => 'Parameter #1 $array (%s) of function %s is a list, call has no effect.',
-		'singleElement' => 'Parameter #1 $array (%s) of function %s has at most 1 element, call has no effect.',
+		'noop' => 'Parameter #1 $array (%s) of function %s has at most 1 element, call has no effect.',
 	];
 
 	public function __construct(

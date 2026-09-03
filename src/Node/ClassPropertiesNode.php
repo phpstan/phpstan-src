@@ -291,19 +291,19 @@ final class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 					}
 				}
 				if ($methodScope === null) {
-					$methodScope = $statementResult->getScope();
+					$methodScope = $statementResult->getScope()->toWalkScope();
 					continue;
 				}
 
-				$methodScope = $methodScope->mergeWith($statementResult->getScope());
+				$methodScope = $methodScope->mergeWith($statementResult->getScope()->toWalkScope());
 			}
 
 			foreach ($returnStatementsNode->getReturnStatements() as $returnStatement) {
 				if ($methodScope === null) {
-					$methodScope = $returnStatement->getScope();
+					$methodScope = $returnStatement->getScope()->toWalkScope();
 					continue;
 				}
-				$methodScope = $methodScope->mergeWith($returnStatement->getScope());
+				$methodScope = $methodScope->mergeWith($returnStatement->getScope()->toWalkScope());
 			}
 
 			if ($methodScope === null) {

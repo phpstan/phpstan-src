@@ -19,6 +19,18 @@ final class ExprHandlerRegistry
 	private static array $exprHandlersByClass = [];
 
 	/**
+	 * Handlers belong to the container they came from, and spl_object_id() is
+	 * recycled as soon as a container is freed - so ContainerFactory drops the
+	 * memo whenever another container takes over the global state.
+	 *
+	 * @internal
+	 */
+	public static function clearCache(): void
+	{
+		self::$exprHandlersByClass = [];
+	}
+
+	/**
 	 * @return ExprHandler<Expr>|null
 	 */
 	public static function resolve(Expr $expr, Container $container): ?ExprHandler

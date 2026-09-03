@@ -24,6 +24,15 @@ final class StmtHandlerRegistry
 	private static array $stmtHandlersByClass = [];
 
 	/**
+	 * @see ExprHandlerRegistry::clearCache()
+	 * @internal
+	 */
+	public static function clearCache(): void
+	{
+		self::$stmtHandlersByClass = [];
+	}
+
+	/**
 	 * @return StmtHandler<Stmt>|null
 	 */
 	public static function resolve(Stmt $stmt, Container $container): ?StmtHandler

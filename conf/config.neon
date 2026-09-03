@@ -256,6 +256,7 @@ parameters:
 		- [parameters, internalErrorsCountLimit]
 		- [parameters, cache]
 		- [parameters, memoryLimitFile]
+		- [parameters, tmpDir]
 		- [parameters, pro]
 		- parametersSchema
 

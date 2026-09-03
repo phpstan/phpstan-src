@@ -902,6 +902,18 @@ jobs:
               ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
               ../bashunit -a contains 'UsesCopied.php:16:Method ResultCacheE2EPathRepository\UsesCopied::doUsesCopied() should return int but returns string.' "$OUTPUT"
           - script: |
+              cd e2e/result-cache-composer-json
+              composer install
+              ../../bin/phpstan analyse
+              # composer.json decides which PHP version the analysis targets (config.platform.php) and
+              # which symbols the autoloader can reach, but its contents are hashed nowhere in the cache
+              # metadata - composerLocks and composerInstalled cover composer.lock and installed.php, and
+              # neither of those moves when only composer.json changes.
+              patch -p0 < platform.patch
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Foo.php:10:Function str_contains not found.' "$OUTPUT"
+          - script: |
               cd e2e/result-cache-extension-update
               composer install
               # cold run populates the cache; the shipped rule reports an error, so ignore the exit code

@@ -604,8 +604,10 @@ final class StaticCallHandler implements ExprHandler
 				));
 				$specifiedTypes = $this->defaultNarrowingHelper->specifyTypesFromAsserts($context, $expr, $asserts, $resolvedParametersAcceptor, $scope);
 				if ($specifiedTypes !== null) {
+					// see MethodCallHandler::specifyTypes() - the call's own key gets
+					// the purity gate, the asserts narrow their subjects regardless
 					return $specifiedTypes
-						->unionWith($this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context))
+						->unionWith($this->defaultStaticCallNarrowing($scope, $expr, $classResult, $nodeScopeResolver, $context))
 						->setRootExpr($specifiedTypes->getRootExpr());
 				}
 			}

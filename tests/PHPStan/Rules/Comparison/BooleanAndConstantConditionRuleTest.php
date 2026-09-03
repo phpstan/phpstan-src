@@ -540,4 +540,10 @@ class BooleanAndConstantConditionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug15170(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-15170.php'], []);
+	}
+
 }

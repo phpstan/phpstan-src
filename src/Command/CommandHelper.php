@@ -312,7 +312,11 @@ final class CommandHelper
 
 		if (class_exists('PHPStan\ExtensionInstaller\GeneratedConfig')) {
 			$generatedConfigReflection = new ReflectionClass('PHPStan\ExtensionInstaller\GeneratedConfig');
-			$generatedConfigDirectory = dirname($generatedConfigReflection->getFileName());
+			$generatedConfigFileName = $generatedConfigReflection->getFileName();
+			if ($generatedConfigFileName === false) {
+				throw new ShouldNotHappenException('PHPStan\ExtensionInstaller\GeneratedConfig is not defined in a file.');
+			}
+			$generatedConfigDirectory = dirname($generatedConfigFileName);
 			foreach (GeneratedConfig::EXTENSIONS as $name => $extensionConfig) {
 				foreach ($extensionConfig['extra']['includes'] ?? [] as $includedFile) {
 					if (!is_string($includedFile)) {

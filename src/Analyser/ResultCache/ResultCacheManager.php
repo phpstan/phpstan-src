@@ -24,6 +24,8 @@ use PHPStan\File\FileFinder;
 use PHPStan\File\FileHelper;
 use PHPStan\Internal\ArrayHelper;
 use PHPStan\Internal\ComposerHelper;
+use PHPStan\Php\ComposerPhpVersionFactory;
+use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\StubFilesProvider;
 use PHPStan\ShouldNotHappenException;
 use ReflectionClass;
@@ -84,7 +86,7 @@ final class ResultCacheManager
 	 */
 	private const EXTENSIONS_NOT_INVALIDATING_CACHE = ['xdebug', 'blackfire', 'phpstan_turbo'];
 
-	private const CACHE_VERSION = 'v16-nonAnalysedExportedNodes';
+	private const CACHE_VERSION = 'v17-phpVersionForAnalysis';
 
 	private const SCANNED_FILE_APPEARED = 'appeared';
 	private const SCANNED_FILE_EDITED = 'edited';
@@ -159,6 +161,8 @@ final class ResultCacheManager
 		private int $skipResultCacheIfOlderThanDays,
 		#[AutowiredParameter(ref: '%rootDir%')]
 		private string $anchorDirectory,
+		private PhpVersion $phpVersion,
+		private ComposerPhpVersionFactory $composerPhpVersionFactory,
 	)
 	{
 	}
@@ -1760,11 +1764,24 @@ return [
 		// __DIR__ . '/../x', --autoload-file may be given as ./vendor/autoload.php. Normalizing them
 		// here makes the comparison one of paths, not of spellings - otherwise such an entry reads
 		// as a metadata change on every run and the whole cache is discarded every time.
+		$composerMinPhpVersion = $this->composerPhpVersionFactory->getMinVersion();
+		$composerMaxPhpVersion = $this->composerPhpVersionFactory->getMaxVersion();
+
 		return $this->getPathTransformer()->normalizeMeta([
 			'cacheVersion' => self::CACHE_VERSION,
 			'phpstanVersion' => ComposerHelper::getPhpStanVersion(),
 			'metaExtensions' => $this->getMetaFromPhpStanExtensions(),
 			'phpVersion' => PHP_VERSION_ID,
+			// The version the analysis targets, which is not the one PHPStan runs on: it can come from
+			// the phpVersion parameter, or from config.platform.php in composer.json. The parameter is
+			// part of projectConfig, but composer.json is hashed nowhere - and the two version ranges
+			// below come from its require section, which is not in composer.lock's content hash either,
+			// so a composer update need not move anything else in this metadata.
+			'phpVersionForAnalysis' => [$this->phpVersion->getVersionId(), $this->phpVersion->getSource()],
+			'composerPhpVersionRange' => [
+				$composerMinPhpVersion !== null ? $composerMinPhpVersion->getVersionId() : null,
+				$composerMaxPhpVersion !== null ? $composerMaxPhpVersion->getVersionId() : null,
+			],
 			'projectConfig' => $projectConfigArray,
 			'analysedPaths' => $this->analysedPaths,
 			'scannedFiles' => $this->getScannedFiles($allAnalysedFiles),

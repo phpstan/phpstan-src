@@ -1,0 +1,11 @@
+{
+	"name": "phpstan/result-cache-composer-json-e2e",
+	"autoload": {
+		"classmap": ["src"]
+	},
+	"config": {
+		"platform": {
+			"php": "8.4.0"
+		}
+	}
+}

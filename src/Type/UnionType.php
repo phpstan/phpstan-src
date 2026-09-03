@@ -499,6 +499,9 @@ class UnionType implements CompoundType
 		if (isset($this->cachedDescriptions[$level->getLevelValue()])) {
 			return $this->cachedDescriptions[$level->getLevelValue()];
 		}
+		/**
+		 * @param Type[] $types
+		 */
 		$joinTypes = static function (array $types) use ($level): string {
 			$typeNames = [];
 			foreach ($types as $i => $type) {

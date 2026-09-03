@@ -1,0 +1,5 @@
+--- rule-lib/composer.json
++++ rule-lib/composer.json
+@@ -1 +1 @@
+-{ "name": "test/rule-lib", "version": "1.0.0", "autoload": { "psr-4": { "Test\\RuleLib\\": "src/" } } }
++{ "name": "test/rule-lib", "version": "2.0.0", "autoload": { "psr-4": { "Test\\RuleLib\\": "src/" } } }

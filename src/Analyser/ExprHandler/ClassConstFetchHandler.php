@@ -5,7 +5,9 @@ namespace PHPStan\Analyser\ExprHandler;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Identifier;
+use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
+use PHPStan\Analyser\ClosureBindScopeResolver;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
@@ -33,6 +35,7 @@ final class ClassConstFetchHandler implements ExprHandler
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private ExpressionResultFactory $expressionResultFactory,
+		private ClosureBindScopeResolver $closureBindScopeResolver,
 	)
 	{
 	}
@@ -48,10 +51,18 @@ final class ClassConstFetchHandler implements ExprHandler
 			return new MixedType();
 		}
 
+		$classReflection = $scope->isInClass() ? $scope->getClassReflection() : null;
+		if ($expr->class instanceof Name) {
+			$bindScopeReflection = $this->closureBindScopeResolver->resolveScopeClass($scope, $expr->class);
+			if ($bindScopeReflection !== null) {
+				$classReflection = $bindScopeReflection;
+			}
+		}
+
 		return $this->initializerExprTypeResolver->getClassConstFetchTypeByReflection(
 			$expr->class,
 			$expr->name->name,
-			$scope->isInClass() ? $scope->getClassReflection() : null,
+			$classReflection,
 			static fn (Expr $e): Type => $scope->getType($e),
 		);
 	}

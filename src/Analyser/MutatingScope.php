@@ -41,6 +41,7 @@ use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
 use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\VirtualNode;
+use PHPStan\Parser\ClosureBindArgVisitor;
 use PHPStan\Parser\Parser;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Php\PhpVersionFactory;
@@ -1417,8 +1418,22 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	public function resolveName(Name $name): string
 	{
 		$originalClass = (string) $name;
+		$lowerClass = strtolower($originalClass);
+
+		$bindScopeClassReflection = $this->resolveClosureBindScopeClass($name);
+		if ($bindScopeClassReflection !== null) {
+			if (in_array($lowerClass, ['self', 'static'], true)) {
+				return $bindScopeClassReflection->getName();
+			}
+			if ($lowerClass === 'parent') {
+				$parentClassReflection = $bindScopeClassReflection->getParentClass();
+				if ($parentClassReflection !== null) {
+					return $parentClassReflection->getName();
+				}
+			}
+		}
+
 		if ($this->isInClass()) {
-			$lowerClass = strtolower($originalClass);
 			if (in_array($lowerClass, [
 				'self',
 				'static',
@@ -1441,17 +1456,26 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	/** @api */
 	public function resolveTypeByName(Name $name): TypeWithClassName
 	{
-		if ($name->toLowerString() === 'static' && $this->isInClass()) {
-			if ($this->inClosureBindScopeClasses !== [] && $this->inClosureBindScopeClasses !== ['static']) {
-				if ($this->reflectionProvider->hasClass($this->inClosureBindScopeClasses[0])) {
-					return new StaticType($this->reflectionProvider->getClass($this->inClosureBindScopeClasses[0]));
-				}
+		$bindScopeClassReflection = $this->resolveClosureBindScopeClass($name);
+		if ($name->toLowerString() === 'static') {
+			if ($bindScopeClassReflection !== null) {
+				return new StaticType($bindScopeClassReflection);
 			}
+			if ($this->isInClass()) {
+				if ($this->inClosureBindScopeClasses !== [] && $this->inClosureBindScopeClasses !== ['static']) {
+					if ($this->reflectionProvider->hasClass($this->inClosureBindScopeClasses[0])) {
+						return new StaticType($this->reflectionProvider->getClass($this->inClosureBindScopeClasses[0]));
+					}
+				}
 
-			return new StaticType($this->getClassReflection());
+				return new StaticType($this->getClassReflection());
+			}
 		}
 
 		$originalClass = $this->resolveName($name);
+		if ($bindScopeClassReflection !== null && $this->reflectionProvider->hasClass($originalClass)) {
+			return new ObjectType($originalClass);
+		}
 		if ($this->isInClass()) {
 			if ($this->inClosureBindScopeClasses === [$originalClass]) {
 				if ($this->reflectionProvider->hasClass($originalClass)) {
@@ -1468,6 +1492,28 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		}
 
 		return new ObjectType($originalClass);
+	}
+
+	/**
+	 * Resolves the class a `self`/`parent`/`static` node is bound to by a surrounding
+	 * `Closure::bind()` call, annotated by {@see ClosureBindArgVisitor} and resolved by
+	 * {@see ClosureBindScopeResolver}. Returns null when the node is not inside a bound
+	 * closure or the bind scope argument does not resolve to a single known class (e.g.
+	 * the default "static" scope).
+	 *
+	 * This complements enterClosureBind() and inClosureBindScopeClasses: that scope-based
+	 * path owns member accessibility while the closure body is being processed, but cannot
+	 * reach this case, because the body's type is inferred in the enclosing scope where the
+	 * closure-bind scope classes are not available (including outside any class).
+	 */
+	private function resolveClosureBindScopeClass(Name $name): ?ClassReflection
+	{
+		// Cheap pre-check so the common path stays free of a container lookup.
+		if (!$name->hasAttribute(ClosureBindArgVisitor::SCOPE_ATTRIBUTE_NAME)) {
+			return null;
+		}
+
+		return $this->container->getByType(ClosureBindScopeResolver::class)->resolveScopeClass($this, $name);
 	}
 
 	/**

@@ -715,7 +715,14 @@ final class DependencyResolver
 			$phpDoc = $classReflection->getResolvedPhpDoc();
 			if ($phpDoc !== null) {
 				foreach ($phpDoc->getTypeAliasImportTags() as $importTag) {
-					$dependencies[] = $this->reflectionProvider->getClass($importTag->getImportedFrom());
+					// guarded like every other tag above: the class an alias is imported from can be gone,
+					// and asking for it then throws out of the whole walk - the file would record no
+					// dependency at all, not even the parent class it extends
+					$importedFrom = $importTag->getImportedFrom();
+					if (!$this->reflectionProvider->hasClass($importedFrom)) {
+						continue;
+					}
+					$dependencies[] = $this->reflectionProvider->getClass($importedFrom);
 				}
 			}
 

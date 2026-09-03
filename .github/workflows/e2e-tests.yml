@@ -938,6 +938,19 @@ jobs:
               echo "$OUTPUT"
               ../bashunit -a contains 'Factory.php:12:Instantiated class ResultCacheE2EStringClass\Thing not found.' "$OUTPUT"
           - script: |
+              cd e2e/result-cache-import-type-deleted
+              ../../bin/phpstan analyse
+              # Deleting the class an imported type alias comes from makes the PHPDoc of Base.php
+              # unresolvable, and a file whose PHPDoc cannot be resolved records no dependencies at all -
+              # the edge to User.php is dropped. The next edit of Base.php must still reach User.php.
+              rm src/Aliases.php
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              patch -b -p0 < signature.patch
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'User.php:10:Method ResultCacheE2EImportType\User::doUser() should return int but returns string.' "$OUTPUT"
+          - script: |
               cd e2e/result-cache-extension-update
               composer install
               # cold run populates the cache; the shipped rule reports an error, so ignore the exit code

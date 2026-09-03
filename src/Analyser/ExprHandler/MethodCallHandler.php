@@ -536,8 +536,12 @@ final class MethodCallHandler implements ExprHandler
 				));
 				$specifiedTypes = $this->defaultNarrowingHelper->specifyTypesFromAsserts($context, $expr, $asserts, $resolvedParametersAcceptor, $scope);
 				if ($specifiedTypes !== null) {
+					// the asserts narrow their subjects regardless; the call's OWN
+					// key goes through the same purity gate as the assert-less
+					// default narrowing - an impure method evaluated a second time
+					// must not read the first call's truthiness
 					return $specifiedTypes
-						->unionWith($this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context))
+						->unionWith($this->defaultMethodCallNarrowing($scope, $expr, $varResult, $context))
 						->setRootExpr($specifiedTypes->getRootExpr());
 				}
 			}

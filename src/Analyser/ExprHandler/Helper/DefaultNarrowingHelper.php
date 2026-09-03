@@ -121,9 +121,8 @@ final class DefaultNarrowingHelper
 	 * specifyDefaultTypes() for a chain containing a nullsafe: a truthy chain
 	 * did not short-circuit, so its fully plain twin ($a?->b()?->c() ->
 	 * $a->b()->c()) holds the same value and the source reads it that way once
-	 * every link is known non-null. The twin is keyed through the create path,
-	 * so the impure gate applies to it exactly as to the chain itself - an
-	 * impure call's value is never remembered, plain or nullsafe.
+	 * every link is known non-null. The impure gate applies to the whole family
+	 * of keys - an impure call's value is never remembered, plain or nullsafe.
 	 */
 	public function specifyDefaultTypesWithPlainTwin(Expr $expr, ?ExpressionResult $exprResult, TypeSpecifierContext $context, MutatingScope $s): SpecifiedTypes
 	{
@@ -134,17 +133,52 @@ final class DefaultNarrowingHelper
 
 		// The result is the one-level twin's ($a?->b() walked as $a->b()), and
 		// its impure point is keyed to that very node - so the twin node it
-		// carries is the subject, not a rebuilt one (the impure gate compares
-		// node identity). For a deeper chain the fully plain form differs from
-		// the twin only in its receiver; it is keyed too, through the same gate.
+		// carries is the subject, not a rebuilt one (the gate compares node
+		// identity). The `?->` node and the deeper chain's fully plain form are
+		// rebuilt, so they cannot be gated by identity - they name the same call
+		// and share the twin's verdict.
 		$twinNode = $exprResult->getExpr();
 		$twin = $this->createSubjectTypesFromResultState($s, $twinNode, $exprResult, StaticTypeFactory::falsey(), TypeSpecifierContext::createFalse());
+		if (!$this->isSubjectValueRemembered($exprResult, $twinNode)) {
+			// only the receiver-not-null fan createSubjectTypesFromResultState()
+			// produced for the impure call survives
+			return $twin->setRootExpr($expr);
+		}
+
 		$plainChain = NullsafeOperatorHelper::getNullsafeShortcircuitedExpr($expr);
 		if ($plainChain !== $expr && $this->exprPrinter->printExpr($plainChain) !== $this->exprPrinter->printExpr($twinNode)) {
 			$twin = $twin->unionWith($this->createSubjectTypesFromResultState($s, $plainChain, $exprResult, StaticTypeFactory::falsey(), TypeSpecifierContext::createFalse()));
 		}
 
 		return $default->unionWith($twin)->setRootExpr($expr);
+	}
+
+	/**
+	 * The impure gate read off an already-processed result: a call whose own
+	 * execution is (possibly) impure must not get a remembered type. The
+	 * result's impure point is keyed to the very node that was walked, so the
+	 * subject has to be that node and not a rebuilt one.
+	 */
+	private function isSubjectValueRemembered(ExpressionResult $subjectResult, Expr $subject): bool
+	{
+		if (
+			!$subject instanceof Expr\FuncCall
+			&& !$subject instanceof Expr\MethodCall
+			&& !$subject instanceof Expr\StaticCall
+			&& !$subject instanceof Expr\NullsafeMethodCall
+		) {
+			return true;
+		}
+
+		foreach ($subjectResult->getImpurePoints() as $impurePoint) {
+			if ($impurePoint->getNode() !== $subject) {
+				continue;
+			}
+
+			return !$impurePoint->isCertain() && $this->rememberPossiblyImpureFunctionValues;
+		}
+
+		return true;
 	}
 
 	/**
@@ -216,31 +250,17 @@ final class DefaultNarrowingHelper
 			// a call whose own execution is (possibly) impure must not get a
 			// remembered type - the gate reads the result's own impure point
 			// instead of re-asking reflection like the old create() did
-			if (
-				$subject instanceof Expr\FuncCall
-				|| $subject instanceof Expr\MethodCall
-				|| $subject instanceof Expr\StaticCall
-				|| $subject instanceof Expr\NullsafeMethodCall
-			) {
-				foreach ($subjectResult->getImpurePoints() as $impurePoint) {
-					if ($impurePoint->getNode() !== $subject) {
-						continue;
-					}
-					if ($impurePoint->isCertain() || !$this->rememberPossiblyImpureFunctionValues) {
-						// the call's value is not remembered, but a nullsafe
-						// receiver chain still narrows not-null: the chain must
-						// have evaluated for the (impure) call to produce any
-						// non-null value at all (mirrors the old createForExpr()
-						// returning createNullsafeTypes() from its impure branch)
-						if ($subjectResult->containsNullsafe() && $this->nullsafeShortCircuitRuledOut($s, $subjectResult, $type, $context)) {
-							return $this->createFirstNullsafeReceiverTypes($s, $subject) ?? new SpecifiedTypes([], []);
-						}
-
-						return new SpecifiedTypes([], []);
-					}
-
-					break;
+			if (!$this->isSubjectValueRemembered($subjectResult, $subject)) {
+				// the call's value is not remembered, but a nullsafe receiver
+				// chain still narrows not-null: the chain must have evaluated
+				// for the (impure) call to produce any non-null value at all
+				// (mirrors the old createForExpr() returning createNullsafeTypes()
+				// from its impure branch)
+				if ($subjectResult->containsNullsafe() && $this->nullsafeShortCircuitRuledOut($s, $subjectResult, $type, $context)) {
+					return $this->createFirstNullsafeReceiverTypes($s, $subject) ?? new SpecifiedTypes([], []);
 				}
+
+				return new SpecifiedTypes([], []);
 			}
 
 			// a chain containing a nullsafe narrows its short-circuited plain

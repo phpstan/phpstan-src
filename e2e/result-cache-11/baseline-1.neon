@@ -1,0 +1,7 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Cannot call method name\(\) on TestResultCache11\\Item\|false\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: src/consumer.php

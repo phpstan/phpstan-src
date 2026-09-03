@@ -2,6 +2,7 @@
 
 namespace PHPStan\Dependency;
 
+use PhpParser\Comment\Doc;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\ArrayDimFetch;
@@ -23,6 +24,7 @@ use PHPStan\Node\InPropertyHookNode;
 use PHPStan\Node\InstantiationCallableNode;
 use PHPStan\Node\MethodCallableNode;
 use PHPStan\Node\StaticMethodCallableNode;
+use PHPStan\Node\VirtualNode;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
@@ -59,6 +61,19 @@ final class DependencyResolver
 	{
 		$dependenciesReflections = [];
 		$dependenciesFilePaths = [];
+
+		if (
+			$node instanceof Node\Stmt
+			&& !$node instanceof VirtualNode
+			&& !$node instanceof Node\Stmt\ClassLike
+			&& !$node instanceof Node\Stmt\ClassMethod
+			&& !$node instanceof Node\Stmt\Function_
+			&& !$node instanceof Node\Stmt\Property
+			&& !$node instanceof Node\Stmt\ClassConst
+			&& !$node instanceof Node\Stmt\Const_
+		) {
+			$this->extractStmtVarTags($node, $scope, $dependenciesReflections);
+		}
 
 		if ($node instanceof Node\Stmt\Class_) {
 			if (isset($node->namespacedName)) {
@@ -578,6 +593,40 @@ final class DependencyResolver
 		}
 
 		return $classNames;
+	}
+
+	/**
+	 * Extracts the classes referenced from a variable-level var-tag PHPDoc attached to a statement.
+	 *
+	 * @param array<int, ClassReflection|FunctionReflection|ConstantReflection> $dependenciesReflections
+	 */
+	private function extractStmtVarTags(Node\Stmt $stmt, Scope $scope, array &$dependenciesReflections): void
+	{
+		$comments = $stmt->getComments();
+		if (count($comments) === 0) {
+			return;
+		}
+
+		$function = $scope->getFunction();
+		foreach ($comments as $comment) {
+			if (!$comment instanceof Doc) {
+				continue;
+			}
+
+			$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
+				$scope->getFile(),
+				$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
+				$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
+				$function !== null ? $function->getName() : null,
+				$comment->getText(),
+			);
+
+			foreach ($resolvedPhpDoc->getVarTags() as $varTag) {
+				foreach ($varTag->getType()->getReferencedClasses() as $referencedClass) {
+					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+				}
+			}
+		}
 	}
 
 	/**

@@ -1,0 +1,13 @@
+diff --git a/e2e/result-cache-11/src/Coll.php b/e2e/result-cache-11/src/Coll.php
+index 9a6395d..773bb21 100644
+--- a/e2e/result-cache-11/src/Coll.php
++++ b/e2e/result-cache-11/src/Coll.php
+@@ -4,7 +4,7 @@ namespace TestResultCache11;
+ 
+ /**
+  * @template TValue of object
+- * @extends \Iterator<int, TValue>
++ * @extends \Iterator<int, TValue|false>
+  */
+ interface Coll extends \Iterator
+ {

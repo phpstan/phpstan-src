@@ -24,6 +24,7 @@ use React\Socket\TcpConnector;
 use Symfony\Component\Console\Input\InputInterface;
 use function array_diff;
 use function array_key_exists;
+use function array_merge;
 use function count;
 use function filemtime;
 use function filesize;
@@ -190,14 +191,20 @@ final class FixerWorkerRunner
 					]);
 				},
 			)->then(function (AnalyserResult $intermediateAnalyserResult) use ($resultCacheManager, $resultCache, $errorOutput, $isOnlyFiles, $ignoredErrorHelperResult, $inceptionFiles, $out): void {
-				$analyserResult = $resultCacheManager->process(
+				$resultCacheResult = $resultCacheManager->process(
 					$intermediateAnalyserResult,
 					$resultCache,
 					$errorOutput,
 					false,
 					true,
-				)->getAnalyserResult();
-				$finalizerResult = $this->analyserResultFinalizer->finalize($analyserResult, $isOnlyFiles, false);
+				);
+				$finalizerResult = $this->analyserResultFinalizer->finalize($resultCacheResult->getAnalyserResult(), $isOnlyFiles, false);
+				// The rules built on collected data have run by now, so the files their errors are
+				// reported in are known and the cache can be written knowing which files to watch.
+				$resultCacheResult->save(array_merge(
+					$finalizerResult->getCollectorErrors(),
+					$finalizerResult->getLocallyIgnoredCollectorErrors(),
+				));
 
 				$internalErrors = [];
 				foreach ($finalizerResult->getAnalyserResult()->getInternalErrors() as $internalError) {

@@ -135,11 +135,18 @@ final class AnalyseApplication
 			$processedFiles = $intermediateAnalyserResult->getProcessedFiles();
 
 			$resultCacheResult = $resultCacheManager->process($intermediateAnalyserResult, $resultCache, $errorOutput, $onlyFiles, true);
-			$analyserResult = $this->analyserResultFinalizer->finalize(
+			$finalizerResult = $this->analyserResultFinalizer->finalize(
 				$this->switchTmpFileInAnalyserResult($resultCacheResult->getAnalyserResult(), $insteadOfFile, $tmpFile),
 				$onlyFiles,
 				$debug,
-			)->getAnalyserResult();
+			);
+			// The rules built on collected data have run by now, so the files their errors are reported
+			// in are known and the cache can be written knowing which files to watch.
+			$savedResultCache = $resultCacheResult->save(array_merge(
+				$finalizerResult->getCollectorErrors(),
+				$finalizerResult->getLocallyIgnoredCollectorErrors(),
+			));
+			$analyserResult = $finalizerResult->getAnalyserResult();
 			$internalErrors = $analyserResult->getInternalErrors();
 			$errors = array_merge(
 				$analyserResult->getErrors(),
@@ -153,7 +160,7 @@ final class AnalyseApplication
 			$changedProjectExtensionFilesOutsideOfAnalysedPaths = [];
 			if (
 				$isResultCacheUsed
-				&& $resultCacheResult->isSaved()
+				&& $savedResultCache
 				&& !$onlyFiles
 				&& $projectConfigArray !== null
 			) {
@@ -180,7 +187,6 @@ final class AnalyseApplication
 			$fileSpecificErrors = $ignoredErrorHelperProcessedResult->getNotIgnoredErrors();
 			$notFileSpecificErrors = $ignoredErrorHelperProcessedResult->getOtherIgnoreMessages();
 			$collectedData = $analyserResult->getCollectedData();
-			$savedResultCache = $resultCacheResult->isSaved();
 		}
 
 		return new AnalysisResult(

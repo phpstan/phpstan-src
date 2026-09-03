@@ -9,6 +9,7 @@ use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\ClassMethodsNode;
+use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\Methods\AlwaysUsedMethodExtension;
 use PHPStan\Rules\Rule;
@@ -67,6 +68,10 @@ final class UnusedPrivateMethodRule implements Rule
 				continue;
 			}
 			if (strtolower($methodName) === '__clone') {
+				continue;
+			}
+
+			if ($this->isOverridingPrivateTraitMethod($classReflection, $methodName)) {
 				continue;
 			}
 
@@ -201,6 +206,28 @@ final class UnusedPrivateMethodRule implements Rule
 		}
 
 		return $errors;
+	}
+
+	/**
+	 * A private method overriding a private method of a used trait is called from
+	 * the trait's own methods. Those call sites are invisible when the trait is not
+	 * part of the analysed files.
+	 */
+	private function isOverridingPrivateTraitMethod(ClassReflection $classReflection, string $methodName): bool
+	{
+		foreach ($classReflection->getTraits() as $trait) {
+			if (!$trait->hasNativeMethod($methodName)) {
+				continue;
+			}
+
+			if (!$trait->getNativeMethod($methodName)->isPrivate()) {
+				continue;
+			}
+
+			return true;
+		}
+
+		return false;
 	}
 
 }

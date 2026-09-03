@@ -134,6 +134,16 @@ class UnusedPrivateMethodRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug12201(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12201.php'], [
+			[
+				'Method Bug12201\AnotherKernel::doNothing() is unused.',
+				24,
+			],
+		]);
+	}
+
 	public function testBug14880(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-14880.php'], []);

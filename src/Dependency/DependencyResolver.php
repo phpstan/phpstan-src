@@ -407,11 +407,21 @@ final class DependencyResolver
 					}
 				}
 			}
-		} elseif (
-			$node instanceof Node\Expr\New_
-			&& $node->class instanceof Node\Name
-		) {
-			$this->addClassToDependencies($scope->resolveName($node->class), $dependenciesReflections);
+		} elseif ($node instanceof Node\Expr\New_) {
+			if ($node->class instanceof Node\Name) {
+				$this->addClassToDependencies($scope->resolveName($node->class), $dependenciesReflections);
+			} elseif ($node->class instanceof Node\Expr) {
+				// new $class(), where the class is named by a string the type system resolved and no name
+				// node exists to read it from - the same shape StaticCall and ClassConstFetch already
+				// handle. The type of the whole expression is the instantiated class.
+				foreach ($scope->getType($node)->getReferencedClasses() as $referencedClass) {
+					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+				}
+
+				foreach ($this->getClassNamesFromClassString($scope->getType($node->class)) as $referencedClass) {
+					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+				}
+			}
 		} elseif ($node instanceof Node\Stmt\Trait_ && $node->namespacedName !== null) {
 			try {
 				$classReflection = $this->reflectionProvider->getClass($node->namespacedName->toString());
@@ -451,6 +461,11 @@ final class DependencyResolver
 		} elseif ($node instanceof Node\Expr\Instanceof_) {
 			if ($node->class instanceof Name) {
 				$this->addClassToDependencies($scope->resolveName($node->class), $dependenciesReflections);
+			} else {
+				// $x instanceof $class - the same string-named class as in the New_ arm above
+				foreach ($this->getClassNamesFromClassString($scope->getType($node->class)) as $referencedClass) {
+					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+				}
 			}
 		} elseif ($node instanceof Node\Stmt\Catch_) {
 			foreach ($node->types as $type) {
@@ -528,6 +543,25 @@ final class DependencyResolver
 
 		$itemType = $scope->getType($items[0]->value);
 		return $itemType->isClassString()->yes();
+	}
+
+	/**
+	 * The classes a string naming a class points at, so that `new $class()` and `$x instanceof $class`
+	 * record an edge to the file declaring it, the way a written-out class name does.
+	 *
+	 * @return list<string>
+	 */
+	private function getClassNamesFromClassString(Type $type): array
+	{
+		$classNames = [];
+		foreach ($type->getConstantStrings() as $constantString) {
+			$objectType = $constantString->getClassStringObjectType();
+			foreach ($objectType->getObjectClassNames() as $className) {
+				$classNames[] = $className;
+			}
+		}
+
+		return $classNames;
 	}
 
 	/**

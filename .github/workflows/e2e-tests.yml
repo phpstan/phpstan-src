@@ -928,6 +928,16 @@ jobs:
               echo "$OUTPUT"
               ../bashunit -a not_contains 'Instantiated class ResultCacheE2EEmptyFileGainsSymbol\Thing not found.' "$OUTPUT"
           - script: |
+              cd e2e/result-cache-string-class
+              ../../bin/phpstan analyse
+              # The instantiated class is named by a constant string, so it is resolved through the type
+              # system rather than through a name node, and the dependency graph records no edge from
+              # Thing.php to Factory.php. Deleting the class still has to be noticed.
+              rm src/Thing.php
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Factory.php:12:Instantiated class ResultCacheE2EStringClass\Thing not found.' "$OUTPUT"
+          - script: |
               cd e2e/result-cache-extension-update
               composer install
               # cold run populates the cache; the shipped rule reports an error, so ignore the exit code

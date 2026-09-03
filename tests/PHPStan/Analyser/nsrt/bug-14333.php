@@ -195,3 +195,17 @@ function moreTest(bool $bool, int $int) {
 	assertType("1|2|3|4|5|'a0'|'a1'|'a2'|'a3'|'a4'|'a5'", $e);
 	assertType("'aKey'", $f);
 }
+
+/** @param array<int, string> $arr */
+function testImplicitIndexAfterUnpack(array $arr): void
+{
+	$a = 1;
+
+	$b = [...$arr, &$a];
+	assertType('1', $a);
+
+	// the unpacked array is of unknown length, so the byref slot's index is
+	// unknown too - a write to any int key might have hit it
+	$b[1] = 'one';
+	assertType('1|string', $a);
+}

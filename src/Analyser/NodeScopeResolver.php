@@ -2335,6 +2335,37 @@ class NodeScopeResolver
 			}
 		}
 
+		foreach ($args as $i => $arg) {
+			if ($arg->unpack) {
+				// spread elements land on parameters this loop cannot map, and PHP
+				// does not carry the reference through the unpacking anyway
+				continue;
+			}
+
+			$currentParameter = null;
+			if ($writebackParameters !== null) {
+				if (isset($writebackParameters[$i])) {
+					$currentParameter = $writebackParameters[$i];
+				} elseif (count($writebackParameters) > 0 && $writebackAcceptor->isVariadic()) {
+					$currentParameter = array_last($writebackParameters);
+				}
+			}
+
+			if ($currentParameter !== null && $currentParameter->passedByReference()->createsNewVariable()) {
+				// the by-reference writeback above already propagates through the slots
+				continue;
+			}
+
+			$scope = $this->processByRefArrayItemsPassedByValue(
+				$scope,
+				$storage,
+				$stmt,
+				$arg->value,
+				$currentParameter !== null ? $currentParameter->getType() : new MixedType(),
+				$nodeCallback,
+			);
+		}
+
 		// not storing this, it's scope after processing all args
 		return new ArgsResult(
 			$this->expressionResultFactory->create($scope, $scope, $callLike, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints),
@@ -2619,6 +2650,88 @@ class NodeScopeResolver
 		}
 
 		return null;
+	}
+
+	/**
+	 * A `&$v` item in an array literal keeps aliasing $v after the array is copied into
+	 * the callee, so anything the callee writes into that slot lands in $v. The same holds
+	 * for an array variable built with by-reference items and only then passed to the call.
+	 *
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	private function processByRefArrayItemsPassedByValue(
+		MutatingScope $scope,
+		ExpressionResultStorage $storage,
+		Node\Stmt $stmt,
+		Expr $argValue,
+		Type $parameterType,
+		callable $nodeCallback,
+	): MutatingScope
+	{
+		foreach ($this->resolveByRefArrayItemTypes($scope, $argValue, $parameterType) as [$referencedExpr, $slotType]) {
+			if ($referencedExpr instanceof Variable && $referencedExpr->name === 'this') {
+				continue;
+			}
+
+			if ($scope->hasExpressionType($referencedExpr)->yes()) {
+				// the callee does not have to write into the slot at all
+				$slotType = TypeCombinator::union($scope->getType($referencedExpr), $slotType);
+			}
+
+			$scope = $this->processVirtualAssign(
+				$scope,
+				$storage,
+				$stmt,
+				$referencedExpr,
+				new TypeExpr($slotType),
+				$nodeCallback,
+			)->getScope();
+		}
+
+		return $scope;
+	}
+
+	/**
+	 * By-reference array item slots of $argValue, each with the type the callee can
+	 * write through the reference - the slot read off $parameterType.
+	 *
+	 * @return list<array{Expr, Type}> pairs of [referenced expression, slot type]
+	 */
+	private function resolveByRefArrayItemTypes(MutatingScope $scope, Expr $argValue, Type $parameterType): array
+	{
+		if ($argValue instanceof Expr\Array_) {
+			// rooting the slot expressions at the parameter type resolves the offsets
+			// through the usual dim fetch reading
+			$slots = [];
+			foreach (ArrayByRefItemSlots::resolve($scope, $argValue, new TypeExpr($parameterType)) as [$referencedExpr, $slotExpr]) {
+				if (!$this->isByRefArrayItemWritable($referencedExpr)) {
+					continue;
+				}
+
+				$slots[] = [$referencedExpr, $scope->getType($slotExpr)];
+			}
+
+			return $slots;
+		}
+
+		if ($argValue instanceof Variable && is_string($argValue->name)) {
+			// the array was built with by-reference items earlier - the slots are
+			// already recorded in the scope
+			return $scope->resolveByRefArrayItemTypes($argValue->name, $parameterType);
+		}
+
+		return [];
+	}
+
+	private function isByRefArrayItemWritable(Expr $expr): bool
+	{
+		if ($expr instanceof Variable) {
+			return is_string($expr->name);
+		}
+
+		return $expr instanceof PropertyFetch
+			|| $expr instanceof StaticPropertyFetch
+			|| $expr instanceof ArrayDimFetch;
 	}
 
 	/**

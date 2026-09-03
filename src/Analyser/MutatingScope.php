@@ -2881,6 +2881,45 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	}
 
 	/**
+	 * Types of the expressions aliased by `&` array items (`$array = [&$v]`) of $variableName,
+	 * resolved from $arrayType as if that was the array's new value. The slot keeps aliasing
+	 * the referenced expression even after the array is copied, so a write into the slot is
+	 * a write into the referenced expression.
+	 *
+	 * @return list<array{Expr, Type}> pairs of [referenced expression, slot type]
+	 */
+	public function resolveByRefArrayItemTypes(string $variableName, Type $arrayType): array
+	{
+		$itemTypes = [];
+		foreach ($this->expressionTypes as $expressionType) {
+			$expr = $expressionType->getExpr();
+			if (!$expr instanceof IntertwinedVariableByReferenceWithExpr) {
+				continue;
+			}
+			if (!$expressionType->getCertainty()->yes()) {
+				continue;
+			}
+			if ($expr->getVariableName() !== $variableName) {
+				continue;
+			}
+			$assignedExpr = $expr->getAssignedExpr();
+			if (
+				!$assignedExpr instanceof Expr\ArrayDimFetch
+				|| ScopeOps::getIntertwinedRefRootVariableName($assignedExpr) !== $variableName
+			) {
+				continue;
+			}
+
+			$itemTypes[] = [
+				$expr->getExpr(),
+				$this->resolveIntertwinedAssignedType($this, $arrayType, $assignedExpr, $variableName, false),
+			];
+		}
+
+		return $itemTypes;
+	}
+
+	/**
 	 * @param list<string> $intertwinedPropagatedFrom
 	 */
 	public function assignVariable(string $variableName, Type $type, Type $nativeType, TrinaryLogic $certainty, array $intertwinedPropagatedFrom = []): self

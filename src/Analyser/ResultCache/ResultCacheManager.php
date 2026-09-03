@@ -1636,12 +1636,10 @@ return [
 
 				$allServiceFiles = $this->getAllDependencies($fileName, $dependencies);
 				if (count($allServiceFiles) === 0) {
-					$normalizedFileName = $this->fileHelper->normalizePath($fileName);
-					foreach ($vendorDirs as $vendorDir) {
-						if (str_starts_with($normalizedFileName, $vendorDir)) {
-							continue 2;
-						}
+					if ($this->isFileOfInstalledPackage($this->fileHelper->normalizePath($fileName), $vendorDirs)) {
+						continue;
 					}
+
 					$projectExtensionFiles[$fileName] = [$this->getFileHash($fileName), false, $class];
 					continue;
 				}
@@ -1657,6 +1655,29 @@ return [
 		}
 
 		return $projectExtensionFiles;
+	}
+
+	/**
+	 * Whether the file belongs to a package Composer installed, which only changes when Composer
+	 * changes it - editing one is not a thing to do, and a version change is noticed through the
+	 * metadata instead. A package from a path repository is the exception: it is the project's own
+	 * code, sitting in vendor/ because Composer copied it there, and it is edited in place.
+	 *
+	 * @param list<string> $vendorDirs
+	 */
+	private function isFileOfInstalledPackage(string $normalizedFileName, array $vendorDirs): bool
+	{
+		foreach ($vendorDirs as $vendorDir) {
+			if (!str_starts_with($normalizedFileName, $vendorDir)) {
+				continue;
+			}
+
+			$package = $this->packageDependencyResolver->resolvePackage($normalizedFileName);
+
+			return $package === null || !$this->packageDependencyResolver->isPathPackage($package);
+		}
+
+		return false;
 	}
 
 	/**

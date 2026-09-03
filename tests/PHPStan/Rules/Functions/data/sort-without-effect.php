@@ -278,3 +278,21 @@ function sortOptionalKeyList(array $optionalList): void
 {
 	sort($optionalList);
 }
+
+function sortSingleElementMapLiteral(): void
+{
+	$array = ['key' => 42];
+	sort($array);
+}
+
+/** @param array{foo?: int} $optional */
+function sortOptionalKeyMap(array $optional): void
+{
+	sort($optional);
+}
+
+/** @param array{foo?: int} $optional */
+function shuffleOptionalKeyMap(array $optional): void
+{
+	shuffle($optional);
+}

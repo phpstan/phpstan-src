@@ -161,7 +161,6 @@ final class AnalysisResult
 		return $this->resultCacheExisted;
 	}
 
-
 	/**
 	 * @return list<string>
 	 */

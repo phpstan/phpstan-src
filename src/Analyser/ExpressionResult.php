@@ -564,6 +564,11 @@ final class ExpressionResult
 	 */
 	public function getTypeOnScope(MutatingScope $scope, bool $useNativeTypes): Type
 	{
+		// An already-promoted asking scope selects native types on its own - a
+		// caller that promotes the scope instead of passing the flag (the
+		// isset/empty/?? folds) must not fall through to the phpdoc flavour of
+		// the result's own type.
+		$useNativeTypes = $useNativeTypes || $scope->nativeTypesPromoted;
 		$readScope = $useNativeTypes ? $scope->doNotTreatPhpDocTypesAsCertain() : $scope;
 		// old-world resolveType() consulted these on every ask, both flavours -
 		// a consumer reading a call's type here (an assign filling the target's
@@ -597,6 +602,7 @@ final class ExpressionResult
 			return true;
 		}
 
+		$useNativeTypes = $useNativeTypes || $scope->nativeTypesPromoted;
 		$readScope = $useNativeTypes ? $scope->doNotTreatPhpDocTypesAsCertain() : $scope;
 
 		return $this->isScopeAuthoritative($readScope) || $this->askScopeVariableStateMatches($scope, $useNativeTypes);

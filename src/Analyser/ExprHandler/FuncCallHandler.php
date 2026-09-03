@@ -631,6 +631,13 @@ final class FuncCallHandler implements ExprHandler
 					: ParametersAcceptorSelector::combineAcceptors($variants);
 			}
 
+			// the same shortcut the named-function branch below takes: the native
+			// signature answers on its own, before any phpdoc-based dynamic
+			// return type extension gets a say
+			if ($nativeTypesPromoted && $parametersAcceptor instanceof ExtendedParametersAcceptor) {
+				return $parametersAcceptor->getNativeReturnType();
+			}
+
 			$functionName = null;
 			if ($expr->name instanceof String_) {
 				/** @var non-empty-string $name */

@@ -25,7 +25,7 @@ final class LazyCollectedData
 	 * @param (Closure(array<string, array{int, int}>): CollectorData)|null $cachedReader
 	 * @param CollectorData $fresh
 	 */
-	private function __construct(
+	public function __construct(
 		private array $cachedIndex,
 		private ?Closure $cachedReader,
 		private array $fresh,
@@ -39,25 +39,6 @@ final class LazyCollectedData
 	public static function fromArray(array $data): self
 	{
 		return new self([], null, $data);
-	}
-
-	/**
-	 * @param array<string, array{int, int}> $cachedIndex
-	 * @param Closure(array<string, array{int, int}>): CollectorData $cachedReader
-	 * @param CollectorData $fresh
-	 */
-	public static function fromCache(array $cachedIndex, Closure $cachedReader, array $fresh = []): self
-	{
-		return new self($cachedIndex, $cachedReader, $fresh);
-	}
-
-	/**
-	 * @param array<string, array{int, int}> $cachedIndex
-	 * @param CollectorData $fresh
-	 */
-	public function with(array $cachedIndex, array $fresh): self
-	{
-		return new self($cachedIndex, $this->cachedReader, $fresh);
 	}
 
 	public function withRenamedFile(string $from, string $to): self
@@ -97,9 +78,9 @@ final class LazyCollectedData
 	}
 
 	/**
-	 * Cached entries first, in the order of the index, then the fresh ones; a fresh entry replaces
-	 * a cached one for the same file. Reads the cache file every time: nothing is kept, so the
-	 * caller decides how long the decoded data lives.
+	 * Cached entries first, then the fresh ones; a fresh entry replaces a cached one for the same
+	 * file. Reads the cache file every time: nothing is kept, so the caller decides how long the
+	 * decoded data lives.
 	 *
 	 * @return CollectorData
 	 */

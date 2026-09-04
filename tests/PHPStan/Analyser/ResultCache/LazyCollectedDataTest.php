@@ -34,7 +34,7 @@ class LazyCollectedDataTest extends PHPStanTestCase
 			return $result;
 		};
 
-		$lazy = LazyCollectedData::fromCache(['b.php' => [10, 20], 'a.php' => [30, 40]], $reader);
+		$lazy = new LazyCollectedData(['b.php' => [10, 20], 'a.php' => [30, 40]], $reader, []);
 		$this->assertFalse($lazy->isEmpty());
 		$this->assertSame(0, $this->reads);
 
@@ -51,8 +51,7 @@ class LazyCollectedDataTest extends PHPStanTestCase
 	public function testFreshEntriesReplaceCachedOnes(): void
 	{
 		$reader = static fn (array $index): array => ['a.php' => [MethodWithoutImpurePointsCollector::class => ['cached']], 'b.php' => [MethodWithoutImpurePointsCollector::class => ['cached']]];
-		$lazy = LazyCollectedData::fromCache(['a.php' => [0, 1], 'b.php' => [1, 1]], $reader)
-			->with(['a.php' => [0, 1], 'b.php' => [1, 1]], ['b.php' => [MethodWithoutImpurePointsCollector::class => ['fresh']], 'c.php' => [MethodWithoutImpurePointsCollector::class => ['fresh']]]);
+		$lazy = new LazyCollectedData(['a.php' => [0, 1], 'b.php' => [1, 1]], $reader, ['b.php' => [MethodWithoutImpurePointsCollector::class => ['fresh']], 'c.php' => [MethodWithoutImpurePointsCollector::class => ['fresh']]]);
 
 		$this->assertSame([
 			'a.php' => [MethodWithoutImpurePointsCollector::class => ['cached']],
@@ -64,7 +63,7 @@ class LazyCollectedDataTest extends PHPStanTestCase
 	public function testWithRenamedFile(): void
 	{
 		$reader = static fn (array $index): array => ['renamed.php' => [MethodWithoutImpurePointsCollector::class => ['cached']]];
-		$lazy = LazyCollectedData::fromCache(['tmp.php' => [0, 1]], $reader, ['tmp2.php' => [MethodWithoutImpurePointsCollector::class => ['fresh']]])
+		$lazy = (new LazyCollectedData(['tmp.php' => [0, 1]], $reader, ['tmp2.php' => [MethodWithoutImpurePointsCollector::class => ['fresh']]]))
 			->withRenamedFile('tmp.php', 'renamed.php')
 			->withRenamedFile('tmp2.php', 'renamed2.php');
 

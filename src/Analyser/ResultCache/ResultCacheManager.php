@@ -148,17 +148,6 @@ final class ResultCacheManager
 	 */
 	private const LAZY_SECTIONS = ['errors', 'locallyIgnoredErrors', 'exportedNodes'];
 
-	/**
-	 * The section that is never decoded as a whole. Collected data is by far the largest part of the
-	 * cache on a project using collectors (a dead code detector stores every member usage there), and
-	 * only the rules that run on CollectedDataNode need it - after the analysis, in the main process.
-	 * readCacheFile() records where each file's entry is and restore() hands that index out as
-	 * LazyCollectedData; save() copies the entries that stay valid byte for byte from the old file.
-	 * Nothing decodes the section before AnalyserResultFinalizer asks for it, so the forked workers
-	 * never inherit it.
-	 */
-	private const INDEXED_SECTION = 'collectedData';
-
 	/** @var array<string, string> */
 	private array $fileHashes = [];
 
@@ -366,15 +355,12 @@ final class ResultCacheManager
 		$data['unmatchedLineIgnores'] = $transformer->absolutizeCompoundKeyed($data['unmatchedLineIgnores']);
 		$data['dependencies'] = $transformer->absolutizeDependencies($data['dependencies']);
 		$data['packageDependencies'] = $transformer->absolutizeFileKeyed($data['packageDependencies'] ?? []);
+		$data['collectedDataIndex'] = $transformer->absolutizeFileKeyed($data['collectedDataIndex']);
 
 		$errorsCallback = $data['errorsCallback'];
 		$data['errorsCallback'] = static fn (): array => $transformer->absolutizeErrors($errorsCallback());
 		$locallyIgnoredErrorsCallback = $data['locallyIgnoredErrorsCallback'];
 		$data['locallyIgnoredErrorsCallback'] = static fn (): array => $transformer->absolutizeErrors($locallyIgnoredErrorsCallback());
-		$collectedDataIndex = [];
-		foreach ($data['collectedDataIndex'] as $relativeFile => $position) {
-			$collectedDataIndex[$transformer->absolutizePath($relativeFile)] = $position;
-		}
 		$exportedNodesCallback = $data['exportedNodesCallback'];
 		$data['exportedNodesCallback'] = static fn (): array => $transformer->absolutizeFileKeyed($exportedNodesCallback());
 
@@ -619,6 +605,7 @@ final class ResultCacheManager
 		$invertedUsedTraitDependenciesToReturn = [];
 		$linesToIgnore = $data['linesToIgnore'];
 		$unmatchedLineIgnores = $data['unmatchedLineIgnores'];
+		$collectedDataIndex = $data['collectedDataIndex'];
 
 		try {
 			// The cached objects are reconstructed here, and a cache written by a PHPStan whose classes
@@ -884,7 +871,7 @@ final class ResultCacheManager
 			locallyIgnoredErrors: $filteredLocallyIgnoredErrors,
 			linesToIgnore: $filteredLinesToIgnore,
 			unmatchedLineIgnores: $filteredUnmatchedLineIgnores,
-			collectedData: LazyCollectedData::fromCache($filteredCollectedDataIndex, $this->createCollectedDataReader($cacheFilePath)),
+			collectedData: new LazyCollectedData($filteredCollectedDataIndex, $this->createCollectedDataReader(), []),
 			dependencies: $invertedDependenciesToReturn,
 			usedTraitDependencies: $invertedUsedTraitDependenciesToReturn,
 			packageDependencies: $packageDependencies,
@@ -1137,11 +1124,9 @@ final class ResultCacheManager
 				}
 			}
 			$savedCollectedData = $doSave($errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedData, $dependencies, $usedTraitDependencies, $packageDependencies, $exportedNodes, $projectExtensionFiles);
-			if ($savedCollectedData !== null) {
-				// The old file is gone after the rename, so the entries are read back from the new one.
-				$collectedData = $savedCollectedData;
-				$saved = true;
-			}
+			$saved = $savedCollectedData !== null;
+			// The old file is gone after the rename, so the cached entries are read back from the new one.
+			$collectedData = $savedCollectedData ?? $collectedData;
 		}
 
 		$flatErrors = [];
@@ -1240,7 +1225,7 @@ final class ResultCacheManager
 			$mergedFresh[$file] = $freshCollectedDataByFile[$file];
 		}
 
-		return $resultCache->getCollectedData()->with($cachedIndex, $mergedFresh);
+		return new LazyCollectedData($cachedIndex, $this->createCollectedDataReader(), $mergedFresh);
 	}
 
 	/**
@@ -1569,7 +1554,7 @@ final class ResultCacheManager
 			}
 		}
 
-		return LazyCollectedData::fromCache($savedCollectedDataIndex, $this->createCollectedDataReader($file), $collectedData->getFresh());
+		return new LazyCollectedData($savedCollectedDataIndex, $this->createCollectedDataReader(), $collectedData->getFresh());
 	}
 
 	/**
@@ -1578,60 +1563,46 @@ final class ResultCacheManager
 	 * every other section is, so the file does not depend on which files were re-analysed.
 	 *
 	 * @param resource $handle
-	 * @return array<string, array{int, int}> The position of every copied entry in the new file
+	 * @return array<string, array{int, int}> Where every copied entry is in the new file
 	 */
 	private function writeCollectedDataFrame($handle, string $file, LazyCollectedData $collectedData): array
 	{
 		$transformer = $this->getPathTransformer();
 		$cachedIndex = $collectedData->getCachedIndex();
 		$fresh = $collectedData->getFresh();
-		foreach ($fresh as & $collectedDataPerFile) {
-			ksort($collectedDataPerFile);
-		}
-		unset($collectedDataPerFile);
-
 		$files = array_keys($cachedIndex + $fresh);
 		sort($files);
-
-		$this->writeToHandle($handle, $file, self::INDEXED_SECTION . '* ' . count($files) . "\n");
+		$this->writeToHandle($handle, $file, 'collectedData* ' . count($files) . "\n");
 
 		$sourceHandle = null;
 		$savedIndex = [];
-		try {
-			foreach ($files as $analysedFile) {
-				if (array_key_exists($analysedFile, $fresh)) {
-					foreach ($transformer->relativizeCollectedData([$analysedFile => $fresh[$analysedFile]]) as $relativeFile => $data) {
-						$this->writeEntryFrame($handle, $file, $relativeFile, $data);
-					}
-
-					continue;
+		foreach ($files as $analysedFile) {
+			if (array_key_exists($analysedFile, $fresh)) {
+				$collectedDataPerFile = $fresh[$analysedFile];
+				ksort($collectedDataPerFile);
+				foreach ($transformer->relativizeCollectedData([$analysedFile => $collectedDataPerFile]) as $relativeFile => $data) {
+					$this->writeEntryFrame($handle, $file, $relativeFile, $data);
 				}
 
-				[$offset, $length] = $cachedIndex[$analysedFile];
-				if ($sourceHandle === null) {
-					$openedHandle = @fopen($this->cacheFilePath, 'r');
-					if ($openedHandle === false) {
-						throw new RuntimeException(sprintf('Cannot open the result cache file %s to copy the collected data from.', $this->cacheFilePath));
-					}
-					$sourceHandle = $openedHandle;
-				}
-
-				$position = ftell($handle);
-				if ($position === false) {
-					throw new CouldNotWriteFileException($file, 'cannot tell the position in the file');
-				}
-
-				$copied = stream_copy_to_stream($sourceHandle, $handle, $length, $offset);
-				if ($copied !== $length) {
-					throw new RuntimeException(sprintf('The result cache file %s changed while it was being read: the entry of %s is not where it was.', $this->cacheFilePath, $analysedFile));
-				}
-
-				$savedIndex[$analysedFile] = [$position, $length];
+				continue;
 			}
-		} finally {
-			if ($sourceHandle !== null) {
-				fclose($sourceHandle);
+
+			$sourceHandle ??= $this->openCacheFile();
+			$position = ftell($handle);
+			if ($position === false) {
+				throw new CouldNotWriteFileException($file, 'cannot tell the position in the file');
 			}
+
+			[$offset, $length] = $cachedIndex[$analysedFile];
+			if (stream_copy_to_stream($sourceHandle, $handle, $length, $offset) !== $length) {
+				throw new RuntimeException(sprintf('The result cache file %s changed while it was being read: the entry of %s is not where it was.', $this->cacheFilePath, $analysedFile));
+			}
+
+			$savedIndex[$analysedFile] = [$position, $length];
+		}
+
+		if ($sourceHandle !== null) {
+			fclose($sourceHandle);
 		}
 
 		return $savedIndex;
@@ -1717,7 +1688,7 @@ final class ResultCacheManager
 
 			$data = [];
 			$lazy = array_fill_keys(self::LAZY_SECTIONS, false);
-			$data[self::INDEXED_SECTION . 'Index'] = [];
+			$data['collectedDataIndex'] = [];
 			while (($header = fgets($handle)) !== false) {
 				$header = rtrim($header, "\n");
 				if ($header === '') {
@@ -1738,8 +1709,12 @@ final class ResultCacheManager
 
 				$name = substr($name, 0, -1);
 				$count = (int) $size;
-				if ($name === self::INDEXED_SECTION) {
-					$data[$name . 'Index'] = $this->indexEntryFrames($handle, $count, $fileSize, $name);
+				// Never decoded as a whole: it is by far the largest section on a project using collectors,
+				// and only the rules on CollectedDataNode need it - after the analysis, in the main process.
+				// restore() hands the index out as LazyCollectedData, which reads the entries on demand,
+				// and save() copies the ones that stay valid from this file byte for byte.
+				if ($name === 'collectedData') {
+					$data['collectedDataIndex'] = $this->indexEntryFrames($handle, $count, $fileSize, $name);
 
 					continue;
 				}
@@ -1792,19 +1767,14 @@ final class ResultCacheManager
 	 */
 	private function indexEntryFrames($handle, int $count, int $fileSize, string $name): array
 	{
+		$offset = ftell($handle);
+		if ($offset === false) {
+			throw new RuntimeException(sprintf('Cannot tell the position of section "%s".', $name));
+		}
+
 		$index = [];
 		for ($i = 0; $i < $count; $i++) {
-			$offset = ftell($handle);
-			if ($offset === false) {
-				throw new RuntimeException(sprintf('Cannot tell the position of entry %d of section "%s".', $i, $name));
-			}
-
-			$entry = sprintf('entry %d of %d in section "%s"', $i, $count, $name);
-			[$keyLength, $valueLength] = $this->readEntryHeader($handle, $entry);
-			$key = $this->readFrame($handle, $keyLength);
-			if (!is_int($key) && !is_string($key)) {
-				throw new RuntimeException(sprintf('The key of %s is not an array key.', $entry));
-			}
+			[$key, $valueLength] = $this->readEntryKey($handle);
 
 			// fseek() past the end of a file succeeds, so the position is what catches a section the
 			// file does not actually hold.
@@ -1818,90 +1788,97 @@ final class ResultCacheManager
 			}
 
 			$index[$key] = [$offset, $position - $offset];
+			$offset = $position;
 		}
 
 		return $index;
 	}
 
 	/**
+	 * The header and key of an entry frame, leaving the handle at its value.
+	 *
 	 * @param resource $handle
-	 * @param string $entry What the entry is, for the error message
-	 * @return array{int, int} The lengths of the key and value payloads
+	 * @return array{int|string, int} The key and the length of the value payload
 	 */
-	private function readEntryHeader($handle, string $entry): array
+	private function readEntryKey($handle): array
 	{
 		$header = fgets($handle);
 		if ($header === false) {
-			throw new RuntimeException(sprintf('The cache file ended before %s.', $entry));
+			throw new RuntimeException('The cache file ended inside an array section.');
 		}
 
-		$parts = explode(' ', rtrim($header, "\n"), 2);
-		if (count($parts) !== 2) {
-			throw new RuntimeException(sprintf('Malformed header "%s" of %s.', rtrim($header, "\n"), $entry));
+		$lengths = explode(' ', rtrim($header, "\n"));
+		if (count($lengths) !== 2 || (int) $lengths[1] <= 0) {
+			throw new RuntimeException(sprintf('Malformed entry header "%s".', rtrim($header, "\n")));
 		}
 
-		[$keyLength, $valueLength] = [(int) $parts[0], (int) $parts[1]];
-		if ($keyLength <= 0 || $valueLength <= 0) {
-			throw new RuntimeException(sprintf('A frame length of %s is not positive.', $entry));
+		$key = $this->readFrame($handle, (int) $lengths[0]);
+		if (!is_int($key) && !is_string($key)) {
+			throw new RuntimeException('An entry key is not an array key.');
 		}
 
-		return [$keyLength, $valueLength];
+		return [$key, (int) $lengths[1]];
 	}
 
 	/**
-	 * Reads the collected data entries the index points at, in the order of the index. The file is
-	 * opened for the duration of the call only: an open handle would be inherited by the forked
-	 * workers, and a rename over the file (the next save) must not find it open on Windows.
-	 *
 	 * @return Closure(array<string, array{int, int}>): CollectorData
 	 */
-	private function createCollectedDataReader(string $cacheFilePath): Closure
+	private function createCollectedDataReader(): Closure
 	{
-		return function (array $index) use ($cacheFilePath): array {
-			$handle = @fopen($cacheFilePath, 'r');
-			if ($handle === false) {
-				throw new RuntimeException(sprintf('Cannot open the result cache file %s to read the collected data from.', $cacheFilePath));
+		return fn (array $index): array => $this->readCollectedData($index);
+	}
+
+	/**
+	 * Reads the collected data entries the index points at. The file is opened for the duration of
+	 * the call only: an open handle would be inherited by the forked workers, and a rename over the
+	 * file (the next save) must not find it open on Windows.
+	 *
+	 * @param array<string, array{int, int}> $index
+	 * @return CollectorData
+	 */
+	private function readCollectedData(array $index): array
+	{
+		// Read front to back: the entries are stored in the order of their paths and the index
+		// usually is too, but a seek backwards on a file this size is what makes reading it slow.
+		uasort($index, static fn (array $a, array $b): int => $a[0] <=> $b[0]);
+
+		$transformer = $this->getPathTransformer();
+		$handle = $this->openCacheFile();
+		$data = [];
+		foreach ($index as $file => [$offset]) {
+			if (fseek($handle, $offset) !== 0) {
+				throw new RuntimeException(sprintf('Cannot seek to the collected data of %s.', $file));
 			}
 
-			$transformer = $this->getPathTransformer();
-
-			// Read front to back: the entries are stored in the order of their paths and the index
-			// usually is too, but a seek backwards on a file this size is what makes reading it slow.
-			$byOffset = $index;
-			uasort($byOffset, static fn (array $a, array $b): int => $a[0] <=> $b[0]);
-
-			$relativeData = [];
-			try {
-				foreach ($byOffset as $file => [$offset, $length]) {
-					if (fseek($handle, $offset) !== 0) {
-						throw new RuntimeException(sprintf('Cannot seek to the collected data of %s.', $file));
-					}
-
-					[$keyLength, $valueLength] = $this->readEntryHeader($handle, sprintf('the collected data of %s', $file));
-					$key = $this->readFrame($handle, $keyLength);
-					if (!is_string($key) || $transformer->absolutizePath($key) !== $file) {
-						throw new RuntimeException(sprintf('The result cache file %s changed while it was being read: the entry of %s is not where it was.', $cacheFilePath, $file));
-					}
-
-					$value = $this->readFrame($handle, $valueLength);
-					if (!is_array($value)) {
-						throw new RuntimeException(sprintf('The collected data of %s is not an array.', $file));
-					}
-
-					$relativeData[$key] = $value;
-				}
-			} finally {
-				fclose($handle);
+			[$key, $valueLength] = $this->readEntryKey($handle);
+			if (!is_string($key) || $transformer->absolutizePath($key) !== $file) {
+				throw new RuntimeException(sprintf('The result cache file %s changed while it was being read: the entry of %s is not where it was.', $this->cacheFilePath, $file));
 			}
 
-			$absoluteData = $transformer->absolutizeCollectedData($relativeData);
-			$result = [];
-			foreach (array_keys($index) as $file) {
-				$result[$file] = $absoluteData[$file];
+			$value = $this->readFrame($handle, $valueLength);
+			if (!is_array($value)) {
+				throw new RuntimeException(sprintf('The collected data of %s is not an array.', $file));
 			}
 
-			return $result;
-		};
+			$data[$key] = $value;
+		}
+
+		fclose($handle);
+
+		return $transformer->absolutizeCollectedData($data);
+	}
+
+	/**
+	 * @return resource
+	 */
+	private function openCacheFile()
+	{
+		$handle = @fopen($this->cacheFilePath, 'r');
+		if ($handle === false) {
+			throw new RuntimeException(sprintf('Cannot open the result cache file %s.', $this->cacheFilePath));
+		}
+
+		return $handle;
 	}
 
 	/**
@@ -1925,13 +1902,7 @@ final class ResultCacheManager
 	{
 		$entries = [];
 		for ($i = 0; $i < $count; $i++) {
-			$entry = sprintf('entry %d of %d', $i, $count);
-			[$keyLength, $valueLength] = $this->readEntryHeader($handle, $entry);
-			$key = $this->readFrame($handle, $keyLength);
-			if (!is_int($key) && !is_string($key)) {
-				throw new RuntimeException(sprintf('The key of %s is not an array key.', $entry));
-			}
-
+			[$key, $valueLength] = $this->readEntryKey($handle);
 			$entries[$key] = $this->readFrame($handle, $valueLength);
 		}
 

@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser\ResultCache;
 
 use PHPStan\Rules\DeadCode\MethodWithoutImpurePointsCollector;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
 use function array_keys;
 
@@ -62,17 +63,23 @@ class LazyCollectedDataTest extends PHPStanTestCase
 
 	public function testWithRenamedFile(): void
 	{
-		$reader = static fn (array $index): array => ['renamed.php' => [MethodWithoutImpurePointsCollector::class => ['cached']]];
-		$lazy = (new LazyCollectedData(['tmp.php' => [0, 1]], $reader, ['tmp2.php' => [MethodWithoutImpurePointsCollector::class => ['fresh']]]))
-			->withRenamedFile('tmp.php', 'renamed.php')
-			->withRenamedFile('tmp2.php', 'renamed2.php');
+		$reader = static fn (array $index): array => ['cached.php' => [MethodWithoutImpurePointsCollector::class => ['cached']]];
+		$lazy = (new LazyCollectedData(['cached.php' => [0, 1]], $reader, ['tmp.php' => [MethodWithoutImpurePointsCollector::class => ['fresh']]]))
+			->withRenamedFile('tmp.php', 'renamed.php');
 
-		$this->assertSame(['renamed.php' => [0, 1]], $lazy->getCachedIndex());
-		$this->assertSame(['renamed2.php' => [MethodWithoutImpurePointsCollector::class => ['fresh']]], $lazy->getFresh());
+		$this->assertSame(['cached.php' => [0, 1]], $lazy->getCachedIndex());
 		$this->assertSame([
-			'renamed.php' => [MethodWithoutImpurePointsCollector::class => ['cached']],
-			'renamed2.php' => [MethodWithoutImpurePointsCollector::class => ['fresh']],
+			'cached.php' => [MethodWithoutImpurePointsCollector::class => ['cached']],
+			'renamed.php' => [MethodWithoutImpurePointsCollector::class => ['fresh']],
 		], $lazy->toArray());
+	}
+
+	public function testWithRenamedFileRefusesCachedFile(): void
+	{
+		$lazy = new LazyCollectedData(['cached.php' => [0, 1]], static fn (array $index): array => [], []);
+
+		$this->expectException(ShouldNotHappenException::class);
+		$lazy->withRenamedFile('cached.php', 'renamed.php');
 	}
 
 }

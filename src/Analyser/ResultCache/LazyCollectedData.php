@@ -4,6 +4,8 @@ namespace PHPStan\Analyser\ResultCache;
 
 use Closure;
 use PHPStan\Collectors\CollectedData;
+use PHPStan\ShouldNotHappenException;
+use function array_key_exists;
 use function count;
 
 /**
@@ -41,11 +43,16 @@ final class LazyCollectedData
 		return new self([], null, $data);
 	}
 
+	/**
+	 * Editor mode analyses a temporary copy of a file and reports it under the file's own path. Only
+	 * the fresh side can hold the temporary path: ResultCacheManager::mergeCollectedData() takes both
+	 * paths out of the cached index, and a cached entry is verified against its file on reading, so it
+	 * could not be renamed anyway.
+	 */
 	public function withRenamedFile(string $from, string $to): self
 	{
-		$cachedIndex = [];
-		foreach ($this->cachedIndex as $file => $position) {
-			$cachedIndex[$file === $from ? $to : $file] = $position;
+		if (array_key_exists($from, $this->cachedIndex)) {
+			throw new ShouldNotHappenException();
 		}
 
 		$fresh = [];
@@ -53,7 +60,7 @@ final class LazyCollectedData
 			$fresh[$file === $from ? $to : $file] = $data;
 		}
 
-		return new self($cachedIndex, $this->cachedReader, $fresh);
+		return new self($this->cachedIndex, $this->cachedReader, $fresh);
 	}
 
 	/**

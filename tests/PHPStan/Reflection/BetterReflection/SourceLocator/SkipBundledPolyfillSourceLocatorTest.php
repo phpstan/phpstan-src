@@ -50,7 +50,7 @@ class SkipBundledPolyfillSourceLocatorTest extends PHPStanTestCase
 	 * On PHP 8.5 the class is a real internal class of the running PHP version,
 	 * symfony/polyfill-php85 declares nothing.
 	 */
-	#[RequiresPhp('<8.5')]
+	#[RequiresPhp('<8.5.0')]
 	public function testClassFromBundledPolyfillIsNotFound(): void
 	{
 		$reflector = $this->createReflector();

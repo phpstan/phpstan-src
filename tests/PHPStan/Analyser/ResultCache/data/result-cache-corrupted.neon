@@ -1,0 +1,2 @@
+parameters:
+	resultCachePath: %tmpDir%/result-cache-manager-restore-test/resultCache.php

@@ -11,11 +11,10 @@ use function count;
 /**
  * Collected data that is read from the result cache file only when something asks for it.
  *
- * The cached part is an index of where each analysed file's entry sits in the cache file. The
- * fresh part is what this run's analysis produced and holds the actual values. toArray() reads the
- * cached entries and lays the fresh ones over them - the only point where the cached values exist
- * in memory. Until then, the main process holds a few bytes per file, which is what the forked
- * workers inherit; restore() used to hand them the whole decoded section.
+ * The cached part is an index of where each analysed file's entry sits in the cache file; the
+ * fresh part is what this run's analysis produced. toArray() reads the cached entries and lays the
+ * fresh ones over them. Until then, the main process holds a few bytes per file, which is all the
+ * forked workers inherit.
  *
  * @phpstan-import-type CollectorData from CollectedData
  */

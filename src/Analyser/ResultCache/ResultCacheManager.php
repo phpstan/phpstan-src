@@ -1775,6 +1775,11 @@ final class ResultCacheManager
 		$index = [];
 		for ($i = 0; $i < $count; $i++) {
 			[$key, $valueLength] = $this->readEntryKey($handle);
+			// The sections are keyed by file path. restore() absolutizes the keys outside the guard that
+			// turns a damaged file into a full analysis, so anything else has to be refused here.
+			if (!is_string($key)) {
+				throw new RuntimeException(sprintf('Entry %d of section "%s" is not keyed by a path.', $i, $name));
+			}
 
 			// fseek() past the end of a file succeeds, so the position is what catches a section the
 			// file does not actually hold.

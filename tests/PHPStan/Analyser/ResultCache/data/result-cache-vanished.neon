@@ -1,0 +1,2 @@
+parameters:
+	resultCachePath: phpstan-result-cache-test://resultCache.php

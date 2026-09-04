@@ -43,6 +43,7 @@ use function array_merge;
 use function array_unique;
 use function array_values;
 use function class_exists;
+use function clearstatcache;
 use function count;
 use function error_get_last;
 use function explode;
@@ -336,10 +337,22 @@ final class ResultCacheManager
 		}
 
 		if (!is_array($data)) {
+			// readCacheFile() returns null both for a file it could not read back and for one it could
+			// not open at all, and the second is not a corruption: the file was there for the is_file()
+			// check above and gone by the time it was opened. A concurrent clear-result-cache, a temp
+			// directory being swept, a CI cache artifact expiring mid-run. Calling that corrupt sends
+			// someone looking for a broken disk. Ask before the unlink below, which removes the file
+			// in both cases, and clear the stat cache first: PHP may still answer from the is_file()
+			// check above.
+			clearstatcache(true, $cacheFilePath);
+			$reason = is_file($cacheFilePath)
+				? 'Result cache not used because the cache file is corrupted.'
+				: 'Result cache not used because the cache file disappeared while it was being read.';
+
 			@unlink($cacheFilePath);
 
 			return $this->fullAnalysis(
-				'Result cache not used because the cache file is corrupted.',
+				$reason,
 				$allAnalysedFiles,
 				$this->getMeta($allAnalysedFiles, $projectConfigArray),
 				$currentFileHashes,

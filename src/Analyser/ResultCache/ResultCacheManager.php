@@ -1733,7 +1733,7 @@ final class ResultCacheManager
 					throw new RuntimeException(sprintf('Cannot tell the position of section "%s".', $name));
 				}
 
-				$this->indexEntryFrames($handle, $count, $fileSize, $name);
+				$this->skipEntryFrames($handle, $count, $fileSize, $name);
 				$lazy[$name] = true;
 				$data[$name . 'Callback'] = fn (): array => $this->readEntryFramesAt($handle, $offset, $count, $name);
 			}
@@ -1800,12 +1800,34 @@ final class ResultCacheManager
 	}
 
 	/**
-	 * The header and key of an entry frame, leaving the handle at its value.
+	 * Walks past an array frame's entries without decoding anything, checking as it goes that the
+	 * file really holds them.
 	 *
 	 * @param resource $handle
-	 * @return array{int|string, int} The key and the length of the value payload
 	 */
-	private function readEntryKey($handle): array
+	private function skipEntryFrames($handle, int $count, int $fileSize, string $name): void
+	{
+		for ($i = 0; $i < $count; $i++) {
+			[$keyLength, $valueLength] = $this->readEntryHeader($handle);
+
+			// fseek() past the end of a file succeeds, so the position is what catches a section the
+			// file does not actually hold.
+			if (fseek($handle, $keyLength + $valueLength, SEEK_CUR) !== 0) {
+				throw new RuntimeException(sprintf('Cannot skip entry %d of section "%s".', $i, $name));
+			}
+
+			$position = ftell($handle);
+			if ($position === false || $position > $fileSize) {
+				throw new RuntimeException(sprintf('Section "%s" is truncated at entry %d of %d.', $name, $i, $count));
+			}
+		}
+	}
+
+	/**
+	 * @param resource $handle
+	 * @return array{int, int} The lengths of the key and value payloads
+	 */
+	private function readEntryHeader($handle): array
 	{
 		$header = fgets($handle);
 		if ($header === false) {
@@ -1813,16 +1835,28 @@ final class ResultCacheManager
 		}
 
 		$lengths = explode(' ', rtrim($header, "\n"));
-		if (count($lengths) !== 2 || (int) $lengths[1] <= 0) {
+		if (count($lengths) !== 2 || (int) $lengths[0] <= 0 || (int) $lengths[1] <= 0) {
 			throw new RuntimeException(sprintf('Malformed entry header "%s".', rtrim($header, "\n")));
 		}
 
-		$key = $this->readFrame($handle, (int) $lengths[0]);
+		return [(int) $lengths[0], (int) $lengths[1]];
+	}
+
+	/**
+	 * The header and key of an entry frame, leaving the handle at its value.
+	 *
+	 * @param resource $handle
+	 * @return array{int|string, int} The key and the length of the value payload
+	 */
+	private function readEntryKey($handle): array
+	{
+		[$keyLength, $valueLength] = $this->readEntryHeader($handle);
+		$key = $this->readFrame($handle, $keyLength);
 		if (!is_int($key) && !is_string($key)) {
 			throw new RuntimeException('An entry key is not an array key.');
 		}
 
-		return [$key, (int) $lengths[1]];
+		return [$key, $valueLength];
 	}
 
 	/**

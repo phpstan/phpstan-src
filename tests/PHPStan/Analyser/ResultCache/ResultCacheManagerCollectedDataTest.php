@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser\ResultCache;
 
+use Nette\Utils\Strings;
 use Override;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Command\Output;
@@ -20,14 +21,15 @@ use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Console\Style\SymfonyStyle as SymfonyConsoleStyle;
 use function array_keys;
+use function basename;
 use function count;
 use function file_get_contents;
 use function file_put_contents;
 use function is_file;
 use function md5_file;
 use function mkdir;
+use function ord;
 use function rmdir;
-use function str_replace;
 use function strlen;
 use function strpos;
 use function substr;
@@ -47,11 +49,12 @@ class ResultCacheManagerCollectedDataTest extends PHPStanTestCase
 	protected function setUp(): void
 	{
 		parent::setUp();
-		$this->directory = sys_get_temp_dir() . '/phpstan-collected-data-' . uniqid();
+		$fileHelper = self::getContainer()->getByType(FileHelper::class);
+		$this->directory = $fileHelper->normalizePath(sys_get_temp_dir() . '/phpstan-collected-data-' . uniqid());
 		// the cache file must not be in the analysed directory, or it counts as a scanned file
 		mkdir($this->directory . '/src', 0777, true);
 		foreach (['a', 'b', 'c'] as $name) {
-			$file = $this->directory . '/src/' . $name . '.php';
+			$file = $fileHelper->normalizePath($this->directory . '/src/' . $name . '.php');
 			file_put_contents($file, '<?php class Cache' . $name . " {}\n");
 			$this->files[] = $file;
 		}
@@ -87,7 +90,7 @@ class ResultCacheManagerCollectedDataTest extends PHPStanTestCase
 		$this->assertNotFalse($contents);
 		foreach ($lazy->getCachedIndex() as $file => [$offset, $length]) {
 			$entry = substr($contents, $offset, $length);
-			$this->assertStringContainsString('"' . str_replace($this->directory . '/', '', $file) . '"', $entry);
+			$this->assertStringContainsString('"src/' . basename($file) . '"', $entry);
 			$this->assertStringEndsWith('}', $entry);
 		}
 	}
@@ -123,9 +126,9 @@ class ResultCacheManagerCollectedDataTest extends PHPStanTestCase
 		$expected[$this->files[1]] = $freshB[$this->files[1]];
 		$this->assertSame($expected, $processed->getAnalyserResult()->getCollectedData());
 
-		$partial = md5_file($this->cacheFilePath());
+		$partial = $this->cacheContentsWithoutTime();
 		$this->saveFullAnalysis($expected);
-		$this->assertSame($partial, md5_file($this->cacheFilePath()));
+		$this->assertSame($partial, $this->cacheContentsWithoutTime());
 	}
 
 	public function testDamagedValueDiscardsTheCacheWhenRead(): void
@@ -186,7 +189,7 @@ class ResultCacheManagerCollectedDataTest extends PHPStanTestCase
 	{
 		$data = [];
 		foreach ($names as $name) {
-			$data[$this->directory . '/src/' . $name . '.php'] = [MethodWithoutImpurePointsCollector::class => ['usage in ' . $name]];
+			$data[$this->files[ord($name) - ord('a')]] = [MethodWithoutImpurePointsCollector::class => ['usage in ' . $name]];
 		}
 
 		return $data;
@@ -234,6 +237,17 @@ class ResultCacheManagerCollectedDataTest extends PHPStanTestCase
 			peakMemoryUsageBytes: 0,
 			processedFiles: $this->files,
 		);
+	}
+
+	/**
+	 * A full analysis records its own time, which a partial save keeps from the previous one.
+	 */
+	private function cacheContentsWithoutTime(): string
+	{
+		$contents = file_get_contents($this->cacheFilePath());
+		$this->assertNotFalse($contents);
+
+		return Strings::replace($contents, '~^lastFullAnalysisTime \d+\ni:\d+;~m', '');
 	}
 
 	private function breakFirstCollectedDataValue(): void

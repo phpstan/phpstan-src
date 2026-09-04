@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PHPStan\Analyser\ResultCache\ResultCacheMetaExtension;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Internal\Silencer;
 use function array_filter;
 use function array_map;
 use function array_values;
@@ -50,10 +51,14 @@ final class OpenSslCipherMethodsProvider implements ResultCacheMetaExtension
 			// openssl_get_cipher_methods() reports algorithms that are not actually
 			// supported on PHP 8.0-8.4 due to https://github.com/php/php-src/issues/19994
 			// Filter by actually testing each algorithm with openssl_cipher_iv_length().
-			$methods = array_values(array_filter(
+			//
+			// Probing an unsupported algorithm warns, and @ is not enough on its own: a user error
+			// handler that does not consult error_reporting() is still called for a suppressed
+			// diagnostic, and whatever installs one is out of our hands. See Silencer.
+			$methods = Silencer::call(static fn (): array => array_values(array_filter(
 				openssl_get_cipher_methods(true),
-				static fn (string $algorithm): bool => @openssl_cipher_iv_length($algorithm) !== false,
-			));
+				static fn (string $algorithm): bool => openssl_cipher_iv_length($algorithm) !== false,
+			)));
 		}
 
 		$this->supportedCipherMethods = array_map('strtolower', $methods);

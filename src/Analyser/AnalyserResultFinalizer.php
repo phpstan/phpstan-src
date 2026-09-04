@@ -61,7 +61,7 @@ final class AnalyserResultFinalizer
 		}
 
 		$nodeType = CollectedDataNode::class;
-		// Decoded here and released with this node; the result below carries the lazy form on.
+		// Released with this node; the result below carries the lazy form on.
 		$node = new CollectedDataNode($collectedData, $onlyFiles);
 		unset($collectedData);
 

@@ -23,7 +23,7 @@ final class AnalysisResult
 	 * @param list<string> $notFileSpecificErrors
 	 * @param list<InternalError> $internalErrors
 	 * @param list<string> $warnings
-	 * @param list<CollectedData>|(Closure(): list<CollectedData>) $collectedData A closure defers building the list, which after a cached run means decoding the biggest section of the result cache
+	 * @param list<CollectedData>|(Closure(): list<CollectedData>) $collectedData A closure defers decoding the result cache until asked
 	 * @param list<string> $processedFiles
 	 */
 	public function __construct(

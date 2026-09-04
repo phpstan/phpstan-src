@@ -142,8 +142,7 @@ final class AnalyserResult
 	}
 
 	/**
-	 * Decodes the collected data that came from the result cache. Prefer getLazyCollectedData()
-	 * unless the whole array is needed - after a cached run this is the biggest section of the cache.
+	 * Decodes what came from the result cache; getLazyCollectedData() passes it on undecoded.
 	 *
 	 * @return CollectorData
 	 */

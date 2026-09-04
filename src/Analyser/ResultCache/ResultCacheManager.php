@@ -1065,7 +1065,18 @@ final class ResultCacheManager
 				}
 			}
 
-			$savedCollectedData = $this->save($resultCache->getLastFullAnalysisTime(), $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedData, $dependencies, $usedTraitDependencies, $packageDependencies, $exportedNodes, $projectExtensionFiles, $resultCache->getCurrentFileHashes(), $meta);
+			try {
+				$savedCollectedData = $this->save($resultCache->getLastFullAnalysisTime(), $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedData, $dependencies, $usedTraitDependencies, $packageDependencies, $exportedNodes, $projectExtensionFiles, $resultCache->getCurrentFileHashes(), $meta);
+			} catch (RuntimeException $e) {
+				// Only the copy of the cached collected data throws this: the file it was restored from
+				// no longer holds the entries where the index says, so another run sharing the tmpDir
+				// replaced it. Its cache stays; the rules on CollectedDataNode discard it when they find
+				// the same, and the next run analyses everything.
+				if ($output->isVeryVerbose()) {
+					$output->writeLineFormatted(sprintf('Result cache was not saved because the previous cache file changed during the analysis: %s', $e->getMessage()));
+				}
+				return null;
+			}
 
 			if ($output->isVeryVerbose()) {
 				$output->writeLineFormatted('Result cache is saved.');
@@ -1593,7 +1604,11 @@ final class ResultCacheManager
 				throw new CouldNotWriteFileException($file, 'cannot tell the position in the file');
 			}
 
+			// Nothing holds the file open between restore() and here, so another run sharing the tmpDir
+			// may have renamed a different cache over it. The key at the offset says whether the bytes
+			// about to be copied are still the entry the index was built for.
 			[$offset, $length] = $cachedIndex[$analysedFile];
+			$this->seekToEntry($sourceHandle, $offset, $analysedFile);
 			if (stream_copy_to_stream($sourceHandle, $handle, $length, $offset) !== $length) {
 				throw new RuntimeException(sprintf('The result cache file %s changed while it was being read: the entry of %s is not where it was.', $this->cacheFilePath, $analysedFile));
 			}
@@ -1886,15 +1901,7 @@ final class ResultCacheManager
 		$data = [];
 		try {
 			foreach ($index as $file => [$offset]) {
-				if (fseek($handle, $offset) !== 0) {
-					throw new RuntimeException(sprintf('Cannot seek to the collected data of %s.', $file));
-				}
-
-				[$key, $valueLength] = $this->readEntryKey($handle);
-				if (!is_string($key) || $transformer->absolutizePath($key) !== $file) {
-					throw new RuntimeException(sprintf('The entry of %s is not where it was.', $file));
-				}
-
+				[$key, $valueLength] = $this->seekToEntry($handle, $offset, $file);
 				$value = $this->readFrame($handle, $valueLength);
 				if (!is_array($value)) {
 					throw new RuntimeException(sprintf('The collected data of %s is not an array.', $file));
@@ -1916,6 +1923,27 @@ final class ResultCacheManager
 		fclose($handle);
 
 		return $transformer->absolutizeCollectedData($data);
+	}
+
+	/**
+	 * Moves to an entry of the collected data section and past its key, refusing an entry that is
+	 * not the one the index was built for.
+	 *
+	 * @param resource $handle
+	 * @return array{string, int} The key as stored and the length of the value payload
+	 */
+	private function seekToEntry($handle, int $offset, string $file): array
+	{
+		if (fseek($handle, $offset) !== 0) {
+			throw new RuntimeException(sprintf('Cannot seek to the collected data of %s.', $file));
+		}
+
+		[$key, $valueLength] = $this->readEntryKey($handle);
+		if (!is_string($key) || $this->getPathTransformer()->absolutizePath($key) !== $file) {
+			throw new RuntimeException(sprintf('The result cache file %s changed while it was being read: the entry of %s is not where it was.', $this->cacheFilePath, $file));
+		}
+
+		return [$key, $valueLength];
 	}
 
 	/**

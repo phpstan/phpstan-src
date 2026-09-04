@@ -24,12 +24,12 @@ final class LazyCollectedData
 
 	/**
 	 * @param array<string, array{int, int}> $cachedIndex analysed file => [offset, length] of its entry in the cache file
-	 * @param (Closure(array<string, array{int, int}>): CollectorData)|null $cachedReader
+	 * @param Closure(array<string, array{int, int}>): CollectorData $cachedReader
 	 * @param CollectorData $fresh
 	 */
 	public function __construct(
 		private array $cachedIndex,
-		private ?Closure $cachedReader,
+		private Closure $cachedReader,
 		private array $fresh,
 	)
 	{
@@ -40,7 +40,7 @@ final class LazyCollectedData
 	 */
 	public static function fromArray(array $data): self
 	{
-		return new self([], null, $data);
+		return new self([], static fn (): array => [], $data);
 	}
 
 	/**
@@ -93,7 +93,7 @@ final class LazyCollectedData
 	 */
 	public function toArray(): array
 	{
-		if (count($this->cachedIndex) === 0 || $this->cachedReader === null) {
+		if (count($this->cachedIndex) === 0) {
 			return $this->fresh;
 		}
 

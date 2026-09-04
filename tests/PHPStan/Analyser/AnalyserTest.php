@@ -41,6 +41,7 @@ use function sprintf;
 use function str_replace;
 use function strtoupper;
 use function substr;
+use const DIRECTORY_SEPARATOR;
 use const PHP_OS;
 
 class AnalyserTest extends PHPStanTestCase
@@ -176,7 +177,8 @@ class AnalyserTest extends PHPStanTestCase
 		$this->assertInstanceOf(Error::class, $result[0]);
 		$this->assertSame('Fail.', $result[0]->getMessage());
 		$this->assertInstanceOf(Error::class, $result[1]);
-		$this->assertSame('Ignored error pattern wrong.identifier in path ' . __DIR__ . '/data/bootstrap-error.php was not matched in reported errors.', $result[1]->getMessage());
+		$expectedPath = str_replace('/', DIRECTORY_SEPARATOR, __DIR__ . '/data/bootstrap-error.php');
+		$this->assertSame('Ignored error pattern wrong.identifier in path ' . $expectedPath . ' was not matched in reported errors.', $result[1]->getMessage());
 	}
 
 	public function testIgnoreErrorByPath(): void

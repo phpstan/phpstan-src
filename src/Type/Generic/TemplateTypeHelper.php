@@ -2,14 +2,17 @@
 
 namespace PHPStan\Type\Generic;
 
+use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\GeneralizePrecision;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\NonAcceptingNeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
+use function array_values;
 
 final class TemplateTypeHelper
 {
@@ -93,6 +96,74 @@ final class TemplateTypeHelper
 
 			return $traverse($type);
 		});
+	}
+
+	/**
+	 * Widens `never` type arguments of generic objects to their template bounds.
+	 *
+	 * An object constructed empty - like `new ArrayObject()` - gets `never` type
+	 * arguments inferred. Once the object might have been mutated, `never` no longer
+	 * describes what it can contain, but a wider type inferred from the call site
+	 * would be unsound, so the bounds are the safest thing to fall back to.
+	 */
+	public static function widenNeverTypeArguments(Type $type): Type
+	{
+		return TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
+			if ($type instanceof GenericObjectType) {
+				$widenedTypes = self::widenNeverTypesToBounds($type->getTypes(), $type->getClassReflection());
+				if ($widenedTypes !== null) {
+					return $traverse(new GenericObjectType(
+						$type->getClassName(),
+						$widenedTypes,
+						$type->getSubtractedType(),
+						variances: $type->getVariances(),
+					));
+				}
+			} elseif ($type instanceof GenericStaticType) {
+				$widenedTypes = self::widenNeverTypesToBounds($type->getTypes(), $type->getClassReflection());
+				if ($widenedTypes !== null) {
+					return $traverse(new GenericStaticType(
+						$type->getClassReflection(),
+						$widenedTypes,
+						$type->getSubtractedType(),
+						$type->getVariances(),
+					));
+				}
+			}
+
+			return $traverse($type);
+		});
+	}
+
+	/**
+	 * @param array<int, Type> $typeArguments
+	 * @return array<int, Type>|null null when nothing was widened
+	 */
+	private static function widenNeverTypesToBounds(array $typeArguments, ?ClassReflection $classReflection): ?array
+	{
+		if ($classReflection === null) {
+			return null;
+		}
+
+		$templateTypes = array_values($classReflection->getTemplateTypeMap()->getTypes());
+		$widened = false;
+		foreach ($typeArguments as $i => $typeArgument) {
+			if (!$typeArgument instanceof NeverType) {
+				continue;
+			}
+			if (!isset($templateTypes[$i])) {
+				continue;
+			}
+			$templateType = $templateTypes[$i];
+			if (!$templateType instanceof TemplateType) {
+				continue;
+			}
+
+			$typeArguments[$i] = $templateType->getBound();
+			$widened = true;
+		}
+
+		return $widened ? $typeArguments : null;
 	}
 
 	/**

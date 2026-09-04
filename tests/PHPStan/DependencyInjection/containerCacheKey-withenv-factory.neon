@@ -1,0 +1,5 @@
+# References %env.* inside a service factory entity - a position that a scan limited to plain
+# parameter/argument string values would miss. Toggling the referenced var must still recompile.
+services:
+	envFactoryService:
+		factory: PhpParser\Node\Name(%env.PHPSTAN_TEST_W1_CACHE_KEY%)

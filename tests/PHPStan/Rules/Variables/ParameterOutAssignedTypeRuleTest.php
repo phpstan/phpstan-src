@@ -117,4 +117,27 @@ class ParameterOutAssignedTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug15066(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15066.php'], [
+			[
+				'Parameter &$refs by-ref type of function Bug15066Variables\\variadicWrongType() expects string|null, int|string|null given.',
+				22,
+				'You can change the parameter out type with @param-out PHPDoc tag.',
+			],
+			[
+				'Parameter &$refs by-ref type of method Bug15066Variables\\Foo::variadicWrongType() expects string|null, int|string|null given.',
+				52,
+				'You can change the parameter out type with @param-out PHPDoc tag.',
+			],
+			// rebinding the packed variable to a non-array is silent, to an array is not - see the fixture
+			[
+				'Parameter &$refs by-ref type of function Bug15066Variables\\variadicRebindWrongArray() expects string|null, int given.',
+				69,
+				'You can change the parameter out type with @param-out PHPDoc tag.',
+			],
+		]);
+	}
+
 }

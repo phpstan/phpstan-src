@@ -166,6 +166,19 @@ class AnalyserTest extends PHPStanTestCase
 		$this->assertSame('Ignored error pattern wrong.identifier was not matched in reported errors.', $result[1]);
 	}
 
+	public function testFileWithAnIgnoredErrorIdentifierAndPathWithWrongIdentifier(): void
+	{
+		$result = $this->runAnalyser([[
+			'identifier' => 'wrong.identifier',
+			'path' => __DIR__ . '/data/bootstrap-error.php',
+		]], true, __DIR__ . '/data/bootstrap-error.php', false);
+		$this->assertCount(2, $result);
+		$this->assertInstanceOf(Error::class, $result[0]);
+		$this->assertSame('Fail.', $result[0]->getMessage());
+		$this->assertInstanceOf(Error::class, $result[1]);
+		$this->assertSame('Ignored error pattern wrong.identifier in path ' . __DIR__ . '/data/bootstrap-error.php was not matched in reported errors.', $result[1]->getMessage());
+	}
+
 	public function testIgnoreErrorByPath(): void
 	{
 		$ignoreErrors = [
@@ -404,6 +417,37 @@ class AnalyserTest extends PHPStanTestCase
 		];
 		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/bootstrap-error.php', false);
 		$this->assertNoErrors($result);
+	}
+
+	public function testIgnoreErrorByMessageIdentifierAndSecondPath(): void
+	{
+		$ignoreErrors = [
+			[
+				'message' => '#Fail\.#',
+				'identifier' => 'tests.alwaysFail',
+				'paths' => [
+					__DIR__ . '/data/another-path.php',
+					__DIR__ . '/data/bootstrap-error.php',
+				],
+			],
+		];
+		$result = $this->runAnalyser($ignoreErrors, false, __DIR__ . '/data/bootstrap-error.php', false);
+		$this->assertNoErrors($result);
+	}
+
+	public function testIgnoreErrorByPathsRequiresMatchingIdentifier(): void
+	{
+		$ignoreErrors = [
+			[
+				'message' => '#Fail\.#',
+				'identifier' => 'wrong.identifier',
+				'paths' => [__DIR__ . '/data/bootstrap-error.php'],
+			],
+		];
+		$result = $this->runAnalyser($ignoreErrors, false, __DIR__ . '/data/bootstrap-error.php', false);
+		$this->assertCount(1, $result);
+		$this->assertInstanceOf(Error::class, $result[0]);
+		$this->assertSame('Fail.', $result[0]->getMessage());
 	}
 
 	public function testIgnoreErrorMultiByPaths(): void

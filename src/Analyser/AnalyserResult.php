@@ -17,8 +17,6 @@ final class AnalyserResult
 	/** @var list<Error>|null */
 	private ?array $errors = null;
 
-	private LazyCollectedData $collectedData;
-
 	/**
 	 * @param list<Error> $unorderedErrors
 	 * @param list<Error> $filteredPhpErrors
@@ -26,7 +24,6 @@ final class AnalyserResult
 	 * @param list<Error> $locallyIgnoredErrors
 	 * @param array<string, LinesToIgnore> $linesToIgnore
 	 * @param array<string, LinesToIgnore> $unmatchedLineIgnores
-	 * @param CollectorData|LazyCollectedData $collectedData
 	 * @param list<InternalError> $internalErrors
 	 * @param array<string, array<string>>|null $dependencies
 	 * @param array<string, array<string>>|null $usedTraitDependencies
@@ -42,7 +39,7 @@ final class AnalyserResult
 		private array $linesToIgnore,
 		private array $unmatchedLineIgnores,
 		private array $internalErrors,
-		array|LazyCollectedData $collectedData,
+		private LazyCollectedData $collectedData,
 		private ?array $dependencies,
 		private ?array $usedTraitDependencies,
 		private ?array $packageDependencies,
@@ -53,9 +50,6 @@ final class AnalyserResult
 		private int $workerCount = 0,
 	)
 	{
-		$this->collectedData = $collectedData instanceof LazyCollectedData
-			? $collectedData
-			: LazyCollectedData::fromArray($collectedData);
 	}
 
 	/**

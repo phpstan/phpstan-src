@@ -5,6 +5,7 @@ namespace PHPStan\Command;
 use Closure;
 use PHPStan\Analyser\Analyser;
 use PHPStan\Analyser\AnalyserResult;
+use PHPStan\Analyser\ResultCache\LazyCollectedData;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Parallel\ParallelAnalyser;
 use PHPStan\Parallel\Scheduler;
@@ -65,7 +66,7 @@ final class AnalyserRunner
 				linesToIgnore: [],
 				unmatchedLineIgnores: [],
 				internalErrors: [],
-				collectedData: [],
+				collectedData: LazyCollectedData::fromArray([]),
 				dependencies: [],
 				usedTraitDependencies: [],
 				packageDependencies: [],

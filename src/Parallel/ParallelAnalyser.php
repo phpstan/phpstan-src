@@ -9,6 +9,7 @@ use Nette\Utils\Random;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\InternalError;
+use PHPStan\Analyser\ResultCache\LazyCollectedData;
 use PHPStan\Cache\ArenaCache;
 use PHPStan\Command\CommandHelper;
 use PHPStan\Command\Output;
@@ -157,7 +158,7 @@ final class ParallelAnalyser
 				linesToIgnore: $linesToIgnore,
 				unmatchedLineIgnores: $unmatchedLineIgnores,
 				internalErrors: $internalErrors,
-				collectedData: $collectedData,
+				collectedData: LazyCollectedData::fromArray($collectedData),
 				dependencies: $internalErrorsCount === 0 ? $dependencies : null,
 				usedTraitDependencies: $internalErrorsCount === 0 ? $usedTraitDependencies : null,
 				packageDependencies: $internalErrorsCount === 0 ? $packageDependencies : null,

@@ -83,3 +83,19 @@ class Sit
 	use GenericDefault;
 
 }
+
+/** @use GenericTrait<\stdClass> */
+class WithClassLevelUseTag
+{
+
+	use GenericTrait;
+
+}
+
+/** @use NongenericTrait<\stdClass> */
+class WithUnrelatedClassLevelUseTag
+{
+
+	use GenericTrait;
+
+}

@@ -4,10 +4,10 @@ namespace PHPStan\Analyser\ResultCache;
 
 use PHPStan\Rules\DeadCode\MethodWithoutImpurePointsCollector;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\TestCase;
 use function array_keys;
 
-class LazyCollectedDataTest extends PHPStanTestCase
+class LazyCollectedDataTest extends TestCase
 {
 
 	private int $reads = 0;

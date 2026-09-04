@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use Closure;
+use PHPStan\Analyser\ResultCache\LazyCollectedData;
 use PHPStan\Collectors\CollectedData;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\DependencyInjection\AutowiredParameter;
@@ -140,7 +141,7 @@ final class Analyser
 			linesToIgnore: $linesToIgnore,
 			unmatchedLineIgnores: $unmatchedLineIgnores,
 			internalErrors: [],
-			collectedData: $collectedData,
+			collectedData: LazyCollectedData::fromArray($collectedData),
 			dependencies: $internalErrorsCount === 0 ? $dependencies : null,
 			usedTraitDependencies: $internalErrorsCount === 0 ? $usedTraitDependencies : null,
 			packageDependencies: $internalErrorsCount === 0 ? $packageDependencies : null,

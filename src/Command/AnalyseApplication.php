@@ -224,7 +224,7 @@ final class AnalyseApplication
 				linesToIgnore: [],
 				unmatchedLineIgnores: [],
 				internalErrors: [],
-				collectedData: [],
+				collectedData: LazyCollectedData::fromArray([]),
 				dependencies: [],
 				usedTraitDependencies: [],
 				packageDependencies: [],

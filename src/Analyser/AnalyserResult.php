@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser;
 
+use PHPStan\Analyser\ResultCache\LazyCollectedData;
 use PHPStan\Collectors\CollectedData;
 use PHPStan\Dependency\RootExportedNode;
 use function usort;
@@ -16,6 +17,8 @@ final class AnalyserResult
 	/** @var list<Error>|null */
 	private ?array $errors = null;
 
+	private LazyCollectedData $collectedData;
+
 	/**
 	 * @param list<Error> $unorderedErrors
 	 * @param list<Error> $filteredPhpErrors
@@ -23,7 +26,7 @@ final class AnalyserResult
 	 * @param list<Error> $locallyIgnoredErrors
 	 * @param array<string, LinesToIgnore> $linesToIgnore
 	 * @param array<string, LinesToIgnore> $unmatchedLineIgnores
-	 * @param CollectorData $collectedData
+	 * @param CollectorData|LazyCollectedData $collectedData
 	 * @param list<InternalError> $internalErrors
 	 * @param array<string, array<string>>|null $dependencies
 	 * @param array<string, array<string>>|null $usedTraitDependencies
@@ -39,7 +42,7 @@ final class AnalyserResult
 		private array $linesToIgnore,
 		private array $unmatchedLineIgnores,
 		private array $internalErrors,
-		private array $collectedData,
+		array|LazyCollectedData $collectedData,
 		private ?array $dependencies,
 		private ?array $usedTraitDependencies,
 		private ?array $packageDependencies,
@@ -50,6 +53,9 @@ final class AnalyserResult
 		private int $workerCount = 0,
 	)
 	{
+		$this->collectedData = $collectedData instanceof LazyCollectedData
+			? $collectedData
+			: LazyCollectedData::fromArray($collectedData);
 	}
 
 	/**
@@ -142,9 +148,17 @@ final class AnalyserResult
 	}
 
 	/**
+	 * Decodes the collected data that came from the result cache. Prefer getLazyCollectedData()
+	 * unless the whole array is needed - after a cached run this is the biggest section of the cache.
+	 *
 	 * @return CollectorData
 	 */
 	public function getCollectedData(): array
+	{
+		return $this->collectedData->toArray();
+	}
+
+	public function getLazyCollectedData(): LazyCollectedData
 	{
 		return $this->collectedData;
 	}

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Command;
 
+use Closure;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\InternalError;
 use PHPStan\Collectors\CollectedData;
@@ -22,7 +23,7 @@ final class AnalysisResult
 	 * @param list<string> $notFileSpecificErrors
 	 * @param list<InternalError> $internalErrors
 	 * @param list<string> $warnings
-	 * @param list<CollectedData> $collectedData
+	 * @param list<CollectedData>|(Closure(): list<CollectedData>) $collectedData A closure defers building the list, which after a cached run means decoding the biggest section of the result cache
 	 * @param list<string> $processedFiles
 	 */
 	public function __construct(
@@ -30,7 +31,7 @@ final class AnalysisResult
 		private array $notFileSpecificErrors,
 		private array $internalErrors,
 		private array $warnings,
-		private array $collectedData,
+		private array|Closure $collectedData,
 		private bool $defaultLevelUsed,
 		private ?string $projectConfigFile,
 		private bool $savedResultCache,
@@ -109,6 +110,10 @@ final class AnalysisResult
 	 */
 	public function getCollectedData(): array
 	{
+		if ($this->collectedData instanceof Closure) {
+			$this->collectedData = ($this->collectedData)();
+		}
+
 		return $this->collectedData;
 	}
 

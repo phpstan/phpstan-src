@@ -40,7 +40,7 @@ final class AnalyserResultFinalizer
 
 	public function finalize(AnalyserResult $analyserResult, bool $onlyFiles, bool $debug): FinalizerResult
 	{
-		if (count($analyserResult->getCollectedData()) === 0) {
+		if ($analyserResult->getLazyCollectedData()->isEmpty()) {
 			return $this->addUnmatchedIgnoredErrors($this->mergeFilteredPhpErrors($analyserResult), [], []);
 		}
 
@@ -50,6 +50,8 @@ final class AnalyserResultFinalizer
 		}
 
 		$nodeType = CollectedDataNode::class;
+		// The only point where the cached collected data is decoded. It lives as long as this node,
+		// which the result below does not hold on to.
 		$node = new CollectedDataNode($analyserResult->getCollectedData(), $onlyFiles);
 
 		$file = 'N/A';
@@ -148,7 +150,7 @@ final class AnalyserResultFinalizer
 			linesToIgnore: $allLinesToIgnore,
 			unmatchedLineIgnores: $allUnmatchedLineIgnores,
 			internalErrors: $internalErrors,
-			collectedData: $analyserResult->getCollectedData(),
+			collectedData: $analyserResult->getLazyCollectedData(),
 			dependencies: $analyserResult->getDependencies(),
 			usedTraitDependencies: $analyserResult->getUsedTraitDependencies(),
 			packageDependencies: $analyserResult->getPackageDependencies(),
@@ -170,7 +172,7 @@ final class AnalyserResultFinalizer
 			linesToIgnore: $analyserResult->getLinesToIgnore(),
 			unmatchedLineIgnores: $analyserResult->getUnmatchedLineIgnores(),
 			internalErrors: $analyserResult->getInternalErrors(),
-			collectedData: $analyserResult->getCollectedData(),
+			collectedData: $analyserResult->getLazyCollectedData(),
 			dependencies: $analyserResult->getDependencies(),
 			usedTraitDependencies: $analyserResult->getUsedTraitDependencies(),
 			packageDependencies: $analyserResult->getPackageDependencies(),
@@ -237,7 +239,7 @@ final class AnalyserResultFinalizer
 				linesToIgnore: $analyserResult->getLinesToIgnore(),
 				unmatchedLineIgnores: $analyserResult->getUnmatchedLineIgnores(),
 				internalErrors: $analyserResult->getInternalErrors(),
-				collectedData: $analyserResult->getCollectedData(),
+				collectedData: $analyserResult->getLazyCollectedData(),
 				dependencies: $analyserResult->getDependencies(),
 				usedTraitDependencies: $analyserResult->getUsedTraitDependencies(),
 				packageDependencies: $analyserResult->getPackageDependencies(),

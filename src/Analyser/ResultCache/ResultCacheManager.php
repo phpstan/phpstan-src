@@ -1763,7 +1763,7 @@ final class ResultCacheManager
 	 * entry over to the next cache file unchanged.
 	 *
 	 * @param resource $handle
-	 * @return array<int|string, array{int, int}>
+	 * @return array<string, array{int, int}>
 	 */
 	private function indexEntryFrames($handle, int $count, int $fileSize, string $name): array
 	{

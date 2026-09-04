@@ -4647,7 +4647,55 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		if (!$this->compareVariableTypeHolders($this->expressionTypes, $otherScope->expressionTypes)) {
 			return false;
 		}
-		return $this->compareVariableTypeHolders($this->nativeExpressionTypes, $otherScope->nativeExpressionTypes);
+		if (!$this->compareVariableTypeHolders($this->nativeExpressionTypes, $otherScope->nativeExpressionTypes)) {
+			return false;
+		}
+
+		return $this->compareConditionalExpressions($this->conditionalExpressions, $otherScope->conditionalExpressions);
+	}
+
+	/**
+	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
+	 * @param array<string, ConditionalExpressionHolder[]> $otherConditionalExpressions
+	 */
+	private function compareConditionalExpressions(array $conditionalExpressions, array $otherConditionalExpressions): bool
+	{
+		if (count($conditionalExpressions) !== count($otherConditionalExpressions)) {
+			return false;
+		}
+		foreach ($conditionalExpressions as $exprString => $holders) {
+			if (!isset($otherConditionalExpressions[$exprString])) {
+				return false;
+			}
+			$otherHolders = $otherConditionalExpressions[$exprString];
+			if (count($holders) !== count($otherHolders)) {
+				return false;
+			}
+			foreach ($holders as $key => $holder) {
+				if (!isset($otherHolders[$key])) {
+					return false;
+				}
+				$otherHolder = $otherHolders[$key];
+				if (!$holder->getTypeHolder()->equals($otherHolder->getTypeHolder())) {
+					return false;
+				}
+				$conditions = $holder->getConditionExpressionTypeHolders();
+				$otherConditions = $otherHolder->getConditionExpressionTypeHolders();
+				if (count($conditions) !== count($otherConditions)) {
+					return false;
+				}
+				foreach ($conditions as $conditionExprString => $conditionHolder) {
+					if (!isset($otherConditions[$conditionExprString])) {
+						return false;
+					}
+					if (!$conditionHolder->equals($otherConditions[$conditionExprString])) {
+						return false;
+					}
+				}
+			}
+		}
+
+		return true;
 	}
 
 	/**

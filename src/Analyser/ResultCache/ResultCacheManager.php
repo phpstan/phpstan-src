@@ -1884,22 +1884,33 @@ final class ResultCacheManager
 		$transformer = $this->getPathTransformer();
 		$handle = $this->openCacheFile();
 		$data = [];
-		foreach ($index as $file => [$offset]) {
-			if (fseek($handle, $offset) !== 0) {
-				throw new RuntimeException(sprintf('Cannot seek to the collected data of %s.', $file));
-			}
+		try {
+			foreach ($index as $file => [$offset]) {
+				if (fseek($handle, $offset) !== 0) {
+					throw new RuntimeException(sprintf('Cannot seek to the collected data of %s.', $file));
+				}
 
-			[$key, $valueLength] = $this->readEntryKey($handle);
-			if (!is_string($key) || $transformer->absolutizePath($key) !== $file) {
-				throw new RuntimeException(sprintf('The result cache file %s changed while it was being read: the entry of %s is not where it was.', $this->cacheFilePath, $file));
-			}
+				[$key, $valueLength] = $this->readEntryKey($handle);
+				if (!is_string($key) || $transformer->absolutizePath($key) !== $file) {
+					throw new RuntimeException(sprintf('The entry of %s is not where it was.', $file));
+				}
 
-			$value = $this->readFrame($handle, $valueLength);
-			if (!is_array($value)) {
-				throw new RuntimeException(sprintf('The collected data of %s is not an array.', $file));
-			}
+				$value = $this->readFrame($handle, $valueLength);
+				if (!is_array($value)) {
+					throw new RuntimeException(sprintf('The collected data of %s is not an array.', $file));
+				}
 
-			$data[$key] = $value;
+				$data[$key] = $value;
+			}
+		} catch (Throwable $e) {
+			// The walk in readCacheFile() validated the framing, not the values, so this is the first
+			// point where a damaged value shows, and save() has already carried it over into the new
+			// file. Left in place it would fail every run from now on; restore() discards a cache it
+			// cannot read back the same way.
+			fclose($handle);
+			@unlink($this->cacheFilePath);
+
+			throw new RuntimeException(sprintf('The result cache file %s could not be read back and was discarded, so the next run analyses everything: %s', $this->cacheFilePath, $e->getMessage()), previous: $e);
 		}
 
 		fclose($handle);

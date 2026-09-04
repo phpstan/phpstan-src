@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\AnalysedCodeException;
+use PHPStan\Analyser\ResultCache\LazyCollectedData;
 use PHPStan\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
 use PHPStan\BetterReflection\Reflection\Exception\CircularReference;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
@@ -49,10 +50,20 @@ final class AnalyserResultFinalizer
 			return $this->addUnmatchedIgnoredErrors($this->mergeFilteredPhpErrors($analyserResult), [], []);
 		}
 
+		try {
+			$collectedData = $analyserResult->getCollectedData();
+		} catch (Throwable $t) {
+			if ($debug) {
+				throw $t;
+			}
+
+			return $this->addUnmatchedIgnoredErrors($this->mergeFilteredPhpErrors($this->withUnreadableCollectedData($analyserResult, $t)), [], []);
+		}
+
 		$nodeType = CollectedDataNode::class;
-		// The only point where the cached collected data is decoded. It lives as long as this node,
-		// which the result below does not hold on to.
-		$node = new CollectedDataNode($analyserResult->getCollectedData(), $onlyFiles);
+		// Decoded here and released with this node; the result below carries the lazy form on.
+		$node = new CollectedDataNode($collectedData, $onlyFiles);
+		unset($collectedData);
 
 		$file = 'N/A';
 		$scope = $this->scopeFactory->create(ScopeContext::create($file));
@@ -160,6 +171,41 @@ final class AnalyserResultFinalizer
 			processedFiles: $analyserResult->getProcessedFiles(),
 			workerCount: $analyserResult->getWorkerCount(),
 		), $collectorErrors, $locallyIgnoredCollectorErrors);
+	}
+
+	/**
+	 * The result cache was discarded by the reader, so the run reports the failure and the collector
+	 * rules do not run; the next run analyses everything and starts a new cache.
+	 */
+	private function withUnreadableCollectedData(AnalyserResult $analyserResult, Throwable $t): AnalyserResult
+	{
+		$internalErrors = $analyserResult->getInternalErrors();
+		$internalErrors[] = new InternalError(
+			$t->getMessage(),
+			'reading the collected data from the result cache',
+			InternalError::prepareTrace($t),
+			$t->getTraceAsString(),
+			shouldReportBug: false,
+		);
+
+		return new AnalyserResult(
+			unorderedErrors: $analyserResult->getUnorderedErrors(),
+			filteredPhpErrors: $analyserResult->getFilteredPhpErrors(),
+			allPhpErrors: $analyserResult->getAllPhpErrors(),
+			locallyIgnoredErrors: $analyserResult->getLocallyIgnoredErrors(),
+			linesToIgnore: $analyserResult->getLinesToIgnore(),
+			unmatchedLineIgnores: $analyserResult->getUnmatchedLineIgnores(),
+			internalErrors: $internalErrors,
+			collectedData: LazyCollectedData::fromArray([]),
+			dependencies: $analyserResult->getDependencies(),
+			usedTraitDependencies: $analyserResult->getUsedTraitDependencies(),
+			packageDependencies: $analyserResult->getPackageDependencies(),
+			exportedNodes: $analyserResult->getExportedNodes(),
+			reachedInternalErrorsCountLimit: $analyserResult->hasReachedInternalErrorsCountLimit(),
+			peakMemoryUsageBytes: $analyserResult->getPeakMemoryUsageBytes(),
+			processedFiles: $analyserResult->getProcessedFiles(),
+			workerCount: $analyserResult->getWorkerCount(),
+		);
 	}
 
 	private function mergeFilteredPhpErrors(AnalyserResult $analyserResult): AnalyserResult

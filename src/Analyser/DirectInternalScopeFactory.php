@@ -71,6 +71,7 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 		bool $nativeTypesPromoted = false,
 		?TemplateArgumentFrame $templateArgumentFrame = null,
 		?TemplateArgumentConstraints $templateArgumentConstraints = null,
+		array $resultProvenance = [],
 	): MutatingScope
 	{
 		$className = MutatingScope::class;
@@ -116,6 +117,7 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 			$nativeTypesPromoted,
 			$templateArgumentFrame,
 			$templateArgumentConstraints,
+			$resultProvenance,
 		);
 	}
 

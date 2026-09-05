@@ -99,6 +99,7 @@ zv::Val typeResultType(zval *result)
 /* {{{ node shapes and properties */
 
 pt_property_site pt_inh_expr_site;
+pt_property_site pt_inh_variable_name_site;
 pt_property_site pt_inh_name_site;
 pt_property_site pt_inh_identifier_name_site;
 pt_property_site pt_inh_class_site;
@@ -903,6 +904,15 @@ private:
 			return zv::Val::null();
 		}
 
+		// a provenance-recorded subject variable narrows through its defining
+		// call's families, exactly like the direct call comparison - the
+		// variable itself still pins to the constant alongside
+		zv::Val provenanceTypes = specifyThroughResultProvenance(subject, constantExpr, constantType.raw(), context, evaluationScope);
+		if (UNEXPECTED(provenanceTypes.isUndef())) return zv::Val();
+		if (!provenanceTypes.isNull()) {
+			return unionWith(std::move(provenanceTypes), createSubjectTypes(evaluationScope, subject, subjectResult, constantType.raw(), context));
+		}
+
 		// $a::class === Foo::class narrows $a to a final Foo when true;
 		// other contexts and plain-string sides only pin the fetch
 		if (isA(unwrappedSubject, PT_CLASS_CLASS_CONST_FETCH) && isA(classOf(unwrappedSubject), PT_CLASS_EXPR)) {
@@ -1396,8 +1406,49 @@ private:
 		return lowerNameIs(identifierString(name), "class");
 	}
 
+	/* Mirrors specifyThroughResultProvenance(): a SpecifiedTypes or null */
+	zv::Val specifyThroughResultProvenance(zval *subject, zval *constantExpr, zval *constantType, zval *context, zval *evaluationScope) const
+	{
+		zval *unwrappedSubject = unwrap(subject);
+		if (!isA(unwrappedSubject, PT_CLASS_VARIABLE)) {
+			if (UNEXPECTED(EG(exception))) return zv::Val();
+			return zv::Val::null();
+		}
+		zval *name = nodeProp(pt_inh_variable_name_site, unwrappedSubject, PT_LC("name"));
+		if (Z_TYPE_P(name) != IS_STRING) return zv::Val::null();
+
+		zv::Str exprString = zv::Str::adopt(zend_string_concat2(PT_LC("$"), Z_STRVAL_P(name), Z_STRLEN_P(name)));
+		zv::Val call = pt_mutating_scope_get_result_provenance_call(Z_OBJ_P(evaluationScope), exprString.get());
+		if (UNEXPECTED(call.isUndef())) return zv::Val();
+		if (call.isNull()) return call;
+
+		zv::Val familyTypes = specifyFuncCallFamilies(call.raw(), NULL, call.raw(), constantExpr, constantType, context, evaluationScope, NULL, true);
+		if (UNEXPECTED(familyTypes.isUndef())) return zv::Val();
+		if (Z_TYPE_P(familyTypes.raw()) != IS_OBJECT) return zv::Val::null();
+
+		return familyTypes;
+	}
+
+	/* Mirrors resolveFamilyArgType(): the first argument's current type for
+	 * the family compositions, PHP null when unknown; UNDEF = pending
+	 * exception */
+	zv::Val resolveFamilyArgType(zval *call, zval *argResult, bool argTypesFromScopeState, zval *evaluationScope) const
+	{
+		if (argTypesFromScopeState) {
+			zval *argExpr = firstArgValue(call);
+			if (UNEXPECTED(Z_TYPE_P(argExpr) != IS_OBJECT)) {
+				zend_throw_error(NULL, "phpstan_turbo: a provenance-recorded call has no argument");
+				return zv::Val();
+			}
+			return pt_mutating_scope_get_state_type(Z_OBJ_P(evaluationScope), Z_OBJ_P(argExpr));
+		}
+		if (argResult == NULL) return zv::Val::null();
+
+		return typeOnScope(argResult, evaluationScope);
+	}
+
 	/* Mirrors specifyFuncCallFamilies(): a SpecifiedTypes, false or null */
-	zv::Val specifyFuncCallFamilies(zval *subject, zval *subjectResult, zval *call, zval *constantExpr, zval *constantType, zval *context, zval *evaluationScope, zval *argResult) const
+	zv::Val specifyFuncCallFamilies(zval *subject, zval *subjectResult, zval *call, zval *constantExpr, zval *constantType, zval *context, zval *evaluationScope, zval *argResult, bool argTypesFromScopeState = false) const
 	{
 		if (!isA(nameOf(call), PT_CLASS_NAME)) {
 			if (UNEXPECTED(EG(exception))) return zv::Val();
@@ -1416,7 +1467,10 @@ private:
 			if (isTrue) {
 				bool one;
 				if (UNEXPECTED(!constantIntegerContains(1, constantType, one))) return zv::Val();
-				if (one) return pt_expression_result_get_specified_types_for_scope(subjectResult, evaluationScope, context);
+				if (one) {
+					if (subjectResult == NULL) return zv::Val::null();
+					return pt_expression_result_get_specified_types_for_scope(subjectResult, evaluationScope, context);
+				}
 			}
 
 			// other constants and contexts only pin the call below
@@ -1434,9 +1488,9 @@ private:
 					if (UNEXPECTED(value.isUndef())) return zv::Val();
 					if (Z_TYPE_P(value.raw()) == IS_STRING && ZSTR_LEN(Z_STR_P(value.raw())) == 0) {
 						zval *argExpr = firstArgValue(call);
-						if (argResult == NULL) return zv::Val::null();
-						zv::Val argType = typeOnScope(argResult, evaluationScope);
+						zv::Val argType = resolveFamilyArgType(call, argResult, argTypesFromScopeState, evaluationScope);
 						if (UNEXPECTED(argType.isUndef())) return zv::Val();
+						if (argType.isNull()) return zv::Val::null();
 						zend_long isString = trinaryOp(argType.raw(), PT_OP_IS_STRING, "isString");
 						if (UNEXPECTED(isString < 0)) return zv::Val();
 						if (isString == PT_TRI_YES) {
@@ -1473,9 +1527,9 @@ private:
 					if (UNEXPECTED(value.isUndef())) return zv::Val();
 					if (!(Z_TYPE_P(value.raw()) == IS_STRING && ZSTR_LEN(Z_STR_P(value.raw())) == 0)) {
 						zval *argExpr = firstArgValue(call);
-						if (argResult == NULL) return zv::Val::null();
-						zv::Val argType = typeOnScope(argResult, evaluationScope);
+						zv::Val argType = resolveFamilyArgType(call, argResult, argTypesFromScopeState, evaluationScope);
 						if (UNEXPECTED(argType.isUndef())) return zv::Val();
+						if (argType.isNull()) return zv::Val::null();
 						zv::Val className = constantStringValue(firstOf(constantStrings.raw()));
 						if (UNEXPECTED(className.isUndef())) return zv::Val();
 						if (UNEXPECTED(Z_TYPE_P(className.raw()) != IS_STRING)) {
@@ -1526,9 +1580,9 @@ private:
 			if (UNEXPECTED(nonEmptyConstant < 0)) return zv::Val();
 			if (truthy && nonEmptyConstant == PT_TRI_YES) {
 				zval *argExpr = firstArgValue(call);
-				if (argResult == NULL) return zv::Val::null();
-				zv::Val argType = typeOnScope(argResult, evaluationScope);
+				zv::Val argType = resolveFamilyArgType(call, argResult, argTypesFromScopeState, evaluationScope);
 				if (UNEXPECTED(argType.isUndef())) return zv::Val();
+				if (argType.isNull()) return zv::Val::null();
 
 				zend_long isString = trinaryOp(argType.raw(), PT_OP_IS_STRING, "isString");
 				if (UNEXPECTED(isString < 0)) return zv::Val();
@@ -1579,9 +1633,9 @@ private:
 				return createForSubject(argExpr, never.raw(), context, evaluationScope);
 			}
 
-			if (argResult == NULL) return zv::Val::null();
-			zv::Val argType = typeOnScope(argResult, evaluationScope);
+			zv::Val argType = resolveFamilyArgType(call, argResult, argTypesFromScopeState, evaluationScope);
 			if (UNEXPECTED(argType.isUndef())) return zv::Val();
+			if (argType.isNull()) return zv::Val::null();
 
 			bool zero;
 			if (UNEXPECTED(!constantIntegerContains(0, constantType, zero))) return zv::Val();
@@ -1680,9 +1734,9 @@ private:
 			bool positive = false;
 			if (truthy && UNEXPECTED(!rangeContains(NullableLong::of(1), NullableLong::null(), constantType, positive))) return zv::Val();
 			if (truthy && positive) {
-				if (argResult == NULL) return zv::Val::null();
-				zv::Val argType = typeOnScope(argResult, evaluationScope);
+				zv::Val argType = resolveFamilyArgType(call, argResult, argTypesFromScopeState, evaluationScope);
 				if (UNEXPECTED(argType.isUndef())) return zv::Val();
+				if (argType.isNull()) return zv::Val::null();
 				zend_long isString = trinaryOp(argType.raw(), PT_OP_IS_STRING, "isString");
 				if (UNEXPECTED(isString < 0)) return zv::Val();
 				if (isString == PT_TRI_YES) {

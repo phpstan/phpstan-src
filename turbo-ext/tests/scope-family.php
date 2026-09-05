@@ -123,6 +123,7 @@ final class RecordingScopeFactory implements InternalScopeFactory
 		bool $nativeTypesPromoted = false,
 		$templateArgumentFrame = null,
 		$templateArgumentConstraints = null,
+		array $resultProvenance = [],
 	): MutatingScope
 	{
 		$this->calls[] = func_get_args();
@@ -135,6 +136,7 @@ final class RecordingScopeFactory implements InternalScopeFactory
 			$conditionalExpressions, $inClosureBindScopeClasses, $anonymousFunctionReflection, $inFirstLevelStatement,
 			$currentlyAssignedExpressions, $currentlyAllowedUndefinedExpressions, $inFunctionCallsStack,
 			$afterExtractCall, $parentScope, $nativeTypesPromoted, $templateArgumentFrame, $templateArgumentConstraints,
+			$resultProvenance,
 		]);
 	}
 
@@ -457,6 +459,9 @@ final class Harness
 		if ($value instanceof \PHPStan\Analyser\Generics\TemplateArgumentConstraints) {
 			// each side builds its own empty constraints
 			return ['TAC', $value->isEmpty()];
+		}
+		if ($value instanceof \PHPStan\Analyser\ResultProvenance) {
+			return ['RP', $this->norm($value->getCall()), $value->getCallExprString()];
 		}
 		if ($value instanceof \PHPStan\Php\PhpVersions) {
 			return ['PV', $this->norm($value->getType())];
@@ -1183,6 +1188,7 @@ $sfScopeDigest = static function (mixed $result, object $scope, object $dummy) u
 		'nativeTypesPromoted' => $sfProp($result, 'nativeTypesPromoted'),
 		'namespace' => $sfProp($result, 'namespace'),
 		'templateArgumentConstraints' => $sfHarness->norm($sfProp($result, 'templateArgumentConstraints')),
+		'resultProvenance' => $sfHarness->norm($sfProp($result, 'resultProvenance')),
 		'resolvedTypes' => array_keys($sfProp($result, 'resolvedTypes')),
 	];
 };
@@ -1538,6 +1544,7 @@ foreach ($sfScopes as $sfId => [$sfWalkScope, $sfExprs, $sfStorage]) {
 			});
 
 			// the two-scope methods
+			$observe('getResultProvenanceCall', static fn () => $scope->getResultProvenanceCall('$n'));
 			$observe('getDifferingVariableRoots(self)', static fn () => $scope->getDifferingVariableRoots($scope));
 			$observe('getDifferingVariableRoots(other)', static fn () => $scope->getDifferingVariableRoots($other));
 			$observe('getDifferingVariableRoots(other, reversed)', static fn () => $other->getDifferingVariableRoots($scope));
@@ -1560,6 +1567,7 @@ foreach ($sfScopes as $sfId => [$sfWalkScope, $sfExprs, $sfStorage]) {
 				'toNodeCallbackScope again' => static fn () => $scope->toNodeCallbackScope(),
 				'duplicateWith' => static fn () => $scope->duplicateWith($args['expressionTypes'], $args['nativeExpressionTypes'], $args['conditionalExpressions'], ['$x' => true], ['$y' => true], [], !$args['inFirstLevelStatement'], true),
 				'withoutMemoizedTypes' => static fn () => $scope->withoutMemoizedTypes(),
+				'recordResultProvenance' => static fn () => $scope->recordResultProvenance('$n', new \PhpParser\Node\Expr\FuncCall(new \PhpParser\Node\Name('count'), [new \PhpParser\Node\Arg(new \PhpParser\Node\Expr\Variable('x'))])),
 				'withTemplateArgumentFrame' => static fn () => $scope->withTemplateArgumentFrame($args['templateArgumentFrame']),
 				'withTemplateArgumentConstraints(same)' => static fn () => $scope->withTemplateArgumentConstraints($args['templateArgumentConstraints']),
 				'withTemplateArgumentConstraints(other)' => static function () use ($scope, $args, $emptyConstraints, $sfHarness) {
@@ -2186,6 +2194,7 @@ foreach ($sfScopes as $sfId => [$sfWalkScope, $sfExprs, $sfStorage]) {
 					'conditionalExpressions', 'inClosureBindScopeClasses', 'anonymousFunctionReflection', 'inFirstLevelStatement',
 					'currentlyAssignedExpressions', 'currentlyAllowedUndefinedExpressions', 'inFunctionCallsStack',
 					'afterExtractCall', 'parentScope', 'nativeTypesPromoted', 'templateArgumentFrame', 'templateArgumentConstraints',
+					'resultProvenance',
 				] as $i => $name) {
 					$ctor[$name] = $createArgs[$i];
 				}

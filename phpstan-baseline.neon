@@ -1567,12 +1567,6 @@ parameters:
 			path: src/Type/Php/ReflectionMethodConstructorThrowTypeExtension.php
 
 		-
-			rawMessage: If condition is always true.
-			identifier: if.alwaysTrue
-			count: 1
-			path: src/Type/Php/SubstrDynamicReturnTypeExtension.php
-
-		-
 			rawMessage: 'Doing instanceof PHPStan\Type\ObjectType is error-prone and deprecated. Use Type::isObject() or Type::getObjectClassNames() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 2

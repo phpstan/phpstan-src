@@ -3855,7 +3855,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 					}
 					$scope = $scope->unsetExpression($expr);
 					foreach ($rescuedHolders as $targetExprString => $targetHolders) {
-						$scope = $scope->addConditionalExpressions((string) $targetExprString, $targetHolders);
+						$scope = $scope->addConditionalExpressions((string) $targetExprString, $targetHolders); // @phpstan-ignore cast.useless
 					}
 					$specifiedExpressions[$innerExprString] = new ExpressionTypeHolder($expr, new ErrorType(), TrinaryLogic::createNo());
 				}

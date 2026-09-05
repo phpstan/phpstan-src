@@ -1909,7 +1909,7 @@ final class AssignHandler implements ExprHandler
 			$conditionalHolder = new ConditionalExpressionHolder([
 				'$' . $variableName => ExpressionTypeHolder::createYes(new Variable($variableName), $variableType),
 			], $holder);
-			$conditionalExpressions[(string) $exprString][$conditionalHolder->getKey()] = $conditionalHolder;
+			$conditionalExpressions[(string) $exprString][$conditionalHolder->getKey()] = $conditionalHolder; // @phpstan-ignore cast.useless
 		}
 
 		return $conditionalExpressions;

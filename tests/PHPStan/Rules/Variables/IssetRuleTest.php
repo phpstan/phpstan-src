@@ -567,8 +567,12 @@ class IssetRuleTest extends RuleTestCase
 				13,
 			],
 			[
-				'Offset 3 on array{string, string, string, string, string} in isset() always exists and is not nullable.',
+				'Offset 3 on array{0: string, 1: string, 2: string, 4: string} in isset() does not exist.',
 				17,
+			],
+			[
+				'Offset 3 on array{string, string, string, string, string} in isset() always exists and is not nullable.',
+				29,
 			],
 		]);
 	}

@@ -21,7 +21,9 @@ use PHPStan\Reflection\ParameterReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use function array_filter;
 use function array_key_exists;
 use function array_key_first;
@@ -376,10 +378,10 @@ final class ScopeOps
 		$newVariableTypes = $ourExpressionTypes;
 
 		// When our-branch type is a subtype of their-branch type, the union
-		// absorbs it (merged === their). Such a variable is a poor *guard* —
-		// asserting its our-branch type later wouldn't reliably select this
-		// branch — but it remains a valid conditional *target*, so only exclude
-		// it from guard selection instead of dropping it entirely.
+		// absorbs it (merged === their). Such a variable cannot be a *guard* —
+		// its branch set difference below comes out empty — but it remains a
+		// valid conditional *target*; the flag also lets the target loop skip
+		// pairing these absorbed targets with constant-array guards.
 		$guardsToExclude = [];
 		foreach (array_keys($differingKeys) as $exprString) {
 			if (!array_key_exists($exprString, $theirExpressionTypes)) {
@@ -424,18 +426,41 @@ final class ScopeOps
 				continue;
 			}
 
-			if (
-				array_key_exists($exprString, $theirExpressionTypes)
-				&& !$theirExpressionTypes[$exprString]->getCertainty()->yes()
-			) {
+			if (!array_key_exists($exprString, $theirExpressionTypes)) {
+				// with no their-branch entry the merged holder keeps our type with
+				// lowered certainty, so no later type assertion can tell the
+				// branches apart
+				continue;
+			}
+			$theirHolder = $theirExpressionTypes[$exprString];
+			if (!$theirHolder->getCertainty()->yes()) {
+				continue;
+			}
+			if ($holder->equalTypes($theirHolder)) {
 				continue;
 			}
 
-			if ($mergedExpressionTypes[$exprString]->equalTypes($holder)) {
+			// The set difference between the branch types is the part of our type
+			// the other branch cannot produce: observing it later proves this
+			// branch was taken, even when the full branch types overlap - so a
+			// representable remainder makes a sound guard where the full type
+			// would not (the full our-branch type may even equal the merged
+			// type). When the subtraction is not representable, remove() keeps
+			// our full type and the merged-type comparison below restores the
+			// long-standing behavior for such guards.
+			$remainder = TypeCombinator::remove($holder->getType(), $theirHolder->getType());
+			if ($remainder instanceof NeverType) {
+				continue;
+			}
+			if ($mergedExpressionTypes[$exprString]->getType()->equals($remainder)) {
+				// matching this guard later would not discriminate the branches -
+				// the merged scope already guarantees it
 				continue;
 			}
 
-			$typeGuards[$exprString] = $holder;
+			$typeGuards[$exprString] = $remainder === $holder->getType()
+				? $holder
+				: ExpressionTypeHolder::createYes($holder->getExpr(), $remainder);
 		}
 
 		if (count($typeGuards) === 0) {

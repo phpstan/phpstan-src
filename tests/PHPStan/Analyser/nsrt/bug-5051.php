@@ -92,7 +92,7 @@ class HelloWorld
 			assertType('false', $foo);
 		} else {
 			assertType('bool', $update);
-			assertType('bool', $foo);
+			assertType('true', $foo);
 		}
 
 	}

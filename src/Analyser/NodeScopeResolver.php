@@ -3175,7 +3175,7 @@ class NodeScopeResolver
 				$gatheredArgTypeByIndex[$i] = $exprResult->getType();
 				$this->addGatheredArgType($gatheredTypes, $gatheredUnpack, $gatheredHasName, $originalArg, $i, $gatheredArgTypeByIndex[$i]);
 				$templateArgumentFrame = $this->observingTemplateArgumentFrame($scope);
-				if ($templateArgumentFrame !== null && $parameter !== null && $argMetadataAcceptor !== null) {
+				if ($templateArgumentFrame !== null && $parameter !== null) {
 					// the metadata acceptor is resolved against the arguments gathered
 					// before this one, so a template this argument itself decides is
 					// still its bound there - observe the declared parameter type,
@@ -3262,10 +3262,6 @@ class NodeScopeResolver
 				}
 
 				if ($assignByReference) {
-					if ($currentParameter === null) {
-						throw new ShouldNotHappenException();
-					}
-
 					$argValue = $arg->value;
 					if (!$argValue instanceof Variable || $argValue->name !== 'this') {
 						$paramOutType = $this->getParameterOutExtensionsType($callLike, $calleeReflection, $currentParameter, $scope);

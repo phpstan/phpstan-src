@@ -195,7 +195,7 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 				return null;
 			}
 
-			[$reflectionCacheKey, $variableCacheKey] = $this->getCacheKeys($file, $identifier); // @phpstan-ignore variable.undefined
+			[$reflectionCacheKey, $variableCacheKey] = $this->getCacheKeys($file, $identifier);
 			$functionReflection = $this->nodeToReflection($reflector, $fetchedFunctionNode);
 			$this->cache->save($reflectionCacheKey, $variableCacheKey, $functionReflection->exportToCache());
 

@@ -164,7 +164,7 @@ final class SwitchHandler implements StmtHandler
 			$alwaysTerminating = false;
 		}
 
-		if ($prevScope !== null && isset($branchFinalScopeResult)) {
+		if ($prevScope !== null) {
 			$finalScope = $prevScope->mergeWith($finalScope);
 			$alwaysTerminating = $alwaysTerminating && $branchFinalScopeResult->isAlwaysTerminating();
 		}

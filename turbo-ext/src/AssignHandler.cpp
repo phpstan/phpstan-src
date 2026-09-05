@@ -23,9 +23,11 @@
 #include "support.h"
 #include "generated/AssignHandler.h"
 #include "generated/PreparedAssignTarget.h"
+#include "generated/MutatingScope.h"
 
 namespace slots = ptdecl::AssignHandler::slot;
 namespace sigs = ptdecl::AssignHandler::sig;
+namespace msSlots = ptdecl::MutatingScope::slot;
 #include "zv.h"
 #include "TypeTraits.h"
 #include "TypeOps.h"
@@ -2058,6 +2060,23 @@ private:
 				}
 				AH_OKB(processSureTypesForConditionalExpressionsAfterAssign(nsr, scope.raw(), storage, varName, conditionalExpressions, falseySpecifiedTypes.raw(), falseyType.raw(), impurePoints.raw(), assignedExpr.raw(), stored));
 				AH_OKB(processSureNotTypesForConditionalExpressionsAfterAssign(nsr, scope.raw(), storage, varName, conditionalExpressions, falseySpecifiedTypes.raw(), falseyType.raw(), impurePoints.raw(), assignedExpr.raw(), stored));
+
+				// An assignment inside a short-circuit operand may or may not have run
+				// (its variable is only maybe-defined after the RHS walk), but a truthy
+				// && (or falsey ||) guarantees the right operand was evaluated. The
+				// operand walk's truthy/falsey scope knows exactly which variables it
+				// defined - record their certainty as a consequence of the assigned
+				// boolean, e.g. "$bool = $x && ($var = 'foo'); if ($bool) { … $var … }".
+				bool isAnd = ahIs(assignedExpr.raw(), PT_CLASS_BOOLEAN_AND_EXPR) || ahIs(assignedExpr.raw(), PT_CLASS_LOGICAL_AND_EXPR);
+				bool isOr = !isAnd && (ahIs(assignedExpr.raw(), PT_CLASS_BOOLEAN_OR_EXPR) || ahIs(assignedExpr.raw(), PT_CLASS_LOGICAL_OR_EXPR));
+				if (stored != NULL && (isAnd || isOr)) {
+					bool containsAssignment;
+					AH_OKB(containsVariableAssignment(assignedExpr.raw(), containsAssignment));
+					if (containsAssignment) {
+						AH_VALB(branchScope, isAnd ? pt_expression_result_get_truthy_scope(stored) : pt_expression_result_get_falsey_scope(stored));
+						AH_OKB(processDefinednessForConditionalExpressionsAfterAssign(conditionalExpressions, varName, isAnd ? truthyType.raw() : falseyType.raw(), branchScope.raw(), scope.raw()));
+					}
+				}
 			}
 
 			for (int falseyIndex = 0; falseyIndex < 7; falseyIndex++) {
@@ -2464,6 +2483,74 @@ private:
 		}
 
 		return true;
+	}
+
+	/* Records "if the assigned variable has $variableType, the target variable is
+	 * certainly defined (with its branch-scope type)" holders for variables whose
+	 * certainty is Yes in the given branch continuation scope of the RHS (the
+	 * truthy scope of a `&&`, the falsey scope of a `||`) but only Maybe in the
+	 * merged after-RHS scope. */
+	[[nodiscard]] static bool processDefinednessForConditionalExpressionsAfterAssign(zv::Val &conditionalExpressions, zend_string *variableName, zval *variableType, zval *branchScope, zval *mergedScope)
+	{
+		zval *branchTypes = OBJ_PROP_NUM(Z_OBJ_P(branchScope), msSlots::expressionTypes);
+		zval *mergedTypes = OBJ_PROP_NUM(Z_OBJ_P(mergedScope), msSlots::expressionTypes);
+		ZVAL_DEREF(branchTypes);
+		ZVAL_DEREF(mergedTypes);
+		if (UNEXPECTED(Z_TYPE_P(branchTypes) != IS_ARRAY || Z_TYPE_P(mergedTypes) != IS_ARRAY)) {
+			pt_throw_should_not_happen();
+			return false;
+		}
+
+		for (auto entry : zv::TableRef(Z_ARRVAL_P(branchTypes))) {
+			zval *holder = entry.value().deref().raw();
+			if (pt_holder_certainty_value(Z_OBJ_P(holder)) != PT_TRI_YES) continue;
+			zval *expr = OBJ_PROP_NUM(Z_OBJ_P(holder), PT_ETH_PROP_EXPR);
+			ZVAL_DEREF(expr);
+			zend_string *name = ahStringVariableName(expr);
+			if (name == NULL || zend_string_equals(name, variableName)) continue;
+
+			zend_string *stringKey = entry.stringKeyOrNull();
+			zval *mergedHolder = stringKey != NULL ? zend_hash_find(Z_ARRVAL_P(mergedTypes), stringKey) : zend_hash_index_find(Z_ARRVAL_P(mergedTypes), entry.indexKey());
+			if (mergedHolder == NULL) continue;
+			ZVAL_DEREF(mergedHolder);
+			if (pt_holder_certainty_value(Z_OBJ_P(mergedHolder)) != PT_TRI_MAYBE) continue;
+
+			AH_VALB(variable, newVariable(variableName));
+			AH_VALB(conditionHolder, newExpressionTypeHolder(variable.raw(), variableType, PT_TRI_YES));
+			zv::Str conditionKey = zv::Str::adopt(zend_string_concat2(PT_LC("$"), ZSTR_VAL(variableName), ZSTR_LEN(variableName)));
+			zv::Val conditions = ahEmptyArray();
+			ahSetKey(conditions, conditionKey.get(), conditionHolder.raw());
+			AH_VALB(conditionalHolder, newConditionalExpressionHolder(conditions.raw(), holder));
+			zv::Str holderKey = zv::Str::adopt(conditionalHolderKey(conditionalHolder.raw()));
+			AH_OKB(!holderKey.isNull());
+			zv::Str exprString = stringKey != NULL ? zv::Str::copyOf(stringKey) : zv::Str::adopt(zend_long_to_str((zend_long) entry.indexKey()));
+			nestedSet(conditionalExpressions, exprString.get(), holderKey.get(), conditionalHolder.raw());
+		}
+
+		return true;
+	}
+
+	/* matcher for containsVariableAssignment() */
+	static bool variableAssignmentMatcher(zend_object *node, void *ctx)
+	{
+		zend_class_entry *assignCe = pt_class(PT_CLASS_ASSIGN_EXPR);
+		zend_class_entry *assignOpCe = pt_class(PT_CLASS_ASSIGN_OP_EXPR);
+		zend_class_entry *assignRefCe = pt_class(PT_CLASS_ASSIGN_REF_EXPR);
+		if (UNEXPECTED(assignCe == NULL || assignOpCe == NULL || assignRefCe == NULL)) {
+			static_cast<pt_find_ctx *>(ctx)->failed = true;
+			return false;
+		}
+		return instanceof_function(node->ce, assignCe) || instanceof_function(node->ce, assignOpCe) || instanceof_function(node->ce, assignRefCe);
+	}
+
+	/* Whether the expression contains an assignment whose execution short-circuit
+	 * evaluation may have skipped - a cheap AST gate so the truthy/falsey scope
+	 * is only derived for boolean RHS expressions that can define a variable. */
+	[[nodiscard]] static bool containsVariableAssignment(zval *node, bool &contains)
+	{
+		pt_find_ctx ctx = {};
+		contains = pt_find_first_recursive(Z_OBJ_P(node), variableAssignmentMatcher, &ctx) != NULL;
+		return !ctx.failed;
 	}
 
 	/* (twin 2081) */

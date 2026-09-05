@@ -26,6 +26,11 @@ final class ParserNodeTypeToPHPStanType
 		} elseif ($type instanceof Name) {
 			$typeClassName = (string) $type;
 			$lowercasedClassName = strtolower($typeClassName);
+			if ($lowercasedClassName === 'resource') {
+				// PhpStorm stubs describe pre-PHP 8 signatures with a `resource` native type
+				return new ResourceType();
+			}
+
 			if ($classReflection !== null && in_array($lowercasedClassName, ['self', 'static'], true)) {
 				if ($lowercasedClassName === 'static') {
 					return new StaticType($classReflection);

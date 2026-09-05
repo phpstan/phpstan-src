@@ -8,7 +8,12 @@ use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\Assign;
+use PhpParser\Node\Expr\AssignOp;
 use PhpParser\Node\Expr\AssignRef;
+use PhpParser\Node\Expr\BinaryOp\BooleanAnd;
+use PhpParser\Node\Expr\BinaryOp\BooleanOr;
+use PhpParser\Node\Expr\BinaryOp\LogicalAnd;
+use PhpParser\Node\Expr\BinaryOp\LogicalOr;
 use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\List_;
@@ -90,6 +95,7 @@ use function array_reverse;
 use function array_slice;
 use function count;
 use function in_array;
+use function is_array;
 use function is_int;
 use function is_string;
 use function spl_object_id;
@@ -1157,6 +1163,29 @@ final class AssignHandler implements ExprHandler
 						: $this->defaultNarrowingHelper->specifyTypesForNode($scope, $assignedExpr, TypeSpecifierContext::createFalsey());
 					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($nodeScopeResolver, $scope, $storage, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType, $impurePoints, $assignedExpr, $storedAssignedExprResult);
 					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($nodeScopeResolver, $scope, $storage, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType, $impurePoints, $assignedExpr, $storedAssignedExprResult);
+
+					// An assignment inside a short-circuit operand may or may not have run
+					// (its variable is only maybe-defined after the RHS walk), but a truthy
+					// && (or falsey ||) guarantees the right operand was evaluated. The
+					// operand walk's truthy/falsey scope knows exactly which variables it
+					// defined - record their certainty as a consequence of the assigned
+					// boolean, e.g. "$bool = $x && ($var = 'foo'); if ($bool) { … $var … }".
+					if (
+						$storedAssignedExprResult !== null
+						&& (
+							$assignedExpr instanceof BooleanAnd
+							|| $assignedExpr instanceof BooleanOr
+							|| $assignedExpr instanceof LogicalAnd
+							|| $assignedExpr instanceof LogicalOr
+						)
+						&& self::containsVariableAssignment($assignedExpr)
+					) {
+						if ($assignedExpr instanceof BooleanAnd || $assignedExpr instanceof LogicalAnd) {
+							$conditionalExpressions = $this->processDefinednessForConditionalExpressionsAfterAssign($conditionalExpressions, $var->name, $truthyType, $storedAssignedExprResult->getTruthyScope(), $scope);
+						} else {
+							$conditionalExpressions = $this->processDefinednessForConditionalExpressionsAfterAssign($conditionalExpressions, $var->name, $falseyType, $storedAssignedExprResult->getFalseyScope(), $scope);
+						}
+					}
 				}
 
 				foreach ([null, false, 0, 0.0, '', '0', []] as $falseyScalar) {
@@ -1843,6 +1872,76 @@ final class AssignHandler implements ExprHandler
 		}
 
 		return $conditionalExpressions;
+	}
+
+	/**
+	 * Records "if the assigned variable has $variableType, the target variable is
+	 * certainly defined (with its branch-scope type)" holders for variables whose
+	 * certainty is Yes in the given branch continuation scope of the RHS (the
+	 * truthy scope of a `&&`, the falsey scope of a `||` - the scopes where every
+	 * short-circuit operand was guaranteed evaluated) but only Maybe in the
+	 * merged after-RHS scope.
+	 *
+	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
+	 * @return array<string, ConditionalExpressionHolder[]>
+	 */
+	private function processDefinednessForConditionalExpressionsAfterAssign(
+		array $conditionalExpressions,
+		string $variableName,
+		Type $variableType,
+		MutatingScope $branchScope,
+		MutatingScope $mergedScope,
+	): array
+	{
+		foreach ($branchScope->expressionTypes as $exprString => $holder) {
+			if (!$holder->getCertainty()->yes()) {
+				continue;
+			}
+			$expr = $holder->getExpr();
+			if (!$expr instanceof Variable || !is_string($expr->name) || $expr->name === $variableName) {
+				continue;
+			}
+			$mergedHolder = $mergedScope->expressionTypes[$exprString] ?? null;
+			if ($mergedHolder === null || !$mergedHolder->getCertainty()->maybe()) {
+				continue;
+			}
+
+			$conditionalHolder = new ConditionalExpressionHolder([
+				'$' . $variableName => ExpressionTypeHolder::createYes(new Variable($variableName), $variableType),
+			], $holder);
+			$conditionalExpressions[(string) $exprString][$conditionalHolder->getKey()] = $conditionalHolder;
+		}
+
+		return $conditionalExpressions;
+	}
+
+	/**
+	 * Whether the expression contains an assignment whose execution short-circuit
+	 * evaluation may have skipped - a cheap AST gate so the truthy/falsey scope
+	 * is only derived for boolean RHS expressions that can define a variable.
+	 */
+	private static function containsVariableAssignment(Node $node): bool
+	{
+		if ($node instanceof Assign || $node instanceof AssignOp || $node instanceof AssignRef) {
+			return true;
+		}
+
+		foreach ($node->getSubNodeNames() as $subNodeName) {
+			$subNode = $node->$subNodeName;
+			if ($subNode instanceof Node) {
+				if (self::containsVariableAssignment($subNode)) {
+					return true;
+				}
+			} elseif (is_array($subNode)) {
+				foreach ($subNode as $subNodeItem) {
+					if ($subNodeItem instanceof Node && self::containsVariableAssignment($subNodeItem)) {
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
 	}
 
 	/**

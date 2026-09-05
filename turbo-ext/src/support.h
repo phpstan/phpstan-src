@@ -81,6 +81,7 @@ enum {
 	PT_CLASS_ARROW_FUNCTION,
 	PT_CLASS_TYPE,
 	PT_CLASS_RECURSION_GUARD,
+	PT_CLASS_NEVER_TYPE,
 	/* classes the extension instantiates (their PHP twins are themselves
 	 * shadowed, hence no default name): configured to the stub subclasses
 	 * so created objects satisfy the original PHPStan type hints */

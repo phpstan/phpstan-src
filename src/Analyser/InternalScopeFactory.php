@@ -19,6 +19,7 @@ interface InternalScopeFactory
 	 * @param array<string, bool> $currentlyAssignedExpressions
 	 * @param array<string, true> $currentlyAllowedUndefinedExpressions
 	 * @param list<array{FunctionReflection|MethodReflection|null, ParameterReflection|null}> $inFunctionCallsStack
+	 * @param array<string, ResultProvenance> $resultProvenance
 	 */
 	public function create(
 		ScopeContext $context,
@@ -37,6 +38,7 @@ interface InternalScopeFactory
 		bool $afterExtractCall = false,
 		?MutatingScope $parentScope = null,
 		bool $nativeTypesPromoted = false,
+		array $resultProvenance = [],
 	): MutatingScope;
 
 	public function toNodeCallbackScopeFactory(): self;

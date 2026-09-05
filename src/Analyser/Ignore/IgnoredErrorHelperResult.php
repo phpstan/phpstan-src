@@ -69,6 +69,25 @@ final class IgnoredErrorHelperResult
 	}
 
 	/**
+	 * @param array<array{index: int<0, max>, ignoreError: string|ExpandedIgnoredErrorData}> $ignoreErrors
+	 * @return array<array{index: int<0, max>, ignoreError: string|ExpandedIgnoredErrorData}>
+	 */
+	private static function filterIgnoreErrorsByIdentifier(array $ignoreErrors, ?string $identifier): array
+	{
+		$filtered = [];
+		foreach ($ignoreErrors as $ignoreError) {
+			$ignore = $ignoreError['ignoreError'];
+			if (is_array($ignore) && isset($ignore['identifier']) && $ignore['identifier'] !== $identifier) {
+				continue;
+			}
+
+			$filtered[] = $ignoreError;
+		}
+
+		return $filtered;
+	}
+
+	/**
 	 * @param list<Error> $errors
 	 * @param string[] $analysedFiles
 	 */
@@ -88,6 +107,12 @@ final class IgnoredErrorHelperResult
 		// offset writes — otherwise PHPStan widens it to `array<mixed>`.
 		$realCounts = [];
 		$matchedAt = [];
+
+		// Preserve configuration order while filtering out identifier-specific
+		// entries that cannot match, once per distinct error identifier.
+		$otherIgnoreErrorsByIdentifier = [];
+
+		$ignoreErrorsByFileAndIdentifier = [];
 
 		$processIgnoreError = function (Error $error, int $i, $ignore) use (&$unmatchedIgnoredErrors, &$stringErrors, &$realCounts, &$matchedAt): bool {
 			$shouldBeIgnored = false;
@@ -116,22 +141,27 @@ final class IgnoredErrorHelperResult
 						}
 					}
 				} elseif (isset($ignore['paths'])) {
-					foreach ($ignore['paths'] as $j => $ignorePath) {
-						$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, ignoredErrorPattern: $ignore['message'] ?? null, ignoredErrorMessage: $ignore['rawMessage'] ?? null, identifier: $ignore['identifier'] ?? null, path: $ignorePath);
-						if (!$shouldBeIgnored) {
-							continue;
-						}
+					// Message and identifier do not depend on the path. Match them once
+					// instead of repeating the potentially expensive regex for every path.
+					$matchesMessageAndIdentifier = IgnoredError::shouldIgnore($this->fileHelper, $error, ignoredErrorPattern: $ignore['message'] ?? null, ignoredErrorMessage: $ignore['rawMessage'] ?? null, identifier: $ignore['identifier'] ?? null, path: null);
+					if ($matchesMessageAndIdentifier) {
+						foreach ($ignore['paths'] as $j => $ignorePath) {
+							$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, ignoredErrorPattern: null, ignoredErrorMessage: null, identifier: null, path: $ignorePath);
+							if (!$shouldBeIgnored) {
+								continue;
+							}
 
-						if (isset($unmatchedIgnoredErrors[$i])) {
-							if (!is_array($unmatchedIgnoredErrors[$i])) {
-								throw new ShouldNotHappenException();
+							if (isset($unmatchedIgnoredErrors[$i])) {
+								if (!is_array($unmatchedIgnoredErrors[$i])) {
+									throw new ShouldNotHappenException();
+								}
+								unset($unmatchedIgnoredErrors[$i]['paths'][$j]);
+								if (isset($unmatchedIgnoredErrors[$i]['paths']) && count($unmatchedIgnoredErrors[$i]['paths']) === 0) {
+									unset($unmatchedIgnoredErrors[$i]);
+								}
 							}
-							unset($unmatchedIgnoredErrors[$i]['paths'][$j]);
-							if (isset($unmatchedIgnoredErrors[$i]['paths']) && count($unmatchedIgnoredErrors[$i]['paths']) === 0) {
-								unset($unmatchedIgnoredErrors[$i]);
-							}
+							break;
 						}
-						break;
 					}
 				} else {
 					$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, ignoredErrorPattern: $ignore['message'] ?? null, ignoredErrorMessage: $ignore['rawMessage'] ?? null, identifier: $ignore['identifier'] ?? null, path: null);
@@ -161,6 +191,10 @@ final class IgnoredErrorHelperResult
 		$errorQueue = $errors;
 		for ($errorIndex = 0; $errorIndex < count($errorQueue); $errorIndex++) {
 			$error = $errorQueue[$errorIndex];
+			$identifier = $error->getIdentifier();
+			$identifierKey = $identifier ?? '';
+			$matchingOtherIgnoreErrors = $otherIgnoreErrorsByIdentifier[$identifierKey]
+				??= self::filterIgnoreErrorsByIdentifier($this->otherIgnoreErrors, $identifier);
 
 			// An error deduplicated directly into a trait (see ConstantConditionInTraitRule)
 			// stands for one occurrence per using class. An ignoreErrors path pointing at one
@@ -175,7 +209,9 @@ final class IgnoredErrorHelperResult
 					$contextError = $error->asReportedInTraitContext($contextFilePath);
 					$contextIgnored = false;
 					$normalizedContextFilePath = $this->fileHelper->normalizePath($contextFilePath);
-					foreach ($this->ignoreErrorsByFile[$normalizedContextFilePath] ?? [] as $ignoreError) {
+					$matchingFileIgnoreErrors = $ignoreErrorsByFileAndIdentifier[$normalizedContextFilePath][$identifierKey]
+						??= self::filterIgnoreErrorsByIdentifier($this->ignoreErrorsByFile[$normalizedContextFilePath] ?? [], $identifier);
+					foreach ($matchingFileIgnoreErrors as $ignoreError) {
 						$i = $ignoreError['index'];
 						$ignore = $ignoreError['ignoreError'];
 						if (!$processIgnoreError($contextError, $i, $ignore)) {
@@ -185,7 +221,7 @@ final class IgnoredErrorHelperResult
 						}
 					}
 					if (!$contextIgnored) {
-						foreach ($this->otherIgnoreErrors as $ignoreError) {
+						foreach ($matchingOtherIgnoreErrors as $ignoreError) {
 							$i = $ignoreError['index'];
 							$ignore = $ignoreError['ignoreError'];
 							// only entries scoped to a path that does not cover the trait file
@@ -234,7 +270,9 @@ final class IgnoredErrorHelperResult
 
 			$filePath = $this->fileHelper->normalizePath($error->getFilePath());
 			if (!$isStrippedSurvivor && isset($this->ignoreErrorsByFile[$filePath])) {
-				foreach ($this->ignoreErrorsByFile[$filePath] as $ignoreError) {
+				$matchingFileIgnoreErrors = $ignoreErrorsByFileAndIdentifier[$filePath][$identifierKey]
+					??= self::filterIgnoreErrorsByIdentifier($this->ignoreErrorsByFile[$filePath], $identifier);
+				foreach ($matchingFileIgnoreErrors as $ignoreError) {
 					$i = $ignoreError['index'];
 					$ignore = $ignoreError['ignoreError'];
 					$result = $processIgnoreError($error, $i, $ignore);
@@ -249,7 +287,9 @@ final class IgnoredErrorHelperResult
 			if ($traitFilePath !== null) {
 				$normalizedTraitFilePath = $this->fileHelper->normalizePath($traitFilePath);
 				if (isset($this->ignoreErrorsByFile[$normalizedTraitFilePath])) {
-					foreach ($this->ignoreErrorsByFile[$normalizedTraitFilePath] as $ignoreError) {
+					$matchingFileIgnoreErrors = $ignoreErrorsByFileAndIdentifier[$normalizedTraitFilePath][$identifierKey]
+						??= self::filterIgnoreErrorsByIdentifier($this->ignoreErrorsByFile[$normalizedTraitFilePath], $identifier);
+					foreach ($matchingFileIgnoreErrors as $ignoreError) {
 						$i = $ignoreError['index'];
 						$ignore = $ignoreError['ignoreError'];
 						$result = $processIgnoreError($error, $i, $ignore);
@@ -261,7 +301,7 @@ final class IgnoredErrorHelperResult
 				}
 			}
 
-			foreach ($this->otherIgnoreErrors as $ignoreError) {
+			foreach ($matchingOtherIgnoreErrors as $ignoreError) {
 				$i = $ignoreError['index'];
 				$ignore = $ignoreError['ignoreError'];
 

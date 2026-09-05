@@ -95,7 +95,12 @@ final class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTyp
 				}
 
 				if (is_bool($substr)) {
-					$results[] = new ConstantBooleanType($substr);
+					if ($this->phpVersion->substrReturnFalseInsteadOfEmptyString()) {
+						$results[] = new ConstantBooleanType($substr);
+					} else {
+						// Simulate substr call on a recent PHP version if the runtime one is too old.
+						$results[] = new ConstantStringType('');
+					}
 				} else {
 					$results[] = new ConstantStringType($substr);
 				}

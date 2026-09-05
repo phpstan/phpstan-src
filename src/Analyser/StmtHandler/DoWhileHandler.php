@@ -107,7 +107,7 @@ final class DoWhileHandler implements StmtHandler
 		$storage = $originalStorage;
 		if (
 			$replayBodyRecording !== null && $replayPassStorage !== null && $replayPassResult !== null
-			&& $prevEntryScope !== null && $bodyScope->equals($prevEntryScope)
+			&& $bodyScope->equals($prevEntryScope)
 		) {
 			// the final body walk would repeat the recorded fixpoint pass exactly
 			// (same entry scope, deterministic walk) - adopt the pass's results

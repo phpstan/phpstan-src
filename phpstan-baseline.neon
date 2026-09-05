@@ -19,6 +19,24 @@ parameters:
 			path: src/Analyser/ArgumentsNormalizer.php
 
 		-
+			rawMessage: Foreach overwrites $expr with its value variable.
+			identifier: foreach.valueOverwrite
+			count: 1
+			path: src/Analyser/ConditionalExpressionHolderRecipe.php
+
+		-
+			rawMessage: Foreach overwrites $exprString with its value variable.
+			identifier: foreach.valueOverwrite
+			count: 1
+			path: src/Analyser/ConditionalExpressionHolderRecipe.php
+
+		-
+			rawMessage: Foreach overwrites $type with its value variable.
+			identifier: foreach.valueOverwrite
+			count: 1
+			path: src/Analyser/ConditionalExpressionHolderRecipe.php
+
+		-
 			rawMessage: Casting to string something that's already string.
 			identifier: cast.useless
 			count: 3
@@ -43,6 +61,24 @@ parameters:
 			path: src/Analyser/ExprHandler/Helper/ConditionalExpressionHolderHelper.php
 
 		-
+			rawMessage: Foreach overwrites $expr with its value variable.
+			identifier: foreach.valueOverwrite
+			count: 1
+			path: src/Analyser/ExprHandler/Helper/ConditionalExpressionHolderHelper.php
+
+		-
+			rawMessage: Foreach overwrites $exprString with its key variable.
+			identifier: foreach.keyOverwrite
+			count: 1
+			path: src/Analyser/ExprHandler/Helper/ConditionalExpressionHolderHelper.php
+
+		-
+			rawMessage: Foreach overwrites $type with its value variable.
+			identifier: foreach.valueOverwrite
+			count: 1
+			path: src/Analyser/ExprHandler/Helper/ConditionalExpressionHolderHelper.php
+
+		-
 			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 2
@@ -53,6 +89,12 @@ parameters:
 			identifier: preInc.nonNumeric
 			count: 1
 			path: src/Analyser/ExprHandler/Helper/IncDecTypeHelper.php
+
+		-
+			rawMessage: Foreach overwrites $varName with its value variable.
+			identifier: foreach.valueOverwrite
+			count: 1
+			path: src/Analyser/ExprHandler/MatchHandler.php
 
 		-
 			rawMessage: Casting to string something that's already string.
@@ -97,6 +139,12 @@ parameters:
 			path: src/Analyser/RuleErrorTransformer.php
 
 		-
+			rawMessage: Foreach overwrites $exprString with its value variable.
+			identifier: foreach.valueOverwrite
+			count: 2
+			path: src/Analyser/ScopeOps.php
+
+		-
 			rawMessage: 'Parameter #2 $node of method PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection::__invoke() expects PhpParser\Node\Expr\ArrowFunction|PhpParser\Node\Expr\Closure|PhpParser\Node\Expr\FuncCall|PhpParser\Node\Stmt\Class_|PhpParser\Node\Stmt\Const_|PhpParser\Node\Stmt\Enum_|PhpParser\Node\Stmt\Function_|PhpParser\Node\Stmt\Interface_|PhpParser\Node\Stmt\Trait_, PhpParser\Node\Stmt\ClassLike given.'
 			identifier: argument.type
 			count: 1
@@ -125,6 +173,12 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: src/Collectors/Registry.php
+
+		-
+			rawMessage: Foreach overwrites $internalError with its value variable.
+			identifier: foreach.valueOverwrite
+			count: 1
+			path: src/Command/AnalyseCommand.php
 
 		-
 			rawMessage: 'Call to static method expand() of internal class Nette\DI\Helpers from outside its root namespace Nette.'
@@ -349,6 +403,12 @@ parameters:
 			path: src/Reflection/BetterReflection/SourceLocator/FileReadTrapStreamWrapper.php
 
 		-
+			rawMessage: Foreach overwrites $file with its value variable.
+			identifier: foreach.valueOverwrite
+			count: 1
+			path: src/Reflection/BetterReflection/SourceLocator/OptimizedDirectorySourceLocator.php
+
+		-
 			rawMessage: 'Parameter #2 $node of method PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection::__invoke() expects PhpParser\Node\Expr\ArrowFunction|PhpParser\Node\Expr\Closure|PhpParser\Node\Expr\FuncCall|PhpParser\Node\Stmt\Class_|PhpParser\Node\Stmt\Const_|PhpParser\Node\Stmt\Enum_|PhpParser\Node\Stmt\Function_|PhpParser\Node\Stmt\Interface_|PhpParser\Node\Stmt\Trait_, PhpParser\Node\Expr\FuncCall|PhpParser\Node\Stmt\ClassLike|PhpParser\Node\Stmt\Const_|PhpParser\Node\Stmt\Function_ given.'
 			identifier: argument.type
 			count: 1
@@ -479,6 +539,12 @@ parameters:
 			identifier: phpstanApi.instanceofType
 			count: 2
 			path: src/Rules/Classes/ImpossibleInstanceOfRule.php
+
+		-
+			rawMessage: Foreach overwrites $param with its value variable.
+			identifier: foreach.valueOverwrite
+			count: 1
+			path: src/Rules/Classes/InvalidPromotedPropertiesRule.php
 
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\ObjectType is error-prone and deprecated. Use Type::isObject() or Type::getObjectClassNames() instead.'
@@ -859,6 +925,12 @@ parameters:
 			path: src/Type/ArrayType.php
 
 		-
+			rawMessage: Foreach overwrites $keyType with its value variable.
+			identifier: foreach.valueOverwrite
+			count: 1
+			path: src/Type/ArrayType.php
+
+		-
 			rawMessage: 'Doing instanceof PHPStan\Type\BooleanType is error-prone and deprecated. Use Type::isBoolean() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 2
@@ -916,6 +988,12 @@ parameters:
 			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
 			count: 2
+			path: src/Type/Constant/ConstantArrayType.php
+
+		-
+			rawMessage: Foreach overwrites $position with its value variable.
+			identifier: foreach.valueOverwrite
+			count: 1
 			path: src/Type/Constant/ConstantArrayType.php
 
 		-
@@ -1489,6 +1567,12 @@ parameters:
 			path: src/Type/Php/ArrayKeyExistsFunctionTypeSpecifyingExtension.php
 
 		-
+			rawMessage: Foreach overwrites $arg with its value variable.
+			identifier: foreach.valueOverwrite
+			count: 1
+			path: src/Type/Php/ArrayMapFunctionReturnTypeExtension.php
+
+		-
 			rawMessage: 'Doing instanceof PHPStan\Type\ConstantScalarType is error-prone and deprecated. Use Type::isConstantScalarValue() or Type::getConstantScalarTypes() or Type::getConstantScalarValues() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 16
@@ -1559,6 +1643,18 @@ parameters:
 			identifier: phpstanApi.instanceofType
 			count: 1
 			path: src/Type/Php/ReflectionMethodConstructorThrowTypeExtension.php
+
+		-
+			rawMessage: Foreach overwrites $group with its value variable.
+			identifier: foreach.valueOverwrite
+			count: 1
+			path: src/Type/Regex/RegexGroupList.php
+
+		-
+			rawMessage: Foreach overwrites $i with its key variable.
+			identifier: foreach.keyOverwrite
+			count: 1
+			path: src/Type/Regex/RegexGroupList.php
 
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\ObjectType is error-prone and deprecated. Use Type::isObject() or Type::getObjectClassNames() instead.'
@@ -1636,6 +1732,30 @@ parameters:
 			rawMessage: 'Doing instanceof PHPStan\Type\ObjectShapeType is error-prone and deprecated. Use Type::isObject() and Type::hasProperty() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 2
+			path: src/Type/TypeCombinator.php
+
+		-
+			rawMessage: For loop initial assignment overwrites variable $i.
+			identifier: for.variableOverwrite
+			count: 2
+			path: src/Type/TypeCombinator.php
+
+		-
+			rawMessage: Foreach overwrites $arr with its value variable.
+			identifier: foreach.valueOverwrite
+			count: 1
+			path: src/Type/TypeCombinator.php
+
+		-
+			rawMessage: Foreach overwrites $idx with its key variable.
+			identifier: foreach.keyOverwrite
+			count: 1
+			path: src/Type/TypeCombinator.php
+
+		-
+			rawMessage: Foreach overwrites $idx with its value variable.
+			identifier: foreach.valueOverwrite
+			count: 1
 			path: src/Type/TypeCombinator.php
 
 		-

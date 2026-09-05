@@ -3827,12 +3827,37 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				$expr = $issetExpr->getExpr();
 
 				if ($typeSpecification['sure']) {
+					$innerExprString = $scope->getNodeKey($expr);
 					$scope = $scope->setExpressionCertaintyKeepingType(
 						$expr,
 						TrinaryLogic::createMaybe(),
 					);
+					$specifiedExpressions[$innerExprString] = ExpressionTypeHolder::createMaybe(
+						$expr,
+						$scope->expressionTypes[$innerExprString]->getType(),
+					);
 				} else {
+					$innerExprString = $scope->getNodeKey($expr);
+					// Holders conditioned on this expression being undefined (a
+					// certainty-No condition) wait for exactly the specification
+					// applied here, but unsetExpression()'s invalidation would drop
+					// them before the conditional-expressions matcher below could
+					// fire them - carve them out and re-add them afterwards.
+					$rescuedHolders = [];
+					foreach ($scope->conditionalExpressions as $targetExprString => $targetHolders) {
+						foreach ($targetHolders as $holderKey => $conditionalHolder) {
+							$conditionHolder = $conditionalHolder->getConditionExpressionTypeHolders()[$innerExprString] ?? null;
+							if ($conditionHolder === null || !$conditionHolder->getCertainty()->no()) {
+								continue;
+							}
+							$rescuedHolders[$targetExprString][$holderKey] = $conditionalHolder;
+						}
+					}
 					$scope = $scope->unsetExpression($expr);
+					foreach ($rescuedHolders as $targetExprString => $targetHolders) {
+						$scope = $scope->addConditionalExpressions((string) $targetExprString, $targetHolders);
+					}
+					$specifiedExpressions[$innerExprString] = new ExpressionTypeHolder($expr, new ErrorType(), TrinaryLogic::createNo());
 				}
 				$scopeIsWorkingCopy = false;
 

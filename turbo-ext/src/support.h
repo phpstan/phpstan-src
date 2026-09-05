@@ -519,6 +519,8 @@ enum {
 	/* the class names of Type::toPhpDocNode() and how describe() prints them */
 	PT_CLASS_FULLY_QUALIFIED_NAME_NODE,
 	PT_CLASS_TYPE_NODE_DESCRIBER,
+	/* the foreach value-variable alias (MutatingScope::enterForeach()) */
+	PT_CLASS_FOREACH_VALUE_ALIAS_EXPR,
 	PT_CLASS_COUNT
 };
 
@@ -2920,10 +2922,12 @@ zval *pt_parameters_acceptor_parameters(zval *acceptor, zv::Val &hold);
 zval *pt_assertions_all(zval *assertions, zv::Val &hold);
 
 /* MutatingScope.cpp — $scope->afterExtractCall() /
- * afterClearstatcacheCall() / afterOpenSslCall($name); UNDEF = pending
+ * afterClearstatcacheCall() / invalidateForeachValueAliases() /
+ * afterOpenSslCall($name); UNDEF = pending
  * exception */
 zv::Val pt_mutating_scope_after_extract_call(zend_object *scope);
 zv::Val pt_mutating_scope_after_clearstatcache_call(zend_object *scope);
+zv::Val pt_mutating_scope_invalidate_foreach_value_aliases(zend_object *scope);
 zv::Val pt_mutating_scope_after_open_ssl_call(zend_object *scope, zend_string *openSslFunctionName);
 
 /* OutputBufferHelper.cpp — the shadowing class and its public methods for
@@ -3451,7 +3455,7 @@ zv::Val pt_variable_flow_builder_writes(zval *flow);
 /* MutatingScope.cpp — $scope->generalizeWith($otherScope,
  * $writableVariableNames) ($writableVariableNames NULL or IS_NULL for null) /
  * ->enterForeach($originalScope, $iteratee, $iterateeType,
- * $nativeIterateeType, $valueName, $keyName, $valueByRef) ($keyName NULL for
+ * $nativeIterateeType, $valueName, $keyName, $valueByRef, $recordValueAlias) ($keyName NULL for
  * null) / ->enterForeachKey(...) / ->enterCatchType($catchType,
  * $variableName) ($variableName NULL for null) /
  * ->processFinallyScope($finallyScope, $originalFinallyScope) /
@@ -3459,7 +3463,7 @@ zv::Val pt_variable_flow_builder_writes(zval *flow);
  * body for exactly a MutatingScope, the method otherwise (everything
  * borrowed); UNDEF = pending exception */
 zv::Val pt_mutating_scope_generalize_with_names(zend_object *scope, zend_object *otherScope, zval *writableVariableNames);
-zv::Val pt_mutating_scope_enter_foreach(zend_object *scope, zend_object *originalScope, zval *iteratee, zval *iterateeType, zval *nativeIterateeType, zend_string *valueName, zend_string *keyName, bool valueByRef);
+zv::Val pt_mutating_scope_enter_foreach(zend_object *scope, zend_object *originalScope, zval *iteratee, zval *iterateeType, zval *nativeIterateeType, zend_string *valueName, zend_string *keyName, bool valueByRef, bool recordValueAlias);
 zv::Val pt_mutating_scope_enter_foreach_key(zend_object *scope, zend_object *originalScope, zval *iteratee, zval *iterateeType, zval *nativeIterateeType, zend_string *keyName);
 zv::Val pt_mutating_scope_enter_catch_type(zend_object *scope, zval *catchType, zend_string *variableName);
 zv::Val pt_mutating_scope_process_finally_scope(zend_object *scope, zend_object *finallyScope, zend_object *originalFinallyScope);

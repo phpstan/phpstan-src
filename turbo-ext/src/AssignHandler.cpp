@@ -2188,6 +2188,9 @@ private:
 			AH_VALB(nativeScopeBeforeAssignEval, pt_mutating_scope_do_not_treat_phpdoc_types_as_certain(Z_OBJ_P(scopeBeforeAssignEval.raw())));
 			AH_VALB(nativeValueType, readAssignedValueType(nsr, stored, assignedExpr.raw(), nativeScopeBeforeAssignEval.raw()));
 			AH_SETB(scope, assignDynamicVariable(scope.raw(), nameExprResult.raw(), valueType.raw(), nativeValueType.raw()));
+			// a dynamic $$name write can target any variable, including the
+			// foreach value/key/iteratee - drop the value aliases
+			AH_SETB(scope, pt_mutating_scope_invalidate_foreach_value_aliases(Z_OBJ_P(scope.raw())));
 		}
 
 		return true;

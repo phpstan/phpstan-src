@@ -96,6 +96,8 @@ use function is_string;
 final class AssignHandler implements ExprHandler
 {
 
+	private const TERNARY_ARM_EXCLUDED_VALUES_LIMIT = 3;
+
 	public function __construct(
 		private VarAnnotationProcessor $varAnnotationProcessor,
 		private TypeSpecifier $typeSpecifier,
@@ -917,14 +919,21 @@ final class AssignHandler implements ExprHandler
 					$truthyType = $truthyScope->getType($if);
 					$falseyType = $falsyScope->getType($assignedExpr->else);
 
-					if (
-						$truthyType->isSuperTypeOf($falseyType)->no()
-						&& $falseyType->isSuperTypeOf($truthyType)->no()
-					) {
-						$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType, $impurePoints, $assignedExpr);
-						$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType, $impurePoints, $assignedExpr);
-						$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType, $impurePoints, $assignedExpr);
-						$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType, $impurePoints, $assignedExpr);
+					// The variable can prove an arm was taken even when the arm types overlap:
+					// the part of an arm's type not producible by the other arm implies that
+					// arm's condition outcome. With fully disjoint arms both remainders are
+					// the full arm types.
+					$truthyRemainder = TypeCombinator::remove($truthyType, $falseyType);
+					if ($falseyType->isSuperTypeOf($truthyRemainder)->no()) {
+						$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyRemainder, $impurePoints, $assignedExpr);
+						$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyRemainder, $impurePoints, $assignedExpr);
+						$conditionalExpressions = $this->processTernaryArmValueImpliedTypesAfterAssign($truthyScope, $var->name, $conditionalExpressions, $if, $truthyRemainder, $falseyType, $impurePoints, $assignedExpr);
+					}
+					$falseyRemainder = TypeCombinator::remove($falseyType, $truthyType);
+					if ($truthyType->isSuperTypeOf($falseyRemainder)->no()) {
+						$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyRemainder, $impurePoints, $assignedExpr);
+						$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyRemainder, $impurePoints, $assignedExpr);
+						$conditionalExpressions = $this->processTernaryArmValueImpliedTypesAfterAssign($falsyScope, $var->name, $conditionalExpressions, $assignedExpr->else, $falseyRemainder, $truthyType, $impurePoints, $assignedExpr);
 					}
 				}
 
@@ -1502,6 +1511,50 @@ final class AssignHandler implements ExprHandler
 				TypeCombinator::remove($scope->getType($expr), $exprType),
 				TrinaryLogic::createYes(),
 			);
+		}
+
+		return $conditionalExpressions;
+	}
+
+	/**
+	 * A ternary-assigned variable holding a value only one arm can produce proves that
+	 * arm's expression produced it — so the arm expression's value is also outside the
+	 * other arm's type. For each concrete value of the other arm's type this projects
+	 * the narrowings of `$armExpr !== $value` (e.g. `array_key_first($arr) !== null`
+	 * implying a non-empty `$arr`) into conditional expressions guarded by the variable.
+	 *
+	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
+	 * @param ImpurePoint[] $rhsImpurePoints
+	 * @return array<string, ConditionalExpressionHolder[]>
+	 */
+	private function processTernaryArmValueImpliedTypesAfterAssign(
+		MutatingScope $armScope,
+		string $variableName,
+		array $conditionalExpressions,
+		Expr $armExpr,
+		Type $remainderType,
+		Type $otherArmType,
+		array $rhsImpurePoints,
+		Expr $assignedExpr,
+	): array
+	{
+		$otherArmFiniteTypes = $otherArmType->getFiniteTypes();
+		if (count($otherArmFiniteTypes) === 0 || count($otherArmFiniteTypes) > self::TERNARY_ARM_EXCLUDED_VALUES_LIMIT) {
+			return $conditionalExpressions;
+		}
+
+		foreach ($otherArmFiniteTypes as $finiteType) {
+			if (!$remainderType->isSuperTypeOf($finiteType)->no()) {
+				continue;
+			}
+
+			$specifiedTypes = $this->typeSpecifier->specifyTypesInCondition(
+				$armScope,
+				new Expr\BinaryOp\NotIdentical($armExpr, new TypeExpr($finiteType)),
+				TypeSpecifierContext::createTrue(),
+			);
+			$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($armScope, $variableName, $conditionalExpressions, $specifiedTypes, $remainderType, $rhsImpurePoints, $assignedExpr);
+			$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($armScope, $variableName, $conditionalExpressions, $specifiedTypes, $remainderType, $rhsImpurePoints, $assignedExpr);
 		}
 
 		return $conditionalExpressions;

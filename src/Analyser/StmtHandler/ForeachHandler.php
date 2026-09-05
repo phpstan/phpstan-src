@@ -19,6 +19,7 @@ use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Break_;
 use PhpParser\Node\Stmt\Continue_;
 use PhpParser\Node\Stmt\Foreach_;
+use PhpParser\NodeFinder;
 use PHPStan\Analyser\ConditionalExpressionHolder;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResultStorage;
@@ -73,6 +74,7 @@ final class ForeachHandler implements StmtHandler
 
 	private const FOREACH_UNROLL_LIMIT = 16;
 	private const FOREACH_UNROLL_NESTED_LIMIT = 8;
+	private const RECORD_VALUE_ALIAS_ATTRIBUTE = 'foreachValueAliasRecordable';
 
 	public function __construct(
 		private Container $container,
@@ -500,6 +502,7 @@ final class ForeachHandler implements StmtHandler
 				$stmt->valueVar->name,
 				$keyVarName,
 				$stmt->byRef,
+				$this->shouldRecordForeachValueAlias($stmt),
 			);
 			$vars = [$stmt->valueVar->name];
 			if ($keyVarName !== null) {
@@ -603,6 +606,176 @@ final class ForeachHandler implements StmtHandler
 		}
 
 		return $this->varAnnotationProcessor->processVarAnnotation($scope, $vars, $stmt);
+	}
+
+	/**
+	 * Whether the foreach value variable may alias the iteratee dim fetch
+	 * ($array[$key]) for its whole iteration. `foreach` iterates a snapshot, so
+	 * the alias is unsound once the body mutates the iteratee at a foreign key,
+	 * reassigns the iteratee, or lets it escape by reference: a later iteration
+	 * would read a live element the snapshot value variable no longer matches.
+	 * A same-key write ($array[$key] = ...) is kept - it only touches the current
+	 * iteration's element, invalidated in-body through containment. The verdict is
+	 * static, so it is cached on the loop node across convergence passes.
+	 */
+	private function shouldRecordForeachValueAlias(Foreach_ $stmt): bool
+	{
+		$cached = $stmt->getAttribute(self::RECORD_VALUE_ALIAS_ATTRIBUTE);
+		if ($cached !== null) {
+			return $cached;
+		}
+
+		$result = $this->computeShouldRecordForeachValueAlias($stmt);
+		$stmt->setAttribute(self::RECORD_VALUE_ALIAS_ATTRIBUTE, $result);
+
+		return $result;
+	}
+
+	private function computeShouldRecordForeachValueAlias(Foreach_ $stmt): bool
+	{
+		// the value alias exists only for `foreach ($var as $key => $value)` over a
+		// plain-variable iteratee with plain key/value variables
+		if (!$stmt->expr instanceof Variable || !is_string($stmt->expr->name)) {
+			return false;
+		}
+		if (!$stmt->keyVar instanceof Variable || !is_string($stmt->keyVar->name)) {
+			return false;
+		}
+		if (!$stmt->valueVar instanceof Variable || !is_string($stmt->valueVar->name)) {
+			return false;
+		}
+
+		$iterateeName = $stmt->expr->name;
+		$keyName = $stmt->keyVar->name;
+
+		$desyncingNode = (new NodeFinder())->findFirst(
+			$stmt->stmts,
+			fn (Node $node): bool => $this->foreachAliasDesyncingNode($node, $iterateeName, $keyName),
+		);
+
+		return $desyncingNode === null;
+	}
+
+	private function foreachAliasDesyncingNode(Node $node, string $iterateeName, string $keyName): bool
+	{
+		if ($node instanceof Assign || $node instanceof Expr\AssignRef || $node instanceof Expr\AssignOp) {
+			return $this->foreachAliasDesyncingTarget($node->var, $iterateeName, $keyName);
+		}
+
+		if (
+			$node instanceof Expr\PreInc || $node instanceof Expr\PreDec
+			|| $node instanceof Expr\PostInc || $node instanceof Expr\PostDec
+		) {
+			return $this->foreachAliasDesyncingTarget($node->var, $iterateeName, $keyName);
+		}
+
+		if ($node instanceof Stmt\Unset_) {
+			foreach ($node->vars as $var) {
+				if ($this->foreachAliasDesyncingTarget($var, $iterateeName, $keyName)) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		if ($node instanceof Expr\Closure) {
+			foreach ($node->uses as $use) {
+				if (
+					$use->byRef
+					&& is_string($use->var->name)
+					&& ($use->var->name === $iterateeName || $use->var->name === $keyName)
+				) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		if ($node instanceof Stmt\Global_) {
+			foreach ($node->vars as $var) {
+				if ($var instanceof Variable && is_string($var->name) && $var->name === $iterateeName) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		if ($node instanceof Stmt\Static_) {
+			foreach ($node->vars as $staticVar) {
+				if (is_string($staticVar->var->name) && $staticVar->var->name === $iterateeName) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		if ($node instanceof Foreach_ && $node->byRef) {
+			// foreach ($iteratee as &$x) writes elements of the iteratee back
+			return $node->expr instanceof Variable && is_string($node->expr->name) && $node->expr->name === $iterateeName;
+		}
+
+		if (
+			$node instanceof FuncCall || $node instanceof Expr\MethodCall
+			|| $node instanceof Expr\NullsafeMethodCall || $node instanceof Expr\StaticCall
+			|| $node instanceof Expr\New_
+		) {
+			// the whole iteratee (or the key) passed to a call may be mutated by
+			// reference - conservatively treat it as a desync
+			foreach ($node->getArgs() as $arg) {
+				if (
+					$arg->value instanceof Variable
+					&& is_string($arg->value->name)
+					&& ($arg->value->name === $iterateeName || $arg->value->name === $keyName)
+				) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		return false;
+	}
+
+	private function foreachAliasDesyncingTarget(Expr $target, string $iterateeName, string $keyName): bool
+	{
+		if ($target instanceof List_ || $target instanceof Array_) {
+			foreach ($target->items as $item) {
+				if ($item === null) {
+					continue;
+				}
+				if ($this->foreachAliasDesyncingTarget($item->value, $iterateeName, $keyName)) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		// whole-iteratee reassignment ($iteratee = ...)
+		if ($target instanceof Variable && is_string($target->name) && $target->name === $iterateeName) {
+			return true;
+		}
+
+		// a write into the iteratee is safe only when the outermost access on the
+		// iteratee variable uses exactly the current key ($iteratee[$key]...); any
+		// other offset, or an append ($iteratee[]), may hit a future iteration's
+		// element
+		$node = $target;
+		while ($node instanceof ArrayDimFetch) {
+			$inner = $node->var;
+			if ($inner instanceof Variable && is_string($inner->name) && $inner->name === $iterateeName) {
+				return !($node->dim instanceof Variable && is_string($node->dim->name) && $node->dim->name === $keyName);
+			}
+
+			$node = $inner;
+		}
+
+		return false;
 	}
 
 	/**

@@ -1984,6 +1984,14 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			[
 				[
+					TemplateTypeFactory::create(TemplateTypeScope::createWithFunction('foo'), 'T', new BenevolentUnionType([new IntegerType(), new StringType()]), TemplateTypeVariance::createInvariant()),
+					new ConstantBooleanType(false),
+				],
+				UnionType::class,
+				'T of (int|string) (function foo(), parameter)|false',
+			],
+			[
+				[
 					new ConstantStringType(''),
 					new IntersectionType([
 						new StringType(),

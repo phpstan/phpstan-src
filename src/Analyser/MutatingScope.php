@@ -4232,6 +4232,14 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	}
 
 	/**
+	 * Rescues one-sided conditional holders across an if-merge.
+	 *
+	 * A holder missing from the intersection survives when either some guard's
+	 * recorded type is impossible in the other branch (the holder is vacuously
+	 * true there), or the other branch's flat state for the holder's target
+	 * already satisfies the holder's consequent (subtype with at-least-as-strong
+	 * certainty) - the consequent then holds on both paths under the guard.
+	 *
 	 * @param array<string, ConditionalExpressionHolder[]> $currentConditionalExpressions
 	 * @param array<string, ConditionalExpressionHolder[]> $sourceConditionalExpressions
 	 * @param array<string, ExpressionTypeHolder> $otherExpressionTypes
@@ -4264,8 +4272,21 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 
 					if ($otherType->isSuperTypeOf($guardType)->no()) {
 						$currentConditionalExpressions[$exprString][$key] = $holder;
-						break;
+						continue 2;
 					}
+				}
+
+				if ($typeHolder->getCertainty()->no() || !array_key_exists($exprString, $otherExpressionTypes)) {
+					continue;
+				}
+
+				$otherTargetHolder = $otherExpressionTypes[$exprString];
+				$otherTargetCertainty = $otherTargetHolder->getCertainty();
+				if (
+					($otherTargetCertainty->yes() || $otherTargetCertainty->equals($typeHolder->getCertainty()))
+					&& $typeHolder->getType()->isSuperTypeOf($otherTargetHolder->getType())->yes()
+				) {
+					$currentConditionalExpressions[$exprString][$key] = $holder;
 				}
 			}
 		}

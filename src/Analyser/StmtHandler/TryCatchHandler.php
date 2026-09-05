@@ -4,9 +4,12 @@ namespace PHPStan\Analyser\StmtHandler;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\TryCatch;
+use PHPStan\Analyser\ConditionalExpressionHolder;
 use PHPStan\Analyser\ExpressionResultStorage;
+use PHPStan\Analyser\ExpressionTypeHolder;
 use PHPStan\Analyser\InternalStatementResult;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
@@ -18,7 +21,10 @@ use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\FinallyExitPointsNode;
 use PHPStan\Node\VariableAssignNode;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\TrinaryLogic;
+use PHPStan\Type\ErrorType;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\TypeCombinator;
 use Throwable;
@@ -213,7 +219,13 @@ final class TryCatchHandler implements StmtHandler
 			$catchScopeResult = $nodeScopeResolver->processStmtNodesInternal($catchNode, $catchNode->stmts, $catchScope->enterCatchType($catchType, $variableName), $storage, $nodeCallback, $context);
 			$catchScopeForFinally = $catchScopeResult->getScope();
 
-			$finalScope = $catchScopeResult->isAlwaysTerminating() ? $finalScope : $catchScopeResult->getScope()->mergeWith($finalScope);
+			if (!$catchScopeResult->isAlwaysTerminating()) {
+				$mergedScope = $catchScopeResult->getScope()->mergeWith($finalScope);
+				if ($variableName !== null && $finalScope !== null) {
+					$mergedScope = $this->addCatchVariableDefinednessConditionals($mergedScope, $finalScope, $catchScopeResult->getScope(), $variableName);
+				}
+				$finalScope = $mergedScope;
+			}
 			$alwaysTerminating = $alwaysTerminating && $catchScopeResult->isAlwaysTerminating();
 			$hasYield = $hasYield || $catchScopeResult->hasYield();
 			$catchThrowPoints = $catchScopeResult->getThrowPoints();
@@ -272,6 +284,72 @@ final class TryCatchHandler implements StmtHandler
 		}
 
 		return new InternalStatementResult($finalScope, hasYield: $hasYield, isAlwaysTerminating: $alwaysTerminating, exitPoints: $exitPoints, throwPoints: array_merge($throwPoints, $throwPointsForLater), impurePoints: $impurePoints);
+	}
+
+	/**
+	 * The catch variable's definedness after the try/catch tells the two joined
+	 * paths apart: when it is untracked on the non-catch path and certainly
+	 * defined at the end of the catch body, "the catch variable is undefined"
+	 * later implies the non-catch path ran. Record that as conditional
+	 * expression holders with a certainty-No condition on the catch variable,
+	 * restoring the non-catch certainty (and type) of variables the join
+	 * demoted to maybe-defined - e.g. `isset($e) || $var instanceof \DateTime`
+	 * evaluates `$var` only where `$e` is narrowed away.
+	 */
+	private function addCatchVariableDefinednessConditionals(
+		MutatingScope $mergedScope,
+		MutatingScope $nonCatchScope,
+		MutatingScope $catchEndScope,
+		string $variableName,
+	): MutatingScope
+	{
+		$variableExprString = '$' . $variableName;
+		if (isset($nonCatchScope->expressionTypes[$variableExprString])) {
+			return $mergedScope;
+		}
+
+		$catchVariableHolder = $catchEndScope->expressionTypes[$variableExprString] ?? null;
+		if ($catchVariableHolder === null || !$catchVariableHolder->getCertainty()->yes()) {
+			return $mergedScope;
+		}
+
+		$conditions = [
+			[
+				$variableExprString => new ExpressionTypeHolder(new Variable($variableName), new ErrorType(), TrinaryLogic::createNo()),
+			],
+		];
+		if ($catchVariableHolder->getType()->isNull()->no()) {
+			// In a scope where any variable can exist (e.g. the top level), the
+			// isset() machinery models "!isset($e)" on a maybe-defined variable as
+			// "maybe defined, null when defined" instead of unsetting it. That
+			// state excludes the catch path just the same - it guarantees a
+			// defined, non-null catch variable.
+			$conditions[] = [
+				$variableExprString => ExpressionTypeHolder::createMaybe(new Variable($variableName), new NullType()),
+			];
+		}
+		foreach ($nonCatchScope->expressionTypes as $exprString => $holder) {
+			if (!$holder->getCertainty()->yes()) {
+				continue;
+			}
+			$expr = $holder->getExpr();
+			if (!$expr instanceof Variable || !is_string($expr->name)) {
+				continue;
+			}
+			$mergedHolder = $mergedScope->expressionTypes[$exprString] ?? null;
+			if ($mergedHolder === null || !$mergedHolder->getCertainty()->maybe()) {
+				continue;
+			}
+
+			$conditionalHolders = [];
+			foreach ($conditions as $condition) {
+				$conditionalHolder = new ConditionalExpressionHolder($condition, $holder);
+				$conditionalHolders[$conditionalHolder->getKey()] = $conditionalHolder;
+			}
+			$mergedScope = $mergedScope->addConditionalExpressions((string) $exprString, $conditionalHolders); // @phpstan-ignore cast.useless
+		}
+
+		return $mergedScope;
 	}
 
 }

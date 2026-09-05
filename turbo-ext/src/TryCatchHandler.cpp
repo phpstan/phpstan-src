@@ -18,9 +18,11 @@
 
 #include "support.h"
 #include "generated/TryCatchHandler.h"
+#include "generated/MutatingScope.h"
 
 namespace slots = ptdecl::TryCatchHandler::slot;
 namespace sigs = ptdecl::TryCatchHandler::sig;
+namespace msSlots = ptdecl::MutatingScope::slot;
 #include "zv.h"
 #include "TypeTraits.h"
 #include "TypeOps.h"
@@ -52,6 +54,124 @@ pt_property_site pt_tch_return_expr_site;
 zend_string *pt_tch_throwable_class = nullptr;
 zend_string *pt_tch_exception_class = nullptr;
 zend_string *pt_tch_error_class = nullptr;
+
+/* the expressionTypes table of a scope; NULL = pending exception */
+HashTable *scopeExpressionTypes(zval *scope)
+{
+	zval *table = OBJ_PROP_NUM(Z_OBJ_P(scope), msSlots::expressionTypes);
+	ZVAL_DEREF(table);
+	if (UNEXPECTED(Z_TYPE_P(table) != IS_ARRAY)) {
+		pt_throw_should_not_happen();
+		return NULL;
+	}
+	return Z_ARRVAL_P(table);
+}
+
+/* new ExpressionTypeHolder(new Variable($name), $type, $certainty) */
+zv::Val variableHolder(zend_string *name, zval *type, zend_long certainty)
+{
+	zv::Args variableArgv{name};
+	zv::Val variable = pt_type_new(PT_CLASS_VARIABLE, 1, variableArgv);
+	if (UNEXPECTED(variable.isUndef())) return zv::Val();
+	zval holder;
+	pt_holder_create(&holder, variable.raw(), type, certainty);
+	return zv::Val::adopt(holder);
+}
+
+/* The catch variable's definedness after the try/catch tells the two joined
+ * paths apart: when it is untracked on the non-catch path and certainly
+ * defined at the end of the catch body, "the catch variable is undefined"
+ * later implies the non-catch path ran. Record that as conditional
+ * expression holders with a certainty-No condition on the catch variable,
+ * restoring the non-catch certainty (and type) of variables the join
+ * demoted to maybe-defined. Mirrors addCatchVariableDefinednessConditionals();
+ * false = pending exception. */
+[[nodiscard]] bool addCatchVariableDefinednessConditionals(zv::Val &mergedScope, zval *nonCatchScope, zval *catchEndScope, zend_string *variableName)
+{
+	zv::Str variableExprString = zv::Str::adopt(zend_string_concat2(PT_LC("$"), ZSTR_VAL(variableName), ZSTR_LEN(variableName)));
+	HashTable *nonCatchTypes = scopeExpressionTypes(nonCatchScope);
+	if (UNEXPECTED(nonCatchTypes == NULL)) return false;
+	zval *nonCatchVariable = zend_symtable_find(nonCatchTypes, variableExprString.get());
+	if (nonCatchVariable != NULL && Z_TYPE_P(nonCatchVariable) != IS_NULL) return true;
+
+	HashTable *catchEndTypes = scopeExpressionTypes(catchEndScope);
+	if (UNEXPECTED(catchEndTypes == NULL)) return false;
+	zval *catchVariableHolder = zend_symtable_find(catchEndTypes, variableExprString.get());
+	if (catchVariableHolder == NULL) return true;
+	ZVAL_DEREF(catchVariableHolder);
+	if (pt_holder_certainty_value(Z_OBJ_P(catchVariableHolder)) != PT_TRI_YES) return true;
+
+	zv::Arr conditions = zv::Arr::create(2);
+	{
+		zval errorType;
+		if (UNEXPECTED(!pt_error_type_new(&errorType))) return false;
+		zv::Val errorTypeHold = zv::Val::adopt(errorType);
+		zv::Val holder = variableHolder(variableName, errorTypeHold.raw(), PT_TRI_NO);
+		if (UNEXPECTED(holder.isUndef())) return false;
+		zv::Arr condition = zv::Arr::create(1);
+		condition.set(variableExprString.get(), std::move(holder));
+		conditions.push(zv::Val(std::move(condition)));
+	}
+	zval *catchVariableType = OBJ_PROP_NUM(Z_OBJ_P(catchVariableHolder), PT_ETH_PROP_TYPE);
+	ZVAL_DEREF(catchVariableType);
+	zend_long isNull = pt_type_call_trinary(Z_OBJ_P(catchVariableType), PT_LC("isnull"), 0, NULL);
+	if (UNEXPECTED(isNull < 0)) return false;
+	if (isNull == PT_TRI_NO) {
+		/* In a scope where any variable can exist (e.g. the top level), the
+		 * isset() machinery models "!isset($e)" on a maybe-defined variable
+		 * as "maybe defined, null when defined" instead of unsetting it. That
+		 * state excludes the catch path just the same. */
+		zval nullType;
+		if (UNEXPECTED(!pt_null_type_new(&nullType))) return false;
+		zv::Val nullTypeHold = zv::Val::adopt(nullType);
+		zv::Val holder = variableHolder(variableName, nullTypeHold.raw(), PT_TRI_MAYBE);
+		if (UNEXPECTED(holder.isUndef())) return false;
+		zv::Arr condition = zv::Arr::create(1);
+		condition.set(variableExprString.get(), std::move(holder));
+		conditions.push(zv::Val(std::move(condition)));
+	}
+
+	for (auto entry : zv::TableRef(nonCatchTypes)) {
+		zval *holder = entry.value().deref().raw();
+		if (pt_holder_certainty_value(Z_OBJ_P(holder)) != PT_TRI_YES) continue;
+		zval *expr = OBJ_PROP_NUM(Z_OBJ_P(holder), PT_ETH_PROP_EXPR);
+		ZVAL_DEREF(expr);
+		bool instanceError = false;
+		bool isVariable = ptsh::isInstanceOf(expr, PT_CLASS_VARIABLE, instanceError);
+		if (UNEXPECTED(instanceError)) return false;
+		if (!isVariable) continue;
+		zval *name = ptsh::readNodeProperty(pt_tch_variable_name_site, expr, PT_LC("name"));
+		if (UNEXPECTED(name == NULL)) return false;
+		if (Z_TYPE_P(name) != IS_STRING) continue;
+
+		HashTable *mergedTypes = scopeExpressionTypes(mergedScope.raw());
+		if (UNEXPECTED(mergedTypes == NULL)) return false;
+		zend_string *stringKey = entry.stringKeyOrNull();
+		zval *mergedHolder = stringKey != NULL ? zend_hash_find(mergedTypes, stringKey) : zend_hash_index_find(mergedTypes, entry.indexKey());
+		if (mergedHolder == NULL) continue;
+		ZVAL_DEREF(mergedHolder);
+		if (pt_holder_certainty_value(Z_OBJ_P(mergedHolder)) != PT_TRI_MAYBE) continue;
+
+		zv::Arr conditionalHolders = zv::Arr::create(2);
+		for (auto condition : zv::ArrRef(conditions.raw())) {
+			zval raw;
+			object_init_ex(&raw, pt_ce_cond_expr_holder);
+			zv::Val conditionalHolder = zv::Val::adopt(raw);
+			zv::ObjRef object(conditionalHolder.ref().asObject());
+			object.propAtWrite(PT_CEH_PROP_CONDS, zv::Val::copyOf(condition.value()));
+			object.propAtWrite(PT_CEH_PROP_TYPEHOLDER, zv::Val::copyOf(zv::Ref(holder)));
+			zv::Str key = zv::Str::adopt(pt_ceh_key_build(Z_ARRVAL_P(condition.value().deref().raw()), holder));
+			if (UNEXPECTED(key.isNull())) return false;
+			conditionalHolders.set(key.get(), std::move(conditionalHolder));
+		}
+		zv::Str exprString = stringKey != NULL ? zv::Str::copyOf(stringKey) : zv::Str::adopt(zend_long_to_str((zend_long) entry.indexKey()));
+		zv::Val added = pt_mutating_scope_add_conditional_expressions(Z_OBJ_P(mergedScope.raw()), exprString.get(), conditionalHolders.table());
+		if (UNEXPECTED(added.isUndef())) return false;
+		mergedScope = std::move(added);
+	}
+
+	return true;
+}
 
 /* $name->toString() */
 zv::Val nameToString(zval *name)
@@ -617,7 +737,11 @@ public:
 				zv::Val hold;
 				zval *resultScope = pt_internal_statement_result_scope(catchResult, hold);
 				if (UNEXPECTED(resultScope == NULL)) return zv::Val();
+				zv::Val nonCatchScope = zv::Val::copyOf(finalScope.ref());
 				if (UNEXPECTED(!ptlh::otherMergeWith(resultScope, finalScope))) return zv::Val();
+				if (variableName != NULL && !nonCatchScope.isNull()) {
+					if (UNEXPECTED(!addCatchVariableDefinednessConditionals(finalScope, nonCatchScope.raw(), resultScope, Z_STR_P(variableNameHold.raw())))) return zv::Val();
+				}
 			}
 			alwaysTerminating = alwaysTerminating && catchAlwaysTerminating;
 			if (!hasYield) {

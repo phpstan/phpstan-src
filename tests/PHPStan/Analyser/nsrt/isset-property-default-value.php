@@ -28,5 +28,5 @@ function coalesceWithoutDefault(Holder $a, Holder $b): void
 		throw new \LogicException();
 	}
 
-	assertType('int|null', $a->noDefault ?? $b->noDefault);
+	assertType('int', $a->noDefault ?? $b->noDefault);
 }

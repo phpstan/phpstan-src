@@ -17,6 +17,8 @@ use function sprintf;
 final class ForeachValueAliasExpr extends Expr implements VirtualNode
 {
 
+	public const KEY_PREFIX = '__phpstanForeachValueAlias(';
+
 	public Expr\Variable $var;
 
 	public function __construct(private string $variableName, public Expr\ArrayDimFetch $dimFetch)
@@ -38,7 +40,7 @@ final class ForeachValueAliasExpr extends Expr implements VirtualNode
 	/** The expression key this node prints to - derivable from the value variable name alone. */
 	public static function key(string $variableName): string
 	{
-		return sprintf('__phpstanForeachValueAlias(%s)', $variableName);
+		return sprintf('%s%s)', self::KEY_PREFIX, $variableName);
 	}
 
 	#[Override]

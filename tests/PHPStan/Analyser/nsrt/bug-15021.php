@@ -7,7 +7,7 @@ use function PHPStan\Testing\assertType;
 /** @param array{foo?: string, bar?: string} $data */
 function optionalOffset(array $data): void
 {
-	$data['foo'] ??= assertType('array{foo?: string, bar?: string}', $data);
+	$data['foo'] ??= assertType('array{bar?: string}', $data);
 }
 
 /** @param array{foo?: string, bar?: string} $data */
@@ -65,7 +65,7 @@ function nonNullableStaticProperty(): void
 
 function propertyOffset(Foo $foo): void
 {
-	$foo->data['foo'] ??= assertType('array{foo?: string, bar?: string}', $foo->data);
+	$foo->data['foo'] ??= assertType('array{bar?: string}', $foo->data);
 }
 
 /** @param \ArrayAccess<string, string> $a */
@@ -133,14 +133,14 @@ function unsetTargetBeforeAssignOp(array $data): void
 function emptyTargetBeforeAssignOp(array $data): void
 {
 	if (empty($data['foo'])) {
-		$data['foo'] ??= assertType('array{foo?: string, bar?: string}', $data);
+		$data['foo'] ??= assertType('array{bar?: string}', $data);
 	}
 }
 
 /** @param array{foo?: string, bar?: string} $data */
 function assignOpInsideEmpty(array $data): void
 {
-	if (empty($data['foo'] ??= assertType('array{foo?: string, bar?: string}', $data))) {
+	if (empty($data['foo'] ??= assertType('array{bar?: string}', $data))) {
 		echo 'empty';
 	}
 }
@@ -148,7 +148,7 @@ function assignOpInsideEmpty(array $data): void
 /** @param array{foo?: string, bar?: string} $data */
 function assignOpInsideIsset(array $data): void
 {
-	if (isset($data['foo'] ??= assertType('array{foo?: string, bar?: string}', $data))) {
+	if (isset($data['foo'] ??= assertType('array{bar?: string}', $data))) {
 		echo 'isset';
 	}
 }
@@ -157,7 +157,7 @@ function assignOpInsideIsset(array $data): void
 function assignOpInsideUnsetOffset(array $data): void
 {
 	$other = ['x' => 1, 'fallback' => 2];
-	unset($other[$data['foo'] ??= assertType('array{foo?: string, bar?: string}', $data)]);
+	unset($other[$data['foo'] ??= assertType('array{bar?: string}', $data)]);
 }
 
 /** @param array{foo?: string, bar?: string} $data */

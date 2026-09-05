@@ -4287,12 +4287,24 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 
 				$otherTargetHolder = $otherExpressionTypes[$exprString];
 				$otherTargetCertainty = $otherTargetHolder->getCertainty();
-				if (
-					($otherTargetCertainty->yes() || $otherTargetCertainty->equals($typeHolder->getCertainty()))
-					&& $typeHolder->getType()->isSuperTypeOf($otherTargetHolder->getType())->yes()
-				) {
-					$currentConditionalExpressions[$exprString][$key] = $holder;
+				if (!$otherTargetCertainty->yes() && !$otherTargetCertainty->equals($typeHolder->getCertainty())) {
+					continue;
 				}
+
+				// An unresolved expression (e.g. an access to an undefined property) is held
+				// as ErrorType. ErrorType is a subtype of everything, so a consequent or an
+				// other-branch state of ErrorType would look "already satisfied" and preserve
+				// a holder that tracks the expression and hides the underlying error. Such a
+				// holder carries no real type relationship, so skip it.
+				if ($typeHolder->getType() instanceof ErrorType || $otherTargetHolder->getType() instanceof ErrorType) {
+					continue;
+				}
+
+				if (!$typeHolder->getType()->isSuperTypeOf($otherTargetHolder->getType())->yes()) {
+					continue;
+				}
+
+				$currentConditionalExpressions[$exprString][$key] = $holder;
 			}
 		}
 

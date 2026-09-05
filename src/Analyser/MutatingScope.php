@@ -31,6 +31,7 @@ use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Node\EmitCollectedDataNode;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Node\Expr\CloneReinitializationExpr;
+use PHPStan\Node\Expr\ForeachValueAliasExpr;
 use PHPStan\Node\Expr\IntertwinedVariableByReferenceWithExpr;
 use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\Expr\OriginalForeachKeyExpr;
@@ -2795,6 +2796,19 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		if ($keyName !== null) {
 			$scope = $scope->enterForeachKey($originalScope, $iteratee, $iterateeType, $nativeIterateeType, $keyName);
 
+			if ($iterateeType->isArray()->yes()) {
+				// for the current iteration the value variable and the iteratee dim
+				// fetch alias one runtime value - narrowings landed on the value
+				// variable are projected onto the tracked dim fetch through this
+				// link (applySpecifiedTypes()); a write to any of the three
+				// participating expressions invalidates it through containment
+				$scope = $scope->assignExpression(
+					new ForeachValueAliasExpr($valueName, new Expr\ArrayDimFetch($iteratee, new Variable($keyName))),
+					$valueType,
+					$nativeValueType,
+				);
+			}
+
 			if ($valueByRef && $iterateeType->isArray()->yes() && $iterateeType->isConstantArray()->no()) {
 				$scope = $scope->assignExpression(
 					new IntertwinedVariableByReferenceWithExpr($valueName, new Expr\ArrayDimFetch($iteratee, new Variable($keyName)), new Variable($valueName)),
@@ -3966,6 +3980,61 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				? $scope->expressionTypes[$exprString]->getType()
 				: $type;
 			$specifiedExpressions[$exprString] = ExpressionTypeHolder::createYes($expr, $holderType);
+		}
+
+		// while a foreach value variable still aliases the iteratee dim fetch
+		// (ForeachValueAliasExpr link intact - none of the participating
+		// expressions were written), a narrowing landed on the value variable
+		// also narrows the tracked dim fetch: they hold the same runtime value
+		foreach ($specifiedExpressions as $specifiedHolder) {
+			$specifiedExpr = $specifiedHolder->getExpr();
+			if (!$specifiedExpr instanceof Variable || !is_string($specifiedExpr->name)) {
+				continue;
+			}
+			$aliasHolder = $scope->expressionTypes[ForeachValueAliasExpr::key($specifiedExpr->name)] ?? null;
+			if ($aliasHolder === null || !$aliasHolder->getCertainty()->yes()) {
+				continue;
+			}
+			$aliasExpr = $aliasHolder->getExpr();
+			if (!$aliasExpr instanceof ForeachValueAliasExpr) {
+				continue;
+			}
+			$valueExprString = '$' . $specifiedExpr->name;
+			$valueHolder = $scope->expressionTypes[$valueExprString] ?? null;
+			$valueNativeHolder = $scope->nativeExpressionTypes[$valueExprString] ?? null;
+			if (
+				$valueHolder === null || !$valueHolder->getCertainty()->yes()
+				|| $valueNativeHolder === null || !$valueNativeHolder->getCertainty()->yes()
+			) {
+				continue;
+			}
+			$dimFetchExpr = $aliasExpr->getDimFetch();
+			$dimFetchString = $scope->getNodeKey($dimFetchExpr);
+			$dimFetchHolder = $scope->expressionTypes[$dimFetchString] ?? null;
+			$dimFetchNativeHolder = $scope->nativeExpressionTypes[$dimFetchString] ?? null;
+			if (
+				$dimFetchHolder === null || !$dimFetchHolder->getCertainty()->yes()
+				|| $dimFetchNativeHolder === null || !$dimFetchNativeHolder->getCertainty()->yes()
+			) {
+				continue;
+			}
+			if ($scope->isComplexUnionType($dimFetchHolder->getType())) {
+				continue;
+			}
+
+			$newDimFetchType = TypeCombinator::intersect($dimFetchHolder->getType(), $valueHolder->getType());
+			$newDimFetchNativeType = TypeCombinator::intersect($dimFetchNativeHolder->getType(), $valueNativeHolder->getType());
+			if (
+				$newDimFetchType->equals($dimFetchHolder->getType())
+				&& $newDimFetchNativeType->equals($dimFetchNativeHolder->getType())
+			) {
+				continue;
+			}
+			if (!$scopeIsWorkingCopy) {
+				$scope = $scope->openSpecificationScope();
+				$scopeIsWorkingCopy = true;
+			}
+			$scope->specifyExpressionTypeInPlace($dimFetchExpr, $newDimFetchType, $newDimFetchNativeType, TrinaryLogic::createYes());
 		}
 
 		$scope = $scope->processConditionalExpressionsAfterSpecifying($specifiedExpressions);

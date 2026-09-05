@@ -55,15 +55,34 @@ final class CoalesceHandler implements ExprHandler
 		$scope = $this->nonNullabilityHelper->revertNonNullability($condResult->getScope(), $nonNullabilityResult->getSpecifiedExpressions());
 		$scope = $nodeScopeResolver->lookForUnsetAllowedUndefinedExpressions($scope, $expr->left);
 
+		$chainResults = [];
+		$this->defaultNarrowingHelper->captureChainResults($expr->left, $storage, $chainResults);
+
 		// the falsey narrowing of this very node - asking the scope about it
 		// mid-processing would take the on-demand path and recurse
-		$rightScope = $scope->applySpecifiedTypes($this->coalesceCompositionHelper->getFalseySpecifiedTypes($scope, $scope, $expr->left, $condResult, $expr, TypeSpecifierContext::createFalsey()));
+		$rightSideSpecifiedTypes = $this->coalesceCompositionHelper->getFalseySpecifiedTypes($scope, $scope, $expr->left, $condResult, $expr, TypeSpecifierContext::createFalsey());
+		$leftSurelySetNonNull = $condResult->getIssetabilityResolution($scope, false)->isSet(static function (Type $type): ?bool {
+			$isNull = $type->isNull();
+			if ($isNull->maybe()) {
+				return null;
+			}
+
+			return !$isNull->yes();
+		}) === true;
+		if (!$leftSurelySetNonNull) {
+			// the right side only evaluates when the left side is null or unset -
+			// the falsey isset() narrowing of the left side, like `??=`; skipped
+			// when the right side cannot evaluate at all, so its counterfactual
+			// certainty reductions do not survive the merge below
+			$rightSideSpecifiedTypes = $rightSideSpecifiedTypes->unionWith(
+				$this->coalesceCompositionHelper->getRightSideScopeSpecifiedTypes($scope, $expr->left, $condResult, $chainResults, $expr),
+			);
+		}
+		$rightScope = $scope->applySpecifiedTypes($rightSideSpecifiedTypes);
 		$rightResult = $nodeScopeResolver->processExprNode($stmt, $expr->right, $rightScope, $storage, $nodeCallback, $context->enterDeep());
 		// the left-is-set narrowing, composed from the already-processed chain
 		// results - the inside-out equivalent of narrowing by isset($expr->left)
 		// without synthesizing an Isset_ node and re-walking the chain on demand
-		$chainResults = [];
-		$this->defaultNarrowingHelper->captureChainResults($expr->left, $storage, $chainResults);
 		$leftIssetTypes = $this->defaultNarrowingHelper->createIssetTruthyChainTypes(
 			$scope,
 			$expr->left,

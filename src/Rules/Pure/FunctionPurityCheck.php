@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Pure;
 
+use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Name;
@@ -13,6 +14,8 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Functions\CallToFunctionStatementWithoutSideEffectsRule;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -29,6 +32,10 @@ use function sprintf;
 #[AutowiredService]
 final class FunctionPurityCheck
 {
+
+	public function __construct(private ReflectionProvider $reflectionProvider)
+	{
+	}
 
 	/**
 	 * @param 'Function'|'Method' $identifier
@@ -117,12 +124,12 @@ final class FunctionPurityCheck
 				))->identifier(sprintf('pure%s.void', $identifier))->build();
 			}
 
-			$errors = array_merge($errors, $this->reportImpurePoints($impurePoints, $pureUnlessCallableParamNames, $functionDescription));
+			$errors = array_merge($errors, $this->reportImpurePoints($scope, $impurePoints, $pureUnlessCallableParamNames, $functionDescription));
 		} elseif ($pureUnlessCallableParamNames !== []) {
 			// A function declared @pure-unless-callable-is-impure is pure except
 			// for the flagged callables, so its body is checked for purity while
 			// the flagged callables' own invocations are exempt.
-			$errors = array_merge($errors, $this->reportImpurePoints($impurePoints, $pureUnlessCallableParamNames, $functionDescription));
+			$errors = array_merge($errors, $this->reportImpurePoints($scope, $impurePoints, $pureUnlessCallableParamNames, $functionDescription));
 		} elseif ($isPure->no()) {
 			if (
 				count($throwPoints) === 0
@@ -192,11 +199,11 @@ final class FunctionPurityCheck
 	 * @param array<string, true> $pureUnlessCallableParamNames
 	 * @return list<IdentifierRuleError>
 	 */
-	private function reportImpurePoints(array $impurePoints, array $pureUnlessCallableParamNames, string $functionDescription): array
+	private function reportImpurePoints(Scope $scope, array $impurePoints, array $pureUnlessCallableParamNames, string $functionDescription): array
 	{
 		$errors = [];
 		foreach ($impurePoints as $impurePoint) {
-			if ($this->isPureUnlessCallableInvocation($impurePoint, $pureUnlessCallableParamNames)) {
+			if ($this->isPureUnlessCallableExempt($scope, $impurePoint, $pureUnlessCallableParamNames)) {
 				continue;
 			}
 
@@ -219,26 +226,133 @@ final class FunctionPurityCheck
 	}
 
 	/**
+	 * Decides whether an impure point found inside a @pure-unless-callable-is-impure
+	 * function's body is actually covered by that annotation, and so should not be
+	 * reported. Three shapes are exempt:
+	 *
+	 *  - the flagged callback used as a value, e.g. `$fun` (passed onward as an argument);
+	 *  - `$fun(...)`, a direct invocation of a flagged callback;
+	 *  - `otherFun($fun)`, a delegating call to another @pure-unless-callable-is-impure
+	 *    function that forwards the flagged callback(s) into all of its own flagged
+	 *    callable parameters.
+	 *
 	 * @param array<string, true> $pureUnlessCallableParamNames
 	 */
-	private function isPureUnlessCallableInvocation(ImpurePoint $impurePoint, array $pureUnlessCallableParamNames): bool
+	private function isPureUnlessCallableExempt(Scope $scope, ImpurePoint $impurePoint, array $pureUnlessCallableParamNames): bool
 	{
 		if ($pureUnlessCallableParamNames === []) {
 			return false;
 		}
 
 		$node = $impurePoint->getNode();
+
+		if ($node instanceof Variable) {
+			return is_string($node->name) && array_key_exists($node->name, $pureUnlessCallableParamNames);
+		}
+
 		if (!$node instanceof FuncCall) {
 			return false;
 		}
-		if (!$node->name instanceof Variable) {
+
+		if ($node->name instanceof Variable) {
+			return is_string($node->name->name) && array_key_exists($node->name->name, $pureUnlessCallableParamNames);
+		}
+
+		if ($node->name instanceof Name) {
+			return $this->isPureUnlessCallableDelegation($scope, $node, $pureUnlessCallableParamNames);
+		}
+
+		return false;
+	}
+
+	/**
+	 * Exempts a call like `otherFun($fun)` where otherFun() is itself flagged
+	 * pure-unless-callable-is-impure and every one of its flagged callable
+	 * parameters receives, as its argument, one of the enclosing function's own
+	 * flagged callbacks. Such a call is pure modulo the enclosing function's
+	 * callbacks, which is exactly what the enclosing function already declares.
+	 *
+	 * Conservative by construction: if the callee can't be resolved, has no
+	 * flagged callable parameters, or any flagged slot is unmatched or filled
+	 * with something other than one of the enclosing function's flagged
+	 * callbacks, this returns false and the impure point is still reported.
+	 *
+	 * @param array<string, true> $pureUnlessCallableParamNames
+	 */
+	private function isPureUnlessCallableDelegation(Scope $scope, FuncCall $node, array $pureUnlessCallableParamNames): bool
+	{
+		if (!$node->name instanceof Name) {
 			return false;
 		}
-		if (!is_string($node->name->name)) {
+		if ($node->isFirstClassCallable()) {
+			return false;
+		}
+		if (!$this->reflectionProvider->hasFunction($node->name, $scope)) {
 			return false;
 		}
 
-		return array_key_exists($node->name->name, $pureUnlessCallableParamNames);
+		$function = $this->reflectionProvider->getFunction($node->name, $scope);
+		$calleeFlaggedParameters = $function->getPureUnlessCallableIsImpureParameters();
+		if ($calleeFlaggedParameters === []) {
+			return false;
+		}
+
+		$variant = ParametersAcceptorSelector::selectFromArgs($scope, $node->getArgs(), $function->getVariants());
+
+		$hasFlaggedParameter = false;
+		foreach ($variant->getParameters() as $parameterIndex => $parameter) {
+			if (!array_key_exists($parameter->getName(), $calleeFlaggedParameters)) {
+				continue;
+			}
+
+			$hasFlaggedParameter = true;
+
+			$matchedArg = $this->findMatchedArg($node->getArgs(), $parameterIndex, $parameter->getName());
+			if ($matchedArg === null) {
+				return false;
+			}
+
+			if (!$matchedArg->value instanceof Variable) {
+				return false;
+			}
+			if (!is_string($matchedArg->value->name)) {
+				return false;
+			}
+			if (!array_key_exists($matchedArg->value->name, $pureUnlessCallableParamNames)) {
+				return false;
+			}
+		}
+
+		return $hasFlaggedParameter;
+	}
+
+	/**
+	 * Matches call arguments to a parameter the same way
+	 * SimpleImpurePoint::resolvePureUnlessCallableIsImpureVerdict() does:
+	 * a named argument matching the parameter name wins, otherwise the
+	 * positional argument at the parameter's index.
+	 *
+	 * @param Arg[] $args
+	 */
+	private function findMatchedArg(array $args, int $parameterIndex, string $parameterName): ?Arg
+	{
+		$hasNamedParameter = false;
+		foreach ($args as $i => $arg) {
+			if ($arg->name !== null) {
+				$hasNamedParameter = true;
+				if ($arg->name->name === $parameterName) {
+					return $arg;
+				}
+
+				continue;
+			}
+
+			if (!$hasNamedParameter && $i === $parameterIndex) {
+				return $arg;
+			}
+		}
+
+		return null;
 	}
 
 }

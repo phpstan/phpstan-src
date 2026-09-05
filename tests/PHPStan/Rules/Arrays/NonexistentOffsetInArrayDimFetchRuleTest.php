@@ -1358,6 +1358,11 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13688.php'], []);
 	}
 
+	public function testBug6379(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6379.php'], []);
+	}
+
 	public static function dataUnsealedArrayShapes(): iterable
 	{
 		foreach ([false, true] as $reportPossiblyNonexistentGeneralArrayOffset) {

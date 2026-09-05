@@ -43,7 +43,6 @@ use function count;
 use function get_class;
 use function implode;
 use function in_array;
-use function is_int;
 use function sprintf;
 use function usort;
 use const PHP_INT_MAX;
@@ -995,19 +994,11 @@ final class TypeCombinator
 		$keyTypesForGeneralArray = [];
 		$valueTypesForGeneralArray = [];
 		$generalArrayOccurred = false;
-		$constantKeyTypesNumbered = [];
-		$filledArrays = 0;
-		$overflowed = false;
-
-		/** @var int|float $nextConstantKeyTypeIndex */
-		$nextConstantKeyTypeIndex = 1;
+		$seenConstantKeyTypes = [];
 
 		foreach ($arrayTypes as $arrayType) {
 			$constantArrays = $arrayType->getConstantArrays();
 			$isConstantArray = $constantArrays !== [];
-			if (!$isConstantArray || !$arrayType->isIterableAtLeastOnce()->no()) {
-				$filledArrays++;
-			}
 
 			if (!$isConstantArray) {
 				foreach ($arrayType->getArrays() as $type) {
@@ -1024,23 +1015,16 @@ final class TypeCombinator
 					$valueTypesForGeneralArray[] = $valueTypes[$i];
 
 					$keyTypeValue = $keyType->getValue();
-					if (array_key_exists($keyTypeValue, $constantKeyTypesNumbered)) {
+					if (array_key_exists($keyTypeValue, $seenConstantKeyTypes)) {
 						continue;
 					}
+					$seenConstantKeyTypes[$keyTypeValue] = true;
 					$keyTypesForGeneralArray[] = $keyType;
-
-					$constantKeyTypesNumbered[$keyTypeValue] = $nextConstantKeyTypeIndex;
-					$nextConstantKeyTypeIndex *= 2;
-					if (!is_int($nextConstantKeyTypeIndex)) {
-						$generalArrayOccurred = true;
-						$overflowed = true;
-						continue 2;
-					}
 				}
 			}
 		}
 
-		if ($generalArrayOccurred && (!$overflowed || $filledArrays > 1)) {
+		if ($generalArrayOccurred) {
 			$reducedArrayTypes = self::reduceArrays($arrayTypes, false);
 			if (count($reducedArrayTypes) === 1) {
 				return [self::intersect($reducedArrayTypes[0], ...$accessoryTypes)];

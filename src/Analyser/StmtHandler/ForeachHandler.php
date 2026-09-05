@@ -263,7 +263,7 @@ final class ForeachHandler implements StmtHandler
 		if (
 			$replayBodyRecording !== null && $replayPassStorage !== null
 			&& $replayPassResult !== null && $replayEntryScope !== null
-			&& $unrolledTotalKeys === null && $finalEntryScope->equals($replayEntryScope)
+			&& $finalEntryScope->equals($replayEntryScope)
 		) {
 			// the final walk would repeat the recorded fixpoint pass exactly
 			// (same entry scope, deterministic walk) - adopt the pass's results

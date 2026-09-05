@@ -49,6 +49,7 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_ARROW_FUNCTION */ {"arrowFunction", "PhpParser\\Node\\Expr\\ArrowFunction"},
 	/* PT_CLASS_TYPE */ {"type", "PHPStan\\Type\\Type"},
 	/* PT_CLASS_RECURSION_GUARD */ {"recursionGuard", "PHPStan\\Type\\RecursionGuard"},
+	/* PT_CLASS_NEVER_TYPE */ {"neverType", "PHPStan\\Type\\NeverType"},
 	/* PT_CLASS_TRINARY */ {"trinaryLogic", NULL},
 	/* PT_CLASS_ETH */ {"expressionTypeHolder", NULL},
 	/* PT_CLASS_CEH */ {"conditionalExpressionHolder", NULL},

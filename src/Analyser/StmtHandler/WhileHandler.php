@@ -132,7 +132,7 @@ final class WhileHandler implements StmtHandler
 			$replayCondRecording !== null && $replayBodyRecording !== null
 			&& $replayPassStorage !== null && $replayPassResult !== null
 			&& $replayCondResult !== null
-			&& $prevEntryScope !== null && $bodyScope->equals($prevEntryScope)
+			&& $bodyScope->equals($prevEntryScope)
 		) {
 			// the final walk would repeat the recorded fixpoint pass exactly
 			// (same entry scope, deterministic walk) - adopt the pass's results

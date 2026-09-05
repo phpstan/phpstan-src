@@ -471,17 +471,22 @@ public:
 	static zv::Val createConditionalExpressions(zv::TableRef conditional, zv::TableRef ours, zv::TableRef theirs, zv::TableRef merged, zv::TableRef differingKeys)
 	{
 		zend_class_entry *virtualNodeCe = pt_class(PT_CLASS_VIRTUAL_NODE);
-		if (UNEXPECTED(virtualNodeCe == NULL)) {
+		zend_class_entry *neverTypeCe = pt_class(PT_CLASS_NEVER_TYPE);
+		if (UNEXPECTED(virtualNodeCe == NULL || neverTypeCe == NULL)) {
 			return zv::Val();
 		}
 
 		zv::ScratchTable guardsToExclude(8);
 		zv::ScratchTable typeGuards(8);
+		/* owns the remainder-typed holders created below; the scratch table
+		 * only borrows them */
+		zv::Arr createdGuardHolders;
 
-		/* guardsToExclude: subtype-absorbed their-branch variables are poor
-		 * guards but stay valid conditional targets. Only the merge's differing
-		 * keys can qualify — iterate those (in their insertion order, like the
-		 * twin) instead of the whole holder maps. */
+		/* guardsToExclude: subtype-absorbed their-branch variables cannot be
+		 * guards (their branch set difference is empty) but stay valid
+		 * conditional targets. Only the merge's differing keys can qualify —
+		 * iterate those (in their insertion order, like the twin) instead of
+		 * the whole holder maps. */
 		for (auto diffEntry : differingKeys) {
 			zend_string *key = diffEntry.stringKeyOrNull();
 			zend_ulong idx = diffEntry.indexKey();
@@ -561,33 +566,68 @@ public:
 				continue;
 			}
 			zval *theirSlot = pt_ht_find(theirs.table(), key, idx);
-			if (theirSlot != NULL) {
-				zv::Ref theirHolder = zv::Ref(theirSlot).deref();
-				if (UNEXPECTED(!pt_check_holder(theirHolder.raw()))) {
-					return zv::Val();
-				}
-				if (pt_holder_certainty_value(theirHolder.asObject()) != PT_TRI_YES) {
-					continue;
-				}
+			if (theirSlot == NULL) {
+				/* with no their-branch entry the merged holder keeps our type
+				 * with lowered certainty, so no later type assertion can tell
+				 * the branches apart */
+				continue;
+			}
+			zv::Ref theirHolder = zv::Ref(theirSlot).deref();
+			if (UNEXPECTED(!pt_check_holder(theirHolder.raw()))) {
+				return zv::Val();
+			}
+			if (pt_holder_certainty_value(theirHolder.asObject()) != PT_TRI_YES) {
+				continue;
 			}
 			bool equalTypes;
-			{
-				zv::Ref mergedHolder = zv::Ref(mergedSlot).deref();
-				if (UNEXPECTED(!pt_check_holder(mergedHolder.raw()))) {
-					return zv::Val();
-				}
-				if (UNEXPECTED(!pt_holder_equal_types(mergedHolder.raw(), holder.raw(), &equalTypes))) {
-					return zv::Val();
-				}
+			if (UNEXPECTED(!pt_holder_equal_types(holder.raw(), theirHolder.raw(), &equalTypes))) {
+				return zv::Val();
 			}
 			if (equalTypes) {
 				continue;
 			}
 
-			/* borrowed entry — the scratch table has no destructor */
-			zval borrowed;
-			ZVAL_COPY_VALUE(&borrowed, holder.raw());
-			pt_ht_update(typeGuards.table(), key, idx, &borrowed);
+			/* the branch set difference — see the twin for why an unchanged
+			 * remainder falls back to the merged-type comparison */
+			zv::Val remainder = typeCombinatorRemove(holderType(holder), holderType(theirHolder));
+			if (UNEXPECTED(remainder.isUndef())) {
+				return zv::Val();
+			}
+			if (remainder.ref().instanceOf(neverTypeCe)) {
+				continue;
+			}
+			{
+				zv::Ref mergedHolder = zv::Ref(mergedSlot).deref();
+				if (UNEXPECTED(!pt_check_holder(mergedHolder.raw()))) {
+					return zv::Val();
+				}
+				bool mergedEqualsRemainder = pt_types_identical_or_equal(holderType(mergedHolder), remainder.raw());
+				if (UNEXPECTED(EG(exception))) {
+					return zv::Val();
+				}
+				if (mergedEqualsRemainder) {
+					continue;
+				}
+			}
+
+			if (Z_OBJ_P(remainder.raw()) == Z_OBJ_P(holderType(holder))) {
+				/* borrowed entry — the scratch table has no destructor */
+				zval borrowed;
+				ZVAL_COPY_VALUE(&borrowed, holder.raw());
+				pt_ht_update(typeGuards.table(), key, idx, &borrowed);
+			} else {
+				/* ExpressionTypeHolder::createYes($holder->expr, $remainder) —
+				 * owned by createdGuardHolders, borrowed by the scratch table */
+				zval created;
+				pt_holder_create(&created, zv::ObjRef(holder.asObject()).propAt(PT_ETH_PROP_EXPR).raw(), remainder.raw(), PT_TRI_YES);
+				zval borrowed;
+				ZVAL_COPY_VALUE(&borrowed, &created);
+				if (createdGuardHolders.isUndef()) {
+					createdGuardHolders = zv::Arr::create(4);
+				}
+				createdGuardHolders.push(zv::Val::adopt(created));
+				pt_ht_update(typeGuards.table(), key, idx, &borrowed);
+			}
 		}
 
 		if (typeGuards.size() == 0) {
@@ -1473,6 +1513,21 @@ private:
 		}
 		zend_call_known_function(fn, Z_OBJ_P(obj), ce, retval, argc, argv, NULL);
 		return !EG(exception);
+	}
+
+	/* TypeCombinator::remove($fromType, $typeToRemove) */
+	static zv::Val typeCombinatorRemove(zval *fromType, zval *typeToRemove)
+	{
+		zval retval;
+		if (UNEXPECTED(!pt_type_combinator_binary("remove", sizeof("remove") - 1, fromType, typeToRemove, &retval))) {
+			return zv::Val();
+		}
+		zv::Val result = zv::Val::adopt(retval);
+		if (UNEXPECTED(!result.ref().isObject())) {
+			zend_throw_error(NULL, "phpstan_turbo: TypeCombinator::remove did not return an object");
+			return zv::Val();
+		}
+		return result;
 	}
 
 	/* $type->isSuperTypeOf($otherType)->result->value */

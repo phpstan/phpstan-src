@@ -2828,10 +2828,6 @@ class NodeScopeResolver
 				}
 
 				if ($assignByReference) {
-					if ($currentParameter === null) {
-						throw new ShouldNotHappenException();
-					}
-
 					$argValue = $arg->value;
 					if (!$argValue instanceof Variable || $argValue->name !== 'this') {
 						$paramOutType = $this->getParameterOutExtensionsType($callLike, $calleeReflection, $currentParameter, $scope);

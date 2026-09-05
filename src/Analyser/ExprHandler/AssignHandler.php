@@ -1225,6 +1225,13 @@ final class AssignHandler implements ExprHandler
 				$isAlwaysTerminating = $isAlwaysTerminating || $nameExprResult->isAlwaysTerminating();
 				$scope = $nameExprResult->getScope();
 			}
+
+			if (!is_string($var->name)) {
+				// a dynamic $$name write can target any variable, including the
+				// foreach value/key/iteratee - drop the value aliases so a later
+				// narrowing is not projected onto a dim fetch it may have desynced
+				$scope = $scope->invalidateForeachValueAliases();
+			}
 		} elseif ($kind === PreparedAssignTarget::KIND_ARRAY_DIM_FETCH) {
 			if (!$var instanceof ArrayDimFetch) {
 				throw new ShouldNotHappenException();

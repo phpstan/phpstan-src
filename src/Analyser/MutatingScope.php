@@ -31,6 +31,7 @@ use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Node\EmitCollectedDataNode;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Node\Expr\CloneReinitializationExpr;
+use PHPStan\Node\Expr\ForeachValueAliasExpr;
 use PHPStan\Node\Expr\IntertwinedVariableByReferenceWithExpr;
 use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\Expr\OriginalForeachKeyExpr;
@@ -494,23 +495,28 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 
 	public function afterExtractCall(): self
 	{
-		return $this->scopeFactory->create(
-			$this->context,
-			$this->isDeclareStrictTypes(),
-			$this->getFunction(),
-			$this->getNamespace(),
-			$this->expressionTypes,
-			$this->nativeExpressionTypes,
+		// extract() may (re)define any variable, including the foreach value/key/
+		// iteratee - drop the value aliases so a later narrowing is not projected
+		// onto a dim fetch the extracted values may have desynced.
+		$scope = $this->invalidateForeachValueAliases();
+
+		return $scope->scopeFactory->create(
+			$scope->context,
+			$scope->isDeclareStrictTypes(),
+			$scope->getFunction(),
+			$scope->getNamespace(),
+			$scope->expressionTypes,
+			$scope->nativeExpressionTypes,
 			[],
-			$this->inClosureBindScopeClasses,
-			$this->anonymousFunctionReflection,
-			$this->isInFirstLevelStatement(),
-			$this->currentlyAssignedExpressions,
-			$this->currentlyAllowedUndefinedExpressions,
-			$this->inFunctionCallsStack,
+			$scope->inClosureBindScopeClasses,
+			$scope->anonymousFunctionReflection,
+			$scope->isInFirstLevelStatement(),
+			$scope->currentlyAssignedExpressions,
+			$scope->currentlyAllowedUndefinedExpressions,
+			$scope->inFunctionCallsStack,
 			true,
-			$this->parentScope,
-			$this->nativeTypesPromoted,
+			$scope->parentScope,
+			$scope->nativeTypesPromoted,
 		);
 	}
 
@@ -2759,7 +2765,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		return $this->assignExpression($condExpr, $type, $nativeType);
 	}
 
-	public function enterForeach(self $originalScope, Expr $iteratee, Type $iterateeType, Type $nativeIterateeType, string $valueName, ?string $keyName, bool $valueByRef): self
+	public function enterForeach(self $originalScope, Expr $iteratee, Type $iterateeType, Type $nativeIterateeType, string $valueName, ?string $keyName, bool $valueByRef, bool $recordValueAlias = true): self
 	{
 		$valueType = $originalScope->getIterableValueType($iterateeType);
 		$nativeValueType = $originalScope->getIterableValueType($nativeIterateeType);
@@ -2794,6 +2800,23 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		}
 		if ($keyName !== null) {
 			$scope = $scope->enterForeachKey($originalScope, $iteratee, $iterateeType, $nativeIterateeType, $keyName);
+
+			if ($recordValueAlias && $iterateeType->isArray()->yes()) {
+				// for the current iteration the value variable and the iteratee dim
+				// fetch alias one runtime value - narrowings landed on the value
+				// variable are projected onto the tracked dim fetch through this
+				// link (applySpecifiedTypes()); a write to any of the three
+				// participating expressions invalidates it through containment.
+				// The alias is only recorded when the loop body does not mutate the
+				// iteratee at a foreign key or reassign the key ($recordValueAlias,
+				// decided in ForeachHandler): a cross-iteration write would desync
+				// $array[$key] from the snapshot value variable.
+				$scope = $scope->assignExpression(
+					new ForeachValueAliasExpr($valueName, new Expr\ArrayDimFetch($iteratee, new Variable($keyName))),
+					$valueType,
+					$nativeValueType,
+				);
+			}
 
 			if ($valueByRef && $iterateeType->isArray()->yes() && $iterateeType->isConstantArray()->no()) {
 				$scope = $scope->assignExpression(
@@ -3577,6 +3600,57 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		);
 	}
 
+	/**
+	 * Drops every foreach value-variable alias (ForeachValueAliasExpr). The alias
+	 * is a precision optimization whose soundness depends on the value variable
+	 * still holding the iteratee element - code paths that write a variable
+	 * without going through the assignment-time containment invalidation (a by-ref
+	 * closure use, extract(), a dynamic $$name write) must sever it here, because
+	 * they may have desynced the value variable from $array[$key]. Losing the alias
+	 * conservatively is always sound; the element type falls back to the iterable
+	 * value type.
+	 */
+	public function invalidateForeachValueAliases(): self
+	{
+		$changed = false;
+		$expressionTypes = $this->expressionTypes;
+		$nativeExpressionTypes = $this->nativeExpressionTypes;
+		foreach ([$this->expressionTypes, $this->nativeExpressionTypes] as $types) {
+			foreach (array_keys($types) as $exprString) {
+				if (!str_starts_with($exprString, ForeachValueAliasExpr::KEY_PREFIX)) {
+					continue;
+				}
+
+				unset($expressionTypes[$exprString]);
+				unset($nativeExpressionTypes[$exprString]);
+				$changed = true;
+			}
+		}
+
+		if (!$changed) {
+			return $this;
+		}
+
+		return $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->getFunction(),
+			$this->getNamespace(),
+			$expressionTypes,
+			$nativeExpressionTypes,
+			$this->conditionalExpressions,
+			$this->inClosureBindScopeClasses,
+			$this->anonymousFunctionReflection,
+			$this->isInFirstLevelStatement(),
+			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
+			$this->inFunctionCallsStack,
+			$this->afterExtractCall,
+			$this->parentScope,
+			$this->nativeTypesPromoted,
+		);
+	}
+
 	/** @internal called by ScopeOps */
 	public function isPrivatePropertyOfDifferentClass(Expr $expr, ClassReflection $invalidatingClass): bool
 	{
@@ -3966,6 +4040,61 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				? $scope->expressionTypes[$exprString]->getType()
 				: $type;
 			$specifiedExpressions[$exprString] = ExpressionTypeHolder::createYes($expr, $holderType);
+		}
+
+		// while a foreach value variable still aliases the iteratee dim fetch
+		// (ForeachValueAliasExpr link intact - none of the participating
+		// expressions were written), a narrowing landed on the value variable
+		// also narrows the tracked dim fetch: they hold the same runtime value
+		foreach ($specifiedExpressions as $specifiedHolder) {
+			$specifiedExpr = $specifiedHolder->getExpr();
+			if (!$specifiedExpr instanceof Variable || !is_string($specifiedExpr->name)) {
+				continue;
+			}
+			$aliasHolder = $scope->expressionTypes[ForeachValueAliasExpr::key($specifiedExpr->name)] ?? null;
+			if ($aliasHolder === null || !$aliasHolder->getCertainty()->yes()) {
+				continue;
+			}
+			$aliasExpr = $aliasHolder->getExpr();
+			if (!$aliasExpr instanceof ForeachValueAliasExpr) {
+				continue;
+			}
+			$valueExprString = '$' . $specifiedExpr->name;
+			$valueHolder = $scope->expressionTypes[$valueExprString] ?? null;
+			$valueNativeHolder = $scope->nativeExpressionTypes[$valueExprString] ?? null;
+			if (
+				$valueHolder === null || !$valueHolder->getCertainty()->yes()
+				|| $valueNativeHolder === null || !$valueNativeHolder->getCertainty()->yes()
+			) {
+				continue;
+			}
+			$dimFetchExpr = $aliasExpr->getDimFetch();
+			$dimFetchString = $scope->getNodeKey($dimFetchExpr);
+			$dimFetchHolder = $scope->expressionTypes[$dimFetchString] ?? null;
+			$dimFetchNativeHolder = $scope->nativeExpressionTypes[$dimFetchString] ?? null;
+			if (
+				$dimFetchHolder === null || !$dimFetchHolder->getCertainty()->yes()
+				|| $dimFetchNativeHolder === null || !$dimFetchNativeHolder->getCertainty()->yes()
+			) {
+				continue;
+			}
+			if ($scope->isComplexUnionType($dimFetchHolder->getType())) {
+				continue;
+			}
+
+			$newDimFetchType = TypeCombinator::intersect($dimFetchHolder->getType(), $valueHolder->getType());
+			$newDimFetchNativeType = TypeCombinator::intersect($dimFetchNativeHolder->getType(), $valueNativeHolder->getType());
+			if (
+				$newDimFetchType->equals($dimFetchHolder->getType())
+				&& $newDimFetchNativeType->equals($dimFetchNativeHolder->getType())
+			) {
+				continue;
+			}
+			if (!$scopeIsWorkingCopy) {
+				$scope = $scope->openSpecificationScope();
+				$scopeIsWorkingCopy = true;
+			}
+			$scope->specifyExpressionTypeInPlace($dimFetchExpr, $newDimFetchType, $newDimFetchNativeType, TrinaryLogic::createYes());
 		}
 
 		$scope = $scope->processConditionalExpressionsAfterSpecifying($specifiedExpressions);
@@ -4424,6 +4553,22 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$holder = ExpressionTypeHolder::createYes($use->var, $variableType);
 			$expressionTypes[$variableExprString] = $holder;
 			$nativeExpressionTypes[$variableExprString] = $holder;
+		}
+
+		// The by-ref uses above write variable holders directly, bypassing the
+		// assignment-time containment invalidation. A by-ref use may write the
+		// foreach value/key/iteratee variable, desyncing the value variable from
+		// $array[$key] - drop the value aliases so a later narrowing is not
+		// projected onto the tracked dim fetch.
+		foreach ([$expressionTypes, $nativeExpressionTypes] as $types) {
+			foreach (array_keys($types) as $exprString) {
+				if (!str_starts_with($exprString, ForeachValueAliasExpr::KEY_PREFIX)) {
+					continue;
+				}
+
+				unset($expressionTypes[$exprString]);
+				unset($nativeExpressionTypes[$exprString]);
+			}
 		}
 
 		return $this->scopeFactory->create(

@@ -6,9 +6,9 @@ use Error;
 use Exception;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\TryCatch;
-use PhpParser\Node\Expr\Variable;
 use PHPStan\Analyser\ConditionalExpressionHolder;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExpressionTypeHolder;
@@ -395,7 +395,7 @@ final class TryCatchHandler implements StmtHandler
 				$conditionalHolder = new ConditionalExpressionHolder($condition, $holder);
 				$conditionalHolders[$conditionalHolder->getKey()] = $conditionalHolder;
 			}
-			$mergedScope = $mergedScope->addConditionalExpressions((string) $exprString, $conditionalHolders);
+			$mergedScope = $mergedScope->addConditionalExpressions((string) $exprString, $conditionalHolders); // @phpstan-ignore cast.useless
 		}
 
 		return $mergedScope;

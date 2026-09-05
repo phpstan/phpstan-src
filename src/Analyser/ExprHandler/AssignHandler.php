@@ -21,6 +21,7 @@ use PhpParser\Node\Expr\Ternary;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
+use PhpParser\NodeFinder;
 use PHPStan\Analyser\AssignTargetWalkMode;
 use PHPStan\Analyser\ConditionalExpressionHolder;
 use PHPStan\Analyser\ExpressionContext;
@@ -79,6 +80,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use TypeError;
+use function array_key_exists;
 use function array_key_last;
 use function array_merge;
 use function array_pop;
@@ -99,6 +101,8 @@ final class AssignHandler implements ExprHandler
 {
 
 	private const TERNARY_ARM_EXCLUDED_VALUES_LIMIT = 3;
+
+	private const DERIVED_CONDITIONAL_EXPRESSIONS_LIMIT = 16;
 
 	public function __construct(
 		private VarAnnotationProcessor $varAnnotationProcessor,
@@ -950,6 +954,8 @@ final class AssignHandler implements ExprHandler
 					$conditionalExpressions = $this->processInArrayForConditionalExpressionsAfterAssign($scopeBeforeAssignEval, $var->name, $conditionalExpressions, $assignedExpr, $type, $impurePoints);
 				}
 
+				$conditionalExpressions = $this->processDerivedConditionalExpressionsAfterAssign($scopeBeforeAssignEval, $var->name, $conditionalExpressions, $assignedExpr, $type, $impurePoints);
+
 				$truthyType = TypeCombinator::removeFalsey($type);
 				// Value comparison, not identity: remove() happens to hand back the very same
 				// instance when it removes nothing, but that is not part of its contract — the
@@ -1661,6 +1667,87 @@ final class AssignHandler implements ExprHandler
 		}
 
 		return $newConditionalExpressions;
+	}
+
+	/**
+	 * Propagates conditional expressions through a derived assignment: when the
+	 * right-hand side reads a variable that existing conditional expressions describe
+	 * (e.g. `if $key = 'test1' then $functionName is 'Test'`), the assigned variable
+	 * gets its own conditional expressions under the same conditions, with the
+	 * right-hand side re-evaluated under each consequent
+	 * (`if $key = 'test1' then $functionToCall is 'fetchTest'`).
+	 *
+	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
+	 * @param ImpurePoint[] $rhsImpurePoints
+	 * @return array<string, ConditionalExpressionHolder[]>
+	 */
+	private function processDerivedConditionalExpressionsAfterAssign(
+		MutatingScope $scope,
+		string $variableName,
+		array $conditionalExpressions,
+		Expr $assignedExpr,
+		Type $assignedType,
+		array $rhsImpurePoints,
+	): array
+	{
+		if (count($rhsImpurePoints) > 0) {
+			return $conditionalExpressions;
+		}
+		$scopeConditionalExpressions = $scope->getConditionalExpressions();
+		if (count($scopeConditionalExpressions) === 0) {
+			return $conditionalExpressions;
+		}
+
+		$targetExprString = '$' . $variableName;
+		$evaluations = 0;
+		$seenReadExprStrings = [];
+		/** @var Variable[] $readVariables */
+		$readVariables = (new NodeFinder())->findInstanceOf([$assignedExpr], Variable::class);
+		foreach ($readVariables as $readVariable) {
+			if (!is_string($readVariable->name) || $readVariable->name === $variableName) {
+				continue;
+			}
+			$readExprString = '$' . $readVariable->name;
+			if (array_key_exists($readExprString, $seenReadExprStrings)) {
+				continue;
+			}
+			$seenReadExprStrings[$readExprString] = true;
+
+			foreach ($scopeConditionalExpressions[$readExprString] ?? [] as $holder) {
+				$consequent = $holder->getTypeHolder();
+				if (!$consequent->getCertainty()->yes()) {
+					continue;
+				}
+
+				$conditionHolders = $holder->getConditionExpressionTypeHolders();
+				$evalScope = $scope;
+				foreach ($conditionHolders as $conditionExprString => $conditionHolder) {
+					if ($conditionExprString === $targetExprString || !$conditionHolder->getCertainty()->yes()) {
+						// a condition on the just-overwritten variable is stale
+						continue 2;
+					}
+					$evalScope = $evalScope->assignExpression($conditionHolder->getExpr(), $conditionHolder->getType(), $conditionHolder->getType());
+				}
+
+				if (++$evaluations > self::DERIVED_CONDITIONAL_EXPRESSIONS_LIMIT) {
+					return $conditionalExpressions;
+				}
+
+				$evalScope = $evalScope->assignExpression($consequent->getExpr(), $consequent->getType(), $consequent->getType());
+				$derivedType = $evalScope->getType($assignedExpr);
+				if ($derivedType->equals($assignedType)) {
+					continue;
+				}
+
+				$derivedHolder = new ConditionalExpressionHolder(
+					$conditionHolders,
+					ExpressionTypeHolder::createYes(new Variable($variableName), $derivedType),
+				);
+				$conditionalExpressions[$targetExprString][$derivedHolder->getKey()] = $derivedHolder;
+			}
+		}
+
+		return $conditionalExpressions;
 	}
 
 	/**

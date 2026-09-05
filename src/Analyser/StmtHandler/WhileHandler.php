@@ -91,7 +91,7 @@ final class WhileHandler implements StmtHandler
 				}
 				// the candidate to replace the final walk when this pass's
 				// entry turns out to be the fixpoint
-				if ($condRecording instanceof RecordingNodeCallback && $bodyRecording instanceof RecordingNodeCallback) {
+				if ($condRecording instanceof RecordingNodeCallback) {
 					$replayCondRecording = $condRecording;
 					$replayBodyRecording = $bodyRecording;
 					$replayPassStorage = $storage;

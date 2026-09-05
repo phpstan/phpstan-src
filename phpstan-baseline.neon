@@ -1645,6 +1645,12 @@ parameters:
 			path: src/Type/Php/ReflectionMethodConstructorThrowTypeExtension.php
 
 		-
+			rawMessage: If condition is always true.
+			identifier: if.alwaysTrue
+			count: 1
+			path: src/Type/Php/SubstrDynamicReturnTypeExtension.php
+
+		-
 			rawMessage: Foreach overwrites $group with its value variable.
 			identifier: foreach.valueOverwrite
 			count: 1

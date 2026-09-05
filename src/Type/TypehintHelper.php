@@ -20,12 +20,18 @@ use function sprintf;
 final class TypehintHelper
 {
 
-	/** @api */
+	/**
+	 * @api
+	 * @param bool $isBuiltin Whether the type declaration comes from a PHP internal symbol.
+	 *                        Stubs of internal functions declare the resource pseudo-type
+	 *                        as `resource`, which PHP itself would read as a class name.
+	 */
 	public static function decideTypeFromReflection(
 		?ReflectionType $reflectionType,
 		?Type $phpDocType = null,
 		ClassReflection|null $selfClass = null,
 		bool $isVariadic = false,
+		bool $isBuiltin = false,
 	): Type
 	{
 		if ($reflectionType === null) {
@@ -36,7 +42,7 @@ final class TypehintHelper
 		}
 
 		if ($reflectionType instanceof ReflectionUnionType) {
-			$type = TypeCombinator::union(...array_map(static fn (ReflectionType $type): Type => self::decideTypeFromReflection($type, selfClass: $selfClass), $reflectionType->getTypes()));
+			$type = TypeCombinator::union(...array_map(static fn (ReflectionType $type): Type => self::decideTypeFromReflection($type, selfClass: $selfClass, isBuiltin: $isBuiltin), $reflectionType->getTypes()));
 
 			return self::decideType($type, $phpDocType);
 		}
@@ -44,7 +50,7 @@ final class TypehintHelper
 		if ($reflectionType instanceof ReflectionIntersectionType) {
 			$types = [];
 			foreach ($reflectionType->getTypes() as $innerReflectionType) {
-				$innerType = self::decideTypeFromReflection($innerReflectionType, selfClass: $selfClass);
+				$innerType = self::decideTypeFromReflection($innerReflectionType, selfClass: $selfClass, isBuiltin: $isBuiltin);
 				if (!$innerType->isObject()->yes()) {
 					return new NeverType();
 				}
@@ -65,7 +71,7 @@ final class TypehintHelper
 			$typeNode = new FullyQualified($reflectionType->getName());
 		}
 
-		$type = ParserNodeTypeToPHPStanType::resolve($typeNode, $selfClass);
+		$type = ParserNodeTypeToPHPStanType::resolve($typeNode, $selfClass, $isBuiltin);
 		if ($reflectionType->allowsNull()) {
 			$type = TypeCombinator::addNull($type);
 		}

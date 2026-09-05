@@ -124,7 +124,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 
 			$tentativeReturnType = null;
 			if ($prototypeMethod->getTentativeReturnType() !== null) {
-				$tentativeReturnType = TypehintHelper::decideTypeFromReflection($prototypeMethod->getTentativeReturnType(), selfClass: $prototypeDeclaringClass);
+				$tentativeReturnType = TypehintHelper::decideTypeFromReflection($prototypeMethod->getTentativeReturnType(), selfClass: $prototypeDeclaringClass, isBuiltin: $prototypeDeclaringClass->isBuiltin());
 			}
 
 			return new MethodPrototypeReflection(
@@ -232,6 +232,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 			$this->attributeReflectionFactory->fromNativeReflection($reflection->getAttributes(), InitializerExprContext::fromReflectionParameter($reflection)),
 			$this->allowedConstantsMapProvider->getForMethodParameter($this->declaringClass->getName(), $this->reflection->getName(), $reflection->getName()),
 			TrinaryLogic::createFromBoolean($this->pureUnlessCallableIsImpureParameters[$reflection->getName()] ?? false),
+			$this->reflection->isInternal(),
 		), $this->reflection->getParameters());
 	}
 
@@ -277,6 +278,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 				$returnType,
 				$this->phpDocReturnType,
 				$this->declaringClass,
+				isBuiltin: $this->reflection->isInternal(),
 			);
 		}
 
@@ -297,6 +299,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 		return $this->nativeReturnType ??= TypehintHelper::decideTypeFromReflection(
 			$this->reflection->getReturnType(),
 			selfClass: $this->declaringClass,
+			isBuiltin: $this->reflection->isInternal(),
 		);
 	}
 

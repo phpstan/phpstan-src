@@ -149,7 +149,7 @@ final class FunctionSignatureMapProvider implements SignatureMapProvider
 				$parameter->getName(),
 				$parameter->isOptional(),
 				$parameter->getType(),
-				TypehintHelper::decideTypeFromReflection($nativeParameters[$i]->getType()),
+				TypehintHelper::decideTypeFromReflection($nativeParameters[$i]->getType(), isBuiltin: true),
 				$parameter->passedByReference(),
 				$parameter->isVariadic(),
 				$nativeParameters[$i]->isDefaultValueAvailable() ? $this->initializerExprTypeResolver->getType(
@@ -163,7 +163,7 @@ final class FunctionSignatureMapProvider implements SignatureMapProvider
 		if ($reflectionFunction === null) {
 			$nativeReturnType = new MixedType();
 		} else {
-			$nativeReturnType = TypehintHelper::decideTypeFromReflection($reflectionFunction->getReturnType());
+			$nativeReturnType = TypehintHelper::decideTypeFromReflection($reflectionFunction->getReturnType(), isBuiltin: true);
 		}
 
 		return new FunctionSignature(

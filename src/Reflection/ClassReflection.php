@@ -955,7 +955,7 @@ final class ClassReflection
 			return null;
 		}
 
-		return TypehintHelper::decideTypeFromReflection($this->reflection->getBackingType());
+		return TypehintHelper::decideTypeFromReflection($this->reflection->getBackingType(), isBuiltin: $this->isBuiltin());
 	}
 
 	public function hasEnumCase(string $name): bool
@@ -1305,7 +1305,7 @@ final class ClassReflection
 
 			$nativeType = null;
 			if ($reflectionConstant->getType() !== null) {
-				$nativeType = TypehintHelper::decideTypeFromReflection($reflectionConstant->getType(), selfClass: $declaringClass);
+				$nativeType = TypehintHelper::decideTypeFromReflection($reflectionConstant->getType(), selfClass: $declaringClass, isBuiltin: $declaringClass->isBuiltin());
 			} elseif ($this->signatureMapProvider->hasClassConstantMetadata($declaringClass->getName(), $name)) {
 				$nativeType = $this->signatureMapProvider->getClassConstantMetadata($declaringClass->getName(), $name)['nativeType'];
 			}
@@ -1366,7 +1366,7 @@ final class ClassReflection
 
 		$nativeType = null;
 		if ($reflectionConstant->getType() !== null) {
-			$nativeType = TypehintHelper::decideTypeFromReflection($reflectionConstant->getType());
+			$nativeType = TypehintHelper::decideTypeFromReflection($reflectionConstant->getType(), isBuiltin: $reflectionConstant->getDeclaringClass()->isInternal());
 		}
 
 		$declaringClassName = $reflectionConstant->getDeclaringClass()->getName();

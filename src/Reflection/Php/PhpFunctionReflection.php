@@ -133,6 +133,7 @@ final class PhpFunctionReflection implements FunctionReflection
 				$this->attributeReflectionFactory->fromNativeReflection($reflection->getAttributes(), InitializerExprContext::fromReflectionParameter($reflection)),
 				$this->allowedConstantsMapProvider->getForFunctionParameter(strtolower($this->reflection->getName()), $reflection->getName()),
 				TrinaryLogic::createFromBoolean($this->phpDocParameterPureUnlessCallableIsImpure[$reflection->getName()] ?? false),
+				$this->isBuiltin(),
 			);
 		}, $this->reflection->getParameters());
 	}
@@ -147,6 +148,7 @@ final class PhpFunctionReflection implements FunctionReflection
 		return TypehintHelper::decideTypeFromReflection(
 			$this->reflection->getReturnType(),
 			$this->phpDocReturnType,
+			isBuiltin: $this->isBuiltin(),
 		);
 	}
 
@@ -161,7 +163,7 @@ final class PhpFunctionReflection implements FunctionReflection
 
 	private function getNativeReturnType(): Type
 	{
-		return TypehintHelper::decideTypeFromReflection($this->reflection->getReturnType());
+		return TypehintHelper::decideTypeFromReflection($this->reflection->getReturnType(), isBuiltin: $this->isBuiltin());
 	}
 
 	public function getDeprecatedDescription(): ?string

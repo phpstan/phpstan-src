@@ -38,6 +38,7 @@ final class PhpParameterReflection implements ExtendedParameterReflection
 		private array $attributes,
 		private ?ParameterAllowedConstants $allowedConstants,
 		private TrinaryLogic $pureUnlessCallableIsImpureParameter,
+		private bool $isBuiltin = false,
 	)
 	{
 	}
@@ -74,6 +75,7 @@ final class PhpParameterReflection implements ExtendedParameterReflection
 				$phpDocType,
 				$this->declaringClass,
 				$this->isVariadic(),
+				$this->isBuiltin,
 			);
 		}
 
@@ -112,6 +114,7 @@ final class PhpParameterReflection implements ExtendedParameterReflection
 			$this->reflection->getType(),
 			selfClass: $this->declaringClass,
 			isVariadic: $this->isVariadic(),
+			isBuiltin: $this->isBuiltin,
 		);
 	}
 

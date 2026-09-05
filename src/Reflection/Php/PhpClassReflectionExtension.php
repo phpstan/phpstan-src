@@ -367,7 +367,7 @@ final class PhpClassReflectionExtension
 			);
 		}
 
-		$nativeType = TypehintHelper::decideTypeFromReflection($propertyReflection->getType(), selfClass: $declaringClassReflection);
+		$nativeType = TypehintHelper::decideTypeFromReflection($propertyReflection->getType(), selfClass: $declaringClassReflection, isBuiltin: $declaringClassReflection->isBuiltin());
 
 		$declaringTrait = null;
 		$reflectionProvider = $this->reflectionProviderProvider->getReflectionProvider();
@@ -881,6 +881,7 @@ final class PhpClassReflectionExtension
 		$nativeReturnType = TypehintHelper::decideTypeFromReflection(
 			$methodReflection->getReturnType(),
 			selfClass: $actualDeclaringClass,
+			isBuiltin: $actualDeclaringClass->isBuiltin(),
 		);
 
 		$isPure = null;

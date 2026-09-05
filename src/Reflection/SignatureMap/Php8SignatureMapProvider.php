@@ -142,7 +142,7 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 					continue;
 				}
 
-				$this->constantTypes[$lowerClassName][$const->name->toLowerString()] = ParserNodeTypeToPHPStanType::resolve($stmt->type, null);
+				$this->constantTypes[$lowerClassName][$const->name->toLowerString()] = ParserNodeTypeToPHPStanType::resolve($stmt->type, null, true);
 			}
 		}
 	}
@@ -442,7 +442,7 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 			if (!$name instanceof Variable || !is_string($name->name)) {
 				throw new ShouldNotHappenException();
 			}
-			$parameterType = ParserNodeTypeToPHPStanType::resolve($param->type, $classReflection);
+			$parameterType = ParserNodeTypeToPHPStanType::resolve($param->type, $classReflection, true);
 			$phpDocParameterType = $phpDocParameterTypes[$name->name] ?? null;
 
 			if ($param->default instanceof ConstFetch) {
@@ -473,7 +473,7 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 			$variadic = $variadic || $param->variadic;
 		}
 
-		$returnType = ParserNodeTypeToPHPStanType::resolve($function->getReturnType(), $classReflection);
+		$returnType = ParserNodeTypeToPHPStanType::resolve($function->getReturnType(), $classReflection, true);
 
 		return new FunctionSignature(
 			$parameters,

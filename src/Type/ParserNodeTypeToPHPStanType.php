@@ -18,14 +18,20 @@ final class ParserNodeTypeToPHPStanType
 
 	/**
 	 * @param Node\Name|Node\Identifier|Node\ComplexType|null $type
+	 * @param bool $isBuiltin Whether the type declaration comes from a PHP internal symbol.
+	 *                        Stubs of internal functions declare the resource pseudo-type
+	 *                        as `resource`, which PHP itself would read as a class name.
 	 */
-	public static function resolve($type, ?ClassReflection $classReflection): Type
+	public static function resolve($type, ?ClassReflection $classReflection, bool $isBuiltin = false): Type
 	{
 		if ($type === null) {
 			return new MixedType();
 		} elseif ($type instanceof Name) {
 			$typeClassName = (string) $type;
 			$lowercasedClassName = strtolower($typeClassName);
+			if ($isBuiltin && $lowercasedClassName === 'resource') {
+				return new ResourceType();
+			}
 			if ($classReflection !== null && in_array($lowercasedClassName, ['self', 'static'], true)) {
 				if ($lowercasedClassName === 'static') {
 					return new StaticType($classReflection);
@@ -41,18 +47,18 @@ final class ParserNodeTypeToPHPStanType
 
 			return new ObjectType($typeClassName);
 		} elseif ($type instanceof NullableType) {
-			return TypeCombinator::addNull(self::resolve($type->type, $classReflection));
+			return TypeCombinator::addNull(self::resolve($type->type, $classReflection, $isBuiltin));
 		} elseif ($type instanceof Node\UnionType) {
 			$types = [];
 			foreach ($type->types as $unionTypeType) {
-				$types[] = self::resolve($unionTypeType, $classReflection);
+				$types[] = self::resolve($unionTypeType, $classReflection, $isBuiltin);
 			}
 
 			return TypeCombinator::union(...$types);
 		} elseif ($type instanceof Node\IntersectionType) {
 			$types = [];
 			foreach ($type->types as $intersectionTypeType) {
-				$innerType = self::resolve($intersectionTypeType, $classReflection);
+				$innerType = self::resolve($intersectionTypeType, $classReflection, $isBuiltin);
 				if (!$innerType->isObject()->yes()) {
 					return new NeverType();
 				}

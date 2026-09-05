@@ -1084,7 +1084,7 @@ public:
 	void construct(zval *argv)
 	{
 		zv::ObjRef object(self);
-		for (uint32_t i = 0; i < 20; i++) {
+		for (uint32_t i = 0; i < 21; i++) {
 			object.propAtWrite(i, zv::Val::copyOf(zv::Ref(&argv[i])));
 		}
 	}
@@ -2159,10 +2159,35 @@ private:
 				AH_VALB(assignNode, newVariableAssignNode(var, assignedExpr.raw()));
 				AH_OKB(nsrCallNodeCallback(nsr, nodeCallback, assignNode.raw(), scopeBeforeAssignEval.raw(), storage));
 			}
+			zv::Val remappedConditionalExpressions = ahEmptyArray();
+			// only the concat-assign's own write remaps - an enclosing plain
+			// assignment of the same variable (`$s = $s .= 'x'`) sees the
+			// already-remapped holders and would remap them a second time
+			if (Z_TYPE_P(AH_TARGET(target, isAssignOp)) == IS_TRUE && ahIs(assignedExpr.raw(), PT_CLASS_ASSIGN_OP_CONCAT)) {
+				zend_string *concatVarName = ahStringVariableName(AH_PROP(assignedExpr.raw(), var));
+				if (concatVarName != NULL && zend_string_equals(concatVarName, varName)) {
+					AH_VALB(scopeConditionalExpressions, pt_mutating_scope_get_conditional_expressions(Z_OBJ_P(scope.raw())));
+					if (Z_TYPE_P(scopeConditionalExpressions.raw()) == IS_ARRAY && zend_hash_num_elements(Z_ARRVAL_P(scopeConditionalExpressions.raw())) > 0) {
+						AH_VALB(appendedType, pt_expression_result_get_type(valueResult));
+						zv::Str varExprString = zv::Str::adopt(zend_string_concat2(PT_LC("$"), ZSTR_VAL(varName), ZSTR_LEN(varName)));
+						AH_SETB(remappedConditionalExpressions, remapConditionalExpressionsThroughConcatAssign(scopeConditionalExpressions.raw(), varExprString.get(), appendedType.raw()));
+					}
+				}
+			}
 
 			AH_VALB(nativeScope, pt_mutating_scope_do_not_treat_phpdoc_types_as_certain(Z_OBJ_P(scope.raw())));
 			AH_VALB(nativeType, readAssignedValueType(nsr, stored, assignedExpr.raw(), nativeScope.raw()));
 			AH_SETB(scope, pt_mutating_scope_assign_variable(Z_OBJ_P(scope.raw()), varName, type.raw(), nativeType.raw(), ahTrinary(PT_TRI_YES)));
+			for (auto entry : zv::TableRef(Z_ARRVAL_P(remappedConditionalExpressions.raw()))) {
+				zval *holders = entry.value().raw();
+				zend_string *exprString = entry.stringKeyOrNull();
+				if (exprString != NULL) {
+					AH_SETB(scope, pt_mutating_scope_add_conditional_expressions(Z_OBJ_P(scope.raw()), exprString, Z_ARRVAL_P(holders)));
+				} else {
+					zv::Str key = zv::Str::adopt(zend_long_to_str((zend_long) entry.indexKey()));
+					AH_SETB(scope, pt_mutating_scope_add_conditional_expressions(Z_OBJ_P(scope.raw()), key.get(), Z_ARRVAL_P(holders)));
+				}
+			}
 			for (auto entry : zv::TableRef(Z_ARRVAL_P(conditionalExpressions.raw()))) {
 				zval *holders = entry.value().raw();
 				zend_string *exprString = entry.stringKeyOrNull();
@@ -2483,6 +2508,127 @@ private:
 		}
 
 		return true;
+	}
+
+	static bool strContains(zend_string *haystack, zend_string *needle)
+	{
+		return zend_memnstr(ZSTR_VAL(haystack), ZSTR_VAL(needle), ZSTR_LEN(needle), ZSTR_VAL(haystack) + ZSTR_LEN(haystack)) != NULL;
+	}
+
+	/* the single constant string a type is exactly (count(getConstantStrings())
+	 * === 1 and equals() it), UNDEF = pending exception, PHP null = none */
+	static zv::Val singleConstantString(zval *type)
+	{
+		AH_VAL(constantStrings, ahCall(type, PT_LC("getconstantstrings"), 0, NULL));
+		if (Z_TYPE_P(constantStrings.raw()) != IS_ARRAY || zend_hash_num_elements(Z_ARRVAL_P(constantStrings.raw())) != 1) return zv::Val::null();
+		zval *constantString = zend_hash_index_find(Z_ARRVAL_P(constantStrings.raw()), 0);
+		if (UNEXPECTED(constantString == NULL)) {
+			pt_throw_should_not_happen();
+			return zv::Val();
+		}
+		ZVAL_DEREF(constantString);
+		bool equal;
+		AH_OK(ahEquals(type, constantString, equal));
+		if (!equal) return zv::Val::null();
+		return zv::Val::copyOf(zv::Ref(constantString));
+	}
+
+	/* $holder->getConditionExpressionTypeHolders() / ->getTypeHolder() of a ConditionalExpressionHolder */
+	static zv::Val conditionalHolderPart(zval *holder, bool conditions)
+	{
+		if (EXPECTED(Z_TYPE_P(holder) == IS_OBJECT && Z_OBJCE_P(holder) == pt_ce_cond_expr_holder)) {
+			return zv::Val::copyOf(zv::ObjRef(Z_OBJ_P(holder)).propAt(conditions ? PT_CEH_PROP_CONDS : PT_CEH_PROP_TYPEHOLDER).deref());
+		}
+		return conditions ? ahCall(holder, PT_LC("getconditionexpressiontypeholders"), 0, NULL) : ahCall(holder, PT_LC("gettypeholder"), 0, NULL);
+	}
+
+	/* (twin remapConditionalExpressionsThroughConcatAssign) `$var .= <single
+	 * constant string>` keeps the conditional-expression holders about $var
+	 * alive by remapping them through the append instead of losing them to
+	 * the write's invalidation; see the PHP twin for the rules. */
+	zv::Val remapConditionalExpressionsThroughConcatAssign(zval *conditionalExpressions, zend_string *varExprString, zval *appendedType)
+	{
+		AH_VAL(appendedConstantString, singleConstantString(appendedType));
+		if (appendedConstantString.isNull()) return ahEmptyArray();
+
+		zv::Val remapped = ahEmptyArray();
+		for (auto targetEntry : zv::TableRef(Z_ARRVAL_P(conditionalExpressions))) {
+			zv::Str targetExprString = targetEntry.stringKeyOrNull() != NULL ? zv::Str::copyOf(targetEntry.stringKey()) : zv::Str::adopt(zend_long_to_str((zend_long) targetEntry.indexKey()));
+			bool targetIsVar = zend_string_equals(targetExprString.get(), varExprString);
+			if (!targetIsVar && strContains(targetExprString.get(), varExprString)) {
+				// a composite target containing the variable ($var[0], f($var), ...)
+				continue;
+			}
+
+			zval *holders = targetEntry.value().deref().raw();
+			if (UNEXPECTED(Z_TYPE_P(holders) != IS_ARRAY)) continue;
+			for (auto holderEntry : zv::TableRef(Z_ARRVAL_P(holders))) {
+				zval *holder = holderEntry.value().deref().raw();
+				bool holderTouchesVar = targetIsVar;
+				bool remappable = true;
+				zv::Val newConditions = ahEmptyArray();
+				AH_VAL(conditions, conditionalHolderPart(holder, true));
+				if (UNEXPECTED(Z_TYPE_P(conditions.raw()) != IS_ARRAY)) continue;
+				for (auto conditionEntry : zv::TableRef(Z_ARRVAL_P(conditions.raw()))) {
+					zv::Str conditionExprString = conditionEntry.stringKeyOrNull() != NULL ? zv::Str::copyOf(conditionEntry.stringKey()) : zv::Str::adopt(zend_long_to_str((zend_long) conditionEntry.indexKey()));
+					zval *conditionHolder = conditionEntry.value().deref().raw();
+					if (zend_string_equals(conditionExprString.get(), varExprString)) {
+						holderTouchesVar = true;
+						if (pt_holder_certainty_value(Z_OBJ_P(conditionHolder)) != PT_TRI_YES) {
+							remappable = false;
+							break;
+						}
+						zval *conditionType = OBJ_PROP_NUM(Z_OBJ_P(conditionHolder), PT_ETH_PROP_TYPE);
+						ZVAL_DEREF(conditionType);
+						AH_VAL(conditionConstantString, singleConstantString(conditionType));
+						if (conditionConstantString.isNull()) {
+							remappable = false;
+							break;
+						}
+						zval appendArg;
+						ZVAL_COPY_VALUE(&appendArg, appendedConstantString.raw());
+						AH_VAL(appended, ahCall(conditionConstantString.raw(), PT_LC("append"), 1, &appendArg));
+						zval *conditionExpr = OBJ_PROP_NUM(Z_OBJ_P(conditionHolder), PT_ETH_PROP_EXPR);
+						ZVAL_DEREF(conditionExpr);
+						AH_VAL(newConditionHolder, newExpressionTypeHolder(conditionExpr, appended.raw(), PT_TRI_YES));
+						ahSetKey(newConditions, conditionExprString.get(), newConditionHolder.raw());
+						continue;
+					}
+
+					if (strContains(conditionExprString.get(), varExprString)) {
+						remappable = false;
+						break;
+					}
+
+					ahSetKey(newConditions, conditionExprString.get(), conditionHolder);
+				}
+				if (!remappable || !holderTouchesVar) continue;
+
+				AH_VAL(typeHolder, conditionalHolderPart(holder, false));
+				if (targetIsVar) {
+					if (pt_holder_certainty_value(Z_OBJ_P(typeHolder.raw())) != PT_TRI_YES) {
+						// the append leaves the variable defined on every path -
+						// an undefined/maybe consequence cannot be carried over
+						continue;
+					}
+					zval *holderType = OBJ_PROP_NUM(Z_OBJ_P(typeHolder.raw()), PT_ETH_PROP_TYPE);
+					ZVAL_DEREF(holderType);
+					zv::Args concatArgs{holderType, appendedType};
+					AH_VAL(concatType, ahCall(prop(slots::initializerExprTypeResolver), PT_LC("resolveconcattype"), 2, concatArgs));
+					if (Z_TYPE_P(concatType.raw()) == IS_OBJECT && instanceof_function(Z_OBJCE_P(concatType.raw()), pt_ce_error_type)) continue;
+					zval *holderExpr = OBJ_PROP_NUM(Z_OBJ_P(typeHolder.raw()), PT_ETH_PROP_EXPR);
+					ZVAL_DEREF(holderExpr);
+					AH_SET(typeHolder, newExpressionTypeHolder(holderExpr, concatType.raw(), PT_TRI_YES));
+				}
+
+				AH_VAL(newHolder, newConditionalExpressionHolder(newConditions.raw(), typeHolder.raw()));
+				zv::Str newHolderKey = zv::Str::adopt(conditionalHolderKey(newHolder.raw()));
+				AH_OK(!newHolderKey.isNull());
+				nestedSet(remapped, targetExprString.get(), newHolderKey.get(), newHolder.raw());
+			}
+		}
+
+		return remapped;
 	}
 
 	/* Records "if the assigned variable has $variableType, the target variable is
@@ -4960,7 +5106,7 @@ PT_MINIT_REGISTRATION(pt_register_assign_handler)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *argv;
 		uint32_t argc;
-		ZEND_PARSE_PARAMETERS_START(20, 20)
+		ZEND_PARSE_PARAMETERS_START(21, 21)
 			Z_PARAM_VARIADIC('+', argv, argc)
 		ZEND_PARSE_PARAMETERS_END();
 		for (uint32_t i = 0; i < argc; i++) {

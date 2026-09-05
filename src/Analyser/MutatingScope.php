@@ -4140,6 +4140,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				$ourExpressionTypes,
 			);
 		}
+		$conditionalExpressions = $this->mergeSameGuardConditionalExpressions(
+			$conditionalExpressions,
+			$this->conditionalExpressions,
+			$otherScope->conditionalExpressions,
+		);
 		$conditionalExpressions = ScopeOps::createConditionalExpressions(
 			$conditionalExpressions,
 			$ourExpressionTypes,
@@ -4232,6 +4237,14 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	}
 
 	/**
+	 * Rescues one-sided conditional holders across an if-merge.
+	 *
+	 * A holder missing from the intersection survives when either some guard's
+	 * recorded type is impossible in the other branch (the holder is vacuously
+	 * true there), or the other branch's flat state for the holder's target
+	 * already satisfies the holder's consequent (subtype with at-least-as-strong
+	 * certainty) - the consequent then holds on both paths under the guard.
+	 *
 	 * @param array<string, ConditionalExpressionHolder[]> $currentConditionalExpressions
 	 * @param array<string, ConditionalExpressionHolder[]> $sourceConditionalExpressions
 	 * @param array<string, ExpressionTypeHolder> $otherExpressionTypes
@@ -4264,8 +4277,95 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 
 					if ($otherType->isSuperTypeOf($guardType)->no()) {
 						$currentConditionalExpressions[$exprString][$key] = $holder;
-						break;
+						continue 2;
 					}
+				}
+
+				if ($typeHolder->getCertainty()->no() || !array_key_exists($exprString, $otherExpressionTypes)) {
+					continue;
+				}
+
+				$otherTargetHolder = $otherExpressionTypes[$exprString];
+				$otherTargetCertainty = $otherTargetHolder->getCertainty();
+				if (
+					($otherTargetCertainty->yes() || $otherTargetCertainty->equals($typeHolder->getCertainty()))
+					&& $typeHolder->getType()->isSuperTypeOf($otherTargetHolder->getType())->yes()
+				) {
+					$currentConditionalExpressions[$exprString][$key] = $holder;
+				}
+			}
+		}
+
+		return $currentConditionalExpressions;
+	}
+
+	/**
+	 * Merges one-sided holders that share a target and an identical guard set:
+	 * whichever branch a merged path came from, the guard matching later implies
+	 * one of the recorded consequents, so the union of the consequent types
+	 * (under their shared certainty) holds on every merged path.
+	 *
+	 * @param array<string, ConditionalExpressionHolder[]> $currentConditionalExpressions
+	 * @param array<string, ConditionalExpressionHolder[]> $ourConditionalExpressions
+	 * @param array<string, ConditionalExpressionHolder[]> $theirConditionalExpressions
+	 * @return array<string, ConditionalExpressionHolder[]>
+	 */
+	private function mergeSameGuardConditionalExpressions(
+		array $currentConditionalExpressions,
+		array $ourConditionalExpressions,
+		array $theirConditionalExpressions,
+	): array
+	{
+		foreach ($ourConditionalExpressions as $exprString => $ourHolders) {
+			if (!array_key_exists($exprString, $theirConditionalExpressions)) {
+				continue;
+			}
+
+			$theirHolders = $theirConditionalExpressions[$exprString];
+			foreach ($ourHolders as $ourKey => $ourHolder) {
+				if (isset($currentConditionalExpressions[$exprString][$ourKey])) {
+					continue;
+				}
+
+				$ourTypeHolder = $ourHolder->getTypeHolder();
+				if ($ourTypeHolder->getCertainty()->no()) {
+					continue;
+				}
+
+				foreach ($theirHolders as $theirKey => $theirHolder) {
+					if (isset($currentConditionalExpressions[$exprString][$theirKey])) {
+						continue;
+					}
+
+					$theirTypeHolder = $theirHolder->getTypeHolder();
+					if (!$theirTypeHolder->getCertainty()->equals($ourTypeHolder->getCertainty())) {
+						continue;
+					}
+
+					$ourGuards = $ourHolder->getConditionExpressionTypeHolders();
+					$theirGuards = $theirHolder->getConditionExpressionTypeHolders();
+					if (count($ourGuards) !== count($theirGuards)) {
+						continue;
+					}
+
+					foreach ($ourGuards as $guardExprString => $ourGuardHolder) {
+						if (
+							!array_key_exists($guardExprString, $theirGuards)
+							|| !$ourGuardHolder->equals($theirGuards[$guardExprString])
+						) {
+							continue 2;
+						}
+					}
+
+					$unionHolder = new ConditionalExpressionHolder(
+						$ourGuards,
+						new ExpressionTypeHolder(
+							$ourTypeHolder->getExpr(),
+							TypeCombinator::union($ourTypeHolder->getType(), $theirTypeHolder->getType()),
+							$ourTypeHolder->getCertainty(),
+						),
+					);
+					$currentConditionalExpressions[$exprString][$unionHolder->getKey()] = $unionHolder;
 				}
 			}
 		}

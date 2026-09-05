@@ -7,14 +7,14 @@
 		"knplabs/github-api": "^3.9",
 		"league/commonmark": "^2.3",
 		"nette/neon": "^3.3",
-		"nette/utils": "^3.2",
+		"nette/utils": "^4.0",
 		"phpstan/phpstan-deprecation-rules": "^2.0",
 		"phpstan/phpstan-strict-rules": "^2.0",
 		"react/child-process": "^0.6.7",
 		"react/event-loop": "^1.6",
 		"react/promise": "^3.3",
-		"symfony/console": "^6.1",
-		"symfony/finder": "^6.1"
+		"symfony/console": "^8.0",
+		"symfony/finder": "^8.0"
 	},
 	"autoload": {
 		"psr-4": {
@@ -35,6 +35,6 @@
 	"minimum-stability": "dev",
 	"prefer-stable": true,
 	"require-dev": {
-		"phpunit/phpunit": "^10"
+		"phpunit/phpunit": "^13"
 	}
 }

@@ -687,13 +687,31 @@ final class DefaultNarrowingHelper
 				if ($dimType instanceof ConstantIntegerType || $dimType instanceof ConstantStringType) {
 					$constantArrays = $varType->getConstantArrays();
 					$typesToRemove = [];
+					$hasOptionalNonNullableOffset = false;
+					$hasPossiblyNullOffsetValue = false;
 					foreach ($constantArrays as $constantArray) {
 						$hasOffset = $constantArray->hasOffsetValueType($dimType);
-						if (!$hasOffset->yes() || !$constantArray->getOffsetValueType($dimType)->isNull()->no()) {
+						if ($hasOffset->no()) {
+							continue;
+						}
+						if (!$constantArray->getOffsetValueType($dimType)->isNull()->no()) {
+							$hasPossiblyNullOffsetValue = true;
 							continue;
 						}
 
-						$typesToRemove[] = $constantArray;
+						if ($hasOffset->yes()) {
+							$typesToRemove[] = $constantArray;
+							continue;
+						}
+
+						$hasOptionalNonNullableOffset = true;
+					}
+
+					// !isset() on an optional key with a non-nullable value means the
+					// key is absent - but only when no member can hold null at that
+					// offset (the removal distributes over every union member).
+					if ($hasOptionalNonNullableOffset && !$hasPossiblyNullOffsetValue) {
+						$typesToRemove[] = new HasOffsetType($dimType);
 					}
 
 					if ($typesToRemove !== []) {

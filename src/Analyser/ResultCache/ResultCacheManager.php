@@ -328,8 +328,17 @@ final class ResultCacheManager
 		if (!is_array($data)) {
 			@unlink($cacheFilePath);
 
+			// readCacheFile() returns null both for a file it could not read back and for one it could
+			// not open at all, and the second is not a corruption: the file was there for the is_file()
+			// check above and gone by the time it was opened. A concurrent clear-result-cache, a temp
+			// directory being swept, a CI cache artifact expiring mid-run. Calling that corrupt sends
+			// someone looking for a broken disk.
+			$reason = is_file($cacheFilePath)
+				? 'Result cache not used because the cache file is corrupted.'
+				: 'Result cache not used because the cache file disappeared while it was being read.';
+
 			return $this->fullAnalysis(
-				'Result cache not used because the cache file is corrupted.',
+				$reason,
 				$allAnalysedFiles,
 				$this->getMeta($allAnalysedFiles, $projectConfigArray),
 				$currentFileHashes,

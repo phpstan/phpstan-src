@@ -695,7 +695,12 @@ final class ForeachHandler implements StmtHandler
 
 		if ($node instanceof Stmt\Global_) {
 			foreach ($node->vars as $var) {
-				if ($var instanceof Variable && is_string($var->name) && $var->name === $iterateeName) {
+				if (!$var instanceof Variable) {
+					continue;
+				}
+				// `global $iteratee` rebinds the iteratee to the global; a dynamic
+				// `global $$name` may rebind it too - drop the alias in both cases
+				if (!is_string($var->name) || $var->name === $iterateeName) {
 					return true;
 				}
 			}
@@ -741,6 +746,15 @@ final class ForeachHandler implements StmtHandler
 		return false;
 	}
 
+	/**
+	 * Conservatively complete: the value alias is a pure precision optimization,
+	 * so any write target the analyzer cannot PROVE is exactly $iteratee[$key]
+	 * (or a sub-offset of it) or a distinctly named non-iteratee location drops
+	 * the alias. In particular a dynamic-variable base ($$name / ${expr}) may
+	 * resolve to the iteratee, key or value variable at runtime, so it always
+	 * desyncs; only a same-key iteratee write ($iteratee[$key]...) and writes to
+	 * provably distinct plain variables / non-variable storage are kept.
+	 */
 	private function foreachAliasDesyncingTarget(Expr $target, string $iterateeName, string $keyName): bool
 	{
 		if ($target instanceof List_ || $target instanceof Array_) {
@@ -756,20 +770,40 @@ final class ForeachHandler implements StmtHandler
 			return false;
 		}
 
-		// whole-iteratee reassignment ($iteratee = ...)
-		if ($target instanceof Variable && is_string($target->name) && $target->name === $iterateeName) {
-			return true;
+		if ($target instanceof Variable) {
+			// a dynamic $$name / ${expr} write may target the iteratee (or the key
+			// or value variable) - we cannot prove otherwise, so drop the alias
+			if (!is_string($target->name)) {
+				return true;
+			}
+
+			// whole-iteratee reassignment ($iteratee = ...); a plain write to a
+			// differently named variable (including a static write to the key or
+			// value variable, which is severed through containment) does not desync
+			// across iterations
+			return $target->name === $iterateeName;
 		}
 
-		// a write into the iteratee is safe only when the outermost access on the
-		// iteratee variable uses exactly the current key ($iteratee[$key]...); any
-		// other offset, or an append ($iteratee[]), may hit a future iteration's
-		// element
+		// A write into an array offset is safe only when it provably targets the
+		// iteratee at exactly the current key ($iteratee[$key]...) - keeping the
+		// #7508 same-key sub-offset case - or provably targets a distinctly named
+		// plain variable. Peel the ArrayDimFetch layers to the base variable; a
+		// dynamic-variable base ($$name[...]) that may be the iteratee, or an
+		// iteratee write at any other offset / an append ($iteratee[]), drops the
+		// alias. A non-variable base (a property, etc.) cannot rebind the plain
+		// iteratee variable and is kept.
 		$node = $target;
 		while ($node instanceof ArrayDimFetch) {
 			$inner = $node->var;
-			if ($inner instanceof Variable && is_string($inner->name) && $inner->name === $iterateeName) {
-				return !($node->dim instanceof Variable && is_string($node->dim->name) && $node->dim->name === $keyName);
+			if ($inner instanceof Variable) {
+				if (!is_string($inner->name)) {
+					return true;
+				}
+				if ($inner->name === $iterateeName) {
+					return !($node->dim instanceof Variable && is_string($node->dim->name) && $node->dim->name === $keyName);
+				}
+
+				return false;
 			}
 
 			$node = $inner;

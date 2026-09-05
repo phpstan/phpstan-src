@@ -21,6 +21,7 @@ use PhpParser\Node\Expr\Ternary;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
+use PhpParser\NodeFinder;
 use PHPStan\Analyser\AssignTargetWalkMode;
 use PHPStan\Analyser\ConditionalExpressionHolder;
 use PHPStan\Analyser\ExpressionContext;
@@ -79,6 +80,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use TypeError;
+use function array_key_exists;
 use function array_key_last;
 use function array_merge;
 use function array_pop;
@@ -86,7 +88,9 @@ use function array_reverse;
 use function array_slice;
 use function count;
 use function in_array;
+use function is_float;
 use function is_int;
+use function is_nan;
 use function is_string;
 
 /**
@@ -95,6 +99,10 @@ use function is_string;
 #[AutowiredService]
 final class AssignHandler implements ExprHandler
 {
+
+	private const TERNARY_ARM_EXCLUDED_VALUES_LIMIT = 3;
+
+	private const DERIVED_CONDITIONAL_EXPRESSIONS_LIMIT = 16;
 
 	public function __construct(
 		private VarAnnotationProcessor $varAnnotationProcessor,
@@ -917,14 +925,21 @@ final class AssignHandler implements ExprHandler
 					$truthyType = $truthyScope->getType($if);
 					$falseyType = $falsyScope->getType($assignedExpr->else);
 
-					if (
-						$truthyType->isSuperTypeOf($falseyType)->no()
-						&& $falseyType->isSuperTypeOf($truthyType)->no()
-					) {
-						$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType, $impurePoints, $assignedExpr);
-						$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType, $impurePoints, $assignedExpr);
-						$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType, $impurePoints, $assignedExpr);
-						$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType, $impurePoints, $assignedExpr);
+					// The variable can prove an arm was taken even when the arm types overlap:
+					// the part of an arm's type not producible by the other arm implies that
+					// arm's condition outcome. With fully disjoint arms both remainders are
+					// the full arm types.
+					$truthyRemainder = TypeCombinator::remove($truthyType, $falseyType);
+					if ($falseyType->isSuperTypeOf($truthyRemainder)->no()) {
+						$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyRemainder, $impurePoints, $assignedExpr);
+						$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyRemainder, $impurePoints, $assignedExpr);
+						$conditionalExpressions = $this->processTernaryArmValueImpliedTypesAfterAssign($truthyScope, $var->name, $conditionalExpressions, $if, $truthyRemainder, $falseyType, $impurePoints, $assignedExpr);
+					}
+					$falseyRemainder = TypeCombinator::remove($falseyType, $truthyType);
+					if ($truthyType->isSuperTypeOf($falseyRemainder)->no()) {
+						$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyRemainder, $impurePoints, $assignedExpr);
+						$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyRemainder, $impurePoints, $assignedExpr);
+						$conditionalExpressions = $this->processTernaryArmValueImpliedTypesAfterAssign($falsyScope, $var->name, $conditionalExpressions, $assignedExpr->else, $falseyRemainder, $truthyType, $impurePoints, $assignedExpr);
 					}
 				}
 
@@ -934,6 +949,12 @@ final class AssignHandler implements ExprHandler
 						$this->processMatchForConditionalExpressionsAfterAssign($scopeBeforeAssignEval, $var->name, $assignedExpr),
 					);
 				}
+
+				if ($assignedExpr instanceof FuncCall) {
+					$conditionalExpressions = $this->processInArrayForConditionalExpressionsAfterAssign($scopeBeforeAssignEval, $var->name, $conditionalExpressions, $assignedExpr, $type, $impurePoints);
+				}
+
+				$conditionalExpressions = $this->processDerivedConditionalExpressionsAfterAssign($scopeBeforeAssignEval, $var->name, $conditionalExpressions, $assignedExpr, $type, $impurePoints);
 
 				$truthyType = TypeCombinator::removeFalsey($type);
 				// Value comparison, not identity: remove() happens to hand back the very same
@@ -1508,6 +1529,50 @@ final class AssignHandler implements ExprHandler
 	}
 
 	/**
+	 * A ternary-assigned variable holding a value only one arm can produce proves that
+	 * arm's expression produced it — so the arm expression's value is also outside the
+	 * other arm's type. For each concrete value of the other arm's type this projects
+	 * the narrowings of `$armExpr !== $value` (e.g. `array_key_first($arr) !== null`
+	 * implying a non-empty `$arr`) into conditional expressions guarded by the variable.
+	 *
+	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
+	 * @param ImpurePoint[] $rhsImpurePoints
+	 * @return array<string, ConditionalExpressionHolder[]>
+	 */
+	private function processTernaryArmValueImpliedTypesAfterAssign(
+		MutatingScope $armScope,
+		string $variableName,
+		array $conditionalExpressions,
+		Expr $armExpr,
+		Type $remainderType,
+		Type $otherArmType,
+		array $rhsImpurePoints,
+		Expr $assignedExpr,
+	): array
+	{
+		$otherArmFiniteTypes = $otherArmType->getFiniteTypes();
+		if (count($otherArmFiniteTypes) === 0 || count($otherArmFiniteTypes) > self::TERNARY_ARM_EXCLUDED_VALUES_LIMIT) {
+			return $conditionalExpressions;
+		}
+
+		foreach ($otherArmFiniteTypes as $finiteType) {
+			if (!$remainderType->isSuperTypeOf($finiteType)->no()) {
+				continue;
+			}
+
+			$specifiedTypes = $this->typeSpecifier->specifyTypesInCondition(
+				$armScope,
+				new Expr\BinaryOp\NotIdentical($armExpr, new TypeExpr($finiteType)),
+				TypeSpecifierContext::createTrue(),
+			);
+			$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($armScope, $variableName, $conditionalExpressions, $specifiedTypes, $remainderType, $rhsImpurePoints, $assignedExpr);
+			$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($armScope, $variableName, $conditionalExpressions, $specifiedTypes, $remainderType, $rhsImpurePoints, $assignedExpr);
+		}
+
+		return $conditionalExpressions;
+	}
+
+	/**
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
 	 * @return array<string, ConditionalExpressionHolder[]>
 	 */
@@ -1602,6 +1667,170 @@ final class AssignHandler implements ExprHandler
 		}
 
 		return $newConditionalExpressions;
+	}
+
+	/**
+	 * Propagates conditional expressions through a derived assignment: when the
+	 * right-hand side reads a variable that existing conditional expressions describe
+	 * (e.g. `if $key = 'test1' then $functionName is 'Test'`), the assigned variable
+	 * gets its own conditional expressions under the same conditions, with the
+	 * right-hand side re-evaluated under each consequent
+	 * (`if $key = 'test1' then $functionToCall is 'fetchTest'`).
+	 *
+	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
+	 * @param ImpurePoint[] $rhsImpurePoints
+	 * @return array<string, ConditionalExpressionHolder[]>
+	 */
+	private function processDerivedConditionalExpressionsAfterAssign(
+		MutatingScope $scope,
+		string $variableName,
+		array $conditionalExpressions,
+		Expr $assignedExpr,
+		Type $assignedType,
+		array $rhsImpurePoints,
+	): array
+	{
+		if (count($rhsImpurePoints) > 0) {
+			return $conditionalExpressions;
+		}
+		$scopeConditionalExpressions = $scope->getConditionalExpressions();
+		if (count($scopeConditionalExpressions) === 0) {
+			return $conditionalExpressions;
+		}
+
+		$targetExprString = '$' . $variableName;
+		$evaluations = 0;
+		$seenReadExprStrings = [];
+		/** @var Variable[] $readVariables */
+		$readVariables = (new NodeFinder())->findInstanceOf([$assignedExpr], Variable::class);
+		foreach ($readVariables as $readVariable) {
+			if (!is_string($readVariable->name) || $readVariable->name === $variableName) {
+				continue;
+			}
+			$readExprString = '$' . $readVariable->name;
+			if (array_key_exists($readExprString, $seenReadExprStrings)) {
+				continue;
+			}
+			$seenReadExprStrings[$readExprString] = true;
+
+			foreach ($scopeConditionalExpressions[$readExprString] ?? [] as $holder) {
+				$consequent = $holder->getTypeHolder();
+				if (!$consequent->getCertainty()->yes()) {
+					continue;
+				}
+
+				$conditionHolders = $holder->getConditionExpressionTypeHolders();
+				$evalScope = $scope;
+				foreach ($conditionHolders as $conditionExprString => $conditionHolder) {
+					if ($conditionExprString === $targetExprString || !$conditionHolder->getCertainty()->yes()) {
+						// a condition on the just-overwritten variable is stale
+						continue 2;
+					}
+					$evalScope = $evalScope->assignExpression($conditionHolder->getExpr(), $conditionHolder->getType(), $conditionHolder->getType());
+				}
+
+				if (++$evaluations > self::DERIVED_CONDITIONAL_EXPRESSIONS_LIMIT) {
+					return $conditionalExpressions;
+				}
+
+				$evalScope = $evalScope->assignExpression($consequent->getExpr(), $consequent->getType(), $consequent->getType());
+				$derivedType = $evalScope->getType($assignedExpr);
+				if ($derivedType->equals($assignedType)) {
+					continue;
+				}
+
+				$derivedHolder = new ConditionalExpressionHolder(
+					$conditionHolders,
+					ExpressionTypeHolder::createYes(new Variable($variableName), $derivedType),
+				);
+				$conditionalExpressions[$targetExprString][$derivedHolder->getKey()] = $derivedHolder;
+			}
+		}
+
+		return $conditionalExpressions;
+	}
+
+	/**
+	 * Records the reverse implication of a `$var = in_array($needle, [...known values])`
+	 * assignment: a needle that is one of the haystack's always-present values makes the
+	 * call return true, whether the comparison is loose or strict (`==` cannot miss an
+	 * identical value). A later narrowing of the needle below the recorded value union
+	 * then forces `$var` to true — and cascades into conditional expressions guarded
+	 * by `$var`.
+	 *
+	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
+	 * @param ImpurePoint[] $rhsImpurePoints
+	 * @return array<string, ConditionalExpressionHolder[]>
+	 */
+	private function processInArrayForConditionalExpressionsAfterAssign(
+		MutatingScope $scope,
+		string $variableName,
+		array $conditionalExpressions,
+		FuncCall $assignedExpr,
+		Type $assignedType,
+		array $rhsImpurePoints,
+	): array
+	{
+		if (
+			!$assignedExpr->name instanceof Name
+			|| $assignedExpr->name->toLowerString() !== 'in_array'
+			|| $assignedExpr->isFirstClassCallable()
+			|| !$assignedType->isTrue()->maybe()
+		) {
+			return $conditionalExpressions;
+		}
+
+		$args = $assignedExpr->getArgs();
+		if (count($args) < 2 || $args[0]->name !== null || $args[0]->unpack || $args[1]->name !== null || $args[1]->unpack) {
+			return $conditionalExpressions;
+		}
+
+		$needleExpr = $args[0]->value;
+		if (!$this->isExprSafeToProjectThroughVariable($needleExpr, $variableName, $rhsImpurePoints, $assignedExpr)) {
+			return $conditionalExpressions;
+		}
+
+		$haystackType = $scope->getType($args[1]->value);
+		if (!$haystackType->isConstantArray()->yes()) {
+			return $conditionalExpressions;
+		}
+		$constantArrays = $haystackType->getConstantArrays();
+		if (count($constantArrays) !== 1) {
+			return $conditionalExpressions;
+		}
+
+		$guaranteedValueTypes = [];
+		$constantArray = $constantArrays[0];
+		foreach ($constantArray->getValueTypes() as $i => $valueType) {
+			if ($constantArray->isOptionalKey($i)) {
+				continue;
+			}
+			if (!$valueType->isConstantScalarValue()->yes()) {
+				continue;
+			}
+			$scalarValues = $valueType->getConstantScalarValues();
+			if (count($scalarValues) !== 1) {
+				continue;
+			}
+			if (is_float($scalarValues[0]) && is_nan($scalarValues[0])) {
+				// NAN never compares equal, not even to itself
+				continue;
+			}
+
+			$guaranteedValueTypes[] = $valueType;
+		}
+
+		if (count($guaranteedValueTypes) === 0) {
+			return $conditionalExpressions;
+		}
+
+		$holder = new ConditionalExpressionHolder(
+			[$this->exprPrinter->printExpr($needleExpr) => ExpressionTypeHolder::createYes($needleExpr, TypeCombinator::union(...$guaranteedValueTypes))],
+			ExpressionTypeHolder::createYes(new Variable($variableName), new ConstantBooleanType(true)),
+		);
+		$conditionalExpressions['$' . $variableName][$holder->getKey()] = $holder;
+
+		return $conditionalExpressions;
 	}
 
 	/**

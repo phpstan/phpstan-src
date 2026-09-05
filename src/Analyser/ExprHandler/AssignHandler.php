@@ -86,7 +86,9 @@ use function array_reverse;
 use function array_slice;
 use function count;
 use function in_array;
+use function is_float;
 use function is_int;
+use function is_nan;
 use function is_string;
 
 /**
@@ -944,6 +946,10 @@ final class AssignHandler implements ExprHandler
 					);
 				}
 
+				if ($assignedExpr instanceof FuncCall) {
+					$conditionalExpressions = $this->processInArrayForConditionalExpressionsAfterAssign($scopeBeforeAssignEval, $var->name, $conditionalExpressions, $assignedExpr, $type, $impurePoints);
+				}
+
 				$truthyType = TypeCombinator::removeFalsey($type);
 				// Value comparison, not identity: remove() happens to hand back the very same
 				// instance when it removes nothing, but that is not part of its contract — the
@@ -1655,6 +1661,89 @@ final class AssignHandler implements ExprHandler
 		}
 
 		return $newConditionalExpressions;
+	}
+
+	/**
+	 * Records the reverse implication of a `$var = in_array($needle, [...known values])`
+	 * assignment: a needle that is one of the haystack's always-present values makes the
+	 * call return true, whether the comparison is loose or strict (`==` cannot miss an
+	 * identical value). A later narrowing of the needle below the recorded value union
+	 * then forces `$var` to true — and cascades into conditional expressions guarded
+	 * by `$var`.
+	 *
+	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
+	 * @param ImpurePoint[] $rhsImpurePoints
+	 * @return array<string, ConditionalExpressionHolder[]>
+	 */
+	private function processInArrayForConditionalExpressionsAfterAssign(
+		MutatingScope $scope,
+		string $variableName,
+		array $conditionalExpressions,
+		FuncCall $assignedExpr,
+		Type $assignedType,
+		array $rhsImpurePoints,
+	): array
+	{
+		if (
+			!$assignedExpr->name instanceof Name
+			|| $assignedExpr->name->toLowerString() !== 'in_array'
+			|| $assignedExpr->isFirstClassCallable()
+			|| !$assignedType->isTrue()->maybe()
+		) {
+			return $conditionalExpressions;
+		}
+
+		$args = $assignedExpr->getArgs();
+		if (count($args) < 2 || $args[0]->name !== null || $args[0]->unpack || $args[1]->name !== null || $args[1]->unpack) {
+			return $conditionalExpressions;
+		}
+
+		$needleExpr = $args[0]->value;
+		if (!$this->isExprSafeToProjectThroughVariable($needleExpr, $variableName, $rhsImpurePoints, $assignedExpr)) {
+			return $conditionalExpressions;
+		}
+
+		$haystackType = $scope->getType($args[1]->value);
+		if (!$haystackType->isConstantArray()->yes()) {
+			return $conditionalExpressions;
+		}
+		$constantArrays = $haystackType->getConstantArrays();
+		if (count($constantArrays) !== 1) {
+			return $conditionalExpressions;
+		}
+
+		$guaranteedValueTypes = [];
+		$constantArray = $constantArrays[0];
+		foreach ($constantArray->getValueTypes() as $i => $valueType) {
+			if ($constantArray->isOptionalKey($i)) {
+				continue;
+			}
+			if (!$valueType->isConstantScalarValue()->yes()) {
+				continue;
+			}
+			$scalarValues = $valueType->getConstantScalarValues();
+			if (count($scalarValues) !== 1) {
+				continue;
+			}
+			if (is_float($scalarValues[0]) && is_nan($scalarValues[0])) {
+				// NAN never compares equal, not even to itself
+				continue;
+			}
+
+			$guaranteedValueTypes[] = $valueType;
+		}
+
+		if (count($guaranteedValueTypes) === 0) {
+			return $conditionalExpressions;
+		}
+
+		$holder = new ConditionalExpressionHolder(
+			[$this->exprPrinter->printExpr($needleExpr) => ExpressionTypeHolder::createYes($needleExpr, TypeCombinator::union(...$guaranteedValueTypes))],
+			ExpressionTypeHolder::createYes(new Variable($variableName), new ConstantBooleanType(true)),
+		);
+		$conditionalExpressions['$' . $variableName][$holder->getKey()] = $holder;
+
+		return $conditionalExpressions;
 	}
 
 	/**

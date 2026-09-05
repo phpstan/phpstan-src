@@ -43,6 +43,58 @@ function dynamicWrite(array $data): void
 }
 
 /**
+ * A dynamic-variable dim write ($$name is $data) into the iteratee at a foreign
+ * key desyncs the live element from the snapshot value variable, exactly like a
+ * statically named $data[$key + 1] write - the dynamic base must not slip past
+ * the alias detector.
+ *
+ * @param array<int|string> $data
+ */
+function dynamicDimWrite(array $data): void
+{
+	foreach ($data as $key => $value) {
+		$name = 'data';
+		$$name[$key + 1] = 'str';
+		if (is_int($value)) {
+			assertType('int|string', $data[$key]);
+		}
+	}
+}
+
+/**
+ * A dynamic write to the key variable ($$name is $key) means $data[$key] no
+ * longer refers to the snapshot value's element.
+ *
+ * @param array<int|string> $data
+ */
+function dynamicKeyWrite(array $data): void
+{
+	foreach ($data as $key => $value) {
+		$name = 'key';
+		$$name = 99;
+		if (is_int($value)) {
+			assertType('int|string', $data[$key]);
+		}
+	}
+}
+
+/**
+ * A curly-brace dynamic variable (${'data'}) is a Variable with an Expr name in
+ * the AST, so a dim write through it must be treated as a possible iteratee write.
+ *
+ * @param array<int|string> $data
+ */
+function curlyDynamicDimWrite(array $data): void
+{
+	foreach ($data as $key => $value) {
+		${'data'}[$key + 1] = 'str';
+		if (is_int($value)) {
+			assertType('int|string', $data[$key]);
+		}
+	}
+}
+
+/**
  * @param array<int|string> $data
  * @param array<string, mixed> $vars
  */

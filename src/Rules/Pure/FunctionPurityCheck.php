@@ -91,6 +91,24 @@ final class FunctionPurityCheck
 			))->identifier(sprintf('pure%s.redundantUnlessCallable', $identifier))->build();
 		}
 
+		$pureUnlessParameterPassedParameters = $functionReflection->getPureUnlessParameterPassedParameters();
+		foreach ($parameters as $parameter) {
+			if (!array_key_exists($parameter->getName(), $pureUnlessParameterPassedParameters)) {
+				continue;
+			}
+			if ($parameter->isOptional()) {
+				continue;
+			}
+
+			$errors[] = RuleErrorBuilder::message(sprintf(
+				'%s is marked @pure-unless-parameter-passed for parameter $%s, but $%s is not optional, so %s is never pure.',
+				$functionDescription,
+				$parameter->getName(),
+				$parameter->getName(),
+				lcfirst($functionDescription),
+			))->identifier(sprintf('pure%s.nonOptionalParameterPassed', $identifier))->build();
+		}
+
 		if ($isPure->yes()) {
 			foreach ($parameters as $parameter) {
 				if (!$parameter->passedByReference()->createsNewVariable()) {

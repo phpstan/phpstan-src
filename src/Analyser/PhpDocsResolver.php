@@ -40,7 +40,7 @@ final class PhpDocsResolver
 	}
 
 	/**
-	 * @return array{TemplateTypeMap, array<string, Type>, array<string, bool>, array<string, Type>, ?Type, ?Type, ?string, bool, bool, bool, bool|null, bool, bool, string|null, Assertions, ?Type, array<string, Type>, array<(string|int), VarTag>, bool, ?ResolvedPhpDocBlock, array<string, bool>}
+	 * @return array{TemplateTypeMap, array<string, Type>, array<string, bool>, array<string, Type>, ?Type, ?Type, ?string, bool, bool, bool, bool|null, bool, bool, string|null, Assertions, ?Type, array<string, Type>, array<(string|int), VarTag>, bool, ?ResolvedPhpDocBlock, array<string, bool>, array<string, bool>}
 	 */
 	public function getPhpDocs(Scope $scope, Node\FunctionLike|Node\Stmt\Property $node): array
 	{
@@ -71,6 +71,7 @@ final class PhpDocsResolver
 		$functionName = null;
 		$phpDocParameterOutTypes = [];
 		$phpDocPureUnlessCallableIsImpureParameters = [];
+		$phpDocPureUnlessParameterPassedParameters = [];
 
 		if ($node instanceof Node\Stmt\ClassMethod) {
 			if (!$scope->isInClass()) {
@@ -205,6 +206,7 @@ final class PhpDocsResolver
 			$selfOutType = $resolvedPhpDoc->getSelfOutTag() !== null ? $resolvedPhpDoc->getSelfOutTag()->getType() : null;
 			$varTags = $resolvedPhpDoc->getVarTags();
 			$phpDocPureUnlessCallableIsImpureParameters = $resolvedPhpDoc->getParamsPureUnlessCallableIsImpure();
+			$phpDocPureUnlessParameterPassedParameters = $resolvedPhpDoc->getParamsPureUnlessParameterPassed();
 		}
 
 		if ($acceptsNamedArguments && $scope->isInClass()) {
@@ -228,7 +230,7 @@ final class PhpDocsResolver
 			}
 		}
 
-		return [$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocClosureThisTypeParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, $isReadOnly, $docComment, $asserts, $selfOutType, $phpDocParameterOutTypes, $varTags, $isAllowedPrivateMutation, $resolvedPhpDoc, $phpDocPureUnlessCallableIsImpureParameters];
+		return [$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocClosureThisTypeParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, $isReadOnly, $docComment, $asserts, $selfOutType, $phpDocParameterOutTypes, $varTags, $isAllowedPrivateMutation, $resolvedPhpDoc, $phpDocPureUnlessCallableIsImpureParameters, $phpDocPureUnlessParameterPassedParameters];
 	}
 
 	private function getPhpDocReturnType(ResolvedPhpDocBlock $resolvedPhpDoc, Type $nativeReturnType): ?Type

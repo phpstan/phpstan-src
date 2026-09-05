@@ -41,6 +41,7 @@ final class PhpFunctionReflection implements FunctionReflection
 	 * @param array<string, Type> $phpDocParameterClosureThisTypes
 	 * @param list<AttributeReflection> $attributes
 	 * @param array<string, bool> $phpDocParameterPureUnlessCallableIsImpure
+	 * @param array<string, bool> $phpDocParameterPureUnlessParameterPassed
 	 */
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
@@ -64,6 +65,7 @@ final class PhpFunctionReflection implements FunctionReflection
 		private array $phpDocParameterClosureThisTypes,
 		private array $attributes,
 		private array $phpDocParameterPureUnlessCallableIsImpure,
+		private array $phpDocParameterPureUnlessParameterPassed,
 	)
 	{
 	}
@@ -133,6 +135,7 @@ final class PhpFunctionReflection implements FunctionReflection
 				$this->attributeReflectionFactory->fromNativeReflection($reflection->getAttributes(), InitializerExprContext::fromReflectionParameter($reflection)),
 				$this->allowedConstantsMapProvider->getForFunctionParameter(strtolower($this->reflection->getName()), $reflection->getName()),
 				TrinaryLogic::createFromBoolean($this->phpDocParameterPureUnlessCallableIsImpure[$reflection->getName()] ?? false),
+				TrinaryLogic::createFromBoolean($this->phpDocParameterPureUnlessParameterPassed[$reflection->getName()] ?? false),
 			);
 		}, $this->reflection->getParameters());
 	}
@@ -222,6 +225,14 @@ final class PhpFunctionReflection implements FunctionReflection
 	public function getPureUnlessCallableIsImpureParameters(): array
 	{
 		return array_map(static fn (bool $value): TrinaryLogic => TrinaryLogic::createFromBoolean($value), $this->phpDocParameterPureUnlessCallableIsImpure);
+	}
+
+	/**
+	 * @return array<string, TrinaryLogic>
+	 */
+	public function getPureUnlessParameterPassedParameters(): array
+	{
+		return array_map(static fn (bool $value): TrinaryLogic => TrinaryLogic::createFromBoolean($value), $this->phpDocParameterPureUnlessParameterPassed);
 	}
 
 	public function isBuiltin(): bool

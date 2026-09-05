@@ -192,6 +192,11 @@ final class NativeMethodReflection implements ExtendedMethodReflection
 		return [];
 	}
 
+	public function getPureUnlessParameterPassedParameters(): array
+	{
+		return [];
+	}
+
 	private function isVoid(): bool
 	{
 		foreach ($this->variants as $variant) {

@@ -63,7 +63,16 @@ final class SimpleImpurePoint
 			}
 
 			if (!$certain && $scope !== null && $variant !== null) {
+				// A function can carry both flags at once (e.g. preg_replace_callback,
+				// which is pure unless its callback is impure or its $count is passed).
+				// It stays pure only when both verdicts agree it is pure, so combine
+				// them: Yes = pure, No = impure, Maybe = possibly impure.
 				$verdict = self::resolvePureUnlessCallableIsImpureVerdict($variant, $scope, $args);
+				$passedVerdict = self::resolvePureUnlessParameterPassedVerdict($variant, $args);
+				if ($passedVerdict !== null) {
+					$verdict = $verdict === null ? $passedVerdict : $verdict->and($passedVerdict);
+				}
+
 				if ($verdict !== null) {
 					if ($verdict->yes()) {
 						return null;
@@ -198,6 +207,79 @@ final class SimpleImpurePoint
 			foreach ($acceptors as $acceptor) {
 				$verdict = $verdict->and($acceptor->isPure());
 			}
+		}
+
+		return $verdict;
+	}
+
+	/**
+	 * Purity verdict for parameters flagged with @pure-unless-parameter-passed:
+	 * the call stays pure as long as none of those (by-ref out) parameters
+	 * received an argument. Returns Yes when no flagged parameter was passed,
+	 * No when at least one was, and null when the variant has no such parameters
+	 * (so the caller keeps its current behavior).
+	 *
+	 * @param Arg[] $args
+	 */
+	public static function resolvePureUnlessParameterPassedVerdict(ParametersAcceptor $variant, array $args): ?TrinaryLogic
+	{
+		$parameters = $variant->getParameters();
+		$verdict = null;
+
+		foreach ($parameters as $parameterIndex => $parameter) {
+			if (!$parameter instanceof ExtendedParameterReflection) {
+				continue;
+			}
+			if ($parameter->isPureUnlessParameterPassedParameter()->no()) {
+				continue;
+			}
+
+			$verdict ??= TrinaryLogic::createYes();
+
+			$matchedArg = null;
+			$hasUnpackedArg = false;
+			$hasNamedParameter = false;
+			foreach ($args as $i => $arg) {
+				if ($arg->unpack) {
+					$hasUnpackedArg = true;
+					continue;
+				}
+
+				if ($arg->name !== null) {
+					$hasNamedParameter = true;
+					if ($arg->name->name === $parameter->getName()) {
+						$matchedArg = $arg;
+						break;
+					}
+
+					continue;
+				}
+
+				if (!$hasNamedParameter && $i === $parameterIndex) {
+					$matchedArg = $arg;
+					break;
+				}
+			}
+
+			if ($matchedArg === null) {
+				if ($hasUnpackedArg) {
+					// An unpacked argument list (...$args) might supply the flagged
+					// by-ref parameter, so we cannot be sure the call stays pure.
+					$verdict = $verdict->and(TrinaryLogic::createMaybe());
+				}
+
+				continue;
+			}
+
+			if ($parameter->isPureUnlessParameterPassedParameter()->yes()) {
+				$verdict = $verdict->and(TrinaryLogic::createNo());
+				continue;
+			}
+
+			// The flag itself is uncertain (e.g. only one variant of a union type
+			// declares @pure-unless-parameter-passed), so passing an argument here
+			// only makes the call possibly impure, not certainly impure.
+			$verdict = $verdict->and(TrinaryLogic::createMaybe());
 		}
 
 		return $verdict;

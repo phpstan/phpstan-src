@@ -120,6 +120,7 @@ final class CallbackUnresolvedMethodPrototypeReflection implements UnresolvedMet
 							$parameter->getAttributes(),
 							$parameter->getAllowedConstants(),
 							$parameter->isPureUnlessCallableIsImpureParameter(),
+							$parameter->isPureUnlessParameterPassedParameter(),
 						);
 					},
 					$acceptor->getParameters(),

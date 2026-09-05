@@ -119,7 +119,7 @@ use Symfony\Component\Finder\Finder;
 		);
 	}
 
-	/** @var array<string, array{hasSideEffects?: bool, pureUnlessCallableIsImpureParameters?: array<string, bool>}> $metadata */
+	/** @var array<string, array{hasSideEffects?: bool, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}> $metadata */
 	$metadata = require __DIR__ . '/functionMetadata_original.php';
 	foreach ($visitor->functions as $functionName) {
 		if (array_key_exists($functionName, $metadata)) {
@@ -130,6 +130,14 @@ use Symfony\Component\Finder\Finder;
 			if (isset($metadata[$functionName]['pureUnlessCallableIsImpureParameters'])) {
 				$metadata[$functionName] = [
 					'pureUnlessCallableIsImpureParameters' => $metadata[$functionName]['pureUnlessCallableIsImpureParameters'],
+				];
+
+				continue;
+			}
+
+			if (isset($metadata[$functionName]['pureUnlessParameterPassedParameters'])) {
+				$metadata[$functionName] = [
+					'pureUnlessParameterPassedParameters' => $metadata[$functionName]['pureUnlessParameterPassedParameters'],
 				];
 
 				continue;
@@ -192,9 +200,12 @@ use Symfony\Component\Finder\Finder;
  *   - ['pureUnlessCallableIsImpureParameters' => array<string, true>] - pure unless
  *     one of the listed callable parameters (keyed by parameter name) receives an
  *     impure callable, e.g. array_map()'s 'callback'.
+ *   - ['pureUnlessParameterPassedParameters' => array<string, true>] - pure unless
+ *     one of the listed (by-ref out) parameters (keyed by parameter name) receives
+ *     an argument, e.g. str_replace()'s 'replace_count'.
  */
 
-/** @var array<string, array{hasSideEffects: bool}|array{pureUnlessCallableIsImpureParameters: array<string, bool>}> */
+/** @var array<string, array{hasSideEffects: bool}|array{pureUnlessCallableIsImpureParameters: array<string, bool>}|array{pureUnlessParameterPassedParameters: array<string, bool>}> */
 return [
 %s
 ];
@@ -216,6 +227,20 @@ php;
 			),
 		),
 	];
+	$encodePureUnlessParameterPassedParameters = static fn (array $meta) => [
+		$escape('pureUnlessParameterPassedParameters'),
+		sprintf(
+			'[%s]',
+			implode(
+				' ,',
+				array_map(
+					static fn ($key, $param) => sprintf('%s => %s', $escape($key), $escape($param)),
+					array_keys($meta['pureUnlessParameterPassedParameters']),
+					$meta['pureUnlessParameterPassedParameters'],
+				),
+			),
+		),
+	];
 
 	foreach ($metadata as $name => $meta) {
 		$content .= sprintf(
@@ -224,6 +249,7 @@ php;
 			...match (true) {
 				isset($meta['hasSideEffects']) => $encodeHasSideEffects($meta),
 				isset($meta['pureUnlessCallableIsImpureParameters']) => $encodePureUnlessCallableIsImpureParameters($meta),
+				isset($meta['pureUnlessParameterPassedParameters']) => $encodePureUnlessParameterPassedParameters($meta),
 				default => throw new ShouldNotHappenException($escape($meta)),
 			},
 		);

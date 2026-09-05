@@ -106,6 +106,11 @@ final class RewrittenDeclaringClassMethodReflection implements ExtendedMethodRef
 		return $this->methodReflection->getPureUnlessCallableIsImpureParameters();
 	}
 
+	public function getPureUnlessParameterPassedParameters(): array
+	{
+		return $this->methodReflection->getPureUnlessParameterPassedParameters();
+	}
+
 	public function getAttributes(): array
 	{
 		return $this->methodReflection->getAttributes();

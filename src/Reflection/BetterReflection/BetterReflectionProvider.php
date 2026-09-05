@@ -296,6 +296,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 		$phpDocParameterImmediatelyInvokedCallable = [];
 		$phpDocParameterClosureThisTypeTags = [];
 		$phpDocParameterPureUnlessCallableIsImpure = [];
+		$phpDocParameterPureUnlessParameterPassed = [];
 
 		$resolvedPhpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($reflectionFunction->getName(), array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $reflectionFunction->getParameters()));
 		if ($resolvedPhpDoc === null && $reflectionFunction->getFileName() !== false && $reflectionFunction->getDocComment() !== false) {
@@ -323,6 +324,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 			$phpDocParameterImmediatelyInvokedCallable = $resolvedPhpDoc->getParamsImmediatelyInvokedCallable();
 			$phpDocParameterClosureThisTypeTags = $resolvedPhpDoc->getParamClosureThisTags();
 			$phpDocParameterPureUnlessCallableIsImpure = $resolvedPhpDoc->getParamsPureUnlessCallableIsImpure();
+			$phpDocParameterPureUnlessParameterPassed = $resolvedPhpDoc->getParamsPureUnlessParameterPassed();
 		}
 
 		$lowerCasedFunctionName = strtolower($reflectionFunction->getName());
@@ -334,6 +336,13 @@ final class BetterReflectionProvider implements ReflectionProvider
 				}
 
 				$phpDocParameterPureUnlessCallableIsImpure[$parameterName] = $isPureUnlessCallableIsImpure;
+			}
+			foreach ($functionMetadata['pureUnlessParameterPassedParameters'] ?? [] as $parameterName => $isPureUnlessParameterPassed) {
+				if (($phpDocParameterPureUnlessParameterPassed[$parameterName] ?? false) === true) {
+					continue;
+				}
+
+				$phpDocParameterPureUnlessParameterPassed[$parameterName] = $isPureUnlessParameterPassed;
 			}
 		}
 
@@ -356,6 +365,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 			array_map(static fn (ParamClosureThisTag $tag): Type => $tag->getType(), $phpDocParameterClosureThisTypeTags),
 			$this->attributeReflectionFactory->fromNativeReflection($reflectionFunction->getAttributes(), InitializerExprContext::fromFunction($reflectionFunction->getName(), $reflectionFunction->getFileName() !== false ? $reflectionFunction->getFileName() : null)),
 			$phpDocParameterPureUnlessCallableIsImpure,
+			$phpDocParameterPureUnlessParameterPassed,
 		);
 	}
 

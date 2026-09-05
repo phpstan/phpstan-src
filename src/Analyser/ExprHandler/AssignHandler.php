@@ -101,6 +101,15 @@ use function spl_object_id;
 final class AssignHandler implements ExprHandler
 {
 
+	/**
+	 * Pure information-carrying functions whose call result keeps provenance
+	 * when assigned to a variable: comparing the variable later narrows
+	 * through the call's own comparison machinery, exactly like comparing the
+	 * call directly (`$type = gettype($x); if ($type === 'string')` narrows
+	 * $x the way `if (gettype($x) === 'string')` does).
+	 */
+	private const RESULT_PROVENANCE_FUNCTIONS = ['count', 'sizeof', 'gettype', 'get_class', 'get_debug_type'];
+
 	public function __construct(
 		private VarAnnotationProcessor $varAnnotationProcessor,
 		private PhpVersion $phpVersion,
@@ -1211,6 +1220,11 @@ final class AssignHandler implements ExprHandler
 					$scope = $scope->addConditionalExpressions((string) $exprString, $holders);
 				}
 
+				$provenanceCall = $this->resolveResultProvenanceCall($assignedExpr, $var->name);
+				if ($provenanceCall !== null) {
+					$scope = $scope->recordResultProvenance('$' . $var->name, $provenanceCall);
+				}
+
 				if ($assignedExpr instanceof Expr\Array_) {
 					$scope = $this->processArrayByRefItems($nodeScopeResolver, $scope, $storage, $var->name, $assignedExpr, new Variable($var->name));
 				}
@@ -1759,6 +1773,46 @@ final class AssignHandler implements ExprHandler
 		}
 
 		return $expr;
+	}
+
+	/**
+	 * The assigned expression, when it is a whitelisted pure call over a plain
+	 * variable whose result the target variable now provably holds - the shape
+	 * whose provenance the scope records. The single-variable-argument
+	 * requirement keeps invalidation exact: a write to the argument (or the
+	 * target) drops the record by key containment alone.
+	 */
+	private function resolveResultProvenanceCall(Expr $assignedExpr, string $targetVariableName): ?FuncCall
+	{
+		if (
+			!$assignedExpr instanceof FuncCall
+			|| !$assignedExpr->name instanceof Name
+			|| $assignedExpr->isFirstClassCallable()
+			|| !in_array($assignedExpr->name->toLowerString(), self::RESULT_PROVENANCE_FUNCTIONS, true)
+		) {
+			return null;
+		}
+
+		$args = $assignedExpr->getArgs();
+		if (count($args) !== 1 || $args[0]->unpack || $args[0]->name !== null) {
+			return null;
+		}
+
+		$argValue = $args[0]->value;
+		if (
+			!$argValue instanceof Variable
+			|| !is_string($argValue->name)
+			// the call read the target's pre-assignment value - after the
+			// assignment the record would describe the variable through itself
+			|| $argValue->name === $targetVariableName
+			// closure binds rebind $this without touching provenance
+			|| $argValue->name === 'this'
+			|| in_array($argValue->name, Scope::SUPERGLOBAL_VARIABLES, true)
+		) {
+			return null;
+		}
+
+		return $assignedExpr;
 	}
 
 	/**

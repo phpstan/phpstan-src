@@ -64,6 +64,7 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 		bool $afterExtractCall = false,
 		?MutatingScope $parentScope = null,
 		bool $nativeTypesPromoted = false,
+		array $resultProvenance = [],
 	): MutatingScope
 	{
 		$className = MutatingScope::class;
@@ -103,6 +104,7 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 			$afterExtractCall,
 			$parentScope,
 			$nativeTypesPromoted,
+			$resultProvenance,
 		);
 	}
 

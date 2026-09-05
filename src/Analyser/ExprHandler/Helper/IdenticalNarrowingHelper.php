@@ -46,6 +46,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use function count;
 use function in_array;
+use function is_string;
 
 /**
  * New-world narrowing for `===` (and, via a negated context, `!==`): composed
@@ -237,6 +238,20 @@ final class IdenticalNarrowingHelper
 		if (count($constantType->getFiniteTypes()) !== 1) {
 			// a class constant does not have to be single-valued
 			return null;
+		}
+
+		// a provenance-recorded subject variable narrows through its defining
+		// call's families, exactly like the direct call comparison - the
+		// variable itself still pins to the constant alongside
+		$provenanceTypes = $this->specifyThroughResultProvenance($subject, $constantExpr, $constantType, $context, $evaluationScope);
+		if ($provenanceTypes !== null) {
+			return $provenanceTypes->unionWith($this->defaultNarrowingHelper->createSubjectTypes(
+				$evaluationScope,
+				$subject,
+				$subjectResult,
+				$constantType,
+				$context,
+			));
 		}
 
 		// $a::class === Foo::class narrows $a to a final Foo when true;
@@ -818,6 +833,40 @@ final class IdenticalNarrowingHelper
 	}
 
 	/**
+	 * When the subject variable is provenance-recorded as holding the result
+	 * of a pure call (`$v = count($x)`), the comparison against the constant
+	 * also runs the call's own family narrowing - `$v == 3` narrows $x like
+	 * `count($x) == 3` would. The recorded call comes from an earlier
+	 * statement and has no stored results in this walk, so the families read
+	 * the argument's current type from the evaluation scope's tracked state.
+	 */
+	private function specifyThroughResultProvenance(
+		Expr $subject,
+		Expr $constantExpr,
+		Type $constantType,
+		TypeSpecifierContext $context,
+		MutatingScope $evaluationScope,
+	): ?SpecifiedTypes
+	{
+		$unwrappedSubject = $subject instanceof AlwaysRememberedExpr ? $subject->getExpr() : $subject;
+		if (!$unwrappedSubject instanceof Expr\Variable || !is_string($unwrappedSubject->name)) {
+			return null;
+		}
+
+		$call = $evaluationScope->getResultProvenanceCall('$' . $unwrappedSubject->name);
+		if ($call === null) {
+			return null;
+		}
+
+		$familyTypes = $this->specifyFuncCallFamilies($call, null, $call, $constantExpr, $constantType, $context, $evaluationScope, null, true);
+		if (!$familyTypes instanceof SpecifiedTypes) {
+			return null;
+		}
+
+		return $familyTypes;
+	}
+
+	/**
 	 * The function-family compositions, shared by the literal and the
 	 * TYPE-based constant sides: a family answer, null to fall back to the
 	 * old-world path, or false when no family matched and the caller narrows
@@ -827,13 +876,14 @@ final class IdenticalNarrowingHelper
 	 */
 	private function specifyFuncCallFamilies(
 		Expr $subject,
-		ExpressionResult $subjectResult,
+		?ExpressionResult $subjectResult,
 		Expr\FuncCall $call,
 		Expr $constantExpr,
 		Type $constantType,
 		TypeSpecifierContext $context,
 		MutatingScope $evaluationScope,
 		?ExpressionResult $argResult,
+		bool $argTypesFromScopeState = false,
 	): SpecifiedTypes|false|null
 	{
 		if (!($call->name instanceof Name) || $call->isFirstClassCallable() || !isset($call->getArgs()[0])) {
@@ -846,6 +896,10 @@ final class IdenticalNarrowingHelper
 			$call->name->toLowerString() === 'preg_match'
 		) {
 			if ($context->true() && (new ConstantIntegerType(1))->isSuperTypeOf($constantType)->yes()) {
+				if ($subjectResult === null) {
+					return null;
+				}
+
 				return $subjectResult->getSpecifiedTypesForScope($evaluationScope, $context);
 			}
 
@@ -860,10 +914,11 @@ final class IdenticalNarrowingHelper
 				$constantStrings = $constantType->getConstantStrings();
 				if (count($constantStrings) === 1 && $constantStrings[0]->getValue() === '') {
 					$argExpr = $call->getArgs()[0]->value;
-					if ($argResult === null) {
+					$argType = $this->resolveFamilyArgType($call, $argResult, $argTypesFromScopeState, $evaluationScope);
+					if ($argType === null) {
 						return null;
 					}
-					if ($argResult->getTypeOnScope($evaluationScope, $evaluationScope->nativeTypesPromoted)->isString()->yes()) {
+					if ($argType->isString()->yes()) {
 						return $this->defaultNarrowingHelper->createForSubject(
 							$argExpr,
 							new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()]),
@@ -883,10 +938,10 @@ final class IdenticalNarrowingHelper
 				$constantStrings = $constantType->getConstantStrings();
 				if (count($constantStrings) === 1 && $constantStrings[0]->getValue() !== '') {
 					$argExpr = $call->getArgs()[0]->value;
-					if ($argResult === null) {
+					$argType = $this->resolveFamilyArgType($call, $argResult, $argTypesFromScopeState, $evaluationScope);
+					if ($argType === null) {
 						return null;
 					}
-					$argType = $argResult->getTypeOnScope($evaluationScope, $evaluationScope->nativeTypesPromoted);
 					$objectType = new ObjectType($constantStrings[0]->getValue());
 					$classStringType = new GenericClassStringType($objectType);
 
@@ -917,10 +972,10 @@ final class IdenticalNarrowingHelper
 		) {
 			if ($context->truthy() && $constantType->isNonEmptyString()->yes()) {
 				$argExpr = $call->getArgs()[0]->value;
-				if ($argResult === null) {
+				$argType = $this->resolveFamilyArgType($call, $argResult, $argTypesFromScopeState, $evaluationScope);
+				if ($argType === null) {
 					return null;
 				}
-				$argType = $argResult->getTypeOnScope($evaluationScope, $evaluationScope->nativeTypesPromoted);
 
 				if ($argType->isString()->yes()) {
 					$types = new SpecifiedTypes();
@@ -962,10 +1017,10 @@ final class IdenticalNarrowingHelper
 				return $this->defaultNarrowingHelper->createForSubject($argExpr, new NeverType(), $context, $evaluationScope);
 			}
 
-			if ($argResult === null) {
+			$argType = $this->resolveFamilyArgType($call, $argResult, $argTypesFromScopeState, $evaluationScope);
+			if ($argType === null) {
 				return null;
 			}
-			$argType = $argResult->getTypeOnScope($evaluationScope, $evaluationScope->nativeTypesPromoted);
 
 			if ((new ConstantIntegerType(0))->isSuperTypeOf($constantType)->yes()) {
 				$newArgType = $context->truthy() && !$argType->isArray()->yes()
@@ -1023,10 +1078,11 @@ final class IdenticalNarrowingHelper
 			}
 
 			if ($context->truthy() && IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($constantType)->yes()) {
-				if ($argResult === null) {
+				$argType = $this->resolveFamilyArgType($call, $argResult, $argTypesFromScopeState, $evaluationScope);
+				if ($argType === null) {
 					return null;
 				}
-				if ($argResult->getTypeOnScope($evaluationScope, $evaluationScope->nativeTypesPromoted)->isString()->yes()) {
+				if ($argType->isString()->yes()) {
 					$accessory = IntegerRangeType::fromInterval(2, null)->isSuperTypeOf($constantType)->yes()
 						? new AccessoryNonFalsyStringType()
 						: new AccessoryNonEmptyStringType();
@@ -1101,6 +1157,25 @@ final class IdenticalNarrowingHelper
 		}
 
 		return false;
+	}
+
+	/**
+	 * The first argument's current type for the family compositions: from the
+	 * captured operand result or - for a provenance-recorded call from an
+	 * earlier statement, which has no captured results in this comparison -
+	 * from the evaluation scope's tracked state. Null means unknown and the
+	 * family falls back to the old-world path.
+	 */
+	private function resolveFamilyArgType(Expr\FuncCall $call, ?ExpressionResult $argResult, bool $argTypesFromScopeState, MutatingScope $evaluationScope): ?Type
+	{
+		if ($argTypesFromScopeState) {
+			return $evaluationScope->getStateType($call->getArgs()[0]->value);
+		}
+		if ($argResult === null) {
+			return null;
+		}
+
+		return $argResult->getTypeOnScope($evaluationScope, $evaluationScope->nativeTypesPromoted);
 	}
 
 	/**

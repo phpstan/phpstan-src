@@ -5,7 +5,11 @@ namespace PHPStan\Type\Generic;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Variable;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Enum\EnumCaseObjectType;
+use PHPStan\Type\FiniteTypeSet;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
@@ -50,6 +54,19 @@ class UnresolvedTemplateArgumentTypeTest extends PHPStanTestCase
 		$this->assertFalse($marker->equals(self::marker($site, new ConstantIntegerType(1), 'U')));
 		$this->assertFalse($marker->equals(new ConstantIntegerType(1)));
 		$this->assertFalse((new ConstantIntegerType(1))->equals($marker));
+	}
+
+	public function testFiniteValueIdentityDoesNotEraseMarkers(): void
+	{
+		foreach ([new ConstantIntegerType(123), new ConstantStringType('foo'), new ConstantBooleanType(true), new NullType(), new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'A')] as $initialType) {
+			$marker = self::marker(new Variable('a'), $initialType);
+			$union = new UnionType([$marker, new ConstantIntegerType(321)]);
+			$resolvedUnion = new UnionType([$initialType, new ConstantIntegerType(321)]);
+
+			$this->assertNull(FiniteTypeSet::key($marker));
+			$this->assertFalse($union->equals($resolvedUnion));
+			$this->assertFalse($resolvedUnion->equals($union));
+		}
 	}
 
 	public function testBehavesAsItsDelegate(): void

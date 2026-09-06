@@ -78,7 +78,7 @@ class Foo {
 	function stringFunctions(string $s, $nonFalsey, $arrayOfNonFalsey, $nonEmptyArray, array $arr)
 	{
 		assertType('string', implode($nonFalsey, []));
-		assertType('non-falsy-string', implode($nonFalsey, $nonEmptyArray));
+		assertType('string', implode($nonFalsey, $nonEmptyArray));
 		assertType('non-falsy-string', implode($nonFalsey, $arrayOfNonFalsey));
 		assertType('non-falsy-string', implode($s, $arrayOfNonFalsey));
 

@@ -25,6 +25,8 @@ use function usort;
 class CallStaticMethodsRuleTest extends RuleTestCase
 {
 
+	private bool $checkNullables = true;
+
 	private bool $checkThisOnly;
 
 	private bool $checkExplicitMixed = false;
@@ -36,7 +38,7 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		$reflectionProvider = self::createReflectionProvider();
 		$ruleLevelHelper = new RuleLevelHelper(
 			$reflectionProvider,
-			checkNullables: true,
+			checkNullables: $this->checkNullables,
 			checkThisOnly: $this->checkThisOnly,
 			checkUnionTypes: true,
 			checkExplicitMixed: $this->checkExplicitMixed,
@@ -1082,6 +1084,13 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 				22,
 			],
 		]);
+	}
+
+	public function testBug10698(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = false;
+		$this->analyse([__DIR__ . '/data/bug-10698.php'], []);
 	}
 
 }

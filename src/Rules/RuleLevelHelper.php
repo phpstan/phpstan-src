@@ -6,11 +6,13 @@ use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
@@ -47,6 +49,29 @@ final class RuleLevelHelper
 		private bool $discoveringSymbolsTip,
 	)
 	{
+	}
+
+	/**
+	 * @param callable(Type): Type $traverse
+	 */
+	private function traverseWithoutMapping(Type $type, ?Type $acceptingType, callable $traverse): Type
+	{
+		if ($type instanceof GenericObjectType && $acceptingType !== null) {
+			return $type->traverseSimultaneously($acceptingType, function (Type $type, Type $acceptingType) use ($traverse): Type {
+				if (
+					!$this->checkNullables
+					&& !$type instanceof BenevolentUnionType
+					&& TypeCombinator::containsNull($type)
+					&& !TypeCombinator::containsNull($acceptingType)
+				) {
+					return $traverse(TypeCombinator::removeNull($type));
+				}
+
+				return $type;
+			});
+		}
+
+		return $traverse($type);
 	}
 
 	/** @api */
@@ -93,9 +118,10 @@ final class RuleLevelHelper
 					return $acceptedType;
 				}
 
+				$acceptingReturnType = $acceptingType instanceof ParametersAcceptor ? $acceptingType->getReturnType() : null;
 				return new CallableType(
 					$acceptedType->getParameters(),
-					$traverse($acceptedType->getReturnType()),
+					$this->traverseWithoutMapping($acceptedType->getReturnType(), $acceptingReturnType, $traverse),
 					$acceptedType->isVariadic(),
 					$acceptedType->getTemplateTypeMap(),
 					$acceptedType->getResolvedTemplateTypeMap(),
@@ -109,9 +135,10 @@ final class RuleLevelHelper
 					return $acceptedType;
 				}
 
+				$acceptingReturnType = $acceptingType instanceof ParametersAcceptor ? $acceptingType->getReturnType() : null;
 				return new ClosureType(
 					$acceptedType->getParameters(),
-					$traverse($acceptedType->getReturnType()),
+					$this->traverseWithoutMapping($acceptedType->getReturnType(), $acceptingReturnType, $traverse),
 					$acceptedType->isVariadic(),
 					$acceptedType->getTemplateTypeMap(),
 					$acceptedType->getResolvedTemplateTypeMap(),
@@ -125,6 +152,10 @@ final class RuleLevelHelper
 					$acceptedType->mustUseReturnValue(),
 					isStatic: $acceptedType->isStaticClosure(),
 				);
+			}
+
+			if ($acceptedType instanceof GenericObjectType) {
+				return $this->traverseWithoutMapping($acceptedType, $acceptingType, $traverse);
 			}
 
 			if (

@@ -13,6 +13,8 @@ use PHPUnit\Framework\Attributes\RequiresPhp;
 class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 {
 
+	private bool $checkNullables = true;
+
 	private bool $checkExplicitMixed = false;
 
 	private bool $checkImplicitMixed = false;
@@ -22,7 +24,7 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		return new TypesAssignedToPropertiesRule(
 			new RuleLevelHelper(
 				self::createReflectionProvider(),
-				checkNullables: true,
+				checkNullables: $this->checkNullables,
 				checkThisOnly: false,
 				checkUnionTypes: true,
 				checkExplicitMixed: $this->checkExplicitMixed,
@@ -1101,6 +1103,18 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 	public function testBug15166(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-15166.php'], []);
+	}
+
+	public function testBug13876(): void
+	{
+		$this->checkNullables = false;
+		$this->analyse([__DIR__ . '/data/bug-13876.php'], []);
+	}
+
+	public function testBug9096(): void
+	{
+		$this->checkNullables = false;
+		$this->analyse([__DIR__ . '/data/bug-9096.php'], []);
 	}
 
 }

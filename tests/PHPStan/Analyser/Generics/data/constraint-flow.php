@@ -77,3 +77,14 @@ function shortCircuit(bool $condition): void
 	$condition && consume($box);
 	assertType('TemplateArgumentConstraintFlow\Box<int>', $box);
 }
+
+function acceptCallback(callable $callback): void
+{
+}
+
+function arrowArgument(): void
+{
+	$box = new Box();
+	acceptCallback(fn () => consume($box));
+	assertType('TemplateArgumentConstraintFlow\Box<int>', $box);
+}

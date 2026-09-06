@@ -3079,6 +3079,7 @@ class NodeScopeResolver
 						$deferredInvalidateExpressions[] = [$arrowFunctionType->getInvalidateExpressions(), $arrowFunctionType->getUsedVariables()];
 					}
 				}
+				$scope = $scope->addTemplateArgumentConstraints($argResults[spl_object_id($arg->value)]->getScope()->getTemplateArgumentConstraints());
 			} else {
 				$enterExpressionAssignForByRef = $assignByReference && $arg->value instanceof ArrayDimFetch && $arg->value->dim === null;
 				if ($enterExpressionAssignForByRef) {

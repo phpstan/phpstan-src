@@ -71,6 +71,11 @@ class InstantiationRuleTest extends RuleTestCase
 		);
 	}
 
+	public function testTemplateArgumentArrow(): void
+	{
+		$this->analyse([__DIR__ . '/data/template-argument-arrow.php'], []);
+	}
+
 	public function testInstantiation(): void
 	{
 		$this->analyse(

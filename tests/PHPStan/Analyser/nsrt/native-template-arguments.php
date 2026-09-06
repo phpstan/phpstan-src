@@ -90,3 +90,61 @@ function takesUnbounded(Unbounded $u): void
 function takesBoundedInt(BoundedInt $b): void
 {
 }
+
+/** @template T */
+class WithoutConstructor
+{
+}
+
+/**
+ * @template T of int
+ * @extends BoundedInt<T>
+ */
+class InheritedConstructor extends BoundedInt
+{
+}
+
+/**
+ * @template T of object
+ * @template U of T
+ */
+class DependentBounds
+{
+}
+
+function otherConstructors(): void
+{
+	assertNativeType('NativeTemplateArguments\WithoutConstructor<mixed>', new WithoutConstructor());
+	assertNativeType('NativeTemplateArguments\InheritedConstructor<int>', new InheritedConstructor(1));
+	assertNativeType('NativeTemplateArguments\DependentBounds<object, object>', new DependentBounds());
+}
+
+class PropertyAssignment
+{
+
+	/** @var WithoutConstructor<int> */
+	private WithoutConstructor $value;
+
+	public function assign(): void
+	{
+		assertNativeType('NativeTemplateArguments\WithoutConstructor<mixed>', $this->value = new WithoutConstructor());
+	}
+
+}
+
+/** @template T of int */
+class StaticInstantiation
+{
+
+	/** @param T $value */
+	public function __construct($value)
+	{
+	}
+
+	public static function create(): void
+	{
+		assertNativeType('NativeTemplateArguments\StaticInstantiation<int>', new self(1));
+		assertNativeType('static(NativeTemplateArguments\StaticInstantiation<int>)', new static(1));
+	}
+
+}

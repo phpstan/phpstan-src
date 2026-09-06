@@ -569,7 +569,7 @@ final class NewHandler implements ExprHandler
 			return $objectType;
 		}
 
-		$frame = $scope->getCurrentTemplateArgumentFrame();
+		$frame = $allowUnresolved ? $scope->getCurrentTemplateArgumentFrame() : null;
 		// the class's arguments when the constructor says nothing about them
 		$unresolvedArguments = function () use ($classReflection, $node, $frame, $allowUnresolved, $isStatic, $resolvedClassName): Type {
 			$types = $this->unresolvedArgumentList($classReflection, $node, $frame, $allowUnresolved);
@@ -579,6 +579,11 @@ final class NewHandler implements ExprHandler
 
 			return new GenericObjectType($resolvedClassName, $types, classReflection: $classReflection->withTypes($types)->asFinal());
 		};
+
+		if (!$allowUnresolved) {
+			// Native types use the bounds or defaults, without PHPDoc inference.
+			return $unresolvedArguments();
+		}
 
 		$assignedToProperty = $node->getAttribute(NewAssignedToPropertyVisitor::ATTRIBUTE_NAME);
 		if ($assignedToProperty !== null) {

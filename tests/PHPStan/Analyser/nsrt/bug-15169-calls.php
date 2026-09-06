@@ -95,12 +95,12 @@ function funcCall(C $c): void
 
 function instantiation(): void
 {
-	// the template argument is inferred from the phpdoc @param, so it stays
-	// unresolved in the native flavour
-	assertType('Bug15169Calls\Generic<int>', new Generic(1));
-	assertNativeType('Bug15169Calls\Generic<mixed>', new Generic(1));
+	// the template argument is inferred from the phpdoc @param; the frame's
+	// resolution is shared by both flavours, so the native one sees it too
+	assertType('Bug15169Calls\Generic<1>', new Generic(1));
+	assertNativeType('Bug15169Calls\Generic<1>', new Generic(1));
 
-	assertType('int', (new Generic(1))->value);
+	assertType('1', (new Generic(1))->value);
 	assertNativeType('mixed', (new Generic(1))->value);
 }
 

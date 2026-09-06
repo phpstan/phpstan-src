@@ -1368,7 +1368,7 @@ final class AssignHandler implements ExprHandler
 				$scope = $scope->addTemplateArgumentConstraints($nodeScopeResolver->collectOffsetSetUsage(
 					$scope,
 					$setVarType,
-					count($offsetTypes) > 0 ? $offsetTypes[count($offsetTypes) - 1][0] : null,
+					$offsetTypes[count($offsetTypes) - 1][0],
 					$writtenValueType,
 				));
 				$throwPoints = array_merge($throwPoints, $this->methodThrowPointHelper->getThrowPointsForCallOnType(

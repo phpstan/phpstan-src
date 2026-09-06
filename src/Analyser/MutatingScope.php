@@ -1542,6 +1542,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		];
 		foreach ($tables as [$ours, $theirs]) {
 			foreach ($ours as $key => $holder) {
+				if ($holder->getExpr() instanceof PossiblyImpureCallExpr) {
+					continue;
+				}
 				$theirHolder = $theirs[$key] ?? null;
 				if ($theirHolder !== null && ($theirHolder === $holder || $holder->equals($theirHolder))) {
 					continue;
@@ -1553,7 +1556,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				$roots[$root] = true;
 			}
 			foreach ($theirs as $key => $holder) {
-				if (isset($ours[$key])) {
+				if (isset($ours[$key]) || $holder->getExpr() instanceof PossiblyImpureCallExpr) {
 					continue;
 				}
 				$root = self::getVariableRootOfExpressionKey($key);
@@ -1574,7 +1577,12 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				}
 				$root = self::getVariableRootOfExpressionKey($key);
 				if ($root === null) {
-					return null;
+					foreach ($holders as $holder) {
+						if (!$holder->getTypeHolder()->getExpr() instanceof PossiblyImpureCallExpr) {
+							return null;
+						}
+					}
+					continue;
 				}
 				$roots[$root] = true;
 			}

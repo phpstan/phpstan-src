@@ -26,8 +26,8 @@ class MinimalReWalkTest extends TypeInferenceTestCase
 		}
 
 		$this->assertSame(1, $counters['bodiesWithSites']);
-		// the `new`, the property send, and the assertType() reading the variable
-		$this->assertSame(3, $counters['statementsReWalked']);
+		// The construction, property send, assertion and method call read $c.
+		$this->assertSame(4, $counters['statementsReWalked']);
 		// the ten statements never mentioning $c
 		$this->assertSame(10, $counters['statementsReplayed']);
 	}

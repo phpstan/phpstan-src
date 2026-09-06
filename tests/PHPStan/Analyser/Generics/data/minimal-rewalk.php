@@ -20,6 +20,12 @@ class Collection
 	{
 	}
 
+	/** @return self<T> */
+	public function remember(): self
+	{
+		return $this;
+	}
+
 }
 
 class Foo
@@ -33,6 +39,7 @@ class Foo
 		$c = new Collection([1]);
 		$this->ints = $c;
 		assertType('MinimalReWalk\Collection<int>', $c);
+		$c->remember();
 		$a = $x + 1;
 		$b = $a * 2;
 		$d = $b - 1;

@@ -18,7 +18,7 @@ class Foo
 
 		assertType('bool', (bool) $s);
 
-		assertType('int', $s + $s);
+		assertType('float|int', $s + $s);
 	}
 
 	/**

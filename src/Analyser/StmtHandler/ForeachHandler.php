@@ -469,7 +469,7 @@ final class ForeachHandler implements StmtHandler
 		}
 
 		return new InternalStatementResult(
-			$finalScope,
+			$finalScope->addTemplateArgumentConstraints($finalScopeResult->getScope()->getTemplateArgumentConstraints()),
 			hasYield: $finalScopeResult->hasYield() || $condResult->hasYield(),
 			isAlwaysTerminating: $isIterableAtLeastOnce->yes() && $finalScopeResult->isAlwaysTerminating(),
 			exitPoints: $finalScopeResult->getExitPointsForOuterLoop(),

@@ -125,6 +125,15 @@ function terminatingExpressions(bool $condition, ?bool $nullable): void
 	assertType('TemplateArgumentConstraintFlow\Box<int>', $match);
 }
 
+function foreachLoop(): void
+{
+	foreach ([30, 7] as $day) {
+		$box = new Box();
+		consume($box);
+		assertType('TemplateArgumentConstraintFlow\Box<int>', $box);
+	}
+}
+
 function switchTermination(bool $condition): void
 {
 	$box = new Box();

@@ -31,7 +31,7 @@ final class ParserNodeTypeToPHPStanType
 				// Compared case-sensitively on purpose: PHP has no `resource` native type,
 				// it reads such a typehint as a class name, so a userland class named
 				// `Resource` has to keep resolving to an object type.
-				return new ResourceType();
+				// return new ResourceType();
 			}
 
 			if ($classReflection !== null && in_array($lowercasedClassName, ['self', 'static'], true)) {

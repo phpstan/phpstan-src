@@ -3023,6 +3023,42 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/callables-without-check-nullables.php'], $expectedErrors);
 	}
 
+	public static function dataGenericArgumentNullability(): iterable
+	{
+		yield [false, [
+			[
+				'Parameter #1 $collection of method GenericArgumentNullability\\Foo::acceptNullable() expects GenericArgumentNullability\\Collection<string, int|null>, GenericArgumentNullability\\Collection<string, int> given.',
+				75,
+				'Template type TValue on class GenericArgumentNullability\\Collection is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
+			],
+		]];
+		yield [true, [
+			[
+				'Parameter #1 $collection of method GenericArgumentNullability\\Foo::acceptPlain() expects GenericArgumentNullability\\Collection<string, int>, GenericArgumentNullability\\Collection<string, int|null> given.',
+				74,
+			],
+			[
+				'Parameter #1 $collection of method GenericArgumentNullability\\Foo::acceptNullable() expects GenericArgumentNullability\\Collection<string, int|null>, GenericArgumentNullability\\Collection<string, int> given.',
+				75,
+				'Template type TValue on class GenericArgumentNullability\\Collection is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
+			],
+			[
+				'Parameter #1 $collection of method GenericArgumentNullability\\Foo::acceptCovariantPlain() expects GenericArgumentNullability\\CovariantCollection<int>, GenericArgumentNullability\\CovariantCollection<int|null> given.',
+				76,
+			],
+		]];
+	}
+
+	/** @param list<array{0: string, 1: int, 2?: string|null}> $expectedErrors */
+	#[DataProvider('dataGenericArgumentNullability')]
+	public function testGenericArgumentNullability(bool $checkNullables, array $expectedErrors): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = $checkNullables;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/generic-argument-nullability.php'], $expectedErrors);
+	}
+
 	#[RequiresPhp('>= 8.0.0')]
 	public function testBug8713(): void
 	{

@@ -74,7 +74,7 @@ final class CoalesceHandler implements ExprHandler
 
 		$rightExprType = $rightResult->getType();
 		if ($rightExprType instanceof NeverType && $rightExprType->isExplicit()) {
-			$scope = $scope->applySpecifiedTypes($leftIssetTypes);
+			$scope = $scope->applySpecifiedTypes($leftIssetTypes)->addTemplateArgumentConstraints($rightResult->getScope()->getTemplateArgumentConstraints());
 		} else {
 			$scope = $scope->applySpecifiedTypes($leftIssetTypes)->mergeWith($rightResult->getScope());
 		}

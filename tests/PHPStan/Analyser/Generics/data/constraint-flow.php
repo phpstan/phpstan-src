@@ -88,3 +88,51 @@ function arrowArgument(): void
 	acceptCallback(fn () => consume($box));
 	assertType('TemplateArgumentConstraintFlow\Box<int>', $box);
 }
+
+/** @param Box<int> $box */
+function terminate(Box $box): never
+{
+	exit;
+}
+
+function terminatingExpressions(bool $condition, ?bool $nullable): void
+{
+	$and = new Box();
+	$condition && terminate($and);
+	assertType('TemplateArgumentConstraintFlow\Box<int>', $and);
+
+	$or = new Box();
+	$condition || terminate($or);
+	assertType('TemplateArgumentConstraintFlow\Box<int>', $or);
+
+	$coalesce = new Box();
+	$nullable ?? terminate($coalesce);
+	assertType('TemplateArgumentConstraintFlow\Box<int>', $coalesce);
+
+	$ternaryIf = new Box();
+	$condition ? terminate($ternaryIf) : false;
+	assertType('TemplateArgumentConstraintFlow\Box<int>', $ternaryIf);
+
+	$ternaryElse = new Box();
+	$condition ? true : terminate($ternaryElse);
+	assertType('TemplateArgumentConstraintFlow\Box<int>', $ternaryElse);
+
+	$match = new Box();
+	match ($condition) {
+		true => terminate($match),
+		false => false,
+	};
+	assertType('TemplateArgumentConstraintFlow\Box<int>', $match);
+}
+
+function switchTermination(bool $condition): void
+{
+	$box = new Box();
+	switch ($condition) {
+		case true:
+			terminate($box);
+		default:
+			break;
+	}
+	assertType('TemplateArgumentConstraintFlow\Box<int>', $box);
+}

@@ -284,6 +284,7 @@ final class MatchHandler implements ExprHandler, PerFileAnalysisResettable
 						ExpressionContext::createTopLevel(),
 					);
 					$armScope = $armResult->getScope();
+					$scope = $scope->addTemplateArgumentConstraints($armScope->getTemplateArgumentConstraints());
 					if (!$armResult->isAlwaysTerminating()) {
 						$armBodyScopes[] = $armScope;
 					}
@@ -322,6 +323,7 @@ final class MatchHandler implements ExprHandler, PerFileAnalysisResettable
 				$armNodes[$i] = new MatchExpressionArm($matchArmBody, [], $arm->getStartLine());
 				$armResult = $nodeScopeResolver->processExprNode($stmt, $arm->body, $matchScope, $storage, $nodeCallback, ExpressionContext::createTopLevel());
 				$matchScope = $armResult->getScope();
+				$scope = $scope->addTemplateArgumentConstraints($matchScope->getTemplateArgumentConstraints());
 				$hasYield = $hasYield || $armResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $armResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $armResult->getImpurePoints());
@@ -430,6 +432,7 @@ final class MatchHandler implements ExprHandler, PerFileAnalysisResettable
 				ExpressionContext::createTopLevel(),
 			);
 			$armScope = $armResult->getScope();
+			$scope = $scope->addTemplateArgumentConstraints($armScope->getTemplateArgumentConstraints());
 			if (!$armResult->isAlwaysTerminating()) {
 				$armBodyScopes[] = $armScope;
 			}
@@ -483,6 +486,8 @@ final class MatchHandler implements ExprHandler, PerFileAnalysisResettable
 			}
 			$throwPoints[] = InternalThrowPoint::createExplicit($scope, new ObjectType(UnhandledMatchError::class), $expr, false);
 		}
+
+		$scope = $scope->addTemplateArgumentConstraints($scopeForMatchNodeCallback->getTemplateArgumentConstraints());
 
 		ksort($armNodes, SORT_NUMERIC);
 

@@ -28,6 +28,7 @@ use PHPStan\Type\Test\C;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
+use WeakReference;
 
 class TemplateArgumentResolverTest extends PHPStanTestCase
 {
@@ -264,6 +265,15 @@ class TemplateArgumentResolverTest extends PHPStanTestCase
 		$this->assertSame('PHPStan\Type\Test\A\A<1>', self::describe($variant->getReturnTypeWithUnresolvedTemplateArguments($site, $initial, true)));
 		$this->assertTrue($unresolved->equals($variant->getReturnTypeWithUnresolvedTemplateArguments($site, $collecting, true)));
 		$this->assertTrue($collecting->isObserving());
+
+		$reference = WeakReference::create($collecting);
+		unset($collecting);
+		$this->assertNull($reference->get(), 'The return-type cache must not retain the inference context.');
+
+		$variant->getReturnTypeWithUnresolvedTemplateArguments($site, $sent, true);
+		$siteReference = WeakReference::create($site);
+		unset($site, $marker, $constraints, $unresolved);
+		$this->assertNull($siteReference->get(), 'The resolved return-type cache must not retain the call AST.');
 	}
 
 	public function testSiteAttributionByTokenPosition(): void

@@ -37,7 +37,11 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 
 	private ?Type $phpDocReturnType = null;
 
-	/** @var array{Expr, WeakReference<TemplateArgumentFrame>, bool, Type}|null */
+	/**
+	 * Cache keys must not keep the call AST or inference context alive.
+	 *
+	 * @var array{WeakReference<Expr>, WeakReference<TemplateArgumentFrame>, bool, Type}|null
+	 */
 	private ?array $returnTypeWithUnresolvedTemplateArguments = null;
 
 	/**
@@ -186,7 +190,7 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 	public function getReturnTypeWithUnresolvedTemplateArguments(Expr $site, TemplateArgumentFrame $frame, bool $allowUnresolved): Type
 	{
 		$cached = $this->returnTypeWithUnresolvedTemplateArguments;
-		if ($cached !== null && $cached[0] === $site && $cached[1]->get() === $frame && $cached[2] === $allowUnresolved) {
+		if ($cached !== null && $cached[0]->get() === $site && $cached[1]->get() === $frame && $cached[2] === $allowUnresolved) {
 			return $cached[3];
 		}
 
@@ -201,7 +205,7 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 			),
 			false,
 		);
-		$this->returnTypeWithUnresolvedTemplateArguments = [$site, WeakReference::create($frame), $allowUnresolved, $type];
+		$this->returnTypeWithUnresolvedTemplateArguments = [WeakReference::create($site), WeakReference::create($frame), $allowUnresolved, $type];
 
 		return $type;
 	}

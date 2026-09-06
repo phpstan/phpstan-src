@@ -134,6 +134,27 @@ function foreachLoop(): void
 	}
 }
 
+function unreachableLoops(): void
+{
+	$while = new Box();
+	while (false) {
+		consume($while);
+	}
+	assertType('TemplateArgumentConstraintFlow\Box<int>', $while);
+
+	$for = new Box();
+	for (; false;) {
+		consume($for);
+	}
+	assertType('TemplateArgumentConstraintFlow\Box<int>', $for);
+
+	$foreach = new Box();
+	foreach ([] as $unused) {
+		consume($foreach);
+	}
+	assertType('TemplateArgumentConstraintFlow\Box<int>', $foreach);
+}
+
 function switchTermination(bool $condition): void
 {
 	$box = new Box();

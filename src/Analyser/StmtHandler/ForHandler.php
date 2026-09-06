@@ -289,7 +289,7 @@ final class ForHandler implements StmtHandler
 		}
 
 		return new InternalStatementResult(
-			$finalScope,
+			$finalScope->addTemplateArgumentConstraints($loopScope->getTemplateArgumentConstraints()),
 			hasYield: $finalScopeResult->hasYield() || $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			exitPoints: $finalScopeResult->getExitPointsForOuterLoop(),

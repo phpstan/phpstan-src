@@ -108,11 +108,16 @@ final class TemplateArgumentSolver
 	private function resolveObservation(array $observation): Type
 	{
 		$initial = $observation['initial'] !== null ? $this->substituteResolutions($observation['initial']) : null;
+		$template = $observation['marker']->getTemplate();
 		$lowerBounds = [];
 		foreach ($observation['lowerBounds'] as $lowerBound) {
-			$lowerBounds[] = $this->substituteResolutions($lowerBound);
+			$inferred = $template->inferTemplateTypes($this->substituteResolutions($lowerBound))->getType($template->getName());
+			if ($inferred === null) {
+				continue;
+			}
+			$lowerBounds[] = $inferred;
 		}
-		$templateVariance = $observation['marker']->getTemplate()->getVariance();
+		$templateVariance = $template->getVariance();
 
 		// nothing inferred, or never (an empty array): every send accepts it
 		$acceptsAnything = $initial === null || $initial instanceof NeverType;

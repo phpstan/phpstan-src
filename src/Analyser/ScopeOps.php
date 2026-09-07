@@ -890,6 +890,11 @@ final class ScopeOps
 	 * object (a method call, an offset access) can observe static state and keeps
 	 * being invalidated. A property name computed from anything but a plain variable
 	 * could do the same, so it is not accepted either.
+	 *
+	 * Callers must still invalidate the object when they hand it to the callee as an
+	 * argument. Reaching it through static state ('self::$instance = $this;' and then
+	 * a static method writing through 'self::$instance') is not tracked - the same
+	 * limitation every receiver other than '$this' has always had.
 	 */
 	private static function isPropertyFetchChainOn(Expr $expr, string $exprStringToInvalidate, ExprPrinter $exprPrinter): bool
 	{

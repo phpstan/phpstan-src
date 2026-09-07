@@ -1,6 +1,6 @@
 [
     {
-        "message": "Cannot assign offset int|object to SplObjectStorage<object, *NEVER*>.",
+        "message": "Cannot assign offset int|object to SplObjectStorage<object, int>.",
         "line": 27,
         "ignorable": true
     }

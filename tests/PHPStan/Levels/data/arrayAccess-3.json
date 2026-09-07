@@ -1,27 +1,7 @@
 [
     {
-        "message": "SplObjectStorage<object, *NEVER*> does not accept int.",
-        "line": 16,
-        "ignorable": true
-    },
-    {
-        "message": "SplObjectStorage<object, *NEVER*> does not accept int.",
-        "line": 27,
-        "ignorable": true
-    },
-    {
-        "message": "Cannot assign offset int to SplObjectStorage<object, *NEVER*>.",
+        "message": "Cannot assign offset int to SplObjectStorage<object, int>.",
         "line": 35,
-        "ignorable": true
-    },
-    {
-        "message": "SplObjectStorage<object, *NEVER*> does not accept int.",
-        "line": 35,
-        "ignorable": true
-    },
-    {
-        "message": "SplObjectStorage<object, *NEVER*> does not accept int.",
-        "line": 43,
         "ignorable": true
     }
 ]

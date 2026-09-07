@@ -34,6 +34,13 @@ class ReturnTypeRuleTest extends RuleTestCase
 		));
 	}
 
+	public function testArrayObjectObjectInput(): void
+	{
+		$this->checkNullables = true;
+		$this->checkExplicitMixed = false;
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/array-object-object-input.php'], []);
+	}
+
 	public function testReturnTypeRule(): void
 	{
 		require_once __DIR__ . '/data/returnTypes.php';

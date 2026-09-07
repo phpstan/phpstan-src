@@ -116,6 +116,22 @@ class HelloWorld extends ParentClass
 		assertType('Bug13735b\Foo|null', $this->foo);
 	}
 
+	public function doLateStaticBinding(): void
+	{
+		$this->foo = new Foo();
+		assertType('Bug13735b\Foo', $this->foo);
+		static::sideEffect();
+		assertType('Bug13735b\Foo', $this->foo);
+	}
+
+	public function doLateStaticBindingNonStaticMethod(): void
+	{
+		$this->foo = new Foo();
+		assertType('Bug13735b\Foo', $this->foo);
+		static::nonStatic();
+		assertType('Bug13735b\Foo|null', $this->foo);
+	}
+
 	public function doParentMethod(): void
 	{
 		$this->publicFoo = new Foo();

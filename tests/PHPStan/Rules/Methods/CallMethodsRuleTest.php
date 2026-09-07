@@ -4384,4 +4384,13 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testUnconstrainedCollectionTemplateArguments(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/../Functions/data/bug-15168.php'], []);
+	}
+
 }

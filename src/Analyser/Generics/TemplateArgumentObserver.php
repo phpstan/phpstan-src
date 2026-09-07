@@ -66,21 +66,21 @@ final class TemplateArgumentObserver
 	 * $actual flows into $declared: a property's writable type, a parameter
 	 * type, a declared return type, a @var type.
 	 */
-	private function observeSend(TemplateArgumentConstraints $constraints, Type $declared, Type $actual): TemplateArgumentConstraints
+	private function observeSend(TemplateArgumentConstraints $constraints, Type $declared, Type $actual, bool $isCallArgument = false): TemplateArgumentConstraints
 	{
 		if ($declared instanceof TemplateType || !$this->containsMarker($actual)) {
 			return $constraints;
 		}
 		if ($actual instanceof UnionType) {
 			foreach ($actual->getTypes() as $member) {
-				$constraints = $this->observeSend($constraints, $declared, $member);
+				$constraints = $this->observeSend($constraints, $declared, $member, $isCallArgument);
 			}
 
 			return $constraints;
 		}
 		if ($declared instanceof UnionType) {
 			foreach ($declared->getTypes() as $member) {
-				$constraints = $this->observeSend($constraints, $member, $actual);
+				$constraints = $this->observeSend($constraints, $member, $actual, $isCallArgument);
 			}
 
 			return $constraints;
@@ -119,16 +119,14 @@ final class TemplateArgumentObserver
 				}
 				$declaredArgument = $declaredArguments[$i];
 				if (!$argument instanceof UnresolvedTemplateArgumentType) {
-					$constraints = $this->observeSend($constraints, $declaredArgument, $argument);
+					$constraints = $this->observeSend($constraints, $declaredArgument, $argument, $isCallArgument);
 					continue;
 				}
 				if (self::isUninformativeSendTarget($declaredArgument)) {
-					if ($declaredArgument instanceof MixedType && !$declaredArgument instanceof TemplateType) {
-						// mixed accepts every argument, so it decides nothing - but the
-						// object did leave the body through it, which is more than the
-						// untouched `new Foo()` that resolves to never. A target that
-						// still carries template types is not such a signal: it is not
-						// a target yet.
+					// An unresolved call parameter, like mixed, uses the object without
+					// constraining it. Return/property templates are fixed by their
+					// declaration and must keep an empty argument compatible with them.
+					if (($isCallArgument && self::hasOnlyInferableTemplates($declaredArgument)) || ($declaredArgument instanceof MixedType && !$declaredArgument instanceof TemplateType)) {
 						$constraints = $constraints->withUnconstrainingSend($argument);
 					}
 
@@ -144,7 +142,7 @@ final class TemplateArgumentObserver
 				if ($initial === null) {
 					continue;
 				}
-				$constraints = $this->observeSend($constraints, $declaredArgument, $initial);
+				$constraints = $this->observeSend($constraints, $declaredArgument, $initial, $isCallArgument);
 			}
 
 			return $constraints;
@@ -158,8 +156,8 @@ final class TemplateArgumentObserver
 			return $constraints;
 		}
 
-		$constraints = $this->observeSend($constraints, $declared->getIterableKeyType(), $actual->getIterableKeyType());
-		$constraints = $this->observeSend($constraints, $declared->getIterableValueType(), $actual->getIterableValueType());
+		$constraints = $this->observeSend($constraints, $declared->getIterableKeyType(), $actual->getIterableKeyType(), $isCallArgument);
+		$constraints = $this->observeSend($constraints, $declared->getIterableValueType(), $actual->getIterableValueType(), $isCallArgument);
 
 		return $constraints;
 	}
@@ -171,7 +169,7 @@ final class TemplateArgumentObserver
 	 */
 	private function observeArgument(TemplateArgumentConstraints $constraints, Type $parameterType, Type $argumentType): TemplateArgumentConstraints
 	{
-		$constraints = $this->observeSend($constraints, $parameterType, $argumentType);
+		$constraints = $this->observeSend($constraints, $parameterType, $argumentType, true);
 		$constraints = $this->observeLowerBound($constraints, $parameterType, $argumentType);
 
 		return $constraints;
@@ -255,6 +253,18 @@ final class TemplateArgumentObserver
 		// and a declared argument with unresolved template types is no target yet
 		return ($declaredArgument instanceof MixedType && !$declaredArgument instanceof TemplateType)
 			|| $declaredArgument->hasTemplateOrLateResolvableType();
+	}
+
+	private static function hasOnlyInferableTemplates(Type $type): bool
+	{
+		$references = $type->getReferencedTemplateTypes(TemplateTypeVariance::createInvariant());
+		foreach ($references as $reference) {
+			if ($reference->getType()->isArgument()) {
+				return false;
+			}
+		}
+
+		return count($references) > 0;
 	}
 
 }

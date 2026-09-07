@@ -70,7 +70,7 @@ final class DoWhileHandler implements StmtHandler
 				$bodyRecording = $bodyIsReplayable ? new RecordingNodeCallback() : new NoopNodeCallback();
 				$scope->pushExpressionResultStorage($storage);
 				try {
-					$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $bodyRecording, $context->enterDeep())->filterOutLoopExitPoints();
+					$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $bodyRecording, $context->enterDeep()->withoutTemplateArgumentResolution())->filterOutLoopExitPoints();
 					$alwaysTerminating = $bodyScopeResult->isAlwaysTerminating();
 					$bodyScope = $bodyScopeResult->getScope();
 					foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
@@ -87,7 +87,7 @@ final class DoWhileHandler implements StmtHandler
 						$replayPassStorage = $storage;
 						$replayPassResult = $bodyScopeResult;
 					}
-					$bodyScope = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep())->getTruthyScope();
+					$bodyScope = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep(resolveTemplateArguments: false))->getTruthyScope();
 				} finally {
 					$scope->popExpressionResultStorage();
 				}
@@ -129,7 +129,7 @@ final class DoWhileHandler implements StmtHandler
 		// scope - the previous scope-based read here was a guaranteed storage
 		// miss (the condition was only ever stored into discarded convergence
 		// duplicates) that re-priced the condition on demand before this walk
-		$condResult = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep());
+		$condResult = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
 
 		$alwaysIterates = false;
 		if ($context->isTopLevel()) {

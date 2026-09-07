@@ -4,6 +4,7 @@ namespace PHPStan\Type;
 
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
 use function array_diff_key;
 use function array_key_exists;
 use function count;
@@ -95,12 +96,12 @@ final class FiniteTypeSet
 	 * with value identity for them (-0.0 === 0.0, NAN !== NAN). A type that merely contains
 	 * a finite value - an intersection with an accessory type, a whole single-case enum, a
 	 * conditional type resolving to a constant - is excluded by the equals() check: only a
-	 * type that *is* the value can stand in for it. Template types are excluded outright,
-	 * their comparison semantics are not value identity.
+	 * type that *is* the value can stand in for it. Template types and unresolved arguments are
+	 * excluded outright: their comparison semantics are not value identity.
 	 */
 	public static function key(Type $type): ?string
 	{
-		if ($type instanceof TemplateType || $type instanceof UnionType || $type instanceof IntersectionType) {
+		if ($type instanceof TemplateType || $type instanceof UnresolvedTemplateArgumentType || $type instanceof UnionType || $type instanceof IntersectionType) {
 			return null;
 		}
 

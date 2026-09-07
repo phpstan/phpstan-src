@@ -27,3 +27,4 @@ parameters:
 		switchConditionAlwaysFalse: true
 		checkImportedClassNameCase: true
 		sortWithoutEffect: true
+		unresolvedTemplateArguments: true

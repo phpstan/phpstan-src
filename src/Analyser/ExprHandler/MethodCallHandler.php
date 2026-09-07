@@ -19,6 +19,7 @@ use PHPStan\Analyser\ExprHandler\Helper\DynamicReturnTypeStoragePrimer;
 use PHPStan\Analyser\ExprHandler\Helper\EarlyTerminatingCallHelper;
 use PHPStan\Analyser\ExprHandler\Helper\MethodCallReturnTypeHelper;
 use PHPStan\Analyser\ExprHandler\Helper\MethodThrowPointHelper;
+use PHPStan\Analyser\Generics\TemplateArgumentFrame;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
@@ -95,7 +96,7 @@ final class MethodCallHandler implements ExprHandler
 			// its stored ExpressionResult instead of reading the unprocessed node via
 			// Scope::getType(). processArgs() below processes it again as call()'s first
 			// argument; the NoopNodeCallback here avoids a duplicate node-callback.
-			$newThisResult = $nodeScopeResolver->processExprNode($stmt, $expr->getArgs()[0]->value, $scope, $storage, new NoopNodeCallback(), $context->enterDeep());
+			$newThisResult = $nodeScopeResolver->processExprNode($stmt, $expr->getArgs()[0]->value, $scope, $storage, new NoopNodeCallback(), $context->enterDeep()->withoutTemplateArgumentResolution());
 			$closureCallScope = $scope->enterClosureCall(
 				$newThisResult->getType(),
 				$newThisResult->getNativeType(),
@@ -305,7 +306,7 @@ final class MethodCallHandler implements ExprHandler
 				// processArgs() selected (generics resolved against the actual arg
 				// types), falling back to the structural acceptor for dynamic callees.
 				$acceptorForGenerics = $resolvedParametersAcceptor ?? $parametersAcceptor;
-				$rememberedType = $acceptorForGenerics->getReturnType();
+				$rememberedType = TemplateArgumentFrame::returnTypeOfCall($acceptorForGenerics, $scope, $expr);
 				if ($varResult->containsNullsafe() && TypeCombinator::containsNull($calledOnType)) {
 					// a call on a nullsafe chain whose receiver is nullable
 					// short-circuits to null - the tracked entry is keyed by the

@@ -3,7 +3,10 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node\Expr\ConstFetch;
+use PhpParser\Node\Expr\MethodCall;
+use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Name\FullyQualified;
+use PHPStan\Node\Expr\PossiblyImpureCallExpr;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -11,6 +14,7 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\IntegerRangeType;
+use PHPStan\Type\IntegerType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
@@ -269,6 +273,40 @@ class ScopeTest extends PHPStanTestCase
 			->assignVariable('b', new ConstantStringType('b'), new StringType(), TrinaryLogic::createMaybe());
 
 		$this->assertSame(['b'], $scope->getMaybeDefinedVariables());
+	}
+
+	public function testPossiblyImpureCallsDoNotAffectDifferingVariableRoots(): void
+	{
+		$scope = self::getContainer()->getByType(ScopeFactory::class)->create(ScopeContext::create('file.php'));
+		$variable = new Variable('a');
+		$expr = new PossiblyImpureCallExpr(new MethodCall($variable, 'remember'), $variable, 'Collection::remember()');
+		$intScope = $scope->assignExpression($expr, new IntegerType(), new IntegerType());
+		$stringScope = $scope->assignExpression($expr, new StringType(), new StringType());
+
+		$this->assertSame([], $intScope->getDifferingVariableRoots($scope));
+		$this->assertSame([], $scope->getDifferingVariableRoots($intScope));
+		$this->assertSame([], $intScope->getDifferingVariableRoots($stringScope));
+		$this->assertSame([], $stringScope->getDifferingVariableRoots($intScope));
+
+		$variableScope = $intScope->assignVariable('a', new StringType(), new StringType(), TrinaryLogic::createYes());
+		$this->assertSame(['a'], $variableScope->getDifferingVariableRoots($stringScope));
+		$this->assertSame(['a'], $stringScope->getDifferingVariableRoots($variableScope));
+	}
+
+	public function testPossiblyImpureConditionalCallsDoNotAffectDifferingVariableRoots(): void
+	{
+		$scope = self::getContainer()->getByType(ScopeFactory::class)->create(ScopeContext::create('file.php'));
+		$variable = new Variable('a');
+		$expr = new PossiblyImpureCallExpr(new MethodCall($variable, 'remember'), $variable, 'Collection::remember()');
+		$conditionalScope = $scope->addConditionalExpressions($scope->getExprPrinter()->printExpr($expr), [
+			new ConditionalExpressionHolder(
+				['$condition' => ExpressionTypeHolder::createYes(new Variable('condition'), new ConstantBooleanType(true))],
+				ExpressionTypeHolder::createYes($expr, new IntegerType()),
+			),
+		]);
+
+		$this->assertSame([], $scope->getDifferingVariableRoots($conditionalScope));
+		$this->assertSame([], $conditionalScope->getDifferingVariableRoots($scope));
 	}
 
 }

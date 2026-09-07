@@ -63,7 +63,7 @@ function works(): void {
     $myCollection = new Collection([new SpecificA(1, 'A'), new SpecificB(2, 'B')]);
 
 	$result = $myCollection->map(static fn (SpecificA|SpecificB $specific): MyDTO => new MyDTO($specific->someSharedValue));
-	assertType('Bug14203\Collection<int, Bug14203\MyDTO>', $result);
+	assertType('Bug14203\Collection<0|1, Bug14203\MyDTO>', $result);
 }
 
 /**

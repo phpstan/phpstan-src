@@ -3,6 +3,8 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node;
+use PHPStan\Analyser\Generics\TemplateArgumentConstraints;
+use PHPStan\Analyser\Generics\TemplateArgumentFrame;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Node\Printer\ExprPrinter;
@@ -64,6 +66,8 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 		bool $afterExtractCall = false,
 		?MutatingScope $parentScope = null,
 		bool $nativeTypesPromoted = false,
+		?TemplateArgumentFrame $templateArgumentFrame = null,
+		?TemplateArgumentConstraints $templateArgumentConstraints = null,
 	): MutatingScope
 	{
 		$className = MutatingScope::class;
@@ -103,6 +107,8 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 			$afterExtractCall,
 			$parentScope,
 			$nativeTypesPromoted,
+			$templateArgumentFrame,
+			$templateArgumentConstraints,
 		);
 	}
 

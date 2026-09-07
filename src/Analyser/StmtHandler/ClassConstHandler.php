@@ -42,7 +42,7 @@ final class ClassConstHandler implements StmtHandler
 		$impurePoints = [];
 		$nodeScopeResolver->processAttributeGroups($stmt, $stmt->attrGroups, $scope, $storage, $nodeCallback);
 		foreach ($stmt->consts as $const) {
-			$constResult = $nodeScopeResolver->processExprNode($stmt, $const->value, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			$constResult = $nodeScopeResolver->processExprNode($stmt, $const->value, $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
 			// the constant's callback fires after its value was processed, so
 			// rule-side asks about the value answer from the storage
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $const, $scope, $storage);

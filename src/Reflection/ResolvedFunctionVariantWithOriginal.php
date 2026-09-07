@@ -2,6 +2,8 @@
 
 namespace PHPStan\Reflection;
 
+use PhpParser\Node\Expr;
+use PHPStan\Analyser\Generics\TemplateArgumentFrame;
 use PHPStan\Reflection\Php\ExtendedDummyParameter;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\ErrorType;
@@ -12,10 +14,12 @@ use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
+use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
 use PHPStan\Type\NonAcceptingNeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
+use WeakReference;
 use function array_key_exists;
 use function array_map;
 
@@ -32,6 +36,13 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 	private ?Type $returnType = null;
 
 	private ?Type $phpDocReturnType = null;
+
+	/**
+	 * Cache keys must not keep the call AST or inference context alive.
+	 *
+	 * @var array{WeakReference<Expr>, WeakReference<TemplateArgumentFrame>, bool, Type}|null
+	 */
+	private ?array $returnTypeWithUnresolvedTemplateArguments = null;
 
 	/**
 	 * @param array<string, Type> $passedArgs
@@ -176,6 +187,29 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 		return $type;
 	}
 
+	public function getReturnTypeWithUnresolvedTemplateArguments(Expr $site, TemplateArgumentFrame $frame, bool $allowUnresolved): Type
+	{
+		$cached = $this->returnTypeWithUnresolvedTemplateArguments;
+		if ($cached !== null && $cached[0]->get() === $site && $cached[1]->get() === $frame && $cached[2] === $allowUnresolved) {
+			return $cached[3];
+		}
+
+		$type = TypeUtils::resolveLateResolvableTypes(
+			TemplateTypeHelper::resolveTemplateTypes(
+				$this->resolveConditionalTypesForParameter(
+					$this->resolveResolvableTemplateTypes($this->parametersAcceptor->getReturnType(), TemplateTypeVariance::createCovariant(), $site, $frame, $allowUnresolved),
+				),
+				$this->resolvedTemplateTypeMap,
+				$this->callSiteVarianceMap,
+				TemplateTypeVariance::createCovariant(),
+			),
+			false,
+		);
+		$this->returnTypeWithUnresolvedTemplateArguments = [WeakReference::create($site), WeakReference::create($frame), $allowUnresolved, $type];
+
+		return $type;
+	}
+
 	public function getPhpDocReturnType(): Type
 	{
 		$type = $this->phpDocReturnType;
@@ -202,11 +236,11 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 		return $this->parametersAcceptor->getNativeReturnType();
 	}
 
-	private function resolveResolvableTemplateTypes(Type $type, TemplateTypeVariance $positionVariance): Type
+	private function resolveResolvableTemplateTypes(Type $type, TemplateTypeVariance $positionVariance, ?Expr $site = null, ?TemplateArgumentFrame $frame = null, bool $allowUnresolved = true): Type
 	{
 		$references = $type->getReferencedTemplateTypes($positionVariance);
 
-		$objectCb = function (Type $type, callable $traverse) use ($references): Type {
+		$objectCb = function (Type $type, callable $traverse) use ($references, $site, $frame, $allowUnresolved): Type {
 			if (
 				$type instanceof TemplateType
 				&& !$type->isArgument()
@@ -217,7 +251,11 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 					return $traverse($type);
 				}
 
-				$newType = TemplateTypeHelper::generalizeInferredTemplateType($type, $newType);
+				if ($site !== null && $frame !== null) {
+					$newType = $this->unresolvedOrResolvedTemplateArgument($type, $newType, $site, $frame, $allowUnresolved);
+				} else {
+					$newType = TemplateTypeHelper::generalizeInferredTemplateType($type, $newType);
+				}
 				$variance = TemplateTypeVariance::createInvariant();
 				foreach ($references as $reference) {
 					// this uses identity to distinguish between different occurrences of the same template type
@@ -268,6 +306,12 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 					}
 				}
 
+				if ($variance->covariant()) {
+					// an unresolved template argument inferred from a generic argument
+					// and returned bare is a derived value - see TemplateTypeHelper::resolveTemplateTypes()
+					$newType = UnresolvedTemplateArgumentType::unwrapBare($newType);
+				}
+
 				$callSiteVariance = $this->callSiteVarianceMap->getVariance($type->getName());
 				if ($callSiteVariance === null || $callSiteVariance->invariant()) {
 					return $newType;
@@ -286,6 +330,25 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 
 			return $traverse($type);
 		});
+	}
+
+	/**
+	 * An inferred template argument inside a generic object of the return type:
+	 * during the body's observation pass a marker keyed by the call (an inferred
+	 * argument that already carries another site's marker passes through - the
+	 * outer result then resolves the inner site), under a resolved frame its
+	 * resolution, else the exact inferred type.
+	 */
+	private function unresolvedOrResolvedTemplateArgument(TemplateType $template, Type $inferred, Expr $site, TemplateArgumentFrame $frame, bool $allowUnresolved): Type
+	{
+		if ($allowUnresolved && $frame->isObserving()) {
+			if ($inferred instanceof UnresolvedTemplateArgumentType) {
+				return $inferred;
+			}
+			return new UnresolvedTemplateArgumentType($site, $template, $inferred);
+		}
+
+		return $frame->resolve($site, $template->getName()) ?? $inferred;
 	}
 
 	private function resolveConditionalTypesForParameter(Type $type): Type

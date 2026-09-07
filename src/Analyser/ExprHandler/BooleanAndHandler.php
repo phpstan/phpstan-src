@@ -50,7 +50,7 @@ final class BooleanAndHandler implements ExprHandler
 		$rightResult = $nodeScopeResolver->processExprNode($stmt, $expr->right, $leftTruthyScope, $storage, $nodeCallback, $context);
 		$rightExprType = $rightResult->getType();
 		if ($rightExprType instanceof NeverType && $rightExprType->isExplicit()) {
-			$leftMergedWithRightScope = $leftResult->getFalseyScope();
+			$leftMergedWithRightScope = $leftResult->getFalseyScope()->addTemplateArgumentConstraints($rightResult->getScope()->getTemplateArgumentConstraints());
 		} else {
 			$leftMergedWithRightScope = $leftResult->getScope()->mergeWith($rightResult->getScope());
 		}

@@ -17,6 +17,7 @@ use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\ExprHandler\Helper\MethodCallReturnTypeHelper;
 use PHPStan\Analyser\ExprHandler\Helper\MethodThrowPointHelper;
+use PHPStan\Analyser\Generics\TemplateArgumentFrame;
 use PHPStan\Analyser\IssetabilityDescriptor;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
@@ -110,7 +111,7 @@ final class ArrayDimFetchHandler implements ExprHandler
 			// flavour); the fabricated node is only the payload dynamic return
 			// type extensions receive - nothing walks it. Gated by the same
 			// maybe-ArrayAccess condition, so plain arrays never reach it.
-			$offsetGetCall = new MethodCall($expr->var, new Identifier('offsetGet'), [new Arg($expr->dim)]);
+			$offsetGetCall = new MethodCall($expr->var, new Identifier('offsetGet'), [new Arg($expr->dim)], [TemplateArgumentFrame::SYNTHETIC_SITE_ATTRIBUTE => true]);
 		}
 
 		return $this->expressionResultFactory->create(

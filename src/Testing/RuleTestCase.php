@@ -8,6 +8,8 @@ use PHPStan\Analyser\AnalyserResultFinalizer;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\FileAnalyser;
+use PHPStan\Analyser\Generics\TemplateArgumentObserver;
+use PHPStan\Analyser\Generics\TemplateArgumentResolver;
 use PHPStan\Analyser\IgnoreErrorExtension;
 use PHPStan\Analyser\InternalError;
 use PHPStan\Analyser\LocalIgnoresProcessor;
@@ -87,6 +89,8 @@ abstract class RuleTestCase extends PHPStanTestCase
 
 		return new NodeScopeResolver(
 			self::getContainer(),
+			self::getContainer()->getByType(TemplateArgumentObserver::class),
+			self::getContainer()->getByType(TemplateArgumentResolver::class),
 			$reflectionProvider,
 			self::getContainer()->getExtensionsCollection(FunctionParameterOutTypeExtension::class),
 			self::getContainer()->getExtensionsCollection(MethodParameterOutTypeExtension::class),
@@ -105,6 +109,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 			self::getContainer()->getParameter('exceptions')['implicitThrows'],
 			$this->shouldTreatPhpDocTypesAsCertain(),
 			self::getContainer()->getByType(ExpressionResultFactory::class),
+			self::getContainer()->getParameter('featureToggles')['unresolvedTemplateArguments'],
 		);
 	}
 

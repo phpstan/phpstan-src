@@ -640,4 +640,17 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testTemplateArgumentRawReturn(): void
+	{
+		$this->checkTypeAgainstPhpDocType = true;
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/template-argument-raw-return.php'], []);
+	}
+
+	public function testUnconstrainedQueryResult(): void
+	{
+		$this->checkTypeAgainstPhpDocType = true;
+		$this->strictWideningCheck = true;
+		$this->analyse([__DIR__ . '/../Methods/data/unconstrained-query-result.php'], []);
+	}
+
 }

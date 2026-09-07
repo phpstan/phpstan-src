@@ -18,18 +18,19 @@ final class ExpressionContext
 		private bool $inThrow = false,
 		private ?Type $inAssignRightSideType = null,
 		private ?Type $inAssignRightSideNativeType = null,
+		private bool $resolveTemplateArguments = true,
 	)
 	{
 	}
 
-	public static function createTopLevel(): self
+	public static function createTopLevel(bool $resolveTemplateArguments = true): self
 	{
-		return new self(isDeep: false, inAssignRightSideVariableName: null, inAssignRightSideExpr: null);
+		return new self(isDeep: false, inAssignRightSideVariableName: null, inAssignRightSideExpr: null, resolveTemplateArguments: $resolveTemplateArguments);
 	}
 
-	public static function createDeep(): self
+	public static function createDeep(bool $resolveTemplateArguments = true): self
 	{
-		return new self(isDeep: true, inAssignRightSideVariableName: null, inAssignRightSideExpr: null);
+		return new self(isDeep: true, inAssignRightSideVariableName: null, inAssignRightSideExpr: null, resolveTemplateArguments: $resolveTemplateArguments);
 	}
 
 	public function enterDeep(): self
@@ -38,7 +39,7 @@ final class ExpressionContext
 			return $this;
 		}
 
-		return new self(true, $this->inAssignRightSideVariableName, $this->inAssignRightSideExpr, $this->inThrow, $this->inAssignRightSideType, $this->inAssignRightSideNativeType);
+		return new self(true, $this->inAssignRightSideVariableName, $this->inAssignRightSideExpr, $this->inThrow, $this->inAssignRightSideType, $this->inAssignRightSideNativeType, $this->resolveTemplateArguments);
 	}
 
 	public function isDeep(): bool
@@ -46,9 +47,23 @@ final class ExpressionContext
 		return $this->isDeep;
 	}
 
+	public function shouldResolveTemplateArguments(): bool
+	{
+		return $this->resolveTemplateArguments;
+	}
+
+	public function withoutTemplateArgumentResolution(): self
+	{
+		if (!$this->resolveTemplateArguments) {
+			return $this;
+		}
+
+		return new self($this->isDeep, $this->inAssignRightSideVariableName, $this->inAssignRightSideExpr, $this->inThrow, $this->inAssignRightSideType, $this->inAssignRightSideNativeType, false);
+	}
+
 	public function enterThrow(): self
 	{
-		return new self($this->isDeep, $this->inAssignRightSideVariableName, $this->inAssignRightSideExpr, true, $this->inAssignRightSideType, $this->inAssignRightSideNativeType);
+		return new self($this->isDeep, $this->inAssignRightSideVariableName, $this->inAssignRightSideExpr, true, $this->inAssignRightSideType, $this->inAssignRightSideNativeType, $this->resolveTemplateArguments);
 	}
 
 	public function isInThrow(): bool
@@ -58,7 +73,7 @@ final class ExpressionContext
 
 	public function enterRightSideAssign(string $variableName, Expr $expr): self
 	{
-		return new self($this->isDeep, $variableName, $expr, $this->inThrow);
+		return new self($this->isDeep, $variableName, $expr, $this->inThrow, resolveTemplateArguments: $this->resolveTemplateArguments);
 	}
 
 	public function getInAssignRightSideVariableName(): ?string
@@ -87,6 +102,7 @@ final class ExpressionContext
 			$this->inThrow,
 			TemplateTypeHelper::resolveToBounds($acceptor->getReturnType()),
 			TemplateTypeHelper::resolveToBounds($acceptor instanceof ExtendedParametersAcceptor ? $acceptor->getNativeReturnType() : $acceptor->getReturnType()),
+			$this->resolveTemplateArguments,
 		);
 	}
 

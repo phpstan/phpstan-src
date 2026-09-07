@@ -17,6 +17,7 @@ use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\ExprHandler\Helper\DynamicReturnTypeStoragePrimer;
+use PHPStan\Analyser\Generics\TemplateArgumentFrame;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
@@ -56,6 +57,7 @@ use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
+use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NonexistentParentClassType;
 use PHPStan\Type\ObjectType;
@@ -158,7 +160,7 @@ final class NewHandler implements ExprHandler
 						$constructorResult = $node;
 					});
 					try {
-						$nodeScopeResolver->processStmtNode($expr->class, $scope, $storage, $nodeCallback, StatementContext::createTopLevel());
+						$nodeScopeResolver->processStmtNode($expr->class, $scope, $storage, $nodeCallback, StatementContext::createTopLevel($context->shouldResolveTemplateArguments()));
 					} finally {
 						$nodeScopeResolver->popNodeGatherer();
 					}
@@ -168,7 +170,7 @@ final class NewHandler implements ExprHandler
 						$impurePoints = $constructorResult->getImpurePoints();
 					}
 				} else {
-					$nodeScopeResolver->processStmtNode($expr->class, $scope, $storage, $nodeCallback, StatementContext::createTopLevel());
+					$nodeScopeResolver->processStmtNode($expr->class, $scope, $storage, $nodeCallback, StatementContext::createTopLevel($context->shouldResolveTemplateArguments()));
 					if (!$constructorReflection->hasSideEffects()->no()) {
 						$certain = $constructorReflection->isPure()->no();
 						$impurePoints[] = new ImpurePoint(
@@ -181,7 +183,7 @@ final class NewHandler implements ExprHandler
 					}
 				}
 			} else {
-				$nodeScopeResolver->processStmtNode($expr->class, $scope, $storage, $nodeCallback, StatementContext::createTopLevel());
+				$nodeScopeResolver->processStmtNode($expr->class, $scope, $storage, $nodeCallback, StatementContext::createTopLevel($context->shouldResolveTemplateArguments()));
 			}
 
 			if ($parametersAcceptor !== null) {
@@ -202,7 +204,7 @@ final class NewHandler implements ExprHandler
 			// the not-yet-stored New_ node, which would re-enter this handler.
 			$objectClasses = $classResult->getType()->getObjectTypeOrClassStringObjectType()->getObjectClassNames();
 			if (count($objectClasses) === 1) {
-				$objectExprResult = $nodeScopeResolver->processExprNode($stmt, new New_(new Name($objectClasses[0])), $scope, $storage, new NoopNodeCallback(), $context->enterDeep());
+				$objectExprResult = $nodeScopeResolver->processExprNode($stmt, new New_(new Name($objectClasses[0]), attributes: [TemplateArgumentFrame::SYNTHETIC_SITE_ATTRIBUTE => true]), $scope, $storage, new NoopNodeCallback(), $context->enterDeep()->withoutTemplateArgumentResolution());
 				$className = $objectClasses[0];
 				$additionalThrowPoints = $objectExprResult->getThrowPoints();
 			} else {
@@ -260,6 +262,7 @@ final class NewHandler implements ExprHandler
 			$nativeTypesPromoted ? null : $resolvedParametersAcceptor,
 			$classResult !== null ? ($nativeTypesPromoted ? $classResult->getNativeType() : $classResult->getType()) : null,
 			$argsResult,
+			!$nativeTypesPromoted,
 		);
 		$specifyTypesCallback = fn (TypeSpecifierContext $specifyContext, bool $nativeTypesPromoted): SpecifiedTypes => $this->specifyTypes(
 			$nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope,
@@ -438,10 +441,10 @@ final class NewHandler implements ExprHandler
 	 *
 	 * @param New_ $expr
 	 */
-	private function resolveReturnType(MutatingScope $scope, Expr $expr, ?ParametersAcceptor $preResolvedAcceptor, ?Type $classExprType, ?ArgsResult $argsResult = null): Type
+	private function resolveReturnType(MutatingScope $scope, Expr $expr, ?ParametersAcceptor $preResolvedAcceptor, ?Type $classExprType, ?ArgsResult $argsResult = null, bool $allowUnresolved = true): Type
 	{
 		if ($expr->class instanceof Name) {
-			return $this->exactInstantiation($scope, $expr, $expr->class, $preResolvedAcceptor, $argsResult);
+			return $this->exactInstantiation($scope, $expr, $expr->class, $preResolvedAcceptor, $argsResult, $allowUnresolved);
 		}
 		if ($expr->class instanceof Node\Stmt\Class_) {
 			$anonymousClassReflection = $this->reflectionProvider->getAnonymousClassReflection($expr->class, $scope);
@@ -457,7 +460,10 @@ final class NewHandler implements ExprHandler
 		return $classExprType->getObjectTypeOrClassStringObjectType();
 	}
 
-	private function exactInstantiation(MutatingScope $scope, New_ $node, Name $className, ?ParametersAcceptor $preResolvedAcceptor, ?ArgsResult $argsResult = null): Type
+	/**
+	 * @param bool $allowUnresolved false for the native flavour, which never carries UnresolvedTemplateArgumentType
+	 */
+	private function exactInstantiation(MutatingScope $scope, New_ $node, Name $className, ?ParametersAcceptor $preResolvedAcceptor, ?ArgsResult $argsResult = null, bool $allowUnresolved = true): Type
 	{
 		$resolvedClassName = $scope->resolveName($className);
 		$isStatic = false;
@@ -563,6 +569,22 @@ final class NewHandler implements ExprHandler
 			return $objectType;
 		}
 
+		$frame = $allowUnresolved ? $scope->getCurrentTemplateArgumentFrame() : null;
+		// the class's arguments when the constructor says nothing about them
+		$unresolvedArguments = function () use ($classReflection, $node, $frame, $allowUnresolved, $isStatic, $resolvedClassName): Type {
+			$types = $this->unresolvedArgumentList($classReflection, $node, $frame, $allowUnresolved);
+			if ($isStatic) {
+				return new GenericStaticType($classReflection, $types, null, []);
+			}
+
+			return new GenericObjectType($resolvedClassName, $types, classReflection: $classReflection->withTypes($types)->asFinal());
+		};
+
+		if (!$allowUnresolved) {
+			// Native types use the bounds or defaults, without PHPDoc inference.
+			return $unresolvedArguments();
+		}
+
 		$assignedToProperty = $node->getAttribute(NewAssignedToPropertyVisitor::ATTRIBUTE_NAME);
 		if ($assignedToProperty !== null) {
 			$constructorVariants = $constructorMethod->getVariants();
@@ -597,80 +619,24 @@ final class NewHandler implements ExprHandler
 		}
 
 		if ($constructorMethod instanceof DummyConstructorReflection) {
-			if ($isStatic) {
-				return new GenericStaticType(
-					$classReflection,
-					$classReflection->typeMapToList($classReflection->getTemplateTypeMap()->resolveToBounds()),
-					null,
-					[],
-				);
-			}
-
-			$types = $classReflection->typeMapToList($classReflection->getTemplateTypeMap()->resolveToBounds());
-			return new GenericObjectType(
-				$resolvedClassName,
-				$types,
-				classReflection: $classReflection->withTypes($types)->asFinal(),
-			);
+			return $unresolvedArguments();
 		}
 
 		if ($constructorMethod->getDeclaringClass()->getName() !== $classReflection->getName()) {
 			if (!$constructorMethod->getDeclaringClass()->isGeneric()) {
-				if ($isStatic) {
-					return new GenericStaticType(
-						$classReflection,
-						$classReflection->typeMapToList($classReflection->getTemplateTypeMap()->resolveToBounds()),
-						null,
-						[],
-					);
-				}
-
-				$types = $classReflection->typeMapToList($classReflection->getTemplateTypeMap()->resolveToBounds());
-				return new GenericObjectType(
-					$resolvedClassName,
-					$types,
-					classReflection: $classReflection->withTypes($types)->asFinal(),
-				);
+				return $unresolvedArguments();
 			}
 			$newType = new GenericObjectType($resolvedClassName, $classReflection->typeMapToList($classReflection->getTemplateTypeMap()));
 			$ancestorType = $newType->getAncestorWithClassName($constructorMethod->getDeclaringClass()->getName());
 			if ($ancestorType === null) {
-				if ($isStatic) {
-					return new GenericStaticType(
-						$classReflection,
-						$classReflection->typeMapToList($classReflection->getTemplateTypeMap()->resolveToBounds()),
-						null,
-						[],
-					);
-				}
-
-				$types = $classReflection->typeMapToList($classReflection->getTemplateTypeMap()->resolveToBounds());
-				return new GenericObjectType(
-					$resolvedClassName,
-					$types,
-					classReflection: $classReflection->withTypes($types)->asFinal(),
-				);
+				return $unresolvedArguments();
 			}
 			$ancestorClassReflections = $ancestorType->getObjectClassReflections();
 			if (count($ancestorClassReflections) !== 1) {
-				if ($isStatic) {
-					return new GenericStaticType(
-						$classReflection,
-						$classReflection->typeMapToList($classReflection->getTemplateTypeMap()->resolveToBounds()),
-						null,
-						[],
-					);
-				}
-
-				$types = $classReflection->typeMapToList($classReflection->getTemplateTypeMap()->resolveToBounds());
-				return new GenericObjectType(
-					$resolvedClassName,
-					$types,
-					classReflection: $classReflection->withTypes($types)->asFinal(),
-				);
+				return $unresolvedArguments();
 			}
 
-			$newParentNode = new New_(new Name($constructorMethod->getDeclaringClass()->getName()), $node->args);
+			$newParentNode = new New_(new Name($constructorMethod->getDeclaringClass()->getName()), $node->args, [TemplateArgumentFrame::SYNTHETIC_SITE_ATTRIBUTE => true]);
 			// the synthetic walk is load-bearing: it re-resolves the parent
 			// constructor's template types from the arguments (processArgs against
 			// the parent's signature), which a direct exactInstantiation() recursion
@@ -678,21 +644,7 @@ final class NewHandler implements ExprHandler
 			$newParentType = $this->container->getByType(NodeScopeResolver::class)->processSyntheticOnDemand($newParentNode, $scope)->getTypeOnScope($scope, false);
 			$newParentTypeClassReflections = $newParentType->getObjectClassReflections();
 			if (count($newParentTypeClassReflections) !== 1) {
-				if ($isStatic) {
-					return new GenericStaticType(
-						$classReflection,
-						$classReflection->typeMapToList($classReflection->getTemplateTypeMap()->resolveToBounds()),
-						null,
-						[],
-					);
-				}
-
-				$types = $classReflection->typeMapToList($classReflection->getTemplateTypeMap()->resolveToBounds());
-				return new GenericObjectType(
-					$resolvedClassName,
-					$types,
-					classReflection: $classReflection->withTypes($types)->asFinal(),
-				);
+				return $unresolvedArguments();
 			}
 			$newParentTypeClassReflection = $newParentTypeClassReflections[0];
 
@@ -713,6 +665,11 @@ final class NewHandler implements ExprHandler
 				}
 
 				$ancestorType = $ancestorMapping[$typeName];
+				if ($type instanceof UnresolvedTemplateArgumentType) {
+					// inferred by the parent constructor under the synthetic node:
+					// this node is the site, the child's template the argument
+					$type = $this->rekeyParentTemplateArgument($type, $node, $ancestorType, $frame, $allowUnresolved);
+				}
 				if (!$ancestorType->getBound()->isSuperTypeOf($type)->yes()) {
 					continue;
 				}
@@ -762,7 +719,49 @@ final class NewHandler implements ExprHandler
 			return $newGenericType;
 		}
 
-		return TypeTraverser::map($newGenericType, new GenericTypeTemplateTraverser($resolvedTemplateTypeMap));
+		return TypeTraverser::map($newGenericType, new GenericTypeTemplateTraverser($resolvedTemplateTypeMap, $node, $frame, $allowUnresolved));
+	}
+
+	/**
+	 * The class's template arguments when the constructor says nothing about
+	 * them: unresolved markers during a body's observation pass, the frame's
+	 * resolutions (the defaults or bounds when unconstrained) during its second
+	 * pass, the bounds outside any frame.
+	 *
+	 * @return list<Type>
+	 */
+	private function unresolvedArgumentList(ClassReflection $classReflection, New_ $site, ?TemplateArgumentFrame $frame, bool $allowUnresolved): array
+	{
+		if ($frame === null) {
+			return $classReflection->typeMapToList($classReflection->getTemplateTypeMap()->resolveToBounds());
+		}
+
+		// a synthetic site (the parent constructor's `new`) always hands out
+		// markers - the real site re-keys and resolves them
+		$synthetic = $site->getAttribute(TemplateArgumentFrame::SYNTHETIC_SITE_ATTRIBUTE) === true;
+
+		return $classReflection->typeMapToList($classReflection->getTemplateTypeMap()->map(static function (string $name, Type $type) use ($site, $frame, $allowUnresolved, $synthetic): Type {
+			if (!$type instanceof TemplateType) {
+				return $type;
+			}
+			if ($synthetic || ($allowUnresolved && $frame->isObserving())) {
+				return new UnresolvedTemplateArgumentType($site, $type, null);
+			}
+
+			return $frame->resolveOrUnconstrained($site, $type);
+		}));
+	}
+
+	private function rekeyParentTemplateArgument(UnresolvedTemplateArgumentType $type, New_ $site, TemplateType $template, ?TemplateArgumentFrame $frame, bool $allowUnresolved): Type
+	{
+		if ($frame === null) {
+			return $type->getInitialType() ?? $template->getDefault() ?? $template->getBound();
+		}
+		if ($allowUnresolved && $frame->isObserving()) {
+			return $type->withSite($site, $template);
+		}
+
+		return $frame->resolve($site, $template->getName()) ?? $type->getInitialType() ?? $frame->resolveOrUnconstrained($site, $template);
 	}
 
 	/**

@@ -1,0 +1,371 @@
+<?php declare(strict_types = 1);
+
+namespace PHPStan\Analyser\Generics;
+
+use PhpParser\Node\Expr;
+use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\ResolvedFunctionVariant;
+use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\Generic\TemplateTypeHelper;
+use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
+use PHPStan\Type\MixedType;
+use PHPStan\Type\NeverType;
+use PHPStan\Type\Type;
+use PHPStan\Type\TypeTraverser;
+use PHPStan\Type\UnionType;
+use function array_merge;
+use function count;
+use function is_string;
+
+/**
+ * Matches declared and actual types to collect constraints on unresolved
+ * template arguments. All accumulation is local to a call; the returned
+ * constraints and the scope's inference context are immutable.
+ */
+#[AutowiredService]
+final class TemplateArgumentObserver
+{
+
+	public function collectSites(Type $type): TemplateArgumentConstraints
+	{
+		$constraints = TemplateArgumentConstraints::createEmpty();
+		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$constraints): Type {
+			if ($type instanceof UnresolvedTemplateArgumentType) {
+				$constraints = $constraints->withSite($type);
+				$initial = $type->getInitialType();
+				if ($initial !== null) {
+					$traverse($initial);
+				}
+				return $type;
+			}
+			return $traverse($type);
+		});
+		return $constraints;
+	}
+
+	/** Skip ordinary recursive generic relationships that cannot contribute a constraint. */
+	private function containsMarker(Type $type): bool
+	{
+		$contains = false;
+		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$contains): Type {
+			if ($type instanceof UnresolvedTemplateArgumentType) {
+				$contains = true;
+			}
+			return $contains ? $type : $traverse($type);
+		});
+		return $contains;
+	}
+
+	public function collectSend(Type $declared, Type $actual): TemplateArgumentConstraints
+	{
+		return $this->observeSend(TemplateArgumentConstraints::createEmpty(), $declared, $actual);
+	}
+
+	public function collectArgument(Type $parameterType, Type $argumentType, bool $isPure = false): TemplateArgumentConstraints
+	{
+		// A pure consumer accepting anything cannot initialize an empty object.
+		if ($isPure && $parameterType instanceof MixedType && !$parameterType instanceof TemplateType) {
+			return TemplateArgumentConstraints::createEmpty();
+		}
+		return $this->observeArgument(TemplateArgumentConstraints::createEmpty(), $parameterType, $argumentType);
+	}
+
+	/**
+	 * Keep a call's inferable parameters shared across all of its arguments.
+	 * Invariant uses relate fresh instances instead of fixing each one from
+	 * the arguments seen so far. The call's return type uses the same site.
+	 *
+	 * @param array<int|string, Type> $argumentTypes
+	 */
+	public function collectCall(Expr $site, ParametersAcceptor $acceptor, array $argumentTypes, ?TemplateTypeMap $classTemplates = null): TemplateArgumentConstraints
+	{
+		$constraints = TemplateArgumentConstraints::createEmpty();
+		if ($acceptor instanceof ResolvedFunctionVariant) {
+			$acceptor = $acceptor->getOriginalParametersAcceptor();
+		}
+		$templates = new TemplateTypeMap(array_merge($classTemplates !== null ? $classTemplates->getTypes() : [], $acceptor->getTemplateTypeMap()->getTypes()));
+		if ($templates->isEmpty()) {
+			return $constraints;
+		}
+		$hasMarkers = false;
+		foreach ($argumentTypes as $argumentType) {
+			if (!$this->containsMarker($argumentType)) {
+				continue;
+			}
+			$hasMarkers = true;
+			break;
+		}
+		if (!$hasMarkers) {
+			return $constraints;
+		}
+
+		$parameters = $acceptor->getParameters();
+		$parametersByName = [];
+		foreach ($parameters as $parameter) {
+			$parametersByName[$parameter->getName()] = $parameter;
+		}
+		foreach ($argumentTypes as $i => $argumentType) {
+			$parameter = is_string($i) ? ($parametersByName[$i] ?? null) : ($parameters[$i] ?? null);
+			$parameter ??= $acceptor->isVariadic() && count($parameters) > 0 ? $parameters[count($parameters) - 1] : null;
+			if ($parameter === null) {
+				continue;
+			}
+			$parameterType = TypeTraverser::map($parameter->getType(), static function (Type $type, callable $traverse) use ($site, $templates, &$constraints): Type {
+				if (!$type instanceof TemplateType || $type->isArgument()) {
+					return $traverse($type);
+				}
+				$template = $templates->getType($type->getName());
+				if (!$template instanceof TemplateType || !$template->getScope()->equals($type->getScope())) {
+					return $type;
+				}
+				$marker = new UnresolvedTemplateArgumentType($site, $type, null);
+				$constraints = $constraints->withSite($marker);
+				return $marker;
+			});
+			$constraints = $this->observeArgument($constraints, $parameterType, $argumentType);
+		}
+
+		return $constraints;
+	}
+
+	/**
+	 * $actual flows into $declared: a property's writable type, a parameter
+	 * type, a declared return type, a @var type.
+	 */
+	private function observeSend(TemplateArgumentConstraints $constraints, Type $declared, Type $actual, bool $isCallArgument = false): TemplateArgumentConstraints
+	{
+		if ($declared instanceof TemplateType || !$this->containsMarker($actual)) {
+			return $constraints;
+		}
+		if ($isCallArgument && $declared instanceof MixedType) {
+			foreach ($this->collectSites($actual)->getFacts() as [$marker]) {
+				$constraints = $constraints->withUnconstrainingSend($marker);
+			}
+			return $constraints;
+		}
+		if ($actual instanceof UnionType) {
+			foreach ($actual->getTypes() as $member) {
+				$constraints = $this->observeSend($constraints, $declared, $member, $isCallArgument);
+			}
+
+			return $constraints;
+		}
+		if ($declared instanceof UnionType) {
+			foreach ($declared->getTypes() as $member) {
+				$constraints = $this->observeSend($constraints, $member, $actual, $isCallArgument);
+			}
+
+			return $constraints;
+		}
+		if ($actual instanceof UnresolvedTemplateArgumentType) {
+			// a bare marker is a derived value (Foo<T>::get()) and never constrains
+			return $constraints;
+		}
+		if ($actual instanceof NeverType) {
+			// never holds no markers, and is its own iterable key and value type
+			return $constraints;
+		}
+
+		$actualReflections = $actual->getObjectClassReflections();
+		if (count($actualReflections) === 1) {
+			$declaredReflections = $declared->getObjectClassReflections();
+			if (count($declaredReflections) !== 1) {
+				return $constraints;
+			}
+			$declaredReflection = $declaredReflections[0];
+
+			// the declared type names an ancestor: its arguments map onto the
+			// object's through @extends/@implements
+			$ancestor = $actualReflections[0]->getAncestorWithClassName($declaredReflection->getName());
+			if ($ancestor === null || !$ancestor->isGeneric()) {
+				return $constraints;
+			}
+
+			$templates = $ancestor->typeMapToList($ancestor->getTemplateTypeMap());
+			// Omitted arguments are not explicit constraints to widen to the bounds.
+			$declaredArguments = $declaredReflection->typeMapToList($declaredReflection->getPossiblyIncompleteActiveTemplateTypeMap());
+			$declaredVariances = $declaredReflection->getCallSiteVarianceMap();
+			foreach ($ancestor->typeMapToList($ancestor->getActiveTemplateTypeMap()) as $i => $argument) {
+				$template = $templates[$i] ?? null;
+				if (!$template instanceof TemplateType || !isset($declaredArguments[$i])) {
+					continue;
+				}
+				$declaredArgument = $declaredArguments[$i];
+				if (!$argument instanceof UnresolvedTemplateArgumentType) {
+					$constraints = $this->observeSend($constraints, $declaredArgument, $argument, $isCallArgument);
+					continue;
+				}
+				if (
+					$isCallArgument
+					&& ($argument->getInitialType() === null || $argument->getInitialType() instanceof NeverType)
+					&& self::hasOnlyInferableTemplates($declaredArgument)
+				) {
+					$declaredArgument = TemplateTypeHelper::resolveToDefaults($declaredArgument);
+				}
+				if (self::isUninformativeSendTarget($declaredArgument)) {
+					// An unresolved call parameter, like mixed, uses the object without
+					// constraining it. Return/property templates are fixed by their
+					// declaration and must keep an empty argument compatible with them.
+					if (($isCallArgument && self::hasOnlyInferableTemplates($declaredArgument)) || ($declaredArgument instanceof MixedType && !$declaredArgument instanceof TemplateType)) {
+						$constraints = $constraints->withUnconstrainingSend($argument);
+					}
+
+					continue;
+				}
+
+				$callSiteVariance = $declaredVariances->getVariance($template->getName()) ?? TemplateTypeVariance::createInvariant();
+				$effectiveVariance = $callSiteVariance->invariant() ? $template->getVariance() : $callSiteVariance;
+				$constraints = $constraints->withSend($argument, $declaredArgument, $effectiveVariance);
+
+				// a site whose inferred argument itself carries markers (wrap(new Foo(1)))
+				$initial = $argument->getInitialType();
+				if ($initial === null) {
+					continue;
+				}
+				$constraints = $this->observeSend($constraints, $declaredArgument, $initial, $isCallArgument);
+			}
+
+			return $constraints;
+		}
+
+		if (count($actualReflections) > 0 || $actual->isObject()->yes()) {
+			return $constraints;
+		}
+
+		if (!$actual->isIterable()->yes() || !$declared->isIterable()->yes()) {
+			return $constraints;
+		}
+
+		$constraints = $this->observeSend($constraints, $declared->getIterableKeyType(), $actual->getIterableKeyType(), $isCallArgument);
+		$constraints = $this->observeSend($constraints, $declared->getIterableValueType(), $actual->getIterableValueType(), $isCallArgument);
+
+		return $constraints;
+	}
+
+	/**
+	 * An argument was passed to a parameter: the argument's markers are sent to
+	 * the parameter type, and a parameter type carrying the receiver's markers
+	 * (add(T $x) on Foo<unresolved>) puts the argument as a lower bound on them.
+	 */
+	private function observeArgument(TemplateArgumentConstraints $constraints, Type $parameterType, Type $argumentType): TemplateArgumentConstraints
+	{
+		$constraints = $this->observeSend($constraints, $parameterType, $argumentType, true);
+		$constraints = $this->observeLowerBound($constraints, $parameterType, $argumentType);
+
+		return $constraints;
+	}
+
+	private function observeLowerBound(TemplateArgumentConstraints $constraints, Type $parameterType, Type $argumentType): TemplateArgumentConstraints
+	{
+		if (!$this->containsMarker($parameterType)) {
+			return $constraints;
+		}
+		if ($parameterType instanceof UnresolvedTemplateArgumentType) {
+			$constraints = $constraints->withLowerBound($parameterType, $argumentType);
+			return $constraints;
+		}
+		if ($parameterType instanceof NeverType) {
+			// never is its own iterable key and value type
+			return $constraints;
+		}
+		if ($parameterType instanceof TemplateType || $parameterType->isCallable()->yes()) {
+			// callable parameters put the template in a contravariant position:
+			// what they say about it is an upper bound, not something flowing in
+			return $constraints;
+		}
+		if ($parameterType instanceof UnionType) {
+			foreach ($parameterType->getTypes() as $member) {
+				$constraints = $this->observeLowerBound($constraints, $member, $argumentType);
+			}
+
+			return $constraints;
+		}
+		if ($argumentType instanceof UnionType) {
+			foreach ($argumentType->getTypes() as $member) {
+				$constraints = $this->observeLowerBound($constraints, $parameterType, $member);
+			}
+
+			return $constraints;
+		}
+
+		$parameterReflections = $parameterType->getObjectClassReflections();
+		if (count($parameterReflections) === 1) {
+			$parameterReflection = $parameterReflections[0];
+			if (!$parameterReflection->isGeneric()) {
+				return $constraints;
+			}
+			$argumentReflections = $argumentType->getObjectClassReflections();
+			if (count($argumentReflections) !== 1) {
+				return $constraints;
+			}
+			$ancestor = $argumentReflections[0]->getAncestorWithClassName($parameterReflection->getName());
+			if ($ancestor === null) {
+				return $constraints;
+			}
+			$ancestorArguments = $ancestor->typeMapToList($ancestor->getActiveTemplateTypeMap());
+			foreach ($parameterReflection->typeMapToList($parameterReflection->getActiveTemplateTypeMap()) as $i => $parameterArgument) {
+				if (!isset($ancestorArguments[$i])) {
+					continue;
+				}
+				if ($parameterArgument instanceof UnresolvedTemplateArgumentType) {
+					$template = $parameterReflection->typeMapToList($parameterReflection->getTemplateTypeMap())[$i] ?? null;
+					if ($template instanceof TemplateType) {
+						$variance = $parameterReflection->getCallSiteVarianceMap()->getVariance($template->getName()) ?? TemplateTypeVariance::createInvariant();
+						$variance = $variance->invariant() ? $template->getVariance() : $variance;
+						if ($variance->invariant()) {
+							$constraints = $constraints->withSend($parameterArgument, $ancestorArguments[$i], $variance);
+							continue;
+						}
+						if ($variance->contravariant()) {
+							$constraints = $constraints->withSend($parameterArgument, $ancestorArguments[$i], TemplateTypeVariance::createCovariant());
+							continue;
+						}
+						if ($variance->bivariant()) {
+							continue;
+						}
+					}
+				}
+				$constraints = $this->observeLowerBound($constraints, $parameterArgument, $ancestorArguments[$i]);
+			}
+
+			return $constraints;
+		}
+
+		if (count($parameterReflections) > 0 || $parameterType->isObject()->yes()) {
+			return $constraints;
+		}
+
+		if (!$parameterType->isIterable()->yes() || !$argumentType->isIterable()->yes()) {
+			return $constraints;
+		}
+
+		$constraints = $this->observeLowerBound($constraints, $parameterType->getIterableKeyType(), $argumentType->getIterableKeyType());
+		$constraints = $this->observeLowerBound($constraints, $parameterType->getIterableValueType(), $argumentType->getIterableValueType());
+
+		return $constraints;
+	}
+
+	private static function isUninformativeSendTarget(Type $declaredArgument): bool
+	{
+		// Foo<mixed> accepts every Foo<X> (TemplateTypeVariance::isValidVariance)
+		// and a declared argument with unresolved template types is no target yet
+		return ($declaredArgument instanceof MixedType && !$declaredArgument instanceof TemplateType)
+			|| $declaredArgument->hasTemplateOrLateResolvableType();
+	}
+
+	private static function hasOnlyInferableTemplates(Type $type): bool
+	{
+		$references = $type->getReferencedTemplateTypes(TemplateTypeVariance::createInvariant());
+		foreach ($references as $reference) {
+			if ($reference->getType()->isArgument()) {
+				return false;
+			}
+		}
+
+		return count($references) > 0;
+	}
+
+}

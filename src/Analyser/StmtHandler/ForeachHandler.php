@@ -101,7 +101,7 @@ final class ForeachHandler implements StmtHandler
 		if ($stmt->expr instanceof Variable && is_string($stmt->expr->name)) {
 			$scope = $this->varAnnotationProcessor->processVarAnnotation($scope, [$stmt->expr->name], $stmt);
 		}
-		$condResult = $nodeScopeResolver->processExprNode($stmt, $stmt->expr, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+		$condResult = $nodeScopeResolver->processExprNode($stmt, $stmt->expr, $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
 		$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $entryScope, $storage);
 		$throwPoints = $condResult->getThrowPoints();
 		$impurePoints = $condResult->getImpurePoints();
@@ -228,7 +228,7 @@ final class ForeachHandler implements StmtHandler
 					$scope->pushExpressionResultStorage($storage);
 					try {
 						$bodyScope = $this->enterForeach($nodeScopeResolver, $bodyScope, $storage, $originalScope, $stmt, $foreachIterateeType, $foreachNativeIterateeType, $nodeCallback);
-						$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $bodyRecording, $context->enterDeep())->filterOutLoopExitPoints();
+						$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $bodyRecording, $context->enterDeep()->withoutTemplateArgumentResolution())->filterOutLoopExitPoints();
 						$bodyScope = $bodyScopeResult->getScope();
 						foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
 							$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
@@ -469,7 +469,7 @@ final class ForeachHandler implements StmtHandler
 		}
 
 		return new InternalStatementResult(
-			$finalScope,
+			$finalScope->addTemplateArgumentConstraints($finalScopeResult->getScope()->getTemplateArgumentConstraints()),
 			hasYield: $finalScopeResult->hasYield() || $condResult->hasYield(),
 			isAlwaysTerminating: $isIterableAtLeastOnce->yes() && $finalScopeResult->isAlwaysTerminating(),
 			exitPoints: $finalScopeResult->getExitPointsForOuterLoop(),
@@ -789,7 +789,7 @@ final class ForeachHandler implements StmtHandler
 				$iterStorage = $originalStorage->duplicate();
 				$iterBodyScope = $loopScope->mergeWith($endScope);
 				$iterBodyScope = $this->enterForeach($nodeScopeResolver, $iterBodyScope, $iterStorage, $originalScope, $stmt, $iterateeType, $nativeIterateeType, new NoopNodeCallback());
-				$iterBodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $iterBodyScope, $iterStorage, new NoopNodeCallback(), $context->enterDeep())->filterOutLoopExitPoints();
+				$iterBodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $iterBodyScope, $iterStorage, new NoopNodeCallback(), $context->enterDeep()->withoutTemplateArgumentResolution())->filterOutLoopExitPoints();
 				$loopScope = $iterBodyScopeResult->getScope();
 				foreach ($iterBodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
 					$loopScope = $loopScope->mergeWith($continueExitPoint->getScope());

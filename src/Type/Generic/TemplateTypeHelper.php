@@ -53,6 +53,12 @@ final class TemplateTypeHelper
 					return $traverse($type->getDefault() ?? $type->getBound());
 				}
 
+				if ($variance->covariant()) {
+					// a bare unresolved argument read out of the object (Foo<T>::get(): T)
+					// is a derived value - see UnresolvedTemplateArgumentType::unwrapBare()
+					$newType = UnresolvedTemplateArgumentType::unwrapBare($newType);
+				}
+
 				$callSiteVariance = $callSiteVariances->getVariance($type->getName());
 				if ($callSiteVariance === null || $callSiteVariance->invariant()) {
 					return $newType;
@@ -76,8 +82,8 @@ final class TemplateTypeHelper
 	public static function resolveToDefaults(Type $type): Type
 	{
 		return TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
-			if ($type instanceof TemplateType) {
-				return $traverse($type->getDefault() ?? $type->getBound());
+			while ($type instanceof TemplateType) {
+				$type = $type->getDefault() ?? $type->getBound();
 			}
 
 			return $traverse($type);
@@ -87,8 +93,8 @@ final class TemplateTypeHelper
 	public static function resolveToBounds(Type $type): Type
 	{
 		return TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
-			if ($type instanceof TemplateType) {
-				return $traverse($type->getBound());
+			while ($type instanceof TemplateType) {
+				$type = $type->getBound();
 			}
 
 			return $traverse($type);

@@ -1,17 +1,7 @@
 [
     {
-        "message": "Parameter #1 $a of method PHPStan\\Generics\\Classes\\A<int>::set() expects int, string given.",
-        "line": 261,
-        "ignorable": true
-    },
-    {
         "message": "Parameter #1 $a of method PHPStan\\Generics\\Classes\\A<DateTime>::set() expects DateTime, int given.",
         "line": 266,
-        "ignorable": true
-    },
-    {
-        "message": "Parameter #1 $a of method PHPStan\\Generics\\Classes\\A<int>::set() expects int, string given.",
-        "line": 271,
         "ignorable": true
     },
     {

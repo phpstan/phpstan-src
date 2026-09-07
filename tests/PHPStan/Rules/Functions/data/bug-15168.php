@@ -127,3 +127,33 @@ function test(): void
 	variadic(null, null);
 	fromClassString(null);
 }
+
+/** @template T */
+class Sink
+{
+
+	/** @param Coll<T> $collection */
+	public function take(Coll $collection): void
+	{
+	}
+
+	/**
+	 * @template U
+	 * @param Coll<U|null> $collection
+	 * @return U
+	 */
+	public function read(Coll $collection)
+	{
+	}
+
+}
+
+/**
+ * @template T
+ * @param Sink<T> $sink
+ */
+function fixedReceiverTemplate(Sink $sink): void
+{
+	$sink->take(new Coll(null));
+	$sink->read(new Coll(null));
+}

@@ -990,11 +990,11 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-10502.php'], [
 			[
-				"Call to function is_callable() with array{ArrayObject<int, int>, 'count'} will always evaluate to true.",
+				"Call to function is_callable() with array{ArrayObject<0, 0>, 'count'} will always evaluate to true.",
 				23,
 			],
 			[
-				"Call to function is_callable() with array{1: 'count', 0: ArrayObject<int, int>} will always evaluate to true.",
+				"Call to function is_callable() with array{1: 'count', 0: ArrayObject<0, 0>} will always evaluate to true.",
 				24,
 				$tipText,
 			],

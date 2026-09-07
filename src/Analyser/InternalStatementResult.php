@@ -25,6 +25,12 @@ final class InternalStatementResult
 		private array $endStatements = [],
 	)
 	{
+		foreach ($exitPoints as $exitPoint) {
+			$this->scope = $this->scope->addTemplateArgumentConstraints($exitPoint->getScope()->getTemplateArgumentConstraints());
+		}
+		foreach ($endStatements as $endStatement) {
+			$this->scope = $this->scope->addTemplateArgumentConstraints($endStatement->getResult()->getScope()->getTemplateArgumentConstraints());
+		}
 	}
 
 	public function toPublic(): StatementResult

@@ -44,7 +44,7 @@ final class DeclareHandler implements StmtHandler
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $declare, $scope, $storage);
 			// the value is a constant scalar - process it so its result is stored
 			// before the callback fires on it, like every other expression node
-			$nodeScopeResolver->processExprNode($stmt, $declare->value, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			$nodeScopeResolver->processExprNode($stmt, $declare->value, $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
 			if (
 				$declare->key->name !== 'strict_types'
 				|| !($declare->value instanceof Int_)

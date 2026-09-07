@@ -70,22 +70,22 @@ function (): void {
 	$value = Option::some(1)
 		->zip(Option::some(2));
 
-	assertType('Bug10254\\Option<array{int, int}>', $value);
+	assertType('Bug10254\\Option<array{1, 2}>', $value);
 
 	$value1 = $value->map(function ($value) {
-		assertType('int', $value[0]);
-		assertType('int', $value[1]);
+		assertType('1', $value[0]);
+		assertType('2', $value[1]);
 		return $value[0] + $value[1];
 	});
 
-	assertType('Bug10254\\Option<int>', $value1);
+	assertType('Bug10254\\Option<3>', $value1);
 
 	$value2 = $value->map(function ($value): int {
-		assertType('int', $value[0]);
-		assertType('int', $value[1]);
+		assertType('1', $value[0]);
+		assertType('2', $value[1]);
 		return $value[0] + $value[1];
 	});
 
-	assertType('Bug10254\\Option<int>', $value2);
+	assertType('Bug10254\\Option<3>', $value2);
 
 };

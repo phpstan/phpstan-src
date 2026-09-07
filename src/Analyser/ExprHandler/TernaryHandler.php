@@ -136,6 +136,9 @@ final class TernaryHandler implements ExprHandler, PerFileAnalysisResettable
 			}
 		}
 
+		$finalScope = $finalScope->addTemplateArgumentConstraints($ifTrueScope->getTemplateArgumentConstraints())
+			->addTemplateArgumentConstraints($ifFalseScope->getTemplateArgumentConstraints());
+
 		// lazily memoized merged-falsey scope of the (cond && if) disjunct
 		$aFalseyScope = null;
 

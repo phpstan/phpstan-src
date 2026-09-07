@@ -2,6 +2,8 @@
 
 namespace PHPStan\Analyser;
 
+use PHPStan\Analyser\Generics\TemplateArgumentConstraints;
+use PHPStan\Analyser\Generics\TemplateArgumentFrame;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
@@ -37,6 +39,8 @@ interface InternalScopeFactory
 		bool $afterExtractCall = false,
 		?MutatingScope $parentScope = null,
 		bool $nativeTypesPromoted = false,
+		?TemplateArgumentFrame $templateArgumentFrame = null,
+		?TemplateArgumentConstraints $templateArgumentConstraints = null,
 	): MutatingScope;
 
 	public function toNodeCallbackScopeFactory(): self;

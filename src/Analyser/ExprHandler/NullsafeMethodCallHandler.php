@@ -17,6 +17,7 @@ use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\BooleanNarrowingHelper;
 use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\ExprHandler\Helper\NonNullabilityHelper;
+use PHPStan\Analyser\Generics\TemplateArgumentFrame;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\SpecifiedTypes;
@@ -76,7 +77,7 @@ final class NullsafeMethodCallHandler implements ExprHandler
 		// walk itself will consume - exactly what storing the receiver walked
 		// inside the twin used to produce
 		$nodeScopeResolver->storeExpressionResult($storage, $expr->var, $processedReceiverResult->atAskPosition($nonNullabilityResult->getScope()));
-		$attributes = array_merge($expr->getAttributes(), ['virtualNullsafeMethodCall' => true]);
+		$attributes = array_merge($expr->getAttributes(), ['virtualNullsafeMethodCall' => true, TemplateArgumentFrame::ORIGINAL_SITE_ATTRIBUTE => $expr]);
 		unset($attributes[ExprPrinter::ATTRIBUTE_CACHE_KEY]);
 		$methodCall = new MethodCall(
 			$expr->var,

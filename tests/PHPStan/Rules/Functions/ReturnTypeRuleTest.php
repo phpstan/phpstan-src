@@ -34,6 +34,13 @@ class ReturnTypeRuleTest extends RuleTestCase
 		));
 	}
 
+	public function testArrayObjectObjectInput(): void
+	{
+		$this->checkNullables = true;
+		$this->checkExplicitMixed = false;
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/array-object-object-input.php'], []);
+	}
+
 	public function testReturnTypeRule(): void
 	{
 		require_once __DIR__ . '/data/returnTypes.php';
@@ -117,7 +124,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->checkNullables = true;
 		$this->analyse([__DIR__ . '/data/bug-2723.php'], [
 			[
-				'Function Bug2723\baz() should return Bug2723\Bar<Bug2723\Foo<T4>> but returns Bug2723\BarOfFoo<string>.',
+				'Function Bug2723\baz() should return Bug2723\Bar<Bug2723\Foo<T4>> but returns Bug2723\BarOfFoo<\'hello\'>.',
 				55,
 			],
 		]);
@@ -491,6 +498,35 @@ class ReturnTypeRuleTest extends RuleTestCase
 				14,
 			],
 		]);
+	}
+
+	public function testBug10419(): void
+	{
+		$this->checkNullables = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-10419.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.2.0')]
+	public function testBug10290(): void
+	{
+		$this->checkNullables = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-10290.php'], []);
+	}
+
+	public function testBug5741(): void
+	{
+		$this->checkNullables = true;
+		$this->checkExplicitMixed = false;
+		$this->analyse([__DIR__ . '/data/bug-5741.php'], []);
+	}
+
+	public function testBug8031(): void
+	{
+		$this->checkNullables = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-8031.php'], []);
 	}
 
 }

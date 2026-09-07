@@ -52,6 +52,43 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		);
 	}
 
+	public function testJointTemplateInference(): void
+	{
+		$this->analyse([__DIR__ . '/../../Analyser/Generics/data/joint-inference.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testJointTemplateInferenceNamedArguments(): void
+	{
+		$this->analyse([__DIR__ . '/data/joint-inference-named.php'], []);
+	}
+
+	public function testJointTemplateInferenceErrors(): void
+	{
+		$this->analyse([__DIR__ . '/../../Analyser/Generics/data/joint-inference-errors.php'], [
+			[
+				'Parameter #1 $promises of function JointInference\\all expects array<JointInference\\Promise<1|2>>, array{JointInference\\Promise<1>, JointInference\\Promise<2>} given.',
+				13,
+				'Template type T on class JointInference\\Promise is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
+			],
+			[
+				'Parameter #1 $a of function JointInference\\both expects JointInference\\Box<JointInference\\Cat|JointInference\\Dog>, JointInference\\Box<JointInference\\Cat> given.',
+				22,
+				'Template type T on class JointInference\\Box is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
+			],
+			[
+				'Parameter #2 $b of function JointInference\\both expects JointInference\\Box<JointInference\\Cat|JointInference\\Dog>, JointInference\\Box<JointInference\\Dog> given.',
+				22,
+				'Template type T on class JointInference\\Box is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
+			],
+		]);
+	}
+
+	public function testTemplateArgumentReduceIterator(): void
+	{
+		$this->analyse([__DIR__ . '/data/template-argument-reduce-iterator.php'], []);
+	}
+
 	public function testCallToFunctionWithoutParameters(): void
 	{
 		require_once __DIR__ . '/data/existing-function-definition.php';
@@ -3115,6 +3152,16 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	public function testBug15168(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-15168.php'], []);
+	}
+
+	public function testBug6732(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6732.php'], [
+			[
+				'Parameter #1 $strings of function Bug6732Functions\takeStrings expects Bug6732Functions\Collection<string>, Bug6732Functions\Collection<int> given.',
+				29,
+			],
+		]);
 	}
 
 }

@@ -6,6 +6,8 @@ use PhpParser\Lexer;
 use PhpParser\NodeVisitor;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\Parser\Php7;
+use PHPStan\Analyser\Generics\TemplateArgumentObserver;
+use PHPStan\Analyser\Generics\TemplateArgumentResolver;
 use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
 use PHPStan\Analyser\Ignore\IgnoreLexer;
 use PHPStan\Collectors\Registry as CollectorRegistry;
@@ -859,6 +861,8 @@ class AnalyserTest extends PHPStanTestCase
 
 		$nodeScopeResolver = new NodeScopeResolver(
 			$container,
+			$container->getByType(TemplateArgumentObserver::class),
+			$container->getByType(TemplateArgumentResolver::class),
 			$reflectionProvider,
 			$container->getExtensionsCollection(FunctionParameterOutTypeExtension::class),
 			$container->getExtensionsCollection(MethodParameterOutTypeExtension::class),
@@ -877,6 +881,7 @@ class AnalyserTest extends PHPStanTestCase
 			true,
 			$this->shouldTreatPhpDocTypesAsCertain(),
 			$container->getByType(ExpressionResultFactory::class),
+			$container->getParameter('featureToggles')['unresolvedTemplateArguments'],
 		);
 		$lexer = new Lexer();
 		$fileAnalyser = new FileAnalyser(

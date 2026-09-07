@@ -20,6 +20,7 @@ use PHPStan\Analyser\ExprHandler\Helper\DynamicReturnTypeStoragePrimer;
 use PHPStan\Analyser\ExprHandler\Helper\EarlyTerminatingCallHelper;
 use PHPStan\Analyser\ExprHandler\Helper\MethodCallReturnTypeHelper;
 use PHPStan\Analyser\ExprHandler\Helper\MethodThrowPointHelper;
+use PHPStan\Analyser\Generics\TemplateArgumentFrame;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
@@ -231,7 +232,7 @@ final class StaticCallHandler implements ExprHandler
 				$objectClasses = $classResult->getType()->getObjectTypeOrClassStringObjectType()->getObjectClassNames();
 			}
 			if (count($objectClasses) === 1) {
-				$objectExprResult = $nodeScopeResolver->processExprNode($stmt, new StaticCall(new Name($objectClasses[0]), $expr->name, []), $scope, $storage, new NoopNodeCallback(), $context->enterDeep());
+				$objectExprResult = $nodeScopeResolver->processExprNode($stmt, new StaticCall(new Name($objectClasses[0]), $expr->name, []), $scope, $storage, new NoopNodeCallback(), $context->enterDeep()->withoutTemplateArgumentResolution());
 				$additionalThrowPoints = $objectExprResult->getThrowPoints();
 			} else {
 				$additionalThrowPoints = [InternalThrowPoint::createImplicit($scope, $expr)];
@@ -392,7 +393,7 @@ final class StaticCallHandler implements ExprHandler
 			$acceptorForGenerics = $resolvedParametersAcceptor ?? $parametersAcceptor;
 			$scope = $scope->assignExpression(
 				new PossiblyImpureCallExpr($normalizedExpr, new Variable('this'), sprintf('%s::%s()', $methodReflection->getDeclaringClass()->getDisplayName(), $methodReflection->getName())),
-				$acceptorForGenerics->getReturnType(),
+				TemplateArgumentFrame::returnTypeOfCall($acceptorForGenerics, $scope, $expr),
 				new MixedType(),
 			);
 		}

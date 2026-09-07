@@ -16,7 +16,7 @@
          $type = $this->getStmtType($function);
  
          if ($type === null) {
-@@ -727,6 +736,15 @@
+@@ -727,6 +736,16 @@
  
              $this->modifyStmtTypeByPhpVersion($parameterNode);
  
@@ -27,6 +27,7 @@
 +                assert(is_string($parameterNode->var->name));
 +
 +                $this->addTagToDocComment($function, sprintf('param %s $%s', $rawType, $parameterNode->var->name));
++                $parameterNode->type = null;
 +            }
 +
              $parameters[] = $parameterNode;

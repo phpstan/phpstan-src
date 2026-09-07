@@ -377,7 +377,8 @@ final class StaticCallHandler implements ExprHandler
 			&& $scope->isInClass()
 			&& $scope->getClassReflection()->is($methodReflection->getDeclaringClass()->getName())
 		) {
-			$scope = $scope->invalidateExpression(new Variable('this'), true, $methodReflection->getDeclaringClass());
+			// a static method never receives $this, so property fetches on it survive
+			$scope = $scope->invalidateExpression(new Variable('this'), true, $methodReflection->getDeclaringClass(), $methodReflection->isStatic());
 		} elseif (
 			$expr->class instanceof Name
 			&& $methodReflection !== null

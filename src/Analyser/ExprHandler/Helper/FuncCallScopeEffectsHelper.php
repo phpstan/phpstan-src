@@ -101,7 +101,8 @@ final class FuncCallScopeEffectsHelper
 			$parametersAcceptor instanceof ClosureType && count($parametersAcceptor->getImpurePoints()) > 0
 			&& $scope->isInClass()
 		) {
-			$scope = $scope->invalidateExpression(new Variable('this'), true);
+			// a static closure is never bound to $this, so property fetches on it survive
+			$scope = $scope->invalidateExpression(new Variable('this'), true, keepPropertyFetches: $parametersAcceptor->isStaticClosure()->yes());
 		}
 
 		if (

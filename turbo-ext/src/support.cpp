@@ -28,6 +28,8 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_NAME */ {"name", "PhpParser\\Node\\Name"},
 	/* PT_CLASS_EXPR */ {"expr", "PhpParser\\Node\\Expr"},
 	/* PT_CLASS_PROPERTY_FETCH */ {"propertyFetch", "PhpParser\\Node\\Expr\\PropertyFetch"},
+	/* PT_CLASS_NULLSAFE_PROPERTY_FETCH */ {"nullsafePropertyFetch", "PhpParser\\Node\\Expr\\NullsafePropertyFetch"},
+	/* PT_CLASS_IDENTIFIER */ {"identifier", "PhpParser\\Node\\Identifier"},
 	/* PT_CLASS_INTERTWINED_VAR */ {"intertwinedVariableByReferenceWithExpr", "PHPStan\\Node\\Expr\\IntertwinedVariableByReferenceWithExpr"},
 	/* PT_CLASS_ARRAY_DIM_FETCH */ {"arrayDimFetch", "PhpParser\\Node\\Expr\\ArrayDimFetch"},
 	/* PT_CLASS_METHOD_CALL */ {"methodCall", "PhpParser\\Node\\Expr\\MethodCall"},

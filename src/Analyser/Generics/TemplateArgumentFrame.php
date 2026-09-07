@@ -111,7 +111,7 @@ final class TemplateArgumentFrame
 	 */
 	public function resolveOrUnconstrained(Expr $site, TemplateType $template): Type
 	{
-		return $this->resolve($site, $template->getName()) ?? self::resolveUnconstrained($site, $template, $this->resolve(...));
+		return $this->resolve($site, $template->getName()) ?? self::resolveUnconstrained($site, $template, fn (Expr $site, string $templateName): ?Type => $this->resolve($site, $templateName));
 	}
 
 	/**

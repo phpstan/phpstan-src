@@ -39,7 +39,7 @@ final class ArrowFunctionHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		$arrowFunctionResult = $nodeScopeResolver->processArrowFunctionNode($stmt, $expr, $scope, $storage, $nodeCallback, null, context: $context);
+		$arrowFunctionResult = $nodeScopeResolver->processArrowFunctionNode($stmt, $expr, $scope, $storage, $nodeCallback, null, null, $context);
 		$result = $arrowFunctionResult->getExpressionResult();
 
 		// A plain typeCallback recursing through getClosureType() would re-walk

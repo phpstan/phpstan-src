@@ -176,7 +176,7 @@ final class TemplateArgumentSolver
 				TemplateArgumentStats::increment('resolvedUnconstrained');
 			}
 
-			return TemplateArgumentFrame::resolveUnconstrained($observation['marker']->getSite(), $observation['marker']->getTemplate(), $this->resolve(...));
+			return TemplateArgumentFrame::resolveUnconstrained($observation['marker']->getSite(), $observation['marker']->getTemplate(), fn (Expr $site, string $templateName): ?Type => $this->resolve($site, $templateName));
 		}
 
 		if (TemplateArgumentStats::$enabled) {

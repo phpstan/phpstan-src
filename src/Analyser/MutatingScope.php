@@ -4379,7 +4379,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 
 	public function mergeWith(?self $otherScope, bool $preserveVacuousConditionals = false): self
 	{
-		return $this->mergeWithVariableState($otherScope, $preserveVacuousConditionals)->addTemplateArgumentConstraints($otherScope?->getTemplateArgumentConstraints());
+		return $this->mergeWithVariableState($otherScope, $preserveVacuousConditionals)->addTemplateArgumentConstraints($otherScope !== null ? $otherScope->getTemplateArgumentConstraints() : null);
 	}
 
 	private function mergeWithVariableState(?self $otherScope, bool $preserveVacuousConditionals = false): self

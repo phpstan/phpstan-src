@@ -4390,7 +4390,20 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
 		$this->checkExplicitMixed = true;
-		$this->analyse([__DIR__ . '/../Functions/data/bug-15168.php'], []);
+		$this->analyse([__DIR__ . '/../Functions/data/bug-15168.php'], [
+			[
+				'Parameter #1 $collection of method Bug15168Functions\Sink<T>::take() expects Bug15168Functions\Coll<T>, Bug15168Functions\Coll<mixed> given.',
+				157,
+			],
+		]);
+	}
+
+	public function testUnconstrainedQueryResult(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/unconstrained-query-result.php'], []);
 	}
 
 }

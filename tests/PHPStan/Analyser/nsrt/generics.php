@@ -887,9 +887,9 @@ function cache1($t): void {
 }
 
 function newHandling(): void {
-	assertType('PHPStan\Generics\FunctionsAssertType\C<*NEVER*>', new C());
+	assertType('PHPStan\Generics\FunctionsAssertType\C<mixed>', new C());
 	assertType('PHPStan\Generics\FunctionsAssertType\A<stdClass>', new A(new \stdClass()));
-	assertType('PHPStan\Generics\FunctionsAssertType\A<*NEVER*>', new A());
+	assertType('PHPStan\Generics\FunctionsAssertType\A<mixed>', new A());
 }
 
 /**

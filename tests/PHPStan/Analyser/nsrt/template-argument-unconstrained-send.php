@@ -47,7 +47,7 @@ function concreteConsumer(): void
 function untouchedCollection(): void
 {
 	$collection = new Collection(null);
-	assertType('TemplateArgumentUnconstrainedSend\Collection<*NEVER*>', $collection);
+	assertType('TemplateArgumentUnconstrainedSend\Collection<mixed>', $collection);
 }
 
 function consumeMixed($value): void
@@ -70,7 +70,7 @@ function pureMixedConsumer(): void
 {
 	$collection = new Collection(null);
 	inspectMixed($collection);
-	assertType('TemplateArgumentUnconstrainedSend\Collection<*NEVER*>', $collection);
+	assertType('TemplateArgumentUnconstrainedSend\Collection<mixed>', $collection);
 }
 
 /** @template ID of string|array<string, string> = string */

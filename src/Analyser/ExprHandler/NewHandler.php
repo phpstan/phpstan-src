@@ -725,7 +725,7 @@ final class NewHandler implements ExprHandler
 	/**
 	 * The class's template arguments when the constructor says nothing about
 	 * them: unresolved markers during a body's observation pass, the frame's
-	 * resolutions (never, when nothing constrained them) during its second
+	 * resolutions (the defaults or bounds when unconstrained) during its second
 	 * pass, the bounds outside any frame.
 	 *
 	 * @return list<Type>

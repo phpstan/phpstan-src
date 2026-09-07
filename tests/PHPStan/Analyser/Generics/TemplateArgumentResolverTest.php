@@ -21,6 +21,7 @@ use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Test\A;
@@ -87,16 +88,23 @@ class TemplateArgumentResolverTest extends PHPStanTestCase
 		$this->assertSame('1', self::describe($frame->resolve($site, 'T')));
 	}
 
-	public function testNothingInferredResolvesToNeverOrToTheSend(): void
+	public function testNothingInferredResolvesToTheBoundOrToTheSend(): void
 	{
 		[$constraints, $site] = self::constraintsWithA(null);
 		$frame = (new TemplateArgumentResolver())->resolve($constraints, null, []);
-		$this->assertSame('*NEVER*', self::describe($frame->resolve($site, 'T')));
+		$this->assertSame('mixed', self::describe($frame->resolve($site, 'T')));
 
 		[$constraints, $site, $ofMarker] = self::constraintsWithA(null);
 		$constraints = $constraints->merge((new TemplateArgumentObserver())->collectSend(new GenericObjectType(A\A::class, [new StringType()]), $ofMarker));
 		$frame = (new TemplateArgumentResolver())->resolve($constraints, null, []);
 		$this->assertSame('string', self::describe($frame->resolve($site, 'T')), 'nothing inferred is accepted by every send');
+	}
+
+	public function testEmptyInputRemainsNever(): void
+	{
+		[$constraints, $site] = self::constraintsWithA(new NeverType());
+		$frame = (new TemplateArgumentResolver())->resolve($constraints, null, []);
+		$this->assertSame('*NEVER*', self::describe($frame->resolve($site, 'T')));
 	}
 
 	public function testMixedAndTemplateTargetsAreNotSends(): void

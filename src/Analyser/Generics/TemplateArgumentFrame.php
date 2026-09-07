@@ -7,8 +7,6 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ResolvedFunctionVariant;
 use PHPStan\Type\Generic\TemplateType;
-use PHPStan\Type\MixedType;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use function array_keys;
@@ -115,9 +113,9 @@ final class TemplateArgumentFrame
 	}
 
 	/**
-	 * Nothing was inferred, sent or passed in: the template's default, else
-	 * its bound when it says something (`T of Foo`, `U of T` - resolved
-	 * against the sibling arguments), else never - the object holds nothing.
+	 * Nothing was inferred, sent or passed in: use the template's default or
+	 * bound, resolving sibling arguments in dependent bounds (`U of T`).
+	 * An unknown argument does not imply that the object holds nothing.
 	 *
 	 * @param callable(Expr, string): ?Type $resolve
 	 */
@@ -129,9 +127,6 @@ final class TemplateArgumentFrame
 		}
 
 		$bound = $template->getBound();
-		if ($bound instanceof MixedType && !$bound instanceof TemplateType) {
-			return new NeverType();
-		}
 		if (!$bound->hasTemplateOrLateResolvableType()) {
 			return $bound;
 		}

@@ -219,7 +219,7 @@ function (): void {
 
 function (): void {
 	$b = new Bag();
-	assertType('Bug6732\Bag<*NEVER*>', $b);
+	assertType('Bug6732\Bag<mixed>', $b);
 	$c = new Collection();
 	assertType('Bug6732\Collection<*NEVER*>', $c);
 	$e = new Collection([]);

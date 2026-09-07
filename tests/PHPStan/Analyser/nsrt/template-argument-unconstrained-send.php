@@ -49,3 +49,42 @@ function untouchedCollection(): void
 	$collection = new Collection(null);
 	assertType('TemplateArgumentUnconstrainedSend\Collection<*NEVER*>', $collection);
 }
+
+/** @template ID of string|array<string, string> = string */
+class Criteria
+{
+
+	/** @param array<ID>|null $ids */
+	public function __construct(?array $ids = null)
+	{
+	}
+
+}
+
+abstract class Repository
+{
+
+	/**
+	 * @template ID of string|array<string, string> = string
+	 * @param Criteria<ID> $criteria
+	 * @return list<ID>
+	 */
+	abstract public function searchIds(Criteria $criteria): array;
+
+}
+
+function defaultTemplateArgument(Repository $repository): void
+{
+	$criteria = new Criteria();
+	$ids = $repository->searchIds($criteria);
+	assertType('TemplateArgumentUnconstrainedSend\Criteria<string>', $criteria);
+	assertType('list<string>', $ids);
+}
+
+function inferredTemplateArgumentOverridesDefault(Repository $repository): void
+{
+	$criteria = new Criteria([['id' => 'foo']]);
+	$ids = $repository->searchIds($criteria);
+	assertType("TemplateArgumentUnconstrainedSend\Criteria<array{id: 'foo'}>", $criteria);
+	assertType("list<array{id: 'foo'}>", $ids);
+}

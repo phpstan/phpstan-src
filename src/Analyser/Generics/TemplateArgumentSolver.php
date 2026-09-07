@@ -170,9 +170,9 @@ final class TemplateArgumentSolver
 		if (count($parts) === 0) {
 			if ($observation['unconstrainingSend']) {
 				// sent to a target that accepts anything: the object is in use, so
-				// the template's bound is what is known about the argument - never
+				// the template's default or bound describes the argument - never
 				// would make every later read of it an error
-				return $observation['marker']->getTemplate()->getBound();
+				return $template->getDefault() ?? $template->getBound();
 			}
 			if ($initial instanceof NeverType) {
 				return $initial;

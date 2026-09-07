@@ -175,7 +175,7 @@ final class TypeCombinator
 	{
 		if ($type instanceof UnionType) {
 			foreach ($type->getTypes() as $innerType) {
-				if ($innerType instanceof NullType) {
+				if ($innerType->isNull()->yes()) {
 					return true;
 				}
 			}

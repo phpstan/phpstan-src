@@ -76,6 +76,16 @@ class InstantiationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/template-argument-arrow.php'], []);
 	}
 
+	public function testTemplateArgumentNestedCollection(): void
+	{
+		$this->analyse([__DIR__ . '/data/template-argument-nested-collection.php'], [
+			[
+				'Parameter #1 $events of class TemplateArgumentNestedCollection\ContainerEvent constructor expects TemplateArgumentNestedCollection\EventCollection<TemplateArgumentNestedCollection\WrittenEvent<ID of array<string, string>|string = string>>, TemplateArgumentNestedCollection\EventCollection<TemplateArgumentNestedCollection\Event> given.',
+				62,
+			],
+		]);
+	}
+
 	public function testInstantiation(): void
 	{
 		$this->analyse(

@@ -4,6 +4,7 @@ namespace PHPStan\Analyser\Generics;
 
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
 use PHPStan\Type\MixedType;
@@ -121,6 +122,13 @@ final class TemplateArgumentObserver
 				if (!$argument instanceof UnresolvedTemplateArgumentType) {
 					$constraints = $this->observeSend($constraints, $declaredArgument, $argument, $isCallArgument);
 					continue;
+				}
+				if (
+					$isCallArgument
+					&& ($argument->getInitialType() === null || $argument->getInitialType() instanceof NeverType)
+					&& self::hasOnlyInferableTemplates($declaredArgument)
+				) {
+					$declaredArgument = TemplateTypeHelper::resolveToDefaults($declaredArgument);
 				}
 				if (self::isUninformativeSendTarget($declaredArgument)) {
 					// An unresolved call parameter, like mixed, uses the object without

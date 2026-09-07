@@ -3131,6 +3131,7 @@ class NodeScopeResolver
 					$scope = $scope->addTemplateArgumentConstraints($this->templateArgumentObserver->collectArgument(
 						$this->findOriginalParameterType($argMetadataAcceptor, $parameter) ?? $parameter->getType(),
 						$gatheredArgTypeByIndex[$i],
+						($calleeReflection instanceof FunctionReflection || $calleeReflection instanceof ExtendedMethodReflection) && $calleeReflection->isPure()->yes(),
 					));
 				}
 			}

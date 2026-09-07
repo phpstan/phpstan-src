@@ -52,6 +52,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		);
 	}
 
+	public function testTemplateArgumentReduceIterator(): void
+	{
+		$this->analyse([__DIR__ . '/data/template-argument-reduce-iterator.php'], []);
+	}
+
 	public function testCallToFunctionWithoutParameters(): void
 	{
 		require_once __DIR__ . '/data/existing-function-definition.php';

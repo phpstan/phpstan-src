@@ -50,6 +50,29 @@ function untouchedCollection(): void
 	assertType('TemplateArgumentUnconstrainedSend\Collection<*NEVER*>', $collection);
 }
 
+function consumeMixed($value): void
+{
+}
+
+/** @phpstan-pure */
+function inspectMixed($value): void
+{
+}
+
+function mixedConsumer(): void
+{
+	$collection = new Collection(null);
+	consumeMixed($collection);
+	assertType('TemplateArgumentUnconstrainedSend\Collection<mixed>', $collection);
+}
+
+function pureMixedConsumer(): void
+{
+	$collection = new Collection(null);
+	inspectMixed($collection);
+	assertType('TemplateArgumentUnconstrainedSend\Collection<*NEVER*>', $collection);
+}
+
 /** @template ID of string|array<string, string> = string */
 class Criteria
 {

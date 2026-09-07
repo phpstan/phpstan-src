@@ -58,8 +58,12 @@ final class TemplateArgumentObserver
 		return $this->observeSend(TemplateArgumentConstraints::createEmpty(), $declared, $actual);
 	}
 
-	public function collectArgument(Type $parameterType, Type $argumentType): TemplateArgumentConstraints
+	public function collectArgument(Type $parameterType, Type $argumentType, bool $isPure = false): TemplateArgumentConstraints
 	{
+		// A pure consumer accepting anything cannot initialize an empty object.
+		if ($isPure && $parameterType instanceof MixedType && !$parameterType instanceof TemplateType) {
+			return TemplateArgumentConstraints::createEmpty();
+		}
 		return $this->observeArgument(TemplateArgumentConstraints::createEmpty(), $parameterType, $argumentType);
 	}
 
@@ -70,6 +74,12 @@ final class TemplateArgumentObserver
 	private function observeSend(TemplateArgumentConstraints $constraints, Type $declared, Type $actual, bool $isCallArgument = false): TemplateArgumentConstraints
 	{
 		if ($declared instanceof TemplateType || !$this->containsMarker($actual)) {
+			return $constraints;
+		}
+		if ($isCallArgument && $declared instanceof MixedType) {
+			foreach ($this->collectSites($actual)->getFacts() as [$marker]) {
+				$constraints = $constraints->withUnconstrainingSend($marker);
+			}
 			return $constraints;
 		}
 		if ($actual instanceof UnionType) {

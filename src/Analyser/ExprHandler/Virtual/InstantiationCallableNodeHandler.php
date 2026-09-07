@@ -47,7 +47,7 @@ final class InstantiationCallableNodeHandler implements ExprHandler
 		$hasYield = false;
 		$isAlwaysTerminating = false;
 		if ($expr->getClass() instanceof Expr) {
-			$classResult = $nodeScopeResolver->processExprNode($stmt, $expr->getClass(), $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			$classResult = $nodeScopeResolver->processExprNode($stmt, $expr->getClass(), $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
 			$scope = $classResult->getScope();
 			$hasYield = $classResult->hasYield();
 			$throwPoints = $classResult->getThrowPoints();

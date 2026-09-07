@@ -48,7 +48,7 @@ final class StaticMethodCallableNodeHandler implements ExprHandler
 		$hasYield = false;
 		$isAlwaysTerminating = false;
 		if ($expr->getClass() instanceof Expr) {
-			$classResult = $nodeScopeResolver->processExprNode($stmt, $expr->getClass(), $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			$classResult = $nodeScopeResolver->processExprNode($stmt, $expr->getClass(), $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
 			$scope = $classResult->getScope();
 			$hasYield = $classResult->hasYield();
 			$throwPoints = $classResult->getThrowPoints();
@@ -56,7 +56,7 @@ final class StaticMethodCallableNodeHandler implements ExprHandler
 			$isAlwaysTerminating = $classResult->isAlwaysTerminating();
 		}
 		if ($expr->getName() instanceof Expr) {
-			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->getName(), $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->getName(), $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
 			$scope = $nameResult->getScope();
 			$hasYield = $hasYield || $nameResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $nameResult->getThrowPoints());

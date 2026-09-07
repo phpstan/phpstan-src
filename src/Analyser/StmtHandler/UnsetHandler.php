@@ -59,7 +59,7 @@ final class UnsetHandler implements StmtHandler
 		$impurePoints = [];
 		foreach ($stmt->vars as $var) {
 			$scope = $nodeScopeResolver->lookForSetAllowedUndefinedExpressions($scope, $var);
-			$exprResult = $nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			$exprResult = $nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
 			$scope = $exprResult->getScope();
 			$scope = $nodeScopeResolver->lookForUnsetAllowedUndefinedExpressions($scope, $var);
 			$hasYield = $hasYield || $exprResult->hasYield();
@@ -70,7 +70,7 @@ final class UnsetHandler implements StmtHandler
 				if (!$varType->isArray()->yes() && !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->no()) {
 					$throwPoints = array_merge($throwPoints, $this->container->getByType(MethodThrowPointHelper::class)->getThrowPointsForCallOnType(
 						$scope,
-						ExpressionContext::createDeep(),
+						ExpressionContext::createDeep($context->shouldResolveTemplateArguments()),
 						$varType,
 						new MethodCall(new TypeExpr($varType), 'offsetUnset'),
 					));

@@ -136,7 +136,7 @@ final class FunctionHandler implements StmtHandler
 				$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
 			});
 			try {
-				$statementResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $functionScope, $bodyStorage, $nodeCallback, StatementContext::createTopLevel())->toPublic();
+				$statementResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $functionScope, $bodyStorage, $nodeCallback, StatementContext::createTopLevel($context->shouldResolveTemplateArguments()))->toPublic();
 			} finally {
 				$nodeScopeResolver->popNodeGatherer();
 			}

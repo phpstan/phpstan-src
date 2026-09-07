@@ -38,7 +38,7 @@ final class ReturnHandler implements StmtHandler
 		$stmtScope = $nodeScopeResolver->processStmtVarAnnotation($scope, $storage, $stmt, $stmt->expr, $nodeCallback);
 
 		if ($stmt->expr !== null) {
-			$result = $nodeScopeResolver->processExprNode($stmt, $stmt->expr, $stmtScope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			$result = $nodeScopeResolver->processExprNode($stmt, $stmt->expr, $stmtScope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
 			// the @var-changed-type node fires now that the expression is stored
 			// on the scope BEFORE the @var tag re-typed the expression, so the rule
 			// compares the tag against the expression's walked type

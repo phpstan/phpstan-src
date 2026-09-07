@@ -491,7 +491,7 @@ class NodeScopeResolver
 				$bodyScope,
 				$tempStorage,
 				new NoopNodeCallback(),
-				$context,
+				$context->withoutTemplateArgumentResolution(),
 			);
 
 			$gotoScope = null;
@@ -674,8 +674,7 @@ class NodeScopeResolver
 			$shouldCheckLastStatement
 			&& $stmtCount > 0
 			&& $this->unresolvedTemplateArguments
-			&& !$nodeCallback instanceof RecordingNodeCallback
-			&& !$nodeCallback instanceof NoopNodeCallback
+			&& $context->shouldResolveTemplateArguments()
 		) {
 			return $this->processBodyStmtNodesTwoPass($parentNode, $stmts, $scope, $storage, $nodeCallback, $context);
 		}
@@ -870,12 +869,13 @@ class NodeScopeResolver
 		$state = new StatementListWalkState($scope);
 		/** @var list<array{StatementListWalkState, int}> $entries the state and recording offset before each statement, plus the final ones */
 		$entries = [];
+		$observationContext = $context->withoutTemplateArgumentResolution();
 		$suspendedGatherers = $this->nodeGatherers;
 		$this->nodeGatherers = [];
 		try {
 			foreach ($stmts as $i => $stmt) {
 				$entries[$i] = [clone $state, $recording->count()];
-				$this->processStatementStep($parentNode, $stmts, $i, $stmt, $state, $storage, $recording, $context, true);
+				$this->processStatementStep($parentNode, $stmts, $i, $stmt, $state, $storage, $recording, $observationContext, true);
 			}
 		} finally {
 			$this->nodeGatherers = $suspendedGatherers;
@@ -1347,7 +1347,7 @@ class NodeScopeResolver
 				$scope,
 				$storage,
 				new NoopNodeCallback(),
-				ExpressionContext::createTopLevel(),
+				ExpressionContext::createTopLevel(resolveTemplateArguments: false),
 			);
 		} finally {
 			$scope->popExpressionResultStorage();
@@ -2047,7 +2047,7 @@ class NodeScopeResolver
 		if (count($byRefUses) === 0) {
 			$this->pushNodeGatherer($closureStmtsGatherer);
 			try {
-				$statementResult = $this->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, $nodeCallback, StatementContext::createTopLevel());
+				$statementResult = $this->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, $nodeCallback, StatementContext::createTopLevel($context->shouldResolveTemplateArguments()));
 			} finally {
 				$this->popNodeGatherer();
 			}
@@ -2092,7 +2092,7 @@ class NodeScopeResolver
 			// loops walk single-pass here and only the final walk below (top-level)
 			// runs their full convergence - otherwise every closure-convergence
 			// pass would re-converge every inner loop from scratch
-			$intermediaryClosureScopeResult = $this->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, $bodyRecording, StatementContext::createDeep());
+			$intermediaryClosureScopeResult = $this->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, $bodyRecording, StatementContext::createDeep(resolveTemplateArguments: false));
 			// the candidate to replace the final walk when this pass's entry
 			// turns out to be the fixpoint
 			if ($bodyRecording instanceof RecordingNodeCallback) {
@@ -2146,7 +2146,7 @@ class NodeScopeResolver
 				$this->replayRecording($replayBodyRecording, $nodeCallback, $originalStorage, $closureScope);
 				$statementResult = $replayPassResult;
 			} else {
-				$statementResult = $this->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, $nodeCallback, StatementContext::createTopLevel());
+				$statementResult = $this->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, $nodeCallback, StatementContext::createTopLevel($context->shouldResolveTemplateArguments()));
 			}
 		} finally {
 			$this->popNodeGatherer();
@@ -2255,8 +2255,10 @@ class NodeScopeResolver
 		callable $nodeCallback,
 		?Type $passedToType,
 		?Type $nativePassedToType = null,
+		?ExpressionContext $context = null,
 	): ProcessArrowFunctionResult
 	{
+		$context ??= ExpressionContext::createTopLevel();
 		foreach ($expr->params as $param) {
 			$this->processParamNode($stmt, $param, $scope, $storage, $nodeCallback);
 		}
@@ -2305,7 +2307,7 @@ class NodeScopeResolver
 
 		$this->pushNodeGatherer($arrowFunctionStmtsGatherer);
 		try {
-			$exprResult = $this->processExprNode($stmt, $expr->expr, $arrowFunctionScope, $storage, $nodeCallback, ExpressionContext::createTopLevel());
+			$exprResult = $this->processExprNode($stmt, $expr->expr, $arrowFunctionScope, $storage, $nodeCallback, ExpressionContext::createTopLevel($context->shouldResolveTemplateArguments()));
 		} finally {
 			$this->popNodeGatherer();
 		}
@@ -3025,7 +3027,7 @@ class NodeScopeResolver
 						}
 					}
 
-					$arrowFunctionResult = $this->processArrowFunctionNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $parameterType, $parameterNativeType);
+					$arrowFunctionResult = $this->processArrowFunctionNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $parameterType, $parameterNativeType, $context);
 					$arrowFunctionExprResult = $arrowFunctionResult->getExpressionResult();
 					if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
 						$throwPoints = array_merge($throwPoints, array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $arrowFunctionExprResult->getThrowPoints()));
@@ -3458,7 +3460,7 @@ class NodeScopeResolver
 				continue;
 			}
 
-			$this->processExprNode($stmt, $originalArg->value, $scope, $storage, new NoopNodeCallback(), $context->enterDeep());
+			$this->processExprNode($stmt, $originalArg->value, $scope, $storage, new NoopNodeCallback(), $context->enterDeep()->withoutTemplateArgumentResolution());
 		}
 	}
 

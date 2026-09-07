@@ -281,7 +281,7 @@ final class MatchHandler implements ExprHandler, PerFileAnalysisResettable
 						$matchArmBodyScope,
 						$storage,
 						$nodeCallback,
-						ExpressionContext::createTopLevel(),
+						ExpressionContext::createTopLevel($context->shouldResolveTemplateArguments()),
 					);
 					$armScope = $armResult->getScope();
 					$scope = $scope->addTemplateArgumentConstraints($armScope->getTemplateArgumentConstraints());
@@ -321,7 +321,7 @@ final class MatchHandler implements ExprHandler, PerFileAnalysisResettable
 				$defaultArmBodyScope = $matchScope;
 				$matchArmBody = new MatchExpressionArmBody($matchScope, $arm->body);
 				$armNodes[$i] = new MatchExpressionArm($matchArmBody, [], $arm->getStartLine());
-				$armResult = $nodeScopeResolver->processExprNode($stmt, $arm->body, $matchScope, $storage, $nodeCallback, ExpressionContext::createTopLevel());
+				$armResult = $nodeScopeResolver->processExprNode($stmt, $arm->body, $matchScope, $storage, $nodeCallback, ExpressionContext::createTopLevel($context->shouldResolveTemplateArguments()));
 				$matchScope = $armResult->getScope();
 				$scope = $scope->addTemplateArgumentConstraints($matchScope->getTemplateArgumentConstraints());
 				$hasYield = $hasYield || $armResult->hasYield();
@@ -429,7 +429,7 @@ final class MatchHandler implements ExprHandler, PerFileAnalysisResettable
 				$bodyScope,
 				$storage,
 				$nodeCallback,
-				ExpressionContext::createTopLevel(),
+				ExpressionContext::createTopLevel($context->shouldResolveTemplateArguments()),
 			);
 			$armScope = $armResult->getScope();
 			$scope = $scope->addTemplateArgumentConstraints($armScope->getTemplateArgumentConstraints());

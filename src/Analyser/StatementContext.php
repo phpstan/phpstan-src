@@ -16,6 +16,7 @@ final class StatementContext
 	private function __construct(
 		private bool $isTopLevel,
 		private int $foreachUnrollFactor = 1,
+		private bool $resolveTemplateArguments = true,
 	)
 	{
 	}
@@ -23,17 +24,17 @@ final class StatementContext
 	/**
 	 * @api
 	 */
-	public static function createTopLevel(): self
+	public static function createTopLevel(bool $resolveTemplateArguments = true): self
 	{
-		return new self(true);
+		return new self(true, resolveTemplateArguments: $resolveTemplateArguments);
 	}
 
 	/**
 	 * @api
 	 */
-	public static function createDeep(): self
+	public static function createDeep(bool $resolveTemplateArguments = true): self
 	{
-		return new self(false);
+		return new self(false, resolveTemplateArguments: $resolveTemplateArguments);
 	}
 
 	public function isTopLevel(): bool
@@ -46,10 +47,24 @@ final class StatementContext
 		return $this->foreachUnrollFactor;
 	}
 
+	public function shouldResolveTemplateArguments(): bool
+	{
+		return $this->resolveTemplateArguments;
+	}
+
+	public function withoutTemplateArgumentResolution(): self
+	{
+		if (!$this->resolveTemplateArguments) {
+			return $this;
+		}
+
+		return new self($this->isTopLevel, $this->foreachUnrollFactor, false);
+	}
+
 	public function enterDeep(): self
 	{
 		if ($this->isTopLevel) {
-			return new self(false, $this->foreachUnrollFactor);
+			return new self(false, $this->foreachUnrollFactor, $this->resolveTemplateArguments);
 		}
 
 		return $this;
@@ -57,7 +72,7 @@ final class StatementContext
 
 	public function enterUnrolledForeach(int $totalKeys): self
 	{
-		return new self($this->isTopLevel, $this->foreachUnrollFactor * $totalKeys);
+		return new self($this->isTopLevel, $this->foreachUnrollFactor * $totalKeys, $this->resolveTemplateArguments);
 	}
 
 }

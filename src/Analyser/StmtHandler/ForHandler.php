@@ -127,7 +127,7 @@ final class ForHandler implements StmtHandler
 		$throwPoints = [];
 		$impurePoints = [];
 		foreach ($stmt->init as $initExpr) {
-			$initResult = $nodeScopeResolver->processExprNode($stmt, $initExpr, $initScope, $storage, $nodeCallback, ExpressionContext::createTopLevel());
+			$initResult = $nodeScopeResolver->processExprNode($stmt, $initExpr, $initScope, $storage, $nodeCallback, ExpressionContext::createTopLevel($context->shouldResolveTemplateArguments()));
 			$initScope = $initResult->getScope();
 			$hasYield = $hasYield || $initResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $initResult->getThrowPoints());
@@ -144,7 +144,7 @@ final class ForHandler implements StmtHandler
 			$scope->pushExpressionResultStorage($storage);
 			try {
 				foreach ($stmt->cond as $condExpr) {
-					$condResult = $nodeScopeResolver->processExprNode($stmt, $condExpr, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep());
+					$condResult = $nodeScopeResolver->processExprNode($stmt, $condExpr, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep(resolveTemplateArguments: false));
 					$initScope = $condResult->getScope();
 
 					// only the last condition expression is relevant whether the loop continues
@@ -181,16 +181,16 @@ final class ForHandler implements StmtHandler
 				$scope->pushExpressionResultStorage($storage);
 				try {
 					if ($lastCondExpr !== null) {
-						$bodyScope = $nodeScopeResolver->processExprNode($stmt, $lastCondExpr, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep())->getTruthyScope();
+						$bodyScope = $nodeScopeResolver->processExprNode($stmt, $lastCondExpr, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep(resolveTemplateArguments: false))->getTruthyScope();
 					}
-					$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, new NoopNodeCallback(), $context->enterDeep())->filterOutLoopExitPoints();
+					$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, new NoopNodeCallback(), $context->enterDeep()->withoutTemplateArgumentResolution())->filterOutLoopExitPoints();
 					$bodyScope = $bodyScopeResult->getScope();
 					foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
 						$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
 					}
 
 					foreach ($stmt->loop as $loopExpr) {
-						$exprResult = $nodeScopeResolver->processExprNode($stmt, $loopExpr, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createTopLevel());
+						$exprResult = $nodeScopeResolver->processExprNode($stmt, $loopExpr, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createTopLevel(resolveTemplateArguments: false));
 						$bodyScope = $exprResult->getScope();
 						$hasYield = $hasYield || $exprResult->hasYield();
 						$throwPoints = array_merge($throwPoints, $exprResult->getThrowPoints());
@@ -220,7 +220,7 @@ final class ForHandler implements StmtHandler
 			// its result - the previous scope-based read was a guaranteed
 			// storage miss (the condition was only stored into discarded
 			// convergence duplicates) that re-priced it on demand
-			$condResult = $nodeScopeResolver->processExprNode($stmt, $lastCondExpr, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			$condResult = $nodeScopeResolver->processExprNode($stmt, $lastCondExpr, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
 			$alwaysIterates = $alwaysIterates->and($condResult->getType()->toBoolean()->isTrue());
 			$bodyScope = $condResult->getTruthyScope();
 			$bodyScope = $this->inferForLoopExpressions($nodeScopeResolver, $stmt, $lastCondExpr, $bodyScope, $storage);
@@ -234,7 +234,7 @@ final class ForHandler implements StmtHandler
 
 		$loopScope = $finalScope;
 		foreach ($stmt->loop as $loopExpr) {
-			$loopScope = $nodeScopeResolver->processExprNode($stmt, $loopExpr, $loopScope, $storage, $nodeCallback, ExpressionContext::createTopLevel())->getScope();
+			$loopScope = $nodeScopeResolver->processExprNode($stmt, $loopExpr, $loopScope, $storage, $nodeCallback, ExpressionContext::createTopLevel($context->shouldResolveTemplateArguments()))->getScope();
 		}
 		$finalScope = $finalScope->generalizeWith($loopScope);
 

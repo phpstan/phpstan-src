@@ -96,7 +96,7 @@ final class MethodCallHandler implements ExprHandler
 			// its stored ExpressionResult instead of reading the unprocessed node via
 			// Scope::getType(). processArgs() below processes it again as call()'s first
 			// argument; the NoopNodeCallback here avoids a duplicate node-callback.
-			$newThisResult = $nodeScopeResolver->processExprNode($stmt, $expr->getArgs()[0]->value, $scope, $storage, new NoopNodeCallback(), $context->enterDeep());
+			$newThisResult = $nodeScopeResolver->processExprNode($stmt, $expr->getArgs()[0]->value, $scope, $storage, new NoopNodeCallback(), $context->enterDeep()->withoutTemplateArgumentResolution());
 			$closureCallScope = $scope->enterClosureCall(
 				$newThisResult->getType(),
 				$newThisResult->getNativeType(),

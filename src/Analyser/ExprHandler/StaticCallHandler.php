@@ -232,7 +232,7 @@ final class StaticCallHandler implements ExprHandler
 				$objectClasses = $classResult->getType()->getObjectTypeOrClassStringObjectType()->getObjectClassNames();
 			}
 			if (count($objectClasses) === 1) {
-				$objectExprResult = $nodeScopeResolver->processExprNode($stmt, new StaticCall(new Name($objectClasses[0]), $expr->name, []), $scope, $storage, new NoopNodeCallback(), $context->enterDeep());
+				$objectExprResult = $nodeScopeResolver->processExprNode($stmt, new StaticCall(new Name($objectClasses[0]), $expr->name, []), $scope, $storage, new NoopNodeCallback(), $context->enterDeep()->withoutTemplateArgumentResolution());
 				$additionalThrowPoints = $objectExprResult->getThrowPoints();
 			} else {
 				$additionalThrowPoints = [InternalThrowPoint::createImplicit($scope, $expr)];

@@ -1117,7 +1117,7 @@ final class AssignHandler implements ExprHandler
 						if ($if === null) {
 							$if = $assignedExpr->cond;
 						}
-						$condScope = $nodeScopeResolver->processExprNode($stmt, $assignedExpr->cond, $scope, $storage->duplicate(), new NoopNodeCallback(), ExpressionContext::createDeep())->getScope();
+						$condScope = $nodeScopeResolver->processExprNode($stmt, $assignedExpr->cond, $scope, $storage->duplicate(), new NoopNodeCallback(), ExpressionContext::createDeep(resolveTemplateArguments: false))->getScope();
 						$truthySpecifiedTypes = $this->defaultNarrowingHelper->specifyTypesForNode($condScope, $assignedExpr->cond, TypeSpecifierContext::createTruthy());
 						$falseySpecifiedTypes = $this->defaultNarrowingHelper->specifyTypesForNode($condScope, $assignedExpr->cond, TypeSpecifierContext::createFalsey());
 						$truthyScope = $condScope->applySpecifiedTypes($truthySpecifiedTypes);

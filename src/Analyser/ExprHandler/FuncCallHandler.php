@@ -209,8 +209,8 @@ final class FuncCallHandler implements ExprHandler
 			// properties array resolve from stored results instead of unprocessed
 			// nodes; processArgs() below processes them again as clone()'s arguments,
 			// so the NoopNodeCallback here avoids duplicate node-callbacks.
-			$cloneObjectArgResult = $nodeScopeResolver->processExprNode($stmt, $normalizedExpr->getArgs()[0]->value, $scope, $storage, new NoopNodeCallback(), $context->enterDeep());
-			$clonePropertiesArgResult = $nodeScopeResolver->processExprNode($stmt, $normalizedExpr->getArgs()[1]->value, $scope, $storage, new NoopNodeCallback(), $context->enterDeep());
+			$cloneObjectArgResult = $nodeScopeResolver->processExprNode($stmt, $normalizedExpr->getArgs()[0]->value, $scope, $storage, new NoopNodeCallback(), $context->enterDeep()->withoutTemplateArgumentResolution());
+			$clonePropertiesArgResult = $nodeScopeResolver->processExprNode($stmt, $normalizedExpr->getArgs()[1]->value, $scope, $storage, new NoopNodeCallback(), $context->enterDeep()->withoutTemplateArgumentResolution());
 			$clonePropertiesArgType = $clonePropertiesArgResult->getType();
 			// the cloned type is composed from the object argument's result -
 			// no synthetic Clone_ walk

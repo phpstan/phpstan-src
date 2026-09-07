@@ -160,7 +160,7 @@ final class NewHandler implements ExprHandler
 						$constructorResult = $node;
 					});
 					try {
-						$nodeScopeResolver->processStmtNode($expr->class, $scope, $storage, $nodeCallback, StatementContext::createTopLevel());
+						$nodeScopeResolver->processStmtNode($expr->class, $scope, $storage, $nodeCallback, StatementContext::createTopLevel($context->shouldResolveTemplateArguments()));
 					} finally {
 						$nodeScopeResolver->popNodeGatherer();
 					}
@@ -170,7 +170,7 @@ final class NewHandler implements ExprHandler
 						$impurePoints = $constructorResult->getImpurePoints();
 					}
 				} else {
-					$nodeScopeResolver->processStmtNode($expr->class, $scope, $storage, $nodeCallback, StatementContext::createTopLevel());
+					$nodeScopeResolver->processStmtNode($expr->class, $scope, $storage, $nodeCallback, StatementContext::createTopLevel($context->shouldResolveTemplateArguments()));
 					if (!$constructorReflection->hasSideEffects()->no()) {
 						$certain = $constructorReflection->isPure()->no();
 						$impurePoints[] = new ImpurePoint(
@@ -183,7 +183,7 @@ final class NewHandler implements ExprHandler
 					}
 				}
 			} else {
-				$nodeScopeResolver->processStmtNode($expr->class, $scope, $storage, $nodeCallback, StatementContext::createTopLevel());
+				$nodeScopeResolver->processStmtNode($expr->class, $scope, $storage, $nodeCallback, StatementContext::createTopLevel($context->shouldResolveTemplateArguments()));
 			}
 
 			if ($parametersAcceptor !== null) {
@@ -204,7 +204,7 @@ final class NewHandler implements ExprHandler
 			// the not-yet-stored New_ node, which would re-enter this handler.
 			$objectClasses = $classResult->getType()->getObjectTypeOrClassStringObjectType()->getObjectClassNames();
 			if (count($objectClasses) === 1) {
-				$objectExprResult = $nodeScopeResolver->processExprNode($stmt, new New_(new Name($objectClasses[0]), attributes: [TemplateArgumentFrame::SYNTHETIC_SITE_ATTRIBUTE => true]), $scope, $storage, new NoopNodeCallback(), $context->enterDeep());
+				$objectExprResult = $nodeScopeResolver->processExprNode($stmt, new New_(new Name($objectClasses[0]), attributes: [TemplateArgumentFrame::SYNTHETIC_SITE_ATTRIBUTE => true]), $scope, $storage, new NoopNodeCallback(), $context->enterDeep()->withoutTemplateArgumentResolution());
 				$className = $objectClasses[0];
 				$additionalThrowPoints = $objectExprResult->getThrowPoints();
 			} else {

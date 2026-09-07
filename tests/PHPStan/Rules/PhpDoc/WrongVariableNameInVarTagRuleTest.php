@@ -640,4 +640,10 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testTemplateArgumentRawReturn(): void
+	{
+		$this->checkTypeAgainstPhpDocType = true;
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/template-argument-raw-return.php'], []);
+	}
+
 }

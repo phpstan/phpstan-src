@@ -121,7 +121,8 @@ final class TemplateArgumentObserver
 			}
 
 			$templates = $ancestor->typeMapToList($ancestor->getTemplateTypeMap());
-			$declaredArguments = $declaredReflection->typeMapToList($declaredReflection->getActiveTemplateTypeMap());
+			// Omitted arguments are not explicit constraints to widen to the bounds.
+			$declaredArguments = $declaredReflection->typeMapToList($declaredReflection->getPossiblyIncompleteActiveTemplateTypeMap());
 			$declaredVariances = $declaredReflection->getCallSiteVarianceMap();
 			foreach ($ancestor->typeMapToList($ancestor->getActiveTemplateTypeMap()) as $i => $argument) {
 				$template = $templates[$i] ?? null;

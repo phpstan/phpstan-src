@@ -3172,6 +3172,15 @@ class NodeScopeResolver
 				: $metadataAcceptor;
 		}
 
+		if ($resolvedAcceptor !== null && $this->observingTemplateArgumentFrame($scope) !== null) {
+			$scope = $scope->addTemplateArgumentConstraints($this->templateArgumentObserver->collectCall(
+				$callLike,
+				$resolvedAcceptor,
+				$gatheredTypes,
+				$callLike instanceof New_ && $calleeReflection instanceof MethodReflection ? $calleeReflection->getDeclaringClass()->getTemplateTypeMap() : null,
+			));
+		}
+
 		// The by-ref OUT writeback reads the metadata acceptor: it is selected from
 		// the full argument count (stable variant). When that single acceptor still
 		// carries templates (fast path), its OUT types need generic-resolving from the

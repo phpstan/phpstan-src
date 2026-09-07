@@ -2,9 +2,13 @@
 
 namespace PHPStan\Analyser\Generics;
 
+use PhpParser\Node\Expr;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\ResolvedFunctionVariant;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
+use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
 use PHPStan\Type\MixedType;
@@ -12,7 +16,9 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
+use function array_merge;
 use function count;
+use function is_string;
 
 /**
  * Matches declared and actual types to collect constraints on unresolved
@@ -65,6 +71,64 @@ final class TemplateArgumentObserver
 			return TemplateArgumentConstraints::createEmpty();
 		}
 		return $this->observeArgument(TemplateArgumentConstraints::createEmpty(), $parameterType, $argumentType);
+	}
+
+	/**
+	 * Keep a call's inferable parameters shared across all of its arguments.
+	 * Invariant uses relate fresh instances instead of fixing each one from
+	 * the arguments seen so far. The call's return type uses the same site.
+	 *
+	 * @param array<int|string, Type> $argumentTypes
+	 */
+	public function collectCall(Expr $site, ParametersAcceptor $acceptor, array $argumentTypes, ?TemplateTypeMap $classTemplates = null): TemplateArgumentConstraints
+	{
+		$constraints = TemplateArgumentConstraints::createEmpty();
+		if ($acceptor instanceof ResolvedFunctionVariant) {
+			$acceptor = $acceptor->getOriginalParametersAcceptor();
+		}
+		$templates = new TemplateTypeMap(array_merge($classTemplates !== null ? $classTemplates->getTypes() : [], $acceptor->getTemplateTypeMap()->getTypes()));
+		if ($templates->isEmpty()) {
+			return $constraints;
+		}
+		$hasMarkers = false;
+		foreach ($argumentTypes as $argumentType) {
+			if (!$this->containsMarker($argumentType)) {
+				continue;
+			}
+			$hasMarkers = true;
+			break;
+		}
+		if (!$hasMarkers) {
+			return $constraints;
+		}
+
+		$parameters = $acceptor->getParameters();
+		$parametersByName = [];
+		foreach ($parameters as $parameter) {
+			$parametersByName[$parameter->getName()] = $parameter;
+		}
+		foreach ($argumentTypes as $i => $argumentType) {
+			$parameter = is_string($i) ? ($parametersByName[$i] ?? null) : ($parameters[$i] ?? null);
+			$parameter ??= $acceptor->isVariadic() && count($parameters) > 0 ? $parameters[count($parameters) - 1] : null;
+			if ($parameter === null) {
+				continue;
+			}
+			$parameterType = TypeTraverser::map($parameter->getType(), static function (Type $type, callable $traverse) use ($site, $templates, &$constraints): Type {
+				if (!$type instanceof TemplateType || $type->isArgument()) {
+					return $traverse($type);
+				}
+				$template = $templates->getType($type->getName());
+				if (!$template instanceof TemplateType || !$template->getScope()->equals($type->getScope())) {
+					return $type;
+				}
+				$marker = new UnresolvedTemplateArgumentType($site, $type, null);
+				$constraints = $constraints->withSite($marker);
+				return $marker;
+			});
+			$constraints = $this->observeArgument($constraints, $parameterType, $argumentType);
+		}
+
+		return $constraints;
 	}
 
 	/**
@@ -245,6 +309,24 @@ final class TemplateArgumentObserver
 			foreach ($parameterReflection->typeMapToList($parameterReflection->getActiveTemplateTypeMap()) as $i => $parameterArgument) {
 				if (!isset($ancestorArguments[$i])) {
 					continue;
+				}
+				if ($parameterArgument instanceof UnresolvedTemplateArgumentType) {
+					$template = $parameterReflection->typeMapToList($parameterReflection->getTemplateTypeMap())[$i] ?? null;
+					if ($template instanceof TemplateType) {
+						$variance = $parameterReflection->getCallSiteVarianceMap()->getVariance($template->getName()) ?? TemplateTypeVariance::createInvariant();
+						$variance = $variance->invariant() ? $template->getVariance() : $variance;
+						if ($variance->invariant()) {
+							$constraints = $constraints->withSend($parameterArgument, $ancestorArguments[$i], $variance);
+							continue;
+						}
+						if ($variance->contravariant()) {
+							$constraints = $constraints->withSend($parameterArgument, $ancestorArguments[$i], TemplateTypeVariance::createCovariant());
+							continue;
+						}
+						if ($variance->bivariant()) {
+							continue;
+						}
+					}
 				}
 				$constraints = $this->observeLowerBound($constraints, $parameterArgument, $ancestorArguments[$i]);
 			}

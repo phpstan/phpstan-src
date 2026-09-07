@@ -9,8 +9,12 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
+use PHPStan\Type\UnionType;
+use function array_filter;
 use function array_key_exists;
 use function array_keys;
+use function array_merge;
+use function array_values;
 use function count;
 use function spl_object_id;
 
@@ -32,11 +36,95 @@ final class TemplateArgumentSolver
 	/** @return array<string, Type> */
 	public function solve(): array
 	{
+		$this->mergeEqualArguments();
 		foreach (array_keys($this->observations) as $key) {
 			$this->resolveKey($key);
 		}
+		foreach ($this->representatives as $key => $representative) {
+			$this->resolutions[$key] = $this->resolveKey($representative);
+		}
 
 		return $this->resolutions;
+	}
+
+	/** @var array<string, string> */
+	private array $representatives = [];
+
+	private function representative(string $key): string
+	{
+		$representative = $this->representatives[$key] ?? $key;
+		if ($representative === $key) {
+			return $key;
+		}
+		return $this->representatives[$key] = $this->representative($representative);
+	}
+
+	/** Invariant arguments share one variable until all their bounds are known. */
+	private function mergeEqualArguments(): void
+	{
+		$ranks = [];
+		foreach ($this->observations as $key => $observation) {
+			foreach ($observation['sends'] as [$sent, $variance]) {
+				if (!$variance->invariant() || !$sent instanceof UnresolvedTemplateArgumentType) {
+					continue;
+				}
+				$other = self::key($sent->getSite(), $sent->getTemplateName());
+				if (!isset($this->observations[$other])) {
+					continue;
+				}
+				$left = $this->representative($key);
+				$right = $this->representative($other);
+				if ($left === $right) {
+					continue;
+				}
+				$leftRank = $ranks[$left] ?? 0;
+				$rightRank = $ranks[$right] ?? 0;
+				if ($leftRank < $rightRank) {
+					$this->representatives[$left] = $right;
+				} else {
+					$this->representatives[$right] = $left;
+					if ($leftRank === $rightRank) {
+						$ranks[$left] = $leftRank + 1;
+					}
+				}
+			}
+		}
+		if ($this->representatives === []) {
+			return;
+		}
+		$observations = [];
+		foreach ($this->observations as $key => $observation) {
+			$representative = $this->representative($key);
+			$this->representatives[$key] = $representative;
+			$initial = $observation['initial'];
+			$observation['initial'] = $initial !== null ? $this->removeSelfBounds($initial, $representative) : null;
+			$observation['sends'] = array_values(array_filter($observation['sends'], fn (array $send): bool => !$send[0] instanceof UnresolvedTemplateArgumentType
+					|| $this->representative(self::key($send[0]->getSite(), $send[0]->getTemplateName())) !== $representative));
+			if (!isset($observations[$representative])) {
+				$observations[$representative] = $observation;
+				continue;
+			}
+			$merged = $observations[$representative];
+			if ($observation['initial'] !== null) {
+				$merged['initial'] = $merged['initial'] !== null ? TypeCombinator::union($merged['initial'], $observation['initial']) : $observation['initial'];
+			}
+			$merged['sends'] = array_merge($merged['sends'], $observation['sends']);
+			$merged['lowerBounds'] = array_merge($merged['lowerBounds'], $observation['lowerBounds']);
+			$merged['unconstrainingSend'] = $merged['unconstrainingSend'] || $observation['unconstrainingSend'];
+			$observations[$representative] = $merged;
+		}
+		$this->observations = $observations;
+	}
+
+	private function removeSelfBounds(Type $type, string $key): Type
+	{
+		if ($type instanceof UnresolvedTemplateArgumentType && $this->representative(self::key($type->getSite(), $type->getTemplateName())) === $key) {
+			return new NeverType();
+		}
+		if ($type instanceof UnionType) {
+			return $type->traverse(fn (Type $member): Type => $this->removeSelfBounds($member, $key));
+		}
+		return $type;
 	}
 
 	/** @var array<string, true> */
@@ -44,6 +132,7 @@ final class TemplateArgumentSolver
 
 	private function resolveKey(string $key): Type
 	{
+		$key = $this->representative($key);
 		if (array_key_exists($key, $this->resolutions)) {
 			return $this->resolutions[$key];
 		}
@@ -86,7 +175,7 @@ final class TemplateArgumentSolver
 
 	private function substituteMarker(UnresolvedTemplateArgumentType $marker): Type
 	{
-		$key = self::key($marker->getSite(), $marker->getTemplateName());
+		$key = $this->representative(self::key($marker->getSite(), $marker->getTemplateName()));
 		if (array_key_exists($key, $this->observations)) {
 			return $this->resolveKey($key);
 		}
@@ -126,6 +215,7 @@ final class TemplateArgumentSolver
 		if (!$templateVariance->covariant() || $acceptsAnything) {
 			$covariantFallback = null;
 			foreach ($observation['sends'] as [$sent, $variance]) {
+				$sent = $this->substituteResolutions($sent);
 				if ($variance->contravariant()) {
 					// Foo<contravariant int> accepts Foo<X> for every X wider than int
 					$lowerBounds[] = $sent;

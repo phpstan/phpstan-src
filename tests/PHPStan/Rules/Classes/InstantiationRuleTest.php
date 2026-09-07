@@ -71,6 +71,25 @@ class InstantiationRuleTest extends RuleTestCase
 		);
 	}
 
+	public function testJointTemplateInference(): void
+	{
+		$this->analyse([__DIR__ . '/../../Analyser/Generics/data/joint-inference.php'], []);
+	}
+
+	public function testJointTemplateInferenceErrors(): void
+	{
+		$this->analyse([__DIR__ . '/../../Analyser/Generics/data/joint-inference-errors.php'], [
+			[
+				'Parameter #1 $events of class JointInference\\ContainerEvent constructor expects JointInference\\EventCollection<JointInference\\WrittenEvent<\'one\'|\'two\'>>, JointInference\\EventCollection<JointInference\\WrittenEvent<\'one\'>|JointInference\\WrittenEvent<\'two\'>> given.',
+				53,
+			],
+			[
+				'Parameter #1 $events of class JointInference\\ContainerEvent constructor expects JointInference\\EventCollection<JointInference\\WrittenEvent<ID of string>>, JointInference\\EventCollection<JointInference\\Event> given.',
+				58,
+			],
+		]);
+	}
+
 	public function testTemplateArgumentArrow(): void
 	{
 		$this->analyse([__DIR__ . '/data/template-argument-arrow.php'], []);

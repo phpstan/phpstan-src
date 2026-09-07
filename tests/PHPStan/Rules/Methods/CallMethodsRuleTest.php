@@ -63,6 +63,40 @@ class CallMethodsRuleTest extends RuleTestCase
 		);
 	}
 
+	public function testJointTemplateInference(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/../../Analyser/Generics/data/joint-inference.php'], []);
+	}
+
+	public function testJointTemplateInferenceErrors(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/../../Analyser/Generics/data/joint-inference-errors.php'], [
+			[
+				'Parameter #1 $value of method JointInference\\Resolver<int>::resolve() expects int, string given.',
+				37,
+			],
+			[
+				'Parameter #1 $callback of method JointInference\\Promise<array<int>>::onCompletion() expects Closure(array<1|2>): void, Closure(string): void given.',
+				47,
+			],
+			[
+				'Parameter #1 $value of method JointInference\\Resolver<int>::resolve() expects int, string given.',
+				75,
+			],
+			[
+				'Parameter #1 $callback of method JointInference\\Promise<int|string>::onCompletion() expects Closure(1|\'wrong\'): void, Closure(int): void given.',
+				82,
+				'Type int of parameter #1 $value of passed callable needs to be same or wider than parameter type int|string of accepting callable.',
+			],
+		]);
+	}
+
 	#[RequiresPhp('< 8.0.0')]
 	public function testIsCallablePhp7(): void
 	{

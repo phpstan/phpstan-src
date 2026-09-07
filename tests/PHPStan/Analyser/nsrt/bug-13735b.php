@@ -24,6 +24,8 @@ class HelloWorld extends ParentClass
 
 	private static ?Foo $staticFoo = null;
 
+	private static ?HelloWorld $instance = null;
+
 	public function doNestedPropertyFetch(): void
 	{
 		$this->foo = new Foo();
@@ -78,6 +80,67 @@ class HelloWorld extends ParentClass
 		};
 		$staticClosure();
 		assertType('Bug13735b\Foo', $this->foo);
+	}
+
+	public function doStaticClosureGettingThisAsArgument(): void
+	{
+		$this->foo = new Foo();
+		assertType('Bug13735b\Foo', $this->foo);
+		$staticClosure = static function (HelloWorld $other): void {
+			$other->foo = null;
+		};
+		$staticClosure($this);
+		assertType('Bug13735b\Foo|null', $this->foo);
+	}
+
+	public function doStaticArrowFunctionGettingThisAsArgument(): void
+	{
+		$this->foo = new Foo();
+		assertType('Bug13735b\Foo', $this->foo);
+		$staticArrowFunction = static fn (HelloWorld $other): ?Foo => $other->foo = null;
+		$staticArrowFunction($this);
+		assertType('Bug13735b\Foo|null', $this->foo);
+	}
+
+	public function doStaticClosureGettingPropertyAsArgument(): void
+	{
+		$this->foo = new Foo();
+		$this->foo->bar = new Bar();
+		$staticClosure = static function (Foo $foo): void {
+			$foo->bar = null;
+		};
+		$staticClosure($this->foo);
+		// the closure cannot change which Foo $this->foo points at, only what's inside it
+		assertType('Bug13735b\Foo', $this->foo);
+		assertType('Bug13735b\Bar|null', $this->foo->bar);
+	}
+
+	public function doStaticClosureGettingScalarAsArgument(): void
+	{
+		$this->foo = new Foo();
+		assertType('Bug13735b\Foo', $this->foo);
+		$staticClosure = static function (int $i): void {
+			file_put_contents('log file', (string) $i);
+		};
+		$staticClosure(1);
+		assertType('Bug13735b\Foo', $this->foo);
+	}
+
+	public function doStaticMethodGettingThisAsArgument(): void
+	{
+		$this->foo = new Foo();
+		assertType('Bug13735b\Foo', $this->foo);
+		self::mutate($this);
+		assertType('Bug13735b\Foo|null', $this->foo);
+	}
+
+	public function doStaticMethodGettingPropertyAsArgument(): void
+	{
+		$this->foo = new Foo();
+		$this->foo->bar = new Bar();
+		self::mutateFoo($this->foo);
+		assertType('Bug13735b\Foo', $this->foo);
+		assertType('Bug13735b\Bar|null', $this->foo->bar);
 	}
 
 	public function doNonStaticClosure(): void
@@ -140,9 +203,40 @@ class HelloWorld extends ParentClass
 		assertType('Bug13735b\Foo|null', $this->publicFoo);
 	}
 
+	/**
+	 * A static method can also reach the object through static state. PHPStan does
+	 * not track that for any receiver - 'HelloWorld::$instance = $other; HelloWorld::mutateStored();'
+	 * has never invalidated '$other->foo' either - so '$this' is no longer an exception.
+	 */
+	public function doReachedViaStaticProperty(): void
+	{
+		self::$instance = $this;
+		$this->foo = new Foo();
+		assertType('Bug13735b\Foo', $this->foo);
+		self::mutateStored();
+		assertType('Bug13735b\Foo', $this->foo);
+	}
+
 	public function getFoo(): ?Foo
 	{
 		return $this->foo;
+	}
+
+	public static function mutate(HelloWorld $other): void
+	{
+		$other->foo = null;
+	}
+
+	public static function mutateFoo(Foo $foo): void
+	{
+		$foo->bar = null;
+	}
+
+	public static function mutateStored(): void
+	{
+		if (self::$instance !== null) {
+			self::$instance->foo = null;
+		}
 	}
 
 	public static function sideEffect(): void

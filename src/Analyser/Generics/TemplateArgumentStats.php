@@ -42,6 +42,7 @@ final class TemplateArgumentStats
 		'statementsReplayed' => 0,
 		'statementsReWalked' => 0,
 		'earlyExits' => 0,
+		'closureTypeBodyWalks' => 0,
 		'resolvedBySend' => 0,
 		'resolvedWithLowerBounds' => 0,
 		'resolvedToInitial' => 0,

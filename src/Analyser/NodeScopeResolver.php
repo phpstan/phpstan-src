@@ -31,6 +31,7 @@ use PhpParser\Node\Stmt\Static_;
 use PhpParser\Node\Stmt\Switch_;
 use PhpParser\NodeFinder;
 use PHPStan\Analyser\ExprHandler\AssignHandler;
+use PHPStan\Analyser\ExprHandler\Helper\ClosureParameterResolver;
 use PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver;
 use PHPStan\Analyser\ExprHandler\Helper\NonNullabilityHelper;
 use PHPStan\Analyser\ExprHandler\Helper\VirtualExprResultHelper;
@@ -1936,8 +1937,9 @@ class NodeScopeResolver
 		$byRefUses = [];
 
 		$closureCallArgs = $expr->getAttribute(ClosureArgVisitor::ATTRIBUTE_NAME);
-		$callableParameters = $this->createCallableParameters($scope, $expr, $closureCallArgs, $passedToType);
-		$nativeCallableParameters = $this->createNativeCallableParameters($scope, $expr, $closureCallArgs, $nativePassedToType);
+		$parameterTypes = $this->container->getByType(ClosureParameterResolver::class)->resolve($scope, $expr, $storage, $closureCallArgs, $passedToType, $nativePassedToType);
+		$callableParameters = $parameterTypes->parameters;
+		$nativeCallableParameters = $parameterTypes->nativeParameters;
 
 		$useScope = $scope;
 		foreach ($expr->uses as $use) {
@@ -2263,8 +2265,9 @@ class NodeScopeResolver
 		}
 
 		$arrowFunctionCallArgs = $expr->getAttribute(ArrowFunctionArgVisitor::ATTRIBUTE_NAME);
-		$callableParameters = $this->createCallableParameters($scope, $expr, $arrowFunctionCallArgs, $passedToType);
-		$nativeCallableParameters = $this->createNativeCallableParameters($scope, $expr, $arrowFunctionCallArgs, $nativePassedToType);
+		$parameterTypes = $this->container->getByType(ClosureParameterResolver::class)->resolve($scope, $expr, $storage, $arrowFunctionCallArgs, $passedToType, $nativePassedToType);
+		$callableParameters = $parameterTypes->parameters;
+		$nativeCallableParameters = $parameterTypes->nativeParameters;
 		$arrowFunctionScope = $scope->enterArrowFunction($expr, $callableParameters, $nativeCallableParameters);
 		if ($arrowFunctionScope->getAnonymousFunctionReflection() === null) {
 			throw new ShouldNotHappenException();

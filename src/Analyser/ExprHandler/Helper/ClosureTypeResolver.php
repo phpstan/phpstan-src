@@ -11,6 +11,7 @@ use PhpParser\Node\Expr\YieldFrom;
 use PhpParser\NodeFinder;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResultStorage;
+use PHPStan\Analyser\Generics\TemplateArgumentStats;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
@@ -23,8 +24,6 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\InvalidateExprNode;
 use PHPStan\Node\PropertyAssignNode;
-use PHPStan\Parser\ArrayMapArgVisitor;
-use PHPStan\Parser\ImmediatelyInvokedClosureVisitor;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\Callables\SimpleThrowPoint;
 use PHPStan\Reflection\ExtendedParameterReflection;
@@ -33,7 +32,6 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\PassedByReference;
-use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ClosureType;
@@ -82,6 +80,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 	public function __construct(
 		private NodeScopeResolver $nodeScopeResolver,
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
+		private ClosureParameterResolver $closureParameterResolver,
 	)
 	{
 	}
@@ -155,6 +154,9 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 			);
 		}
 
+		if (TemplateArgumentStats::$enabled) {
+			TemplateArgumentStats::increment('closureTypeBodyWalks');
+		}
 		if ($expr instanceof ArrowFunction) {
 			$arrowScope = $scope->enterArrowFunctionWithoutReflection($expr, $callableParameters, $nativeCallableParameters);
 
@@ -308,10 +310,6 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		?ExpressionResultStorage $storage = null,
 	): ClosureType
 	{
-		if ($this->bodyWalkHasOwnParameterTypes($expr)) {
-			return $this->getClosureType($native ? $scope->doNotTreatPhpDocTypesAsCertain() : $scope, $expr, false, $storage);
-		}
-
 		[$parameters, $isVariadic, $callableParameters, $nativeCallableParameters] = $this->buildParametersAndAcceptors($scope, $expr, $storage);
 
 		return $this->buildClosureTypeFromClosureWalk(
@@ -360,10 +358,6 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		?ExpressionResultStorage $storage = null,
 	): ClosureType
 	{
-		if ($this->bodyWalkHasOwnParameterTypes($expr)) {
-			return $this->getClosureType($native ? $scope->doNotTreatPhpDocTypesAsCertain() : $scope, $expr, false, $storage);
-		}
-
 		[$parameters, $isVariadic, $callableParameters, $nativeCallableParameters] = $this->buildParametersAndAcceptors($scope, $expr, $storage);
 
 		$returnType = $this->resolveArrowFunctionReturnType($scope, $arrowScope, $expr, $native, $storage);
@@ -379,24 +373,6 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		));
 	}
 
-	/**
-	 * Whether getClosureType() would walk the body with different parameter types
-	 * than NodeScopeResolver's single walk (processClosureNode()/
-	 * processArrowFunctionNode()) did. array_map() callbacks and immediately
-	 * invoked closures get their parameter types from the array element type /
-	 * the invocation arguments in getClosureType(), whereas the single walk types
-	 * them from the closure's passed-to callable type - so the return type read
-	 * from the gathered scopes would differ, and getClosureType() must re-walk.
-	 */
-	/**
-	 * The expression roots this closure's type can read from the enclosing
-	 * scope: '$this' and the use()d variables for closures, '$this' and
-	 * every body variable that is not a parameter for arrow functions. Null
-	 * when the body accesses variables dynamically ($$name, compact(),
-	 * get_defined_vars()) and the whole scope must key the cache.
-	 *
-	 * @return list<string>|null
-	 */
 	/**
 	 * The cache key of everything this closure's type can depend on: the
 	 * free-variable slice of the scope plus the parameter types the caller
@@ -483,12 +459,6 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		$expr->setAttribute('phpstanFreeVariableRoots', $rootList);
 
 		return $rootList;
-	}
-
-	private function bodyWalkHasOwnParameterTypes(Node\Expr\Closure|ArrowFunction $expr): bool
-	{
-		return $expr->getAttribute(ArrayMapArgVisitor::ATTRIBUTE_NAME) !== null
-			|| $expr->getAttribute(ImmediatelyInvokedClosureVisitor::ARGS_ATTRIBUTE_NAME) !== null;
 	}
 
 	/**
@@ -818,41 +788,19 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 	{
 		[$parameters, $isVariadic] = $this->buildDeclaredParameters($scope, $expr);
 
-		$callableParameters = null;
-		$nativeCallableParameters = null;
-		$arrayMapArgs = $expr->getAttribute(ArrayMapArgVisitor::ATTRIBUTE_NAME);
-		$immediatelyInvokedArgs = $expr->getAttribute(ImmediatelyInvokedClosureVisitor::ARGS_ATTRIBUTE_NAME);
-		if ($arrayMapArgs !== null) {
-			$callableParameters = [];
-			$nativeCallableParameters = [];
-			foreach ($arrayMapArgs as $funcCallArg) {
-				// array_map()'s array arguments were walked before the callback
-				// (processArgs orders closures last), so their results are stored
-				$callableParameters[] = new DummyParameter('item', $this->readExprType($storage, $funcCallArg->value, $scope, false)->getIterableValueType(), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
-				$nativeCallableParameters[] = new DummyParameter('item', $this->readExprType($storage, $funcCallArg->value, $scope->doNotTreatPhpDocTypesAsCertain(), true)->getIterableValueType(), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
-			}
-		} elseif ($immediatelyInvokedArgs !== null) {
-			foreach ($immediatelyInvokedArgs as $immediatelyInvokedArg) {
-				// an immediately invoked closure is the callee; the call handler
-				// walks its invocation arguments BEFORE the closure, so their
-				// results are stored (see FuncCallHandler)
-				$argValue = $immediatelyInvokedArg->value;
-				$callableParameters[] = new DummyParameter('item', $this->readExprType($storage, $argValue, $scope, false), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
-				$nativeCallableParameters[] = new DummyParameter('item', $this->readExprType($storage, $argValue, $scope->doNotTreatPhpDocTypesAsCertain(), true), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
-			}
-		} else {
-			$inFunctionCallsStackCount = count($scope->inFunctionCallsStack);
-			if ($inFunctionCallsStackCount > 0) {
-				[, $inParameter] = $scope->inFunctionCallsStack[$inFunctionCallsStackCount - 1];
-				if ($inParameter !== null) {
-					$callableParameters = $this->nodeScopeResolver->createCallableParameters($scope, $expr, null, $inParameter->getType());
-					$nativeType = $inParameter instanceof ExtendedParameterReflection ? $inParameter->getNativeType() : $inParameter->getType();
-					$nativeCallableParameters = $this->nodeScopeResolver->createNativeCallableParameters($scope, $expr, null, $nativeType);
-				}
+		$passedToType = null;
+		$nativePassedToType = null;
+		$inFunctionCallsStackCount = count($scope->inFunctionCallsStack);
+		if ($inFunctionCallsStackCount > 0) {
+			[, $inParameter] = $scope->inFunctionCallsStack[$inFunctionCallsStackCount - 1];
+			if ($inParameter !== null) {
+				$passedToType = $inParameter->getType();
+				$nativePassedToType = $inParameter instanceof ExtendedParameterReflection ? $inParameter->getNativeType() : $inParameter->getType();
 			}
 		}
+		$parameterTypes = $this->closureParameterResolver->resolve($scope, $expr, $storage, null, $passedToType, $nativePassedToType);
 
-		return [$parameters, $isVariadic, $callableParameters, $nativeCallableParameters];
+		return [$parameters, $isVariadic, $parameterTypes->parameters, $parameterTypes->nativeParameters];
 	}
 
 	/**

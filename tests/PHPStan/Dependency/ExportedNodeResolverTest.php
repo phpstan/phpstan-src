@@ -6,6 +6,7 @@ use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\Parser;
 use PHPStan\Reflection\ReflectionProvider\DummyReflectionProvider;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 final class ExportedNodeResolverTest extends PHPStanTestCase
 {
@@ -38,6 +39,9 @@ final class ExportedNodeResolverTest extends PHPStanTestCase
 		$this->assertSame(0, $reflectionProvider->hasClassCallCount);
 	}
 
+	// The parser follows the analysed PHP version, which defaults to the running one, so the hooks
+	// in the data file do not parse below 8.4 and no nodes come out at all.
+	#[RequiresPhp('>= 8.4.0')]
 	public function testHookedPropertyStillLooksUpTheClass(): void
 	{
 		$reflectionProvider = new CountingReflectionProvider(new DummyReflectionProvider());

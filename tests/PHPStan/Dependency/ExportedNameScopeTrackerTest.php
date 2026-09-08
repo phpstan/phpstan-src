@@ -2,10 +2,7 @@
 
 namespace PHPStan\Dependency;
 
-use Override;
-use PhpParser\Node;
 use PhpParser\NodeTraverser;
-use PhpParser\NodeVisitorAbstract;
 use PHPStan\Parser\Parser;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\FileTypeMapper;
@@ -20,36 +17,13 @@ final class ExportedNameScopeTrackerTest extends PHPStanTestCase
 	{
 		/** @var Parser $parser */
 		$parser = self::getContainer()->getService('defaultAnalysisParser');
-		$tracker = new ExportedNameScopeTracker();
-		$scopes = [];
 
-		$visitor = new class ($tracker, $scopes) extends NodeVisitorAbstract {
-
-			/**
-			 * @param array<string, ExportedNameScope> $scopes
-			 */
-			public function __construct(private ExportedNameScopeTracker $tracker, public array &$scopes)
-			{
-			}
-
-			#[Override]
-			public function enterNode(Node $node): ?int
-			{
-				$this->tracker->enterNode($node);
-				if ($node instanceof Node\Stmt\Class_ && isset($node->namespacedName)) {
-					$this->scopes[$node->namespacedName->toString()] = $this->tracker->getNameScope();
-				}
-
-				return null;
-			}
-
-		};
-
+		$visitor = new ExportedNameScopeCollectingVisitor(new ExportedNameScopeTracker());
 		$traverser = new NodeTraverser();
 		$traverser->addVisitor($visitor);
 		$traverser->traverse($parser->parseFile($file));
 
-		return $scopes;
+		return $visitor->getScopes();
 	}
 
 	public function testTracksNamespacesAndUses(): void

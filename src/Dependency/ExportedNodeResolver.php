@@ -389,8 +389,14 @@ final class ExportedNodeResolver
 			// Virtuality is decided by the native reflection, so it is read straight off it.
 			// PhpPropertyReflection would give the same answer, but building it resolves the
 			// class PHPDoc - see exportPhpDocNode() for why that is not allowed here.
+			//
+			// Only a hooked property can be virtual, so the hook-less ones are answered from the
+			// node alone. Reaching the ReflectionProvider boots BetterReflection and the stub
+			// files, and this runs in the main process during a result cache restore - where that
+			// boot is pure latency in front of the analysis, paid as soon as a single file with a
+			// non-private property changed.
 			$virtual = false;
-			if ($this->reflectionProvider->hasClass($namespacedName)) {
+			if ($node->hooks !== [] && $this->reflectionProvider->hasClass($namespacedName)) {
 				$nativeReflection = $this->reflectionProvider->getClass($namespacedName)->getNativeReflection();
 				if ($nativeReflection->hasProperty($names[0])) {
 					$virtual = $nativeReflection->getProperty($names[0])->isVirtual();

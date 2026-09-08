@@ -2145,7 +2145,7 @@ final class ResultCacheManager
 		}
 
 		$directories = array_unique(array_merge($analysedDirectories, $this->scanDirectories));
-		foreach ($this->scanFileFinder->findFiles($directories)->getFiles() as $file) {
+		foreach ($this->scanFileFinder->findFilesCached($directories)->getFiles() as $file) {
 			$scannedFiles[] = $file;
 		}
 

@@ -143,6 +143,48 @@ class HelloWorld extends ParentClass
 		assertType('Bug13735b\Bar|null', $this->foo->bar);
 	}
 
+	public function doLateStaticBindingGettingThisAsArgument(): void
+	{
+		$this->foo = new Foo();
+		assertType('Bug13735b\Foo', $this->foo);
+		static::mutate($this);
+		assertType('Bug13735b\Foo|null', $this->foo);
+	}
+
+	public function doStaticMethodCalledOnThisGettingThisAsArgument(): void
+	{
+		$this->foo = new Foo();
+		assertType('Bug13735b\Foo', $this->foo);
+		$this->mutate($this);
+		assertType('Bug13735b\Foo|null', $this->foo);
+	}
+
+	public function doStaticMethodCalledOnInstanceGettingThisAsArgument(HelloWorld $other): void
+	{
+		$this->foo = new Foo();
+		assertType('Bug13735b\Foo', $this->foo);
+		$other->mutate($this);
+		assertType('Bug13735b\Foo|null', $this->foo);
+	}
+
+	public function doMethodCallGettingThisAsArgument(HelloWorld $other): void
+	{
+		$this->foo = new Foo();
+		assertType('Bug13735b\Foo', $this->foo);
+		$other->nonStaticMutate($this);
+		assertType('Bug13735b\Foo|null', $this->foo);
+	}
+
+	public function doMethodCallGettingPropertyAsArgument(HelloWorld $other): void
+	{
+		$this->foo = new Foo();
+		$this->foo->bar = new Bar();
+		$other->mutateFoo($this->foo);
+		// the callee can change what's inside $this->foo, not which Foo it points at
+		assertType('Bug13735b\Foo', $this->foo);
+		assertType('Bug13735b\Bar|null', $this->foo->bar);
+	}
+
 	public function doNonStaticClosure(): void
 	{
 		$this->foo = new Foo();
@@ -247,6 +289,11 @@ class HelloWorld extends ParentClass
 	public function nonStatic(): void
 	{
 		file_put_contents('log file', 'foo');
+	}
+
+	public function nonStaticMutate(HelloWorld $other): void
+	{
+		$other->foo = null;
 	}
 }
 

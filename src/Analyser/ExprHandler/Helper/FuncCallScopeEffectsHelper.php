@@ -18,6 +18,7 @@ use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\Expr\PossiblyImpureCallExpr;
+use PHPStan\Node\InvalidateExprNode;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptor;
@@ -34,6 +35,7 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
+use PHPStan\Type\ResourceType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -101,7 +103,25 @@ final class FuncCallScopeEffectsHelper
 			$parametersAcceptor instanceof ClosureType && count($parametersAcceptor->getImpurePoints()) > 0
 			&& $scope->isInClass()
 		) {
-			$scope = $scope->invalidateExpression(new Variable('this'), true);
+			$isStaticClosure = $parametersAcceptor->isStaticClosure()->yes();
+
+			// A static closure is never bound to $this, so property fetches on it survive.
+			// But a capture may be the object under another name ('$self = $this;' then
+			// 'use ($self)'), and PHPStan does not track that aliasing: a write would land
+			// on '$self->foo' while the caller remembers '$this->foo'. An arrow function
+			// captures implicitly and records no used variables at all, so any closure that
+			// writes anywhere gives the carve-out up too.
+			$keepPropertyFetches = $isStaticClosure
+				&& $parametersAcceptor->getUsedVariables() === []
+				&& $parametersAcceptor->getInvalidateExpressions() === [];
+
+			if ($isStaticClosure) {
+				// The object can still be handed to it as an argument. That's the same channel
+				// processArgs() invalidates for a callee with side effects, which is what keeps
+				// '$this' invalidated for 'self::mutate($this)'.
+				$scope = $this->invalidateObjectArgs($nodeScopeResolver, $normalizedExpr, $argsResult, $scope, $storage, $nodeCallback);
+			}
+			$scope = $scope->invalidateExpression(new Variable('this'), true, null, $keepPropertyFetches);
 		}
 
 		if (
@@ -360,6 +380,39 @@ final class FuncCallScopeEffectsHelper
 		) {
 			$scope = $scope->invalidateVolatileExpressions();
 		}
+		return $scope;
+	}
+
+	/**
+	 * Invalidates the arguments a callee could write through, mirroring what
+	 * NodeScopeResolver::processArgs() does for a callee with side effects. A
+	 * closure has no FunctionReflection, so processArgs() skips it.
+	 *
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	private function invalidateObjectArgs(NodeScopeResolver $nodeScopeResolver, FuncCall $normalizedExpr, ArgsResult $argsResult, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback): MutatingScope
+	{
+		foreach ($normalizedExpr->getArgs() as $arg) {
+			// a default-value argument ArgumentsNormalizer synthesized for an omitted
+			// optional parameter was never processed, and holds no expression the caller
+			// could observe afterwards
+			$argResult = $argsResult->findArgResult($arg->value);
+			if ($argResult === null) {
+				continue;
+			}
+
+			$argType = $argResult->getTypeOnScope($scope, false);
+			if (
+				$argType->isObject()->no()
+				&& (new ResourceType())->isSuperTypeOf($argType)->no()
+			) {
+				continue;
+			}
+
+			$nodeScopeResolver->callNodeCallback($nodeCallback, new InvalidateExprNode($arg->value), $scope, $storage);
+			$scope = $scope->invalidateExpression($arg->value, true);
+		}
+
 		return $scope;
 	}
 

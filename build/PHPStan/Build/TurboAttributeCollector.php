@@ -14,6 +14,7 @@ use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\New_;
+use PhpParser\Node\Expr\NullsafePropertyFetch;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\UnaryMinus;
@@ -21,6 +22,7 @@ use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Expr\Yield_;
 use PhpParser\Node\Expr\YieldFrom;
 use PhpParser\Node\FunctionLike;
+use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Scalar;
 use PhpParser\Node\Stmt;
@@ -88,6 +90,8 @@ final class TurboAttributeCollector
 		'name' => Name::class,
 		'expr' => Expr::class,
 		'propertyFetch' => PropertyFetch::class,
+		'nullsafePropertyFetch' => NullsafePropertyFetch::class,
+		'identifier' => Identifier::class,
 		'arrayDimFetch' => ArrayDimFetch::class,
 		'methodCall' => MethodCall::class,
 		'functionLike' => FunctionLike::class,

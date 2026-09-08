@@ -853,7 +853,8 @@ public:
 		zval *invalidatingClass,
 		zv::TableRef expressionTypes,
 		zv::TableRef nativeExpressionTypes,
-		zv::TableRef conditionalExpressions)
+		zv::TableRef conditionalExpressions,
+		bool keepPropertyFetches)
 	{
 		InvalidationQuery query = {
 			scope,
@@ -862,6 +863,7 @@ public:
 			expressionToInvalidate,
 			invalidatingClass,
 			zend_string_equals_literal(exprStringToInvalidate, "$this"),
+			keepPropertyFetches,
 		};
 
 		/* Mirrors the twin's $canUseKeyPrefilter: outside shouldInvalidate()'s
@@ -1063,7 +1065,7 @@ public:
 	}
 
 	/* Mirrors ScopeOps::shouldInvalidateExpression(). */
-	static bool shouldInvalidateExpression(zval *scope, zval *exprPrinter, zend_string *exprStringToInvalidate, zval *exprToInvalidate, zend_object *expr, zend_string *exprString, bool requireMoreCharacters, zval *invalidatingClass, bool *failed)
+	static bool shouldInvalidateExpression(zval *scope, zval *exprPrinter, zend_string *exprStringToInvalidate, zval *exprToInvalidate, zend_object *expr, zend_string *exprString, bool requireMoreCharacters, zval *invalidatingClass, bool keepPropertyFetches, bool *failed)
 	{
 		InvalidationQuery query = {
 			scope,
@@ -1072,6 +1074,7 @@ public:
 			exprToInvalidate,
 			invalidatingClass,
 			zend_string_equals_literal(exprStringToInvalidate, "$this"),
+			keepPropertyFetches,
 		};
 		return shouldInvalidate(query, exprString, expr, requireMoreCharacters, failed);
 	}
@@ -1595,6 +1598,7 @@ private:
 		zval *expressionToInvalidate;
 		zval *invalidatingClass; /* may be NULL */
 		bool isThis;
+		bool keepPropertyFetches;
 	};
 
 	static bool strContains(zend_string *haystack, const char *needle, size_t len)
@@ -1745,6 +1749,69 @@ private:
 	}
 
 	/*
+	 * Mirrors ScopeOps::isPropertyFetchChainOn(): whether $expr is a chain of
+	 * property fetches rooted at the invalidated expression, state a callee
+	 * that never receives the object cannot change.
+	 */
+	static bool isPropertyFetchChainOn(zend_object *expr, zend_string *exprStringToInvalidate, zval *exprPrinter, bool *failed)
+	{
+		zend_class_entry *propertyFetchCe = pt_class(PT_CLASS_PROPERTY_FETCH);
+		zend_class_entry *nullsafeCe = pt_class(PT_CLASS_NULLSAFE_PROPERTY_FETCH);
+		zend_class_entry *identifierCe = pt_class(PT_CLASS_IDENTIFIER);
+		zend_class_entry *variableCe = pt_class(PT_CLASS_VARIABLE);
+
+		if (UNEXPECTED(propertyFetchCe == NULL || nullsafeCe == NULL || identifierCe == NULL || variableCe == NULL)) {
+			*failed = true;
+			return false;
+		}
+
+		if (!instanceof_function(expr->ce, propertyFetchCe) && !instanceof_function(expr->ce, nullsafeCe)) {
+			return false;
+		}
+
+		while (instanceof_function(expr->ce, propertyFetchCe) || instanceof_function(expr->ce, nullsafeCe)) {
+			int32_t nameOffset = pt_instance_prop_offset(expr->ce, "name", sizeof("name") - 1);
+			int32_t varOffset = pt_instance_prop_offset(expr->ce, "var", sizeof("var") - 1);
+			if (UNEXPECTED(nameOffset < 0 || varOffset < 0)) {
+				return false;
+			}
+
+			zv::Ref name = zv::ObjRef(expr).propAtOffset((uint32_t) nameOffset).deref();
+			if (!name.isObject()) {
+				return false;
+			}
+			zend_class_entry *nameCe = name.asObject()->ce;
+			if (!instanceof_function(nameCe, identifierCe)) {
+				if (!instanceof_function(nameCe, variableCe)) {
+					return false;
+				}
+				pt_node_class_info *nameInfo = pt_get_node_class_info(nameCe);
+				if (nameInfo == NULL || nameInfo->name_offset < 0) {
+					return false;
+				}
+				zv::Ref variableName = zv::ObjRef(name.asObject()).propAtOffset((uint32_t) nameInfo->name_offset).deref();
+				if (!variableName.isString()) {
+					return false;
+				}
+			}
+
+			zv::Ref var = zv::ObjRef(expr).propAtOffset((uint32_t) varOffset).deref();
+			if (!var.isObject()) {
+				return false;
+			}
+			expr = var.asObject();
+		}
+
+		zv::Str rootKey = zv::Str::adopt(pt_node_key(expr, exprPrinter));
+		if (UNEXPECTED(rootKey.isNull())) {
+			*failed = true;
+			return false;
+		}
+
+		return zend_string_equals(rootKey.get(), exprStringToInvalidate);
+	}
+
+	/*
 	 * The core of shouldInvalidateExpression(); $requireMoreCharacters is
 	 * per-call (the conditional-holder scan passes false). Returns false and
 	 * sets *failed on exception.
@@ -1820,6 +1887,13 @@ private:
 					}
 					return zend_string_equals(query.exprStringToInvalidate, exprString);
 				}
+			}
+		}
+
+		if (query.keepPropertyFetches) {
+			bool isChain = isPropertyFetchChainOn(expr, query.exprStringToInvalidate, query.exprPrinter, failed);
+			if (UNEXPECTED(*failed) || isChain) {
+				return false;
 			}
 		}
 
@@ -2034,12 +2108,13 @@ void pt_register_scope_ops()
 		ScopeOps::intersectConditionalExpressions(zv::TableRef(ours), zv::TableRef(theirs)).intoReturnValue(return_value);
 	});
 
-	cls.method("invalidateExpressionEntries", reg::PublicStatic, 9, { reg::objectArg("scope"), reg::objectArg("exprPrinter"), reg::stringArg("exprStringToInvalidate"), reg::objectArg("expressionToInvalidate"), reg::boolArg("requireMoreCharacters"), reg::objectArg("invalidatingClass", true), reg::arrayArg("expressionTypes"), reg::arrayArg("nativeExpressionTypes"), reg::arrayArg("conditionalExpressions") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method("invalidateExpressionEntries", reg::PublicStatic, 9, { reg::objectArg("scope"), reg::objectArg("exprPrinter"), reg::stringArg("exprStringToInvalidate"), reg::objectArg("expressionToInvalidate"), reg::boolArg("requireMoreCharacters"), reg::objectArg("invalidatingClass", true), reg::arrayArg("expressionTypes"), reg::arrayArg("nativeExpressionTypes"), reg::arrayArg("conditionalExpressions"), reg::boolArg("keepPropertyFetches") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *scope, *expr_printer, *expr_to_invalidate, *invalidating_class = NULL;
 		zend_string *invalidate_str;
 		bool require_more_characters;
+		bool keep_property_fetches = false;
 		HashTable *expression_types, *native_expression_types, *conditional_expressions;
-		ZEND_PARSE_PARAMETERS_START(9, 9)
+		ZEND_PARSE_PARAMETERS_START(9, 10)
 			Z_PARAM_OBJECT(scope)
 			Z_PARAM_OBJECT(expr_printer)
 			Z_PARAM_STR(invalidate_str)
@@ -2049,20 +2124,23 @@ void pt_register_scope_ops()
 			Z_PARAM_ARRAY_HT(expression_types)
 			Z_PARAM_ARRAY_HT(native_expression_types)
 			Z_PARAM_ARRAY_HT(conditional_expressions)
+			Z_PARAM_OPTIONAL
+			Z_PARAM_BOOL(keep_property_fetches)
 		ZEND_PARSE_PARAMETERS_END();
 		pt_init_strs();
-		zv::Val result = ScopeOps::invalidateExpressionEntries(scope, expr_printer, invalidate_str, expr_to_invalidate, require_more_characters, invalidating_class, zv::TableRef(expression_types), zv::TableRef(native_expression_types), zv::TableRef(conditional_expressions));
+		zv::Val result = ScopeOps::invalidateExpressionEntries(scope, expr_printer, invalidate_str, expr_to_invalidate, require_more_characters, invalidating_class, zv::TableRef(expression_types), zv::TableRef(native_expression_types), zv::TableRef(conditional_expressions), keep_property_fetches);
 		if (UNEXPECTED(result.isUndef())) {
 			RETURN_THROWS();
 		}
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("shouldInvalidateExpression", reg::PublicStatic, 6, { reg::objectArg("scope"), reg::objectArg("exprPrinter"), reg::stringArg("exprStringToInvalidate"), reg::objectArg("exprToInvalidate"), reg::objectArg("expr"), reg::stringArg("exprString"), reg::boolArg("requireMoreCharacters"), reg::objectArg("invalidatingClass", true) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method("shouldInvalidateExpression", reg::PublicStatic, 6, { reg::objectArg("scope"), reg::objectArg("exprPrinter"), reg::stringArg("exprStringToInvalidate"), reg::objectArg("exprToInvalidate"), reg::objectArg("expr"), reg::stringArg("exprString"), reg::boolArg("requireMoreCharacters"), reg::objectArg("invalidatingClass", true), reg::boolArg("keepPropertyFetches") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *scope, *expr_printer, *expr_to_invalidate, *expr, *invalidating_class = NULL;
 		zend_string *invalidate_str, *expr_string;
 		bool require_more_characters = false;
-		ZEND_PARSE_PARAMETERS_START(6, 8)
+		bool keep_property_fetches = false;
+		ZEND_PARSE_PARAMETERS_START(6, 9)
 			Z_PARAM_OBJECT(scope)
 			Z_PARAM_OBJECT(expr_printer)
 			Z_PARAM_STR(invalidate_str)
@@ -2072,10 +2150,11 @@ void pt_register_scope_ops()
 			Z_PARAM_OPTIONAL
 			Z_PARAM_BOOL(require_more_characters)
 			Z_PARAM_OBJECT_OR_NULL(invalidating_class)
+			Z_PARAM_BOOL(keep_property_fetches)
 		ZEND_PARSE_PARAMETERS_END();
 		pt_init_strs();
 		bool failed = false;
-		bool result = ScopeOps::shouldInvalidateExpression(scope, expr_printer, invalidate_str, expr_to_invalidate, Z_OBJ_P(expr), expr_string, require_more_characters, invalidating_class, &failed);
+		bool result = ScopeOps::shouldInvalidateExpression(scope, expr_printer, invalidate_str, expr_to_invalidate, Z_OBJ_P(expr), expr_string, require_more_characters, invalidating_class, keep_property_fetches, &failed);
 		if (UNEXPECTED(failed)) {
 			RETURN_THROWS();
 		}

@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
+use PhpParser\Node\Expr\NullsafePropertyFetch;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Name;
@@ -640,6 +641,7 @@ final class ScopeOps
 		array $expressionTypes,
 		array $nativeExpressionTypes,
 		array $conditionalExpressions,
+		bool $keepPropertyFetches = false,
 	): ?array
 	{
 		$invalidated = false;
@@ -661,7 +663,7 @@ final class ScopeOps
 			) {
 				continue;
 			}
-			if (!self::shouldInvalidateExpression($scope, $exprPrinter, $exprStringToInvalidate, $expressionToInvalidate, $exprTypeHolder->getExpr(), $exprString, $requireMoreCharacters, $invalidatingClass)) {
+			if (!self::shouldInvalidateExpression($scope, $exprPrinter, $exprStringToInvalidate, $expressionToInvalidate, $exprTypeHolder->getExpr(), $exprString, $requireMoreCharacters, $invalidatingClass, $keepPropertyFetches)) {
 				continue;
 			}
 
@@ -682,7 +684,7 @@ final class ScopeOps
 				|| self::keyMayHideSubExpressions($conditionalExprString)
 			) {
 				$firstHolder = $holders[array_key_first($holders)]->getTypeHolder();
-				if (self::shouldInvalidateExpression($scope, $exprPrinter, $exprStringToInvalidate, $expressionToInvalidate, $firstHolder->getExpr(), self::nodeKey($firstHolder->getExpr(), $exprPrinter), $requireMoreCharacters, $invalidatingClass)) {
+				if (self::shouldInvalidateExpression($scope, $exprPrinter, $exprStringToInvalidate, $expressionToInvalidate, $firstHolder->getExpr(), self::nodeKey($firstHolder->getExpr(), $exprPrinter), $requireMoreCharacters, $invalidatingClass, $keepPropertyFetches)) {
 					$invalidated = true;
 					continue;
 				}
@@ -712,7 +714,7 @@ final class ScopeOps
 				$shouldKeep = true;
 				$conditionalTypeHolders = $holder->getConditionExpressionTypeHolders();
 				foreach ($conditionalTypeHolders as $conditionalTypeHolderExprString => $conditionalTypeHolder) {
-					if (self::shouldInvalidateExpression($scope, $exprPrinter, $exprStringToInvalidate, $expressionToInvalidate, $conditionalTypeHolder->getExpr(), $conditionalTypeHolderExprString, invalidatingClass: $invalidatingClass)) {
+					if (self::shouldInvalidateExpression($scope, $exprPrinter, $exprStringToInvalidate, $expressionToInvalidate, $conditionalTypeHolder->getExpr(), $conditionalTypeHolderExprString, invalidatingClass: $invalidatingClass, keepPropertyFetches: $keepPropertyFetches)) {
 						$invalidated = true;
 						$shouldKeep = false;
 						break;
@@ -799,7 +801,7 @@ final class ScopeOps
 	/**
 	 * Mirrors the former MutatingScope::shouldInvalidateExpression().
 	 */
-	public static function shouldInvalidateExpression(MutatingScope $scope, ExprPrinter $exprPrinter, string $exprStringToInvalidate, Expr $exprToInvalidate, Expr $expr, string $exprString, bool $requireMoreCharacters = false, ?ClassReflection $invalidatingClass = null): bool
+	public static function shouldInvalidateExpression(MutatingScope $scope, ExprPrinter $exprPrinter, string $exprStringToInvalidate, Expr $exprToInvalidate, Expr $expr, string $exprString, bool $requireMoreCharacters = false, ?ClassReflection $invalidatingClass = null, bool $keepPropertyFetches = false): bool
 	{
 		if (
 			$expr instanceof IntertwinedVariableByReferenceWithExpr
@@ -829,6 +831,10 @@ final class ScopeOps
 			}
 
 			return $exprStringToInvalidate === $exprString;
+		}
+
+		if ($keepPropertyFetches && self::isPropertyFetchChainOn($expr, $exprStringToInvalidate, $exprPrinter)) {
+			return false;
 		}
 
 		// nodeKey() is the pretty-printed expression, and the standard printer is
@@ -872,6 +878,42 @@ final class ScopeOps
 		}
 
 		return true;
+	}
+
+	/**
+	 * Whether $expr is a chain of property fetches rooted at the invalidated
+	 * expression, like '$this->foo', '$this->foo?->bar' or '$this->$name' for '$this'.
+	 *
+	 * Such an expression only reads state reachable through the object itself, so a
+	 * callee that never receives the object - a static method, a static closure -
+	 * cannot change it and it survives the invalidation. Anything else rooted at the
+	 * object (a method call, an offset access) can observe static state and keeps
+	 * being invalidated. A property name computed from anything but a plain variable
+	 * could do the same, so it is not accepted either.
+	 *
+	 * Callers must still invalidate the object when they hand it to the callee as an
+	 * argument. Reaching it through static state ('self::$instance = $this;' and then
+	 * a static method writing through 'self::$instance') is not tracked - the same
+	 * limitation every receiver other than '$this' has always had.
+	 */
+	private static function isPropertyFetchChainOn(Expr $expr, string $exprStringToInvalidate, ExprPrinter $exprPrinter): bool
+	{
+		if (!$expr instanceof PropertyFetch && !$expr instanceof NullsafePropertyFetch) {
+			return false;
+		}
+
+		while ($expr instanceof PropertyFetch || $expr instanceof NullsafePropertyFetch) {
+			if (
+				!$expr->name instanceof Node\Identifier
+				&& !($expr->name instanceof Variable && is_string($expr->name->name))
+			) {
+				return false;
+			}
+
+			$expr = $expr->var;
+		}
+
+		return self::nodeKey($expr, $exprPrinter) === $exprStringToInvalidate;
 	}
 
 	/**

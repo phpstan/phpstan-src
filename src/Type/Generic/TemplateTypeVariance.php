@@ -149,30 +149,42 @@ final class TemplateTypeVariance
 		return $other;
 	}
 
-	public function isValidVariance(TemplateType $templateType, Type $a, Type $b): IsSuperTypeOfResult
+	/**
+	 * By default `mixed` and benevolent unions are compatible with any other type
+	 * argument in both directions - that is how gradual typing works.
+	 *
+	 * With $strict that answer is not given: it makes the relation symmetric
+	 * (`Foo<mixed>` and `Foo<int>` end up supertypes of each other) and
+	 * TypeCombinator::union() then discards one of them depending on the order the
+	 * types come in. In the strict mode invariance is relaxed just enough to keep
+	 * `Foo<mixed>` a supertype of `Foo<int>` and not the other way around.
+	 */
+	public function isValidVariance(TemplateType $templateType, Type $a, Type $b, bool $strict = false): IsSuperTypeOfResult
 	{
 		if ($b instanceof NeverType) {
 			return IsSuperTypeOfResult::createYes();
 		}
 
-		if ($a instanceof MixedType && !$a instanceof TemplateType) {
-			return IsSuperTypeOfResult::createYes();
-		}
-
-		if ($a instanceof BenevolentUnionType) {
-			if (!$a->isSuperTypeOf($b)->no()) {
+		if (!$strict) {
+			if ($a instanceof MixedType && !$a instanceof TemplateType) {
 				return IsSuperTypeOfResult::createYes();
 			}
-		}
 
-		if ($b instanceof BenevolentUnionType) {
-			if (!$b->isSuperTypeOf($a)->no()) {
+			if ($a instanceof BenevolentUnionType) {
+				if (!$a->isSuperTypeOf($b)->no()) {
+					return IsSuperTypeOfResult::createYes();
+				}
+			}
+
+			if ($b instanceof BenevolentUnionType) {
+				if (!$b->isSuperTypeOf($a)->no()) {
+					return IsSuperTypeOfResult::createYes();
+				}
+			}
+
+			if ($b instanceof MixedType && !$b instanceof TemplateType) {
 				return IsSuperTypeOfResult::createYes();
 			}
-		}
-
-		if ($b instanceof MixedType && !$b instanceof TemplateType) {
-			return IsSuperTypeOfResult::createYes();
 		}
 
 		if ($this->invariant()) {
@@ -181,6 +193,24 @@ final class TemplateTypeVariance
 				&& $a->getName() === $b->getName()
 			) {
 				return IsSuperTypeOfResult::createYes();
+			}
+
+			if ($strict) {
+				if ($a instanceof MixedType && !$a instanceof TemplateType) {
+					return IsSuperTypeOfResult::createYes();
+				}
+
+				if ($a instanceof BenevolentUnionType && !$a->isSuperTypeOf($b)->no()) {
+					return IsSuperTypeOfResult::createYes();
+				}
+
+				if ($b instanceof BenevolentUnionType && !$b->isSuperTypeOf($a)->no()) {
+					return IsSuperTypeOfResult::createMaybe();
+				}
+
+				if ($b instanceof MixedType && !$b instanceof TemplateType) {
+					return IsSuperTypeOfResult::createMaybe();
+				}
 			}
 
 			$result = $a->equals($b);

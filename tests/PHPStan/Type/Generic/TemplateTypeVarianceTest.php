@@ -6,6 +6,7 @@ use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
@@ -18,63 +19,27 @@ class TemplateTypeVarianceTest extends PHPStanTestCase
 
 	public static function dataIsValidVariance(): iterable
 	{
+		$benevolent = static fn (): BenevolentUnionType => new BenevolentUnionType([new IntegerType(), new StringType()]);
+		$yes = TrinaryLogic::createYes();
+		$maybe = TrinaryLogic::createMaybe();
+
 		foreach ([TemplateTypeVariance::createInvariant(), TemplateTypeVariance::createCovariant()] as $variance) {
-			yield [
-				$variance,
-				new BenevolentUnionType([new IntegerType(), new StringType()]),
-				new BenevolentUnionType([new IntegerType(), new StringType()]),
-				TrinaryLogic::createYes(),
-				TrinaryLogic::createYes(),
-			];
-
-			yield [
-				$variance,
-				new IntegerType(),
-				new BenevolentUnionType([new IntegerType(), new StringType()]),
-				TrinaryLogic::createYes(),
-				TrinaryLogic::createYes(),
-			];
-
-			yield [
-				$variance,
-				new BenevolentUnionType([new IntegerType(), new StringType()]),
-				new IntegerType(),
-				TrinaryLogic::createYes(),
-				TrinaryLogic::createYes(),
-			];
-
-			yield [
-				$variance,
-				new StringType(),
-				new BenevolentUnionType([new IntegerType(), new StringType()]),
-				TrinaryLogic::createYes(),
-				TrinaryLogic::createYes(),
-			];
-
-			yield [
-				$variance,
-				new BenevolentUnionType([new IntegerType(), new StringType()]),
-				new StringType(),
-				TrinaryLogic::createYes(),
-				TrinaryLogic::createYes(),
-			];
-
-			yield [
-				$variance,
-				new BenevolentUnionType([new IntegerType(), new StringType()]),
-				new UnionType([new IntegerType(), new StringType()]),
-				TrinaryLogic::createYes(),
-				TrinaryLogic::createYes(),
-			];
-
-			yield [
-				$variance,
-				new UnionType([new IntegerType(), new StringType()]),
-				new BenevolentUnionType([new IntegerType(), new StringType()]),
-				TrinaryLogic::createYes(),
-				TrinaryLogic::createYes(),
-			];
+			yield [$variance, $benevolent(), $benevolent(), $yes, $yes, $yes, $yes];
+			yield [$variance, new IntegerType(), $benevolent(), $yes, $yes, $maybe, $yes];
+			yield [$variance, $benevolent(), new IntegerType(), $yes, $yes, $yes, $maybe];
+			yield [$variance, new StringType(), $benevolent(), $yes, $yes, $maybe, $yes];
+			yield [$variance, $benevolent(), new StringType(), $yes, $yes, $yes, $maybe];
+			yield [$variance, new MixedType(), new IntegerType(), $yes, $yes, $yes, $maybe];
 		}
+
+		yield [TemplateTypeVariance::createInvariant(), $benevolent(), new UnionType([new IntegerType(), new StringType()]), $yes, $yes, $yes, $maybe];
+		yield [TemplateTypeVariance::createInvariant(), new UnionType([new IntegerType(), new StringType()]), $benevolent(), $yes, $yes, $maybe, $yes];
+
+		yield [TemplateTypeVariance::createCovariant(), $benevolent(), new UnionType([new IntegerType(), new StringType()]), $yes, $yes, $yes, $yes];
+		yield [TemplateTypeVariance::createCovariant(), new UnionType([new IntegerType(), new StringType()]), $benevolent(), $yes, $yes, $yes, $yes];
+
+		yield [TemplateTypeVariance::createContravariant(), new MixedType(), new IntegerType(), $yes, $yes, $maybe, $yes];
+		yield [TemplateTypeVariance::createContravariant(), new IntegerType(), $benevolent(), $yes, $yes, $yes, $maybe];
 	}
 
 	#[DataProvider('dataIsValidVariance')]
@@ -84,6 +49,8 @@ class TemplateTypeVarianceTest extends PHPStanTestCase
 		Type $b,
 		TrinaryLogic $expected,
 		TrinaryLogic $expectedInversed,
+		TrinaryLogic $expectedStrict,
+		TrinaryLogic $expectedStrictInversed,
 	): void
 	{
 		$templateType = TemplateTypeFactory::create(TemplateTypeScope::createWithFunction('foo'), 'T', null, $variance);
@@ -96,6 +63,16 @@ class TemplateTypeVarianceTest extends PHPStanTestCase
 			$expectedInversed->describe(),
 			$variance->isValidVariance($templateType, $b, $a)->result->describe(),
 			sprintf('%s->isValidVariance(%s, %s)', $variance->describe(), $b->describe(VerbosityLevel::precise()), $a->describe(VerbosityLevel::precise())),
+		);
+		$this->assertSame(
+			$expectedStrict->describe(),
+			$variance->isValidVariance($templateType, $a, $b, true)->result->describe(),
+			sprintf('%s->isValidVariance(%s, %s, true)', $variance->describe(), $a->describe(VerbosityLevel::precise()), $b->describe(VerbosityLevel::precise())),
+		);
+		$this->assertSame(
+			$expectedStrictInversed->describe(),
+			$variance->isValidVariance($templateType, $b, $a, true)->result->describe(),
+			sprintf('%s->isValidVariance(%s, %s, true)', $variance->describe(), $b->describe(VerbosityLevel::precise()), $a->describe(VerbosityLevel::precise())),
 		);
 	}
 

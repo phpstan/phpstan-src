@@ -16,6 +16,7 @@ use PHPStan\Analyser\InternalError;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\FileMonitor;
+use PHPStan\File\FileMonitorFactory;
 use PHPStan\File\FileMonitorResult;
 use PHPStan\File\FileReader;
 use PHPStan\File\FileWriter;
@@ -75,7 +76,7 @@ final class FixerApplication
 	 * @param string[] $bootstrapFiles
 	 */
 	public function __construct(
-		private FileMonitor $fileMonitor,
+		private FileMonitorFactory $fileMonitorFactory,
 		private IgnoredErrorHelper $ignoredErrorHelper,
 		private StubFilesProvider $stubFilesProvider,
 		#[AutowiredParameter]
@@ -102,6 +103,8 @@ final class FixerApplication
 	)
 	{
 	}
+
+	private ?FileMonitor $fileMonitor = null;
 
 	public function run(
 		InceptionResult $inceptionResult,
@@ -154,7 +157,7 @@ final class FixerApplication
 				}
 			});
 
-			$this->fileMonitor->initialize(array_merge(
+			$this->fileMonitor = $this->fileMonitorFactory->create(array_merge(
 				$this->getComposerLocks(),
 				$this->getComposerInstalled(),
 				$this->getExecutedFiles(),
@@ -404,24 +407,29 @@ final class FixerApplication
 	 */
 	private function monitorFileChanges(LoopInterface $loop, callable $hasChangesCallback): void
 	{
-		$callback = function () use (&$callback, $loop, $hasChangesCallback): void {
+		if ($this->fileMonitor === null) {
+			throw new ShouldNotHappenException();
+		}
+		$fileMonitor = $this->fileMonitor;
+		$interval = $fileMonitor->getPollInterval();
+		$callback = function () use (&$callback, $loop, $hasChangesCallback, $fileMonitor, $interval): void {
 			if (!$this->fileMonitorActive) {
-				$loop->addTimer(1.0, $callback);
+				$loop->addTimer($interval, $callback);
 				return;
 			}
 			if ($this->processInProgress !== null) {
-				$loop->addTimer(1.0, $callback);
+				$loop->addTimer($interval, $callback);
 				return;
 			}
-			$changes = $this->fileMonitor->getChanges();
+			$changes = $fileMonitor->getChanges();
 
 			if ($changes->hasAnyChanges()) {
 				$hasChangesCallback($changes);
 			}
 
-			$loop->addTimer(1.0, $callback);
+			$loop->addTimer($interval, $callback);
 		};
-		$loop->addTimer(1.0, $callback);
+		$loop->addTimer($interval, $callback);
 	}
 
 	private function analyse(

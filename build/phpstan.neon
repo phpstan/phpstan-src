@@ -81,6 +81,14 @@ parameters:
 		- '#should be contravariant with parameter \$node \(PhpParser\\Node\) of method PHPStan\\Rules\\Rule<PhpParser\\Node>::processNode\(\)$#'
 		- '#Variable property access on PhpParser\\Node#'
 		-
+			# FFI's methods are the C functions declared in the cdef string at
+			# runtime, so no reflection can know them
+			identifier: method.notFound
+			message: '#^Call to an undefined method FFI::#'
+			paths:
+				- ../src/File/FsEventsFileMonitor.php
+				- ../src/File/InotifyFileMonitor.php
+		-
 			identifier: shipmonk.deadMethod
 			message: '#^Unused .*?::__construct#' # likely used in DIC
 			reportUnmatched: false

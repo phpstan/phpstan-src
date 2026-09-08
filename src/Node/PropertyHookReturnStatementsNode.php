@@ -19,12 +19,14 @@ final class PropertyHookReturnStatementsNode extends NodeAbstract implements Ret
 
 	/**
 	 * @param list<ReturnStatement> $returnStatements
+	 * @param list<ReturnStatement> $returnStatementsAfterFinally
 	 * @param list<ExecutionEndNode> $executionEnds
 	 * @param ImpurePoint[] $impurePoints
 	 */
 	public function __construct(
 		private PropertyHook $hook,
 		private array $returnStatements,
+		private array $returnStatementsAfterFinally,
 		private StatementResult $statementResult,
 		private array $executionEnds,
 		private array $impurePoints,
@@ -64,6 +66,11 @@ final class PropertyHookReturnStatementsNode extends NodeAbstract implements Ret
 	public function getReturnStatements(): array
 	{
 		return $this->returnStatements;
+	}
+
+	public function getReturnStatementsAfterFinally(): array
+	{
+		return $this->returnStatementsAfterFinally;
 	}
 
 	public function getStatementResult(): StatementResult

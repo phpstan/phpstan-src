@@ -7,6 +7,7 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\TryCatch;
 use PHPStan\Analyser\ExpressionResultStorage;
+use PHPStan\Analyser\InternalStatementExitPoint;
 use PHPStan\Analyser\InternalStatementResult;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
@@ -16,6 +17,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\CatchWithUnthrownExceptionNode;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\FinallyExitPointsNode;
+use PHPStan\Node\ReturnAfterFinallyNode;
 use PHPStan\Node\VariableAssignNode;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\NeverType;
@@ -262,6 +264,28 @@ final class TryCatchHandler implements StmtHandler
 			$impurePoints = array_merge($impurePoints, $finallyResult->getImpurePoints());
 			$finallyScope = $finallyResult->getScope();
 			$finalScope = $finallyResult->isAlwaysTerminating() ? $finalScope : $finalScope->processFinallyScope($finallyScope, $originalFinallyScope);
+			if (!$finallyResult->isAlwaysTerminating()) {
+				// the finally block runs after the exit point, so its changes are
+				// part of the state the exit point leaves the try-catch with
+				$exitPointsAfterFinally = [];
+				foreach ($exitPoints as $exitPoint) {
+					$exitStatement = $exitPoint->getStatement();
+					$exitPointScope = $exitPoint->getScope()->processFinallyScope($finallyScope, $originalFinallyScope);
+					$exitPointsAfterFinally[] = new InternalStatementExitPoint($exitStatement, $exitPointScope);
+
+					if (!$exitStatement instanceof Node\Stmt\Return_ || $exitStatement->expr === null) {
+						continue;
+					}
+
+					$nodeScopeResolver->callNodeCallback(
+						$nodeCallback,
+						new ReturnAfterFinallyNode($exitStatement),
+						$exitPointScope,
+						$storage,
+					);
+				}
+				$exitPoints = $exitPointsAfterFinally;
+			}
 			if (count($finallyResult->getExitPoints()) > 0 && $finallyResult->isAlwaysTerminating()) {
 				$nodeScopeResolver->callNodeCallback($nodeCallback, new FinallyExitPointsNode(
 					$finallyResult->toPublic()->getExitPoints(),

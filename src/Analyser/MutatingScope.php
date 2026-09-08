@@ -4647,7 +4647,54 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		if (!$this->compareVariableTypeHolders($this->expressionTypes, $otherScope->expressionTypes)) {
 			return false;
 		}
-		return $this->compareVariableTypeHolders($this->nativeExpressionTypes, $otherScope->nativeExpressionTypes);
+		if (!$this->compareVariableTypeHolders($this->nativeExpressionTypes, $otherScope->nativeExpressionTypes)) {
+			return false;
+		}
+		return $this->compareConditionalExpressions($this->conditionalExpressions, $otherScope->conditionalExpressions);
+	}
+
+	/**
+	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
+	 * @param array<string, ConditionalExpressionHolder[]> $otherConditionalExpressions
+	 */
+	private function compareConditionalExpressions(array $conditionalExpressions, array $otherConditionalExpressions): bool
+	{
+		if (count($conditionalExpressions) !== count($otherConditionalExpressions)) {
+			return false;
+		}
+		foreach ($conditionalExpressions as $exprString => $holders) {
+			if (!array_key_exists($exprString, $otherConditionalExpressions)) {
+				return false;
+			}
+			$otherHolders = $otherConditionalExpressions[$exprString];
+			if (count($holders) !== count($otherHolders)) {
+				return false;
+			}
+			foreach ($holders as $key => $holder) {
+				if (!array_key_exists($key, $otherHolders)) {
+					return false;
+				}
+				$otherHolder = $otherHolders[$key];
+				if (!$holder->getTypeHolder()->equals($otherHolder->getTypeHolder())) {
+					return false;
+				}
+				$conditionHolders = $holder->getConditionExpressionTypeHolders();
+				$otherConditionHolders = $otherHolder->getConditionExpressionTypeHolders();
+				if (count($conditionHolders) !== count($otherConditionHolders)) {
+					return false;
+				}
+				foreach ($conditionHolders as $conditionExprString => $conditionHolder) {
+					if (!array_key_exists($conditionExprString, $otherConditionHolders)) {
+						return false;
+					}
+					if (!$conditionHolder->equals($otherConditionHolders[$conditionExprString])) {
+						return false;
+					}
+				}
+			}
+		}
+
+		return true;
 	}
 
 	/**

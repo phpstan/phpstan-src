@@ -30,10 +30,8 @@ use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\Printer\NodeTypePrinter;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\FileTypeMapper;
 use function array_map;
 use function is_string;
-use function sprintf;
 
 #[AutowiredService]
 final class ExportedNodeResolver
@@ -41,13 +39,12 @@ final class ExportedNodeResolver
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
-		private FileTypeMapper $fileTypeMapper,
 		private ExprPrinter $exprPrinter,
 	)
 	{
 	}
 
-	public function resolve(string $fileName, Node $node): ?RootExportedNode
+	public function resolve(Node $node, ExportedNameScope $nameScope): ?RootExportedNode
 	{
 		if ($node instanceof Class_ && isset($node->namespacedName)) {
 			$docComment = $node->getDocComment();
@@ -76,12 +73,7 @@ final class ExportedNodeResolver
 
 			return new ExportedClassNode(
 				$className,
-				$this->exportPhpDocNode(
-					$fileName,
-					$className,
-					null,
-					$docComment !== null ? $docComment->getText() : null,
-				),
+				$this->exportPhpDocNode($docComment !== null ? $docComment->getText() : null, $nameScope),
 				$node->isAbstract(),
 				$node->isFinal(),
 				$extendsName,
@@ -107,7 +99,7 @@ final class ExportedNodeResolver
 
 					throw new ShouldNotHappenException();
 				}, $adaptations),
-				$this->exportClassStatements($node->stmts, $fileName, $className),
+				$this->exportClassStatements($node->stmts, $className, $nameScope),
 				$this->exportAttributeNodes($node->attrGroups),
 			);
 		}
@@ -120,14 +112,9 @@ final class ExportedNodeResolver
 
 			return new ExportedInterfaceNode(
 				$interfaceName,
-				$this->exportPhpDocNode(
-					$fileName,
-					$interfaceName,
-					null,
-					$docComment !== null ? $docComment->getText() : null,
-				),
+				$this->exportPhpDocNode($docComment !== null ? $docComment->getText() : null, $nameScope),
 				$extendsNames,
-				$this->exportClassStatements($node->stmts, $fileName, $interfaceName),
+				$this->exportClassStatements($node->stmts, $interfaceName, $nameScope),
 			);
 		}
 
@@ -144,14 +131,9 @@ final class ExportedNodeResolver
 			return new ExportedEnumNode(
 				$enumName,
 				$scalarType,
-				$this->exportPhpDocNode(
-					$fileName,
-					$enumName,
-					null,
-					$docComment !== null ? $docComment->getText() : null,
-				),
+				$this->exportPhpDocNode($docComment !== null ? $docComment->getText() : null, $nameScope),
 				$implementsNames,
-				$this->exportClassStatements($node->stmts, $fileName, $enumName),
+				$this->exportClassStatements($node->stmts, $enumName, $nameScope),
 				$this->exportAttributeNodes($node->attrGroups),
 			);
 		}
@@ -173,12 +155,7 @@ final class ExportedNodeResolver
 
 			return new ExportedTraitNode(
 				$className,
-				$this->exportPhpDocNode(
-					$fileName,
-					$className,
-					null,
-					$docComment !== null ? $docComment->getText() : null,
-				),
+				$this->exportPhpDocNode($docComment !== null ? $docComment->getText() : null, $nameScope),
 				$usedTraits,
 				array_map(static function (Node\Stmt\TraitUseAdaptation $adaptation): ExportedTraitUseAdaptation {
 					if ($adaptation instanceof Node\Stmt\TraitUseAdaptation\Alias) {
@@ -200,7 +177,7 @@ final class ExportedNodeResolver
 
 					throw new ShouldNotHappenException();
 				}, $adaptations),
-				$this->exportClassStatements($node->stmts, $fileName, $className),
+				$this->exportClassStatements($node->stmts, $className, $nameScope),
 				$this->exportAttributeNodes($node->attrGroups),
 			);
 		}
@@ -215,15 +192,10 @@ final class ExportedNodeResolver
 
 			return new ExportedFunctionNode(
 				$functionName,
-				$this->exportPhpDocNode(
-					$fileName,
-					null,
-					$functionName,
-					$docComment !== null ? $docComment->getText() : null,
-				),
+				$this->exportPhpDocNode($docComment !== null ? $docComment->getText() : null, $nameScope),
 				$node->byRef,
 				NodeTypePrinter::printType($node->returnType),
-				$this->exportParameterNodes($node->params, $fileName, null),
+				$this->exportParameterNodes($node->params, $nameScope),
 				$this->exportAttributeNodes($node->attrGroups),
 			);
 		}
@@ -266,7 +238,7 @@ final class ExportedNodeResolver
 	 * @param Node\Param[] $params
 	 * @return ExportedParameterNode[]
 	 */
-	private function exportParameterNodes(array $params, string $fileName, ?string $className): array
+	private function exportParameterNodes(array $params, ExportedNameScope $nameScope): array
 	{
 		$nodes = [];
 		foreach ($params as $param) {
@@ -295,12 +267,7 @@ final class ExportedNodeResolver
 				$param->variadic,
 				$param->default !== null,
 				$this->exportAttributeNodes($param->attrGroups),
-				$this->exportPhpDocNode(
-					$fileName,
-					$className,
-					null,
-					$docComment !== null ? $docComment->getText() : null,
-				),
+				$this->exportPhpDocNode($docComment !== null ? $docComment->getText() : null, $nameScope),
 				$param->flags,
 			);
 		}
@@ -308,23 +275,9 @@ final class ExportedNodeResolver
 		return $nodes;
 	}
 
-	private function exportPhpDocNode(
-		string $file,
-		?string $className,
-		?string $functionName,
-		?string $text,
-	): ?ExportedPhpDocNode
+	private function exportPhpDocNode(?string $text, ExportedNameScope $nameScope): ?ExportedPhpDocNode
 	{
 		if ($text === null) {
-			return null;
-		}
-
-		// Only the namespace and the uses are exported, so the fully resolved PHPDoc block is not
-		// needed - and building it would resolve the surrounding @template bounds through the
-		// ReflectionProvider. The result cache restore fetches exported nodes in the main process
-		// before the deferred bootstrapFiles have run, where reading PHPDocs is not allowed.
-		$nameScope = $this->fileTypeMapper->getIntermediaryNameScope($file, $className, null, $functionName);
-		if ($nameScope === null) {
 			return null;
 		}
 
@@ -335,11 +288,11 @@ final class ExportedNodeResolver
 	 * @param Node\Stmt[] $statements
 	 * @return ExportedNode[]
 	 */
-	private function exportClassStatements(array $statements, string $fileName, string $namespacedName): array
+	private function exportClassStatements(array $statements, string $namespacedName, ExportedNameScope $nameScope): array
 	{
 		$exportedNodes = [];
 		foreach ($statements as $statement) {
-			$exportedNode = $this->exportClassStatement($statement, $fileName, $namespacedName);
+			$exportedNode = $this->exportClassStatement($statement, $namespacedName, $nameScope);
 			if ($exportedNode === null) {
 				continue;
 			}
@@ -350,7 +303,7 @@ final class ExportedNodeResolver
 		return $exportedNodes;
 	}
 
-	private function exportClassStatement(Node\Stmt $node, string $fileName, string $namespacedName): ?ExportedNode
+	private function exportClassStatement(Node\Stmt $node, string $namespacedName, ExportedNameScope $nameScope): ?ExportedNode
 	{
 		if ($node instanceof ClassMethod) {
 			if ($node->isAbstract() || $node->isFinal() || !$node->isPrivate()) {
@@ -359,12 +312,7 @@ final class ExportedNodeResolver
 
 				return new ExportedMethodNode(
 					$methodName,
-					$this->exportPhpDocNode(
-						$fileName,
-						$namespacedName,
-						$methodName,
-						$docComment !== null ? $docComment->getText() : null,
-					),
+					$this->exportPhpDocNode($docComment !== null ? $docComment->getText() : null, $nameScope),
 					$node->byRef,
 					$node->isPublic(),
 					$node->isPrivate(),
@@ -372,7 +320,7 @@ final class ExportedNodeResolver
 					$node->isFinal(),
 					$node->isStatic(),
 					NodeTypePrinter::printType($node->returnType),
-					$this->exportParameterNodes($node->params, $fileName, $namespacedName),
+					$this->exportParameterNodes($node->params, $nameScope),
 					$this->exportAttributeNodes($node->attrGroups),
 				);
 			}
@@ -405,12 +353,7 @@ final class ExportedNodeResolver
 
 			return new ExportedPropertiesNode(
 				$names,
-				$this->exportPhpDocNode(
-					$fileName,
-					$namespacedName,
-					null,
-					$docComment !== null ? $docComment->getText() : null,
-				),
+				$this->exportPhpDocNode($docComment !== null ? $docComment->getText() : null, $nameScope),
 				NodeTypePrinter::printType($node->type),
 				$node->isPublic(),
 				$node->isPrivate(),
@@ -423,7 +366,7 @@ final class ExportedNodeResolver
 				$node->isPrivateSet(),
 				$virtual,
 				$this->exportAttributeNodes($node->attrGroups),
-				$this->exportPropertyHooks($node->hooks, $fileName, $namespacedName),
+				$this->exportPropertyHooks($node->hooks, $namespacedName, $nameScope),
 			);
 		}
 
@@ -448,12 +391,7 @@ final class ExportedNodeResolver
 				$node->isPublic(),
 				$node->isPrivate(),
 				$node->isFinal(),
-				$this->exportPhpDocNode(
-					$fileName,
-					$namespacedName,
-					null,
-					$docComment !== null ? $docComment->getText() : null,
-				),
+				$this->exportPhpDocNode($docComment !== null ? $docComment->getText() : null, $nameScope),
 			);
 		}
 
@@ -463,12 +401,7 @@ final class ExportedNodeResolver
 			return new ExportedEnumCaseNode(
 				$node->name->toString(),
 				$node->expr !== null ? $this->exprPrinter->printExpr($node->expr) : null,
-				$this->exportPhpDocNode(
-					$fileName,
-					$namespacedName,
-					null,
-					$docComment !== null ? $docComment->getText() : null,
-				),
+				$this->exportPhpDocNode($docComment !== null ? $docComment->getText() : null, $nameScope),
 			);
 		}
 
@@ -505,8 +438,8 @@ final class ExportedNodeResolver
 	 */
 	private function exportPropertyHooks(
 		array $hooks,
-		string $fileName,
 		string $namespacedName,
+		ExportedNameScope $nameScope,
 	): array
 	{
 		$nodes = [];
@@ -518,17 +451,12 @@ final class ExportedNodeResolver
 			}
 			$nodes[] = new ExportedPropertyHookNode(
 				$hook->name->toString(),
-				$this->exportPhpDocNode(
-					$fileName,
-					$namespacedName,
-					sprintf('$%s::%s', $propertyName, $hook->name->toString()),
-					$docComment !== null ? $docComment->getText() : null,
-				),
+				$this->exportPhpDocNode($docComment !== null ? $docComment->getText() : null, $nameScope),
 				$hook->byRef,
 				$hook->body === null,
 				$hook->isFinal(),
 				$hook->body instanceof Expr,
-				$this->exportParameterNodes($hook->params, $fileName, $namespacedName),
+				$this->exportParameterNodes($hook->params, $nameScope),
 				$this->exportAttributeNodes($hook->attrGroups),
 			);
 		}

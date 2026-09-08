@@ -47,6 +47,10 @@ final class DependencyResolver
 	/** @var array<string, list<ClassReflection|FunctionReflection|ConstantReflection>> */
 	private array $classDependencies = [];
 
+	private ExportedNameScopeTracker $nameScopeTracker;
+
+	private ?string $nameScopeFile = null;
+
 	public function __construct(
 		private FileHelper $fileHelper,
 		private IncludedFilePathResolver $includedFilePathResolver,
@@ -55,10 +59,21 @@ final class DependencyResolver
 		private FileTypeMapper $fileTypeMapper,
 	)
 	{
+		$this->nameScopeTracker = new ExportedNameScopeTracker();
 	}
 
 	public function resolveDependencies(Node $node, Scope $scope): NodeDependencies
 	{
+		// The exported nodes written to the result cache have to record the same PHPDoc scope the
+		// restore computes when it re-reads the file, so both go through the tracker. The nodes
+		// arrive here in document order, one file at a time.
+		$file = $scope->getFile();
+		if ($file !== $this->nameScopeFile) {
+			$this->nameScopeFile = $file;
+			$this->nameScopeTracker->reset();
+		}
+		$this->nameScopeTracker->enterNode($node);
+
 		$dependenciesReflections = [];
 		$dependenciesFilePaths = [];
 
@@ -552,7 +567,7 @@ final class DependencyResolver
 			}
 		}
 
-		return new NodeDependencies($this->fileHelper, $dependenciesReflections, $this->exportedNodeResolver->resolve($scope->getFile(), $node), $dependenciesFilePaths);
+		return new NodeDependencies($this->fileHelper, $dependenciesReflections, $this->exportedNodeResolver->resolve($node, $this->nameScopeTracker->getNameScope()), $dependenciesFilePaths);
 	}
 
 	public function resolveUsedTraitDependencies(InClassNode $inClassNode): NodeDependencies

@@ -893,7 +893,7 @@ class AnalyserTest extends PHPStanTestCase
 				$container->getExtensionsCollection(NodeVisitor::class),
 				new IgnoreLexer(),
 			),
-			new DependencyResolver($fileHelper, new IncludedFilePathResolver(__DIR__, $fileHelper), $reflectionProvider, new ExportedNodeResolver($reflectionProvider, $fileTypeMapper, new ExprPrinter(new Printer())), $fileTypeMapper),
+			new DependencyResolver($fileHelper, new IncludedFilePathResolver(__DIR__, $fileHelper), $reflectionProvider, new ExportedNodeResolver($reflectionProvider, new ExprPrinter(new Printer())), $fileTypeMapper),
 			new PackageDependencyResolver([], $fileHelper),
 			new DirectExtensionsCollection([]),
 			$container->getByType(RuleErrorTransformer::class),

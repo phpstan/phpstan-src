@@ -2,13 +2,11 @@
 
 namespace PHPStan\File;
 
-use Symfony\Component\Finder\Finder;
 use function array_filter;
 use function array_map;
 use function array_unique;
 use function array_values;
 use function file_exists;
-use function implode;
 use function is_file;
 use function sort;
 
@@ -22,6 +20,7 @@ final class FileFinder
 		private FileExcluder $fileExcluder,
 		private FileHelper $fileHelper,
 		private array $fileExtensions,
+		private DirectoryWalker $directoryWalker,
 	)
 	{
 	}
@@ -31,6 +30,25 @@ final class FileFinder
 	 */
 	public function findFiles(array $paths): FileFinderResult
 	{
+		return $this->doFindFiles($paths, false);
+	}
+
+	/**
+	 * Like findFiles(), but the directory walk is shared with the other FileFinder - see
+	 * DirectoryWalker. Only for the callers that run once per analysis, before it starts.
+	 *
+	 * @param string[] $paths
+	 */
+	public function findFilesCached(array $paths): FileFinderResult
+	{
+		return $this->doFindFiles($paths, true);
+	}
+
+	/**
+	 * @param string[] $paths
+	 */
+	private function doFindFiles(array $paths, bool $cached): FileFinderResult
+	{
 		$onlyFiles = true;
 		$files = [];
 		foreach ($paths as $path) {
@@ -39,10 +57,11 @@ final class FileFinder
 			} elseif (!file_exists($path)) {
 				throw new PathNotFoundException($path);
 			} else {
-				$finder = new Finder();
-				$finder->followLinks();
-				foreach ($finder->files()->name('*.{' . implode(',', $this->fileExtensions) . '}')->in($path) as $fileInfo) {
-					$files[] = $fileInfo->getPathname();
+				$walkedFiles = $cached
+					? $this->directoryWalker->walkCached($path, $this->fileExtensions)
+					: $this->directoryWalker->walk($path, $this->fileExtensions);
+				foreach ($walkedFiles as $walkedFile) {
+					$files[] = $walkedFile;
 					$onlyFiles = false;
 				}
 			}

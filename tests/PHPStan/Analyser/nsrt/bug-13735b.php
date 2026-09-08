@@ -144,6 +144,96 @@ class HelloWorld extends ParentClass
 		assertType('Bug13735b\Foo', $this->foo);
 	}
 
+	/**
+	 * 'static function () use ($this) {}' is a fatal error - 'Cannot use $this as
+	 * lexical variable' - so a static closure reaches the object by capturing it
+	 * under another name. PHPStan does not track that aliasing, so the write lands
+	 * on '$self->foo' while the caller remembers '$this->foo'.
+	 */
+	public function doStaticClosureCapturingReceiver(): void
+	{
+		$this->foo = new Foo();
+		assertType('Bug13735b\Foo', $this->foo);
+		$self = $this;
+		$staticClosure = static function () use ($self): void {
+			$self->foo = null;
+		};
+		$staticClosure();
+		assertType('Bug13735b\Foo|null', $this->foo);
+	}
+
+	public function doStaticClosureCapturingReceiverByRef(): void
+	{
+		$this->foo = new Foo();
+		assertType('Bug13735b\Foo', $this->foo);
+		$self = $this;
+		$staticClosure = static function () use (&$self): void {
+			$self->foo = null;
+		};
+		$staticClosure();
+		assertType('Bug13735b\Foo|null', $this->foo);
+	}
+
+	public function doStaticClosureCallingImpureMethodOnCapturedReceiver(): void
+	{
+		$this->foo = new Foo();
+		assertType('Bug13735b\Foo', $this->foo);
+		$self = $this;
+		$staticClosure = static function () use ($self): void {
+			$self->nonStaticMutate($self);
+		};
+		$staticClosure();
+		assertType('Bug13735b\Foo|null', $this->foo);
+	}
+
+	/** An arrow function captures the receiver without a 'use' clause at all. */
+	public function doStaticArrowFunctionCapturingReceiver(): void
+	{
+		$this->foo = new Foo();
+		assertType('Bug13735b\Foo', $this->foo);
+		$self = $this;
+		$staticArrowFunction = static fn (): ?Foo => $self->foo = null;
+		$staticArrowFunction();
+		assertType('Bug13735b\Foo|null', $this->foo);
+	}
+
+	/** Capturing the receiver only to read it changes nothing about it. */
+	public function doStaticClosureReadingCapturedReceiver(): void
+	{
+		$this->foo = new Foo();
+		assertType('Bug13735b\Foo', $this->foo);
+		$self = $this;
+		$staticClosure = static function () use ($self): void {
+			file_put_contents('log file', $self->foo === null ? 'null' : 'foo');
+		};
+		$staticClosure();
+		assertType('Bug13735b\Foo', $this->foo);
+	}
+
+	public function doStaticClosureCapturingScalar(): void
+	{
+		$this->foo = new Foo();
+		assertType('Bug13735b\Foo', $this->foo);
+		$message = 'foo';
+		$staticClosure = static function () use ($message): void {
+			file_put_contents('log file', $message);
+		};
+		$staticClosure();
+		assertType('Bug13735b\Foo', $this->foo);
+	}
+
+	public function doNonStaticClosureCapturingReceiver(): void
+	{
+		$this->foo = new Foo();
+		assertType('Bug13735b\Foo', $this->foo);
+		$self = $this;
+		$closure = function () use ($self): void {
+			$self->foo = null;
+		};
+		$closure();
+		assertType('Bug13735b\Foo|null', $this->foo);
+	}
+
 	public function doStaticMethodGettingThisAsArgument(): void
 	{
 		$this->foo = new Foo();

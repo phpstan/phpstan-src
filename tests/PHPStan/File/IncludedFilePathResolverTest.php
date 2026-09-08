@@ -4,6 +4,8 @@ namespace PHPStan\File;
 
 use PHPStan\Analyser\Scope;
 use PHPStan\Testing\PHPStanTestCase;
+use function array_map;
+use function str_replace;
 
 final class IncludedFilePathResolverTest extends PHPStanTestCase
 {
@@ -37,10 +39,16 @@ final class IncludedFilePathResolverTest extends PHPStanTestCase
 
 	public function testRelativePathIsResolvedAgainstEveryDirectory(): void
 	{
-		$paths = $this->createResolver()->resolve('lorem.php', $this->createScope());
+		// Compared with forward slashes so the expectations hold on Windows too, where
+		// absolutizePath() joins with a backslash.
+		$paths = array_map(
+			static fn (string $path): string => str_replace('\\', '/', $path),
+			$this->createResolver()->resolve('lorem.php', $this->createScope()),
+		);
+		$directory = str_replace('\\', '/', __DIR__);
 
-		$this->assertContains(__DIR__ . '/lorem.php', $paths);
-		$this->assertContains(__DIR__ . '/test/lorem.php', $paths);
+		$this->assertContains($directory . '/lorem.php', $paths);
+		$this->assertContains($directory . '/test/lorem.php', $paths);
 	}
 
 }

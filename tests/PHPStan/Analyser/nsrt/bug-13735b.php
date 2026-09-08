@@ -115,6 +115,24 @@ class HelloWorld extends ParentClass
 		assertType('Bug13735b\Bar|null', $this->foo->bar);
 	}
 
+	public function doStaticClosureGettingResourceAsArgument(): void
+	{
+		$fh = fopen('php://memory', 'r');
+		if ($fh === false) {
+			return;
+		}
+
+		if (ftell($fh) !== false) {
+			assertType('int', ftell($fh));
+			$staticClosure = static function ($handle): void {
+				fseek($handle, 10);
+			};
+			$staticClosure($fh);
+			// a resource is a handle to mutable state the closure can move
+			assertType('int|false', ftell($fh));
+		}
+	}
+
 	public function doStaticClosureGettingScalarAsArgument(): void
 	{
 		$this->foo = new Foo();

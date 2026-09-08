@@ -612,7 +612,7 @@ final class CommandHelper
 				$errorOutput->writeLineFormatted('At least one path must be specified to analyse.');
 				throw new InceptionNotSuccessfulException();
 			}
-			$fileFinderResult = $fileFinder->findFiles($paths);
+			$fileFinderResult = $fileFinder->findFilesCached($paths);
 			$files = $fileFinderResult->getFiles();
 
 			$pathRoutingParser->setAnalysedFiles($files);

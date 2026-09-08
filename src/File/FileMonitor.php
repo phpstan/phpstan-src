@@ -43,6 +43,7 @@ final class FileMonitor
 		private array $scanFiles,
 		#[AutowiredParameter]
 		private array $scanDirectories,
+		private DirectoryWalker $directoryWalker,
 	)
 	{
 	}
@@ -67,6 +68,10 @@ final class FileMonitor
 		if ($this->fileHashes === null || $this->filePaths === null) {
 			throw new ShouldNotHappenException();
 		}
+
+		// Detecting a change means looking at the filesystem as it is now, so the walks shared
+		// with the analysis file discovery must not be reused here.
+		$this->directoryWalker->clearCachedWalks();
 		$finderResult = $this->analyseFileFinder->findFiles($this->analysedPaths);
 		$oldFileHashes = $this->fileHashes;
 		$fileHashes = [];

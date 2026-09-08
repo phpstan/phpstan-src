@@ -1924,6 +1924,15 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testNullSafeOnTemplateTypeNarrowedAgainstNull(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+
+		$this->analyse([__DIR__ . '/data/nullsafe-method-call-template-type.php'], []);
+	}
+
 	#[RequiresPhp('< 8.0.0')]
 	public function testDisallowNamedArguments(): void
 	{

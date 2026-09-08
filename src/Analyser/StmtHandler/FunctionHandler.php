@@ -22,6 +22,7 @@ use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\FunctionReturnStatementsNode;
 use PHPStan\Node\InFunctionNode;
 use PHPStan\Node\PropertyAssignNode;
+use PHPStan\Node\ReturnAfterFinallyNode;
 use PHPStan\Node\ReturnStatement;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\ShouldNotHappenException;
@@ -96,6 +97,7 @@ final class FunctionHandler implements StmtHandler
 		$nodeScopeResolver->callNodeCallback($nodeCallback, new InFunctionNode($functionReflection, $stmt), $functionScope, $storage);
 
 		$gatheredReturnStatements = [];
+		$gatheredReturnStatementsAfterFinally = [];
 		$gatheredYieldStatements = [];
 		$executionEnds = [];
 		$functionImpurePoints = [];
@@ -105,7 +107,7 @@ final class FunctionHandler implements StmtHandler
 		$bodyStorage = $storage->duplicate();
 		$scope->pushExpressionResultStorage($bodyStorage);
 		try {
-			$nodeScopeResolver->pushNodeGatherer(static function (Node $node, Scope $scope) use ($functionScope, &$gatheredReturnStatements, &$gatheredYieldStatements, &$executionEnds, &$functionImpurePoints): void {
+			$nodeScopeResolver->pushNodeGatherer(static function (Node $node, Scope $scope) use ($functionScope, &$gatheredReturnStatements, &$gatheredReturnStatementsAfterFinally, &$gatheredYieldStatements, &$executionEnds, &$functionImpurePoints): void {
 				if ($scope->getFunction() !== $functionScope->getFunction()) {
 					return;
 				}
@@ -126,6 +128,10 @@ final class FunctionHandler implements StmtHandler
 					$executionEnds[] = $node;
 					return;
 				}
+				if ($node instanceof ReturnAfterFinallyNode) {
+					$gatheredReturnStatementsAfterFinally[] = new ReturnStatement($scope, $node->getReturnNode());
+					return;
+				}
 				if ($node instanceof Expr\Yield_ || $node instanceof Expr\YieldFrom) {
 					$gatheredYieldStatements[] = $node;
 				}
@@ -144,6 +150,7 @@ final class FunctionHandler implements StmtHandler
 			$nodeScopeResolver->callNodeCallback($nodeCallback, new FunctionReturnStatementsNode(
 				$stmt,
 				$gatheredReturnStatements,
+				$gatheredReturnStatementsAfterFinally,
 				$gatheredYieldStatements,
 				$statementResult,
 				$executionEnds,

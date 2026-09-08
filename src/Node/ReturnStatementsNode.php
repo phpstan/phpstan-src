@@ -19,6 +19,17 @@ interface ReturnStatementsNode extends VirtualNode
 	 */
 	public function getReturnStatements(): array;
 
+	/**
+	 * Return statements from try or catch blocks, with the scope updated
+	 * by the changes made in the following finally block.
+	 *
+	 * Only relevant for functions returning by reference - the value the caller
+	 * receives is read after the finally block has run.
+	 *
+	 * @return list<ReturnStatement>
+	 */
+	public function getReturnStatementsAfterFinally(): array;
+
 	public function getStatementResult(): StatementResult;
 
 	/**

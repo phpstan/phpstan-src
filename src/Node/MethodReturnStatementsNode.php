@@ -24,6 +24,7 @@ final class MethodReturnStatementsNode extends NodeAbstract implements ReturnSta
 
 	/**
 	 * @param list<ReturnStatement> $returnStatements
+	 * @param list<ReturnStatement> $returnStatementsAfterFinally
 	 * @param list<Yield_|YieldFrom> $yieldStatements
 	 * @param list<ExecutionEndNode> $executionEnds
 	 * @param ImpurePoint[] $impurePoints
@@ -31,6 +32,7 @@ final class MethodReturnStatementsNode extends NodeAbstract implements ReturnSta
 	public function __construct(
 		ClassMethod $method,
 		private array $returnStatements,
+		private array $returnStatementsAfterFinally,
 		private array $yieldStatements,
 		private StatementResult $statementResult,
 		private array $executionEnds,
@@ -46,6 +48,11 @@ final class MethodReturnStatementsNode extends NodeAbstract implements ReturnSta
 	public function getReturnStatements(): array
 	{
 		return $this->returnStatements;
+	}
+
+	public function getReturnStatementsAfterFinally(): array
+	{
+		return $this->returnStatementsAfterFinally;
 	}
 
 	public function getStatementResult(): StatementResult

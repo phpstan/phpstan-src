@@ -15,6 +15,7 @@ use PHPStan\Node\InPropertyHookNode;
 use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Node\PropertyHookReturnStatementsNode;
 use PHPStan\Node\PropertyHookStatementNode;
+use PHPStan\Node\ReturnAfterFinallyNode;
 use PHPStan\Node\ReturnStatement;
 use PHPStan\Parser\LineAttributesVisitor;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
@@ -111,9 +112,10 @@ final class PropertyHooksProcessor
 			}
 
 			$gatheredReturnStatements = [];
+			$gatheredReturnStatementsAfterFinally = [];
 			$executionEnds = [];
 			$methodImpurePoints = [];
-			$nodeScopeResolver->pushNodeGatherer(static function (Node $node, Scope $scope) use ($hookScope, &$gatheredReturnStatements, &$executionEnds, &$hookImpurePoints): void {
+			$nodeScopeResolver->pushNodeGatherer(static function (Node $node, Scope $scope) use ($hookScope, &$gatheredReturnStatements, &$gatheredReturnStatementsAfterFinally, &$executionEnds, &$hookImpurePoints): void {
 				if ($scope->getFunction() !== $hookScope->getFunction()) {
 					return;
 				}
@@ -134,6 +136,10 @@ final class PropertyHooksProcessor
 					$executionEnds[] = $node;
 					return;
 				}
+				if ($node instanceof ReturnAfterFinallyNode) {
+					$gatheredReturnStatementsAfterFinally[] = new ReturnStatement($scope, $node->getReturnNode());
+					return;
+				}
 				if (!$node instanceof Return_) {
 					return;
 				}
@@ -149,6 +155,7 @@ final class PropertyHooksProcessor
 			$nodeScopeResolver->callNodeCallback($nodeCallback, new PropertyHookReturnStatementsNode(
 				$hook,
 				$gatheredReturnStatements,
+				$gatheredReturnStatementsAfterFinally,
 				$statementResult,
 				$executionEnds,
 				array_merge($statementResult->getImpurePoints(), $methodImpurePoints),

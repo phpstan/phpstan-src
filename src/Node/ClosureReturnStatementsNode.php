@@ -22,6 +22,7 @@ final class ClosureReturnStatementsNode extends NodeAbstract implements ReturnSt
 
 	/**
 	 * @param list<ReturnStatement> $returnStatements
+	 * @param list<ReturnStatement> $returnStatementsAfterFinally
 	 * @param list<Yield_|YieldFrom> $yieldStatements
 	 * @param list<ExecutionEndNode> $executionEnds
 	 * @param ImpurePoint[] $impurePoints
@@ -29,6 +30,7 @@ final class ClosureReturnStatementsNode extends NodeAbstract implements ReturnSt
 	public function __construct(
 		Closure $closureExpr,
 		private array $returnStatements,
+		private array $returnStatementsAfterFinally,
 		private array $yieldStatements,
 		private StatementResult $statementResult,
 		private array $executionEnds,
@@ -52,6 +54,11 @@ final class ClosureReturnStatementsNode extends NodeAbstract implements ReturnSt
 	public function getReturnStatements(): array
 	{
 		return $this->returnStatements;
+	}
+
+	public function getReturnStatementsAfterFinally(): array
+	{
+		return $this->returnStatementsAfterFinally;
 	}
 
 	public function getExecutionEnds(): array

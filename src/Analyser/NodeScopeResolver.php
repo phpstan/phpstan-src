@@ -50,6 +50,7 @@ use PHPStan\Node\MethodCallableNode;
 use PHPStan\Node\MethodCallExpressionNode;
 use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Node\PropertyHookStatementNode;
+use PHPStan\Node\ReturnAfterFinallyNode;
 use PHPStan\Node\ReturnStatement;
 use PHPStan\Node\StaticMethodCallableNode;
 use PHPStan\Node\StaticMethodCallExpressionNode;
@@ -1231,12 +1232,13 @@ class NodeScopeResolver
 
 		$executionEnds = [];
 		$gatheredReturnStatements = [];
+		$gatheredReturnStatementsAfterFinally = [];
 		$gatheredReturnStatementsWithScope = [];
 		$gatheredYieldStatements = [];
 		$gatheredYieldStatementsWithScope = [];
 		$closureImpurePoints = [];
 		$invalidateExpressions = [];
-		$closureStmtsGatherer = static function (Node $node, Scope $scope) use (&$executionEnds, &$gatheredReturnStatements, &$gatheredReturnStatementsWithScope, &$gatheredYieldStatements, &$gatheredYieldStatementsWithScope, &$closureScope, &$closureImpurePoints, &$invalidateExpressions): void {
+		$closureStmtsGatherer = static function (Node $node, Scope $scope) use (&$executionEnds, &$gatheredReturnStatements, &$gatheredReturnStatementsAfterFinally, &$gatheredReturnStatementsWithScope, &$gatheredYieldStatements, &$gatheredYieldStatementsWithScope, &$closureScope, &$closureImpurePoints, &$invalidateExpressions): void {
 			if ($scope->getAnonymousFunctionReflection() !== $closureScope->getAnonymousFunctionReflection()) {
 				return;
 			}
@@ -1253,6 +1255,10 @@ class NodeScopeResolver
 			}
 			if ($node instanceof ExecutionEndNode) {
 				$executionEnds[] = $node;
+				return;
+			}
+			if ($node instanceof ReturnAfterFinallyNode) {
+				$gatheredReturnStatementsAfterFinally[] = new ReturnStatement($scope, $node->getReturnNode());
 				return;
 			}
 			if ($node instanceof InvalidateExprNode) {
@@ -1283,6 +1289,7 @@ class NodeScopeResolver
 			$this->callNodeCallback($nodeCallback, new ClosureReturnStatementsNode(
 				$expr,
 				$gatheredReturnStatements,
+				$gatheredReturnStatementsAfterFinally,
 				$gatheredYieldStatements,
 				$publicStatementResult,
 				$executionEnds,
@@ -1383,6 +1390,7 @@ class NodeScopeResolver
 		$this->callNodeCallback($nodeCallback, new ClosureReturnStatementsNode(
 			$expr,
 			$gatheredReturnStatements,
+			$gatheredReturnStatementsAfterFinally,
 			$gatheredYieldStatements,
 			$publicStatementResult,
 			$executionEnds,

@@ -110,8 +110,9 @@ class HelloWorld extends ParentClass
 			$foo->bar = null;
 		};
 		$staticClosure($this->foo);
-		// the closure cannot change which Foo $this->foo points at, only what's inside it
-		assertType('Bug13735b\Foo', $this->foo);
+		// a closure that writes anywhere gives the carve-out up entirely - PHPStan cannot
+		// tell a write through a parameter from one through a capture that aliases $this
+		assertType('Bug13735b\Foo|null', $this->foo);
 		assertType('Bug13735b\Bar|null', $this->foo->bar);
 	}
 
@@ -186,7 +187,10 @@ class HelloWorld extends ParentClass
 		assertType('Bug13735b\Foo|null', $this->foo);
 	}
 
-	/** An arrow function captures the receiver without a 'use' clause at all. */
+	/**
+	 * An arrow function captures the receiver without a 'use' clause at all, so it
+	 * records no used variables - only the write it does gives the capture away.
+	 */
 	public function doStaticArrowFunctionCapturingReceiver(): void
 	{
 		$this->foo = new Foo();
@@ -197,7 +201,7 @@ class HelloWorld extends ParentClass
 		assertType('Bug13735b\Foo|null', $this->foo);
 	}
 
-	/** Capturing the receiver only to read it changes nothing about it. */
+	/** A capture is enough to give the carve-out up, even one that is only read. */
 	public function doStaticClosureReadingCapturedReceiver(): void
 	{
 		$this->foo = new Foo();
@@ -207,9 +211,10 @@ class HelloWorld extends ParentClass
 			file_put_contents('log file', $self->foo === null ? 'null' : 'foo');
 		};
 		$staticClosure();
-		assertType('Bug13735b\Foo', $this->foo);
+		assertType('Bug13735b\Foo|null', $this->foo);
 	}
 
+	/** ... and a capture that cannot be the object at all is not told apart either. */
 	public function doStaticClosureCapturingScalar(): void
 	{
 		$this->foo = new Foo();
@@ -219,7 +224,7 @@ class HelloWorld extends ParentClass
 			file_put_contents('log file', $message);
 		};
 		$staticClosure();
-		assertType('Bug13735b\Foo', $this->foo);
+		assertType('Bug13735b\Foo|null', $this->foo);
 	}
 
 	public function doNonStaticClosureCapturingReceiver(): void

@@ -9,7 +9,6 @@ use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
-use PhpParser\NodeFinder;
 use PHPStan\Analyser\ArgsResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\MutatingScope;
@@ -41,11 +40,9 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
-use function array_key_exists;
 use function array_slice;
 use function count;
 use function in_array;
-use function is_string;
 use function sprintf;
 use function str_starts_with;
 
@@ -106,15 +103,22 @@ final class FuncCallScopeEffectsHelper
 			$parametersAcceptor instanceof ClosureType && count($parametersAcceptor->getImpurePoints()) > 0
 			&& $scope->isInClass()
 		) {
-			// a static closure is never bound to $this, so property fetches on it survive -
-			// unless it writes through a variable it captured, which may be the object
-			// under another name
-			$keepPropertyFetches = $parametersAcceptor->isStaticClosure()->yes()
-				&& !$this->writesThroughCapturedVariable($parametersAcceptor);
-			if ($keepPropertyFetches) {
-				// ... but the object can still be handed to it as an argument. That's the
-				// same channel processArgs() invalidates for a callee with side effects,
-				// which is what keeps '$this' invalidated for 'self::mutate($this)'.
+			$isStaticClosure = $parametersAcceptor->isStaticClosure()->yes();
+
+			// A static closure is never bound to $this, so property fetches on it survive.
+			// But a capture may be the object under another name ('$self = $this;' then
+			// 'use ($self)'), and PHPStan does not track that aliasing: a write would land
+			// on '$self->foo' while the caller remembers '$this->foo'. An arrow function
+			// captures implicitly and records no used variables at all, so any closure that
+			// writes anywhere gives the carve-out up too.
+			$keepPropertyFetches = $isStaticClosure
+				&& $parametersAcceptor->getUsedVariables() === []
+				&& $parametersAcceptor->getInvalidateExpressions() === [];
+
+			if ($isStaticClosure) {
+				// The object can still be handed to it as an argument. That's the same channel
+				// processArgs() invalidates for a callee with side effects, which is what keeps
+				// '$this' invalidated for 'self::mutate($this)'.
 				$scope = $this->invalidateObjectArgs($nodeScopeResolver, $normalizedExpr, $argsResult, $scope, $storage, $nodeCallback);
 			}
 			$scope = $scope->invalidateExpression(new Variable('this'), true, null, $keepPropertyFetches);
@@ -377,42 +381,6 @@ final class FuncCallScopeEffectsHelper
 			$scope = $scope->invalidateVolatileExpressions();
 		}
 		return $scope;
-	}
-
-	/**
-	 * Whether the closure body writes through a variable that is not one of its own
-	 * parameters - a captured one, which may be the receiver under another name.
-	 *
-	 * A static closure cannot say '$this', but 'use ($self)' with '$self = $this'
-	 * reaches the same object, and an arrow function captures it without saying so at
-	 * all. PHPStan does not track aliasing, so such a write lands on '$self->foo'
-	 * while the caller remembers '$this->foo'. Keeping property fetches on the
-	 * receiver is only safe when the closure has no write through a capture at all.
-	 *
-	 * Writes through the closure's own parameters are fine: those arrive from the
-	 * call site, where invalidateObjectArgs() invalidates them.
-	 */
-	private function writesThroughCapturedVariable(ClosureType $closureType): bool
-	{
-		$parameterNames = [];
-		foreach ($closureType->getParameters() as $parameter) {
-			$parameterNames[$parameter->getName()] = true;
-		}
-
-		$nodeFinder = new NodeFinder();
-		foreach ($closureType->getInvalidateExpressions() as $invalidateExpression) {
-			$capturedVariable = $nodeFinder->findFirst(
-				[$invalidateExpression->getExpr()],
-				static fn (Node $node) => $node instanceof Variable
-					&& is_string($node->name)
-					&& !array_key_exists($node->name, $parameterNames),
-			);
-			if ($capturedVariable !== null) {
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	/**

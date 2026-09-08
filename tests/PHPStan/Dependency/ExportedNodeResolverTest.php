@@ -6,7 +6,6 @@ use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\Parser;
 use PHPStan\Reflection\ReflectionProvider\DummyReflectionProvider;
 use PHPStan\Testing\PHPStanTestCase;
-use PHPStan\Type\FileTypeMapper;
 
 final class ExportedNodeResolverTest extends PHPStanTestCase
 {
@@ -18,7 +17,6 @@ final class ExportedNodeResolverTest extends PHPStanTestCase
 	{
 		$resolver = new ExportedNodeResolver(
 			$reflectionProvider,
-			self::getContainer()->getByType(FileTypeMapper::class),
 			self::getContainer()->getByType(ExprPrinter::class),
 		);
 

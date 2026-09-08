@@ -19,18 +19,22 @@ final class ExportedNodeVisitor extends NodeVisitorAbstract
 	/** @var RootExportedNode[] */
 	private array $currentNodes = [];
 
+	private ExportedNameScopeTracker $nameScopeTracker;
+
 	/**
 	 * ExportedNodeVisitor constructor.
 	 *
 	 */
 	public function __construct(private ExportedNodeResolver $exportedNodeResolver)
 	{
+		$this->nameScopeTracker = new ExportedNameScopeTracker();
 	}
 
 	public function reset(string $fileName): void
 	{
 		$this->fileName = $fileName;
 		$this->currentNodes = [];
+		$this->nameScopeTracker->reset();
 	}
 
 	/**
@@ -47,7 +51,8 @@ final class ExportedNodeVisitor extends NodeVisitorAbstract
 		if ($this->fileName === null) {
 			throw new ShouldNotHappenException();
 		}
-		$exportedNode = $this->exportedNodeResolver->resolve($this->fileName, $node);
+		$this->nameScopeTracker->enterNode($node);
+		$exportedNode = $this->exportedNodeResolver->resolve($node, $this->nameScopeTracker->getNameScope());
 		if ($exportedNode !== null) {
 			$this->currentNodes[] = $exportedNode;
 		}

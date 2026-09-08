@@ -41,6 +41,22 @@ class RequireFileExistsRuleTest extends RuleTestCase
 		];
 	}
 
+	public function testPathWithAnUnregisteredStreamWrapper(): void
+	{
+		// PHPStan cannot see through a wrapper that is not registered, so the path is still
+		// reported - it just must not be stat'd to get there, see IncludedFilePathResolverTest.
+		$this->analyse([__DIR__ . '/data/require-file-stream-wrapper.php'], [
+			[
+				'Path in include_once() "vfs://drupal/sites/default/modules/module_a/module_a.post_update.php" is not a file or it does not exist.',
+				7,
+			],
+			[
+				'Path in require() "not-a-registered-wrapper://somewhere/else.php" is not a file or it does not exist.',
+				8,
+			],
+		]);
+	}
+
 	public function testBasicCase(): void
 	{
 		$this->analyse([__DIR__ . '/data/require-file-simple-case.php'], [

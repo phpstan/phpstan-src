@@ -10,6 +10,10 @@ use function array_values;
 use function dirname;
 use function explode;
 use function get_include_path;
+use function in_array;
+use function preg_match;
+use function stream_get_wrappers;
+use function strtolower;
 use const PATH_SEPARATOR;
 
 /**
@@ -34,6 +38,10 @@ final class IncludedFilePathResolver
 	 */
 	public function resolve(string $path, Scope $scope): array
 	{
+		if ($this->hasUnavailableStreamWrapper($path)) {
+			return [];
+		}
+
 		$directories = array_merge(
 			[$this->currentWorkingDirectory],
 			explode(PATH_SEPARATOR, get_include_path()),
@@ -51,6 +59,23 @@ final class IncludedFilePathResolver
 		}
 
 		return array_values($candidatePaths);
+	}
+
+	/**
+	 * A path like `vfs://sites/default/x.php` names a stream wrapper rather than a place on the
+	 * filesystem. When that wrapper is not registered in the PHPStan process - vfsStream registers
+	 * its own from a test's setUp(), which never runs here - PHP cannot stat the path at all: every
+	 * is_file() on it raises "Unable to find the wrapper". Such a path has no candidates, and it
+	 * cannot come to have any, so nothing downstream should keep stat'ing it - the result cache
+	 * would otherwise record it as a missing file dependency and warn on every run.
+	 */
+	private function hasUnavailableStreamWrapper(string $path): bool
+	{
+		if (preg_match('~^([a-z0-9+\-.]+)://~i', $path, $matches) !== 1) {
+			return false;
+		}
+
+		return !in_array(strtolower($matches[1]), stream_get_wrappers(), true);
 	}
 
 	/**

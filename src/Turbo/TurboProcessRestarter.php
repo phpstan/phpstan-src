@@ -2,6 +2,7 @@
 
 namespace PHPStan\Turbo;
 
+use PHPStan\Process\InheritedPhpConfig;
 use function explode;
 use function extension_loaded;
 use function function_exists;
@@ -11,7 +12,6 @@ use function ini_get;
 use function is_string;
 use function max;
 use function pcntl_exec;
-use function php_ini_loaded_file;
 use function strtolower;
 use function trim;
 use const PHP_BINARY;
@@ -129,14 +129,37 @@ final class TurboProcessRestarter
 			return;
 		}
 
-		$args = [];
-		$phpIni = php_ini_loaded_file();
-		if ($phpIni !== false) {
-			$args[] = '-c';
-			$args[] = $phpIni;
-		}
+		pcntl_exec(PHP_BINARY, self::resolveRestartArgs(
+			InheritedPhpConfig::getArgs(),
+			$opcacheArgs,
+			$extensionPath,
+			ini_get('memory_limit'),
+			$argv,
+		));
+		// pcntl_exec() returns only on failure — continue as we are
+	}
+
+	/**
+	 * The whole command line of the restarted process, php options first.
+	 *
+	 * The restart replaces the process, so everything the current command line
+	 * gave it and a child process does not inherit has to be spelled out again
+	 * - the php.ini situation and the Xdebug mode of InheritedPhpConfig just as
+	 * much as the OPcache setup this restart exists for. Without the former,
+	 * `php -d xdebug.mode=off vendor/bin/phpstan` restarted into a process with
+	 * Xdebug active again, which xdebug-handler then had to restart a second
+	 * time.
+	 *
+	 * @param list<string> $inheritedArgs InheritedPhpConfig::getArgs()
+	 * @param list<string> $opcacheArgs getOpcacheArgs()
+	 * @param list<string> $argv the current $_SERVER['argv'], php options already stripped from it
+	 * @return list<string>
+	 */
+	public static function resolveRestartArgs(array $inheritedArgs, array $opcacheArgs, ?string $extensionPath, string $memoryLimit, array $argv): array
+	{
+		$args = $inheritedArgs;
 		$args[] = '-d';
-		$args[] = 'memory_limit=' . ini_get('memory_limit');
+		$args[] = 'memory_limit=' . $memoryLimit;
 		foreach ($opcacheArgs as $opcacheArg) {
 			$args[] = '-d';
 			$args[] = $opcacheArg;
@@ -153,8 +176,7 @@ final class TurboProcessRestarter
 			$args[] = $arg;
 		}
 
-		pcntl_exec(PHP_BINARY, $args);
-		// pcntl_exec() returns only on failure — continue as we are
+		return $args;
 	}
 
 	/**

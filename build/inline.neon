@@ -1,0 +1,25 @@
+# Configuration of the phar build's inlining pass (compiler PrepareCommand →
+# InlineCallCollector): a level-0 analysis of PHPStan's own code that only
+# collects the call sites to rewrite. Paths must match
+# InlineCallCollector::directories().
+parameters:
+	level: 0
+	tmpDir: %currentWorkingDirectory%/tmp/inline
+	reportUnmatchedIgnoredErrors: false
+	paths:
+		- ../src
+		- ../vendor/nikic/php-parser/lib
+		- ../vendor/phpstan/phpdoc-parser/src
+		- ../vendor/ondrejmirtes/better-reflection/src
+
+services:
+	-
+		class: PHPStan\Build\InlineCallCollector
+		arguments:
+			parser: @defaultAnalysisParser
+		tags:
+			- phpstan.collector
+	-
+		class: PHPStan\Build\InlineEditsRule
+		tags:
+			- phpstan.rules.rule

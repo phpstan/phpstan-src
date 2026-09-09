@@ -172,6 +172,13 @@ final class ClassReflection
 	private array $hasStaticPropertyCache = [];
 
 	/**
+	 * getName() is the hottest call on this class (millions per run), two adapter frames deep
+	 *
+	 * @var class-string|null
+	 */
+	private ?string $name = null;
+
+	/**
 	 * @param ReflectionClass|ReflectionEnum $reflection
 	 * @param (Closure(): ?ResolvedPhpDocBlock)|null $stubPhpDocBlockCallback
 	 */
@@ -275,7 +282,7 @@ final class ClassReflection
 	 */
 	public function getName(): string
 	{
-		return $this->reflection->getName();
+		return $this->name ??= $this->reflection->getName();
 	}
 
 	public function getDisplayName(bool $withTemplateTypes = true): string

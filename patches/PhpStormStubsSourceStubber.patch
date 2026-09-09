@@ -1,0 +1,138 @@
+--- a/src/SourceLocator/SourceStubber/PhpStormStubsSourceStubber.php
++++ b/src/SourceLocator/SourceStubber/PhpStormStubsSourceStubber.php
+@@ -704,6 +704,15 @@
+             return;
+         }
+ 
++        $rawType = $this->getRawStmtType($function);
++
++        if ($rawType !== null && self::isResourcePseudoType($rawType)) {
++            $this->addTagToDocComment($function, sprintf('return %s', $rawType));
++            $function->returnType = null;
++
++            return;
++        }
++
+         $type = $this->getStmtType($function);
+ 
+         if ($type === null) {
+@@ -727,6 +736,16 @@
+ 
+             $this->modifyStmtTypeByPhpVersion($parameterNode);
+ 
++            $rawType = $this->getRawStmtType($parameterNode);
++
++            if ($rawType !== null && self::isResourcePseudoType($rawType)) {
++                assert($parameterNode->var instanceof Node\Expr\Variable);
++                assert(is_string($parameterNode->var->name));
++
++                $this->addTagToDocComment($function, sprintf('param %s $%s', $rawType, $parameterNode->var->name));
++                $parameterNode->type = null;
++            }
++
+             $parameters[] = $parameterNode;
+         }
+ 
+@@ -739,6 +757,20 @@
+      */
+     private function getStmtType($node)
+     {
++        $type = $this->getRawStmtType($node);
++
++        if ($type === null) {
++            return null;
++        }
++
++        return $this->normalizeType($type);
++    }
++
++    /**
++     * @param \PhpParser\Node\Stmt\Function_|\PhpParser\Node\Stmt\ClassMethod|\PhpParser\Node\Stmt\Property|\PhpParser\Node\Param $node
++     */
++    private function getRawStmtType($node): ?string
++    {
+         $languageLevelTypeAwareAttribute = $this->getNodeAttribute($node, 'JetBrains\PhpStorm\Internal\LanguageLevelTypeAware');
+ 
+         if ($languageLevelTypeAwareAttribute === null) {
+@@ -760,13 +792,13 @@
+                 continue;
+             }
+ 
+-            return $this->normalizeType($type->value->value);
++            return $type->value->value;
+         }
+ 
+         assert($languageLevelTypeAwareAttribute->args[1]->value instanceof Node\Scalar\String_);
+ 
+         return $languageLevelTypeAwareAttribute->args[1]->value->value !== ''
+-            ? $this->normalizeType($languageLevelTypeAwareAttribute->args[1]->value->value)
++            ? $languageLevelTypeAwareAttribute->args[1]->value->value
+             : null;
+     }
+ 
+@@ -803,16 +835,7 @@
+         $node,
+         string $annotationName
+     ): void {
+-        $docComment = $node->getDocComment();
+-
+-        if ($docComment === null) {
+-            $docCommentText = sprintf('/** @%s */', $annotationName);
+-        } else {
+-            $docCommentText = preg_replace('~(\r?\n\s*)\*/~', sprintf('\1* @%s\1*/', $annotationName), $docComment->getText());
+-            assert($docCommentText !== null);
+-        }
+-
+-        $node->setDocComment(new Doc($docCommentText));
++        $this->addTagToDocComment($node, $annotationName);
+     }
+ 
+     /**
+@@ -991,10 +1014,47 @@
+             return null;
+         }
+ 
++        if (self::isResourcePseudoType($type)) {
++            return null;
++        }
++
+         /** @psalm-suppress InternalClass, InternalMethod */
+         return BuilderHelpers::normalizeType($type);
+     }
+ 
++    /**
++     * `resource` is a pseudo-type: PHP has no such native type, and a `resource`
++     * typehint in source code is read back as a class name. The stubs use it in
++     * `#[LanguageLevelTypeAware]` to describe pre-PHP 8 signatures, so it must never
++     * become a native type - it is moved into the PHPDoc instead, where `resource`
++     * is a well-known type.
++     */
++    private static function isResourcePseudoType(string $type): bool
++    {
++        return in_array('resource', explode('|', ltrim($type, '?')), true);
++    }
++
++    /**
++     * @param \PhpParser\Node\Stmt\ClassLike|\PhpParser\Node\Stmt\ClassConst|\PhpParser\Node\Stmt\Property|\PhpParser\Node\Stmt\ClassMethod|\PhpParser\Node\Stmt\Function_|\PhpParser\Node\Stmt\Const_|\PhpParser\Node\Stmt\EnumCase $node
++     */
++    private function addTagToDocComment($node, string $tag): void
++    {
++        $docComment = $node->getDocComment();
++
++        if ($docComment === null) {
++            $docCommentText = sprintf('/** @%s */', $tag);
++        } else {
++            $docCommentText = preg_replace_callback(
++                '~(\r?\n\s*)\*/~',
++                static fn (array $matches): string => sprintf('%s* @%s%s*/', $matches[1], $tag, $matches[1]),
++                $docComment->getText()
++            );
++            assert($docCommentText !== null);
++        }
++
++        $node->setDocComment(new Doc($docCommentText));
++    }
++
+     private function getStubsDirectory(): string
+     {
+         if ($this->stubsDirectory !== null) {

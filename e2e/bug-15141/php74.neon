@@ -1,0 +1,7 @@
+parameters:
+	level: 10
+	phpVersion: 70400
+	paths:
+		- test.php
+		- resource-pseudo-type.php
+		- resource-pseudo-type-errors.php

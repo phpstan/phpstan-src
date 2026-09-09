@@ -1408,6 +1408,25 @@ jobs:
               cd e2e/bug-14305
               ../../bin/phpstan
           - script: |
+              # A userland class named `Resource` is a class, not the `resource` pseudo-type,
+              # on every phpVersion: https://phpstan.org/r/47fe50ab-e9de-4e20-8093-b24400e53d66
+              # The `resource` native type in the pre-PHP 8 PhpStorm stubs is the pseudo-type,
+              # which is what https://github.com/phpstan/phpstan/issues/15141 was about.
+              cd e2e/bug-15141
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --no-progress --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'test.php:13:Parameter #1 $r of function doFoo expects Resource, resource given.' "$OUTPUT"
+              ../bashunit -a equals '1' "$(echo "$OUTPUT" | grep -Ec '^/.+:[0-9]+:')"
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --no-progress --error-format raw -c php74.neon")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'test.php:13:Parameter #1 $r of function doFoo expects Resource, resource given.' "$OUTPUT"
+              # The pseudo-type still has to check parameters, even where the stub
+              # has no `@param` type of its own to fall back on.
+              ../bashunit -a contains 'resource-pseudo-type-errors.php:5:Parameter #1 $result of function pg_numrows expects resource, string given.' "$OUTPUT"
+              ../bashunit -a contains 'resource-pseudo-type-errors.php:6:Parameter #1 $result of function pg_freeresult expects resource, int given.' "$OUTPUT"
+              ../bashunit -a contains 'resource-pseudo-type-errors.php:7:Parameter #1 $finfo of function finfo_buffer expects resource, int given.' "$OUTPUT"
+              ../bashunit -a equals '4' "$(echo "$OUTPUT" | grep -Ec '^/.+:[0-9]+:')"
+          - script: |
               cd e2e/composer-and-phpstan-version-config
               composer install --ignore-platform-reqs
               ../../bin/phpstan analyze test.php --level=0

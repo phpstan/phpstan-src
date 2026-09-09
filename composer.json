@@ -141,6 +141,9 @@
 			"nette/di": [
 				"patches/Resolver.patch"
 			],
+			"ondrejmirtes/better-reflection": [
+				"patches/PhpStormStubsSourceStubber.patch"
+			],
 			"symfony/console": [
 				"patches/OutputFormatter.patch",
 				"patches/Application.patch"

@@ -435,4 +435,28 @@ class CallCallablesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-13810.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug11935(): void
+	{
+		// Below level 9 mixed is compatible with every type argument in both
+		// directions - that is how gradual typing works.
+		$this->analyse([__DIR__ . '/data/bug-11935.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug11935WithCheckExplicitMixed(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-11935.php'], [
+			[
+				'Parameter #1 of callable callable(Bug11935\Inv<A>): Bug11935\Inv<A> expects Bug11935\Inv<A>, Bug11935\Inv<mixed> given.',
+				34,
+			],
+			[
+				'Parameter #1 of callable callable(Bug11935\Inv<int>): void expects Bug11935\Inv<int>, Bug11935\Inv<mixed> given.',
+				43,
+			],
+		]);
+	}
+
 }

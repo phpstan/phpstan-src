@@ -26,7 +26,7 @@ interface TemplateType extends CompoundType
 
 	public function isArgument(): bool;
 
-	public function isValidVariance(Type $a, Type $b): IsSuperTypeOfResult;
+	public function isValidVariance(Type $a, Type $b, bool $strict = false): IsSuperTypeOfResult;
 
 	public function getVariance(): TemplateTypeVariance;
 

@@ -172,6 +172,15 @@ class GenericObjectType extends ObjectType
 			return $nakedSuperTypeOf;
 		}
 
+		// Type arguments of a class name written without them are resolved to the
+		// template bounds, so a `mixed` there means "not parameterized" and stays
+		// compatible with any other type argument. When the other side is explicitly
+		// parameterized, `mixed` is a type argument like any other and the variance
+		// has to be evaluated strictly - otherwise `Foo<mixed>` and `Foo<int>` would
+		// be supertypes of each other and TypeCombinator::union() would discard one
+		// of them depending on their order.
+		$strictVariance = !$acceptsContext && $type instanceof self;
+
 		$typeList = $classReflection->typeMapToList($classReflection->getTemplateTypeMap());
 		$results = [];
 		foreach ($typeList as $i => $templateType) {
@@ -191,9 +200,9 @@ class GenericObjectType extends ObjectType
 			$thisVariance = $this->variances[$i] ?? TemplateTypeVariance::createInvariant();
 			$ancestorVariance = $ancestor->variances[$i] ?? TemplateTypeVariance::createInvariant();
 			if (!$thisVariance->invariant()) {
-				$results[] = $thisVariance->isValidVariance($templateType, $this->types[$i], $ancestor->types[$i]);
+				$results[] = $thisVariance->isValidVariance($templateType, $this->types[$i], $ancestor->types[$i], $strictVariance);
 			} else {
-				$results[] = $templateType->isValidVariance($this->types[$i], $ancestor->types[$i]);
+				$results[] = $templateType->isValidVariance($this->types[$i], $ancestor->types[$i], $strictVariance);
 			}
 
 			$results[] = IsSuperTypeOfResult::createFromBoolean($thisVariance->validPosition($ancestorVariance));

@@ -386,4 +386,28 @@ class MissingReturnRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5681.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testNeverMagicMethod(): void
+	{
+		$this->checkExplicitMixedMissingReturn = true;
+		$this->analyse([__DIR__ . '/data/never-magic-method.php'], [
+			[
+				'Method MissingReturnNeverMagicMethod\Foo::__toString() should always throw an exception or terminate script execution but doesn\'t do that.',
+				8,
+			],
+			[
+				'Method MissingReturnNeverMagicMethod\Foo::__clone() should always throw an exception or terminate script execution but doesn\'t do that.',
+				12,
+			],
+			[
+				'Method MissingReturnNeverMagicMethod\Foo::__serialize() should always throw an exception or terminate script execution but doesn\'t do that.',
+				16,
+			],
+			[
+				'Method MissingReturnNeverMagicMethod\Foo::__isset() should always throw an exception or terminate script execution but doesn\'t do that.',
+				20,
+			],
+		]);
+	}
+
 }

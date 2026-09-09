@@ -1364,4 +1364,31 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14893.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testNeverMagicMethodReturnType(): void
+	{
+		$this->analyse([__DIR__ . '/data/never-magic-method-return-type.php'], [
+			[
+				'Method NeverMagicMethodReturnType\Foo::__clone() should never return but return statement found.',
+				10,
+			],
+			[
+				'Method NeverMagicMethodReturnType\Foo::__serialize() should never return but return statement found.',
+				15,
+			],
+			[
+				'Method NeverMagicMethodReturnType\Foo::__toString() should never return but return statement found.',
+				20,
+			],
+			[
+				'Method NeverMagicMethodReturnType\Foo::__isset() should never return but return statement found.',
+				25,
+			],
+			[
+				'Method NeverMagicMethodReturnType\Foo::__sleep() should never return but return statement found.',
+				31,
+			],
+		]);
+	}
+
 }

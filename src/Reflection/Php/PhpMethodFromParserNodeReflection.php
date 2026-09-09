@@ -43,6 +43,7 @@ final class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeR
 	 * @param array<string, bool> $immediatelyInvokedCallableParameters
 	 * @param array<string, Type> $phpDocClosureThisTypeParameters
 	 * @param list<AttributeReflection> $attributes
+	 * @param array<string, Type> $phpDocClosureScopeTypeParameters
 	 */
 	public function __construct(
 		private ClassReflection $declaringClass,
@@ -73,6 +74,7 @@ final class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeR
 		private bool $isConstructor,
 		array $attributes,
 		array $pureUnlessCallableIsImpureParameters,
+		array $phpDocClosureScopeTypeParameters = [],
 	)
 	{
 		if ($this->classMethod instanceof Node\PropertyHook) {
@@ -140,6 +142,7 @@ final class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeR
 			$phpDocClosureThisTypeParameters,
 			$attributes,
 			$pureUnlessCallableIsImpureParameters,
+			$phpDocClosureScopeTypeParameters,
 		);
 	}
 

@@ -399,7 +399,9 @@ jobs:
         if: matrix.target.family == 'musl'
         run: |
           V="$(echo "$PHP_MINOR" | tr -d .)"
-          apk add --no-cache bash curl git make g++ musl-dev linux-headers patch tar zstd \
+          # php86 is only in edge/testing so far, php83 to php85 are in the stable repos
+          [ "$PHP_MINOR" = "8.6" ] && APK_REPO="--repository=https://dl-cdn.alpinelinux.org/alpine/edge/testing" || APK_REPO=""
+          apk add --no-cache $APK_REPO bash curl git make g++ musl-dev linux-headers patch tar zstd \
             "php$V" "php$V-dev" "php$V-ctype" "php$V-curl" "php$V-mbstring" \
             "php$V-tokenizer" "php$V-iconv" "php$V-openssl" "php$V-phar" \
             "php$V-dom" "php$V-xml" "php$V-xmlwriter" "php$V-simplexml"
@@ -578,7 +580,9 @@ jobs:
         run: |
           docker exec -i alpine-build sh -e <<'EOF'
           V="$(echo "$PHP_MINOR" | tr -d .)"
-          apk add --no-cache bash curl git make g++ musl-dev linux-headers patch tar zstd \
+          # php86 is only in edge/testing so far, php83 to php85 are in the stable repos
+          [ "$PHP_MINOR" = "8.6" ] && APK_REPO="--repository=https://dl-cdn.alpinelinux.org/alpine/edge/testing" || APK_REPO=""
+          apk add --no-cache $APK_REPO bash curl git make g++ musl-dev linux-headers patch tar zstd \
             "php$V" "php$V-dev" "php$V-ctype" "php$V-curl" "php$V-mbstring" \
             "php$V-tokenizer" "php$V-iconv" "php$V-openssl" "php$V-phar" \
             "php$V-dom" "php$V-xml" "php$V-xmlwriter" "php$V-simplexml"

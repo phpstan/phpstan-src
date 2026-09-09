@@ -2,7 +2,6 @@
 
 namespace PHPStan\Turbo;
 
-use Phar;
 use PHPStan\Command\Output;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Diagnose\DiagnoseExtension;
@@ -79,9 +78,6 @@ final class TurboDiagnoseExtension implements DiagnoseExtension
 		}
 		if (!TurboExtensionEnabler::isActive()) {
 			return 'off (extension inactive)';
-		}
-		if (Phar::running(false) === '') {
-			return 'off (not running from a phar)';
 		}
 
 		return 'off (--debug, or OPcache is not active)';

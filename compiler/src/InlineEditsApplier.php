@@ -10,7 +10,7 @@ use function file_get_contents;
 use function file_put_contents;
 use function json_decode;
 use function preg_quote;
-use function preg_replace;
+use function preg_replace_callback;
 use function sprintf;
 use function substr;
 use function usort;
@@ -81,10 +81,17 @@ final class InlineEditsApplier
 			}
 			foreach (array_keys($names) as $name) {
 				// a declaration, a promoted constructor parameter or a trait property:
-				// visibility, optional modifiers and type, then the variable
-				$source = preg_replace(
+				// visibility, optional modifiers and type, then the variable — made
+				// public, with the source visibility recorded in an attribute PHPStan's
+				// own reflection honours (same line, so line numbers stay)
+				$source = preg_replace_callback(
 					'/\b(private|protected)(\s+(?:readonly\s+|static\s+)*(?:[?\w\\\\|&()]+\s+)?)\$' . preg_quote($name, '/') . '\b/',
-					'public$2$' . $name,
+					static fn (array $matches): string => sprintf(
+						'#[\PHPStan\Reflection\Attribute\%s] public%s$%s',
+						$matches[1] === 'private' ? 'PrivateProperty' : 'ProtectedProperty',
+						$matches[2],
+						$name,
+					),
 					$source,
 					-1,
 					$count,

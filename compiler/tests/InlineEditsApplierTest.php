@@ -59,7 +59,7 @@ final class InlineEditsApplierTest extends TestCase
 
 		self::assertSame(['edits' => 2, 'files' => 1, 'properties' => 2], $stats);
 		self::assertSame("<?php\n\$a = \$foo->bar;\n\$b = \$foo->bar;\n", file_get_contents($caller));
-		self::assertSame("<?php\nclass Foo {\n\tpublic int \$bar = 1;\n\tpublic function __construct(public readonly ?string \$baz = null)\n\t{\n\t}\n}\n", file_get_contents($callee));
+		self::assertSame("<?php\nclass Foo {\n\t#[\\PHPStan\\Reflection\\Attribute\\PrivateProperty] public int \$bar = 1;\n\tpublic function __construct(#[\\PHPStan\\Reflection\\Attribute\\PrivateProperty] public readonly ?string \$baz = null)\n\t{\n\t}\n}\n", file_get_contents($callee));
 
 		unlink($caller);
 		unlink($callee);

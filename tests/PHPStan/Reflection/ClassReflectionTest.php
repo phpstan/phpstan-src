@@ -112,6 +112,34 @@ class ClassReflectionTest extends PHPStanTestCase
 		);
 	}
 
+	public function testPrivatePropertyAttribute(): void
+	{
+		// the phar build makes the properties its inlined getters read public
+		// and records the source visibility in an attribute
+		$reflectionProvider = self::createReflectionProvider();
+		$classReflection = $reflectionProvider->getClass(\PrivatePropertyAttribute\Foo::class);
+
+		$madePublic = $classReflection->getNativeProperty('madePublic');
+		$this->assertTrue($madePublic->isPrivate());
+		$this->assertFalse($madePublic->isPublic());
+
+		$madePublicFromProtected = $classReflection->getNativeProperty('madePublicFromProtected');
+		$this->assertFalse($madePublicFromProtected->isPrivate());
+		$this->assertFalse($madePublicFromProtected->isPublic());
+
+		$promoted = $classReflection->getNativeProperty('promoted');
+		$this->assertTrue($promoted->isPrivate());
+		$this->assertFalse($promoted->isPublic());
+
+		$reallyPublic = $classReflection->getNativeProperty('reallyPublic');
+		$this->assertFalse($reallyPublic->isPrivate());
+		$this->assertTrue($reallyPublic->isPublic());
+
+		$reallyPrivate = $classReflection->getNativeProperty('reallyPrivate');
+		$this->assertTrue($reallyPrivate->isPrivate());
+		$this->assertFalse($reallyPrivate->isPublic());
+	}
+
 	public function testVariadicTraitMethod(): void
 	{
 		$reflectionProvider = self::createReflectionProvider();

@@ -25,6 +25,8 @@ use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\Annotations\AnnotationsMethodsClassReflectionExtension;
 use PHPStan\Reflection\Annotations\AnnotationsPropertiesClassReflectionExtension;
 use PHPStan\Reflection\Assertions;
+use PHPStan\Reflection\Attribute\PrivateProperty;
+use PHPStan\Reflection\Attribute\ProtectedProperty;
 use PHPStan\Reflection\AttributeReflectionFactory;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
@@ -435,6 +437,16 @@ final class PhpClassReflectionExtension
 			}
 		}
 
+		// a property the phar build made public for its inlined getters keeps its source visibility here
+		$isPrivate = $propertyReflection->isPrivate();
+		$isPublic = $propertyReflection->isPublic();
+		if ($isPublic && count($propertyReflection->getAttributes(PrivateProperty::class)) > 0) {
+			$isPrivate = true;
+			$isPublic = false;
+		} elseif ($isPublic && count($propertyReflection->getAttributes(ProtectedProperty::class)) > 0) {
+			$isPublic = false;
+		}
+
 		$nativeProperty = new PhpPropertyReflection(
 			$declaringClassReflection,
 			$declaringTrait,
@@ -454,8 +466,8 @@ final class PhpClassReflectionExtension
 			$isFinal,
 			true,
 			true,
-			$propertyReflection->isPrivate(),
-			$propertyReflection->isPublic(),
+			$isPrivate,
+			$isPublic,
 		);
 
 		if (

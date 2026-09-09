@@ -339,7 +339,8 @@ jobs:
     # packages ZTS PHP (neither ppa:ondrej/php nor Alpine); setup-php
     # provides thread-safe builds. No musl ZTS for the same packaging
     # reason.
-    container: ${{ matrix.target.family == 'gnu' && format('ghcr.io/phpstan/turbo-build:gnu-php{0}', matrix.php-version) || matrix.target.container }}
+    # alpine 3.24 carries php83 to php85, php86 only exists in edge so far
+    container: ${{ matrix.target.family == 'gnu' && format('ghcr.io/phpstan/turbo-build:gnu-php{0}', matrix.php-version) || (matrix.target.family == 'musl' && matrix.php-version == '8.6' && 'alpine:edge') || matrix.target.container }}
     timeout-minutes: 30
 
     env:
@@ -564,11 +565,14 @@ jobs:
           fetch-depth: 0
 
       - name: "Start the Alpine build container"
+        env:
+          # alpine 3.24 carries php83 to php85, php86 only exists in edge so far
+          ALPINE_IMAGE: ${{ matrix.php-version == '8.6' && 'alpine:edge' || 'alpine:3.24' }}
         run: |
           docker run -d --name alpine-build \
             -v "$PWD:/work" -w /work \
             -e PHP_MINOR -e COMPOSER_VERSION -e COMPOSER_PHAR_SHA256 \
-            alpine:3.24 sleep 7200
+            "$ALPINE_IMAGE" sleep 7200
 
       - name: "Install PHP and build tools"
         run: |
@@ -810,6 +814,8 @@ jobs:
             vs: "vs17"
           - php-version: "8.5"
             vs: "vs17"
+          - php-version: "8.6"
+            vs: "vs18"
 
     steps:
       - name: "Checkout"
@@ -843,8 +849,10 @@ jobs:
           INFIX=$([ "$MATRIX_TS" = "zts" ] && echo "" || echo "-nts")
           PACK="php-devel-pack-$FULL$INFIX-Win32-$MATRIX_VS-x64.zip"
           echo "devel pack: $PACK"
+          # betas and RCs are published under downloads/qa, released versions are not
           curl -fsSLo devel-pack.zip "https://windows.php.net/downloads/releases/$PACK" \
-            || curl -fsSLo devel-pack.zip "https://windows.php.net/downloads/releases/archives/$PACK"
+            || curl -fsSLo devel-pack.zip "https://windows.php.net/downloads/releases/archives/$PACK" \
+            || curl -fsSLo devel-pack.zip "https://windows.php.net/downloads/qa/$PACK"
           unzip -q devel-pack.zip -d /c/php-devel
 
           git clone -q https://github.com/php/php-sdk-binary-tools.git /c/php-sdk

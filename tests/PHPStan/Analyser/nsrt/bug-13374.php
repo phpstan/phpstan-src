@@ -46,7 +46,7 @@ class Collection
 function test(Collection $pushCollection, Collection $putCollection): void
 {
 	assertType('Bug13374\Collection<int|string, int>', $pushCollection->push(123));
-	assertType('Bug13374\Collection<int|string, int|string>', $pushCollection->push('foo'));
-	assertType('Bug13374\Collection<int|string, int>', $putCollection->put(123, 456));
-	assertType('Bug13374\Collection<int|string, int|string>', $putCollection->put(789, 'foo'));
+	assertType("Bug13374\Collection<int|string, 'foo'|int>", $pushCollection->push('foo'));
+	assertType('Bug13374\Collection<123|string, int>', $putCollection->put(123, 456));
+	assertType("Bug13374\Collection<123|789|string, 'foo'|int>", $putCollection->put(789, 'foo'));
 }

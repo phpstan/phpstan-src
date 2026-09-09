@@ -348,7 +348,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ["8.3", "8.4", "8.5"]
+        php-version: ["8.3", "8.4", "8.5", "8.6"]
         target:
           - name: "linux-gnu-x86_64"
             runs-on: "ubuntu-latest"
@@ -545,7 +545,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ["8.3", "8.4", "8.5"]
+        php-version: ["8.3", "8.4", "8.5", "8.6"]
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -795,7 +795,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ["8.3", "8.4", "8.5"]
+        php-version: ["8.3", "8.4", "8.5", "8.6"]
         ts: ["nts", "zts"]
         # The official 8.3 Windows binaries are built with VS16 (linker
         # 14.2x) and PHP's module loader is one-directional (module toolset
@@ -989,7 +989,7 @@ jobs:
       # vs17-built official PHP loads it fine.
       matrix:
         operating-system: ["ubuntu-latest", "windows-latest"]
-        php-version: ["8.3", "8.4", "8.5"]
+        php-version: ["8.3", "8.4", "8.5", "8.6"]
         ts: ["nts", "zts"]
         script: ["make tests", "make phpstan"]
         # macOS runs the shipped ad-hoc-signed arm64 binary; there is no

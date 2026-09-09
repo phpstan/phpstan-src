@@ -92,7 +92,8 @@ that does not exec() must `_exit()` instead.
 own code runs rather than replacing it: it arms an opcache optimizer pass
 (`TrustedTypes.cpp`) that drops the engine's argument and return type checks
 from scripts compiled under the given prefix — the running phar, passed by
-`TurboExtensionEnabler::trustOwnTypesIfSuitable()`. PHPStan's code is verified
+`TurboExtensionEnabler::trustOwnTypesIfSuitable()` — the running phar, or the
+source checkout `bin/phpstan` runs from. PHPStan's code is verified
 by PHPStan, so those checks re-check what analysis proved, at about 8% of the
 analysis CPU. Nothing outside the prefix is touched, and a check sits in the
 callee, so extensions and bootstrapped code keep checking what PHPStan hands

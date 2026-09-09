@@ -12,6 +12,7 @@ use function in_array;
 use function is_file;
 use function json_decode;
 use function phpversion;
+use const DIRECTORY_SEPARATOR;
 
 final class TurboExtensionEnabler
 {
@@ -177,12 +178,13 @@ final class TurboExtensionEnabler
 	 * the engine's run-time checks of its parameter and return types re-check
 	 * what analysis already proved — at about 8% of the analysis CPU: a
 	 * class-typed parameter costs a class lookup and an instanceof on every
-	 * call, a typed return the same on the way out. With the extension active
-	 * and PHPStan running from a phar, its optimizer pass (TrustedTypes.cpp)
-	 * drops those checks from the code compiled out of the phar. Nothing else
-	 * is touched: extensions, bootstrap files and the analysed project keep
-	 * their checks, including on what they receive from PHPStan and return to
-	 * it — a check sits in the callee.
+	 * call, a typed return the same on the way out. With the extension
+	 * active, its optimizer pass (TrustedTypes.cpp) drops those checks from
+	 * the code compiled out of the running phar — or out of the source
+	 * checkout bin/phpstan runs from. Nothing else is touched: extensions,
+	 * bootstrap files and the analysed project keep their checks, including
+	 * on what they receive from PHPStan and return to it — a check sits in
+	 * the callee.
 	 *
 	 * What is lost is the TypeError at the boundary when such code passes a
 	 * wrong value into PHPStan: it surfaces later, deeper. That is why --debug
@@ -204,15 +206,17 @@ final class TurboExtensionEnabler
 		if (in_array('--debug', $argv, true)) {
 			return;
 		}
-		if (!class_exists('Phar', false)) {
-			return;
-		}
-		$pharPath = Phar::running(false);
-		if ($pharPath === '') {
-			return;
+		$pharPath = class_exists('Phar', false) ? Phar::running(false) : '';
+		if ($pharPath !== '') {
+			$prefix = 'phar://' . $pharPath . '/';
+		} else {
+			// bin/phpstan of a source checkout: src/, vendor/ and build/ of the
+			// checkout, the same code the phar would hold (compiled filenames
+			// are resolved paths, as __DIR__ is)
+			$prefix = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR;
 		}
 
-		self::$trustingOwnTypes = Runtime::trustTypesUnder('phar://' . $pharPath . '/');
+		self::$trustingOwnTypes = Runtime::trustTypesUnder($prefix);
 	}
 
 }

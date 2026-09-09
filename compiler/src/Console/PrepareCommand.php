@@ -4,6 +4,7 @@ namespace PHPStan\Compiler\Console;
 
 use Exception;
 use PHPStan\Compiler\Filesystem\Filesystem;
+use PHPStan\Compiler\InlineEditsApplier;
 use PHPStan\ShouldNotHappenException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -18,6 +19,7 @@ use function file_put_contents;
 use function implode;
 use function in_array;
 use function is_dir;
+use function is_file;
 use function json_decode;
 use function json_encode;
 use function realpath;
@@ -50,6 +52,7 @@ final class PrepareCommand extends Command
 
 	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
+		$this->inlineSource($output);
 		$this->buildPreloadScript();
 		$this->deleteUnnecessaryVendorCode();
 		$this->fixComposerJson($this->buildDir);
@@ -255,6 +258,33 @@ php;
 
 		@unlink($vendorDir . '/nikic/php-parser/grammar/rebuildParsers.php');
 		@unlink($vendorDir . '/nikic/php-parser/bin/php-parse');
+	}
+
+	/**
+	 * Inlines PHPStan's own single-return getters at their call sites (see
+	 * build/PHPStan/Build/InlineCallCollector.php): the analysis knows the
+	 * receiver class at every call site, which the engine's optimizer does
+	 * not — it compiles callers before callees. Runs on the pristine tree,
+	 * before the downgrade, with PHPStan analysing itself.
+	 */
+	private function inlineSource(OutputInterface $output): void
+	{
+		$root = __DIR__ . '/../../..';
+		chdir($root);
+		$editsFile = $this->buildDir . '/inline-edits.json';
+		@unlink($editsFile);
+		exec(
+			'INLINE_EDITS_OUT=' . escapeshellarg($editsFile) . ' php bin/phpstan analyse -c build/inline.neon --no-progress --error-format=raw --memory-limit=2G 2>&1',
+			$outputLines,
+			$exitCode,
+		);
+		// level 0 findings in the analysed vendors are not what this run is for
+		if (!is_file($editsFile)) {
+			throw new ShouldNotHappenException("Inlining analysis produced no edits file:\n" . implode("\n", $outputLines));
+		}
+		$stats = (new InlineEditsApplier())->apply($editsFile);
+		unlink($editsFile);
+		$output->writeln(sprintf('Inlined %d call sites in %d files, %d properties made public', $stats['edits'], $stats['files'], $stats['properties']));
 	}
 
 	private function transformSource(): void

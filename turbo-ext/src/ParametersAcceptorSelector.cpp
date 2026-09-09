@@ -253,6 +253,7 @@ enum ParameterGetter
 	PG_ALLOWED_CONSTANTS,
 	PG_PURE_UNLESS_CALLABLE_IS_IMPURE,
 	PG_PURE_UNLESS_PARAMETER_PASSED,
+	PG_CLOSURE_SCOPE_TYPE,
 	PG_COUNT,
 };
 
@@ -273,6 +274,7 @@ const pt_parameter_reflection_member pt_pas_parameter_members[PG_COUNT] = {
 	PT_PR_GET_ALLOWED_CONSTANTS,
 	PT_PR_IS_PURE_UNLESS_CALLABLE_IS_IMPURE_PARAMETER,
 	PT_PR_IS_PURE_UNLESS_PARAMETER_PASSED_PARAMETER,
+	PT_PR_GET_CLOSURE_SCOPE_TYPE,
 };
 
 /* $parameter->getX() (ParameterValues.h) */
@@ -749,6 +751,11 @@ public:
 					out = true;
 					return true;
 				}
+				if (UNEXPECTED(!optionalTypeHasTemplate(parameter, PG_CLOSURE_SCOPE_TYPE, has))) return false;
+				if (has) {
+					out = true;
+					return true;
+				}
 			}
 
 			zv::Val type = parameterGet(parameter, PG_TYPE);
@@ -1130,14 +1137,14 @@ private:
 		return zv::Val(std::move(values));
 	}
 
-	/* new ExtendedDummyParameter(...$argv) over fifteen owned values */
+	/* new ExtendedDummyParameter(...$argv) over sixteen owned values */
 	static zv::Val newExtendedDummyParameter(zv::Val *values)
 	{
-		zval argv[15];
-		for (int k = 0; k < 15; k++) {
+		zval argv[16];
+		for (int k = 0; k < 16; k++) {
 			ZVAL_COPY_VALUE(&argv[k], values[k].raw());
 		}
-		return pt_extended_dummy_parameter_new(15, argv);
+		return pt_extended_dummy_parameter_new(16, argv);
 	}
 
 	/* `$parameter instanceof ExtendedParameterReflection ? $parameter->getX()
@@ -1158,7 +1165,7 @@ private:
 	 * over its getters ($i + 1 > $minimumNumberOfParameters as optional) */
 	static zv::Val firstCombinedParameter(zval *parameter, bool isExtended, bool optional)
 	{
-		zv::Val values[15];
+		zv::Val values[16];
 		values[0] = parameterGet(parameter, PG_NAME);
 		if (UNEXPECTED(values[0].isUndef())) return zv::Val();
 		values[1] = parameterGet(parameter, PG_TYPE);
@@ -1174,7 +1181,7 @@ private:
 		{
 			ParameterGetter getter;
 			zv::Val (*fallback)();
-		} extended[9] = {
+		} extended[10] = {
 			{ PG_NATIVE_TYPE, mixedDefault },
 			{ PG_PHPDOC_TYPE, mixedDefault },
 			{ PG_OUT_TYPE, nullDefault },
@@ -1184,8 +1191,9 @@ private:
 			{ PG_ALLOWED_CONSTANTS, nullDefault },
 			{ PG_PURE_UNLESS_CALLABLE_IS_IMPURE, noDefault },
 			{ PG_PURE_UNLESS_PARAMETER_PASSED, noDefault },
+			{ PG_CLOSURE_SCOPE_TYPE, nullDefault },
 		};
-		for (int k = 0; k < 9; k++) {
+		for (int k = 0; k < 10; k++) {
 			values[6 + k] = extendedOr(parameter, isExtended, extended[k].getter, extended[k].fallback);
 			if (UNEXPECTED(values[6 + k].isUndef())) return zv::Val();
 		}
@@ -1229,6 +1237,8 @@ private:
 		if (UNEXPECTED(immediatelyInvokedCallable.isUndef())) return zv::Val();
 		zv::Val closureThisType = parameterGet(existing, PG_CLOSURE_THIS_TYPE);
 		if (UNEXPECTED(closureThisType.isUndef())) return zv::Val();
+		zv::Val closureScopeType = parameterGet(existing, PG_CLOSURE_SCOPE_TYPE);
+		if (UNEXPECTED(closureScopeType.isUndef())) return zv::Val();
 		zv::Val attributes = parameterGet(existing, PG_ATTRIBUTES);
 		if (UNEXPECTED(attributes.isUndef())) return zv::Val();
 		if (isExtended) {
@@ -1265,6 +1275,17 @@ private:
 				closureThisType = zv::Val::null();
 			}
 
+			zv::Val parameterClosureScopeType = parameterGet(parameter, PG_CLOSURE_SCOPE_TYPE);
+			if (UNEXPECTED(parameterClosureScopeType.isUndef())) return zv::Val();
+			if (!parameterClosureScopeType.isNull() && !closureScopeType.isNull()) {
+				zv::Val again = parameterGet(parameter, PG_CLOSURE_SCOPE_TYPE);
+				if (UNEXPECTED(again.isUndef())) return zv::Val();
+				closureScopeType = union2(closureScopeType.raw(), again.raw());
+				if (UNEXPECTED(closureScopeType.isUndef())) return zv::Val();
+			} else {
+				closureScopeType = zv::Val::null();
+			}
+
 			zv::Val parameterImmediately = parameterGet(parameter, PG_IMMEDIATELY_INVOKED_CALLABLE);
 			zend_long left = trinaryOf(parameterImmediately);
 			if (UNEXPECTED(left < 0)) return zv::Val();
@@ -1283,6 +1304,7 @@ private:
 			outType = zv::Val::null();
 			immediatelyInvokedCallable = trinary(PT_TRI_MAYBE);
 			closureThisType = zv::Val::null();
+			closureScopeType = zv::Val::null();
 		}
 
 		if (isParameterVariadic) {
@@ -1363,7 +1385,7 @@ private:
 		if (UNEXPECTED(rightPassed < 0)) return zv::Val();
 		zv::Val pureUnlessParameterPassedParameter = leftPassed == rightPassed ? std::move(leftPureUnlessParameterPassed) : trinary(PT_TRI_MAYBE);
 
-		zv::Val values[15];
+		zv::Val values[16];
 		{
 			zv::Val existingName = parameterGet(existing, PG_NAME);
 			if (UNEXPECTED(existingName.isUndef())) return zv::Val();
@@ -1405,6 +1427,7 @@ private:
 		values[12] = std::move(allowedConstants);
 		values[13] = std::move(pureUnlessCallableIsImpureParameter);
 		values[14] = std::move(pureUnlessParameterPassedParameter);
+		values[15] = std::move(closureScopeType);
 		return newExtendedDummyParameter(values);
 	}
 
@@ -1474,7 +1497,7 @@ public:
 		if (UNEXPECTED(!isA(parameter, PT_CLASS_EXTENDED_PARAMETER_REFLECTION, isExtended))) return zv::Val();
 		if (isExtended) return zv::Val::copyOf(zv::Ref(parameter));
 
-		zv::Val values[15];
+		zv::Val values[16];
 		static const ParameterGetter getters[6] = { PG_NAME, PG_TYPE, PG_OPTIONAL, PG_PASSED_BY_REFERENCE, PG_VARIADIC, PG_DEFAULT_VALUE };
 		for (int k = 0; k < 6; k++) {
 			values[k] = parameterGet(parameter, getters[k]);
@@ -1491,6 +1514,7 @@ public:
 		values[12] = zv::Val::null();
 		values[13] = trinary(PT_TRI_NO);
 		values[14] = trinary(PT_TRI_NO);
+		values[15] = zv::Val::null();
 		return newExtendedDummyParameter(values);
 	}
 
@@ -1499,7 +1523,7 @@ public:
 	{
 		zv::Val wrapped = wrapParameter(original);
 		if (UNEXPECTED(wrapped.isUndef())) return zv::Val();
-		zv::Val values[15];
+		zv::Val values[16];
 		values[0] = parameterGet(wrapped.raw(), PG_NAME);
 		if (UNEXPECTED(values[0].isUndef())) return zv::Val();
 		values[1] = zv::Val::copyOf(zv::Ref(type));
@@ -1507,10 +1531,11 @@ public:
 		{
 			int index;
 			ParameterGetter getter;
-		} getters[11] = {
+		} getters[12] = {
 			{ 2, PG_OPTIONAL }, { 3, PG_PASSED_BY_REFERENCE }, { 4, PG_VARIADIC }, { 5, PG_DEFAULT_VALUE },
 			{ 8, PG_OUT_TYPE }, { 9, PG_IMMEDIATELY_INVOKED_CALLABLE }, { 10, PG_CLOSURE_THIS_TYPE }, { 11, PG_ATTRIBUTES },
 			{ 12, PG_ALLOWED_CONSTANTS }, { 13, PG_PURE_UNLESS_CALLABLE_IS_IMPURE }, { 14, PG_PURE_UNLESS_PARAMETER_PASSED },
+			{ 15, PG_CLOSURE_SCOPE_TYPE },
 		};
 		values[6] = zv::Val::copyOf(zv::Ref(nativeType));
 		values[7] = zv::Val::copyOf(zv::Ref(type));

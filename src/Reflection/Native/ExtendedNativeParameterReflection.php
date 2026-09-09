@@ -35,6 +35,7 @@ final class ExtendedNativeParameterReflection implements ExtendedParameterReflec
 		private ?ParameterAllowedConstants $allowedConstants,
 		private TrinaryLogic $pureUnlessCallableIsImpureParameter,
 		private TrinaryLogic $pureUnlessParameterPassedParameter,
+		private ?Type $closureScopeType = null,
 	)
 	{
 	}
@@ -97,6 +98,11 @@ final class ExtendedNativeParameterReflection implements ExtendedParameterReflec
 	public function getClosureThisType(): ?Type
 	{
 		return $this->closureThisType;
+	}
+
+	public function getClosureScopeType(): ?Type
+	{
+		return $this->closureScopeType;
 	}
 
 	public function getAttributes(): array

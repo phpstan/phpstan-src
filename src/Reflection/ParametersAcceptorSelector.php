@@ -612,6 +612,14 @@ final class ParametersAcceptorSelector
 				return true;
 			}
 
+			if (
+				$parameter instanceof ExtendedParameterReflection
+				&& $parameter->getClosureScopeType() !== null
+				&& $parameter->getClosureScopeType()->hasTemplateOrLateResolvableType()
+			) {
+				return true;
+			}
+
 			if (!$parameter->getType()->hasTemplateOrLateResolvableType()) {
 				continue;
 			}
@@ -844,6 +852,7 @@ final class ParametersAcceptorSelector
 						$parameter instanceof ExtendedParameterReflection ? $parameter->getAllowedConstants() : null,
 						$parameter instanceof ExtendedParameterReflection ? $parameter->isPureUnlessCallableIsImpureParameter() : TrinaryLogic::createNo(),
 						$parameter instanceof ExtendedParameterReflection ? $parameter->isPureUnlessParameterPassedParameter() : TrinaryLogic::createNo(),
+						$parameter instanceof ExtendedParameterReflection ? $parameter->getClosureScopeType() : null,
 					);
 					continue;
 				}
@@ -863,6 +872,7 @@ final class ParametersAcceptorSelector
 				$outType = $parameters[$i]->getOutType();
 				$immediatelyInvokedCallable = $parameters[$i]->isImmediatelyInvokedCallable();
 				$closureThisType = $parameters[$i]->getClosureThisType();
+				$closureScopeType = $parameters[$i]->getClosureScopeType();
 				$attributes = $parameters[$i]->getAttributes();
 				if ($parameter instanceof ExtendedParameterReflection) {
 					$nativeType = TypeCombinator::union($nativeType, $parameter->getNativeType());
@@ -880,6 +890,12 @@ final class ParametersAcceptorSelector
 						$closureThisType = null;
 					}
 
+					if ($parameter->getClosureScopeType() !== null && $closureScopeType !== null) {
+						$closureScopeType = TypeCombinator::union($closureScopeType, $parameter->getClosureScopeType());
+					} else {
+						$closureScopeType = null;
+					}
+
 					$immediatelyInvokedCallable = $parameter->isImmediatelyInvokedCallable()->or($immediatelyInvokedCallable);
 					$attributes = array_merge($attributes, $parameter->getAttributes());
 				} else {
@@ -888,6 +904,7 @@ final class ParametersAcceptorSelector
 					$outType = null;
 					$immediatelyInvokedCallable = TrinaryLogic::createMaybe();
 					$closureThisType = null;
+					$closureScopeType = null;
 				}
 
 				if ($isParameterVariadic) {
@@ -942,6 +959,7 @@ final class ParametersAcceptorSelector
 					$allowedConstants,
 					$pureUnlessCallableIsImpureParameter,
 					$pureUnlessParameterPassedParameter,
+					$closureScopeType,
 				);
 
 				if ($isParameterVariadic) {
@@ -1404,6 +1422,7 @@ final class ParametersAcceptorSelector
 			$wrapped->getAllowedConstants(),
 			$wrapped->isPureUnlessCallableIsImpureParameter(),
 			$wrapped->isPureUnlessParameterPassedParameter(),
+			$wrapped->getClosureScopeType(),
 		);
 	}
 

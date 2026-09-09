@@ -2722,8 +2722,8 @@ extern zend_class_entry *pt_ce_class_method_handler;
 extern zend_class_entry *pt_ce_function_handler;
 extern zend_class_entry *pt_ce_class_like_handler;
 
-/* MutatingScope.cpp — $scope->enterClassMethod(...$argv) (the 20 positional
- * arguments) / ->enterFunction(...$argv) (the 16 positional arguments) /
+/* MutatingScope.cpp — $scope->enterClassMethod(...$argv) (the 22 positional
+ * arguments) / ->enterFunction(...$argv) (the 18 positional arguments) /
  * ->enterClass($classReflection) / ->rememberConstructorScope() /
  * ->invalidateExistenceCheckExpressions($functionNames, $declaredSymbolName)
  * (IS_NULL for null) / ->getNamespace(), next to the walk hub's
@@ -3485,7 +3485,7 @@ extern zend_class_entry *pt_ce_deprecated_attribute_resolver;
 extern zend_class_entry *pt_ce_property_hooks_processor;
 extern zend_class_entry *pt_ce_called_method_processor;
 
-/* $phpDocsResolver->getPhpDocs($scope, $node) without the array: the 22
+/* $phpDocsResolver->getPhpDocs($scope, $node) without the array: the 23
  * values of the twin's list, owned. For the shadowing class every item is
  * set; any other resolver's method runs and its array is unpacked like the
  * caller's list() — an item it lacks stays UNDEF, unless its bit (1 << index)
@@ -3493,7 +3493,7 @@ extern zend_class_entry *pt_ce_called_method_processor;
  * false = pending exception */
 enum : uint32_t
 {
-	PT_PHP_DOCS_COUNT = 22,
+	PT_PHP_DOCS_COUNT = 23,
 	PT_PHP_DOCS_TEMPLATE_TYPE_MAP = 0,
 	PT_PHP_DOCS_PARAMETER_TYPES,
 	PT_PHP_DOCS_IMMEDIATELY_INVOKED_CALLABLE_PARAMETERS,
@@ -3516,6 +3516,7 @@ enum : uint32_t
 	PT_PHP_DOCS_RESOLVED_PHP_DOC,
 	PT_PHP_DOCS_PURE_UNLESS_CALLABLE_IS_IMPURE_PARAMETERS,
 	PT_PHP_DOCS_PURE_UNLESS_PARAMETER_PASSED_PARAMETERS,
+	PT_PHP_DOCS_CLOSURE_SCOPE_TYPE_PARAMETERS,
 };
 struct pt_php_docs
 {
@@ -3828,6 +3829,7 @@ enum pt_parameter_reflection_member
 	PT_PR_GET_ALLOWED_CONSTANTS,
 	PT_PR_IS_PURE_UNLESS_CALLABLE_IS_IMPURE_PARAMETER,
 	PT_PR_IS_PURE_UNLESS_PARAMETER_PASSED_PARAMETER,
+	PT_PR_GET_CLOSURE_SCOPE_TYPE,
 	PT_PR_MEMBER_COUNT
 };
 /* $parameter-><member>() of any parameter reflection (borrowed): callers
@@ -4408,6 +4410,7 @@ enum pt_resolved_php_doc_member
 	PT_RPD_GET_PARAMS_PURE_UNLESS_CALLABLE_IS_IMPURE,
 	PT_RPD_GET_PARAMS_PURE_UNLESS_PARAMETER_PASSED,
 	PT_RPD_GET_PARAM_CLOSURE_THIS_TAGS,
+	PT_RPD_GET_PARAM_CLOSURE_SCOPE_TAGS,
 	PT_RPD_GET_RETURN_TAG,
 	PT_RPD_GET_THROWS_TAG,
 	PT_RPD_GET_MIXIN_TAGS,

@@ -35,6 +35,7 @@ final class ExtendedDummyParameter extends DummyParameter implements ExtendedPar
 		private ?ParameterAllowedConstants $allowedConstants,
 		private TrinaryLogic $pureUnlessCallableIsImpureParameter,
 		private TrinaryLogic $pureUnlessParameterPassedParameter,
+		private ?Type $closureScopeType = null,
 	)
 	{
 		parent::__construct($name, $type, $optional, $passedByReference, $variadic, $defaultValue);
@@ -68,6 +69,11 @@ final class ExtendedDummyParameter extends DummyParameter implements ExtendedPar
 	public function getClosureThisType(): ?Type
 	{
 		return $this->closureThisType;
+	}
+
+	public function getClosureScopeType(): ?Type
+	{
+		return $this->closureScopeType;
 	}
 
 	public function getAttributes(): array

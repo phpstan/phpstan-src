@@ -42,6 +42,7 @@ final class PhpFunctionReflection implements FunctionReflection
 	 * @param list<AttributeReflection> $attributes
 	 * @param array<string, bool> $phpDocParameterPureUnlessCallableIsImpure
 	 * @param array<string, bool> $phpDocParameterPureUnlessParameterPassed
+	 * @param array<string, Type> $phpDocParameterClosureScopeTypes
 	 */
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
@@ -66,6 +67,7 @@ final class PhpFunctionReflection implements FunctionReflection
 		private array $attributes,
 		private array $phpDocParameterPureUnlessCallableIsImpure,
 		private array $phpDocParameterPureUnlessParameterPassed,
+		private array $phpDocParameterClosureScopeTypes = [],
 	)
 	{
 	}
@@ -136,6 +138,7 @@ final class PhpFunctionReflection implements FunctionReflection
 				$this->allowedConstantsMapProvider->getForFunctionParameter(strtolower($this->reflection->getName()), $reflection->getName()),
 				TrinaryLogic::createFromBoolean($this->phpDocParameterPureUnlessCallableIsImpure[$reflection->getName()] ?? false),
 				TrinaryLogic::createFromBoolean($this->phpDocParameterPureUnlessParameterPassed[$reflection->getName()] ?? false),
+				$this->phpDocParameterClosureScopeTypes[$reflection->getName()] ?? null,
 			);
 		}, $this->reflection->getParameters());
 	}

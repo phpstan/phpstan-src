@@ -678,6 +678,7 @@ final class PhpClassReflectionExtension
 					$phpDocParameterOutTypes = [];
 					$immediatelyInvokedCallableParameters = [];
 					$closureThisParameters = [];
+					$closureScopeParameters = [];
 					$currentResolvedPhpDoc = null;
 					$phpDocDeclaringClass = $declaringClass;
 					$phpDocFromStubs = false;
@@ -721,6 +722,7 @@ final class PhpClassReflectionExtension
 						}
 
 						$closureThisParameters = array_map(static fn ($tag) => $tag->getType(), $currentResolvedPhpDoc->getParamClosureThisTags());
+						$closureScopeParameters = array_map(static fn ($tag) => $tag->getType(), $currentResolvedPhpDoc->getParamClosureScopeTags());
 						foreach ($currentResolvedPhpDoc->getParamTags() as $name => $paramTag) {
 							$phpDocParameterTypes[$name] = TemplateTypeHelper::resolveTemplateTypes(
 								$paramTag->getType(),
@@ -768,7 +770,7 @@ final class PhpClassReflectionExtension
 							}
 						}
 					}
-					$variantsByType[$signatureType][] = $this->createNativeMethodVariant($declaringClassName, $methodReflection->getName(), $methodSignature, $phpDocParameterTypes, $phpDocReturnType, $phpDocParameterNameMapping, $phpDocParameterOutTypes, $immediatelyInvokedCallableParameters, $closureThisParameters, $phpDocFromStubs, $signatureType !== 'named');
+					$variantsByType[$signatureType][] = $this->createNativeMethodVariant($declaringClassName, $methodReflection->getName(), $methodSignature, $phpDocParameterTypes, $phpDocReturnType, $phpDocParameterNameMapping, $phpDocParameterOutTypes, $immediatelyInvokedCallableParameters, $closureThisParameters, $phpDocFromStubs, $signatureType !== 'named', $closureScopeParameters);
 				}
 			}
 
@@ -935,6 +937,7 @@ final class PhpClassReflectionExtension
 		$templateTypeMap = TemplateTypeMap::createEmpty();
 		$immediatelyInvokedCallableParameters = [];
 		$closureThisParameters = [];
+		$closureScopeParameters = [];
 		$phpDocThrowType = null;
 		$isInternal = false;
 		$isFinal = false;
@@ -946,6 +949,7 @@ final class PhpClassReflectionExtension
 			$templateTypeMap = $resolvedPhpDoc->getTemplateTypeMap();
 			$immediatelyInvokedCallableParameters = array_map(static fn (bool $immediate) => TrinaryLogic::createFromBoolean($immediate), $resolvedPhpDoc->getParamsImmediatelyInvokedCallable());
 			$closureThisParameters = array_map(static fn ($tag) => $tag->getType(), $resolvedPhpDoc->getParamClosureThisTags());
+			$closureScopeParameters = array_map(static fn ($tag) => $tag->getType(), $resolvedPhpDoc->getParamClosureScopeTags());
 			foreach ($resolvedPhpDoc->getParamsPureUnlessCallableIsImpure() as $paramName => $isPureUnlessCallableIsImpure) {
 				$pureUnlessCallableIsImpureParameters[$paramName] = $isPureUnlessCallableIsImpure;
 			}
@@ -1033,6 +1037,7 @@ final class PhpClassReflectionExtension
 			$this->attributeReflectionFactory->fromNativeReflection($methodReflection->getAttributes(), InitializerExprContext::fromClassMethod($actualDeclaringClass->getName(), $declaringTraitName, $methodReflection->getName(), $actualDeclaringClass->getFileName())),
 			$pureUnlessCallableIsImpureParameters,
 			$pureUnlessParameterPassedParameters,
+			$closureScopeParameters,
 		);
 	}
 
@@ -1042,6 +1047,7 @@ final class PhpClassReflectionExtension
 	 * @param array<string, Type> $phpDocParameterOutTypes
 	 * @param array<string, TrinaryLogic> $immediatelyInvokedCallableParameters
 	 * @param array<string, Type> $closureThisParameters
+	 * @param array<string, Type> $closureScopeParameters
 	 */
 	private function createNativeMethodVariant(
 		string $declaringClassName,
@@ -1055,6 +1061,7 @@ final class PhpClassReflectionExtension
 		array $closureThisParameters,
 		bool $phpDocFromStubs,
 		bool $usePhpDocParameterNames,
+		array $closureScopeParameters = [],
 	): ExtendedFunctionVariant
 	{
 		$parameters = [];
@@ -1085,6 +1092,11 @@ final class PhpClassReflectionExtension
 				$closureThisType = $closureThisParameters[$phpDocParameterName];
 			}
 
+			$closureScopeType = null;
+			if (isset($closureScopeParameters[$phpDocParameterName])) {
+				$closureScopeType = $closureScopeParameters[$phpDocParameterName];
+			}
+
 			$parameters[] = new ExtendedNativeParameterReflection(
 				$usePhpDocParameterNames
 					? $phpDocParameterName
@@ -1106,6 +1118,7 @@ final class PhpClassReflectionExtension
 				// Class::method entries in functionMetadata.php).
 				TrinaryLogic::createNo(),
 				TrinaryLogic::createNo(),
+				$closureScopeType,
 			);
 		}
 
@@ -1213,7 +1226,7 @@ final class PhpClassReflectionExtension
 			$classScope = $classScope->enterNamespace($namespace);
 		}
 		$classScope = $classScope->enterClass($declaringClass);
-		[$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocClosureThisTypeParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, , $phpDocComment, $asserts, $selfOutType, $phpDocParameterOutTypes, , , , $phpDocPureUnlessCallableIsImpureParameters, $phpDocPureUnlessParameterPassedParameters] = $this->phpDocsResolver->getPhpDocs($classScope, $methodNode);
+		[$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocClosureThisTypeParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, , $phpDocComment, $asserts, $selfOutType, $phpDocParameterOutTypes, , , , $phpDocPureUnlessCallableIsImpureParameters, $phpDocPureUnlessParameterPassedParameters, $phpDocClosureScopeTypeParameters] = $this->phpDocsResolver->getPhpDocs($classScope, $methodNode);
 		$methodScope = $classScope->enterClassMethod(
 			$methodNode,
 			$templateTypeMap,
@@ -1236,6 +1249,7 @@ final class PhpClassReflectionExtension
 			null,
 			$phpDocPureUnlessCallableIsImpureParameters,
 			$phpDocPureUnlessParameterPassedParameters,
+			$phpDocClosureScopeTypeParameters,
 		);
 
 		$propertyTypes = [];

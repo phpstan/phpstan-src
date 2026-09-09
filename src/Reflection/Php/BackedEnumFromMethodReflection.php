@@ -86,6 +86,7 @@ final class BackedEnumFromMethodReflection implements ExtendedMethodReflection
 				$parameter->getAllowedConstants(),
 				$parameter->isPureUnlessCallableIsImpureParameter(),
 				$parameter->isPureUnlessParameterPassedParameter(),
+				$parameter->getClosureScopeType(),
 			), $variant->getParameters()),
 			$variant->isVariadic(),
 			$variant->getReturnType(),

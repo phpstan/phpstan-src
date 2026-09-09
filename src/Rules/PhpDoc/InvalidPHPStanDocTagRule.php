@@ -66,6 +66,7 @@ final class InvalidPHPStanDocTagRule implements MultipleNodeTypesRule
 		'@phpstan-param-closure-this',
 		'@phpstan-pure-unless-callable-is-impure',
 		'@phpstan-pure-unless-parameter-passed',
+		'@phpstan-param-closure-scope',
 		'@phpstan-all-methods-pure',
 		'@phpstan-all-methods-impure',
 	];

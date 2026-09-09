@@ -70,7 +70,7 @@ inline constexpr int8_t dummySlots[PT_PR_MEMBER_COUNT] = {
 	/* PT_PR_PASSED_BY_REFERENCE */ (int8_t) ptdecl::DummyParameter::slot::passedByReference,
 	/* PT_PR_IS_VARIADIC */ (int8_t) ptdecl::DummyParameter::slot::variadic,
 	/* PT_PR_GET_DEFAULT_VALUE */ (int8_t) ptdecl::DummyParameter::slot::defaultValue,
-	PT_PV_NONE, PT_PV_NONE, PT_PV_NONE, PT_PV_NONE, PT_PV_NONE, PT_PV_NONE, PT_PV_NONE, PT_PV_NONE, PT_PV_NONE, PT_PV_NONE,
+	PT_PV_NONE, PT_PV_NONE, PT_PV_NONE, PT_PV_NONE, PT_PV_NONE, PT_PV_NONE, PT_PV_NONE, PT_PV_NONE, PT_PV_NONE, PT_PV_NONE, PT_PV_NONE,
 };
 
 inline constexpr int8_t extendedDummySlots[PT_PR_MEMBER_COUNT] = {
@@ -90,6 +90,7 @@ inline constexpr int8_t extendedDummySlots[PT_PR_MEMBER_COUNT] = {
 	/* PT_PR_GET_ALLOWED_CONSTANTS */ (int8_t) ptdecl::ExtendedDummyParameter::slot::allowedConstants,
 	/* PT_PR_IS_PURE_UNLESS_CALLABLE_IS_IMPURE_PARAMETER */ (int8_t) ptdecl::ExtendedDummyParameter::slot::pureUnlessCallableIsImpureParameter,
 	/* PT_PR_IS_PURE_UNLESS_PARAMETER_PASSED_PARAMETER */ (int8_t) ptdecl::ExtendedDummyParameter::slot::pureUnlessParameterPassedParameter,
+	/* PT_PR_GET_CLOSURE_SCOPE_TYPE */ (int8_t) ptdecl::ExtendedDummyParameter::slot::closureScopeType,
 };
 
 inline constexpr int8_t nativeSlots[PT_PR_MEMBER_COUNT] = {
@@ -99,7 +100,7 @@ inline constexpr int8_t nativeSlots[PT_PR_MEMBER_COUNT] = {
 	(int8_t) ptdecl::NativeParameterReflection::slot::passedByReference,
 	(int8_t) ptdecl::NativeParameterReflection::slot::variadic,
 	(int8_t) ptdecl::NativeParameterReflection::slot::defaultValue,
-	PT_PV_NONE, PT_PV_NONE, PT_PV_NONE, PT_PV_NONE, PT_PV_NONE, PT_PV_NONE, PT_PV_NONE, PT_PV_NONE, PT_PV_NONE, PT_PV_NONE,
+	PT_PV_NONE, PT_PV_NONE, PT_PV_NONE, PT_PV_NONE, PT_PV_NONE, PT_PV_NONE, PT_PV_NONE, PT_PV_NONE, PT_PV_NONE, PT_PV_NONE, PT_PV_NONE,
 };
 
 inline constexpr int8_t extendedNativeSlots[PT_PR_MEMBER_COUNT] = {
@@ -119,6 +120,7 @@ inline constexpr int8_t extendedNativeSlots[PT_PR_MEMBER_COUNT] = {
 	(int8_t) ptdecl::ExtendedNativeParameterReflection::slot::allowedConstants,
 	(int8_t) ptdecl::ExtendedNativeParameterReflection::slot::pureUnlessCallableIsImpureParameter,
 	(int8_t) ptdecl::ExtendedNativeParameterReflection::slot::pureUnlessParameterPassedParameter,
+	(int8_t) ptdecl::ExtendedNativeParameterReflection::slot::closureScopeType,
 };
 
 #undef PT_PV_NONE

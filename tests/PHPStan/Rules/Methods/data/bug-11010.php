@@ -11,6 +11,7 @@ class HelloWorld
 
 	/**
 	 * @param-closure-this self $cb
+	 * @param-closure-scope self $cb
 	 */
 	public static function cb(\Closure $cb): void
 	{

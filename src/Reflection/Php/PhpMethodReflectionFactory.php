@@ -22,6 +22,7 @@ interface PhpMethodReflectionFactory
 	 * @param list<AttributeReflection> $attributes
 	 * @param array<string, bool> $pureUnlessCallableIsImpureParameters
 	 * @param array<string, bool> $pureUnlessParameterPassedParameters
+	 * @param array<string, Type> $phpDocClosureScopeTypeParameters
 	 */
 	public function create(
 		ClassReflection $declaringClass,
@@ -47,6 +48,7 @@ interface PhpMethodReflectionFactory
 		array $attributes,
 		array $pureUnlessCallableIsImpureParameters,
 		array $pureUnlessParameterPassedParameters,
+		array $phpDocClosureScopeTypeParameters = [],
 	): PhpMethodReflection;
 
 }

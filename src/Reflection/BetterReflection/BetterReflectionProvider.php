@@ -31,6 +31,7 @@ use PHPStan\Parser\AnonymousClassVisitor;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\StubPhpDocProvider;
+use PHPStan\PhpDoc\Tag\ParamClosureScopeTag;
 use PHPStan\PhpDoc\Tag\ParamClosureThisTag;
 use PHPStan\PhpDoc\Tag\ParamOutTag;
 use PHPStan\Reflection\Assertions;
@@ -304,6 +305,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 		$phpDocParameterOutTags = [];
 		$phpDocParameterImmediatelyInvokedCallable = [];
 		$phpDocParameterClosureThisTypeTags = [];
+		$phpDocParameterClosureScopeTypeTags = [];
 		$phpDocParameterPureUnlessCallableIsImpure = [];
 		$phpDocParameterPureUnlessParameterPassed = [];
 
@@ -332,6 +334,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 			$phpDocParameterOutTags = $resolvedPhpDoc->getParamOutTags();
 			$phpDocParameterImmediatelyInvokedCallable = $resolvedPhpDoc->getParamsImmediatelyInvokedCallable();
 			$phpDocParameterClosureThisTypeTags = $resolvedPhpDoc->getParamClosureThisTags();
+			$phpDocParameterClosureScopeTypeTags = $resolvedPhpDoc->getParamClosureScopeTags();
 			$phpDocParameterPureUnlessCallableIsImpure = $resolvedPhpDoc->getParamsPureUnlessCallableIsImpure();
 			$phpDocParameterPureUnlessParameterPassed = $resolvedPhpDoc->getParamsPureUnlessParameterPassed();
 		}
@@ -375,6 +378,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 			$this->attributeReflectionFactory->fromNativeReflection($reflectionFunction->getAttributes(), InitializerExprContext::fromFunction($reflectionFunction->getName(), $reflectionFunction->getFileName() !== false ? $reflectionFunction->getFileName() : null)),
 			$phpDocParameterPureUnlessCallableIsImpure,
 			$phpDocParameterPureUnlessParameterPassed,
+			array_map(static fn (ParamClosureScopeTag $tag): Type => $tag->getType(), $phpDocParameterClosureScopeTypeTags),
 		);
 	}
 

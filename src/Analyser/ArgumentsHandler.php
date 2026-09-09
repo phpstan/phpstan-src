@@ -382,14 +382,8 @@ final class ArgumentsHandler
 					if (
 						$closureBindScopeFactory === null
 						&& $parameter instanceof ExtendedParameterReflection
-						&& !$arg->value->static
 					) {
-						$closureThisType = $this->resolveClosureThisType($callLike, $calleeReflection, $parameter, $scopeToPass);
-						if ($closureThisType !== null) {
-							$restoreThisScope = $scopeToPass;
-							$scopeToPass = $scopeToPass->assignVariable('this', $closureThisType, new ObjectWithoutClassType(), TrinaryLogic::createYes())
-								->withClosureBindScopeClasses($closureThisType->getObjectClassNames());
-						}
+						[$scopeToPass, $restoreThisScope] = $this->applyClosureThisAndScope($scopeToPass, $callLike, $calleeReflection, $parameter, $arg->value->static);
 					}
 
 					if ($parameter !== null) {
@@ -531,13 +525,8 @@ final class ArgumentsHandler
 					if (
 						$closureBindScopeFactory === null
 						&& $parameter instanceof ExtendedParameterReflection
-						&& !$arg->value->static
 					) {
-						$closureThisType = $this->resolveClosureThisType($callLike, $calleeReflection, $parameter, $scopeToPass);
-						if ($closureThisType !== null) {
-							$scopeToPass = $scopeToPass->assignVariable('this', $closureThisType, new ObjectWithoutClassType(), TrinaryLogic::createYes())
-								->withClosureBindScopeClasses($closureThisType->getObjectClassNames());
-						}
+						[$scopeToPass] = $this->applyClosureThisAndScope($scopeToPass, $callLike, $calleeReflection, $parameter, $arg->value->static);
 					}
 
 					if ($parameter !== null) {
@@ -1230,7 +1219,7 @@ final class ArgumentsHandler
 	/**
 	 * @param FunctionReflection|MethodReflection|null $calleeReflection
 	 */
-	private function resolveClosureThisType(
+	private function resolveClosureThisTypeFromExtensions(
 		?CallLike $call,
 		$calleeReflection,
 		ParameterReflection $parameter,
@@ -1269,11 +1258,52 @@ final class ArgumentsHandler
 			}
 		}
 
-		if ($parameter instanceof ExtendedParameterReflection) {
-			return $parameter->getClosureThisType();
+		return null;
+	}
+
+	/**
+	 * A closure-this type from an extension also binds the closure scope;
+	 * from @param-closure-this it binds only $this, the scope comes from @param-closure-scope.
+	 *
+	 * @param FunctionReflection|MethodReflection|null $calleeReflection
+	 * @return array{MutatingScope, MutatingScope|null}
+	 */
+	private function applyClosureThisAndScope(
+		MutatingScope $scopeToPass,
+		?CallLike $call,
+		$calleeReflection,
+		ParameterReflection $parameter,
+		bool $isStatic,
+	): array
+	{
+		if (!$parameter instanceof ExtendedParameterReflection) {
+			return [$scopeToPass, null];
 		}
 
-		return null;
+		$closureThisType = null;
+		$closureScopeType = $parameter->getClosureScopeType();
+		if (!$isStatic) {
+			$closureThisType = $this->resolveClosureThisTypeFromExtensions($call, $calleeReflection, $parameter, $scopeToPass);
+			if ($closureThisType !== null) {
+				$closureScopeType ??= $closureThisType;
+			} else {
+				$closureThisType = $parameter->getClosureThisType();
+			}
+		}
+
+		if ($closureThisType === null && $closureScopeType === null) {
+			return [$scopeToPass, null];
+		}
+
+		$restoreThisScope = $scopeToPass;
+		if ($closureThisType !== null) {
+			$scopeToPass = $scopeToPass->assignVariable('this', $closureThisType, new ObjectWithoutClassType(), TrinaryLogic::createYes());
+		}
+		if ($closureScopeType !== null) {
+			$scopeToPass = $scopeToPass->withClosureBindScopeClasses($closureScopeType->getObjectClassNames());
+		}
+
+		return [$scopeToPass, $restoreThisScope];
 	}
 
 	/**

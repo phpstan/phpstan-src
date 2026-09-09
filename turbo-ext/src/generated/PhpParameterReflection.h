@@ -23,6 +23,7 @@ inline constexpr uint32_t attributes = 9;
 inline constexpr uint32_t allowedConstants = 10;
 inline constexpr uint32_t pureUnlessCallableIsImpureParameter = 11;
 inline constexpr uint32_t pureUnlessParameterPassedParameter = 12;
+inline constexpr uint32_t closureScopeType = 13;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -47,6 +48,7 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("allowedConstants", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_NULL, "PHPStan\\Reflection\\ParameterAllowedConstants");
 	cls.property("pureUnlessCallableIsImpureParameter", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\TrinaryLogic");
 	cls.property("pureUnlessParameterPassedParameter", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\TrinaryLogic");
+	cls.property("closureScopeType", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_NULL, "PHPStan\\Type\\Type");
 }
 
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
@@ -69,28 +71,31 @@ inline constexpr char strings[] =
 	"PHPStan\\Reflection\\ParameterAllowedConstants\0" /* 329 */
 	"pureUnlessCallableIsImpureParameter\0" /* 374 */
 	"pureUnlessParameterPassedParameter\0" /* 410 */
-	"__construct\0" /* 445 */
-	"\0" /* 457 */
-	"isOptional\0" /* 458 */
-	"getName\0" /* 469 */
-	"getType\0" /* 477 */
-	"PHPStan\\Reflection\\PassedByReference\0" /* 485 */
-	"passedByReference\0" /* 522 */
-	"isVariadic\0" /* 540 */
-	"getPhpDocType\0" /* 551 */
-	"hasNativeType\0" /* 565 */
-	"getNativeType\0" /* 579 */
-	"getDefaultValue\0" /* 593 */
-	"getOutType\0" /* 609 */
-	"isImmediatelyInvokedCallable\0" /* 620 */
-	"getClosureThisType\0" /* 649 */
-	"getAttributes\0" /* 668 */
-	"getAllowedConstants\0" /* 682 */
-	"constants\0" /* 702 */
-	"PHPStan\\Reflection\\AllowedConstantsResult\0" /* 712 */
-	"checkAllowedConstants\0" /* 754 */
-	"isPureUnlessCallableIsImpureParameter\0" /* 776 */
-	"isPureUnlessParameterPassedParameter"; /* 814 */
+	"closureScopeType\0" /* 445 */
+	"null\0" /* 462 */
+	"__construct\0" /* 467 */
+	"\0" /* 479 */
+	"isOptional\0" /* 480 */
+	"getName\0" /* 491 */
+	"getType\0" /* 499 */
+	"PHPStan\\Reflection\\PassedByReference\0" /* 507 */
+	"passedByReference\0" /* 544 */
+	"isVariadic\0" /* 562 */
+	"getPhpDocType\0" /* 573 */
+	"hasNativeType\0" /* 587 */
+	"getNativeType\0" /* 601 */
+	"getDefaultValue\0" /* 615 */
+	"getOutType\0" /* 631 */
+	"isImmediatelyInvokedCallable\0" /* 642 */
+	"getClosureThisType\0" /* 671 */
+	"getClosureScopeType\0" /* 690 */
+	"getAttributes\0" /* 710 */
+	"getAllowedConstants\0" /* 724 */
+	"constants\0" /* 744 */
+	"PHPStan\\Reflection\\AllowedConstantsResult\0" /* 754 */
+	"checkAllowedConstants\0" /* 796 */
+	"isPureUnlessCallableIsImpureParameter\0" /* 818 */
+	"isPureUnlessParameterPassedParameter"; /* 856 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 28), /* __construct $initializerExprTypeResolver */
 	reg::packed(75, 0, 86), /* __construct $reflection */
@@ -103,48 +108,51 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(312, MAY_BE_NULL, 329), /* __construct $allowedConstants */
 	reg::packed(374, 0, 264), /* __construct $pureUnlessCallableIsImpureParameter */
 	reg::packed(410, 0, 264), /* __construct $pureUnlessParameterPassedParameter */
-	reg::packed(457, MAY_BE_BOOL), /* isOptional return */
-	reg::packed(457, MAY_BE_STRING), /* getName return */
-	reg::packed(457, 0, 161), /* getType return */
-	reg::packed(457, 0, 485), /* passedByReference return */
-	reg::packed(457, MAY_BE_BOOL), /* isVariadic return */
-	reg::packed(457, 0, 161), /* getPhpDocType return */
-	reg::packed(457, MAY_BE_BOOL), /* hasNativeType return */
-	reg::packed(457, 0, 161), /* getNativeType return */
-	reg::packed(457, MAY_BE_NULL, 161), /* getDefaultValue return */
-	reg::packed(457, MAY_BE_NULL, 161), /* getOutType return */
-	reg::packed(457, 0, 264), /* isImmediatelyInvokedCallable return */
-	reg::packed(457, MAY_BE_NULL, 161), /* getClosureThisType return */
-	reg::packed(457, MAY_BE_ARRAY), /* getAttributes return */
-	reg::packed(457, MAY_BE_NULL, 329), /* getAllowedConstants return */
-	reg::packed(702, MAY_BE_ARRAY), /* checkAllowedConstants $constants */
-	reg::packed(457, 0, 712), /* checkAllowedConstants return */
-	reg::packed(457, 0, 264), /* isPureUnlessCallableIsImpureParameter return */
-	reg::packed(457, 0, 264), /* isPureUnlessParameterPassedParameter return */
+	reg::packed(445, MAY_BE_NULL, 161, false, false, 462), /* __construct $closureScopeType */
+	reg::packed(479, MAY_BE_BOOL), /* isOptional return */
+	reg::packed(479, MAY_BE_STRING), /* getName return */
+	reg::packed(479, 0, 161), /* getType return */
+	reg::packed(479, 0, 507), /* passedByReference return */
+	reg::packed(479, MAY_BE_BOOL), /* isVariadic return */
+	reg::packed(479, 0, 161), /* getPhpDocType return */
+	reg::packed(479, MAY_BE_BOOL), /* hasNativeType return */
+	reg::packed(479, 0, 161), /* getNativeType return */
+	reg::packed(479, MAY_BE_NULL, 161), /* getDefaultValue return */
+	reg::packed(479, MAY_BE_NULL, 161), /* getOutType return */
+	reg::packed(479, 0, 264), /* isImmediatelyInvokedCallable return */
+	reg::packed(479, MAY_BE_NULL, 161), /* getClosureThisType return */
+	reg::packed(479, MAY_BE_NULL, 161), /* getClosureScopeType return */
+	reg::packed(479, MAY_BE_ARRAY), /* getAttributes return */
+	reg::packed(479, MAY_BE_NULL, 329), /* getAllowedConstants return */
+	reg::packed(744, MAY_BE_ARRAY), /* checkAllowedConstants $constants */
+	reg::packed(479, 0, 754), /* checkAllowedConstants return */
+	reg::packed(479, 0, 264), /* isPureUnlessCallableIsImpureParameter return */
+	reg::packed(479, 0, 264), /* isPureUnlessParameterPassedParameter return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig __construct = { { 445 /* __construct */, 11, 0, 11, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isOptional = { { 458 /* isOptional */, 0, 11, 0, 11, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getName = { { 469 /* getName */, 0, 12, 0, 12, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getType = { { 477 /* getType */, 0, 13, 0, 13, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig passedByReference = { { 522 /* passedByReference */, 0, 14, 0, 14, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isVariadic = { { 540 /* isVariadic */, 0, 15, 0, 15, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getPhpDocType = { { 551 /* getPhpDocType */, 0, 16, 0, 16, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig hasNativeType = { { 565 /* hasNativeType */, 0, 17, 0, 17, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getNativeType = { { 579 /* getNativeType */, 0, 18, 0, 18, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getDefaultValue = { { 593 /* getDefaultValue */, 0, 19, 0, 19, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getOutType = { { 609 /* getOutType */, 0, 20, 0, 20, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isImmediatelyInvokedCallable = { { 620 /* isImmediatelyInvokedCallable */, 0, 21, 0, 21, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getClosureThisType = { { 649 /* getClosureThisType */, 0, 22, 0, 22, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getAttributes = { { 668 /* getAttributes */, 0, 23, 0, 23, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getAllowedConstants = { { 682 /* getAllowedConstants */, 0, 24, 0, 24, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig checkAllowedConstants = { { 754 /* checkAllowedConstants */, 1, 25, 1, 26, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isPureUnlessCallableIsImpureParameter = { { 776 /* isPureUnlessCallableIsImpureParameter */, 0, 27, 0, 27, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isPureUnlessParameterPassedParameter = { { 814 /* isPureUnlessParameterPassedParameter */, 0, 28, 0, 28, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig __construct = { { 467 /* __construct */, 11, 0, 12, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isOptional = { { 480 /* isOptional */, 0, 12, 0, 12, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getName = { { 491 /* getName */, 0, 13, 0, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getType = { { 499 /* getType */, 0, 14, 0, 14, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig passedByReference = { { 544 /* passedByReference */, 0, 15, 0, 15, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isVariadic = { { 562 /* isVariadic */, 0, 16, 0, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getPhpDocType = { { 573 /* getPhpDocType */, 0, 17, 0, 17, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasNativeType = { { 587 /* hasNativeType */, 0, 18, 0, 18, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getNativeType = { { 601 /* getNativeType */, 0, 19, 0, 19, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getDefaultValue = { { 615 /* getDefaultValue */, 0, 20, 0, 20, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getOutType = { { 631 /* getOutType */, 0, 21, 0, 21, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isImmediatelyInvokedCallable = { { 642 /* isImmediatelyInvokedCallable */, 0, 22, 0, 22, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getClosureThisType = { { 671 /* getClosureThisType */, 0, 23, 0, 23, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getClosureScopeType = { { 690 /* getClosureScopeType */, 0, 24, 0, 24, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getAttributes = { { 710 /* getAttributes */, 0, 25, 0, 25, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getAllowedConstants = { { 724 /* getAllowedConstants */, 0, 26, 0, 26, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig checkAllowedConstants = { { 796 /* checkAllowedConstants */, 1, 27, 1, 28, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isPureUnlessCallableIsImpureParameter = { { 818 /* isPureUnlessCallableIsImpureParameter */, 0, 29, 0, 29, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isPureUnlessParameterPassedParameter = { { 856 /* isPureUnlessParameterPassedParameter */, 0, 30, 0, 30, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::PhpParameterReflection

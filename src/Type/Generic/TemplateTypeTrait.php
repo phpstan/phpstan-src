@@ -115,9 +115,9 @@ trait TemplateTypeTrait
 		);
 	}
 
-	public function isValidVariance(Type $a, Type $b): IsSuperTypeOfResult
+	public function isValidVariance(Type $a, Type $b, bool $strict = false): IsSuperTypeOfResult
 	{
-		return $this->variance->isValidVariance($this, $a, $b);
+		return $this->variance->isValidVariance($this, $a, $b, $strict);
 	}
 
 	public function subtract(Type $typeToRemove): Type

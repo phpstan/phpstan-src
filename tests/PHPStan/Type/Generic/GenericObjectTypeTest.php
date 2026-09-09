@@ -60,6 +60,20 @@ class GenericObjectTypeTest extends PHPStanTestCase
 				new GenericObjectType(A\A::class, [new ObjectType('DateTime')]),
 				TrinaryLogic::createNo(),
 			],
+			// https://github.com/phpstan/phpstan/issues/11935 - `mixed` as a type
+			// argument stays compatible with any other one in the accepts context,
+			// but isSuperTypeOf() has to be a one-way relation, otherwise
+			// TypeCombinator would discard one of the two based on their order.
+			'same class, mixed type arg on the super side' => [
+				new GenericObjectType(A\A::class, [new MixedType(true)]),
+				new GenericObjectType(A\A::class, [new ObjectType('DateTime')]),
+				TrinaryLogic::createYes(),
+			],
+			'same class, mixed type arg on the sub side' => [
+				new GenericObjectType(A\A::class, [new ObjectType('DateTime')]),
+				new GenericObjectType(A\A::class, [new MixedType(true)]),
+				TrinaryLogic::createMaybe(),
+			],
 			'same class, one naked' => [
 				new GenericObjectType(A\A::class, [new ObjectType('DateTimeInterface')]),
 				new ObjectType(A\A::class),
@@ -301,6 +315,17 @@ class GenericObjectTypeTest extends PHPStanTestCase
 				new GenericObjectType(A\A::class, [new ObjectType('DateTimeInterface')]),
 				new GenericObjectType(A\A::class, [new ObjectType('DateTime')]),
 				TrinaryLogic::createNo(),
+			],
+			// https://github.com/phpstan/phpstan/issues/11935
+			'same class, mixed type arg on the accepting side' => [
+				new GenericObjectType(A\A::class, [new MixedType(true)]),
+				new GenericObjectType(A\A::class, [new ObjectType('DateTime')]),
+				TrinaryLogic::createYes(),
+			],
+			'same class, mixed type arg on the accepted side' => [
+				new GenericObjectType(A\A::class, [new ObjectType('DateTime')]),
+				new GenericObjectType(A\A::class, [new MixedType(true)]),
+				TrinaryLogic::createYes(),
 			],
 			'same class, one naked' => [
 				new GenericObjectType(A\A::class, [new ObjectType('DateTimeInterface')]),

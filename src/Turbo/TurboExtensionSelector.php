@@ -109,8 +109,10 @@ final class TurboExtensionSelector
 	public static function resolvePlatformDirectory(string $osFamily, string $machine, bool $isMusl): ?string
 	{
 		if ($osFamily === 'Darwin') {
-			// one universal binary covers x86_64 and arm64
-			return 'macos';
+			// arm64 (Apple Silicon) only - there is no Intel build. An x86_64
+			// PHP under Rosetta reports x86_64 here as well, and cannot load
+			// the arm64 binary either.
+			return $machine === 'arm64' ? 'macos-arm64' : null;
 		}
 		if ($osFamily === 'Windows') {
 			return $machine === 'AMD64' || $machine === 'x86_64' ? 'windows-x86_64' : null;

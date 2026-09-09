@@ -14,7 +14,7 @@ self-analysis).
 **Most users do not need to install anything.** The
 [phpstan/phpstan](https://github.com/phpstan/phpstan) Composer package ships
 prebuilt binaries for the most common platforms — Linux (glibc and musl,
-x86_64 and arm64), macOS, and Windows (x86_64), for PHP 8.3 and newer — and
+x86_64 and arm64), macOS (arm64), and Windows (x86_64), for PHP 8.3 and newer — and
 PHPStan automatically loads the one matching your runtime into its worker
 processes.
 

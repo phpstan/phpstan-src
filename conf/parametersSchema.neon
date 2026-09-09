@@ -116,10 +116,10 @@ parametersSchema:
 		loadLimit: schema(float(), nullable())
 	])
 	phpVersion: schema(anyOf(
-		schema(int(), min(70100), max(80599)),
+		schema(int(), min(70100), max(80699)),
 		structure([
-			min: schema(int(), min(70100), max(80599)),
-			max: schema(int(), min(70100), max(80599))
+			min: schema(int(), min(70100), max(80699)),
+			max: schema(int(), min(70100), max(80699))
 		])
 	), nullable())
 	polluteScopeWithLoopInitialAssignments: bool()

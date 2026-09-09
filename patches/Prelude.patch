@@ -1,0 +1,11 @@
+--- Prelude.php
++++ Prelude.php
+@@ -49,7 +49,7 @@
+ 
+ $define = function ($constantName, $constantValue, $case = false) {
+     if (!defined($constantName)) {
+-        return define($constantName, $constantValue, $case);
++        return define($constantName, $constantValue);
+     }
+ 
+     return false;

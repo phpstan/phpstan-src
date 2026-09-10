@@ -49,3 +49,8 @@ function checkOptional(\ReflectionParameter $parameter): void
 
 	assertType('bool', $optional);
 }
+
+function checkHasType(\ReflectionParameter $parameter): void
+{
+	assertType('bool', $parameter->hasType());
+}

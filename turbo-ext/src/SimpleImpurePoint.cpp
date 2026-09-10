@@ -215,17 +215,9 @@ public:
 		}
 
 		if (!certain && scope != NULL && variant != NULL) {
-			/* both verdicts combined: Yes = pure, No = impure, Maybe = possibly impure */
 			zend_long verdict = PT_TRI_YES;
 			bool hasVerdict = false;
-			if (UNEXPECTED(!resolveVerdict(variant, scope, args, hasVerdict, verdict))) return false;
-			zend_long passedVerdict = PT_TRI_YES;
-			bool hasPassedVerdict = false;
-			if (UNEXPECTED(!resolvePassedVerdict(variant, args, hasPassedVerdict, passedVerdict))) return false;
-			if (hasPassedVerdict) {
-				verdict = hasVerdict ? pt_trinary_and(verdict, passedVerdict) : passedVerdict;
-				hasVerdict = true;
-			}
+			if (UNEXPECTED(!resolveConditionalVerdict(variant, scope, args, hasVerdict, verdict))) return false;
 			if (hasVerdict) {
 				if (verdict == PT_TRI_YES) return true;
 				if (verdict == PT_TRI_NO) certain = true;
@@ -278,6 +270,64 @@ public:
 		out.description = smart_str_extract(&description);
 		out.certain = certain;
 		return true;
+	}
+
+	/* Mirrors resolveConditionalPurityVerdict(): both verdicts combined
+	 * (Yes = pure, No = impure, Maybe = possibly impure); hasVerdict false
+	 * for the twin's null; false = pending exception */
+	[[nodiscard]] static bool resolveConditionalVerdict(zval *variant, zval *scope, zval *args, bool &hasVerdict, zend_long &verdict)
+	{
+		if (UNEXPECTED(!resolveVerdict(variant, scope, args, hasVerdict, verdict))) return false;
+		zend_long passedVerdict = PT_TRI_YES;
+		bool hasPassedVerdict = false;
+		if (UNEXPECTED(!resolvePassedVerdict(variant, args, hasPassedVerdict, passedVerdict))) return false;
+		if (!hasPassedVerdict) return true;
+		verdict = hasVerdict ? pt_trinary_and(verdict, passedVerdict) : passedVerdict;
+		hasVerdict = true;
+		return true;
+	}
+
+	/* Mirrors narrowByConditionalPurity(); UNDEF = pending exception */
+	static zv::Val narrowByConditionalPurity(zval *impurePoints, zval *variant, zval *scope, zval *args)
+	{
+		bool hasVerdict = false;
+		zend_long verdict = PT_TRI_YES;
+		if (UNEXPECTED(!resolveConditionalVerdict(variant, scope, args, hasVerdict, verdict))) return zv::Val();
+		if (!hasVerdict || verdict == PT_TRI_MAYBE) return zv::Val::copyOf(zv::Ref(impurePoints));
+		if (verdict == PT_TRI_YES) return zv::Val(zv::Arr::empty());
+
+		/* array_map() keeps the keys of its one array */
+		zv::Arr narrowed = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(impurePoints)));
+		for (zv::ArrayEntry entry : zv::ArrRef(impurePoints)) {
+			zval *impurePoint = entry.value().deref().raw();
+			if (UNEXPECTED(Z_TYPE_P(impurePoint) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(impurePoint), pt_ce_simple_impure_point))) {
+				zend_type_error("{closure}(): Argument #1 ($impurePoint) must be of type PHPStan\\Reflection\\Callables\\SimpleImpurePoint, %s given", zend_zval_value_name(impurePoint));
+				return zv::Val();
+			}
+			SimpleImpurePoint point(Z_OBJ_P(impurePoint));
+			zv::Val certain = point.isCertain();
+			if (UNEXPECTED(certain.isUndef())) return zv::Val();
+			zv::Val mapped;
+			if (zend_is_true(certain.raw())) {
+				mapped = zv::Val::copyOf(zv::Ref(impurePoint));
+			} else {
+				zv::Val identifier = point.getIdentifier();
+				if (UNEXPECTED(identifier.isUndef())) return zv::Val();
+				zv::Val description = point.getDescription();
+				if (UNEXPECTED(description.isUndef())) return zv::Val();
+				mapped = create(Z_STR_P(identifier.raw()), Z_STR_P(description.raw()), true);
+				if (UNEXPECTED(mapped.isUndef())) return zv::Val();
+			}
+			zend_string *key = entry.stringKeyOrNull();
+			if (key != NULL) {
+				narrowed.set(key, std::move(mapped));
+			} else {
+				narrowed.separate();
+				zval value = mapped.take();
+				zend_hash_index_update(narrowed.table(), entry.indexKey(), &value);
+			}
+		}
+		return zv::Val(std::move(narrowed));
 	}
 
 	/* Mirrors resolvePureUnlessCallableIsImpureVerdict(): hasVerdict false
@@ -601,6 +651,11 @@ bool pt_simple_impure_point_resolve_passed_verdict(zval *variant, zval *args, bo
 	return SimpleImpurePoint::resolvePassedVerdict(variant, args, hasVerdict, verdict);
 }
 
+zv::Val pt_simple_impure_point_narrow_by_conditional_purity(zval *impurePoints, zval *variant, zval *scope, zval *args)
+{
+	return SimpleImpurePoint::narrowByConditionalPurity(impurePoints, variant, scope, args);
+}
+
 /* }}} */
 
 /* {{{ engine ABI glue: parameter parsing + registration */
@@ -654,6 +709,22 @@ PT_MINIT_REGISTRATION(pt_register_simple_impure_point)
 		if (UNEXPECTED(!SimpleImpurePoint::resolveVerdict(variant, scope, args, hasVerdict, verdict))) RETURN_THROWS();
 		if (!hasVerdict) RETURN_NULL();
 		RETURN_COPY(pt_trinary_singleton(verdict));
+	});
+
+	cls.method(sigs::resolveConditionalPurityVerdict, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *variant, *scope, *args;
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Arr>(execute_data, variant, scope, args)) RETURN_THROWS();
+		bool hasVerdict = false;
+		zend_long verdict = PT_TRI_YES;
+		if (UNEXPECTED(!SimpleImpurePoint::resolveConditionalVerdict(variant, scope, args, hasVerdict, verdict))) RETURN_THROWS();
+		if (!hasVerdict) RETURN_NULL();
+		RETURN_COPY(pt_trinary_singleton(verdict));
+	});
+
+	cls.method(sigs::narrowByConditionalPurity, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *impurePoints, *variant, *scope, *args;
+		if (!zp::parse<zp::Arr, zp::Obj, zp::Obj, zp::Arr>(execute_data, impurePoints, variant, scope, args)) RETURN_THROWS();
+		PT_RETURN_VAL(SimpleImpurePoint::narrowByConditionalPurity(impurePoints, variant, scope, args));
 	});
 
 	cls.method(sigs::resolvePureUnlessParameterPassedVerdict, [](INTERNAL_FUNCTION_PARAMETERS) {

@@ -6891,7 +6891,8 @@ foreach ([\PHPStan\Reflection\Php\PhpPropertyReflection::class, \PHPStan\Reflect
 // and array_reduce() fed pure, impure, maybe-pure, null, non-callable and
 // omitted callbacks (positional and named), the pure-unless-parameter-passed
 // out parameters of str_replace() and preg_match() passed and omitted
-// (positional, named and unpacked), the transformed and plain
+// (positional, named and unpacked), both verdicts combined and applied to a
+// keyed list of certain and uncertain points, the transformed and plain
 // fixture methods, a missing scope or variant, and unconstructed instances
 $observations['native ' . \PHPStan\Reflection\Callables\SimpleImpurePoint::class] = (new ReflectionMethod(\PHPStan\Reflection\Callables\SimpleImpurePoint::class, 'createFromVariant'))->isInternal();
 {
@@ -6944,6 +6945,8 @@ $observations['native ' . \PHPStan\Reflection\Callables\SimpleImpurePoint::class
 			$r["function $functionName $argListName"] = $catching(static fn () => $viewImpurePoint(\PHPStan\Reflection\Callables\SimpleImpurePoint::createFromVariant($function, $variant, $sipScope, $args)));
 			$r["function $functionName $argListName verdict"] = $catching(static fn () => $view(\PHPStan\Reflection\Callables\SimpleImpurePoint::resolvePureUnlessCallableIsImpureVerdict($variant, $sipScope, $args)));
 			$r["function $functionName $argListName passed verdict"] = $catching(static fn () => $view(\PHPStan\Reflection\Callables\SimpleImpurePoint::resolvePureUnlessParameterPassedVerdict($variant, $args)));
+			$r["function $functionName $argListName conditional verdict"] = $catching(static fn () => $view(\PHPStan\Reflection\Callables\SimpleImpurePoint::resolveConditionalPurityVerdict($variant, $sipScope, $args)));
+			$r["function $functionName $argListName narrowed"] = $catching(static fn () => array_map($viewImpurePoint, \PHPStan\Reflection\Callables\SimpleImpurePoint::narrowByConditionalPurity(['certain' => new \PHPStan\Reflection\Callables\SimpleImpurePoint('functionCall', 'certain call', true), 3 => new \PHPStan\Reflection\Callables\SimpleImpurePoint('methodCall', 'possible call', false)], $variant, $sipScope, $args)));
 		}
 	}
 	foreach (['returnsStatic', 'withValue', 'each', 'fails'] as $methodName) {

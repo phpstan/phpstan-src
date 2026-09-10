@@ -2749,6 +2749,9 @@ zv::Val pt_template_type_map_map(zval *map, zval *cb);
 /* SimpleImpurePoint::resolvePureUnlessParameterPassedVerdict($variant,
  * $args): the same answers */
 [[nodiscard]] bool pt_simple_impure_point_resolve_passed_verdict(zval *variant, zval *args, bool &hasVerdict, zend_long &verdict);
+/* SimpleImpurePoint::narrowByConditionalPurity($impurePoints, $variant,
+ * $scope, $args) (everything borrowed); UNDEF = pending exception */
+zv::Val pt_simple_impure_point_narrow_by_conditional_purity(zval *impurePoints, zval *variant, zval *scope, zval *args);
 
 /* }}} */
 

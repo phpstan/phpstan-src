@@ -1508,12 +1508,24 @@ private:
 		}
 		if (UNEXPECTED(!arrayMerge(throwPoints, callableThrowPointsHold.raw()))) return false;
 
-		zv::Val simpleImpurePoints = pt_parameters_acceptor_call(parametersAcceptor, PT_PA_GET_IMPURE_POINTS);
-		if (UNEXPECTED(simpleImpurePoints.isUndef())) return false;
-		if (UNEXPECTED(Z_TYPE_P(simpleImpurePoints.raw()) != IS_ARRAY)) {
-			zend_type_error("array_map(): Argument #2 ($array) must be of type array, %s given", zend_zval_value_name(simpleImpurePoints.raw()));
+		zv::Val acceptorImpurePoints = pt_parameters_acceptor_call(parametersAcceptor, PT_PA_GET_IMPURE_POINTS);
+		if (UNEXPECTED(acceptorImpurePoints.isUndef())) return false;
+		if (UNEXPECTED(Z_TYPE_P(acceptorImpurePoints.raw()) != IS_ARRAY)) {
+			zend_type_error("PHPStan\\Reflection\\Callables\\SimpleImpurePoint::narrowByConditionalPurity(): Argument #1 ($impurePoints) must be of type array, %s given", zend_zval_value_name(acceptorImpurePoints.raw()));
 			return false;
 		}
+		/* SimpleImpurePoint::narrowByConditionalPurity($parametersAcceptor->getImpurePoints(),
+		 * $parametersAcceptor, $scope, $expr->getArgs()): the conditional purity
+		 * of a callable value is settled here, where its arguments are known */
+		zv::Val argsHold;
+		zval *callArgs = pt_call_like_args(Z_OBJ_P(expr), argsHold);
+		if (UNEXPECTED(callArgs == NULL)) return false;
+		if (UNEXPECTED(Z_TYPE_P(callArgs) != IS_ARRAY)) {
+			zend_type_error("PHPStan\\Reflection\\Callables\\SimpleImpurePoint::narrowByConditionalPurity(): Argument #4 ($args) must be of type array, %s given", zend_zval_value_name(callArgs));
+			return false;
+		}
+		zv::Val simpleImpurePoints = pt_simple_impure_point_narrow_by_conditional_purity(acceptorImpurePoints.raw(), parametersAcceptor, scope.raw(), callArgs);
+		if (UNEXPECTED(simpleImpurePoints.isUndef())) return false;
 		zv::Arr callableImpurePoints = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(simpleImpurePoints.raw())));
 		for (zv::ArrayEntry entry : zv::ArrRef(simpleImpurePoints.raw())) {
 			zv::Val impurePoint = impurePointOf(scope.raw(), expr, entry.value().deref().raw());

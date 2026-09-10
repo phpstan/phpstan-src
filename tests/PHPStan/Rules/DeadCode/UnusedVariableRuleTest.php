@@ -254,6 +254,23 @@ class UnusedVariableRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('< 8.0.0')]
+	public function testCatchVariableNotReportedBeforePhp80(): void
+	{
+		$this->analyse([__DIR__ . '/data/unused-variable-catch.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testCatchVariableReportedSincePhp80(): void
+	{
+		$this->analyse([__DIR__ . '/data/unused-variable-catch.php'], [
+			[
+				'Catch variable $e is never read.',
+				9,
+			],
+		]);
+	}
+
 	public function testRedundantAssignment(): void
 	{
 		$this->analyse([__DIR__ . '/data/unused-variable-redundant.php'], [

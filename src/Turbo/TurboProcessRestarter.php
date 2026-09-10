@@ -108,6 +108,13 @@ final class TurboProcessRestarter
 			return;
 		}
 		if (
+			isset($_SERVER['BLACKFIRE_AGENT_SOCKET'])
+		) {
+			// pcntl_exec() is not supported by blackfire
+			// see https://support.blackfire.platform.sh/hc/en-us/articles/4843014509202-Conflicts-with-pcntl-exec-calls
+			return;
+		}
+		if (
 			!function_exists('pcntl_exec')
 			|| !function_exists('pcntl_fork')
 			|| !function_exists('pcntl_waitpid')

@@ -191,6 +191,11 @@ final class UnresolvedTemplateArgumentType implements CompoundType
 		return $otherType->isSmallerThanOrEqual($this->getDelegate(), $phpVersion);
 	}
 
+	/**
+	 * The initial type may be a template type of the enclosing class; when the
+	 * callback substitutes it by another site's marker (templates resolve by
+	 * name), the marker behaves as that delegate rather than nesting.
+	 */
 	public function traverse(callable $cb): Type
 	{
 		if ($this->initialType === null) {
@@ -202,7 +207,7 @@ final class UnresolvedTemplateArgumentType implements CompoundType
 			return $this;
 		}
 
-		return $this->withInitialType($newInitialType);
+		return $this->withInitialType(self::unwrapBare($newInitialType));
 	}
 
 	public function traverseSimultaneously(Type $right, callable $cb): Type
@@ -216,7 +221,7 @@ final class UnresolvedTemplateArgumentType implements CompoundType
 			return $this;
 		}
 
-		return $this->withInitialType($newInitialType);
+		return $this->withInitialType(self::unwrapBare($newInitialType));
 	}
 
 	public function generalize(GeneralizePrecision $precision): Type

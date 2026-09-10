@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\Type\Type;
+use function in_array;
 use function is_string;
 use function spl_object_id;
 
@@ -16,9 +17,24 @@ final class VariableFlowBuilder
 	/** @param InternalThrowPoint[] $throwPoints */
 	public static function throws(Expr $expr, array $throwPoints): ?VariableFlow
 	{
+		// a callback the callee invokes immediately throws through the call -
+		// its throw points are re-created on the callback argument node
+		$callbackArguments = [];
+		if ($expr instanceof Expr\CallLike && !$expr->isFirstClassCallable()) {
+			foreach ($expr->getArgs() as $arg) {
+				if (!$arg->value instanceof Expr\Closure && !$arg->value instanceof Expr\ArrowFunction) {
+					continue;
+				}
+				$callbackArguments[] = $arg->value;
+			}
+		}
 		$throws = [];
 		foreach ($throwPoints as $throw) {
-			if ($throw->getNode() !== $expr && ($throw->getNode()->getStartFilePos() !== $expr->getStartFilePos() || $throw->getNode()->getEndFilePos() !== $expr->getEndFilePos())) {
+			if (
+				$throw->getNode() !== $expr
+				&& !in_array($throw->getNode(), $callbackArguments, true)
+				&& ($throw->getNode()->getStartFilePos() !== $expr->getStartFilePos() || $throw->getNode()->getEndFilePos() !== $expr->getEndFilePos())
+			) {
 				continue;
 			}
 

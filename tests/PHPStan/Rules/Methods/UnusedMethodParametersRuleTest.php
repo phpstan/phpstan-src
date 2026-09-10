@@ -39,4 +39,9 @@ class UnusedMethodParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testParameterReadOnlyInCatchOfOverridingThrows(): void
+	{
+		$this->analyse([__DIR__ . '/data/unused-method-parameters-overriding-throws.php'], []);
+	}
+
 }

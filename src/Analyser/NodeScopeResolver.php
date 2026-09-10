@@ -1215,6 +1215,13 @@ class NodeScopeResolver
 		if ($stmtHandler !== null) {
 			$stmtResult = $stmtHandler->processStmt($this, $stmt, $scope, $storage, $nodeCallback, $context);
 			if ($overridingThrowPoints !== null) {
+				// the overriding throw points use the scope before the statement,
+				// so the variable flow throws before the statement does its work
+				$overridingThrowFlows = [];
+				foreach ($overridingThrowPoints as $overridingThrowPoint) {
+					$overridingThrowFlows[] = VariableFlow::throwing($overridingThrowPoint->getType(), true, $overridingThrowPoint->canContainAnyThrowable());
+				}
+
 				return new InternalStatementResult(
 					$stmtResult->getScope(),
 					hasYield: $stmtResult->hasYield(),
@@ -1223,7 +1230,7 @@ class NodeScopeResolver
 					throwPoints: $overridingThrowPoints,
 					impurePoints: $stmtResult->getImpurePoints(),
 					endStatements: $stmtResult->getEndStatements(),
-					variableFlow: $stmtResult->getVariableFlow(),
+					variableFlow: VariableFlow::sequence(...$overridingThrowFlows, ...[$stmtResult->getVariableFlow()]),
 				);
 			}
 

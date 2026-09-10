@@ -29,6 +29,40 @@ class UnusedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/unused-variable-throwable-catch.php'], []);
 	}
 
+	public function testOverridingThrowsReachesCatch(): void
+	{
+		$this->analyse([__DIR__ . '/data/unused-variable-overriding-throws.php'], [
+			[
+				'Value assigned to variable $before is never read.',
+				13,
+			],
+			[
+				'Value assigned to variable $before is never read.',
+				24,
+			],
+			[
+				'Value assigned to variable $before is never read.',
+				32,
+			],
+			[
+				'Value assigned to variable $before is never read.',
+				43,
+			],
+			[
+				'Value assigned to variable $before is never read.',
+				82,
+			],
+			[
+				'Variable $before is never read.',
+				93,
+			],
+			[
+				'Variable $before is never read.',
+				95,
+			],
+		]);
+	}
+
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/unused-variable.php'], [

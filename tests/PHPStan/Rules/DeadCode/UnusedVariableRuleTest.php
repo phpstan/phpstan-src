@@ -337,4 +337,19 @@ class UnusedVariableRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testResultFlow(): void
+	{
+		$this->analyse([__DIR__ . '/data/unused-variable-result-flow.php'], [
+			['Value assigned to variable $shadowed is never read.', 15],
+			['Value assigned to variable $value is never read.', 16],
+			['Value assigned to variable $value is never read.', 73],
+			['Value assigned to variable $value is never read.', 98],
+			['Value assigned to variable $value is never read.', 128],
+			['Variable $value is never read.', 136],
+			['Value assigned to variable $value is never read.', 148],
+			['Value assigned to variable $value is never read.', 160],
+			['Value assigned to variable $value is never read.', 167],
+		]);
+	}
+
 }

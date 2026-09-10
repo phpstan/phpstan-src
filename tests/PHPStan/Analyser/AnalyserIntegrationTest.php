@@ -975,9 +975,9 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-12767.php');
 		$this->assertCount(3, $errors);
 
-		$this->assertSame('Expected type int, actual: *ERROR*', $errors[0]->getMessage());
-		$this->assertSame('Undefined variable: $field1', $errors[1]->getMessage());
-		$this->assertSame('Undefined variable: $field2', $errors[2]->getMessage());
+		$this->assertSame('Expected type int, actual: int<1, max>', $errors[0]->getMessage());
+		$this->assertSame('Variable $field1 might not be defined.', $errors[1]->getMessage());
+		$this->assertSame('Variable $field2 might not be defined.', $errors[2]->getMessage());
 	}
 
 	public function testBug7554(): void

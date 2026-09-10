@@ -16,6 +16,11 @@ class UnusedClosureUsesRuleTest extends RuleTestCase
 		return new UnusedClosureUsesRule(true);
 	}
 
+	public function testCapturesAssignedThroughVariableVariables(): void
+	{
+		$this->analyse([__DIR__ . '/data/unused-closure-uses-variable-variables.php'], []);
+	}
+
 	public function testUnusedClosureUses(): void
 	{
 		$this->analyse([__DIR__ . '/data/unused-closure-uses.php'], [

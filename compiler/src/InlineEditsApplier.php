@@ -6,21 +6,28 @@ use PHPStan\ShouldNotHappenException;
 use function array_keys;
 use function array_reverse;
 use function count;
+use function dirname;
 use function file_get_contents;
 use function file_put_contents;
 use function json_decode;
 use function preg_quote;
 use function preg_replace_callback;
+use function realpath;
 use function sprintf;
+use function str_starts_with;
 use function substr;
 use function usort;
+use const DIRECTORY_SEPARATOR;
 use const JSON_THROW_ON_ERROR;
 
 /**
  * Applies the call-site edits InlineCallCollector gathered (build/inline.neon)
  * to the sources in place, then makes the non-public properties the inlined
  * bodies read public — a property read moved from its class into a caller
- * needs to be accessible there.
+ * needs to be accessible there. Never a property of php-parser or
+ * phpdoc-parser (PROTECTED_PACKAGE_DIRECTORIES): the collector does not
+ * record those, and an edit that would need one is refused here rather than
+ * applied.
  *
  * Overlapping edits (a call inside an argument of another inlined call)
  * resolve outermost-wins: the outer replacement was printed from the
@@ -29,6 +36,37 @@ use const JSON_THROW_ON_ERROR;
  */
 final class InlineEditsApplier
 {
+
+	/**
+	 * Same list as InlineCallCollector::PROTECTED_PACKAGE_DIRECTORIES —
+	 * packages the phar ships unprefixed and projects install on their own
+	 * too, so the copy loaded at run time may be one with the properties
+	 * still non-public.
+	 */
+	private const PROTECTED_PACKAGE_DIRECTORIES = [
+		'vendor/nikic/php-parser',
+		'vendor/phpstan/phpdoc-parser',
+	];
+
+	/** @var list<string> */
+	private array $protectedDirectories = [];
+
+	/**
+	 * @param list<string>|null $protectedDirectories defaults to PROTECTED_PACKAGE_DIRECTORIES under the repository root
+	 */
+	public function __construct(?array $protectedDirectories = null)
+	{
+		if ($protectedDirectories === null) {
+			$protectedDirectories = [];
+			foreach (self::PROTECTED_PACKAGE_DIRECTORIES as $directory) {
+				$protectedDirectories[] = dirname(__DIR__, 2) . '/' . $directory;
+			}
+		}
+		foreach ($protectedDirectories as $directory) {
+			$realDirectory = realpath($directory);
+			$this->protectedDirectories[] = ($realDirectory === false ? $directory : $realDirectory) . DIRECTORY_SEPARATOR;
+		}
+	}
 
 	/**
 	 * @return array{edits: int, files: int, properties: int}
@@ -66,6 +104,9 @@ final class InlineEditsApplier
 				foreach ($edit['publicize'] as $property) {
 					if ($property['file'] === null) {
 						throw new ShouldNotHappenException(sprintf('No file for %s::$%s', $property['class'], $property['property']));
+					}
+					if ($this->isInProtectedPackage($property['file'])) {
+						throw new ShouldNotHappenException(sprintf('Refusing to make %s::$%s public, it is declared in a protected package (%s)', $property['class'], $property['property'], $property['file']));
 					}
 					$publicize[$property['file']][$property['property']] = true;
 				}
@@ -105,6 +146,18 @@ final class InlineEditsApplier
 		}
 
 		return ['edits' => $applied, 'files' => count($byFile), 'properties' => $properties];
+	}
+
+	private function isInProtectedPackage(string $file): bool
+	{
+		$realFile = realpath($file);
+		foreach ($this->protectedDirectories as $directory) {
+			if (str_starts_with($realFile === false ? $file : $realFile, $directory)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 }

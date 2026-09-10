@@ -2,10 +2,13 @@
 
 namespace PHPStan\Compiler;
 
+use PHPStan\ShouldNotHappenException;
 use PHPUnit\Framework\TestCase;
 use function file_get_contents;
 use function file_put_contents;
 use function json_encode;
+use function mkdir;
+use function rmdir;
 use function strlen;
 use function strpos;
 use function sys_get_temp_dir;
@@ -64,6 +67,48 @@ final class InlineEditsApplierTest extends TestCase
 		unlink($caller);
 		unlink($callee);
 		unlink($editsFile);
+	}
+
+	public function testRefusesToPublicizeProtectedPackageProperty(): void
+	{
+		$vendor = tempnam(sys_get_temp_dir(), 'vendor');
+		unlink($vendor);
+		mkdir($vendor . '/acme/lib', 0777, true);
+		$caller = tempnam(sys_get_temp_dir(), 'caller');
+		$callee = $vendor . '/acme/lib/Foo.php';
+		$source = "<?php\n\$a = \$foo->getBar();\n";
+		file_put_contents($caller, $source);
+		$calleeSource = "<?php\nclass Foo {\n\tprivate int \$bar = 1;\n}\n";
+		file_put_contents($callee, $calleeSource);
+
+		$start = strpos($source, '$foo->getBar()');
+		$edits = [
+			[
+				'file' => $caller,
+				'start' => $start,
+				'end' => $start + strlen('$foo->getBar()') - 1,
+				'replacement' => '$foo->bar',
+				'callee' => 'Foo::getBar',
+				'publicize' => [['class' => 'Foo', 'property' => 'bar', 'file' => $callee]],
+			],
+		];
+		$editsFile = tempnam(sys_get_temp_dir(), 'edits');
+		file_put_contents($editsFile, json_encode($edits, JSON_THROW_ON_ERROR));
+
+		try {
+			(new InlineEditsApplier([$vendor . '/acme']))->apply($editsFile);
+			self::fail('Expected the property to be refused');
+		} catch (ShouldNotHappenException $e) {
+			self::assertStringContainsString('Refusing to make Foo::$bar public, it is declared in a protected package', $e->getMessage());
+		} finally {
+			self::assertSame($calleeSource, file_get_contents($callee));
+			unlink($caller);
+			unlink($callee);
+			unlink($editsFile);
+			rmdir($vendor . '/acme/lib');
+			rmdir($vendor . '/acme');
+			rmdir($vendor);
+		}
 	}
 
 }

@@ -1389,7 +1389,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 	{
 		$typesDescription = [];
 
-		foreach ($specifiedTypes->getSureTypes() as $exprString => [$exprNode, $exprType]) {
+		foreach ($specifiedTypes->getSureTypes() as $exprString => [1 => $exprType]) {
 			$typesDescription[$exprString][] = $exprType->describe(VerbosityLevel::precise());
 		}
 
@@ -1405,7 +1405,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 			$typesDescription[$exprString][] = TypeCombinator::union(...$parts)->describe(VerbosityLevel::precise());
 		}
 
-		foreach ($specifiedTypes->getSureNotTypes() as $exprString => [$exprNode, $exprType]) {
+		foreach ($specifiedTypes->getSureNotTypes() as $exprString => [1 => $exprType]) {
 			$typesDescription[$exprString][] = '~' . $exprType->describe(VerbosityLevel::precise());
 		}
 

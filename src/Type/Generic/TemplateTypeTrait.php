@@ -71,11 +71,9 @@ trait TemplateTypeTrait
 	{
 		$basicDescription = function () use ($level): string {
 			// @phpstan-ignore booleanAnd.alwaysFalse, instanceof.alwaysFalse, booleanAnd.alwaysFalse, instanceof.alwaysFalse, instanceof.alwaysTrue
-			if ($this->bound instanceof MixedType && $this->bound->getSubtractedType() === null && !$this->bound instanceof TemplateMixedType) {
-				$boundDescription = '';
-			} else {
-				$boundDescription = sprintf(' of %s', $this->bound->describe($level));
-			}
+			$boundDescription = $this->bound instanceof MixedType && $this->bound->getSubtractedType() === null && !$this->bound instanceof TemplateMixedType
+				? ''
+				: sprintf(' of %s', $this->bound->describe($level));
 			$defaultDescription = '';
 			if ($this->default !== null) {
 				$recursionGuard = RecursionGuard::runOnObjectIdentity($this->default, fn () => $this->default->describe($level));

@@ -100,7 +100,6 @@ final class ParametersAcceptorSelector
 		}
 
 		$reorderedArgs = $args;
-		$parameters = null;
 		$singleParametersAcceptor = null;
 		if (count($parametersAcceptors) === 1) {
 			if (!array_is_list($args)) {

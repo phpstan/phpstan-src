@@ -342,7 +342,6 @@ final class MatchHandler implements ExprHandler, PerFileAnalysisResettable
 			$filteringCondData = [];
 			$armCondScope = $matchScope;
 			$condNodes = [];
-			$armCondResultScope = $matchScope;
 			$bodyScope = null;
 			$condArgResult = $this->identicalNarrowingHelper->captureFirstArgResult($expr->cond, $storage);
 			foreach ($arm->conds as $j => $armCond) {

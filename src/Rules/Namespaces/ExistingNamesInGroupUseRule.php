@@ -45,8 +45,6 @@ final class ExistingNamesInGroupUseRule implements Rule
 	{
 		$errors = [];
 		foreach ($node->uses as $use) {
-			$error = null;
-
 			/** @var Node\Name $name */
 			$name = Node\Name::concat($node->prefix, $use->name, ['startLine' => $use->getStartLine()]);
 			if (

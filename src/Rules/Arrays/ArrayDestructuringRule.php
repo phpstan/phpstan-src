@@ -84,7 +84,6 @@ final class ArrayDestructuringRule implements Rule
 				continue;
 			}
 
-			$keyExpr = null;
 			if ($item->key === null) {
 				$keyType = new ConstantIntegerType($i);
 				$keyExpr = new Node\Scalar\Int_($i);

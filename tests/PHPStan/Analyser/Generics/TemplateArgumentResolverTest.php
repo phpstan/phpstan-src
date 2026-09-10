@@ -284,6 +284,29 @@ class TemplateArgumentResolverTest extends PHPStanTestCase
 		$this->assertNull($siteReference->get(), 'The resolved return-type cache must not retain the call AST.');
 	}
 
+	public function testConcreteReturnTypeKeepsExistingMarkers(): void
+	{
+		[$constraints, $site, $type] = self::constraintsWithA(new ConstantIntegerType(1));
+		$variant = new ResolvedFunctionVariantWithOriginal(
+			new ExtendedFunctionVariant(TemplateTypeMap::createEmpty(), null, [], false, $type, $type, new MixedType()),
+			TemplateTypeMap::createEmpty(),
+			TemplateTypeVarianceMap::createEmpty(),
+			[],
+		);
+		$observer = new TemplateArgumentObserver();
+		$resolved = (new TemplateArgumentResolver())->resolve($constraints->merge($observer->collectSend(new GenericObjectType(A\A::class, [new IntegerType()]), $type)), null, []);
+		self::assertFalse($type->hasTemplateOrLateResolvableType());
+
+		foreach ([new TemplateArgumentFrame(null), $resolved] as $frame) {
+			foreach ([true, false] as $allowUnresolved) {
+				$result = $variant->getReturnTypeWithUnresolvedTemplateArguments($site, $frame, $allowUnresolved);
+				self::assertTrue($type->equals($result));
+				$observed = (new TemplateArgumentResolver())->resolve($observer->collectSites($result), null, []);
+				self::assertSame('1', self::describe($observed->resolve($site, 'T')));
+			}
+		}
+	}
+
 	public function testSiteAttributionByTokenPosition(): void
 	{
 		$constraints = TemplateArgumentConstraints::createEmpty();

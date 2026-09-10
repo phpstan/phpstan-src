@@ -1,47 +1,47 @@
 [
     {
         "message": "Access to an undefined property Levels\\PropertyAccesses\\Bar|Levels\\PropertyAccesses\\Foo::$foo.",
-        "line": 57,
+        "line": 59,
         "ignorable": true
     },
     {
         "message": "Access to an undefined property Levels\\PropertyAccesses\\Bar|Levels\\PropertyAccesses\\Foo::$bar.",
-        "line": 58,
+        "line": 60,
         "ignorable": true
     },
     {
         "message": "Access to an undefined property Levels\\PropertyAccesses\\Bar|Levels\\PropertyAccesses\\Foo::$foo.",
-        "line": 63,
+        "line": 67,
         "ignorable": true
     },
     {
         "message": "Access to an undefined property Levels\\PropertyAccesses\\Bar|Levels\\PropertyAccesses\\Foo::$bar.",
-        "line": 64,
+        "line": 68,
         "ignorable": true
     },
     {
         "message": "Access to an undefined property Levels\\PropertyAccesses\\Bar|Levels\\PropertyAccesses\\Foo::$foo.",
-        "line": 161,
+        "line": 167,
         "ignorable": true
     },
     {
         "message": "Access to an undefined property Levels\\PropertyAccesses\\Bar|Levels\\PropertyAccesses\\Foo::$bar.",
-        "line": 162,
+        "line": 168,
         "ignorable": true
     },
     {
         "message": "Access to an undefined property Levels\\PropertyAccesses\\Bar|Levels\\PropertyAccesses\\Foo::$foo.",
-        "line": 169,
+        "line": 177,
         "ignorable": true
     },
     {
         "message": "Access to an undefined property Levels\\PropertyAccesses\\Bar|Levels\\PropertyAccesses\\Foo::$bar.",
-        "line": 170,
+        "line": 178,
         "ignorable": true
     },
     {
         "message": "Access to an undefined property object::$baz.",
-        "line": 200,
+        "line": 210,
         "ignorable": true
     }
 ]

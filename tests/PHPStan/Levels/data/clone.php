@@ -26,14 +26,16 @@ class Foo
 		$mixed
 	)
 	{
-		$result = clone $int;
-		$result = clone $intOrString;
-		$result = clone $foo;
-		$result = clone $nullableFoo;
-		$result = clone $fooOrInt;
-		$result = clone $nullableInt;
-		$result = clone $nullableUnion;
-		$result = clone $mixed;
+		$results = [];
+		$results[] = clone $int;
+		$results[] = clone $intOrString;
+		$results[] = clone $foo;
+		$results[] = clone $nullableFoo;
+		$results[] = clone $fooOrInt;
+		$results[] = clone $nullableInt;
+		$results[] = clone $nullableUnion;
+		$results[] = clone $mixed;
+		var_dump($results);
 	}
 
 }

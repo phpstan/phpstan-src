@@ -168,11 +168,10 @@ final class FixerApplication
 				$mainScript,
 				$projectConfigFile,
 				$input,
-				$output,
 				$encoder,
 			);
 
-			$this->monitorFileChanges($loop, function (FileMonitorResult $changes) use ($loop, $inceptionResult, $mainScript, $projectConfigFile, $input, $encoder, $output): void {
+			$this->monitorFileChanges($loop, function (FileMonitorResult $changes) use ($loop, $inceptionResult, $mainScript, $projectConfigFile, $input, $encoder): void {
 				if ($this->processInProgress !== null) {
 					$this->processInProgress->cancel();
 					$this->processInProgress = null;
@@ -190,7 +189,6 @@ final class FixerApplication
 					$mainScript,
 					$projectConfigFile,
 					$input,
-					$output,
 					$encoder,
 				);
 			});
@@ -430,7 +428,6 @@ final class FixerApplication
 		string $mainScript,
 		?string $projectConfigFile,
 		InputInterface $input,
-		OutputInterface $output,
 		Encoder $phpstanFixerEncoder,
 	): void
 	{

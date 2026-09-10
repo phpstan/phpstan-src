@@ -15,6 +15,7 @@ use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\VariableFlow;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\NonAcceptingNeverType;
 use PHPStan\Type\Type;
@@ -47,6 +48,7 @@ final class ThrowHandler implements ExprHandler
 			$scope,
 			beforeScope: $scope,
 			expr: $expr,
+			variableFlow: VariableFlow::sequence($exprResult->getVariableFlow(), VariableFlow::throwing($exprResult->getType(), false)),
 			hasYield: false,
 			isAlwaysTerminating: true,
 			throwPoints: array_merge($exprResult->getThrowPoints(), [InternalThrowPoint::createExplicit($scope, $exprResult->getType(), $expr, false)]),

@@ -11,6 +11,7 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use SimpleXMLElement;
+use Throwable;
 use function count;
 use function extension_loaded;
 use function libxml_use_internal_errors;
@@ -41,7 +42,7 @@ final class SimpleXMLElementConstructorThrowTypeExtension implements DynamicStat
 			foreach ($constantStrings as $constantString) {
 				try {
 					new SimpleXMLElement($constantString->getValue());
-				} catch (\Exception $e) { // phpcs:ignore
+				} catch (Throwable) {
 					return $methodReflection->getThrowType();
 				}
 

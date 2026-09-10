@@ -366,7 +366,7 @@ final class ExportedNodeResolver
 				$node->isPrivateSet(),
 				$virtual,
 				$this->exportAttributeNodes($node->attrGroups),
-				$this->exportPropertyHooks($node->hooks, $namespacedName, $nameScope),
+				$this->exportPropertyHooks($node->hooks, $nameScope),
 			);
 		}
 
@@ -438,7 +438,6 @@ final class ExportedNodeResolver
 	 */
 	private function exportPropertyHooks(
 		array $hooks,
-		string $namespacedName,
 		ExportedNameScope $nameScope,
 	): array
 	{

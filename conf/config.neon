@@ -59,6 +59,8 @@ parameters:
 		checkImportedClassNameCase: false
 		sortWithoutEffect: false
 		unresolvedTemplateArguments: false
+		unusedVariable: false
+		unusedParameters: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -154,6 +156,7 @@ parameters:
 		- ../stubs/ReflectionMethod.stub
 		- ../stubs/ReflectionParameter.stub
 		- ../stubs/ReflectionProperty.stub
+		- ../stubs/ReflectionType.stub
 		- ../stubs/iterable.stub
 		- ../stubs/ArrayObject.stub
 		- ../stubs/WeakReference.stub

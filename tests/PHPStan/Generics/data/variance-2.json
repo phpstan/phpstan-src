@@ -46,32 +46,32 @@
     },
     {
         "message": "Variance annotation is only allowed for type parameters of classes and interfaces, but occurs in template type T in in function PHPStan\\Generics\\Variance\\returnOut().",
-        "line": 109,
+        "line": 111,
         "ignorable": true
     },
     {
         "message": "Variance annotation is only allowed for type parameters of classes and interfaces, but occurs in template type T in in function PHPStan\\Generics\\Variance\\returnInvariant().",
-        "line": 117,
+        "line": 119,
         "ignorable": true
     },
     {
         "message": "Template type T is declared as covariant, but occurs in contravariant position in parameter v of method PHPStan\\Generics\\Variance\\CovariantOfOBject::set().",
-        "line": 124,
+        "line": 126,
         "ignorable": true
     },
     {
         "message": "Template type T is declared as covariant, but occurs in contravariant position in parameter t of method PHPStan\\Generics\\Variance\\ConstructorAndStatic::create().",
-        "line": 154,
+        "line": 156,
         "ignorable": true
     },
     {
         "message": "Template type T is declared as covariant, but occurs in contravariant position in parameter w of method PHPStan\\Generics\\Variance\\ConstructorAndStatic::create().",
-        "line": 154,
+        "line": 156,
         "ignorable": true
     },
     {
         "message": "Template type T is declared as covariant, but occurs in invariant position in parameter v of method PHPStan\\Generics\\Variance\\ConstructorAndStatic::create().",
-        "line": 154,
+        "line": 156,
         "ignorable": true
     }
 ]

@@ -99,6 +99,8 @@ class Quuz extends Quux {
  * @return T
  */
 function x($a, $b, $c, $d, $e) {
+	var_dump($b, $c, $d, $e);
+
 	return $a;
 }
 

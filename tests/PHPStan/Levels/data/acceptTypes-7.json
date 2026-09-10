@@ -36,127 +36,127 @@
     },
     {
         "message": "Parameter #1 $closure of method Levels\\AcceptTypes\\ClosureAccepts::doBar() expects Closure(Levels\\AcceptTypes\\FooInterface, int): Levels\\AcceptTypes\\FooInterface, (Closure(): Levels\\AcceptTypes\\FooInterface)|(Closure(Levels\\AcceptTypes\\FooInterface, mixed, mixed): Levels\\AcceptTypes\\FooImpl) given.",
-        "line": 283,
-        "ignorable": true
-    },
-    {
-        "message": "Parameter #1 $callable of method Levels\\AcceptTypes\\ClosureAccepts::doBaz() expects callable(Levels\\AcceptTypes\\FooInterface, int): Levels\\AcceptTypes\\FooInterface, (Closure(): Levels\\AcceptTypes\\FooInterface)|(Closure(Levels\\AcceptTypes\\FooInterface, mixed, mixed): Levels\\AcceptTypes\\FooImpl) given.",
         "line": 284,
         "ignorable": true
     },
     {
-        "message": "Parameter #1 $closure of method Levels\\AcceptTypes\\ClosureAccepts::doBar() expects Closure(Levels\\AcceptTypes\\FooInterface, int): Levels\\AcceptTypes\\FooInterface, (Closure(): Levels\\AcceptTypes\\FooInterface)|(Closure(Levels\\AcceptTypes\\FooImpl): Levels\\AcceptTypes\\FooImpl) given.",
-        "line": 301,
+        "message": "Parameter #1 $callable of method Levels\\AcceptTypes\\ClosureAccepts::doBaz() expects callable(Levels\\AcceptTypes\\FooInterface, int): Levels\\AcceptTypes\\FooInterface, (Closure(): Levels\\AcceptTypes\\FooInterface)|(Closure(Levels\\AcceptTypes\\FooInterface, mixed, mixed): Levels\\AcceptTypes\\FooImpl) given.",
+        "line": 285,
         "ignorable": true
     },
     {
-        "message": "Parameter #1 $callable of method Levels\\AcceptTypes\\ClosureAccepts::doBaz() expects callable(Levels\\AcceptTypes\\FooInterface, int): Levels\\AcceptTypes\\FooInterface, (Closure(): Levels\\AcceptTypes\\FooInterface)|(Closure(Levels\\AcceptTypes\\FooImpl): Levels\\AcceptTypes\\FooImpl) given.",
+        "message": "Parameter #1 $closure of method Levels\\AcceptTypes\\ClosureAccepts::doBar() expects Closure(Levels\\AcceptTypes\\FooInterface, int): Levels\\AcceptTypes\\FooInterface, (Closure(): Levels\\AcceptTypes\\FooInterface)|(Closure(Levels\\AcceptTypes\\FooImpl): Levels\\AcceptTypes\\FooImpl) given.",
         "line": 302,
         "ignorable": true
     },
     {
-        "message": "Parameter #1 $closure of method Levels\\AcceptTypes\\ClosureAccepts::doBar() expects Closure(Levels\\AcceptTypes\\FooInterface, int): Levels\\AcceptTypes\\FooInterface, (Closure(): Levels\\AcceptTypes\\FooInterface)|(Closure(Levels\\AcceptTypes\\FooInterface): Levels\\AcceptTypes\\ParentFooInterface) given.",
-        "line": 319,
+        "message": "Parameter #1 $callable of method Levels\\AcceptTypes\\ClosureAccepts::doBaz() expects callable(Levels\\AcceptTypes\\FooInterface, int): Levels\\AcceptTypes\\FooInterface, (Closure(): Levels\\AcceptTypes\\FooInterface)|(Closure(Levels\\AcceptTypes\\FooImpl): Levels\\AcceptTypes\\FooImpl) given.",
+        "line": 303,
         "ignorable": true
     },
     {
-        "message": "Parameter #1 $callable of method Levels\\AcceptTypes\\ClosureAccepts::doBaz() expects callable(Levels\\AcceptTypes\\FooInterface, int): Levels\\AcceptTypes\\FooInterface, (Closure(): Levels\\AcceptTypes\\FooInterface)|(Closure(Levels\\AcceptTypes\\FooInterface): Levels\\AcceptTypes\\ParentFooInterface) given.",
+        "message": "Parameter #1 $closure of method Levels\\AcceptTypes\\ClosureAccepts::doBar() expects Closure(Levels\\AcceptTypes\\FooInterface, int): Levels\\AcceptTypes\\FooInterface, (Closure(): Levels\\AcceptTypes\\FooInterface)|(Closure(Levels\\AcceptTypes\\FooInterface): Levels\\AcceptTypes\\ParentFooInterface) given.",
         "line": 320,
         "ignorable": true
     },
     {
+        "message": "Parameter #1 $callable of method Levels\\AcceptTypes\\ClosureAccepts::doBaz() expects callable(Levels\\AcceptTypes\\FooInterface, int): Levels\\AcceptTypes\\FooInterface, (Closure(): Levels\\AcceptTypes\\FooInterface)|(Closure(Levels\\AcceptTypes\\FooInterface): Levels\\AcceptTypes\\ParentFooInterface) given.",
+        "line": 321,
+        "ignorable": true
+    },
+    {
         "message": "Parameter #1 $i of method Levels\\AcceptTypes\\Baz::doBar() expects int, float|int given.",
-        "line": 415,
+        "line": 416,
         "ignorable": true
     },
     {
         "message": "Parameter #1 $a of method Levels\\AcceptTypes\\Baz::doIpsum() expects float, float|string given.",
-        "line": 429,
-        "ignorable": true
-    },
-    {
-        "message": "Parameter #1 $a of method Levels\\AcceptTypes\\Baz::doIpsum() expects float, float|string|null given.",
         "line": 430,
         "ignorable": true
     },
     {
+        "message": "Parameter #1 $a of method Levels\\AcceptTypes\\Baz::doIpsum() expects float, float|string|null given.",
+        "line": 431,
+        "ignorable": true
+    },
+    {
         "message": "Parameter #1 $i of method Levels\\AcceptTypes\\Baz::doBarArray() expects array<int>, array<float|int> given.",
-        "line": 496,
+        "line": 497,
         "ignorable": true
     },
     {
         "message": "Parameter #1 $array of method Levels\\AcceptTypes\\Baz::requireArray() expects array<mixed>, array|Levels\\AcceptTypes\\Foo given.",
-        "line": 531,
-        "ignorable": true
-    },
-    {
-        "message": "Parameter #1 $foo of method Levels\\AcceptTypes\\Baz::requireFoo() expects Levels\\AcceptTypes\\Foo, array|Levels\\AcceptTypes\\Foo given.",
         "line": 532,
         "ignorable": true
     },
     {
-        "message": "Parameter #1 $array of method Levels\\AcceptTypes\\Baz::requireArray() expects array<mixed>, array<mixed>|Levels\\AcceptTypes\\Foo given.",
-        "line": 542,
+        "message": "Parameter #1 $foo of method Levels\\AcceptTypes\\Baz::requireFoo() expects Levels\\AcceptTypes\\Foo, array|Levels\\AcceptTypes\\Foo given.",
+        "line": 533,
         "ignorable": true
     },
     {
-        "message": "Parameter #1 $foo of method Levels\\AcceptTypes\\Baz::requireFoo() expects Levels\\AcceptTypes\\Foo, array<mixed>|Levels\\AcceptTypes\\Foo given.",
+        "message": "Parameter #1 $array of method Levels\\AcceptTypes\\Baz::requireArray() expects array<mixed>, array<mixed>|Levels\\AcceptTypes\\Foo given.",
         "line": 543,
         "ignorable": true
     },
     {
-        "message": "Parameter #1 $one of method Levels\\AcceptTypes\\ArrayShapes::doBar() expects array{foo: callable(): mixed}, array{}|array{foo: 'date'} given.",
-        "line": 596,
+        "message": "Parameter #1 $foo of method Levels\\AcceptTypes\\Baz::requireFoo() expects Levels\\AcceptTypes\\Foo, array<mixed>|Levels\\AcceptTypes\\Foo given.",
+        "line": 544,
         "ignorable": true
     },
     {
-        "message": "Parameter #1 $one of method Levels\\AcceptTypes\\ArrayShapes::doBar() expects array{foo: callable(): mixed}, iterable<callable(): mixed> given.",
+        "message": "Parameter #1 $one of method Levels\\AcceptTypes\\ArrayShapes::doBar() expects array{foo: callable(): mixed}, array{}|array{foo: 'date'} given.",
         "line": 597,
         "ignorable": true
     },
     {
-        "message": "Parameter #1 $s of method Levels\\AcceptTypes\\RequireClassString::requireClassString() expects class-string, string given.",
-        "line": 617,
+        "message": "Parameter #1 $one of method Levels\\AcceptTypes\\ArrayShapes::doBar() expects array{foo: callable(): mixed}, iterable<callable(): mixed> given.",
+        "line": 598,
         "ignorable": true
     },
     {
-        "message": "Parameter #1 $s of method Levels\\AcceptTypes\\RequireClassString::requireGenericClassString() expects class-string<stdClass>, string given.",
+        "message": "Parameter #1 $s of method Levels\\AcceptTypes\\RequireClassString::requireClassString() expects class-string, string given.",
         "line": 618,
         "ignorable": true
     },
     {
+        "message": "Parameter #1 $s of method Levels\\AcceptTypes\\RequireClassString::requireGenericClassString() expects class-string<stdClass>, string given.",
+        "line": 619,
+        "ignorable": true
+    },
+    {
         "message": "Parameter #1 $stdClass of method Levels\\AcceptTypes\\RequireObjectWithoutClassType::requireStdClass() expects stdClass, object given.",
-        "line": 647,
+        "line": 648,
         "ignorable": true
     },
     {
         "message": "Parameter #1 $min (int<-1, 1>) of function random_int expects lower number than parameter #2 $max (int<0, 1>).",
-        "line": 690,
-        "ignorable": true
-    },
-    {
-        "message": "Parameter #1 $min (int<-1, 0>) of function random_int expects lower number than parameter #2 $max (int<-1, 1>).",
         "line": 691,
         "ignorable": true
     },
     {
-        "message": "Parameter #1 $min (int<-1, 1>) of function random_int expects lower number than parameter #2 $max (int<-1, 1>).",
+        "message": "Parameter #1 $min (int<-1, 0>) of function random_int expects lower number than parameter #2 $max (int<-1, 1>).",
         "line": 692,
         "ignorable": true
     },
     {
+        "message": "Parameter #1 $min (int<-1, 1>) of function random_int expects lower number than parameter #2 $max (int<-1, 1>).",
+        "line": 693,
+        "ignorable": true
+    },
+    {
         "message": "Parameter #1 $numericString of method Levels\\AcceptTypes\\NumericStrings::doBar() expects numeric-string, string given.",
-        "line": 708,
+        "line": 709,
         "ignorable": true
     },
     {
         "message": "Parameter #1 $nonEmpty of method Levels\\AcceptTypes\\AcceptNonEmpty::doBar() expects non-empty-array<mixed>, array<mixed> given.",
-        "line": 735,
+        "line": 736,
         "ignorable": true
     },
     {
         "message": "Parameter #2 $array of function implode expects array, array|int|string given.",
-        "line": 756,
+        "line": 757,
         "ignorable": true
     }
 ]

@@ -34,6 +34,8 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\VariableFlow;
+use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -392,7 +394,6 @@ final class FuncCallHandler implements ExprHandler
 				);
 			};
 		$specifyTypesCallback = fn (TypeSpecifierContext $specifyContext, bool $nativeTypesPromoted): SpecifiedTypes => $this->specifyTypes(
-			$nodeScopeResolver,
 			$nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope,
 			$expr,
 			$normalizedExpr,
@@ -406,9 +407,9 @@ final class FuncCallHandler implements ExprHandler
 		// function call narrows the call itself - the inside-out equivalent of
 		// createForExpr's FuncCall purity gate + tail entry. An impure call narrows to
 		// nothing.
-		$createTypesCallback = function (Type $type, TypeSpecifierContext $createContext, bool $nativeTypesPromoted) use ($nodeScopeResolver, $expr, $normalizedExpr, $nameResult, $beforeScope, $argsResult): SpecifiedTypes {
+		$createTypesCallback = function (Type $type, TypeSpecifierContext $createContext, bool $nativeTypesPromoted) use ($expr, $normalizedExpr, $nameResult, $beforeScope, $argsResult): SpecifiedTypes {
 			$s = $nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope;
-			if (!$this->isFuncCallNarrowable($nodeScopeResolver, $s, $expr, $nameResult)) {
+			if (!$this->isFuncCallNarrowable($s, $expr, $nameResult)) {
 				return new SpecifiedTypes([], []);
 			}
 
@@ -518,7 +519,15 @@ final class FuncCallHandler implements ExprHandler
 
 		$scope = $this->scopeEffectsHelper->applyCallScopeEffects($nodeScopeResolver, $stmt, $normalizedExpr, $functionReflection, $parametersAcceptor, $argsResult, $scope, $scopeBeforeArgs, $storage, $nodeCallback);
 
-		return $preliminaryResult->finalize($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints);
+		$variableFlow = VariableFlow::sequence(
+			$nameResult !== null ? $nameResult->getVariableFlow() : null,
+			VariableFlowBuilder::arguments($expr, $argsResult, $storage),
+			self::getCallVariableFlow($functionReflection !== null ? $functionReflection->getName() : null, $normalizedExpr, $argsResult, $scope),
+			VariableFlowBuilder::throws($expr, $throwPoints),
+			$isAlwaysTerminating ? VariableFlow::exit(VariableFlow::STOP) : null,
+		);
+
+		return $preliminaryResult->finalize($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints, $variableFlow);
 	}
 
 	private function getFunctionThrowPoint(
@@ -748,7 +757,7 @@ final class FuncCallHandler implements ExprHandler
 	 *
 	 * @param FuncCall $expr
 	 */
-	private function specifyTypes(NodeScopeResolver $nodeScopeResolver, MutatingScope $scope, Expr $expr, FuncCall $normalizedExpr, ?ExpressionResult $nameResult, ?ParametersAcceptor $resolvedParametersAcceptor, TypeSpecifierContext $context, ?ArgsResult $argsResult = null): SpecifiedTypes
+	private function specifyTypes(MutatingScope $scope, Expr $expr, FuncCall $normalizedExpr, ?ExpressionResult $nameResult, ?ParametersAcceptor $resolvedParametersAcceptor, TypeSpecifierContext $context, ?ArgsResult $argsResult = null): SpecifiedTypes
 	{
 		if ($expr->name instanceof Name) {
 			if ($this->reflectionProvider->hasFunction($expr->name, $scope)) {
@@ -793,7 +802,7 @@ final class FuncCallHandler implements ExprHandler
 						// evaluated a second time must not read the first call's
 						// truthiness (mirrors the create() gate the old
 						// specifyTypesInCondition() reached for the self key)
-						return ($this->isFuncCallNarrowable($nodeScopeResolver, $scope, $expr, $nameResult)
+						return ($this->isFuncCallNarrowable($scope, $expr, $nameResult)
 							? $specifiedTypes->unionWith($this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context))
 							: $specifiedTypes)
 							->setRootExpr($specifiedTypes->getRootExpr());
@@ -801,18 +810,18 @@ final class FuncCallHandler implements ExprHandler
 				}
 			}
 
-			return $this->defaultFuncCallNarrowing($nodeScopeResolver, $scope, $expr, $nameResult, $context);
+			return $this->defaultFuncCallNarrowing($scope, $expr, $nameResult, $context);
 		}
 
-		$specifiedTypes = $this->specifyTypesFromCallableCall($nodeScopeResolver, $context, $expr, $nameResult, $resolvedParametersAcceptor, $scope);
+		$specifiedTypes = $this->specifyTypesFromCallableCall($context, $expr, $nameResult, $resolvedParametersAcceptor, $scope);
 		if ($specifiedTypes !== null) {
 			return $specifiedTypes;
 		}
 
-		return $this->defaultFuncCallNarrowing($nodeScopeResolver, $scope, $expr, $nameResult, $context);
+		return $this->defaultFuncCallNarrowing($scope, $expr, $nameResult, $context);
 	}
 
-	private function specifyTypesFromCallableCall(NodeScopeResolver $nodeScopeResolver, TypeSpecifierContext $context, FuncCall $call, ?ExpressionResult $nameResult, ?ParametersAcceptor $resolvedParametersAcceptor, MutatingScope $scope): ?SpecifiedTypes
+	private function specifyTypesFromCallableCall(TypeSpecifierContext $context, FuncCall $call, ?ExpressionResult $nameResult, ?ParametersAcceptor $resolvedParametersAcceptor, MutatingScope $scope): ?SpecifiedTypes
 	{
 		if (!$call->name instanceof Expr) {
 			return null;
@@ -863,16 +872,16 @@ final class FuncCallHandler implements ExprHandler
 	 * this expression through create().
 	 *
 	 */
-	private function defaultFuncCallNarrowing(NodeScopeResolver $nodeScopeResolver, MutatingScope $scope, FuncCall $expr, ?ExpressionResult $nameResult, TypeSpecifierContext $context): SpecifiedTypes
+	private function defaultFuncCallNarrowing(MutatingScope $scope, FuncCall $expr, ?ExpressionResult $nameResult, TypeSpecifierContext $context): SpecifiedTypes
 	{
-		if (!$this->isFuncCallNarrowable($nodeScopeResolver, $scope, $expr, $nameResult)) {
+		if (!$this->isFuncCallNarrowable($scope, $expr, $nameResult)) {
 			return (new SpecifiedTypes([], []))->setRootExpr($expr);
 		}
 
 		return $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context);
 	}
 
-	private function isFuncCallNarrowable(NodeScopeResolver $nodeScopeResolver, MutatingScope $scope, FuncCall $expr, ?ExpressionResult $nameResult): bool
+	private function isFuncCallNarrowable(MutatingScope $scope, FuncCall $expr, ?ExpressionResult $nameResult): bool
 	{
 		if ($expr->name instanceof Name) {
 			if (!$this->reflectionProvider->hasFunction($expr->name, $scope)) {
@@ -940,6 +949,62 @@ final class FuncCallHandler implements ExprHandler
 		}
 
 		return null;
+	}
+
+	private static function getCallVariableFlow(?string $functionName, Expr\FuncCall $call, ArgsResult $args, MutatingScope $scope): ?VariableFlow
+	{
+		if (in_array($functionName, ['get_defined_vars', 'extract'], true)) {
+			return VariableFlow::all(VariableFlow::READ_ALL);
+		}
+		if (in_array($functionName, ['func_get_arg', 'func_get_args'], true)) {
+			return VariableFlow::all(VariableFlow::MENTION_ALL);
+		}
+		if ($functionName !== 'compact') {
+			return null;
+		}
+		$reads = [];
+		foreach ($call->getArgs() as $arg) {
+			if ($arg->unpack) {
+				return VariableFlow::all(VariableFlow::READ_ALL);
+			}
+			$names = self::compactNames($args->requireArgResult($arg->value)->getTypeOnScope($scope, false));
+			if ($names === null) {
+				return VariableFlow::all(VariableFlow::READ_ALL);
+			}
+			foreach ($names as $name) {
+				$reads[] = VariableFlow::read($name);
+			}
+		}
+		return VariableFlow::sequence(...$reads);
+	}
+
+	/** @return list<string>|null */
+	private static function compactNames(Type $type): ?array
+	{
+		$strings = $type->getConstantStrings();
+		if ($strings !== []) {
+			return array_map(static fn ($name) => $name->getValue(), $strings);
+		}
+		$arrays = $type->getConstantArrays();
+		if ($arrays === []) {
+			return null;
+		}
+		$names = [];
+		foreach ($arrays as $array) {
+			if ($array->isUnsealed()->yes()) {
+				return null;
+			}
+			foreach ($array->getValueTypes() as $value) {
+				$values = self::compactNames($value);
+				if ($values === null) {
+					return null;
+				}
+				foreach ($values as $name) {
+					$names[] = $name;
+				}
+			}
+		}
+		return $names;
 	}
 
 }

@@ -16,9 +16,11 @@ class Foo
 		$arrayOrFloatOrInt
 	)
 	{
-		$test = (int) $array;
-		$test = (int) $arrayOrCallable;
-		$test = (string) $arrayOrFloatOrInt;
+		$tests = [];
+		$tests[] = (int) $array;
+		$tests[] = (int) $arrayOrCallable;
+		$tests[] = (string) $arrayOrFloatOrInt;
+		var_dump($tests);
 	}
 
 }

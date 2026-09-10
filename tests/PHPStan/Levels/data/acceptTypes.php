@@ -177,6 +177,7 @@ class Foo
 	{
 		foreach ($strings as $key => $val) {
 			$this->doBar($key);
+			var_dump($val);
 		}
 	}
 
@@ -754,6 +755,8 @@ class Implode {
 	 */
 	public function partlySupportedUnion($union) {
 		$imploded = implode('abc', $union);
+
+		return $imploded;
 	}
 
 	/**
@@ -761,6 +764,8 @@ class Implode {
 	 */
 	public function invalidType($invalid) {
 		$imploded = implode('abc', $invalid);
+
+		return $imploded;
 	}
 }
 

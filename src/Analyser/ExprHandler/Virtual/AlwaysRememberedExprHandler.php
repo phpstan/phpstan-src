@@ -56,6 +56,7 @@ final class AlwaysRememberedExprHandler implements ExprHandler
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
+			variableFlow: $innerResult->getVariableFlow(),
 			hasYield: $innerResult->hasYield(),
 			isAlwaysTerminating: $innerResult->isAlwaysTerminating(),
 			throwPoints: $innerResult->getThrowPoints(),

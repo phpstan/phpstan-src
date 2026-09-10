@@ -47,6 +47,7 @@ final class BitwiseNotHandler implements ExprHandler
 			$exprResult->getScope(),
 			beforeScope: $scope,
 			expr: $expr,
+			variableFlow: $exprResult->getVariableFlow(),
 			hasYield: $exprResult->hasYield(),
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
 			throwPoints: $exprResult->getThrowPoints(),

@@ -17,7 +17,10 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\VariableFlow;
+use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\Type\Type;
 
 /**
@@ -65,18 +68,21 @@ final class PostIncHandler implements ExprHandler
 		// rule-side asks about it answer from the storage
 		$nodeScopeResolver->storeExpressionResult($storage, $virtualExpr, $virtualExprResult);
 
+		$assignedScope = $nodeScopeResolver->processVirtualAssign(
+			$varResult->getScope(),
+			$storage,
+			$stmt,
+			$expr->var,
+			$virtualExpr,
+			$nodeCallback,
+			$virtualExprResult,
+		)->getScope();
+
 		return $this->expressionResultFactory->create(
-			$nodeScopeResolver->processVirtualAssign(
-				$varResult->getScope(),
-				$storage,
-				$stmt,
-				$expr->var,
-				$virtualExpr,
-				$nodeCallback,
-				$virtualExprResult,
-			)->getScope(),
+			$assignedScope,
 			beforeScope: $scope,
 			expr: $expr,
+			variableFlow: VariableFlow::sequence($varResult->getVariableFlow(), VariableFlowBuilder::targetWrite($expr->var, VariableWrite::KIND_POST_INC, $assignedScope, $storage)),
 			hasYield: $varResult->hasYield(),
 			isAlwaysTerminating: $varResult->isAlwaysTerminating(),
 			throwPoints: $varResult->getThrowPoints(),

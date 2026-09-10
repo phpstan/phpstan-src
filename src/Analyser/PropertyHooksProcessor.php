@@ -147,7 +147,8 @@ final class PropertyHooksProcessor
 				$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
 			});
 			try {
-				$statementResult = $nodeScopeResolver->processStmtNodesInternal(new PropertyHookStatementNode($hook), $stmts, $hookScope, $storage, $nodeCallback, StatementContext::createTopLevel())->toPublic();
+				$internalStatementResult = $nodeScopeResolver->processStmtNodesInternal(new PropertyHookStatementNode($hook), $stmts, $hookScope, $storage, $nodeCallback, StatementContext::createTopLevel());
+				$statementResult = $internalStatementResult->toPublic();
 			} finally {
 				$nodeScopeResolver->popNodeGatherer();
 			}
@@ -163,6 +164,7 @@ final class PropertyHooksProcessor
 				$hookReflection,
 				$propertyReflection,
 			), $hookScope, $storage);
+			$nodeScopeResolver->callNodeCallback($nodeCallback, VariableLivenessResolver::resolve($hook, $internalStatementResult->getVariableFlow()), $hookScope, $storage);
 		}
 	}
 

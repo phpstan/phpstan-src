@@ -16,6 +16,7 @@ use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\VariableFlow;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -49,6 +50,7 @@ final class InterpolatedStringHandler implements ExprHandler
 		$beforeScope = $scope;
 		$hasYield = false;
 		$throwPoints = [];
+		$variableFlows = [];
 		$impurePoints = [];
 		$isAlwaysTerminating = false;
 		/** @var array<int, ExpressionResult> $partResults */
@@ -58,6 +60,7 @@ final class InterpolatedStringHandler implements ExprHandler
 				continue;
 			}
 			$partResult = $nodeScopeResolver->processExprNode($stmt, $part, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$variableFlows[] = $partResult->getVariableFlow();
 			$partResults[spl_object_id($part)] = $partResult;
 			$hasYield = $hasYield || $partResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $partResult->getThrowPoints());
@@ -75,6 +78,7 @@ final class InterpolatedStringHandler implements ExprHandler
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
+			variableFlow: VariableFlow::sequence(...$variableFlows),
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,

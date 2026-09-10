@@ -55,8 +55,8 @@ class NodeCallbackScopeResolverRuleTest extends RuleTestCase
 					return [];
 				}
 
+				$scope->getType($node->getArgs()[0]->value); // on purpose to hit the cache
 				$arg0 = $scope->getType($node->getArgs()[0]->value);
-				$arg0 = $scope->getType($node->getArgs()[0]->value); // on purpose to hit the cache
 
 				return [
 					RuleErrorBuilder::message($arg0->describe(VerbosityLevel::precise()))->identifier('fnsr.rule')->build(),

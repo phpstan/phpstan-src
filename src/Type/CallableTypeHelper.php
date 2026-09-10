@@ -5,6 +5,7 @@ namespace PHPStan\Type;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\TrinaryLogic;
 use function array_key_exists;
+use function array_keys;
 use function array_merge;
 use function count;
 use function sprintf;
@@ -33,7 +34,7 @@ final class CallableTypeHelper
 			&& $lastParameter->isVariadic()
 			&& $theirParameterCount < $ourParameterCount
 		) {
-			foreach ($ourParameters as $i => $ourParameter) {
+			foreach (array_keys($ourParameters) as $i) {
 				if (array_key_exists($i, $theirParameters)) {
 					continue;
 				}

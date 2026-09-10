@@ -1,17 +1,17 @@
 [
     {
         "message": "Cannot clone non-object variable $nullableFoo of type Levels\\Cloning\\Foo|null.",
-        "line": 32,
+        "line": 33,
         "ignorable": true
     },
     {
         "message": "Cannot clone non-object variable $nullableInt of type int|null.",
-        "line": 34,
+        "line": 35,
         "ignorable": true
     },
     {
         "message": "Cannot clone non-object variable $nullableUnion of type int|Levels\\Cloning\\Foo|null.",
-        "line": 35,
+        "line": 36,
         "ignorable": true
     }
 ]

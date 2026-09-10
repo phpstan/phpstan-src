@@ -15,7 +15,9 @@ use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\VariableFlow;
 use PHPStan\DependencyInjection\AutowiredService;
+use function is_string;
 
 /**
  * @implements ExprHandler<Closure>
@@ -72,6 +74,7 @@ final class ClosureHandler implements ExprHandler
 			$processClosureResult->applyByRefUseScope($processClosureResult->getScope()),
 			beforeScope: $scope,
 			expr: $expr,
+			variableFlow: self::getVariableFlow($expr),
 			hasYield: false,
 			isAlwaysTerminating: false,
 			throwPoints: [],
@@ -81,6 +84,19 @@ final class ClosureHandler implements ExprHandler
 			nativeType: $nativeType,
 			typeCallback: null,
 		);
+	}
+
+	public static function getVariableFlow(Closure $expr): ?VariableFlow
+	{
+		$uses = [];
+		foreach ($expr->uses as $use) {
+			if (!is_string($use->var->name)) {
+				continue;
+			}
+
+			$uses[] = $use->byRef ? VariableFlow::escape($use->var->name) : VariableFlow::read($use->var->name);
+		}
+		return VariableFlow::sequence(...$uses);
 	}
 
 }

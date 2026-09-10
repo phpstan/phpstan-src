@@ -48,7 +48,7 @@ function testApply()
  * @param callable(callable():T):T $closure
  * @return T
  */
-function bar(callable $closure) { throw new \Exception(); }
+function bar(callable $closure) { var_dump($closure); throw new \Exception(); }
 
 /** @param callable(callable():int):string $callable */
 function testBar($callable): void {

@@ -23,6 +23,7 @@ final class InternalStatementResult
 		private array $throwPoints,
 		private array $impurePoints,
 		private array $endStatements = [],
+		private ?VariableFlow $variableFlow = null,
 	)
 	{
 		foreach ($exitPoints as $exitPoint) {
@@ -31,6 +32,11 @@ final class InternalStatementResult
 		foreach ($endStatements as $endStatement) {
 			$this->scope = $this->scope->addTemplateArgumentConstraints($endStatement->getResult()->getScope()->getTemplateArgumentConstraints());
 		}
+	}
+
+	public function getVariableFlow(): ?VariableFlow
+	{
+		return $this->variableFlow;
 	}
 
 	public function toPublic(): StatementResult
@@ -75,14 +81,14 @@ final class InternalStatementResult
 
 			$num = $statement->num;
 			if (!$num instanceof Int_) {
-				return new self($this->scope, $this->hasYield, false, $this->exitPoints, $this->throwPoints, $this->impurePoints);
+				return new self($this->scope, $this->hasYield, false, $this->exitPoints, $this->throwPoints, $this->impurePoints, variableFlow: $this->variableFlow);
 			}
 
 			if ($num->value !== 1) {
 				continue;
 			}
 
-			return new self($this->scope, $this->hasYield, false, $this->exitPoints, $this->throwPoints, $this->impurePoints);
+			return new self($this->scope, $this->hasYield, false, $this->exitPoints, $this->throwPoints, $this->impurePoints, variableFlow: $this->variableFlow);
 		}
 
 		return $this;

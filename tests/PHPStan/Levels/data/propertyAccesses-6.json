@@ -6,32 +6,32 @@
     },
     {
         "message": "Method Levels\\PropertyAccesses\\Bar::doBar() has no return type specified.",
-        "line": 29,
+        "line": 30,
         "ignorable": true
     },
     {
         "message": "Method Levels\\PropertyAccesses\\Baz::doBaz() has no return type specified.",
-        "line": 50,
+        "line": 52,
         "ignorable": true
     },
     {
         "message": "Method Levels\\PropertyAccesses\\ClassWithMagicMethod::doFoo() has no return type specified.",
-        "line": 74,
+        "line": 80,
         "ignorable": true
     },
     {
         "message": "Method Levels\\PropertyAccesses\\AnotherClassWithMagicMethod::doFoo() has no return type specified.",
-        "line": 93,
+        "line": 99,
         "ignorable": true
     },
     {
         "message": "Method Levels\\PropertyAccesses\\AnotherClassWithMagicMethod::__get() has no return type specified.",
-        "line": 98,
+        "line": 104,
         "ignorable": true
     },
     {
         "message": "Method Levels\\PropertyAccesses\\Ipsum::doBaz() has no return type specified.",
-        "line": 158,
+        "line": 164,
         "ignorable": true
     }
 ]

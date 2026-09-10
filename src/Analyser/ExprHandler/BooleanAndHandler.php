@@ -16,6 +16,7 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\VariableFlow;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\BooleanAndNode;
 use PHPStan\Type\BooleanType;
@@ -59,6 +60,7 @@ final class BooleanAndHandler implements ExprHandler
 			$leftMergedWithRightScope,
 			beforeScope: $scope,
 			expr: $expr,
+			variableFlow: VariableFlow::sequence($leftResult->getVariableFlow(), VariableFlow::choice($rightResult->getVariableFlow(), null)),
 			hasYield: $leftResult->hasYield() || $rightResult->hasYield(),
 			isAlwaysTerminating: $leftResult->isAlwaysTerminating(),
 			throwPoints: array_merge($leftResult->getThrowPoints(), $rightResult->getThrowPoints()),

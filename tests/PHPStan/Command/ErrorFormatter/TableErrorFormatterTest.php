@@ -466,7 +466,6 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 				$this->fail('showAllErrors cannot be true when errorsBudget is set');
 			}
 			putenv('PHPSTAN_TABLE_ERROR_FORMATTER_FORCE_SHOW_ALL_ERRORS=1');
-			$errorsBudget = null;
 		} else {
 			putenv('PHPSTAN_TABLE_ERROR_FORMATTER_FORCE_SHOW_ALL_ERRORS');
 		}

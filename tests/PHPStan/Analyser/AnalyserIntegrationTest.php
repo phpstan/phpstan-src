@@ -24,12 +24,16 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testUndefinedVariableFromAssignErrorHasLine(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/undefined-variable-assign.php');
-		$this->assertCount(2, $errors);
+		$this->assertCount(3, $errors);
 		$error = $errors[0];
 		$this->assertSame('Undefined variable: $bar', $error->getMessage());
 		$this->assertSame(3, $error->getLine());
 
 		$error = $errors[1];
+		$this->assertSame('Variable $foo is never read.', $error->getMessage());
+		$this->assertSame(3, $error->getLine());
+
+		$error = $errors[2];
 		$this->assertSame('Variable $foo might not be defined.', $error->getMessage());
 		$this->assertSame(6, $error->getLine());
 	}
@@ -57,7 +61,11 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testAnonymousClassWithInheritedConstructor(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/anonymous-class-with-inherited-constructor.php');
-		$this->assertNoErrors($errors);
+		$this->assertCount(2, $errors);
+		$this->assertSame('Variable $a is never read.', $errors[0]->getMessage());
+		$this->assertSame(17, $errors[0]->getLine());
+		$this->assertSame('Variable $a is never read.', $errors[1]->getMessage());
+		$this->assertSame(33, $errors[1]->getLine());
 	}
 
 	public function testNestedFunctionCallsDoNotCauseExcessiveFunctionNesting(): void
@@ -167,14 +175,20 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testBug14548(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-14548.php');
-		$this->assertNoErrors($errors);
+		$this->assertCount(1, $errors);
+		$this->assertSame('Foreach value variable $priorityName is never read.', $errors[0]->getMessage());
+		$this->assertSame(18, $errors[0]->getLine());
 	}
 
 	public function testBug12803(): void
 	{
 		// crash
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-12803.php');
-		$this->assertNoErrors($errors);
+		$this->assertCount(2, $errors);
+		$this->assertSame('Variable $a is never read.', $errors[0]->getMessage());
+		$this->assertSame(14, $errors[0]->getLine());
+		$this->assertSame('Variable $b is never read.', $errors[1]->getMessage());
+		$this->assertSame(15, $errors[1]->getLine());
 	}
 
 	public function testArrayDestructuringArrayDimFetch(): void
@@ -225,16 +239,22 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	{
 		// crash
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-14604.php');
-		$this->assertNoErrors($errors);
+		$this->assertCount(1, $errors);
+		$this->assertSame('Variable $locations is never read.', $errors[0]->getMessage());
+		$this->assertSame(17, $errors[0]->getLine());
 	}
 
 	public function testBug13424(): void
 	{
 		// crash
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-13424.php');
-		$this->assertCount(1, $errors);
-		$this->assertSame('Instantiated class Bug13424\Hello not found.', $errors[0]->getMessage());
-		$this->assertSame(14, $errors[0]->getLine());
+		$this->assertCount(3, $errors);
+		$this->assertSame('Variable $hello is never read.', $errors[0]->getMessage());
+		$this->assertSame(10, $errors[0]->getLine());
+		$this->assertSame('Instantiated class Bug13424\Hello not found.', $errors[1]->getMessage());
+		$this->assertSame(14, $errors[1]->getLine());
+		$this->assertSame('Variable $hello is never read.', $errors[2]->getMessage());
+		$this->assertSame(14, $errors[2]->getLine());
 	}
 
 	public function testTwoSameClassesInSingleFile(): void
@@ -290,7 +310,9 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	{
 		// false positive
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-3468.php');
-		$this->assertNoErrors($errors);
+		$this->assertCount(1, $errors);
+		$this->assertSame('Variable $element is never read.', $errors[0]->getMessage());
+		$this->assertSame(18, $errors[0]->getLine());
 	}
 
 	public function testBug3379(): void
@@ -363,7 +385,11 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		// false positive
 		require_once __DIR__ . '/../Rules/Generics/data/bug-3769.php';
 		$errors = $this->runAnalyse(__DIR__ . '/../Rules/Generics/data/bug-3769.php');
-		$this->assertNoErrors($errors);
+		$this->assertCount(11, $errors);
+		foreach ([13, 29, 30, 31, 40, 75, 76, 77, 78, 108, 111] as $i => $line) {
+			$this->assertSame('Variable $a is never read.', $errors[$i]->getMessage());
+			$this->assertSame($line, $errors[$i]->getLine());
+		}
 	}
 
 	public function testBug6301(): void
@@ -400,8 +426,10 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	{
 		// crash
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-4713.php');
-		$this->assertCount(1, $errors);
+		$this->assertCount(2, $errors);
 		$this->assertSame('Method Bug4713\Service::createInstance() should return Bug4713\Service but returns object.', $errors[0]->getMessage());
+		$this->assertSame('Variable $service is never read.', $errors[1]->getMessage());
+		$this->assertSame(14, $errors[1]->getLine());
 
 		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass(Service::class);
@@ -586,10 +614,14 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 			[
 				__DIR__ . '/data/bug-6253.php',
 				__DIR__ . '/data/bug-6253-app-scope-trait.php',
-				__DIR__ . '/data/bug-6253-collection-trait.php',
+				// deliberately unnormalized: setAnalysedFiles() must normalize it, or the
+				// trait is silently not analysed in class context (mixed separators on Windows)
+				__DIR__ . '/data/../data/bug-6253-collection-trait.php',
 			],
 		);
-		$this->assertNoErrors($errors);
+		$this->assertCount(1, $errors);
+		$this->assertSame('Variable $c is never read.', $errors[0]->getMessage());
+		$this->assertSame(9, $errors[0]->getLine());
 	}
 
 	public function testBug13057(): void
@@ -713,11 +745,21 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	{
 		// false positive
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6160.php');
-		$this->assertCount(2, $errors);
+		$this->assertCount(7, $errors);
 		$this->assertSame('Parameter #1 $flags of static method Bug6160\HelloWorld::split() expects 0|1|2, 94561 given.', $errors[0]->getMessage());
 		$this->assertSame(19, $errors[0]->getLine());
-		$this->assertSame('Parameter #1 $flags of static method Bug6160\HelloWorld::split() expects 0|1|2, \'sdf\' given.', $errors[1]->getMessage());
-		$this->assertSame(23, $errors[1]->getLine());
+		$this->assertSame('Variable $a is never read.', $errors[1]->getMessage());
+		$this->assertSame(19, $errors[1]->getLine());
+		$this->assertSame('Variable $a is never read.', $errors[2]->getMessage());
+		$this->assertSame(20, $errors[2]->getLine());
+		$this->assertSame('Variable $a is never read.', $errors[3]->getMessage());
+		$this->assertSame(21, $errors[3]->getLine());
+		$this->assertSame('Variable $a is never read.', $errors[4]->getMessage());
+		$this->assertSame(22, $errors[4]->getLine());
+		$this->assertSame('Parameter #1 $flags of static method Bug6160\HelloWorld::split() expects 0|1|2, \'sdf\' given.', $errors[5]->getMessage());
+		$this->assertSame(23, $errors[5]->getLine());
+		$this->assertSame('Variable $a is never read.', $errors[6]->getMessage());
+		$this->assertSame(23, $errors[6]->getLine());
 	}
 
 	public function testBug6979(): void
@@ -739,9 +781,10 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	#[RequiresPhp('>= 8.1.0')]
 	public function testBug7012(): void
 	{
-		// false positive
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7012.php');
-		$this->assertNoErrors($errors);
+		$this->assertCount(1, $errors);
+		$this->assertSame('Function Bug7012\test() has an unused parameter $f.', $errors[0]->getMessage());
+		$this->assertSame(10, $errors[0]->getLine());
 	}
 
 	#[RequiresPhp('>= 8.1.0')]
@@ -904,9 +947,12 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 
 	public function testBug7153(): void
 	{
-		// false negative
 		$errors = $this->runAnalyse(__DIR__ . '/nsrt/bug-7153.php');
-		$this->assertNoErrors($errors);
+		$this->assertCount(2, $errors);
+		$this->assertSame('Function Bug7153\blih() has an unused parameter $blah.', $errors[0]->getMessage());
+		$this->assertSame(18, $errors[0]->getLine());
+		$this->assertSame('Function Bug7153\blih() has an unused parameter $bleh.', $errors[1]->getMessage());
+		$this->assertSame(18, $errors[1]->getLine());
 	}
 
 	public function testBug7275(): void
@@ -929,9 +975,9 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-12767.php');
 		$this->assertCount(3, $errors);
 
-		$this->assertSame('Expected type int, actual: *ERROR*', $errors[0]->getMessage());
-		$this->assertSame('Undefined variable: $field1', $errors[1]->getMessage());
-		$this->assertSame('Undefined variable: $field2', $errors[2]->getMessage());
+		$this->assertSame('Expected type int, actual: int<1, max>', $errors[0]->getMessage());
+		$this->assertSame('Variable $field1 might not be defined.', $errors[1]->getMessage());
+		$this->assertSame('Variable $field2 might not be defined.', $errors[2]->getMessage());
 	}
 
 	public function testBug7554(): void
@@ -986,7 +1032,15 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	{
 		// crash
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7918.php');
-		$this->assertNoErrors($errors);
+		$this->assertCount(4, $errors);
+		$this->assertSame('Foreach key variable $id is never read.', $errors[0]->getMessage());
+		$this->assertSame(33, $errors[0]->getLine());
+		$this->assertSame('Foreach value variable $arr2 is never read.', $errors[1]->getMessage());
+		$this->assertSame(33, $errors[1]->getLine());
+		$this->assertSame('Foreach key variable $id is never read.', $errors[2]->getMessage());
+		$this->assertSame(91, $errors[2]->getLine());
+		$this->assertSame('Foreach value variable $arr2 is never read.', $errors[3]->getMessage());
+		$this->assertSame(91, $errors[3]->getLine());
 	}
 
 	public function testArrayUnion(): void
@@ -1014,7 +1068,9 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	{
 		// crash
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-8078.php');
-		$this->assertNoErrors($errors);
+		$this->assertCount(1, $errors);
+		$this->assertSame('Variable $closure is never read.', $errors[0]->getMessage());
+		$this->assertSame(9, $errors[0]->getLine());
 	}
 
 	#[RequiresPhp('>= 8.1.0')]
@@ -1101,7 +1157,13 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testPr2030(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/pr-2030.php');
-		$this->assertNoErrors($errors);
+		$this->assertCount(3, $errors);
+		$this->assertSame('Foreach key variable $index is never read.', $errors[0]->getMessage());
+		$this->assertSame(24, $errors[0]->getLine());
+		$this->assertSame('Variable $noteTitle is never read.', $errors[1]->getMessage());
+		$this->assertSame(25, $errors[1]->getLine());
+		$this->assertSame('Variable $noteSource is never read.', $errors[2]->getMessage());
+		$this->assertSame(26, $errors[2]->getLine());
 	}
 
 	#[RequiresPhp('>= 8.0.0')]
@@ -1224,7 +1286,9 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	{
 		// crash
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-13492.php');
-		$this->assertNoErrors($errors);
+		$this->assertCount(1, $errors);
+		$this->assertSame('Variable $customer is never read.', $errors[0]->getMessage());
+		$this->assertSame(56, $errors[0]->getLine());
 	}
 
 	#[RequiresPhp('>= 8.0.0')]
@@ -1352,7 +1416,9 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	{
 		// crash
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-11026.php');
-		$this->assertNoErrors($errors);
+		$this->assertCount(1, $errors);
+		$this->assertSame('Variable $a is never read.', $errors[0]->getMessage());
+		$this->assertSame(6, $errors[0]->getLine());
 	}
 
 	public function testBug10867(): void
@@ -1406,7 +1472,11 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	{
 		// false negative
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-11598.php');
-		$this->assertNoErrors($errors);
+		$this->assertCount(2, $errors);
+		$this->assertSame('Variable $foo is never read.', $errors[0]->getMessage());
+		$this->assertSame(9, $errors[0]->getLine());
+		$this->assertSame('Variable $foo is never read.', $errors[1]->getMessage());
+		$this->assertSame(14, $errors[1]->getLine());
 	}
 
 	public function testBug11640(): void

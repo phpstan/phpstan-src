@@ -33,6 +33,7 @@ interface ExpressionResultFactory
 		?Type $type = null,
 		?Type $nativeType = null,
 		?ArgsResult $argsResult = null,
+		?VariableFlow $variableFlow = null,
 	): ExpressionResult;
 
 }

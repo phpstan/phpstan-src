@@ -1,25 +1,25 @@
 parameters:
 	ignoreErrors:
 		-
-			message: '#^This is an error from a rule that uses a collector$#'
+			message: '#^This is an error from a rule that uses a collector\: ClassCollector$#'
 			identifier: class.name
 			count: 1
 			path: src/ClassCollector.php
 
 		-
-			message: '#^This is an error from a rule that uses a collector$#'
+			message: '#^This is an error from a rule that uses a collector\: ClassRule$#'
 			identifier: class.name
 			count: 1
 			path: src/ClassRule.php
 
 		-
-			message: '#^This is an error from a rule that uses a collector$#'
+			message: '#^This is an error from a rule that uses a collector\: ControllerActionReturnTypeIgnoreExtension$#'
 			identifier: class.name
 			count: 1
 			path: src/ControllerActionReturnTypeIgnoreExtension.php
 
 		-
-			message: '#^This is an error from a rule that uses a collector$#'
+			message: '#^This is an error from a rule that uses a collector\: ControllerClassNameIgnoreExtension$#'
 			identifier: class.name
 			count: 1
 			path: src/ControllerClassNameIgnoreExtension.php

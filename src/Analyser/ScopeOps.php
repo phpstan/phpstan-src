@@ -524,6 +524,9 @@ final class ScopeOps
 			if (array_key_exists($exprString, $ourExpressionTypes)) {
 				continue;
 			}
+			if ($mergedExprTypeHolder->getExpr() instanceof VirtualNode) {
+				continue;
+			}
 
 			foreach ($typeGuards as $guardExprString => $guardHolder) {
 				$conditionalExpression = new ConditionalExpressionHolder([$guardExprString => $guardHolder], new ExpressionTypeHolder($mergedExprTypeHolder->getExpr(), new ErrorType(), TrinaryLogic::createNo()));

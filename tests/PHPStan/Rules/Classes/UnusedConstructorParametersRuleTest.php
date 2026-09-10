@@ -2,9 +2,8 @@
 
 namespace PHPStan\Rules\Classes;
 
-use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\UnusedFunctionParametersCheck;
+use PHPStan\Rules\UnusedParametersCheck;
 use PHPStan\Testing\RuleTestCase;
 
 /**
@@ -17,11 +16,7 @@ class UnusedConstructorParametersRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new UnusedConstructorParametersRule(new UnusedFunctionParametersCheck(
-			self::createReflectionProvider(),
-			self::getContainer()->getByType(InitializerExprTypeResolver::class),
-			$this->reportExactLine,
-		));
+		return new UnusedConstructorParametersRule(self::getContainer()->getByType(UnusedParametersCheck::class), $this->reportExactLine);
 	}
 
 	public function testUnusedConstructorParametersNoExactLine(): void
@@ -81,6 +76,20 @@ class UnusedConstructorParametersRuleTest extends RuleTestCase
 	public function testParameterUsedInIncludedFile(): void
 	{
 		$this->analyse([__DIR__ . '/data/unused-constructor-parameters-include.php'], []);
+	}
+
+	public function testResolvedDynamicUsages(): void
+	{
+		$this->analyse([__DIR__ . '/data/unused-constructor-parameters-resolved-dynamic.php'], [
+			[
+				'Constructor of class UnusedConstructorParametersResolvedDynamic\VariableVariable has an unused parameter $other.',
+				8,
+			],
+			[
+				'Constructor of class UnusedConstructorParametersResolvedDynamic\OverwrittenParameter has an unused parameter $x.',
+				43,
+			],
+		]);
 	}
 
 }

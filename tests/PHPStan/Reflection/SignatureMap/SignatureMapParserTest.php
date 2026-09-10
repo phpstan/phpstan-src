@@ -529,7 +529,7 @@ class SignatureMapParserTest extends PHPStanTestCase
 				} else {
 					$reflectionFunction = new ReflectionFunction($reflector->reflectFunction($realFunctionName));
 				}
-			} catch (IdentifierNotFound | OutOfBoundsException $e) {
+			} catch (IdentifierNotFound | OutOfBoundsException) {
 				// pass
 			}
 

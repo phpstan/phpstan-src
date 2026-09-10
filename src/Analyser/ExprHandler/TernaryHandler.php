@@ -18,6 +18,7 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\PerFileAnalysisResettable;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\VariableFlow;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -146,6 +147,7 @@ final class TernaryHandler implements ExprHandler, PerFileAnalysisResettable
 			$finalScope,
 			beforeScope: $scope,
 			expr: $expr,
+			variableFlow: VariableFlow::sequence($ternaryCondResult->getVariableFlow(), VariableFlow::choice($ifResult !== null ? $ifResult->getVariableFlow() : null, $elseResult->getVariableFlow())),
 			hasYield: $hasYield,
 			isAlwaysTerminating: $ternaryCondResult->isAlwaysTerminating(),
 			throwPoints: $throwPoints,

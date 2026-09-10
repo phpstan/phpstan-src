@@ -15,7 +15,7 @@ class TestClassUsingTrait
 		return $this->doFoo();
 	}
 
-	public function doBaz(): void
+	public function doBaz(): \stdClass
 	{
 		$class = new class() {
 
@@ -29,6 +29,8 @@ class TestClassUsingTrait
 				return $this->doFoo();
 			}
 		};
+
+		return $class->doBar();
 	}
 
 }

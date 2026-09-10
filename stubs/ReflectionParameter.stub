@@ -10,9 +10,18 @@ class ReflectionParameter
     }
 
 	/**
+	 * @return bool
 	 * @phpstan-assert-if-true !null $this->getType()
 	 */
 	public function hasType(): bool
+	{
+	}
+
+	/**
+	 * @return bool
+	 * @throws void
+	 */
+	public function isOptional(): bool
 	{
 	}
 

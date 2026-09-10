@@ -1,52 +1,52 @@
 [
     {
         "message": "Access to an undefined property Levels\\PropertyAccesses\\Foo::$bar.",
-        "line": 18,
+        "line": 19,
         "ignorable": true
     },
     {
         "message": "Access to an undefined static property Levels\\PropertyAccesses\\Bar::$foo.",
-        "line": 36,
+        "line": 38,
         "ignorable": true
     },
     {
         "message": "Non-static access to static property Levels\\PropertyAccesses\\Bar::$bar.",
-        "line": 58,
+        "line": 60,
         "ignorable": true
     },
     {
         "message": "Access to an undefined property Levels\\PropertyAccesses\\Foo::$bar.",
-        "line": 61,
-        "ignorable": true
-    },
-    {
-        "message": "Non-static access to static property Levels\\PropertyAccesses\\Bar::$bar.",
         "line": 64,
         "ignorable": true
     },
     {
+        "message": "Non-static access to static property Levels\\PropertyAccesses\\Bar::$bar.",
+        "line": 68,
+        "ignorable": true
+    },
+    {
         "message": "Access to an undefined property Levels\\PropertyAccesses\\Bar|Levels\\PropertyAccesses\\Baz::$foo.",
-        "line": 66,
+        "line": 71,
         "ignorable": true
     },
     {
         "message": "Non-static access to static property Levels\\PropertyAccesses\\Bar::$bar.",
-        "line": 162,
+        "line": 168,
         "ignorable": true
     },
     {
         "message": "Access to an undefined property Levels\\PropertyAccesses\\Foo::$bar.",
-        "line": 166,
+        "line": 173,
         "ignorable": true
     },
     {
         "message": "Non-static access to static property Levels\\PropertyAccesses\\Bar::$bar.",
-        "line": 170,
+        "line": 178,
         "ignorable": true
     },
     {
         "message": "Access to an undefined property Levels\\PropertyAccesses\\Bar|Levels\\PropertyAccesses\\Baz::$foo.",
-        "line": 173,
+        "line": 182,
         "ignorable": true
     }
 ]

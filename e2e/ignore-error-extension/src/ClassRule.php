@@ -29,7 +29,7 @@ final class ClassRule implements Rule
 
 		foreach ($node->get(ClassCollector::class) as $file => $data) {
 			foreach ($data as [$className, $line]) {
-				$errors[] = RuleErrorBuilder::message('This is an error from a rule that uses a collector')
+				$errors[] = RuleErrorBuilder::message(sprintf('This is an error from a rule that uses a collector: %s', $className))
 					->file($file)
 					->line($line)
 					->identifier('class.name')

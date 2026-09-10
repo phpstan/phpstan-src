@@ -38,9 +38,9 @@ final class ThrowPoint
 	/**
 	 * @param Node\Expr|Node\Stmt $node
 	 */
-	public static function createImplicit(Scope $scope, Node $node): self
+	public static function createImplicit(Scope $scope, Node $node, ?Type $type = null): self
 	{
-		return new self($scope, new ObjectType(Throwable::class), $node, explicit: false, canContainAnyThrowable: true);
+		return new self($scope, $type ?? new ObjectType(Throwable::class), $node, explicit: false, canContainAnyThrowable: true);
 	}
 
 	public function getScope(): Scope

@@ -23,6 +23,8 @@ use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\VariableFlow;
+use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\TrinaryLogic;
 use function array_last;
@@ -126,9 +128,12 @@ final class ForHandler implements StmtHandler
 		$hasYield = false;
 		$throwPoints = [];
 		$impurePoints = [];
+		$initFlow = [];
+		$conditionFlow = [];
 		foreach ($stmt->init as $initExpr) {
 			$initResult = $nodeScopeResolver->processExprNode($stmt, $initExpr, $initScope, $storage, $nodeCallback, ExpressionContext::createTopLevel($context->shouldResolveTemplateArguments()));
 			$initScope = $initResult->getScope();
+			$initFlow[] = $initResult->getVariableFlow();
 			$hasYield = $hasYield || $initResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $initResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $initResult->getImpurePoints());
@@ -143,9 +148,10 @@ final class ForHandler implements StmtHandler
 			$storage = $originalStorage->duplicate();
 			$scope->pushExpressionResultStorage($storage);
 			try {
-				foreach ($stmt->cond as $condExpr) {
+				foreach ($stmt->cond as $condIndex => $condExpr) {
 					$condResult = $nodeScopeResolver->processExprNode($stmt, $condExpr, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep(resolveTemplateArguments: false));
 					$initScope = $condResult->getScope();
+					$conditionFlow[$condIndex] = $condResult->getVariableFlow();
 
 					// only the last condition expression is relevant whether the loop continues
 					// see https://www.php.net/manual/en/control-structures.for.php
@@ -222,6 +228,7 @@ final class ForHandler implements StmtHandler
 			// convergence duplicates) that re-priced it on demand
 			$condResult = $nodeScopeResolver->processExprNode($stmt, $lastCondExpr, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
 			$alwaysIterates = $alwaysIterates->and($condResult->getType()->toBoolean()->isTrue());
+			$conditionFlow[count($stmt->cond) - 1] = $condResult->getVariableFlow();
 			$bodyScope = $condResult->getTruthyScope();
 			$bodyScope = $this->inferForLoopExpressions($nodeScopeResolver, $stmt, $lastCondExpr, $bodyScope, $storage);
 		}
@@ -288,6 +295,16 @@ final class ForHandler implements StmtHandler
 			$isAlwaysTerminating = false;
 		}
 
+		$updateFlow = [];
+		foreach ($stmt->loop as $loopExpr) {
+			$updateFlow[] = VariableFlowBuilder::child($loopExpr, $storage);
+		}
+		$condition = VariableFlow::sequence(...$conditionFlow);
+		$update = VariableFlow::sequence(...$updateFlow);
+		$loop = $isIterableAtLeastOnce->no()
+			? VariableFlow::sequence($condition, VariableFlow::dead(VariableFlow::sequence($finalScopeResult->getVariableFlow(), $update)))
+			: VariableFlow::loop($condition, $finalScopeResult->getVariableFlow(), $update, $isIterableAtLeastOnce->yes(), !$alwaysIterates->yes());
+		$variableFlow = VariableFlow::sequence(...[...$initFlow, $loop]);
 		return new InternalStatementResult(
 			$finalScope->addTemplateArgumentConstraints($loopScope->getTemplateArgumentConstraints()),
 			hasYield: $finalScopeResult->hasYield() || $hasYield,
@@ -295,6 +312,7 @@ final class ForHandler implements StmtHandler
 			exitPoints: $finalScopeResult->getExitPointsForOuterLoop(),
 			throwPoints: array_merge($throwPoints, $finalScopeResult->getThrowPoints()),
 			impurePoints: array_merge($impurePoints, $finalScopeResult->getImpurePoints()),
+			variableFlow: $variableFlow,
 		);
 	}
 

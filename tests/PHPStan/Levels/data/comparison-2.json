@@ -1,12 +1,12 @@
 [
     {
         "message": "Comparison operation \"==\" between stdClass and int results in an error.",
-        "line": 27,
+        "line": 28,
         "ignorable": true
     },
     {
         "message": "Comparison operation \"==\" between stdClass and float results in an error.",
-        "line": 28,
+        "line": 29,
         "ignorable": true
     }
 ]

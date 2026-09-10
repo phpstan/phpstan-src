@@ -47,6 +47,8 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VarAnnotationProcessor;
+use PHPStan\Analyser\VariableFlow;
+use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\ExistingArrayDimFetch;
 use PHPStan\Node\Expr\IntertwinedVariableByReferenceWithExpr;
@@ -56,6 +58,7 @@ use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\PropertyAssignNode;
+use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\Node\VariableAssignNode;
 use PHPStan\Node\VirtualNode;
 use PHPStan\Php\PhpVersion;
@@ -254,10 +257,26 @@ final class AssignHandler implements ExprHandler
 			}
 		}
 
+		$redundantType = $expr instanceof Assign && $expr->var instanceof Variable && is_string($expr->var->name)
+			? self::redundant($assignedExprResult, $expr->var->name)
+			: null;
+		$variableFlow = VariableFlow::sequence(
+			VariableFlowBuilder::targetRead($expr->var, $storage, false),
+			$assignedExprResult->getVariableFlow(),
+			VariableFlowBuilder::targetWrite($expr->var, VariableWrite::KIND_ASSIGN, $scope, $storage, $redundantType),
+		);
+		if ($expr instanceof Assign && $expr->expr instanceof Expr\Array_ && self::hasArrayReference($expr->expr)) {
+			$variableFlow = VariableFlow::sequence($variableFlow, VariableFlowBuilder::escapeRoot($expr->var));
+		}
+		if ($expr instanceof AssignRef) {
+			$variableFlow = VariableFlow::sequence($variableFlow, VariableFlowBuilder::escapeRoot($expr->var), VariableFlowBuilder::escapeRoot($expr->expr));
+		}
+
 		return $this->expressionResultFactory->create(
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
+			variableFlow: $variableFlow,
 			hasYield: $result->hasYield(),
 			isAlwaysTerminating: $result->isAlwaysTerminating(),
 			throwPoints: $result->getThrowPoints(),
@@ -1097,7 +1116,6 @@ final class AssignHandler implements ExprHandler
 				$storedAssignedExprResult = $assignedExpr === $target->getAssignedExpr()
 					? $assignedValueResult ?? $storage->findExpressionResult($assignedExpr)
 					: $storage->findExpressionResult($assignedExpr);
-				$assignedValueResult = $storedAssignedExprResult;
 				$type = $this->readAssignedValueType($nodeScopeResolver, $storedAssignedExprResult, $assignedExpr, $scopeBeforeAssignEval);
 
 				$conditionalExpressions = [];
@@ -1145,7 +1163,7 @@ final class AssignHandler implements ExprHandler
 				if ($assignedExpr instanceof Match_) {
 					$conditionalExpressions = $this->mergeConditionalExpressions(
 						$conditionalExpressions,
-						$this->processMatchForConditionalExpressionsAfterAssign($nodeScopeResolver, $scopeBeforeAssignEval, $storage, $var->name, $assignedExpr),
+						$this->processMatchForConditionalExpressionsAfterAssign($scopeBeforeAssignEval, $var->name, $assignedExpr),
 					);
 				}
 
@@ -1219,7 +1237,15 @@ final class AssignHandler implements ExprHandler
 				}
 
 				$nodeScopeResolver->callNodeCallback($nodeCallback, new VariableAssignNode($var, $assignedExpr), $scopeBeforeAssignEval, $storage);
-				$scope = $scope->assignVariable($var->name, $type, $this->readAssignedValueType($nodeScopeResolver, $storedAssignedExprResult, $assignedExpr, $scope->doNotTreatPhpDocTypesAsCertain()), TrinaryLogic::createYes());
+
+				$nativeType = $this->readAssignedValueType($nodeScopeResolver, $storedAssignedExprResult, $assignedExpr, $scope->doNotTreatPhpDocTypesAsCertain());
+				$scope = $scope->assignVariable(
+					$var->name,
+					$type,
+					$nativeType,
+					TrinaryLogic::createYes(),
+					[],
+				);
 				foreach ($conditionalExpressions as $exprString => $holders) {
 					$scope = $scope->addConditionalExpressions((string) $exprString, $holders);
 				}
@@ -1227,16 +1253,24 @@ final class AssignHandler implements ExprHandler
 				if ($assignedExpr instanceof Expr\Array_) {
 					$scope = $this->processArrayByRefItems($nodeScopeResolver, $scope, $storage, $var->name, $assignedExpr, new Variable($var->name));
 				}
-			} elseif ($target->getVariableNameResult() === null) {
-				// a plain assignment does not read the target, so the dynamic name
-				// is walked here; read-modify-write targets walked it in
-				// prepareTarget() and already carry its state
-				$nameExprResult = $nodeScopeResolver->processExprNode($stmt, $var->name, $scope, $storage, $nodeCallback, $context);
-				$hasYield = $hasYield || $nameExprResult->hasYield();
-				$throwPoints = array_merge($throwPoints, $nameExprResult->getThrowPoints());
-				$impurePoints = array_merge($impurePoints, $nameExprResult->getImpurePoints());
-				$isAlwaysTerminating = $isAlwaysTerminating || $nameExprResult->isAlwaysTerminating();
-				$scope = $nameExprResult->getScope();
+			} else {
+				$nameExprResult = $target->getVariableNameResult();
+				if ($nameExprResult === null) {
+					// Read-modify-write targets already evaluated the dynamic name in prepareTarget().
+					$nameExprResult = $nodeScopeResolver->processExprNode($stmt, $var->name, $scope, $storage, $nodeCallback, $context);
+					$hasYield = $hasYield || $nameExprResult->hasYield();
+					$throwPoints = array_merge($throwPoints, $nameExprResult->getThrowPoints());
+					$impurePoints = array_merge($impurePoints, $nameExprResult->getImpurePoints());
+					$isAlwaysTerminating = $isAlwaysTerminating || $nameExprResult->isAlwaysTerminating();
+					$scope = $nameExprResult->getScope();
+				}
+				$storedAssignedExprResult = $assignedValueResult ?? $storage->findExpressionResult($assignedExpr);
+				$scope = $this->assignDynamicVariable(
+					$scope,
+					$nameExprResult,
+					$this->readAssignedValueType($nodeScopeResolver, $storedAssignedExprResult, $assignedExpr, $scopeBeforeAssignEval),
+					$this->readAssignedValueType($nodeScopeResolver, $storedAssignedExprResult, $assignedExpr, $scopeBeforeAssignEval->doNotTreatPhpDocTypesAsCertain()),
+				);
 			}
 		} elseif ($kind === PreparedAssignTarget::KIND_ARRAY_DIM_FETCH) {
 			if (!$var instanceof ArrayDimFetch) {
@@ -1320,7 +1354,13 @@ final class AssignHandler implements ExprHandler
 			if ($varType->isArray()->yes() || !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->yes()) {
 				if ($var instanceof Variable && is_string($var->name)) {
 					$nodeScopeResolver->callNodeCallback($nodeCallback, new VariableAssignNode($var, new TypeExpr($valueToWrite)), $scopeBeforeAssignEval, $storage);
-					$scope = $scope->assignVariable($var->name, $valueToWrite, $nativeValueToWrite, TrinaryLogic::createYes());
+					$scope = $scope->assignVariable(
+						$var->name,
+						$valueToWrite,
+						$nativeValueToWrite,
+						TrinaryLogic::createYes(),
+						[],
+					);
 				} else {
 					if ($var instanceof PropertyFetch || $var instanceof StaticPropertyFetch) {
 						$nodeScopeResolver->callNodeCallback($nodeCallback, new PropertyAssignNode($var, $assignedPropertyExpr, $isAssignOp), $scopeBeforeAssignEval, $storage);
@@ -1784,6 +1824,44 @@ final class AssignHandler implements ExprHandler
 		return [$varResult->getType(), $varResult->getNativeType()];
 	}
 
+	private function assignDynamicVariable(MutatingScope $scope, ExpressionResult $nameResult, Type $valueType, Type $nativeValueType): MutatingScope
+	{
+		$nameType = $nameResult->getType()->toString();
+		$nativeNameType = $nameResult->getNativeType()->toString();
+		$names = [];
+		foreach ($nameType->getConstantStrings() as $name) {
+			$names[$name->getValue()] = $name;
+		}
+		foreach (array_merge($scope->getDefinedVariables(), $scope->getMaybeDefinedVariables()) as $name) {
+			$nameStringType = new ConstantStringType($name);
+			if ($nameType->isSuperTypeOf($nameStringType)->no()) {
+				continue;
+			}
+			$names[$name] = $nameStringType;
+		}
+
+		$beforeScope = $scope;
+		foreach ($names as $nameStringType) {
+			$name = $nameStringType->getValue();
+			if ($name === 'this') {
+				continue;
+			}
+			$certainty = $beforeScope->hasVariableType($name);
+			$type = $valueType;
+			$nativeType = $nativeValueType;
+			if (!$certainty->no()) {
+				if (!$nameType->equals($nameStringType)) {
+					$type = TypeCombinator::union($beforeScope->getVariableType($name), $type);
+				}
+				if (!$nativeNameType->equals($nameStringType)) {
+					$nativeType = TypeCombinator::union($beforeScope->doNotTreatPhpDocTypesAsCertain()->getVariableType($name), $nativeType);
+				}
+			}
+			$scope = $scope->assignVariable($name, $type, $nativeType, $nameType->equals($nameStringType) ? TrinaryLogic::createYes() : $certainty->or(TrinaryLogic::createMaybe()));
+		}
+		return $scope;
+	}
+
 	private function unwrapAssign(Expr $expr): Expr
 	{
 		if ($expr instanceof Assign) {
@@ -1971,9 +2049,7 @@ final class AssignHandler implements ExprHandler
 	 * @return array<string, ConditionalExpressionHolder[]>
 	 */
 	private function processMatchForConditionalExpressionsAfterAssign(
-		NodeScopeResolver $nodeScopeResolver,
 		MutatingScope $scope,
-		ExpressionResultStorage $storage,
 		string $variableName,
 		Match_ $expr,
 	): array
@@ -2149,6 +2225,7 @@ final class AssignHandler implements ExprHandler
 			}
 
 			$refVarName = $arrayItem->value->name;
+			// `$root = [&$ref]` aliases the two slots from now on
 			$dimFetchExpr = new ArrayDimFetch($parentExpr, $dimExpr);
 			// a plain variable read is scope state - no need to price a synthetic
 			// Variable node on demand (mirrors VariableHandler's typeCallback)
@@ -2408,6 +2485,34 @@ final class AssignHandler implements ExprHandler
 		}
 
 		return $originalPropertyType;
+	}
+
+	private static function hasArrayReference(Expr\Array_ $array): bool
+	{
+		foreach ($array->items as $item) {
+			if ($item->byRef || ($item->value instanceof Expr\Array_ && self::hasArrayReference($item->value))) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private static function redundant(ExpressionResult $rhs, string $name): ?Type
+	{
+		$scope = $rhs->getScope();
+		if (!$scope->hasVariableType($name)->yes()) {
+			return null;
+		}
+		$values = $scope->getVariableType($name)->getFiniteTypes();
+		if (count($values) !== 1 || !$values[0]->equals($rhs->getType())) {
+			return null;
+		}
+		$nativeScope = $scope->doNotTreatPhpDocTypesAsCertain();
+		if (!$nativeScope->hasVariableType($name)->yes()) {
+			return null;
+		}
+		$nativeValues = $nativeScope->getVariableType($name)->getFiniteTypes();
+		return count($nativeValues) === 1 && $nativeValues[0]->equals($rhs->getNativeType()) ? $rhs->getType() : null;
 	}
 
 }

@@ -32,14 +32,9 @@ final class ExpressionResult
 	/** @var (callable(Type, TypeSpecifierContext, bool): SpecifiedTypes)|null */
 	private $createTypesCallback;
 
-	/** @var array<int, SpecifiedTypes> */
-	private array $specifiedTypes = [];
-
 	private ?MutatingScope $truthyScope = null;
 
 	private ?MutatingScope $falseyScope = null;
-
-	private ?Type $cachedType = null;
 
 	/**
 	 * Whether every ExpressionTypeResolverExtension declined this expression.
@@ -50,19 +45,6 @@ final class ExpressionResult
 	 */
 	private bool $extensionsDeclined = false;
 
-	private ?Type $cachedNativeType = null;
-
-	private ?Type $resolvedType = null;
-
-	private ?Type $resolvedNativeType = null;
-
-	private ?Type $projectedType = null;
-
-	private ?Type $projectedNativeType = null;
-
-	/** @var list<string>|null */
-	private ?array $readVariableNames = null;
-
 	/**
 	 * @param InternalThrowPoint[] $throwPoints
 	 * @param ImpurePoint[] $impurePoints
@@ -70,6 +52,8 @@ final class ExpressionResult
 	 * @param callable(TypeSpecifierContext, bool): SpecifiedTypes $specifyTypesCallback
 	 * @param (callable(Type, TypeSpecifierContext, bool): SpecifiedTypes)|null $createTypesCallback
 	 * @param ExtensionsCollection<ExpressionTypeResolverExtension> $expressionTypeResolverExtensions
+	 * @param array<int, SpecifiedTypes> $specifiedTypes
+	 * @param list<string>|null $readVariableNames
 	 */
 	public function __construct(
 		#[AutowiredExtensions(of: ExpressionTypeResolverExtension::class)]
@@ -91,16 +75,26 @@ final class ExpressionResult
 		private ?Type $type = null,
 		private ?Type $nativeType = null,
 		private ?ArgsResult $argsResult = null,
+		private ?VariableFlow $variableFlow = null,
+		private array $specifiedTypes = [],
+		private ?Type $cachedType = null,
+		bool $extensionsDeclined = false,
+		private ?Type $cachedNativeType = null,
+		private ?Type $resolvedType = null,
+		private ?Type $resolvedNativeType = null,
+		private ?Type $projectedType = null,
+		private ?Type $projectedNativeType = null,
+		private ?array $readVariableNames = null,
 	)
 	{
 		// A precomputed type and a lazy typeCallback are mutually exclusive, but
-		// exactly one of them must be set - a result with neither cannot answer its
-		// own type. phpdoc and native types are precomputed together or not at all.
+		// one must be set unless both callback results have already been memoized.
+		// PHPDoc and native types are precomputed together or not at all.
 		if ($typeCallback !== null && $type !== null) {
 			throw new ShouldNotHappenException('ExpressionResult cannot have both a typeCallback and a precomputed type.');
 		}
-		if ($typeCallback === null && $type === null) {
-			throw new ShouldNotHappenException('ExpressionResult must have either a precomputed type or a typeCallback.');
+		if ($typeCallback === null && $type === null && ($resolvedType === null || $resolvedNativeType === null)) {
+			throw new ShouldNotHappenException('ExpressionResult must have precomputed types, a typeCallback, or both resolved types.');
 		}
 		if (($type === null) !== ($nativeType === null)) {
 			throw new ShouldNotHappenException('ExpressionResult type and nativeType must both be set or both be null.');
@@ -109,31 +103,48 @@ final class ExpressionResult
 		$this->typeCallback = $typeCallback;
 		$this->specifyTypesCallback = $specifyTypesCallback;
 		$this->createTypesCallback = $createTypesCallback;
+		$this->extensionsDeclined = $extensionsDeclined;
 	}
 
 	/**
-	 * Turns the stored preliminary result (the type/specify callbacks published
-	 * before the call handler's throw-point leg runs) into the final one in
-	 * place: the resolved scope and the effects arrive, every memoized
-	 * own-type/narrowing answer computed through the preliminary is carried
-	 * over, and the truthy/falsey scopes derived from the preliminary scope
-	 * are dropped. Equivalent to overwriting the stored result with a second
-	 * object, minus the allocation and the lost memos.
+	 * Preserve the preliminary result's cached types in a final result carrying
+	 * the resolved scope, effects, and variable flow.
 	 *
 	 * @param InternalThrowPoint[] $throwPoints
 	 * @param ImpurePoint[] $impurePoints
 	 */
-	public function finalize(MutatingScope $scope, bool $hasYield, bool $isAlwaysTerminating, array $throwPoints, array $impurePoints): self
+	public function finalize(MutatingScope $scope, bool $hasYield, bool $isAlwaysTerminating, array $throwPoints, array $impurePoints, ?VariableFlow $variableFlow): self
 	{
-		$this->scope = $scope;
-		$this->hasYield = $hasYield;
-		$this->isAlwaysTerminating = $isAlwaysTerminating;
-		$this->throwPoints = $throwPoints;
-		$this->impurePoints = $impurePoints;
-		$this->truthyScope = null;
-		$this->falseyScope = null;
-
-		return $this;
+		return new self(
+			expressionTypeResolverExtensions: $this->expressionTypeResolverExtensions,
+			scope: $scope,
+			beforeScope: $this->beforeScope,
+			expr: $this->expr,
+			hasYield: $hasYield,
+			isAlwaysTerminating: $isAlwaysTerminating,
+			throwPoints: $throwPoints,
+			impurePoints: $impurePoints,
+			typeCallback: $this->typeCallback,
+			specifyTypesCallback: $this->specifyTypesCallback,
+			containsNullsafe: $this->containsNullsafe,
+			issetabilityDescriptor: $this->issetabilityDescriptor,
+			truthyScopeOverrideResult: $this->truthyScopeOverrideResult,
+			falseyScopeOverrideResult: $this->falseyScopeOverrideResult,
+			createTypesCallback: $this->createTypesCallback,
+			type: $this->type,
+			nativeType: $this->nativeType,
+			argsResult: $this->argsResult,
+			variableFlow: $variableFlow,
+			specifiedTypes: $this->specifiedTypes,
+			cachedType: $this->cachedType,
+			extensionsDeclined: $this->extensionsDeclined,
+			cachedNativeType: $this->cachedNativeType,
+			resolvedType: $this->resolvedType,
+			resolvedNativeType: $this->resolvedNativeType,
+			projectedType: $this->projectedType,
+			projectedNativeType: $this->projectedNativeType,
+			readVariableNames: $this->readVariableNames,
+		);
 	}
 
 	public function getScope(): MutatingScope
@@ -141,16 +152,18 @@ final class ExpressionResult
 		return $this->scope;
 	}
 
+	public function getVariableFlow(): ?VariableFlow
+	{
+		return $this->variableFlow;
+	}
+
 	public function withScope(MutatingScope $scope): self
 	{
 		if ($scope === $this->scope) {
 			return $this;
 		}
-		$result = clone $this;
-		$result->scope = $scope;
-		$result->truthyScope = null;
-		$result->falseyScope = null;
-		return $result;
+
+		return $this->finalize($scope, $this->hasYield, $this->isAlwaysTerminating, $this->throwPoints, $this->impurePoints, $this->variableFlow);
 	}
 
 	public function getBeforeScope(): MutatingScope
@@ -731,30 +744,36 @@ final class ExpressionResult
 	 */
 	public function atAskPosition(MutatingScope $scope): self
 	{
-		$clone = clone $this;
-		$clone->scope = $scope;
-		$clone->beforeScope = $scope;
-		$clone->truthyScope = null;
-		$clone->falseyScope = null;
-		$clone->truthyScopeOverrideResult = null;
-		$clone->falseyScopeOverrideResult = null;
-		$clone->cachedType = null;
-		$clone->cachedNativeType = null;
-		// a scope-authoritative expression's type is pinned eagerly from the ask
-		// position's state - the original callbacks capture the original
-		// position's scopes and would answer stale types (e.g. a variable
-		// receiver consumed on an ensured-non-null scope)
-		if ($this->type === null && $this->isScopeAuthoritative($scope)) {
-			$clone->type = $scope->getStateType($this->expr);
-			$clone->nativeType = $scope->doNotTreatPhpDocTypesAsCertain()->getStateType($this->expr);
-			$clone->typeCallback = null;
-			$clone->resolvedType = null;
-			$clone->resolvedNativeType = null;
-			$clone->projectedType = null;
-			$clone->projectedNativeType = null;
-		}
+		// Scope-authoritative types must come from the asking position: the
+		// original callback captures the original scope.
+		$fromScope = $this->type === null && $this->isScopeAuthoritative($scope);
 
-		return $clone;
+		return new self(
+			expressionTypeResolverExtensions: $this->expressionTypeResolverExtensions,
+			scope: $scope,
+			beforeScope: $scope,
+			expr: $this->expr,
+			hasYield: $this->hasYield,
+			isAlwaysTerminating: $this->isAlwaysTerminating,
+			throwPoints: $this->throwPoints,
+			impurePoints: $this->impurePoints,
+			typeCallback: $fromScope ? null : $this->typeCallback,
+			specifyTypesCallback: $this->specifyTypesCallback,
+			containsNullsafe: $this->containsNullsafe,
+			issetabilityDescriptor: $this->issetabilityDescriptor,
+			createTypesCallback: $this->createTypesCallback,
+			type: $fromScope ? $scope->getStateType($this->expr) : $this->type,
+			nativeType: $fromScope ? $scope->doNotTreatPhpDocTypesAsCertain()->getStateType($this->expr) : $this->nativeType,
+			argsResult: $this->argsResult,
+			variableFlow: $this->variableFlow,
+			specifiedTypes: $this->specifiedTypes,
+			extensionsDeclined: $this->extensionsDeclined,
+			resolvedType: $fromScope ? null : $this->resolvedType,
+			resolvedNativeType: $fromScope ? null : $this->resolvedNativeType,
+			projectedType: $fromScope ? null : $this->projectedType,
+			projectedNativeType: $fromScope ? null : $this->projectedNativeType,
+			readVariableNames: $this->readVariableNames,
+		);
 	}
 
 	/**
@@ -768,15 +787,34 @@ final class ExpressionResult
 	 */
 	public function onNonNullabilityDevicedScopes(MutatingScope $beforeScope, MutatingScope $scope): self
 	{
-		$clone = clone $this;
-		$clone->beforeScope = $beforeScope;
-		$clone->scope = $scope;
-		$clone->cachedType = null;
-		$clone->cachedNativeType = null;
-		$clone->truthyScope = null;
-		$clone->falseyScope = null;
-
-		return $clone;
+		return new self(
+			expressionTypeResolverExtensions: $this->expressionTypeResolverExtensions,
+			scope: $scope,
+			beforeScope: $beforeScope,
+			expr: $this->expr,
+			hasYield: $this->hasYield,
+			isAlwaysTerminating: $this->isAlwaysTerminating,
+			throwPoints: $this->throwPoints,
+			impurePoints: $this->impurePoints,
+			typeCallback: $this->typeCallback,
+			specifyTypesCallback: $this->specifyTypesCallback,
+			containsNullsafe: $this->containsNullsafe,
+			issetabilityDescriptor: $this->issetabilityDescriptor,
+			truthyScopeOverrideResult: $this->truthyScopeOverrideResult,
+			falseyScopeOverrideResult: $this->falseyScopeOverrideResult,
+			createTypesCallback: $this->createTypesCallback,
+			type: $this->type,
+			nativeType: $this->nativeType,
+			argsResult: $this->argsResult,
+			variableFlow: $this->variableFlow,
+			specifiedTypes: $this->specifiedTypes,
+			extensionsDeclined: $this->extensionsDeclined,
+			resolvedType: $this->resolvedType,
+			resolvedNativeType: $this->resolvedNativeType,
+			projectedType: $this->projectedType,
+			projectedNativeType: $this->projectedNativeType,
+			readVariableNames: $this->readVariableNames,
+		);
 	}
 
 	/**

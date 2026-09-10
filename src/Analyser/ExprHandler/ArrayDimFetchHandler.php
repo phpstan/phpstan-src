@@ -23,6 +23,8 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\VariableFlow;
+use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\ParametersAcceptorSelector;
@@ -84,6 +86,7 @@ final class ArrayDimFetchHandler implements ExprHandler
 				$scope,
 				beforeScope: $beforeScope,
 				expr: $expr,
+				variableFlow: $varResult->getVariableFlow(),
 				hasYield: $varResult->hasYield(),
 				isAlwaysTerminating: $varResult->isAlwaysTerminating(),
 				throwPoints: $varResult->getThrowPoints(),
@@ -118,6 +121,7 @@ final class ArrayDimFetchHandler implements ExprHandler
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
+			variableFlow: VariableFlow::sequence($varResult->getVariableFlow(), $dimResult->getVariableFlow(), VariableFlowBuilder::throws($expr, $throwPoints)),
 			hasYield: $dimResult->hasYield() || $varResult->hasYield(),
 			isAlwaysTerminating: $dimResult->isAlwaysTerminating() || $varResult->isAlwaysTerminating(),
 			throwPoints: $throwPoints,

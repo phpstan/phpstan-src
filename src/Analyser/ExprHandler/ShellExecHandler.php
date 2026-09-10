@@ -15,6 +15,7 @@ use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\VariableFlow;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\NullType;
@@ -52,6 +53,7 @@ final class ShellExecHandler implements ExprHandler
 		$beforeScope = $scope;
 		$hasYield = false;
 		$throwPoints = [];
+		$variableFlows = [];
 		$impurePoints = [];
 		$isAlwaysTerminating = false;
 		foreach ($expr->parts as $part) {
@@ -59,6 +61,7 @@ final class ShellExecHandler implements ExprHandler
 				continue;
 			}
 			$partResult = $nodeScopeResolver->processExprNode($stmt, $part, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$variableFlows[] = $partResult->getVariableFlow();
 			$hasYield = $hasYield || $partResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $partResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $partResult->getImpurePoints());
@@ -75,6 +78,7 @@ final class ShellExecHandler implements ExprHandler
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
+			variableFlow: VariableFlow::sequence(...$variableFlows),
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,

@@ -1,42 +1,37 @@
 [
     {
         "message": "Parameter #1 (mixed) of echo cannot be converted to string.",
-        "line": 14,
+        "line": 15,
         "ignorable": true
     },
     {
         "message": "Parameter #1 (mixed) of echo cannot be converted to string.",
-        "line": 18,
+        "line": 19,
         "ignorable": true
     },
     {
         "message": "Parameter #1 (mixed) of echo cannot be converted to string.",
-        "line": 32,
+        "line": 34,
         "ignorable": true
     },
     {
         "message": "Parameter #1 (mixed) of echo cannot be converted to string.",
-        "line": 36,
+        "line": 38,
         "ignorable": true
     },
     {
         "message": "Parameter #1 (mixed) of echo cannot be converted to string.",
-        "line": 95,
+        "line": 101,
         "ignorable": true
     },
     {
         "message": "Parameter #1 (mixed) of echo cannot be converted to string.",
-        "line": 186,
+        "line": 196,
         "ignorable": true
     },
     {
         "message": "Parameter #1 (mixed) of echo cannot be converted to string.",
-        "line": 187,
-        "ignorable": true
-    },
-    {
-        "message": "Parameter #1 (mixed) of echo cannot be converted to string.",
-        "line": 188,
+        "line": 197,
         "ignorable": true
     },
     {
@@ -46,12 +41,17 @@
     },
     {
         "message": "Parameter #1 (mixed) of echo cannot be converted to string.",
-        "line": 199,
+        "line": 208,
         "ignorable": true
     },
     {
         "message": "Parameter #1 (mixed) of echo cannot be converted to string.",
-        "line": 200,
+        "line": 209,
+        "ignorable": true
+    },
+    {
+        "message": "Parameter #1 (mixed) of echo cannot be converted to string.",
+        "line": 210,
         "ignorable": true
     }
 ]

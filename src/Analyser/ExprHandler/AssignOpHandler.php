@@ -20,8 +20,11 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\VariableFlow;
+use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\CoalesceExpressionNode;
+use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -280,10 +283,20 @@ final class AssignOpHandler implements ExprHandler
 			$nodeScopeResolver->callNodeCallbackWithExpression($nodeCallback, new CoalesceExpressionNode($expr, $condResult, 'on left side of ??='), $beforeScope, $storage, $context);
 		}
 
+		$writeFlow = VariableFlow::sequence(
+			$rhsResult->getVariableFlow(),
+			VariableFlowBuilder::targetWrite($expr->var, VariableWrite::KIND_READ_MODIFY_WRITE, $scope, $storage),
+		);
+		$variableFlow = VariableFlow::sequence(
+			VariableFlowBuilder::targetRead($expr->var, $storage, true),
+			$expr instanceof Expr\AssignOp\Coalesce ? VariableFlow::choice($writeFlow, null) : $writeFlow,
+		);
+
 		return $this->expressionResultFactory->create(
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
+			variableFlow: $variableFlow,
 			hasYield: $assignResult->hasYield(),
 			isAlwaysTerminating: $assignResult->isAlwaysTerminating(),
 			throwPoints: $throwPoints,

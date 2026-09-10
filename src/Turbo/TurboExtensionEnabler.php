@@ -23,7 +23,7 @@ final class TurboExtensionEnabler
 	 * version is the short SHA of the last commit touching turbo-ext/src/,
 	 * enforced by the phar.yml turbo-version job.
 	 */
-	public const EXPECTED_EXTENSION_VERSION = 'b48812e';
+	public const EXPECTED_EXTENSION_VERSION = 'b1c223b';
 
 	private static bool $typeCombinatorCacheEnabled = false;
 

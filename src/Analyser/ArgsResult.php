@@ -22,11 +22,13 @@ final class ArgsResult
 
 	/**
 	 * @param array<int, ExpressionResult> $argResults keyed by spl_object_id of each argument's value expression
+	 * @param array<int, true> $byRefArguments
 	 */
 	public function __construct(
 		private ExpressionResult $expressionResult,
 		private ?ParametersAcceptor $resolvedParametersAcceptor,
 		private array $argResults,
+		private array $byRefArguments = [],
 	)
 	{
 	}
@@ -70,6 +72,11 @@ final class ArgsResult
 		}
 
 		return $result;
+	}
+
+	public function isPassedByReference(Expr $arg): bool
+	{
+		return isset($this->byRefArguments[spl_object_id($arg)]);
 	}
 
 	public function getScope(): MutatingScope

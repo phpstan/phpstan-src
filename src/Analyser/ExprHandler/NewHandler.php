@@ -29,6 +29,8 @@ use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\ThrowPoint;
 use PHPStan\Analyser\Traverser\GenericTypeTemplateTraverser;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\VariableFlow;
+use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -208,7 +210,6 @@ final class NewHandler implements ExprHandler
 				$className = $objectClasses[0];
 				$additionalThrowPoints = $objectExprResult->getThrowPoints();
 			} else {
-				$className = null;
 				$additionalThrowPoints = [InternalThrowPoint::createImplicit($scope, $expr)];
 			}
 
@@ -310,7 +311,14 @@ final class NewHandler implements ExprHandler
 			$scope = $scope->invalidateVolatileExpressions();
 		}
 
-		return $preliminaryResult->finalize($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints);
+		$variableFlow = VariableFlow::sequence(
+			$classResult !== null ? $classResult->getVariableFlow() : null,
+			VariableFlowBuilder::arguments($expr, $argsResult, $storage),
+			VariableFlowBuilder::throws($expr, $throwPoints),
+			$isAlwaysTerminating ? VariableFlow::exit(VariableFlow::STOP) : null,
+		);
+
+		return $preliminaryResult->finalize($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints, $variableFlow);
 	}
 
 	/**

@@ -17,6 +17,8 @@ use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\VariableFlow;
+use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
@@ -58,6 +60,8 @@ final class YieldHandler implements ExprHandler
 			),
 		];
 		$isAlwaysTerminating = false;
+		$keyResult = null;
+		$valueResult = null;
 		if ($expr->key !== null) {
 			$keyResult = $nodeScopeResolver->processExprNode($stmt, $expr->key, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$scope = $keyResult->getScope();
@@ -81,6 +85,7 @@ final class YieldHandler implements ExprHandler
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
+			variableFlow: VariableFlow::sequence($keyResult !== null ? $keyResult->getVariableFlow() : null, $valueResult !== null ? $valueResult->getVariableFlow() : null, VariableFlowBuilder::throws($expr, $throwPoints)),
 			hasYield: true,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,

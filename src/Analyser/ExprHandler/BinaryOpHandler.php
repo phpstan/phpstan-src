@@ -27,6 +27,8 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\RicherScopeGetTypeHelper;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\VariableFlow;
+use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Php\PhpVersion;
@@ -288,6 +290,7 @@ final class BinaryOpHandler implements ExprHandler
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
+			variableFlow: VariableFlow::sequence($leftResult->getVariableFlow(), $rightResult->getVariableFlow(), VariableFlowBuilder::throws($expr, $throwPoints)),
 			hasYield: $leftResult->hasYield() || $rightResult->hasYield(),
 			isAlwaysTerminating: $leftResult->isAlwaysTerminating() || $rightResult->isAlwaysTerminating(),
 			throwPoints: $throwPoints,

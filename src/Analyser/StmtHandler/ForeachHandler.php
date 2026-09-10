@@ -35,6 +35,8 @@ use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VarAnnotationProcessor;
+use PHPStan\Analyser\VariableFlow;
+use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
@@ -43,6 +45,7 @@ use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\Expr\OriginalForeachKeyExpr;
 use PHPStan\Node\Expr\OriginalForeachValueExpr;
 use PHPStan\Node\InForeachNode;
+use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\Node\VariableAssignNode;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\BooleanType;
@@ -468,6 +471,14 @@ final class ForeachHandler implements StmtHandler
 			$finalScope = $finalScope->assignExpression(new ForeachValueByRefExpr($stmt->valueVar), new MixedType(), new MixedType());
 		}
 
+		$bindingFlow = VariableFlow::sequence(
+			$stmt->keyVar !== null ? VariableFlowBuilder::targetRead($stmt->keyVar, $storage, false) : null,
+			$stmt->keyVar !== null ? VariableFlowBuilder::targetWrite($stmt->keyVar, VariableWrite::KIND_FOREACH_KEY, $finalScope, $storage) : null,
+			VariableFlowBuilder::targetRead($stmt->valueVar, $storage, false),
+			VariableFlowBuilder::targetWrite($stmt->valueVar, VariableWrite::KIND_FOREACH_VALUE, $finalScope, $storage),
+			$stmt->byRef && $stmt->valueVar instanceof Variable && is_string($stmt->valueVar->name) ? VariableFlow::escape($stmt->valueVar->name) : null,
+		);
+		$loopFlow = VariableFlow::loop($traversableThrowPoint !== null ? VariableFlow::throwing($traversableThrowPoint->getType(), true) : null, VariableFlow::sequence($bindingFlow, $finalScopeResult->getVariableFlow()), null, $isIterableAtLeastOnce->yes() && $nodeScopeResolver->shouldPolluteScopeWithAlwaysIterableForeach(), true);
 		return new InternalStatementResult(
 			$finalScope->addTemplateArgumentConstraints($finalScopeResult->getScope()->getTemplateArgumentConstraints()),
 			hasYield: $finalScopeResult->hasYield() || $condResult->hasYield(),
@@ -475,6 +486,7 @@ final class ForeachHandler implements StmtHandler
 			exitPoints: $finalScopeResult->getExitPointsForOuterLoop(),
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
+			variableFlow: VariableFlow::sequence($condResult->getVariableFlow(), $isIterableAtLeastOnce->no() ? VariableFlow::dead($loopFlow) : $loopFlow),
 		);
 	}
 
@@ -516,6 +528,7 @@ final class ForeachHandler implements StmtHandler
 					$originalScope->getIterableValueType($nativeIterateeType),
 				),
 				$nodeCallback,
+				null,
 			)->getScope();
 			$vars = $nodeScopeResolver->getAssignedVariables($stmt->valueVar);
 			if (
@@ -534,13 +547,13 @@ final class ForeachHandler implements StmtHandler
 						$originalScope->getIterableKeyType($nativeIterateeType),
 					),
 					$nodeCallback,
+					null,
 				)->getScope();
 				$vars = array_merge($vars, $nodeScopeResolver->getAssignedVariables($stmt->keyVar));
 			}
 
 			if ($stmt->valueVar instanceof List_) {
 				$scope = $this->addDestructureTaggedUnionConditionalHolders(
-					$nodeScopeResolver,
 					$scope,
 					$originalScope->getIterableValueType($iterateeType),
 					$stmt->valueVar,
@@ -694,6 +707,7 @@ final class ForeachHandler implements StmtHandler
 					$valueType,
 					$nativeValueType,
 					TrinaryLogic::createYes(),
+					[],
 				);
 				$iterScope = $iterScope->assignExpression(
 					new OriginalForeachValueExpr($valueVarName),
@@ -706,6 +720,7 @@ final class ForeachHandler implements StmtHandler
 						$keyType,
 						$nativeKeyType,
 						TrinaryLogic::createYes(),
+						[],
 					);
 					$iterScope = $iterScope->assignExpression(
 						new OriginalForeachKeyExpr($keyVarName),
@@ -863,7 +878,6 @@ final class ForeachHandler implements StmtHandler
 	 * the regular per-variable type tracking.
 	 */
 	private function addDestructureTaggedUnionConditionalHolders(
-		NodeScopeResolver $nodeScopeResolver,
 		MutatingScope $scope,
 		Type $iterableValueType,
 		List_ $list,

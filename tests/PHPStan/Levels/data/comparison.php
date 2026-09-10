@@ -24,13 +24,15 @@ class Foo
 		$intOrObject
 	)
 	{
-		$result = $object == $int;
-		$result = $object == $float;
-		$result = $object == $string;
-		$result = $object == $intOrString;
-		$result = $object == $intOrObject;
+		$results = [];
+		$results[] = $object == $int;
+		$results[] = $object == $float;
+		$results[] = $object == $string;
+		$results[] = $object == $intOrString;
+		$results[] = $object == $intOrObject;
 
-		$result = self::FOO_CONST === 'bar';
+		$results[] = self::FOO_CONST === 'bar';
+		var_dump($results);
 	}
 
 	public function doBar(\ffmpeg_movie $movie): void

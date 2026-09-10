@@ -63,6 +63,7 @@ final class FunctionCallableNodeHandler implements ExprHandler
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
+			variableFlow: $nameResult !== null ? $nameResult->getVariableFlow() : null,
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,

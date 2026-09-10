@@ -122,7 +122,7 @@ final class IdenticalNarrowingHelper
 				return $types;
 			}
 
-			return $this->specifyGeneral($nodeScopeResolver, $left, $right, $leftResult, $rightResult, $context, $evaluationScope, $leftArgResult, $rightArgResult, $identicalTypeCallback);
+			return $this->specifyGeneral($left, $right, $leftResult, $rightResult, $context, $evaluationScope, $leftArgResult, $rightArgResult, $identicalTypeCallback);
 		}
 
 		if ($constantName === 'null') {
@@ -367,7 +367,6 @@ final class IdenticalNarrowingHelper
 	 * @param callable(): Type $identicalTypeCallback
 	 */
 	private function specifyGeneral(
-		NodeScopeResolver $nodeScopeResolver,
 		Expr $left,
 		Expr $right,
 		ExpressionResult $leftResult,

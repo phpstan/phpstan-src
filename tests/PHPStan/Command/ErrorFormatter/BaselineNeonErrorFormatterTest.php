@@ -378,7 +378,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 					],
 				],
 			], Neon::BLOCK)),
-			$f = trim($this->getOutputContent()),
+			trim($this->getOutputContent()),
 		);
 	}
 

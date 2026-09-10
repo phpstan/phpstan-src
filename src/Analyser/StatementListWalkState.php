@@ -10,6 +10,9 @@ namespace PHPStan\Analyser;
 final class StatementListWalkState
 {
 
+	/** @var array<int, VariableFlow|null> */
+	public array $variableFlows = [];
+
 	public bool $alreadyTerminated = false;
 
 	public bool $hasYield = false;
@@ -36,6 +39,7 @@ final class StatementListWalkState
 			$this->exitPoints,
 			$this->throwPoints,
 			$this->impurePoints,
+			variableFlow: VariableFlow::sequence(...$this->variableFlows),
 		);
 	}
 

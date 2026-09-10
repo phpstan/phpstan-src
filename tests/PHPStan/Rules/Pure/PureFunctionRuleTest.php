@@ -296,6 +296,21 @@ class PureFunctionRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testPureUnlessCallableIsImpureFirstClassCallable(): void
+	{
+		$this->analyse([__DIR__ . '/data/pure-unless-callable-is-impure-first-class-callable.php'], [
+			[
+				'Impure call to function array_map() in pure function PureUnlessCallableIsImpureFirstClassCallable\pureCallingFirstClassCallableWithImpureCallback().',
+				27,
+			],
+			[
+				'Possibly impure call to function array_map() in pure function PureUnlessCallableIsImpureFirstClassCallable\pureCallingFirstClassCallableWithOpaqueCallback().',
+				45,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.0.0')]
 	public function testPureUnlessCallableIsImpureNamedArgs(): void
 	{
@@ -423,40 +438,36 @@ class PureFunctionRuleTest extends RuleTestCase
 				318,
 			],
 			[
-				'Possibly impure call to function PureUnlessParameterPassedFunction\myReplace() in pure function PureUnlessParameterPassedFunction\pureCallingFirstClassCallableOmittingCount().',
-				331,
-			],
-			[
-				'Possibly impure call to function PureUnlessParameterPassedFunction\myReplace() in pure function PureUnlessParameterPassedFunction\pureCallingFirstClassCallablePassingCount().',
-				343,
+				'Impure call to function PureUnlessParameterPassedFunction\myReplace() in pure function PureUnlessParameterPassedFunction\pureCallingFirstClassCallablePassingCount().',
+				341,
 			],
 			[
 				'Function PureUnlessParameterPassedFunction\nonOptionalUnlessParameterPassed() is marked @pure-unless-parameter-passed for parameter $count, but $count is not optional, so function PureUnlessParameterPassedFunction\nonOptionalUnlessParameterPassed() is never pure.',
-				350,
+				348,
 			],
 			[
 				'Impure call to function PureUnlessParameterPassedFunction\myReplaceVariadic() in pure function PureUnlessParameterPassedFunction\pureVariadicPassingCount().',
-				387,
+				385,
 			],
 			[
 				'Impure call to function PureUnlessParameterPassedFunction\myReplaceVariadic() in pure function PureUnlessParameterPassedFunction\pureVariadicPassingCountWithExtra().',
-				398,
+				396,
 			],
 			[
 				'Impure call to function PureUnlessParameterPassedFunction\myVariadicOut() in pure function PureUnlessParameterPassedFunction\pureVariadicOutPositional().',
-				430,
+				428,
 			],
 			[
 				'Impure call to function PureUnlessParameterPassedFunction\myVariadicOut() in pure function PureUnlessParameterPassedFunction\pureVariadicOutNamed().',
-				441,
+				439,
 			],
 			[
 				'Function PureUnlessParameterPassedFunction\byValueUnlessParameterPassed() is marked @pure-unless-parameter-passed for parameter $flag, but $flag is not passed by reference.',
-				457,
+				455,
 			],
 			[
 				'Impure echo in pure function PureUnlessParameterPassedFunction\sideEffectUnlessParameterPassed().',
-				472,
+				470,
 			],
 		]);
 	}

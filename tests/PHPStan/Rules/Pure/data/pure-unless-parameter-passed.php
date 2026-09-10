@@ -324,10 +324,8 @@ function pureCallingRenamedInheritedMethodPassingByRef(InheritedReplacerRenamedC
 function pureCallingFirstClassCallableOmittingCount(string $s): string
 {
 	$f = myReplace(...);
-	// A first-class callable's purity is evaluated from its ParametersAcceptor
-	// alone, without scope/args, so @pure-unless-parameter-passed cannot gate on
-	// whether $count is actually passed at this call site; it stays possibly
-	// impure even though $count is omitted here.
+	// The flag travels with the callable's parameters, so omitting $count keeps
+	// the indirect call as pure as the direct one.
 	return $f($s);
 }
 
@@ -338,8 +336,8 @@ function pureCallingFirstClassCallablePassingCount(string $s): string
 {
 	$count = 0;
 	$f = myReplace(...);
-	// The first-class callable is called with the flagged $count passed, so this
-	// stays possibly impure.
+	// The first-class callable is called with the flagged $count passed, so the
+	// call is impure (the flag is certain), same as calling myReplace() directly.
 	return $f($s, $count);
 }
 

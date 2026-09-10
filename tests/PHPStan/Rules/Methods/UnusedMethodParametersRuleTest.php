@@ -44,4 +44,14 @@ class UnusedMethodParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/unused-method-parameters-overriding-throws.php'], []);
 	}
 
+	public function testParameterCapturedByReference(): void
+	{
+		$this->analyse([__DIR__ . '/data/unused-method-parameters-by-ref-use.php'], [
+			[
+				'Method UnusedMethodParametersByRefUse\Foo::capturedByReferenceAfterOverwrite() has an unused parameter $expectedCalls.',
+				23,
+			],
+		]);
+	}
+
 }

@@ -147,7 +147,9 @@ final class VariableLivenessResolver
 			return $next;
 		}
 		if ($flow instanceof VariableAccessFlow) {
-			if ($flow->kind === VariableFlow::READ) {
+			if (in_array($flow->kind, [VariableFlow::READ, VariableFlow::ESCAPE], true)) {
+				// a by-reference capture aliases the variable - the value it
+				// holds at that point is observable through the alias
 				$next[$flow->name] = true;
 			} elseif ($flow->write !== null) {
 				if (isset($next[$flow->name])) {

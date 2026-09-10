@@ -19,6 +19,8 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\VariableFlow;
+use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Rules\Properties\FoundPropertyReflection;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
@@ -108,6 +110,7 @@ final class StaticPropertyFetchHandler implements ExprHandler
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
+			variableFlow: VariableFlow::sequence($classResult !== null ? $classResult->getVariableFlow() : null, $nameResult !== null ? $nameResult->getVariableFlow() : null, VariableFlowBuilder::throws($expr, $throwPoints)),
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,

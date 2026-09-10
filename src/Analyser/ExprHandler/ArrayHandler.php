@@ -16,6 +16,8 @@ use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\SpecifiedTypes;
+use PHPStan\Analyser\VariableFlow;
+use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\LiteralArrayItem;
 use PHPStan\Node\LiteralArrayNode;
@@ -53,6 +55,7 @@ final class ArrayHandler implements ExprHandler
 		$beforeScope = $scope;
 		$itemNodes = [];
 		$itemResults = [];
+		$variableFlows = [];
 		$hasYield = false;
 		$throwPoints = [];
 		$impurePoints = [];
@@ -63,6 +66,7 @@ final class ArrayHandler implements ExprHandler
 			if ($arrayItem->key !== null) {
 				$keyResult = $nodeScopeResolver->processExprNode($stmt, $arrayItem->key, $scope, $storage, $nodeCallback, $context->enterDeep());
 				$itemResults[spl_object_id($arrayItem->key)] = $keyResult;
+				$variableFlows[] = $keyResult->getVariableFlow();
 				$hasYield = $hasYield || $keyResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $keyResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $keyResult->getImpurePoints());
@@ -72,6 +76,10 @@ final class ArrayHandler implements ExprHandler
 
 			$valueResult = $nodeScopeResolver->processExprNode($stmt, $arrayItem->value, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$itemResults[spl_object_id($arrayItem->value)] = $valueResult;
+			$variableFlows[] = $valueResult->getVariableFlow();
+			if ($arrayItem->byRef) {
+				$variableFlows[] = VariableFlowBuilder::escapeRoot($arrayItem->value);
+			}
 			$hasYield = $hasYield || $valueResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $valueResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $valueResult->getImpurePoints());
@@ -88,6 +96,7 @@ final class ArrayHandler implements ExprHandler
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
+			variableFlow: VariableFlow::sequence(...$variableFlows),
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,

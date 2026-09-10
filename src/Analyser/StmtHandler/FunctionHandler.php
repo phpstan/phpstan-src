@@ -17,6 +17,7 @@ use PHPStan\Analyser\PhpDocsResolver;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
+use PHPStan\Analyser\VariableLivenessResolver;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\FunctionReturnStatementsNode;
@@ -142,7 +143,8 @@ final class FunctionHandler implements StmtHandler
 				$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
 			});
 			try {
-				$statementResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $functionScope, $bodyStorage, $nodeCallback, StatementContext::createTopLevel($context->shouldResolveTemplateArguments()))->toPublic();
+				$internalStatementResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $functionScope, $bodyStorage, $nodeCallback, StatementContext::createTopLevel($context->shouldResolveTemplateArguments()));
+				$statementResult = $internalStatementResult->toPublic();
 			} finally {
 				$nodeScopeResolver->popNodeGatherer();
 			}
@@ -157,6 +159,7 @@ final class FunctionHandler implements StmtHandler
 				array_merge($statementResult->getImpurePoints(), $functionImpurePoints),
 				$functionReflection,
 			), $functionScope, $bodyStorage);
+			$nodeScopeResolver->callNodeCallback($nodeCallback, VariableLivenessResolver::resolve($stmt, $internalStatementResult->getVariableFlow()), $functionScope, $bodyStorage);
 		} finally {
 			$scope->popExpressionResultStorage();
 		}

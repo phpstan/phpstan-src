@@ -59,6 +59,8 @@ parameters:
 		checkImportedClassNameCase: false
 		sortWithoutEffect: false
 		unresolvedTemplateArguments: false
+		unusedVariable: false
+		unusedParameters: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false

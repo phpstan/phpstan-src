@@ -16,6 +16,7 @@ use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\VariableFlow;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
@@ -46,15 +47,19 @@ final class IncludeHandler implements ExprHandler
 		$beforeScope = $scope;
 		$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
 		$identifier = in_array($expr->type, [Include_::TYPE_INCLUDE, Include_::TYPE_INCLUDE_ONCE], true) ? 'include' : 'require';
+		// the included file may read any variable
 		$scope = $exprResult->getScope()->afterExtractCall()->invalidateVolatileExpressions();
+
+		$throwPoint = InternalThrowPoint::createImplicit($scope, $expr);
 
 		return $this->expressionResultFactory->create(
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
+			variableFlow: VariableFlow::sequence($exprResult->getVariableFlow(), VariableFlow::all(VariableFlow::READ_ALL), VariableFlow::throwing($throwPoint->getType(), true)),
 			hasYield: $exprResult->hasYield(),
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
-			throwPoints: array_merge($exprResult->getThrowPoints(), [InternalThrowPoint::createImplicit($scope, $expr)]),
+			throwPoints: array_merge($exprResult->getThrowPoints(), [$throwPoint]),
 			impurePoints: array_merge($exprResult->getImpurePoints(), [new ImpurePoint($scope, $expr, $identifier, $identifier, true)]),
 			typeCallback: static fn (bool $nativeTypesPromoted): Type => new MixedType(),
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),

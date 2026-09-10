@@ -16,6 +16,7 @@ use PHPStan\Analyser\RecordingNodeCallback;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\VariableFlow;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\BreaklessWhileLoopNode;
 use function array_merge;
@@ -64,6 +65,7 @@ final class WhileHandler implements StmtHandler
 					exitPoints: [],
 					throwPoints: $condResult->getThrowPoints(),
 					impurePoints: $condResult->getImpurePoints(),
+					variableFlow: $condResult->getVariableFlow(),
 				);
 			}
 			$bodyScope = $condResult->getTruthyScope();
@@ -214,6 +216,9 @@ final class WhileHandler implements StmtHandler
 			exitPoints: $finalScopeResult->getExitPointsForOuterLoop(),
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
+			variableFlow: $neverIterates
+				? VariableFlow::sequence($condResult->getVariableFlow(), VariableFlow::dead($finalScopeResult->getVariableFlow()))
+				: VariableFlow::loop($bodyCondResult->getVariableFlow(), $finalScopeResult->getVariableFlow(), null, $isIterableAtLeastOnce, !$alwaysIterates),
 		);
 	}
 

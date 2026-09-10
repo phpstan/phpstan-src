@@ -15,6 +15,7 @@ use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\VariableFlow;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\NonAcceptingNeverType;
 use PHPStan\Type\Type;
@@ -50,8 +51,10 @@ final class ExitHandler implements ExprHandler
 
 		$hasYield = false;
 		$throwPoints = [];
+		$variableFlow = null;
 		if ($expr->expr !== null) {
 			$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$variableFlow = $exprResult->getVariableFlow();
 			$hasYield = $exprResult->hasYield();
 			$throwPoints = $exprResult->getThrowPoints();
 			$impurePoints = array_merge($impurePoints, $exprResult->getImpurePoints());
@@ -62,6 +65,7 @@ final class ExitHandler implements ExprHandler
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
+			variableFlow: VariableFlow::sequence($variableFlow, VariableFlow::exit(VariableFlow::STOP)),
 			hasYield: $hasYield,
 			isAlwaysTerminating: true,
 			throwPoints: $throwPoints,

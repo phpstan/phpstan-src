@@ -21,6 +21,7 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\VariableFlow;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\ShouldNotHappenException;
@@ -28,6 +29,7 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function array_map;
 use function count;
 use function in_array;
 use function is_string;
@@ -146,11 +148,15 @@ final class VariableHandler implements ExprHandler
 		$throwPoints = [];
 		$impurePoints = [];
 		$isAlwaysTerminating = false;
+		$variableFlow = null;
 		if (is_string($expr->name)) {
+			$variableFlow = VariableFlow::read($expr->name);
 			if (in_array($expr->name, Scope::SUPERGLOBAL_VARIABLES, true)) {
 				$impurePoints[] = new ImpurePoint($scope, $expr, 'superglobal', 'access to superglobal variable', true);
 			}
 		} elseif ($nameResult !== null) {
+			$names = $nameResult->getType()->getConstantStrings();
+			$variableFlow = VariableFlow::sequence($nameResult->getVariableFlow(), $names === [] ? VariableFlow::all(VariableFlow::READ_ALL) : VariableFlow::sequence(...array_map(static fn ($name) => VariableFlow::read($name->getValue()), $names)));
 			$hasYield = $nameResult->hasYield();
 			$throwPoints = $nameResult->getThrowPoints();
 			$impurePoints = $nameResult->getImpurePoints();
@@ -162,6 +168,7 @@ final class VariableHandler implements ExprHandler
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
+			variableFlow: $variableFlow,
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,

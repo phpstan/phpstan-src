@@ -15,6 +15,7 @@ use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\Analyser\RecordingNodeCallback;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
+use PHPStan\Analyser\VariableFlow;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\DoWhileLoopConditionNode;
 use function array_merge;
@@ -175,6 +176,7 @@ final class DoWhileHandler implements StmtHandler
 			exitPoints: $bodyScopeResult->getExitPointsForOuterLoop(),
 			throwPoints: array_merge($throwPoints, $bodyScopeResult->getThrowPoints()),
 			impurePoints: array_merge($impurePoints, $bodyScopeResult->getImpurePoints()),
+			variableFlow: VariableFlow::loop(null, $bodyScopeResult->getVariableFlow(), $condResult->getVariableFlow(), true, !$alwaysIterates, !$condResult->getType()->toBoolean()->isFalse()->yes()),
 		);
 	}
 

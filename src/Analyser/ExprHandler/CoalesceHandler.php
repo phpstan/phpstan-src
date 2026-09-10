@@ -17,6 +17,7 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\VariableFlow;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\CoalesceExpressionNode;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -85,6 +86,7 @@ final class CoalesceHandler implements ExprHandler
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
+			variableFlow: VariableFlow::sequence($condResult->getVariableFlow(), VariableFlow::choice($rightResult->getVariableFlow(), null)),
 			hasYield: $condResult->hasYield() || $rightResult->hasYield(),
 			isAlwaysTerminating: $condResult->isAlwaysTerminating(),
 			throwPoints: array_merge($condResult->getThrowPoints(), $rightResult->getThrowPoints()),

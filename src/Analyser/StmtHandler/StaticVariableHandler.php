@@ -13,6 +13,7 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
 use PHPStan\Analyser\VarAnnotationProcessor;
+use PHPStan\Analyser\VariableFlow;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
@@ -58,6 +59,7 @@ final class StaticVariableHandler implements StmtHandler
 		];
 
 		$vars = [];
+		$variableFlows = [];
 		foreach ($stmt->vars as $var) {
 			if (!is_string($var->var->name)) {
 				throw new ShouldNotHappenException();
@@ -65,10 +67,12 @@ final class StaticVariableHandler implements StmtHandler
 
 			if ($var->default !== null) {
 				$defaultExprResult = $nodeScopeResolver->processExprNode($stmt, $var->default, $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
+				$variableFlows[] = $defaultExprResult->getVariableFlow();
 				$impurePoints = array_merge($impurePoints, $defaultExprResult->getImpurePoints());
 			}
 
 			$scope = $scope->enterExpressionAssign($var->var);
+			$variableFlows[] = VariableFlow::escape($var->var->name);
 			$varResult = $nodeScopeResolver->processExprNode($stmt, $var->var, $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
 			$impurePoints = array_merge($impurePoints, $varResult->getImpurePoints());
 			$scope = $scope->exitExpressionAssign($var->var);
@@ -79,7 +83,7 @@ final class StaticVariableHandler implements StmtHandler
 
 		$scope = $this->varAnnotationProcessor->processVarAnnotation($scope, $vars, $stmt);
 
-		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: $impurePoints);
+		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: $impurePoints, variableFlow: VariableFlow::sequence(...$variableFlows));
 	}
 
 }

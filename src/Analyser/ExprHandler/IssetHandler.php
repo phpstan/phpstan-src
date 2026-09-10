@@ -23,6 +23,7 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\VariableFlow;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\IssetExpressionNode;
@@ -30,6 +31,7 @@ use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
+use function array_map;
 use function array_merge;
 use function array_reverse;
 use function count;
@@ -126,6 +128,7 @@ final class IssetHandler implements ExprHandler
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
+			variableFlow: VariableFlow::sequence(...array_map(static fn (ExpressionResult $result) => $result->getVariableFlow(), $varResults)),
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,

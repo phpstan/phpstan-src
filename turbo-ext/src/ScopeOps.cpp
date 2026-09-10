@@ -748,6 +748,9 @@ public:
 			if (UNEXPECTED(!pt_check_holder(mergedHolder.raw()))) {
 				return zv::Val();
 			}
+			if (instanceof_function(holderExpr(mergedHolder)->ce, virtualNodeCe)) {
+				continue;
+			}
 
 			for (auto guardEntry : zv::TableRef(typeGuards.table())) {
 				zv::Val noHolder = createNoErrorHolder(zv::ObjRef(mergedHolder.asObject()).propAt(PT_ETH_PROP_EXPR).raw());

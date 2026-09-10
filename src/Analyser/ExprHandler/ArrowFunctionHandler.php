@@ -15,6 +15,7 @@ use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\VariableFlow;
 use PHPStan\DependencyInjection\AutowiredService;
 
 /**
@@ -77,6 +78,7 @@ final class ArrowFunctionHandler implements ExprHandler
 			$result->getScope(),
 			beforeScope: $scope,
 			expr: $expr,
+			variableFlow: $result->getVariableFlow(),
 			hasYield: $result->hasYield(),
 			isAlwaysTerminating: false,
 			throwPoints: [],
@@ -86,6 +88,11 @@ final class ArrowFunctionHandler implements ExprHandler
 			nativeType: $nativeType,
 			typeCallback: null,
 		);
+	}
+
+	public static function getVariableFlow(ArrowFunction $expr, ExpressionResult $bodyResult): VariableFlow
+	{
+		return VariableFlow::arrow($expr, $bodyResult->getVariableFlow());
 	}
 
 }

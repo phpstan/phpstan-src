@@ -10,6 +10,8 @@ namespace PHPStan;
  *
  * @throws void
  */
+// the parameters are consumed by the analyser, not by the function body
+// @phpstan-ignore function.unusedParameter, function.unusedParameter
 function dumpType($value, ...$values) // phpcs:ignore Squiz.Functions.GlobalFunction.Found
 {
 	return null;
@@ -23,6 +25,8 @@ function dumpType($value, ...$values) // phpcs:ignore Squiz.Functions.GlobalFunc
  *
  * @throws void
  */
+// the parameters are consumed by the analyser, not by the function body
+// @phpstan-ignore function.unusedParameter, function.unusedParameter
 function dumpNativeType($value, ...$values) // phpcs:ignore Squiz.Functions.GlobalFunction.Found
 {
 	return null;
@@ -36,6 +40,8 @@ function dumpNativeType($value, ...$values) // phpcs:ignore Squiz.Functions.Glob
  *
  * @throws void
  */
+// the parameters are consumed by the analyser, not by the function body
+// @phpstan-ignore function.unusedParameter, function.unusedParameter
 function dumpPhpDocType($value, ...$values) // phpcs:ignore Squiz.Functions.GlobalFunction.Found
 {
 	return null;

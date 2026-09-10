@@ -1,0 +1,17 @@
+[
+    {
+        "message": "Variable $string is assigned value 'foo' but it already has that value.",
+        "line": 12,
+        "ignorable": true
+    },
+    {
+        "message": "Variable $string is assigned value 'foo' but it already has that value.",
+        "line": 15,
+        "ignorable": true
+    },
+    {
+        "message": "Variable $string is assigned value 'foo' but it already has that value.",
+        "line": 18,
+        "ignorable": true
+    }
+]

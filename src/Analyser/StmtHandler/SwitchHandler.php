@@ -17,6 +17,8 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\VariableFlow;
+use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Node\SwitchConditionArm;
@@ -50,6 +52,7 @@ final class SwitchHandler implements StmtHandler
 	): InternalStatementResult
 	{
 		$entryScope = $scope;
+		$caseFlows = [];
 		$condResult = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
 		$scope = $condResult->getScope();
 		$scopeForBranches = $scope;
@@ -111,6 +114,7 @@ final class SwitchHandler implements StmtHandler
 
 			$branchScope = $branchScope->mergeWith($prevScope);
 			$branchScopeResult = $nodeScopeResolver->processStmtNodesInternal($caseNode, $caseNode->stmts, $branchScope, $storage, $nodeCallback, $context);
+			$caseFlows[] = [VariableFlowBuilder::child($caseNode->cond, $storage), $branchScopeResult->getVariableFlow(), $caseNode->cond === null];
 			$branchScope = $branchScopeResult->getScope();
 			$branchFinalScopeResult = $branchScopeResult->filterOutLoopExitPoints();
 			$hasYield = $hasYield || $branchFinalScopeResult->hasYield();
@@ -169,7 +173,7 @@ final class SwitchHandler implements StmtHandler
 			$finalScope = $scopeForBranches->mergeWith($finalScope);
 		}
 
-		return new InternalStatementResult($finalScope, hasYield: $hasYield, isAlwaysTerminating: $alwaysTerminating, exitPoints: $exitPointsForOuterLoop, throwPoints: $throwPoints, impurePoints: $impurePoints);
+		return new InternalStatementResult($finalScope, hasYield: $hasYield, isAlwaysTerminating: $alwaysTerminating, exitPoints: $exitPointsForOuterLoop, throwPoints: $throwPoints, impurePoints: $impurePoints, variableFlow: VariableFlow::switch($condResult->getVariableFlow(), $caseFlows, $hasDefaultCase || $exhaustive));
 	}
 
 }

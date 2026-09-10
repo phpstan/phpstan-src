@@ -29,6 +29,8 @@ use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\VariableFlow;
+use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\PossiblyImpureCallExpr;
@@ -426,7 +428,15 @@ final class StaticCallHandler implements ExprHandler
 		$impurePoints = array_merge($impurePoints, $argsResult->getImpurePoints());
 		$isAlwaysTerminating = $isAlwaysTerminating || $argsResult->isAlwaysTerminating();
 
-		return $preliminaryResult->finalize($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints);
+		$variableFlow = VariableFlow::sequence(
+			$classResult !== null ? $classResult->getVariableFlow() : null,
+			$nameResult !== null ? $nameResult->getVariableFlow() : null,
+			VariableFlowBuilder::arguments($expr, $argsResult, $storage),
+			VariableFlowBuilder::throws($expr, $throwPoints),
+			$isAlwaysTerminating ? VariableFlow::exit(VariableFlow::STOP) : null,
+		);
+
+		return $preliminaryResult->finalize($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints, $variableFlow);
 	}
 
 	/**

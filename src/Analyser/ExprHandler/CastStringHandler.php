@@ -17,6 +17,8 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\VariableFlow;
+use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\ShouldNotHappenException;
@@ -60,6 +62,7 @@ final class CastStringHandler implements ExprHandler
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
+			variableFlow: VariableFlow::sequence($exprResult->getVariableFlow(), VariableFlowBuilder::throws($expr, $throwPoints)),
 			hasYield: $exprResult->hasYield(),
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
 			throwPoints: $throwPoints,

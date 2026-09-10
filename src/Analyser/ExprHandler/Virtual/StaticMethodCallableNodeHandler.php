@@ -13,6 +13,7 @@ use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\VariableFlow;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\StaticMethodCallableNode;
 use PHPStan\Reflection\InitializerExprContext;
@@ -47,6 +48,8 @@ final class StaticMethodCallableNodeHandler implements ExprHandler
 		$impurePoints = [];
 		$hasYield = false;
 		$isAlwaysTerminating = false;
+		$classResult = null;
+		$nameResult = null;
 		if ($expr->getClass() instanceof Expr) {
 			$classResult = $nodeScopeResolver->processExprNode($stmt, $expr->getClass(), $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
 			$scope = $classResult->getScope();
@@ -68,6 +71,7 @@ final class StaticMethodCallableNodeHandler implements ExprHandler
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
+			variableFlow: VariableFlow::sequence($classResult !== null ? $classResult->getVariableFlow() : null, $nameResult !== null ? $nameResult->getVariableFlow() : null),
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,

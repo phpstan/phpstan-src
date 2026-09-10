@@ -13,11 +13,14 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
+use PHPStan\Analyser\VariableFlow;
+use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\CatchWithUnthrownExceptionNode;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\FinallyExitPointsNode;
 use PHPStan\Node\ReturnAfterFinallyNode;
+use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\Node\VariableAssignNode;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\NeverType;
@@ -51,6 +54,8 @@ final class TryCatchHandler implements StmtHandler
 		StatementContext $context,
 	): InternalStatementResult
 	{
+		$catchFlows = [];
+		$finallyFlow = null;
 		$branchScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $scope, $storage, $nodeCallback, $context);
 		$branchScope = $branchScopeResult->getScope();
 		$finalScope = $branchScopeResult->isAlwaysTerminating() ? null : $branchScope;
@@ -214,6 +219,7 @@ final class TryCatchHandler implements StmtHandler
 
 			$catchScopeResult = $nodeScopeResolver->processStmtNodesInternal($catchNode, $catchNode->stmts, $catchScope->enterCatchType($catchType, $variableName), $storage, $nodeCallback, $context);
 			$catchScopeForFinally = $catchScopeResult->getScope();
+			$catchFlows[] = [$catchType, VariableFlow::sequence($catchNode->var !== null ? VariableFlowBuilder::targetWrite($catchNode->var, VariableWrite::KIND_CATCH, $catchScopeForFinally, $storage) : null, $catchScopeResult->getVariableFlow())];
 
 			$finalScope = $catchScopeResult->isAlwaysTerminating() ? $finalScope : $catchScopeResult->getScope()->mergeWith($finalScope);
 			$alwaysTerminating = $alwaysTerminating && $catchScopeResult->isAlwaysTerminating();
@@ -258,6 +264,7 @@ final class TryCatchHandler implements StmtHandler
 		if ($finallyScope !== null) {
 			$originalFinallyScope = $finallyScope;
 			$finallyResult = $nodeScopeResolver->processStmtNodesInternal($stmt->finally, $stmt->finally->stmts, $finallyScope, $storage, $nodeCallback, $context);
+			$finallyFlow = $finallyResult->getVariableFlow();
 			$alwaysTerminating = $alwaysTerminating || $finallyResult->isAlwaysTerminating();
 			$hasYield = $hasYield || $finallyResult->hasYield();
 			$throwPointsForLater = array_merge($throwPointsForLater, $finallyResult->getThrowPoints());
@@ -295,7 +302,7 @@ final class TryCatchHandler implements StmtHandler
 			$exitPoints = array_merge($exitPoints, $finallyResult->getExitPoints());
 		}
 
-		return new InternalStatementResult($finalScope, hasYield: $hasYield, isAlwaysTerminating: $alwaysTerminating, exitPoints: $exitPoints, throwPoints: array_merge($throwPoints, $throwPointsForLater), impurePoints: $impurePoints);
+		return new InternalStatementResult($finalScope, hasYield: $hasYield, isAlwaysTerminating: $alwaysTerminating, exitPoints: $exitPoints, throwPoints: array_merge($throwPoints, $throwPointsForLater), impurePoints: $impurePoints, variableFlow: VariableFlow::tryCatch($branchScopeResult->getVariableFlow(), $catchFlows, $finallyFlow));
 	}
 
 }

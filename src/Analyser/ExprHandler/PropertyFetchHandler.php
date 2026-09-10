@@ -19,6 +19,8 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\PropertyHookThrowPointsResolver;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\VariableFlow;
+use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Properties\FoundPropertyReflection;
@@ -108,6 +110,7 @@ final class PropertyFetchHandler implements ExprHandler
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
+			variableFlow: VariableFlow::sequence($varResult->getVariableFlow(), $nameResult !== null ? $nameResult->getVariableFlow() : null, VariableFlowBuilder::throws($expr, $throwPoints)),
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,

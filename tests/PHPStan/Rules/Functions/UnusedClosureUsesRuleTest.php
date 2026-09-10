@@ -2,9 +2,7 @@
 
 namespace PHPStan\Rules\Functions;
 
-use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\UnusedFunctionParametersCheck;
 use PHPStan\Testing\RuleTestCase;
 
 /**
@@ -15,7 +13,7 @@ class UnusedClosureUsesRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new UnusedClosureUsesRule(new UnusedFunctionParametersCheck(self::createReflectionProvider(), self::getContainer()->getByType(InitializerExprTypeResolver::class), true));
+		return new UnusedClosureUsesRule(true);
 	}
 
 	public function testUnusedClosureUses(): void
@@ -36,6 +34,20 @@ class UnusedClosureUsesRuleTest extends RuleTestCase
 			[
 				'Anonymous function has an unused use $container.',
 				43,
+			],
+		]);
+	}
+
+	public function testResolvedDynamicUsages(): void
+	{
+		$this->analyse([__DIR__ . '/data/unused-closure-uses-resolved-dynamic.php'], [
+			[
+				'Anonymous function has an unused use $other.',
+				6,
+			],
+			[
+				'Anonymous function has an unused use $overwritten.',
+				22,
 			],
 		]);
 	}

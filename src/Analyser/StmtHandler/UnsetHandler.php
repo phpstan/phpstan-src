@@ -19,6 +19,8 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
+use PHPStan\Analyser\VariableFlow;
+use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Node\Expr\ExistingArrayDimFetch;
@@ -27,6 +29,7 @@ use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\Expr\UnsetOffsetExpr;
 use PHPStan\Type\ObjectType;
 use function array_merge;
+use function is_string;
 
 /**
  * @implements StmtHandler<Unset_>
@@ -57,9 +60,14 @@ final class UnsetHandler implements StmtHandler
 		$hasYield = false;
 		$throwPoints = [];
 		$impurePoints = [];
+		$variableFlows = [];
 		foreach ($stmt->vars as $var) {
 			$scope = $nodeScopeResolver->lookForSetAllowedUndefinedExpressions($scope, $var);
 			$exprResult = $nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
+			$variableFlows[] = VariableFlowBuilder::targetRead($var, $storage, true);
+			if ($var instanceof Expr\Variable && is_string($var->name)) {
+				$variableFlows[] = VariableFlow::mention($var->name);
+			}
 			$scope = $exprResult->getScope();
 			$scope = $nodeScopeResolver->lookForUnsetAllowedUndefinedExpressions($scope, $var);
 			$hasYield = $hasYield || $exprResult->hasYield();
@@ -127,7 +135,7 @@ final class UnsetHandler implements StmtHandler
 		// asks about them answer from the storage
 		$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $entryScope, $storage);
 
-		return new InternalStatementResult($scope, hasYield: $hasYield, isAlwaysTerminating: false, exitPoints: [], throwPoints: $throwPoints, impurePoints: $impurePoints);
+		return new InternalStatementResult($scope, hasYield: $hasYield, isAlwaysTerminating: false, exitPoints: [], throwPoints: $throwPoints, impurePoints: $impurePoints, variableFlow: VariableFlow::sequence(...$variableFlows));
 	}
 
 }

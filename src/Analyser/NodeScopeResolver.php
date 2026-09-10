@@ -30,7 +30,9 @@ use PhpParser\Node\Stmt\Return_;
 use PhpParser\Node\Stmt\Static_;
 use PhpParser\Node\Stmt\Switch_;
 use PhpParser\NodeFinder;
+use PHPStan\Analyser\ExprHandler\ArrowFunctionHandler;
 use PHPStan\Analyser\ExprHandler\AssignHandler;
+use PHPStan\Analyser\ExprHandler\ClosureHandler;
 use PHPStan\Analyser\ExprHandler\Helper\ClosureParameterResolver;
 use PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver;
 use PHPStan\Analyser\ExprHandler\Helper\NonNullabilityHelper;
@@ -757,6 +759,7 @@ class NodeScopeResolver
 			$nodeCallback,
 			$context,
 		);
+		$state->variableFlows[$i] = $statementResult->getVariableFlow();
 		$state->scope = $statementResult->getScope();
 		$state->hasYield = $state->hasYield || $statementResult->hasYield();
 
@@ -1025,6 +1028,13 @@ class NodeScopeResolver
 	/** Carries what the recorded walk from $from to $to added onto $state. */
 	private function appendRecordedStatementResults(StatementListWalkState $state, StatementListWalkState $from, StatementListWalkState $to): void
 	{
+		foreach ($to->variableFlows as $index => $flow) {
+			if (array_key_exists($index, $from->variableFlows)) {
+				continue;
+			}
+
+			$state->variableFlows[$index] = $flow;
+		}
 		$state->hasYield = $state->hasYield || ($to->hasYield && !$from->hasYield);
 		$state->alreadyTerminated = $state->alreadyTerminated || ($to->alreadyTerminated && !$from->alreadyTerminated);
 		$state->exitPoints = array_merge($state->exitPoints, array_slice($to->exitPoints, count($from->exitPoints)));
@@ -1197,6 +1207,7 @@ class NodeScopeResolver
 					throwPoints: $overridingThrowPoints,
 					impurePoints: $stmtResult->getImpurePoints(),
 					endStatements: $stmtResult->getEndStatements(),
+					variableFlow: $stmtResult->getVariableFlow(),
 				);
 			}
 
@@ -1647,6 +1658,7 @@ class NodeScopeResolver
 				isAlwaysTerminating: $newExprResult->isAlwaysTerminating(),
 				throwPoints: $newExprResult->getThrowPoints(),
 				impurePoints: $newExprResult->getImpurePoints(),
+				variableFlow: $newExprResult->getVariableFlow(),
 				// the first-class callable closure type lives on the *CallableNode
 				// result; delegate so getType() of the original CallLike answers from it
 				typeCallback: static fn (bool $nativeTypesPromoted): Type => ($nativeTypesPromoted ? $newExprResult->getNativeType() : $newExprResult->getType()),
@@ -1797,15 +1809,6 @@ class NodeScopeResolver
 		return false;
 	}
 
-	/**
-	 * Replays a recorded convergence pass's emissions through the real node
-	 * callback in place of the final loop walk. The pass's storage was merged
-	 * into $storage by the caller; binding it for the whole replay lets the
-	 * recorded scopes answer rule asks from the stored before-scopes, the
-	 * same way the repeated walk's per-emission binding would.
-	 *
-	 * @param callable(Node $node, Scope $scope): void $nodeCallback
-	 */
 	/**
 	 * Opens an engine-feeding gatherer frame for the duration of a body walk.
 	 * The caller closes it in a finally block via popNodeGatherer().
@@ -2078,6 +2081,7 @@ class NodeScopeResolver
 				$executionEnds,
 				array_merge($publicStatementResult->getImpurePoints(), $closureImpurePoints),
 			), $closureReturnStatementsNodeScope, $storage);
+			$this->callNodeCallback($nodeCallback, VariableLivenessResolver::resolve($expr, $statementResult->getVariableFlow()), $closureReturnStatementsNodeScope, $storage);
 
 			return new ProcessClosureResult(
 				$scope->addTemplateArgumentConstraints($statementResult->getScope()->getTemplateArgumentConstraints()),
@@ -2179,6 +2183,7 @@ class NodeScopeResolver
 			$executionEnds,
 			array_merge($publicStatementResult->getImpurePoints(), $closureImpurePoints),
 		), $closureReturnStatementsNodeScope, $storage);
+		$this->callNodeCallback($nodeCallback, VariableLivenessResolver::resolve($expr, $statementResult->getVariableFlow()), $closureReturnStatementsNodeScope, $storage);
 
 		return new ProcessClosureResult(
 			$scope->addTemplateArgumentConstraints($statementResult->getScope()->getTemplateArgumentConstraints()),
@@ -2360,6 +2365,7 @@ class NodeScopeResolver
 				expr: $expr,
 				hasYield: false,
 				isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
+				variableFlow: ArrowFunctionHandler::getVariableFlow($expr, $exprResult),
 				throwPoints: $exprResult->getThrowPoints(),
 				impurePoints: $exprResult->getImpurePoints(),
 				typeCallback: static fn () => new MixedType(),
@@ -2708,6 +2714,7 @@ class NodeScopeResolver
 		});
 
 		$argResults = [];
+		$byRefArguments = [];
 		$countStableMetadataAcceptor = null;
 		foreach ($processingOrder as $i) {
 			$arg = $args[$i];
@@ -2802,6 +2809,9 @@ class NodeScopeResolver
 				}
 			}
 
+			if ($parameter !== null && !$parameter->passedByReference()->no()) {
+				$byRefArguments[spl_object_id($arg->value)] = true;
+			}
 			$lookForUnset = false;
 			if ($assignByReference) {
 				$isBuiltin = false;
@@ -2909,6 +2919,7 @@ class NodeScopeResolver
 						$closureResult->getScope(),
 						$scopeToPass,
 						$arg->value,
+						variableFlow: ClosureHandler::getVariableFlow($arg->value),
 						hasYield: false,
 						isAlwaysTerminating: false,
 						throwPoints: [],
@@ -3069,6 +3080,7 @@ class NodeScopeResolver
 					);
 					$storedArrowResult = $this->expressionResultFactory->create(
 						$arrowFunctionExprResult->getScope(),
+						variableFlow: $arrowFunctionExprResult->getVariableFlow(),
 						beforeScope: $scopeToPass,
 						expr: $arg->value,
 						hasYield: $arrowFunctionExprResult->hasYield(),
@@ -3310,6 +3322,7 @@ class NodeScopeResolver
 			),
 			$resolvedAcceptor,
 			$argResults,
+			$byRefArguments,
 		);
 	}
 

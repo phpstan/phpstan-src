@@ -28,6 +28,8 @@ use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\VariableFlow;
+use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\PossiblyImpureCallExpr;
@@ -353,7 +355,15 @@ final class MethodCallHandler implements ExprHandler
 		$impurePoints = array_merge($impurePoints, $argsResult->getImpurePoints());
 		$isAlwaysTerminating = $isAlwaysTerminating || $argsResult->isAlwaysTerminating();
 
-		$result = $preliminaryResult->finalize($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints);
+		$variableFlow = VariableFlow::sequence(
+			$varResult->getVariableFlow(),
+			$nameResult !== null ? $nameResult->getVariableFlow() : null,
+			VariableFlowBuilder::arguments($expr, $argsResult, $storage),
+			VariableFlowBuilder::throws($expr, $throwPoints),
+			$isAlwaysTerminating ? VariableFlow::exit(VariableFlow::STOP) : null,
+		);
+
+		$result = $preliminaryResult->finalize($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints, $variableFlow);
 
 		// the var was processed above as the receiver; read its already-computed
 		// result on the original scope instead of re-walking via Scope::getType().
@@ -375,20 +385,7 @@ final class MethodCallHandler implements ExprHandler
 			$calledMethodScope = $this->calledMethodProcessor->processCalledMethod($nodeScopeResolver, $methodReflection);
 			if ($calledMethodScope !== null) {
 				$scope = $scope->mergeInitializedProperties($calledMethodScope);
-				return $this->expressionResultFactory->create(
-					$scope,
-					beforeScope: $beforeScope,
-					expr: $expr,
-					hasYield: $result->hasYield(),
-					isAlwaysTerminating: $result->isAlwaysTerminating(),
-					throwPoints: $result->getThrowPoints(),
-					impurePoints: $result->getImpurePoints(),
-					containsNullsafe: $varResult->containsNullsafe(),
-					typeCallback: $typeCallback,
-					specifyTypesCallback: $specifyTypesCallback,
-					createTypesCallback: $createTypesCallback,
-					argsResult: $argsResult,
-				);
+				return $result->withScope($scope);
 			}
 		}
 

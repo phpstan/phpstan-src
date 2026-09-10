@@ -115,6 +115,7 @@ final class NullsafePropertyFetchHandler implements ExprHandler
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
+			variableFlow: $exprResult->getVariableFlow(),
 			hasYield: $exprResult->hasYield(),
 			isAlwaysTerminating: false,
 			throwPoints: $exprResult->getThrowPoints(),

@@ -16,6 +16,8 @@ use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\VariableFlow;
+use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Type;
@@ -58,6 +60,7 @@ final class PrintHandler implements ExprHandler
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
+			variableFlow: VariableFlow::sequence($exprResult->getVariableFlow(), VariableFlowBuilder::throws($expr, $throwPoints)),
 			hasYield: $exprResult->hasYield(),
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
 			throwPoints: $throwPoints,

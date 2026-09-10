@@ -11,6 +11,7 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
+use PHPStan\Analyser\VariableFlow;
 use PHPStan\DependencyInjection\AutowiredService;
 
 /**
@@ -34,9 +35,10 @@ final class GotoHandler implements StmtHandler
 		StatementContext $context,
 	): InternalStatementResult
 	{
+		// a jump defeats reaching-write tracking for the whole body
 		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: true, exitPoints: [
 			new InternalStatementExitPoint($stmt, $scope),
-		], throwPoints: [], impurePoints: []);
+		], throwPoints: [], impurePoints: [], variableFlow: VariableFlow::all(VariableFlow::OPAQUE));
 	}
 
 }

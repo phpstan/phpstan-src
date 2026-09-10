@@ -34,6 +34,8 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\VariableFlow;
+use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -517,7 +519,15 @@ final class FuncCallHandler implements ExprHandler
 
 		$scope = $this->scopeEffectsHelper->applyCallScopeEffects($nodeScopeResolver, $stmt, $normalizedExpr, $functionReflection, $parametersAcceptor, $argsResult, $scope, $scopeBeforeArgs, $storage, $nodeCallback);
 
-		return $preliminaryResult->finalize($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints);
+		$variableFlow = VariableFlow::sequence(
+			$nameResult !== null ? $nameResult->getVariableFlow() : null,
+			VariableFlowBuilder::arguments($expr, $argsResult, $storage),
+			self::getCallVariableFlow($functionReflection !== null ? $functionReflection->getName() : null, $normalizedExpr, $argsResult, $scope),
+			VariableFlowBuilder::throws($expr, $throwPoints),
+			$isAlwaysTerminating ? VariableFlow::exit(VariableFlow::STOP) : null,
+		);
+
+		return $preliminaryResult->finalize($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints, $variableFlow);
 	}
 
 	private function getFunctionThrowPoint(
@@ -939,6 +949,62 @@ final class FuncCallHandler implements ExprHandler
 		}
 
 		return null;
+	}
+
+	private static function getCallVariableFlow(?string $functionName, Expr\FuncCall $call, ArgsResult $args, MutatingScope $scope): ?VariableFlow
+	{
+		if (in_array($functionName, ['get_defined_vars', 'extract'], true)) {
+			return VariableFlow::all(VariableFlow::READ_ALL);
+		}
+		if ($functionName === 'func_get_args') {
+			return VariableFlow::all(VariableFlow::MENTION_ALL);
+		}
+		if ($functionName !== 'compact') {
+			return null;
+		}
+		$reads = [];
+		foreach ($call->getArgs() as $arg) {
+			if ($arg->unpack) {
+				return VariableFlow::all(VariableFlow::READ_ALL);
+			}
+			$names = self::compactNames($args->requireArgResult($arg->value)->getTypeOnScope($scope, false));
+			if ($names === null) {
+				return VariableFlow::all(VariableFlow::READ_ALL);
+			}
+			foreach ($names as $name) {
+				$reads[] = VariableFlow::read($name);
+			}
+		}
+		return VariableFlow::sequence(...$reads);
+	}
+
+	/** @return list<string>|null */
+	private static function compactNames(Type $type): ?array
+	{
+		$strings = $type->getConstantStrings();
+		if ($strings !== []) {
+			return array_map(static fn ($name) => $name->getValue(), $strings);
+		}
+		$arrays = $type->getConstantArrays();
+		if ($arrays === []) {
+			return null;
+		}
+		$names = [];
+		foreach ($arrays as $array) {
+			if ($array->isUnsealed()->yes()) {
+				return null;
+			}
+			foreach ($array->getValueTypes() as $value) {
+				$values = self::compactNames($value);
+				if ($values === null) {
+					return null;
+				}
+				foreach ($values as $name) {
+					$names[] = $name;
+				}
+			}
+		}
+		return $names;
 	}
 
 }

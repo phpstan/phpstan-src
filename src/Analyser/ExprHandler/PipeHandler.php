@@ -19,6 +19,8 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\VariableFlow;
+use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\FunctionCallableNode;
 use PHPStan\Node\MethodCallableNode;
@@ -85,6 +87,7 @@ final class PipeHandler implements ExprHandler
 				$scope,
 				beforeScope: $scope,
 				expr: $expr->right,
+				variableFlow: $callableNodeResult->getVariableFlow(),
 				hasYield: false,
 				isAlwaysTerminating: false,
 				throwPoints: [],
@@ -100,6 +103,7 @@ final class PipeHandler implements ExprHandler
 			$callResult->getScope(),
 			beforeScope: $scope,
 			expr: $expr,
+			variableFlow: VariableFlow::sequence(VariableFlowBuilder::child($expr->left, $storage), VariableFlowBuilder::child($expr->right, $storage), VariableFlowBuilder::throws($expr, $callResult->getThrowPoints())),
 			hasYield: $callResult->hasYield(),
 			isAlwaysTerminating: $callResult->isAlwaysTerminating(),
 			throwPoints: $callResult->getThrowPoints(),

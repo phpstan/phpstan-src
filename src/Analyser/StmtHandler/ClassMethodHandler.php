@@ -19,6 +19,7 @@ use PHPStan\Analyser\PropertyHooksProcessor;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
+use PHPStan\Analyser\VariableLivenessResolver;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Node\ExecutionEndNode;
@@ -223,7 +224,8 @@ final class ClassMethodHandler implements StmtHandler
 					$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
 				});
 				try {
-					$statementResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $methodScope, $bodyStorage, $nodeCallback, StatementContext::createTopLevel($context->shouldResolveTemplateArguments()))->toPublic();
+					$internalStatementResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $methodScope, $bodyStorage, $nodeCallback, StatementContext::createTopLevel($context->shouldResolveTemplateArguments()));
+					$statementResult = $internalStatementResult->toPublic();
 				} finally {
 					$nodeScopeResolver->popNodeGatherer();
 				}
@@ -244,6 +246,7 @@ final class ClassMethodHandler implements StmtHandler
 					$classReflection,
 					$methodReflection,
 				), $methodScope, $bodyStorage);
+				$nodeScopeResolver->callNodeCallback($nodeCallback, VariableLivenessResolver::resolve($stmt, $internalStatementResult->getVariableFlow()), $methodScope, $bodyStorage);
 			} finally {
 				$scope->popExpressionResultStorage();
 			}

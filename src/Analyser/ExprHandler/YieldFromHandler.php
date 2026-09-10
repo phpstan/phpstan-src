@@ -17,6 +17,7 @@ use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\VariableFlow;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
@@ -48,13 +49,16 @@ final class YieldFromHandler implements ExprHandler
 		$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
 		$scope = $exprResult->getScope();
 
+		$throwPoint = InternalThrowPoint::createImplicit($scope, $expr);
+
 		return $this->expressionResultFactory->create(
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
+			variableFlow: VariableFlow::sequence($exprResult->getVariableFlow(), VariableFlow::throwing($throwPoint->getType(), true)),
 			hasYield: true,
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
-			throwPoints: array_merge($exprResult->getThrowPoints(), [InternalThrowPoint::createImplicit($scope, $expr)]),
+			throwPoints: array_merge($exprResult->getThrowPoints(), [$throwPoint]),
 			impurePoints: array_merge($exprResult->getImpurePoints(), [new ImpurePoint($scope, $expr, 'yieldFrom', 'yield from', true)]),
 			typeCallback: static function (bool $nativeTypesPromoted) use ($exprResult): Type {
 				$yieldFromType = ($nativeTypesPromoted ? $exprResult->getNativeType() : $exprResult->getType());

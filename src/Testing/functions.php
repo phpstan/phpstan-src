@@ -13,6 +13,8 @@ use PHPStan\TrinaryLogic;
  *
  * @throws void
  */
+// the parameters are consumed by the analyser, not by the function body
+// @phpstan-ignore function.unusedParameter, function.unusedParameter
 function assertType(string $type, $value) // phpcs:ignore
 {
 	return null;
@@ -30,6 +32,8 @@ function assertType(string $type, $value) // phpcs:ignore
  *
  * @throws void
  */
+// the parameters are consumed by the analyser, not by the function body
+// @phpstan-ignore function.unusedParameter, function.unusedParameter
 function assertNativeType(string $type, $value) // phpcs:ignore
 {
 	return null;
@@ -44,6 +48,8 @@ function assertNativeType(string $type, $value) // phpcs:ignore
  *
  * @throws void
  */
+// the parameters are consumed by the analyser, not by the function body
+// @phpstan-ignore function.unusedParameter, function.unusedParameter
 function assertSuperType(string $superType, $value) // phpcs:ignore
 {
 	return null;
@@ -56,6 +62,8 @@ function assertSuperType(string $superType, $value) // phpcs:ignore
  *
  * @throws void
  */
+// the parameters are consumed by the analyser, not by the function body
+// @phpstan-ignore function.unusedParameter, function.unusedParameter
 function assertVariableCertainty(TrinaryLogic $certainty, $variable) // phpcs:ignore
 {
 	return null;

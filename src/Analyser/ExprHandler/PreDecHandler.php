@@ -16,7 +16,10 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\VariableFlow;
+use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Node\Variable\VariableWrite;
 
 /**
  * @implements ExprHandler<PreDec>
@@ -67,18 +70,21 @@ final class PreDecHandler implements ExprHandler
 		// final result after this handler returns
 		$nodeScopeResolver->storeExpressionResult($storage, $expr, $incDecValueResult);
 
+		$assignedScope = $nodeScopeResolver->processVirtualAssign(
+			$varResult->getScope(),
+			$storage,
+			$stmt,
+			$expr->var,
+			$expr,
+			$nodeCallback,
+			$incDecValueResult,
+		)->getScope();
+
 		return $this->expressionResultFactory->create(
-			$nodeScopeResolver->processVirtualAssign(
-				$varResult->getScope(),
-				$storage,
-				$stmt,
-				$expr->var,
-				$expr,
-				$nodeCallback,
-				$incDecValueResult,
-			)->getScope(),
+			$assignedScope,
 			beforeScope: $scope,
 			expr: $expr,
+			variableFlow: VariableFlow::sequence($varResult->getVariableFlow(), VariableFlowBuilder::targetWrite($expr->var, VariableWrite::KIND_PRE_DEC, $assignedScope, $storage)),
 			hasYield: $varResult->hasYield(),
 			isAlwaysTerminating: $varResult->isAlwaysTerminating(),
 			throwPoints: $varResult->getThrowPoints(),

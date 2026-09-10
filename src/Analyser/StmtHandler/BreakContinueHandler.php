@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser\StmtHandler;
 
+use PhpParser\Node\Scalar\Int_;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Break_;
 use PhpParser\Node\Stmt\Continue_;
@@ -13,6 +14,7 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
+use PHPStan\Analyser\VariableFlow;
 use PHPStan\DependencyInjection\AutowiredService;
 
 /**
@@ -50,7 +52,10 @@ final class BreakContinueHandler implements StmtHandler
 
 		return new InternalStatementResult($scope, hasYield: $hasYield, isAlwaysTerminating: true, exitPoints: [
 			new InternalStatementExitPoint($stmt, $scope),
-		], throwPoints: $throwPoints, impurePoints: $impurePoints);
+		], throwPoints: $throwPoints, impurePoints: $impurePoints, variableFlow: VariableFlow::exit(
+			$stmt instanceof Break_ ? VariableFlow::BREAK : VariableFlow::CONTINUE,
+			$stmt->num instanceof Int_ ? $stmt->num->value : 1,
+		));
 	}
 
 }

@@ -102,9 +102,9 @@ final class ExpressionHandler implements StmtHandler
 		if ($statementType instanceof NeverType && $statementType->isExplicit()) {
 			return new InternalStatementResult($scope, hasYield: $hasYield, isAlwaysTerminating: true, exitPoints: [
 				new InternalStatementExitPoint($stmt, $scope),
-			], throwPoints: $throwPoints, impurePoints: $impurePoints);
+			], throwPoints: $throwPoints, impurePoints: $impurePoints, variableFlow: $result->getVariableFlow());
 		}
-		return new InternalStatementResult($scope, hasYield: $hasYield, isAlwaysTerminating: $isAlwaysTerminating, exitPoints: [], throwPoints: $throwPoints, impurePoints: $impurePoints);
+		return new InternalStatementResult($scope, hasYield: $hasYield, isAlwaysTerminating: $isAlwaysTerminating, exitPoints: [], throwPoints: $throwPoints, impurePoints: $impurePoints, variableFlow: $result->getVariableFlow());
 	}
 
 }

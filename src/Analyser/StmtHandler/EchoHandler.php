@@ -13,6 +13,7 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
+use PHPStan\Analyser\VariableFlow;
 use PHPStan\DependencyInjection\AutowiredService;
 use function array_merge;
 
@@ -46,8 +47,10 @@ final class EchoHandler implements StmtHandler
 		$throwPoints = [];
 		$impurePoints = [];
 		$isAlwaysTerminating = false;
+		$variableFlows = [];
 		foreach ($stmt->exprs as $echoExpr) {
 			$result = $nodeScopeResolver->processExprNode($stmt, $echoExpr, $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
+			$variableFlows[] = $result->getVariableFlow();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
 			$toStringResult = $this->implicitToStringCallHelper->processImplicitToStringCall($echoExpr, $scope, $result);
@@ -61,7 +64,7 @@ final class EchoHandler implements StmtHandler
 		$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $entryScope, $storage);
 
 		$impurePoints[] = new ImpurePoint($scope, $stmt, 'echo', 'echo', true);
-		return new InternalStatementResult($scope, hasYield: $hasYield, isAlwaysTerminating: $isAlwaysTerminating, exitPoints: [], throwPoints: $throwPoints, impurePoints: $impurePoints);
+		return new InternalStatementResult($scope, hasYield: $hasYield, isAlwaysTerminating: $isAlwaysTerminating, exitPoints: [], throwPoints: $throwPoints, impurePoints: $impurePoints, variableFlow: VariableFlow::sequence(...$variableFlows));
 	}
 
 }

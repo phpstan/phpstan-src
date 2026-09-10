@@ -12,8 +12,10 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
+use PHPStan\Analyser\VariableFlow;
 use PHPStan\DependencyInjection\AutowiredService;
 use function array_merge;
+use function array_reverse;
 use function count;
 
 /**
@@ -38,6 +40,8 @@ final class IfHandler implements StmtHandler
 	): InternalStatementResult
 	{
 		$entryScope = $scope;
+		$flowBranches = [];
+		$elseFlow = null;
 		$condResult = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
 		$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $entryScope, $storage);
 		$conditionType = ($nodeScopeResolver->shouldTreatPhpDocTypesAsCertain() ? $condResult->getType() : $condResult->getNativeType())->toBoolean();
@@ -49,9 +53,8 @@ final class IfHandler implements StmtHandler
 		$finalScope = null;
 		$alwaysTerminating = true;
 		$hasYield = $condResult->hasYield();
-
 		$branchScopeStatementResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $condResult->getTruthyScope(), $storage, $nodeCallback, $context);
-
+		$flowBranches[] = [$condResult->getVariableFlow(), $branchScopeStatementResult->getVariableFlow(), $conditionType->isTrue()->yes() ? true : ($conditionType->isFalse()->yes() ? false : null)];
 		if (!$conditionType->isTrue()->no()) {
 			$exitPoints = $branchScopeStatementResult->getExitPoints();
 			$throwPoints = array_merge($throwPoints, $branchScopeStatementResult->getThrowPoints());
@@ -80,7 +83,7 @@ final class IfHandler implements StmtHandler
 			$throwPoints = array_merge($throwPoints, $condResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $condResult->getImpurePoints());
 			$branchScopeStatementResult = $nodeScopeResolver->processStmtNodesInternal($elseif, $elseif->stmts, $condResult->getTruthyScope(), $storage, $nodeCallback, $context);
-
+			$flowBranches[] = [$condResult->getVariableFlow(), $branchScopeStatementResult->getVariableFlow(), $elseIfConditionType->isTrue()->yes() ? true : ($elseIfConditionType->isFalse()->yes() ? false : null)];
 			if (
 				!$ifAlwaysTrue
 				&& !$lastElseIfConditionIsTrue
@@ -120,7 +123,7 @@ final class IfHandler implements StmtHandler
 		} else {
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt->else, $scope, $storage);
 			$branchScopeStatementResult = $nodeScopeResolver->processStmtNodesInternal($stmt->else, $stmt->else->stmts, $scope, $storage, $nodeCallback, $context);
-
+			$elseFlow = $branchScopeStatementResult->getVariableFlow();
 			if (!$ifAlwaysTrue && !$lastElseIfConditionIsTrue) {
 				$exitPoints = array_merge($exitPoints, $branchScopeStatementResult->getExitPoints());
 				$throwPoints = array_merge($throwPoints, $branchScopeStatementResult->getThrowPoints());
@@ -147,7 +150,10 @@ final class IfHandler implements StmtHandler
 			$endStatements[] = new InternalEndStatementResult($stmt, new InternalStatementResult($finalScope, hasYield: $hasYield, isAlwaysTerminating: $alwaysTerminating, exitPoints: $exitPoints, throwPoints: $throwPoints, impurePoints: $impurePoints));
 		}
 
-		return new InternalStatementResult($finalScope, hasYield: $hasYield, isAlwaysTerminating: $alwaysTerminating, exitPoints: $exitPoints, throwPoints: $throwPoints, impurePoints: $impurePoints, endStatements: $endStatements);
+		foreach (array_reverse($flowBranches) as [$conditionFlow, $branchFlow, $truthy]) {
+			$elseFlow = VariableFlow::conditional($conditionFlow, $branchFlow, $elseFlow, $truthy);
+		}
+		return new InternalStatementResult($finalScope, hasYield: $hasYield, isAlwaysTerminating: $alwaysTerminating, exitPoints: $exitPoints, throwPoints: $throwPoints, impurePoints: $impurePoints, endStatements: $endStatements, variableFlow: $elseFlow);
 	}
 
 }

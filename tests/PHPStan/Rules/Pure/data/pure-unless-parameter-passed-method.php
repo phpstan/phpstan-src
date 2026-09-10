@@ -27,4 +27,24 @@ class Replacer
 		return $subject;
 	}
 
+	/**
+	 * @pure-unless-parameter-passed $flag
+	 */
+	public function replaceByValue(string $subject, bool $flag = false): string
+	{
+		return $subject;
+	}
+
+	/**
+	 * @param-out int $count
+	 * @pure-unless-parameter-passed $count
+	 */
+	public function replaceWithSideEffect(string $subject, int &$count = 0): string
+	{
+		echo $subject;
+		$count = 1;
+
+		return $subject;
+	}
+
 }

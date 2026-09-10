@@ -92,21 +92,39 @@ final class FunctionPurityCheck
 		}
 
 		$pureUnlessParameterPassedParameters = $functionReflection->getPureUnlessParameterPassedParameters();
+		$pureUnlessParameterPassedParamNames = [];
 		foreach ($parameters as $parameter) {
 			if (!array_key_exists($parameter->getName(), $pureUnlessParameterPassedParameters)) {
 				continue;
 			}
-			if ($parameter->isOptional()) {
+
+			$pureUnlessParameterPassedParamNames[$parameter->getName()] = true;
+
+			if (!$parameter->isOptional()) {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'%s is marked @pure-unless-parameter-passed for parameter $%s, but $%s is not optional, so %s is never pure.',
+					$functionDescription,
+					$parameter->getName(),
+					$parameter->getName(),
+					lcfirst($functionDescription),
+				))->identifier(sprintf('pure%s.nonOptionalParameterPassed', $identifier))->build();
+			}
+
+			// Passing a by-value parameter cannot introduce a side effect on its own,
+			// so the body would have to be impure for the tag to mean anything - and
+			// that impurity is not conditional on the argument being passed. Only a
+			// by-ref out parameter is written through without producing an impure
+			// point, which is what makes the conditional verdict checkable.
+			if (!$parameter->passedByReference()->no()) {
 				continue;
 			}
 
 			$errors[] = RuleErrorBuilder::message(sprintf(
-				'%s is marked @pure-unless-parameter-passed for parameter $%s, but $%s is not optional, so %s is never pure.',
+				'%s is marked @pure-unless-parameter-passed for parameter $%s, but $%s is not passed by reference.',
 				$functionDescription,
 				$parameter->getName(),
 				$parameter->getName(),
-				lcfirst($functionDescription),
-			))->identifier(sprintf('pure%s.nonOptionalParameterPassed', $identifier))->build();
+			))->identifier(sprintf('pure%s.parameterPassedNotByRef', $identifier))->build();
 		}
 
 		if ($isPure->yes()) {
@@ -136,10 +154,13 @@ final class FunctionPurityCheck
 			}
 
 			$errors = array_merge($errors, $this->reportImpurePoints($impurePoints, $pureUnlessCallableParamNames, $functionDescription));
-		} elseif ($pureUnlessCallableParamNames !== []) {
+		} elseif ($pureUnlessCallableParamNames !== [] || $pureUnlessParameterPassedParamNames !== []) {
 			// A function declared @pure-unless-callable-is-impure is pure except
 			// for the flagged callables, so its body is checked for purity while
-			// the flagged callables' own invocations are exempt.
+			// the flagged callables' own invocations are exempt. The same holds for
+			// @pure-unless-parameter-passed: writing through the flagged by-ref
+			// parameter is not an impure point, so the rest of the body still has
+			// to be pure for the conditional verdict to hold.
 			$errors = array_merge($errors, $this->reportImpurePoints($impurePoints, $pureUnlessCallableParamNames, $functionDescription));
 		} elseif ($isPure->no()) {
 			if (

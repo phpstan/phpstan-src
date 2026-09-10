@@ -126,6 +126,7 @@ final class UnusedVariableRule implements Rule
 
 	/**
 	 * @param VariableWrite::KIND_* $kind
+	 * @return 'variable.unused'|'assign.unused'|'preInc.unused'|'postInc.unused'|'preDec.unused'|'postDec.unused'|'foreach.unusedValue'|'foreach.unusedKey'|'catch.unusedVariable'
 	 */
 	private function getIdentifier(int $kind, bool $unusedVariable): string
 	{

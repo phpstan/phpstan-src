@@ -373,18 +373,14 @@ jobs:
             family: "zts"
             artifact: "phpstan_turbo"
             suffix: "-zts"
-          # The macOS slices are merged into one universal binary (and ad-hoc
-          # signed) by the turbo-macos-universal job below, so their artifacts
-          # carry the turbo-slice prefix that the phpstan_turbo-* download
-          # patterns in the aggregate and commit jobs do not match.
-          - name: "macos-x86_64"
-            runs-on: "macos-15-intel" # the last x86_64 macOS image, available until August 2027
-            family: "macos"
-            artifact: "turbo-slice"
+          # arm64 (Apple Silicon) only: setup-php dropped Intel macOS. An
+          # x86_64 PHP — native Intel, or Rosetta on Apple Silicon, which
+          # reports x86_64 too — finds no binary: TurboExtensionSelector
+          # resolves Darwin to macos-arm64 only when php_uname('m') says arm64.
           - name: "macos-arm64"
             runs-on: "macos-latest"
             family: "macos"
-            artifact: "turbo-slice"
+            artifact: "phpstan_turbo"
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -460,6 +456,19 @@ jobs:
         #   character name (GCC ignores the unknown -Wno- flag)
         run: |
           make WARN_FLAGS="-Wall -Wextra -Werror -Wno-assume -Wno-unused-parameter -Wno-unicode" -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || nproc)"
+
+      # On arm64 AMFI refuses to map unsigned code, so the binary must carry
+      # at least an ad-hoc signature. The linker applies one itself, but
+      # re-sign deliberately instead of relying on that. Quarantine (and thus
+      # Gatekeeper/notarization) only applies to browser downloads —
+      # composer/git/curl installs never see it — so an ad-hoc signature is
+      # enough and needs no secrets.
+      - name: "Ad-hoc sign the extension (macOS)"
+        if: matrix.target.family == 'macos'
+        working-directory: "turbo-ext"
+        run: |
+          codesign --force --sign - phpstan_turbo.so
+          codesign --verify --verbose=2 phpstan_turbo.so
 
       - name: "Verify the built extension reports the expected version"
         run: |
@@ -768,67 +777,6 @@ jobs:
           SCRIPT: ${{ matrix.script }}
         run: docker run --rm --shm-size=1g -v "$PWD:/work" -v "$RUNNER_TEMP/turbo-docker.ini:/usr/local/etc/php/conf.d/zz-turbo.ini" -w /work "$IMAGE" bash -c "$SCRIPT"
 
-  turbo-macos-universal:
-    name: "Turbo macOS Universal Binary"
-    needs: "turbo-compile"
-    runs-on: "macos-latest"
-    timeout-minutes: 30
-
-    strategy:
-      fail-fast: false
-      matrix:
-        php-version: ["8.3", "8.4", "8.5"]
-
-    steps:
-      - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
-        with:
-          egress-policy: audit
-
-      - name: "Download x86_64 slice"
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: "turbo-slice-macos-x86_64-php${{ matrix.php-version }}"
-          path: "slice-x86_64"
-
-      - name: "Download arm64 slice"
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: "turbo-slice-macos-arm64-php${{ matrix.php-version }}"
-          path: "slice-arm64"
-
-      - name: "Merge the slices into a universal binary"
-        run: |
-          lipo -create slice-x86_64/phpstan_turbo.so slice-arm64/phpstan_turbo.so -output phpstan_turbo.so
-          lipo -info phpstan_turbo.so
-
-      # On arm64 AMFI refuses to map unsigned code, so the binary must carry
-      # at least an ad-hoc signature. lipo preserves the linker's per-slice
-      # ad-hoc signatures, but re-sign deliberately instead of relying on
-      # that. Quarantine (and thus Gatekeeper/notarization) only applies to
-      # browser downloads — composer/git/curl installs never see it — so an
-      # ad-hoc signature is enough and needs no secrets.
-      - name: "Ad-hoc sign the universal binary"
-        run: |
-          codesign --force --sign - phpstan_turbo.so
-          codesign --verify --verbose=2 phpstan_turbo.so
-
-      - name: "Install PHP"
-        uses: "shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240" # v2.37.2
-        with:
-          coverage: "none"
-          php-version: "${{ matrix.php-version }}"
-
-      - name: "Verify the universal binary loads"
-        run: php -d extension="$PWD/phpstan_turbo.so" -m | grep phpstan_turbo
-
-      - name: "Upload universal binary artifact"
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: "phpstan_turbo-macos-php${{ matrix.php-version }}"
-          path: "phpstan_turbo.so"
-          if-no-files-found: "error"
-
   turbo-compile-windows:
     name: "Compile Turbo Extension (Windows)"
     # windows-latest and windows-2025 serve the VS2026 image, whose 14.5x
@@ -982,7 +930,6 @@ jobs:
       - turbo-compile
       - turbo-compile-musl-arm64
       - turbo-compile-windows
-      - turbo-macos-universal
     runs-on: "ubuntu-latest"
     timeout-minutes: 5
 
@@ -1027,7 +974,6 @@ jobs:
     needs:
       - turbo-compile
       - turbo-compile-windows
-      - turbo-macos-universal
     runs-on: ${{ matrix.operating-system }}
     timeout-minutes: 60
 
@@ -1046,7 +992,7 @@ jobs:
         php-version: ["8.3", "8.4", "8.5"]
         ts: ["nts", "zts"]
         script: ["make tests", "make phpstan"]
-        # macOS runs the shipped ad-hoc-signed universal binary; there is no
+        # macOS runs the shipped ad-hoc-signed arm64 binary; there is no
         # macOS zts build, and 8.3/8.4 coverage comes from the other legs.
         include:
           - operating-system: "macos-latest"
@@ -1080,7 +1026,7 @@ jobs:
       - name: "Download extension artifact"
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: "phpstan_turbo-${{ matrix.operating-system == 'windows-latest' && 'windows-x86_64' || matrix.operating-system == 'macos-latest' && 'macos' || 'linux-gnu-x86_64' }}-php${{ matrix.php-version }}${{ matrix.ts == 'zts' && '-zts' || '' }}"
+          name: "phpstan_turbo-${{ matrix.operating-system == 'windows-latest' && 'windows-x86_64' || matrix.operating-system == 'macos-latest' && 'macos-arm64' || 'linux-gnu-x86_64' }}-php${{ matrix.php-version }}${{ matrix.ts == 'zts' && '-zts' || '' }}"
           path: "turbo-ext"
 
       - name: "Install extension"
@@ -1539,7 +1485,6 @@ jobs:
       - turbo-compile
       - turbo-compile-musl-arm64
       - turbo-compile-windows
-      - turbo-macos-universal
     runs-on: "ubuntu-latest"
     timeout-minutes: 60
     steps:

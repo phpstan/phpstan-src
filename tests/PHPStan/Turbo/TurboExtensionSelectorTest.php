@@ -13,8 +13,8 @@ final class TurboExtensionSelectorTest extends PHPStanTestCase
 	 */
 	public static function dataResolvePlatformDirectory(): iterable
 	{
-		yield ['Darwin', 'arm64', false, 'macos'];
-		yield ['Darwin', 'x86_64', false, 'macos'];
+		yield ['Darwin', 'arm64', false, 'macos-arm64'];
+		yield ['Darwin', 'x86_64', false, null];
 		yield ['Linux', 'x86_64', false, 'linux-gnu-x86_64'];
 		yield ['Linux', 'aarch64', false, 'linux-gnu-arm64'];
 		yield ['Linux', 'arm64', false, 'linux-gnu-arm64'];

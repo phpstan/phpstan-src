@@ -159,6 +159,17 @@ final class InlineCallCollector implements Collector
 			if ($n instanceof Expr\NullsafePropertyFetch || $n instanceof Expr\NullsafeMethodCall) {
 				return true;
 			}
+			if ($n instanceof Expr\MethodCall) {
+				// the phar build's PHP 7.4 downgrade resolves a method call's named
+				// arguments only on a $this->prop receiver (it reads the property's
+				// native type); after substitution the receiver is the call site's
+				// expression, and the arguments would survive as a parse error
+				foreach ($n->getArgs() as $arg) {
+					if ($arg->name !== null) {
+						return true;
+					}
+				}
+			}
 			return false;
 		});
 		if ($forbidden !== null) {

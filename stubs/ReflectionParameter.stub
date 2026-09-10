@@ -16,4 +16,11 @@ class ReflectionParameter
 	{
 	}
 
+	/**
+	 * @throws void
+	 */
+	public function isOptional(): bool
+	{
+	}
+
 }

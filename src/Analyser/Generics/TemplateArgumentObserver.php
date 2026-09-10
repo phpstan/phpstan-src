@@ -14,6 +14,7 @@ use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use function array_merge;
@@ -113,22 +114,60 @@ final class TemplateArgumentObserver
 			if ($parameter === null) {
 				continue;
 			}
-			$parameterType = TypeTraverser::map($parameter->getType(), static function (Type $type, callable $traverse) use ($site, $templates, &$constraints): Type {
-				if (!$type instanceof TemplateType || $type->isArgument()) {
-					return $traverse($type);
-				}
-				$template = $templates->getType($type->getName());
-				if (!$template instanceof TemplateType || !$template->getScope()->equals($type->getScope())) {
-					return $type;
-				}
-				$marker = new UnresolvedTemplateArgumentType($site, $type, null);
-				$constraints = $constraints->withSite($marker);
-				return $marker;
-			});
+			$parameterType = $this->replaceInferableTemplates($parameter->getType(), $site, $templates, $constraints);
 			$constraints = $this->observeArgument($constraints, $parameterType, $argumentType);
 		}
 
 		return $constraints;
+	}
+
+	/**
+	 * Replaces the call's own template types by markers of the call site. A
+	 * marker behaves as its delegate (mixed for a bare @template), so normalizing
+	 * a union lets a naked marker absorb its siblings: T|null becomes the marker,
+	 * which is what links Collection<T|null> to a Collection<unresolved> argument.
+	 * A sibling that itself carries a marker of the call is kept next to the
+	 * naked one instead - Foo<T>|T has to keep both members for the argument to
+	 * be matched against Foo<T> first.
+	 */
+	private function replaceInferableTemplates(Type $type, Expr $site, TemplateTypeMap $templates, TemplateArgumentConstraints &$constraints): Type
+	{
+		// a template with a union bound is a union too - it is a template first
+		if ($type instanceof UnionType && !$type instanceof TemplateType) {
+			$naked = [];
+			$structural = [];
+			$members = [];
+			foreach ($type->getTypes() as $member) {
+				$member = $this->replaceInferableTemplates($member, $site, $templates, $constraints);
+				$members[] = $member;
+				if ($member instanceof UnresolvedTemplateArgumentType) {
+					$naked[] = $member;
+				} elseif ($this->containsMarker($member)) {
+					$structural[] = $member;
+				}
+			}
+			if ($naked === [] || $structural === []) {
+				return TypeCombinator::union(...$members);
+			}
+
+			return new UnionType([...$naked, ...$structural]);
+		}
+
+		return TypeTraverser::map($type, function (Type $type, callable $traverse) use ($site, $templates, &$constraints): Type {
+			if ($type instanceof UnionType && !$type instanceof TemplateType) {
+				return $this->replaceInferableTemplates($type, $site, $templates, $constraints);
+			}
+			if (!$type instanceof TemplateType || $type->isArgument()) {
+				return $traverse($type);
+			}
+			$template = $templates->getType($type->getName());
+			if (!$template instanceof TemplateType || !$template->getScope()->equals($type->getScope())) {
+				return $type;
+			}
+			$marker = new UnresolvedTemplateArgumentType($site, $type, null);
+			$constraints = $constraints->withSite($marker);
+			return $marker;
+		});
 	}
 
 	/**
@@ -277,8 +316,41 @@ final class TemplateArgumentObserver
 			return $constraints;
 		}
 		if ($parameterType instanceof UnionType) {
-			foreach ($parameterType->getTypes() as $member) {
-				$constraints = $this->observeLowerBound($constraints, $member, $argumentType);
+			// Mirrors UnionType::inferTemplateTypes(): an argument member that a
+			// sibling takes - a marker-free member accepting it, or a member
+			// carrying the call's markers matching it structurally (Foo<T> for a
+			// Foo<X>) - does not flow into a naked marker next to it. T|Foo<T>
+			// receiving Foo<X> binds T to X, not to Foo<X> as well.
+			$argumentMembers = $argumentType instanceof UnionType ? $argumentType->getTypes() : [$argumentType];
+			foreach ($argumentMembers as $argumentMember) {
+				$taken = false;
+				foreach ($parameterType->getTypes() as $member) {
+					if ($member instanceof UnresolvedTemplateArgumentType) {
+						continue;
+					}
+					if (!$this->containsMarker($member)) {
+						if ($member->isSuperTypeOf($argumentMember)->yes()) {
+							$taken = true;
+						}
+						continue;
+					}
+					$before = $constraints;
+					$constraints = $this->observeLowerBound($constraints, $member, $argumentMember);
+					if ($constraints === $before) {
+						continue;
+					}
+
+					$taken = true;
+				}
+				if ($taken) {
+					continue;
+				}
+				foreach ($parameterType->getTypes() as $member) {
+					if (!$member instanceof UnresolvedTemplateArgumentType) {
+						continue;
+					}
+					$constraints = $this->observeLowerBound($constraints, $member, $argumentMember);
+				}
 			}
 
 			return $constraints;

@@ -161,16 +161,12 @@ final class StaticCallHandler implements ExprHandler
 							$nativeThisType = null;
 							if (isset($expr->getArgs()[1])) {
 								$argType = $readArgType($expr->getArgs()[1]->value, false);
-								if ($argType->isNull()->yes()) {
-									$thisType = null;
-								} else {
+								if (!$argType->isNull()->yes()) {
 									$thisType = $argType;
 								}
 
 								$nativeArgType = $readArgType($expr->getArgs()[1]->value, true);
-								if ($nativeArgType->isNull()->yes()) {
-									$nativeThisType = null;
-								} else {
+								if (!$nativeArgType->isNull()->yes()) {
 									$nativeThisType = $nativeArgType;
 								}
 							}

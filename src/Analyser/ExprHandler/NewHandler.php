@@ -208,7 +208,6 @@ final class NewHandler implements ExprHandler
 				$className = $objectClasses[0];
 				$additionalThrowPoints = $objectExprResult->getThrowPoints();
 			} else {
-				$className = null;
 				$additionalThrowPoints = [InternalThrowPoint::createImplicit($scope, $expr)];
 			}
 

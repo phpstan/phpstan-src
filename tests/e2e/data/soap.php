@@ -37,8 +37,10 @@ class MySoapClient3 extends \SoapClient
 
 function () {
 	$soap = new MySoapClient('some.wsdl', ['soap_version' => SOAP_1_2]);
-	$soap = new MySoapClient2('some.wsdl', ['soap_version' => SOAP_1_2]);
-	$soap = new MySoapClient3('some.wsdl', ['soap_version' => SOAP_1_2]);
+	$soap2 = new MySoapClient2('some.wsdl', ['soap_version' => SOAP_1_2]);
+	$soap3 = new MySoapClient3('some.wsdl', ['soap_version' => SOAP_1_2]);
+
+	return [$soap, $soap2, $soap3];
 };
 
 class MySoapHeader extends \SoapHeader
@@ -53,6 +55,8 @@ class MySoapHeader extends \SoapHeader
 
 function () {
 	$header = new MySoapHeader('user', 'passw0rd');
+
+	return $header;
 };
 
 function (\SoapFault $fault) {

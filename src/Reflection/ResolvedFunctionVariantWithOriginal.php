@@ -35,6 +35,8 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 
 	private ?Type $returnType = null;
 
+	private ?bool $hasTemplateOrLateResolvableReturnType = null;
+
 	private ?Type $phpDocReturnType = null;
 
 	/**
@@ -189,6 +191,13 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 
 	public function getReturnTypeWithUnresolvedTemplateArguments(Expr $site, TemplateArgumentFrame $frame, bool $allowUnresolved): Type
 	{
+		// Existing markers pass through both paths; only declared templates can
+		// create markers for this call or substitute its frame-specific resolutions.
+		$this->hasTemplateOrLateResolvableReturnType ??= $this->parametersAcceptor->getReturnType()->hasTemplateOrLateResolvableType();
+		if (!$this->hasTemplateOrLateResolvableReturnType) {
+			return $this->getReturnType();
+		}
+
 		$cached = $this->returnTypeWithUnresolvedTemplateArguments;
 		if ($cached !== null && $cached[0]->get() === $site && $cached[1]->get() === $frame && $cached[2] === $allowUnresolved) {
 			return $cached[3];

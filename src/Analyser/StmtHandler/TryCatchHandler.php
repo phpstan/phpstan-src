@@ -186,6 +186,7 @@ final class TryCatchHandler implements StmtHandler
 			}
 
 			if (count($matchingThrowPoints) === 0) {
+				$catchFlows[] = [$originalCatchType, $nodeScopeResolver->getVariableMentionFlow($catchNode)];
 				continue;
 			}
 

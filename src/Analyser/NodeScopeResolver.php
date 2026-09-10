@@ -1042,6 +1042,22 @@ class NodeScopeResolver
 		$state->impurePoints = array_merge($state->impurePoints, array_slice($to->impurePoints, count($from->impurePoints)));
 	}
 
+	public function getVariableMentionFlow(Node\Stmt $stmt): ?VariableFlow
+	{
+		$names = [];
+		$mentionsEverything = false;
+		$this->collectMentionedVariables($stmt, $names, $mentionsEverything);
+		if ($mentionsEverything) {
+			return VariableFlow::all(VariableFlow::MENTION_ALL);
+		}
+
+		$flows = [];
+		foreach (array_keys($names) as $name) {
+			$flows[] = VariableFlow::mention($name);
+		}
+		return VariableFlow::sequence(...$flows);
+	}
+
 	private const MENTIONED_VARIABLES_ATTRIBUTE = 'templateArgumentMentionedVariables';
 
 	/**

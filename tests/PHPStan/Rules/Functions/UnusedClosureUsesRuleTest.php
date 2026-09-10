@@ -57,4 +57,11 @@ class UnusedClosureUsesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testReferenceCapturedInSkippedCatch(): void
+	{
+		$this->analyse([__DIR__ . '/data/unused-closure-uses-skipped-catch.php'], [
+			['Anonymous function has an unused use $unused.', 15],
+		]);
+	}
+
 }

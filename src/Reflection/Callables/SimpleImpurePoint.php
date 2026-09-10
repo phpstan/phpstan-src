@@ -13,6 +13,7 @@ use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use function array_key_exists;
+use function array_map;
 use function count;
 use function sprintf;
 
@@ -65,16 +66,7 @@ final class SimpleImpurePoint
 			}
 
 			if (!$certain && $scope !== null && $variant !== null) {
-				// A function can carry both flags at once (e.g. preg_replace_callback,
-				// which is pure unless its callback is impure or its $count is passed).
-				// It stays pure only when both verdicts agree it is pure, so combine
-				// them: Yes = pure, No = impure, Maybe = possibly impure.
-				$verdict = self::resolvePureUnlessCallableIsImpureVerdict($variant, $scope, $args);
-				$passedVerdict = self::resolvePureUnlessParameterPassedVerdict($variant, $args);
-				if ($passedVerdict !== null) {
-					$verdict = $verdict === null ? $passedVerdict : $verdict->and($passedVerdict);
-				}
-
+				$verdict = self::resolveConditionalPurityVerdict($variant, $scope, $args);
 				if ($verdict !== null) {
 					if ($verdict->yes()) {
 						return null;
@@ -140,6 +132,57 @@ final class SimpleImpurePoint
 		}
 
 		return null;
+	}
+
+	/**
+	 * Purity verdict of a call to a variant that declares conditional purity.
+	 *
+	 * A function can carry both flags at once (e.g. preg_replace_callback, which is
+	 * pure unless its callback is impure or its $count is passed). It stays pure only
+	 * when both verdicts agree it is pure, so they are combined: Yes = pure,
+	 * No = impure, Maybe = possibly impure. Returns null when the variant declares
+	 * neither flag, so the caller keeps its current behavior.
+	 *
+	 * @param Arg[] $args
+	 */
+	public static function resolveConditionalPurityVerdict(ParametersAcceptor $variant, Scope $scope, array $args): ?TrinaryLogic
+	{
+		$verdict = self::resolvePureUnlessCallableIsImpureVerdict($variant, $scope, $args);
+		$passedVerdict = self::resolvePureUnlessParameterPassedVerdict($variant, $args);
+		if ($passedVerdict === null) {
+			return $verdict;
+		}
+
+		return $verdict === null ? $passedVerdict : $verdict->and($passedVerdict);
+	}
+
+	/**
+	 * Applies the conditional purity verdict of this call site to impure points that
+	 * were resolved without one - a callable value's impure points are computed from
+	 * its ParametersAcceptor alone, so a first-class callable of a conditionally pure
+	 * function arrives here as an unconditional "possibly impure" point.
+	 *
+	 * @param SimpleImpurePoint[] $impurePoints
+	 * @param Arg[] $args
+	 * @return SimpleImpurePoint[]
+	 */
+	public static function narrowByConditionalPurity(array $impurePoints, ParametersAcceptor $variant, Scope $scope, array $args): array
+	{
+		$verdict = self::resolveConditionalPurityVerdict($variant, $scope, $args);
+		if ($verdict === null || $verdict->maybe()) {
+			return $impurePoints;
+		}
+
+		if ($verdict->yes()) {
+			return [];
+		}
+
+		return array_map(
+			static fn (self $impurePoint) => $impurePoint->isCertain()
+				? $impurePoint
+				: new self($impurePoint->getIdentifier(), $impurePoint->getDescription(), true),
+			$impurePoints,
+		);
 	}
 
 	/**

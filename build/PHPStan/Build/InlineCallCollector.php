@@ -29,8 +29,11 @@ use function file_get_contents;
 use function in_array;
 use function is_string;
 use function json_decode;
+use function realpath;
+use function str_starts_with;
 use function strtolower;
 use function substr;
+use const DIRECTORY_SEPARATOR;
 
 /**
  * Source-level inliner for the phar build (compiler's PrepareCommand): for
@@ -38,7 +41,9 @@ use function substr;
  * callee body is one `return <expr>;`, records a textual replacement of the
  * call with that expression ($this and parameters substituted), plus the
  * non-public properties the expression reads (they become public for the
- * rewrite to run — see InlineEditsApplier in the compiler).
+ * rewrite to run — see InlineEditsApplier in the compiler). Properties of
+ * php-parser and phpdoc-parser are never made public
+ * (PROTECTED_PACKAGE_DIRECTORIES): a body reading one is left as a call.
  *
  * Callees are ones no subclass can override — final class, final or private
  * method — or, closed-world, non-final ones nothing in the scanned code base
@@ -52,6 +57,18 @@ final class InlineCallCollector implements Collector
 {
 
 	private const MAX_EXPR_NODES = 30;
+
+	/**
+	 * Packages the phar ships under their own, unprefixed namespaces and that
+	 * projects install on their own too — the copy loaded at run time may be
+	 * the project's, whose properties are still non-public. Their properties
+	 * are never made public; better-reflection is PHPStan's own fork.
+	 * Relative to the repository root; InlineEditsApplier keeps the same list.
+	 */
+	private const PROTECTED_PACKAGE_DIRECTORIES = [
+		'vendor/nikic/php-parser',
+		'vendor/phpstan/phpdoc-parser',
+	];
 
 	/** @var array<string, array<string, Stmt\ClassMethod|null>> */
 	private array $methodNodes = [];
@@ -215,6 +232,9 @@ final class InlineCallCollector implements Collector
 				continue;
 			}
 			foreach ($this->publicizeTargets($propertyDeclaringClass->getName(), $propertyName) as $target) {
+				if ($target['file'] !== null && $this->isInProtectedPackage($target['file'])) {
+					return null;
+				}
 				$publicize[] = $target;
 			}
 		}
@@ -509,6 +529,29 @@ final class InlineCallCollector implements Collector
 		}
 
 		return $targets;
+	}
+
+	/** @var list<string>|null */
+	private ?array $protectedDirectories = null;
+
+	private function isInProtectedPackage(string $file): bool
+	{
+		if ($this->protectedDirectories === null) {
+			$this->protectedDirectories = [];
+			foreach (self::PROTECTED_PACKAGE_DIRECTORIES as $directory) {
+				$directory = dirname(__DIR__, 3) . '/' . $directory;
+				$realDirectory = realpath($directory);
+				$this->protectedDirectories[] = ($realDirectory === false ? $directory : $realDirectory) . DIRECTORY_SEPARATOR;
+			}
+		}
+		$realFile = realpath($file);
+		foreach ($this->protectedDirectories as $directory) {
+			if (str_starts_with($realFile === false ? $file : $realFile, $directory)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**

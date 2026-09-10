@@ -106,3 +106,10 @@ function commentOnlyBody(int $color): void
 {
 	// Omitted
 }
+
+function observedByFuncGetArg(int $x): array
+{
+	$x = 1;
+
+	return [func_get_arg(0), $x];
+}

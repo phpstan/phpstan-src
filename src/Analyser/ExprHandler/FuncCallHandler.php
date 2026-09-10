@@ -956,7 +956,7 @@ final class FuncCallHandler implements ExprHandler
 		if (in_array($functionName, ['get_defined_vars', 'extract'], true)) {
 			return VariableFlow::all(VariableFlow::READ_ALL);
 		}
-		if ($functionName === 'func_get_args') {
+		if (in_array($functionName, ['func_get_arg', 'func_get_args'], true)) {
 			return VariableFlow::all(VariableFlow::MENTION_ALL);
 		}
 		if ($functionName !== 'compact') {

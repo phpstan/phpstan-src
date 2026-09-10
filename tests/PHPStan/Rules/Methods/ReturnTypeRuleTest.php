@@ -16,6 +16,8 @@ use const PHP_VERSION_ID;
 class ReturnTypeRuleTest extends RuleTestCase
 {
 
+	private bool $checkNullables = true;
+
 	private bool $checkExplicitMixed = false;
 
 	private bool $checkUnionTypes = true;
@@ -27,7 +29,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 		return new ReturnTypeRule(new FunctionReturnTypeCheck(
 			new RuleLevelHelper(
 				self::createReflectionProvider(),
-				checkNullables: true,
+				checkNullables: $this->checkNullables,
 				checkThisOnly: false,
 				checkUnionTypes: $this->checkUnionTypes,
 				checkExplicitMixed: $this->checkExplicitMixed,
@@ -1405,6 +1407,12 @@ class ReturnTypeRuleTest extends RuleTestCase
 	public function testBug10289(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-10289.php'], []);
+	}
+
+	public function testBug12984(): void
+	{
+		$this->checkNullables = false;
+		$this->analyse([__DIR__ . '/data/bug-12984.php'], []);
 	}
 
 }

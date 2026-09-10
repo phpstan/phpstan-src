@@ -20,6 +20,8 @@ use const PHP_VERSION_ID;
 class CallToFunctionParametersRuleTest extends RuleTestCase
 {
 
+	private bool $checkNullables = true;
+
 	private bool $checkExplicitMixed = false;
 
 	private bool $checkImplicitMixed = false;
@@ -32,7 +34,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			new FunctionCallParametersCheck(
 				new RuleLevelHelper(
 					$broker,
-					checkNullables: true,
+					checkNullables: $this->checkNullables,
 					checkThisOnly: false,
 					checkUnionTypes: true,
 					checkExplicitMixed: $this->checkExplicitMixed,
@@ -3162,6 +3164,18 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				29,
 			],
 		]);
+	}
+
+	public function testBug9377(): void
+	{
+		$this->checkNullables = false;
+		$this->analyse([__DIR__ . '/data/bug-9377.php'], []);
+	}
+
+	public function testBug11041(): void
+	{
+		$this->checkNullables = false;
+		$this->analyse([__DIR__ . '/data/bug-11041.php'], []);
 	}
 
 }

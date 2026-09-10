@@ -91,6 +91,11 @@ class Foo
 		return true;
 	}
 
+	private function commentOnlyBody(int $color): void
+	{
+		// Omitted
+	}
+
 	public function callThemAll(): void
 	{
 		$this->completelyUnused(1, 2);

@@ -32,9 +32,7 @@ final class UnusedFunctionParametersRule implements Rule
 		if (!$originalNode instanceof Node\Stmt\Function_) {
 			return [];
 		}
-		if (count($originalNode->stmts) === 0) {
-			// an empty body is a deliberate no-op stub (PHPStan\dumpType(),
-			// PHPStan\Testing\assertType(), ...) - the parameters exist to be ignored
+		if ($this->check->isNoOpBody($originalNode->stmts)) {
 			return [];
 		}
 		if (count($originalNode->params) === 0) {

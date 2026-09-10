@@ -4,6 +4,7 @@ namespace PHPStan\Rules;
 
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Param;
+use PhpParser\Node\Stmt;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\VariableWritesNode;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
@@ -105,6 +106,24 @@ final class UnusedParametersCheck
 		}
 
 		return $names;
+	}
+
+	/**
+	 * A body with no real statements - empty, or only comments (a comment
+	 * parses into a Nop statement) - is a deliberate no-op stub; its
+	 * parameters exist to be ignored.
+	 *
+	 * @param Stmt[] $stmts
+	 */
+	public function isNoOpBody(array $stmts): bool
+	{
+		foreach ($stmts as $stmt) {
+			if (!$stmt instanceof Stmt\Nop) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 }

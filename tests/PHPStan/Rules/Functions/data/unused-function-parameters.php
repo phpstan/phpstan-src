@@ -101,3 +101,8 @@ function parameterInConditionalReturnType(array $array, int $maybeZero): int
 {
 	return $array[0];
 }
+
+function commentOnlyBody(int $color): void
+{
+	// Omitted
+}

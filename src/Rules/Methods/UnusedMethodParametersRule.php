@@ -38,8 +38,7 @@ final class UnusedMethodParametersRule implements Rule
 		if (!$originalNode instanceof Node\Stmt\ClassMethod) {
 			return [];
 		}
-		if (!$originalNode->isPrivate() || $originalNode->stmts === null || count($originalNode->stmts) === 0) {
-			// no statements: not walked, or an empty body - a deliberate no-op stub
+		if (!$originalNode->isPrivate() || $originalNode->stmts === null || $this->check->isNoOpBody($originalNode->stmts)) {
 			return [];
 		}
 		if (str_starts_with($originalNode->name->toString(), '__')) {

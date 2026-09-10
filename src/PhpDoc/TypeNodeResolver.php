@@ -174,7 +174,7 @@ final class TypeNodeResolver
 			return $this->resolveIdentifierTypeNode($typeNode, $nameScope);
 
 		} elseif ($typeNode instanceof ThisTypeNode) {
-			return $this->resolveThisTypeNode($typeNode, $nameScope);
+			return $this->resolveThisTypeNode($nameScope);
 
 		} elseif ($typeNode instanceof NullableTypeNode) {
 			return $this->resolveNullableTypeNode($typeNode, $nameScope);
@@ -588,7 +588,7 @@ final class TypeNodeResolver
 		return null;
 	}
 
-	private function resolveThisTypeNode(ThisTypeNode $typeNode, NameScope $nameScope): Type
+	private function resolveThisTypeNode(NameScope $nameScope): Type
 	{
 		$className = $nameScope->getClassName();
 		if ($className !== null) {

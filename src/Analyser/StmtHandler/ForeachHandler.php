@@ -540,7 +540,6 @@ final class ForeachHandler implements StmtHandler
 
 			if ($stmt->valueVar instanceof List_) {
 				$scope = $this->addDestructureTaggedUnionConditionalHolders(
-					$nodeScopeResolver,
 					$scope,
 					$originalScope->getIterableValueType($iterateeType),
 					$stmt->valueVar,
@@ -863,7 +862,6 @@ final class ForeachHandler implements StmtHandler
 	 * the regular per-variable type tracking.
 	 */
 	private function addDestructureTaggedUnionConditionalHolders(
-		NodeScopeResolver $nodeScopeResolver,
 		MutatingScope $scope,
 		Type $iterableValueType,
 		List_ $list,

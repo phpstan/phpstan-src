@@ -348,7 +348,7 @@ final class AnalyseCommand extends Command
 				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
 			}
 
-			return $this->runFixer($inceptionResult, $container, $onlyFiles, $input, $output, $files);
+			return $this->runFixer($inceptionResult, $container, $input, $output, $files);
 		}
 
 		/** @var AnalyseApplication $application */
@@ -834,7 +834,7 @@ final class AnalyseCommand extends Command
 	/**
 	 * @param string[] $files
 	 */
-	private function runFixer(InceptionResult $inceptionResult, Container $container, bool $onlyFiles, InputInterface $input, OutputInterface $output, array $files): int
+	private function runFixer(InceptionResult $inceptionResult, Container $container, InputInterface $input, OutputInterface $output, array $files): int
 	{
 		$ciDetector = new CiDetector();
 		if ($ciDetector->isCiDetected()) {

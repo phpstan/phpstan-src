@@ -293,7 +293,6 @@ final class StaticCallHandler implements ExprHandler
 		$typeCallback = $isEarlyTerminating
 			? static fn (bool $nativeTypesPromoted): Type => new NeverType(true)
 			: fn (bool $nativeTypesPromoted): Type => $this->resolveReturnType(
-				$nodeScopeResolver,
 				$beforeScope,
 				$nativeTypesPromoted,
 				$expr,
@@ -303,7 +302,6 @@ final class StaticCallHandler implements ExprHandler
 				$argsResult,
 			);
 		$specifyTypesCallback = fn (TypeSpecifierContext $specifyContext, bool $nativeTypesPromoted): SpecifiedTypes => $this->specifyTypes(
-			$nodeScopeResolver,
 			$nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope,
 			$expr,
 			$normalizedExpr,
@@ -316,10 +314,10 @@ final class StaticCallHandler implements ExprHandler
 		// A type constraint on a (narrowable, i.e. non-side-effecting) static call
 		// narrows the call itself - the inside-out equivalent of createForExpr's
 		// StaticCall purity gate + tail entry. An impure call narrows to nothing.
-		$createTypesCallback = function (Type $type, TypeSpecifierContext $createContext, bool $nativeTypesPromoted) use ($expr, $classResult, $nodeScopeResolver, $beforeScope): SpecifiedTypes {
+		$createTypesCallback = function (Type $type, TypeSpecifierContext $createContext, bool $nativeTypesPromoted) use ($expr, $classResult, $beforeScope): SpecifiedTypes {
 			$s = $nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope;
 
-			return $this->isStaticCallNarrowable($s, $expr, $classResult, $nodeScopeResolver)
+			return $this->isStaticCallNarrowable($s, $expr, $classResult)
 				? $this->defaultNarrowingHelper->createSubjectTypes($s, $expr, null, $type, $createContext)
 				: new SpecifiedTypes([], []);
 		};
@@ -447,7 +445,7 @@ final class StaticCallHandler implements ExprHandler
 	 * branch builds a synthetic StaticCall priced on demand by the resolver.
 	 *
 	 */
-	private function resolveReturnType(NodeScopeResolver $nodeScopeResolver, MutatingScope $reflectionScope, bool $nativeTypesPromoted, StaticCall $expr, ?ExpressionResult $classResult, ?ExpressionResult $nameResult, ?ParametersAcceptor $preResolvedAcceptor, ?ArgsResult $argsResult): Type
+	private function resolveReturnType(MutatingScope $reflectionScope, bool $nativeTypesPromoted, StaticCall $expr, ?ExpressionResult $classResult, ?ExpressionResult $nameResult, ?ParametersAcceptor $preResolvedAcceptor, ?ArgsResult $argsResult): Type
 	{
 		$classType = $classResult !== null
 			? ($nativeTypesPromoted ? $classResult->getNativeType() : $classResult->getType())
@@ -546,7 +544,7 @@ final class StaticCallHandler implements ExprHandler
 	 * @param StaticCall $expr
 	 * @param StaticCall $normalizedExpr
 	 */
-	private function specifyTypes(NodeScopeResolver $nodeScopeResolver, MutatingScope $scope, Expr $expr, Expr $normalizedExpr, ?ExpressionResult $classResult, ?ParametersAcceptor $resolvedParametersAcceptor, TypeSpecifierContext $context, ?ArgsResult $argsResult = null): SpecifiedTypes
+	private function specifyTypes(MutatingScope $scope, Expr $expr, Expr $normalizedExpr, ?ExpressionResult $classResult, ?ParametersAcceptor $resolvedParametersAcceptor, TypeSpecifierContext $context, ?ArgsResult $argsResult = null): SpecifiedTypes
 	{
 		if (!$expr->name instanceof Identifier) {
 			return $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context);
@@ -609,13 +607,13 @@ final class StaticCallHandler implements ExprHandler
 					// see MethodCallHandler::specifyTypes() - the call's own key gets
 					// the purity gate, the asserts narrow their subjects regardless
 					return $specifiedTypes
-						->unionWith($this->defaultStaticCallNarrowing($scope, $expr, $classResult, $nodeScopeResolver, $context))
+						->unionWith($this->defaultStaticCallNarrowing($scope, $expr, $classResult, $context))
 						->setRootExpr($specifiedTypes->getRootExpr());
 				}
 			}
 		}
 
-		return $this->defaultStaticCallNarrowing($scope, $expr, $classResult, $nodeScopeResolver, $context);
+		return $this->defaultStaticCallNarrowing($scope, $expr, $classResult, $context);
 	}
 
 	/**
@@ -628,9 +626,9 @@ final class StaticCallHandler implements ExprHandler
 	 *
 	 * @param StaticCall $expr
 	 */
-	private function defaultStaticCallNarrowing(MutatingScope $scope, Expr $expr, ?ExpressionResult $classResult, NodeScopeResolver $nodeScopeResolver, TypeSpecifierContext $context): SpecifiedTypes
+	private function defaultStaticCallNarrowing(MutatingScope $scope, Expr $expr, ?ExpressionResult $classResult, TypeSpecifierContext $context): SpecifiedTypes
 	{
-		if (!$this->isStaticCallNarrowable($scope, $expr, $classResult, $nodeScopeResolver)) {
+		if (!$this->isStaticCallNarrowable($scope, $expr, $classResult)) {
 			return (new SpecifiedTypes([], []))->setRootExpr($expr);
 		}
 
@@ -638,7 +636,7 @@ final class StaticCallHandler implements ExprHandler
 	}
 
 	/** @param StaticCall $expr */
-	private function isStaticCallNarrowable(MutatingScope $scope, Expr $expr, ?ExpressionResult $classResult, NodeScopeResolver $nodeScopeResolver): bool
+	private function isStaticCallNarrowable(MutatingScope $scope, Expr $expr, ?ExpressionResult $classResult): bool
 	{
 		if (!$expr->name instanceof Identifier) {
 			return true;

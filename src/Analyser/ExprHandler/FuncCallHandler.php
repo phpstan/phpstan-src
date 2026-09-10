@@ -392,7 +392,6 @@ final class FuncCallHandler implements ExprHandler
 				);
 			};
 		$specifyTypesCallback = fn (TypeSpecifierContext $specifyContext, bool $nativeTypesPromoted): SpecifiedTypes => $this->specifyTypes(
-			$nodeScopeResolver,
 			$nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope,
 			$expr,
 			$normalizedExpr,
@@ -406,9 +405,9 @@ final class FuncCallHandler implements ExprHandler
 		// function call narrows the call itself - the inside-out equivalent of
 		// createForExpr's FuncCall purity gate + tail entry. An impure call narrows to
 		// nothing.
-		$createTypesCallback = function (Type $type, TypeSpecifierContext $createContext, bool $nativeTypesPromoted) use ($nodeScopeResolver, $expr, $normalizedExpr, $nameResult, $beforeScope, $argsResult): SpecifiedTypes {
+		$createTypesCallback = function (Type $type, TypeSpecifierContext $createContext, bool $nativeTypesPromoted) use ($expr, $normalizedExpr, $nameResult, $beforeScope, $argsResult): SpecifiedTypes {
 			$s = $nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope;
-			if (!$this->isFuncCallNarrowable($nodeScopeResolver, $s, $expr, $nameResult)) {
+			if (!$this->isFuncCallNarrowable($s, $expr, $nameResult)) {
 				return new SpecifiedTypes([], []);
 			}
 
@@ -748,7 +747,7 @@ final class FuncCallHandler implements ExprHandler
 	 *
 	 * @param FuncCall $expr
 	 */
-	private function specifyTypes(NodeScopeResolver $nodeScopeResolver, MutatingScope $scope, Expr $expr, FuncCall $normalizedExpr, ?ExpressionResult $nameResult, ?ParametersAcceptor $resolvedParametersAcceptor, TypeSpecifierContext $context, ?ArgsResult $argsResult = null): SpecifiedTypes
+	private function specifyTypes(MutatingScope $scope, Expr $expr, FuncCall $normalizedExpr, ?ExpressionResult $nameResult, ?ParametersAcceptor $resolvedParametersAcceptor, TypeSpecifierContext $context, ?ArgsResult $argsResult = null): SpecifiedTypes
 	{
 		if ($expr->name instanceof Name) {
 			if ($this->reflectionProvider->hasFunction($expr->name, $scope)) {
@@ -793,7 +792,7 @@ final class FuncCallHandler implements ExprHandler
 						// evaluated a second time must not read the first call's
 						// truthiness (mirrors the create() gate the old
 						// specifyTypesInCondition() reached for the self key)
-						return ($this->isFuncCallNarrowable($nodeScopeResolver, $scope, $expr, $nameResult)
+						return ($this->isFuncCallNarrowable($scope, $expr, $nameResult)
 							? $specifiedTypes->unionWith($this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context))
 							: $specifiedTypes)
 							->setRootExpr($specifiedTypes->getRootExpr());
@@ -801,18 +800,18 @@ final class FuncCallHandler implements ExprHandler
 				}
 			}
 
-			return $this->defaultFuncCallNarrowing($nodeScopeResolver, $scope, $expr, $nameResult, $context);
+			return $this->defaultFuncCallNarrowing($scope, $expr, $nameResult, $context);
 		}
 
-		$specifiedTypes = $this->specifyTypesFromCallableCall($nodeScopeResolver, $context, $expr, $nameResult, $resolvedParametersAcceptor, $scope);
+		$specifiedTypes = $this->specifyTypesFromCallableCall($context, $expr, $nameResult, $resolvedParametersAcceptor, $scope);
 		if ($specifiedTypes !== null) {
 			return $specifiedTypes;
 		}
 
-		return $this->defaultFuncCallNarrowing($nodeScopeResolver, $scope, $expr, $nameResult, $context);
+		return $this->defaultFuncCallNarrowing($scope, $expr, $nameResult, $context);
 	}
 
-	private function specifyTypesFromCallableCall(NodeScopeResolver $nodeScopeResolver, TypeSpecifierContext $context, FuncCall $call, ?ExpressionResult $nameResult, ?ParametersAcceptor $resolvedParametersAcceptor, MutatingScope $scope): ?SpecifiedTypes
+	private function specifyTypesFromCallableCall(TypeSpecifierContext $context, FuncCall $call, ?ExpressionResult $nameResult, ?ParametersAcceptor $resolvedParametersAcceptor, MutatingScope $scope): ?SpecifiedTypes
 	{
 		if (!$call->name instanceof Expr) {
 			return null;
@@ -863,16 +862,16 @@ final class FuncCallHandler implements ExprHandler
 	 * this expression through create().
 	 *
 	 */
-	private function defaultFuncCallNarrowing(NodeScopeResolver $nodeScopeResolver, MutatingScope $scope, FuncCall $expr, ?ExpressionResult $nameResult, TypeSpecifierContext $context): SpecifiedTypes
+	private function defaultFuncCallNarrowing(MutatingScope $scope, FuncCall $expr, ?ExpressionResult $nameResult, TypeSpecifierContext $context): SpecifiedTypes
 	{
-		if (!$this->isFuncCallNarrowable($nodeScopeResolver, $scope, $expr, $nameResult)) {
+		if (!$this->isFuncCallNarrowable($scope, $expr, $nameResult)) {
 			return (new SpecifiedTypes([], []))->setRootExpr($expr);
 		}
 
 		return $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context);
 	}
 
-	private function isFuncCallNarrowable(NodeScopeResolver $nodeScopeResolver, MutatingScope $scope, FuncCall $expr, ?ExpressionResult $nameResult): bool
+	private function isFuncCallNarrowable(MutatingScope $scope, FuncCall $expr, ?ExpressionResult $nameResult): bool
 	{
 		if ($expr->name instanceof Name) {
 			if (!$this->reflectionProvider->hasFunction($expr->name, $scope)) {

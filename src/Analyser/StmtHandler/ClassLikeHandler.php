@@ -84,7 +84,7 @@ final class ClassLikeHandler implements StmtHandler
 			return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: []);
 		}
 		if (isset($stmt->namespacedName)) {
-			$classReflection = $this->getCurrentClassReflection($nodeScopeResolver, $stmt, $stmt->namespacedName->toString(), $scope);
+			$classReflection = $this->getCurrentClassReflection($stmt, $stmt->namespacedName->toString(), $scope);
 			$classScope = $scope->enterClass($classReflection);
 		} elseif ($stmt instanceof Class_) {
 			if ($stmt->name === null) {
@@ -136,7 +136,7 @@ final class ClassLikeHandler implements StmtHandler
 		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: []);
 	}
 
-	private function getCurrentClassReflection(NodeScopeResolver $nodeScopeResolver, Node\Stmt\ClassLike $stmt, string $className, Scope $scope): ClassReflection
+	private function getCurrentClassReflection(Node\Stmt\ClassLike $stmt, string $className, Scope $scope): ClassReflection
 	{
 		if (!$this->reflectionProvider->hasClass($className)) {
 			return $this->createAstClassReflection($stmt, $className, $scope);

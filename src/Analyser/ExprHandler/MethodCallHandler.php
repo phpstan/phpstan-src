@@ -205,7 +205,6 @@ final class MethodCallHandler implements ExprHandler
 				$argsResult,
 			);
 		$specifyTypesCallback = fn (TypeSpecifierContext $specifyContext, bool $nativeTypesPromoted): SpecifiedTypes => $this->specifyTypes(
-			$nodeScopeResolver,
 			$nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope,
 			$expr,
 			$normalizedExpr,
@@ -484,7 +483,7 @@ final class MethodCallHandler implements ExprHandler
 	 * @param MethodCall $expr
 	 * @param MethodCall $normalizedExpr
 	 */
-	private function specifyTypes(NodeScopeResolver $nodeScopeResolver, MutatingScope $scope, Expr $expr, Expr $normalizedExpr, ExpressionResult $varResult, ?ParametersAcceptor $resolvedParametersAcceptor, TypeSpecifierContext $context, ?ArgsResult $argsResult = null): SpecifiedTypes
+	private function specifyTypes(MutatingScope $scope, Expr $expr, Expr $normalizedExpr, ExpressionResult $varResult, ?ParametersAcceptor $resolvedParametersAcceptor, TypeSpecifierContext $context, ?ArgsResult $argsResult = null): SpecifiedTypes
 	{
 		if (!$expr->name instanceof Identifier) {
 			return $this->defaultMethodCallNarrowing($scope, $expr, $varResult, $context);

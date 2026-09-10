@@ -68,6 +68,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			$container->getByType(TemplateArgumentObserver::class),
 			$container->getByType(TemplateArgumentResolver::class),
 			$reflectionProvider,
+			$container->getByType(FileHelper::class),
 			$container->getExtensionsCollection(FunctionParameterOutTypeExtension::class),
 			$container->getExtensionsCollection(MethodParameterOutTypeExtension::class),
 			$container->getExtensionsCollection(StaticMethodParameterOutTypeExtension::class),

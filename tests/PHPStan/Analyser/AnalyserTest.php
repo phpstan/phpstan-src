@@ -864,6 +864,7 @@ class AnalyserTest extends PHPStanTestCase
 			$container->getByType(TemplateArgumentObserver::class),
 			$container->getByType(TemplateArgumentResolver::class),
 			$reflectionProvider,
+			$fileHelper,
 			$container->getExtensionsCollection(FunctionParameterOutTypeExtension::class),
 			$container->getExtensionsCollection(MethodParameterOutTypeExtension::class),
 			$container->getExtensionsCollection(StaticMethodParameterOutTypeExtension::class),

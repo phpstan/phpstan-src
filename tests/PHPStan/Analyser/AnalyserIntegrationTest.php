@@ -586,7 +586,9 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 			[
 				__DIR__ . '/data/bug-6253.php',
 				__DIR__ . '/data/bug-6253-app-scope-trait.php',
-				__DIR__ . '/data/bug-6253-collection-trait.php',
+				// deliberately unnormalized: setAnalysedFiles() must normalize it, or the
+				// trait is silently not analysed in class context (mixed separators on Windows)
+				__DIR__ . '/data/../data/bug-6253-collection-trait.php',
 			],
 		);
 		$this->assertNoErrors($errors);

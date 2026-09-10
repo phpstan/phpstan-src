@@ -22,6 +22,7 @@ use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Dependency\PackageDependencyResolver;
 use PHPStan\DependencyInjection\DirectExtensionsCollection;
+use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
 use PHPStan\Fixable\Patcher;
 use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
@@ -92,6 +93,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 			self::getContainer()->getByType(TemplateArgumentObserver::class),
 			self::getContainer()->getByType(TemplateArgumentResolver::class),
 			$reflectionProvider,
+			self::getContainer()->getByType(FileHelper::class),
 			self::getContainer()->getExtensionsCollection(FunctionParameterOutTypeExtension::class),
 			self::getContainer()->getExtensionsCollection(MethodParameterOutTypeExtension::class),
 			self::getContainer()->getExtensionsCollection(StaticMethodParameterOutTypeExtension::class),

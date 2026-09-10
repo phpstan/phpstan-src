@@ -45,6 +45,7 @@ use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ExtensionsCollection;
+use PHPStan\File\FileHelper;
 use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\Expr\NativeTypeExpr;
@@ -111,7 +112,6 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
-use function array_fill_keys;
 use function array_filter;
 use function array_key_exists;
 use function array_keys;
@@ -214,6 +214,7 @@ class NodeScopeResolver
 		private readonly TemplateArgumentObserver $templateArgumentObserver,
 		private readonly TemplateArgumentResolver $templateArgumentResolver,
 		private readonly ReflectionProvider $reflectionProvider,
+		private readonly FileHelper $fileHelper,
 		#[AutowiredExtensions(of: FunctionParameterOutTypeExtension::class)]
 		private readonly ExtensionsCollection $functionParameterOutTypeExtensions,
 		#[AutowiredExtensions(of: MethodParameterOutTypeExtension::class)]
@@ -256,12 +257,21 @@ class NodeScopeResolver
 	}
 
 	/**
+	 * The lookups (isAnalysedFile()) are keyed by normalized paths, so the
+	 * given paths are normalized here - a caller-provided unnormalized path
+	 * (mixed directory separators on Windows) must not silently skip the
+	 * in-class-context analysis of a trait.
+	 *
 	 * @api
 	 * @param string[] $files
 	 */
 	public function setAnalysedFiles(array $files): void
 	{
-		$this->analysedFiles = array_fill_keys($files, true);
+		$analysedFiles = [];
+		foreach ($files as $file) {
+			$analysedFiles[$this->fileHelper->normalizePath($file)] = true;
+		}
+		$this->analysedFiles = $analysedFiles;
 	}
 
 	/**

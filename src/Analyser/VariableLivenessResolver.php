@@ -40,6 +40,8 @@ final class VariableLivenessResolver
 
 	private bool $allNamesMentioned = false;
 
+	private bool $returnsByReference = false;
+
 	private function __construct()
 	{
 	}
@@ -47,6 +49,7 @@ final class VariableLivenessResolver
 	public static function resolve(Node\FunctionLike $function, ?VariableFlow $flow): VariableWritesNode
 	{
 		$self = new self();
+		$self->returnsByReference = $function->returnsByRef();
 		$imports = [];
 		foreach ($function->getParams() as $param) {
 			if (!$param->var instanceof Node\Expr\Variable || !is_string($param->var->name)) {
@@ -119,6 +122,9 @@ final class VariableLivenessResolver
 		}
 		if (!$flow instanceof VariableControlFlow) {
 			return;
+		}
+		if ($flow->kind === VariableFlow::RETURN && $flow->name !== null && $this->returnsByReference) {
+			$this->escapedNames[$flow->name] = true;
 		}
 		foreach ($flow->cases as [$condition, $body]) {
 			$this->collect($condition, $dead);

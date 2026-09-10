@@ -488,6 +488,22 @@ class PureFunctionRuleTest extends RuleTestCase
 				'Impure echo in pure function PureUnlessParameterPassedBuiltin\purePregReplaceCallbackImpureCallback().',
 				90,
 			],
+			[
+				'Impure call to function str_ireplace() in pure function PureUnlessParameterPassedBuiltin\pureStrIreplaceWithCount().',
+				113,
+			],
+			[
+				'Impure call to function preg_replace() in pure function PureUnlessParameterPassedBuiltin\purePregReplaceWithCount().',
+				133,
+			],
+			[
+				'Impure call to function preg_match_all() in pure function PureUnlessParameterPassedBuiltin\purePregMatchAllWithMatches().',
+				151,
+			],
+			[
+				'Impure call to function similar_text() in pure function PureUnlessParameterPassedBuiltin\pureSimilarTextWithPercent().',
+				169,
+			],
 		]);
 	}
 

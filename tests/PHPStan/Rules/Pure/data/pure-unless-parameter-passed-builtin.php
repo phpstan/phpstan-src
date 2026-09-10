@@ -92,3 +92,79 @@ function purePregReplaceCallbackImpureCallback(string $s): ?string
 		return $m[0];
 	}, $s);
 }
+
+/**
+ * @phpstan-pure
+ */
+function pureStrIreplaceWithoutCount(string $s): string
+{
+	// The by-ref $count is omitted, so str_ireplace() is pure.
+	return str_ireplace('a', 'b', $s);
+}
+
+/**
+ * @phpstan-pure
+ */
+function pureStrIreplaceWithCount(string $s): string
+{
+	// The by-ref $count is passed, so str_ireplace() is impure (the flag is certain).
+	$count = 0;
+
+	return str_ireplace('a', 'b', $s, $count);
+}
+
+/**
+ * @phpstan-pure
+ */
+function purePregReplaceWithoutCount(string $s): ?string
+{
+	// The by-ref $count is omitted, so preg_replace() is pure.
+	return preg_replace('/a/', 'b', $s);
+}
+
+/**
+ * @phpstan-pure
+ */
+function purePregReplaceWithCount(string $s): ?string
+{
+	// The by-ref $count is passed, so preg_replace() is impure (the flag is certain).
+	$count = 0;
+
+	return preg_replace('/a/', 'b', $s, -1, $count);
+}
+
+/**
+ * @phpstan-pure
+ */
+function purePregMatchAllWithoutMatches(string $s): int
+{
+	// The by-ref $matches is omitted, so preg_match_all() is pure.
+	return (int) preg_match_all('/a/', $s);
+}
+
+/**
+ * @phpstan-pure
+ */
+function purePregMatchAllWithMatches(string $s): int
+{
+	// The by-ref $matches is passed, so preg_match_all() is impure (the flag is certain).
+	return (int) preg_match_all('/a/', $s, $matches);
+}
+
+/**
+ * @phpstan-pure
+ */
+function pureSimilarTextWithoutPercent(string $a, string $b): int
+{
+	// The by-ref $percent is omitted, so similar_text() is pure.
+	return similar_text($a, $b);
+}
+
+/**
+ * @phpstan-pure
+ */
+function pureSimilarTextWithPercent(string $a, string $b): int
+{
+	// The by-ref $percent is passed, so similar_text() is impure (the flag is certain).
+	return similar_text($a, $b, $percent);
+}

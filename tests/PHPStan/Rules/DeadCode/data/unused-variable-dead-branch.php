@@ -81,3 +81,19 @@ function liveBranchesStillReport(int $i): void
 	}
 	sink($x);
 }
+
+/**
+ * @param mixed $maybeint
+ */
+function absint($maybeint): int
+{
+	if (!is_numeric($maybeint)) {
+		return 0;
+	}
+	$value = abs((int) $maybeint);
+	if (is_float($value)) {
+		$value = PHP_INT_MAX;
+	}
+
+	return $value;
+}

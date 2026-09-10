@@ -2,6 +2,8 @@
 
 namespace PHPStan\Analyser\StmtHandler;
 
+use Error;
+use Exception;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt;
@@ -147,7 +149,13 @@ final class TryCatchHandler implements StmtHandler
 			}
 
 			// implicit only
-			if (count($matchingThrowPoints) === 0 || $onlyExplicitIsThrow) {
+			// Broad catches also cover undocumented exceptions when a documented throw matches.
+			if (
+				count($matchingThrowPoints) === 0
+				|| $onlyExplicitIsThrow
+				|| $originalCatchType->isSuperTypeOf(new ObjectType(Exception::class))->yes() // phpcs:ignore SlevomatCodingStandard.Exceptions.ReferenceThrowableOnly.ReferencedGeneralException
+				|| $originalCatchType->isSuperTypeOf(new ObjectType(Error::class))->yes()
+			) {
 				foreach ($throwPoints as $throwPointIndex => $throwPoint) {
 					if ($throwPoint->isExplicit() || $throwPoint->getType() instanceof NeverType) {
 						continue;

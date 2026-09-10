@@ -387,4 +387,11 @@ class UnusedVariableRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBroadCatchesIncludeImplicitThrows(): void
+	{
+		$this->analyse([__DIR__ . '/data/unused-variable-broad-catch.php'], [
+			['Value assigned to variable $file is never read.', 71],
+		]);
+	}
+
 }

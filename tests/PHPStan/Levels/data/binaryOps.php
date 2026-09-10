@@ -18,14 +18,16 @@ class Foo
 		$stringOrObject
 	)
 	{
-		$result = $int + $int;
-		$result = $int + $intOrString;
-		$result = $int + $stringOrObject;
-		$result = $int + $string;
-		$result = $string + $string;
-		$result = $intOrString + $stringOrObject;
-		$result = $intOrString + $string;
-		$result = $stringOrObject + $stringOrObject;
+		$results = [];
+		$results[] = $int + $int;
+		$results[] = $int + $intOrString;
+		$results[] = $int + $stringOrObject;
+		$results[] = $int + $string;
+		$results[] = $string + $string;
+		$results[] = $intOrString + $stringOrObject;
+		$results[] = $intOrString + $string;
+		$results[] = $stringOrObject + $stringOrObject;
+		var_dump($results);
 	}
 
 }

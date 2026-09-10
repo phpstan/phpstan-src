@@ -1,12 +1,12 @@
 [
     {
         "message": "Access to an undefined property Levels\\PropertyAccesses\\Foo::$bar.",
-        "line": 14,
+        "line": 15,
         "ignorable": true
     },
     {
         "message": "Access to static property $bar on an unknown class Levels\\PropertyAccesses\\Lorem.",
-        "line": 32,
+        "line": 34,
         "ignorable": true
     }
 ]

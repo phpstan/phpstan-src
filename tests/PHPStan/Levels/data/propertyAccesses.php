@@ -11,6 +11,7 @@ class Foo
 	public function doFoo(int $i)
 	{
 		$foo = $this->foo;
+		var_dump($foo);
 		echo $this->bar;
 
 		$foo = new self();
@@ -29,6 +30,7 @@ class Bar
 	public static function doBar(int $i)
 	{
 		$bar = Bar::$bar;
+		var_dump($bar);
 		echo Lorem::$bar;
 
 		$bar = new Bar();
@@ -56,14 +58,18 @@ class Baz
 	{
 		$foo = $fooOrBar->foo;
 		$bar =$fooOrBar->bar;
+		var_dump($foo, $bar);
 
 		$foo = $fooOrNull->foo;
 		$bar = $fooOrNull->bar;
+		var_dump($foo, $bar);
 
 		$foo = $fooOrBarOrNull->foo;
 		$bar = $fooOrBarOrNull->bar;
+		var_dump($foo, $bar);
 
 		$foo = $barOrBaz->foo;
+		var_dump($foo);
 	}
 
 }
@@ -160,17 +166,21 @@ class Ipsum
 		$fooOrBar = $this->makeFooOrBar();
 		$foo = $fooOrBar->foo;
 		$bar =$fooOrBar->bar;
+		var_dump($foo, $bar);
 
 		$fooOrNull = $this->makeFooOrNull();
 		$foo = $fooOrNull->foo;
 		$bar = $fooOrNull->bar;
+		var_dump($foo, $bar);
 
 		$fooOrBarOrNull = $this->makeFooOrBarOrNull();
 		$foo = $fooOrBarOrNull->foo;
 		$bar = $fooOrBarOrNull->bar;
+		var_dump($foo, $bar);
 
 		$barOrBaz = $this->makeBarOrBaz();
 		$foo = $barOrBaz->foo;
+		var_dump($foo);
 	}
 
 }

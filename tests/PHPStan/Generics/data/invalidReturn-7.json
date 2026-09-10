@@ -1,17 +1,17 @@
 [
     {
         "message": "Function PHPStan\\Generics\\InvalidReturn\\invalidReturnA() should return T but returns int.",
-        "line": 11,
+        "line": 13,
         "ignorable": true
     },
     {
         "message": "Function PHPStan\\Generics\\InvalidReturn\\invalidReturnB() should return T of DateTimeInterface but returns DateTime.",
-        "line": 20,
+        "line": 24,
         "ignorable": true
     },
     {
         "message": "Function PHPStan\\Generics\\InvalidReturn\\invalidReturnC() should return T of DateTime but returns DateTime.",
-        "line": 29,
+        "line": 35,
         "ignorable": true
     }
 ]

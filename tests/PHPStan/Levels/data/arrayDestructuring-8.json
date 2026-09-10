@@ -1,7 +1,7 @@
 [
     {
         "message": "Cannot use array destructuring on array<mixed>|null.",
-        "line": 15,
+        "line": 16,
         "ignorable": true
     }
 ]

@@ -8,6 +8,8 @@ namespace PHPStan\Generics\InvalidReturn;
  * @return T
  */
 function invalidReturnA($a) {
+	var_dump($a);
+
 	return 1;
 }
 
@@ -17,6 +19,8 @@ function invalidReturnA($a) {
  * @return T
  */
 function invalidReturnB($a) {
+	var_dump($a);
+
 	return new \DateTime();
 }
 
@@ -26,5 +30,7 @@ function invalidReturnB($a) {
  * @return T
  */
 function invalidReturnC($a) {
+	var_dump($a);
+
 	return new \DateTime();
 }

@@ -21,19 +21,19 @@ class Foo
 	)
 	{
 		foreach ($array as $val) {
-
+			var_dump($val);
 		}
 		foreach ($arrayOrNull as $val) {
-
+			var_dump($val);
 		}
 		foreach ($int as $val) {
-
+			var_dump($val);
 		}
 		foreach ($intOrFloat as $val) {
-
+			var_dump($val);
 		}
 		foreach ($arrayOrFalse as $val) {
-
+			var_dump($val);
 		}
 	}
 

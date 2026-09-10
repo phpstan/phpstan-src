@@ -442,6 +442,14 @@ class PureFunctionRuleTest extends RuleTestCase
 				'Impure call to function PureUnlessParameterPassedFunction\myReplaceVariadic() in pure function PureUnlessParameterPassedFunction\pureVariadicPassingCountWithExtra().',
 				398,
 			],
+			[
+				'Impure call to function PureUnlessParameterPassedFunction\myVariadicOut() in pure function PureUnlessParameterPassedFunction\pureVariadicOutPositional().',
+				430,
+			],
+			[
+				'Impure call to function PureUnlessParameterPassedFunction\myVariadicOut() in pure function PureUnlessParameterPassedFunction\pureVariadicOutNamed().',
+				441,
+			],
 		]);
 	}
 

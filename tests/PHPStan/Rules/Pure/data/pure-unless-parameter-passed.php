@@ -397,3 +397,56 @@ function pureVariadicPassingCountWithExtra(string $s): string
 	// arguments do not affect the flagged parameter, so the call is impure.
 	return myReplaceVariadic($s, $count, 'a', 'b');
 }
+
+/**
+ * @param-out int $out
+ * @pure-unless-parameter-passed $out
+ */
+function myVariadicOut(string $subject, int &...$out): string
+{
+	foreach ($out as $key => $value) {
+		$out[$key] = 1;
+	}
+
+	return $subject;
+}
+
+/**
+ * @phpstan-pure
+ */
+function pureVariadicOutOmitted(string $s): string
+{
+	// The flagged variadic collects nothing, so the call stays pure.
+	return myVariadicOut($s);
+}
+
+/**
+ * @phpstan-pure
+ */
+function pureVariadicOutPositional(string $s): string
+{
+	$out = 0;
+	// The positional argument lands in the flagged variadic, so the call is impure.
+	return myVariadicOut($s, $out);
+}
+
+/**
+ * @phpstan-pure
+ */
+function pureVariadicOutNamed(string $s): string
+{
+	$out = 0;
+	// A named argument matching no declared parameter is collected by the flagged
+	// variadic as a string-keyed element, so the call is impure.
+	return myVariadicOut($s, extra: $out);
+}
+
+/**
+ * @phpstan-pure
+ */
+function pureVariadicOutNamedForOtherParameter(string $s): string
+{
+	// The named argument targets the declared $subject, not the flagged variadic,
+	// so the call stays pure.
+	return myVariadicOut(subject: $s);
+}

@@ -1,5 +1,5 @@
-<?php
-// lint >= 8.0
+<?php // lint >= 8.0
+
 
 namespace UnusedVariableArrowReference;
 

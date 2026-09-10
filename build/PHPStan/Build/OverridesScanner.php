@@ -21,9 +21,11 @@ use function strtolower;
  * Which methods some class in the scanned code base overrides — the
  * closed-world half of InlineCallCollector: a non-final method nothing
  * overrides is as safe to inline as a final one, as long as the code base is
- * the whole world (PHPStan's own phar, where extensions subclassing
- * PHPStan's classes are the accepted exception: they still work, they just
- * see the parent's inlined bodies at PHPStan's own call sites).
+ * the whole world. It is not for the classes PHPStan invites extensions to
+ * subclass (abstract classes and non-final `@api` classes — a test case
+ * overriding RuleTestCase::getCollectors(), an ObjectType subclass
+ * overriding describeAdditionalCacheKey()); InlineCallCollector keeps those
+ * out of the closed world on its own.
  *
  * Conservative: a method declared by a class (or by a trait it uses) counts
  * as overriding it on every ancestor, whether or not that ancestor declares

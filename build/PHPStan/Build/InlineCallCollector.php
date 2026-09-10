@@ -47,9 +47,13 @@ use const DIRECTORY_SEPARATOR;
  *
  * Callees are ones no subclass can override — final class, final or private
  * method — or, closed-world, non-final ones nothing in the scanned code base
- * overrides (OverridesScanner). Every call frame saved is engine work saved:
- * a getter call costs about 40ns of frame setup for a body that reads one
- * property; a self-analysis measured -4% user CPU.
+ * overrides (OverridesScanner). The closed world stops at PHPStan's extension
+ * surface: an abstract class or a non-final class tagged `@api` exists to be
+ * subclassed by third parties, whose overrides the scan cannot see, so its
+ * overridable methods stay calls and its properties stay non-public
+ * (isExtensible()). Every call frame saved is engine work saved: a getter
+ * call costs about 40ns of frame setup for a body that reads one property;
+ * a self-analysis measured -4% user CPU.
  *
  * @implements Collector<MethodCall, array{file: string, start: int, end: int, replacement: string, callee: string, publicize: list<array{class: string, property: string, file: string|null}>}>
  */
@@ -76,7 +80,10 @@ final class InlineCallCollector implements Collector
 	/** @var array<string, true>|null */
 	private ?array $overrides = null;
 
-	public function __construct(private Parser $parser, private ReflectionProvider $reflectionProvider)
+	/**
+	 * @param list<string>|null $directories the closed world to scan for overrides; null = directories()
+	 */
+	public function __construct(private Parser $parser, private ReflectionProvider $reflectionProvider, private ?array $directories = null)
 	{
 	}
 
@@ -116,7 +123,7 @@ final class InlineCallCollector implements Collector
 			return null;
 		}
 		$guardFree = $declaringClass->isFinal() || $method->isFinal()->yes() || $method->isPrivate();
-		if (!$guardFree && $this->isOverridden($declaringClass, $methodName)) {
+		if (!$guardFree && ($this->isExtensible($declaringClass) || $this->isOverridden($declaringClass, $methodName))) {
 			return null;
 		}
 
@@ -233,6 +240,11 @@ final class InlineCallCollector implements Collector
 			}
 			foreach ($this->publicizeTargets($propertyDeclaringClass->getName(), $propertyName) as $target) {
 				if ($target['file'] !== null && $this->isInProtectedPackage($target['file'])) {
+					return null;
+				}
+				// a third-party subclass redeclaring the property would no longer load
+				// ("Access level to Sub::$x must be public")
+				if ($this->reflectionProvider->hasClass($target['class']) && $this->isExtensible($this->reflectionProvider->getClass($target['class']))) {
 					return null;
 				}
 				$publicize[] = $target;
@@ -490,10 +502,38 @@ final class InlineCallCollector implements Collector
 	{
 		if ($this->scanner === null) {
 			$this->scanner = new OverridesScanner();
-			$this->overrides = $this->scanner->scan(self::directories());
+			$this->overrides = $this->scanner->scan($this->directories ?? self::directories());
 		}
 
 		return $this->scanner;
+	}
+
+	/**
+	 * Whether third parties are meant to subclass the class, so that the
+	 * closed-world scan cannot vouch for its overridable methods or for
+	 * subclasses redeclaring its properties: abstract classes and non-final
+	 * classes tagged `@api` (the backward compatibility promise lets
+	 * extensions extend those).
+	 */
+	private function isExtensible(ClassReflection $classReflection): bool
+	{
+		if ($classReflection->isFinal()) {
+			return false;
+		}
+		if ($classReflection->isAbstract()) {
+			return true;
+		}
+		$docBlock = $classReflection->getResolvedPhpDoc();
+		if ($docBlock === null) {
+			return false;
+		}
+		foreach ($docBlock->getPhpDocNodes() as $phpDocNode) {
+			if (count($phpDocNode->getTagsByName('@api')) > 0) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private function isOverridden(ClassReflection $declaringClass, string $methodName): bool

@@ -8,10 +8,12 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
+use function array_key_exists;
 use function count;
 use function sprintf;
 
@@ -153,6 +155,7 @@ final class SimpleImpurePoint
 	public static function resolvePureUnlessCallableIsImpureVerdict(ParametersAcceptor $variant, Scope $scope, array $args): ?TrinaryLogic
 	{
 		$parameters = $variant->getParameters();
+		$declaredParameterNames = self::collectParameterNames($parameters);
 		$verdict = null;
 
 		foreach ($parameters as $parameterIndex => $parameter) {
@@ -165,26 +168,17 @@ final class SimpleImpurePoint
 
 			$verdict ??= TrinaryLogic::createYes();
 
-			$matchedArg = null;
-			$hasNamedParameter = false;
-			foreach ($args as $i => $arg) {
-				if ($arg->name !== null) {
-					$hasNamedParameter = true;
-					if ($arg->name->name === $parameter->getName()) {
-						$matchedArg = $arg;
-						break;
-					}
+			[$matchedArg, $hasUnpackedArg] = self::matchArgForParameter($args, $parameter, $parameterIndex, $declaredParameterNames);
+
+			if ($matchedArg === null) {
+				if ($hasUnpackedArg) {
+					// An unpacked argument list (...$args) might supply the flagged
+					// callable, so we cannot be sure the call stays pure.
+					$verdict = $verdict->and(TrinaryLogic::createMaybe());
 
 					continue;
 				}
 
-				if (!$hasNamedParameter && $i === $parameterIndex) {
-					$matchedArg = $arg;
-					break;
-				}
-			}
-
-			if ($matchedArg === null) {
 				// Optional callback omitted (e.g. array_filter($arr)) - pure.
 				continue;
 			}
@@ -226,6 +220,7 @@ final class SimpleImpurePoint
 	public static function resolvePureUnlessParameterPassedVerdict(ParametersAcceptor $variant, array $args): ?TrinaryLogic
 	{
 		$parameters = $variant->getParameters();
+		$declaredParameterNames = self::collectParameterNames($parameters);
 		$verdict = null;
 
 		foreach ($parameters as $parameterIndex => $parameter) {
@@ -238,30 +233,7 @@ final class SimpleImpurePoint
 
 			$verdict ??= TrinaryLogic::createYes();
 
-			$matchedArg = null;
-			$hasUnpackedArg = false;
-			$hasNamedParameter = false;
-			foreach ($args as $i => $arg) {
-				if ($arg->unpack) {
-					$hasUnpackedArg = true;
-					continue;
-				}
-
-				if ($arg->name !== null) {
-					$hasNamedParameter = true;
-					if ($arg->name->name === $parameter->getName()) {
-						$matchedArg = $arg;
-						break;
-					}
-
-					continue;
-				}
-
-				if (!$hasNamedParameter && $i === $parameterIndex) {
-					$matchedArg = $arg;
-					break;
-				}
-			}
+			[$matchedArg, $hasUnpackedArg] = self::matchArgForParameter($args, $parameter, $parameterIndex, $declaredParameterNames);
 
 			if ($matchedArg === null) {
 				if ($hasUnpackedArg) {
@@ -285,6 +257,71 @@ final class SimpleImpurePoint
 		}
 
 		return $verdict;
+	}
+
+	/**
+	 * @param ParameterReflection[] $parameters
+	 * @return array<string, true>
+	 */
+	private static function collectParameterNames(array $parameters): array
+	{
+		$names = [];
+		foreach ($parameters as $parameter) {
+			$names[$parameter->getName()] = true;
+		}
+
+		return $names;
+	}
+
+	/**
+	 * Finds the argument a flagged parameter receives at a call site.
+	 *
+	 * A trailing variadic parameter collects every positional argument from its own
+	 * position onwards, and - because a named argument that matches no declared
+	 * parameter is collected by the variadic as a string-keyed element - those named
+	 * arguments too.
+	 *
+	 * @param Arg[] $args
+	 * @param array<string, true> $declaredParameterNames
+	 * @return array{?Arg, bool} the matched argument (null when the parameter received
+	 *                           none) and whether an unpacked argument list might have
+	 *                           supplied it
+	 */
+	private static function matchArgForParameter(array $args, ExtendedParameterReflection $parameter, int $parameterIndex, array $declaredParameterNames): array
+	{
+		$isVariadic = $parameter->isVariadic();
+		$hasUnpackedArg = false;
+		$hasNamedArg = false;
+
+		foreach ($args as $i => $arg) {
+			if ($arg->unpack) {
+				$hasUnpackedArg = true;
+				continue;
+			}
+
+			if ($arg->name !== null) {
+				$hasNamedArg = true;
+				if ($arg->name->name === $parameter->getName()) {
+					return [$arg, $hasUnpackedArg];
+				}
+
+				if ($isVariadic && !array_key_exists($arg->name->name, $declaredParameterNames)) {
+					return [$arg, $hasUnpackedArg];
+				}
+
+				continue;
+			}
+
+			if ($hasNamedArg) {
+				continue;
+			}
+
+			if ($i === $parameterIndex || ($isVariadic && $i > $parameterIndex)) {
+				return [$arg, $hasUnpackedArg];
+			}
+		}
+
+		return [null, $hasUnpackedArg];
 	}
 
 	/** @return ImpurePointIdentifier */

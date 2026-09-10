@@ -53,3 +53,51 @@ function namedArgs(): void
 	$v = 1;
 	sink(v: $v);
 }
+
+class NullsafeReads
+{
+
+	public function __construct(private ?\DateTimeImmutable $maxDate, private ?NullsafeReads $inner, private ?\ArrayObject $bag)
+	{
+	}
+
+	public function argumentOfNullsafeCall(): ?\DateTimeImmutable
+	{
+		$nightsFrom = 1;
+
+		return $this->maxDate?->modify(sprintf('-%d days', $nightsFrom));
+	}
+
+	public function argumentOfNestedNullsafeCall(): void
+	{
+		$weekDay = 3;
+		sink($this->inner?->argumentOfNullsafeCallWith($weekDay));
+	}
+
+	public function argumentOfNullsafeCallWith(int $weekDay): int
+	{
+		return $weekDay;
+	}
+
+	public function nullsafeInCondition(): void
+	{
+		$time = new \DateTimeImmutable();
+		if ($this->maxDate?->getTimestamp() === $time->getTimestamp()) {
+			sink(1);
+		}
+	}
+
+	public function nullsafeOffsetOnPropertyFetch(): void
+	{
+		$key = 'k';
+		sink($this->bag?->offsetGet($key));
+	}
+
+	public function unreadArgumentVariable(): void
+	{
+		$nightsFrom = 1; // unused $nightsFrom
+		$nightsFrom = 2;
+		sink($this->maxDate?->modify(sprintf('-%d days', $nightsFrom)));
+	}
+
+}

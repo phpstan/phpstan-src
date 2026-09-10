@@ -236,6 +236,24 @@ class UnusedVariableRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug10202(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10202.php'], [
+			[
+				'Variable $x is never read.',
+				9,
+			],
+			[
+				'Variable $x is never read.',
+				12,
+			],
+			[
+				'Variable $x is never read.',
+				14,
+			],
+		]);
+	}
+
 	public function testRedundantAssignment(): void
 	{
 		$this->analyse([__DIR__ . '/data/unused-variable-redundant.php'], [

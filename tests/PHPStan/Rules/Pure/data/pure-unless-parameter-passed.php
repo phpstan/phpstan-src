@@ -450,3 +450,27 @@ function pureVariadicOutNamedForOtherParameter(string $s): string
 	// so the call stays pure.
 	return myVariadicOut(subject: $s);
 }
+
+/**
+ * @pure-unless-parameter-passed $flag
+ */
+function byValueUnlessParameterPassed(string $subject, bool $flag = false): string
+{
+	// $flag is not passed by reference, so passing it cannot make the call impure
+	// on its own and the tag cannot be checked.
+	return $subject;
+}
+
+/**
+ * @param-out int $count
+ * @pure-unless-parameter-passed $count
+ */
+function sideEffectUnlessParameterPassed(string $subject, int &$count = 0): string
+{
+	// The tag only exempts writing through the flagged by-ref parameter; the rest
+	// of the body still has to be pure.
+	echo $subject;
+	$count = 1;
+
+	return $subject;
+}

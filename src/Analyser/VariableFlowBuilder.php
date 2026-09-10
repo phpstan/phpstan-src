@@ -100,7 +100,10 @@ final class VariableFlowBuilder
 		if (!$target instanceof Expr\Variable || !is_string($target->name)) {
 			return null;
 		}
-		return VariableFlow::write(new VariableWrite($target->name, $target, spl_object_id($target), $kind), $redundant);
+		return VariableFlow::sequence(
+			$kind === VariableWrite::KIND_ARRAY_DIM_WRITE ? VariableFlow::read($target->name) : null,
+			VariableFlow::write(new VariableWrite($target->name, $target, spl_object_id($target), $kind), $redundant),
+		);
 	}
 
 	public static function escapeRoot(Expr $expr): ?VariableFlow

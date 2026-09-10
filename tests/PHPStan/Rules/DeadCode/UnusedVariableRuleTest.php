@@ -375,4 +375,9 @@ class UnusedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/unused-variable-usage-flow.php'], []);
 	}
 
+	public function testNestedOffsetWrites(): void
+	{
+		$this->analyse([__DIR__ . '/data/unused-variable-nested-offset-writes.php'], []);
+	}
+
 }

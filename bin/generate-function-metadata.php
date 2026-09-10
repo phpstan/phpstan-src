@@ -127,18 +127,20 @@ use Symfony\Component\Finder\Finder;
 				throw new ShouldNotHappenException($functionName);
 			}
 
-			if (isset($metadata[$functionName]['pureUnlessCallableIsImpureParameters'])) {
-				$metadata[$functionName] = [
-					'pureUnlessCallableIsImpureParameters' => $metadata[$functionName]['pureUnlessCallableIsImpureParameters'],
-				];
+			// An entry can carry both conditions at once (e.g. preg_replace_callback,
+			// which is pure unless its callback is impure or its 'count' is passed),
+			// so keep every condition the hand-maintained entry declares.
+			$conditions = [];
+			foreach (['pureUnlessCallableIsImpureParameters', 'pureUnlessParameterPassedParameters'] as $conditionKey) {
+				if (!isset($metadata[$functionName][$conditionKey])) {
+					continue;
+				}
 
-				continue;
+				$conditions[$conditionKey] = $metadata[$functionName][$conditionKey];
 			}
 
-			if (isset($metadata[$functionName]['pureUnlessParameterPassedParameters'])) {
-				$metadata[$functionName] = [
-					'pureUnlessParameterPassedParameters' => $metadata[$functionName]['pureUnlessParameterPassedParameters'],
-				];
+			if ($conditions !== []) {
+				$metadata[$functionName] = $conditions;
 
 				continue;
 			}
@@ -212,46 +214,39 @@ return [
 php;
 	$content = '';
 	$escape = static fn (mixed $value): string => var_export($value, true);
-	$encodeHasSideEffects = static fn (array $meta) => [$escape('hasSideEffects'), $escape($meta['hasSideEffects'])];
-	$encodePureUnlessCallableIsImpureParameters = static fn (array $meta) => [
-		$escape('pureUnlessCallableIsImpureParameters'),
-		sprintf(
-			'[%s]',
-			implode(
-				' ,',
-				array_map(
-					static fn ($key, $param) => sprintf('%s => %s', $escape($key), $escape($param)),
-					array_keys($meta['pureUnlessCallableIsImpureParameters']),
-					$meta['pureUnlessCallableIsImpureParameters'],
-				),
+	$encodeParameterMap = static fn (array $parameters) => sprintf(
+		'[%s]',
+		implode(
+			', ',
+			array_map(
+				static fn ($key, $param) => sprintf('%s => %s', $escape($key), $escape($param)),
+				array_keys($parameters),
+				$parameters,
 			),
 		),
-	];
-	$encodePureUnlessParameterPassedParameters = static fn (array $meta) => [
-		$escape('pureUnlessParameterPassedParameters'),
-		sprintf(
-			'[%s]',
-			implode(
-				' ,',
-				array_map(
-					static fn ($key, $param) => sprintf('%s => %s', $escape($key), $escape($param)),
-					array_keys($meta['pureUnlessParameterPassedParameters']),
-					$meta['pureUnlessParameterPassedParameters'],
-				),
-			),
-		),
-	];
+	);
 
 	foreach ($metadata as $name => $meta) {
+		// An entry is either unconditional or carries one or both of the conditional
+		// purity keys, so encode every key it has instead of just the first one.
+		$entries = [];
+		if (isset($meta['hasSideEffects'])) {
+			$entries[] = sprintf('%s => %s', $escape('hasSideEffects'), $escape($meta['hasSideEffects']));
+		}
+		if (isset($meta['pureUnlessCallableIsImpureParameters'])) {
+			$entries[] = sprintf('%s => %s', $escape('pureUnlessCallableIsImpureParameters'), $encodeParameterMap($meta['pureUnlessCallableIsImpureParameters']));
+		}
+		if (isset($meta['pureUnlessParameterPassedParameters'])) {
+			$entries[] = sprintf('%s => %s', $escape('pureUnlessParameterPassedParameters'), $encodeParameterMap($meta['pureUnlessParameterPassedParameters']));
+		}
+		if ($entries === []) {
+			throw new ShouldNotHappenException($escape($meta));
+		}
+
 		$content .= sprintf(
-			"\t%s => [%s => %s],\n",
+			"\t%s => [%s],\n",
 			var_export($name, true),
-			...match (true) {
-				isset($meta['hasSideEffects']) => $encodeHasSideEffects($meta),
-				isset($meta['pureUnlessCallableIsImpureParameters']) => $encodePureUnlessCallableIsImpureParameters($meta),
-				isset($meta['pureUnlessParameterPassedParameters']) => $encodePureUnlessParameterPassedParameters($meta),
-				default => throw new ShouldNotHappenException($escape($meta)),
-			},
+			implode(', ', $entries),
 		);
 	}
 

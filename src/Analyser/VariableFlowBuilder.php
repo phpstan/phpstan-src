@@ -22,7 +22,7 @@ final class VariableFlowBuilder
 				continue;
 			}
 
-			$throws[] = VariableFlow::throwing($throw->getType(), true);
+			$throws[] = VariableFlow::throwing($throw->getType(), true, $throw->canContainAnyThrowable());
 		}
 		return VariableFlow::sequence(...$throws);
 	}

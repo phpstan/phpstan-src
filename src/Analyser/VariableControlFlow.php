@@ -26,6 +26,7 @@ final class VariableControlFlow extends VariableFlow
 		public readonly ?ArrowFunction $arrow = null,
 		public readonly array $cases = [],
 		public readonly bool $canRepeat = true,
+		public readonly bool $canContainAnyThrowable = false,
 	)
 	{
 		parent::__construct($kind);

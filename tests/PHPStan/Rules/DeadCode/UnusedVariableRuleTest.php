@@ -24,6 +24,11 @@ class UnusedVariableRuleTest extends RuleTestCase
 		return new UnusedVariableRule();
 	}
 
+	public function testThrowableCatchAfterDocumentedException(): void
+	{
+		$this->analyse([__DIR__ . '/data/unused-variable-throwable-catch.php'], []);
+	}
+
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/unused-variable.php'], [

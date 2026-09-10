@@ -131,9 +131,9 @@ abstract class VariableFlow
 		return new VariableControlFlow($kind, name: $name, level: $level);
 	}
 
-	public static function throwing(Type $type, bool $canContinue): self
+	public static function throwing(Type $type, bool $canContinue, bool $canContainAnyThrowable = false): self
 	{
-		return new VariableControlFlow(self::THROW, type: $type, canExit: $canContinue);
+		return new VariableControlFlow(self::THROW, type: $type, canExit: $canContinue, canContainAnyThrowable: $canContainAnyThrowable);
 	}
 
 	public static function dead(?self $flow): ?self

@@ -9,6 +9,7 @@ use PhpParser\Node\Stmt\TryCatch;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\InternalStatementExitPoint;
 use PHPStan\Analyser\InternalStatementResult;
+use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\StatementContext;
@@ -120,6 +121,9 @@ final class TryCatchHandler implements StmtHandler
 			$onlyExplicitIsThrow = true;
 			if (count($matchingThrowPoints) === 0) {
 				foreach ($throwPoints as $throwPointIndex => $throwPoint) {
+					if ($throwPoint->getType() instanceof NeverType) {
+						continue;
+					}
 					foreach ($catchTypes as $catchTypeIndex => $catchTypeItem) {
 						if ($catchTypeItem->isSuperTypeOf($throwPoint->getType())->no()) {
 							continue;
@@ -145,7 +149,7 @@ final class TryCatchHandler implements StmtHandler
 			// implicit only
 			if (count($matchingThrowPoints) === 0 || $onlyExplicitIsThrow) {
 				foreach ($throwPoints as $throwPointIndex => $throwPoint) {
-					if ($throwPoint->isExplicit()) {
+					if ($throwPoint->isExplicit() || $throwPoint->getType() instanceof NeverType) {
 						continue;
 					}
 
@@ -191,7 +195,12 @@ final class TryCatchHandler implements StmtHandler
 				$newThrowPoint = $throwPoint->subtractCatchType($originalCatchType);
 
 				if ($newThrowPoint->getType() instanceof NeverType) {
-					continue;
+					if (!$throwPoint->canContainAnyThrowable() || $originalCatchType->isSuperTypeOf(new ObjectType(Throwable::class))->yes()) {
+						continue;
+					}
+					// Keep the fallback Throwable path for enclosing try blocks without
+					// introducing any other exception types after the documented ones were caught.
+					$newThrowPoint = InternalThrowPoint::createImplicit($throwPoint->getScope(), $throwPoint->getNode(), $newThrowPoint->getType());
 				}
 
 				$newThrowPoints[] = $newThrowPoint;
@@ -219,7 +228,7 @@ final class TryCatchHandler implements StmtHandler
 
 			$catchScopeResult = $nodeScopeResolver->processStmtNodesInternal($catchNode, $catchNode->stmts, $catchScope->enterCatchType($catchType, $variableName), $storage, $nodeCallback, $context);
 			$catchScopeForFinally = $catchScopeResult->getScope();
-			$catchFlows[] = [$catchType, VariableFlow::sequence($catchNode->var !== null ? VariableFlowBuilder::targetWrite($catchNode->var, VariableWrite::KIND_CATCH, $catchScopeForFinally, $storage) : null, $catchScopeResult->getVariableFlow())];
+			$catchFlows[] = [$originalCatchType, VariableFlow::sequence($catchNode->var !== null ? VariableFlowBuilder::targetWrite($catchNode->var, VariableWrite::KIND_CATCH, $catchScopeForFinally, $storage) : null, $catchScopeResult->getVariableFlow())];
 
 			$finalScope = $catchScopeResult->isAlwaysTerminating() ? $finalScope : $catchScopeResult->getScope()->mergeWith($finalScope);
 			$alwaysTerminating = $alwaysTerminating && $catchScopeResult->isAlwaysTerminating();

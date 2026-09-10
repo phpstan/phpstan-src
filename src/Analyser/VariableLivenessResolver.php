@@ -6,7 +6,9 @@ use PhpParser\Node;
 use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\Node\VariableWritesNode;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
+use Throwable;
 use function array_reverse;
 use function array_values;
 use function count;
@@ -237,6 +239,15 @@ final class VariableLivenessResolver
 			}
 			if ($flow->type === null) {
 				throw new ShouldNotHappenException();
+			}
+			if ($flow->canContainAnyThrowable) {
+				foreach ($context->catches as [$catchType, $destination]) {
+					if (!$catchType->isSuperTypeOf(new ObjectType(Throwable::class))->yes()) {
+						continue;
+					}
+					$names += $destination;
+					break;
+				}
 			}
 			foreach ($context->catches as [$catchType, $destination]) {
 				$accepts = $catchType->isSuperTypeOf($flow->type);

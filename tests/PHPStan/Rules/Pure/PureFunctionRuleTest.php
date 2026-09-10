@@ -450,6 +450,14 @@ class PureFunctionRuleTest extends RuleTestCase
 				'Impure call to function PureUnlessParameterPassedFunction\myVariadicOut() in pure function PureUnlessParameterPassedFunction\pureVariadicOutNamed().',
 				441,
 			],
+			[
+				'Function PureUnlessParameterPassedFunction\byValueUnlessParameterPassed() is marked @pure-unless-parameter-passed for parameter $flag, but $flag is not passed by reference.',
+				457,
+			],
+			[
+				'Impure echo in pure function PureUnlessParameterPassedFunction\sideEffectUnlessParameterPassed().',
+				472,
+			],
 		]);
 	}
 

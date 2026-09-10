@@ -415,6 +415,14 @@ class PureMethodRuleTest extends RuleTestCase
 				'Method PureUnlessParameterPassedMethod\Replacer::replace() is marked @pure-unless-parameter-passed for parameter $count, but $count is not optional, so method PureUnlessParameterPassedMethod\Replacer::replace() is never pure.',
 				12,
 			],
+			[
+				'Method PureUnlessParameterPassedMethod\Replacer::replaceByValue() is marked @pure-unless-parameter-passed for parameter $flag, but $flag is not passed by reference.',
+				33,
+			],
+			[
+				'Impure echo in pure method PureUnlessParameterPassedMethod\Replacer::replaceWithSideEffect().',
+				44,
+			],
 		]);
 	}
 

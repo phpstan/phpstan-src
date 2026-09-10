@@ -17,6 +17,7 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\DependencyInjection\AutowiredService;
+use function is_string;
 
 /**
  * @implements ExprHandler<ArrowFunction>
@@ -92,7 +93,15 @@ final class ArrowFunctionHandler implements ExprHandler
 
 	public static function getVariableFlow(ArrowFunction $expr, ExpressionResult $bodyResult): VariableFlow
 	{
-		return VariableFlow::arrow($expr, $bodyResult->getVariableFlow());
+		$outputs = [];
+		foreach ($expr->params as $param) {
+			if (!$param->byRef || !$param->var instanceof Expr\Variable || !is_string($param->var->name)) {
+				continue;
+			}
+			$outputs[] = VariableFlow::read($param->var->name);
+		}
+
+		return VariableFlow::arrow($expr, $bodyResult->getVariableFlow(), VariableFlow::sequence(...$outputs));
 	}
 
 }

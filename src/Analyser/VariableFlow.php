@@ -72,9 +72,9 @@ abstract class VariableFlow
 		return new VariableSequenceFlow(self::CHOICE, $branches);
 	}
 
-	public static function arrow(ArrowFunction $arrow, ?self $body): self
+	public static function arrow(ArrowFunction $arrow, ?self $body, ?self $outputs): self
 	{
-		return new VariableControlFlow(self::ARROW, [$body], arrow: $arrow);
+		return new VariableControlFlow(self::ARROW, [$body, $outputs], arrow: $arrow);
 	}
 
 	public static function read(string $name): ?self

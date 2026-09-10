@@ -380,4 +380,11 @@ class UnusedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/unused-variable-nested-offset-writes.php'], []);
 	}
 
+	public function testArrowReferenceParameters(): void
+	{
+		$this->analyse([__DIR__ . '/data/unused-variable-arrow-reference.php'], [
+			['Value assigned to variable $value is never read.', 14],
+		]);
+	}
+
 }

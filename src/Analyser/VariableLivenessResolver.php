@@ -174,7 +174,8 @@ final class VariableLivenessResolver
 			throw new ShouldNotHappenException();
 		}
 		if ($flow->kind === VariableFlow::ARROW && $flow->arrow !== null) {
-			$names = $this->liveBefore($flow->children[0], [], new VariableFlowContext([]));
+			$outputs = $this->liveBefore($flow->children[1], [], new VariableFlowContext([]));
+			$names = $this->liveBefore($flow->children[0], $outputs, new VariableFlowContext($outputs, uncaught: $outputs));
 			foreach ($flow->arrow->params as $param) {
 				if (!$param->var instanceof Node\Expr\Variable || !is_string($param->var->name)) {
 					continue;

@@ -365,4 +365,9 @@ class UnusedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/unused-variable-foreach-pollution.php'], []);
 	}
 
+	public function testUsageFlow(): void
+	{
+		$this->analyse([__DIR__ . '/data/unused-variable-usage-flow.php'], []);
+	}
+
 }

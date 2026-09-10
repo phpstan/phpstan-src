@@ -327,4 +327,14 @@ class UnusedVariableRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testDeadBranchWrites(): void
+	{
+		$this->analyse([__DIR__ . '/data/unused-variable-dead-branch.php'], [
+			[
+				'Value assigned to variable $x is never read.',
+				79,
+			],
+		]);
+	}
+
 }

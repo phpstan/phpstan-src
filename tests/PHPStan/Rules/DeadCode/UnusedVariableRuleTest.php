@@ -12,6 +12,13 @@ use PHPUnit\Framework\Attributes\RequiresPhp;
 class UnusedVariableRuleTest extends RuleTestCase
 {
 
+	private bool $polluteScopeWithAlwaysIterableForeach = true;
+
+	protected function shouldPolluteScopeWithAlwaysIterableForeach(): bool
+	{
+		return $this->polluteScopeWithAlwaysIterableForeach;
+	}
+
 	protected function getRule(): Rule
 	{
 		return new UnusedVariableRule();
@@ -350,6 +357,12 @@ class UnusedVariableRuleTest extends RuleTestCase
 			['Value assigned to variable $value is never read.', 160],
 			['Value assigned to variable $value is never read.', 167],
 		]);
+	}
+
+	public function testForeachWithoutPollution(): void
+	{
+		$this->polluteScopeWithAlwaysIterableForeach = false;
+		$this->analyse([__DIR__ . '/data/unused-variable-foreach-pollution.php'], []);
 	}
 
 }

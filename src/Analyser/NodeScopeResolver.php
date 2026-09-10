@@ -65,6 +65,7 @@ use PHPStan\Reflection\Callables\SimpleThrowPoint;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\Native\NativeMethodReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
@@ -77,6 +78,7 @@ use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ClosureType;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\FunctionParameterClosureThisExtension;
 use PHPStan\Type\FunctionParameterClosureTypeExtension;
@@ -120,6 +122,15 @@ class NodeScopeResolver
 
 	public const LOOP_SCOPE_ITERATIONS = 3;
 	public const GENERALIZE_AFTER_ITERATION = 1;
+
+	/**
+	 * Set on a closure/arrow function nested inside a call argument (through
+	 * array literals and ternaries) to the parameter type it ends up passed
+	 * to, as array{Type, Type|null} (phpdoc type, native type).
+	 * A closure that IS the argument gets that type handed to
+	 * processClosureNode() directly and never carries the attribute.
+	 */
+	public const CLOSURE_PASSED_TO_TYPE_ATTRIBUTE = 'phpstanClosurePassedToType';
 
 	/** @var array<string, true> filePath(string) => bool(true) */
 	private array $analysedFiles = [];
@@ -1934,12 +1945,19 @@ class NodeScopeResolver
 					// args that pin them, so determining siblings are already processed; the mixed pad keeps
 					// the argument COUNT correct so the by-ref/variadic variant stays stable (e.g. sscanf),
 					// while processed siblings resolve a generic callable(T) parameter. No forward read.
+					// An argument that only CONTAINS closures (array literal, ternary) pins template
+					// types itself - array<T, Closure(T)> reads T off the keys - so it is padded with
+					// its structural type: the literal with each nested closure's declared signature.
 					$paddedTypes = [];
 					$paddedUnpack = false;
 					$paddedHasName = false;
 					foreach ($args as $j => $paddedArg) {
 						$paddedOriginalArg = $paddedArg->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE) ?? $paddedArg;
-						$this->addGatheredArgType($paddedTypes, $paddedUnpack, $paddedHasName, $paddedOriginalArg, $j, $gatheredArgTypeByIndex[$j] ?? new MixedType());
+						$paddedType = $gatheredArgTypeByIndex[$j] ?? null;
+						if ($paddedType === null && $j === $i) {
+							$paddedType = $this->getStructuralArgType($scope, $arg->value);
+						}
+						$this->addGatheredArgType($paddedTypes, $paddedUnpack, $paddedHasName, $paddedOriginalArg, $j, $paddedType ?? new MixedType());
 					}
 					$argMetadataAcceptor = $this->selectArgsMetadataAcceptor($args, $paddedTypes, $parametersAcceptors, $namedArgumentsVariants, $paddedHasName, $paddedUnpack, $scope);
 				} else {
@@ -2178,6 +2196,9 @@ class NodeScopeResolver
 				// getType() answers from the stored result
 				$this->callNodeCallbackWithExpression($nodeCallback, $arg->value, $scopeToPass, $storage, $context);
 			} else {
+				if ($parameterType !== null) {
+					$this->annotateNestedClosuresWithPassedToType($scope, $arg->value, $parameterType, $parameterNativeType);
+				}
 				$exprType = $scope->getType($arg->value);
 				$enterExpressionAssignForByRef = $assignByReference && $arg->value instanceof ArrayDimFetch && $arg->value->dim === null;
 				if ($enterExpressionAssignForByRef) {
@@ -2463,6 +2484,118 @@ class NodeScopeResolver
 		}
 
 		return $scope->getType($closureExpr);
+	}
+
+	/**
+	 * The type of an argument that contains closures, without walking any
+	 * closure body: array literals and ternaries are built structurally,
+	 * a nested closure/arrow function contributes its declared signature
+	 * only, and any other closure-containing expression (a call taking a
+	 * closure, ...) is mixed. Sub-expressions without a closure inside read
+	 * their scope type as usual.
+	 *
+	 * Null when the expression is not an array literal or ternary - there
+	 * is nothing structural to read and the caller pads with mixed.
+	 */
+	private function getStructuralArgType(MutatingScope $scope, Expr $expr): ?Type
+	{
+		if ($expr instanceof Expr\Ternary) {
+			$ifType = $this->getStructuralItemType($scope, $expr->if ?? $expr->cond);
+			$elseType = $this->getStructuralItemType($scope, $expr->else);
+
+			return TypeCombinator::union($ifType, $elseType);
+		}
+
+		if (!$expr instanceof Expr\Array_) {
+			return null;
+		}
+
+		return $this->container->getByType(InitializerExprTypeResolver::class)->getArrayType($expr, fn (Expr $itemExpr): Type => $this->getStructuralItemType($scope, $itemExpr));
+	}
+
+	private function getStructuralItemType(MutatingScope $scope, Expr $expr): Type
+	{
+		if ($expr instanceof Expr\Closure || $expr instanceof Expr\ArrowFunction) {
+			return $this->container->getByType(ClosureTypeResolver::class)->getClosureType($scope, $expr, shallow: true);
+		}
+
+		if (!$this->argConsumesResolvedParameterType($expr)) {
+			return $scope->getType($expr);
+		}
+
+		return $this->getStructuralArgType($scope, $expr) ?? new MixedType();
+	}
+
+	/**
+	 * Projects the parameter type an argument is passed to onto the
+	 * closures/arrow functions nested inside it, so their parameters are
+	 * inferred the same way as for a closure that IS the argument.
+	 *
+	 * Walks array literals (projecting through the key: a literal key or the
+	 * auto-index reads the offset value type, so array shapes resolve per
+	 * item) and both branches of a ternary. Any other expression stops the
+	 * projection - its value is not the argument value itself.
+	 */
+	private function annotateNestedClosuresWithPassedToType(Scope $scope, Expr $expr, Type $type, ?Type $nativeType): void
+	{
+		if ($expr instanceof Expr\Closure || $expr instanceof Expr\ArrowFunction) {
+			$expr->setAttribute(self::CLOSURE_PASSED_TO_TYPE_ATTRIBUTE, [$type, $nativeType]);
+			return;
+		}
+
+		if (!$this->argConsumesResolvedParameterType($expr)) {
+			return;
+		}
+
+		if ($expr instanceof Expr\Ternary) {
+			if ($expr->if !== null) {
+				$this->annotateNestedClosuresWithPassedToType($scope, $expr->if, $type, $nativeType);
+			}
+			$this->annotateNestedClosuresWithPassedToType($scope, $expr->else, $type, $nativeType);
+			return;
+		}
+
+		if (!$expr instanceof Expr\Array_) {
+			return;
+		}
+
+		// only the array members of a union describe the literal's items
+		if ($type instanceof UnionType) {
+			$type = $type->filterTypes(static fn (Type $innerType) => $innerType->isArray()->yes());
+			if ($type->isArray()->no()) {
+				return;
+			}
+		}
+		if ($nativeType instanceof UnionType) {
+			$nativeType = $nativeType->filterTypes(static fn (Type $innerType) => $innerType->isArray()->yes());
+		}
+
+		$nextAutoIndex = 0;
+		foreach ($expr->items as $item) {
+			if ($item->unpack) {
+				// the unpacked count is unknown, later auto-indexes are too
+				$nextAutoIndex = null;
+				continue;
+			}
+
+			if ($item->key === null) {
+				$keyType = $nextAutoIndex !== null ? new ConstantIntegerType($nextAutoIndex++) : null;
+			} else {
+				$keyType = $scope->getType($item->key);
+				$keyValues = $keyType->getConstantScalarValues();
+				if ($nextAutoIndex !== null && count($keyValues) === 1 && is_int($keyValues[0])) {
+					$nextAutoIndex = max($nextAutoIndex, $keyValues[0] + 1);
+				}
+			}
+
+			$itemType = $keyType !== null ? $type->getOffsetValueType($keyType) : $type->getIterableValueType();
+			$itemNativeType = null;
+			if ($nativeType !== null) {
+				$itemNativeType = $keyType !== null ? $nativeType->getOffsetValueType($keyType) : $nativeType->getIterableValueType();
+			}
+
+			$this->annotateNestedClosuresWithPassedToType($scope, $item->value, $itemType, $itemNativeType);
+		}
 	}
 
 	/**

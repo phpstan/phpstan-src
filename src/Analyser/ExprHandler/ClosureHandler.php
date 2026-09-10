@@ -41,7 +41,11 @@ final class ClosureHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		$processClosureResult = $nodeScopeResolver->processClosureNode($stmt, $expr, $scope, $storage, $nodeCallback, $context, null);
+		// a closure nested inside a call argument (array literal, ternary)
+		// carries the parameter type it is passed to - see
+		// NodeScopeResolver::annotateNestedClosuresWithPassedToType()
+		[$passedToType, $nativePassedToType] = $expr->getAttribute(NodeScopeResolver::CLOSURE_PASSED_TO_TYPE_ATTRIBUTE) ?? [null, null];
+		$processClosureResult = $nodeScopeResolver->processClosureNode($stmt, $expr, $scope, $storage, $nodeCallback, $context, $passedToType, $nativePassedToType);
 		$this->closureTypeResolver->seedCacheFromClosureWalk($scope, $expr, $processClosureResult);
 
 		return $this->expressionResultFactory->create(

@@ -803,6 +803,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		$nativeCallableParameters = null;
 		$arrayMapArgs = $expr->getAttribute(ArrayMapArgVisitor::ATTRIBUTE_NAME);
 		$immediatelyInvokedArgs = $expr->getAttribute(ImmediatelyInvokedClosureVisitor::ARGS_ATTRIBUTE_NAME);
+		$passedTo = $expr->getAttribute(NodeScopeResolver::CLOSURE_PASSED_TO_TYPE_ATTRIBUTE);
 		if ($arrayMapArgs !== null) {
 			$callableParameters = [];
 			$nativeCallableParameters = [];
@@ -815,6 +816,13 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 				$callableParameters[] = new DummyParameter('item', $scope->getType($immediatelyInvokedArg->value), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
 				$nativeCallableParameters[] = new DummyParameter('item', $scope->getNativeType($immediatelyInvokedArg->value), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
 			}
+		} elseif ($passedTo !== null) {
+			// nested inside a call argument: the projected parameter type, not
+			// the enclosing parameter on the in-function-call stack (that one
+			// describes the whole argument, e.g. the array of closures)
+			[$passedToType, $nativePassedToType] = $passedTo;
+			$callableParameters = $this->nodeScopeResolver->createCallableParameters($scope, $expr, null, $passedToType);
+			$nativeCallableParameters = $this->nodeScopeResolver->createNativeCallableParameters($scope, $expr, null, $nativePassedToType ?? $passedToType);
 		} else {
 			$inFunctionCallsStackCount = count($scope->inFunctionCallsStack);
 			if ($inFunctionCallsStackCount > 0) {

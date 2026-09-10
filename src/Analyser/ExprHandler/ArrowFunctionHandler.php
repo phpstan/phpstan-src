@@ -41,7 +41,11 @@ final class ArrowFunctionHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		$arrowFunctionResult = $nodeScopeResolver->processArrowFunctionNode($stmt, $expr, $scope, $storage, $nodeCallback, null);
+		// an arrow function nested inside a call argument (array literal,
+		// ternary) carries the parameter type it is passed to - see
+		// NodeScopeResolver::annotateNestedClosuresWithPassedToType()
+		[$passedToType, $nativePassedToType] = $expr->getAttribute(NodeScopeResolver::CLOSURE_PASSED_TO_TYPE_ATTRIBUTE) ?? [null, null];
+		$arrowFunctionResult = $nodeScopeResolver->processArrowFunctionNode($stmt, $expr, $scope, $storage, $nodeCallback, $passedToType, $nativePassedToType);
 		$this->closureTypeResolver->seedCacheFromArrowFunctionWalk($scope, $expr, $arrowFunctionResult);
 		$result = $arrowFunctionResult->getExpressionResult();
 

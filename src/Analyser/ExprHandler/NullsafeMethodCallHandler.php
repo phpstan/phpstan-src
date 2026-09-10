@@ -23,7 +23,6 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
-use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\NullsafeMethodCallExpressionNode;
 use PHPStan\Node\Printer\ExprPrinter;
@@ -138,7 +137,7 @@ final class NullsafeMethodCallHandler implements ExprHandler
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
-			variableFlow: VariableFlow::choice($exprResult->getVariableFlow(), VariableFlow::sequence($processedReceiverResult->getVariableFlow(), VariableFlowBuilder::child($expr->name, $storage))),
+			variableFlow: VariableFlow::choice($exprResult->getVariableFlow(), $processedReceiverResult->getVariableFlow()),
 			hasYield: $exprResult->hasYield(),
 			isAlwaysTerminating: false,
 			throwPoints: $exprResult->getThrowPoints(),

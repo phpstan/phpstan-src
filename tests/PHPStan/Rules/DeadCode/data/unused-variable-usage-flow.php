@@ -55,3 +55,17 @@ function nestedCaptures(): \Closure
 		return fn () => $value;
 	};
 }
+
+function nullsafeDynamicMethod(?object $object): void
+{
+	$method = 'before';
+	$object?->{$method = 'after'}();
+	echo $method;
+}
+
+function nullsafeDynamicProperty(?object $object): void
+{
+	$property = 'before';
+	$object?->{$property = 'after'};
+	echo $property;
+}

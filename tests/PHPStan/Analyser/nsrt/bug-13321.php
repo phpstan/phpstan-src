@@ -36,9 +36,10 @@ class Bar
 			return;
 		}
 
+		// immediately invoked - nothing can change the property in between
 		(function () {
 			assertType(Foo::class, $this->foo);
-			assertType(Foo::class.'|null', $this->writableFoo);
+			assertType(Foo::class, $this->writableFoo);
 
 			echo $this->foo->value;
 		})();

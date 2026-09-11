@@ -1160,6 +1160,7 @@ class NodeScopeResolver
 		ExpressionContext $context,
 		?Type $passedToType,
 		?Type $nativePassedToType = null,
+		bool $immediatelyInvoked = false,
 	): ProcessClosureResult
 	{
 		foreach ($expr->params as $param) {
@@ -1221,7 +1222,7 @@ class NodeScopeResolver
 			$this->callNodeCallback($nodeCallback, $expr->returnType, $scope, $storage);
 		}
 
-		$closureScope = $scope->enterAnonymousFunction($expr, $callableParameters, $nativeCallableParameters);
+		$closureScope = $scope->enterAnonymousFunction($expr, $callableParameters, $nativeCallableParameters, $immediatelyInvoked);
 		$closureScope = $closureScope->processClosureScope($scope, null, $byRefUses);
 		$closureType = $closureScope->getAnonymousFunctionReflection();
 		if (!$closureType instanceof ClosureType) {
@@ -1345,7 +1346,7 @@ class NodeScopeResolver
 				break;
 			}
 
-			$closureScope = $scope->enterAnonymousFunction($expr, $callableParameters, $nativeCallableParameters);
+			$closureScope = $scope->enterAnonymousFunction($expr, $callableParameters, $nativeCallableParameters, $immediatelyInvoked);
 			$closureScope = $closureScope->processClosureScope($intermediaryClosureScope, $prevScope, $byRefUses);
 
 			if ($closureScope->equals($prevScope)) {
@@ -2065,12 +2066,13 @@ class NodeScopeResolver
 					}
 				}
 
-				$closureResult = $this->processClosureNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $context, $parameterType, $parameterNativeType);
+				$callbackCalledImmediately = $this->callCallbackImmediately($parameter, $parameterType, $calleeReflection);
+				$closureResult = $this->processClosureNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $context, $parameterType, $parameterNativeType, $callbackCalledImmediately);
 				// the preferred ClosureType read below now answers from this seed
 				// instead of walking the body again (unless a parked fiber may
 				// still complete the gathered data - then it keeps re-walking)
 				$this->container->getByType(ClosureTypeResolver::class)->seedCacheFromClosureWalk($scopeToPass, $arg->value, $closureResult);
-				if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
+				if ($callbackCalledImmediately) {
 					$throwPoints = array_merge($throwPoints, array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $closureResult->getThrowPoints()));
 					$impurePoints = array_merge($impurePoints, $closureResult->getImpurePoints());
 				}

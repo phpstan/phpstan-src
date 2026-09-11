@@ -26,6 +26,7 @@ use PHPStan\Analyser\ExpressionTypeHolder;
 use PHPStan\Analyser\ExprHandler\Helper\IdenticalNarrowingHelper;
 use PHPStan\Analyser\InternalStatementResult;
 use PHPStan\Analyser\InternalThrowPoint;
+use PHPStan\Analyser\LoopWrittenVariableNames;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\NoopNodeCallback;
@@ -254,7 +255,7 @@ final class ForeachHandler implements StmtHandler
 					}
 
 					if ($count >= NodeScopeResolver::GENERALIZE_AFTER_ITERATION) {
-						$bodyScope = $prevScope->generalizeWith($bodyScope);
+						$bodyScope = $prevScope->generalizeWith($bodyScope, LoopWrittenVariableNames::collect($stmt, $bodyScopeResult->getVariableFlow()));
 					}
 					$count++;
 				} while ($count < NodeScopeResolver::LOOP_SCOPE_ITERATIONS);
@@ -844,7 +845,7 @@ final class ForeachHandler implements StmtHandler
 					break;
 				}
 				if ($count >= NodeScopeResolver::GENERALIZE_AFTER_ITERATION) {
-					$loopScope = $prevLoopScope->generalizeWith($loopScope);
+					$loopScope = $prevLoopScope->generalizeWith($loopScope, LoopWrittenVariableNames::collect($stmt, $iterBodyScopeResult->getVariableFlow()));
 				}
 				$count++;
 			} while ($count < NodeScopeResolver::LOOP_SCOPE_ITERATIONS);

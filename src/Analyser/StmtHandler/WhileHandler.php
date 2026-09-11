@@ -8,6 +8,7 @@ use PhpParser\Node\Stmt\While_;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\InternalStatementResult;
+use PHPStan\Analyser\LoopWrittenVariableNames;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\NoopNodeCallback;
@@ -122,7 +123,10 @@ final class WhileHandler implements StmtHandler
 				}
 
 				if ($count >= NodeScopeResolver::GENERALIZE_AFTER_ITERATION) {
-					$bodyScope = $prevScope->generalizeWith($bodyScope);
+					$bodyScope = $prevScope->generalizeWith(
+						$bodyScope,
+						LoopWrittenVariableNames::collect($stmt, VariableFlow::sequence($passCondResult->getVariableFlow(), $bodyScopeResult->getVariableFlow())),
+					);
 				}
 				$count++;
 			} while ($count < NodeScopeResolver::LOOP_SCOPE_ITERATIONS);

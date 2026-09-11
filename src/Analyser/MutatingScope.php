@@ -4773,20 +4773,47 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		);
 	}
 
-	public function generalizeWith(self $otherScope): self
+	/**
+	 * @param array<string, true>|null $writableVariableNames variables the loop can write, null when unknown
+	 */
+	public function generalizeWith(self $otherScope, ?array $writableVariableNames = null): self
 	{
-		return $this->generalizeWithVariableState($otherScope)->addTemplateArgumentConstraints($otherScope->getTemplateArgumentConstraints());
+		return $this->generalizeWithVariableState($otherScope, $writableVariableNames)->addTemplateArgumentConstraints($otherScope->getTemplateArgumentConstraints());
 	}
 
-	private function generalizeWithVariableState(self $otherScope): self
+	/**
+	 * @param array<string, true>|null $writableVariableNames
+	 */
+	private function generalizeWithVariableState(self $otherScope, ?array $writableVariableNames): self
 	{
+		if ($writableVariableNames !== null) {
+			// a reference created before the loop lets the loop write a variable it does not name
+			foreach ([$this->expressionTypes, $otherScope->expressionTypes] as $expressionTypes) {
+				foreach ($expressionTypes as $expressionTypeHolder) {
+					$intertwinedExpr = $expressionTypeHolder->getExpr();
+					if (!$intertwinedExpr instanceof IntertwinedVariableByReferenceWithExpr) {
+						continue;
+					}
+					$writableVariableNames[$intertwinedExpr->getVariableName()] = true;
+					foreach ([$intertwinedExpr->getExpr(), $intertwinedExpr->getAssignedExpr()] as $aliasedExpr) {
+						$aliasedVariableName = ScopeOps::getIntertwinedRefRootVariableName($aliasedExpr);
+						if ($aliasedVariableName === null) {
+							continue;
+						}
+						$writableVariableNames[$aliasedVariableName] = true;
+					}
+				}
+			}
+		}
 		$variableTypeHolders = $this->generalizeVariableTypeHolders(
 			$this->expressionTypes,
 			$otherScope->expressionTypes,
+			$writableVariableNames,
 		);
 		$nativeTypes = $this->generalizeVariableTypeHolders(
 			$this->nativeExpressionTypes,
 			$otherScope->nativeExpressionTypes,
+			$writableVariableNames,
 		);
 
 		return $this->scopeFactory->create(
@@ -4814,11 +4841,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	/**
 	 * @param array<string, ExpressionTypeHolder> $variableTypeHolders
 	 * @param array<string, ExpressionTypeHolder> $otherVariableTypeHolders
+	 * @param array<string, true>|null $writableVariableNames
 	 * @return array<string, ExpressionTypeHolder>
 	 */
 	private function generalizeVariableTypeHolders(
 		array $variableTypeHolders,
 		array $otherVariableTypeHolders,
+		?array $writableVariableNames,
 	): array
 	{
 		uksort($variableTypeHolders, static fn (string $exprA, string $exprB): int => strlen($exprA) <=> strlen($exprB));
@@ -4838,7 +4867,18 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				continue;
 			}
 
-			$generalizedType = $this->generalizeType($variableTypeHolder->getType(), $otherVariableTypeHolders[$variableExprString]->getType(), 0);
+			$variableExpr = $variableTypeHolder->getExpr();
+			if (
+				$writableVariableNames !== null
+				&& $variableExpr instanceof Variable
+				&& is_string($variableExpr->name)
+				&& !isset($writableVariableNames[$variableExpr->name])
+			) {
+				// the loop does not write this variable, its types differ between passes only by narrowing
+				$generalizedType = TypeCombinator::union($variableTypeHolder->getType(), $otherVariableTypeHolders[$variableExprString]->getType());
+			} else {
+				$generalizedType = $this->generalizeType($variableTypeHolder->getType(), $otherVariableTypeHolders[$variableExprString]->getType(), 0);
+			}
 			if (
 				!$generalizedType->equals($variableTypeHolder->getType())
 			) {

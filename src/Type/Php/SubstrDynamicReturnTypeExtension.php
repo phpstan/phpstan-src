@@ -23,7 +23,6 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use function count;
 use function in_array;
-use function is_bool;
 use function mb_substr;
 use function strlen;
 use function substr;
@@ -75,32 +74,25 @@ final class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTyp
 		) {
 			$results = [];
 			foreach ($constantStrings as $constantString) {
-				if ($length !== null) {
-					if ($functionReflection->getName() === 'mb_substr') {
-						$substr = mb_substr($constantString->getValue(), $offset->getValue(), $length->getValue());
-					} elseif ($this->phpVersion->substrReturnFalseInsteadOfEmptyString()) {
-						$substr = $this->substrOrFalse($constantString->getValue(), $offset->getValue(), $length->getValue());
-					} else {
-						$substr = substr($constantString->getValue(), $offset->getValue(), $length->getValue());
-					}
-				} else {
-					if ($functionReflection->getName() === 'mb_substr') {
-						$substr = mb_substr($constantString->getValue(), $offset->getValue());
-					} elseif ($this->phpVersion->substrReturnFalseInsteadOfEmptyString()) {
-						// Simulate substr call on an older PHP version if the runtime one is too new.
-						$substr = $this->substrOrFalse($constantString->getValue(), $offset->getValue());
-					} else {
-						$substr = substr($constantString->getValue(), $offset->getValue());
-					}
+				if ($functionReflection->getName() === 'mb_substr') {
+					$substr = $length !== null
+						? mb_substr($constantString->getValue(), $offset->getValue(), $length->getValue())
+						: mb_substr($constantString->getValue(), $offset->getValue());
+					$results[] = new ConstantStringType($substr);
+					continue;
 				}
 
-				if (is_bool($substr)) {
-					if ($this->phpVersion->substrReturnFalseInsteadOfEmptyString()) {
-						$results[] = new ConstantBooleanType($substr);
-					} else {
-						// Simulate substr call on a recent PHP version if the runtime one is too old.
-						$results[] = new ConstantStringType('');
-					}
+				// substrOrFalse() detects an out-of-range offset with its own length
+				// check, so the result does not depend on the runtime PHP version's
+				// substr() semantics. false is then mapped to the analysed version's
+				// result: false on PHP < 8, an empty string on PHP >= 8.
+				$substr = $length !== null
+					? $this->substrOrFalse($constantString->getValue(), $offset->getValue(), $length->getValue())
+					: $this->substrOrFalse($constantString->getValue(), $offset->getValue());
+				if ($substr === false) {
+					$results[] = $this->phpVersion->substrReturnFalseInsteadOfEmptyString()
+						? new ConstantBooleanType(false)
+						: new ConstantStringType('');
 				} else {
 					$results[] = new ConstantStringType($substr);
 				}

@@ -360,7 +360,7 @@ final class RichParser implements Parser
 		}
 
 		if ($openParenthesisCount > 0) {
-			throw new IgnoreParseException('Unexpected end, unclosed opening parenthesis', $tokenLine ?? 1);
+			throw new IgnoreParseException('Unexpected end, unclosed opening parenthesis', $tokenLine);
 		}
 
 		if (count($identifiers) === 0) {

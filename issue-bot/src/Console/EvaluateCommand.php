@@ -170,7 +170,7 @@ class EvaluateCommand extends Command
 
 		$postComments = (bool) $input->getOption('post-comments');
 		if ($postComments) {
-			if (count($toPost) > 20) {
+			if (count($toPost) > 100) {
 				$output->writeln('Too many comments to post, something is probably wrong.');
 				return self::EXIT_ERROR;
 			}

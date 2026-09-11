@@ -445,7 +445,7 @@ class ArrayKeysValues
 	{
 		// Source's unsealed key type is `string`, so the result's
 		// unsealed values are strings.
-		assertType("array{'a', 'b', ...<string>}", array_keys($arr));
+		assertType("array{'a', 'b', ...<(int|string)>}", array_keys($arr));
 	}
 
 }

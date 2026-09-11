@@ -242,7 +242,7 @@ class Foo
 	{
 		assertType("'a'", array_search('foo', $arr, true));
 		assertType("'b'", array_search('bar', $arr, true));
-		assertType("string|false", array_search('baz', $arr, true));
+		assertType("(int|string|false)", array_search('baz', $arr, true));
 		assertType("false", array_search('quux', $arr, true));
 	}
 
@@ -269,7 +269,7 @@ class Foo
 	 */
 	public function searchUnsealedNeedleInBothSides(array $arr): void
 	{
-		assertType("string|false", array_search(99, $arr, true));
+		assertType("(int|string|false)", array_search(99, $arr, true));
 	}
 
 	/**
@@ -284,8 +284,8 @@ class Foo
 		// `'a'` is a definite hit (constant value matches needle exactly,
 		// not optional) so `false` is excluded; the explicit-key match
 		// then merges into the unsealed-extras' broader `string` key.
-		assertType("string", array_search(1, $arr, false));
-		assertType("string|false", array_search(99, $arr, false));
+		assertType("(int|string)", array_search(1, $arr, false));
+		assertType("(int|string|false)", array_search(99, $arr, false));
 	}
 
 	/**

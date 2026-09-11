@@ -49,10 +49,10 @@ function doFooStrings($unionKeyedArray, $fourOrFive) {
  */
 function doFooBar(array $array, array $list, array $strings) {
 	$keys = array_keys($strings, "a", true);
-	assertType('list<string>', $keys);
+	assertType('list<(int|string)>', $keys);
 
 	$keys = array_keys($strings, "a", false);
-	assertType('list<string>', $keys);
+	assertType('list<(int|string)>', $keys);
 
 	$keys = array_keys($array, 1, true);
 	assertType('list<int>', $keys);

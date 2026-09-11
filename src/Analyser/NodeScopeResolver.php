@@ -2516,7 +2516,7 @@ class NodeScopeResolver
 	private function getStructuralItemType(MutatingScope $scope, Expr $expr): Type
 	{
 		if ($expr instanceof Expr\Closure || $expr instanceof Expr\ArrowFunction) {
-			return $this->container->getByType(ClosureTypeResolver::class)->getClosureType($scope, $expr, shallow: true);
+			return $this->container->getByType(ClosureTypeResolver::class)->getClosureType($scope, $expr, true);
 		}
 
 		if (!$this->argConsumesResolvedParameterType($expr)) {

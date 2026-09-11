@@ -9,6 +9,8 @@ use PhpParser\Node;
  *
  * Immutable. Whether the written value was read afterwards is not a property
  * of the write - it is answered by VariableWritesNode::isRead().
+ *
+ * @api
  */
 final class VariableWrite
 {

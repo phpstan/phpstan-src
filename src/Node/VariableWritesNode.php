@@ -18,6 +18,8 @@ use PHPStan\Type\Type;
  * Emitted right after the body's ReturnStatementsNode, with the scope inside
  * the function-like. Arrow functions have no node of their own - their writes
  * belong to the enclosing function-like.
+ *
+ * @api
  */
 final class VariableWritesNode extends NodeAbstract implements VirtualNode
 {

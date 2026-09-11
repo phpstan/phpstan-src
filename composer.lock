@@ -4,7 +4,7 @@
     "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
     "This file is @generated automatically"
   ],
-  "content-hash": "e7371e320815f49da1b7c7a2151d5caa",
+  "content-hash": "7764ec0b2dcf84f1ba1dc4c6a09e7334",
   "packages": [
     {
       "name": "clue/ndjson-react",
@@ -5222,28 +5222,30 @@
     },
     {
       "name": "phpstan/phpstan-strict-rules",
-      "version": "2.0.10",
+      "version": "2.1.x-dev",
       "source": {
         "type": "git",
         "url": "https://github.com/phpstan/phpstan-strict-rules.git",
-        "reference": "1aba28b697c1e3b6bbec8a1725f8b11b6d3e5a5f"
+        "reference": "49084840349a98b05ba6f4cab11c3ad5f2fd49fe"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/phpstan/phpstan-strict-rules/zipball/1aba28b697c1e3b6bbec8a1725f8b11b6d3e5a5f",
-        "reference": "1aba28b697c1e3b6bbec8a1725f8b11b6d3e5a5f",
+        "url": "https://api.github.com/repos/phpstan/phpstan-strict-rules/zipball/49084840349a98b05ba6f4cab11c3ad5f2fd49fe",
+        "reference": "49084840349a98b05ba6f4cab11c3ad5f2fd49fe",
         "shasum": ""
       },
       "require": {
         "php": "^7.4 || ^8.0",
-        "phpstan/phpstan": "^2.1.39"
+        "phpstan/phpstan": "^2.3"
       },
       "require-dev": {
         "php-parallel-lint/php-parallel-lint": "^1.2",
         "phpstan/phpstan-deprecation-rules": "^2.0",
         "phpstan/phpstan-phpunit": "^2.0",
-        "phpunit/phpunit": "^9.6"
+        "phpunit/phpunit": "^9.6",
+        "shipmonk/name-collision-detector": "^2.1"
       },
+      "default-branch": true,
       "type": "phpstan-extension",
       "extra": {
         "phpstan": {
@@ -5267,9 +5269,9 @@
       ],
       "support": {
         "issues": "https://github.com/phpstan/phpstan-strict-rules/issues",
-        "source": "https://github.com/phpstan/phpstan-strict-rules/tree/2.0.10"
+        "source": "https://github.com/phpstan/phpstan-strict-rules/tree/2.1.x"
       },
-      "time": "2026-02-11T14:17:32+00:00"
+      "time": "2026-09-11T10:31:00+00:00"
     },
     {
       "name": "phpunit/php-code-coverage",

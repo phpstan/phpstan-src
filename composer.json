@@ -74,7 +74,7 @@
 		"phpstan/phpstan-deprecation-rules": "^2.0.2",
 		"phpstan/phpstan-nette": "^2.0",
 		"phpstan/phpstan-phpunit": "^2.0.19",
-		"phpstan/phpstan-strict-rules": "^2.0",
+		"phpstan/phpstan-strict-rules": "^2.1",
 		"phpunit/phpunit": "^11.5.23",
 		"shipmonk/composer-dependency-analyser": "^1.5",
 		"shipmonk/dead-code-detector": "^1.0.0",

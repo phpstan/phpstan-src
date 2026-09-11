@@ -4,7 +4,6 @@ namespace PHPStan\Analyser\StmtHandler;
 
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Break_;
-use PhpParser\Node\Stmt\Continue_;
 use PhpParser\Node\Stmt\Do_;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResultStorage;
@@ -72,12 +71,8 @@ final class DoWhileHandler implements StmtHandler
 				$scope->pushExpressionResultStorage($storage);
 				try {
 					$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $bodyRecording, $context->enterDeep()->withoutTemplateArgumentResolution())->filterOutLoopExitPoints();
-					$alwaysTerminating = $bodyScopeResult->isAlwaysTerminating();
-					$bodyScope = $bodyScopeResult->getScope();
-					foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
-						$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
-					}
-					$finalScope = $alwaysTerminating ? $finalScope : $bodyScope->mergeWith($finalScope);
+					$backEdgeScope = $bodyScopeResult->getLoopBackEdgeScope();
+					$finalScope = $backEdgeScope === null ? $finalScope : $backEdgeScope->mergeWith($finalScope);
 					foreach ($bodyScopeResult->getExitPointsByType(Break_::class) as $breakExitPoint) {
 						$finalScope = $breakExitPoint->getScope()->mergeWith($finalScope);
 					}
@@ -88,9 +83,15 @@ final class DoWhileHandler implements StmtHandler
 						$replayPassStorage = $storage;
 						$replayPassResult = $bodyScopeResult;
 					}
-					$bodyScope = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep(resolveTemplateArguments: false))->getTruthyScope();
+					if ($backEdgeScope !== null) {
+						$bodyScope = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $backEdgeScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep(resolveTemplateArguments: false))->getTruthyScope();
+					}
 				} finally {
 					$scope->popExpressionResultStorage();
+				}
+				if ($backEdgeScope === null) {
+					$bodyScope = $prevScope;
+					break;
 				}
 				if ($bodyScope->equals($prevScope)) {
 					break;
@@ -120,10 +121,9 @@ final class DoWhileHandler implements StmtHandler
 		} else {
 			$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context)->filterOutLoopExitPoints();
 		}
-		$bodyScope = $bodyScopeResult->getScope();
-		foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
-			$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
-		}
+		$backEdgeScope = $bodyScopeResult->getLoopBackEdgeScope();
+		$backEdgeDead = $backEdgeScope === null;
+		$bodyScope = $backEdgeScope ?? $bodyScopeResult->getScope();
 
 		// the condition is processed once on the post-body scope; its result
 		// answers both the always-iterates check below and the falsey post-loop
@@ -138,16 +138,16 @@ final class DoWhileHandler implements StmtHandler
 			$alwaysIterates = $condBooleanType->isTrue()->yes();
 		}
 
-		if ($alwaysIterates) {
+		if ($alwaysIterates || $backEdgeDead) {
 			$alwaysTerminating = count($bodyScopeResult->getExitPointsByType(Break_::class)) === 0;
 		} else {
 			$alwaysTerminating = $bodyScopeResult->isAlwaysTerminating();
 		}
-		$finalScope = $alwaysTerminating ? $finalScope : $bodyScope->mergeWith($finalScope);
+		$finalScope = $alwaysTerminating || $backEdgeDead ? $finalScope : $bodyScope->mergeWith($finalScope);
 		if ($finalScope === null) {
 			$finalScope = $scope;
 		}
-		if (!$alwaysTerminating) {
+		if (!$alwaysTerminating && !$backEdgeDead) {
 			$hasYield = $condResult->hasYield();
 			$throwPoints = $condResult->getThrowPoints();
 			$impurePoints = $condResult->getImpurePoints();
@@ -162,7 +162,7 @@ final class DoWhileHandler implements StmtHandler
 
 		$breakExitPoints = $bodyScopeResult->getExitPointsByType(Break_::class);
 		if (count($breakExitPoints) > 0) {
-			$breakScope = $alwaysIterates ? null : $finalScope;
+			$breakScope = $alwaysIterates || $backEdgeDead ? null : $finalScope;
 			foreach ($breakExitPoints as $breakExitPoint) {
 				$breakScope = $breakScope === null ? $breakExitPoint->getScope() : $breakScope->mergeWith($breakExitPoint->getScope());
 			}

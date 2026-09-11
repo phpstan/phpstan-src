@@ -12,7 +12,6 @@ use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Break_;
-use PhpParser\Node\Stmt\Continue_;
 use PhpParser\Node\Stmt\For_;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResultStorage;
@@ -200,10 +199,12 @@ final class ForHandler implements StmtHandler
 						$bodyScope = $nodeScopeResolver->processExprNode($stmt, $lastCondExpr, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep(resolveTemplateArguments: false))->getTruthyScope();
 					}
 					$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, new NoopNodeCallback(), $context->enterDeep()->withoutTemplateArgumentResolution())->filterOutLoopExitPoints();
-					$bodyScope = $bodyScopeResult->getScope();
-					foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
-						$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
+					$backEdgeScope = $bodyScopeResult->getLoopBackEdgeScope();
+					if ($backEdgeScope === null) {
+						$bodyScope = $prevScope;
+						break;
 					}
+					$bodyScope = $backEdgeScope;
 
 					foreach ($stmt->loop as $loopExpr) {
 						$exprResult = $nodeScopeResolver->processExprNode($stmt, $loopExpr, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createTopLevel(resolveTemplateArguments: false));
@@ -244,10 +245,9 @@ final class ForHandler implements StmtHandler
 		}
 
 		$finalScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context)->filterOutLoopExitPoints();
-		$finalScope = $finalScopeResult->getScope();
-		foreach ($finalScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
-			$finalScope = $continueExitPoint->getScope()->mergeWith($finalScope);
-		}
+		$backEdgeScope = $finalScopeResult->getLoopBackEdgeScope();
+		$backEdgeDead = $backEdgeScope === null;
+		$finalScope = $backEdgeScope ?? $finalScopeResult->getScope();
 
 		$loopScope = $finalScope;
 		foreach ($stmt->loop as $loopExpr) {
@@ -271,14 +271,14 @@ final class ForHandler implements StmtHandler
 
 		$breakExitPoints = $finalScopeResult->getExitPointsByType(Break_::class);
 		if (count($breakExitPoints) > 0) {
-			$breakScope = $alwaysIterates->yes() ? null : $finalScope;
+			$breakScope = $alwaysIterates->yes() || $backEdgeDead ? null : $finalScope;
 			foreach ($breakExitPoints as $breakExitPoint) {
 				$breakScope = $breakScope === null ? $breakExitPoint->getScope() : $breakScope->mergeWith($breakExitPoint->getScope());
 			}
 			$finalScope = $breakScope;
 		}
 
-		if ($isIterableAtLeastOnce->no() || $finalScopeResult->isAlwaysTerminating()) {
+		if ($isIterableAtLeastOnce->no() || $finalScopeResult->isAlwaysTerminating() || ($backEdgeDead && count($breakExitPoints) === 0)) {
 			if ($nodeScopeResolver->shouldPolluteScopeWithLoopInitialAssignments()) {
 				$finalScope = $initScope;
 			} else {

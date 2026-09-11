@@ -4,7 +4,6 @@ namespace PHPStan\Analyser\StmtHandler;
 
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Break_;
-use PhpParser\Node\Stmt\Continue_;
 use PhpParser\Node\Stmt\While_;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResultStorage;
@@ -100,13 +99,15 @@ final class WhileHandler implements StmtHandler
 					$passCondResult = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $condRecording, ExpressionContext::createDeep(resolveTemplateArguments: false));
 					$bodyScope = $passCondResult->getTruthyScope();
 					$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $bodyRecording, $context->enterDeep()->withoutTemplateArgumentResolution())->filterOutLoopExitPoints();
-					$bodyScope = $bodyScopeResult->getScope();
-					foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
-						$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
-					}
+					$backEdgeScope = $bodyScopeResult->getLoopBackEdgeScope();
 				} finally {
 					$scope->popExpressionResultStorage();
 				}
+				if ($backEdgeScope === null) {
+					$bodyScope = $prevScope;
+					break;
+				}
+				$bodyScope = $backEdgeScope;
 				// the candidate to replace the final walk when this pass's
 				// entry turns out to be the fixpoint
 				if ($condRecording instanceof RecordingNodeCallback && $bodyRecording instanceof RecordingNodeCallback) {
@@ -155,7 +156,9 @@ final class WhileHandler implements StmtHandler
 			$bodyScope = $bodyCondResult->getTruthyScope();
 			$finalScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context)->filterOutLoopExitPoints();
 		}
-		$finalScope = $finalScopeResult->getScope();
+		$backEdgeScope = $finalScopeResult->getLoopBackEdgeScope();
+		$backEdgeDead = $backEdgeScope === null;
+		$finalScope = $backEdgeScope ?? $finalScopeResult->getScope();
 		// the loop condition narrows the post-loop scope to its falsey branch;
 		// $finalScope (after the body ran) is a different scope than the condition's
 		// own, so reprocess the condition there rather than re-running its result.
@@ -170,15 +173,9 @@ final class WhileHandler implements StmtHandler
 			$alwaysIterates = $condBooleanType->isTrue()->yes();
 			$neverIterates = $condBooleanType->isFalse()->yes();
 		}
-		if (!$alwaysIterates) {
-			foreach ($finalScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
-				$finalScope = $finalScope->mergeWith($continueExitPoint->getScope());
-			}
-		}
-
 		$breakExitPoints = $finalScopeResult->getExitPointsByType(Break_::class);
 		if (count($breakExitPoints) > 0) {
-			$breakScope = $alwaysIterates ? null : $finalScope;
+			$breakScope = $alwaysIterates || $backEdgeDead ? null : $finalScope;
 			foreach ($breakExitPoints as $breakExitPoint) {
 				$breakScope = $breakScope === null ? $breakExitPoint->getScope() : $breakScope->mergeWith($breakExitPoint->getScope());
 			}
@@ -195,12 +192,16 @@ final class WhileHandler implements StmtHandler
 		} else {
 			$isAlwaysTerminating = false;
 		}
+		if ($backEdgeDead && count($breakExitPoints) === 0) {
+			$finalScope = null;
+		}
 		if (!$isIterableAtLeastOnce) {
 			if (!$nodeScopeResolver->shouldPolluteScopeWithLoopInitialAssignments()) {
 				$condScope = $condScope->mergeWith($scope);
 			}
-			$finalScope = $finalScope->mergeWith($condScope);
+			$finalScope = $finalScope === null ? $condScope : $finalScope->mergeWith($condScope);
 		}
+		$finalScope ??= $finalScopeResult->getScope();
 
 		$throwPoints = $condResult->getThrowPoints();
 		$impurePoints = $condResult->getImpurePoints();

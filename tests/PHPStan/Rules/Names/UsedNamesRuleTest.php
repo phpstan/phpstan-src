@@ -112,6 +112,11 @@ final class UsedNamesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug15215(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15215.php'], []);
+	}
+
 	public function testIgnoreUseFunctionAndConstant(): void
 	{
 		$this->analyse([__DIR__ . '/data/ignore-use-function-and-constant.php'], []);

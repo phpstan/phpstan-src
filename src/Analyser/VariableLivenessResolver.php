@@ -9,10 +9,13 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use Throwable;
+use function array_keys;
+use function array_pop;
 use function array_reverse;
 use function array_values;
 use function count;
 use function in_array;
+use function is_int;
 use function is_string;
 use function spl_object_id;
 
@@ -26,6 +29,9 @@ final class VariableLivenessResolver
 	/** @var array<int, true> */
 	private array $readIds = [];
 
+	/** @var array<int, true> */
+	private array $observedIds = [];
+
 	/** @var array<string, true> */
 	private array $readNames = [];
 
@@ -38,7 +44,39 @@ final class VariableLivenessResolver
 	/** @var array<int, Type> */
 	private array $redundantTypes = [];
 
+	/** @var array<string, list<VariableAccessFlow>> */
+	private array $accesses = [];
+
+	/** @var array<int, array<string, true>> */
+	private array $readKeys = [];
+
+	/** @var array<string, array<string, true>> */
+	private array $nameKeys = [];
+
+	/** @var array<int, array<string, int|null>> */
+	private array $observedKeys = [];
+
+	/** @var array<int, array<string, true>> */
+	private array $killedKeys = [];
+
+	/** @var array<int, array<int, true>> */
+	private array $dependencies = [];
+
+	/** @var array<int, array<int, true>> */
+	private array $inputCopies = [];
+
+	/** @var array<int, true> */
+	private array $inputSinks = [];
+
+	/** @var array<int, array<int, VariableWrite>> */
+	private array $literalItems = [];
+
+	/** @var array<string, true> */
+	private array $allReadKeys = [];
+
 	private bool $opaque = false;
+
+	private bool $readsAllVariables = false;
 
 	private bool $allNamesMentioned = false;
 
@@ -78,27 +116,34 @@ final class VariableLivenessResolver
 		$body = VariableFlow::sequence(...[...$imports, $flow]);
 		$self->collect($body);
 		if ($self->writes !== [] && !$self->opaque) {
+			$self->compileAccesses();
 			$self->liveBefore($body, [], new VariableFlowContext([]));
+			$self->resolveDependencies();
 		}
 
-		return new VariableWritesNode($function, array_values($self->writes), $self->readIds, $self->readNames, $self->redundantTypes, $self->mentionedNames, $self->escapedNames, $self->opaque, $self->allNamesMentioned);
+		return new VariableWritesNode($function, array_values($self->writes), $self->observedIds + $self->readIds, $self->readIds, $self->readNames, $self->redundantTypes, $self->mentionedNames, $self->escapedNames, $self->opaque, $self->allNamesMentioned);
 	}
 
 	private function collect(?VariableFlow $flow, bool $dead = false): void
 	{
-		if ($flow === null) {
+		if ($flow === null || $flow instanceof VariableInputFlow) {
 			return;
 		}
 		if ($flow instanceof VariableAccessFlow && $flow->name !== 'this' && !in_array($flow->name, Scope::SUPERGLOBAL_VARIABLES, true)) {
 			$this->mentionedNames[$flow->name] = true;
+			$this->accesses[$flow->name][] = $flow;
 			if ($flow->kind === VariableFlow::READ) {
 				$this->readNames[$flow->name] = true;
 			} elseif ($flow->kind === VariableFlow::ESCAPE) {
 				$this->escapedNames[$flow->name] = true;
 			}
-			if ($flow->write !== null) {
+			if ($flow->write !== null && $flow->kind !== VariableFlow::DISCARD) {
 				$id = $flow->write->getId();
 				$this->writes[$id] = $flow->write;
+				$parentId = $flow->write->getParentId();
+				if ($parentId !== null) {
+					$this->literalItems[$parentId][$id] = $flow->write;
+				}
 				if ($flow->type !== null) {
 					$this->redundantTypes[$id] = $flow->type;
 				}
@@ -106,6 +151,9 @@ final class VariableLivenessResolver
 					$this->readIds[$id] = true;
 				}
 			}
+		}
+		if ($flow->kind === VariableFlow::READ_ALL) {
+			$this->readsAllVariables = true;
 		}
 		if ($flow->kind === VariableFlow::OPAQUE) {
 			$this->opaque = true;
@@ -146,16 +194,32 @@ final class VariableLivenessResolver
 		if ($flow === null || $flow->kind === VariableFlow::DEAD) {
 			return $next;
 		}
+		if ($flow instanceof VariableInputFlow) {
+			if ($flow->targetId === null) {
+				$this->inputSinks[$flow->writeId] = true;
+			} else {
+				$this->inputCopies[$flow->targetId][$flow->writeId] = true;
+			}
+			return $next;
+		}
 		if ($flow instanceof VariableAccessFlow) {
 			if (in_array($flow->kind, [VariableFlow::READ, VariableFlow::ESCAPE], true)) {
 				// a by-reference capture aliases the variable - the value it
 				// holds at that point is observable through the alias
-				$next[$flow->name] = true;
-			} elseif ($flow->write !== null) {
-				if (isset($next[$flow->name])) {
-					$this->readIds[$flow->write->getId()] = true;
+				return $next + ($this->readKeys[spl_object_id($flow)] ?? []);
+			}
+			if ($flow->write === null || $flow->kind === VariableFlow::DEFINE) {
+				return $next;
+			}
+			$id = $flow->write->getId();
+			if ($flow->kind !== VariableFlow::DISCARD) {
+				$this->observeWrite($id, $next);
+				foreach ($this->literalItems[$id] ?? [] as $item) {
+					$this->observeWrite($item->getId(), $next);
 				}
-				unset($next[$flow->name]);
+			}
+			foreach (array_keys($this->killedKeys[$id] ?? []) as $key) {
+				unset($next[$key]);
 			}
 			return $next;
 		}
@@ -182,7 +246,9 @@ final class VariableLivenessResolver
 				if (!$param->var instanceof Node\Expr\Variable || !is_string($param->var->name)) {
 					continue;
 				}
-				unset($names[$param->var->name]);
+				foreach (array_keys($this->nameKeys[$param->var->name] ?? []) as $key) {
+					unset($names[$key]);
+				}
 			}
 			return $next + $names;
 		}
@@ -287,9 +353,146 @@ final class VariableLivenessResolver
 		}
 		if ($flow->kind === VariableFlow::READ_ALL) {
 			$this->readNames += $this->mentionedNames;
-			return $next + $this->mentionedNames;
+			return $next + $this->allReadKeys;
 		}
 		return $next;
+	}
+
+	/** @param int|string $offset */
+	private static function offsetKey($offset): string
+	{
+		return (is_int($offset) ? 'i:' : 's:') . $offset;
+	}
+
+	/** Compile each access once; loop iterations only union and remove its keys. */
+	private function compileAccesses(): void
+	{
+		foreach ($this->accesses as $name => $accesses) {
+			$slots = ['container' => true, 'unknown' => true];
+			foreach ($accesses as $access) {
+				$offset = $access->write !== null ? $access->write->getOffset() : $access->offset;
+				if ($offset === null) {
+					continue;
+				}
+
+				$slots[self::offsetKey($offset)] = true;
+			}
+			$keysBySlot = [];
+			foreach ($accesses as $access) {
+				if (!in_array($access->kind, [VariableFlow::READ, VariableFlow::ESCAPE], true)) {
+					continue;
+				}
+				if ($access->container) {
+					$selected = ['container' => true];
+				} elseif ($access->offset !== null) {
+					$selected = ['container' => true, self::offsetKey($access->offset) => true];
+				} else {
+					$selected = $slots;
+				}
+				foreach (array_keys($selected) as $slot) {
+					$key = $name . "\0" . $slot . "\0" . ($access->targetId ?? 0);
+					$keysBySlot[$slot][$key] = $access->targetId;
+					$this->readKeys[spl_object_id($access)][$key] = true;
+					$this->nameKeys[$name][$key] = true;
+				}
+			}
+			// A dynamic observation sees every offset, including ones never named by a read.
+			if ($this->readsAllVariables) {
+				foreach (array_keys($slots) as $slot) {
+					$key = $name . "\0" . $slot . "\0" . 0;
+					$keysBySlot[$slot][$key] = null;
+					$this->allReadKeys[$key] = true;
+					$this->nameKeys[$name][$key] = true;
+				}
+			}
+			foreach ($accesses as $access) {
+				$write = $access->write;
+				if ($write === null) {
+					continue;
+				}
+				$id = $write->getId();
+				$offset = $write->getOffset();
+				if ($write->isOffsetWrite() && $offset !== null) {
+					$slot = self::offsetKey($offset);
+					$selectedKeys = [$slot => $keysBySlot[$slot] ?? []];
+				} else {
+					$selectedKeys = $keysBySlot;
+					if ($write->isOffsetWrite()) {
+						unset($selectedKeys['container']);
+					}
+				}
+				$kills = !$write->isOffsetWrite() || ($offset !== null && $write->replacesOffset());
+				foreach ($selectedKeys as $keys) {
+					foreach ($keys as $key => $targetId) {
+						$this->observedKeys[$id][$key] = $targetId;
+						if (!$kills) {
+							continue;
+						}
+
+						$this->killedKeys[$id][$key] = true;
+					}
+				}
+			}
+		}
+	}
+
+	/** @param array<string, true> $next */
+	private function observeWrite(int $id, array $next): void
+	{
+		foreach ($this->observedKeys[$id] ?? [] as $key => $targetId) {
+			if (!isset($next[$key])) {
+				continue;
+			}
+			$this->observedIds[$id] = true;
+			if ($targetId === null) {
+				$this->readIds[$id] = true;
+			} else {
+				$this->dependencies[$targetId][$id] = true;
+			}
+		}
+	}
+
+	private function resolveDependencies(): void
+	{
+		$stack = [];
+		foreach (array_keys($this->readIds) as $id) {
+			$stack[] = [$id, false];
+		}
+		foreach (array_keys($this->inputSinks) as $id) {
+			$stack[] = [$id, true];
+		}
+		foreach ($this->writes as $id => $write) {
+			if (!isset($this->escapedNames[$write->getVariableName()])) {
+				continue;
+			}
+			// a write to an aliased variable is observable through the alias,
+			// so whatever flows into it is used; whether the write itself is
+			// read stays with the flow-sensitive capture read
+			$stack[] = [$id, false];
+			$stack[] = [$id, true];
+		}
+		$visited = [];
+		while ($stack !== []) {
+			[$id, $inputs] = array_pop($stack);
+			$key = $id . ($inputs ? ':inputs' : ':value');
+			if (isset($visited[$key])) {
+				continue;
+			}
+			$visited[$key] = true;
+			foreach (array_keys($this->dependencies[$id] ?? []) as $dependency) {
+				$this->readIds[$dependency] = true;
+				$stack[] = [$dependency, false];
+			}
+			foreach (array_keys($this->inputCopies[$id] ?? []) as $source) {
+				$stack[] = [$source, true];
+			}
+			if (!$inputs) {
+				continue;
+			}
+			foreach ($this->literalItems[$id] ?? [] as $item) {
+				$stack[] = [$item->getId(), true];
+			}
+		}
 	}
 
 }

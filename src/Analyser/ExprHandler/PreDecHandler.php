@@ -43,7 +43,9 @@ final class PreDecHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $context->enterDeep());
+		$valueFlowWrite = VariableFlowBuilder::writeSite($expr->var, VariableWrite::KIND_PRE_DEC, $scope, $storage);
+		$valueContext = $valueFlowWrite !== null ? $context->enterDeep()->enterValueFlow($valueFlowWrite, false) : $context->enterDeep();
+		$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $valueContext);
 
 		$typeCallback = $this->incDecTypeHelper->getTypeCallback($expr->var, $varResult, false);
 		$specifyTypesCallback = fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context);
@@ -84,7 +86,7 @@ final class PreDecHandler implements ExprHandler
 			$assignedScope,
 			beforeScope: $scope,
 			expr: $expr,
-			variableFlow: VariableFlow::sequence($varResult->getVariableFlow(), VariableFlowBuilder::targetWrite($expr->var, VariableWrite::KIND_PRE_DEC, $assignedScope, $storage)),
+			variableFlow: VariableFlow::sequence($varResult->getVariableFlow(), $valueFlowWrite !== null && $context->isValueConsumed() ? VariableFlow::inputs($valueFlowWrite->getId(), $context->getValueFlowTarget() !== null ? $context->getValueFlowTarget()->getId() : null) : null, VariableFlowBuilder::targetWrite($expr->var, VariableWrite::KIND_PRE_DEC, $assignedScope, $storage)),
 			hasYield: $varResult->hasYield(),
 			isAlwaysTerminating: $varResult->isAlwaysTerminating(),
 			throwPoints: $varResult->getThrowPoints(),

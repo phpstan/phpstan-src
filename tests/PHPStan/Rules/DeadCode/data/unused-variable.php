@@ -247,8 +247,8 @@ function arrayBuildReturned(): array
 function arrayBuildUnused(): void
 {
 	$x = [];
-	$x[] = 1;
-	$x['k'] = 2; // unused $x
+	$x[] = 1; // unused $x[]
+	$x['k'] = 2; // unused $x['k']
 }
 
 function stringAppendReturned(): string
@@ -260,13 +260,13 @@ function stringAppendReturned(): string
 
 function stringAppendUnused(): void
 {
-	$s = 'a';
+	$s = 'a'; // unused $s
 	$s .= 'b'; // unused $s
 }
 
 function unsetAfterWrite(): void
 {
-	$a = 1; // known false negative: unset() walks the variable as a read
+	$a = 1; // unused $a
 	unset($a);
 }
 
@@ -698,15 +698,15 @@ function cloneRead(): object
 
 function selfReferentialChain(): void
 {
-	// the Psalm layer will also report the first write; phase 1 sees it read by the second
-	$a = 5;
+	// the first write only feeds the second, which is never used
+	$a = 5; // unused $a
 	$a = $a + 1; // unused $a
 }
 
 function articleExample(): void
 {
-	// Psalm reports every write of $b; phase 1 sees each read by the self-chain
-	$b = $a = 0;
+	// every write of $b only feeds the self-chain - Psalm's example
+	$b = $a = 0; // unused $b
 	while (cond()) {
 		if (cond() && cond()) {
 			$a = 5;
@@ -716,7 +716,7 @@ function articleExample(): void
 			continue;
 		}
 		$a = $a + 1;
-		$b = $b + 1;
+		$b = $b + 1; // unused $b
 	}
 	sink($a);
 }

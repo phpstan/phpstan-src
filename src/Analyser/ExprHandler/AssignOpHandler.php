@@ -100,7 +100,9 @@ final class AssignOpHandler implements ExprHandler
 			}
 		}
 
-		$valueResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $valueScope, $storage, $nodeCallback, $valueContext->enterDeep());
+		$valueFlowWrite = VariableFlowBuilder::writeSite($expr->var, VariableWrite::KIND_READ_MODIFY_WRITE, $valueScope, $storage);
+		$valueContext = $valueFlowWrite !== null ? $valueContext->enterDeep()->enterValueFlow($valueFlowWrite, false) : $valueContext->enterDeep();
+		$valueResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $valueScope, $storage, $nodeCallback, $valueContext);
 		$rhsResult = $valueResult;
 		if ($expr instanceof Expr\AssignOp\Coalesce) {
 			$rightResult = $valueResult;
@@ -285,10 +287,11 @@ final class AssignOpHandler implements ExprHandler
 
 		$writeFlow = VariableFlow::sequence(
 			$rhsResult->getVariableFlow(),
+			$valueFlowWrite !== null && $context->isValueConsumed() ? VariableFlow::inputs($valueFlowWrite->getId(), $context->getValueFlowTarget() !== null ? $context->getValueFlowTarget()->getId() : null) : null,
 			VariableFlowBuilder::targetWrite($expr->var, VariableWrite::KIND_READ_MODIFY_WRITE, $scope, $storage),
 		);
 		$variableFlow = VariableFlow::sequence(
-			VariableFlowBuilder::targetRead($expr->var, $storage, true),
+			VariableFlowBuilder::targetRead($expr->var, $storage, true, !($expr instanceof Expr\AssignOp\Coalesce) && $valueFlowWrite !== null ? $valueFlowWrite->getId() : null),
 			$expr instanceof Expr\AssignOp\Coalesce ? VariableFlow::choice($writeFlow, null) : $writeFlow,
 		);
 

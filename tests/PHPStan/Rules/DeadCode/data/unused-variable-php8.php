@@ -101,3 +101,19 @@ class NullsafeReads
 	}
 
 }
+
+function matchArmFlow(): void
+{
+	$a = source(); // unused $a
+	$b = match (true) { // unused $b
+		default => $a,
+	};
+}
+
+function matchConditionIsSink(): void
+{
+	$a = source();
+	$b = match ($a) { // unused $b
+		default => 1,
+	};
+}

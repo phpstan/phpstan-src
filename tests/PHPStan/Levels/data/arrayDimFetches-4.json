@@ -1,0 +1,7 @@
+[
+    {
+        "message": "Offset 'a' of array assigned to variable $arr is never read.",
+        "line": 34,
+        "ignorable": true
+    }
+]

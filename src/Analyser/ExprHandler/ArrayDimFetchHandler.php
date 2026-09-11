@@ -25,6 +25,7 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\Analyser\VariableFlowBuilder;
+use PHPStan\Analyser\VariableWriteOffset;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\ParametersAcceptorSelector;
@@ -34,6 +35,7 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_merge;
+use function is_string;
 
 /**
  * @implements ExprHandler<ArrayDimFetch>
@@ -60,13 +62,13 @@ final class ArrayDimFetchHandler implements ExprHandler
 	{
 		$beforeScope = $scope;
 		if ($expr->dim === null) {
-			$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $context->enterDeepKeepingValueFlow()->enterArrayDimFetchRoot());
 
 			return $this->composeResult($nodeScopeResolver, $stmt, $expr, null, $varResult, $storage, $context, $beforeScope);
 		}
 
-		$dimResult = $nodeScopeResolver->processExprNode($stmt, $expr->dim, $scope, $storage, $nodeCallback, $context->enterDeep());
-		$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $dimResult->getScope(), $storage, $nodeCallback, $context->enterDeep());
+		$dimResult = $nodeScopeResolver->processExprNode($stmt, $expr->dim, $scope, $storage, $nodeCallback, $context->enterDeepKeepingValueFlow());
+		$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $dimResult->getScope(), $storage, $nodeCallback, $context->enterDeepKeepingValueFlow()->enterArrayDimFetchRoot());
 
 		return $this->composeResult($nodeScopeResolver, $stmt, $expr, $dimResult, $varResult, $storage, $context, $beforeScope);
 	}
@@ -86,7 +88,7 @@ final class ArrayDimFetchHandler implements ExprHandler
 				$scope,
 				beforeScope: $beforeScope,
 				expr: $expr,
-				variableFlow: $varResult->getVariableFlow(),
+				variableFlow: VariableFlow::sequence($varResult->getVariableFlow(), self::offsetRead($expr, null, $context)),
 				hasYield: $varResult->hasYield(),
 				isAlwaysTerminating: $varResult->isAlwaysTerminating(),
 				throwPoints: $varResult->getThrowPoints(),
@@ -121,7 +123,7 @@ final class ArrayDimFetchHandler implements ExprHandler
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
-			variableFlow: VariableFlow::sequence($varResult->getVariableFlow(), $dimResult->getVariableFlow(), VariableFlowBuilder::throws($expr, $throwPoints)),
+			variableFlow: VariableFlow::sequence($varResult->getVariableFlow(), $dimResult->getVariableFlow(), self::offsetRead($expr, $dimResult, $context), VariableFlowBuilder::throws($expr, $throwPoints)),
 			hasYield: $dimResult->hasYield() || $varResult->hasYield(),
 			isAlwaysTerminating: $dimResult->isAlwaysTerminating() || $varResult->isAlwaysTerminating(),
 			throwPoints: $throwPoints,
@@ -155,6 +157,15 @@ final class ArrayDimFetchHandler implements ExprHandler
 			},
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypesWithNullsafeFan($expr, $context, $beforeScope, $nativeTypesPromoted),
 		);
+	}
+
+	private static function offsetRead(ArrayDimFetch $expr, ?ExpressionResult $dimResult, ExpressionContext $context): ?VariableFlow
+	{
+		if ($context->isUnsetTarget() || !$expr->var instanceof Expr\Variable || !is_string($expr->var->name)) {
+			return null;
+		}
+		$target = $context->getValueFlowTarget();
+		return VariableFlow::read($expr->var->name, $target !== null ? $target->getId() : null, offset: $dimResult !== null ? VariableWriteOffset::fromType($dimResult->getType()) : null);
 	}
 
 }

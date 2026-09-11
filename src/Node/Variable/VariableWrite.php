@@ -2,7 +2,7 @@
 
 namespace PHPStan\Node\Variable;
 
-use PhpParser\Node\Expr;
+use PhpParser\Node;
 
 /**
  * A write site of a local variable inside a function-like body.
@@ -26,15 +26,21 @@ final class VariableWrite
 	public const KIND_CATCH = 11;
 	public const KIND_PARAMETER = 12;
 	public const KIND_CLOSURE_USE = 13;
+	public const KIND_ARRAY_LITERAL_ITEM = 14;
 
 	/**
 	 * @param self::KIND_* $kind
+	 * @param int|string|null $offset
 	 */
 	public function __construct(
 		private string $variableName,
-		private Expr\Variable $variable,
+		private Node $node,
 		private int $id,
 		private int $kind,
+		private bool $offsetWrite = false,
+		private $offset = null,
+		private ?int $parentId = null,
+		private bool $replacesOffset = true,
 	)
 	{
 	}
@@ -47,9 +53,9 @@ final class VariableWrite
 	/**
 	 * The target node of the write - the source of the reported line.
 	 */
-	public function getVariable(): Expr\Variable
+	public function getNode(): Node
 	{
-		return $this->variable;
+		return $this->node;
 	}
 
 	public function getId(): int
@@ -63,6 +69,27 @@ final class VariableWrite
 	public function getKind(): int
 	{
 		return $this->kind;
+	}
+
+	public function isOffsetWrite(): bool
+	{
+		return $this->offsetWrite;
+	}
+
+	/** @return int|string|null */
+	public function getOffset()
+	{
+		return $this->offset;
+	}
+
+	public function getParentId(): ?int
+	{
+		return $this->parentId;
+	}
+
+	public function replacesOffset(): bool
+	{
+		return $this->replacesOffset;
 	}
 
 }

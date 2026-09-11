@@ -132,7 +132,7 @@ final class VariableHandler implements ExprHandler
 			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
 		}
 
-		return $this->composeResult($nodeScopeResolver, $expr, $nameResult, $storage, $beforeScope);
+		return $this->composeResult($nodeScopeResolver, $expr, $nameResult, $storage, $beforeScope, $context);
 	}
 
 	/**
@@ -141,7 +141,7 @@ final class VariableHandler implements ExprHandler
 	 * walking a dynamic name; AssignHandler::prepareTarget() calls it to price a
 	 * read-modify-write target without re-walking it.
 	 */
-	public function composeResult(NodeScopeResolver $nodeScopeResolver, Variable $expr, ?ExpressionResult $nameResult, ExpressionResultStorage $storage, MutatingScope $beforeScope): ExpressionResult
+	public function composeResult(NodeScopeResolver $nodeScopeResolver, Variable $expr, ?ExpressionResult $nameResult, ExpressionResultStorage $storage, MutatingScope $beforeScope, ?ExpressionContext $context = null): ExpressionResult
 	{
 		$scope = $beforeScope;
 		$hasYield = false;
@@ -150,7 +150,7 @@ final class VariableHandler implements ExprHandler
 		$isAlwaysTerminating = false;
 		$variableFlow = null;
 		if (is_string($expr->name)) {
-			$variableFlow = VariableFlow::read($expr->name);
+			$variableFlow = ($context !== null && $context->isUnsetTarget() ? VariableFlow::mention($expr->name) : VariableFlow::read($expr->name, $context !== null && $context->getValueFlowTarget() !== null ? $context->getValueFlowTarget()->getId() : null, $context !== null && $context->isArrayDimFetchRoot()));
 			if (in_array($expr->name, Scope::SUPERGLOBAL_VARIABLES, true)) {
 				$impurePoints[] = new ImpurePoint($scope, $expr, 'superglobal', 'access to superglobal variable', true);
 			}

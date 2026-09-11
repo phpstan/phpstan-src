@@ -45,7 +45,9 @@ final class PostIncHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $context->enterDeep());
+		$valueFlowWrite = VariableFlowBuilder::writeSite($expr->var, VariableWrite::KIND_POST_INC, $scope, $storage);
+		$valueContext = $valueFlowWrite !== null ? $context->enterDeep()->enterValueFlow($valueFlowWrite, false) : $context->enterDeep();
+		$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $valueContext);
 
 		// the virtual assign writes the incremented value - hand it the synthetic's
 		// result so applyWrite composes off it instead of pricing the
@@ -82,7 +84,7 @@ final class PostIncHandler implements ExprHandler
 			$assignedScope,
 			beforeScope: $scope,
 			expr: $expr,
-			variableFlow: VariableFlow::sequence($varResult->getVariableFlow(), VariableFlowBuilder::targetWrite($expr->var, VariableWrite::KIND_POST_INC, $assignedScope, $storage)),
+			variableFlow: VariableFlow::sequence($varResult->getVariableFlow(), $valueFlowWrite !== null && $context->isValueConsumed() ? VariableFlow::inputs($valueFlowWrite->getId(), $context->getValueFlowTarget() !== null ? $context->getValueFlowTarget()->getId() : null) : null, VariableFlowBuilder::targetWrite($expr->var, VariableWrite::KIND_POST_INC, $assignedScope, $storage)),
 			hasYield: $varResult->hasYield(),
 			isAlwaysTerminating: $varResult->isAlwaysTerminating(),
 			throwPoints: $varResult->getThrowPoints(),

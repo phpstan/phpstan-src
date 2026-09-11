@@ -23,6 +23,7 @@ final class VariableWritesNode extends NodeAbstract implements VirtualNode
 	/**
 	 * @param list<VariableWrite> $writes
 	 * @param array<int, true> $readWriteIds
+	 * @param array<int, true> $usedWriteIds
 	 * @param array<string, true> $readVariableNames
 	 * @param array<int, Type> $redundantWriteTypes
 	 * @param array<string, true> $referencedVariableNames
@@ -32,6 +33,7 @@ final class VariableWritesNode extends NodeAbstract implements VirtualNode
 		private Node\FunctionLike $functionLike,
 		private array $writes,
 		private array $readWriteIds,
+		private array $usedWriteIds,
 		private array $readVariableNames,
 		private array $redundantWriteTypes,
 		private array $referencedVariableNames,
@@ -63,7 +65,7 @@ final class VariableWritesNode extends NodeAbstract implements VirtualNode
 	public function getWriteForNode(Node\Expr\Variable $variable): ?VariableWrite
 	{
 		foreach ($this->writes as $write) {
-			if ($write->getVariable() === $variable) {
+			if ($write->getNode() === $variable) {
 				return $write;
 			}
 		}
@@ -80,9 +82,13 @@ final class VariableWritesNode extends NodeAbstract implements VirtualNode
 		return $this->allVariableNamesReferenced;
 	}
 
-	/**
-	 * Whether some path from the write reaches a read of the written value.
-	 */
+	/** Whether the value reaches an observable use, directly or through another write. */
+	public function isUsed(VariableWrite $write): bool
+	{
+		return isset($this->usedWriteIds[$write->getId()]);
+	}
+
+	/** Whether some path from the write reaches a read of the written value. */
 	public function isRead(VariableWrite $write): bool
 	{
 		return isset($this->readWriteIds[$write->getId()]);

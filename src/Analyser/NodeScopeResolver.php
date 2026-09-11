@@ -2018,7 +2018,7 @@ class NodeScopeResolver
 					$scope = $scope->assignVariable($inAssignRightSideVariableName, $variableType, $variableNativeType, TrinaryLogic::createYes());
 				}
 			}
-			$this->processExprNode($stmt, $use->var, $useScope, $storage, $nodeCallback, $context);
+			$this->processExprNode($stmt, $use->var, $useScope, $storage, $nodeCallback, $context->withoutValueFlow());
 			if (!$use->byRef) {
 				continue;
 			}

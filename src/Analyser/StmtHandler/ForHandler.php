@@ -16,6 +16,7 @@ use PhpParser\Node\Stmt\For_;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\InternalStatementResult;
+use PHPStan\Analyser\LoopWrittenVariableNames;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\NoopNodeCallback;
@@ -195,10 +196,14 @@ final class ForHandler implements StmtHandler
 				$prevEntryScope = $bodyScope;
 				$scope->pushExpressionResultStorage($storage);
 				try {
+					$passFlows = [];
 					if ($lastCondExpr !== null) {
-						$bodyScope = $nodeScopeResolver->processExprNode($stmt, $lastCondExpr, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep(resolveTemplateArguments: false))->getTruthyScope();
+						$passCondResult = $nodeScopeResolver->processExprNode($stmt, $lastCondExpr, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep(resolveTemplateArguments: false));
+						$bodyScope = $passCondResult->getTruthyScope();
+						$passFlows[] = $passCondResult->getVariableFlow();
 					}
 					$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, new NoopNodeCallback(), $context->enterDeep()->withoutTemplateArgumentResolution())->filterOutLoopExitPoints();
+					$passFlows[] = $bodyScopeResult->getVariableFlow();
 					$backEdgeScope = $bodyScopeResult->getLoopBackEdgeScope();
 					if ($backEdgeScope === null) {
 						$bodyScope = $prevScope;
@@ -209,6 +214,7 @@ final class ForHandler implements StmtHandler
 					foreach ($stmt->loop as $loopExpr) {
 						$exprResult = $nodeScopeResolver->processExprNode($stmt, $loopExpr, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createTopLevel(resolveTemplateArguments: false));
 						$bodyScope = $exprResult->getScope();
+						$passFlows[] = $exprResult->getVariableFlow();
 						$hasYield = $hasYield || $exprResult->hasYield();
 						$throwPoints = array_merge($throwPoints, $exprResult->getThrowPoints());
 						$impurePoints = array_merge($impurePoints, $exprResult->getImpurePoints());
@@ -222,7 +228,7 @@ final class ForHandler implements StmtHandler
 				}
 
 				if ($count >= NodeScopeResolver::GENERALIZE_AFTER_ITERATION) {
-					$bodyScope = $prevScope->generalizeWith($bodyScope);
+					$bodyScope = $prevScope->generalizeWith($bodyScope, LoopWrittenVariableNames::collect($stmt, VariableFlow::sequence(...$passFlows)));
 				}
 				$count++;
 			} while ($count < NodeScopeResolver::LOOP_SCOPE_ITERATIONS);

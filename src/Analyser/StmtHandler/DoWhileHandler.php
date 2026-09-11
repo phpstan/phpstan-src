@@ -8,6 +8,7 @@ use PhpParser\Node\Stmt\Do_;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\InternalStatementResult;
+use PHPStan\Analyser\LoopWrittenVariableNames;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\NoopNodeCallback;
@@ -83,22 +84,24 @@ final class DoWhileHandler implements StmtHandler
 						$replayPassStorage = $storage;
 						$replayPassResult = $bodyScopeResult;
 					}
-					if ($backEdgeScope !== null) {
-						$bodyScope = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $backEdgeScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep(resolveTemplateArguments: false))->getTruthyScope();
+					if ($backEdgeScope === null) {
+						$bodyScope = $prevScope;
+						break;
 					}
+					$passCondResult = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $backEdgeScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep(resolveTemplateArguments: false));
+					$bodyScope = $passCondResult->getTruthyScope();
 				} finally {
 					$scope->popExpressionResultStorage();
-				}
-				if ($backEdgeScope === null) {
-					$bodyScope = $prevScope;
-					break;
 				}
 				if ($bodyScope->equals($prevScope)) {
 					break;
 				}
 
 				if ($count >= NodeScopeResolver::GENERALIZE_AFTER_ITERATION) {
-					$bodyScope = $prevScope->generalizeWith($bodyScope);
+					$bodyScope = $prevScope->generalizeWith(
+						$bodyScope,
+						LoopWrittenVariableNames::collect($stmt, VariableFlow::sequence($bodyScopeResult->getVariableFlow(), $passCondResult->getVariableFlow())),
+					);
 				}
 				$count++;
 			} while ($count < NodeScopeResolver::LOOP_SCOPE_ITERATIONS);

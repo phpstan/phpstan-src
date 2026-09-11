@@ -4,6 +4,8 @@ namespace PHPStan\Node;
 
 use Override;
 use PhpParser\Node;
+use PhpParser\Node\Stmt\For_;
+use PhpParser\Node\Stmt\Foreach_;
 use PhpParser\NodeAbstract;
 use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\Type\Type;
@@ -29,6 +31,7 @@ final class VariableWritesNode extends NodeAbstract implements VirtualNode
 	 * @param array<int, Type> $redundantWriteTypes
 	 * @param array<string, true> $referencedVariableNames
 	 * @param array<string, true> $untrackedVariableNames
+	 * @param array<int, Foreach_|For_> $variableOverwritingLoops
 	 */
 	public function __construct(
 		private Node\FunctionLike $functionLike,
@@ -40,6 +43,7 @@ final class VariableWritesNode extends NodeAbstract implements VirtualNode
 		private array $redundantWriteTypes,
 		private array $referencedVariableNames,
 		private array $untrackedVariableNames,
+		private array $variableOverwritingLoops,
 		private bool $opaque,
 		private bool $allVariableNamesReferenced,
 	)
@@ -121,6 +125,21 @@ final class VariableWritesNode extends NodeAbstract implements VirtualNode
 	public function getRedundantType(VariableWrite $write): ?Type
 	{
 		return $this->redundantWriteTypes[$write->getId()] ?? null;
+	}
+
+	/**
+	 * The loop statement that binds this write in its head - a foreach key
+	 * or value variable, a for-loop initial assignment - when the variable
+	 * was assigned before the loop and is read after it with no assignment
+	 * in between other than the loop's own bindings and updates: the loop
+	 * takes over a variable still in use, rather than a spent loop variable.
+	 * Null for every other write.
+	 *
+	 * @return Foreach_|For_|null
+	 */
+	public function getVariableOverwritingLoop(VariableWrite $write): ?Node\Stmt
+	{
+		return $this->variableOverwritingLoops[$write->getId()] ?? null;
 	}
 
 	/**

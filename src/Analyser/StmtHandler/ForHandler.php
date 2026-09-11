@@ -32,6 +32,7 @@ use function array_merge;
 use function count;
 use function in_array;
 use function is_string;
+use function spl_object_id;
 
 /**
  * @implements StmtHandler<For_>
@@ -137,6 +138,15 @@ final class ForHandler implements StmtHandler
 			$hasYield = $hasYield || $initResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $initResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $initResult->getImpurePoints());
+		}
+		$initTargets = [];
+		foreach ($stmt->init as $initExpr) {
+			if (!$initExpr instanceof Assign) {
+				continue;
+			}
+			foreach (self::targetVariables($initExpr->var) as $variable) {
+				$initTargets[spl_object_id($variable)] = true;
+			}
 		}
 
 		$originalStorage = $storage;
@@ -304,7 +314,15 @@ final class ForHandler implements StmtHandler
 		$loop = $isIterableAtLeastOnce->no()
 			? VariableFlow::sequence($condition, VariableFlow::dead(VariableFlow::sequence($finalScopeResult->getVariableFlow(), $update)))
 			: VariableFlow::loop($condition, $finalScopeResult->getVariableFlow(), $update, $isIterableAtLeastOnce->yes(), !$alwaysIterates->yes());
-		$variableFlow = VariableFlow::sequence(...[...$initFlow, $loop]);
+		$initWrites = VariableFlowBuilder::writes(VariableFlow::sequence(...$initFlow));
+		$bindings = [];
+		foreach ($initWrites as $write) {
+			if ($write->isOffsetWrite() || !isset($initTargets[$write->getId()])) {
+				continue;
+			}
+			$bindings[] = $write;
+		}
+		$variableFlow = VariableFlow::loopStatement($stmt, VariableFlow::sequence(...[...$initFlow, $loop]), $bindings, [...$initWrites, ...VariableFlowBuilder::writes($update)]);
 		return new InternalStatementResult(
 			$finalScope->addTemplateArgumentConstraints($loopScope->getTemplateArgumentConstraints()),
 			hasYield: $finalScopeResult->hasYield() || $hasYield,
@@ -314,6 +332,33 @@ final class ForHandler implements StmtHandler
 			impurePoints: array_merge($impurePoints, $finalScopeResult->getImpurePoints()),
 			variableFlow: $variableFlow,
 		);
+	}
+
+	/**
+	 * The variables an assignment target binds - the variable itself, or the
+	 * variables of a destructuring list's items.
+	 *
+	 * @return list<Variable>
+	 */
+	private static function targetVariables(Expr $target): array
+	{
+		if ($target instanceof Variable) {
+			return [$target];
+		}
+		if (!$target instanceof Expr\List_ && !$target instanceof Expr\Array_) {
+			return [];
+		}
+		$variables = [];
+		foreach ($target->items as $item) {
+			if ($item === null) {
+				continue;
+			}
+			foreach (self::targetVariables($item->value) as $variable) {
+				$variables[] = $variable;
+			}
+		}
+
+		return $variables;
 	}
 
 }

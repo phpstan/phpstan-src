@@ -91,6 +91,33 @@ final class VariableFlowBuilder
 		return self::child($target, $storage);
 	}
 
+	/**
+	 * The writes of a flow composed only of accesses and sequences - an
+	 * assignment target or a loop head.
+	 *
+	 * @return list<VariableWrite>
+	 */
+	public static function writes(?VariableFlow $flow): array
+	{
+		if ($flow === null) {
+			return [];
+		}
+		if ($flow instanceof VariableAccessFlow) {
+			return $flow->write !== null ? [$flow->write] : [];
+		}
+		if (!$flow instanceof VariableSequenceFlow) {
+			return [];
+		}
+		$writes = [];
+		foreach ($flow->children as $child) {
+			foreach (self::writes($child) as $write) {
+				$writes[] = $write;
+			}
+		}
+
+		return $writes;
+	}
+
 	/** @param VariableWrite::KIND_* $kind */
 	public static function targetWrite(Expr $target, int $kind, MutatingScope $scope, ExpressionResultStorage $storage, ?Type $redundant = null): ?VariableFlow
 	{

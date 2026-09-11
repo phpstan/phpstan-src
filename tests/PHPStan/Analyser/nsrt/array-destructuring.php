@@ -129,10 +129,10 @@ function (\stdClass $obj) {
     assertType('non-empty-string', $secondStringArrayForeachList);
     assertType('non-empty-string', $thirdStringArrayForeachList);
     assertType('non-empty-string', $fourthStringArrayForeachList);
-    assertType('lowercase-string&uppercase-string', $dateArray['Y']);
-    assertType('lowercase-string&uppercase-string', $dateArray['m']);
+    assertType("'2018'", $dateArray['Y']);
+    assertType("'12'", $dateArray['m']);
     assertType('int', $dateArray['d']);
-    assertType('lowercase-string&uppercase-string', $intArrayForRewritingFirstElement[0]);
+    assertType("''", $intArrayForRewritingFirstElement[0]);
     assertType('int', $intArrayForRewritingFirstElement[1]);
     assertType('ArrayAccess&stdClass', $obj);
     assertType('stdClass', $newArray['newKey']);

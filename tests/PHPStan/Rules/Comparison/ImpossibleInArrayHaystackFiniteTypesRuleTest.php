@@ -42,7 +42,7 @@ class ImpossibleInArrayHaystackFiniteTypesRuleTest extends RuleTestCase
 				38,
 			],
 			[
-				'Value \'installed\' in the haystack passed to in_array() can never be identical to the needle type mixed.',
+				'Value \'installed\' in the haystack passed to in_array() can never be identical to the needle type mixed~\'installed\'.',
 				99,
 				'Type \'installed\' has already been eliminated from mixed.',
 			],

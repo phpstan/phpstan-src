@@ -100,6 +100,20 @@ class MixedType implements CompoundType, SubtractableType
 
 	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
+		if (
+			$this->subtractedType !== null
+			&& !$type instanceof NeverType
+			&& $this->subtractedType->isSuperTypeOf($type)->yes()
+		) {
+			return AcceptsResult::createNo([
+				sprintf(
+					'Type %s has already been eliminated from %s.',
+					$this->subtractedType->describe(VerbosityLevel::precise()),
+					$this->describe(VerbosityLevel::typeOnly()),
+				),
+			]);
+		}
+
 		return AcceptsResult::createYes();
 	}
 

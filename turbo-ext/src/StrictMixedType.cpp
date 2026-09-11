@@ -26,8 +26,8 @@ public:
 	/* AcceptsResult::createYes() */
 	static zv::Val accepts() { return pt_type_accepts_result(PT_TRI_YES); }
 
-	/* yes for a StrictMixedType or a MixedType that is no TemplateMixedType,
-	 * maybe otherwise; UNDEF = pending exception */
+	/* yes for a StrictMixedType that is no TemplateStrictMixedType or a
+	 * MixedType that is no TemplateMixedType, maybe otherwise; UNDEF = pending exception */
 	static zv::Val isAcceptedBy(zval *acceptingType)
 	{
 		bool yes;
@@ -38,8 +38,8 @@ public:
 	/* IsSuperTypeOfResult::createYes() */
 	static zv::Val isSuperTypeOf() { return pt_type_is_super_type_of_result(PT_TRI_YES); }
 
-	/* yes for a StrictMixedType or a MixedType that is no TemplateMixedType,
-	 * maybe otherwise; UNDEF = pending exception */
+	/* yes for a StrictMixedType that is no TemplateStrictMixedType or a
+	 * MixedType that is no TemplateMixedType, maybe otherwise; UNDEF = pending exception */
 	static zv::Val isSubTypeOf(zval *otherType)
 	{
 		bool yes;
@@ -114,13 +114,14 @@ public:
 	}
 
 private:
-	/* `$type instanceof self || ($type instanceof MixedType && !$type
-	 * instanceof TemplateMixedType)`; false = pending exception */
+	/* `($type instanceof self && !$type instanceof TemplateStrictMixedType)
+	 * || ($type instanceof MixedType && !$type instanceof TemplateMixedType)`;
+	 * false = pending exception */
 	[[nodiscard]] static bool isStrictOrPlainMixed(zval *type, bool &out)
 	{
 		zend_class_entry *ce = Z_OBJCE_P(type);
 		if (instanceof_function(ce, pt_ce_strict_mixed_type)) {
-			out = true;
+			out = !instanceof_function(ce, pt_ce_template_strict_mixed_type);
 			return true;
 		}
 		if (!instanceof_function(ce, pt_ce_mixed_type)) {

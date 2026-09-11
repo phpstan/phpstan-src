@@ -185,6 +185,19 @@ class ImpossibleCheckTypeStaticMethodCallRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testInvariantGenericAssert(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
+		$this->analyse([__DIR__ . '/data/invariant-generic-assert.php'], [
+			[
+				'Call to static method InvariantGenericAssert\Asserter::assertStringBagStatic() with InvariantGenericAssert\Bag<int> will always evaluate to false.',
+				94,
+				$tipText,
+			],
+		]);
+	}
+
 	public static function getAdditionalConfigFiles(): array
 	{
 		return [

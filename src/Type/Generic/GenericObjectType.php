@@ -13,6 +13,7 @@ use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ErrorType;
@@ -202,7 +203,28 @@ class GenericObjectType extends ObjectType
 			if (!$thisVariance->invariant()) {
 				$results[] = $thisVariance->isValidVariance($templateType, $this->types[$i], $ancestor->types[$i], $strictVariance);
 			} else {
-				$results[] = $templateType->isValidVariance($this->types[$i], $ancestor->types[$i], $strictVariance);
+				$varianceResult = $templateType->isValidVariance($this->types[$i], $ancestor->types[$i], $strictVariance);
+
+				// Invariance means `Foo<Cat>` is not assignable to `Foo<Animal>`, it does not
+				// mean the two are disjoint - the same object can satisfy both claims. Saying
+				// "no" outside of the accepts context would let TypeCombinator::intersect()
+				// and dead code detection conclude that narrowing `Foo<Animal>` down to
+				// `Foo<Cat>` is impossible. Assignability is still answered with "no", so
+				// variance keeps being enforced on arguments and return types.
+				if (
+					!$acceptsContext
+					&& $templateType->getVariance()->invariant()
+					&& $varianceResult->no()
+					&& !$this->types[$i]->isSuperTypeOf($ancestor->types[$i])->no()
+				) {
+					$varianceResult = new IsSuperTypeOfResult(
+						TrinaryLogic::createMaybe(),
+						$varianceResult->reasons,
+						$varianceResult->lazyReasons,
+					);
+				}
+
+				$results[] = $varianceResult;
 			}
 
 			$results[] = IsSuperTypeOfResult::createFromBoolean($thisVariance->validPosition($ancestorVariance));

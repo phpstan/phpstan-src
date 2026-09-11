@@ -441,6 +441,23 @@ class UnusedVariableRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testRedundantOffsets(): void
+	{
+		$redundant = [];
+		foreach ($this->gatherAnalyserErrors([__DIR__ . '/data/unused-variable-redundant-offsets.php']) as $error) {
+			if ($error->getIdentifier() !== 'assign.redundant') {
+				continue;
+			}
+			$redundant[] = [$error->getMessage(), $error->getLine()];
+		}
+		$this->assertSame([
+			['Offset $a[0] is assigned value 1 but it already has that value.', 8],
+			['Offset $a[0] is assigned value 1 but it already has that value.', 14],
+			['Offset $a[\'x\'][\'y\'] is assigned value 1 but it already has that value.', 21],
+			['Offset $a[\'0\'] is assigned value 1 but it already has that value.', 28],
+		], $redundant);
+	}
+
 	public function testDynamicOffsetOverwritten(): void
 	{
 		$errors = $this->gatherAnalyserErrors([__DIR__ . '/data/unused-variable-offset-overwrite.php']);

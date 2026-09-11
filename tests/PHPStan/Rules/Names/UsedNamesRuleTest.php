@@ -84,6 +84,34 @@ final class UsedNamesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testRepeatedNamespaces(): void
+	{
+		$this->analyse([__DIR__ . '/data/repeated-namespaces.php'], [
+			[
+				'Cannot declare class RepeatedNamespaces\RepeatedUses because the name is already in use.',
+				23,
+			],
+			[
+				'Cannot declare class RepeatedNamespaces\RepeatedClass because the name is already in use.',
+				29,
+			],
+		]);
+	}
+
+	public function testRepeatedBracedNamespaces(): void
+	{
+		$this->analyse([__DIR__ . '/data/repeated-braced-namespaces.php'], [
+			[
+				'Cannot declare class RepeatedBracedNamespaces\RepeatedBracedUses because the name is already in use.',
+				16,
+			],
+			[
+				'Cannot declare class RepeatedBracedNamespaces\RepeatedBracedClass because the name is already in use.',
+				23,
+			],
+		]);
+	}
+
 	public function testIgnoreUseFunctionAndConstant(): void
 	{
 		$this->analyse([__DIR__ . '/data/ignore-use-function-and-constant.php'], []);

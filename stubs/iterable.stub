@@ -159,22 +159,19 @@ class ArrayIterator implements SeekableIterator, ArrayAccess, Countable
 }
 
 /**
- * @template T of \RecursiveIterator|\IteratorAggregate
- * @mixin T
+ * @template TValue = mixed
+ * @implements SeekableIterator<string, TValue>
  */
-class RecursiveIteratorIterator
+class DirectoryIterator extends SplFileInfo implements SeekableIterator
 {
-	/**
-	 * @param T $iterator
-	 */
-	public function __construct(
-		$iterator,
-		int $mode = RecursiveIteratorIterator::LEAVES_ONLY,
-		int $flags = 0
-	)
-	{
 
-	}
+}
+
+/**
+ * @extends DirectoryIterator<SplFileInfo|string>
+ */
+class FilesystemIterator extends DirectoryIterator
+{
 
 }
 
@@ -205,6 +202,29 @@ class IteratorIterator implements OuterIterator {
      * @param TIterator $iterator
      */
     public function __construct(Traversable $iterator) {}
+}
+
+/**
+ * @template T of \RecursiveIterator|\IteratorAggregate
+ *
+ * @implements OuterIterator<key-of<T>, value-of<T>>
+ *
+ * @mixin T
+ */
+class RecursiveIteratorIterator implements OuterIterator
+{
+	/**
+	 * @param T $iterator
+	 */
+	public function __construct(
+		$iterator,
+		int $mode = RecursiveIteratorIterator::LEAVES_ONLY,
+		int $flags = 0
+	)
+	{
+
+	}
+
 }
 
 /**
@@ -287,6 +307,14 @@ class RecursiveArrayIterator extends ArrayIterator implements RecursiveIterator 
      * @return void
      */
     public function uksort($cmp_function) { }
+}
+
+/**
+ * @implements RecursiveIterator<string, SplFileInfo|string>
+ */
+class RecursiveDirectoryIterator extends FilesystemIterator implements RecursiveIterator
+{
+
 }
 
 /**

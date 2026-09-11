@@ -11,9 +11,11 @@ use PHPStan\Testing\RuleTestCase;
 class UnusedClosureUsesRuleTest extends RuleTestCase
 {
 
+	private bool $reportUnusedFlow = true;
+
 	protected function getRule(): Rule
 	{
-		return new UnusedClosureUsesRule(true);
+		return new UnusedClosureUsesRule(true, $this->reportUnusedFlow);
 	}
 
 	public function testCapturesAssignedThroughVariableVariables(): void
@@ -61,6 +63,23 @@ class UnusedClosureUsesRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/unused-closure-uses-skipped-catch.php'], [
 			['Anonymous function has an unused use $unused.', 15],
+		]);
+	}
+
+	public function testValueFlow(): void
+	{
+		$this->analyse([__DIR__ . '/data/unused-input-value-flow.php'], [
+			['Anonymous function has a use $input that only flows into values that are never used.', 25],
+			['Anonymous function has a use $input that only flows into values that are never used.', 34],
+			['Anonymous function has an unused use $input.', 49],
+		]);
+	}
+
+	public function testValueFlowWithoutBleedingEdge(): void
+	{
+		$this->reportUnusedFlow = false;
+		$this->analyse([__DIR__ . '/data/unused-input-value-flow.php'], [
+			['Anonymous function has an unused use $input.', 49],
 		]);
 	}
 

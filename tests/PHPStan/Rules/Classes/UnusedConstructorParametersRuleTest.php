@@ -14,9 +14,11 @@ class UnusedConstructorParametersRuleTest extends RuleTestCase
 
 	private bool $reportExactLine = true;
 
+	private bool $reportUnusedFlow = true;
+
 	protected function getRule(): Rule
 	{
-		return new UnusedConstructorParametersRule(self::getContainer()->getByType(UnusedParametersCheck::class), $this->reportExactLine);
+		return new UnusedConstructorParametersRule(self::getContainer()->getByType(UnusedParametersCheck::class), $this->reportExactLine, $this->reportUnusedFlow);
 	}
 
 	public function testUnusedConstructorParametersNoExactLine(): void
@@ -89,6 +91,23 @@ class UnusedConstructorParametersRuleTest extends RuleTestCase
 				'Constructor of class UnusedConstructorParametersResolvedDynamic\OverwrittenParameter has an unused parameter $x.',
 				43,
 			],
+		]);
+	}
+
+	public function testValueFlow(): void
+	{
+		$this->analyse([__DIR__ . '/data/unused-constructor-parameters-value-flow.php'], [
+			['Constructor of class UnusedConstructorParametersValueFlow\Foo has a parameter $covered that only flows into values that are never used.', 10],
+			['Constructor of class UnusedConstructorParametersValueFlow\Foo has a parameter $input that only flows into values that are never used.', 10],
+			['Constructor of class UnusedConstructorParametersValueFlow\Foo has an unused parameter $overwritten.', 10],
+		]);
+	}
+
+	public function testValueFlowWithoutBleedingEdge(): void
+	{
+		$this->reportUnusedFlow = false;
+		$this->analyse([__DIR__ . '/data/unused-constructor-parameters-value-flow.php'], [
+			['Constructor of class UnusedConstructorParametersValueFlow\Foo has an unused parameter $overwritten.', 10],
 		]);
 	}
 

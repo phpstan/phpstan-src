@@ -21,6 +21,10 @@ use function sprintf;
  * that value is read on some path (overwriting it first is not a use);
  * func_get_args() observes every parameter's original value; a by-ref
  * parameter gives the caller the variable, so any mention counts.
+ *
+ * A parameter whose value is read, but only into values that never reach a
+ * sink, is a separate finding - callers opt into it, because the rules that
+ * predate the value-flow analysis report it only under bleeding edge.
  */
 #[AutowiredService]
 final class UnusedParametersCheck
@@ -29,6 +33,7 @@ final class UnusedParametersCheck
 	/**
 	 * @param Param[] $parameters
 	 * @param 'constructor.unusedParameter'|'function.unusedParameter'|'method.unusedParameter' $identifier
+	 * @param 'constructor.unusedParameterFlow'|'function.unusedParameterFlow'|'method.unusedParameterFlow'|null $unusedFlowIdentifier null = do not report parameters whose value only flows into values that are never used
 	 * @return list<IdentifierRuleError>
 	 */
 	public function getUnusedParameterErrors(
@@ -38,6 +43,8 @@ final class UnusedParametersCheck
 		string $unusedParameterMessage,
 		string $identifier,
 		bool $reportExactLine,
+		?string $unusedFlowMessage = null,
+		?string $unusedFlowIdentifier = null,
 	): array
 	{
 		if ($node->isOpaque()) {
@@ -57,17 +64,26 @@ final class UnusedParametersCheck
 			if (isset($contractParameterNames[$parameter->var->name])) {
 				continue;
 			}
+			$message = $unusedParameterMessage;
+			$errorIdentifier = $identifier;
 			$write = $node->getWriteForNode($parameter->var);
 			if ($write !== null) {
-				if ($node->isRead($write) || $node->areAllVariableNamesReferenced()) {
+				if ($node->isUsed($write) || $node->areAllVariableNamesReferenced()) {
 					continue;
+				}
+				if ($node->isRead($write)) {
+					if ($unusedFlowMessage === null || $unusedFlowIdentifier === null) {
+						continue;
+					}
+					$message = $unusedFlowMessage;
+					$errorIdentifier = $unusedFlowIdentifier;
 				}
 			} elseif ($node->isVariableReferenced($parameter->var->name)) {
 				continue;
 			}
 
-			$errorBuilder = RuleErrorBuilder::message(sprintf($unusedParameterMessage, $parameter->var->name))
-				->identifier($identifier);
+			$errorBuilder = RuleErrorBuilder::message(sprintf($message, $parameter->var->name))
+				->identifier($errorIdentifier);
 			if ($reportExactLine) {
 				$errorBuilder->line($parameter->var->getStartLine());
 			}

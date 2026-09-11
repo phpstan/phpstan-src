@@ -22,6 +22,8 @@ final class UnusedClosureUsesRule implements Rule
 	public function __construct(
 		#[AutowiredParameter(ref: '%featureToggles.reportPreciseLineForUnusedFunctionParameter%')]
 		private bool $reportExactLine,
+		#[AutowiredParameter(ref: '%featureToggles.unusedParameters%')]
+		private bool $reportUnusedFlow,
 	)
 	{
 	}
@@ -46,20 +48,31 @@ final class UnusedClosureUsesRule implements Rule
 			if (!is_string($use->var->name)) {
 				continue;
 			}
+			$message = 'Anonymous function has an unused use $%s.';
+			$identifier = 'closure.unusedUse';
 			$write = $node->getWriteForNode($use->var);
 			if ($write !== null) {
 				// a by-value use imports a value - it is unused unless that
 				// value is read on some path (overwriting it first is not a use)
-				if ($node->isRead($write) || $node->areAllVariableNamesReferenced()) {
+				if ($node->isUsed($write) || $node->areAllVariableNamesReferenced()) {
 					continue;
+				}
+				if ($node->isRead($write)) {
+					// read, but only into values that never reach a sink - a
+					// newer finding than the rule, so bleeding edge only
+					if (!$this->reportUnusedFlow) {
+						continue;
+					}
+					$message = 'Anonymous function has a use $%s that only flows into values that are never used.';
+					$identifier = 'closure.unusedUseFlow';
 				}
 			} elseif ($node->isVariableReferenced($use->var->name)) {
 				// a by-ref use aliases the outer variable - any mention counts
 				continue;
 			}
 
-			$errorBuilder = RuleErrorBuilder::message(sprintf('Anonymous function has an unused use $%s.', $use->var->name))
-				->identifier('closure.unusedUse');
+			$errorBuilder = RuleErrorBuilder::message(sprintf($message, $use->var->name))
+				->identifier($identifier);
 			if ($this->reportExactLine) {
 				$errorBuilder->line($use->var->getStartLine());
 			}

@@ -24,6 +24,8 @@ final class UnusedConstructorParametersRule implements Rule
 		private UnusedParametersCheck $check,
 		#[AutowiredParameter(ref: '%featureToggles.reportPreciseLineForUnusedFunctionParameter%')]
 		private bool $reportExactLine,
+		#[AutowiredParameter(ref: '%featureToggles.unusedParameters%')]
+		private bool $reportUnusedFlow,
 	)
 	{
 	}
@@ -67,21 +69,23 @@ final class UnusedConstructorParametersRule implements Rule
 			}
 		}
 
-		$message = sprintf(
-			'Constructor of class %s has an unused parameter $%%s.',
+		$constructorDescription = sprintf(
+			'Constructor of class %s',
 			SprintfHelper::escapeFormatString($classReflection->getDisplayName()),
 		);
 		if ($classReflection->isAnonymous()) {
-			$message = 'Constructor of an anonymous class has an unused parameter $%s.';
+			$constructorDescription = 'Constructor of an anonymous class';
 		}
 
 		return $this->check->getUnusedParameterErrors(
 			$node,
 			$method,
 			$originalNode->params,
-			$message,
+			sprintf('%s has an unused parameter $%%s.', $constructorDescription),
 			'constructor.unusedParameter',
 			$this->reportExactLine,
+			$this->reportUnusedFlow ? sprintf('%s has a parameter $%%s that only flows into values that are never used.', $constructorDescription) : null,
+			$this->reportUnusedFlow ? 'constructor.unusedParameterFlow' : null,
 		);
 	}
 

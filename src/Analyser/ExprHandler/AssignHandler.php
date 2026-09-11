@@ -259,8 +259,8 @@ final class AssignHandler implements ExprHandler
 			}
 		}
 
-		$redundantType = $expr instanceof Assign && $expr->var instanceof Variable && is_string($expr->var->name)
-			? self::redundant($assignedExprResult, $expr->var->name)
+		$redundantType = $expr instanceof Assign
+			? self::redundant($assignedExprResult, $expr->var, $storage)
 			: null;
 		$variableFlow = VariableFlow::sequence(
 			VariableFlowBuilder::targetRead($expr->var, $storage, false),
@@ -2500,21 +2500,45 @@ final class AssignHandler implements ExprHandler
 		return false;
 	}
 
-	private static function redundant(ExpressionResult $rhs, string $name): ?Type
+	private static function redundant(ExpressionResult $rhs, Expr $target, ExpressionResultStorage $storage): ?Type
 	{
-		$scope = $rhs->getScope();
-		if (!$scope->hasVariableType($name)->yes()) {
+		$dimensions = [];
+		while ($target instanceof ArrayDimFetch) {
+			if ($target->dim === null) {
+				return null;
+			}
+			$dimResult = $storage->findExpressionResult($target->dim);
+			if ($dimResult === null || count($dimResult->getType()->toArrayKey()->getConstantScalarValues()) !== 1) {
+				return null;
+			}
+			$dimensions[] = $dimResult;
+			$target = $target->var;
+		}
+		if (!$target instanceof Variable || !is_string($target->name)) {
 			return null;
 		}
-		$values = $scope->getVariableType($name)->getFiniteTypes();
+		$name = $target->name;
+		$scope = $rhs->getScope();
+		$nativeScope = $scope->doNotTreatPhpDocTypesAsCertain();
+		if (!$scope->hasVariableType($name)->yes() || !$nativeScope->hasVariableType($name)->yes()) {
+			return null;
+		}
+		$type = $scope->getVariableType($name);
+		$nativeType = $nativeScope->getVariableType($name);
+		foreach (array_reverse($dimensions) as $dimension) {
+			$offset = $dimension->getType()->toArrayKey();
+			$nativeOffset = $dimension->getNativeType()->toArrayKey();
+			if (!$type->isArray()->yes() || !$nativeType->isArray()->yes() || !$type->hasOffsetValueType($offset)->yes() || !$nativeType->hasOffsetValueType($nativeOffset)->yes()) {
+				return null;
+			}
+			$type = $type->getOffsetValueType($offset);
+			$nativeType = $nativeType->getOffsetValueType($nativeOffset);
+		}
+		$values = $type->getFiniteTypes();
 		if (count($values) !== 1 || !$values[0]->equals($rhs->getType())) {
 			return null;
 		}
-		$nativeScope = $scope->doNotTreatPhpDocTypesAsCertain();
-		if (!$nativeScope->hasVariableType($name)->yes()) {
-			return null;
-		}
-		$nativeValues = $nativeScope->getVariableType($name)->getFiniteTypes();
+		$nativeValues = $nativeType->getFiniteTypes();
 		return count($nativeValues) === 1 && $nativeValues[0]->equals($rhs->getNativeType()) ? $rhs->getType() : null;
 	}
 

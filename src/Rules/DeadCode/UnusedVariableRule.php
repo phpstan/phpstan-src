@@ -71,14 +71,19 @@ final class UnusedVariableRule implements Rule
 			}
 
 			$redundantType = $node->getRedundantType($write);
-			if ($redundantType !== null && $node->isUsed($write)) {
+			if ($redundantType !== null && ($write->isOffsetWrite() || $node->isUsed($write))) {
+				$target = $write->getNode();
+				if (!$target instanceof Node\Expr) {
+					throw new ShouldNotHappenException();
+				}
+				$description = $write->isOffsetWrite() ? 'Offset ' . $this->exprPrinter->printExpr($target) : 'Variable $' . $name;
 				$errors[] = RuleErrorBuilder::message(sprintf(
-					'Variable $%s is assigned value %s but it already has that value.',
-					$name,
+					'%s is assigned value %s but it already has that value.',
+					$description,
 					$redundantType->describe(VerbosityLevel::value()),
 				))
 					->identifier('assign.redundant')
-					->line($write->getNode()->getStartLine())
+					->line($target->getStartLine())
 					->build();
 				continue;
 			}

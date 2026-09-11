@@ -244,7 +244,7 @@ final class ClassMethodHandler implements StmtHandler
 						continue;
 					}
 
-					$endScope = $executionEnd->getStatementResult()->getScope();
+					$endScope = $executionEnd->getStatementResult()->getScope()->toWalkScope();
 					if ($finalScope === null) {
 						$finalScope = $endScope;
 						continue;

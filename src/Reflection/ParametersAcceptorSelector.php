@@ -203,6 +203,7 @@ final class ParametersAcceptorSelector
 			count($args) > 0
 			&& count($parametersAcceptors) > 0
 		) {
+			/** @var Node\Arg[]|null $arrayMapArgs */
 			$arrayMapArgs = $args[0]->value->getAttribute(ArrayMapArgVisitor::ATTRIBUTE_NAME);
 			if ($arrayMapArgs !== null) {
 				$callbackParameters = [];

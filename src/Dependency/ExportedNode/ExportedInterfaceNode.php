@@ -96,6 +96,7 @@ final class ExportedInterfaceNode implements RootExportedNode, JsonSerializable
 			$data['phpDoc'] !== null ? ExportedPhpDocNode::decode($data['phpDoc']['data']) : null,
 			$data['extends'],
 			array_map(static function (array $node): ExportedNode {
+				/** @var class-string<ExportedNode> $nodeType */
 				$nodeType = $node['type'];
 
 				return $nodeType::decode($node['data']);

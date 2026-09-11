@@ -1881,7 +1881,9 @@ class NodeScopeResolver
 
 		$processingOrder = array_keys($args);
 		usort($processingOrder, static function (int $a, int $b) use ($args): int {
+			/** @var Node\Arg|null $aOriginalArg */
 			$aOriginalArg = $args[$a]->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE);
+			/** @var Node\Arg|null $bOriginalArg */
 			$bOriginalArg = $args[$b]->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE);
 			$aValue = $aOriginalArg !== null ? $aOriginalArg->value : $args[$a]->value;
 			$bValue = $bOriginalArg !== null ? $bOriginalArg->value : $args[$b]->value;
@@ -1893,19 +1895,17 @@ class NodeScopeResolver
 				return $aIsClosure ? 1 : -1;
 			}
 
-			$aOriginal = $args[$a]->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE);
-			$bOriginal = $args[$b]->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE);
-			if ($aOriginal === null && $bOriginal === null) {
+			if ($aOriginalArg === null && $bOriginalArg === null) {
 				return $a <=> $b;
 			}
-			if ($aOriginal === null) {
+			if ($aOriginalArg === null) {
 				return 1;
 			}
-			if ($bOriginal === null) {
+			if ($bOriginalArg === null) {
 				return -1;
 			}
 
-			return $aOriginal->getStartTokenPos() <=> $bOriginal->getStartTokenPos();
+			return $aOriginalArg->getStartTokenPos() <=> $bOriginalArg->getStartTokenPos();
 		});
 
 		$countStableMetadataAcceptor = null;

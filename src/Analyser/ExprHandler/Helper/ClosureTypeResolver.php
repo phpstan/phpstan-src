@@ -308,9 +308,11 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		array $invalidateExpressions,
 		bool $native = false,
 		?ExpressionResultStorage $storage = null,
+		?Type $passedToType = null,
+		?Type $nativePassedToType = null,
 	): ClosureType
 	{
-		[$parameters, $isVariadic, $callableParameters, $nativeCallableParameters] = $this->buildParametersAndAcceptors($scope, $expr, $storage);
+		[$parameters, $isVariadic, $callableParameters, $nativeCallableParameters] = $this->buildParametersAndAcceptors($scope, $expr, $storage, $passedToType, $nativePassedToType);
 
 		return $this->buildClosureTypeFromClosureWalk(
 			$scope,
@@ -356,9 +358,11 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		array $invalidateExpressions,
 		bool $native = false,
 		?ExpressionResultStorage $storage = null,
+		?Type $passedToType = null,
+		?Type $nativePassedToType = null,
 	): ClosureType
 	{
-		[$parameters, $isVariadic, $callableParameters, $nativeCallableParameters] = $this->buildParametersAndAcceptors($scope, $expr, $storage);
+		[$parameters, $isVariadic, $callableParameters, $nativeCallableParameters] = $this->buildParametersAndAcceptors($scope, $expr, $storage, $passedToType, $nativePassedToType);
 
 		$returnType = $this->resolveArrowFunctionReturnType($scope, $arrowScope, $expr, $native, $storage);
 
@@ -784,14 +788,13 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		MutatingScope $scope,
 		Node\Expr\Closure|ArrowFunction $expr,
 		?ExpressionResultStorage $storage = null,
+		?Type $passedToType = null,
+		?Type $nativePassedToType = null,
 	): array
 	{
 		[$parameters, $isVariadic] = $this->buildDeclaredParameters($scope, $expr);
-
-		$passedToType = null;
-		$nativePassedToType = null;
 		$inFunctionCallsStackCount = count($scope->inFunctionCallsStack);
-		if ($inFunctionCallsStackCount > 0) {
+		if ($passedToType === null && $inFunctionCallsStackCount > 0) {
 			[, $inParameter] = $scope->inFunctionCallsStack[$inFunctionCallsStackCount - 1];
 			if ($inParameter !== null) {
 				$passedToType = $inParameter->getType();

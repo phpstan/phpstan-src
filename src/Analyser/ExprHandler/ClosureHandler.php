@@ -41,7 +41,7 @@ final class ClosureHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		$processClosureResult = $nodeScopeResolver->processClosureNode($stmt, $expr, $scope, $storage, $nodeCallback, $context, null);
+		$processClosureResult = $nodeScopeResolver->processClosureNode($stmt, $expr, $scope, $storage, $nodeCallback, $context, $context->getPassedToType(), $context->getNativePassedToType());
 
 		// A plain typeCallback recursing through getClosureType() would re-walk
 		// the body each getType() ask before the cache populates and hang;
@@ -67,6 +67,8 @@ final class ClosureHandler implements ExprHandler
 			$processClosureResult->getInvalidateExpressions(),
 			false,
 			$storage,
+			$context->getPassedToType(),
+			$context->getNativePassedToType(),
 		);
 		$nativeType = $type;
 

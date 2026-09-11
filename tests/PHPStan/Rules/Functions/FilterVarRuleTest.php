@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Functions;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPStan\Type\Php\FilterFunctionFlagsHelper;
 use PHPStan\Type\Php\FilterFunctionReturnTypeHelper;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 
@@ -17,6 +18,7 @@ class FilterVarRuleTest extends RuleTestCase
 		return new FilterVarRule(
 			self::createReflectionProvider(),
 			self::getContainer()->getByType(FilterFunctionReturnTypeHelper::class),
+			self::getContainer()->getByType(FilterFunctionFlagsHelper::class),
 			self::getContainer()->getByType(PhpVersion::class),
 		);
 	}
@@ -28,6 +30,18 @@ class FilterVarRuleTest extends RuleTestCase
 			['Cannot use both FILTER_NULL_ON_FAILURE and FILTER_THROW_ON_FAILURE.', 5],
 			['Cannot use both FILTER_NULL_ON_FAILURE and FILTER_THROW_ON_FAILURE.', 8],
 			['Cannot use both FILTER_NULL_ON_FAILURE and FILTER_THROW_ON_FAILURE.', 10],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.5.0')]
+	public function testFilterFunctions(): void
+	{
+		$this->analyse([__DIR__ . '/data/filter-functions-null-and-throw.php'], [
+			['Cannot use both FILTER_NULL_ON_FAILURE and FILTER_THROW_ON_FAILURE.', 7],
+			['Cannot use both FILTER_NULL_ON_FAILURE and FILTER_THROW_ON_FAILURE.', 8],
+			['Cannot use both FILTER_NULL_ON_FAILURE and FILTER_THROW_ON_FAILURE.', 9],
+			['Cannot use both FILTER_NULL_ON_FAILURE and FILTER_THROW_ON_FAILURE.', 10],
+			['Cannot use both FILTER_NULL_ON_FAILURE and FILTER_THROW_ON_FAILURE.', 11],
 		]);
 	}
 

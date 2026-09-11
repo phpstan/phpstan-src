@@ -60,7 +60,10 @@ final class FilterFunctionReturnTypeHelper
 	private function getOffsetValueType(Type $inputType, Type $offsetType, ?Type $filterType, ?Type $flagsType): Type
 	{
 		$hasNullOnFailure = $this->hasFlag('FILTER_NULL_ON_FAILURE', $flagsType);
-		if ($hasNullOnFailure->yes()) {
+		if ($this->hasThrowOnFailureFlag($flagsType)->yes()) {
+			// a missing input value throws instead of being reported through the return value
+			$inexistentOffsetType = new NeverType();
+		} elseif ($hasNullOnFailure->yes()) {
 			$inexistentOffsetType = new ConstantBooleanType(false);
 		} elseif ($hasNullOnFailure->no()) {
 			$inexistentOffsetType = new NullType();
@@ -151,9 +154,7 @@ final class FilterFunctionReturnTypeHelper
 
 		$inputIsArray = $inputType->isArray();
 		$hasRequireArrayFlag = $this->hasFlag('FILTER_REQUIRE_ARRAY', $flagsType);
-		$hasThrowOnFailureFlag = $this->phpVersion->hasFilterThrowOnFailureConstant()
-			? $this->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType)
-			: TrinaryLogic::createNo();
+		$hasThrowOnFailureFlag = $this->hasThrowOnFailureFlag($flagsType);
 		if ($inputIsArray->no() && $hasRequireArrayFlag->yes()) {
 			if ($hasThrowOnFailureFlag->yes()) {
 				return new ErrorType();
@@ -512,6 +513,13 @@ final class FilterFunctionReturnTypeHelper
 				(((int) $scalar) & $flag) === $flag,
 			),
 		);
+	}
+
+	private function hasThrowOnFailureFlag(?Type $flagsType): TrinaryLogic
+	{
+		return $this->phpVersion->hasFilterThrowOnFailureConstant()
+			? $this->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType)
+			: TrinaryLogic::createNo();
 	}
 
 	private function getFlagsValue(Type $exprType): Type

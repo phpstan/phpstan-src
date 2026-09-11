@@ -11,8 +11,8 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\Php\FilterFunctionFlagsHelper;
 use PHPStan\Type\Php\FilterFunctionReturnTypeHelper;
-use function count;
 
 /**
  * @implements Rule<Node\Expr\FuncCall>
@@ -24,6 +24,7 @@ final class FilterVarRule implements Rule
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private FilterFunctionReturnTypeHelper $filterFunctionReturnTypeHelper,
+		private FilterFunctionFlagsHelper $filterFunctionFlagsHelper,
 		private PhpVersion $phpVersion,
 	)
 	{
@@ -40,13 +41,12 @@ final class FilterVarRule implements Rule
 			return [];
 		}
 
-		if ($this->reflectionProvider->resolveFunctionName($node->name, $scope) !== 'filter_var') {
+		if (!$this->reflectionProvider->hasFunction($node->name, $scope)) {
 			return [];
 		}
 
-		$args = $node->getArgs();
-
-		if (count($args) < 3) {
+		$functionReflection = $this->reflectionProvider->getFunction($node->name, $scope);
+		if (!$this->filterFunctionFlagsHelper->isSupported($functionReflection)) {
 			return [];
 		}
 
@@ -57,12 +57,14 @@ final class FilterVarRule implements Rule
 			return [];
 		}
 
-		$flagsType = $scope->getType($args[2]->value);
+		foreach ($this->filterFunctionFlagsHelper->getFlagsTypes($functionReflection, $node, $scope) as $flagsType) {
+			if (!$this->filterFunctionReturnTypeHelper->hasFlag('FILTER_NULL_ON_FAILURE', $flagsType)
+				->and($this->filterFunctionReturnTypeHelper->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType))
+				->yes()
+			) {
+				continue;
+			}
 
-		if ($this->filterFunctionReturnTypeHelper->hasFlag('FILTER_NULL_ON_FAILURE', $flagsType)
-			->and($this->filterFunctionReturnTypeHelper->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType))
-			->yes()
-		) {
 			return [
 				RuleErrorBuilder::message('Cannot use both FILTER_NULL_ON_FAILURE and FILTER_THROW_ON_FAILURE.')
 					->identifier('filterVar.nullOnFailureAndThrowOnFailure')

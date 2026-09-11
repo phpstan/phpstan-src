@@ -115,29 +115,29 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 
 		if ($identifier->isClass()) {
 			$identifierName = strtolower($identifier->getName());
-			$file = $this->findFileByClass($identifierName);
-			if ($file === null) {
+			$fileByClass = $this->findFileByClass($identifierName);
+			if ($fileByClass === null) {
 				return null;
 			}
-			$files = [$file];
+			$files = [$fileByClass];
 		} elseif ($identifier->isFunction()) {
 			$identifierName = strtolower($identifier->getName());
 			$files = $this->findFilesByFunction($identifierName);
 		} elseif ($identifier->isConstant()) {
 			$identifierName = ConstantNameHelper::normalize($identifier->getName());
-			$file = $this->findFileByConstant($identifierName);
+			$fileByConstant = $this->findFileByConstant($identifierName);
 
-			if ($file === null) {
+			if ($fileByConstant === null) {
 				return null;
 			}
 
-			$files = [$file];
+			$files = [$fileByConstant];
 		} else {
 			return null;
 		}
 
-		foreach ($files as $file) {
-			[$reflectionCacheKey, $variableCacheKey] = $this->getCacheKeys($file, $identifier);
+		foreach ($files as $oneFile) {
+			[$reflectionCacheKey, $variableCacheKey] = $this->getCacheKeys($oneFile, $identifier);
 			$cachedReflection = $this->cache->load($reflectionCacheKey, $variableCacheKey);
 			if ($cachedReflection === null) {
 				continue;

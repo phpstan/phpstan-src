@@ -9,6 +9,8 @@ use function array_map;
 final class InternalStatementResult
 {
 
+	private bool $endReachable;
+
 	/**
 	 * @param InternalStatementExitPoint[] $exitPoints
 	 * @param InternalThrowPoint[] $throwPoints
@@ -24,8 +26,10 @@ final class InternalStatementResult
 		private array $impurePoints,
 		private array $endStatements = [],
 		private ?VariableFlow $variableFlow = null,
+		?bool $endReachable = null,
 	)
 	{
+		$this->endReachable = $endReachable ?? !$isAlwaysTerminating;
 		foreach ($exitPoints as $exitPoint) {
 			$this->scope = $this->scope->addTemplateArgumentConstraints($exitPoint->getScope()->getTemplateArgumentConstraints());
 		}
@@ -37,6 +41,30 @@ final class InternalStatementResult
 	public function getVariableFlow(): ?VariableFlow
 	{
 		return $this->variableFlow;
+	}
+
+	/**
+	 * Whether execution can reach the end of the statements. Unlike isAlwaysTerminating(),
+	 * filterOutLoopExitPoints() does not reset it: a loop body left only through
+	 * break or continue still cannot reach its end.
+	 */
+	public function isEndReachable(): bool
+	{
+		return $this->endReachable;
+	}
+
+	/**
+	 * The scope the next iteration of a loop starts from: the end of the body when
+	 * it is reachable, merged with the body's continue statements. Null when the body
+	 * never reaches the next iteration.
+	 */
+	public function getLoopBackEdgeScope(): ?MutatingScope
+	{
+		$backEdge = $this->endReachable ? $this->scope : null;
+		foreach ($this->getExitPointsByType(Stmt\Continue_::class) as $continueExitPoint) {
+			$backEdge = $backEdge === null ? $continueExitPoint->getScope() : $backEdge->mergeWith($continueExitPoint->getScope());
+		}
+		return $backEdge;
 	}
 
 	public function toPublic(): StatementResult
@@ -81,14 +109,14 @@ final class InternalStatementResult
 
 			$num = $statement->num;
 			if (!$num instanceof Int_) {
-				return new self($this->scope, $this->hasYield, false, $this->exitPoints, $this->throwPoints, $this->impurePoints, variableFlow: $this->variableFlow);
+				return new self($this->scope, $this->hasYield, false, $this->exitPoints, $this->throwPoints, $this->impurePoints, variableFlow: $this->variableFlow, endReachable: false);
 			}
 
 			if ($num->value !== 1) {
 				continue;
 			}
 
-			return new self($this->scope, $this->hasYield, false, $this->exitPoints, $this->throwPoints, $this->impurePoints, variableFlow: $this->variableFlow);
+			return new self($this->scope, $this->hasYield, false, $this->exitPoints, $this->throwPoints, $this->impurePoints, variableFlow: $this->variableFlow, endReachable: false);
 		}
 
 		return $this;

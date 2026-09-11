@@ -232,10 +232,12 @@ final class ForeachHandler implements StmtHandler
 					try {
 						$bodyScope = $this->enterForeach($nodeScopeResolver, $bodyScope, $storage, $originalScope, $stmt, $foreachIterateeType, $foreachNativeIterateeType, $nodeCallback);
 						$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $bodyRecording, $context->enterDeep()->withoutTemplateArgumentResolution())->filterOutLoopExitPoints();
-						$bodyScope = $bodyScopeResult->getScope();
-						foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
-							$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
+						$backEdgeScope = $bodyScopeResult->getLoopBackEdgeScope();
+						if ($backEdgeScope === null) {
+							$bodyScope = $prevScope;
+							break;
 						}
+						$bodyScope = $backEdgeScope;
 					} finally {
 						$scope->popExpressionResultStorage();
 					}
@@ -278,7 +280,7 @@ final class ForeachHandler implements StmtHandler
 			$finalPassContext = $unrolledTotalKeys !== null ? $context->enterUnrolledForeach($unrolledTotalKeys) : $context;
 			$finalScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $finalPassContext)->filterOutLoopExitPoints();
 		}
-		$finalScope = $finalScopeResult->getScope();
+		$finalScope = $finalScopeResult->isEndReachable() ? $finalScopeResult->getScope() : null;
 		$scopesWithIterableValueType = [];
 
 		$keyVarExpr = null;
@@ -299,7 +301,7 @@ final class ForeachHandler implements StmtHandler
 		$trackingExpr = $originalKeyVarExpr ?? $originalValueExpr;
 
 		$continueExitPointHasUnoriginalKeyType = false;
-		if ($trackingExpr !== null) {
+		if ($trackingExpr !== null && $finalScope !== null) {
 			if ($finalScope->hasExpressionType($trackingExpr)->yes()) {
 				$scopesWithIterableValueType[] = $finalScope;
 			} else {
@@ -309,7 +311,7 @@ final class ForeachHandler implements StmtHandler
 
 		foreach ($finalScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
 			$continueScope = $continueExitPoint->getScope();
-			$finalScope = $continueScope->mergeWith($finalScope);
+			$finalScope = $finalScope === null ? $continueScope : $continueScope->mergeWith($finalScope);
 			if ($trackingExpr === null || !$continueScope->hasExpressionType($trackingExpr)->yes()) {
 				$continueExitPointHasUnoriginalKeyType = true;
 				continue;
@@ -318,8 +320,9 @@ final class ForeachHandler implements StmtHandler
 		}
 		$breakExitPoints = $finalScopeResult->getExitPointsByType(Break_::class);
 		foreach ($breakExitPoints as $breakExitPoint) {
-			$finalScope = $breakExitPoint->getScope()->mergeWith($finalScope);
+			$finalScope = $finalScope === null ? $breakExitPoint->getScope() : $breakExitPoint->getScope()->mergeWith($finalScope);
 		}
+		$finalScope ??= $finalScopeResult->getScope();
 
 		if ($unrolledEndScope !== null) {
 			$finalScope = $unrolledEndScope;
@@ -628,7 +631,7 @@ final class ForeachHandler implements StmtHandler
 	}
 
 	/**
-	 * @return array{bodyScope: MutatingScope, endScope: MutatingScope, totalKeys: int}|null
+	 * @return array{bodyScope: MutatingScope, endScope: MutatingScope|null, totalKeys: int}|null
 	 */
 	private function tryProcessUnrolledConstantArrayForeach(
 		NodeScopeResolver $nodeScopeResolver,
@@ -755,12 +758,20 @@ final class ForeachHandler implements StmtHandler
 					$bodyContext,
 				)->filterOutLoopExitPoints();
 
-				$iterEndScope = $bodyResult->getScope();
-				foreach ($bodyResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
-					$iterEndScope = $iterEndScope->mergeWith($continueExitPoint->getScope());
-				}
+				$iterEndScope = $bodyResult->getLoopBackEdgeScope();
 				foreach ($bodyResult->getExitPointsByType(Break_::class) as $breakExitPoint) {
 					$allBreakScopes[] = $breakExitPoint->getScope();
+				}
+
+				if ($iterEndScope === null) {
+					if ($isOptional) {
+						// the key may be missing, the next iteration then starts from the previous one
+						continue;
+					}
+
+					// no later iteration runs, the loop is left only through its break statements
+					$chainScope = null;
+					break;
 				}
 
 				if ($isOptional) {
@@ -774,11 +785,15 @@ final class ForeachHandler implements StmtHandler
 			for ($i = 1, $c = count($entryScopes); $i < $c; $i++) {
 				$arrayBodyScope = $arrayBodyScope->mergeWith($entryScopes[$i]);
 			}
-			if (count($entryScopes) === 1) {
+			if (count($entryScopes) === 1 && $chainScope !== null) {
 				$arrayBodyScope = $arrayBodyScope->mergeWith($chainScope);
 			}
 
 			$allBodyScopes[] = $arrayBodyScope;
+			if ($chainScope === null) {
+				continue;
+			}
+
 			$allChainScopes[] = $chainScope;
 		}
 
@@ -791,13 +806,14 @@ final class ForeachHandler implements StmtHandler
 			$bodyScope = $bodyScope->mergeWith($allBodyScopes[$i]);
 		}
 
-		$endScope = $allChainScopes[0];
-		for ($i = 1, $c = count($allChainScopes); $i < $c; $i++) {
-			$endScope = $endScope->mergeWith($allChainScopes[$i]);
+		$chainEndScope = null;
+		foreach ($allChainScopes as $chainScope) {
+			$chainEndScope = $chainEndScope === null ? $chainScope : $chainEndScope->mergeWith($chainScope);
 		}
 
+		$endScope = $chainEndScope;
 		foreach ($allBreakScopes as $breakScope) {
-			$endScope = $endScope->mergeWith($breakScope);
+			$endScope = $endScope === null ? $breakScope : $endScope->mergeWith($breakScope);
 		}
 
 		// Unsealed shapes describe zero-or-more additional entries beyond the
@@ -805,7 +821,7 @@ final class ForeachHandler implements StmtHandler
 		// unrolled explicit iterations so body-scope variables (e.g. counters)
 		// account for the extra iterations while keeping the lower bound
 		// established by the non-optional explicit keys.
-		if ($hasUnsealed) {
+		if ($hasUnsealed && $chainEndScope !== null && $endScope !== null) {
 			$loopScope = $endScope;
 			$count = 0;
 			do {
@@ -814,13 +830,15 @@ final class ForeachHandler implements StmtHandler
 				$iterBodyScope = $loopScope->mergeWith($endScope);
 				$iterBodyScope = $this->enterForeach($nodeScopeResolver, $iterBodyScope, $iterStorage, $originalScope, $stmt, $iterateeType, $nativeIterateeType, new NoopNodeCallback());
 				$iterBodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $iterBodyScope, $iterStorage, new NoopNodeCallback(), $context->enterDeep()->withoutTemplateArgumentResolution())->filterOutLoopExitPoints();
-				$loopScope = $iterBodyScopeResult->getScope();
-				foreach ($iterBodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
-					$loopScope = $loopScope->mergeWith($continueExitPoint->getScope());
-				}
+				$backEdgeScope = $iterBodyScopeResult->getLoopBackEdgeScope();
 				foreach ($iterBodyScopeResult->getExitPointsByType(Break_::class) as $breakExitPoint) {
 					$endScope = $endScope->mergeWith($breakExitPoint->getScope());
 				}
+				if ($backEdgeScope === null) {
+					$loopScope = $prevLoopScope;
+					break;
+				}
+				$loopScope = $backEdgeScope;
 				$bodyScope = $bodyScope->mergeWith($loopScope);
 				if ($loopScope->equals($prevLoopScope)) {
 					break;

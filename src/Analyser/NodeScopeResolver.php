@@ -3143,7 +3143,11 @@ class NodeScopeResolver
 				if ($enterExpressionAssignForByRef) {
 					$scopeToPass = $scopeToPass->enterExpressionAssign($arg->value);
 				}
-				$exprResult = $this->processExprNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $context->enterDeep());
+				$argContext = $context->enterDeep();
+				if (!$arg->unpack && $arg->value instanceof Expr\Array_) {
+					$argContext = $argContext->enterPassedToType($parameterType, $parameterNativeType);
+				}
+				$exprResult = $this->processExprNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $argContext);
 				$argResults[spl_object_id($arg->value)] = $exprResult;
 				$exprType = $exprResult->getType();
 				$throwPoints = array_merge($throwPoints, $exprResult->getThrowPoints());

@@ -25,6 +25,8 @@ final class ExpressionContext
 		private bool $arrayDimFetchRoot = false,
 		private bool $unsetTarget = false,
 		private ?bool $valueConsumed = null,
+		private ?Type $passedToType = null,
+		private ?Type $nativePassedToType = null,
 	)
 	{
 	}
@@ -46,7 +48,7 @@ final class ExpressionContext
 	 */
 	public function enterDeep(): self
 	{
-		if ($this->isDeep && $this->valueFlowTarget === null && !$this->arrayDimFetchRoot && !$this->unsetTarget) {
+		if ($this->isDeep && $this->valueFlowTarget === null && !$this->arrayDimFetchRoot && !$this->unsetTarget && $this->passedToType === null && $this->nativePassedToType === null) {
 			return $this;
 		}
 
@@ -74,7 +76,7 @@ final class ExpressionContext
 	 */
 	public function withoutValueFlow(): self
 	{
-		if ($this->valueFlowTarget === null && !$this->arrayDimFetchRoot && !$this->unsetTarget) {
+		if ($this->valueFlowTarget === null && !$this->arrayDimFetchRoot && !$this->unsetTarget && $this->passedToType === null && $this->nativePassedToType === null) {
 			return $this;
 		}
 
@@ -90,6 +92,30 @@ final class ExpressionContext
 	public function isValueConsumed(): bool
 	{
 		return $this->valueFlowTarget !== null || ($this->valueConsumed ?? $this->isDeep);
+	}
+
+	/** Applies only to this expression; child expressions must receive their own expected types. */
+	public function enterPassedToType(?Type $type, ?Type $nativeType): self
+	{
+		if ($this->passedToType === $type && $this->nativePassedToType === $nativeType) {
+			return $this;
+		}
+
+		$context = clone $this;
+		$context->passedToType = $type;
+		$context->nativePassedToType = $nativeType;
+
+		return $context;
+	}
+
+	public function getPassedToType(): ?Type
+	{
+		return $this->passedToType;
+	}
+
+	public function getNativePassedToType(): ?Type
+	{
+		return $this->nativePassedToType;
 	}
 
 	public function isDeep(): bool

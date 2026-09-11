@@ -5,6 +5,8 @@ namespace PHPStan\Analyser\ExprHandler;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
+use PhpParser\Node\Expr\ArrowFunction;
+use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\Stmt;
@@ -25,7 +27,11 @@ use PHPStan\Node\LiteralArrayNode;
 use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\ArrayType;
 use PHPStan\Type\CallableType;
+use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\IntegerType;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_key_exists;
@@ -68,6 +74,9 @@ final class ArrayHandler implements ExprHandler
 		if ($literalWrite !== null && $literalWrite->isOffsetWrite()) {
 			$literalWrite = null;
 		}
+		$passedToType = $this->getExpectedArrayType($context->getPassedToType());
+		$nativePassedToType = $this->getExpectedArrayType($context->getNativePassedToType());
+		$hasExpectedType = $passedToType !== null || $nativePassedToType !== null;
 		$nextIndex = 0;
 		foreach ($expr->items as $arrayItem) {
 			$itemNodes[] = new LiteralArrayItem($scope, $arrayItem);
@@ -85,7 +94,11 @@ final class ArrayHandler implements ExprHandler
 			}
 
 			$valueContext = $context->enterDeepKeepingValueFlow();
-			if ($literalWrite !== null) {
+			$keyType = null;
+			if ($hasExpectedType && !$arrayItem->unpack && ($arrayItem->value instanceof Array_ || $arrayItem->value instanceof Closure || $arrayItem->value instanceof ArrowFunction)) {
+				$keyType = $keyResult !== null ? $keyResult->getType()->toArrayKey() : ($nextIndex !== null ? new ConstantIntegerType($nextIndex) : new IntegerType());
+			}
+			if ($literalWrite !== null || $hasExpectedType) {
 				if ($arrayItem->unpack) {
 					$offset = null;
 					$nextIndex = null;
@@ -102,9 +115,17 @@ final class ArrayHandler implements ExprHandler
 						$nextIndex = max($nextIndex, $offset + 1);
 					}
 				}
+			}
+			if ($literalWrite !== null) {
 				$itemWrite = new VariableWrite($literalWrite->getVariableName(), $arrayItem, spl_object_id($arrayItem), VariableWrite::KIND_ARRAY_LITERAL_ITEM, true, $offset, $literalWrite->getId());
 				$variableFlows[] = VariableFlow::write($itemWrite);
 				$valueContext = $context->enterDeep()->enterValueFlow($itemWrite, false);
+			}
+			if ($keyType !== null) {
+				$valueContext = $valueContext->enterPassedToType(
+					$this->getExpectedValueType($passedToType, $keyType),
+					$this->getExpectedValueType($nativePassedToType, $keyType),
+				);
 			}
 			$valueResult = $nodeScopeResolver->processExprNode($stmt, $arrayItem->value, $scope, $storage, $nodeCallback, $valueContext);
 			$itemResults[spl_object_id($arrayItem->value)] = $valueResult;
@@ -172,6 +193,28 @@ final class ArrayHandler implements ExprHandler
 			},
 			specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
 		);
+	}
+
+	private function getExpectedArrayType(?Type $type): ?Type
+	{
+		if ($type === null || $type->isIterable()->no()) {
+			return null;
+		}
+
+		if ($type->isArray()->yes()) {
+			return $type;
+		}
+
+		return TypeCombinator::intersect($type, new ArrayType(new MixedType(), new MixedType()));
+	}
+
+	private function getExpectedValueType(?Type $arrayType, Type $keyType): ?Type
+	{
+		if ($arrayType === null || $arrayType->hasOffsetValueType($keyType)->no()) {
+			return null;
+		}
+
+		return $arrayType->getOffsetValueType($keyType);
 	}
 
 }

@@ -37,20 +37,25 @@ final class UsedNamesRule implements Rule
 	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$usedNames = [];
+		$declaredNames = [];
+		$fileScopeNames = [];
 		$errors = [];
 		foreach ($node->getNodes() as $oneNode) {
 			if ($oneNode instanceof Namespace_) {
 				$namespaceName = $oneNode->name !== null ? $oneNode->name->toString() : '';
+
+				// A namespace declaration starts a new import scope, even when the namespace
+				// has already been declared earlier in the same file.
+				$namespaceScopeNames = [];
 				foreach ($oneNode->stmts as $stmt) {
-					foreach ($this->findErrorsForNode($stmt, $namespaceName, $usedNames) as $error) {
+					foreach ($this->findErrorsForNode($stmt, $namespaceName, $declaredNames, $namespaceScopeNames) as $error) {
 						$errors[] = $error;
 					}
 				}
 				continue;
 			}
 
-			foreach ($this->findErrorsForNode($oneNode, '', $usedNames) as $error) {
+			foreach ($this->findErrorsForNode($oneNode, '', $declaredNames, $fileScopeNames) as $error) {
 				$errors[] = $error;
 			}
 		}
@@ -59,17 +64,17 @@ final class UsedNamesRule implements Rule
 	}
 
 	/**
-	 * @param array<string, string[]> $usedNames
+	 * @param array<string, string[]> $declaredNames names of classes declared anywhere in the file, by namespace
+	 * @param string[] $currentScopeNames names taken in the current namespace declaration
 	 * @return list<IdentifierRuleError>
 	 */
-	private function findErrorsForNode(Node $node, string $namespace, array &$usedNames): array
+	private function findErrorsForNode(Node $node, string $namespace, array &$declaredNames, array &$currentScopeNames): array
 	{
-		$lowerNamespace = strtolower($namespace);
 		if ($node instanceof Use_) {
 			if ($this->shouldBeIgnored($node)) {
 				return [];
 			}
-			return $this->findErrorsInUses($node->uses, '', $lowerNamespace, $usedNames);
+			return $this->findErrorsInUses($node->uses, '', $currentScopeNames);
 		}
 
 		if ($node instanceof GroupUse) {
@@ -77,7 +82,7 @@ final class UsedNamesRule implements Rule
 				return [];
 			}
 			$useGroupPrefix = $node->prefix->toString();
-			return $this->findErrorsInUses($node->uses, $useGroupPrefix, $lowerNamespace, $usedNames);
+			return $this->findErrorsInUses($node->uses, $useGroupPrefix, $currentScopeNames);
 		}
 
 		if ($node instanceof ClassLike) {
@@ -92,8 +97,12 @@ final class UsedNamesRule implements Rule
 			} elseif ($node instanceof Enum_) {
 				$type = 'enum';
 			}
+			$lowerNamespace = strtolower($namespace);
 			$name = $node->name->toLowerString();
-			if (in_array($name, $usedNames[$lowerNamespace] ?? [], true)) {
+			if (
+				in_array($name, $currentScopeNames, true)
+				|| in_array($name, $declaredNames[$lowerNamespace] ?? [], true)
+			) {
 				return [
 					RuleErrorBuilder::message(sprintf(
 						'Cannot declare %s %s because the name is already in use.',
@@ -106,7 +115,8 @@ final class UsedNamesRule implements Rule
 						->build(),
 				];
 			}
-			$usedNames[$lowerNamespace][] = $name;
+			$currentScopeNames[] = $name;
+			$declaredNames[$lowerNamespace][] = $name;
 			return [];
 		}
 
@@ -115,10 +125,10 @@ final class UsedNamesRule implements Rule
 
 	/**
 	 * @param Node\UseItem[] $uses
-	 * @param array<string, string[]> $usedNames
+	 * @param string[] $currentScopeNames
 	 * @return list<IdentifierRuleError>
 	 */
-	private function findErrorsInUses(array $uses, string $useGroupPrefix, string $lowerNamespace, array &$usedNames): array
+	private function findErrorsInUses(array $uses, string $useGroupPrefix, array &$currentScopeNames): array
 	{
 		$errors = [];
 		foreach ($uses as $use) {
@@ -126,7 +136,7 @@ final class UsedNamesRule implements Rule
 				continue;
 			}
 			$useAlias = $use->getAlias()->toLowerString();
-			if (in_array($useAlias, $usedNames[$lowerNamespace] ?? [], true)) {
+			if (in_array($useAlias, $currentScopeNames, true)) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Cannot use %s as %s because the name is already in use.',
 					$useGroupPrefix !== '' ? $useGroupPrefix . '\\' . $use->name->toString() : $use->name->toString(),
@@ -138,7 +148,7 @@ final class UsedNamesRule implements Rule
 					->build();
 				continue;
 			}
-			$usedNames[$lowerNamespace][] = $useAlias;
+			$currentScopeNames[] = $useAlias;
 		}
 		return $errors;
 	}

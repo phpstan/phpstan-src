@@ -3178,4 +3178,20 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11041.php'], []);
 	}
 
+	public function testBug1946(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-1946.php'], [
+			[
+				'Parameter #1 $string of function strlen expects string, null given.',
+				19,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug11919(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11919.php'], []);
+	}
+
 }

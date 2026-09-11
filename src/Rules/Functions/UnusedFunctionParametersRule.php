@@ -50,6 +50,8 @@ final class UnusedFunctionParametersRule implements Rule
 			sprintf('Function %s() has an unused parameter $%%s.', SprintfHelper::escapeFormatString($function->getName())),
 			'function.unusedParameter',
 			true,
+			sprintf('Function %s() has a parameter $%%s that only flows into values that are never used.', SprintfHelper::escapeFormatString($function->getName())),
+			'function.unusedParameterFlow',
 		);
 	}
 

@@ -57,17 +57,21 @@ final class UnusedMethodParametersRule implements Rule
 			return [];
 		}
 
+		$methodDescription = sprintf(
+			'%s::%s()',
+			SprintfHelper::escapeFormatString($scope->getClassReflection()->getDisplayName()),
+			SprintfHelper::escapeFormatString($originalNode->name->toString()),
+		);
+
 		return $this->check->getUnusedParameterErrors(
 			$node,
 			$method,
 			$originalNode->params,
-			sprintf(
-				'Method %s::%s() has an unused parameter $%%s.',
-				SprintfHelper::escapeFormatString($scope->getClassReflection()->getDisplayName()),
-				SprintfHelper::escapeFormatString($originalNode->name->toString()),
-			),
+			sprintf('Method %s has an unused parameter $%%s.', $methodDescription),
 			'method.unusedParameter',
 			true,
+			sprintf('Method %s has a parameter $%%s that only flows into values that are never used.', $methodDescription),
+			'method.unusedParameterFlow',
 		);
 	}
 

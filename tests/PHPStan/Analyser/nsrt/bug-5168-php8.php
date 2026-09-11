@@ -8,5 +8,5 @@ function (float $f): void {
 	define('LARAVEL_START', microtime(true));
 
 	$comment = 'Calculated in ' . microtime(true) - $f;
-	assertType('non-falsy-string', $comment);
+	assertType('non-decimal-int-string&non-falsy-string', $comment);
 };

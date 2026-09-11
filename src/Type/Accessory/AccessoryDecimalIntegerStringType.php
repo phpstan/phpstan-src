@@ -218,10 +218,8 @@ class AccessoryDecimalIntegerStringType implements CompoundType, AccessoryType
 	public function toNumber(): Type
 	{
 		if ($this->inverse) {
-			return new UnionType([
-				$this->toInteger(),
-				$this->toFloat(),
-			]);
+			// a non-decimal-int-string can be an arbitrary non-numeric string like "foo"
+			return new ErrorType();
 		}
 
 		return $this->toInteger();

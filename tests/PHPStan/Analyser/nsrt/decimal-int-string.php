@@ -32,7 +32,7 @@ class Foo
 
 		assertType('bool', (bool) $s);
 
-		assertType('float|int', $s + $s);
+		assertType('*ERROR*', $s + $s);
 	}
 
 	public function doBaz(string $s): void

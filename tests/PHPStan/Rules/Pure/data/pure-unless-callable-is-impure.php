@@ -398,3 +398,64 @@ function pureCallingRenamedInheritedMethodWithOpaqueCallback(InheritedMapperRena
 	// makes the call possibly impure.
 	return $mapper->map($cb, $arr);
 }
+
+/**
+ * @pure-unless-callable-is-impure $fun
+ * @param callable(): void $fun
+ */
+function haveFun(callable $fun): void
+{
+	$fun();
+}
+
+/**
+ * @pure-unless-callable-is-impure $fun
+ * @param callable(): void $fun
+ */
+function indirectFun(callable $fun): void
+{
+	// haveFun() is itself @pure-unless-callable-is-impure and $fun is forwarded
+	// into its only flagged parameter, so this call is pure modulo $fun -
+	// exactly what indirectFun() already declares for itself. No error expected.
+	haveFun($fun);
+}
+
+/**
+ * @pure-unless-callable-is-impure $fun
+ * @param callable(): void $fun
+ */
+function indirectFunWithDifferentCallback(callable $fun): void
+{
+	// haveFun()'s flagged parameter is filled with an inline impure closure,
+	// not with indirectFunWithDifferentCallback()'s own flagged $fun, so the
+	// call is not exempt and must still be reported.
+	haveFun(static function (): void {
+		echo 'side effect';
+	});
+}
+
+/**
+ * @param callable(): void $one
+ * @param callable(): void $two
+ * @pure-unless-callable-is-impure $one
+ * @pure-unless-callable-is-impure $two
+ */
+function haveTwoFuns(callable $one, callable $two): void
+{
+	$one();
+	$two();
+}
+
+/**
+ * @pure-unless-callable-is-impure $fun
+ * @param callable(): void $fun
+ */
+function indirectFunPartialForward(callable $fun): void
+{
+	// haveTwoFuns() has two flagged parameters; only $one receives a forwarded
+	// flagged callback ($fun), while $two receives an opaque impure closure.
+	// Not every flagged slot is covered, so the call must still be reported.
+	haveTwoFuns($fun, static function (): void {
+		echo 'side effect';
+	});
+}

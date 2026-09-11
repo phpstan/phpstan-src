@@ -17,7 +17,7 @@ class PureMethodRuleTest extends RuleTestCase
 
 	public function getRule(): Rule
 	{
-		return new PureMethodRule(new FunctionPurityCheck());
+		return new PureMethodRule(new FunctionPurityCheck($this->createReflectionProvider()));
 	}
 
 	protected function shouldTreatPhpDocTypesAsCertain(): bool

@@ -1576,9 +1576,12 @@ class ObjectType implements TypeWithClassName, SubtractableType
 				$offsetType = new NullType();
 			}
 
+			// asking accepts() instead of isSuperTypeOf() keeps `$o[$k] = $v` in sync with
+			// the `$o->offsetSet($k, $v)` call it stands for - most visibly for the implicit
+			// `never` an empty collection like `new ArrayObject([])` is generic over
 			if (
-				(!$offsetType instanceof MixedType && !$acceptedOffsetType->isSuperTypeOf($offsetType)->yes())
-				|| (!$valueType instanceof MixedType && !$acceptedValueType->isSuperTypeOf($valueType)->yes())
+				(!$offsetType instanceof MixedType && !$acceptedOffsetType->accepts($offsetType, true)->yes())
+				|| (!$valueType instanceof MixedType && !$acceptedValueType->accepts($valueType, true)->yes())
 			) {
 				return new ErrorType();
 			}

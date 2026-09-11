@@ -11,6 +11,7 @@ use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Rules\VariadicByRefParameterOutType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
@@ -21,6 +22,9 @@ use function sprintf;
  *
  * The promise is either an explicit `@param-out` or, in its absence, the parameter's own type.
  * Which one it is only shows in the error message, so callers report it via $isParamOutType.
+ *
+ * For a variadic parameter the promise describes a single argument while the variable holds the
+ * packed array of them, so the two sides are reconciled through VariadicByRefParameterOutType.
  *
  * @internal
  */
@@ -47,6 +51,8 @@ final class ParameterOutTypeCheck
 		bool $isParamOutType,
 	): array
 	{
+		$isVariadic = $parameter->isVariadic();
+
 		$typeResult = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
 			$checkedExpr,
@@ -58,6 +64,13 @@ final class ParameterOutTypeCheck
 		}
 
 		$assignedExprType = $scope->getType($checkedExpr);
+		if ($isVariadic) {
+			$assignedExprType = VariadicByRefParameterOutType::elementType($assignedExprType);
+			if ($assignedExprType === null) {
+				return [];
+			}
+		}
+
 		if ($outType->isSuperTypeOf($assignedExprType)->yes()) {
 			return [];
 		}

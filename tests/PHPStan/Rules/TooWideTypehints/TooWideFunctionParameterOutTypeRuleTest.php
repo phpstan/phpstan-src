@@ -5,6 +5,7 @@ namespace PHPStan\Rules\TooWideTypehints;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule as TRule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<TooWideFunctionParameterOutTypeRule>
@@ -46,6 +47,24 @@ class TooWideFunctionParameterOutTypeRuleTest extends RuleTestCase
 				'PHPDoc tag @param-out type array<array{int, bool}> of function NestedTooWideFunctionParameterOutType\doFoo() can be narrowed to array<array{int, false}>.',
 				9,
 				'Offset 1 (false) does not accept type bool.',
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug15066(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15066.php'], [
+			[
+				'Function Bug15066\\variadicNeverNull() never assigns null to &$refs so it can be removed from the by-ref type.',
+				24,
+				'You can narrow the parameter out type with @param-out PHPDoc tag.',
+			],
+			// rebinding the packed variable to a non-array is silent, to an array is not - see the fixture
+			[
+				'Function Bug15066\\variadicRebindOnlyString() never assigns null to &$refs so it can be removed from the by-ref type.',
+				62,
+				'You can narrow the parameter out type with @param-out PHPDoc tag.',
 			],
 		]);
 	}

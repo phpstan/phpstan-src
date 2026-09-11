@@ -77,7 +77,7 @@ final class GlobalHandler implements StmtHandler
 				throw new ShouldNotHappenException();
 			}
 			$scope = $nodeScopeResolver->lookForSetAllowedUndefinedExpressions($scope, $var);
-			$varResult = $nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			$varResult = $nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, ExpressionContext::createDeep(), null);
 			$impurePoints = array_merge($impurePoints, $varResult->getImpurePoints());
 			$scope = $nodeScopeResolver->lookForUnsetAllowedUndefinedExpressions($scope, $var);
 

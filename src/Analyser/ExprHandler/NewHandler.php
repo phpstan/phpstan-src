@@ -96,7 +96,7 @@ final class NewHandler implements ExprHandler
 		return $expr instanceof New_ && !$expr->isFirstClassCallable();
 	}
 
-	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context, ?Type $overriddenType): ExpressionResult
 	{
 		$beforeScope = $scope;
 		$parametersAcceptor = null;
@@ -178,7 +178,7 @@ final class NewHandler implements ExprHandler
 			$isDynamic = true;
 			$objectClasses = $scope->getType($expr)->getObjectClassNames();
 			if (count($objectClasses) === 1) {
-				$objectExprResult = $nodeScopeResolver->processExprNode($stmt, new New_(new Name($objectClasses[0])), $scope, $storage, new NoopNodeCallback(), $context->enterDeep());
+				$objectExprResult = $nodeScopeResolver->processExprNode($stmt, new New_(new Name($objectClasses[0])), $scope, $storage, new NoopNodeCallback(), $context->enterDeep(), null);
 				$className = $objectClasses[0];
 				$additionalThrowPoints = $objectExprResult->getThrowPoints();
 			} else {
@@ -186,7 +186,7 @@ final class NewHandler implements ExprHandler
 				$additionalThrowPoints = [InternalThrowPoint::createImplicit($scope, $expr)];
 			}
 
-			$classResult = $nodeScopeResolver->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$classResult = $nodeScopeResolver->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep(), null);
 			$scope = $classResult->getScope();
 			$hasYield = $classResult->hasYield();
 			$throwPoints = $classResult->getThrowPoints();

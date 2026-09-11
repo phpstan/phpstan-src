@@ -67,7 +67,7 @@ final class ExpressionHandler implements StmtHandler
 			$hasAssign = true;
 		});
 		try {
-			$result = $nodeScopeResolver->processExprNode($stmt, $stmt->expr, $scope, $storage, $nodeCallback, ExpressionContext::createTopLevel());
+			$result = $nodeScopeResolver->processExprNode($stmt, $stmt->expr, $scope, $storage, $nodeCallback, ExpressionContext::createTopLevel(), null);
 		} finally {
 			$nodeScopeResolver->popNodeGatherer();
 		}

@@ -10,12 +10,12 @@ use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ClosureType;
-use PHPStan\Type\FunctionParameterClosureTypeExtension;
+use PHPStan\Type\DynamicFunctionParameterTypeExtension;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 
 #[AutowiredService]
-final class PregReplaceCallbackClosureTypeExtension implements FunctionParameterClosureTypeExtension
+final class PregReplaceCallbackClosureTypeExtension implements DynamicFunctionParameterTypeExtension
 {
 
 	public function __construct(

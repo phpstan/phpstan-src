@@ -48,17 +48,17 @@ final class InstanceofHandler implements ExprHandler
 		return $expr instanceof Instanceof_;
 	}
 
-	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context, ?Type $overriddenType): ExpressionResult
 	{
 		$beforeScope = $scope;
-		$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
+		$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep(), null);
 		$hasYield = $exprResult->hasYield();
 		$throwPoints = $exprResult->getThrowPoints();
 		$impurePoints = $exprResult->getImpurePoints();
 		$isAlwaysTerminating = $exprResult->isAlwaysTerminating();
 		$scope = $exprResult->getScope();
 		if (!$expr->class instanceof Name) {
-			$classResult = $nodeScopeResolver->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$classResult = $nodeScopeResolver->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep(), null);
 			$scope = $classResult->getScope();
 			$hasYield = $hasYield || $classResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $classResult->getThrowPoints());

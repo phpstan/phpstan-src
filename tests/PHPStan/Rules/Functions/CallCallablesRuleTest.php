@@ -9,6 +9,7 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPStan\Type\DynamicParameterTypeResolver;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 use const PHP_VERSION_ID;
@@ -41,6 +42,7 @@ class CallCallablesRuleTest extends RuleTestCase
 				new UnresolvableTypeHelper(),
 				new PropertyReflectionFinder(),
 				$reflectionProvider,
+				self::getContainer()->getByType(DynamicParameterTypeResolver::class),
 				checkArgumentTypes: true,
 				checkArgumentsPassedByReference: true,
 				checkExtraArguments: true,

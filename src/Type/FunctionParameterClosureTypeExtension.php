@@ -22,6 +22,8 @@ use PHPStan\Reflection\ParameterReflection;
  * ```
  *
  * @api
+ * @deprecated
+ * @see \PHPStan\Type\DynamicFunctionParameterTypeExtension
  */
 #[ExtensionInterface(tag: 'phpstan.functionParameterClosureTypeExtension')]
 interface FunctionParameterClosureTypeExtension

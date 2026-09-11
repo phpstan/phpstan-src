@@ -240,4 +240,15 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14983-uninitialized.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug9789(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-9789.php'], [
+			[
+				'Access to an uninitialized property Bug9789\NotReadOnlyReadBeforeInit::$value.',
+				130,
+			],
+		]);
+	}
+
 }

@@ -28,6 +28,7 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 					'Bug10523\\MultipleWrites::init',
 					'Bug10523\\SingleWriteInConstructorCalledMethod::init',
 					'Bug12253\\PayloadWithAdditionalConstructor::setUp',
+					'Bug9789\\WithAdditionalConstructor::setUp',
 				],
 			),
 		);
@@ -218,6 +219,33 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 			[
 				'Class Bug7649\Foo has an uninitialized readonly property $bar. Assign it in the constructor.',
 				7,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug9789(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-9789.php'], [
+			[
+				'Class Bug9789\InitNeverCalled has an uninitialized readonly property $value. Assign it in the constructor.',
+				6,
+			],
+			[
+				'Class Bug9789\InitOnAnotherObject has an uninitialized readonly property $value. Assign it in the constructor.',
+				6,
+			],
+			[
+				'Access to an uninitialized readonly property Bug9789\ReadBeforeInit::$value.',
+				51,
+			],
+			[
+				'Access to an uninitialized readonly property Bug9789\ConditionalInit::$value.',
+				69,
+			],
+			[
+				'Access to an uninitialized readonly property Bug9789\InitOnAnotherObject::$value.',
+				97,
 			],
 		]);
 	}

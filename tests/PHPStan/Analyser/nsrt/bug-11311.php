@@ -210,7 +210,7 @@ function (string $s): void {
 
 function (string $s): void {
 	if (preg_match('~a|(\d)|(\s)~', $s, $matches, PREG_UNMATCHED_AS_NULL|PREG_OFFSET_CAPTURE) === 1) {
-		assertType("array{array{non-empty-string|null, int<-1, max>}, array{numeric-string|null, int<-1, max>}, array{non-empty-string|null, int<-1, max>}}", $matches);
+		assertType("array{array{non-empty-string|null, int<0, max>}, array{numeric-string|null, int<-1, max>}, array{non-empty-string|null, int<-1, max>}}", $matches);
 	}
 };
 

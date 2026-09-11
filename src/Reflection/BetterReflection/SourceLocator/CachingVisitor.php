@@ -15,6 +15,9 @@ use PHPStan\Reflection\ConstantNameHelper;
 use function strtolower;
 
 // autoTag: false - must not be tagged as a RichParser node visitor
+/**
+ * @phpstan-import-type ClassLikeNode from FetchedNodesResult
+ */
 #[AutowiredService(autoTag: false)]
 final class CachingVisitor extends NodeVisitorAbstract
 {
@@ -23,7 +26,7 @@ final class CachingVisitor extends NodeVisitorAbstract
 
 	private string $contents;
 
-	/** @var array<string, list<FetchedNode<Node\Stmt\ClassLike>>> */
+	/** @var array<string, list<FetchedNode<ClassLikeNode>>> */
 	private array $classNodes;
 
 	/** @var array<string, list<FetchedNode<Node\Stmt\Function_>>> */
@@ -43,7 +46,12 @@ final class CachingVisitor extends NodeVisitorAbstract
 			return null;
 		}
 
-		if ($node instanceof Node\Stmt\ClassLike) {
+		if (
+			$node instanceof Node\Stmt\Class_
+			|| $node instanceof Node\Stmt\Interface_
+			|| $node instanceof Node\Stmt\Trait_
+			|| $node instanceof Node\Stmt\Enum_
+		) {
 			if ($node->name !== null) {
 				$fullClassName = $node->name->toString();
 				if ($this->currentNamespaceNode !== null && $this->currentNamespaceNode->name !== null) {
@@ -127,7 +135,7 @@ final class CachingVisitor extends NodeVisitorAbstract
 	}
 
 	/**
-	 * @return array<string, list<FetchedNode<Node\Stmt\ClassLike>>>
+	 * @return array<string, list<FetchedNode<ClassLikeNode>>>
 	 */
 	public function getClassNodes(): array
 	{

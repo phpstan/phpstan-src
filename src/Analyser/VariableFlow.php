@@ -3,6 +3,8 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node\Expr\ArrowFunction;
+use PhpParser\Node\Stmt\For_;
+use PhpParser\Node\Stmt\Foreach_;
 use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\Type\Type;
 use function count;
@@ -36,6 +38,7 @@ abstract class VariableFlow
 	public const THROW = 'throw';
 	public const STOP = 'stop';
 	public const ARROW = 'arrow';
+	public const LOOP_STATEMENT = 'loopStatement';
 
 	/** @param self::* $kind */
 	protected function __construct(public readonly string $kind)
@@ -158,6 +161,25 @@ abstract class VariableFlow
 	public static function loop(?self $condition, ?self $body, ?self $update, bool $atLeastOnce, bool $canExit, bool $canRepeat = true): self
 	{
 		return new VariableControlFlow(self::LOOP, [$condition, $body, $update], atLeastOnce: $atLeastOnce, canExit: $canExit, canRepeat: $canRepeat);
+	}
+
+	/**
+	 * A loop statement whose head binds variables - a foreach key/value or
+	 * a for-loop initial assignment. The bindings are checked for reusing a
+	 * variable that is assigned before the statement and read after it;
+	 * the statement's own writes (the bindings and a for-loop update) are
+	 * the only assignments allowed in between.
+	 *
+	 * @param list<VariableWrite> $bindings
+	 * @param list<VariableWrite> $ownWrites
+	 */
+	public static function loopStatement(Foreach_|For_ $stmt, ?self $flow, array $bindings, array $ownWrites): ?self
+	{
+		if ($bindings === []) {
+			return $flow;
+		}
+
+		return new VariableControlFlow(self::LOOP_STATEMENT, [$flow], stmt: $stmt, bindings: $bindings, ownWrites: $ownWrites);
 	}
 
 	/** @param list<array{Type, self|null}> $catches */

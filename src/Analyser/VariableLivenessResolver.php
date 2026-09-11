@@ -3,6 +3,8 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node;
+use PhpParser\Node\Stmt\For_;
+use PhpParser\Node\Stmt\Foreach_;
 use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\Node\VariableWritesNode;
 use PHPStan\ShouldNotHappenException;
@@ -18,6 +20,11 @@ use function in_array;
 use function is_int;
 use function is_string;
 use function spl_object_id;
+use function sprintf;
+use function str_ends_with;
+use function str_starts_with;
+use function strlen;
+use function substr;
 
 /** Resolve liveness backwards over immutable body fragments. */
 final class VariableLivenessResolver
@@ -77,6 +84,15 @@ final class VariableLivenessResolver
 	/** @var array<string, true> */
 	private array $allReadKeys = [];
 
+	/** @var array<int, Foreach_|For_> */
+	private array $loopStatements = [];
+
+	/** @var array<int, array<int, true>> */
+	private array $ownWriteIds = [];
+
+	/** @var array<int, Foreach_|For_> */
+	private array $variableOverwritingLoops = [];
+
 	private bool $opaque = false;
 
 	private bool $readsAllVariables = false;
@@ -125,7 +141,7 @@ final class VariableLivenessResolver
 			$self->resolveCoverage();
 		}
 
-		return new VariableWritesNode($function, array_values($self->writes), $self->observedIds + $self->readIds, $self->readIds, $self->coveredIds, $self->readNames, $self->redundantTypes, $self->mentionedNames, $self->escapedNames, $self->opaque, $self->allNamesMentioned);
+		return new VariableWritesNode($function, array_values($self->writes), $self->observedIds + $self->readIds, $self->readIds, $self->coveredIds, $self->readNames, $self->redundantTypes, $self->mentionedNames, $self->escapedNames, $self->variableOverwritingLoops, $self->opaque, $self->allNamesMentioned);
 	}
 
 	private function collect(?VariableFlow $flow, bool $dead = false): void
@@ -177,6 +193,16 @@ final class VariableLivenessResolver
 		if (!$flow instanceof VariableControlFlow) {
 			return;
 		}
+		if ($flow->kind === VariableFlow::LOOP_STATEMENT && $flow->stmt !== null) {
+			$ownIds = [];
+			foreach ($flow->ownWrites as $write) {
+				$ownIds[$write->getId()] = true;
+			}
+			foreach ($flow->bindings as $binding) {
+				$this->loopStatements[$binding->getId()] = $flow->stmt;
+				$this->ownWriteIds[$binding->getId()] = $ownIds;
+			}
+		}
 		if ($flow->kind === VariableFlow::RETURN && $flow->name !== null && $this->returnsByReference) {
 			$this->escapedNames[$flow->name] = true;
 		}
@@ -210,10 +236,16 @@ final class VariableLivenessResolver
 			if (in_array($flow->kind, [VariableFlow::READ, VariableFlow::ESCAPE], true)) {
 				// a by-reference capture aliases the variable - the value it
 				// holds at that point is observable through the alias
+				if ($flow->kind === VariableFlow::ESCAPE && $this->loopStatements !== []) {
+					$next = $this->passBindingProbes($next, $flow->name, null);
+				}
 				return $next + ($this->readKeys[spl_object_id($flow)] ?? []);
 			}
 			if ($flow->write === null || $flow->kind === VariableFlow::DEFINE) {
 				return $next;
+			}
+			if ($this->loopStatements !== []) {
+				$next = $this->passBindingProbes($next, $flow->name, $flow->write, $flow->kind === VariableFlow::DISCARD);
 			}
 			$id = $flow->write->getId();
 			if ($flow->kind !== VariableFlow::DISCARD) {
@@ -242,6 +274,34 @@ final class VariableLivenessResolver
 		}
 		if (!$flow instanceof VariableControlFlow) {
 			throw new ShouldNotHappenException();
+		}
+		if ($flow->kind === VariableFlow::LOOP_STATEMENT) {
+			// a binding reusing a variable that is read after the loop: the
+			// probe follows the variable backwards through the statement;
+			// surviving to its entry, it is armed to catch the assignment
+			// before the loop whose value the binding replaces
+			foreach ($flow->bindings as $binding) {
+				if (!isset($this->nameKeys[$binding->getVariableName()])) {
+					continue;
+				}
+				foreach (array_keys($this->nameKeys[$binding->getVariableName()]) as $key) {
+					if (!isset($next[$key])) {
+						continue;
+					}
+					$next[self::bindingProbe($binding, false)] = true;
+					break;
+				}
+			}
+			$names = $this->liveBefore($flow->children[0], $next, $context);
+			foreach ($flow->bindings as $binding) {
+				$probe = self::bindingProbe($binding, false);
+				if (!isset($names[$probe])) {
+					continue;
+				}
+				unset($names[$probe]);
+				$names[self::bindingProbe($binding, true)] = true;
+			}
+			return $names;
 		}
 		if ($flow->kind === VariableFlow::ARROW && $flow->arrow !== null) {
 			$outputs = $this->liveBefore($flow->children[1], [], new VariableFlowContext([]));
@@ -359,6 +419,48 @@ final class VariableLivenessResolver
 			$this->readNames += $this->mentionedNames;
 			return $next + $this->allReadKeys;
 		}
+		return $next;
+	}
+
+	/**
+	 * A probe travels in the live set under a key no read can produce. Armed
+	 * once it has survived its loop statement, it records the assignment (or
+	 * by-reference alias) before the loop whose variable the binding takes
+	 * over; the loop's own writes let it through in either state.
+	 */
+	private static function bindingProbe(VariableWrite $binding, bool $armed): string
+	{
+		return sprintf("\0%s\0%d%s", $binding->getVariableName(), $binding->getId(), $armed ? "\0" : '');
+	}
+
+	/**
+	 * @param array<string, true> $next
+	 * @return array<string, true>
+	 */
+	private function passBindingProbes(array $next, string $name, ?VariableWrite $write, bool $discard = false): array
+	{
+		$prefix = sprintf("\0%s\0", $name);
+		foreach (array_keys($next) as $key) {
+			if (!str_starts_with($key, $prefix)) {
+				continue;
+			}
+			$id = substr($key, strlen($prefix));
+			$armed = str_ends_with($id, "\0");
+			$bindingId = (int) ($armed ? substr($id, 0, -1) : $id);
+			if ($write !== null && isset($this->ownWriteIds[$bindingId][$write->getId()])) {
+				continue;
+			}
+			if ($armed && !$discard) {
+				$this->variableOverwritingLoops[$bindingId] = $this->loopStatements[$bindingId];
+			}
+			if ($write === null || $write->isOffsetWrite()) {
+				// an alias or an offset write keeps the variable - the probe
+				// carries on to the assignment that created it
+				continue;
+			}
+			unset($next[$key]);
+		}
+
 		return $next;
 	}
 

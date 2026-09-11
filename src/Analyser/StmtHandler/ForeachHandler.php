@@ -479,6 +479,15 @@ final class ForeachHandler implements StmtHandler
 			$stmt->byRef && $stmt->valueVar instanceof Variable && is_string($stmt->valueVar->name) ? VariableFlow::escape($stmt->valueVar->name) : null,
 		);
 		$loopFlow = VariableFlow::loop($traversableThrowPoint !== null ? VariableFlow::throwing($traversableThrowPoint->getType(), true) : null, VariableFlow::sequence($bindingFlow, $finalScopeResult->getVariableFlow()), null, $isIterableAtLeastOnce->yes() && $nodeScopeResolver->shouldPolluteScopeWithAlwaysIterableForeach(), true);
+		$bindingWrites = VariableFlowBuilder::writes($bindingFlow);
+		$bindings = [];
+		foreach ($bindingWrites as $write) {
+			if ($write->isOffsetWrite()) {
+				continue;
+			}
+			$bindings[] = $write;
+		}
+		$loopFlow = VariableFlow::loopStatement($stmt, $loopFlow, $bindings, $bindingWrites);
 		return new InternalStatementResult(
 			$finalScope->addTemplateArgumentConstraints($finalScopeResult->getScope()->getTemplateArgumentConstraints()),
 			hasYield: $finalScopeResult->hasYield() || $condResult->hasYield(),

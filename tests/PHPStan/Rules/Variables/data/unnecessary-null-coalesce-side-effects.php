@@ -1,4 +1,4 @@
-<?php // lint >= 8.2
+<?php
 
 declare(strict_types = 1);
 
@@ -8,7 +8,8 @@ use LogicException;
 
 const NULL_CONSTANT = null;
 
-function returnsNull(bool $value): null
+/** @return null */
+function returnsNull(bool $value)
 {
 	if ($value === false) {
 		throw new LogicException('nope');
@@ -17,8 +18,11 @@ function returnsNull(bool $value): null
 	return null;
 }
 
-/** @phpstan-pure */
-function pureReturnsNull(): null
+/**
+ * @phpstan-pure
+ * @return null
+ */
+function pureReturnsNull()
 {
 	return null;
 }
@@ -34,17 +38,20 @@ class Foo
 	/** @var null */
 	public $alwaysNull = null;
 
-	public function returnsNull(): null
+	/** @return null */
+	public function returnsNull()
 	{
 		return null;
 	}
 
-	public static function staticReturnsNull(): null
+	/** @return null */
+	public static function staticReturnsNull()
 	{
 		return null;
 	}
 
-	public function __invoke(): null
+	/** @return null */
+	public function __invoke()
 	{
 		return null;
 	}
@@ -73,7 +80,7 @@ function invokeOnRightSide(Foo $foo): ?string
 
 function closureCallOnRightSide(Foo $foo): ?string
 {
-	$closure = static function (): null {
+	$closure = static function () {
 		echo 'side effect';
 
 		return null;

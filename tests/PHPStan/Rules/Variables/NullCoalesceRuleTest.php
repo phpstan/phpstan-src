@@ -520,19 +520,15 @@ class NullCoalesceRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/unnecessary-null-coalesce-side-effects.php'], [
 			[
 				'Coalesce operator ??= is unnecessary because the left side is always set and the right side is null.',
-				104,
-			],
-			[
-				'Coalesce operator ?? is unnecessary because the left side is always set and the right side is null.',
 				111,
 			],
 			[
 				'Coalesce operator ?? is unnecessary because the left side is always set and the right side is null.',
-				116,
+				118,
 			],
 			[
 				'Coalesce operator ?? is unnecessary because the left side is always set and the right side is null.',
-				121,
+				123,
 			],
 			[
 				'Coalesce operator ?? is unnecessary because the left side is always set and the right side is null.',
@@ -540,7 +536,11 @@ class NullCoalesceRuleTest extends RuleTestCase
 			],
 			[
 				'Coalesce operator ?? is unnecessary because the left side is always set and the right side is null.',
-				133,
+				135,
+			],
+			[
+				'Coalesce operator ?? is unnecessary because the left side is always set and the right side is null.',
+				140,
 			],
 		]);
 	}

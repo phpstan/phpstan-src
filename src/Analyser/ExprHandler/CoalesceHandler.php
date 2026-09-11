@@ -136,7 +136,7 @@ final class CoalesceHandler implements ExprHandler
 			$scope = $scope->filterByTruthyValue(new Expr\Isset_([$expr->left]))->mergeWith($rightResult->getScope());
 		}
 
-		$nodeScopeResolver->callNodeCallbackWithExpression($nodeCallback, new CoalesceExpressionNode($expr, $condResult, 'on left side of ??'), $beforeScope, $storage, $context);
+		$nodeScopeResolver->callNodeCallbackWithExpression($nodeCallback, new CoalesceExpressionNode($expr, $condResult, $rightResult, 'on left side of ??'), $beforeScope, $storage, $context);
 
 		return $this->expressionResultFactory->create(
 			$scope,

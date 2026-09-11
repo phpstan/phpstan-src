@@ -70,7 +70,6 @@ class UnusedClosureUsesRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/unused-input-value-flow.php'], [
 			['Anonymous function has a use $input that only flows into values that are never used.', 25],
-			['Anonymous function has a use $input that only flows into values that are never used.', 34],
 			['Anonymous function has an unused use $input.', 49],
 		]);
 	}

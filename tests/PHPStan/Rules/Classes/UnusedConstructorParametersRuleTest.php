@@ -97,7 +97,6 @@ class UnusedConstructorParametersRuleTest extends RuleTestCase
 	public function testValueFlow(): void
 	{
 		$this->analyse([__DIR__ . '/data/unused-constructor-parameters-value-flow.php'], [
-			['Constructor of class UnusedConstructorParametersValueFlow\Foo has a parameter $covered that only flows into values that are never used.', 10],
 			['Constructor of class UnusedConstructorParametersValueFlow\Foo has a parameter $input that only flows into values that are never used.', 10],
 			['Constructor of class UnusedConstructorParametersValueFlow\Foo has an unused parameter $overwritten.', 10],
 		]);

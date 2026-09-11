@@ -24,6 +24,7 @@ final class VariableWritesNode extends NodeAbstract implements VirtualNode
 	 * @param list<VariableWrite> $writes
 	 * @param array<int, true> $readWriteIds
 	 * @param array<int, true> $usedWriteIds
+	 * @param array<int, true> $coveredWriteIds
 	 * @param array<string, true> $readVariableNames
 	 * @param array<int, Type> $redundantWriteTypes
 	 * @param array<string, true> $referencedVariableNames
@@ -34,6 +35,7 @@ final class VariableWritesNode extends NodeAbstract implements VirtualNode
 		private array $writes,
 		private array $readWriteIds,
 		private array $usedWriteIds,
+		private array $coveredWriteIds,
 		private array $readVariableNames,
 		private array $redundantWriteTypes,
 		private array $referencedVariableNames,
@@ -86,6 +88,15 @@ final class VariableWritesNode extends NodeAbstract implements VirtualNode
 	public function isUsed(VariableWrite $write): bool
 	{
 		return isset($this->usedWriteIds[$write->getId()]);
+	}
+
+	/**
+	 * Whether the value flows into a write that is never read at all - that
+	 * write is the one to report, this one only feeds it.
+	 */
+	public function flowsIntoNeverReadWrite(VariableWrite $write): bool
+	{
+		return isset($this->coveredWriteIds[$write->getId()]);
 	}
 
 	/** Whether some path from the write reaches a read of the written value. */

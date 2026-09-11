@@ -47,7 +47,6 @@ class UnusedFunctionParametersRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/unused-input-value-flow.php'], [
 			['Function UnusedInputValueFlow\unusedParameter() has a parameter $input that only flows into values that are never used.', 5],
-			['Function UnusedInputValueFlow\coveredParameter() has a parameter $input that only flows into values that are never used.', 12],
 			['Function UnusedInputValueFlow\overwrittenParameter() has an unused parameter $input.', 55],
 		]);
 	}

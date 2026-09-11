@@ -24,7 +24,7 @@ function sink($v): void
 
 function chainNeverSunk(): void
 {
-	$a = 5; // unused $a
+	$a = 5;
 	$a = $a + 1; // unused $a
 }
 
@@ -37,8 +37,8 @@ function chainSunk(): void
 
 function concatChain(): void
 {
-	$s = 'a'; // unused $s
-	$s .= 'b'; // unused $s
+	$s = 'a';
+	$s .= 'b';
 	$s = $s . 'c'; // unused $s
 }
 
@@ -51,10 +51,10 @@ function concatChainSunk(): string
 
 function incrementChain(): void
 {
-	$i = 0; // unused $i
-	$i++; // unused $i
-	++$i; // unused $i
-	$i--; // unused $i
+	$i = 0;
+	$i++;
+	++$i;
+	$i--;
 	--$i; // unused $i
 }
 
@@ -73,7 +73,7 @@ function incrementConsumedBySink(): void
 
 function incrementIntoAssignment(): void
 {
-	$i = 0; // unused $i
+	$i = 0;
 	$j = $i++; // unused $j, $i
 }
 
@@ -114,7 +114,7 @@ function loopAccumulatorSunkByBreak(): void
 
 function comparisonResultUnused(): void
 {
-	$a = source(); // unused $a
+	$a = source();
 	$ok = $a === 1; // unused $ok
 }
 
@@ -127,7 +127,7 @@ function comparisonResultSunk(): void
 
 function ternaryBranchFlow(): void
 {
-	$a = source(); // unused $a
+	$a = source();
 	$b = cond() ? $a : 0; // unused $b
 }
 
@@ -152,7 +152,7 @@ function shortTernaryConditionIsSink(): void
 
 function arrayLiteralFlow(): void
 {
-	$a = source(); // unused $a
+	$a = source();
 	$arr = [$a, 'k' => $a]; // unused $arr
 }
 
@@ -165,14 +165,14 @@ function arrayLiteralFlowSunk(): void
 
 function castFlow(): void
 {
-	$a = source(); // unused $a
+	$a = source();
 	$b = (int) $a; // unused $b
 	$c = (string) $a; // unused $c
 }
 
 function unaryFlow(): void
 {
-	$a = 1; // unused $a
+	$a = 1;
 	$b = -$a; // unused $b
 	$c = !$a; // unused $c
 	$d = ~$a; // unused $d
@@ -180,19 +180,19 @@ function unaryFlow(): void
 
 function interpolationFlow(): void
 {
-	$a = 'x'; // unused $a
+	$a = 'x';
 	$b = "v: $a"; // unused $b
 }
 
 function errorSuppressFlow(): void
 {
-	$a = source(); // unused $a
+	$a = source();
 	$b = @$a; // unused $b
 }
 
 function coalesceRightSideFlow(): void
 {
-	$d = 1; // unused $d
+	$d = 1;
 	$b = source() ?? $d; // unused $b
 }
 
@@ -305,7 +305,7 @@ function nestedAssignValueFlowsToOuter(): void
 
 function nestedAssignAllUnused(): void
 {
-	$c = source(); // unused $c
+	$c = source();
 	$a = $b = $c + 1; // unused $a, $b
 }
 
@@ -318,7 +318,7 @@ function readInFlowThenSunk(): void
 
 function flowThenOverwrite(): void
 {
-	$a = 1; // unused $a
+	$a = 1;
 	$b = $a + 1; // unused $b
 	$a = 2;
 	sink($a);
@@ -326,7 +326,7 @@ function flowThenOverwrite(): void
 
 function flowIntoArrayOffsetWrite(): void
 {
-	$v = source(); // unused $v
+	$v = source();
 	$a = [];
 	$a['x'] = $v; // unused $a['x']
 }
@@ -341,7 +341,7 @@ function flowIntoArrayOffsetWriteSunk(): void
 
 function offsetReadFlow(): void
 {
-	$a = ['k' => 1]; // unused $a
+	$a = ['k' => 1];
 	$b = $a['k']; // unused $b
 }
 
@@ -354,8 +354,8 @@ function offsetReadFlowSunk(): void
 
 function dimensionFlow(): void
 {
-	$i = 0; // unused $i
-	$a = source(); // unused $a
+	$i = 0;
+	$a = source();
 	$b = $a[$i]; // unused $b
 }
 
@@ -366,9 +366,9 @@ function parameterInFlow(int $p): void
 
 function flowThroughSeveralVariables(): void
 {
-	$a = 1; // unused $a
-	$b = $a * 2; // unused $b
-	$c = $b + $a; // unused $c
+	$a = 1;
+	$b = $a * 2;
+	$c = $b + $a;
 	$d = $c; // unused $d
 }
 
@@ -400,7 +400,7 @@ function flowInLoopNeverSunk(): void
 
 function chainFedByFunctionCallIsStillUnused(): void
 {
-	$a = source(); // unused $a
+	$a = source();
 	$a = $a + 1; // unused $a
 }
 
@@ -480,7 +480,7 @@ function assignOpValueFlowsToOuter(): void
 
 function assignOpValueFlowsToOuterUnused(): void
 {
-	$s = ''; // unused $s
+	$s = '';
 	$x = ($s .= 'a'); // unused $x, $s
 }
 

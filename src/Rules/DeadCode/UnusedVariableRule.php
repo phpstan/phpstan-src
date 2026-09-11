@@ -88,7 +88,7 @@ final class UnusedVariableRule implements Rule
 				continue;
 			}
 
-			if ($node->isUsed($write)) {
+			if ($node->isUsed($write) || $node->flowsIntoNeverReadWrite($write)) {
 				continue;
 			}
 

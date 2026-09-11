@@ -18,9 +18,11 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\Analyser\VariableFlowBuilder;
+use PHPStan\Analyser\VariableWriteOffset;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\LiteralArrayItem;
 use PHPStan\Node\LiteralArrayNode;
+use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\CallableType;
@@ -29,6 +31,8 @@ use PHPStan\Type\TypeCombinator;
 use function array_key_exists;
 use function array_merge;
 use function count;
+use function is_int;
+use function max;
 use function spl_object_id;
 
 /**
@@ -60,11 +64,17 @@ final class ArrayHandler implements ExprHandler
 		$throwPoints = [];
 		$impurePoints = [];
 		$isAlwaysTerminating = false;
+		$literalWrite = $context->isValueFlowDirect() ? $context->getValueFlowTarget() : null;
+		if ($literalWrite !== null && $literalWrite->isOffsetWrite()) {
+			$literalWrite = null;
+		}
+		$nextIndex = 0;
 		foreach ($expr->items as $arrayItem) {
 			$itemNodes[] = new LiteralArrayItem($scope, $arrayItem);
 			$itemCallbackScope = $scope;
+			$keyResult = null;
 			if ($arrayItem->key !== null) {
-				$keyResult = $nodeScopeResolver->processExprNode($stmt, $arrayItem->key, $scope, $storage, $nodeCallback, $context->enterDeep());
+				$keyResult = $nodeScopeResolver->processExprNode($stmt, $arrayItem->key, $scope, $storage, $nodeCallback, $context->enterDeepKeepingValueFlow());
 				$itemResults[spl_object_id($arrayItem->key)] = $keyResult;
 				$variableFlows[] = $keyResult->getVariableFlow();
 				$hasYield = $hasYield || $keyResult->hasYield();
@@ -74,7 +84,29 @@ final class ArrayHandler implements ExprHandler
 				$scope = $keyResult->getScope();
 			}
 
-			$valueResult = $nodeScopeResolver->processExprNode($stmt, $arrayItem->value, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$valueContext = $context->enterDeepKeepingValueFlow();
+			if ($literalWrite !== null) {
+				if ($arrayItem->unpack) {
+					$offset = null;
+					$nextIndex = null;
+				} elseif ($keyResult === null) {
+					$offset = $nextIndex;
+					if ($nextIndex !== null) {
+						$nextIndex++;
+					}
+				} else {
+					$offset = VariableWriteOffset::fromType($keyResult->getType());
+					if ($offset === null) {
+						$nextIndex = null;
+					} elseif (is_int($offset) && $nextIndex !== null) {
+						$nextIndex = max($nextIndex, $offset + 1);
+					}
+				}
+				$itemWrite = new VariableWrite($literalWrite->getVariableName(), $arrayItem, spl_object_id($arrayItem), VariableWrite::KIND_ARRAY_LITERAL_ITEM, true, $offset, $literalWrite->getId());
+				$variableFlows[] = VariableFlow::write($itemWrite);
+				$valueContext = $context->enterDeep()->enterValueFlow($itemWrite, false);
+			}
+			$valueResult = $nodeScopeResolver->processExprNode($stmt, $arrayItem->value, $scope, $storage, $nodeCallback, $valueContext);
 			$itemResults[spl_object_id($arrayItem->value)] = $valueResult;
 			$variableFlows[] = $valueResult->getVariableFlow();
 			if ($arrayItem->byRef) {

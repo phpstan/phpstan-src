@@ -287,7 +287,7 @@ final class MatchHandler implements ExprHandler, PerFileAnalysisResettable
 						$matchArmBodyScope,
 						$storage,
 						$nodeCallback,
-						ExpressionContext::createTopLevel($context->shouldResolveTemplateArguments()),
+						$context->enterMatchArm(),
 					);
 					$armFlows[$i] = $armResult->getVariableFlow();
 					$armScope = $armResult->getScope();
@@ -328,7 +328,7 @@ final class MatchHandler implements ExprHandler, PerFileAnalysisResettable
 				$defaultArmBodyScope = $matchScope;
 				$matchArmBody = new MatchExpressionArmBody($matchScope, $arm->body);
 				$armNodes[$i] = new MatchExpressionArm($matchArmBody, [], $arm->getStartLine());
-				$armResult = $nodeScopeResolver->processExprNode($stmt, $arm->body, $matchScope, $storage, $nodeCallback, ExpressionContext::createTopLevel($context->shouldResolveTemplateArguments()));
+				$armResult = $nodeScopeResolver->processExprNode($stmt, $arm->body, $matchScope, $storage, $nodeCallback, $context->enterMatchArm());
 				$armFlows[$i] = $armResult->getVariableFlow();
 				$matchScope = $armResult->getScope();
 				$scope = $scope->addTemplateArgumentConstraints($matchScope->getTemplateArgumentConstraints());
@@ -437,7 +437,7 @@ final class MatchHandler implements ExprHandler, PerFileAnalysisResettable
 				$bodyScope,
 				$storage,
 				$nodeCallback,
-				ExpressionContext::createTopLevel($context->shouldResolveTemplateArguments()),
+				$context->enterMatchArm(),
 			);
 			$armFlows[$i] = $armResult->getVariableFlow();
 			$armScope = $armResult->getScope();

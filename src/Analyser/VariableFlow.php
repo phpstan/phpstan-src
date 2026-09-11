@@ -22,6 +22,8 @@ abstract class VariableFlow
 	public const SWITCH = 'switch';
 	public const READ = 'read';
 	public const WRITE = 'write';
+	public const DEFINE = 'define';
+	public const DISCARD = 'discard';
 	public const ESCAPE = 'escape';
 	public const MENTION = 'mention';
 	public const READ_ALL = 'readAll';
@@ -77,13 +79,14 @@ abstract class VariableFlow
 		return new VariableControlFlow(self::ARROW, [$body, $outputs], arrow: $arrow);
 	}
 
-	public static function read(string $name): ?self
+	/** @param int|string|null $offset */
+	public static function read(string $name, ?int $targetId = null, bool $container = false, $offset = null): ?self
 	{
 		if ($name === 'this' || in_array($name, Scope::SUPERGLOBAL_VARIABLES, true)) {
 			return null;
 		}
 
-		return new VariableAccessFlow(self::READ, $name);
+		return new VariableAccessFlow(self::READ, $name, targetId: $targetId, container: $container, offset: $offset);
 	}
 
 	public static function conditional(?self $condition, ?self $if, ?self $else, ?bool $truthy): ?self
@@ -106,7 +109,18 @@ abstract class VariableFlow
 
 	public static function write(VariableWrite $write, ?Type $redundantType = null): self
 	{
-		return new VariableAccessFlow(self::WRITE, $write->getVariableName(), $write, $redundantType);
+		return new VariableAccessFlow($write->getParentId() === null ? self::WRITE : self::DEFINE, $write->getVariableName(), $write, $redundantType);
+	}
+
+	public static function discard(VariableWrite $write): self
+	{
+		return new VariableAccessFlow(self::DISCARD, $write->getVariableName(), $write);
+	}
+
+	/** The enclosing expression consumes a write's inputs, without reading its target. */
+	public static function inputs(int $writeId, ?int $targetId): self
+	{
+		return new VariableInputFlow($writeId, $targetId);
 	}
 
 	public static function escape(string $name): self

@@ -194,7 +194,13 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testArrayDestructuringArrayDimFetch(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/array-destructuring-array-dim-fetch.php');
-		$this->assertNoErrors($errors);
+		$this->assertCount(2, $errors);
+		$this->assertSame('Value assigned to $barcodes[] is never read.', $errors[0]->getMessage());
+		$this->assertSame('assign.unused', $errors[0]->getIdentifier());
+		$this->assertSame(6, $errors[0]->getLine());
+		$this->assertSame('Value assigned to $barcodes[] is never read.', $errors[1]->getMessage());
+		$this->assertSame('assign.unused', $errors[1]->getIdentifier());
+		$this->assertSame(13, $errors[1]->getLine());
 	}
 
 	public function testNestedNamespaces(): void
@@ -1399,9 +1405,18 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	#[RequiresPhp('>= 8.1.0')]
 	public function testBug10847(): void
 	{
-		// false positive
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-10847.php');
-		$this->assertNoErrors($errors);
+		// The loop appends to $overloads instead of $processedOverloads.
+		$this->assertCount(3, $errors);
+		$this->assertSame('Foreach key variable $args only flows into values that are never used.', $errors[0]->getMessage());
+		$this->assertSame('foreach.unusedKeyFlow', $errors[0]->getIdentifier());
+		$this->assertSame(158, $errors[0]->getLine());
+		$this->assertSame('Foreach value variable $callback only flows into values that are never used.', $errors[1]->getMessage());
+		$this->assertSame('foreach.unusedValueFlow', $errors[1]->getIdentifier());
+		$this->assertSame(158, $errors[1]->getLine());
+		$this->assertSame('Value assigned to $overloads[] is never read.', $errors[2]->getMessage());
+		$this->assertSame('assign.unused', $errors[2]->getIdentifier());
+		$this->assertSame(159, $errors[2]->getLine());
 	}
 
 	#[RequiresPhp('>= 8.1.0')]

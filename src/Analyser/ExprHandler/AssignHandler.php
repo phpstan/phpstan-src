@@ -21,6 +21,7 @@ use PhpParser\Node\Expr\Ternary;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
+use PHPStan\Analyser\ArrayByRefItemSlots;
 use PHPStan\Analyser\AssignTargetWalkMode;
 use PHPStan\Analyser\ConditionalExpressionHolder;
 use PHPStan\Analyser\ExpressionContext;
@@ -68,7 +69,6 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntegerRangeType;
-use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
@@ -86,7 +86,6 @@ use function array_reverse;
 use function array_slice;
 use function count;
 use function in_array;
-use function is_int;
 use function is_string;
 
 /**
@@ -1701,44 +1700,12 @@ final class AssignHandler implements ExprHandler
 
 	private function processArrayByRefItems(MutatingScope $scope, string $rootVarName, Expr\Array_ $arrayExpr, Expr $parentExpr): MutatingScope
 	{
-		$implicitIndex = 0;
-		foreach ($arrayExpr->items as $arrayItem) {
-			if ($arrayItem->key !== null) {
-				$keyType = $scope->getType($arrayItem->key)->toArrayKey();
-
-				if ($implicitIndex !== null) {
-					$keyValues = $keyType->getConstantScalarValues();
-					if (count($keyValues) === 1) {
-						$keyValue = $keyValues[0];
-						if (is_int($keyValue) && $keyValue >= $implicitIndex) {
-							$implicitIndex = $keyValue + 1;
-						}
-					} elseif (!$keyType->isInteger()->no()) {
-						// Key could be an integer, but we don't know which one,
-						// so subsequent implicit indices are unpredictable
-						$implicitIndex = null;
-					}
-				}
-
-				$dimExpr = $arrayItem->key;
-			} elseif ($implicitIndex !== null) {
-				$dimExpr = new Node\Scalar\Int_($implicitIndex);
-				$implicitIndex++;
-			} else {
-				$dimExpr = new TypeExpr(new IntegerType());
-			}
-
-			if ($arrayItem->value instanceof Expr\Array_) {
-				$dimFetchExpr = new ArrayDimFetch($parentExpr, $dimExpr);
-				$scope = $this->processArrayByRefItems($scope, $rootVarName, $arrayItem->value, $dimFetchExpr);
-			}
-
-			if (!$arrayItem->byRef || !$arrayItem->value instanceof Variable || !is_string($arrayItem->value->name)) {
+		foreach (ArrayByRefItemSlots::resolve($scope, $arrayExpr, $parentExpr) as [$referencedExpr, $dimFetchExpr]) {
+			if (!$referencedExpr instanceof Variable || !is_string($referencedExpr->name)) {
 				continue;
 			}
 
-			$refVarName = $arrayItem->value->name;
-			$dimFetchExpr = new ArrayDimFetch($parentExpr, $dimExpr);
+			$refVarName = $referencedExpr->name;
 			$refType = $scope->getType(new Variable($refVarName));
 			$refNativeType = $scope->getNativeType(new Variable($refVarName));
 

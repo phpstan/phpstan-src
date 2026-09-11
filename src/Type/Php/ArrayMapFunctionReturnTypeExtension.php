@@ -62,6 +62,7 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 			));
 		} elseif ($callableIsNull) {
 			$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
+			/** @var array<int, Type> $argTypes */
 			$argTypes = [];
 			$areAllSameSize = true;
 			$expectedSize = null;

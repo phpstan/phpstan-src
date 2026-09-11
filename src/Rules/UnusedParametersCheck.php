@@ -72,7 +72,7 @@ final class UnusedParametersCheck
 					continue;
 				}
 				if ($node->isRead($write)) {
-					if ($unusedFlowMessage === null || $unusedFlowIdentifier === null) {
+					if ($unusedFlowMessage === null || $unusedFlowIdentifier === null || $node->flowsIntoNeverReadWrite($write)) {
 						continue;
 					}
 					$message = $unusedFlowMessage;

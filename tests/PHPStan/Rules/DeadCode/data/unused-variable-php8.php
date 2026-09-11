@@ -104,7 +104,7 @@ class NullsafeReads
 
 function matchArmFlow(): void
 {
-	$a = source(); // unused $a
+	$a = source();
 	$b = match (true) { // unused $b
 		default => $a,
 	};

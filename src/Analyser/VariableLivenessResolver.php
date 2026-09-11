@@ -71,6 +71,9 @@ final class VariableLivenessResolver
 	/** @var array<int, array<int, VariableWrite>> */
 	private array $literalItems = [];
 
+	/** @var array<int, true> */
+	private array $coveredIds = [];
+
 	/** @var array<string, true> */
 	private array $allReadKeys = [];
 
@@ -119,9 +122,10 @@ final class VariableLivenessResolver
 			$self->compileAccesses();
 			$self->liveBefore($body, [], new VariableFlowContext([]));
 			$self->resolveDependencies();
+			$self->resolveCoverage();
 		}
 
-		return new VariableWritesNode($function, array_values($self->writes), $self->observedIds + $self->readIds, $self->readIds, $self->readNames, $self->redundantTypes, $self->mentionedNames, $self->escapedNames, $self->opaque, $self->allNamesMentioned);
+		return new VariableWritesNode($function, array_values($self->writes), $self->observedIds + $self->readIds, $self->readIds, $self->coveredIds, $self->readNames, $self->redundantTypes, $self->mentionedNames, $self->escapedNames, $self->opaque, $self->allNamesMentioned);
 	}
 
 	private function collect(?VariableFlow $flow, bool $dead = false): void
@@ -491,6 +495,42 @@ final class VariableLivenessResolver
 			}
 			foreach ($this->literalItems[$id] ?? [] as $item) {
 				$stack[] = [$item->getId(), true];
+			}
+		}
+	}
+
+	/**
+	 * A write whose value flows only into unused writes is covered when one of
+	 * them is never read at all: reporting that write already points at the
+	 * dead chain. Walks the dependency edges backwards from every never-read
+	 * write; a chain that only feeds itself (Psalm's `$b = $b + 1` loop) has
+	 * no such write and stays uncovered.
+	 */
+	private function resolveCoverage(): void
+	{
+		$stack = [];
+		foreach (array_keys($this->writes) as $id) {
+			if (isset($this->observedIds[$id]) || isset($this->readIds[$id])) {
+				continue;
+			}
+
+			$stack[] = $id;
+		}
+		$visited = [];
+		while ($stack !== []) {
+			$id = array_pop($stack);
+			if (isset($visited[$id])) {
+				continue;
+			}
+			$visited[$id] = true;
+			$sources = array_keys($this->dependencies[$id] ?? []);
+			foreach (array_keys($this->inputCopies[$id] ?? []) as $copied) {
+				// the inputs of $copied flow into $id as well
+				$sources = [...$sources, ...array_keys($this->dependencies[$copied] ?? [])];
+			}
+			foreach ($sources as $source) {
+				$this->coveredIds[$source] = true;
+				$stack[] = $source;
 			}
 		}
 	}

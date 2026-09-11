@@ -153,7 +153,7 @@ function literalOffsetUnset(): void
 
 function literalItemValueFlow(): void
 {
-	$v = source(); // unused $v
+	$v = source();
 	$a = ['x' => $v, 'y' => 2]; // unused offset 'x' of $a
 	sink($a['y']);
 }
@@ -567,7 +567,7 @@ function dimWriteCoalesceAssignValueFlow(): void
 
 function literalItemReadIntoUnused(): void
 {
-	$a = ['x' => 1, 'y' => 2]; // offset 'x' of $a only flows into values that are never used
+	$a = ['x' => 1, 'y' => 2];
 	$b = $a['x']; // unused $b
 	sink($a['y']);
 }

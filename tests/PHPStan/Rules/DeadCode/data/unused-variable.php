@@ -260,7 +260,7 @@ function stringAppendReturned(): string
 
 function stringAppendUnused(): void
 {
-	$s = 'a'; // unused $s
+	$s = 'a';
 	$s .= 'b'; // unused $s
 }
 
@@ -699,7 +699,7 @@ function cloneRead(): object
 function selfReferentialChain(): void
 {
 	// the first write only feeds the second, which is never used
-	$a = 5; // unused $a
+	$a = 5;
 	$a = $a + 1; // unused $a
 }
 

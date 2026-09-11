@@ -60,7 +60,7 @@ final class UnusedClosureUsesRule implements Rule
 				if ($node->isRead($write)) {
 					// read, but only into values that never reach a sink - a
 					// newer finding than the rule, so bleeding edge only
-					if (!$this->reportUnusedFlow) {
+					if (!$this->reportUnusedFlow || $node->flowsIntoNeverReadWrite($write)) {
 						continue;
 					}
 					$message = 'Anonymous function has a use $%s that only flows into values that are never used.';

@@ -3,7 +3,9 @@
 namespace PHPStan\Rules\Variables;
 
 use PhpParser\Node;
+use PhpParser\NodeFinder;
 use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
@@ -15,6 +17,7 @@ use PHPStan\Rules\IssetCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Type;
+use function array_filter;
 use function sprintf;
 
 /**
@@ -96,6 +99,20 @@ final class NullCoalesceRule implements Rule
 			return null;
 		}
 
+		// Dropping the coalesce also drops the evaluation of the right side, which
+		// only happens when the left side is null. That's only observationally
+		// equivalent when evaluating the right side cannot do anything but produce
+		// its null value.
+		$rightResult = $node->getRightResult();
+		if (
+			$rightResult->getImpurePoints() !== []
+			|| array_filter($rightResult->getThrowPoints(), static fn (InternalThrowPoint $throwPoint): bool => $throwPoint->isExplicit()) !== []
+			|| $rightResult->hasYield()
+			|| $this->containsAssign($right)
+		) {
+			return null;
+		}
+
 		// The coalesce only changes the result when the left side is undefined.
 		// If the left side is always set, `?? null` (or `??= null`) never changes
 		// anything, so the whole coalesce is redundant.
@@ -107,6 +124,21 @@ final class NullCoalesceRule implements Rule
 		return RuleErrorBuilder::message(
 			sprintf('Coalesce operator %s is unnecessary because the left side is always set and the right side is null.', $operator),
 		)->identifier('nullCoalesce.unnecessary')->build();
+	}
+
+	/**
+	 * Writes to variables, properties and offsets are not impure points, but they
+	 * still make the right side worth keeping around.
+	 */
+	private function containsAssign(Node\Expr $expr): bool
+	{
+		return (new NodeFinder())->findFirst([$expr], static fn (Node $node): bool => $node instanceof Node\Expr\Assign
+			|| $node instanceof Node\Expr\AssignRef
+			|| $node instanceof Node\Expr\AssignOp
+			|| $node instanceof Node\Expr\PostInc
+			|| $node instanceof Node\Expr\PreInc
+			|| $node instanceof Node\Expr\PostDec
+			|| $node instanceof Node\Expr\PreDec) !== null;
 	}
 
 }

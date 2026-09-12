@@ -139,7 +139,7 @@ final class AssignOpHandler implements ExprHandler
 		}
 
 		if ($condResult !== null) {
-			$nodeScopeResolver->callNodeCallbackWithExpression($nodeCallback, new CoalesceExpressionNode($expr, $condResult, 'on left side of ??='), $beforeScope, $storage, $context);
+			$nodeScopeResolver->callNodeCallbackWithExpression($nodeCallback, new CoalesceExpressionNode($expr, $condResult, $valueResult, 'on left side of ??='), $beforeScope, $storage, $context);
 		}
 
 		return $this->expressionResultFactory->create(

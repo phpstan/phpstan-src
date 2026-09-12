@@ -745,6 +745,23 @@ jobs:
               ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-full-baseline.neon"
               ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-full-baseline.neon"
           - script: |
+              cd e2e/baseline-trait-context-own-error
+              # A using class may report its own error with the same message and identifier
+              # as an error deduplicated directly into the trait: --generate-baseline records
+              # the class's own occurrence under the class path and the deduplicated error
+              # under the trait path. The trait-pathed entry hides the deduplicated error for
+              # every using class, so the class-pathed entry accounts only for the class's
+              # own occurrence: the generated baseline holds on re-run, with both an empty
+              # and a primed result cache.
+              ../../bin/phpstan clear-result-cache
+              ../../bin/phpstan --generate-baseline=baseline.neon
+              ../bashunit -a contains 'path: src/AMailer.php' "$(cat baseline.neon)"
+              ../bashunit -a contains 'path: src/SomeTrait.php' "$(cat baseline.neon)"
+              ../bashunit -a not_contains 'BMailer.php' "$(cat baseline.neon)"
+              ../../bin/phpstan clear-result-cache
+              ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-baseline.neon"
+              ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-baseline.neon"
+          - script: |
               cd e2e/result-cache-meta-extension
               composer install
               ../../bin/phpstan -vvv

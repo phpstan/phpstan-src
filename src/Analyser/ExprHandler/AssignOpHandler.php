@@ -282,7 +282,7 @@ final class AssignOpHandler implements ExprHandler
 				throw new ShouldNotHappenException();
 			}
 
-			$nodeScopeResolver->callNodeCallbackWithExpression($nodeCallback, new CoalesceExpressionNode($expr, $condResult, 'on left side of ??='), $beforeScope, $storage, $context);
+			$nodeScopeResolver->callNodeCallbackWithExpression($nodeCallback, new CoalesceExpressionNode($expr, $condResult, $valueResult, 'on left side of ??='), $beforeScope, $storage, $context);
 		}
 
 		$writeFlow = VariableFlow::sequence(

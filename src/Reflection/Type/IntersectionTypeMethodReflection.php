@@ -216,12 +216,12 @@ final class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 
 	public function getPureUnlessCallableIsImpureParameters(): array
 	{
-		return MergedPureUnlessCallableIsImpureParameters::merge($this->methods);
+		return MergedConditionalPurityParameters::mergePureUnlessCallableIsImpure($this->methods);
 	}
 
 	public function getPureUnlessParameterPassedParameters(): array
 	{
-		return MergedPureUnlessParameterPassedParameters::merge($this->methods);
+		return MergedConditionalPurityParameters::mergePureUnlessParameterPassed($this->methods);
 	}
 
 	public function getDocComment(): ?string

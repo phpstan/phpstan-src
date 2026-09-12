@@ -9,7 +9,7 @@ class HelloWorld
 	/**
      * @param array<string, string> $data
 	 */
-	public function sayHello(array|null $data): void
+	public function sayHello(?array $data): void
 	{
 		$key = $data === null ? null : array_key_first($data);
 		echo $key === null ? null : $data[$key];

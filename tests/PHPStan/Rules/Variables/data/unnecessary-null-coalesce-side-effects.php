@@ -139,3 +139,40 @@ function nullPropertyOnRightSide(Foo $foo, Foo $bar): ?string
 {
 	return $foo->stringOrNull ?? $bar->alwaysNull;
 }
+
+function assignRefOnRightSide(Foo $foo): ?string
+{
+	$null = null;
+
+	return $foo->stringOrNull ?? $ref = &$null;
+}
+
+/** @param array<int, null> $nulls */
+function assignOpInOffsetOnRightSide(Foo $foo, array $nulls, int $i): ?string
+{
+	return $foo->stringOrNull ?? $nulls[$i += 1];
+}
+
+/** @param array<int, null> $nulls */
+function postIncOnRightSide(Foo $foo, array $nulls, int $i): ?string
+{
+	return $foo->stringOrNull ?? $nulls[$i++];
+}
+
+/** @param array<int, null> $nulls */
+function preIncOnRightSide(Foo $foo, array $nulls, int $i): ?string
+{
+	return $foo->stringOrNull ?? $nulls[++$i];
+}
+
+/** @param array<int, null> $nulls */
+function postDecOnRightSide(Foo $foo, array $nulls, int $i): ?string
+{
+	return $foo->stringOrNull ?? $nulls[$i--];
+}
+
+/** @param array<int, null> $nulls */
+function preDecOnRightSide(Foo $foo, array $nulls, int $i): ?string
+{
+	return $foo->stringOrNull ?? $nulls[--$i];
+}

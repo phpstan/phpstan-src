@@ -22,6 +22,7 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionProvider\DirectReflectionProviderProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
+use PHPStan\Testing\PHPUnit\ContainerInitializer;
 use PHPStan\Type\Constant\OversizedArrayBuilder;
 use PHPStan\Type\ExpressionTypeResolverExtension;
 use PHPStan\Type\OperatorTypeSpecifyingExtensionRegistry;
@@ -43,21 +44,29 @@ abstract class PHPStanTestCase extends TestCase
 	use PHPStanTestCaseTrait;
 
 	/**
-	 * Re-register the runtime container as the global static reflection provider before
-	 * every test. Enable this in tests that construct Type objects directly and assert
-	 * PHP-version-dependent reflection results, so a foreign PhpVersion leaked by another
-	 * test can't flake them. See https://github.com/phpstan/phpstan/issues/14860
+	 * Re-register this test class's container as the owner of the global static state
+	 * (the reflection provider, the PhpVersion, the bleeding edge toggle) before every
+	 * test, so a container another test class installed can't flake tests that build
+	 * Type objects directly. See https://github.com/phpstan/phpstan/issues/14860
+	 *
+	 * PHPUnit >= 10 does this through InitContainerBeforeTestSubscriber; PHPUnit 9 -
+	 * which the "Tests with old PHPUnit" jobs run - rejects that extension, so the
+	 * guarantee has to hold here too.
 	 */
-	protected bool $reinitializeContainerBeforeEachTest = false;
-
 	#[Override]
 	protected function setUp(): void
 	{
-		if (!$this->reinitializeContainerBeforeEachTest) {
-			return;
-		}
+		ContainerInitializer::initialize(static::class);
+	}
 
-		self::getContainer();
+	#[Override]
+	public static function tearDownAfterClass(): void
+	{
+		parent::tearDownAfterClass();
+
+		// The next test class's data providers run before any hook this test case has
+		// on PHPUnit 9, in the same ParaTest worker process - see restoreBaseContainer().
+		self::restoreBaseContainer();
 	}
 
 	public static function getParser(): Parser

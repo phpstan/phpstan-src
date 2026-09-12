@@ -17,6 +17,12 @@ class TypeGetFiniteTypesTest extends PHPStanTestCase
 
 	public static function dataGetFiniteTypes(): iterable
 	{
+		// The expected ConstantArrayTypes below read the bleeding edge toggle in their
+		// constructor, so this class's container has to be the installed one already
+		// while they are built. On PHPUnit 9 nothing installs it before a data provider
+		// runs - see PHPStanTestCaseTrait::restoreBaseContainer().
+		self::getContainer();
+
 		yield [
 			IntegerRangeType::fromInterval(0, 5),
 			[

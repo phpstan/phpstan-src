@@ -17,6 +17,8 @@ use Nette\Utils\Strings;
 use Nette\Utils\Validators;
 use Phar;
 use PhpParser\Parser;
+use PHPStan\Analyser\ExprHandlerRegistry;
+use PHPStan\Analyser\StmtHandlerRegistry;
 use PHPStan\BetterReflection\BetterReflection;
 use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
@@ -32,6 +34,7 @@ use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\TypeCombinator;
+use WeakReference;
 use function array_diff_key;
 use function array_intersect;
 use function array_key_exists;
@@ -49,7 +52,6 @@ use function is_array;
 use function is_file;
 use function is_readable;
 use function is_string;
-use function spl_object_id;
 use function sprintf;
 use function str_ends_with;
 use function substr;
@@ -66,7 +68,8 @@ final class ContainerFactory
 
 	private string $configDirectory;
 
-	private static ?int $lastInitializedContainerId = null;
+	/** @var WeakReference<Container>|null */
+	private static ?WeakReference $lastInitializedContainer = null;
 
 	private bool $journalContainer = false;
 
@@ -172,12 +175,22 @@ final class ContainerFactory
 	/** @internal */
 	public static function postInitializeContainer(Container $container): void
 	{
-		$containerId = spl_object_id($container);
-		if ($containerId === self::$lastInitializedContainerId) {
+		// Comparing spl_object_id()s would be wrong: an id is recycled as soon as its
+		// container is freed, so a fresh container could inherit the last initialized
+		// one's id and silently skip installing its own global state.
+		$lastInitializedContainer = self::$lastInitializedContainer !== null ? self::$lastInitializedContainer->get() : null;
+		if ($lastInitializedContainer === $container) {
 			return;
 		}
 
-		self::$lastInitializedContainerId = $containerId;
+		self::$lastInitializedContainer = WeakReference::create($container);
+
+		// Both registries memoize handler instances per container, keyed by the
+		// container's spl_object_id() - a recycled id would otherwise hand this
+		// container the freed one's handlers, which carry the other container's
+		// services and parameters.
+		ExprHandlerRegistry::clearCache();
+		StmtHandlerRegistry::clearCache();
 
 		/** @var SourceLocator $sourceLocator */
 		$sourceLocator = $container->getService('betterReflectionSourceLocator');

@@ -1,5 +1,6 @@
 <?php declare(strict_types = 1);
 
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Turbo\TurboExtensionEnabler;
 
 error_reporting(E_ALL);
@@ -24,3 +25,10 @@ eval('trait TraitInEval {
 	}
 
 }');
+
+// A ParaTest worker builds the test suite of the first test file it picks up - and with it
+// runs that file's data providers - before any PHPUnit hook of ours gets a chance to run on
+// PHPUnit 9, which rejects PHPStanPHPUnitExtension. Install the base container's global state
+// (the static reflection provider, the PhpVersion, the bleeding edge toggle) up front so those
+// data providers see the same state as every later one.
+PHPStanTestCase::restoreBaseContainer();

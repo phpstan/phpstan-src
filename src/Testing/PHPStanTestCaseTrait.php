@@ -22,10 +22,40 @@ trait PHPStanTestCaseTrait
 
 	public static function getContainer(): Container
 	{
-		$additionalConfigFiles = [__DIR__ . '/TestCase.neon'];
+		$additionalConfigFiles = [self::getBaseConfigFile()];
 		foreach (static::getAdditionalConfigFiles() as $configFile) {
 			$additionalConfigFiles[] = $configFile;
 		}
+
+		return self::getContainerForConfigFiles($additionalConfigFiles);
+	}
+
+	/**
+	 * Installs the global state of the container built from just the base config -
+	 * the bleeding edge toggle, the static reflection provider, the PhpVersion and
+	 * the type caches all live in static properties that the last initialized
+	 * container owns.
+	 *
+	 * PHPUnit >= 10 initializes the right container before every data provider and
+	 * every test (see PHPStanPHPUnitExtension). PHPUnit 9 - which the "Tests with old
+	 * PHPUnit" jobs run - rejects that extension and has no hook that fires before a
+	 * data provider, while ParaTest reuses one worker process for many test files. A
+	 * class whose container turns on e.g. bleeding edge would therefore leak that
+	 * state into the data providers of the next test file, which build Type objects
+	 * that read the toggle in their constructor. Restoring the base state when a test
+	 * class is done keeps those data providers deterministic on every supported
+	 * PHPUnit version.
+	 */
+	public static function restoreBaseContainer(): void
+	{
+		self::getContainerForConfigFiles([self::getBaseConfigFile()]);
+	}
+
+	/**
+	 * @param string[] $additionalConfigFiles
+	 */
+	private static function getContainerForConfigFiles(array $additionalConfigFiles): Container
+	{
 		$cacheKey = hash('sha256', implode("\n", $additionalConfigFiles));
 
 		if (!isset(self::$containers[$cacheKey])) {
@@ -63,6 +93,11 @@ trait PHPStanTestCaseTrait
 		}
 
 		return self::$containers[$cacheKey];
+	}
+
+	private static function getBaseConfigFile(): string
+	{
+		return __DIR__ . '/TestCase.neon';
 	}
 
 	/**

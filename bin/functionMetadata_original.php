@@ -22,7 +22,7 @@
  * e.g. preg_replace_callback() (impure callback or a passed 'count').
  */
 
-/** @var array<string, array{hasSideEffects: bool}|array{pureUnlessCallableIsImpureParameters: array<string, bool>}|array{pureUnlessParameterPassedParameters: array<string, bool>}|array{pureUnlessCallableIsImpureParameters: array<string, bool>, pureUnlessParameterPassedParameters: array<string, bool>}> */
+/** @var array<string, array{hasSideEffects?: bool, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}> */
 return [
 	'abs' => ['hasSideEffects' => false],
 	'acos' => ['hasSideEffects' => false],

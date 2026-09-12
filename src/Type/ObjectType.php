@@ -125,6 +125,14 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	private ?string $cachedDescription = null;
 
 	/**
+	 * The class name as the reflection spells it - the properly cased name, or the
+	 * readable `class@anonymous...` form. Resolving it takes two ReflectionProvider
+	 * round-trips and both the type-only and the value level need it, the latter on
+	 * every operation RecursionGuard guards.
+	 */
+	private ?string $cachedPreciseName = null;
+
+	/**
 	 * The reflection resolved on demand by getClassReflection(), kept apart from the one
 	 * handed to the constructor. The constructor's reflection is part of the type's value
 	 * — it can differ from what the provider would return (an anonymous class is identified
@@ -742,13 +750,21 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function describe(VerbosityLevel $level): string
 	{
+		if ($this->cachedPreciseName !== null && ($level->isValue() || $level->isTypeOnly())) {
+			return $this->cachedPreciseName;
+		}
+
 		$preciseNameCallback = function (): string {
-			$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
-			if (!$reflectionProvider->hasClass($this->className)) {
-				return $this->className;
+			if ($this->cachedPreciseName !== null) {
+				return $this->cachedPreciseName;
 			}
 
-			return $reflectionProvider->getClassName($this->className);
+			$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
+			if (!$reflectionProvider->hasClass($this->className)) {
+				return $this->cachedPreciseName = $this->className;
+			}
+
+			return $this->cachedPreciseName = $reflectionProvider->getClassName($this->className);
 		};
 
 		$preciseWithSubtracted = fn (): string => $this->className . $this->describeSubtractedType($this->subtractedType, $level);

@@ -1662,7 +1662,11 @@ class UnionType implements CompoundType
 		$types = $this->notBenevolentPickFromTypes(static fn (Type $type) => $type->getFiniteTypes());
 		$uniquedTypes = [];
 		foreach ($types as $type) {
-			$uniquedTypes[$type->describe(VerbosityLevel::cache())] = $type;
+			// These are finite types, so FiniteTypeSet keys them by the value they
+			// stand for - which is what the uniquing wants and what describe() was
+			// standing in for. Floats have no such key (equals() does not agree with
+			// value identity for them) and keep describing themselves.
+			$uniquedTypes[FiniteTypeSet::key($type) ?? $type->describe(VerbosityLevel::cache())] = $type;
 		}
 
 		if (count($uniquedTypes) > InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT) {

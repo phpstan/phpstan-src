@@ -39,6 +39,7 @@ use Throwable;
 use function array_diff_assoc;
 use function array_fill_keys;
 use function array_intersect;
+use function array_key_exists;
 use function array_keys;
 use function array_map;
 use function array_merge;
@@ -1566,6 +1567,50 @@ class UnionType implements CompoundType
 				}
 
 				return new UnionType($remainingTypes);
+			}
+
+			// Every member of this union is a distinct value, and so is every member
+			// of the removed one: the result is their set difference, which no order
+			// of removals can sharpen. Taking it in one pass keeps removing a union
+			// of values linear instead of re-deriving this union once per value.
+			if ($typeToRemove instanceof self) {
+				$keysToRemove = [];
+				foreach ($typeToRemove->getTypes() as $innerTypeToRemove) {
+					$innerKey = FiniteTypeSet::key($innerTypeToRemove);
+					if ($innerKey === null) {
+						$keysToRemove = null;
+						break;
+					}
+
+					$keysToRemove[$innerKey] = true;
+				}
+
+				if ($keysToRemove !== null) {
+					$remainingTypes = [];
+					$removedAny = false;
+					foreach ($finiteTypeSet->getMembers() as $memberKey => $member) {
+						if (array_key_exists($memberKey, $keysToRemove)) {
+							$removedAny = true;
+							continue;
+						}
+
+						$remainingTypes[] = $member;
+					}
+
+					if (!$removedAny) {
+						return null;
+					}
+
+					if (count($remainingTypes) === 0) {
+						return new NeverType();
+					}
+
+					if (count($remainingTypes) === 1) {
+						return $remainingTypes[0];
+					}
+
+					return new UnionType($remainingTypes);
+				}
 			}
 		}
 

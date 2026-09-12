@@ -146,7 +146,6 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_node_scanner();
 	pt_register_parser_runner();
 	pt_register_type_combinator_cache();
-	pt_register_type_traverser();
 	pt_register_arena_cache();
 	pt_register_expression_result_storage();
 	pt_register_php_file_cleaner();
@@ -181,7 +180,6 @@ static PHP_RSHUTDOWN_FUNCTION(phpstan_turbo)
 	pt_scope_ops_rshutdown();
 	pt_node_traverser_rshutdown();
 	pt_type_combinator_cache_rshutdown();
-	pt_type_traverser_rshutdown();
 	pt_support_rshutdown();
 
 	return SUCCESS;

@@ -31,7 +31,6 @@
 
 extern "C" {
 #include "php.h"
-#include "zend_closures.h"
 #include "zend_exceptions.h"
 #include "zend_interfaces.h"
 #include "zend_smart_str.h"
@@ -82,7 +81,6 @@ enum {
 	PT_CLASS_ARROW_FUNCTION,
 	PT_CLASS_TYPE,
 	PT_CLASS_RECURSION_GUARD,
-	PT_CLASS_TYPE_TRAVERSER_CALLABLE,
 	/* classes the extension instantiates (their PHP twins are themselves
 	 * shadowed, hence no default name): configured to the stub subclasses
 	 * so created objects satisfy the original PHPStan type hints */
@@ -152,7 +150,6 @@ void pt_register_scope_ops();
 void pt_register_node_scanner();
 void pt_register_parser_runner();
 void pt_register_type_combinator_cache();
-void pt_register_type_traverser();
 void pt_register_arena_cache();
 void pt_register_expression_result_storage();
 void pt_register_php_file_cleaner();
@@ -165,7 +162,6 @@ void pt_scope_ops_rinit();
 void pt_scope_ops_rshutdown();
 void pt_type_combinator_cache_rinit();
 void pt_type_combinator_cache_rshutdown();
-void pt_type_traverser_rshutdown();
 
 /* module-shutdown backstop: destroys the arena mapping if the run skipped
  * ArenaCache::destroy() on a graceful exit */

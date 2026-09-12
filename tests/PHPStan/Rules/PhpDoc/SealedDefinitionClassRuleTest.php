@@ -3,7 +3,6 @@
 namespace PHPStan\Rules\PhpDoc;
 
 use PHPStan\Classes\ForbiddenClassNameExtension;
-use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
@@ -17,6 +16,8 @@ use PHPUnit\Framework\Attributes\RequiresPhp;
  */
 class SealedDefinitionClassRuleTest extends RuleTestCase
 {
+
+	private bool $checkSealedSubtypes = true;
 
 	protected function getRule(): Rule
 	{
@@ -33,6 +34,7 @@ class SealedDefinitionClassRuleTest extends RuleTestCase
 			),
 			true,
 			true,
+			$this->checkSealedSubtypes,
 		);
 	}
 
@@ -89,11 +91,10 @@ class SealedDefinitionClassRuleTest extends RuleTestCase
 	}
 
 	#[RequiresPhp('>= 8.1.0')]
-	public function testFinalSubtypesAreNotCheckedWithoutBleedingEdge(): void
+	public function testFinalSubtypesAreNotCheckedWhenDisabled(): void
 	{
-		BleedingEdgeToggle::withBleedingEdge(false, function (): void {
-			$this->analyse([__DIR__ . '/data/sealed-non-final-subtypes.php'], []);
-		});
+		$this->checkSealedSubtypes = false;
+		$this->analyse([__DIR__ . '/data/sealed-non-final-subtypes.php'], []);
 	}
 
 }

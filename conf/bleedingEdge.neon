@@ -1,6 +1,7 @@
 parameters:
 	featureToggles:
 		bleedingEdge: true
+		checkSealedSubtypes: true
 		checkNonStringableDynamicAccess: true
 		checkParameterCastableToNumberFunctions: true
 		skipCheckGenericClasses!: []

@@ -5,7 +5,6 @@ namespace PHPStan\Rules\PhpDoc;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
-use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\Node\InClassNode;
@@ -35,6 +34,8 @@ final class SealedDefinitionClassRule implements Rule
 		private bool $checkClassCaseSensitivity,
 		#[AutowiredParameter(ref: '%tips.discoveringSymbols%')]
 		private bool $discoveringSymbolsTip,
+		#[AutowiredParameter(ref: '%featureToggles.checkSealedSubtypes%')]
+		private bool $checkSealedSubtypes,
 	)
 	{
 	}
@@ -88,7 +89,7 @@ final class SealedDefinitionClassRule implements Rule
 				$sealedTypeReflection = $this->reflectionProvider->getClass($class);
 
 				if (
-					BleedingEdgeToggle::isBleedingEdge()
+					$this->checkSealedSubtypes
 					&& ($sealedTypeReflection->isEnum() || $sealedTypeReflection->isFinal())
 					&& !$sealedTypeReflection->is($classReflection->getName())
 				) {

@@ -1473,6 +1473,19 @@ final class ResultCacheManager
 
 		ksort($exportedNodes);
 
+		// Every other section above is ordered before it is written; this one was not, so its order
+		// followed the order the workers happened to finish in. Two identical runs of a 4524-file
+		// project produced 74.9 MB caches of the same size differing in 468652 bytes; with this sort
+		// they differ in the 2 bytes of lastFullAnalysisTime, which is meant to differ. That costs
+		// nothing to a run reading the file back, but it means the cache cannot be hashed, compared or
+		// deduplicated between two machines, and "the same analysis produces the same cache" is worth
+		// having before anyone ships one as a CI artifact.
+		ksort($packageDependencies);
+		foreach ($packageDependencies as $file => $packages) {
+			sort($packages);
+			$packageDependencies[$file] = $packages;
+		}
+
 		// The only point where the StubFilesExtensions may run: the analysis is over, bootstrapFiles
 		// have been executed, so the extensions can rely on them. restore() reads these hashes back
 		// instead of running the extensions again.

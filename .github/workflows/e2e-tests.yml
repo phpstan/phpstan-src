@@ -891,6 +891,17 @@ jobs:
               ../bashunit -a contains 'Composer packages changed (test/logger); re-analysing the files depending on them and the files with errors.' "$OUTPUT"
               ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
           - script: |
+              cd e2e/result-cache-deterministic-order
+              composer install
+              # Nothing in the written file may depend on the order the parallel workers happened to
+              # finish in: a result cache that is not reproducible cannot be hashed, compared or
+              # deduplicated between two machines. The fixture splits four files into two jobs, so no
+              # completion order puts them in ascending order by accident, and assert-sorted.php fails
+              # if any entry section of the cache is out of key order.
+              ../../bin/phpstan analyse
+              OUTPUT=$(php assert-sorted.php tmp/resultCache.php 2>&1) || { echo "$OUTPUT"; exit 1; }
+              echo "$OUTPUT"
+          - script: |
               cd e2e/result-cache-path-repository
               composer install
               ../../bin/phpstan analyse

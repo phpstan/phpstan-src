@@ -1,0 +1,26 @@
+{
+	"name": "phpstan/result-cache-deterministic-order-e2e",
+	"repositories": [
+		{
+			"type": "path",
+			"url": "./logger",
+			"options": {
+				"symlink": false
+			}
+		},
+		{
+			"type": "path",
+			"url": "./mailer",
+			"options": {
+				"symlink": false
+			}
+		}
+	],
+	"require": {
+		"test/logger": "*",
+		"test/mailer": "*"
+	},
+	"autoload": {
+		"classmap": ["src"]
+	}
+}

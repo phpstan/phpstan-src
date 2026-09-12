@@ -40,6 +40,14 @@ final class ProcessPool
 		$this->processes[$identifier] = $process;
 	}
 
+	/**
+	 * @return array<string, Process>
+	 */
+	public function getAttachedProcesses(): array
+	{
+		return $this->processes;
+	}
+
 	public function tryQuitProcess(string $identifier): void
 	{
 		if (!array_key_exists($identifier, $this->processes)) {

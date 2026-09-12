@@ -10,6 +10,7 @@ use Override;
 use PHPStan\Command\Bisect\BinarySearch;
 use PHPStan\File\FileReader;
 use PHPStan\Internal\HttpClientFactory;
+use PHPStan\Process\InheritedPhpConfig;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputArgument;
@@ -19,6 +20,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Throwable;
 use function array_filter;
+use function array_map;
 use function array_merge;
 use function array_values;
 use function chmod;
@@ -416,9 +418,16 @@ final class BisectCommand extends Command
 
 	private function runAnalysis(string $pharPath, string $analyseArgs): int
 	{
+		// every bisect step is a full analysis of its own, and a child process
+		// inherits nothing of our command line - without this each of them
+		// would run with an Xdebug the user turned off for us, see
+		// InheritedPhpConfig
+		$phpArgs = implode(' ', array_map(static fn (string $arg): string => escapeshellarg($arg), InheritedPhpConfig::getArgs()));
+
 		$command = sprintf(
-			'%s %s analyse %s',
+			'%s %s %s analyse %s',
 			escapeshellarg(PHP_BINARY),
+			$phpArgs,
 			escapeshellarg($pharPath),
 			$analyseArgs,
 		);

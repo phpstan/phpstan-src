@@ -1,4 +1,4 @@
-<?php // lint < 8.4
+<?php // lint >= 8.1
 
 namespace EnumReflection;
 

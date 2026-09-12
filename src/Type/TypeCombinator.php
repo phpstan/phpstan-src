@@ -24,11 +24,13 @@ use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateArrayType;
 use PHPStan\Type\Generic\TemplateBenevolentUnionType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateUnionType;
 use function array_fill;
 use function array_filter;
@@ -2076,6 +2078,18 @@ final class TypeCombinator
 						continue;
 					}
 
+					$mergedGenericObject = self::mergeGenericObjectTypes($types[$i], $types[$j]);
+					if ($mergedGenericObject !== null) {
+						if ($mergedGenericObject instanceof NeverType) {
+							return $mergedGenericObject;
+						}
+
+						$types[$i] = $mergedGenericObject;
+						array_splice($types, $j--, 1);
+						$typesCount--;
+						continue;
+					}
+
 					if (
 						$types[$i] instanceof ArrayType
 						&& get_class($types[$i]) === ArrayType::class
@@ -2137,6 +2151,61 @@ final class TypeCombinator
 		}
 
 		return new IntersectionType($types);
+	}
+
+	/**
+	 * Invariance of a template type means `Foo<Cat>` is not assignable to `Foo<Animal>`.
+	 * It does not mean the two are disjoint - PHP generics are erased, so the same object
+	 * can satisfy both claims. isSuperTypeOf() answers "no" in both directions there, which
+	 * would otherwise make intersect() collapse `Foo<Animal> & Foo<Cat>` into never.
+	 *
+	 * Returns null when the two types are not the same parameterized class and the caller
+	 * should keep its own handling, NeverType when the type arguments really are disjoint.
+	 */
+	private static function mergeGenericObjectTypes(Type $a, Type $b): ?Type
+	{
+		if (get_class($a) !== GenericObjectType::class || get_class($b) !== GenericObjectType::class) {
+			return null;
+		}
+		if ($a->getClassName() !== $b->getClassName()) {
+			return null;
+		}
+		if ($a->getSubtractedType() !== null || $b->getSubtractedType() !== null) {
+			return null;
+		}
+
+		$aTypes = $a->getTypes();
+		$bTypes = $b->getTypes();
+		if (count($aTypes) !== count($bTypes)) {
+			return null;
+		}
+
+		$aVariances = $a->getVariances();
+		$bVariances = $b->getVariances();
+		$invariant = TemplateTypeVariance::createInvariant();
+		foreach (array_keys($aTypes) as $i) {
+			if (($aVariances[$i] ?? $invariant)->equals($bVariances[$i] ?? $invariant)) {
+				continue;
+			}
+
+			return null;
+		}
+
+		$newTypes = [];
+		foreach ($aTypes as $i => $aType) {
+			$newType = self::intersect($aType, $bTypes[$i]);
+			if ($newType instanceof NeverType) {
+				return $newType;
+			}
+
+			$newTypes[] = $newType;
+		}
+
+		return new GenericObjectType(
+			$a->getClassName(),
+			$newTypes,
+			variances: $aVariances === [] ? $bVariances : $aVariances,
+		);
 	}
 
 	private static function intersectDefiniteConstantArrays(ConstantArrayType $a, ConstantArrayType $b): Type

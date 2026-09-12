@@ -82,4 +82,14 @@ class FunctionAssertRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testInvariantGenericAssert(): void
+	{
+		$this->analyse([__DIR__ . '/data/invariant-generic-assert.php'], [
+			[
+				'Asserted type InvariantGenericAssertPhpDoc\Bag<string> for $b with type InvariantGenericAssertPhpDoc\Bag<int> can never happen.',
+				31,
+			],
+		]);
+	}
+
 }

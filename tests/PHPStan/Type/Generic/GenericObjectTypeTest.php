@@ -55,9 +55,16 @@ class GenericObjectTypeTest extends PHPStanTestCase
 				new GenericObjectType(A\SubA::class, [new ObjectType('DateTime')]),
 				TrinaryLogic::createYes(),
 			],
+			// Invariance is about assignability - it does not make the two types disjoint,
+			// so isSuperTypeOf() has to stay at maybe. dataAccepts() still says no.
 			'same class, different type args' => [
 				new GenericObjectType(A\A::class, [new ObjectType('DateTimeInterface')]),
 				new GenericObjectType(A\A::class, [new ObjectType('DateTime')]),
+				TrinaryLogic::createMaybe(),
+			],
+			'same class, disjoint type args' => [
+				new GenericObjectType(A\A::class, [new ObjectType('DateTime')]),
+				new GenericObjectType(A\A::class, [new IntegerType()]),
 				TrinaryLogic::createNo(),
 			],
 			// https://github.com/phpstan/phpstan/issues/11935 - `mixed` as a type
@@ -87,7 +94,7 @@ class GenericObjectTypeTest extends PHPStanTestCase
 			'implementation with @extends with different type args' => [
 				new GenericObjectType(B\I::class, [new ObjectType('DateTimeInterface')]),
 				new GenericObjectType(B\IImpl::class, [new ObjectType('DateTime')]),
-				TrinaryLogic::createNo(),
+				TrinaryLogic::createMaybe(),
 			],
 			'invariant with equals types' => [
 				new GenericObjectType(C\Invariant::class, [new ObjectType('DateTime')]),
@@ -97,11 +104,16 @@ class GenericObjectTypeTest extends PHPStanTestCase
 			'invariant with sub type' => [
 				new GenericObjectType(C\Invariant::class, [new ObjectType('DateTimeInterface')]),
 				new GenericObjectType(C\Invariant::class, [new ObjectType('DateTime')]),
-				TrinaryLogic::createNo(),
+				TrinaryLogic::createMaybe(),
 			],
 			'invariant with super type' => [
 				new GenericObjectType(C\Invariant::class, [new ObjectType('DateTime')]),
 				new GenericObjectType(C\Invariant::class, [new ObjectType('DateTimeInterface')]),
+				TrinaryLogic::createMaybe(),
+			],
+			'invariant with disjoint type' => [
+				new GenericObjectType(C\Invariant::class, [new ObjectType('DateTime')]),
+				new GenericObjectType(C\Invariant::class, [new ObjectType(Exception::class)]),
 				TrinaryLogic::createNo(),
 			],
 			'covariant with equals types' => [
@@ -155,7 +167,7 @@ class GenericObjectTypeTest extends PHPStanTestCase
 				new GenericObjectType(ReflectionClass::class, [
 					new ObjectType(stdClass::class),
 				]),
-				PHP_VERSION_ID >= 80400 ? TrinaryLogic::createNo() : TrinaryLogic::createYes(),
+				PHP_VERSION_ID >= 80400 ? TrinaryLogic::createMaybe() : TrinaryLogic::createYes(),
 			],
 			[
 				new GenericObjectType(ReflectionClass::class, [
@@ -164,7 +176,7 @@ class GenericObjectTypeTest extends PHPStanTestCase
 				new GenericObjectType(ReflectionClass::class, [
 					new ObjectWithoutClassType(),
 				]),
-				PHP_VERSION_ID >= 80400 ? TrinaryLogic::createNo() : TrinaryLogic::createMaybe(),
+				TrinaryLogic::createMaybe(),
 			],
 			[
 				new GenericObjectType(ReflectionClass::class, [
@@ -218,6 +230,7 @@ class GenericObjectTypeTest extends PHPStanTestCase
 		];
 	}
 
+	/** @return list<array{Type, Type, TrinaryLogic}|array{Type, Type, TrinaryLogic, TrinaryLogic}> */
 	public static function dataTypeProjections(): array
 	{
 		$invariantA = new GenericObjectType(E\Foo::class, [new ObjectType(E\A::class)], variances: [TemplateTypeVariance::createInvariant()]);
@@ -235,9 +248,9 @@ class GenericObjectTypeTest extends PHPStanTestCase
 		$bivariant = new GenericObjectType(E\Foo::class, [new MixedType(true)], variances: [TemplateTypeVariance::createBivariant()]);
 
 		return [
-			[$invariantB, $invariantA, TrinaryLogic::createNo()],
+			[$invariantB, $invariantA, TrinaryLogic::createMaybe(), TrinaryLogic::createNo()],
 			[$invariantB, $invariantB, TrinaryLogic::createYes()],
-			[$invariantB, $invariantC, TrinaryLogic::createNo()],
+			[$invariantB, $invariantC, TrinaryLogic::createMaybe(), TrinaryLogic::createNo()],
 			[$invariantB, $covariantA, TrinaryLogic::createNo()],
 			[$invariantB, $covariantB, TrinaryLogic::createNo()],
 			[$invariantB, $covariantC, TrinaryLogic::createNo()],
@@ -281,8 +294,26 @@ class GenericObjectTypeTest extends PHPStanTestCase
 		];
 	}
 
+	/** @return list<array{Type, Type, TrinaryLogic}> */
+	public static function dataTypeProjectionsIsSuperTypeOf(): array
+	{
+		return array_map(
+			static fn (array $data): array => [$data[0], $data[1], $data[2]],
+			self::dataTypeProjections(),
+		);
+	}
+
+	/** @return list<array{Type, Type, TrinaryLogic}> */
+	public static function dataTypeProjectionsAccepts(): array
+	{
+		return array_map(
+			static fn (array $data): array => [$data[0], $data[1], $data[3] ?? $data[2]],
+			self::dataTypeProjections(),
+		);
+	}
+
 	#[DataProvider('dataIsSuperTypeOf')]
-	#[DataProvider('dataTypeProjections')]
+	#[DataProvider('dataTypeProjectionsIsSuperTypeOf')]
 	public function testIsSuperTypeOf(Type $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isSuperTypeOf($otherType);
@@ -361,7 +392,7 @@ class GenericObjectTypeTest extends PHPStanTestCase
 	}
 
 	#[DataProvider('dataAccepts')]
-	#[DataProvider('dataTypeProjections')]
+	#[DataProvider('dataTypeProjectionsAccepts')]
 	public function testAccepts(
 		Type $acceptingType,
 		Type $acceptedType,

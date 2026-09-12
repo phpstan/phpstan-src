@@ -40,7 +40,7 @@ final class PhpDocsResolver
 	}
 
 	/**
-	 * @return array{TemplateTypeMap, array<string, Type>, array<string, bool>, array<string, Type>, ?Type, ?Type, ?string, bool, bool, bool, bool|null, bool, bool, string|null, Assertions, ?Type, array<string, Type>, array<(string|int), VarTag>, bool, ?ResolvedPhpDocBlock, array<string, bool>}
+	 * @return array{TemplateTypeMap, array<string, Type>, array<string, bool>, array<string, Type>, ?Type, ?Type, ?string, bool, bool, bool, bool|null, bool, bool, string|null, Assertions, ?Type, array<string, Type>, array<(string|int), VarTag>, bool, ?ResolvedPhpDocBlock, array<string, bool>, array<string, Type>}
 	 */
 	public function getPhpDocs(Scope $scope, Node\FunctionLike|Node\Stmt\Property $node): array
 	{
@@ -48,6 +48,7 @@ final class PhpDocsResolver
 		$phpDocParameterTypes = [];
 		$phpDocImmediatelyInvokedCallableParameters = [];
 		$phpDocClosureThisTypeParameters = [];
+		$phpDocClosureScopeTypeParameters = [];
 		$phpDocReturnType = null;
 		$phpDocThrowType = null;
 		$deprecatedDescription = null;
@@ -181,6 +182,16 @@ final class PhpDocsResolver
 				}
 				$phpDocClosureThisTypeParameters[$paramName] = $paramClosureThisType;
 			}
+			foreach ($resolvedPhpDoc->getParamClosureScopeTags() as $paramName => $paramClosureScopeTag) {
+				if (array_key_exists($paramName, $phpDocClosureScopeTypeParameters)) {
+					continue;
+				}
+				$paramClosureScopeType = $paramClosureScopeTag->getType();
+				if ($scope->isInClass()) {
+					$paramClosureScopeType = $this->transformStaticType($scope->getClassReflection(), $paramClosureScopeType);
+				}
+				$phpDocClosureScopeTypeParameters[$paramName] = $paramClosureScopeType;
+			}
 
 			foreach ($resolvedPhpDoc->getParamOutTags() as $paramName => $paramOutTag) {
 				$phpDocParameterOutTypes[$paramName] = $paramOutTag->getType();
@@ -228,7 +239,7 @@ final class PhpDocsResolver
 			}
 		}
 
-		return [$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocClosureThisTypeParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, $isReadOnly, $docComment, $asserts, $selfOutType, $phpDocParameterOutTypes, $varTags, $isAllowedPrivateMutation, $resolvedPhpDoc, $phpDocPureUnlessCallableIsImpureParameters];
+		return [$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocClosureThisTypeParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, $isReadOnly, $docComment, $asserts, $selfOutType, $phpDocParameterOutTypes, $varTags, $isAllowedPrivateMutation, $resolvedPhpDoc, $phpDocPureUnlessCallableIsImpureParameters, $phpDocClosureScopeTypeParameters];
 	}
 
 	private function getPhpDocReturnType(ResolvedPhpDocBlock $resolvedPhpDoc, Type $nativeReturnType): ?Type

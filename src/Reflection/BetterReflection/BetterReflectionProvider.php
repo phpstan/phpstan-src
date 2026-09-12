@@ -31,6 +31,7 @@ use PHPStan\Parser\AnonymousClassVisitor;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\StubPhpDocProvider;
+use PHPStan\PhpDoc\Tag\ParamClosureScopeTag;
 use PHPStan\PhpDoc\Tag\ParamClosureThisTag;
 use PHPStan\PhpDoc\Tag\ParamOutTag;
 use PHPStan\Reflection\Assertions;
@@ -295,6 +296,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 		$phpDocParameterOutTags = [];
 		$phpDocParameterImmediatelyInvokedCallable = [];
 		$phpDocParameterClosureThisTypeTags = [];
+		$phpDocParameterClosureScopeTypeTags = [];
 		$phpDocParameterPureUnlessCallableIsImpure = [];
 
 		$resolvedPhpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($reflectionFunction->getName(), array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $reflectionFunction->getParameters()));
@@ -322,6 +324,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 			$phpDocParameterOutTags = $resolvedPhpDoc->getParamOutTags();
 			$phpDocParameterImmediatelyInvokedCallable = $resolvedPhpDoc->getParamsImmediatelyInvokedCallable();
 			$phpDocParameterClosureThisTypeTags = $resolvedPhpDoc->getParamClosureThisTags();
+			$phpDocParameterClosureScopeTypeTags = $resolvedPhpDoc->getParamClosureScopeTags();
 			$phpDocParameterPureUnlessCallableIsImpure = $resolvedPhpDoc->getParamsPureUnlessCallableIsImpure();
 		}
 
@@ -356,6 +359,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 			array_map(static fn (ParamClosureThisTag $tag): Type => $tag->getType(), $phpDocParameterClosureThisTypeTags),
 			$this->attributeReflectionFactory->fromNativeReflection($reflectionFunction->getAttributes(), InitializerExprContext::fromFunction($reflectionFunction->getName(), $reflectionFunction->getFileName() !== false ? $reflectionFunction->getFileName() : null)),
 			$phpDocParameterPureUnlessCallableIsImpure,
+			array_map(static fn (ParamClosureScopeTag $tag): Type => $tag->getType(), $phpDocParameterClosureScopeTypeTags),
 		);
 	}
 

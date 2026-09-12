@@ -58,6 +58,7 @@ use Throwable;
 use Traversable;
 use function array_key_exists;
 use function array_map;
+use function array_merge;
 use function array_values;
 use function count;
 use function get_class;
@@ -123,6 +124,14 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	private array $currentAncestors = [];
 
 	private ?string $cachedDescription = null;
+
+	/**
+	 * The class name as the reflection spells it - the properly cased name, or the
+	 * readable `class@anonymous...` form. Resolving it takes two ReflectionProvider
+	 * round-trips and both the type-only and the value level need it, the latter on
+	 * every operation RecursionGuard guards.
+	 */
+	private ?string $cachedPreciseName = null;
 
 	/**
 	 * The reflection resolved on demand by getClassReflection(), kept apart from the one
@@ -742,13 +751,21 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function describe(VerbosityLevel $level): string
 	{
+		if ($this->cachedPreciseName !== null && ($level->isValue() || $level->isTypeOnly())) {
+			return $this->cachedPreciseName;
+		}
+
 		$preciseNameCallback = function (): string {
-			$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
-			if (!$reflectionProvider->hasClass($this->className)) {
-				return $this->className;
+			if ($this->cachedPreciseName !== null) {
+				return $this->cachedPreciseName;
 			}
 
-			return $reflectionProvider->getClassName($this->className);
+			$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
+			if (!$reflectionProvider->hasClass($this->className)) {
+				return $this->cachedPreciseName = $this->className;
+			}
+
+			return $this->cachedPreciseName = $reflectionProvider->getClassName($this->className);
 		};
 
 		$preciseWithSubtracted = fn (): string => $this->className . $this->describeSubtractedType($this->subtractedType, $level);
@@ -1756,11 +1773,24 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function subtract(Type $type): Type
 	{
-		if ($this->subtractedType !== null) {
-			$type = TypeCombinator::union($this->subtractedType, $type);
+		if ($this->subtractedType === null) {
+			return $this->changeSubtractedType($type);
 		}
 
-		return $this->changeSubtractedType($type);
+		// A sealed hierarchy rebuilds its subtraction from the flattened parts
+		// below, so normalising the union of the old and the new subtracted type
+		// first is wasted work - and quadratic when a removal peels the subtypes
+		// off one at a time, as removing a whole enum from its own type does.
+		// Only the path that keeps the subtracted type as it is needs the union.
+		$matched = $this->matchAllowedSubTypes(array_merge(
+			TypeUtils::flattenTypes($this->subtractedType),
+			TypeUtils::flattenTypes($type),
+		));
+		if ($matched !== null) {
+			return $matched;
+		}
+
+		return $this->changeSubtractedType(TypeCombinator::union($this->subtractedType, $type));
 	}
 
 	public function getTypeWithoutSubtractedType(): Type
@@ -1788,47 +1818,9 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	public function changeSubtractedType(?Type $subtractedType): Type
 	{
 		if ($subtractedType !== null) {
-			$classReflection = $this->getClassReflection();
-			$allowedSubTypes = $classReflection !== null ? $classReflection->getAllowedSubTypes() : null;
-			if ($allowedSubTypes !== null) {
-				$preciseVerbosity = VerbosityLevel::precise();
-
-				$originalAllowedSubTypes = $allowedSubTypes;
-				$subtractedSubTypes = [];
-
-				$subtractedTypes = TypeUtils::flattenTypes($subtractedType);
-				foreach ($subtractedTypes as $subType) {
-					foreach ($allowedSubTypes as $key => $allowedSubType) {
-						if ($subType->equals($allowedSubType)) {
-							$description = $allowedSubType->describe($preciseVerbosity);
-							$subtractedSubTypes[$description] = $subType;
-							unset($allowedSubTypes[$key]);
-							continue 2;
-						}
-					}
-
-					return new self($this->className, $subtractedType);
-				}
-
-				if (count($allowedSubTypes) === 1) {
-					return array_values($allowedSubTypes)[0];
-				}
-
-				$subtractedSubTypes = array_values($subtractedSubTypes);
-				$subtractedSubTypesCount = count($subtractedSubTypes);
-				if ($subtractedSubTypesCount === count($originalAllowedSubTypes)) {
-					return new NeverType();
-				}
-
-				if ($subtractedSubTypesCount === 0) {
-					return new self($this->className);
-				}
-
-				if ($subtractedSubTypesCount === 1) {
-					return new self($this->className, $subtractedSubTypes[0]);
-				}
-
-				return new self($this->className, new UnionType($subtractedSubTypes));
+			$matched = $this->matchAllowedSubTypes(TypeUtils::flattenTypes($subtractedType));
+			if ($matched !== null) {
+				return $matched;
 			}
 		}
 
@@ -1837,6 +1829,59 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		return new self($this->className, $subtractedType);
+	}
+
+	/**
+	 * Rebuilds the type from the subtracted members of its sealed hierarchy.
+	 *
+	 * Returns null when the class has no allowed subtypes, or when a subtracted
+	 * type is not one of them - the caller then keeps the subtracted type whole.
+	 *
+	 * @param array<Type> $subtractedTypes flattened, may repeat
+	 */
+	private function matchAllowedSubTypes(array $subtractedTypes): ?Type
+	{
+		$classReflection = $this->getClassReflection();
+		$allowedSubTypes = $classReflection !== null ? $classReflection->getAllowedSubTypes() : null;
+		if ($allowedSubTypes === null) {
+			return null;
+		}
+
+		$allowedSubTypesCount = count($allowedSubTypes);
+		$subtractedSubTypes = [];
+
+		foreach ($subtractedTypes as $subType) {
+			foreach ($allowedSubTypes as $key => $allowedSubType) {
+				if ($subType->equals($allowedSubType)) {
+					// An allowed subtype is dropped as it matches, so no two matches
+					// can be the same one and the matches need no keying.
+					$subtractedSubTypes[] = $subType;
+					unset($allowedSubTypes[$key]);
+					continue 2;
+				}
+			}
+
+			return null;
+		}
+
+		if (count($allowedSubTypes) === 1) {
+			return array_values($allowedSubTypes)[0];
+		}
+
+		$subtractedSubTypesCount = count($subtractedSubTypes);
+		if ($subtractedSubTypesCount === $allowedSubTypesCount) {
+			return new NeverType();
+		}
+
+		if ($subtractedSubTypesCount === 0) {
+			return new self($this->className);
+		}
+
+		if ($subtractedSubTypesCount === 1) {
+			return new self($this->className, $subtractedSubTypes[0]);
+		}
+
+		return new self($this->className, new UnionType($subtractedSubTypes));
 	}
 
 	public function getSubtractedType(): ?Type

@@ -188,7 +188,7 @@ final class RuleErrorTransformer
 			}
 		}
 
-		if (!$replacingVisitor->isFound() || $indent === null) {
+		if (!$replacingVisitor->isFound()) {
 			return null;
 		}
 

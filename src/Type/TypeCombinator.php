@@ -98,12 +98,54 @@ final class TypeCombinator
 		return self::doRemove($fromType, $typeToRemove);
 	}
 
+	/**
+	 * Whether removing the union's members all at once gives what removing them
+	 * one at a time would: true when the subtraction is a set difference, so no
+	 * order of removals can sharpen the result.
+	 *
+	 * Everywhere else the members have to come off one at a time - removing one
+	 * can narrow the type so that removing the next achieves more.
+	 */
+	private static function canRemoveUnionAtOnce(Type $fromType): bool
+	{
+		// A sealed hierarchy - an enum, or a hierarchy an
+		// AllowedSubTypesClassReflectionExtension seals - subtracts by dropping
+		// allowed subtypes, and which ones are dropped does not depend on order.
+		$classReflections = $fromType->getObjectClassReflections();
+		if (count($classReflections) === 1 && $classReflections[0]->getAllowedSubTypes() !== null) {
+			return true;
+		}
+
+		// A union removes the whole thing from each of its members, and each of
+		// those removals weighs this same question again - so a member that needs
+		// the removals one at a time still gets them that way.
+		return $fromType instanceof UnionType;
+	}
+
 	/** @internal Delegated to from TypeCombinatorCache, which the native extension shadows to memoize it. */
 	public static function doRemove(Type $fromType, Type $typeToRemove): Type
 	{
 		if ($typeToRemove instanceof UnionType) {
+			// Removing the members one at a time is what keeps the result precise:
+			// removing one can narrow the type so that removing the next achieves
+			// more. A sealed hierarchy is the exception - there the subtraction is
+			// a set difference over the allowed subtypes, so the order the members
+			// come off cannot matter, and peeling them would rebuild the whole
+			// subtraction once per member (removing an enum from its own type then
+			// costs O(cases^2)).
+			if (self::canRemoveUnionAtOnce($fromType)) {
+				$removed = $fromType->tryRemove($typeToRemove);
+				if ($removed !== null) {
+					return $removed;
+				}
+			}
+
 			foreach ($typeToRemove->getTypes() as $unionTypeToRemove) {
 				$fromType = self::remove($fromType, $unionTypeToRemove);
+				if ($fromType instanceof NeverType) {
+					// there is nothing left to remove from
+					break;
+				}
 			}
 			return $fromType;
 		}

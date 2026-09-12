@@ -1,0 +1,17 @@
+<?php // lint >= 8.0
+
+declare(strict_types = 1);
+
+namespace Bug7905Rule;
+
+class HelloWorld
+{
+	/**
+     * @param array<string, string> $data
+	 */
+	public function sayHello(?array $data): void
+	{
+		$key = $data === null ? null : array_key_first($data);
+		echo $key === null ? null : $data[$key];
+	}
+}

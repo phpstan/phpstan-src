@@ -278,11 +278,11 @@ final class AssignOpHandler implements ExprHandler
 		}
 
 		if ($expr instanceof Expr\AssignOp\Coalesce) {
-			if ($condResult === null) {
+			if ($condResult === null || $rightResult === null) {
 				throw new ShouldNotHappenException();
 			}
 
-			$nodeScopeResolver->callNodeCallbackWithExpression($nodeCallback, new CoalesceExpressionNode($expr, $condResult, 'on left side of ??='), $beforeScope, $storage, $context);
+			$nodeScopeResolver->callNodeCallbackWithExpression($nodeCallback, new CoalesceExpressionNode($expr, $condResult, $rightResult, 'on left side of ??='), $beforeScope, $storage, $context);
 		}
 
 		$writeFlow = VariableFlow::sequence(

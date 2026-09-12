@@ -21,6 +21,7 @@ final class CoalesceExpressionNode extends NodeAbstract implements VirtualNode
 	public function __construct(
 		private Expr $originalExpr,
 		private ExpressionResult $subjectResult,
+		private ExpressionResult $rightResult,
 		private string $operatorDescription,
 	)
 	{
@@ -35,6 +36,12 @@ final class CoalesceExpressionNode extends NodeAbstract implements VirtualNode
 	public function getSubjectResult(): ExpressionResult
 	{
 		return $this->subjectResult;
+	}
+
+	/** Result of the right side - the operand that's only evaluated when the left side is null. */
+	public function getRightResult(): ExpressionResult
+	{
+		return $this->rightResult;
 	}
 
 	public function getOperatorDescription(): string

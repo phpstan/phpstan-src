@@ -26,6 +26,7 @@ parameters:
 			throwTypeCovariance: false
 	featureToggles:
 		bleedingEdge: false
+		checkSealedSubtypes: false
 		checkNonStringableDynamicAccess: false
 		checkParameterCastableToNumberFunctions: false
 		skipCheckGenericClasses:

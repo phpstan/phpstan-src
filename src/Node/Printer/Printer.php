@@ -13,6 +13,7 @@ use PHPStan\Node\BooleanOrNode;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Node\Expr\CloneReinitializationExpr;
 use PHPStan\Node\Expr\ExistingArrayDimFetch;
+use PHPStan\Node\Expr\ForeachValueAliasExpr;
 use PHPStan\Node\Expr\ForeachValueByRefExpr;
 use PHPStan\Node\Expr\IntertwinedVariableByReferenceWithExpr;
 use PHPStan\Node\Expr\NativeTypeExpr;
@@ -171,6 +172,11 @@ final class Printer extends Standard
 	protected function pPHPStan_Node_OriginalForeachValueExpr(OriginalForeachValueExpr $expr): string // phpcs:ignore
 	{
 		return sprintf('__phpstanOriginalForeachValue(%s)', $expr->getVariableName());
+	}
+
+	protected function pPHPStan_Node_ForeachValueAliasExpr(ForeachValueAliasExpr $expr): string // phpcs:ignore
+	{
+		return ForeachValueAliasExpr::key($expr->getVariableName());
 	}
 
 	protected function pPHPStan_Node_IntertwinedVariableByReferenceWithExpr(IntertwinedVariableByReferenceWithExpr $expr): string // phpcs:ignore

@@ -127,9 +127,6 @@ use Symfony\Component\Finder\Finder;
 				throw new ShouldNotHappenException($functionName);
 			}
 
-			// An entry can carry both conditions at once (e.g. preg_replace_callback,
-			// which is pure unless its callback is impure or its 'count' is passed),
-			// so keep every condition the hand-maintained entry declares.
 			$conditions = [];
 			foreach (['pureUnlessCallableIsImpureParameters', 'pureUnlessParameterPassedParameters'] as $conditionKey) {
 				if (!isset($metadata[$functionName][$conditionKey])) {
@@ -227,8 +224,6 @@ php;
 	);
 
 	foreach ($metadata as $name => $meta) {
-		// An entry is either unconditional or carries one or both of the conditional
-		// purity keys, so encode every key it has instead of just the first one.
 		$entries = [];
 		if (isset($meta['hasSideEffects'])) {
 			$entries[] = sprintf('%s => %s', $escape('hasSideEffects'), $escape($meta['hasSideEffects']));

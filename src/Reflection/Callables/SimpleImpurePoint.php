@@ -135,13 +135,9 @@ final class SimpleImpurePoint
 	}
 
 	/**
-	 * Purity verdict of a call to a variant that declares conditional purity.
-	 *
 	 * A function can carry both flags at once (e.g. preg_replace_callback, which is
-	 * pure unless its callback is impure or its $count is passed). It stays pure only
-	 * when both verdicts agree it is pure, so they are combined: Yes = pure,
-	 * No = impure, Maybe = possibly impure. Returns null when the variant declares
-	 * neither flag, so the caller keeps its current behavior.
+	 * pure unless its callback is impure or its $count is passed), so the two
+	 * verdicts are combined. Returns null when the variant declares neither flag.
 	 *
 	 * @param Arg[] $args
 	 */
@@ -157,11 +153,6 @@ final class SimpleImpurePoint
 	}
 
 	/**
-	 * Applies the conditional purity verdict of this call site to impure points that
-	 * were resolved without one - a callable value's impure points are computed from
-	 * its ParametersAcceptor alone, so a first-class callable of a conditionally pure
-	 * function arrives here as an unconditional "possibly impure" point.
-	 *
 	 * @param SimpleImpurePoint[] $impurePoints
 	 * @param Arg[] $args
 	 * @return SimpleImpurePoint[]
@@ -250,11 +241,7 @@ final class SimpleImpurePoint
 	}
 
 	/**
-	 * Purity verdict for parameters flagged with @pure-unless-parameter-passed:
-	 * the call stays pure as long as none of those (by-ref out) parameters
-	 * received an argument. Returns Yes when no flagged parameter was passed,
-	 * No when at least one was, and null when the variant has no such parameters
-	 * (so the caller keeps its current behavior).
+	 * Returns null when the variant has no flagged parameters.
 	 *
 	 * @param Arg[] $args
 	 */

@@ -207,7 +207,7 @@ use Symfony\Component\Finder\Finder;
  *     an argument, e.g. str_replace()'s 'replace_count'.
  */
 
-/** @var array<string, array{hasSideEffects: bool}|array{pureUnlessCallableIsImpureParameters: array<string, bool>}|array{pureUnlessParameterPassedParameters: array<string, bool>}> */
+/** @var array<string, array{hasSideEffects?: bool, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}> */
 return [
 %s
 ];

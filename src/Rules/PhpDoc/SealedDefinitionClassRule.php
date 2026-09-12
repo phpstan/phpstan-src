@@ -84,6 +84,18 @@ final class SealedDefinitionClassRule implements Rule
 					continue;
 				}
 
+				if (!$this->reflectionProvider->getClass($class)->is($classReflection->getName())) {
+					$errorBuilder = RuleErrorBuilder::message(sprintf(
+						'PHPDoc tag @phpstan-sealed type %s is not subtype of %s.',
+						$class,
+						$classReflection->getName(),
+					))->identifier('sealed.notSubtype');
+
+					$errors[] = $errorBuilder->build();
+
+					continue;
+				}
+
 				$errors = array_merge(
 					$errors,
 					$this->classCheck->checkClassNames($scope, [

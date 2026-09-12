@@ -5,6 +5,7 @@ namespace PHPStan\Rules\PhpDoc;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\Node\InClassNode;
@@ -87,7 +88,8 @@ final class SealedDefinitionClassRule implements Rule
 				$sealedTypeReflection = $this->reflectionProvider->getClass($class);
 
 				if (
-					($sealedTypeReflection->isEnum() || $sealedTypeReflection->isFinal())
+					BleedingEdgeToggle::isBleedingEdge()
+					&& ($sealedTypeReflection->isEnum() || $sealedTypeReflection->isFinal())
 					&& !$sealedTypeReflection->is($classReflection->getName())
 				) {
 					$errorBuilder = RuleErrorBuilder::message(sprintf(

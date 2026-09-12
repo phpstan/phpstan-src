@@ -68,11 +68,11 @@ class SealedDefinitionClassRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/sealed-subtypes.php'], [
 			[
 				'PHPDoc tag @phpstan-sealed contains final type SealedSubtypes\\__YEnumInvalid that is not subtype of SealedSubtypes\\__EnumError.',
-				23,
+				10,
 			],
 			[
 				'PHPDoc tag @phpstan-sealed contains final type SealedSubtypes\\__YClassInvalid that is not subtype of SealedSubtypes\\__ClassError.',
-				65,
+				20,
 			],
 		]);
 	}

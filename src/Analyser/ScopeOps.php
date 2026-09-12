@@ -378,6 +378,42 @@ final class ScopeOps
 	{
 		$newVariableTypes = $ourExpressionTypes;
 
+		// A guard is only ever consumed paired with a target: a *different* key in
+		// the first target loop below, any key in the second one. Deriving a guard
+		// costs a TypeCombinator::remove() of the two branch types - the most
+		// expensive step of the merge - so settle which keys can be targets with
+		// the cheap checks first, bail out when none can, and skip the subtraction
+		// for a guard no target can pair with. The first target loop reuses this
+		// set instead of repeating the checks.
+		$targets = [];
+		$hasUndefinedTarget = false;
+		foreach (array_keys($differingKeys) as $exprString) {
+			if (!array_key_exists($exprString, $newVariableTypes)) {
+				if (
+					array_key_exists($exprString, $mergedExpressionTypes)
+					&& !$mergedExpressionTypes[$exprString]->getExpr() instanceof VirtualNode
+				) {
+					$hasUndefinedTarget = true;
+				}
+				continue;
+			}
+			$targetHolder = $newVariableTypes[$exprString];
+			if ($targetHolder->getExpr() instanceof VirtualNode) {
+				continue;
+			}
+			if (
+				array_key_exists($exprString, $mergedExpressionTypes)
+				&& $mergedExpressionTypes[$exprString]->equals($targetHolder)
+			) {
+				continue;
+			}
+			$targets[$exprString] = true;
+		}
+		if (!$hasUndefinedTarget && count($targets) === 0) {
+			return $conditionalExpressions;
+		}
+		$onlySelfIsTarget = !$hasUndefinedTarget && count($targets) === 1;
+
 		// When our-branch type is a subtype of their-branch type, the union
 		// absorbs it (merged === their). Such a variable cannot be a *guard* —
 		// its branch set difference below comes out empty — but it remains a
@@ -441,6 +477,12 @@ final class ScopeOps
 				continue;
 			}
 
+			if ($onlySelfIsTarget && array_key_exists($exprString, $targets)) {
+				// the sole target is this very key, which the target loop unsets from
+				// its own guard set - no pairing can use this guard
+				continue;
+			}
+
 			// The set difference between the branch types is the part of our type
 			// the other branch cannot produce: observing it later proves this
 			// branch was taken, even when the full branch types overlap - so a
@@ -476,20 +518,8 @@ final class ScopeOps
 		$guardIsSuperTypeOfTheirExprCache = [];
 		$theirExprIsSuperTypeOfGuardCache = [];
 
-		foreach (array_keys($differingKeys) as $exprString) {
-			if (!array_key_exists($exprString, $newVariableTypes)) {
-				continue;
-			}
+		foreach (array_keys($targets) as $exprString) {
 			$holder = $newVariableTypes[$exprString];
-			if ($holder->getExpr() instanceof VirtualNode) {
-				continue;
-			}
-			if (
-				array_key_exists($exprString, $mergedExpressionTypes)
-				&& $mergedExpressionTypes[$exprString]->equals($holder)
-			) {
-				continue;
-			}
 
 			$variableTypeGuards = $typeGuards;
 			unset($variableTypeGuards[$exprString]);

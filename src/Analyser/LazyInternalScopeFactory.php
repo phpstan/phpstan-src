@@ -89,6 +89,7 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 		bool $nativeTypesPromoted = false,
 		?TemplateArgumentFrame $templateArgumentFrame = null,
 		?TemplateArgumentConstraints $templateArgumentConstraints = null,
+		array $resultProvenance = [],
 	): MutatingScope
 	{
 		$className = MutatingScope::class;
@@ -142,6 +143,7 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 			$nativeTypesPromoted,
 			$templateArgumentFrame,
 			$templateArgumentConstraints,
+			$resultProvenance,
 		);
 	}
 

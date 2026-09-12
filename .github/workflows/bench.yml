@@ -33,6 +33,7 @@ jobs:
         php-version:
           - "7.4"
           - "8.5"
+          - "8.6"
 
     steps:
       - name: Harden the runner (Audit all outbound calls)

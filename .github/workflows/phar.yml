@@ -339,7 +339,8 @@ jobs:
     # packages ZTS PHP (neither ppa:ondrej/php nor Alpine); setup-php
     # provides thread-safe builds. No musl ZTS for the same packaging
     # reason.
-    container: ${{ matrix.target.family == 'gnu' && format('ghcr.io/phpstan/turbo-build:gnu-php{0}', matrix.php-version) || matrix.target.container }}
+    # alpine 3.24 carries php83 to php85, php86 only exists in edge so far
+    container: ${{ matrix.target.family == 'gnu' && format('ghcr.io/phpstan/turbo-build:gnu-php{0}', matrix.php-version) || (matrix.target.family == 'musl' && matrix.php-version == '8.6' && 'alpine:edge') || matrix.target.container }}
     timeout-minutes: 30
 
     env:
@@ -348,7 +349,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ["8.3", "8.4", "8.5"]
+        php-version: ["8.3", "8.4", "8.5", "8.6"]
         target:
           - name: "linux-gnu-x86_64"
             runs-on: "ubuntu-latest"
@@ -398,7 +399,9 @@ jobs:
         if: matrix.target.family == 'musl'
         run: |
           V="$(echo "$PHP_MINOR" | tr -d .)"
-          apk add --no-cache bash curl git make g++ musl-dev linux-headers patch tar zstd \
+          # php86 is only in edge/testing so far, php83 to php85 are in the stable repos
+          [ "$PHP_MINOR" = "8.6" ] && APK_REPO="--repository=https://dl-cdn.alpinelinux.org/alpine/edge/testing" || APK_REPO=""
+          apk add --no-cache $APK_REPO bash curl git make g++ musl-dev linux-headers patch tar zstd \
             "php$V" "php$V-dev" "php$V-ctype" "php$V-curl" "php$V-mbstring" \
             "php$V-tokenizer" "php$V-iconv" "php$V-openssl" "php$V-phar" \
             "php$V-dom" "php$V-xml" "php$V-xmlwriter" "php$V-simplexml"
@@ -545,7 +548,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ["8.3", "8.4", "8.5"]
+        php-version: ["8.3", "8.4", "8.5", "8.6"]
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -564,17 +567,22 @@ jobs:
           fetch-depth: 0
 
       - name: "Start the Alpine build container"
+        env:
+          # alpine 3.24 carries php83 to php85, php86 only exists in edge so far
+          ALPINE_IMAGE: ${{ matrix.php-version == '8.6' && 'alpine:edge' || 'alpine:3.24' }}
         run: |
           docker run -d --name alpine-build \
             -v "$PWD:/work" -w /work \
             -e PHP_MINOR -e COMPOSER_VERSION -e COMPOSER_PHAR_SHA256 \
-            alpine:3.24 sleep 7200
+            "$ALPINE_IMAGE" sleep 7200
 
       - name: "Install PHP and build tools"
         run: |
           docker exec -i alpine-build sh -e <<'EOF'
           V="$(echo "$PHP_MINOR" | tr -d .)"
-          apk add --no-cache bash curl git make g++ musl-dev linux-headers patch tar zstd \
+          # php86 is only in edge/testing so far, php83 to php85 are in the stable repos
+          [ "$PHP_MINOR" = "8.6" ] && APK_REPO="--repository=https://dl-cdn.alpinelinux.org/alpine/edge/testing" || APK_REPO=""
+          apk add --no-cache $APK_REPO bash curl git make g++ musl-dev linux-headers patch tar zstd \
             "php$V" "php$V-dev" "php$V-ctype" "php$V-curl" "php$V-mbstring" \
             "php$V-tokenizer" "php$V-iconv" "php$V-openssl" "php$V-phar" \
             "php$V-dom" "php$V-xml" "php$V-xmlwriter" "php$V-simplexml"
@@ -795,7 +803,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ["8.3", "8.4", "8.5"]
+        php-version: ["8.3", "8.4", "8.5", "8.6"]
         ts: ["nts", "zts"]
         # The official 8.3 Windows binaries are built with VS16 (linker
         # 14.2x) and PHP's module loader is one-directional (module toolset
@@ -810,6 +818,8 @@ jobs:
             vs: "vs17"
           - php-version: "8.5"
             vs: "vs17"
+          - php-version: "8.6"
+            vs: "vs18"
 
     steps:
       - name: "Checkout"
@@ -843,8 +853,10 @@ jobs:
           INFIX=$([ "$MATRIX_TS" = "zts" ] && echo "" || echo "-nts")
           PACK="php-devel-pack-$FULL$INFIX-Win32-$MATRIX_VS-x64.zip"
           echo "devel pack: $PACK"
+          # betas and RCs are published under downloads/qa, released versions are not
           curl -fsSLo devel-pack.zip "https://windows.php.net/downloads/releases/$PACK" \
-            || curl -fsSLo devel-pack.zip "https://windows.php.net/downloads/releases/archives/$PACK"
+            || curl -fsSLo devel-pack.zip "https://windows.php.net/downloads/releases/archives/$PACK" \
+            || curl -fsSLo devel-pack.zip "https://windows.php.net/downloads/qa/$PACK"
           unzip -q devel-pack.zip -d /c/php-devel
 
           git clone -q https://github.com/php/php-sdk-binary-tools.git /c/php-sdk
@@ -989,7 +1001,7 @@ jobs:
       # vs17-built official PHP loads it fine.
       matrix:
         operating-system: ["ubuntu-latest", "windows-latest"]
-        php-version: ["8.3", "8.4", "8.5"]
+        php-version: ["8.3", "8.4", "8.5", "8.6"]
         ts: ["nts", "zts"]
         script: ["make tests", "make phpstan"]
         # macOS runs the shipped ad-hoc-signed arm64 binary; there is no
@@ -1085,7 +1097,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ["7.4", "8.0", "8.1", "8.2", "8.3", "8.4", "8.5"]
+        php-version: ["7.4", "8.0", "8.1", "8.2", "8.3", "8.4", "8.5", "8.6"]
 
     steps:
       - name: Harden the runner (Audit all outbound calls)

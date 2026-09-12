@@ -476,6 +476,59 @@ public:
 			return zv::Val();
 		}
 
+		/* A guard is only ever consumed paired with a target: a *different* key
+		 * in the first target loop below, any key in the second one. Deriving a
+		 * guard costs a TypeCombinator::remove() of the two branch types - the
+		 * most expensive step of the merge - so settle which keys can be targets
+		 * with the cheap checks first, bail out when none can, and skip the
+		 * subtraction for a guard no target can pair with. The first target loop
+		 * reuses this set instead of repeating the checks. Mirrors the twin. */
+		zv::ScratchTable targets(8);
+		bool hasUndefinedTarget = false;
+		for (auto diffEntry : differingKeys) {
+			zend_string *key = diffEntry.stringKeyOrNull();
+			zend_ulong idx = diffEntry.indexKey();
+
+			zval *ourSlot = pt_ht_find(ours.table(), key, idx);
+			zval *mergedSlot = pt_ht_find(merged.table(), key, idx);
+			if (ourSlot == NULL) {
+				if (mergedSlot != NULL) {
+					zv::Ref mergedHolder = zv::Ref(mergedSlot).deref();
+					if (UNEXPECTED(!pt_check_holder(mergedHolder.raw()))) {
+						return zv::Val();
+					}
+					if (!instanceof_function(holderExpr(mergedHolder)->ce, virtualNodeCe)) {
+						hasUndefinedTarget = true;
+					}
+				}
+				continue;
+			}
+			zv::Ref holder = zv::Ref(ourSlot).deref();
+			if (UNEXPECTED(!pt_check_holder(holder.raw()))) {
+				return zv::Val();
+			}
+			if (instanceof_function(holderExpr(holder)->ce, virtualNodeCe)) {
+				continue;
+			}
+			if (mergedSlot != NULL) {
+				zv::Ref mergedHolder = zv::Ref(mergedSlot).deref();
+				bool equal;
+				if (UNEXPECTED(!pt_holder_equals(mergedHolder.raw(), holder.raw(), &equal))) {
+					return zv::Val();
+				}
+				if (equal) {
+					continue;
+				}
+			}
+			zval targetTrue;
+			ZVAL_TRUE(&targetTrue);
+			pt_ht_update(targets.table(), key, idx, &targetTrue);
+		}
+		if (!hasUndefinedTarget && targets.size() == 0) {
+			return zv::Arr::copyOfTable(conditional.table());
+		}
+		bool onlySelfIsTarget = !hasUndefinedTarget && targets.size() == 1;
+
 		zv::ScratchTable guardsToExclude(8);
 		zv::ScratchTable typeGuards(8);
 		/* owns the remainder-typed holders created below; the scratch table
@@ -587,6 +640,12 @@ public:
 				continue;
 			}
 
+			if (onlySelfIsTarget && pt_ht_exists(targets.table(), key, idx)) {
+				/* the sole target is this very key, which the target loop unsets
+				 * from its own guard set - no pairing can use this guard */
+				continue;
+			}
+
 			/* the branch set difference — see the twin for why an unchanged
 			 * remainder falls back to the merged-type comparison */
 			zv::Val remainder = typeCombinatorRemove(holderType(holder), holderType(theirHolder));
@@ -641,31 +700,17 @@ public:
 		zv::ScratchTable guardIsConstantArrayCache(8);
 		zv::Arr result; /* stays UNDEF until the first append duplicates the input */
 
-		/* main loop: pair non-merged expressions with guards */
-		for (auto diffEntry : differingKeys) {
-			zend_string *key = diffEntry.stringKeyOrNull();
-			zend_ulong idx = diffEntry.indexKey();
+		/* main loop: pair non-merged expressions with guards - the settled
+		 * target set already carries the cheap checks */
+		for (auto targetEntry : zv::TableRef(targets.table())) {
+			zend_string *key = targetEntry.stringKeyOrNull();
+			zend_ulong idx = targetEntry.indexKey();
 
 			zval *ourSlot = pt_ht_find(ours.table(), key, idx);
-			if (ourSlot == NULL) {
+			if (UNEXPECTED(ourSlot == NULL)) {
 				continue;
 			}
 			zv::Ref holder = zv::Ref(ourSlot).deref();
-
-			if (instanceof_function(holderExpr(holder)->ce, virtualNodeCe)) {
-				continue;
-			}
-			zval *mergedSlot = pt_ht_find(merged.table(), key, idx);
-			if (mergedSlot != NULL) {
-				zv::Ref mergedHolder = zv::Ref(mergedSlot).deref();
-				bool equal;
-				if (UNEXPECTED(!pt_holder_equals(mergedHolder.raw(), holder.raw(), &equal))) {
-					return zv::Val();
-				}
-				if (equal) {
-					continue;
-				}
-			}
 
 			bool hasSelfGuard = pt_ht_exists(typeGuards.table(), key, idx);
 			if (typeGuards.size() - (hasSelfGuard ? 1 : 0) == 0) {

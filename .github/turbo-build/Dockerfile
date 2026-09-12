@@ -10,7 +10,7 @@
 # The ubuntu:22.04 base pins the built binaries' glibc symbol floor at
 # 2.34 (RHEL 9, Ubuntu 22.04+, Debian 12+) independently of the runner
 # image — same floor as the previous `container: ubuntu:22.04` legs.
-FROM ubuntu:22.04
+FROM ubuntu:26.04
 
 ARG PHP_MINOR
 ENV DEBIAN_FRONTEND=noninteractive

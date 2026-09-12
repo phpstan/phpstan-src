@@ -185,6 +185,7 @@ final class BetterReflectionSourceLocatorFactory
 				new PhpInternalSourceLocator($astPhp8Locator, $this->phpstormStubsSourceStubber),
 				$this->cache,
 				$this->phpVersion,
+				$this->phpstormStubsSourceStubber,
 			));
 
 			$locators[] = $this->skipBundledPolyfills(new AutoloadSourceLocator($this->fileNodesFetcher, true));

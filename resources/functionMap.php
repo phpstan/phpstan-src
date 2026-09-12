@@ -8737,7 +8737,7 @@ return [
 'Redis::zSize' => ['', 'key'=>'string'],
 'Redis::zUnion' => ['__benevolent<Redis|array|false>', 'keys'=>'string[]', 'weights'=>'?array', 'options='=>'?array'],
 'RedisArray::__construct' => ['void', 'name'=>'string'],
-'RedisArray::__construct\'1' => ['void', 'hosts'=>'array<int, string>', 'opts='=>'array<string, string>'],
+'RedisArray::__construct\'1' => ['void', 'hosts'=>'array<int, string>', 'opts='=>'array<string, mixed>'],
 'RedisArray::_function' => ['string'],
 'RedisArray::_hosts' => ['array'],
 'RedisArray::_rehash' => ['', 'callable='=>'callable'],

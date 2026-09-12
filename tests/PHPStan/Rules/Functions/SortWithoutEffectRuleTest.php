@@ -2,23 +2,33 @@
 
 namespace PHPStan\Rules\Functions;
 
+use PHPStan\Rules\Comparison\ConstantConditionInTraitHelper;
+use PHPStan\Rules\Comparison\ConstantConditionInTraitRule;
 use PHPStan\Rules\Rule;
+use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
- * @extends RuleTestCase<SortWithoutEffectRule>
+ * @extends RuleTestCase<CompositeRule>
  */
 class SortWithoutEffectRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
 	{
-		return new SortWithoutEffectRule(
-			self::createReflectionProvider(),
-			$this->shouldTreatPhpDocTypesAsCertain(),
-			true,
-		);
+		// @phpstan-ignore argument.type
+		return new CompositeRule([
+			new SortWithoutEffectRule(
+				self::createReflectionProvider(),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+				$this->shouldTreatPhpDocTypesAsCertain(),
+				true,
+			),
+			// a trait body is analysed once per using class, and this rule is what decides what the
+			// contexts agreed on
+			new ConstantConditionInTraitRule(),
+		]);
 	}
 
 	public function testRule(): void
@@ -183,6 +193,30 @@ class SortWithoutEffectRuleTest extends RuleTestCase
 				$tipText,
 			],
 		]);
+	}
+
+	public function testInTrait(): void
+	{
+		$this->analyse([__DIR__ . '/data/sort-without-effect-in-trait.php'], [
+			[
+				'Parameter #1 $array (array{1}) of function sort has at most 1 element, call has no effect.',
+				46,
+			],
+			[
+				'Parameter #1 $array (array{}) of function sort is empty, call has no effect.',
+				55,
+			],
+			[
+				'Parameter #1 $array (array{1}) of function sort has at most 1 element, call has no effect.',
+				85,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testInTraitWithEnums(): void
+	{
+		$this->analyse([__DIR__ . '/data/sort-without-effect-in-trait-enum.php'], []);
 	}
 
 }

@@ -54,13 +54,18 @@ final class ConstantConditionInTraitHelper
 	}
 
 	/**
+	 * $value is what the using classes have to agree on for the error to be reported. A condition's
+	 * value is a bool; a rule whose verdict has more than two outcomes passes the outcome itself, so
+	 * that two using classes reaching the same expression for different reasons still counts as
+	 * disagreement.
+	 *
 	 * @param class-string<Rule<covariant Node>> $ruleName
 	 */
 	public function emitError(
 		string $ruleName,
 		Scope&NodeCallbackInvoker&CollectedDataEmitter $scope,
 		Expr $expr,
-		bool $value,
+		bool|string $value,
 		RuleError $ruleError,
 	): void
 	{

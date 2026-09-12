@@ -115,10 +115,10 @@ final class TypeInferenceTestCaseTest extends TypeInferenceTestCase
 	{
 		$filePath = __DIR__ . '/data/assert-certainty-variable-or-offset.php';
 
-		[$variableAssert, $offsetAssert] = array_values(self::gatherAssertTypes($filePath));
+		$asserts = array_values(self::gatherAssertTypes($filePath));
 
-		$this->assertSame('variable $context', $variableAssert[4]);
-		$this->assertSame("offset 'email'", $offsetAssert[4]);
+		$this->assertSame('variable $context', $asserts[0][4]);
+		$this->assertSame("offset 'email'", $asserts[1][4]);
 	}
 
 	public function testSuperType(): void

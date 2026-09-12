@@ -54,6 +54,9 @@ final class ConstructorsHelper
 		$nativeReflection = $classReflection->getNativeReflection();
 		foreach ($this->additionalConstructors as $additionalConstructor) {
 			[$className, $methodName] = explode('::', $additionalConstructor);
+			if ($methodName === null) {
+				continue;
+			}
 			if (!$nativeReflection->hasMethod($methodName)) {
 				continue;
 			}

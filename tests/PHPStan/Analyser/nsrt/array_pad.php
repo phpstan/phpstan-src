@@ -74,5 +74,13 @@ class HelloWorld
 		assertType('non-empty-list<\'foo\'|int>', array_pad($nonEmptyListInt, $positiveInt, 'foo'));
 		assertType('non-empty-list<\'foo\'|int>', array_pad($nonEmptyListInt, $negativeInt, 'foo'));
 		assertType('non-empty-list<\'foo\'|int>', array_pad($nonEmptyListInt, $nonZero, 'foo'));
+
+		assertType('non-empty-list<string>&hasOffsetValue(0, string)&hasOffsetValue(1, string)', array_pad($listString, 2, 'foo'));
+		assertType('non-empty-list<string>&hasOffsetValue(0, string)&hasOffsetValue(1, string)', array_pad($listString, -2, 'foo'));
+		assertType('non-empty-array<int|string, string>', array_pad($arrayString, 2, 'foo'));
+
+		[$first, $second] = array_pad($listString, 2, 'foo');
+		assertType('string', $first);
+		assertType('string', $second);
 	}
 }

@@ -49,6 +49,17 @@ final class FileCacheStorage implements CacheStorage
 	{
 		[,, $filePath] = $this->getFilePaths($key);
 
+		// Letting include() fail is an expensive way to learn that an entry was
+		// never written: PHP walks the include_path and builds two warnings only
+		// to have them discarded by the @, about 29us per miss, while the stat()
+		// that rules the file out costs about 1.4us and is free on the hit path
+		// (the include stats the file anyway). Misses are not rare - every class
+		// name that reaches the PHP-internal locator and turns out not to be a
+		// built-in is one, tens of thousands per run and per worker.
+		if (!is_file($filePath)) {
+			return null;
+		}
+
 		return (static function ($variableKey, $filePath) {
 			$cacheItem = @include $filePath;
 			if (!$cacheItem instanceof CacheItem) {

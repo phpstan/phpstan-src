@@ -11,6 +11,7 @@ use PHPStan\BetterReflection\Reflection\ReflectionConstant;
 use PHPStan\BetterReflection\Reflection\ReflectionEnum;
 use PHPStan\BetterReflection\Reflection\ReflectionFunction;
 use PHPStan\BetterReflection\Reflector\Reflector;
+use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\Cache\Cache;
 use PHPStan\Internal\ComposerHelper;
@@ -59,6 +60,7 @@ final class CachedPhpInternalSourceLocator implements SourceLocator
 		private SourceLocator $inner,
 		private Cache $cache,
 		private PhpVersion $phpVersion,
+		private PhpStormStubsSourceStubber $stubber,
 	)
 	{
 	}
@@ -70,6 +72,20 @@ final class CachedPhpInternalSourceLocator implements SourceLocator
 		if ($identifier->isClass() || $identifier->isFunction()) {
 			$name = strtolower($name);
 		}
+
+		// Almost everything that reaches this locator is a userland class name
+		// that every earlier locator failed to resolve, and a name the stubs do
+		// not have can never have been cached - the stubber is the only source
+		// the wrapped locator reads from. Ruling those out against the stubs map
+		// is an array lookup, where asking the cache means hashing the key and
+		// stat()ing a file that will never exist. The wrapped locator is still
+		// asked: it resolves class aliases before consulting the stubber, so it
+		// can answer for a name the map does not list - such an answer just does
+		// not get cached, under a key that would be the alias anyway.
+		if ($identifier->isClass() && !$this->stubber->hasClass($name)) {
+			return $this->inner->locateIdentifier($reflector, $identifier);
+		}
+
 		$cacheKey = sprintf('phpinternal-%s-%s', $identifier->getType()->getName(), $name);
 		$variableCacheKey = $this->getVariableCacheKey();
 

@@ -2,6 +2,9 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Turbo\ShadowedByTurboExtension;
+
+#[ShadowedByTurboExtension(turboClass: 'PHPStanTurbo\TypeTraverser', implementation: __DIR__ . '/../../turbo-ext/src/TypeTraverser.cpp')]
 final class TypeTraverser
 {
 

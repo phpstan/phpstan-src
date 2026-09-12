@@ -304,6 +304,116 @@ $afterClear = \PHPStanTurbo\TypeCombinatorCache::union($intT, $stringT);
 check($describe($afterClear) === $describe($first), 'TCC clearCache keeps results correct');
 check($afterClear !== $first, 'TCC clearCache actually drops entries');
 
+// ---- TypeTraverser ----
+$covered[\PHPStan\Type\TypeTraverser::class] = true;
+// The native traverser drives the same recursion through the same userland
+// Type::traverse() implementations and the same callbacks; only the frames
+// in between are native, so identical results are the whole contract.
+$ttPrecise = \PHPStan\Type\VerbosityLevel::precise();
+$ttInputs = [
+	'leaf' => $stringT,
+	'array' => new \PHPStan\Type\ArrayType($stringT, $intT),
+	'union' => \PHPStan\Type\TypeCombinator::union($oneT, $nullT, new \PHPStan\Type\Constant\ConstantStringType('a')),
+	'nested' => new \PHPStan\Type\ArrayType(new \PHPStan\Type\MixedType(), \PHPStan\Type\TypeCombinator::intersect($arrayT, $nonEmpty)),
+];
+
+final class SmokeTypeTraverserCallable implements \PHPStan\Type\TypeTraverserCallable
+{
+
+	public function traverse(\PHPStan\Type\Type $type, callable $traverse): \PHPStan\Type\Type
+	{
+		if ($type->isInteger()->yes()) {
+			return new \PHPStan\Type\BooleanType();
+		}
+		return $traverse($type);
+	}
+
+}
+
+final class SmokeTypeTraverserMethod
+{
+
+	public function widenStrings(\PHPStan\Type\Type $type, callable $traverse): \PHPStan\Type\Type
+	{
+		if ($type->isString()->yes()) {
+			return new \PHPStan\Type\NullType();
+		}
+		return $traverse($type);
+	}
+
+}
+
+$ttMethodCb = new SmokeTypeTraverserMethod();
+$ttCallbacks = [
+	// the documented example: constant strings to objects, unions traversed
+	'closure' => static function (\PHPStan\Type\Type $type, callable $traverse): \PHPStan\Type\Type {
+		if ($type instanceof \PHPStan\Type\UnionType || $type instanceof \PHPStan\Type\IntersectionType) {
+			return $traverse($type);
+		}
+		if ($type instanceof \PHPStan\Type\Constant\ConstantStringType) {
+			return new \PHPStan\Type\ObjectType($type->getValue());
+		}
+		return new \PHPStan\Type\MixedType();
+	},
+	// never traverses: the callback decides the whole result
+	'no traverse' => static fn (\PHPStan\Type\Type $type, callable $traverse): \PHPStan\Type\Type => new \PHPStan\Type\NullType(),
+	// the twin wraps this one in a closure, the native side calls traverse() directly
+	'TypeTraverserCallable' => new SmokeTypeTraverserCallable(),
+	'array callable' => [$ttMethodCb, 'widenStrings'],
+	'first-class callable' => $ttMethodCb->widenStrings(...),
+	// a traversal started from inside a traversal, which the traverser the
+	// native side keeps for reuse must not disturb
+	'nested map' => static function (\PHPStan\Type\Type $type, callable $traverse) use ($intT): \PHPStan\Type\Type {
+		if ($type->isString()->yes()) {
+			return \PHPStan\Type\TypeTraverser::map(new \PHPStan\Type\ArrayType($type, $intT), static fn (\PHPStan\Type\Type $inner, callable $innerTraverse): \PHPStan\Type\Type => $inner->isInteger()->yes() ? new \PHPStan\Type\FloatType() : $innerTraverse($inner));
+		}
+		return $traverse($type);
+	},
+];
+
+foreach ($ttCallbacks as $ttLabel => $ttCallback) {
+	foreach ($ttInputs as $ttInputLabel => $ttInput) {
+		$phpResult = \PHPStan\Type\TypeTraverser::map($ttInput, $ttCallback)->describe($ttPrecise);
+		$nativeResult = \PHPStanTurbo\TypeTraverser::map($ttInput, $ttCallback)->describe($ttPrecise);
+		check($phpResult === $nativeResult, "TypeTraverser $ttLabel over $ttInputLabel: $phpResult vs $nativeResult");
+	}
+}
+
+// an exception from the callback propagates out of map()
+foreach (['php' => \PHPStan\Type\TypeTraverser::class, 'native' => \PHPStanTurbo\TypeTraverser::class] as $ttSide => $ttClass) {
+	$ttThrown = null;
+	try {
+		$ttClass::map($ttInputs['array'], static function (\PHPStan\Type\Type $type, callable $traverse): \PHPStan\Type\Type {
+			throw new \PHPStan\ShouldNotHappenException();
+		});
+	} catch (\PHPStan\ShouldNotHappenException $e) {
+		$ttThrown = $e;
+	}
+	check($ttThrown !== null, "TypeTraverser $ttSide: the callback's exception propagates");
+
+	// a callback that returns something else than a Type is a TypeError on
+	// both sides (the twin's declared return type, checked natively)
+	$ttTypeError = null;
+	try {
+		$ttClass::map($ttInputs['leaf'], static fn (\PHPStan\Type\Type $type, callable $traverse) => 'not a type');
+	} catch (TypeError $e) {
+		$ttTypeError = $e;
+	}
+	check($ttTypeError !== null, "TypeTraverser $ttSide: a non-Type callback result is a TypeError");
+
+	// the traverse callable stays usable after map() returned — the native
+	// traverser must not recycle an object the callback kept a hold of
+	$ttEscaped = null;
+	$ttClass::map($ttInputs['array'], static function (\PHPStan\Type\Type $type, callable $traverse) use (&$ttEscaped): \PHPStan\Type\Type {
+		$ttEscaped ??= $traverse;
+		return $traverse($type);
+	});
+	check(
+		$ttEscaped(new \PHPStan\Type\ArrayType($stringT, $intT))->describe($ttPrecise) === 'array<string, int>',
+		"TypeTraverser $ttSide: an escaped traverse callable still works",
+	);
+}
+
 // ---- ExpressionResultStorage ----
 $covered[\PHPStan\Analyser\ExpressionResultStorage::class] = true;
 $makeScope = static function () {

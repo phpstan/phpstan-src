@@ -54,25 +54,9 @@ class SealedDefinitionClassRuleTest extends RuleTestCase
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
-				'PHPDoc tag @phpstan-sealed type IncompatibleSealed\SomeClass is not subtype of IncompatibleSealed\Valid.',
-				31,
-			],
-			[
-				'PHPDoc tag @phpstan-sealed type IncompatibleSealed\SomeClass is not subtype of IncompatibleSealed\ValidInterface.',
-				36,
-			],
-			[
-				'PHPDoc tag @phpstan-sealed type IncompatibleSealed\SomeInterface is not subtype of IncompatibleSealed\ValidInterface2.',
-				41,
-			],
-			[
 				'PHPDoc tag @phpstan-sealed contains unknown class IncompatibleSealed\UnknownClass.',
 				46,
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
-			],
-			[
-				'PHPDoc tag @phpstan-sealed type IncompatibleSealed\SomeClass is not subtype of IncompatibleSealed\InvalidClassWithUnion.',
-				46,
 			],
 		]);
 	}
@@ -82,20 +66,23 @@ class SealedDefinitionClassRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/sealed-subtypes.php'], [
 			[
-				'PHPDoc tag @phpstan-sealed type SealedSubtypes\\__YEnumInvalid is not subtype of SealedSubtypes\\__EnumError.',
+				'PHPDoc tag @phpstan-sealed contains final type SealedSubtypes\\__YEnumInvalid that is not subtype of SealedSubtypes\\__EnumError.',
 				23,
 			],
 			[
-				'PHPDoc tag @phpstan-sealed type SealedSubtypes\\__YInterfaceInvalid is not subtype of SealedSubtypes\\__InterfaceError.',
-				37,
-			],
-			[
-				'PHPDoc tag @phpstan-sealed type SealedSubtypes\\__YAbstractClassInvalid is not subtype of SealedSubtypes\\__AbstractClassError.',
-				51,
-			],
-			[
-				'PHPDoc tag @phpstan-sealed type SealedSubtypes\\__YClassInvalid is not subtype of SealedSubtypes\\__ClassError.',
+				'PHPDoc tag @phpstan-sealed contains final type SealedSubtypes\\__YClassInvalid that is not subtype of SealedSubtypes\\__ClassError.',
 				65,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testNonFinalSubtypes(): void
+	{
+		$this->analyse([__DIR__ . '/data/sealed-non-final-subtypes.php'], [
+			[
+				'PHPDoc tag @phpstan-sealed contains final type SealedNonFinalSubtypes\\InvalidZ that is not subtype of SealedNonFinalSubtypes\\InvalidSealed.',
+				8,
 			],
 		]);
 	}

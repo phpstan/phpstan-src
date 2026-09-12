@@ -19,9 +19,12 @@
  *   - ['pureUnlessCallableIsImpureParameters' => array<string, true>] - pure unless
  *     one of the listed callable parameters (keyed by parameter name) receives an
  *     impure callable, e.g. array_map()'s 'callback'.
+ *   - ['pureUnlessParameterPassedParameters' => array<string, true>] - pure unless
+ *     one of the listed (by-ref out) parameters (keyed by parameter name) receives
+ *     an argument, e.g. str_replace()'s 'count'.
  */
 
-/** @var array<string, array{hasSideEffects: bool}|array{pureUnlessCallableIsImpureParameters: array<string, bool>}> */
+/** @var array<string, array{hasSideEffects?: bool, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}> */
 return [
 	'BackedEnum::from' => ['hasSideEffects' => false],
 	'BackedEnum::tryFrom' => ['hasSideEffects' => false],
@@ -781,10 +784,10 @@ return [
 	'array_sum' => ['hasSideEffects' => false],
 	'array_udiff' => ['pureUnlessCallableIsImpureParameters' => ['data_comp_func' => true]],
 	'array_udiff_assoc' => ['pureUnlessCallableIsImpureParameters' => ['key_comp_func' => true]],
-	'array_udiff_uassoc' => ['pureUnlessCallableIsImpureParameters' => ['data_comp_func' => true ,'key_comp_func' => true]],
+	'array_udiff_uassoc' => ['pureUnlessCallableIsImpureParameters' => ['data_comp_func' => true, 'key_comp_func' => true]],
 	'array_uintersect' => ['pureUnlessCallableIsImpureParameters' => ['data_compare_func' => true]],
 	'array_uintersect_assoc' => ['pureUnlessCallableIsImpureParameters' => ['data_compare_func' => true]],
-	'array_uintersect_uassoc' => ['pureUnlessCallableIsImpureParameters' => ['data_compare_func' => true ,'key_compare_func' => true]],
+	'array_uintersect_uassoc' => ['pureUnlessCallableIsImpureParameters' => ['data_compare_func' => true, 'key_compare_func' => true]],
 	'array_unique' => ['hasSideEffects' => false],
 	'array_unshift' => ['hasSideEffects' => true],
 	'array_values' => ['hasSideEffects' => false],
@@ -1631,11 +1634,15 @@ return [
 	'posix_ttyname' => ['hasSideEffects' => false],
 	'posix_uname' => ['hasSideEffects' => false],
 	'pow' => ['hasSideEffects' => false],
+	'preg_filter' => ['pureUnlessParameterPassedParameters' => ['count' => true]],
 	'preg_grep' => ['hasSideEffects' => false],
 	'preg_last_error' => ['hasSideEffects' => true],
 	'preg_last_error_msg' => ['hasSideEffects' => true],
+	'preg_match' => ['pureUnlessParameterPassedParameters' => ['matches' => true, 'subpatterns' => true]],
+	'preg_match_all' => ['pureUnlessParameterPassedParameters' => ['matches' => true, 'subpatterns' => true]],
 	'preg_quote' => ['hasSideEffects' => false],
-	'preg_replace_callback' => ['pureUnlessCallableIsImpureParameters' => ['callback' => true]],
+	'preg_replace' => ['pureUnlessParameterPassedParameters' => ['count' => true]],
+	'preg_replace_callback' => ['pureUnlessCallableIsImpureParameters' => ['callback' => true], 'pureUnlessParameterPassedParameters' => ['count' => true]],
 	'preg_split' => ['hasSideEffects' => false],
 	'property_exists' => ['hasSideEffects' => false],
 	'quoted_printable_decode' => ['hasSideEffects' => false],
@@ -1666,6 +1673,7 @@ return [
 	'rtrim' => ['hasSideEffects' => false],
 	'sha1' => ['hasSideEffects' => false],
 	'sha1_file' => ['hasSideEffects' => true],
+	'similar_text' => ['pureUnlessParameterPassedParameters' => ['percent' => true]],
 	'sin' => ['hasSideEffects' => false],
 	'sinh' => ['hasSideEffects' => false],
 	'sizeof' => ['hasSideEffects' => false],
@@ -1680,8 +1688,10 @@ return [
 	'str_ends_with' => ['hasSideEffects' => false],
 	'str_getcsv' => ['hasSideEffects' => false],
 	'str_increment' => ['hasSideEffects' => false],
+	'str_ireplace' => ['pureUnlessParameterPassedParameters' => ['count' => true, 'replace_count' => true]],
 	'str_pad' => ['hasSideEffects' => false],
 	'str_repeat' => ['hasSideEffects' => false],
+	'str_replace' => ['pureUnlessParameterPassedParameters' => ['count' => true, 'replace_count' => true]],
 	'str_rot13' => ['hasSideEffects' => false],
 	'str_split' => ['hasSideEffects' => false],
 	'str_starts_with' => ['hasSideEffects' => false],

@@ -119,7 +119,7 @@ use Symfony\Component\Finder\Finder;
 		);
 	}
 
-	/** @var array<string, array{hasSideEffects?: bool, pureUnlessCallableIsImpureParameters?: array<string, bool>}> $metadata */
+	/** @var array<string, array{hasSideEffects?: bool, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}> $metadata */
 	$metadata = require __DIR__ . '/functionMetadata_original.php';
 	foreach ($visitor->functions as $functionName) {
 		if (array_key_exists($functionName, $metadata)) {
@@ -127,10 +127,17 @@ use Symfony\Component\Finder\Finder;
 				throw new ShouldNotHappenException($functionName);
 			}
 
-			if (isset($metadata[$functionName]['pureUnlessCallableIsImpureParameters'])) {
-				$metadata[$functionName] = [
-					'pureUnlessCallableIsImpureParameters' => $metadata[$functionName]['pureUnlessCallableIsImpureParameters'],
-				];
+			$conditions = [];
+			foreach (['pureUnlessCallableIsImpureParameters', 'pureUnlessParameterPassedParameters'] as $conditionKey) {
+				if (!isset($metadata[$functionName][$conditionKey])) {
+					continue;
+				}
+
+				$conditions[$conditionKey] = $metadata[$functionName][$conditionKey];
+			}
+
+			if ($conditions !== []) {
+				$metadata[$functionName] = $conditions;
 
 				continue;
 			}
@@ -192,40 +199,49 @@ use Symfony\Component\Finder\Finder;
  *   - ['pureUnlessCallableIsImpureParameters' => array<string, true>] - pure unless
  *     one of the listed callable parameters (keyed by parameter name) receives an
  *     impure callable, e.g. array_map()'s 'callback'.
+ *   - ['pureUnlessParameterPassedParameters' => array<string, true>] - pure unless
+ *     one of the listed (by-ref out) parameters (keyed by parameter name) receives
+ *     an argument, e.g. str_replace()'s 'replace_count'.
  */
 
-/** @var array<string, array{hasSideEffects: bool}|array{pureUnlessCallableIsImpureParameters: array<string, bool>}> */
+/** @var array<string, array{hasSideEffects?: bool, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}> */
 return [
 %s
 ];
 php;
 	$content = '';
 	$escape = static fn (mixed $value): string => var_export($value, true);
-	$encodeHasSideEffects = static fn (array $meta) => [$escape('hasSideEffects'), $escape($meta['hasSideEffects'])];
-	$encodePureUnlessCallableIsImpureParameters = static fn (array $meta) => [
-		$escape('pureUnlessCallableIsImpureParameters'),
-		sprintf(
-			'[%s]',
-			implode(
-				' ,',
-				array_map(
-					static fn ($key, $param) => sprintf('%s => %s', $escape($key), $escape($param)),
-					array_keys($meta['pureUnlessCallableIsImpureParameters']),
-					$meta['pureUnlessCallableIsImpureParameters'],
-				),
+	$encodeParameterMap = static fn (array $parameters) => sprintf(
+		'[%s]',
+		implode(
+			', ',
+			array_map(
+				static fn ($key, $param) => sprintf('%s => %s', $escape($key), $escape($param)),
+				array_keys($parameters),
+				$parameters,
 			),
 		),
-	];
+	);
 
 	foreach ($metadata as $name => $meta) {
+		$entries = [];
+		if (isset($meta['hasSideEffects'])) {
+			$entries[] = sprintf('%s => %s', $escape('hasSideEffects'), $escape($meta['hasSideEffects']));
+		}
+		if (isset($meta['pureUnlessCallableIsImpureParameters'])) {
+			$entries[] = sprintf('%s => %s', $escape('pureUnlessCallableIsImpureParameters'), $encodeParameterMap($meta['pureUnlessCallableIsImpureParameters']));
+		}
+		if (isset($meta['pureUnlessParameterPassedParameters'])) {
+			$entries[] = sprintf('%s => %s', $escape('pureUnlessParameterPassedParameters'), $encodeParameterMap($meta['pureUnlessParameterPassedParameters']));
+		}
+		if ($entries === []) {
+			throw new ShouldNotHappenException($escape($meta));
+		}
+
 		$content .= sprintf(
-			"\t%s => [%s => %s],\n",
+			"\t%s => [%s],\n",
 			var_export($name, true),
-			...match (true) {
-				isset($meta['hasSideEffects']) => $encodeHasSideEffects($meta),
-				isset($meta['pureUnlessCallableIsImpureParameters']) => $encodePureUnlessCallableIsImpureParameters($meta),
-				default => throw new ShouldNotHappenException($escape($meta)),
-			},
+			implode(', ', $entries),
 		);
 	}
 

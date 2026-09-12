@@ -296,6 +296,21 @@ class PureFunctionRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testPureUnlessCallableIsImpureFirstClassCallable(): void
+	{
+		$this->analyse([__DIR__ . '/data/pure-unless-callable-is-impure-first-class-callable.php'], [
+			[
+				'Impure call to function array_map() in pure function PureUnlessCallableIsImpureFirstClassCallable\pureCallingFirstClassCallableWithImpureCallback().',
+				27,
+			],
+			[
+				'Possibly impure call to function array_map() in pure function PureUnlessCallableIsImpureFirstClassCallable\pureCallingFirstClassCallableWithOpaqueCallback().',
+				45,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.0.0')]
 	public function testPureUnlessCallableIsImpureNamedArgs(): void
 	{
@@ -374,6 +389,131 @@ class PureFunctionRuleTest extends RuleTestCase
 			[
 				'Impure echo in pure function PureUnlessCallableIsImpureFunctionPhp84\findKeyWithImpureCallback().',
 				72,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testPureUnlessParameterPassed(): void
+	{
+		$this->analyse([__DIR__ . '/data/pure-unless-parameter-passed.php'], [
+			[
+				'Impure call to function PureUnlessParameterPassedFunction\myReplace() in pure function PureUnlessParameterPassedFunction\purePassingByRef().',
+				44,
+			],
+			[
+				'Impure call to function PureUnlessParameterPassedFunction\myReplacePhpstanAlias() in pure function PureUnlessParameterPassedFunction\purePassingByRefAlias().',
+				62,
+			],
+			[
+				'Possibly impure call to function PureUnlessParameterPassedFunction\myReplace() in pure function PureUnlessParameterPassedFunction\pureUnpackingArgs().',
+				72,
+			],
+			[
+				'Impure call to function PureUnlessParameterPassedFunction\myReplace() in pure function PureUnlessParameterPassedFunction\pureNamedArgForFlaggedParameter().',
+				91,
+			],
+			[
+				'Impure instantiation of class PureUnlessParameterPassedFunction\MyReplacerConstructor in pure function PureUnlessParameterPassedFunction\pureConstructorPassingByRef().',
+				127,
+			],
+			[
+				'Possibly impure call to method PureUnlessParameterPassedFunction\PureUnlessParameterPassedA::m() in pure function PureUnlessParameterPassedFunction\pureUnionMethodPassingCount().',
+				167,
+			],
+			[
+				'Impure call to method PureUnlessParameterPassedFunction\PureUnlessParameterPassedIntersectionA::m() in pure function PureUnlessParameterPassedFunction\pureIntersectionMethodPassingCount().',
+				206,
+			],
+			[
+				'Impure call to method PureUnlessParameterPassedFunction\Replacer::replace() in pure function PureUnlessParameterPassedFunction\pureCallingMethodPassingByRef().',
+				241,
+			],
+			[
+				'Impure call to method PureUnlessParameterPassedFunction\InheritedReplacerChild::replace() in pure function PureUnlessParameterPassedFunction\pureCallingInheritedMethodPassingByRef().',
+				297,
+			],
+			[
+				'Impure call to method PureUnlessParameterPassedFunction\InheritedReplacerRenamedChild::replace() in pure function PureUnlessParameterPassedFunction\pureCallingRenamedInheritedMethodPassingByRef().',
+				318,
+			],
+			[
+				'Impure call to function PureUnlessParameterPassedFunction\myReplace() in pure function PureUnlessParameterPassedFunction\pureCallingFirstClassCallablePassingCount().',
+				341,
+			],
+			[
+				'Function PureUnlessParameterPassedFunction\nonOptionalUnlessParameterPassed() is marked @pure-unless-parameter-passed for parameter $count, but $count is not optional, so function PureUnlessParameterPassedFunction\nonOptionalUnlessParameterPassed() is never pure.',
+				348,
+			],
+			[
+				'Impure call to function PureUnlessParameterPassedFunction\myReplaceVariadic() in pure function PureUnlessParameterPassedFunction\pureVariadicPassingCount().',
+				385,
+			],
+			[
+				'Impure call to function PureUnlessParameterPassedFunction\myReplaceVariadic() in pure function PureUnlessParameterPassedFunction\pureVariadicPassingCountWithExtra().',
+				396,
+			],
+			[
+				'Impure call to function PureUnlessParameterPassedFunction\myVariadicOut() in pure function PureUnlessParameterPassedFunction\pureVariadicOutPositional().',
+				428,
+			],
+			[
+				'Impure call to function PureUnlessParameterPassedFunction\myVariadicOut() in pure function PureUnlessParameterPassedFunction\pureVariadicOutNamed().',
+				439,
+			],
+			[
+				'Function PureUnlessParameterPassedFunction\byValueUnlessParameterPassed() is marked @pure-unless-parameter-passed for parameter $flag, but $flag is not passed by reference.',
+				455,
+			],
+			[
+				'Impure echo in pure function PureUnlessParameterPassedFunction\sideEffectUnlessParameterPassed().',
+				470,
+			],
+		]);
+	}
+
+	public function testPureUnlessParameterPassedBuiltin(): void
+	{
+		$this->analyse([__DIR__ . '/data/pure-unless-parameter-passed-builtin.php'], [
+			[
+				'Impure call to function str_replace() in pure function PureUnlessParameterPassedBuiltin\pureStrReplaceWithCount().',
+				22,
+			],
+			[
+				'Impure call to function preg_match() in pure function PureUnlessParameterPassedBuiltin\purePregMatchWithMatches().',
+				40,
+			],
+			[
+				'Impure call to function preg_filter() in pure function PureUnlessParameterPassedBuiltin\purePregFilterWithCount().',
+				60,
+			],
+			[
+				'Impure call to function preg_replace_callback() in pure function PureUnlessParameterPassedBuiltin\purePregReplaceCallbackWithCount().',
+				80,
+			],
+			[
+				'Impure call to function preg_replace_callback() in pure function PureUnlessParameterPassedBuiltin\purePregReplaceCallbackImpureCallback().',
+				89,
+			],
+			[
+				'Impure echo in pure function PureUnlessParameterPassedBuiltin\purePregReplaceCallbackImpureCallback().',
+				90,
+			],
+			[
+				'Impure call to function str_ireplace() in pure function PureUnlessParameterPassedBuiltin\pureStrIreplaceWithCount().',
+				113,
+			],
+			[
+				'Impure call to function preg_replace() in pure function PureUnlessParameterPassedBuiltin\purePregReplaceWithCount().',
+				133,
+			],
+			[
+				'Impure call to function preg_match_all() in pure function PureUnlessParameterPassedBuiltin\purePregMatchAllWithMatches().',
+				151,
+			],
+			[
+				'Impure call to function similar_text() in pure function PureUnlessParameterPassedBuiltin\pureSimilarTextWithPercent().',
+				169,
 			],
 		]);
 	}

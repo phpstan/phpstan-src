@@ -135,7 +135,13 @@ final class FuncCallHandler implements ExprHandler
 					$callableThrowPoints = array_values(array_filter($callableThrowPoints, static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit()));
 				}
 				$throwPoints = array_merge($throwPoints, $callableThrowPoints);
-				$impurePoints = array_merge($impurePoints, array_map(static fn (SimpleImpurePoint $impurePoint) => new ImpurePoint($scope, $expr, $impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain()), $parametersAcceptor->getImpurePoints()));
+				// A callable value's impure points are resolved from its
+				// ParametersAcceptor alone, so a conditionally pure function reached
+				// through a first-class callable arrives here as an unconditional
+				// "possibly impure" point. The arguments are known at this call site,
+				// so settle the verdict here.
+				$callableImpurePoints = SimpleImpurePoint::narrowByConditionalPurity($parametersAcceptor->getImpurePoints(), $parametersAcceptor, $scope, $expr->getArgs());
+				$impurePoints = array_merge($impurePoints, array_map(static fn (SimpleImpurePoint $impurePoint) => new ImpurePoint($scope, $expr, $impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain()), $callableImpurePoints));
 
 				$scope = $nodeScopeResolver->processImmediatelyCalledCallable($scope, $parametersAcceptor->getInvalidateExpressions(), $parametersAcceptor->getUsedVariables());
 			}

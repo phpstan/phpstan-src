@@ -184,6 +184,11 @@ final class AnnotationMethodReflection implements ExtendedMethodReflection
 		return [];
 	}
 
+	public function getPureUnlessParameterPassedParameters(): array
+	{
+		return [];
+	}
+
 	public function getAttributes(): array
 	{
 		return [];

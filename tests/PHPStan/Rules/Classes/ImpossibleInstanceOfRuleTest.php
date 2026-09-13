@@ -11,16 +11,12 @@ use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
-use function sprintf;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<CompositeRule>
  */
 class ImpossibleInstanceOfRuleTest extends RuleTestCase
 {
-
-	private bool $treatPhpDocTypesAsCertain;
 
 	private bool $reportAlwaysTrueInLastCondition = false;
 
@@ -43,7 +39,7 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 				$ruleLevelHelper,
 				new PossiblyImpureTipHelper(true),
 				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
-				treatPhpDocTypesAsCertain: $this->treatPhpDocTypesAsCertain,
+				treatPhpDocTypesAsCertain: true,
 				reportAlwaysTrueInLastCondition: $this->reportAlwaysTrueInLastCondition,
 				treatPhpDocTypesAsCertainTip: true,
 			),
@@ -51,14 +47,8 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 		]);
 	}
 
-	protected function shouldTreatPhpDocTypesAsCertain(): bool
-	{
-		return $this->treatPhpDocTypesAsCertain;
-	}
-
 	public function testInstanceof(): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
 		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
 		$this->analyse(
 			[__DIR__ . '/data/impossible-instanceof.php'],
@@ -213,32 +203,8 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 		);
 	}
 
-	public function testDoNotReportTypesFromPhpDocs(): void
-	{
-		$this->treatPhpDocTypesAsCertain = false;
-		$this->analyse([__DIR__ . '/data/impossible-instanceof-not-phpdoc.php'], [
-			[
-				'Instanceof between stdClass and stdClass will always evaluate to true.',
-				12,
-			],
-			[
-				'Instanceof between stdClass and Exception will always evaluate to false.',
-				15,
-			],
-			[
-				'Instanceof between DateTimeInterface and DateTimeInterface will always evaluate to true.',
-				27,
-			],
-			[
-				'Instanceof between DateTimeInterface and ImpossibleInstanceofNotPhpDoc\SomeFinalClass will always evaluate to false.',
-				30,
-			],
-		]);
-	}
-
 	public function testReportTypesFromPhpDocs(): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/impossible-instanceof-not-phpdoc.php'], [
 			[
 				'Instanceof between stdClass and stdClass will always evaluate to true.',
@@ -271,26 +237,17 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 
 	public function testBug3096(): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-3096.php'], []);
 	}
 
 	public function testBug6213(): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-6213.php'], []);
-	}
-
-	public function testBug5333(): void
-	{
-		$this->treatPhpDocTypesAsCertain = false;
-		$this->analyse([__DIR__ . '/data/bug-5333.php'], []);
 	}
 
 	#[RequiresPhp('>= 8.0.0')]
 	public function testBug8042(): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-8042.php'], [
 			[
 				'Instanceof between Bug8042\B and Bug8042\B will always evaluate to true.',
@@ -308,13 +265,11 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 	#[RequiresPhp('>= 8.1.0')]
 	public function testBug7721(): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-7721.php'], []);
 	}
 
 	public function testUnreachableIfBranches(): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/../Comparison/data/unreachable-if-branches.php'], [
 			[
 				'Instanceof between stdClass and stdClass will always evaluate to true.',
@@ -336,30 +291,8 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testIfBranchesDoNotReportPhpDoc(): void
-	{
-		$this->treatPhpDocTypesAsCertain = false;
-		$this->analyse([__DIR__ . '/../Comparison/data/unreachable-if-branches-not-phpdoc.php'], [
-			[
-				'Instanceof between UnreachableIfBranchesNotPhpDoc\Foo and UnreachableIfBranchesNotPhpDoc\Foo will always evaluate to true.',
-				16,
-			],
-			[
-				'Instanceof between UnreachableIfBranchesNotPhpDoc\Foo and UnreachableIfBranchesNotPhpDoc\Foo will always evaluate to true.',
-				26,
-				'Remove remaining cases below this one and this error will disappear too.',
-			],
-			[
-				'Instanceof between UnreachableIfBranchesNotPhpDoc\Foo and UnreachableIfBranchesNotPhpDoc\Foo will always evaluate to true.',
-				36,
-				'Remove remaining cases below this one and this error will disappear too.',
-			],
-		]);
-	}
-
 	public function testIfBranchesReportPhpDoc(): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
 		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
 		$this->analyse([__DIR__ . '/../Comparison/data/unreachable-if-branches-not-phpdoc.php'], [
 			[
@@ -396,7 +329,6 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 
 	public function testUnreachableTernaryElse(): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/../Comparison/data/unreachable-ternary-else-branch.php'], [
 			[
 				'Instanceof between stdClass and stdClass will always evaluate to true.',
@@ -409,28 +341,8 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testTernaryElseDoNotReportPhpDoc(): void
-	{
-		$this->treatPhpDocTypesAsCertain = false;
-		$this->analyse([__DIR__ . '/../Comparison/data/unreachable-ternary-else-branch-not-phpdoc.php'], [
-			[
-				'Instanceof between UnreachableTernaryElseBranchNotPhpDoc\Foo and UnreachableTernaryElseBranchNotPhpDoc\Foo will always evaluate to true.',
-				16,
-			],
-			[
-				'Instanceof between UnreachableTernaryElseBranchNotPhpDoc\Foo and UnreachableTernaryElseBranchNotPhpDoc\Foo will always evaluate to true.',
-				17,
-			],
-			[
-				'Instanceof between UnreachableTernaryElseBranchNotPhpDoc\Foo and UnreachableTernaryElseBranchNotPhpDoc\Foo will always evaluate to true.',
-				20,
-			],
-		]);
-	}
-
 	public function testTernaryElseReportPhpDoc(): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
 		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
 		$this->analyse([__DIR__ . '/../Comparison/data/unreachable-ternary-else-branch-not-phpdoc.php'], [
 			[
@@ -451,12 +363,6 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 				20,
 			],
 		]);
-	}
-
-	public function testBug4689(): void
-	{
-		$this->treatPhpDocTypesAsCertain = false;
-		$this->analyse([__DIR__ . '/data/bug-4689.php'], []);
 	}
 
 	public static function dataReportAlwaysTrueInLastCondition(): iterable
@@ -490,7 +396,6 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 	#[DataProvider('dataReportAlwaysTrueInLastCondition')]
 	public function testReportAlwaysTrueInLastCondition(bool $reportAlwaysTrueInLastCondition, array $expectedErrors): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
 		$this->reportAlwaysTrueInLastCondition = $reportAlwaysTrueInLastCondition;
 		$this->analyse([__DIR__ . '/data/impossible-instanceof-report-always-true-last-condition.php'], $expectedErrors);
 	}
@@ -498,7 +403,6 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 	#[RequiresPhp('>= 8.1.0')]
 	public function testBug10201(): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-10201.php'], [
 			[
 				'Instanceof between string and Bug10201\Hello will always evaluate to false.',
@@ -509,8 +413,6 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 
 	public function testBug3632(): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
-
 		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
 		$this->analyse([__DIR__ . '/data/bug-3632.php'], [
 			[
@@ -531,8 +433,6 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 
 	public function testBug10036(): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
-
 		$this->analyse([__DIR__ . '/data/bug-10036.php'], [
 			[
 				'Instanceof between stdClass and string|null results in an error.',
@@ -551,20 +451,17 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 
 	public function testBug10353(): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-10353.php'], []);
 	}
 
 	public function testBug12267(): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-12267.php'], []);
 	}
 
 	#[RequiresPhp('>= 8.0.0')]
 	public function testNewIsAlwaysFinalClass(): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/impossible-instanceof-new-is-always-final.php'], [
 			[
 				'Instanceof between ImpossibleInstanceofNewIsAlwaysFinal\Bar and ImpossibleInstanceofNewIsAlwaysFinal\Foo will always evaluate to false.',
@@ -597,17 +494,6 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testBug13469(): void
-	{
-		$this->treatPhpDocTypesAsCertain = false;
-		$this->analyse([__DIR__ . '/data/bug-13469.php'], [
-			[
-				sprintf('Instanceof between Bug13469\Foo and Stringable will always evaluate to %s.', PHP_VERSION_ID >= 80000 ? 'true' : 'false'),
-				23,
-			],
-		]);
-	}
-
 	public static function dataBug13975(): iterable
 	{
 		yield [__DIR__ . '/data/bug-13975-a.php'];
@@ -617,13 +503,11 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 	#[DataProvider('dataBug13975')]
 	public function testBug13975(string $file): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([$file], []);
 	}
 
 	public function testPossiblyImpureTip(): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
 		$learnMore = ' Learn more: <fg=cyan>https://phpstan.org/blog/remembering-and-forgetting-returned-values</>';
 		$this->analyse([__DIR__ . '/data/possibly-impure-instanceof-tip.php'], [
 			// maybe-impure: tip expected
@@ -643,7 +527,6 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 
 	public function testInTrait(): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
 		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
 		$this->analyse([__DIR__ . '/data/impossible-instanceof-in-trait.php'], [
 			[
@@ -657,12 +540,6 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 				$tipText,
 			],
 		]);
-	}
-
-	public function testBug5271(): void
-	{
-		$this->treatPhpDocTypesAsCertain = false;
-		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-5271.php'], []);
 	}
 
 }

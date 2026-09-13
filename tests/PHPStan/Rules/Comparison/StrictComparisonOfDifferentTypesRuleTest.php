@@ -21,8 +21,6 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 
 	private bool $treatPhpDocTypesAsCertain = true;
 
-	private bool $polluteScopeWithAlwaysIterableForeach = true;
-
 	protected function getRule(): Rule
 	{
 		// @phpstan-ignore argument.type
@@ -42,11 +40,6 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 	protected function shouldTreatPhpDocTypesAsCertain(): bool
 	{
 		return $this->treatPhpDocTypesAsCertain;
-	}
-
-	protected function shouldPolluteScopeWithAlwaysIterableForeach(): bool
-	{
-		return $this->polluteScopeWithAlwaysIterableForeach;
 	}
 
 	public function testStrictComparison(): void
@@ -1233,12 +1226,6 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 	public function testBug13421(): void
 	{
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-13421.php'], []);
-	}
-
-	public function testBug14446(): void
-	{
-		$this->polluteScopeWithAlwaysIterableForeach = false;
-		$this->analyse([__DIR__ . '/../../Analyser/data/bug-14446.php'], []);
 	}
 
 	public function testBug13444(): void

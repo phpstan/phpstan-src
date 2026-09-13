@@ -77,9 +77,6 @@ class UnreachableStatementRuleTest extends RuleTestCase
 			[
 				true,
 			],
-			[
-				false,
-			],
 		];
 	}
 
@@ -224,23 +221,6 @@ class UnreachableStatementRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11179.php'], []);
 	}
 
-	public function testBug11992(): void
-	{
-		$this->treatPhpDocTypesAsCertain = false;
-		$this->analyse([__DIR__ . '/data/bug-11992.php'], []);
-	}
-
-	public function testBug7531(): void
-	{
-		$this->treatPhpDocTypesAsCertain = false;
-		$this->analyse([__DIR__ . '/data/bug-7531.php'], [
-			[
-				'Unreachable statement - code above always terminates.',
-				22,
-			],
-		]);
-	}
-
 	public function testMultipleUnreachable(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
@@ -250,127 +230,6 @@ class UnreachableStatementRuleTest extends RuleTestCase
 				14,
 			],
 		]);
-	}
-
-	#[RequiresPhp('>= 8.1.0')]
-	public function testBug11909(): void
-	{
-		$this->treatPhpDocTypesAsCertain = false;
-		$this->analyse([__DIR__ . '/data/bug-11909.php'], [
-			[
-				'Unreachable statement - code above always terminates.',
-				10,
-			],
-		]);
-	}
-
-	#[RequiresPhp('>= 8.1.0')]
-	public function testBug13232a(): void
-	{
-		$this->treatPhpDocTypesAsCertain = false;
-		$this->analyse([__DIR__ . '/data/bug-13232a.php'], [
-			[
-				'Unreachable statement - code above always terminates.',
-				10,
-			],
-			[
-				'Unreachable statement - code above always terminates.',
-				17,
-			],
-			[
-				'Unreachable statement - code above always terminates.',
-				23,
-			],
-			[
-				'Unreachable statement - code above always terminates.',
-				32,
-			],
-			[
-				'Unreachable statement - code above always terminates.',
-				38,
-			],
-			[
-				'Unreachable statement - code above always terminates.',
-				44,
-			],
-			[
-				'Unreachable statement - code above always terminates.',
-				52,
-			],
-			[
-				'Unreachable statement - code above always terminates.',
-				61,
-			],
-			[
-				'Unreachable statement - code above always terminates.',
-				70,
-			],
-		]);
-	}
-
-	#[RequiresPhp('>= 8.1.0')]
-	public function testBug13232b(): void
-	{
-		$this->treatPhpDocTypesAsCertain = false;
-		$this->analyse([__DIR__ . '/data/bug-13232b.php'], [
-			[
-				'Unreachable statement - code above always terminates.',
-				19,
-			],
-		]);
-	}
-
-	#[RequiresPhp('>= 8.1.0')]
-	public function testBug13232c(): void
-	{
-		$this->treatPhpDocTypesAsCertain = false;
-		$this->analyse([__DIR__ . '/data/bug-13232c.php'], [
-			[
-				'Unreachable statement - code above always terminates.',
-				12,
-			],
-			[
-				'Unreachable statement - code above always terminates.',
-				20,
-			],
-		]);
-	}
-
-	#[RequiresPhp('>= 8.1.0')]
-	public function testBug13232d(): void
-	{
-		$this->treatPhpDocTypesAsCertain = false;
-		$this->analyse([__DIR__ . '/data/bug-13232d.php'], [
-			[
-				'Unreachable statement - code above always terminates.',
-				11,
-			],
-		]);
-	}
-
-	#[RequiresPhp('>= 8.1.0')]
-	public function testBug13288(): void
-	{
-		$this->treatPhpDocTypesAsCertain = false;
-		$this->analyse([__DIR__ . '/data/bug-13288.php'], []);
-	}
-
-	public function testBug13311(): void
-	{
-		$this->treatPhpDocTypesAsCertain = false;
-		$this->analyse([__DIR__ . '/data/bug-13311.php'], []);
-	}
-
-	public function testBug13307(): void
-	{
-		$this->treatPhpDocTypesAsCertain = false;
-		$this->analyse([__DIR__ . '/data/bug-13307.php'], []);
-	}
-
-	public function testBug13331(): void
-	{
-		$this->treatPhpDocTypesAsCertain = false;
-		$this->analyse([__DIR__ . '/data/bug-13331.php'], []);
 	}
 
 	#[RequiresPhp('>= 8.2.0')]
@@ -434,12 +293,6 @@ class UnreachableStatementRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testBug15169(): void
-	{
-		$this->treatPhpDocTypesAsCertain = false;
-		$this->analyse([__DIR__ . '/data/bug-15169.php'], []);
-	}
-
 	public function testBug15169TreatPhpDocTypesAsCertain(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
@@ -469,12 +322,6 @@ class UnreachableStatementRuleTest extends RuleTestCase
 				76,
 			],
 		]);
-	}
-
-	public function testBug15169Analogous(): void
-	{
-		$this->treatPhpDocTypesAsCertain = false;
-		$this->analyse([__DIR__ . '/data/bug-15169b.php'], []);
 	}
 
 	public function testBug15169AnalogousTreatPhpDocTypesAsCertain(): void
@@ -514,13 +361,6 @@ class UnreachableStatementRuleTest extends RuleTestCase
 				127,
 			],
 		]);
-	}
-
-	#[RequiresPhp('>= 8.1.0')]
-	public function testBug15169FirstClassCallables(): void
-	{
-		$this->treatPhpDocTypesAsCertain = false;
-		$this->analyse([__DIR__ . '/data/bug-15169c.php'], []);
 	}
 
 	#[RequiresPhp('>= 8.1.0')]

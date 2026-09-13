@@ -16,6 +16,7 @@ use PHPStan\Analyser\RecordingNodeCallback;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
 use PHPStan\Analyser\VariableFlow;
+use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\DoWhileLoopConditionNode;
 use function array_merge;
@@ -27,6 +28,13 @@ use function count;
 #[AutowiredService]
 final class DoWhileHandler implements StmtHandler
 {
+
+	public function __construct(
+		#[AutowiredParameter]
+		private bool $treatPhpDocTypesAsCertain,
+	)
+	{
+	}
 
 	public function supports(Stmt $stmt): bool
 	{
@@ -137,7 +145,7 @@ final class DoWhileHandler implements StmtHandler
 
 		$alwaysIterates = false;
 		if ($context->isTopLevel()) {
-			$condBooleanType = ($nodeScopeResolver->shouldTreatPhpDocTypesAsCertain() ? $condResult->getType() : $condResult->getNativeType())->toBoolean();
+			$condBooleanType = ($this->treatPhpDocTypesAsCertain ? $condResult->getType() : $condResult->getNativeType())->toBoolean();
 			$alwaysIterates = $condBooleanType->isTrue()->yes();
 		}
 

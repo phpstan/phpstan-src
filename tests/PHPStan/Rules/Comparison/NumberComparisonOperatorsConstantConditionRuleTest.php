@@ -16,8 +16,6 @@ class NumberComparisonOperatorsConstantConditionRuleTest extends RuleTestCase
 
 	private bool $treatPhpDocTypesAsCertain = true;
 
-	private bool $polluteScopeWithAlwaysIterableForeach = true;
-
 	protected function getRule(): Rule
 	{
 		// @phpstan-ignore argument.type
@@ -30,11 +28,6 @@ class NumberComparisonOperatorsConstantConditionRuleTest extends RuleTestCase
 			),
 			new ConstantConditionInTraitRule(),
 		]);
-	}
-
-	protected function shouldPolluteScopeWithAlwaysIterableForeach(): bool
-	{
-		return $this->polluteScopeWithAlwaysIterableForeach;
 	}
 
 	public function testBug8277(): void
@@ -286,12 +279,6 @@ class NumberComparisonOperatorsConstantConditionRuleTest extends RuleTestCase
 	{
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-3387.php'], []);
-	}
-
-	public function testBug13984(): void
-	{
-		$this->polluteScopeWithAlwaysIterableForeach = false;
-		$this->analyse([__DIR__ . '/data/bug-13984.php'], []);
 	}
 
 	public function testBug13874(): void

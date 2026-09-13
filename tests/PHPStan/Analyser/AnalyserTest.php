@@ -20,7 +20,6 @@ use PHPStan\Node\Printer\Printer;
 use PHPStan\Parser\RichParser;
 use PHPStan\Rules\AlwaysFailRule;
 use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
-use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\FileTypeMapper;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -853,11 +852,7 @@ class AnalyserTest extends PHPStanTestCase
 			$container,
 			$container->getByType(TemplateArgumentObserver::class),
 			$fileHelper,
-			$container->getExtensionsCollection(ReadWritePropertiesExtension::class),
 			$container->getExtensionsCollection(PerFileAnalysisResettable::class),
-			false,
-			true,
-			$this->shouldTreatPhpDocTypesAsCertain(),
 			$container->getByType(ExpressionResultFactory::class),
 			$container->getByType(StatementsHandler::class),
 		);

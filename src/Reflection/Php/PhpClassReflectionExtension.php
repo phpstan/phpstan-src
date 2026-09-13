@@ -7,6 +7,7 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Declare_;
 use PhpParser\Node\Stmt\Namespace_;
+use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Analyser\PhpDocsResolver;
@@ -1239,7 +1240,7 @@ final class PhpClassReflectionExtension
 
 			// an independent lazy pass on its own scope - never read through
 			// Scope::getType(), which is reserved for the file's main walk
-			$propertyType = $this->nodeScopeResolver->processIndependentPassExpr($expr->expr, $methodScope)->getType();
+			$propertyType = $this->nodeScopeResolver->processExprOnDemand($expr->expr, $methodScope, new ExpressionResultStorage())->getType();
 			if ($propertyType instanceof ErrorType || $propertyType instanceof NeverType) {
 				continue;
 			}

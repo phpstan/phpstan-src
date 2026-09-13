@@ -1458,7 +1458,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			return null;
 		}
 
-		return $this->container->getByType(NodeScopeResolver::class)->findSettledExpressionResult($storage, $node);
+		return $storage->findExpressionResult($node);
 	}
 
 	public function getCurrentExpressionResultStorage(): ?ExpressionResultStorage

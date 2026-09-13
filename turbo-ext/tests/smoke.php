@@ -34,6 +34,16 @@ foreach ($classRefs as $key => $default) {
 // completeness check at the end holds the union against the manifest
 $covered = [];
 
+// The native classes are declared as PHPStanTurbo\* here and instantiate
+// each other under those names (a native TrinaryLogic hands out a native
+// BooleanType); a Type-valued result is compared by class modulo that
+// prefix, mapped from the manifest so a new port needs no edit here.
+$turboNormMap = [];
+foreach ($shadowedClasses as $shadowedClass => $entry) {
+	$turboNormMap[$entry['turboClass']] = $shadowedClass;
+}
+$turboNorm = static fn (string $class): string => strtr($class, $turboNormMap);
+
 // ---- TrinaryLogic ----
 $covered[\PHPStan\TrinaryLogic::class] = true;
 $pYes = TrinaryLogic::createYes();
@@ -57,7 +67,7 @@ foreach (['yes', 'no', 'maybe'] as $k) {
 	check($pAll[$k]->describe() === $nAll[$k]->describe(), "$k describe()");
 	// the native side instantiates the shadowing Boolean classes, declared
 	// as PHPStanTurbo\* here — compare the class modulo that prefix
-	check(get_class($pAll[$k]->toBooleanType()) === strtr(get_class($nAll[$k]->toBooleanType()), ['PHPStanTurbo\\ConstantBooleanType' => 'PHPStan\\Type\\Constant\\ConstantBooleanType', 'PHPStanTurbo\\BooleanType' => 'PHPStan\\Type\\BooleanType']), "$k toBooleanType() class");
+	check(get_class($pAll[$k]->toBooleanType()) === $turboNorm(get_class($nAll[$k]->toBooleanType())), "$k toBooleanType() class");
 	check($pAll[$k]->toBooleanType()->describe(\PHPStan\Type\VerbosityLevel::precise()) === $nAll[$k]->toBooleanType()->describe(\PHPStan\Type\VerbosityLevel::precise()), "$k toBooleanType() describe");
 	foreach (['yes', 'no', 'maybe'] as $j) {
 		check($pAll[$k]->and($pAll[$j])->describe() === $nAll[$k]->and($nAll[$j])->describe(), "$k and $j");
@@ -793,129 +803,82 @@ foreach ($resultObservations['php'] as $key => $expected) {
 	check($expected === ($resultObservations['native'][$key] ?? null), "IsSuperTypeOfResult/AcceptsResult $key: " . json_encode($expected) . ' vs ' . json_encode($resultObservations['native'][$key] ?? null));
 }
 
-// ---- BooleanType / ConstantBooleanType ----
-// The first Type ports: the native pair is declared as PHPStanTurbo\BooleanType
-// / PHPStanTurbo\ConstantBooleanType (child of the former) here; every other
-// Type they meet is the PHP class. Type-valued results are compared by
-// precise description plus class name modulo the PHPStanTurbo\ prefix.
+// ---- the Type ports: BooleanType, ConstantBooleanType, IntegerType, ConstantIntegerType, IntegerRangeType ----
+// A Type never acts alone: its results flow into the PHP compound types and
+// back through `self`-typed statics (IsSuperTypeOfResult::extremeIdentity()),
+// so a native result object meeting the PHP result class in the prefixed
+// declaration used above is a TypeError. The Type ports are therefore
+// compared the way they run: tests/type-family.php observes the whole
+// family under the real names, once as the PHP twins and once with the
+// native classes activated in their place, and the two observation sets
+// must be identical.
 $covered[\PHPStan\Type\BooleanType::class] = true;
 $covered[\PHPStan\Type\Constant\ConstantBooleanType::class] = true;
-$boolNorm = static fn (string $class): string => strtr($class, ['PHPStanTurbo\\ConstantBooleanType' => 'PHPStan\\Type\\Constant\\ConstantBooleanType', 'PHPStanTurbo\\BooleanType' => 'PHPStan\\Type\\BooleanType']);
-$boolView = static function (mixed $v) use ($boolNorm, &$boolView): mixed {
-	if ($v instanceof \PHPStan\Type\Type) {
-		return [$boolNorm(get_class($v)), $v->describe(\PHPStan\Type\VerbosityLevel::precise())];
+$covered[\PHPStan\Type\IntegerType::class] = true;
+$covered[\PHPStan\Type\Constant\ConstantIntegerType::class] = true;
+$covered[\PHPStan\Type\IntegerRangeType::class] = true;
+
+/** @return array<string, mixed> */
+function observeTypeFamily(string $mode): array
+{
+	// Windows CI provides the built DLL path via TURBO_DLL (see phar.yml, as
+	// for arena-smoke.php); everywhere else the .so sits next to the tests.
+	$extension = getenv('TURBO_DLL');
+	if (!is_string($extension) || $extension === '') {
+		$extension = __DIR__ . '/../phpstan_turbo.so';
 	}
-	if ($v instanceof \PHPStan\TrinaryLogic) {
-		return $v->describe();
+	// either mode peaks near 1 GB, past a stock php.ini's memory_limit, and
+	// its observations run to tens of MB here
+	ini_set('memory_limit', '4G');
+	$cmd = sprintf(
+		'%s -d memory_limit=4G -d extension=%s %s %s',
+		escapeshellarg(PHP_BINARY),
+		escapeshellarg($extension),
+		escapeshellarg(__DIR__ . '/type-family.php'),
+		escapeshellarg($mode),
+	);
+	$process = proc_open($cmd, [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
+	if ($process === false) {
+		fwrite(STDERR, "proc_open failed\n");
+		exit(2);
 	}
-	if ($v instanceof \PHPStan\Type\IsSuperTypeOfResult || $v instanceof \PHPStan\Type\AcceptsResult) {
-		return [$v->result->describe(), $v->reasons];
+	$stdout = stream_get_contents($pipes[1]);
+	$stderr = stream_get_contents($pipes[2]);
+	fclose($pipes[1]);
+	fclose($pipes[2]);
+	$exitCode = proc_close($process);
+	if ($exitCode !== 0 || $stdout === false) {
+		fwrite(STDERR, sprintf("type-family.php %s failed with exit code %d\n%s%s", $mode, $exitCode, $stdout === false ? '' : $stdout, $stderr));
+		exit(1);
 	}
-	if ($v instanceof \PHPStan\PhpDocParser\Ast\Type\TypeNode) {
-		return (string) $v;
+	// the observations are the child's last stdout line; a startup notice
+	// (the extension also loaded through php.ini) may precede it
+	$lines = array_values(array_filter(explode("\n", $stdout), static fn (string $line): bool => trim($line) !== ''));
+	try {
+		$observations = json_decode($lines === [] ? '' : $lines[count($lines) - 1], true, 16, JSON_THROW_ON_ERROR);
+	} catch (\JsonException $e) {
+		fwrite(STDERR, sprintf("type-family.php %s printed no observations: %s\n%s%s", $mode, $e->getMessage(), $stdout, $stderr));
+		exit(1);
 	}
-	if ($v instanceof \PHPStan\Type\Generic\TemplateTypeMap) {
-		return count($v->getTypes());
+	if (!is_array($observations)) {
+		fwrite(STDERR, sprintf("type-family.php %s printed no observations\n", $mode));
+		exit(1);
 	}
-	if ($v instanceof \PHPStan\Type\ClassNameToObjectTypeResult) {
-		return [$boolNorm(get_class($v)), $v->describe()];
-	}
-	if (is_array($v)) {
-		return array_map($boolView, $v);
-	}
-	if (is_object($v)) {
-		return $boolNorm(get_class($v));
-	}
-	return $v;
-};
-$boolPhpVersion = new \PHPStan\Php\PhpVersion(80400);
-$boolOthers = static fn (string $bool, string $constBool): array => [
-	'bool' => new $bool(),
-	'true' => new $constBool(true),
-	'false' => new $constBool(false),
-	'int' => new \PHPStan\Type\IntegerType(),
-	'int1' => new \PHPStan\Type\Constant\ConstantIntegerType(1),
-	'mixed' => new \PHPStan\Type\MixedType(),
-	'null' => new \PHPStan\Type\NullType(),
-	'string' => new \PHPStan\Type\StringType(),
-	'string0' => new \PHPStan\Type\Constant\ConstantStringType('0'),
-	'union' => new \PHPStan\Type\UnionType([new \PHPStan\Type\Constant\ConstantBooleanType(true), new \PHPStan\Type\NullType()]),
-	'never' => new \PHPStan\Type\NeverType(),
-	'array' => new \PHPStan\Type\ArrayType(new \PHPStan\Type\MixedType(), new \PHPStan\Type\MixedType()),
-];
-$boolResults = [];
-foreach (['php' => [\PHPStan\Type\BooleanType::class, \PHPStan\Type\Constant\ConstantBooleanType::class], 'native' => [\PHPStanTurbo\BooleanType::class, \PHPStanTurbo\ConstantBooleanType::class]] as $side => [$boolClass, $constBoolClass]) {
-	$r = [];
-	$others = $boolOthers($boolClass, $constBoolClass);
-	foreach (['bool' => new $boolClass(), 'true' => new $constBoolClass(true), 'false' => new $constBoolClass(false)] as $name => $subject) {
-		$r["$name instanceof"] = [$subject instanceof \PHPStan\Type\Type, $subject instanceof $boolClass, $subject instanceof \PHPStan\Type\ConstantScalarType];
-		foreach (\PHPStan\Type\VerbosityLevel::cases() as $level) {
-			$r["$name describe " . $level->name] = $subject->describe($level);
-		}
-		foreach ($others as $otherName => $other) {
-			$r["$name isSuperTypeOf $otherName"] = $boolView($subject->isSuperTypeOf($other));
-			$r["$name accepts $otherName"] = $boolView($subject->accepts($other, true));
-			$r["$name accepts-loose $otherName"] = $boolView($subject->accepts($other, false));
-			$r["$name equals $otherName"] = $subject->equals($other);
-			$r["$name tryRemove $otherName"] = $boolView($subject->tryRemove($other));
-			$r["$name looseCompare $otherName"] = $boolView($subject->looseCompare($other, $boolPhpVersion));
-			$r["$name isSmallerThan $otherName"] = $boolView($subject->isSmallerThan($other, $boolPhpVersion));
-			$r["$name isSmallerThanOrEqual $otherName"] = $boolView($subject->isSmallerThanOrEqual($other, $boolPhpVersion));
-			$r["$name traverseSimultaneously $otherName"] = $boolView($subject->traverseSimultaneously($other, static fn ($a, $b) => $a));
-			$r["$name getOffsetValueType $otherName"] = $boolView($subject->getOffsetValueType($other));
-			$r["$name hasOffsetValueType $otherName"] = $boolView($subject->hasOffsetValueType($other));
-			$r["$name exponentiate $otherName"] = $boolView($subject->exponentiate($other));
-		}
-		foreach (['toBoolean', 'toNumber', 'toInteger', 'toFloat', 'toString', 'toArray', 'toArrayKey', 'toBitwiseNotType', 'toAbsoluteNumber', 'toGetClassResultType', 'toObjectTypeForInstanceofCheck',
-			'isTrue', 'isFalse', 'isBoolean', 'isScalar', 'isNull', 'isInteger', 'isFloat', 'isString', 'isNumericString', 'isNonEmptyString', 'isNonFalsyString', 'isLiteralString', 'isLowercaseString', 'isUppercaseString', 'isClassString', 'isVoid',
-			'isConstantValue', 'isConstantScalarValue', 'getConstantScalarTypes', 'getConstantScalarValues', 'getFiniteTypes', 'isObject', 'isEnum', 'getArrays', 'getConstantArrays', 'getConstantStrings', 'getReferencedClasses', 'getObjectClassNames', 'getObjectClassReflections',
-			'getClassStringType', 'getClassStringObjectType', 'getObjectTypeOrClassStringObjectType', 'canAccessProperties', 'canCallMethods', 'canAccessConstants', 'isIterable', 'isIterableAtLeastOnce', 'getArraySize', 'getIterableKeyType', 'getFirstIterableKeyType', 'getLastIterableKeyType',
-			'getIterableValueType', 'getFirstIterableValueType', 'getLastIterableValueType', 'isArray', 'isConstantArray', 'isOversizedArray', 'isList', 'isOffsetAccessible', 'isOffsetAccessLegal', 'getKeysArray', 'getValuesArray', 'flipArray', 'popArray', 'shiftArray', 'shuffleArray',
-			'makeListMaybe', 'makeAllArrayKeysOptional', 'filterArrayRemovingFalsey', 'getEnumCases', 'getEnumCaseObject', 'isCallable', 'isCloneable', 'toPhpDocNode', 'getReferencedTemplateTypes'] as $method) {
-			if ($method === 'getReferencedTemplateTypes') {
-				$r["$name $method"] = $boolView($subject->$method(\PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()));
-				continue;
-			}
-			$r["$name $method"] = $boolView($subject->$method());
-		}
-		foreach (['getSmallerType', 'getSmallerOrEqualType', 'getGreaterType', 'getGreaterOrEqualType'] as $method) {
-			$r["$name $method"] = $boolView($subject->$method($boolPhpVersion));
-		}
-		foreach ([\PHPStan\Type\GeneralizePrecision::lessSpecific(), \PHPStan\Type\GeneralizePrecision::moreSpecific(), \PHPStan\Type\GeneralizePrecision::templateArgument()] as $i => $precision) {
-			$r["$name generalize $i"] = $boolView($subject->generalize($precision));
-		}
-		$r["$name toCoercedArgumentType"] = [$boolView($subject->toCoercedArgumentType(true)), $boolView($subject->toCoercedArgumentType(false))];
-		$r["$name traverse identity"] = $subject->traverse(static fn ($t) => $t) === $subject;
-		$r["$name inferTemplateTypes"] = $boolView($subject->inferTemplateTypes($others['int']));
-		$r["$name getTemplateType"] = $boolView($subject->getTemplateType('Foo', 'T'));
-		$r["$name hasProperty"] = $boolView($subject->hasProperty('x'));
-		$r["$name hasMethod"] = $boolView($subject->hasMethod('x'));
-		$r["$name hasConstant"] = $boolView($subject->hasConstant('X'));
-		$r["$name setOffsetValueType"] = $boolView($subject->setOffsetValueType(null, $others['int']));
-		$r["$name unsetOffset"] = $boolView($subject->unsetOffset($others['int']));
-		$r["$name mapValueType"] = $boolView($subject->mapValueType(static fn ($t) => $t));
-		$r["$name mapKeyType"] = $boolView($subject->mapKeyType(static fn ($t) => $t));
-		$r["$name changeKeyCaseArray"] = $boolView($subject->changeKeyCaseArray(null));
-		$r["$name toObjectTypeForIsACheck"] = $boolView($subject->toObjectTypeForIsACheck($others['mixed'], true, true));
-		foreach (['getProperty', 'getMethod', 'getConstant'] as $method) {
-			try {
-				$args = $method === 'getConstant' ? ['X'] : ['x', new \PHPStan\Analyser\OutOfClassScope()];
-				$subject->$method(...$args);
-				$r["$name $method"] = 'no throw';
-			} catch (\PHPStan\ShouldNotHappenException $e) {
-				$r["$name $method"] = 'ShouldNotHappenException';
-			}
-		}
-		if ($subject instanceof \PHPStan\Type\ConstantScalarType) {
-			$r["$name getValue"] = $subject->getValue();
-		}
-	}
-	$r['true equals constant'] = (new $constBoolClass(true))->equals(new $constBoolClass(true));
-	$r['true equals false'] = (new $constBoolClass(true))->equals(new $constBoolClass(false));
-	$boolResults[$side] = $r;
+	return $observations;
 }
-foreach ($boolResults['php'] as $key => $expected) {
-	check($expected === ($boolResults['native'][$key] ?? '<missing>'), "BooleanType/ConstantBooleanType $key: " . json_encode($expected) . ' vs ' . json_encode($boolResults['native'][$key] ?? '<missing>'));
+
+$typeFamilyPhp = observeTypeFamily('php');
+$typeFamilyNative = observeTypeFamily('native');
+foreach ([\PHPStan\Type\BooleanType::class, \PHPStan\Type\Constant\ConstantBooleanType::class, \PHPStan\Type\IntegerType::class, \PHPStan\Type\Constant\ConstantIntegerType::class, \PHPStan\Type\IntegerRangeType::class] as $typeClass) {
+	check(($typeFamilyPhp["native $typeClass"] ?? null) === false, "type-family.php php: $typeClass is the PHP twin");
+	check(($typeFamilyNative["native $typeClass"] ?? null) === true, "type-family.php native: $typeClass is the native class");
+	unset($typeFamilyPhp["native $typeClass"], $typeFamilyNative["native $typeClass"]);
+}
+check(count($typeFamilyPhp) > 1000, 'type-family.php: a substantial number of observations (' . count($typeFamilyPhp) . ')');
+check(array_keys($typeFamilyPhp) === array_keys($typeFamilyNative), 'type-family.php: both modes observed the same keys');
+foreach ($typeFamilyPhp as $key => $expected) {
+	$actual = array_key_exists($key, $typeFamilyNative) ? $typeFamilyNative[$key] : '<missing>';
+	check($expected === $actual, "Type family $key: " . json_encode($expected) . ' vs ' . json_encode($actual));
 }
 
 // ---- differential coverage completeness ----

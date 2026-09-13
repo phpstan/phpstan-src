@@ -95,7 +95,11 @@ being ≥0.5% faster is. When the estimate is marginal, don't port.
    must equal the PHP implementation's result on the same inputs) and
    register the class in `$covered` next to its checks — the completeness
    check at the end fails for any shadowed class with no registered
-   coverage.
+   coverage. A `Type` port goes into `tests/type-family.php` instead
+   (observations under the real names, run by `smoke.php` once per
+   implementation and compared — the prefixed declaration cannot mix a
+   native result object into the PHP compound types) and is registered in
+   `$covered` at the section of `smoke.php` that runs it.
 8. **Verify**: strict build, smoke test,
    `php -d extension=$PWD/turbo-ext/phpstan_turbo.so turbo-ext/tests/signature-parity.php`
    (arginfo parameter names must match the PHP twin exactly — named

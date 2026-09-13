@@ -20,6 +20,8 @@
 #include "generated/NonOffsetAccessibleTypeTrait.h"
 #include "generated/NonGeneralizableTypeTrait.h"
 #include "generated/ConstantScalarTypeTrait.h"
+#include "generated/ConstantScalarToBooleanTrait.h"
+#include "generated/ConstantNumericComparisonTypeTrait.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpragmas"
@@ -179,9 +181,9 @@ zv::Val pt_type_new_mixed_type_without_null()
 
 zv::Val pt_type_new_constant_integer(zend_long value)
 {
-	zval arg;
-	ZVAL_LONG(&arg, value);
-	return pt_type_new(PT_CLASS_CONSTANT_INTEGER_TYPE, 1, &arg);
+	zval result;
+	if (UNEXPECTED(!pt_constant_integer_type_new(&result, value))) return zv::Val();
+	return zv::Val::adopt(result);
 }
 
 zv::Val pt_type_new_constant_float(double value)
@@ -200,6 +202,60 @@ zv::Val pt_type_new_constant_string(const char *value, size_t len)
 zv::Val pt_type_new_union(zv::Arr types)
 {
 	return pt_type_new(PT_CLASS_UNION_TYPE, 1, types.raw());
+}
+
+/* the spread of a PHP array into an argument vector: a packed table
+ * without holes is a contiguous zval array already (borrowed); any other
+ * layout is copied into an emalloc'd vector the caller frees */
+static zval *pt_type_spread_args(HashTable *args, uint32_t &count, bool &owned)
+{
+	count = zend_hash_num_elements(args);
+	if (EXPECTED(HT_IS_PACKED(args) && HT_IS_WITHOUT_HOLES(args))) {
+		owned = false;
+		return args->arPacked;
+	}
+	zval *argv = (zval *) safe_emalloc(count, sizeof(zval), 0);
+	uint32_t i = 0;
+	for (zv::ArrayEntry entry : zv::TableRef(args)) {
+		ZVAL_COPY_VALUE(&argv[i++], entry.value().raw());
+	}
+	count = i;
+	owned = true;
+	return argv;
+}
+
+zv::Val pt_type_call_static_spread(int classIdx, const char *lcname, size_t len, HashTable *args)
+{
+	uint32_t count;
+	bool owned;
+	zval *argv = pt_type_spread_args(args, count, owned);
+	zv::Val result = pt_type_call_static(classIdx, lcname, len, count, argv);
+	if (owned) {
+		efree(argv);
+	}
+	return result;
+}
+
+zv::Val pt_type_call_spread(zend_object *object, const char *lcname, size_t len, HashTable *args)
+{
+	uint32_t count;
+	bool owned;
+	zval *argv = pt_type_spread_args(args, count, owned);
+	zv::Val result = pt_type_call(object, lcname, len, count, argv);
+	if (owned) {
+		efree(argv);
+	}
+	return result;
+}
+
+zv::Val pt_type_mixed_minus(HashTable *subtractedTypes)
+{
+	zv::Val mixed = pt_type_new_mixed_type();
+	if (UNEXPECTED(mixed.isUndef())) return zv::Val();
+	zv::Val unionType = pt_type_call_static_spread(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), subtractedTypes);
+	if (UNEXPECTED(unionType.isUndef())) return zv::Val();
+	zv::Args args{mixed.raw(), unionType.raw()};
+	return pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("remove"), 2, args);
 }
 
 /* $this->isObject()->yes(); false = pending exception. The fast path
@@ -735,7 +791,7 @@ void pt_type_trait_non_generalizable(reg::Class &cls)
  * trait declares (found on the declaring class, so the slot is right for
  * subclasses too); NULL with an Error pending when uninitialized, as the
  * twin's typed-property read raises */
-[[nodiscard]] static zval *constantScalarValue(zend_object *object, zend_class_entry *scope)
+[[nodiscard]] zval *pt_type_constant_scalar_value(zend_object *object, zend_class_entry *scope)
 {
 	zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&scope->properties_info, PT_LC("value"));
 	if (UNEXPECTED(info == NULL || (info->flags & ZEND_ACC_STATIC) != 0)) {
@@ -761,9 +817,9 @@ static bool constantScalarEqualsImpl(zend_object *self, zend_class_entry *scope,
 		out = false;
 		return true;
 	}
-	zval *selfValue = constantScalarValue(self, scope);
+	zval *selfValue = pt_type_constant_scalar_value(self, scope);
 	if (UNEXPECTED(selfValue == NULL)) return false;
-	zval *typeValue = constantScalarValue(Z_OBJ_P(type), scope);
+	zval *typeValue = pt_type_constant_scalar_value(Z_OBJ_P(type), scope);
 	if (UNEXPECTED(typeValue == NULL)) return false;
 	out = zend_is_identical(selfValue, typeValue);
 	return true;
@@ -856,7 +912,7 @@ static void constantScalarSmaller(INTERNAL_FUNCTION_PARAMETERS, bool orEqual)
 	bool isConstantScalar;
 	if (UNEXPECTED(!pt_type_instanceof(otherType, PT_CLASS_CONSTANT_SCALAR_TYPE, isConstantScalar))) RETURN_THROWS();
 	if (isConstantScalar) {
-		zval *selfValue = constantScalarValue(PT_THIS_OBJ, PT_SCOPE);
+		zval *selfValue = pt_type_constant_scalar_value(PT_THIS_OBJ, PT_SCOPE);
 		if (UNEXPECTED(selfValue == NULL)) RETURN_THROWS();
 		zv::Val otherValue = constantScalarGetValue(Z_OBJ_P(otherType));
 		if (UNEXPECTED(otherValue.isUndef())) RETURN_THROWS();
@@ -972,6 +1028,130 @@ void pt_type_trait_constant_scalar(reg::Class &cls)
 		zv::Arr types = zv::Arr::create(1);
 		types.push(zv::Ref(ZEND_THIS));
 		PT_RETURN_VAL(zv::Val(std::move(types)));
+	});
+}
+
+/* }}} */
+
+/* {{{ ConstantScalarToBooleanTrait */
+
+void pt_type_trait_constant_scalar_to_boolean(reg::Class &cls)
+{
+	namespace sigs = ptdecl::ConstantScalarToBooleanTrait::sig;
+	cls.traitMethod(sigs::toBoolean, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		/* new ConstantBooleanType((bool) $this->value) */
+		zval *value = pt_type_constant_scalar_value(PT_THIS_OBJ, PT_SCOPE);
+		if (UNEXPECTED(value == NULL)) RETURN_THROWS();
+		zval result;
+		if (UNEXPECTED(!pt_constant_boolean_type_new(&result, zend_is_true(value)))) RETURN_THROWS();
+		RETURN_COPY_VALUE(&result);
+	});
+}
+
+/* }}} */
+
+/* {{{ ConstantNumericComparisonTypeTrait */
+
+/* the four comparison-type methods share one shape: a list of subtracted
+ * types built around $this->value, removed from mixed */
+enum ConstantNumericComparison
+{
+	CNC_SMALLER,
+	CNC_SMALLER_OR_EQUAL,
+	CNC_GREATER,
+	CNC_GREATER_OR_EQUAL,
+};
+
+static bool cncPushNull(zv::Arr &types)
+{
+	zv::Val nullType = pt_type_new(PT_CLASS_NULL_TYPE, 0, NULL);
+	if (UNEXPECTED(nullType.isUndef())) return false;
+	types.push(std::move(nullType));
+	return true;
+}
+
+static bool cncPushBoolean(zv::Arr &types, bool value)
+{
+	zval boolean;
+	if (UNEXPECTED(!pt_constant_boolean_type_new(&boolean, value))) return false;
+	types.push(zv::Val::adopt(boolean));
+	return true;
+}
+
+/* new ConstantFloatType(0.0) — "subtract range when we support float-ranges" */
+static bool cncPushFloatZero(zv::Arr &types)
+{
+	zv::Val zero = pt_type_new_constant_float(0.0);
+	if (UNEXPECTED(zero.isUndef())) return false;
+	types.push(std::move(zero));
+	return true;
+}
+
+static bool cncPushRange(zv::Arr &types, zv::Val range)
+{
+	if (UNEXPECTED(range.isUndef())) return false;
+	types.push(std::move(range));
+	return true;
+}
+
+static void constantNumericComparison(INTERNAL_FUNCTION_PARAMETERS, ConstantNumericComparison which)
+{
+	PT_ARGS(1, 1);
+	zval *value = pt_type_constant_scalar_value(PT_THIS_OBJ, PT_SCOPE);
+	if (UNEXPECTED(value == NULL)) RETURN_THROWS();
+	bool truthy = zend_is_true(value); /* (bool) $this->value */
+	zv::Arr types = zv::Arr::create(5);
+	bool ok;
+	switch (which) {
+		case CNC_SMALLER:
+			/* [new ConstantBooleanType(true), IntegerRangeType::createAllGreaterThanOrEqualTo($this->value)]
+			 * + [new NullType(), new ConstantBooleanType(false), new ConstantFloatType(0.0)] when falsy */
+			ok = cncPushBoolean(types, true)
+				&& cncPushRange(types, pt_integer_range_create_all_greater_than_or_equal_to(value))
+				&& (truthy || (cncPushNull(types) && cncPushBoolean(types, false) && cncPushFloatZero(types)));
+			break;
+		case CNC_SMALLER_OR_EQUAL:
+			/* [IntegerRangeType::createAllGreaterThan($this->value)] + [new ConstantBooleanType(true)] when falsy */
+			ok = cncPushRange(types, pt_integer_range_create_all_greater_than(value))
+				&& (truthy || cncPushBoolean(types, true));
+			break;
+		case CNC_GREATER:
+			/* [new NullType(), new ConstantBooleanType(false), new ConstantFloatType(0.0), IntegerRangeType::createAllSmallerThanOrEqualTo($this->value)]
+			 * + [new ConstantBooleanType(true)] when truthy */
+			ok = cncPushNull(types) && cncPushBoolean(types, false) && cncPushFloatZero(types)
+				&& cncPushRange(types, pt_integer_range_create_all_smaller_than_or_equal_to(value))
+				&& (!truthy || cncPushBoolean(types, true));
+			break;
+		case CNC_GREATER_OR_EQUAL:
+		default:
+			/* [IntegerRangeType::createAllSmallerThan($this->value)]
+			 * + [new NullType(), new ConstantBooleanType(false), new ConstantFloatType(0.0)] when truthy */
+			ok = cncPushRange(types, pt_integer_range_create_all_smaller_than(value))
+				&& (!truthy || (cncPushNull(types) && cncPushBoolean(types, false) && cncPushFloatZero(types)));
+			break;
+	}
+	if (UNEXPECTED(!ok)) RETURN_THROWS();
+	PT_RETURN_VAL(pt_type_mixed_minus(types.table()));
+}
+
+void pt_type_trait_constant_numeric_comparison(reg::Class &cls)
+{
+	namespace sigs = ptdecl::ConstantNumericComparisonTypeTrait::sig;
+	cls.traitMethod(sigs::getSmallerType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		constantNumericComparison(INTERNAL_FUNCTION_PARAM_PASSTHRU, CNC_SMALLER);
+	});
+
+	cls.traitMethod(sigs::getSmallerOrEqualType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		constantNumericComparison(INTERNAL_FUNCTION_PARAM_PASSTHRU, CNC_SMALLER_OR_EQUAL);
+	});
+
+	cls.traitMethod(sigs::getGreaterType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		constantNumericComparison(INTERNAL_FUNCTION_PARAM_PASSTHRU, CNC_GREATER);
+	});
+
+	cls.traitMethod(sigs::getGreaterOrEqualType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		constantNumericComparison(INTERNAL_FUNCTION_PARAM_PASSTHRU, CNC_GREATER_OR_EQUAL);
 	});
 }
 

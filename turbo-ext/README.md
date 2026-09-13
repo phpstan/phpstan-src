@@ -93,7 +93,14 @@ The consequences for a port:
   `PHPStanTurbo\<ShortName>` next to the PHP twins in one process, so both
   sides can be compared. The manifest derives that name the way the
   extension derives it, and rejects two shadowed classes sharing a short
-  name — they would arrive at one native name.
+  name — they would arrive at one native name. The Type ports are the
+  exception: a Type's results flow into the PHP compound types and back
+  through `self`-typed statics (`IsSuperTypeOfResult::extremeIdentity()`),
+  so a native result object meeting the PHP result class is a TypeError.
+  `tests/type-family.php` therefore observes the whole Type family under
+  the real names — once as the PHP twins, once with the natives activated
+  in their place, exactly as production runs — and `smoke.php` runs both
+  and requires the two observation sets to be identical.
 
 Class names the native code references at run time come through
 `PHPStanTurbo\Runtime::configure()`: `TurboExtensionEnabler` feeds it the

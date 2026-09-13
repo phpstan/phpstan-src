@@ -241,9 +241,11 @@ zend_always_inline bool parse(zend_execute_data *execute_data, typename K1::type
 namespace reg {
 
 constexpr uint32_t Public = ZEND_ACC_PUBLIC;
+constexpr uint32_t Protected = ZEND_ACC_PROTECTED;
 constexpr uint32_t Private = ZEND_ACC_PRIVATE;
 constexpr uint32_t Static = ZEND_ACC_STATIC;
 constexpr uint32_t PublicStatic = ZEND_ACC_PUBLIC | ZEND_ACC_STATIC;
+constexpr uint32_t ProtectedStatic = ZEND_ACC_PROTECTED | ZEND_ACC_STATIC;
 
 /* One parameter's metadata, mirroring what the ZEND_ARG_* macros encode. */
 struct Arg

@@ -53,7 +53,6 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_MIXED_TYPE */ {"mixedType", "PHPStan\\Type\\MixedType"},
 	/* PT_CLASS_NULL_TYPE */ {"nullType", "PHPStan\\Type\\NullType"},
 	/* PT_CLASS_UNION_TYPE */ {"unionType", "PHPStan\\Type\\UnionType"},
-	/* PT_CLASS_CONSTANT_INTEGER_TYPE */ {"constantIntegerType", "PHPStan\\Type\\Constant\\ConstantIntegerType"},
 	/* PT_CLASS_CONSTANT_FLOAT_TYPE */ {"constantFloatType", "PHPStan\\Type\\Constant\\ConstantFloatType"},
 	/* PT_CLASS_CONSTANT_STRING_TYPE */ {"constantStringType", "PHPStan\\Type\\Constant\\ConstantStringType"},
 	/* PT_CLASS_CONSTANT_ARRAY_TYPE */ {"constantArrayType", "PHPStan\\Type\\Constant\\ConstantArrayType"},
@@ -67,6 +66,15 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_EXPONENTIATE_HELPER */ {"exponentiateHelper", "PHPStan\\Type\\ExponentiateHelper"},
 	/* PT_CLASS_COMPOUND_TYPE */ {"compoundType", "PHPStan\\Type\\CompoundType"},
 	/* PT_CLASS_CONSTANT_SCALAR_TYPE */ {"constantScalarType", "PHPStan\\Type\\ConstantScalarType"},
+	/* PT_CLASS_FLOAT_TYPE */ {"floatType", "PHPStan\\Type\\FloatType"},
+	/* PT_CLASS_STRING_TYPE */ {"stringType", "PHPStan\\Type\\StringType"},
+	/* PT_CLASS_INTERSECTION_TYPE */ {"intersectionType", "PHPStan\\Type\\IntersectionType"},
+	/* PT_CLASS_ACCESSORY_DECIMAL_INTEGER_STRING_TYPE */ {"accessoryDecimalIntegerStringType", "PHPStan\\Type\\Accessory\\AccessoryDecimalIntegerStringType"},
+	/* PT_CLASS_ACCESSORY_NON_FALSY_STRING_TYPE */ {"accessoryNonFalsyStringType", "PHPStan\\Type\\Accessory\\AccessoryNonFalsyStringType"},
+	/* PT_CLASS_INITIALIZER_EXPR_TYPE_RESOLVER */ {"initializerExprTypeResolver", "PHPStan\\Reflection\\InitializerExprTypeResolver"},
+	/* PT_CLASS_GENERIC_TYPE_NODE */ {"genericTypeNode", "PHPStan\\PhpDocParser\\Ast\\Type\\GenericTypeNode"},
+	/* PT_CLASS_CONST_TYPE_NODE */ {"constTypeNode", "PHPStan\\PhpDocParser\\Ast\\Type\\ConstTypeNode"},
+	/* PT_CLASS_CONST_EXPR_INTEGER_NODE */ {"constExprIntegerNode", "PHPStan\\PhpDocParser\\Ast\\ConstExpr\\ConstExprIntegerNode"},
 };
 
 zend_class_entry *pt_class(int idx)

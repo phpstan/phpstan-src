@@ -9,6 +9,7 @@ use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -27,6 +28,7 @@ use function count;
 
 /** @api */
 #[InstanceofDeprecated(insteadUse: 'Type::isString()')]
+#[ReferencedByTurboExtension(key: 'stringType')]
 class StringType implements Type
 {
 

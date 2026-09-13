@@ -72,6 +72,8 @@ inline constexpr reg::Arg unresolvedMethodPrototypeReflection = reg::obj("", "PH
 inline constexpr reg::Arg classConstantReflection = reg::obj("", "PHPStan\\Reflection\\ClassConstantReflection");
 inline constexpr reg::Arg string = reg::stringArg("");
 inline constexpr reg::Arg boolean = reg::boolArg("");
+inline constexpr reg::Arg integer = reg::longArg("");
+inline constexpr reg::Arg nullableInteger = reg::longArg("", true);
 inline constexpr reg::Arg array = reg::arrayArg("");
 
 } // namespace ptret
@@ -127,9 +129,9 @@ zv::Val pt_type_new_error_type();
 zv::Val pt_type_new_mixed_type();
 zv::Val pt_type_new_mixed_type_without_null();
 
-/* new ConstantIntegerType($value), new ConstantFloatType($value), new
- * ConstantStringType($value), new UnionType($types) ($types consumed);
- * UNDEF = pending exception */
+/* new ConstantIntegerType($value) (the shadowing class), new
+ * ConstantFloatType($value), new ConstantStringType($value), new
+ * UnionType($types) ($types consumed); UNDEF = pending exception */
 zv::Val pt_type_new_constant_integer(zend_long value);
 zv::Val pt_type_new_constant_float(double value);
 zv::Val pt_type_new_constant_string(const char *value, size_t len);
@@ -143,6 +145,64 @@ zv::Val pt_type_new_union(zv::Arr types);
  * scope is the class the trait is used in. UNDEF = pending exception */
 void ZEND_FASTCALL pt_type_trait_constant_scalar_loose_compare(INTERNAL_FUNCTION_PARAMETERS);
 zv::Val pt_type_constant_scalar_loose_compare(zend_object *self, zend_class_entry *scope, zval *type, zval *phpVersion);
+
+/* $this->value in a class using one of the ConstantScalar* traits: the
+ * private property the class using the trait (scope) declares — found on
+ * scope, so the slot is right for subclasses too; NULL with an Error
+ * pending when uninitialized, as the twin's typed-property read raises */
+[[nodiscard]] zval *pt_type_constant_scalar_value(zend_object *object, zend_class_entry *scope);
+
+/* Class::method(...$args) on a class-map class / $object->method(...$args)
+ * through the object's class entry, with the arguments spread from a PHP
+ * array (`TypeCombinator::union(...$types)`); UNDEF = pending exception */
+zv::Val pt_type_call_static_spread(int classIdx, const char *lcname, size_t len, HashTable *args);
+zv::Val pt_type_call_spread(zend_object *object, const char *lcname, size_t len, HashTable *args);
+
+/* TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));
+ * UNDEF = pending exception */
+zv::Val pt_type_mixed_minus(HashTable *subtractedTypes);
+
+namespace phpstanturbo {
+
+/* a PHP ?int */
+struct NullableLong
+{
+	bool isNull;
+	zend_long value;
+
+	static NullableLong null() { return { true, 0 }; }
+	static NullableLong of(zend_long v) { return { false, v }; }
+	/* the ?int held by a zval (IS_LONG, else null) */
+	static NullableLong from(const zval *z) { return Z_TYPE_P(z) == IS_LONG ? of(Z_LVAL_P(z)) : null(); }
+
+	zv::Val toVal() const { return isNull ? zv::Val::null() : zv::Val::integer(value); }
+};
+
+} // namespace phpstanturbo
+
+/* the shadowing IntegerRangeType's factories (IntegerRangeType.cpp):
+ * fromInterval() and the createAll*() family, the latter taking the
+ * int|float $value zval as the twin's untyped parameter does; UNDEF =
+ * pending exception */
+zv::Val pt_integer_range_from_interval(phpstanturbo::NullableLong min, phpstanturbo::NullableLong max, zend_long shift);
+zv::Val pt_integer_range_create_all_smaller_than(zval *value);
+zv::Val pt_integer_range_create_all_smaller_than_or_equal_to(zval *value);
+zv::Val pt_integer_range_create_all_greater_than(zval *value);
+zv::Val pt_integer_range_create_all_greater_than_or_equal_to(zval *value);
+/* $range->getMin() / $range->getMax() of an IntegerRangeType instance —
+ * the slots when it is exactly the native class, the methods through its
+ * class entry otherwise (a subclass may override them); false = pending
+ * exception */
+[[nodiscard]] bool pt_integer_range_bounds(zend_object *range, phpstanturbo::NullableLong &min, phpstanturbo::NullableLong &max);
+/* $type->getValue() of a ConstantIntegerType instance, the same way
+ * (ConstantIntegerType.cpp); false = pending exception */
+[[nodiscard]] bool pt_constant_integer_get_value(zend_object *object, zend_long &out);
+
+/* the bodies of IntegerType::looseCompare() and IntegerType::exponentiate()
+ * (IntegerType.cpp), for the children's parent:: calls; UNDEF = pending
+ * exception */
+zv::Val pt_integer_type_loose_compare(zend_object *self, zval *type, zval *phpVersion);
+zv::Val pt_integer_type_exponentiate(zend_object *self, zval *exponent);
 
 /* module startup: the internal helper classes the trait code needs */
 void pt_register_type_traits();
@@ -174,6 +234,10 @@ void pt_type_trait_non_offset_accessible(reg::Class &cls);
 void pt_type_trait_non_generalizable(reg::Class &cls);
 /* src/Type/Traits/ConstantScalarTypeTrait.php */
 void pt_type_trait_constant_scalar(reg::Class &cls);
+/* src/Type/Constant/ConstantScalarToBooleanTrait.php */
+void pt_type_trait_constant_scalar_to_boolean(reg::Class &cls);
+/* src/Type/Traits/ConstantNumericComparisonTypeTrait.php */
+void pt_type_trait_constant_numeric_comparison(reg::Class &cls);
 
 /* }}} */
 

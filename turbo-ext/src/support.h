@@ -38,6 +38,13 @@ extern "C" {
 
 #pragma GCC diagnostic pop
 
+#ifdef _WIN32
+/* the engine headers pull in windows.h, whose min() / max() macros would
+ * rewrite every member and call of those names */
+#undef min
+#undef max
+#endif
+
 /* {{{ configurable class references */
 
 typedef struct _pt_class_ref {
@@ -85,7 +92,6 @@ enum {
 	PT_CLASS_MIXED_TYPE,
 	PT_CLASS_NULL_TYPE,
 	PT_CLASS_UNION_TYPE,
-	PT_CLASS_CONSTANT_INTEGER_TYPE,
 	PT_CLASS_CONSTANT_FLOAT_TYPE,
 	PT_CLASS_CONSTANT_STRING_TYPE,
 	PT_CLASS_CONSTANT_ARRAY_TYPE,
@@ -99,6 +105,15 @@ enum {
 	PT_CLASS_EXPONENTIATE_HELPER,
 	PT_CLASS_COMPOUND_TYPE,
 	PT_CLASS_CONSTANT_SCALAR_TYPE,
+	PT_CLASS_FLOAT_TYPE,
+	PT_CLASS_STRING_TYPE,
+	PT_CLASS_INTERSECTION_TYPE,
+	PT_CLASS_ACCESSORY_DECIMAL_INTEGER_STRING_TYPE,
+	PT_CLASS_ACCESSORY_NON_FALSY_STRING_TYPE,
+	PT_CLASS_INITIALIZER_EXPR_TYPE_RESOLVER,
+	PT_CLASS_GENERIC_TYPE_NODE,
+	PT_CLASS_CONST_TYPE_NODE,
+	PT_CLASS_CONST_EXPR_INTEGER_NODE,
 	PT_CLASS_COUNT
 };
 
@@ -153,9 +168,13 @@ extern zend_class_entry *pt_ce_cond_expr_holder;
 extern zend_class_entry *pt_ce_type_combinator_cache;
 extern zend_class_entry *pt_ce_accepts_result;
 extern zend_class_entry *pt_ce_is_super_type_of_result;
-/* the shadowing Type classes (BooleanType.cpp, ConstantBooleanType.cpp) */
+/* the shadowing Type classes (BooleanType.cpp, ConstantBooleanType.cpp,
+ * IntegerType.cpp, ConstantIntegerType.cpp, IntegerRangeType.cpp) */
 extern zend_class_entry *pt_ce_boolean_type;
 extern zend_class_entry *pt_ce_constant_boolean_type;
+extern zend_class_entry *pt_ce_integer_type;
+extern zend_class_entry *pt_ce_constant_integer_type;
+extern zend_class_entry *pt_ce_integer_range_type;
 
 /* registration hooks, called from the extension's onStartup */
 /* Shadow.cpp — Runtime::activateShadowing() */
@@ -180,10 +199,16 @@ void pt_register_is_super_type_of_result();
 void pt_register_accepts_result();
 /* the Type ports; registered after the result classes their return types
  * name (a plan naming a class declared later would make the linker autoload
- * the PHP twin) — BooleanType before its child ConstantBooleanType */
+ * the PHP twin) — BooleanType before its child ConstantBooleanType,
+ * IntegerType before its children ConstantIntegerType and IntegerRangeType
+ * (and after BooleanType, whose class their toBoolean() return type names) */
 void pt_register_type_traits();
 void pt_register_boolean_type();
 void pt_register_constant_boolean_type();
+void pt_register_integer_type();
+void pt_register_constant_integer_type();
+void pt_register_integer_range_type();
+void pt_integer_range_type_rinit();
 void pt_is_super_type_of_result_rinit();
 void pt_is_super_type_of_result_rshutdown();
 void pt_accepts_result_rinit();
@@ -272,6 +297,15 @@ bool pt_constant_boolean_type_new(zval *out, bool value);
 /* the $value of an instance of the shadowing ConstantBooleanType; false
  * with an Error pending when uninitialized */
 bool pt_constant_boolean_type_value(zend_object *object, bool &out);
+
+/* new IntegerType() / new ConstantIntegerType($value) — instances of the
+ * shadowing classes (IntegerType.cpp / ConstantIntegerType.cpp); false =
+ * pending exception */
+bool pt_integer_type_new(zval *out);
+bool pt_constant_integer_type_new(zval *out, zend_long value);
+/* the $value of an instance of the shadowing ConstantIntegerType; false
+ * with an Error pending when uninitialized */
+bool pt_constant_integer_type_value(zend_object *object, zend_long &out);
 
 /* }}} */
 

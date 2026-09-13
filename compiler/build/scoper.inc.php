@@ -140,13 +140,8 @@ return [
 
 			return \Nette\Neon\Neon::encode($updatedNeon, \Nette\Neon\Neon::BLOCK);
 		},
-		function (string $filePath, string $prefix, string $content): string {
-			if (!in_array($filePath, [
-				'bin/phpstan',
-				'src/Testing/TestCaseSourceLocatorFactory.php',
-				'src/Testing/PHPStanTestCase.php',
-				'vendor/ondrejmirtes/better-reflection/src/SourceLocator/Type/ComposerSourceLocator.php',
-			], true)) {
+		function (string $filePath, string $prefix, string $content) use ($namespaces): string {
+			if (!in_array($filePath, $namespaces['unprefixedComposerClassLoaderIn'], true)) {
 				return $content;
 			}
 

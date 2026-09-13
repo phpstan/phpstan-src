@@ -43,4 +43,21 @@ return [
 		'Foobar',
 		'PDO',
 	],
+
+	/**
+	 * Files that refer to the analysed project's Composer\Autoload\ClassLoader,
+	 * not to the phar's own prefixed copy - an instanceof against the prefixed
+	 * name never matches the project's autoloader.
+	 *
+	 * A patcher in scoper.inc.php strips the prefix back off in these files.
+	 * ScoperComposerClassLoaderTest fails when a file in src/ or bin/ refers to
+	 * the class without being listed here.
+	 */
+	'unprefixedComposerClassLoaderIn' => [
+		'bin/phpstan',
+		'src/Reflection/BetterReflection/SourceLocator/AutoloadSourceLocator.php',
+		'src/Testing/TestCaseSourceLocatorFactory.php',
+		'src/Testing/PHPStanTestCase.php',
+		'vendor/ondrejmirtes/better-reflection/src/SourceLocator/Type/ComposerSourceLocator.php',
+	],
 ];

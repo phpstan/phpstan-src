@@ -30,6 +30,7 @@ final class NoScopeTypeReadInEngineRule implements Rule
 		'PHPStan\\Analyser\\ArgumentsHandler',
 		'PHPStan\\Analyser\\AttributesHandler',
 		'PHPStan\\Analyser\\ClosureProcessor',
+		'PHPStan\\Analyser\\ParametersProcessor',
 		'PHPStan\\Analyser\\StatementsHandler',
 		'PHPStan\\Analyser\\StmtHandler\\',
 		'PHPStan\\Analyser\\ExprHandler\\',

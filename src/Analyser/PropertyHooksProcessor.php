@@ -31,6 +31,7 @@ final class PropertyHooksProcessor
 		private DeprecatedAttributeResolver $deprecatedAttributeResolver,
 		private PhpDocsResolver $phpDocsResolver,
 		private AttributesHandler $attributesHandler,
+		private ParametersProcessor $parametersProcessor,
 	)
 	{
 	}
@@ -63,9 +64,7 @@ final class PropertyHooksProcessor
 
 			[, $phpDocParameterTypes,,,, $phpDocThrowType,,,,,,,, $phpDocComment,,,,,, $resolvedPhpDoc] = $this->phpDocsResolver->getPhpDocs($scope, $hook);
 
-			foreach ($hook->params as $param) {
-				$nodeScopeResolver->processParamNode($stmt, $param, $scope, $storage, $nodeCallback);
-			}
+			$this->parametersProcessor->processParams($nodeScopeResolver, $stmt, $hook->params, $scope, $storage, $nodeCallback);
 
 			[$isDeprecated, $deprecatedDescription] = $this->deprecatedAttributeResolver->getDeprecatedAttribute($scope, $hook);
 

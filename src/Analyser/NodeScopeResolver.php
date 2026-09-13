@@ -139,7 +139,6 @@ class NodeScopeResolver
 		private readonly bool $treatPhpDocTypesAsCertain,
 		private readonly ExpressionResultFactory $expressionResultFactory,
 		private readonly StatementsHandler $statementsHandler,
-		private readonly AttributesHandler $attributesHandler,
 	)
 	{
 		self::$guardNewWorld = getenv('PHPSTAN_GUARD_NW') === '1';
@@ -1087,29 +1086,6 @@ class NodeScopeResolver
 		// result are already stored when the callback fires - NodeCallbackScope
 		// answers every ask synchronously from the storage
 		$nodeCallback($node, $scope->toNodeCallbackScope());
-	}
-
-	/**
-	 * @param callable(Node $node, Scope $scope): void $nodeCallback
-	 */
-	public function processParamNode(
-		Node\Stmt $stmt,
-		Node\Param $param,
-		MutatingScope $scope,
-		ExpressionResultStorage $storage,
-		callable $nodeCallback,
-	): void
-	{
-		$this->attributesHandler->processAttributeGroups($this, $stmt, $param->attrGroups, $scope, $storage, $nodeCallback);
-		$this->callNodeCallback($nodeCallback, $param, $scope, $storage);
-		if ($param->type !== null) {
-			$this->callNodeCallback($nodeCallback, $param->type, $scope, $storage);
-		}
-		if ($param->default === null) {
-			return;
-		}
-
-		$this->processExprNode($stmt, $param->default, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
 	}
 
 	/**

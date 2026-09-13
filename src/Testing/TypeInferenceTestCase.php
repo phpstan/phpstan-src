@@ -6,7 +6,7 @@ use LogicException;
 use PhpParser\Node;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Name;
-use PHPStan\Analyser\ArgumentsHandler;
+use PHPStan\Analyser\AttributesHandler;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\Generics\TemplateArgumentObserver;
 use PHPStan\Analyser\MutatingScope;
@@ -52,12 +52,10 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 	protected static function createNodeScopeResolver(): NodeScopeResolver
 	{
 		$container = self::getContainer();
-		$reflectionProvider = self::createReflectionProvider();
 
 		return new NodeScopeResolver(
 			$container,
 			$container->getByType(TemplateArgumentObserver::class),
-			$reflectionProvider,
 			$container->getByType(FileHelper::class),
 			$container->getExtensionsCollection(ReadWritePropertiesExtension::class),
 			$container->getExtensionsCollection(PerFileAnalysisResettable::class),
@@ -66,7 +64,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			$container->getParameter('treatPhpDocTypesAsCertain'),
 			$container->getByType(ExpressionResultFactory::class),
 			$container->getByType(StatementsHandler::class),
-			$container->getByType(ArgumentsHandler::class),
+			$container->getByType(AttributesHandler::class),
 		);
 	}
 

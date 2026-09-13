@@ -28,6 +28,7 @@ final class NoScopeTypeReadInEngineRule implements Rule
 	private const ENGINE_NAMESPACES = [
 		'PHPStan\\Analyser\\NodeScopeResolver',
 		'PHPStan\\Analyser\\ArgumentsHandler',
+		'PHPStan\\Analyser\\AttributesHandler',
 		'PHPStan\\Analyser\\StatementsHandler',
 		'PHPStan\\Analyser\\StmtHandler\\',
 		'PHPStan\\Analyser\\ExprHandler\\',

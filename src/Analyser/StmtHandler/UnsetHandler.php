@@ -11,6 +11,7 @@ use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Unset_;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResultStorage;
+use PHPStan\Analyser\ExprHandler\AssignHandler;
 use PHPStan\Analyser\ExprHandler\Helper\MethodThrowPointHelper;
 use PHPStan\Analyser\ExprHandler\Helper\VirtualExprResultHelper;
 use PHPStan\Analyser\ImpurePoint;
@@ -48,7 +49,10 @@ final class UnsetHandler implements StmtHandler
 		return $stmt instanceof Unset_;
 	}
 
-	public function __construct(private Container $container)
+	public function __construct(
+		private Container $container,
+		private AssignHandler $assignHandler,
+	)
 	{
 	}
 
@@ -109,7 +113,8 @@ final class UnsetHandler implements StmtHandler
 				};
 				$clonedVar = $buildExistingChain($var->var);
 				$unsetOffsetExpr = new UnsetOffsetExpr($var->var, $var->dim);
-				$scope = $nodeScopeResolver->processVirtualAssign(
+				$scope = $this->assignHandler->processVirtualAssign(
+					$nodeScopeResolver,
 					$scope,
 					$storage,
 					$stmt,

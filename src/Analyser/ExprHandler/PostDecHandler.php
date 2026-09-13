@@ -34,6 +34,7 @@ final class PostDecHandler implements ExprHandler
 		private ExpressionResultFactory $expressionResultFactory,
 		private DefaultNarrowingHelper $defaultNarrowingHelper,
 		private IncDecTypeHelper $incDecTypeHelper,
+		private AssignHandler $assignHandler,
 	)
 	{
 	}
@@ -70,7 +71,8 @@ final class PostDecHandler implements ExprHandler
 		// rule-side asks about it answer from the storage
 		$nodeScopeResolver->storeExpressionResult($storage, $virtualExpr, $virtualExprResult);
 
-		$assignedScope = $nodeScopeResolver->processVirtualAssign(
+		$assignedScope = $this->assignHandler->processVirtualAssign(
+			$nodeScopeResolver,
 			$varResult->getScope(),
 			$storage,
 			$stmt,

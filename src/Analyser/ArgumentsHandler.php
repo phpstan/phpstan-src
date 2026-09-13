@@ -14,6 +14,7 @@ use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\NodeFinder;
+use PHPStan\Analyser\ExprHandler\AssignHandler;
 use PHPStan\Analyser\ExprHandler\ClosureHandler;
 use PHPStan\Analyser\ExprHandler\Helper\ClosureParameterResolver;
 use PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver;
@@ -117,6 +118,7 @@ final class ArgumentsHandler
 		private ExtensionsCollection $staticMethodParameterClosureTypeExtensions,
 		#[AutowiredParameter(ref: '%exceptions.implicitThrows%')]
 		private bool $implicitThrows,
+		private AssignHandler $assignHandler,
 	)
 	{
 	}
@@ -769,7 +771,8 @@ final class ArgumentsHandler
 							$byRefType = new MixedType();
 						}
 
-						$scope = $nodeScopeResolver->processVirtualAssign(
+						$scope = $this->assignHandler->processVirtualAssign(
+							$nodeScopeResolver,
 							$scope,
 							$storage,
 							$stmt,

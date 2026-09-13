@@ -23,6 +23,7 @@ use PHPStan\Analyser\ConditionalExpressionHolder;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExpressionTypeHolder;
+use PHPStan\Analyser\ExprHandler\AssignHandler;
 use PHPStan\Analyser\ExprHandler\Helper\IdenticalNarrowingHelper;
 use PHPStan\Analyser\InternalStatementResult;
 use PHPStan\Analyser\InternalThrowPoint;
@@ -83,6 +84,7 @@ final class ForeachHandler implements StmtHandler
 		#[AutowiredParameter(ref: '%exceptions.implicitThrows%')]
 		private bool $implicitThrows,
 		private VarAnnotationProcessor $varAnnotationProcessor,
+		private AssignHandler $assignHandler,
 	)
 	{
 	}
@@ -531,7 +533,8 @@ final class ForeachHandler implements StmtHandler
 				$vars[] = $keyVarName;
 			}
 		} else {
-			$scope = $nodeScopeResolver->processVirtualAssign(
+			$scope = $this->assignHandler->processVirtualAssign(
+				$nodeScopeResolver,
 				$scope,
 				$storage,
 				$stmt,
@@ -550,7 +553,8 @@ final class ForeachHandler implements StmtHandler
 				$scope = $scope->enterForeachKey($originalScope, $stmt->expr, $iterateeType, $nativeIterateeType, $stmt->keyVar->name);
 				$vars[] = $stmt->keyVar->name;
 			} elseif ($stmt->keyVar !== null) {
-				$scope = $nodeScopeResolver->processVirtualAssign(
+				$scope = $this->assignHandler->processVirtualAssign(
+					$nodeScopeResolver,
 					$scope,
 					$storage,
 					$stmt,

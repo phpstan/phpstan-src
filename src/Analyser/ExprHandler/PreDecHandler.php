@@ -32,6 +32,7 @@ final class PreDecHandler implements ExprHandler
 		private ExpressionResultFactory $expressionResultFactory,
 		private IncDecTypeHelper $incDecTypeHelper,
 		private DefaultNarrowingHelper $defaultNarrowingHelper,
+		private AssignHandler $assignHandler,
 	)
 	{
 	}
@@ -72,7 +73,8 @@ final class PreDecHandler implements ExprHandler
 		// final result after this handler returns
 		$nodeScopeResolver->storeExpressionResult($storage, $expr, $incDecValueResult);
 
-		$assignedScope = $nodeScopeResolver->processVirtualAssign(
+		$assignedScope = $this->assignHandler->processVirtualAssign(
+			$nodeScopeResolver,
 			$varResult->getScope(),
 			$storage,
 			$stmt,

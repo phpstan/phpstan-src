@@ -90,9 +90,7 @@ enum {
 	PT_CLASS_RECURSION_GUARD,
 	PT_CLASS_NEVER_TYPE,
 	PT_CLASS_MIXED_TYPE,
-	PT_CLASS_NULL_TYPE,
 	PT_CLASS_UNION_TYPE,
-	PT_CLASS_CONSTANT_FLOAT_TYPE,
 	PT_CLASS_CONSTANT_ARRAY_TYPE,
 	PT_CLASS_OBJECT_WITHOUT_CLASS_TYPE,
 	PT_CLASS_CLASS_NAME_TO_OBJECT_TYPE_RESULT,
@@ -103,7 +101,6 @@ enum {
 	PT_CLASS_EXPONENTIATE_HELPER,
 	PT_CLASS_COMPOUND_TYPE,
 	PT_CLASS_CONSTANT_SCALAR_TYPE,
-	PT_CLASS_FLOAT_TYPE,
 	PT_CLASS_INTERSECTION_TYPE,
 	PT_CLASS_ACCESSORY_DECIMAL_INTEGER_STRING_TYPE,
 	PT_CLASS_ACCESSORY_NON_FALSY_STRING_TYPE,
@@ -131,6 +128,7 @@ enum {
 	PT_CLASS_CONST_EXPR_STRING_NODE,
 	PT_CLASS_NETTE_STRINGS,
 	PT_CLASS_NETTE_REGEXP_EXCEPTION,
+	PT_CLASS_CONST_EXPR_FLOAT_NODE,
 	PT_CLASS_COUNT
 };
 
@@ -198,6 +196,11 @@ extern zend_class_entry *pt_ce_string_type;
 extern zend_class_entry *pt_ce_constant_string_type;
 extern zend_class_entry *pt_ce_class_string_type;
 extern zend_class_entry *pt_ce_generic_class_string_type;
+/* FloatType.cpp, ConstantFloatType.cpp, NullType.cpp, VoidType.cpp */
+extern zend_class_entry *pt_ce_float_type;
+extern zend_class_entry *pt_ce_constant_float_type;
+extern zend_class_entry *pt_ce_null_type;
+extern zend_class_entry *pt_ce_void_type;
 
 /* registration hooks, called from the extension's onStartup */
 /* Shadow.cpp — Runtime::activateShadowing() */
@@ -238,6 +241,13 @@ void pt_register_string_type();
 void pt_register_constant_string_type();
 void pt_register_class_string_type();
 void pt_register_generic_class_string_type();
+/* FloatType before its child ConstantFloatType, then NullType and
+ * VoidType; all after the string family, whose classes their bodies
+ * instantiate (FloatType::toString()) */
+void pt_register_float_type();
+void pt_register_constant_float_type();
+void pt_register_null_type();
+void pt_register_void_type();
 void pt_integer_range_type_rinit();
 void pt_constant_string_type_rinit();
 void pt_is_super_type_of_result_rinit();
@@ -319,6 +329,9 @@ bool pt_is_super_type_of_result_singleton(zval *out, zend_long value);
 /* $self->and($other) on two AcceptsResult instances; false = pending
  * exception (AcceptsResult.cpp) */
 [[nodiscard]] bool pt_accepts_result_and(zval *out, zval *self, zval *other);
+/* new AcceptsResult($trinary, $reasons); $reasons is owned and consumed;
+ * false = pending exception (AcceptsResult.cpp) */
+[[nodiscard]] bool pt_accepts_result_create(zval *out, zval *trinary, zval *reasons);
 /* ->result's trinary value of a native result object; -1 with an Error
  * pending for an object that skipped its constructor (AcceptsResult.cpp) */
 [[nodiscard]] zend_long pt_result_value(zend_object *object);
@@ -348,6 +361,15 @@ bool pt_constant_integer_type_value(zend_object *object, zend_long &out);
 bool pt_string_type_new(zval *out);
 bool pt_class_string_type_new(zval *out);
 bool pt_constant_string_type_new(zval *out, zend_string *value, bool isClassString = false);
+
+/* new FloatType() / new ConstantFloatType($value) / new NullType() /
+ * new VoidType() — instances of the shadowing classes (FloatType.cpp /
+ * ConstantFloatType.cpp / NullType.cpp / VoidType.cpp); false = pending
+ * exception */
+[[nodiscard]] bool pt_float_type_new(zval *out);
+bool pt_constant_float_type_new(zval *out, double value);
+bool pt_null_type_new(zval *out);
+bool pt_void_type_new(zval *out);
 
 /* }}} */
 

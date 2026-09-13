@@ -44,8 +44,11 @@ public:
 		return pt_integer_range_create_all_greater_than_or_equal_to(&zero);
 	}
 
-	/* new FloatType() */
-	static zv::Val toFloat() { return pt_type_new(PT_CLASS_FLOAT_TYPE, 0, NULL); }
+	/* new FloatType() — the shadowing class */
+	static zv::Val toFloat()
+	{
+		return pt_val_of<pt_float_type_new>();
+	}
 
 	/* $this */
 	zv::Val toInteger() const { return thisValue(); }

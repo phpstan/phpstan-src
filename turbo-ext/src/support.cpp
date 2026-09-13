@@ -51,9 +51,7 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_RECURSION_GUARD */ {"recursionGuard", "PHPStan\\Type\\RecursionGuard"},
 	/* PT_CLASS_NEVER_TYPE */ {"neverType", "PHPStan\\Type\\NeverType"},
 	/* PT_CLASS_MIXED_TYPE */ {"mixedType", "PHPStan\\Type\\MixedType"},
-	/* PT_CLASS_NULL_TYPE */ {"nullType", "PHPStan\\Type\\NullType"},
 	/* PT_CLASS_UNION_TYPE */ {"unionType", "PHPStan\\Type\\UnionType"},
-	/* PT_CLASS_CONSTANT_FLOAT_TYPE */ {"constantFloatType", "PHPStan\\Type\\Constant\\ConstantFloatType"},
 	/* PT_CLASS_CONSTANT_ARRAY_TYPE */ {"constantArrayType", "PHPStan\\Type\\Constant\\ConstantArrayType"},
 	/* PT_CLASS_OBJECT_WITHOUT_CLASS_TYPE */ {"objectWithoutClassType", "PHPStan\\Type\\ObjectWithoutClassType"},
 	/* PT_CLASS_CLASS_NAME_TO_OBJECT_TYPE_RESULT */ {"classNameToObjectTypeResult", "PHPStan\\Type\\ClassNameToObjectTypeResult"},
@@ -64,7 +62,6 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_EXPONENTIATE_HELPER */ {"exponentiateHelper", "PHPStan\\Type\\ExponentiateHelper"},
 	/* PT_CLASS_COMPOUND_TYPE */ {"compoundType", "PHPStan\\Type\\CompoundType"},
 	/* PT_CLASS_CONSTANT_SCALAR_TYPE */ {"constantScalarType", "PHPStan\\Type\\ConstantScalarType"},
-	/* PT_CLASS_FLOAT_TYPE */ {"floatType", "PHPStan\\Type\\FloatType"},
 	/* PT_CLASS_INTERSECTION_TYPE */ {"intersectionType", "PHPStan\\Type\\IntersectionType"},
 	/* PT_CLASS_ACCESSORY_DECIMAL_INTEGER_STRING_TYPE */ {"accessoryDecimalIntegerStringType", "PHPStan\\Type\\Accessory\\AccessoryDecimalIntegerStringType"},
 	/* PT_CLASS_ACCESSORY_NON_FALSY_STRING_TYPE */ {"accessoryNonFalsyStringType", "PHPStan\\Type\\Accessory\\AccessoryNonFalsyStringType"},
@@ -92,6 +89,7 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_CONST_EXPR_STRING_NODE */ {"constExprStringNode", "PHPStan\\PhpDocParser\\Ast\\ConstExpr\\ConstExprStringNode"},
 	/* PT_CLASS_NETTE_STRINGS */ {"netteStrings", "Nette\\Utils\\Strings"},
 	/* PT_CLASS_NETTE_REGEXP_EXCEPTION */ {"netteRegexpException", "Nette\\Utils\\RegexpException"},
+	/* PT_CLASS_CONST_EXPR_FLOAT_NODE */ {"constExprFloatNode", "PHPStan\\PhpDocParser\\Ast\\ConstExpr\\ConstExprFloatNode"},
 };
 
 zend_class_entry *pt_class(int idx)

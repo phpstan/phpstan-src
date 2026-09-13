@@ -183,6 +183,10 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_constant_string_type();
 	pt_register_class_string_type();
 	pt_register_generic_class_string_type();
+	pt_register_float_type();
+	pt_register_constant_float_type();
+	pt_register_null_type();
+	pt_register_void_type();
 
 	return SUCCESS;
 }

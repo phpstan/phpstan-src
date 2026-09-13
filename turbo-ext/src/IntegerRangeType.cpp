@@ -1234,11 +1234,12 @@ private:
 		return true;
 	}
 
+	/* new NullType() — the shadowing class */
 	static bool pushNull(zv::Arr &types)
 	{
-		zv::Val nullType = pt_type_new(PT_CLASS_NULL_TYPE, 0, NULL);
-		if (UNEXPECTED(nullType.isUndef())) return false;
-		types.push(std::move(nullType));
+		zval nullType;
+		if (UNEXPECTED(!pt_null_type_new(&nullType))) return false;
+		types.push(zv::Val::adopt(nullType));
 		return true;
 	}
 

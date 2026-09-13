@@ -5,7 +5,7 @@ namespace PHPStan\Type\Constant;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprFloatNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
-use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
@@ -22,7 +22,7 @@ use function is_nan;
 use function str_contains;
 
 /** @api */
-#[ReferencedByTurboExtension(key: 'constantFloatType')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ConstantFloatType.cpp')]
 class ConstantFloatType extends FloatType implements ConstantScalarType
 {
 

@@ -1022,7 +1022,7 @@ public:
 			return zv::Val();
 		}
 		if (ZSTR_LEN(v) == 0) {
-			if (UNEXPECTED(!pushNew(subtractedTypes, PT_CLASS_NULL_TYPE) || !pushString(subtractedTypes))) return zv::Val();
+			if (UNEXPECTED(!pushNull(subtractedTypes) || !pushString(subtractedTypes))) return zv::Val();
 		}
 		if (!truthy(v) && UNEXPECTED(!pushBoolean(subtractedTypes, false))) return zv::Val();
 		return pt_type_mixed_minus(subtractedTypes.table());
@@ -1306,6 +1306,15 @@ private:
 		zval string;
 		if (UNEXPECTED(!pt_string_type_new(&string))) return false;
 		types.push(zv::Val::adopt(string));
+		return true;
+	}
+
+	/* new NullType() — the shadowing class */
+	static bool pushNull(zv::Arr &types)
+	{
+		zval nullType;
+		if (UNEXPECTED(!pt_null_type_new(&nullType))) return false;
+		types.push(zv::Val::adopt(nullType));
 		return true;
 	}
 

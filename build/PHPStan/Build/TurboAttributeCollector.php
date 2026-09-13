@@ -32,6 +32,7 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\VariadicPlaceholder;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
+use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprFloatNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprIntegerNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
@@ -120,6 +121,7 @@ final class TurboAttributeCollector
 		'constExprStringNode' => ConstExprStringNode::class,
 		'netteStrings' => Strings::class,
 		'netteRegexpException' => RegexpException::class,
+		'constExprFloatNode' => ConstExprFloatNode::class,
 	];
 
 	private string $realRoot;

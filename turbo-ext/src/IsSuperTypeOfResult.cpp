@@ -56,7 +56,6 @@ bool pt_result_object_create(zval *out, zend_class_entry *ce, zval *trinary, zva
 bool pt_reasons_merge(zval *result, zval *const *arrays, uint32_t count, bool mergeKeys, bool unique);
 bool pt_reasons_merge_operands(zval *result, zend_object *self, zval *operands, uint32_t count, uint32_t slot, bool mergeKeys, bool unique);
 bool pt_call_fci(zend_fcall_info *fci, zend_fcall_info_cache *fcc, uint32_t argc, zval *argv, zval *retval);
-bool pt_accepts_result_create(zval *out, zval *trinary, zval *reasons);
 bool pt_reasons_decorate(zval *out, zval *reasons, zend_fcall_info *fci, zend_fcall_info_cache *fcc);
 
 /* }}} */

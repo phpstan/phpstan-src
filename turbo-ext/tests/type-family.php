@@ -56,7 +56,7 @@ $observations = [];
 // which implementation answered: smoke.php holds the php run to false and
 // the native run to true, so the two sets can never be one implementation
 // compared against itself
-foreach ([\PHPStan\Type\BooleanType::class, \PHPStan\Type\Constant\ConstantBooleanType::class, \PHPStan\Type\IntegerType::class, \PHPStan\Type\Constant\ConstantIntegerType::class, \PHPStan\Type\IntegerRangeType::class, \PHPStan\Type\StringType::class, \PHPStan\Type\Constant\ConstantStringType::class, \PHPStan\Type\ClassStringType::class, \PHPStan\Type\Generic\GenericClassStringType::class] as $typeClass) {
+foreach ([\PHPStan\Type\BooleanType::class, \PHPStan\Type\Constant\ConstantBooleanType::class, \PHPStan\Type\IntegerType::class, \PHPStan\Type\Constant\ConstantIntegerType::class, \PHPStan\Type\IntegerRangeType::class, \PHPStan\Type\StringType::class, \PHPStan\Type\Constant\ConstantStringType::class, \PHPStan\Type\ClassStringType::class, \PHPStan\Type\Generic\GenericClassStringType::class, \PHPStan\Type\FloatType::class, \PHPStan\Type\Constant\ConstantFloatType::class, \PHPStan\Type\NullType::class, \PHPStan\Type\VoidType::class] as $typeClass) {
 	$observations["native $typeClass"] = (new ReflectionMethod($typeClass, 'describe'))->isInternal();
 }
 
@@ -649,11 +649,294 @@ $stringOthers = static fn (string $string, string $constString, string $classStr
 }
 
 
+// ---- FloatType / ConstantFloatType / NullType / VoidType ----
+// the string family's reflection provider and PhpVersion accessors stay
+// registered from the section above (looseCompare() against objects with
+// __toString() and LooseComparisonHelper consult them)
+$floatPhpVersions = [new \PHPStan\Php\PhpVersion(70400), new \PHPStan\Php\PhpVersion(80400)];
+$floatOthers = static fn (string $float, string $constFloat, string $null, string $void): array => [
+	'float' => new $float(),
+	'float0' => new $constFloat(0.0),
+	'float-0' => new $constFloat(-0.0),
+	'float1' => new $constFloat(1.0),
+	'float1.5' => new $constFloat(1.5),
+	'float-2.5' => new $constFloat(-2.5),
+	'floatHuge' => new $constFloat(1e30),
+	'floatNan' => new $constFloat(NAN),
+	'floatInf' => new $constFloat(INF),
+	'floatNegInf' => new $constFloat(-INF),
+	'floatIntMax' => new $constFloat((float) PHP_INT_MAX),
+	'null' => new $null(),
+	'void' => new $void(),
+	'int' => new \PHPStan\Type\IntegerType(),
+	'int0' => new \PHPStan\Type\Constant\ConstantIntegerType(0),
+	'int1' => new \PHPStan\Type\Constant\ConstantIntegerType(1),
+	'int-1' => new \PHPStan\Type\Constant\ConstantIntegerType(-1),
+	'intMax' => new \PHPStan\Type\Constant\ConstantIntegerType(PHP_INT_MAX),
+	'range0-10' => \PHPStan\Type\IntegerRangeType::fromInterval(0, 10),
+	'rangeMin--1' => \PHPStan\Type\IntegerRangeType::fromInterval(null, -1),
+	'bool' => new \PHPStan\Type\BooleanType(),
+	'true' => new \PHPStan\Type\Constant\ConstantBooleanType(true),
+	'false' => new \PHPStan\Type\Constant\ConstantBooleanType(false),
+	'string' => new \PHPStan\Type\StringType(),
+	'stringEmpty' => new \PHPStan\Type\Constant\ConstantStringType(''),
+	'string0' => new \PHPStan\Type\Constant\ConstantStringType('0'),
+	'string1.5' => new \PHPStan\Type\Constant\ConstantStringType('1.5'),
+	'stringAbc' => new \PHPStan\Type\Constant\ConstantStringType('abc'),
+	'stringNull' => new \PHPStan\Type\Constant\ConstantStringType('null'),
+	'numericString' => new \PHPStan\Type\IntersectionType([new \PHPStan\Type\StringType(), new \PHPStan\Type\Accessory\AccessoryNumericStringType()]),
+	'mixed' => new \PHPStan\Type\MixedType(),
+	'mixedNotNull' => new \PHPStan\Type\MixedType(subtractedType: new $null()),
+	'union' => new \PHPStan\Type\UnionType([new $constFloat(1.5), new $null()]),
+	'unionFloats' => new \PHPStan\Type\UnionType([new $constFloat(1.0), new $constFloat(2.0)]),
+	'unionInts' => new \PHPStan\Type\UnionType([new \PHPStan\Type\Constant\ConstantIntegerType(0), new \PHPStan\Type\Constant\ConstantIntegerType(2)]),
+	'never' => new \PHPStan\Type\NeverType(),
+	'array' => new \PHPStan\Type\ArrayType(new \PHPStan\Type\MixedType(), new \PHPStan\Type\MixedType()),
+	'emptyArray' => new \PHPStan\Type\Constant\ConstantArrayType([], []),
+	'nonEmptyArray' => new \PHPStan\Type\Constant\ConstantArrayType([new \PHPStan\Type\Constant\ConstantIntegerType(0)], [new $null()], [1], [], \PHPStan\TrinaryLogic::createYes()),
+	'object' => new \PHPStan\Type\ObjectType(\stdClass::class),
+	'objectWithToString' => new \PHPStan\Type\ObjectType(\Exception::class),
+	'objectWithoutClass' => new \PHPStan\Type\ObjectWithoutClassType(),
+];
+{
+	$floatClass = \PHPStan\Type\FloatType::class;
+	$constFloatClass = \PHPStan\Type\Constant\ConstantFloatType::class;
+	$nullClass = \PHPStan\Type\NullType::class;
+	$voidClass = \PHPStan\Type\VoidType::class;
+	$r = [];
+	$others = $floatOthers($floatClass, $constFloatClass, $nullClass, $voidClass);
+	$subjects = [
+		'float' => new $floatClass(),
+		'const0' => new $constFloatClass(0.0),
+		'const-0' => new $constFloatClass(-0.0),
+		'const1' => new $constFloatClass(1.0),
+		'const1.5' => new $constFloatClass(1.5),
+		'const-2.5' => new $constFloatClass(-2.5),
+		'const0.1' => new $constFloatClass(0.1),
+		'const0.3' => new $constFloatClass(0.1 + 0.2),
+		'const1e15' => new $constFloatClass(1e15),
+		'const1e17' => new $constFloatClass(1e17),
+		'const1e-7' => new $constFloatClass(1e-7),
+		'const1e30' => new $constFloatClass(1e30),
+		'const-1e30' => new $constFloatClass(-1e30),
+		'constNan' => new $constFloatClass(NAN),
+		'constInf' => new $constFloatClass(INF),
+		'constNegInf' => new $constFloatClass(-INF),
+		'constIntMax' => new $constFloatClass((float) PHP_INT_MAX),
+		'constIntMin' => new $constFloatClass((float) PHP_INT_MIN),
+		'constTiny' => new $constFloatClass(5e-324),
+		'constFloatMax' => new $constFloatClass(PHP_FLOAT_MAX),
+		'constFromInt' => new $constFloatClass(3),
+		'null' => new $nullClass(),
+		'void' => new $voidClass(),
+	];
+	$outOfClassScope = new \PHPStan\Analyser\OutOfClassScope();
+	foreach ($subjects as $name => $subject) {
+		$r["$name class"] = $view($subject);
+		$r["$name instanceof"] = [$subject instanceof \PHPStan\Type\Type, $subject instanceof $floatClass, $subject instanceof $nullClass, $subject instanceof $voidClass, $subject instanceof \PHPStan\Type\ConstantScalarType, $subject instanceof \PHPStan\Type\CompoundType];
+		foreach (['typeOnly' => \PHPStan\Type\VerbosityLevel::typeOnly(), 'value' => \PHPStan\Type\VerbosityLevel::value(), 'precise' => \PHPStan\Type\VerbosityLevel::precise(), 'cache' => \PHPStan\Type\VerbosityLevel::cache()] as $levelName => $level) {
+			$r["$name describe $levelName"] = $subject->describe($level);
+		}
+		foreach ($others as $otherName => $other) {
+			$r["$name isSuperTypeOf $otherName"] = $view($subject->isSuperTypeOf($other));
+			$r["$name accepts $otherName"] = $view($subject->accepts($other, true));
+			$r["$name accepts-loose $otherName"] = $view($subject->accepts($other, false));
+			$r["$name equals $otherName"] = $subject->equals($other);
+			$r["$name tryRemove $otherName"] = $view($subject->tryRemove($other));
+			foreach ($floatPhpVersions as $vi => $phpVersion) {
+				$r["$name looseCompare $otherName $vi"] = $view($subject->looseCompare($other, $phpVersion));
+				$r["$name isSmallerThan $otherName $vi"] = $view($subject->isSmallerThan($other, $phpVersion));
+				$r["$name isSmallerThanOrEqual $otherName $vi"] = $view($subject->isSmallerThanOrEqual($other, $phpVersion));
+			}
+			$r["$name traverseSimultaneously $otherName"] = $view($subject->traverseSimultaneously($other, static fn ($a, $b) => $a));
+			$r["$name traverseSimultaneously-right $otherName"] = $view($subject->traverseSimultaneously($other, static fn ($a, $b) => $b));
+			$r["$name getOffsetValueType $otherName"] = $view($subject->getOffsetValueType($other));
+			$r["$name hasOffsetValueType $otherName"] = $view($subject->hasOffsetValueType($other));
+			// a float offset goes through the PHP ConstantArrayTypeBuilder's (int) cast, whose out-of-range diagnostics are silenced like the ones above
+			$r["$name setOffsetValueType $otherName"] = [$view(@$subject->setOffsetValueType($other, $others['int1'])), $view(@$subject->setOffsetValueType($other, $others['stringAbc'], false))];
+			$r["$name setExistingOffsetValueType $otherName"] = $view($subject->setExistingOffsetValueType($other, $others['int1']));
+			$r["$name unsetOffset $otherName"] = $view($subject->unsetOffset($other));
+			$r["$name inferTemplateTypes $otherName"] = $view($subject->inferTemplateTypes($other));
+			try {
+				$r["$name exponentiate $otherName"] = $view($subject->exponentiate($other));
+			} catch (\Throwable $e) {
+				$r["$name exponentiate $otherName"] = get_class($e);
+			}
+		}
+		// the (int) casts of a NAN, an infinity or an out-of-range float
+		// raise the engine's warning on both sides; silenced so the
+		// observations stay the last line of stdout
+		foreach (['toBoolean', 'toNumber', 'toInteger', 'toFloat', 'toString', 'toArray', 'toArrayKey', 'toBitwiseNotType', 'toAbsoluteNumber', 'toGetClassResultType', 'toObjectTypeForInstanceofCheck',
+			'isTrue', 'isFalse', 'isBoolean', 'isScalar', 'isNull', 'isInteger', 'isFloat', 'isString', 'isNumericString', 'isDecimalIntegerString', 'isNonEmptyString', 'isNonFalsyString', 'isLiteralString', 'isLowercaseString', 'isUppercaseString', 'isClassString', 'isVoid',
+			'isConstantValue', 'isConstantScalarValue', 'getConstantScalarTypes', 'getConstantScalarValues', 'getFiniteTypes', 'isObject', 'isEnum', 'getArrays', 'getConstantArrays', 'getConstantStrings', 'getReferencedClasses', 'getObjectClassNames', 'getObjectClassReflections',
+			'getClassStringType', 'getClassStringObjectType', 'getObjectTypeOrClassStringObjectType', 'canAccessProperties', 'canCallMethods', 'canAccessConstants', 'isIterable', 'isIterableAtLeastOnce', 'getArraySize', 'getIterableKeyType', 'getFirstIterableKeyType', 'getLastIterableKeyType',
+			'getIterableValueType', 'getFirstIterableValueType', 'getLastIterableValueType', 'isArray', 'isConstantArray', 'isOversizedArray', 'isList', 'isOffsetAccessible', 'isOffsetAccessLegal', 'getKeysArray', 'getValuesArray', 'flipArray', 'popArray', 'shiftArray', 'shuffleArray',
+			'makeListMaybe', 'makeAllArrayKeysOptional', 'filterArrayRemovingFalsey', 'getEnumCases', 'getEnumCaseObject', 'isCallable', 'isCloneable', 'toPhpDocNode', 'getReferencedTemplateTypes', 'hasTemplateOrLateResolvableType'] as $method) {
+			if ($method === 'getReferencedTemplateTypes') {
+				foreach ([\PHPStan\Type\Generic\TemplateTypeVariance::createInvariant(), \PHPStan\Type\Generic\TemplateTypeVariance::createCovariant(), \PHPStan\Type\Generic\TemplateTypeVariance::createContravariant()] as $vi => $variance) {
+					$r["$name $method $vi"] = $view($subject->$method($variance));
+				}
+				continue;
+			}
+			$r["$name $method"] = $view(@$subject->$method());
+		}
+		foreach (['getSmallerType', 'getSmallerOrEqualType', 'getGreaterType', 'getGreaterOrEqualType'] as $method) {
+			foreach ($floatPhpVersions as $vi => $phpVersion) {
+				$r["$name $method $vi"] = $view(@$subject->$method($phpVersion));
+			}
+		}
+		foreach ([\PHPStan\Type\GeneralizePrecision::lessSpecific(), \PHPStan\Type\GeneralizePrecision::moreSpecific(), \PHPStan\Type\GeneralizePrecision::templateArgument()] as $i => $precision) {
+			$r["$name generalize $i"] = $view($subject->generalize($precision));
+		}
+		$r["$name toCoercedArgumentType"] = [$view($subject->toCoercedArgumentType(true)), $view(@$subject->toCoercedArgumentType(false))];
+		$r["$name traverse identity"] = $subject->traverse(static fn ($t) => $t) === $subject;
+		$r["$name traverse replaced"] = $view($subject->traverse(static fn ($t) => new \PHPStan\Type\ObjectType(\stdClass::class)));
+		$r["$name getTemplateType"] = $view($subject->getTemplateType('Foo', 'T'));
+		$r["$name hasProperty"] = $view($subject->hasProperty('x'));
+		$r["$name hasMethod"] = $view($subject->hasMethod('x'));
+		$r["$name hasConstant"] = $view($subject->hasConstant('X'));
+		$r["$name setOffsetValueType null"] = [$view($subject->setOffsetValueType(null, $others['int1'])), $view($subject->setOffsetValueType(null, $others['stringAbc'], false)), $view($subject->setOffsetValueType(null, $others['float1.5'], unionValues: true))];
+		$r["$name mapValueType"] = $view($subject->mapValueType(static fn ($t) => $t));
+		$r["$name mapKeyType"] = $view($subject->mapKeyType(static fn ($t) => $t));
+		$r["$name changeKeyCaseArray"] = $view($subject->changeKeyCaseArray(null));
+		$r["$name toClassConstantType"] = $view($subject->toClassConstantType($stringReflectionProvider));
+		$r["$name toObjectTypeForIsACheck"] = [$view($subject->toObjectTypeForIsACheck($others['mixed'], true, true)), $view($subject->toObjectTypeForIsACheck($others['object'], false, false))];
+		foreach (['getProperty', 'getMethod', 'getConstant'] as $method) {
+			try {
+				$args = $method === 'getConstant' ? ['X'] : ['x', $outOfClassScope];
+				$subject->$method(...$args);
+				$r["$name $method"] = 'no throw';
+			} catch (\PHPStan\ShouldNotHappenException $e) {
+				$r["$name $method"] = 'ShouldNotHappenException';
+			}
+		}
+		try {
+			$subject->getCallableParametersAcceptors($outOfClassScope);
+			$r["$name getCallableParametersAcceptors"] = 'no throw';
+		} catch (\PHPStan\ShouldNotHappenException $e) {
+			$r["$name getCallableParametersAcceptors"] = 'ShouldNotHappenException';
+		}
+		if ($subject instanceof \PHPStan\Type\ConstantScalarType) {
+			$r["$name getValue"] = $subject->getValue();
+		}
+	}
+	// equality over the float edge cases: -0.0 equals 0.0, NAN equals NAN
+	foreach ([[0.0, -0.0], [0.0, 0.0], [1.5, 1.5], [1.5, 1.6], [NAN, NAN], [NAN, 1.0], [INF, INF], [INF, -INF], [1e30, 1e30]] as $i => [$a, $b]) {
+		$r["const equals const $i"] = [(new $constFloatClass($a))->equals(new $constFloatClass($b)), $view((new $constFloatClass($a))->isSuperTypeOf(new $constFloatClass($b))), $view((new $constFloatClass($a))->accepts(new $constFloatClass($b), true))];
+	}
+	$r['null equals null'] = [(new $nullClass())->equals(new $nullClass()), (new $voidClass())->equals(new $voidClass()), (new $nullClass())->equals(new $voidClass())];
+	// the ini precision the twin restores after describing
+	$r['ini precision'] = ini_get('precision');
+	// an uninitialized instance: every typed-slot read raises the same Error
+	$uninitialized = (new \ReflectionClass($constFloatClass))->newInstanceWithoutConstructor();
+	foreach (['getValue' => [], 'describe' => [\PHPStan\Type\VerbosityLevel::precise()], 'equals' => [$others['float1.5']], 'isSuperTypeOf' => [$others['float1.5']], 'toString' => [], 'toInteger' => [], 'toBoolean' => [], 'getFiniteTypes' => [], 'toPhpDocNode' => [], 'getSmallerType' => [$floatPhpVersions[1]]] as $method => $args) {
+		try {
+			$uninitialized->$method(...$args);
+			$r["uninitialized $method"] = 'no throw';
+		} catch (\Error $e) {
+			$r["uninitialized $method"] = [get_class($e), $e->getMessage()];
+		}
+	}
+	// the typed constructor parameter: an int coerces, a string does not
+	foreach ([3, '3', null] as $value) {
+		try {
+			$r['construct ' . var_export($value, true)] = $view(new $constFloatClass($value));
+		} catch (\TypeError $e) {
+			$r['construct ' . var_export($value, true)] = 'TypeError';
+		}
+	}
+	// PHP subclasses overriding what the natives call through $this
+	$templateFloat = new \PHPStan\Type\Generic\TemplateFloatType(
+		\PHPStan\Type\Generic\TemplateTypeScope::createWithFunction('foo'),
+		new \PHPStan\Type\Generic\TemplateTypeParameterStrategy(),
+		\PHPStan\Type\Generic\TemplateTypeVariance::createInvariant(),
+		'T',
+		new $floatClass(),
+		null,
+	);
+	$templateNull = new \PHPStan\Type\Generic\TemplateNullType(
+		\PHPStan\Type\Generic\TemplateTypeScope::createWithFunction('foo'),
+		new \PHPStan\Type\Generic\TemplateTypeParameterStrategy(),
+		\PHPStan\Type\Generic\TemplateTypeVariance::createInvariant(),
+		'U',
+		new $nullClass(),
+		null,
+	);
+	foreach (['templateFloat' => $templateFloat, 'templateNull' => $templateNull] as $templateName => $template) {
+		$r["$templateName describe"] = $template->describe(\PHPStan\Type\VerbosityLevel::precise());
+		$r["$templateName equals self"] = [$template->equals($template), $template->equals($subjects['float']), $subjects['float']->equals($template), $subjects['null']->equals($template)];
+		foreach (['float', 'const1.5', 'null', 'void'] as $subjectName) {
+			$r["$templateName isSuperTypeOf $subjectName"] = $view($template->isSuperTypeOf($subjects[$subjectName]));
+			$r["$subjectName isSuperTypeOf $templateName"] = $view($subjects[$subjectName]->isSuperTypeOf($template));
+			$r["$subjectName accepts $templateName"] = $view($subjects[$subjectName]->accepts($template, true));
+			$r["$subjectName tryRemove $templateName"] = $view($subjects[$subjectName]->tryRemove($template));
+			foreach ($floatPhpVersions as $vi => $phpVersion) {
+				$r["$subjectName looseCompare $templateName $vi"] = $view($subjects[$subjectName]->looseCompare($template, $phpVersion));
+				$r["$subjectName isSmallerThan $templateName $vi"] = $view($subjects[$subjectName]->isSmallerThan($template, $phpVersion));
+			}
+		}
+		$r["$templateName toCoercedArgumentType"] = [$view($template->toCoercedArgumentType(true)), $view($template->toCoercedArgumentType(false))];
+		$r["$templateName toAbsoluteNumber"] = $view($template->toAbsoluteNumber());
+		$r["$templateName toFloat"] = $view($template->toFloat());
+		$r["$templateName generalize"] = $view($template->generalize(\PHPStan\Type\GeneralizePrecision::moreSpecific()));
+	}
+	$anonymous = new class (2.5) extends \PHPStan\Type\Constant\ConstantFloatType {
+
+		public function getValue(): float
+		{
+			return 7.25;
+		}
+
+		public function toInteger(): \PHPStan\Type\Type
+		{
+			return new \PHPStan\Type\Constant\ConstantIntegerType(42);
+		}
+
+	};
+	$r['anonymous describe'] = $anonymous->describe(\PHPStan\Type\VerbosityLevel::precise());
+	$r['anonymous getConstantScalarValues'] = $view($anonymous->getConstantScalarValues());
+	$r['anonymous toCoercedArgumentType'] = [$view($anonymous->toCoercedArgumentType(true)), $view($anonymous->toCoercedArgumentType(false))];
+	$r['anonymous toArrayKey'] = $view($anonymous->toArrayKey());
+	$r['anonymous toBoolean'] = $view($anonymous->toBoolean());
+	$r['anonymous equals'] = [$anonymous->equals(new $constFloatClass(2.5)), $anonymous->equals(new $constFloatClass(7.25)), (new $constFloatClass(2.5))->equals($anonymous)];
+	$r['anonymous isSuperTypeOf'] = [$view($anonymous->isSuperTypeOf(new $constFloatClass(2.5))), $view((new $constFloatClass(2.5))->isSuperTypeOf($anonymous)), $view($subjects['float']->isSuperTypeOf($anonymous))];
+	foreach ($floatPhpVersions as $vi => $phpVersion) {
+		$r["anonymous isSmallerThan $vi"] = [$view($anonymous->isSmallerThan($others['int1'], $phpVersion)), $view($others['int1']->isSmallerThan($anonymous, $phpVersion)), $view($subjects['null']->isSmallerThan($anonymous, $phpVersion))];
+		$r["anonymous getSmallerType $vi"] = $view($anonymous->getSmallerType($phpVersion));
+	}
+	$anonymousNull = new class extends \PHPStan\Type\NullType {
+
+		public function toNumber(): \PHPStan\Type\Type
+		{
+			return new \PHPStan\Type\Constant\ConstantIntegerType(-5);
+		}
+
+		public function getValue()
+		{
+			return null;
+		}
+
+	};
+	$r['anonymousNull toAbsoluteNumber'] = $view($anonymousNull->toAbsoluteNumber());
+	$r['anonymousNull toInteger'] = $view($anonymousNull->toInteger());
+	$r['anonymousNull toFloat'] = $view($anonymousNull->toFloat());
+	$r['anonymousNull getConstantScalarValues'] = $view($anonymousNull->getConstantScalarValues());
+	$r['anonymousNull looseCompare emptyArray'] = $view($anonymousNull->looseCompare($others['emptyArray'], $floatPhpVersions[1]));
+	$r['null isSuperTypeOf anonymousNull'] = [$view($subjects['null']->isSuperTypeOf($anonymousNull)), $subjects['null']->equals($anonymousNull), $view($subjects['void']->accepts($anonymousNull, true))];
+	foreach ($r as $key => $value) {
+		$observations["float $key"] = $value;
+	}
+}
+
 // observations holding bytes that are not UTF-8 (the invalid-UTF-8 subject's
-// descriptions) go out base64-encoded so json_encode() keeps every byte
+// descriptions) go out base64-encoded so json_encode() keeps every byte; the
+// non-finite floats (the NAN and infinity subjects' values) as their names
 $encodable = static function (mixed $v) use (&$encodable): mixed {
 	if (is_string($v) && !mb_check_encoding($v, 'UTF-8')) {
 		return 'base64:' . base64_encode($v);
+	}
+	if (is_float($v) && !is_finite($v)) {
+		return is_nan($v) ? 'float:NAN' : ($v > 0 ? 'float:INF' : 'float:-INF');
 	}
 	if (is_array($v)) {
 		return array_map($encodable, $v);

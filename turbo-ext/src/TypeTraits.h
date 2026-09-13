@@ -75,6 +75,7 @@ inline constexpr reg::Arg boolean = reg::boolArg("");
 inline constexpr reg::Arg integer = reg::longArg("");
 inline constexpr reg::Arg nullableInteger = reg::longArg("", true);
 inline constexpr reg::Arg array = reg::arrayArg("");
+inline constexpr reg::Arg floating = reg::doubleArg("");
 
 } // namespace ptret
 
@@ -124,14 +125,14 @@ zv::Val pt_type_accepts_result(zend_long value);
 zv::Val pt_type_is_super_type_of_result(zend_long value);
 
 /* new ErrorType(), new MixedType(), new MixedType(subtractedType: new
- * NullType()); UNDEF = pending exception */
+ * NullType()) (the shadowing NullType); UNDEF = pending exception */
 zv::Val pt_type_new_error_type();
 zv::Val pt_type_new_mixed_type();
 zv::Val pt_type_new_mixed_type_without_null();
 
-/* new ConstantIntegerType($value) (the shadowing class), new
- * ConstantFloatType($value), new ConstantStringType($value), new
- * UnionType($types) ($types consumed); UNDEF = pending exception */
+/* new ConstantIntegerType($value), new ConstantFloatType($value), new
+ * ConstantStringType($value) (the shadowing classes), new UnionType($types)
+ * ($types consumed); UNDEF = pending exception */
 zv::Val pt_type_new_constant_integer(zend_long value);
 zv::Val pt_type_new_constant_float(double value);
 zv::Val pt_type_new_constant_string(const char *value, size_t len);
@@ -264,6 +265,10 @@ void pt_type_trait_constant_scalar(reg::Class &cls);
 void pt_type_trait_constant_scalar_to_boolean(reg::Class &cls);
 /* src/Type/Traits/ConstantNumericComparisonTypeTrait.php */
 void pt_type_trait_constant_numeric_comparison(reg::Class &cls);
+/* src/Type/Traits/FalseyBooleanTypeTrait.php */
+void pt_type_trait_falsey_boolean(reg::Class &cls);
+/* src/Type/Traits/NonRemoveableTypeTrait.php */
+void pt_type_trait_non_removeable(reg::Class &cls);
 
 /* }}} */
 

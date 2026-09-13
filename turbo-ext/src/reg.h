@@ -290,6 +290,11 @@ constexpr Arg longArg(const char *name, bool nullable = false)
 	return { name, detail::codeMask(IS_LONG, nullable) | detail::flagBits(false, false), nullptr };
 }
 
+constexpr Arg doubleArg(const char *name)
+{
+	return { name, detail::codeMask(IS_DOUBLE, false) | detail::flagBits(false, false), nullptr };
+}
+
 constexpr Arg boolArg(const char *name)
 {
 	return { name, detail::codeMask(_IS_BOOL, false) | detail::flagBits(false, false), nullptr };

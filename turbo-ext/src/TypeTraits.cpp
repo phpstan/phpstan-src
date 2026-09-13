@@ -23,6 +23,8 @@
 #include "generated/ConstantScalarTypeTrait.h"
 #include "generated/ConstantScalarToBooleanTrait.h"
 #include "generated/ConstantNumericComparisonTypeTrait.h"
+#include "generated/FalseyBooleanTypeTrait.h"
+#include "generated/NonRemoveableTypeTrait.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpragmas"
@@ -171,12 +173,13 @@ zv::Val pt_type_new_mixed_type()
 zv::Val pt_type_new_mixed_type_without_null()
 {
 	/* new MixedType(subtractedType: new NullType()) — the named argument
-	 * skips $isExplicitMixed, whose default is false */
-	zv::Val nullType = pt_type_new(PT_CLASS_NULL_TYPE, 0, NULL);
-	if (UNEXPECTED(nullType.isUndef())) return zv::Val();
+	 * skips $isExplicitMixed, whose default is false; the shadowing NullType */
+	zval nullType;
+	if (UNEXPECTED(!pt_null_type_new(&nullType))) return zv::Val();
+	zv::Val nullTypeVal = zv::Val::adopt(nullType);
 	zval args[2];
 	ZVAL_FALSE(&args[0]);
-	ZVAL_COPY_VALUE(&args[1], nullType.raw());
+	ZVAL_COPY_VALUE(&args[1], nullTypeVal.raw());
 	return pt_type_new(PT_CLASS_MIXED_TYPE, 2, args);
 }
 
@@ -189,9 +192,9 @@ zv::Val pt_type_new_constant_integer(zend_long value)
 
 zv::Val pt_type_new_constant_float(double value)
 {
-	zval arg;
-	ZVAL_DOUBLE(&arg, value);
-	return pt_type_new(PT_CLASS_CONSTANT_FLOAT_TYPE, 1, &arg);
+	zval result;
+	if (UNEXPECTED(!pt_constant_float_type_new(&result, value))) return zv::Val();
+	return zv::Val::adopt(result);
 }
 
 zv::Val pt_type_new_constant_string(const char *value, size_t len)
@@ -1113,11 +1116,12 @@ enum ConstantNumericComparison
 	CNC_GREATER_OR_EQUAL,
 };
 
+/* new NullType() — the shadowing class */
 static bool cncPushNull(zv::Arr &types)
 {
-	zv::Val nullType = pt_type_new(PT_CLASS_NULL_TYPE, 0, NULL);
-	if (UNEXPECTED(nullType.isUndef())) return false;
-	types.push(std::move(nullType));
+	zval nullType;
+	if (UNEXPECTED(!pt_null_type_new(&nullType))) return false;
+	types.push(zv::Val::adopt(nullType));
 	return true;
 }
 
@@ -1222,6 +1226,35 @@ void pt_register_type_traits()
 	pt_ce_generalize_callback->ce_flags |= ZEND_ACC_FINAL;
 	pt_generalize_callback_invoke = (zend_function *) zend_hash_str_find_ptr(&pt_ce_generalize_callback->function_table, PT_LC("__invoke"));
 	ZEND_ASSERT(pt_generalize_callback_invoke != NULL);
+}
+
+/* }}} */
+
+/* {{{ FalseyBooleanTypeTrait */
+
+void pt_type_trait_falsey_boolean(reg::Class &cls)
+{
+	namespace sigs = ptdecl::FalseyBooleanTypeTrait::sig;
+	cls.traitMethod(sigs::toBoolean, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		/* new ConstantBooleanType(false) — the shadowing class */
+		zval result;
+		if (UNEXPECTED(!pt_constant_boolean_type_new(&result, false))) RETURN_THROWS();
+		RETURN_COPY_VALUE(&result);
+	});
+}
+
+/* }}} */
+
+/* {{{ NonRemoveableTypeTrait */
+
+void pt_type_trait_non_removeable(reg::Class &cls)
+{
+	namespace sigs = ptdecl::NonRemoveableTypeTrait::sig;
+	cls.traitMethod(sigs::tryRemove, [](INTERNAL_FUNCTION_PARAMETERS) {
+		PT_ARGS(1, 1);
+		RETURN_NULL();
+	});
 }
 
 /* }}} */

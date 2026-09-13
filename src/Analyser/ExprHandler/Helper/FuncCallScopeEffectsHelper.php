@@ -11,6 +11,7 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ArgsResult;
 use PHPStan\Analyser\ExpressionResultStorage;
+use PHPStan\Analyser\ExprHandler\AssignHandler;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\Scope;
@@ -64,6 +65,7 @@ final class FuncCallScopeEffectsHelper
 		private OutputBufferHelper $outputBufferHelper,
 		#[AutowiredParameter]
 		private bool $rememberPossiblyImpureFunctionValues,
+		private AssignHandler $assignHandler,
 	)
 	{
 	}
@@ -82,7 +84,8 @@ final class FuncCallScopeEffectsHelper
 		$newArrayType = $arrayWalkOriginalArrayType->mapValueType(static fn (Type $type): Type => $arrayWalkValueType);
 		$newArrayNativeType = $arrayWalkOriginalArrayNativeType->mapValueType(static fn (Type $type): Type => $arrayWalkValueNativeType);
 
-		$scope = $nodeScopeResolver->processVirtualAssign(
+		$scope = $this->assignHandler->processVirtualAssign(
+			$nodeScopeResolver,
 			$scope,
 			$storage,
 			$stmt,
@@ -169,7 +172,8 @@ final class FuncCallScopeEffectsHelper
 			$arrayArgNativeType = $arrayArgResult->getTypeOnScope($scope, true);
 			$isArrayPop = $functionReflection->getName() === 'array_pop';
 
-			$scope = $nodeScopeResolver->processVirtualAssign(
+			$scope = $this->assignHandler->processVirtualAssign(
+				$nodeScopeResolver,
 				$scope,
 				$storage,
 				$stmt,
@@ -189,7 +193,8 @@ final class FuncCallScopeEffectsHelper
 		) {
 			$arrayArg = $normalizedExpr->getArgs()[0]->value;
 
-			$scope = $nodeScopeResolver->processVirtualAssign(
+			$scope = $this->assignHandler->processVirtualAssign(
+				$nodeScopeResolver,
 				$scope,
 				$storage,
 				$stmt,
@@ -215,7 +220,8 @@ final class FuncCallScopeEffectsHelper
 		) {
 			$arrayArg = $normalizedExpr->getArgs()[0]->value;
 
-			$scope = $nodeScopeResolver->processVirtualAssign(
+			$scope = $this->assignHandler->processVirtualAssign(
+				$nodeScopeResolver,
 				$scope,
 				$storage,
 				$stmt,
@@ -255,7 +261,8 @@ final class FuncCallScopeEffectsHelper
 				$replacementNativeType = new ConstantArrayType([], []);
 			}
 
-			$scope = $nodeScopeResolver->processVirtualAssign(
+			$scope = $this->assignHandler->processVirtualAssign(
+				$nodeScopeResolver,
 				$scope,
 				$storage,
 				$stmt,
@@ -275,7 +282,8 @@ final class FuncCallScopeEffectsHelper
 		) {
 			$arrayArg = $normalizedExpr->getArgs()[0]->value;
 
-			$scope = $nodeScopeResolver->processVirtualAssign(
+			$scope = $this->assignHandler->processVirtualAssign(
+				$nodeScopeResolver,
 				$scope,
 				$storage,
 				$stmt,
@@ -292,7 +300,8 @@ final class FuncCallScopeEffectsHelper
 		) {
 			$arrayArg = $normalizedExpr->getArgs()[0]->value;
 
-			$scope = $nodeScopeResolver->processVirtualAssign(
+			$scope = $this->assignHandler->processVirtualAssign(
+				$nodeScopeResolver,
 				$scope,
 				$storage,
 				$stmt,

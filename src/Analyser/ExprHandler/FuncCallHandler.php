@@ -107,6 +107,7 @@ final class FuncCallHandler implements ExprHandler
 		private ClosureTypeResolver $closureTypeResolver,
 		private ArgumentsHandler $argumentsHandler,
 		private ClosureProcessor $closureProcessor,
+		private AssignHandler $assignHandler,
 	)
 	{
 	}
@@ -228,7 +229,8 @@ final class FuncCallHandler implements ExprHandler
 					$propertyAttributes = $normalizedExpr->getAttributes();
 					$propertyAttributes['inCloneWith'] = true;
 					if (count($clonePropertyKeyTypeScalars) === 1) {
-						$nodeScopeResolver->processVirtualAssign(
+						$this->assignHandler->processVirtualAssign(
+							$nodeScopeResolver,
 							$scope,
 							$storage,
 							$stmt,
@@ -239,7 +241,8 @@ final class FuncCallHandler implements ExprHandler
 						continue;
 					}
 
-					$nodeScopeResolver->processVirtualAssign(
+					$this->assignHandler->processVirtualAssign(
+						$nodeScopeResolver,
 						$scope,
 						$storage,
 						$stmt,

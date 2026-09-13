@@ -51,9 +51,11 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VarAnnotationProcessor;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\Analyser\VariableFlowBuilder;
+use PHPStan\Analyser\VirtualAssignNodeCallback;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\ExistingArrayDimFetch;
 use PHPStan\Node\Expr\IntertwinedVariableByReferenceWithExpr;
+use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\TypeExpr;
@@ -545,6 +547,59 @@ final class AssignHandler implements ExprHandler
 
 			return $specifiedTypes;
 		};
+	}
+
+	/**
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	public function processVirtualAssign(NodeScopeResolver $nodeScopeResolver, MutatingScope $scope, ExpressionResultStorage $storage, Node\Stmt $stmt, Expr $var, Expr $assignedExpr, callable $nodeCallback, ?ExpressionResult $assignedExprResult = null): ExpressionResult
+	{
+		// work off an available result for the assigned expr: passed by the
+		// caller, or fabricated from a type-carrying virtual node - threaded
+		// straight into applyWrite() so its reads compose instead of falling
+		// back to on-demand pricing of the type, the truthy/falsey narrowing,
+		// and the synthetic sentinel comparisons
+		if (
+			$assignedExprResult === null
+			&& ($assignedExpr instanceof TypeExpr || $assignedExpr instanceof NativeTypeExpr)
+			&& $storage->findExpressionResult($assignedExpr) === null
+		) {
+			$assignedExprResult = $this->virtualExprResultHelper->createTypeExprResult($scope, $assignedExpr);
+		}
+
+		$virtualAssignNodeCallback = VirtualAssignNodeCallback::create($nodeCallback);
+		$target = $this->prepareTarget(
+			$nodeScopeResolver,
+			$scope,
+			$storage,
+			$stmt,
+			$var,
+			$assignedExpr,
+			$virtualAssignNodeCallback,
+			ExpressionContext::createDeep(),
+			AssignTargetWalkMode::virtualAssign(),
+		);
+
+		return $this->applyWrite(
+			$nodeScopeResolver,
+			$target,
+			$this->expressionResultFactory->create(
+				$target->getScope(),
+				beforeScope: $target->getScope(),
+				expr: $assignedExpr,
+				hasYield: false,
+				isAlwaysTerminating: false,
+				throwPoints: [],
+				impurePoints: [],
+				typeCallback: static fn () => new MixedType(),
+				specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
+			),
+			$assignedExprResult,
+			$stmt,
+			$storage,
+			$virtualAssignNodeCallback,
+			ExpressionContext::createDeep(),
+		);
 	}
 
 	/**

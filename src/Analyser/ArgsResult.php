@@ -10,7 +10,7 @@ use function spl_object_id;
 use function sprintf;
 
 /**
- * Result of NodeScopeResolver::processArgs(): the scope/throw/impure state after
+ * Result of ArgumentsHandler::processArgs(): the scope/throw/impure state after
  * processing all arguments (wrapped ExpressionResult) plus the ParametersAcceptor
  * resolved from the arg types gathered on the arg-to-arg evolving scope. The
  * resolved acceptor is type-driven (selectFromTypes) so its generics are resolved

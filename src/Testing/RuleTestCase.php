@@ -5,6 +5,7 @@ namespace PHPStan\Testing;
 use PhpParser\Node;
 use PHPStan\Analyser\Analyser;
 use PHPStan\Analyser\AnalyserResultFinalizer;
+use PHPStan\Analyser\ArgumentsHandler;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\FileAnalyser;
@@ -29,15 +30,6 @@ use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\Rules\Rule;
-use PHPStan\Type\FunctionParameterClosureThisExtension;
-use PHPStan\Type\FunctionParameterClosureTypeExtension;
-use PHPStan\Type\FunctionParameterOutTypeExtension;
-use PHPStan\Type\MethodParameterClosureThisExtension;
-use PHPStan\Type\MethodParameterClosureTypeExtension;
-use PHPStan\Type\MethodParameterOutTypeExtension;
-use PHPStan\Type\StaticMethodParameterClosureThisExtension;
-use PHPStan\Type\StaticMethodParameterClosureTypeExtension;
-use PHPStan\Type\StaticMethodParameterOutTypeExtension;
 use function array_map;
 use function array_merge;
 use function count;
@@ -92,23 +84,14 @@ abstract class RuleTestCase extends PHPStanTestCase
 			self::getContainer()->getByType(TemplateArgumentObserver::class),
 			$reflectionProvider,
 			self::getContainer()->getByType(FileHelper::class),
-			self::getContainer()->getExtensionsCollection(FunctionParameterOutTypeExtension::class),
-			self::getContainer()->getExtensionsCollection(MethodParameterOutTypeExtension::class),
-			self::getContainer()->getExtensionsCollection(StaticMethodParameterOutTypeExtension::class),
 			$readWritePropertiesExtensions !== [] ? new DirectExtensionsCollection($readWritePropertiesExtensions) : self::getContainer()->getExtensionsCollection(ReadWritePropertiesExtension::class),
-			self::getContainer()->getExtensionsCollection(FunctionParameterClosureThisExtension::class),
-			self::getContainer()->getExtensionsCollection(MethodParameterClosureThisExtension::class),
-			self::getContainer()->getExtensionsCollection(StaticMethodParameterClosureThisExtension::class),
-			self::getContainer()->getExtensionsCollection(FunctionParameterClosureTypeExtension::class),
-			self::getContainer()->getExtensionsCollection(MethodParameterClosureTypeExtension::class),
-			self::getContainer()->getExtensionsCollection(StaticMethodParameterClosureTypeExtension::class),
 			self::getContainer()->getExtensionsCollection(PerFileAnalysisResettable::class),
 			$this->shouldPolluteScopeWithLoopInitialAssignments(),
 			$this->shouldPolluteScopeWithAlwaysIterableForeach(),
-			self::getContainer()->getParameter('exceptions')['implicitThrows'],
 			$this->shouldTreatPhpDocTypesAsCertain(),
 			self::getContainer()->getByType(ExpressionResultFactory::class),
 			self::getContainer()->getByType(StatementsHandler::class),
+			self::getContainer()->getByType(ArgumentsHandler::class),
 		);
 	}
 

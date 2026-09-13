@@ -6,6 +6,7 @@ use LogicException;
 use PhpParser\Node;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Name;
+use PHPStan\Analyser\ArgumentsHandler;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\Generics\TemplateArgumentObserver;
 use PHPStan\Analyser\MutatingScope;
@@ -23,15 +24,6 @@ use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ConstantScalarType;
-use PHPStan\Type\FunctionParameterClosureThisExtension;
-use PHPStan\Type\FunctionParameterClosureTypeExtension;
-use PHPStan\Type\FunctionParameterOutTypeExtension;
-use PHPStan\Type\MethodParameterClosureThisExtension;
-use PHPStan\Type\MethodParameterClosureTypeExtension;
-use PHPStan\Type\MethodParameterOutTypeExtension;
-use PHPStan\Type\StaticMethodParameterClosureThisExtension;
-use PHPStan\Type\StaticMethodParameterClosureTypeExtension;
-use PHPStan\Type\StaticMethodParameterOutTypeExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use Symfony\Component\Finder\Finder;
@@ -67,23 +59,14 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			$container->getByType(TemplateArgumentObserver::class),
 			$reflectionProvider,
 			$container->getByType(FileHelper::class),
-			$container->getExtensionsCollection(FunctionParameterOutTypeExtension::class),
-			$container->getExtensionsCollection(MethodParameterOutTypeExtension::class),
-			$container->getExtensionsCollection(StaticMethodParameterOutTypeExtension::class),
 			$container->getExtensionsCollection(ReadWritePropertiesExtension::class),
-			$container->getExtensionsCollection(FunctionParameterClosureThisExtension::class),
-			$container->getExtensionsCollection(MethodParameterClosureThisExtension::class),
-			$container->getExtensionsCollection(StaticMethodParameterClosureThisExtension::class),
-			$container->getExtensionsCollection(FunctionParameterClosureTypeExtension::class),
-			$container->getExtensionsCollection(MethodParameterClosureTypeExtension::class),
-			$container->getExtensionsCollection(StaticMethodParameterClosureTypeExtension::class),
 			$container->getExtensionsCollection(PerFileAnalysisResettable::class),
 			$container->getParameter('polluteScopeWithLoopInitialAssignments'),
 			$container->getParameter('polluteScopeWithAlwaysIterableForeach'),
-			$container->getParameter('exceptions')['implicitThrows'],
 			$container->getParameter('treatPhpDocTypesAsCertain'),
 			$container->getByType(ExpressionResultFactory::class),
 			$container->getByType(StatementsHandler::class),
+			$container->getByType(ArgumentsHandler::class),
 		);
 	}
 

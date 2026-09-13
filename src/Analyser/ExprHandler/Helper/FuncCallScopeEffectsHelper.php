@@ -385,7 +385,7 @@ final class FuncCallScopeEffectsHelper
 
 	/**
 	 * Invalidates the arguments a callee could write through, mirroring what
-	 * NodeScopeResolver::processArgs() does for a callee with side effects. A
+	 * ArgumentsHandler::processArgs() does for a callee with side effects. A
 	 * closure has no FunctionReflection, so processArgs() skips it.
 	 *
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback

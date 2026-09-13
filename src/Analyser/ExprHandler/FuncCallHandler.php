@@ -13,6 +13,7 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ArgsResult;
+use PHPStan\Analyser\ArgumentsHandler;
 use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
@@ -103,6 +104,7 @@ final class FuncCallHandler implements ExprHandler
 		private DynamicReturnTypeStoragePrimer $storagePrimer,
 		private ImpossibleCheckTypeHelper $impossibleCheckTypeHelper,
 		private ClosureTypeResolver $closureTypeResolver,
+		private ArgumentsHandler $argumentsHandler,
 	)
 	{
 	}
@@ -140,7 +142,7 @@ final class FuncCallHandler implements ExprHandler
 			// their turn. The closure is then walked on the post-argument scope.
 			$shallowVariants = $this->closureTypeResolver->getDeclaredClosureType($scope, $expr->name)->getCallableParametersAcceptors($scope);
 			$shallowAcceptor = ParametersAcceptorSelector::combineVariantsForNormalization($expr->getArgs(), $shallowVariants, null);
-			$argumentsWalkedAhead = $nodeScopeResolver->processArgs($stmt, null, null, $shallowVariants, null, ArgumentsNormalizer::reorderFuncArguments($shallowAcceptor, $expr) ?? $expr, $scope, $storage, $nodeCallback, $context);
+			$argumentsWalkedAhead = $this->argumentsHandler->processArgs($nodeScopeResolver, $stmt, null, null, $shallowVariants, null, ArgumentsNormalizer::reorderFuncArguments($shallowAcceptor, $expr) ?? $expr, $scope, $storage, $nodeCallback, $context);
 			$scope = $argumentsWalkedAhead->getScope();
 		}
 		if ($expr->name instanceof Expr) {
@@ -320,7 +322,7 @@ final class FuncCallHandler implements ExprHandler
 				// the arguments are processed; the call resolves from the walked
 				// closure's acceptor, which is the sole variant of its type
 				? $argumentsWalkedAhead->withResolvedParametersAcceptor($parametersAcceptor)
-				: $nodeScopeResolver->processArgs($stmt, $functionReflection, null, $variants, $namedArgumentsVariants, $normalizedExpr, $scope, $storage, $nodeCallback, $context);
+				: $this->argumentsHandler->processArgs($nodeScopeResolver, $stmt, $functionReflection, null, $variants, $namedArgumentsVariants, $normalizedExpr, $scope, $storage, $nodeCallback, $context);
 		} finally {
 			if ($argsGatherer !== null) {
 				$nodeScopeResolver->popNodeGatherer();
@@ -332,7 +334,7 @@ final class FuncCallHandler implements ExprHandler
 		if ($argumentsWalkedAhead === null) {
 			$scope = $argsResult->getScope();
 		}
-		$nodeScopeResolver->processDroppedArgs($stmt, $expr, $normalizedExpr, $scope, $storage, $context);
+		$this->argumentsHandler->processDroppedArgs($nodeScopeResolver, $stmt, $expr, $normalizedExpr, $scope, $storage, $context);
 		$hasYield = $argsResult->hasYield();
 		$throwPoints = array_merge($throwPoints, $argsResult->getThrowPoints());
 		$impurePoints = array_merge($impurePoints, $argsResult->getImpurePoints());

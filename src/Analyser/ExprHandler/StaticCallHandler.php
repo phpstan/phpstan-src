@@ -9,6 +9,7 @@ use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ArgsResult;
+use PHPStan\Analyser\ArgumentsHandler;
 use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
@@ -78,6 +79,7 @@ final class StaticCallHandler implements ExprHandler
 		private DefaultNarrowingHelper $defaultNarrowingHelper,
 		private DynamicReturnTypeStoragePrimer $storagePrimer,
 		private EarlyTerminatingCallHelper $earlyTerminatingHelper,
+		private ArgumentsHandler $argumentsHandler,
 	)
 	{
 	}
@@ -250,10 +252,10 @@ final class StaticCallHandler implements ExprHandler
 		if ($parametersAcceptor !== null && $context->getInAssignRightSideExpr() === $expr) {
 			$context = $context->enterAssignRightSideCallArgs($parametersAcceptor);
 		}
-		$argsResult = $nodeScopeResolver->processArgs($stmt, $methodReflection, null, $variants, $namedArgumentsVariants, $normalizedExpr, $scope, $storage, $nodeCallback, $context, $closureBindScopeFactory);
+		$argsResult = $this->argumentsHandler->processArgs($nodeScopeResolver, $stmt, $methodReflection, null, $variants, $namedArgumentsVariants, $normalizedExpr, $scope, $storage, $nodeCallback, $context, $closureBindScopeFactory);
 		$resolvedParametersAcceptor = $argsResult->getResolvedParametersAcceptor();
 		$scope = $argsResult->getScope();
-		$nodeScopeResolver->processDroppedArgs($stmt, $expr, $normalizedExpr, $scope, $storage, $context);
+		$this->argumentsHandler->processDroppedArgs($nodeScopeResolver, $stmt, $expr, $normalizedExpr, $scope, $storage, $context);
 
 		if ($methodReflection !== null) {
 			// created after the args were processed - the pure-unless-callable-

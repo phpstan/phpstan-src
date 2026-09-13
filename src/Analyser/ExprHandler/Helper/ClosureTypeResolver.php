@@ -80,7 +80,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 	public function __construct(
 		private NodeScopeResolver $nodeScopeResolver,
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
-		private ClosureParameterResolver $closureParameterResolver,
+		private ContextualClosureParameterResolver $contextualClosureParameterResolver,
 	)
 	{
 	}
@@ -801,7 +801,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 				$nativePassedToType = $inParameter instanceof ExtendedParameterReflection ? $inParameter->getNativeType() : $inParameter->getType();
 			}
 		}
-		$parameterTypes = $this->closureParameterResolver->resolve($scope, $expr, $storage, null, $passedToType, $nativePassedToType);
+		$parameterTypes = $this->contextualClosureParameterResolver->resolve($scope, $expr, $storage, $passedToType, $nativePassedToType);
 
 		return [$parameters, $isVariadic, $parameterTypes->parameters, $parameterTypes->nativeParameters];
 	}

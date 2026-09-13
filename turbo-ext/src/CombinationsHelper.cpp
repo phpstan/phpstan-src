@@ -143,7 +143,8 @@ using phpstanturbo::CombinationsHelper;
 
 void pt_register_combinations_helper()
 {
-	reg::Class cls("PHPStanTurbo\\CombinationsHelper");
+	reg::Class cls("PHPStan\\Internal\\CombinationsHelper");
+	cls.final();
 
 	cls.method("combinations", reg::PublicStatic, 1, { reg::arrayArg("arrays") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		HashTable *arrays;
@@ -159,8 +160,7 @@ void pt_register_combinations_helper()
 		result.intoReturnValue(return_value);
 	});
 
-	/* not final: a PHP stub subclass may extend this class */
-	pt_ce_combinations = cls.register_();
+	cls.shadow(&pt_ce_combinations);
 }
 
 /* }}} */

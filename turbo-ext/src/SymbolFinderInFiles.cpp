@@ -196,7 +196,8 @@ zv::Val SymbolFinderInFiles::findSymbols(HashTable *files, bool supportsEnums)
 
 void pt_register_symbol_finder_in_files()
 {
-	reg::Class cls("PHPStanTurbo\\SymbolFinderInFiles");
+	reg::Class cls("PHPStan\\Reflection\\BetterReflection\\SourceLocator\\SymbolFinderInFiles");
+	cls.final();
 
 	/* the arginfo has to keep the real parameter class name: Nette reflects
 	 * this constructor while compiling the container (rule 6) */
@@ -220,8 +221,7 @@ void pt_register_symbol_finder_in_files()
 		finder.findSymbols(files, supportsEnums).intoReturnValue(return_value);
 	});
 
-	/* not final: a PHP stub subclass may extend this class */
-	pt_ce_symbol_finder = cls.register_();
+	cls.shadow(&pt_ce_symbol_finder);
 }
 
 /* }}} */

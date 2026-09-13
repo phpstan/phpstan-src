@@ -3,7 +3,7 @@
 // Differential test: PHPStanTurbo\* native classes vs PHPStan's PHP implementations.
 // Run: php -d extension=.../phpstan_turbo.so smoke.php  (from repo root)
 
-require __DIR__ . '/../../vendor/autoload.php';
+['manifest' => $shadowedClasses, 'classMap' => $classMap] = require __DIR__ . '/activate-prefixed.php';
 
 use PHPStan\TrinaryLogic;
 
@@ -17,40 +17,18 @@ function check(bool $cond, string $msg): void
 	}
 }
 
-if (!extension_loaded('phpstan_turbo')) {
-	fwrite(STDERR, "extension not loaded\n");
-	exit(2);
-}
-
-$classMap = require __DIR__ . '/../../vendor/turbo-class-map.php';
-$shadowedClasses = json_decode(file_get_contents(__DIR__ . '/../../vendor/turbo-shadowed-classes.json'), true, 8, JSON_THROW_ON_ERROR);
-
 // The native class-reference table is the authority on the map's shape: the
-// generated map must cover it exactly; an entry without a baked default
-// name is one the native code instantiates, so its class must itself be
-// shadowed (the resolved name is then the stub subclass and created objects
-// satisfy the original type hints); every baked default must equal the
-// mapped class.
+// generated map must cover it exactly, and every baked default must equal
+// the mapped class (the native code holds the class entries of the classes
+// it shadows itself, so the table never names one of them).
 $classRefs = \PHPStanTurbo\Runtime::classRefs();
 ksort($classRefs);
 check(array_keys($classRefs) === array_keys($classMap), 'the class map covers the native class-reference table exactly');
 foreach ($classRefs as $key => $default) {
-	if ($default === null) {
-		check(isset($shadowedClasses[$classMap[$key] ?? '']), "class-map key $key has no native default, so its class must be shadowed");
-	} else {
-		check(($classMap[$key] ?? null) === $default, "class-map key $key must match the native default");
-	}
+	check($default !== null, "class-map key $key has no baked default name");
+	check(($classMap[$key] ?? null) === $default, "class-map key $key must match the native default");
+	check(!isset($shadowedClasses[$default]), "class-map key $key names a shadowed class");
 }
-
-// The class map minus the shadowed classes: the enabler is NOT run here, so
-// the original class names are the real PHP twins, not the stub subclasses —
-// configuring them would make the native factories instantiate the PHP
-// implementations. Unconfigured, they fall back to the native classes, which
-// is what the differential comparison needs.
-\PHPStanTurbo\Runtime::configure(array_filter(
-	$classMap,
-	static fn (string $class): bool => !isset($shadowedClasses[$class]),
-));
 
 // each differential section registers the shadowed class it exercises; the
 // completeness check at the end holds the union against the manifest

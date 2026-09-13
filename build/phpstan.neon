@@ -145,7 +145,7 @@ parameters:
 			path: ../src/Cache/ArenaCache.php
 			reportUnmatched: false
 		-
-			# called from build/generate-turbo-stubs.php and
+			# called from build/generate-turbo-manifest.php and
 			# turbo-ext/bin/side-by-side.php, outside the analysed paths
 			identifier: shipmonk.deadMethod
 			path: PHPStan/Build/TurboAttributeCollector.php
@@ -159,6 +159,11 @@ parameters:
 			# called from bin/phpstan before the autoloader, outside the analysed paths
 			identifier: shipmonk.deadMethod
 			message: '#^Unused PHPStan\\Turbo\\TurboExtensionEnabler::trustOwnTypesIfSuitable#'
+			reportUnmatched: false
+		-
+			# called from bin/phpstan right after the autoloader, outside the analysed paths
+			identifier: shipmonk.deadMethod
+			message: '#^Unused PHPStan\\Turbo\\TurboExtensionEnabler::activateIfCompatible#'
 			reportUnmatched: false
 		-
 			# the turbo extension shadows this seam class; the nullable returns

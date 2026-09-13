@@ -29,12 +29,12 @@ use Symfony\Component\Console\Helper\ProgressBar;
 	require_once __DIR__ . '/../src/Turbo/TurboExtensionSelector.php';
 	require_once __DIR__ . '/../src/Turbo/TurboProcessRestarter.php';
 	TurboProcessRestarter::restartIfSuitable($_SERVER['argv']);
-	TurboExtensionEnabler::enableIfLoaded();
 	TurboExtensionEnabler::trustOwnTypesIfSuitable($_SERVER['argv']);
 
 	$analysisStartTime = microtime(true);
 
 	$devOrPharLoader = require_once __DIR__ . '/../vendor/autoload.php';
+	TurboExtensionEnabler::activateIfCompatible();
 	require_once __DIR__ . '/../preload.php';
 	$cwd = getcwd();
 	$composerJsonPath = ComposerHelper::getComposerJsonPath($cwd);

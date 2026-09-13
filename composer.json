@@ -169,7 +169,7 @@
 		]
 	},
 	"scripts": {
-		"post-autoload-dump": "@php -r \"if (is_file('build/generate-turbo-stubs.php')) include 'build/generate-turbo-stubs.php';\""
+		"post-autoload-dump": "@php -r \"if (is_file('build/generate-turbo-manifest.php')) include 'build/generate-turbo-manifest.php';\""
 	},
 	"minimum-stability": "dev",
 	"prefer-stable": true,

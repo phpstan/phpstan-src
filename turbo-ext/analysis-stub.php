@@ -3,8 +3,7 @@
 /**
  * Symbol stub for PHPStan's self-analysis (registered via scanFiles in
  * build/phpstan.neon). Never executed or autoloaded. Only symbols referenced
- * from analysed code need to appear here; the generated runtime stubs
- * (vendor/turbo-stubs.php) are not part of the analysed paths.
+ * from analysed code need to appear here.
  */
 
 namespace PHPStanTurbo;
@@ -16,6 +15,17 @@ final class Runtime
 	 * @param array<string, class-string> $classMap
 	 */
 	public static function configure(array $classMap): void
+	{
+	}
+
+	/**
+	 * @param array<string, string> $twinFiles
+	 */
+	public static function activateShadowing(array $twinFiles, ?string $prefix = null): void
+	{
+	}
+
+	public static function isShadowing(): bool
 	{
 	}
 

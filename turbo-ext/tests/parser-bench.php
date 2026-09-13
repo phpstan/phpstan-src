@@ -7,7 +7,7 @@
 
 $root = dirname(__DIR__, 2);
 chdir($root);
-require $root . '/vendor/autoload.php';
+require __DIR__ . '/activate-prefixed.php';
 
 $files = [];
 $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator('src', FilesystemIterator::SKIP_DOTS));

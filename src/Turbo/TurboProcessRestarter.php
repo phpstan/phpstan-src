@@ -29,7 +29,7 @@ use const PHP_BINARY;
  * (ProcessHelper) cannot reach it, and dl() cannot load a binary from next
  * to the phar. So the whole process is re-executed with the extension
  * before anything else runs — forked workers then inherit the extension,
- * its stub shadowing, and (when running from a phar) the phar-fork-guard
+ * its shadowing classes, and (when running from a phar) the phar-fork-guard
  * that keeps phar:// reads safe across fork.
  *
  * The OPcache configuration in effect is not the one PHPStan wants (see

@@ -2,9 +2,9 @@
  * PHPStanTurbo\ExpressionResultStorage — native implementation of
  * PHPStan\Analyser\ExpressionResultStorage.
  *
- * Not final: a PHP stub subclass extends this class. duplicate() creates
- * instances of the object's own class (the stub), so userland type hints
- * keep working without a configured Impl entry.
+ * Declared as PHPStan\Analyser\ExpressionResultStorage itself at activation
+ * (final, like the twin); duplicate() creates instances of the object's own
+ * class.
  *
  * The result table is two id-keyed arrays in private property slots:
  * exprsById pins each stored Expr so its object handle cannot be reused
@@ -97,9 +97,10 @@ using phpstanturbo::ExpressionResultStorage;
 
 void pt_register_expression_result_storage()
 {
-	reg::Class cls("PHPStanTurbo\\ExpressionResultStorage");
-	/* not final: a PHP stub subclass extends this class; exprsById/resultsById/
-	 * fallback must stay in this order (OBJ_PROP_NUM slots) */
+	reg::Class cls("PHPStan\\Analyser\\ExpressionResultStorage");
+	cls.final();
+	/* exprsById/resultsById/fallback must stay in this order (OBJ_PROP_NUM
+	 * slots) */
 	cls.privateArrayProperty("exprsById");
 	cls.privateArrayProperty("resultsById");
 	cls.privateNullProperty("fallback");
@@ -144,7 +145,7 @@ void pt_register_expression_result_storage()
 		ExpressionResultStorage(ZEND_THIS).findExpressionResult(expr).intoReturnValue(return_value);
 	});
 
-	cls.register_();
+	cls.shadow(NULL);
 }
 
 /* }}} */

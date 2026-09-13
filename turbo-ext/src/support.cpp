@@ -52,9 +52,6 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_TYPE */ {"type", "PHPStan\\Type\\Type"},
 	/* PT_CLASS_RECURSION_GUARD */ {"recursionGuard", "PHPStan\\Type\\RecursionGuard"},
 	/* PT_CLASS_NEVER_TYPE */ {"neverType", "PHPStan\\Type\\NeverType"},
-	/* PT_CLASS_TRINARY */ {"trinaryLogic", NULL},
-	/* PT_CLASS_ETH */ {"expressionTypeHolder", NULL},
-	/* PT_CLASS_CEH */ {"conditionalExpressionHolder", NULL},
 };
 
 zend_class_entry *pt_class(int idx)
@@ -84,19 +81,6 @@ zend_class_entry *pt_class(int idx)
 	zend_string_release(name);
 	ref->ce = ce;
 	return ce;
-}
-
-zend_class_entry *pt_impl_class(int idx, zend_class_entry *native_fallback)
-{
-	pt_class_ref *ref = &PT_G(class_refs)[idx];
-	if (EXPECTED(ref->ce != NULL)) {
-		return ref->ce;
-	}
-	if (ref->configured == NULL) {
-		ref->ce = native_fallback;
-		return native_fallback;
-	}
-	return pt_class(idx);
 }
 
 void pt_class_map_configure(zend_string *key, zend_string *value)
@@ -213,7 +197,7 @@ zval *pt_trinary_singleton(zend_long value)
 {
 	if (UNEXPECTED(!PT_G(trinary_inited))) {
 		static const zend_long values[3] = {PT_TRI_YES, PT_TRI_MAYBE, PT_TRI_NO};
-		zend_class_entry *impl = pt_impl_class(PT_CLASS_TRINARY, pt_ce_trinary);
+		zend_class_entry *impl = pt_ce_trinary;
 		zval *slots[3];
 		slots[0] = &PT_G(trinary_yes);
 		slots[1] = &PT_G(trinary_maybe);
@@ -778,7 +762,7 @@ bool pt_check_holder(zval *zv)
 
 void pt_holder_create(zval *result, zval *expr, zval *type, zend_long certainty)
 {
-	zend_class_entry *impl = pt_impl_class(PT_CLASS_ETH, pt_ce_expr_type_holder);
+	zend_class_entry *impl = pt_ce_expr_type_holder;
 	zend_object *obj;
 	object_init_ex(result, impl);
 	obj = Z_OBJ_P(result);

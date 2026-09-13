@@ -16,6 +16,10 @@ if (!extension_loaded('phpstan_turbo')) {
 
 use PHPStanTurbo\ArenaCache;
 
+// every mode (parent and the spawned children) declares the native class
+// as PHPStanTurbo\ArenaCache first
+require __DIR__ . '/activate-prefixed.php';
+
 $failures = 0;
 function check(bool $cond, string $msg): void
 {

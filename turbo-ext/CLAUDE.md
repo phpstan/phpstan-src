@@ -1,6 +1,6 @@
 # turbo-ext — instructions for working on the native extension
 
-Read `README.md` first: the stub-shadowing pattern, the sync machinery, and
+Read `README.md` first: how shadowing works, the sync machinery, and
 the seven **Design rules for new ports** there are binding. This file is the
 operational checklist on top of them.
 
@@ -21,9 +21,13 @@ being ≥0.5% faster is. When the estimate is marginal, don't port.
    `grep "\$this->foo"` in double quotes sends `\$` to grep and silently
    matches nothing — use single quotes). Run the full test suite now, before
    any native work.
-2. **Check it has no parent class** — the stub shell extends the native
-   class and PHP is single-inheritance, so the collector rejects it. If it is
-   a DI service, its native `__construct` arginfo must declare the real
+2. **Note its parent and interfaces** — the native class is declared with
+   the twin's real name, final flag, parent and interfaces
+   (`cls.final()`, `cls.parent(...)`, `cls.implements({...})`), and linked
+   like a PHP declaration: interface methods need declared return types, a
+   non-final class must dispatch its own non-final methods through the
+   object's class entry (a PHP subclass may override them). If it is a DI
+   service, its native `__construct` arginfo must declare the real
    parameter class names (rule 6 in README): Nette autowires by reflecting
    the constructor, and erased types fail container compilation for every
    shadowed service at once.
@@ -57,16 +61,15 @@ being ≥0.5% faster is. When the estimate is marginal, don't port.
    class with `#[ReferencedByTurboExtension(key: '...')]` (vendored PhpParser
    classes are hardcoded in `build/TurboAttributeCollector.php` instead —
    `tests/smoke.php` holds the map against the real compiled table via
-   `Runtime::classRefs()`). A referenced class that is itself shadowed is one
-   the native code *instantiates*: its table entry gets no default name, and
-   the resolved name is the stub subclass, so created instances satisfy the
-   original type hints.
+   `Runtime::classRefs()`). Never reference a shadowed class this way — the
+   native code holds its class entry (the `shadow(&pt_ce_x)` out-pointer)
+   and instantiates it directly.
 5. **Mark the class** with `#[ShadowedByTurboExtension(turboClass:
    'PHPStanTurbo\Foo', implementation: __DIR__ . '/../turbo-ext/src/Foo.cpp')]`
-   and run `composer dump-autoload` — `build/generate-turbo-stubs.php`
-   regenerates the stub shells in `vendor/turbo-stubs.php`, the manifest of
-   shadowed pairs in `vendor/turbo-shadowed-classes.json` and the class map
-   in `vendor/turbo-class-map.php` from the attributes (shadowed classes
+   and run `composer dump-autoload` — `build/generate-turbo-manifest.php`
+   regenerates the manifest of shadowed pairs in
+   `vendor/turbo-shadowed-classes.json` and the class map in
+   `vendor/turbo-class-map.php` from the attributes (shadowed classes
    living in vendor/ cannot carry the attribute and are hardcoded in
    `build/TurboAttributeCollector.php`).
 6. **Check method parity**: `php bin/side-by-side.php` must pass (it also
@@ -79,7 +82,9 @@ being ≥0.5% faster is. When the estimate is marginal, don't port.
    coverage.
 8. **Verify**: strict build, smoke test,
    `php -d extension=$PWD/turbo-ext/phpstan_turbo.so turbo-ext/tests/signature-parity.php`
-   (arginfo parameter names must match the PHP twin exactly — named arguments),
+   (arginfo parameter names must match the PHP twin exactly — named
+   arguments — and optional parameters need `reg::withDefault()` so named
+   arguments can skip them),
    full `make tests` with the extension loaded, and byte-identical analysis
    output with the extension loaded vs. not loaded. Anything touching
    `src/parser/` additionally runs `turbo-ext/tests/parser-corpus.php`
@@ -145,7 +150,7 @@ Output identity: `--error-format=raw` runs in both modes must diff empty.
   actual multi-threaded use.
 - Node callbacks run nested walks — native code may be re-entered.
 - Cloned scopes must reset per-instance memo properties to constructor
-  defaults, and native factories must instantiate the `…Impl` stub classes.
+  defaults.
 
 ## Updating php-parser (the native parser engine)
 

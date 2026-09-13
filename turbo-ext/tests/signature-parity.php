@@ -10,27 +10,14 @@
  * Run with the extension loaded and vendor/ installed:
  *   php -d extension=$PWD/turbo-ext/phpstan_turbo.so turbo-ext/tests/signature-parity.php
  *
- * The enabler is deliberately NOT run, so the original PHP classes load
- * unshadowed next to the PHPStanTurbo ones.
+ * The enabler is deliberately NOT run: the native classes are declared as
+ * PHPStanTurbo\* next to the original PHP classes (tests/activate-prefixed.php).
  */
 
 $root = dirname(__DIR__, 2);
 chdir($root);
 
-if (!extension_loaded('phpstan_turbo')) {
-	fwrite(STDERR, "the phpstan_turbo extension is not loaded\n");
-	exit(1);
-}
-
-require $root . '/vendor/autoload.php';
-
-// generated next to vendor/turbo-stubs.php by build/generate-turbo-stubs.php
-$manifestFile = 'vendor/turbo-shadowed-classes.json';
-if (!is_file($manifestFile)) {
-	fwrite(STDERR, $manifestFile . " does not exist — run composer dump-autoload first\n");
-	exit(1);
-}
-$manifest = json_decode(file_get_contents($manifestFile), true, 8, JSON_THROW_ON_ERROR);
+['manifest' => $manifest] = require __DIR__ . '/activate-prefixed.php';
 
 // Native arginfo deliberately erases most types to none or object: baking
 // class-name strings into the binary would couple it to userland names, and
@@ -59,7 +46,7 @@ function normalizeType(?ReflectionType $type, array $nativeToTwin, string $selfC
 
 $nativeToTwin = [];
 foreach ($manifest as $twinClass => $entry) {
-	$nativeToTwin[strtolower('PHPStanTurbo\\' . basename($entry['cpp'], '.cpp'))] = strtolower($twinClass);
+	$nativeToTwin[strtolower($entry['turboClass'])] = strtolower($twinClass);
 }
 
 function visibility(ReflectionMethod $m): string
@@ -71,11 +58,36 @@ $failed = false;
 $compared = 0;
 
 foreach ($manifest as $twinClass => $entry) {
-	$nativeClass = 'PHPStanTurbo\\' . basename($entry['cpp'], '.cpp');
+	$nativeClass = $entry['turboClass'];
 	$twin = new ReflectionClass($twinClass);
 	$native = new ReflectionClass($nativeClass);
 
 	$problems = [];
+
+	// the class-level shape the native declaration must repeat: what the
+	// twin declares is what the shadowing class is linked with at activation
+	if ($native->isFinal() !== $twin->isFinal()) {
+		$problems[] = sprintf('is %s natively, %s in PHP', $native->isFinal() ? 'final' : 'not final', $twin->isFinal() ? 'final' : 'not final');
+	}
+	$nativeParent = $native->getParentClass();
+	$twinParent = $twin->getParentClass();
+	$nativeParentName = $nativeParent === false ? null : strtr(strtolower($nativeParent->getName()), $nativeToTwin);
+	if ($nativeParentName !== ($twinParent === false ? null : strtolower($twinParent->getName()))) {
+		$problems[] = sprintf('extends %s natively, %s in PHP', $nativeParent === false ? 'nothing' : $nativeParent->getName(), $twinParent === false ? 'nothing' : $twinParent->getName());
+	}
+	$nativeInterfaces = array_map('strtolower', $native->getInterfaceNames());
+	$twinInterfaces = array_map('strtolower', $twin->getInterfaceNames());
+	sort($nativeInterfaces);
+	sort($twinInterfaces);
+	if ($nativeInterfaces !== $twinInterfaces) {
+		$problems[] = sprintf('implements [%s] natively, [%s] in PHP', implode(', ', $native->getInterfaceNames()), implode(', ', $twin->getInterfaceNames()));
+	}
+	if (!array_key_exists('final', $entry) || !array_key_exists('parent', $entry)
+		|| $entry['final'] !== $twin->isFinal()
+		|| $entry['parent'] !== ($twinParent === false ? null : $twinParent->getName())
+	) {
+		$problems[] = 'the manifest final/parent entries do not match the class — regenerate with composer dump-autoload';
+	}
 
 	// the manifest must point at the file the class actually lives in
 	// (bin/side-by-side.php parses that file's source as the PHP side)

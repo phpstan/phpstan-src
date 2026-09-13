@@ -10,15 +10,19 @@ use Attribute;
  * every method must behave exactly like its native counterpart (see
  * turbo-ext/README.md for the sync machinery).
  *
- * On composer dump-autoload, build/generate-turbo-stubs.php collects these
- * attributes and generates vendor/turbo-stubs.php — an empty stub shell per
- * class extending the native one and repeating its implements clause (a
- * parent class is rejected: the shell has no inheritance slot left for it)
- * — which TurboExtensionEnabler declares
- * before the Composer autoloader registers when the extension is active,
- * plus vendor/turbo-shadowed-classes.json — the manifest of shadowed pairs
- * read by the enabler, the compiler's preload builder, and the parity
- * tooling.
+ * With the extension active, TurboExtensionEnabler::activateIfCompatible()
+ * declares the native implementation under this very class name right
+ * after the Composer autoloader registers (a linked class like any PHP
+ * declaration: same final flag, parent and interfaces), so the PHP twin is
+ * never loaded and every reference resolves to the native class. The twin's
+ * source file stays the class's file for reflection.
+ *
+ * On composer dump-autoload, build/generate-turbo-manifest.php collects
+ * these attributes into vendor/turbo-shadowed-classes.json — the manifest
+ * of shadowed pairs read by the enabler, the compiler's preload builder,
+ * and the parity tooling. $turboClass is the name the differential tests
+ * declare the native class under next to the twin ("PHPStanTurbo\" plus
+ * the short class name).
  */
 #[Attribute(flags: Attribute::TARGET_CLASS)]
 final class ShadowedByTurboExtension

@@ -1317,7 +1317,8 @@ using phpstanturbo::ParserEngine;
 
 void pt_register_parser_runner(void)
 {
-	reg::Class cls("PHPStanTurbo\\ParserRunner");
+	reg::Class cls("PHPStan\\Parser\\ParserRunner");
+	cls.final();
 
 	cls.method("parse", reg::PublicStatic, 3, { reg::objectArg("parser"), reg::stringArg("sourceCode"), reg::objectArg("errorHandler") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *parserObj, *code, *errorHandler;
@@ -1346,7 +1347,7 @@ void pt_register_parser_runner(void)
 		zend_call_known_function(parseFn, Z_OBJ_P(parserObj), Z_OBJCE_P(parserObj), return_value, 2, args, NULL);
 	});
 
-	cls.register_();
+	cls.shadow(NULL);
 }
 
 /* }}} */

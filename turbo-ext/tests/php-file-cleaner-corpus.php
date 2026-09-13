@@ -9,23 +9,9 @@
 // Run: php -d extension=.../phpstan_turbo.so turbo-ext/tests/php-file-cleaner-corpus.php
 
 $root = dirname(__DIR__, 2);
-require $root . '/vendor/autoload.php';
+require __DIR__ . '/activate-prefixed.php';
 
-if (!extension_loaded('phpstan_turbo')) {
-	fwrite(STDERR, "extension not loaded\n");
-	exit(2);
-}
-
-// Declares the stub subclasses before the autoloader can load the twins.
-PHPStan\Turbo\TurboExtensionEnabler::enableIfLoaded();
-
-use PHPStan\Reflection\BetterReflection\SourceLocator\PhpFileCleaner;
-
-$native = new PhpFileCleaner();
-if (get_parent_class($native) !== 'PHPStanTurbo\PhpFileCleaner') {
-	fwrite(STDERR, "the native class is not shadowing the twin — is the extension version current?\n");
-	exit(2);
-}
+$native = new PHPStanTurbo\PhpFileCleaner();
 
 // The reference is the twin's own source with the class renamed, so it cannot
 // drift from the file the port mirrors.

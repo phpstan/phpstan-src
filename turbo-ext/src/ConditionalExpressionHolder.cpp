@@ -2,8 +2,9 @@
  * PHPStanTurbo\ConditionalExpressionHolder — native implementation of
  * PHPStan\Analyser\ConditionalExpressionHolder.
  *
- * Not final: a PHP stub subclass extends this class. The getKey() string is
- * built by pt_ceh_key_build() in support.cpp, shared with ScopeOps.
+ * Declared as PHPStan\Analyser\ConditionalExpressionHolder itself at
+ * activation (final, like the twin). The getKey() string is built by
+ * pt_ceh_key_build() in support.cpp, shared with ScopeOps.
  */
 
 #include "support.h"
@@ -77,9 +78,9 @@ using phpstanturbo::ConditionalExpressionHolder;
 
 void pt_register_conditional_expression_holder()
 {
-	reg::Class cls("PHPStanTurbo\\ConditionalExpressionHolder");
-	/* not final: a PHP stub subclass extends this class;
-	 * conditionExpressionTypeHolders/typeHolder must stay in this order */
+	reg::Class cls("PHPStan\\Analyser\\ConditionalExpressionHolder");
+	cls.final();
+	/* conditionExpressionTypeHolders/typeHolder must stay in this order */
 	cls.privateNullProperty("conditionExpressionTypeHolders");
 	cls.privateNullProperty("typeHolder");
 
@@ -114,7 +115,7 @@ void pt_register_conditional_expression_holder()
 		key.intoReturnValue(return_value);
 	});
 
-	pt_ce_cond_expr_holder = cls.register_();
+	cls.shadow(&pt_ce_cond_expr_holder);
 }
 
 /* }}} */

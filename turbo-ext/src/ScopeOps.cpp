@@ -8,8 +8,8 @@
  * for method, in the same order; where a body departs from the twin's shape
  * for performance the comment on the method says so. The PHP_METHOD functions
  * at the bottom are only the engine ABI glue (parameter parsing + delegation).
- * Not final: a PHP stub subclass extends this class, so PHP code calls the
- * methods through the shadowed class.
+ * Declared as PHPStan\Analyser\ScopeOps itself at activation (final, like
+ * the twin), so PHP code calls the methods through the shadowed name.
  */
 
 #include "support.h"
@@ -1662,7 +1662,7 @@ private:
 		}
 
 		zval cehRaw;
-		object_init_ex(&cehRaw, pt_impl_class(PT_CLASS_CEH, pt_ce_cond_expr_holder));
+		object_init_ex(&cehRaw, pt_ce_cond_expr_holder);
 		zv::Val ceh = zv::Val::adopt(cehRaw);
 		zv::ObjRef cehObj(ceh.ref().asObject());
 		cehObj.propAtWrite(PT_CEH_PROP_CONDS, std::move(conditions));
@@ -2157,7 +2157,8 @@ void pt_scope_ops_rshutdown()
 
 void pt_register_scope_ops()
 {
-	reg::Class cls("PHPStanTurbo\\ScopeOps");
+	reg::Class cls("PHPStan\\Analyser\\ScopeOps");
+	cls.final();
 
 	cls.method("mergeVariableHolders", reg::PublicStatic, 2, { reg::arrayArg("ourVariableTypeHolders"), reg::arrayArg("theirVariableTypeHolders"), reg::any("differingKeys", true) }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		HashTable *ours, *theirs;
@@ -2425,7 +2426,7 @@ void pt_register_scope_ops()
 		result.intoReturnValue(return_value);
 	});
 
-	pt_ce_scope_ops = cls.register_();
+	cls.shadow(&pt_ce_scope_ops);
 	(void) pt_ce_scope_ops;
 }
 

@@ -22,7 +22,8 @@ static zend_class_entry *pt_ce_php_file_cleaner = nullptr;
 
 void pt_register_php_file_cleaner()
 {
-	reg::Class cls("PHPStanTurbo\\PhpFileCleaner");
+	reg::Class cls("PHPStan\\Reflection\\BetterReflection\\SourceLocator\\PhpFileCleaner");
+	cls.final();
 
 	cls.method("__construct", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
@@ -42,8 +43,7 @@ void pt_register_php_file_cleaner()
 		RETURN_STRINGL(cleaned.data(), cleaned.size());
 	});
 
-	/* not final: a PHP stub subclass may extend this class */
-	pt_ce_php_file_cleaner = cls.register_();
+	cls.shadow(&pt_ce_php_file_cleaner);
 }
 
 /* }}} */

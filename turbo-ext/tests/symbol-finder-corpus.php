@@ -10,24 +10,9 @@
 // Run: php -d extension=.../phpstan_turbo.so turbo-ext/tests/symbol-finder-corpus.php
 
 $root = dirname(__DIR__, 2);
-require $root . '/vendor/autoload.php';
+require __DIR__ . '/activate-prefixed.php';
 
-if (!extension_loaded('phpstan_turbo')) {
-	fwrite(STDERR, "extension not loaded\n");
-	exit(2);
-}
-
-// Declares the stub subclasses before the autoloader can load the twins.
-PHPStan\Turbo\TurboExtensionEnabler::enableIfLoaded();
-
-use PHPStan\Reflection\BetterReflection\SourceLocator\PhpFileCleaner;
-use PHPStan\Reflection\BetterReflection\SourceLocator\SymbolFinderInFiles;
-
-$native = new SymbolFinderInFiles(new PhpFileCleaner());
-if (get_parent_class($native) !== 'PHPStanTurbo\SymbolFinderInFiles') {
-	fwrite(STDERR, "the native class is not shadowing the twin — is the extension version current?\n");
-	exit(2);
-}
+$native = new PHPStanTurbo\SymbolFinderInFiles(new PHPStanTurbo\PhpFileCleaner());
 
 // The references are the twins' own sources with the classes renamed, so they
 // cannot drift from the files the port mirrors.

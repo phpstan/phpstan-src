@@ -37,11 +37,9 @@ use RecursiveIteratorIterator;
 use ReflectionClass;
 use RuntimeException;
 use Throwable;
-use function array_keys;
 use function class_exists;
 use function count;
 use function file_get_contents;
-use function implode;
 use function interface_exists;
 use function json_decode;
 use function json_encode;
@@ -51,7 +49,6 @@ use function sprintf;
 use function str_replace;
 use function str_starts_with;
 use function strlen;
-use function strrpos;
 use function strtr;
 use function substr;
 use function var_export;
@@ -62,21 +59,21 @@ use const JSON_UNESCAPED_SLASHES;
 
 /**
  * Collects the ShadowedByTurboExtension and ReferencedByTurboExtension
- * attributes with runtime reflection and renders the three generated files:
- * vendor/turbo-stubs.php, vendor/turbo-shadowed-classes.json and
- * vendor/turbo-class-map.php. Shared by build/generate-turbo-stubs.php
- * (which writes the artifacts on every autoloader dump) and
- * turbo-ext/bin/side-by-side.php (which re-derives and byte-compares them,
- * so a stale dump fails the check). Not autoloaded and not shipped —
- * require this file directly; the Composer autoloader must be registered.
+ * attributes with runtime reflection and renders the two generated files:
+ * vendor/turbo-shadowed-classes.json and vendor/turbo-class-map.php. Shared
+ * by build/generate-turbo-manifest.php (which writes the artifacts on every
+ * autoloader dump) and turbo-ext/bin/side-by-side.php (which re-derives and
+ * byte-compares them, so a stale dump fails the check). Not autoloaded and
+ * not shipped — require this file directly; the Composer autoloader must be
+ * registered.
  */
 final class TurboAttributeCollector
 {
 
 	// Shadowed classes living in vendor/ cannot carry the attribute, so
-	// their pairs are hardcoded. Class name => [native class, final, .cpp]
+	// their pairs are hardcoded. Class name => [test name, .cpp]
 	private const VENDORED_PAIRS = [
-		NodeTraverser::class => ['PHPStanTurbo\NodeTraverser', false, 'turbo-ext/src/NodeTraverser.cpp'],
+		NodeTraverser::class => ['PHPStanTurbo\NodeTraverser', 'turbo-ext/src/NodeTraverser.cpp'],
 	];
 
 	// Classes the native code references that live in vendor/ cannot carry
@@ -148,8 +145,7 @@ final class TurboAttributeCollector
 	 * the path) and merges the hardcoded vendored entries.
 	 *
 	 * @return array{
-	 *     pairs: array<string, array{string, bool, string, list<class-string>}>,
-	 *     manifest: array<string, array{php: string, cpp: string, vendored?: bool}>,
+	 *     manifest: array<string, array{php: string, cpp: string, turboClass: string, final: bool, parent: string|null, interfaces: list<class-string>, vendored?: bool}>,
 	 *     classMap: array<string, string>,
 	 *     referenced: array<string, string>,
 	 * }
@@ -187,7 +183,7 @@ final class TurboAttributeCollector
 			$attributes = $reflection->getAttributes(ShadowedByTurboExtension::class);
 			if (count($attributes) > 0) {
 				$attribute = $attributes[0]->newInstance();
-				$pairs[$className] = [$attribute->turboClass, $reflection->isFinal(), $this->relativize($attribute->implementation)];
+				$pairs[$className] = [$attribute->turboClass, $this->relativize($attribute->implementation)];
 			}
 
 			foreach ($reflection->getAttributes(ReferencedByTurboExtension::class) as $referencedAttribute) {
@@ -200,42 +196,36 @@ final class TurboAttributeCollector
 			}
 		}
 
-		foreach (array_keys($pairs) as $className) {
-			$reflection = new ReflectionClass($className);
-
-			// The stub shell extends the native class, and PHP is
-			// single-inheritance, so a parent of the shadowed class would
-			// silently disappear together with everything it declares.
-			$parent = $reflection->getParentClass();
-			if ($parent !== false) {
-				throw new RuntimeException(sprintf(
-					'%s cannot be shadowed by the turbo extension because it extends %s — the stub shell already extends the native class.',
-					$className,
-					$parent->getName(),
-				));
-			}
-
-			// Interfaces do survive, but only because they are re-declared on
-			// the stub: it inherits from the native class alone, so an
-			// interface left out here silently stops matching instanceof and
-			// DI type lookups.
-			$pairs[$className][3] = $reflection->getInterfaceNames();
-		}
-
 		ksort($pairs);
 		ksort($classMap);
 		ksort($referenced);
 
 		$manifest = [];
-		foreach ($pairs as $className => [, , $cppFile]) {
-			$fileName = (new ReflectionClass($className))->getFileName();
+		foreach ($pairs as $className => [$turboClass, $cppFile]) {
+			$reflection = new ReflectionClass($className);
+			$fileName = $reflection->getFileName();
 			if ($fileName === false) {
 				throw new RuntimeException(sprintf('%s has no source file', $className));
 			}
+
+			// The differential tests declare the native class next to the
+			// twin under this name; the extension derives it from the real
+			// name, so the attribute must agree with that rule.
+			if ($turboClass !== 'PHPStanTurbo\\' . $reflection->getShortName()) {
+				throw new RuntimeException(sprintf('%s names its native class %s, expected PHPStanTurbo\\%s', $className, $turboClass, $reflection->getShortName()));
+			}
+
+			$parent = $reflection->getParentClass();
 			$phpFile = $this->relativize($fileName);
 			$entry = [
 				'php' => $phpFile,
 				'cpp' => $cppFile,
+				'turboClass' => $turboClass,
+				// what the native class must declare too — held by
+				// turbo-ext/tests/signature-parity.php
+				'final' => $reflection->isFinal(),
+				'parent' => $parent === false ? null : $parent->getName(),
+				'interfaces' => $reflection->getInterfaceNames(),
 			];
 			if (str_starts_with($phpFile, 'vendor/')) {
 				$entry['vendored'] = true;
@@ -243,102 +233,11 @@ final class TurboAttributeCollector
 			$manifest[$className] = $entry;
 		}
 
-		return ['pairs' => $pairs, 'manifest' => $manifest, 'classMap' => $classMap, 'referenced' => $referenced];
+		return ['manifest' => $manifest, 'classMap' => $classMap, 'referenced' => $referenced];
 	}
 
 	/**
-	 * Parent interfaces first, deduplicated, keyed by name to keep the order
-	 * stable across calls.
-	 *
-	 * @param class-string $interface
-	 * @param array<string, string> $files
-	 */
-	private static function collectInterfaceFiles(string $interface, array &$files): void
-	{
-		if (isset($files[$interface])) {
-			return;
-		}
-
-		$reflection = new ReflectionClass($interface);
-		foreach ($reflection->getInterfaceNames() as $parent) {
-			self::collectInterfaceFiles($parent, $files);
-		}
-
-		$fileName = $reflection->getFileName();
-		if ($fileName === false) {
-			return; // an engine interface, always declared
-		}
-
-		$files[$interface] = $fileName;
-	}
-
-	/** @param array<string, array{string, bool, string, list<class-string>}> $pairs */
-	public function renderStubs(array $pairs): string
-	{
-		$namespaces = [];
-		foreach ($pairs as $className => [$turboClass, $final, , $interfaces]) {
-			$pos = strrpos($className, '\\');
-			if ($pos === false) {
-				throw new RuntimeException(sprintf('%s is not a namespaced class name', $className));
-			}
-			$implements = '';
-			if (count($interfaces) > 0) {
-				$implements = ' implements \\' . implode(', \\', $interfaces);
-			}
-			$namespaces[substr($className, 0, $pos)][] = sprintf(
-				"\t%sclass %s extends \\%s%s {}",
-				$final ? 'final ' : '',
-				substr($className, $pos + 1),
-				$turboClass,
-				$implements,
-			);
-		}
-
-		$blocks = [];
-
-		// The stubs are declared before the Composer autoloader registers, so
-		// the interfaces they re-declare have to be required here — parents
-		// first, since an interface extending another needs it at declaration
-		// time. Interfaces without a file are the engine's own.
-		$interfaceFiles = [];
-		foreach ($pairs as $pair) {
-			foreach ($pair[3] as $interface) {
-				self::collectInterfaceFiles($interface, $interfaceFiles);
-			}
-		}
-		if (count($interfaceFiles) > 0) {
-			$requires = [];
-			foreach ($interfaceFiles as $file) {
-				$requires[] = sprintf("\trequire_once __DIR__ . '/../%s';", $this->relativize($file));
-			}
-			$blocks[] = sprintf("namespace {\n\n%s\n\n}", implode("\n", $requires));
-		}
-
-		foreach ($namespaces as $namespace => $declarations) {
-			$blocks[] = sprintf("namespace %s {\n\n%s\n\n}", $namespace, implode("\n", $declarations));
-		}
-
-		return sprintf(
-			<<<'PHP'
-<?php declare(strict_types = 1);
-
-// turbo-stubs.php @generated by build/generate-turbo-stubs.php — do not edit.
-// Empty stub shells shadowing each class marked with the
-// ShadowedByTurboExtension attribute (plus the hardcoded vendored
-// PhpParser\NodeTraverser) with the phpstan_turbo extension's native
-// implementation. Required by PHPStan\Turbo\TurboExtensionEnabler before
-// the Composer autoloader registers — hence the interface sources required
-// below, which the autoloader cannot resolve yet.
-
-%s
-
-PHP,
-			implode("\n\n", $blocks),
-		);
-	}
-
-	/**
-	 * @param array<string, array{php: string, cpp: string, vendored?: bool}> $manifest
+	 * @param array<string, array{php: string, cpp: string, turboClass: string, final: bool, parent: string|null, interfaces: list<class-string>, vendored?: bool}> $manifest
 	 * @throws JsonException
 	 */
 	public function renderManifestJson(array $manifest): string
@@ -358,7 +257,7 @@ PHP,
 			<<<'PHP'
 <?php declare(strict_types = 1);
 
-// turbo-class-map.php @generated by build/generate-turbo-stubs.php — do not
+// turbo-class-map.php @generated by build/generate-turbo-manifest.php — do not
 // edit. The class map PHPStan\Turbo\TurboExtensionEnabler passes to
 // PHPStanTurbo\Runtime::configure(): one entry per key of the native
 // class-reference table, from the ReferencedByTurboExtension attributes

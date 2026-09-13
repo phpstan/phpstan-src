@@ -811,7 +811,8 @@ void pt_register_type_combinator_cache()
 {
 	static const char *TYPE_CLASS = "PHPStan\\Type\\Type";
 
-	reg::Class cls("PHPStanTurbo\\TypeCombinatorCache");
+	reg::Class cls("PHPStan\\Type\\TypeCombinatorCache");
+	cls.final();
 
 	cls.method("union", reg::PublicStatic, 0, { reg::variadicObj("types", TYPE_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *types;
@@ -864,7 +865,7 @@ void pt_register_type_combinator_cache()
 		TypeCombinatorCache::clear();
 	});
 
-	pt_ce_type_combinator_cache = cls.register_();
+	cls.shadow(&pt_ce_type_combinator_cache);
 }
 
 /* }}} */

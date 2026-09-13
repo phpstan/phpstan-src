@@ -1296,7 +1296,8 @@ void pt_arena_mshutdown()
 
 void pt_register_arena_cache()
 {
-	reg::Class cls("PHPStanTurbo\\ArenaCache");
+	reg::Class cls("PHPStan\\Cache\\ArenaCache");
+	cls.final();
 
 	cls.method("create", reg::PublicStatic, 1, { reg::stringArg("runId") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *runId;
@@ -1378,5 +1379,5 @@ void pt_register_arena_cache()
 		phpstanturbo::ArenaCache::publishHash(recordKey, entries);
 	});
 
-	cls.register_();
+	cls.shadow(NULL);
 }

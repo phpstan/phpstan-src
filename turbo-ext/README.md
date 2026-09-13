@@ -40,44 +40,67 @@ Useful to know:
 
 A plain Zend C++ extension, no framework dependencies.
 
-## How it works — the stub-shadowing pattern
+## How it works — shadowing under the real names
 
 Every shadowed piece of PHP code follows the same three steps:
 
 1. The code is extracted into a dedicated PHP class (plain PHP, this is what
    runs when the extension is absent) — e.g. `PHPStan\Analyser\ScopeOps`,
-   `PHPStan\Analyser\ExprHandlerDispatch`, `PHPStan\Node\NodeScanner`, or an
-   existing value class like `PHPStan\TrinaryLogic`.
-2. The extension implements the same class natively in the `PHPStanTurbo`
-   namespace (one class per file in `src/`).
-3. The PHP class is marked with the `#[ShadowedByTurboExtension]` attribute
-   naming its native counterpart. On every `composer dump-autoload`,
-   `build/generate-turbo-stubs.php` collects the attributes with runtime
-   reflection and generates `vendor/turbo-stubs.php` — an empty stub shell
-   per class, `final class Foo extends \PHPStanTurbo\Foo {}` (shadowed
-   classes living in vendor/ cannot carry the attribute and are hardcoded in
-   `build/TurboAttributeCollector.php`; currently `PhpParser\NodeTraverser`).
-   The shell repeats the class's own `implements` clause, because it inherits
-   from the native class alone — an interface left off it silently stops
-   matching `instanceof` and DI type lookups — and `require`s the interface
-   sources, which the autoloader cannot yet provide at that point. A parent
-   class cannot survive the same way (PHP is single-inheritance), so the
-   collector rejects a shadowed class that has one.
-   When the extension
-   is enabled, `PHPStan\Turbo\TurboExtensionEnabler` `require`s that file
-   *before* the Composer autoloader registers. All PHP code keeps calling
-   the original class name, transparently getting the native implementation
-   via inheritance.
+   `PHPStan\Node\NodeScanner`, or an existing value class like
+   `PHPStan\TrinaryLogic`.
+2. The extension implements the same class natively (one class per file in
+   `src/`), registered through the `reg::Class` builder with the twin's real
+   name, final flag, parent and interfaces: `reg::Class cls("PHPStan\\TrinaryLogic"); cls.final(); … cls.shadow(&pt_ce_trinary);`
+3. The PHP class is marked with the `#[ShadowedByTurboExtension]` attribute.
+   On every `composer dump-autoload`, `build/generate-turbo-manifest.php`
+   collects the attributes with runtime reflection into
+   `vendor/turbo-shadowed-classes.json` — the manifest of shadowed pairs
+   (shadowed classes living in vendor/ cannot carry the attribute and are
+   hardcoded in `build/TurboAttributeCollector.php`; currently
+   `PhpParser\NodeTraverser`).
+
+Nothing is registered under PHPStan's names at module startup:
+`reg::Class::shadow()` only records a plan. Activation happens in PHP —
+`TurboExtensionEnabler::activateIfCompatible()`, called right after the
+Composer autoloader registers — which checks the extension's version and
+calls `Runtime::activateShadowing()` (`Shadow.cpp`). That declares each plan
+as a linked *user* class carrying the twin's real name: built the way the
+compiler builds one (`zend_initialize_class_data`, internal method entries,
+`zend_do_link_class()`), so the parent and the interfaces are resolved
+through the autoloader and the class passes the same inheritance and
+signature checks a PHP declaration gets. `PHPStan\TrinaryLogic` *is* the
+native class; the PHP twin is never loaded, and every reference, `instanceof`,
+type hint and DI lookup resolves to it. PHP classes may extend a native
+class and a native class may extend a PHP one or another native one. The
+twin's source file is recorded as the class's file, so reflection — and
+PHPStan's own `AutoloadSourceLocator` — keeps reading the PHP declaration
+with its PHPDocs and attributes.
+
+Internal classes could not do this: they are registered at module startup,
+before any userland parent or interface exists, and PHPStan's classes
+implement userland interfaces (`PHPStan\Type\Type`) and extend each other.
+
+The consequences for a port:
+
+- A native method calling another non-final method of its own class must
+  dispatch through the object's class entry (fast path when the object is
+  of the native class itself), because a PHP subclass may override it.
+- Methods implementing an interface declare their return types (reg.h's
+  `returns` argument) — the engine checks covariance at link time; parameter
+  types may still be erased (contravariance allows it).
+- The differential tests run the extension the other way round:
+  `tests/activate-prefixed.php` declares the native classes as
+  `PHPStanTurbo\<ShortName>` next to the PHP twins in one process (the
+  attribute's `turboClass` names exactly that), so both sides can be
+  compared.
 
 Class names the native code references at run time come through
 `PHPStanTurbo\Runtime::configure()`: `TurboExtensionEnabler` feeds it the
 generated `vendor/turbo-class-map.php`, derived from the
 `#[ReferencedByTurboExtension]` attributes (vendored PhpParser classes are
 hardcoded in the collector), so a renamed class updates the map on the next
-autoloader dump. Because instances must satisfy the original type hints, the
-native code never instantiates its own classes directly: a referenced class
-that is itself shadowed resolves to its stub subclass, and
-factories/singletons instantiate that.
+autoloader dump. Shadowed classes are never referenced that way — the native
+code holds their class entries itself and instantiates them directly.
 
 Two more `Runtime` entry points serve fork mode (see `ForkParallelChecker`):
 `enablePharForkGuard()` gives each pcntl_fork()ed worker a private cursor on
@@ -104,8 +127,10 @@ signatures, typed variadics and typed property writes stay checked
 behaviour.
 
 The extension is version-pinned (`TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION`);
-a mismatched extension is ignored. There is no runtime kill switch — the only
-way to run without it is not to load it.
+a mismatched extension never gets `activateShadowing()` called and the PHP
+implementations load as usual (`Runtime`'s fork guard and trusted-types pass
+do not depend on it). There is no runtime kill switch — the only way to run
+without it is not to load it.
 
 The version is the short SHA of the last commit that touched `turbo-ext/src/`.
 The binary's (actual) version is baked in at build time — the Makefile
@@ -133,9 +158,9 @@ The manifest of shadowed pairs — each PHP class and the C++ file
 implementing it natively — is derived from the `#[ShadowedByTurboExtension]`
 attributes: the attributed file is the PHP side, the attribute names the
 native class and the implementing `.cpp`. Nothing is maintained by hand;
-`build/generate-turbo-stubs.php` derives the same map into
+`build/generate-turbo-manifest.php` derives the same map into
 `vendor/turbo-shadowed-classes.json` on every `composer dump-autoload` (for
-the runtime consumers: the enabler's reflection sources, the phar's preload
+the runtime consumers: the enabler's activation, the phar's preload
 builder, `tests/signature-parity.php`), and the vendored
 `PhpParser\NodeTraverser` pair, which cannot carry the attribute, is
 hardcoded in `build/TurboAttributeCollector.php` — the collection and
@@ -147,14 +172,15 @@ drives three things:
   `PHP_METHOD` counterpart in the C++ file and every `PHP_METHOD` corresponds
   to a method of the PHP class. Non-public PHP methods may stay PHP-only
   (native code inlines them or uses C helpers). It also verifies every
-  class-defining `.cpp` corresponds 1:1 to the attributes, and re-derives the
-  three generated `vendor/turbo-*` files from the attributes and
+  class-defining `.cpp` corresponds 1:1 to the attributes and declares the
+  twin's exact name, and re-derives the two generated `vendor/turbo-*` files
+  from the attributes and
   byte-compares them, so a stale autoloader dump (or a hand edit of a
   generated file) fails.
 - **CI signature parity** — `php tests/signature-parity.php` (compile job,
   needs the built extension and vendor/) reflects each native class against
-  its PHP twin: visibility, staticness, parameter
-  names/optionality/by-ref/variadic, and
+  its PHP twin: final flag, parent, interfaces, and per method visibility,
+  staticness, parameter names/optionality/by-ref/variadic, and
   types. It also verifies each manifest entry points at the file the class
   actually lives in (and that the `vendored` flag matches), so a stale
   autoloader dump fails instead of silently comparing against the wrong
@@ -373,8 +399,8 @@ Measured in the July 2026 benchmarks (callback-free absorptions gained
    declare the real parameter class names — erasing them fails container
    compilation for every shadowed service at once. (Aliasing a service class
    is what genuinely cannot work: `getByType()` normalizes the requested type
-   through reflection to the real class name. The stub shells are subclasses
-   carrying the original name, so that does not apply to them.)
+   through reflection to the real class name. A shadowing class carries the
+   original name itself, so that does not apply to it.)
 7. **Every port must prove itself**: interleaved A/B benchmark on a long run
    (user CPU, result cache cleared) plus a byte-identical output diff. Ports
    measuring ≤0.5% get reverted — the failure mode is silent no-gain, and
@@ -428,7 +454,8 @@ run — third-party PHP that no port removes.)
 ## Testing
 
 ```bash
-# differential test of the native classes vs the PHP implementations
+# differential test of the native classes vs the PHP implementations (they
+# are declared as PHPStanTurbo\* next to the twins, see tests/activate-prefixed.php)
 php -d extension=$(pwd)/phpstan_turbo.so tests/smoke.php
 
 # PHPStan's own test suite with the extension loaded

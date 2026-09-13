@@ -2,9 +2,9 @@
  * PHPStanTurbo\ExpressionTypeHolder — native implementation of
  * PHPStan\Analyser\ExpressionTypeHolder.
  *
- * Not final: a PHP stub subclass extends this class, and instances are
- * created from the configured expressionTypeHolderImpl class (see
- * pt_holder_create() in support.cpp) so userland type hints keep working.
+ * Declared as PHPStan\Analyser\ExpressionTypeHolder itself at activation
+ * (final, like the twin); instances are created by pt_holder_create() in
+ * support.cpp.
  *
  * The type/certainty logic stays in the shared pt_holder_* helpers
  * (support.cpp), which ScopeOps also uses without crossing the method-call
@@ -83,9 +83,9 @@ using phpstanturbo::ExpressionTypeHolder;
 
 void pt_register_expression_type_holder()
 {
-	reg::Class cls("PHPStanTurbo\\ExpressionTypeHolder");
-	/* not final: a PHP stub subclass extends this class; expr/type/certainty
-	 * must stay in this order (OBJ_PROP_NUM slots) */
+	reg::Class cls("PHPStan\\Analyser\\ExpressionTypeHolder");
+	cls.final();
+	/* expr/type/certainty must stay in this order (OBJ_PROP_NUM slots) */
 	cls.privateNullProperty("expr");
 	cls.privateNullProperty("type");
 	cls.privateNullProperty("certainty");
@@ -169,7 +169,7 @@ void pt_register_expression_type_holder()
 		ExpressionTypeHolder(ZEND_THIS).getCertainty().intoReturnValue(return_value);
 	});
 
-	pt_ce_expr_type_holder = cls.register_();
+	cls.shadow(&pt_ce_expr_type_holder);
 }
 
 /* }}} */

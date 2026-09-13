@@ -84,21 +84,12 @@ enum {
 	PT_CLASS_TYPE,
 	PT_CLASS_RECURSION_GUARD,
 	PT_CLASS_NEVER_TYPE,
-	/* classes the extension instantiates (their PHP twins are themselves
-	 * shadowed, hence no default name): configured to the stub subclasses
-	 * so created objects satisfy the original PHPStan type hints */
-	PT_CLASS_TRINARY,
-	PT_CLASS_ETH,
-	PT_CLASS_CEH,
 	PT_CLASS_COUNT
 };
 
 /* Resolves a configured/default class; throws and returns NULL on failure. */
 zend_class_entry *pt_class(int idx);
 
-/* Like pt_class(), but for the *Impl entries: when unconfigured, falls back
- * to the given native class entry instead of a name lookup. */
-zend_class_entry *pt_impl_class(int idx, zend_class_entry *native_fallback);
 
 /* Called by Runtime::configure() */
 void pt_class_map_configure(zend_string *key, zend_string *value);
@@ -144,6 +135,10 @@ extern zend_class_entry *pt_ce_cond_expr_holder;
 extern zend_class_entry *pt_ce_type_combinator_cache;
 
 /* registration hooks, called from the extension's onStartup */
+/* Shadow.cpp — Runtime::activateShadowing() */
+bool pt_shadow_activate(HashTable *twinFiles, zend_string *prefix);
+bool pt_shadow_is_active();
+
 void pt_register_trinary_logic();
 void pt_register_expression_type_holder();
 void pt_register_conditional_expression_holder();
@@ -196,8 +191,8 @@ bool pt_trusted_types_set_prefix(zend_string *prefix);
 #define PT_CEH_PROP_CONDS 0
 #define PT_CEH_PROP_TYPEHOLDER 1
 
-/* Returns the singleton for the given value (instances of the configured
- * trinaryLogicImpl class). Borrowed zval; callers must copy. */
+/* Returns the singleton for the given value (instances of the shadowing
+ * TrinaryLogic class). Borrowed zval; callers must copy. */
 zval *pt_trinary_singleton(zend_long value);
 
 static zend_always_inline zend_long pt_trinary_value(zend_object *obj)
@@ -329,7 +324,7 @@ bool pt_expr_contains_superglobal(zend_object *expr);
 /* {{{ ExpressionTypeHolder helpers (no zpp; used by holders and ScopeOps) */
 
 bool pt_check_holder(zval *zv);
-/* creates an instance of the configured expressionTypeHolderImpl class */
+/* creates an instance of the shadowing ExpressionTypeHolder class */
 void pt_holder_create(zval *result, zval *expr, zval *type, zend_long certainty);
 bool pt_holder_and(zval *a, zval *b, zval *result);
 bool pt_holder_equals(zval *a, zval *b, bool *out);

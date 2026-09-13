@@ -1,10 +1,9 @@
 /*
  * PHPStanTurbo\TrinaryLogic — native implementation of PHPStan\TrinaryLogic.
  *
- * When the extension is enabled, PHPStan\TrinaryLogic is declared as an empty
- * final subclass of this class (the generated vendor/turbo-stubs.php). Instances
- * are always of that subclass — the singletons are created from the
- * configured trinaryLogicImpl class — so userland type hints keep working.
+ * When the extension is active, PHPStan\TrinaryLogic is this class, declared
+ * under that name at activation (final, like the twin); every instance — the
+ * singletons included — is of it.
  *
  * The logic lives in the TrinaryLogic handle class below, structured to
  * mirror src/TrinaryLogic.php method for method; the PHP_METHOD functions at
@@ -350,9 +349,9 @@ static void pt_trinary_and_or(INTERNAL_FUNCTION_PARAMETERS, bool isAnd)
 
 void pt_register_trinary_logic()
 {
-	reg::Class cls("PHPStanTurbo\\TrinaryLogic");
-	/* not final: the stub subclass PHPStan\TrinaryLogic extends this class;
-	 * "value" must stay the first declared property (OBJ_PROP_NUM slot 0) */
+	reg::Class cls("PHPStan\\TrinaryLogic");
+	cls.final();
+	/* "value" must stay the first declared property (OBJ_PROP_NUM slot 0) */
 	cls.privateLongProperty("value", 0);
 
 	cls.method("__construct", reg::Private, 1, { reg::longArg("value") }, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -488,7 +487,7 @@ void pt_register_trinary_logic()
 		RETURN_STRING(TrinaryLogic(Z_OBJ_P(ZEND_THIS)).describe());
 	});
 
-	pt_ce_trinary = cls.register_();
+	cls.shadow(&pt_ce_trinary);
 }
 
 /* }}} */

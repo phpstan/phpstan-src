@@ -13,20 +13,28 @@ use function is_file;
 use function json_decode;
 use function phpversion;
 
+/**
+ * Activates the phpstan_turbo extension's shadowing classes.
+ *
+ * The extension registers nothing under PHPStan's class names at module
+ * startup. Once the Composer autoloader is registered, activateIfCompatible()
+ * checks the loaded extension's version against EXPECTED_EXTENSION_VERSION
+ * and, when it matches, asks Runtime::activateShadowing() to declare the
+ * native classes under the PHP twins' real names — PHPStan\TrinaryLogic then
+ * is the native class, linked like a PHP declaration (parents and interfaces
+ * resolved through the autoloader). A mismatched or absent extension never
+ * gets the call, and the PHP implementations load as usual.
+ *
+ * The version is the short SHA of the last commit touching turbo-ext/src/,
+ * enforced by the phar.yml turbo-version job; the native classes must
+ * behave exactly like the PHP implementations, hence the gate.
+ */
 final class TurboExtensionEnabler
 {
 
-	/**
-	 * The native classes must match the PHP implementations exactly, so the
-	 * extension is only enabled when its version is the expected one. The
-	 * version is the short SHA of the last commit touching turbo-ext/src/,
-	 * enforced by the phar.yml turbo-version job.
-	 */
 	public const EXPECTED_EXTENSION_VERSION = 'c734733';
 
-	private static bool $typeCombinatorCacheEnabled = false;
-
-	private static bool $enabled = false;
+	private static bool $active = false;
 
 	private static bool $trustingOwnTypes = false;
 
@@ -36,9 +44,8 @@ final class TurboExtensionEnabler
 	}
 
 	/**
-	 * The version of the loaded extension when it does not pass the
-	 * enableIfLoaded() version gate. Null when the extension is not loaded
-	 * or compatible.
+	 * The version of the loaded extension when it does not pass the version
+	 * gate. Null when the extension is not loaded or compatible.
 	 */
 	public static function getIncompatibleLoadedVersion(): ?string
 	{
@@ -54,97 +61,73 @@ final class TurboExtensionEnabler
 		return $version === false ? 'unknown' : $version;
 	}
 
+	private static function isCompatible(): bool
+	{
+		return self::isLoaded() && phpversion('phpstan_turbo') === self::EXPECTED_EXTENSION_VERSION;
+	}
+
 	/**
-	 * Whether enableIfLoaded() actually activated the extension — the stubs
-	 * shadow the PHP implementations only in that case.
+	 * Whether activateIfCompatible() declared the native classes — the
+	 * shadowed class names resolve to them only in that case.
 	 */
 	public static function isActive(): bool
 	{
-		return self::$enabled;
+		return self::$active;
 	}
 
 	/**
-	 * The real source files of the shadowed classes. With the extension
-	 * active, the class names are declared by the stub shells, so reflection
-	 * needs these files fed to it explicitly — resolving the class names
-	 * through the autoloader would reflect the stubs. The manifest is
-	 * generated next to the stubs by build/generate-turbo-stubs.php.
-	 *
-	 * @return list<string>
-	 */
-	public static function getShadowedClassSourceFiles(): array
-	{
-		$root = dirname(__DIR__, 2);
-		$manifestPath = $root . '/vendor/turbo-shadowed-classes.json';
-		if (!is_file($manifestPath)) {
-			return [];
-		}
-
-		$manifestContents = file_get_contents($manifestPath);
-		if ($manifestContents === false) {
-			return [];
-		}
-
-		/** @var array<string, array{php: string, cpp: string, vendored?: bool}> $manifest */
-		$manifest = json_decode($manifestContents, true);
-		$files = [];
-		foreach ($manifest as $entry) {
-			$file = $root . '/' . $entry['php'];
-			if (!is_file($file)) {
-				continue;
-			}
-			$files[] = $file;
-		}
-
-		return $files;
-	}
-
-	/**
-	 * Read lazily by TypeCombinator: enableIfLoaded() runs before the Composer
-	 * autoloader, so it cannot touch autoloadable classes itself.
+	 * Read lazily by TypeCombinator, whose memoization lives in the native
+	 * TypeCombinatorCache.
 	 */
 	public static function isTypeCombinatorCacheEnabled(): bool
 	{
-		return self::$typeCombinatorCacheEnabled;
+		return self::$active;
 	}
 
-	public static function enableIfLoaded(): void
+	/**
+	 * Must run after the Composer autoloader is registered (the native classes
+	 * implement userland interfaces and may extend userland classes, resolved
+	 * through it) and before anything could autoload one of the shadowed
+	 * classes — a twin already declared cannot be shadowed.
+	 */
+	public static function activateIfCompatible(): void
 	{
-		if (!self::isLoaded()) {
+		if (!self::isCompatible()) {
 			return;
 		}
 
-		if (phpversion('phpstan_turbo') !== self::EXPECTED_EXTENSION_VERSION) {
+		// Both files are generated on composer dump-autoload by
+		// build/generate-turbo-manifest.php from the attributes; missing when
+		// the dump skipped scripts — run without the extension rather than
+		// fatal.
+		$root = dirname(__DIR__, 2);
+		$manifestFile = $root . '/vendor/turbo-shadowed-classes.json';
+		$classMapFile = $root . '/vendor/turbo-class-map.php';
+		if (!is_file($manifestFile) || !is_file($classMapFile)) {
 			return;
 		}
 
-		// Generated on composer dump-autoload by build/generate-turbo-stubs.php
-		// from the ShadowedByTurboExtension attributes (plus the hardcoded
-		// vendored PhpParser\NodeTraverser). Missing when the dump skipped
-		// scripts — run without the extension rather than fatal.
-		$stubsFile = dirname(__DIR__, 2) . '/vendor/turbo-stubs.php';
-		if (!is_file($stubsFile)) {
+		$manifestContents = file_get_contents($manifestFile);
+		if ($manifestContents === false) {
 			return;
 		}
 
-		// Class names the extension needs at runtime, generated from the
-		// ReferencedByTurboExtension attributes so a renamed class updates the
-		// map on the next autoloader dump. Entries mapping to shadowed classes
-		// name what the extension instantiates — the stub subclasses loaded
-		// below, so that every created object satisfies the original type
-		// hints.
-		$classMapFile = dirname(__DIR__, 2) . '/vendor/turbo-class-map.php';
-		if (!is_file($classMapFile)) {
-			return;
+		// The manifest of shadowed pairs, from the ShadowedByTurboExtension
+		// attributes: each native class is declared with its twin's source
+		// file, so reflection keeps reading the PHP declaration.
+		/** @var array<string, array{php: string, cpp: string, vendored?: bool}> $manifest */
+		$manifest = json_decode($manifestContents, true);
+		$twinFiles = [];
+		foreach ($manifest as $className => $entry) {
+			$twinFiles[$className] = $root . '/' . $entry['php'];
 		}
 
+		// Class names the native code references at run time, from the
+		// ReferencedByTurboExtension attributes, so a renamed class updates
+		// the map on the next autoloader dump.
 		Runtime::configure(require $classMapFile);
 
-		// Shadow the PHP implementations with the generated stubs extending the
-		// extension's native classes. The stubs are declared before the Composer
-		// autoloader registers, so later references to the original names
-		// resolve to them.
-		require_once $stubsFile;
+		Runtime::activateShadowing($twinFiles);
 
 		// When running from a phar, arm the pthread_atfork hooks that keep
 		// phar:// reads safe in pcntl_fork()ed workers — libphar serves them
@@ -158,8 +141,7 @@ final class TurboExtensionEnabler
 			}
 		}
 
-		self::$typeCombinatorCacheEnabled = true;
-		self::$enabled = true;
+		self::$active = true;
 	}
 
 	/**
@@ -190,15 +172,16 @@ final class TurboExtensionEnabler
 	 * yields the original error. PHPUnit never gets here, so the test suites
 	 * of PHPStan and of extensions always run fully checked.
 	 *
-	 * Must run right after enableIfLoaded(), before the Composer autoloader
-	 * and preload.php are compiled: the pass rewrites scripts as they are
-	 * compiled, so whatever was compiled earlier keeps its checks.
+	 * Must run before the Composer autoloader and preload.php are compiled:
+	 * the pass rewrites scripts as they are compiled, so whatever was
+	 * compiled earlier keeps its checks. Independent of activateIfCompatible()
+	 * — only the version gate matters here.
 	 *
 	 * @param list<string> $argv
 	 */
 	public static function trustOwnTypesIfSuitable(array $argv): void
 	{
-		if (!self::$enabled) {
+		if (!self::isCompatible()) {
 			return;
 		}
 		if (in_array('--debug', $argv, true)) {

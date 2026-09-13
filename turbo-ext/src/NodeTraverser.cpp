@@ -1,7 +1,7 @@
 /*
  * PHPStanTurbo\NodeTraverser — native reimplementation of
- * PhpParser\NodeTraverser (a PHP stub subclass PhpParser\NodeTraverser
- * extends this class when the extension is loaded).
+ * PhpParser\NodeTraverser, declared under that name at activation (not
+ * final and implementing NodeTraverserInterface, like the original).
  *
  * The logic lives in the NodeTraverser handle class below, structured to
  * mirror vendor/nikic/php-parser/lib/PhpParser/NodeTraverser.php method for
@@ -870,9 +870,9 @@ using phpstanturbo::NodeTraverser;
 
 void pt_register_node_traverser()
 {
-	reg::Class cls("PHPStanTurbo\\NodeTraverser");
-	/* not final: the stub subclass PhpParser\NodeTraverser extends this class;
-	 * "visitors" must stay slot 0 and "stopTraversal" slot 1 (PT_NT_PROP_*) */
+	reg::Class cls("PhpParser\\NodeTraverser");
+	cls.implements({ "PhpParser\\NodeTraverserInterface" });
+	/* "visitors" must stay slot 0 and "stopTraversal" slot 1 (PT_NT_PROP_*) */
 	cls.protectedArrayProperty("visitors");
 	cls.protectedBoolProperty("stopTraversal", false);
 
@@ -925,7 +925,7 @@ void pt_register_node_traverser()
 		result.intoReturnValue(return_value);
 	}, &arrayReturn);
 
-	pt_ce_node_traverser = cls.register_();
+	cls.shadow(&pt_ce_node_traverser);
 }
 
 /* }}} */

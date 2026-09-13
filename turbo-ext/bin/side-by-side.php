@@ -6,7 +6,7 @@
  * ShadowedByTurboExtension attributes (used by CI): every shadowed pair's
  * files exist, every public method of the PHP class has a PHP_METHOD
  * counterpart in the C++ file, and every PHP_METHOD corresponds to a method
- * of the PHP class. The three generated vendor/turbo-* files are re-derived
+ * of the PHP class. The two generated vendor/turbo-* files are re-derived
  * through the shared TurboAttributeCollector and byte-compared, so a stale
  * autoloader dump fails here.
  *
@@ -255,8 +255,9 @@ function analyzePair(string $className, array $entry): array
 	$phpMethods = parsePhpMethods($entry['php']);
 	$cppMethods = parseCppMethods($entry['cpp']);
 
-	// Every public PHP method must exist natively — the stub subclass is
-	// empty, so a missing native method is a fatal when the extension is on.
+	// Every public PHP method must exist natively — the native class replaces
+	// the twin whole, so a missing native method is a fatal when the
+	// extension is on.
 	$missingNative = [];
 	foreach ($phpMethods as $name => $info) {
 		if ($info['visibility'] === 'public' && !isset($cppMethods[$name])) {
@@ -293,17 +294,32 @@ function checkStructure(array $manifest): array
 		$fromManifest[basename($entry['cpp'], '.cpp')] = $className;
 	}
 
-	// main.cpp hosts extension-only classes (Runtime) that shadow no PHP
-	// implementation — they never get a manifest entry.
-	$cppClasses = array_values(array_diff(array_filter(array_map(
-		static fn ($f) => preg_match('~PHP_METHOD\(PHPStanTurbo_|reg::Class\s+\w+\("PHPStanTurbo~', file_get_contents($f)) === 1 ? basename($f, '.cpp') : null,
-		array_merge(glob('turbo-ext/src/*.cpp'), glob('turbo-ext/src/parser/*.cpp')),
-	)), ['main']));
+	// A class-defining .cpp declares its class with reg::Class under the PHP
+	// twin's real name (reg::Class::shadow()); extension-only classes with
+	// no twin (Runtime, helpers) stay in the PHPStanTurbo namespace and get
+	// no manifest entry.
+	$cppClasses = [];
+	$declaredNames = [];
+	foreach (array_merge(glob('turbo-ext/src/*.cpp'), glob('turbo-ext/src/parser/*.cpp')) as $file) {
+		preg_match_all('~reg::Class\s+\w+\("((?:PHPStan|PhpParser)\\\\[^"]+)"\)~', file_get_contents($file), $m);
+		if ($m[1] === []) {
+			continue;
+		}
+		$cppClasses[] = basename($file, '.cpp');
+		foreach ($m[1] as $declared) {
+			$declaredNames[basename($file, '.cpp')][] = stripslashes($declared);
+		}
+	}
 	foreach (array_diff($cppClasses, array_keys($fromManifest)) as $extra) {
-		$problems[] = sprintf('%s from class-defining .cpp files (PHP_METHOD or reg::Class) has no ShadowedByTurboExtension attribute naming it', $extra);
+		$problems[] = sprintf('%s.cpp declares a shadowing class but no ShadowedByTurboExtension attribute names it', $extra);
 	}
 	foreach (array_diff(array_keys($fromManifest), $cppClasses) as $missing) {
-		$problems[] = sprintf('shadowed class %s (%s) is missing from the class-defining .cpp files (PHP_METHOD or reg::Class)', $fromManifest[$missing], $missing);
+		$problems[] = sprintf('shadowed class %s (%s) declares no reg::Class under its name in the .cpp files', $fromManifest[$missing], $missing);
+	}
+	foreach ($fromManifest as $cpp => $className) {
+		if (isset($declaredNames[$cpp]) && !in_array($className, $declaredNames[$cpp], true)) {
+			$problems[] = sprintf('%s.cpp declares [%s], not the shadowed class %s', $cpp, implode(', ', $declaredNames[$cpp]), $className);
+		}
 	}
 
 	return $problems;
@@ -320,7 +336,6 @@ function checkGeneratedArtifacts(PHPStan\Build\TurboAttributeCollector $collecto
 {
 	$problems = [];
 	$expected = [
-		'vendor/turbo-stubs.php' => $collector->renderStubs($collected['pairs']),
 		'vendor/turbo-shadowed-classes.json' => $collector->renderManifestJson($collected['manifest']),
 		'vendor/turbo-class-map.php' => $collector->renderClassMap($collected['classMap']),
 	];

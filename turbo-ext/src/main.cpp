@@ -56,6 +56,35 @@ static void ZEND_FASTCALL runtimeConfigure(INTERNAL_FUNCTION_PARAMETERS)
 	} ZEND_HASH_FOREACH_END();
 }
 
+/* PHPStanTurbo\Runtime::activateShadowing() — declares the shadowing classes
+ * under their PHP twins' names (Shadow.cpp). TurboExtensionEnabler calls it
+ * once the version matches and the Composer autoloader is registered;
+ * $twinFiles maps each class to its PHP source file, and the differential
+ * tests pass a $prefix to declare the classes as PHPStanTurbo\* beside the
+ * twins instead. */
+static void ZEND_FASTCALL runtimeActivateShadowing(INTERNAL_FUNCTION_PARAMETERS)
+{
+	HashTable *twinFiles;
+	zend_string *prefix = NULL;
+	ZEND_PARSE_PARAMETERS_START(1, 2)
+		Z_PARAM_ARRAY_HT(twinFiles)
+		Z_PARAM_OPTIONAL
+		Z_PARAM_STR_OR_NULL(prefix)
+	ZEND_PARSE_PARAMETERS_END();
+
+	if (!pt_shadow_activate(twinFiles, prefix)) {
+		RETURN_THROWS();
+	}
+}
+
+/* PHPStanTurbo\Runtime::isShadowing() — whether activateShadowing() ran */
+static void ZEND_FASTCALL runtimeIsShadowing(INTERNAL_FUNCTION_PARAMETERS)
+{
+	ZEND_PARSE_PARAMETERS_NONE();
+
+	RETURN_BOOL(pt_shadow_is_active());
+}
+
 /* PHPStanTurbo\Runtime::classRefs() — the native class-reference table as
  * key => default FQCN (or null), so the smoke test can hold the generated
  * class map against the real compiled table instead of parsing source. */
@@ -132,6 +161,8 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	reg::Class runtime("PHPStanTurbo\\Runtime");
 	runtime.method("configure", reg::PublicStatic, 1, { reg::arrayArg("classMap") }, runtimeConfigure);
 	runtime.method("classRefs", reg::PublicStatic, 0, {}, runtimeClassRefs);
+	runtime.method("activateShadowing", reg::PublicStatic, 1, { reg::arrayArg("twinFiles"), reg::withDefault(reg::stringArg("prefix", true), "null") }, runtimeActivateShadowing);
+	runtime.method("isShadowing", reg::PublicStatic, 0, {}, runtimeIsShadowing, &returnsBool);
 	runtime.method("enablePharForkGuard", reg::PublicStatic, 1, { reg::stringArg("pharPath") }, runtimeEnablePharForkGuard);
 	runtime.method("trustTypesUnder", reg::PublicStatic, 1, { reg::stringArg("prefix") }, runtimeTrustTypesUnder, &returnsBool);
 	runtime.method("exitImmediately", reg::PublicStatic, 0, {}, runtimeExitImmediately);

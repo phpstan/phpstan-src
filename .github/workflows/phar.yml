@@ -789,10 +789,9 @@ jobs:
       - name: "Verify the extension is active in ${{ matrix.image }}"
         run: |
           docker run --rm -v "$PWD:/work" -v "$RUNNER_TEMP/turbo-docker.ini:/usr/local/etc/php/conf.d/zz-turbo.ini" -w /work "$IMAGE" php -r '
-            require "src/Turbo/TurboExtensionEnabler.php";
-            PHPStan\Turbo\TurboExtensionEnabler::enableIfLoaded();
             require "vendor/autoload.php";
-            if (!(new ReflectionClass("PHPStan\\Analyser\\ScopeOps"))->getParentClass() || !(new ReflectionClass("PHPStan\\Analyser\\ScopeOps"))->getParentClass()->isInternal()) {
+            PHPStan\Turbo\TurboExtensionEnabler::activateIfCompatible();
+            if (!PHPStan\Turbo\TurboExtensionEnabler::isActive() || !(new ReflectionMethod("PHPStan\\Analyser\\ScopeOps", "nodeKey"))->isInternal()) {
               fwrite(STDERR, "turbo extension is not shadowing ScopeOps" . PHP_EOL);
               exit(1);
             }
@@ -1110,10 +1109,9 @@ jobs:
       - name: "Verify the extension is active"
         run: |
           php -r '
-            require "src/Turbo/TurboExtensionEnabler.php";
-            PHPStan\Turbo\TurboExtensionEnabler::enableIfLoaded();
             require "vendor/autoload.php";
-            if (!(new ReflectionClass("PHPStan\\Analyser\\ScopeOps"))->getParentClass() || !(new ReflectionClass("PHPStan\\Analyser\\ScopeOps"))->getParentClass()->isInternal()) {
+            PHPStan\Turbo\TurboExtensionEnabler::activateIfCompatible();
+            if (!PHPStan\Turbo\TurboExtensionEnabler::isActive() || !(new ReflectionMethod("PHPStan\\Analyser\\ScopeOps", "nodeKey"))->isInternal()) {
               fwrite(STDERR, "turbo extension is not shadowing ScopeOps" . PHP_EOL);
               exit(1);
             }

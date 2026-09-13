@@ -4,13 +4,11 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node\Expr;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 
 #[ShadowedByTurboExtension(turboClass: 'PHPStanTurbo\ExpressionTypeHolder', implementation: __DIR__ . '/../../turbo-ext/src/ExpressionTypeHolder.cpp')]
-#[ReferencedByTurboExtension(key: 'expressionTypeHolder')]
 final class ExpressionTypeHolder
 {
 

@@ -51,7 +51,8 @@ using phpstanturbo::NodeScanner;
 
 void pt_register_node_scanner()
 {
-	reg::Class cls("PHPStanTurbo\\NodeScanner");
+	reg::Class cls("PHPStan\\Node\\NodeScanner");
+	cls.final();
 
 	cls.method("nodeIsOrContainsYield", reg::PublicStatic, 1, { reg::objectArg("node") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *node;
@@ -67,7 +68,7 @@ void pt_register_node_scanner()
 	});
 
 	/* not final */
-	pt_ce_node_scanner = cls.register_();
+	cls.shadow(&pt_ce_node_scanner);
 }
 
 /* }}} */

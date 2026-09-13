@@ -9,7 +9,8 @@
  * Run with the extension loaded and vendor/ installed:
  *   php -d extension=$PWD/turbo-ext/phpstan_turbo.so turbo-ext/tests/parser-corpus.php [maxFiles]
  *
- * The enabler is NOT run; PHPStanTurbo\ParserRunner is called directly.
+ * The enabler is NOT run; the native class is declared as PHPStanTurbo\ParserRunner
+ * (tests/activate-prefixed.php) and called directly.
  */
 
 $root = dirname(__DIR__, 2);
@@ -20,7 +21,7 @@ if (!extension_loaded('phpstan_turbo')) {
 	exit(1);
 }
 
-require $root . '/vendor/autoload.php';
+require __DIR__ . '/activate-prefixed.php';
 
 $maxFiles = isset($argv[1]) ? (int) $argv[1] : PHP_INT_MAX;
 

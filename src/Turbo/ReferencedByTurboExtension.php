@@ -7,12 +7,11 @@ use Attribute;
 /**
  * Marks a class the phpstan_turbo extension's native code references at run
  * time — for instanceof-style checks, static calls, throws, or instantiation
- * (a referenced class that is itself shadowed resolves to its stub subclass,
- * so natively created objects satisfy the original type hints) — under the
- * given key of the native class-reference table (pt_class_refs in
- * turbo-ext/src/support.cpp).
+ * — under the given key of the native class-reference table (pt_class_refs
+ * in turbo-ext/src/support.cpp). Classes the extension shadows are never
+ * referenced this way: the native code holds their class entries itself.
  *
- * On composer dump-autoload, build/generate-turbo-stubs.php collects these
+ * On composer dump-autoload, build/generate-turbo-manifest.php collects these
  * attributes into vendor/turbo-class-map.php — the map TurboExtensionEnabler
  * passes to PHPStanTurbo\Runtime::configure() — so a renamed class updates
  * the map on the next dump instead of going stale in a hand-written list.

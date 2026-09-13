@@ -20,7 +20,8 @@
  * Run with the extension loaded and vendor/ installed:
  *   php -d extension=phpstan_turbo.so turbo-ext/tests/token-id-probe.php
  *
- * The enabler is NOT run; PHPStanTurbo\ParserRunner is called directly.
+ * The enabler is NOT run; the native class is declared as PHPStanTurbo\ParserRunner
+ * (tests/activate-prefixed.php) and called directly.
  */
 
 use PhpParser\ErrorHandler\Collecting;
@@ -36,7 +37,7 @@ if (!extension_loaded('phpstan_turbo')) {
 	exit(1);
 }
 
-require $root . '/vendor/autoload.php';
+require __DIR__ . '/activate-prefixed.php';
 
 printf(
 	"php %s, phpstan_turbo %s\nruntime token ids: T_COMMENT=%d T_DOC_COMMENT=%d T_WHITESPACE=%d T_ATTRIBUTE=%d T_INC=%d\n",

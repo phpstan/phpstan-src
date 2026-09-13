@@ -204,6 +204,30 @@ zv::Val pt_integer_range_create_all_greater_than_or_equal_to(zval *value);
 zv::Val pt_integer_type_loose_compare(zend_object *self, zval *type, zval *phpVersion);
 zv::Val pt_integer_type_exponentiate(zend_object *self, zval *exponent);
 
+/* the bodies of StringType's offset methods and tryRemove() (StringType.cpp),
+ * for the children's parent:: calls; the setOffsetValueType() body takes
+ * the twin's `?Type $offsetType` (NULL for null) with $unionValues at its
+ * default; UNDEF = pending exception */
+zv::Val pt_string_type_has_offset_value_type(zend_object *self, zval *offsetType);
+zv::Val pt_string_type_get_offset_value_type(zend_object *self, zval *offsetType);
+zv::Val pt_string_type_set_offset_value_type(zend_object *self, zval *offsetType, zval *valueType);
+zv::Val pt_string_type_try_remove(zend_object *self, zval *typeToRemove);
+
+/* $type->getValue() of a ConstantStringType instance — the slot when it is
+ * exactly the native class, the method through its class entry otherwise
+ * (a subclass may override it); an owned string, UNDEF = pending exception
+ * (ConstantStringType.cpp) */
+zv::Val pt_constant_string_get_value(zend_object *object);
+
+/* the PT_TRI_* value of a result object's ->result (an IsSuperTypeOfResult /
+ * AcceptsResult — the native class by its slot, anything else through the
+ * public property); -1 = pending exception */
+[[nodiscard]] zend_long pt_type_result_trinary(zval *result);
+
+/* calls a zpp-parsed callable (AcceptsResult.cpp); false = pending
+ * exception (*retval is then released) */
+[[nodiscard]] bool pt_call_fci(zend_fcall_info *fci, zend_fcall_info_cache *fcc, uint32_t argc, zval *argv, zval *retval);
+
 /* module startup: the internal helper classes the trait code needs */
 void pt_register_type_traits();
 
@@ -218,6 +242,8 @@ void pt_type_trait_just_nullable(reg::Class &cls);
 void pt_type_trait_non_array(reg::Class &cls);
 /* src/Type/Traits/NonCallableTypeTrait.php */
 void pt_type_trait_non_callable(reg::Class &cls);
+/* src/Type/Traits/MaybeCallableTypeTrait.php */
+void pt_type_trait_maybe_callable(reg::Class &cls);
 /* src/Type/Traits/NonIterableTypeTrait.php */
 void pt_type_trait_non_iterable(reg::Class &cls);
 /* src/Type/Traits/NonObjectTypeTrait.php */

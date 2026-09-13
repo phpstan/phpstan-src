@@ -8,6 +8,7 @@ use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\CallableAssertionsHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
@@ -18,6 +19,7 @@ use Throwable;
 use function array_map;
 use function count;
 
+#[ReferencedByTurboExtension(key: 'functionCallableVariant')]
 final class FunctionCallableVariant implements CallableParametersAcceptor, ExtendedParametersAcceptor
 {
 

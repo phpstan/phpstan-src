@@ -2,6 +2,8 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Turbo\ReferencedByTurboExtension;
+
 /**
  * Controls how aggressively Type::generalize() widens a type.
  *
@@ -22,6 +24,7 @@ namespace PHPStan\Type;
  *
  *     $type->generalize(GeneralizePrecision::lessSpecific())
  */
+#[ReferencedByTurboExtension(key: 'generalizePrecision')]
 final class GeneralizePrecision
 {
 

@@ -179,6 +179,10 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_integer_type();
 	pt_register_constant_integer_type();
 	pt_register_integer_range_type();
+	pt_register_string_type();
+	pt_register_constant_string_type();
+	pt_register_class_string_type();
+	pt_register_generic_class_string_type();
 
 	return SUCCESS;
 }
@@ -203,6 +207,7 @@ static PHP_RINIT_FUNCTION(phpstan_turbo)
 	pt_is_super_type_of_result_rinit();
 	pt_accepts_result_rinit();
 	pt_integer_range_type_rinit();
+	pt_constant_string_type_rinit();
 
 	return SUCCESS;
 }

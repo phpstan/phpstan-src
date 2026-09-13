@@ -4,6 +4,8 @@ namespace PHPStan\Build;
 
 use FilesystemIterator;
 use JsonException;
+use Nette\Utils\RegexpException;
+use Nette\Utils\Strings;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
@@ -31,6 +33,7 @@ use PhpParser\Node\VariadicPlaceholder;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprIntegerNode;
+use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
@@ -114,6 +117,9 @@ final class TurboAttributeCollector
 		'genericTypeNode' => GenericTypeNode::class,
 		'constTypeNode' => ConstTypeNode::class,
 		'constExprIntegerNode' => ConstExprIntegerNode::class,
+		'constExprStringNode' => ConstExprStringNode::class,
+		'netteStrings' => Strings::class,
+		'netteRegexpException' => RegexpException::class,
 	];
 
 	private string $realRoot;

@@ -6,6 +6,7 @@ use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\ClassNameToObjectTypeResult;
 use PHPStan\Type\ClassStringType;
@@ -29,6 +30,7 @@ use function sprintf;
 
 /** @api */
 #[InstanceofDeprecated(insteadUse: 'Type::isClassStringType() and Type::getClassStringObjectType()')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/GenericClassStringType.cpp')]
 class GenericClassStringType extends ClassStringType
 {
 

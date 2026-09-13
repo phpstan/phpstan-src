@@ -93,10 +93,8 @@ enum {
 	PT_CLASS_NULL_TYPE,
 	PT_CLASS_UNION_TYPE,
 	PT_CLASS_CONSTANT_FLOAT_TYPE,
-	PT_CLASS_CONSTANT_STRING_TYPE,
 	PT_CLASS_CONSTANT_ARRAY_TYPE,
 	PT_CLASS_OBJECT_WITHOUT_CLASS_TYPE,
-	PT_CLASS_CLASS_STRING_TYPE,
 	PT_CLASS_CLASS_NAME_TO_OBJECT_TYPE_RESULT,
 	PT_CLASS_TEMPLATE_TYPE_MAP,
 	PT_CLASS_IDENTIFIER_TYPE_NODE,
@@ -106,7 +104,6 @@ enum {
 	PT_CLASS_COMPOUND_TYPE,
 	PT_CLASS_CONSTANT_SCALAR_TYPE,
 	PT_CLASS_FLOAT_TYPE,
-	PT_CLASS_STRING_TYPE,
 	PT_CLASS_INTERSECTION_TYPE,
 	PT_CLASS_ACCESSORY_DECIMAL_INTEGER_STRING_TYPE,
 	PT_CLASS_ACCESSORY_NON_FALSY_STRING_TYPE,
@@ -114,6 +111,26 @@ enum {
 	PT_CLASS_GENERIC_TYPE_NODE,
 	PT_CLASS_CONST_TYPE_NODE,
 	PT_CLASS_CONST_EXPR_INTEGER_NODE,
+	PT_CLASS_OBJECT_TYPE,
+	PT_CLASS_REFLECTION_PROVIDER_STATIC_ACCESSOR,
+	PT_CLASS_PHP_VERSION_STATIC_ACCESSOR,
+	PT_CLASS_REPORT_UNSAFE_ARRAY_STRING_KEY_CASTING_TOGGLE,
+	PT_CLASS_ACCESSORY_NON_EMPTY_STRING_TYPE,
+	PT_CLASS_ACCESSORY_LITERAL_STRING_TYPE,
+	PT_CLASS_ACCESSORY_LOWERCASE_STRING_TYPE,
+	PT_CLASS_ACCESSORY_UPPERCASE_STRING_TYPE,
+	PT_CLASS_ACCESSORY_NUMERIC_STRING_TYPE,
+	PT_CLASS_OUT_OF_CLASS_SCOPE,
+	PT_CLASS_FUNCTION_CALLABLE_VARIANT,
+	PT_CLASS_TRIVIAL_PARAMETERS_ACCEPTOR,
+	PT_CLASS_INACCESSIBLE_METHOD,
+	PT_CLASS_STATIC_TYPE,
+	PT_CLASS_TEMPLATE_TYPE,
+	PT_CLASS_TEMPLATE_TYPE_VARIANCE,
+	PT_CLASS_GENERALIZE_PRECISION,
+	PT_CLASS_CONST_EXPR_STRING_NODE,
+	PT_CLASS_NETTE_STRINGS,
+	PT_CLASS_NETTE_REGEXP_EXCEPTION,
 	PT_CLASS_COUNT
 };
 
@@ -169,12 +186,18 @@ extern zend_class_entry *pt_ce_type_combinator_cache;
 extern zend_class_entry *pt_ce_accepts_result;
 extern zend_class_entry *pt_ce_is_super_type_of_result;
 /* the shadowing Type classes (BooleanType.cpp, ConstantBooleanType.cpp,
- * IntegerType.cpp, ConstantIntegerType.cpp, IntegerRangeType.cpp) */
+ * IntegerType.cpp, ConstantIntegerType.cpp, IntegerRangeType.cpp,
+ * StringType.cpp, ConstantStringType.cpp, ClassStringType.cpp,
+ * GenericClassStringType.cpp) */
 extern zend_class_entry *pt_ce_boolean_type;
 extern zend_class_entry *pt_ce_constant_boolean_type;
 extern zend_class_entry *pt_ce_integer_type;
 extern zend_class_entry *pt_ce_constant_integer_type;
 extern zend_class_entry *pt_ce_integer_range_type;
+extern zend_class_entry *pt_ce_string_type;
+extern zend_class_entry *pt_ce_constant_string_type;
+extern zend_class_entry *pt_ce_class_string_type;
+extern zend_class_entry *pt_ce_generic_class_string_type;
 
 /* registration hooks, called from the extension's onStartup */
 /* Shadow.cpp — Runtime::activateShadowing() */
@@ -208,7 +231,15 @@ void pt_register_constant_boolean_type();
 void pt_register_integer_type();
 void pt_register_constant_integer_type();
 void pt_register_integer_range_type();
+/* StringType before its children ConstantStringType and ClassStringType,
+ * ClassStringType before its child GenericClassStringType; all after the
+ * integer family, whose classes their bodies instantiate */
+void pt_register_string_type();
+void pt_register_constant_string_type();
+void pt_register_class_string_type();
+void pt_register_generic_class_string_type();
 void pt_integer_range_type_rinit();
+void pt_constant_string_type_rinit();
 void pt_is_super_type_of_result_rinit();
 void pt_is_super_type_of_result_rshutdown();
 void pt_accepts_result_rinit();
@@ -288,6 +319,9 @@ bool pt_is_super_type_of_result_singleton(zval *out, zend_long value);
 /* $self->and($other) on two AcceptsResult instances; false = pending
  * exception (AcceptsResult.cpp) */
 [[nodiscard]] bool pt_accepts_result_and(zval *out, zval *self, zval *other);
+/* ->result's trinary value of a native result object; -1 with an Error
+ * pending for an object that skipped its constructor (AcceptsResult.cpp) */
+[[nodiscard]] zend_long pt_result_value(zend_object *object);
 
 /* new BooleanType() / new ConstantBooleanType($value) — instances of the
  * shadowing classes (BooleanType.cpp / ConstantBooleanType.cpp); false =
@@ -306,6 +340,14 @@ bool pt_constant_integer_type_new(zval *out, zend_long value);
 /* the $value of an instance of the shadowing ConstantIntegerType; false
  * with an Error pending when uninitialized */
 bool pt_constant_integer_type_value(zend_object *object, zend_long &out);
+
+/* new StringType() / new ClassStringType() / new ConstantStringType($value,
+ * $isClassString) — instances of the shadowing classes (StringType.cpp /
+ * ClassStringType.cpp / ConstantStringType.cpp; $value borrowed); false =
+ * pending exception */
+bool pt_string_type_new(zval *out);
+bool pt_class_string_type_new(zval *out);
+bool pt_constant_string_type_new(zval *out, zend_string *value, bool isClassString = false);
 
 /* }}} */
 

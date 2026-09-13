@@ -2,9 +2,12 @@
 
 namespace PHPStan\DependencyInjection;
 
+use PHPStan\Turbo\ReferencedByTurboExtension;
+
 /**
  * @phpstan-type Level = self::DETECT|self::PREVENT|null
  */
+#[ReferencedByTurboExtension(key: 'reportUnsafeArrayStringKeyCastingToggle')]
 final class ReportUnsafeArrayStringKeyCastingToggle
 {
 

@@ -708,8 +708,9 @@ public:
 
 		zend_long isZero;
 		if (UNEXPECTED(!zeroIsSuperTypeOfThisValue(isZero))) return zv::Val();
-		zv::Val string = pt_type_new(PT_CLASS_STRING_TYPE, 0, NULL);
-		if (UNEXPECTED(string.isUndef())) return zv::Val();
+		zval stringZv;
+		if (UNEXPECTED(!pt_string_type_new(&stringZv))) return zv::Val();
+		zv::Val string = zv::Val::adopt(stringZv);
 		zv::Val decimal = pt_type_new(PT_CLASS_ACCESSORY_DECIMAL_INTEGER_STRING_TYPE, 0, NULL);
 		if (UNEXPECTED(decimal.isUndef())) return zv::Val();
 		zv::Arr types = zv::Arr::create(3);

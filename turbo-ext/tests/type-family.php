@@ -56,7 +56,7 @@ $observations = [];
 // which implementation answered: smoke.php holds the php run to false and
 // the native run to true, so the two sets can never be one implementation
 // compared against itself
-foreach ([\PHPStan\Type\BooleanType::class, \PHPStan\Type\Constant\ConstantBooleanType::class, \PHPStan\Type\IntegerType::class, \PHPStan\Type\Constant\ConstantIntegerType::class, \PHPStan\Type\IntegerRangeType::class] as $typeClass) {
+foreach ([\PHPStan\Type\BooleanType::class, \PHPStan\Type\Constant\ConstantBooleanType::class, \PHPStan\Type\IntegerType::class, \PHPStan\Type\Constant\ConstantIntegerType::class, \PHPStan\Type\IntegerRangeType::class, \PHPStan\Type\StringType::class, \PHPStan\Type\Constant\ConstantStringType::class, \PHPStan\Type\ClassStringType::class, \PHPStan\Type\Generic\GenericClassStringType::class] as $typeClass) {
 	$observations["native $typeClass"] = (new ReflectionMethod($typeClass, 'describe'))->isInternal();
 }
 
@@ -400,4 +400,265 @@ $intOthers = static fn (string $int, string $constInt, string $range): array => 
 }
 
 
-echo json_encode($observations, JSON_THROW_ON_ERROR | JSON_PRESERVE_ZERO_FRACTION), "\n";
+// ---- StringType / ConstantStringType / ClassStringType / GenericClassStringType ----
+// a reflection provider behind ReflectionProviderStaticAccessor, as the
+// class-string and callable queries need one (an existing class name, a
+// known function, a static method); the PhpVersion accessor for isCallable()
+$stringContainer = (new \PHPStan\DependencyInjection\ContainerFactory($root))->create(sys_get_temp_dir() . '/phpstan-turbo-type-family', [], []);
+$stringReflectionProvider = $stringContainer->getByType(\PHPStan\Reflection\ReflectionProvider::class);
+\PHPStan\Reflection\ReflectionProviderStaticAccessor::registerInstance($stringReflectionProvider);
+\PHPStan\Reflection\PhpVersionStaticAccessor::registerInstance($stringContainer->getByType(\PHPStan\Php\PhpVersion::class));
+$stringPhpVersions = [new \PHPStan\Php\PhpVersion(70400), new \PHPStan\Php\PhpVersion(80400)];
+$stringOthers = static fn (string $string, string $constString, string $classString, string $genericClassString): array => [
+	'string' => new $string(),
+	'stringEmpty' => new $constString(''),
+	'stringAbc' => new $constString('abc'),
+	'string0' => new $constString('0'),
+	'string123' => new $constString('123'),
+	'stringTrinary' => new $constString(\PHPStan\TrinaryLogic::class),
+	'stringTrinaryClass' => new $constString(\PHPStan\TrinaryLogic::class, true),
+	'stringStrlen' => new $constString('strlen'),
+	'classString' => new $classString(),
+	'genericTrinary' => new $genericClassString(new \PHPStan\Type\ObjectType(\PHPStan\TrinaryLogic::class)),
+	'genericType' => new $genericClassString(new \PHPStan\Type\ObjectType(\PHPStan\Type\Type::class)),
+	'genericNonexistent' => new $genericClassString(new \PHPStan\Type\ObjectType('NonexistentClass')),
+	'genericMixed' => new $genericClassString(new \PHPStan\Type\MixedType()),
+	'genericObject' => new $genericClassString(new \PHPStan\Type\ObjectWithoutClassType()),
+	'genericStatic' => new $genericClassString(new \PHPStan\Type\StaticType($stringReflectionProvider->getClass(\PHPStan\TrinaryLogic::class))),
+	'genericTemplate' => new $genericClassString(\PHPStan\Type\Generic\TemplateTypeFactory::create(\PHPStan\Type\Generic\TemplateTypeScope::createWithFunction('foo'), 'T', new \PHPStan\Type\ObjectType(\PHPStan\Type\Type::class), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant())),
+	'genericUnion' => new $genericClassString(new \PHPStan\Type\UnionType([new \PHPStan\Type\ObjectType(\PHPStan\TrinaryLogic::class), new \PHPStan\Type\ObjectType(\PHPStan\Type\VerbosityLevel::class)])),
+	'nonEmptyString' => new \PHPStan\Type\IntersectionType([new $string(), new \PHPStan\Type\Accessory\AccessoryNonEmptyStringType()]),
+	'numericString' => new \PHPStan\Type\IntersectionType([new $string(), new \PHPStan\Type\Accessory\AccessoryNumericStringType()]),
+	'literalString' => new \PHPStan\Type\IntersectionType([new $string(), new \PHPStan\Type\Accessory\AccessoryLiteralStringType()]),
+	'accessoryNonEmpty' => new \PHPStan\Type\Accessory\AccessoryNonEmptyStringType(),
+	'int' => new \PHPStan\Type\IntegerType(),
+	'int0' => new \PHPStan\Type\Constant\ConstantIntegerType(0),
+	'int1' => new \PHPStan\Type\Constant\ConstantIntegerType(1),
+	'int2' => new \PHPStan\Type\Constant\ConstantIntegerType(2),
+	'int-1' => new \PHPStan\Type\Constant\ConstantIntegerType(-1),
+	'int-4' => new \PHPStan\Type\Constant\ConstantIntegerType(-4),
+	'int5' => new \PHPStan\Type\Constant\ConstantIntegerType(5),
+	'range0-1' => \PHPStan\Type\IntegerRangeType::fromInterval(0, 1),
+	'range0-10' => \PHPStan\Type\IntegerRangeType::fromInterval(0, 10),
+	'range-2-1' => \PHPStan\Type\IntegerRangeType::fromInterval(-2, 1),
+	'range5-max' => \PHPStan\Type\IntegerRangeType::fromInterval(5, null),
+	'float' => new \PHPStan\Type\FloatType(),
+	'float2.5' => new \PHPStan\Type\Constant\ConstantFloatType(2.5),
+	'bool' => new \PHPStan\Type\BooleanType(),
+	'true' => new \PHPStan\Type\Constant\ConstantBooleanType(true),
+	'false' => new \PHPStan\Type\Constant\ConstantBooleanType(false),
+	'mixed' => new \PHPStan\Type\MixedType(),
+	'null' => new \PHPStan\Type\NullType(),
+	'union' => new \PHPStan\Type\UnionType([new $constString('a'), new $constString('b')]),
+	'unionMixed' => new \PHPStan\Type\UnionType([new $constString('abc'), new \PHPStan\Type\NullType()]),
+	'unionInts' => new \PHPStan\Type\UnionType([new \PHPStan\Type\Constant\ConstantIntegerType(0), new \PHPStan\Type\Constant\ConstantIntegerType(2)]),
+	'never' => new \PHPStan\Type\NeverType(),
+	'array' => new \PHPStan\Type\ArrayType(new \PHPStan\Type\MixedType(), new \PHPStan\Type\MixedType()),
+	'emptyArray' => new \PHPStan\Type\Constant\ConstantArrayType([], []),
+	'object' => new \PHPStan\Type\ObjectType(\stdClass::class),
+	'objectTrinary' => new \PHPStan\Type\ObjectType(\PHPStan\TrinaryLogic::class),
+	'objectWithToString' => new \PHPStan\Type\ObjectType(\Exception::class),
+	'objectWithoutClass' => new \PHPStan\Type\ObjectWithoutClassType(),
+];
+{
+	$stringClass = \PHPStan\Type\StringType::class;
+	$constStringClass = \PHPStan\Type\Constant\ConstantStringType::class;
+	$classStringClass = \PHPStan\Type\ClassStringType::class;
+	$genericClassStringClass = \PHPStan\Type\Generic\GenericClassStringType::class;
+	$r = [];
+	$others = $stringOthers($stringClass, $constStringClass, $classStringClass, $genericClassStringClass);
+	$longString = str_repeat('abcdefghij', 10);
+	$subjects = [
+		'string' => new $stringClass(),
+		'constEmpty' => new $constStringClass(''),
+		'constAbc' => new $constStringClass('abc'),
+		'const0' => new $constStringClass('0'),
+		'const123' => new $constStringClass('123'),
+		'const1e3' => new $constStringClass('1e3'),
+		'constSpace1' => new $constStringClass(' 1'),
+		'const2.5' => new $constStringClass('2.5'),
+		'constFooBar' => new $constStringClass('Foo\\Bar'),
+		'constTrinary' => new $constStringClass(\PHPStan\TrinaryLogic::class),
+		'constTrinaryClass' => new $constStringClass(\PHPStan\TrinaryLogic::class, true),
+		'constStrlen' => new $constStringClass('strlen'),
+		'constStaticMethod' => new $constStringClass(\PHPStan\TrinaryLogic::class . '::createYes'),
+		'constInstanceMethod' => new $constStringClass(\PHPStan\TrinaryLogic::class . '::yes'),
+		'constMissingMethod' => new $constStringClass(\PHPStan\TrinaryLogic::class . '::nonexistent'),
+		'constUnknownClassMethod' => new $constStringClass('Nonexistent\\Foo::bar'),
+		'constQuotes' => new $constStringClass("with\"quotes\\and\nnewline"),
+		'constLong' => new $constStringClass($longString),
+		'constUpper' => new $constStringClass('ABC'),
+		'constMixedCase' => new $constStringClass('Abc'),
+		'constUtf8' => new $constStringClass('příliš žluťoučký kůň úpěl ďábelské ódy'),
+		'constInvalidUtf8' => new $constStringClass(str_repeat("\xff", 30)),
+		'classString' => new $classStringClass(),
+		'genericTrinary' => new $genericClassStringClass(new \PHPStan\Type\ObjectType(\PHPStan\TrinaryLogic::class)),
+		'genericType' => new $genericClassStringClass(new \PHPStan\Type\ObjectType(\PHPStan\Type\Type::class)),
+		'genericNonexistent' => new $genericClassStringClass(new \PHPStan\Type\ObjectType('NonexistentClass')),
+		'genericMixed' => new $genericClassStringClass(new \PHPStan\Type\MixedType()),
+		'genericStatic' => new $genericClassStringClass(new \PHPStan\Type\StaticType($stringReflectionProvider->getClass(\PHPStan\TrinaryLogic::class))),
+		'genericTemplate' => new $genericClassStringClass(\PHPStan\Type\Generic\TemplateTypeFactory::create(\PHPStan\Type\Generic\TemplateTypeScope::createWithFunction('foo'), 'T', new \PHPStan\Type\ObjectType(\PHPStan\Type\Type::class), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant())),
+		'genericUnion' => new $genericClassStringClass(new \PHPStan\Type\UnionType([new \PHPStan\Type\ObjectType(\PHPStan\TrinaryLogic::class), new \PHPStan\Type\ObjectType(\PHPStan\Type\VerbosityLevel::class)])),
+	];
+	$outOfClassScope = new \PHPStan\Analyser\OutOfClassScope();
+	foreach ($subjects as $name => $subject) {
+		$r["$name class"] = $view($subject);
+		$r["$name instanceof"] = [$subject instanceof \PHPStan\Type\Type, $subject instanceof $stringClass, $subject instanceof $classStringClass, $subject instanceof \PHPStan\Type\ConstantScalarType];
+		foreach (['typeOnly' => \PHPStan\Type\VerbosityLevel::typeOnly(), 'value' => \PHPStan\Type\VerbosityLevel::value(), 'precise' => \PHPStan\Type\VerbosityLevel::precise(), 'cache' => \PHPStan\Type\VerbosityLevel::cache()] as $levelName => $level) {
+			$r["$name describe $levelName"] = $subject->describe($level);
+			// the memoized description must read back the same
+			$r["$name describe $levelName again"] = $subject->describe($level);
+		}
+		foreach ($others as $otherName => $other) {
+			$r["$name isSuperTypeOf $otherName"] = $view($subject->isSuperTypeOf($other));
+			$r["$name accepts $otherName"] = $view($subject->accepts($other, true));
+			$r["$name accepts-loose $otherName"] = $view($subject->accepts($other, false));
+			$r["$name equals $otherName"] = $subject->equals($other);
+			$r["$name tryRemove $otherName"] = $view($subject->tryRemove($other));
+			foreach ($stringPhpVersions as $vi => $phpVersion) {
+				$r["$name looseCompare $otherName $vi"] = $view($subject->looseCompare($other, $phpVersion));
+				$r["$name isSmallerThan $otherName $vi"] = $view($subject->isSmallerThan($other, $phpVersion));
+				$r["$name isSmallerThanOrEqual $otherName $vi"] = $view($subject->isSmallerThanOrEqual($other, $phpVersion));
+			}
+			$r["$name traverseSimultaneously $otherName"] = $view($subject->traverseSimultaneously($other, static fn ($a, $b) => $a));
+			$r["$name traverseSimultaneously-right $otherName"] = $view($subject->traverseSimultaneously($other, static fn ($a, $b) => $b));
+			$r["$name getOffsetValueType $otherName"] = $view($subject->getOffsetValueType($other));
+			$r["$name hasOffsetValueType $otherName"] = $view($subject->hasOffsetValueType($other));
+			$r["$name setOffsetValueType $otherName"] = $view($subject->setOffsetValueType($other, $others['stringAbc']));
+			$r["$name setOffsetValueType-x $otherName"] = $view($subject->setOffsetValueType($other, new $constStringClass('x')));
+			$r["$name setOffsetValueType-int $otherName"] = $view($subject->setOffsetValueType($other, $others['int1']));
+			$r["$name setOffsetValueType-array $otherName"] = $view($subject->setOffsetValueType($other, $others['array']));
+			$r["$name setExistingOffsetValueType $otherName"] = $view($subject->setExistingOffsetValueType($other, new $constStringClass('x')));
+			$r["$name unsetOffset $otherName"] = $view($subject->unsetOffset($other));
+			$r["$name inferTemplateTypes $otherName"] = $view($subject->inferTemplateTypes($other));
+			$r["$name toObjectTypeForIsACheck $otherName"] = [$view($subject->toObjectTypeForIsACheck($other, true, true)), $view($subject->toObjectTypeForIsACheck($other, false, true)), $view($subject->toObjectTypeForIsACheck($other, true, false)), $view($subject->toObjectTypeForIsACheck($other, false, false))];
+			try {
+				$r["$name exponentiate $otherName"] = $view($subject->exponentiate($other));
+			} catch (\Throwable $e) {
+				$r["$name exponentiate $otherName"] = get_class($e);
+			}
+		}
+		foreach (['toBoolean', 'toNumber', 'toInteger', 'toFloat', 'toString', 'toArray', 'toArrayKey', 'toBitwiseNotType', 'toAbsoluteNumber', 'toGetClassResultType', 'toObjectTypeForInstanceofCheck',
+			'isTrue', 'isFalse', 'isBoolean', 'isScalar', 'isNull', 'isInteger', 'isFloat', 'isString', 'isNumericString', 'isDecimalIntegerString', 'isNonEmptyString', 'isNonFalsyString', 'isLiteralString', 'isLowercaseString', 'isUppercaseString', 'isClassString', 'isVoid',
+			'isConstantValue', 'isConstantScalarValue', 'getConstantScalarTypes', 'getConstantScalarValues', 'getFiniteTypes', 'isObject', 'isEnum', 'getArrays', 'getConstantArrays', 'getConstantStrings', 'getReferencedClasses', 'getObjectClassNames', 'getObjectClassReflections',
+			'getClassStringType', 'getClassStringObjectType', 'getObjectTypeOrClassStringObjectType', 'canAccessProperties', 'canCallMethods', 'canAccessConstants', 'isIterable', 'isIterableAtLeastOnce', 'getArraySize', 'getIterableKeyType', 'getFirstIterableKeyType', 'getLastIterableKeyType',
+			'getIterableValueType', 'getFirstIterableValueType', 'getLastIterableValueType', 'isArray', 'isConstantArray', 'isOversizedArray', 'isList', 'isOffsetAccessible', 'isOffsetAccessLegal', 'getKeysArray', 'getValuesArray', 'flipArray', 'popArray', 'shiftArray', 'shuffleArray',
+			'makeListMaybe', 'makeAllArrayKeysOptional', 'filterArrayRemovingFalsey', 'getEnumCases', 'getEnumCaseObject', 'isCallable', 'isCloneable', 'toPhpDocNode', 'getReferencedTemplateTypes', 'hasTemplateOrLateResolvableType'] as $method) {
+			if ($method === 'getReferencedTemplateTypes') {
+				foreach ([\PHPStan\Type\Generic\TemplateTypeVariance::createInvariant(), \PHPStan\Type\Generic\TemplateTypeVariance::createCovariant(), \PHPStan\Type\Generic\TemplateTypeVariance::createContravariant()] as $vi => $variance) {
+					$r["$name $method $vi"] = $view($subject->$method($variance));
+				}
+				continue;
+			}
+			$r["$name $method"] = $view($subject->$method());
+		}
+		foreach (['getSmallerType', 'getSmallerOrEqualType', 'getGreaterType', 'getGreaterOrEqualType'] as $method) {
+			$r["$name $method"] = $view($subject->$method($stringPhpVersions[1]));
+		}
+		foreach ([\PHPStan\Type\GeneralizePrecision::lessSpecific(), \PHPStan\Type\GeneralizePrecision::moreSpecific(), \PHPStan\Type\GeneralizePrecision::templateArgument()] as $i => $precision) {
+			$r["$name generalize $i"] = $view($subject->generalize($precision));
+		}
+		$r["$name toCoercedArgumentType"] = [$view($subject->toCoercedArgumentType(true)), $view($subject->toCoercedArgumentType(false))];
+		$r["$name traverse identity"] = $subject->traverse(static fn ($t) => $t) === $subject;
+		$r["$name traverse replaced"] = $view($subject->traverse(static fn ($t) => new \PHPStan\Type\ObjectType(\stdClass::class)));
+		$r["$name getTemplateType"] = $view($subject->getTemplateType('Foo', 'T'));
+		$r["$name hasProperty"] = $view($subject->hasProperty('x'));
+		$r["$name hasMethod"] = $view($subject->hasMethod('x'));
+		$r["$name hasConstant"] = [$view($subject->hasConstant('X')), $view($subject->hasConstant('YES'))];
+		$r["$name setOffsetValueType null"] = [$view($subject->setOffsetValueType(null, $others['stringAbc'])), $view($subject->setOffsetValueType(null, $others['int1'], false))];
+		$r["$name mapValueType"] = $view($subject->mapValueType(static fn ($t) => $t));
+		$r["$name mapKeyType"] = $view($subject->mapKeyType(static fn ($t) => $t));
+		$r["$name changeKeyCaseArray"] = $view($subject->changeKeyCaseArray(null));
+		foreach (['getProperty', 'getMethod', 'getConstant'] as $method) {
+			foreach (['x', 'YES'] as $memberName) {
+				try {
+					$args = $method === 'getConstant' ? [$memberName] : [$memberName, $outOfClassScope];
+					$r["$name $method $memberName"] = $view($subject->$method(...$args));
+				} catch (\PHPStan\ShouldNotHappenException $e) {
+					$r["$name $method $memberName"] = 'ShouldNotHappenException';
+				} catch (\Throwable $e) {
+					$r["$name $method $memberName"] = [get_class($e), $e->getMessage()];
+				}
+			}
+		}
+		try {
+			$acceptors = $subject->getCallableParametersAcceptors($outOfClassScope);
+			$r["$name getCallableParametersAcceptors"] = array_map(static fn ($acceptor) => [get_class($acceptor), $acceptor->getReturnType()->describe(\PHPStan\Type\VerbosityLevel::precise()), count($acceptor->getParameters())], $acceptors);
+		} catch (\PHPStan\ShouldNotHappenException $e) {
+			$r["$name getCallableParametersAcceptors"] = 'ShouldNotHappenException';
+		}
+		if ($subject instanceof \PHPStan\Type\ConstantScalarType) {
+			$r["$name getValue"] = $subject->getValue();
+		}
+		if ($subject instanceof $constStringClass) {
+			$r["$name append"] = [$view($subject->append(new $constStringClass('xyz'))), $view($subject->append(new $constStringClass('')))];
+			// the array-key memo must read back the same
+			$r["$name toArrayKey again"] = $view($subject->toArrayKey());
+		}
+		if ($subject instanceof $genericClassStringClass) {
+			$r["$name getGenericType"] = $view($subject->getGenericType());
+		}
+	}
+	$r['const equals const'] = [(new $constStringClass('a'))->equals(new $constStringClass('a')), (new $constStringClass('a'))->equals(new $constStringClass('b')), (new $constStringClass('a'))->equals(new $constStringClass('a', true))];
+	$r['generic equals generic'] = [$subjects['genericTrinary']->equals(new $genericClassStringClass(new \PHPStan\Type\ObjectType(\PHPStan\TrinaryLogic::class))), $subjects['genericTrinary']->equals($subjects['genericType']), $subjects['genericTrinary']->equals($subjects['classString'])];
+	// an uninitialized instance: every typed-slot read raises the same Error
+	foreach ([$constStringClass, $genericClassStringClass] as $uninitializedClass) {
+		$uninitialized = (new \ReflectionClass($uninitializedClass))->newInstanceWithoutConstructor();
+		foreach (['describe' => [\PHPStan\Type\VerbosityLevel::precise()], 'isSuperTypeOf' => [$others['int']], 'getConstantStrings' => [], 'isCallable' => [], 'toPhpDocNode' => []] as $method => $args) {
+			try {
+				$uninitialized->$method(...$args);
+				$r["uninitialized $uninitializedClass $method"] = 'no throw';
+			} catch (\Error $e) {
+				$r["uninitialized $uninitializedClass $method"] = [get_class($e), $e->getMessage()];
+			}
+		}
+	}
+	// a PHP subclass overriding what the natives call through $this
+	$templateConstant = new \PHPStan\Type\Generic\TemplateConstantStringType(
+		\PHPStan\Type\Generic\TemplateTypeScope::createWithFunction('foo'),
+		new \PHPStan\Type\Generic\TemplateTypeParameterStrategy(),
+		\PHPStan\Type\Generic\TemplateTypeVariance::createInvariant(),
+		'T',
+		new $constStringClass('abc'),
+		null,
+	);
+	$r['template describe'] = $templateConstant->describe(\PHPStan\Type\VerbosityLevel::precise());
+	$r['template isSuperTypeOf const'] = $view($templateConstant->isSuperTypeOf($others['stringAbc']));
+	$r['template toArrayKey'] = $view($templateConstant->toArrayKey());
+	$r['template generalize'] = $view($templateConstant->generalize(\PHPStan\Type\GeneralizePrecision::moreSpecific()));
+	$r['const isSuperTypeOf template'] = $view($subjects['constAbc']->isSuperTypeOf($templateConstant));
+	$r['string isSuperTypeOf template'] = $view($subjects['string']->isSuperTypeOf($templateConstant));
+	$r['generic accepts template'] = $view($subjects['genericTrinary']->accepts($templateConstant, true));
+	$anonymous = new class ('abc') extends \PHPStan\Type\Constant\ConstantStringType {
+
+		public function getValue(): string
+		{
+			return 'overridden';
+		}
+
+	};
+	$r['anonymous isNumericString'] = $view($anonymous->isNumericString());
+	$r['anonymous isNonEmptyString'] = $view($anonymous->isNonEmptyString());
+	$r['anonymous append'] = $view($anonymous->append(new $constStringClass('!')));
+	$r['anonymous generalize'] = $view($anonymous->generalize(\PHPStan\Type\GeneralizePrecision::moreSpecific()));
+	$r['string tryRemove anonymous'] = $view($subjects['string']->tryRemove($anonymous));
+	$r['const isSuperTypeOf anonymous'] = $view($subjects['constAbc']->isSuperTypeOf($anonymous));
+	foreach ($r as $key => $value) {
+		$observations["string $key"] = $value;
+	}
+}
+
+
+// observations holding bytes that are not UTF-8 (the invalid-UTF-8 subject's
+// descriptions) go out base64-encoded so json_encode() keeps every byte
+$encodable = static function (mixed $v) use (&$encodable): mixed {
+	if (is_string($v) && !mb_check_encoding($v, 'UTF-8')) {
+		return 'base64:' . base64_encode($v);
+	}
+	if (is_array($v)) {
+		return array_map($encodable, $v);
+	}
+	return $v;
+};
+
+echo json_encode($encodable($observations), JSON_THROW_ON_ERROR | JSON_PRESERVE_ZERO_FRACTION), "\n";

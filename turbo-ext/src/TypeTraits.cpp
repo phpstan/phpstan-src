@@ -12,6 +12,7 @@
 #include "generated/JustNullableTypeTrait.h"
 #include "generated/NonArrayTypeTrait.h"
 #include "generated/NonCallableTypeTrait.h"
+#include "generated/MaybeCallableTypeTrait.h"
 #include "generated/NonIterableTypeTrait.h"
 #include "generated/NonObjectTypeTrait.h"
 #include "generated/UndecidedBooleanTypeTrait.h"
@@ -195,8 +196,30 @@ zv::Val pt_type_new_constant_float(double value)
 
 zv::Val pt_type_new_constant_string(const char *value, size_t len)
 {
-	zv::Val arg = zv::Val::string(value, len);
-	return pt_type_new(PT_CLASS_CONSTANT_STRING_TYPE, 1, arg.raw());
+	zend_string *str = zend_string_init(value, len, 0);
+	zval result;
+	bool created = pt_constant_string_type_new(&result, str);
+	zend_string_release(str);
+	if (UNEXPECTED(!created)) return zv::Val();
+	return zv::Val::adopt(result);
+}
+
+zend_long pt_type_result_trinary(zval *result)
+{
+	if (UNEXPECTED(Z_TYPE_P(result) != IS_OBJECT)) {
+		zend_type_error("phpstan_turbo: expected a result object, %s given", zend_zval_value_name(result));
+		return -1;
+	}
+	zend_object *object = Z_OBJ_P(result);
+	if (EXPECTED(object->ce == pt_ce_is_super_type_of_result || object->ce == pt_ce_accepts_result)) return pt_result_value(object);
+	/* the PHP twin declared next to the native class in the differential
+	 * tests: its public readonly $result */
+	zval rv;
+	zval *trinary = zend_read_property(object->ce, object, PT_LC("result"), 0, &rv);
+	if (UNEXPECTED(trinary == NULL || EG(exception))) return -1;
+	zend_long value = pt_type_trinary_value(trinary);
+	zval_ptr_dtor(&rv);
+	return value;
 }
 
 zv::Val pt_type_new_union(zv::Arr types)
@@ -510,6 +533,32 @@ void pt_type_trait_non_callable(reg::Class &cls)
 
 /* }}} */
 
+/* {{{ MaybeCallableTypeTrait */
+
+static void ZEND_FASTCALL trinaryMaybe0(INTERNAL_FUNCTION_PARAMETERS)
+{
+	ZEND_PARSE_PARAMETERS_NONE();
+	PT_RETURN_TRINARY(PT_TRI_MAYBE);
+}
+
+void pt_type_trait_maybe_callable(reg::Class &cls)
+{
+	namespace sigs = ptdecl::MaybeCallableTypeTrait::sig;
+	cls.traitMethod(sigs::isCallable, trinaryMaybe0);
+
+	cls.traitMethod(sigs::getCallableParametersAcceptors, [](INTERNAL_FUNCTION_PARAMETERS) {
+		PT_ARGS(1, 1);
+		/* [new TrivialParametersAcceptor()] */
+		zv::Val acceptor = pt_type_new(PT_CLASS_TRIVIAL_PARAMETERS_ACCEPTOR, 0, NULL);
+		if (UNEXPECTED(acceptor.isUndef())) RETURN_THROWS();
+		zv::Arr acceptors = zv::Arr::create(1);
+		acceptors.push(std::move(acceptor));
+		PT_RETURN_VAL(zv::Val(std::move(acceptors)));
+	});
+}
+
+/* }}} */
+
 /* {{{ NonIterableTypeTrait */
 
 void pt_type_trait_non_iterable(reg::Class &cls)
@@ -570,12 +619,13 @@ void pt_type_trait_non_object(reg::Class &cls)
 		if (UNEXPECTED(objectWithoutClass.isUndef())) RETURN_THROWS();
 		zv::Val type;
 		if (allowString) {
-			/* new UnionType([new ObjectWithoutClassType(), new ClassStringType()]) */
-			zv::Val classString = pt_type_new(PT_CLASS_CLASS_STRING_TYPE, 0, NULL);
-			if (UNEXPECTED(classString.isUndef())) RETURN_THROWS();
+			/* new UnionType([new ObjectWithoutClassType(), new ClassStringType()])
+			 * — the shadowing ClassStringType */
+			zval classString;
+			if (UNEXPECTED(!pt_class_string_type_new(&classString))) RETURN_THROWS();
 			zv::Arr types = zv::Arr::create(2);
 			types.push(std::move(objectWithoutClass));
-			types.push(std::move(classString));
+			types.push(zv::Val::adopt(classString));
 			zval typesZv = types.take();
 			type = pt_type_new(PT_CLASS_UNION_TYPE, 1, &typesZv);
 			zval_ptr_dtor(&typesZv);

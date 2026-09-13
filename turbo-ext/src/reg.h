@@ -377,6 +377,7 @@ struct Constant
 {
 	const char *name;
 	zend_long value;
+	uint32_t flags; /* ZEND_ACC_PUBLIC / ZEND_ACC_PRIVATE */
 };
 
 /*
@@ -506,7 +507,15 @@ inline void declareMembers(zend_class_entry *ce, const std::vector<Property> &pr
 		}
 	}
 	for (const Constant &constant : constants) {
-		zend_declare_class_constant_long(ce, constant.name, strlen(constant.name), constant.value);
+		if (constant.flags == ZEND_ACC_PUBLIC) {
+			zend_declare_class_constant_long(ce, constant.name, strlen(constant.name), constant.value);
+			continue;
+		}
+		zend_string *nameStr = zend_string_init_interned(constant.name, strlen(constant.name), ce->type == ZEND_INTERNAL_CLASS);
+		zval value;
+		ZVAL_LONG(&value, constant.value);
+		zend_declare_class_constant_ex(ce, nameStr, &value, (int) constant.flags, NULL);
+		zend_string_release(nameStr);
 	}
 }
 
@@ -823,10 +832,40 @@ public:
 		return *this;
 	}
 
+	/* a `private Foo $x` / `private ?Foo $x` class-typed property with no
+	 * default (IS_PROP_UNINIT until the constructor writes it); className
+	 * is a persistent literal */
+	Class &privateTypedClassProperty(const char *propertyName, const char *className, bool nullable)
+	{
+		properties.push_back({ propertyName, PropertyKind::Typed, ZEND_ACC_PRIVATE, nullable ? (zend_long) MAY_BE_NULL : 0, className });
+		return *this;
+	}
+
+	/* a `private ?Foo $x = null` class-typed property */
+	Class &privateTypedClassPropertyDefaultNull(const char *propertyName, const char *className)
+	{
+		properties.push_back({ propertyName, PropertyKind::TypedNull, ZEND_ACC_PRIVATE, (zend_long) MAY_BE_NULL, className });
+		return *this;
+	}
+
+	/* a `private array $x = []` typed property */
+	Class &privateTypedArrayPropertyDefaultEmpty(const char *propertyName)
+	{
+		properties.push_back({ propertyName, PropertyKind::TypedEmptyArray, ZEND_ACC_PRIVATE, (zend_long) MAY_BE_ARRAY });
+		return *this;
+	}
+
 	/* a public long class constant (zend_declare_class_constant_long) */
 	Class &classConstantLong(const char *constantName, zend_long value)
 	{
-		constants.push_back({ constantName, value });
+		constants.push_back({ constantName, value, ZEND_ACC_PUBLIC });
+		return *this;
+	}
+
+	/* a `private const X = <int>` class constant */
+	Class &privateClassConstantLong(const char *constantName, zend_long value)
+	{
+		constants.push_back({ constantName, value, ZEND_ACC_PRIVATE });
 		return *this;
 	}
 

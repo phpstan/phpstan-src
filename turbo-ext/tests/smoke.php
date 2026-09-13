@@ -803,7 +803,7 @@ foreach ($resultObservations['php'] as $key => $expected) {
 	check($expected === ($resultObservations['native'][$key] ?? null), "IsSuperTypeOfResult/AcceptsResult $key: " . json_encode($expected) . ' vs ' . json_encode($resultObservations['native'][$key] ?? null));
 }
 
-// ---- the Type ports: BooleanType, ConstantBooleanType, IntegerType, ConstantIntegerType, IntegerRangeType ----
+// ---- the Type ports: BooleanType, ConstantBooleanType, IntegerType, ConstantIntegerType, IntegerRangeType, StringType, ConstantStringType, ClassStringType, GenericClassStringType ----
 // A Type never acts alone: its results flow into the PHP compound types and
 // back through `self`-typed statics (IsSuperTypeOfResult::extremeIdentity()),
 // so a native result object meeting the PHP result class in the prefixed
@@ -817,6 +817,10 @@ $covered[\PHPStan\Type\Constant\ConstantBooleanType::class] = true;
 $covered[\PHPStan\Type\IntegerType::class] = true;
 $covered[\PHPStan\Type\Constant\ConstantIntegerType::class] = true;
 $covered[\PHPStan\Type\IntegerRangeType::class] = true;
+$covered[\PHPStan\Type\StringType::class] = true;
+$covered[\PHPStan\Type\Constant\ConstantStringType::class] = true;
+$covered[\PHPStan\Type\ClassStringType::class] = true;
+$covered[\PHPStan\Type\Generic\GenericClassStringType::class] = true;
 
 /** @return array<string, mixed> */
 function observeTypeFamily(string $mode): array
@@ -869,7 +873,7 @@ function observeTypeFamily(string $mode): array
 
 $typeFamilyPhp = observeTypeFamily('php');
 $typeFamilyNative = observeTypeFamily('native');
-foreach ([\PHPStan\Type\BooleanType::class, \PHPStan\Type\Constant\ConstantBooleanType::class, \PHPStan\Type\IntegerType::class, \PHPStan\Type\Constant\ConstantIntegerType::class, \PHPStan\Type\IntegerRangeType::class] as $typeClass) {
+foreach ([\PHPStan\Type\BooleanType::class, \PHPStan\Type\Constant\ConstantBooleanType::class, \PHPStan\Type\IntegerType::class, \PHPStan\Type\Constant\ConstantIntegerType::class, \PHPStan\Type\IntegerRangeType::class, \PHPStan\Type\StringType::class, \PHPStan\Type\Constant\ConstantStringType::class, \PHPStan\Type\ClassStringType::class, \PHPStan\Type\Generic\GenericClassStringType::class] as $typeClass) {
 	check(($typeFamilyPhp["native $typeClass"] ?? null) === false, "type-family.php php: $typeClass is the PHP twin");
 	check(($typeFamilyNative["native $typeClass"] ?? null) === true, "type-family.php native: $typeClass is the native class");
 	unset($typeFamilyPhp["native $typeClass"], $typeFamilyNative["native $typeClass"]);

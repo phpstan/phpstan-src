@@ -380,11 +380,13 @@ jobs:
               echo "$OUTPUT"
               ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
               ../bashunit -a not_contains 'Scanned files with changed symbols' "$OUTPUT"
+              ../bashunit -a contains 'Result cache is saved.' "$OUTPUT"
               # The new contents are recorded: the next run has nothing to notice.
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
               ../bashunit -a not_contains 'Scanned files with changed symbols' "$OUTPUT"
               ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+              ../bashunit -a contains 'Result cache was not rewritten because it is unchanged.' "$OUTPUT"
               # A changed return type is an exported node change: the file depending on it is
               # re-analysed. A changed signature cannot make a new symbol available, so the file with
               # the error is left alone.

@@ -1,0 +1,9 @@
+services:
+	-
+		class: PHPStan\Rules\Properties\EntityIdReadWritePropertiesExtension
+		tags:
+			- phpstan.properties.readWriteExtension
+	-
+		class: PHPStan\Rules\Properties\InitAnnotationReadWritePropertiesExtension
+		tags:
+			- phpstan.properties.readWriteExtension

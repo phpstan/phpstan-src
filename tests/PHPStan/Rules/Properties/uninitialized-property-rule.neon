@@ -3,3 +3,11 @@ services:
         class: PHPStan\Rules\Properties\TestInitializedProperty
         tags:
             - phpstan.additionalConstructorsExtension
+    -
+        class: PHPStan\Rules\Properties\InitedPropertyReadWritePropertiesExtension
+        tags:
+            - phpstan.properties.readWriteExtension
+    -
+        class: PHPStan\Rules\Properties\InjectAnnotationReadWritePropertiesExtension
+        tags:
+            - phpstan.properties.readWriteExtension

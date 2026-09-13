@@ -21,7 +21,6 @@ use PHPStan\Collectors\Collector;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Dependency\PackageDependencyResolver;
-use PHPStan\DependencyInjection\DirectExtensionsCollection;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
 use PHPStan\Fixable\Patcher;
@@ -29,6 +28,7 @@ use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\Rules\Rule;
+use PHPStan\ShouldNotHappenException;
 use function array_map;
 use function array_merge;
 use function count;
@@ -61,6 +61,10 @@ abstract class RuleTestCase extends PHPStanTestCase
 	}
 
 	/**
+	 * No longer configures the analysis - register the extensions as services
+	 * in a config file returned from getAdditionalConfigFiles() instead.
+	 * Returning any extension fails the test.
+	 *
 	 * @return ReadWritePropertiesExtension[]
 	 */
 	protected function getReadWritePropertiesExtensions(): array
@@ -75,17 +79,19 @@ abstract class RuleTestCase extends PHPStanTestCase
 
 	protected function createNodeScopeResolver(): NodeScopeResolver
 	{
-		$readWritePropertiesExtensions = $this->getReadWritePropertiesExtensions();
+		if (
+			$this->getReadWritePropertiesExtensions() !== []
+			|| $this->shouldPolluteScopeWithLoopInitialAssignments() !== self::getContainer()->getParameter('polluteScopeWithLoopInitialAssignments')
+			|| $this->shouldPolluteScopeWithAlwaysIterableForeach() !== self::getContainer()->getParameter('polluteScopeWithAlwaysIterableForeach')
+		) {
+			throw new ShouldNotHappenException('getReadWritePropertiesExtensions(), shouldPolluteScopeWithLoopInitialAssignments() and shouldPolluteScopeWithAlwaysIterableForeach() no longer configure the analysis. Register the extensions as services and set the parameters in a config file returned from getAdditionalConfigFiles() instead.');
+		}
 
 		return new NodeScopeResolver(
 			self::getContainer(),
 			self::getContainer()->getByType(TemplateArgumentObserver::class),
 			self::getContainer()->getByType(FileHelper::class),
-			$readWritePropertiesExtensions !== [] ? new DirectExtensionsCollection($readWritePropertiesExtensions) : self::getContainer()->getExtensionsCollection(ReadWritePropertiesExtension::class),
 			self::getContainer()->getExtensionsCollection(PerFileAnalysisResettable::class),
-			$this->shouldPolluteScopeWithLoopInitialAssignments(),
-			$this->shouldPolluteScopeWithAlwaysIterableForeach(),
-			$this->shouldTreatPhpDocTypesAsCertain(),
 			self::getContainer()->getByType(ExpressionResultFactory::class),
 			self::getContainer()->getByType(StatementsHandler::class),
 		);
@@ -306,14 +312,24 @@ abstract class RuleTestCase extends PHPStanTestCase
 		];
 	}
 
+	/**
+	 * No longer configures the analysis - set the polluteScopeWithLoopInitialAssignments
+	 * parameter in a config file returned from getAdditionalConfigFiles() instead.
+	 * Returning a different value than the parameter fails the test.
+	 */
 	protected function shouldPolluteScopeWithLoopInitialAssignments(): bool
 	{
-		return true;
+		return self::getContainer()->getParameter('polluteScopeWithLoopInitialAssignments');
 	}
 
+	/**
+	 * No longer configures the analysis - set the polluteScopeWithAlwaysIterableForeach
+	 * parameter in a config file returned from getAdditionalConfigFiles() instead.
+	 * Returning a different value than the parameter fails the test.
+	 */
 	protected function shouldPolluteScopeWithAlwaysIterableForeach(): bool
 	{
-		return true;
+		return self::getContainer()->getParameter('polluteScopeWithAlwaysIterableForeach');
 	}
 
 	protected function shouldFailOnPhpErrors(): bool

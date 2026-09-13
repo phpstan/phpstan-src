@@ -27,7 +27,6 @@ use PHPStan\Analyser\Generics\TemplateArgumentFrame;
 use PHPStan\Analyser\Generics\TemplateArgumentObserver;
 use PHPStan\Analyser\Generics\TemplateArgumentStats;
 use PHPStan\DependencyInjection\AutowiredExtensions;
-use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ExtensionsCollection;
@@ -41,7 +40,6 @@ use PHPStan\Node\StaticMethodCallableNode;
 use PHPStan\Node\StaticMethodCallExpressionNode;
 use PHPStan\Reflection\Native\NativeMethodReflection;
 use PHPStan\Reflection\Php\PhpMethodReflection;
-use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
@@ -116,23 +114,14 @@ class NodeScopeResolver
 	public static array $guardProcessedExprIds = [];
 
 	/**
-	 * @param ExtensionsCollection<ReadWritePropertiesExtension> $readWritePropertiesExtensions
 	 * @param ExtensionsCollection<PerFileAnalysisResettable> $perFileAnalysisResettables
 	 */
 	public function __construct(
 		private readonly Container $container,
 		private readonly TemplateArgumentObserver $templateArgumentObserver,
 		private readonly FileHelper $fileHelper,
-		#[AutowiredExtensions(of: ReadWritePropertiesExtension::class)]
-		private readonly ExtensionsCollection $readWritePropertiesExtensions,
 		#[AutowiredExtensions(of: PerFileAnalysisResettable::class)]
 		private readonly ExtensionsCollection $perFileAnalysisResettables,
-		#[AutowiredParameter]
-		private readonly bool $polluteScopeWithLoopInitialAssignments,
-		#[AutowiredParameter]
-		private readonly bool $polluteScopeWithAlwaysIterableForeach,
-		#[AutowiredParameter]
-		private readonly bool $treatPhpDocTypesAsCertain,
 		private readonly ExpressionResultFactory $expressionResultFactory,
 		private readonly StatementsHandler $statementsHandler,
 	)
@@ -429,27 +418,6 @@ class NodeScopeResolver
 	public function isAnalysedFile(string $fileName): bool
 	{
 		return isset($this->analysedFiles[$fileName]);
-	}
-
-	public function shouldPolluteScopeWithLoopInitialAssignments(): bool
-	{
-		return $this->polluteScopeWithLoopInitialAssignments;
-	}
-
-	public function shouldPolluteScopeWithAlwaysIterableForeach(): bool
-	{
-		return $this->polluteScopeWithAlwaysIterableForeach;
-	}
-
-	public function shouldTreatPhpDocTypesAsCertain(): bool
-	{
-		return $this->treatPhpDocTypesAsCertain;
-	}
-
-	/** @return ExtensionsCollection<ReadWritePropertiesExtension> */
-	public function getReadWritePropertiesExtensions(): ExtensionsCollection
-	{
-		return $this->readWritePropertiesExtensions;
 	}
 
 	/** Whether an on-demand walk answers already processed real nodes from their stored results (see processExprOnDemand()). */

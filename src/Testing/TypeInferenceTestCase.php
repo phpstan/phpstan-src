@@ -19,7 +19,6 @@ use PHPStan\File\SystemAgnosticSimpleRelativePathHelper;
 use PHPStan\Node\InClassNode;
 use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ConstantScalarType;
@@ -56,11 +55,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			$container,
 			$container->getByType(TemplateArgumentObserver::class),
 			$container->getByType(FileHelper::class),
-			$container->getExtensionsCollection(ReadWritePropertiesExtension::class),
 			$container->getExtensionsCollection(PerFileAnalysisResettable::class),
-			$container->getParameter('polluteScopeWithLoopInitialAssignments'),
-			$container->getParameter('polluteScopeWithAlwaysIterableForeach'),
-			$container->getParameter('treatPhpDocTypesAsCertain'),
 			$container->getByType(ExpressionResultFactory::class),
 			$container->getByType(StatementsHandler::class),
 		);

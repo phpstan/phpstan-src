@@ -13,6 +13,7 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
 use PHPStan\Analyser\VariableFlow;
+use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use function array_merge;
 use function array_reverse;
@@ -24,6 +25,13 @@ use function count;
 #[AutowiredService]
 final class IfHandler implements StmtHandler
 {
+
+	public function __construct(
+		#[AutowiredParameter]
+		private bool $treatPhpDocTypesAsCertain,
+	)
+	{
+	}
 
 	public function supports(Stmt $stmt): bool
 	{
@@ -44,7 +52,7 @@ final class IfHandler implements StmtHandler
 		$elseFlow = null;
 		$condResult = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
 		$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $entryScope, $storage);
-		$conditionType = ($nodeScopeResolver->shouldTreatPhpDocTypesAsCertain() ? $condResult->getType() : $condResult->getNativeType())->toBoolean();
+		$conditionType = ($this->treatPhpDocTypesAsCertain ? $condResult->getType() : $condResult->getNativeType())->toBoolean();
 		$ifAlwaysTrue = $conditionType->isTrue()->yes();
 		$exitPoints = [];
 		$throwPoints = $condResult->getThrowPoints();
@@ -79,7 +87,7 @@ final class IfHandler implements StmtHandler
 		foreach ($stmt->elseifs as $elseif) {
 			$condResult = $nodeScopeResolver->processExprNode($stmt, $elseif->cond, $condScope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $elseif, $scope, $storage);
-			$elseIfConditionType = ($nodeScopeResolver->shouldTreatPhpDocTypesAsCertain() ? $condResult->getType() : $condResult->getNativeType())->toBoolean();
+			$elseIfConditionType = ($this->treatPhpDocTypesAsCertain ? $condResult->getType() : $condResult->getNativeType())->toBoolean();
 			$throwPoints = array_merge($throwPoints, $condResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $condResult->getImpurePoints());
 			$branchScopeStatementResult = $nodeScopeResolver->processStmtNodesInternal($elseif, $elseif->stmts, $condResult->getTruthyScope(), $storage, $nodeCallback, $context);

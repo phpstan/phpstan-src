@@ -22,7 +22,9 @@ use PHPStan\BetterReflection\Reflection\ReflectionEnum;
 use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
+use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\File\FileReader;
 use PHPStan\Node\ClassConstantsNode;
 use PHPStan\Node\ClassMethodsNode;
@@ -32,6 +34,7 @@ use PHPStan\Node\InClassNode;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ClassReflectionFactory;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\ShouldNotHappenException;
 use function sprintf;
 use function usort;
@@ -46,12 +49,17 @@ use const PHP_VERSION_ID;
 final class ClassLikeHandler implements StmtHandler
 {
 
+	/**
+	 * @param ExtensionsCollection<ReadWritePropertiesExtension> $readWritePropertiesExtensions
+	 */
 	public function __construct(
 		private Reflector $reflector,
 		private ClassReflectionFactory $classReflectionFactory,
 		private CalledMethodProcessor $calledMethodProcessor,
 		private ReflectionProvider $reflectionProvider,
 		private AttributesHandler $attributesHandler,
+		#[AutowiredExtensions(of: ReadWritePropertiesExtension::class)]
+		private ExtensionsCollection $readWritePropertiesExtensions,
 	)
 	{
 	}
@@ -129,7 +137,7 @@ final class ClassLikeHandler implements StmtHandler
 		// Class members have their own inference context, including when the class
 		// declaration is visited during an enclosing body's observation pass.
 		$nodeScopeResolver->processStmtNodesInternal($stmt, $classLikeStatements, $classScope, $storage, $classStatementsGatherer, StatementContext::createTopLevel());
-		$nodeScopeResolver->callNodeCallback($nodeCallback, new ClassPropertiesNode($stmt, $nodeScopeResolver->getReadWritePropertiesExtensions(), $classStatementsGatherer->getProperties(), $classStatementsGatherer->getPropertyUsages(), $classStatementsGatherer->getMethodCalls(), $classStatementsGatherer->getReturnStatementsNodes(), $classStatementsGatherer->getPropertyAssigns(), $classReflection), $classScope, $storage);
+		$nodeScopeResolver->callNodeCallback($nodeCallback, new ClassPropertiesNode($stmt, $this->readWritePropertiesExtensions, $classStatementsGatherer->getProperties(), $classStatementsGatherer->getPropertyUsages(), $classStatementsGatherer->getMethodCalls(), $classStatementsGatherer->getReturnStatementsNodes(), $classStatementsGatherer->getPropertyAssigns(), $classReflection), $classScope, $storage);
 		$nodeScopeResolver->callNodeCallback($nodeCallback, new ClassMethodsNode($stmt, $classStatementsGatherer->getMethods(), $classStatementsGatherer->getMethodCalls(), $classReflection), $classScope, $storage);
 		$nodeScopeResolver->callNodeCallback($nodeCallback, new ClassConstantsNode($stmt, $classStatementsGatherer->getConstants(), $classStatementsGatherer->getConstantFetches(), $classReflection), $classScope, $storage);
 		$classReflection->evictPrivateSymbols();

@@ -4,12 +4,10 @@ namespace PHPStan\Rules\Properties;
 
 use PHPStan\Reflection\AdditionalConstructorsExtension;
 use PHPStan\Reflection\ConstructorsHelper;
-use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
-use function in_array;
-use function strpos;
+use function array_merge;
 
 /**
  * @extends RuleTestCase<MissingReadOnlyPropertyAssignRule>
@@ -33,53 +31,14 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		);
 	}
 
-	protected function getReadWritePropertiesExtensions(): array
+	public static function getAdditionalConfigFiles(): array
 	{
-		return [
-			new class() implements ReadWritePropertiesExtension {
-
-				public function isAlwaysRead(PropertyReflection $property, string $propertyName): bool
-				{
-					return $this->isEntityId($property, $propertyName);
-				}
-
-				public function isAlwaysWritten(PropertyReflection $property, string $propertyName): bool
-				{
-					return $this->isEntityId($property, $propertyName);
-				}
-
-				public function isInitialized(PropertyReflection $property, string $propertyName): bool
-				{
-					return $this->isEntityId($property, $propertyName);
-				}
-
-				private function isEntityId(PropertyReflection $property, string $propertyName): bool
-				{
-					return $property->getDeclaringClass()->getName() === 'MissingReadOnlyPropertyAssign\\Entity'
-						&& in_array($propertyName, ['id'], true);
-				}
-
-			},
-			new class() implements ReadWritePropertiesExtension {
-
-				public function isAlwaysRead(PropertyReflection $property, string $propertyName): bool
-				{
-					return false;
-				}
-
-				public function isAlwaysWritten(PropertyReflection $property, string $propertyName): bool
-				{
-					return $this->isInitialized($property, $propertyName);
-				}
-
-				public function isInitialized(PropertyReflection $property, string $propertyName): bool
-				{
-					return $property->isPublic() &&
-						strpos($property->getDocComment() ?? '', '@init') !== false;
-				}
-
-			},
-		];
+		return array_merge(
+			parent::getAdditionalConfigFiles(),
+			[
+				__DIR__ . '/missing-readonly-property-assign-rule.neon',
+			],
+		);
 	}
 
 	#[RequiresPhp('>= 8.1.0')]

@@ -17,6 +17,7 @@ use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
+use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\BreaklessWhileLoopNode;
 use function array_merge;
@@ -28,6 +29,15 @@ use function count;
 #[AutowiredService]
 final class WhileHandler implements StmtHandler
 {
+
+	public function __construct(
+		#[AutowiredParameter]
+		private bool $polluteScopeWithLoopInitialAssignments,
+		#[AutowiredParameter]
+		private bool $treatPhpDocTypesAsCertain,
+	)
+	{
+	}
 
 	public function supports(Stmt $stmt): bool
 	{
@@ -51,10 +61,10 @@ final class WhileHandler implements StmtHandler
 		$scope->pushExpressionResultStorage($storage);
 		try {
 			$condResult = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $scope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep(resolveTemplateArguments: false));
-			$beforeCondBooleanType = ($nodeScopeResolver->shouldTreatPhpDocTypesAsCertain() ? $condResult->getType() : $condResult->getNativeType())->toBoolean();
+			$beforeCondBooleanType = ($this->treatPhpDocTypesAsCertain ? $condResult->getType() : $condResult->getNativeType())->toBoolean();
 			$condScope = $condResult->getFalseyScope();
 			if (!$context->isTopLevel() && $beforeCondBooleanType->isFalse()->yes()) {
-				if (!$nodeScopeResolver->shouldPolluteScopeWithLoopInitialAssignments()) {
+				if (!$this->polluteScopeWithLoopInitialAssignments) {
 					$scope = $condScope->mergeWith($scope);
 				}
 
@@ -173,7 +183,7 @@ final class WhileHandler implements StmtHandler
 		$alwaysIterates = false;
 		$neverIterates = false;
 		if ($context->isTopLevel()) {
-			$condBooleanType = ($nodeScopeResolver->shouldTreatPhpDocTypesAsCertain() ? $bodyCondResult->getType() : $bodyCondResult->getNativeType())->toBoolean();
+			$condBooleanType = ($this->treatPhpDocTypesAsCertain ? $bodyCondResult->getType() : $bodyCondResult->getNativeType())->toBoolean();
 			$alwaysIterates = $condBooleanType->isTrue()->yes();
 			$neverIterates = $condBooleanType->isFalse()->yes();
 		}
@@ -200,7 +210,7 @@ final class WhileHandler implements StmtHandler
 			$finalScope = null;
 		}
 		if (!$isIterableAtLeastOnce) {
-			if (!$nodeScopeResolver->shouldPolluteScopeWithLoopInitialAssignments()) {
+			if (!$this->polluteScopeWithLoopInitialAssignments) {
 				$condScope = $condScope->mergeWith($scope);
 			}
 			$finalScope = $finalScope === null ? $condScope : $finalScope->mergeWith($condScope);

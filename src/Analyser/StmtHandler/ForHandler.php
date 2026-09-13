@@ -25,6 +25,7 @@ use PHPStan\Analyser\StmtHandler;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\Analyser\VariableFlowBuilder;
+use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\TrinaryLogic;
 use function array_last;
@@ -40,6 +41,15 @@ use function spl_object_id;
 #[AutowiredService]
 final class ForHandler implements StmtHandler
 {
+
+	public function __construct(
+		#[AutowiredParameter]
+		private bool $polluteScopeWithLoopInitialAssignments,
+		#[AutowiredParameter]
+		private bool $treatPhpDocTypesAsCertain,
+	)
+	{
+	}
 
 	public function supports(Stmt $stmt): bool
 	{
@@ -166,7 +176,7 @@ final class ForHandler implements StmtHandler
 					// only the last condition expression is relevant whether the loop continues
 					// see https://www.php.net/manual/en/control-structures.for.php
 					if ($condExpr === $lastCondExpr) {
-						$condTruthiness = ($nodeScopeResolver->shouldTreatPhpDocTypesAsCertain() ? $condResult->getType() : $condResult->getNativeType())->toBoolean();
+						$condTruthiness = ($this->treatPhpDocTypesAsCertain ? $condResult->getType() : $condResult->getNativeType())->toBoolean();
 						$isIterableAtLeastOnce = $isIterableAtLeastOnce->and($condTruthiness->isTrue());
 					}
 
@@ -285,20 +295,20 @@ final class ForHandler implements StmtHandler
 		}
 
 		if ($isIterableAtLeastOnce->no() || $finalScopeResult->isAlwaysTerminating() || ($backEdgeDead && count($breakExitPoints) === 0)) {
-			if ($nodeScopeResolver->shouldPolluteScopeWithLoopInitialAssignments()) {
+			if ($this->polluteScopeWithLoopInitialAssignments) {
 				$finalScope = $initScope;
 			} else {
 				$finalScope = $scope;
 			}
 
 		} elseif ($isIterableAtLeastOnce->maybe()) {
-			if ($nodeScopeResolver->shouldPolluteScopeWithLoopInitialAssignments()) {
+			if ($this->polluteScopeWithLoopInitialAssignments) {
 				$finalScope = $finalScope->mergeWith($initScope);
 			} else {
 				$finalScope = $finalScope->mergeWith($scope);
 			}
 		} else {
-			if (!$nodeScopeResolver->shouldPolluteScopeWithLoopInitialAssignments()) {
+			if (!$this->polluteScopeWithLoopInitialAssignments) {
 				$finalScope = $finalScope->mergeWith($scope);
 			}
 		}

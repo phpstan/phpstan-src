@@ -85,6 +85,8 @@ final class ForeachHandler implements StmtHandler
 		private bool $implicitThrows,
 		private VarAnnotationProcessor $varAnnotationProcessor,
 		private AssignHandler $assignHandler,
+		#[AutowiredParameter]
+		private bool $polluteScopeWithAlwaysIterableForeach,
 	)
 	{
 	}
@@ -151,7 +153,7 @@ final class ForeachHandler implements StmtHandler
 		// walked synthetic would delegate to); the walk is the composition's
 		// miss seam
 		$nonEmptyIterateeScope = $scope;
-		if ($nodeScopeResolver->shouldPolluteScopeWithAlwaysIterableForeach()) {
+		if ($this->polluteScopeWithAlwaysIterableForeach) {
 			$identicalNarrowingHelper = $this->container->getByType(IdenticalNarrowingHelper::class);
 			$emptyArrayType = new ConstantArrayType([], []);
 			$nonEmptyTypes = $identicalNarrowingHelper->specifyIdenticalAgainstType(
@@ -460,7 +462,7 @@ final class ForeachHandler implements StmtHandler
 			), TypeSpecifierContext::createTruthy()));
 		} elseif ($isIterableAtLeastOnce->no() || $finalScopeResult->isAlwaysTerminating()) {
 			$finalScope = $scope;
-		} elseif (!$nodeScopeResolver->shouldPolluteScopeWithAlwaysIterableForeach()) {
+		} elseif (!$this->polluteScopeWithAlwaysIterableForeach) {
 			$finalScope = $scope->processAlwaysIterableForeachScopeWithoutPollute($finalScope);
 			// get types from finalScope, but don't create new variables
 		}
@@ -484,7 +486,7 @@ final class ForeachHandler implements StmtHandler
 			VariableFlowBuilder::targetWrite($stmt->valueVar, VariableWrite::KIND_FOREACH_VALUE, $finalScope, $storage),
 			$stmt->byRef && $stmt->valueVar instanceof Variable && is_string($stmt->valueVar->name) ? VariableFlow::escape($stmt->valueVar->name) : null,
 		);
-		$loopFlow = VariableFlow::loop($traversableThrowPoint !== null ? VariableFlow::throwing($traversableThrowPoint->getType(), true) : null, VariableFlow::sequence($bindingFlow, $finalScopeResult->getVariableFlow()), null, $isIterableAtLeastOnce->yes() && $nodeScopeResolver->shouldPolluteScopeWithAlwaysIterableForeach(), true);
+		$loopFlow = VariableFlow::loop($traversableThrowPoint !== null ? VariableFlow::throwing($traversableThrowPoint->getType(), true) : null, VariableFlow::sequence($bindingFlow, $finalScopeResult->getVariableFlow()), null, $isIterableAtLeastOnce->yes() && $this->polluteScopeWithAlwaysIterableForeach, true);
 		$bindingWrites = VariableFlowBuilder::writes($bindingFlow);
 		$bindings = [];
 		foreach ($bindingWrites as $write) {

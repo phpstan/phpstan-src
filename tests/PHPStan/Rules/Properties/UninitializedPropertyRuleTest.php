@@ -4,12 +4,10 @@ namespace PHPStan\Rules\Properties;
 
 use PHPStan\Reflection\AdditionalConstructorsExtension;
 use PHPStan\Reflection\ConstructorsHelper;
-use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 use function array_merge;
-use function strpos;
 
 /**
  * @extends RuleTestCase<UninitializedPropertyRule>
@@ -31,51 +29,6 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 				],
 			),
 		);
-	}
-
-	protected function getReadWritePropertiesExtensions(): array
-	{
-		return [
-			new class() implements ReadWritePropertiesExtension {
-
-				public function isAlwaysRead(PropertyReflection $property, string $propertyName): bool
-				{
-					return false;
-				}
-
-				public function isAlwaysWritten(PropertyReflection $property, string $propertyName): bool
-				{
-					return false;
-				}
-
-				public function isInitialized(PropertyReflection $property, string $propertyName): bool
-				{
-					return $property->getDeclaringClass()->getName() === 'UninitializedProperty\\TestExtension' && $propertyName === 'inited';
-				}
-
-			},
-
-			// bug-9619
-			new class() implements ReadWritePropertiesExtension {
-
-				public function isAlwaysRead(PropertyReflection $property, string $propertyName): bool
-				{
-					return false;
-				}
-
-				public function isAlwaysWritten(PropertyReflection $property, string $propertyName): bool
-				{
-					return $this->isInitialized($property, $propertyName);
-				}
-
-				public function isInitialized(PropertyReflection $property, string $propertyName): bool
-				{
-					return $property->isPublic() &&
-						strpos($property->getDocComment() ?? '', '@inject') !== false;
-				}
-
-			},
-		];
 	}
 
 	public static function getAdditionalConfigFiles(): array

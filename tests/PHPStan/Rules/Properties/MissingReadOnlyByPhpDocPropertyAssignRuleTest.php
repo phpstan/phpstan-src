@@ -4,11 +4,10 @@ namespace PHPStan\Rules\Properties;
 
 use PHPStan\Reflection\AdditionalConstructorsExtension;
 use PHPStan\Reflection\ConstructorsHelper;
-use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
-use function in_array;
+use function array_merge;
 
 /**
  * @extends RuleTestCase<MissingReadOnlyByPhpDocPropertyAssignRule>
@@ -28,34 +27,14 @@ class MissingReadOnlyByPhpDocPropertyAssignRuleTest extends RuleTestCase
 		);
 	}
 
-	protected function getReadWritePropertiesExtensions(): array
+	public static function getAdditionalConfigFiles(): array
 	{
-		return [
-			new class() implements ReadWritePropertiesExtension {
-
-				public function isAlwaysRead(PropertyReflection $property, string $propertyName): bool
-				{
-					return $this->isEntityId($property, $propertyName);
-				}
-
-				public function isAlwaysWritten(PropertyReflection $property, string $propertyName): bool
-				{
-					return $this->isEntityId($property, $propertyName);
-				}
-
-				public function isInitialized(PropertyReflection $property, string $propertyName): bool
-				{
-					return $this->isEntityId($property, $propertyName);
-				}
-
-				private function isEntityId(PropertyReflection $property, string $propertyName): bool
-				{
-					return $property->getDeclaringClass()->getName() === 'MissingReadOnlyPropertyAssignPhpDoc\\Entity'
-						&& in_array($propertyName, ['id'], true);
-				}
-
-			},
-		];
+		return array_merge(
+			parent::getAdditionalConfigFiles(),
+			[
+				__DIR__ . '/missing-readonly-by-phpdoc-property-assign-rule.neon',
+			],
+		);
 	}
 
 	public function testRule(): void

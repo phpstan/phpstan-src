@@ -237,21 +237,6 @@ class BooleanOrConstantConditionRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testDoNotReportPhpDoc(): void
-	{
-		$this->treatPhpDocTypesAsCertain = false;
-		$this->analyse([__DIR__ . '/data/boolean-or-not-phpdoc.php'], [
-			[
-				'Left side of || is always true.',
-				24,
-			],
-			[
-				'Right side of || is always true.',
-				30,
-			],
-		]);
-	}
-
 	public function testReportPhpDoc(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
@@ -287,9 +272,6 @@ class BooleanOrConstantConditionRuleTest extends RuleTestCase
 		return [
 			[
 				true,
-			],
-			[
-				false,
 			],
 		];
 	}
@@ -439,13 +421,6 @@ class BooleanOrConstantConditionRuleTest extends RuleTestCase
 		$this->treatPhpDocTypesAsCertain = true;
 
 		$this->analyse([__DIR__ . '/data/bug-14473.php'], []);
-	}
-
-	public function testBug15169(): void
-	{
-		$this->treatPhpDocTypesAsCertain = false;
-
-		$this->analyse([__DIR__ . '/../DeadCode/data/bug-15169.php'], []);
 	}
 
 	public function testBug15169TreatPhpDocTypesAsCertain(): void

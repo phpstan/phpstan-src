@@ -17,10 +17,6 @@ class DefinedVariableRuleTest extends RuleTestCase
 
 	private bool $checkMaybeUndefinedVariables;
 
-	private bool $polluteScopeWithLoopInitialAssignments;
-
-	private bool $polluteScopeWithAlwaysIterableForeach;
-
 	protected function getRule(): Rule
 	{
 		return new DefinedVariableRule(
@@ -29,313 +25,9 @@ class DefinedVariableRuleTest extends RuleTestCase
 		);
 	}
 
-	protected function shouldPolluteScopeWithLoopInitialAssignments(): bool
-	{
-		return $this->polluteScopeWithLoopInitialAssignments;
-	}
-
-	protected function shouldPolluteScopeWithAlwaysIterableForeach(): bool
-	{
-		return $this->polluteScopeWithAlwaysIterableForeach;
-	}
-
-	public function testDefinedVariables(): void
-	{
-		require_once __DIR__ . '/data/defined-variables-definition.php';
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/defined-variables.php'], [
-			[
-				'Undefined variable: $definedLater',
-				5,
-			],
-			[
-				'Variable $definedInIfOnly might not be defined.',
-				10,
-			],
-			[
-				'Variable $definedInCases might not be defined.',
-				21,
-			],
-			[
-				'Undefined variable: $fooParameterBeforeDeclaration',
-				29,
-			],
-			[
-				'Undefined variable: $parseStrParameter',
-				34,
-			],
-			[
-				'Undefined variable: $parseStrParameter',
-				36,
-			],
-			[
-				'Undefined variable: $foo',
-				39,
-			],
-			[
-				'Undefined variable: $willBeUnset',
-				44,
-			],
-			[
-				'Undefined variable: $mustAlreadyExistWhenDividing',
-				50,
-			],
-			[
-				'Undefined variable: $arrayDoesNotExist',
-				57,
-			],
-			[
-				'Undefined variable: $undefinedVariable',
-				59,
-			],
-			[
-				'Undefined variable: $this',
-				96,
-			],
-			[
-				'Undefined variable: $this',
-				99,
-			],
-			[
-				'Undefined variable: $variableInEmpty',
-				145,
-			],
-			[
-				'Undefined variable: $negatedVariableInEmpty',
-				152,
-			],
-			[
-				'Undefined variable: $variableInEmpty',
-				155,
-			],
-			[
-				'Undefined variable: $negatedVariableInEmpty',
-				156,
-			],
-			[
-				'Undefined variable: $variableInIsset',
-				159,
-			],
-			[
-				'Undefined variable: $anotherVariableInIsset',
-				159,
-			],
-			[
-				'Undefined variable: $variableInIsset',
-				161,
-			],
-			[
-				'Undefined variable: $anotherVariableInIsset',
-				161,
-			],
-			[
-				'Undefined variable: $http_response_header',
-				185,
-			],
-			[
-				'Undefined variable: $http_response_header',
-				191,
-			],
-			[
-				'Undefined variable: $assignedInKey',
-				203,
-			],
-			[
-				'Undefined variable: $assignedInKey',
-				204,
-			],
-			[
-				'Variable $forI might not be defined.',
-				250,
-			],
-			[
-				'Variable $forJ might not be defined.',
-				251,
-			],
-			[
-				'Variable $variableAvailableInAllCatches might not be defined.',
-				266,
-			],
-			[
-				'Variable $variableDefinedOnlyInOneCatch might not be defined.',
-				267,
-			],
-			[
-				'Undefined variable: $variableInBitwiseAndAssign',
-				277,
-			],
-			[
-				'Variable $mightBeUndefinedInDoWhile might not be defined.',
-				282,
-			],
-			[
-				'Undefined variable: $variableInSecondCase',
-				290,
-			],
-			[
-				'Variable $variableInSecondCase might not be defined.',
-				293,
-			],
-			[
-				'Undefined variable: $variableAssignedInSecondCase',
-				300,
-			],
-			[
-				'Variable $variableInFallthroughCase might not be defined.',
-				302,
-			],
-			[
-				'Variable $variableFromDefaultFirst might not be defined.',
-				312,
-			],
-			[
-				'Undefined variable: $undefinedVariableInForeach',
-				315,
-			],
-			[
-				'Variable $anotherForLoopVariable might not be defined.',
-				328,
-			],
-			[
-				'Variable $maybeDefinedInTernary might not be defined.',
-				351,
-			],
-			[
-				'Variable $anotherMaybeDefinedInTernary might not be defined.',
-				354,
-			],
-			[
-				'Variable $whileVariableUsedAndThenDefined might not be defined.',
-				356,
-			],
-			[
-				'Variable $forVariableUsedAndThenDefined might not be defined.',
-				360,
-			],
-			[
-				'Variable $unknownVariablePassedToReset might not be defined.',
-				368,
-			],
-			[
-				'Variable $unknownVariablePassedToReset might not be defined.',
-				369,
-			],
-			[
-				'Variable $variableInAssign might not be defined.',
-				384,
-			],
-			[
-				'Variable $undefinedArrayIndex might not be defined.',
-				409,
-			],
-			[
-				'Variable $anotherUndefinedArrayIndex might not be defined.',
-				409,
-			],
-			[
-				'Variable $str might not be defined.',
-				423,
-			],
-			[
-				'Variable $str might not be defined.',
-				428,
-			],
-		]);
-	}
-
-	public function testDefinedVariablesInClosures(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/defined-variables-closures.php'], [
-			[
-				'Undefined variable: $this',
-				14,
-			],
-		]);
-	}
-
-	public function testDefinedVariablesInShortArrayDestructuringSyntax(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/defined-variables-array-destructuring-short-syntax.php'], [
-			[
-				'Undefined variable: $f',
-				11,
-			],
-			[
-				'Undefined variable: $f',
-				14,
-			],
-			[
-				'Undefined variable: $var3',
-				32,
-			],
-		]);
-	}
-
-	public function testCliArgumentsVariablesNotRegistered(): void
-	{
-		$this->cliArgumentsVariablesRegistered = false;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/cli-arguments-variables.php'], [
-			[
-				'Variable $argc might not be defined.',
-				3,
-			],
-			[
-				'Undefined variable: $argc',
-				5,
-			],
-		]);
-	}
-
-	public function testCliArgumentsVariablesRegistered(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/cli-arguments-variables.php'], [
-			[
-				'Undefined variable: $argc',
-				5,
-			],
-		]);
-	}
-
 	public static function dataLoopInitialAssignments(): array
 	{
 		return [
-			[
-				false,
-				false,
-				[],
-			],
-			[
-				false,
-				true,
-				[
-					[
-						'Variable $i might not be defined.',
-						7,
-					],
-					[
-						'Variable $whileVar might not be defined.',
-						13,
-					],
-				],
-			],
 			[
 				true,
 				false,
@@ -360,547 +52,28 @@ class DefinedVariableRuleTest extends RuleTestCase
 	): void
 	{
 		$this->cliArgumentsVariablesRegistered = false;
-		$this->polluteScopeWithLoopInitialAssignments = $polluteScopeWithLoopInitialAssignments;
 		$this->checkMaybeUndefinedVariables = $checkMaybeUndefinedVariables;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
 		$this->analyse([__DIR__ . '/data/loop-initial-assignments.php'], $expectedErrors);
-	}
-
-	public function testDefineVariablesInClass(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/define-variables-class.php'], []);
-	}
-
-	public function testDeadBranches(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/dead-branches.php'], [
-			[
-				'Undefined variable: $test',
-				21,
-			],
-			[
-				'Undefined variable: $test',
-				33,
-			],
-			[
-				'Undefined variable: $test',
-				55,
-			],
-			[
-				'Undefined variable: $test',
-				66,
-			],
-			[
-				'Undefined variable: $test',
-				94,
-			],
-		]);
-	}
-
-	public function testForeach(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/foreach.php'], [
-			[
-				'Variable $val might not be defined.',
-				9,
-			],
-			[
-				'Variable $test might not be defined.',
-				10,
-			],
-			[
-				'Undefined variable: $val',
-				46,
-			],
-			[
-				'Undefined variable: $test',
-				47,
-			],
-			[
-				'Variable $val might not be defined.',
-				62,
-			],
-			[
-				'Variable $test might not be defined.',
-				63,
-			],
-			[
-				'Undefined variable: $val',
-				200,
-			],
-			[
-				'Undefined variable: $test',
-				201,
-			],
-			[
-				'Undefined variable: $val',
-				216,
-			],
-			[
-				'Undefined variable: $test',
-				217,
-			],
-			[
-				'Variable $val might not be defined.',
-				246,
-			],
-			[
-				'Variable $test might not be defined.',
-				247,
-			],
-		]);
-	}
-
-	public static function dataForeachPolluteScopeWithAlwaysIterableForeach(): array
-	{
-		return [
-			[
-				true,
-				[
-					[
-						'Undefined variable: $key',
-						8,
-					],
-					[
-						'Undefined variable: $val',
-						9,
-					],
-					[
-						'Undefined variable: $test',
-						10,
-					],
-					[
-						'Variable $test might not be defined.',
-						34,
-					],
-					[
-						'Variable $key might not be defined.',
-						47,
-					],
-					[
-						'Variable $test might not be defined.',
-						48,
-					],
-					[
-						'Variable $key might not be defined.',
-						61,
-					],
-					[
-						'Variable $test might not be defined.',
-						62,
-					],
-				],
-			],
-			[
-				false,
-				[
-					[
-						'Undefined variable: $key',
-						8,
-					],
-					[
-						'Undefined variable: $val',
-						9,
-					],
-					[
-						'Undefined variable: $test',
-						10,
-					],
-					[
-						'Variable $key might not be defined.',
-						19,
-					],
-					[
-						'Variable $val might not be defined.',
-						20,
-					],
-					[
-						'Variable $test might not be defined.',
-						21,
-					],
-					[
-						'Variable $key might not be defined.',
-						32,
-					],
-					[
-						'Variable $val might not be defined.',
-						33,
-					],
-					[
-						'Variable $test might not be defined.',
-						34,
-					],
-					[
-						'Variable $key might not be defined.',
-						47,
-					],
-					[
-						'Variable $test might not be defined.',
-						48,
-					],
-					[
-						'Variable $key might not be defined.',
-						61,
-					],
-					[
-						'Variable $test might not be defined.',
-						62,
-					],
-					[
-						'Variable $key might not be defined.',
-						75,
-					],
-					[
-						'Variable $test might not be defined.',
-						76,
-					],
-				],
-			],
-		];
-	}
-
-	/**
-	 * @param list<array{0: string, 1: int, 2?: string}> $errors
-	 */
-	#[DataProvider('dataForeachPolluteScopeWithAlwaysIterableForeach')]
-	public function testForeachPolluteScopeWithAlwaysIterableForeach(bool $polluteScopeWithAlwaysIterableForeach, array $errors): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = $polluteScopeWithAlwaysIterableForeach;
-		$this->analyse([__DIR__ . '/data/foreach-always-iterable.php'], $errors);
-	}
-
-	public function testBooleanOperatorsTruthyFalsey(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/boolean-op-truthy-falsey.php'], [
-			[
-				'Variable $matches might not be defined.',
-				9,
-			],
-			[
-				'Variable $matches might not be defined.',
-				15,
-			],
-		]);
-	}
-
-	public function testArrowFunctions(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/defined-variables-arrow-functions.php'], [
-			[
-				'Undefined variable: $a',
-				10,
-			],
-			[
-				'Undefined variable: $this',
-				19,
-			],
-		]);
-	}
-
-	public function testCoalesceAssign(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/defined-variables-coalesce-assign.php'], [
-			[
-				'Undefined variable: $b',
-				16,
-			],
-		]);
-	}
-
-	public function testBug2748(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/bug-2748.php'], [
-			[
-				'Undefined variable: $foo',
-				10,
-			],
-			[
-				'Undefined variable: $foo',
-				15,
-			],
-		]);
-	}
-
-	public function testGlobalVariables(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/global-variables.php'], []);
-	}
-
-	public function testRootScopeMaybeDefined(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = false;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/root-scope-maybe.php'], []);
-	}
-
-	public function testRootScopeMaybeDefinedCheck(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/root-scope-maybe.php'], [
-			[
-				'Variable $maybe might not be defined.',
-				3,
-			],
-			[
-				'Variable $this might not be defined.',
-				5,
-			],
-		]);
-	}
-
-	public function testFormerThisVariableRule(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/this.php'], [
-			[
-				'Undefined variable: $this',
-				16,
-			],
-			[
-				'Undefined variable: $this',
-				20,
-			],
-			[
-				'Undefined variable: $this',
-				26,
-			],
-			[
-				'Undefined variable: $this',
-				38,
-			],
-		]);
-	}
-
-	public function testClosureUse(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/defined-variables-anonymous-function-use.php'], [
-			[
-				'Variable $bar might not be defined.',
-				5,
-			],
-			[
-				'Variable $wrongErrorHandler might not be defined.',
-				22,
-			],
-			[
-				'Variable $onlyInIf might not be defined.',
-				23,
-			],
-			[
-				'Variable $forI might not be defined.',
-				24,
-			],
-			[
-				'Variable $forJ might not be defined.',
-				25,
-			],
-			[
-				'Variable $anotherVariableFromForCond might not be defined.',
-				26,
-			],
-		]);
-	}
-
-	public function testNullsafeIsset(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/variable-nullsafe-isset.php'], []);
-	}
-
-	#[RequiresPhp('>= 8.0.0')]
-	public function testBug7291(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/bug-7291.php'], [
-			[
-				'Variable $a might not be defined.',
-				23,
-			],
-			[
-				'Variable $b might not be defined.',
-				32,
-			],
-			[
-				'Variable $c might not be defined.',
-				41,
-			],
-			[
-				'Variable $d might not be defined.',
-				50,
-			],
-		]);
-	}
-
-	public function testBug1306(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/bug-1306.php'], []);
-	}
-
-	public function testBug3515(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/bug-3515.php'], [
-			[
-				'Undefined variable: $anArray',
-				19,
-			],
-			[
-				'Undefined variable: $anArray',
-				20,
-			],
-		]);
-	}
-
-	public function testBug4412(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/bug-4412.php'], [
-			[
-				'Undefined variable: $a',
-				17,
-			],
-		]);
-	}
-
-	public function testBug3283(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/bug-3283.php'], []);
-	}
-
-	public function testFirstClassCallables(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/first-class-callables.php'], [
-			[
-				'Undefined variable: $foo',
-				10,
-			],
-			[
-				'Undefined variable: $foo',
-				11,
-			],
-			[
-				'Undefined variable: $foo',
-				29,
-			],
-			[
-				'Undefined variable: $foo',
-				30,
-			],
-			[
-				'Undefined variable: $foo',
-				48,
-			],
-			[
-				'Undefined variable: $foo',
-				49,
-			],
-		]);
-	}
-
-	public function testBug6112(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/bug-6112.php'], []);
 	}
 
 	public function testBug3601(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
 		$this->analyse([__DIR__ . '/data/bug-3601.php'], []);
 	}
 
 	public function testBug1016(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
 		$this->analyse([__DIR__ . '/data/bug-1016.php'], []);
 	}
 
 	public function testBug1016b(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
 		$this->analyse([__DIR__ . '/data/bug-1016b.php'], []);
 	}
 
@@ -908,82 +81,22 @@ class DefinedVariableRuleTest extends RuleTestCase
 	public function testBug8142(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
 		$this->analyse([__DIR__ . '/data/bug-8142.php'], []);
-	}
-
-	public function testBug5401(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/bug-5401.php'], []);
 	}
 
 	public function testBug8212(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
 		$this->analyse([__DIR__ . '/data/bug-8212.php'], []);
-	}
-
-	public function testBug4173(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/bug-4173.php'], []);
-	}
-
-	public function testBug5805(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/bug-5805.php'], []);
-	}
-
-	public function testBug8467c(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = false;
-		$this->analyse([__DIR__ . '/data/bug-8467c.php'], [
-			[
-				'Variable $v might not be defined.',
-				16,
-			],
-			[
-				'Variable $v might not be defined.',
-				18,
-			],
-		]);
-	}
-
-	public function testBug393(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/bug-393.php'], []);
 	}
 
 	#[RequiresPhp('>= 8.1.0')]
 	public function testBug9474(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
 		$this->analyse([__DIR__ . '/data/bug-9474.php'], []);
 	}
 
@@ -991,36 +104,28 @@ class DefinedVariableRuleTest extends RuleTestCase
 	public function testEnum(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
 		$this->analyse([__DIR__ . '/data/defined-variables-enum.php'], []);
 	}
 
 	public function testBug5326(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
 		$this->analyse([__DIR__ . '/data/bug-5326.php'], []);
 	}
 
 	public function testBug5266(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
 		$this->analyse([__DIR__ . '/data/bug-5266.php'], []);
 	}
 
 	public function testIsStringNarrowsCertainty(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
 		$this->analyse([__DIR__ . '/data/isstring-certainty.php'], [
 			[
 				'Variable $a might not be defined.',
@@ -1036,9 +141,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 	public function testBug12364(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
 		$this->analyse([__DIR__ . '/data/bug-12364.php'], [
 			[
 				'Variable $z might not be defined.',
@@ -1054,9 +157,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 	public function testDiscussion10252(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
 		$this->analyse([__DIR__ . '/data/discussion-10252.php'], []);
 	}
 
@@ -1064,9 +165,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 	public function testBug10418(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
 		$this->analyse([__DIR__ . '/data/bug-10418.php'], []);
 	}
 
@@ -1074,9 +173,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 	public function testPassByReferenceIntoNotNullable(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
 		$this->analyse([__DIR__ . '/data/pass-by-reference-into-not-nullable.php'], [
 			[
 				'Undefined variable: $three',
@@ -1088,18 +185,14 @@ class DefinedVariableRuleTest extends RuleTestCase
 	public function testBug10228(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
 		$this->analyse([__DIR__ . '/data/bug-10228.php'], []);
 	}
 
 	public function testBug9426(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
 		$this->analyse([__DIR__ . '/data/bug-9426.php'], []);
 	}
 
@@ -1107,9 +200,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 	public function testPropertyHooks(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
 		$this->analyse([__DIR__ . '/data/property-hooks.php'], [
 			[
 				'Undefined variable: $val',
@@ -1133,9 +224,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 	public function testDynamicAccess(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
 		$this->analyse([__DIR__ . '/data/dynamic-access.php'], [
 			[
 				'Undefined variable: $bar',
@@ -1187,9 +276,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 	public function testBug8719(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
 
 		$this->analyse([__DIR__ . '/data/bug-8719.php'], []);
 	}
@@ -1198,9 +285,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 	public function testBug13353(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
 
 		$this->analyse([__DIR__ . '/data/bug-13353.php'], []);
 	}
@@ -1208,9 +293,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 	public function testBug13694(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
 
 		$this->analyse([__DIR__ . '/data/bug-13694.php'], []);
 	}
@@ -1219,9 +302,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 	public function testBug5191(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
 
 		$this->analyse([__DIR__ . '/data/bug-5191.php'], [
 			[
@@ -1235,9 +316,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 	public function testBug10909(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
 
 		$this->analyse([__DIR__ . '/data/bug-10909.php'], []);
 	}
@@ -1246,9 +325,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 	public function testBug13981(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
 
 		$this->analyse([__DIR__ . '/data/bug-13981.php'], [
 			[
@@ -1266,9 +343,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 	public function testBug7705(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
 
 		$this->analyse([__DIR__ . '/data/bug-7705.php'], []);
 	}
@@ -1277,40 +352,16 @@ class DefinedVariableRuleTest extends RuleTestCase
 	public function testBug12944(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
 
 		$this->analyse([__DIR__ . '/data/bug-12944.php'], []);
-	}
-
-	public function testBug9023(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-
-		$this->analyse([__DIR__ . '/data/bug-9023.php'], []);
-	}
-
-	public function testBug11984(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-
-		$this->analyse([__DIR__ . '/data/bug-11984.php'], []);
 	}
 
 	#[DataProvider('dataBug11545')]
 	public function testBug11545(bool $polluteScopeWithLoopInitialAssignments): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = $polluteScopeWithLoopInitialAssignments;
 		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
 
 		$errors = [];
 		if (!$polluteScopeWithLoopInitialAssignments) {
@@ -1326,294 +377,22 @@ class DefinedVariableRuleTest extends RuleTestCase
 	/** @return iterable<array{bool}> */
 	public static function dataBug11545(): iterable
 	{
-		yield [false];
 		yield [true];
-	}
-
-	public function testBug10245(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-
-		$this->analyse([__DIR__ . '/data/bug-10245.php'], []);
-	}
-
-	public function testBug5919(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-
-		$this->analyse([__DIR__ . '/data/bug-5919.php'], []);
-	}
-
-	public function testBug8430(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-
-		$this->analyse([__DIR__ . '/data/bug-8430.php'], []);
-	}
-
-	public function testBug8430b(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-
-		$this->analyse([__DIR__ . '/data/bug-8430b.php'], []);
-	}
-
-	public function testBug5477(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-
-		$this->analyse([__DIR__ . '/data/bug-5477.php'], []);
-	}
-
-	public function testBug10657(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-
-		$this->analyse([__DIR__ . '/data/bug-10657.php'], []);
-	}
-
-	public function testBug6830(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-
-		$this->analyse([__DIR__ . '/data/bug-6830.php'], []);
-	}
-
-	public function testBug14019(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-
-		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-14019.php'], []);
-	}
-
-	public function testBug9349(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-
-		$this->analyse([__DIR__ . '/data/bug-9349.php'], [
-			[
-				'Variable $sql might not be defined.',
-				19,
-			],
-			[
-				'Variable $sql might not be defined.',
-				78,
-			],
-		]);
-	}
-
-	public function testBug14318(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-
-		$this->analyse([__DIR__ . '/data/bug-14318.php'], []);
-	}
-
-	public function testBug14323(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-
-		$this->analyse([__DIR__ . '/data/bug-14323.php'], [
-			[
-				'Variable $command might not be defined.',
-				24,
-			],
-			[
-				'Variable $command might not be defined.',
-				50,
-			],
-			[
-				'Variable $command might not be defined.',
-				119,
-			],
-		]);
-	}
-
-	#[RequiresPhp('>= 8.0.0')]
-	public function testBug14274(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-
-		$this->analyse([__DIR__ . '/data/bug-14274.php'], []);
-	}
-
-	#[RequiresPhp('>= 8.0.0')]
-	public function testBug12373(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-
-		$this->analyse([__DIR__ . '/data/bug-12373.php'], []);
 	}
 
 	public function testBug13920(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
 
 		$this->analyse([__DIR__ . '/data/bug-13920.php'], []);
-	}
-
-	public function testBug12992(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/bug-12992.php'], []);
-	}
-
-	public function testBug14227(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/bug-14227.php'], []);
-	}
-
-	public function testBug14117(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-
-		$this->analyse([__DIR__ . '/data/bug-14117.php'], [
-			[
-				'Variable $value might not be defined.',
-				49,
-			],
-			[
-				'Undefined variable: $value',
-				65,
-			],
-			[
-				'Undefined variable: $value',
-				81,
-			],
-		]);
-	}
-
-	public function testBug12597(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/bug-12597.php'], []);
-	}
-
-	public function testBug11218(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/bug-11218.php'], []);
-	}
-
-	public function testBug4352(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/bug-4352.php'], []);
-	}
-
-	public function testBug6688(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/bug-6688.php'], [
-			[
-				'Variable $a might not be defined.',
-				5,
-			],
-		]);
-	}
-
-	#[RequiresPhp('>= 8.0.0')]
-	public function testBug10729(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/bug-10729.php'], [
-			[
-				'Variable $format might not be defined.',
-				12,
-			],
-			[
-				'Undefined variable: $format',
-				25,
-			],
-			[
-				'Variable $format might not be defined.',
-				31,
-			],
-			[
-				'Variable $value might not be defined.',
-				32,
-			],
-			[
-				'Variable $format might not be defined.',
-				38,
-			],
-		]);
 	}
 
 	#[RequiresPhp('>= 8.0.0')]
 	public function testBug6833(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-6833.php'], [
 			[
 				'Variable $file might not be defined.',
@@ -1666,114 +445,14 @@ class DefinedVariableRuleTest extends RuleTestCase
 	public function testBug9392(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
 		$this->analyse([__DIR__ . '/data/bug-9392.php'], []);
-	}
-
-	public function testBug10090(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-10090.php'], [
-			[
-				'Undefined variable: $shortcut_id',
-				18,
-			],
-			[
-				'Undefined variable: $shortcut_id',
-				19,
-			],
-			[
-				'Variable $x might not be defined.',
-				35,
-			],
-			[
-				'Variable $x might not be defined.',
-				36,
-			],
-			[
-				'Variable $x might not be defined.',
-				80,
-			],
-			[
-				'Variable $x might not be defined.',
-				81,
-			],
-			[
-				'Undefined variable: $x',
-				96,
-			],
-		]);
-	}
-
-	public function testBug2032(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/bug-2032.php'], [
-			[
-				'Undefined variable: $undefined',
-				6,
-			],
-			[
-				'Undefined variable: $undefined',
-				9,
-			],
-			[
-				'Undefined variable: $undefined',
-				15,
-			],
-		]);
-	}
-
-	public function testBug13833(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/bug-13833.php'], []);
-	}
-
-	public function testBug9685(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/bug-9685.php'], []);
-	}
-
-	public function testBug7706(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/bug-7706.php'], []);
-	}
-
-	public function testBug8360(): void
-	{
-		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
-		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/bug-8360.php'], []);
 	}
 
 	public function testBug14418(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
-		$this->polluteScopeWithAlwaysIterableForeach = true;
 		$this->analyse([__DIR__ . '/data/bug-14418.php'], []);
 	}
 

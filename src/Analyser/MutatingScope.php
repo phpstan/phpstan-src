@@ -41,6 +41,7 @@ use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
 use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\VirtualNode;
+use PHPStan\Parser\ImmediatelyInvokedClosureVisitor;
 use PHPStan\Parser\Parser;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Php\PhpVersionFactory;
@@ -2195,11 +2196,12 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		Expr\Closure $closure,
 		?array $callableParameters,
 		?array $nativeCallableParameters = null,
+		bool $immediatelyInvoked = false,
 	): self
 	{
 		$anonymousFunctionReflection = $this->container->getByType(ClosureTypeResolver::class)->getClosureType($this, $closure, true);
 
-		$scope = $this->enterAnonymousFunctionWithoutReflection($closure, $callableParameters, $nativeCallableParameters);
+		$scope = $this->enterAnonymousFunctionWithoutReflection($closure, $callableParameters, $nativeCallableParameters, $immediatelyInvoked);
 
 		return $this->scopeFactory->create(
 			$scope->context,
@@ -2229,6 +2231,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		Expr\Closure $closure,
 		?array $callableParameters,
 		?array $nativeCallableParameters,
+		bool $immediatelyInvoked = false,
 	): self
 	{
 		$expressionTypes = [];
@@ -2250,8 +2253,17 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$nativeTypes[$paramExprString] = ExpressionTypeHolder::createYes($parameter->var, $nativeParameterType);
 		}
 
+		$capturesThis = $this->hasVariableType('this')->yes() && !$closure->static;
+		$invokedImmediately = $immediatelyInvoked
+			|| $closure->getAttribute(ImmediatelyInvokedClosureVisitor::ATTRIBUTE_NAME) === true;
+
 		$nonRefVariableNames = [];
 		$useVariableNames = [];
+		if ($capturesThis && $invokedImmediately) {
+			// The body runs before anything else can touch $this, so expressions rooted
+			// in it stay as narrow as they are here - the same as for a by-value use.
+			$nonRefVariableNames['this'] = true;
+		}
 		foreach ($closure->uses as $use) {
 			if (!is_string($use->var->name)) {
 				throw new ShouldNotHappenException();
@@ -2300,9 +2312,14 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			}
 
 			$expressionTypes[$exprString] = $typeHolder;
+			if (!array_key_exists($exprString, $this->nativeExpressionTypes)) {
+				continue;
+			}
+
+			$nativeTypes[$exprString] = $this->nativeExpressionTypes[$exprString];
 		}
 
-		if ($this->hasVariableType('this')->yes() && !$closure->static) {
+		if ($capturesThis) {
 			$node = new Variable('this');
 			$expressionTypes['$this'] = ExpressionTypeHolder::createYes($node, $this->getType($node));
 			$nativeTypes['$this'] = ExpressionTypeHolder::createYes($node, $this->getNativeType($node));
@@ -2320,19 +2337,24 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 					}
 
 					$expressionTypes[$exprString] = $typeHolder;
+					if (!array_key_exists($exprString, $this->nativeExpressionTypes)) {
+						continue;
+					}
+
+					$nativeTypes[$exprString] = $this->nativeExpressionTypes[$exprString];
 				}
 			}
 		}
 
 		$filteredConditionalExpressions = [];
 		foreach ($this->conditionalExpressions as $conditionalExprString => $holders) {
-			if (!array_key_exists($conditionalExprString, $useVariableNames)) {
-				continue;
-			}
 			$filteredHolders = [];
 			foreach ($holders as $holder) {
-				foreach (array_keys($holder->getConditionExpressionTypeHolders()) as $holderExprString) {
-					if (!array_key_exists($holderExprString, $useVariableNames)) {
+				if (!$this->isExprCapturedByClosure($holder->getTypeHolder()->getExpr(), $conditionalExprString, $nonRefVariableNames, $useVariableNames)) {
+					continue;
+				}
+				foreach ($holder->getConditionExpressionTypeHolders() as $holderExprString => $conditionTypeHolder) {
+					if (!$this->isExprCapturedByClosure($conditionTypeHolder->getExpr(), $holderExprString, $nonRefVariableNames, $useVariableNames)) {
 						continue 2;
 					}
 				}
@@ -2363,6 +2385,46 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this,
 			$this->nativeTypesPromoted,
 		);
+	}
+
+	/**
+	 * An expression keeps its narrowed type inside a closure body only when everything
+	 * it is rooted in is captured by the closure - a by-value use, or $this when the
+	 * closure is invoked immediately.
+	 *
+	 * @param array<string, true> $nonRefVariableNames
+	 * @param array<string, true> $useVariableNames
+	 */
+	private function isExprCapturedByClosure(Expr $expr, string $exprString, array $nonRefVariableNames, array $useVariableNames): bool
+	{
+		if (array_key_exists($exprString, $useVariableNames)) {
+			return true;
+		}
+
+		$nodeFinder = new NodeFinder();
+		$staticExpr = $nodeFinder->findFirst(
+			[$expr],
+			static fn ($node) => $node instanceof Expr\StaticCall || $node instanceof Expr\StaticPropertyFetch,
+		);
+		if ($staticExpr !== null) {
+			return false;
+		}
+
+		$variables = $nodeFinder->findInstanceOf([$expr], Variable::class);
+		if ($variables === []) {
+			return false;
+		}
+
+		foreach ($variables as $variable) {
+			if (!is_string($variable->name)) {
+				return false;
+			}
+			if (!array_key_exists($variable->name, $nonRefVariableNames)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	private function expressionTypeIsUnchangeable(ExpressionTypeHolder $typeHolder): bool

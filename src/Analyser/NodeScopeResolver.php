@@ -1067,30 +1067,4 @@ class NodeScopeResolver
 		return $this->templateArgumentObserver->collectSend($declaredReturnType, $returnedResult->getType());
 	}
 
-	/**
-	 * A write through ArrayAccess (`$storage[$key] = $value`) reaches the
-	 * object's template arguments exactly like the offsetSet() call it stands
-	 * for, so observe both the key and the written value against that method's
-	 * parameters resolved on the receiver.
-	 */
-	public function collectOffsetSetUsage(MutatingScope $scope, Type $receiverType, ?Type $keyType, Type $valueType): TemplateArgumentConstraints
-	{
-		$constraints = TemplateArgumentConstraints::createEmpty();
-		$frame = $this->observingTemplateArgumentFrame($scope);
-		if ($frame === null || !$receiverType->hasMethod('offsetSet')->yes()) {
-			return $constraints;
-		}
-
-		$parameters = $receiverType->getMethod('offsetSet', $scope)->getOnlyVariant()->getParameters();
-		if ($keyType !== null && isset($parameters[0])) {
-			$constraints = $constraints->merge($this->templateArgumentObserver->collectArgument($parameters[0]->getType(), $keyType));
-		}
-		if (!isset($parameters[1])) {
-			return $constraints;
-		}
-
-		$constraints = $constraints->merge($this->templateArgumentObserver->collectArgument($parameters[1]->getType(), $valueType));
-		return $constraints;
-	}
-
 }

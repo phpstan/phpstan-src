@@ -36,6 +36,7 @@ use PHPStan\Analyser\ExprHandler\Helper\IdenticalNarrowingHelper;
 use PHPStan\Analyser\ExprHandler\Helper\MethodThrowPointHelper;
 use PHPStan\Analyser\ExprHandler\Helper\NonNullabilityHelper;
 use PHPStan\Analyser\ExprHandler\Helper\VirtualExprResultHelper;
+use PHPStan\Analyser\Generics\TemplateArgumentConstraints;
 use PHPStan\Analyser\Generics\TemplateArgumentObserver;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
@@ -1492,7 +1493,8 @@ final class AssignHandler implements ExprHandler
 				&& !$setVarType->isArray()->yes()
 				&& !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($setVarType)->no()
 			) {
-				$scope = $scope->addTemplateArgumentConstraints($nodeScopeResolver->collectOffsetSetUsage(
+				$scope = $scope->addTemplateArgumentConstraints($this->collectOffsetSetUsage(
+					$nodeScopeResolver,
 					$scope,
 					$setVarType,
 					$offsetTypes[count($offsetTypes) - 1][0],
@@ -1811,6 +1813,32 @@ final class AssignHandler implements ExprHandler
 			typeCallback: static fn () => new MixedType(),
 			specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
 		);
+	}
+
+	/**
+	 * A write through ArrayAccess (`$storage[$key] = $value`) reaches the
+	 * object's template arguments exactly like the offsetSet() call it stands
+	 * for, so observe both the key and the written value against that method's
+	 * parameters resolved on the receiver.
+	 */
+	private function collectOffsetSetUsage(NodeScopeResolver $nodeScopeResolver, MutatingScope $scope, Type $receiverType, ?Type $keyType, Type $valueType): TemplateArgumentConstraints
+	{
+		$constraints = TemplateArgumentConstraints::createEmpty();
+		$frame = $nodeScopeResolver->observingTemplateArgumentFrame($scope);
+		if ($frame === null || !$receiverType->hasMethod('offsetSet')->yes()) {
+			return $constraints;
+		}
+
+		$parameters = $receiverType->getMethod('offsetSet', $scope)->getOnlyVariant()->getParameters();
+		if ($keyType !== null && isset($parameters[0])) {
+			$constraints = $constraints->merge($this->templateArgumentObserver->collectArgument($parameters[0]->getType(), $keyType));
+		}
+		if (!isset($parameters[1])) {
+			return $constraints;
+		}
+
+		$constraints = $constraints->merge($this->templateArgumentObserver->collectArgument($parameters[1]->getType(), $valueType));
+		return $constraints;
 	}
 
 	private function createArrayDimFetchConditionalExpressionHolder(

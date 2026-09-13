@@ -176,6 +176,7 @@ final class MethodCallHandler implements ExprHandler
 			if ($methodReflection->getName() === '__construct' || $methodReflection->hasSideEffects()->yes()) {
 				$nodeScopeResolver->callNodeCallback($nodeCallback, new InvalidateExprNode($normalizedExpr->var), $scope, $storage);
 				$scope = $scope->invalidateExpression($normalizedExpr->var, true, $methodReflection->getDeclaringClass());
+				$scope = $nodeScopeResolver->widenNeverTypeArguments($scope, $normalizedExpr->var);
 			} elseif ($this->rememberPossiblyImpureFunctionValues && $methodReflection->hasSideEffects()->maybe() && !$methodReflection->getDeclaringClass()->isBuiltin()) {
 				// the remembered call value and the @phpstan-self-out type are
 				// generic-sensitive: resolve them from the type-driven acceptor
@@ -208,6 +209,7 @@ final class MethodCallHandler implements ExprHandler
 		} else {
 			$nodeScopeResolver->callNodeCallback($nodeCallback, new InvalidateExprNode($normalizedExpr->var), $scope, $storage);
 			$scope = $scope->invalidateExpression($normalizedExpr->var, true);
+			$scope = $nodeScopeResolver->widenNeverTypeArguments($scope, $normalizedExpr->var);
 			$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
 		}
 		if (

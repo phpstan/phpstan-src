@@ -1090,6 +1090,7 @@ final class ResultCacheManager
 				&& $exportedNodes === $resultCache->getExportedNodes()
 				&& $projectExtensionFiles === $resultCache->getProjectExtensionFiles()
 				&& $stubFiles === $this->restoredStubFiles
+				&& is_file($this->cacheFilePath)
 			) {
 				if ($output->isVeryVerbose()) {
 					$output->writeLineFormatted('Result cache was not rewritten because it is unchanged.');

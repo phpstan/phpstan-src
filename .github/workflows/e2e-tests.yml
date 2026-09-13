@@ -128,10 +128,17 @@ jobs:
               cd e2e/result-cache-atomic-save
               ../../bin/phpstan
               INODE=$(ls -i tmp/resultCache.php | awk '{print $1}')
+              OUTPUT=$(../../bin/phpstan -vvv 2>&1)
+              echo "$OUTPUT"
+              UNCHANGED=$([ "$INODE" = "$(ls -i tmp/resultCache.php | awk '{print $1}')" ] && echo unchanged || echo replaced)
+              ../bashunit -a equals 'unchanged' "$UNCHANGED"
+              ../bashunit -a contains 'Result cache was not rewritten because it is unchanged.' "$OUTPUT"
+              echo >> src/Foo.php
               ../../bin/phpstan
               # The cache is written next to its final path and renamed into place, so saving it
-              # again replaces the file rather than truncating and rewriting the one the next run
-              # reads. That is what keeps a run killed mid-save from leaving a partial cache behind.
+              # after a change replaces the file rather than truncating and rewriting the one the
+              # next run reads. That is what keeps a run killed mid-save from leaving a partial
+              # cache behind.
               REPLACED=$([ "$INODE" != "$(ls -i tmp/resultCache.php | awk '{print $1}')" ] && echo replaced || echo 'written in place')
               ../bashunit -a equals 'replaced' "$REPLACED"
               # A completed save leaves nothing next to the cache file.

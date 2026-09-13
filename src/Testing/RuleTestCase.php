@@ -9,13 +9,13 @@ use PHPStan\Analyser\Error;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\FileAnalyser;
 use PHPStan\Analyser\Generics\TemplateArgumentObserver;
-use PHPStan\Analyser\Generics\TemplateArgumentResolver;
 use PHPStan\Analyser\IgnoreErrorExtension;
 use PHPStan\Analyser\InternalError;
 use PHPStan\Analyser\LocalIgnoresProcessor;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\PerFileAnalysisResettable;
 use PHPStan\Analyser\RuleErrorTransformer;
+use PHPStan\Analyser\StatementsHandler;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Collectors\Collector;
 use PHPStan\Collectors\Registry as CollectorRegistry;
@@ -29,7 +29,6 @@ use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\Rules\Rule;
-use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\FunctionParameterClosureThisExtension;
 use PHPStan\Type\FunctionParameterClosureTypeExtension;
 use PHPStan\Type\FunctionParameterOutTypeExtension;
@@ -91,13 +90,11 @@ abstract class RuleTestCase extends PHPStanTestCase
 		return new NodeScopeResolver(
 			self::getContainer(),
 			self::getContainer()->getByType(TemplateArgumentObserver::class),
-			self::getContainer()->getByType(TemplateArgumentResolver::class),
 			$reflectionProvider,
 			self::getContainer()->getByType(FileHelper::class),
 			self::getContainer()->getExtensionsCollection(FunctionParameterOutTypeExtension::class),
 			self::getContainer()->getExtensionsCollection(MethodParameterOutTypeExtension::class),
 			self::getContainer()->getExtensionsCollection(StaticMethodParameterOutTypeExtension::class),
-			self::getContainer()->getByType(FileTypeMapper::class),
 			$readWritePropertiesExtensions !== [] ? new DirectExtensionsCollection($readWritePropertiesExtensions) : self::getContainer()->getExtensionsCollection(ReadWritePropertiesExtension::class),
 			self::getContainer()->getExtensionsCollection(FunctionParameterClosureThisExtension::class),
 			self::getContainer()->getExtensionsCollection(MethodParameterClosureThisExtension::class),
@@ -111,7 +108,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 			self::getContainer()->getParameter('exceptions')['implicitThrows'],
 			$this->shouldTreatPhpDocTypesAsCertain(),
 			self::getContainer()->getByType(ExpressionResultFactory::class),
-			self::getContainer()->getParameter('featureToggles')['unresolvedTemplateArguments'],
+			self::getContainer()->getByType(StatementsHandler::class),
 		);
 	}
 

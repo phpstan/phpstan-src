@@ -8,12 +8,12 @@ use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\Generics\TemplateArgumentObserver;
-use PHPStan\Analyser\Generics\TemplateArgumentResolver;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\PerFileAnalysisResettable;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\ScopeContext;
+use PHPStan\Analyser\StatementsHandler;
 use PHPStan\File\FileHelper;
 use PHPStan\File\SystemAgnosticSimpleRelativePathHelper;
 use PHPStan\Node\InClassNode;
@@ -23,7 +23,6 @@ use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ConstantScalarType;
-use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\FunctionParameterClosureThisExtension;
 use PHPStan\Type\FunctionParameterClosureTypeExtension;
 use PHPStan\Type\FunctionParameterOutTypeExtension;
@@ -66,13 +65,11 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 		return new NodeScopeResolver(
 			$container,
 			$container->getByType(TemplateArgumentObserver::class),
-			$container->getByType(TemplateArgumentResolver::class),
 			$reflectionProvider,
 			$container->getByType(FileHelper::class),
 			$container->getExtensionsCollection(FunctionParameterOutTypeExtension::class),
 			$container->getExtensionsCollection(MethodParameterOutTypeExtension::class),
 			$container->getExtensionsCollection(StaticMethodParameterOutTypeExtension::class),
-			$container->getByType(FileTypeMapper::class),
 			$container->getExtensionsCollection(ReadWritePropertiesExtension::class),
 			$container->getExtensionsCollection(FunctionParameterClosureThisExtension::class),
 			$container->getExtensionsCollection(MethodParameterClosureThisExtension::class),
@@ -86,7 +83,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			$container->getParameter('exceptions')['implicitThrows'],
 			$container->getParameter('treatPhpDocTypesAsCertain'),
 			$container->getByType(ExpressionResultFactory::class),
-			$container->getParameter('featureToggles')['unresolvedTemplateArguments'],
+			$container->getByType(StatementsHandler::class),
 		);
 	}
 

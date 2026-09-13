@@ -12,6 +12,7 @@ use PHPStan\Analyser\InternalStatementResult;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\StatementContext;
+use PHPStan\Analyser\StatementsHandler;
 use PHPStan\Analyser\StmtHandler;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -23,6 +24,12 @@ use function is_string;
 #[AutowiredService]
 final class ReturnHandler implements StmtHandler
 {
+
+	public function __construct(
+		private StatementsHandler $statementsHandler,
+	)
+	{
+	}
 
 	public function supports(Stmt $stmt): bool
 	{
@@ -38,14 +45,14 @@ final class ReturnHandler implements StmtHandler
 		StatementContext $context,
 	): InternalStatementResult
 	{
-		$stmtScope = $nodeScopeResolver->processStmtVarAnnotation($scope, $storage, $stmt, $stmt->expr, $nodeCallback);
+		$stmtScope = $this->statementsHandler->processStmtVarAnnotation($nodeScopeResolver, $scope, $storage, $stmt, $stmt->expr, $nodeCallback);
 
 		if ($stmt->expr !== null) {
 			$result = $nodeScopeResolver->processExprNode($stmt, $stmt->expr, $stmtScope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
 			// the @var-changed-type node fires now that the expression is stored
 			// on the scope BEFORE the @var tag re-typed the expression, so the rule
 			// compares the tag against the expression's walked type
-			$varConstraints = $nodeScopeResolver->emitVarTagChangedNode($scope, $storage, $stmt, $stmt->expr, $nodeCallback);
+			$varConstraints = $this->statementsHandler->emitVarTagChangedNode($nodeScopeResolver, $scope, $storage, $stmt, $stmt->expr, $nodeCallback);
 			$throwPoints = $result->getThrowPoints();
 			$impurePoints = $result->getImpurePoints();
 			$scope = $result->getScope()->addTemplateArgumentConstraints($varConstraints)->addTemplateArgumentConstraints($nodeScopeResolver->collectReturnSend($stmtScope, $result));

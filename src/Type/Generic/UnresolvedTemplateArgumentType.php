@@ -33,7 +33,7 @@ use function sprintf;
  * generic call, before the surrounding function body decided what it should be.
  *
  * Exists only during the observation pass of a function body (see
- * NodeScopeResolver::processBodyStmtNodesTwoPass()): every send of the object
+ * StatementsHandler::processBodyStmtNodesTwoPass()): every send of the object
  * to a declared type (property, parameter, return, @var) and every method call
  * on it is recorded against the site (the creating node) and the template name,
  * and the second pass substitutes the resolved type. Rules never see it.

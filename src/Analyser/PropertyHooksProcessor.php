@@ -30,6 +30,7 @@ final class PropertyHooksProcessor
 	public function __construct(
 		private DeprecatedAttributeResolver $deprecatedAttributeResolver,
 		private PhpDocsResolver $phpDocsResolver,
+		private AttributesHandler $attributesHandler,
 	)
 	{
 	}
@@ -58,7 +59,7 @@ final class PropertyHooksProcessor
 
 		foreach ($hooks as $hook) {
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $hook, $scope, $storage);
-			$nodeScopeResolver->processAttributeGroups($stmt, $hook->attrGroups, $scope, $storage, $nodeCallback);
+			$this->attributesHandler->processAttributeGroups($nodeScopeResolver, $stmt, $hook->attrGroups, $scope, $storage, $nodeCallback);
 
 			[, $phpDocParameterTypes,,,, $phpDocThrowType,,,,,,,, $phpDocComment,,,,,, $resolvedPhpDoc] = $this->phpDocsResolver->getPhpDocs($scope, $hook);
 

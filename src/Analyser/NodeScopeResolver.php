@@ -4,7 +4,6 @@ namespace PHPStan\Analyser;
 
 use Closure;
 use PhpParser\Node;
-use PhpParser\Node\AttributeGroup;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\FuncCall;
@@ -62,9 +61,7 @@ use PHPStan\Parser\ImmediatelyInvokedClosureVisitor;
 use PHPStan\Reflection\Native\NativeMethodReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpMethodReflection;
-use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
@@ -156,7 +153,6 @@ class NodeScopeResolver
 	public function __construct(
 		private readonly Container $container,
 		private readonly TemplateArgumentObserver $templateArgumentObserver,
-		private readonly ReflectionProvider $reflectionProvider,
 		private readonly FileHelper $fileHelper,
 		#[AutowiredExtensions(of: ReadWritePropertiesExtension::class)]
 		private readonly ExtensionsCollection $readWritePropertiesExtensions,
@@ -170,7 +166,7 @@ class NodeScopeResolver
 		private readonly bool $treatPhpDocTypesAsCertain,
 		private readonly ExpressionResultFactory $expressionResultFactory,
 		private readonly StatementsHandler $statementsHandler,
-		private readonly ArgumentsHandler $argumentsHandler,
+		private readonly AttributesHandler $attributesHandler,
 	)
 	{
 		self::$guardNewWorld = getenv('PHPSTAN_GUARD_NW') === '1';
@@ -1724,7 +1720,7 @@ class NodeScopeResolver
 		callable $nodeCallback,
 	): void
 	{
-		$this->processAttributeGroups($stmt, $param->attrGroups, $scope, $storage, $nodeCallback);
+		$this->attributesHandler->processAttributeGroups($this, $stmt, $param->attrGroups, $scope, $storage, $nodeCallback);
 		$this->callNodeCallback($nodeCallback, $param, $scope, $storage);
 		if ($param->type !== null) {
 			$this->callNodeCallback($nodeCallback, $param->type, $scope, $storage);
@@ -1734,48 +1730,6 @@ class NodeScopeResolver
 		}
 
 		$this->processExprNode($stmt, $param->default, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
-	}
-
-	/**
-	 * @param AttributeGroup[] $attrGroups
-	 * @param callable(Node $node, Scope $scope): void $nodeCallback
-	 */
-	public function processAttributeGroups(
-		Node\Stmt $stmt,
-		array $attrGroups,
-		MutatingScope $scope,
-		ExpressionResultStorage $storage,
-		callable $nodeCallback,
-	): void
-	{
-		foreach ($attrGroups as $attrGroup) {
-			foreach ($attrGroup->attrs as $attr) {
-				$className = $scope->resolveName($attr->name);
-				if ($this->reflectionProvider->hasClass($className)) {
-					$classReflection = $this->reflectionProvider->getClass($className);
-					if ($classReflection->hasConstructor()) {
-						$constructorReflection = $classReflection->getConstructor();
-						$parametersAcceptor = ParametersAcceptorSelector::combineVariantsForNormalization(
-							$attr->args,
-							$constructorReflection->getVariants(),
-							$constructorReflection->getNamedArgumentsVariants(),
-						);
-						$expr = new New_($attr->name, $attr->args);
-						$expr = ArgumentsNormalizer::reorderNewArguments($parametersAcceptor, $expr) ?? $expr;
-						$this->argumentsHandler->processArgs($this, $stmt, $constructorReflection, null, $constructorReflection->getVariants(), $constructorReflection->getNamedArgumentsVariants(), $expr, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
-						$this->callNodeCallback($nodeCallback, $attr, $scope, $storage);
-						continue;
-					}
-				}
-
-				foreach ($attr->args as $arg) {
-					$this->processExprNode($stmt, $arg->value, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
-					$this->callNodeCallback($nodeCallback, $arg, $scope, $storage);
-				}
-				$this->callNodeCallback($nodeCallback, $attr, $scope, $storage);
-			}
-			$this->callNodeCallback($nodeCallback, $attrGroup, $scope, $storage);
-		}
 	}
 
 	/**

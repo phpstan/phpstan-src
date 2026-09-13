@@ -4,6 +4,7 @@ namespace PHPStan\Analyser\StmtHandler;
 
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Property;
+use PHPStan\Analyser\AttributesHandler;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\InternalStatementResult;
@@ -29,6 +30,7 @@ final class PropertyHandler implements StmtHandler
 	public function __construct(
 		private PhpDocsResolver $phpDocsResolver,
 		private PropertyHooksProcessor $propertyHooksProcessor,
+		private AttributesHandler $attributesHandler,
 	)
 	{
 	}
@@ -47,7 +49,7 @@ final class PropertyHandler implements StmtHandler
 		StatementContext $context,
 	): InternalStatementResult
 	{
-		$nodeScopeResolver->processAttributeGroups($stmt, $stmt->attrGroups, $scope, $storage, $nodeCallback);
+		$this->attributesHandler->processAttributeGroups($nodeScopeResolver, $stmt, $stmt->attrGroups, $scope, $storage, $nodeCallback);
 
 		$nativePropertyType = $stmt->type !== null ? ParserNodeTypeToPHPStanType::resolve($stmt->type, $scope->getClassReflection()) : null;
 

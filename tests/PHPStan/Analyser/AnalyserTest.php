@@ -852,7 +852,6 @@ class AnalyserTest extends PHPStanTestCase
 		$nodeScopeResolver = new NodeScopeResolver(
 			$container,
 			$container->getByType(TemplateArgumentObserver::class),
-			$reflectionProvider,
 			$fileHelper,
 			$container->getExtensionsCollection(ReadWritePropertiesExtension::class),
 			$container->getExtensionsCollection(PerFileAnalysisResettable::class),
@@ -861,7 +860,7 @@ class AnalyserTest extends PHPStanTestCase
 			$this->shouldTreatPhpDocTypesAsCertain(),
 			$container->getByType(ExpressionResultFactory::class),
 			$container->getByType(StatementsHandler::class),
-			$container->getByType(ArgumentsHandler::class),
+			$container->getByType(AttributesHandler::class),
 		);
 		$lexer = new Lexer();
 		$fileAnalyser = new FileAnalyser(

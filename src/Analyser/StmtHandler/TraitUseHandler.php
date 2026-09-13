@@ -6,6 +6,7 @@ use PhpParser\Modifiers;
 use PhpParser\Node;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\TraitUse;
+use PHPStan\Analyser\AttributesHandler;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\InternalStatementResult;
 use PHPStan\Analyser\MutatingScope;
@@ -38,6 +39,7 @@ final class TraitUseHandler implements StmtHandler
 		private FileHelper $fileHelper,
 		#[AutowiredParameter(ref: '@defaultAnalysisParser')]
 		private Parser $parser,
+		private AttributesHandler $attributesHandler,
 	)
 	{
 	}
@@ -176,7 +178,7 @@ final class TraitUseHandler implements StmtHandler
 
 				// attribute args are not processed as part of the trait statements
 				// but rules like TraitAttributesRule ask about their types
-				$nodeScopeResolver->processAttributeGroups($node, $node->attrGroups, $traitScope, $storage, new NoopNodeCallback());
+				$this->attributesHandler->processAttributeGroups($nodeScopeResolver, $node, $node->attrGroups, $traitScope, $storage, new NoopNodeCallback());
 
 				$nodeScopeResolver->callNodeCallback($nodeCallback, new InTraitNode($node, $traitReflection, $scope->getClassReflection()), $traitScope, $storage);
 				$nodeScopeResolver->processStmtNodesInternal($node, $stmts, $traitScope, $storage, $nodeCallback, StatementContext::createTopLevel());

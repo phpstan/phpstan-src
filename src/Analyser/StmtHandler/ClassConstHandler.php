@@ -6,6 +6,7 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\ClassConst;
+use PHPStan\Analyser\AttributesHandler;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\InternalStatementResult;
@@ -24,6 +25,12 @@ use function array_merge;
 final class ClassConstHandler implements StmtHandler
 {
 
+	public function __construct(
+		private AttributesHandler $attributesHandler,
+	)
+	{
+	}
+
 	public function supports(Stmt $stmt): bool
 	{
 		return $stmt instanceof ClassConst;
@@ -40,7 +47,7 @@ final class ClassConstHandler implements StmtHandler
 	{
 		$entryScope = $scope;
 		$impurePoints = [];
-		$nodeScopeResolver->processAttributeGroups($stmt, $stmt->attrGroups, $scope, $storage, $nodeCallback);
+		$this->attributesHandler->processAttributeGroups($nodeScopeResolver, $stmt, $stmt->attrGroups, $scope, $storage, $nodeCallback);
 		foreach ($stmt->consts as $const) {
 			$constResult = $nodeScopeResolver->processExprNode($stmt, $const->value, $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
 			// the constant's callback fires after its value was processed, so

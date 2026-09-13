@@ -5,7 +5,7 @@ namespace PHPStan\Testing;
 use PhpParser\Node;
 use PHPStan\Analyser\Analyser;
 use PHPStan\Analyser\AnalyserResultFinalizer;
-use PHPStan\Analyser\ArgumentsHandler;
+use PHPStan\Analyser\AttributesHandler;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\FileAnalyser;
@@ -77,12 +77,10 @@ abstract class RuleTestCase extends PHPStanTestCase
 	protected function createNodeScopeResolver(): NodeScopeResolver
 	{
 		$readWritePropertiesExtensions = $this->getReadWritePropertiesExtensions();
-		$reflectionProvider = $this->createReflectionProvider();
 
 		return new NodeScopeResolver(
 			self::getContainer(),
 			self::getContainer()->getByType(TemplateArgumentObserver::class),
-			$reflectionProvider,
 			self::getContainer()->getByType(FileHelper::class),
 			$readWritePropertiesExtensions !== [] ? new DirectExtensionsCollection($readWritePropertiesExtensions) : self::getContainer()->getExtensionsCollection(ReadWritePropertiesExtension::class),
 			self::getContainer()->getExtensionsCollection(PerFileAnalysisResettable::class),
@@ -91,7 +89,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 			$this->shouldTreatPhpDocTypesAsCertain(),
 			self::getContainer()->getByType(ExpressionResultFactory::class),
 			self::getContainer()->getByType(StatementsHandler::class),
-			self::getContainer()->getByType(ArgumentsHandler::class),
+			self::getContainer()->getByType(AttributesHandler::class),
 		);
 	}
 

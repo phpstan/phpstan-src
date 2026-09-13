@@ -8,6 +8,7 @@ use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\Trait_;
+use PHPStan\Analyser\AttributesHandler;
 use PHPStan\Analyser\CalledMethodProcessor;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\InternalStatementResult;
@@ -50,6 +51,7 @@ final class ClassLikeHandler implements StmtHandler
 		private ClassReflectionFactory $classReflectionFactory,
 		private CalledMethodProcessor $calledMethodProcessor,
 		private ReflectionProvider $reflectionProvider,
+		private AttributesHandler $attributesHandler,
 	)
 	{
 	}
@@ -104,7 +106,7 @@ final class ClassLikeHandler implements StmtHandler
 		// the class attributes are processed before the InClassNode emission, so
 		// rules firing on it (ClassAttributesRule) read the attribute arguments
 		// from the storage
-		$nodeScopeResolver->processAttributeGroups($stmt, $stmt->attrGroups, $classScope, $storage, $classStatementsGatherer);
+		$this->attributesHandler->processAttributeGroups($nodeScopeResolver, $stmt, $stmt->attrGroups, $classScope, $storage, $classStatementsGatherer);
 		$nodeScopeResolver->callNodeCallback($nodeCallback, new InClassNode($stmt, $classReflection), $classScope, $storage);
 
 		$classLikeStatements = $stmt->stmts;

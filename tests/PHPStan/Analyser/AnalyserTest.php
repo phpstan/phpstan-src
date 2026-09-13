@@ -7,7 +7,6 @@ use PhpParser\NodeVisitor;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\Parser\Php7;
 use PHPStan\Analyser\Generics\TemplateArgumentObserver;
-use PHPStan\Analyser\Generics\TemplateArgumentResolver;
 use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
 use PHPStan\Analyser\Ignore\IgnoreLexer;
 use PHPStan\Collectors\Registry as CollectorRegistry;
@@ -862,13 +861,11 @@ class AnalyserTest extends PHPStanTestCase
 		$nodeScopeResolver = new NodeScopeResolver(
 			$container,
 			$container->getByType(TemplateArgumentObserver::class),
-			$container->getByType(TemplateArgumentResolver::class),
 			$reflectionProvider,
 			$fileHelper,
 			$container->getExtensionsCollection(FunctionParameterOutTypeExtension::class),
 			$container->getExtensionsCollection(MethodParameterOutTypeExtension::class),
 			$container->getExtensionsCollection(StaticMethodParameterOutTypeExtension::class),
-			$fileTypeMapper,
 			$container->getExtensionsCollection(ReadWritePropertiesExtension::class),
 			$container->getExtensionsCollection(FunctionParameterClosureThisExtension::class),
 			$container->getExtensionsCollection(MethodParameterClosureThisExtension::class),
@@ -882,7 +879,7 @@ class AnalyserTest extends PHPStanTestCase
 			true,
 			$this->shouldTreatPhpDocTypesAsCertain(),
 			$container->getByType(ExpressionResultFactory::class),
-			$container->getParameter('featureToggles')['unresolvedTemplateArguments'],
+			$container->getByType(StatementsHandler::class),
 		);
 		$lexer = new Lexer();
 		$fileAnalyser = new FileAnalyser(

@@ -15,6 +15,7 @@ use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\StatementContext;
+use PHPStan\Analyser\StatementsHandler;
 use PHPStan\Analyser\StmtHandler;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\Analyser\VariableFlowBuilder;
@@ -42,6 +43,12 @@ use function is_string;
 #[AutowiredService]
 final class TryCatchHandler implements StmtHandler
 {
+
+	public function __construct(
+		private StatementsHandler $statementsHandler,
+	)
+	{
+	}
 
 	public function supports(Stmt $stmt): bool
 	{
@@ -194,7 +201,7 @@ final class TryCatchHandler implements StmtHandler
 			}
 
 			if (count($matchingThrowPoints) === 0) {
-				$catchFlows[] = [$originalCatchType, $nodeScopeResolver->getVariableMentionFlow($catchNode)];
+				$catchFlows[] = [$originalCatchType, $this->statementsHandler->getVariableMentionFlow($catchNode)];
 				continue;
 			}
 

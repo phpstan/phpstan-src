@@ -46,6 +46,7 @@ use PHPStan\Analyser\PreparedAssignTarget;
 use PHPStan\Analyser\PropertyHookThrowPointsResolver;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
+use PHPStan\Analyser\StatementsHandler;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VarAnnotationProcessor;
 use PHPStan\Analyser\VariableFlow;
@@ -132,6 +133,7 @@ final class AssignHandler implements ExprHandler
 		private StaticPropertyFetchHandler $staticPropertyFetchHandler,
 		private MethodThrowPointHelper $methodThrowPointHelper,
 		private PropertyHookThrowPointsResolver $propertyHookThrowPointsResolver,
+		private StatementsHandler $statementsHandler,
 	)
 	{
 	}
@@ -252,7 +254,7 @@ final class AssignHandler implements ExprHandler
 			$varChangedScope = false;
 			$scope = $this->varAnnotationProcessor->processVarAnnotation($scope, $vars, $stmt, $varChangedScope);
 			if (!$varChangedScope) {
-				$scope = $nodeScopeResolver->processStmtVarAnnotation($scope, $storage, $stmt, null, $nodeCallback);
+				$scope = $this->statementsHandler->processStmtVarAnnotation($nodeScopeResolver, $scope, $storage, $stmt, null, $nodeCallback);
 			} else {
 				// the @var tag is a declared type the assigned value flows into
 				$templateArgumentFrame = $nodeScopeResolver->observingTemplateArgumentFrame($scope);

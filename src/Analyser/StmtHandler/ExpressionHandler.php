@@ -14,6 +14,7 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\StatementContext;
+use PHPStan\Analyser\StatementsHandler;
 use PHPStan\Analyser\StmtHandler;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -30,6 +31,12 @@ use function count;
 #[AutowiredService]
 final class ExpressionHandler implements StmtHandler
 {
+
+	public function __construct(
+		private StatementsHandler $statementsHandler,
+	)
+	{
+	}
 
 	public function supports(Stmt $stmt): bool
 	{
@@ -48,7 +55,7 @@ final class ExpressionHandler implements StmtHandler
 		$preAnnotationScope = $scope;
 		$stmtScope = $scope;
 		if ($stmt->expr instanceof Expr\Throw_) {
-			$stmtScope = $nodeScopeResolver->processStmtVarAnnotation($scope, $storage, $stmt, $stmt->expr->expr, $nodeCallback);
+			$stmtScope = $this->statementsHandler->processStmtVarAnnotation($nodeScopeResolver, $scope, $storage, $stmt, $stmt->expr->expr, $nodeCallback);
 			$scope = $stmtScope;
 		}
 		$hasAssign = false;
@@ -68,7 +75,7 @@ final class ExpressionHandler implements StmtHandler
 			$result = $nodeScopeResolver->processExprNode($stmt, $stmt->expr, $scope, $storage, $nodeCallback, ExpressionContext::createTopLevel($context->shouldResolveTemplateArguments()));
 			if ($stmt->expr instanceof Expr\Throw_) {
 				// the @var-changed-type node fires now that the thrown expression is stored
-				$result = $result->withScope($result->getScope()->addTemplateArgumentConstraints($nodeScopeResolver->emitVarTagChangedNode($preAnnotationScope, $storage, $stmt, $stmt->expr->expr, $nodeCallback)));
+				$result = $result->withScope($result->getScope()->addTemplateArgumentConstraints($this->statementsHandler->emitVarTagChangedNode($nodeScopeResolver, $preAnnotationScope, $storage, $stmt, $stmt->expr->expr, $nodeCallback)));
 			}
 		} finally {
 			$nodeScopeResolver->popNodeGatherer();

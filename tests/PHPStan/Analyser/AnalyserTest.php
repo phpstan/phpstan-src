@@ -23,15 +23,6 @@ use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\FileTypeMapper;
-use PHPStan\Type\FunctionParameterClosureThisExtension;
-use PHPStan\Type\FunctionParameterClosureTypeExtension;
-use PHPStan\Type\FunctionParameterOutTypeExtension;
-use PHPStan\Type\MethodParameterClosureThisExtension;
-use PHPStan\Type\MethodParameterClosureTypeExtension;
-use PHPStan\Type\MethodParameterOutTypeExtension;
-use PHPStan\Type\StaticMethodParameterClosureThisExtension;
-use PHPStan\Type\StaticMethodParameterClosureTypeExtension;
-use PHPStan\Type\StaticMethodParameterOutTypeExtension;
 use PHPUnit\Framework\Attributes\DataProvider;
 use function array_map;
 use function array_merge;
@@ -863,23 +854,14 @@ class AnalyserTest extends PHPStanTestCase
 			$container->getByType(TemplateArgumentObserver::class),
 			$reflectionProvider,
 			$fileHelper,
-			$container->getExtensionsCollection(FunctionParameterOutTypeExtension::class),
-			$container->getExtensionsCollection(MethodParameterOutTypeExtension::class),
-			$container->getExtensionsCollection(StaticMethodParameterOutTypeExtension::class),
 			$container->getExtensionsCollection(ReadWritePropertiesExtension::class),
-			$container->getExtensionsCollection(FunctionParameterClosureThisExtension::class),
-			$container->getExtensionsCollection(MethodParameterClosureThisExtension::class),
-			$container->getExtensionsCollection(StaticMethodParameterClosureThisExtension::class),
-			$container->getExtensionsCollection(FunctionParameterClosureTypeExtension::class),
-			$container->getExtensionsCollection(MethodParameterClosureTypeExtension::class),
-			$container->getExtensionsCollection(StaticMethodParameterClosureTypeExtension::class),
 			$container->getExtensionsCollection(PerFileAnalysisResettable::class),
 			false,
-			true,
 			true,
 			$this->shouldTreatPhpDocTypesAsCertain(),
 			$container->getByType(ExpressionResultFactory::class),
 			$container->getByType(StatementsHandler::class),
+			$container->getByType(ArgumentsHandler::class),
 		);
 		$lexer = new Lexer();
 		$fileAnalyser = new FileAnalyser(

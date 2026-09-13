@@ -7,6 +7,7 @@ use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ArgsResult;
+use PHPStan\Analyser\ArgumentsHandler;
 use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\CalledMethodProcessor;
 use PHPStan\Analyser\ExpressionContext;
@@ -75,6 +76,7 @@ final class MethodCallHandler implements ExprHandler
 		private DefaultNarrowingHelper $defaultNarrowingHelper,
 		private DynamicReturnTypeStoragePrimer $storagePrimer,
 		private EarlyTerminatingCallHelper $earlyTerminatingHelper,
+		private ArgumentsHandler $argumentsHandler,
 	)
 	{
 	}
@@ -156,7 +158,8 @@ final class MethodCallHandler implements ExprHandler
 		if ($parametersAcceptor !== null && $context->getInAssignRightSideExpr() === $expr) {
 			$context = $context->enterAssignRightSideCallArgs($parametersAcceptor);
 		}
-		$argsResult = $nodeScopeResolver->processArgs(
+		$argsResult = $this->argumentsHandler->processArgs(
+			$nodeScopeResolver,
 			$stmt,
 			$methodReflection,
 			$methodReflection !== null ? $scope->getNakedMethod($calledOnType, $methodReflection->getName()) : null,
@@ -170,7 +173,7 @@ final class MethodCallHandler implements ExprHandler
 		);
 		$resolvedParametersAcceptor = $argsResult->getResolvedParametersAcceptor();
 		$scope = $argsResult->getScope();
-		$nodeScopeResolver->processDroppedArgs($stmt, $expr, $normalizedExpr, $scope, $storage, $context);
+		$this->argumentsHandler->processDroppedArgs($nodeScopeResolver, $stmt, $expr, $normalizedExpr, $scope, $storage, $context);
 
 		if ($methodReflection !== null) {
 			// created after the args were processed - the pure-unless-callable-

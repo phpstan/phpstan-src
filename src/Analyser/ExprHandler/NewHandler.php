@@ -9,6 +9,7 @@ use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ArgsResult;
+use PHPStan\Analyser\ArgumentsHandler;
 use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
@@ -97,6 +98,7 @@ final class NewHandler implements ExprHandler
 		private DefaultNarrowingHelper $defaultNarrowingHelper,
 		private DynamicReturnTypeStoragePrimer $storagePrimer,
 		private Container $container,
+		private ArgumentsHandler $argumentsHandler,
 	)
 	{
 	}
@@ -236,10 +238,10 @@ final class NewHandler implements ExprHandler
 		$variants = $constructorReflection !== null ? $constructorReflection->getVariants() : [];
 		$namedArgumentsVariants = $constructorReflection !== null ? $constructorReflection->getNamedArgumentsVariants() : null;
 		$scopeBeforeArgs = $scope;
-		$argsResult = $nodeScopeResolver->processArgs($stmt, $constructorReflection, null, $variants, $namedArgumentsVariants, $normalizedExpr, $scope, $storage, $nodeCallback, $context);
+		$argsResult = $this->argumentsHandler->processArgs($nodeScopeResolver, $stmt, $constructorReflection, null, $variants, $namedArgumentsVariants, $normalizedExpr, $scope, $storage, $nodeCallback, $context);
 		$resolvedParametersAcceptor = $argsResult->getResolvedParametersAcceptor();
 		$scope = $argsResult->getScope();
-		$nodeScopeResolver->processDroppedArgs($stmt, $expr, $normalizedExpr, $scope, $storage, $context);
+		$this->argumentsHandler->processDroppedArgs($nodeScopeResolver, $stmt, $expr, $normalizedExpr, $scope, $storage, $context);
 		$hasYield = $hasYield || $argsResult->hasYield();
 		$throwPoints = array_merge($throwPoints, $argsResult->getThrowPoints());
 		$impurePoints = array_merge($impurePoints, $argsResult->getImpurePoints());

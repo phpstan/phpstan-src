@@ -84,9 +84,7 @@ final class ClosureProcessor
 		?Type $nativePassedToType = null,
 	): ProcessClosureResult
 	{
-		foreach ($expr->params as $param) {
-			$nodeScopeResolver->processParamNode($stmt, $param, $scope, $storage, $nodeCallback);
-		}
+		$this->container->getByType(ParametersProcessor::class)->processParams($nodeScopeResolver, $stmt, $expr->params, $scope, $storage, $nodeCallback);
 
 		$byRefUses = [];
 
@@ -423,9 +421,7 @@ final class ClosureProcessor
 	): ProcessArrowFunctionResult
 	{
 		$context ??= ExpressionContext::createTopLevel();
-		foreach ($expr->params as $param) {
-			$nodeScopeResolver->processParamNode($stmt, $param, $scope, $storage, $nodeCallback);
-		}
+		$this->container->getByType(ParametersProcessor::class)->processParams($nodeScopeResolver, $stmt, $expr->params, $scope, $storage, $nodeCallback);
 		if ($expr->returnType !== null) {
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $expr->returnType, $scope, $storage);
 		}

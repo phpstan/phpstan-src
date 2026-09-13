@@ -5,7 +5,6 @@ namespace PHPStan\Testing;
 use PhpParser\Node;
 use PHPStan\Analyser\Analyser;
 use PHPStan\Analyser\AnalyserResultFinalizer;
-use PHPStan\Analyser\AttributesHandler;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\FileAnalyser;
@@ -89,7 +88,6 @@ abstract class RuleTestCase extends PHPStanTestCase
 			$this->shouldTreatPhpDocTypesAsCertain(),
 			self::getContainer()->getByType(ExpressionResultFactory::class),
 			self::getContainer()->getByType(StatementsHandler::class),
-			self::getContainer()->getByType(AttributesHandler::class),
 		);
 	}
 

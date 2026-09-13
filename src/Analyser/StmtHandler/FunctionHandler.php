@@ -14,6 +14,7 @@ use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalStatementResult;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\ParametersProcessor;
 use PHPStan\Analyser\PhpDocsResolver;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\StatementContext;
@@ -41,6 +42,7 @@ final class FunctionHandler implements StmtHandler
 		private DeprecatedAttributeResolver $deprecatedAttributeResolver,
 		private PhpDocsResolver $phpDocsResolver,
 		private AttributesHandler $attributesHandler,
+		private ParametersProcessor $parametersProcessor,
 	)
 	{
 	}
@@ -62,9 +64,7 @@ final class FunctionHandler implements StmtHandler
 		$this->attributesHandler->processAttributeGroups($nodeScopeResolver, $stmt, $stmt->attrGroups, $scope, $storage, $nodeCallback);
 		[$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocClosureThisTypeParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, , $isPure, $acceptsNamedArguments, , $phpDocComment, $asserts,, $phpDocParameterOutTypes, , , , $pureUnlessCallableIsImpureParameters] = $this->phpDocsResolver->getPhpDocs($scope, $stmt);
 
-		foreach ($stmt->params as $param) {
-			$nodeScopeResolver->processParamNode($stmt, $param, $scope, $storage, $nodeCallback);
-		}
+		$this->parametersProcessor->processParams($nodeScopeResolver, $stmt, $stmt->params, $scope, $storage, $nodeCallback);
 
 		if ($stmt->returnType !== null) {
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt->returnType, $scope, $storage);

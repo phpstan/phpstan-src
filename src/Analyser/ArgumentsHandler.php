@@ -15,6 +15,7 @@ use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\NodeFinder;
 use PHPStan\Analyser\ExprHandler\ClosureHandler;
+use PHPStan\Analyser\ExprHandler\Helper\ClosureParameterResolver;
 use PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver;
 use PHPStan\Analyser\Generics\TemplateArgumentObserver;
 use PHPStan\DependencyInjection\AutowiredExtensions;
@@ -95,6 +96,7 @@ final class ArgumentsHandler
 		private Container $container,
 		private TemplateArgumentObserver $templateArgumentObserver,
 		private ExpressionResultFactory $expressionResultFactory,
+		private ClosureProcessor $closureProcessor,
 		#[AutowiredExtensions(of: FunctionParameterOutTypeExtension::class)]
 		private ExtensionsCollection $functionParameterOutTypeExtensions,
 		#[AutowiredExtensions(of: MethodParameterOutTypeExtension::class)]
@@ -228,7 +230,7 @@ final class ArgumentsHandler
 				// resolution (see gatherClosureArgType()).
 				$originalArgForGather = $arg->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE) ?? $arg;
 				$gatheredArgTypeByIndex[$i] = $typeDrivenAcceptorSelection
-					? $this->gatherClosureArgType($nodeScopeResolver, $parametersAcceptors, $i, $arg->value, $scope)
+					? $this->gatherClosureArgType($parametersAcceptors, $i, $arg->value, $scope)
 					: $this->container->getByType(ClosureTypeResolver::class)->getClosureType($scope, $arg->value, true, $storage);
 				$this->addGatheredArgType($gatheredTypes, $gatheredUnpack, $gatheredHasName, $originalArgForGather, $i, $gatheredArgTypeByIndex[$i]);
 			}
@@ -408,7 +410,7 @@ final class ArgumentsHandler
 						}
 					}
 
-					$closureResult = $nodeScopeResolver->processClosureNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $context, $parameterType, $parameterNativeType);
+					$closureResult = $this->closureProcessor->processClosureNode($nodeScopeResolver, $stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $context, $parameterType, $parameterNativeType);
 					if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
 						$throwPoints = array_merge($throwPoints, array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $closureResult->getThrowPoints()));
 						$impurePoints = array_merge($impurePoints, $closureResult->getImpurePoints());
@@ -556,7 +558,7 @@ final class ArgumentsHandler
 						}
 					}
 
-					$arrowFunctionResult = $nodeScopeResolver->processArrowFunctionNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $parameterType, $parameterNativeType, $context);
+					$arrowFunctionResult = $this->closureProcessor->processArrowFunctionNode($nodeScopeResolver, $stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $parameterType, $parameterNativeType, $context);
 					$arrowFunctionExprResult = $arrowFunctionResult->getExpressionResult();
 					if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
 						$throwPoints = array_merge($throwPoints, array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $arrowFunctionExprResult->getThrowPoints()));
@@ -686,7 +688,7 @@ final class ArgumentsHandler
 		}
 
 		foreach ($deferredInvalidateExpressions as [$invalidateExpressions, $uses]) {
-			$scope = $nodeScopeResolver->processImmediatelyCalledCallable($scope, $invalidateExpressions, $uses);
+			$scope = $this->closureProcessor->processImmediatelyCalledCallable($scope, $invalidateExpressions, $uses);
 		}
 
 		foreach ($deferredByRefClosureResults as $deferredClosureResult) {
@@ -911,7 +913,7 @@ final class ArgumentsHandler
 	 *
 	 * @param ParametersAcceptor[] $parametersAcceptors
 	 */
-	private function gatherClosureArgType(NodeScopeResolver $nodeScopeResolver, array $parametersAcceptors, int $i, Expr $closureExpr, MutatingScope $scope): Type
+	private function gatherClosureArgType(array $parametersAcceptors, int $i, Expr $closureExpr, MutatingScope $scope): Type
 	{
 		$rawParameter = null;
 		if (count($parametersAcceptors) === 1) {
@@ -927,7 +929,7 @@ final class ArgumentsHandler
 			$scope = $scope->pushInFunctionCall(null, $rawParameter, false);
 		}
 
-		return $nodeScopeResolver->resolveCallableTypeForScope($closureExpr, $scope);
+		return $this->container->getByType(ClosureParameterResolver::class)->resolveCallableTypeForScope($closureExpr, $scope);
 	}
 
 	/**

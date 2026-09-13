@@ -5,6 +5,7 @@ namespace PHPStan\Analyser\ExprHandler;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Stmt;
+use PHPStan\Analyser\ClosureProcessor;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
@@ -30,6 +31,7 @@ final class ClosureHandler implements ExprHandler
 		private ClosureTypeResolver $closureTypeResolver,
 		private ExpressionResultFactory $expressionResultFactory,
 		private DefaultNarrowingHelper $defaultNarrowingHelper,
+		private ClosureProcessor $closureProcessor,
 	)
 	{
 	}
@@ -41,7 +43,7 @@ final class ClosureHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		$processClosureResult = $nodeScopeResolver->processClosureNode($stmt, $expr, $scope, $storage, $nodeCallback, $context, $context->getPassedToType(), $context->getNativePassedToType());
+		$processClosureResult = $this->closureProcessor->processClosureNode($nodeScopeResolver, $stmt, $expr, $scope, $storage, $nodeCallback, $context, $context->getPassedToType(), $context->getNativePassedToType());
 
 		// A plain typeCallback recursing through getClosureType() would re-walk
 		// the body each getType() ask before the cache populates and hang;

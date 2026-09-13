@@ -6,6 +6,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
@@ -31,6 +32,7 @@ use PHPStan\Type\VerbosityLevel;
 
 /** @api */
 #[InstanceofDeprecated(insteadUse: 'Type::isList()')]
+#[ReferencedByTurboExtension(key: 'accessoryArrayListType')]
 class AccessoryArrayListType implements CompoundType, AccessoryType
 {
 

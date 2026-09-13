@@ -88,8 +88,6 @@ enum {
 	PT_CLASS_ARROW_FUNCTION,
 	PT_CLASS_TYPE,
 	PT_CLASS_RECURSION_GUARD,
-	PT_CLASS_NEVER_TYPE,
-	PT_CLASS_MIXED_TYPE,
 	PT_CLASS_UNION_TYPE,
 	PT_CLASS_CONSTANT_ARRAY_TYPE,
 	PT_CLASS_OBJECT_WITHOUT_CLASS_TYPE,
@@ -129,6 +127,19 @@ enum {
 	PT_CLASS_NETTE_STRINGS,
 	PT_CLASS_NETTE_REGEXP_EXCEPTION,
 	PT_CLASS_CONST_EXPR_FLOAT_NODE,
+	PT_CLASS_TEMPLATE_MIXED_TYPE,
+	PT_CLASS_SUBTRACTABLE_TYPE,
+	PT_CLASS_ARRAY_TYPE,
+	PT_CLASS_ACCESSORY_ARRAY_LIST_TYPE,
+	PT_CLASS_CALLABLE_TYPE,
+	PT_CLASS_DUMMY_PROPERTY_REFLECTION,
+	PT_CLASS_CALLBACK_UNRESOLVED_PROPERTY_PROTOTYPE_REFLECTION,
+	PT_CLASS_DUMMY_METHOD_REFLECTION,
+	PT_CLASS_CALLBACK_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION,
+	PT_CLASS_DUMMY_CLASS_CONSTANT_REFLECTION,
+	PT_CLASS_BENEVOLENT_UNION_TYPE,
+	PT_CLASS_ITERABLE_TYPE,
+	PT_CLASS_OVERSIZED_ARRAY_TYPE,
 	PT_CLASS_COUNT
 };
 
@@ -201,6 +212,10 @@ extern zend_class_entry *pt_ce_float_type;
 extern zend_class_entry *pt_ce_constant_float_type;
 extern zend_class_entry *pt_ce_null_type;
 extern zend_class_entry *pt_ce_void_type;
+/* the never/mixed family (NeverType.cpp, MixedType.cpp, StrictMixedType.cpp) */
+extern zend_class_entry *pt_ce_never_type;
+extern zend_class_entry *pt_ce_mixed_type;
+extern zend_class_entry *pt_ce_strict_mixed_type;
 
 /* registration hooks, called from the extension's onStartup */
 /* Shadow.cpp — Runtime::activateShadowing() */
@@ -248,6 +263,12 @@ void pt_register_float_type();
 void pt_register_constant_float_type();
 void pt_register_null_type();
 void pt_register_void_type();
+/* the never/mixed family after the string family (their bodies instantiate
+ * its classes); NeverType before MixedType (the constructor drops a NeverType
+ * subtracted type), StrictMixedType last (isAcceptedBy() names MixedType) */
+void pt_register_never_type();
+void pt_register_mixed_type();
+void pt_register_strict_mixed_type();
 void pt_integer_range_type_rinit();
 void pt_constant_string_type_rinit();
 void pt_is_super_type_of_result_rinit();
@@ -370,6 +391,11 @@ bool pt_constant_string_type_new(zval *out, zend_string *value, bool isClassStri
 bool pt_constant_float_type_new(zval *out, double value);
 bool pt_null_type_new(zval *out);
 bool pt_void_type_new(zval *out);
+/* new NeverType($isExplicit) / new MixedType($isExplicitMixed, $subtractedType)
+ * — instances of the shadowing classes (NeverType.cpp / MixedType.cpp;
+ * $subtractedType borrowed, NULL for null); false = pending exception */
+[[nodiscard]] bool pt_never_type_new(zval *out, bool isExplicit = false);
+bool pt_mixed_type_new(zval *out, bool isExplicitMixed = false, zval *subtractedType = NULL);
 
 /* }}} */
 

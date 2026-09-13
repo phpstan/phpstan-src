@@ -56,7 +56,7 @@ $observations = [];
 // which implementation answered: smoke.php holds the php run to false and
 // the native run to true, so the two sets can never be one implementation
 // compared against itself
-foreach ([\PHPStan\Type\BooleanType::class, \PHPStan\Type\Constant\ConstantBooleanType::class, \PHPStan\Type\IntegerType::class, \PHPStan\Type\Constant\ConstantIntegerType::class, \PHPStan\Type\IntegerRangeType::class, \PHPStan\Type\StringType::class, \PHPStan\Type\Constant\ConstantStringType::class, \PHPStan\Type\ClassStringType::class, \PHPStan\Type\Generic\GenericClassStringType::class, \PHPStan\Type\FloatType::class, \PHPStan\Type\Constant\ConstantFloatType::class, \PHPStan\Type\NullType::class, \PHPStan\Type\VoidType::class] as $typeClass) {
+foreach ([\PHPStan\Type\BooleanType::class, \PHPStan\Type\Constant\ConstantBooleanType::class, \PHPStan\Type\IntegerType::class, \PHPStan\Type\Constant\ConstantIntegerType::class, \PHPStan\Type\IntegerRangeType::class, \PHPStan\Type\StringType::class, \PHPStan\Type\Constant\ConstantStringType::class, \PHPStan\Type\ClassStringType::class, \PHPStan\Type\Generic\GenericClassStringType::class, \PHPStan\Type\FloatType::class, \PHPStan\Type\Constant\ConstantFloatType::class, \PHPStan\Type\NullType::class, \PHPStan\Type\VoidType::class, \PHPStan\Type\NeverType::class, \PHPStan\Type\MixedType::class, \PHPStan\Type\StrictMixedType::class] as $typeClass) {
 	$observations["native $typeClass"] = (new ReflectionMethod($typeClass, 'describe'))->isInternal();
 }
 
@@ -927,6 +927,322 @@ $floatOthers = static fn (string $float, string $constFloat, string $null, strin
 		$observations["float $key"] = $value;
 	}
 }
+
+// ---- NeverType / MixedType / StrictMixedType ----
+// the PHP subclasses over the native parents come along: ErrorType (a PHP
+// constructor calling parent::__construct(), overriding describe(),
+// subtract(), getIterableValueType()), NonAcceptingNeverType, and the
+// template types over MixedType / StrictMixedType
+$mixedPhpVersions = [new \PHPStan\Php\PhpVersion(70400), new \PHPStan\Php\PhpVersion(80400)];
+$mixedTemplateScope = \PHPStan\Type\Generic\TemplateTypeScope::createWithFunction('foo');
+$mixedOthers = static fn (string $never, string $mixed, string $strictMixed): array => [
+	'never' => new $never(),
+	'neverExplicit' => new $never(true),
+	'nonAcceptingNever' => new \PHPStan\Type\NonAcceptingNeverType(),
+	'mixed' => new $mixed(),
+	'mixedExplicit' => new $mixed(true),
+	'mixedMinusInt' => new $mixed(false, new \PHPStan\Type\IntegerType()),
+	'mixedMinusNull' => new $mixed(false, new \PHPStan\Type\NullType()),
+	'mixedExplicitMinusUnion' => new $mixed(true, new \PHPStan\Type\UnionType([new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()])),
+	'strictMixed' => new $strictMixed(),
+	'error' => new \PHPStan\Type\ErrorType(),
+	'templateMixed' => \PHPStan\Type\Generic\TemplateTypeFactory::create($mixedTemplateScope, 'T', null, \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()),
+	'templateStrictMixed' => new \PHPStan\Type\Generic\TemplateStrictMixedType($mixedTemplateScope, new \PHPStan\Type\Generic\TemplateTypeParameterStrategy(), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant(), 'T', new $strictMixed(), null),
+	'templateInt' => \PHPStan\Type\Generic\TemplateTypeFactory::create($mixedTemplateScope, 'T', new \PHPStan\Type\IntegerType(), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()),
+	'int' => new \PHPStan\Type\IntegerType(),
+	'int0' => new \PHPStan\Type\Constant\ConstantIntegerType(0),
+	'int1' => new \PHPStan\Type\Constant\ConstantIntegerType(1),
+	'range0-10' => \PHPStan\Type\IntegerRangeType::fromInterval(0, 10),
+	'float' => new \PHPStan\Type\FloatType(),
+	'bool' => new \PHPStan\Type\BooleanType(),
+	'true' => new \PHPStan\Type\Constant\ConstantBooleanType(true),
+	'false' => new \PHPStan\Type\Constant\ConstantBooleanType(false),
+	'null' => new \PHPStan\Type\NullType(),
+	'string' => new \PHPStan\Type\StringType(),
+	'stringAbc' => new \PHPStan\Type\Constant\ConstantStringType('abc'),
+	'stringEmpty' => new \PHPStan\Type\Constant\ConstantStringType(''),
+	'classString' => new \PHPStan\Type\ClassStringType(),
+	'nonEmptyString' => new \PHPStan\Type\IntersectionType([new \PHPStan\Type\StringType(), new \PHPStan\Type\Accessory\AccessoryNonEmptyStringType()]),
+	'union' => new \PHPStan\Type\UnionType([new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()]),
+	'unionNullable' => new \PHPStan\Type\UnionType([new \PHPStan\Type\IntegerType(), new \PHPStan\Type\NullType()]),
+	'array' => new \PHPStan\Type\ArrayType(new \PHPStan\Type\MixedType(), new \PHPStan\Type\MixedType()),
+	'list' => new \PHPStan\Type\IntersectionType([new \PHPStan\Type\ArrayType(\PHPStan\Type\IntegerRangeType::createAllGreaterThanOrEqualTo(0), new \PHPStan\Type\MixedType()), new \PHPStan\Type\Accessory\AccessoryArrayListType()]),
+	'emptyArray' => new \PHPStan\Type\Constant\ConstantArrayType([], []),
+	'object' => new \PHPStan\Type\ObjectType(\stdClass::class),
+	'objectWithoutClass' => new \PHPStan\Type\ObjectWithoutClassType(),
+	'arrayAccess' => new \PHPStan\Type\ObjectType(\ArrayAccess::class),
+	'callable' => new \PHPStan\Type\CallableType(),
+	'iterable' => new \PHPStan\Type\IterableType(new \PHPStan\Type\MixedType(), new \PHPStan\Type\MixedType()),
+	'void' => new \PHPStan\Type\VoidType(),
+	'scalars' => new \PHPStan\Type\UnionType([new \PHPStan\Type\BooleanType(), new \PHPStan\Type\FloatType(), new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()]),
+	'falsey' => \PHPStan\Type\StaticTypeFactory::falsey(),
+	'truthy' => \PHPStan\Type\StaticTypeFactory::truthy(),
+	'castsToZero' => new \PHPStan\Type\UnionType([new \PHPStan\Type\NullType(), new \PHPStan\Type\Constant\ConstantBooleanType(false), new \PHPStan\Type\Constant\ConstantIntegerType(0), new \PHPStan\Type\Constant\ConstantArrayType([], []), new \PHPStan\Type\StringType(), new \PHPStan\Type\FloatType()]),
+	'castsToEmptyString' => new \PHPStan\Type\UnionType([new \PHPStan\Type\NullType(), new \PHPStan\Type\Constant\ConstantBooleanType(false), new \PHPStan\Type\Constant\ConstantStringType('')]),
+	'castsToFalsyString' => new \PHPStan\Type\UnionType([new \PHPStan\Type\NullType(), new \PHPStan\Type\Constant\ConstantBooleanType(false), new \PHPStan\Type\Constant\ConstantStringType(''), new \PHPStan\Type\Constant\ConstantFloatType(0.0), new \PHPStan\Type\Constant\ConstantStringType('0'), new \PHPStan\Type\Constant\ConstantIntegerType(0)]),
+	'offsetAccessibles' => new \PHPStan\Type\UnionType([new \PHPStan\Type\StringType(), new \PHPStan\Type\ArrayType(new \PHPStan\Type\MixedType(), new \PHPStan\Type\MixedType()), new \PHPStan\Type\ObjectType(\ArrayAccess::class)]),
+];
+{
+	$neverClass = \PHPStan\Type\NeverType::class;
+	$mixedClass = \PHPStan\Type\MixedType::class;
+	$strictMixedClass = \PHPStan\Type\StrictMixedType::class;
+	$r = [];
+	$others = $mixedOthers($neverClass, $mixedClass, $strictMixedClass);
+	$subjects = [
+		'never' => new $neverClass(),
+		'neverExplicit' => new $neverClass(true),
+		'neverReason' => new $neverClass(false, 'because'),
+		'nonAcceptingNever' => new \PHPStan\Type\NonAcceptingNeverType(),
+		'mixed' => new $mixedClass(),
+		'mixedExplicit' => new $mixedClass(true),
+		'mixedMinusInt' => new $mixedClass(false, new \PHPStan\Type\IntegerType()),
+		'mixedMinusNull' => new $mixedClass(false, new \PHPStan\Type\NullType()),
+		'mixedMinusNever' => new $mixedClass(false, new $neverClass()),
+		'mixedMinusFalsey' => new $mixedClass(false, \PHPStan\Type\StaticTypeFactory::falsey()),
+		'mixedMinusCastsToZero' => new $mixedClass(false, $others['castsToZero']),
+		'mixedMinusCastsToEmptyString' => new $mixedClass(false, $others['castsToEmptyString']),
+		'mixedMinusCastsToFalsyString' => new $mixedClass(false, $others['castsToFalsyString']),
+		'mixedMinusOffsetAccessibles' => new $mixedClass(false, $others['offsetAccessibles']),
+		'mixedMinusObject' => new $mixedClass(false, new \PHPStan\Type\ObjectWithoutClassType()),
+		'mixedMinusArray' => new $mixedClass(false, $others['array']),
+		'mixedMinusList' => new $mixedClass(false, $others['list']),
+		'mixedMinusIterable' => new $mixedClass(false, $others['iterable']),
+		'mixedMinusCallable' => new $mixedClass(false, $others['callable']),
+		'mixedMinusScalars' => new $mixedClass(false, $others['scalars']),
+		'mixedMinusString' => new $mixedClass(false, new \PHPStan\Type\StringType()),
+		'mixedMinusNonEmptyString' => new $mixedClass(false, $others['nonEmptyString']),
+		'mixedMinusClassString' => new $mixedClass(false, new \PHPStan\Type\ClassStringType()),
+		'mixedMinusMixedMinusInt' => new $mixedClass(false, new $mixedClass(false, new \PHPStan\Type\IntegerType())),
+		'mixedExplicitMinusUnion' => new $mixedClass(true, new \PHPStan\Type\UnionType([new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()])),
+		'strictMixed' => new $strictMixedClass(),
+		'error' => new \PHPStan\Type\ErrorType(),
+		'errorReason' => new \PHPStan\Type\ErrorType('why'),
+		'templateMixed' => $others['templateMixed'],
+		'templateStrictMixed' => $others['templateStrictMixed'],
+	];
+	$outOfClassScope = new \PHPStan\Analyser\OutOfClassScope();
+	foreach ($subjects as $name => $subject) {
+		$r["$name class"] = $view($subject);
+		$r["$name instanceof"] = [$subject instanceof \PHPStan\Type\Type, $subject instanceof $neverClass, $subject instanceof $mixedClass, $subject instanceof $strictMixedClass, $subject instanceof \PHPStan\Type\CompoundType, $subject instanceof \PHPStan\Type\SubtractableType];
+		foreach (['typeOnly' => \PHPStan\Type\VerbosityLevel::typeOnly(), 'value' => \PHPStan\Type\VerbosityLevel::value(), 'precise' => \PHPStan\Type\VerbosityLevel::precise(), 'cache' => \PHPStan\Type\VerbosityLevel::cache()] as $levelName => $level) {
+			$r["$name describe $levelName"] = $subject->describe($level);
+		}
+		foreach ($others as $otherName => $other) {
+			$r["$name isSuperTypeOf $otherName"] = $view($subject->isSuperTypeOf($other));
+			$r["$name accepts $otherName"] = $view($subject->accepts($other, true));
+			$r["$name accepts-loose $otherName"] = $view($subject->accepts($other, false));
+			$r["$name equals $otherName"] = $subject->equals($other);
+			$r["$name tryRemove $otherName"] = $view($subject->tryRemove($other));
+			foreach ($mixedPhpVersions as $vi => $phpVersion) {
+				$r["$name looseCompare $otherName $vi"] = $view($subject->looseCompare($other, $phpVersion));
+				$r["$name isSmallerThan $otherName $vi"] = $view($subject->isSmallerThan($other, $phpVersion));
+				$r["$name isSmallerThanOrEqual $otherName $vi"] = $view($subject->isSmallerThanOrEqual($other, $phpVersion));
+				$r["$name isGreaterThan $otherName $vi"] = $view($subject->isGreaterThan($other, $phpVersion));
+				$r["$name isGreaterThanOrEqual $otherName $vi"] = $view($subject->isGreaterThanOrEqual($other, $phpVersion));
+			}
+			$r["$name isSubTypeOf $otherName"] = $view($subject->isSubTypeOf($other));
+			$r["$name isAcceptedBy $otherName"] = $view($subject->isAcceptedBy($other, true));
+			$r["$name isAcceptedBy-loose $otherName"] = $view($subject->isAcceptedBy($other, false));
+			$r["$name traverseSimultaneously $otherName"] = $view($subject->traverseSimultaneously($other, static fn ($a, $b) => $b));
+			$r["$name getOffsetValueType $otherName"] = $view($subject->getOffsetValueType($other));
+			$r["$name hasOffsetValueType $otherName"] = $view($subject->hasOffsetValueType($other));
+			$r["$name setOffsetValueType $otherName"] = $view($subject->setOffsetValueType($other, $others['int1']));
+			$r["$name setExistingOffsetValueType $otherName"] = $view($subject->setExistingOffsetValueType($other, $others['int1']));
+			$r["$name unsetOffset $otherName"] = $view($subject->unsetOffset($other));
+			$r["$name exponentiate $otherName"] = $view($subject->exponentiate($other));
+			$r["$name inferTemplateTypes $otherName"] = $view($subject->inferTemplateTypes($other));
+			$r["$name fillKeysArray $otherName"] = $view($subject->fillKeysArray($other));
+			$r["$name intersectKeyArray $otherName"] = $view($subject->intersectKeyArray($other));
+			$r["$name truncateListToSize $otherName"] = $view($subject->truncateListToSize($other));
+			$r["$name searchArray $otherName"] = [$view($subject->searchArray($other)), $view($subject->searchArray($other, \PHPStan\TrinaryLogic::createYes()))];
+			$r["$name chunkArray $otherName"] = $view($subject->chunkArray($other, \PHPStan\TrinaryLogic::createNo()));
+			$r["$name sliceArray $otherName"] = $view($subject->sliceArray($other, $other, \PHPStan\TrinaryLogic::createMaybe()));
+			$r["$name spliceArray $otherName"] = $view($subject->spliceArray($other, $other, $other));
+			$r["$name getKeysArrayFiltered $otherName"] = $view($subject->getKeysArrayFiltered($other, \PHPStan\TrinaryLogic::createYes()));
+			$r["$name toObjectTypeForIsACheck $otherName"] = [$view($subject->toObjectTypeForIsACheck($other, true, true)), $view($subject->toObjectTypeForIsACheck($other, false, true)), $view($subject->toObjectTypeForIsACheck($other, true, false)), $view($subject->toObjectTypeForIsACheck($other, false, false))];
+			if ($subject instanceof $mixedClass) {
+				$r["$name subtract $otherName"] = $view($subject->subtract($other));
+				$r["$name changeSubtractedType $otherName"] = $view($subject->changeSubtractedType($other));
+				$r["$name describeSubtractedType $otherName"] = [$subject->describeSubtractedType($other, \PHPStan\Type\VerbosityLevel::precise()), $subject->describeSubtractedType($other, \PHPStan\Type\VerbosityLevel::typeOnly())];
+				if ($other instanceof $mixedClass) {
+					$r["$name isSuperTypeOfMixed $otherName"] = $view($subject->isSuperTypeOfMixed($other));
+				}
+			}
+		}
+		foreach (['toBoolean', 'toNumber', 'toInteger', 'toFloat', 'toString', 'toArray', 'toArrayKey', 'toBitwiseNotType', 'toAbsoluteNumber', 'toGetClassResultType', 'toObjectTypeForInstanceofCheck',
+			'isTrue', 'isFalse', 'isBoolean', 'isScalar', 'isNull', 'isInteger', 'isFloat', 'isString', 'isNumericString', 'isDecimalIntegerString', 'isNonEmptyString', 'isNonFalsyString', 'isLiteralString', 'isLowercaseString', 'isUppercaseString', 'isClassString', 'isVoid',
+			'isConstantValue', 'isConstantScalarValue', 'getConstantScalarTypes', 'getConstantScalarValues', 'getFiniteTypes', 'isObject', 'isEnum', 'getArrays', 'getConstantArrays', 'getConstantStrings', 'getReferencedClasses', 'getObjectClassNames', 'getObjectClassReflections',
+			'getClassStringType', 'getClassStringObjectType', 'getObjectTypeOrClassStringObjectType', 'canAccessProperties', 'canCallMethods', 'canAccessConstants', 'isIterable', 'isIterableAtLeastOnce', 'getArraySize', 'getIterableKeyType', 'getFirstIterableKeyType', 'getLastIterableKeyType',
+			'getIterableValueType', 'getFirstIterableValueType', 'getLastIterableValueType', 'isArray', 'isConstantArray', 'isOversizedArray', 'isList', 'isOffsetAccessible', 'isOffsetAccessLegal', 'getKeysArray', 'getValuesArray', 'flipArray', 'popArray', 'shiftArray', 'shuffleArray',
+			'makeListMaybe', 'makeAllArrayKeysOptional', 'filterArrayRemovingFalsey', 'getEnumCases', 'getEnumCaseObject', 'isCallable', 'isCloneable', 'toPhpDocNode', 'getReferencedTemplateTypes', 'hasTemplateOrLateResolvableType'] as $method) {
+			if ($method === 'getReferencedTemplateTypes') {
+				foreach ([\PHPStan\Type\Generic\TemplateTypeVariance::createInvariant(), \PHPStan\Type\Generic\TemplateTypeVariance::createCovariant(), \PHPStan\Type\Generic\TemplateTypeVariance::createContravariant()] as $vi => $variance) {
+					$r["$name $method $vi"] = $view($subject->$method($variance));
+				}
+				continue;
+			}
+			$r["$name $method"] = $view($subject->$method());
+		}
+		foreach (['getSmallerType', 'getSmallerOrEqualType', 'getGreaterType', 'getGreaterOrEqualType'] as $method) {
+			$r["$name $method"] = $view($subject->$method($mixedPhpVersions[1]));
+		}
+		foreach ([\PHPStan\Type\GeneralizePrecision::lessSpecific(), \PHPStan\Type\GeneralizePrecision::moreSpecific(), \PHPStan\Type\GeneralizePrecision::templateArgument()] as $i => $precision) {
+			$r["$name generalize $i"] = $view($subject->generalize($precision));
+		}
+		$r["$name toCoercedArgumentType"] = [$view($subject->toCoercedArgumentType(true)), $view($subject->toCoercedArgumentType(false))];
+		$r["$name traverse identity"] = $subject->traverse(static fn ($t) => $t) === $subject;
+		$r["$name traverse replaced"] = $view($subject->traverse(static fn ($t) => new \PHPStan\Type\ObjectType(\stdClass::class)));
+		$r["$name getTemplateType"] = $view($subject->getTemplateType('Foo', 'T'));
+		$r["$name hasProperty"] = $view($subject->hasProperty('x'));
+		$r["$name hasInstanceProperty"] = $view($subject->hasInstanceProperty('x'));
+		$r["$name hasStaticProperty"] = $view($subject->hasStaticProperty('x'));
+		$r["$name hasMethod"] = $view($subject->hasMethod('x'));
+		$r["$name hasConstant"] = $view($subject->hasConstant('X'));
+		$r["$name setOffsetValueType null"] = [$view($subject->setOffsetValueType(null, $others['int1'])), $view($subject->setOffsetValueType(null, $others['int1'], false))];
+		$r["$name mapValueType"] = [$view($subject->mapValueType(static fn ($t) => $t)), $view($subject->mapValueType(static fn ($t) => new \PHPStan\Type\ObjectType(\stdClass::class)))];
+		$r["$name mapKeyType"] = [$view($subject->mapKeyType(static fn ($t) => $t)), $view($subject->mapKeyType(static fn ($t) => new \PHPStan\Type\IntegerType()))];
+		$r["$name changeKeyCaseArray"] = [$view($subject->changeKeyCaseArray(null)), $view($subject->changeKeyCaseArray(CASE_LOWER))];
+		$r["$name reverseArray"] = $view($subject->reverseArray(\PHPStan\TrinaryLogic::createYes()));
+		$r["$name toClassConstantType"] = $view($subject->toClassConstantType($stringReflectionProvider));
+		foreach (['getProperty', 'getInstanceProperty', 'getStaticProperty', 'getMethod', 'getConstant'] as $method) {
+			try {
+				$args = $method === 'getConstant' ? ['x'] : ['x', $outOfClassScope];
+				$member = $subject->$method(...$args);
+				$r["$name $method"] = [get_class($member), $member->getName(), $member->getDeclaringClass()->getName()];
+			} catch (\PHPStan\ShouldNotHappenException $e) {
+				$r["$name $method"] = 'ShouldNotHappenException';
+			}
+		}
+		foreach (['getUnresolvedPropertyPrototype', 'getUnresolvedInstancePropertyPrototype', 'getUnresolvedStaticPropertyPrototype', 'getUnresolvedMethodPrototype'] as $method) {
+			try {
+				$prototype = $subject->$method('x', $outOfClassScope);
+				$transformed = $method === 'getUnresolvedMethodPrototype' ? $prototype->getTransformedMethod() : $prototype->getTransformedProperty();
+				$naive = $method === 'getUnresolvedMethodPrototype' ? $prototype->getNakedMethod() : $prototype->getNakedProperty();
+				$withStatic = $prototype->doNotResolveTemplateTypeMapToBounds();
+				$r["$name $method"] = [get_class($prototype), get_class($transformed), $transformed->getName(), get_class($naive), get_class($withStatic)];
+			} catch (\PHPStan\ShouldNotHappenException $e) {
+				$r["$name $method"] = 'ShouldNotHappenException';
+			}
+		}
+		try {
+			$acceptors = $subject->getCallableParametersAcceptors($outOfClassScope);
+			$r["$name getCallableParametersAcceptors"] = array_map(static fn ($acceptor) => [get_class($acceptor), $acceptor->getReturnType()->describe(\PHPStan\Type\VerbosityLevel::precise()), count($acceptor->getParameters())], $acceptors);
+		} catch (\PHPStan\ShouldNotHappenException $e) {
+			$r["$name getCallableParametersAcceptors"] = 'ShouldNotHappenException';
+		}
+		if ($subject instanceof $neverClass) {
+			$r["$name isExplicit/getReason"] = [$subject->isExplicit(), $subject->getReason()];
+		}
+		if ($subject instanceof $mixedClass) {
+			$r["$name isExplicitMixed"] = $subject->isExplicitMixed();
+			$r["$name getSubtractedType"] = $view($subject->getSubtractedType());
+			$r["$name getTypeWithoutSubtractedType"] = $view($subject->getTypeWithoutSubtractedType());
+			$r["$name changeSubtractedType null"] = $view($subject->changeSubtractedType(null));
+			$r["$name describeSubtractedType null"] = $subject->describeSubtractedType(null, \PHPStan\Type\VerbosityLevel::precise());
+			$r["$name subtract own subtracted"] = $view($subject->subtract($subject->getSubtractedType() ?? new \PHPStan\Type\NullType()));
+		}
+		if ($subject instanceof \PHPStan\Type\ErrorType) {
+			$r["$name error getReason"] = $subject->getReason();
+		}
+	}
+	// the family through the compound types and the combinator, the way the
+	// analysis exercises it
+	foreach (['mixed', 'mixedExplicit', 'mixedMinusInt', 'mixedMinusNull', 'mixedExplicitMinusUnion', 'never', 'strictMixed', 'error'] as $name) {
+		$subject = $subjects[$name];
+		foreach (['int', 'null', 'union', 'unionNullable', 'mixed', 'never', 'array', 'object', 'string', 'callable'] as $otherName) {
+			$other = $others[$otherName];
+			$r["combinator union $name $otherName"] = $view(\PHPStan\Type\TypeCombinator::union($subject, $other));
+			$r["combinator intersect $name $otherName"] = $view(\PHPStan\Type\TypeCombinator::intersect($subject, $other));
+			$r["combinator remove $name $otherName"] = $view(\PHPStan\Type\TypeCombinator::remove($subject, $other));
+			$r["combinator remove-reverse $name $otherName"] = $view(\PHPStan\Type\TypeCombinator::remove($other, $subject));
+			$r["combinator removeNull $name"] = $view(\PHPStan\Type\TypeCombinator::removeNull($subject));
+			$r["combinator addNull $name"] = $view(\PHPStan\Type\TypeCombinator::addNull($subject));
+			$r["union isSuperTypeOf $name $otherName"] = $view($others['unionNullable']->isSuperTypeOf($subject));
+			$r["union accepts $name $otherName"] = $view($others['unionNullable']->accepts($subject, true));
+			$r["other isSuperTypeOf $name $otherName"] = $view($other->isSuperTypeOf($subject));
+			$r["other accepts $name $otherName"] = $view($other->accepts($subject, true));
+		}
+	}
+	$r['mixed equals mixed'] = [(new $mixedClass())->equals(new $mixedClass()), (new $mixedClass())->equals(new $mixedClass(true)), (new $mixedClass(false, new \PHPStan\Type\IntegerType()))->equals(new $mixedClass(false, new \PHPStan\Type\IntegerType())), (new $mixedClass(false, new \PHPStan\Type\IntegerType()))->equals(new $mixedClass(false, new \PHPStan\Type\StringType())), (new $mixedClass())->equals(new \PHPStan\Type\ErrorType()), (new \PHPStan\Type\ErrorType())->equals(new $mixedClass())];
+	$r['never equals never'] = [(new $neverClass())->equals(new $neverClass(true)), (new $neverClass())->equals(new \PHPStan\Type\NonAcceptingNeverType()), (new \PHPStan\Type\NonAcceptingNeverType())->equals(new $neverClass())];
+	// the constructor by named arguments
+	$r['mixed named subtractedType'] = $view(new $mixedClass(subtractedType: new \PHPStan\Type\NullType()));
+	$r['never named reason'] = (new $neverClass(reason: 'named'))->getReason();
+	// an uninitialized instance: every typed-slot read raises the same Error
+	foreach ([$neverClass, $mixedClass] as $uninitializedClass) {
+		$uninitialized = (new \ReflectionClass($uninitializedClass))->newInstanceWithoutConstructor();
+		foreach (['describe' => [\PHPStan\Type\VerbosityLevel::precise()], 'describeTypeOnly' => [\PHPStan\Type\VerbosityLevel::typeOnly()], 'isSuperTypeOf' => [$others['int']], 'equals' => [$uninitialized], 'isNull' => [], 'toBoolean' => [], 'subtract' => [$others['int']], 'getSubtractedType' => [], 'isExplicitMixed' => [], 'isExplicit' => [], 'getReason' => [], 'toPhpDocNode' => []] as $method => $args) {
+			$realMethod = $method === 'describeTypeOnly' ? 'describe' : $method;
+			if (!method_exists($uninitialized, $realMethod)) {
+				continue;
+			}
+			try {
+				$r["uninitialized $uninitializedClass $method"] = $view($uninitialized->$realMethod(...$args));
+			} catch (\Error $e) {
+				$r["uninitialized $uninitializedClass $method"] = [get_class($e), $e->getMessage()];
+			}
+		}
+	}
+	// a PHP subclass overriding what the natives call through $this
+	$anonymousMixed = new class (false, new \PHPStan\Type\IntegerType()) extends \PHPStan\Type\MixedType {
+
+		public function isArray(): \PHPStan\TrinaryLogic
+		{
+			return \PHPStan\TrinaryLogic::createNo();
+		}
+
+		public function isObject(): \PHPStan\TrinaryLogic
+		{
+			return \PHPStan\TrinaryLogic::createYes();
+		}
+
+		public function getClassStringType(): \PHPStan\Type\Type
+		{
+			return new \PHPStan\Type\Constant\ConstantStringType('overridden');
+		}
+
+		public function describeSubtractedType(?\PHPStan\Type\Type $subtractedType, \PHPStan\Type\VerbosityLevel $level): string
+		{
+			return '<overridden>';
+		}
+
+		public function isSuperTypeOf(\PHPStan\Type\Type $type): \PHPStan\Type\IsSuperTypeOfResult
+		{
+			return \PHPStan\Type\IsSuperTypeOfResult::createNo(['anonymous']);
+		}
+
+	};
+	$r['anonymous mixed describe'] = [$anonymousMixed->describe(\PHPStan\Type\VerbosityLevel::precise()), $anonymousMixed->describe(\PHPStan\Type\VerbosityLevel::cache())];
+	$r['anonymous mixed getKeysArray'] = $view($anonymousMixed->getKeysArray());
+	$r['anonymous mixed toGetClassResultType'] = $view($anonymousMixed->toGetClassResultType());
+	$r['anonymous mixed isConstantArray'] = $view($anonymousMixed->isConstantArray());
+	$r['anonymous mixed tryRemove'] = $view($anonymousMixed->tryRemove($others['int']));
+	$r['anonymous mixed isAcceptedBy'] = $view($anonymousMixed->isAcceptedBy($others['int'], true));
+	$r['anonymous mixed getObjectTypeOrClassStringObjectType'] = $view($anonymousMixed->getObjectTypeOrClassStringObjectType());
+	$r['anonymous mixed equals'] = [$anonymousMixed->equals(new $mixedClass(false, new \PHPStan\Type\IntegerType())), (new $mixedClass(false, new \PHPStan\Type\IntegerType()))->equals($anonymousMixed)];
+	$r['mixed isSuperTypeOf anonymous'] = $view($subjects['mixedMinusInt']->isSuperTypeOf($anonymousMixed));
+	$r['mixed isSubTypeOf anonymous'] = $view($subjects['mixedMinusInt']->isSubTypeOf($anonymousMixed));
+	$anonymousNever = new class extends \PHPStan\Type\NeverType {
+
+		public function isSubTypeOf(\PHPStan\Type\Type $otherType): \PHPStan\Type\IsSuperTypeOfResult
+		{
+			return \PHPStan\Type\IsSuperTypeOfResult::createMaybe();
+		}
+
+		public function getKeysArray(): \PHPStan\Type\Type
+		{
+			return new \PHPStan\Type\IntegerType();
+		}
+
+	};
+	$r['anonymous never isAcceptedBy'] = $view($anonymousNever->isAcceptedBy($others['int'], true));
+	$r['anonymous never getKeysArrayFiltered'] = $view($anonymousNever->getKeysArrayFiltered($others['int'], \PHPStan\TrinaryLogic::createYes()));
+	$r['anonymous never isExplicit'] = $anonymousNever->isExplicit();
+	foreach ($r as $key => $value) {
+		$observations["mixed $key"] = $value;
+	}
+}
+
 
 // observations holding bytes that are not UTF-8 (the invalid-UTF-8 subject's
 // descriptions) go out base64-encoded so json_encode() keeps every byte; the

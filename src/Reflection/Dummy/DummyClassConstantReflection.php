@@ -9,11 +9,13 @@ use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use stdClass;
 use function sprintf;
 
+#[ReferencedByTurboExtension(key: 'dummyClassConstantReflection')]
 final class DummyClassConstantReflection implements ClassConstantReflection
 {
 

@@ -174,9 +174,7 @@ public:
 			zval *ownType = this->type();
 			if (UNEXPECTED(ownType == NULL)) return zv::Val();
 			zv::Val genericType = zv::Val::copyOf(zv::Ref(ownType));
-			bool isMixed;
-			if (UNEXPECTED(!pt_type_instanceof(genericType.raw(), PT_CLASS_MIXED_TYPE, isMixed))) return zv::Val();
-			if (isMixed) return pt_type_is_super_type_of_result(PT_TRI_YES);
+			if (zv::Ref(genericType.raw()).instanceOf(pt_ce_mixed_type)) return pt_type_is_super_type_of_result(PT_TRI_YES);
 
 			bool isStatic;
 			if (UNEXPECTED(!pt_type_instanceof(genericType.raw(), PT_CLASS_STATIC_TYPE, isStatic))) return zv::Val();
@@ -396,7 +394,7 @@ public:
 						if (UNEXPECTED(classReflection.isUndef())) return zv::Val();
 						zv::Val isFinal = pt_type_call(Z_OBJ_P(classReflection.raw()), PT_LC("isfinal"), 0, NULL);
 						if (UNEXPECTED(isFinal.isUndef())) return zv::Val();
-						if (zend_is_true(isFinal.raw()) && zend_is_identical(classNameZv, removedValue.raw())) return pt_type_new(PT_CLASS_NEVER_TYPE, 0, NULL);
+						if (zend_is_true(isFinal.raw()) && zend_is_identical(classNameZv, removedValue.raw())) return pt_type_new_never_type();
 
 						zv::Val allowedSubTypes = pt_type_call(Z_OBJ_P(classReflection.raw()), PT_LC("getallowedsubtypes"), 0, NULL);
 						if (UNEXPECTED(allowedSubTypes.isUndef())) return zv::Val();
@@ -406,9 +404,7 @@ public:
 							zv::Args args{generic.raw(), objectTypeToRemove.raw()};
 							zv::Val remainingType = pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("remove"), 2, args);
 							if (UNEXPECTED(remainingType.isUndef())) return zv::Val();
-							bool isNever;
-							if (UNEXPECTED(!pt_type_instanceof(remainingType.raw(), PT_CLASS_NEVER_TYPE, isNever))) return zv::Val();
-							if (isNever) return pt_type_new(PT_CLASS_NEVER_TYPE, 0, NULL);
+							if (zv::Ref(remainingType.raw()).instanceOf(pt_ce_never_type)) return pt_type_new_never_type();
 
 							zv::Val equal = pt_type_call(Z_OBJ_P(remainingType.raw()), PT_LC("equals"), 1, generic.raw());
 							if (UNEXPECTED(equal.isUndef())) return zv::Val();
@@ -429,9 +425,7 @@ public:
 							zv::Args args{generic.raw(), objectTypeToRemove.raw()};
 							zv::Val remainingType = pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("remove"), 2, args);
 							if (UNEXPECTED(remainingType.isUndef())) return zv::Val();
-							bool isNever;
-							if (UNEXPECTED(!pt_type_instanceof(remainingType.raw(), PT_CLASS_NEVER_TYPE, isNever))) return zv::Val();
-							if (isNever) return pt_type_new(PT_CLASS_NEVER_TYPE, 0, NULL);
+							if (zv::Ref(remainingType.raw()).instanceOf(pt_ce_never_type)) return pt_type_new_never_type();
 
 							return create(remainingType.raw());
 						}

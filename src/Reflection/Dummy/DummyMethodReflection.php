@@ -11,9 +11,11 @@ use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Type;
 use stdClass;
 
+#[ReferencedByTurboExtension(key: 'dummyMethodReflection')]
 final class DummyMethodReflection implements ExtendedMethodReflection
 {
 

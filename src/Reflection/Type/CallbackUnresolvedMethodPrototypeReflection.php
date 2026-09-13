@@ -10,11 +10,13 @@ use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\Php\ExtendedDummyParameter;
 use PHPStan\Reflection\ResolvedMethodReflection;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_map;
 
+#[ReferencedByTurboExtension(key: 'callbackUnresolvedMethodPrototypeReflection')]
 final class CallbackUnresolvedMethodPrototypeReflection implements UnresolvedMethodPrototypeReflection
 {
 

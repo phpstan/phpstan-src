@@ -300,9 +300,7 @@ public:
 		if (instanceof_function(typeCe, pt_ce_generic_class_string_type)) {
 			zv::Val genericType = pt_type_call(Z_OBJ_P(type), PT_LC("getgenerictype"), 0, NULL);
 			if (UNEXPECTED(genericType.isUndef())) return zv::Val();
-			bool isMixed;
-			if (UNEXPECTED(!pt_type_instanceof(genericType.raw(), PT_CLASS_MIXED_TYPE, isMixed))) return zv::Val();
-			if (isMixed) return pt_type_is_super_type_of_result(PT_TRI_MAYBE);
+			if (zv::Ref(genericType.raw()).instanceOf(pt_ce_mixed_type)) return pt_type_is_super_type_of_result(PT_TRI_MAYBE);
 			bool isStatic;
 			if (UNEXPECTED(!pt_type_instanceof(genericType.raw(), PT_CLASS_STATIC_TYPE, isStatic))) return zv::Val();
 			if (isStatic) {
@@ -617,7 +615,7 @@ public:
 				}
 
 				if (isSameClass) {
-					zv::Val never = pt_type_new(PT_CLASS_NEVER_TYPE, 0, NULL);
+					zv::Val never = pt_type_new_never_type();
 					if (UNEXPECTED(never.isUndef())) return zv::Val();
 					return classNameToObjectTypeResult(never.raw(), false);
 				}

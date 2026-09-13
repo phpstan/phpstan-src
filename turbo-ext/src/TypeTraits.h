@@ -46,6 +46,7 @@ inline constexpr const char *generalizePrecision = "PHPStan\\Type\\GeneralizePre
 inline constexpr const char *classMemberAccessAnswerer = "PHPStan\\Reflection\\ClassMemberAccessAnswerer";
 inline constexpr const char *reflectionProvider = "PHPStan\\Reflection\\ReflectionProvider";
 inline constexpr const char *templateTypeVariance = "PHPStan\\Type\\Generic\\TemplateTypeVariance";
+inline constexpr const char *mixedType = "PHPStan\\Type\\MixedType";
 
 } // namespace ptcls
 
@@ -269,6 +270,49 @@ void pt_type_trait_constant_numeric_comparison(reg::Class &cls);
 void pt_type_trait_falsey_boolean(reg::Class &cls);
 /* src/Type/Traits/NonRemoveableTypeTrait.php */
 void pt_type_trait_non_removeable(reg::Class &cls);
+/* src/Type/Traits/UndecidedComparisonCompoundTypeTrait.php — only what the
+ * trait declares itself; the UndecidedComparisonTypeTrait it uses is run
+ * separately, as the twin's `use` chain resolves it */
+void pt_type_trait_undecided_comparison_compound(reg::Class &cls);
+/* src/Type/Traits/SubstractableTypeTrait.php */
+void pt_type_trait_substractable(reg::Class &cls);
+
+/* }}} */
+
+/* {{{ helpers of the never/mixed family (NeverType.cpp, MixedType.cpp,
+ * StrictMixedType.cpp) */
+
+/* new NeverType(); UNDEF = pending exception */
+zv::Val pt_type_new_never_type();
+
+/* Class::method(...$args) on a class entry the native code holds (a
+ * shadowed result class); UNDEF = pending exception */
+zv::Val pt_type_call_static_ce(zend_class_entry *ce, const char *lcname, size_t len, uint32_t argc, zval *argv);
+
+/* which of $level->handle()'s callbacks a VerbosityLevel selects: the
+ * type-only, value or precise one, or the fourth (the cache level — any
+ * other value falls there too, as handle() does); false = pending
+ * exception */
+enum pt_verbosity_case
+{
+	PT_VERBOSITY_TYPE_ONLY,
+	PT_VERBOSITY_VALUE,
+	PT_VERBOSITY_PRECISE,
+	PT_VERBOSITY_CACHE,
+};
+bool pt_type_verbosity_case(zval *level, pt_verbosity_case &out);
+
+/* the body of SubstractableTypeTrait::describeSubtractedType(): the handler
+ * the registrar declares (the fast-path identity for a $this-call), and the
+ * implementation taking the ?Type as a zval (IS_NULL for null); an owned
+ * string, UNDEF = pending exception */
+void ZEND_FASTCALL pt_type_trait_substractable_describe_subtracted_type(INTERNAL_FUNCTION_PARAMETERS);
+zv::Val pt_type_describe_subtracted_type(zval *subtractedType, zval *level);
+
+/* JustNullableTypeTrait's identity traverse() handler, for a class whose own
+ * traverse() returns $this — registering it under that handler lets
+ * NonGeneralizableTypeTrait's generalize() take its no-callback fast path */
+zif_handler pt_type_identity_traverse_handler();
 
 /* }}} */
 

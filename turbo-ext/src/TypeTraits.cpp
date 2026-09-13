@@ -25,6 +25,8 @@
 #include "generated/ConstantNumericComparisonTypeTrait.h"
 #include "generated/FalseyBooleanTypeTrait.h"
 #include "generated/NonRemoveableTypeTrait.h"
+#include "generated/UndecidedComparisonCompoundTypeTrait.h"
+#include "generated/SubstractableTypeTrait.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpragmas"
@@ -167,20 +169,21 @@ zv::Val pt_type_new_error_type()
 
 zv::Val pt_type_new_mixed_type()
 {
-	return pt_type_new(PT_CLASS_MIXED_TYPE, 0, NULL);
+	zval result;
+	if (UNEXPECTED(!pt_mixed_type_new(&result))) return zv::Val();
+	return zv::Val::adopt(result);
 }
 
 zv::Val pt_type_new_mixed_type_without_null()
 {
 	/* new MixedType(subtractedType: new NullType()) — the named argument
-	 * skips $isExplicitMixed, whose default is false; the shadowing NullType */
-	zval nullType;
-	if (UNEXPECTED(!pt_null_type_new(&nullType))) return zv::Val();
-	zv::Val nullTypeVal = zv::Val::adopt(nullType);
-	zval args[2];
-	ZVAL_FALSE(&args[0]);
-	ZVAL_COPY_VALUE(&args[1], nullTypeVal.raw());
-	return pt_type_new(PT_CLASS_MIXED_TYPE, 2, args);
+	 * skips $isExplicitMixed, whose default is false */
+	zval nullRaw;
+	if (UNEXPECTED(!pt_null_type_new(&nullRaw))) return zv::Val();
+	zv::Val nullType = zv::Val::adopt(nullRaw);
+	zval result;
+	if (UNEXPECTED(!pt_mixed_type_new(&result, false, nullType.raw()))) return zv::Val();
+	return zv::Val::adopt(result);
 }
 
 zv::Val pt_type_new_constant_integer(zend_long value)
@@ -1255,6 +1258,185 @@ void pt_type_trait_non_removeable(reg::Class &cls)
 		PT_ARGS(1, 1);
 		RETURN_NULL();
 	});
+}
+
+/* }}} */
+
+/* {{{ UndecidedComparisonCompoundTypeTrait (its own two methods; the
+ * UndecidedComparisonTypeTrait it uses is registered separately) */
+
+void pt_type_trait_undecided_comparison_compound(reg::Class &cls)
+{
+	namespace sigs = ptdecl::UndecidedComparisonCompoundTypeTrait::sig;
+	cls.traitMethod(sigs::isGreaterThan, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *otherType, *phpVersion;
+		if (!zp::parse<zp::Obj, zp::Zval>(execute_data, otherType, phpVersion)) RETURN_THROWS();
+		/* $otherType->isNull()->yes() && $this->isObject()->yes() —
+		 * short-circuiting like the twin */
+		zend_long otherIsNull = pt_type_call_trinary(Z_OBJ_P(otherType), PT_LC("isnull"), 0, NULL);
+		if (UNEXPECTED(otherIsNull < 0)) RETURN_THROWS();
+		if (otherIsNull == PT_TRI_YES) {
+			bool isObject;
+			if (UNEXPECTED(!pt_this_is_object(PT_THIS_OBJ, isObject))) RETURN_THROWS();
+			if (isObject) {
+				PT_RETURN_TRINARY(PT_TRI_YES);
+			}
+		}
+		PT_RETURN_TRINARY(PT_TRI_MAYBE);
+	});
+
+	cls.traitMethod(sigs::isGreaterThanOrEqual, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *otherType, *phpVersion;
+		if (!zp::parse<zp::Obj, zp::Zval>(execute_data, otherType, phpVersion)) RETURN_THROWS();
+		zend_long otherIsNull = pt_type_call_trinary(Z_OBJ_P(otherType), PT_LC("isnull"), 0, NULL);
+		if (UNEXPECTED(otherIsNull < 0)) RETURN_THROWS();
+		if (otherIsNull == PT_TRI_YES) {
+			PT_RETURN_TRINARY(PT_TRI_YES);
+		}
+		PT_RETURN_TRINARY(PT_TRI_MAYBE);
+	});
+}
+
+/* }}} */
+
+/* {{{ SubstractableTypeTrait */
+
+zv::Val pt_type_describe_subtracted_type(zval *subtractedType, zval *level)
+{
+	if (Z_TYPE_P(subtractedType) == IS_NULL) return zv::Val::string("", 0);
+	if (UNEXPECTED(Z_TYPE_P(subtractedType) != IS_OBJECT)) {
+		zend_type_error("phpstan_turbo: describeSubtractedType(): Argument #1 ($subtractedType) must be of type ?%s, %s given", ptcls::type, zend_zval_value_name(subtractedType));
+		return zv::Val();
+	}
+
+	/* $subtractedType instanceof UnionType
+	 * || ($subtractedType instanceof SubtractableType && $subtractedType->getSubtractedType() !== null) */
+	bool wrap;
+	if (UNEXPECTED(!pt_type_instanceof(subtractedType, PT_CLASS_UNION_TYPE, wrap))) return zv::Val();
+	if (!wrap) {
+		bool subtractable;
+		if (UNEXPECTED(!pt_type_instanceof(subtractedType, PT_CLASS_SUBTRACTABLE_TYPE, subtractable))) return zv::Val();
+		if (subtractable) {
+			zv::Val inner = pt_type_call(Z_OBJ_P(subtractedType), PT_LC("getsubtractedtype"), 0, NULL);
+			if (UNEXPECTED(inner.isUndef())) return zv::Val();
+			wrap = !inner.isNull();
+		}
+	}
+
+	zv::Val description = pt_type_call(Z_OBJ_P(subtractedType), PT_LC("describe"), 1, level);
+	if (UNEXPECTED(description.isUndef())) return zv::Val();
+	if (UNEXPECTED(!zv::Ref(description.raw()).isString())) {
+		zend_type_error("phpstan_turbo: %s::describe() must return string", ZSTR_VAL(Z_OBJCE_P(subtractedType)->name));
+		return zv::Val();
+	}
+	zend_string *inner = zv::Ref(description.raw()).asString();
+	smart_str str = {NULL, 0};
+	if (wrap) {
+		smart_str_appendl(&str, "~(", 2);
+		smart_str_append(&str, inner);
+		smart_str_appendc(&str, ')');
+	} else {
+		smart_str_appendc(&str, '~');
+		smart_str_append(&str, inner);
+	}
+	smart_str_0(&str);
+	return zv::Val::adoptString(str.s);
+}
+
+void ZEND_FASTCALL pt_type_trait_substractable_describe_subtracted_type(INTERNAL_FUNCTION_PARAMETERS)
+{
+	zval *subtractedType, *level;
+	if (!zp::parse<zp::ObjOrNull, zp::Obj>(execute_data, subtractedType, level)) RETURN_THROWS();
+	zval nullZv;
+	if (subtractedType == NULL) {
+		ZVAL_NULL(&nullZv);
+		subtractedType = &nullZv;
+	}
+	PT_RETURN_VAL(pt_type_describe_subtracted_type(subtractedType, level));
+}
+
+void pt_type_trait_substractable(reg::Class &cls)
+{
+	namespace sigs = ptdecl::SubstractableTypeTrait::sig;
+	cls.traitMethod(sigs::describeSubtractedType, pt_type_trait_substractable_describe_subtracted_type);
+}
+
+/* }}} */
+
+/* {{{ helpers of the never/mixed family */
+
+zv::Val pt_type_new_never_type()
+{
+	zval result;
+	if (UNEXPECTED(!pt_never_type_new(&result))) return zv::Val();
+	return zv::Val::adopt(result);
+}
+
+zv::Val pt_type_call_static_ce(zend_class_entry *ce, const char *lcname, size_t len, uint32_t argc, zval *argv)
+{
+	zend_function *fn = pt_find_method(ce, lcname, len);
+	if (UNEXPECTED(fn == NULL)) return zv::Val();
+	return pt_type_call_fn(fn, NULL, ce, argc, argv);
+}
+
+/* VerbosityLevel's private level constants, read once from the class (the
+ * cache is keyed on the class entry: a later request declares a new one) */
+static zend_class_entry *pt_verbosity_case_ce = nullptr;
+static zend_long pt_verbosity_case_type_only = 0;
+static zend_long pt_verbosity_case_value = 0;
+static zend_long pt_verbosity_case_precise = 0;
+
+/* Class::NAME — a literal class constant, borrowed; NULL = pending
+ * exception */
+static zval *pt_verbosity_constant(zend_class_entry *ce, const char *name, size_t len)
+{
+	zend_class_constant *constant = (zend_class_constant *) zend_hash_str_find_ptr(&ce->constants_table, name, len);
+	if (UNEXPECTED(constant == NULL)) {
+		zend_throw_error(NULL, "phpstan_turbo: %s::%s not found", ZSTR_VAL(ce->name), name);
+		return NULL;
+	}
+	if (UNEXPECTED(Z_TYPE(constant->value) == IS_CONSTANT_AST && zval_update_constant_ex(&constant->value, ce) != SUCCESS)) return NULL;
+	return &constant->value;
+}
+
+bool pt_type_verbosity_case(zval *level, pt_verbosity_case &out)
+{
+	zv::Val levelValueZv = pt_type_call(Z_OBJ_P(level), PT_LC("getlevelvalue"), 0, NULL);
+	if (UNEXPECTED(levelValueZv.isUndef())) return false;
+	if (UNEXPECTED(!zv::Ref(levelValueZv.raw()).isLong())) {
+		zend_type_error("phpstan_turbo: %s::getLevelValue() must return int", ZSTR_VAL(Z_OBJCE_P(level)->name));
+		return false;
+	}
+	zend_long levelValue = zv::Ref(levelValueZv.raw()).asLong();
+
+	zend_class_entry *ce = pt_class(PT_CLASS_VERBOSITY_LEVEL);
+	if (UNEXPECTED(ce == NULL)) return false;
+	if (UNEXPECTED(ce != pt_verbosity_case_ce)) {
+		zval *typeOnly = pt_verbosity_constant(ce, PT_LC("TYPE_ONLY"));
+		zval *value = typeOnly != NULL ? pt_verbosity_constant(ce, PT_LC("VALUE")) : NULL;
+		zval *precise = value != NULL ? pt_verbosity_constant(ce, PT_LC("PRECISE")) : NULL;
+		if (UNEXPECTED(precise == NULL)) return false;
+		pt_verbosity_case_type_only = zval_get_long(typeOnly);
+		pt_verbosity_case_value = zval_get_long(value);
+		pt_verbosity_case_precise = zval_get_long(precise);
+		pt_verbosity_case_ce = ce;
+	}
+
+	if (levelValue == pt_verbosity_case_type_only) {
+		out = PT_VERBOSITY_TYPE_ONLY;
+	} else if (levelValue == pt_verbosity_case_value) {
+		out = PT_VERBOSITY_VALUE;
+	} else if (levelValue == pt_verbosity_case_precise) {
+		out = PT_VERBOSITY_PRECISE;
+	} else {
+		out = PT_VERBOSITY_CACHE;
+	}
+	return true;
+}
+
+zif_handler pt_type_identity_traverse_handler()
+{
+	return identityTraverse;
 }
 
 /* }}} */

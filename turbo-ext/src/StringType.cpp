@@ -73,9 +73,7 @@ public:
 
 		zend_long isInteger = pt_type_call_trinary(Z_OBJ_P(offsetType), PT_LC("isinteger"), 0, NULL);
 		if (UNEXPECTED(isInteger < 0)) return zv::Val();
-		bool isMixed = false;
-		if (isInteger != PT_TRI_YES && UNEXPECTED(!pt_type_instanceof(offsetType, PT_CLASS_MIXED_TYPE, isMixed))) return zv::Val();
-		if (isInteger == PT_TRI_YES || isMixed) return nonEmptyString();
+		if (isInteger == PT_TRI_YES || instanceof_function(Z_OBJCE_P(offsetType), pt_ce_mixed_type)) return nonEmptyString();
 
 		return pt_type_new_error_type();
 	}

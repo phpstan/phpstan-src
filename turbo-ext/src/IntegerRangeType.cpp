@@ -1212,7 +1212,7 @@ private:
 		return pt_type_new(PT_CLASS_CONST_TYPE_NODE, 1, constExpr.raw());
 	}
 
-	static zv::Val never() { return pt_type_new(PT_CLASS_NEVER_TYPE, 0, NULL); }
+	static zv::Val never() { return pt_type_new_never_type(); }
 
 	static zv::Val integer()
 	{

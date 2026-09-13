@@ -82,7 +82,7 @@ public:
 		bool v = false;
 		if (UNEXPECTED(!value(v))) return zv::Val();
 		if (v) return falsey();
-		return pt_type_new(PT_CLASS_NEVER_TYPE, 0, NULL);
+		return pt_type_new_never_type();
 	}
 
 	/* new MixedType() for true, StaticTypeFactory::falsey() for false */
@@ -99,7 +99,7 @@ public:
 	{
 		bool v = false;
 		if (UNEXPECTED(!value(v))) return zv::Val();
-		if (v) return pt_type_new(PT_CLASS_NEVER_TYPE, 0, NULL);
+		if (v) return pt_type_new_never_type();
 		return truthy();
 	}
 

@@ -200,7 +200,7 @@ public:
 		}
 		if (!lowerPart.isUndef()) return lowerPart;
 		if (!upperPart.isUndef()) return upperPart;
-		return pt_type_new(PT_CLASS_NEVER_TYPE, 0, NULL);
+		return pt_type_new_never_type();
 	}
 
 	static zv::Val getFiniteTypes() { return zv::Val(zv::Arr::empty()); }

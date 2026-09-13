@@ -271,7 +271,7 @@ public:
 	}
 
 	/* new NeverType() */
-	static zv::Val getSmallerType() { return pt_type_new(PT_CLASS_NEVER_TYPE, 0, NULL); }
+	static zv::Val getSmallerType() { return pt_type_new_never_type(); }
 
 	/* all falsey types except '0': new UnionType([new NullType(), new
 	 * ConstantBooleanType(false), new ConstantIntegerType(0), new
@@ -293,10 +293,9 @@ public:
 		if (UNEXPECTED(types.isUndef())) return zv::Val();
 		zv::Val unionType = pt_type_new_union(std::move(types));
 		if (UNEXPECTED(unionType.isUndef())) return zv::Val();
-		zval args[2];
-		ZVAL_FALSE(&args[0]);
-		ZVAL_COPY_VALUE(&args[1], unionType.raw());
-		return pt_type_new(PT_CLASS_MIXED_TYPE, 2, args);
+		zval raw;
+		if (UNEXPECTED(!pt_mixed_type_new(&raw, false, unionType.raw()))) return zv::Val();
+		return zv::Val::adopt(raw);
 	}
 
 	/* new MixedType() */

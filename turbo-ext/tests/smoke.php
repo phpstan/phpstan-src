@@ -825,6 +825,9 @@ $covered[\PHPStan\Type\FloatType::class] = true;
 $covered[\PHPStan\Type\Constant\ConstantFloatType::class] = true;
 $covered[\PHPStan\Type\NullType::class] = true;
 $covered[\PHPStan\Type\VoidType::class] = true;
+$covered[\PHPStan\Type\NeverType::class] = true;
+$covered[\PHPStan\Type\MixedType::class] = true;
+$covered[\PHPStan\Type\StrictMixedType::class] = true;
 
 /** @return array<string, mixed> */
 function observeTypeFamily(string $mode): array
@@ -877,7 +880,7 @@ function observeTypeFamily(string $mode): array
 
 $typeFamilyPhp = observeTypeFamily('php');
 $typeFamilyNative = observeTypeFamily('native');
-foreach ([\PHPStan\Type\BooleanType::class, \PHPStan\Type\Constant\ConstantBooleanType::class, \PHPStan\Type\IntegerType::class, \PHPStan\Type\Constant\ConstantIntegerType::class, \PHPStan\Type\IntegerRangeType::class, \PHPStan\Type\StringType::class, \PHPStan\Type\Constant\ConstantStringType::class, \PHPStan\Type\ClassStringType::class, \PHPStan\Type\Generic\GenericClassStringType::class, \PHPStan\Type\FloatType::class, \PHPStan\Type\Constant\ConstantFloatType::class, \PHPStan\Type\NullType::class, \PHPStan\Type\VoidType::class] as $typeClass) {
+foreach ([\PHPStan\Type\BooleanType::class, \PHPStan\Type\Constant\ConstantBooleanType::class, \PHPStan\Type\IntegerType::class, \PHPStan\Type\Constant\ConstantIntegerType::class, \PHPStan\Type\IntegerRangeType::class, \PHPStan\Type\StringType::class, \PHPStan\Type\Constant\ConstantStringType::class, \PHPStan\Type\ClassStringType::class, \PHPStan\Type\Generic\GenericClassStringType::class, \PHPStan\Type\FloatType::class, \PHPStan\Type\Constant\ConstantFloatType::class, \PHPStan\Type\NullType::class, \PHPStan\Type\VoidType::class, \PHPStan\Type\NeverType::class, \PHPStan\Type\MixedType::class, \PHPStan\Type\StrictMixedType::class] as $typeClass) {
 	check(($typeFamilyPhp["native $typeClass"] ?? null) === false, "type-family.php php: $typeClass is the PHP twin");
 	check(($typeFamilyNative["native $typeClass"] ?? null) === true, "type-family.php native: $typeClass is the native class");
 	unset($typeFamilyPhp["native $typeClass"], $typeFamilyNative["native $typeClass"]);

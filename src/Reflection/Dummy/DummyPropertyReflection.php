@@ -8,10 +8,12 @@ use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use stdClass;
 
+#[ReferencedByTurboExtension(key: 'dummyPropertyReflection')]
 final class DummyPropertyReflection implements ExtendedPropertyReflection
 {
 

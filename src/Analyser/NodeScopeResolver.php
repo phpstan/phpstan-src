@@ -204,30 +204,6 @@ class NodeScopeResolver
 		}
 	}
 
-	/** The stored result an outside asker may consume. */
-	public function findSettledExpressionResult(ExpressionResultStorage $storage, Expr $expr): ?ExpressionResult
-	{
-		return $storage->findExpressionResult($expr);
-	}
-
-	/** An effect-free result carrying eagerly known types, positioned at the given scope. */
-	protected function createEagerExpressionResult(MutatingScope $scope, Expr $expr, Type $type, Type $nativeType): ExpressionResult
-	{
-		return $this->expressionResultFactory->create(
-			$scope,
-			beforeScope: $scope,
-			expr: $expr,
-			hasYield: false,
-			isAlwaysTerminating: false,
-			throwPoints: [],
-			impurePoints: [],
-			typeCallback: null,
-			specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
-			type: $type,
-			nativeType: $nativeType,
-		);
-	}
-
 	public function storeExpressionResult(ExpressionResultStorage $storage, Expr $expr, ExpressionResult $expressionResult): void
 	{
 		if (self::$guardNewWorld) {
@@ -506,7 +482,20 @@ class NodeScopeResolver
 			ExprHandlerRegistry::resolve($expr, $this->container) === null
 			&& !($expr instanceof Expr\CallLike && $expr->isFirstClassCallable())
 		) {
-			return $this->createEagerExpressionResult($scope, $expr, new MixedType(), new MixedType());
+			$mixed = new MixedType();
+			return $this->expressionResultFactory->create(
+				$scope,
+				beforeScope: $scope,
+				expr: $expr,
+				hasYield: false,
+				isAlwaysTerminating: false,
+				throwPoints: [],
+				impurePoints: [],
+				typeCallback: null,
+				specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
+				type: $mixed,
+				nativeType: $mixed,
+			);
 		}
 
 		// save/restore, never reset: on-demand walks nest (a typeCallback
@@ -530,18 +519,6 @@ class NodeScopeResolver
 			$scope->popExpressionResultStorage();
 			$this->returnStoredExpressionResults = $previous;
 		}
-	}
-
-	/**
-	 * Processes an expression for an independent analysis pass - a reflection-
-	 * level lazy computation that builds its own scope from scratch (e.g.
-	 * private property type inference from constructor assignments). Such a
-	 * pass legitimately prices real AST nodes outside the file's main walk,
-	 * on a fresh storage of its own.
-	 */
-	public function processIndependentPassExpr(Expr $expr, MutatingScope $scope): ExpressionResult
-	{
-		return $this->processExprOnDemand($expr, $scope, new ExpressionResultStorage());
 	}
 
 	/**

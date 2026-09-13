@@ -1,0 +1,10 @@
+{
+	"autoload": {
+		"psr-4": {
+			"Bug15184\\": "src/"
+		},
+		"files": [
+			"src/Type/optional.php"
+		]
+	}
+}

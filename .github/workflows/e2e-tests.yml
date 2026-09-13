@@ -255,6 +255,14 @@ jobs:
               composer install
               ../../bin/phpstan analyze
           - script: |
+              cd e2e/bug-15184
+              composer install
+              # The crash needs OPcache: forked workers switch it off, the --debug main process and
+              # spawned workers (pcntl_fork disabled, as on Windows) keep it on.
+              php -r 'exit(extension_loaded("Zend OPcache") ? 0 : 1);'
+              ../../bin/phpstan analyze --debug
+              php -d disable_functions=pcntl_fork ../../bin/phpstan analyze
+          - script: |
               cd e2e/bug-14724
               composer install
               ../../bin/phpstan analyze app/

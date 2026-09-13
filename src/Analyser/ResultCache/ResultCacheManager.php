@@ -151,6 +151,11 @@ final class ResultCacheManager
 	/** @var array<string, true> */
 	private array $alreadyProcessed = [];
 
+	private bool $restoredCacheUnchanged = false;
+
+	/** @var array<string, string> */
+	private array $restoredStubFiles = [];
+
 	/**
 	 * @param string[] $analysedPaths
 	 * @param string[] $analysedPathsFromConfig
@@ -268,6 +273,9 @@ final class ResultCacheManager
 	 */
 	public function restore(array $allAnalysedFiles, bool $debug, bool $onlyFiles, ?array $projectConfigArray, Output $output): ResultCache
 	{
+		$this->restoredCacheUnchanged = false;
+		$this->restoredStubFiles = [];
+
 		$startTime = microtime(true);
 		$currentFileHashes = [];
 		foreach ($allAnalysedFiles as $analysedFile) {
@@ -384,7 +392,8 @@ final class ResultCacheManager
 		// make anything be re-analysed. A scanned file can change without any of its symbols changing,
 		// and then nothing here has to happen at all.
 		$scannedFilesWithChangedSymbols = [];
-		if ($this->isMetaDifferent($data['meta'], $meta)) {
+		$metaDifferent = $this->isMetaDifferent($data['meta'], $meta);
+		if ($metaDifferent) {
 			$diffs = $this->getMetaKeyDifferences($data['meta'], $meta);
 
 			// Some metadata differences do not invalidate the whole analysis, because the code they
@@ -631,6 +640,7 @@ final class ResultCacheManager
 		$filteredCollectedData = [];
 		$filteredExportedNodes = [];
 		$newFileAppeared = false;
+		$dependencyFilesChanged = false;
 
 		foreach (array_keys($cachedStubFiles) as $stubFile) {
 			if (!array_key_exists($stubFile, $errors)) {
@@ -748,6 +758,7 @@ final class ResultCacheManager
 			}
 
 			if (is_file($notAnalysedFile) && $wasMissing) {
+				$dependencyFilesChanged = true;
 				// It exists now. Whether it holds any symbol is beside the point - a file that was named
 				// and was not there is now there, and that alone changes what the analysis says.
 				$invertedDependenciesToReturn[$notAnalysedFile] = $dependentFiles;
@@ -773,6 +784,7 @@ final class ResultCacheManager
 					continue;
 				}
 
+				$dependencyFilesChanged = true;
 				// Edited: the same rule as for an analysed file. Nothing the files depending on it can
 				// see changed unless its exported nodes did, so a body-only edit re-analyses nothing -
 				// except the classes using a trait declared here, whose body is analysed in their
@@ -810,6 +822,8 @@ final class ResultCacheManager
 				}
 
 				$dependentFiles = array_merge($dependentFiles, $usedTraitDependentFiles);
+			} else {
+				$dependencyFilesChanged = true;
 			}
 
 			foreach ($dependentFiles as $dependentFile) {
@@ -856,6 +870,9 @@ final class ResultCacheManager
 				$filesToAnalyseCount === 1 ? 'file' : 'files',
 			));
 		}
+
+		$this->restoredCacheUnchanged = !$metaDifferent && !$dependencyFilesChanged;
+		$this->restoredStubFiles = $cachedStubFiles;
 
 		return new ResultCache(
 			filesToAnalyse: $filesToAnalyse,
@@ -1059,7 +1076,29 @@ final class ResultCacheManager
 				}
 			}
 
-			$this->save($resultCache->getLastFullAnalysisTime(), $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $packageDependencies, $exportedNodes, $projectExtensionFiles, $resultCache->getCurrentFileHashes(), $meta);
+			$stubFiles = $this->getStubFiles();
+			if (
+				!$resultCache->isFullAnalysis()
+				&& $resultCache->getFilesToAnalyse() === []
+				&& $this->restoredCacheUnchanged
+				&& $errorsByFile === $resultCache->getErrors()
+				&& $locallyIgnoredErrorsByFile === $resultCache->getLocallyIgnoredErrors()
+				&& $linesToIgnore === $resultCache->getLinesToIgnore()
+				&& $unmatchedLineIgnores === $resultCache->getUnmatchedLineIgnores()
+				&& $collectedDataByFile === $resultCache->getCollectedData()
+				&& $packageDependencies === $resultCache->getPackageDependencies()
+				&& $exportedNodes === $resultCache->getExportedNodes()
+				&& $projectExtensionFiles === $resultCache->getProjectExtensionFiles()
+				&& $stubFiles === $this->restoredStubFiles
+			) {
+				if ($output->isVeryVerbose()) {
+					$output->writeLineFormatted('Result cache was not rewritten because it is unchanged.');
+				}
+
+				return true;
+			}
+
+			$this->save($resultCache->getLastFullAnalysisTime(), $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $packageDependencies, $exportedNodes, $projectExtensionFiles, $resultCache->getCurrentFileHashes(), $meta, $stubFiles);
 
 			if ($output->isVeryVerbose()) {
 				$output->writeLineFormatted('Result cache is saved.');
@@ -1385,6 +1424,7 @@ final class ResultCacheManager
 	 * @param array<string, array{string, bool, string}> $projectExtensionFiles
 	 * @param array<string, string> $currentFileHashes
 	 * @param mixed[] $meta
+	 * @param array<string, string> $stubFiles
 	 */
 	private function save(
 		int $lastFullAnalysisTime,
@@ -1400,6 +1440,7 @@ final class ResultCacheManager
 		array $projectExtensionFiles,
 		array $currentFileHashes,
 		array $meta,
+		array $stubFiles,
 	): void
 	{
 		$invertedDependencies = [];
@@ -1476,7 +1517,7 @@ final class ResultCacheManager
 		// The only point where the StubFilesExtensions may run: the analysis is over, bootstrapFiles
 		// have been executed, so the extensions can rely on them. restore() reads these hashes back
 		// instead of running the extensions again.
-		$meta['stubFiles'] = $this->getStubFiles();
+		$meta['stubFiles'] = $stubFiles;
 
 		// Store paths relative to the anchor so the cache survives a change of the project's absolute
 		// path prefix (a fresh CI checkout dir, a git worktree). projectConfig inside $meta is already a

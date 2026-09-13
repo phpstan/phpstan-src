@@ -10,12 +10,15 @@ use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use function array_map;
+use function clearstatcache;
 use function escapeshellarg;
 use function exec;
+use function filemtime;
 use function implode;
 use function md5;
 use function sprintf;
 use function sys_get_temp_dir;
+use function touch;
 use function uniqid;
 use const PHP_BINARY;
 
@@ -139,6 +142,33 @@ PHP);
 		$this->assertTrue($json['resultCacheUsed']);
 		$this->assertSame(2, $json['analysedFilesCount']);
 		$this->assertSame(1, $json['filesToAnalyseCount']);
+	}
+
+	public function testWarmAnalysisDoesNotRewriteUnchangedResultCache(): void
+	{
+		[$analyseOutput, $analyseExitCode] = $this->runPhpstan(['analyse', '--no-progress']);
+		$this->assertSame(0, $analyseExitCode, $analyseOutput);
+
+		$resultCachePath = $this->projectDir . '/tmp/resultCache.php';
+		$oldModificationTime = 946684800;
+		$this->assertTrue(touch($resultCachePath, $oldModificationTime));
+
+		[$warmOutput, $warmExitCode] = $this->runPhpstan(['analyse', '--no-progress', '-vvv']);
+		$this->assertSame(0, $warmExitCode, $warmOutput);
+		$this->assertStringContainsString('Result cache was not rewritten because it is unchanged.', $warmOutput);
+		clearstatcache(true, $resultCachePath);
+		$this->assertSame($oldModificationTime, filemtime($resultCachePath));
+
+		FileSystem::write(
+			$this->projectDir . '/src/Foo.php',
+			FileSystem::read($this->projectDir . '/src/Foo.php') . "\n",
+		);
+
+		[$changedOutput, $changedExitCode] = $this->runPhpstan(['analyse', '--no-progress', '-vvv']);
+		$this->assertSame(0, $changedExitCode, $changedOutput);
+		$this->assertStringContainsString('Result cache is saved.', $changedOutput);
+		clearstatcache(true, $resultCachePath);
+		$this->assertNotSame($oldModificationTime, filemtime($resultCachePath));
 	}
 
 	public function testChangedLevelInvalidatesResultCache(): void

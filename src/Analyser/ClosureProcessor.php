@@ -47,8 +47,21 @@ final class ClosureProcessor
 	public function __construct(
 		private Container $container,
 		private ExpressionResultFactory $expressionResultFactory,
+		private ClosureParameterResolver $closureParameterResolver,
+		private ClosureTypeResolver $closureTypeResolver,
 	)
 	{
+	}
+
+	/**
+	 * Looked up instead of injected: parameters walk their attributes, attribute
+	 * arguments are call arguments walked by ArgumentsHandler, and those walk
+	 * closure arguments through this class - a closure in an attribute argument
+	 * recurses back here, which constructor injection cannot express.
+	 */
+	private function getParametersProcessor(): ParametersProcessor
+	{
+		return $this->container->getByType(ParametersProcessor::class);
 	}
 
 	/**
@@ -84,12 +97,12 @@ final class ClosureProcessor
 		?Type $nativePassedToType = null,
 	): ProcessClosureResult
 	{
-		$this->container->getByType(ParametersProcessor::class)->processParams($nodeScopeResolver, $stmt, $expr->params, $scope, $storage, $nodeCallback);
+		$this->getParametersProcessor()->processParams($nodeScopeResolver, $stmt, $expr->params, $scope, $storage, $nodeCallback);
 
 		$byRefUses = [];
 
 		$closureCallArgs = $expr->getAttribute(ClosureArgVisitor::ATTRIBUTE_NAME);
-		$parameterTypes = $this->container->getByType(ClosureParameterResolver::class)->resolve($scope, $expr, $storage, $closureCallArgs, $passedToType, $nativePassedToType);
+		$parameterTypes = $this->closureParameterResolver->resolve($scope, $expr, $storage, $closureCallArgs, $passedToType, $nativePassedToType);
 		$callableParameters = $parameterTypes->parameters;
 		$nativeCallableParameters = $parameterTypes->nativeParameters;
 
@@ -108,7 +121,7 @@ final class ClosureProcessor
 					// a call's type is carried by the context (see
 					// ExpressionContext::enterAssignRightSideCallArgs()); a closure
 					// right side resolves through the closure type resolver
-					$inAssignRightSideType = $context->getInAssignRightSideType() ?? $this->container->getByType(ClosureParameterResolver::class)->resolveCallableTypeForScope($inAssignRightSideExpr, $scope);
+					$inAssignRightSideType = $context->getInAssignRightSideType() ?? $this->closureParameterResolver->resolveCallableTypeForScope($inAssignRightSideExpr, $scope);
 					if ($inAssignRightSideType instanceof ClosureType) {
 						$variableType = $inAssignRightSideType;
 					} else {
@@ -119,7 +132,7 @@ final class ClosureProcessor
 							$variableType = TypeCombinator::union($scope->getVariableType($inAssignRightSideVariableName), $inAssignRightSideType);
 						}
 					}
-					$inAssignRightSideNativeType = $context->getInAssignRightSideNativeType() ?? $this->container->getByType(ClosureParameterResolver::class)->resolveCallableTypeForScope($inAssignRightSideExpr, $scope->doNotTreatPhpDocTypesAsCertain());
+					$inAssignRightSideNativeType = $context->getInAssignRightSideNativeType() ?? $this->closureParameterResolver->resolveCallableTypeForScope($inAssignRightSideExpr, $scope->doNotTreatPhpDocTypesAsCertain());
 					if ($inAssignRightSideNativeType instanceof ClosureType) {
 						$variableNativeType = $inAssignRightSideNativeType;
 					} else {
@@ -365,7 +378,7 @@ final class ClosureProcessor
 		ExpressionResultStorage $storage,
 	): MutatingScope
 	{
-		$refinedClosureType = $this->container->getByType(ClosureTypeResolver::class)->buildClosureTypeForClosure(
+		$refinedClosureType = $this->closureTypeResolver->buildClosureTypeForClosure(
 			$scope,
 			$expr,
 			$gatheredReturnStatementsWithScope,
@@ -421,13 +434,13 @@ final class ClosureProcessor
 	): ProcessArrowFunctionResult
 	{
 		$context ??= ExpressionContext::createTopLevel();
-		$this->container->getByType(ParametersProcessor::class)->processParams($nodeScopeResolver, $stmt, $expr->params, $scope, $storage, $nodeCallback);
+		$this->getParametersProcessor()->processParams($nodeScopeResolver, $stmt, $expr->params, $scope, $storage, $nodeCallback);
 		if ($expr->returnType !== null) {
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $expr->returnType, $scope, $storage);
 		}
 
 		$arrowFunctionCallArgs = $expr->getAttribute(ArrowFunctionArgVisitor::ATTRIBUTE_NAME);
-		$parameterTypes = $this->container->getByType(ClosureParameterResolver::class)->resolve($scope, $expr, $storage, $arrowFunctionCallArgs, $passedToType, $nativePassedToType);
+		$parameterTypes = $this->closureParameterResolver->resolve($scope, $expr, $storage, $arrowFunctionCallArgs, $passedToType, $nativePassedToType);
 		$callableParameters = $parameterTypes->parameters;
 		$nativeCallableParameters = $parameterTypes->nativeParameters;
 		$arrowFunctionScope = $scope->enterArrowFunction($expr, $callableParameters, $nativeCallableParameters);
@@ -482,7 +495,7 @@ final class ClosureProcessor
 		// run, build the refined arrow function type from the body expression's
 		// stored type (no second walk) and fire InArrowFunctionNode with it, so the
 		// node and the return-type rules see the refined expected return.
-		$refinedArrowFunctionType = $this->container->getByType(ClosureTypeResolver::class)->buildClosureTypeForArrowFunction(
+		$refinedArrowFunctionType = $this->closureTypeResolver->buildClosureTypeForArrowFunction(
 			$scope,
 			$expr,
 			$arrowFunctionScope,

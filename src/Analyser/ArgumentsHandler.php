@@ -22,7 +22,6 @@ use PHPStan\Analyser\Generics\TemplateArgumentObserver;
 use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\InvalidateExprNode;
@@ -94,7 +93,6 @@ final class ArgumentsHandler
 	 * @param ExtensionsCollection<StaticMethodParameterClosureTypeExtension> $staticMethodParameterClosureTypeExtensions
 	 */
 	public function __construct(
-		private Container $container,
 		private TemplateArgumentObserver $templateArgumentObserver,
 		private ExpressionResultFactory $expressionResultFactory,
 		private ClosureProcessor $closureProcessor,
@@ -119,6 +117,8 @@ final class ArgumentsHandler
 		#[AutowiredParameter(ref: '%exceptions.implicitThrows%')]
 		private bool $implicitThrows,
 		private AssignHandler $assignHandler,
+		private ClosureTypeResolver $closureTypeResolver,
+		private ClosureParameterResolver $closureParameterResolver,
 	)
 	{
 	}
@@ -233,7 +233,7 @@ final class ArgumentsHandler
 				$originalArgForGather = $arg->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE) ?? $arg;
 				$gatheredArgTypeByIndex[$i] = $typeDrivenAcceptorSelection
 					? $this->gatherClosureArgType($parametersAcceptors, $i, $arg->value, $scope)
-					: $this->container->getByType(ClosureTypeResolver::class)->getClosureType($scope, $arg->value, true, $storage);
+					: $this->closureTypeResolver->getClosureType($scope, $arg->value, true, $storage);
 				$this->addGatheredArgType($gatheredTypes, $gatheredUnpack, $gatheredHasName, $originalArgForGather, $i, $gatheredArgTypeByIndex[$i]);
 			}
 
@@ -362,7 +362,6 @@ final class ArgumentsHandler
 					// a miss means "walk it", not "price it silently": pricing skips
 					// the body walk and never fires the closure's node callbacks
 					if ($storedClosureArgResult === null && $nodeScopeResolver->isReturningStoredExpressionResults()) {
-						$closureTypeResolver = $this->container->getByType(ClosureTypeResolver::class);
 						$storedClosureArgResult = $this->expressionResultFactory->create(
 							$scopeToPass,
 							beforeScope: $scopeToPass,
@@ -371,8 +370,8 @@ final class ArgumentsHandler
 							isAlwaysTerminating: false,
 							throwPoints: [],
 							impurePoints: [],
-							type: $closureTypeResolver->getClosureType($scopeToPass, $arg->value, false, $storage),
-							nativeType: $closureTypeResolver->getClosureType($scopeToPass->doNotTreatPhpDocTypesAsCertain(), $arg->value, false, $storage),
+							type: $this->closureTypeResolver->getClosureType($scopeToPass, $arg->value, false, $storage),
+							nativeType: $this->closureTypeResolver->getClosureType($scopeToPass->doNotTreatPhpDocTypesAsCertain(), $arg->value, false, $storage),
 							typeCallback: null,
 							specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
 						);
@@ -418,7 +417,6 @@ final class ArgumentsHandler
 						$impurePoints = array_merge($impurePoints, $closureResult->getImpurePoints());
 					}
 
-					$closureTypeResolver = $this->container->getByType(ClosureTypeResolver::class);
 					$storedClosureResult = $this->expressionResultFactory->create(
 						$closureResult->getScope(),
 						$scopeToPass,
@@ -428,7 +426,7 @@ final class ArgumentsHandler
 						isAlwaysTerminating: false,
 						throwPoints: [],
 						impurePoints: [],
-						type: $closureTypeResolver->buildClosureTypeForClosure(
+						type: $this->closureTypeResolver->buildClosureTypeForClosure(
 							$scopeToPass,
 							$arg->value,
 							$closureResult->getGatheredReturnStatements(),
@@ -442,7 +440,7 @@ final class ArgumentsHandler
 						),
 						// the native flavour reads the stored native types off the same
 						// single body walk - no second walk on the promoted scope
-						nativeType: $closureTypeResolver->buildClosureTypeForClosure(
+						nativeType: $this->closureTypeResolver->buildClosureTypeForClosure(
 							$scopeToPass,
 							$arg->value,
 							$closureResult->getGatheredReturnStatements(),
@@ -512,7 +510,6 @@ final class ArgumentsHandler
 					// consume mode alone (the nullsafe call's plain-twin walk) is the
 					// first and only walk of the argument - a miss means walk it
 					if ($storedClosureArgResult === null && $nodeScopeResolver->isReturningStoredExpressionResults()) {
-						$closureTypeResolver = $this->container->getByType(ClosureTypeResolver::class);
 						$storedClosureArgResult = $this->expressionResultFactory->create(
 							$scopeToPass,
 							beforeScope: $scopeToPass,
@@ -521,8 +518,8 @@ final class ArgumentsHandler
 							isAlwaysTerminating: false,
 							throwPoints: [],
 							impurePoints: [],
-							type: $closureTypeResolver->getClosureType($scopeToPass, $arg->value, false, $storage),
-							nativeType: $closureTypeResolver->getClosureType($scopeToPass->doNotTreatPhpDocTypesAsCertain(), $arg->value, false, $storage),
+							type: $this->closureTypeResolver->getClosureType($scopeToPass, $arg->value, false, $storage),
+							nativeType: $this->closureTypeResolver->getClosureType($scopeToPass->doNotTreatPhpDocTypesAsCertain(), $arg->value, false, $storage),
 							typeCallback: null,
 							specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
 						);
@@ -566,13 +563,12 @@ final class ArgumentsHandler
 						$throwPoints = array_merge($throwPoints, array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $arrowFunctionExprResult->getThrowPoints()));
 						$impurePoints = array_merge($impurePoints, $arrowFunctionExprResult->getImpurePoints());
 					}
-					$arrowFunctionClosureTypeResolver = $this->container->getByType(ClosureTypeResolver::class);
 					$arrowFunctionScope = $arrowFunctionResult->getArrowFunctionScope();
 					// both flavours are built from the single body walk (see
 					// ArrowFunctionHandler); the built type also answers the
 					// invalidate-expressions read below without re-walking the
 					// still-unstored node through Scope::getType()
-					$arrowFunctionType = $arrowFunctionClosureTypeResolver->buildClosureTypeForArrowFunction(
+					$arrowFunctionType = $this->closureTypeResolver->buildClosureTypeForArrowFunction(
 						$scopeToPass,
 						$arg->value,
 						$arrowFunctionScope,
@@ -592,7 +588,7 @@ final class ArgumentsHandler
 						throwPoints: $arrowFunctionExprResult->getThrowPoints(),
 						impurePoints: $arrowFunctionExprResult->getImpurePoints(),
 						type: $arrowFunctionType,
-						nativeType: $arrowFunctionClosureTypeResolver->buildClosureTypeForArrowFunction(
+						nativeType: $this->closureTypeResolver->buildClosureTypeForArrowFunction(
 							$scopeToPass,
 							$arg->value,
 							$arrowFunctionScope,
@@ -932,7 +928,7 @@ final class ArgumentsHandler
 			$scope = $scope->pushInFunctionCall(null, $rawParameter, false);
 		}
 
-		return $this->container->getByType(ClosureParameterResolver::class)->resolveCallableTypeForScope($closureExpr, $scope);
+		return $this->closureParameterResolver->resolveCallableTypeForScope($closureExpr, $scope);
 	}
 
 	/**

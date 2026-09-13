@@ -15,6 +15,7 @@ use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ArgsResult;
 use PHPStan\Analyser\ArgumentsHandler;
 use PHPStan\Analyser\ArgumentsNormalizer;
+use PHPStan\Analyser\ClosureProcessor;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
@@ -105,6 +106,7 @@ final class FuncCallHandler implements ExprHandler
 		private ImpossibleCheckTypeHelper $impossibleCheckTypeHelper,
 		private ClosureTypeResolver $closureTypeResolver,
 		private ArgumentsHandler $argumentsHandler,
+		private ClosureProcessor $closureProcessor,
 	)
 	{
 	}
@@ -176,7 +178,7 @@ final class FuncCallHandler implements ExprHandler
 				$throwPoints = array_merge($throwPoints, $callableThrowPoints);
 				$impurePoints = array_merge($impurePoints, array_map(static fn (SimpleImpurePoint $impurePoint) => new ImpurePoint($scope, $expr, $impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain()), $parametersAcceptor->getImpurePoints()));
 
-				$scope = $nodeScopeResolver->processImmediatelyCalledCallable($scope, $parametersAcceptor->getInvalidateExpressions(), $parametersAcceptor->getUsedVariables());
+				$scope = $this->closureProcessor->processImmediatelyCalledCallable($scope, $parametersAcceptor->getInvalidateExpressions(), $parametersAcceptor->getUsedVariables());
 			}
 		} elseif ($this->reflectionProvider->hasFunction($expr->name, $scope)) {
 			$functionReflection = $this->reflectionProvider->getFunction($expr->name, $scope);

@@ -129,7 +129,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		// ENTRY (enterAnonymousFunction()/enterArrowFunction()) so entering a
 		// closure/arrow scope never re-walks the body - the refined return type is
 		// built afterwards from the single body walk's gathered returns and carried
-		// on the node/rule scope (see NodeScopeResolver::processClosureNodeInternal()
+		// on the node/rule scope (see ClosureProcessor::processClosureNodeInternal()
 		// and processArrowFunctionNode()).
 		if ($shallow) {
 			return new ClosureType(
@@ -286,7 +286,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 
 	/**
 	 * Constructs a closure type from data the engine already gathered while
-	 * walking the body once (see NodeScopeResolver::processClosureNode()),
+	 * walking the body once (see ClosureProcessor::processClosureNode()),
 	 * without a second walk. The return/yield expression types are read from
 	 * their stored results.
 	 *
@@ -341,7 +341,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 
 	/**
 	 * Constructs an arrow function type from data the engine already gathered
-	 * while walking the body once (see NodeScopeResolver::
+	 * while walking the body once (see ClosureProcessor::
 	 * processArrowFunctionNode()), without a second walk. The return/yield
 	 * expression types are read from their stored results on $arrowScope.
 	 *

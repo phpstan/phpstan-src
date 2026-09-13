@@ -556,7 +556,7 @@ struct Bound
 			call(execute_data, std::forward<A>(args)...);
 		} else {
 			static_assert(std::is_same_v<R, bool> && Signature::arity == sizeof...(K) + 1, "a bound method returns zv::Val, void, or bool with a trailing bool & out parameter");
-			bool out;
+			bool out = false;
 			if (UNEXPECTED(!call(execute_data, std::forward<A>(args)..., out))) RETURN_THROWS();
 			RETURN_BOOL(out);
 		}

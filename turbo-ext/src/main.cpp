@@ -167,6 +167,9 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_expression_result_storage();
 	pt_register_php_file_cleaner();
 	pt_register_symbol_finder_in_files();
+	pt_register_scope_context();
+	pt_register_is_super_type_of_result();
+	pt_register_accepts_result();
 
 	return SUCCESS;
 }
@@ -188,6 +191,8 @@ static PHP_RINIT_FUNCTION(phpstan_turbo)
 	pt_node_traverser_rinit();
 	pt_scope_ops_rinit();
 	pt_type_combinator_cache_rinit();
+	pt_is_super_type_of_result_rinit();
+	pt_accepts_result_rinit();
 
 	return SUCCESS;
 }
@@ -197,6 +202,8 @@ static PHP_RSHUTDOWN_FUNCTION(phpstan_turbo)
 	pt_scope_ops_rshutdown();
 	pt_node_traverser_rshutdown();
 	pt_type_combinator_cache_rshutdown();
+	pt_is_super_type_of_result_rshutdown();
+	pt_accepts_result_rshutdown();
 	pt_support_rshutdown();
 
 	return SUCCESS;

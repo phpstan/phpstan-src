@@ -616,6 +616,181 @@ foreach ($scopeOpsClasses as $side => $scopeOpsClass) {
 }
 check($matchResults['php'] === $matchResults['native'], 'ScopeOps matchConditionalExpressions: fixed point and remaining conditions');
 
+// ---- ScopeContext ----
+// Needs real ClassReflection instances (the PHP twin type-hints them), so a
+// container is booted here; equals() must compare by getName(), not identity.
+$covered[\PHPStan\Analyser\ScopeContext::class] = true;
+$scContainerFactory = new \PHPStan\DependencyInjection\ContainerFactory(dirname(__DIR__, 2));
+$scContainer = $scContainerFactory->create(sys_get_temp_dir() . '/phpstan-turbo-smoke', [$scContainerFactory->getConfigDirectory() . '/config.level8.neon'], []);
+$scReflectionProvider = $scContainer->getByType(\PHPStan\Reflection\ReflectionProvider::class);
+$scClassA = $scReflectionProvider->getClass(\PHPStan\Type\IntegerType::class);
+$scClassA2 = $scReflectionProvider->getClass(\PHPStan\Type\IntegerType::class);
+$scClassB = $scReflectionProvider->getClass(\PHPStan\Type\StringType::class);
+$scTrait = $scReflectionProvider->getClass(\PHPStan\Type\Traits\ConstantScalarTypeTrait::class);
+$scResults = [];
+foreach (['php' => \PHPStan\Analyser\ScopeContext::class, 'native' => \PHPStanTurbo\ScopeContext::class] as $side => $scClass) {
+	$r = [];
+	$file = $scClass::create('/a.php');
+	$r[] = [$file instanceof $scClass, $file->getFile(), $file->getClassReflection(), $file->getTraitReflection()];
+	$inClass = $file->enterClass($scClassA);
+	$r[] = [$inClass->getFile(), $inClass->getClassReflection() === $scClassA, $inClass->getTraitReflection()];
+	$inTrait = $inClass->enterTrait($scTrait);
+	$r[] = [$inTrait->getClassReflection() === $scClassA, $inTrait->getTraitReflection() === $scTrait];
+	$begun = $inTrait->beginFile();
+	$r[] = [$begun->getFile(), $begun->getClassReflection(), $begun->getTraitReflection()];
+	$contexts = [
+		'file' => $file, 'file2' => $scClass::create('/a.php'), 'other' => $scClass::create('/b.php'),
+		'classA' => $inClass, 'classA2' => $scClass::create('/a.php')->enterClass($scClassA2), 'classB' => $file->enterClass($scClassB),
+		'trait' => $inTrait, 'trait2' => $scClass::create('/a.php')->enterClass($scClassA2)->enterTrait($scTrait), 'traitB' => $file->enterClass($scClassB)->enterTrait($scTrait),
+	];
+	foreach ($contexts as $k1 => $c1) {
+		foreach ($contexts as $k2 => $c2) {
+			$r[] = [$k1, $k2, $c1->equals($c2)];
+		}
+	}
+	foreach ([
+		'class in class' => static fn () => $inClass->enterClass($scClassB),
+		'trait via enterClass' => static fn () => $file->enterClass($scTrait),
+		'trait outside class' => static fn () => $file->enterTrait($scTrait),
+		'non-trait via enterTrait' => static fn () => $inClass->enterTrait($scClassB),
+	] as $label => $fn) {
+		try {
+			$fn();
+			$r[] = [$label, 'no exception'];
+		} catch (\PHPStan\ShouldNotHappenException $e) {
+			$r[] = [$label, $e->getMessage()];
+		}
+	}
+	try {
+		new $scClass('/x.php', null, null);
+		$r[] = 'ctor callable';
+	} catch (\Error $e) {
+		$r[] = ['ctor', get_class($e)];
+	}
+	$scResults[$side] = $r;
+}
+check($scResults['php'] === $scResults['native'], 'ScopeContext parity: ' . json_encode($scResults['php']) . ' vs ' . json_encode($scResults['native']));
+
+// ---- IsSuperTypeOfResult / AcceptsResult ----
+$covered[\PHPStan\Type\IsSuperTypeOfResult::class] = true;
+$covered[\PHPStan\Type\AcceptsResult::class] = true;
+$resultSides = [
+	'php' => [\PHPStan\Type\IsSuperTypeOfResult::class, \PHPStan\Type\AcceptsResult::class, $pAll],
+	'native' => [\PHPStanTurbo\IsSuperTypeOfResult::class, \PHPStanTurbo\AcceptsResult::class, $nAll],
+];
+$resultObservations = [];
+foreach ($resultSides as $side => [$is, $ar, $tri]) {
+	$o = [];
+	$log = [];
+	$lazy = static function (string $s) use (&$log): \Closure {
+		return static function () use ($s, &$log): string {
+			$log[] = $s;
+			return $s;
+		};
+	};
+	// structural view of a result without invoking its lazy reasons
+	$shape = static fn (object $r): array => [$r->result->describe(), $r->reasons, $r instanceof $is ? count($r->lazyReasons) : null];
+	$norm = static fn (string $m): string => str_replace(['PHPStanTurbo\\', 'PHPStan\\Type\\'], '', $m);
+
+	$o['yes identity'] = $is::createYes() === $is::createYes();
+	$o['maybe identity'] = $is::createMaybe() === $is::createMaybe();
+	$o['no identity'] = $is::createNo() === $is::createNo() && $is::createNo([]) === $is::createNo() && $is::createNo([], []) === $is::createNo();
+	$o['fromBoolean'] = $is::createFromBoolean(true) === $is::createYes() && $is::createFromBoolean(false) === $is::createNo();
+	$o['no with reasons is fresh'] = $is::createNo(['x']) !== $is::createNo() && $is::createNo([], [$lazy('l')]) !== $is::createNo();
+	$o['named-arg skip'] = $shape($is::createNo(lazyReasons: [$lazy('n')]));
+	$o['singleton result identity'] = $is::createYes()->result === $tri['yes'] && $is::createNo()->result === $tri['no'] && $is::createMaybe()->result === $tri['maybe'];
+	foreach (['yes' => $is::createYes(), 'maybe' => $is::createMaybe(), 'no' => $is::createNo()] as $k => $r) {
+		$o["$k flags"] = [$r->yes(), $r->maybe(), $r->no(), $r->describe(), $r->reasons, $r->lazyReasons, $r->getReasons()];
+	}
+
+	$a = new $is($tri['no'], ['r1', 'r2'], [$lazy('l1')]);
+	$b = new $is($tri['maybe'], ['r2', 'r3'], [$lazy('l2'), $lazy('r1')]);
+	$c = new $is($tri['yes'], []);
+	$o['props'] = [$a->result === $tri['no'], $a->reasons, count($a->lazyReasons), $c->lazyReasons];
+	$o['getReasons'] = [$a->getReasons(), $b->getReasons(), $c->getReasons()];
+	$o['getReasons log'] = $log;
+	$log = [];
+
+	$o['and'] = [$shape($a->and($b)), $shape($a->and($b, $c)), $shape($a->and()), $shape($c->and($a)), $a->and($b)->getReasons()];
+	$o['or'] = [$shape($a->or($b)), $shape($b->or($c, $a)), $shape($a->or()), $a->or($b)->getReasons()];
+	$o['and/or fresh'] = $a->and() !== $a && $c->and() !== $c && $c->or() !== $c;
+	$log = [];
+	$d = $a->decorateReasons(static fn (string $s): string => "<$s>");
+	$o['decorate keeps lazy lazy'] = $log;
+	$o['decorate'] = [$shape($d), array_map(static fn ($x) => $x instanceof \Closure, $d->lazyReasons), $d->getReasons(), $d->result === $a->result];
+	$o['decorate log'] = $log;
+	$log = [];
+	$o['decorate empty'] = $shape($c->decorateReasons(static fn (string $s): string => $s));
+
+	$o['extremeIdentity'] = [$shape($is::extremeIdentity($a, $b, $c)), $shape($is::extremeIdentity($a, $a)), $shape($is::extremeIdentity($c, $c)), $is::extremeIdentity($a, $b)->getReasons()];
+	$o['maxMin'] = [$shape($is::maxMin($a, $b)), $shape($is::maxMin($a, $c)), $shape($is::maxMin($b, $b)), $is::maxMin($a, $b)->getReasons()];
+	foreach (['extremeIdentity', 'maxMin'] as $m) {
+		try {
+			$is::$m();
+			$o["$m empty"] = 'no throw';
+		} catch (\PHPStan\ShouldNotHappenException) {
+			$o["$m empty"] = 'throws';
+		}
+	}
+	$byName = ['a' => $a, 'b' => $b, 'c' => $c];
+	$cb = static fn (string $n) => $byName[$n];
+	$o['lazyMaxMin'] = [
+		$is::lazyMaxMin(['a', 'b', 'c'], $cb) === $c,
+		$shape($is::lazyMaxMin(['a', 'b'], $cb)),
+		$is::lazyMaxMin(['a', 'b'], $cb)->getReasons(),
+		$shape($is::lazyMaxMin(['b'], $cb)),
+		$shape($is::lazyMaxMin([], $cb)),
+		$is::lazyMaxMin([], $cb) !== $is::createMaybe(),
+		$is::lazyMaxMin(['b', 'b'], $cb)->getReasons(),
+	];
+	$o['negate'] = [$shape($a->negate()), $shape($b->negate()), $shape($c->negate()), $a->negate() !== $a, $a->negate()->getReasons()];
+	$acc = $a->toAcceptsResult();
+	$o['toAcceptsResult'] = [$acc instanceof $ar, $acc->result === $a->result, $acc->reasons, $c->toAcceptsResult() !== $ar::createYes(), $b->toAcceptsResult()->reasons];
+
+	$o['ar singletons'] = [$ar::createYes() === $ar::createYes(), $ar::createNo() === $ar::createNo([]), $ar::createMaybe() === $ar::createMaybe(), $ar::createFromBoolean(true) === $ar::createYes(), $ar::createFromBoolean(false) === $ar::createNo(), $ar::createNo(['q']) !== $ar::createNo(), $ar::createNo(['q'])->reasons, $ar::createYes()->result === $tri['yes']];
+	$x = new $ar($tri['no'], ['a', 'b']);
+	$y = new $ar($tri['maybe'], ['b', 'c']);
+	$z = new $ar($tri['yes'], []);
+	$o['ar flags'] = [[$x->yes(), $x->maybe(), $x->no()], [$y->yes(), $y->maybe(), $y->no()], [$z->yes(), $z->maybe(), $z->no()]];
+	$o['ar and/or'] = [$shape($x->and($y)), $shape($y->and($z)), $shape($x->or($y)), $shape($z->or($x)), $shape($x->and($x))];
+	$o['ar decorate'] = [$shape($x->decorateReasons(static fn (string $s): string => "[$s]")), $shape($z->decorateReasons(static fn (string $s): string => "[$s]"))];
+	$o['ar extremeIdentity/maxMin'] = [$shape($ar::extremeIdentity($x, $y)), $shape($ar::extremeIdentity($z, $z)), $shape($ar::maxMin($x, $y)), $shape($ar::maxMin($x, $z)), $shape($ar::maxMin($y, $y))];
+	foreach (['extremeIdentity', 'maxMin'] as $m) {
+		try {
+			$ar::$m();
+			$o["ar $m empty"] = 'no throw';
+		} catch (\PHPStan\ShouldNotHappenException) {
+			$o["ar $m empty"] = 'throws';
+		}
+	}
+	$arByName = ['x' => $x, 'y' => $y, 'z' => $z];
+	$arCb = static fn (string $n) => $arByName[$n];
+	$o['ar lazyMaxMin'] = [$ar::lazyMaxMin(['x', 'y', 'z'], $arCb) === $z, $shape($ar::lazyMaxMin(['x', 'y'], $arCb)), $shape($ar::lazyMaxMin(['y'], $arCb)), $shape($ar::lazyMaxMin([], $arCb)), $ar::lazyMaxMin([], $arCb) !== $ar::createMaybe()];
+
+	try {
+		$a->reasons = [];
+		$o['readonly write'] = 'no throw';
+	} catch (\Error $e) {
+		$o['readonly write'] = $norm($e->getMessage());
+	}
+	try {
+		$a->__construct($tri['yes'], []);
+		$o['reconstruct'] = 'no throw';
+	} catch (\Error $e) {
+		$o['reconstruct'] = $norm($e->getMessage());
+	}
+	try {
+		(new $is($tri['no'], [], ['not a closure']))->getReasons();
+		$o['lazy type'] = 'no throw';
+	} catch (\TypeError) {
+		$o['lazy type'] = 'TypeError';
+	}
+	$resultObservations[$side] = $o;
+}
+foreach ($resultObservations['php'] as $key => $expected) {
+	check($expected === ($resultObservations['native'][$key] ?? null), "IsSuperTypeOfResult/AcceptsResult $key: " . json_encode($expected) . ' vs ' . json_encode($resultObservations['native'][$key] ?? null));
+}
+
 // ---- differential coverage completeness ----
 // Every shadowed class must be exercised by one of the tests/ scripts; the
 // classes not covered above have their own dedicated script.

@@ -152,6 +152,13 @@ void pt_register_arena_cache();
 void pt_register_expression_result_storage();
 void pt_register_php_file_cleaner();
 void pt_register_symbol_finder_in_files();
+void pt_register_scope_context();
+void pt_register_is_super_type_of_result();
+void pt_register_accepts_result();
+void pt_is_super_type_of_result_rinit();
+void pt_is_super_type_of_result_rshutdown();
+void pt_accepts_result_rinit();
+void pt_accepts_result_rshutdown();
 
 /* per-request hooks of individual classes */
 void pt_node_traverser_rinit();

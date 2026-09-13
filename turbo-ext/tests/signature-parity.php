@@ -31,15 +31,17 @@ function isErased(?ReflectionType $type): bool
 
 /**
  * A native class name means its twin (across all shadowed pairs — a native
- * TrinaryLogic parameter type is equivalent to PHPStan\TrinaryLogic), and
- * self/static mean the pair's own class on either side.
+ * TrinaryLogic parameter type is equivalent to PHPStan\TrinaryLogic), self means
+ * the method's declaring class and static the pair's own class, on either side
+ * (from PHP 8.5 reflection names the declaring class for self itself).
  *
  * @param array<string, string> $nativeToTwin
  */
-function normalizeType(?ReflectionType $type, array $nativeToTwin, string $selfClass): string
+function normalizeType(?ReflectionType $type, array $nativeToTwin, string $selfClass, string $staticClass): string
 {
 	$s = strtolower((string) $type);
-	$s = preg_replace('~(^|\||&|\?)(self|static)($|\||&)~', '$1' . $selfClass . '$3', $s);
+	$s = preg_replace('~(^|\||&|\?)self($|\||&)~', '$1' . $selfClass . '$2', $s);
+	$s = preg_replace('~(^|\||&|\?)static($|\||&)~', '$1' . $staticClass . '$2', $s);
 
 	return strtr($s, $nativeToTwin);
 }
@@ -106,6 +108,8 @@ foreach ($manifest as $twinClass => $entry) {
 		}
 		$twinMethod = $twin->getMethod($name);
 		$compared++;
+		$nativeSelf = strtr(strtolower($nativeMethod->getDeclaringClass()->getName()), $nativeToTwin);
+		$twinSelf = strtolower($twinMethod->getDeclaringClass()->getName());
 
 		if (visibility($nativeMethod) !== visibility($twinMethod)) {
 			$problems[] = sprintf('%s(): %s natively, %s in PHP', $name, visibility($nativeMethod), visibility($twinMethod));
@@ -140,8 +144,8 @@ foreach ($manifest as $twinClass => $entry) {
 					$problems[] = sprintf('%s($%s): variadic differs', $name, $twinParam->getName());
 				}
 				if (!isErased($nativeParam->getType())) {
-					$nativeType = normalizeType($nativeParam->getType(), $nativeToTwin, strtolower($twinClass));
-					$twinType = normalizeType($twinParam->getType(), $nativeToTwin, strtolower($twinClass));
+					$nativeType = normalizeType($nativeParam->getType(), $nativeToTwin, $nativeSelf, strtolower($twinClass));
+					$twinType = normalizeType($twinParam->getType(), $nativeToTwin, $twinSelf, strtolower($twinClass));
 					if ($nativeType !== $twinType) {
 						$problems[] = sprintf('%s($%s): type "%s" natively, "%s" in PHP', $name, $twinParam->getName(), $nativeType, $twinType);
 					}
@@ -151,8 +155,8 @@ foreach ($manifest as $twinClass => $entry) {
 
 		$nativeReturnType = $nativeMethod->getReturnType() ?? $nativeMethod->getTentativeReturnType();
 		if (!isErased($nativeReturnType)) {
-			$nativeReturn = normalizeType($nativeReturnType, $nativeToTwin, strtolower($twinClass));
-			$twinReturn = normalizeType($twinMethod->getReturnType() ?? $twinMethod->getTentativeReturnType(), $nativeToTwin, strtolower($twinClass));
+			$nativeReturn = normalizeType($nativeReturnType, $nativeToTwin, $nativeSelf, strtolower($twinClass));
+			$twinReturn = normalizeType($twinMethod->getReturnType() ?? $twinMethod->getTentativeReturnType(), $nativeToTwin, $twinSelf, strtolower($twinClass));
 			if ($nativeReturn !== $twinReturn) {
 				$problems[] = sprintf('%s(): returns "%s" natively, "%s" in PHP', $name, $nativeReturn, $twinReturn);
 			}

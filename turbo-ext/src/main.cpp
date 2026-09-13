@@ -170,6 +170,12 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_scope_context();
 	pt_register_is_super_type_of_result();
 	pt_register_accepts_result();
+	/* the Type ports go after the result classes their return types name
+	 * (a plan naming a class declared later would make the linker autoload
+	 * the PHP twin); a parent before its child */
+	pt_register_type_traits();
+	pt_register_boolean_type();
+	pt_register_constant_boolean_type();
 
 	return SUCCESS;
 }

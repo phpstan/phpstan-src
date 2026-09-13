@@ -5,6 +5,7 @@ namespace PHPStan\Type\Constant;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprIntegerNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\GeneralizePrecision;
@@ -21,6 +22,7 @@ use function sprintf;
 use const PHP_INT_MIN;
 
 /** @api */
+#[ReferencedByTurboExtension(key: 'constantIntegerType')]
 class ConstantIntegerType extends IntegerType implements ConstantScalarType
 {
 

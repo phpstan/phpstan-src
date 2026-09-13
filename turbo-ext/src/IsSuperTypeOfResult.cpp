@@ -452,6 +452,18 @@ zval IsSuperTypeOfResult::singletons[3];
 
 using phpstanturbo::IsSuperTypeOfResult;
 
+/* the per-request singleton for a PT_TRI_* value (createYes()/createMaybe()/
+ * createNo()); owned copy in *out, false = pending exception */
+[[nodiscard]] bool pt_is_super_type_of_result_singleton(zval *out, zend_long value)
+{
+	zv::Val result = value == PT_TRI_YES ? IsSuperTypeOfResult::createYes()
+		: value == PT_TRI_MAYBE ? IsSuperTypeOfResult::createMaybe()
+		: IsSuperTypeOfResult::createNo(NULL, NULL);
+	if (UNEXPECTED(result.isUndef())) return false;
+	*out = result.take();
+	return true;
+}
+
 void pt_is_super_type_of_result_rinit()
 {
 	IsSuperTypeOfResult::rinit();

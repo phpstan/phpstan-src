@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Generic;
 
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -32,6 +33,7 @@ use function count;
  *
  * @api
  */
+#[ReferencedByTurboExtension(key: 'templateTypeMap')]
 final class TemplateTypeMap
 {
 

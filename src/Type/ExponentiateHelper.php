@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use function is_float;
@@ -10,6 +11,7 @@ use function is_numeric;
 use function is_string;
 use function pow;
 
+#[ReferencedByTurboExtension(key: 'exponentiateHelper')]
 final class ExponentiateHelper
 {
 

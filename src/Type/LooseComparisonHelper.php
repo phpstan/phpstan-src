@@ -3,8 +3,10 @@
 namespace PHPStan\Type;
 
 use PHPStan\Php\PhpVersion;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Constant\ConstantBooleanType;
 
+#[ReferencedByTurboExtension(key: 'looseComparisonHelper')]
 final class LooseComparisonHelper
 {
 

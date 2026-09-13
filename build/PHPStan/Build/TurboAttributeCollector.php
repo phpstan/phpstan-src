@@ -30,6 +30,7 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\VariadicPlaceholder;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use RecursiveDirectoryIterator;
@@ -106,6 +107,7 @@ final class TurboAttributeCollector
 		'nodeVisitorAbstract' => NodeVisitorAbstract::class,
 		'closureExpr' => Closure::class,
 		'arrowFunction' => ArrowFunction::class,
+		'identifierTypeNode' => IdentifierTypeNode::class,
 	];
 
 	private string $realRoot;

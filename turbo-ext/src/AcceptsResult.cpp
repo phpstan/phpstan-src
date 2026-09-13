@@ -615,7 +615,26 @@ zval AcceptsResult::singletons[3];
 
 using phpstanturbo::AcceptsResult;
 
-/* {{{ shared entry points for IsSuperTypeOfResult.cpp */
+/* {{{ shared entry points for IsSuperTypeOfResult.cpp and the Type ports */
+
+/* the per-request singleton for a PT_TRI_* value (createYes()/createMaybe()/
+ * createNo()); owned copy in *out, false = pending exception */
+[[nodiscard]] bool pt_accepts_result_singleton(zval *out, zend_long value)
+{
+	zv::Val result = AcceptsResult::singleton(value);
+	if (UNEXPECTED(result.isUndef())) return false;
+	*out = result.take();
+	return true;
+}
+
+/* $self->and($other); false = pending exception */
+[[nodiscard]] bool pt_accepts_result_and(zval *out, zval *self, zval *other)
+{
+	zv::Val result = AcceptsResult(Z_OBJ_P(self)).and_(other);
+	if (UNEXPECTED(result.isUndef())) return false;
+	*out = result.take();
+	return true;
+}
 
 /* new AcceptsResult($trinary, $reasons) — IsSuperTypeOfResult::toAcceptsResult();
  * reasons is owned and consumed; false = pending exception */

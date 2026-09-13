@@ -110,34 +110,22 @@ public:
 		return "No";
 	}
 
-	/* BooleanType for maybe, ConstantBooleanType(yes/no) otherwise;
-	 * UNDEF result means a pending exception */
+	/* new BooleanType() for maybe, new ConstantBooleanType(yes/no) otherwise
+	 * — both shadowing classes, instantiated directly (BooleanType.cpp /
+	 * ConstantBooleanType.cpp); UNDEF result means a pending exception */
 	zv::Val toBooleanType() const
 	{
-		if (maybe()) return constructConfigured(PT_CLASS_BOOLEAN_TYPE, NULL, 0);
-		zval arg;
-		ZVAL_BOOL(&arg, yes());
-		return constructConfigured(PT_CLASS_CONSTANT_BOOLEAN_TYPE, &arg, 1);
+		zval obj;
+		if (maybe()) {
+			if (UNEXPECTED(!pt_boolean_type_new(&obj))) return zv::Val();
+			return zv::Val::adopt(obj);
+		}
+		if (UNEXPECTED(!pt_constant_boolean_type_new(&obj, yes()))) return zv::Val();
+		return zv::Val::adopt(obj);
 	}
 
 private:
 	zend_object *self;
-
-	static zv::Val constructConfigured(int classIdx, zval *args, uint32_t argc)
-	{
-		zend_class_entry *ce = pt_class(classIdx);
-		if (UNEXPECTED(ce == NULL)) return zv::Val();
-		zval obj;
-		if (UNEXPECTED(object_init_ex(&obj, ce) != SUCCESS)) return zv::Val();
-		if (ce->constructor != NULL) {
-			zend_call_known_instance_method(ce->constructor, Z_OBJ(obj), NULL, argc, args);
-			if (UNEXPECTED(EG(exception))) {
-				zval_ptr_dtor(&obj);
-				return zv::Val();
-			}
-		}
-		return zv::Val::adopt(obj);
-	}
 };
 
 /*

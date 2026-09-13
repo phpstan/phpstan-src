@@ -7,6 +7,7 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
@@ -22,6 +23,7 @@ use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 
 /** @api */
 #[InstanceofDeprecated(insteadUse: 'Type::isNull()')]
+#[ReferencedByTurboExtension(key: 'nullType')]
 class NullType implements ConstantScalarType
 {
 

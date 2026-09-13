@@ -2,6 +2,8 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Turbo\ReferencedByTurboExtension;
+
 /**
  * Result of projecting a "class-name-or-object" `Type` to its corresponding
  * `ObjectType` for an `instanceof` / `is_a` check.
@@ -11,6 +13,7 @@ namespace PHPStan\Type;
  * symbolically instead of being resolved to a concrete object type. Composite
  * types OR-fold the flag across their members.
  */
+#[ReferencedByTurboExtension(key: 'classNameToObjectTypeResult')]
 final class ClassNameToObjectTypeResult
 {
 

@@ -49,8 +49,6 @@ typedef struct _pt_class_ref {
 
 enum {
 	PT_CLASS_TYPE_COMBINATOR = 0,
-	PT_CLASS_BOOLEAN_TYPE,
-	PT_CLASS_CONSTANT_BOOLEAN_TYPE,
 	PT_CLASS_SHOULD_NOT_HAPPEN,
 	PT_CLASS_VERBOSITY_LEVEL,
 	PT_CLASS_VARIABLE,
@@ -84,6 +82,23 @@ enum {
 	PT_CLASS_TYPE,
 	PT_CLASS_RECURSION_GUARD,
 	PT_CLASS_NEVER_TYPE,
+	PT_CLASS_MIXED_TYPE,
+	PT_CLASS_NULL_TYPE,
+	PT_CLASS_UNION_TYPE,
+	PT_CLASS_CONSTANT_INTEGER_TYPE,
+	PT_CLASS_CONSTANT_FLOAT_TYPE,
+	PT_CLASS_CONSTANT_STRING_TYPE,
+	PT_CLASS_CONSTANT_ARRAY_TYPE,
+	PT_CLASS_OBJECT_WITHOUT_CLASS_TYPE,
+	PT_CLASS_CLASS_STRING_TYPE,
+	PT_CLASS_CLASS_NAME_TO_OBJECT_TYPE_RESULT,
+	PT_CLASS_TEMPLATE_TYPE_MAP,
+	PT_CLASS_IDENTIFIER_TYPE_NODE,
+	PT_CLASS_STATIC_TYPE_FACTORY,
+	PT_CLASS_LOOSE_COMPARISON_HELPER,
+	PT_CLASS_EXPONENTIATE_HELPER,
+	PT_CLASS_COMPOUND_TYPE,
+	PT_CLASS_CONSTANT_SCALAR_TYPE,
 	PT_CLASS_COUNT
 };
 
@@ -121,6 +136,9 @@ extern pt_globals_t pt_globals;
 
 #define PT_G(v) (pt_globals.v)
 
+/* a string literal as the (chars, length) argument pair of the by-name helpers */
+#define PT_LC(literal) literal, sizeof(literal) - 1
+
 /* per-request lifecycle, wired to PHP-CPP's onRequest/onIdle */
 void pt_support_rinit();
 void pt_support_rshutdown();
@@ -133,6 +151,11 @@ extern zend_class_entry *pt_ce_trinary;
 extern zend_class_entry *pt_ce_expr_type_holder;
 extern zend_class_entry *pt_ce_cond_expr_holder;
 extern zend_class_entry *pt_ce_type_combinator_cache;
+extern zend_class_entry *pt_ce_accepts_result;
+extern zend_class_entry *pt_ce_is_super_type_of_result;
+/* the shadowing Type classes (BooleanType.cpp, ConstantBooleanType.cpp) */
+extern zend_class_entry *pt_ce_boolean_type;
+extern zend_class_entry *pt_ce_constant_boolean_type;
 
 /* registration hooks, called from the extension's onStartup */
 /* Shadow.cpp — Runtime::activateShadowing() */
@@ -155,6 +178,12 @@ void pt_register_symbol_finder_in_files();
 void pt_register_scope_context();
 void pt_register_is_super_type_of_result();
 void pt_register_accepts_result();
+/* the Type ports; registered after the result classes their return types
+ * name (a plan naming a class declared later would make the linker autoload
+ * the PHP twin) — BooleanType before its child ConstantBooleanType */
+void pt_register_type_traits();
+void pt_register_boolean_type();
+void pt_register_constant_boolean_type();
 void pt_is_super_type_of_result_rinit();
 void pt_is_super_type_of_result_rshutdown();
 void pt_accepts_result_rinit();
@@ -224,6 +253,25 @@ bool pt_type_combinator_binary(const char *lcname, size_t len, zval *type_a, zva
 /* $type->describe(VerbosityLevel::precise()) */
 bool pt_type_describe_precise(zval *type, zval *result);
 void pt_throw_should_not_happen();
+
+/* the per-request AcceptsResult / IsSuperTypeOfResult singletons for a
+ * PT_TRI_* value (createYes()/createMaybe()/createNo() with no reasons —
+ * createFromBoolean() maps to the yes/no ones); owned copy in *out, false =
+ * pending exception (AcceptsResult.cpp / IsSuperTypeOfResult.cpp) */
+bool pt_accepts_result_singleton(zval *out, zend_long value);
+bool pt_is_super_type_of_result_singleton(zval *out, zend_long value);
+/* $self->and($other) on two AcceptsResult instances; false = pending
+ * exception (AcceptsResult.cpp) */
+[[nodiscard]] bool pt_accepts_result_and(zval *out, zval *self, zval *other);
+
+/* new BooleanType() / new ConstantBooleanType($value) — instances of the
+ * shadowing classes (BooleanType.cpp / ConstantBooleanType.cpp); false =
+ * pending exception */
+bool pt_boolean_type_new(zval *out);
+bool pt_constant_boolean_type_new(zval *out, bool value);
+/* the $value of an instance of the shadowing ConstantBooleanType; false
+ * with an Error pending when uninitialized */
+bool pt_constant_boolean_type_value(zend_object *object, bool &out);
 
 /* }}} */
 

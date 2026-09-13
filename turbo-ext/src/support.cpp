@@ -17,8 +17,6 @@ typedef struct _pt_class_template {
 
 static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_TYPE_COMBINATOR */ {"typeCombinator", "PHPStan\\Type\\TypeCombinator"},
-	/* PT_CLASS_BOOLEAN_TYPE */ {"booleanType", "PHPStan\\Type\\BooleanType"},
-	/* PT_CLASS_CONSTANT_BOOLEAN_TYPE */ {"constantBooleanType", "PHPStan\\Type\\Constant\\ConstantBooleanType"},
 	/* PT_CLASS_SHOULD_NOT_HAPPEN */ {"shouldNotHappenException", "PHPStan\\ShouldNotHappenException"},
 	/* PT_CLASS_VERBOSITY_LEVEL */ {"verbosityLevel", "PHPStan\\Type\\VerbosityLevel"},
 	/* PT_CLASS_VARIABLE */ {"variable", "PhpParser\\Node\\Expr\\Variable"},
@@ -52,6 +50,23 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_TYPE */ {"type", "PHPStan\\Type\\Type"},
 	/* PT_CLASS_RECURSION_GUARD */ {"recursionGuard", "PHPStan\\Type\\RecursionGuard"},
 	/* PT_CLASS_NEVER_TYPE */ {"neverType", "PHPStan\\Type\\NeverType"},
+	/* PT_CLASS_MIXED_TYPE */ {"mixedType", "PHPStan\\Type\\MixedType"},
+	/* PT_CLASS_NULL_TYPE */ {"nullType", "PHPStan\\Type\\NullType"},
+	/* PT_CLASS_UNION_TYPE */ {"unionType", "PHPStan\\Type\\UnionType"},
+	/* PT_CLASS_CONSTANT_INTEGER_TYPE */ {"constantIntegerType", "PHPStan\\Type\\Constant\\ConstantIntegerType"},
+	/* PT_CLASS_CONSTANT_FLOAT_TYPE */ {"constantFloatType", "PHPStan\\Type\\Constant\\ConstantFloatType"},
+	/* PT_CLASS_CONSTANT_STRING_TYPE */ {"constantStringType", "PHPStan\\Type\\Constant\\ConstantStringType"},
+	/* PT_CLASS_CONSTANT_ARRAY_TYPE */ {"constantArrayType", "PHPStan\\Type\\Constant\\ConstantArrayType"},
+	/* PT_CLASS_OBJECT_WITHOUT_CLASS_TYPE */ {"objectWithoutClassType", "PHPStan\\Type\\ObjectWithoutClassType"},
+	/* PT_CLASS_CLASS_STRING_TYPE */ {"classStringType", "PHPStan\\Type\\ClassStringType"},
+	/* PT_CLASS_CLASS_NAME_TO_OBJECT_TYPE_RESULT */ {"classNameToObjectTypeResult", "PHPStan\\Type\\ClassNameToObjectTypeResult"},
+	/* PT_CLASS_TEMPLATE_TYPE_MAP */ {"templateTypeMap", "PHPStan\\Type\\Generic\\TemplateTypeMap"},
+	/* PT_CLASS_IDENTIFIER_TYPE_NODE */ {"identifierTypeNode", "PHPStan\\PhpDocParser\\Ast\\Type\\IdentifierTypeNode"},
+	/* PT_CLASS_STATIC_TYPE_FACTORY */ {"staticTypeFactory", "PHPStan\\Type\\StaticTypeFactory"},
+	/* PT_CLASS_LOOSE_COMPARISON_HELPER */ {"looseComparisonHelper", "PHPStan\\Type\\LooseComparisonHelper"},
+	/* PT_CLASS_EXPONENTIATE_HELPER */ {"exponentiateHelper", "PHPStan\\Type\\ExponentiateHelper"},
+	/* PT_CLASS_COMPOUND_TYPE */ {"compoundType", "PHPStan\\Type\\CompoundType"},
+	/* PT_CLASS_CONSTANT_SCALAR_TYPE */ {"constantScalarType", "PHPStan\\Type\\ConstantScalarType"},
 };
 
 zend_class_entry *pt_class(int idx)

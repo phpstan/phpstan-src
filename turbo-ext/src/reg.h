@@ -48,6 +48,27 @@
 		return; \
 	} while (0)
 
+/* argument-count check for parameters the twin never reads */
+#define PT_ARGS(min, max) \
+	do { \
+		if (UNEXPECTED(ZEND_NUM_ARGS() < (uint32_t) (min) || ZEND_NUM_ARGS() > (uint32_t) (max))) { \
+			zend_wrong_parameters_count_error(min, max); \
+			RETURN_THROWS(); \
+		} \
+	} while (0)
+
+#define PT_RETURN_TRINARY(value) RETURN_COPY(pt_trinary_singleton(value))
+
+/* a PT_TRI_* verdict into return_value; RETURN_THROWS when negative (pending exception) */
+#define PT_RETURN_TRINARY_OR_THROW(expr) \
+	do { \
+		zend_long pt_value__ = (expr); \
+		if (UNEXPECTED(pt_value__ < 0)) { \
+			RETURN_THROWS(); \
+		} \
+		RETURN_COPY(pt_trinary_singleton(pt_value__)); \
+	} while (0)
+
 /* }}} */
 
 /* {{{ zp: typed parameter parsing
@@ -262,9 +283,9 @@ constexpr Arg any(const char *name, bool byRef = false)
 	return { name, detail::flagBits(byRef, false), nullptr };
 }
 
-constexpr Arg longArg(const char *name)
+constexpr Arg longArg(const char *name, bool nullable = false)
 {
-	return { name, detail::codeMask(IS_LONG, false) | detail::flagBits(false, false), nullptr };
+	return { name, detail::codeMask(IS_LONG, nullable) | detail::flagBits(false, false), nullptr };
 }
 
 constexpr Arg boolArg(const char *name)
@@ -562,8 +583,12 @@ struct Bound
 		}
 	}
 
+	/* MSVC names the types of the discarded if-constexpr branches in handle()
+	 * too, so an index past the pack resolves to a placeholder kind instead of
+	 * failing tuple_element_t */
+	struct NoKind { using type = int; };
 	template <size_t I>
-	using At = std::tuple_element_t<I, std::tuple<K...>>;
+	using At = std::tuple_element_t<(I < sizeof...(K) ? I : sizeof...(K)), std::tuple<K..., NoKind>>;
 
 	/* the destinations are uninitialized locals, as the declarations above a
 	 * hand-written ZEND_PARSE_PARAMETERS block leave them */
@@ -708,6 +733,35 @@ public:
 		return method(sig.name, sig.flags, sig.requiredArgs, sig.args, sig.argc, &detail::Bound<M, K...>::handle, sig.returns);
 	}
 
+	/* whether a method of that name is already declared on the builder
+	 * (case-insensitive, like the engine's function table) */
+	bool hasMethod(const char *methodName) const
+	{
+		for (const zend_function_entry &entry : entries) {
+			if (strcasecmp(entry.fname, methodName) == 0) return true;
+		}
+		return false;
+	}
+
+	/*
+	 * A method contributed by a PHP trait (the pt_type_trait_* registrars in
+	 * TypeTraits.cpp): registered only when the class did not declare a
+	 * method of that name itself — the class body wins over a used trait,
+	 * exactly the precedence PHP applies. The class's own methods must
+	 * therefore be registered before its trait registrars run.
+	 */
+	Class &traitMethod(const char *methodName, uint32_t flags, uint32_t requiredArgs, std::initializer_list<Arg> args, zif_handler handler, const Arg *returns = NULL)
+	{
+		if (hasMethod(methodName)) return *this;
+		return method(methodName, flags, requiredArgs, args, handler, returns);
+	}
+
+	Class &traitMethod(const Sig &sig, zif_handler handler)
+	{
+		if (hasMethod(sig.name)) return *this;
+		return method(sig, handler);
+	}
+
 	/* declaration order defines the OBJ_PROP_NUM slot, as with the macros */
 	Class &privateLongProperty(const char *propertyName, zend_long defaultValue)
 	{
@@ -755,6 +809,15 @@ public:
 	Class &publicReadonlyProperty(const char *propertyName, uint32_t typeMask)
 	{
 		properties.push_back({ propertyName, PropertyKind::Typed, ZEND_ACC_PUBLIC | ZEND_ACC_READONLY, (zend_long) typeMask });
+		return *this;
+	}
+
+	/* a `private` typed property with no default (IS_PROP_UNINIT until the
+	 * constructor writes it), as a promoted `private bool $value` declares;
+	 * typeMask is a MAY_BE_* mask */
+	Class &privateTypedProperty(const char *propertyName, uint32_t typeMask)
+	{
+		properties.push_back({ propertyName, PropertyKind::Typed, ZEND_ACC_PRIVATE, (zend_long) typeMask });
 		return *this;
 	}
 

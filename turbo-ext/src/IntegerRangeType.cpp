@@ -449,7 +449,7 @@ public:
 			if (UNEXPECTED(result.isUndef())) return zv::Val();
 			results.push(std::move(result));
 		}
-		return pt_type_call_spread(Z_OBJ_P(no.raw()), PT_LC("or"), results.table());
+		return pt_is_super_type_of_result_spread(Z_OBJ_P(no.raw()), false, results.table());
 	}
 
 	/* $this->isSubTypeOf($acceptingType)->toAcceptsResult(); UNDEF =

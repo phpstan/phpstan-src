@@ -108,29 +108,6 @@ static zv::Val combinator2(const char *lcname, size_t len, zval *a, zval *b)
 	return pt_type_combinator_call(lcname, len, 2, args);
 }
 
-/* Class::method(...$args) on a class entry the native code holds, the
- * arguments spread from a PHP array; UNDEF = pending exception */
-static zv::Val staticSpread(zend_class_entry *ce, const char *lcname, size_t len, HashTable *args)
-{
-	uint32_t count = zend_hash_num_elements(args);
-	zval *argv = args->arPacked;
-	bool owned = false;
-	if (UNEXPECTED(!HT_IS_PACKED(args) || !HT_IS_WITHOUT_HOLES(args))) {
-		argv = (zval *) safe_emalloc(count, sizeof(zval), 0);
-		uint32_t i = 0;
-		for (zv::ArrayEntry entry : zv::TableRef(args)) {
-			ZVAL_COPY_VALUE(&argv[i++], entry.value().raw());
-		}
-		count = i;
-		owned = true;
-	}
-	zv::Val result = pt_type_call_static_ce(ce, lcname, len, count, argv);
-	if (owned) {
-		efree(argv);
-	}
-	return result;
-}
-
 /* throw new ShouldNotHappenException($message) ($message NULL = the
  * default) */
 static void throwShouldNotHappen(zval *message)
@@ -817,7 +794,7 @@ public:
 		}
 		zv::Val no = isSuperTypeOfResult(PT_TRI_NO);
 		if (UNEXPECTED(no.isUndef())) return zv::Val();
-		zv::Val result = pt_type_call_spread(Z_OBJ_P(no.raw()), PT_LC("or"), results.table());
+		zv::Val result = pt_is_super_type_of_result_spread(Z_OBJ_P(no.raw()), false, results.table());
 		if (UNEXPECTED(result.isUndef())) return zv::Val();
 
 		bool orWithSubType;
@@ -856,7 +833,7 @@ public:
 
 		zv::Val results = mapReversed(PT_LC("issupertypeof"), Z_OBJ_P(otherType), 0, NULL);
 		if (UNEXPECTED(results.isUndef())) return zv::Val();
-		return staticSpread(pt_ce_is_super_type_of_result, PT_LC("extremeidentity"), zv::ArrRef(results.raw()).table());
+		return pt_is_super_type_of_result_extreme_identity_spread(zv::ArrRef(results.raw()).table());
 	}
 
 	/* yes when the finite set is contained, else AcceptsResult::extremeIdentity()
@@ -871,7 +848,7 @@ public:
 		ZVAL_BOOL(&strictZv, strictTypes);
 		zv::Val results = mapReversed(PT_LC("accepts"), Z_OBJ_P(acceptingType), 1, &strictZv);
 		if (UNEXPECTED(results.isUndef())) return zv::Val();
-		return staticSpread(pt_ce_accepts_result, PT_LC("extremeidentity"), zv::ArrRef(results.raw()).table());
+		return pt_accepts_result_extreme_identity_spread(zv::ArrRef(results.raw()).table());
 	}
 
 	/* the same class (`$type instanceof static`) with the same member
@@ -967,13 +944,10 @@ public:
 	 * = pending exception */
 	zv::Val describe(zval *level) const
 	{
-		zv::Val levelValueZv = pt_type_call(Z_OBJ_P(level), PT_LC("getlevelvalue"), 0, NULL);
-		if (UNEXPECTED(levelValueZv.isUndef())) return zv::Val();
-		if (UNEXPECTED(!zv::Ref(levelValueZv.raw()).isLong())) {
-			zend_type_error("phpstan_turbo: %s::getLevelValue() must return int", ZSTR_VAL(Z_OBJCE_P(level)->name));
-			return zv::Val();
-		}
-		zend_long levelValue = zv::Ref(levelValueZv.raw()).asLong();
+		/* $level->getLevelValue() — the shadowing VerbosityLevel's slot, or
+		 * the PHP twin's method (VerbosityLevel.cpp) */
+		zend_long levelValue;
+		if (UNEXPECTED(!pt_verbosity_level_value_of(level, levelValue))) return zv::Val();
 		zval *cache = OBJ_PROP_NUM(self, slots::cachedDescriptions);
 		if (EXPECTED(Z_TYPE_P(cache) == IS_ARRAY)) {
 			zval *cached = zend_hash_index_find(Z_ARRVAL_P(cache), levelValue);
@@ -2997,6 +2971,7 @@ void pt_register_union_type()
 	});
 
 	cls.method(sigs::getTypes, utGetTypes);
+	cls.op<PT_OP_GET_TYPES, &UnionType::getTypes>();
 
 	cls.method(sigs::filterTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_fcall_info fci;
@@ -3015,6 +2990,7 @@ void pt_register_union_type()
 	cls.method(sigs::getReferencedClasses, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::getReferencedClasses);
 	});
+	cls.op<PT_OP_GET_REFERENCED_CLASSES, &UnionType::getReferencedClasses>();
 	cls.method(sigs::getObjectClassNames, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::getObjectClassNames);
 	});
@@ -3022,6 +2998,7 @@ void pt_register_union_type()
 	cls.method(sigs::getObjectClassReflections, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::getObjectClassReflections);
 	});
+	cls.op<PT_OP_GET_OBJECT_CLASS_REFLECTIONS, &UnionType::getObjectClassReflections>();
 	cls.method(sigs::getArrays, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::getArrays);
 	});
@@ -3085,12 +3062,14 @@ void pt_register_union_type()
 	cls.method(sigs::hasInstanceProperty, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_trinary_string(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::hasInstanceProperty);
 	});
+	cls.op<PT_OP_HAS_INSTANCE_PROPERTY, &UnionType::hasInstanceProperty>();
 	cls.method(sigs::getInstanceProperty, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_transformed_member(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getunresolvedinstancepropertyprototype"), false);
 	});
 	cls.method(sigs::getUnresolvedInstancePropertyPrototype, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_unresolved_prototype(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::getUnresolvedInstancePropertyPrototype);
 	});
+	cls.op<PT_OP_GET_UNRESOLVED_INSTANCE_PROPERTY_PROTOTYPE, &UnionType::getUnresolvedInstancePropertyPrototype>();
 	cls.method(sigs::hasStaticProperty, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_trinary_string(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::hasStaticProperty);
 	});
@@ -3106,12 +3085,14 @@ void pt_register_union_type()
 	cls.method(sigs::hasMethod, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_trinary_string(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::hasMethod);
 	});
+	cls.op<PT_OP_HAS_METHOD, &UnionType::hasMethod>();
 	cls.method(sigs::getMethod, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_transformed_member(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getunresolvedmethodprototype"), true);
 	});
 	cls.method(sigs::getUnresolvedMethodPrototype, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_unresolved_prototype(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::getUnresolvedMethodPrototype);
 	});
+	cls.op<PT_OP_GET_UNRESOLVED_METHOD_PROTOTYPE, &UnionType::getUnresolvedMethodPrototype>();
 	cls.method(sigs::canAccessConstants, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::canAccessConstants);
 	});
@@ -3229,9 +3210,11 @@ void pt_register_union_type()
 		if (!zp::parse<zp::Obj>(execute_data, offsetType)) RETURN_THROWS();
 		PT_RETURN_TRINARY_OR_THROW(PT_THIS.hasOffsetValueType(offsetType));
 	});
+	cls.op<PT_OP_HAS_OFFSET_VALUE_TYPE, &UnionType::hasOffsetValueType>();
 	cls.method(sigs::getOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_value_object(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::getOffsetValueType);
 	});
+	cls.op<PT_OP_GET_OFFSET_VALUE_TYPE, &UnionType::getOffsetValueType>();
 	cls.method(sigs::setOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *offsetType, *valueType;
 		bool unionValues = true;
@@ -3325,6 +3308,7 @@ void pt_register_union_type()
 	cls.method(sigs::getEnumCaseObject, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::getEnumCaseObject);
 	});
+	cls.op<PT_OP_GET_ENUM_CASE_OBJECT, &UnionType::getEnumCaseObject>();
 
 	cls.method(sigs::isCallable, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::isCallable);

@@ -265,6 +265,7 @@ void pt_register_constant_integer_type()
 		if (UNEXPECTED(!PT_THIS.getValue(value))) RETURN_THROWS();
 		RETURN_LONG(value);
 	});
+	cls.op(PT_OP_GET_VALUE, PT_OP_LAMBDA { zend_long value = 0; if (UNEXPECTED(!ConstantIntegerType(self).getValue(value))) { return zv::Val(); } return zv::Val::integer(value); });
 
 	cls.method<&ConstantIntegerType::isSuperTypeOf, zp::Obj>(sigs::isSuperTypeOf);
 	cls.op<PT_OP_IS_SUPER_TYPE_OF, &ConstantIntegerType::isSuperTypeOf>();

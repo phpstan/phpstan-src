@@ -1242,9 +1242,11 @@ void pt_register_object_shape_type()
 	});
 
 	cls.method<&ObjectShapeType::getReferencedClasses>(sigs::getReferencedClasses);
+	cls.op<PT_OP_GET_REFERENCED_CLASSES, &ObjectShapeType::getReferencedClasses>();
 
 	cls.method(sigs::getObjectClassNames, ostEmptyArray0);
 	cls.method(sigs::getObjectClassReflections, ostEmptyArray0);
+	cls.op(PT_OP_GET_OBJECT_CLASS_REFLECTIONS, PT_OP_LAMBDA { return pt_op_empty_array(); });
 
 	cls.method<&ObjectShapeType::getClassStringType>(sigs::getClassStringType);
 
@@ -1272,12 +1274,14 @@ void pt_register_object_shape_type()
 	});
 
 	cls.method(sigs::hasInstanceProperty, ostHasInstanceProperty);
+	cls.op<PT_OP_HAS_INSTANCE_PROPERTY, &ObjectShapeType::hasInstanceProperty>();
 
 	cls.method(sigs::getInstanceProperty, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ostTransformedProperty(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getunresolvedinstancepropertyprototype"));
 	});
 
 	cls.method(sigs::getUnresolvedInstancePropertyPrototype, ostUnresolvedInstancePropertyPrototype);
+	cls.op(PT_OP_GET_UNRESOLVED_INSTANCE_PROPERTY_PROTOTYPE, PT_OP_LAMBDA { return ObjectShapeType(self).getUnresolvedInstancePropertyPrototype(Z_STR(argv[0])); });
 
 	cls.method(sigs::hasStaticProperty, ostNo1);
 	cls.method(sigs::getStaticProperty, ostShouldNotHappen2);
@@ -1304,6 +1308,7 @@ void pt_register_object_shape_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_NULL();
 	});
+	cls.op(PT_OP_GET_ENUM_CASE_OBJECT, PT_OP_LAMBDA { return zv::Val::null(); });
 
 	cls.method(sigs::traverse, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_fcall_info fci;

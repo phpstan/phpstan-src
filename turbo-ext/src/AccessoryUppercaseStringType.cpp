@@ -340,9 +340,11 @@ void pt_register_accessory_uppercase_string_type()
 	});
 
 	cls.method(sigs::getReferencedClasses, aucsEmptyArray0);
+	cls.op(PT_OP_GET_REFERENCED_CLASSES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getObjectClassNames, aucsEmptyArray0);
 	cls.op(PT_OP_GET_OBJECT_CLASS_NAMES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getObjectClassReflections, aucsEmptyArray0);
+	cls.op(PT_OP_GET_OBJECT_CLASS_REFLECTIONS, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getConstantStrings, aucsEmptyArray0);
 
 	cls.method<&AccessoryUppercaseStringType::accepts, zp::Obj, zp::Bool>(sigs::accepts);
@@ -388,10 +390,12 @@ void pt_register_accessory_uppercase_string_type()
 		if (UNEXPECTED(value < 0)) RETURN_THROWS();
 		PT_RETURN_TRINARY(value);
 	});
+	cls.op(PT_OP_HAS_OFFSET_VALUE_TYPE, PT_OP_LAMBDA { return pt_op_trinary(AccessoryUppercaseStringType::hasOffsetValueType(argv)); });
 
 	cls.method(sigs::getOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_aucs_one_type(INTERNAL_FUNCTION_PARAM_PASSTHRU, &AccessoryUppercaseStringType::getOffsetValueType);
 	});
+	cls.op<PT_OP_GET_OFFSET_VALUE_TYPE, &AccessoryUppercaseStringType::getOffsetValueType>();
 
 	cls.method(sigs::setOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *offsetType, *valueType;
@@ -458,6 +462,7 @@ void pt_register_accessory_uppercase_string_type()
 	cls.op(PT_OP_IS_VOID, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isScalar, aucsYes0);
 	cls.method(sigs::hasMethod, aucsMaybe1);
+	cls.op(PT_OP_HAS_METHOD, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_MAYBE); });
 
 	cls.method(sigs::looseCompare, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *type, *phpVersion;

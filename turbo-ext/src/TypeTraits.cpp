@@ -308,6 +308,42 @@ zv::Val pt_type_call_spread(zend_object *object, const char *lcname, size_t len,
 	return result;
 }
 
+zv::Val pt_is_super_type_of_result_spread(zend_object *self, bool isAnd, HashTable *args)
+{
+	uint32_t count;
+	bool owned;
+	zval *argv = pt_type_spread_args(args, count, owned);
+	zv::Val result = pt_is_super_type_of_result_combine(self, isAnd, count, argv);
+	if (owned) {
+		efree(argv);
+	}
+	return result;
+}
+
+zv::Val pt_is_super_type_of_result_extreme_identity_spread(HashTable *args)
+{
+	uint32_t count;
+	bool owned;
+	zval *argv = pt_type_spread_args(args, count, owned);
+	zv::Val result = pt_is_super_type_of_result_extreme_identity(count, argv);
+	if (owned) {
+		efree(argv);
+	}
+	return result;
+}
+
+zv::Val pt_accepts_result_extreme_identity_spread(HashTable *args)
+{
+	uint32_t count;
+	bool owned;
+	zval *argv = pt_type_spread_args(args, count, owned);
+	zv::Val result = pt_accepts_result_extreme_identity(count, argv);
+	if (owned) {
+		efree(argv);
+	}
+	return result;
+}
+
 zv::Val pt_type_mixed_minus(HashTable *subtractedTypes)
 {
 	zv::Val mixed = pt_type_new_mixed_type();
@@ -451,9 +487,11 @@ void pt_type_trait_just_nullable(reg::Class &cls)
 {
 	namespace sigs = ptdecl::JustNullableTypeTrait::sig;
 	cls.traitMethod(sigs::getReferencedClasses, emptyArray0);
+	cls.traitOp(PT_OP_GET_REFERENCED_CLASSES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.traitMethod(sigs::getObjectClassNames, emptyArray0);
 	cls.traitOp(PT_OP_GET_OBJECT_CLASS_NAMES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.traitMethod(sigs::getObjectClassReflections, emptyArray0);
+	cls.traitOp(PT_OP_GET_OBJECT_CLASS_REFLECTIONS, PT_OP_LAMBDA { return pt_op_empty_array(); });
 
 	cls.traitMethod(sigs::accepts, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *type;
@@ -694,16 +732,20 @@ void pt_type_trait_non_object(reg::Class &cls)
 	cls.traitMethod(sigs::getProperty, shouldNotHappen2);
 	cls.traitMethod(sigs::getUnresolvedPropertyPrototype, shouldNotHappen2);
 	cls.traitMethod(sigs::hasInstanceProperty, trinaryNo1);
+	cls.traitOp(PT_OP_HAS_INSTANCE_PROPERTY, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.traitMethod(sigs::getInstanceProperty, shouldNotHappen2);
 	cls.traitMethod(sigs::getUnresolvedInstancePropertyPrototype, shouldNotHappen2);
+	cls.traitOp(PT_OP_GET_UNRESOLVED_INSTANCE_PROPERTY_PROTOTYPE, PT_OP_LAMBDA { pt_throw_should_not_happen(); return zv::Val(); });
 	cls.traitMethod(sigs::hasStaticProperty, trinaryNo1);
 	cls.traitMethod(sigs::getStaticProperty, shouldNotHappen2);
 	cls.traitMethod(sigs::getUnresolvedStaticPropertyPrototype, shouldNotHappen2);
 
 	cls.traitMethod(sigs::canCallMethods, trinaryNo0);
 	cls.traitMethod(sigs::hasMethod, trinaryNo1);
+	cls.traitOp(PT_OP_HAS_METHOD, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.traitMethod(sigs::getMethod, shouldNotHappen2);
 	cls.traitMethod(sigs::getUnresolvedMethodPrototype, shouldNotHappen2);
+	cls.traitOp(PT_OP_GET_UNRESOLVED_METHOD_PROTOTYPE, PT_OP_LAMBDA { pt_throw_should_not_happen(); return zv::Val(); });
 
 	cls.traitMethod(sigs::canAccessConstants, trinaryNo0);
 	cls.traitMethod(sigs::hasConstant, trinaryNo1);
@@ -717,6 +759,7 @@ void pt_type_trait_non_object(reg::Class &cls)
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_NULL();
 	});
+	cls.traitOp(PT_OP_GET_ENUM_CASE_OBJECT, PT_OP_LAMBDA { return zv::Val::null(); });
 
 	cls.traitMethod(sigs::getTemplateType, errorType2);
 }
@@ -823,7 +866,9 @@ void pt_type_trait_non_offset_accessible(reg::Class &cls)
 	namespace sigs = ptdecl::NonOffsetAccessibleTypeTrait::sig;
 	cls.traitMethod(sigs::isOffsetAccessible, trinaryNo0);
 	cls.traitMethod(sigs::hasOffsetValueType, trinaryNo1);
+	cls.traitOp(PT_OP_HAS_OFFSET_VALUE_TYPE, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.traitMethod(sigs::getOffsetValueType, errorType1);
+	cls.traitOp(PT_OP_GET_OFFSET_VALUE_TYPE, PT_OP_LAMBDA { return pt_type_new_error_type(); });
 	cls.traitMethod(sigs::setOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		PT_ARGS(2, 3);
 		PT_RETURN_ERROR_TYPE();
@@ -1553,10 +1598,12 @@ void pt_type_trait_maybe_offset_accessible(reg::Class &cls)
 		PT_ARGS(1, 1);
 		PT_RETURN_TRINARY(PT_TRI_MAYBE);
 	});
+	cls.traitOp(PT_OP_HAS_OFFSET_VALUE_TYPE, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_MAYBE); });
 	cls.traitMethod(sigs::getOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		PT_ARGS(1, 1);
 		PT_RETURN_VAL(pt_type_new_mixed_type());
 	});
+	cls.traitOp(PT_OP_GET_OFFSET_VALUE_TYPE, PT_OP_LAMBDA { return pt_type_new_mixed_type(); });
 	cls.traitMethod(sigs::setOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		PT_ARGS(2, 3);
 		PT_RETURN_THIS();
@@ -1686,12 +1733,14 @@ void pt_type_trait_object(reg::Class &cls)
 		objectTraitUnresolvedPrototype(INTERNAL_FUNCTION_PARAM_PASSTHRU, false);
 	});
 	cls.traitMethod(sigs::hasInstanceProperty, trinaryMaybe1);
+	cls.traitOp(PT_OP_HAS_INSTANCE_PROPERTY, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_MAYBE); });
 	cls.traitMethod(sigs::getInstanceProperty, [](INTERNAL_FUNCTION_PARAMETERS) {
 		objectTraitTransformedMember(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getunresolvedinstancepropertyprototype"), false);
 	});
 	cls.traitMethod(sigs::getUnresolvedInstancePropertyPrototype, [](INTERNAL_FUNCTION_PARAMETERS) {
 		objectTraitUnresolvedPrototype(INTERNAL_FUNCTION_PARAM_PASSTHRU, false);
 	});
+	cls.traitOp(PT_OP_GET_UNRESOLVED_INSTANCE_PROPERTY_PROTOTYPE, PT_OP_LAMBDA { return pt_type_dummy_unresolved_prototype(false, argv); });
 	cls.traitMethod(sigs::hasStaticProperty, trinaryMaybe1);
 	cls.traitMethod(sigs::getStaticProperty, [](INTERNAL_FUNCTION_PARAMETERS) {
 		objectTraitTransformedMember(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getunresolvedstaticpropertyprototype"), false);
@@ -1702,12 +1751,14 @@ void pt_type_trait_object(reg::Class &cls)
 
 	cls.traitMethod(sigs::canCallMethods, trinaryYes0);
 	cls.traitMethod(sigs::hasMethod, trinaryMaybe1);
+	cls.traitOp(PT_OP_HAS_METHOD, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_MAYBE); });
 	cls.traitMethod(sigs::getMethod, [](INTERNAL_FUNCTION_PARAMETERS) {
 		objectTraitTransformedMember(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getunresolvedmethodprototype"), true);
 	});
 	cls.traitMethod(sigs::getUnresolvedMethodPrototype, [](INTERNAL_FUNCTION_PARAMETERS) {
 		objectTraitUnresolvedPrototype(INTERNAL_FUNCTION_PARAM_PASSTHRU, true);
 	});
+	cls.traitOp(PT_OP_GET_UNRESOLVED_METHOD_PROTOTYPE, PT_OP_LAMBDA { return pt_type_dummy_unresolved_prototype(true, argv); });
 
 	cls.traitMethod(sigs::canAccessConstants, trinaryYes0);
 	cls.traitMethod(sigs::hasConstant, trinaryMaybe1);
@@ -2042,6 +2093,13 @@ bool pt_direct_invoke(const zend_function *fn, zend_object *object, uint32_t arg
 			*retval = result.take();
 			return true;
 		}
+	} else {
+		/* the StaticType callback holder (StaticType.cpp) and the identity
+		 * callback (MixedType.cpp) */
+		if (pt_static_type_callbacks_direct_invoke(fn, object, argc, argv, retval, handled)) return true;
+		if (handled) return false;
+		if (pt_identity_callback_direct_invoke(fn, object, argc, argv, retval, handled)) return true;
+		if (handled) return false;
 	}
 	handled = false;
 	return false;
@@ -2213,6 +2271,7 @@ void pt_type_trait_array(reg::Class &cls)
 	cls.traitMethod(sigs::getObjectClassNames, emptyArray0);
 	cls.traitOp(PT_OP_GET_OBJECT_CLASS_NAMES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.traitMethod(sigs::getObjectClassReflections, emptyArray0);
+	cls.traitOp(PT_OP_GET_OBJECT_CLASS_REFLECTIONS, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.traitMethod(sigs::toNumber, errorType0);
 	cls.traitMethod(sigs::toBitwiseNotType, errorType0);
 	cls.traitMethod(sigs::toAbsoluteNumber, errorType0);
@@ -2309,6 +2368,18 @@ void pt_type_trait_maybe_array(reg::Class &cls)
 /* new CallbackUnresolved{Property,Method}PrototypeReflection($member,
  * $member->getDeclaringClass(), false, static fn (Type $type): Type => $type)
  * over a Dummy{Property,Method}Reflection($name) */
+/* the body, shared with the direct entries; UNDEF = pending exception */
+static zv::Val maybeObjectUnresolvedPrototype(bool isMethod, zval *name)
+{
+	zv::Val member = pt_type_new(isMethod ? PT_CLASS_DUMMY_METHOD_REFLECTION : PT_CLASS_DUMMY_PROPERTY_REFLECTION, 1, name);
+	if (UNEXPECTED(member.isUndef())) return zv::Val();
+	zv::Val declaringClass = pt_type_call(Z_OBJ_P(member.raw()), PT_LC("getdeclaringclass"), 0, NULL);
+	if (UNEXPECTED(declaringClass.isUndef())) return zv::Val();
+	zv::Val callback = pt_type_identity_callback();
+	zv::Args args{member.raw(), declaringClass.raw(), false, callback.raw()};
+	return pt_type_new(isMethod ? PT_CLASS_CALLBACK_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION : PT_CLASS_CALLBACK_UNRESOLVED_PROPERTY_PROTOTYPE_REFLECTION, 4, args);
+}
+
 static void pt_maybe_object_unresolved_prototype(INTERNAL_FUNCTION_PARAMETERS, bool isMethod)
 {
 	zend_string *name;
@@ -2316,17 +2387,7 @@ static void pt_maybe_object_unresolved_prototype(INTERNAL_FUNCTION_PARAMETERS, b
 	if (!zp::parse<zp::Str, zp::Obj>(execute_data, name, scope)) RETURN_THROWS();
 	zval nameZv;
 	ZVAL_STR(&nameZv, name);
-	zv::Val member = pt_type_new(isMethod ? PT_CLASS_DUMMY_METHOD_REFLECTION : PT_CLASS_DUMMY_PROPERTY_REFLECTION, 1, &nameZv);
-	if (UNEXPECTED(member.isUndef())) RETURN_THROWS();
-	zv::Val declaringClass = pt_type_call(Z_OBJ_P(member.raw()), PT_LC("getdeclaringclass"), 0, NULL);
-	if (UNEXPECTED(declaringClass.isUndef())) RETURN_THROWS();
-	zv::Val callback = pt_type_identity_callback();
-	zval args[4];
-	ZVAL_COPY_VALUE(&args[0], member.raw());
-	ZVAL_COPY_VALUE(&args[1], declaringClass.raw());
-	ZVAL_FALSE(&args[2]);
-	ZVAL_COPY_VALUE(&args[3], callback.raw());
-	PT_RETURN_VAL(pt_type_new(isMethod ? PT_CLASS_CALLBACK_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION : PT_CLASS_CALLBACK_UNRESOLVED_PROPERTY_PROTOTYPE_REFLECTION, 4, args));
+	PT_RETURN_VAL(maybeObjectUnresolvedPrototype(isMethod, &nameZv));
 }
 
 /* $this->getUnresolved*Prototype($name, $scope)->getTransformedProperty() /
@@ -2423,12 +2484,14 @@ void pt_type_trait_maybe_object(reg::Class &cls)
 		pt_maybe_object_unresolved_prototype(INTERNAL_FUNCTION_PARAM_PASSTHRU, false);
 	});
 	cls.traitMethod(sigs::hasInstanceProperty, trinaryMaybe1);
+	cls.traitOp(PT_OP_HAS_INSTANCE_PROPERTY, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_MAYBE); });
 	cls.traitMethod(sigs::getInstanceProperty, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_maybe_object_transformed_member(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getunresolvedinstancepropertyprototype"), false);
 	});
 	cls.traitMethod(sigs::getUnresolvedInstancePropertyPrototype, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_maybe_object_unresolved_prototype(INTERNAL_FUNCTION_PARAM_PASSTHRU, false);
 	});
+	cls.traitOp(PT_OP_GET_UNRESOLVED_INSTANCE_PROPERTY_PROTOTYPE, PT_OP_LAMBDA { return maybeObjectUnresolvedPrototype(false, argv); });
 	cls.traitMethod(sigs::hasStaticProperty, trinaryMaybe1);
 	cls.traitMethod(sigs::getStaticProperty, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_maybe_object_transformed_member(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getunresolvedstaticpropertyprototype"), false);
@@ -2438,12 +2501,14 @@ void pt_type_trait_maybe_object(reg::Class &cls)
 	});
 	cls.traitMethod(sigs::canCallMethods, trinaryMaybe0);
 	cls.traitMethod(sigs::hasMethod, trinaryMaybe1);
+	cls.traitOp(PT_OP_HAS_METHOD, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_MAYBE); });
 	cls.traitMethod(sigs::getMethod, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_maybe_object_transformed_member(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getunresolvedmethodprototype"), true);
 	});
 	cls.traitMethod(sigs::getUnresolvedMethodPrototype, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_maybe_object_unresolved_prototype(INTERNAL_FUNCTION_PARAM_PASSTHRU, true);
 	});
+	cls.traitOp(PT_OP_GET_UNRESOLVED_METHOD_PROTOTYPE, PT_OP_LAMBDA { return maybeObjectUnresolvedPrototype(true, argv); });
 	cls.traitMethod(sigs::canAccessConstants, trinaryMaybe0);
 	cls.traitMethod(sigs::hasConstant, trinaryMaybe1);
 
@@ -3388,6 +3453,15 @@ public:
 		return pt_type_call(Z_OBJ_P(result.raw()), lcname, len, argc, argv);
 	}
 
+	/* the same for a hot operation (TypeOps.h): the resolved type's direct
+	 * entry when it is a native class */
+	zv::Val delegateOp(pt_type_op_id op, uint32_t argc, zval *argv) const
+	{
+		zv::Val result = resolved();
+		if (UNEXPECTED(result.isUndef())) return zv::Val();
+		return pt_type_op(Z_OBJ_P(result.raw()), op, argc, argv);
+	}
+
 	/* the same with the method named by the trait method's own frame (the
 	 * one forward every `return $this->resolve()->x(...)` body is) */
 	zv::Val delegateNamed(zend_string *name, uint32_t argc, zval *argv) const
@@ -3609,6 +3683,7 @@ void pt_type_trait_late_resolvable(reg::Class &cls)
 
 	cls.traitMethod(sigs::getObjectClassNames, lrDelegate);
 	cls.traitMethod(sigs::getObjectClassReflections, lrDelegate);
+	cls.traitOp(PT_OP_GET_OBJECT_CLASS_REFLECTIONS, PT_OP_LAMBDA { return LateResolvable(self, scope).delegateOp(PT_OP_GET_OBJECT_CLASS_REFLECTIONS, argc, argv); });
 	cls.traitMethod(sigs::getArrays, lrDelegate);
 	cls.traitMethod(sigs::getConstantArrays, lrDelegate);
 	cls.traitMethod(sigs::getConstantStrings, lrDelegate);
@@ -3624,15 +3699,19 @@ void pt_type_trait_late_resolvable(reg::Class &cls)
 	cls.traitMethod(sigs::getProperty, lrDelegate);
 	cls.traitMethod(sigs::getUnresolvedPropertyPrototype, lrDelegate);
 	cls.traitMethod(sigs::hasInstanceProperty, lrDelegate);
+	cls.traitOp(PT_OP_HAS_INSTANCE_PROPERTY, PT_OP_LAMBDA { return LateResolvable(self, scope).delegateOp(PT_OP_HAS_INSTANCE_PROPERTY, argc, argv); });
 	cls.traitMethod(sigs::getInstanceProperty, lrDelegate);
 	cls.traitMethod(sigs::getUnresolvedInstancePropertyPrototype, lrDelegate);
+	cls.traitOp(PT_OP_GET_UNRESOLVED_INSTANCE_PROPERTY_PROTOTYPE, PT_OP_LAMBDA { return LateResolvable(self, scope).delegateOp(PT_OP_GET_UNRESOLVED_INSTANCE_PROPERTY_PROTOTYPE, argc, argv); });
 	cls.traitMethod(sigs::hasStaticProperty, lrDelegate);
 	cls.traitMethod(sigs::getStaticProperty, lrDelegate);
 	cls.traitMethod(sigs::getUnresolvedStaticPropertyPrototype, lrDelegate);
 	cls.traitMethod(sigs::canCallMethods, lrDelegate);
 	cls.traitMethod(sigs::hasMethod, lrDelegate);
+	cls.traitOp(PT_OP_HAS_METHOD, PT_OP_LAMBDA { return LateResolvable(self, scope).delegateOp(PT_OP_HAS_METHOD, argc, argv); });
 	cls.traitMethod(sigs::getMethod, lrDelegate);
 	cls.traitMethod(sigs::getUnresolvedMethodPrototype, lrDelegate);
+	cls.traitOp(PT_OP_GET_UNRESOLVED_METHOD_PROTOTYPE, PT_OP_LAMBDA { return LateResolvable(self, scope).delegateOp(PT_OP_GET_UNRESOLVED_METHOD_PROTOTYPE, argc, argv); });
 	cls.traitMethod(sigs::canAccessConstants, lrDelegate);
 	cls.traitMethod(sigs::hasConstant, lrDelegate);
 	cls.traitMethod(sigs::getConstant, lrDelegate);
@@ -3652,7 +3731,9 @@ void pt_type_trait_late_resolvable(reg::Class &cls)
 	cls.traitMethod(sigs::isOffsetAccessible, lrDelegate);
 	cls.traitMethod(sigs::isOffsetAccessLegal, lrDelegate);
 	cls.traitMethod(sigs::hasOffsetValueType, lrDelegate);
+	cls.traitOp(PT_OP_HAS_OFFSET_VALUE_TYPE, PT_OP_LAMBDA { return LateResolvable(self, scope).delegateOp(PT_OP_HAS_OFFSET_VALUE_TYPE, argc, argv); });
 	cls.traitMethod(sigs::getOffsetValueType, lrDelegate);
+	cls.traitOp(PT_OP_GET_OFFSET_VALUE_TYPE, PT_OP_LAMBDA { return LateResolvable(self, scope).delegateOp(PT_OP_GET_OFFSET_VALUE_TYPE, argc, argv); });
 	cls.traitMethod(sigs::setOffsetValueType, lrDelegate);
 	cls.traitMethod(sigs::setExistingOffsetValueType, lrDelegate);
 	cls.traitMethod(sigs::unsetOffset, lrDelegate);
@@ -3680,6 +3761,7 @@ void pt_type_trait_late_resolvable(reg::Class &cls)
 	cls.traitMethod(sigs::isCallable, lrDelegate);
 	cls.traitMethod(sigs::getEnumCases, lrDelegate);
 	cls.traitMethod(sigs::getEnumCaseObject, lrDelegate);
+	cls.traitOp(PT_OP_GET_ENUM_CASE_OBJECT, PT_OP_LAMBDA { return LateResolvable(self, scope).delegateOp(PT_OP_GET_ENUM_CASE_OBJECT, argc, argv); });
 	cls.traitMethod(sigs::getCallableParametersAcceptors, lrDelegate);
 	cls.traitMethod(sigs::isCloneable, lrDelegate);
 	cls.traitMethod(sigs::toBoolean, lrDelegate);
@@ -4782,6 +4864,7 @@ void pt_type_trait_template_type(reg::Class &cls)
 		ZEND_PARSE_PARAMETERS_NONE();
 		PT_RETURN_VAL(PT_TT_THIS.getTypeWithoutSubtractedType());
 	});
+	cls.traitOp(PT_OP_GET_TYPE_WITHOUT_SUBTRACTED_TYPE, PT_OP_LAMBDA { return TemplateTypeTrait(self, scope).getTypeWithoutSubtractedType(); });
 
 	cls.traitMethod(sigs::changeSubtractedType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *subtractedType;
@@ -4795,6 +4878,7 @@ void pt_type_trait_template_type(reg::Class &cls)
 		ZEND_PARSE_PARAMETERS_NONE();
 		PT_RETURN_VAL(PT_TT_THIS.getSubtractedType());
 	});
+	cls.traitOp(PT_OP_GET_SUBTRACTED_TYPE, PT_OP_LAMBDA { return TemplateTypeTrait(self, scope).getSubtractedType(); });
 
 	cls.traitMethod(sigs::equals, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *type;

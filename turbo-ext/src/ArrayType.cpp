@@ -2077,6 +2077,7 @@ void pt_register_array_type()
 	cls.method<&ArrayType::getKeyType>(sigs::getKeyType);
 
 	cls.method<&ArrayType::getItemType>(sigs::getItemType);
+	cls.op<PT_OP_GET_ITEM_TYPE, &ArrayType::getItemType>();
 
 	cls.method(sigs::withTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *keyType, *itemType;
@@ -2088,6 +2089,7 @@ void pt_register_array_type()
 	});
 
 	cls.method<&ArrayType::getReferencedClasses>(sigs::getReferencedClasses);
+	cls.op<PT_OP_GET_REFERENCED_CLASSES, &ArrayType::getReferencedClasses>();
 
 	cls.method(sigs::getConstantArrays, atEmptyArray0);
 	cls.op(PT_OP_GET_CONSTANT_ARRAYS, PT_OP_LAMBDA { return pt_op_empty_array(); });
@@ -2151,10 +2153,12 @@ void pt_register_array_type()
 		if (!zp::parse<zp::Obj>(execute_data, offsetType)) RETURN_THROWS();
 		PT_RETURN_TRINARY_OR_THROW(PT_THIS.hasOffsetValueType(offsetType));
 	});
+	cls.op<PT_OP_HAS_OFFSET_VALUE_TYPE, &ArrayType::hasOffsetValueType>();
 
 	cls.method(sigs::getOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_at_one_type(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ArrayType::getOffsetValueType);
 	});
+	cls.op<PT_OP_GET_OFFSET_VALUE_TYPE, &ArrayType::getOffsetValueType>();
 
 	cls.method(sigs::setOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *offsetType, *valueType;

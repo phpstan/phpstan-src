@@ -835,11 +835,14 @@ void pt_register_iterable_type()
 
 	cls.method(sigs::getKeyType, itGetKeyType);
 	cls.method(sigs::getItemType, itGetItemType);
+	cls.op<PT_OP_GET_ITEM_TYPE, &IterableType::getItemType>();
 
 	cls.method<&IterableType::getReferencedClasses>(sigs::getReferencedClasses);
+	cls.op<PT_OP_GET_REFERENCED_CLASSES, &IterableType::getReferencedClasses>();
 	cls.method(sigs::getObjectClassNames, itEmptyArray0);
 	cls.op(PT_OP_GET_OBJECT_CLASS_NAMES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getObjectClassReflections, itEmptyArray0);
+	cls.op(PT_OP_GET_OBJECT_CLASS_REFLECTIONS, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getConstantStrings, itEmptyArray0);
 
 	cls.method<&IterableType::accepts, zp::Obj, zp::Bool>(sigs::accepts);
@@ -871,6 +874,7 @@ void pt_register_iterable_type()
 		if (UNEXPECTED(value < 0)) RETURN_THROWS();
 		PT_RETURN_TRINARY(value);
 	});
+	cls.op<PT_OP_HAS_OFFSET_VALUE_TYPE, &IterableType::hasOffsetValueType>();
 
 	cls.method(sigs::toNumber, itError0);
 	cls.method(sigs::toBitwiseNotType, itError0);
@@ -957,6 +961,7 @@ void pt_register_iterable_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_NULL();
 	});
+	cls.op(PT_OP_GET_ENUM_CASE_OBJECT, PT_OP_LAMBDA { return zv::Val::null(); });
 
 	cls.method<&IterableType::inferTemplateTypes, zp::Obj>(sigs::inferTemplateTypes);
 

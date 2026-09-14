@@ -497,6 +497,7 @@ void pt_register_verbosity_level()
 		ZEND_PARSE_PARAMETERS_NONE();
 		pt_vl_return_is(return_value, ZEND_THIS, VerbosityLevel::TYPE_ONLY);
 	});
+	cls.op(PT_OP_IS_TYPE_ONLY, PT_OP_LAMBDA { zend_long value = VerbosityLevel(self).value(); return value < 0 ? zv::Val() : zv::Val::boolean(value == VerbosityLevel::TYPE_ONLY); });
 
 	cls.method(sigs::isValue, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();

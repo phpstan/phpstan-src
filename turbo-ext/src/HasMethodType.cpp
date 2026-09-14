@@ -347,8 +347,10 @@ void pt_register_has_method_type()
 	cls.method<&HasMethodType::construct, zp::Str>(sigs::__construct);
 
 	cls.method(sigs::getReferencedClasses, hmtEmptyArray0);
+	cls.op(PT_OP_GET_REFERENCED_CLASSES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getObjectClassNames, hmtEmptyArray0);
 	cls.method(sigs::getObjectClassReflections, hmtEmptyArray0);
+	cls.op(PT_OP_GET_OBJECT_CLASS_REFLECTIONS, PT_OP_LAMBDA { return pt_op_empty_array(); });
 
 	cls.method(sigs::getClassStringType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_hmt_no_args(INTERNAL_FUNCTION_PARAM_PASSTHRU, &HasMethodType::getClassStringType);
@@ -383,6 +385,7 @@ void pt_register_has_method_type()
 		if (!zp::parse<zp::Str>(execute_data, methodName)) RETURN_THROWS();
 		PT_RETURN_TRINARY_OR_THROW(PT_THIS.hasMethod(methodName));
 	});
+	cls.op<PT_OP_HAS_METHOD, &HasMethodType::hasMethod>();
 
 	cls.method<&HasMethodType::getMethod, zp::Zval, zp::Obj>(sigs::getMethod);
 
@@ -390,6 +393,7 @@ void pt_register_has_method_type()
 		PT_ARGS(2, 2);
 		PT_RETURN_VAL(PT_THIS.getUnresolvedMethodPrototype());
 	});
+	cls.op<PT_OP_GET_UNRESOLVED_METHOD_PROTOTYPE, &HasMethodType::getUnresolvedMethodPrototype>();
 
 	cls.method(sigs::isCallable, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
@@ -438,6 +442,7 @@ void pt_register_has_method_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_NULL();
 	});
+	cls.op(PT_OP_GET_ENUM_CASE_OBJECT, PT_OP_LAMBDA { return zv::Val::null(); });
 	cls.method("traverse", reg::Public, 1, { reg::callableArg("cb") }, pt_type_identity_traverse_handler(), &ptret::type);
 	cls.method(sigs::traverseSimultaneously, hmtThis2);
 	cls.method(sigs::exponentiate, hmtError1);

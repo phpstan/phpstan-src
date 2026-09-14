@@ -235,6 +235,7 @@ void pt_register_this_type()
 	});
 
 	cls.method<&ThisType::changeBaseClass, zp::Obj>(sigs::changeBaseClass);
+	cls.op<PT_OP_CHANGE_BASE_CLASS, &ThisType::changeBaseClass>();
 
 	cls.method<&ThisType::describe, zp::Obj>(sigs::describe);
 	cls.op<PT_OP_DESCRIBE, &ThisType::describe>();

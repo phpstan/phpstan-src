@@ -1333,6 +1333,22 @@ static void ZEND_FASTCALL identityCallbackIdentity(INTERNAL_FUNCTION_PARAMETERS)
 	RETURN_COPY(type);
 }
 
+/* identity() entered without a frame (TypeOps.h, pt_direct_invoke): one
+ * object, as Z_PARAM_OBJECT delivers it; anything else is left to the
+ * engine path */
+bool pt_identity_callback_direct_invoke(const zend_function *fn, zend_object *object, uint32_t argc, zval *argv, zval *retval, bool &handled)
+{
+	(void) object;
+	handled = false;
+	if (fn->internal_function.handler != identityCallbackIdentity && !(fn->common.scope == pt_ce_identity_callback && zend_string_equals_literal(fn->common.function_name, "identity"))) {
+		return false;
+	}
+	if (argc != 1 || Z_TYPE_P(argv) != IS_OBJECT) return false;
+	handled = true;
+	ZVAL_COPY(retval, argv);
+	return true;
+}
+
 /* the trivial bodies the twin repeats (one handler per body and arity;
  * each method is still declared exactly once, at its registration line) */
 
@@ -1502,9 +1518,11 @@ void pt_register_mixed_type()
 	});
 
 	cls.method(sigs::getReferencedClasses, mtEmptyArray0);
+	cls.op(PT_OP_GET_REFERENCED_CLASSES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getObjectClassNames, mtEmptyArray0);
 	cls.op(PT_OP_GET_OBJECT_CLASS_NAMES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getObjectClassReflections, mtEmptyArray0);
+	cls.op(PT_OP_GET_OBJECT_CLASS_REFLECTIONS, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getArrays, mtEmptyArray0);
 	cls.method(sigs::getConstantArrays, mtEmptyArray0);
 	cls.op(PT_OP_GET_CONSTANT_ARRAYS, PT_OP_LAMBDA { return pt_op_empty_array(); });
@@ -1594,6 +1612,7 @@ void pt_register_mixed_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_NULL();
 	});
+	cls.op(PT_OP_GET_ENUM_CASE_OBJECT, PT_OP_LAMBDA { return zv::Val::null(); });
 
 	cls.method(sigs::getCallableParametersAcceptors, [](INTERNAL_FUNCTION_PARAMETERS) {
 		PT_ARGS(1, 1);
@@ -1637,12 +1656,14 @@ void pt_register_mixed_type()
 		pt_mt_unresolved_prototype(INTERNAL_FUNCTION_PARAM_PASSTHRU, false);
 	});
 	cls.method(sigs::hasInstanceProperty, mtYes1);
+	cls.op(PT_OP_HAS_INSTANCE_PROPERTY, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_YES); });
 	cls.method(sigs::getInstanceProperty, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_mt_transformed_member(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getunresolvedinstancepropertyprototype"), false);
 	});
 	cls.method(sigs::getUnresolvedInstancePropertyPrototype, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_mt_unresolved_prototype(INTERNAL_FUNCTION_PARAM_PASSTHRU, false);
 	});
+	cls.op(PT_OP_GET_UNRESOLVED_INSTANCE_PROPERTY_PROTOTYPE, PT_OP_LAMBDA { return MixedType::unresolvedPrototype(false, argv); });
 	cls.method(sigs::hasStaticProperty, mtYes1);
 	cls.method(sigs::getStaticProperty, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_mt_transformed_member(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getunresolvedstaticpropertyprototype"), false);
@@ -1652,12 +1673,14 @@ void pt_register_mixed_type()
 	});
 	cls.method(sigs::canCallMethods, mtYes0);
 	cls.method(sigs::hasMethod, mtYes1);
+	cls.op(PT_OP_HAS_METHOD, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_YES); });
 	cls.method(sigs::getMethod, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_mt_transformed_member(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getunresolvedmethodprototype"), true);
 	});
 	cls.method(sigs::getUnresolvedMethodPrototype, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_mt_unresolved_prototype(INTERNAL_FUNCTION_PARAM_PASSTHRU, true);
 	});
+	cls.op(PT_OP_GET_UNRESOLVED_METHOD_PROTOTYPE, PT_OP_LAMBDA { return MixedType::unresolvedPrototype(true, argv); });
 	cls.method(sigs::canAccessConstants, mtYes0);
 	cls.method(sigs::hasConstant, mtYes1);
 
@@ -1740,14 +1763,17 @@ void pt_register_mixed_type()
 		PT_ARGS(1, 1);
 		PT_RETURN_TRINARY_OR_THROW(PT_THIS.hasOffsetValueType());
 	});
+	cls.op<PT_OP_HAS_OFFSET_VALUE_TYPE, &MixedType::hasOffsetValueType>();
 
 	cls.method(sigs::getOffsetValueType, mtWithoutSubtractedType1);
+	cls.op<PT_OP_GET_OFFSET_VALUE_TYPE, &MixedType::withoutSubtractedType>();
 
 	cls.method<&MixedType::isExplicitMixed>(sigs::isExplicitMixed);
 
 	cls.method<&MixedType::subtract, zp::Obj>(sigs::subtract);
 
 	cls.method(sigs::getTypeWithoutSubtractedType, mtWithoutSubtractedType0);
+	cls.op<PT_OP_GET_TYPE_WITHOUT_SUBTRACTED_TYPE, &MixedType::withoutSubtractedType>();
 
 	cls.method<&MixedType::changeSubtractedType, zp::ObjOrNull>(sigs::changeSubtractedType);
 
@@ -1757,6 +1783,7 @@ void pt_register_mixed_type()
 		if (UNEXPECTED(subtracted == NULL)) RETURN_THROWS();
 		RETURN_COPY(subtracted);
 	});
+	cls.op(PT_OP_GET_SUBTRACTED_TYPE, PT_OP_LAMBDA { zval *subtracted = MixedType(self).subtractedType(); return subtracted == NULL ? zv::Val() : zv::Val::copyOf(zv::Ref(subtracted)); });
 
 	cls.method("traverse", reg::Public, 1, { reg::callableArg("cb") }, pt_type_identity_traverse_handler(), &ptret::type);
 	cls.op(PT_OP_TRAVERSE, PT_OP_LAMBDA { return pt_op_traverse_identity(self); });

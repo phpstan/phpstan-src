@@ -565,9 +565,11 @@ void pt_register_accessory_decimal_integer_string_type()
 	});
 
 	cls.method(sigs::getReferencedClasses, adisEmptyArray0);
+	cls.op(PT_OP_GET_REFERENCED_CLASSES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getObjectClassNames, adisEmptyArray0);
 	cls.op(PT_OP_GET_OBJECT_CLASS_NAMES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getObjectClassReflections, adisEmptyArray0);
+	cls.op(PT_OP_GET_OBJECT_CLASS_REFLECTIONS, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getConstantStrings, adisEmptyArray0);
 
 	cls.method<&AccessoryDecimalIntegerStringType::accepts, zp::Obj, zp::Bool>(sigs::accepts);
@@ -607,10 +609,12 @@ void pt_register_accessory_decimal_integer_string_type()
 		if (!zp::parse<zp::Obj>(execute_data, offsetType)) RETURN_THROWS();
 		PT_RETURN_TRINARY_OR_THROW(AccessoryDecimalIntegerStringType::hasOffsetValueType(offsetType));
 	});
+	cls.op(PT_OP_HAS_OFFSET_VALUE_TYPE, PT_OP_LAMBDA { return pt_op_trinary(AccessoryDecimalIntegerStringType::hasOffsetValueType(argv)); });
 
 	cls.method(sigs::getOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_adis_one_type(INTERNAL_FUNCTION_PARAM_PASSTHRU, &AccessoryDecimalIntegerStringType::getOffsetValueType);
 	});
+	cls.op<PT_OP_GET_OFFSET_VALUE_TYPE, &AccessoryDecimalIntegerStringType::getOffsetValueType>();
 
 	cls.method(sigs::setOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *offsetType, *valueType;

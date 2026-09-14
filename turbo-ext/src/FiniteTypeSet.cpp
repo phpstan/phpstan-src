@@ -366,6 +366,7 @@ void pt_register_finite_type_set()
 		if (UNEXPECTED(result < 0)) RETURN_THROWS();
 		RETURN_BOOL(result == 1);
 	});
+	cls.op(PT_OP_IS_COMPLETE, PT_OP_LAMBDA { int result = FiniteTypeSet(self).isComplete(); return result < 0 ? zv::Val() : zv::Val::boolean(result == 1); });
 
 	cls.method(sigs::getMembers, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();

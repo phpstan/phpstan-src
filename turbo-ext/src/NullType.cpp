@@ -427,16 +427,19 @@ void pt_register_null_type()
 	});
 
 	cls.method<&NullType::getReferencedClasses>(sigs::getReferencedClasses);
+	cls.op(PT_OP_GET_REFERENCED_CLASSES, PT_OP_LAMBDA { return NullType::getReferencedClasses(); });
 
 	cls.method<&NullType::getObjectClassNames>(sigs::getObjectClassNames);
 	cls.op(PT_OP_GET_OBJECT_CLASS_NAMES, PT_OP_LAMBDA { return NullType::getObjectClassNames(); });
 
 	cls.method<&NullType::getObjectClassReflections>(sigs::getObjectClassReflections);
+	cls.op(PT_OP_GET_OBJECT_CLASS_REFLECTIONS, PT_OP_LAMBDA { return NullType::getObjectClassReflections(); });
 
 	cls.method<&NullType::getConstantStrings>(sigs::getConstantStrings);
 
 	/* the twin declares no return type (`@return null`) */
 	cls.method<&NullType::getValue>(sigs::getValue);
+	cls.op(PT_OP_GET_VALUE, PT_OP_LAMBDA { return NullType::getValue(); });
 
 	cls.method(sigs::generalize, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *precision;
@@ -520,12 +523,14 @@ void pt_register_null_type()
 		if (!zp::parse<zp::Obj>(execute_data, offsetType)) RETURN_THROWS();
 		RETURN_COPY(pt_trinary_singleton(NullType::hasOffsetValueType()));
 	});
+	cls.op(PT_OP_HAS_OFFSET_VALUE_TYPE, PT_OP_LAMBDA { return pt_op_trinary(NullType::hasOffsetValueType()); });
 
 	cls.method(sigs::getOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *offsetType;
 		if (!zp::parse<zp::Obj>(execute_data, offsetType)) RETURN_THROWS();
 		PT_RETURN_VAL(NullType::getOffsetValueType());
 	});
+	cls.op(PT_OP_GET_OFFSET_VALUE_TYPE, PT_OP_LAMBDA { return NullType::getOffsetValueType(); });
 
 	cls.method(sigs::setOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *offsetType, *valueType;

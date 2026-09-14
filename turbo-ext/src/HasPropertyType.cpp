@@ -302,8 +302,10 @@ void pt_register_has_property_type()
 	cls.method<&HasPropertyType::construct, zp::Str>(sigs::__construct);
 
 	cls.method(sigs::getReferencedClasses, hptEmptyArray0);
+	cls.op(PT_OP_GET_REFERENCED_CLASSES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getObjectClassNames, hptEmptyArray0);
 	cls.method(sigs::getObjectClassReflections, hptEmptyArray0);
+	cls.op(PT_OP_GET_OBJECT_CLASS_REFLECTIONS, PT_OP_LAMBDA { return pt_op_empty_array(); });
 
 	cls.method<&HasPropertyType::getClassStringType>(sigs::getClassStringType);
 
@@ -340,6 +342,7 @@ void pt_register_has_property_type()
 	cls.method(sigs::hasInstanceProperty, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_hpt_one_name(INTERNAL_FUNCTION_PARAM_PASSTHRU, &HasPropertyType::hasInstanceProperty);
 	});
+	cls.op<PT_OP_HAS_INSTANCE_PROPERTY, &HasPropertyType::hasInstanceProperty>();
 
 	cls.method(sigs::hasStaticProperty, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_hpt_one_name(INTERNAL_FUNCTION_PARAM_PASSTHRU, &HasPropertyType::hasStaticProperty);
@@ -383,6 +386,7 @@ void pt_register_has_property_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_NULL();
 	});
+	cls.op(PT_OP_GET_ENUM_CASE_OBJECT, PT_OP_LAMBDA { return zv::Val::null(); });
 	cls.method("traverse", reg::Public, 1, { reg::callableArg("cb") }, pt_type_identity_traverse_handler(), &ptret::type);
 	cls.method(sigs::traverseSimultaneously, hptThis2);
 	cls.method(sigs::exponentiate, hptError1);

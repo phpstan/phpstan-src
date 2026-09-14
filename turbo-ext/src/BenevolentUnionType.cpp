@@ -514,6 +514,7 @@ void pt_register_benevolent_union_type()
 	cls.method(sigs::pickFromTypes, buPickFromTypes);
 
 	cls.method<&BenevolentUnionType::getOffsetValueType, zp::Obj>(sigs::getOffsetValueType);
+	cls.op<PT_OP_GET_OFFSET_VALUE_TYPE, &BenevolentUnionType::getOffsetValueType>();
 
 	cls.method(sigs::unionResults, buUnionResults);
 

@@ -1943,7 +1943,7 @@ public:
 			/* IsSuperTypeOfResult::createYes()->and(...$results) */
 			zv::Val yes = pt_type_is_super_type_of_result(PT_TRI_YES);
 			if (UNEXPECTED(yes.isUndef())) return zv::Val();
-			return pt_type_call_spread(Z_OBJ_P(yes.raw()), PT_LC("and"), results.table());
+			return pt_is_super_type_of_result_spread(Z_OBJ_P(yes.raw()), true, results.table());
 		}
 
 		if (instanceof_function(Z_OBJCE_P(type), pt_ce_array_type)) {
@@ -7227,6 +7227,7 @@ void pt_register_constant_array_type()
 	});
 
 	cls.method(sigs::isUnsealed, catIsUnsealed);
+	cls.op<PT_OP_IS_UNSEALED, &ConstantArrayType::isUnsealed>();
 
 	cls.method(sigs::getUnsealedTypes, catGetUnsealedTypes);
 
@@ -7244,6 +7245,7 @@ void pt_register_constant_array_type()
 	cls.method(sigs::getReferencedClasses, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_cat_no_args(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ConstantArrayType::getReferencedClasses);
 	});
+	cls.op<PT_OP_GET_REFERENCED_CLASSES, &ConstantArrayType::getReferencedClasses>();
 
 	cls.method(sigs::getIterableKeyType, catGetIterableKeyType);
 	cls.op<PT_OP_GET_ITERABLE_KEY_TYPE, &ConstantArrayType::getIterableKeyType>();
@@ -7251,6 +7253,7 @@ void pt_register_constant_array_type()
 	cls.op<PT_OP_GET_ITERABLE_VALUE_TYPE, &ConstantArrayType::getIterableValueType>();
 	cls.method(sigs::getKeyType, catGetKeyType);
 	cls.method(sigs::getItemType, catGetItemType);
+	cls.op<PT_OP_GET_ITEM_TYPE, &ConstantArrayType::getItemType>();
 
 	cls.method(sigs::isConstantValue, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
@@ -7264,13 +7267,16 @@ void pt_register_constant_array_type()
 	cls.method(sigs::getOptionalKeys, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_cat_no_args(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ConstantArrayType::getOptionalKeys);
 	});
+	cls.op<PT_OP_GET_OPTIONAL_KEYS, &ConstantArrayType::getOptionalKeys>();
 
 	cls.method(sigs::getAllArrays, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_cat_no_args(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ConstantArrayType::getAllArrays);
 	});
 
 	cls.method(sigs::getKeyTypes, catGetKeyTypes);
+	cls.op<PT_OP_GET_KEY_TYPES, &ConstantArrayType::getKeyTypes>();
 	cls.method(sigs::getValueTypes, catGetValueTypes);
+	cls.op<PT_OP_GET_VALUE_TYPES, &ConstantArrayType::getValueTypes>();
 	cls.method(sigs::isOptionalKey, catIsOptionalKey);
 
 	cls.method(sigs::sortKeys, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -7309,7 +7315,9 @@ void pt_register_constant_array_type()
 	cls.method(sigs::findTypeAndMethodNames, catFindTypeAndMethodNames);
 
 	cls.method(sigs::hasOffsetValueType, catHasOffsetValueType);
+	cls.op<PT_OP_HAS_OFFSET_VALUE_TYPE, &ConstantArrayType::hasOffsetValueType>();
 	cls.method(sigs::getOffsetValueType, catGetOffsetValueType);
+	cls.op<PT_OP_GET_OFFSET_VALUE_TYPE, &ConstantArrayType::getOffsetValueType>();
 
 	cls.method(sigs::setOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *offsetType, *valueType;

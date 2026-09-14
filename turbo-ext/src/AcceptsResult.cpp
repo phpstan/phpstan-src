@@ -725,6 +725,34 @@ static void pt_accepts_result_bool(INTERNAL_FUNCTION_PARAMETERS, zend_long expec
 	RETURN_BOOL(value == expected);
 }
 
+/* {{{ direct entries for native callers (TypeOps.h): the statics called by
+ * name from native bodies, entered without a frame; what the handler's
+ * zpp or its operand check would reject takes the engine path (or raises
+ * the very error the handler raises) */
+
+zv::Val pt_accepts_result_extreme_identity(uint32_t count, zval *operands)
+{
+	if (UNEXPECTED(count == 0)) {
+		pt_throw_should_not_happen();
+		return zv::Val();
+	}
+	if (UNEXPECTED(pt_verify_accepts_result_variadic(operands, count, 1) != SUCCESS)) return zv::Val();
+	return AcceptsResult::extremeIdentity(operands, count);
+}
+
+zv::Val pt_accepts_result_lazy_max_min(zval *objects, zval *callback)
+{
+	zend_fcall_info fci;
+	zend_fcall_info_cache fcc;
+	if (UNEXPECTED(Z_TYPE_P(objects) != IS_ARRAY || !pt_op_parse_callable(callback, fci, fcc))) {
+		zv::Args args{objects, callback};
+		return pt_type_call_static_ce(pt_ce_accepts_result, "lazymaxmin", sizeof("lazymaxmin") - 1, 2, args);
+	}
+	return AcceptsResult::lazyMaxMin(zv::ArrRef(objects), &fci, &fcc);
+}
+
+/* }}} */
+
 void pt_register_accepts_result()
 {
 	reg::Class cls("PHPStan\\Type\\AcceptsResult");
@@ -791,6 +819,7 @@ void pt_register_accepts_result()
 	cls.method("or", reg::Public, 1, { reg::obj("other", ACCEPTS_RESULT_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_accepts_result_and_or(INTERNAL_FUNCTION_PARAM_PASSTHRU, false);
 	});
+	cls.op(PT_OP_OR, PT_OP_LAMBDA { if (UNEXPECTED(!instanceof_function(Z_OBJCE_P(argv), pt_ce_accepts_result))) { return pt_type_call_engine(self, "or", sizeof("or") - 1, 1, argv); } return AcceptsResult(self).or_(argv); });
 
 	cls.method("decorateReasons", reg::Public, 1, { reg::callableArg("cb") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_fcall_info fci;

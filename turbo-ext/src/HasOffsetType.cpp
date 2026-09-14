@@ -532,9 +532,11 @@ void pt_register_has_offset_type()
 	cls.method<&HasOffsetType::getOffsetType>(sigs::getOffsetType);
 
 	cls.method(sigs::getReferencedClasses, hotEmptyArray0);
+	cls.op(PT_OP_GET_REFERENCED_CLASSES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getObjectClassNames, hotEmptyArray0);
 	cls.op(PT_OP_GET_OBJECT_CLASS_NAMES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getObjectClassReflections, hotEmptyArray0);
+	cls.op(PT_OP_GET_OBJECT_CLASS_REFLECTIONS, PT_OP_LAMBDA { return pt_op_empty_array(); });
 
 	cls.method<&HasOffsetType::accepts, zp::Obj, zp::Bool>(sigs::accepts);
 	cls.op(PT_OP_ACCEPTS, PT_OP_LAMBDA { return HasOffsetType(self).accepts(argv, (Z_TYPE(argv[1]) == IS_TRUE)); });
@@ -570,8 +572,10 @@ void pt_register_has_offset_type()
 		if (!zp::parse<zp::Obj>(execute_data, offsetType)) RETURN_THROWS();
 		PT_RETURN_TRINARY_OR_THROW(PT_THIS.hasOffsetValueType(offsetType));
 	});
+	cls.op<PT_OP_HAS_OFFSET_VALUE_TYPE, &HasOffsetType::hasOffsetValueType>();
 
 	cls.method(sigs::getOffsetValueType, hotMixed1);
+	cls.op(PT_OP_GET_OFFSET_VALUE_TYPE, PT_OP_LAMBDA { return pt_type_new_mixed_type(); });
 	cls.method(sigs::setOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		PT_ARGS(2, 3);
 		RETURN_OBJ_COPY(Z_OBJ_P(ZEND_THIS));
@@ -680,6 +684,7 @@ void pt_register_has_offset_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_NULL();
 	});
+	cls.op(PT_OP_GET_ENUM_CASE_OBJECT, PT_OP_LAMBDA { return zv::Val::null(); });
 	cls.method("traverse", reg::Public, 1, { reg::callableArg("cb") }, pt_type_identity_traverse_handler(), &ptret::type);
 	cls.op(PT_OP_TRAVERSE, PT_OP_LAMBDA { return pt_op_traverse_identity(self); });
 	cls.method(sigs::traverseSimultaneously, hotThis2);

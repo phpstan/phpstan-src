@@ -117,15 +117,19 @@ void pt_register_nonexistent_parent_class_type()
 	cls.method(sigs::getProperty, npcShouldNotHappen2);
 	cls.method(sigs::getUnresolvedPropertyPrototype, npcShouldNotHappen2);
 	cls.method(sigs::hasInstanceProperty, npcNo1);
+	cls.op(PT_OP_HAS_INSTANCE_PROPERTY, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::getInstanceProperty, npcShouldNotHappen2);
 	cls.method(sigs::getUnresolvedInstancePropertyPrototype, npcShouldNotHappen2);
+	cls.op(PT_OP_GET_UNRESOLVED_INSTANCE_PROPERTY_PROTOTYPE, PT_OP_LAMBDA { pt_throw_should_not_happen(); return zv::Val(); });
 	cls.method(sigs::hasStaticProperty, npcNo1);
 	cls.method(sigs::getStaticProperty, npcShouldNotHappen2);
 	cls.method(sigs::getUnresolvedStaticPropertyPrototype, npcShouldNotHappen2);
 	cls.method(sigs::canCallMethods, npcNo0);
 	cls.method(sigs::hasMethod, npcNo1);
+	cls.op(PT_OP_HAS_METHOD, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::getMethod, npcShouldNotHappen2);
 	cls.method(sigs::getUnresolvedMethodPrototype, npcShouldNotHappen2);
+	cls.op(PT_OP_GET_UNRESOLVED_METHOD_PROTOTYPE, PT_OP_LAMBDA { pt_throw_should_not_happen(); return zv::Val(); });
 	cls.method(sigs::canAccessConstants, npcNo0);
 	cls.method(sigs::hasConstant, npcNo1);
 	cls.method(sigs::getConstant, npcShouldNotHappen1);
@@ -190,6 +194,7 @@ void pt_register_nonexistent_parent_class_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_NULL();
 	});
+	cls.op(PT_OP_GET_ENUM_CASE_OBJECT, PT_OP_LAMBDA { return zv::Val::null(); });
 	cls.method(sigs::exponentiate, npcError1);
 	cls.method(sigs::getFiniteTypes, npcEmptyArray0);
 

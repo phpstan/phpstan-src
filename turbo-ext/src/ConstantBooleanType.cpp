@@ -268,6 +268,7 @@ void pt_register_constant_boolean_type()
 	cls.method<&ConstantBooleanType::construct, zp::Bool>(sigs::__construct);
 
 	cls.method<&ConstantBooleanType::getValue>(sigs::getValue);
+	cls.op<PT_OP_GET_VALUE, &ConstantBooleanType::getValue>();
 
 	cls.method(sigs::describe, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *level;

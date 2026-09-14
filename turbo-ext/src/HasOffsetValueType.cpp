@@ -839,9 +839,11 @@ void pt_register_has_offset_value_type()
 	cls.method<&HasOffsetValueType::getValueType>(sigs::getValueType);
 
 	cls.method(sigs::getReferencedClasses, hovtEmptyArray0);
+	cls.op(PT_OP_GET_REFERENCED_CLASSES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getObjectClassNames, hovtEmptyArray0);
 	cls.op(PT_OP_GET_OBJECT_CLASS_NAMES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getObjectClassReflections, hovtEmptyArray0);
+	cls.op(PT_OP_GET_OBJECT_CLASS_REFLECTIONS, PT_OP_LAMBDA { return pt_op_empty_array(); });
 
 	cls.method<&HasOffsetValueType::accepts, zp::Obj, zp::Bool>(sigs::accepts);
 	cls.op(PT_OP_ACCEPTS, PT_OP_LAMBDA { return HasOffsetValueType(self).accepts(argv, (Z_TYPE(argv[1]) == IS_TRUE)); });
@@ -877,10 +879,12 @@ void pt_register_has_offset_value_type()
 		if (!zp::parse<zp::Obj>(execute_data, offsetType)) RETURN_THROWS();
 		PT_RETURN_TRINARY_OR_THROW(PT_THIS.hasOffsetValueType(offsetType));
 	});
+	cls.op<PT_OP_HAS_OFFSET_VALUE_TYPE, &HasOffsetValueType::hasOffsetValueType>();
 
 	cls.method(sigs::getOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_hovt_one_type(INTERNAL_FUNCTION_PARAM_PASSTHRU, &HasOffsetValueType::getOffsetValueType);
 	});
+	cls.op<PT_OP_GET_OFFSET_VALUE_TYPE, &HasOffsetValueType::getOffsetValueType>();
 
 	cls.method(sigs::setOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *offsetType, *valueType;
@@ -1015,6 +1019,7 @@ void pt_register_has_offset_value_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_NULL();
 	});
+	cls.op(PT_OP_GET_ENUM_CASE_OBJECT, PT_OP_LAMBDA { return zv::Val::null(); });
 
 	cls.method(sigs::traverse, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_fcall_info fci;

@@ -440,6 +440,7 @@ void pt_register_conditional_type()
 	cls.method<&ConditionalType::isSuperTypeOf, zp::Obj>(sigs::isSuperTypeOf);
 
 	cls.method<&ConditionalType::getReferencedClasses>(sigs::getReferencedClasses);
+	cls.op<PT_OP_GET_REFERENCED_CLASSES, &ConditionalType::getReferencedClasses>();
 
 	cls.method<&ConditionalType::getReferencedTemplateTypes, zp::Obj>(sigs::getReferencedTemplateTypes);
 

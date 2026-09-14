@@ -859,8 +859,10 @@ void pt_register_late_resolvable_array_shape_type()
 	cls.method<&LateResolvableArrayShapeType::create, zp::Arr, zp::ArrOrNull, zp::Str>(sigs::create);
 
 	cls.method<&LateResolvableArrayShapeType::getReferencedClasses>(sigs::getReferencedClasses);
+	cls.op<PT_OP_GET_REFERENCED_CLASSES, &LateResolvableArrayShapeType::getReferencedClasses>();
 	cls.method(sigs::getObjectClassNames, lrasEmptyArray0);
 	cls.method(sigs::getObjectClassReflections, lrasEmptyArray0);
+	cls.op(PT_OP_GET_OBJECT_CLASS_REFLECTIONS, PT_OP_LAMBDA { return pt_op_empty_array(); });
 
 	cls.method<&LateResolvableArrayShapeType::getReferencedTemplateTypes, zp::Obj>(sigs::getReferencedTemplateTypes);
 

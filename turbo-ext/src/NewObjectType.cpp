@@ -203,6 +203,7 @@ void pt_register_new_object_type()
 	cls.method<&NewObjectType::getType>(sigs::getType);
 
 	cls.method<&NewObjectType::getReferencedClasses>(sigs::getReferencedClasses);
+	cls.op<PT_OP_GET_REFERENCED_CLASSES, &NewObjectType::getReferencedClasses>();
 
 	cls.method<&NewObjectType::getReferencedTemplateTypes, zp::Obj>(sigs::getReferencedTemplateTypes);
 

@@ -208,6 +208,15 @@ public:
 		return pt_type_call(Z_OBJ_P(staticObject.raw()), lcname, len, argc, argv);
 	}
 
+	/* the same for a hot operation (TypeOps.h): the static object type's
+	 * direct entry when it is a native class */
+	zv::Val delegateOp(pt_type_op_id op, uint32_t argc, zval *argv) const
+	{
+		zv::Val staticObject = thisStaticObjectType();
+		if (UNEXPECTED(staticObject.isUndef())) return zv::Val();
+		return pt_type_op(Z_OBJ_P(staticObject.raw()), op, argc, argv);
+	}
+
 	/* the CompoundType callback; no for anything but an instance of the
 	 * object's own class; else the static object types' answer; UNDEF =
 	 * pending exception */
@@ -830,6 +839,55 @@ static void ZEND_FASTCALL callbackToArgument(INTERNAL_FUNCTION_PARAMETERS)
 	PT_RETURN_VAL(pt_type_template_type_helper_to_argument(type));
 }
 
+/* the holder's methods entered without a frame (TypeOps.h, pt_direct_invoke):
+ * the callable is recognised by its handler (a plain callable) or by the
+ * scope and name of the Closure's function copy; the arguments must be
+ * what the handler's zpp would accept — anything else, or a holder without
+ * its type, is left to the engine path */
+bool pt_static_type_callbacks_direct_invoke(const zend_function *fn, zend_object *object, uint32_t argc, zval *argv, zval *retval, bool &handled)
+{
+	zif_handler handler = fn->internal_function.handler;
+	bool inHolder = fn->common.scope == pt_ce_static_type_callbacks;
+	zend_string *name = fn->common.function_name;
+	handled = false;
+	if (handler == callbackToArgument || (inHolder && zend_string_equals_literal(name, "toArgument"))) {
+		if (argc != 2 || Z_TYPE(argv[1]) != IS_OBJECT) return false;
+		handled = true;
+		zv::Val result = pt_type_template_type_helper_to_argument(&argv[1]);
+		if (UNEXPECTED(result.isUndef())) {
+			ZVAL_UNDEF(retval);
+			return false;
+		}
+		*retval = result.take();
+		return true;
+	}
+	if (object == NULL || object->ce != pt_ce_static_type_callbacks) return false;
+	zv::Val result;
+	if (handler == callbackTransform || (inHolder && zend_string_equals_literal(name, "transform"))) {
+		zval *staticType = OBJ_PROP_NUM(object, slots::subtractedType);
+		if (argc != 1 || Z_TYPE_P(argv) != IS_OBJECT || Z_TYPE_P(staticType) != IS_OBJECT) return false;
+		handled = true;
+		result = StaticType(Z_OBJ_P(staticType)).transformStaticType(argv, OBJ_PROP_NUM(object, slots::staticObjectType));
+	} else if (handler == callbackMap || (inHolder && zend_string_equals_literal(name, "map"))) {
+		zval *staticType = OBJ_PROP_NUM(object, slots::subtractedType);
+		if (argc != 2 || Z_TYPE_P(argv) != IS_OBJECT || Z_TYPE_P(staticType) != IS_OBJECT) return false;
+		handled = true;
+		result = StaticType(Z_OBJ_P(staticType)).mapStaticType(argv, OBJ_PROP_NUM(object, slots::staticObjectType), &argv[1]);
+	} else if (handler == callbackGuard || (inHolder && zend_string_equals_literal(name, "guard"))) {
+		if (argc != 0) return false;
+		handled = true;
+		result = pt_type_call_callable(OBJ_PROP_NUM(object, slots::methodCache), 1, OBJ_PROP_NUM(object, slots::baseClass));
+	} else {
+		return false;
+	}
+	if (UNEXPECTED(result.isUndef())) {
+		ZVAL_UNDEF(retval);
+		return false;
+	}
+	*retval = result.take();
+	return true;
+}
+
 /* the delegating bodies: $this->getStaticObjectType()->method(...$args)
  * with the arguments passed through as received (one handler per arity;
  * each method is still declared exactly once, at its registration line) */
@@ -991,24 +1049,30 @@ void pt_register_static_type()
 
 	cls.method(sigs::getClassName, stGetClassName);
 	cls.method(sigs::getClassReflection, stGetClassReflection);
+	cls.op<PT_OP_GET_CLASS_REFLECTION, &StaticType::getClassReflection>();
 	cls.method(sigs::getAncestorWithClassName, stGetAncestorWithClassName);
+	cls.op<PT_OP_GET_ANCESTOR_WITH_CLASS_NAME, &StaticType::getAncestorWithClassName>();
 	cls.method(sigs::getStaticObjectType, stGetStaticObjectType);
 
 	cls.method(sigs::getReferencedClasses, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getreferencedclasses"), 0, 0);
 	});
+	cls.op(PT_OP_GET_REFERENCED_CLASSES, PT_OP_LAMBDA { return StaticType(self).delegateOp(PT_OP_GET_REFERENCED_CLASSES, argc, argv); });
 	cls.method(sigs::getObjectClassNames, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getobjectclassnames"), 0, 0);
 	});
+	cls.op(PT_OP_GET_OBJECT_CLASS_NAMES, PT_OP_LAMBDA { return StaticType(self).delegateOp(PT_OP_GET_OBJECT_CLASS_NAMES, argc, argv); });
 	cls.method(sigs::getObjectClassReflections, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getobjectclassreflections"), 0, 0);
 	});
+	cls.op(PT_OP_GET_OBJECT_CLASS_REFLECTIONS, PT_OP_LAMBDA { return StaticType(self).delegateOp(PT_OP_GET_OBJECT_CLASS_REFLECTIONS, argc, argv); });
 	cls.method(sigs::getArrays, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getarrays"), 0, 0);
 	});
 	cls.method(sigs::getConstantArrays, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getconstantarrays"), 0, 0);
 	});
+	cls.op(PT_OP_GET_CONSTANT_ARRAYS, PT_OP_LAMBDA { return StaticType(self).delegateOp(PT_OP_GET_CONSTANT_ARRAYS, argc, argv); });
 	cls.method(sigs::getConstantStrings, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getconstantstrings"), 0, 0);
 	});
@@ -1050,12 +1114,14 @@ void pt_register_static_type()
 	cls.method(sigs::hasInstanceProperty, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("hasinstanceproperty"), 1, 1);
 	});
+	cls.op(PT_OP_HAS_INSTANCE_PROPERTY, PT_OP_LAMBDA { return StaticType(self).delegateOp(PT_OP_HAS_INSTANCE_PROPERTY, argc, argv); });
 	cls.method(sigs::getInstanceProperty, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stTransformedMember(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getunresolvedinstancepropertyprototype"), false);
 	});
 	cls.method(sigs::getUnresolvedInstancePropertyPrototype, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stUnresolvedPrototype(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getunresolvedinstancepropertyprototype"), false);
 	});
+	cls.op(PT_OP_GET_UNRESOLVED_INSTANCE_PROPERTY_PROTOTYPE, PT_OP_LAMBDA { return StaticType(self).unresolvedPrototype(PT_LC("getunresolvedinstancepropertyprototype"), false, argv, &argv[1]); });
 	cls.method(sigs::hasStaticProperty, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("hasstaticproperty"), 1, 1);
 	});
@@ -1071,6 +1137,7 @@ void pt_register_static_type()
 	cls.method(sigs::hasMethod, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("hasmethod"), 1, 1);
 	});
+	cls.op(PT_OP_HAS_METHOD, PT_OP_LAMBDA { return StaticType(self).delegateOp(PT_OP_HAS_METHOD, argc, argv); });
 
 	cls.method(sigs::getMethod, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *methodName;
@@ -1084,6 +1151,7 @@ void pt_register_static_type()
 	cls.method(sigs::getUnresolvedMethodPrototype, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stUnresolvedPrototype(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getunresolvedmethodprototype"), true);
 	});
+	cls.op(PT_OP_GET_UNRESOLVED_METHOD_PROTOTYPE, PT_OP_LAMBDA { return StaticType(self).unresolvedPrototype(PT_LC("getunresolvedmethodprototype"), true, argv, &argv[1]); });
 
 	cls.method(sigs::canAccessConstants, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("canaccessconstants"), 0, 0);
@@ -1096,6 +1164,7 @@ void pt_register_static_type()
 	});
 
 	cls.method(sigs::changeBaseClass, stChangeBaseClass);
+	cls.op<PT_OP_CHANGE_BASE_CLASS, &StaticType::changeBaseClass>();
 
 	cls.method(sigs::isIterable, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("isiterable"), 0, 0);
@@ -1103,12 +1172,14 @@ void pt_register_static_type()
 	cls.method(sigs::isIterableAtLeastOnce, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("isiterableatleastonce"), 0, 0);
 	});
+	cls.op(PT_OP_IS_ITERABLE_AT_LEAST_ONCE, PT_OP_LAMBDA { return StaticType(self).delegateOp(PT_OP_IS_ITERABLE_AT_LEAST_ONCE, argc, argv); });
 	cls.method(sigs::getArraySize, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getarraysize"), 0, 0);
 	});
 	cls.method(sigs::getIterableKeyType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getiterablekeytype"), 0, 0);
 	});
+	cls.op(PT_OP_GET_ITERABLE_KEY_TYPE, PT_OP_LAMBDA { return StaticType(self).delegateOp(PT_OP_GET_ITERABLE_KEY_TYPE, argc, argv); });
 	/* the first/last variants delegate to the plain key/value ones, as
 	 * the twin does */
 	cls.method(sigs::getFirstIterableKeyType, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -1120,6 +1191,7 @@ void pt_register_static_type()
 	cls.method(sigs::getIterableValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getiterablevaluetype"), 0, 0);
 	});
+	cls.op(PT_OP_GET_ITERABLE_VALUE_TYPE, PT_OP_LAMBDA { return StaticType(self).delegateOp(PT_OP_GET_ITERABLE_VALUE_TYPE, argc, argv); });
 	cls.method(sigs::getFirstIterableValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getiterablevaluetype"), 0, 0);
 	});
@@ -1135,9 +1207,11 @@ void pt_register_static_type()
 	cls.method(sigs::hasOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("hasoffsetvaluetype"), 1, 1);
 	});
+	cls.op(PT_OP_HAS_OFFSET_VALUE_TYPE, PT_OP_LAMBDA { return StaticType(self).delegateOp(PT_OP_HAS_OFFSET_VALUE_TYPE, argc, argv); });
 	cls.method(sigs::getOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getoffsetvaluetype"), 1, 1);
 	});
+	cls.op(PT_OP_GET_OFFSET_VALUE_TYPE, PT_OP_LAMBDA { return StaticType(self).delegateOp(PT_OP_GET_OFFSET_VALUE_TYPE, argc, argv); });
 	cls.method(sigs::setOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval unionValues;
 		ZVAL_TRUE(&unionValues);
@@ -1217,39 +1291,47 @@ void pt_register_static_type()
 	cls.method(sigs::isCallable, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("iscallable"), 0, 0);
 	});
+	cls.op(PT_OP_IS_CALLABLE, PT_OP_LAMBDA { return StaticType(self).delegateOp(PT_OP_IS_CALLABLE, argc, argv); });
 	cls.method(sigs::getEnumCases, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getenumcases"), 0, 0);
 	});
 	cls.method(sigs::getEnumCaseObject, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getenumcaseobject"), 0, 0);
 	});
+	cls.op(PT_OP_GET_ENUM_CASE_OBJECT, PT_OP_LAMBDA { return StaticType(self).delegateOp(PT_OP_GET_ENUM_CASE_OBJECT, argc, argv); });
 	cls.method(sigs::isArray, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("isarray"), 0, 0);
 	});
+	cls.op(PT_OP_IS_ARRAY, PT_OP_LAMBDA { return StaticType(self).delegateOp(PT_OP_IS_ARRAY, argc, argv); });
 	cls.method(sigs::isConstantArray, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("isconstantarray"), 0, 0);
 	});
+	cls.op(PT_OP_IS_CONSTANT_ARRAY, PT_OP_LAMBDA { return StaticType(self).delegateOp(PT_OP_IS_CONSTANT_ARRAY, argc, argv); });
 	cls.method(sigs::isOversizedArray, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("isoversizedarray"), 0, 0);
 	});
 	cls.method(sigs::isList, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("islist"), 0, 0);
 	});
+	cls.op(PT_OP_IS_LIST, PT_OP_LAMBDA { return StaticType(self).delegateOp(PT_OP_IS_LIST, argc, argv); });
 	cls.method(sigs::isNull, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("isnull"), 0, 0);
 	});
+	cls.op(PT_OP_IS_NULL, PT_OP_LAMBDA { return StaticType(self).delegateOp(PT_OP_IS_NULL, argc, argv); });
 	cls.method(sigs::isConstantValue, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("isconstantvalue"), 0, 0);
 	});
 	cls.method(sigs::isConstantScalarValue, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("isconstantscalarvalue"), 0, 0);
 	});
+	cls.op(PT_OP_IS_CONSTANT_SCALAR_VALUE, PT_OP_LAMBDA { return StaticType(self).delegateOp(PT_OP_IS_CONSTANT_SCALAR_VALUE, argc, argv); });
 	cls.method(sigs::getConstantScalarTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getconstantscalartypes"), 0, 0);
 	});
 	cls.method(sigs::getConstantScalarValues, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getconstantscalarvalues"), 0, 0);
 	});
+	cls.op(PT_OP_GET_CONSTANT_SCALAR_VALUES, PT_OP_LAMBDA { return StaticType(self).delegateOp(PT_OP_GET_CONSTANT_SCALAR_VALUES, argc, argv); });
 	cls.method(sigs::isTrue, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("istrue"), 0, 0);
 	});
@@ -1259,15 +1341,19 @@ void pt_register_static_type()
 	cls.method(sigs::isBoolean, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("isboolean"), 0, 0);
 	});
+	cls.op(PT_OP_IS_BOOLEAN, PT_OP_LAMBDA { return StaticType(self).delegateOp(PT_OP_IS_BOOLEAN, argc, argv); });
 	cls.method(sigs::isFloat, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("isfloat"), 0, 0);
 	});
+	cls.op(PT_OP_IS_FLOAT, PT_OP_LAMBDA { return StaticType(self).delegateOp(PT_OP_IS_FLOAT, argc, argv); });
 	cls.method(sigs::isInteger, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("isinteger"), 0, 0);
 	});
+	cls.op(PT_OP_IS_INTEGER, PT_OP_LAMBDA { return StaticType(self).delegateOp(PT_OP_IS_INTEGER, argc, argv); });
 	cls.method(sigs::isString, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("isstring"), 0, 0);
 	});
+	cls.op(PT_OP_IS_STRING, PT_OP_LAMBDA { return StaticType(self).delegateOp(PT_OP_IS_STRING, argc, argv); });
 	cls.method(sigs::isNumericString, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("isnumericstring"), 0, 0);
 	});
@@ -1302,6 +1388,7 @@ void pt_register_static_type()
 	cls.method(sigs::isVoid, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("isvoid"), 0, 0);
 	});
+	cls.op(PT_OP_IS_VOID, PT_OP_LAMBDA { return StaticType(self).delegateOp(PT_OP_IS_VOID, argc, argv); });
 	cls.method(sigs::isScalar, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("isscalar"), 0, 0);
 	});
@@ -1364,6 +1451,7 @@ void pt_register_static_type()
 	cls.method(sigs::toArrayKey, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("toarraykey"), 0, 0);
 	});
+	cls.op(PT_OP_TO_ARRAY_KEY, PT_OP_LAMBDA { return StaticType(self).delegateOp(PT_OP_TO_ARRAY_KEY, argc, argv); });
 	cls.method(sigs::toCoercedArgumentType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("tocoercedargumenttype"), 1, 1);
 	});
@@ -1389,9 +1477,11 @@ void pt_register_static_type()
 	cls.method(sigs::subtract, stSubtract);
 
 	cls.method<&StaticType::getTypeWithoutSubtractedType>(sigs::getTypeWithoutSubtractedType);
+	cls.op<PT_OP_GET_TYPE_WITHOUT_SUBTRACTED_TYPE, &StaticType::getTypeWithoutSubtractedType>();
 
 	cls.method(sigs::changeSubtractedType, stChangeSubtractedType);
 	cls.method(sigs::getSubtractedType, stGetSubtractedType);
+	cls.op(PT_OP_GET_SUBTRACTED_TYPE, PT_OP_LAMBDA { zval *subtracted = StaticType(self).subtractedType(); return subtracted == NULL ? zv::Val() : zv::Val::copyOf(zv::Ref(subtracted)); });
 
 	cls.method<&StaticType::tryRemove, zp::Obj>(sigs::tryRemove);
 
@@ -1407,6 +1497,7 @@ void pt_register_static_type()
 	cls.method(sigs::hasTemplateOrLateResolvableType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("hastemplateorlateresolvabletype"), 0, 0);
 	});
+	cls.op(PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, PT_OP_LAMBDA { return StaticType(self).delegateOp(PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, argc, argv); });
 
 	/* the traits, in the twin's `use` order; the class body above wins over
 	 * every name it declares */

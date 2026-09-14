@@ -542,6 +542,7 @@ void pt_register_generic_class_string_type()
 	cls.method<&GenericClassStringType::construct, zp::Obj>(sigs::__construct);
 
 	cls.method<&GenericClassStringType::getReferencedClasses>(sigs::getReferencedClasses);
+	cls.op<PT_OP_GET_REFERENCED_CLASSES, &GenericClassStringType::getReferencedClasses>();
 
 	cls.method<&GenericClassStringType::getGenericType>(sigs::getGenericType);
 

@@ -269,6 +269,7 @@ void pt_register_value_of_type()
 	cls.method<&ValueOfType::construct, zp::Obj>(sigs::__construct);
 
 	cls.method<&ValueOfType::getReferencedClasses>(sigs::getReferencedClasses);
+	cls.op<PT_OP_GET_REFERENCED_CLASSES, &ValueOfType::getReferencedClasses>();
 
 	cls.method<&ValueOfType::getReferencedTemplateTypes, zp::Obj>(sigs::getReferencedTemplateTypes);
 

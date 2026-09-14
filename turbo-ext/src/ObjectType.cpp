@@ -3631,10 +3631,12 @@ void pt_register_object_type()
 	});
 	cls.method(sigs::getUnresolvedPropertyPrototype, otGetUnresolvedPropertyPrototype);
 	cls.method(sigs::hasInstanceProperty, otHasInstanceProperty);
+	cls.op<PT_OP_HAS_INSTANCE_PROPERTY, &ObjectType::hasInstanceProperty>();
 	cls.method(sigs::getInstanceProperty, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ot_member(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ObjectType::getInstanceProperty);
 	});
 	cls.method(sigs::getUnresolvedInstancePropertyPrototype, otGetUnresolvedInstancePropertyPrototype);
+	cls.op(PT_OP_GET_UNRESOLVED_INSTANCE_PROPERTY_PROTOTYPE, PT_OP_LAMBDA { return ObjectType(self).getUnresolvedPropertyPrototype(phpstanturbo::PT_OT_INSTANCE_PROPERTY, argv, &argv[1]); });
 	cls.method(sigs::hasStaticProperty, otHasStaticProperty);
 	cls.method(sigs::getStaticProperty, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ot_member(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ObjectType::getStaticProperty);
@@ -3644,6 +3646,7 @@ void pt_register_object_type()
 	cls.method(sigs::getReferencedClasses, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ot_value(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ObjectType::getReferencedClasses);
 	});
+	cls.op<PT_OP_GET_REFERENCED_CLASSES, &ObjectType::getReferencedClasses>();
 	cls.method(sigs::getObjectClassNames, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ot_value(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ObjectType::getObjectClassNames);
 	});
@@ -3651,6 +3654,7 @@ void pt_register_object_type()
 	cls.method(sigs::getObjectClassReflections, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ot_value(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ObjectType::getObjectClassReflections);
 	});
+	cls.op<PT_OP_GET_OBJECT_CLASS_REFLECTIONS, &ObjectType::getObjectClassReflections>();
 
 	cls.method<&ObjectType::accepts, zp::Obj, zp::Bool>(sigs::accepts);
 	cls.op(PT_OP_ACCEPTS, PT_OP_LAMBDA { return ObjectType(self).accepts(argv, (Z_TYPE(argv[1]) == IS_TRUE)); });
@@ -3713,8 +3717,10 @@ void pt_register_object_type()
 		pt_ot_trinary(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ObjectType::canCallMethods);
 	});
 	cls.method(sigs::hasMethod, otHasMethod);
+	cls.op<PT_OP_HAS_METHOD, &ObjectType::hasMethod>();
 	cls.method(sigs::getMethod, otGetMethod);
 	cls.method(sigs::getUnresolvedMethodPrototype, otGetUnresolvedMethodPrototype);
+	cls.op<PT_OP_GET_UNRESOLVED_METHOD_PROTOTYPE, &ObjectType::getUnresolvedMethodPrototype>();
 	cls.method(sigs::canAccessConstants, otYes0);
 	cls.method(sigs::hasConstant, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ot_trinary_of_name(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ObjectType::hasConstant);
@@ -3803,9 +3809,11 @@ void pt_register_object_type()
 		if (!zp::parse<zp::Obj>(execute_data, offsetType)) RETURN_THROWS();
 		PT_RETURN_TRINARY_OR_THROW(PT_THIS.hasOffsetValueType(offsetType));
 	});
+	cls.op<PT_OP_HAS_OFFSET_VALUE_TYPE, &ObjectType::hasOffsetValueType>();
 	cls.method(sigs::getOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ot_value_of_type(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ObjectType::getOffsetValueType);
 	});
+	cls.op<PT_OP_GET_OFFSET_VALUE_TYPE, &ObjectType::getOffsetValueType>();
 	cls.method(sigs::setOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *offsetType, *valueType;
 		bool unionValues = true;
@@ -3825,6 +3833,7 @@ void pt_register_object_type()
 	cls.method(sigs::getEnumCaseObject, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ot_value(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ObjectType::getEnumCaseObject);
 	});
+	cls.op<PT_OP_GET_ENUM_CASE_OBJECT, &ObjectType::getEnumCaseObject>();
 
 	cls.method(sigs::isCallable, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ot_trinary(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ObjectType::isCallable);
@@ -3841,6 +3850,7 @@ void pt_register_object_type()
 	cls.method(sigs::getTypeWithoutSubtractedType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ot_value(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ObjectType::getTypeWithoutSubtractedType);
 	});
+	cls.op<PT_OP_GET_TYPE_WITHOUT_SUBTRACTED_TYPE, &ObjectType::getTypeWithoutSubtractedType>();
 	cls.method(sigs::withoutFinalByKeywordOverride, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ot_value(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ObjectType::withoutFinalByKeywordOverride);
 	});
@@ -3851,6 +3861,7 @@ void pt_register_object_type()
 		if (UNEXPECTED(subtracted == NULL)) RETURN_THROWS();
 		RETURN_COPY(subtracted);
 	});
+	cls.op(PT_OP_GET_SUBTRACTED_TYPE, PT_OP_LAMBDA { zval *subtracted = ObjectType(self).subtractedType(); return subtracted == NULL ? zv::Val() : zv::Val::copyOf(zv::Ref(subtracted)); });
 
 	cls.method(sigs::traverse, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_fcall_info fci;
@@ -3868,7 +3879,9 @@ void pt_register_object_type()
 
 	cls.method(sigs::getNakedClassReflection, otGetNakedClassReflection);
 	cls.method(sigs::getClassReflection, otGetClassReflection);
+	cls.op<PT_OP_GET_CLASS_REFLECTION, &ObjectType::getClassReflection>();
 	cls.method(sigs::getAncestorWithClassName, otGetAncestorWithClassName);
+	cls.op<PT_OP_GET_ANCESTOR_WITH_CLASS_NAME, &ObjectType::getAncestorWithClassName>();
 
 	cls.method(sigs::tryRemove, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ot_value_of_type(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ObjectType::tryRemove);

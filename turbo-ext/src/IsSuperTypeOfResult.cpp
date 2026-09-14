@@ -476,6 +476,7 @@ void pt_is_super_type_of_result_rshutdown()
 /* {{{ engine ABI glue: parameter parsing + registration */
 
 #include "reg.h"
+#include "TypeTraits.h"
 
 #define IS_SUPER_TYPE_OF_RESULT_CLASS "PHPStanTurbo\\IsSuperTypeOfResult"
 #define TRINARY_CLASS "PHPStanTurbo\\TrinaryLogic"
@@ -535,6 +536,44 @@ static void pt_is_super_type_of_result_bool(INTERNAL_FUNCTION_PARAMETERS, zend_l
 	if (UNEXPECTED(value < 0)) RETURN_THROWS();
 	RETURN_BOOL(value == expected);
 }
+
+/* {{{ direct entries for native callers (TypeOps.h): the variadic and()/or()
+ * and the statics called by name from native bodies, entered without a
+ * frame; what the handler's zpp or its operand check would reject takes
+ * the engine path (or raises the very error the handler raises) */
+
+zv::Val pt_is_super_type_of_result_combine(zend_object *self, bool isAnd, uint32_t count, zval *operands)
+{
+	if (UNEXPECTED(self->ce != pt_ce_is_super_type_of_result)) {
+		return isAnd ? pt_type_call_engine(self, "and", sizeof("and") - 1, count, operands) : pt_type_call_engine(self, "or", sizeof("or") - 1, count, operands);
+	}
+	if (UNEXPECTED(pt_verify_is_super_type_of_result_variadic(operands, count, 1) != SUCCESS)) return zv::Val();
+	IsSuperTypeOfResult result(self);
+	return isAnd ? result.and_(operands, count) : result.or_(operands, count);
+}
+
+zv::Val pt_is_super_type_of_result_extreme_identity(uint32_t count, zval *operands)
+{
+	if (UNEXPECTED(count == 0)) {
+		pt_throw_should_not_happen();
+		return zv::Val();
+	}
+	if (UNEXPECTED(pt_verify_is_super_type_of_result_variadic(operands, count, 1) != SUCCESS)) return zv::Val();
+	return IsSuperTypeOfResult::extremeIdentity(operands, count);
+}
+
+zv::Val pt_is_super_type_of_result_lazy_max_min(zval *objects, zval *callback)
+{
+	zend_fcall_info fci;
+	zend_fcall_info_cache fcc;
+	if (UNEXPECTED(Z_TYPE_P(objects) != IS_ARRAY || !pt_op_parse_callable(callback, fci, fcc))) {
+		zv::Args args{objects, callback};
+		return pt_type_call_static_ce(pt_ce_is_super_type_of_result, "lazymaxmin", sizeof("lazymaxmin") - 1, 2, args);
+	}
+	return IsSuperTypeOfResult::lazyMaxMin(zv::ArrRef(objects), &fci, &fcc);
+}
+
+/* }}} */
 
 void pt_register_is_super_type_of_result()
 {
@@ -619,6 +658,7 @@ void pt_register_is_super_type_of_result()
 	cls.method("or", reg::Public, 0, { reg::variadicObj("others", IS_SUPER_TYPE_OF_RESULT_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_is_super_type_of_result_and_or(INTERNAL_FUNCTION_PARAM_PASSTHRU, false);
 	});
+	cls.op(PT_OP_OR, PT_OP_LAMBDA { if (UNEXPECTED(pt_verify_is_super_type_of_result_variadic(argv, 1, 1) != SUCCESS)) { return zv::Val(); } return IsSuperTypeOfResult(self).or_(argv, 1); });
 
 	cls.method("decorateReasons", reg::Public, 1, { reg::callableArg("cb") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_fcall_info fci;

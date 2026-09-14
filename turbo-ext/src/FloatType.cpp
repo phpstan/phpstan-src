@@ -235,11 +235,13 @@ void pt_register_float_type()
 	});
 
 	cls.method<&FloatType::getReferencedClasses>(sigs::getReferencedClasses);
+	cls.op(PT_OP_GET_REFERENCED_CLASSES, PT_OP_LAMBDA { return FloatType::getReferencedClasses(); });
 
 	cls.method<&FloatType::getObjectClassNames>(sigs::getObjectClassNames);
 	cls.op(PT_OP_GET_OBJECT_CLASS_NAMES, PT_OP_LAMBDA { return FloatType::getObjectClassNames(); });
 
 	cls.method<&FloatType::getObjectClassReflections>(sigs::getObjectClassReflections);
+	cls.op(PT_OP_GET_OBJECT_CLASS_REFLECTIONS, PT_OP_LAMBDA { return FloatType::getObjectClassReflections(); });
 
 	cls.method<&FloatType::getConstantStrings>(sigs::getConstantStrings);
 

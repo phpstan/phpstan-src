@@ -574,8 +574,10 @@ void pt_register_enum_case_object_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_OBJ_COPY(Z_OBJ_P(ZEND_THIS));
 	});
+	cls.op(PT_OP_GET_TYPE_WITHOUT_SUBTRACTED_TYPE, PT_OP_LAMBDA { return pt_op_this(self); });
 	cls.method(sigs::changeSubtractedType, ecotChangeSubtractedType);
 	cls.method(sigs::getSubtractedType, ecotGetSubtractedType);
+	cls.op(PT_OP_GET_SUBTRACTED_TYPE, PT_OP_LAMBDA { return zv::Val::null(); });
 	cls.method(sigs::tryRemove, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ecot_value_of(INTERNAL_FUNCTION_PARAM_PASSTHRU, &EnumCaseObjectType::tryRemove);
 	});
@@ -583,6 +585,7 @@ void pt_register_enum_case_object_type()
 		pt_ecot_member(INTERNAL_FUNCTION_PARAM_PASSTHRU, &EnumCaseObjectType::getUnresolvedPropertyPrototype);
 	});
 	cls.method(sigs::getUnresolvedInstancePropertyPrototype, ecotGetUnresolvedInstancePropertyPrototype);
+	cls.op<PT_OP_GET_UNRESOLVED_INSTANCE_PROPERTY_PROTOTYPE, &EnumCaseObjectType::getUnresolvedInstancePropertyPrototype>();
 	cls.method(sigs::hasStaticProperty, [](INTERNAL_FUNCTION_PARAMETERS) {
 		PT_ARGS(1, 1);
 		PT_RETURN_TRINARY(PT_TRI_NO);
@@ -605,6 +608,7 @@ void pt_register_enum_case_object_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_OBJ_COPY(Z_OBJ_P(ZEND_THIS));
 	});
+	cls.op(PT_OP_GET_ENUM_CASE_OBJECT, PT_OP_LAMBDA { return pt_op_this(self); });
 	cls.method(sigs::getClassStringType, ecotGetClassStringType);
 	cls.method(sigs::toClassConstantType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		PT_ARGS(1, 1);

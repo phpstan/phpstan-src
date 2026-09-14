@@ -1354,6 +1354,7 @@ void pt_register_constant_string_type()
 	});
 
 	cls.method<&ConstantStringType::getValue>(sigs::getValue);
+	cls.op<PT_OP_GET_VALUE, &ConstantStringType::getValue>();
 
 	cls.method<&ConstantStringType::getConstantStrings>(sigs::getConstantStrings);
 
@@ -1439,8 +1440,10 @@ void pt_register_constant_string_type()
 	});
 
 	cls.method<&ConstantStringType::hasOffsetValueType, zp::Obj>(sigs::hasOffsetValueType);
+	cls.op<PT_OP_HAS_OFFSET_VALUE_TYPE, &ConstantStringType::hasOffsetValueType>();
 
 	cls.method<&ConstantStringType::getOffsetValueType, zp::Obj>(sigs::getOffsetValueType);
+	cls.op<PT_OP_GET_OFFSET_VALUE_TYPE, &ConstantStringType::getOffsetValueType>();
 
 	cls.method(sigs::setOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *offsetType, *valueType;

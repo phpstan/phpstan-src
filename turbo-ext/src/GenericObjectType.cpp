@@ -1059,7 +1059,9 @@ void pt_register_generic_object_type()
 	cls.method(sigs::getReferencedClasses, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_got_value(INTERNAL_FUNCTION_PARAM_PASSTHRU, &GenericObjectType::getReferencedClasses);
 	});
+	cls.op<PT_OP_GET_REFERENCED_CLASSES, &GenericObjectType::getReferencedClasses>();
 	cls.method(sigs::getTypes, gotGetTypes);
+	cls.op<PT_OP_GET_TYPES, &GenericObjectType::getTypes>();
 	cls.method(sigs::getVariances, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_got_value(INTERNAL_FUNCTION_PARAM_PASSTHRU, &GenericObjectType::getVariances);
 	});
@@ -1072,6 +1074,7 @@ void pt_register_generic_object_type()
 	cls.op<PT_OP_IS_SUPER_TYPE_OF, &GenericObjectType::isSuperTypeOf>();
 
 	cls.method(sigs::getClassReflection, gotGetClassReflection);
+	cls.op<PT_OP_GET_CLASS_REFLECTION, &GenericObjectType::getClassReflection>();
 
 	cls.method(sigs::getProperty, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_got_member(INTERNAL_FUNCTION_PARAM_PASSTHRU, &GenericObjectType::getProperty);
@@ -1081,6 +1084,7 @@ void pt_register_generic_object_type()
 		pt_got_member(INTERNAL_FUNCTION_PARAM_PASSTHRU, &GenericObjectType::getInstanceProperty);
 	});
 	cls.method(sigs::getUnresolvedInstancePropertyPrototype, gotGetUnresolvedInstancePropertyPrototype);
+	cls.op<PT_OP_GET_UNRESOLVED_INSTANCE_PROPERTY_PROTOTYPE, &GenericObjectType::getUnresolvedInstancePropertyPrototype>();
 	cls.method(sigs::getStaticProperty, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_got_member(INTERNAL_FUNCTION_PARAM_PASSTHRU, &GenericObjectType::getStaticProperty);
 	});
@@ -1089,6 +1093,7 @@ void pt_register_generic_object_type()
 		pt_got_member(INTERNAL_FUNCTION_PARAM_PASSTHRU, &GenericObjectType::getMethod);
 	});
 	cls.method(sigs::getUnresolvedMethodPrototype, gotGetUnresolvedMethodPrototype);
+	cls.op<PT_OP_GET_UNRESOLVED_METHOD_PROTOTYPE, &GenericObjectType::getUnresolvedMethodPrototype>();
 
 	cls.method(sigs::inferTemplateTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_got_value_of(INTERNAL_FUNCTION_PARAM_PASSTHRU, &GenericObjectType::inferTemplateTypes);

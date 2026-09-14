@@ -238,8 +238,10 @@ void pt_register_offset_access_type()
 	cls.method<&OffsetAccessType::construct, zp::Obj, zp::Obj>(sigs::__construct);
 
 	cls.method<&OffsetAccessType::getReferencedClasses>(sigs::getReferencedClasses);
+	cls.op<PT_OP_GET_REFERENCED_CLASSES, &OffsetAccessType::getReferencedClasses>();
 	cls.method(sigs::getObjectClassNames, oaEmptyArray0);
 	cls.method(sigs::getObjectClassReflections, oaEmptyArray0);
+	cls.op(PT_OP_GET_OBJECT_CLASS_REFLECTIONS, PT_OP_LAMBDA { return pt_op_empty_array(); });
 
 	cls.method<&OffsetAccessType::getReferencedTemplateTypes, zp::Obj>(sigs::getReferencedTemplateTypes);
 

@@ -272,9 +272,11 @@ void pt_register_oversized_array_type()
 	});
 
 	cls.method(sigs::getReferencedClasses, oaEmptyArray0);
+	cls.op(PT_OP_GET_REFERENCED_CLASSES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getObjectClassNames, oaEmptyArray0);
 	cls.op(PT_OP_GET_OBJECT_CLASS_NAMES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getObjectClassReflections, oaEmptyArray0);
+	cls.op(PT_OP_GET_OBJECT_CLASS_REFLECTIONS, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getArrays, oaEmptyArray0);
 	cls.method(sigs::getConstantArrays, oaEmptyArray0);
 	cls.op(PT_OP_GET_CONSTANT_ARRAYS, PT_OP_LAMBDA { return pt_op_empty_array(); });
@@ -316,7 +318,9 @@ void pt_register_oversized_array_type()
 	cls.method(sigs::isOffsetAccessible, oaYes0);
 	cls.method(sigs::isOffsetAccessLegal, oaYes0);
 	cls.method(sigs::hasOffsetValueType, oaMaybe1);
+	cls.op(PT_OP_HAS_OFFSET_VALUE_TYPE, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_MAYBE); });
 	cls.method(sigs::getOffsetValueType, oaMixed1);
+	cls.op(PT_OP_GET_OFFSET_VALUE_TYPE, PT_OP_LAMBDA { return pt_type_new_mixed_type(); });
 	cls.method(sigs::setOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		PT_ARGS(2, 3);
 		RETURN_OBJ_COPY(Z_OBJ_P(ZEND_THIS));

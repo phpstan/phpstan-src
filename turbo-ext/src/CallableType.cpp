@@ -1051,9 +1051,11 @@ void pt_register_callable_type()
 	cls.method(sigs::isPure, ctIsPure);
 
 	cls.method<&CallableType::getReferencedClasses>(sigs::getReferencedClasses);
+	cls.op<PT_OP_GET_REFERENCED_CLASSES, &CallableType::getReferencedClasses>();
 	cls.method(sigs::getObjectClassNames, ctEmptyArray0);
 	cls.op(PT_OP_GET_OBJECT_CLASS_NAMES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getObjectClassReflections, ctEmptyArray0);
+	cls.op(PT_OP_GET_OBJECT_CLASS_REFLECTIONS, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getConstantStrings, ctEmptyArray0);
 
 	cls.method<&CallableType::accepts, zp::Obj, zp::Bool>(sigs::accepts);
@@ -1199,6 +1201,7 @@ void pt_register_callable_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_NULL();
 	});
+	cls.op(PT_OP_GET_ENUM_CASE_OBJECT, PT_OP_LAMBDA { return zv::Val::null(); });
 	cls.method(sigs::isCommonCallable, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		ctReturnSlot(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_THIS.isCommonCallableSlot());

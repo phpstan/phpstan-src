@@ -446,8 +446,10 @@ void pt_register_string_type()
 		if (!zp::parse<zp::Obj>(execute_data, offsetType)) RETURN_THROWS();
 		PT_RETURN_TRINARY_OR_THROW(StringType::hasOffsetValueType(offsetType));
 	});
+	cls.op(PT_OP_HAS_OFFSET_VALUE_TYPE, PT_OP_LAMBDA { return pt_op_trinary(StringType::hasOffsetValueType(argv)); });
 
 	cls.method<&StringType::getOffsetValueType, zp::Obj>(sigs::getOffsetValueType);
+	cls.op<PT_OP_GET_OFFSET_VALUE_TYPE, &StringType::getOffsetValueType>();
 
 	cls.method(sigs::setOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *offsetType, *valueType;
@@ -593,6 +595,7 @@ void pt_register_string_type()
 		(void) methodName;
 		PT_RETURN_TRINARY_OR_THROW(PT_THIS.hasMethod());
 	});
+	cls.op<PT_OP_HAS_METHOD, &StringType::hasMethod>();
 
 	cls.method<&StringType::tryRemove, zp::Obj>(sigs::tryRemove);
 

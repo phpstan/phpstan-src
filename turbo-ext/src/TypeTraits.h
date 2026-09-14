@@ -1328,4 +1328,37 @@ bool pt_direct_invoke(const zend_function *fn, zend_object *object, uint32_t arg
 
 /* }}} */
 
+/* {{{ direct dispatch, second round: the callback holders and the result
+ * statics native bodies reached by name */
+
+/* pt_direct_invoke()'s entries for the PHPStanTurbo\StaticTypeCallbacks
+ * holder's methods (StaticType.cpp) and IdentityCallback::identity()
+ * (MixedType.cpp): the same contract as pt_direct_invoke() — handled =
+ * false when fn is not one of theirs or the arguments are not what the
+ * handler's zpp would accept (nothing was called) */
+bool pt_static_type_callbacks_direct_invoke(const zend_function *fn, zend_object *object, uint32_t argc, zval *argv, zval *retval, bool &handled);
+bool pt_identity_callback_direct_invoke(const zend_function *fn, zend_object *object, uint32_t argc, zval *argv, zval *retval, bool &handled);
+
+/* $self->and(...$operands) / ->or(...$operands) on an IsSuperTypeOfResult:
+ * the native body when $self is exactly the native class, the method by
+ * name otherwise; the operands checked as the variadic `self` parameter
+ * is; UNDEF = pending exception (IsSuperTypeOfResult.cpp) */
+zv::Val pt_is_super_type_of_result_combine(zend_object *self, bool isAnd, uint32_t count, zval *operands);
+/* IsSuperTypeOfResult::extremeIdentity(...$operands) / AcceptsResult::
+ * extremeIdentity(...$operands) — the statics' bodies, the operands
+ * checked as the handlers check them; UNDEF = pending exception */
+zv::Val pt_is_super_type_of_result_extreme_identity(uint32_t count, zval *operands);
+zv::Val pt_accepts_result_extreme_identity(uint32_t count, zval *operands);
+/* IsSuperTypeOfResult::lazyMaxMin($objects, $callback) / AcceptsResult::
+ * lazyMaxMin(...) — the statics' bodies; arguments the handlers' zpp
+ * would reject go through the engine; UNDEF = pending exception */
+zv::Val pt_is_super_type_of_result_lazy_max_min(zval *objects, zval *callback);
+zv::Val pt_accepts_result_lazy_max_min(zval *objects, zval *callback);
+/* the same over a PHP array of operands (the `...$results` spreads) */
+zv::Val pt_is_super_type_of_result_spread(zend_object *self, bool isAnd, HashTable *args);
+zv::Val pt_is_super_type_of_result_extreme_identity_spread(HashTable *args);
+zv::Val pt_accepts_result_extreme_identity_spread(HashTable *args);
+
+/* }}} */
+
 #endif /* PHPSTANTURBO_TYPETRAITS_H */

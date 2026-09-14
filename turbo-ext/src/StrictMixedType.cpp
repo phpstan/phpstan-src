@@ -227,9 +227,11 @@ void pt_register_strict_mixed_type()
 	ptdecl::StrictMixedType::declareProperties(cls);
 
 	cls.method(sigs::getReferencedClasses, smtEmptyArray0);
+	cls.op(PT_OP_GET_REFERENCED_CLASSES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getObjectClassNames, smtEmptyArray0);
 	cls.op(PT_OP_GET_OBJECT_CLASS_NAMES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getObjectClassReflections, smtEmptyArray0);
+	cls.op(PT_OP_GET_OBJECT_CLASS_REFLECTIONS, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getConstantStrings, smtEmptyArray0);
 
 	cls.method(sigs::accepts, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -281,15 +283,19 @@ void pt_register_strict_mixed_type()
 	cls.method(sigs::getProperty, smtShouldNotHappen2);
 	cls.method(sigs::getUnresolvedPropertyPrototype, smtShouldNotHappen2);
 	cls.method(sigs::hasInstanceProperty, smtNo1);
+	cls.op(PT_OP_HAS_INSTANCE_PROPERTY, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::getInstanceProperty, smtShouldNotHappen2);
 	cls.method(sigs::getUnresolvedInstancePropertyPrototype, smtShouldNotHappen2);
+	cls.op(PT_OP_GET_UNRESOLVED_INSTANCE_PROPERTY_PROTOTYPE, PT_OP_LAMBDA { pt_throw_should_not_happen(); return zv::Val(); });
 	cls.method(sigs::hasStaticProperty, smtNo1);
 	cls.method(sigs::getStaticProperty, smtShouldNotHappen2);
 	cls.method(sigs::getUnresolvedStaticPropertyPrototype, smtShouldNotHappen2);
 	cls.method(sigs::canCallMethods, smtNo0);
 	cls.method(sigs::hasMethod, smtNo1);
+	cls.op(PT_OP_HAS_METHOD, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::getMethod, smtShouldNotHappen2);
 	cls.method(sigs::getUnresolvedMethodPrototype, smtShouldNotHappen2);
+	cls.op(PT_OP_GET_UNRESOLVED_METHOD_PROTOTYPE, PT_OP_LAMBDA { pt_throw_should_not_happen(); return zv::Val(); });
 	cls.method(sigs::canAccessConstants, smtNo0);
 	cls.method(sigs::hasConstant, smtNo1);
 	cls.method(sigs::getConstant, smtShouldNotHappen1);
@@ -340,7 +346,9 @@ void pt_register_strict_mixed_type()
 	cls.method(sigs::isOffsetAccessible, smtNo0);
 	cls.method(sigs::isOffsetAccessLegal, smtNo0);
 	cls.method(sigs::hasOffsetValueType, smtNo1);
+	cls.op(PT_OP_HAS_OFFSET_VALUE_TYPE, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::getOffsetValueType, smtError1);
+	cls.op(PT_OP_GET_OFFSET_VALUE_TYPE, PT_OP_LAMBDA { return StrictMixedType::error(); });
 	cls.method(sigs::setOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		PT_ARGS(2, 3);
 		PT_RETURN_VAL(StrictMixedType::error());
@@ -400,6 +408,7 @@ void pt_register_strict_mixed_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_NULL();
 	});
+	cls.op(PT_OP_GET_ENUM_CASE_OBJECT, PT_OP_LAMBDA { return zv::Val::null(); });
 	cls.method("traverse", reg::Public, 1, { reg::callableArg("cb") }, pt_type_identity_traverse_handler(), &ptret::type);
 	cls.op(PT_OP_TRAVERSE, PT_OP_LAMBDA { return pt_op_traverse_identity(self); });
 	cls.method(sigs::traverseSimultaneously, [](INTERNAL_FUNCTION_PARAMETERS) {

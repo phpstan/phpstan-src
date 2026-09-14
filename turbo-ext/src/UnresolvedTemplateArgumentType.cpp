@@ -218,6 +218,15 @@ public:
 		return pt_type_call(Z_OBJ_P(target.raw()), lcname, len, argc, argv);
 	}
 
+	/* the same for a hot operation (TypeOps.h): the delegate's direct entry
+	 * when it is a native class */
+	zv::Val delegateOp(pt_type_op_id op, uint32_t argc, zval *argv) const
+	{
+		zv::Val target = getDelegate();
+		if (UNEXPECTED(target.isUndef())) return zv::Val();
+		return pt_type_op(Z_OBJ_P(target.raw()), op, argc, argv);
+	}
+
 	/* the same with the method named by the forwarding method's own frame */
 	zv::Val delegateNamed(zend_string *name, uint32_t argc, zval *argv) const
 	{
@@ -492,8 +501,10 @@ void pt_register_unresolved_template_argument_type()
 	cls.method(sigs::hasTemplateOrLateResolvableType, utaDelegate);
 	cls.method(sigs::toPhpDocNode, utaDelegate);
 	cls.method(sigs::getReferencedClasses, utaDelegate);
+	cls.op(PT_OP_GET_REFERENCED_CLASSES, PT_OP_LAMBDA { return UnresolvedTemplateArgumentType(self).delegateOp(PT_OP_GET_REFERENCED_CLASSES, argc, argv); });
 	cls.method(sigs::getObjectClassNames, utaDelegate);
 	cls.method(sigs::getObjectClassReflections, utaDelegate);
+	cls.op(PT_OP_GET_OBJECT_CLASS_REFLECTIONS, PT_OP_LAMBDA { return UnresolvedTemplateArgumentType(self).delegateOp(PT_OP_GET_OBJECT_CLASS_REFLECTIONS, argc, argv); });
 	cls.method(sigs::getClassStringType, utaDelegate);
 	cls.method(sigs::getClassStringObjectType, utaDelegate);
 	cls.method(sigs::getObjectTypeOrClassStringObjectType, utaDelegate);
@@ -507,15 +518,19 @@ void pt_register_unresolved_template_argument_type()
 	cls.method(sigs::getProperty, utaDelegate);
 	cls.method(sigs::getUnresolvedPropertyPrototype, utaDelegate);
 	cls.method(sigs::hasInstanceProperty, utaDelegate);
+	cls.op(PT_OP_HAS_INSTANCE_PROPERTY, PT_OP_LAMBDA { return UnresolvedTemplateArgumentType(self).delegateOp(PT_OP_HAS_INSTANCE_PROPERTY, argc, argv); });
 	cls.method(sigs::getInstanceProperty, utaDelegate);
 	cls.method(sigs::getUnresolvedInstancePropertyPrototype, utaDelegate);
+	cls.op(PT_OP_GET_UNRESOLVED_INSTANCE_PROPERTY_PROTOTYPE, PT_OP_LAMBDA { return UnresolvedTemplateArgumentType(self).delegateOp(PT_OP_GET_UNRESOLVED_INSTANCE_PROPERTY_PROTOTYPE, argc, argv); });
 	cls.method(sigs::hasStaticProperty, utaDelegate);
 	cls.method(sigs::getStaticProperty, utaDelegate);
 	cls.method(sigs::getUnresolvedStaticPropertyPrototype, utaDelegate);
 	cls.method(sigs::canCallMethods, utaDelegate);
 	cls.method(sigs::hasMethod, utaDelegate);
+	cls.op(PT_OP_HAS_METHOD, PT_OP_LAMBDA { return UnresolvedTemplateArgumentType(self).delegateOp(PT_OP_HAS_METHOD, argc, argv); });
 	cls.method(sigs::getMethod, utaDelegate);
 	cls.method(sigs::getUnresolvedMethodPrototype, utaDelegate);
+	cls.op(PT_OP_GET_UNRESOLVED_METHOD_PROTOTYPE, PT_OP_LAMBDA { return UnresolvedTemplateArgumentType(self).delegateOp(PT_OP_GET_UNRESOLVED_METHOD_PROTOTYPE, argc, argv); });
 	cls.method(sigs::canAccessConstants, utaDelegate);
 	cls.method(sigs::hasConstant, utaDelegate);
 	cls.method(sigs::getConstant, utaDelegate);
@@ -535,7 +550,9 @@ void pt_register_unresolved_template_argument_type()
 	cls.method(sigs::isOffsetAccessible, utaDelegate);
 	cls.method(sigs::isOffsetAccessLegal, utaDelegate);
 	cls.method(sigs::hasOffsetValueType, utaDelegate);
+	cls.op(PT_OP_HAS_OFFSET_VALUE_TYPE, PT_OP_LAMBDA { return UnresolvedTemplateArgumentType(self).delegateOp(PT_OP_HAS_OFFSET_VALUE_TYPE, argc, argv); });
 	cls.method(sigs::getOffsetValueType, utaDelegate);
+	cls.op(PT_OP_GET_OFFSET_VALUE_TYPE, PT_OP_LAMBDA { return UnresolvedTemplateArgumentType(self).delegateOp(PT_OP_GET_OFFSET_VALUE_TYPE, argc, argv); });
 	cls.method(sigs::setOffsetValueType, utaDelegate);
 	cls.method(sigs::setExistingOffsetValueType, utaDelegate);
 	cls.method(sigs::unsetOffset, utaDelegate);
@@ -562,6 +579,7 @@ void pt_register_unresolved_template_argument_type()
 	cls.method(sigs::filterArrayRemovingFalsey, utaDelegate);
 	cls.method(sigs::getEnumCases, utaDelegate);
 	cls.method(sigs::getEnumCaseObject, utaDelegate);
+	cls.op(PT_OP_GET_ENUM_CASE_OBJECT, PT_OP_LAMBDA { return UnresolvedTemplateArgumentType(self).delegateOp(PT_OP_GET_ENUM_CASE_OBJECT, argc, argv); });
 	cls.method(sigs::getFiniteTypes, utaDelegate);
 	cls.method(sigs::exponentiate, utaDelegate);
 	cls.method(sigs::isCallable, utaDelegate);

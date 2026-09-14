@@ -157,7 +157,21 @@ static zv::Val getTypes(zval *compound)
 /* VerbosityLevel::<factory>(); UNDEF = pending exception */
 static zv::Val verbosityLevel(const char *lcname, size_t len)
 {
-	return pt_type_call_static_ce(pt_ce_verbosity_level, lcname, len, 0, NULL);
+	/* the twin's singletons for the factories the bodies name
+	 * (VerbosityLevel.cpp), any other name through the engine */
+	zend_long value = 0;
+	if (len == 5 && memcmp(lcname, "cache", 5) == 0) {
+		value = PT_VERBOSITY_LEVEL_CACHE;
+	} else if (len == 7 && memcmp(lcname, "precise", 7) == 0) {
+		value = PT_VERBOSITY_LEVEL_PRECISE;
+	} else if (len == 5 && memcmp(lcname, "value", 5) == 0) {
+		value = PT_VERBOSITY_LEVEL_VALUE;
+	} else if (len == 8 && memcmp(lcname, "typeonly", 8) == 0) {
+		value = PT_VERBOSITY_LEVEL_TYPE_ONLY;
+	}
+	if (UNEXPECTED(value == 0)) return pt_type_call_static_ce(pt_ce_verbosity_level, lcname, len, 0, NULL);
+	zval *level = pt_verbosity_level_singleton(value);
+	return level == NULL ? zv::Val() : zv::Val::copyOf(zv::Ref(level));
 }
 
 /* $type->describe($level), the level created on first use (a lazily filled

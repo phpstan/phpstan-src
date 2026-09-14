@@ -367,9 +367,11 @@ void pt_register_object_without_class_type()
 	});
 
 	cls.method(sigs::getReferencedClasses, owctEmptyArray0);
+	cls.op(PT_OP_GET_REFERENCED_CLASSES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getObjectClassNames, owctEmptyArray0);
 	cls.op(PT_OP_GET_OBJECT_CLASS_NAMES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getObjectClassReflections, owctEmptyArray0);
+	cls.op(PT_OP_GET_OBJECT_CLASS_REFLECTIONS, PT_OP_LAMBDA { return pt_op_empty_array(); });
 
 	cls.method<&ObjectWithoutClassType::getClassStringType>(sigs::getClassStringType);
 
@@ -390,10 +392,12 @@ void pt_register_object_without_class_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_NULL();
 	});
+	cls.op(PT_OP_GET_ENUM_CASE_OBJECT, PT_OP_LAMBDA { return zv::Val::null(); });
 
 	cls.method<&ObjectWithoutClassType::subtract, zp::Obj>(sigs::subtract);
 
 	cls.method<&ObjectWithoutClassType::getTypeWithoutSubtractedType>(sigs::getTypeWithoutSubtractedType);
+	cls.op(PT_OP_GET_TYPE_WITHOUT_SUBTRACTED_TYPE, PT_OP_LAMBDA { return ObjectWithoutClassType::getTypeWithoutSubtractedType(); });
 
 	cls.method<&ObjectWithoutClassType::changeSubtractedType, zp::ObjOrNull>(sigs::changeSubtractedType);
 
@@ -403,6 +407,7 @@ void pt_register_object_without_class_type()
 		if (UNEXPECTED(subtracted == NULL)) RETURN_THROWS();
 		RETURN_COPY(subtracted);
 	});
+	cls.op(PT_OP_GET_SUBTRACTED_TYPE, PT_OP_LAMBDA { zval *subtracted = ObjectWithoutClassType(self).subtractedType(); return subtracted == NULL ? zv::Val() : zv::Val::copyOf(zv::Ref(subtracted)); });
 
 	cls.method(sigs::traverse, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_fcall_info fci;

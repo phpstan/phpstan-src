@@ -168,11 +168,13 @@ void pt_register_void_type()
 	});
 
 	cls.method<&VoidType::getReferencedClasses>(sigs::getReferencedClasses);
+	cls.op(PT_OP_GET_REFERENCED_CLASSES, PT_OP_LAMBDA { return VoidType::getReferencedClasses(); });
 
 	cls.method<&VoidType::getObjectClassNames>(sigs::getObjectClassNames);
 	cls.op(PT_OP_GET_OBJECT_CLASS_NAMES, PT_OP_LAMBDA { return VoidType::getObjectClassNames(); });
 
 	cls.method<&VoidType::getObjectClassReflections>(sigs::getObjectClassReflections);
+	cls.op(PT_OP_GET_OBJECT_CLASS_REFLECTIONS, PT_OP_LAMBDA { return VoidType::getObjectClassReflections(); });
 
 	cls.method<&VoidType::accepts, zp::Obj, zp::Bool>(sigs::accepts);
 	cls.op(PT_OP_ACCEPTS, PT_OP_LAMBDA { return VoidType(self).accepts(argv, (Z_TYPE(argv[1]) == IS_TRUE)); });

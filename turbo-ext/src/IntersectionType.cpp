@@ -557,7 +557,7 @@ public:
 		if (UNEXPECTED(results.isUndef())) return zv::Val();
 		zv::Val yes = pt_type_is_super_type_of_result(PT_TRI_YES);
 		if (UNEXPECTED(yes.isUndef())) return zv::Val();
-		return pt_type_call_spread(Z_OBJ_P(yes.raw()), PT_LC("and"), zv::ArrRef(results.raw()).table());
+		return pt_is_super_type_of_result_spread(Z_OBJ_P(yes.raw()), true, zv::ArrRef(results.raw()).table());
 	}
 
 	/* $otherType->isSuperTypeOf($this) for a compound other type, else
@@ -694,13 +694,10 @@ public:
 	 * levels every member; an owned string, UNDEF = pending exception */
 	zv::Val describe(zval *level) const
 	{
-		zv::Val levelValueZv = pt_type_call(Z_OBJ_P(level), PT_LC("getlevelvalue"), 0, NULL);
-		if (UNEXPECTED(levelValueZv.isUndef())) return zv::Val();
-		if (UNEXPECTED(!zv::Ref(levelValueZv.raw()).isLong())) {
-			zend_type_error("phpstan_turbo: %s::getLevelValue() must return int", ZSTR_VAL(Z_OBJCE_P(level)->name));
-			return zv::Val();
-		}
-		zend_long levelValue = zv::Ref(levelValueZv.raw()).asLong();
+		/* $level->getLevelValue() — the shadowing VerbosityLevel's slot, or
+		 * the PHP twin's method (VerbosityLevel.cpp) */
+		zend_long levelValue;
+		if (UNEXPECTED(!pt_verbosity_level_value_of(level, levelValue))) return zv::Val();
 		zval *cache = OBJ_PROP_NUM(self, slots::cachedDescriptions);
 		if (EXPECTED(Z_TYPE_P(cache) == IS_ARRAY)) {
 			zval *cached = zend_hash_index_find(Z_ARRVAL_P(cache), levelValue);
@@ -2752,6 +2749,8 @@ private:
 		}
 		zv::Val callback = pt_type_native_callback(lazyMaxMinCallback, state.raw(), NULL);
 		if (UNEXPECTED(callback.isUndef())) return zv::Val();
+		if (resultClass == pt_ce_is_super_type_of_result) return pt_is_super_type_of_result_lazy_max_min(types, callback.raw());
+		if (resultClass == pt_ce_accepts_result) return pt_accepts_result_lazy_max_min(types, callback.raw());
 		zv::Args args{types, callback.raw()};
 		return pt_type_call_static_ce(resultClass, PT_LC("lazymaxmin"), 2, args);
 	}
@@ -3102,6 +3101,7 @@ void pt_register_intersection_type()
 	cls.method(sigs::getTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::getTypes);
 	});
+	cls.op<PT_OP_GET_TYPES, &IntersectionType::getTypes>();
 
 	cls.method(sigs::inferTemplateTypesOn, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_value_object(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::inferTemplateTypesOn);
@@ -3110,6 +3110,7 @@ void pt_register_intersection_type()
 	cls.method(sigs::getReferencedClasses, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::getReferencedClasses);
 	});
+	cls.op<PT_OP_GET_REFERENCED_CLASSES, &IntersectionType::getReferencedClasses>();
 	cls.method(sigs::getObjectClassNames, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::getObjectClassNames);
 	});
@@ -3117,6 +3118,7 @@ void pt_register_intersection_type()
 	cls.method(sigs::getObjectClassReflections, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::getObjectClassReflections);
 	});
+	cls.op<PT_OP_GET_OBJECT_CLASS_REFLECTIONS, &IntersectionType::getObjectClassReflections>();
 	cls.method(sigs::getArrays, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::getArrays);
 	});
@@ -3180,12 +3182,14 @@ void pt_register_intersection_type()
 	cls.method(sigs::hasInstanceProperty, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_trinary_string(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::hasInstanceProperty);
 	});
+	cls.op<PT_OP_HAS_INSTANCE_PROPERTY, &IntersectionType::hasInstanceProperty>();
 	cls.method(sigs::getInstanceProperty, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_transformed_member(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getunresolvedinstancepropertyprototype"), false);
 	});
 	cls.method(sigs::getUnresolvedInstancePropertyPrototype, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_unresolved_prototype(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::getUnresolvedInstancePropertyPrototype);
 	});
+	cls.op<PT_OP_GET_UNRESOLVED_INSTANCE_PROPERTY_PROTOTYPE, &IntersectionType::getUnresolvedInstancePropertyPrototype>();
 	cls.method(sigs::hasStaticProperty, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_trinary_string(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::hasStaticProperty);
 	});
@@ -3201,12 +3205,14 @@ void pt_register_intersection_type()
 	cls.method(sigs::hasMethod, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_trinary_string(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::hasMethod);
 	});
+	cls.op<PT_OP_HAS_METHOD, &IntersectionType::hasMethod>();
 	cls.method(sigs::getMethod, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_transformed_member(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getunresolvedmethodprototype"), true);
 	});
 	cls.method(sigs::getUnresolvedMethodPrototype, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_unresolved_prototype(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::getUnresolvedMethodPrototype);
 	});
+	cls.op<PT_OP_GET_UNRESOLVED_METHOD_PROTOTYPE, &IntersectionType::getUnresolvedMethodPrototype>();
 	cls.method(sigs::canAccessConstants, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::canAccessConstants);
 	});
@@ -3322,9 +3328,11 @@ void pt_register_intersection_type()
 		if (!zp::parse<zp::Obj>(execute_data, offsetType)) RETURN_THROWS();
 		PT_RETURN_TRINARY_OR_THROW(PT_THIS.hasOffsetValueType(offsetType));
 	});
+	cls.op<PT_OP_HAS_OFFSET_VALUE_TYPE, &IntersectionType::hasOffsetValueType>();
 	cls.method(sigs::getOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_value_object(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::getOffsetValueType);
 	});
+	cls.op<PT_OP_GET_OFFSET_VALUE_TYPE, &IntersectionType::getOffsetValueType>();
 	cls.method(sigs::setOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *offsetType, *valueType;
 		bool unionValues = true;
@@ -3420,6 +3428,7 @@ void pt_register_intersection_type()
 	cls.method(sigs::getEnumCaseObject, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::getEnumCaseObject);
 	});
+	cls.op<PT_OP_GET_ENUM_CASE_OBJECT, &IntersectionType::getEnumCaseObject>();
 
 	cls.method(sigs::isCallable, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::isCallable);

@@ -203,6 +203,7 @@ void pt_register_key_of_type()
 	cls.method<&KeyOfType::getType>(sigs::getType);
 
 	cls.method<&KeyOfType::getReferencedClasses>(sigs::getReferencedClasses);
+	cls.op<PT_OP_GET_REFERENCED_CLASSES, &KeyOfType::getReferencedClasses>();
 
 	cls.method<&KeyOfType::getReferencedTemplateTypes, zp::Obj>(sigs::getReferencedTemplateTypes);
 

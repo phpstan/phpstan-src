@@ -218,6 +218,15 @@ public:
 		return pt_type_call(object, lcname, len, argc, argv);
 	}
 
+	/* the same for a hot operation (TypeOps.h): the object type's direct
+	 * entry when it is a native class */
+	zv::Val delegateOp(pt_type_op_id op, uint32_t argc, zval *argv) const
+	{
+		zend_object *object = objectType();
+		if (UNEXPECTED(object == NULL)) return zv::Val();
+		return pt_type_op(object, op, argc, argv);
+	}
+
 	/* yes without impure points, no with a certain one, maybe otherwise;
 	 * -1 = pending exception */
 	[[nodiscard]] zend_long isPure() const
@@ -890,17 +899,22 @@ void pt_register_closure_type()
 	cls.method(sigs::getClassReflection, [](INTERNAL_FUNCTION_PARAMETERS) {
 		cltDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getclassreflection"), 0, 0);
 	});
+	cls.op(PT_OP_GET_CLASS_REFLECTION, PT_OP_LAMBDA { return ClosureType(self).delegateOp(PT_OP_GET_CLASS_REFLECTION, argc, argv); });
 	cls.method(sigs::getAncestorWithClassName, [](INTERNAL_FUNCTION_PARAMETERS) {
 		cltDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getancestorwithclassname"), 1, 1);
 	});
+	cls.op(PT_OP_GET_ANCESTOR_WITH_CLASS_NAME, PT_OP_LAMBDA { return ClosureType(self).delegateOp(PT_OP_GET_ANCESTOR_WITH_CLASS_NAME, argc, argv); });
 
 	cls.method<&ClosureType::getReferencedClasses>(sigs::getReferencedClasses);
+	cls.op<PT_OP_GET_REFERENCED_CLASSES, &ClosureType::getReferencedClasses>();
 	cls.method(sigs::getObjectClassNames, [](INTERNAL_FUNCTION_PARAMETERS) {
 		cltDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getobjectclassnames"), 0, 0);
 	});
+	cls.op(PT_OP_GET_OBJECT_CLASS_NAMES, PT_OP_LAMBDA { return ClosureType(self).delegateOp(PT_OP_GET_OBJECT_CLASS_NAMES, argc, argv); });
 	cls.method(sigs::getObjectClassReflections, [](INTERNAL_FUNCTION_PARAMETERS) {
 		cltDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getobjectclassreflections"), 0, 0);
 	});
+	cls.op(PT_OP_GET_OBJECT_CLASS_REFLECTIONS, PT_OP_LAMBDA { return ClosureType(self).delegateOp(PT_OP_GET_OBJECT_CLASS_REFLECTIONS, argc, argv); });
 
 	cls.method<&ClosureType::accepts, zp::Obj, zp::Bool>(sigs::accepts);
 	cls.op(PT_OP_ACCEPTS, PT_OP_LAMBDA { return ClosureType(self).accepts(argv, (Z_TYPE(argv[1]) == IS_TRUE)); });
@@ -940,12 +954,14 @@ void pt_register_closure_type()
 	cls.method(sigs::hasInstanceProperty, [](INTERNAL_FUNCTION_PARAMETERS) {
 		cltDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("hasinstanceproperty"), 1, 1);
 	});
+	cls.op(PT_OP_HAS_INSTANCE_PROPERTY, PT_OP_LAMBDA { return ClosureType(self).delegateOp(PT_OP_HAS_INSTANCE_PROPERTY, argc, argv); });
 	cls.method(sigs::getInstanceProperty, [](INTERNAL_FUNCTION_PARAMETERS) {
 		cltDelegateMember(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getinstanceproperty"));
 	});
 	cls.method(sigs::getUnresolvedInstancePropertyPrototype, [](INTERNAL_FUNCTION_PARAMETERS) {
 		cltDelegateMember(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getunresolvedinstancepropertyprototype"));
 	});
+	cls.op(PT_OP_GET_UNRESOLVED_INSTANCE_PROPERTY_PROTOTYPE, PT_OP_LAMBDA { return ClosureType(self).delegateOp(PT_OP_GET_UNRESOLVED_INSTANCE_PROPERTY_PROTOTYPE, argc, argv); });
 	cls.method(sigs::hasStaticProperty, [](INTERNAL_FUNCTION_PARAMETERS) {
 		cltDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("hasstaticproperty"), 1, 1);
 	});
@@ -961,6 +977,7 @@ void pt_register_closure_type()
 	cls.method(sigs::hasMethod, [](INTERNAL_FUNCTION_PARAMETERS) {
 		cltDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("hasmethod"), 1, 1);
 	});
+	cls.op(PT_OP_HAS_METHOD, PT_OP_LAMBDA { return ClosureType(self).delegateOp(PT_OP_HAS_METHOD, argc, argv); });
 
 	cls.method<&ClosureType::getMethod, zp::Zval, zp::Obj>(sigs::getMethod);
 
@@ -972,6 +989,7 @@ void pt_register_closure_type()
 		ZVAL_STR(&nameZv, methodName);
 		PT_RETURN_VAL(PT_THIS.getUnresolvedMethodPrototype(&nameZv, scope));
 	});
+	cls.op<PT_OP_GET_UNRESOLVED_METHOD_PROTOTYPE, &ClosureType::getUnresolvedMethodPrototype>();
 
 	cls.method(sigs::canAccessConstants, [](INTERNAL_FUNCTION_PARAMETERS) {
 		cltDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("canaccessconstants"), 0, 0);
@@ -994,6 +1012,7 @@ void pt_register_closure_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_NULL();
 	});
+	cls.op(PT_OP_GET_ENUM_CASE_OBJECT, PT_OP_LAMBDA { return zv::Val::null(); });
 	cls.method(sigs::isCommonCallable, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		cltReturnSlot(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_THIS.isCommonCallableSlot());

@@ -582,6 +582,7 @@ void pt_register_generic_static_type()
 		if (UNEXPECTED(types == NULL)) RETURN_THROWS();
 		RETURN_COPY(types);
 	});
+	cls.op(PT_OP_GET_TYPES, PT_OP_LAMBDA { zval *types = GenericStaticType(self).types(); return types == NULL ? zv::Val() : zv::Val::copyOf(zv::Ref(types)); });
 
 	cls.method(sigs::getVariances, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
@@ -593,6 +594,7 @@ void pt_register_generic_static_type()
 	cls.method<&GenericStaticType::getStaticObjectType>(sigs::getStaticObjectType);
 
 	cls.method<&GenericStaticType::changeBaseClass, zp::Obj>(sigs::changeBaseClass);
+	cls.op<PT_OP_CHANGE_BASE_CLASS, &GenericStaticType::changeBaseClass>();
 
 	cls.method<&GenericStaticType::isSuperTypeOf, zp::Obj>(sigs::isSuperTypeOf);
 

@@ -827,7 +827,7 @@ static void ZEND_FASTCALL callbackToArgument(INTERNAL_FUNCTION_PARAMETERS)
 {
 	zval *name, *type;
 	if (!zp::parse<zp::Zval, zp::Obj>(execute_data, name, type)) RETURN_THROWS();
-	PT_RETURN_VAL(pt_type_call_static(PT_CLASS_TEMPLATE_TYPE_HELPER, PT_LC("toargument"), 1, type));
+	PT_RETURN_VAL(pt_type_template_type_helper_to_argument(type));
 }
 
 /* the delegating bodies: $this->getStaticObjectType()->method(...$args)

@@ -244,11 +244,11 @@ public:
 		}
 
 		/* new self($classReflection, $classReflection->typeMapToList(new TemplateTypeMap($newClassTypes)), $this->subtractedType, $classReflection->varianceMapToList(new TemplateTypeVarianceMap($newClassVariances))) */
-		zv::Val newTypeMap = pt_type_new(PT_CLASS_TEMPLATE_TYPE_MAP, 1, newClassTypes.raw());
+		zv::Val newTypeMap = pt_type_template_type_map_new(newClassTypes.raw());
 		if (UNEXPECTED(newTypeMap.isUndef())) return zv::Val();
 		zv::Val listTypes = pt_type_call(Z_OBJ_P(classReflection), PT_LC("typemaptolist"), 1, newTypeMap.raw());
 		if (UNEXPECTED(listTypes.isUndef())) return zv::Val();
-		zv::Val newVarianceMap = pt_type_new(PT_CLASS_TEMPLATE_TYPE_VARIANCE_MAP, 1, newClassVariances.raw());
+		zv::Val newVarianceMap = pt_type_template_type_variance_map_new(newClassVariances.raw());
 		if (UNEXPECTED(newVarianceMap.isUndef())) return zv::Val();
 		zv::Val listVariances = pt_type_call(Z_OBJ_P(classReflection), PT_LC("variancemaptolist"), 1, newVarianceMap.raw());
 		if (UNEXPECTED(listVariances.isUndef())) return zv::Val();

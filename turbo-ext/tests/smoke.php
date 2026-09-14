@@ -987,7 +987,7 @@ function observeTypeFamily(string $mode): array
 
 $typeFamilyPhp = observeTypeFamily('php');
 $typeFamilyNative = observeTypeFamily('native');
-foreach ([\PHPStan\Type\BooleanType::class, \PHPStan\Type\Constant\ConstantBooleanType::class, \PHPStan\Type\IntegerType::class, \PHPStan\Type\Constant\ConstantIntegerType::class, \PHPStan\Type\IntegerRangeType::class, \PHPStan\Type\StringType::class, \PHPStan\Type\Constant\ConstantStringType::class, \PHPStan\Type\ClassStringType::class, \PHPStan\Type\Generic\GenericClassStringType::class, \PHPStan\Type\FloatType::class, \PHPStan\Type\Constant\ConstantFloatType::class, \PHPStan\Type\NullType::class, \PHPStan\Type\VoidType::class, \PHPStan\Type\NeverType::class, \PHPStan\Type\MixedType::class, \PHPStan\Type\StrictMixedType::class, \PHPStan\Type\ObjectWithoutClassType::class, \PHPStan\Type\StaticType::class, \PHPStan\Type\ThisType::class, \PHPStan\Type\Generic\GenericStaticType::class, \PHPStan\Type\ObjectShapeType::class, \PHPStan\Type\NonexistentParentClassType::class, \PHPStan\Type\ArrayType::class, \PHPStan\Type\Accessory\NonEmptyArrayType::class, \PHPStan\Type\Accessory\AccessoryArrayListType::class, \PHPStan\Type\Accessory\OversizedArrayType::class, \PHPStan\Type\Accessory\HasOffsetType::class, \PHPStan\Type\Accessory\HasOffsetValueType::class, \PHPStan\Type\Accessory\AccessoryNumericStringType::class, \PHPStan\Type\Accessory\AccessoryNonEmptyStringType::class, \PHPStan\Type\Accessory\AccessoryNonFalsyStringType::class, \PHPStan\Type\Accessory\AccessoryLiteralStringType::class, \PHPStan\Type\Accessory\AccessoryLowercaseStringType::class, \PHPStan\Type\Accessory\AccessoryUppercaseStringType::class, \PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType::class, \PHPStan\Type\Accessory\HasMethodType::class, \PHPStan\Type\Accessory\HasPropertyType::class, \PHPStan\Type\ObjectType::class, \PHPStan\Type\Generic\GenericObjectType::class, \PHPStan\Type\Enum\EnumCaseObjectType::class, \PHPStan\Type\IterableType::class, \PHPStan\Type\CallableType::class, \PHPStan\Type\ClosureType::class, \PHPStan\Type\Constant\ConstantArrayType::class, \PHPStan\Type\UnionType::class, \PHPStan\Type\BenevolentUnionType::class, \PHPStan\Type\IntersectionType::class, \PHPStan\Type\ErrorType::class, \PHPStan\Type\CircularTypeAliasErrorType::class, \PHPStan\Type\Generic\AbsorbedTemplateArgumentType::class, \PHPStan\Type\NonAcceptingNeverType::class, \PHPStan\Type\StringAlwaysAcceptingObjectWithToStringType::class, \PHPStan\Type\StringNeverAcceptingObjectWithToStringType::class, \PHPStan\Type\ResourceType::class, \PHPStan\Type\TypeUtils::class, \PHPStan\Type\TypehintHelper::class, \PHPStan\Type\TypeCombinator::class] as $typeClass) {
+foreach ([\PHPStan\Type\BooleanType::class, \PHPStan\Type\Constant\ConstantBooleanType::class, \PHPStan\Type\IntegerType::class, \PHPStan\Type\Constant\ConstantIntegerType::class, \PHPStan\Type\IntegerRangeType::class, \PHPStan\Type\StringType::class, \PHPStan\Type\Constant\ConstantStringType::class, \PHPStan\Type\ClassStringType::class, \PHPStan\Type\Generic\GenericClassStringType::class, \PHPStan\Type\FloatType::class, \PHPStan\Type\Constant\ConstantFloatType::class, \PHPStan\Type\NullType::class, \PHPStan\Type\VoidType::class, \PHPStan\Type\NeverType::class, \PHPStan\Type\MixedType::class, \PHPStan\Type\StrictMixedType::class, \PHPStan\Type\ObjectWithoutClassType::class, \PHPStan\Type\StaticType::class, \PHPStan\Type\ThisType::class, \PHPStan\Type\Generic\GenericStaticType::class, \PHPStan\Type\ObjectShapeType::class, \PHPStan\Type\NonexistentParentClassType::class, \PHPStan\Type\ArrayType::class, \PHPStan\Type\Accessory\NonEmptyArrayType::class, \PHPStan\Type\Accessory\AccessoryArrayListType::class, \PHPStan\Type\Accessory\OversizedArrayType::class, \PHPStan\Type\Accessory\HasOffsetType::class, \PHPStan\Type\Accessory\HasOffsetValueType::class, \PHPStan\Type\Accessory\AccessoryNumericStringType::class, \PHPStan\Type\Accessory\AccessoryNonEmptyStringType::class, \PHPStan\Type\Accessory\AccessoryNonFalsyStringType::class, \PHPStan\Type\Accessory\AccessoryLiteralStringType::class, \PHPStan\Type\Accessory\AccessoryLowercaseStringType::class, \PHPStan\Type\Accessory\AccessoryUppercaseStringType::class, \PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType::class, \PHPStan\Type\Accessory\HasMethodType::class, \PHPStan\Type\Accessory\HasPropertyType::class, \PHPStan\Type\ObjectType::class, \PHPStan\Type\Generic\GenericObjectType::class, \PHPStan\Type\Enum\EnumCaseObjectType::class, \PHPStan\Type\IterableType::class, \PHPStan\Type\CallableType::class, \PHPStan\Type\ClosureType::class, \PHPStan\Type\Constant\ConstantArrayType::class, \PHPStan\Type\UnionType::class, \PHPStan\Type\BenevolentUnionType::class, \PHPStan\Type\IntersectionType::class, \PHPStan\Type\ErrorType::class, \PHPStan\Type\CircularTypeAliasErrorType::class, \PHPStan\Type\Generic\AbsorbedTemplateArgumentType::class, \PHPStan\Type\NonAcceptingNeverType::class, \PHPStan\Type\StringAlwaysAcceptingObjectWithToStringType::class, \PHPStan\Type\StringNeverAcceptingObjectWithToStringType::class, \PHPStan\Type\ResourceType::class, \PHPStan\Type\TypeUtils::class, \PHPStan\Type\TypehintHelper::class, \PHPStan\Type\TypeCombinator::class, \PHPStan\Type\Generic\TemplateTypeVariance::class, \PHPStan\Type\Generic\TemplateTypeVarianceMap::class, \PHPStan\Type\Generic\TemplateTypeMap::class, \PHPStan\Type\Generic\TemplateTypeScope::class, \PHPStan\Type\Generic\TemplateTypeReference::class, \PHPStan\Type\Generic\TemplateTypeHelper::class] as $typeClass) {
 	check(($typeFamilyPhp["native $typeClass"] ?? null) === false, "type-family.php php: $typeClass is the PHP twin");
 	check(($typeFamilyNative["native $typeClass"] ?? null) === true, "type-family.php native: $typeClass is the native class");
 	unset($typeFamilyPhp["native $typeClass"], $typeFamilyNative["native $typeClass"]);
@@ -1344,6 +1344,327 @@ $covered[\PHPStan\Type\VerbosityLevel::class] = true;
 $covered[\PHPStan\Type\RecursionGuard::class] = true;
 $covered[\PHPStan\Type\FiniteTypeSet::class] = true;
 $covered[\PHPStan\Type\TypeCombinator::class] = true;
+
+// ---- TemplateTypeVariance ----
+// The five singletons and their queries, compose()/equals()/validPosition()
+// over every pair, describe() and toPhpDocNodeVariance() (a static variance
+// has no node variance: the same exception on both sides). isValidVariance()
+// needs a Type graph on one implementation and is observed under the real
+// names in tests/type-family.php.
+$ttvFactories = ['createInvariant', 'createCovariant', 'createContravariant', 'createStatic', 'createBivariant'];
+$ttvPhp = [];
+$ttvNative = [];
+foreach ($ttvFactories as $ttvFactory) {
+	$ttvPhp[$ttvFactory] = \PHPStan\Type\Generic\TemplateTypeVariance::$ttvFactory();
+	$ttvNative[$ttvFactory] = \PHPStanTurbo\TemplateTypeVariance::$ttvFactory();
+	check($ttvNative[$ttvFactory] === \PHPStanTurbo\TemplateTypeVariance::$ttvFactory(), "TemplateTypeVariance::$ttvFactory() identity");
+	check($ttvNative[$ttvFactory] instanceof \PHPStanTurbo\TemplateTypeVariance, "TemplateTypeVariance::$ttvFactory() is the native class");
+	foreach (['invariant', 'covariant', 'contravariant', 'static', 'bivariant'] as $ttvQuery) {
+		check($ttvPhp[$ttvFactory]->$ttvQuery() === $ttvNative[$ttvFactory]->$ttvQuery(), "TemplateTypeVariance::$ttvFactory() $ttvQuery()");
+	}
+	check($ttvPhp[$ttvFactory]->describe() === $ttvNative[$ttvFactory]->describe(), "TemplateTypeVariance::$ttvFactory() describe()");
+	$ttvNodeVariance = static function (object $variance): string {
+		try {
+			return $variance->toPhpDocNodeVariance();
+		} catch (\Throwable $e) {
+			return get_class($e) . ': ' . $e->getMessage();
+		}
+	};
+	check($ttvNodeVariance($ttvPhp[$ttvFactory]) === $ttvNodeVariance($ttvNative[$ttvFactory]), "TemplateTypeVariance::$ttvFactory() toPhpDocNodeVariance() (" . $ttvNodeVariance($ttvNative[$ttvFactory]) . ')');
+}
+foreach ($ttvFactories as $ttvLeft) {
+	foreach ($ttvFactories as $ttvRight) {
+		$ttvPhpComposed = $ttvPhp[$ttvLeft]->compose($ttvPhp[$ttvRight]);
+		$ttvNativeComposed = $ttvNative[$ttvLeft]->compose($ttvNative[$ttvRight]);
+		check($ttvPhpComposed->describe() === $ttvNativeComposed->describe(), "TemplateTypeVariance $ttvLeft compose $ttvRight: " . $ttvPhpComposed->describe() . ' vs ' . $ttvNativeComposed->describe());
+		check(($ttvPhpComposed === $ttvPhp[$ttvRight]) === ($ttvNativeComposed === $ttvNative[$ttvRight]), "TemplateTypeVariance $ttvLeft compose $ttvRight returns the operand itself on both sides or neither");
+		check($ttvNativeComposed === \PHPStanTurbo\TemplateTypeVariance::{'create' . ucfirst($ttvNativeComposed->describe())}(), "TemplateTypeVariance $ttvLeft compose $ttvRight is a singleton");
+		check($ttvPhp[$ttvLeft]->equals($ttvPhp[$ttvRight]) === $ttvNative[$ttvLeft]->equals($ttvNative[$ttvRight]), "TemplateTypeVariance $ttvLeft equals $ttvRight");
+		check($ttvPhp[$ttvLeft]->validPosition($ttvPhp[$ttvRight]) === $ttvNative[$ttvLeft]->validPosition($ttvNative[$ttvRight]), "TemplateTypeVariance $ttvLeft validPosition $ttvRight");
+	}
+}
+$ttvErrors = static function (string $class): array {
+	$errors = [];
+	try {
+		$class::createCovariant()->compose(new \stdClass());
+		$errors[] = 'none';
+	} catch (\Throwable $e) {
+		$errors[] = get_class($e);
+	}
+	try {
+		$class::createCovariant()->equals(new \stdClass());
+		$errors[] = 'none';
+	} catch (\Throwable $e) {
+		$errors[] = get_class($e);
+	}
+	return $errors;
+};
+check($ttvErrors(\PHPStan\Type\Generic\TemplateTypeVariance::class) === $ttvErrors(\PHPStanTurbo\TemplateTypeVariance::class), 'TemplateTypeVariance: a foreign operand throws the same (' . implode(', ', $ttvErrors(\PHPStanTurbo\TemplateTypeVariance::class)) . ')');
+
+$covered[\PHPStan\Type\Generic\TemplateTypeVariance::class] = true;
+
+// ---- TemplateTypeVarianceMap ----
+// The empty singleton and the lookups over a map of both sides' variances.
+$ttvmPhp = new \PHPStan\Type\Generic\TemplateTypeVarianceMap(['T' => $ttvPhp['createCovariant'], 'U' => $ttvPhp['createInvariant'], '5' => $ttvPhp['createStatic']]);
+$ttvmNative = new \PHPStanTurbo\TemplateTypeVarianceMap(['T' => $ttvNative['createCovariant'], 'U' => $ttvNative['createInvariant'], '5' => $ttvNative['createStatic']]);
+check(\PHPStanTurbo\TemplateTypeVarianceMap::createEmpty() === \PHPStanTurbo\TemplateTypeVarianceMap::createEmpty(), 'TemplateTypeVarianceMap::createEmpty() identity');
+check(\PHPStanTurbo\TemplateTypeVarianceMap::createEmpty()->getVariances() === [], 'TemplateTypeVarianceMap::createEmpty() is empty');
+check(array_keys($ttvmPhp->getVariances()) === array_keys($ttvmNative->getVariances()), 'TemplateTypeVarianceMap::getVariances() keys');
+foreach (['T', 'U', '5', 'V', ''] as $ttvmName) {
+	check($ttvmPhp->hasVariance($ttvmName) === $ttvmNative->hasVariance($ttvmName), "TemplateTypeVarianceMap::hasVariance($ttvmName)");
+	check(($ttvmPhp->getVariance($ttvmName)?->describe()) === ($ttvmNative->getVariance($ttvmName)?->describe()), "TemplateTypeVarianceMap::getVariance($ttvmName)");
+}
+check($ttvmNative->getVariance('T') === $ttvNative['createCovariant'], 'TemplateTypeVarianceMap::getVariance() hands out the stored instance');
+$covered[\PHPStan\Type\Generic\TemplateTypeVarianceMap::class] = true;
+
+// ---- TemplateTypeMap ----
+// Every operation over maps of upper and lower bounds, absorbed arguments
+// and template types, each side built from its own Type classes (the
+// native map probes NeverType by class entry); Type values compared by
+// class modulo the prefix and by description.
+$ttmClass = static fn (string $phpClass, bool $native): string => $native ? $shadowedClasses[$phpClass]['turboClass'] : $phpClass;
+$ttmScope = \PHPStan\Type\Generic\TemplateTypeScope::createWithClass('Foo');
+/** @return array<string, object> */
+$ttmMaps = static function (bool $native) use ($ttmClass, $ttmScope): array {
+	$c = static fn (string $phpClass): string => $ttmClass($phpClass, $native);
+	$mapClass = $c(\PHPStan\Type\Generic\TemplateTypeMap::class);
+	$int = new ($c(\PHPStan\Type\IntegerType::class))();
+	$string = new ($c(\PHPStan\Type\StringType::class))();
+	$constInt = new ($c(\PHPStan\Type\Constant\ConstantIntegerType::class))(1);
+	$never = new ($c(\PHPStan\Type\NeverType::class))();
+	$t = \PHPStan\Type\Generic\TemplateTypeFactory::create($ttmScope, 'T', null, \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant());
+	$u = \PHPStan\Type\Generic\TemplateTypeFactory::create($ttmScope, 'U', new \PHPStan\Type\IntegerType(), \PHPStan\Type\Generic\TemplateTypeVariance::createCovariant(), null, new \PHPStan\Type\Constant\ConstantIntegerType(5));
+	$absorbed = new ($c(\PHPStan\Type\Generic\AbsorbedTemplateArgumentType::class))(); /* shadowed: each side its own class */
+	return [
+		'empty' => $mapClass::createEmpty(),
+		'upper' => new $mapClass(['T' => $int, 'U' => $string]),
+		'lower' => new $mapClass([], ['T' => $string, 'V' => $constInt]),
+		'both' => new $mapClass(['T' => $int, 'V' => $string], ['T' => $constInt, 'U' => $int]),
+		'templates' => new $mapClass(['T' => $t, 'U' => $u]),
+		'absorbed' => new $mapClass(['T' => $absorbed, 'U' => $int]),
+		'disjoint lower' => new $mapClass(['T' => $int], ['U' => $never]),
+	];
+};
+$ttmPhpMaps = $ttmMaps(false);
+$ttmNativeMaps = $ttmMaps(true);
+$ttmView = static function (mixed $v) use (&$ttmView, $turboNorm): mixed {
+	if ($v instanceof \PHPStan\Type\Type) {
+		return [$turboNorm(get_class($v)), $v->describe(\PHPStan\Type\VerbosityLevel::precise())];
+	}
+	if (is_array($v)) {
+		return array_map($ttmView, $v);
+	}
+	if (is_object($v)) {
+		return $turboNorm(get_class($v));
+	}
+	return $v;
+};
+check(\PHPStanTurbo\TemplateTypeMap::createEmpty() === \PHPStanTurbo\TemplateTypeMap::createEmpty(), 'TemplateTypeMap::createEmpty() identity');
+foreach ($ttmPhpMaps as $ttmLabel => $ttmPhp) {
+	$ttmNative = $ttmNativeMaps[$ttmLabel];
+	check($ttmNative instanceof \PHPStanTurbo\TemplateTypeMap, "TemplateTypeMap $ttmLabel is the native class");
+	check($ttmView($ttmPhp->getTypes()) === $ttmView($ttmNative->getTypes()), "TemplateTypeMap $ttmLabel getTypes(): " . json_encode($ttmView($ttmNative->getTypes())));
+	check($ttmPhp->count() === $ttmNative->count() && $ttmPhp->isEmpty() === $ttmNative->isEmpty(), "TemplateTypeMap $ttmLabel count()/isEmpty()");
+	foreach (['T', 'U', 'V', '5', 'X', ''] as $ttmName) {
+		check($ttmPhp->hasType($ttmName) === $ttmNative->hasType($ttmName), "TemplateTypeMap $ttmLabel hasType($ttmName)");
+		check($ttmView($ttmPhp->getType($ttmName)) === $ttmView($ttmNative->getType($ttmName)), "TemplateTypeMap $ttmLabel getType($ttmName)");
+		check($ttmView($ttmPhp->unsetType($ttmName)->getTypes()) === $ttmView($ttmNative->unsetType($ttmName)->getTypes()), "TemplateTypeMap $ttmLabel unsetType($ttmName)");
+		check(($ttmPhp->unsetType($ttmName) === $ttmPhp) === ($ttmNative->unsetType($ttmName) === $ttmNative), "TemplateTypeMap $ttmLabel unsetType($ttmName) returns \$this on both sides or neither");
+		check(($ttmPhp->unsetType($ttmName) === \PHPStan\Type\Generic\TemplateTypeMap::createEmpty()) === ($ttmNative->unsetType($ttmName) === \PHPStanTurbo\TemplateTypeMap::createEmpty()), "TemplateTypeMap $ttmLabel unsetType($ttmName) returns the empty singleton on both sides or neither");
+	}
+	check($ttmView($ttmPhp->convertToLowerBoundTypes()->getTypes()) === $ttmView($ttmNative->convertToLowerBoundTypes()->getTypes()), "TemplateTypeMap $ttmLabel convertToLowerBoundTypes()");
+	check($ttmPhp->convertToLowerBoundTypes()->count() === $ttmNative->convertToLowerBoundTypes()->count(), "TemplateTypeMap $ttmLabel convertToLowerBoundTypes() count");
+	check($ttmView($ttmPhp->resolveToBounds()->getTypes()) === $ttmView($ttmNative->resolveToBounds()->getTypes()), "TemplateTypeMap $ttmLabel resolveToBounds(): " . json_encode($ttmView($ttmNative->resolveToBounds()->getTypes())));
+	check($ttmNative->resolveToBounds() === $ttmNative->resolveToBounds(), "TemplateTypeMap $ttmLabel resolveToBounds() is memoized");
+	$ttmMapper = static fn (string $name, \PHPStan\Type\Type $type): \PHPStan\Type\Type => $name === 'T' ? new \PHPStan\Type\NullType() : $type;
+	check($ttmView($ttmPhp->map($ttmMapper)->getTypes()) === $ttmView($ttmNative->map($ttmMapper)->getTypes()), "TemplateTypeMap $ttmLabel map()");
+	// the set operations combine the members through TypeCombinator, where a
+	// native Type meeting a PHP TemplateType is a TypeError in this prefixed
+	// declaration — the template-bearing maps combine under the real names in
+	// tests/type-family.php; an absorbed argument yields before TypeCombinator
+	// runs, so it pairs with the others in the unions
+	foreach ($ttmPhpMaps as $ttmOtherLabel => $ttmOtherPhp) {
+		$ttmOtherNative = $ttmNativeMaps[$ttmOtherLabel];
+		if ($ttmLabel === 'templates' || $ttmOtherLabel === 'templates') {
+			continue;
+		}
+		foreach (['union', 'benevolentUnion', 'intersect'] as $ttmOp) {
+			if ($ttmOp === 'intersect' && ($ttmLabel === 'absorbed' || $ttmOtherLabel === 'absorbed')) {
+				continue;
+			}
+			$ttmPhpResult = $ttmPhp->$ttmOp($ttmOtherPhp);
+			$ttmNativeResult = $ttmNative->$ttmOp($ttmOtherNative);
+			check($ttmView($ttmPhpResult->getTypes()) === $ttmView($ttmNativeResult->getTypes()) && $ttmPhpResult->count() === $ttmNativeResult->count(), "TemplateTypeMap $ttmLabel $ttmOp $ttmOtherLabel: " . json_encode($ttmView($ttmPhpResult->getTypes())) . ' vs ' . json_encode($ttmView($ttmNativeResult->getTypes())));
+			// the lower bounds of a result are not converted here: the never
+			// TypeCombinator::intersect() answers for disjoint bounds is the PHP
+			// NeverType in this prefixed declaration, which the native map cannot
+			// tell from any other type — observed under the real names in
+			// tests/type-family.php ("template map ... convertToLowerBoundTypes")
+		}
+	}
+}
+$ttmErrors = static function (string $class): array {
+	$errors = [];
+	try {
+		$class::createEmpty()->union(new \stdClass());
+		$errors[] = 'none';
+	} catch (\Throwable $e) {
+		$errors[] = get_class($e);
+	}
+	try {
+		$class::createEmpty()->map('no such function');
+		$errors[] = 'none';
+	} catch (\Throwable $e) {
+		$errors[] = get_class($e);
+	}
+	try {
+		(new ReflectionClass($class))->newInstanceWithoutConstructor()->getTypes();
+		$errors[] = 'none';
+	} catch (\Throwable $e) {
+		$errors[] = get_class($e);
+	}
+	return $errors;
+};
+check($ttmErrors(\PHPStan\Type\Generic\TemplateTypeMap::class) === $ttmErrors(\PHPStanTurbo\TemplateTypeMap::class), 'TemplateTypeMap: a foreign operand, a non-callable and an unconstructed instance throw the same (' . implode(', ', $ttmErrors(\PHPStanTurbo\TemplateTypeMap::class)) . ')');
+$covered[\PHPStan\Type\Generic\TemplateTypeMap::class] = true;
+
+// ---- TemplateTypeScope ----
+// The four factories, the getters, equals() over every pair and describe().
+$ttsScopes = static fn (string $class): array => [
+	'anonymous' => $class::createWithAnonymousFunction(),
+	'function foo' => $class::createWithFunction('foo'),
+	'function bar' => $class::createWithFunction('bar'),
+	'method Foo::bar' => $class::createWithMethod('Foo', 'bar'),
+	'method Foo::baz' => $class::createWithMethod('Foo', 'baz'),
+	'method Bar::bar' => $class::createWithMethod('Bar', 'bar'),
+	'class Foo' => $class::createWithClass('Foo'),
+	'class Bar' => $class::createWithClass('Bar'),
+];
+$ttsPhp = $ttsScopes(\PHPStan\Type\Generic\TemplateTypeScope::class);
+$ttsNative = $ttsScopes(\PHPStanTurbo\TemplateTypeScope::class);
+foreach ($ttsPhp as $ttsLabel => $ttsPhpScope) {
+	$ttsNativeScope = $ttsNative[$ttsLabel];
+	check($ttsNativeScope instanceof \PHPStanTurbo\TemplateTypeScope, "TemplateTypeScope $ttsLabel is the native class");
+	check($ttsPhpScope->getClassName() === $ttsNativeScope->getClassName(), "TemplateTypeScope $ttsLabel getClassName()");
+	check($ttsPhpScope->getFunctionName() === $ttsNativeScope->getFunctionName(), "TemplateTypeScope $ttsLabel getFunctionName()");
+	check($ttsPhpScope->describe() === $ttsNativeScope->describe(), "TemplateTypeScope $ttsLabel describe(): " . $ttsNativeScope->describe());
+	foreach ($ttsPhp as $ttsOtherLabel => $ttsOtherPhp) {
+		check($ttsPhpScope->equals($ttsOtherPhp) === $ttsNativeScope->equals($ttsNative[$ttsOtherLabel]), "TemplateTypeScope $ttsLabel equals $ttsOtherLabel");
+	}
+}
+$ttsErrors = static function (string $class): array {
+	$errors = [];
+	try {
+		$class::createWithClass('Foo')->equals(new \stdClass());
+		$errors[] = 'none';
+	} catch (\Throwable $e) {
+		$errors[] = get_class($e);
+	}
+	try {
+		new $class('Foo', null);
+		$errors[] = 'none';
+	} catch (\Throwable $e) {
+		$errors[] = get_class($e);
+	}
+	try {
+		(new ReflectionClass($class))->newInstanceWithoutConstructor()->describe();
+		$errors[] = 'none';
+	} catch (\Throwable $e) {
+		$errors[] = get_class($e);
+	}
+	return $errors;
+};
+check($ttsErrors(\PHPStan\Type\Generic\TemplateTypeScope::class) === $ttsErrors(\PHPStanTurbo\TemplateTypeScope::class), 'TemplateTypeScope: a foreign operand, the private constructor and an unconstructed instance throw the same (' . implode(', ', $ttsErrors(\PHPStanTurbo\TemplateTypeScope::class)) . ')');
+$covered[\PHPStan\Type\Generic\TemplateTypeScope::class] = true;
+
+// ---- TemplateTypeReference ----
+// A pair of a template type and a variance, handed back as given.
+$ttrTemplate = \PHPStan\Type\Generic\TemplateTypeFactory::create(\PHPStan\Type\Generic\TemplateTypeScope::createWithClass('Foo'), 'T', null, \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant());
+$ttrPhp = new \PHPStan\Type\Generic\TemplateTypeReference($ttrTemplate, $ttvPhp['createContravariant']);
+$ttrNative = new \PHPStanTurbo\TemplateTypeReference($ttrTemplate, $ttvNative['createContravariant']);
+check($ttrPhp->getType() === $ttrTemplate && $ttrNative->getType() === $ttrTemplate, 'TemplateTypeReference::getType() hands back the template type');
+check($ttrPhp->getPositionVariance() === $ttvPhp['createContravariant'] && $ttrNative->getPositionVariance() === $ttvNative['createContravariant'], 'TemplateTypeReference::getPositionVariance() hands back the variance');
+check($ttrPhp->getPositionVariance()->describe() === $ttrNative->getPositionVariance()->describe(), 'TemplateTypeReference::getPositionVariance() describe()');
+$ttrErrors = static function (string $class, object $variance) use ($ttrTemplate): array {
+	$errors = [];
+	try {
+		new $class(new \PHPStan\Type\IntegerType(), $variance);
+		$errors[] = 'none';
+	} catch (\Throwable $e) {
+		$errors[] = get_class($e);
+	}
+	try {
+		new $class($ttrTemplate, new \stdClass());
+		$errors[] = 'none';
+	} catch (\Throwable $e) {
+		$errors[] = get_class($e);
+	}
+	try {
+		(new ReflectionClass($class))->newInstanceWithoutConstructor()->getType();
+		$errors[] = 'none';
+	} catch (\Throwable $e) {
+		$errors[] = get_class($e);
+	}
+	return $errors;
+};
+check($ttrErrors(\PHPStan\Type\Generic\TemplateTypeReference::class, $ttvPhp['createInvariant']) === $ttrErrors(\PHPStanTurbo\TemplateTypeReference::class, $ttvNative['createInvariant']), 'TemplateTypeReference: a non-template type, a foreign variance and an unconstructed instance throw the same (' . implode(', ', $ttrErrors(\PHPStanTurbo\TemplateTypeReference::class, $ttvNative['createInvariant'])) . ')');
+$covered[\PHPStan\Type\Generic\TemplateTypeReference::class] = true;
+
+// ---- TemplateTypeHelper ----
+// The traversals over bare template types (the template types are PHP
+// classes on both sides; the compounds they sit in need one Type graph per
+// process and are observed under the real names in tests/type-family.php),
+// generalizeInferredTemplateType() over each side's constant types, and
+// the failure modes.
+$tthScope = \PHPStan\Type\Generic\TemplateTypeScope::createWithClass('Foo');
+$tthT = \PHPStan\Type\Generic\TemplateTypeFactory::create($tthScope, 'T', null, \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant());
+$tthU = \PHPStan\Type\Generic\TemplateTypeFactory::create($tthScope, 'U', new \PHPStan\Type\IntegerType(), \PHPStan\Type\Generic\TemplateTypeVariance::createCovariant(), null, new \PHPStan\Type\Constant\ConstantIntegerType(5));
+$tthK = \PHPStan\Type\Generic\TemplateTypeFactory::create($tthScope, 'K', new \PHPStan\Type\UnionType([new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()]), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant());
+$tthAnonymous = \PHPStan\Type\Generic\TemplateTypeFactory::create(\PHPStan\Type\Generic\TemplateTypeScope::createWithAnonymousFunction(), 'A', null, \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant());
+$tthView = static fn (\PHPStan\Type\Type $type): array => [$turboNorm(get_class($type)), $type->describe(\PHPStan\Type\VerbosityLevel::precise())];
+foreach (['T' => $tthT, 'U' => $tthU, 'K' => $tthK, 'A' => $tthAnonymous, 'T argument' => $tthT->toArgument()] as $tthLabel => $tthSubject) {
+	foreach (['resolveToBounds', 'resolveToDefaults', 'toArgument', 'removeFinalByKeywordOverrides'] as $tthMethod) {
+		$tthPhpResult = \PHPStan\Type\Generic\TemplateTypeHelper::$tthMethod($tthSubject);
+		$tthNativeResult = \PHPStanTurbo\TemplateTypeHelper::$tthMethod($tthSubject);
+		check($tthView($tthPhpResult) === $tthView($tthNativeResult), "TemplateTypeHelper::$tthMethod($tthLabel): " . json_encode($tthView($tthPhpResult)) . ' vs ' . json_encode($tthView($tthNativeResult)));
+		check(($tthPhpResult === $tthSubject) === ($tthNativeResult === $tthSubject), "TemplateTypeHelper::$tthMethod($tthLabel) hands the subject back on both sides or neither");
+	}
+	// resolveTemplateTypes() hands the position variance to the subject's
+	// getReferencedTemplateTypes(TemplateTypeVariance $positionVariance) — a
+	// native variance meeting a PHP template type's typed parameter is a
+	// TypeError in this prefixed declaration, so the resolution is observed
+	// under the real names in tests/type-family.php ("template helper
+	// resolveTemplateTypes ...")
+}
+// generalizeInferredTemplateType() describes the template's bound with the
+// helper's own VerbosityLevel — the native level meeting a PHP bound's typed
+// describe() parameter is a TypeError in this prefixed declaration, so the
+// generalization is observed under the real names in tests/type-family.php
+// ("template helper generalizeInferredTemplateType ...")
+$tthErrors = static function (string $helper, string $mapClass, string $varianceMapClass, object $variance) use ($tthT): array {
+	$errors = [];
+	try {
+		$helper::resolveTemplateTypes($tthT, new \stdClass(), $varianceMapClass::createEmpty(), $variance);
+		$errors[] = 'none';
+	} catch (\Throwable $e) {
+		$errors[] = get_class($e);
+	}
+	try {
+		$helper::resolveTemplateTypes($tthT, $mapClass::createEmpty(), $varianceMapClass::createEmpty(), new \stdClass());
+		$errors[] = 'none';
+	} catch (\Throwable $e) {
+		$errors[] = get_class($e);
+	}
+	try {
+		$helper::resolveToBounds(new \stdClass());
+		$errors[] = 'none';
+	} catch (\Throwable $e) {
+		$errors[] = get_class($e);
+	}
+	return $errors;
+};
+check($tthErrors(\PHPStan\Type\Generic\TemplateTypeHelper::class, \PHPStan\Type\Generic\TemplateTypeMap::class, \PHPStan\Type\Generic\TemplateTypeVarianceMap::class, \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()) === $tthErrors(\PHPStanTurbo\TemplateTypeHelper::class, \PHPStanTurbo\TemplateTypeMap::class, \PHPStanTurbo\TemplateTypeVarianceMap::class, $ttvNative['createInvariant']), 'TemplateTypeHelper: foreign arguments throw the same (' . implode(', ', $tthErrors(\PHPStanTurbo\TemplateTypeHelper::class, \PHPStanTurbo\TemplateTypeMap::class, \PHPStanTurbo\TemplateTypeVarianceMap::class, $ttvNative['createInvariant'])) . ')');
+$covered[\PHPStan\Type\Generic\TemplateTypeHelper::class] = true;
 
 // ---- differential coverage completeness ----
 // Every shadowed class must be exercised by one of the tests/ scripts; the

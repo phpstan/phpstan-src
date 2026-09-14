@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeStrategy;
@@ -24,6 +25,7 @@ use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
  * at all before both resolve. The resolvers of template types therefore traverse into
  * it instead of substituting it.
  */
+#[ReferencedByTurboExtension(key: 'narrowedSubjectType')]
 final class NarrowedSubjectType implements TemplateType, LateResolvableType
 {
 

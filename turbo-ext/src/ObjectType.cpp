@@ -1696,7 +1696,7 @@ public:
 			if (UNEXPECTED(templateType.isUndef())) return zv::Val();
 			if (templateType.isNull()) return type;
 
-			zv::Val bound = pt_type_call_static(PT_CLASS_TEMPLATE_TYPE_HELPER, PT_LC("resolvetobounds"), 1, templateType.raw());
+			zv::Val bound = pt_type_template_type_helper_resolve_to_bounds(templateType.raw());
 			if (UNEXPECTED(bound.isUndef())) return zv::Val();
 			if (zv::Ref(bound.raw()).instanceOf(pt_ce_mixed_type)) {
 				bool explicitMixed;
@@ -1708,7 +1708,7 @@ public:
 				}
 			}
 
-			return pt_type_call_static(PT_CLASS_TEMPLATE_TYPE_HELPER, PT_LC("resolvetodefaults"), 1, templateType.raw());
+			return pt_type_template_type_helper_resolve_to_defaults(templateType.raw());
 		}
 
 		return type;

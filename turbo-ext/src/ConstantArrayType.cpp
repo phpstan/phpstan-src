@@ -4363,7 +4363,7 @@ public:
 
 		if (instanceof_function(Z_OBJCE_P(receivedType), pt_ce_constant_array_type)) {
 			zend_object *received = Z_OBJ_P(receivedType);
-			zv::Val typeMap = pt_type_call_static(PT_CLASS_TEMPLATE_TYPE_MAP, PT_LC("createempty"), 0, NULL);
+			zv::Val typeMap = pt_type_template_type_map_empty();
 			zval *k = keyTypes();
 			zval *v = k != NULL ? valueTypes() : NULL;
 			if (UNEXPECTED(typeMap.isUndef() || v == NULL)) return zv::Val();
@@ -4459,7 +4459,7 @@ public:
 			return pt_type_call(Z_OBJ_P(keyTypeMap.raw()), PT_LC("union"), 1, itemTypeMap.raw());
 		}
 
-		return pt_type_call_static(PT_CLASS_TEMPLATE_TYPE_MAP, PT_LC("createempty"), 0, NULL);
+		return pt_type_template_type_map_empty();
 	}
 
 	/* the referenced template types of the keys, the values and the
@@ -4467,7 +4467,7 @@ public:
 	 * variance; UNDEF = pending exception */
 	zv::Val getReferencedTemplateTypes(zval *positionVariance) const
 	{
-		zv::Val covariant = pt_type_call_static(PT_CLASS_TEMPLATE_TYPE_VARIANCE, PT_LC("createcovariant"), 0, NULL);
+		zv::Val covariant = pt_type_template_type_variance(PT_TEMPLATE_TYPE_VARIANCE_COVARIANT);
 		if (UNEXPECTED(covariant.isUndef())) return zv::Val();
 		zv::Val variance = pt_type_call(Z_OBJ_P(positionVariance), PT_LC("compose"), 1, covariant.raw());
 		if (UNEXPECTED(variance.isUndef())) return zv::Val();

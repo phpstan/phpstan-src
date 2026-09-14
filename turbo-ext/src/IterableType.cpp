@@ -424,7 +424,7 @@ public:
 	 * $variance the position composed with covariance */
 	zv::Val getReferencedTemplateTypes(zval *positionVariance) const
 	{
-		zv::Val covariant = pt_type_call_static(PT_CLASS_TEMPLATE_TYPE_VARIANCE, PT_LC("createcovariant"), 0, NULL);
+		zv::Val covariant = pt_type_template_type_variance(PT_TEMPLATE_TYPE_VARIANCE_COVARIANT);
 		if (UNEXPECTED(covariant.isUndef())) return zv::Val();
 		zv::Val variance = pt_type_call(Z_OBJ_P(positionVariance), PT_LC("compose"), 1, covariant.raw());
 		if (UNEXPECTED(variance.isUndef())) return zv::Val();

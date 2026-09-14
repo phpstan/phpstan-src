@@ -2,13 +2,13 @@
 
 namespace PHPStan\Type\Generic;
 
-use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_key_exists;
 
 /**
  * @api
  */
-#[ReferencedByTurboExtension(key: 'templateTypeVarianceMap')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TemplateTypeVarianceMap.cpp')]
 final class TemplateTypeVarianceMap
 {
 

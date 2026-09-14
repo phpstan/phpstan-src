@@ -85,7 +85,6 @@ enum {
 	PT_CLASS_ARROW_FUNCTION,
 	PT_CLASS_TYPE,
 	PT_CLASS_CLASS_NAME_TO_OBJECT_TYPE_RESULT,
-	PT_CLASS_TEMPLATE_TYPE_MAP,
 	PT_CLASS_IDENTIFIER_TYPE_NODE,
 	PT_CLASS_STATIC_TYPE_FACTORY,
 	PT_CLASS_LOOSE_COMPARISON_HELPER,
@@ -104,7 +103,7 @@ enum {
 	PT_CLASS_TRIVIAL_PARAMETERS_ACCEPTOR,
 	PT_CLASS_INACCESSIBLE_METHOD,
 	PT_CLASS_TEMPLATE_TYPE,
-	PT_CLASS_TEMPLATE_TYPE_VARIANCE,
+	PT_CLASS_NARROWED_SUBJECT_TYPE,
 	PT_CLASS_GENERALIZE_PRECISION,
 	PT_CLASS_CONST_EXPR_STRING_NODE,
 	PT_CLASS_NETTE_STRINGS,
@@ -117,12 +116,10 @@ enum {
 	PT_CLASS_DUMMY_METHOD_REFLECTION,
 	PT_CLASS_CALLBACK_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION,
 	PT_CLASS_DUMMY_CLASS_CONSTANT_REFLECTION,
-	PT_CLASS_TEMPLATE_TYPE_HELPER,
 	PT_CLASS_TYPE_WITH_CLASS_NAME,
 	PT_CLASS_OBJECT_SHAPE_PROPERTY_REFLECTION,
 	PT_CLASS_UNIVERSAL_OBJECT_CRATES_CLASS_REFLECTION_EXTENSION,
 	PT_CLASS_MISSING_PROPERTY_FROM_REFLECTION_EXCEPTION,
-	PT_CLASS_TEMPLATE_TYPE_VARIANCE_MAP,
 	PT_CLASS_THIS_TYPE_NODE,
 	PT_CLASS_OBJECT_SHAPE_NODE,
 	PT_CLASS_OBJECT_SHAPE_ITEM_NODE,
@@ -184,6 +181,7 @@ enum {
 	PT_CLASS_PARSER_NODE_TYPE_TO_PHPSTAN_TYPE,
 	PT_CLASS_TURBO_EXTENSION_ENABLER,
 	PT_CLASS_TEMPLATE_TYPE_FACTORY,
+	PT_CLASS_PARAMETERS_ACCEPTOR,
 	PT_CLASS_COUNT
 };
 
@@ -899,5 +897,73 @@ zv::Val pt_type_combinator_cache_union(uint32_t argc, zval *argv);
 zv::Val pt_type_combinator_cache_intersect(uint32_t argc, zval *argv);
 zv::Val pt_type_combinator_cache_remove(zval *fromType, zval *typeToRemove);
 void pt_type_combinator_cache_clear();
+
+/* merged from the parallel port branch */
+/* merged from the parallel port branch */
+/* the template-type helper classes (TemplateTypeVariance.cpp,
+ * TemplateTypeVarianceMap.cpp, TemplateTypeMap.cpp, TemplateTypeScope.cpp,
+ * TemplateTypeReference.cpp, TemplateTypeHelper.cpp) */
+extern zend_class_entry *pt_ce_template_type_variance;
+extern zend_class_entry *pt_ce_template_type_variance_map;
+extern zend_class_entry *pt_ce_template_type_map;
+extern zend_class_entry *pt_ce_template_type_scope;
+extern zend_class_entry *pt_ce_template_type_reference;
+extern zend_class_entry *pt_ce_template_type_helper;
+/* registered at the end of the Type block, after FiniteTypeSet:
+ * TemplateTypeVariance first (the maps', the reference's and the helper's
+ * signatures name it), then TemplateTypeVarianceMap, TemplateTypeMap,
+ * TemplateTypeScope, TemplateTypeReference and TemplateTypeHelper (its
+ * signatures name the maps) */
+void pt_register_template_type_variance();
+void pt_register_template_type_variance_map();
+void pt_register_template_type_map();
+void pt_register_template_type_scope();
+void pt_register_template_type_reference();
+void pt_register_template_type_helper();
+/* the twin's private variance constants */
+#define PT_TEMPLATE_TYPE_VARIANCE_INVARIANT 1
+#define PT_TEMPLATE_TYPE_VARIANCE_COVARIANT 2
+#define PT_TEMPLATE_TYPE_VARIANCE_CONTRAVARIANT 3
+#define PT_TEMPLATE_TYPE_VARIANCE_STATIC 4
+#define PT_TEMPLATE_TYPE_VARIANCE_BIVARIANT 5
+/* TemplateTypeVariance::create*() for a PT_TEMPLATE_TYPE_VARIANCE_* value —
+ * the twin's singletons, held in its static $registry; borrowed zval,
+ * callers copy; NULL = pending exception */
+[[nodiscard]] zval *pt_template_type_variance_singleton(zend_long value);
+/* the $value of a variance instance: the slot of a native instance, the
+ * is-queries of anything else (the PHP twin declared next to the native
+ * class in the differential tests); false = pending exception */
+[[nodiscard]] bool pt_template_type_variance_value_of(zval *variance, zend_long &out);
+/* $self->compose($other) — natively for a native $self, through the
+ * method otherwise; false = pending exception */
+[[nodiscard]] bool pt_template_type_variance_compose(zval *out, zval *self, zval *other);
+/* TemplateTypeVarianceMap::createEmpty() / new TemplateTypeVarianceMap($variances)
+ * — the twin's singleton (held in its static $empty) and a fresh instance
+ * ($variances borrowed, checked as the twin's `array` parameter); false =
+ * pending exception */
+bool pt_template_type_variance_map_empty(zval *out);
+bool pt_template_type_variance_map_new(zval *out, zval *variances);
+/* TemplateTypeMap::createEmpty() / new TemplateTypeMap($types,
+ * $lowerBoundTypes) — the twin's singleton (held in its static $empty) and
+ * a fresh instance (the arrays borrowed, checked as the twin's `array`
+ * parameters; $lowerBoundTypes NULL for the default []); false = pending
+ * exception */
+[[nodiscard]] bool pt_template_type_map_empty(zval *out);
+bool pt_template_type_map_new(zval *out, zval *types, zval *lowerBoundTypes = NULL);
+/* new TemplateTypeScope($className, $functionName) — the twin's private
+ * constructor behind its create*() factories (NULL for null, the strings
+ * borrowed); false = pending exception */
+[[nodiscard]] bool pt_template_type_scope_new(zval *out, zend_string *className, zend_string *functionName);
+/* $self->equals($other) — natively for two native scopes, through the
+ * method otherwise; false = pending exception */
+[[nodiscard]] bool pt_template_type_scope_equals(zval *self, zval *other, bool &out);
+/* new TemplateTypeReference($type, $positionVariance) (both borrowed,
+ * checked as the twin's typed parameters check them); false = pending
+ * exception */
+[[nodiscard]] bool pt_template_type_reference_new(zval *out, zval *type, zval *positionVariance);
+/* $scope->equals(TemplateTypeScope::createWithAnonymousFunction()) —
+ * natively for a native scope, through the scope's own class otherwise;
+ * false = pending exception */
+[[nodiscard]] bool pt_template_type_scope_is_anonymous(zval *scope, bool &out);
 
 #endif /* PHPSTANTURBO_SUPPORT_H */

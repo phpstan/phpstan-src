@@ -305,7 +305,7 @@ private:
 	 * $type->method($argument), or $argument->method($type) when reversed */
 	zv::Val benevolentMapUnion(const char *lcname, size_t len, zval *argument, bool reversed) const
 	{
-		zv::Val types = pt_type_call_static(PT_CLASS_TEMPLATE_TYPE_MAP, PT_LC("createempty"), 0, NULL);
+		zv::Val types = pt_type_template_type_map_empty();
 		if (UNEXPECTED(types.isUndef())) return zv::Val();
 		zv::Val members = thisGetTypes();
 		if (UNEXPECTED(members.isUndef())) return zv::Val();

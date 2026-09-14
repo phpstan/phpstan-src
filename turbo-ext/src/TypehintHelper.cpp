@@ -379,7 +379,7 @@ private:
 			return true;
 		}
 
-		zv::Val bounds = pt_type_call_static(PT_CLASS_TEMPLATE_TYPE_HELPER, PT_LC("resolvetobounds"), 1, phpDocType);
+		zv::Val bounds = pt_type_template_type_helper_resolve_to_bounds(phpDocType);
 		if (UNEXPECTED(bounds.isUndef())) return false;
 		zv::Val isSuperType = pt_type_call(Z_OBJ_P(type), PT_LC("issupertypeof"), 1, bounds.raw());
 		if (UNEXPECTED(isSuperType.isUndef())) return false;

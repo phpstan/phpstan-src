@@ -1705,7 +1705,7 @@ public:
 			if (UNEXPECTED(receivedType.isUndef())) return zv::Val();
 		}
 
-		zv::Val types = pt_type_call_static(PT_CLASS_TEMPLATE_TYPE_MAP, PT_LC("createempty"), 0, NULL);
+		zv::Val types = pt_type_template_type_map_empty();
 		if (UNEXPECTED(types.isUndef())) return zv::Val();
 		zv::Val receivedTypes;
 		if (zv::Ref(receivedType.raw()).instanceOf(pt_ce_union_type)) {
@@ -1822,14 +1822,14 @@ public:
 			zv::Val argument = zv::Val::adopt(argumentRaw);
 			absorbed.set(zv::Ref(name.raw()).asString(), std::move(argument));
 		}
-		if (zend_hash_num_elements(absorbed.table()) == 0) return pt_type_call_static(PT_CLASS_TEMPLATE_TYPE_MAP, PT_LC("createempty"), 0, NULL);
-		return pt_type_new(PT_CLASS_TEMPLATE_TYPE_MAP, 1, absorbed.raw());
+		if (zend_hash_num_elements(absorbed.table()) == 0) return pt_type_template_type_map_empty();
+		return pt_type_template_type_map_new(absorbed.raw());
 	}
 
 	/* the union of $templateType->inferTemplateTypes() over every member */
 	zv::Val inferTemplateTypesOn(zval *templateType) const
 	{
-		zv::Val types = pt_type_call_static(PT_CLASS_TEMPLATE_TYPE_MAP, PT_LC("createempty"), 0, NULL);
+		zv::Val types = pt_type_template_type_map_empty();
 		if (UNEXPECTED(types.isUndef())) return zv::Val();
 		zval *ownTypes = this->types();
 		if (UNEXPECTED(ownTypes == NULL)) return zv::Val();

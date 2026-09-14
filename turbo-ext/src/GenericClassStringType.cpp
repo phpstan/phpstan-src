@@ -284,7 +284,7 @@ public:
 		} else {
 			zend_long isClassString = pt_type_call_trinary(Z_OBJ_P(receivedType), PT_LC("isclassstring"), 0, NULL);
 			if (UNEXPECTED(isClassString < 0)) return zv::Val();
-			if (isClassString != PT_TRI_YES) return pt_type_call_static(PT_CLASS_TEMPLATE_TYPE_MAP, PT_LC("createempty"), 0, NULL);
+			if (isClassString != PT_TRI_YES) return pt_type_template_type_map_empty();
 			zval *t = type();
 			if (UNEXPECTED(t == NULL)) return zv::Val();
 			typeToInfer = zv::Val::copyOf(zv::Ref(t));
@@ -307,7 +307,7 @@ public:
 	/* $this->type->getReferencedTemplateTypes($positionVariance->compose(TemplateTypeVariance::createCovariant())) */
 	zv::Val getReferencedTemplateTypes(zval *positionVariance) const
 	{
-		zv::Val covariant = pt_type_call_static(PT_CLASS_TEMPLATE_TYPE_VARIANCE, PT_LC("createcovariant"), 0, NULL);
+		zv::Val covariant = pt_type_template_type_variance(PT_TEMPLATE_TYPE_VARIANCE_COVARIANT);
 		if (UNEXPECTED(covariant.isUndef())) return zv::Val();
 		zv::Val variance = pt_type_call(Z_OBJ_P(positionVariance), PT_LC("compose"), 1, covariant.raw());
 		if (UNEXPECTED(variance.isUndef())) return zv::Val();

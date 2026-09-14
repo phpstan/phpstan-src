@@ -475,7 +475,7 @@ public:
 		}
 
 		if (instanceof_function(Z_OBJCE_P(receivedType), pt_ce_object_shape_type)) {
-			zv::Val typeMap = pt_type_call_static(PT_CLASS_TEMPLATE_TYPE_MAP, PT_LC("createempty"), 0, NULL);
+			zv::Val typeMap = pt_type_template_type_map_empty();
 			if (UNEXPECTED(typeMap.isUndef())) return zv::Val();
 			zv::Val scope = pt_type_new(PT_CLASS_OUT_OF_CLASS_SCOPE, 0, NULL);
 			if (UNEXPECTED(scope.isUndef())) return zv::Val();
@@ -510,14 +510,14 @@ public:
 			return typeMap;
 		}
 
-		return pt_type_call_static(PT_CLASS_TEMPLATE_TYPE_MAP, PT_LC("createempty"), 0, NULL);
+		return pt_type_template_type_map_empty();
 	}
 
 	/* the references of every property type, in the position variance
 	 * composed with covariant; UNDEF = pending exception */
 	zv::Val getReferencedTemplateTypes(zval *positionVariance) const
 	{
-		zv::Val covariant = pt_type_call_static(PT_CLASS_TEMPLATE_TYPE_VARIANCE, PT_LC("createcovariant"), 0, NULL);
+		zv::Val covariant = pt_type_template_type_variance(PT_TEMPLATE_TYPE_VARIANCE_COVARIANT);
 		if (UNEXPECTED(covariant.isUndef())) return zv::Val();
 		zv::Val variance = pt_type_call(Z_OBJ_P(positionVariance), PT_LC("compose"), 1, covariant.raw());
 		if (UNEXPECTED(variance.isUndef())) return zv::Val();

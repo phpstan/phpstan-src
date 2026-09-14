@@ -4659,6 +4659,229 @@ $observations['native PHPStan\Type\TypeCombinator'] = (new ReflectionMethod(\PHP
 }
 
 
+// ---- TemplateTypeVariance ----
+// isValidVariance() over every variance, strict and not, on pairs of
+// template types (same/different scope and name), mixed, benevolent unions,
+// never and plain types — the reasons carry the class scope of $templateType.
+{
+	$r = [];
+	$classScope = \PHPStan\Type\Generic\TemplateTypeScope::createWithClass('Foo');
+	$functionScope = \PHPStan\Type\Generic\TemplateTypeScope::createWithFunction('foo');
+	$int = new \PHPStan\Type\IntegerType();
+	$string = new \PHPStan\Type\StringType();
+	$constInt = new \PHPStan\Type\Constant\ConstantIntegerType(1);
+	$intOrString = new \PHPStan\Type\UnionType([$int, $string]);
+	$mixed = new \PHPStan\Type\MixedType();
+	$explicitMixed = new \PHPStan\Type\MixedType(true);
+	$never = new \PHPStan\Type\NeverType();
+	$benevolent = new \PHPStan\Type\BenevolentUnionType([$int, $string]);
+	$benevolentFloat = new \PHPStan\Type\BenevolentUnionType([new \PHPStan\Type\FloatType(), new \PHPStan\Type\NullType()]);
+	$stdClass = new \PHPStan\Type\ObjectType(\stdClass::class);
+	$tClass = \PHPStan\Type\Generic\TemplateTypeFactory::create($classScope, 'T', null, \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant());
+	$tClassAgain = \PHPStan\Type\Generic\TemplateTypeFactory::create($classScope, 'T', null, \PHPStan\Type\Generic\TemplateTypeVariance::createCovariant());
+	$uClass = \PHPStan\Type\Generic\TemplateTypeFactory::create($classScope, 'U', $int, \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant());
+	$tFunction = \PHPStan\Type\Generic\TemplateTypeFactory::create($functionScope, 'T', null, \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant());
+	$tObject = \PHPStan\Type\Generic\TemplateTypeFactory::create($classScope, 'TObj', $stdClass, \PHPStan\Type\Generic\TemplateTypeVariance::createCovariant());
+	$subjects = [
+		'int' => $int,
+		'string' => $string,
+		'const int' => $constInt,
+		'int|string' => $intOrString,
+		'mixed' => $mixed,
+		'explicit mixed' => $explicitMixed,
+		'never' => $never,
+		'benevolent int|string' => $benevolent,
+		'benevolent float|null' => $benevolentFloat,
+		'stdClass' => $stdClass,
+		'T of class' => $tClass,
+		'T of class again' => $tClassAgain,
+		'U of class' => $uClass,
+		'T of function' => $tFunction,
+		'TObj of class' => $tObject,
+	];
+	$variances = [
+		'invariant' => \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant(),
+		'covariant' => \PHPStan\Type\Generic\TemplateTypeVariance::createCovariant(),
+		'contravariant' => \PHPStan\Type\Generic\TemplateTypeVariance::createContravariant(),
+		'bivariant' => \PHPStan\Type\Generic\TemplateTypeVariance::createBivariant(),
+		'static' => \PHPStan\Type\Generic\TemplateTypeVariance::createStatic(),
+	];
+	foreach ([['class', $tClass], ['function', $tFunction]] as [$templateLabel, $templateType]) {
+		foreach ($variances as $varianceLabel => $variance) {
+			foreach ([false, true] as $strict) {
+				foreach ($subjects as $aLabel => $a) {
+					foreach ($subjects as $bLabel => $b) {
+						try {
+							$r[sprintf('%s %s %s: %s vs %s', $templateLabel, $varianceLabel, $strict ? 'strict' : 'loose', $aLabel, $bLabel)] = $view($variance->isValidVariance($templateType, $a, $b, $strict));
+						} catch (\Throwable $e) {
+							$r[sprintf('%s %s %s: %s vs %s', $templateLabel, $varianceLabel, $strict ? 'strict' : 'loose', $aLabel, $bLabel)] = [get_class($e), $e->getMessage()];
+						}
+					}
+				}
+			}
+		}
+	}
+	foreach ($r as $key => $value) {
+		$observations["template variance $key"] = $value;
+	}
+	$observations['native ' . \PHPStan\Type\Generic\TemplateTypeVariance::class] = (new ReflectionMethod(\PHPStan\Type\Generic\TemplateTypeVariance::class, 'compose'))->isInternal();
+}
+
+
+// ---- TemplateTypeVarianceMap / TemplateTypeMap ----
+// The maps the generic types hand out under the real names: inference on a
+// generic object produces the map, its set operations combine the inferred
+// types through TypeCombinator, resolveToBounds() replaces the templates.
+{
+	$r = [];
+	$classScope = \PHPStan\Type\Generic\TemplateTypeScope::createWithClass('Foo');
+	$int = new \PHPStan\Type\IntegerType();
+	$string = new \PHPStan\Type\StringType();
+	$t = \PHPStan\Type\Generic\TemplateTypeFactory::create($classScope, 'T', null, \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant());
+	$u = \PHPStan\Type\Generic\TemplateTypeFactory::create($classScope, 'U', $int, \PHPStan\Type\Generic\TemplateTypeVariance::createCovariant(), null, new \PHPStan\Type\Constant\ConstantIntegerType(5));
+	$arrayObjectReflection = $stringReflectionProvider->getClass(\ArrayObject::class);
+	$generic = new \PHPStan\Type\Generic\GenericObjectType(\ArrayObject::class, [$t, $u], null, $arrayObjectReflection);
+	$concrete = new \PHPStan\Type\Generic\GenericObjectType(\ArrayObject::class, [$int, $string], null, $arrayObjectReflection);
+	$inferred = $generic->inferTemplateTypes($concrete);
+	$arrayInferred = (new \PHPStan\Type\ArrayType($t, $u))->inferTemplateTypes(new \PHPStan\Type\Constant\ConstantArrayType([new \PHPStan\Type\Constant\ConstantIntegerType(0)], [$string]));
+	$maps = [
+		'inferred' => $inferred,
+		'array inferred' => $arrayInferred,
+		'declared' => new \PHPStan\Type\Generic\TemplateTypeMap(['T' => $t, 'U' => $u]),
+		'lower' => new \PHPStan\Type\Generic\TemplateTypeMap(['T' => $int], ['T' => $string, 'U' => $int]),
+		'disjoint lower' => new \PHPStan\Type\Generic\TemplateTypeMap([], ['T' => $int, 'U' => $string, 'V' => $string]),
+		'empty' => \PHPStan\Type\Generic\TemplateTypeMap::createEmpty(),
+	];
+	foreach ($maps as $label => $map) {
+		$r["$label class"] = get_class($map);
+		$r["$label types"] = $view($map->getTypes());
+		$r["$label count"] = $map->count();
+		$r["$label resolveToBounds"] = $view($map->resolveToBounds()->getTypes());
+		$r["$label resolveToBounds identity"] = $map->resolveToBounds() === $map->resolveToBounds();
+		$r["$label convertToLowerBoundTypes"] = $view($map->convertToLowerBoundTypes()->getTypes());
+		foreach ($maps as $otherLabel => $other) {
+			$r["$label union $otherLabel"] = $view($map->union($other)->getTypes());
+			$r["$label benevolentUnion $otherLabel"] = $view($map->benevolentUnion($other)->getTypes());
+			$r["$label intersect $otherLabel"] = $view($map->intersect($other)->getTypes());
+			$r["$label union $otherLabel lower bounds"] = $view($map->union($other)->convertToLowerBoundTypes()->getTypes());
+			$r["$label intersect $otherLabel lower bounds"] = $view($map->intersect($other)->convertToLowerBoundTypes()->getTypes());
+		}
+	}
+	$r['generic variances'] = $view($generic->getVariances());
+	$r['generic referenced template types'] = $view(array_map(static fn (\PHPStan\Type\Generic\TemplateTypeReference $ref): array => [$ref->getType()->getName(), $ref->getPositionVariance()->describe()], $generic->getReferencedTemplateTypes(\PHPStan\Type\Generic\TemplateTypeVariance::createCovariant())));
+	$r['callable variance map'] = $view((new \PHPStan\Type\ClosureType())->getCallSiteVarianceMap()->getVariances());
+	$genericStatic = new \PHPStan\Type\Generic\GenericStaticType($arrayObjectReflection, [$int, $string], null, []);
+	$r['generic static changed template types'] = $view($genericStatic->changeSubtractedType(null));
+	foreach ($r as $key => $value) {
+		$observations["template map $key"] = $value;
+	}
+	$observations['native ' . \PHPStan\Type\Generic\TemplateTypeVarianceMap::class] = (new ReflectionMethod(\PHPStan\Type\Generic\TemplateTypeVarianceMap::class, 'getVariance'))->isInternal();
+	$observations['native ' . \PHPStan\Type\Generic\TemplateTypeMap::class] = (new ReflectionMethod(\PHPStan\Type\Generic\TemplateTypeMap::class, 'union'))->isInternal();
+	// the scopes and references the template types carry under the real names
+	$r = [];
+	$r['T scope'] = $t->getScope()->describe();
+	$r['T scope equals U scope'] = $t->getScope()->equals($u->getScope());
+	$r['T scope equals function scope'] = $t->getScope()->equals(\PHPStan\Type\Generic\TemplateTypeScope::createWithFunction('foo'));
+	$r['T scope equals anonymous'] = $t->getScope()->equals(\PHPStan\Type\Generic\TemplateTypeScope::createWithAnonymousFunction());
+	$r['T describe precise'] = $t->describe(\PHPStan\Type\VerbosityLevel::precise());
+	$r['T argument scope'] = $t->toArgument()->getScope()->describe();
+	$r['generic referenced classes'] = $view(array_map(static fn (\PHPStan\Type\Generic\TemplateTypeReference $ref): array => [get_class($ref), $ref->getType()->describe(\PHPStan\Type\VerbosityLevel::precise()), $ref->getPositionVariance()->describe()], (new \PHPStan\Type\ArrayType($t, $u))->getReferencedTemplateTypes(\PHPStan\Type\Generic\TemplateTypeVariance::createContravariant())));
+	foreach ($r as $key => $value) {
+		$observations["template scope $key"] = $value;
+	}
+	$observations['native ' . \PHPStan\Type\Generic\TemplateTypeScope::class] = (new ReflectionMethod(\PHPStan\Type\Generic\TemplateTypeScope::class, 'equals'))->isInternal();
+	$observations['native ' . \PHPStan\Type\Generic\TemplateTypeReference::class] = (new ReflectionMethod(\PHPStan\Type\Generic\TemplateTypeReference::class, 'getType'))->isInternal();
+}
+
+
+// ---- TemplateTypeHelper ----
+// The traversals over compounds carrying template types under the real
+// names: resolveTemplateTypes() over standins (plain, error, unresolved
+// argument, absent), call-site variances and position variances, the
+// bound/default resolutions, toArgument() over callables owning their
+// templates, removeFinalByKeywordOverrides() and the generalization.
+{
+	$r = [];
+	$classScope = \PHPStan\Type\Generic\TemplateTypeScope::createWithClass('Foo');
+	$functionScope = \PHPStan\Type\Generic\TemplateTypeScope::createWithFunction('foo');
+	$int = new \PHPStan\Type\IntegerType();
+	$string = new \PHPStan\Type\StringType();
+	$t = \PHPStan\Type\Generic\TemplateTypeFactory::create($classScope, 'T', null, \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant());
+	$u = \PHPStan\Type\Generic\TemplateTypeFactory::create($classScope, 'U', $int, \PHPStan\Type\Generic\TemplateTypeVariance::createCovariant(), null, new \PHPStan\Type\Constant\ConstantIntegerType(5));
+	$k = \PHPStan\Type\Generic\TemplateTypeFactory::create($classScope, 'K', new \PHPStan\Type\UnionType([$int, $string]), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant());
+	$f = \PHPStan\Type\Generic\TemplateTypeFactory::create($functionScope, 'F', new \PHPStan\Type\ObjectType(\stdClass::class), \PHPStan\Type\Generic\TemplateTypeVariance::createContravariant());
+	$a = \PHPStan\Type\Generic\TemplateTypeFactory::create(\PHPStan\Type\Generic\TemplateTypeScope::createWithAnonymousFunction(), 'A', null, \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant());
+	$arrayObjectReflection = $stringReflectionProvider->getClass(\ArrayObject::class);
+	$finalStd = new \PHPStan\Type\ObjectType(\stdClass::class, null, $stringReflectionProvider->getClass(\stdClass::class)->asFinal());
+	$ownedClosure = new \PHPStan\Type\ClosureType([new \PHPStan\Reflection\Native\NativeParameterReflection('x', false, $t, \PHPStan\Reflection\PassedByReference::createNo(), false, null)], $u, false, new \PHPStan\Type\Generic\TemplateTypeMap(['T' => $t, 'U' => $u]));
+	$subjects = [
+		'T' => $t,
+		'U' => $u,
+		'array<T, U>' => new \PHPStan\Type\ArrayType($t, $u),
+		'array<K, F>' => new \PHPStan\Type\ArrayType($k, $f),
+		'ArrayObject<T, U>' => new \PHPStan\Type\Generic\GenericObjectType(\ArrayObject::class, [$t, $u], null, $arrayObjectReflection),
+		'T|U|null' => new \PHPStan\Type\UnionType([$t, $u, new \PHPStan\Type\NullType()]),
+		'Closure(T): U' => new \PHPStan\Type\ClosureType([new \PHPStan\Reflection\Native\NativeParameterReflection('x', false, $t, \PHPStan\Reflection\PassedByReference::createNo(), false, null)], $u, false),
+		'owning Closure(T): U' => $ownedClosure,
+		'array<A, T>' => new \PHPStan\Type\ArrayType($a, $t),
+		'final stdClass' => $finalStd,
+		'array<int, final stdClass>' => new \PHPStan\Type\ArrayType($int, $finalStd),
+		'int' => $int,
+	];
+	$standins = [
+		'plain' => new \PHPStan\Type\Generic\TemplateTypeMap(['T' => $string, 'U' => new \PHPStan\Type\Constant\ConstantIntegerType(1), 'K' => $int, 'F' => new \PHPStan\Type\ObjectType(\ArrayObject::class)]),
+		'error' => new \PHPStan\Type\Generic\TemplateTypeMap(['T' => new \PHPStan\Type\ErrorType(), 'U' => $string]),
+		'unresolved' => new \PHPStan\Type\Generic\TemplateTypeMap(['T' => new \PHPStan\Type\Generic\UnresolvedTemplateArgumentType(new \PhpParser\Node\Expr\Variable('x'), $t, $string), 'U' => $int]),
+		'empty' => \PHPStan\Type\Generic\TemplateTypeMap::createEmpty(),
+	];
+	$callSiteVariances = [
+		'none' => \PHPStan\Type\Generic\TemplateTypeVarianceMap::createEmpty(),
+		'T covariant' => new \PHPStan\Type\Generic\TemplateTypeVarianceMap(['T' => \PHPStan\Type\Generic\TemplateTypeVariance::createCovariant(), 'U' => \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()]),
+		'T contravariant' => new \PHPStan\Type\Generic\TemplateTypeVarianceMap(['T' => \PHPStan\Type\Generic\TemplateTypeVariance::createContravariant(), 'U' => \PHPStan\Type\Generic\TemplateTypeVariance::createContravariant(), 'F' => \PHPStan\Type\Generic\TemplateTypeVariance::createCovariant()]),
+		'bivariant' => new \PHPStan\Type\Generic\TemplateTypeVarianceMap(['T' => \PHPStan\Type\Generic\TemplateTypeVariance::createBivariant(), 'U' => \PHPStan\Type\Generic\TemplateTypeVariance::createBivariant()]),
+	];
+	$positions = [
+		'invariant' => \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant(),
+		'covariant' => \PHPStan\Type\Generic\TemplateTypeVariance::createCovariant(),
+		'contravariant' => \PHPStan\Type\Generic\TemplateTypeVariance::createContravariant(),
+	];
+	foreach ($subjects as $label => $subject) {
+		foreach (['resolveToBounds', 'resolveToDefaults', 'toArgument', 'removeFinalByKeywordOverrides'] as $method) {
+			$result = \PHPStan\Type\Generic\TemplateTypeHelper::$method($subject);
+			$r["$method $label"] = $view($result);
+			$r["$method $label identity"] = $result === $subject;
+		}
+		foreach ($standins as $standinLabel => $standin) {
+			foreach ($callSiteVariances as $varianceLabel => $variances) {
+				foreach ($positions as $positionLabel => $position) {
+					foreach ([false, true] as $keep) {
+						$result = \PHPStan\Type\Generic\TemplateTypeHelper::resolveTemplateTypes($subject, $standin, $variances, $position, $keep);
+						$r[sprintf('resolveTemplateTypes %s / %s / %s / %s%s', $label, $standinLabel, $varianceLabel, $positionLabel, $keep ? ' keep' : '')] = [$view($result), $result === $subject];
+					}
+				}
+			}
+		}
+	}
+	$generalizeCases = [
+		'constant int' => new \PHPStan\Type\Constant\ConstantIntegerType(1),
+		'constant string' => new \PHPStan\Type\Constant\ConstantStringType('foo'),
+		'int' => $int,
+		'constant array' => new \PHPStan\Type\Constant\ConstantArrayType([new \PHPStan\Type\Constant\ConstantIntegerType(0)], [$string]),
+		'true' => new \PHPStan\Type\Constant\ConstantBooleanType(true),
+		'stdClass' => new \PHPStan\Type\ObjectType(\stdClass::class),
+	];
+	foreach (['T' => $t, 'U' => $u, 'K' => $k, 'F' => $f] as $label => $templateType) {
+		foreach ($generalizeCases as $caseLabel => $case) {
+			$r["generalizeInferredTemplateType $label / $caseLabel"] = $view(\PHPStan\Type\Generic\TemplateTypeHelper::generalizeInferredTemplateType($templateType, $case));
+		}
+	}
+	foreach ($r as $key => $value) {
+		$observations["template helper $key"] = $value;
+	}
+	$observations['native ' . \PHPStan\Type\Generic\TemplateTypeHelper::class] = (new ReflectionMethod(\PHPStan\Type\Generic\TemplateTypeHelper::class, 'resolveToBounds'))->isInternal();
+}
+
+
 // observations holding bytes that are not UTF-8 (the invalid-UTF-8 subject's
 // descriptions) go out base64-encoded so json_encode() keeps every byte; the
 // non-finite floats (the NAN and infinity subjects' values) as their names

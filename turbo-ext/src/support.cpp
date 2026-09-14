@@ -47,7 +47,6 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_ARROW_FUNCTION */ {"arrowFunction", "PhpParser\\Node\\Expr\\ArrowFunction"},
 	/* PT_CLASS_TYPE */ {"type", "PHPStan\\Type\\Type"},
 	/* PT_CLASS_CLASS_NAME_TO_OBJECT_TYPE_RESULT */ {"classNameToObjectTypeResult", "PHPStan\\Type\\ClassNameToObjectTypeResult"},
-	/* PT_CLASS_TEMPLATE_TYPE_MAP */ {"templateTypeMap", "PHPStan\\Type\\Generic\\TemplateTypeMap"},
 	/* PT_CLASS_IDENTIFIER_TYPE_NODE */ {"identifierTypeNode", "PHPStan\\PhpDocParser\\Ast\\Type\\IdentifierTypeNode"},
 	/* PT_CLASS_STATIC_TYPE_FACTORY */ {"staticTypeFactory", "PHPStan\\Type\\StaticTypeFactory"},
 	/* PT_CLASS_LOOSE_COMPARISON_HELPER */ {"looseComparisonHelper", "PHPStan\\Type\\LooseComparisonHelper"},
@@ -66,7 +65,7 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_TRIVIAL_PARAMETERS_ACCEPTOR */ {"trivialParametersAcceptor", "PHPStan\\Reflection\\TrivialParametersAcceptor"},
 	/* PT_CLASS_INACCESSIBLE_METHOD */ {"inaccessibleMethod", "PHPStan\\Reflection\\InaccessibleMethod"},
 	/* PT_CLASS_TEMPLATE_TYPE */ {"templateType", "PHPStan\\Type\\Generic\\TemplateType"},
-	/* PT_CLASS_TEMPLATE_TYPE_VARIANCE */ {"templateTypeVariance", "PHPStan\\Type\\Generic\\TemplateTypeVariance"},
+	/* PT_CLASS_NARROWED_SUBJECT_TYPE */ {"narrowedSubjectType", "PHPStan\\Type\\NarrowedSubjectType"},
 	/* PT_CLASS_GENERALIZE_PRECISION */ {"generalizePrecision", "PHPStan\\Type\\GeneralizePrecision"},
 	/* PT_CLASS_CONST_EXPR_STRING_NODE */ {"constExprStringNode", "PHPStan\\PhpDocParser\\Ast\\ConstExpr\\ConstExprStringNode"},
 	/* PT_CLASS_NETTE_STRINGS */ {"netteStrings", "Nette\\Utils\\Strings"},
@@ -79,12 +78,10 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_DUMMY_METHOD_REFLECTION */ {"dummyMethodReflection", "PHPStan\\Reflection\\Dummy\\DummyMethodReflection"},
 	/* PT_CLASS_CALLBACK_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION */ {"callbackUnresolvedMethodPrototypeReflection", "PHPStan\\Reflection\\Type\\CallbackUnresolvedMethodPrototypeReflection"},
 	/* PT_CLASS_DUMMY_CLASS_CONSTANT_REFLECTION */ {"dummyClassConstantReflection", "PHPStan\\Reflection\\Dummy\\DummyClassConstantReflection"},
-	/* PT_CLASS_TEMPLATE_TYPE_HELPER */ {"templateTypeHelper", "PHPStan\\Type\\Generic\\TemplateTypeHelper"},
 	/* PT_CLASS_TYPE_WITH_CLASS_NAME */ {"typeWithClassName", "PHPStan\\Type\\TypeWithClassName"},
 	/* PT_CLASS_OBJECT_SHAPE_PROPERTY_REFLECTION */ {"objectShapePropertyReflection", "PHPStan\\Type\\ObjectShapePropertyReflection"},
 	/* PT_CLASS_UNIVERSAL_OBJECT_CRATES_CLASS_REFLECTION_EXTENSION */ {"universalObjectCratesClassReflectionExtension", "PHPStan\\Reflection\\Php\\UniversalObjectCratesClassReflectionExtension"},
 	/* PT_CLASS_MISSING_PROPERTY_FROM_REFLECTION_EXCEPTION */ {"missingPropertyFromReflectionException", "PHPStan\\Reflection\\MissingPropertyFromReflectionException"},
-	/* PT_CLASS_TEMPLATE_TYPE_VARIANCE_MAP */ {"templateTypeVarianceMap", "PHPStan\\Type\\Generic\\TemplateTypeVarianceMap"},
 	/* PT_CLASS_THIS_TYPE_NODE */ {"thisTypeNode", "PHPStan\\PhpDocParser\\Ast\\Type\\ThisTypeNode"},
 	/* PT_CLASS_OBJECT_SHAPE_NODE */ {"objectShapeNode", "PHPStan\\PhpDocParser\\Ast\\Type\\ObjectShapeNode"},
 	/* PT_CLASS_OBJECT_SHAPE_ITEM_NODE */ {"objectShapeItemNode", "PHPStan\\PhpDocParser\\Ast\\Type\\ObjectShapeItemNode"},
@@ -146,6 +143,7 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_PARSER_NODE_TYPE_TO_PHPSTAN_TYPE */ {"parserNodeTypeToPHPStanType", "PHPStan\\Type\\ParserNodeTypeToPHPStanType"},
 	/* PT_CLASS_TURBO_EXTENSION_ENABLER */ {"turboExtensionEnabler", "PHPStan\\Turbo\\TurboExtensionEnabler"},
 	/* PT_CLASS_TEMPLATE_TYPE_FACTORY */ {"templateTypeFactory", "PHPStan\\Type\\Generic\\TemplateTypeFactory"},
+	/* PT_CLASS_PARAMETERS_ACCEPTOR */ {"parametersAcceptor", "PHPStan\\Reflection\\ParametersAcceptor"},
 };
 
 zend_class_entry *pt_class(int idx)

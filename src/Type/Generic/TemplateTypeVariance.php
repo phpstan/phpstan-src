@@ -5,7 +5,7 @@ namespace PHPStan\Type\Generic;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
@@ -34,7 +34,7 @@ use function sprintf;
  *
  * @api
  */
-#[ReferencedByTurboExtension(key: 'templateTypeVariance')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TemplateTypeVariance.cpp')]
 final class TemplateTypeVariance
 {
 

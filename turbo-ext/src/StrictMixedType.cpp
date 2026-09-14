@@ -104,7 +104,7 @@ public:
 	}
 
 	/* TemplateTypeMap::createEmpty() */
-	static zv::Val inferTemplateTypes() { return pt_type_call_static(PT_CLASS_TEMPLATE_TYPE_MAP, PT_LC("createempty"), 0, NULL); }
+	static zv::Val inferTemplateTypes() { return pt_type_template_type_map_empty(); }
 
 	/* new IdentifierTypeNode('mixed') */
 	static zv::Val toPhpDocNode()

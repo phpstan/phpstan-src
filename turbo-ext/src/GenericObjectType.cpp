@@ -920,7 +920,7 @@ private:
 			}
 			return zv::Val::copyOf(zv::Ref(found));
 		}
-		return pt_type_call_static(PT_CLASS_TEMPLATE_TYPE_VARIANCE, PT_LC("createinvariant"), 0, NULL);
+		return pt_type_template_type_variance(PT_TEMPLATE_TYPE_VARIANCE_INVARIANT);
 	}
 
 	/* $classReflection->typeMapToList($classReflection->get*TemplateTypeMap());
@@ -939,7 +939,7 @@ private:
 	}
 
 	/* TemplateTypeMap::createEmpty() */
-	static zv::Val emptyTemplateTypeMap() { return pt_type_call_static(PT_CLASS_TEMPLATE_TYPE_MAP, PT_LC("createempty"), 0, NULL); }
+	static zv::Val emptyTemplateTypeMap() { return pt_type_template_type_map_empty(); }
 
 	/* $result->and(IsSuperTypeOfResult::createMaybe()); UNDEF = pending exception */
 	static zv::Val andMaybe(zv::Val result)

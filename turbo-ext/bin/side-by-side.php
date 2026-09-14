@@ -108,7 +108,12 @@ function parsePhpMethods(string $file): array
 			) {
 				$declStartLine ??= $line;
 			}
-			if ($id === T_PUBLIC) {
+			if ($prevSignificant === T_FUNCTION && $id !== null && $text !== '(') {
+				// the method name — not necessarily T_STRING: names like
+				// and()/or()/static() tokenize as T_LOGICAL_AND/T_LOGICAL_OR/
+				// T_STATIC, so this comes before the modifier branches
+				$pendingMethod = [$text, $visibility, $static, $declStartLine ?? $line];
+			} elseif ($id === T_PUBLIC) {
 				$visibility = 'public';
 			} elseif ($id === T_PROTECTED) {
 				$visibility = 'protected';
@@ -116,10 +121,6 @@ function parsePhpMethods(string $file): array
 				$visibility = 'private';
 			} elseif ($id === T_STATIC) {
 				$static = true;
-			} elseif ($prevSignificant === T_FUNCTION && $id !== null && $text !== '(') {
-				// the method name — not necessarily T_STRING: names like
-				// and()/or() tokenize as T_LOGICAL_AND/T_LOGICAL_OR
-				$pendingMethod = [$text, $visibility, $static, $declStartLine ?? $line];
 			} elseif ($text === ';') {
 				if ($pendingMethod !== null) { // abstract/interface method
 					$methods[$pendingMethod[0]] = [

@@ -774,7 +774,7 @@ void pt_type_trait_non_generic(reg::Class &cls)
 	namespace sigs = ptdecl::NonGenericTypeTrait::sig;
 	cls.traitMethod(sigs::inferTemplateTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
 		PT_ARGS(1, 1);
-		PT_RETURN_VAL(pt_type_call_static(PT_CLASS_TEMPLATE_TYPE_MAP, PT_LC("createempty"), 0, NULL));
+		PT_RETURN_VAL(pt_type_template_type_map_empty());
 	});
 
 	cls.traitMethod(sigs::getReferencedTemplateTypes, emptyArray1);
@@ -2761,13 +2761,15 @@ bool pt_callable_parameters_or_asserts_have_template(zval *parameters, zval *ass
 	return true;
 }
 
-/* $positionVariance->compose(TemplateTypeVariance::<factory>()); UNDEF =
- * pending exception */
-static zv::Val pt_callable_compose_variance(zval *positionVariance, const char *factoryLcname, size_t factoryLen)
+/* $positionVariance->compose(TemplateTypeVariance::<factory>()) for a
+ * PT_TEMPLATE_TYPE_VARIANCE_* value; UNDEF = pending exception */
+static zv::Val pt_callable_compose_variance(zval *positionVariance, zend_long value)
 {
-	zv::Val variance = pt_type_call_static(PT_CLASS_TEMPLATE_TYPE_VARIANCE, factoryLcname, factoryLen, 0, NULL);
-	if (UNEXPECTED(variance.isUndef())) return zv::Val();
-	return pt_type_call(Z_OBJ_P(positionVariance), PT_LC("compose"), 1, variance.raw());
+	zval *variance = pt_template_type_variance_singleton(value);
+	if (UNEXPECTED(variance == NULL)) return zv::Val();
+	zval composed;
+	if (UNEXPECTED(!pt_template_type_variance_compose(&composed, positionVariance, variance))) return zv::Val();
+	return zv::Val::adopt(composed);
 }
 
 /* foreach ($type->getReferencedTemplateTypes($variance) as $reference) $references[] = $reference */
@@ -2790,7 +2792,7 @@ zv::Val pt_callable_referenced_template_types(zend_object *self, pt_callable_thi
 	if (UNEXPECTED(returnType.isUndef())) return zv::Val();
 	zend_object *returnTypeObject = pt_callable_element_object(returnType.raw(), "the return type");
 	if (UNEXPECTED(returnTypeObject == NULL)) return zv::Val();
-	zv::Val covariant = pt_callable_compose_variance(positionVariance, PT_LC("createcovariant"));
+	zv::Val covariant = pt_callable_compose_variance(positionVariance, PT_TEMPLATE_TYPE_VARIANCE_COVARIANT);
 	if (UNEXPECTED(covariant.isUndef())) return zv::Val();
 	zv::Val initial = pt_callable_call_array(returnTypeObject, PT_LC("getreferencedtemplatetypes"), 1, covariant.raw());
 	if (UNEXPECTED(initial.isUndef())) return zv::Val();
@@ -2802,11 +2804,11 @@ zv::Val pt_callable_referenced_template_types(zend_object *self, pt_callable_thi
 		if (UNEXPECTED(assertTag == NULL)) return zv::Val();
 		zv::Val type = pt_type_call(assertTag, PT_LC("gettype"), 0, NULL);
 		if (UNEXPECTED(type.isUndef())) return zv::Val();
-		zv::Val tagVariance = pt_callable_compose_variance(positionVariance, PT_LC("createcovariant"));
+		zv::Val tagVariance = pt_callable_compose_variance(positionVariance, PT_TEMPLATE_TYPE_VARIANCE_COVARIANT);
 		if (UNEXPECTED(tagVariance.isUndef())) return zv::Val();
 		if (UNEXPECTED(!pt_callable_append_referenced_template_types(references, type.raw(), tagVariance.raw()))) return zv::Val();
 	}
-	zv::Val paramVariance = pt_callable_compose_variance(positionVariance, PT_LC("createcontravariant"));
+	zv::Val paramVariance = pt_callable_compose_variance(positionVariance, PT_TEMPLATE_TYPE_VARIANCE_CONTRAVARIANT);
 	if (UNEXPECTED(paramVariance.isUndef())) return zv::Val();
 	zv::Val parameters = getParameters(self);
 	if (UNEXPECTED(parameters.isUndef())) return zv::Val();
@@ -2876,7 +2878,7 @@ zv::Val pt_callable_infer_template_types_on_parameters_acceptor(zend_object *sel
 			bool isTemplate;
 			if (UNEXPECTED(!pt_type_instanceof(paramType.raw(), PT_CLASS_TEMPLATE_TYPE, isTemplate))) return zv::Val();
 			if (isTemplate) {
-				argType = pt_type_call_static(PT_CLASS_TEMPLATE_TYPE_HELPER, PT_LC("resolvetobounds"), 1, paramType.raw());
+				argType = pt_type_template_type_helper_resolve_to_bounds(paramType.raw());
 			} else {
 				argType = pt_type_new_never_type();
 			}
@@ -3047,12 +3049,12 @@ zv::Val pt_callable_out_of_class_scope()
 
 zv::Val pt_callable_template_type_map_empty()
 {
-	return pt_type_call_static(PT_CLASS_TEMPLATE_TYPE_MAP, PT_LC("createempty"), 0, NULL);
+	return pt_type_template_type_map_empty();
 }
 
 zv::Val pt_callable_template_type_variance_map_empty()
 {
-	return pt_type_call_static(PT_CLASS_TEMPLATE_TYPE_VARIANCE_MAP, PT_LC("createempty"), 0, NULL);
+	return pt_type_template_type_variance_map_empty();
 }
 
 zv::Val pt_callable_assertions_empty()

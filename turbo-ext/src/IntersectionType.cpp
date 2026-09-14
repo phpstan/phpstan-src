@@ -2672,7 +2672,7 @@ private:
 	 * $type->method($argument), or $argument->method($type) when reversed */
 	zv::Val mapIntersect(const char *lcname, size_t len, zval *argument, bool reversed) const
 	{
-		zv::Val map = pt_type_call_static(PT_CLASS_TEMPLATE_TYPE_MAP, PT_LC("createempty"), 0, NULL);
+		zv::Val map = pt_type_template_type_map_empty();
 		if (UNEXPECTED(map.isUndef())) return zv::Val();
 		zval *types = this->types();
 		if (UNEXPECTED(types == NULL)) return zv::Val();

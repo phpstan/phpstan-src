@@ -843,6 +843,40 @@ zv::Val pt_type_just_nullable_is_super_type_of(zend_object *self, zend_class_ent
  * (TypeUtils.cpp); UNDEF = pending exception */
 zv::Val pt_type_utils_flatten_types(zval *type);
 
+/* merged from the parallel port branch */
+/* }}} */
+
+/* merged from the parallel port branch */
+/* {{{ helpers of the template-type classes (TemplateTypeVariance.cpp,
+ * TemplateTypeVarianceMap.cpp, TemplateTypeMap.cpp, TemplateTypeHelper.cpp) */
+
+/* TemplateTypeVariance::create*() for a PT_TEMPLATE_TYPE_VARIANCE_* value,
+ * as an owned copy of the singleton; UNDEF = pending exception */
+zv::Val pt_type_template_type_variance(zend_long value);
+/* TemplateTypeVarianceMap::createEmpty() / new TemplateTypeVarianceMap($variances)
+ * ($variances borrowed); UNDEF = pending exception */
+zv::Val pt_type_template_type_variance_map_empty();
+zv::Val pt_type_template_type_variance_map_new(zval *variances);
+/* TemplateTypeMap::createEmpty() / new TemplateTypeMap($types, $lowerBoundTypes)
+ * (the arrays borrowed, $lowerBoundTypes NULL for []); UNDEF = pending
+ * exception */
+zv::Val pt_type_template_type_map_empty();
+zv::Val pt_type_template_type_map_new(zval *types, zval *lowerBoundTypes = NULL);
+/* TemplateTypeHelper::resolveTemplateTypes() / resolveToDefaults() /
+ * resolveToBounds() / toArgument() (the arguments borrowed); UNDEF =
+ * pending exception */
+zv::Val pt_type_template_type_helper_resolve_template_types(zval *type, zval *standins, zval *callSiteVariances, zval *positionVariance, bool keepErrorTypes);
+zv::Val pt_type_template_type_helper_resolve_to_defaults(zval *type);
+zv::Val pt_type_template_type_helper_resolve_to_bounds(zval *type);
+zv::Val pt_type_template_type_helper_to_argument(zval *type);
+/* $reference->getType() / ->getPositionVariance() of a reference instance
+ * (TemplateTypeReference.cpp): the slots of a native instance, the methods
+ * of anything else (the PHP twin declared next to the native class in the
+ * differential tests); owned copies, false = pending exception */
+[[nodiscard]] bool pt_template_type_reference_parts(zval *reference, zv::Val &type, zv::Val &positionVariance);
+
+/* }}} */
+
 /* {{{ bodies the Type ports share verbatim — their members forward here */
 
 /* $this as an owned value (a new reference) */

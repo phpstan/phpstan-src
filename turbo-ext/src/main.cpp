@@ -273,6 +273,7 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_template_union_type();
 	pt_register_template_type_factory();
 	pt_register_type_projection_helper();
+	pt_register_template_key_of_type();
 	pt_register_constant_array_type_builder();
 	pt_register_union_type_helper();
 	pt_register_constant_type_helper();

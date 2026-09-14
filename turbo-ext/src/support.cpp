@@ -134,7 +134,6 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_OFFSET_ACCESS_TYPE_NODE */ {"offsetAccessTypeNode", "PHPStan\\PhpDocParser\\Ast\\Type\\OffsetAccessTypeNode"},
 	/* PT_CLASS_CONDITIONAL_TYPE_NODE */ {"conditionalTypeNode", "PHPStan\\PhpDocParser\\Ast\\Type\\ConditionalTypeNode"},
 	/* PT_CLASS_CONDITIONAL_TYPE_FOR_PARAMETER_NODE */ {"conditionalTypeForParameterNode", "PHPStan\\PhpDocParser\\Ast\\Type\\ConditionalTypeForParameterNode"},
-	/* PT_CLASS_TEMPLATE_KEY_OF_TYPE */ {"templateKeyOfType", "PHPStan\\Type\\Generic\\TemplateKeyOfType"},
 };
 
 zend_class_entry *pt_class(int idx)

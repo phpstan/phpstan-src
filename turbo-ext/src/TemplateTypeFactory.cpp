@@ -7,8 +7,7 @@
  * Template*Type class of its kind — an exact class test (`get_class($bound)
  * === X::class`, natively the class entry the native code holds) or a
  * template bound of that kind, in the twin's order — instantiating the
- * native classes directly; TemplateKeyOfType (a PHP class over the
- * unshadowed KeyOfType) goes through the class map.
+ * native classes directly.
  */
 
 #include "TypeTraits.h"
@@ -141,17 +140,8 @@ public:
 			return of(pt_template_intersection_type_new, scope, strategy, variance, nameStr, bound, defaultType);
 		}
 
-		/* KeyOfType is native (its class entry); TemplateKeyOfType is a PHP class (the class map) */
-		zend_class_entry *keyOfClass = pt_ce_key_of_type;
-		if (instanceof_function(boundClass, keyOfClass) && (boundClass == keyOfClass || isTemplate)) {
-			zval args[6];
-			ZVAL_COPY_VALUE(&args[0], scope);
-			ZVAL_COPY_VALUE(&args[1], strategy);
-			ZVAL_COPY_VALUE(&args[2], variance);
-			ZVAL_COPY_VALUE(&args[3], name);
-			ZVAL_COPY_VALUE(&args[4], bound);
-			ZVAL_COPY_VALUE(&args[5], defaultType);
-			return pt_type_new(PT_CLASS_TEMPLATE_KEY_OF_TYPE, 6, args);
+		if (instanceof_function(boundClass, pt_ce_key_of_type) && (boundClass == pt_ce_key_of_type || isTemplate)) {
+			return of(pt_template_key_of_type_new, scope, strategy, variance, nameStr, bound, defaultType);
 		}
 
 		if (instanceof_function(boundClass, pt_ce_iterable_type) && (boundClass == pt_ce_iterable_type || isTemplate)) {

@@ -172,7 +172,6 @@ enum {
 	PT_CLASS_OFFSET_ACCESS_TYPE_NODE,
 	PT_CLASS_CONDITIONAL_TYPE_NODE,
 	PT_CLASS_CONDITIONAL_TYPE_FOR_PARAMETER_NODE,
-	PT_CLASS_TEMPLATE_KEY_OF_TYPE,
 	PT_CLASS_COUNT
 };
 
@@ -1165,5 +1164,15 @@ zv::Val pt_callable_type_helper_is_parameters_acceptor_super_type_of(zval *ours,
 /* new GetTemplateTypeType($type, $ancestorClassName, $templateTypeName)
  * (borrowed); UNDEF = pending exception */
 zv::Val pt_get_template_type_type_new(zval *type, zend_string *ancestorClassName, zend_string *templateTypeName);
+
+/* TemplateKeyOfType.cpp — registered after KeyOfType and the rest of the
+ * template family (its parent, and the factory that instantiates it) */
+extern zend_class_entry *pt_ce_template_key_of_type;
+void pt_register_template_key_of_type();
+/* new TemplateKeyOfType($scope, $templateTypeStrategy, $templateTypeVariance,
+ * $name, $bound, $default) — an instance of the shadowing class (every
+ * argument borrowed, $default NULL or IS_NULL for null, $bound checked
+ * against KeyOfType); false = pending exception */
+[[nodiscard]] bool pt_template_key_of_type_new(zval *out, zval *scope, zval *strategy, zval *variance, zend_string *name, zval *bound, zval *defaultType);
 
 #endif /* PHPSTANTURBO_SUPPORT_H */

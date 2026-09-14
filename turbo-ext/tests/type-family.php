@@ -56,7 +56,7 @@ $observations = [];
 // which implementation answered: smoke.php holds the php run to false and
 // the native run to true, so the two sets can never be one implementation
 // compared against itself
-foreach ([\PHPStan\Type\BooleanType::class, \PHPStan\Type\Constant\ConstantBooleanType::class, \PHPStan\Type\IntegerType::class, \PHPStan\Type\Constant\ConstantIntegerType::class, \PHPStan\Type\IntegerRangeType::class, \PHPStan\Type\StringType::class, \PHPStan\Type\Constant\ConstantStringType::class, \PHPStan\Type\ClassStringType::class, \PHPStan\Type\Generic\GenericClassStringType::class, \PHPStan\Type\FloatType::class, \PHPStan\Type\Constant\ConstantFloatType::class, \PHPStan\Type\NullType::class, \PHPStan\Type\VoidType::class, \PHPStan\Type\NeverType::class, \PHPStan\Type\MixedType::class, \PHPStan\Type\StrictMixedType::class, \PHPStan\Type\ObjectWithoutClassType::class, \PHPStan\Type\StaticType::class, \PHPStan\Type\ThisType::class, \PHPStan\Type\Generic\GenericStaticType::class, \PHPStan\Type\ObjectShapeType::class, \PHPStan\Type\NonexistentParentClassType::class, \PHPStan\Type\ArrayType::class, \PHPStan\Type\Accessory\NonEmptyArrayType::class, \PHPStan\Type\Accessory\AccessoryArrayListType::class, \PHPStan\Type\Accessory\OversizedArrayType::class, \PHPStan\Type\Accessory\HasOffsetType::class, \PHPStan\Type\Accessory\HasOffsetValueType::class, \PHPStan\Type\Accessory\AccessoryNumericStringType::class, \PHPStan\Type\Accessory\AccessoryNonEmptyStringType::class, \PHPStan\Type\Accessory\AccessoryNonFalsyStringType::class, \PHPStan\Type\Accessory\AccessoryLiteralStringType::class, \PHPStan\Type\Accessory\AccessoryLowercaseStringType::class, \PHPStan\Type\Accessory\AccessoryUppercaseStringType::class, \PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType::class, \PHPStan\Type\Accessory\HasMethodType::class, \PHPStan\Type\Accessory\HasPropertyType::class, \PHPStan\Type\ObjectType::class, \PHPStan\Type\Generic\GenericObjectType::class, \PHPStan\Type\Enum\EnumCaseObjectType::class, \PHPStan\Type\IterableType::class, \PHPStan\Type\CallableType::class, \PHPStan\Type\ClosureType::class, \PHPStan\Type\Constant\ConstantArrayType::class, \PHPStan\Type\UnionType::class, \PHPStan\Type\BenevolentUnionType::class, \PHPStan\Type\IntersectionType::class, \PHPStan\Type\ErrorType::class, \PHPStan\Type\CircularTypeAliasErrorType::class, \PHPStan\Type\Generic\AbsorbedTemplateArgumentType::class, \PHPStan\Type\NonAcceptingNeverType::class, \PHPStan\Type\StringAlwaysAcceptingObjectWithToStringType::class, \PHPStan\Type\StringNeverAcceptingObjectWithToStringType::class, \PHPStan\Type\ResourceType::class, \PHPStan\Type\KeyOfType::class, \PHPStan\Type\ValueOfType::class, \PHPStan\Type\OffsetAccessType::class, \PHPStan\Type\ClassConstantAccessType::class, \PHPStan\Type\NewObjectType::class, \PHPStan\Type\ConditionalType::class, \PHPStan\Type\ConditionalTypeForParameter::class, \PHPStan\Type\LateResolvableArrayShapeType::class, \PHPStan\Type\Generic\UnresolvedTemplateArgumentType::class, \PHPStan\Type\Generic\TemplateArrayType::class, \PHPStan\Type\Generic\TemplateBenevolentUnionType::class, \PHPStan\Type\Generic\TemplateBooleanType::class, \PHPStan\Type\Generic\TemplateConstantArrayType::class, \PHPStan\Type\Generic\TemplateConstantIntegerType::class, \PHPStan\Type\Generic\TemplateConstantStringType::class, \PHPStan\Type\Generic\TemplateFloatType::class, \PHPStan\Type\Generic\TemplateGenericObjectType::class, \PHPStan\Type\Generic\TemplateIntegerType::class, \PHPStan\Type\Generic\TemplateIntersectionType::class, \PHPStan\Type\Generic\TemplateIterableType::class, \PHPStan\Type\Generic\TemplateMixedType::class, \PHPStan\Type\Generic\TemplateNullType::class, \PHPStan\Type\Generic\TemplateObjectShapeType::class, \PHPStan\Type\Generic\TemplateObjectType::class, \PHPStan\Type\Generic\TemplateObjectWithoutClassType::class, \PHPStan\Type\Generic\TemplateStrictMixedType::class, \PHPStan\Type\Generic\TemplateStringType::class, \PHPStan\Type\Generic\TemplateUnionType::class] as $typeClass) {
+foreach ([\PHPStan\Type\BooleanType::class, \PHPStan\Type\Constant\ConstantBooleanType::class, \PHPStan\Type\IntegerType::class, \PHPStan\Type\Constant\ConstantIntegerType::class, \PHPStan\Type\IntegerRangeType::class, \PHPStan\Type\StringType::class, \PHPStan\Type\Constant\ConstantStringType::class, \PHPStan\Type\ClassStringType::class, \PHPStan\Type\Generic\GenericClassStringType::class, \PHPStan\Type\FloatType::class, \PHPStan\Type\Constant\ConstantFloatType::class, \PHPStan\Type\NullType::class, \PHPStan\Type\VoidType::class, \PHPStan\Type\NeverType::class, \PHPStan\Type\MixedType::class, \PHPStan\Type\StrictMixedType::class, \PHPStan\Type\ObjectWithoutClassType::class, \PHPStan\Type\StaticType::class, \PHPStan\Type\ThisType::class, \PHPStan\Type\Generic\GenericStaticType::class, \PHPStan\Type\ObjectShapeType::class, \PHPStan\Type\NonexistentParentClassType::class, \PHPStan\Type\ArrayType::class, \PHPStan\Type\Accessory\NonEmptyArrayType::class, \PHPStan\Type\Accessory\AccessoryArrayListType::class, \PHPStan\Type\Accessory\OversizedArrayType::class, \PHPStan\Type\Accessory\HasOffsetType::class, \PHPStan\Type\Accessory\HasOffsetValueType::class, \PHPStan\Type\Accessory\AccessoryNumericStringType::class, \PHPStan\Type\Accessory\AccessoryNonEmptyStringType::class, \PHPStan\Type\Accessory\AccessoryNonFalsyStringType::class, \PHPStan\Type\Accessory\AccessoryLiteralStringType::class, \PHPStan\Type\Accessory\AccessoryLowercaseStringType::class, \PHPStan\Type\Accessory\AccessoryUppercaseStringType::class, \PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType::class, \PHPStan\Type\Accessory\HasMethodType::class, \PHPStan\Type\Accessory\HasPropertyType::class, \PHPStan\Type\ObjectType::class, \PHPStan\Type\Generic\GenericObjectType::class, \PHPStan\Type\Enum\EnumCaseObjectType::class, \PHPStan\Type\IterableType::class, \PHPStan\Type\CallableType::class, \PHPStan\Type\ClosureType::class, \PHPStan\Type\Constant\ConstantArrayType::class, \PHPStan\Type\UnionType::class, \PHPStan\Type\BenevolentUnionType::class, \PHPStan\Type\IntersectionType::class, \PHPStan\Type\ErrorType::class, \PHPStan\Type\CircularTypeAliasErrorType::class, \PHPStan\Type\Generic\AbsorbedTemplateArgumentType::class, \PHPStan\Type\NonAcceptingNeverType::class, \PHPStan\Type\StringAlwaysAcceptingObjectWithToStringType::class, \PHPStan\Type\StringNeverAcceptingObjectWithToStringType::class, \PHPStan\Type\ResourceType::class, \PHPStan\Type\KeyOfType::class, \PHPStan\Type\ValueOfType::class, \PHPStan\Type\OffsetAccessType::class, \PHPStan\Type\ClassConstantAccessType::class, \PHPStan\Type\NewObjectType::class, \PHPStan\Type\ConditionalType::class, \PHPStan\Type\ConditionalTypeForParameter::class, \PHPStan\Type\LateResolvableArrayShapeType::class, \PHPStan\Type\Generic\UnresolvedTemplateArgumentType::class, \PHPStan\Type\Generic\TemplateArrayType::class, \PHPStan\Type\Generic\TemplateBenevolentUnionType::class, \PHPStan\Type\Generic\TemplateBooleanType::class, \PHPStan\Type\Generic\TemplateConstantArrayType::class, \PHPStan\Type\Generic\TemplateConstantIntegerType::class, \PHPStan\Type\Generic\TemplateConstantStringType::class, \PHPStan\Type\Generic\TemplateFloatType::class, \PHPStan\Type\Generic\TemplateGenericObjectType::class, \PHPStan\Type\Generic\TemplateIntegerType::class, \PHPStan\Type\Generic\TemplateIntersectionType::class, \PHPStan\Type\Generic\TemplateIterableType::class, \PHPStan\Type\Generic\TemplateMixedType::class, \PHPStan\Type\Generic\TemplateNullType::class, \PHPStan\Type\Generic\TemplateObjectShapeType::class, \PHPStan\Type\Generic\TemplateObjectType::class, \PHPStan\Type\Generic\TemplateObjectWithoutClassType::class, \PHPStan\Type\Generic\TemplateStrictMixedType::class, \PHPStan\Type\Generic\TemplateStringType::class, \PHPStan\Type\Generic\TemplateUnionType::class, \PHPStan\Type\Generic\TemplateKeyOfType::class] as $typeClass) {
 	$observations["native $typeClass"] = (new ReflectionMethod($typeClass, 'describe'))->isInternal();
 }
 
@@ -5490,6 +5490,156 @@ $templateMapView = static fn (\PHPStan\Type\Generic\TemplateTypeMap $map) => arr
 		$r['uninitialized'] = [get_class($e), $e->getMessage()];
 	}
 
+
+	// ---- TemplateKeyOfType ----
+	// the template over the late-resolvable KeyOfType: built through the
+	// factory over key-of bounds (a constant shape, a plain array, a list,
+	// the empty shape, mixed, a template, a template array, a nested
+	// key-of), through the factory's TemplateType arm (a key-of template
+	// as the bound) and through its own constructor; the class's getResult()
+	// (the bound's result re-templated through the factory) is what the
+	// inherited resolve() reaches — memoized, and behind every forwarding
+	// method of LateResolvableTypeTrait the TemplateTypeTrait does not
+	// override
+	$keyOfBounds = [
+		'constShape' => new \PHPStan\Type\KeyOfType($templateConstShape),
+		'arrayIntString' => new \PHPStan\Type\KeyOfType($templateBounds['arrayIntString']),
+		'list' => new \PHPStan\Type\KeyOfType($templateBounds['list']),
+		'emptyArray' => new \PHPStan\Type\KeyOfType($templateBounds['emptyArray']),
+		'mixed' => new \PHPStan\Type\KeyOfType($templateBounds['mixed']),
+		'templateU' => new \PHPStan\Type\KeyOfType($templateInnerT),
+		'templateArray' => new \PHPStan\Type\KeyOfType($subjects['arrayIntString parameter none']),
+		'keyOfKeyOf' => new \PHPStan\Type\KeyOfType(new \PHPStan\Type\KeyOfType($templateConstShape)),
+	];
+	$keyOfSubjects = [];
+	foreach ($keyOfBounds as $boundName => $bound) {
+		foreach (['parameter', 'argument'] as $strategyName) {
+			foreach (['none', 'stringD'] as $defaultName) {
+				$keyOfSubjects["$boundName $strategyName $defaultName"] = \PHPStan\Type\Generic\TemplateTypeFactory::create($templateScopeF, 'K', $bound, $strategyName === 'parameter' ? $templateVariances['invariant'] : $templateVariances['covariant'], $templateStrategies[$strategyName], $templateDefaults[$defaultName]);
+			}
+		}
+	}
+	$keyOfSubjects['nested'] = \PHPStan\Type\Generic\TemplateTypeFactory::create($templateScopeM, 'N', $keyOfSubjects['constShape parameter none'], $templateVariances['contravariant']);
+	$keyOfSubjects['nested unresolvable'] = \PHPStan\Type\Generic\TemplateTypeFactory::create($templateScopeM, 'N', $keyOfSubjects['templateU argument stringD'], $templateVariances['bivariant'], $templateStrategies['argument'], $templateDefaults['int']);
+	$keyOfSubjects['direct'] = new \PHPStan\Type\Generic\TemplateKeyOfType($templateScopeF, $templateStrategies['parameter'], $templateVariances['static'], 'D', $keyOfBounds['constShape'], $templateDefaults['int']);
+	$keyOfPeers = ['constShape parameter none', 'constShape argument stringD', 'templateU parameter none', 'nested', 'direct'];
+	$keyOfRights = $others + ['keyOfConstShape' => $keyOfBounds['constShape'], 'keyOfArray' => $keyOfBounds['arrayIntString'], 'keyOfTemplateU' => $keyOfBounds['templateU'], 'constShapeKeys' => new \PHPStan\Type\UnionType([new \PHPStan\Type\Constant\ConstantStringType('a'), new \PHPStan\Type\Constant\ConstantStringType('b')]), 'stringB' => new \PHPStan\Type\Constant\ConstantStringType('b'), 'templateKeyOfOther' => \PHPStan\Type\Generic\TemplateTypeFactory::create(\PHPStan\Type\Generic\TemplateTypeScope::createWithFunction('other'), 'K', $keyOfBounds['constShape'], $templateVariances['invariant'])];
+	$keyOfMap = new \PHPStan\Type\Generic\TemplateTypeMap(['K' => new \PHPStan\Type\Constant\ConstantStringType('a'), 'N' => new \PHPStan\Type\IntegerType(), 'U' => $templateBounds['list']]);
+	foreach ($keyOfSubjects as $name => $subject) {
+		$reflection = new ReflectionClass($subject);
+		$r["keyOf $name class"] = [get_class($subject), $reflection->isFinal(), $reflection->getParentClass() === false ? null : $reflection->getParentClass()->getName(), $reflection->getConstructor()?->getNumberOfParameters()];
+		$r["keyOf $name instanceof"] = [$subject instanceof \PHPStan\Type\Type, $subject instanceof \PHPStan\Type\Generic\TemplateType, $subject instanceof \PHPStan\Type\KeyOfType, $subject instanceof \PHPStan\Type\CompoundType, $subject instanceof \PHPStan\Type\LateResolvableType, $subject instanceof \PHPStan\Type\SubtractableType];
+		foreach (['typeOnly' => \PHPStan\Type\VerbosityLevel::typeOnly(), 'value' => \PHPStan\Type\VerbosityLevel::value(), 'precise' => \PHPStan\Type\VerbosityLevel::precise(), 'cache' => \PHPStan\Type\VerbosityLevel::cache()] as $levelName => $level) {
+			$r["keyOf $name describe $levelName"] = $subject->describe($level);
+		}
+		$r["keyOf $name getName"] = $subject->getName();
+		$r["keyOf $name getScope"] = [$subject->getScope()->describe(), $subject->getScope()->equals($templateScopeF)];
+		$r["keyOf $name getBound"] = [$view($subject->getBound()), isset($keyOfBounds[explode(' ', $name)[0]]) && $subject->getBound() === $keyOfBounds[explode(' ', $name)[0]]];
+		$r["keyOf $name getType"] = [$view($subject->getType()), $subject->getType() === $subject->getBound()->getType()];
+		$r["keyOf $name getDefault"] = $view($subject->getDefault());
+		$r["keyOf $name getVariance"] = $subject->getVariance()->describe();
+		$r["keyOf $name getStrategy"] = [get_class($subject->getStrategy()), $subject->getStrategy()->isArgument()];
+		$r["keyOf $name isArgument"] = $subject->isArgument();
+		$r["keyOf $name isResolvable"] = $subject->isResolvable();
+		$resolved = $subject->resolve();
+		$r["keyOf $name resolve"] = [$view($resolved), $resolved === $subject->resolve(), $resolved === $subject, $resolved instanceof \PHPStan\Type\Generic\TemplateType ? [$resolved->getName(), $resolved->getScope()->describe(), $resolved->getVariance()->describe(), get_class($resolved->getStrategy()), $view($resolved->getDefault()), $view($resolved->getBound())] : null];
+		$r["keyOf $name resolve vs bound"] = [$view($subject->getBound()->resolve()), $resolved->equals($subject->getBound()->resolve())];
+		$argument = $subject->toArgument();
+		$r["keyOf $name toArgument"] = [$view($argument), $argument->isArgument(), get_class($argument->getStrategy()), $view($argument->getDefault()), $argument->getScope()->describe(), $view($argument->resolve())];
+		$r["keyOf $name getSubtractedType"] = $view($subject->getSubtractedType());
+		$r["keyOf $name getTypeWithoutSubtractedType"] = [$view($subject->getTypeWithoutSubtractedType()), $subject->getTypeWithoutSubtractedType() === $subject];
+		$r["keyOf $name changeSubtractedType"] = [$view($subject->changeSubtractedType($others['int'])), $subject->changeSubtractedType($others['int']) === $subject, $view($subject->changeSubtractedType(null))];
+		$r["keyOf $name toArrayKey"] = $subject->toArrayKey() === $subject;
+		$r["keyOf $name toCoercedArgumentType"] = [$subject->toCoercedArgumentType(true) === $subject, $subject->toCoercedArgumentType(false) === $subject];
+		$r["keyOf $name toClassConstantType"] = $view($subject->toClassConstantType($stringReflectionProvider));
+		$r["keyOf $name toPhpDocNode"] = $view($subject->toPhpDocNode());
+		$r["keyOf $name hasTemplateOrLateResolvableType"] = $subject->hasTemplateOrLateResolvableType();
+		$r["keyOf $name getReferencedClasses"] = $subject->getReferencedClasses();
+		foreach ($templateVariances as $varianceName => $variance) {
+			$r["keyOf $name getReferencedTemplateTypes $varianceName"] = array_map(static fn (\PHPStan\Type\Generic\TemplateTypeReference $ref): array => [$view($ref->getType()), $ref->getType() === $subject, $ref->getPositionVariance()->describe()], $subject->getReferencedTemplateTypes($variance));
+		}
+		$r["keyOf $name traverse identity"] = $subject->traverse($templateIdentity) === $subject;
+		$r["keyOf $name traverse mapped"] = $view($subject->traverse($templateMapper));
+		$r["keyOf $name traverse map"] = $view(\PHPStan\Type\TypeTraverser::map($subject, $templateTraverseCounter));
+		$r["keyOf $name traverseSimultaneously self"] = $subject->traverseSimultaneously($subject, static fn (\PHPStan\Type\Type $a, \PHPStan\Type\Type $b): \PHPStan\Type\Type => $a) === $subject;
+		$r["keyOf $name traverseSimultaneously other template"] = $view($subject->traverseSimultaneously($others['templateVString'], static fn (\PHPStan\Type\Type $a, \PHPStan\Type\Type $b): \PHPStan\Type\Type => \PHPStan\Type\TypeCombinator::union($a, $b)));
+		$r["keyOf $name traverseSimultaneously key-of"] = $view($subject->traverseSimultaneously($keyOfBounds['arrayIntString'], static fn (\PHPStan\Type\Type $a, \PHPStan\Type\Type $b): \PHPStan\Type\Type => \PHPStan\Type\TypeCombinator::union($a, $b)));
+		$r["keyOf $name traverseSimultaneously non-template"] = $subject->traverseSimultaneously($others['int'], static fn (\PHPStan\Type\Type $a, \PHPStan\Type\Type $b): \PHPStan\Type\Type => $b) === $subject;
+		$r["keyOf $name generalize"] = [$view($subject->generalize(\PHPStan\Type\GeneralizePrecision::lessSpecific())), $view($subject->generalize(\PHPStan\Type\GeneralizePrecision::moreSpecific()))];
+		$r["keyOf $name comparisons"] = [$view($subject->isGreaterThan($others['null'], $templatePhpVersion)), $view($subject->isGreaterThan($others['int'], $templatePhpVersion)), $view($subject->isGreaterThanOrEqual($others['null'], $templatePhpVersion)), $view($subject->isSmallerThan($others['int'], $templatePhpVersion)), $view($subject->isSmallerThanOrEqual($others['string'], $templatePhpVersion)), $view($subject->getSmallerType($templatePhpVersion)), $view($subject->getGreaterOrEqualType($templatePhpVersion)), $view($subject->looseCompare($others['int'], $templatePhpVersion))];
+		$r["keyOf $name predicates"] = [$view($subject->isNull()), $view($subject->isObject()), $view($subject->isArray()), $view($subject->isString()), $view($subject->isNonEmptyString()), $view($subject->isLiteralString()), $view($subject->isInteger()), $view($subject->isIterable()), $view($subject->isCallable()), $view($subject->isScalar()), $view($subject->isConstantValue()), $view($subject->isConstantScalarValue()), $view($subject->getConstantScalarTypes()), $view($subject->getConstantScalarValues()), $view($subject->getFiniteTypes()), $view($subject->isOffsetAccessible()), $view($subject->isOffsetAccessLegal())];
+		$r["keyOf $name conversions"] = [$view($subject->toBoolean()), $view($subject->toNumber()), $view($subject->toString()), $view($subject->toInteger()), $view($subject->toFloat()), $view($subject->toArray()), $view($subject->getIterableKeyType()), $view($subject->getIterableValueType()), $view($subject->getClassStringType()), $view($subject->toAbsoluteNumber()), $view($subject->exponentiate($others['int']))];
+		$r["keyOf $name array ops"] = [$view($subject->getKeysArray()), $view($subject->getValuesArray()), $view($subject->getArraySize()), $view($subject->setOffsetValueType(new \PHPStan\Type\Constant\ConstantStringType('b'), new \PHPStan\Type\IntegerType())), $view($subject->getOffsetValueType($others['int'])), $view($subject->hasOffsetValueType($others['int']))];
+		foreach ($keyOfRights as $otherName => $other) {
+			$r["keyOf $name isSuperTypeOf $otherName"] = $view($subject->isSuperTypeOf($other));
+			$r["keyOf $name isSubTypeOf $otherName"] = $view($subject->isSubTypeOf($other));
+			$r["keyOf $name accepts $otherName"] = [$view($subject->accepts($other, true)), $view($subject->accepts($other, false))];
+			$r["keyOf $name isAcceptedBy $otherName"] = [$view($subject->isAcceptedBy($other, true)), $view($subject->isAcceptedBy($other, false))];
+			$r["keyOf $name equals $otherName"] = [$subject->equals($other), $other->equals($subject)];
+			$r["keyOf $otherName isSuperTypeOf $name"] = $view($other->isSuperTypeOf($subject));
+			$r["keyOf $otherName accepts $name"] = [$view($other->accepts($subject, true)), $view($other->accepts($subject, false))];
+			$r["keyOf $name tryRemove $otherName"] = $view($subject->tryRemove($other));
+			$r["keyOf $name subtract $otherName"] = $view($subject->subtract($other));
+			$r["keyOf $name inferTemplateTypes $otherName"] = $templateMapView($subject->inferTemplateTypes($other));
+			$r["keyOf $name union $otherName"] = $view(\PHPStan\Type\TypeCombinator::union($subject, $other));
+			$r["keyOf $name intersect $otherName"] = $view(\PHPStan\Type\TypeCombinator::intersect($subject, $other));
+			$r["keyOf $name remove $otherName"] = $view(\PHPStan\Type\TypeCombinator::remove($subject, $other));
+		}
+		foreach ($keyOfPeers as $peerName) {
+			$peer = $keyOfSubjects[$peerName];
+			$r["keyOf $name peer equals $peerName"] = [$subject->equals($peer), $subject->equals(\PHPStan\Type\Generic\TemplateTypeFactory::create($templateScopeF, 'K', $subject->getBound(), $subject->getVariance(), $subject->getStrategy(), $subject->getDefault())), $subject->equals(new \PHPStan\Type\Generic\TemplateKeyOfType($subject->getScope(), $subject->getStrategy(), $subject->getVariance(), $subject->getName(), $subject->getBound(), $subject->getDefault()))];
+			$r["keyOf $name peer isSuperTypeOf $peerName"] = [$view($subject->isSuperTypeOf($peer)), $view($subject->isSubTypeOf($peer)), $view($subject->accepts($peer, true)), $view($subject->isAcceptedBy($peer, true))];
+			$r["keyOf $name peer inferTemplateTypes $peerName"] = $templateMapView($subject->inferTemplateTypes($peer));
+			$r["keyOf $name peer traverseSimultaneously $peerName"] = $view($subject->traverseSimultaneously($peer, static fn (\PHPStan\Type\Type $a, \PHPStan\Type\Type $b): \PHPStan\Type\Type => \PHPStan\Type\TypeCombinator::union($a, $b)));
+			$r["keyOf $name peer union $peerName"] = [$view(\PHPStan\Type\TypeCombinator::union($subject, $peer)), $view(\PHPStan\Type\TypeCombinator::intersect($subject, $peer))];
+		}
+		foreach (['resolveToBounds', 'resolveToDefaults', 'toArgument', 'removeFinalByKeywordOverrides'] as $helperMethod) {
+			$helperResult = \PHPStan\Type\Generic\TemplateTypeHelper::$helperMethod($subject);
+			$r["keyOf $name helper $helperMethod"] = [$view($helperResult), $helperResult === $subject];
+		}
+		foreach ($templateVariances as $varianceName => $variance) {
+			$r["keyOf $name helper resolveTemplateTypes $varianceName"] = $view(\PHPStan\Type\Generic\TemplateTypeHelper::resolveTemplateTypes($subject, $keyOfMap, \PHPStan\Type\Generic\TemplateTypeVarianceMap::createEmpty(), $variance));
+		}
+		$r["keyOf $name helper generalizeInferredTemplateType"] = $view(\PHPStan\Type\Generic\TemplateTypeHelper::generalizeInferredTemplateType($subject, $others['stringA']));
+		$r["keyOf $name in compounds"] = [$view(new \PHPStan\Type\ArrayType($subject, $others['int'])), $view(\PHPStan\Type\TypeCombinator::union($subject, $others['null'])), $view(\PHPStan\Type\TypeCombinator::intersect($subject, $others['nonEmptyString'])), $view(new \PHPStan\Type\KeyOfType($subject)), $view((new \PHPStan\Type\KeyOfType($subject))->resolve()), $view(new \PHPStan\Type\Constant\ConstantArrayType([new \PHPStan\Type\Constant\ConstantIntegerType(0)], [$subject]))];
+	}
+	// the constructor's checks and the factory's dispatch on the key-of kinds
+	foreach (['int' => new \PHPStan\Type\IntegerType(), 'array' => $templateBounds['arrayIntString'], 'valueOf' => new \PHPStan\Type\ValueOfType($templateConstShape)] as $badName => $badBound) {
+		try {
+			new \PHPStan\Type\Generic\TemplateKeyOfType($templateScopeF, $templateStrategies['parameter'], $templateVariances['invariant'], 'T', $badBound, null);
+			$r["keyOf bad bound $badName"] = 'no throw';
+		} catch (\TypeError $e) {
+			$r["keyOf bad bound $badName"] = preg_replace('~^(\w+)\\\\?(.*)~', '$1', get_class($e)) . ': ' . preg_replace('~ given.*~', ' given', $e->getMessage());
+		}
+	}
+	$keyOfReconstructed = $keyOfSubjects['constShape parameter none'];
+	$keyOfReconstructed->__construct($templateScopeM, $templateStrategies['argument'], $templateVariances['covariant'], 'R', $keyOfBounds['arrayIntString'], new \PHPStan\Type\StringType());
+	$r['keyOf reconstruct'] = [$view($keyOfReconstructed), $keyOfReconstructed->getName(), $keyOfReconstructed->isArgument(), $view($keyOfReconstructed->getDefault()), $keyOfReconstructed->getScope()->describe(), $view($keyOfReconstructed->getType()), $view($keyOfReconstructed->resolve())];
+	foreach (['getName', 'resolve', 'getType', 'isResolvable'] as $uninitializedMethod) {
+		try {
+			(new ReflectionClass(\PHPStan\Type\Generic\TemplateKeyOfType::class))->newInstanceWithoutConstructor()->$uninitializedMethod();
+			$r["keyOf uninitialized $uninitializedMethod"] = 'no throw';
+		} catch (\Error $e) {
+			$r["keyOf uninitialized $uninitializedMethod"] = [get_class($e), $e->getMessage()];
+		}
+	}
+	$keyOfAnonymousBound = new class ($templateConstShape) extends \PHPStan\Type\KeyOfType {
+		public function getType(): \PHPStan\Type\Type
+		{
+			return new \PHPStan\Type\ArrayType(new \PHPStan\Type\StringType(), new \PHPStan\Type\IntegerType());
+		}
+
+		protected function getResult(): \PHPStan\Type\Type
+		{
+			return new \PHPStan\Type\Constant\ConstantStringType('anon');
+		}
+	};
+	// the factory's exact-class test routes the subclass past the key-of
+	// arm; the constructor's `KeyOfType $bound` takes it, and both
+	// $this-calls on the bound (getType(), getResult()) reach its overrides
+	$r['keyOf anonymous bound factory'] = $view(\PHPStan\Type\Generic\TemplateTypeFactory::create($templateScopeF, 'A', $keyOfAnonymousBound, $templateVariances['invariant']));
+	$keyOfOverAnonymous = new \PHPStan\Type\Generic\TemplateKeyOfType($templateScopeF, $templateStrategies['parameter'], $templateVariances['invariant'], 'A', $keyOfAnonymousBound, null);
+	$r['keyOf anonymous bound'] = [$view($keyOfOverAnonymous), $view($keyOfOverAnonymous->getType()), $view($keyOfOverAnonymous->resolve()), $view($keyOfOverAnonymous->getBound()), $keyOfOverAnonymous->getBound() === $keyOfAnonymousBound, $view($keyOfOverAnonymous->traverse($templateMapper)), $view($keyOfOverAnonymous->toArgument())];
 	foreach ($r as $key => $value) {
 		$observations["template $key"] = $value;
 	}

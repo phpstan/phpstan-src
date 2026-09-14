@@ -137,6 +137,7 @@ use function md5;
 use function preg_match;
 use function spl_object_id;
 use function sprintf;
+use function str_contains;
 use function str_starts_with;
 use function strlen;
 use function strtolower;
@@ -180,6 +181,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	 * @param array<string, ExpressionTypeHolder> $nativeExpressionTypes
 	 * @param list<array{MethodReflection|FunctionReflection|null, ParameterReflection|null}> $inFunctionCallsStack
 	 * @param ExtensionsCollection<ExpressionTypeResolverExtension> $expressionTypeResolverExtensions
+	 * @param array<string, ResultProvenance> $resultProvenance
 	 */
 	public function __construct(
 		private Container $container,
@@ -215,6 +217,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		public bool $nativeTypesPromoted = false,
 		protected ?TemplateArgumentFrame $templateArgumentFrame = null,
 		protected ?TemplateArgumentConstraints $templateArgumentConstraints = null,
+		protected array $resultProvenance = [],
 	)
 	{
 		if ($namespace === '') {
@@ -249,6 +252,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->nativeTypesPromoted,
 			$this->templateArgumentFrame,
 			$this->templateArgumentConstraints,
+			$this->resultProvenance,
 		);
 		if ($nodeCallbackScope instanceof NodeCallbackScope) {
 			$nodeCallbackScope->seedWalkScope($this);
@@ -405,6 +409,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->nativeTypesPromoted,
 			$this->templateArgumentFrame,
 			$this->templateArgumentConstraints,
+			$this->resultProvenance,
 		);
 	}
 
@@ -592,6 +597,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->nativeTypesPromoted,
 			$this->templateArgumentFrame,
 			$this->templateArgumentConstraints,
+			$this->resultProvenance,
 		);
 	}
 
@@ -692,6 +698,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->nativeTypesPromoted,
 			$this->templateArgumentFrame,
 			$this->templateArgumentConstraints,
+			$this->resultProvenance,
 		);
 	}
 
@@ -734,6 +741,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->nativeTypesPromoted,
 			$this->templateArgumentFrame,
 			$this->templateArgumentConstraints,
+			$this->resultProvenance,
 		);
 	}
 
@@ -771,6 +779,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->nativeTypesPromoted,
 			$this->templateArgumentFrame,
 			$this->templateArgumentConstraints,
+			$this->resultProvenance,
 		);
 	}
 
@@ -1045,6 +1054,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->nativeTypesPromoted,
 			$this->templateArgumentFrame,
 			$this->templateArgumentConstraints,
+			$this->resultProvenance,
 		);
 	}
 
@@ -1141,6 +1151,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->nativeTypesPromoted,
 			$this->templateArgumentFrame,
 			$this->templateArgumentConstraints,
+			$this->resultProvenance,
 		);
 	}
 
@@ -1739,6 +1750,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			true,
 			templateArgumentFrame: $this->templateArgumentFrame,
 			templateArgumentConstraints: $this->templateArgumentConstraints,
+			resultProvenance: $this->resultProvenance,
 		);
 	}
 
@@ -1854,6 +1866,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->nativeTypesPromoted,
 			$this->templateArgumentFrame,
 			$this->templateArgumentConstraints,
+			$this->resultProvenance,
 		);
 
 		if ($rememberTypes) {
@@ -1887,6 +1900,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->nativeTypesPromoted,
 			$this->templateArgumentFrame,
 			$this->templateArgumentConstraints,
+			$this->resultProvenance,
 		);
 
 		$parentScope->resolvedTypes = $this->resolvedTypes;
@@ -2412,6 +2426,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->anonymousFunctionReflection,
 			templateArgumentFrame: $this->templateArgumentFrame,
 			templateArgumentConstraints: $this->templateArgumentConstraints,
+			resultProvenance: $this->resultProvenance,
 		);
 	}
 
@@ -2443,6 +2458,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->anonymousFunctionReflection,
 			templateArgumentFrame: $this->templateArgumentFrame,
 			templateArgumentConstraints: $this->templateArgumentConstraints,
+			resultProvenance: $this->resultProvenance,
 		);
 	}
 
@@ -2491,6 +2507,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->nativeTypesPromoted,
 			$this->templateArgumentFrame,
 			$this->templateArgumentConstraints,
+			$this->resultProvenance,
 		);
 	}
 
@@ -2514,6 +2531,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->anonymousFunctionReflection,
 			templateArgumentFrame: $this->templateArgumentFrame,
 			templateArgumentConstraints: $this->templateArgumentConstraints,
+			resultProvenance: $this->resultProvenance,
 		);
 	}
 
@@ -2547,6 +2565,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->nativeTypesPromoted,
 			$this->templateArgumentFrame,
 			$this->templateArgumentConstraints,
+			$this->resultProvenance,
 		);
 	}
 
@@ -3120,6 +3139,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->nativeTypesPromoted,
 			$this->templateArgumentFrame,
 			$this->templateArgumentConstraints,
+			$this->resultProvenance,
 		);
 		$scope->resolvedTypes = $this->resolvedTypes;
 
@@ -3151,6 +3171,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->nativeTypesPromoted,
 			$this->templateArgumentFrame,
 			$this->templateArgumentConstraints,
+			$this->resultProvenance,
 		);
 		$scope->resolvedTypes = $this->resolvedTypes;
 
@@ -3212,6 +3233,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->nativeTypesPromoted,
 			$this->templateArgumentFrame,
 			$this->templateArgumentConstraints,
+			$this->resultProvenance,
 		);
 		$scope->resolvedTypes = $this->resolvedTypes;
 
@@ -3243,6 +3265,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->nativeTypesPromoted,
 			$this->templateArgumentFrame,
 			$this->templateArgumentConstraints,
+			$this->resultProvenance,
 		);
 		$scope->resolvedTypes = $this->resolvedTypes;
 
@@ -3654,6 +3677,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->nativeTypesPromoted,
 			$this->templateArgumentFrame,
 			$this->templateArgumentConstraints,
+			$this->resultProvenance,
 		);
 	}
 
@@ -3812,6 +3836,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	{
 		$exprStringToInvalidate = $this->getNodeKey($expressionToInvalidate);
 
+		$filteredResultProvenance = self::filterResultProvenance($this->resultProvenance, $exprStringToInvalidate);
 		$result = ScopeOps::invalidateExpressionEntries(
 			$this,
 			$this->exprPrinter,
@@ -3825,11 +3850,18 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$keepPropertyFetches,
 		);
 		if ($result === null) {
-			return $this;
+			if (count($filteredResultProvenance) === count($this->resultProvenance)) {
+				return $this;
+			}
+
+			$scope = $this->openSpecificationScope();
+			$scope->resultProvenance = $filteredResultProvenance;
+
+			return $scope;
 		}
 
-		/** @var static */
-		return ScopeOps::scopeWith(
+		/** @var static $scope */
+		$scope = ScopeOps::scopeWith(
 			$this,
 			$result[0],
 			$result[1],
@@ -3840,6 +3872,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->inFirstLevelStatement,
 			$this->afterExtractCall,
 		);
+		$scope->resultProvenance = $filteredResultProvenance;
+
+		return $scope;
 	}
 
 	/** @internal called by ScopeOps */
@@ -4266,6 +4301,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$scope->nativeTypesPromoted,
 			$scope->templateArgumentFrame,
 			$scope->templateArgumentConstraints,
+			$scope->resultProvenance,
 		);
 	}
 
@@ -4347,6 +4383,101 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->inFirstLevelStatement,
 			$this->afterExtractCall,
 		);
+	}
+
+	/**
+	 * The recorded pure defining call of the given expression key ("$v" holds
+	 * the result of this very call), or null when nothing is recorded.
+	 *
+	 * @internal
+	 */
+	public function getResultProvenanceCall(string $exprString): ?FuncCall
+	{
+		if (!isset($this->resultProvenance[$exprString])) {
+			return null;
+		}
+
+		return $this->resultProvenance[$exprString]->getCall();
+	}
+
+	/**
+	 * Records that the given expression key currently holds the result of the
+	 * given pure call - the caller (AssignHandler) has just performed the
+	 * assignment and vouches for the call's purity and its arguments being
+	 * invalidation-trackable.
+	 *
+	 * @internal
+	 */
+	public function recordResultProvenance(string $exprString, FuncCall $call): self
+	{
+		$scope = $this->openSpecificationScope();
+		$resultProvenance = $this->resultProvenance;
+		$resultProvenance[$exprString] = new ResultProvenance($call, $this->getNodeKey($call));
+		$scope->resultProvenance = $resultProvenance;
+
+		return $scope;
+	}
+
+	/**
+	 * Merge counterpart for result provenance: only entries recording the very
+	 * same defining call on both sides survive.
+	 *
+	 * @param array<string, ResultProvenance> $ours
+	 * @param array<string, ResultProvenance> $theirs
+	 * @return array<string, ResultProvenance>
+	 */
+	private static function intersectResultProvenance(array $ours, array $theirs): array
+	{
+		if ($ours === [] || $theirs === []) {
+			return [];
+		}
+
+		$intersected = [];
+		foreach ($ours as $exprString => $provenance) {
+			if (!isset($theirs[$exprString])) {
+				continue;
+			}
+			if ($theirs[$exprString]->getCallExprString() !== $provenance->getCallExprString()) {
+				continue;
+			}
+
+			$intersected[$exprString] = $provenance;
+		}
+
+		return $intersected;
+	}
+
+	/**
+	 * Drops provenance entries whose target or defining call mentions the
+	 * invalidated expression - conservatively by printed-key containment, a
+	 * cheap over-approximation of ScopeOps::shouldInvalidateExpression()
+	 * (sound because dropping an entry only loses narrowing). Containment is
+	 * exhaustive here: entries only ever target plain variables and record
+	 * calls over plain variable arguments, whose printed keys spell out every
+	 * subexpression.
+	 *
+	 * @param array<string, ResultProvenance> $resultProvenance
+	 * @return array<string, ResultProvenance>
+	 */
+	private static function filterResultProvenance(array $resultProvenance, string $exprStringToInvalidate): array
+	{
+		if ($resultProvenance === []) {
+			return $resultProvenance;
+		}
+
+		$filtered = [];
+		foreach ($resultProvenance as $exprString => $provenance) {
+			if (
+				str_contains($exprString, $exprStringToInvalidate)
+				|| str_contains($provenance->getCallExprString(), $exprStringToInvalidate)
+			) {
+				continue;
+			}
+
+			$filtered[$exprString] = $provenance;
+		}
+
+		return $filtered;
 	}
 
 	public function exitFirstLevelStatements(): self
@@ -4440,8 +4571,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$otherScope->nativeExpressionTypes,
 		);
 
-		/** @var static */
-		return ScopeOps::scopeWith(
+		/** @var static $mergedScope */
+		$mergedScope = ScopeOps::scopeWith(
 			$this,
 			$mergedExpressionTypes,
 			$mergedNativeTypes,
@@ -4452,6 +4583,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->inFirstLevelStatement,
 			$this->afterExtractCall && $otherScope->afterExtractCall,
 		);
+		// scopeWith() copied our side's provenance - a merge keeps only entries
+		// identical in both branches
+		$mergedScope->resultProvenance = self::intersectResultProvenance($this->resultProvenance, $otherScope->resultProvenance);
+
+		return $mergedScope;
 	}
 
 	/**
@@ -4733,6 +4869,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->nativeTypesPromoted,
 			$this->templateArgumentFrame,
 			$this->templateArgumentConstraints,
+			self::intersectResultProvenance($this->resultProvenance, $finallyScope->resultProvenance),
 		);
 	}
 
@@ -4782,6 +4919,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			return $this;
 		}
 
+		$resultProvenance = $this->resultProvenance;
 		foreach ($byRefUses as $use) {
 			if (!is_string($use->var->name)) {
 				throw new ShouldNotHappenException();
@@ -4789,6 +4927,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 
 			$variableName = $use->var->name;
 			$variableExprString = '$' . $variableName;
+			$resultProvenance = self::filterResultProvenance($resultProvenance, $variableExprString);
 
 			if (!$closureScope->hasVariableType($variableName)->yes()) {
 				$holder = ExpressionTypeHolder::createYes($use->var, new NullType());
@@ -4831,6 +4970,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->nativeTypesPromoted,
 			$this->templateArgumentFrame,
 			$this->templateArgumentConstraints,
+			$resultProvenance,
 		);
 	}
 
@@ -4882,6 +5022,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->nativeTypesPromoted,
 			$this->templateArgumentFrame,
 			$this->templateArgumentConstraints,
+			self::intersectResultProvenance($this->resultProvenance, $finalScope->resultProvenance),
 		);
 	}
 
@@ -4947,6 +5088,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$this->nativeTypesPromoted,
 			$this->templateArgumentFrame,
 			$this->templateArgumentConstraints,
+			self::intersectResultProvenance($this->resultProvenance, $otherScope->resultProvenance),
 		);
 	}
 
@@ -5645,6 +5787,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 					$holder->getTypeHolder()->getCertainty()->describe(),
 				);
 			}
+		}
+
+		foreach ($this->resultProvenance as $exprString => $provenance) {
+			$descriptions[sprintf('result provenance of %s', $exprString)] = $provenance->getCallExprString();
 		}
 
 		return $descriptions;

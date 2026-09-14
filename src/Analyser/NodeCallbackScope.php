@@ -77,6 +77,7 @@ final class NodeCallbackScope extends MutatingScope
 			$this->nativeTypesPromoted,
 			$this->templateArgumentFrame,
 			$this->templateArgumentConstraints,
+			$this->resultProvenance,
 		);
 	}
 

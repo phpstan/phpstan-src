@@ -39,3 +39,8 @@
 /src/parser/*.lo
 /src/.libs/
 /src/parser/.libs/
+
+# profile-guided build artifacts (make pgo)
+/pgo/
+/src/*.gcda
+/src/parser/*.gcda

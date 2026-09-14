@@ -2,7 +2,12 @@
 # phpstan_turbo — a plain Zend extension, no framework dependencies.
 #
 #   make            builds phpstan_turbo.so
-#   make clean
+#   make pgo        builds it profile-guided: an instrumented build, a
+#                   training run (bin/pgo-train.sh: PHPStan analysing its own
+#                   sources with the instrumented extension loaded), then the
+#                   final build using the recorded profile — what the
+#                   distributed CI binaries are built with (phar.yml)
+#   make clean      also drops the recorded profile
 #
 
 PHP_CONFIG ?= php-config
@@ -17,6 +22,24 @@ WARN_FLAGS ?= -Wall
 CXXFLAGS := $(WARN_FLAGS) -O2 -std=c++17 -fPIC \
 	-DZEND_ENABLE_STATIC_TSRMLS_CACHE=1 \
 	`$(PHP_CONFIG) --includes`
+
+# Profile-guided optimisation. PGO_FLAGS is empty for a plain build; `make
+# pgo` drives the two instrumented/optimised builds below with the flags of
+# the compiler in use (clang writes .profraw files merged by llvm-profdata,
+# GCC writes .gcda files next to the objects and reads them back from
+# there). The flags go on the link line too: the instrumented runtime is
+# linked in by them.
+PGO_DIR := pgo
+PGO_FLAGS ?=
+CXXFLAGS += $(PGO_FLAGS)
+CXX_IS_CLANG := $(shell $(CXX) --version 2>/dev/null | grep -qi clang && echo 1)
+ifeq ($(CXX_IS_CLANG),1)
+PGO_GEN_FLAGS := -fprofile-instr-generate
+PGO_USE_FLAGS := -fprofile-instr-use=$(PGO_DIR)/turbo.profdata -Wno-profile-instr-out-of-date -Wno-profile-instr-unprofiled
+else
+PGO_GEN_FLAGS := -fprofile-generate -fprofile-update=atomic
+PGO_USE_FLAGS := -fprofile-use -fprofile-correction -Wno-missing-profile
+endif
 
 # The extension version is the short SHA of the last commit touching
 # turbo-ext/src/ (the same computation the CI version job enforces against
@@ -56,7 +79,7 @@ SOURCES := $(wildcard src/*.cpp) $(wildcard src/parser/*.cpp)
 OBJECTS := $(SOURCES:.cpp=.o)
 
 phpstan_turbo.so: $(OBJECTS)
-	$(CXX) `$(PHP_CONFIG) --ldflags` -shared $(LINK_FLAGS) -o $@ $(OBJECTS)
+	$(CXX) `$(PHP_CONFIG) --ldflags` -shared $(LINK_FLAGS) $(PGO_FLAGS) -o $@ $(OBJECTS)
 	@# a shared object links with undefined symbols allowed (the engine's are
 	@# resolved at load time), so a helper declared but never defined only
 	@# surfaces as a jump to NULL at run time — fail the build instead
@@ -80,7 +103,32 @@ $(filter src/parser/%.o,$(OBJECTS)): src/parser/ParserEngine.h src/zv.h
 
 src/parser/ParserRunner.o: src/parser/ParserRunnerActionsSplit.h
 
-clean:
-	rm -f $(OBJECTS) phpstan_turbo.so version.stamp
+# The profile-guided build, in three sub-makes so each stage gets its own
+# flags: instrumented objects + .so, the training run, the optimised
+# objects + .so. Objects never survive a stage — an object compiled with
+# other flags than its neighbours is exactly the mismatch PGO cannot detect.
+# bin/pgo-train.sh needs the monorepo checkout with its Composer
+# dependencies installed (it runs bin/phpstan); the recorded profile is kept
+# in $(PGO_DIR) (clang) or next to the objects as .gcda files (GCC).
+pgo:
+	$(MAKE) pgo-clean
+	$(MAKE) PGO_FLAGS="$(PGO_GEN_FLAGS)" phpstan_turbo.so
+	PGO_DIR="$(PGO_DIR)" bin/pgo-train.sh
+	rm -f $(OBJECTS) phpstan_turbo.so
+ifeq ($(CXX_IS_CLANG),1)
+	$(LLVM_PROFDATA) merge -output=$(PGO_DIR)/turbo.profdata $(PGO_DIR)/*.profraw
+endif
+	$(MAKE) PGO_FLAGS="$(PGO_USE_FLAGS)" phpstan_turbo.so
 
-.PHONY: clean FORCE
+# llvm-profdata must match the clang in use: Xcode ships it behind xcrun,
+# Linux distributions suffix it with the LLVM major version
+LLVM_PROFDATA ?= $(shell command -v llvm-profdata 2>/dev/null || (command -v xcrun > /dev/null 2>&1 && echo "xcrun llvm-profdata") || ls /usr/bin/llvm-profdata-* 2>/dev/null | sort -V | tail -1)
+
+pgo-clean:
+	rm -f $(OBJECTS) phpstan_turbo.so version.stamp
+	rm -rf $(PGO_DIR)
+	find src -name '*.gcda' -delete
+
+clean: pgo-clean
+
+.PHONY: clean pgo pgo-clean FORCE

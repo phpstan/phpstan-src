@@ -456,8 +456,34 @@ jobs:
         if: matrix.target.family == 'zts'
         run: "php -r 'exit((bool) PHP_ZTS ? 0 : 1);'"
 
-      - name: "Compile phpstan_turbo with strict warnings"
+      # The training run of `make pgo` (bin/pgo-train.sh) runs bin/phpstan on
+      # the checkout, so the dependencies must be in place before the build.
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
+        if: matrix.target.family == 'macos'
+        with:
+          ignore-cache: true
+
+      - name: "Install Composer dependencies (pinned composer)"
+        if: matrix.target.family != 'macos'
+        # checksum-pinned composer, run under the matrix PHP so platform
+        # requirements are validated against the interpreter the tests below
+        # run on. COMPOSER_HOME is isolated: on the runner (ZTS) legs,
+        # setup-php seeds ~/.composer/auth.json with the workflow's GitHub
+        # token, which this pinned composer rejects at startup ("github oauth
+        # token contains invalid characters") — everything here comes from
+        # packagist dists, no auth needed.
+        run: |
+          curl -fsSLo composer.phar "https://getcomposer.org/download/$COMPOSER_VERSION/composer.phar"
+          echo "$COMPOSER_PHAR_SHA256  composer.phar" | sha256sum -c -
+          COMPOSER_HOME="$(mktemp -d)" php composer.phar install --no-interaction --no-progress
+          rm composer.phar
+
+      - name: "Compile phpstan_turbo with strict warnings (profile-guided)"
         working-directory: "turbo-ext"
+        # `make pgo`: an instrumented build, a training run of PHPStan over
+        # its own sources with that build loaded, then the final build using
+        # the recorded profile — the same three stages `make pgo` runs
+        # locally, so a profile-guided binary can be reproduced outside CI.
         # Exemptions, each caused by third-party macro expansions, not our code:
         # -Wno-assume: zend's parameter-parsing macros expand __builtin_assume
         #   with (potential) side effects
@@ -467,7 +493,7 @@ jobs:
         #   clang lexes the \N in "PhpParser\NodeVisitor" as a universal
         #   character name (GCC ignores the unknown -Wno- flag)
         run: |
-          make WARN_FLAGS="-Wall -Wextra -Werror -Wno-assume -Wno-unused-parameter -Wno-unicode" -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || nproc)"
+          make pgo WARN_FLAGS="-Wall -Wextra -Werror -Wno-assume -Wno-unused-parameter -Wno-unicode" -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || nproc)"
 
       # On arm64 AMFI refuses to map unsigned code, so the binary must carry
       # at least an ad-hoc signature. The linker applies one itself, but
@@ -488,26 +514,6 @@ jobs:
           EXPECTED="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"
           echo "built extension reports: $REPORTED, enabler expects: $EXPECTED"
           [ "$REPORTED" = "$EXPECTED" ]
-
-      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
-        if: matrix.target.family == 'macos'
-        with:
-          ignore-cache: true
-
-      - name: "Install Composer dependencies (pinned composer)"
-        if: matrix.target.family != 'macos'
-        # checksum-pinned composer, run under the matrix PHP so platform
-        # requirements are validated against the interpreter the tests below
-        # run on. COMPOSER_HOME is isolated: on the runner (ZTS) legs,
-        # setup-php seeds ~/.composer/auth.json with the workflow's GitHub
-        # token, which this pinned composer rejects at startup ("github oauth
-        # token contains invalid characters") — everything here comes from
-        # packagist dists, no auth needed.
-        run: |
-          curl -fsSLo composer.phar "https://getcomposer.org/download/$COMPOSER_VERSION/composer.phar"
-          echo "$COMPOSER_PHAR_SHA256  composer.phar" | sha256sum -c -
-          COMPOSER_HOME="$(mktemp -d)" php composer.phar install --no-interaction --no-progress
-          rm composer.phar
 
       - name: "Smoke test (differential: native vs PHP implementations)"
         run: php -d extension="$PWD/turbo-ext/phpstan_turbo.so" turbo-ext/tests/smoke.php
@@ -609,10 +615,21 @@ jobs:
       - name: "Trust the checkout despite the container/host uid mismatch"
         run: docker exec alpine-build git config --global --add safe.directory /work
 
-      - name: "Compile phpstan_turbo with strict warnings"
+      # The training run of `make pgo` runs bin/phpstan on the checkout, so
+      # the dependencies must be in place before the build.
+      - name: "Install Composer dependencies (pinned composer)"
+        run: |
+          docker exec -i alpine-build sh -e <<'EOF'
+          curl -fsSLo composer.phar "https://getcomposer.org/download/$COMPOSER_VERSION/composer.phar"
+          echo "$COMPOSER_PHAR_SHA256  composer.phar" | sha256sum -c -
+          COMPOSER_HOME="$(mktemp -d)" php composer.phar install --no-interaction --no-progress
+          rm composer.phar
+          EOF
+
+      - name: "Compile phpstan_turbo with strict warnings (profile-guided)"
         run: |
           docker exec -i -w /work/turbo-ext alpine-build sh -e <<'EOF'
-          make WARN_FLAGS="-Wall -Wextra -Werror -Wno-assume -Wno-unused-parameter -Wno-unicode" -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || nproc)"
+          make pgo WARN_FLAGS="-Wall -Wextra -Werror -Wno-assume -Wno-unused-parameter -Wno-unicode" -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || nproc)"
           EOF
 
       - name: "Verify the built extension reports the expected version"
@@ -622,15 +639,6 @@ jobs:
           EXPECTED="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"
           echo "built extension reports: $REPORTED, enabler expects: $EXPECTED"
           [ "$REPORTED" = "$EXPECTED" ]
-          EOF
-
-      - name: "Install Composer dependencies (pinned composer)"
-        run: |
-          docker exec -i alpine-build sh -e <<'EOF'
-          curl -fsSLo composer.phar "https://getcomposer.org/download/$COMPOSER_VERSION/composer.phar"
-          echo "$COMPOSER_PHAR_SHA256  composer.phar" | sha256sum -c -
-          COMPOSER_HOME="$(mktemp -d)" php composer.phar install --no-interaction --no-progress
-          rm composer.phar
           EOF
 
       - name: "Smoke test (differential: native vs PHP implementations)"

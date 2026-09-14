@@ -97,6 +97,29 @@ class AbilityToDisableImplicitThrowsTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testTriggerErrorThrowType(): void
+	{
+		$this->analyse([__DIR__ . '/data/trigger-error-throw-type.php'], [
+			[
+				'Dead catch - Exception is never thrown in the try block.',
+				14,
+			],
+			[
+				'Dead catch - Exception is never thrown in the try block.',
+				19,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				34,
+			],
+			[
+				'Dead catch - Exception is never thrown in the try block.',
+				39,
+			],
+		]);
+	}
+
 	public static function getAdditionalConfigFiles(): array
 	{
 		return array_merge(

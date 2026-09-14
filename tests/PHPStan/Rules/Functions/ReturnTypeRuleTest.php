@@ -6,6 +6,7 @@ use PHPStan\Rules\FunctionReturnTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
@@ -436,6 +437,36 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->checkNullables = true;
 		$this->checkExplicitMixed = false;
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-14428.php'], []);
+	}
+
+	public static function dataNonEmptyMixedReturn(): iterable
+	{
+		yield [false];
+		yield [true];
+	}
+
+	#[DataProvider('dataNonEmptyMixedReturn')]
+	public function testNonEmptyMixedReturn(bool $checkExplicitMixed): void
+	{
+		$this->checkNullables = true;
+		$this->checkExplicitMixed = $checkExplicitMixed;
+		$this->analyse([__DIR__ . '/data/non-empty-mixed-return.php'], [
+			[
+				'Function NonEmptyMixedReturn\returnsEmptyString() should return mixed~(0|0.0|\'\'|\'0\'|array{}|false|null) but returns \'\'.',
+				8,
+				'Type 0|0.0|\'\'|\'0\'|array{}|false|null has already been eliminated from mixed.',
+			],
+			[
+				'Function NonEmptyMixedReturn\returnsNull() should return mixed~(0|0.0|\'\'|\'0\'|array{}|false|null) but returns null.',
+				14,
+				'Type 0|0.0|\'\'|\'0\'|array{}|false|null has already been eliminated from mixed.',
+			],
+			[
+				'Function NonEmptyMixedReturn\returnsEmptyArray() should return mixed~(0|0.0|\'\'|\'0\'|array{}|false|null) but returns array{}.',
+				20,
+				'Type 0|0.0|\'\'|\'0\'|array{}|false|null has already been eliminated from mixed.',
+			],
+		]);
 	}
 
 	public function testBug13565(): void

@@ -568,6 +568,14 @@ class ClassConstantRuleTest extends RuleTestCase
 				'Class constant name for object must be a string, but mixed was given.',
 				39,
 			],
+			[
+				'Class constant name for ClassConstantDynamicStringableAccess\Baz must be a string, but mixed~null was given.',
+				53,
+			],
+			[
+				'Class constant name for ClassConstantDynamicStringableAccess\Baz must be a string, but T of mixed~null (method ClassConstantDynamicStringableAccess\Baz::testSubtractedTemplate(), argument) was given.',
+				66,
+			],
 		]);
 	}
 

@@ -3,7 +3,7 @@
 namespace PHPStan\Type;
 
 use ArrayAccess;
-use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -12,7 +12,7 @@ use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 
-#[ReferencedByTurboExtension(key: 'staticTypeFactory')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/StaticTypeFactory.cpp')]
 final class StaticTypeFactory
 {
 

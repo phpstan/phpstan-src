@@ -228,8 +228,8 @@ private:
 
 	zv::Val thisValue() const { return pt_this_value(self); }
 
-	static zv::Val falsey() { return pt_type_call_static(PT_CLASS_STATIC_TYPE_FACTORY, PT_LC("falsey"), 0, NULL); }
-	static zv::Val truthy() { return pt_type_call_static(PT_CLASS_STATIC_TYPE_FACTORY, PT_LC("truthy"), 0, NULL); }
+	static zv::Val falsey() { return pt_static_type_factory_falsey(); }
+	static zv::Val truthy() { return pt_static_type_factory_truthy(); }
 };
 
 } // namespace phpstanturbo

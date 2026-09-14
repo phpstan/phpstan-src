@@ -938,6 +938,22 @@ public:
 		return *this;
 	}
 
+	/* a `private bool $x = false` / `= true` typed property */
+	Class &privateTypedBoolProperty(const char *propertyName, bool defaultValue)
+	{
+		properties.push_back({ propertyName, PropertyKind::TypedBool, ZEND_ACC_PRIVATE, defaultValue ? 1 : 0 });
+		return *this;
+	}
+
+	/* a `public readonly Foo $x` class-typed property with no default
+	 * (IS_PROP_UNINIT until the constructor writes it); className is a
+	 * persistent literal */
+	Class &publicReadonlyTypedClassProperty(const char *propertyName, const char *className)
+	{
+		properties.push_back({ propertyName, PropertyKind::Typed, ZEND_ACC_PUBLIC | ZEND_ACC_READONLY, 0, className });
+		return *this;
+	}
+
 	/* a public long class constant (zend_declare_class_constant_long) */
 	Class &classConstantLong(const char *constantName, zend_long value)
 	{

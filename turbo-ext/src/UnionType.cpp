@@ -511,7 +511,7 @@ public:
 		if (Z_TYPE_P(slot) == IS_NULL) {
 			zval *types = this->types();
 			if (UNEXPECTED(types == NULL)) return zv::Val();
-			zv::Val sorted = pt_type_call_static(PT_CLASS_UNION_TYPE_HELPER, PT_LC("sorttypes"), 1, types);
+			zv::Val sorted = pt_union_type_helper_sort_types(types);
 			if (UNEXPECTED(sorted.isUndef())) return zv::Val();
 			if (UNEXPECTED(!zv::Ref(sorted.raw()).isArray())) {
 				zend_type_error("phpstan_turbo: UnionTypeHelper::sortTypes() must return array");

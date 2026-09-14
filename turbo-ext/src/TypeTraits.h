@@ -1261,4 +1261,24 @@ inline zv::Val pt_type_call_type(zend_object *object, const char *lcname, size_t
 
 /* }}} */
 
+/* merged from the parallel port branch */
+/* merged from the parallel port branch */
+/* {{{ helpers of the Type-namespace helper classes and the late-resolvable
+ * types (ConstantArrayTypeBuilder.cpp, GetTemplateTypeType.cpp) */
+
+/* TypeUtils::containsTemplateType($type) / getIntegerRanges($type) — the
+ * shadowing class's bodies (TypeUtils.cpp); false / UNDEF = pending
+ * exception */
+zv::Val pt_type_utils_get_integer_ranges(zval *type);
+
+/* src/Type/Traits/LateResolvableTypeTrait.php — declares the trait's
+ * `private ?Type $result = null` slot on the class too, so run it after the
+ * class's own properties are declared (the slot follows them, as PHP binds
+ * a trait's properties after the class's own) */
+/* $this->resolve() of a class using LateResolvableTypeTrait: `$this->result
+ * ??= $this->getResult()`, the $result slot the class (scope) declares,
+ * getResult() through the object's class entry; UNDEF = pending exception */
+
+/* }}} */
+
 #endif /* PHPSTANTURBO_TYPETRAITS_H */

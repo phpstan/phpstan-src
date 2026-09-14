@@ -86,7 +86,6 @@ enum {
 	PT_CLASS_TYPE,
 	PT_CLASS_CLASS_NAME_TO_OBJECT_TYPE_RESULT,
 	PT_CLASS_IDENTIFIER_TYPE_NODE,
-	PT_CLASS_STATIC_TYPE_FACTORY,
 	PT_CLASS_LOOSE_COMPARISON_HELPER,
 	PT_CLASS_EXPONENTIATE_HELPER,
 	PT_CLASS_COMPOUND_TYPE,
@@ -124,7 +123,6 @@ enum {
 	PT_CLASS_OBJECT_SHAPE_ITEM_NODE,
 	PT_CLASS_UNSAFE_ARRAY_STRING_KEY_CASTING_TRAVERSER,
 	PT_CLASS_ALLOWED_ARRAY_KEYS_TYPES,
-	PT_CLASS_CONSTANT_ARRAY_TYPE_BUILDER,
 	PT_CLASS_LRU_CACHE,
 	PT_CLASS_CLASS_NOT_FOUND_EXCEPTION,
 	PT_CLASS_CALLED_ON_TYPE_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION,
@@ -134,7 +132,6 @@ enum {
 	PT_CLASS_ENUM_PROPERTY_REFLECTION,
 	PT_CLASS_CONST_FETCH_NODE,
 	PT_CLASS_PARAMETERS_ACCEPTOR_SELECTOR,
-	PT_CLASS_CALLABLE_TYPE_HELPER,
 	PT_CLASS_CALLABLE_ASSERTIONS_HELPER,
 	PT_CLASS_CALLABLE_PARAMETERS_ACCEPTOR,
 	PT_CLASS_ASSERTIONS,
@@ -154,7 +151,6 @@ enum {
 	PT_CLASS_ARRAY_SHAPE_NODE,
 	PT_CLASS_ARRAY_SHAPE_ITEM_NODE,
 	PT_CLASS_ARRAY_SHAPE_UNSEALED_TYPE_NODE,
-	PT_CLASS_UNION_TYPE_HELPER,
 	PT_CLASS_LATE_RESOLVABLE_TYPE,
 	PT_CLASS_UNION_TYPE_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION,
 	PT_CLASS_MISSING_METHOD_FROM_REFLECTION_EXCEPTION,
@@ -1101,5 +1097,73 @@ namespace zv { class Val; }
 /* TypeProjectionHelper::describe($type, $variance, $level) ($variance NULL
  * or IS_NULL for null); an owned string, UNDEF = pending exception */
 zv::Val pt_type_projection_helper_describe(zval *type, zval *variance, zval *level);
+
+/* merged from the parallel port branch */
+/* merged from the parallel port branch */
+/* the Type-namespace helper classes (ConstantArrayTypeBuilder.cpp,
+ * UnionTypeHelper.cpp, ConstantTypeHelper.cpp, StaticTypeFactory.cpp,
+ * TypeResult.cpp, CallableTypeHelper.cpp) and the late-resolvable
+ * GetTemplateTypeType (GetTemplateTypeType.cpp) */
+extern zend_class_entry *pt_ce_constant_array_type_builder;
+extern zend_class_entry *pt_ce_union_type_helper;
+extern zend_class_entry *pt_ce_constant_type_helper;
+extern zend_class_entry *pt_ce_static_type_factory;
+extern zend_class_entry *pt_ce_type_result;
+extern zend_class_entry *pt_ce_callable_type_helper;
+extern zend_class_entry *pt_ce_get_template_type_type;
+/* registered at the end of the Type block (their signatures name
+ * ConstantArrayType, IsSuperTypeOfResult and the Type classes their
+ * bodies instantiate): the builder first (ConstantTypeHelper's body uses
+ * it), then the helpers, TypeResult, and GetTemplateTypeType last (its
+ * trait methods' return types name BooleanType, EnumCaseObjectType and
+ * TemplateTypeMap) */
+void pt_register_constant_array_type_builder();
+void pt_register_union_type_helper();
+void pt_register_constant_type_helper();
+void pt_register_static_type_factory();
+void pt_register_type_result();
+void pt_register_callable_type_helper();
+void pt_register_get_template_type_type();
+/* the twin's `static $falsey` & co. — the memoized types StaticTypeFactory
+ * hands out, held per request */
+void pt_static_type_factory_rinit();
+void pt_static_type_factory_rshutdown();
+/* the twin's public const ARRAY_COUNT_LIMIT — the one place the native
+ * code reads it from (the class constant is declared with the same value) */
+#define PT_CONSTANT_ARRAY_TYPE_BUILDER_ARRAY_COUNT_LIMIT 256
+/* ConstantArrayTypeBuilder::createEmpty() / createFromConstantArray($array)
+ * ($array borrowed, checked as the twin's typed parameter); UNDEF = pending
+ * exception */
+zv::Val pt_constant_array_type_builder_create_empty();
+zv::Val pt_constant_array_type_builder_create_from_constant_array(zval *array);
+/* $builder->setOffsetValueType($offsetType, $valueType, $optional) /
+ * ->makeUnsealed($keyType, $valueType) / ->degradeToGeneralArray($oversized)
+ * / ->getArray() — natively for a native builder, through the method
+ * otherwise ($offsetType NULL or IS_NULL for null, the Types borrowed);
+ * false / UNDEF = pending exception */
+[[nodiscard]] bool pt_constant_array_type_builder_set_offset_value_type(zval *builder, zval *offsetType, zval *valueType, bool optional = false);
+bool pt_constant_array_type_builder_make_unsealed(zval *builder, zval *keyType, zval *valueType);
+bool pt_constant_array_type_builder_degrade_to_general_array(zval *builder, bool oversized = false);
+zv::Val pt_constant_array_type_builder_get_array(zval *builder);
+/* UnionTypeHelper::sortTypes($types) ($types a borrowed list of Types);
+ * UNDEF = pending exception */
+zv::Val pt_union_type_helper_sort_types(zval *types);
+/* ConstantTypeHelper::getTypeFromValue($value) ($value borrowed); UNDEF =
+ * pending exception */
+zv::Val pt_constant_type_helper_get_type_from_value(zval *value);
+/* StaticTypeFactory::falsey() / truthy() — copies of the memoized types;
+ * UNDEF = pending exception */
+zv::Val pt_static_type_factory_falsey();
+zv::Val pt_static_type_factory_truthy();
+/* new TypeResult($type, $reasons) (both borrowed, checked as the twin's
+ * typed parameters); UNDEF = pending exception */
+zv::Val pt_type_result_new(zval *type, zval *reasons);
+/* CallableTypeHelper::isParametersAcceptorSuperTypeOf($ours, $theirs,
+ * $treatMixedAsAny, $strictTypes) (the acceptors borrowed); UNDEF = pending
+ * exception */
+zv::Val pt_callable_type_helper_is_parameters_acceptor_super_type_of(zval *ours, zval *theirs, bool treatMixedAsAny, bool strictTypes = true);
+/* new GetTemplateTypeType($type, $ancestorClassName, $templateTypeName)
+ * (borrowed); UNDEF = pending exception */
+zv::Val pt_get_template_type_type_new(zval *type, zend_string *ancestorClassName, zend_string *templateTypeName);
 
 #endif /* PHPSTANTURBO_SUPPORT_H */

@@ -5496,6 +5496,635 @@ $templateMapView = static fn (\PHPStan\Type\Generic\TemplateTypeMap $map) => arr
 }
 
 
+// ---- ConstantArrayTypeBuilder ----
+// The builder folds the keys and values it collects through TypeCombinator
+// and hands out ConstantArrayType / ArrayType / IntersectionType compounds,
+// so its matrix runs under the real names here (one Type graph per
+// process); smoke.php's prefixed block holds the side-by-side basics and
+// the error modes. Every scenario runs under both BleedingEdgeToggle states
+// (createEmpty() starts unsealed with explicit nevers on bleeding edge).
+{
+	$r = [];
+	$int = new \PHPStan\Type\IntegerType();
+	$string = new \PHPStan\Type\StringType();
+	$float = new \PHPStan\Type\FloatType();
+	$mixed = new \PHPStan\Type\MixedType();
+	$ci = static fn (int $v): \PHPStan\Type\Constant\ConstantIntegerType => new \PHPStan\Type\Constant\ConstantIntegerType($v);
+	$cs = static fn (string $v): \PHPStan\Type\Constant\ConstantStringType => new \PHPStan\Type\Constant\ConstantStringType($v);
+	$closure = static fn (): \PHPStan\Type\ClosureType => new \PHPStan\Type\ClosureType([], new \PHPStan\Type\VoidType(), false);
+	$limit = \PHPStan\Type\Constant\ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT;
+	$builderClass = \PHPStan\Type\Constant\ConstantArrayTypeBuilder::class;
+	$fresh = static fn (): \PHPStan\Type\Constant\ConstantArrayTypeBuilder => \PHPStan\Type\Constant\ConstantArrayTypeBuilder::createEmpty();
+	/** @param list<array{0: ?\PHPStan\Type\Type, 1: \PHPStan\Type\Type, 2?: bool}> $sets */
+	$built = static function (array $sets) use ($fresh): \PHPStan\Type\Constant\ConstantArrayTypeBuilder {
+		$b = $fresh();
+		foreach ($sets as $set) {
+			$b->setOffsetValueType($set[0], $set[1], $set[2] ?? false);
+		}
+		return $b;
+	};
+	$scenarios = [
+		'empty' => static fn () => $fresh(),
+		'append' => static fn () => $built([[null, $int], [null, $string]]),
+		'append optional' => static fn () => $built([[null, $int, true]]),
+		'append optional then required' => static fn () => $built([[null, $int, true], [null, $string]]),
+		'append required then optional' => static fn () => $built([[null, $int], [null, $string, true]]),
+		'append two optional' => static fn () => $built([[null, $int, true], [null, $string, true], [null, $float]]),
+		'keys 0 1 2' => static fn () => $built([[$ci(0), $int], [$ci(1), $string], [$ci(2), $float]]),
+		'keys 0 2' => static fn () => $built([[$ci(0), $int], [$ci(2), $string]]),
+		'key 2 first' => static fn () => $built([[$ci(2), $int]]),
+		'key 1 then 0' => static fn () => $built([[$ci(1), $int], [$ci(0), $string]]),
+		'negative key' => static fn () => $built([[$ci(-1), $int]]),
+		'negative key optional' => static fn () => $built([[$ci(0), $int], [$ci(-1), $string, true]]),
+		'string key' => static fn () => $built([[$cs('a'), $int]]),
+		'string key optional' => static fn () => $built([[$cs('a'), $int, true]]),
+		'string then int key' => static fn () => $built([[$cs('a'), $int], [$ci(0), $string]]),
+		'numeric string key' => static fn () => $built([[$cs('1'), $int], [$ci(1), $string]]),
+		'overwrite key' => static fn () => $built([[$ci(0), $int], [$ci(0), $string]]),
+		'overwrite key optional' => static fn () => $built([[$ci(0), $int], [$ci(0), $string, true]]),
+		'optional then overwrite' => static fn () => $built([[$ci(0), $int, true], [$ci(0), $string]]),
+		'overwrite string key' => static fn () => $built([[$cs('a'), $int], [$cs('b'), $float], [$cs('a'), $string]]),
+		'append after key 5' => static fn () => $built([[$ci(5), $int], [null, $string]]),
+		'append after optional key' => static fn () => $built([[$ci(0), $int, true], [null, $string]]),
+		'append after optional key optional' => static fn () => $built([[$ci(0), $int, true], [null, $string, true]]),
+		'key within auto indexes' => static fn () => $built([[null, $int, true], [null, $string, true], [$ci(1), $float]]),
+		'key beyond auto indexes optional' => static fn () => $built([[null, $int], [$ci(5), $string, true]]),
+		'int max key' => static fn () => $built([[$ci(PHP_INT_MAX), $int]]),
+		'int max key then append' => static fn () => $built([[$ci(PHP_INT_MAX), $int], [null, $string]]),
+		'int max key optional then append' => static fn () => $built([[$ci(PHP_INT_MAX), $int, true], [null, $string]]),
+		'float key' => static fn () => $built([[new \PHPStan\Type\Constant\ConstantFloatType(1.5), $int]]),
+		'bool key' => static fn () => $built([[new \PHPStan\Type\Constant\ConstantBooleanType(true), $int]]),
+		'null key' => static fn () => $built([[new \PHPStan\Type\NullType(), $int]]),
+		'union const keys' => static fn () => $built([[new \PHPStan\Type\UnionType([$cs('a'), $cs('b')]), $int]]),
+		'union const keys matching' => static fn () => $built([[$cs('a'), $int], [new \PHPStan\Type\UnionType([$cs('a'), $cs('b')]), $string]]),
+		'union const keys matching optional existing' => static fn () => $built([[$cs('a'), $int, true], [new \PHPStan\Type\UnionType([$cs('a'), $cs('b')]), $string]]),
+		'union const keys optional' => static fn () => $built([[$cs('a'), $int], [new \PHPStan\Type\UnionType([$cs('a'), $cs('b')]), $string, true]]),
+		'union int keys advancing' => static fn () => $built([[null, $int], [new \PHPStan\Type\UnionType([$ci(1), $ci(3)]), $string], [null, $float]]),
+		'union int max key' => static fn () => $built([[null, $int], [new \PHPStan\Type\UnionType([$ci(PHP_INT_MAX), $ci(1)]), $string]]),
+		'range key' => static fn () => $built([[\PHPStan\Type\IntegerRangeType::fromInterval(0, 3), $int]]),
+		'range key after keys' => static fn () => $built([[$ci(1), $string], [\PHPStan\Type\IntegerRangeType::fromInterval(0, 3), $int]]),
+		'range key unbounded' => static fn () => $built([[\PHPStan\Type\IntegerRangeType::fromInterval(0, null), $int]]),
+		'range key huge' => static fn () => $built([[\PHPStan\Type\IntegerRangeType::fromInterval(0, 1000), $int]]),
+		'general string key' => static fn () => $built([[$string, $int]]),
+		'general string key optional' => static fn () => $built([[$string, $int, true]]),
+		'general string key after keys' => static fn () => $built([[$cs('a'), $int], [$string, $string]]),
+		'general int key after keys' => static fn () => $built([[$ci(0), $int], [$ci(1), $float], [$int, $string]]),
+		'general key then const key' => static fn () => $built([[$string, $int], [$cs('a'), $float]]),
+		'mixed key' => static fn () => $built([[$mixed, $int]]),
+		'int|string key' => static fn () => $built([[new \PHPStan\Type\UnionType([$int, $string]), $float]]),
+		'array key' => static fn () => $built([[new \PHPStan\Type\ArrayType($int, $int), $float]]),
+		'over limit appends' => static function () use ($fresh, $int, $limit) {
+			$b = $fresh();
+			for ($i = 0; $i <= $limit; $i++) {
+				$b->setOffsetValueType(null, $int);
+			}
+			return $b;
+		},
+		'at limit appends' => static function () use ($fresh, $int, $limit) {
+			$b = $fresh();
+			for ($i = 0; $i < $limit; $i++) {
+				$b->setOffsetValueType(null, $int);
+			}
+			return $b;
+		},
+		'over limit keys' => static function () use ($fresh, $int, $ci, $limit) {
+			$b = $fresh();
+			for ($i = 0; $i <= $limit; $i++) {
+				$b->setOffsetValueType($ci($i * 2), $int);
+			}
+			return $b;
+		},
+		'over limit string keys optional' => static function () use ($fresh, $int, $cs, $limit) {
+			$b = $fresh();
+			for ($i = 0; $i <= $limit; $i++) {
+				$b->setOffsetValueType($cs('k' . $i), $int, true);
+			}
+			return $b;
+		},
+		'over limit disabled' => static function () use ($fresh, $int, $limit) {
+			$b = $fresh();
+			$b->disableArrayDegradation();
+			for ($i = 0; $i <= $limit + 40; $i++) {
+				$b->setOffsetValueType(null, $int);
+			}
+			return $b;
+		},
+		'degrade explicit' => static function () use ($built, $int, $string, $ci) {
+			$b = $built([[$ci(0), $int], [$ci(1), $string]]);
+			$b->degradeToGeneralArray();
+			return $b;
+		},
+		'degrade oversized explicit' => static function () use ($built, $int, $ci) {
+			$b = $built([[$ci(0), $int]]);
+			$b->degradeToGeneralArray(true);
+			return $b;
+		},
+		'degrade empty' => static function () use ($fresh) {
+			$b = $fresh();
+			$b->degradeToGeneralArray();
+			return $b;
+		},
+		'degrade then append' => static function () use ($fresh, $int, $string) {
+			$b = $fresh();
+			$b->degradeToGeneralArray();
+			$b->setOffsetValueType(null, $int);
+			$b->setOffsetValueType(null, $string);
+			return $b;
+		},
+		'degrade then key' => static function () use ($fresh, $int, $cs) {
+			$b = $fresh();
+			$b->degradeToGeneralArray();
+			$b->setOffsetValueType($cs('a'), $int);
+			return $b;
+		},
+		'degrade all optional' => static function () use ($fresh, $int, $cs) {
+			$b = $fresh();
+			$b->degradeToGeneralArray();
+			$b->setOffsetValueType($cs('a'), $int, true);
+			return $b;
+		},
+		'degrade then general key' => static function () use ($fresh, $int, $string) {
+			$b = $fresh();
+			$b->degradeToGeneralArray();
+			$b->setOffsetValueType($string, $int);
+			return $b;
+		},
+		'degrade after disable' => static function () use ($fresh) {
+			$b = $fresh();
+			$b->disableArrayDegradation();
+			$b->degradeToGeneralArray();
+			return $b;
+		},
+		'closures 32' => static function () use ($fresh, $closure) {
+			$b = $fresh();
+			for ($i = 0; $i < 32; $i++) {
+				$b->setOffsetValueType(null, $closure());
+			}
+			return $b;
+		},
+		'closures 31' => static function () use ($fresh, $closure) {
+			$b = $fresh();
+			for ($i = 0; $i < 31; $i++) {
+				$b->setOffsetValueType(null, $closure());
+			}
+			return $b;
+		},
+		'closures 32 with ints' => static function () use ($fresh, $closure, $int, $cs) {
+			$b = $fresh();
+			$b->setOffsetValueType($cs('n'), $int);
+			for ($i = 0; $i < 32; $i++) {
+				$b->setOffsetValueType(null, $closure());
+			}
+			return $b;
+		},
+		'closures disabled' => static function () use ($fresh, $closure) {
+			$b = $fresh();
+			$b->disableClosureDegradation();
+			for ($i = 0; $i < 40; $i++) {
+				$b->setOffsetValueType(null, $closure());
+			}
+			return $b;
+		},
+		'closures with disabled degradation' => static function () use ($fresh, $closure) {
+			$b = $fresh();
+			$b->disableArrayDegradation();
+			for ($i = 0; $i < 40; $i++) {
+				$b->setOffsetValueType(null, $closure());
+			}
+			return $b;
+		},
+		'makeUnsealed' => static function () use ($built, $int, $string, $cs) {
+			$b = $built([[$cs('a'), $int]]);
+			$b->makeUnsealed($string, $int);
+			return $b;
+		},
+		'makeUnsealed empty' => static function () use ($fresh, $int, $string) {
+			$b = $fresh();
+			$b->makeUnsealed($int, $string);
+			return $b;
+		},
+		'makeUnsealed then general key' => static function () use ($fresh, $int, $string, $float) {
+			$b = $fresh();
+			$b->makeUnsealed($int, $string);
+			$b->setOffsetValueType($string, $float);
+			return $b;
+		},
+		'makeUnsealed then covered key' => static function () use ($built, $int, $string, $cs) {
+			$b = $built([[$cs('a'), $int]]);
+			$b->makeUnsealed($string, $int);
+			$b->setOffsetValueType($string, $string);
+			return $b;
+		},
+		'makeUnsealed then const key' => static function () use ($fresh, $int, $string, $cs) {
+			$b = $fresh();
+			$b->makeUnsealed($string, $int);
+			$b->setOffsetValueType($cs('a'), $string);
+			return $b;
+		},
+		'mergeUnsealed' => static function () use ($fresh, $int, $string) {
+			$b = $fresh();
+			$b->mergeUnsealed($int, $string);
+			return $b;
+		},
+		'mergeUnsealed twice' => static function () use ($fresh, $int, $string, $float) {
+			$b = $fresh();
+			$b->mergeUnsealed($int, $string);
+			$b->mergeUnsealed($string, $float);
+			return $b;
+		},
+		'mergeUnsealed after keys' => static function () use ($built, $int, $string, $cs) {
+			$b = $built([[$cs('a'), $int]]);
+			$b->mergeUnsealed($string, $string);
+			return $b;
+		},
+		'unsealed then degrade' => static function () use ($built, $int, $string, $cs) {
+			$b = $built([[$cs('a'), $int]]);
+			$b->makeUnsealed($string, $int);
+			$b->degradeToGeneralArray();
+			return $b;
+		},
+		'unsealed then over limit' => static function () use ($fresh, $int, $string, $float, $limit) {
+			$b = $fresh();
+			$b->makeUnsealed($string, $float);
+			for ($i = 0; $i <= $limit; $i++) {
+				$b->setOffsetValueType(null, $int);
+			}
+			return $b;
+		},
+		'from constant array' => static fn () => $builderClass::createFromConstantArray(new \PHPStan\Type\Constant\ConstantArrayType([$ci(0), $ci(1)], [$int, $string])),
+		'from constant array then append' => static function () use ($builderClass, $int, $string, $float, $ci) {
+			$b = $builderClass::createFromConstantArray(new \PHPStan\Type\Constant\ConstantArrayType([$ci(0), $ci(1)], [$int, $string], [2]));
+			$b->setOffsetValueType(null, $float);
+			return $b;
+		},
+		'from constant array optional' => static function () use ($builderClass, $int, $string, $float, $ci) {
+			$b = $builderClass::createFromConstantArray(new \PHPStan\Type\Constant\ConstantArrayType([$ci(0), $ci(1)], [$int, $string], [1, 2], [1]));
+			$b->setOffsetValueType(null, $float);
+			return $b;
+		},
+		'from constant array unsealed' => static function () use ($builderClass, $int, $string, $float, $cs) {
+			$b = $builderClass::createFromConstantArray(new \PHPStan\Type\Constant\ConstantArrayType([$cs('a')], [$int], [0], [], \PHPStan\TrinaryLogic::createNo(), [$string, $float]));
+			$b->setOffsetValueType($string, $int);
+			return $b;
+		},
+		'from constant array non-list' => static fn () => $builderClass::createFromConstantArray(new \PHPStan\Type\Constant\ConstantArrayType([$cs('a'), $ci(0)], [$int, $string], [1], [], \PHPStan\TrinaryLogic::createNo())),
+		'from constant array big' => static function () use ($builderClass, $int, $ci, $limit) {
+			$keys = [];
+			$values = [];
+			for ($i = 0; $i <= $limit; $i++) {
+				$keys[] = $ci($i);
+				$values[] = $int;
+			}
+			return $builderClass::createFromConstantArray(new \PHPStan\Type\Constant\ConstantArrayType($keys, $values, [$limit + 1], [], \PHPStan\TrinaryLogic::createYes()));
+		},
+		'from empty constant array' => static function () use ($builderClass, $int) {
+			$b = $builderClass::createFromConstantArray(new \PHPStan\Type\Constant\ConstantArrayType([], []));
+			$b->setOffsetValueType(null, $int);
+			return $b;
+		},
+		'from empty unsealed constant array' => static fn () => $builderClass::createFromConstantArray(new \PHPStan\Type\Constant\ConstantArrayType([], [], [0], [], null, [$string, $int])),
+	];
+	foreach ([false, true] as $bleedingEdge) {
+		foreach ($scenarios as $label => $scenario) {
+			$r[($bleedingEdge ? 'bleeding-edge ' : '') . $label] = \PHPStan\DependencyInjection\BleedingEdgeToggle::withBleedingEdge($bleedingEdge, static function () use ($scenario, $view): array {
+				try {
+					$b = $scenario();
+				} catch (\Throwable $e) {
+					return ['throws', get_class($e)];
+				}
+				return [$view($b->getArray()), $b->isList()];
+			});
+		}
+	}
+	foreach ($r as $key => $value) {
+		$observations["constant array builder $key"] = $value;
+	}
+	$observations['native ' . \PHPStan\Type\Constant\ConstantArrayTypeBuilder::class] = (new ReflectionMethod(\PHPStan\Type\Constant\ConstantArrayTypeBuilder::class, 'getArray'))->isInternal();
+}
+
+
+// ---- UnionTypeHelper ----
+// sortTypes() over the observation types incl. the compounds (an
+// intersection answers isConstantArray()/isString() through its members),
+// in several input orders; the result is the sequence of input labels
+// (spl_object_id → label), so stability among equal members shows too.
+{
+	$r = [];
+	$int = new \PHPStan\Type\IntegerType();
+	$string = new \PHPStan\Type\StringType();
+	$ci = static fn (int $v): \PHPStan\Type\Constant\ConstantIntegerType => new \PHPStan\Type\Constant\ConstantIntegerType($v);
+	$cs = static fn (string $v): \PHPStan\Type\Constant\ConstantStringType => new \PHPStan\Type\Constant\ConstantStringType($v);
+	$classScope = \PHPStan\Type\Generic\TemplateTypeScope::createWithClass('Foo');
+	$types = [
+		'null' => new \PHPStan\Type\NullType(),
+		'int' => $int,
+		'int again' => new \PHPStan\Type\IntegerType(),
+		'string' => $string,
+		'const 1' => $ci(1),
+		'const 1 again' => $ci(1),
+		'const -3' => $ci(-3),
+		'const 1.0' => new \PHPStan\Type\Constant\ConstantFloatType(1.0),
+		'const 2.5' => new \PHPStan\Type\Constant\ConstantFloatType(2.5),
+		'const -3.0' => new \PHPStan\Type\Constant\ConstantFloatType(-3.0),
+		'const B' => $cs('B'),
+		'const a' => $cs('a'),
+		'const A' => $cs('A'),
+		'const empty' => $cs(''),
+		'const 10' => $cs('10'),
+		'const 9' => $cs('9'),
+		'true' => new \PHPStan\Type\Constant\ConstantBooleanType(true),
+		'false' => new \PHPStan\Type\Constant\ConstantBooleanType(false),
+		'bool' => new \PHPStan\Type\BooleanType(),
+		'range 0-10' => \PHPStan\Type\IntegerRangeType::fromInterval(0, 10),
+		'range min-5' => \PHPStan\Type\IntegerRangeType::fromInterval(null, 5),
+		'range 5-max' => \PHPStan\Type\IntegerRangeType::fromInterval(5, null),
+		'range -5-5' => \PHPStan\Type\IntegerRangeType::fromInterval(-5, 5),
+		'non-empty-string' => new \PHPStan\Type\IntersectionType([$string, new \PHPStan\Type\Accessory\AccessoryNonEmptyStringType()]),
+		'numeric-string' => new \PHPStan\Type\IntersectionType([$string, new \PHPStan\Type\Accessory\AccessoryNumericStringType()]),
+		'literal-string' => new \PHPStan\Type\IntersectionType([$string, new \PHPStan\Type\Accessory\AccessoryLiteralStringType()]),
+		'accessory non-empty' => new \PHPStan\Type\Accessory\AccessoryNonEmptyStringType(),
+		'accessory numeric' => new \PHPStan\Type\Accessory\AccessoryNumericStringType(),
+		'accessory list' => new \PHPStan\Type\Accessory\AccessoryArrayListType(),
+		'accessory non-empty-array' => new \PHPStan\Type\Accessory\NonEmptyArrayType(),
+		'enum hearts' => new \PHPStan\Type\Enum\EnumCaseObjectType('App\\Suit', 'Hearts'),
+		'enum spades' => new \PHPStan\Type\Enum\EnumCaseObjectType('App\\Suit', 'Spades'),
+		'enum red' => new \PHPStan\Type\Enum\EnumCaseObjectType('App\\Color', 'Red'),
+		'callable' => new \PHPStan\Type\CallableType(),
+		'callable(int): int' => new \PHPStan\Type\CallableType([new \PHPStan\Reflection\Native\NativeParameterReflection('x', false, $int, \PHPStan\Reflection\PassedByReference::createNo(), false, null)], $int, false),
+		'closure' => new \PHPStan\Type\ClosureType([], $int, false),
+		'closure(string): void' => new \PHPStan\Type\ClosureType([new \PHPStan\Reflection\Native\NativeParameterReflection('x', false, $string, \PHPStan\Reflection\PassedByReference::createNo(), false, null)], new \PHPStan\Type\VoidType(), false),
+		'array{}' => new \PHPStan\Type\Constant\ConstantArrayType([], []),
+		'array{} again' => new \PHPStan\Type\Constant\ConstantArrayType([], []),
+		'array{a: int}' => new \PHPStan\Type\Constant\ConstantArrayType([$cs('a')], [$int]),
+		'array{string}' => new \PHPStan\Type\Constant\ConstantArrayType([$ci(0)], [$string]),
+		'array{a?: int}' => new \PHPStan\Type\Constant\ConstantArrayType([$cs('a')], [$int], [0], [0]),
+		'non-empty-array{a: int}' => new \PHPStan\Type\IntersectionType([new \PHPStan\Type\Constant\ConstantArrayType([$cs('a')], [$int]), new \PHPStan\Type\Accessory\NonEmptyArrayType()]),
+		'array<int, string>' => new \PHPStan\Type\ArrayType($int, $string),
+		'non-empty-array<int, string>' => new \PHPStan\Type\IntersectionType([new \PHPStan\Type\ArrayType($int, $string), new \PHPStan\Type\Accessory\NonEmptyArrayType()]),
+		'list<int>' => new \PHPStan\Type\IntersectionType([new \PHPStan\Type\ArrayType($int, $int), new \PHPStan\Type\Accessory\AccessoryArrayListType()]),
+		'stdClass' => new \PHPStan\Type\ObjectType(\stdClass::class),
+		'ArrayObject' => new \PHPStan\Type\ObjectType(\ArrayObject::class),
+		'ArrayObject<int, string>' => new \PHPStan\Type\Generic\GenericObjectType(\ArrayObject::class, [$int, $string]),
+		'float' => new \PHPStan\Type\FloatType(),
+		'mixed' => new \PHPStan\Type\MixedType(),
+		'never' => new \PHPStan\Type\NeverType(),
+		'void' => new \PHPStan\Type\VoidType(),
+		'object' => new \PHPStan\Type\ObjectWithoutClassType(),
+		'class-string' => new \PHPStan\Type\ClassStringType(),
+		'class-string<stdClass>' => new \PHPStan\Type\Generic\GenericClassStringType(new \PHPStan\Type\ObjectType(\stdClass::class)),
+		'iterable' => new \PHPStan\Type\IterableType(new \PHPStan\Type\MixedType(), new \PHPStan\Type\MixedType()),
+		'int|string' => new \PHPStan\Type\UnionType([$int, $string]),
+		'T' => \PHPStan\Type\Generic\TemplateTypeFactory::create($classScope, 'T', null, \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()),
+		'static' => new \PHPStan\Type\StaticType($stringReflectionProvider->getClass(\ArrayObject::class)),
+		'resource' => new \PHPStan\Type\ResourceType(),
+	];
+	$labelOf = [];
+	foreach ($types as $label => $type) {
+		$labelOf[spl_object_id($type)] = $label;
+	}
+	$sequence = static fn (array $sorted): array => array_map(static fn (\PHPStan\Type\Type $t): string => $labelOf[spl_object_id($t)], $sorted);
+	$declared = array_values($types);
+	$interleaved = [];
+	foreach ($declared as $i => $type) {
+		if ($i % 2 === 0) {
+			$interleaved[] = $type;
+		}
+	}
+	foreach ($declared as $i => $type) {
+		if ($i % 2 === 1) {
+			$interleaved[] = $type;
+		}
+	}
+	$rotated = array_merge(array_slice($declared, 17), array_slice($declared, 0, 17));
+	foreach (['declared' => $declared, 'reversed' => array_reverse($declared), 'interleaved' => $interleaved, 'rotated' => $rotated, 'reversed pairs' => array_reverse(array_slice($declared, 0, 30))] as $orderLabel => $list) {
+		$sorted = \PHPStan\Type\UnionTypeHelper::sortTypes($list);
+		$r["sortTypes $orderLabel"] = $sequence($sorted);
+		$r["sortTypes $orderLabel keys"] = array_keys($sorted);
+	}
+	foreach ($types as $aLabel => $a) {
+		foreach (['null', 'int', 'const 1', 'const 1.0', 'const a', 'true', 'range 0-10', 'accessory numeric', 'enum hearts', 'closure', 'array{}', 'array{a: int}', 'non-empty-string', 'stdClass', 'mixed', 'T'] as $bLabel) {
+			$r["sortTypes pair $aLabel / $bLabel"] = $sequence(\PHPStan\Type\UnionTypeHelper::sortTypes([$a, $types[$bLabel]]));
+			$r["sortTypes pair $bLabel / $aLabel"] = $sequence(\PHPStan\Type\UnionTypeHelper::sortTypes([$types[$bLabel], $a]));
+		}
+	}
+	$big = [$types['null']];
+	for ($i = 0; $i < 1024; $i++) {
+		$big[] = $int;
+	}
+	$sortedBig = \PHPStan\Type\UnionTypeHelper::sortTypes($big);
+	$r['sortTypes over limit'] = [count($sortedBig), $sequence([$sortedBig[0]]), $sortedBig[1] === $int, $sortedBig === $big];
+	array_pop($big);
+	$sortedBig = \PHPStan\Type\UnionTypeHelper::sortTypes($big);
+	$r['sortTypes at limit'] = [count($sortedBig), $sequence([$sortedBig[1023]]), $sortedBig[0] === $int];
+	$r['sortTypes empty'] = \PHPStan\Type\UnionTypeHelper::sortTypes([]);
+	$r['sortTypes string keys'] = $sequence(\PHPStan\Type\UnionTypeHelper::sortTypes(['x' => $types['null'], 'y' => $types['int'], 5 => $types['const a']]));
+	foreach ($r as $key => $value) {
+		$observations["union type helper $key"] = $value;
+	}
+	$observations['native ' . \PHPStan\Type\UnionTypeHelper::class] = (new ReflectionMethod(\PHPStan\Type\UnionTypeHelper::class, 'sortTypes'))->isInternal();
+}
+
+
+// ---- CallableTypeHelper ----
+// isParametersAcceptorSuperTypeOf() over pairs of closure and callable
+// acceptors (parameter counts, optional and variadic parameters, unnamed
+// parameters, return types, purity and staticness) under every
+// treatMixedAsAny / strictTypes combination; the result by its trinary and
+// reasons.
+{
+	$r = [];
+	$int = new \PHPStan\Type\IntegerType();
+	$string = new \PHPStan\Type\StringType();
+	$mixed = new \PHPStan\Type\MixedType();
+	$void = new \PHPStan\Type\VoidType();
+	$param = static fn (string $name, \PHPStan\Type\Type $type, bool $optional = false, bool $variadic = false): \PHPStan\Reflection\Native\NativeParameterReflection => new \PHPStan\Reflection\Native\NativeParameterReflection($name, $optional, $type, \PHPStan\Reflection\PassedByReference::createNo(), $variadic, null);
+	$acceptors = [
+		'(): mixed' => new \PHPStan\Type\ClosureType([], $mixed, false),
+		'(int): int' => new \PHPStan\Type\ClosureType([$param('a', $int)], $int, false),
+		'(int, string=): string' => new \PHPStan\Type\ClosureType([$param('a', $int), $param('b', $string, true)], $string, false),
+		'(int ...$rest): void' => new \PHPStan\Type\ClosureType([$param('rest', $int, true, true)], $void, true),
+		'(int, int ...$rest): int' => new \PHPStan\Type\ClosureType([$param('a', $int), $param('rest', $int, true, true)], $int, true),
+		'(mixed): mixed' => new \PHPStan\Type\ClosureType([$param('a', $mixed)], $mixed, false),
+		'(int|string, ?string): int|string' => new \PHPStan\Type\ClosureType([$param('a', new \PHPStan\Type\UnionType([$int, $string])), $param('b', new \PHPStan\Type\UnionType([$string, new \PHPStan\Type\NullType()]))], new \PHPStan\Type\UnionType([$int, $string]), false),
+		'(string): int' => new \PHPStan\Type\ClosureType([$param('a', $string)], $int, false),
+		'(int): string' => new \PHPStan\Type\ClosureType([$param('a', $int)], $string, false),
+		'(stdClass): int' => new \PHPStan\Type\ClosureType([$param('o', new \PHPStan\Type\ObjectType(\stdClass::class))], $int, false),
+		'(unnamed int): int' => new \PHPStan\Type\ClosureType([$param('', $int)], $int, false),
+		'(int, int=, int=): int' => new \PHPStan\Type\ClosureType([$param('a', $int), $param('b', $int, true), $param('c', $int, true)], $int, false),
+		'pure (int): int' => new \PHPStan\Type\ClosureType(parameters: [$param('a', $int)], returnType: $int, variadic: false, impurePoints: []),
+		'static pure (int): int' => new \PHPStan\Type\ClosureType(parameters: [$param('a', $int)], returnType: $int, variadic: false, impurePoints: [], isStatic: \PHPStan\TrinaryLogic::createYes()),
+		'non-static (int): int' => new \PHPStan\Type\ClosureType(parameters: [$param('a', $int)], returnType: $int, variadic: false, isStatic: \PHPStan\TrinaryLogic::createNo()),
+		'callable' => new \PHPStan\Type\CallableType(),
+		'callable(int): int' => new \PHPStan\Type\CallableType([$param('x', $int)], $int, false),
+		'pure callable(int): int' => new \PHPStan\Type\CallableType([$param('x', $int)], $int, false, null, null, [], \PHPStan\TrinaryLogic::createYes()),
+		'impure callable(int): int' => new \PHPStan\Type\CallableType([$param('x', $int)], $int, false, null, null, [], \PHPStan\TrinaryLogic::createNo()),
+		'callable(int ...$rest): int' => new \PHPStan\Type\CallableType([$param('rest', $int, true, true)], $int, true),
+	];
+	foreach ($acceptors as $oursLabel => $ours) {
+		foreach ($acceptors as $theirsLabel => $theirs) {
+			foreach ([[false, true], [true, true], [true, false], [false, false]] as [$treatMixedAsAny, $strictTypes]) {
+				$r[sprintf('%s <- %s%s%s', $oursLabel, $theirsLabel, $treatMixedAsAny ? ' mixed-as-any' : '', $strictTypes ? '' : ' loose')] = $view(\PHPStan\Type\CallableTypeHelper::isParametersAcceptorSuperTypeOf($ours, $theirs, $treatMixedAsAny, $strictTypes));
+			}
+		}
+	}
+	$r['(int): int <- (int, string=): string default strictTypes'] = $view(\PHPStan\Type\CallableTypeHelper::isParametersAcceptorSuperTypeOf($acceptors['(int): int'], $acceptors['(int, string=): string'], true));
+	foreach ($r as $key => $value) {
+		$observations["callable type helper $key"] = $value;
+	}
+	$observations['native ' . \PHPStan\Type\CallableTypeHelper::class] = (new ReflectionMethod(\PHPStan\Type\CallableTypeHelper::class, 'isParametersAcceptorSuperTypeOf'))->isInternal();
+}
+
+
+// ---- GetTemplateTypeType ----
+// The late-resolvable `template-type<T, Class, Name>`: its own methods
+// (describe, equals, traverse, toPhpDocNode, isResolvable, resolve) and the
+// LateResolvableTypeTrait delegations over the resolved type, for subjects
+// that resolve to a template argument, to an error, and that stay
+// unresolvable (a template type inside).
+{
+	$r = [];
+	$int = new \PHPStan\Type\IntegerType();
+	$string = new \PHPStan\Type\StringType();
+	$mixed = new \PHPStan\Type\MixedType();
+	$phpVersion = new \PHPStan\Php\PhpVersion(80400);
+	$classScope = \PHPStan\Type\Generic\TemplateTypeScope::createWithClass('Foo');
+	$t = \PHPStan\Type\Generic\TemplateTypeFactory::create($classScope, 'T', null, \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant());
+	$arrayObjectReflection = $stringReflectionProvider->getClass(\ArrayObject::class);
+	$arrayObjectIntString = new \PHPStan\Type\Generic\GenericObjectType(\ArrayObject::class, [$int, $string], null, $arrayObjectReflection);
+	$arrayObjectStringT = new \PHPStan\Type\Generic\GenericObjectType(\ArrayObject::class, [$string, $t], null, $arrayObjectReflection);
+	$gtt = static fn (\PHPStan\Type\Type $type, string $ancestor, string $name): \PHPStan\Type\Helper\GetTemplateTypeType => new \PHPStan\Type\Helper\GetTemplateTypeType($type, $ancestor, $name);
+	$subjects = [
+		'Traversable<int, string> TValue' => $gtt(new \PHPStan\Type\Generic\GenericObjectType(\Traversable::class, [$int, $string]), \Traversable::class, 'TValue'),
+		'Traversable<int, string> TKey' => $gtt(new \PHPStan\Type\Generic\GenericObjectType(\Traversable::class, [$int, $string]), \Traversable::class, 'TKey'),
+		'Iterator<int, string> Traversable TValue' => $gtt(new \PHPStan\Type\Generic\GenericObjectType(\Iterator::class, [$int, $string]), \Traversable::class, 'TValue'),
+		'ArrayObject<int, string> plain TValue' => $gtt(new \PHPStan\Type\Generic\GenericObjectType(\ArrayObject::class, [$int, $string]), \ArrayObject::class, 'TValue'),
+		'ArrayObject<int, string> TValue' => $gtt($arrayObjectIntString, \ArrayObject::class, 'TValue'),
+		'ArrayObject<int, string> TKey' => $gtt($arrayObjectIntString, \ArrayObject::class, 'TKey'),
+		'ArrayObject<int, string> unknown' => $gtt($arrayObjectIntString, \ArrayObject::class, 'X'),
+		'ArrayObject<int, string> IteratorAggregate TValue' => $gtt($arrayObjectIntString, \IteratorAggregate::class, 'TValue'),
+		'ArrayObject<int, string> stdClass T' => $gtt($arrayObjectIntString, \stdClass::class, 'T'),
+		'ArrayObject TValue' => $gtt(new \PHPStan\Type\ObjectType(\ArrayObject::class), \ArrayObject::class, 'TValue'),
+		'ArrayObject<string, T> TValue' => $gtt($arrayObjectStringT, \ArrayObject::class, 'TValue'),
+		'ArrayObject<string, T> TKey' => $gtt($arrayObjectStringT, \ArrayObject::class, 'TKey'),
+		'T TValue' => $gtt($t, \ArrayObject::class, 'TValue'),
+		'int TValue' => $gtt($int, \ArrayObject::class, 'TValue'),
+		'stdClass T' => $gtt(new \PHPStan\Type\ObjectType(\stdClass::class), \stdClass::class, 'T'),
+		'union TValue' => $gtt(new \PHPStan\Type\UnionType([$arrayObjectIntString, new \PHPStan\Type\Generic\GenericObjectType(\ArrayObject::class, [$string, new \PHPStan\Type\FloatType()], null, $arrayObjectReflection)]), \ArrayObject::class, 'TValue'),
+		'nested TValue' => $gtt($gtt($arrayObjectIntString, \ArrayObject::class, 'TValue'), \ArrayObject::class, 'TValue'),
+	];
+	$others = [
+		'int' => $int,
+		'string' => $string,
+		'mixed' => $mixed,
+		'never' => new \PHPStan\Type\NeverType(),
+		'null' => new \PHPStan\Type\NullType(),
+		'ArrayObject<int, string>' => $arrayObjectIntString,
+		'T' => $t,
+		'same' => $subjects['ArrayObject<int, string> TValue'],
+		'other' => $subjects['ArrayObject<int, string> TKey'],
+		'unresolvable' => $subjects['T TValue'],
+		'array{a: int}' => new \PHPStan\Type\Constant\ConstantArrayType([new \PHPStan\Type\Constant\ConstantStringType('a')], [$int]),
+	];
+	$scope = new \PHPStan\Analyser\OutOfClassScope();
+	$catching = static function (callable $cb) use ($view): mixed {
+		try {
+			return $view($cb());
+		} catch (\Throwable $e) {
+			return ['throws', get_class($e)];
+		}
+	};
+	foreach ($subjects as $name => $subject) {
+		$r["$name instanceof"] = [$subject instanceof \PHPStan\Type\Type, $subject instanceof \PHPStan\Type\CompoundType, $subject instanceof \PHPStan\Type\LateResolvableType];
+		foreach (['typeOnly' => \PHPStan\Type\VerbosityLevel::typeOnly(), 'value' => \PHPStan\Type\VerbosityLevel::value(), 'precise' => \PHPStan\Type\VerbosityLevel::precise(), 'cache' => \PHPStan\Type\VerbosityLevel::cache()] as $levelName => $level) {
+			$r["$name describe $levelName"] = $subject->describe($level);
+		}
+		$r["$name isResolvable"] = $subject->isResolvable();
+		$r["$name resolve"] = $catching(static fn () => $subject->resolve());
+		$r["$name resolve memoized"] = $catching(static fn () => $subject->resolve() === $subject->resolve());
+		$r["$name hasTemplateOrLateResolvableType"] = $subject->hasTemplateOrLateResolvableType();
+		$r["$name getReferencedClasses"] = $subject->getReferencedClasses();
+		$r["$name getReferencedTemplateTypes"] = $view($subject->getReferencedTemplateTypes(\PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()));
+		$r["$name getReferencedTemplateTypes covariant"] = $view($subject->getReferencedTemplateTypes(\PHPStan\Type\Generic\TemplateTypeVariance::createCovariant()));
+		$r["$name toPhpDocNode"] = $view($subject->toPhpDocNode());
+		$r["$name traverse identity"] = $subject->traverse(static fn (\PHPStan\Type\Type $type): \PHPStan\Type\Type => $type) === $subject;
+		$r["$name traverse replaced"] = $view($subject->traverse(static fn (\PHPStan\Type\Type $type): \PHPStan\Type\Type => $int));
+		$r["$name generalize"] = $view($subject->generalize(\PHPStan\Type\GeneralizePrecision::lessSpecific()));
+		foreach ($subjects as $otherName => $other) {
+			$r["$name equals $otherName"] = $subject->equals($other);
+			$r["$name traverseSimultaneously $otherName identity"] = $subject->traverseSimultaneously($other, static fn (\PHPStan\Type\Type $a, \PHPStan\Type\Type $b): \PHPStan\Type\Type => $a) === $subject;
+			$r["$name traverseSimultaneously $otherName right"] = $view($subject->traverseSimultaneously($other, static fn (\PHPStan\Type\Type $a, \PHPStan\Type\Type $b): \PHPStan\Type\Type => $b));
+		}
+		foreach ($others as $otherName => $other) {
+			$r["$name isSuperTypeOf $otherName"] = $catching(static fn () => $subject->isSuperTypeOf($other));
+			$r["$name isSubTypeOf $otherName"] = $catching(static fn () => $subject->isSubTypeOf($other));
+			$r["$name accepts $otherName"] = $catching(static fn () => $subject->accepts($other, true));
+			$r["$name accepts-loose $otherName"] = $catching(static fn () => $subject->accepts($other, false));
+			$r["$name isAcceptedBy $otherName"] = $catching(static fn () => $subject->isAcceptedBy($other, true));
+			$r["$name equals other $otherName"] = $subject->equals($other);
+			$r["$name tryRemove $otherName"] = $catching(static fn () => $subject->tryRemove($other));
+			$r["$name traverseSimultaneously other $otherName"] = $view($subject->traverseSimultaneously($other, static fn (\PHPStan\Type\Type $a, \PHPStan\Type\Type $b): \PHPStan\Type\Type => $b));
+			$r["$name looseCompare $otherName"] = $catching(static fn () => $subject->looseCompare($other, $phpVersion));
+			$r["$name isSmallerThan $otherName"] = $catching(static fn () => $subject->isSmallerThan($other, $phpVersion));
+			$r["$name isSmallerThanOrEqual $otherName"] = $catching(static fn () => $subject->isSmallerThanOrEqual($other, $phpVersion));
+			$r["$name isGreaterThan $otherName"] = $catching(static fn () => $subject->isGreaterThan($other, $phpVersion));
+			$r["$name isGreaterThanOrEqual $otherName"] = $catching(static fn () => $subject->isGreaterThanOrEqual($other, $phpVersion));
+			$r["$name getOffsetValueType $otherName"] = $catching(static fn () => $subject->getOffsetValueType($other));
+			$r["$name hasOffsetValueType $otherName"] = $catching(static fn () => $subject->hasOffsetValueType($other));
+			$r["$name exponentiate $otherName"] = $catching(static fn () => $subject->exponentiate($other));
+			$r["$name inferTemplateTypes $otherName"] = $catching(static fn () => $subject->inferTemplateTypes($other));
+			$r["$name setOffsetValueType $otherName"] = $catching(static fn () => $subject->setOffsetValueType($other, $int));
+			$r["$name setExistingOffsetValueType $otherName"] = $catching(static fn () => $subject->setExistingOffsetValueType($other, $int));
+			$r["$name unsetOffset $otherName"] = $catching(static fn () => $subject->unsetOffset($other));
+		}
+		foreach (['toBoolean', 'toNumber', 'toInteger', 'toFloat', 'toString', 'toArray', 'toArrayKey', 'toBitwiseNotType', 'toAbsoluteNumber', 'toGetClassResultType', 'toObjectTypeForInstanceofCheck',
+			'isTrue', 'isFalse', 'isBoolean', 'isScalar', 'isNull', 'isInteger', 'isFloat', 'isString', 'isNumericString', 'isDecimalIntegerString', 'isNonEmptyString', 'isNonFalsyString', 'isLiteralString', 'isLowercaseString', 'isUppercaseString', 'isClassString', 'isVoid',
+			'isConstantValue', 'isConstantScalarValue', 'getConstantScalarTypes', 'getConstantScalarValues', 'getFiniteTypes', 'isObject', 'isEnum', 'getArrays', 'getConstantArrays', 'getConstantStrings', 'getObjectClassNames', 'getObjectClassReflections',
+			'getClassStringType', 'getClassStringObjectType', 'getObjectTypeOrClassStringObjectType', 'canAccessProperties', 'canCallMethods', 'canAccessConstants', 'isIterable', 'isIterableAtLeastOnce', 'getArraySize', 'getIterableKeyType', 'getFirstIterableKeyType', 'getLastIterableKeyType',
+			'getIterableValueType', 'getFirstIterableValueType', 'getLastIterableValueType', 'isArray', 'isConstantArray', 'isOversizedArray', 'isList', 'isOffsetAccessible', 'isOffsetAccessLegal', 'getKeysArray', 'getValuesArray', 'flipArray', 'popArray', 'shiftArray', 'shuffleArray',
+			'makeListMaybe', 'makeAllArrayKeysOptional', 'filterArrayRemovingFalsey', 'getEnumCases', 'getEnumCaseObject', 'isCallable', 'isCloneable'] as $method) {
+			$r["$name $method"] = $catching(static fn () => $subject->$method());
+		}
+		foreach (['getSmallerType', 'getSmallerOrEqualType', 'getGreaterType', 'getGreaterOrEqualType'] as $method) {
+			$r["$name $method"] = $catching(static fn () => $subject->$method($phpVersion));
+		}
+		$r["$name toCoercedArgumentType"] = [$catching(static fn () => $subject->toCoercedArgumentType(true)), $catching(static fn () => $subject->toCoercedArgumentType(false))];
+		$r["$name getTemplateType"] = $catching(static fn () => $subject->getTemplateType(\ArrayObject::class, 'TValue'));
+		$r["$name hasProperty"] = $catching(static fn () => $subject->hasProperty('x'));
+		$r["$name hasInstanceProperty"] = $catching(static fn () => $subject->hasInstanceProperty('x'));
+		$r["$name hasStaticProperty"] = $catching(static fn () => $subject->hasStaticProperty('x'));
+		$r["$name hasMethod"] = $catching(static fn () => $subject->hasMethod('count'));
+		$r["$name hasConstant"] = $catching(static fn () => $subject->hasConstant('X'));
+		$r["$name mapValueType"] = $catching(static fn () => $subject->mapValueType(static fn (\PHPStan\Type\Type $t): \PHPStan\Type\Type => $t));
+		$r["$name mapKeyType"] = $catching(static fn () => $subject->mapKeyType(static fn (\PHPStan\Type\Type $t): \PHPStan\Type\Type => $t));
+		$r["$name changeKeyCaseArray"] = $catching(static fn () => $subject->changeKeyCaseArray(null));
+		$r["$name searchArray"] = $catching(static fn () => $subject->searchArray($int));
+		$r["$name searchArray strict"] = $catching(static fn () => $subject->searchArray($int, \PHPStan\TrinaryLogic::createYes()));
+		$r["$name reverseArray"] = $catching(static fn () => $subject->reverseArray(\PHPStan\TrinaryLogic::createNo()));
+		$r["$name chunkArray"] = $catching(static fn () => $subject->chunkArray(new \PHPStan\Type\Constant\ConstantIntegerType(2), \PHPStan\TrinaryLogic::createNo()));
+		$r["$name fillKeysArray"] = $catching(static fn () => $subject->fillKeysArray($int));
+		$r["$name intersectKeyArray"] = $catching(static fn () => $subject->intersectKeyArray($others['array{a: int}']));
+		$r["$name sliceArray"] = $catching(static fn () => $subject->sliceArray(new \PHPStan\Type\Constant\ConstantIntegerType(0), new \PHPStan\Type\Constant\ConstantIntegerType(1), \PHPStan\TrinaryLogic::createNo()));
+		$r["$name spliceArray"] = $catching(static fn () => $subject->spliceArray(new \PHPStan\Type\Constant\ConstantIntegerType(0), new \PHPStan\Type\Constant\ConstantIntegerType(1), $others['array{a: int}']));
+		$r["$name truncateListToSize"] = $catching(static fn () => $subject->truncateListToSize(new \PHPStan\Type\Constant\ConstantIntegerType(1)));
+		$r["$name getKeysArrayFiltered"] = $catching(static fn () => $subject->getKeysArrayFiltered($int, \PHPStan\TrinaryLogic::createYes()));
+		$r["$name toObjectTypeForIsACheck"] = $catching(static fn () => $subject->toObjectTypeForIsACheck($mixed, true, true));
+		$r["$name toClassConstantType"] = $catching(static fn () => $subject->toClassConstantType($stringReflectionProvider));
+		$r["$name getCallableParametersAcceptors"] = $catching(static fn () => $subject->getCallableParametersAcceptors($scope));
+		foreach (['getProperty', 'getInstanceProperty', 'getStaticProperty', 'getUnresolvedPropertyPrototype', 'getUnresolvedInstancePropertyPrototype', 'getUnresolvedStaticPropertyPrototype', 'getMethod', 'getUnresolvedMethodPrototype', 'getConstant'] as $method) {
+			$r["$name $method"] = $catching(static function () use ($subject, $method, $scope): mixed {
+				$args = $method === 'getConstant' ? ['X'] : [$method === 'getMethod' || $method === 'getUnresolvedMethodPrototype' ? 'count' : 'x', $scope];
+				$result = $subject->$method(...$args);
+				return is_object($result) ? get_class($result) : $result;
+			});
+		}
+	}
+	foreach ($r as $key => $value) {
+		$observations["get template type type $key"] = $value;
+	}
+	$observations['native ' . \PHPStan\Type\Helper\GetTemplateTypeType::class] = (new ReflectionMethod(\PHPStan\Type\Helper\GetTemplateTypeType::class, 'describe'))->isInternal();
+}
+
+
 // observations holding bytes that are not UTF-8 (the invalid-UTF-8 subject's
 // descriptions) go out base64-encoded so json_encode() keeps every byte; the
 // non-finite floats (the NAN and infinity subjects' values) as their names

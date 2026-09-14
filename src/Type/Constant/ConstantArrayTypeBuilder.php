@@ -5,7 +5,7 @@ namespace PHPStan\Type\Constant;
 use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Accessory\OversizedArrayType;
@@ -30,7 +30,7 @@ use function min;
 /**
  * @api
  */
-#[ReferencedByTurboExtension(key: 'constantArrayTypeBuilder')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ConstantArrayTypeBuilder.cpp')]
 final class ConstantArrayTypeBuilder
 {
 

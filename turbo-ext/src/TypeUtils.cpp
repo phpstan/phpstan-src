@@ -446,6 +446,11 @@ bool pt_type_utils_contains_template_type(zval *type, bool &out)
 	return TypeUtils::containsTemplateType(type, out);
 }
 
+zv::Val pt_type_utils_get_integer_ranges(zval *type)
+{
+	return TypeUtils::getIntegerRanges(type);
+}
+
 /* {{{ engine ABI glue: parameter parsing + registration */
 
 /* one handler per Type-taking static returning through fn */

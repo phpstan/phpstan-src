@@ -226,7 +226,7 @@ public:
 	{
 		zval *its = items();
 		if (UNEXPECTED(its == NULL)) return zv::Val();
-		zv::Val builder = pt_type_call_static(PT_CLASS_CONSTANT_ARRAY_TYPE_BUILDER, PT_LC("createempty"), 0, NULL);
+		zv::Val builder = pt_constant_array_type_builder_create_empty();
 		if (UNEXPECTED(builder.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(builder.raw()).isObject())) {
 			zend_type_error("phpstan_turbo: ConstantArrayTypeBuilder::createEmpty() must return an object");

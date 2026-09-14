@@ -463,7 +463,7 @@ public:
 	 * otherwise; UNDEF = pending exception */
 	zv::Val filterArrayRemovingFalsey() const
 	{
-		zv::Val falseyTypes = pt_type_call_static(PT_CLASS_STATIC_TYPE_FACTORY, PT_LC("falsey"), 0, NULL);
+		zv::Val falseyTypes = pt_static_type_factory_falsey();
 		if (UNEXPECTED(falseyTypes.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(falseyTypes.raw()).isObject())) {
 			zend_type_error("phpstan_turbo: StaticTypeFactory::falsey() must return %s", ptcls::type);

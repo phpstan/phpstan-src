@@ -273,6 +273,13 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_template_union_type();
 	pt_register_template_type_factory();
 	pt_register_type_projection_helper();
+	pt_register_constant_array_type_builder();
+	pt_register_union_type_helper();
+	pt_register_constant_type_helper();
+	pt_register_static_type_factory();
+	pt_register_type_result();
+	pt_register_callable_type_helper();
+	pt_register_get_template_type_type();
 
 	return SUCCESS;
 }
@@ -298,6 +305,7 @@ static PHP_RINIT_FUNCTION(phpstan_turbo)
 	pt_accepts_result_rinit();
 	pt_integer_range_type_rinit();
 	pt_object_type_rinit();
+	pt_static_type_factory_rinit();
 
 	return SUCCESS;
 }
@@ -311,6 +319,7 @@ static PHP_RSHUTDOWN_FUNCTION(phpstan_turbo)
 	pt_accepts_result_rshutdown();
 	pt_support_rshutdown();
 	pt_object_type_rshutdown();
+	pt_static_type_factory_rshutdown();
 
 	return SUCCESS;
 }

@@ -7,6 +7,7 @@ use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\LateResolvableType;
@@ -18,6 +19,7 @@ use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
 /** @api */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/GetTemplateTypeType.cpp')]
 final class GetTemplateTypeType implements CompoundType, LateResolvableType
 {
 

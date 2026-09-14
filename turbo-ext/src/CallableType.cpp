@@ -225,12 +225,9 @@ public:
 			bool isCallableAcceptor;
 			if (UNEXPECTED(!pt_type_instanceof(variant.raw(), PT_CLASS_CALLABLE_PARAMETERS_ACCEPTOR, isCallableAcceptor))) return zv::Val();
 			if (!isCallableAcceptor) return pt_type_is_super_type_of_result(PT_TRI_NO);
-			zval helperArgs[4];
-			ZVAL_OBJ(&helperArgs[0], self);
-			ZVAL_COPY_VALUE(&helperArgs[1], variant.raw());
-			ZVAL_BOOL(&helperArgs[2], treatMixedAsAny);
-			ZVAL_BOOL(&helperArgs[3], strictTypes);
-			zv::Val isSuperType = pt_type_call_static(PT_CLASS_CALLABLE_TYPE_HELPER, PT_LC("isparametersacceptorsupertypeof"), 4, helperArgs);
+			zval selfZv;
+			ZVAL_OBJ(&selfZv, self);
+			zv::Val isSuperType = pt_callable_type_helper_is_parameters_acceptor_super_type_of(&selfZv, variant.raw(), treatMixedAsAny, strictTypes);
 			if (UNEXPECTED(isSuperType.isUndef())) return zv::Val();
 			if (variantsResult.isUndef()) {
 				variantsResult = std::move(isSuperType);

@@ -269,26 +269,11 @@ static zval *symtableFind(HashTable *map, zval *keyValue)
 	return false;
 }
 
-/* Class::NAME of a class-map class (borrowed); NULL = pending exception */
-[[nodiscard]] static zval *classConstant(int classIdx, const char *name, size_t len)
-{
-	zend_class_entry *ce = pt_class(classIdx);
-	if (UNEXPECTED(ce == NULL)) return NULL;
-	zend_class_constant *constant = (zend_class_constant *) zend_hash_str_find_ptr(&ce->constants_table, name, len);
-	if (UNEXPECTED(constant == NULL)) {
-		zend_throw_error(NULL, "phpstan_turbo: %s::%s not found", ZSTR_VAL(ce->name), name);
-		return NULL;
-	}
-	if (UNEXPECTED(Z_TYPE(constant->value) == IS_CONSTANT_AST && zval_update_constant_ex(&constant->value, ce) != SUCCESS)) return NULL;
-	return &constant->value;
-}
-
-/* ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT; -1 = pending exception */
+/* ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT — the shadowed class's
+ * constant, shared as a native constant; -1 = pending exception (never) */
 [[nodiscard]] static zend_long arrayCountLimit()
 {
-	zval *limit = classConstant(PT_CLASS_CONSTANT_ARRAY_TYPE_BUILDER, PT_LC("ARRAY_COUNT_LIMIT"));
-	if (UNEXPECTED(limit == NULL)) return -1;
-	return zval_get_long(limit);
+	return PT_CONSTANT_ARRAY_TYPE_BUILDER_ARRAY_COUNT_LIMIT;
 }
 
 /* the shadowed classes' constructors as Vals; UNDEF = pending exception */
@@ -2916,7 +2901,7 @@ public:
 			}
 		}
 
-		zv::Val newArray = pt_type_call_static(PT_CLASS_CONSTANT_ARRAY_TYPE_BUILDER, PT_LC("createempty"), 0, NULL);
+		zv::Val newArray = pt_constant_array_type_builder_create_empty();
 		PT_FAIL_IF_UNDEF(newArray);
 		/* Preserve unsealed extras from the source shape, intersected with
 		 * the other side's iterable key/value */
@@ -3601,7 +3586,7 @@ public:
 			}
 		}
 
-		zv::Val newArray = pt_type_call_static(PT_CLASS_CONSTANT_ARRAY_TYPE_BUILDER, PT_LC("createempty"), 0, NULL);
+		zv::Val newArray = pt_constant_array_type_builder_create_empty();
 		PT_FAIL_IF_UNDEF(newArray);
 
 		if (bothUnsealed) {
@@ -3830,14 +3815,14 @@ public:
 
 	static zv::Val removeFalsey(zval *type)
 	{
-		zv::Val falsey = pt_type_call_static(PT_CLASS_STATIC_TYPE_FACTORY, PT_LC("falsey"), 0, NULL);
+		zv::Val falsey = pt_static_type_factory_falsey();
 		PT_FAIL_IF_UNDEF(falsey);
 		return remove(type, falsey.raw());
 	}
 
 	static zv::Val removeTruthy(zval *type)
 	{
-		zv::Val truthy = pt_type_call_static(PT_CLASS_STATIC_TYPE_FACTORY, PT_LC("truthy"), 0, NULL);
+		zv::Val truthy = pt_static_type_factory_truthy();
 		PT_FAIL_IF_UNDEF(truthy);
 		return remove(type, truthy.raw());
 	}

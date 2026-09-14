@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
@@ -22,6 +23,7 @@ use function is_string;
 /**
  * @api
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ConstantTypeHelper.cpp')]
 final class ConstantTypeHelper
 {
 

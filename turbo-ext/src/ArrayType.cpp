@@ -27,10 +27,6 @@ zend_class_entry *pt_ce_array_type = nullptr;
 /* the twin's private const TRUNCATE_ACCESSORIES_LIMIT */
 #define PT_AT_TRUNCATE_ACCESSORIES_LIMIT 8
 
-/* ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT, read once per class entry */
-static zend_class_entry *pt_array_count_limit_ce = nullptr;
-static zend_long pt_array_count_limit = 0;
-
 namespace phpstanturbo {
 
 /* the instanceof checks the twin makes, as helpers: a class-map class
@@ -666,7 +662,7 @@ public:
 			zend_long covers = pt_type_call_result_trinary(Z_OBJ_P(offsetType.raw()), PT_LC("issupertypeof"), 1, k);
 			if (UNEXPECTED(covers < 0)) return zv::Val();
 			if (covers == PT_TRI_YES) {
-				zv::Val builder = pt_type_call_static(PT_CLASS_CONSTANT_ARRAY_TYPE_BUILDER, PT_LC("createempty"), 0, NULL);
+				zv::Val builder = pt_constant_array_type_builder_create_empty();
 				if (UNEXPECTED(builder.isUndef())) return zv::Val();
 				zv::Args args{offsetType.raw(), valueType};
 				zv::Val set = pt_type_call(Z_OBJ_P(builder.raw()), PT_LC("setoffsetvaluetype"), 2, args);
@@ -743,7 +739,7 @@ public:
 							zend_type_error("phpstan_turbo: getConstantArrays() must return a list of ConstantArrayType instances");
 							return zv::Val();
 						}
-						zv::Val builder = pt_type_call_static(PT_CLASS_CONSTANT_ARRAY_TYPE_BUILDER, PT_LC("createfromconstantarray"), 1, itemConstantArray);
+						zv::Val builder = pt_constant_array_type_builder_create_from_constant_array(itemConstantArray);
 						if (UNEXPECTED(builder.isUndef())) return zv::Val();
 						zv::Val shapeKeyTypes = pt_type_call_array(Z_OBJ_P(constArray), PT_LC("getkeytypes"), 0, NULL);
 						if (UNEXPECTED(shapeKeyTypes.isUndef())) return zv::Val();
@@ -905,7 +901,7 @@ public:
 		zend_long isKeySuperType = pt_type_call_result_trinary(Z_OBJ_P(otherKeyType.raw()), PT_LC("issupertypeof"), 1, keyType.raw());
 		if (UNEXPECTED(isKeySuperType < 0)) return zv::Val();
 		if (isKeySuperType == PT_TRI_NO) {
-			zv::Val builder = pt_type_call_static(PT_CLASS_CONSTANT_ARRAY_TYPE_BUILDER, PT_LC("createempty"), 0, NULL);
+			zv::Val builder = pt_constant_array_type_builder_create_empty();
 			if (UNEXPECTED(builder.isUndef())) return zv::Val();
 			return pt_type_call(Z_OBJ_P(builder.raw()), PT_LC("getarray"), 0, NULL);
 		}
@@ -952,7 +948,7 @@ public:
 	 * exception */
 	zv::Val intersectConstantArrayShape(zval *constantArray) const
 	{
-		zv::Val builder = pt_type_call_static(PT_CLASS_CONSTANT_ARRAY_TYPE_BUILDER, PT_LC("createempty"), 0, NULL);
+		zv::Val builder = pt_constant_array_type_builder_create_empty();
 		if (UNEXPECTED(builder.isUndef())) return zv::Val();
 		zv::Val valueType = thisGetIterableValueType();
 		zv::Val keyType = thisGetIterableKeyType();
@@ -1172,7 +1168,7 @@ public:
 			ZVAL_LONG(&limitZv, limit);
 			if (zend_compare(&limitZv, &span) < 0) return intersectedWithNonEmpty();
 
-			zv::Val builder = pt_type_call_static(PT_CLASS_CONSTANT_ARRAY_TYPE_BUILDER, PT_LC("createempty"), 0, NULL);
+			zv::Val builder = pt_constant_array_type_builder_create_empty();
 			if (UNEXPECTED(builder.isUndef())) return zv::Val();
 			for (zend_long i = 0; i < max.value; i++) {
 				zv::Val offsetType = pt_type_new_constant_integer(i);
@@ -1278,7 +1274,7 @@ public:
 	 * when nothing remains); UNDEF = pending exception */
 	zv::Val filterArrayRemovingFalsey() const
 	{
-		zv::Val falseyTypes = pt_type_call_static(PT_CLASS_STATIC_TYPE_FACTORY, PT_LC("falsey"), 0, NULL);
+		zv::Val falseyTypes = pt_static_type_factory_falsey();
 		if (UNEXPECTED(falseyTypes.isUndef())) return zv::Val();
 		zv::Val itemType = thisGetItemType();
 		if (UNEXPECTED(itemType.isUndef())) return zv::Val();
@@ -1728,26 +1724,11 @@ private:
 		sub_function(out, &x, &y);
 	}
 
-	/* ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT; false = pending exception */
-	[[nodiscard]] static bool arrayCountLimit(zend_long &out)
+	/* ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT — the shadowed class's
+	 * constant, shared as a native constant */
+	static bool arrayCountLimit(zend_long &out)
 	{
-		zend_class_entry *ce = pt_class(PT_CLASS_CONSTANT_ARRAY_TYPE_BUILDER);
-		if (UNEXPECTED(ce == NULL)) return false;
-		if (UNEXPECTED(ce != pt_array_count_limit_ce)) {
-			zend_class_constant *constant = (zend_class_constant *) zend_hash_str_find_ptr(&ce->constants_table, PT_LC("ARRAY_COUNT_LIMIT"));
-			if (UNEXPECTED(constant == NULL)) {
-				zend_throw_error(NULL, "phpstan_turbo: %s::ARRAY_COUNT_LIMIT not found", ZSTR_VAL(ce->name));
-				return false;
-			}
-			if (UNEXPECTED(Z_TYPE(constant->value) == IS_CONSTANT_AST && zval_update_constant_ex(&constant->value, ce) != SUCCESS)) return false;
-			if (UNEXPECTED(Z_TYPE(constant->value) != IS_LONG)) {
-				zend_type_error("phpstan_turbo: %s::ARRAY_COUNT_LIMIT must be an int", ZSTR_VAL(ce->name));
-				return false;
-			}
-			pt_array_count_limit = Z_LVAL(constant->value);
-			pt_array_count_limit_ce = ce;
-		}
-		out = pt_array_count_limit;
+		out = PT_CONSTANT_ARRAY_TYPE_BUILDER_ARRAY_COUNT_LIMIT;
 		return true;
 	}
 

@@ -513,7 +513,7 @@ public:
 		zval *subtracted = subtractedType();
 		if (UNEXPECTED(subtracted == NULL)) return zv::Val();
 		if (Z_TYPE_P(subtracted) != IS_NULL) {
-			zv::Val falsey = pt_type_call_static(PT_CLASS_STATIC_TYPE_FACTORY, PT_LC("falsey"), 0, NULL);
+			zv::Val falsey = pt_static_type_factory_falsey();
 			if (UNEXPECTED(falsey.isUndef())) return zv::Val();
 			zend_long isSuperType = isSuperTypeOfTrinary(subtracted, falsey.raw());
 			if (UNEXPECTED(isSuperType < 0)) return zv::Val();

@@ -53,11 +53,8 @@ bool pt_result_object_create(zval *out, zend_class_entry *ce, zval *trinary, zva
 #define PT_CAT_CASE_LOWER 0
 #define PT_CAT_CASE_UPPER 1
 
-/* ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT and
- * InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT, read once per class
+/* InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT, read once per class
  * entry */
-static zend_class_entry *pt_carr_array_count_limit_ce = nullptr;
-static zend_long pt_carr_array_count_limit = 0;
 static zend_class_entry *pt_carr_calculate_scalars_limit_ce = nullptr;
 static zend_long pt_carr_calculate_scalars_limit = 0;
 
@@ -337,10 +334,12 @@ static zv::Val substituteMixedUnsealedKey(zval *unsealedKeyType)
 	return true;
 }
 
-/* ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT */
+/* ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT — the shadowed class's
+ * constant, shared as a native constant */
 static bool arrayCountLimit(zend_long &out)
 {
-	return classConstantLong(PT_CLASS_CONSTANT_ARRAY_TYPE_BUILDER, PT_LC("ARRAY_COUNT_LIMIT"), pt_carr_array_count_limit_ce, pt_carr_array_count_limit, out);
+	out = PT_CONSTANT_ARRAY_TYPE_BUILDER_ARRAY_COUNT_LIMIT;
+	return true;
 }
 
 /* InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT */
@@ -646,48 +645,43 @@ static zend_string *reasonArgument(uint32_t argc, zval *argv)
 	return Z_STR_P(&argv[0]);
 }
 
-/* a ConstantArrayTypeBuilder: createEmpty() / createFromConstantArray($array) */
+/* a ConstantArrayTypeBuilder: createEmpty() / createFromConstantArray($array)
+ * — the shadowed class, driven through its exported helpers (direct C++
+ * calls) */
 static zv::Val builderCreateEmpty()
 {
-	return pt_type_call_static(PT_CLASS_CONSTANT_ARRAY_TYPE_BUILDER, PT_LC("createempty"), 0, NULL);
+	return pt_constant_array_type_builder_create_empty();
 }
 
 static zv::Val builderCreateFromConstantArray(zval *array)
 {
-	return pt_type_call_static(PT_CLASS_CONSTANT_ARRAY_TYPE_BUILDER, PT_LC("createfromconstantarray"), 1, array);
+	return pt_constant_array_type_builder_create_from_constant_array(array);
 }
 
 /* $builder->setOffsetValueType($offsetType, $valueType[, $optional]);
  * offsetType NULL = the twin's null, optional -1 = the parameter left at
- * its default; false = pending exception */
+ * its default (false); false = pending exception */
 [[nodiscard]] static bool builderSet(zval *builder, zval *offsetType, zval *valueType, int optional = -1)
 {
-	zval args[3];
-	if (offsetType == NULL) {
-		ZVAL_NULL(&args[0]);
-	} else {
-		ZVAL_COPY_VALUE(&args[0], offsetType);
-	}
-	ZVAL_COPY_VALUE(&args[1], valueType);
-	ZVAL_BOOL(&args[2], optional > 0);
-	zv::Val result = pt_type_call(Z_OBJ_P(builder), PT_LC("setoffsetvaluetype"), optional < 0 ? 2 : 3, args);
-	return !result.isUndef();
+	return pt_constant_array_type_builder_set_offset_value_type(builder, offsetType, valueType, optional > 0);
 }
 
 /* $builder->makeUnsealed($keyType, $valueType); false = pending exception */
 [[nodiscard]] static bool builderMakeUnsealed(zval *builder, zval *keyType, zval *valueType)
 {
-	zval args[2];
-	ZVAL_COPY_VALUE(&args[0], keyType);
-	ZVAL_COPY_VALUE(&args[1], valueType);
-	zv::Val result = pt_type_call(Z_OBJ_P(builder), PT_LC("makeunsealed"), 2, args);
-	return !result.isUndef();
+	return pt_constant_array_type_builder_make_unsealed(builder, keyType, valueType);
 }
 
 /* $builder->getArray() */
 static zv::Val builderGetArray(zval *builder)
 {
-	return callType(Z_OBJ_P(builder), PT_LC("getarray"), 0, NULL);
+	zv::Val array = pt_constant_array_type_builder_get_array(builder);
+	if (UNEXPECTED(array.isUndef())) return zv::Val();
+	if (UNEXPECTED(!zv::Ref(array.raw()).isObject())) {
+		zend_type_error("phpstan_turbo: ConstantArrayTypeBuilder::getArray() must return %s", ptcls::type);
+		return zv::Val();
+	}
+	return array;
 }
 
 /* $builder->degradeToGeneralArray() / ->disableArrayDegradation(); false =
@@ -5450,7 +5444,7 @@ public:
 	 * when nothing remains); UNDEF = pending exception */
 	zv::Val filterArrayRemovingFalsey() const
 	{
-		zv::Val falseyTypes = pt_type_call_static(PT_CLASS_STATIC_TYPE_FACTORY, PT_LC("falsey"), 0, NULL);
+		zv::Val falseyTypes = pt_static_type_factory_falsey();
 		if (UNEXPECTED(falseyTypes.isUndef() || !zv::Ref(falseyTypes.raw()).isObject())) {
 			if (!EG(exception)) {
 				zend_type_error("phpstan_turbo: StaticTypeFactory::falsey() must return %s", ptcls::type);

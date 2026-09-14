@@ -43,6 +43,7 @@ use function count;
 use function get_class;
 use function implode;
 use function in_array;
+use function spl_object_id;
 use function sprintf;
 use function usort;
 use const PHP_INT_MAX;
@@ -293,52 +294,76 @@ final class TypeCombinator
 			}
 		}
 
+		// A member passed more than once contributes nothing; dropping the
+		// repeats up front keeps the pairwise comparison below from paying for
+		// them (array_values() of a shape unions the same value type per slot).
+		if ($typesCount > 2) {
+			$seenTypes = [];
+			$uniqueTypes = [];
+			foreach ($types as $type) {
+				$typeId = spl_object_id($type);
+				if (isset($seenTypes[$typeId])) {
+					continue;
+				}
+				$seenTypes[$typeId] = true;
+				$uniqueTypes[] = $type;
+			}
+			if (count($uniqueTypes) === 1) {
+				return $uniqueTypes[0];
+			}
+			if (count($uniqueTypes) === 2) {
+				return self::union($uniqueTypes[0], $uniqueTypes[1]);
+			}
+			$types = $uniqueTypes;
+		}
+
 		$alreadyNormalized = [];
 		$alreadyNormalizedCounter = 0;
 
 		$benevolentTypes = [];
 		$neverCount = 0;
-		// transform A | (B | C) to A | B | C
-		for ($i = 0; $i < $typesCount; $i++) {
+		// transform A | (B | C) to A | B | C - in one pass, a union's members are
+		// never unions, implicit never or implicit mixed themselves
+		$flattenedTypes = [];
+		foreach ($types as $type) {
 			if (
-				$types[$i] instanceof MixedType
-				&& !$types[$i]->isExplicitMixed()
-				&& !$types[$i] instanceof TemplateMixedType
-				&& $types[$i]->getSubtractedType() === null
+				$type instanceof MixedType
+				&& !$type->isExplicitMixed()
+				&& !$type instanceof TemplateMixedType
+				&& $type->getSubtractedType() === null
 			) {
-				return $types[$i];
+				return $type;
 			}
-			if ($types[$i] instanceof NeverType && !$types[$i]->isExplicit()) {
+			if ($type instanceof NeverType && !$type->isExplicit()) {
 				$neverCount++;
+				$flattenedTypes[] = $type;
 				continue;
 			}
-			if ($types[$i] instanceof BenevolentUnionType) {
-				if ($types[$i] instanceof TemplateType) {
+			if ($type instanceof BenevolentUnionType) {
+				if ($type instanceof TemplateType) {
+					$flattenedTypes[] = $type;
 					continue;
 				}
-				$benevolentTypesCount = 0;
-				$typesInner = $types[$i]->getTypes();
-				foreach ($typesInner as $benevolentInnerType) {
-					$benevolentTypesCount++;
+				foreach ($type->getTypes() as $benevolentInnerType) {
 					$benevolentTypes[$benevolentInnerType->describe(VerbosityLevel::value())] = $benevolentInnerType;
+					$flattenedTypes[] = $benevolentInnerType;
 				}
-				array_splice($types, $i, 1, $typesInner);
-				$typesCount += $benevolentTypesCount - 1;
 				continue;
 			}
-			if (!($types[$i] instanceof UnionType)) {
-				continue;
-			}
-			if ($types[$i] instanceof TemplateType) {
+			if (!($type instanceof UnionType) || $type instanceof TemplateType) {
+				$flattenedTypes[] = $type;
 				continue;
 			}
 
-			$typesInner = $types[$i]->getTypes();
+			$typesInner = $type->getTypes();
 			$alreadyNormalized[$alreadyNormalizedCounter] = $typesInner;
 			$alreadyNormalizedCounter++;
-			array_splice($types, $i, 1, $typesInner);
-			$typesCount += count($typesInner) - 1;
+			foreach ($typesInner as $innerType) {
+				$flattenedTypes[] = $innerType;
+			}
 		}
+		$types = $flattenedTypes;
+		$typesCount = count($types);
 
 		// Bulk-remove implicit NeverTypes (skipped during the loop above)
 		if ($neverCount > 0) {
@@ -427,8 +452,9 @@ final class TypeCombinator
 			static fn (IntegerRangeType $a, IntegerRangeType $b): int => ($a->getMin() ?? PHP_INT_MIN) <=> ($b->getMin() ?? PHP_INT_MIN)
 				?: ($a->getMax() ?? PHP_INT_MAX) <=> ($b->getMax() ?? PHP_INT_MAX),
 		);
-		$types = array_merge($types, $integerRangeTypes);
-		$types = array_values($types);
+		// array_merge() hands the first array back as it is when the second one
+		// is empty, so the keys the bucketing above unset must be renumbered here
+		$types = array_merge(array_values($types), $integerRangeTypes);
 		$typesCount = count($types);
 
 		foreach ($scalarTypes as $classType => $scalarTypeItems) {

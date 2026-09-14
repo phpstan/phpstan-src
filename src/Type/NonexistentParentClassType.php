@@ -14,6 +14,7 @@ use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
@@ -26,6 +27,7 @@ use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/NonexistentParentClassType.cpp')]
 class NonexistentParentClassType implements Type
 {
 

@@ -4,7 +4,7 @@ namespace PHPStan\Type;
 
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
-use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
@@ -14,7 +14,7 @@ use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 
 /** @api */
 #[InstanceofDeprecated(insteadUse: 'Type::isObject()')]
-#[ReferencedByTurboExtension(key: 'objectWithoutClassType')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ObjectWithoutClassType.cpp')]
 class ObjectWithoutClassType implements SubtractableType
 {
 

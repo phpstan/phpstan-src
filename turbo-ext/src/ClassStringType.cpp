@@ -75,8 +75,8 @@ public:
 	static zend_long isClassString() { return PT_TRI_YES; }
 
 	/* new ObjectWithoutClassType() */
-	static zv::Val getClassStringObjectType() { return pt_type_new(PT_CLASS_OBJECT_WITHOUT_CLASS_TYPE, 0, NULL); }
-	static zv::Val getObjectTypeOrClassStringObjectType() { return pt_type_new(PT_CLASS_OBJECT_WITHOUT_CLASS_TYPE, 0, NULL); }
+	static zv::Val getClassStringObjectType() { return pt_type_new_object_without_class_type(); }
+	static zv::Val getObjectTypeOrClassStringObjectType() { return pt_type_new_object_without_class_type(); }
 
 	/* new IdentifierTypeNode('class-string') */
 	static zv::Val toPhpDocNode()

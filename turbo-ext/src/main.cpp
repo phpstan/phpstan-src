@@ -190,6 +190,12 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_never_type();
 	pt_register_mixed_type();
 	pt_register_strict_mixed_type();
+	pt_register_object_without_class_type();
+	pt_register_static_type();
+	pt_register_this_type();
+	pt_register_generic_static_type();
+	pt_register_object_shape_type();
+	pt_register_nonexistent_parent_class_type();
 
 	return SUCCESS;
 }

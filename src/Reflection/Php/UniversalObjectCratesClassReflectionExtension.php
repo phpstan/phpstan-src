@@ -9,10 +9,12 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\PropertiesClassReflectionExtension;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\MixedType;
 
 // autoTag: false - wired explicitly in ClassReflectionExtensionRegistry, must not be tagged
 #[AutowiredService(autoTag: false)]
+#[ReferencedByTurboExtension(key: 'universalObjectCratesClassReflectionExtension')]
 final class UniversalObjectCratesClassReflectionExtension
 	implements PropertiesClassReflectionExtension
 {

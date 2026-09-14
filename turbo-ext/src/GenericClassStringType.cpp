@@ -140,7 +140,7 @@ public:
 			if (UNEXPECTED(other == NULL)) return zv::Val();
 			objectType = zv::Val::copyOf(zv::Ref(other));
 		} else if (instanceof_function(typeCe, pt_ce_class_string_type)) {
-			objectType = pt_type_new(PT_CLASS_OBJECT_WITHOUT_CLASS_TYPE, 0, NULL);
+			objectType = pt_type_new_object_without_class_type();
 		} else if (instanceof_function(typeCe, pt_ce_string_type)) {
 			return pt_type_accepts_result(PT_TRI_MAYBE);
 		} else {
@@ -176,8 +176,8 @@ public:
 			zv::Val genericType = zv::Val::copyOf(zv::Ref(ownType));
 			if (zv::Ref(genericType.raw()).instanceOf(pt_ce_mixed_type)) return pt_type_is_super_type_of_result(PT_TRI_YES);
 
-			bool isStatic;
-			if (UNEXPECTED(!pt_type_instanceof(genericType.raw(), PT_CLASS_STATIC_TYPE, isStatic))) return zv::Val();
+			/* $genericType instanceof StaticType — the shadowing class */
+			bool isStatic = zv::Ref(genericType.raw()).instanceOf(pt_ce_static_type);
 			if (isStatic) {
 				genericType = pt_type_call(Z_OBJ_P(genericType.raw()), PT_LC("getstaticobjecttype"), 0, NULL);
 				if (UNEXPECTED(genericType.isUndef())) return zv::Val();
@@ -220,7 +220,7 @@ public:
 			return callOnType(PT_LC("issupertypeof"), 1, other);
 		}
 		if (instanceof_function(typeCe, pt_ce_class_string_type)) {
-			zv::Val objectWithoutClass = pt_type_new(PT_CLASS_OBJECT_WITHOUT_CLASS_TYPE, 0, NULL);
+			zv::Val objectWithoutClass = pt_type_new_object_without_class_type();
 			if (UNEXPECTED(objectWithoutClass.isUndef())) return zv::Val();
 			return callOnType(PT_LC("issupertypeof"), 1, objectWithoutClass.raw());
 		}
@@ -294,7 +294,7 @@ public:
 				typeToInfer = pt_type_call(Z_OBJ_P(typeToInfer.raw()), PT_LC("getbound"), 0, NULL);
 				if (UNEXPECTED(typeToInfer.isUndef())) return zv::Val();
 			}
-			zv::Val objectWithoutClass = pt_type_new(PT_CLASS_OBJECT_WITHOUT_CLASS_TYPE, 0, NULL);
+			zv::Val objectWithoutClass = pt_type_new_object_without_class_type();
 			if (UNEXPECTED(objectWithoutClass.isUndef())) return zv::Val();
 			zv::Args args{typeToInfer.raw(), objectWithoutClass.raw()};
 			typeToInfer = pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("intersect"), 2, args);

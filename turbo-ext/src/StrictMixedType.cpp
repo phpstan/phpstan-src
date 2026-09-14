@@ -90,7 +90,7 @@ public:
 	 * ObjectWithoutClassType alone otherwise; UNDEF = pending exception */
 	static zv::Val toObjectTypeForIsACheck(bool allowString)
 	{
-		zv::Val objectWithoutClass = pt_type_new(PT_CLASS_OBJECT_WITHOUT_CLASS_TYPE, 0, NULL);
+		zv::Val objectWithoutClass = pt_type_new_object_without_class_type();
 		if (UNEXPECTED(objectWithoutClass.isUndef())) return zv::Val();
 		if (!allowString) return classNameToObjectTypeResult(std::move(objectWithoutClass));
 		zval classString;

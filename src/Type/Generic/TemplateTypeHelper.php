@@ -3,6 +3,7 @@
 namespace PHPStan\Type\Generic;
 
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\NarrowedSubjectType;
@@ -12,6 +13,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
 
+#[ReferencedByTurboExtension(key: 'templateTypeHelper')]
 final class TemplateTypeHelper
 {
 

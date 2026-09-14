@@ -18,6 +18,7 @@ use PHPStan\Reflection\Type\CallbackUnresolvedPropertyPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -38,6 +39,7 @@ use function sprintf;
 
 /** @api */
 #[InstanceofDeprecated(insteadUse: 'Type::isObject() and Type::hasProperty()')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ObjectShapeType.cpp')]
 class ObjectShapeType implements Type
 {
 

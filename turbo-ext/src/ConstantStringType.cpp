@@ -301,8 +301,8 @@ public:
 			zv::Val genericType = pt_type_call(Z_OBJ_P(type), PT_LC("getgenerictype"), 0, NULL);
 			if (UNEXPECTED(genericType.isUndef())) return zv::Val();
 			if (zv::Ref(genericType.raw()).instanceOf(pt_ce_mixed_type)) return pt_type_is_super_type_of_result(PT_TRI_MAYBE);
-			bool isStatic;
-			if (UNEXPECTED(!pt_type_instanceof(genericType.raw(), PT_CLASS_STATIC_TYPE, isStatic))) return zv::Val();
+			/* $genericType instanceof StaticType — the shadowing class */
+			bool isStatic = zv::Ref(genericType.raw()).instanceOf(pt_ce_static_type);
 			if (isStatic) {
 				genericType = pt_type_call(Z_OBJ_P(genericType.raw()), PT_LC("getstaticobjecttype"), 0, NULL);
 				if (UNEXPECTED(genericType.isUndef())) return zv::Val();

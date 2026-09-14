@@ -90,7 +90,6 @@ enum {
 	PT_CLASS_RECURSION_GUARD,
 	PT_CLASS_UNION_TYPE,
 	PT_CLASS_CONSTANT_ARRAY_TYPE,
-	PT_CLASS_OBJECT_WITHOUT_CLASS_TYPE,
 	PT_CLASS_CLASS_NAME_TO_OBJECT_TYPE_RESULT,
 	PT_CLASS_TEMPLATE_TYPE_MAP,
 	PT_CLASS_IDENTIFIER_TYPE_NODE,
@@ -119,7 +118,6 @@ enum {
 	PT_CLASS_FUNCTION_CALLABLE_VARIANT,
 	PT_CLASS_TRIVIAL_PARAMETERS_ACCEPTOR,
 	PT_CLASS_INACCESSIBLE_METHOD,
-	PT_CLASS_STATIC_TYPE,
 	PT_CLASS_TEMPLATE_TYPE,
 	PT_CLASS_TEMPLATE_TYPE_VARIANCE,
 	PT_CLASS_GENERALIZE_PRECISION,
@@ -140,6 +138,18 @@ enum {
 	PT_CLASS_BENEVOLENT_UNION_TYPE,
 	PT_CLASS_ITERABLE_TYPE,
 	PT_CLASS_OVERSIZED_ARRAY_TYPE,
+	PT_CLASS_TYPE_TRAVERSER,
+	PT_CLASS_TEMPLATE_TYPE_HELPER,
+	PT_CLASS_GENERIC_OBJECT_TYPE,
+	PT_CLASS_TYPE_WITH_CLASS_NAME,
+	PT_CLASS_OBJECT_SHAPE_PROPERTY_REFLECTION,
+	PT_CLASS_UNIVERSAL_OBJECT_CRATES_CLASS_REFLECTION_EXTENSION,
+	PT_CLASS_MISSING_PROPERTY_FROM_REFLECTION_EXCEPTION,
+	PT_CLASS_HAS_PROPERTY_TYPE,
+	PT_CLASS_TEMPLATE_TYPE_VARIANCE_MAP,
+	PT_CLASS_THIS_TYPE_NODE,
+	PT_CLASS_OBJECT_SHAPE_NODE,
+	PT_CLASS_OBJECT_SHAPE_ITEM_NODE,
 	PT_CLASS_COUNT
 };
 
@@ -216,6 +226,15 @@ extern zend_class_entry *pt_ce_void_type;
 extern zend_class_entry *pt_ce_never_type;
 extern zend_class_entry *pt_ce_mixed_type;
 extern zend_class_entry *pt_ce_strict_mixed_type;
+/* the object family (ObjectWithoutClassType.cpp, StaticType.cpp,
+ * ThisType.cpp, GenericStaticType.cpp, ObjectShapeType.cpp,
+ * NonexistentParentClassType.cpp) */
+extern zend_class_entry *pt_ce_object_without_class_type;
+extern zend_class_entry *pt_ce_static_type;
+extern zend_class_entry *pt_ce_this_type;
+extern zend_class_entry *pt_ce_generic_static_type;
+extern zend_class_entry *pt_ce_object_shape_type;
+extern zend_class_entry *pt_ce_nonexistent_parent_class_type;
 
 /* registration hooks, called from the extension's onStartup */
 /* Shadow.cpp — Runtime::activateShadowing() */
@@ -269,6 +288,17 @@ void pt_register_void_type();
 void pt_register_never_type();
 void pt_register_mixed_type();
 void pt_register_strict_mixed_type();
+/* the object family after the never/mixed family (their bodies instantiate
+ * its classes): ObjectWithoutClassType first (the others' isSuperTypeOf()
+ * and toObjectTypeForIsACheck() name it), StaticType before its children
+ * ThisType and GenericStaticType, then ObjectShapeType and
+ * NonexistentParentClassType */
+void pt_register_object_without_class_type();
+void pt_register_static_type();
+void pt_register_this_type();
+void pt_register_generic_static_type();
+void pt_register_object_shape_type();
+void pt_register_nonexistent_parent_class_type();
 void pt_integer_range_type_rinit();
 void pt_constant_string_type_rinit();
 void pt_is_super_type_of_result_rinit();
@@ -396,6 +426,18 @@ bool pt_void_type_new(zval *out);
  * $subtractedType borrowed, NULL for null); false = pending exception */
 [[nodiscard]] bool pt_never_type_new(zval *out, bool isExplicit = false);
 bool pt_mixed_type_new(zval *out, bool isExplicitMixed = false, zval *subtractedType = NULL);
+/* new ObjectWithoutClassType($subtractedType) / new StaticType($classReflection,
+ * $subtractedType) / new ThisType($classReflection, $subtractedType) /
+ * new GenericStaticType($classReflection, $types, $subtractedType, $variances)
+ * / new ObjectShapeType($properties, $optionalProperties) /
+ * new NonexistentParentClassType() — instances of the shadowing classes
+ * (arguments borrowed, NULL for null); false = pending exception */
+[[nodiscard]] bool pt_object_without_class_type_new(zval *out, zval *subtractedType = NULL);
+bool pt_static_type_new(zval *out, zval *classReflection, zval *subtractedType = NULL);
+bool pt_this_type_new(zval *out, zval *classReflection, zval *subtractedType = NULL);
+bool pt_generic_static_type_new(zval *out, zval *classReflection, zval *types, zval *subtractedType, zval *variances);
+bool pt_object_shape_type_new(zval *out, zval *properties, zval *optionalProperties);
+bool pt_nonexistent_parent_class_type_new(zval *out);
 
 /* }}} */
 

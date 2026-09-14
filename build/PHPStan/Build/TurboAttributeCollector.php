@@ -38,6 +38,9 @@ use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\ObjectShapeItemNode;
+use PHPStan\PhpDocParser\Ast\Type\ObjectShapeNode;
+use PHPStan\PhpDocParser\Ast\Type\ThisTypeNode;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use RecursiveDirectoryIterator;
@@ -122,6 +125,9 @@ final class TurboAttributeCollector
 		'netteStrings' => Strings::class,
 		'netteRegexpException' => RegexpException::class,
 		'constExprFloatNode' => ConstExprFloatNode::class,
+		'thisTypeNode' => ThisTypeNode::class,
+		'objectShapeNode' => ObjectShapeNode::class,
+		'objectShapeItemNode' => ObjectShapeItemNode::class,
 	];
 
 	private string $realRoot;

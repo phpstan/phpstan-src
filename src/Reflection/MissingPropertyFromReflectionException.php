@@ -3,8 +3,10 @@
 namespace PHPStan\Reflection;
 
 use Exception;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use function sprintf;
 
+#[ReferencedByTurboExtension(key: 'missingPropertyFromReflectionException')]
 final class MissingPropertyFromReflectionException extends Exception
 {
 

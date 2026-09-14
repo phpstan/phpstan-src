@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * A Type that represents an object with a known class name.
@@ -22,6 +23,7 @@ use PHPStan\Reflection\ClassReflection;
  * @api-do-not-implement
  */
 #[InstanceofDeprecated(insteadUse: 'Type::getObjectClassNames() or Type::getObjectClassReflections()')]
+#[ReferencedByTurboExtension(key: 'typeWithClassName')]
 interface TypeWithClassName extends Type
 {
 

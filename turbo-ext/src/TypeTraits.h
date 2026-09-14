@@ -316,6 +316,99 @@ zif_handler pt_type_identity_traverse_handler();
 
 /* }}} */
 
+/* {{{ trait registrars of the object family (ObjectWithoutClassType.cpp,
+ * ObjectShapeType.cpp, NonexistentParentClassType.cpp) */
+
+/* src/Type/Traits/TruthyBooleanTypeTrait.php */
+void pt_type_trait_truthy_boolean(reg::Class &cls);
+/* src/Type/Traits/MaybeIterableTypeTrait.php */
+void pt_type_trait_maybe_iterable(reg::Class &cls);
+/* src/Type/Traits/MaybeOffsetAccessibleTypeTrait.php */
+void pt_type_trait_maybe_offset_accessible(reg::Class &cls);
+/* src/Type/Traits/ObjectTypeTrait.php — only what the trait declares
+ * itself; the MaybeCallable, MaybeIterable, MaybeOffsetAccessible, NonArray
+ * and TruthyBoolean traits it uses are run separately, as the twin's `use`
+ * chain resolves them */
+void pt_type_trait_object(reg::Class &cls);
+
+/* }}} */
+
+/* {{{ helpers of the object family */
+
+/* static fn (Type $type): Type => $type — a Closure over the internal
+ * IdentityCallback::identity() (MixedType.cpp) */
+zv::Val pt_type_identity_callback();
+
+/* new CallbackUnresolved{Property,Method}PrototypeReflection($member,
+ * $member->getDeclaringClass(), false, static fn (Type $type): Type => $type)
+ * over a Dummy{Property,Method}Reflection($name) — the body ObjectTypeTrait
+ * and MixedType share; UNDEF = pending exception */
+zv::Val pt_type_dummy_unresolved_prototype(bool isMethod, zval *name);
+
+/* $self->getUnresolved*Prototype($name, $scope)->getTransformedProperty()
+ * / ->getTransformedMethod(), the prototype method through the object's
+ * class entry; UNDEF = pending exception */
+zv::Val pt_type_transformed_member(zend_object *self, const char *prototypeLcname, size_t prototypeLen, bool isMethod, zval *name, zval *scope);
+
+/* new ClassNameToObjectTypeResult(new UnionType([new ObjectWithoutClassType(),
+ * new ClassStringType()]), false) when strings are allowed, of an
+ * ObjectWithoutClassType alone otherwise — the toObjectTypeForIsACheck()
+ * body the object traits share; UNDEF = pending exception */
+zv::Val pt_type_object_type_for_is_a_check(bool allowString);
+
+/* new ObjectWithoutClassType() (the shadowing class); UNDEF = pending
+ * exception */
+zv::Val pt_type_new_object_without_class_type();
+
+/* new Class(...$args) on a class entry the native code holds (a shadowed
+ * class), its constructor called when it declares one; UNDEF = pending
+ * exception */
+zv::Val pt_type_new_ce(zend_class_entry *ce, uint32_t argc, zval *argv);
+
+/* a Closure over the method of an internal callback-holder class, bound to
+ * the holder ($this; NULL for a static method) — the `fn () => ...` the
+ * twins pass around, with the captured variables in the holder's slots */
+zv::Val pt_type_closure_over(zend_function *fn, zend_class_entry *ce, zend_object *holder);
+
+/* $callable(...$args) for any PHP callable value; UNDEF = pending exception */
+zv::Val pt_type_call_callable(zval *callable, uint32_t argc, zval *argv);
+
+/* }}} */
+
+/* {{{ helpers of the static family (StaticType.cpp), for the children's
+ * parent:: calls (ThisType.cpp, GenericStaticType.cpp) */
+
+/* parent::__construct($classReflection, $subtractedType) — StaticType's
+ * constructor body on the object ($subtractedType NULL for null) */
+void pt_static_type_construct(zend_object *self, zval *classReflection, zval *subtractedType);
+
+/* $this->subtractedType / $this->classReflection of StaticType's scope —
+ * the slots StaticType declares (borrowed); NULL with an Error pending
+ * when uninitialized */
+[[nodiscard]] zval *pt_static_type_subtracted_type(zend_object *object);
+zval *pt_static_type_class_reflection(zend_object *object);
+
+/* the bodies of StaticType::getStaticObjectType(), isSuperTypeOf(),
+ * changeSubtractedType(), toClassConstantType() and toPhpDocNode() run on
+ * the object (its own class answering the $this-calls inside them, as
+ * parent:: keeps it); UNDEF = pending exception */
+zv::Val pt_static_type_get_static_object_type(zend_object *self);
+zv::Val pt_static_type_is_super_type_of(zend_object *self, zval *type);
+zv::Val pt_static_type_change_subtracted_type(zend_object *self, zval *subtractedType);
+zv::Val pt_static_type_to_class_constant_type(zend_object *self);
+zv::Val pt_static_type_to_php_doc_node();
+
+/* $this->getStaticObjectType() / $this->getClassReflection() /
+ * $this->getSubtractedType() / $this->getClassName() through the object's
+ * class entry, with the direct path when the method is StaticType's own;
+ * UNDEF = pending exception */
+zv::Val pt_static_type_this_static_object_type(zend_object *self);
+zv::Val pt_static_type_this_class_reflection(zend_object *self);
+zv::Val pt_static_type_this_subtracted_type(zend_object *self);
+zv::Val pt_static_type_this_class_name(zend_object *self);
+
+/* }}} */
+
 /* {{{ bodies the Type ports share verbatim — their members forward here */
 
 /* $this as an owned value (a new reference) */
@@ -324,6 +417,33 @@ inline zv::Val pt_this_value(zend_object *self)
 	zval selfZv;
 	ZVAL_OBJ(&selfZv, self);
 	return zv::Val::copyOf(zv::Ref(&selfZv));
+}
+
+/* a declared typed property slot of scope; NULL with the Error the
+ * typed-property read raises pending when it was never initialized */
+inline zval *pt_typed_slot(zend_object *object, uint32_t index, zend_class_entry *scope, const char *name)
+{
+	zval *p = OBJ_PROP_NUM(object, index);
+	if (UNEXPECTED(Z_TYPE_P(p) == IS_UNDEF)) {
+		zend_throw_error(NULL, "Typed property %s::$%s must not be accessed before initialization", ZSTR_VAL(scope->name), name);
+		return NULL;
+	}
+	return p;
+}
+
+/* a constructor's write of a declared property slot: overwritten in place
+ * (a repeated parent::__construct() call from a subclass would otherwise
+ * leak the first value) and no longer IS_PROP_UNINIT */
+inline void pt_write_slot(zend_object *self, uint32_t index, zval *value)
+{
+	zval *p = OBJ_PROP_NUM(self, index);
+	zval previous;
+	ZVAL_COPY_VALUE(&previous, p);
+	ZVAL_COPY(p, value);
+	Z_PROP_FLAG_P(p) = 0;
+	if (Z_TYPE(previous) != IS_UNDEF) {
+		zval_ptr_dtor(&previous);
+	}
 }
 
 /* new Class() of a class entry whose constructor is not run; UNDEF = pending exception */

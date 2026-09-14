@@ -8,8 +8,10 @@ use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use stdClass;
 
+#[ReferencedByTurboExtension(key: 'objectShapePropertyReflection')]
 final class ObjectShapePropertyReflection implements ExtendedPropertyReflection
 {
 

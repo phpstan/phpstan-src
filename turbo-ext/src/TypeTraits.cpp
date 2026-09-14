@@ -27,6 +27,10 @@
 #include "generated/NonRemoveableTypeTrait.h"
 #include "generated/UndecidedComparisonCompoundTypeTrait.h"
 #include "generated/SubstractableTypeTrait.h"
+#include "generated/TruthyBooleanTypeTrait.h"
+#include "generated/MaybeIterableTypeTrait.h"
+#include "generated/MaybeOffsetAccessibleTypeTrait.h"
+#include "generated/ObjectTypeTrait.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpragmas"
@@ -621,7 +625,7 @@ void pt_type_trait_non_object(reg::Class &cls)
 		zval *objectOrClassType;
 		bool allowString, allowSameClass;
 		if (!zp::parse<zp::Zval, zp::Bool, zp::Bool>(execute_data, objectOrClassType, allowString, allowSameClass)) RETURN_THROWS();
-		zv::Val objectWithoutClass = pt_type_new(PT_CLASS_OBJECT_WITHOUT_CLASS_TYPE, 0, NULL);
+		zv::Val objectWithoutClass = pt_type_new_object_without_class_type();
 		if (UNEXPECTED(objectWithoutClass.isUndef())) RETURN_THROWS();
 		zv::Val type;
 		if (allowString) {
@@ -1437,6 +1441,420 @@ bool pt_type_verbosity_case(zval *level, pt_verbosity_case &out)
 zif_handler pt_type_identity_traverse_handler()
 {
 	return identityTraverse;
+}
+
+/* }}} */
+
+/* {{{ trait registrars of the object family */
+
+/* TruthyBooleanTypeTrait */
+
+void pt_type_trait_truthy_boolean(reg::Class &cls)
+{
+	namespace sigs = ptdecl::TruthyBooleanTypeTrait::sig;
+	cls.traitMethod(sigs::toBoolean, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		/* new ConstantBooleanType(true) — the shadowing class */
+		zval result;
+		if (UNEXPECTED(!pt_constant_boolean_type_new(&result, true))) RETURN_THROWS();
+		RETURN_COPY_VALUE(&result);
+	});
+}
+
+/* MaybeIterableTypeTrait */
+
+static void ZEND_FASTCALL maybeIterableMaybe0(INTERNAL_FUNCTION_PARAMETERS)
+{
+	ZEND_PARSE_PARAMETERS_NONE();
+	PT_RETURN_TRINARY(PT_TRI_MAYBE);
+}
+
+static void ZEND_FASTCALL maybeIterableMixed0(INTERNAL_FUNCTION_PARAMETERS)
+{
+	ZEND_PARSE_PARAMETERS_NONE();
+	PT_RETURN_VAL(pt_type_new_mixed_type());
+}
+
+void pt_type_trait_maybe_iterable(reg::Class &cls)
+{
+	namespace sigs = ptdecl::MaybeIterableTypeTrait::sig;
+	cls.traitMethod(sigs::isIterable, maybeIterableMaybe0);
+	cls.traitMethod(sigs::isIterableAtLeastOnce, maybeIterableMaybe0);
+
+	cls.traitMethod(sigs::getArraySize, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		/* $this->isIterable()->no() / $this->isIterableAtLeastOnce()->yes()
+		 * — through the object's class, a subclass may override them; the
+		 * trait's own answers need no call */
+		zend_long iterable = pt_type_method_is(PT_THIS_OBJ, PT_LC("isiterable"), maybeIterableMaybe0) ? PT_TRI_MAYBE : pt_type_call_trinary(PT_THIS_OBJ, PT_LC("isiterable"), 0, NULL);
+		if (UNEXPECTED(iterable < 0)) RETURN_THROWS();
+		if (iterable == PT_TRI_NO) {
+			PT_RETURN_ERROR_TYPE();
+		}
+		zend_long atLeastOnce = pt_type_method_is(PT_THIS_OBJ, PT_LC("isiterableatleastonce"), maybeIterableMaybe0) ? PT_TRI_MAYBE : pt_type_call_trinary(PT_THIS_OBJ, PT_LC("isiterableatleastonce"), 0, NULL);
+		if (UNEXPECTED(atLeastOnce < 0)) RETURN_THROWS();
+		if (atLeastOnce == PT_TRI_YES) {
+			PT_RETURN_VAL(pt_integer_range_from_interval(phpstanturbo::NullableLong::of(1), phpstanturbo::NullableLong::null(), 0));
+		}
+		PT_RETURN_VAL(pt_integer_range_from_interval(phpstanturbo::NullableLong::of(0), phpstanturbo::NullableLong::null(), 0));
+	});
+
+	cls.traitMethod(sigs::getIterableKeyType, maybeIterableMixed0);
+	cls.traitMethod(sigs::getFirstIterableKeyType, maybeIterableMixed0);
+	cls.traitMethod(sigs::getLastIterableKeyType, maybeIterableMixed0);
+	cls.traitMethod(sigs::getIterableValueType, maybeIterableMixed0);
+	cls.traitMethod(sigs::getFirstIterableValueType, maybeIterableMixed0);
+	cls.traitMethod(sigs::getLastIterableValueType, maybeIterableMixed0);
+}
+
+/* MaybeOffsetAccessibleTypeTrait */
+
+void pt_type_trait_maybe_offset_accessible(reg::Class &cls)
+{
+	namespace sigs = ptdecl::MaybeOffsetAccessibleTypeTrait::sig;
+	cls.traitMethod(sigs::isOffsetAccessible, trinaryMaybe0);
+	cls.traitMethod(sigs::isOffsetAccessLegal, trinaryMaybe0);
+	cls.traitMethod(sigs::hasOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		PT_ARGS(1, 1);
+		PT_RETURN_TRINARY(PT_TRI_MAYBE);
+	});
+	cls.traitMethod(sigs::getOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		PT_ARGS(1, 1);
+		PT_RETURN_VAL(pt_type_new_mixed_type());
+	});
+	cls.traitMethod(sigs::setOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		PT_ARGS(2, 3);
+		PT_RETURN_THIS();
+	});
+	cls.traitMethod(sigs::setExistingOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		PT_ARGS(2, 2);
+		PT_RETURN_THIS();
+	});
+	cls.traitMethod(sigs::unsetOffset, this1);
+}
+
+/* ObjectTypeTrait */
+
+/* getProperty() & co.: (string $name, ClassMemberAccessAnswerer $scope) →
+ * the transformed member of the prototype, through the object's class */
+static void objectTraitTransformedMember(INTERNAL_FUNCTION_PARAMETERS, const char *prototypeLcname, size_t prototypeLen, bool isMethod)
+{
+	zval *name, *scope;
+	if (!zp::parse<zp::Zval, zp::Obj>(execute_data, name, scope)) RETURN_THROWS();
+	PT_RETURN_VAL(pt_type_transformed_member(PT_THIS_OBJ, prototypeLcname, prototypeLen, isMethod, name, scope));
+}
+
+/* getUnresolvedPropertyPrototype() & co.: (string $name, ClassMemberAccessAnswerer $scope) */
+static void objectTraitUnresolvedPrototype(INTERNAL_FUNCTION_PARAMETERS, bool isMethod)
+{
+	zend_string *name;
+	zval *scope;
+	if (!zp::parse<zp::Str, zp::Obj>(execute_data, name, scope)) RETURN_THROWS();
+	zval nameZv;
+	ZVAL_STR(&nameZv, name);
+	PT_RETURN_VAL(pt_type_dummy_unresolved_prototype(isMethod, &nameZv));
+}
+
+static void ZEND_FASTCALL trinaryMaybe1(INTERNAL_FUNCTION_PARAMETERS)
+{
+	PT_ARGS(1, 1);
+	PT_RETURN_TRINARY(PT_TRI_MAYBE);
+}
+
+void pt_type_trait_object(reg::Class &cls)
+{
+	namespace sigs = ptdecl::ObjectTypeTrait::sig;
+	cls.traitMethod(sigs::getTemplateType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		PT_ARGS(2, 2);
+		PT_RETURN_VAL(pt_type_new_mixed_type());
+	});
+
+	cls.traitMethod(sigs::isObject, trinaryYes0);
+
+	cls.traitMethod(sigs::toGetClassResultType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		/* $this->getClassStringType() — through the object's class */
+		PT_RETURN_VAL(pt_type_call(PT_THIS_OBJ, PT_LC("getclassstringtype"), 0, NULL));
+	});
+
+	cls.traitMethod(sigs::toClassConstantType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *reflectionProvider;
+		if (!zp::parse<zp::Obj>(execute_data, reflectionProvider)) RETURN_THROWS();
+		/* $classNames = $this->getObjectClassNames() — through the object's class */
+		zv::Val classNames = pt_type_call(PT_THIS_OBJ, PT_LC("getobjectclassnames"), 0, NULL);
+		if (UNEXPECTED(classNames.isUndef())) RETURN_THROWS();
+		if (UNEXPECTED(!zv::Ref(classNames.raw()).isArray())) {
+			zend_type_error("phpstan_turbo: getObjectClassNames() must return array");
+			RETURN_THROWS();
+		}
+		if (zv::ArrRef(classNames.raw()).size() == 1) {
+			zval *className = zend_hash_index_find(zv::ArrRef(classNames.raw()).table(), 0);
+			if (className != NULL) {
+				zv::Val hasClass = pt_type_call(Z_OBJ_P(reflectionProvider), PT_LC("hasclass"), 1, className);
+				if (UNEXPECTED(hasClass.isUndef())) RETURN_THROWS();
+				if (zend_is_true(hasClass.raw())) {
+					zv::Val reflection = pt_type_call(Z_OBJ_P(reflectionProvider), PT_LC("getclass"), 1, className);
+					if (UNEXPECTED(reflection.isUndef())) RETURN_THROWS();
+					if (UNEXPECTED(!zv::Ref(reflection.raw()).isObject())) {
+						zend_type_error("phpstan_turbo: getClass() must return an object");
+						RETURN_THROWS();
+					}
+					zv::Val finalByKeyword = pt_type_call(Z_OBJ_P(reflection.raw()), PT_LC("isfinalbykeyword"), 0, NULL);
+					if (UNEXPECTED(finalByKeyword.isUndef())) RETURN_THROWS();
+					if (zend_is_true(finalByKeyword.raw())) {
+						/* new ConstantStringType($reflection->getName(), true) */
+						zv::Val name = pt_type_call(Z_OBJ_P(reflection.raw()), PT_LC("getname"), 0, NULL);
+						if (UNEXPECTED(name.isUndef())) RETURN_THROWS();
+						if (UNEXPECTED(!zv::Ref(name.raw()).isString())) {
+							zend_type_error("phpstan_turbo: getName() must return string");
+							RETURN_THROWS();
+						}
+						zval result;
+						if (UNEXPECTED(!pt_constant_string_type_new(&result, zv::Ref(name.raw()).asString(), true))) RETURN_THROWS();
+						RETURN_COPY_VALUE(&result);
+					}
+				}
+			}
+		}
+		/* new IntersectionType([$this->getClassStringType(), new AccessoryLiteralStringType()]) */
+		zv::Val classString = pt_type_call(PT_THIS_OBJ, PT_LC("getclassstringtype"), 0, NULL);
+		if (UNEXPECTED(classString.isUndef())) RETURN_THROWS();
+		zv::Val literal = pt_type_new(PT_CLASS_ACCESSORY_LITERAL_STRING_TYPE, 0, NULL);
+		if (UNEXPECTED(literal.isUndef())) RETURN_THROWS();
+		zv::Arr types = zv::Arr::create(2);
+		types.push(std::move(classString));
+		types.push(std::move(literal));
+		PT_RETURN_VAL(pt_type_new(PT_CLASS_INTERSECTION_TYPE, 1, types.raw()));
+	});
+
+	cls.traitMethod(sigs::toObjectTypeForInstanceofCheck, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		/* new ClassNameToObjectTypeResult($this, true) */
+		zv::Args args{ZEND_THIS, true};
+		PT_RETURN_VAL(pt_type_new(PT_CLASS_CLASS_NAME_TO_OBJECT_TYPE_RESULT, 2, args));
+	});
+
+	cls.traitMethod(sigs::toObjectTypeForIsACheck, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *objectOrClassType;
+		bool allowString, allowSameClass;
+		if (!zp::parse<zp::Zval, zp::Bool, zp::Bool>(execute_data, objectOrClassType, allowString, allowSameClass)) RETURN_THROWS();
+		PT_RETURN_VAL(pt_type_object_type_for_is_a_check(allowString));
+	});
+
+	cls.traitMethod(sigs::isEnum, trinaryMaybe0);
+	cls.traitMethod(sigs::canAccessProperties, trinaryYes0);
+	cls.traitMethod(sigs::hasProperty, trinaryMaybe1);
+	cls.traitMethod(sigs::getProperty, [](INTERNAL_FUNCTION_PARAMETERS) {
+		objectTraitTransformedMember(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getunresolvedpropertyprototype"), false);
+	});
+	cls.traitMethod(sigs::getUnresolvedPropertyPrototype, [](INTERNAL_FUNCTION_PARAMETERS) {
+		objectTraitUnresolvedPrototype(INTERNAL_FUNCTION_PARAM_PASSTHRU, false);
+	});
+	cls.traitMethod(sigs::hasInstanceProperty, trinaryMaybe1);
+	cls.traitMethod(sigs::getInstanceProperty, [](INTERNAL_FUNCTION_PARAMETERS) {
+		objectTraitTransformedMember(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getunresolvedinstancepropertyprototype"), false);
+	});
+	cls.traitMethod(sigs::getUnresolvedInstancePropertyPrototype, [](INTERNAL_FUNCTION_PARAMETERS) {
+		objectTraitUnresolvedPrototype(INTERNAL_FUNCTION_PARAM_PASSTHRU, false);
+	});
+	cls.traitMethod(sigs::hasStaticProperty, trinaryMaybe1);
+	cls.traitMethod(sigs::getStaticProperty, [](INTERNAL_FUNCTION_PARAMETERS) {
+		objectTraitTransformedMember(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getunresolvedstaticpropertyprototype"), false);
+	});
+	cls.traitMethod(sigs::getUnresolvedStaticPropertyPrototype, [](INTERNAL_FUNCTION_PARAMETERS) {
+		objectTraitUnresolvedPrototype(INTERNAL_FUNCTION_PARAM_PASSTHRU, false);
+	});
+
+	cls.traitMethod(sigs::canCallMethods, trinaryYes0);
+	cls.traitMethod(sigs::hasMethod, trinaryMaybe1);
+	cls.traitMethod(sigs::getMethod, [](INTERNAL_FUNCTION_PARAMETERS) {
+		objectTraitTransformedMember(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getunresolvedmethodprototype"), true);
+	});
+	cls.traitMethod(sigs::getUnresolvedMethodPrototype, [](INTERNAL_FUNCTION_PARAMETERS) {
+		objectTraitUnresolvedPrototype(INTERNAL_FUNCTION_PARAM_PASSTHRU, true);
+	});
+
+	cls.traitMethod(sigs::canAccessConstants, trinaryYes0);
+	cls.traitMethod(sigs::hasConstant, trinaryMaybe1);
+	cls.traitMethod(sigs::getConstant, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zend_string *constantName;
+		if (!zp::parse<zp::Str>(execute_data, constantName)) RETURN_THROWS();
+		/* new DummyClassConstantReflection($constantName) */
+		zval nameZv;
+		ZVAL_STR(&nameZv, constantName);
+		PT_RETURN_VAL(pt_type_new(PT_CLASS_DUMMY_CLASS_CONSTANT_REFLECTION, 1, &nameZv));
+	});
+
+	cls.traitMethod(sigs::getConstantStrings, emptyArray0);
+	cls.traitMethod(sigs::isCloneable, trinaryYes0);
+	cls.traitMethod(sigs::isNull, trinaryNo0);
+	cls.traitMethod(sigs::isConstantValue, trinaryNo0);
+	cls.traitMethod(sigs::isConstantScalarValue, trinaryNo0);
+	cls.traitMethod(sigs::getConstantScalarTypes, emptyArray0);
+	cls.traitMethod(sigs::getConstantScalarValues, emptyArray0);
+	cls.traitMethod(sigs::isTrue, trinaryNo0);
+	cls.traitMethod(sigs::isFalse, trinaryNo0);
+	cls.traitMethod(sigs::isBoolean, trinaryNo0);
+	cls.traitMethod(sigs::isFloat, trinaryNo0);
+	cls.traitMethod(sigs::isInteger, trinaryNo0);
+	cls.traitMethod(sigs::isString, trinaryNo0);
+	cls.traitMethod(sigs::isNumericString, trinaryNo0);
+	cls.traitMethod(sigs::isDecimalIntegerString, trinaryNo0);
+	cls.traitMethod(sigs::isNonEmptyString, trinaryNo0);
+	cls.traitMethod(sigs::isNonFalsyString, trinaryNo0);
+	cls.traitMethod(sigs::isLiteralString, trinaryNo0);
+	cls.traitMethod(sigs::isLowercaseString, trinaryNo0);
+	cls.traitMethod(sigs::isUppercaseString, trinaryNo0);
+	cls.traitMethod(sigs::isClassString, trinaryNo0);
+	cls.traitMethod(sigs::getClassStringObjectType, errorType0);
+	cls.traitMethod(sigs::getObjectTypeOrClassStringObjectType, this0);
+	cls.traitMethod(sigs::isVoid, trinaryNo0);
+	cls.traitMethod(sigs::isScalar, trinaryNo0);
+
+	cls.traitMethod(sigs::looseCompare, [](INTERNAL_FUNCTION_PARAMETERS) {
+		PT_ARGS(2, 2);
+		/* new BooleanType() — the shadowing class */
+		zval result;
+		if (UNEXPECTED(!pt_boolean_type_new(&result))) RETURN_THROWS();
+		RETURN_COPY_VALUE(&result);
+	});
+
+	cls.traitMethod(sigs::toNumber, errorType0);
+	cls.traitMethod(sigs::toBitwiseNotType, errorType0);
+	cls.traitMethod(sigs::toAbsoluteNumber, errorType0);
+	cls.traitMethod(sigs::toString, errorType0);
+	cls.traitMethod(sigs::toInteger, errorType0);
+	cls.traitMethod(sigs::toFloat, errorType0);
+
+	cls.traitMethod(sigs::toArray, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		/* new ArrayType(new MixedType(), new MixedType()) */
+		zv::Val key = pt_type_new_mixed_type();
+		zv::Val value = pt_type_new_mixed_type();
+		if (UNEXPECTED(key.isUndef() || value.isUndef())) RETURN_THROWS();
+		zval args[2];
+		ZVAL_COPY_VALUE(&args[0], key.raw());
+		ZVAL_COPY_VALUE(&args[1], value.raw());
+		PT_RETURN_VAL(pt_type_new(PT_CLASS_ARRAY_TYPE, 2, args));
+	});
+
+	cls.traitMethod(sigs::toArrayKey, errorType0);
+
+	cls.traitMethod(sigs::toCoercedArgumentType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		bool strictTypes;
+		if (!zp::parse<zp::Bool>(execute_data, strictTypes)) RETURN_THROWS();
+		if (strictTypes) {
+			PT_RETURN_THIS();
+		}
+		/* TypeCombinator::union($this, $this->toString()) — through the object's class */
+		zv::Val string = pt_type_call(PT_THIS_OBJ, PT_LC("tostring"), 0, NULL);
+		if (UNEXPECTED(string.isUndef())) RETURN_THROWS();
+		zv::Args args{ZEND_THIS, string.raw()};
+		PT_RETURN_VAL(pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), 2, args));
+	});
+}
+
+/* }}} */
+
+/* {{{ helpers of the object family */
+
+zv::Val pt_type_dummy_unresolved_prototype(bool isMethod, zval *name)
+{
+	zv::Val member = pt_type_new(isMethod ? PT_CLASS_DUMMY_METHOD_REFLECTION : PT_CLASS_DUMMY_PROPERTY_REFLECTION, 1, name);
+	if (UNEXPECTED(member.isUndef())) return zv::Val();
+	zv::Val declaringClass = pt_type_call(Z_OBJ_P(member.raw()), PT_LC("getdeclaringclass"), 0, NULL);
+	if (UNEXPECTED(declaringClass.isUndef())) return zv::Val();
+	zv::Val callback = pt_type_identity_callback();
+	zv::Args args{member.raw(), declaringClass.raw(), false, callback.raw()};
+	return pt_type_new(isMethod ? PT_CLASS_CALLBACK_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION : PT_CLASS_CALLBACK_UNRESOLVED_PROPERTY_PROTOTYPE_REFLECTION, 4, args);
+}
+
+zv::Val pt_type_transformed_member(zend_object *self, const char *prototypeLcname, size_t prototypeLen, bool isMethod, zval *name, zval *scope)
+{
+	zv::Args args{name, scope};
+	zv::Val prototype = pt_type_call(self, prototypeLcname, prototypeLen, 2, args);
+	if (UNEXPECTED(prototype.isUndef())) return zv::Val();
+	if (UNEXPECTED(!zv::Ref(prototype.raw()).isObject())) {
+		zend_type_error("phpstan_turbo: %s() must return an object", prototypeLcname);
+		return zv::Val();
+	}
+	if (isMethod) return pt_type_call(Z_OBJ_P(prototype.raw()), PT_LC("gettransformedmethod"), 0, NULL);
+	return pt_type_call(Z_OBJ_P(prototype.raw()), PT_LC("gettransformedproperty"), 0, NULL);
+}
+
+zv::Val pt_type_object_type_for_is_a_check(bool allowString)
+{
+	zv::Val objectWithoutClass = pt_type_new_object_without_class_type();
+	if (UNEXPECTED(objectWithoutClass.isUndef())) return zv::Val();
+	zv::Val type;
+	if (allowString) {
+		/* new UnionType([new ObjectWithoutClassType(), new ClassStringType()])
+		 * — the shadowing ClassStringType */
+		zval classString;
+		if (UNEXPECTED(!pt_class_string_type_new(&classString))) return zv::Val();
+		zv::Arr types = zv::Arr::create(2);
+		types.push(std::move(objectWithoutClass));
+		types.push(zv::Val::adopt(classString));
+		type = pt_type_new_union(std::move(types));
+		if (UNEXPECTED(type.isUndef())) return zv::Val();
+	} else {
+		type = std::move(objectWithoutClass);
+	}
+	zv::Args args{type.raw(), false};
+	return pt_type_new(PT_CLASS_CLASS_NAME_TO_OBJECT_TYPE_RESULT, 2, args);
+}
+
+zv::Val pt_type_new_object_without_class_type()
+{
+	zval result;
+	if (UNEXPECTED(!pt_object_without_class_type_new(&result))) return zv::Val();
+	return zv::Val::adopt(result);
+}
+
+zv::Val pt_type_new_ce(zend_class_entry *ce, uint32_t argc, zval *argv)
+{
+	zval object;
+	if (UNEXPECTED(object_init_ex(&object, ce) != SUCCESS)) return zv::Val();
+	if (ce->constructor != NULL) {
+		zend_call_known_instance_method(ce->constructor, Z_OBJ(object), NULL, argc, argv);
+		if (UNEXPECTED(EG(exception))) {
+			zval_ptr_dtor(&object);
+			return zv::Val();
+		}
+	}
+	return zv::Val::adopt(object);
+}
+
+zv::Val pt_type_closure_over(zend_function *fn, zend_class_entry *ce, zend_object *holder)
+{
+	zval closure;
+#if PHP_VERSION_ID >= 80600
+	/* php-src fbb2e1f23d6: $this is passed as zend_object* from 8.6 on */
+	zend_create_closure(&closure, fn, ce, ce, holder);
+#else
+	zval holderZv;
+	if (holder != NULL) {
+		ZVAL_OBJ(&holderZv, holder);
+	}
+	zend_create_closure(&closure, fn, ce, ce, holder != NULL ? &holderZv : NULL);
+#endif
+	return zv::Val::adopt(closure);
+}
+
+zv::Val pt_type_call_callable(zval *callable, uint32_t argc, zval *argv)
+{
+	zval ret;
+	if (UNEXPECTED(call_user_function(NULL, NULL, callable, &ret, argc, argv) != SUCCESS)) {
+		if (!EG(exception)) {
+			zend_throw_error(NULL, "phpstan_turbo: the callable could not be called");
+		}
+		return zv::Val();
+	}
+	if (UNEXPECTED(EG(exception))) {
+		zval_ptr_dtor(&ret);
+		return zv::Val();
+	}
+	return zv::Val::adopt(ret);
 }
 
 /* }}} */

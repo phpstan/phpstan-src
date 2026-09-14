@@ -422,7 +422,7 @@ public:
 
 	/* no when the subtracted type covers every object, maybe otherwise —
 	 * isObject() and isEnum(); -1 = pending exception */
-	[[nodiscard]] zend_long isObject() const { return noWhenSubtractedCovers(PT_CLASS_OBJECT_WITHOUT_CLASS_TYPE); }
+	[[nodiscard]] zend_long isObject() const { return noWhenSubtractedCovers(objectWithoutClassNew); }
 
 	/* new ClassStringType() */
 	static zv::Val getClassStringType()
@@ -565,7 +565,7 @@ public:
 	 * ObjectWithoutClassType alone otherwise; UNDEF = pending exception */
 	static zv::Val toObjectTypeForIsACheck(bool allowString)
 	{
-		zv::Val objectWithoutClass = pt_type_new(PT_CLASS_OBJECT_WITHOUT_CLASS_TYPE, 0, NULL);
+		zv::Val objectWithoutClass = pt_type_new_object_without_class_type();
 		if (UNEXPECTED(objectWithoutClass.isUndef())) return zv::Val();
 		if (!allowString) return classNameToObjectTypeResult(std::move(objectWithoutClass));
 		zv::Val classString = getClassStringType();
@@ -765,7 +765,7 @@ public:
 	[[nodiscard]] zend_long isOffsetAccessLegal() const
 	{
 		bool covered;
-		if (UNEXPECTED(!subtractedCovers(PT_CLASS_OBJECT_WITHOUT_CLASS_TYPE, covered))) return -1;
+		if (UNEXPECTED(!subtractedCovers(objectWithoutClassNew, covered))) return -1;
 		return covered ? PT_TRI_YES : PT_TRI_MAYBE;
 	}
 
@@ -953,7 +953,7 @@ public:
 	{
 		zend_long classString = isExact() ? isClassString() : pt_type_call_trinary(self, PT_LC("isclassstring"), 0, NULL);
 		if (UNEXPECTED(classString < 0)) return zv::Val();
-		if (classString != PT_TRI_NO) return pt_type_new(PT_CLASS_OBJECT_WITHOUT_CLASS_TYPE, 0, NULL);
+		if (classString != PT_TRI_NO) return pt_type_new_object_without_class_type();
 		return errorType();
 	}
 
@@ -962,7 +962,7 @@ public:
 	zv::Val getObjectTypeOrClassStringObjectType() const
 	{
 		zv::Arr types = zv::Arr::create(2);
-		if (UNEXPECTED(!pushNew(types, PT_CLASS_OBJECT_WITHOUT_CLASS_TYPE))) return zv::Val();
+		if (UNEXPECTED(!pushNew(types, objectWithoutClassNew))) return zv::Val();
 		zv::Val classString = getClassStringType();
 		if (UNEXPECTED(classString.isUndef())) return zv::Val();
 		types.push(std::move(classString));
@@ -972,7 +972,7 @@ public:
 		if (UNEXPECTED(isSuperType.isUndef())) return zv::Val();
 		zend_long value = pt_type_result_trinary(isSuperType.raw());
 		if (UNEXPECTED(value < 0)) return zv::Val();
-		if (value != PT_TRI_NO) return pt_type_new(PT_CLASS_OBJECT_WITHOUT_CLASS_TYPE, 0, NULL);
+		if (value != PT_TRI_NO) return pt_type_new_object_without_class_type();
 		return errorType();
 	}
 
@@ -1032,6 +1032,10 @@ private:
 	/* exactly a MixedType, none of its methods overridden: $this-calls can
 	 * go straight to the C++ methods */
 	bool isExact() const { return self->ce == pt_ce_mixed_type; }
+
+	/* new ObjectWithoutClassType() — the shadowing class, in the shape the
+	 * probe and push overloads take */
+	static bool objectWithoutClassNew(zval *out) { return pt_object_without_class_type_new(out); }
 
 	zv::Val thisValue() const { return pt_this_value(self); }
 
@@ -1282,8 +1286,10 @@ private:
 		return pt_type_new(PT_CLASS_CLASS_NAME_TO_OBJECT_TYPE_RESULT, 2, args);
 	}
 
+public:
 	/* static fn (Type $type): Type => $type — a Closure over
-	 * IdentityCallback::identity() */
+	 * IdentityCallback::identity() (shared with the object family through
+	 * pt_type_identity_callback()) */
 	static zv::Val identityCallback()
 	{
 		zval closure;
@@ -1836,4 +1842,12 @@ void pt_register_mixed_type()
 	cls.shadow(&pt_ce_mixed_type);
 }
 
+/* }}} */
+
+/* {{{ shared with the object family (TypeTraits.h) */
+
+zv::Val pt_type_identity_callback()
+{
+	return MixedType::identityCallback();
+}
 /* }}} */

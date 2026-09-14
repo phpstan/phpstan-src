@@ -1,5 +1,0 @@
-parameters:
-	ignoreErrors:
-		-
-			message: '#^Parameter \#1 \$array \(list<PHPStan\\Type\\Type>\) of array_values is already a list, call has no effect\.$#'
-			path: ../src/Type/TypeCombinator.php

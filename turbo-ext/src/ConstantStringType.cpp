@@ -52,18 +52,6 @@ zend_class_entry *pt_ce_constant_string_type = nullptr;
 /* the twin's private const DESCRIBE_LIMIT */
 #define PT_CST_DESCRIBE_LIMIT 20
 
-/* VerbosityLevel's private level constants, read once per request from the
- * class (its handle() dispatches on them) */
-static zend_class_entry *pt_verbosity_level_ce = nullptr;
-static zend_long pt_verbosity_type_only = 0;
-static zend_long pt_verbosity_value = 0;
-static zend_long pt_verbosity_precise = 0;
-
-void pt_constant_string_type_rinit()
-{
-	pt_verbosity_level_ce = nullptr;
-}
-
 /* Class::NAME — a literal class constant, borrowed; NULL = pending
  * exception */
 static zval *pt_class_constant(zend_class_entry *ce, const char *name, size_t len)
@@ -75,22 +63,6 @@ static zval *pt_class_constant(zend_class_entry *ce, const char *name, size_t le
 	}
 	if (UNEXPECTED(Z_TYPE(constant->value) == IS_CONSTANT_AST && zval_update_constant_ex(&constant->value, ce) != SUCCESS)) return NULL;
 	return &constant->value;
-}
-
-static bool pt_verbosity_levels_resolve()
-{
-	zend_class_entry *ce = pt_class(PT_CLASS_VERBOSITY_LEVEL);
-	if (UNEXPECTED(ce == NULL)) return false;
-	if (EXPECTED(ce == pt_verbosity_level_ce)) return true;
-	zval *typeOnly = pt_class_constant(ce, PT_LC("TYPE_ONLY"));
-	zval *value = typeOnly != NULL ? pt_class_constant(ce, PT_LC("VALUE")) : NULL;
-	zval *precise = value != NULL ? pt_class_constant(ce, PT_LC("PRECISE")) : NULL;
-	if (UNEXPECTED(precise == NULL)) return false;
-	pt_verbosity_type_only = zval_get_long(typeOnly);
-	pt_verbosity_value = zval_get_long(value);
-	pt_verbosity_precise = zval_get_long(precise);
-	pt_verbosity_level_ce = ce;
-	return true;
 }
 
 namespace phpstanturbo {
@@ -248,13 +220,10 @@ public:
 	 * pending exception */
 	zv::Val describe(zval *level) const
 	{
-		zv::Val levelValueZv = pt_type_call(Z_OBJ_P(level), PT_LC("getlevelvalue"), 0, NULL);
-		if (UNEXPECTED(levelValueZv.isUndef())) return zv::Val();
-		if (UNEXPECTED(!zv::Ref(levelValueZv.raw()).isLong())) {
-			zend_type_error("phpstan_turbo: %s::getLevelValue() must return int", ZSTR_VAL(Z_OBJCE_P(level)->name));
-			return zv::Val();
-		}
-		zend_long levelValue = zv::Ref(levelValueZv.raw()).asLong();
+		/* $level->getLevelValue() — the shadowing VerbosityLevel's slot, or
+		 * the PHP twin's method (VerbosityLevel.cpp) */
+		zend_long levelValue;
+		if (UNEXPECTED(!pt_verbosity_level_value_of(level, levelValue))) return zv::Val();
 
 		zv::ArrRef cached(OBJ_PROP_NUM(self, slots::cachedDescriptions));
 		if (UNEXPECTED(!cached.isArray())) {
@@ -264,13 +233,12 @@ public:
 		zv::Ref hit = cached.findIndex((zend_ulong) levelValue);
 		if (hit.raw() != NULL && !hit.isNull()) return zv::Val::copyOf(hit);
 
-		if (UNEXPECTED(!pt_verbosity_levels_resolve())) return zv::Val();
-		if (levelValue == pt_verbosity_type_only) return zv::Val::string("string", sizeof("string") - 1);
+		if (levelValue == PT_VERBOSITY_LEVEL_TYPE_ONLY) return zv::Val::string("string", sizeof("string") - 1);
 
 		zend_string *v = value();
 		if (UNEXPECTED(v == NULL)) return zv::Val();
 		zv::Val exported;
-		if (levelValue == pt_verbosity_value) {
+		if (levelValue == PT_VERBOSITY_LEVEL_VALUE) {
 			bool flag = false;
 			if (UNEXPECTED(!isClassStringFlag(flag))) return zv::Val();
 			zv::Str truncated;

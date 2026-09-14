@@ -234,10 +234,7 @@ public:
 			zv::Val otherPropertyType = pt_type_call(Z_OBJ_P(otherProperty.raw()), PT_LC("getreadabletype"), 0, NULL);
 			if (UNEXPECTED(otherPropertyType.isUndef())) return zv::Val();
 			/* $verbosity = VerbosityLevel::getRecommendedLevelByType($propertyType, $otherPropertyType) */
-			zval verbosityArgs[2];
-			ZVAL_COPY_VALUE(&verbosityArgs[0], propertyType);
-			ZVAL_COPY_VALUE(&verbosityArgs[1], otherPropertyType.raw());
-			zv::Val verbosity = pt_type_call_static(PT_CLASS_VERBOSITY_LEVEL, PT_LC("getrecommendedlevelbytype"), 2, verbosityArgs);
+			zv::Val verbosity = pt_type_verbosity_recommended(propertyType, otherPropertyType.raw());
 			if (UNEXPECTED(verbosity.isUndef())) return zv::Val();
 			/* $propertyType->accepts($otherPropertyType, $strictTypes)->decorateReasons(...) */
 			zv::Args acceptsArgs{otherPropertyType.raw(), strictTypes};
@@ -919,7 +916,7 @@ private:
 		if (value == PT_TRI_YES) {
 			reasons = zv::Arr::empty();
 		} else {
-			zv::Val typeOnly = pt_type_call_static(PT_CLASS_VERBOSITY_LEVEL, PT_LC("typeonly"), 0, NULL);
+			zv::Val typeOnly = pt_type_verbosity_level(PT_VERBOSITY_LEVEL_TYPE_ONLY);
 			if (UNEXPECTED(typeOnly.isUndef())) return zv::Val();
 			zv::Val description = pt_type_call(Z_OBJ_P(type), PT_LC("describe"), 1, typeOnly.raw());
 			if (UNEXPECTED(description.isUndef())) return zv::Val();

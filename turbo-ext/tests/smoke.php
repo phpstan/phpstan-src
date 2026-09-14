@@ -175,9 +175,13 @@ foreach ($cases as $i => $case) {
 $covered[\PHPStan\Analyser\ExpressionTypeHolder::class] = true;
 $expr1 = new \PhpParser\Node\Expr\Variable('a');
 $expr2 = new \PhpParser\Node\Expr\Variable('b');
-$int = new \PHPStan\Type\IntegerType();
-$string = new \PHPStan\Type\StringType();
-$int2 = new \PHPStan\Type\IntegerType();
+// The holders' types are the native Type classes: the native holders
+// describe them with the native VerbosityLevel (ConditionalExpressionHolder::getKey()),
+// which the PHP twins' describe(VerbosityLevel $level) would refuse, while the
+// native describe() takes either level.
+$int = new \PHPStanTurbo\IntegerType();
+$string = new \PHPStanTurbo\StringType();
+$int2 = new \PHPStanTurbo\IntegerType();
 
 $pH = static fn ($expr, $type, $c) => new \PHPStan\Analyser\ExpressionTypeHolder($expr, $type, $c);
 $nH = static fn ($expr, $type, $c) => new \PHPStanTurbo\ExpressionTypeHolder($expr, $type, $c);
@@ -544,8 +548,8 @@ $mergeInputs = static function (string $side): array {
 	$yes = $side === 'php' ? \PHPStan\TrinaryLogic::createYes() : \PHPStanTurbo\TrinaryLogic::createYes();
 	$maybe = $side === 'php' ? \PHPStan\TrinaryLogic::createMaybe() : \PHPStanTurbo\TrinaryLogic::createMaybe();
 
-	$int = new \PHPStan\Type\IntegerType();
-	$string = new \PHPStan\Type\StringType();
+	$int = new \PHPStanTurbo\IntegerType();
+	$string = new \PHPStanTurbo\StringType();
 
 	$same = $holder(new \PhpParser\Node\Expr\Variable('same'), $int, $yes);
 	$andExpr = new \PhpParser\Node\Expr\Variable('and');
@@ -593,8 +597,8 @@ $matchInputs = static function (string $side): array {
 		: static fn ($conditions, $typeHolder) => new \PHPStanTurbo\ConditionalExpressionHolder($conditions, $typeHolder);
 	$yes = $side === 'php' ? \PHPStan\TrinaryLogic::createYes() : \PHPStanTurbo\TrinaryLogic::createYes();
 
-	$int = new \PHPStan\Type\IntegerType();
-	$string = new \PHPStan\Type\StringType();
+	$int = new \PHPStanTurbo\IntegerType();
+	$string = new \PHPStanTurbo\StringType();
 	$aExpr = new \PhpParser\Node\Expr\Variable('a');
 
 	return [
@@ -922,6 +926,351 @@ foreach ($typeFamilyPhp as $key => $expected) {
 	$actual = array_key_exists($key, $typeFamilyNative) ? $typeFamilyNative[$key] : '<missing>';
 	check($expected === $actual, "Type family $key: " . json_encode($expected) . ' vs ' . json_encode($actual));
 }
+
+// ---- TypeTraverser ----
+// The native traverser hands its [$traverser, 'method'] arrays to the
+// callback and to Type::traverse() exactly as the twin does — PHP types on
+// both sides (their traverse() takes any callable), the native traverser
+// against the PHP one, the callback recording what it was handed.
+$ttSubject = new \PHPStan\Type\UnionType([
+	new \PHPStan\Type\Constant\ConstantStringType('foo'),
+	new \PHPStan\Type\IntersectionType([new \PHPStan\Type\StringType(), new \PHPStan\Type\Accessory\AccessoryNonEmptyStringType()]),
+	new \PHPStan\Type\ArrayType(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\Constant\ConstantStringType('bar')),
+	new \PHPStan\Type\NullType(),
+]);
+$ttMakeCallback = static function (array &$log): \Closure {
+	return static function (\PHPStan\Type\Type $type, callable $traverse) use (&$log): \PHPStan\Type\Type {
+		$log[] = [get_class($type), is_array($traverse) && count($traverse) === 2 && is_object($traverse[0]) && is_string($traverse[1]) ? $traverse[1] : gettype($traverse)];
+		if ($type instanceof \PHPStan\Type\Constant\ConstantStringType) {
+			return new \PHPStan\Type\ObjectType($type->getValue());
+		}
+		return $traverse($type);
+	};
+};
+$ttPhpLog = [];
+$ttNativeLog = [];
+$ttPhpMapped = \PHPStan\Type\TypeTraverser::map($ttSubject, $ttMakeCallback($ttPhpLog));
+$ttNativeMapped = \PHPStanTurbo\TypeTraverser::map($ttSubject, $ttMakeCallback($ttNativeLog));
+check($ttPhpMapped->describe(\PHPStan\Type\VerbosityLevel::precise()) === $ttNativeMapped->describe(\PHPStan\Type\VerbosityLevel::precise()), 'TypeTraverser: map() result');
+check($ttPhpLog === $ttNativeLog, 'TypeTraverser: the callback saw the same types and the same $traverse shape (' . json_encode($ttNativeLog) . ')');
+check(count($ttNativeLog) > 4, 'TypeTraverser: the traversal descended into the compound types');
+check($ttNativeLog[0][1] === 'traverseInternal', 'TypeTraverser: $traverse is [$traverser, \'traverseInternal\']');
+// a callback that never descends replaces the root
+$ttPhpRoot = \PHPStan\Type\TypeTraverser::map($ttSubject, static fn (\PHPStan\Type\Type $type, callable $traverse): \PHPStan\Type\Type => new \PHPStan\Type\IntegerType());
+$ttNativeRoot = \PHPStanTurbo\TypeTraverser::map($ttSubject, static fn (\PHPStan\Type\Type $type, callable $traverse): \PHPStan\Type\Type => new \PHPStan\Type\IntegerType());
+check(get_class($ttPhpRoot) === get_class($ttNativeRoot) && $ttNativeRoot instanceof \PHPStan\Type\IntegerType, 'TypeTraverser: a callback replacing the root');
+// a TypeTraverserCallable receives (Type, callable) and its result is the map's
+$ttCallable = new class implements \PHPStan\Type\TypeTraverserCallable {
+
+	/** @var list<string> */
+	public array $seen = [];
+
+	public function traverse(\PHPStan\Type\Type $type, callable $traverse): \PHPStan\Type\Type
+	{
+		$this->seen[] = get_class($type) . '/' . (is_array($traverse) ? 'array' : gettype($traverse));
+		if ($type instanceof \PHPStan\Type\NullType) {
+			return new \PHPStan\Type\VoidType();
+		}
+		return $traverse($type);
+	}
+
+};
+$ttPhpCallable = clone $ttCallable;
+$ttNativeCallable = clone $ttCallable;
+$ttPhpMapped = \PHPStan\Type\TypeTraverser::map($ttSubject, $ttPhpCallable);
+$ttNativeMapped = \PHPStanTurbo\TypeTraverser::map($ttSubject, $ttNativeCallable);
+check($ttPhpMapped->describe(\PHPStan\Type\VerbosityLevel::precise()) === $ttNativeMapped->describe(\PHPStan\Type\VerbosityLevel::precise()), 'TypeTraverser: map() over a TypeTraverserCallable');
+check($ttPhpCallable->seen === $ttNativeCallable->seen && count($ttNativeCallable->seen) > 4, 'TypeTraverser: the TypeTraverserCallable saw the same (Type, callable) pairs');
+// the twin's parameter and return types
+$ttErrors = static function (string $traverser) use ($ttSubject): array {
+	$errors = [];
+	try {
+		$traverser::map($ttSubject, 'no-such-function-anywhere');
+		$errors[] = 'none';
+	} catch (\Throwable $e) {
+		$errors[] = get_class($e);
+	}
+	try {
+		$traverser::map($ttSubject, static fn (\PHPStan\Type\Type $type, callable $traverse) => 'not a type');
+		$errors[] = 'none';
+	} catch (\Throwable $e) {
+		$errors[] = get_class($e);
+	}
+	return $errors;
+};
+check($ttErrors(\PHPStan\Type\TypeTraverser::class) === $ttErrors(\PHPStanTurbo\TypeTraverser::class), 'TypeTraverser: a non-callable $cb and a non-Type result throw the same (' . implode(', ', $ttErrors(\PHPStanTurbo\TypeTraverser::class)) . ')');
+
+// ---- VerbosityLevel ----
+// The singletons and their queries, handle() over every callback
+// combination, and getRecommendedLevelByType() over paired inputs: the
+// native level inspects Type classes by class entry, so the native side
+// gets the native Type classes and the PHP side the twins (same
+// construction, the classes mapped through the manifest). Generic subjects
+// cannot be paired here — a native GenericObjectType::describe() hands the
+// native level to the PHP TypeProjectionHelper's VerbosityLevel parameter —
+// so the invariant-template traversal is observed under the real names in
+// tests/type-family.php instead.
+$vlLevels = [];
+foreach (['typeOnly', 'value', 'precise', 'cache'] as $vlFactory) {
+	$vlPhp = \PHPStan\Type\VerbosityLevel::$vlFactory();
+	$vlNative = \PHPStanTurbo\VerbosityLevel::$vlFactory();
+	check($vlNative === \PHPStanTurbo\VerbosityLevel::$vlFactory(), "VerbosityLevel::$vlFactory() identity");
+	check($vlPhp->getLevelValue() === $vlNative->getLevelValue(), "VerbosityLevel::$vlFactory() getLevelValue()");
+	foreach (['isTypeOnly', 'isValue', 'isPrecise', 'isCache'] as $vlQuery) {
+		check($vlPhp->$vlQuery() === $vlNative->$vlQuery(), "VerbosityLevel::$vlFactory() $vlQuery()");
+	}
+	$vlT = static fn (): string => 'T';
+	$vlV = static fn (): string => 'V';
+	$vlP = static fn (): string => 'P';
+	$vlC = static fn (): string => 'C';
+	check($vlPhp->handle($vlT, $vlV) === $vlNative->handle($vlT, $vlV), "VerbosityLevel::$vlFactory() handle(T, V)");
+	check($vlPhp->handle($vlT, $vlV, $vlP) === $vlNative->handle($vlT, $vlV, $vlP), "VerbosityLevel::$vlFactory() handle(T, V, P)");
+	check($vlPhp->handle($vlT, $vlV, null, $vlC) === $vlNative->handle($vlT, $vlV, null, $vlC), "VerbosityLevel::$vlFactory() handle(T, V, null, C)");
+	check($vlPhp->handle($vlT, $vlV, $vlP, $vlC) === $vlNative->handle($vlT, $vlV, $vlP, $vlC), "VerbosityLevel::$vlFactory() handle(T, V, P, C)");
+	check($vlPhp->handle(typeOnlyCallback: $vlT, valueCallback: $vlV, cacheCallback: $vlC) === $vlNative->handle(typeOnlyCallback: $vlT, valueCallback: $vlV, cacheCallback: $vlC), "VerbosityLevel::$vlFactory() handle() with named arguments");
+	$vlHandleErrors = static function (\PHPStan\Type\VerbosityLevel|\PHPStanTurbo\VerbosityLevel $level): string {
+		try {
+			$level->handle(static fn () => 1, static fn () => 1, static fn () => 1, static fn () => 1);
+			return 'none';
+		} catch (\Throwable $e) {
+			return get_class($e);
+		}
+	};
+	check($vlHandleErrors($vlPhp) === $vlHandleErrors($vlNative), "VerbosityLevel::$vlFactory() handle() rejects a non-string result the same way");
+	$vlLevels[$vlFactory] = [$vlPhp, $vlNative];
+}
+$vlClass = static fn (string $phpClass, bool $native): string => $native ? $shadowedClasses[$phpClass]['turboClass'] : $phpClass;
+/** @return list<array{string, \PHPStan\Type\Type, \PHPStan\Type\Type|null}> */
+$vlCases = static function (bool $native) use ($vlClass): array {
+	$c = static fn (string $phpClass): string => $vlClass($phpClass, $native);
+	$string = new ($c(\PHPStan\Type\StringType::class))();
+	$int = new ($c(\PHPStan\Type\IntegerType::class))();
+	$constString = new ($c(\PHPStan\Type\Constant\ConstantStringType::class))('foo');
+	$constInt = new ($c(\PHPStan\Type\Constant\ConstantIntegerType::class))(1);
+	$null = new ($c(\PHPStan\Type\NullType::class))();
+	$nonEmpty = new ($c(\PHPStan\Type\IntersectionType::class))([new ($c(\PHPStan\Type\StringType::class))(), new ($c(\PHPStan\Type\Accessory\AccessoryNonEmptyStringType::class))()]);
+	$lowercase = new ($c(\PHPStan\Type\IntersectionType::class))([new ($c(\PHPStan\Type\StringType::class))(), new ($c(\PHPStan\Type\Accessory\AccessoryLowercaseStringType::class))()]);
+	$list = new ($c(\PHPStan\Type\IntersectionType::class))([new ($c(\PHPStan\Type\ArrayType::class))($int, $string), new ($c(\PHPStan\Type\Accessory\AccessoryArrayListType::class))()]);
+	$range = ($c(\PHPStan\Type\IntegerRangeType::class))::fromInterval(1, 5);
+	$closure = new ($c(\PHPStan\Type\ClosureType::class))();
+	$callable = new ($c(\PHPStan\Type\CallableType::class))();
+	$array = new ($c(\PHPStan\Type\ArrayType::class))($int, $string);
+	$constArray = new ($c(\PHPStan\Type\Constant\ConstantArrayType::class))([new ($c(\PHPStan\Type\Constant\ConstantIntegerType::class))(0)], [$string]);
+	$nullOrOne = new ($c(\PHPStan\Type\UnionType::class))([new ($c(\PHPStan\Type\NullType::class))(), new ($c(\PHPStan\Type\Constant\ConstantIntegerType::class))(1)]);
+	$nested = new ($c(\PHPStan\Type\UnionType::class))([new ($c(\PHPStan\Type\Constant\ConstantStringType::class))('a'), new ($c(\PHPStan\Type\IntersectionType::class))([new ($c(\PHPStan\Type\StringType::class))(), new ($c(\PHPStan\Type\Accessory\AccessoryUppercaseStringType::class))()])]);
+	$plainObject = new ($c(\PHPStan\Type\ObjectType::class))(\stdClass::class);
+
+	return [
+		['string', $string, null],
+		['constant string', $constString, null],
+		['constant int', $constInt, null],
+		['null', $null, null],
+		['non-empty-string', $nonEmpty, null],
+		['lowercase-string', $lowercase, null],
+		['list', $list, null],
+		['int range', $range, null],
+		['closure', $closure, null],
+		['callable', $callable, null],
+		['array', $array, null],
+		['constant array', $constArray, null],
+		['null|1', $nullOrOne, null],
+		['nested uppercase', $nested, null],
+		['array vs constant string', $array, $constString],
+		['string vs lowercase', $string, $lowercase],
+		['plain object vs constant string', $plainObject, $constString],
+		['plain object vs lowercase', $plainObject, $lowercase],
+	];
+};
+$vlPhpCases = $vlCases(false);
+$vlNativeCases = $vlCases(true);
+foreach ($vlPhpCases as $vlIndex => [$vlLabel, $vlAccepting, $vlAccepted]) {
+	[, $vlNativeAccepting, $vlNativeAccepted] = $vlNativeCases[$vlIndex];
+	$vlPhpLevel = \PHPStan\Type\VerbosityLevel::getRecommendedLevelByType($vlAccepting, $vlAccepted);
+	$vlNativeLevel = \PHPStanTurbo\VerbosityLevel::getRecommendedLevelByType($vlNativeAccepting, $vlNativeAccepted);
+	check($vlPhpLevel->getLevelValue() === $vlNativeLevel->getLevelValue(), sprintf('VerbosityLevel::getRecommendedLevelByType(%s): %d vs %d', $vlLabel, $vlPhpLevel->getLevelValue(), $vlNativeLevel->getLevelValue()));
+	check($vlNativeLevel instanceof \PHPStanTurbo\VerbosityLevel, "VerbosityLevel::getRecommendedLevelByType($vlLabel) returns the native singleton");
+}
+check(\PHPStanTurbo\VerbosityLevel::getRecommendedLevelByType($vlNativeCases[0][1], null) === \PHPStanTurbo\VerbosityLevel::typeOnly(), 'VerbosityLevel::getRecommendedLevelByType() with an explicit null $acceptedType');
+check(\PHPStanTurbo\VerbosityLevel::getRecommendedLevelByType(acceptingType: $vlNativeCases[1][1]) === \PHPStanTurbo\VerbosityLevel::value(), 'VerbosityLevel::getRecommendedLevelByType() with a named argument');
+
+// ---- RecursionGuard ----
+// Each guard runs its own implementation's types (run() describes the type
+// with its VerbosityLevel — the twin's describe(VerbosityLevel $level) takes
+// the PHP level only); the observable sequence of results must agree.
+$rgObserve = static function (string $guard, \PHPStan\Type\Type $type, \PHPStan\Type\Type $sameDescription, \PHPStan\Type\Type $other): array {
+	$log = [];
+	$log[] = $guard::run($type, static function () use ($guard, $type, $sameDescription, $other, &$log): string {
+		$log[] = 'outer';
+		$log[] = get_class($guard::run($type, static fn (): string => 'inner ran'));
+		$log[] = get_class($guard::run($sameDescription, static fn (): string => 'same description ran'));
+		$log[] = $guard::run($other, static fn (): string => 'other ran');
+		return 'outer done';
+	});
+	$log[] = $guard::run($type, static fn (): string => 'released');
+	try {
+		$guard::run($type, static function (): void {
+			throw new \RuntimeException('boom');
+		});
+		$log[] = 'no exception';
+	} catch (\RuntimeException $e) {
+		$log[] = $e->getMessage();
+	}
+	$log[] = $guard::run($type, static fn (): string => 'released after the exception');
+	$log[] = $guard::runOnObjectIdentity($type, static function () use ($guard, $type, $sameDescription, &$log): string {
+		$log[] = get_class($guard::runOnObjectIdentity($type, static fn (): string => 'identity inner ran'));
+		$log[] = $guard::runOnObjectIdentity($sameDescription, static fn (): string => 'another instance ran');
+		$log[] = $guard::run($type, static fn (): string => 'description key next to the identity key');
+		return 'identity outer done';
+	});
+	$log[] = $guard::runOnObjectIdentity($type, static fn (): string => 'identity released');
+
+	return array_map(static fn ($entry) => is_string($entry) ? str_replace('PHPStanTurbo\\', 'PHPStan\\Type\\', $entry) : $entry, $log);
+};
+$rgTriples = [
+	'string' => [
+		[new \PHPStan\Type\StringType(), new \PHPStan\Type\StringType(), new \PHPStan\Type\IntegerType()],
+		[new \PHPStanTurbo\StringType(), new \PHPStanTurbo\StringType(), new \PHPStanTurbo\IntegerType()],
+	],
+	'numeric description' => [
+		[new \PHPStan\Type\Constant\ConstantIntegerType(5), new \PHPStan\Type\Constant\ConstantIntegerType(5), new \PHPStan\Type\Constant\ConstantIntegerType(6)],
+		[new \PHPStanTurbo\ConstantIntegerType(5), new \PHPStanTurbo\ConstantIntegerType(5), new \PHPStanTurbo\ConstantIntegerType(6)],
+	],
+	'union' => [
+		[new \PHPStan\Type\UnionType([new \PHPStan\Type\StringType(), new \PHPStan\Type\NullType()]), new \PHPStan\Type\UnionType([new \PHPStan\Type\StringType(), new \PHPStan\Type\NullType()]), new \PHPStan\Type\UnionType([new \PHPStan\Type\IntegerType(), new \PHPStan\Type\NullType()])],
+		[new \PHPStanTurbo\UnionType([new \PHPStanTurbo\StringType(), new \PHPStanTurbo\NullType()]), new \PHPStanTurbo\UnionType([new \PHPStanTurbo\StringType(), new \PHPStanTurbo\NullType()]), new \PHPStanTurbo\UnionType([new \PHPStanTurbo\IntegerType(), new \PHPStanTurbo\NullType()])],
+	],
+];
+foreach ($rgTriples as $rgLabel => [$rgPhp, $rgNative]) {
+	$rgPhpLog = $rgObserve(\PHPStan\Type\RecursionGuard::class, ...$rgPhp);
+	$rgNativeLog = $rgObserve(\PHPStanTurbo\RecursionGuard::class, ...$rgNative);
+	check($rgPhpLog === $rgNativeLog, "RecursionGuard: $rgLabel " . json_encode($rgPhpLog) . ' vs ' . json_encode($rgNativeLog));
+	check(in_array('PHPStan\\Type\\ErrorType', $rgNativeLog, true), "RecursionGuard: $rgLabel short-circuited to ErrorType somewhere");
+}
+$rgErrors = static function (string $guard, \PHPStan\Type\Type $type): string {
+	try {
+		$guard::run($type, 'no-such-function-anywhere');
+		return 'none';
+	} catch (\Throwable $e) {
+		return get_class($e);
+	}
+};
+check($rgErrors(\PHPStan\Type\RecursionGuard::class, new \PHPStan\Type\StringType()) === $rgErrors(\PHPStanTurbo\RecursionGuard::class, new \PHPStanTurbo\StringType()), 'RecursionGuard: a non-callable $callback throws the same');
+
+// ---- FiniteTypeSet ----
+// Sets built from the same lists of types on both sides (PHP types for the
+// PHP set, the native classes for the native one — the kinds are class
+// names), every query observed.
+/** @return array<string, \PHPStan\Type\Type> */
+$ftsTypes = static function (bool $native) use ($vlClass): array {
+	$c = static fn (string $phpClass): string => $vlClass($phpClass, $native);
+	return [
+		'a' => new ($c(\PHPStan\Type\Constant\ConstantStringType::class))('a'),
+		'b' => new ($c(\PHPStan\Type\Constant\ConstantStringType::class))('b'),
+		'a again' => new ($c(\PHPStan\Type\Constant\ConstantStringType::class))('a'),
+		'numeric string' => new ($c(\PHPStan\Type\Constant\ConstantStringType::class))('1'),
+		'1' => new ($c(\PHPStan\Type\Constant\ConstantIntegerType::class))(1),
+		'-3' => new ($c(\PHPStan\Type\Constant\ConstantIntegerType::class))(-3),
+		'true' => new ($c(\PHPStan\Type\Constant\ConstantBooleanType::class))(true),
+		'false' => new ($c(\PHPStan\Type\Constant\ConstantBooleanType::class))(false),
+		'null' => new ($c(\PHPStan\Type\NullType::class))(),
+		'float' => new ($c(\PHPStan\Type\Constant\ConstantFloatType::class))(1.5),
+		'enum hearts' => new ($c(\PHPStan\Type\Enum\EnumCaseObjectType::class))('App\\Suit', 'Hearts'),
+		'enum spades' => new ($c(\PHPStan\Type\Enum\EnumCaseObjectType::class))('App\\Suit', 'Spades'),
+		'enum red' => new ($c(\PHPStan\Type\Enum\EnumCaseObjectType::class))('App\\Color', 'Red'),
+		'string' => new ($c(\PHPStan\Type\StringType::class))(),
+		'object' => new ($c(\PHPStan\Type\ObjectType::class))(\stdClass::class),
+		'union' => new ($c(\PHPStan\Type\UnionType::class))([new ($c(\PHPStan\Type\Constant\ConstantIntegerType::class))(7), new ($c(\PHPStan\Type\Constant\ConstantIntegerType::class))(8)]),
+		'intersection' => new ($c(\PHPStan\Type\IntersectionType::class))([new ($c(\PHPStan\Type\StringType::class))(), new ($c(\PHPStan\Type\Accessory\AccessoryNonEmptyStringType::class))()]),
+		'template' => \PHPStan\Type\Generic\TemplateTypeFactory::create(\PHPStan\Type\Generic\TemplateTypeScope::createWithFunction('f'), 'T', null, \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()),
+	];
+};
+$ftsObserve = static function (string $class, array $types): array {
+	$describe = static fn (\PHPStan\Type\Type $type): string => $type->describe(\PHPStan\Type\VerbosityLevel::precise());
+	$observations = [];
+	foreach ($types as $label => $type) {
+		$observations["key $label"] = $class::key($type);
+	}
+	$lists = [
+		'scalars' => ['a', 'b', 'numeric string', '1', '-3', 'true', 'false', 'null'],
+		'duplicates' => ['a', 'b', 'a again', '1'],
+		'mixed' => ['a', 'string', '1', 'object', 'null'],
+		'enums' => ['enum hearts', 'enum spades', 'enum red', 'a'],
+		'unkeyed' => ['string', 'object', 'float', 'union', 'intersection', 'template'],
+		'float next to a' => ['float', 'a'],
+		'one' => ['a'],
+		'a and b' => ['a', 'b'],
+		'b and 1' => ['b', '1'],
+	];
+	$sets = [];
+	foreach ($lists as $name => $labels) {
+		$set = $class::create(array_map(static fn (string $label): \PHPStan\Type\Type => $types[$label], $labels));
+		$sets[$name] = $set;
+		if ($set === null) {
+			$observations["create $name"] = null;
+			continue;
+		}
+		$observations["create $name"] = [
+			'members' => array_map($describe, $set->getMembers()),
+			'others' => array_map($describe, $set->getOthers()),
+			'complete' => $set->isComplete(),
+			'has s:a' => $set->has('s:a'),
+			'has s:x' => $set->has('s:x'),
+			'has null' => $set->has('null'),
+			'has i:1' => $set->has('i:1'),
+			'representatives of a' => array_map($describe, $set->getRepresentativesOfOtherKinds($types['a'])),
+			'representatives of enum hearts' => array_map($describe, $set->getRepresentativesOfOtherKinds($types['enum hearts'])),
+			'representatives of enum red' => array_map($describe, $set->getRepresentativesOfOtherKinds($types['enum red'])),
+			'representatives of string' => array_map($describe, $set->getRepresentativesOfOtherKinds($types['string'])),
+			'representatives of union' => array_map($describe, $set->getRepresentativesOfOtherKinds($types['union'])),
+			'containedInKey s:a' => $set->containedInKey('s:a')->describe(),
+			'containedInKey i:1' => $set->containedInKey('i:1')->describe(),
+			'containedInKey s:zzz' => $set->containedInKey('s:zzz')->describe(),
+		];
+	}
+	foreach ($sets as $left => $leftSet) {
+		foreach ($sets as $right => $rightSet) {
+			if ($leftSet === null || $rightSet === null) {
+				continue;
+			}
+			$observations["containedIn $left / $right"] = $leftSet->containedIn($rightSet)->describe();
+		}
+	}
+	$observations['native TrinaryLogic'] = $sets['one']->containedIn($sets['one']) instanceof \PHPStanTurbo\TrinaryLogic;
+
+	return $observations;
+};
+$ftsPhp = $ftsObserve(\PHPStan\Type\FiniteTypeSet::class, $ftsTypes(false));
+$ftsNative = $ftsObserve(\PHPStanTurbo\FiniteTypeSet::class, $ftsTypes(true));
+check($ftsPhp['native TrinaryLogic'] === false && $ftsNative['native TrinaryLogic'] === true, 'FiniteTypeSet: the native set answers with the native TrinaryLogic');
+unset($ftsPhp['native TrinaryLogic'], $ftsNative['native TrinaryLogic']);
+check(array_keys($ftsPhp) === array_keys($ftsNative), 'FiniteTypeSet: both sides observed the same keys');
+foreach ($ftsPhp as $ftsKey => $ftsExpected) {
+	$ftsActual = array_key_exists($ftsKey, $ftsNative) ? $ftsNative[$ftsKey] : '<missing>';
+	check($ftsExpected === $ftsActual, "FiniteTypeSet $ftsKey: " . json_encode($ftsExpected) . ' vs ' . json_encode($ftsActual));
+}
+check(count($ftsPhp) > 60, 'FiniteTypeSet: a substantial number of observations (' . count($ftsPhp) . ')');
+$ftsErrors = static function (string $class, array $types): array {
+	$errors = [];
+	try {
+		$class::create([$types['a'], 'not a type']);
+		$errors[] = 'none';
+	} catch (\Throwable $e) {
+		$errors[] = get_class($e);
+	}
+	try {
+		$class::create([$types['a']])->containedIn(new \stdClass());
+		$errors[] = 'none';
+	} catch (\Throwable $e) {
+		$errors[] = get_class($e);
+	}
+	return $errors;
+};
+check($ftsErrors(\PHPStan\Type\FiniteTypeSet::class, $ftsTypes(false)) === $ftsErrors(\PHPStanTurbo\FiniteTypeSet::class, $ftsTypes(true)), 'FiniteTypeSet: a non-Type member and a foreign containedIn() argument throw the same (' . implode(', ', $ftsErrors(\PHPStanTurbo\FiniteTypeSet::class, $ftsTypes(true))) . ')');
+
+$covered[\PHPStan\Type\TypeTraverser::class] = true;
+$covered[\PHPStan\Type\VerbosityLevel::class] = true;
+$covered[\PHPStan\Type\RecursionGuard::class] = true;
+$covered[\PHPStan\Type\FiniteTypeSet::class] = true;
 
 // ---- differential coverage completeness ----
 // Every shadowed class must be exercised by one of the tests/ scripts; the

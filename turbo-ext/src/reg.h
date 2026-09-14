@@ -923,6 +923,21 @@ public:
 		return *this;
 	}
 
+	/* the twin's `private static array $x;` / `private static Foo $x;`
+	 * typed static properties with no default (uninitialized until the
+	 * first write); the class name "self" stands for the declared class */
+	Class &privateStaticTypedArrayProperty(const char *propertyName)
+	{
+		properties.push_back({ propertyName, PropertyKind::Typed, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, (zend_long) MAY_BE_ARRAY });
+		return *this;
+	}
+
+	Class &privateStaticTypedClassProperty(const char *propertyName, const char *className)
+	{
+		properties.push_back({ propertyName, PropertyKind::Typed, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 0, className });
+		return *this;
+	}
+
 	/* a public long class constant (zend_declare_class_constant_long) */
 	Class &classConstantLong(const char *constantName, zend_long value)
 	{

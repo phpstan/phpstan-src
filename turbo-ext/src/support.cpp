@@ -18,7 +18,6 @@ typedef struct _pt_class_template {
 static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_TYPE_COMBINATOR */ {"typeCombinator", "PHPStan\\Type\\TypeCombinator"},
 	/* PT_CLASS_SHOULD_NOT_HAPPEN */ {"shouldNotHappenException", "PHPStan\\ShouldNotHappenException"},
-	/* PT_CLASS_VERBOSITY_LEVEL */ {"verbosityLevel", "PHPStan\\Type\\VerbosityLevel"},
 	/* PT_CLASS_VARIABLE */ {"variable", "PhpParser\\Node\\Expr\\Variable"},
 	/* PT_CLASS_FUNC_CALL */ {"funcCall", "PhpParser\\Node\\Expr\\FuncCall"},
 	/* PT_CLASS_VIRTUAL_NODE */ {"virtualNode", "PHPStan\\Node\\VirtualNode"},
@@ -48,7 +47,6 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_CLOSURE_EXPR */ {"closureExpr", "PhpParser\\Node\\Expr\\Closure"},
 	/* PT_CLASS_ARROW_FUNCTION */ {"arrowFunction", "PhpParser\\Node\\Expr\\ArrowFunction"},
 	/* PT_CLASS_TYPE */ {"type", "PHPStan\\Type\\Type"},
-	/* PT_CLASS_RECURSION_GUARD */ {"recursionGuard", "PHPStan\\Type\\RecursionGuard"},
 	/* PT_CLASS_CLASS_NAME_TO_OBJECT_TYPE_RESULT */ {"classNameToObjectTypeResult", "PHPStan\\Type\\ClassNameToObjectTypeResult"},
 	/* PT_CLASS_TEMPLATE_TYPE_MAP */ {"templateTypeMap", "PHPStan\\Type\\Generic\\TemplateTypeMap"},
 	/* PT_CLASS_IDENTIFIER_TYPE_NODE */ {"identifierTypeNode", "PHPStan\\PhpDocParser\\Ast\\Type\\IdentifierTypeNode"},
@@ -82,7 +80,6 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_DUMMY_METHOD_REFLECTION */ {"dummyMethodReflection", "PHPStan\\Reflection\\Dummy\\DummyMethodReflection"},
 	/* PT_CLASS_CALLBACK_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION */ {"callbackUnresolvedMethodPrototypeReflection", "PHPStan\\Reflection\\Type\\CallbackUnresolvedMethodPrototypeReflection"},
 	/* PT_CLASS_DUMMY_CLASS_CONSTANT_REFLECTION */ {"dummyClassConstantReflection", "PHPStan\\Reflection\\Dummy\\DummyClassConstantReflection"},
-	/* PT_CLASS_TYPE_TRAVERSER */ {"typeTraverser", "PHPStan\\Type\\TypeTraverser"},
 	/* PT_CLASS_TEMPLATE_TYPE_HELPER */ {"templateTypeHelper", "PHPStan\\Type\\Generic\\TemplateTypeHelper"},
 	/* PT_CLASS_TYPE_WITH_CLASS_NAME */ {"typeWithClassName", "PHPStan\\Type\\TypeWithClassName"},
 	/* PT_CLASS_OBJECT_SHAPE_PROPERTY_REFLECTION */ {"objectShapePropertyReflection", "PHPStan\\Type\\ObjectShapePropertyReflection"},
@@ -128,7 +125,6 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_ARRAY_SHAPE_NODE */ {"arrayShapeNode", "PHPStan\\PhpDocParser\\Ast\\Type\\ArrayShapeNode"},
 	/* PT_CLASS_ARRAY_SHAPE_ITEM_NODE */ {"arrayShapeItemNode", "PHPStan\\PhpDocParser\\Ast\\Type\\ArrayShapeItemNode"},
 	/* PT_CLASS_ARRAY_SHAPE_UNSEALED_TYPE_NODE */ {"arrayShapeUnsealedTypeNode", "PHPStan\\PhpDocParser\\Ast\\Type\\ArrayShapeUnsealedTypeNode"},
-	/* PT_CLASS_FINITE_TYPE_SET */ {"finiteTypeSet", "PHPStan\\Type\\FiniteTypeSet"},
 	/* PT_CLASS_UNION_TYPE_HELPER */ {"unionTypeHelper", "PHPStan\\Type\\UnionTypeHelper"},
 	/* PT_CLASS_TEMPLATE_UNION_TYPE */ {"templateUnionType", "PHPStan\\Type\\Generic\\TemplateUnionType"},
 	/* PT_CLASS_TEMPLATE_ITERABLE_TYPE */ {"templateIterableType", "PHPStan\\Type\\Generic\\TemplateIterableType"},
@@ -143,6 +139,7 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_TEMPLATE_ARRAY_TYPE */ {"templateArrayType", "PHPStan\\Type\\Generic\\TemplateArrayType"},
 	/* PT_CLASS_UNION_TYPE_NODE */ {"unionTypeNode", "PHPStan\\PhpDocParser\\Ast\\Type\\UnionTypeNode"},
 	/* PT_CLASS_INTERSECTION_TYPE_NODE */ {"intersectionTypeNode", "PHPStan\\PhpDocParser\\Ast\\Type\\IntersectionTypeNode"},
+	/* PT_CLASS_TYPE_TRAVERSER_CALLABLE */ {"typeTraverserCallable", "PHPStan\\Type\\TypeTraverserCallable"},
 };
 
 zend_class_entry *pt_class(int idx)
@@ -227,11 +224,9 @@ void pt_init_strs()
 void pt_support_rinit()
 {
 	PT_G(trinary_inited) = false;
-	PT_G(verbosity_inited) = false;
 	ZVAL_UNDEF(&PT_G(trinary_yes));
 	ZVAL_UNDEF(&PT_G(trinary_maybe));
 	ZVAL_UNDEF(&PT_G(trinary_no));
-	ZVAL_UNDEF(&PT_G(verbosity_precise));
 
 	for (int i = 0; i < PT_CLASS_COUNT; i++) {
 		PT_G(class_refs)[i].key = pt_class_templates[i].key;
@@ -251,10 +246,6 @@ void pt_support_rshutdown()
 		zval_ptr_dtor(&PT_G(trinary_maybe));
 		zval_ptr_dtor(&PT_G(trinary_no));
 		PT_G(trinary_inited) = false;
-	}
-	if (PT_G(verbosity_inited)) {
-		zval_ptr_dtor(&PT_G(verbosity_precise));
-		PT_G(verbosity_inited) = false;
 	}
 	for (int i = 0; i < PT_CLASS_COUNT; i++) {
 		if (PT_G(class_refs)[i].configured != NULL) {
@@ -357,20 +348,14 @@ bool pt_type_describe_precise(zval *type, zval *result)
 	zend_function *fn;
 	zval args[1];
 
-	if (UNEXPECTED(!PT_G(verbosity_inited))) {
-		zend_class_entry *vce = pt_class(PT_CLASS_VERBOSITY_LEVEL);
-		if (UNEXPECTED(vce == NULL)) return false;
-		fn = pt_find_method(vce, "precise", sizeof("precise") - 1);
-		if (UNEXPECTED(fn == NULL)) return false;
-		zend_call_known_function(fn, NULL, vce, &PT_G(verbosity_precise), 0, NULL, NULL);
-		if (UNEXPECTED(EG(exception))) return false;
-		PT_G(verbosity_inited) = true;
-	}
+	/* the shadowing VerbosityLevel's precise() singleton (VerbosityLevel.cpp) */
+	zval *precise = pt_verbosity_level_singleton(PT_VERBOSITY_LEVEL_PRECISE);
+	if (UNEXPECTED(precise == NULL)) return false;
 
 	ce = Z_OBJCE_P(type);
 	fn = pt_find_method(ce, "describe", sizeof("describe") - 1);
 	if (UNEXPECTED(fn == NULL)) return false;
-	ZVAL_COPY_VALUE(&args[0], &PT_G(verbosity_precise));
+	ZVAL_COPY_VALUE(&args[0], precise);
 	zend_call_known_function(fn, Z_OBJ_P(type), ce, result, 1, args, NULL);
 	return !EG(exception);
 }

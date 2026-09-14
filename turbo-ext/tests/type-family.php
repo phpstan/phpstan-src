@@ -3900,6 +3900,42 @@ $compoundOthers = static fn (string $union, string $benevolent, string $intersec
 }
 
 
+// ---- VerbosityLevel::getRecommendedLevelByType() over generics ----
+// The invariant-template traversal of the recommended level: a generic
+// subject's describe() reaches the PHP TypeProjectionHelper with the level
+// in hand, which only the real-name declaration lets through — so the
+// generic cases live here rather than in smoke.php's prefixed section.
+{
+	$r = [];
+	$arrayObjectReflection = $stringReflectionProvider->getClass(\ArrayObject::class);
+	$int = new \PHPStan\Type\IntegerType();
+	$string = new \PHPStan\Type\StringType();
+	$constString = new \PHPStan\Type\Constant\ConstantStringType('foo');
+	$lowercase = new \PHPStan\Type\IntersectionType([new \PHPStan\Type\StringType(), new \PHPStan\Type\Accessory\AccessoryLowercaseStringType()]);
+	$arrayObject = new \PHPStan\Type\Generic\GenericObjectType(\ArrayObject::class, [$int, $string], null, $arrayObjectReflection);
+	$covariantList = new \PHPStan\Type\Generic\GenericObjectType(\ArrayObject::class, [$int, $string], null, $arrayObjectReflection, [\PHPStan\Type\Generic\TemplateTypeVariance::createCovariant(), \PHPStan\Type\Generic\TemplateTypeVariance::createCovariant()]);
+	$traversable = new \PHPStan\Type\Generic\GenericObjectType(\Traversable::class, [$int, $string], null, $stringReflectionProvider->getClass(\Traversable::class));
+	$unionWithGeneric = new \PHPStan\Type\UnionType([$arrayObject, new \PHPStan\Type\NullType()]);
+	$cases = [
+		'ArrayObject vs string' => [$arrayObject, $string],
+		'ArrayObject vs constant string' => [$arrayObject, $constString],
+		'ArrayObject vs lowercase' => [$arrayObject, $lowercase],
+		'ArrayObject alone' => [$arrayObject, null],
+		'ArrayObject vs ArrayObject' => [$arrayObject, $arrayObject],
+		'call-site covariant ArrayObject vs constant string' => [$covariantList, $constString],
+		'Traversable (covariant templates) vs constant string' => [$traversable, $constString],
+		'ArrayObject|null vs constant string' => [$unionWithGeneric, $constString],
+		'constant string vs ArrayObject' => [$constString, $arrayObject],
+		'string vs ArrayObject' => [$string, $arrayObject],
+	];
+	foreach ($cases as $label => [$accepting, $accepted]) {
+		$r[$label] = \PHPStan\Type\VerbosityLevel::getRecommendedLevelByType($accepting, $accepted)->getLevelValue();
+	}
+	foreach ($r as $key => $value) {
+		$observations["recommended level $key"] = $value;
+	}
+}
+
 // observations holding bytes that are not UTF-8 (the invalid-UTF-8 subject's
 // descriptions) go out base64-encoded so json_encode() keeps every byte; the
 // non-finite floats (the NAN and infinity subjects' values) as their names

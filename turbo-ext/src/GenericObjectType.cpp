@@ -240,10 +240,7 @@ public:
 			zv::Ref type = entry.value().deref();
 			zv::Val callback = pt_object_type_referenced_classes_callback(type.raw());
 			if (UNEXPECTED(callback.isUndef())) return zv::Val();
-			zval args[2];
-			ZVAL_COPY_VALUE(&args[0], type.raw());
-			ZVAL_COPY_VALUE(&args[1], callback.raw());
-			zv::Val referencedClasses = pt_type_call_static(PT_CLASS_RECURSION_GUARD, PT_LC("runonobjectidentity"), 2, args);
+			zv::Val referencedClasses = pt_type_recursion_guard_run_on_object_identity(type.raw(), callback.raw());
 			if (UNEXPECTED(referencedClasses.isUndef())) return zv::Val();
 			bool isError;
 			if (UNEXPECTED(!pt_type_instanceof(referencedClasses.raw(), PT_CLASS_ERROR_TYPE, isError))) return zv::Val();

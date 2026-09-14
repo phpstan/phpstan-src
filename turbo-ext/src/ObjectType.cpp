@@ -874,7 +874,7 @@ public:
 		if (instanceof_function(Z_OBJCE_P(type), pt_ce_object_type)) {
 			description = describeCache(Z_OBJ_P(type));
 		} else {
-			zv::Val cacheLevel = pt_type_call_static(PT_CLASS_VERBOSITY_LEVEL, PT_LC("cache"), 0, NULL);
+			zv::Val cacheLevel = pt_type_verbosity_level(PT_VERBOSITY_LEVEL_CACHE);
 			if (UNEXPECTED(cacheLevel.isUndef())) return zv::Val();
 			description = pt_type_call(Z_OBJ_P(type), PT_LC("describe"), 1, cacheLevel.raw());
 		}
@@ -1198,7 +1198,7 @@ public:
 		if (Z_TYPE_P(cached) == IS_STRING) return zv::Val::copyOf(zv::Ref(cached));
 
 		if (object->ce != pt_ce_object_type) {
-			zv::Val cacheLevel = pt_type_call_static(PT_CLASS_VERBOSITY_LEVEL, PT_LC("cache"), 0, NULL);
+			zv::Val cacheLevel = pt_type_verbosity_level(PT_VERBOSITY_LEVEL_CACHE);
 			if (UNEXPECTED(cacheLevel.isUndef())) return zv::Val();
 			zv::Val description = pt_type_call(object, PT_LC("describe"), 1, cacheLevel.raw());
 			if (UNEXPECTED(description.isUndef())) return zv::Val();
@@ -1216,7 +1216,7 @@ public:
 		 * unreachable here: a subclass returned above */
 		zval *subtracted = subtractedTypeOf(object);
 		if (UNEXPECTED(subtracted == NULL)) return zv::Val();
-		zv::Val cacheLevel = pt_type_call_static(PT_CLASS_VERBOSITY_LEVEL, PT_LC("cache"), 0, NULL);
+		zv::Val cacheLevel = pt_type_verbosity_level(PT_VERBOSITY_LEVEL_CACHE);
 		if (UNEXPECTED(cacheLevel.isUndef())) return zv::Val();
 		/* exactly the class: describeSubtractedType() is the trait's */
 		zv::Val subtractedDescription = pt_type_describe_subtracted_type(subtracted, cacheLevel.raw());
@@ -2344,7 +2344,7 @@ public:
 			allowedList.push(allowedEntry.value());
 		}
 		zv::Val allowedListVal(std::move(allowedList));
-		zv::Val allowedSet = pt_type_call_static(PT_CLASS_FINITE_TYPE_SET, PT_LC("create"), 1, allowedListVal.raw());
+		zv::Val allowedSet = pt_type_finite_type_set_create(allowedListVal.raw());
 		if (UNEXPECTED(allowedSet.isUndef())) return zv::Val();
 		zv::Arr keyed = zv::Arr::create(0);
 		zv::Arr remaining = zv::Arr::create(0);
@@ -2369,7 +2369,7 @@ public:
 				zend_type_error("phpstan_turbo: a subtracted type must be %s", ptcls::type);
 				return zv::Val();
 			}
-			zv::Val key = pt_type_call_static(PT_CLASS_FINITE_TYPE_SET, PT_LC("key"), 1, subType.raw());
+			zv::Val key = pt_type_finite_type_set_key(subType.raw());
 			if (UNEXPECTED(key.isUndef())) return zv::Val();
 			if (Z_TYPE_P(key.raw()) == IS_STRING) {
 				zval *keyedAllowed = zend_symtable_find(keyed.table(), Z_STR_P(key.raw()));
@@ -2976,10 +2976,7 @@ private:
 		ZVAL_OBJ(&selfZv, self);
 		zv::Val callback = pt_ot_callback(kind, object != NULL ? object : &selfZv, arg, scope, holderOut);
 		if (UNEXPECTED(callback.isUndef())) return zv::Val();
-		zval args[2];
-		ZVAL_COPY_VALUE(&args[0], &selfZv);
-		ZVAL_COPY_VALUE(&args[1], callback.raw());
-		return pt_type_call_static(PT_CLASS_RECURSION_GUARD, PT_LC("run"), 2, args);
+		return pt_type_recursion_guard_run(&selfZv, callback.raw());
 	}
 
 	/* RecursionGuard::run($this, fn (): Type => $this->getMethod($name, new OutOfClassScope())->getOnlyVariant()->getReturnType()[->getIterable*Type()]);

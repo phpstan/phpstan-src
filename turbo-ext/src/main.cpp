@@ -221,6 +221,10 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_union_type();
 	pt_register_benevolent_union_type();
 	pt_register_intersection_type();
+	pt_register_type_traverser();
+	pt_register_verbosity_level();
+	pt_register_recursion_guard();
+	pt_register_finite_type_set();
 
 	return SUCCESS;
 }
@@ -245,7 +249,6 @@ static PHP_RINIT_FUNCTION(phpstan_turbo)
 	pt_is_super_type_of_result_rinit();
 	pt_accepts_result_rinit();
 	pt_integer_range_type_rinit();
-	pt_constant_string_type_rinit();
 	pt_object_type_rinit();
 
 	return SUCCESS;

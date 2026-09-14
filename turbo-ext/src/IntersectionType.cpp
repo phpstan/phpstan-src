@@ -126,10 +126,11 @@ static void throwMapped(int classIdx, uint32_t argc, zval *argv)
 	return &constant->value;
 }
 
-/* VerbosityLevel::<factory>() */
-static zv::Val verbosityLevel(const char *lcname, size_t len)
+/* VerbosityLevel::<factory>() for a PT_VERBOSITY_LEVEL_* value (the
+ * shadowing class's singleton, VerbosityLevel.cpp) */
+static zv::Val verbosityLevel(zend_long value)
 {
-	return pt_type_call_static(PT_CLASS_VERBOSITY_LEVEL, lcname, len, 0, NULL);
+	return pt_type_verbosity_level(value);
 }
 
 /* a public property of an object (owned copy); UNDEF = pending exception */
@@ -157,7 +158,7 @@ static bool isPlainMixed(zval *type, bool &out)
 {
 	out = false;
 	if (!zv::Ref(type).instanceOf(pt_ce_mixed_type)) return true;
-	zv::Val precise = verbosityLevel(PT_LC("precise"));
+	zv::Val precise = verbosityLevel(PT_VERBOSITY_LEVEL_PRECISE);
 	if (UNEXPECTED(precise.isUndef())) return false;
 	zv::Val description = describeOf(type, precise.raw());
 	if (UNEXPECTED(description.isUndef())) return false;
@@ -503,7 +504,7 @@ public:
 				collected.push(entry.value());
 			}
 			zv::Args args{&selfZv, otherType};
-			zv::Val verbosity = pt_type_call_static(PT_CLASS_VERBOSITY_LEVEL, PT_LC("getrecommendedlevelbytype"), 2, args);
+			zv::Val verbosity = pt_type_verbosity_recommended(&selfZv, otherType);
 			if (UNEXPECTED(verbosity.isUndef())) return zv::Val();
 			zend_long thisIsList = thisTrinary(PT_LC("islist"), &IntersectionType::isList);
 			if (UNEXPECTED(thisIsList < 0)) return zv::Val();
@@ -1096,7 +1097,7 @@ public:
 		}
 		uint32_t found = zend_hash_num_elements(prototypes.table());
 		if (found == 0) {
-			zv::Val typeOnly = verbosityLevel(PT_LC("typeonly"));
+			zv::Val typeOnly = verbosityLevel(PT_VERBOSITY_LEVEL_TYPE_ONLY);
 			if (UNEXPECTED(typeOnly.isUndef())) return zv::Val();
 			zv::Val description = thisDescribe(typeOnly.raw());
 			if (UNEXPECTED(description.isUndef())) return zv::Val();
@@ -1155,7 +1156,7 @@ public:
 			if (UNEXPECTED(has < 0)) return zv::Val();
 			if (has == PT_TRI_YES) return pt_type_call(type, PT_LC("getconstant"), 1, constantName);
 		}
-		zv::Val typeOnly = verbosityLevel(PT_LC("typeonly"));
+		zv::Val typeOnly = verbosityLevel(PT_VERBOSITY_LEVEL_TYPE_ONLY);
 		if (UNEXPECTED(typeOnly.isUndef())) return zv::Val();
 		zv::Val description = thisDescribe(typeOnly.raw());
 		if (UNEXPECTED(description.isUndef())) return zv::Val();
@@ -2032,10 +2033,7 @@ public:
 			state.push(std::move(newValueType));
 			zv::Val callback = pt_type_native_callback(replaceKeyValueCallback, state.raw(), NULL);
 			if (UNEXPECTED(callback.isUndef())) return zv::Val();
-			zval mapArgs[2];
-			ZVAL_COPY_VALUE(&mapArgs[0], innerType);
-			ZVAL_COPY_VALUE(&mapArgs[1], callback.raw());
-			zv::Val mapped = pt_type_call_static(PT_CLASS_TYPE_TRAVERSER, PT_LC("map"), 2, mapArgs);
+			zv::Val mapped = pt_type_traverser_map_of(innerType, callback.raw());
 			if (UNEXPECTED(mapped.isUndef())) return zv::Val();
 			newTypes.push(std::move(mapped));
 		}
@@ -2110,7 +2108,7 @@ public:
 					key = enumCaseKey(finiteType);
 				} else {
 					if (typeOnly.isUndef()) {
-						typeOnly = verbosityLevel(PT_LC("typeonly"));
+						typeOnly = verbosityLevel(PT_VERBOSITY_LEVEL_TYPE_ONLY);
 						if (UNEXPECTED(typeOnly.isUndef())) return zv::Val();
 					}
 					key = describeOf(finiteType, typeOnly.raw());
@@ -2415,7 +2413,7 @@ public:
 		uint32_t described = zend_hash_num_elements(nodes.table());
 		if (described == 1) return zv::Val::copyOf(nodes.arrRef().findIndex(0));
 		if (described == 0) {
-			zv::Val precise = verbosityLevel(PT_LC("precise"));
+			zv::Val precise = verbosityLevel(PT_VERBOSITY_LEVEL_PRECISE);
 			if (UNEXPECTED(precise.isUndef())) return zv::Val();
 			zval *types = this->types();
 			if (UNEXPECTED(types == NULL)) return zv::Val();
@@ -2778,7 +2776,7 @@ private:
 	/* $offsetType->describe(VerbosityLevel::cache()) */
 	static zv::Val cacheKeyOf(zval *offsetType)
 	{
-		zv::Val cache = verbosityLevel(PT_LC("cache"));
+		zv::Val cache = verbosityLevel(PT_VERBOSITY_LEVEL_CACHE);
 		if (UNEXPECTED(cache.isUndef())) return zv::Val();
 		return describeOf(offsetType, cache.raw());
 	}
@@ -2920,7 +2918,7 @@ private:
 	 * with: <the members described at the value level>' */
 	static void throwCannotCreate(zval *types)
 	{
-		zv::Val value = verbosityLevel(PT_LC("value"));
+		zv::Val value = verbosityLevel(PT_VERBOSITY_LEVEL_VALUE);
 		if (UNEXPECTED(value.isUndef())) return;
 		smart_str message = {NULL, 0};
 		smart_str_appendl(&message, "Cannot create ", 14);

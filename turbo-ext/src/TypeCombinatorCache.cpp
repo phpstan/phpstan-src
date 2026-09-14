@@ -155,11 +155,6 @@ static bool pt_cache_inited = false;
 static bool pt_invalidate_active = false;
 
 
-static zend_class_entry *pt_guard_ce = NULL;
-static uint32_t pt_guard_offset = 0;
-static bool pt_guard_resolved = false;
-static bool pt_guard_unavailable = false;
-
 static zend_function *pt_fn_do_union = NULL;
 static zend_function *pt_fn_do_intersect = NULL;
 static zend_function *pt_fn_do_remove = NULL;
@@ -402,35 +397,14 @@ static bool hashObject(zend_object *obj, Hash128 &out, uint32_t depth)
  * its arguments — and runOnObjectIdentity() keys on spl_object_id(), which memoization
  * itself perturbs by handing back shared instances. The memo is therefore bypassed whole
  * while a guard is active: entries are only ever produced and consumed with an empty
- * context, where the operations are pure functions of their arguments. Failing to read the
- * guard disables the memo rather than risking an unsound entry. */
+ * context, where the operations are pure functions of their arguments. The context is the
+ * shadowing RecursionGuard's (pt_recursion_guard_active(), RecursionGuard.cpp), which
+ * answers active when it cannot be read — disabling the memo rather than risking an
+ * unsound entry. */
 
 static bool guardActive()
 {
-	if (UNEXPECTED(!pt_guard_resolved)) {
-		pt_guard_resolved = true;
-		pt_guard_unavailable = true;
-
-		zend_class_entry *ce = pt_class(PT_CLASS_RECURSION_GUARD);
-		if (ce == NULL) return true;
-		zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&ce->properties_info, "context", sizeof("context") - 1);
-		if (info == NULL || (info->flags & ZEND_ACC_STATIC) == 0) return true;
-
-		pt_guard_ce = ce;
-		pt_guard_offset = info->offset;
-		pt_guard_unavailable = false;
-	}
-
-	if (UNEXPECTED(pt_guard_unavailable)) return true;
-
-	if (UNEXPECTED(CE_STATIC_MEMBERS(pt_guard_ce) == NULL)) {
-		zend_class_init_statics(pt_guard_ce);
-	}
-
-	zval *context = &CE_STATIC_MEMBERS(pt_guard_ce)[pt_guard_offset];
-	ZVAL_DEREF(context);
-
-	return Z_TYPE_P(context) != IS_ARRAY || zend_hash_num_elements(Z_ARRVAL_P(context)) > 0;
+	return pt_recursion_guard_active();
 }
 
 /* }}} */
@@ -696,9 +670,6 @@ using phpstanturbo::pt_memo_count;
 using phpstanturbo::pt_memo_results;
 using phpstanturbo::pt_obj_serials;
 using phpstanturbo::pt_next_serial;
-using phpstanturbo::pt_guard_ce;
-using phpstanturbo::pt_guard_resolved;
-using phpstanturbo::pt_guard_unavailable;
 using phpstanturbo::pt_type_hashes;
 using phpstanturbo::typeHashDtor;
 using phpstanturbo::MEMO_INITIAL_CAPACITY_LIMIT;
@@ -721,9 +692,6 @@ void pt_type_combinator_cache_rinit()
 	pt_memo_count = 0;
 	phpstanturbo::pt_memo_tombstones = 0;
 	pt_next_serial = 1;
-	pt_guard_ce = NULL;
-	pt_guard_resolved = false;
-	pt_guard_unavailable = false;
 	phpstanturbo::pt_invalidate_active = true;
 	pt_cache_inited = true;
 }
@@ -745,8 +713,6 @@ void pt_type_combinator_cache_rshutdown()
 	pt_fn_do_union = NULL;
 	pt_fn_do_intersect = NULL;
 	pt_fn_do_remove = NULL;
-	pt_guard_ce = NULL;
-	pt_guard_resolved = false;
 	pt_cache_inited = false;
 }
 

@@ -759,6 +759,63 @@ zv::Val pt_combinations_helper_combinations(zval *arrays);
 
 /* }}} */
 
+/* merged from the parallel port branch */
+/* {{{ helpers of the Type-kernel classes (TypeTraverser.cpp,
+ * VerbosityLevel.cpp, RecursionGuard.cpp, FiniteTypeSet.cpp) — the
+ * support.h entry points as owned values; UNDEF = pending exception */
+
+/* VerbosityLevel::typeOnly() / value() / precise() / cache() for a
+ * PT_VERBOSITY_LEVEL_* value (the twin's singleton) */
+inline zv::Val pt_type_verbosity_level(zend_long value)
+{
+	zval *level = pt_verbosity_level_singleton(value);
+	return level == NULL ? zv::Val() : zv::Val::copyOf(zv::Ref(level));
+}
+
+/* VerbosityLevel::getRecommendedLevelByType($acceptingType, $acceptedType)
+ * ($acceptedType NULL for null) */
+inline zv::Val pt_type_verbosity_recommended(zval *acceptingType, zval *acceptedType)
+{
+	zval result;
+	return pt_verbosity_level_recommended(&result, acceptingType, acceptedType) ? zv::Val::adopt(result) : zv::Val();
+}
+
+/* TypeTraverser::map($type, $cb) */
+inline zv::Val pt_type_traverser_map_of(zval *type, zval *cb)
+{
+	zval result;
+	return pt_type_traverser_map(&result, type, cb) ? zv::Val::adopt(result) : zv::Val();
+}
+
+/* RecursionGuard::run($type, $callback) / runOnObjectIdentity($type, $callback) */
+inline zv::Val pt_type_recursion_guard_run(zval *type, zval *callback)
+{
+	zval result;
+	return pt_recursion_guard_run(&result, type, callback) ? zv::Val::adopt(result) : zv::Val();
+}
+
+inline zv::Val pt_type_recursion_guard_run_on_object_identity(zval *type, zval *callback)
+{
+	zval result;
+	return pt_recursion_guard_run_on_object_identity(&result, type, callback) ? zv::Val::adopt(result) : zv::Val();
+}
+
+/* FiniteTypeSet::create($types) (the set or null) / FiniteTypeSet::key($type)
+ * (a string or null) */
+inline zv::Val pt_type_finite_type_set_create(zval *types)
+{
+	zval result;
+	return pt_finite_type_set_create(&result, types) ? zv::Val::adopt(result) : zv::Val();
+}
+
+inline zv::Val pt_type_finite_type_set_key(zval *type)
+{
+	zval result;
+	return pt_finite_type_set_key(&result, type) ? zv::Val::adopt(result) : zv::Val();
+}
+
+/* }}} */
+
 /* {{{ bodies the Type ports share verbatim — their members forward here */
 
 /* $this as an owned value (a new reference) */

@@ -2,9 +2,12 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Turbo\ReferencedByTurboExtension;
+
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'typeTraverserCallable')]
 interface TypeTraverserCallable
 {
 

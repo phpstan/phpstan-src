@@ -1390,54 +1390,18 @@ zv::Val pt_type_call_static_ce(zend_class_entry *ce, const char *lcname, size_t 
 	return pt_type_call_fn(fn, NULL, ce, argc, argv);
 }
 
-/* VerbosityLevel's private level constants, read once from the class (the
- * cache is keyed on the class entry: a later request declares a new one) */
-static zend_class_entry *pt_verbosity_case_ce = nullptr;
-static zend_long pt_verbosity_case_type_only = 0;
-static zend_long pt_verbosity_case_value = 0;
-static zend_long pt_verbosity_case_precise = 0;
-
-/* Class::NAME — a literal class constant, borrowed; NULL = pending
- * exception */
-static zval *pt_verbosity_constant(zend_class_entry *ce, const char *name, size_t len)
-{
-	zend_class_constant *constant = (zend_class_constant *) zend_hash_str_find_ptr(&ce->constants_table, name, len);
-	if (UNEXPECTED(constant == NULL)) {
-		zend_throw_error(NULL, "phpstan_turbo: %s::%s not found", ZSTR_VAL(ce->name), name);
-		return NULL;
-	}
-	if (UNEXPECTED(Z_TYPE(constant->value) == IS_CONSTANT_AST && zval_update_constant_ex(&constant->value, ce) != SUCCESS)) return NULL;
-	return &constant->value;
-}
-
 bool pt_type_verbosity_case(zval *level, pt_verbosity_case &out)
 {
-	zv::Val levelValueZv = pt_type_call(Z_OBJ_P(level), PT_LC("getlevelvalue"), 0, NULL);
-	if (UNEXPECTED(levelValueZv.isUndef())) return false;
-	if (UNEXPECTED(!zv::Ref(levelValueZv.raw()).isLong())) {
-		zend_type_error("phpstan_turbo: %s::getLevelValue() must return int", ZSTR_VAL(Z_OBJCE_P(level)->name));
-		return false;
-	}
-	zend_long levelValue = zv::Ref(levelValueZv.raw()).asLong();
-
-	zend_class_entry *ce = pt_class(PT_CLASS_VERBOSITY_LEVEL);
-	if (UNEXPECTED(ce == NULL)) return false;
-	if (UNEXPECTED(ce != pt_verbosity_case_ce)) {
-		zval *typeOnly = pt_verbosity_constant(ce, PT_LC("TYPE_ONLY"));
-		zval *value = typeOnly != NULL ? pt_verbosity_constant(ce, PT_LC("VALUE")) : NULL;
-		zval *precise = value != NULL ? pt_verbosity_constant(ce, PT_LC("PRECISE")) : NULL;
-		if (UNEXPECTED(precise == NULL)) return false;
-		pt_verbosity_case_type_only = zval_get_long(typeOnly);
-		pt_verbosity_case_value = zval_get_long(value);
-		pt_verbosity_case_precise = zval_get_long(precise);
-		pt_verbosity_case_ce = ce;
-	}
-
-	if (levelValue == pt_verbosity_case_type_only) {
+	/* the level's value — the shadowing VerbosityLevel's slot, or the PHP
+	 * twin's getLevelValue() (VerbosityLevel.cpp); the constants are the
+	 * twin's private ones */
+	zend_long levelValue;
+	if (UNEXPECTED(!pt_verbosity_level_value_of(level, levelValue))) return false;
+	if (levelValue == PT_VERBOSITY_LEVEL_TYPE_ONLY) {
 		out = PT_VERBOSITY_TYPE_ONLY;
-	} else if (levelValue == pt_verbosity_case_value) {
+	} else if (levelValue == PT_VERBOSITY_LEVEL_VALUE) {
 		out = PT_VERBOSITY_VALUE;
-	} else if (levelValue == pt_verbosity_case_precise) {
+	} else if (levelValue == PT_VERBOSITY_LEVEL_PRECISE) {
 		out = PT_VERBOSITY_PRECISE;
 	} else {
 		out = PT_VERBOSITY_CACHE;

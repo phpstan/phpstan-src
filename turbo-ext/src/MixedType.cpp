@@ -190,7 +190,7 @@ public:
 			zval subtractedDescriptionRaw;
 			if (UNEXPECTED(!pt_type_describe_precise(subtracted, &subtractedDescriptionRaw))) return zv::Val();
 			zv::Val subtractedDescription = zv::Val::adopt(subtractedDescriptionRaw);
-			zv::Val typeOnly = pt_type_call_static(PT_CLASS_VERBOSITY_LEVEL, PT_LC("typeonly"), 0, NULL);
+			zv::Val typeOnly = pt_type_verbosity_level(PT_VERBOSITY_LEVEL_TYPE_ONLY);
 			if (UNEXPECTED(typeOnly.isUndef())) return zv::Val();
 			zv::Val ownDescription = isExact() ? describe(typeOnly.raw()) : pt_type_call(self, PT_LC("describe"), 1, typeOnly.raw());
 			if (UNEXPECTED(ownDescription.isUndef())) return zv::Val();

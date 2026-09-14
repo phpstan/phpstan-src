@@ -334,7 +334,7 @@ public:
 			out = false;
 			return true;
 		}
-		zv::Val precise = pt_type_call_static(PT_CLASS_VERBOSITY_LEVEL, PT_LC("precise"), 0, NULL);
+		zv::Val precise = pt_type_verbosity_level(PT_VERBOSITY_LEVEL_PRECISE);
 		if (UNEXPECTED(precise.isUndef())) return false;
 		zv::Val ownDescription = thisDescribe(precise.raw());
 		if (UNEXPECTED(ownDescription.isUndef())) return false;

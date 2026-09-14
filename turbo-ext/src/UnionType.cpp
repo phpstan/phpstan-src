@@ -169,10 +169,11 @@ static void throwMapped(int classIdx, uint32_t argc, zval *argv)
 	return &constant->value;
 }
 
-/* VerbosityLevel::<factory>() */
-static zv::Val verbosityLevel(const char *lcname, size_t len)
+/* VerbosityLevel::<factory>() for a PT_VERBOSITY_LEVEL_* value (the
+ * shadowing class's singleton, VerbosityLevel.cpp) */
+static zv::Val verbosityLevel(zend_long value)
 {
-	return pt_type_call_static(PT_CLASS_VERBOSITY_LEVEL, lcname, len, 0, NULL);
+	return pt_type_verbosity_level(value);
 }
 
 /* new ErrorType() / new NeverType() */
@@ -471,7 +472,7 @@ public:
 		if (Z_TYPE_P(slot) == IS_NULL) {
 			zval *types = this->types();
 			if (UNEXPECTED(types == NULL)) return zv::Val();
-			zv::Val created = pt_type_call_static(PT_CLASS_FINITE_TYPE_SET, PT_LC("create"), 1, types);
+			zv::Val created = pt_type_finite_type_set_create(types);
 			if (UNEXPECTED(created.isUndef())) return zv::Val();
 			slot = OBJ_PROP_NUM(self, slots::finiteTypeSet);
 			if (zv::Ref(created.raw()).isNull()) {
@@ -1234,7 +1235,7 @@ public:
 		}
 		uint32_t propertiesCount = zend_hash_num_elements(prototypes.table());
 		if (propertiesCount == 0) {
-			zv::Val typeOnly = verbosityLevel(PT_LC("typeonly"));
+			zv::Val typeOnly = verbosityLevel(PT_VERBOSITY_LEVEL_TYPE_ONLY);
 			if (UNEXPECTED(typeOnly.isUndef())) return zv::Val();
 			zv::Val description = thisDescribe(typeOnly.raw());
 			if (UNEXPECTED(description.isUndef())) return zv::Val();
@@ -1294,7 +1295,7 @@ public:
 		}
 		uint32_t methodsCount = zend_hash_num_elements(prototypes.table());
 		if (methodsCount == 0) {
-			zv::Val typeOnly = verbosityLevel(PT_LC("typeonly"));
+			zv::Val typeOnly = verbosityLevel(PT_VERBOSITY_LEVEL_TYPE_ONLY);
 			if (UNEXPECTED(typeOnly.isUndef())) return zv::Val();
 			zv::Val description = thisDescribe(typeOnly.raw());
 			if (UNEXPECTED(description.isUndef())) return zv::Val();
@@ -2063,7 +2064,7 @@ public:
 			if (UNEXPECTED(key.isUndef())) return zv::Val();
 			if (!zv::Ref(key.raw()).isString()) {
 				if (cacheLevel.isUndef()) {
-					cacheLevel = verbosityLevel(PT_LC("cache"));
+					cacheLevel = verbosityLevel(PT_VERBOSITY_LEVEL_CACHE);
 					if (UNEXPECTED(cacheLevel.isUndef())) return zv::Val();
 				}
 				key = describeOf(type, cacheLevel.raw());
@@ -2276,7 +2277,7 @@ private:
 	/* FiniteTypeSet::key($type): a string or null; UNDEF = pending exception */
 	static zv::Val finiteKey(zval *type)
 	{
-		zv::Val key = pt_type_call_static(PT_CLASS_FINITE_TYPE_SET, PT_LC("key"), 1, type);
+		zv::Val key = pt_type_finite_type_set_key(type);
 		if (UNEXPECTED(key.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(key.raw()).isString() && !zv::Ref(key.raw()).isNull())) {
 			zend_type_error("phpstan_turbo: FiniteTypeSet::key() must return ?string");
@@ -2479,7 +2480,7 @@ private:
 	 * with: <the members described at the value level>' */
 	static void throwCannotCreate(zval *types)
 	{
-		zv::Val value = verbosityLevel(PT_LC("value"));
+		zv::Val value = verbosityLevel(PT_VERBOSITY_LEVEL_VALUE);
 		if (UNEXPECTED(value.isUndef())) return;
 		smart_str message = {NULL, 0};
 		smart_str_appendl(&message, "Cannot create ", 14);

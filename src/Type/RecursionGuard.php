@@ -2,18 +2,18 @@
 
 namespace PHPStan\Type;
 
-use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function spl_object_id;
 
-#[ReferencedByTurboExtension(key: 'recursionGuard')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/RecursionGuard.cpp')]
 final class RecursionGuard
 {
 
 	/**
 	 * While this is non-empty, run() and runOnObjectIdentity() short-circuit to ErrorType,
 	 * so a type operation's result depends on the call stack and not only on its arguments.
-	 * The native extension reads this property to know when it must not memoize
-	 * TypeCombinator's operations (see PHPStanTurbo\TypeCombinatorCache).
+	 * The native TypeCombinatorCache consults it (through the native RecursionGuard)
+	 * to know when it must not memoize TypeCombinator's operations.
 	 *
 	 * @var true[]
 	 */

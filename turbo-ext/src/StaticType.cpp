@@ -440,10 +440,7 @@ public:
 	zv::Val transformStaticType(zval *type, zval *scope) const
 	{
 		zv::Val callback = callbackHolder(pt_static_type_callbacks_map, self, scope, NULL, NULL);
-		zval args[2];
-		ZVAL_COPY_VALUE(&args[0], type);
-		ZVAL_COPY_VALUE(&args[1], callback.raw());
-		return pt_type_call_static(PT_CLASS_TYPE_TRAVERSER, PT_LC("map"), 2, args);
+		return pt_type_traverser_map_of(type, callback.raw());
 	}
 
 	/* the TypeTraverser::map() callback: a StaticType is rebased onto the
@@ -502,10 +499,7 @@ public:
 		if (!isFinal || zv::Ref(mapped.raw()).instanceOf(pt_ce_this_type)) {
 			/* RecursionGuard::run($type, static fn () => $traverse($type)) */
 			zv::Val thunk = callbackHolder(pt_static_type_callbacks_guard, NULL, NULL, mapped.raw(), traverse);
-			zval args[2];
-			ZVAL_COPY_VALUE(&args[0], mapped.raw());
-			ZVAL_COPY_VALUE(&args[1], thunk.raw());
-			return pt_type_call_static(PT_CLASS_RECURSION_GUARD, PT_LC("run"), 2, args);
+			return pt_type_recursion_guard_run(mapped.raw(), thunk.raw());
 		}
 
 		zv::Val staticObject = pt_type_call(Z_OBJ_P(mapped.raw()), PT_LC("getstaticobjecttype"), 0, NULL);

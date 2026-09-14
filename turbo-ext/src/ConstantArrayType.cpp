@@ -216,10 +216,10 @@ static zv::Val describeOf(zval *type, zval *level)
 	return callString(Z_OBJ_P(type), PT_LC("describe"), 1, level);
 }
 
-/* VerbosityLevel::value() */
+/* VerbosityLevel::value() (the shadowing class's singleton, VerbosityLevel.cpp) */
 static zv::Val verbosityValue()
 {
-	return pt_type_call_static(PT_CLASS_VERBOSITY_LEVEL, PT_LC("value"), 0, NULL);
+	return pt_type_verbosity_level(PT_VERBOSITY_LEVEL_VALUE);
 }
 
 /* $type->describe(VerbosityLevel::value()) / (VerbosityLevel::precise()) */
@@ -1733,10 +1733,7 @@ public:
 			if (UNEXPECTED(result.isUndef())) return zv::Val();
 			zv::Val otherValueType = callType(Z_OBJ_P(type), PT_LC("getoffsetvaluetype"), 1, keyType);
 			if (UNEXPECTED(otherValueType.isUndef())) return zv::Val();
-			zval levelArgs[2];
-			ZVAL_COPY_VALUE(&levelArgs[0], valueType);
-			ZVAL_COPY_VALUE(&levelArgs[1], otherValueType.raw());
-			zv::Val verbosity = pt_type_call_static(PT_CLASS_VERBOSITY_LEVEL, PT_LC("getrecommendedlevelbytype"), 2, levelArgs);
+			zv::Val verbosity = pt_type_verbosity_recommended(valueType, otherValueType.raw());
 			if (UNEXPECTED(verbosity.isUndef())) return zv::Val();
 			zv::Args args{otherValueType.raw(), strictTypes};
 			zv::Val acceptsValue = pt_type_call(Z_OBJ_P(valueType), PT_LC("accepts"), 2, args);
@@ -2142,10 +2139,7 @@ public:
 	{
 		zv::Val callback = pt_type_native_callback(isCallableCallback, thisZv(), NULL);
 		if (UNEXPECTED(callback.isUndef())) return -1;
-		zval args[2];
-		ZVAL_COPY_VALUE(&args[0], thisZv());
-		ZVAL_COPY_VALUE(&args[1], callback.raw());
-		zv::Val result = pt_type_call_static(PT_CLASS_RECURSION_GUARD, PT_LC("run"), 2, args);
+		zv::Val result = pt_type_recursion_guard_run(thisZv(), callback.raw());
 		if (UNEXPECTED(result.isUndef())) return -1;
 		bool isError;
 		if (UNEXPECTED(!isInstance(result.raw(), PT_CLASS_ERROR_TYPE, isError))) return -1;

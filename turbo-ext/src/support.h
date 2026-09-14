@@ -57,7 +57,6 @@ typedef struct _pt_class_ref {
 enum {
 	PT_CLASS_TYPE_COMBINATOR = 0,
 	PT_CLASS_SHOULD_NOT_HAPPEN,
-	PT_CLASS_VERBOSITY_LEVEL,
 	PT_CLASS_VARIABLE,
 	PT_CLASS_FUNC_CALL,
 	PT_CLASS_VIRTUAL_NODE,
@@ -87,7 +86,6 @@ enum {
 	PT_CLASS_CLOSURE_EXPR,
 	PT_CLASS_ARROW_FUNCTION,
 	PT_CLASS_TYPE,
-	PT_CLASS_RECURSION_GUARD,
 	PT_CLASS_CLASS_NAME_TO_OBJECT_TYPE_RESULT,
 	PT_CLASS_TEMPLATE_TYPE_MAP,
 	PT_CLASS_IDENTIFIER_TYPE_NODE,
@@ -121,7 +119,6 @@ enum {
 	PT_CLASS_DUMMY_METHOD_REFLECTION,
 	PT_CLASS_CALLBACK_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION,
 	PT_CLASS_DUMMY_CLASS_CONSTANT_REFLECTION,
-	PT_CLASS_TYPE_TRAVERSER,
 	PT_CLASS_TEMPLATE_TYPE_HELPER,
 	PT_CLASS_TYPE_WITH_CLASS_NAME,
 	PT_CLASS_OBJECT_SHAPE_PROPERTY_REFLECTION,
@@ -167,7 +164,6 @@ enum {
 	PT_CLASS_ARRAY_SHAPE_NODE,
 	PT_CLASS_ARRAY_SHAPE_ITEM_NODE,
 	PT_CLASS_ARRAY_SHAPE_UNSEALED_TYPE_NODE,
-	PT_CLASS_FINITE_TYPE_SET,
 	PT_CLASS_UNION_TYPE_HELPER,
 	PT_CLASS_TEMPLATE_UNION_TYPE,
 	PT_CLASS_TEMPLATE_ITERABLE_TYPE,
@@ -182,6 +178,7 @@ enum {
 	PT_CLASS_TEMPLATE_ARRAY_TYPE,
 	PT_CLASS_UNION_TYPE_NODE,
 	PT_CLASS_INTERSECTION_TYPE_NODE,
+	PT_CLASS_TYPE_TRAVERSER_CALLABLE,
 	PT_CLASS_COUNT
 };
 
@@ -206,8 +203,6 @@ struct pt_globals_t {
 	zval trinary_maybe;
 	zval trinary_no;
 	bool trinary_inited;
-	zval verbosity_precise;
-	bool verbosity_inited;
 	pt_class_ref class_refs[PT_CLASS_COUNT];
 	/* TrustedTypes.cpp: the filename prefix armed by Runtime::trustTypesUnder()
 	 * (empty = off) */
@@ -332,7 +327,6 @@ void pt_register_generic_static_type();
 void pt_register_object_shape_type();
 void pt_register_nonexistent_parent_class_type();
 void pt_integer_range_type_rinit();
-void pt_constant_string_type_rinit();
 void pt_is_super_type_of_result_rinit();
 void pt_is_super_type_of_result_rshutdown();
 void pt_accepts_result_rinit();
@@ -756,5 +750,57 @@ void pt_register_intersection_type();
 [[nodiscard]] bool pt_union_type_new(zval *out, zval *types, bool normalized = false);
 bool pt_benevolent_union_type_new(zval *out, zval *types, bool normalized = false);
 bool pt_intersection_type_new(zval *out, zval *types);
+
+/* merged from the parallel port branch */
+/* the Type-kernel helper classes (TypeTraverser.cpp, VerbosityLevel.cpp,
+ * RecursionGuard.cpp, FiniteTypeSet.cpp) */
+extern zend_class_entry *pt_ce_type_traverser;
+extern zend_class_entry *pt_ce_verbosity_level;
+extern zend_class_entry *pt_ce_recursion_guard;
+extern zend_class_entry *pt_ce_finite_type_set;
+/* registered at the end of the Type block: TypeTraverser first
+ * (VerbosityLevel::getRecommendedLevelByType() runs it), then
+ * VerbosityLevel (RecursionGuard::run() describes with its value level),
+ * RecursionGuard, FiniteTypeSet (its containedIn() names TrinaryLogic) */
+void pt_register_type_traverser();
+void pt_register_verbosity_level();
+void pt_register_recursion_guard();
+void pt_register_finite_type_set();
+/* TypeTraverser::map($type, $cb) — $cb a TypeTraverserCallable or any
+ * callable (borrowed); false = pending exception */
+[[nodiscard]] bool pt_type_traverser_map(zval *out, zval *type, zval *cb);
+/* $traverse($type) for the `callable $traverse` a TypeTraverser callback
+ * receives: the native traverser's traverseInternal() directly when it is
+ * its own [$traverser, 'traverseInternal'] array, any other callable
+ * through the engine; false = pending exception */
+[[nodiscard]] bool pt_type_traverser_traverse(zval *out, zval *traverse, zval *type);
+/* the twin's private level constants */
+#define PT_VERBOSITY_LEVEL_TYPE_ONLY 1
+#define PT_VERBOSITY_LEVEL_VALUE 2
+#define PT_VERBOSITY_LEVEL_PRECISE 3
+#define PT_VERBOSITY_LEVEL_CACHE 4
+/* VerbosityLevel::typeOnly() / value() / precise() / cache() for a
+ * PT_VERBOSITY_LEVEL_* value — the twin's singletons, held in its static
+ * properties; borrowed zval, callers copy; NULL = pending exception */
+[[nodiscard]] zval *pt_verbosity_level_singleton(zend_long value);
+/* $level->getLevelValue(): the slot of a native instance, the method of
+ * anything else (the PHP twin declared next to the native class in the
+ * differential tests); false = pending exception */
+[[nodiscard]] bool pt_verbosity_level_value_of(zval *level, zend_long &out);
+/* VerbosityLevel::getRecommendedLevelByType($acceptingType, $acceptedType)
+ * ($acceptedType NULL for null); false = pending exception */
+[[nodiscard]] bool pt_verbosity_level_recommended(zval *out, zval *acceptingType, zval *acceptedType);
+/* RecursionGuard::run($type, $callback) / runOnObjectIdentity($type,
+ * $callback) — $callback any callable (borrowed); false = pending exception */
+[[nodiscard]] bool pt_recursion_guard_run(zval *out, zval *type, zval *callback);
+bool pt_recursion_guard_run_on_object_identity(zval *out, zval *type, zval *callback);
+/* whether RecursionGuard::$context is non-empty (or unreadable) — the
+ * TypeCombinatorCache memo stays out while it is */
+bool pt_recursion_guard_active();
+/* FiniteTypeSet::create($types) (the set or null in *out) and
+ * FiniteTypeSet::key($type) (a string or null in *out); false = pending
+ * exception */
+[[nodiscard]] bool pt_finite_type_set_create(zval *out, zval *types);
+bool pt_finite_type_set_key(zval *out, zval *type);
 
 #endif /* PHPSTANTURBO_SUPPORT_H */

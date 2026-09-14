@@ -143,7 +143,7 @@ public:
 		bool isBenevolent;
 		if (UNEXPECTED(!pt_union_benevolent_instanceof(keyType.raw(), isBenevolent))) return false;
 		if (isBenevolent) {
-			zv::Val level = pt_type_call_static(PT_CLASS_VERBOSITY_LEVEL, PT_LC("value"), 0, NULL);
+			zv::Val level = pt_type_verbosity_level(PT_VERBOSITY_LEVEL_VALUE);
 			if (UNEXPECTED(level.isUndef())) return false;
 			zv::Val description = pt_type_call(Z_OBJ_P(keyType.raw()), PT_LC("describe"), 1, level.raw());
 			if (UNEXPECTED(description.isUndef())) return false;
@@ -1270,10 +1270,7 @@ public:
 		zv::Val caseZv = caseArg.toVal();
 		zv::Val callback = pt_type_native_callback(changeKeyCaseCallback, caseZv.raw(), NULL);
 		if (UNEXPECTED(callback.isUndef())) return zv::Val();
-		zval args[2];
-		ZVAL_COPY_VALUE(&args[0], k);
-		ZVAL_COPY_VALUE(&args[1], callback.raw());
-		zv::Val newKeyType = pt_type_call_static(PT_CLASS_TYPE_TRAVERSER, PT_LC("map"), 2, args);
+		zv::Val newKeyType = pt_type_traverser_map_of(k, callback.raw());
 		return thisWithTypes(std::move(newKeyType), thisGetItemType());
 	}
 
@@ -1842,10 +1839,7 @@ private:
 		zv::Arr empty = zv::Arr::empty();
 		zv::Val callback = pt_type_native_callback(collectIntegerTypesCallback, empty.raw(), NULL);
 		if (UNEXPECTED(callback.isUndef())) return zv::Val();
-		zval args[2];
-		ZVAL_COPY_VALUE(&args[0], keyType);
-		ZVAL_COPY_VALUE(&args[1], callback.raw());
-		zv::Val mapped = pt_type_call_static(PT_CLASS_TYPE_TRAVERSER, PT_LC("map"), 2, args);
+		zv::Val mapped = pt_type_traverser_map_of(keyType, callback.raw());
 		if (UNEXPECTED(mapped.isUndef())) return zv::Val();
 		zval *collected = pt_type_native_callback_state(callback.raw(), 0);
 		if (Z_TYPE_P(collected) != IS_ARRAY) return zv::Val(zv::Arr::empty());
@@ -1875,10 +1869,7 @@ private:
 	{
 		zv::Val callback = pt_type_native_callback(renumberIntegerKeysCallback, NULL, NULL);
 		if (UNEXPECTED(callback.isUndef())) return zv::Val();
-		zval args[2];
-		ZVAL_COPY_VALUE(&args[0], keyType);
-		ZVAL_COPY_VALUE(&args[1], callback.raw());
-		return pt_type_call_static(PT_CLASS_TYPE_TRAVERSER, PT_LC("map"), 2, args);
+		return pt_type_traverser_map_of(keyType, callback.raw());
 	}
 
 	/* private static foldConstantStringKeyCase(ConstantStringType $type, ?int $case):

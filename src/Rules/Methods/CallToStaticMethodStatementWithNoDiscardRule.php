@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -26,7 +25,6 @@ final class CallToStaticMethodStatementWithNoDiscardRule implements Rule
 	public function __construct(
 		private RuleLevelHelper $ruleLevelHelper,
 		private ReflectionProvider $reflectionProvider,
-		private PhpVersion $phpVersion,
 	)
 	{
 	}
@@ -65,10 +63,6 @@ final class CallToStaticMethodStatementWithNoDiscardRule implements Rule
 		}
 
 		if ($methodCall->isFirstClassCallable()) {
-			return [];
-		}
-
-		if (!$this->phpVersion->supportsNoDiscardAttribute()) {
 			return [];
 		}
 

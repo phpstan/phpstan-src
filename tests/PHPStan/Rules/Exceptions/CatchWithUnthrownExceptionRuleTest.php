@@ -141,6 +141,10 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 				'Dead catch - ArithmeticError is never thrown in the try block.',
 				762,
 			],
+			[
+				'Dead catch - Exception is never thrown in the try block.',
+				802,
+			],
 		]);
 	}
 
@@ -232,6 +236,10 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 			[
 				'Dead catch - Exception is never thrown in the try block.',
 				555,
+			],
+			[
+				'Dead catch - Exception is never thrown in the try block.',
+				802,
 			],
 		]);
 	}
@@ -840,6 +848,17 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 	public function testBug9826(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-9826.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testTriggerErrorThrowType(): void
+	{
+		$this->analyse([__DIR__ . '/data/trigger-error-throw-type.php'], [
+			[
+				'Dead catch - Exception is never thrown in the try block.',
+				39,
+			],
+		]);
 	}
 
 }

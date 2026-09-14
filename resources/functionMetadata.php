@@ -1378,7 +1378,7 @@ return [
 	'mb_rtrim' => ['hasSideEffects' => false],
 	'mb_scrub' => ['hasSideEffects' => false],
 	'mb_split' => ['hasSideEffects' => false],
-	'mb_str_pad' => ['hasSideEffects' => true],
+	'mb_str_pad' => ['hasSideEffects' => false],
 	'mb_str_split' => ['hasSideEffects' => false],
 	'mb_strcut' => ['hasSideEffects' => false],
 	'mb_strimwidth' => ['hasSideEffects' => false],

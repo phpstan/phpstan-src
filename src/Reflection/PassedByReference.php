@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection;
 
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use function array_key_exists;
 
 /**
@@ -23,6 +24,7 @@ use function array_key_exists;
  *
  * @api
  */
+#[ReferencedByTurboExtension(key: 'passedByReference')]
 final class PassedByReference
 {
 

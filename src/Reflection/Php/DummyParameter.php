@@ -4,8 +4,10 @@ namespace PHPStan\Reflection\Php;
 
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\PassedByReference;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Type;
 
+#[ReferencedByTurboExtension(key: 'dummyParameter')]
 class DummyParameter implements ParameterReflection
 {
 

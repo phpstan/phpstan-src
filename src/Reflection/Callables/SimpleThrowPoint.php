@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\Callables;
 
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use Throwable;
@@ -17,6 +18,7 @@ use Throwable;
  * Explicit throw points come from @throws annotations. Implicit throw points represent
  * the possibility that any function call could throw.
  */
+#[ReferencedByTurboExtension(key: 'simpleThrowPoint')]
 final class SimpleThrowPoint
 {
 

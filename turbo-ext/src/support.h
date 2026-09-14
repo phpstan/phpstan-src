@@ -119,14 +119,12 @@ enum {
 	PT_CLASS_CONST_EXPR_FLOAT_NODE,
 	PT_CLASS_TEMPLATE_MIXED_TYPE,
 	PT_CLASS_SUBTRACTABLE_TYPE,
-	PT_CLASS_CALLABLE_TYPE,
 	PT_CLASS_DUMMY_PROPERTY_REFLECTION,
 	PT_CLASS_CALLBACK_UNRESOLVED_PROPERTY_PROTOTYPE_REFLECTION,
 	PT_CLASS_DUMMY_METHOD_REFLECTION,
 	PT_CLASS_CALLBACK_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION,
 	PT_CLASS_DUMMY_CLASS_CONSTANT_REFLECTION,
 	PT_CLASS_BENEVOLENT_UNION_TYPE,
-	PT_CLASS_ITERABLE_TYPE,
 	PT_CLASS_TYPE_TRAVERSER,
 	PT_CLASS_TEMPLATE_TYPE_HELPER,
 	PT_CLASS_TYPE_WITH_CLASS_NAME,
@@ -151,8 +149,23 @@ enum {
 	PT_CLASS_UNION_TYPE_UNRESOLVED_PROPERTY_PROTOTYPE_REFLECTION,
 	PT_CLASS_ENUM_UNRESOLVED_PROPERTY_PROTOTYPE_REFLECTION,
 	PT_CLASS_ENUM_PROPERTY_REFLECTION,
-	PT_CLASS_CLOSURE_TYPE,
 	PT_CLASS_CONST_FETCH_NODE,
+	PT_CLASS_PARAMETERS_ACCEPTOR_SELECTOR,
+	PT_CLASS_CALLABLE_TYPE_HELPER,
+	PT_CLASS_CALLABLE_ASSERTIONS_HELPER,
+	PT_CLASS_CALLABLE_PARAMETERS_ACCEPTOR,
+	PT_CLASS_ASSERTIONS,
+	PT_CLASS_SIMPLE_IMPURE_POINT,
+	PT_CLASS_SIMPLE_THROW_POINT,
+	PT_CLASS_DUMMY_PARAMETER,
+	PT_CLASS_NATIVE_PARAMETER_REFLECTION,
+	PT_CLASS_PASSED_BY_REFERENCE,
+	PT_CLASS_EXTENDED_PARAMETER_REFLECTION,
+	PT_CLASS_CLOSURE_CALL_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION,
+	PT_CLASS_PHPDOC_PRINTER,
+	PT_CLASS_CALLABLE_TYPE_NODE,
+	PT_CLASS_CALLABLE_TYPE_PARAMETER_NODE,
+	PT_CLASS_TEMPLATE_TAG_VALUE_NODE,
 	PT_CLASS_FINITE_TYPE_SET,
 	PT_CLASS_COUNT
 };
@@ -665,5 +678,32 @@ void pt_object_type_rshutdown();
 [[nodiscard]] bool pt_object_type_new(zval *out, zend_string *className, zval *subtractedType = NULL, zval *classReflection = NULL);
 bool pt_generic_object_type_new(zval *out, zend_string *mainType, zval *types, zval *subtractedType = NULL, zval *classReflection = NULL, zval *variances = NULL);
 bool pt_enum_case_object_type_new(zval *out, zend_string *className, zend_string *enumCaseName, zval *classReflection = NULL);
+
+/* merged from the parallel port branch */
+/* the callable family (IterableType.cpp, CallableType.cpp, ClosureType.cpp) */
+extern zend_class_entry *pt_ce_iterable_type;
+extern zend_class_entry *pt_ce_callable_type;
+extern zend_class_entry *pt_ce_closure_type;
+/* registered at the end of the Type block: IterableType, then CallableType
+ * (MixedType's isIterable()/isCallable() probes instantiate them), then
+ * ClosureType (its toCoercedArgumentType() instantiates CallableType, its
+ * constructor ObjectType) */
+void pt_register_iterable_type();
+void pt_register_callable_type();
+void pt_register_closure_type();
+/* new IterableType($keyType, $itemType) / new CallableType($parameters,
+ * $returnType, $variadic, $templateTypeMap, $resolvedTemplateTypeMap,
+ * $templateTags, $isPure, $assertions) / new ClosureType($parameters,
+ * $returnType, $variadic, $templateTypeMap, $resolvedTemplateTypeMap,
+ * $callSiteVarianceMap, $templateTags, $throwPoints, $impurePoints,
+ * $invalidateExpressions, $usedVariables, $acceptsNamedArguments,
+ * $mustUseReturnValue, $assertions, $isStatic) — instances of the shadowing
+ * classes (IterableType.cpp / CallableType.cpp / ClosureType.cpp; every
+ * argument borrowed, NULL for a null or a default — the twins' `?array`
+ * and `?Type` parameters at null decide isCommonCallable); false = pending
+ * exception */
+[[nodiscard]] bool pt_iterable_type_new(zval *out, zval *keyType, zval *itemType);
+bool pt_callable_type_new(zval *out, zval *parameters = NULL, zval *returnType = NULL, bool variadic = true, zval *templateTypeMap = NULL, zval *resolvedTemplateTypeMap = NULL, zval *templateTags = NULL, zval *isPure = NULL, zval *assertions = NULL);
+bool pt_closure_type_new(zval *out, zval *parameters = NULL, zval *returnType = NULL, bool variadic = true, zval *templateTypeMap = NULL, zval *resolvedTemplateTypeMap = NULL, zval *callSiteVarianceMap = NULL, zval *templateTags = NULL, zval *throwPoints = NULL, zval *impurePoints = NULL, zval *invalidateExpressions = NULL, zval *usedVariables = NULL, zval *acceptsNamedArguments = NULL, zval *mustUseReturnValue = NULL, zval *assertions = NULL, zval *isStatic = NULL);
 
 #endif /* PHPSTANTURBO_SUPPORT_H */

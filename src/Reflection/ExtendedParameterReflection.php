@@ -3,12 +3,14 @@
 namespace PHPStan\Reflection;
 
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Type;
 
 /**
  * @api
  * @api-do-not-implement
  */
+#[ReferencedByTurboExtension(key: 'extendedParameterReflection')]
 interface ExtendedParameterReflection extends ParameterReflection
 {
 

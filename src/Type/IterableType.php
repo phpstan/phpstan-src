@@ -7,7 +7,7 @@ use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateMixedType;
@@ -27,7 +27,7 @@ use function sprintf;
 
 /** @api */
 #[InstanceofDeprecated(insteadUse: 'Type::isIterable()')]
-#[ReferencedByTurboExtension(key: 'iterableType')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/IterableType.cpp')]
 class IterableType implements CompoundType
 {
 

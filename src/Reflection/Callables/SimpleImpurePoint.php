@@ -10,6 +10,7 @@ use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Type;
 use function count;
 use function sprintf;
@@ -28,6 +29,7 @@ use function sprintf;
  *
  * @phpstan-import-type ImpurePointIdentifier from ImpurePoint
  */
+#[ReferencedByTurboExtension(key: 'simpleImpurePoint')]
 final class SimpleImpurePoint
 {
 

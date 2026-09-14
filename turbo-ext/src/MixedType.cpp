@@ -339,7 +339,7 @@ public:
 
 	/* no when the subtracted type covers every callable, maybe otherwise;
 	 * -1 = pending exception */
-	[[nodiscard]] zend_long isCallable() const { return noWhenSubtractedCovers(PT_CLASS_CALLABLE_TYPE); }
+	[[nodiscard]] zend_long isCallable() const { return noWhenSubtractedCovers(callableTypeNew); }
 
 	/* [new TrivialParametersAcceptor()] */
 	static zv::Val getCallableParametersAcceptors()
@@ -710,11 +710,9 @@ public:
 			zv::Val key = create();
 			zv::Val value = create();
 			if (UNEXPECTED(key.isUndef() || value.isUndef())) return -1;
-			zval args[2];
-			ZVAL_COPY_VALUE(&args[0], key.raw());
-			ZVAL_COPY_VALUE(&args[1], value.raw());
-			zv::Val iterable = pt_type_new(PT_CLASS_ITERABLE_TYPE, 2, args);
-			if (UNEXPECTED(iterable.isUndef())) return -1;
+			zval iterableRaw;
+			if (UNEXPECTED(!pt_iterable_type_new(&iterableRaw, key.raw(), value.raw()))) return -1;
+			zv::Val iterable = zv::Val::adopt(iterableRaw);
 			zend_long isSuperType = isSuperTypeOfTrinary(subtracted, iterable.raw());
 			if (UNEXPECTED(isSuperType < 0)) return -1;
 			if (isSuperType == PT_TRI_YES) return PT_TRI_NO;
@@ -1036,6 +1034,8 @@ private:
 	/* new ObjectWithoutClassType() — the shadowing class, in the shape the
 	 * probe and push overloads take */
 	static bool objectWithoutClassNew(zval *out) { return pt_object_without_class_type_new(out); }
+	/* new CallableType() — the shadowing class at the twin's defaults */
+	static bool callableTypeNew(zval *out) { return pt_callable_type_new(out); }
 
 	zv::Val thisValue() const { return pt_this_value(self); }
 

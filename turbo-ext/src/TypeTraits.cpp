@@ -2436,3 +2436,676 @@ zv::Val pt_type_new_object_type(zval *className)
 }
 
 /* }}} */
+
+/* merged from the parallel port branch */
+
+/* {{{ helpers of the callable family (IterableType.cpp, CallableType.cpp,
+ * ClosureType.cpp) */
+
+/* $object->method(...$args) requiring an object result; UNDEF = pending
+ * exception (a TypeError when the method returned something else) */
+static zv::Val pt_callable_call_object(zend_object *object, const char *lcname, size_t len, uint32_t argc, zval *argv)
+{
+	zv::Val result = pt_type_call(object, lcname, len, argc, argv);
+	if (UNEXPECTED(result.isUndef())) return zv::Val();
+	if (UNEXPECTED(!zv::Ref(result.raw()).isObject())) {
+		zend_type_error("phpstan_turbo: %s::%s() must return an object, %s returned", ZSTR_VAL(object->ce->name), lcname, zend_zval_value_name(result.raw()));
+		return zv::Val();
+	}
+	return result;
+}
+
+/* the same requiring an array result */
+static zv::Val pt_callable_call_array(zend_object *object, const char *lcname, size_t len, uint32_t argc, zval *argv)
+{
+	zv::Val result = pt_type_call(object, lcname, len, argc, argv);
+	if (UNEXPECTED(result.isUndef())) return zv::Val();
+	if (UNEXPECTED(!zv::Ref(result.raw()).isArray())) {
+		zend_type_error("phpstan_turbo: %s::%s() must return an array, %s returned", ZSTR_VAL(object->ce->name), lcname, zend_zval_value_name(result.raw()));
+		return zv::Val();
+	}
+	return result;
+}
+
+/* the same requiring a string result */
+static zv::Val pt_callable_call_string(zend_object *object, const char *lcname, size_t len, uint32_t argc, zval *argv)
+{
+	zv::Val result = pt_type_call(object, lcname, len, argc, argv);
+	if (UNEXPECTED(result.isUndef())) return zv::Val();
+	if (UNEXPECTED(!zv::Ref(result.raw()).isString())) {
+		zend_type_error("phpstan_turbo: %s::%s() must return a string, %s returned", ZSTR_VAL(object->ce->name), lcname, zend_zval_value_name(result.raw()));
+		return zv::Val();
+	}
+	return result;
+}
+
+/* the same on a method returning bool; -1 = pending exception */
+static int pt_callable_call_bool(zend_object *object, const char *lcname, size_t len, uint32_t argc, zval *argv)
+{
+	zv::Val result = pt_type_call(object, lcname, len, argc, argv);
+	if (UNEXPECTED(result.isUndef())) return -1;
+	return zend_is_true(result.raw()) ? 1 : 0;
+}
+
+/* an element the twins call methods on (a ParameterReflection, an
+ * AssertTag, a TemplateTag); NULL with an Error pending for a non-object,
+ * as the twin's member call on it raises */
+[[nodiscard]] static zend_object *pt_callable_element_object(zval *element, const char *what)
+{
+	if (UNEXPECTED(Z_TYPE_P(element) != IS_OBJECT)) {
+		zend_type_error("phpstan_turbo: %s must be an object, %s given", what, zend_zval_value_name(element));
+		return NULL;
+	}
+	return Z_OBJ_P(element);
+}
+
+bool pt_callable_array_merge_into(zv::Arr &into, zval *more)
+{
+	if (UNEXPECTED(Z_TYPE_P(more) != IS_ARRAY)) {
+		zend_type_error("array_merge(): Argument #2 must be of type array, %s given", zend_zval_value_name(more));
+		return false;
+	}
+	for (zv::ArrayEntry entry : zv::ArrRef(more)) {
+		if (entry.hasStringKey()) {
+			into.set(entry.stringKey(), zv::Val::copyOf(entry.value()));
+		} else {
+			into.push(entry.value());
+		}
+	}
+	return true;
+}
+
+/* $classes = array_merge($classes, $type->getReferencedClasses()) */
+static bool pt_callable_merge_referenced_classes(zv::Arr &classes, zval *type)
+{
+	zend_object *object = pt_callable_element_object(type, "a type");
+	if (UNEXPECTED(object == NULL)) return false;
+	zv::Val referenced = pt_callable_call_array(object, PT_LC("getreferencedclasses"), 0, NULL);
+	if (UNEXPECTED(referenced.isUndef())) return false;
+	return pt_callable_array_merge_into(classes, referenced.raw());
+}
+
+zv::Val pt_callable_assertions_all(zval *assertions)
+{
+	zend_object *object = pt_callable_element_object(assertions, "the assertions");
+	if (UNEXPECTED(object == NULL)) return zv::Val();
+	return pt_callable_call_array(object, PT_LC("getall"), 0, NULL);
+}
+
+zv::Val pt_callable_referenced_classes(zv::Arr classes, zval *parameters, zval *assertions, zval *returnType)
+{
+	if (UNEXPECTED(Z_TYPE_P(parameters) != IS_ARRAY)) {
+		zend_type_error("phpstan_turbo: the parameters must be an array");
+		return zv::Val();
+	}
+	for (zv::ArrayEntry entry : zv::ArrRef(parameters)) {
+		zend_object *parameter = pt_callable_element_object(entry.value().raw(), "a parameter");
+		if (UNEXPECTED(parameter == NULL)) return zv::Val();
+		zv::Val type = pt_callable_call_object(parameter, PT_LC("gettype"), 0, NULL);
+		if (UNEXPECTED(type.isUndef() || !pt_callable_merge_referenced_classes(classes, type.raw()))) return zv::Val();
+	}
+	zv::Val assertTags = pt_callable_assertions_all(assertions);
+	if (UNEXPECTED(assertTags.isUndef())) return zv::Val();
+	for (zv::ArrayEntry entry : zv::ArrRef(assertTags.raw())) {
+		zend_object *assertTag = pt_callable_element_object(entry.value().raw(), "an assert tag");
+		if (UNEXPECTED(assertTag == NULL)) return zv::Val();
+		zv::Val type = pt_callable_call_object(assertTag, PT_LC("gettype"), 0, NULL);
+		if (UNEXPECTED(type.isUndef() || !pt_callable_merge_referenced_classes(classes, type.raw()))) return zv::Val();
+	}
+	if (UNEXPECTED(!pt_callable_merge_referenced_classes(classes, returnType))) return zv::Val();
+	return zv::Val(std::move(classes));
+}
+
+zv::Val pt_callable_parameter_types(zval *parameters)
+{
+	if (UNEXPECTED(Z_TYPE_P(parameters) != IS_ARRAY)) {
+		zend_type_error("array_map(): Argument #2 ($array) must be of type array, %s given", zend_zval_value_name(parameters));
+		return zv::Val();
+	}
+	/* array_map() over one array keeps its keys */
+	zv::Arr types = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(parameters)));
+	for (zv::ArrayEntry entry : zv::ArrRef(parameters)) {
+		zend_object *parameter = pt_callable_element_object(entry.value().raw(), "a parameter");
+		if (UNEXPECTED(parameter == NULL)) return zv::Val();
+		zv::Val type = pt_type_call(parameter, PT_LC("gettype"), 0, NULL);
+		if (UNEXPECTED(type.isUndef())) return zv::Val();
+		if (entry.hasStringKey()) {
+			types.set(entry.stringKey(), std::move(type));
+		} else {
+			types.separate();
+			zval v = type.take();
+			zend_hash_index_update(types.table(), entry.indexKey(), &v);
+		}
+	}
+	return zv::Val(std::move(types));
+}
+
+zv::Val pt_callable_dummy_parameters(zval *parameters, zval *assertions)
+{
+	/* $assertedParameterNames[$assertTag->getParameter()->getParameterName()] = true */
+	zv::Val assertTags = pt_callable_assertions_all(assertions);
+	if (UNEXPECTED(assertTags.isUndef())) return zv::Val();
+	zv::Arr assertedParameterNames = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(assertTags.raw())));
+	for (zv::ArrayEntry entry : zv::ArrRef(assertTags.raw())) {
+		zend_object *assertTag = pt_callable_element_object(entry.value().raw(), "an assert tag");
+		if (UNEXPECTED(assertTag == NULL)) return zv::Val();
+		zv::Val parameter = pt_callable_call_object(assertTag, PT_LC("getparameter"), 0, NULL);
+		if (UNEXPECTED(parameter.isUndef())) return zv::Val();
+		zv::Val name = pt_callable_call_string(Z_OBJ_P(parameter.raw()), PT_LC("getparametername"), 0, NULL);
+		if (UNEXPECTED(name.isUndef())) return zv::Val();
+		assertedParameterNames.set(Z_STR_P(name.raw()), zv::Val::boolean(true));
+	}
+	if (UNEXPECTED(Z_TYPE_P(parameters) != IS_ARRAY)) {
+		zend_type_error("array_map(): Argument #2 ($array) must be of type array, %s given", zend_zval_value_name(parameters));
+		return zv::Val();
+	}
+	zv::Arr dummies = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(parameters)));
+	for (zv::ArrayEntry entry : zv::ArrRef(parameters)) {
+		zend_object *p = pt_callable_element_object(entry.value().raw(), "a parameter");
+		if (UNEXPECTED(p == NULL)) return zv::Val();
+		/* array_key_exists('$' . $p->getName(), $assertedParameterNames) ? $p->getName() : '' */
+		zv::Val name = pt_callable_call_string(p, PT_LC("getname"), 0, NULL);
+		if (UNEXPECTED(name.isUndef())) return zv::Val();
+		zend_string *dollarName = zend_string_concat2("$", 1, ZSTR_VAL(Z_STR_P(name.raw())), ZSTR_LEN(Z_STR_P(name.raw())));
+		bool asserted = zend_symtable_exists(assertedParameterNames.table(), dollarName);
+		zend_string_release(dollarName);
+		zv::Val dummyName = asserted ? zv::Val::copyOf(zv::Ref(name.raw())) : zv::Val::string("", 0);
+		zv::Val type = pt_type_call(p, PT_LC("gettype"), 0, NULL);
+		if (UNEXPECTED(type.isUndef())) return zv::Val();
+		/* optional: $p->isOptional() && !$p->isVariadic() */
+		int optional = pt_callable_call_bool(p, PT_LC("isoptional"), 0, NULL);
+		if (UNEXPECTED(optional < 0)) return zv::Val();
+		if (optional == 1) {
+			int variadic = pt_callable_call_bool(p, PT_LC("isvariadic"), 0, NULL);
+			if (UNEXPECTED(variadic < 0)) return zv::Val();
+			optional = variadic == 1 ? 0 : 1;
+		}
+		zv::Val passedByReference = pt_type_call_static(PT_CLASS_PASSED_BY_REFERENCE, PT_LC("createno"), 0, NULL);
+		if (UNEXPECTED(passedByReference.isUndef())) return zv::Val();
+		int variadic = pt_callable_call_bool(p, PT_LC("isvariadic"), 0, NULL);
+		if (UNEXPECTED(variadic < 0)) return zv::Val();
+		zv::Val defaultValue = pt_type_call(p, PT_LC("getdefaultvalue"), 0, NULL);
+		if (UNEXPECTED(defaultValue.isUndef())) return zv::Val();
+		zv::Args args{dummyName.raw(), type.raw(), bool(optional == 1), passedByReference.raw(), bool(variadic == 1), defaultValue.raw()};
+		zv::Val dummy = pt_type_new(PT_CLASS_DUMMY_PARAMETER, 6, args);
+		if (UNEXPECTED(dummy.isUndef())) return zv::Val();
+		if (entry.hasStringKey()) {
+			dummies.set(entry.stringKey(), std::move(dummy));
+		} else {
+			dummies.separate();
+			zval v = dummy.take();
+			zend_hash_index_update(dummies.table(), entry.indexKey(), &v);
+		}
+	}
+	return zv::Val(std::move(dummies));
+}
+
+zv::Val pt_callable_print_php_doc_node(zval *type)
+{
+	zv::Val printer = pt_type_new(PT_CLASS_PHPDOC_PRINTER, 0, NULL);
+	if (UNEXPECTED(printer.isUndef())) return zv::Val();
+	zv::Val node = pt_type_call(Z_OBJ_P(type), PT_LC("tophpdocnode"), 0, NULL);
+	if (UNEXPECTED(node.isUndef())) return zv::Val();
+	return pt_type_call(Z_OBJ_P(printer.raw()), PT_LC("print"), 1, node.raw());
+}
+
+zv::Val pt_callable_type_node(const char *identifier, size_t identifierLen, zval *parameters, zval *templateTags, zval *assertions, zval *returnType)
+{
+	if (UNEXPECTED(Z_TYPE_P(parameters) != IS_ARRAY || Z_TYPE_P(templateTags) != IS_ARRAY)) {
+		zend_type_error("phpstan_turbo: the parameters and template tags must be arrays");
+		return zv::Val();
+	}
+	/* $parameters[] = new CallableTypeParameterNode($parameter->getType()->toPhpDocNode(),
+	 * !$parameter->passedByReference()->no(), $parameter->isVariadic(),
+	 * $parameter->getName() === '' ? '' : '$' . $parameter->getName(), $parameter->isOptional()) */
+	zv::Arr parameterNodes = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(parameters)));
+	for (zv::ArrayEntry entry : zv::ArrRef(parameters)) {
+		zend_object *parameter = pt_callable_element_object(entry.value().raw(), "a parameter");
+		if (UNEXPECTED(parameter == NULL)) return zv::Val();
+		zv::Val type = pt_callable_call_object(parameter, PT_LC("gettype"), 0, NULL);
+		if (UNEXPECTED(type.isUndef())) return zv::Val();
+		zv::Val typeNode = pt_type_call(Z_OBJ_P(type.raw()), PT_LC("tophpdocnode"), 0, NULL);
+		if (UNEXPECTED(typeNode.isUndef())) return zv::Val();
+		zv::Val passedByReference = pt_callable_call_object(parameter, PT_LC("passedbyreference"), 0, NULL);
+		if (UNEXPECTED(passedByReference.isUndef())) return zv::Val();
+		int byReferenceNo = pt_callable_call_bool(Z_OBJ_P(passedByReference.raw()), PT_LC("no"), 0, NULL);
+		if (UNEXPECTED(byReferenceNo < 0)) return zv::Val();
+		int variadic = pt_callable_call_bool(parameter, PT_LC("isvariadic"), 0, NULL);
+		if (UNEXPECTED(variadic < 0)) return zv::Val();
+		zv::Val name = pt_callable_call_string(parameter, PT_LC("getname"), 0, NULL);
+		if (UNEXPECTED(name.isUndef())) return zv::Val();
+		zv::Val parameterName;
+		if (ZSTR_LEN(Z_STR_P(name.raw())) == 0) {
+			parameterName = zv::Val::string("", 0);
+		} else {
+			parameterName = zv::Val::adoptString(zend_string_concat2("$", 1, ZSTR_VAL(Z_STR_P(name.raw())), ZSTR_LEN(Z_STR_P(name.raw()))));
+		}
+		int optional = pt_callable_call_bool(parameter, PT_LC("isoptional"), 0, NULL);
+		if (UNEXPECTED(optional < 0)) return zv::Val();
+		zv::Args args{typeNode.raw(), bool(byReferenceNo == 0), bool(variadic == 1), parameterName.raw(), bool(optional == 1)};
+		zv::Val node = pt_type_new(PT_CLASS_CALLABLE_TYPE_PARAMETER_NODE, 5, args);
+		if (UNEXPECTED(node.isUndef())) return zv::Val();
+		parameterNodes.push(std::move(node));
+	}
+	/* $templateTags[] = new TemplateTagValueNode($templateName, $templateTag->getBound()->toPhpDocNode(), '') */
+	zv::Arr templateTagNodes = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(templateTags)));
+	for (zv::ArrayEntry entry : zv::ArrRef(templateTags)) {
+		zend_object *templateTag = pt_callable_element_object(entry.value().raw(), "a template tag");
+		if (UNEXPECTED(templateTag == NULL)) return zv::Val();
+		zv::Val bound = pt_callable_call_object(templateTag, PT_LC("getbound"), 0, NULL);
+		if (UNEXPECTED(bound.isUndef())) return zv::Val();
+		zv::Val boundNode = pt_type_call(Z_OBJ_P(bound.raw()), PT_LC("tophpdocnode"), 0, NULL);
+		if (UNEXPECTED(boundNode.isUndef())) return zv::Val();
+		zv::Val templateName = entry.hasStringKey() ? zv::Val::string(entry.stringKey()) : zv::Val::adoptString(zend_long_to_str((zend_long) entry.indexKey()));
+		zval args[3];
+		ZVAL_COPY_VALUE(&args[0], templateName.raw());
+		ZVAL_COPY_VALUE(&args[1], boundNode.raw());
+		ZVAL_EMPTY_STRING(&args[2]);
+		zv::Val node = pt_type_new(PT_CLASS_TEMPLATE_TAG_VALUE_NODE, 3, args);
+		zval_ptr_dtor(&args[2]);
+		if (UNEXPECTED(node.isUndef())) return zv::Val();
+		templateTagNodes.push(std::move(node));
+	}
+	/* CallableAssertionsHelper::toConditionalReturnTypeNode($this->assertions, $this->parameters, $this->returnType) ?? $this->returnType->toPhpDocNode() */
+	zv::Args helperArgs{assertions, parameters, returnType};
+	zv::Val returnTypeNode = pt_type_call_static(PT_CLASS_CALLABLE_ASSERTIONS_HELPER, PT_LC("toconditionalreturntypenode"), 3, helperArgs);
+	if (UNEXPECTED(returnTypeNode.isUndef())) return zv::Val();
+	if (returnTypeNode.isNull()) {
+		returnTypeNode = pt_type_call(Z_OBJ_P(returnType), PT_LC("tophpdocnode"), 0, NULL);
+		if (UNEXPECTED(returnTypeNode.isUndef())) return zv::Val();
+	}
+	zv::Val identifierNode = pt_type_new_identifier_type_node(identifier, identifierLen);
+	if (UNEXPECTED(identifierNode.isUndef())) return zv::Val();
+	zv::Args args{identifierNode.raw(), parameterNodes.raw(), returnTypeNode.raw(), templateTagNodes.raw()};
+	return pt_type_new(PT_CLASS_CALLABLE_TYPE_NODE, 4, args);
+}
+
+/* $type->hasTemplateOrLateResolvableType(); -1 = pending exception */
+static int pt_callable_type_has_template(zval *type)
+{
+	zend_object *object = pt_callable_element_object(type, "a type");
+	if (UNEXPECTED(object == NULL)) return -1;
+	return pt_callable_call_bool(object, PT_LC("hastemplateorlateresolvabletype"), 0, NULL);
+}
+
+/* $parameter->getOutType() / getClosureThisType() !== null && ->hasTemplateOrLateResolvableType() */
+static int pt_callable_nullable_type_has_template(zend_object *parameter, const char *lcname, size_t len)
+{
+	zv::Val type = pt_type_call(parameter, lcname, len, 0, NULL);
+	if (UNEXPECTED(type.isUndef())) return -1;
+	if (type.isNull()) return 0;
+	return pt_callable_type_has_template(type.raw());
+}
+
+bool pt_callable_parameters_or_asserts_have_template(zval *parameters, zval *assertions, bool &out)
+{
+	if (UNEXPECTED(Z_TYPE_P(parameters) != IS_ARRAY)) {
+		zend_type_error("phpstan_turbo: the parameters must be an array");
+		return false;
+	}
+	for (zv::ArrayEntry entry : zv::ArrRef(parameters)) {
+		zend_object *parameter = pt_callable_element_object(entry.value().raw(), "a parameter");
+		if (UNEXPECTED(parameter == NULL)) return false;
+		zv::Val type = pt_type_call(parameter, PT_LC("gettype"), 0, NULL);
+		if (UNEXPECTED(type.isUndef())) return false;
+		int has = pt_callable_type_has_template(type.raw());
+		if (UNEXPECTED(has < 0)) return false;
+		if (has == 1) {
+			out = true;
+			return true;
+		}
+		bool extended;
+		if (UNEXPECTED(!pt_type_instanceof(entry.value().raw(), PT_CLASS_EXTENDED_PARAMETER_REFLECTION, extended))) return false;
+		if (!extended) continue;
+		has = pt_callable_nullable_type_has_template(parameter, PT_LC("getouttype"));
+		if (UNEXPECTED(has < 0)) return false;
+		if (has == 1) {
+			out = true;
+			return true;
+		}
+		has = pt_callable_nullable_type_has_template(parameter, PT_LC("getclosurethistype"));
+		if (UNEXPECTED(has < 0)) return false;
+		if (has == 1) {
+			out = true;
+			return true;
+		}
+	}
+	zv::Val assertTags = pt_callable_assertions_all(assertions);
+	if (UNEXPECTED(assertTags.isUndef())) return false;
+	for (zv::ArrayEntry entry : zv::ArrRef(assertTags.raw())) {
+		zend_object *assertTag = pt_callable_element_object(entry.value().raw(), "an assert tag");
+		if (UNEXPECTED(assertTag == NULL)) return false;
+		zv::Val type = pt_type_call(assertTag, PT_LC("gettype"), 0, NULL);
+		if (UNEXPECTED(type.isUndef())) return false;
+		int has = pt_callable_type_has_template(type.raw());
+		if (UNEXPECTED(has < 0)) return false;
+		if (has == 1) {
+			out = true;
+			return true;
+		}
+	}
+	out = false;
+	return true;
+}
+
+/* $positionVariance->compose(TemplateTypeVariance::<factory>()); UNDEF =
+ * pending exception */
+static zv::Val pt_callable_compose_variance(zval *positionVariance, const char *factoryLcname, size_t factoryLen)
+{
+	zv::Val variance = pt_type_call_static(PT_CLASS_TEMPLATE_TYPE_VARIANCE, factoryLcname, factoryLen, 0, NULL);
+	if (UNEXPECTED(variance.isUndef())) return zv::Val();
+	return pt_type_call(Z_OBJ_P(positionVariance), PT_LC("compose"), 1, variance.raw());
+}
+
+/* foreach ($type->getReferencedTemplateTypes($variance) as $reference) $references[] = $reference */
+static bool pt_callable_append_referenced_template_types(zv::Arr &references, zval *type, zval *variance)
+{
+	zend_object *object = pt_callable_element_object(type, "a type");
+	if (UNEXPECTED(object == NULL)) return false;
+	zv::Val referenced = pt_callable_call_array(object, PT_LC("getreferencedtemplatetypes"), 1, variance);
+	if (UNEXPECTED(referenced.isUndef())) return false;
+	for (zv::ArrayEntry entry : zv::ArrRef(referenced.raw())) {
+		references.push(entry.value());
+	}
+	return true;
+}
+
+zv::Val pt_callable_referenced_template_types(zend_object *self, pt_callable_this_getter getReturnType, pt_callable_this_getter getParameters, zval *assertions, zval *positionVariance)
+{
+	/* $references = $this->getReturnType()->getReferencedTemplateTypes($positionVariance->compose(TemplateTypeVariance::createCovariant())) */
+	zv::Val returnType = getReturnType(self);
+	if (UNEXPECTED(returnType.isUndef())) return zv::Val();
+	zend_object *returnTypeObject = pt_callable_element_object(returnType.raw(), "the return type");
+	if (UNEXPECTED(returnTypeObject == NULL)) return zv::Val();
+	zv::Val covariant = pt_callable_compose_variance(positionVariance, PT_LC("createcovariant"));
+	if (UNEXPECTED(covariant.isUndef())) return zv::Val();
+	zv::Val initial = pt_callable_call_array(returnTypeObject, PT_LC("getreferencedtemplatetypes"), 1, covariant.raw());
+	if (UNEXPECTED(initial.isUndef())) return zv::Val();
+	zv::Arr references = zv::Arr::adoptVal(std::move(initial));
+	zv::Val assertTags = pt_callable_assertions_all(assertions);
+	if (UNEXPECTED(assertTags.isUndef())) return zv::Val();
+	for (zv::ArrayEntry entry : zv::ArrRef(assertTags.raw())) {
+		zend_object *assertTag = pt_callable_element_object(entry.value().raw(), "an assert tag");
+		if (UNEXPECTED(assertTag == NULL)) return zv::Val();
+		zv::Val type = pt_type_call(assertTag, PT_LC("gettype"), 0, NULL);
+		if (UNEXPECTED(type.isUndef())) return zv::Val();
+		zv::Val tagVariance = pt_callable_compose_variance(positionVariance, PT_LC("createcovariant"));
+		if (UNEXPECTED(tagVariance.isUndef())) return zv::Val();
+		if (UNEXPECTED(!pt_callable_append_referenced_template_types(references, type.raw(), tagVariance.raw()))) return zv::Val();
+	}
+	zv::Val paramVariance = pt_callable_compose_variance(positionVariance, PT_LC("createcontravariant"));
+	if (UNEXPECTED(paramVariance.isUndef())) return zv::Val();
+	zv::Val parameters = getParameters(self);
+	if (UNEXPECTED(parameters.isUndef())) return zv::Val();
+	if (UNEXPECTED(!zv::Ref(parameters.raw()).isArray())) {
+		zend_type_error("phpstan_turbo: getParameters() must return an array");
+		return zv::Val();
+	}
+	for (zv::ArrayEntry entry : zv::ArrRef(parameters.raw())) {
+		zend_object *param = pt_callable_element_object(entry.value().raw(), "a parameter");
+		if (UNEXPECTED(param == NULL)) return zv::Val();
+		zv::Val type = pt_type_call(param, PT_LC("gettype"), 0, NULL);
+		if (UNEXPECTED(type.isUndef())) return zv::Val();
+		if (UNEXPECTED(!pt_callable_append_referenced_template_types(references, type.raw(), paramVariance.raw()))) return zv::Val();
+	}
+	return zv::Val(std::move(references));
+}
+
+/* $typeMap->union($other); UNDEF = pending exception */
+static zv::Val pt_callable_type_map_union(zv::Val typeMap, zval *other)
+{
+	if (UNEXPECTED(typeMap.isUndef() || other == NULL)) return zv::Val();
+	return pt_type_call(Z_OBJ_P(typeMap.raw()), PT_LC("union"), 1, other);
+}
+
+zv::Val pt_callable_infer_template_types_on_parameters_acceptor(zend_object *self, pt_callable_this_getter getParameters, pt_callable_this_getter getReturnType, zval *parametersAcceptor)
+{
+	/* $parameterTypes = array_map(static fn ($parameter) => $parameter->getType(), $this->getParameters()) */
+	zv::Val parameters = getParameters(self);
+	if (UNEXPECTED(parameters.isUndef())) return zv::Val();
+	zv::Val parameterTypes = pt_callable_parameter_types(parameters.raw());
+	if (UNEXPECTED(parameterTypes.isUndef())) return zv::Val();
+	/* $parametersAcceptor = ParametersAcceptorSelector::selectFromTypes($parameterTypes, [$parametersAcceptor], false) */
+	zv::Arr acceptors = zv::Arr::create(1);
+	acceptors.push(zv::Ref(parametersAcceptor));
+	zv::Args selectArgs{parameterTypes.raw(), acceptors.raw(), false};
+	zv::Val selected = pt_type_call_static(PT_CLASS_PARAMETERS_ACCEPTOR_SELECTOR, PT_LC("selectfromtypes"), 3, selectArgs);
+	if (UNEXPECTED(selected.isUndef())) return zv::Val();
+	if (UNEXPECTED(!zv::Ref(selected.raw()).isObject())) {
+		zend_type_error("phpstan_turbo: ParametersAcceptorSelector::selectFromTypes() must return an object");
+		return zv::Val();
+	}
+	zv::Val args = pt_callable_call_array(Z_OBJ_P(selected.raw()), PT_LC("getparameters"), 0, NULL);
+	if (UNEXPECTED(args.isUndef())) return zv::Val();
+	zv::Val returnType = pt_type_call(Z_OBJ_P(selected.raw()), PT_LC("getreturntype"), 0, NULL);
+	if (UNEXPECTED(returnType.isUndef())) return zv::Val();
+	zv::Val typeMap = pt_callable_template_type_map_empty();
+	if (UNEXPECTED(typeMap.isUndef())) return zv::Val();
+	zv::Val ownParameters = getParameters(self);
+	if (UNEXPECTED(ownParameters.isUndef())) return zv::Val();
+	if (UNEXPECTED(!zv::Ref(ownParameters.raw()).isArray())) {
+		zend_type_error("phpstan_turbo: getParameters() must return an array");
+		return zv::Val();
+	}
+	for (zv::ArrayEntry entry : zv::ArrRef(ownParameters.raw())) {
+		zend_object *param = pt_callable_element_object(entry.value().raw(), "a parameter");
+		if (UNEXPECTED(param == NULL)) return zv::Val();
+		zv::Val paramType = pt_callable_call_object(param, PT_LC("gettype"), 0, NULL);
+		if (UNEXPECTED(paramType.isUndef())) return zv::Val();
+		/* isset($args[$i]) */
+		zval *arg = entry.hasStringKey() ? zend_symtable_find(Z_ARRVAL_P(args.raw()), entry.stringKey()) : zend_hash_index_find(Z_ARRVAL_P(args.raw()), entry.indexKey());
+		zv::Val argType;
+		if (arg != NULL && Z_TYPE_P(arg) != IS_NULL) {
+			zend_object *argObject = pt_callable_element_object(arg, "a parameter");
+			if (UNEXPECTED(argObject == NULL)) return zv::Val();
+			argType = pt_type_call(argObject, PT_LC("gettype"), 0, NULL);
+		} else {
+			bool isTemplate;
+			if (UNEXPECTED(!pt_type_instanceof(paramType.raw(), PT_CLASS_TEMPLATE_TYPE, isTemplate))) return zv::Val();
+			if (isTemplate) {
+				argType = pt_type_call_static(PT_CLASS_TEMPLATE_TYPE_HELPER, PT_LC("resolvetobounds"), 1, paramType.raw());
+			} else {
+				argType = pt_type_new_never_type();
+			}
+		}
+		if (UNEXPECTED(argType.isUndef())) return zv::Val();
+		zv::Val inferred = pt_type_call(Z_OBJ_P(paramType.raw()), PT_LC("infertemplatetypes"), 1, argType.raw());
+		if (UNEXPECTED(inferred.isUndef())) return zv::Val();
+		if (UNEXPECTED(!zv::Ref(inferred.raw()).isObject())) {
+			zend_type_error("phpstan_turbo: inferTemplateTypes() must return an object");
+			return zv::Val();
+		}
+		zv::Val lower = pt_type_call(Z_OBJ_P(inferred.raw()), PT_LC("converttolowerboundtypes"), 0, NULL);
+		if (UNEXPECTED(lower.isUndef())) return zv::Val();
+		typeMap = pt_callable_type_map_union(std::move(typeMap), lower.raw());
+		if (UNEXPECTED(typeMap.isUndef())) return zv::Val();
+	}
+	/* $typeMap = $typeMap->union(CallableAssertionsHelper::inferTemplateTypesOnAsserts($this, $parametersAcceptor)) */
+	zv::Args assertArgs{self, selected.raw()};
+	zv::Val onAsserts = pt_type_call_static(PT_CLASS_CALLABLE_ASSERTIONS_HELPER, PT_LC("infertemplatetypesonasserts"), 2, assertArgs);
+	if (UNEXPECTED(onAsserts.isUndef())) return zv::Val();
+	typeMap = pt_callable_type_map_union(std::move(typeMap), onAsserts.raw());
+	if (UNEXPECTED(typeMap.isUndef())) return zv::Val();
+	/* return $typeMap->union($this->getReturnType()->inferTemplateTypes($returnType)) */
+	zv::Val ownReturnType = getReturnType(self);
+	if (UNEXPECTED(ownReturnType.isUndef())) return zv::Val();
+	zend_object *ownReturnTypeObject = pt_callable_element_object(ownReturnType.raw(), "the return type");
+	if (UNEXPECTED(ownReturnTypeObject == NULL)) return zv::Val();
+	zv::Val onReturn = pt_type_call(ownReturnTypeObject, PT_LC("infertemplatetypes"), 1, returnType.raw());
+	if (UNEXPECTED(onReturn.isUndef())) return zv::Val();
+	return pt_callable_type_map_union(std::move(typeMap), onReturn.raw());
+}
+
+zv::Val pt_callable_infer_template_types_on_acceptors(zend_object *self, pt_callable_this_getter getParameters, pt_callable_this_getter getReturnType, zval *acceptors)
+{
+	if (UNEXPECTED(Z_TYPE_P(acceptors) != IS_ARRAY)) {
+		zend_type_error("phpstan_turbo: getCallableParametersAcceptors() must return an array");
+		return zv::Val();
+	}
+	zv::Val typeMap = pt_callable_template_type_map_empty();
+	if (UNEXPECTED(typeMap.isUndef())) return zv::Val();
+	for (zv::ArrayEntry entry : zv::ArrRef(acceptors)) {
+		zv::Val inferred = pt_callable_infer_template_types_on_parameters_acceptor(self, getParameters, getReturnType, entry.value().raw());
+		if (UNEXPECTED(inferred.isUndef())) return zv::Val();
+		typeMap = pt_callable_type_map_union(std::move(typeMap), inferred.raw());
+		if (UNEXPECTED(typeMap.isUndef())) return zv::Val();
+	}
+	return typeMap;
+}
+
+/* new NativeParameterReflection($name, $optional, $type, $passedByReference, $variadic, $defaultValue);
+ * UNDEF = pending exception */
+static zv::Val pt_callable_new_native_parameter(zval *name, zval *optional, zval *type, zval *passedByReference, zval *variadic, zval *defaultValue)
+{
+	zv::Args args{name, optional, type, passedByReference, variadic, defaultValue};
+	return pt_type_new(PT_CLASS_NATIVE_PARAMETER_REFLECTION, 6, args);
+}
+
+zv::Val pt_callable_traverse_parameters(zval *parameters, zend_fcall_info *fci, zend_fcall_info_cache *fcc)
+{
+	if (UNEXPECTED(Z_TYPE_P(parameters) != IS_ARRAY)) {
+		zend_type_error("array_map(): Argument #2 ($array) must be of type array, %s given", zend_zval_value_name(parameters));
+		return zv::Val();
+	}
+	/* array_map() over one array keeps its keys */
+	zv::Arr mapped = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(parameters)));
+	for (zv::ArrayEntry entry : zv::ArrRef(parameters)) {
+		zend_object *param = pt_callable_element_object(entry.value().raw(), "a parameter");
+		if (UNEXPECTED(param == NULL)) return zv::Val();
+		zv::Val defaultValue = pt_type_call(param, PT_LC("getdefaultvalue"), 0, NULL);
+		if (UNEXPECTED(defaultValue.isUndef())) return zv::Val();
+		zv::Val name = pt_type_call(param, PT_LC("getname"), 0, NULL);
+		if (UNEXPECTED(name.isUndef())) return zv::Val();
+		zv::Val optional = pt_type_call(param, PT_LC("isoptional"), 0, NULL);
+		if (UNEXPECTED(optional.isUndef())) return zv::Val();
+		zv::Val type = pt_type_call(param, PT_LC("gettype"), 0, NULL);
+		if (UNEXPECTED(type.isUndef())) return zv::Val();
+		zval mappedTypeRaw;
+		if (UNEXPECTED(!pt_call_fci(fci, fcc, 1, type.raw(), &mappedTypeRaw))) return zv::Val();
+		zv::Val mappedType = zv::Val::adopt(mappedTypeRaw);
+		zv::Val passedByReference = pt_type_call(param, PT_LC("passedbyreference"), 0, NULL);
+		if (UNEXPECTED(passedByReference.isUndef())) return zv::Val();
+		zv::Val variadic = pt_type_call(param, PT_LC("isvariadic"), 0, NULL);
+		if (UNEXPECTED(variadic.isUndef())) return zv::Val();
+		zv::Val mappedDefault = zv::Val::null();
+		if (!defaultValue.isNull()) {
+			zval mappedDefaultRaw;
+			if (UNEXPECTED(!pt_call_fci(fci, fcc, 1, defaultValue.raw(), &mappedDefaultRaw))) return zv::Val();
+			mappedDefault = zv::Val::adopt(mappedDefaultRaw);
+		}
+		zv::Val parameter = pt_callable_new_native_parameter(name.raw(), optional.raw(), mappedType.raw(), passedByReference.raw(), variadic.raw(), mappedDefault.raw());
+		if (UNEXPECTED(parameter.isUndef())) return zv::Val();
+		if (entry.hasStringKey()) {
+			mapped.set(entry.stringKey(), std::move(parameter));
+		} else {
+			mapped.separate();
+			zval v = parameter.take();
+			zend_hash_index_update(mapped.table(), entry.indexKey(), &v);
+		}
+	}
+	return zv::Val(std::move(mapped));
+}
+
+zv::Val pt_callable_traverse_parameters_simultaneously(zval *leftParameters, zval *rightParameters, zend_fcall_info *fci, zend_fcall_info_cache *fcc)
+{
+	if (UNEXPECTED(Z_TYPE_P(leftParameters) != IS_ARRAY || Z_TYPE_P(rightParameters) != IS_ARRAY)) {
+		zend_type_error("phpstan_turbo: the parameters must be arrays");
+		return zv::Val();
+	}
+	zv::Arr parameters = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(leftParameters)));
+	for (zv::ArrayEntry entry : zv::ArrRef(leftParameters)) {
+		zend_object *leftParam = pt_callable_element_object(entry.value().raw(), "a parameter");
+		if (UNEXPECTED(leftParam == NULL)) return zv::Val();
+		/* $rightParam = $rightParameters[$i] */
+		zval *right = entry.hasStringKey() ? zend_symtable_find(Z_ARRVAL_P(rightParameters), entry.stringKey()) : zend_hash_index_find(Z_ARRVAL_P(rightParameters), entry.indexKey());
+		if (UNEXPECTED(right == NULL || Z_TYPE_P(right) != IS_OBJECT)) {
+			zend_throw_error(NULL, "Call to a member function getDefaultValue() on %s", right == NULL ? "null" : zend_zval_value_name(right));
+			return zv::Val();
+		}
+		zend_object *rightParam = Z_OBJ_P(right);
+		zv::Val leftDefaultValue = pt_type_call(leftParam, PT_LC("getdefaultvalue"), 0, NULL);
+		if (UNEXPECTED(leftDefaultValue.isUndef())) return zv::Val();
+		zv::Val rightDefaultValue = pt_type_call(rightParam, PT_LC("getdefaultvalue"), 0, NULL);
+		if (UNEXPECTED(rightDefaultValue.isUndef())) return zv::Val();
+		zv::Val defaultValue = zv::Val::copyOf(zv::Ref(leftDefaultValue.raw()));
+		if (!leftDefaultValue.isNull() && !rightDefaultValue.isNull()) {
+			zv::Args args{leftDefaultValue.raw(), rightDefaultValue.raw()};
+			zval mappedRaw;
+			if (UNEXPECTED(!pt_call_fci(fci, fcc, 2, args, &mappedRaw))) return zv::Val();
+			defaultValue = zv::Val::adopt(mappedRaw);
+		}
+		zv::Val name = pt_type_call(leftParam, PT_LC("getname"), 0, NULL);
+		if (UNEXPECTED(name.isUndef())) return zv::Val();
+		zv::Val optional = pt_type_call(leftParam, PT_LC("isoptional"), 0, NULL);
+		if (UNEXPECTED(optional.isUndef())) return zv::Val();
+		zv::Val leftType = pt_type_call(leftParam, PT_LC("gettype"), 0, NULL);
+		if (UNEXPECTED(leftType.isUndef())) return zv::Val();
+		zv::Val rightType = pt_type_call(rightParam, PT_LC("gettype"), 0, NULL);
+		if (UNEXPECTED(rightType.isUndef())) return zv::Val();
+		zv::Args typeArgs{leftType.raw(), rightType.raw()};
+		zval mappedTypeRaw;
+		if (UNEXPECTED(!pt_call_fci(fci, fcc, 2, typeArgs, &mappedTypeRaw))) return zv::Val();
+		zv::Val mappedType = zv::Val::adopt(mappedTypeRaw);
+		zv::Val passedByReference = pt_type_call(leftParam, PT_LC("passedbyreference"), 0, NULL);
+		if (UNEXPECTED(passedByReference.isUndef())) return zv::Val();
+		zv::Val variadic = pt_type_call(leftParam, PT_LC("isvariadic"), 0, NULL);
+		if (UNEXPECTED(variadic.isUndef())) return zv::Val();
+		zv::Val parameter = pt_callable_new_native_parameter(name.raw(), optional.raw(), mappedType.raw(), passedByReference.raw(), variadic.raw(), defaultValue.raw());
+		if (UNEXPECTED(parameter.isUndef())) return zv::Val();
+		parameters.push(std::move(parameter));
+	}
+	return zv::Val(std::move(parameters));
+}
+
+zv::Val pt_callable_is_super_type_of_result_of(zval *trinary)
+{
+	zval reasons, lazyReasons;
+	ZVAL_EMPTY_ARRAY(&reasons);
+	ZVAL_EMPTY_ARRAY(&lazyReasons); /* the constructor's default [] */
+	zval result;
+	if (UNEXPECTED(!pt_result_object_create(&result, pt_ce_is_super_type_of_result, trinary, &reasons, &lazyReasons))) return zv::Val();
+	return zv::Val::adopt(result);
+}
+
+zv::Val pt_callable_out_of_class_scope()
+{
+	return pt_type_new(PT_CLASS_OUT_OF_CLASS_SCOPE, 0, NULL);
+}
+
+zv::Val pt_callable_template_type_map_empty()
+{
+	return pt_type_call_static(PT_CLASS_TEMPLATE_TYPE_MAP, PT_LC("createempty"), 0, NULL);
+}
+
+zv::Val pt_callable_template_type_variance_map_empty()
+{
+	return pt_type_call_static(PT_CLASS_TEMPLATE_TYPE_VARIANCE_MAP, PT_LC("createempty"), 0, NULL);
+}
+
+zv::Val pt_callable_assertions_empty()
+{
+	return pt_type_call_static(PT_CLASS_ASSERTIONS, PT_LC("createempty"), 0, NULL);
+}
+
+zv::Val pt_callable_new_simple_impure_point(const char *identifier, size_t identifierLen, const char *description, size_t descriptionLen, bool certain)
+{
+	zval args[3];
+	ZVAL_STRINGL(&args[0], identifier, identifierLen);
+	ZVAL_STRINGL(&args[1], description, descriptionLen);
+	ZVAL_BOOL(&args[2], certain);
+	zv::Val point = pt_type_new(PT_CLASS_SIMPLE_IMPURE_POINT, 3, args);
+	zval_ptr_dtor(&args[0]);
+	zval_ptr_dtor(&args[1]);
+	return point;
+}
+
+zv::Val pt_callable_self_list(zend_object *self)
+{
+	zv::Arr list = zv::Arr::create(1);
+	zval selfZv;
+	ZVAL_OBJ(&selfZv, self);
+	list.push(zv::Ref(&selfZv));
+	return zv::Val(std::move(list));
+}
+
+/* }}} */

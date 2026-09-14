@@ -544,6 +544,86 @@ zv::Val pt_object_type_to_php_doc_node(zend_object *self);
  * RecursionGuard::runOnObjectIdentity(); UNDEF = pending exception */
 zv::Val pt_object_type_referenced_classes_callback(zval *type);
 
+/* merged from the parallel port branch */
+
+/* {{{ helpers of the callable family (IterableType.cpp, CallableType.cpp,
+ * ClosureType.cpp) — the bodies CallableType and ClosureType share verbatim,
+ * taking the twins' private slots as borrowed zvals */
+
+/* a $this-call a subclass may override (`$this->getParameters()`,
+ * `$this->getReturnType()`), answered by the handle class of the caller
+ * with its direct path when the method is the native one; UNDEF = pending
+ * exception */
+typedef zv::Val (*pt_callable_this_getter)(zend_object *self);
+
+/* $into = array_merge($into, $more): string keys kept, integer keys
+ * renumbered; false with a TypeError pending when $more is not an array */
+bool pt_callable_array_merge_into(zv::Arr &into, zval *more);
+/* the getReferencedClasses() body over an initial $classes: the
+ * parameters' types', the assertions' types' and the return type's
+ * merged in; UNDEF = pending exception */
+zv::Val pt_callable_referenced_classes(zv::Arr classes, zval *parameters, zval *assertions, zval *returnType);
+/* $assertions->getAll() as an owned array; UNDEF = pending exception */
+zv::Val pt_callable_assertions_all(zval *assertions);
+/* array_map(static fn ($parameter) => $parameter->getType(), $parameters);
+ * UNDEF = pending exception */
+zv::Val pt_callable_parameter_types(zval *parameters);
+/* the DummyParameter list of describe(): every parameter without its name
+ * unless an assertion refers to it, never by reference, optional only when
+ * not variadic; UNDEF = pending exception */
+zv::Val pt_callable_dummy_parameters(zval *parameters, zval *assertions);
+/* (new Printer())->print($type->toPhpDocNode()) — the $printer created
+ * first, as the twins do; UNDEF = pending exception */
+zv::Val pt_callable_print_php_doc_node(zval *type);
+/* the CallableTypeNode of toPhpDocNode(): new CallableTypeNode(new
+ * IdentifierTypeNode($identifier), <parameter nodes>, <the conditional
+ * return type node of the assertions, else $returnType->toPhpDocNode()>,
+ * <template tag nodes>); UNDEF = pending exception */
+zv::Val pt_callable_type_node(const char *identifier, size_t identifierLen, zval *parameters, zval *templateTags, zval *assertions, zval *returnType);
+/* whether a parameter's type, out type or closure-this type, or an
+ * assertion's type has a template or late-resolvable type — the
+ * hasTemplateOrLateResolvableType() body before the return type's answer;
+ * false = pending exception */
+[[nodiscard]] bool pt_callable_parameters_or_asserts_have_template(zval *parameters, zval *assertions, bool &out);
+/* the getReferencedTemplateTypes() body; UNDEF = pending exception */
+zv::Val pt_callable_referenced_template_types(zend_object *self, pt_callable_this_getter getReturnType, pt_callable_this_getter getParameters, zval *assertions, zval *positionVariance);
+/* the private inferTemplateTypesOnParametersAcceptor() body; UNDEF =
+ * pending exception */
+zv::Val pt_callable_infer_template_types_on_parameters_acceptor(zend_object *self, pt_callable_this_getter getParameters, pt_callable_this_getter getReturnType, zval *parametersAcceptor);
+/* the inferTemplateTypes() tail: the empty map unioned with the inference
+ * on every acceptor of $acceptors; UNDEF = pending exception */
+zv::Val pt_callable_infer_template_types_on_acceptors(zend_object *self, pt_callable_this_getter getParameters, pt_callable_this_getter getReturnType, zval *acceptors);
+/* the traverse() parameter mapping: every ParameterReflection rebuilt as a
+ * NativeParameterReflection over $cb of its type and default value;
+ * UNDEF = pending exception */
+zv::Val pt_callable_traverse_parameters(zval *parameters, zend_fcall_info *fci, zend_fcall_info_cache *fcc);
+/* the traverseSimultaneously() parameter mapping over the left and right
+ * parameter lists of equal size; UNDEF = pending exception */
+zv::Val pt_callable_traverse_parameters_simultaneously(zval *leftParameters, zval *rightParameters, zend_fcall_info *fci, zend_fcall_info_cache *fcc);
+/* new IsSuperTypeOfResult($trinary, []) over a TrinaryLogic zval; UNDEF =
+ * pending exception */
+zv::Val pt_callable_is_super_type_of_result_of(zval *trinary);
+/* new OutOfClassScope(); UNDEF = pending exception */
+zv::Val pt_callable_out_of_class_scope();
+/* TemplateTypeMap::createEmpty() / TemplateTypeVarianceMap::createEmpty() /
+ * Assertions::createEmpty(); UNDEF = pending exception */
+zv::Val pt_callable_template_type_map_empty();
+zv::Val pt_callable_template_type_variance_map_empty();
+zv::Val pt_callable_assertions_empty();
+/* new SimpleImpurePoint($identifier, $description, $certain); UNDEF =
+ * pending exception */
+zv::Val pt_callable_new_simple_impure_point(const char *identifier, size_t identifierLen, const char *description, size_t descriptionLen, bool certain);
+/* [$self]; UNDEF = pending exception */
+zv::Val pt_callable_self_list(zend_object *self);
+/* an `array $x` / `?array $x = null` parameter's arginfo (the twins'
+ * `?array $parameters = null`); reg.h has no nullable array shorthand */
+constexpr reg::Arg pt_callable_nullable_array_arg(const char *name)
+{
+	return { name, MAY_BE_ARRAY | MAY_BE_NULL | reg::detail::flagBits(false, false), nullptr };
+}
+
+/* }}} */
+
 /* {{{ bodies the Type ports share verbatim — their members forward here */
 
 /* $this as an owned value (a new reference) */
@@ -636,6 +716,14 @@ inline zv::Val pt_type_sub_type_to_accepts_result(zv::Val result)
 	if (UNEXPECTED(result.isUndef())) return false;
 	out = zend_is_true(result.raw());
 	return true;
+}
+
+/* the same as 1 / 0, -1 = pending exception */
+[[nodiscard, maybe_unused]] static int pt_type_call_is_true(zend_object *object, const char *lcname, size_t len, uint32_t argc, zval *argv)
+{
+	zv::Val result = pt_type_call(object, lcname, len, argc, argv);
+	if (UNEXPECTED(result.isUndef())) return -1;
+	return zend_is_true(result.raw()) ? 1 : 0;
 }
 
 /* the PT_TRI_* value of the result object of $object->method(...$args)

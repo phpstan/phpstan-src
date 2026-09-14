@@ -6,6 +6,7 @@ use PHPStan\Node\InvalidateExprNode;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * A ParametersAcceptor for callable types (closures, first-class callables).
@@ -27,6 +28,7 @@ use PHPStan\TrinaryLogic;
  * @api
  * @api-do-not-implement
  */
+#[ReferencedByTurboExtension(key: 'callableParametersAcceptor')]
 interface CallableParametersAcceptor extends ParametersAcceptor
 {
 

@@ -56,7 +56,7 @@ $observations = [];
 // which implementation answered: smoke.php holds the php run to false and
 // the native run to true, so the two sets can never be one implementation
 // compared against itself
-foreach ([\PHPStan\Type\BooleanType::class, \PHPStan\Type\Constant\ConstantBooleanType::class, \PHPStan\Type\IntegerType::class, \PHPStan\Type\Constant\ConstantIntegerType::class, \PHPStan\Type\IntegerRangeType::class, \PHPStan\Type\StringType::class, \PHPStan\Type\Constant\ConstantStringType::class, \PHPStan\Type\ClassStringType::class, \PHPStan\Type\Generic\GenericClassStringType::class, \PHPStan\Type\FloatType::class, \PHPStan\Type\Constant\ConstantFloatType::class, \PHPStan\Type\NullType::class, \PHPStan\Type\VoidType::class, \PHPStan\Type\NeverType::class, \PHPStan\Type\MixedType::class, \PHPStan\Type\StrictMixedType::class, \PHPStan\Type\ObjectWithoutClassType::class, \PHPStan\Type\StaticType::class, \PHPStan\Type\ThisType::class, \PHPStan\Type\Generic\GenericStaticType::class, \PHPStan\Type\ObjectShapeType::class, \PHPStan\Type\NonexistentParentClassType::class, \PHPStan\Type\ArrayType::class, \PHPStan\Type\Accessory\NonEmptyArrayType::class, \PHPStan\Type\Accessory\AccessoryArrayListType::class, \PHPStan\Type\Accessory\OversizedArrayType::class, \PHPStan\Type\Accessory\HasOffsetType::class, \PHPStan\Type\Accessory\HasOffsetValueType::class, \PHPStan\Type\Accessory\AccessoryNumericStringType::class, \PHPStan\Type\Accessory\AccessoryNonEmptyStringType::class, \PHPStan\Type\Accessory\AccessoryNonFalsyStringType::class, \PHPStan\Type\Accessory\AccessoryLiteralStringType::class, \PHPStan\Type\Accessory\AccessoryLowercaseStringType::class, \PHPStan\Type\Accessory\AccessoryUppercaseStringType::class, \PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType::class, \PHPStan\Type\Accessory\HasMethodType::class, \PHPStan\Type\Accessory\HasPropertyType::class, \PHPStan\Type\ObjectType::class, \PHPStan\Type\Generic\GenericObjectType::class, \PHPStan\Type\Enum\EnumCaseObjectType::class] as $typeClass) {
+foreach ([\PHPStan\Type\BooleanType::class, \PHPStan\Type\Constant\ConstantBooleanType::class, \PHPStan\Type\IntegerType::class, \PHPStan\Type\Constant\ConstantIntegerType::class, \PHPStan\Type\IntegerRangeType::class, \PHPStan\Type\StringType::class, \PHPStan\Type\Constant\ConstantStringType::class, \PHPStan\Type\ClassStringType::class, \PHPStan\Type\Generic\GenericClassStringType::class, \PHPStan\Type\FloatType::class, \PHPStan\Type\Constant\ConstantFloatType::class, \PHPStan\Type\NullType::class, \PHPStan\Type\VoidType::class, \PHPStan\Type\NeverType::class, \PHPStan\Type\MixedType::class, \PHPStan\Type\StrictMixedType::class, \PHPStan\Type\ObjectWithoutClassType::class, \PHPStan\Type\StaticType::class, \PHPStan\Type\ThisType::class, \PHPStan\Type\Generic\GenericStaticType::class, \PHPStan\Type\ObjectShapeType::class, \PHPStan\Type\NonexistentParentClassType::class, \PHPStan\Type\ArrayType::class, \PHPStan\Type\Accessory\NonEmptyArrayType::class, \PHPStan\Type\Accessory\AccessoryArrayListType::class, \PHPStan\Type\Accessory\OversizedArrayType::class, \PHPStan\Type\Accessory\HasOffsetType::class, \PHPStan\Type\Accessory\HasOffsetValueType::class, \PHPStan\Type\Accessory\AccessoryNumericStringType::class, \PHPStan\Type\Accessory\AccessoryNonEmptyStringType::class, \PHPStan\Type\Accessory\AccessoryNonFalsyStringType::class, \PHPStan\Type\Accessory\AccessoryLiteralStringType::class, \PHPStan\Type\Accessory\AccessoryLowercaseStringType::class, \PHPStan\Type\Accessory\AccessoryUppercaseStringType::class, \PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType::class, \PHPStan\Type\Accessory\HasMethodType::class, \PHPStan\Type\Accessory\HasPropertyType::class, \PHPStan\Type\ObjectType::class, \PHPStan\Type\Generic\GenericObjectType::class, \PHPStan\Type\Enum\EnumCaseObjectType::class, \PHPStan\Type\IterableType::class, \PHPStan\Type\CallableType::class, \PHPStan\Type\ClosureType::class] as $typeClass) {
 	$observations["native $typeClass"] = (new ReflectionMethod($typeClass, 'describe'))->isInternal();
 }
 
@@ -2584,6 +2584,463 @@ $objectOthers = static fn (string $object, string $generic, string $case): array
 	$r['after reset getAncestorWithClassName'] = $view((new $objectClass(\ArrayIterator::class))->getAncestorWithClassName(\Traversable::class));
 	foreach ($r as $key => $value) {
 		$observations["object $key"] = $value;
+	}
+}
+
+
+// ---- IterableType / CallableType / ClosureType ----
+// the reflection provider and PhpVersion accessors stay registered from the
+// string section (the callable queries over strings and constant arrays
+// consult them); the PHP TemplateIterableType over the native IterableType
+// and anonymous subclasses overriding what the natives call through $this
+// come along
+$callablePhpVersions = [new \PHPStan\Php\PhpVersion(70400), new \PHPStan\Php\PhpVersion(80400)];
+$callableTemplateScope = \PHPStan\Type\Generic\TemplateTypeScope::createWithFunction('callableFoo');
+$callableT = \PHPStan\Type\Generic\TemplateTypeFactory::create($callableTemplateScope, 'T', new \PHPStan\Type\ObjectType(\Countable::class), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant());
+$callableU = \PHPStan\Type\Generic\TemplateTypeFactory::create($callableTemplateScope, 'U', null, \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant());
+$callableParam = static fn (string $name, \PHPStan\Type\Type $type, bool $optional = false, ?\PHPStan\Reflection\PassedByReference $byRef = null, bool $variadic = false, ?\PHPStan\Type\Type $default = null): \PHPStan\Reflection\Native\NativeParameterReflection => new \PHPStan\Reflection\Native\NativeParameterReflection($name, $optional, $type, $byRef ?? \PHPStan\Reflection\PassedByReference::createNo(), $variadic, $default);
+$callableAssertTag = static fn (string $if, string $parameter, \PHPStan\Type\Type $type, bool $negated = false): \PHPStan\PhpDoc\Tag\AssertTag => new \PHPStan\PhpDoc\Tag\AssertTag($if, $type, new \PHPStan\PhpDoc\Tag\AssertTagParameter($parameter, null, null), $negated, false, true);
+$callableAssertions = \PHPStan\Reflection\Assertions::createFromAssertTags([$callableAssertTag(\PHPStan\PhpDoc\Tag\AssertTag::NULL, '$a', new \PHPStan\Type\StringType())]);
+$callableAssertionsIfTrue = \PHPStan\Reflection\Assertions::createFromAssertTags([$callableAssertTag(\PHPStan\PhpDoc\Tag\AssertTag::IF_TRUE, '$a', new \PHPStan\Type\ObjectType(\Countable::class))]);
+$callableAssertionsTemplate = \PHPStan\Reflection\Assertions::createFromAssertTags([$callableAssertTag(\PHPStan\PhpDoc\Tag\AssertTag::IF_TRUE, '$a', $callableT)]);
+$callableTemplateTags = [
+	'T' => new \PHPStan\PhpDoc\Tag\TemplateTag('T', new \PHPStan\Type\ObjectType(\Countable::class), null, \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()),
+	'U' => new \PHPStan\PhpDoc\Tag\TemplateTag('U', new \PHPStan\Type\MixedType(), new \PHPStan\Type\IntegerType(), \PHPStan\Type\Generic\TemplateTypeVariance::createCovariant()),
+];
+$callableTemplateTypeMap = new \PHPStan\Type\Generic\TemplateTypeMap(['T' => $callableT, 'U' => $callableU]);
+$callableResolvedTemplateTypeMap = new \PHPStan\Type\Generic\TemplateTypeMap(['T' => new \PHPStan\Type\ObjectType(\ArrayIterator::class)]);
+$callableCallSiteVarianceMap = new \PHPStan\Type\Generic\TemplateTypeVarianceMap(['T' => \PHPStan\Type\Generic\TemplateTypeVariance::createCovariant()]);
+$callableSubjects = static fn (): array => [
+	'callable' => new \PHPStan\Type\CallableType(),
+	'callablePure' => new \PHPStan\Type\CallableType(isPure: \PHPStan\TrinaryLogic::createYes()),
+	'callableImpure' => new \PHPStan\Type\CallableType(isPure: \PHPStan\TrinaryLogic::createNo()),
+	'callableEmpty' => new \PHPStan\Type\CallableType([], new \PHPStan\Type\VoidType()),
+	'callableNullParams' => new \PHPStan\Type\CallableType(null, new \PHPStan\Type\StringType()),
+	'callableParams' => new \PHPStan\Type\CallableType([$callableParam('a', new \PHPStan\Type\IntegerType()), $callableParam('b', new \PHPStan\Type\StringType(), true, null, false, new \PHPStan\Type\Constant\ConstantStringType('x')), $callableParam('c', new \PHPStan\Type\FloatType(), true, null, true)], new \PHPStan\Type\StringType()),
+	'callableParamsCopy' => new \PHPStan\Type\CallableType([$callableParam('a', new \PHPStan\Type\IntegerType()), $callableParam('b', new \PHPStan\Type\StringType(), true, null, false, new \PHPStan\Type\Constant\ConstantStringType('x')), $callableParam('c', new \PHPStan\Type\FloatType(), true, null, true)], new \PHPStan\Type\StringType()),
+	'callableParamsOtherDefault' => new \PHPStan\Type\CallableType([$callableParam('a', new \PHPStan\Type\IntegerType()), $callableParam('b', new \PHPStan\Type\StringType(), true, null, false, new \PHPStan\Type\Constant\ConstantStringType('y'))], new \PHPStan\Type\StringType()),
+	'callableParamsNoDefault' => new \PHPStan\Type\CallableType([$callableParam('a', new \PHPStan\Type\IntegerType()), $callableParam('b', new \PHPStan\Type\StringType(), true)], new \PHPStan\Type\StringType()),
+	'callableNonVariadic' => new \PHPStan\Type\CallableType([$callableParam('a', new \PHPStan\Type\IntegerType())], new \PHPStan\Type\IntegerType(), false),
+	'callableByRef' => new \PHPStan\Type\CallableType([$callableParam('a', new \PHPStan\Type\IntegerType(), false, \PHPStan\Reflection\PassedByReference::createCreatesNewVariable())], new \PHPStan\Type\NullType()),
+	'callableNoNames' => new \PHPStan\Type\CallableType([$callableParam('', new \PHPStan\Type\IntegerType())], new \PHPStan\Type\MixedType()),
+	'callableTemplate' => new \PHPStan\Type\CallableType([$callableParam('a', $callableT), $callableParam('b', $callableU)], $callableT, true, $callableTemplateTypeMap, $callableResolvedTemplateTypeMap, $callableTemplateTags),
+	'callableTemplateTagsOnly' => new \PHPStan\Type\CallableType([$callableParam('a', new \PHPStan\Type\IntegerType())], new \PHPStan\Type\IntegerType(), true, null, null, ['T' => $callableTemplateTags['T']]),
+	'callableAsserts' => new \PHPStan\Type\CallableType([$callableParam('a', new \PHPStan\Type\MixedType())], new \PHPStan\Type\BooleanType(), true, null, null, [], null, $callableAssertionsIfTrue),
+	'callableAssertsPlain' => new \PHPStan\Type\CallableType([$callableParam('a', new \PHPStan\Type\MixedType())], new \PHPStan\Type\BooleanType(), true, null, null, [], null, $callableAssertions),
+	'callableAssertsTemplate' => new \PHPStan\Type\CallableType([$callableParam('a', new \PHPStan\Type\MixedType())], new \PHPStan\Type\BooleanType(), true, $callableTemplateTypeMap, null, $callableTemplateTags, null, $callableAssertionsTemplate),
+	'callablePureParams' => new \PHPStan\Type\CallableType([$callableParam('a', new \PHPStan\Type\IntegerType())], new \PHPStan\Type\IntegerType(), true, null, null, [], \PHPStan\TrinaryLogic::createYes()),
+	'closure' => new \PHPStan\Type\ClosureType(),
+	'closurePure' => \PHPStan\Type\ClosureType::createPure(),
+	'closureStatic' => new \PHPStan\Type\ClosureType(isStatic: \PHPStan\TrinaryLogic::createYes()),
+	'closureStaticPure' => new \PHPStan\Type\ClosureType(impurePoints: [], isStatic: \PHPStan\TrinaryLogic::createYes()),
+	'closureEmpty' => new \PHPStan\Type\ClosureType([], new \PHPStan\Type\VoidType(), impurePoints: []),
+	'closureNullParams' => new \PHPStan\Type\ClosureType(null, new \PHPStan\Type\StringType()),
+	'closureParams' => new \PHPStan\Type\ClosureType([$callableParam('a', new \PHPStan\Type\IntegerType()), $callableParam('b', new \PHPStan\Type\StringType(), true, null, false, new \PHPStan\Type\Constant\ConstantStringType('x')), $callableParam('c', new \PHPStan\Type\FloatType(), true, null, true)], new \PHPStan\Type\StringType(), true, $callableTemplateTypeMap, $callableResolvedTemplateTypeMap, $callableCallSiteVarianceMap, $callableTemplateTags, [\PHPStan\Reflection\Callables\SimpleThrowPoint::createImplicit(), \PHPStan\Reflection\Callables\SimpleThrowPoint::createExplicit(new \PHPStan\Type\ObjectType(\RuntimeException::class), false)], [new \PHPStan\Reflection\Callables\SimpleImpurePoint('functionCall', 'call to a callable', false)], [new \PHPStan\Node\InvalidateExprNode(new \PhpParser\Node\Expr\Variable('a'))], ['a', 'b'], \PHPStan\TrinaryLogic::createNo(), \PHPStan\TrinaryLogic::createYes(), $callableAssertionsIfTrue, \PHPStan\TrinaryLogic::createNo()),
+	'closureParamsCopy' => new \PHPStan\Type\ClosureType([$callableParam('a', new \PHPStan\Type\IntegerType()), $callableParam('b', new \PHPStan\Type\StringType(), true, null, false, new \PHPStan\Type\Constant\ConstantStringType('x')), $callableParam('c', new \PHPStan\Type\FloatType(), true, null, true)], new \PHPStan\Type\StringType()),
+	'closureCertainImpure' => new \PHPStan\Type\ClosureType([$callableParam('a', new \PHPStan\Type\IntegerType())], new \PHPStan\Type\VoidType(), impurePoints: [new \PHPStan\Reflection\Callables\SimpleImpurePoint('functionCall', 'certain', true), new \PHPStan\Reflection\Callables\SimpleImpurePoint('propertyAssign', 'uncertain', false)]),
+	'closureStaticParams' => new \PHPStan\Type\ClosureType([$callableParam('a', new \PHPStan\Type\IntegerType())], new \PHPStan\Type\IntegerType(), isStatic: \PHPStan\TrinaryLogic::createYes()),
+	'closureStaticParamsPure' => new \PHPStan\Type\ClosureType([$callableParam('a', new \PHPStan\Type\IntegerType())], new \PHPStan\Type\IntegerType(), impurePoints: [], isStatic: \PHPStan\TrinaryLogic::createYes()),
+	'closureNonVariadic' => new \PHPStan\Type\ClosureType([$callableParam('a', new \PHPStan\Type\IntegerType())], new \PHPStan\Type\IntegerType(), false),
+	'closureByRef' => new \PHPStan\Type\ClosureType([$callableParam('a', new \PHPStan\Type\IntegerType(), false, \PHPStan\Reflection\PassedByReference::createCreatesNewVariable())], new \PHPStan\Type\NullType()),
+	'closureTemplate' => new \PHPStan\Type\ClosureType([$callableParam('a', $callableT), $callableParam('b', $callableU)], $callableT, true, $callableTemplateTypeMap, $callableResolvedTemplateTypeMap, null, $callableTemplateTags),
+	'closureAsserts' => new \PHPStan\Type\ClosureType([$callableParam('a', new \PHPStan\Type\MixedType())], new \PHPStan\Type\BooleanType(), assertions: $callableAssertionsIfTrue),
+	'closureAssertsTemplate' => new \PHPStan\Type\ClosureType([$callableParam('a', new \PHPStan\Type\MixedType())], new \PHPStan\Type\BooleanType(), true, $callableTemplateTypeMap, null, null, $callableTemplateTags, [], null, [], [], null, null, $callableAssertionsTemplate),
+	'iterable' => new \PHPStan\Type\IterableType(new \PHPStan\Type\MixedType(), new \PHPStan\Type\MixedType()),
+	'iterableExplicit' => new \PHPStan\Type\IterableType(new \PHPStan\Type\MixedType(true), new \PHPStan\Type\MixedType(true)),
+	'iterableIntString' => new \PHPStan\Type\IterableType(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()),
+	'iterableIntStringCopy' => new \PHPStan\Type\IterableType(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()),
+	'iterableMixedString' => new \PHPStan\Type\IterableType(new \PHPStan\Type\MixedType(), new \PHPStan\Type\StringType()),
+	'iterableStringMixed' => new \PHPStan\Type\IterableType(new \PHPStan\Type\StringType(), new \PHPStan\Type\MixedType()),
+	'iterableMixedMinusNull' => new \PHPStan\Type\IterableType(new \PHPStan\Type\MixedType(false, new \PHPStan\Type\NullType()), new \PHPStan\Type\MixedType()),
+	'iterableTemplate' => new \PHPStan\Type\IterableType(new \PHPStan\Type\IntegerType(), $callableT),
+	'iterableTemplateMixed' => new \PHPStan\Type\IterableType($callableU, $callableU),
+	'iterableNever' => new \PHPStan\Type\IterableType(new \PHPStan\Type\NeverType(), new \PHPStan\Type\NeverType()),
+	'iterableObjectKey' => new \PHPStan\Type\IterableType(new \PHPStan\Type\ObjectType(\stdClass::class), new \PHPStan\Type\IntegerType()),
+	'templateIterable' => \PHPStan\Type\Generic\TemplateTypeFactory::create($callableTemplateScope, 'I', new \PHPStan\Type\IterableType(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()),
+];
+$callableOthers = static fn (): array => [
+	'string' => new \PHPStan\Type\StringType(),
+	'stringStrlen' => new \PHPStan\Type\Constant\ConstantStringType('strlen'),
+	'stringNope' => new \PHPStan\Type\Constant\ConstantStringType('nope'),
+	'stringStaticMethod' => new \PHPStan\Type\Constant\ConstantStringType(\PHPStan\TrinaryLogic::class . '::createYes'),
+	'classString' => new \PHPStan\Type\ClassStringType(),
+	'nonEmptyString' => new \PHPStan\Type\IntersectionType([new \PHPStan\Type\StringType(), new \PHPStan\Type\Accessory\AccessoryNonEmptyStringType()]),
+	'int' => new \PHPStan\Type\IntegerType(),
+	'int1' => new \PHPStan\Type\Constant\ConstantIntegerType(1),
+	'float' => new \PHPStan\Type\FloatType(),
+	'bool' => new \PHPStan\Type\BooleanType(),
+	'true' => new \PHPStan\Type\Constant\ConstantBooleanType(true),
+	'mixed' => new \PHPStan\Type\MixedType(),
+	'explicitMixed' => new \PHPStan\Type\MixedType(true),
+	'mixedMinusCallable' => new \PHPStan\Type\MixedType(false, new \PHPStan\Type\CallableType()),
+	'mixedMinusIterable' => new \PHPStan\Type\MixedType(false, new \PHPStan\Type\IterableType(new \PHPStan\Type\MixedType(), new \PHPStan\Type\MixedType())),
+	'null' => new \PHPStan\Type\NullType(),
+	'never' => new \PHPStan\Type\NeverType(),
+	'array' => new \PHPStan\Type\ArrayType(new \PHPStan\Type\MixedType(), new \PHPStan\Type\MixedType()),
+	'arrayIntString' => new \PHPStan\Type\ArrayType(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()),
+	'arrayStringInt' => new \PHPStan\Type\ArrayType(new \PHPStan\Type\StringType(), new \PHPStan\Type\IntegerType()),
+	'listOfInt' => new \PHPStan\Type\IntersectionType([new \PHPStan\Type\ArrayType(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\IntegerType()), new \PHPStan\Type\Accessory\AccessoryArrayListType()]),
+	'emptyArray' => new \PHPStan\Type\Constant\ConstantArrayType([], []),
+	'constantArrayInts' => new \PHPStan\Type\Constant\ConstantArrayType([new \PHPStan\Type\Constant\ConstantIntegerType(0), new \PHPStan\Type\Constant\ConstantIntegerType(1)], [new \PHPStan\Type\Constant\ConstantIntegerType(1), new \PHPStan\Type\Constant\ConstantIntegerType(2)]),
+	'constantArrayCallable' => new \PHPStan\Type\Constant\ConstantArrayType([new \PHPStan\Type\Constant\ConstantIntegerType(0), new \PHPStan\Type\Constant\ConstantIntegerType(1)], [new \PHPStan\Type\Constant\ConstantStringType(\PHPStan\TrinaryLogic::class), new \PHPStan\Type\Constant\ConstantStringType('createYes')]),
+	'object' => new \PHPStan\Type\ObjectType(\stdClass::class),
+	'objectClosure' => new \PHPStan\Type\ObjectType(\Closure::class),
+	'objectTrinary' => new \PHPStan\Type\ObjectType(\PHPStan\TrinaryLogic::class),
+	'objectTraversable' => new \PHPStan\Type\ObjectType(\Traversable::class),
+	'objectIterator' => new \PHPStan\Type\ObjectType(\Iterator::class),
+	'objectArrayIterator' => new \PHPStan\Type\ObjectType(\ArrayIterator::class),
+	'objectCountable' => new \PHPStan\Type\ObjectType(\Countable::class),
+	'genericTraversable' => new \PHPStan\Type\Generic\GenericObjectType(\Traversable::class, [new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()]),
+	'genericTraversableMixed' => new \PHPStan\Type\Generic\GenericObjectType(\Traversable::class, [new \PHPStan\Type\MixedType(), new \PHPStan\Type\MixedType()]),
+	'genericIterator' => new \PHPStan\Type\Generic\GenericObjectType(\Iterator::class, [new \PHPStan\Type\StringType(), new \PHPStan\Type\IntegerType()]),
+	'objectWithoutClass' => new \PHPStan\Type\ObjectWithoutClassType(),
+	'unionCallableNull' => new \PHPStan\Type\UnionType([new \PHPStan\Type\CallableType(), new \PHPStan\Type\NullType()]),
+	'unionArrayTraversable' => new \PHPStan\Type\UnionType([new \PHPStan\Type\ArrayType(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()), new \PHPStan\Type\ObjectType(\Traversable::class)]),
+	'unionClosures' => new \PHPStan\Type\UnionType([new \PHPStan\Type\ClosureType([$callableParam('a', new \PHPStan\Type\IntegerType())], new \PHPStan\Type\IntegerType()), new \PHPStan\Type\ClosureType([$callableParam('a', new \PHPStan\Type\StringType())], new \PHPStan\Type\StringType())]),
+	'intersectionCountableTraversable' => new \PHPStan\Type\IntersectionType([new \PHPStan\Type\ObjectType(\Countable::class), new \PHPStan\Type\ObjectType(\Traversable::class)]),
+	'templateMixed' => $callableU,
+	'templateCountable' => $callableT,
+	'static' => new \PHPStan\Type\StaticType($stringReflectionProvider->getClass(\PHPStan\TrinaryLogic::class)),
+	'range' => \PHPStan\Type\IntegerRangeType::fromInterval(0, 10),
+	'callableIntToInt' => new \PHPStan\Type\CallableType([$callableParam('x', new \PHPStan\Type\IntegerType())], new \PHPStan\Type\IntegerType()),
+	'callableMixedToMixed' => new \PHPStan\Type\CallableType([$callableParam('x', new \PHPStan\Type\MixedType())], new \PHPStan\Type\MixedType()),
+	'closureIntToInt' => new \PHPStan\Type\ClosureType([$callableParam('x', new \PHPStan\Type\IntegerType())], new \PHPStan\Type\IntegerType()),
+	'closureStringToString' => new \PHPStan\Type\ClosureType([$callableParam('x', new \PHPStan\Type\StringType())], new \PHPStan\Type\StringType()),
+	'closureNoParamsInt' => new \PHPStan\Type\ClosureType([], new \PHPStan\Type\IntegerType()),
+];
+{
+	$r = [];
+	$subjects = $callableSubjects();
+	$others = $callableOthers() + $callableSubjects();
+	$outOfClassScope = new \PHPStan\Analyser\OutOfClassScope();
+	// the richer view of the family's values: parameters, acceptors, tags,
+	// throw and impure points, template maps and references, reflections
+	$cv = static function (mixed $v) use (&$cv, $view): mixed {
+		if ($v instanceof \PHPStan\Reflection\ParameterReflection) {
+			return ['parameter', $v->getName(), $view($v->getType()), $v->isOptional(), $v->isVariadic(), $v->passedByReference()->no(), $v->passedByReference()->createsNewVariable(), $view($v->getDefaultValue())];
+		}
+		if ($v instanceof \PHPStan\Reflection\Callables\SimpleThrowPoint) {
+			return ['throwPoint', $view($v->getType()), $v->isExplicit(), $v->canContainAnyThrowable()];
+		}
+		if ($v instanceof \PHPStan\Reflection\Callables\SimpleImpurePoint) {
+			return ['impurePoint', $v->getIdentifier(), $v->getDescription(), $v->isCertain()];
+		}
+		if ($v instanceof \PHPStan\Node\InvalidateExprNode) {
+			return ['invalidate', get_class($v->getExpr())];
+		}
+		if ($v instanceof \PHPStan\PhpDoc\Tag\TemplateTag) {
+			return ['templateTag', $v->getName(), $view($v->getBound()), $view($v->getDefault()), $v->getVariance()->describe()];
+		}
+		if ($v instanceof \PHPStan\PhpDoc\Tag\AssertTag) {
+			return ['assertTag', $v->getIf(), $v->getParameter()->describe(), $view($v->getType()), $v->isNegated(), $v->isEquality()];
+		}
+		if ($v instanceof \PHPStan\Reflection\Assertions) {
+			return ['assertions', array_map($cv, $v->getAll())];
+		}
+		if ($v instanceof \PHPStan\Type\Generic\TemplateTypeMap) {
+			return ['templateTypeMap', array_map($view, $v->getTypes())];
+		}
+		if ($v instanceof \PHPStan\Type\Generic\TemplateTypeVarianceMap) {
+			return ['varianceMap', array_map(static fn (\PHPStan\Type\Generic\TemplateTypeVariance $variance): string => $variance->describe(), $v->getVariances())];
+		}
+		if ($v instanceof \PHPStan\Type\Generic\TemplateTypeReference) {
+			return ['reference', $v->getType()->getName(), $v->getPositionVariance()->describe()];
+		}
+		if ($v instanceof \PHPStan\Reflection\Callables\CallableParametersAcceptor && !$v instanceof \PHPStan\Type\Type) {
+			return ['acceptor', get_class($v), array_map($cv, $v->getParameters()), $view($v->getReturnType()), $v->isVariadic()];
+		}
+		if ($v instanceof \PHPStan\Reflection\ExtendedMethodReflection) {
+			return ['method', get_class($v), $v->getName(), $v->getDeclaringClass()->getName(), array_map(static fn (\PHPStan\Reflection\ExtendedParametersAcceptor $variant): array => [array_map($cv, $variant->getParameters()), $view($variant->getReturnType())], $v->getVariants())];
+		}
+		if ($v instanceof \PHPStan\Reflection\ExtendedPropertyReflection) {
+			return ['property', get_class($v), $v->getDeclaringClass()->getName(), $view($v->getReadableType())];
+		}
+		if ($v instanceof \PHPStan\Reflection\ClassConstantReflection) {
+			return ['constant', get_class($v), $v->getName()];
+		}
+		if ($v instanceof \PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection || $v instanceof \PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection) {
+			return ['prototype', get_class($v)];
+		}
+		if ($v instanceof \PHPStan\Reflection\ClassReflection) {
+			return ['classReflection', $v->getName()];
+		}
+		if (is_array($v)) {
+			return array_map($cv, $v);
+		}
+		return $view($v);
+	};
+	$attempt = static function (callable $probe) use ($cv): mixed {
+		try {
+			return $cv($probe());
+		} catch (\Throwable $e) {
+			return [get_class($e), $e->getMessage()];
+		}
+	};
+	$levels = ['typeOnly' => \PHPStan\Type\VerbosityLevel::typeOnly(), 'value' => \PHPStan\Type\VerbosityLevel::value(), 'precise' => \PHPStan\Type\VerbosityLevel::precise(), 'cache' => \PHPStan\Type\VerbosityLevel::cache()];
+	$variances = ['invariant' => \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant(), 'covariant' => \PHPStan\Type\Generic\TemplateTypeVariance::createCovariant(), 'contravariant' => \PHPStan\Type\Generic\TemplateTypeVariance::createContravariant(), 'static' => \PHPStan\Type\Generic\TemplateTypeVariance::createStatic()];
+	$precisions = ['lessSpecific' => \PHPStan\Type\GeneralizePrecision::lessSpecific(), 'moreSpecific' => \PHPStan\Type\GeneralizePrecision::moreSpecific(), 'templateArgument' => \PHPStan\Type\GeneralizePrecision::templateArgument()];
+	$compareOthers = ['int', 'null', 'mixed', 'object', 'callable', 'closure', 'iterable', 'array'];
+	$unionCb = static fn (\PHPStan\Type\Type $a, \PHPStan\Type\Type $b): \PHPStan\Type\Type => \PHPStan\Type\TypeCombinator::union($a, $b);
+	$toMixedCb = static fn (\PHPStan\Type\Type $t): \PHPStan\Type\Type => new \PHPStan\Type\MixedType();
+	$identityCb = static fn (\PHPStan\Type\Type $t): \PHPStan\Type\Type => $t;
+	$generalizeCb = static fn (\PHPStan\Type\Type $t): \PHPStan\Type\Type => $t->generalize(\PHPStan\Type\GeneralizePrecision::lessSpecific());
+	foreach ($subjects as $name => $subject) {
+		$r["$name instanceof"] = [$subject instanceof \PHPStan\Type\Type, $subject instanceof \PHPStan\Type\CompoundType, $subject instanceof \PHPStan\Reflection\Callables\CallableParametersAcceptor, $subject instanceof \PHPStan\Type\TypeWithClassName, $subject instanceof \PHPStan\Type\CallableType, $subject instanceof \PHPStan\Type\ClosureType, $subject instanceof \PHPStan\Type\IterableType, $subject instanceof \PHPStan\Type\Generic\TemplateType, get_class($subject)];
+		foreach ($levels as $levelName => $level) {
+			$r["$name describe $levelName"] = $subject->describe($level);
+		}
+		$r["$name toPhpDocNode"] = $attempt(static fn () => $subject->toPhpDocNode());
+		foreach ($others as $otherName => $other) {
+			$r["$name isSuperTypeOf $otherName"] = $attempt(static fn () => $subject->isSuperTypeOf($other));
+			$r["$name accepts $otherName"] = [$attempt(static fn () => $subject->accepts($other, true)), $attempt(static fn () => $subject->accepts($other, false))];
+			$r["$name equals $otherName"] = $subject->equals($other);
+			$r["$name reverse isSuperTypeOf $otherName"] = $attempt(static fn () => $other->isSuperTypeOf($subject));
+			$r["$name reverse accepts $otherName"] = $attempt(static fn () => $other->accepts($subject, true));
+			$r["$name reverse equals $otherName"] = $other->equals($subject);
+			$r["$name inferTemplateTypes $otherName"] = $attempt(static fn () => $subject->inferTemplateTypes($other));
+			$r["$name tryRemove $otherName"] = $attempt(static fn () => $subject->tryRemove($other));
+			$r["$name traverseSimultaneously $otherName"] = $attempt(static fn () => $subject->traverseSimultaneously($other, $unionCb));
+			$r["$name hasOffsetValueType $otherName"] = $attempt(static fn () => $subject->hasOffsetValueType($other));
+			if ($subject instanceof \PHPStan\Type\CompoundType) {
+				$r["$name isSubTypeOf $otherName"] = $attempt(static fn () => $subject->isSubTypeOf($other));
+				$r["$name isAcceptedBy $otherName"] = $attempt(static fn () => $subject->isAcceptedBy($other, true));
+			}
+			if ($subject instanceof \PHPStan\Type\IterableType) {
+				$r["$name isSuperTypeOfMixed $otherName"] = $attempt(static fn () => $subject->isSuperTypeOfMixed($other));
+			}
+		}
+		foreach ($compareOthers as $otherName) {
+			$other = $others[$otherName];
+			foreach ($callablePhpVersions as $phpVersion) {
+				$v = $phpVersion->getVersionId();
+				$r["$name looseCompare $otherName $v"] = $cv($subject->looseCompare($other, $phpVersion));
+				if ($subject instanceof \PHPStan\Type\CompoundType) {
+					$r["$name isGreaterThan $otherName $v"] = $cv($subject->isGreaterThan($other, $phpVersion));
+					$r["$name isGreaterThanOrEqual $otherName $v"] = $cv($subject->isGreaterThanOrEqual($other, $phpVersion));
+				}
+				$r["$name isSmallerThan $otherName $v"] = $cv($subject->isSmallerThan($other, $phpVersion));
+				$r["$name isSmallerThanOrEqual $otherName $v"] = $cv($subject->isSmallerThanOrEqual($other, $phpVersion));
+			}
+		}
+		foreach ($variances as $varianceName => $variance) {
+			$r["$name getReferencedTemplateTypes $varianceName"] = $attempt(static fn () => $subject->getReferencedTemplateTypes($variance));
+		}
+		foreach ($precisions as $precisionName => $precision) {
+			$r["$name generalize $precisionName"] = $attempt(static fn () => $subject->generalize($precision));
+		}
+		$r["$name traverse toMixed"] = $attempt(static fn () => $subject->traverse($toMixedCb));
+		$r["$name traverse identity"] = $attempt(static fn () => [$subject->traverse($identityCb) === $subject, $cv($subject->traverse($identityCb))]);
+		$r["$name traverse generalize"] = $attempt(static fn () => $subject->traverse($generalizeCb));
+		$r["$name getReferencedClasses"] = $attempt(static fn () => $subject->getReferencedClasses());
+		$r["$name getObjectClassNames"] = $subject->getObjectClassNames();
+		$r["$name getObjectClassReflections"] = $cv($subject->getObjectClassReflections());
+		$r["$name getConstantStrings"] = $cv($subject->getConstantStrings());
+		$r["$name hasTemplateOrLateResolvableType"] = $subject->hasTemplateOrLateResolvableType();
+		foreach (['isNull', 'isConstantValue', 'isConstantScalarValue', 'isTrue', 'isFalse', 'isBoolean', 'isFloat', 'isInteger', 'isString', 'isNumericString', 'isDecimalIntegerString', 'isNonEmptyString', 'isNonFalsyString', 'isLiteralString', 'isLowercaseString', 'isUppercaseString', 'isClassString', 'isVoid', 'isScalar', 'isObject', 'isEnum', 'isIterable', 'isIterableAtLeastOnce', 'isArray', 'isConstantArray', 'isOversizedArray', 'isList', 'isOffsetAccessible', 'isOffsetAccessLegal', 'isCloneable', 'canAccessProperties', 'canCallMethods', 'canAccessConstants', 'isCallable'] as $trinaryMethod) {
+			$r["$name $trinaryMethod"] = $cv($subject->$trinaryMethod());
+		}
+		foreach (['toNumber', 'toString', 'toInteger', 'toFloat', 'toAbsoluteNumber', 'toBitwiseNotType', 'toArray', 'toArrayKey', 'toBoolean', 'toGetClassResultType', 'toObjectTypeForInstanceofCheck', 'getEnumCases', 'getEnumCaseObject', 'getFiniteTypes', 'getConstantScalarTypes', 'getConstantScalarValues', 'getArrays', 'getConstantArrays', 'getClassStringObjectType', 'getObjectTypeOrClassStringObjectType', 'getClassStringType', 'getIterableKeyType', 'getFirstIterableKeyType', 'getLastIterableKeyType', 'getIterableValueType', 'getFirstIterableValueType', 'getLastIterableValueType', 'getArraySize', 'getKeysArray', 'getValuesArray', 'popArray', 'shiftArray', 'flipArray', 'shuffleArray', 'filterArrayRemovingFalsey', 'makeListMaybe', 'makeAllArrayKeysOptional'] as $unaryMethod) {
+			$r["$name $unaryMethod"] = $attempt(static fn () => $subject->$unaryMethod());
+		}
+		$r["$name toCoercedArgumentType"] = [$attempt(static fn () => $subject->toCoercedArgumentType(true)), $attempt(static fn () => $subject->toCoercedArgumentType(false))];
+		$r["$name toClassConstantType"] = $attempt(static fn () => $subject->toClassConstantType($stringReflectionProvider));
+		$r["$name toObjectTypeForIsACheck"] = [$attempt(static fn () => $subject->toObjectTypeForIsACheck($others['object'], true, true)), $attempt(static fn () => $subject->toObjectTypeForIsACheck($others['object'], false, false))];
+		$r["$name exponentiate"] = $attempt(static fn () => $subject->exponentiate($others['int']));
+		$r["$name getOffsetValueType"] = $attempt(static fn () => $subject->getOffsetValueType($others['int']));
+		$r["$name setOffsetValueType"] = [$attempt(static fn () => $subject->setOffsetValueType($others['int'], $others['string'])), $attempt(static fn () => $subject->setOffsetValueType(null, $others['string'], false))];
+		$r["$name setExistingOffsetValueType"] = $attempt(static fn () => $subject->setExistingOffsetValueType($others['int'], $others['string']));
+		$r["$name unsetOffset"] = $attempt(static fn () => $subject->unsetOffset($others['int']));
+		$r["$name getKeysArrayFiltered"] = $attempt(static fn () => $subject->getKeysArrayFiltered($others['int'], \PHPStan\TrinaryLogic::createYes()));
+		$r["$name searchArray"] = $attempt(static fn () => $subject->searchArray($others['int']));
+		$r["$name getTemplateType"] = $attempt(static fn () => $subject->getTemplateType(\Closure::class, 'T'));
+		foreach (['x', 'call', 'bindTo', '__invoke', 'fromCallable', 'nope'] as $member) {
+			$r["$name hasProperty $member"] = $cv($subject->hasProperty($member));
+			$r["$name hasInstanceProperty $member"] = $cv($subject->hasInstanceProperty($member));
+			$r["$name hasStaticProperty $member"] = $cv($subject->hasStaticProperty($member));
+			$r["$name hasMethod $member"] = $cv($subject->hasMethod($member));
+			$r["$name hasConstant $member"] = $cv($subject->hasConstant($member));
+			$r["$name getProperty $member"] = $attempt(static fn () => $subject->getProperty($member, $outOfClassScope));
+			$r["$name getInstanceProperty $member"] = $attempt(static fn () => $subject->getInstanceProperty($member, $outOfClassScope));
+			$r["$name getStaticProperty $member"] = $attempt(static fn () => $subject->getStaticProperty($member, $outOfClassScope));
+			$r["$name getUnresolvedPropertyPrototype $member"] = $attempt(static fn () => $subject->getUnresolvedPropertyPrototype($member, $outOfClassScope));
+			$r["$name getUnresolvedInstancePropertyPrototype $member"] = $attempt(static fn () => $subject->getUnresolvedInstancePropertyPrototype($member, $outOfClassScope));
+			$r["$name getUnresolvedStaticPropertyPrototype $member"] = $attempt(static fn () => $subject->getUnresolvedStaticPropertyPrototype($member, $outOfClassScope));
+			$r["$name getMethod $member"] = $attempt(static fn () => $subject->getMethod($member, $outOfClassScope));
+			$r["$name getUnresolvedMethodPrototype $member"] = $attempt(static fn () => $subject->getUnresolvedMethodPrototype($member, $outOfClassScope));
+			$r["$name getConstant $member"] = $attempt(static fn () => $subject->getConstant($member));
+		}
+		$r["$name getCallableParametersAcceptors"] = $attempt(static fn () => $subject->getCallableParametersAcceptors($outOfClassScope));
+		if ($subject instanceof \PHPStan\Reflection\Callables\CallableParametersAcceptor) {
+			$r["$name acceptor"] = [
+				'throwPoints' => $cv($subject->getThrowPoints()),
+				'impurePoints' => $cv($subject->getImpurePoints()),
+				'invalidateExpressions' => $cv($subject->getInvalidateExpressions()),
+				'usedVariables' => $subject->getUsedVariables(),
+				'acceptsNamedArguments' => $cv($subject->acceptsNamedArguments()),
+				'mustUseReturnValue' => $cv($subject->mustUseReturnValue()),
+				'asserts' => $cv($subject->getAsserts()),
+				'isStaticClosure' => $cv($subject->isStaticClosure()),
+				'isPure' => $cv($subject->isPure()),
+				'templateTypeMap' => $cv($subject->getTemplateTypeMap()),
+				'resolvedTemplateTypeMap' => $cv($subject->getResolvedTemplateTypeMap()),
+				'callSiteVarianceMap' => $cv($subject->getCallSiteVarianceMap()),
+				'parameters' => $cv($subject->getParameters()),
+				'isVariadic' => $subject->isVariadic(),
+				'returnType' => $cv($subject->getReturnType()),
+				'templateTags' => $cv($subject->getTemplateTags()),
+				'isCommonCallable' => $subject->isCommonCallable(),
+			];
+		}
+		if ($subject instanceof \PHPStan\Type\TypeWithClassName) {
+			$r["$name withClassName"] = [$subject->getClassName(), $cv($subject->getClassReflection()), $cv($subject->getAncestorWithClassName(\Closure::class)), $cv($subject->getAncestorWithClassName(\stdClass::class))];
+		}
+		if ($subject instanceof \PHPStan\Type\IterableType) {
+			$r["$name iterable"] = [$cv($subject->getKeyType()), $cv($subject->getItemType()), $cv($subject->toArrayOrTraversable())];
+		}
+		if ($subject instanceof \PHPStan\Type\Generic\TemplateType) {
+			$r["$name template"] = [$subject->getName(), $cv($subject->getBound()), $subject->getVariance()->describe(), $cv($subject->toArgument()), $cv($subject->getDefault())];
+		}
+	}
+	// the PHP subclasses over the native parents: what the natives call
+	// through $this must reach the overrides
+	$anonymousCallable = new class ([$callableParam('a', new \PHPStan\Type\IntegerType())], new \PHPStan\Type\StringType()) extends \PHPStan\Type\CallableType {
+
+		public function getParameters(): array
+		{
+			return [new \PHPStan\Reflection\Native\NativeParameterReflection('z', false, new \PHPStan\Type\StringType(), \PHPStan\Reflection\PassedByReference::createNo(), false, null)];
+		}
+
+		public function getReturnType(): \PHPStan\Type\Type
+		{
+			return new \PHPStan\Type\IntegerType();
+		}
+
+		public function isPure(): \PHPStan\TrinaryLogic
+		{
+			return \PHPStan\TrinaryLogic::createYes();
+		}
+
+		public function isVariadic(): bool
+		{
+			return false;
+		}
+
+	};
+	foreach ($levels as $levelName => $level) {
+		$r["anonymous callable describe $levelName"] = $anonymousCallable->describe($level);
+	}
+	$r['anonymous callable toPhpDocNode'] = $cv($anonymousCallable->toPhpDocNode());
+	$r['anonymous callable getImpurePoints'] = $cv($anonymousCallable->getImpurePoints());
+	$r['anonymous callable traverse'] = $cv($anonymousCallable->traverse($identityCb));
+	$r['anonymous callable traverseSimultaneously'] = $cv($anonymousCallable->traverseSimultaneously($subjects['callableParams'], $unionCb));
+	$r['anonymous callable hasTemplateOrLateResolvableType'] = $anonymousCallable->hasTemplateOrLateResolvableType();
+	foreach (['callable', 'callableParams', 'callablePureParams', 'callableTemplate', 'closureParams', 'iterableIntString'] as $otherName) {
+		$r["anonymous callable isSuperTypeOf $otherName"] = $attempt(static fn () => $anonymousCallable->isSuperTypeOf($subjects[$otherName]));
+		$r["anonymous callable accepts $otherName"] = $attempt(static fn () => $anonymousCallable->accepts($subjects[$otherName], true));
+		$r["anonymous callable equals $otherName"] = [$anonymousCallable->equals($subjects[$otherName]), $subjects[$otherName]->equals($anonymousCallable)];
+		$r["anonymous callable inferTemplateTypes $otherName"] = $attempt(static fn () => $anonymousCallable->inferTemplateTypes($subjects[$otherName]));
+		$r["anonymous callable reverse isSuperTypeOf $otherName"] = $attempt(static fn () => $subjects[$otherName]->isSuperTypeOf($anonymousCallable));
+	}
+	foreach ($variances as $varianceName => $variance) {
+		$r["anonymous callable getReferencedTemplateTypes $varianceName"] = $cv($anonymousCallable->getReferencedTemplateTypes($variance));
+	}
+	$anonymousClosure = new class ([$callableParam('a', new \PHPStan\Type\IntegerType())], new \PHPStan\Type\StringType()) extends \PHPStan\Type\ClosureType {
+
+		public function getImpurePoints(): array
+		{
+			return [];
+		}
+
+		public function getReturnType(): \PHPStan\Type\Type
+		{
+			return new \PHPStan\Type\IntegerType();
+		}
+
+		public function getClassStringType(): \PHPStan\Type\Type
+		{
+			return new \PHPStan\Type\Constant\ConstantStringType('overridden');
+		}
+
+		public function getUnresolvedMethodPrototype(string $methodName, \PHPStan\Reflection\ClassMemberAccessAnswerer $scope): \PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection
+		{
+			return parent::getUnresolvedMethodPrototype('bindTo', $scope);
+		}
+
+	};
+	foreach ($levels as $levelName => $level) {
+		$r["anonymous closure describe $levelName"] = $anonymousClosure->describe($level);
+	}
+	$r['anonymous closure isPure'] = $cv($anonymousClosure->isPure());
+	$r['anonymous closure toPhpDocNode'] = $cv($anonymousClosure->toPhpDocNode());
+	$r['anonymous closure toGetClassResultType'] = $cv($anonymousClosure->toGetClassResultType());
+	$r['anonymous closure getMethod'] = $attempt(static fn () => $anonymousClosure->getMethod('call', $outOfClassScope));
+	$r['anonymous closure traverse'] = $cv($anonymousClosure->traverse($identityCb));
+	$r['anonymous closure hasTemplateOrLateResolvableType'] = $anonymousClosure->hasTemplateOrLateResolvableType();
+	foreach (['closure', 'closurePure', 'closureParams', 'closureTemplate', 'callableParams', 'iterableIntString'] as $otherName) {
+		$r["anonymous closure isSuperTypeOf $otherName"] = $attempt(static fn () => $anonymousClosure->isSuperTypeOf($subjects[$otherName]));
+		$r["anonymous closure accepts $otherName"] = $attempt(static fn () => $anonymousClosure->accepts($subjects[$otherName], true));
+		$r["anonymous closure equals $otherName"] = [$anonymousClosure->equals($subjects[$otherName]), $subjects[$otherName]->equals($anonymousClosure)];
+		$r["anonymous closure inferTemplateTypes $otherName"] = $attempt(static fn () => $anonymousClosure->inferTemplateTypes($subjects[$otherName]));
+		$r["anonymous closure reverse isSuperTypeOf $otherName"] = $attempt(static fn () => $subjects[$otherName]->isSuperTypeOf($anonymousClosure));
+	}
+	foreach ($variances as $varianceName => $variance) {
+		$r["anonymous closure getReferencedTemplateTypes $varianceName"] = $cv($anonymousClosure->getReferencedTemplateTypes($variance));
+	}
+	$anonymousIterable = new class (new \PHPStan\Type\IntegerType(), new \PHPStan\Type\MixedType()) extends \PHPStan\Type\IterableType {
+
+		public function getItemType(): \PHPStan\Type\Type
+		{
+			return new \PHPStan\Type\StringType();
+		}
+
+		public function getIterableKeyType(): \PHPStan\Type\Type
+		{
+			return new \PHPStan\Type\Constant\ConstantIntegerType(0);
+		}
+
+	};
+	foreach ($levels as $levelName => $level) {
+		$r["anonymous iterable describe $levelName"] = $anonymousIterable->describe($level);
+	}
+	$r['anonymous iterable toPhpDocNode'] = $cv($anonymousIterable->toPhpDocNode());
+	$r['anonymous iterable getIterableValueType'] = $cv($anonymousIterable->getIterableValueType());
+	$r['anonymous iterable toArray'] = $cv($anonymousIterable->toArray());
+	$r['anonymous iterable getReferencedClasses'] = $anonymousIterable->getReferencedClasses();
+	$r['anonymous iterable traverse'] = $cv($anonymousIterable->traverse($identityCb));
+	foreach (['iterable', 'iterableIntString', 'iterableTemplate', 'templateIterable', 'callableParams'] as $otherName) {
+		$r["anonymous iterable isSuperTypeOf $otherName"] = $attempt(static fn () => $anonymousIterable->isSuperTypeOf($subjects[$otherName]));
+		$r["anonymous iterable accepts $otherName"] = $attempt(static fn () => $anonymousIterable->accepts($subjects[$otherName], true));
+		$r["anonymous iterable isSubTypeOf $otherName"] = $attempt(static fn () => $anonymousIterable->isSubTypeOf($subjects[$otherName]));
+		$r["anonymous iterable equals $otherName"] = [$anonymousIterable->equals($subjects[$otherName]), $subjects[$otherName]->equals($anonymousIterable)];
+		$r["anonymous iterable inferTemplateTypes $otherName"] = $attempt(static fn () => $anonymousIterable->inferTemplateTypes($subjects[$otherName]));
+		$r["anonymous iterable tryRemove $otherName"] = $attempt(static fn () => $anonymousIterable->tryRemove($subjects[$otherName]));
+	}
+	foreach (['arrayIntString', 'genericTraversable', 'objectTraversable', 'unionArrayTraversable'] as $otherName) {
+		$r["anonymous iterable accepts other $otherName"] = $attempt(static fn () => $anonymousIterable->accepts($others[$otherName], true));
+		$r["anonymous iterable isSuperTypeOf other $otherName"] = $attempt(static fn () => $anonymousIterable->isSuperTypeOf($others[$otherName]));
+		$r["anonymous iterable hasOffsetValueType other $otherName"] = $attempt(static fn () => $anonymousIterable->hasOffsetValueType($others[$otherName]));
+	}
+	foreach ($variances as $varianceName => $variance) {
+		$r["anonymous iterable getReferencedTemplateTypes $varianceName"] = $cv($anonymousIterable->getReferencedTemplateTypes($variance));
+	}
+	// the constructors' named arguments and defaults
+	$r['named callable'] = $cv(new \PHPStan\Type\CallableType(returnType: new \PHPStan\Type\IntegerType(), variadic: false));
+	$r['named closure'] = $cv(new \PHPStan\Type\ClosureType(usedVariables: ['x'], acceptsNamedArguments: \PHPStan\TrinaryLogic::createNo()));
+	$r['named closure usedVariables'] = (new \PHPStan\Type\ClosureType(usedVariables: ['x'], acceptsNamedArguments: \PHPStan\TrinaryLogic::createNo()))->getUsedVariables();
+	$r['named iterable'] = $cv(new \PHPStan\Type\IterableType(itemType: new \PHPStan\Type\StringType(), keyType: new \PHPStan\Type\IntegerType()));
+	$r['createPure'] = [get_class(\PHPStan\Type\ClosureType::createPure()), $cv(\PHPStan\Type\ClosureType::createPure()->isPure()), $cv(\PHPStan\Type\ClosureType::createPure()->getImpurePoints())];
+	// the reflection of the declarations: properties in the twin's order
+	foreach ([\PHPStan\Type\CallableType::class, \PHPStan\Type\ClosureType::class, \PHPStan\Type\IterableType::class] as $class) {
+		$reflection = new \ReflectionClass($class);
+		$r["reflection $class"] = [
+			array_map(static fn (\ReflectionProperty $property): array => [$property->getName(), (string) $property->getType(), $property->isPrivate(), $property->hasDefaultValue()], $reflection->getProperties()),
+			array_map(static fn (\ReflectionParameter $parameter): array => [$parameter->getName(), (string) $parameter->getType(), $parameter->isOptional(), $parameter->isDefaultValueAvailable() ? var_export($parameter->getDefaultValue(), true) : null], $reflection->getConstructor()->getParameters()),
+			$reflection->isFinal(),
+			(static function (array $names): array { sort($names); return $names; })(array_map('strtolower', $reflection->getInterfaceNames())),
+		];
+	}
+	foreach ($r as $key => $value) {
+		$observations["callable $key"] = $value;
 	}
 }
 

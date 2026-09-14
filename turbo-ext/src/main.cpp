@@ -214,6 +214,9 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_accessory_decimal_integer_string_type();
 	pt_register_has_method_type();
 	pt_register_has_property_type();
+	pt_register_iterable_type();
+	pt_register_callable_type();
+	pt_register_closure_type();
 
 	return SUCCESS;
 }

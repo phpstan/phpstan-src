@@ -36,12 +36,16 @@ use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprFloatNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprIntegerNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstFetchNode;
+use PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode;
+use PHPStan\PhpDocParser\Ast\Type\CallableTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\CallableTypeParameterNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\ObjectShapeItemNode;
 use PHPStan\PhpDocParser\Ast\Type\ObjectShapeNode;
 use PHPStan\PhpDocParser\Ast\Type\ThisTypeNode;
+use PHPStan\PhpDocParser\Printer\Printer;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use RecursiveDirectoryIterator;
@@ -130,6 +134,10 @@ final class TurboAttributeCollector
 		'objectShapeNode' => ObjectShapeNode::class,
 		'objectShapeItemNode' => ObjectShapeItemNode::class,
 		'constFetchNode' => ConstFetchNode::class,
+		'phpDocPrinter' => Printer::class,
+		'callableTypeNode' => CallableTypeNode::class,
+		'callableTypeParameterNode' => CallableTypeParameterNode::class,
+		'templateTagValueNode' => TemplateTagValueNode::class,
 	];
 
 	private string $realRoot;

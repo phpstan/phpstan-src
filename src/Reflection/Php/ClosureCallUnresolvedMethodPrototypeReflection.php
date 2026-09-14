@@ -4,9 +4,11 @@ namespace PHPStan\Reflection\Php;
 
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\Type;
 
+#[ReferencedByTurboExtension(key: 'closureCallUnresolvedMethodPrototypeReflection')]
 final class ClosureCallUnresolvedMethodPrototypeReflection implements UnresolvedMethodPrototypeReflection
 {
 

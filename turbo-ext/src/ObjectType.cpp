@@ -820,7 +820,7 @@ public:
 			return pt_type_call(Z_OBJ_P(type), PT_LC("isacceptedby"), 2, args);
 		}
 
-		if (UNEXPECTED(!pt_type_instanceof(type, PT_CLASS_CLOSURE_TYPE, is))) return zv::Val();
+		if (UNEXPECTED(!pt_type_instanceof_ce(type, pt_ce_closure_type, is))) return zv::Val();
 		if (is) {
 			/* new AcceptsResult($this->isInstanceOf(Closure::class), []) */
 			zend_long isClosure = thisIsInstanceOfLiteral(PT_LC("Closure"));
@@ -896,7 +896,7 @@ public:
 		if (isCompound) return storeSuperType(thisDescriptionStr, descriptionStr, pt_type_call(Z_OBJ_P(type), PT_LC("issubtypeof"), 1, &selfZv));
 
 		bool isClosure;
-		if (UNEXPECTED(!pt_type_instanceof(type, PT_CLASS_CLOSURE_TYPE, isClosure))) return zv::Val();
+		if (UNEXPECTED(!pt_type_instanceof_ce(type, pt_ce_closure_type, isClosure))) return zv::Val();
 		if (isClosure) {
 			/* new IsSuperTypeOfResult($this->isInstanceOf(Closure::class), []) */
 			zend_long isInstance = thisIsInstanceOfLiteral(PT_LC("Closure"));

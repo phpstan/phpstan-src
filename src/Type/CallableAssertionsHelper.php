@@ -10,6 +10,7 @@ use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use function count;
 
@@ -24,6 +25,7 @@ use function count;
  * narrows the argument via TypeSpecifier, and the template types occurring
  * in the asserted type can be inferred from the assertions of a passed callable.
  */
+#[ReferencedByTurboExtension(key: 'callableAssertionsHelper')]
 final class CallableAssertionsHelper
 {
 

@@ -91,7 +91,7 @@ class DownloadCommand extends Command
 		$this->savePlaygroundCache(new PlaygroundCache($cachedResults));
 
 		$matrix = [];
-		foreach ([70200, 70300, 70400, 80000, 80100, 80200, 80300, 80400, 80500] as $phpVersion) {
+		foreach ([70200, 70300, 70400, 80000, 80100, 80200, 80300, 80400, 80500, 80600] as $phpVersion) {
 			$phpVersionHashes = [];
 			foreach ($cachedResults as $hash => $result) {
 				$resultPhpVersions = array_keys($result->getVersionedErrors());
@@ -113,6 +113,9 @@ class DownloadCommand extends Command
 				}
 				if (!in_array(80500, $resultPhpVersions, true)) {
 					$resultPhpVersions[] = 80500;
+				}
+				if (!in_array(80600, $resultPhpVersions, true)) {
+					$resultPhpVersions[] = 80600;
 				}
 
 				if (!in_array($phpVersion, $resultPhpVersions, true)) {

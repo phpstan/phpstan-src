@@ -3611,8 +3611,8 @@ class ConstantArrayType implements Type
 		// hundreds of builder clones per call for a result that is thrown away.
 		$finiteValueTypesPerKey = [];
 		$count = 1;
-		foreach ($this->keyTypes as $i => $keyType) {
-			$finiteValueTypes = $this->valueTypes[$i]->getFiniteTypes();
+		foreach ($this->valueTypes as $i => $valueType) {
+			$finiteValueTypes = $valueType->getFiniteTypes();
 			if ($finiteValueTypes === []) {
 				return [];
 			}

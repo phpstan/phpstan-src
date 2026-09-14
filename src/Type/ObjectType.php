@@ -1850,13 +1850,32 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		$allowedSubTypesCount = count($allowedSubTypes);
 		$subtractedSubTypes = [];
 
+		// Enum cases are finite values: FiniteTypeSet keys them by value identity, so
+		// a subtracted case is a lookup instead of an equals() sweep over every
+		// allowed case - quadratic in the enum size. Allowed subtypes it cannot key
+		// (a sealed class hierarchy) still take the sweep.
+		$allowedSet = FiniteTypeSet::create(array_values($allowedSubTypes));
+		$keyedAllowedSubTypes = $allowedSet !== null ? $allowedSet->getMembers() : [];
+		$otherAllowedSubTypes = $allowedSet !== null ? $allowedSet->getOthers() : array_values($allowedSubTypes);
+
 		foreach ($subtractedTypes as $subType) {
-			foreach ($allowedSubTypes as $key => $allowedSubType) {
+			$key = FiniteTypeSet::key($subType);
+			if ($key !== null) {
+				if (!array_key_exists($key, $keyedAllowedSubTypes) || !$subType->equals($keyedAllowedSubTypes[$key])) {
+					return null;
+				}
+
+				$subtractedSubTypes[] = $subType;
+				unset($keyedAllowedSubTypes[$key]);
+				continue;
+			}
+
+			foreach ($otherAllowedSubTypes as $i => $allowedSubType) {
 				if ($subType->equals($allowedSubType)) {
 					// An allowed subtype is dropped as it matches, so no two matches
 					// can be the same one and the matches need no keying.
 					$subtractedSubTypes[] = $subType;
-					unset($allowedSubTypes[$key]);
+					unset($otherAllowedSubTypes[$i]);
 					continue 2;
 				}
 			}
@@ -1864,8 +1883,9 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return null;
 		}
 
-		if (count($allowedSubTypes) === 1) {
-			return array_values($allowedSubTypes)[0];
+		$remainingAllowedSubTypes = array_merge(array_values($keyedAllowedSubTypes), array_values($otherAllowedSubTypes));
+		if (count($remainingAllowedSubTypes) === 1) {
+			return $remainingAllowedSubTypes[0];
 		}
 
 		$subtractedSubTypesCount = count($subtractedSubTypes);
@@ -2062,6 +2082,31 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 		if ($this->isSuperTypeOf($typeToRemove)->yes()) {
 			return $this->subtract($typeToRemove);
+		}
+
+		$classReflection = $this->getClassReflection();
+		if ($typeToRemove instanceof UnionType && $classReflection !== null && $classReflection->getAllowedSubTypes() !== null) {
+			// A sealed hierarchy subtracts by set difference, so the members this
+			// type no longer holds (already subtracted) are no-ops and the rest come
+			// off in one subtraction - the same result as removing them one at a
+			// time, without rebuilding the subtracted union once per member.
+			$membersToRemove = [];
+			foreach ($typeToRemove->getTypes() as $member) {
+				$isSuperTypeOfMember = $this->isSuperTypeOf($member);
+				if ($isSuperTypeOfMember->yes()) {
+					$membersToRemove[] = $member;
+					continue;
+				}
+				if ($isSuperTypeOfMember->maybe()) {
+					return null;
+				}
+			}
+
+			if ($membersToRemove === []) {
+				return $this;
+			}
+
+			return $this->subtract(count($membersToRemove) === 1 ? $membersToRemove[0] : new UnionType($membersToRemove));
 		}
 
 		return null;

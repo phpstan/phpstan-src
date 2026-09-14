@@ -110,6 +110,11 @@ final class ClassReflection
 
 	private ?bool $isDeprecated = null;
 
+	/** @var array<Type>|null */
+	private ?array $allowedSubTypes = null;
+
+	private bool $allowedSubTypesResolved = false;
+
 	private ?bool $isGeneric = null;
 
 	private ?bool $isInternal = null;
@@ -2330,9 +2335,14 @@ final class ClassReflection
 	 */
 	public function getAllowedSubTypes(): ?array
 	{
+		if ($this->allowedSubTypesResolved) {
+			return $this->allowedSubTypes;
+		}
+
+		$this->allowedSubTypesResolved = true;
 		foreach ($this->classReflectionExtensionRegistryProvider->getRegistry()->getAllowedSubTypesClassReflectionExtensions() as $allowedSubTypesClassReflectionExtension) {
 			if ($allowedSubTypesClassReflectionExtension->supports($this)) {
-				return $allowedSubTypesClassReflectionExtension->getAllowedSubTypes($this);
+				return $this->allowedSubTypes = $allowedSubTypesClassReflectionExtension->getAllowedSubTypes($this);
 			}
 		}
 

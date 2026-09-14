@@ -2,24 +2,31 @@
 
 namespace PHPStan\Php;
 
+use Composer\Semver\Constraint\MultiConstraint;
 use Composer\Semver\VersionParser;
 use Nette\Utils\Strings;
+use function array_map;
 use function sprintf;
 
 final class ComposerPhpVersionParser
 {
 
 	/**
+	 * @param non-empty-list<string> $versions constraints that all have to be satisfied at once,
+	 *                                         like Composer's `php` and `php-64bit` requirements
 	 * @param callable(string, int, bool):PhpVersion $buildPhpVersion
 	 *
 	 * @return array{PhpVersion|null, PhpVersion|null}
 	 */
-	public function parse(string $version, callable $buildPhpVersion): array
+	public function parse(array $versions, callable $buildPhpVersion): array
 	{
 		$minVersion = null;
 
 		$parser = new VersionParser();
-		$constraint = $parser->parseConstraints($version);
+		$constraint = MultiConstraint::create(
+			array_map(static fn (string $version) => $parser->parseConstraints($version), $versions),
+			true,
+		);
 
 		if (!$constraint->getLowerBound()->isZero()) {
 			$minVersion = $this->buildVersion($constraint->getLowerBound()->getVersion(), false, $buildPhpVersion);

@@ -225,6 +225,15 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_verbosity_level();
 	pt_register_recursion_guard();
 	pt_register_finite_type_set();
+	pt_register_error_type();
+	pt_register_circular_type_alias_error_type();
+	pt_register_absorbed_template_argument_type();
+	pt_register_non_accepting_never_type();
+	pt_register_string_always_accepting_object_with_to_string_type();
+	pt_register_string_never_accepting_object_with_to_string_type();
+	pt_register_resource_type();
+	pt_register_type_utils();
+	pt_register_typehint_helper();
 
 	return SUCCESS;
 }

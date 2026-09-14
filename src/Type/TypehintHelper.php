@@ -9,6 +9,7 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionNamedType;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionUnionType;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use ReflectionType;
@@ -17,6 +18,7 @@ use function count;
 use function get_class;
 use function sprintf;
 
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/TypehintHelper.cpp')]
 final class TypehintHelper
 {
 

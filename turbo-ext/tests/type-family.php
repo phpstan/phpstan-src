@@ -56,7 +56,7 @@ $observations = [];
 // which implementation answered: smoke.php holds the php run to false and
 // the native run to true, so the two sets can never be one implementation
 // compared against itself
-foreach ([\PHPStan\Type\BooleanType::class, \PHPStan\Type\Constant\ConstantBooleanType::class, \PHPStan\Type\IntegerType::class, \PHPStan\Type\Constant\ConstantIntegerType::class, \PHPStan\Type\IntegerRangeType::class, \PHPStan\Type\StringType::class, \PHPStan\Type\Constant\ConstantStringType::class, \PHPStan\Type\ClassStringType::class, \PHPStan\Type\Generic\GenericClassStringType::class, \PHPStan\Type\FloatType::class, \PHPStan\Type\Constant\ConstantFloatType::class, \PHPStan\Type\NullType::class, \PHPStan\Type\VoidType::class, \PHPStan\Type\NeverType::class, \PHPStan\Type\MixedType::class, \PHPStan\Type\StrictMixedType::class, \PHPStan\Type\ObjectWithoutClassType::class, \PHPStan\Type\StaticType::class, \PHPStan\Type\ThisType::class, \PHPStan\Type\Generic\GenericStaticType::class, \PHPStan\Type\ObjectShapeType::class, \PHPStan\Type\NonexistentParentClassType::class, \PHPStan\Type\ArrayType::class, \PHPStan\Type\Accessory\NonEmptyArrayType::class, \PHPStan\Type\Accessory\AccessoryArrayListType::class, \PHPStan\Type\Accessory\OversizedArrayType::class, \PHPStan\Type\Accessory\HasOffsetType::class, \PHPStan\Type\Accessory\HasOffsetValueType::class, \PHPStan\Type\Accessory\AccessoryNumericStringType::class, \PHPStan\Type\Accessory\AccessoryNonEmptyStringType::class, \PHPStan\Type\Accessory\AccessoryNonFalsyStringType::class, \PHPStan\Type\Accessory\AccessoryLiteralStringType::class, \PHPStan\Type\Accessory\AccessoryLowercaseStringType::class, \PHPStan\Type\Accessory\AccessoryUppercaseStringType::class, \PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType::class, \PHPStan\Type\Accessory\HasMethodType::class, \PHPStan\Type\Accessory\HasPropertyType::class, \PHPStan\Type\ObjectType::class, \PHPStan\Type\Generic\GenericObjectType::class, \PHPStan\Type\Enum\EnumCaseObjectType::class, \PHPStan\Type\IterableType::class, \PHPStan\Type\CallableType::class, \PHPStan\Type\ClosureType::class, \PHPStan\Type\Constant\ConstantArrayType::class, \PHPStan\Type\UnionType::class, \PHPStan\Type\BenevolentUnionType::class, \PHPStan\Type\IntersectionType::class] as $typeClass) {
+foreach ([\PHPStan\Type\BooleanType::class, \PHPStan\Type\Constant\ConstantBooleanType::class, \PHPStan\Type\IntegerType::class, \PHPStan\Type\Constant\ConstantIntegerType::class, \PHPStan\Type\IntegerRangeType::class, \PHPStan\Type\StringType::class, \PHPStan\Type\Constant\ConstantStringType::class, \PHPStan\Type\ClassStringType::class, \PHPStan\Type\Generic\GenericClassStringType::class, \PHPStan\Type\FloatType::class, \PHPStan\Type\Constant\ConstantFloatType::class, \PHPStan\Type\NullType::class, \PHPStan\Type\VoidType::class, \PHPStan\Type\NeverType::class, \PHPStan\Type\MixedType::class, \PHPStan\Type\StrictMixedType::class, \PHPStan\Type\ObjectWithoutClassType::class, \PHPStan\Type\StaticType::class, \PHPStan\Type\ThisType::class, \PHPStan\Type\Generic\GenericStaticType::class, \PHPStan\Type\ObjectShapeType::class, \PHPStan\Type\NonexistentParentClassType::class, \PHPStan\Type\ArrayType::class, \PHPStan\Type\Accessory\NonEmptyArrayType::class, \PHPStan\Type\Accessory\AccessoryArrayListType::class, \PHPStan\Type\Accessory\OversizedArrayType::class, \PHPStan\Type\Accessory\HasOffsetType::class, \PHPStan\Type\Accessory\HasOffsetValueType::class, \PHPStan\Type\Accessory\AccessoryNumericStringType::class, \PHPStan\Type\Accessory\AccessoryNonEmptyStringType::class, \PHPStan\Type\Accessory\AccessoryNonFalsyStringType::class, \PHPStan\Type\Accessory\AccessoryLiteralStringType::class, \PHPStan\Type\Accessory\AccessoryLowercaseStringType::class, \PHPStan\Type\Accessory\AccessoryUppercaseStringType::class, \PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType::class, \PHPStan\Type\Accessory\HasMethodType::class, \PHPStan\Type\Accessory\HasPropertyType::class, \PHPStan\Type\ObjectType::class, \PHPStan\Type\Generic\GenericObjectType::class, \PHPStan\Type\Enum\EnumCaseObjectType::class, \PHPStan\Type\IterableType::class, \PHPStan\Type\CallableType::class, \PHPStan\Type\ClosureType::class, \PHPStan\Type\Constant\ConstantArrayType::class, \PHPStan\Type\UnionType::class, \PHPStan\Type\BenevolentUnionType::class, \PHPStan\Type\IntersectionType::class, \PHPStan\Type\ErrorType::class, \PHPStan\Type\CircularTypeAliasErrorType::class, \PHPStan\Type\Generic\AbsorbedTemplateArgumentType::class, \PHPStan\Type\NonAcceptingNeverType::class, \PHPStan\Type\StringAlwaysAcceptingObjectWithToStringType::class, \PHPStan\Type\StringNeverAcceptingObjectWithToStringType::class, \PHPStan\Type\ResourceType::class] as $typeClass) {
 	$observations["native $typeClass"] = (new ReflectionMethod($typeClass, 'describe'))->isInternal();
 }
 
@@ -3935,6 +3935,525 @@ $compoundOthers = static fn (string $union, string $benevolent, string $intersec
 		$observations["recommended level $key"] = $value;
 	}
 }
+
+// ---- ErrorType / CircularTypeAliasErrorType / AbsorbedTemplateArgumentType / NonAcceptingNeverType / StringAlwaysAcceptingObjectWithToStringType / StringNeverAcceptingObjectWithToStringType / ResourceType ----
+// the small classes: the error family over the native MixedType (the
+// $reason slot after the parent's two, describe() through parent::, the
+// inherited constructor of the two children), the non-accepting never over
+// the native NeverType (parent::__construct(true)), the two string children
+// whose isSuperTypeOf()/accepts() ask the reflection provider (registered
+// above by the string family, still in place) for a native __toString(),
+// and the stateless resource type; PHP subclasses over each native parent
+// come along
+$smallPhpVersion = new \PHPStan\Php\PhpVersion(80400);
+$smallScope = \PHPStan\Type\Generic\TemplateTypeScope::createWithFunction('small');
+$smallOthers = static fn (): array => [
+	'int' => new \PHPStan\Type\IntegerType(),
+	'int0' => new \PHPStan\Type\Constant\ConstantIntegerType(0),
+	'float' => new \PHPStan\Type\FloatType(),
+	'bool' => new \PHPStan\Type\BooleanType(),
+	'true' => new \PHPStan\Type\Constant\ConstantBooleanType(true),
+	'null' => new \PHPStan\Type\NullType(),
+	'string' => new \PHPStan\Type\StringType(),
+	'stringAbc' => new \PHPStan\Type\Constant\ConstantStringType('abc'),
+	'stringEmpty' => new \PHPStan\Type\Constant\ConstantStringType(''),
+	'nonEmptyString' => new \PHPStan\Type\IntersectionType([new \PHPStan\Type\StringType(), new \PHPStan\Type\Accessory\AccessoryNonEmptyStringType()]),
+	'classString' => new \PHPStan\Type\ClassStringType(),
+	'stringAlways' => new \PHPStan\Type\StringAlwaysAcceptingObjectWithToStringType(),
+	'stringNever' => new \PHPStan\Type\StringNeverAcceptingObjectWithToStringType(),
+	'mixed' => new \PHPStan\Type\MixedType(),
+	'mixedExplicit' => new \PHPStan\Type\MixedType(true),
+	'mixedMinusInt' => new \PHPStan\Type\MixedType(false, new \PHPStan\Type\IntegerType()),
+	'strictMixed' => new \PHPStan\Type\StrictMixedType(),
+	'never' => new \PHPStan\Type\NeverType(),
+	'neverExplicit' => new \PHPStan\Type\NeverType(true),
+	'nonAcceptingNever' => new \PHPStan\Type\NonAcceptingNeverType(),
+	'error' => new \PHPStan\Type\ErrorType(),
+	'errorReason' => new \PHPStan\Type\ErrorType('because'),
+	'circular' => new \PHPStan\Type\CircularTypeAliasErrorType(),
+	'absorbed' => new \PHPStan\Type\Generic\AbsorbedTemplateArgumentType(),
+	'resource' => new \PHPStan\Type\ResourceType(),
+	'templateT' => \PHPStan\Type\Generic\TemplateTypeFactory::create($smallScope, 'T', null, \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()),
+	'templateInt' => \PHPStan\Type\Generic\TemplateTypeFactory::create($smallScope, 'T', new \PHPStan\Type\IntegerType(), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()),
+	'object' => new \PHPStan\Type\ObjectType(\stdClass::class),
+	'exception' => new \PHPStan\Type\ObjectType(\Exception::class),
+	'throwable' => new \PHPStan\Type\ObjectType(\Throwable::class),
+	'unknownClass' => new \PHPStan\Type\ObjectType('SmallTypeFamily\\DoesNotExist'),
+	'unionExceptionError' => new \PHPStan\Type\UnionType([new \PHPStan\Type\ObjectType(\Exception::class), new \PHPStan\Type\ObjectType(\Error::class)]),
+	'unionExceptionStd' => new \PHPStan\Type\UnionType([new \PHPStan\Type\ObjectType(\Exception::class), new \PHPStan\Type\ObjectType(\stdClass::class)]),
+	'unionExceptionUnknown' => new \PHPStan\Type\UnionType([new \PHPStan\Type\ObjectType(\Exception::class), new \PHPStan\Type\ObjectType('SmallTypeFamily\\DoesNotExist')]),
+	'unionStringException' => new \PHPStan\Type\UnionType([new \PHPStan\Type\StringType(), new \PHPStan\Type\ObjectType(\Exception::class)]),
+	'objectWithoutClass' => new \PHPStan\Type\ObjectWithoutClassType(),
+	'union' => new \PHPStan\Type\UnionType([new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()]),
+	'unionNullable' => new \PHPStan\Type\UnionType([new \PHPStan\Type\StringType(), new \PHPStan\Type\NullType()]),
+	'array' => new \PHPStan\Type\ArrayType(new \PHPStan\Type\MixedType(), new \PHPStan\Type\MixedType()),
+	'emptyArray' => new \PHPStan\Type\Constant\ConstantArrayType([], []),
+	'callable' => new \PHPStan\Type\CallableType(),
+	'closure' => new \PHPStan\Type\ClosureType(),
+	'iterable' => new \PHPStan\Type\IterableType(new \PHPStan\Type\MixedType(), new \PHPStan\Type\MixedType()),
+	'void' => new \PHPStan\Type\VoidType(),
+];
+{
+	$r = [];
+	$others = $smallOthers();
+	$subjects = [
+		'error' => new \PHPStan\Type\ErrorType(),
+		'errorReason' => new \PHPStan\Type\ErrorType('because'),
+		'circular' => new \PHPStan\Type\CircularTypeAliasErrorType(),
+		'circularReason' => new \PHPStan\Type\CircularTypeAliasErrorType('circular'),
+		'absorbed' => new \PHPStan\Type\Generic\AbsorbedTemplateArgumentType(),
+		'absorbedReason' => new \PHPStan\Type\Generic\AbsorbedTemplateArgumentType('absorbed'),
+		'nonAcceptingNever' => new \PHPStan\Type\NonAcceptingNeverType(),
+		'stringAlways' => new \PHPStan\Type\StringAlwaysAcceptingObjectWithToStringType(),
+		'stringNever' => new \PHPStan\Type\StringNeverAcceptingObjectWithToStringType(),
+		'resource' => new \PHPStan\Type\ResourceType(),
+	];
+	foreach ($subjects as $name => $subject) {
+		$reflection = new ReflectionClass($subject);
+		$r["$name class"] = [get_class($subject), $reflection->isFinal(), $reflection->getParentClass() === false ? null : $reflection->getParentClass()->getName(), $reflection->getConstructor()?->getNumberOfParameters()];
+		$r["$name instanceof"] = [$subject instanceof \PHPStan\Type\Type, $subject instanceof \PHPStan\Type\MixedType, $subject instanceof \PHPStan\Type\ErrorType, $subject instanceof \PHPStan\Type\NeverType, $subject instanceof \PHPStan\Type\StringType, $subject instanceof \PHPStan\Type\CompoundType, $subject instanceof \PHPStan\Type\SubtractableType, $subject instanceof \PHPStan\Type\ConstantScalarType];
+		foreach (['typeOnly' => \PHPStan\Type\VerbosityLevel::typeOnly(), 'value' => \PHPStan\Type\VerbosityLevel::value(), 'precise' => \PHPStan\Type\VerbosityLevel::precise(), 'cache' => \PHPStan\Type\VerbosityLevel::cache()] as $levelName => $level) {
+			$r["$name describe $levelName"] = $subject->describe($level);
+		}
+		if ($subject instanceof \PHPStan\Type\ErrorType) {
+			$r["$name getReason"] = $subject->getReason();
+			$r["$name isExplicitMixed"] = $subject->isExplicitMixed();
+			$r["$name getSubtractedType"] = $view($subject->getSubtractedType());
+			$r["$name getTypeWithoutSubtractedType"] = $view($subject->getTypeWithoutSubtractedType());
+			$r["$name changeSubtractedType"] = $view($subject->changeSubtractedType($others['int']));
+		}
+		if ($subject instanceof \PHPStan\Type\NeverType) {
+			$r["$name isExplicit"] = [$subject->isExplicit(), $subject->getReason()];
+		}
+		foreach ($others as $otherName => $other) {
+			$r["$name isSuperTypeOf $otherName"] = $view($subject->isSuperTypeOf($other));
+			$r["$name accepts $otherName"] = [$view($subject->accepts($other, true)), $view($subject->accepts($other, false))];
+			$r["$name equals $otherName"] = [$subject->equals($other), $other->equals($subject)];
+			$r["$otherName isSuperTypeOf $name"] = $view($other->isSuperTypeOf($subject));
+			$r["$otherName accepts $name"] = [$view($other->accepts($subject, true)), $view($other->accepts($subject, false))];
+			$r["$name tryRemove $otherName"] = $view($subject->tryRemove($other));
+			$r["$name looseCompare $otherName"] = $view($subject->looseCompare($other, $smallPhpVersion));
+			$r["$name union $otherName"] = $view(\PHPStan\Type\TypeCombinator::union($subject, $other));
+			$r["$name intersect $otherName"] = $view(\PHPStan\Type\TypeCombinator::intersect($subject, $other));
+			$r["$name remove $otherName"] = $view(\PHPStan\Type\TypeCombinator::remove($subject, $other));
+			if ($subject instanceof \PHPStan\Type\CompoundType) {
+				$r["$name isSubTypeOf $otherName"] = $view($subject->isSubTypeOf($other));
+				$r["$name isAcceptedBy $otherName"] = [$view($subject->isAcceptedBy($other, true)), $view($subject->isAcceptedBy($other, false))];
+			}
+			if ($subject instanceof \PHPStan\Type\SubtractableType) {
+				$r["$name subtract $otherName"] = $view($subject->subtract($other));
+			}
+		}
+		$r["$name getIterableKeyType"] = $view($subject->getIterableKeyType());
+		$r["$name getIterableValueType"] = $view($subject->getIterableValueType());
+		$r["$name toArray"] = $view($subject->toArray());
+		$r["$name toString"] = $view($subject->toString());
+		$r["$name toInteger"] = $view($subject->toInteger());
+		$r["$name toFloat"] = $view($subject->toFloat());
+		$r["$name toNumber"] = $view($subject->toNumber());
+		$r["$name toArrayKey"] = $view($subject->toArrayKey());
+		$r["$name toBoolean"] = $view($subject->toBoolean());
+		$r["$name toAbsoluteNumber"] = $view($subject->toAbsoluteNumber());
+		$r["$name toBitwiseNotType"] = $view($subject->toBitwiseNotType());
+		$r["$name toPhpDocNode"] = $view($subject->toPhpDocNode());
+		$r["$name toCoercedArgumentType"] = [$view($subject->toCoercedArgumentType(true)), $view($subject->toCoercedArgumentType(false))];
+		$r["$name exponentiate"] = $view($subject->exponentiate($others['int']));
+		$r["$name generalize"] = [$view($subject->generalize(\PHPStan\Type\GeneralizePrecision::lessSpecific())), $view($subject->generalize(\PHPStan\Type\GeneralizePrecision::moreSpecific()))];
+		$r["$name traverse"] = $view($subject->traverse(static fn (\PHPStan\Type\Type $t): \PHPStan\Type\Type => $t));
+		$r["$name queries"] = $view([$subject->isScalar(), $subject->isOffsetAccessLegal(), $subject->isOffsetAccessible(), $subject->isString(), $subject->isObject(), $subject->isNull(), $subject->isArray(), $subject->isCallable(), $subject->isIterable(), $subject->isVoid(), $subject->isConstantValue(), $subject->isCloneable(), $subject->isEnum(), $subject->getFiniteTypes(), $subject->getConstantStrings(), $subject->getReferencedClasses(), $subject->getObjectClassNames(), $subject->getEnumCases(), $subject->hasTemplateOrLateResolvableType()]);
+	}
+	// the uninitialized-slot reads the twins' typed properties raise
+	foreach (['error' => \PHPStan\Type\ErrorType::class, 'circular' => \PHPStan\Type\CircularTypeAliasErrorType::class, 'absorbed' => \PHPStan\Type\Generic\AbsorbedTemplateArgumentType::class, 'nonAcceptingNever' => \PHPStan\Type\NonAcceptingNeverType::class] as $name => $class) {
+		$uninitialized = (new ReflectionClass($class))->newInstanceWithoutConstructor();
+		foreach (['getReason', 'describe', 'isSuperTypeOf'] as $method) {
+			try {
+				$r["$name uninitialized $method"] = $view($method === 'getReason' ? $uninitialized->getReason() : ($method === 'describe' ? $uninitialized->describe(\PHPStan\Type\VerbosityLevel::precise()) : $uninitialized->isSuperTypeOf($others['int'])));
+			} catch (\Throwable $e) {
+				$r["$name uninitialized $method"] = [get_class($e), $e->getMessage()];
+			}
+		}
+	}
+	// a repeated constructor call overwrites the slots in place
+	$reconstructed = new \PHPStan\Type\ErrorType('first');
+	$reconstructed->__construct('second');
+	$r['error reconstruct'] = [$reconstructed->getReason(), $reconstructed->describe(\PHPStan\Type\VerbosityLevel::cache())];
+	// PHP subclasses over the native parents: what the natives call through
+	// $this / what parent:: keeps bound to the subclass
+	$anonymousError = new class ('anonymous') extends \PHPStan\Type\ErrorType {
+
+		public function getReason(): ?string
+		{
+			return 'overridden';
+		}
+
+		public function describeSubtractedType(?\PHPStan\Type\Type $subtractedType, \PHPStan\Type\VerbosityLevel $level): string
+		{
+			return '<overridden>';
+		}
+
+		public function isSuperTypeOf(\PHPStan\Type\Type $type): \PHPStan\Type\IsSuperTypeOfResult
+		{
+			return \PHPStan\Type\IsSuperTypeOfResult::createNo(['anonymous']);
+		}
+
+	};
+	$r['anonymous error getReason'] = $anonymousError->getReason();
+	$r['anonymous error describe'] = [$anonymousError->describe(\PHPStan\Type\VerbosityLevel::typeOnly()), $anonymousError->describe(\PHPStan\Type\VerbosityLevel::precise()), $anonymousError->describe(\PHPStan\Type\VerbosityLevel::cache())];
+	$r['anonymous error subtract'] = $view($anonymousError->subtract($others['int']));
+	$r['anonymous error getIterableValueType'] = $view($anonymousError->getIterableValueType());
+	$r['anonymous error isAcceptedBy'] = $view($anonymousError->isAcceptedBy($others['int'], true));
+	$r['anonymous error equals'] = [$anonymousError->equals($subjects['error']), $subjects['error']->equals($anonymousError), $subjects['absorbed']->equals($anonymousError), $subjects['circular']->equals($anonymousError)];
+	$r['error isSuperTypeOf anonymous'] = $view($subjects['errorReason']->isSuperTypeOf($anonymousError));
+	$anonymousNonAccepting = new class extends \PHPStan\Type\NonAcceptingNeverType {
+
+		public function isSubTypeOf(\PHPStan\Type\Type $otherType): \PHPStan\Type\IsSuperTypeOfResult
+		{
+			return \PHPStan\Type\IsSuperTypeOfResult::createMaybe();
+		}
+
+	};
+	$r['anonymous nonAcceptingNever isAcceptedBy'] = $view($anonymousNonAccepting->isAcceptedBy($others['int'], true));
+	$r['anonymous nonAcceptingNever isExplicit'] = $anonymousNonAccepting->isExplicit();
+	$r['anonymous nonAcceptingNever isSuperTypeOf'] = [$view($anonymousNonAccepting->isSuperTypeOf($subjects['nonAcceptingNever'])), $view($subjects['nonAcceptingNever']->isSuperTypeOf($anonymousNonAccepting)), $view($others['never']->isSuperTypeOf($anonymousNonAccepting))];
+	$anonymousStringAlways = new class extends \PHPStan\Type\StringAlwaysAcceptingObjectWithToStringType {
+
+		public function hasOffsetValueType(\PHPStan\Type\Type $offsetType): \PHPStan\TrinaryLogic
+		{
+			return \PHPStan\TrinaryLogic::createNo();
+		}
+
+		public function getObjectClassNames(): array
+		{
+			return [\Exception::class];
+		}
+
+	};
+	$r['anonymous stringAlways getOffsetValueType'] = $view($anonymousStringAlways->getOffsetValueType($others['int']));
+	$r['anonymous stringAlways isSuperTypeOf'] = [$view($anonymousStringAlways->isSuperTypeOf($others['exception'])), $view($subjects['stringAlways']->isSuperTypeOf($anonymousStringAlways)), $view($subjects['stringNever']->isSuperTypeOf($anonymousStringAlways))];
+	$r['anonymous stringAlways accepts'] = [$view($anonymousStringAlways->accepts($others['string'], true)), $view($subjects['stringAlways']->accepts($anonymousStringAlways, true)), $view($subjects['stringNever']->accepts($anonymousStringAlways, false))];
+	$anonymousResource = new class extends \PHPStan\Type\ResourceType {
+
+		public function describe(\PHPStan\Type\VerbosityLevel $level): string
+		{
+			return 'anonymous-resource';
+		}
+
+	};
+	$r['anonymous resource toArray'] = $view($anonymousResource->toArray());
+	$r['anonymous resource equals'] = [$anonymousResource->equals($subjects['resource']), $subjects['resource']->equals($anonymousResource)];
+	$r['anonymous resource isSuperTypeOf'] = [$view($anonymousResource->isSuperTypeOf($subjects['resource'])), $view($subjects['resource']->isSuperTypeOf($anonymousResource))];
+	$r['anonymous resource accepts'] = [$view($anonymousResource->accepts($subjects['resource'], true)), $view($subjects['resource']->accepts($anonymousResource, true))];
+	foreach ($r as $key => $value) {
+		$observations["small $key"] = $value;
+	}
+}
+
+
+// ---- TypeUtils ----
+// the static helpers over the whole family: the class-mapped lookups
+// (getConstantIntegers(), getIntegerRanges(), getAccessoryTypes()) through
+// unions and intersections, the benevolent/strict union conversions (the
+// PHP TemplateBenevolentUnionType included), flattenTypes() over unions and
+// the power sets of constant arrays (and its bail-out), findThisType() /
+// findCallableType() / getHasPropertyTypes() through compound types,
+// containsTemplateType() via TypeTraverser and resolveLateResolvableTypes()
+// over key-of / value-of / conditional types; the string family's
+// reflection provider stays registered
+$observations['native ' . \PHPStan\Type\TypeUtils::class] = (new ReflectionMethod(\PHPStan\Type\TypeUtils::class, 'flattenTypes'))->isInternal();
+{
+	$r = [];
+	$utilsScope = \PHPStan\Type\Generic\TemplateTypeScope::createWithFunction('utils');
+	$utilsTemplateT = \PHPStan\Type\Generic\TemplateTypeFactory::create($utilsScope, 'T', null, \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant());
+	$utilsTemplateInt = \PHPStan\Type\Generic\TemplateTypeFactory::create($utilsScope, 'I', new \PHPStan\Type\IntegerType(), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant());
+	$utilsTemplateUnion = \PHPStan\Type\Generic\TemplateTypeFactory::create($utilsScope, 'U', new \PHPStan\Type\UnionType([new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()]), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant());
+	$utilsTemplateBenevolent = \PHPStan\Type\Generic\TemplateTypeFactory::create($utilsScope, 'B', new \PHPStan\Type\BenevolentUnionType([new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()]), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant());
+	$utilsThis = new \PHPStan\Type\ThisType($stringReflectionProvider->getClass(\Exception::class));
+	$utilsShape = static function (array $entries, array $optionalKeys = []): \PHPStan\Type\Constant\ConstantArrayType {
+		$keyTypes = [];
+		$valueTypes = [];
+		foreach ($entries as $key => $valueType) {
+			$keyTypes[] = is_int($key) ? new \PHPStan\Type\Constant\ConstantIntegerType($key) : new \PHPStan\Type\Constant\ConstantStringType($key);
+			$valueTypes[] = $valueType;
+		}
+		return new \PHPStan\Type\Constant\ConstantArrayType($keyTypes, $valueTypes, [count($keyTypes)], $optionalKeys);
+	};
+	$utilsWideShape = static function (int $keys, int $optional) use ($utilsShape): \PHPStan\Type\Constant\ConstantArrayType {
+		$entries = [];
+		for ($i = 0; $i < $keys; $i++) {
+			$entries["k$i"] = new \PHPStan\Type\IntegerType();
+		}
+		return $utilsShape($entries, range(0, $optional - 1));
+	};
+	$int = new \PHPStan\Type\IntegerType();
+	$string = new \PHPStan\Type\StringType();
+	$subjects = [
+		'int' => $int,
+		'int0' => new \PHPStan\Type\Constant\ConstantIntegerType(0),
+		'string' => $string,
+		'stringStrlen' => new \PHPStan\Type\Constant\ConstantStringType('strlen'),
+		'range0-10' => \PHPStan\Type\IntegerRangeType::fromInterval(0, 10),
+		'mixed' => new \PHPStan\Type\MixedType(),
+		'never' => new \PHPStan\Type\NeverType(),
+		'error' => new \PHPStan\Type\ErrorType(),
+		'null' => new \PHPStan\Type\NullType(),
+		'unionInts' => new \PHPStan\Type\UnionType([new \PHPStan\Type\Constant\ConstantIntegerType(1), new \PHPStan\Type\Constant\ConstantIntegerType(2)]),
+		'unionIntString' => new \PHPStan\Type\UnionType([new \PHPStan\Type\Constant\ConstantIntegerType(1), $string]),
+		'unionRanges' => new \PHPStan\Type\UnionType([\PHPStan\Type\IntegerRangeType::fromInterval(0, 10), \PHPStan\Type\IntegerRangeType::fromInterval(20, 30)]),
+		'unionRangeInt' => new \PHPStan\Type\UnionType([\PHPStan\Type\IntegerRangeType::fromInterval(0, 10), new \PHPStan\Type\Constant\ConstantIntegerType(20)]),
+		'unionScalars' => new \PHPStan\Type\UnionType([$int, $string, new \PHPStan\Type\FloatType()]),
+		'unionNullable' => new \PHPStan\Type\UnionType([$int, new \PHPStan\Type\NullType()]),
+		'benevolent' => new \PHPStan\Type\BenevolentUnionType([$int, $string]),
+		'benevolentInts' => new \PHPStan\Type\BenevolentUnionType([new \PHPStan\Type\Constant\ConstantIntegerType(1), new \PHPStan\Type\Constant\ConstantIntegerType(2)]),
+		'templateT' => $utilsTemplateT,
+		'templateInt' => $utilsTemplateInt,
+		'templateUnion' => $utilsTemplateUnion,
+		'templateBenevolent' => $utilsTemplateBenevolent,
+		'unionWithTemplate' => new \PHPStan\Type\UnionType([$int, $utilsTemplateT]),
+		'arrayOfTemplate' => new \PHPStan\Type\ArrayType($int, $utilsTemplateT),
+		'genericOfTemplate' => new \PHPStan\Type\Generic\GenericObjectType(\ArrayIterator::class, [$int, $utilsTemplateT]),
+		'genericOfInt' => new \PHPStan\Type\Generic\GenericObjectType(\ArrayIterator::class, [$int, $string]),
+		'nonEmptyString' => new \PHPStan\Type\IntersectionType([$string, new \PHPStan\Type\Accessory\AccessoryNonEmptyStringType()]),
+		'literalNonEmptyString' => new \PHPStan\Type\IntersectionType([$string, new \PHPStan\Type\Accessory\AccessoryNonEmptyStringType(), new \PHPStan\Type\Accessory\AccessoryLiteralStringType()]),
+		'unionNonEmptyStringInt' => new \PHPStan\Type\UnionType([new \PHPStan\Type\IntersectionType([$string, new \PHPStan\Type\Accessory\AccessoryNonEmptyStringType()]), $int]),
+		'nonEmptyArray' => new \PHPStan\Type\IntersectionType([new \PHPStan\Type\ArrayType($int, $string), new \PHPStan\Type\Accessory\NonEmptyArrayType()]),
+		'list' => new \PHPStan\Type\IntersectionType([new \PHPStan\Type\ArrayType(\PHPStan\Type\IntegerRangeType::createAllGreaterThanOrEqualTo(0), $string), new \PHPStan\Type\Accessory\AccessoryArrayListType()]),
+		'shape' => $utilsShape(['a' => $int, 'b' => $string]),
+		'shapeOptional' => $utilsShape(['a' => $int, 'b' => $string, 'c' => new \PHPStan\Type\BooleanType()], [1, 2]),
+		'shapeNonEmpty' => new \PHPStan\Type\IntersectionType([$utilsShape(['a' => $int, 'b' => $string], [0, 1]), new \PHPStan\Type\Accessory\NonEmptyArrayType()]),
+		'shapeList' => new \PHPStan\Type\IntersectionType([$utilsShape([0 => $int, 1 => $string], [1]), new \PHPStan\Type\Accessory\AccessoryArrayListType()]),
+		'unionShapes' => new \PHPStan\Type\UnionType([$utilsShape(['a' => $int], [0]), $utilsShape(['b' => $string], [0])]),
+		'unionShapeInt' => new \PHPStan\Type\UnionType([$utilsShape(['a' => $int, 'b' => $string], [1]), $int]),
+		'shapeWide14' => $utilsWideShape(14, 14),
+		'shapeWide15' => $utilsWideShape(15, 15),
+		'shapeWide21' => $utilsWideShape(21, 21),
+		'unionWideShapes' => new \PHPStan\Type\UnionType([$utilsWideShape(8, 8), $utilsWideShape(8, 8)]),
+		'shapeOfTemplate' => $utilsShape(['a' => $utilsTemplateT]),
+		'this' => $utilsThis,
+		'unionThisInt' => new \PHPStan\Type\UnionType([$int, $utilsThis]),
+		'intersectionThisObject' => new \PHPStan\Type\IntersectionType([$utilsThis, new \PHPStan\Type\Accessory\HasMethodType('foo')]),
+		'unionOfIntersectionThis' => new \PHPStan\Type\UnionType([new \PHPStan\Type\NullType(), new \PHPStan\Type\IntersectionType([$utilsThis, new \PHPStan\Type\Accessory\HasMethodType('foo')])]),
+		'object' => new \PHPStan\Type\ObjectType(\stdClass::class),
+		'callable' => new \PHPStan\Type\CallableType(),
+		'closure' => new \PHPStan\Type\ClosureType(),
+		'closureObject' => new \PHPStan\Type\ObjectType(\Closure::class),
+		'unionIntCallable' => new \PHPStan\Type\UnionType([$int, new \PHPStan\Type\CallableType()]),
+		'unionIntClosure' => new \PHPStan\Type\UnionType([$int, new \PHPStan\Type\ClosureType()]),
+		'hasProperty' => new \PHPStan\Type\Accessory\HasPropertyType('foo'),
+		'objectHasProperty' => new \PHPStan\Type\IntersectionType([new \PHPStan\Type\ObjectType(\stdClass::class), new \PHPStan\Type\Accessory\HasPropertyType('foo')]),
+		'objectHasProperties' => new \PHPStan\Type\IntersectionType([new \PHPStan\Type\ObjectType(\stdClass::class), new \PHPStan\Type\Accessory\HasPropertyType('foo'), new \PHPStan\Type\Accessory\HasPropertyType('bar')]),
+		'unionHasProperty' => new \PHPStan\Type\UnionType([new \PHPStan\Type\IntersectionType([new \PHPStan\Type\ObjectType(\stdClass::class), new \PHPStan\Type\Accessory\HasPropertyType('foo')]), new \PHPStan\Type\ObjectType(\Exception::class)]),
+		'keyOfShape' => new \PHPStan\Type\KeyOfType($utilsShape(['a' => $int, 'b' => $string])),
+		'valueOfShape' => new \PHPStan\Type\ValueOfType($utilsShape(['a' => $int, 'b' => $string])),
+		'keyOfTemplate' => new \PHPStan\Type\KeyOfType($utilsTemplateT),
+		'valueOfTemplateInt' => new \PHPStan\Type\ValueOfType(new \PHPStan\Type\ArrayType($int, $utilsTemplateInt)),
+		'conditional' => new \PHPStan\Type\ConditionalType($int, $int, $string, new \PHPStan\Type\BooleanType(), false),
+		'conditionalTemplate' => new \PHPStan\Type\ConditionalType($utilsTemplateT, $int, $string, new \PHPStan\Type\BooleanType(), false),
+		'unionKeyOfInt' => new \PHPStan\Type\UnionType([new \PHPStan\Type\KeyOfType($utilsShape(['a' => $int, 'b' => $string])), $int]),
+		'arrayOfKeyOfTemplate' => new \PHPStan\Type\ArrayType($int, new \PHPStan\Type\KeyOfType($utilsTemplateT)),
+	];
+	foreach ($subjects as $name => $subject) {
+		$r["getConstantIntegers $name"] = $view(\PHPStan\Type\TypeUtils::getConstantIntegers($subject));
+		$r["getIntegerRanges $name"] = $view(\PHPStan\Type\TypeUtils::getIntegerRanges($subject));
+		$r["toBenevolentUnion $name"] = $view(\PHPStan\Type\TypeUtils::toBenevolentUnion($subject));
+		$r["toStrictUnion $name"] = $view(\PHPStan\Type\TypeUtils::toStrictUnion($subject));
+		$r["flattenTypes $name"] = $view(\PHPStan\Type\TypeUtils::flattenTypes($subject));
+		$r["findThisType $name"] = $view(\PHPStan\Type\TypeUtils::findThisType($subject));
+		$r["findCallableType $name"] = $view(\PHPStan\Type\TypeUtils::findCallableType($subject));
+		$r["getHasPropertyTypes $name"] = $view(\PHPStan\Type\TypeUtils::getHasPropertyTypes($subject));
+		$r["getAccessoryTypes $name"] = $view(\PHPStan\Type\TypeUtils::getAccessoryTypes($subject));
+		$r["containsTemplateType $name"] = \PHPStan\Type\TypeUtils::containsTemplateType($subject);
+		$r["resolveLateResolvableTypes $name"] = [$view(\PHPStan\Type\TypeUtils::resolveLateResolvableTypes($subject)), $view(\PHPStan\Type\TypeUtils::resolveLateResolvableTypes($subject, true)), $view(\PHPStan\Type\TypeUtils::resolveLateResolvableTypes($subject, false))];
+	}
+	// identity: the helpers hand the argument back where the twin does
+	$r['identity'] = [
+		\PHPStan\Type\TypeUtils::toBenevolentUnion($subjects['benevolent']) === $subjects['benevolent'],
+		\PHPStan\Type\TypeUtils::toBenevolentUnion($subjects['int']) === $subjects['int'],
+		\PHPStan\Type\TypeUtils::toStrictUnion($subjects['unionIntString']) === $subjects['unionIntString'],
+		\PHPStan\Type\TypeUtils::toStrictUnion($subjects['int']) === $subjects['int'],
+		\PHPStan\Type\TypeUtils::flattenTypes($subjects['int'])[0] === $subjects['int'],
+		\PHPStan\Type\TypeUtils::flattenTypes($subjects['shapeWide15'])[0] === $subjects['shapeWide15'],
+		\PHPStan\Type\TypeUtils::findThisType($subjects['this']) === $subjects['this'],
+		\PHPStan\Type\TypeUtils::findThisType($subjects['unionThisInt']) === $utilsThis,
+		\PHPStan\Type\TypeUtils::findCallableType($subjects['callable']) === $subjects['callable'],
+		\PHPStan\Type\TypeUtils::getHasPropertyTypes($subjects['hasProperty'])[0] === $subjects['hasProperty'],
+		\PHPStan\Type\TypeUtils::getConstantIntegers($subjects['int0'])[0] === $subjects['int0'],
+		\PHPStan\Type\TypeUtils::resolveLateResolvableTypes($subjects['int']) === $subjects['int'],
+	];
+	// a PHP subclass of the shadowed union over the native parent
+	$anonymousUnion = new class ([new \PHPStan\Type\Constant\ConstantIntegerType(5), new \PHPStan\Type\Accessory\HasPropertyType('anon')]) extends \PHPStan\Type\UnionType {
+
+		public function getTypes(): array
+		{
+			return [new \PHPStan\Type\Constant\ConstantIntegerType(7), new \PHPStan\Type\Accessory\HasPropertyType('overridden')];
+		}
+
+	};
+	$r['anonymous union getConstantIntegers'] = $view(\PHPStan\Type\TypeUtils::getConstantIntegers($anonymousUnion));
+	$r['anonymous union getHasPropertyTypes'] = $view(\PHPStan\Type\TypeUtils::getHasPropertyTypes($anonymousUnion));
+	$r['anonymous union toStrictUnion'] = $view(\PHPStan\Type\TypeUtils::toStrictUnion($anonymousUnion));
+	$r['anonymous union flattenTypes'] = $view(\PHPStan\Type\TypeUtils::flattenTypes($anonymousUnion));
+	foreach ($r as $key => $value) {
+		$observations["utils $key"] = $value;
+	}
+}
+
+
+// ---- TypehintHelper ----
+// the native/PHPDoc type decision over the whole family: the reflection
+// types come from the container's reflection provider (the BetterReflection
+// adapters TypehintHelper names) reflecting tests/type-family-typehint-fixture.php
+// — named, nullable, union, intersection, DNF, self/static (with the fixture
+// as the self class), mixed, iterable, array, callable, void, never, a
+// variadic parameter — and no reflection type at all; the PHPDoc types cover
+// the branches of decideType() (a never/void/error/mixed PHPDoc, arrays over
+// an iterable native type, unions the PHPDoc type covers partially, template
+// types resolved to bounds, callables); a core reflection type takes the
+// "Unexpected type" throw; the string family's reflection provider stays
+// registered
+$observations['native ' . \PHPStan\Type\TypehintHelper::class] = (new ReflectionMethod(\PHPStan\Type\TypehintHelper::class, 'decideType'))->isInternal();
+require_once __DIR__ . '/type-family-typehint-fixture.php';
+{
+	$r = [];
+	$hintScope = \PHPStan\Type\Generic\TemplateTypeScope::createWithFunction('hint');
+	$hintTemplateT = \PHPStan\Type\Generic\TemplateTypeFactory::create($hintScope, 'T', null, \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant());
+	$hintTemplateInt = \PHPStan\Type\Generic\TemplateTypeFactory::create($hintScope, 'I', new \PHPStan\Type\IntegerType(), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant());
+	$hintTemplateObject = \PHPStan\Type\Generic\TemplateTypeFactory::create($hintScope, 'O', new \PHPStan\Type\ObjectType(\Exception::class), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant());
+	$hintFixture = $stringReflectionProvider->getClass(\PHPStanTurboTests\TypehintFixture::class);
+	$hintNative = $hintFixture->getNativeReflection();
+	$hintReflectionTypes = ['none' => null];
+	foreach ($hintNative->getMethods() as $hintMethod) {
+		if (!str_starts_with($hintMethod->getName(), 'returns')) {
+			continue;
+		}
+		$hintReflectionTypes[$hintMethod->getName()] = $hintMethod->getReturnType();
+	}
+	$hintReflectionTypes['variadicParameter'] = $hintNative->getMethod('takesVariadic')->getParameters()[0]->getType();
+	$hintReflectionTypes['nullableArrayParameter'] = $hintNative->getMethod('takesNullableArray')->getParameters()[0]->getType();
+	$int = new \PHPStan\Type\IntegerType();
+	$string = new \PHPStan\Type\StringType();
+	$mixed = new \PHPStan\Type\MixedType();
+	$hintPhpDocTypes = [
+		'none' => null,
+		'int' => $int,
+		'string' => $string,
+		'nullableInt' => new \PHPStan\Type\UnionType([$int, new \PHPStan\Type\NullType()]),
+		'null' => new \PHPStan\Type\NullType(),
+		'bool' => new \PHPStan\Type\BooleanType(),
+		'true' => new \PHPStan\Type\Constant\ConstantBooleanType(true),
+		'int1' => new \PHPStan\Type\Constant\ConstantIntegerType(1),
+		'unionIntString' => new \PHPStan\Type\UnionType([$int, $string]),
+		'unionIntStringNull' => new \PHPStan\Type\UnionType([$int, $string, new \PHPStan\Type\NullType()]),
+		'unionIntFloat' => new \PHPStan\Type\UnionType([$int, new \PHPStan\Type\FloatType()]),
+		'benevolent' => new \PHPStan\Type\BenevolentUnionType([$int, $string]),
+		'arrayMixedKey' => new \PHPStan\Type\ArrayType($mixed, $string),
+		'arrayIntKey' => new \PHPStan\Type\ArrayType($int, $string),
+		'arrayMixedKeyOrNull' => new \PHPStan\Type\UnionType([new \PHPStan\Type\ArrayType($mixed, $string), new \PHPStan\Type\NullType()]),
+		'unionArrays' => new \PHPStan\Type\UnionType([new \PHPStan\Type\ArrayType($mixed, $int), new \PHPStan\Type\ArrayType($int, $string)]),
+		'unionArrayInt' => new \PHPStan\Type\UnionType([new \PHPStan\Type\ArrayType($mixed, $int), $int]),
+		'list' => new \PHPStan\Type\IntersectionType([new \PHPStan\Type\ArrayType(\PHPStan\Type\IntegerRangeType::createAllGreaterThanOrEqualTo(0), $string), new \PHPStan\Type\Accessory\AccessoryArrayListType()]),
+		'constantArray' => new \PHPStan\Type\Constant\ConstantArrayType([new \PHPStan\Type\Constant\ConstantStringType('a')], [$int], [1]),
+		'iterable' => new \PHPStan\Type\IterableType($mixed, $mixed),
+		'iterableOfStrings' => new \PHPStan\Type\IterableType($int, $string),
+		'callable' => new \PHPStan\Type\CallableType(),
+		'callableTyped' => new \PHPStan\Type\CallableType([], $int, false),
+		'closure' => new \PHPStan\Type\ClosureType(),
+		'neverExplicit' => new \PHPStan\Type\NeverType(true),
+		'neverImplicit' => new \PHPStan\Type\NeverType(),
+		'error' => new \PHPStan\Type\ErrorType(),
+		'mixed' => $mixed,
+		'mixedExplicit' => new \PHPStan\Type\MixedType(true),
+		'mixedMinusNull' => new \PHPStan\Type\MixedType(false, new \PHPStan\Type\NullType()),
+		'void' => new \PHPStan\Type\VoidType(),
+		'templateT' => $hintTemplateT,
+		'templateInt' => $hintTemplateInt,
+		'templateObject' => $hintTemplateObject,
+		'exception' => new \PHPStan\Type\ObjectType(\Exception::class),
+		'runtimeException' => new \PHPStan\Type\ObjectType(\RuntimeException::class),
+		'stdClass' => new \PHPStan\Type\ObjectType(\stdClass::class),
+		'fixture' => new \PHPStan\Type\ObjectType(\PHPStanTurboTests\TypehintFixture::class),
+		'arrayIterator' => new \PHPStan\Type\ObjectType(\ArrayIterator::class),
+		'genericArrayIterator' => new \PHPStan\Type\Generic\GenericObjectType(\ArrayIterator::class, [$int, $string]),
+		'nonEmptyString' => new \PHPStan\Type\IntersectionType([$string, new \PHPStan\Type\Accessory\AccessoryNonEmptyStringType()]),
+		'objectWithoutClass' => new \PHPStan\Type\ObjectWithoutClassType(),
+	];
+	foreach ($hintReflectionTypes as $reflectionName => $reflectionType) {
+		$r["reflection $reflectionName"] = $reflectionType === null ? null : [get_class($reflectionType), (string) $reflectionType];
+		foreach ($hintPhpDocTypes as $docName => $phpDocType) {
+			$r["decideTypeFromReflection $reflectionName $docName"] = $view(\PHPStan\Type\TypehintHelper::decideTypeFromReflection($reflectionType, $phpDocType, $hintFixture));
+			if ($reflectionName === 'none' || $reflectionName === 'variadicParameter') {
+				$r["decideTypeFromReflection $reflectionName $docName variadic"] = $view(\PHPStan\Type\TypehintHelper::decideTypeFromReflection($reflectionType, $phpDocType, $hintFixture, true));
+			}
+		}
+		$r["decideTypeFromReflection $reflectionName no self class"] = $view(\PHPStan\Type\TypehintHelper::decideTypeFromReflection($reflectionType));
+	}
+	$hintNativeTypes = [
+		'int' => $int,
+		'string' => $string,
+		'nullableInt' => new \PHPStan\Type\UnionType([$int, new \PHPStan\Type\NullType()]),
+		'unionIntString' => new \PHPStan\Type\UnionType([$int, $string]),
+		'unionIntStringNull' => new \PHPStan\Type\UnionType([$int, $string, new \PHPStan\Type\NullType()]),
+		'benevolent' => new \PHPStan\Type\BenevolentUnionType([$int, $string]),
+		'mixed' => $mixed,
+		'mixedExplicit' => new \PHPStan\Type\MixedType(true),
+		'iterable' => new \PHPStan\Type\IterableType($mixed, $mixed),
+		'nullableIterable' => new \PHPStan\Type\UnionType([new \PHPStan\Type\IterableType($mixed, $mixed), new \PHPStan\Type\NullType()]),
+		'array' => new \PHPStan\Type\ArrayType($mixed, $mixed),
+		'callable' => new \PHPStan\Type\CallableType(),
+		'exception' => new \PHPStan\Type\ObjectType(\Exception::class),
+		'never' => new \PHPStan\Type\NeverType(true),
+		'null' => new \PHPStan\Type\NullType(),
+		'void' => new \PHPStan\Type\VoidType(),
+		'bool' => new \PHPStan\Type\BooleanType(),
+		'objectWithoutClass' => new \PHPStan\Type\ObjectWithoutClassType(),
+	];
+	foreach ($hintNativeTypes as $typeName => $type) {
+		foreach ($hintPhpDocTypes as $docName => $phpDocType) {
+			$r["decideType $typeName $docName"] = $view(\PHPStan\Type\TypehintHelper::decideType($type, $phpDocType));
+		}
+	}
+	// identity: the argument comes back where the twin hands it back
+	$r['identity'] = [
+		\PHPStan\Type\TypehintHelper::decideType($hintNativeTypes['int'], null) === $hintNativeTypes['int'],
+		\PHPStan\Type\TypehintHelper::decideType($hintNativeTypes['benevolent'], $hintPhpDocTypes['int']) === $hintNativeTypes['benevolent'],
+		\PHPStan\Type\TypehintHelper::decideType($hintNativeTypes['int'], $hintPhpDocTypes['int1']) === $hintPhpDocTypes['int1'],
+		\PHPStan\Type\TypehintHelper::decideType($hintNativeTypes['int'], $hintPhpDocTypes['error']) === $hintNativeTypes['int'],
+		\PHPStan\Type\TypehintHelper::decideType($hintNativeTypes['mixed'], $hintPhpDocTypes['neverExplicit']) === $hintPhpDocTypes['neverExplicit'],
+		\PHPStan\Type\TypehintHelper::decideType($hintNativeTypes['mixed'], $hintPhpDocTypes['void']) === $hintPhpDocTypes['void'],
+		\PHPStan\Type\TypehintHelper::decideTypeFromReflection(null, $hintPhpDocTypes['int']) === $hintPhpDocTypes['int'],
+		\PHPStan\Type\TypehintHelper::decideTypeFromReflection(null, $hintPhpDocTypes['arrayIntKey'], null, true) === $hintPhpDocTypes['arrayIntKey']->getItemType(),
+	];
+	// a core reflection type is not the adapter the twin names
+	foreach (['returnsInt', 'returnsIntOrString', 'returnsIntersection'] as $hintMethodName) {
+		try {
+			$r["core reflection $hintMethodName"] = $view(\PHPStan\Type\TypehintHelper::decideTypeFromReflection((new ReflectionMethod(\PHPStanTurboTests\TypehintFixture::class, $hintMethodName))->getReturnType()));
+		} catch (\Throwable $e) {
+			$r["core reflection $hintMethodName"] = [get_class($e), $e->getMessage()];
+		}
+	}
+	// a PHP subclass of the shadowed union / array over the native parents
+	$anonymousHintUnion = new class ([$int, $string]) extends \PHPStan\Type\UnionType {
+
+		public function getTypes(): array
+		{
+			return [new \PHPStan\Type\Constant\ConstantIntegerType(1), new \PHPStan\Type\NullType()];
+		}
+
+	};
+	$anonymousHintArray = new class (new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()) extends \PHPStan\Type\ArrayType {
+
+		public function getKeyType(): \PHPStan\Type\Type
+		{
+			return new \PHPStan\Type\MixedType();
+		}
+
+	};
+	$r['anonymous union decideType'] = [$view(\PHPStan\Type\TypehintHelper::decideType($anonymousHintUnion, $hintPhpDocTypes['int1'])), $view(\PHPStan\Type\TypehintHelper::decideType($hintNativeTypes['iterable'], $anonymousHintUnion))];
+	$r['anonymous array decideType'] = [$view(\PHPStan\Type\TypehintHelper::decideType($hintNativeTypes['iterable'], $anonymousHintArray)), $view(\PHPStan\Type\TypehintHelper::decideType($hintNativeTypes['nullableIterable'], new \PHPStan\Type\UnionType([$anonymousHintArray, $int])))];
+	foreach ($r as $key => $value) {
+		$observations["typehint $key"] = $value;
+	}
+}
+
 
 // observations holding bytes that are not UTF-8 (the invalid-UTF-8 subject's
 // descriptions) go out base64-encoded so json_encode() keeps every byte; the

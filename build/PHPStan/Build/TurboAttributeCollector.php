@@ -26,12 +26,16 @@ use PhpParser\Node\Expr\YieldFrom;
 use PhpParser\Node\FunctionLike;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
+use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\Scalar;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\VariadicPlaceholder;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionIntersectionType;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionNamedType;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionUnionType;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprFloatNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprIntegerNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
@@ -148,6 +152,10 @@ final class TurboAttributeCollector
 		'arrayShapeUnsealedTypeNode' => ArrayShapeUnsealedTypeNode::class,
 		'unionTypeNode' => UnionTypeNode::class,
 		'intersectionTypeNode' => IntersectionTypeNode::class,
+		'reflectionUnionType' => ReflectionUnionType::class,
+		'reflectionIntersectionType' => ReflectionIntersectionType::class,
+		'reflectionNamedType' => ReflectionNamedType::class,
+		'fullyQualified' => FullyQualified::class,
 	];
 
 	private string $realRoot;

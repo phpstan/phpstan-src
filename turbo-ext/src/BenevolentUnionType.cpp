@@ -139,7 +139,7 @@ public:
 				return zv::Val();
 			}
 			bool isError;
-			if (UNEXPECTED(!pt_type_instanceof(result.raw(), PT_CLASS_ERROR_TYPE, isError))) return zv::Val();
+			if (UNEXPECTED(!pt_type_instanceof_ce(result.raw(), pt_ce_error_type, isError))) return zv::Val();
 			if (isError) {
 				changed = true;
 				continue;
@@ -194,7 +194,7 @@ public:
 			zv::Val valueType = callType(entry.value().deref().asObject(), PT_LC("getoffsetvaluetype"), 1, offsetType);
 			if (UNEXPECTED(valueType.isUndef())) return zv::Val();
 			bool isError;
-			if (UNEXPECTED(!pt_type_instanceof(valueType.raw(), PT_CLASS_ERROR_TYPE, isError))) return zv::Val();
+			if (UNEXPECTED(!pt_type_instanceof_ce(valueType.raw(), pt_ce_error_type, isError))) return zv::Val();
 			if (isError) continue;
 			valueTypes.push(std::move(valueType));
 		}
@@ -425,7 +425,7 @@ static void ZEND_FASTCALL buUnionTypes(INTERNAL_FUNCTION_PARAMETERS)
 		if (UNEXPECTED(!pt_call_fci(&fci, &fcc, 1, &arg, &resultRaw))) RETURN_THROWS();
 		zv::Val result = zv::Val::adopt(resultRaw);
 		bool isError;
-		if (UNEXPECTED(!pt_type_instanceof(result.raw(), PT_CLASS_ERROR_TYPE, isError))) RETURN_THROWS();
+		if (UNEXPECTED(!pt_type_instanceof_ce(result.raw(), pt_ce_error_type, isError))) RETURN_THROWS();
 		if (isError) {
 			changed = true;
 			continue;

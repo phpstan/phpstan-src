@@ -1834,7 +1834,7 @@ public:
 				zv::Val otherValueType = callType(Z_OBJ_P(type), PT_LC("getoffsetvaluetype"), 1, keyType);
 				if (UNEXPECTED(otherValueType.isUndef())) return zv::Val();
 				bool isError;
-				if (UNEXPECTED(!isInstance(otherValueType.raw(), PT_CLASS_ERROR_TYPE, isError))) return zv::Val();
+				if (UNEXPECTED(!isInstance(otherValueType.raw(), pt_ce_error_type, isError))) return zv::Val();
 				if (isError && bothDefinite && typeUnsealedness == PT_TRI_YES) {
 					zval *typeUnsealedKey, *typeUnsealedValue;
 					if (UNEXPECTED(!unsealedPair(typeUnsealed, typeUnsealedKey, typeUnsealedValue))) return zv::Val();
@@ -2142,7 +2142,7 @@ public:
 		zv::Val result = pt_type_recursion_guard_run(thisZv(), callback.raw());
 		if (UNEXPECTED(result.isUndef())) return -1;
 		bool isError;
-		if (UNEXPECTED(!isInstance(result.raw(), PT_CLASS_ERROR_TYPE, isError))) return -1;
+		if (UNEXPECTED(!isInstance(result.raw(), pt_ce_error_type, isError))) return -1;
 		if (isError) return PT_TRI_NO;
 		return trinaryOf(result.raw());
 	}
@@ -2421,7 +2421,7 @@ public:
 		zv::Val offsetArrayKeyType = callType(Z_OBJ_P(offsetType), PT_LC("toarraykey"), 0, NULL);
 		if (UNEXPECTED(offsetArrayKeyType.isUndef())) return -1;
 		bool isError;
-		if (UNEXPECTED(!isInstance(offsetArrayKeyType.raw(), PT_CLASS_ERROR_TYPE, isError))) return -1;
+		if (UNEXPECTED(!isInstance(offsetArrayKeyType.raw(), pt_ce_error_type, isError))) return -1;
 		if (isError) {
 			zv::Val allowedArrayKeys = pt_type_call_static(PT_CLASS_ALLOWED_ARRAY_KEYS_TYPES, PT_LC("gettype"), 0, NULL);
 			if (UNEXPECTED(allowedArrayKeys.isUndef())) return -1;
@@ -2560,7 +2560,7 @@ public:
 				zv::Val type = combinatorSpread(PT_LC("union"), single.table());
 				if (UNEXPECTED(type.isUndef())) return zv::Val();
 				bool isError;
-				if (UNEXPECTED(!isInstance(type.raw(), PT_CLASS_ERROR_TYPE, isError))) return zv::Val();
+				if (UNEXPECTED(!isInstance(type.raw(), pt_ce_error_type, isError))) return zv::Val();
 				if (isError) return pt_type_new_mixed_type();
 				return type;
 			}
@@ -2623,7 +2623,7 @@ public:
 			zv::Val type = combinatorSpread(PT_LC("union"), matchingValueTypes.table());
 			if (UNEXPECTED(type.isUndef())) return zv::Val();
 			bool isError;
-			if (UNEXPECTED(!isInstance(type.raw(), PT_CLASS_ERROR_TYPE, isError))) return zv::Val();
+			if (UNEXPECTED(!isInstance(type.raw(), pt_ce_error_type, isError))) return zv::Val();
 			if (isError) return pt_type_new_mixed_type();
 			return type;
 		}
@@ -2988,7 +2988,7 @@ public:
 				zv::Val stringKeyType = callType(Z_OBJ_P(keyType), PT_LC("tostring"), 0, NULL);
 				if (UNEXPECTED(stringKeyType.isUndef())) return zv::Val();
 				bool isError;
-				if (UNEXPECTED(!isInstance(stringKeyType.raw(), PT_CLASS_ERROR_TYPE, isError))) return zv::Val();
+				if (UNEXPECTED(!isInstance(stringKeyType.raw(), pt_ce_error_type, isError))) return zv::Val();
 				if (isError) return stringKeyType;
 				offset = std::move(stringKeyType);
 			} else {

@@ -479,7 +479,7 @@ public:
 		zv::Val classHasProperty = guarded(callbackKind, classReflection.raw(), propertyName, NULL);
 		if (UNEXPECTED(classHasProperty.isUndef())) return -1;
 		bool isError;
-		if (UNEXPECTED(!pt_type_instanceof(classHasProperty.raw(), PT_CLASS_ERROR_TYPE, isError))) return -1;
+		if (UNEXPECTED(!pt_type_instanceof_ce(classHasProperty.raw(), pt_ce_error_type, isError))) return -1;
 		if (zv::Ref(classHasProperty.raw()).isTrue() || isError) return PT_TRI_YES;
 
 		if (kind != PT_OT_STATIC_PROPERTY) {
@@ -592,7 +592,7 @@ public:
 		zv::Val property = guarded(callbackKind, nakedClassReflection.raw(), propertyName, scope);
 		if (UNEXPECTED(property.isUndef())) return zv::Val();
 		bool isError;
-		if (UNEXPECTED(!pt_type_instanceof(property.raw(), PT_CLASS_ERROR_TYPE, isError))) return zv::Val();
+		if (UNEXPECTED(!pt_type_instanceof_ce(property.raw(), pt_ce_error_type, isError))) return zv::Val();
 		if (isError) {
 			property = pt_type_new(PT_CLASS_DUMMY_PROPERTY_REFLECTION, 1, propertyName);
 			if (UNEXPECTED(property.isUndef())) return zv::Val();
@@ -1688,7 +1688,7 @@ public:
 			/* read out of the object as a derived value - see TemplateTypeHelper::resolveTemplateTypes() */
 			return pt_type_call(Z_OBJ_P(type.raw()), PT_LC("getdelegate"), 0, NULL);
 		}
-		if (UNEXPECTED(!pt_type_instanceof(type.raw(), PT_CLASS_ERROR_TYPE, is))) return zv::Val();
+		if (UNEXPECTED(!pt_type_instanceof_ce(type.raw(), pt_ce_error_type, is))) return zv::Val();
 		if (is) {
 			zv::Val templateTypeMap = pt_type_call(ancestor, PT_LC("gettemplatetypemap"), 0, NULL);
 			if (UNEXPECTED(templateTypeMap.isUndef())) return zv::Val();
@@ -1777,7 +1777,7 @@ public:
 				zv::Val argument = thisCall(PT_LC("gettemplatetype"), otGetTemplateType, 2, args, [&]() { return getTemplateType(traversableName.raw(), argumentName.raw()); });
 				if (UNEXPECTED(argument.isUndef())) return zv::Val();
 				bool isError;
-				if (UNEXPECTED(!pt_type_instanceof(argument.raw(), PT_CLASS_ERROR_TYPE, isError))) return zv::Val();
+				if (UNEXPECTED(!pt_type_instanceof_ce(argument.raw(), pt_ce_error_type, isError))) return zv::Val();
 				if (!isError) {
 					bool implicitMixed;
 					if (UNEXPECTED(!isImplicitMixed(argument.raw(), implicitMixed))) return zv::Val();
@@ -2106,7 +2106,7 @@ public:
 		if (UNEXPECTED(parametersAcceptors.isUndef())) return -1;
 		if (parametersAcceptors.isNull()) return PT_TRI_NO;
 		bool isError;
-		if (UNEXPECTED(!pt_type_instanceof(parametersAcceptors.raw(), PT_CLASS_ERROR_TYPE, isError))) return -1;
+		if (UNEXPECTED(!pt_type_instanceof_ce(parametersAcceptors.raw(), pt_ce_error_type, isError))) return -1;
 		if (isError) return PT_TRI_NO;
 		if (UNEXPECTED(!zv::Ref(parametersAcceptors.raw()).isArray())) {
 			zend_type_error("phpstan_turbo: findCallableParametersAcceptors() must return array");
@@ -2230,9 +2230,9 @@ public:
 		// first is wasted work - and quadratic when a removal peels the subtypes
 		// off one at a time, as removing a whole enum from its own type does.
 		// Only the path that keeps the subtracted type as it is needs the union.
-		zv::Val flattenedSubtracted = pt_type_call_static(PT_CLASS_TYPE_UTILS, PT_LC("flattentypes"), 1, subtracted);
+		zv::Val flattenedSubtracted = pt_type_utils_flatten_types(subtracted);
 		if (UNEXPECTED(flattenedSubtracted.isUndef())) return zv::Val();
-		zv::Val flattenedType = pt_type_call_static(PT_CLASS_TYPE_UTILS, PT_LC("flattentypes"), 1, type);
+		zv::Val flattenedType = pt_type_utils_flatten_types(type);
 		if (UNEXPECTED(flattenedType.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(flattenedSubtracted.raw()).isArray() || !zv::Ref(flattenedType.raw()).isArray())) {
 			zend_type_error("phpstan_turbo: TypeUtils::flattenTypes() must return array");
@@ -2292,7 +2292,7 @@ public:
 	zv::Val changeSubtractedType(zval *subtractedType) const
 	{
 		if (Z_TYPE_P(subtractedType) != IS_NULL) {
-			zv::Val flattened = pt_type_call_static(PT_CLASS_TYPE_UTILS, PT_LC("flattentypes"), 1, subtractedType);
+			zv::Val flattened = pt_type_utils_flatten_types(subtractedType);
 			if (UNEXPECTED(flattened.isUndef())) return zv::Val();
 			if (UNEXPECTED(!zv::Ref(flattened.raw()).isArray())) {
 				zend_type_error("phpstan_turbo: TypeUtils::flattenTypes() must return array");

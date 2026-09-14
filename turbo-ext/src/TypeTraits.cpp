@@ -172,7 +172,9 @@ zv::Val pt_type_is_super_type_of_result(zend_long value)
 
 zv::Val pt_type_new_error_type()
 {
-	return pt_type_new(PT_CLASS_ERROR_TYPE, 0, NULL);
+	zval result;
+	if (UNEXPECTED(!pt_error_type_new(&result))) return zv::Val();
+	return zv::Val::adopt(result);
 }
 
 zv::Val pt_type_new_mixed_type()
@@ -3093,6 +3095,25 @@ zv::Val pt_carr_native_closure(pt_native_callback fn, zval *state0, zval *state1
 	zend_function *invoke = (zend_function *) zend_hash_str_find_ptr(&pt_ce_native_callback->function_table, PT_LC("__invoke"));
 	ZEND_ASSERT(invoke != NULL);
 	return pt_type_closure_over(invoke, pt_ce_native_callback, Z_OBJ_P(holder.raw()));
+}
+
+/* }}} */
+
+/* merged from the parallel port branch */
+/* {{{ helpers of the small Type classes */
+
+zv::Val pt_type_just_nullable_is_super_type_of(zend_object *self, zend_class_entry *scope, zval *type)
+{
+	/* $type instanceof self — the class the trait is used in */
+	if (instanceof_function(Z_OBJCE_P(type), scope)) return pt_type_is_super_type_of_result(PT_TRI_YES);
+	bool compound;
+	if (UNEXPECTED(!pt_type_instanceof(type, PT_CLASS_COMPOUND_TYPE, compound))) return zv::Val();
+	if (compound) {
+		zval thisValue;
+		ZVAL_OBJ(&thisValue, self);
+		return pt_type_call(Z_OBJ_P(type), PT_LC("issubtypeof"), 1, &thisValue);
+	}
+	return pt_type_is_super_type_of_result(PT_TRI_NO);
 }
 
 /* }}} */

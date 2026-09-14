@@ -1311,6 +1311,16 @@ bool pt_mixed_type_new(zval *out, bool isExplicitMixed, zval *subtractedType)
 	return pt_val_into(MixedType::create(isExplicitMixed, subtractedType), out);
 }
 
+void pt_mixed_type_construct(zend_object *self, bool isExplicitMixed, zval *subtractedType)
+{
+	MixedType(self).construct(isExplicitMixed, subtractedType);
+}
+
+zv::Val pt_mixed_type_describe(zend_object *self, zval *level)
+{
+	return MixedType(self).describe(level);
+}
+
 /* {{{ engine ABI glue: parameter parsing + registration */
 
 #define PT_THIS MixedType(Z_OBJ_P(ZEND_THIS))

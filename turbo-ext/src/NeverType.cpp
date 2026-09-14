@@ -163,6 +163,11 @@ bool pt_never_type_new(zval *out, bool isExplicit)
 	return pt_val_into(NeverType::create(isExplicit), out);
 }
 
+void pt_never_type_construct(zend_object *self, bool isExplicit, zend_string *reason)
+{
+	NeverType(self).construct(isExplicit, reason);
+}
+
 /* {{{ engine ABI glue: parameter parsing + registration */
 
 #define PT_THIS NeverType(Z_OBJ_P(ZEND_THIS))

@@ -243,7 +243,7 @@ public:
 			zv::Val referencedClasses = pt_type_recursion_guard_run_on_object_identity(type.raw(), callback.raw());
 			if (UNEXPECTED(referencedClasses.isUndef())) return zv::Val();
 			bool isError;
-			if (UNEXPECTED(!pt_type_instanceof(referencedClasses.raw(), PT_CLASS_ERROR_TYPE, isError))) return zv::Val();
+			if (UNEXPECTED(!pt_type_instanceof_ce(referencedClasses.raw(), pt_ce_error_type, isError))) return zv::Val();
 			if (isError) continue;
 			if (UNEXPECTED(!zv::Ref(referencedClasses.raw()).isArray())) {
 				zend_type_error("phpstan_turbo: getReferencedClasses() must return array");
@@ -359,7 +359,7 @@ public:
 			zval *thisType = findKey(Z_ARRVAL_P(types), entry);
 			if (thisType == NULL || Z_TYPE_P(thisType) == IS_NULL) continue;
 			bool isError;
-			if (UNEXPECTED(!pt_type_instanceof(templateType.raw(), PT_CLASS_ERROR_TYPE, isError))) return zv::Val();
+			if (UNEXPECTED(!pt_type_instanceof_ce(templateType.raw(), pt_ce_error_type, isError))) return zv::Val();
 			if (isError) continue;
 			bool isTemplate;
 			if (UNEXPECTED(!pt_type_instanceof(templateType.raw(), PT_CLASS_TEMPLATE_TYPE, isTemplate))) return zv::Val();

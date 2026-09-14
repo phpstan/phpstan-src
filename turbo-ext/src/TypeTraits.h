@@ -816,6 +816,33 @@ inline zv::Val pt_type_finite_type_set_key(zval *type)
 
 /* }}} */
 
+/* merged from the parallel port branch */
+/* {{{ helpers of the small Type classes (ErrorType.cpp,
+ * NonAcceptingNeverType.cpp, StringAlwaysAcceptingObjectWithToStringType.cpp,
+ * StringNeverAcceptingObjectWithToStringType.cpp), for the children's
+ * parent:: calls */
+/* parent::__construct($isExplicitMixed, $subtractedType) — MixedType's
+ * constructor body on the object ($subtractedType NULL for null)
+ * (MixedType.cpp) */
+void pt_mixed_type_construct(zend_object *self, bool isExplicitMixed, zval *subtractedType);
+/* the body of MixedType::describe() run on the object (its own class
+ * answering the $this-calls inside it, as parent:: keeps it); UNDEF =
+ * pending exception (MixedType.cpp) */
+zv::Val pt_mixed_type_describe(zend_object *self, zval *level);
+/* parent::__construct($isExplicit, $reason) — NeverType's constructor body
+ * on the object ($reason NULL for null) (NeverType.cpp) */
+void pt_never_type_construct(zend_object *self, bool isExplicit, zend_string *reason);
+/* the body of StringType::accepts() run on the object (StringType.cpp);
+ * UNDEF = pending exception */
+zv::Val pt_string_type_accepts(zend_object *self, zval *type, bool strictTypes);
+/* the body of JustNullableTypeTrait::isSuperTypeOf() run on the object
+ * with `self` bound to scope — the class using the trait, as parent::
+ * from a child of that class binds it; UNDEF = pending exception */
+zv::Val pt_type_just_nullable_is_super_type_of(zend_object *self, zend_class_entry *scope, zval *type);
+/* TypeUtils::flattenTypes($type) — the shadowing class's body
+ * (TypeUtils.cpp); UNDEF = pending exception */
+zv::Val pt_type_utils_flatten_types(zval *type);
+
 /* {{{ bodies the Type ports share verbatim — their members forward here */
 
 /* $this as an owned value (a new reference) */

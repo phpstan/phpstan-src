@@ -75,7 +75,6 @@ enum {
 	PT_CLASS_NEW,
 	PT_CLASS_CLASS_STMT,
 	PT_CLASS_VARIADIC_PLACEHOLDER,
-	PT_CLASS_ERROR_TYPE,
 	PT_CLASS_SCALAR,
 	PT_CLASS_ARRAY_EXPR,
 	PT_CLASS_UNARY_MINUS,
@@ -133,7 +132,6 @@ enum {
 	PT_CLASS_ALLOWED_ARRAY_KEYS_TYPES,
 	PT_CLASS_CONSTANT_ARRAY_TYPE_BUILDER,
 	PT_CLASS_LRU_CACHE,
-	PT_CLASS_TYPE_UTILS,
 	PT_CLASS_UNRESOLVED_TEMPLATE_ARGUMENT_TYPE,
 	PT_CLASS_TYPE_PROJECTION_HELPER,
 	PT_CLASS_CLASS_NOT_FOUND_EXCEPTION,
@@ -168,7 +166,6 @@ enum {
 	PT_CLASS_TEMPLATE_UNION_TYPE,
 	PT_CLASS_TEMPLATE_ITERABLE_TYPE,
 	PT_CLASS_LATE_RESOLVABLE_TYPE,
-	PT_CLASS_ABSORBED_TEMPLATE_ARGUMENT_TYPE,
 	PT_CLASS_UNION_TYPE_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION,
 	PT_CLASS_MISSING_METHOD_FROM_REFLECTION_EXCEPTION,
 	PT_CLASS_MISSING_CONSTANT_FROM_REFLECTION_EXCEPTION,
@@ -179,6 +176,13 @@ enum {
 	PT_CLASS_UNION_TYPE_NODE,
 	PT_CLASS_INTERSECTION_TYPE_NODE,
 	PT_CLASS_TYPE_TRAVERSER_CALLABLE,
+	PT_CLASS_TEMPLATE_BENEVOLENT_UNION_TYPE,
+	PT_CLASS_LATE_RESOLVABLE_TRAVERSER,
+	PT_CLASS_REFLECTION_UNION_TYPE,
+	PT_CLASS_REFLECTION_INTERSECTION_TYPE,
+	PT_CLASS_REFLECTION_NAMED_TYPE,
+	PT_CLASS_FULLY_QUALIFIED,
+	PT_CLASS_PARSER_NODE_TYPE_TO_PHPSTAN_TYPE,
 	PT_CLASS_COUNT
 };
 
@@ -802,5 +806,56 @@ bool pt_recursion_guard_active();
  * exception */
 [[nodiscard]] bool pt_finite_type_set_create(zval *out, zval *types);
 bool pt_finite_type_set_key(zval *out, zval *type);
+
+/* merged from the parallel port branch */
+/* the small Type classes (ErrorType.cpp, CircularTypeAliasErrorType.cpp,
+ * AbsorbedTemplateArgumentType.cpp, NonAcceptingNeverType.cpp,
+ * StringAlwaysAcceptingObjectWithToStringType.cpp,
+ * StringNeverAcceptingObjectWithToStringType.cpp, ResourceType.cpp) */
+extern zend_class_entry *pt_ce_error_type;
+extern zend_class_entry *pt_ce_circular_type_alias_error_type;
+extern zend_class_entry *pt_ce_absorbed_template_argument_type;
+extern zend_class_entry *pt_ce_non_accepting_never_type;
+extern zend_class_entry *pt_ce_string_always_accepting_object_with_to_string_type;
+extern zend_class_entry *pt_ce_string_never_accepting_object_with_to_string_type;
+extern zend_class_entry *pt_ce_resource_type;
+/* registered at the end of the Type block, each child after its parent:
+ * ErrorType (MixedType's child), then its children
+ * CircularTypeAliasErrorType and AbsorbedTemplateArgumentType,
+ * NonAcceptingNeverType (NeverType's child), the two StringType children,
+ * and ResourceType (a Type of its own, whose bodies instantiate the
+ * scalar classes and ConstantArrayType) */
+void pt_register_error_type();
+void pt_register_circular_type_alias_error_type();
+void pt_register_absorbed_template_argument_type();
+void pt_register_non_accepting_never_type();
+void pt_register_string_always_accepting_object_with_to_string_type();
+void pt_register_string_never_accepting_object_with_to_string_type();
+void pt_register_resource_type();
+/* new ErrorType($reason) / new CircularTypeAliasErrorType($reason) / new
+ * AbsorbedTemplateArgumentType($reason) ($reason borrowed, NULL for the
+ * twins' null default) / new NonAcceptingNeverType() / new
+ * StringAlwaysAcceptingObjectWithToStringType() / new
+ * StringNeverAcceptingObjectWithToStringType() / new ResourceType() —
+ * instances of the shadowing classes; false = pending exception */
+[[nodiscard]] bool pt_error_type_new(zval *out, zend_string *reason = NULL);
+bool pt_circular_type_alias_error_type_new(zval *out, zend_string *reason = NULL);
+bool pt_absorbed_template_argument_type_new(zval *out, zend_string *reason = NULL);
+bool pt_non_accepting_never_type_new(zval *out);
+bool pt_string_always_accepting_object_with_to_string_type_new(zval *out);
+bool pt_string_never_accepting_object_with_to_string_type_new(zval *out);
+bool pt_resource_type_new(zval *out);
+/* the body of ErrorType::__construct($reason) on the object (its own
+ * $reason slot, then MixedType's constructor body), for the children's
+ * inherited constructor; $reason borrowed, NULL for null */
+void pt_error_type_construct(zend_object *self, zend_string *reason);
+/* the static type helpers (TypeUtils.cpp) — registered after the Type
+ * block (its return types name ThisType) */
+extern zend_class_entry *pt_ce_type_utils;
+void pt_register_type_utils();
+/* the native-type decision helpers (TypehintHelper.cpp) — registered after
+ * the Type block */
+extern zend_class_entry *pt_ce_typehint_helper;
+void pt_register_typehint_helper();
 
 #endif /* PHPSTANTURBO_SUPPORT_H */

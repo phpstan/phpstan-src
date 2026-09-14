@@ -70,7 +70,7 @@ public:
 		zv::Val valueStringType = pt_type_call(Z_OBJ_P(valueType), PT_LC("tostring"), 0, NULL);
 		if (UNEXPECTED(valueStringType.isUndef())) return zv::Val();
 		bool isError;
-		if (UNEXPECTED(!pt_type_instanceof(valueStringType.raw(), PT_CLASS_ERROR_TYPE, isError))) return zv::Val();
+		if (UNEXPECTED(!pt_type_instanceof_ce(valueStringType.raw(), pt_ce_error_type, isError))) return zv::Val();
 		if (isError) return pt_type_new_error_type();
 
 		zend_long isInteger = pt_type_call_trinary(Z_OBJ_P(offsetType), PT_LC("isinteger"), 0, NULL);
@@ -377,6 +377,11 @@ using phpstanturbo::StringType;
 bool pt_string_type_new(zval *out)
 {
 	return pt_val_into(StringType::create(), out);
+}
+
+zv::Val pt_string_type_accepts(zend_object *self, zval *type, bool strictTypes)
+{
+	return StringType(self).accepts(type, strictTypes);
 }
 
 zv::Val pt_string_type_has_offset_value_type(zend_object *self, zval *offsetType)

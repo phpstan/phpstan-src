@@ -2,6 +2,9 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Turbo\ShadowedByTurboExtension;
+
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/StringNeverAcceptingObjectWithToStringType.cpp')]
 class StringNeverAcceptingObjectWithToStringType extends StringType
 {
 

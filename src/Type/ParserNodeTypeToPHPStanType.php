@@ -8,11 +8,13 @@ use PhpParser\Node\Name;
 use PhpParser\Node\NullableType;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use function get_class;
 use function in_array;
 use function strtolower;
 
+#[ReferencedByTurboExtension(key: 'parserNodeTypeToPHPStanType')]
 final class ParserNodeTypeToPHPStanType
 {
 

@@ -807,6 +807,65 @@ foreach ($resultObservations['php'] as $key => $expected) {
 	check($expected === ($resultObservations['native'][$key] ?? null), "IsSuperTypeOfResult/AcceptsResult $key: " . json_encode($expected) . ' vs ' . json_encode($resultObservations['native'][$key] ?? null));
 }
 
+// ---- TypeUtils ----
+// The differential proper runs under the real names in type-family.php: the
+// helpers test their arguments against the shadowed Type classes — the PHP
+// twins on the PHP side, the prefixed natives here — so a PHP union handed to
+// the prefixed class is not a union to it. Only the answers that do not
+// depend on that are compared here.
+$covered[\PHPStan\Type\TypeUtils::class] = true;
+$tuScope = \PHPStan\Type\Generic\TemplateTypeScope::createWithFunction('tu');
+$tuTemplate = \PHPStan\Type\Generic\TemplateTypeFactory::create($tuScope, 'T', null, \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant());
+$tuInputs = [
+	'int' => new \PHPStan\Type\IntegerType(),
+	'template' => $tuTemplate,
+	'arrayOfTemplate' => new \PHPStan\Type\ArrayType(new \PHPStan\Type\IntegerType(), $tuTemplate),
+	'arrayOfInt' => new \PHPStan\Type\ArrayType(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()),
+	'callable' => new \PHPStan\Type\CallableType(),
+	'closure' => new \PHPStan\Type\ClosureType(),
+	'string' => new \PHPStan\Type\StringType(),
+	'keyOfShape' => new \PHPStan\Type\KeyOfType(new \PHPStan\Type\Constant\ConstantArrayType([new \PHPStan\Type\Constant\ConstantStringType('a')], [new \PHPStan\Type\IntegerType()])),
+	'keyOfTemplate' => new \PHPStan\Type\KeyOfType($tuTemplate),
+];
+$tuPrecise = \PHPStan\Type\VerbosityLevel::precise();
+foreach ($tuInputs as $tuName => $tuInput) {
+	check(\PHPStanTurbo\TypeUtils::containsTemplateType($tuInput) === \PHPStan\Type\TypeUtils::containsTemplateType($tuInput), "TypeUtils containsTemplateType $tuName");
+	$tuPhp = \PHPStan\Type\TypeUtils::findCallableType($tuInput);
+	$tuNative = \PHPStanTurbo\TypeUtils::findCallableType($tuInput);
+	check(($tuPhp === null) === ($tuNative === null) && ($tuPhp === null || $tuPhp->describe($tuPrecise) === $tuNative->describe($tuPrecise)), "TypeUtils findCallableType $tuName");
+	foreach ([true, false] as $tuResolve) {
+		$tuPhp = \PHPStan\Type\TypeUtils::resolveLateResolvableTypes($tuInput, $tuResolve);
+		$tuNative = \PHPStanTurbo\TypeUtils::resolveLateResolvableTypes($tuInput, $tuResolve);
+		check($tuPhp->describe($tuPrecise) === $tuNative->describe($tuPrecise) && get_class($tuPhp) === $turboNorm(get_class($tuNative)), "TypeUtils resolveLateResolvableTypes $tuName " . var_export($tuResolve, true) . ': ' . $tuPhp->describe($tuPrecise) . ' vs ' . $tuNative->describe($tuPrecise));
+	}
+	check(\PHPStanTurbo\TypeUtils::resolveLateResolvableTypes($tuInput) === \PHPStan\Type\TypeUtils::resolveLateResolvableTypes($tuInput) || $tuInput->hasTemplateOrLateResolvableType(), "TypeUtils resolveLateResolvableTypes identity $tuName");
+}
+
+// ---- TypehintHelper ----
+// The differential proper runs under the real names in type-family.php (the
+// helper tests the types against the shadowed classes — the PHP twins on the
+// PHP side, the prefixed natives here); only the answers that do not depend
+// on that are compared here.
+$covered[\PHPStan\Type\TypehintHelper::class] = true;
+$thInt = new \PHPStan\Type\IntegerType();
+$thArray = new \PHPStan\Type\ArrayType(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType());
+$thPrecise = \PHPStan\Type\VerbosityLevel::precise();
+check(\PHPStanTurbo\TypehintHelper::decideType($thInt, null) === $thInt && \PHPStan\Type\TypehintHelper::decideType($thInt, null) === $thInt, 'TypehintHelper decideType without a PHPDoc type is the identity');
+check(\PHPStanTurbo\TypehintHelper::decideTypeFromReflection(null, $thInt) === $thInt && \PHPStan\Type\TypehintHelper::decideTypeFromReflection(null, $thInt) === $thInt, 'TypehintHelper decideTypeFromReflection without a reflection type is the PHPDoc type');
+$thPhp = \PHPStan\Type\TypehintHelper::decideTypeFromReflection(null);
+$thNative = \PHPStanTurbo\TypehintHelper::decideTypeFromReflection(null);
+check(get_class($thPhp) === $turboNorm(get_class($thNative)) && $thPhp->describe($thPrecise) === $thNative->describe($thPrecise), 'TypehintHelper decideTypeFromReflection without anything is mixed');
+$thCore = (new ReflectionMethod(\PHPStan\TrinaryLogic::class, 'yes'))->getReturnType(); // a real (not tentative) return type: the core reflection type, not the adapter
+foreach (['php' => \PHPStan\Type\TypehintHelper::class, 'native' => \PHPStanTurbo\TypehintHelper::class] as $thSide => $thClass) {
+	try {
+		$thClass::decideTypeFromReflection($thCore);
+		$thResults[$thSide] = 'no throw';
+	} catch (\Throwable $e) {
+		$thResults[$thSide] = [get_class($e), $e->getMessage()];
+	}
+}
+check($thResults['php'] === $thResults['native'] && $thResults['php'][0] === \PHPStan\ShouldNotHappenException::class, 'TypehintHelper decideTypeFromReflection of a core reflection type throws: ' . json_encode($thResults));
+
 // ---- the Type ports: BooleanType, ConstantBooleanType, IntegerType, ConstantIntegerType, IntegerRangeType, StringType, ConstantStringType, ClassStringType, GenericClassStringType, FloatType, ConstantFloatType, NullType, VoidType ----
 // A Type never acts alone: its results flow into the PHP compound types and
 // back through `self`-typed statics (IsSuperTypeOfResult::extremeIdentity()),
@@ -863,6 +922,13 @@ $covered[\PHPStan\Type\Constant\ConstantArrayType::class] = true;
 $covered[\PHPStan\Type\UnionType::class] = true;
 $covered[\PHPStan\Type\BenevolentUnionType::class] = true;
 $covered[\PHPStan\Type\IntersectionType::class] = true;
+$covered[\PHPStan\Type\ErrorType::class] = true;
+$covered[\PHPStan\Type\CircularTypeAliasErrorType::class] = true;
+$covered[\PHPStan\Type\Generic\AbsorbedTemplateArgumentType::class] = true;
+$covered[\PHPStan\Type\NonAcceptingNeverType::class] = true;
+$covered[\PHPStan\Type\StringAlwaysAcceptingObjectWithToStringType::class] = true;
+$covered[\PHPStan\Type\StringNeverAcceptingObjectWithToStringType::class] = true;
+$covered[\PHPStan\Type\ResourceType::class] = true;
 
 /** @return array<string, mixed> */
 function observeTypeFamily(string $mode): array
@@ -915,7 +981,7 @@ function observeTypeFamily(string $mode): array
 
 $typeFamilyPhp = observeTypeFamily('php');
 $typeFamilyNative = observeTypeFamily('native');
-foreach ([\PHPStan\Type\BooleanType::class, \PHPStan\Type\Constant\ConstantBooleanType::class, \PHPStan\Type\IntegerType::class, \PHPStan\Type\Constant\ConstantIntegerType::class, \PHPStan\Type\IntegerRangeType::class, \PHPStan\Type\StringType::class, \PHPStan\Type\Constant\ConstantStringType::class, \PHPStan\Type\ClassStringType::class, \PHPStan\Type\Generic\GenericClassStringType::class, \PHPStan\Type\FloatType::class, \PHPStan\Type\Constant\ConstantFloatType::class, \PHPStan\Type\NullType::class, \PHPStan\Type\VoidType::class, \PHPStan\Type\NeverType::class, \PHPStan\Type\MixedType::class, \PHPStan\Type\StrictMixedType::class, \PHPStan\Type\ObjectWithoutClassType::class, \PHPStan\Type\StaticType::class, \PHPStan\Type\ThisType::class, \PHPStan\Type\Generic\GenericStaticType::class, \PHPStan\Type\ObjectShapeType::class, \PHPStan\Type\NonexistentParentClassType::class, \PHPStan\Type\ArrayType::class, \PHPStan\Type\Accessory\NonEmptyArrayType::class, \PHPStan\Type\Accessory\AccessoryArrayListType::class, \PHPStan\Type\Accessory\OversizedArrayType::class, \PHPStan\Type\Accessory\HasOffsetType::class, \PHPStan\Type\Accessory\HasOffsetValueType::class, \PHPStan\Type\Accessory\AccessoryNumericStringType::class, \PHPStan\Type\Accessory\AccessoryNonEmptyStringType::class, \PHPStan\Type\Accessory\AccessoryNonFalsyStringType::class, \PHPStan\Type\Accessory\AccessoryLiteralStringType::class, \PHPStan\Type\Accessory\AccessoryLowercaseStringType::class, \PHPStan\Type\Accessory\AccessoryUppercaseStringType::class, \PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType::class, \PHPStan\Type\Accessory\HasMethodType::class, \PHPStan\Type\Accessory\HasPropertyType::class, \PHPStan\Type\ObjectType::class, \PHPStan\Type\Generic\GenericObjectType::class, \PHPStan\Type\Enum\EnumCaseObjectType::class, \PHPStan\Type\IterableType::class, \PHPStan\Type\CallableType::class, \PHPStan\Type\ClosureType::class, \PHPStan\Type\Constant\ConstantArrayType::class, \PHPStan\Type\UnionType::class, \PHPStan\Type\BenevolentUnionType::class, \PHPStan\Type\IntersectionType::class] as $typeClass) {
+foreach ([\PHPStan\Type\BooleanType::class, \PHPStan\Type\Constant\ConstantBooleanType::class, \PHPStan\Type\IntegerType::class, \PHPStan\Type\Constant\ConstantIntegerType::class, \PHPStan\Type\IntegerRangeType::class, \PHPStan\Type\StringType::class, \PHPStan\Type\Constant\ConstantStringType::class, \PHPStan\Type\ClassStringType::class, \PHPStan\Type\Generic\GenericClassStringType::class, \PHPStan\Type\FloatType::class, \PHPStan\Type\Constant\ConstantFloatType::class, \PHPStan\Type\NullType::class, \PHPStan\Type\VoidType::class, \PHPStan\Type\NeverType::class, \PHPStan\Type\MixedType::class, \PHPStan\Type\StrictMixedType::class, \PHPStan\Type\ObjectWithoutClassType::class, \PHPStan\Type\StaticType::class, \PHPStan\Type\ThisType::class, \PHPStan\Type\Generic\GenericStaticType::class, \PHPStan\Type\ObjectShapeType::class, \PHPStan\Type\NonexistentParentClassType::class, \PHPStan\Type\ArrayType::class, \PHPStan\Type\Accessory\NonEmptyArrayType::class, \PHPStan\Type\Accessory\AccessoryArrayListType::class, \PHPStan\Type\Accessory\OversizedArrayType::class, \PHPStan\Type\Accessory\HasOffsetType::class, \PHPStan\Type\Accessory\HasOffsetValueType::class, \PHPStan\Type\Accessory\AccessoryNumericStringType::class, \PHPStan\Type\Accessory\AccessoryNonEmptyStringType::class, \PHPStan\Type\Accessory\AccessoryNonFalsyStringType::class, \PHPStan\Type\Accessory\AccessoryLiteralStringType::class, \PHPStan\Type\Accessory\AccessoryLowercaseStringType::class, \PHPStan\Type\Accessory\AccessoryUppercaseStringType::class, \PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType::class, \PHPStan\Type\Accessory\HasMethodType::class, \PHPStan\Type\Accessory\HasPropertyType::class, \PHPStan\Type\ObjectType::class, \PHPStan\Type\Generic\GenericObjectType::class, \PHPStan\Type\Enum\EnumCaseObjectType::class, \PHPStan\Type\IterableType::class, \PHPStan\Type\CallableType::class, \PHPStan\Type\ClosureType::class, \PHPStan\Type\Constant\ConstantArrayType::class, \PHPStan\Type\UnionType::class, \PHPStan\Type\BenevolentUnionType::class, \PHPStan\Type\IntersectionType::class, \PHPStan\Type\ErrorType::class, \PHPStan\Type\CircularTypeAliasErrorType::class, \PHPStan\Type\Generic\AbsorbedTemplateArgumentType::class, \PHPStan\Type\NonAcceptingNeverType::class, \PHPStan\Type\StringAlwaysAcceptingObjectWithToStringType::class, \PHPStan\Type\StringNeverAcceptingObjectWithToStringType::class, \PHPStan\Type\ResourceType::class, \PHPStan\Type\TypeUtils::class, \PHPStan\Type\TypehintHelper::class] as $typeClass) {
 	check(($typeFamilyPhp["native $typeClass"] ?? null) === false, "type-family.php php: $typeClass is the PHP twin");
 	check(($typeFamilyNative["native $typeClass"] ?? null) === true, "type-family.php native: $typeClass is the native class");
 	unset($typeFamilyPhp["native $typeClass"], $typeFamilyNative["native $typeClass"]);

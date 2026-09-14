@@ -36,7 +36,6 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_NEW */ {"newExpr", "PhpParser\\Node\\Expr\\New_"},
 	/* PT_CLASS_CLASS_STMT */ {"classStmt", "PhpParser\\Node\\Stmt\\Class_"},
 	/* PT_CLASS_VARIADIC_PLACEHOLDER */ {"variadicPlaceholder", "PhpParser\\Node\\VariadicPlaceholder"},
-	/* PT_CLASS_ERROR_TYPE */ {"errorType", "PHPStan\\Type\\ErrorType"},
 	/* PT_CLASS_SCALAR */ {"scalar", "PhpParser\\Node\\Scalar"},
 	/* PT_CLASS_ARRAY_EXPR */ {"arrayExpr", "PhpParser\\Node\\Expr\\Array_"},
 	/* PT_CLASS_UNARY_MINUS */ {"unaryMinus", "PhpParser\\Node\\Expr\\UnaryMinus"},
@@ -94,7 +93,6 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_ALLOWED_ARRAY_KEYS_TYPES */ {"allowedArrayKeysTypes", "PHPStan\\Rules\\Arrays\\AllowedArrayKeysTypes"},
 	/* PT_CLASS_CONSTANT_ARRAY_TYPE_BUILDER */ {"constantArrayTypeBuilder", "PHPStan\\Type\\Constant\\ConstantArrayTypeBuilder"},
 	/* PT_CLASS_LRU_CACHE */ {"lruCache", "PHPStan\\Internal\\LruCache"},
-	/* PT_CLASS_TYPE_UTILS */ {"typeUtils", "PHPStan\\Type\\TypeUtils"},
 	/* PT_CLASS_UNRESOLVED_TEMPLATE_ARGUMENT_TYPE */ {"unresolvedTemplateArgumentType", "PHPStan\\Type\\Generic\\UnresolvedTemplateArgumentType"},
 	/* PT_CLASS_TYPE_PROJECTION_HELPER */ {"typeProjectionHelper", "PHPStan\\Type\\Generic\\TypeProjectionHelper"},
 	/* PT_CLASS_CLASS_NOT_FOUND_EXCEPTION */ {"classNotFoundException", "PHPStan\\Broker\\ClassNotFoundException"},
@@ -129,7 +127,6 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_TEMPLATE_UNION_TYPE */ {"templateUnionType", "PHPStan\\Type\\Generic\\TemplateUnionType"},
 	/* PT_CLASS_TEMPLATE_ITERABLE_TYPE */ {"templateIterableType", "PHPStan\\Type\\Generic\\TemplateIterableType"},
 	/* PT_CLASS_LATE_RESOLVABLE_TYPE */ {"lateResolvableType", "PHPStan\\Type\\LateResolvableType"},
-	/* PT_CLASS_ABSORBED_TEMPLATE_ARGUMENT_TYPE */ {"absorbedTemplateArgumentType", "PHPStan\\Type\\Generic\\AbsorbedTemplateArgumentType"},
 	/* PT_CLASS_UNION_TYPE_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION */ {"unionTypeUnresolvedMethodPrototypeReflection", "PHPStan\\Reflection\\Type\\UnionTypeUnresolvedMethodPrototypeReflection"},
 	/* PT_CLASS_MISSING_METHOD_FROM_REFLECTION_EXCEPTION */ {"missingMethodFromReflectionException", "PHPStan\\Reflection\\MissingMethodFromReflectionException"},
 	/* PT_CLASS_MISSING_CONSTANT_FROM_REFLECTION_EXCEPTION */ {"missingConstantFromReflectionException", "PHPStan\\Reflection\\MissingConstantFromReflectionException"},
@@ -140,6 +137,13 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_UNION_TYPE_NODE */ {"unionTypeNode", "PHPStan\\PhpDocParser\\Ast\\Type\\UnionTypeNode"},
 	/* PT_CLASS_INTERSECTION_TYPE_NODE */ {"intersectionTypeNode", "PHPStan\\PhpDocParser\\Ast\\Type\\IntersectionTypeNode"},
 	/* PT_CLASS_TYPE_TRAVERSER_CALLABLE */ {"typeTraverserCallable", "PHPStan\\Type\\TypeTraverserCallable"},
+	/* PT_CLASS_TEMPLATE_BENEVOLENT_UNION_TYPE */ {"templateBenevolentUnionType", "PHPStan\\Type\\Generic\\TemplateBenevolentUnionType"},
+	/* PT_CLASS_LATE_RESOLVABLE_TRAVERSER */ {"lateResolvableTraverser", "PHPStan\\Type\\Traverser\\LateResolvableTraverser"},
+	/* PT_CLASS_REFLECTION_UNION_TYPE */ {"reflectionUnionType", "PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionUnionType"},
+	/* PT_CLASS_REFLECTION_INTERSECTION_TYPE */ {"reflectionIntersectionType", "PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionIntersectionType"},
+	/* PT_CLASS_REFLECTION_NAMED_TYPE */ {"reflectionNamedType", "PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionNamedType"},
+	/* PT_CLASS_FULLY_QUALIFIED */ {"fullyQualified", "PhpParser\\Node\\Name\\FullyQualified"},
+	/* PT_CLASS_PARSER_NODE_TYPE_TO_PHPSTAN_TYPE */ {"parserNodeTypeToPHPStanType", "PHPStan\\Type\\ParserNodeTypeToPHPStanType"},
 };
 
 zend_class_entry *pt_class(int idx)

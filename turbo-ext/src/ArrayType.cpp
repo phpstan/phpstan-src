@@ -542,7 +542,7 @@ public:
 		zv::Val offsetArrayKeyType = callType(Z_OBJ_P(offsetTypeArg), PT_LC("toarraykey"), 0, NULL);
 		if (UNEXPECTED(offsetArrayKeyType.isUndef())) return -1;
 		bool isError;
-		if (UNEXPECTED(!isInstance(offsetArrayKeyType.raw(), PT_CLASS_ERROR_TYPE, isError))) return -1;
+		if (UNEXPECTED(!isInstance(offsetArrayKeyType.raw(), pt_ce_error_type, isError))) return -1;
 		if (isError) {
 			zv::Val allowedArrayKeys = pt_type_call_static(PT_CLASS_ALLOWED_ARRAY_KEYS_TYPES, PT_LC("gettype"), 0, NULL);
 			if (UNEXPECTED(allowedArrayKeys.isUndef())) return -1;
@@ -571,7 +571,7 @@ public:
 		zv::Val type = thisGetItemType();
 		if (UNEXPECTED(type.isUndef())) return zv::Val();
 		bool isError;
-		if (UNEXPECTED(!isInstance(type.raw(), PT_CLASS_ERROR_TYPE, isError))) return zv::Val();
+		if (UNEXPECTED(!isInstance(type.raw(), pt_ce_error_type, isError))) return zv::Val();
 		if (isError) return pt_type_new_mixed_type();
 		return type;
 	}
@@ -765,7 +765,7 @@ public:
 						}
 						zv::Val shape = pt_type_call(Z_OBJ_P(builder.raw()), PT_LC("getarray"), 0, NULL);
 						if (UNEXPECTED(shape.isUndef())) return zv::Val();
-						zv::Val accessories = pt_type_call_static(PT_CLASS_TYPE_UTILS, PT_LC("getaccessorytypes"), 1, i);
+						zv::Val accessories = pt_type_call_static_ce(pt_ce_type_utils, PT_LC("getaccessorytypes"), 1, i);
 						if (UNEXPECTED(accessories.isUndef())) return zv::Val();
 						if (UNEXPECTED(Z_TYPE_P(accessories.raw()) != IS_ARRAY)) {
 							zend_type_error("phpstan_turbo: TypeUtils::getAccessoryTypes() must return an array");
@@ -869,7 +869,7 @@ public:
 			zv::Val stringKeyType = callType(Z_OBJ_P(itemType.raw()), PT_LC("tostring"), 0, NULL);
 			if (UNEXPECTED(stringKeyType.isUndef())) return zv::Val();
 			bool isError;
-			if (UNEXPECTED(!isInstance(stringKeyType.raw(), PT_CLASS_ERROR_TYPE, isError))) return zv::Val();
+			if (UNEXPECTED(!isInstance(stringKeyType.raw(), pt_ce_error_type, isError))) return zv::Val();
 			if (isError) return stringKeyType;
 			zv::Val stringArrayKey = callType(Z_OBJ_P(stringKeyType.raw()), PT_LC("toarraykey"), 0, NULL);
 			if (UNEXPECTED(stringArrayKey.isUndef())) return zv::Val();

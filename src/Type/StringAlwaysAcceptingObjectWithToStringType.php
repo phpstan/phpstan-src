@@ -3,7 +3,9 @@
 namespace PHPStan\Type;
 
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/StringAlwaysAcceptingObjectWithToStringType.cpp')]
 class StringAlwaysAcceptingObjectWithToStringType extends StringType
 {
 

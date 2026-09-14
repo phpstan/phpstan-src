@@ -112,7 +112,7 @@ public:
 		zv::Val stringOffset = pt_string_type_set_offset_value_type(Z_OBJ_P(string.raw()), offsetType, valueType);
 		if (UNEXPECTED(stringOffset.isUndef())) return zv::Val();
 		bool isError;
-		if (UNEXPECTED(!pt_type_instanceof(stringOffset.raw(), PT_CLASS_ERROR_TYPE, isError))) return zv::Val();
+		if (UNEXPECTED(!pt_type_instanceof_ce(stringOffset.raw(), pt_ce_error_type, isError))) return zv::Val();
 		if (isError) return stringOffset;
 		zend_long valueIsUppercase = pt_type_call_trinary(Z_OBJ_P(valueType), PT_LC("isuppercasestring"), 0, NULL);
 		if (UNEXPECTED(valueIsUppercase < 0)) return zv::Val();

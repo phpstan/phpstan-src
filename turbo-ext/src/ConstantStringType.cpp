@@ -858,7 +858,7 @@ public:
 		zv::Val valueStringType = pt_type_call(Z_OBJ_P(valueType), PT_LC("tostring"), 0, NULL);
 		if (UNEXPECTED(valueStringType.isUndef())) return zv::Val();
 		bool isError;
-		if (UNEXPECTED(!pt_type_instanceof(valueStringType.raw(), PT_CLASS_ERROR_TYPE, isError))) return zv::Val();
+		if (UNEXPECTED(!pt_type_instanceof_ce(valueStringType.raw(), pt_ce_error_type, isError))) return zv::Val();
 		if (isError) return pt_type_new_error_type();
 		if (offsetType != NULL
 			&& instanceof_function(Z_OBJCE_P(offsetType), pt_ce_constant_integer_type)

@@ -1424,7 +1424,7 @@ public:
 			zv::Val valueType = callType(entry.value().deref().asObject(), PT_LC("getoffsetvaluetype"), 1, offsetType);
 			if (UNEXPECTED(valueType.isUndef())) return zv::Val();
 			bool isError;
-			if (UNEXPECTED(!isInstance(valueType.raw(), PT_CLASS_ERROR_TYPE, isError))) return zv::Val();
+			if (UNEXPECTED(!isInstance(valueType.raw(), pt_ce_error_type, isError))) return zv::Val();
 			if (isError) continue;
 			valueTypes.push(std::move(valueType));
 		}
@@ -1817,8 +1817,9 @@ public:
 			int hasType = pt_type_call_is_true(Z_OBJ_P(inferred), PT_LC("hastype"), 1, name.raw());
 			if (UNEXPECTED(hasType < 0)) return zv::Val();
 			if (hasType == 1) continue;
-			zv::Val argument = pt_type_new(PT_CLASS_ABSORBED_TEMPLATE_ARGUMENT_TYPE, 0, NULL);
-			if (UNEXPECTED(argument.isUndef())) return zv::Val();
+			zval argumentRaw;
+			if (UNEXPECTED(!pt_absorbed_template_argument_type_new(&argumentRaw))) return zv::Val();
+			zv::Val argument = zv::Val::adopt(argumentRaw);
 			absorbed.set(zv::Ref(name.raw()).asString(), std::move(argument));
 		}
 		if (zend_hash_num_elements(absorbed.table()) == 0) return pt_type_call_static(PT_CLASS_TEMPLATE_TYPE_MAP, PT_LC("createempty"), 0, NULL);
@@ -1878,7 +1879,7 @@ public:
 	 * exception */
 	zv::Val traverseSimultaneously(zval *right, zend_fcall_info *fci, zend_fcall_info_cache *fcc) const
 	{
-		zv::Val rightTypes = pt_type_call_static(PT_CLASS_TYPE_UTILS, PT_LC("flattentypes"), 1, right);
+		zv::Val rightTypes = pt_type_utils_flatten_types(right);
 		if (UNEXPECTED(rightTypes.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(rightTypes.raw()).isArray())) {
 			zend_type_error("phpstan_turbo: TypeUtils::flattenTypes() must return array");

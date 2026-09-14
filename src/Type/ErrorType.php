@@ -2,10 +2,10 @@
 
 namespace PHPStan\Type;
 
-use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /** @api */
-#[ReferencedByTurboExtension(key: 'errorType')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ErrorType.cpp')]
 class ErrorType extends MixedType
 {
 

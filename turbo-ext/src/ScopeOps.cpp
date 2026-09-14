@@ -1357,15 +1357,10 @@ private:
 	/* new ExpressionTypeHolder($expr, new ErrorType(), TrinaryLogic::createNo()) */
 	static zv::Val createNoErrorHolder(zval *exprSlot)
 	{
-		zend_class_entry *errorTypeCe = pt_class(PT_CLASS_ERROR_TYPE);
-		if (UNEXPECTED(errorTypeCe == NULL)) return zv::Val();
+		/* the shadowing ErrorType */
 		zval errorTypeRaw;
-		object_init_ex(&errorTypeRaw, errorTypeCe);
+		if (UNEXPECTED(!pt_error_type_new(&errorTypeRaw))) return zv::Val();
 		zv::Val errorType = zv::Val::adopt(errorTypeRaw);
-		if (errorTypeCe->constructor != NULL) {
-			zend_call_known_instance_method(errorTypeCe->constructor, errorType.ref().asObject(), NULL, 0, NULL);
-			if (UNEXPECTED(EG(exception))) return zv::Val();
-		}
 		/* pt_holder_create copies the type; the local ErrorType ref is released */
 		zval holder;
 		pt_holder_create(&holder, exprSlot, errorType.raw(), PT_TRI_NO);

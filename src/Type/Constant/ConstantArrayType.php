@@ -3606,15 +3606,29 @@ class ConstantArrayType implements Type
 		// Build finite array types incrementally, processing one key at a time.
 		// For optional keys, fork each partial result into with/without variants.
 		// This avoids generating 2^N ConstantArrayType objects via getAllArrays().
-		/** @var list<ConstantArrayTypeBuilder> $partials */
-		$partials = [ConstantArrayTypeBuilder::createEmpty()];
-
+		// Count first: a shape with many optional keys overflows the limit after a
+		// handful of keys, and building the partial arrays up to that point costs
+		// hundreds of builder clones per call for a result that is thrown away.
+		$finiteValueTypesPerKey = [];
+		$count = 1;
 		foreach ($this->keyTypes as $i => $keyType) {
 			$finiteValueTypes = $this->valueTypes[$i]->getFiniteTypes();
 			if ($finiteValueTypes === []) {
 				return [];
 			}
 
+			$finiteValueTypesPerKey[$i] = $finiteValueTypes;
+			$count *= count($finiteValueTypes) + ($this->isOptionalKey($i) ? 1 : 0);
+			if ($count > $limit) {
+				return [];
+			}
+		}
+
+		/** @var list<ConstantArrayTypeBuilder> $partials */
+		$partials = [ConstantArrayTypeBuilder::createEmpty()];
+
+		foreach ($this->keyTypes as $i => $keyType) {
+			$finiteValueTypes = $finiteValueTypesPerKey[$i];
 			$isOptional = $this->isOptionalKey($i);
 			$newPartials = [];
 
@@ -3630,9 +3644,6 @@ class ConstantArrayType implements Type
 			}
 
 			$partials = $newPartials;
-			if (count($partials) > $limit) {
-				return [];
-			}
 		}
 
 		$finiteTypes = [];

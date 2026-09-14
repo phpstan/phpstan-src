@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Methods;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<CallToStaticMethodStatementWithNoDiscardRule>
@@ -30,6 +31,8 @@ class CallToStaticMethodStatementWithNoDiscardRuleTest extends RuleTestCase
 		);
 	}
 
+	// #[\NoDiscard] is an attribute, a comment on PHP 7.4
+	#[RequiresPhp('>= 8.0.0')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/static-method-call-statement-result-discarded.php'], [
@@ -39,27 +42,35 @@ class CallToStaticMethodStatementWithNoDiscardRuleTest extends RuleTestCase
 			],
 			[
 				'Call to static method StaticMethodCallStatementResultDiscarded\ClassWithStaticSideEffects::differentCase() on a separate line discards return value.',
-				27,
+				25,
+			],
+		]);
+	}
+
+	// the (void) cast and the pipe operator are PHP 8.5 syntax
+	#[RequiresPhp('>= 8.5.0')]
+	public function testRulePhp85(): void
+	{
+		$this->analyse([__DIR__ . '/data/static-method-call-statement-result-discarded-php85.php'], [
+			[
+				'Call to static method StaticMethodCallStatementResultDiscardedPhp85\Foo::canDiscard() in (void) cast but method allows discarding return value.',
+				23,
 			],
 			[
-				'Call to static method StaticMethodCallStatementResultDiscarded\Foo::canDiscard() in (void) cast but method allows discarding return value.',
-				41,
+				'Call to static method StaticMethodCallStatementResultDiscardedPhp85\ClassWithStaticSideEffects::staticMethod() on a separate line discards return value.',
+				25,
 			],
 			[
-				'Call to static method StaticMethodCallStatementResultDiscarded\ClassWithStaticSideEffects::staticMethod() on a separate line discards return value.',
-				43,
+				'Call to static method StaticMethodCallStatementResultDiscardedPhp85\Foo::canDiscard() in (void) cast but method allows discarding return value.',
+				28,
 			],
 			[
-				'Call to static method StaticMethodCallStatementResultDiscarded\Foo::canDiscard() in (void) cast but method allows discarding return value.',
-				46,
+				'Call to static method StaticMethodCallStatementResultDiscardedPhp85\ClassWithStaticSideEffects::staticMethod() on a separate line discards return value.',
+				30,
 			],
 			[
-				'Call to static method StaticMethodCallStatementResultDiscarded\ClassWithStaticSideEffects::staticMethod() on a separate line discards return value.',
-				48,
-			],
-			[
-				'Call to static method StaticMethodCallStatementResultDiscarded\Foo::canDiscard() in (void) cast but method allows discarding return value.',
-				51,
+				'Call to static method StaticMethodCallStatementResultDiscardedPhp85\Foo::canDiscard() in (void) cast but method allows discarding return value.',
+				33,
 			],
 		]);
 	}

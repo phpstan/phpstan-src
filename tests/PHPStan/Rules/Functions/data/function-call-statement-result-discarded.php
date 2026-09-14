@@ -1,4 +1,4 @@
-<?php // lint >= 8.5
+<?php // lint >= 8.1
 
 namespace FunctionCallStatementResultDiscarded;
 
@@ -9,8 +9,6 @@ function withSideEffects(int $i): array {
 }
 
 withSideEffects(5);
-
-(void)withSideEffects(5);
 
 foreach (withSideEffects(5) as $num) {
 	var_dump($num);
@@ -52,18 +50,6 @@ function canDiscard(int $i): int
 }
 
 canDiscard(5);
-(void) canDiscard(5);
 
 $canDiscardCb = 'FunctionCallStatementResultDiscarded\\canDiscard';
 $canDiscardCb();
-(void) $canDiscardCb();
-
-5 |> withSideEffects(...);
-5 |> canDiscard(...);
-(void) 5 |> withSideEffects(...);
-(void) 5 |> canDiscard(...);
-
-5 |> (fn ($x) => withSideEffects($x));
-5 |> (fn ($x) => canDiscard($x));
-(void) 5 |> (fn ($x) => withSideEffects($x));
-(void) 5 |> (fn ($x) => canDiscard($x));

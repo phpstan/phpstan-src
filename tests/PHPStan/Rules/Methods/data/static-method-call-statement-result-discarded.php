@@ -1,4 +1,4 @@
-<?php // lint >= 8.5
+<?php // lint >= 8.1
 
 namespace StaticMethodCallStatementResultDiscarded;
 
@@ -18,8 +18,6 @@ class ClassWithStaticSideEffects {
 
 ClassWithStaticSideEffects::staticMethod();
 
-(void)ClassWithStaticSideEffects::staticMethod();
-
 foreach (ClassWithStaticSideEffects::staticMethod() as $num) {
 	var_dump($num);
 }
@@ -38,14 +36,3 @@ class Foo
 }
 
 Foo::canDiscard();
-(void) Foo::canDiscard();
-
-5 |> ClassWithStaticSideEffects::staticMethod(...);
-5 |> Foo::canDiscard(...);
-(void) 5 |> ClassWithStaticSideEffects::staticMethod(...);
-(void) 5 |> Foo::canDiscard(...);
-
-5 |> (fn ($x) => ClassWithStaticSideEffects::staticMethod($x));
-5 |> (fn ($x) => Foo::canDiscard($x));
-(void) 5 |> (fn ($x) => ClassWithStaticSideEffects::staticMethod($x));
-(void) 5 |> (fn ($x) => Foo::canDiscard($x));

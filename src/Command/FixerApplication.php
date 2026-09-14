@@ -27,6 +27,7 @@ use PHPStan\Internal\HttpClientFactory;
 use PHPStan\Parallel\ForkParallelChecker;
 use PHPStan\PhpDoc\StubFilesProvider;
 use PHPStan\Process\ForkedProcessPromise;
+use PHPStan\Process\InheritedPhpConfig;
 use PHPStan\Process\ProcessCanceledException;
 use PHPStan\Process\ProcessCrashedException;
 use PHPStan\Process\ProcessHelper;
@@ -43,12 +44,14 @@ use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
+use function array_map;
 use function array_merge;
 use function count;
 use function defined;
 use function escapeshellarg;
 use function get_class;
 use function http_build_query;
+use function implode;
 use function ini_get;
 use function is_file;
 use function parse_url;
@@ -302,7 +305,11 @@ final class FixerApplication
 			}
 		}
 
-		return new Process(sprintf('%s -d memory_limit=%s %s --port %d', escapeshellarg(PHP_BINARY), escapeshellarg(ini_get('memory_limit')), escapeshellarg($pharPath), $serverPort), env: $env, fds: []);
+		// the PHPStan Pro process is a child like a worker is - it inherits
+		// nothing of our command line either, see InheritedPhpConfig
+		$phpArgs = implode(' ', array_map(static fn (string $arg): string => escapeshellarg($arg), InheritedPhpConfig::getArgs()));
+
+		return new Process(sprintf('%s %s -d memory_limit=%s %s --port %d', escapeshellarg(PHP_BINARY), $phpArgs, escapeshellarg(ini_get('memory_limit')), escapeshellarg($pharPath), $serverPort), env: $env, fds: []);
 	}
 
 	/**

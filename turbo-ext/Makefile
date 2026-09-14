@@ -62,7 +62,11 @@ phpstan_turbo.so: $(OBJECTS)
 	@# surfaces as a jump to NULL at run time — fail the build instead
 	@if nm -u $@ | grep -E 'pt_[a-z_]+|phpstanturbo' > /dev/null; then echo "undefined extension symbols in $@:"; nm -u $@ | grep -E 'pt_[a-z_]+|phpstanturbo'; rm -f $@; exit 1; fi
 
-src/%.o: src/%.cpp src/support.h src/zv.h src/reg.h $(wildcard src/generated/*.h)
+# every object depends on every header: the op tables and the trait helper
+# declarations live in TypeOps.h / TypeTraits.h, and a stale object built
+# against an older layout jumps into the wrong entry at run time
+HEADERS := $(wildcard src/*.h) $(wildcard src/generated/*.h)
+src/%.o: src/%.cpp $(HEADERS)
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 src/main.o: version.stamp

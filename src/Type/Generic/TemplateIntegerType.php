@@ -2,11 +2,13 @@
 
 namespace PHPStan\Type\Generic;
 
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 
 /** @api */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TemplateIntegerType.cpp')]
 final class TemplateIntegerType extends IntegerType implements TemplateType
 {
 

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Generic;
 
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Type;
@@ -9,6 +10,7 @@ use PHPStan\Type\Type;
 /**
  * Template type strategy suitable for parameter type acceptance contexts
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TemplateTypeParameterStrategy.cpp')]
 final class TemplateTypeParameterStrategy implements TemplateTypeStrategy
 {
 

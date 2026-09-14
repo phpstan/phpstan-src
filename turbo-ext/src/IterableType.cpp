@@ -192,7 +192,7 @@ public:
 		if (UNEXPECTED(!pt_type_instanceof_ce(a, pt_ce_mixed_type, aMixed) || !pt_type_instanceof_ce(b, pt_ce_mixed_type, bMixed))) return zv::Val();
 		if (!aMixed || !bMixed) return callObject(a, PT_LC("issupertypeof"), 1, b);
 		bool aTemplate, bTemplate;
-		if (UNEXPECTED(!pt_type_instanceof(a, PT_CLASS_TEMPLATE_MIXED_TYPE, aTemplate) || !pt_type_instanceof(b, PT_CLASS_TEMPLATE_MIXED_TYPE, bTemplate))) {
+		if (UNEXPECTED(!pt_type_instanceof_ce(a, pt_ce_template_mixed_type, aTemplate) || !pt_type_instanceof_ce(b, pt_ce_template_mixed_type, bTemplate))) {
 			return zv::Val();
 		}
 		if (aTemplate || bTemplate) return callObject(a, PT_LC("issupertypeof"), 1, b);

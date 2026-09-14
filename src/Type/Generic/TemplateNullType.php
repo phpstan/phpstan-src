@@ -2,10 +2,12 @@
 
 namespace PHPStan\Type\Generic;
 
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TemplateNullType.cpp')]
 final class TemplateNullType extends NullType implements TemplateType
 {
 

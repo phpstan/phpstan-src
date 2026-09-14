@@ -250,6 +250,29 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_conditional_type_for_parameter();
 	pt_register_late_resolvable_array_shape_type();
 	pt_register_unresolved_template_argument_type();
+	pt_register_template_type_argument_strategy();
+	pt_register_template_type_parameter_strategy();
+	pt_register_template_array_type();
+	pt_register_template_benevolent_union_type();
+	pt_register_template_boolean_type();
+	pt_register_template_constant_array_type();
+	pt_register_template_constant_integer_type();
+	pt_register_template_constant_string_type();
+	pt_register_template_float_type();
+	pt_register_template_generic_object_type();
+	pt_register_template_integer_type();
+	pt_register_template_intersection_type();
+	pt_register_template_iterable_type();
+	pt_register_template_mixed_type();
+	pt_register_template_null_type();
+	pt_register_template_object_shape_type();
+	pt_register_template_object_type();
+	pt_register_template_object_without_class_type();
+	pt_register_template_strict_mixed_type();
+	pt_register_template_string_type();
+	pt_register_template_union_type();
+	pt_register_template_type_factory();
+	pt_register_type_projection_helper();
 
 	return SUCCESS;
 }

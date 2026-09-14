@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Generic;
 
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Type;
@@ -12,6 +13,7 @@ use function sprintf;
 /**
  * Template type strategy suitable for return type acceptance contexts
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TemplateTypeArgumentStrategy.cpp')]
 final class TemplateTypeArgumentStrategy implements TemplateTypeStrategy
 {
 

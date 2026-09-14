@@ -128,7 +128,7 @@ private:
 			return true;
 		}
 		bool isTemplateMixed;
-		if (UNEXPECTED(!pt_type_instanceof(type, PT_CLASS_TEMPLATE_MIXED_TYPE, isTemplateMixed))) return false;
+		if (UNEXPECTED(!pt_type_instanceof_ce(type, pt_ce_template_mixed_type, isTemplateMixed))) return false;
 		out = !isTemplateMixed;
 		return true;
 	}

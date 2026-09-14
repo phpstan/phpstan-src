@@ -145,11 +145,7 @@ public:
 		zval null;
 		ZVAL_NULL(&null);
 		for (size_t i = 0; i < count; i++) {
-			zval args[3];
-			ZVAL_COPY_VALUE(&args[0], i < typeValues.size() ? typeValues[i] : &null);
-			ZVAL_COPY_VALUE(&args[1], i < varianceValues.size() ? varianceValues[i] : &null);
-			ZVAL_COPY_VALUE(&args[2], level);
-			zv::Val projected = pt_type_call_static(PT_CLASS_TYPE_PROJECTION_HELPER, PT_LC("describe"), 3, args);
+			zv::Val projected = pt_type_projection_helper_describe(i < typeValues.size() ? typeValues[i] : &null, i < varianceValues.size() ? varianceValues[i] : &null, level);
 			if (UNEXPECTED(projected.isUndef())) {
 				smart_str_free(&description);
 				return zv::Val();

@@ -822,7 +822,7 @@ public:
 			if (UNEXPECTED(types == NULL)) return zv::Val();
 			for (zv::ArrayEntry entry : zv::ArrRef(types)) {
 				bool isTemplateArray;
-				if (UNEXPECTED(!isInstance(entry.value().deref().raw(), PT_CLASS_TEMPLATE_ARRAY_TYPE, isTemplateArray))) return zv::Val();
+				if (UNEXPECTED(!isInstance(entry.value().deref().raw(), pt_ce_template_array_type, isTemplateArray))) return zv::Val();
 				if (isTemplateArray) {
 					hasTemplateArray = true;
 					break;
@@ -878,7 +878,7 @@ public:
 			}
 			if (isList || isArray) {
 				bool isTemplateArray;
-				if (UNEXPECTED(!isInstance(type, PT_CLASS_TEMPLATE_ARRAY_TYPE, isTemplateArray))) return zv::Val();
+				if (UNEXPECTED(!isInstance(type, pt_ce_template_array_type, isTemplateArray))) return zv::Val();
 				if (isTemplateArray) {
 					describedTypes[index] = describeOf(type, level);
 					if (UNEXPECTED(describedTypes[index].isUndef())) return zv::Val();

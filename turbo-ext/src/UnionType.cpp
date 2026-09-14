@@ -730,7 +730,7 @@ public:
 		}
 
 		bool isTemplateUnion;
-		if (UNEXPECTED(!isInstance(type, PT_CLASS_TEMPLATE_UNION_TYPE, isTemplateUnion))) return zv::Val();
+		if (UNEXPECTED(!isInstance(type, pt_ce_template_union_type, isTemplateUnion))) return zv::Val();
 		if (isTemplateUnion) {
 			zv::Args args{&selfZv, &strictZv};
 			zv::Val accepted = pt_type_call(Z_OBJ_P(type), PT_LC("isacceptedby"), 2, args);
@@ -769,7 +769,7 @@ public:
 		bool delegate = false;
 		if (instanceof_function(Z_OBJCE_P(otherType), pt_ce_union_type)) {
 			bool isTemplateUnion;
-			if (UNEXPECTED(!isInstance(otherType, PT_CLASS_TEMPLATE_UNION_TYPE, isTemplateUnion))) return zv::Val();
+			if (UNEXPECTED(!isInstance(otherType, pt_ce_template_union_type, isTemplateUnion))) return zv::Val();
 			delegate = !isTemplateUnion;
 		}
 		if (!delegate) {
@@ -777,7 +777,7 @@ public:
 			if (UNEXPECTED(!isInstance(otherType, pt_ce_iterable_type, isIterable))) return zv::Val();
 			if (isIterable) {
 				bool isTemplateIterable;
-				if (UNEXPECTED(!isInstance(otherType, PT_CLASS_TEMPLATE_ITERABLE_TYPE, isTemplateIterable))) return zv::Val();
+				if (UNEXPECTED(!isInstance(otherType, pt_ce_template_iterable_type, isTemplateIterable))) return zv::Val();
 				delegate = !isTemplateIterable;
 			}
 		}
@@ -821,7 +821,7 @@ public:
 		if (UNEXPECTED(result.isUndef())) return zv::Val();
 
 		bool orWithSubType;
-		if (UNEXPECTED(!isInstance(otherType, PT_CLASS_TEMPLATE_UNION_TYPE, orWithSubType))) return zv::Val();
+		if (UNEXPECTED(!isInstance(otherType, pt_ce_template_union_type, orWithSubType))) return zv::Val();
 		if (!orWithSubType) {
 			bool lateResolvable;
 			if (UNEXPECTED(!isInstance(otherType, PT_CLASS_LATE_RESOLVABLE_TYPE, lateResolvable))) return zv::Val();
@@ -1068,7 +1068,7 @@ public:
 			bool isClosureOrCallableOrTemplateUnion;
 			if (UNEXPECTED(!pt_type_instanceof_ce(type, pt_ce_closure_type, isClosureOrCallableOrTemplateUnion))) return zv::Val();
 			if (!isClosureOrCallableOrTemplateUnion && UNEXPECTED(!isInstance(type, pt_ce_callable_type, isClosureOrCallableOrTemplateUnion))) return zv::Val();
-			if (!isClosureOrCallableOrTemplateUnion && UNEXPECTED(!isInstance(type, PT_CLASS_TEMPLATE_UNION_TYPE, isClosureOrCallableOrTemplateUnion))) {
+			if (!isClosureOrCallableOrTemplateUnion && UNEXPECTED(!isInstance(type, pt_ce_template_union_type, isClosureOrCallableOrTemplateUnion))) {
 				return zv::Val();
 			}
 			zv::Val description;
@@ -1089,7 +1089,7 @@ public:
 							if (UNEXPECTED(subtracted.isUndef())) return zv::Val();
 							if (zv::Ref(subtracted.raw()).isNull()) {
 								bool isTemplateMixed;
-								if (UNEXPECTED(!isInstance(bound.raw(), PT_CLASS_TEMPLATE_MIXED_TYPE, isTemplateMixed))) return zv::Val();
+								if (UNEXPECTED(!isInstance(bound.raw(), pt_ce_template_mixed_type, isTemplateMixed))) return zv::Val();
 								plainMixed = !isTemplateMixed;
 							}
 						}

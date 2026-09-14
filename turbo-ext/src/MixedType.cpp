@@ -384,7 +384,7 @@ public:
 	{
 		if (instanceof_function(Z_OBJCE_P(otherType), pt_ce_mixed_type)) {
 			bool isTemplateMixed;
-			if (UNEXPECTED(!pt_type_instanceof(otherType, PT_CLASS_TEMPLATE_MIXED_TYPE, isTemplateMixed))) return zv::Val();
+			if (UNEXPECTED(!pt_type_instanceof_ce(otherType, pt_ce_template_mixed_type, isTemplateMixed))) return zv::Val();
 			if (!isTemplateMixed) return pt_type_is_super_type_of_result(PT_TRI_YES);
 		}
 

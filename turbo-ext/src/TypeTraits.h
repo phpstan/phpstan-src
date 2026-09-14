@@ -920,6 +920,158 @@ static inline bool pt_type_same_object(zval *a, zval *b)
 
 /* }}} */
 
+/* merged from the parallel port branch */
+/* {{{ the template family (the TemplateTypeTrait registrar below; the
+ * Template*Type.cpp files, TemplateTypeArgumentStrategy.cpp,
+ * TemplateTypeParameterStrategy.cpp, TemplateTypeFactory.cpp) */
+
+namespace ptcls {
+inline constexpr const char *templateType = "PHPStan\\Type\\Generic\\TemplateType";
+inline constexpr const char *templateTypeScope = "PHPStan\\Type\\Generic\\TemplateTypeScope";
+inline constexpr const char *templateTypeStrategy = "PHPStan\\Type\\Generic\\TemplateTypeStrategy";
+} // namespace ptcls
+
+namespace ptret {
+inline constexpr reg::Arg templateType = reg::obj("", ptcls::templateType);
+inline constexpr reg::Arg templateTypeScope = reg::obj("", ptcls::templateTypeScope);
+inline constexpr reg::Arg templateTypeStrategy = reg::obj("", ptcls::templateTypeStrategy);
+inline constexpr reg::Arg templateTypeVariance = reg::obj("", ptcls::templateTypeVariance);
+} // namespace ptret
+
+/* src/Type/Generic/TemplateTypeTrait.php — besides the trait's methods the
+ * registrar declares its six private properties (name, scope, strategy,
+ * variance, bound, default — in that order) on the class, as the class's
+ * LAST slots: a class running it declares no property of its own afterwards.
+ * `self` inside the trait is the class using it (the handler's scope), the
+ * $this-calls go through the object's class entry with the direct path
+ * when the object is exactly that class (TemplateObjectWithoutClassType is
+ * not final). */
+void pt_type_trait_template_type(reg::Class &cls);
+
+/* the twins' constructor tails after parent::__construct(): the six slots
+ * written in the twin's order (scope, strategy, variance, name, bound,
+ * default); scope is the class using the trait, every argument borrowed
+ * (defaultType NULL or IS_NULL for null) */
+void pt_template_type_init(zend_object *self, zend_class_entry *scope, zval *templateScope, zval *strategy, zval *variance, zend_string *name, zval *bound, zval *defaultType);
+
+/* the twins' `<Parent> $bound` constructor parameter: the bound must be an
+ * instance of the class's parent — the TypeError the engine raises for the
+ * twin otherwise (argument number argNo); false = pending exception */
+[[nodiscard]] bool pt_template_type_check_bound(zend_class_entry *scope, zval *bound, uint32_t argNo);
+
+/* parent::__construct(...$args) — the parent's constructor run on the
+ * object; false = pending exception */
+[[nodiscard]] bool pt_template_type_parent_construct(zend_object *self, zend_class_entry *scope, uint32_t argc, zval *argv);
+
+/* the six borrowed slots of a class using the trait, read as the twin
+ * reads `$this->name` etc. from inside the trait (scope the class using
+ * it — the slot is right for a PHP subclass instance too); NULL with an
+ * Error pending when uninitialized, as the typed-property read raises */
+zend_string *pt_template_type_name(zend_object *object, zend_class_entry *scope);
+zval *pt_template_type_scope(zend_object *object, zend_class_entry *scope);
+zval *pt_template_type_strategy(zend_object *object, zend_class_entry *scope);
+zval *pt_template_type_variance(zend_object *object, zend_class_entry *scope);
+zval *pt_template_type_bound(zend_object *object, zend_class_entry *scope);
+zval *pt_template_type_default(zend_object *object, zend_class_entry *scope);
+
+/* the trait's isSuperTypeOf() / isSubTypeOf() bodies run on the object
+ * (the $this-calls inside them through its class entry) — for the
+ * `$this->isSuperTypeOf()` / `$this->isSubTypeOf()` of the final classes
+ * overriding isSuperTypeOfMixed() and isAcceptedBy(); UNDEF = pending
+ * exception */
+zv::Val pt_template_type_is_super_type_of(zend_object *self, zend_class_entry *scope, zval *type);
+zv::Val pt_template_type_is_sub_type_of(zend_object *self, zend_class_entry *scope, zval *type);
+
+/* TemplateTypeFactory::create($scope, $name, $bound, $variance, $strategy,
+ * $default) — the shadowing class's body (TemplateTypeFactory.cpp); $bound /
+ * $strategy / $default NULL or IS_NULL for null; UNDEF = pending exception */
+zv::Val pt_template_type_factory_create(zval *scope, zval *name, zval *bound, zval *variance, zval *strategy, zval *defaultType);
+
+/* the constructor parameters every Template*Type twin declares; boundClass
+ * is the persistent literal of the twin's bound class (its parent) */
+#define PT_TEMPLATE_TYPE_CTOR_ARGS(boundClass) \
+	{ reg::obj("scope", ptcls::templateTypeScope), reg::obj("templateTypeStrategy", ptcls::templateTypeStrategy), reg::obj("templateTypeVariance", ptcls::templateTypeVariance), reg::stringArg("name"), reg::obj("bound", boundClass), reg::obj("default", ptcls::type, true) }
+
+/* the parsed constructor arguments (borrowed) */
+struct pt_template_ctor_args
+{
+	zval *scope;
+	zval *strategy;
+	zval *variance;
+	zend_string *name;
+	zval *bound;
+	zval *defaultType;
+};
+
+/* the constructor's parameter parsing, with the bound checked against the
+ * class's parent as the twin's typed parameter checks it; throws out of
+ * the handler on failure */
+#define PT_TEMPLATE_TYPE_PARSE_CTOR(args) \
+	ZEND_PARSE_PARAMETERS_START(6, 6) \
+		Z_PARAM_OBJECT((args).scope) \
+		Z_PARAM_OBJECT((args).strategy) \
+		Z_PARAM_OBJECT((args).variance) \
+		Z_PARAM_STR((args).name) \
+		Z_PARAM_OBJECT((args).bound) \
+		Z_PARAM_OBJECT_OR_NULL((args).defaultType) \
+	ZEND_PARSE_PARAMETERS_END(); \
+	if (UNEXPECTED(!pt_template_type_check_bound(EX(func)->common.scope, (args).bound, 5))) { \
+		RETURN_THROWS(); \
+	}
+
+/* the strategies (TemplateTypeArgumentStrategy.cpp,
+ * TemplateTypeParameterStrategy.cpp): new <Strategy>() and the accepts()
+ * bodies, for the trait's `$this->strategy->accepts($this, $type,
+ * $strictTypes)` direct path; UNDEF = pending exception */
+zv::Val pt_template_type_argument_strategy_create();
+zv::Val pt_template_type_parameter_strategy_create();
+zv::Val pt_template_type_argument_strategy_accepts(zval *left, zval *right, bool strictTypes);
+zv::Val pt_template_type_parameter_strategy_accepts(zval *left, zval *right, bool strictTypes);
+
+/* new GenericClassStringType($type) (the shadowing class,
+ * GenericClassStringType.cpp); UNDEF = pending exception */
+zv::Val pt_type_new_generic_class_string(zval *type);
+
+/* }}} */
+
+/* the Template*Type twins' shared bodies: new <Class>(...) with the bound
+ * checked as the twin's typed parameter checks it and the handle's
+ * construct() run; the constructor of a twin whose parent takes no
+ * arguments (parent::__construct(), then the trait's slot writes); the same
+ * template type rebuilt around another bound (an UNDEF bound passes a
+ * pending exception through). UNDEF / false = pending exception */
+template <typename Handle>
+zv::Val pt_template_type_create(zend_class_entry *ce, zval *scope, zval *strategy, zval *variance, zend_string *name, zval *bound, zval *defaultType)
+{
+	if (UNEXPECTED(!pt_template_type_check_bound(ce, bound, 5))) return zv::Val();
+	zval object;
+	if (UNEXPECTED(object_init_ex(&object, ce) != SUCCESS)) return zv::Val();
+	zv::Val created = zv::Val::adopt(object);
+	if (UNEXPECTED(!Handle(Z_OBJ(object)).construct(scope, strategy, variance, name, bound, defaultType))) return zv::Val();
+	return created;
+}
+
+inline bool pt_template_type_construct(zend_object *self, zend_class_entry *ce, zval *scope, zval *strategy, zval *variance, zend_string *name, zval *bound, zval *defaultType)
+{
+	if (UNEXPECTED(!pt_template_type_parent_construct(self, ce, 0, NULL))) return false;
+	pt_template_type_init(self, ce, scope, strategy, variance, name, bound, defaultType);
+	return true;
+}
+
+template <typename Handle>
+zv::Val pt_template_type_rebuild(zend_object *self, zend_class_entry *ce, zv::Val bound)
+{
+	if (UNEXPECTED(bound.isUndef())) return zv::Val();
+	zend_string *name = pt_template_type_name(self, ce);
+	if (UNEXPECTED(name == NULL)) return zv::Val();
+	zval *scope = pt_template_type_scope(self, ce);
+	zval *strategy = scope == NULL ? NULL : pt_template_type_strategy(self, ce);
+	zval *variance = strategy == NULL ? NULL : pt_template_type_variance(self, ce);
+	zval *defaultType = variance == NULL ? NULL : pt_template_type_default(self, ce);
+	if (UNEXPECTED(defaultType == NULL)) return zv::Val();
+	return Handle::create(scope, strategy, variance, name, bound.raw(), defaultType);
+}
+
 /* {{{ bodies the Type ports share verbatim — their members forward here */
 
 /* $this as an owned value (a new reference) */

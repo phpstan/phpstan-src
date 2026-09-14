@@ -36,6 +36,7 @@
 #include "generated/MaybeObjectTypeTrait.h"
 #include "generated/MaybeStringTypeTrait.h"
 #include "generated/LateResolvableTypeTrait.h"
+#include "generated/TemplateTypeTrait.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpragmas"
@@ -3571,6 +3572,1146 @@ void pt_type_trait_late_resolvable(reg::Class &cls)
 	cls.traitMethod(sigs::exponentiate, lrDelegate);
 	cls.traitMethod(sigs::getFiniteTypes, lrDelegate);
 	cls.traitMethod(sigs::resolve, lrResolve);
+	cls.traitMethod(sigs::hasTemplateOrLateResolvableType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		RETURN_TRUE;
+	});
+}
+
+/* }}} */
+
+/* {{{ TemplateTypeTrait (src/Type/Generic/TemplateTypeTrait.php) */
+
+/* the trait's six private properties, the class's last slots in this
+ * order (pt_type_trait_template_type() declares them so) */
+#define PT_TT_PROP_NAME 0
+#define PT_TT_PROP_SCOPE 1
+#define PT_TT_PROP_STRATEGY 2
+#define PT_TT_PROP_VARIANCE 3
+#define PT_TT_PROP_BOUND 4
+#define PT_TT_PROP_DEFAULT 5
+#define PT_TT_PROP_COUNT 6
+
+namespace phpstanturbo {
+
+/* Mirrors PHPStan\Type\Generic\TemplateTypeTrait, run on the object with
+ * `self` bound to scope — the class using the trait. State lives in the six
+ * slots the registrar declares on that class. */
+class TemplateTypeTrait
+{
+public:
+	TemplateTypeTrait(zend_object *self, zend_class_entry *scope) : self(self), scope(scope) {}
+
+	/* {{{ the slots */
+
+	static zval *slotOf(zend_object *object, zend_class_entry *scope, int index)
+	{
+		return OBJ_PROP_NUM(object, (uint32_t) scope->default_properties_count - PT_TT_PROP_COUNT + (uint32_t) index);
+	}
+
+	/* a slot read as the twin's typed-property read: NULL with an Error
+	 * pending when the constructor never ran */
+	[[nodiscard]] static zval *slotOrThrow(zend_object *object, zend_class_entry *scope, int index, const char *propertyName)
+	{
+		zval *slot = slotOf(object, scope, index);
+		if (UNEXPECTED(Z_TYPE_P(slot) == IS_UNDEF)) {
+			zend_throw_error(NULL, "Typed property %s::$%s must not be accessed before initialization", ZSTR_VAL(scope->name), propertyName);
+			return NULL;
+		}
+		return slot;
+	}
+
+	zval *nameSlot() const { return slotOrThrow(self, scope, PT_TT_PROP_NAME, "name"); }
+	zval *scopeSlot() const { return slotOrThrow(self, scope, PT_TT_PROP_SCOPE, "scope"); }
+	zval *strategySlot() const { return slotOrThrow(self, scope, PT_TT_PROP_STRATEGY, "strategy"); }
+	zval *varianceSlot() const { return slotOrThrow(self, scope, PT_TT_PROP_VARIANCE, "variance"); }
+	zval *boundSlot() const { return slotOrThrow(self, scope, PT_TT_PROP_BOUND, "bound"); }
+	zval *defaultSlot() const { return slotOrThrow(self, scope, PT_TT_PROP_DEFAULT, "default"); }
+
+	/* the constructor tail: the six slots written in the twin's order */
+	void init(zval *templateScope, zval *strategy, zval *variance, zend_string *name, zval *bound, zval *defaultType) const
+	{
+		zv::ObjRef object(self);
+		uint32_t base = (uint32_t) scope->default_properties_count - PT_TT_PROP_COUNT;
+		object.propAtWrite(base + PT_TT_PROP_SCOPE, zv::Val::copyOf(zv::Ref(templateScope)));
+		object.propAtWrite(base + PT_TT_PROP_STRATEGY, zv::Val::copyOf(zv::Ref(strategy)));
+		object.propAtWrite(base + PT_TT_PROP_VARIANCE, zv::Val::copyOf(zv::Ref(variance)));
+		object.propAtWrite(base + PT_TT_PROP_NAME, zv::Val::string(name));
+		object.propAtWrite(base + PT_TT_PROP_BOUND, zv::Val::copyOf(zv::Ref(bound)));
+		object.propAtWrite(base + PT_TT_PROP_DEFAULT, defaultType == NULL || Z_TYPE_P(defaultType) == IS_NULL ? zv::Val::null() : zv::Val::copyOf(zv::Ref(defaultType)));
+		for (int i = 0; i < PT_TT_PROP_COUNT; i++) {
+			Z_PROP_FLAG_P(OBJ_PROP_NUM(self, base + (uint32_t) i)) = 0; /* no longer IS_PROP_UNINIT */
+		}
+	}
+
+	/* }}} */
+
+	/* {{{ the $this-calls a PHP subclass may override: the slot when the
+	 * object is exactly the class using the trait, the method through its
+	 * class entry otherwise; UNDEF = pending exception */
+
+	bool isExact() const { return self->ce == scope; }
+
+	zv::Val thisCall(const char *lcname, size_t len, int slotIndex, const char *propertyName) const
+	{
+		if (EXPECTED(isExact())) {
+			zval *slot = slotOrThrow(self, scope, slotIndex, propertyName);
+			return slot == NULL ? zv::Val() : zv::Val::copyOf(zv::Ref(slot));
+		}
+		return pt_type_call(self, lcname, len, 0, NULL);
+	}
+
+	zv::Val thisGetName() const { return thisCall(PT_LC("getname"), PT_TT_PROP_NAME, "name"); }
+	zv::Val thisGetScope() const { return thisCall(PT_LC("getscope"), PT_TT_PROP_SCOPE, "scope"); }
+	zv::Val thisGetStrategy() const { return thisCall(PT_LC("getstrategy"), PT_TT_PROP_STRATEGY, "strategy"); }
+	zv::Val thisGetVariance() const { return thisCall(PT_LC("getvariance"), PT_TT_PROP_VARIANCE, "variance"); }
+	zv::Val thisGetDefault() const { return thisCall(PT_LC("getdefault"), PT_TT_PROP_DEFAULT, "default"); }
+
+	/* $this->getBound(), checked to be a Type (the twin's return type) */
+	zv::Val thisGetBound() const
+	{
+		zv::Val bound = thisCall(PT_LC("getbound"), PT_TT_PROP_BOUND, "bound");
+		if (UNEXPECTED(bound.isUndef())) return zv::Val();
+		if (UNEXPECTED(!zv::Ref(bound.raw()).isObject())) {
+			zend_type_error("phpstan_turbo: %s::getBound() must return %s, %s returned", ZSTR_VAL(self->ce->name), ptcls::type, zend_zval_value_name(bound.raw()));
+			return zv::Val();
+		}
+		return bound;
+	}
+
+	/* $this->isArgument(); false = pending exception */
+	[[nodiscard]] bool thisIsArgument(bool &out) const
+	{
+		if (EXPECTED(isExact())) return isArgument(out);
+		zv::Val result = pt_type_call(self, PT_LC("isargument"), 0, NULL);
+		if (UNEXPECTED(result.isUndef())) return false;
+		out = zend_is_true(result.raw());
+		return true;
+	}
+
+	/* $this->isSuperTypeOf($type) / $this->isSubTypeOf($type) /
+	 * $this->isNull() / $this->getObjectClassNames() */
+	zv::Val thisIsSuperTypeOf(zval *type) const
+	{
+		return isExact() ? isSuperTypeOf(type) : pt_type_call(self, PT_LC("issupertypeof"), 1, type);
+	}
+
+	zv::Val thisIsSubTypeOf(zval *type) const
+	{
+		return isExact() ? isSubTypeOf(type) : pt_type_call(self, PT_LC("issubtypeof"), 1, type);
+	}
+
+	/* }}} */
+
+	/* {{{ TemplateTypeFactory::create($this->getScope(), $this->getName(),
+	 * $bound, $this->getVariance(), $this->getStrategy(), $default) — the
+	 * rebuild every mutator ends in; UNDEF = pending exception */
+
+	zv::Val recreate(zval *bound, zval *defaultType) const
+	{
+		zv::Val templateScope = thisGetScope();
+		if (UNEXPECTED(templateScope.isUndef())) return zv::Val();
+		zv::Val name = thisGetName();
+		if (UNEXPECTED(name.isUndef())) return zv::Val();
+		zv::Val variance = thisGetVariance();
+		if (UNEXPECTED(variance.isUndef())) return zv::Val();
+		zv::Val strategy = thisGetStrategy();
+		if (UNEXPECTED(strategy.isUndef())) return zv::Val();
+		return pt_template_type_factory_create(templateScope.raw(), name.raw(), bound, variance.raw(), strategy.raw(), defaultType);
+	}
+
+	/* the same over $this->getDefault() */
+	zv::Val recreateKeepingDefault(zval *bound) const
+	{
+		zv::Val defaultType = thisGetDefault();
+		if (UNEXPECTED(defaultType.isUndef())) return zv::Val();
+		return recreate(bound, defaultType.raw());
+	}
+
+	/* }}} */
+
+	/* {{{ the methods, in the trait's order */
+
+	/* the `fn () => $this->default->describe($level)` of describe():
+	 * state0 is $this->default, state1 the level */
+	static void describeDefault(zval *state0, zval *state1, uint32_t argc, zval *argv, zval *return_value)
+	{
+		zv::Val described = pt_type_call(Z_OBJ_P(state0), PT_LC("describe"), 1, state1);
+		if (UNEXPECTED(described.isUndef())) return;
+		described.intoReturnValue(return_value);
+	}
+
+	/* the $basicDescription closure: the name, ` of <bound>` unless the
+	 * bound is a plain mixed, ` = <default>` unless describing it recurses;
+	 * an owned string, UNDEF = pending exception */
+	zv::Val basicDescription(zval *level) const
+	{
+		zval *name = nameSlot();
+		if (UNEXPECTED(name == NULL)) return zv::Val();
+		zval *bound = boundSlot();
+		if (UNEXPECTED(bound == NULL)) return zv::Val();
+		zval *defaultType = defaultSlot();
+		if (UNEXPECTED(defaultType == NULL)) return zv::Val();
+		smart_str description = {0, 0};
+		smart_str_append(&description, Z_STR_P(name));
+
+		/* $this->bound instanceof MixedType && $this->bound->getSubtractedType() === null && !$this->bound instanceof TemplateMixedType */
+		bool plainMixed = false;
+		if (zv::Ref(bound).instanceOf(pt_ce_mixed_type)) {
+			zv::Val subtracted = pt_type_call(Z_OBJ_P(bound), PT_LC("getsubtractedtype"), 0, NULL);
+			if (UNEXPECTED(subtracted.isUndef())) {
+				smart_str_free(&description);
+				return zv::Val();
+			}
+			plainMixed = zv::Ref(subtracted.raw()).isNull() && !zv::Ref(bound).instanceOf(pt_ce_template_mixed_type);
+		}
+		if (!plainMixed) {
+			zv::Val boundDescription = pt_type_call(Z_OBJ_P(bound), PT_LC("describe"), 1, level);
+			if (UNEXPECTED(boundDescription.isUndef())) {
+				smart_str_free(&description);
+				return zv::Val();
+			}
+			if (UNEXPECTED(!zv::Ref(boundDescription.raw()).isString())) {
+				smart_str_free(&description);
+				zend_type_error("phpstan_turbo: %s::describe() must return string", ZSTR_VAL(Z_OBJCE_P(bound)->name));
+				return zv::Val();
+			}
+			smart_str_appendl(&description, " of ", 4);
+			smart_str_append(&description, Z_STR_P(boundDescription.raw()));
+		}
+		if (Z_TYPE_P(defaultType) == IS_OBJECT) {
+			zv::Val callback = pt_type_native_callback(describeDefault, defaultType, level);
+			if (UNEXPECTED(callback.isUndef())) {
+				smart_str_free(&description);
+				return zv::Val();
+			}
+			zv::Val guarded = pt_type_recursion_guard_run_on_object_identity(defaultType, callback.raw());
+			if (UNEXPECTED(guarded.isUndef())) {
+				smart_str_free(&description);
+				return zv::Val();
+			}
+			if (!zv::Ref(guarded.raw()).instanceOf(pt_ce_error_type)) {
+				if (UNEXPECTED(!zv::Ref(guarded.raw()).isString())) {
+					smart_str_free(&description);
+					zend_type_error("phpstan_turbo: %s::describe() must return string", ZSTR_VAL(Z_OBJCE_P(defaultType)->name));
+					return zv::Val();
+				}
+				smart_str_appendl(&description, " = ", 3);
+				smart_str_append(&description, Z_STR_P(guarded.raw()));
+			}
+		}
+		smart_str_0(&description);
+		return zv::Val::adoptString(smart_str_extract(&description));
+	}
+
+	/* $level->handle($basic, $basic, fn () => '<basic> (<scope>, argument|parameter)') */
+	zv::Val describe(zval *level) const
+	{
+		pt_verbosity_case which;
+		if (UNEXPECTED(!pt_type_verbosity_case(level, which))) return zv::Val();
+		zv::Val basic = basicDescription(level);
+		if (UNEXPECTED(basic.isUndef())) return zv::Val();
+		if (which == PT_VERBOSITY_TYPE_ONLY || which == PT_VERBOSITY_VALUE) return basic;
+		/* the precise callback; handle() falls back to it for the cache
+		 * level too, no cache callback being given */
+		zval *templateScope = scopeSlot();
+		if (UNEXPECTED(templateScope == NULL)) return zv::Val();
+		zv::Val scopeDescription = pt_type_call(Z_OBJ_P(templateScope), PT_LC("describe"), 0, NULL);
+		if (UNEXPECTED(scopeDescription.isUndef())) return zv::Val();
+		if (UNEXPECTED(!zv::Ref(scopeDescription.raw()).isString())) {
+			zend_type_error("phpstan_turbo: %s::describe() must return string", ZSTR_VAL(Z_OBJCE_P(templateScope)->name));
+			return zv::Val();
+		}
+		bool argument;
+		if (UNEXPECTED(!thisIsArgument(argument))) return zv::Val();
+		smart_str description = {0, 0};
+		smart_str_append(&description, Z_STR_P(basic.raw()));
+		smart_str_appendl(&description, " (", 2);
+		smart_str_append(&description, Z_STR_P(scopeDescription.raw()));
+		smart_str_appendl(&description, ", ", 2);
+		if (argument) {
+			smart_str_appendl(&description, "argument", sizeof("argument") - 1);
+		} else {
+			smart_str_appendl(&description, "parameter", sizeof("parameter") - 1);
+		}
+		smart_str_appendc(&description, ')');
+		smart_str_0(&description);
+		return zv::Val::adoptString(smart_str_extract(&description));
+	}
+
+	/* $this->strategy->isArgument(); false = pending exception */
+	[[nodiscard]] bool isArgument(bool &out) const
+	{
+		zval *strategy = strategySlot();
+		if (UNEXPECTED(strategy == NULL)) return false;
+		zend_class_entry *ce = Z_OBJCE_P(strategy);
+		if (EXPECTED(ce == pt_ce_template_type_argument_strategy)) {
+			out = true;
+			return true;
+		}
+		if (EXPECTED(ce == pt_ce_template_type_parameter_strategy)) {
+			out = false;
+			return true;
+		}
+		zv::Val result = pt_type_call(Z_OBJ_P(strategy), PT_LC("isargument"), 0, NULL);
+		if (UNEXPECTED(result.isUndef())) return false;
+		out = zend_is_true(result.raw());
+		return true;
+	}
+
+	/* TemplateTypeHelper::toArgument($type) */
+	static zv::Val helperToArgument(zval *type)
+	{
+		return pt_type_template_type_helper_to_argument(type);
+	}
+
+	/* TemplateTypeFactory::create($this->scope, $this->name, TemplateTypeHelper::toArgument($this->getBound()), $this->variance, new TemplateTypeArgumentStrategy(), <default to argument>) */
+	zv::Val toArgument() const
+	{
+		zval *templateScope = scopeSlot();
+		if (UNEXPECTED(templateScope == NULL)) return zv::Val();
+		zval *name = nameSlot();
+		if (UNEXPECTED(name == NULL)) return zv::Val();
+		zv::Val bound = thisGetBound();
+		if (UNEXPECTED(bound.isUndef())) return zv::Val();
+		zv::Val argumentBound = helperToArgument(bound.raw());
+		if (UNEXPECTED(argumentBound.isUndef())) return zv::Val();
+		zval *variance = varianceSlot();
+		if (UNEXPECTED(variance == NULL)) return zv::Val();
+		zv::Val strategy = pt_template_type_argument_strategy_create();
+		if (UNEXPECTED(strategy.isUndef())) return zv::Val();
+		zval *defaultType = defaultSlot();
+		if (UNEXPECTED(defaultType == NULL)) return zv::Val();
+		zv::Val argumentDefault;
+		if (Z_TYPE_P(defaultType) == IS_OBJECT) {
+			argumentDefault = helperToArgument(defaultType);
+			if (UNEXPECTED(argumentDefault.isUndef())) return zv::Val();
+		}
+		return pt_template_type_factory_create(templateScope, name, argumentBound.raw(), variance, strategy.raw(), argumentDefault.isUndef() ? NULL : argumentDefault.raw());
+	}
+
+	/* $this->variance->isValidVariance($this, $a, $b, $strict) */
+	zv::Val isValidVariance(zval *a, zval *b, bool strict) const
+	{
+		zval *variance = varianceSlot();
+		if (UNEXPECTED(variance == NULL)) return zv::Val();
+		zv::Args args{self, a, b, strict};
+		return pt_type_call(Z_OBJ_P(variance), PT_LC("isvalidvariance"), 4, args);
+	}
+
+	/* the rebuild over TypeCombinator::remove($this->getBound(), $typeToRemove) */
+	zv::Val subtract(zval *typeToRemove) const
+	{
+		zv::Val bound = thisGetBound();
+		if (UNEXPECTED(bound.isUndef())) return zv::Val();
+		zv::Val removedBound = pt_type_combinator_remove(bound.raw(), typeToRemove);
+		if (UNEXPECTED(removedBound.isUndef())) return zv::Val();
+		return recreateKeepingDefault(removedBound.raw());
+	}
+
+	/* $bound instanceof SubtractableType; false = pending exception */
+	[[nodiscard]] static bool isSubtractable(zval *bound, bool &out)
+	{
+		return pt_type_instanceof(bound, PT_CLASS_SUBTRACTABLE_TYPE, out);
+	}
+
+	/* $this for a bound that is not subtractable, else the rebuild over
+	 * $bound->getTypeWithoutSubtractedType() */
+	zv::Val getTypeWithoutSubtractedType() const
+	{
+		zv::Val bound = thisGetBound();
+		if (UNEXPECTED(bound.isUndef())) return zv::Val();
+		bool subtractable;
+		if (UNEXPECTED(!isSubtractable(bound.raw(), subtractable))) return zv::Val();
+		if (!subtractable) return thisObject();
+		zv::Val withoutSubtracted = pt_type_call(Z_OBJ_P(bound.raw()), PT_LC("gettypewithoutsubtractedtype"), 0, NULL);
+		if (UNEXPECTED(withoutSubtracted.isUndef())) return zv::Val();
+		return recreateKeepingDefault(withoutSubtracted.raw());
+	}
+
+	/* $this for a bound that is not subtractable, else the rebuild over
+	 * $bound->changeSubtractedType($subtractedType) */
+	zv::Val changeSubtractedType(zval *subtractedType) const
+	{
+		zv::Val bound = thisGetBound();
+		if (UNEXPECTED(bound.isUndef())) return zv::Val();
+		bool subtractable;
+		if (UNEXPECTED(!isSubtractable(bound.raw(), subtractable))) return zv::Val();
+		if (!subtractable) return thisObject();
+		zv::Val changed = pt_type_call(Z_OBJ_P(bound.raw()), PT_LC("changesubtractedtype"), 1, subtractedType);
+		if (UNEXPECTED(changed.isUndef())) return zv::Val();
+		return recreateKeepingDefault(changed.raw());
+	}
+
+	/* null for a bound that is not subtractable, else $bound->getSubtractedType() */
+	zv::Val getSubtractedType() const
+	{
+		zv::Val bound = thisGetBound();
+		if (UNEXPECTED(bound.isUndef())) return zv::Val();
+		bool subtractable;
+		if (UNEXPECTED(!isSubtractable(bound.raw(), subtractable))) return zv::Val();
+		if (!subtractable) return zv::Val::null();
+		return pt_type_call(Z_OBJ_P(bound.raw()), PT_LC("getsubtractedtype"), 0, NULL);
+	}
+
+	/* $type instanceof self && $type->scope->equals($this->scope) && $type->name === $this->name && $this->bound->equals($type->bound) && <defaults both null or equal>; false = pending exception */
+	[[nodiscard]] bool equals(zval *type, bool &out) const
+	{
+		out = false;
+		if (!instanceof_function(Z_OBJCE_P(type), scope)) return true;
+		zend_object *that = Z_OBJ_P(type);
+		zval *thatScope = slotOrThrow(that, scope, PT_TT_PROP_SCOPE, "scope");
+		if (UNEXPECTED(thatScope == NULL)) return false;
+		zval *thisScope = scopeSlot();
+		if (UNEXPECTED(thisScope == NULL)) return false;
+		zv::Val scopesEqual = pt_type_call(Z_OBJ_P(thatScope), PT_LC("equals"), 1, thisScope);
+		if (UNEXPECTED(scopesEqual.isUndef())) return false;
+		if (!zend_is_true(scopesEqual.raw())) return true;
+		zval *thatName = slotOrThrow(that, scope, PT_TT_PROP_NAME, "name");
+		if (UNEXPECTED(thatName == NULL)) return false;
+		zval *thisName = nameSlot();
+		if (UNEXPECTED(thisName == NULL)) return false;
+		if (!zend_string_equals(Z_STR_P(thatName), Z_STR_P(thisName))) return true;
+		zval *thisBound = boundSlot();
+		if (UNEXPECTED(thisBound == NULL)) return false;
+		zval *thatBound = slotOrThrow(that, scope, PT_TT_PROP_BOUND, "bound");
+		if (UNEXPECTED(thatBound == NULL)) return false;
+		zv::Val boundsEqual = pt_type_call(Z_OBJ_P(thisBound), PT_LC("equals"), 1, thatBound);
+		if (UNEXPECTED(boundsEqual.isUndef())) return false;
+		if (!zend_is_true(boundsEqual.raw())) return true;
+		zval *thisDefault = defaultSlot();
+		if (UNEXPECTED(thisDefault == NULL)) return false;
+		zval *thatDefault = slotOrThrow(that, scope, PT_TT_PROP_DEFAULT, "default");
+		if (UNEXPECTED(thatDefault == NULL)) return false;
+		if (Z_TYPE_P(thisDefault) != IS_OBJECT) {
+			out = Z_TYPE_P(thatDefault) != IS_OBJECT;
+			return true;
+		}
+		if (Z_TYPE_P(thatDefault) != IS_OBJECT) return true;
+		return pt_type_call_bool(Z_OBJ_P(thisDefault), PT_LC("equals"), 1, thatDefault, out);
+	}
+
+	/* the shared head of isAcceptedBy() and isSubTypeOf(): whether the other
+	 * type is a compound (union / intersection) that is neither an instance
+	 * of the bound's class nor a class of $this nor a template type — the
+	 * case delegated back to it; false = pending exception */
+	[[nodiscard]] bool delegatesToCompound(zval *other, zval *bound, bool &out) const
+	{
+		out = false;
+		zend_class_entry *otherCe = Z_OBJCE_P(other);
+		if (instanceof_function(otherCe, Z_OBJCE_P(bound)) || instanceof_function(self->ce, otherCe)) return true;
+		bool isTemplate;
+		if (UNEXPECTED(!pt_type_instanceof(other, PT_CLASS_TEMPLATE_TYPE, isTemplate))) return false;
+		if (isTemplate) return true;
+		out = instanceof_function(otherCe, pt_ce_union_type) || instanceof_function(otherCe, pt_ce_intersection_type);
+		return true;
+	}
+
+	/* $this->getScope()->equals($other->getScope()) && $this->getName() === $other->getName(); false = pending exception */
+	[[nodiscard]] bool sameTemplate(zval *other, bool &out) const
+	{
+		out = false;
+		zv::Val thisScope = thisGetScope();
+		if (UNEXPECTED(thisScope.isUndef())) return false;
+		zv::Val otherScope = pt_type_call(Z_OBJ_P(other), PT_LC("getscope"), 0, NULL);
+		if (UNEXPECTED(otherScope.isUndef())) return false;
+		if (UNEXPECTED(!zv::Ref(thisScope.raw()).isObject())) {
+			zend_type_error("phpstan_turbo: %s::getScope() must return %s", ZSTR_VAL(self->ce->name), ptcls::templateTypeScope);
+			return false;
+		}
+		zv::Val scopesEqual = pt_type_call(Z_OBJ_P(thisScope.raw()), PT_LC("equals"), 1, otherScope.raw());
+		if (UNEXPECTED(scopesEqual.isUndef())) return false;
+		if (!zend_is_true(scopesEqual.raw())) return true;
+		zv::Val thisName = thisGetName();
+		if (UNEXPECTED(thisName.isUndef())) return false;
+		zv::Val otherName = pt_type_call(Z_OBJ_P(other), PT_LC("getname"), 0, NULL);
+		if (UNEXPECTED(otherName.isUndef())) return false;
+		out = zv::Ref(thisName.raw()).isString() && zv::Ref(otherName.raw()).isString() && zend_string_equals(Z_STR_P(thisName.raw()), Z_STR_P(otherName.raw()));
+		return true;
+	}
+
+	/* $other->getBound(), checked to be a Type */
+	static zv::Val boundOf(zval *other)
+	{
+		zv::Val bound = pt_type_call(Z_OBJ_P(other), PT_LC("getbound"), 0, NULL);
+		if (UNEXPECTED(bound.isUndef())) return zv::Val();
+		if (UNEXPECTED(!zv::Ref(bound.raw()).isObject())) {
+			zend_type_error("phpstan_turbo: %s::getBound() must return %s, %s returned", ZSTR_VAL(Z_OBJCE_P(other)->name), ptcls::type, zend_zval_value_name(bound.raw()));
+			return zv::Val();
+		}
+		return bound;
+	}
+
+	zv::Val isAcceptedBy(zval *acceptingType, bool strictTypes) const
+	{
+		zv::Val bound = thisGetBound();
+		if (UNEXPECTED(bound.isUndef())) return zv::Val();
+		zval args[2];
+		ZVAL_BOOL(&args[1], strictTypes);
+		bool delegate;
+		if (UNEXPECTED(!delegatesToCompound(acceptingType, bound.raw(), delegate))) return zv::Val();
+		if (delegate) {
+			/* $acceptingType->accepts($this, $strictTypes) */
+			ZVAL_OBJ(&args[0], self);
+			return pt_type_call(Z_OBJ_P(acceptingType), PT_LC("accepts"), 2, args);
+		}
+		bool isTemplate;
+		if (UNEXPECTED(!pt_type_instanceof(acceptingType, PT_CLASS_TEMPLATE_TYPE, isTemplate))) return zv::Val();
+		if (!isTemplate) {
+			/* $acceptingType->accepts($this->getBound(), $strictTypes) */
+			zv::Val thisBound = thisGetBound();
+			if (UNEXPECTED(thisBound.isUndef())) return zv::Val();
+			ZVAL_COPY_VALUE(&args[0], thisBound.raw());
+			return pt_type_call(Z_OBJ_P(acceptingType), PT_LC("accepts"), 2, args);
+		}
+		bool same;
+		if (UNEXPECTED(!sameTemplate(acceptingType, same))) return zv::Val();
+		/* $acceptingType->getBound()->accepts($this->getBound(), $strictTypes) */
+		zv::Val acceptingBound = boundOf(acceptingType);
+		if (UNEXPECTED(acceptingBound.isUndef())) return zv::Val();
+		zv::Val thisBound = thisGetBound();
+		if (UNEXPECTED(thisBound.isUndef())) return zv::Val();
+		ZVAL_COPY_VALUE(&args[0], thisBound.raw());
+		zv::Val accepts = pt_type_call(Z_OBJ_P(acceptingBound.raw()), PT_LC("accepts"), 2, args);
+		if (same || UNEXPECTED(accepts.isUndef())) return accepts;
+		/* ->and(new AcceptsResult(TrinaryLogic::createMaybe(), [])) */
+		zv::Val maybe = pt_type_new_accepts_result(PT_TRI_MAYBE);
+		if (UNEXPECTED(maybe.isUndef())) return zv::Val();
+		return pt_type_result_and(std::move(accepts), maybe.raw());
+	}
+
+	/* $this->strategy->accepts($this, $type, $strictTypes) — the native
+	 * strategies' bodies directly */
+	zv::Val accepts(zval *type, bool strictTypes) const
+	{
+		zval *strategy = strategySlot();
+		if (UNEXPECTED(strategy == NULL)) return zv::Val();
+		zval thisValue;
+		ZVAL_OBJ(&thisValue, self);
+		zend_class_entry *ce = Z_OBJCE_P(strategy);
+		if (EXPECTED(ce == pt_ce_template_type_argument_strategy)) return pt_template_type_argument_strategy_accepts(&thisValue, type, strictTypes);
+		if (EXPECTED(ce == pt_ce_template_type_parameter_strategy)) return pt_template_type_parameter_strategy_accepts(&thisValue, type, strictTypes);
+		zv::Args args{&thisValue, type, strictTypes};
+		return pt_type_call(Z_OBJ_P(strategy), PT_LC("accepts"), 3, args);
+	}
+
+	zv::Val isSuperTypeOf(zval *type) const
+	{
+		bool isTemplate;
+		if (UNEXPECTED(!pt_type_instanceof(type, PT_CLASS_TEMPLATE_TYPE, isTemplate))) return zv::Val();
+		if (isTemplate || instanceof_function(Z_OBJCE_P(type), pt_ce_intersection_type)) {
+			/* $type->isSubTypeOf($this) */
+			zval thisValue;
+			ZVAL_OBJ(&thisValue, self);
+			return pt_type_call(Z_OBJ_P(type), PT_LC("issubtypeof"), 1, &thisValue);
+		}
+		if (instanceof_function(Z_OBJCE_P(type), pt_ce_never_type)) return pt_type_is_super_type_of_result(PT_TRI_YES);
+		/* $this->getBound()->isSuperTypeOf($type)->and(IsSuperTypeOfResult::createMaybe()) */
+		zv::Val bound = thisGetBound();
+		if (UNEXPECTED(bound.isUndef())) return zv::Val();
+		zv::Val result = pt_type_call(Z_OBJ_P(bound.raw()), PT_LC("issupertypeof"), 1, type);
+		if (UNEXPECTED(result.isUndef())) return zv::Val();
+		zv::Val maybe = pt_type_is_super_type_of_result(PT_TRI_MAYBE);
+		if (UNEXPECTED(maybe.isUndef())) return zv::Val();
+		return pt_type_result_and(std::move(result), maybe.raw());
+	}
+
+	zv::Val isSubTypeOf(zval *type) const
+	{
+		zv::Val bound = thisGetBound();
+		if (UNEXPECTED(bound.isUndef())) return zv::Val();
+		bool delegate;
+		if (UNEXPECTED(!delegatesToCompound(type, bound.raw(), delegate))) return zv::Val();
+		zval thisValue;
+		ZVAL_OBJ(&thisValue, self);
+		if (delegate) {
+			/* $type->isSuperTypeOf($this) */
+			return pt_type_call(Z_OBJ_P(type), PT_LC("issupertypeof"), 1, &thisValue);
+		}
+		bool isTemplate;
+		if (UNEXPECTED(!pt_type_instanceof(type, PT_CLASS_TEMPLATE_TYPE, isTemplate))) return zv::Val();
+		if (!isTemplate) {
+			/* $type->isSuperTypeOf($this->getBound()) */
+			zv::Val thisBound = thisGetBound();
+			if (UNEXPECTED(thisBound.isUndef())) return zv::Val();
+			return pt_type_call(Z_OBJ_P(type), PT_LC("issupertypeof"), 1, thisBound.raw());
+		}
+		bool same;
+		if (UNEXPECTED(!sameTemplate(type, same))) return zv::Val();
+		/* $type->getBound()->isSuperTypeOf($this->getBound()) */
+		zv::Val otherBound = boundOf(type);
+		if (UNEXPECTED(otherBound.isUndef())) return zv::Val();
+		zv::Val thisBound = thisGetBound();
+		if (UNEXPECTED(thisBound.isUndef())) return zv::Val();
+		zv::Val result = pt_type_call(Z_OBJ_P(otherBound.raw()), PT_LC("issupertypeof"), 1, thisBound.raw());
+		if (same || UNEXPECTED(result.isUndef())) return result;
+		/* ->and(IsSuperTypeOfResult::createMaybe()) */
+		zv::Val maybe = pt_type_is_super_type_of_result(PT_TRI_MAYBE);
+		if (UNEXPECTED(maybe.isUndef())) return zv::Val();
+		return pt_type_result_and(std::move(result), maybe.raw());
+	}
+
+	/* $this (toArrayKey(), toCoercedArgumentType()) */
+	zv::Val thisObject() const
+	{
+		zval thisValue;
+		ZVAL_OBJ_COPY(&thisValue, self);
+		return zv::Val::adopt(thisValue);
+	}
+
+	/* new NullType() for a null template, the literal class name for a
+	 * bound that is one known final class, class-string<T>&literal-string
+	 * otherwise */
+	zv::Val toClassConstantType(zval *reflectionProvider) const
+	{
+		zend_long isNull = pt_type_call_trinary(self, PT_LC("isnull"), 0, NULL);
+		if (UNEXPECTED(isNull < 0)) return zv::Val();
+		if (isNull == PT_TRI_YES) {
+			return pt_val_of<pt_null_type_new>();
+		}
+		zv::Val classNames = pt_type_call(self, PT_LC("getobjectclassnames"), 0, NULL);
+		if (UNEXPECTED(classNames.isUndef())) return zv::Val();
+		if (UNEXPECTED(!zv::Ref(classNames.raw()).isArray())) {
+			zend_type_error("phpstan_turbo: %s::getObjectClassNames() must return array", ZSTR_VAL(self->ce->name));
+			return zv::Val();
+		}
+		if (zv::ArrRef(classNames.raw()).size() == 1) {
+			zv::Ref className = zv::ArrRef(classNames.raw()).findIndex(0);
+			if (className.raw() != NULL && className.isString()) {
+				zv::Val hasClass = pt_type_call(Z_OBJ_P(reflectionProvider), PT_LC("hasclass"), 1, className.raw());
+				if (UNEXPECTED(hasClass.isUndef())) return zv::Val();
+				if (zend_is_true(hasClass.raw())) {
+					zv::Val reflection = pt_type_call(Z_OBJ_P(reflectionProvider), PT_LC("getclass"), 1, className.raw());
+					if (UNEXPECTED(reflection.isUndef())) return zv::Val();
+					if (UNEXPECTED(!zv::Ref(reflection.raw()).isObject())) {
+						zend_type_error("phpstan_turbo: ReflectionProvider::getClass() must return an object");
+						return zv::Val();
+					}
+					zv::Val isFinal = pt_type_call(Z_OBJ_P(reflection.raw()), PT_LC("isfinalbykeyword"), 0, NULL);
+					if (UNEXPECTED(isFinal.isUndef())) return zv::Val();
+					if (zend_is_true(isFinal.raw())) {
+						zv::Val reflectionName = pt_type_call(Z_OBJ_P(reflection.raw()), PT_LC("getname"), 0, NULL);
+						if (UNEXPECTED(reflectionName.isUndef())) return zv::Val();
+						if (UNEXPECTED(!zv::Ref(reflectionName.raw()).isString())) {
+							zend_type_error("phpstan_turbo: ClassReflection::getName() must return string");
+							return zv::Val();
+						}
+						zval constantString;
+						if (UNEXPECTED(!pt_constant_string_type_new(&constantString, Z_STR_P(reflectionName.raw()), true))) return zv::Val();
+						return zv::Val::adopt(constantString);
+					}
+				}
+			}
+		}
+		/* new IntersectionType([new GenericClassStringType($this), new AccessoryLiteralStringType()]) */
+		zval thisValue;
+		ZVAL_OBJ(&thisValue, self);
+		zv::Val classString = pt_type_new_generic_class_string(&thisValue);
+		if (UNEXPECTED(classString.isUndef())) return zv::Val();
+		zval literal;
+		if (UNEXPECTED(!pt_accessory_literal_string_type_new(&literal))) return zv::Val();
+		zv::Arr members = zv::Arr::create(2);
+		members.push(std::move(classString));
+		members.push(zv::Val::adopt(literal));
+		return pt_intersection_of(std::move(members));
+	}
+
+	/* new TemplateTypeMap([$this->name => $type]) */
+	zv::Val mapOf(zval *type) const
+	{
+		zval *name = nameSlot();
+		if (UNEXPECTED(name == NULL)) return zv::Val();
+		zv::Arr types = zv::Arr::create(1);
+		types.set(Z_STR_P(name), zv::Val::copyOf(zv::Ref(type)));
+		zv::Val map; /* stays UNDEF when the constructor fails */
+		pt_template_type_map_new(map.raw(), types.raw());
+		return map;
+	}
+
+	zv::Val inferTemplateTypes(zval *receivedTypeIn) const
+	{
+		/* $receivedType = TemplateTypeHelper::removeFinalByKeywordOverrides($receivedType) */
+		zv::Val received = pt_type_call_static_ce(pt_ce_template_type_helper, PT_LC("removefinalbykeywordoverrides"), 1, receivedTypeIn);
+		if (UNEXPECTED(received.isUndef())) return zv::Val();
+		if (UNEXPECTED(!zv::Ref(received.raw()).isObject())) {
+			zend_type_error("phpstan_turbo: TemplateTypeHelper::removeFinalByKeywordOverrides() must return %s", ptcls::type);
+			return zv::Val();
+		}
+		zval *receivedType = received.raw();
+		zv::Val bound = thisGetBound();
+		if (UNEXPECTED(bound.isUndef())) return zv::Val();
+		bool isTemplate;
+		if (UNEXPECTED(!pt_type_instanceof(receivedType, PT_CLASS_TEMPLATE_TYPE, isTemplate))) return zv::Val();
+		if (isTemplate) {
+			/* $this->getBound()->isSuperTypeOf($receivedType->getBound())->yes() */
+			zv::Val receivedBound = boundOf(receivedType);
+			if (UNEXPECTED(receivedBound.isUndef())) return zv::Val();
+			zv::Val superOfBound = pt_type_call(Z_OBJ_P(bound.raw()), PT_LC("issupertypeof"), 1, receivedBound.raw());
+			if (UNEXPECTED(superOfBound.isUndef())) return zv::Val();
+			zend_long value = pt_type_result_trinary(superOfBound.raw());
+			if (UNEXPECTED(value < 0)) return zv::Val();
+			if (value == PT_TRI_YES) return mapOf(receivedType);
+		}
+
+		/* $map = $this->getBound()->inferTemplateTypes($receivedType) */
+		zv::Val map = pt_type_call(Z_OBJ_P(bound.raw()), PT_LC("infertemplatetypes"), 1, receivedType);
+		if (UNEXPECTED(map.isUndef())) return zv::Val();
+		/* TypeUtils::resolveLateResolvableTypes(TemplateTypeHelper::resolveTemplateTypes($this->getBound(), $map, TemplateTypeVarianceMap::createEmpty(), TemplateTypeVariance::createStatic())) */
+		zv::Val varianceMap = pt_callable_template_type_variance_map_empty();
+		if (UNEXPECTED(varianceMap.isUndef())) return zv::Val();
+		zval *staticVariance = pt_template_type_variance_singleton(PT_TEMPLATE_TYPE_VARIANCE_STATIC);
+		if (UNEXPECTED(staticVariance == NULL)) return zv::Val();
+		zv::Val resolvedTemplates = pt_type_template_type_helper_resolve_template_types(bound.raw(), map.raw(), varianceMap.raw(), staticVariance, false);
+		if (UNEXPECTED(resolvedTemplates.isUndef())) return zv::Val();
+		zv::Val resolvedBound = pt_type_call_static_ce(pt_ce_type_utils, PT_LC("resolvelateresolvabletypes"), 1, resolvedTemplates.raw());
+		if (UNEXPECTED(resolvedBound.isUndef())) return zv::Val();
+		if (UNEXPECTED(!zv::Ref(resolvedBound.raw()).isObject())) {
+			zend_type_error("phpstan_turbo: TypeUtils::resolveLateResolvableTypes() must return %s", ptcls::type);
+			return zv::Val();
+		}
+		zv::Val boundMatches = pt_type_call(Z_OBJ_P(resolvedBound.raw()), PT_LC("issupertypeof"), 1, receivedType);
+		if (UNEXPECTED(boundMatches.isUndef())) return zv::Val();
+		zend_long matches = pt_type_result_trinary(boundMatches.raw());
+		if (UNEXPECTED(matches < 0)) return zv::Val();
+		if (matches == PT_TRI_YES) return unionWithMap(mapOf(receivedType), map.raw());
+
+		if (matches == PT_TRI_MAYBE && instanceof_function(Z_OBJCE_P(receivedType), pt_ce_union_type)) {
+			zv::Val innerTypes = pt_union_type_get_types(Z_OBJ_P(receivedType));
+			if (UNEXPECTED(innerTypes.isUndef())) return zv::Val();
+			if (UNEXPECTED(!zv::Ref(innerTypes.raw()).isArray())) {
+				zend_type_error("phpstan_turbo: %s::getTypes() must return array", ZSTR_VAL(Z_OBJCE_P(receivedType)->name));
+				return zv::Val();
+			}
+			zv::Arr matchingTypes = zv::Arr::create(zv::ArrRef(innerTypes.raw()).size());
+			for (zv::ArrayEntry entry : zv::ArrRef(innerTypes.raw())) {
+				zv::Ref innerType = entry.value().deref();
+				if (UNEXPECTED(!innerType.isObject())) {
+					zend_type_error("phpstan_turbo: %s::getTypes() must return a list of types", ZSTR_VAL(Z_OBJCE_P(receivedType)->name));
+					return zv::Val();
+				}
+				zv::Val innerMatches = pt_type_call(Z_OBJ_P(resolvedBound.raw()), PT_LC("issupertypeof"), 1, innerType.raw());
+				if (UNEXPECTED(innerMatches.isUndef())) return zv::Val();
+				zend_long innerValue = pt_type_result_trinary(innerMatches.raw());
+				if (UNEXPECTED(innerValue < 0)) return zv::Val();
+				if (innerValue != PT_TRI_YES) continue;
+				matchingTypes.push(innerType);
+			}
+			if (matchingTypes.arrRef().size() > 0) {
+				/* TypeCombinator::union(...$matchingTypes) */
+				zv::Val filteredType = pt_type_combinator_call_spread(PT_LC("union"), matchingTypes.table());
+				if (UNEXPECTED(filteredType.isUndef())) return zv::Val();
+				return unionWithMap(mapOf(filteredType.raw()), map.raw());
+			}
+		}
+
+		return map;
+	}
+
+	/* $ownMap->union($map); UNDEF = pending exception (also for an UNDEF $ownMap) */
+	static zv::Val unionWithMap(zv::Val ownMap, zval *map)
+	{
+		if (UNEXPECTED(ownMap.isUndef())) return zv::Val();
+		return pt_type_call(Z_OBJ_P(ownMap.raw()), PT_LC("union"), 1, map);
+	}
+
+	/* [new TemplateTypeReference($this, $positionVariance)] */
+	zv::Val getReferencedTemplateTypes(zval *positionVariance) const
+	{
+		zval selfZv;
+		ZVAL_OBJ(&selfZv, self);
+		zv::Val reference;
+		if (UNEXPECTED(!pt_template_type_reference_new(reference.raw(), &selfZv, positionVariance))) return zv::Val();
+		zv::Arr references = zv::Arr::create(1);
+		references.push(std::move(reference));
+		return zv::Val(std::move(references));
+	}
+
+	/* $cb(...$args); UNDEF = pending exception */
+	static zv::Val callback(zend_fcall_info *fci, zend_fcall_info_cache *fcc, uint32_t argc, zval *argv)
+	{
+		zval result;
+		if (UNEXPECTED(!pt_call_fci(fci, fcc, argc, argv, &result))) return zv::Val();
+		return zv::Val::adopt(result);
+	}
+
+	/* whether two values are the same object (`===` on the twin's Type
+	 * operands) */
+	static bool sameObject(zval *a, zval *b)
+	{
+		return Z_TYPE_P(a) == IS_OBJECT && Z_TYPE_P(b) == IS_OBJECT && Z_OBJ_P(a) == Z_OBJ_P(b);
+	}
+
+	/* $this when $cb left the bound and the default alone, the rebuild
+	 * over the mapped ones otherwise */
+	zv::Val traverse(zend_fcall_info *fci, zend_fcall_info_cache *fcc) const
+	{
+		zv::Val bound = thisGetBound();
+		if (UNEXPECTED(bound.isUndef())) return zv::Val();
+		zv::Val mappedBound = callback(fci, fcc, 1, bound.raw());
+		if (UNEXPECTED(mappedBound.isUndef())) return zv::Val();
+		zv::Val defaultType = thisGetDefault();
+		if (UNEXPECTED(defaultType.isUndef())) return zv::Val();
+		zv::Val mappedDefault = zv::Val::null();
+		if (!zv::Ref(defaultType.raw()).isNull()) {
+			mappedDefault = callback(fci, fcc, 1, defaultType.raw());
+			if (UNEXPECTED(mappedDefault.isUndef())) return zv::Val();
+		}
+		return traversed(std::move(mappedBound), std::move(mappedDefault));
+	}
+
+	/* $this when $right is no template type or $cb left the bound and the
+	 * default alone, the rebuild over the mapped ones otherwise */
+	zv::Val traverseSimultaneously(zval *right, zend_fcall_info *fci, zend_fcall_info_cache *fcc) const
+	{
+		bool isTemplate;
+		if (UNEXPECTED(!pt_type_instanceof(right, PT_CLASS_TEMPLATE_TYPE, isTemplate))) return zv::Val();
+		if (!isTemplate) return thisObject();
+		zv::Val bound = thisGetBound();
+		if (UNEXPECTED(bound.isUndef())) return zv::Val();
+		zv::Val rightBound = pt_type_call(Z_OBJ_P(right), PT_LC("getbound"), 0, NULL);
+		if (UNEXPECTED(rightBound.isUndef())) return zv::Val();
+		zv::Args args{bound.raw(), rightBound.raw()};
+		zv::Val mappedBound = callback(fci, fcc, 2, args);
+		if (UNEXPECTED(mappedBound.isUndef())) return zv::Val();
+		zv::Val defaultType = thisGetDefault();
+		if (UNEXPECTED(defaultType.isUndef())) return zv::Val();
+		zv::Val mappedDefault = zv::Val::null();
+		if (!zv::Ref(defaultType.raw()).isNull()) {
+			zv::Val rightDefault = pt_type_call(Z_OBJ_P(right), PT_LC("getdefault"), 0, NULL);
+			if (UNEXPECTED(rightDefault.isUndef())) return zv::Val();
+			if (!zv::Ref(rightDefault.raw()).isNull()) {
+				ZVAL_COPY_VALUE(&args[0], defaultType.raw());
+				ZVAL_COPY_VALUE(&args[1], rightDefault.raw());
+				mappedDefault = callback(fci, fcc, 2, args);
+				if (UNEXPECTED(mappedDefault.isUndef())) return zv::Val();
+			}
+		}
+		return traversed(std::move(mappedBound), std::move(mappedDefault));
+	}
+
+	/* the tail of traverse()/traverseSimultaneously(): `$this->getBound()
+	 * === $bound && $this->getDefault() === $default ? $this : <rebuild>` */
+	zv::Val traversed(zv::Val mappedBound, zv::Val mappedDefault) const
+	{
+		zv::Val bound = thisGetBound();
+		if (UNEXPECTED(bound.isUndef())) return zv::Val();
+		if (sameObject(bound.raw(), mappedBound.raw())) {
+			zv::Val defaultType = thisGetDefault();
+			if (UNEXPECTED(defaultType.isUndef())) return zv::Val();
+			bool sameDefault = zv::Ref(defaultType.raw()).isNull() ? zv::Ref(mappedDefault.raw()).isNull() : sameObject(defaultType.raw(), mappedDefault.raw());
+			if (sameDefault) return thisObject();
+		}
+		return recreate(mappedBound.raw(), mappedDefault.raw());
+	}
+
+	/* null for a template type to remove, null when removing changes the
+	 * bound by value neither, the rebuild over the reduced bound otherwise */
+	zv::Val tryRemove(zval *typeToRemove) const
+	{
+		bool isTemplate;
+		if (UNEXPECTED(!pt_type_instanceof(typeToRemove, PT_CLASS_TEMPLATE_TYPE, isTemplate))) return zv::Val();
+		if (isTemplate) return zv::Val::null();
+		zv::Val bound = thisGetBound();
+		if (UNEXPECTED(bound.isUndef())) return zv::Val();
+		zv::Val removed = pt_type_combinator_remove(bound.raw(), typeToRemove);
+		if (UNEXPECTED(removed.isUndef())) return zv::Val();
+		/* $this->getBound() === $bound || $this->getBound()->equals($bound) */
+		zv::Val boundAgain = thisGetBound();
+		if (UNEXPECTED(boundAgain.isUndef())) return zv::Val();
+		if (sameObject(boundAgain.raw(), removed.raw())) return zv::Val::null();
+		zv::Val boundOnceMore = thisGetBound();
+		if (UNEXPECTED(boundOnceMore.isUndef())) return zv::Val();
+		zv::Val equal = pt_type_call(Z_OBJ_P(boundOnceMore.raw()), PT_LC("equals"), 1, removed.raw());
+		if (UNEXPECTED(equal.isUndef())) return zv::Val();
+		if (zend_is_true(equal.raw())) return zv::Val::null();
+		return recreateKeepingDefault(removed.raw());
+	}
+
+	/* new IdentifierTypeNode($this->name) */
+	zv::Val toPhpDocNode() const
+	{
+		zval *name = nameSlot();
+		if (UNEXPECTED(name == NULL)) return zv::Val();
+		return pt_type_new_identifier_type_node(Z_STRVAL_P(name), Z_STRLEN_P(name));
+	}
+
+	/* }}} */
+
+private:
+	zend_object *self;
+	zend_class_entry *scope;
+};
+
+} // namespace phpstanturbo
+
+using phpstanturbo::TemplateTypeTrait;
+
+void pt_template_type_init(zend_object *self, zend_class_entry *scope, zval *templateScope, zval *strategy, zval *variance, zend_string *name, zval *bound, zval *defaultType)
+{
+	TemplateTypeTrait(self, scope).init(templateScope, strategy, variance, name, bound, defaultType);
+}
+
+bool pt_template_type_check_bound(zend_class_entry *scope, zval *bound, uint32_t argNo)
+{
+	if (UNEXPECTED(scope->parent == NULL)) {
+		zend_throw_error(NULL, "phpstan_turbo: %s has no parent to type its bound by", ZSTR_VAL(scope->name));
+		return false;
+	}
+	if (UNEXPECTED(Z_TYPE_P(bound) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(bound), scope->parent))) {
+		zend_argument_type_error(argNo, "must be of type %s, %s given", ZSTR_VAL(scope->parent->name), zend_zval_value_name(bound));
+		return false;
+	}
+	return true;
+}
+
+bool pt_template_type_parent_construct(zend_object *self, zend_class_entry *scope, uint32_t argc, zval *argv)
+{
+	zv::Val result = pt_type_call_parent(scope, self, PT_LC("__construct"), argc, argv);
+	return !result.isUndef();
+}
+
+zend_string *pt_template_type_name(zend_object *object, zend_class_entry *scope)
+{
+	zval *slot = TemplateTypeTrait(object, scope).nameSlot();
+	return slot == NULL ? NULL : Z_STR_P(slot);
+}
+
+zval *pt_template_type_scope(zend_object *object, zend_class_entry *scope)
+{
+	return TemplateTypeTrait(object, scope).scopeSlot();
+}
+
+zval *pt_template_type_strategy(zend_object *object, zend_class_entry *scope)
+{
+	return TemplateTypeTrait(object, scope).strategySlot();
+}
+
+zval *pt_template_type_variance(zend_object *object, zend_class_entry *scope)
+{
+	return TemplateTypeTrait(object, scope).varianceSlot();
+}
+
+zval *pt_template_type_bound(zend_object *object, zend_class_entry *scope)
+{
+	return TemplateTypeTrait(object, scope).boundSlot();
+}
+
+zval *pt_template_type_default(zend_object *object, zend_class_entry *scope)
+{
+	return TemplateTypeTrait(object, scope).defaultSlot();
+}
+
+zv::Val pt_template_type_is_super_type_of(zend_object *self, zend_class_entry *scope, zval *type)
+{
+	return TemplateTypeTrait(self, scope).isSuperTypeOf(type);
+}
+
+zv::Val pt_template_type_is_sub_type_of(zend_object *self, zend_class_entry *scope, zval *type)
+{
+	return TemplateTypeTrait(self, scope).isSubTypeOf(type);
+}
+
+#define PT_TT_THIS TemplateTypeTrait(PT_THIS_OBJ, PT_SCOPE)
+
+/* $this (toArrayKey(), toCoercedArgumentType()) */
+static void ZEND_FASTCALL templateTypeThis0(INTERNAL_FUNCTION_PARAMETERS)
+{
+	ZEND_PARSE_PARAMETERS_NONE();
+	PT_RETURN_THIS();
+}
+
+void pt_type_trait_template_type(reg::Class &cls)
+{
+	namespace sigs = ptdecl::TemplateTypeTrait::sig;
+	/* the trait's properties, in its order — the class's last slots */
+	cls.privateTypedProperty("name", MAY_BE_STRING);
+	cls.privateTypedClassProperty("scope", ptcls::templateTypeScope, false);
+	cls.privateTypedClassProperty("strategy", ptcls::templateTypeStrategy, false);
+	cls.privateTypedClassProperty("variance", ptcls::templateTypeVariance, false);
+	cls.privateTypedClassProperty("bound", ptcls::type, false);
+	cls.privateTypedClassProperty("default", ptcls::type, true);
+
+	cls.traitMethod(sigs::getName, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		zval *name = PT_TT_THIS.nameSlot();
+		if (UNEXPECTED(name == NULL)) RETURN_THROWS();
+		RETURN_COPY(name);
+	});
+
+	cls.traitMethod(sigs::getScope, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		zval *templateScope = PT_TT_THIS.scopeSlot();
+		if (UNEXPECTED(templateScope == NULL)) RETURN_THROWS();
+		RETURN_COPY(templateScope);
+	});
+
+	cls.traitMethod(sigs::getBound, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		zval *bound = PT_TT_THIS.boundSlot();
+		if (UNEXPECTED(bound == NULL)) RETURN_THROWS();
+		RETURN_COPY(bound);
+	});
+
+	cls.traitMethod(sigs::getDefault, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		zval *defaultType = PT_TT_THIS.defaultSlot();
+		if (UNEXPECTED(defaultType == NULL)) RETURN_THROWS();
+		RETURN_COPY(defaultType);
+	});
+
+	cls.traitMethod(sigs::describe, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *level;
+		if (!zp::parse<zp::Obj>(execute_data, level)) RETURN_THROWS();
+		PT_RETURN_VAL(PT_TT_THIS.describe(level));
+	});
+
+	cls.traitMethod(sigs::isArgument, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		bool argument;
+		if (UNEXPECTED(!PT_TT_THIS.isArgument(argument))) RETURN_THROWS();
+		RETURN_BOOL(argument);
+	});
+
+	cls.traitMethod(sigs::toArgument, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		PT_RETURN_VAL(PT_TT_THIS.toArgument());
+	});
+
+	cls.traitMethod(sigs::isValidVariance, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *a, *b;
+		bool strict = false;
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Opt<zp::Bool>>(execute_data, a, b, strict)) RETURN_THROWS();
+		PT_RETURN_VAL(PT_TT_THIS.isValidVariance(a, b, strict));
+	});
+
+	cls.traitMethod(sigs::subtract, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *typeToRemove;
+		if (!zp::parse<zp::Obj>(execute_data, typeToRemove)) RETURN_THROWS();
+		PT_RETURN_VAL(PT_TT_THIS.subtract(typeToRemove));
+	});
+
+	cls.traitMethod(sigs::getTypeWithoutSubtractedType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		PT_RETURN_VAL(PT_TT_THIS.getTypeWithoutSubtractedType());
+	});
+
+	cls.traitMethod(sigs::changeSubtractedType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *subtractedType;
+		if (!zp::parse<zp::ObjOrNull>(execute_data, subtractedType)) RETURN_THROWS();
+		zval nullValue;
+		ZVAL_NULL(&nullValue);
+		PT_RETURN_VAL(PT_TT_THIS.changeSubtractedType(subtractedType != NULL ? subtractedType : &nullValue));
+	});
+
+	cls.traitMethod(sigs::getSubtractedType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		PT_RETURN_VAL(PT_TT_THIS.getSubtractedType());
+	});
+
+	cls.traitMethod(sigs::equals, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *type;
+		if (!zp::parse<zp::Obj>(execute_data, type)) RETURN_THROWS();
+		bool equal;
+		if (UNEXPECTED(!PT_TT_THIS.equals(type, equal))) RETURN_THROWS();
+		RETURN_BOOL(equal);
+	});
+
+	cls.traitMethod(sigs::isAcceptedBy, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *acceptingType;
+		bool strictTypes;
+		if (!zp::parse<zp::Obj, zp::Bool>(execute_data, acceptingType, strictTypes)) RETURN_THROWS();
+		PT_RETURN_VAL(PT_TT_THIS.isAcceptedBy(acceptingType, strictTypes));
+	});
+
+	cls.traitMethod(sigs::accepts, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *type;
+		bool strictTypes;
+		if (!zp::parse<zp::Obj, zp::Bool>(execute_data, type, strictTypes)) RETURN_THROWS();
+		PT_RETURN_VAL(PT_TT_THIS.accepts(type, strictTypes));
+	});
+
+	cls.traitMethod(sigs::isSuperTypeOf, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *type;
+		if (!zp::parse<zp::Obj>(execute_data, type)) RETURN_THROWS();
+		PT_RETURN_VAL(PT_TT_THIS.isSuperTypeOf(type));
+	});
+
+	cls.traitMethod(sigs::isSubTypeOf, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *type;
+		if (!zp::parse<zp::Obj>(execute_data, type)) RETURN_THROWS();
+		PT_RETURN_VAL(PT_TT_THIS.isSubTypeOf(type));
+	});
+
+	cls.traitMethod(sigs::toArrayKey, templateTypeThis0);
+
+	cls.traitMethod(sigs::toCoercedArgumentType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		PT_ARGS(1, 1);
+		PT_RETURN_THIS();
+	});
+
+	cls.traitMethod(sigs::toClassConstantType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *reflectionProvider;
+		if (!zp::parse<zp::Obj>(execute_data, reflectionProvider)) RETURN_THROWS();
+		PT_RETURN_VAL(PT_TT_THIS.toClassConstantType(reflectionProvider));
+	});
+
+	cls.traitMethod(sigs::inferTemplateTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *receivedType;
+		if (!zp::parse<zp::Obj>(execute_data, receivedType)) RETURN_THROWS();
+		PT_RETURN_VAL(PT_TT_THIS.inferTemplateTypes(receivedType));
+	});
+
+	cls.traitMethod(sigs::getReferencedTemplateTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *positionVariance;
+		if (!zp::parse<zp::Obj>(execute_data, positionVariance)) RETURN_THROWS();
+		PT_RETURN_VAL(PT_TT_THIS.getReferencedTemplateTypes(positionVariance));
+	});
+
+	cls.traitMethod(sigs::getVariance, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		zval *variance = PT_TT_THIS.varianceSlot();
+		if (UNEXPECTED(variance == NULL)) RETURN_THROWS();
+		RETURN_COPY(variance);
+	});
+
+	cls.traitMethod(sigs::getStrategy, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		zval *strategy = PT_TT_THIS.strategySlot();
+		if (UNEXPECTED(strategy == NULL)) RETURN_THROWS();
+		RETURN_COPY(strategy);
+	});
+
+	cls.traitMethod(sigs::traverse, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zend_fcall_info fci;
+		zend_fcall_info_cache fcc;
+		ZEND_PARSE_PARAMETERS_START(1, 1)
+			Z_PARAM_FUNC(fci, fcc)
+		ZEND_PARSE_PARAMETERS_END();
+		PT_RETURN_VAL(PT_TT_THIS.traverse(&fci, &fcc));
+	});
+
+	cls.traitMethod(sigs::traverseSimultaneously, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *right;
+		zend_fcall_info fci;
+		zend_fcall_info_cache fcc;
+		ZEND_PARSE_PARAMETERS_START(2, 2)
+			Z_PARAM_OBJECT(right)
+			Z_PARAM_FUNC(fci, fcc)
+		ZEND_PARSE_PARAMETERS_END();
+		PT_RETURN_VAL(PT_TT_THIS.traverseSimultaneously(right, &fci, &fcc));
+	});
+
+	cls.traitMethod(sigs::tryRemove, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *typeToRemove;
+		if (!zp::parse<zp::Obj>(execute_data, typeToRemove)) RETURN_THROWS();
+		PT_RETURN_VAL(PT_TT_THIS.tryRemove(typeToRemove));
+	});
+
+	cls.traitMethod(sigs::toPhpDocNode, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		PT_RETURN_VAL(PT_TT_THIS.toPhpDocNode());
+	});
+
 	cls.traitMethod(sigs::hasTemplateOrLateResolvableType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_TRUE;

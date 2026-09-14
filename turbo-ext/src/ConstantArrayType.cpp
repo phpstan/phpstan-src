@@ -299,7 +299,7 @@ static zv::Val substituteMixedUnsealedKey(zval *unsealedKeyType)
 	if (UNEXPECTED(!isInstance(unsealedKeyType, pt_ce_mixed_type, isMixed))) return zv::Val();
 	if (isMixed) {
 		bool isTemplateMixed;
-		if (UNEXPECTED(!isInstance(unsealedKeyType, PT_CLASS_TEMPLATE_MIXED_TYPE, isTemplateMixed))) return zv::Val();
+		if (UNEXPECTED(!isInstance(unsealedKeyType, pt_ce_template_mixed_type, isTemplateMixed))) return zv::Val();
 		if (!isTemplateMixed) return benevolentArrayKey();
 		return zv::Val::copyOf(zv::Ref(unsealedKeyType));
 	}
@@ -307,7 +307,7 @@ static zv::Val substituteMixedUnsealedKey(zval *unsealedKeyType)
 	if (UNEXPECTED(!isInstance(unsealedKeyType, pt_ce_strict_mixed_type, isStrictMixed))) return zv::Val();
 	if (isStrictMixed) {
 		bool isTemplateStrictMixed;
-		if (UNEXPECTED(!isInstance(unsealedKeyType, PT_CLASS_TEMPLATE_STRICT_MIXED_TYPE, isTemplateStrictMixed))) return zv::Val();
+		if (UNEXPECTED(!isInstance(unsealedKeyType, pt_ce_template_strict_mixed_type, isTemplateStrictMixed))) return zv::Val();
 		if (!isTemplateStrictMixed) return benevolentArrayKey();
 	}
 	return zv::Val::copyOf(zv::Ref(unsealedKeyType));
@@ -931,7 +931,7 @@ public:
 			if (UNEXPECTED(!isInstance(unsealedKeyType, pt_ce_strict_mixed_type, isStrictMixed))) return false;
 			if (isStrictMixed) {
 				bool isTemplateStrictMixed;
-				if (UNEXPECTED(!isInstance(unsealedKeyType, PT_CLASS_TEMPLATE_STRICT_MIXED_TYPE, isTemplateStrictMixed))) return false;
+				if (UNEXPECTED(!isInstance(unsealedKeyType, pt_ce_template_strict_mixed_type, isTemplateStrictMixed))) return false;
 				if (!isTemplateStrictMixed) {
 					/* (new UnionType([new StringType(), new IntegerType()]))->toArrayKey() */
 					zv::Val string = stringType();

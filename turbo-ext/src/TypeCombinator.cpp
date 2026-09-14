@@ -479,9 +479,7 @@ static int isPlainMixed(zval *type)
 	int isExplicitMixed = callBool(type, PT_LC("isexplicitmixed"));
 	if (UNEXPECTED(isExplicitMixed < 0)) return -1;
 	if (isExplicitMixed) return 0;
-	int isTemplate = isInstanceMap(type, PT_CLASS_TEMPLATE_MIXED_TYPE);
-	if (UNEXPECTED(isTemplate < 0)) return -1;
-	if (isTemplate) return 0;
+	if (isInstance(type, pt_ce_template_mixed_type)) return 0;
 	zv::Val subtracted = call(type, PT_LC("getsubtractedtype"));
 	if (UNEXPECTED(subtracted.isUndef())) return -1;
 	return isNull(subtracted) ? 1 : 0;
@@ -1869,9 +1867,7 @@ public:
 
 			zval *templateArrayType = NULL;
 			for (zv::Val &arrayType : arrayTypes) {
-				int isTemplateArray = isInstanceMap(arrayType.raw(), PT_CLASS_TEMPLATE_ARRAY_TYPE);
-				PT_FAIL_IF_NEG(isTemplateArray);
-				if (!isTemplateArray) {
+				if (!isInstance(arrayType.raw(), pt_ce_template_array_type)) {
 					templateArrayType = NULL;
 					break;
 				}
@@ -1902,15 +1898,15 @@ public:
 				PT_FAIL_IF_UNDEF(name);
 				zv::Val defaultType = call(templateArrayType, PT_LC("getdefault"));
 				PT_FAIL_IF_UNDEF(defaultType);
-				zval args[6];
-				ZVAL_COPY_VALUE(&args[0], scope.raw());
-				ZVAL_COPY_VALUE(&args[1], strategy.raw());
-				ZVAL_COPY_VALUE(&args[2], variance.raw());
-				ZVAL_COPY_VALUE(&args[3], name.raw());
-				ZVAL_COPY_VALUE(&args[4], newArrayType.raw());
-				ZVAL_COPY_VALUE(&args[5], defaultType.raw());
-				newArrayType = pt_type_new(PT_CLASS_TEMPLATE_ARRAY_TYPE, 6, args);
-				PT_FAIL_IF_UNDEF(newArrayType);
+				if (UNEXPECTED(!zv::Ref(name.raw()).isString())) {
+					zend_type_error("phpstan_turbo: %s::getName() must return string", ZSTR_VAL(Z_OBJCE_P(templateArrayType)->name));
+					return zv::Val();
+				}
+				zval created;
+				if (UNEXPECTED(!pt_template_array_type_new(&created, scope.raw(), strategy.raw(), variance.raw(), Z_STR_P(name.raw()), newArrayType.raw(), defaultType.raw()))) {
+					return zv::Val();
+				}
+				newArrayType = zv::Val::adopt(created);
 			}
 
 			zv::Val intersected = intersectWith(newArrayType.raw(), accessoryTypes);
@@ -3067,13 +3063,7 @@ public:
 				PT_FAIL_IF_UNDEF(unioned);
 			}
 
-			int isTemplateUnion = isInstanceMap(type, PT_CLASS_TEMPLATE_UNION_TYPE);
-			PT_FAIL_IF_NEG(isTemplateUnion);
-			if (!isTemplateUnion) {
-				isTemplateUnion = isInstanceMap(type, PT_CLASS_TEMPLATE_BENEVOLENT_UNION_TYPE);
-				PT_FAIL_IF_NEG(isTemplateUnion);
-			}
-			if (isTemplateUnion) {
+			if (isInstance(type, pt_ce_template_union_type) || isInstance(type, pt_ce_template_benevolent_union_type)) {
 				zv::Val scope = call(type, PT_LC("getscope"));
 				PT_FAIL_IF_UNDEF(scope);
 				zv::Val name = call(type, PT_LC("getname"));
@@ -3084,14 +3074,7 @@ public:
 				PT_FAIL_IF_UNDEF(strategy);
 				zv::Val defaultType = call(type, PT_LC("getdefault"));
 				PT_FAIL_IF_UNDEF(defaultType);
-				zval args[6];
-				ZVAL_COPY_VALUE(&args[0], scope.raw());
-				ZVAL_COPY_VALUE(&args[1], name.raw());
-				ZVAL_COPY_VALUE(&args[2], unioned.raw());
-				ZVAL_COPY_VALUE(&args[3], variance.raw());
-				ZVAL_COPY_VALUE(&args[4], strategy.raw());
-				ZVAL_COPY_VALUE(&args[5], defaultType.raw());
-				unioned = pt_type_call_static(PT_CLASS_TEMPLATE_TYPE_FACTORY, PT_LC("create"), 6, args);
+				unioned = pt_template_type_factory_create(scope.raw(), name.raw(), unioned.raw(), variance.raw(), strategy.raw(), defaultType.raw());
 				PT_FAIL_IF_UNDEF(unioned);
 			}
 

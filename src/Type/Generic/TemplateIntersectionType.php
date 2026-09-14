@@ -2,10 +2,12 @@
 
 namespace PHPStan\Type\Generic;
 
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\Type;
 
 /** @api */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TemplateIntersectionType.cpp')]
 final class TemplateIntersectionType extends IntersectionType implements TemplateType
 {
 

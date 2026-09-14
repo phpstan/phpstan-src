@@ -109,7 +109,6 @@ enum {
 	PT_CLASS_NETTE_STRINGS,
 	PT_CLASS_NETTE_REGEXP_EXCEPTION,
 	PT_CLASS_CONST_EXPR_FLOAT_NODE,
-	PT_CLASS_TEMPLATE_MIXED_TYPE,
 	PT_CLASS_SUBTRACTABLE_TYPE,
 	PT_CLASS_DUMMY_PROPERTY_REFLECTION,
 	PT_CLASS_CALLBACK_UNRESOLVED_PROPERTY_PROTOTYPE_REFLECTION,
@@ -123,12 +122,10 @@ enum {
 	PT_CLASS_THIS_TYPE_NODE,
 	PT_CLASS_OBJECT_SHAPE_NODE,
 	PT_CLASS_OBJECT_SHAPE_ITEM_NODE,
-	PT_CLASS_TEMPLATE_STRICT_MIXED_TYPE,
 	PT_CLASS_UNSAFE_ARRAY_STRING_KEY_CASTING_TRAVERSER,
 	PT_CLASS_ALLOWED_ARRAY_KEYS_TYPES,
 	PT_CLASS_CONSTANT_ARRAY_TYPE_BUILDER,
 	PT_CLASS_LRU_CACHE,
-	PT_CLASS_TYPE_PROJECTION_HELPER,
 	PT_CLASS_CLASS_NOT_FOUND_EXCEPTION,
 	PT_CLASS_CALLED_ON_TYPE_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION,
 	PT_CLASS_CALLED_ON_TYPE_UNRESOLVED_PROPERTY_PROTOTYPE_REFLECTION,
@@ -158,8 +155,6 @@ enum {
 	PT_CLASS_ARRAY_SHAPE_ITEM_NODE,
 	PT_CLASS_ARRAY_SHAPE_UNSEALED_TYPE_NODE,
 	PT_CLASS_UNION_TYPE_HELPER,
-	PT_CLASS_TEMPLATE_UNION_TYPE,
-	PT_CLASS_TEMPLATE_ITERABLE_TYPE,
 	PT_CLASS_LATE_RESOLVABLE_TYPE,
 	PT_CLASS_UNION_TYPE_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION,
 	PT_CLASS_MISSING_METHOD_FROM_REFLECTION_EXCEPTION,
@@ -167,11 +162,9 @@ enum {
 	PT_CLASS_INTERSECTION_TYPE_UNRESOLVED_PROPERTY_PROTOTYPE_REFLECTION,
 	PT_CLASS_INTERSECTION_TYPE_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION,
 	PT_CLASS_ACCESSORY_TYPE,
-	PT_CLASS_TEMPLATE_ARRAY_TYPE,
 	PT_CLASS_UNION_TYPE_NODE,
 	PT_CLASS_INTERSECTION_TYPE_NODE,
 	PT_CLASS_TYPE_TRAVERSER_CALLABLE,
-	PT_CLASS_TEMPLATE_BENEVOLENT_UNION_TYPE,
 	PT_CLASS_LATE_RESOLVABLE_TRAVERSER,
 	PT_CLASS_REFLECTION_UNION_TYPE,
 	PT_CLASS_REFLECTION_INTERSECTION_TYPE,
@@ -179,11 +172,11 @@ enum {
 	PT_CLASS_FULLY_QUALIFIED,
 	PT_CLASS_PARSER_NODE_TYPE_TO_PHPSTAN_TYPE,
 	PT_CLASS_TURBO_EXTENSION_ENABLER,
-	PT_CLASS_TEMPLATE_TYPE_FACTORY,
 	PT_CLASS_PARAMETERS_ACCEPTOR,
 	PT_CLASS_OFFSET_ACCESS_TYPE_NODE,
 	PT_CLASS_CONDITIONAL_TYPE_NODE,
 	PT_CLASS_CONDITIONAL_TYPE_FOR_PARAMETER_NODE,
+	PT_CLASS_TEMPLATE_KEY_OF_TYPE,
 	PT_CLASS_COUNT
 };
 
@@ -1020,5 +1013,93 @@ zv::Val pt_conditional_type_for_parameter_resolve_in_type(zval *type, zval *getS
 zv::Val pt_conditional_type_for_parameter_narrow_template_type(zval *type, zval *templateType);
 bool pt_late_resolvable_array_shape_type_create(zval *out, zval *items, zval *unsealed, zend_string *kind);
 bool pt_unresolved_template_argument_type_new(zval *out, zval *site, zval *templateType, zval *initialType);
+
+
+/* merged from the parallel port branch */
+/* the template family (TemplateTypeArgumentStrategy.cpp,
+ * TemplateTypeParameterStrategy.cpp, the Template*Type.cpp files) */
+extern zend_class_entry *pt_ce_template_type_argument_strategy;
+extern zend_class_entry *pt_ce_template_type_parameter_strategy;
+extern zend_class_entry *pt_ce_template_array_type;
+extern zend_class_entry *pt_ce_template_benevolent_union_type;
+extern zend_class_entry *pt_ce_template_boolean_type;
+extern zend_class_entry *pt_ce_template_constant_array_type;
+extern zend_class_entry *pt_ce_template_constant_integer_type;
+extern zend_class_entry *pt_ce_template_constant_string_type;
+extern zend_class_entry *pt_ce_template_float_type;
+extern zend_class_entry *pt_ce_template_generic_object_type;
+extern zend_class_entry *pt_ce_template_integer_type;
+extern zend_class_entry *pt_ce_template_intersection_type;
+extern zend_class_entry *pt_ce_template_iterable_type;
+extern zend_class_entry *pt_ce_template_mixed_type;
+extern zend_class_entry *pt_ce_template_null_type;
+extern zend_class_entry *pt_ce_template_object_shape_type;
+extern zend_class_entry *pt_ce_template_object_type;
+extern zend_class_entry *pt_ce_template_object_without_class_type;
+extern zend_class_entry *pt_ce_template_strict_mixed_type;
+extern zend_class_entry *pt_ce_template_string_type;
+extern zend_class_entry *pt_ce_template_union_type;
+/* registered after the whole Type family: the two strategies (the trait's
+ * getStrategy() names their interface, toArgument() instantiates one),
+ * then the Template*Type classes, each after its native parent (all of
+ * which precede them) */
+void pt_register_template_type_argument_strategy();
+void pt_register_template_type_parameter_strategy();
+void pt_register_template_array_type();
+void pt_register_template_benevolent_union_type();
+void pt_register_template_boolean_type();
+void pt_register_template_constant_array_type();
+void pt_register_template_constant_integer_type();
+void pt_register_template_constant_string_type();
+void pt_register_template_float_type();
+void pt_register_template_generic_object_type();
+void pt_register_template_integer_type();
+void pt_register_template_intersection_type();
+void pt_register_template_iterable_type();
+void pt_register_template_mixed_type();
+void pt_register_template_null_type();
+void pt_register_template_object_shape_type();
+void pt_register_template_object_type();
+void pt_register_template_object_without_class_type();
+void pt_register_template_strict_mixed_type();
+void pt_register_template_string_type();
+void pt_register_template_union_type();
+/* new TemplateTypeArgumentStrategy() / new TemplateTypeParameterStrategy()
+ * / new Template<X>Type($scope, $templateTypeStrategy, $templateTypeVariance,
+ * $name, $bound, $default) — instances of the shadowing classes (every
+ * argument borrowed, $default NULL or IS_NULL for null, $bound checked
+ * against the twin's bound class); false = pending exception */
+[[nodiscard]] bool pt_template_type_argument_strategy_new(zval *out);
+bool pt_template_type_parameter_strategy_new(zval *out);
+bool pt_template_array_type_new(zval *out, zval *scope, zval *strategy, zval *variance, zend_string *name, zval *bound, zval *defaultType);
+bool pt_template_benevolent_union_type_new(zval *out, zval *scope, zval *strategy, zval *variance, zend_string *name, zval *bound, zval *defaultType);
+bool pt_template_boolean_type_new(zval *out, zval *scope, zval *strategy, zval *variance, zend_string *name, zval *bound, zval *defaultType);
+bool pt_template_constant_array_type_new(zval *out, zval *scope, zval *strategy, zval *variance, zend_string *name, zval *bound, zval *defaultType);
+bool pt_template_constant_integer_type_new(zval *out, zval *scope, zval *strategy, zval *variance, zend_string *name, zval *bound, zval *defaultType);
+bool pt_template_constant_string_type_new(zval *out, zval *scope, zval *strategy, zval *variance, zend_string *name, zval *bound, zval *defaultType);
+bool pt_template_float_type_new(zval *out, zval *scope, zval *strategy, zval *variance, zend_string *name, zval *bound, zval *defaultType);
+bool pt_template_generic_object_type_new(zval *out, zval *scope, zval *strategy, zval *variance, zend_string *name, zval *bound, zval *defaultType);
+bool pt_template_integer_type_new(zval *out, zval *scope, zval *strategy, zval *variance, zend_string *name, zval *bound, zval *defaultType);
+bool pt_template_intersection_type_new(zval *out, zval *scope, zval *strategy, zval *variance, zend_string *name, zval *bound, zval *defaultType);
+bool pt_template_iterable_type_new(zval *out, zval *scope, zval *strategy, zval *variance, zend_string *name, zval *bound, zval *defaultType);
+bool pt_template_mixed_type_new(zval *out, zval *scope, zval *strategy, zval *variance, zend_string *name, zval *bound, zval *defaultType);
+bool pt_template_null_type_new(zval *out, zval *scope, zval *strategy, zval *variance, zend_string *name, zval *bound, zval *defaultType);
+bool pt_template_object_shape_type_new(zval *out, zval *scope, zval *strategy, zval *variance, zend_string *name, zval *bound, zval *defaultType);
+bool pt_template_object_type_new(zval *out, zval *scope, zval *strategy, zval *variance, zend_string *name, zval *bound, zval *defaultType);
+bool pt_template_object_without_class_type_new(zval *out, zval *scope, zval *strategy, zval *variance, zend_string *name, zval *bound, zval *defaultType);
+bool pt_template_strict_mixed_type_new(zval *out, zval *scope, zval *strategy, zval *variance, zend_string *name, zval *bound, zval *defaultType);
+bool pt_template_string_type_new(zval *out, zval *scope, zval *strategy, zval *variance, zend_string *name, zval *bound, zval *defaultType);
+bool pt_template_union_type_new(zval *out, zval *scope, zval *strategy, zval *variance, zend_string *name, zval *bound, zval *defaultType);
+/* the static template helpers (TemplateTypeFactory.cpp,
+ * TypeProjectionHelper.cpp), registered after the Template*Type classes
+ * the factory instantiates */
+extern zend_class_entry *pt_ce_template_type_factory;
+extern zend_class_entry *pt_ce_type_projection_helper;
+void pt_register_template_type_factory();
+void pt_register_type_projection_helper();
+namespace zv { class Val; }
+/* TypeProjectionHelper::describe($type, $variance, $level) ($variance NULL
+ * or IS_NULL for null); an owned string, UNDEF = pending exception */
+zv::Val pt_type_projection_helper_describe(zval *type, zval *variance, zval *level);
 
 #endif /* PHPSTANTURBO_SUPPORT_H */

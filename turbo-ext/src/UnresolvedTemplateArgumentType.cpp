@@ -23,7 +23,6 @@ namespace sigs = ptdecl::UnresolvedTemplateArgumentType::sig;
 zend_class_entry *pt_ce_unresolved_template_argument_type = nullptr;
 
 namespace ptcls {
-inline constexpr const char *templateType = "PHPStan\\Type\\Generic\\TemplateType";
 } // namespace ptcls
 
 namespace phpstanturbo {

@@ -103,7 +103,7 @@ public:
 	static zv::Val toStrictUnion(zval *type)
 	{
 		bool templateBenevolent;
-		if (UNEXPECTED(!pt_type_instanceof(type, PT_CLASS_TEMPLATE_BENEVOLENT_UNION_TYPE, templateBenevolent))) return zv::Val();
+		if (UNEXPECTED(!pt_type_instanceof_ce(type, pt_ce_template_benevolent_union_type, templateBenevolent))) return zv::Val();
 		if (templateBenevolent) {
 			/* new TemplateUnionType($type->getScope(), $type->getStrategy(),
 			 * $type->getVariance(), $type->getName(),
@@ -127,14 +127,15 @@ public:
 			if (UNEXPECTED(strictBound.isUndef())) return zv::Val();
 			zv::Val defaultType = pt_type_call(object, PT_LC("getdefault"), 0, NULL);
 			if (UNEXPECTED(defaultType.isUndef())) return zv::Val();
-			zval args[6];
-			ZVAL_COPY_VALUE(&args[0], scope.raw());
-			ZVAL_COPY_VALUE(&args[1], strategy.raw());
-			ZVAL_COPY_VALUE(&args[2], variance.raw());
-			ZVAL_COPY_VALUE(&args[3], name.raw());
-			ZVAL_COPY_VALUE(&args[4], strictBound.raw());
-			ZVAL_COPY_VALUE(&args[5], defaultType.raw());
-			return pt_type_new(PT_CLASS_TEMPLATE_UNION_TYPE, 6, args);
+			if (UNEXPECTED(!zv::Ref(name.raw()).isString())) {
+				zend_type_error("phpstan_turbo: %s::getName() must return string", ZSTR_VAL(object->ce->name));
+				return zv::Val();
+			}
+			zval created;
+			if (UNEXPECTED(!pt_template_union_type_new(&created, scope.raw(), strategy.raw(), variance.raw(), Z_STR_P(name.raw()), strictBound.raw(), defaultType.raw()))) {
+				return zv::Val();
+			}
+			return zv::Val::adopt(created);
 		}
 
 		if (instanceof_function(Z_OBJCE_P(type), pt_ce_benevolent_union_type)) {

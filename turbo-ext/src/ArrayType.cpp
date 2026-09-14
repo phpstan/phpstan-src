@@ -157,7 +157,7 @@ public:
 		if (UNEXPECTED(!isInstance(keyType.raw(), pt_ce_strict_mixed_type, isStrictMixed))) return false;
 		if (isStrictMixed) {
 			bool isTemplateStrictMixed;
-			if (UNEXPECTED(!isInstance(keyType.raw(), PT_CLASS_TEMPLATE_STRICT_MIXED_TYPE, isTemplateStrictMixed))) return false;
+			if (UNEXPECTED(!isInstance(keyType.raw(), pt_ce_template_strict_mixed_type, isTemplateStrictMixed))) return false;
 			if (!isTemplateStrictMixed) {
 				/* (new UnionType([new StringType(), new IntegerType()]))->toArrayKey() */
 				zv::Val string = stringType();
@@ -467,7 +467,7 @@ public:
 		if (UNEXPECTED(!isInstance(keyType.raw(), pt_ce_mixed_type, isMixed))) return zv::Val();
 		if (isMixed) {
 			bool isTemplateMixed;
-			if (UNEXPECTED(!isInstance(keyType.raw(), PT_CLASS_TEMPLATE_MIXED_TYPE, isTemplateMixed))) return zv::Val();
+			if (UNEXPECTED(!isInstance(keyType.raw(), pt_ce_template_mixed_type, isTemplateMixed))) return zv::Val();
 			if (!isTemplateMixed) {
 				keyType = benevolentArrayKey();
 				if (UNEXPECTED(keyType.isUndef())) return zv::Val();

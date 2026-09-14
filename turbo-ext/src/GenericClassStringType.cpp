@@ -523,6 +523,11 @@ private:
 
 using phpstanturbo::GenericClassStringType;
 
+zv::Val pt_type_new_generic_class_string(zval *type)
+{
+	return GenericClassStringType::create(type);
+}
+
 /* {{{ engine ABI glue: parameter parsing + registration */
 
 #define PT_THIS GenericClassStringType(Z_OBJ_P(ZEND_THIS))

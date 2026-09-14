@@ -453,7 +453,22 @@ class ArrayType implements Type
 		if ($this->itemType->isConstantArray()->yes() && $valueType->isConstantArray()->yes()) {
 			$newItemTypes = [];
 
+			$itemConstantArrays = $this->itemType->getConstantArrays();
 			foreach ($valueType->getConstantArrays() as $constArray) {
+				if ($constArray->getOptionalKeys() !== [] && count($itemConstantArrays) === 1) {
+					// A written shape with optional keys is not all-or-nothing: each
+					// optional key may or may not be present on its own, so it is
+					// written as optional (present keys keep their certainty, the
+					// value unions with what the key held) instead of once with every
+					// key required and once with every optional key unset.
+					$builder = ConstantArrayTypeBuilder::createFromConstantArray($itemConstantArrays[0]);
+					foreach ($constArray->getKeyTypes() as $i => $keyType) {
+						$builder->setOffsetValueType($keyType, $constArray->getOffsetValueType($keyType), $constArray->isOptionalKey($i));
+					}
+					$newItemTypes[] = TypeCombinator::intersect($builder->getArray(), ...TypeUtils::getAccessoryTypes($this->itemType));
+					continue;
+				}
+
 				$newItemType = $this->itemType;
 				$optionalKeyTypes = [];
 				foreach ($constArray->getKeyTypes() as $i => $keyType) {

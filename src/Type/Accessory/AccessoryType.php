@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Accessory;
 
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\InstanceofDeprecated;
 use PHPStan\Type\Type;
 
@@ -53,6 +54,7 @@ use PHPStan\Type\Type;
  * - `TypeCombinator` — handles AccessoryType intersection/union normalization
  * - `MissingTypehintCheck` — skips AccessoryTypes in typehint analysis
  */
+#[ReferencedByTurboExtension(key: 'accessoryType')]
 #[InstanceofDeprecated(insteadUse: 'methods on PHPStan\\Type\\Type')]
 interface AccessoryType extends Type
 {

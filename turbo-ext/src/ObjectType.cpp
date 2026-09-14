@@ -1317,7 +1317,7 @@ public:
 		if (UNEXPECTED(classString.isUndef())) return zv::Val();
 		types.push(std::move(classString));
 		if (UNEXPECTED(!pushNew(types, pt_accessory_literal_string_type_new))) return zv::Val();
-		return pt_type_new(PT_CLASS_INTERSECTION_TYPE, 1, types.raw());
+		return pt_intersection_of(std::move(types));
 	}
 
 	/* new ClassNameToObjectTypeResult($this, true) */
@@ -1396,7 +1396,7 @@ public:
 			if (UNEXPECTED(!pushNew(types, pt_string_type_new) || !pushNew(types, pt_accessory_numeric_string_type_new) || !pushNew(types, pt_accessory_non_empty_string_type_new))) {
 				return zv::Val();
 			}
-			return pt_type_new(PT_CLASS_INTERSECTION_TYPE, 1, types.raw());
+			return pt_intersection_of(std::move(types));
 		}
 
 		zv::Val classReflection = thisGetClassReflection();
@@ -1536,7 +1536,7 @@ public:
 				types.push(std::move(hasOffsetValue));
 			}
 
-			return pt_type_new(PT_CLASS_INTERSECTION_TYPE, 1, types.raw());
+			return pt_intersection_of(std::move(types));
 		}
 
 		zval shapeRaw;
@@ -2692,7 +2692,7 @@ public:
 	zv::Val tryRemove(zval *typeToRemove) const
 	{
 		if (zv::Ref(typeToRemove).instanceOf(pt_ce_object_type)) {
-			zend_class_entry *unionCe = pt_class(PT_CLASS_UNION_TYPE);
+			zend_class_entry *unionCe = pt_ce_union_type;
 			if (UNEXPECTED(unionCe == NULL)) return zv::Val();
 			zend_class_constant *constant = (zend_class_constant *) zend_hash_str_find_ptr(&unionCe->constants_table, PT_LC("EQUAL_UNION_CLASSES"));
 			if (UNEXPECTED(constant == NULL)) {
@@ -2753,9 +2753,7 @@ public:
 		 * a time, without rebuilding the subtracted union once per member. */
 		zv::Val classReflection = thisGetClassReflection();
 		if (UNEXPECTED(classReflection.isUndef())) return zv::Val();
-		zend_class_entry *unionTypeCe = pt_class(PT_CLASS_UNION_TYPE);
-		if (UNEXPECTED(unionTypeCe == NULL)) return zv::Val();
-		if (zv::Ref(typeToRemove).instanceOf(unionTypeCe) && !classReflection.isNull()) {
+		if (zv::Ref(typeToRemove).instanceOf(pt_ce_union_type) && !classReflection.isNull()) {
 			zv::Val allowedSubTypes = pt_type_call(Z_OBJ_P(classReflection.raw()), PT_LC("getallowedsubtypes"), 0, NULL);
 			if (UNEXPECTED(allowedSubTypes.isUndef())) return zv::Val();
 			if (!allowedSubTypes.isNull()) {

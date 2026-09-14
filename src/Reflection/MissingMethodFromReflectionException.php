@@ -3,8 +3,10 @@
 namespace PHPStan\Reflection;
 
 use Exception;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use function sprintf;
 
+#[ReferencedByTurboExtension(key: 'missingMethodFromReflectionException')]
 final class MissingMethodFromReflectionException extends Exception
 {
 

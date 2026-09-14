@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
@@ -13,6 +14,7 @@ use function strcasecmp;
 use function usort;
 use const PHP_INT_MIN;
 
+#[ReferencedByTurboExtension(key: 'unionTypeHelper')]
 final class UnionTypeHelper
 {
 

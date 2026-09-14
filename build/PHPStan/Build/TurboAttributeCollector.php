@@ -45,9 +45,11 @@ use PHPStan\PhpDocParser\Ast\Type\CallableTypeParameterNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\IntersectionTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\ObjectShapeItemNode;
 use PHPStan\PhpDocParser\Ast\Type\ObjectShapeNode;
 use PHPStan\PhpDocParser\Ast\Type\ThisTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\UnionTypeNode;
 use PHPStan\PhpDocParser\Printer\Printer;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Turbo\ShadowedByTurboExtension;
@@ -144,6 +146,8 @@ final class TurboAttributeCollector
 		'arrayShapeNode' => ArrayShapeNode::class,
 		'arrayShapeItemNode' => ArrayShapeItemNode::class,
 		'arrayShapeUnsealedTypeNode' => ArrayShapeUnsealedTypeNode::class,
+		'unionTypeNode' => UnionTypeNode::class,
+		'intersectionTypeNode' => IntersectionTypeNode::class,
 	];
 
 	private string $realRoot;

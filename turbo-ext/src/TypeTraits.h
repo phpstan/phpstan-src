@@ -639,6 +639,126 @@ zv::Val pt_carr_native_closure(pt_native_callback fn, zval *state0, zval *state1
  * (NeverType.cpp); false = pending exception */
 [[nodiscard]] bool pt_never_type_is_explicit(zend_object *object, bool &out);
 
+/* {{{ helpers of the compound family (UnionType.cpp, BenevolentUnionType.cpp,
+ * IntersectionType.cpp) */
+
+namespace phpstanturbo {
+
+/* The `static fn (Type $type) => ...` closures UnionType hands to its
+ * protected unionResults()/unionTypes()/pickFromTypes() — the methods
+ * BenevolentUnionType overrides, so the body runs on whichever class the
+ * object is of: a member call on the type ($type->method(...$args)), the
+ * reversed form on the first argument ($args[0]->method($type, ...$args[1..])
+ * — isGreaterThan()'s $otherType->isSmallerThan($type, $phpVersion)), the
+ * looseCompare()->toTrinaryLogic() form, and toArrayKey()'s StringType
+ * passthrough. argv is borrowed. */
+struct UnionMemberOp
+{
+	enum Kind
+	{
+		Call,
+		Reversed,
+		LooseCompare,
+		ToArrayKeyKeepingStrings,
+	};
+
+	Kind kind;
+	const char *lcname;
+	size_t len;
+	uint32_t argc;
+	zval *argv;
+
+	static UnionMemberOp call(const char *lcname, size_t len, uint32_t argc = 0, zval *argv = NULL) { return { Call, lcname, len, argc, argv }; }
+	static UnionMemberOp reversed(const char *lcname, size_t len, uint32_t argc, zval *argv) { return { Reversed, lcname, len, argc, argv }; }
+	static UnionMemberOp looseCompare(zval *argv) { return { LooseCompare, "loosecompare", sizeof("loosecompare") - 1, 2, argv }; }
+	static UnionMemberOp toArrayKeyKeepingStrings() { return { ToArrayKeyKeepingStrings, "toarraykey", sizeof("toarraykey") - 1, 0, NULL }; }
+};
+
+/* the `static fn (Type $type) => $type->isX()->yes()` criteria
+ * pickFromTypes() takes (NULL lcname = none) */
+struct UnionCriteria
+{
+	const char *lcname;
+	size_t len;
+};
+
+} // namespace phpstanturbo
+
+/* the op applied to one member; UNDEF = pending exception (UnionType.cpp) */
+zv::Val pt_union_apply_op(const phpstanturbo::UnionMemberOp &op, zval *type);
+/* `$type->isX()->yes()`; false = pending exception */
+[[nodiscard]] bool pt_union_apply_criteria(const phpstanturbo::UnionCriteria &criteria, zval *type, bool &out);
+/* the op / the criteria as a PHP callable (a PHPStanTurbo\NativeCallback
+ * holder), for a PHP subclass's own unionResults()/unionTypes()/
+ * pickFromTypes(); UNDEF = pending exception */
+zv::Val pt_union_op_callback(const phpstanturbo::UnionMemberOp &op);
+zv::Val pt_union_criteria_callback(const phpstanturbo::UnionCriteria &criteria);
+
+/* $this->types of a UnionType instance (borrowed); NULL with an Error
+ * pending when uninitialized */
+[[nodiscard]] zval *pt_union_type_types(zend_object *object);
+/* $object->getTypes() through the object's class entry, with the direct
+ * path when the method is UnionType's own; UNDEF = pending exception */
+zv::Val pt_union_type_get_types(zend_object *object);
+
+/* the bodies of UnionType::__construct(), filterTypes(), tryRemove(),
+ * describe() and traverseSimultaneously() run on the object (its own class
+ * answering the $this-calls inside them, as parent:: keeps it), for the
+ * child's parent:: calls; false / UNDEF = pending exception */
+[[nodiscard]] bool pt_union_type_construct(zend_object *self, zval *types, bool normalized);
+zv::Val pt_union_type_filter_types(zend_object *self, zend_fcall_info *fci, zend_fcall_info_cache *fcc);
+zv::Val pt_union_type_try_remove(zend_object *self, zval *typeToRemove);
+zv::Val pt_union_type_describe(zend_object *self, zval *level);
+zv::Val pt_union_type_traverse_simultaneously(zend_object *self, zval *right, zend_fcall_info *fci, zend_fcall_info_cache *fcc);
+
+/* BenevolentUnionType's unionResults()/unionTypes()/pickFromTypes() bodies
+ * (BenevolentUnionType.cpp) and the handlers identifying them on a class
+ * entry, so UnionType's $this-calls take the direct path for a benevolent
+ * union too; UNDEF = pending exception */
+zv::Val pt_union_benevolent_union_results(zend_object *self, const phpstanturbo::UnionMemberOp &op);
+zv::Val pt_union_benevolent_union_types(zend_object *self, const phpstanturbo::UnionMemberOp &op);
+zv::Val pt_union_benevolent_pick_from_types(zend_object *self, const phpstanturbo::UnionMemberOp &op, const phpstanturbo::UnionCriteria &criteria);
+zif_handler pt_union_benevolent_union_results_handler();
+zif_handler pt_union_benevolent_union_types_handler();
+zif_handler pt_union_benevolent_pick_from_types_handler();
+
+/* TypeUtils::toBenevolentUnion($type): the type itself for a
+ * BenevolentUnionType, new BenevolentUnionType($type->getTypes()) for any
+ * other UnionType, the type otherwise; UNDEF = pending exception */
+zv::Val pt_union_to_benevolent(zval *type);
+
+/* new IntersectionType($types) ($types consumed); UNDEF = pending exception */
+zv::Val pt_intersection_of(zv::Arr types);
+/* new BenevolentUnionType($types) ($types consumed); UNDEF = pending exception */
+zv::Val pt_union_benevolent_of(zv::Arr types);
+
+/* $value instanceof UnionType / BenevolentUnionType / IntersectionType —
+ * the shadowed classes, whose class entries the native code holds (the
+ * class-map shape kept for the call sites that switched from the table) */
+static inline bool pt_union_type_instanceof(zval *value, bool &out)
+{
+	out = Z_TYPE_P(value) == IS_OBJECT && instanceof_function(Z_OBJCE_P(value), pt_ce_union_type);
+	return true;
+}
+
+static inline bool pt_union_benevolent_instanceof(zval *value, bool &out)
+{
+	out = Z_TYPE_P(value) == IS_OBJECT && instanceof_function(Z_OBJCE_P(value), pt_ce_benevolent_union_type);
+	return true;
+}
+
+static inline bool pt_intersection_type_instanceof(zval *value, bool &out)
+{
+	out = Z_TYPE_P(value) == IS_OBJECT && instanceof_function(Z_OBJCE_P(value), pt_ce_intersection_type);
+	return true;
+}
+
+/* CombinationsHelper::combinations($arrays) — the shadowing class's body
+ * (CombinationsHelper.cpp); UNDEF = pending exception */
+zv::Val pt_combinations_helper_combinations(zval *arrays);
+
+/* }}} */
+
 /* {{{ bodies the Type ports share verbatim — their members forward here */
 
 /* $this as an owned value (a new reference) */
@@ -711,6 +831,14 @@ inline zv::Val pt_type_sub_type_to_accepts_result(zv::Val result)
 		return zv::Val();
 	}
 	return pt_type_call(Z_OBJ_P(result.raw()), PT_LC("toacceptsresult"), 0, NULL);
+}
+
+/* $type instanceof UnionType || $type instanceof IntersectionType */
+inline bool pt_type_is_union_or_intersection(zval *type, bool &out)
+{
+	if (UNEXPECTED(!pt_type_instanceof_ce(type, pt_ce_union_type, out))) return false;
+	if (out) return true;
+	return pt_type_instanceof_ce(type, pt_ce_intersection_type, out);
 }
 
 /* a string type's hasOffsetValueType(): $offsetType->isInteger()->and(maybe);

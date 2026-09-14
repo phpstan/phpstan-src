@@ -88,7 +88,6 @@ enum {
 	PT_CLASS_ARROW_FUNCTION,
 	PT_CLASS_TYPE,
 	PT_CLASS_RECURSION_GUARD,
-	PT_CLASS_UNION_TYPE,
 	PT_CLASS_CLASS_NAME_TO_OBJECT_TYPE_RESULT,
 	PT_CLASS_TEMPLATE_TYPE_MAP,
 	PT_CLASS_IDENTIFIER_TYPE_NODE,
@@ -97,7 +96,6 @@ enum {
 	PT_CLASS_EXPONENTIATE_HELPER,
 	PT_CLASS_COMPOUND_TYPE,
 	PT_CLASS_CONSTANT_SCALAR_TYPE,
-	PT_CLASS_INTERSECTION_TYPE,
 	PT_CLASS_INITIALIZER_EXPR_TYPE_RESOLVER,
 	PT_CLASS_GENERIC_TYPE_NODE,
 	PT_CLASS_CONST_TYPE_NODE,
@@ -123,7 +121,6 @@ enum {
 	PT_CLASS_DUMMY_METHOD_REFLECTION,
 	PT_CLASS_CALLBACK_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION,
 	PT_CLASS_DUMMY_CLASS_CONSTANT_REFLECTION,
-	PT_CLASS_BENEVOLENT_UNION_TYPE,
 	PT_CLASS_TYPE_TRAVERSER,
 	PT_CLASS_TEMPLATE_TYPE_HELPER,
 	PT_CLASS_TYPE_WITH_CLASS_NAME,
@@ -171,6 +168,20 @@ enum {
 	PT_CLASS_ARRAY_SHAPE_ITEM_NODE,
 	PT_CLASS_ARRAY_SHAPE_UNSEALED_TYPE_NODE,
 	PT_CLASS_FINITE_TYPE_SET,
+	PT_CLASS_UNION_TYPE_HELPER,
+	PT_CLASS_TEMPLATE_UNION_TYPE,
+	PT_CLASS_TEMPLATE_ITERABLE_TYPE,
+	PT_CLASS_LATE_RESOLVABLE_TYPE,
+	PT_CLASS_ABSORBED_TEMPLATE_ARGUMENT_TYPE,
+	PT_CLASS_UNION_TYPE_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION,
+	PT_CLASS_MISSING_METHOD_FROM_REFLECTION_EXCEPTION,
+	PT_CLASS_MISSING_CONSTANT_FROM_REFLECTION_EXCEPTION,
+	PT_CLASS_INTERSECTION_TYPE_UNRESOLVED_PROPERTY_PROTOTYPE_REFLECTION,
+	PT_CLASS_INTERSECTION_TYPE_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION,
+	PT_CLASS_ACCESSORY_TYPE,
+	PT_CLASS_TEMPLATE_ARRAY_TYPE,
+	PT_CLASS_UNION_TYPE_NODE,
+	PT_CLASS_INTERSECTION_TYPE_NODE,
 	PT_CLASS_COUNT
 };
 
@@ -724,5 +735,26 @@ void pt_register_constant_array_type();
 [[nodiscard]] bool pt_constant_array_type_new(zval *out, zval *keyTypes, zval *valueTypes, zval *nextAutoIndexes = NULL, zval *optionalKeys = NULL, zval *isList = NULL, zval *unsealed = NULL);
 /* ConstantArrayType::isValidIdentifier($value); false = pending exception */
 [[nodiscard]] bool pt_constant_array_type_is_valid_identifier(zend_string *value, bool &out);
+
+/* merged from the parallel port branch */
+/* the compound family (UnionType.cpp, BenevolentUnionType.cpp,
+ * IntersectionType.cpp) */
+extern zend_class_entry *pt_ce_union_type;
+extern zend_class_entry *pt_ce_benevolent_union_type;
+extern zend_class_entry *pt_ce_intersection_type;
+/* the compound family after the array family (their bodies instantiate
+ * its classes): UnionType first, then its child BenevolentUnionType, then
+ * IntersectionType (whose bodies instantiate both) */
+void pt_register_union_type();
+void pt_register_benevolent_union_type();
+void pt_register_intersection_type();
+/* new UnionType($types, $normalized) / new BenevolentUnionType($types,
+ * $normalized) / new IntersectionType($types) — instances of the shadowing
+ * classes ($types borrowed, checked as the twins' `array` parameters and
+ * constructors check it — fewer than two members throw); false = pending
+ * exception */
+[[nodiscard]] bool pt_union_type_new(zval *out, zval *types, bool normalized = false);
+bool pt_benevolent_union_type_new(zval *out, zval *types, bool normalized = false);
+bool pt_intersection_type_new(zval *out, zval *types);
 
 #endif /* PHPSTANTURBO_SUPPORT_H */

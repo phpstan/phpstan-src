@@ -150,7 +150,7 @@ void pt_register_nonexistent_parent_class_type()
 		zv::Arr types = zv::Arr::create(2);
 		types.push(std::move(classString));
 		types.push(std::move(literal));
-		PT_RETURN_VAL(pt_type_new(PT_CLASS_INTERSECTION_TYPE, 1, types.raw()));
+		PT_RETURN_VAL(pt_intersection_of(std::move(types)));
 	});
 
 	cls.method(sigs::toObjectTypeForInstanceofCheck, [](INTERNAL_FUNCTION_PARAMETERS) {

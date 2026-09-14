@@ -214,7 +214,7 @@ public:
 	zv::Val isSubTypeOf(zval *otherType) const
 	{
 		bool isIntersection, isUnion;
-		if (UNEXPECTED(!pt_type_instanceof(otherType, PT_CLASS_INTERSECTION_TYPE, isIntersection) || !pt_type_instanceof(otherType, PT_CLASS_UNION_TYPE, isUnion))) {
+		if (UNEXPECTED(!pt_type_instanceof_ce(otherType, pt_ce_intersection_type, isIntersection) || !pt_type_instanceof_ce(otherType, pt_ce_union_type, isUnion))) {
 			return zv::Val();
 		}
 		if (isIntersection || isUnion) {
@@ -393,7 +393,7 @@ public:
 	zv::Val inferTemplateTypes(zval *receivedType) const
 	{
 		bool isUnion, isIntersection;
-		if (UNEXPECTED(!pt_type_instanceof(receivedType, PT_CLASS_UNION_TYPE, isUnion) || !pt_type_instanceof(receivedType, PT_CLASS_INTERSECTION_TYPE, isIntersection))) {
+		if (UNEXPECTED(!pt_type_instanceof_ce(receivedType, pt_ce_union_type, isUnion) || !pt_type_instanceof_ce(receivedType, pt_ce_intersection_type, isIntersection))) {
 			return zv::Val();
 		}
 		if (isUnion || isIntersection) {

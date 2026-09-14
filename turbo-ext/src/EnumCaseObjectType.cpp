@@ -337,7 +337,7 @@ public:
 		zv::Val literal = pt_accessory_literal_string_type_new(&literalRaw) ? zv::Val::adopt(literalRaw) : zv::Val();
 		if (UNEXPECTED(literal.isUndef())) return zv::Val();
 		types.push(std::move(literal));
-		return pt_type_new(PT_CLASS_INTERSECTION_TYPE, 1, types.raw());
+		return pt_intersection_of(std::move(types));
 	}
 
 	/* new ConstTypeNode(new ConstFetchNode($this->getClassName(), $this->getEnumCaseName()));

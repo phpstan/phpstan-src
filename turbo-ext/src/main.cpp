@@ -218,6 +218,9 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_callable_type();
 	pt_register_closure_type();
 	pt_register_constant_array_type();
+	pt_register_union_type();
+	pt_register_benevolent_union_type();
+	pt_register_intersection_type();
 
 	return SUCCESS;
 }

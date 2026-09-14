@@ -993,13 +993,13 @@ public:
 			zend_string_release(upper);
 			if (isUpper && UNEXPECTED(!pushNew(accessories, pt_accessory_uppercase_string_type_new))) return zv::Val();
 
-			return pt_type_new(PT_CLASS_INTERSECTION_TYPE, 1, accessories.raw());
+			return pt_intersection_of(std::move(accessories));
 		}
 
 		if (moreSpecific) {
 			zv::Arr accessories = zv::Arr::create(2);
 			if (UNEXPECTED(!pushString(accessories) || !pushNew(accessories, pt_accessory_literal_string_type_new))) return zv::Val();
-			return pt_type_new(PT_CLASS_INTERSECTION_TYPE, 1, accessories.raw());
+			return pt_intersection_of(std::move(accessories));
 		}
 
 		return pt_val_of<pt_string_type_new>();

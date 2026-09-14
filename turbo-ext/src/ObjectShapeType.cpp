@@ -469,8 +469,8 @@ public:
 	zv::Val inferTemplateTypes(zval *receivedType) const
 	{
 		bool compound;
-		if (UNEXPECTED(!pt_type_instanceof(receivedType, PT_CLASS_UNION_TYPE, compound))) return zv::Val();
-		if (!compound && UNEXPECTED(!pt_type_instanceof(receivedType, PT_CLASS_INTERSECTION_TYPE, compound))) return zv::Val();
+		if (UNEXPECTED(!pt_union_type_instanceof(receivedType, compound))) return zv::Val();
+		if (!compound && UNEXPECTED(!pt_intersection_type_instanceof(receivedType, compound))) return zv::Val();
 		if (compound) {
 			zval selfZv;
 			ZVAL_OBJ(&selfZv, self);
@@ -673,7 +673,7 @@ public:
 		zv::Arr types = zv::Arr::create(2);
 		types.push(std::move(floatType));
 		types.push(zv::Val::adopt(integerRaw));
-		return pt_type_new(PT_CLASS_BENEVOLENT_UNION_TYPE, 1, types.raw());
+		return pt_union_benevolent_of(std::move(types));
 	}
 
 	/* new ObjectShapeNode([...]): an identifier key for a valid identifier,

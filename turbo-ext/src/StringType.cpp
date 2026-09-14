@@ -351,7 +351,7 @@ private:
 		zv::Arr types = zv::Arr::create(2);
 		types.push(std::move(string));
 		types.push(std::move(accessory));
-		return pt_type_new(PT_CLASS_INTERSECTION_TYPE, 1, types.raw());
+		return pt_intersection_of(std::move(types));
 	}
 
 	/* ReportUnsafeArrayStringKeyCastingToggle::<name> — a literal class

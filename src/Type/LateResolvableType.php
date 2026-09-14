@@ -2,7 +2,10 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Turbo\ReferencedByTurboExtension;
+
 /** @api */
+#[ReferencedByTurboExtension(key: 'lateResolvableType')]
 interface LateResolvableType
 {
 

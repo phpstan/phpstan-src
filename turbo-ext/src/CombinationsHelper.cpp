@@ -160,3 +160,12 @@ void pt_register_combinations_helper()
 }
 
 /* }}} */
+
+/* {{{ shared with the compound family (TypeTraits.h) */
+
+zv::Val pt_combinations_helper_combinations(zval *arrays)
+{
+	return CombinationsHelper::combinations(zv::ArrRef(arrays));
+}
+
+/* }}} */

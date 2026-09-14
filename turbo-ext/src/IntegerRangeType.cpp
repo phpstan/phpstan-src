@@ -389,11 +389,11 @@ public:
 		if (instanceof_function(Z_OBJCE_P(otherType), pt_ce_integer_type)) return pt_type_call(Z_OBJ_P(otherType), PT_LC("issupertypeof"), 1, &selfZv);
 
 		bool isUnion;
-		if (UNEXPECTED(!pt_type_instanceof(otherType, PT_CLASS_UNION_TYPE, isUnion))) return zv::Val();
+		if (UNEXPECTED(!pt_union_type_instanceof(otherType, isUnion))) return zv::Val();
 		if (isUnion) return isSubTypeOfUnionWithReason(otherType);
 
 		bool isIntersection;
-		if (UNEXPECTED(!pt_type_instanceof(otherType, PT_CLASS_INTERSECTION_TYPE, isIntersection))) return zv::Val();
+		if (UNEXPECTED(!pt_intersection_type_instanceof(otherType, isIntersection))) return zv::Val();
 		if (isIntersection) return pt_type_call(Z_OBJ_P(otherType), PT_LC("issupertypeof"), 1, &selfZv);
 
 		return pt_type_is_super_type_of_result(PT_TRI_NO);
@@ -723,7 +723,7 @@ public:
 			if (UNEXPECTED(nonFalsy.isUndef())) return zv::Val();
 			types.push(std::move(nonFalsy));
 		}
-		return pt_type_new(PT_CLASS_INTERSECTION_TYPE, 1, types.raw());
+		return pt_intersection_of(std::move(types));
 	}
 
 	/* the union with an overlapping or touching IntegerRangeType /
@@ -849,7 +849,7 @@ public:
 	zv::Val exponentiate(zval *exponent) const
 	{
 		bool isUnion;
-		if (UNEXPECTED(!pt_type_instanceof(exponent, PT_CLASS_UNION_TYPE, isUnion))) return zv::Val();
+		if (UNEXPECTED(!pt_union_type_instanceof(exponent, isUnion))) return zv::Val();
 		if (isUnion) {
 			zv::Val types = pt_type_call(Z_OBJ_P(exponent), PT_LC("gettypes"), 0, NULL);
 			if (UNEXPECTED(types.isUndef())) return zv::Val();

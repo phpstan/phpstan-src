@@ -98,7 +98,7 @@ static zv::Val combinatorSpread(const char *lcname, size_t len, HashTable *types
 /* new IntersectionType($types) ($types consumed) */
 static zv::Val intersection(zv::Arr types)
 {
-	return pt_type_new(PT_CLASS_INTERSECTION_TYPE, 1, types.raw());
+	return pt_intersection_of(std::move(types));
 }
 
 /* the shadowed classes' constructors as owned values; UNDEF = pending
@@ -284,7 +284,7 @@ static zv::Val benevolentArrayKey()
 	zv::Arr types = zv::Arr::create(2);
 	types.push(std::move(integer));
 	types.push(std::move(string));
-	zv::Val benevolent = pt_type_new(PT_CLASS_BENEVOLENT_UNION_TYPE, 1, types.raw());
+	zv::Val benevolent = pt_union_benevolent_of(std::move(types));
 	if (UNEXPECTED(benevolent.isUndef())) return zv::Val();
 	return callType(Z_OBJ_P(benevolent.raw()), PT_LC("toarraykey"), 0, NULL);
 }
@@ -915,7 +915,7 @@ public:
 			 * parentheses of '(int|string)' / '(int|non-decimal-int-string)',
 			 * so skip the describe() call for every other key type. */
 			bool isBenevolent;
-			if (UNEXPECTED(!isInstance(unsealedKeyType, PT_CLASS_BENEVOLENT_UNION_TYPE, isBenevolent))) return false;
+			if (UNEXPECTED(!pt_type_instanceof_ce(unsealedKeyType, pt_ce_benevolent_union_type, isBenevolent))) return false;
 			if (isBenevolent) {
 				zv::Val description = describeValue(unsealedKeyType);
 				if (UNEXPECTED(description.isUndef())) return false;
@@ -1445,7 +1445,7 @@ public:
 	{
 		bool compound, isIntersection = false;
 		if (UNEXPECTED(!isInstance(type, PT_CLASS_COMPOUND_TYPE, compound))) return zv::Val();
-		if (compound && UNEXPECTED(!isInstance(type, PT_CLASS_INTERSECTION_TYPE, isIntersection))) return zv::Val();
+		if (compound && UNEXPECTED(!pt_type_instanceof_ce(type, pt_ce_intersection_type, isIntersection))) return zv::Val();
 		if (compound && !isIntersection) {
 			zv::Args args{thisZv(), strictTypes};
 			return pt_type_call(Z_OBJ_P(type), PT_LC("isacceptedby"), 2, args);
@@ -2449,7 +2449,7 @@ public:
 	[[nodiscard]] zend_long recursiveHasOffsetValueType(zval *offsetType) const
 	{
 		bool isUnion;
-		if (UNEXPECTED(!isInstance(offsetType, PT_CLASS_UNION_TYPE, isUnion))) return -1;
+		if (UNEXPECTED(!pt_type_instanceof_ce(offsetType, pt_ce_union_type, isUnion))) return -1;
 		if (isUnion) {
 			zv::Val innerTypes = pt_type_call_array(Z_OBJ_P(offsetType), PT_LC("gettypes"), 0, NULL);
 			if (UNEXPECTED(innerTypes.isUndef())) return -1;
@@ -4298,7 +4298,7 @@ public:
 			 * parentheses of '(int|string)' / '(int|non-decimal-int-string)',
 			 * so skip the describe() call for every other key type. */
 			bool isBenevolent;
-			if (UNEXPECTED(!isInstance(keyType.raw(), PT_CLASS_BENEVOLENT_UNION_TYPE, isBenevolent))) return zv::Val();
+			if (UNEXPECTED(!pt_type_instanceof_ce(keyType.raw(), pt_ce_benevolent_union_type, isBenevolent))) return zv::Val();
 			if (isBenevolent) {
 				zv::Val keyDescription = describeValue(keyType.raw());
 				if (UNEXPECTED(keyDescription.isUndef())) return zv::Val();
@@ -4363,8 +4363,8 @@ public:
 	zv::Val inferTemplateTypes(zval *receivedType) const
 	{
 		bool isUnion, isIntersection = false;
-		if (UNEXPECTED(!isInstance(receivedType, PT_CLASS_UNION_TYPE, isUnion))) return zv::Val();
-		if (!isUnion && UNEXPECTED(!isInstance(receivedType, PT_CLASS_INTERSECTION_TYPE, isIntersection))) return zv::Val();
+		if (UNEXPECTED(!pt_type_instanceof_ce(receivedType, pt_ce_union_type, isUnion))) return zv::Val();
+		if (!isUnion && UNEXPECTED(!pt_type_instanceof_ce(receivedType, pt_ce_intersection_type, isIntersection))) return zv::Val();
 		if (isUnion || isIntersection) return pt_type_call(Z_OBJ_P(receivedType), PT_LC("infertemplatetypeson"), 1, thisZv());
 
 		if (instanceof_function(Z_OBJCE_P(receivedType), pt_ce_constant_array_type)) {
@@ -5524,7 +5524,7 @@ public:
 		if (Z_TYPE_P(key) == IS_OBJECT && instanceof_function(Z_OBJCE_P(key), pt_ce_constant_string_type)) return foldConstantStringKeyCase(key, caseArg);
 
 		bool isUnion;
-		if (UNEXPECTED(!isInstance(key, PT_CLASS_UNION_TYPE, isUnion))) return zv::Val();
+		if (UNEXPECTED(!pt_type_instanceof_ce(key, pt_ce_union_type, isUnion))) return zv::Val();
 		if (isUnion) {
 			zv::Val innerKeys = pt_type_call_array(Z_OBJ_P(key), PT_LC("gettypes"), 0, NULL);
 			if (UNEXPECTED(innerKeys.isUndef())) return zv::Val();

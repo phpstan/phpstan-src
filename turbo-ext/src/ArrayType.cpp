@@ -65,7 +65,7 @@ static zv::Val emptyConstantArray()
 /* new IntersectionType($types) ($types consumed) */
 static zv::Val intersection(zv::Arr types)
 {
-	return pt_type_new(PT_CLASS_INTERSECTION_TYPE, 1, types.raw());
+	return pt_intersection_of(std::move(types));
 }
 
 /* new NonEmptyArrayType() / new AccessoryArrayListType() / new
@@ -141,7 +141,7 @@ public:
 	{
 		zv::Val keyType = zv::Val::copyOf(zv::Ref(keyTypeArg));
 		bool isBenevolent;
-		if (UNEXPECTED(!isInstance(keyType.raw(), PT_CLASS_BENEVOLENT_UNION_TYPE, isBenevolent))) return false;
+		if (UNEXPECTED(!pt_union_benevolent_instanceof(keyType.raw(), isBenevolent))) return false;
 		if (isBenevolent) {
 			zv::Val level = pt_type_call_static(PT_CLASS_VERBOSITY_LEVEL, PT_LC("value"), 0, NULL);
 			if (UNEXPECTED(level.isUndef())) return false;
@@ -590,10 +590,9 @@ public:
 	 * exception */
 	static zv::Val unionKeyTypeWithConstantOffset(zval *k, zval *offsetType)
 	{
-		bool isUnion, isBenevolent;
-		if (UNEXPECTED(!isInstance(k, PT_CLASS_UNION_TYPE, isUnion))) return zv::Val();
-		if (UNEXPECTED(!isInstance(k, PT_CLASS_BENEVOLENT_UNION_TYPE, isBenevolent))) return zv::Val();
-		if (isUnion && !isBenevolent) {
+		if (Z_TYPE_P(k) == IS_OBJECT
+			&& instanceof_function(Z_OBJCE_P(k), pt_ce_union_type)
+			&& !instanceof_function(Z_OBJCE_P(k), pt_ce_benevolent_union_type)) {
 			zend_class_entry *templateType = pt_class(PT_CLASS_TEMPLATE_TYPE);
 			if (UNEXPECTED(templateType == NULL && EG(exception))) return zv::Val();
 			if (templateType == NULL || !instanceof_function(Z_OBJCE_P(k), templateType)) {
@@ -1368,8 +1367,8 @@ public:
 	zv::Val inferTemplateTypes(zval *receivedType) const
 	{
 		bool isUnion, isIntersection = false;
-		if (UNEXPECTED(!isInstance(receivedType, PT_CLASS_UNION_TYPE, isUnion))) return zv::Val();
-		if (!isUnion && UNEXPECTED(!isInstance(receivedType, PT_CLASS_INTERSECTION_TYPE, isIntersection))) return zv::Val();
+		if (UNEXPECTED(!pt_union_type_instanceof(receivedType, isUnion))) return zv::Val();
+		if (!isUnion && UNEXPECTED(!pt_intersection_type_instanceof(receivedType, isIntersection))) return zv::Val();
 		if (isUnion || isIntersection) {
 			zval selfZv;
 			ZVAL_OBJ(&selfZv, self);
@@ -1718,7 +1717,7 @@ private:
 		zv::Arr types = zv::Arr::create(2);
 		types.push(std::move(integer));
 		types.push(std::move(string));
-		zv::Val benevolent = pt_type_new(PT_CLASS_BENEVOLENT_UNION_TYPE, 1, types.raw());
+		zv::Val benevolent = pt_union_benevolent_of(std::move(types));
 		if (UNEXPECTED(benevolent.isUndef())) return zv::Val();
 		return callType(Z_OBJ_P(benevolent.raw()), PT_LC("toarraykey"), 0, NULL);
 	}
@@ -1802,7 +1801,7 @@ private:
 			return false;
 		}
 		bool isUnion;
-		if (UNEXPECTED(!isInstance(&argv[0], PT_CLASS_UNION_TYPE, isUnion))) {
+		if (UNEXPECTED(!pt_union_type_instanceof(&argv[0], isUnion))) {
 			handled = true;
 			return false;
 		}

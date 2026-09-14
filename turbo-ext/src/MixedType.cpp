@@ -696,7 +696,7 @@ public:
 	{
 		zv::Arr types = zv::Arr::create(2);
 		if (UNEXPECTED(!pushInteger(types) || !pushString(types))) return zv::Val();
-		return pt_type_new(PT_CLASS_BENEVOLENT_UNION_TYPE, 1, types.raw());
+		return pt_union_benevolent_of(std::move(types));
 	}
 
 	/* no when the subtracted type covers every iterable, maybe otherwise;
@@ -1014,7 +1014,7 @@ public:
 	{
 		zv::Arr types = zv::Arr::create(2);
 		if (UNEXPECTED(!pushNew(types, pt_float_type_new) || !pushInteger(types))) return zv::Val();
-		return pt_type_new(PT_CLASS_BENEVOLENT_UNION_TYPE, 1, types.raw());
+		return pt_union_benevolent_of(std::move(types));
 	}
 
 	/* new IdentifierTypeNode('mixed') */
@@ -1245,7 +1245,7 @@ private:
 	}
 
 	/* new IntersectionType($types) */
-	static zv::Val intersectionOf(zv::Arr types) { return pt_type_new(PT_CLASS_INTERSECTION_TYPE, 1, types.raw()); }
+	static zv::Val intersectionOf(zv::Arr types) { return pt_intersection_of(std::move(types)); }
 
 	/* new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $valueType), new AccessoryArrayListType()]) */
 	static zv::Val listOf(zv::Val valueType)

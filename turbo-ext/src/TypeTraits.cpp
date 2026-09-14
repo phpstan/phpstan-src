@@ -238,7 +238,9 @@ zend_long pt_type_result_trinary(zval *result)
 
 zv::Val pt_type_new_union(zv::Arr types)
 {
-	return pt_type_new(PT_CLASS_UNION_TYPE, 1, types.raw());
+	zval result;
+	if (UNEXPECTED(!pt_union_type_new(&result, types.raw()))) return zv::Val();
+	return zv::Val::adopt(result);
 }
 
 /* the spread of a PHP array into an argument vector: a packed table
@@ -640,9 +642,7 @@ void pt_type_trait_non_object(reg::Class &cls)
 			zv::Arr types = zv::Arr::create(2);
 			types.push(std::move(objectWithoutClass));
 			types.push(zv::Val::adopt(classString));
-			zval typesZv = types.take();
-			type = pt_type_new(PT_CLASS_UNION_TYPE, 1, &typesZv);
-			zval_ptr_dtor(&typesZv);
+			type = pt_type_new_union(std::move(types));
 			if (UNEXPECTED(type.isUndef())) RETURN_THROWS();
 		} else {
 			type = std::move(objectWithoutClass);
@@ -1323,7 +1323,7 @@ zv::Val pt_type_describe_subtracted_type(zval *subtractedType, zval *level)
 	/* $subtractedType instanceof UnionType
 	 * || ($subtractedType instanceof SubtractableType && $subtractedType->getSubtractedType() !== null) */
 	bool wrap;
-	if (UNEXPECTED(!pt_type_instanceof(subtractedType, PT_CLASS_UNION_TYPE, wrap))) return zv::Val();
+	if (UNEXPECTED(!pt_union_type_instanceof(subtractedType, wrap))) return zv::Val();
 	if (!wrap) {
 		bool subtractable;
 		if (UNEXPECTED(!pt_type_instanceof(subtractedType, PT_CLASS_SUBTRACTABLE_TYPE, subtractable))) return zv::Val();
@@ -1631,7 +1631,7 @@ void pt_type_trait_object(reg::Class &cls)
 		zv::Arr types = zv::Arr::create(2);
 		types.push(std::move(classString));
 		types.push(std::move(literal));
-		PT_RETURN_VAL(pt_type_new(PT_CLASS_INTERSECTION_TYPE, 1, types.raw()));
+		PT_RETURN_VAL(pt_intersection_of(std::move(types)));
 	});
 
 	cls.traitMethod(sigs::toObjectTypeForInstanceofCheck, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -1998,7 +1998,7 @@ static zv::Val pt_trait_list_of(zv::Val valueType)
 	zv::Arr types = zv::Arr::create(2);
 	types.push(zv::Val::adopt(arrayRaw));
 	types.push(zv::Val::adopt(listRaw));
-	return pt_type_new(PT_CLASS_INTERSECTION_TYPE, 1, types.raw());
+	return pt_intersection_of(std::move(types));
 }
 
 /* TypeCombinator::intersect($type, new NonEmptyArrayType()) */
@@ -2342,7 +2342,7 @@ zv::Val pt_type_new_shadowed(bool (*construct)(zval *))
 
 zv::Val pt_type_new_intersection(zv::Arr types)
 {
-	return pt_type_new(PT_CLASS_INTERSECTION_TYPE, 1, types.raw());
+	return pt_intersection_of(std::move(types));
 }
 
 zv::Val pt_type_new_string_with_accessory(bool (*construct)(zval *))
@@ -2393,7 +2393,7 @@ zv::Val pt_type_new_float_or_int_benevolent_union()
 	zv::Arr types = zv::Arr::create(2);
 	types.push(std::move(floatType));
 	types.push(zv::Val::adopt(integerRaw));
-	return pt_type_new(PT_CLASS_BENEVOLENT_UNION_TYPE, 1, types.raw());
+	return pt_union_benevolent_of(std::move(types));
 }
 
 zv::Val pt_type_new_identifier_type_node(const char *name, size_t len)

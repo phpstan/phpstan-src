@@ -296,7 +296,7 @@ public:
 		zv::Arr types = zv::Arr::create(2);
 		types.push(std::move(floatType));
 		types.push(zv::Val::adopt(integerRaw));
-		return pt_type_new(PT_CLASS_BENEVOLENT_UNION_TYPE, 1, types.raw());
+		return pt_union_benevolent_of(std::move(types));
 	}
 
 	/* new IdentifierTypeNode('object') */

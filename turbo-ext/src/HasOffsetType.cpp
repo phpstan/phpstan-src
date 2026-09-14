@@ -373,9 +373,9 @@ private:
 	 * false = pending exception */
 	[[nodiscard]] static bool isUnionOrIntersection(zval *type, bool &out)
 	{
-		if (UNEXPECTED(!pt_type_instanceof(type, PT_CLASS_UNION_TYPE, out))) return false;
+		if (UNEXPECTED(!pt_union_type_instanceof(type, out))) return false;
 		if (out) return true;
-		return pt_type_instanceof(type, PT_CLASS_INTERSECTION_TYPE, out);
+		return pt_intersection_type_instanceof(type, out);
 	}
 
 	/* TypeCombinator::intersect($this, new NonEmptyArrayType()) */

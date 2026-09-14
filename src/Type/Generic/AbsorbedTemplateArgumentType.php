@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Generic;
 
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 
@@ -15,6 +16,7 @@ use PHPStan\Type\Type;
  * class only tells FunctionCallParametersCheck not to ask the caller to resolve a template
  * the signature already declared as optional.
  */
+#[ReferencedByTurboExtension(key: 'absorbedTemplateArgumentType')]
 final class AbsorbedTemplateArgumentType extends ErrorType
 {
 

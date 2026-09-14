@@ -197,12 +197,7 @@ private:
 
 	/* $type instanceof UnionType || $type instanceof IntersectionType;
 	 * false = pending exception */
-	[[nodiscard]] static bool isUnionOrIntersection(zval *type, bool &out)
-	{
-		if (UNEXPECTED(!pt_type_instanceof(type, PT_CLASS_UNION_TYPE, out))) return false;
-		if (out) return true;
-		return pt_type_instanceof(type, PT_CLASS_INTERSECTION_TYPE, out);
-	}
+	[[nodiscard]] static bool isUnionOrIntersection(zval *type, bool &out) { return pt_type_is_union_or_intersection(type, out); }
 };
 
 } // namespace phpstanturbo

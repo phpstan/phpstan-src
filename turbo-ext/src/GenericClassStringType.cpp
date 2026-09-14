@@ -265,8 +265,8 @@ public:
 	zv::Val inferTemplateTypes(zval *receivedType) const
 	{
 		bool isUnion, isIntersection = false;
-		if (UNEXPECTED(!pt_type_instanceof(receivedType, PT_CLASS_UNION_TYPE, isUnion))) return zv::Val();
-		if (!isUnion && UNEXPECTED(!pt_type_instanceof(receivedType, PT_CLASS_INTERSECTION_TYPE, isIntersection))) return zv::Val();
+		if (UNEXPECTED(!pt_union_type_instanceof(receivedType, isUnion))) return zv::Val();
+		if (!isUnion && UNEXPECTED(!pt_intersection_type_instanceof(receivedType, isIntersection))) return zv::Val();
 		if (isUnion || isIntersection) {
 			zval selfZv;
 			ZVAL_OBJ(&selfZv, self);

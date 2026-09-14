@@ -494,9 +494,9 @@ public:
 	zv::Val inferTemplateTypes(zval *receivedType) const
 	{
 		bool is;
-		if (UNEXPECTED(!pt_type_instanceof(receivedType, PT_CLASS_UNION_TYPE, is))) return zv::Val();
+		if (UNEXPECTED(!pt_type_instanceof_ce(receivedType, pt_ce_union_type, is))) return zv::Val();
 		if (!is) {
-			if (UNEXPECTED(!pt_type_instanceof(receivedType, PT_CLASS_INTERSECTION_TYPE, is))) return zv::Val();
+			if (UNEXPECTED(!pt_type_instanceof_ce(receivedType, pt_ce_intersection_type, is))) return zv::Val();
 		}
 		if (is) {
 			zval selfZv;

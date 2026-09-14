@@ -384,6 +384,7 @@ struct Constant
 	zend_long value;
 	uint32_t flags; /* ZEND_ACC_PUBLIC / ZEND_ACC_PRIVATE */
 	const char *stringValue = nullptr; /* persistent literal of a string constant (`private const X = '...'`); value is unused then */
+	void (*buildValue)(zval *out) = nullptr; /* a non-int constant (an array): fills *out with a persistent, immutable value the engine references for the process lifetime */
 };
 
 /*
@@ -513,6 +514,14 @@ inline void declareMembers(zend_class_entry *ce, const std::vector<Property> &pr
 		}
 	}
 	for (const Constant &constant : constants) {
+		if (constant.buildValue != nullptr) {
+			zend_string *nameStr = zend_string_init_interned(constant.name, strlen(constant.name), ce->type == ZEND_INTERNAL_CLASS);
+			zval value;
+			constant.buildValue(&value);
+			zend_declare_class_constant_ex(ce, nameStr, &value, (int) constant.flags, NULL);
+			zend_string_release(nameStr);
+			continue;
+		}
 		if (constant.flags == ZEND_ACC_PUBLIC && constant.stringValue == nullptr) {
 			zend_declare_class_constant_long(ce, constant.name, strlen(constant.name), constant.value);
 			continue;
@@ -853,10 +862,11 @@ public:
 		return *this;
 	}
 
-	/* a `private ?Foo $x = null` class-typed property */
-	Class &privateTypedClassPropertyDefaultNull(const char *propertyName, const char *className)
+	/* a `private ?Foo $x = null` class-typed property; extraMask adds the
+	 * scalar members of a `private Foo|false|null $x = null` (MAY_BE_FALSE) */
+	Class &privateTypedClassPropertyDefaultNull(const char *propertyName, const char *className, uint32_t extraMask = 0)
 	{
-		properties.push_back({ propertyName, PropertyKind::TypedNull, ZEND_ACC_PRIVATE, (zend_long) MAY_BE_NULL, className });
+		properties.push_back({ propertyName, PropertyKind::TypedNull, ZEND_ACC_PRIVATE, (zend_long) (MAY_BE_NULL | extraMask), className });
 		return *this;
 	}
 
@@ -932,6 +942,15 @@ public:
 	Class &privateClassConstantString(const char *constantName, const char *value)
 	{
 		constants.push_back({ constantName, 0, ZEND_ACC_PRIVATE, value });
+		return *this;
+	}
+
+	/* a `public const X = [...]` class constant whose value the builder
+	 * fills in at declaration (a persistent, immutable value — the engine
+	 * references it for the process lifetime) */
+	Class &classConstantValue(const char *constantName, void (*buildValue)(zval *out))
+	{
+		constants.push_back({ constantName, 0, ZEND_ACC_PUBLIC, nullptr, buildValue });
 		return *this;
 	}
 

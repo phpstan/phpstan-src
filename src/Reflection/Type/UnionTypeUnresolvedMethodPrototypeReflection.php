@@ -4,9 +4,11 @@ namespace PHPStan\Reflection\Type;
 
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Type;
 use function array_map;
 
+#[ReferencedByTurboExtension(key: 'unionTypeUnresolvedMethodPrototypeReflection')]
 final class UnionTypeUnresolvedMethodPrototypeReflection implements UnresolvedMethodPrototypeReflection
 {
 

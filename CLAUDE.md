@@ -282,7 +282,7 @@ Recent work on PHP 8.5 support shows the pattern:
 - **Parser support**: Update nikic/php-parser dependency, handle new AST node types
 - **NodeScopeResolver**: Handle new syntax (pipe operator, clone-with, void cast)
 - **Type system**: New type representations if needed
-- **Rules**: Version-gated rules (e.g. deprecated casts only reported on PHP 8.5+, `#[NoDiscard]` only on PHP 8.5+)
+- **Rules**: Version-gated rules (e.g. deprecated casts only reported on PHP 8.5+)
 - **InitializerExprTypeResolver**: Support new constant expression forms (casts, first-class callables, static closures in initializers)
 - **Reflection**: Support new attributes, property features (asymmetric visibility on static properties, `#[Override]` on properties)
 - **PhpVersion**: Add detection methods like `supportsPropertyHooks()`, `supportsPipeOperator()`, etc.

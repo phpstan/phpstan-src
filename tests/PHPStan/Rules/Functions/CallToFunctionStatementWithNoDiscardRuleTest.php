@@ -2,11 +2,8 @@
 
 namespace PHPStan\Rules\Functions;
 
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use PHPUnit\Framework\Attributes\RequiresPhp;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<CallToFunctionStatementWithNoDiscardRule>
@@ -16,10 +13,9 @@ class CallToFunctionStatementWithNoDiscardRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new CallToFunctionStatementWithNoDiscardRule(self::createReflectionProvider(), new PhpVersion(PHP_VERSION_ID));
+		return new CallToFunctionStatementWithNoDiscardRule(self::createReflectionProvider());
 	}
 
-	#[RequiresPhp('>= 8.5.0')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/function-call-statement-result-discarded.php'], [

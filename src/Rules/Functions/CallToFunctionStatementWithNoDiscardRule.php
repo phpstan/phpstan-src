@@ -5,7 +5,6 @@ namespace PHPStan\Rules\Functions;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -22,7 +21,6 @@ final class CallToFunctionStatementWithNoDiscardRule implements Rule
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
-		private PhpVersion $phpVersion,
 	)
 	{
 	}
@@ -58,10 +56,6 @@ final class CallToFunctionStatementWithNoDiscardRule implements Rule
 		}
 
 		if ($funcCall->isFirstClassCallable()) {
-			return [];
-		}
-
-		if (!$this->phpVersion->supportsNoDiscardAttribute()) {
 			return [];
 		}
 

@@ -2,12 +2,9 @@
 
 namespace PHPStan\Rules\Methods;
 
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
-use PHPUnit\Framework\Attributes\RequiresPhp;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<CallToMethodStatementWithNoDiscardRule>
@@ -28,11 +25,9 @@ class CallToMethodStatementWithNoDiscardRuleTest extends RuleTestCase
 				checkBenevolentUnionTypes: false,
 				discoveringSymbolsTip: true,
 			),
-			new PhpVersion(PHP_VERSION_ID),
 		);
 	}
 
-	#[RequiresPhp('>= 8.5.0')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/method-call-statement-result-discarded.php'], [

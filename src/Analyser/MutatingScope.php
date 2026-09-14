@@ -5006,6 +5006,31 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		return $newVariableTypeHolders;
 	}
 
+	/**
+	 * TypeUtils::flattenTypes() expands a shape with optional keys into every
+	 * concrete variant (2^N of them, four lossy representatives above ten),
+	 * only for the union below to merge them back into the very same shape -
+	 * quadratic in the number of variants. The per-key widening reads the
+	 * shape's keys, values and optionality directly, so only unions are split.
+	 *
+	 * @return list<Type>
+	 */
+	private function flattenUnionForGeneralization(Type $type): array
+	{
+		if (!$type instanceof UnionType) {
+			return [$type];
+		}
+
+		$types = [];
+		foreach ($type->getTypes() as $innerType) {
+			foreach ($this->flattenUnionForGeneralization($innerType) as $flattenedType) {
+				$types[] = $flattenedType;
+			}
+		}
+
+		return $types;
+	}
+
 	private function generalizeType(Type $a, Type $b, int $depth): Type
 	{
 		if ($a->equals($b)) {
@@ -5033,8 +5058,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		$otherTypes = [];
 
 		foreach ([
-			'a' => TypeUtils::flattenTypes($a),
-			'b' => TypeUtils::flattenTypes($b),
+			'a' => $this->flattenUnionForGeneralization($a),
+			'b' => $this->flattenUnionForGeneralization($b),
 		] as $key => $types) {
 			foreach ($types as $type) {
 				if ($type instanceof ConstantIntegerType) {

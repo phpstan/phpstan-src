@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Name\FullyQualified;
+use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\Node\Expr\PossiblyImpureCallExpr;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
@@ -27,7 +28,11 @@ class ScopeTest extends PHPStanTestCase
 
 	public static function dataGeneralize(): array
 	{
-		return [
+		// A directly constructed shape is a legacy (unsealed) one only while bleeding
+		// edge is off - the toggle is process-global, and PHPUnit 9 evaluates the
+		// provider after earlier test classes may have left it on. The widening
+		// contract below is the legacy one, so the inputs are pinned to it.
+		return BleedingEdgeToggle::withBleedingEdge(false, static fn (): array => [
 			[
 				new ConstantStringType('a'),
 				new ConstantStringType('a'),
@@ -229,7 +234,7 @@ class ScopeTest extends PHPStanTestCase
 				IntegerRangeType::fromInterval(null, 16),
 				'int<min, 16>',
 			],
-		];
+		]);
 	}
 
 	#[DataProvider('dataGeneralize')]

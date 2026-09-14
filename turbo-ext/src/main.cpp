@@ -217,6 +217,7 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_iterable_type();
 	pt_register_callable_type();
 	pt_register_closure_type();
+	pt_register_constant_array_type();
 
 	return SUCCESS;
 }

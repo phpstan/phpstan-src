@@ -37,6 +37,9 @@ use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprIntegerNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstFetchNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode;
+use PHPStan\PhpDocParser\Ast\Type\ArrayShapeItemNode;
+use PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode;
+use PHPStan\PhpDocParser\Ast\Type\ArrayShapeUnsealedTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\CallableTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\CallableTypeParameterNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
@@ -138,6 +141,9 @@ final class TurboAttributeCollector
 		'callableTypeNode' => CallableTypeNode::class,
 		'callableTypeParameterNode' => CallableTypeParameterNode::class,
 		'templateTagValueNode' => TemplateTagValueNode::class,
+		'arrayShapeNode' => ArrayShapeNode::class,
+		'arrayShapeItemNode' => ArrayShapeItemNode::class,
+		'arrayShapeUnsealedTypeNode' => ArrayShapeUnsealedTypeNode::class,
 	];
 
 	private string $realRoot;

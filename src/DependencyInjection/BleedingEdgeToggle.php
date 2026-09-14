@@ -4,7 +4,9 @@ namespace PHPStan\DependencyInjection;
 
 use Generator;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
+#[ReferencedByTurboExtension(key: 'bleedingEdgeToggle')]
 final class BleedingEdgeToggle
 {
 

@@ -1192,10 +1192,10 @@ private:
 	/* new ConstantArrayType([], []) */
 	static zv::Val emptyConstantArray()
 	{
-		zval args[2];
-		ZVAL_EMPTY_ARRAY(&args[0]);
-		ZVAL_EMPTY_ARRAY(&args[1]);
-		return pt_type_new(PT_CLASS_CONSTANT_ARRAY_TYPE, 2, args);
+		zval empty, result;
+		ZVAL_EMPTY_ARRAY(&empty);
+		if (UNEXPECTED(!pt_constant_array_type_new(&result, &empty, &empty))) return zv::Val();
+		return zv::Val::adopt(result);
 	}
 
 	/* new <Shadowed>() through its exported constructor */

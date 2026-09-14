@@ -688,10 +688,10 @@ public:
 			zval propertyName;
 			keyValue(entry, &propertyName);
 			zv::Val nameString = keyString(entry);
-			zv::Val isValid = pt_type_call_static(PT_CLASS_CONSTANT_ARRAY_TYPE, PT_LC("isvalididentifier"), 1, nameString.raw());
-			if (UNEXPECTED(isValid.isUndef())) return zv::Val();
+			bool isValid;
+			if (UNEXPECTED(!pt_constant_array_type_is_valid_identifier(zv::Ref(nameString.raw()).asString(), isValid))) return zv::Val();
 			zv::Val keyNode;
-			if (zend_is_true(isValid.raw())) {
+			if (isValid) {
 				keyNode = pt_type_new(PT_CLASS_IDENTIFIER_TYPE_NODE, 1, nameString.raw());
 				if (UNEXPECTED(keyNode.isUndef())) return zv::Val();
 			} else {

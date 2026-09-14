@@ -63,7 +63,9 @@ public:
 	 * exception */
 	static zv::Val setOffsetValueType(zval *offsetType, zval *valueType)
 	{
-		if (offsetType == NULL) return pt_type_new_error_type();
+		/* $offsetType === null — a NULL pointer from zpp, or a null zval from a
+		 * caller forwarding the accessory types' parsed arguments */
+		if (offsetType == NULL || Z_TYPE_P(offsetType) == IS_NULL) return pt_type_new_error_type();
 
 		zv::Val valueStringType = pt_type_call(Z_OBJ_P(valueType), PT_LC("tostring"), 0, NULL);
 		if (UNEXPECTED(valueStringType.isUndef())) return zv::Val();
@@ -158,30 +160,7 @@ public:
 	/* new ConstantArrayType([new ConstantIntegerType(0)], [$this], [1],
 	 * isList: TrinaryLogic::createYes()) — the named argument skips
 	 * $optionalKeys, whose default is [] */
-	zv::Val toArray() const
-	{
-		zv::Val zero = pt_type_new_constant_integer(0);
-		if (UNEXPECTED(zero.isUndef())) return zv::Val();
-		zv::Arr keyTypes = zv::Arr::create(1);
-		keyTypes.push(std::move(zero));
-		zv::Arr valueTypes = zv::Arr::create(1);
-		zval selfZv;
-		ZVAL_OBJ(&selfZv, self);
-		valueTypes.push(zv::Ref(&selfZv));
-		zv::Arr nextAutoIndexes = zv::Arr::create(1);
-		nextAutoIndexes.push(zv::Val::integer(1));
-		zval args[5];
-		args[0] = keyTypes.take();
-		args[1] = valueTypes.take();
-		args[2] = nextAutoIndexes.take();
-		ZVAL_EMPTY_ARRAY(&args[3]);
-		ZVAL_COPY_VALUE(&args[4], pt_trinary_singleton(PT_TRI_YES));
-		zv::Val result = pt_type_new(PT_CLASS_CONSTANT_ARRAY_TYPE, 5, args);
-		zval_ptr_dtor(&args[0]);
-		zval_ptr_dtor(&args[1]);
-		zval_ptr_dtor(&args[2]);
-		return result;
-	}
+	zv::Val toArray() const { return pt_type_scalar_to_array(self); }
 
 	/* $this unless ReportUnsafeArrayStringKeyCastingToggle::getLevel() is
 	 * PREVENT; then $this / new IntegerType() when $this->isDecimalIntegerString()

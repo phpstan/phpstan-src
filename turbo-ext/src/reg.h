@@ -305,9 +305,9 @@ constexpr Arg stringArg(const char *name, bool nullable = false)
 	return { name, detail::codeMask(IS_STRING, nullable) | detail::flagBits(false, false), nullptr };
 }
 
-constexpr Arg arrayArg(const char *name)
+constexpr Arg arrayArg(const char *name, bool nullable = false)
 {
-	return { name, detail::codeMask(IS_ARRAY, false) | detail::flagBits(false, false), nullptr };
+	return { name, detail::codeMask(IS_ARRAY, nullable) | detail::flagBits(false, false), nullptr };
 }
 
 constexpr Arg callableArg(const char *name)
@@ -383,6 +383,7 @@ struct Constant
 	const char *name;
 	zend_long value;
 	uint32_t flags; /* ZEND_ACC_PUBLIC / ZEND_ACC_PRIVATE */
+	const char *stringValue = nullptr; /* persistent literal of a string constant (`private const X = '...'`); value is unused then */
 };
 
 /*
@@ -512,13 +513,19 @@ inline void declareMembers(zend_class_entry *ce, const std::vector<Property> &pr
 		}
 	}
 	for (const Constant &constant : constants) {
-		if (constant.flags == ZEND_ACC_PUBLIC) {
+		if (constant.flags == ZEND_ACC_PUBLIC && constant.stringValue == nullptr) {
 			zend_declare_class_constant_long(ce, constant.name, strlen(constant.name), constant.value);
 			continue;
 		}
 		zend_string *nameStr = zend_string_init_interned(constant.name, strlen(constant.name), ce->type == ZEND_INTERNAL_CLASS);
 		zval value;
-		ZVAL_LONG(&value, constant.value);
+		if (constant.stringValue != nullptr) {
+			/* interned like a compiled literal: a user class's constants are
+			 * released with the class, an internal class's must persist */
+			ZVAL_STR(&value, zend_string_init_interned(constant.stringValue, strlen(constant.stringValue), ce->type == ZEND_INTERNAL_CLASS));
+		} else {
+			ZVAL_LONG(&value, constant.value);
+		}
 		zend_declare_class_constant_ex(ce, nameStr, &value, (int) constant.flags, NULL);
 		zend_string_release(nameStr);
 	}
@@ -917,6 +924,14 @@ public:
 	Class &privateClassConstantLong(const char *constantName, zend_long value)
 	{
 		constants.push_back({ constantName, value, ZEND_ACC_PRIVATE });
+		return *this;
+	}
+
+	/* a `private const X = '<string>'` class constant; value is a persistent
+	 * literal */
+	Class &privateClassConstantString(const char *constantName, const char *value)
+	{
+		constants.push_back({ constantName, 0, ZEND_ACC_PRIVATE, value });
 		return *this;
 	}
 

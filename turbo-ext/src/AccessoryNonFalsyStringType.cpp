@@ -173,10 +173,10 @@ public:
 		zv::Val falseType = zv::Val::adopt(falseRaw);
 		zv::Val emptyString = pt_type_new_constant_string("", 0);
 		if (UNEXPECTED(emptyString.isUndef())) return zv::Val();
-		zval emptyArrayArgs[2];
+		zval emptyArrayArgs[2], emptyArrayRaw;
 		ZVAL_EMPTY_ARRAY(&emptyArrayArgs[0]);
 		ZVAL_EMPTY_ARRAY(&emptyArrayArgs[1]);
-		zv::Val emptyArray = pt_type_new(PT_CLASS_CONSTANT_ARRAY_TYPE, 2, emptyArrayArgs);
+		zv::Val emptyArray = pt_constant_array_type_new(&emptyArrayRaw, &emptyArrayArgs[0], &emptyArrayArgs[1]) ? zv::Val::adopt(emptyArrayRaw) : zv::Val();
 		if (UNEXPECTED(emptyArray.isUndef())) return zv::Val();
 		zv::Args args{nullType.raw(), falseType.raw(), emptyString.raw(), emptyArray.raw()};
 		zv::Val dominated = pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), 4, args);

@@ -2012,6 +2012,39 @@ static zv::Val pt_trait_intersect_non_empty(zval *type)
 	return result;
 }
 
+/* chunkArray(Type $lengthType, TrinaryLogic $preserveKeys): a list of
+ * non-empty chunks — $this when keys are preserved, else a list of the
+ * iterable value type — non-empty for a non-empty $this; also registered
+ * under an alias by ConstantArrayType (`chunkArray as traitChunkArray`) */
+static void ZEND_FASTCALL arrayTraitChunkArray(INTERNAL_FUNCTION_PARAMETERS)
+{
+	zval *lengthType, *preserveKeys;
+	if (!zp::parse<zp::Obj, zp::Obj>(execute_data, lengthType, preserveKeys)) RETURN_THROWS();
+	/* $chunkType = $preserveKeys->yes() ? $this : list<$this->getIterableValueType()> */
+	zend_long preserve = pt_type_trinary_value(preserveKeys);
+	if (UNEXPECTED(preserve < 0)) RETURN_THROWS();
+	zv::Val chunkType;
+	if (preserve == PT_TRI_YES) {
+		chunkType = zv::Val::copyOf(zv::Ref(ZEND_THIS));
+	} else {
+		chunkType = pt_trait_list_of(pt_type_call(PT_THIS_OBJ, PT_LC("getiterablevaluetype"), 0, NULL));
+		if (UNEXPECTED(chunkType.isUndef())) RETURN_THROWS();
+	}
+	/* $chunkType = TypeCombinator::intersect($chunkType, new NonEmptyArrayType()) */
+	chunkType = pt_trait_intersect_non_empty(chunkType.raw());
+	if (UNEXPECTED(chunkType.isUndef())) RETURN_THROWS();
+	/* $arrayType = list<$chunkType> */
+	zv::Val arrayType = pt_trait_list_of(std::move(chunkType));
+	if (UNEXPECTED(arrayType.isUndef())) RETURN_THROWS();
+	/* $this->isIterableAtLeastOnce()->yes() ? TypeCombinator::intersect($arrayType, new NonEmptyArrayType()) : $arrayType */
+	zend_long atLeastOnce = pt_type_call_trinary(PT_THIS_OBJ, PT_LC("isiterableatleastonce"), 0, NULL);
+	if (UNEXPECTED(atLeastOnce < 0)) RETURN_THROWS();
+	if (atLeastOnce == PT_TRI_YES) {
+		PT_RETURN_VAL(pt_trait_intersect_non_empty(arrayType.raw()));
+	}
+	PT_RETURN_VAL(std::move(arrayType));
+}
+
 void pt_type_trait_array(reg::Class &cls)
 {
 	namespace sigs = ptdecl::ArrayTypeTrait::sig;
@@ -2062,36 +2095,7 @@ void pt_type_trait_array(reg::Class &cls)
 	cls.traitMethod(sigs::isScalar, trinaryNo0);
 	cls.traitMethod(sigs::exponentiate, errorType1);
 
-	cls.traitMethod(sigs::chunkArray, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *lengthType, *preserveKeys;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(lengthType)
-			Z_PARAM_OBJECT(preserveKeys)
-		ZEND_PARSE_PARAMETERS_END();
-		/* $chunkType = $preserveKeys->yes() ? $this : list<$this->getIterableValueType()> */
-		zend_long preserve = pt_type_trinary_value(preserveKeys);
-		if (UNEXPECTED(preserve < 0)) RETURN_THROWS();
-		zv::Val chunkType;
-		if (preserve == PT_TRI_YES) {
-			chunkType = zv::Val::copyOf(zv::Ref(ZEND_THIS));
-		} else {
-			chunkType = pt_trait_list_of(pt_type_call(PT_THIS_OBJ, PT_LC("getiterablevaluetype"), 0, NULL));
-			if (UNEXPECTED(chunkType.isUndef())) RETURN_THROWS();
-		}
-		/* $chunkType = TypeCombinator::intersect($chunkType, new NonEmptyArrayType()) */
-		chunkType = pt_trait_intersect_non_empty(chunkType.raw());
-		if (UNEXPECTED(chunkType.isUndef())) RETURN_THROWS();
-		/* $arrayType = list<$chunkType> */
-		zv::Val arrayType = pt_trait_list_of(std::move(chunkType));
-		if (UNEXPECTED(arrayType.isUndef())) RETURN_THROWS();
-		/* $this->isIterableAtLeastOnce()->yes() ? TypeCombinator::intersect($arrayType, new NonEmptyArrayType()) : $arrayType */
-		zend_long atLeastOnce = pt_type_call_trinary(PT_THIS_OBJ, PT_LC("isiterableatleastonce"), 0, NULL);
-		if (UNEXPECTED(atLeastOnce < 0)) RETURN_THROWS();
-		if (atLeastOnce == PT_TRI_YES) {
-			PT_RETURN_VAL(pt_trait_intersect_non_empty(arrayType.raw()));
-		}
-		PT_RETURN_VAL(std::move(arrayType));
-	});
+	cls.traitMethod(sigs::chunkArray, arrayTraitChunkArray);
 }
 
 /* }}} */
@@ -2372,7 +2376,8 @@ zv::Val pt_type_string_accessory_to_array(zend_object *self)
 	args[2] = nextAutoIndexes.take();
 	ZVAL_EMPTY_ARRAY(&args[3]);
 	ZVAL_COPY_VALUE(&args[4], pt_trinary_singleton(PT_TRI_YES));
-	zv::Val result = pt_type_new(PT_CLASS_CONSTANT_ARRAY_TYPE, 5, args);
+	zval resultRaw;
+	zv::Val result = pt_constant_array_type_new(&resultRaw, &args[0], &args[1], &args[2], &args[3], &args[4]) ? zv::Val::adopt(resultRaw) : zv::Val();
 	zval_ptr_dtor(&args[0]);
 	zval_ptr_dtor(&args[1]);
 	zval_ptr_dtor(&args[2]);
@@ -3106,6 +3111,24 @@ zv::Val pt_callable_self_list(zend_object *self)
 	ZVAL_OBJ(&selfZv, self);
 	list.push(zv::Ref(&selfZv));
 	return zv::Val(std::move(list));
+}
+
+/* }}} */
+
+/* {{{ helpers of the array-shape type (ConstantArrayType.cpp) */
+
+zif_handler pt_carr_array_trait_chunk_array_handler()
+{
+	return arrayTraitChunkArray;
+}
+
+zv::Val pt_carr_native_closure(pt_native_callback fn, zval *state0, zval *state1)
+{
+	zv::Val holder = pt_type_native_callback(fn, state0, state1);
+	if (UNEXPECTED(holder.isUndef())) return zv::Val();
+	zend_function *invoke = (zend_function *) zend_hash_str_find_ptr(&pt_ce_native_callback->function_table, PT_LC("__invoke"));
+	ZEND_ASSERT(invoke != NULL);
+	return pt_type_closure_over(invoke, pt_ce_native_callback, Z_OBJ_P(holder.raw()));
 }
 
 /* }}} */

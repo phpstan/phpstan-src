@@ -50,7 +50,6 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_TYPE */ {"type", "PHPStan\\Type\\Type"},
 	/* PT_CLASS_RECURSION_GUARD */ {"recursionGuard", "PHPStan\\Type\\RecursionGuard"},
 	/* PT_CLASS_UNION_TYPE */ {"unionType", "PHPStan\\Type\\UnionType"},
-	/* PT_CLASS_CONSTANT_ARRAY_TYPE */ {"constantArrayType", "PHPStan\\Type\\Constant\\ConstantArrayType"},
 	/* PT_CLASS_CLASS_NAME_TO_OBJECT_TYPE_RESULT */ {"classNameToObjectTypeResult", "PHPStan\\Type\\ClassNameToObjectTypeResult"},
 	/* PT_CLASS_TEMPLATE_TYPE_MAP */ {"templateTypeMap", "PHPStan\\Type\\Generic\\TemplateTypeMap"},
 	/* PT_CLASS_IDENTIFIER_TYPE_NODE */ {"identifierTypeNode", "PHPStan\\PhpDocParser\\Ast\\Type\\IdentifierTypeNode"},
@@ -127,6 +126,11 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_CALLABLE_TYPE_NODE */ {"callableTypeNode", "PHPStan\\PhpDocParser\\Ast\\Type\\CallableTypeNode"},
 	/* PT_CLASS_CALLABLE_TYPE_PARAMETER_NODE */ {"callableTypeParameterNode", "PHPStan\\PhpDocParser\\Ast\\Type\\CallableTypeParameterNode"},
 	/* PT_CLASS_TEMPLATE_TAG_VALUE_NODE */ {"templateTagValueNode", "PHPStan\\PhpDocParser\\Ast\\PhpDoc\\TemplateTagValueNode"},
+	/* PT_CLASS_BLEEDING_EDGE_TOGGLE */ {"bleedingEdgeToggle", "PHPStan\\DependencyInjection\\BleedingEdgeToggle"},
+	/* PT_CLASS_CONSTANT_ARRAY_TYPE_AND_METHOD */ {"constantArrayTypeAndMethod", "PHPStan\\Type\\Constant\\ConstantArrayTypeAndMethod"},
+	/* PT_CLASS_ARRAY_SHAPE_NODE */ {"arrayShapeNode", "PHPStan\\PhpDocParser\\Ast\\Type\\ArrayShapeNode"},
+	/* PT_CLASS_ARRAY_SHAPE_ITEM_NODE */ {"arrayShapeItemNode", "PHPStan\\PhpDocParser\\Ast\\Type\\ArrayShapeItemNode"},
+	/* PT_CLASS_ARRAY_SHAPE_UNSEALED_TYPE_NODE */ {"arrayShapeUnsealedTypeNode", "PHPStan\\PhpDocParser\\Ast\\Type\\ArrayShapeUnsealedTypeNode"},
 	/* PT_CLASS_FINITE_TYPE_SET */ {"finiteTypeSet", "PHPStan\\Type\\FiniteTypeSet"},
 };
 

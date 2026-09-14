@@ -89,7 +89,6 @@ enum {
 	PT_CLASS_TYPE,
 	PT_CLASS_RECURSION_GUARD,
 	PT_CLASS_UNION_TYPE,
-	PT_CLASS_CONSTANT_ARRAY_TYPE,
 	PT_CLASS_CLASS_NAME_TO_OBJECT_TYPE_RESULT,
 	PT_CLASS_TEMPLATE_TYPE_MAP,
 	PT_CLASS_IDENTIFIER_TYPE_NODE,
@@ -166,6 +165,11 @@ enum {
 	PT_CLASS_CALLABLE_TYPE_NODE,
 	PT_CLASS_CALLABLE_TYPE_PARAMETER_NODE,
 	PT_CLASS_TEMPLATE_TAG_VALUE_NODE,
+	PT_CLASS_BLEEDING_EDGE_TOGGLE,
+	PT_CLASS_CONSTANT_ARRAY_TYPE_AND_METHOD,
+	PT_CLASS_ARRAY_SHAPE_NODE,
+	PT_CLASS_ARRAY_SHAPE_ITEM_NODE,
+	PT_CLASS_ARRAY_SHAPE_UNSEALED_TYPE_NODE,
 	PT_CLASS_FINITE_TYPE_SET,
 	PT_CLASS_COUNT
 };
@@ -705,5 +709,20 @@ void pt_register_closure_type();
 [[nodiscard]] bool pt_iterable_type_new(zval *out, zval *keyType, zval *itemType);
 bool pt_callable_type_new(zval *out, zval *parameters = NULL, zval *returnType = NULL, bool variadic = true, zval *templateTypeMap = NULL, zval *resolvedTemplateTypeMap = NULL, zval *templateTags = NULL, zval *isPure = NULL, zval *assertions = NULL);
 bool pt_closure_type_new(zval *out, zval *parameters = NULL, zval *returnType = NULL, bool variadic = true, zval *templateTypeMap = NULL, zval *resolvedTemplateTypeMap = NULL, zval *callSiteVarianceMap = NULL, zval *templateTags = NULL, zval *throwPoints = NULL, zval *impurePoints = NULL, zval *invalidateExpressions = NULL, zval *usedVariables = NULL, zval *acceptsNamedArguments = NULL, zval *mustUseReturnValue = NULL, zval *assertions = NULL, zval *isStatic = NULL);
+
+/* merged from the parallel port branch */
+/* the array-shape type (ConstantArrayType.cpp) */
+extern zend_class_entry *pt_ce_constant_array_type;
+/* ConstantArrayType after the whole array family (its bodies instantiate
+ * ArrayType and every accessory) */
+void pt_register_constant_array_type();
+/* new ConstantArrayType($keyTypes, $valueTypes, $nextAutoIndexes = [0],
+ * $optionalKeys = [], $isList = null, $unsealed = null) — an instance of the
+ * shadowing class, the arguments borrowed and checked as the twin's typed
+ * parameters check them; NULL stands for a parameter left at its default;
+ * false = pending exception */
+[[nodiscard]] bool pt_constant_array_type_new(zval *out, zval *keyTypes, zval *valueTypes, zval *nextAutoIndexes = NULL, zval *optionalKeys = NULL, zval *isList = NULL, zval *unsealed = NULL);
+/* ConstantArrayType::isValidIdentifier($value); false = pending exception */
+[[nodiscard]] bool pt_constant_array_type_is_valid_identifier(zend_string *value, bool &out);
 
 #endif /* PHPSTANTURBO_SUPPORT_H */

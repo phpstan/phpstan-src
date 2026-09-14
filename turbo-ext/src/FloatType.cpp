@@ -109,30 +109,7 @@ public:
 	/* new ConstantArrayType([new ConstantIntegerType(0)], [$this], [1],
 	 * isList: TrinaryLogic::createYes()) — the named argument skips
 	 * $optionalKeys, whose default is [] */
-	zv::Val toArray() const
-	{
-		zv::Val zero = pt_type_new_constant_integer(0);
-		if (UNEXPECTED(zero.isUndef())) return zv::Val();
-		zv::Arr keyTypes = zv::Arr::create(1);
-		keyTypes.push(std::move(zero));
-		zv::Arr valueTypes = zv::Arr::create(1);
-		zval selfZv;
-		ZVAL_OBJ(&selfZv, self);
-		valueTypes.push(zv::Ref(&selfZv));
-		zv::Arr nextAutoIndexes = zv::Arr::create(1);
-		nextAutoIndexes.push(zv::Val::integer(1));
-		zval args[5];
-		args[0] = keyTypes.take();
-		args[1] = valueTypes.take();
-		args[2] = nextAutoIndexes.take();
-		ZVAL_EMPTY_ARRAY(&args[3]);
-		ZVAL_COPY_VALUE(&args[4], pt_trinary_singleton(PT_TRI_YES));
-		zv::Val result = pt_type_new(PT_CLASS_CONSTANT_ARRAY_TYPE, 5, args);
-		zval_ptr_dtor(&args[0]);
-		zval_ptr_dtor(&args[1]);
-		zval_ptr_dtor(&args[2]);
-		return result;
-	}
+	zv::Val toArray() const { return pt_type_scalar_to_array(self); }
 
 	/* new IntegerType() */
 	static zv::Val toArrayKey() { return integerType(); }

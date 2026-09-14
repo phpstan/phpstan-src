@@ -485,3 +485,16 @@ void pt_register_never_type()
 }
 
 /* }}} */
+
+/* {{{ helpers of the array-shape type (ConstantArrayType.cpp) */
+
+bool pt_never_type_is_explicit(zend_object *object, bool &out)
+{
+	if (EXPECTED(object->ce == pt_ce_never_type)) return NeverType(object).isExplicit(out);
+	zv::Val result = pt_type_call(object, PT_LC("isexplicit"), 0, NULL);
+	if (UNEXPECTED(result.isUndef())) return false;
+	out = zend_is_true(result.raw());
+	return true;
+}
+
+/* }}} */

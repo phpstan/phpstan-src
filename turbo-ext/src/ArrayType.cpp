@@ -56,10 +56,10 @@ static zv::Val combinator2(const char *lcname, size_t len, zval *a, zval *b)
 /* new ConstantArrayType([], []) */
 static zv::Val emptyConstantArray()
 {
-	zval args[2];
-	ZVAL_EMPTY_ARRAY(&args[0]);
-	ZVAL_EMPTY_ARRAY(&args[1]);
-	return pt_type_new(PT_CLASS_CONSTANT_ARRAY_TYPE, 2, args);
+	zval empty, result;
+	ZVAL_EMPTY_ARRAY(&empty);
+	if (UNEXPECTED(!pt_constant_array_type_new(&result, &empty, &empty))) return zv::Val();
+	return zv::Val::adopt(result);
 }
 
 /* new IntersectionType($types) ($types consumed) */
@@ -242,8 +242,7 @@ public:
 			return pt_type_call(Z_OBJ_P(type), PT_LC("isacceptedby"), 2, args);
 		}
 
-		bool isConstantArray;
-		if (UNEXPECTED(!isInstance(type, PT_CLASS_CONSTANT_ARRAY_TYPE, isConstantArray))) return zv::Val();
+		bool isConstantArray = instanceof_function(Z_OBJCE_P(type), pt_ce_constant_array_type);
 		if (isConstantArray) {
 			zv::Val result = pt_type_accepts_result(PT_TRI_YES);
 			zval *thisKeyType = keyType();
@@ -302,9 +301,8 @@ public:
 	 * pending exception */
 	zv::Val isSuperTypeOf(zval *type) const
 	{
-		bool isConstantArray = false;
 		bool isArray = instanceof_function(Z_OBJCE_P(type), pt_ce_array_type);
-		if (!isArray && UNEXPECTED(!isInstance(type, PT_CLASS_CONSTANT_ARRAY_TYPE, isConstantArray))) return zv::Val();
+		bool isConstantArray = instanceof_function(Z_OBJCE_P(type), pt_ce_constant_array_type);
 		if (isArray || isConstantArray) {
 			zv::Val itemType = thisGetItemType();
 			if (UNEXPECTED(itemType.isUndef())) return zv::Val();
@@ -1129,7 +1127,7 @@ public:
 	zv::Val truncateListToSize(zval *sizeType) const
 	{
 		/* [$min, $max] = ConstantArrayType::extractTruncateListBounds($sizeType) */
-		zv::Val bounds = pt_type_call_static(PT_CLASS_CONSTANT_ARRAY_TYPE, PT_LC("extracttruncatelistbounds"), 1, sizeType);
+		zv::Val bounds = pt_type_call_static_ce(pt_ce_constant_array_type, PT_LC("extracttruncatelistbounds"), 1, sizeType);
 		if (UNEXPECTED(bounds.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(bounds.raw()).isArray())) {
 			zend_type_error("phpstan_turbo: ConstantArrayType::extractTruncateListBounds() must return array");

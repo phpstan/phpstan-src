@@ -4,11 +4,13 @@ namespace PHPStan\Type\Constant;
 
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Type;
 
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'constantArrayTypeAndMethod')]
 final class ConstantArrayTypeAndMethod
 {
 

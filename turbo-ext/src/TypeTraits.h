@@ -624,6 +624,21 @@ constexpr reg::Arg pt_callable_nullable_array_arg(const char *name)
 
 /* }}} */
 
+/* merged from the parallel port branch */
+/* {{{ helpers of the array-shape type (ConstantArrayType.cpp) */
+/* ArrayTypeTrait's chunkArray() handler, for a class aliasing it (`use
+ * ArrayTypeTrait { chunkArray as traitChunkArray; }`) */
+zif_handler pt_carr_array_trait_chunk_array_handler();
+/* a real Closure over a native body — pt_type_native_callback()'s holder
+ * wrapped in a Closure, for the `fn (): string => ...` values a twin stores
+ * where a Closure is required (IsSuperTypeOfResult's $lazyReasons); UNDEF =
+ * pending exception */
+zv::Val pt_carr_native_closure(pt_native_callback fn, zval *state0, zval *state1);
+/* $never->isExplicit() of a NeverType instance — the slot when it is exactly
+ * the native class, the method through its class entry otherwise
+ * (NeverType.cpp); false = pending exception */
+[[nodiscard]] bool pt_never_type_is_explicit(zend_object *object, bool &out);
+
 /* {{{ bodies the Type ports share verbatim — their members forward here */
 
 /* $this as an owned value (a new reference) */
@@ -705,6 +720,25 @@ inline zv::Val pt_type_sub_type_to_accepts_result(zv::Val result)
 	zend_long isInteger = pt_type_call_trinary(Z_OBJ_P(offsetType), PT_LC("isinteger"), 0, NULL);
 	if (UNEXPECTED(isInteger < 0)) return -1;
 	return isInteger < PT_TRI_MAYBE ? isInteger : PT_TRI_MAYBE;
+}
+
+/* a scalar type's toArray(): the array{$this} ConstantArrayType; UNDEF = pending exception */
+inline zv::Val pt_type_scalar_to_array(zend_object *self)
+{
+	zv::Val zero = pt_type_new_constant_integer(0);
+	if (UNEXPECTED(zero.isUndef())) return zv::Val();
+	zv::Arr keyTypes = zv::Arr::create(1);
+	keyTypes.push(std::move(zero));
+	zv::Arr valueTypes = zv::Arr::create(1);
+	valueTypes.push(zv::Ref(&*zv::Val(pt_this_value(self)).raw()));
+	zv::Arr nextAutoIndexes = zv::Arr::create(1);
+	nextAutoIndexes.push(zv::Val::integer(1));
+	zval optionalKeys, result;
+	ZVAL_EMPTY_ARRAY(&optionalKeys);
+	if (UNEXPECTED(!pt_constant_array_type_new(&result, keyTypes.raw(), valueTypes.raw(), nextAutoIndexes.raw(), &optionalKeys, pt_trinary_singleton(PT_TRI_YES)))) {
+		return zv::Val();
+	}
+	return zv::Val::adopt(result);
 }
 
 /* $object->method(...$args) read as a bool; false = pending exception. These four

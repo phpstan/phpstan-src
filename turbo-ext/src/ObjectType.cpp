@@ -1539,10 +1539,9 @@ public:
 			return pt_type_new(PT_CLASS_INTERSECTION_TYPE, 1, types.raw());
 		}
 
-		zval args[2];
-		ZVAL_COPY_VALUE(&args[0], arrayKeys.raw());
-		ZVAL_COPY_VALUE(&args[1], arrayValues.raw());
-		return pt_type_new(PT_CLASS_CONSTANT_ARRAY_TYPE, 2, args);
+		zval shapeRaw;
+		if (UNEXPECTED(!pt_constant_array_type_new(&shapeRaw, arrayKeys.raw(), arrayValues.raw()))) return zv::Val();
+		return zv::Val::adopt(shapeRaw);
 	}
 
 	/* $this, or $this|$this->toString() when coercion may call

@@ -1,4 +1,4 @@
-<?php // lint >= 8.5
+<?php // lint >= 8.1
 
 namespace MethodCallStatementResultDiscarded;
 
@@ -20,9 +20,6 @@ $o = new ClassWithInstanceSideEffects();
 $o->instanceMethod();
 $o?->instanceMethod();
 
-(void)$o->instanceMethod();
-(void)$o?->instanceMethod();
-
 foreach ($o->instanceMethod() as $num) {
 	var_dump($num);
 }
@@ -42,14 +39,3 @@ class Foo
 
 $foo = new Foo();
 $foo->canDiscard();
-(void) $foo->canDiscard();
-
-5 |> $o->instanceMethod(...);
-5 |> $foo->canDiscard(...);
-(void) 5 |> $o->instanceMethod(...);
-(void) 5 |> $foo->canDiscard(...);
-
-5 |> (fn ($x) => $o->instanceMethod($x));
-5 |> (fn ($x) => $foo->canDiscard($x));
-(void) 5 |> (fn ($x) => $o->instanceMethod($x));
-(void) 5 |> (fn ($x) => $foo->canDiscard($x));

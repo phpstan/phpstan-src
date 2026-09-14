@@ -711,13 +711,15 @@ public:
 		zval stringZv;
 		if (UNEXPECTED(!pt_string_type_new(&stringZv))) return zv::Val();
 		zv::Val string = zv::Val::adopt(stringZv);
-		zv::Val decimal = pt_type_new(PT_CLASS_ACCESSORY_DECIMAL_INTEGER_STRING_TYPE, 0, NULL);
+		zval decimalRaw;
+		if (UNEXPECTED(!pt_accessory_decimal_integer_string_type_new(&decimalRaw))) return zv::Val();
+		zv::Val decimal = zv::Val::adopt(decimalRaw);
 		if (UNEXPECTED(decimal.isUndef())) return zv::Val();
 		zv::Arr types = zv::Arr::create(3);
 		types.push(std::move(string));
 		types.push(std::move(decimal));
 		if (isZero == PT_TRI_NO) {
-			zv::Val nonFalsy = pt_type_new(PT_CLASS_ACCESSORY_NON_FALSY_STRING_TYPE, 0, NULL);
+			zv::Val nonFalsy = pt_type_new_shadowed(pt_accessory_non_falsy_string_type_new);
 			if (UNEXPECTED(nonFalsy.isUndef())) return zv::Val();
 			types.push(std::move(nonFalsy));
 		}

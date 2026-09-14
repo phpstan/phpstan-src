@@ -59,7 +59,9 @@ public:
 		zval stringZv;
 		if (UNEXPECTED(!pt_string_type_new(&stringZv))) return zv::Val();
 		zv::Val string = zv::Val::adopt(stringZv);
-		zv::Val accessory = pt_type_new(PT_CLASS_ACCESSORY_DECIMAL_INTEGER_STRING_TYPE, 0, NULL);
+		zval accessoryRaw;
+		if (UNEXPECTED(!pt_accessory_decimal_integer_string_type_new(&accessoryRaw))) return zv::Val();
+		zv::Val accessory = zv::Val::adopt(accessoryRaw);
 		if (UNEXPECTED(accessory.isUndef())) return zv::Val();
 		zv::Arr types = zv::Arr::create(2);
 		types.push(std::move(string));

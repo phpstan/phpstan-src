@@ -1954,19 +1954,19 @@ private:
 			zend_long nonFalsy = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isnonfalsystring"), 0, NULL);
 			if (UNEXPECTED(nonFalsy < 0)) return;
 			if (nonFalsy == PT_TRI_YES) {
-				if (UNEXPECTED(!pushNew(types, PT_CLASS_ACCESSORY_NON_FALSY_STRING_TYPE))) return;
+				if (UNEXPECTED(!pushNew(types, pt_accessory_non_falsy_string_type_new))) return;
 			} else {
 				zend_long nonEmpty = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isnonemptystring"), 0, NULL);
 				if (UNEXPECTED(nonEmpty < 0)) return;
-				if (nonEmpty == PT_TRI_YES && UNEXPECTED(!pushNew(types, PT_CLASS_ACCESSORY_NON_EMPTY_STRING_TYPE))) return;
+				if (nonEmpty == PT_TRI_YES && UNEXPECTED(!pushNew(types, pt_accessory_non_empty_string_type_new))) return;
 			}
 			zend_long numeric = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isnumericstring"), 0, NULL);
 			if (UNEXPECTED(numeric < 0)) return;
-			if (numeric == PT_TRI_YES && UNEXPECTED(!pushNew(types, PT_CLASS_ACCESSORY_NUMERIC_STRING_TYPE))) return;
+			if (numeric == PT_TRI_YES && UNEXPECTED(!pushNew(types, pt_accessory_numeric_string_type_new))) return;
 			if (!caseArg.isNull && caseArg.value == 0) { /* CASE_LOWER */
-				if (UNEXPECTED(!pushNew(types, PT_CLASS_ACCESSORY_LOWERCASE_STRING_TYPE))) return;
+				if (UNEXPECTED(!pushNew(types, pt_accessory_lowercase_string_type_new))) return;
 			} else if (!caseArg.isNull && caseArg.value == 1) { /* CASE_UPPER */
-				if (UNEXPECTED(!pushNew(types, PT_CLASS_ACCESSORY_UPPERCASE_STRING_TYPE))) return;
+				if (UNEXPECTED(!pushNew(types, pt_accessory_uppercase_string_type_new))) return;
 			}
 			if (types.arrRef().size() == 1) {
 				zv::Ref only = types.arrRef().findIndex(0);
@@ -1983,11 +1983,12 @@ private:
 	}
 
 	/* $types[] = new Class(); false = pending exception */
-	[[nodiscard]] static bool pushNew(zv::Arr &types, int classIdx)
+	/* new <Shadowed>() through its exported constructor */
+	[[nodiscard]] static bool pushNew(zv::Arr &types, bool (*construct)(zval *))
 	{
-		zv::Val created = pt_type_new(classIdx, 0, NULL);
-		if (UNEXPECTED(created.isUndef())) return false;
-		types.push(std::move(created));
+		zval raw;
+		if (UNEXPECTED(!construct(&raw))) return false;
+		types.push(zv::Val::adopt(raw));
 		return true;
 	}
 };

@@ -461,6 +461,39 @@ void pt_type_trait_maybe_object(reg::Class &cls);
 /* src/Type/Traits/MaybeStringTypeTrait.php */
 void pt_type_trait_maybe_string(reg::Class &cls);
 
+
+/* {{{ helpers of the string accessory family (AccessoryNumericStringType.cpp,
+ * AccessoryNonEmptyStringType.cpp, AccessoryNonFalsyStringType.cpp,
+ * AccessoryLiteralStringType.cpp, AccessoryLowercaseStringType.cpp,
+ * AccessoryUppercaseStringType.cpp, AccessoryDecimalIntegerStringType.cpp)
+ * and the member accessories (HasMethodType.cpp, HasPropertyType.cpp) */
+
+/* new StringType() (the shadowing class); UNDEF = pending exception */
+zv::Val pt_type_new_string_type();
+/* new <Shadowed>() over a shadowed class's exported no-argument
+ * constructor, as a Val; UNDEF = pending exception */
+zv::Val pt_type_new_shadowed(bool (*construct)(zval *));
+/* new IntersectionType($types) ($types consumed); UNDEF = pending exception */
+zv::Val pt_type_new_intersection(zv::Arr types);
+/* new IntersectionType([new StringType(), new <Accessory>()]) over a
+ * shadowed accessory's exported constructor; UNDEF = pending exception */
+zv::Val pt_type_new_string_with_accessory(bool (*construct)(zval *));
+/* new ConstantArrayType([new ConstantIntegerType(0)], [$this], [1],
+ * isList: TrinaryLogic::createYes()) — the string accessories' toArray()
+ * body; UNDEF = pending exception */
+zv::Val pt_type_string_accessory_to_array(zend_object *self);
+/* new BenevolentUnionType([new FloatType(), new IntegerType()]) — the
+ * string accessories' exponentiate() body; UNDEF = pending exception */
+zv::Val pt_type_new_float_or_int_benevolent_union();
+/* new IdentifierTypeNode($name); UNDEF = pending exception */
+zv::Val pt_type_new_identifier_type_node(const char *name, size_t len);
+/* ReportUnsafeArrayStringKeyCastingToggle::getLevel() !==
+ * ReportUnsafeArrayStringKeyCastingToggle::PREVENT; false = pending
+ * exception */
+[[nodiscard]] bool pt_type_unsafe_array_string_key_casting_not_prevented(bool &out);
+
+/* }}} */
+
 /* {{{ bodies the Type ports share verbatim — their members forward here */
 
 /* $this as an owned value (a new reference) */
@@ -533,6 +566,15 @@ inline zv::Val pt_type_sub_type_to_accepts_result(zv::Val result)
 		return zv::Val();
 	}
 	return pt_type_call(Z_OBJ_P(result.raw()), PT_LC("toacceptsresult"), 0, NULL);
+}
+
+/* a string type's hasOffsetValueType(): $offsetType->isInteger()->and(maybe);
+ * -1 = pending exception */
+[[nodiscard]] inline zend_long pt_type_string_has_offset_value_type(zval *offsetType)
+{
+	zend_long isInteger = pt_type_call_trinary(Z_OBJ_P(offsetType), PT_LC("isinteger"), 0, NULL);
+	if (UNEXPECTED(isInteger < 0)) return -1;
+	return isInteger < PT_TRI_MAYBE ? isInteger : PT_TRI_MAYBE;
 }
 
 /* $object->method(...$args) read as a bool; false = pending exception. These four

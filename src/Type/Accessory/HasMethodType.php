@@ -12,6 +12,7 @@ use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\Type\CallbackUnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
@@ -44,6 +45,7 @@ use function sprintf;
 use function strtolower;
 
 #[InstanceofDeprecated(insteadUse: 'Type::hasMethod()')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/HasMethodType.cpp')]
 class HasMethodType implements AccessoryType, CompoundType
 {
 

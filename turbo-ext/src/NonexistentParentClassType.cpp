@@ -145,7 +145,7 @@ void pt_register_nonexistent_parent_class_type()
 		/* new IntersectionType([$this->getClassStringType(), new AccessoryLiteralStringType()]) */
 		zv::Val classString = pt_type_call(Z_OBJ_P(ZEND_THIS), PT_LC("getclassstringtype"), 0, NULL);
 		if (UNEXPECTED(classString.isUndef())) RETURN_THROWS();
-		zv::Val literal = pt_type_new(PT_CLASS_ACCESSORY_LITERAL_STRING_TYPE, 0, NULL);
+		zv::Val literal = pt_type_new_shadowed(pt_accessory_literal_string_type_new);
 		if (UNEXPECTED(literal.isUndef())) RETURN_THROWS();
 		zv::Arr types = zv::Arr::create(2);
 		types.push(std::move(classString));

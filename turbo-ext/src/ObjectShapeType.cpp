@@ -430,9 +430,7 @@ public:
 	 * anything else; UNDEF = pending exception */
 	zv::Val tryRemove(zval *typeToRemove) const
 	{
-		bool hasPropertyType;
-		if (UNEXPECTED(!pt_type_instanceof(typeToRemove, PT_CLASS_HAS_PROPERTY_TYPE, hasPropertyType))) return zv::Val();
-		if (!hasPropertyType) return zv::Val::null();
+		if (!instanceof_function(Z_OBJCE_P(typeToRemove), pt_ce_has_property_type)) return zv::Val::null();
 		zval *props = properties();
 		if (UNEXPECTED(props == NULL)) return zv::Val();
 		/* $properties = $this->properties; unset($properties[$typeToRemove->getPropertyName()]) */

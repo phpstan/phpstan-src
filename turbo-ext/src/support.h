@@ -99,8 +99,6 @@ enum {
 	PT_CLASS_COMPOUND_TYPE,
 	PT_CLASS_CONSTANT_SCALAR_TYPE,
 	PT_CLASS_INTERSECTION_TYPE,
-	PT_CLASS_ACCESSORY_DECIMAL_INTEGER_STRING_TYPE,
-	PT_CLASS_ACCESSORY_NON_FALSY_STRING_TYPE,
 	PT_CLASS_INITIALIZER_EXPR_TYPE_RESOLVER,
 	PT_CLASS_GENERIC_TYPE_NODE,
 	PT_CLASS_CONST_TYPE_NODE,
@@ -109,11 +107,6 @@ enum {
 	PT_CLASS_REFLECTION_PROVIDER_STATIC_ACCESSOR,
 	PT_CLASS_PHP_VERSION_STATIC_ACCESSOR,
 	PT_CLASS_REPORT_UNSAFE_ARRAY_STRING_KEY_CASTING_TOGGLE,
-	PT_CLASS_ACCESSORY_NON_EMPTY_STRING_TYPE,
-	PT_CLASS_ACCESSORY_LITERAL_STRING_TYPE,
-	PT_CLASS_ACCESSORY_LOWERCASE_STRING_TYPE,
-	PT_CLASS_ACCESSORY_UPPERCASE_STRING_TYPE,
-	PT_CLASS_ACCESSORY_NUMERIC_STRING_TYPE,
 	PT_CLASS_OUT_OF_CLASS_SCOPE,
 	PT_CLASS_FUNCTION_CALLABLE_VARIANT,
 	PT_CLASS_TRIVIAL_PARAMETERS_ACCEPTOR,
@@ -142,7 +135,6 @@ enum {
 	PT_CLASS_OBJECT_SHAPE_PROPERTY_REFLECTION,
 	PT_CLASS_UNIVERSAL_OBJECT_CRATES_CLASS_REFLECTION_EXTENSION,
 	PT_CLASS_MISSING_PROPERTY_FROM_REFLECTION_EXCEPTION,
-	PT_CLASS_HAS_PROPERTY_TYPE,
 	PT_CLASS_TEMPLATE_TYPE_VARIANCE_MAP,
 	PT_CLASS_THIS_TYPE_NODE,
 	PT_CLASS_OBJECT_SHAPE_NODE,
@@ -341,6 +333,7 @@ bool pt_trusted_types_set_prefix(zend_string *prefix);
 
 /* TrinaryLogic::and() / or() of two PT_TRI_* values (yes > maybe > no) */
 static constexpr zend_long pt_trinary_and(zend_long a, zend_long b) { return a < b ? a : b; }
+static constexpr zend_long pt_trinary_or(zend_long a, zend_long b) { return a > b ? a : b; }
 
 #define PT_TRI_PROP_VALUE 0
 #define PT_ETH_PROP_EXPR 0
@@ -595,5 +588,49 @@ bool pt_accessory_array_list_type_new(zval *out);
 bool pt_oversized_array_type_new(zval *out);
 bool pt_has_offset_type_new(zval *out, zval *offsetType);
 bool pt_has_offset_value_type_new(zval *out, zval *offsetType, zval *valueType);
+
+/* the string accessory family (AccessoryNumericStringType.cpp,
+ * AccessoryNonEmptyStringType.cpp, AccessoryNonFalsyStringType.cpp,
+ * AccessoryLiteralStringType.cpp, AccessoryLowercaseStringType.cpp,
+ * AccessoryUppercaseStringType.cpp, AccessoryDecimalIntegerStringType.cpp)
+ * and the member accessories (HasMethodType.cpp, HasPropertyType.cpp) */
+extern zend_class_entry *pt_ce_accessory_numeric_string_type;
+extern zend_class_entry *pt_ce_accessory_non_empty_string_type;
+extern zend_class_entry *pt_ce_accessory_non_falsy_string_type;
+extern zend_class_entry *pt_ce_accessory_literal_string_type;
+extern zend_class_entry *pt_ce_accessory_lowercase_string_type;
+extern zend_class_entry *pt_ce_accessory_uppercase_string_type;
+extern zend_class_entry *pt_ce_accessory_decimal_integer_string_type;
+extern zend_class_entry *pt_ce_has_method_type;
+extern zend_class_entry *pt_ce_has_property_type;
+/* the string accessories after the array family (their bodies instantiate
+ * nothing of each other at registration; the order among them only follows
+ * the twins' cross-references: NumericString before DecimalIntegerString,
+ * NonEmptyString before NonFalsyString), then the member accessories */
+void pt_register_accessory_numeric_string_type();
+void pt_register_accessory_non_empty_string_type();
+void pt_register_accessory_non_falsy_string_type();
+void pt_register_accessory_literal_string_type();
+void pt_register_accessory_lowercase_string_type();
+void pt_register_accessory_uppercase_string_type();
+void pt_register_accessory_decimal_integer_string_type();
+void pt_register_has_method_type();
+void pt_register_has_property_type();
+/* new AccessoryNumericStringType() / new AccessoryNonEmptyStringType() /
+ * new AccessoryNonFalsyStringType() / new AccessoryLiteralStringType() /
+ * new AccessoryLowercaseStringType() / new AccessoryUppercaseStringType() /
+ * new AccessoryDecimalIntegerStringType($inverse) /
+ * new HasMethodType($methodName) / new HasPropertyType($propertyName) —
+ * instances of the shadowing classes (the string arguments borrowed); false
+ * = pending exception */
+[[nodiscard]] bool pt_accessory_numeric_string_type_new(zval *out);
+bool pt_accessory_non_empty_string_type_new(zval *out);
+bool pt_accessory_non_falsy_string_type_new(zval *out);
+bool pt_accessory_literal_string_type_new(zval *out);
+bool pt_accessory_lowercase_string_type_new(zval *out);
+bool pt_accessory_uppercase_string_type_new(zval *out);
+bool pt_accessory_decimal_integer_string_type_new(zval *out, bool inverse = false);
+bool pt_has_method_type_new(zval *out, zend_string *methodName);
+bool pt_has_property_type_new(zval *out, zend_string *propertyName);
 
 #endif /* PHPSTANTURBO_SUPPORT_H */

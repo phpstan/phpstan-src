@@ -657,7 +657,7 @@ public:
 			if (UNEXPECTED(isSuperType < 0)) return zv::Val();
 			if (isSuperType == PT_TRI_YES) {
 				zv::Arr accessories = zv::Arr::create(3);
-				if (UNEXPECTED(!pushString(accessories) || !pushNew(accessories, PT_CLASS_ACCESSORY_NON_EMPTY_STRING_TYPE))) return zv::Val();
+				if (UNEXPECTED(!pushString(accessories) || !pushNew(accessories, pt_accessory_non_empty_string_type_new))) return zv::Val();
 
 				/* new UnionType([new ConstantFloatType(0.0), new ConstantStringType('0'), new ConstantIntegerType(0)]) */
 				zv::Arr castsToZeroStringTypes = zv::Arr::create(3);
@@ -673,7 +673,7 @@ public:
 				zend_long coversZeroString = isSuperTypeOfTrinary(subtracted, castsToZeroString.raw());
 				if (UNEXPECTED(coversZeroString < 0)) return zv::Val();
 				if (coversZeroString == PT_TRI_YES) {
-					if (UNEXPECTED(!pushNew(accessories, PT_CLASS_ACCESSORY_NON_FALSY_STRING_TYPE))) return zv::Val();
+					if (UNEXPECTED(!pushNew(accessories, pt_accessory_non_falsy_string_type_new))) return zv::Val();
 				}
 				return intersectionOf(std::move(accessories));
 			}
@@ -922,13 +922,13 @@ public:
 
 	/* the string accessories: no when the subtracted type covers
 	 * string&<accessory>, maybe otherwise; -1 = pending exception */
-	[[nodiscard]] zend_long isNumericString() const { return noWhenSubtractedCoversAccessoryString(PT_CLASS_ACCESSORY_NUMERIC_STRING_TYPE); }
-	zend_long isDecimalIntegerString() const { return noWhenSubtractedCoversAccessoryString(PT_CLASS_ACCESSORY_DECIMAL_INTEGER_STRING_TYPE); }
-	zend_long isNonEmptyString() const { return noWhenSubtractedCoversAccessoryString(PT_CLASS_ACCESSORY_NON_EMPTY_STRING_TYPE); }
-	zend_long isNonFalsyString() const { return noWhenSubtractedCoversAccessoryString(PT_CLASS_ACCESSORY_NON_FALSY_STRING_TYPE); }
-	zend_long isLiteralString() const { return noWhenSubtractedCoversAccessoryString(PT_CLASS_ACCESSORY_LITERAL_STRING_TYPE); }
-	zend_long isLowercaseString() const { return noWhenSubtractedCoversAccessoryString(PT_CLASS_ACCESSORY_LOWERCASE_STRING_TYPE); }
-	zend_long isUppercaseString() const { return noWhenSubtractedCoversAccessoryString(PT_CLASS_ACCESSORY_UPPERCASE_STRING_TYPE); }
+	[[nodiscard]] zend_long isNumericString() const { return noWhenSubtractedCoversAccessoryString(pt_accessory_numeric_string_type_new); }
+	zend_long isDecimalIntegerString() const { return noWhenSubtractedCoversAccessoryString(decimalIntegerString); }
+	zend_long isNonEmptyString() const { return noWhenSubtractedCoversAccessoryString(pt_accessory_non_empty_string_type_new); }
+	zend_long isNonFalsyString() const { return noWhenSubtractedCoversAccessoryString(pt_accessory_non_falsy_string_type_new); }
+	zend_long isLiteralString() const { return noWhenSubtractedCoversAccessoryString(pt_accessory_literal_string_type_new); }
+	zend_long isLowercaseString() const { return noWhenSubtractedCoversAccessoryString(pt_accessory_lowercase_string_type_new); }
+	zend_long isUppercaseString() const { return noWhenSubtractedCoversAccessoryString(pt_accessory_uppercase_string_type_new); }
 
 	/* no when the subtracted type covers string, or every class-string;
 	 * maybe otherwise; -1 = pending exception */
@@ -1130,15 +1130,16 @@ private:
 	}
 
 	/* no when the subtracted type covers new IntersectionType([new
-	 * StringType(), new Accessory()]), maybe otherwise; -1 = pending
+	 * StringType(), new Accessory()]) — the accessory through its shadowing
+	 * class's exported constructor — maybe otherwise; -1 = pending
 	 * exception */
-	[[nodiscard]] zend_long noWhenSubtractedCoversAccessoryString(int accessoryClassIdx) const
+	[[nodiscard]] zend_long noWhenSubtractedCoversAccessoryString(bool (*construct)(zval *)) const
 	{
 		zval *subtracted = subtractedType();
 		if (UNEXPECTED(subtracted == NULL)) return -1;
 		if (Z_TYPE_P(subtracted) != IS_NULL) {
 			zv::Arr types = zv::Arr::create(2);
-			if (UNEXPECTED(!pushString(types) || !pushNew(types, accessoryClassIdx))) return -1;
+			if (UNEXPECTED(!pushString(types) || !pushNew(types, construct))) return -1;
 			zv::Val probe = intersectionOf(std::move(types));
 			if (UNEXPECTED(probe.isUndef())) return -1;
 			return noWhenSubtractedCoversProbe(subtracted, probe.raw());
@@ -1197,15 +1198,7 @@ private:
 		return pt_type_new(PT_CLASS_CONSTANT_ARRAY_TYPE, 2, args);
 	}
 
-	static bool pushNew(zv::Arr &types, int classIdx)
-	{
-		zv::Val type = pt_type_new(classIdx, 0, NULL);
-		if (UNEXPECTED(type.isUndef())) return false;
-		types.push(std::move(type));
-		return true;
-	}
-
-	/* the same for a shadowing class, through its exported constructor */
+	/* new <Shadowed>() through its exported constructor */
 	static bool pushNew(zv::Arr &types, bool (*construct)(zval *))
 	{
 		zval raw;
@@ -1213,6 +1206,10 @@ private:
 		types.push(zv::Val::adopt(raw));
 		return true;
 	}
+
+	/* new AccessoryDecimalIntegerStringType() — the constructor's $inverse at
+	 * its default */
+	static bool decimalIntegerString(zval *out) { return pt_accessory_decimal_integer_string_type_new(out); }
 
 	static bool pushInteger(zv::Arr &types)
 	{

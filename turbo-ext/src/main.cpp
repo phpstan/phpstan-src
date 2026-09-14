@@ -202,6 +202,15 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_oversized_array_type();
 	pt_register_has_offset_type();
 	pt_register_has_offset_value_type();
+	pt_register_accessory_numeric_string_type();
+	pt_register_accessory_non_empty_string_type();
+	pt_register_accessory_non_falsy_string_type();
+	pt_register_accessory_literal_string_type();
+	pt_register_accessory_lowercase_string_type();
+	pt_register_accessory_uppercase_string_type();
+	pt_register_accessory_decimal_integer_string_type();
+	pt_register_has_method_type();
+	pt_register_has_property_type();
 
 	return SUCCESS;
 }

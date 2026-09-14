@@ -1626,7 +1626,7 @@ void pt_type_trait_object(reg::Class &cls)
 		/* new IntersectionType([$this->getClassStringType(), new AccessoryLiteralStringType()]) */
 		zv::Val classString = pt_type_call(PT_THIS_OBJ, PT_LC("getclassstringtype"), 0, NULL);
 		if (UNEXPECTED(classString.isUndef())) RETURN_THROWS();
-		zv::Val literal = pt_type_new(PT_CLASS_ACCESSORY_LITERAL_STRING_TYPE, 0, NULL);
+		zv::Val literal = pt_type_new_shadowed(pt_accessory_literal_string_type_new);
 		if (UNEXPECTED(literal.isUndef())) RETURN_THROWS();
 		zv::Arr types = zv::Arr::create(2);
 		types.push(std::move(classString));
@@ -2318,6 +2318,100 @@ void pt_type_trait_maybe_string(reg::Class &cls)
 	cls.traitMethod(sigs::isUppercaseString, trinaryMaybe0);
 	cls.traitMethod(sigs::isClassString, trinaryMaybe0);
 	cls.traitMethod(sigs::isScalar, trinaryMaybe0);
+}
+
+/* }}} */
+
+/* {{{ helpers of the string accessory family */
+
+zv::Val pt_type_new_string_type()
+{
+	return pt_val_of<pt_string_type_new>();
+}
+
+zv::Val pt_type_new_shadowed(bool (*construct)(zval *))
+{
+	zval result;
+	if (UNEXPECTED(!construct(&result))) return zv::Val();
+	return zv::Val::adopt(result);
+}
+
+zv::Val pt_type_new_intersection(zv::Arr types)
+{
+	return pt_type_new(PT_CLASS_INTERSECTION_TYPE, 1, types.raw());
+}
+
+zv::Val pt_type_new_string_with_accessory(bool (*construct)(zval *))
+{
+	zv::Val string = pt_type_new_string_type();
+	if (UNEXPECTED(string.isUndef())) return zv::Val();
+	zval accessory;
+	if (UNEXPECTED(!construct(&accessory))) return zv::Val();
+	zv::Arr types = zv::Arr::create(2);
+	types.push(std::move(string));
+	types.push(zv::Val::adopt(accessory));
+	return pt_type_new_intersection(std::move(types));
+}
+
+zv::Val pt_type_string_accessory_to_array(zend_object *self)
+{
+	zv::Val zero = pt_type_new_constant_integer(0);
+	if (UNEXPECTED(zero.isUndef())) return zv::Val();
+	zv::Arr keyTypes = zv::Arr::create(1);
+	keyTypes.push(std::move(zero));
+	zv::Arr valueTypes = zv::Arr::create(1);
+	zval selfZv;
+	ZVAL_OBJ(&selfZv, self);
+	valueTypes.push(zv::Ref(&selfZv));
+	zv::Arr nextAutoIndexes = zv::Arr::create(1);
+	nextAutoIndexes.push(zv::Val::integer(1));
+	/* the named argument isList: skips $optionalKeys, whose default is [] */
+	zval args[5];
+	args[0] = keyTypes.take();
+	args[1] = valueTypes.take();
+	args[2] = nextAutoIndexes.take();
+	ZVAL_EMPTY_ARRAY(&args[3]);
+	ZVAL_COPY_VALUE(&args[4], pt_trinary_singleton(PT_TRI_YES));
+	zv::Val result = pt_type_new(PT_CLASS_CONSTANT_ARRAY_TYPE, 5, args);
+	zval_ptr_dtor(&args[0]);
+	zval_ptr_dtor(&args[1]);
+	zval_ptr_dtor(&args[2]);
+	return result;
+}
+
+zv::Val pt_type_new_float_or_int_benevolent_union()
+{
+	zval floatRaw, integerRaw;
+	if (UNEXPECTED(!pt_float_type_new(&floatRaw))) return zv::Val();
+	zv::Val floatType = zv::Val::adopt(floatRaw);
+	if (UNEXPECTED(!pt_integer_type_new(&integerRaw))) return zv::Val();
+	zv::Arr types = zv::Arr::create(2);
+	types.push(std::move(floatType));
+	types.push(zv::Val::adopt(integerRaw));
+	return pt_type_new(PT_CLASS_BENEVOLENT_UNION_TYPE, 1, types.raw());
+}
+
+zv::Val pt_type_new_identifier_type_node(const char *name, size_t len)
+{
+	zv::Val nameZv = zv::Val::string(name, len);
+	return pt_type_new(PT_CLASS_IDENTIFIER_TYPE_NODE, 1, nameZv.raw());
+}
+
+bool pt_type_unsafe_array_string_key_casting_not_prevented(bool &out)
+{
+	zv::Val level = pt_type_call_static(PT_CLASS_REPORT_UNSAFE_ARRAY_STRING_KEY_CASTING_TOGGLE, PT_LC("getlevel"), 0, NULL);
+	if (UNEXPECTED(level.isUndef())) return false;
+	zend_class_entry *ce = pt_class(PT_CLASS_REPORT_UNSAFE_ARRAY_STRING_KEY_CASTING_TOGGLE);
+	if (UNEXPECTED(ce == NULL)) return false;
+	zend_class_constant *constant = (zend_class_constant *) zend_hash_str_find_ptr(&ce->constants_table, PT_LC("PREVENT"));
+	if (UNEXPECTED(constant == NULL)) {
+		zend_throw_error(NULL, "phpstan_turbo: %s::PREVENT not found", ZSTR_VAL(ce->name));
+		return false;
+	}
+	if (UNEXPECTED(Z_TYPE(constant->value) == IS_CONSTANT_AST && zval_update_constant_ex(&constant->value, ce) != SUCCESS)) return false;
+	/* $level !== ReportUnsafeArrayStringKeyCastingToggle::PREVENT */
+	out = !zend_is_identical(level.raw(), &constant->value);
+	return true;
 }
 
 /* }}} */

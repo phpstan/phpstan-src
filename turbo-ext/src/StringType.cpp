@@ -211,9 +211,9 @@ public:
 		 * argument is the constructor's first parameter */
 		zv::Val integer = toInteger();
 		if (UNEXPECTED(integer.isUndef())) return zv::Val();
-		zval inverse;
-		ZVAL_TRUE(&inverse);
-		zv::Val accessory = pt_type_new(PT_CLASS_ACCESSORY_DECIMAL_INTEGER_STRING_TYPE, 1, &inverse);
+		zval accessoryRaw;
+		if (UNEXPECTED(!pt_accessory_decimal_integer_string_type_new(&accessoryRaw, true))) return zv::Val();
+		zv::Val accessory = zv::Val::adopt(accessoryRaw);
 		if (UNEXPECTED(accessory.isUndef())) return zv::Val();
 		zv::Args args{self, accessory.raw()};
 		zv::Val intersected = pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("intersect"), 2, args);
@@ -323,16 +323,14 @@ public:
 			zv::Val value = pt_constant_string_get_value(Z_OBJ_P(typeToRemove));
 			if (UNEXPECTED(value.isUndef())) return zv::Val();
 			if (ZSTR_LEN(zv::Ref(value.raw()).asString()) == 0) {
-				zv::Val accessory = pt_type_new(PT_CLASS_ACCESSORY_NON_EMPTY_STRING_TYPE, 0, NULL);
+				zv::Val accessory = pt_type_new_shadowed(pt_accessory_non_empty_string_type_new);
 				if (UNEXPECTED(accessory.isUndef())) return zv::Val();
 				zv::Args args{self, accessory.raw()};
 				return pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("intersect"), 2, args);
 			}
 		}
 
-		bool isNonEmptyAccessory;
-		if (UNEXPECTED(!pt_type_instanceof(typeToRemove, PT_CLASS_ACCESSORY_NON_EMPTY_STRING_TYPE, isNonEmptyAccessory))) return zv::Val();
-		if (isNonEmptyAccessory) return pt_type_new_constant_string("", 0);
+		if (instanceof_function(Z_OBJCE_P(typeToRemove), pt_ce_accessory_non_empty_string_type)) return pt_type_new_constant_string("", 0);
 
 		return zv::Val::null();
 	}
@@ -369,7 +367,7 @@ private:
 	{
 		zv::Val string = create();
 		if (UNEXPECTED(string.isUndef())) return zv::Val();
-		zv::Val accessory = pt_type_new(PT_CLASS_ACCESSORY_NON_EMPTY_STRING_TYPE, 0, NULL);
+		zv::Val accessory = pt_type_new_shadowed(pt_accessory_non_empty_string_type_new);
 		if (UNEXPECTED(accessory.isUndef())) return zv::Val();
 		zv::Arr types = zv::Arr::create(2);
 		types.push(std::move(string));

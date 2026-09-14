@@ -9,7 +9,7 @@ use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
@@ -48,7 +48,7 @@ use PHPStan\Type\VerbosityLevel;
  *
  * @api
  */
-#[ReferencedByTurboExtension(key: 'accessoryDecimalIntegerStringType')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/AccessoryDecimalIntegerStringType.cpp')]
 class AccessoryDecimalIntegerStringType implements CompoundType, AccessoryType
 {
 

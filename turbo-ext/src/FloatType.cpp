@@ -95,9 +95,9 @@ public:
 		zval stringZv;
 		if (UNEXPECTED(!pt_string_type_new(&stringZv))) return zv::Val();
 		zv::Val string = zv::Val::adopt(stringZv);
-		zv::Val uppercase = pt_type_new(PT_CLASS_ACCESSORY_UPPERCASE_STRING_TYPE, 0, NULL);
+		zv::Val uppercase = pt_type_new_shadowed(pt_accessory_uppercase_string_type_new);
 		if (UNEXPECTED(uppercase.isUndef())) return zv::Val();
-		zv::Val numeric = pt_type_new(PT_CLASS_ACCESSORY_NUMERIC_STRING_TYPE, 0, NULL);
+		zv::Val numeric = pt_type_new_shadowed(pt_accessory_numeric_string_type_new);
 		if (UNEXPECTED(numeric.isUndef())) return zv::Val();
 		zv::Arr types = zv::Arr::create(3);
 		types.push(std::move(string));

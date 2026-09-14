@@ -534,7 +534,7 @@ public:
 	{
 		zv::Val classString = thisClassStringType();
 		if (UNEXPECTED(classString.isUndef())) return zv::Val();
-		zv::Val literal = pt_type_new(PT_CLASS_ACCESSORY_LITERAL_STRING_TYPE, 0, NULL);
+		zv::Val literal = pt_type_new_shadowed(pt_accessory_literal_string_type_new);
 		if (UNEXPECTED(literal.isUndef())) return zv::Val();
 		zv::Arr types = zv::Arr::create(2);
 		types.push(std::move(classString));

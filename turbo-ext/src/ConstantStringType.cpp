@@ -974,33 +974,31 @@ public:
 		zend_string *v = zv::Ref(valueZv.raw()).asString();
 		if (ZSTR_LEN(v) != 0 && moreSpecific) {
 			zv::Arr accessories = zv::Arr::create(6);
-			if (UNEXPECTED(!pushString(accessories) || !pushNew(accessories, PT_CLASS_ACCESSORY_LITERAL_STRING_TYPE))) return zv::Val();
+			if (UNEXPECTED(!pushString(accessories) || !pushNew(accessories, pt_accessory_literal_string_type_new))) return zv::Val();
 
 			if (is_numeric_string(ZSTR_VAL(v), ZSTR_LEN(v), NULL, NULL, false)) {
-				if (UNEXPECTED(!pushNew(accessories, PT_CLASS_ACCESSORY_NUMERIC_STRING_TYPE))) return zv::Val();
+				if (UNEXPECTED(!pushNew(accessories, pt_accessory_numeric_string_type_new))) return zv::Val();
 			}
 
 			bool isZero = ZSTR_LEN(v) == 1 && ZSTR_VAL(v)[0] == '0';
-			if (UNEXPECTED(!pushNew(accessories, isZero ? PT_CLASS_ACCESSORY_NON_EMPTY_STRING_TYPE : PT_CLASS_ACCESSORY_NON_FALSY_STRING_TYPE))) {
-				return zv::Val();
-			}
+			if (UNEXPECTED(!pushNew(accessories, isZero ? pt_accessory_non_empty_string_type_new : pt_accessory_non_falsy_string_type_new))) return zv::Val();
 
 			zend_string *lower = zend_string_tolower(v);
 			bool isLower = zend_string_equals(lower, v);
 			zend_string_release(lower);
-			if (isLower && UNEXPECTED(!pushNew(accessories, PT_CLASS_ACCESSORY_LOWERCASE_STRING_TYPE))) return zv::Val();
+			if (isLower && UNEXPECTED(!pushNew(accessories, pt_accessory_lowercase_string_type_new))) return zv::Val();
 
 			zend_string *upper = zend_string_toupper(v);
 			bool isUpper = zend_string_equals(upper, v);
 			zend_string_release(upper);
-			if (isUpper && UNEXPECTED(!pushNew(accessories, PT_CLASS_ACCESSORY_UPPERCASE_STRING_TYPE))) return zv::Val();
+			if (isUpper && UNEXPECTED(!pushNew(accessories, pt_accessory_uppercase_string_type_new))) return zv::Val();
 
 			return pt_type_new(PT_CLASS_INTERSECTION_TYPE, 1, accessories.raw());
 		}
 
 		if (moreSpecific) {
 			zv::Arr accessories = zv::Arr::create(2);
-			if (UNEXPECTED(!pushString(accessories) || !pushNew(accessories, PT_CLASS_ACCESSORY_LITERAL_STRING_TYPE))) return zv::Val();
+			if (UNEXPECTED(!pushString(accessories) || !pushNew(accessories, pt_accessory_literal_string_type_new))) return zv::Val();
 			return pt_type_new(PT_CLASS_INTERSECTION_TYPE, 1, accessories.raw());
 		}
 
@@ -1316,11 +1314,12 @@ private:
 		return true;
 	}
 
-	static bool pushNew(zv::Arr &types, int classIdx)
+	/* new <Shadowed>() through its exported constructor */
+	static bool pushNew(zv::Arr &types, bool (*construct)(zval *))
 	{
-		zv::Val created = pt_type_new(classIdx, 0, NULL);
-		if (UNEXPECTED(created.isUndef())) return false;
-		types.push(std::move(created));
+		zval raw;
+		if (UNEXPECTED(!construct(&raw))) return false;
+		types.push(zv::Val::adopt(raw));
 		return true;
 	}
 

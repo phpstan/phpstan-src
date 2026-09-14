@@ -6,7 +6,6 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<CallToStaticMethodStatementWithoutSideEffectsRule>
@@ -32,19 +31,7 @@ class CallToStaticMethodStatementWithoutSideEffectsRuleTest extends RuleTestCase
 		);
 	}
 
-	#[RequiresPhp('>= 8.0.0')]
 	public function testRule(): void
-	{
-		$this->analyse([__DIR__ . '/data/static-method-call-statement-no-side-effects.php'], [
-			[
-				'Call to method DateTime::format() on a separate line has no effect.',
-				23,
-			],
-		]);
-	}
-
-	#[RequiresPhp('< 8.0.0')]
-	public function testRulePhp7(): void
 	{
 		$this->analyse([__DIR__ . '/data/static-method-call-statement-no-side-effects.php'], [
 			[
@@ -122,16 +109,12 @@ class CallToStaticMethodStatementWithoutSideEffectsRuleTest extends RuleTestCase
 
 	public function testBug10819(): void
 	{
-		$errors = [];
-		if (PHP_VERSION_ID < 80000) {
-			$errors = [
-				[
-					'Call to static method DateTime::createFromFormat() on a separate line has no effect.',
-					13,
-				],
-			];
-		}
-		$this->analyse([__DIR__ . '/data/bug-10819.php'], $errors);
+		$this->analyse([__DIR__ . '/data/bug-10819.php'], [
+			[
+				'Call to static method DateTime::createFromFormat() on a separate line has no effect.',
+				13,
+			],
+		]);
 	}
 
 	public function testDynamicStaticCall(): void

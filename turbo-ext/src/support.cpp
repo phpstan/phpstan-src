@@ -85,7 +85,6 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_OBJECT_SHAPE_ITEM_NODE */ {"objectShapeItemNode", "PHPStan\\PhpDocParser\\Ast\\Type\\ObjectShapeItemNode"},
 	/* PT_CLASS_UNSAFE_ARRAY_STRING_KEY_CASTING_TRAVERSER */ {"unsafeArrayStringKeyCastingTraverser", "PHPStan\\Type\\Traverser\\UnsafeArrayStringKeyCastingTraverser"},
 	/* PT_CLASS_ALLOWED_ARRAY_KEYS_TYPES */ {"allowedArrayKeysTypes", "PHPStan\\Rules\\Arrays\\AllowedArrayKeysTypes"},
-	/* PT_CLASS_LRU_CACHE */ {"lruCache", "PHPStan\\Internal\\LruCache"},
 	/* PT_CLASS_CLASS_NOT_FOUND_EXCEPTION */ {"classNotFoundException", "PHPStan\\Broker\\ClassNotFoundException"},
 	/* PT_CLASS_CALLED_ON_TYPE_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION */ {"calledOnTypeUnresolvedMethodPrototypeReflection", "PHPStan\\Reflection\\Type\\CalledOnTypeUnresolvedMethodPrototypeReflection"},
 	/* PT_CLASS_CALLED_ON_TYPE_UNRESOLVED_PROPERTY_PROTOTYPE_REFLECTION */ {"calledOnTypeUnresolvedPropertyPrototypeReflection", "PHPStan\\Reflection\\Type\\CalledOnTypeUnresolvedPropertyPrototypeReflection"},
@@ -134,6 +133,9 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_OFFSET_ACCESS_TYPE_NODE */ {"offsetAccessTypeNode", "PHPStan\\PhpDocParser\\Ast\\Type\\OffsetAccessTypeNode"},
 	/* PT_CLASS_CONDITIONAL_TYPE_NODE */ {"conditionalTypeNode", "PHPStan\\PhpDocParser\\Ast\\Type\\ConditionalTypeNode"},
 	/* PT_CLASS_CONDITIONAL_TYPE_FOR_PARAMETER_NODE */ {"conditionalTypeForParameterNode", "PHPStan\\PhpDocParser\\Ast\\Type\\ConditionalTypeForParameterNode"},
+	/* PT_CLASS_CLASS_REFLECTION */ {"classReflection", "PHPStan\\Reflection\\ClassReflection"},
+	/* PT_CLASS_MUTATING_SCOPE */ {"mutatingScope", "PHPStan\\Analyser\\MutatingScope"},
+	/* PT_CLASS_REFLECTION_ENUM */ {"reflectionEnum", "PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionEnum"},
 };
 
 zend_class_entry *pt_class(int idx)
@@ -160,6 +162,30 @@ zend_class_entry *pt_class(int idx)
 	}
 	zend_string_release(name);
 	ref->ce = ce;
+	return ce;
+}
+
+zend_class_entry *pt_class_loaded(int idx)
+{
+	pt_class_ref *ref = &PT_G(class_refs)[idx];
+	zend_class_entry *ce;
+	zend_string *name;
+
+	if (EXPECTED(ref->ce != NULL)) return ref->ce;
+
+	if (ref->configured != NULL) {
+		name = zend_string_copy(ref->configured);
+	} else if (ref->default_name != NULL) {
+		name = zend_string_init(ref->default_name, strlen(ref->default_name), 0);
+	} else {
+		zend_throw_error(NULL, "phpstan_turbo: class for '%s' was not configured", ref->key);
+		return NULL;
+	}
+	ce = zend_lookup_class_ex(name, NULL, ZEND_FETCH_CLASS_NO_AUTOLOAD);
+	zend_string_release(name);
+	if (ce != NULL) {
+		ref->ce = ce;
+	}
 	return ce;
 }
 

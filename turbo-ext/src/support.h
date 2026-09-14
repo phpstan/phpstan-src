@@ -123,7 +123,6 @@ enum {
 	PT_CLASS_OBJECT_SHAPE_ITEM_NODE,
 	PT_CLASS_UNSAFE_ARRAY_STRING_KEY_CASTING_TRAVERSER,
 	PT_CLASS_ALLOWED_ARRAY_KEYS_TYPES,
-	PT_CLASS_LRU_CACHE,
 	PT_CLASS_CLASS_NOT_FOUND_EXCEPTION,
 	PT_CLASS_CALLED_ON_TYPE_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION,
 	PT_CLASS_CALLED_ON_TYPE_UNRESOLVED_PROPERTY_PROTOTYPE_REFLECTION,
@@ -172,11 +171,19 @@ enum {
 	PT_CLASS_OFFSET_ACCESS_TYPE_NODE,
 	PT_CLASS_CONDITIONAL_TYPE_NODE,
 	PT_CLASS_CONDITIONAL_TYPE_FOR_PARAMETER_NODE,
+	PT_CLASS_CLASS_REFLECTION,
+	PT_CLASS_MUTATING_SCOPE,
+	PT_CLASS_REFLECTION_ENUM,
 	PT_CLASS_COUNT
 };
 
 /* Resolves a configured/default class; throws and returns NULL on failure. */
 zend_class_entry *pt_class(int idx);
+/* pt_class() without autoloading: the class when it is already declared
+ * (cached like pt_class()'s), NULL with no exception when it is not — what
+ * an `instanceof` against an undeclared class sees; throws only when the
+ * key has neither a configured nor a default name */
+zend_class_entry *pt_class_loaded(int idx);
 
 
 /* Called by Runtime::configure() */
@@ -1174,5 +1181,54 @@ void pt_register_template_key_of_type();
  * argument borrowed, $default NULL or IS_NULL for null, $bound checked
  * against KeyOfType); false = pending exception */
 [[nodiscard]] bool pt_template_key_of_type_new(zval *out, zval *scope, zval *strategy, zval *variance, zend_string *name, zval *bound, zval *defaultType);
+
+/* ClassReflectionAccess.cpp — native readers of the memo slots of
+ * PHPStan\Reflection\ClassReflection (a userland final class) and of a
+ * MutatingScope's ScopeContext: the Type kernel's hottest native->PHP calls
+ * (getName()/isGeneric()/hasMethod()/getCacheKey() on class reflections,
+ * isInClass()/getClassReflection() on scopes), answered from the twin's own
+ * property slot when it holds the memoized answer and through the PHP
+ * method otherwise, so the observable behaviour (lazy computation, the
+ * Error on an uninitialized slot, a subclass's override) stays the twin's */
+void pt_class_reflection_access_rinit();
+/* $classReflection->getName() / ->getCacheKey() / ->getNativeReflection();
+ * UNDEF = pending exception */
+zv::Val pt_class_reflection_get_name(zend_object *classReflection);
+zv::Val pt_class_reflection_get_cache_key(zend_object *classReflection);
+zv::Val pt_class_reflection_get_native_reflection(zend_object *classReflection);
+/* $classReflection->isGeneric() / ->hasMethod($methodName) /
+ * ->hasFinalByKeywordOverride() / ->isEnum(), coerced to bool as the call
+ * sites always did; false = pending exception */
+[[nodiscard]] bool pt_class_reflection_is_generic(zend_object *classReflection, bool &out);
+bool pt_class_reflection_has_method(zend_object *classReflection, zval *methodName, bool &out);
+bool pt_class_reflection_has_final_by_keyword_override(zend_object *classReflection, bool &out);
+bool pt_class_reflection_is_enum(zend_object *classReflection, bool &out);
+/* $scope->isInClass() (coerced to bool) / ->getClassReflection(); false /
+ * UNDEF = pending exception */
+[[nodiscard]] bool pt_scope_is_in_class(zend_object *scope, bool &out);
+zv::Val pt_scope_get_class_reflection(zend_object *scope);
+
+/* ScopeContext.cpp: the shadowing class entry, and the $classReflection
+ * slot of one of its instances (borrowed; IS_NULL outside a class) */
+extern zend_class_entry *pt_ce_scope_context;
+zval *pt_scope_context_class_reflection(zend_object *context);
+
+/* LruCache.cpp — registered at the END of the sequence (it names no
+ * shadowed class; ObjectType's description-key LRU instantiates it at run
+ * time) */
+extern zend_class_entry *pt_ce_lru_cache;
+void pt_register_lru_cache();
+/* new LruCache($maxCount, $maxWeight, $weightEvictionFloorCount) — an
+ * instance of the shadowing class; false = pending exception */
+[[nodiscard]] bool pt_lru_cache_new(zval *out, zend_long maxCount = 0, zend_long maxWeight = 0, zend_long weightEvictionFloorCount = 0);
+/* $cache->get($key) / ->set($key, $value, $weight) / ->replace($key,
+ * $value) / ->count() / ->all() — natively for a native cache, through the
+ * method otherwise ($key and $value borrowed); UNDEF / false / -1 = pending
+ * exception */
+zv::Val pt_lru_cache_get(zval *cache, zend_string *key);
+zv::Val pt_lru_cache_set(zval *cache, zend_string *key, zval *value, zend_long weight);
+bool pt_lru_cache_replace(zval *cache, zend_string *key, zval *value);
+zend_long pt_lru_cache_count(zval *cache);
+zv::Val pt_lru_cache_all(zval *cache);
 
 #endif /* PHPSTANTURBO_SUPPORT_H */

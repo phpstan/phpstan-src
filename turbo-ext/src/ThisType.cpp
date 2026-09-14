@@ -189,7 +189,7 @@ public:
 		if (UNEXPECTED(finalByKeyword.isUndef())) return zv::Val();
 		if (zend_is_true(finalByKeyword.raw())) {
 			/* new ConstantStringType($reflection->getName(), true) */
-			zv::Val name = pt_type_call(Z_OBJ_P(reflection.raw()), PT_LC("getname"), 0, NULL);
+			zv::Val name = pt_class_reflection_get_name(Z_OBJ_P(reflection.raw()));
 			if (UNEXPECTED(name.isUndef())) return zv::Val();
 			if (UNEXPECTED(!zv::Ref(name.raw()).isString())) {
 				zend_type_error("phpstan_turbo: getName() must return string");

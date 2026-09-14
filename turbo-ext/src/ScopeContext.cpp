@@ -15,7 +15,12 @@
 namespace slots = ptdecl::ScopeContext::slot;
 #include "zv.h"
 
-static zend_class_entry *pt_ce_scope_context = nullptr;
+zend_class_entry *pt_ce_scope_context = nullptr;
+
+zval *pt_scope_context_class_reflection(zend_object *context)
+{
+	return OBJ_PROP_NUM(context, slots::classReflection);
+}
 
 namespace phpstanturbo {
 
@@ -162,17 +167,11 @@ private:
 		return pt_call_scope_bool(reflection.raw(), lcname, len, 0, NULL, &out);
 	}
 
-	/* $reflection->getName(); UNDEF = pending exception */
+	/* $reflection->getName() — a ClassReflection's memoized name read
+	 * natively (ClassReflectionAccess.cpp); UNDEF = pending exception */
 	static zv::Val callGetName(zv::Ref reflection)
 	{
-		zend_class_entry *ce = Z_OBJCE_P(reflection.raw());
-		zend_function *fn = pt_find_method(ce, "getname", sizeof("getname") - 1);
-		if (UNEXPECTED(fn == NULL)) return zv::Val();
-		zval ret;
-		zend_call_known_function(fn, reflection.asObject(), ce, &ret, 0, NULL, NULL);
-		zv::Val name = zv::Val::adopt(ret);
-		if (UNEXPECTED(EG(exception))) return zv::Val();
-		return name;
+		return pt_class_reflection_get_name(reflection.asObject());
 	}
 
 	/* $a->getName() === $b->getName(); both calls always happen, like the

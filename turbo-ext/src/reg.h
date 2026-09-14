@@ -331,6 +331,12 @@ constexpr Arg variadicObj(const char *name, const char *className)
 	return { name, _ZEND_TYPE_LITERAL_NAME_BIT | detail::flagBits(false, true), className };
 }
 
+/* a `mixed` parameter (ZEND_ARG_TYPE_INFO with IS_MIXED) */
+constexpr Arg mixedArg(const char *name)
+{
+	return { name, MAY_BE_ANY | detail::flagBits(false, false), nullptr };
+}
+
 /* a parameter or return type the way a generated signature spells it
  * (turbo-ext/src/generated): the MAY_BE_* mask, a persistent literal class
  * name ("Foo", "Foo|Bar", "self") or nullptr, by reference / variadic, the
@@ -979,6 +985,13 @@ public:
 	/* a `public const X = [...]` class constant whose value the builder
 	 * fills in at declaration (a persistent, immutable value — the engine
 	 * references it for the process lifetime) */
+	/* a `private int $x = 0` typed property with an int default */
+	Class &privateTypedLongProperty(const char *propertyName, zend_long defaultValue)
+	{
+		properties.push_back({ propertyName, PropertyKind::TypedLong, ZEND_ACC_PRIVATE, defaultValue });
+		return *this;
+	}
+
 	Class &classConstantValue(const char *constantName, void (*buildValue)(zval *out))
 	{
 		constants.push_back({ constantName, 0, ZEND_ACC_PUBLIC, nullptr, buildValue });

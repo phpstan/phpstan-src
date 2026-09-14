@@ -33,6 +33,7 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\VariadicPlaceholder;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionIntersectionType;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionNamedType;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionUnionType;
@@ -162,6 +163,7 @@ final class TurboAttributeCollector
 		'offsetAccessTypeNode' => OffsetAccessTypeNode::class,
 		'conditionalTypeNode' => ConditionalTypeNode::class,
 		'conditionalTypeForParameterNode' => ConditionalTypeForParameterNode::class,
+		'reflectionEnum' => ReflectionEnum::class,
 	];
 
 	private string $realRoot;

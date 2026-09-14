@@ -722,7 +722,7 @@ public:
 		if (UNEXPECTED(reflection == NULL)) return zv::Val();
 		bool override = false;
 		if (Z_TYPE_P(reflection) == IS_OBJECT) {
-			if (UNEXPECTED(!pt_type_call_bool(Z_OBJ_P(reflection), PT_LC("hasfinalbykeywordoverride"), 0, NULL, override))) return zv::Val();
+			if (UNEXPECTED(!pt_class_reflection_has_final_by_keyword_override(Z_OBJ_P(reflection), override))) return zv::Val();
 		}
 		if (Z_TYPE_P(reflection) != IS_OBJECT || !override) return thisValue();
 

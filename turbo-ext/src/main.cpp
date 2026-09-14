@@ -281,6 +281,7 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_type_result();
 	pt_register_callable_type_helper();
 	pt_register_get_template_type_type();
+	pt_register_lru_cache();
 
 	return SUCCESS;
 }
@@ -307,6 +308,7 @@ static PHP_RINIT_FUNCTION(phpstan_turbo)
 	pt_integer_range_type_rinit();
 	pt_object_type_rinit();
 	pt_static_type_factory_rinit();
+	pt_class_reflection_access_rinit();
 
 	return SUCCESS;
 }

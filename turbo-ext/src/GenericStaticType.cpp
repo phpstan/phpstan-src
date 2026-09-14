@@ -109,15 +109,15 @@ public:
 		if (Z_TYPE_P(memo) == IS_OBJECT) return zv::Val::copyOf(zv::Ref(memo));
 		zval *reflection = classReflection();
 		if (UNEXPECTED(reflection == NULL)) return zv::Val();
-		zv::Val generic = pt_type_call(Z_OBJ_P(reflection), PT_LC("isgeneric"), 0, NULL);
-		if (UNEXPECTED(generic.isUndef())) return zv::Val();
+		bool generic;
+		if (UNEXPECTED(!pt_class_reflection_is_generic(Z_OBJ_P(reflection), generic))) return zv::Val();
 		zv::Val objectType;
-		if (zend_is_true(generic.raw())) {
+		if (generic) {
 			zval *ownTypes = types();
 			zval *subtracted = ownTypes != NULL ? subtractedType() : NULL;
 			zval *ownVariances = subtracted != NULL ? variances() : NULL;
 			if (UNEXPECTED(ownVariances == NULL)) return zv::Val();
-			zv::Val name = pt_type_call(Z_OBJ_P(reflection), PT_LC("getname"), 0, NULL);
+			zv::Val name = pt_class_reflection_get_name(Z_OBJ_P(reflection));
 			if (UNEXPECTED(name.isUndef())) return zv::Val();
 			/* new GenericObjectType($name, $this->types, $this->subtractedType, $this->classReflection, $this->variances) */
 			zval genericRaw;
@@ -139,12 +139,12 @@ public:
 	{
 		zv::Val ownClassName = pt_static_type_this_class_name(self);
 		if (UNEXPECTED(ownClassName.isUndef())) return zv::Val();
-		zv::Val newName = pt_type_call(Z_OBJ_P(classReflection), PT_LC("getname"), 0, NULL);
+		zv::Val newName = pt_class_reflection_get_name(Z_OBJ_P(classReflection));
 		if (UNEXPECTED(newName.isUndef())) return zv::Val();
 		if (zend_is_identical(newName.raw(), ownClassName.raw())) return thisValue();
-		zv::Val generic = pt_type_call(Z_OBJ_P(classReflection), PT_LC("isgeneric"), 0, NULL);
-		if (UNEXPECTED(generic.isUndef())) return zv::Val();
-		if (!zend_is_true(generic.raw())) {
+		bool generic;
+		if (UNEXPECTED(!pt_class_reflection_is_generic(Z_OBJ_P(classReflection), generic))) return zv::Val();
+		if (!generic) {
 			zval result;
 			if (UNEXPECTED(!pt_static_type_new(&result, classReflection))) return zv::Val();
 			return zv::Val::adopt(result);

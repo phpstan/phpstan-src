@@ -84,7 +84,7 @@ public:
 		} else {
 			writeSlot(slots::subtractedType, subtractedType);
 		}
-		zv::Val name = pt_type_call(Z_OBJ_P(classReflection), PT_LC("getname"), 0, NULL);
+		zv::Val name = pt_class_reflection_get_name(Z_OBJ_P(classReflection));
 		if (UNEXPECTED(name.isUndef())) return;
 		if (UNEXPECTED(!zv::Ref(name.raw()).isString())) {
 			zend_type_error("phpstan_turbo: %s::getName() must return string", ZSTR_VAL(Z_OBJCE_P(classReflection)->name));
@@ -162,8 +162,8 @@ public:
 		zval *subtracted = subtractedType();
 		if (UNEXPECTED(subtracted == NULL)) return zv::Val();
 		bool generic;
-		if (UNEXPECTED(!reflectionFlag(reflection, PT_LC("isgeneric"), generic))) return zv::Val();
-		zv::Val name = pt_type_call(Z_OBJ_P(reflection), PT_LC("getname"), 0, NULL);
+		if (UNEXPECTED(!pt_class_reflection_is_generic(Z_OBJ_P(reflection), generic))) return zv::Val();
+		zv::Val name = pt_class_reflection_get_name(Z_OBJ_P(reflection));
 		if (UNEXPECTED(name.isUndef())) return zv::Val();
 		zv::Val objectType;
 		if (generic) {
@@ -357,7 +357,7 @@ public:
 			zend_type_error("phpstan_turbo: getDeclaringClass() must return an object");
 			return zv::Val();
 		}
-		zv::Val declaringName = pt_type_call(Z_OBJ_P(declaringClass.raw()), PT_LC("getname"), 0, NULL);
+		zv::Val declaringName = pt_class_reflection_get_name(Z_OBJ_P(declaringClass.raw()));
 		if (UNEXPECTED(declaringName.isUndef())) return zv::Val();
 		zv::Val ancestor = thisGetAncestorWithClassName(declaringName.raw());
 		if (UNEXPECTED(ancestor.isUndef())) return zv::Val();
@@ -388,17 +388,17 @@ public:
 	 * in a class; UNDEF = pending exception */
 	zv::Val getMethod(zval *methodName, zval *scope) const
 	{
-		zv::Val inClass = pt_type_call(Z_OBJ_P(scope), PT_LC("isinclass"), 0, NULL);
-		if (UNEXPECTED(inClass.isUndef())) return zv::Val();
+		bool inClass;
+		if (UNEXPECTED(!pt_scope_is_in_class(Z_OBJ_P(scope), inClass))) return zv::Val();
 		zv::Val key;
-		if (zend_is_true(inClass.raw())) {
-			zv::Val classReflection = pt_type_call(Z_OBJ_P(scope), PT_LC("getclassreflection"), 0, NULL);
+		if (inClass) {
+			zv::Val classReflection = pt_scope_get_class_reflection(Z_OBJ_P(scope));
 			if (UNEXPECTED(classReflection.isUndef())) return zv::Val();
 			if (UNEXPECTED(!zv::Ref(classReflection.raw()).isObject())) {
 				zend_type_error("phpstan_turbo: getClassReflection() must return an object");
 				return zv::Val();
 			}
-			zv::Val cacheKey = pt_type_call(Z_OBJ_P(classReflection.raw()), PT_LC("getcachekey"), 0, NULL);
+			zv::Val cacheKey = pt_class_reflection_get_cache_key(Z_OBJ_P(classReflection.raw()));
 			if (UNEXPECTED(cacheKey.isUndef())) return zv::Val();
 			if (UNEXPECTED(!zv::Ref(cacheKey.raw()).isString() || !zv::Ref(methodName).isString())) {
 				zend_type_error("phpstan_turbo: getCacheKey() must return string");
@@ -456,10 +456,10 @@ public:
 		if (UNEXPECTED(ownReflection == NULL)) return zv::Val();
 		zv::Val classReflection = zv::Val::copyOf(zv::Ref(ownReflection));
 		bool isFinal = false;
-		zv::Val inClass = pt_type_call(Z_OBJ_P(scope), PT_LC("isinclass"), 0, NULL);
-		if (UNEXPECTED(inClass.isUndef())) return zv::Val();
-		if (zend_is_true(inClass.raw())) {
-			classReflection = pt_type_call(Z_OBJ_P(scope), PT_LC("getclassreflection"), 0, NULL);
+		bool inClass;
+		if (UNEXPECTED(!pt_scope_is_in_class(Z_OBJ_P(scope), inClass))) return zv::Val();
+		if (inClass) {
+			classReflection = pt_scope_get_class_reflection(Z_OBJ_P(scope));
 			if (UNEXPECTED(classReflection.isUndef())) return zv::Val();
 			if (UNEXPECTED(!zv::Ref(classReflection.raw()).isObject())) {
 				zend_type_error("phpstan_turbo: getClassReflection() must return an object");

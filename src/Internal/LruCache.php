@@ -3,7 +3,7 @@
 namespace PHPStan\Internal;
 
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_key_exists;
 use function array_key_first;
 use function count;
@@ -20,7 +20,7 @@ use function sprintf;
  *
  * @template TValue
  */
-#[ReferencedByTurboExtension(key: 'lruCache')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/LruCache.cpp')]
 final class LruCache
 {
 

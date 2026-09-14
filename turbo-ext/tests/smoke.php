@@ -2301,6 +2301,62 @@ $cthErrors = static function (string $helper, object $acceptor): array {
 check($cthErrors(\PHPStan\Type\CallableTypeHelper::class, $cthAcceptors(false)['callable']) === $cthErrors(\PHPStanTurbo\CallableTypeHelper::class, $cthAcceptors(true)['callable']), 'CallableTypeHelper: foreign arguments throw the same (' . implode(', ', $cthErrors(\PHPStanTurbo\CallableTypeHelper::class, $cthAcceptors(true)['callable'])) . ')');
 $covered[\PHPStan\Type\CallableTypeHelper::class] = true;
 
+// ---- LruCache ----
+// The array-backed LRU: all() must hand out the same keys (a numeric string
+// becomes an integer key) in the same order on both sides — the order is
+// the eviction order — and the evicted lists, the count and weight bounds
+// with the eviction floor, get() touching, set() re-accounting a replaced
+// key's weight, replace() and the errors must agree.
+$lruResults = [];
+foreach (['php' => \PHPStan\Internal\LruCache::class, 'native' => \PHPStanTurbo\LruCache::class] as $side => $lruClass) {
+	$r = [];
+	$unbounded = new $lruClass();
+	$r[] = [$unbounded instanceof $lruClass, $unbounded->count(), $unbounded->all(), $unbounded->get('a')];
+	foreach ([['a', 'A', 1], ['10', 'ten', 2], ['b', ['B'], 3], ['0', 0.5, 4], ['a', 'A2', 5], ['01', null, 6], ['-3', true, 0]] as [$k, $v, $w]) {
+		$r[] = [$k, $unbounded->set($k, $v, $w), $unbounded->count(), $unbounded->all()];
+	}
+	$r[] = [$unbounded->get('10'), $unbounded->all(), $unbounded->get('nope'), $unbounded->get('0'), $unbounded->get('01'), $unbounded->all()];
+	$unbounded->replace('b', 'B2');
+	$unbounded->replace('10', 'TEN');
+	$r[] = $unbounded->all();
+	try {
+		$unbounded->replace('missing', 1);
+		$r[] = 'replaced';
+	} catch (\PHPStan\ShouldNotHappenException $e) {
+		$r[] = [get_class($e), $e->getMessage()];
+	}
+
+	$byCount = new $lruClass(3);
+	foreach (['a', 'b', 'c', 'd', 'b', 'e', 'f'] as $i => $k) {
+		$r[] = [$k, $byCount->set($k, $i, 0), $byCount->all()];
+	}
+	$r[] = [$byCount->get('b'), $byCount->all()];
+	$r[] = [$byCount->set('g', 7, 0), $byCount->all(), $byCount->count()];
+
+	$byWeight = new $lruClass(maxWeight: 10, weightEvictionFloorCount: 1);
+	foreach ([['a', 4], ['b', 4], ['c', 4], ['huge', 100], ['d', 1], ['huge', 0], ['e', 9], ['f', 1]] as $i => [$k, $w]) {
+		$r[] = [$k, $byWeight->set($k, $i, $w), $byWeight->all()];
+	}
+
+	$both = new $lruClass(2, 5, 0);
+	foreach ([['a', 3], ['b', 3], ['c', 1], ['d', 1], ['e', 9], ['f', 1]] as $i => [$k, $w]) {
+		$r[] = [$k, $both->set($k, $i, $w), $both->all()];
+	}
+	$r[] = [$both->get('f'), $both->set('g', 1, 1), $both->all()];
+
+	$raw = (new \ReflectionClass($lruClass))->newInstanceWithoutConstructor();
+	$r[] = [$raw->count(), $raw->get('x'), $raw->all()];
+	try {
+		$raw->set('x', 1, 1);
+		$r[] = 'set on an unconstructed cache';
+	} catch (\Error $e) {
+		$r[] = [get_class($e), str_replace($lruClass, 'LruCache', $e->getMessage())];
+	}
+	$lruResults[$side] = $r;
+}
+check($lruResults['php'] === $lruResults['native'], 'LruCache parity: ' . json_encode($lruResults['php']) . ' vs ' . json_encode($lruResults['native']));
+$covered[\PHPStan\Internal\LruCache::class] = true;
+
 // ---- differential coverage completeness ----
 // Every shadowed class must be exercised by one of the tests/ scripts; the
 // classes not covered above have their own dedicated script.

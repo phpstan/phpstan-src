@@ -365,9 +365,9 @@ public:
 
 			zv::Val classRef = pt_type_call(provider, PT_LC("getclass"), 1, className.raw());
 			if (UNEXPECTED(classRef.isUndef())) return -1;
-			zv::Val hasMethod = pt_type_call(Z_OBJ_P(classRef.raw()), PT_LC("hasmethod"), 1, methodName.raw());
-			if (UNEXPECTED(hasMethod.isUndef())) return -1;
-			if (zend_is_true(hasMethod.raw())) {
+			bool hasMethod;
+			if (UNEXPECTED(!pt_class_reflection_has_method(Z_OBJ_P(classRef.raw()), methodName.raw(), hasMethod))) return -1;
+			if (hasMethod) {
 				zv::Val phpVersion = pt_type_call_static(PT_CLASS_PHP_VERSION_STATIC_ACCESSOR, PT_LC("getinstance"), 0, NULL);
 				if (UNEXPECTED(phpVersion.isUndef())) return -1;
 				zv::Val supportsInstanceMethods = pt_type_call(Z_OBJ_P(phpVersion.raw()), PT_LC("supportscallableinstancemethods"), 0, NULL);
@@ -435,9 +435,9 @@ public:
 
 			zv::Val classReflection = pt_type_call(provider, PT_LC("getclass"), 1, className.raw());
 			if (UNEXPECTED(classReflection.isUndef())) return zv::Val();
-			zv::Val hasMethod = pt_type_call(Z_OBJ_P(classReflection.raw()), PT_LC("hasmethod"), 1, methodName.raw());
-			if (UNEXPECTED(hasMethod.isUndef())) return zv::Val();
-			if (zend_is_true(hasMethod.raw())) {
+			bool hasMethod;
+			if (UNEXPECTED(!pt_class_reflection_has_method(Z_OBJ_P(classReflection.raw()), methodName.raw(), hasMethod))) return zv::Val();
+			if (hasMethod) {
 				zv::Args methodArgs{methodName.raw(), scope};
 				zv::Val method = pt_type_call(Z_OBJ_P(classReflection.raw()), PT_LC("getmethod"), 2, methodArgs);
 				if (UNEXPECTED(method.isUndef())) return zv::Val();

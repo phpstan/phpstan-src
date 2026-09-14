@@ -18,7 +18,7 @@ use Symfony\Component\Finder\Finder;
 
 	$parser = (new ParserFactory())->createForNewestSupportedVersion();
 	$finder = new Finder();
-	$finder->in(__DIR__ . '/../vendor/jetbrains/phpstorm-stubs')->files()->name('*.php');
+	$finder->in(__DIR__ . '/../vendor/jetbrains/phpstorm-stubs')->exclude('tests')->files()->name('*.php');
 
 	$visitor = new class() extends NodeVisitorAbstract {
 
@@ -69,6 +69,7 @@ use Symfony\Component\Finder\Finder;
 							'function_exists',
 							'json_last_error',
 							'json_last_error_msg',
+							'ob_get_level',
 						], true)) {
 							$this->functions[] = $functionName;
 							break 2;
@@ -90,6 +91,10 @@ use Symfony\Component\Finder\Finder;
 				$class = $node->getAttribute('parent');
 				if (!$class instanceof Node\Stmt\ClassLike) {
 					throw new ShouldNotHappenException($node->name->toString());
+				}
+				if (!isset($class->namespacedName)) {
+					// anonymous class
+					return null;
 				}
 				$className = $class->namespacedName->toString();
 				foreach ($node->attrGroups as $attrGroup) {
@@ -229,5 +234,5 @@ php;
 		);
 	}
 
-	FileWriter::write(__DIR__ . '/../resources/functionMetadata.php', sprintf($template, $content));
+	FileWriter::write(__DIR__ . '/../resources/functionMetadata.php', sprintf($template, $content) . "\n");
 })();

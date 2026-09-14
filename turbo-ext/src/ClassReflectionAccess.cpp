@@ -92,6 +92,21 @@ const ClassReflectionSlots *classReflectionSlots(zend_object *object, bool &erro
 	return true;
 }
 
+/* the subclass of MutatingScope last approved by the inheritance check */
+static zend_class_entry *pt_ms_inherited_ce = NULL;
+
+/* whether a subclass inherits isInClass() and getClassReflection() from
+ * MutatingScope itself (declared there, not re-declared below it) */
+static bool inheritsScopeGetters(zend_class_entry *ce, zend_class_entry *mutatingScope)
+{
+	static const struct { const char *name; size_t len; } methods[] = { { PT_LC("isinclass") }, { PT_LC("getclassreflection") } };
+	for (const auto &method : methods) {
+		zend_function *fn = (zend_function *) zend_hash_str_find_ptr(&ce->function_table, method.name, method.len);
+		if (fn == NULL || fn->common.scope != mutatingScope) return false;
+	}
+	return true;
+}
+
 /* the $classReflection slot of the scope's context when the fast path
  * applies (the scope exactly a MutatingScope, its context a native
  * ScopeContext); NULL otherwise, with `error` set when the class map
@@ -99,16 +114,27 @@ const ClassReflectionSlots *classReflectionSlots(zend_object *object, bool &erro
 zval *scopeClassReflectionSlot(zend_object *scope, bool &error)
 {
 	error = false;
-	if (scope->ce != pt_ms_slots.ce) {
+	if (scope->ce != pt_ms_slots.ce && scope->ce != pt_ms_inherited_ce) {
 		zend_class_entry *ce = pt_class_loaded(PT_CLASS_MUTATING_SCOPE);
 		if (ce == NULL) {
 			error = EG(exception) != NULL;
 			return NULL;
 		}
-		if (scope->ce != ce) return NULL;
+		if (scope->ce != ce) {
+			/* a subclass (NodeCallbackScope) qualifies when it inherits both
+			 * methods from MutatingScope unchanged: the bodies are then the
+			 * twin's, reading the same inherited $context slot; the last
+			 * such class is remembered (one subclass exists in practice) */
+			if (!instanceof_function(scope->ce, ce) || !inheritsScopeGetters(scope->ce, ce)) return NULL;
+		}
 		int32_t context = pt_instance_prop_offset(ce, PT_LC("context"));
 		if (UNEXPECTED(context < 0)) return NULL;
-		pt_ms_slots = { ce, (uint32_t) context };
+		if (scope->ce == ce) {
+			pt_ms_slots = { ce, (uint32_t) context };
+		} else {
+			pt_ms_slots.context = (uint32_t) context;
+			pt_ms_inherited_ce = scope->ce;
+		}
 	}
 	zval *context = OBJ_PROP(scope, pt_ms_slots.context);
 	if (Z_TYPE_P(context) != IS_OBJECT || Z_OBJCE_P(context) != pt_ce_scope_context) return NULL;
@@ -121,6 +147,7 @@ void pt_class_reflection_access_rinit()
 {
 	pt_cr_slots.ce = NULL;
 	pt_ms_slots.ce = NULL;
+	pt_ms_inherited_ce = NULL;
 }
 
 /* {{{ ClassReflection */

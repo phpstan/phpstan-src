@@ -7,9 +7,11 @@ use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 
+#[ReferencedByTurboExtension(key: 'enumPropertyReflection')]
 final class EnumPropertyReflection implements ExtendedPropertyReflection
 {
 

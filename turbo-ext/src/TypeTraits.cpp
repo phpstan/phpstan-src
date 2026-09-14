@@ -2415,3 +2415,24 @@ bool pt_type_unsafe_array_string_key_casting_not_prevented(bool &out)
 }
 
 /* }}} */
+
+/* {{{ the object family */
+
+/* {{{ MaybeIterableTypeTrait */
+
+/* }}} */
+
+/* {{{ new ObjectType($className) — the shadowing class (ObjectType.cpp) */
+
+zv::Val pt_type_new_object_type(zval *className)
+{
+	if (UNEXPECTED(Z_TYPE_P(className) != IS_STRING)) {
+		zend_type_error("phpstan_turbo: ObjectType::__construct(): Argument #1 ($className) must be of type string, %s given", zend_zval_type_name(className));
+		return zv::Val();
+	}
+	zval object;
+	if (UNEXPECTED(!pt_object_type_new(&object, Z_STR_P(className)))) return zv::Val();
+	return zv::Val::adopt(object);
+}
+
+/* }}} */

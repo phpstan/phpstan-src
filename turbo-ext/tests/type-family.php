@@ -56,7 +56,7 @@ $observations = [];
 // which implementation answered: smoke.php holds the php run to false and
 // the native run to true, so the two sets can never be one implementation
 // compared against itself
-foreach ([\PHPStan\Type\BooleanType::class, \PHPStan\Type\Constant\ConstantBooleanType::class, \PHPStan\Type\IntegerType::class, \PHPStan\Type\Constant\ConstantIntegerType::class, \PHPStan\Type\IntegerRangeType::class, \PHPStan\Type\StringType::class, \PHPStan\Type\Constant\ConstantStringType::class, \PHPStan\Type\ClassStringType::class, \PHPStan\Type\Generic\GenericClassStringType::class, \PHPStan\Type\FloatType::class, \PHPStan\Type\Constant\ConstantFloatType::class, \PHPStan\Type\NullType::class, \PHPStan\Type\VoidType::class, \PHPStan\Type\NeverType::class, \PHPStan\Type\MixedType::class, \PHPStan\Type\StrictMixedType::class, \PHPStan\Type\ObjectWithoutClassType::class, \PHPStan\Type\StaticType::class, \PHPStan\Type\ThisType::class, \PHPStan\Type\Generic\GenericStaticType::class, \PHPStan\Type\ObjectShapeType::class, \PHPStan\Type\NonexistentParentClassType::class, \PHPStan\Type\ArrayType::class, \PHPStan\Type\Accessory\NonEmptyArrayType::class, \PHPStan\Type\Accessory\AccessoryArrayListType::class, \PHPStan\Type\Accessory\OversizedArrayType::class, \PHPStan\Type\Accessory\HasOffsetType::class, \PHPStan\Type\Accessory\HasOffsetValueType::class, \PHPStan\Type\Accessory\AccessoryNumericStringType::class, \PHPStan\Type\Accessory\AccessoryNonEmptyStringType::class, \PHPStan\Type\Accessory\AccessoryNonFalsyStringType::class, \PHPStan\Type\Accessory\AccessoryLiteralStringType::class, \PHPStan\Type\Accessory\AccessoryLowercaseStringType::class, \PHPStan\Type\Accessory\AccessoryUppercaseStringType::class, \PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType::class, \PHPStan\Type\Accessory\HasMethodType::class, \PHPStan\Type\Accessory\HasPropertyType::class] as $typeClass) {
+foreach ([\PHPStan\Type\BooleanType::class, \PHPStan\Type\Constant\ConstantBooleanType::class, \PHPStan\Type\IntegerType::class, \PHPStan\Type\Constant\ConstantIntegerType::class, \PHPStan\Type\IntegerRangeType::class, \PHPStan\Type\StringType::class, \PHPStan\Type\Constant\ConstantStringType::class, \PHPStan\Type\ClassStringType::class, \PHPStan\Type\Generic\GenericClassStringType::class, \PHPStan\Type\FloatType::class, \PHPStan\Type\Constant\ConstantFloatType::class, \PHPStan\Type\NullType::class, \PHPStan\Type\VoidType::class, \PHPStan\Type\NeverType::class, \PHPStan\Type\MixedType::class, \PHPStan\Type\StrictMixedType::class, \PHPStan\Type\ObjectWithoutClassType::class, \PHPStan\Type\StaticType::class, \PHPStan\Type\ThisType::class, \PHPStan\Type\Generic\GenericStaticType::class, \PHPStan\Type\ObjectShapeType::class, \PHPStan\Type\NonexistentParentClassType::class, \PHPStan\Type\ArrayType::class, \PHPStan\Type\Accessory\NonEmptyArrayType::class, \PHPStan\Type\Accessory\AccessoryArrayListType::class, \PHPStan\Type\Accessory\OversizedArrayType::class, \PHPStan\Type\Accessory\HasOffsetType::class, \PHPStan\Type\Accessory\HasOffsetValueType::class, \PHPStan\Type\Accessory\AccessoryNumericStringType::class, \PHPStan\Type\Accessory\AccessoryNonEmptyStringType::class, \PHPStan\Type\Accessory\AccessoryNonFalsyStringType::class, \PHPStan\Type\Accessory\AccessoryLiteralStringType::class, \PHPStan\Type\Accessory\AccessoryLowercaseStringType::class, \PHPStan\Type\Accessory\AccessoryUppercaseStringType::class, \PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType::class, \PHPStan\Type\Accessory\HasMethodType::class, \PHPStan\Type\Accessory\HasPropertyType::class, \PHPStan\Type\ObjectType::class, \PHPStan\Type\Generic\GenericObjectType::class, \PHPStan\Type\Enum\EnumCaseObjectType::class] as $typeClass) {
 	$observations["native $typeClass"] = (new ReflectionMethod($typeClass, 'describe'))->isInternal();
 }
 
@@ -2133,6 +2133,457 @@ $arrayOthers = static fn (string $array, string $nonEmpty, string $list, string 
 	$r['anonymous hasOffsetValue describe'] = $anonymousHasOffsetValue->describe(\PHPStan\Type\VerbosityLevel::precise());
 	foreach ($r as $key => $value) {
 		$observations["array $key"] = $value;
+	}
+}
+
+
+// ---- ObjectType / GenericObjectType / EnumCaseObjectType ----
+// the reflection provider and PhpVersion accessors stay registered from the
+// string section; the PHP subclasses over the native parents come along:
+// TemplateObjectType, TemplateGenericObjectType (overriding recreate()),
+// and anonymous subclasses overriding what the natives call through $this
+$objectPhpVersions = [new \PHPStan\Php\PhpVersion(70400), new \PHPStan\Php\PhpVersion(80400)];
+$objectTemplateScope = \PHPStan\Type\Generic\TemplateTypeScope::createWithFunction('foo');
+$objectEnum = \ObjectTypeEnums\FooEnum::class;
+$objectBackedEnum = \Bug12512\FooBarEnum::class;
+$objectOthers = static fn (string $object, string $generic, string $case): array => [
+	'stdClass' => new $object(\stdClass::class),
+	'exception' => new $object(\Exception::class),
+	'throwable' => new $object(\Throwable::class),
+	'runtimeException' => new $object(\RuntimeException::class),
+	'traversable' => new $object(\Traversable::class),
+	'iterator' => new $object(\Iterator::class),
+	'countable' => new $object(\Countable::class),
+	'arrayAccess' => new $object(\ArrayAccess::class),
+	'arrayIterator' => new $object(\ArrayIterator::class),
+	'dateTimeInterface' => new $object(\DateTimeInterface::class),
+	'dateTime' => new $object(\DateTime::class),
+	'closure' => new $object(\Closure::class),
+	'trinary' => new $object(\PHPStan\TrinaryLogic::class),
+	'typeInterface' => new $object(\PHPStan\Type\Type::class),
+	'unknown' => new $object('NonexistentClass'),
+	'throwableMinusException' => new $object(\Throwable::class, new $object(\Exception::class)),
+	'enum' => new $object($objectEnum),
+	'enumMinusFoo' => new $object($objectEnum, new $case($objectEnum, 'FOO')),
+	'backedEnum' => new $object($objectBackedEnum),
+	'genericArrayIterator' => new $generic(\ArrayIterator::class, [new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()]),
+	'genericArrayIteratorMixed' => new $generic(\ArrayIterator::class, [new \PHPStan\Type\MixedType(), new \PHPStan\Type\MixedType()]),
+	'genericIteratorCovariant' => new $generic(\Iterator::class, [new \PHPStan\Type\MixedType(), new $object(\stdClass::class)], null, null, [\PHPStan\Type\Generic\TemplateTypeVariance::createCovariant(), \PHPStan\Type\Generic\TemplateTypeVariance::createCovariant()]),
+	'genericTraversableOne' => new $generic(\Traversable::class, [new \PHPStan\Type\IntegerType()]),
+	'genericUnknown' => new $generic('NonexistentClass', [new \PHPStan\Type\IntegerType()]),
+	'caseFoo' => new $case($objectEnum, 'FOO'),
+	'caseBar' => new $case($objectEnum, 'BAR'),
+	'caseBacked' => new $case($objectBackedEnum, 'CASE_ONE'),
+	'caseUnknown' => new $case('NonexistentEnum', 'X'),
+	'static' => new \PHPStan\Type\StaticType($stringReflectionProvider->getClass(\PHPStan\TrinaryLogic::class)),
+	'templateObject' => new \PHPStan\Type\Generic\TemplateObjectType($objectTemplateScope, new \PHPStan\Type\Generic\TemplateTypeParameterStrategy(), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant(), 'T', new $object(\Countable::class), null),
+	'templateMixed' => \PHPStan\Type\Generic\TemplateTypeFactory::create($objectTemplateScope, 'U', null, \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()),
+	'objectWithoutClass' => new \PHPStan\Type\ObjectWithoutClassType(),
+	'objectWithoutClassMinusStdClass' => new \PHPStan\Type\ObjectWithoutClassType(new $object(\stdClass::class)),
+	'closureType' => new \PHPStan\Type\ClosureType(),
+	'callable' => new \PHPStan\Type\CallableType(),
+	'int' => new \PHPStan\Type\IntegerType(),
+	'string' => new \PHPStan\Type\StringType(),
+	'stringStdClass' => new \PHPStan\Type\Constant\ConstantStringType(\stdClass::class),
+	'classString' => new \PHPStan\Type\ClassStringType(),
+	'genericClassString' => new \PHPStan\Type\Generic\GenericClassStringType(new $object(\Exception::class)),
+	'mixed' => new \PHPStan\Type\MixedType(),
+	'mixedMinusStdClass' => new \PHPStan\Type\MixedType(false, new $object(\stdClass::class)),
+	'null' => new \PHPStan\Type\NullType(),
+	'true' => new \PHPStan\Type\Constant\ConstantBooleanType(true),
+	'never' => new \PHPStan\Type\NeverType(),
+	'array' => new \PHPStan\Type\ArrayType(new \PHPStan\Type\MixedType(), new \PHPStan\Type\MixedType()),
+	'iterable' => new \PHPStan\Type\IterableType(new \PHPStan\Type\MixedType(), new \PHPStan\Type\MixedType()),
+	'union' => new \PHPStan\Type\UnionType([new $object(\Exception::class), new $object(\Error::class)]),
+	'unionNullable' => new \PHPStan\Type\UnionType([new $object(\stdClass::class), new \PHPStan\Type\NullType()]),
+	'unionCases' => new \PHPStan\Type\UnionType([new $case($objectEnum, 'FOO'), new $case($objectEnum, 'BAR')]),
+	'intersection' => new \PHPStan\Type\IntersectionType([new $object(\Countable::class), new $object(\Traversable::class)]),
+];
+{
+	$objectClass = \PHPStan\Type\ObjectType::class;
+	$genericClass = \PHPStan\Type\Generic\GenericObjectType::class;
+	$caseClass = \PHPStan\Type\Enum\EnumCaseObjectType::class;
+	$objectClass::resetCaches();
+	$r = [];
+	$others = $objectOthers($objectClass, $genericClass, $caseClass);
+	$trinaryReflection = $stringReflectionProvider->getClass(\PHPStan\TrinaryLogic::class);
+	$arrayIteratorReflection = $stringReflectionProvider->getClass(\ArrayIterator::class);
+	$enumReflection = $stringReflectionProvider->getClass($objectEnum);
+	$subjects = [
+		'stdClass' => new $objectClass(\stdClass::class),
+		'exception' => new $objectClass(\Exception::class),
+		'throwable' => new $objectClass(\Throwable::class),
+		'traversable' => new $objectClass(\Traversable::class),
+		'iterator' => new $objectClass(\Iterator::class),
+		'iteratorAggregate' => new $objectClass(\IteratorAggregate::class),
+		'countable' => new $objectClass(\Countable::class),
+		'arrayAccess' => new $objectClass(\ArrayAccess::class),
+		'arrayIterator' => new $objectClass(\ArrayIterator::class),
+		'arrayObject' => new $objectClass(\ArrayObject::class),
+		'dateTimeInterface' => new $objectClass(\DateTimeInterface::class),
+		'closure' => new $objectClass(\Closure::class),
+		'simpleXml' => new $objectClass('SimpleXMLElement'),
+		'gmp' => new $objectClass('GMP'),
+		'curl' => new $objectClass('CurlHandle'),
+		'trinary' => new $objectClass(\PHPStan\TrinaryLogic::class),
+		'trinaryWithReflection' => new $objectClass(\PHPStan\TrinaryLogic::class, null, $trinaryReflection),
+		'trinaryLowercase' => new $objectClass('phpstan\\trinarylogic'),
+		'unionType' => new $objectClass(\PHPStan\Type\UnionType::class),
+		'typeInterface' => new $objectClass(\PHPStan\Type\Type::class),
+		'exceptionAsFinal' => new $objectClass(\Exception::class, null, $stringReflectionProvider->getClass(\Exception::class)->asFinal()),
+		'unknown' => new $objectClass('NonexistentClass'),
+		'throwableMinusException' => new $objectClass(\Throwable::class, new $objectClass(\Exception::class)),
+		'stdClassMinusNever' => new $objectClass(\stdClass::class, new \PHPStan\Type\NeverType()),
+		'enum' => new $objectClass($objectEnum),
+		'enumWithReflection' => new $objectClass($objectEnum, null, $enumReflection),
+		'enumMinusFoo' => new $objectClass($objectEnum, new $caseClass($objectEnum, 'FOO')),
+		'enumMinusFooBar' => new $objectClass($objectEnum, new \PHPStan\Type\UnionType([new $caseClass($objectEnum, 'FOO'), new $caseClass($objectEnum, 'BAR')])),
+		'backedEnum' => new $objectClass($objectBackedEnum),
+		'unitEnum' => new $objectClass(\UnitEnum::class),
+		'genericArrayIterator' => new $genericClass(\ArrayIterator::class, [new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()]),
+		'genericArrayIteratorMixed' => new $genericClass(\ArrayIterator::class, [new \PHPStan\Type\MixedType(), new \PHPStan\Type\MixedType()]),
+		'genericArrayIteratorWithReflection' => new $genericClass(\ArrayIterator::class, [new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()], null, $arrayIteratorReflection->withTypes([new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()])),
+		'genericArrayIteratorMinus' => new $genericClass(\ArrayIterator::class, [new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()], new $objectClass(\stdClass::class)),
+		'genericIteratorCovariant' => new $genericClass(\Iterator::class, [new \PHPStan\Type\MixedType(), new $objectClass(\stdClass::class)], null, null, [\PHPStan\Type\Generic\TemplateTypeVariance::createCovariant(), \PHPStan\Type\Generic\TemplateTypeVariance::createCovariant()]),
+		'genericIteratorContravariant' => new $genericClass(\Iterator::class, [new \PHPStan\Type\IntegerType(), new $objectClass(\Exception::class)], null, null, [\PHPStan\Type\Generic\TemplateTypeVariance::createContravariant()]),
+		'genericTraversableOne' => new $genericClass(\Traversable::class, [new \PHPStan\Type\IntegerType()]),
+		'genericTraversableThree' => new $genericClass(\Traversable::class, [new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType(), new \PHPStan\Type\FloatType()]),
+		'genericStdClass' => new $genericClass(\stdClass::class, [new \PHPStan\Type\IntegerType()]),
+		'genericUnknown' => new $genericClass('NonexistentClass', [new \PHPStan\Type\IntegerType()]),
+		'genericEnum' => new $genericClass($objectEnum, []),
+		'genericTemplateArgument' => new $genericClass(\ArrayIterator::class, [new \PHPStan\Type\IntegerType(), \PHPStan\Type\Generic\TemplateTypeFactory::create($objectTemplateScope, 'T', null, \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant())]),
+		'caseFoo' => new $caseClass($objectEnum, 'FOO'),
+		'caseBarWithReflection' => new $caseClass($objectEnum, 'BAR', $enumReflection),
+		'caseBacked' => new $caseClass($objectBackedEnum, 'CASE_ONE'),
+		'caseUnknown' => new $caseClass('NonexistentEnum', 'X'),
+		'caseUnknownCase' => new $caseClass($objectEnum, 'NOPE'),
+		'caseNotEnum' => new $caseClass(\stdClass::class, 'FOO'),
+		'templateObject' => new \PHPStan\Type\Generic\TemplateObjectType($objectTemplateScope, new \PHPStan\Type\Generic\TemplateTypeParameterStrategy(), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant(), 'T', new $objectClass(\Countable::class), null),
+		'templateGeneric' => new \PHPStan\Type\Generic\TemplateGenericObjectType($objectTemplateScope, new \PHPStan\Type\Generic\TemplateTypeParameterStrategy(), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant(), 'T', new $genericClass(\ArrayIterator::class, [new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()]), null),
+	];
+	$outOfClassScope = new \PHPStan\Analyser\OutOfClassScope();
+	$inClassScope = new class ($trinaryReflection) implements \PHPStan\Reflection\ClassMemberAccessAnswerer {
+
+		public function __construct(private \PHPStan\Reflection\ClassReflection $classReflection)
+		{
+		}
+
+		public function isInClass(): bool
+		{
+			return true;
+		}
+
+		public function getClassReflection(): ?\PHPStan\Reflection\ClassReflection
+		{
+			return $this->classReflection;
+		}
+
+		public function canAccessProperty(\PHPStan\Reflection\PropertyReflection $propertyReflection): bool
+		{
+			return true;
+		}
+
+		public function canReadProperty(\PHPStan\Reflection\ExtendedPropertyReflection $propertyReflection): bool
+		{
+			return true;
+		}
+
+		public function canWriteProperty(\PHPStan\Reflection\ExtendedPropertyReflection $propertyReflection): bool
+		{
+			return true;
+		}
+
+		public function canCallMethod(\PHPStan\Reflection\MethodReflection $methodReflection): bool
+		{
+			return true;
+		}
+
+		public function canAccessConstant(\PHPStan\Reflection\ClassConstantReflection $constantReflection): bool
+		{
+			return true;
+		}
+
+	};
+	// reflections and member reflections by their identity, not their class
+	$ov = static function (mixed $v) use (&$ov, $view): mixed {
+		if ($v instanceof \PHPStan\Reflection\ClassReflection) {
+			return ['ClassReflection', $v->getName(), $v->getDisplayName(), $v->isGeneric(), array_keys($v->getActiveTemplateTypeMap()->getTypes()), $v->hasFinalByKeywordOverride(), $v->isFinalByKeyword()];
+		}
+		if ($v instanceof \PHPStan\Reflection\PropertyReflection || $v instanceof \PHPStan\Reflection\MethodReflection || $v instanceof \PHPStan\Reflection\ClassConstantReflection) {
+			return [get_class($v), $v->getName(), $v->getDeclaringClass()->getName()];
+		}
+		if ($v instanceof \PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection) {
+			return [get_class($v), $ov($v->getNakedProperty()), $ov($v->getTransformedProperty()), get_class($v->doNotResolveTemplateTypeMapToBounds()), $v->getTransformedProperty()->getReadableType()->describe(\PHPStan\Type\VerbosityLevel::precise())];
+		}
+		if ($v instanceof \PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection) {
+			return [get_class($v), $ov($v->getNakedMethod()), $ov($v->getTransformedMethod()), get_class($v->doNotResolveTemplateTypeMapToBounds()), count($v->getTransformedMethod()->getVariants())];
+		}
+		if ($v instanceof \PHPStan\Reflection\Callables\CallableParametersAcceptor) {
+			return [get_class($v), $v->getReturnType()->describe(\PHPStan\Type\VerbosityLevel::precise()), count($v->getParameters())];
+		}
+		if (is_array($v)) {
+			return array_map($ov, $v);
+		}
+		return $view($v);
+	};
+	$attempt = static function (callable $probe) use ($ov): mixed {
+		try {
+			return $ov($probe());
+		} catch (\Throwable $e) {
+			return [get_class($e), $e->getMessage()];
+		}
+	};
+	// the exception's class only: a TypeError raised by an internal
+	// callback names the closure by its line in the twin
+	$attemptClass = static function (callable $probe) use ($ov): mixed {
+		try {
+			return $ov($probe());
+		} catch (\Throwable $e) {
+			return get_class($e);
+		}
+	};
+	$ancestorNames = [\stdClass::class, \Exception::class, \Throwable::class, \Traversable::class, \Iterator::class, \IteratorAggregate::class, \Countable::class, \ArrayAccess::class, \ArrayIterator::class, \PHPStan\TrinaryLogic::class, \PHPStan\Type\Type::class, 'NonexistentClass', $objectEnum, \UnitEnum::class, \DateTimeInterface::class, \Stringable::class, 'phpstan\\trinarylogic'];
+	foreach ($subjects as $name => $subject) {
+		$r["$name class"] = $view($subject);
+		$r["$name instanceof"] = [$subject instanceof \PHPStan\Type\Type, $subject instanceof $objectClass, $subject instanceof $genericClass, $subject instanceof $caseClass, $subject instanceof \PHPStan\Type\TypeWithClassName, $subject instanceof \PHPStan\Type\SubtractableType, $subject instanceof \PHPStan\Type\CompoundType];
+		foreach (['typeOnly' => \PHPStan\Type\VerbosityLevel::typeOnly(), 'value' => \PHPStan\Type\VerbosityLevel::value(), 'precise' => \PHPStan\Type\VerbosityLevel::precise(), 'cache' => \PHPStan\Type\VerbosityLevel::cache()] as $levelName => $level) {
+			$r["$name describe $levelName"] = $subject->describe($level);
+			// the memoized descriptions must read back the same
+			$r["$name describe $levelName again"] = $subject->describe($level);
+		}
+		foreach ($others as $otherName => $other) {
+			$r["$name isSuperTypeOf $otherName"] = $view($subject->isSuperTypeOf($other));
+			$r["$name isSuperTypeOf $otherName again"] = $view($subject->isSuperTypeOf($other));
+			$r["$name accepts $otherName"] = $attempt(static fn () => $subject->accepts($other, true));
+			$r["$name accepts-loose $otherName"] = $attempt(static fn () => $subject->accepts($other, false));
+			$r["$name equals $otherName"] = $subject->equals($other);
+			$r["$name tryRemove $otherName"] = $view($subject->tryRemove($other));
+			$r["$name subtract $otherName"] = $view($subject->subtract($other));
+			$r["$name changeSubtractedType $otherName"] = $view($subject->changeSubtractedType($other));
+			$r["$name describeSubtractedType $otherName"] = $subject->describeSubtractedType($other, \PHPStan\Type\VerbosityLevel::precise());
+			foreach ($objectPhpVersions as $vi => $phpVersion) {
+				$r["$name looseCompare $otherName $vi"] = $view($subject->looseCompare($other, $phpVersion));
+				$r["$name isSmallerThan $otherName $vi"] = $view($subject->isSmallerThan($other, $phpVersion));
+				$r["$name isSmallerThanOrEqual $otherName $vi"] = $view($subject->isSmallerThanOrEqual($other, $phpVersion));
+			}
+			$r["$name traverseSimultaneously $otherName"] = $view($subject->traverseSimultaneously($other, static fn ($a, $b) => $a));
+			$r["$name traverseSimultaneously-right $otherName"] = $view($subject->traverseSimultaneously($other, static fn ($a, $b) => $b));
+			$r["$name getOffsetValueType $otherName"] = $view($subject->getOffsetValueType($other));
+			$r["$name hasOffsetValueType $otherName"] = $view($subject->hasOffsetValueType($other));
+			$r["$name setOffsetValueType $otherName"] = [$view($subject->setOffsetValueType($other, $others['int'])), $view($subject->setOffsetValueType($other, $others['mixed'], false)), $view($subject->setOffsetValueType(null, $other))];
+			$r["$name setExistingOffsetValueType $otherName"] = $view($subject->setExistingOffsetValueType($other, $others['int']));
+			$r["$name unsetOffset $otherName"] = $view($subject->unsetOffset($other));
+			$r["$name exponentiate $otherName"] = $attempt(static fn () => $subject->exponentiate($other));
+			$r["$name inferTemplateTypes $otherName"] = $view($subject->inferTemplateTypes($other));
+			$r["$name toObjectTypeForIsACheck $otherName"] = [$view($subject->toObjectTypeForIsACheck($other, true, true)), $view($subject->toObjectTypeForIsACheck($other, false, false))];
+			if ($subject instanceof \PHPStan\Type\CompoundType) {
+				$r["$name isSubTypeOf $otherName"] = $view($subject->isSubTypeOf($other));
+				$r["$name isAcceptedBy $otherName"] = $view($subject->isAcceptedBy($other, true));
+			}
+		}
+		foreach ($ancestorNames as $ancestorName) {
+			$r["$name getAncestorWithClassName $ancestorName"] = $view($subject->getAncestorWithClassName($ancestorName));
+			$r["$name getAncestorWithClassName $ancestorName again"] = $view($subject->getAncestorWithClassName($ancestorName));
+			$r["$name isInstanceOf $ancestorName"] = $view($subject->isInstanceOf($ancestorName));
+		}
+		foreach (['toBoolean', 'toNumber', 'toInteger', 'toFloat', 'toString', 'toArray', 'toArrayKey', 'toBitwiseNotType', 'toAbsoluteNumber', 'toGetClassResultType', 'toObjectTypeForInstanceofCheck',
+			'isTrue', 'isFalse', 'isBoolean', 'isScalar', 'isNull', 'isInteger', 'isFloat', 'isString', 'isNumericString', 'isDecimalIntegerString', 'isNonEmptyString', 'isNonFalsyString', 'isLiteralString', 'isLowercaseString', 'isUppercaseString', 'isClassString', 'isVoid',
+			'isConstantValue', 'isConstantScalarValue', 'getConstantScalarTypes', 'getConstantScalarValues', 'getFiniteTypes', 'isObject', 'isEnum', 'getArrays', 'getConstantArrays', 'getConstantStrings', 'getReferencedClasses', 'getObjectClassNames', 'getObjectClassReflections',
+			'getClassStringType', 'getClassStringObjectType', 'getObjectTypeOrClassStringObjectType', 'canAccessProperties', 'canCallMethods', 'canAccessConstants', 'isIterable', 'isIterableAtLeastOnce', 'getArraySize', 'getIterableKeyType', 'getFirstIterableKeyType', 'getLastIterableKeyType',
+			'getIterableValueType', 'getFirstIterableValueType', 'getLastIterableValueType', 'isArray', 'isConstantArray', 'isOversizedArray', 'isList', 'isOffsetAccessible', 'isOffsetAccessLegal', 'getKeysArray', 'getValuesArray', 'flipArray', 'popArray', 'shiftArray', 'shuffleArray',
+			'makeListMaybe', 'makeAllArrayKeysOptional', 'filterArrayRemovingFalsey', 'getEnumCases', 'getEnumCaseObject', 'isCallable', 'isCloneable', 'toPhpDocNode', 'getReferencedTemplateTypes', 'hasTemplateOrLateResolvableType',
+			'getClassName', 'getClassReflection', 'getNakedClassReflection', 'getSubtractedType', 'getTypeWithoutSubtractedType', 'withoutFinalByKeywordOverride'] as $method) {
+			if ($method === 'getReferencedTemplateTypes') {
+				foreach ([\PHPStan\Type\Generic\TemplateTypeVariance::createInvariant(), \PHPStan\Type\Generic\TemplateTypeVariance::createCovariant(), \PHPStan\Type\Generic\TemplateTypeVariance::createContravariant()] as $vi => $variance) {
+					$r["$name $method $vi"] = $ov($subject->$method($variance));
+				}
+				continue;
+			}
+			$r["$name $method"] = $attempt(static fn () => $subject->$method());
+			$r["$name $method again"] = $attempt(static fn () => $subject->$method());
+		}
+		foreach (['getSmallerType', 'getSmallerOrEqualType', 'getGreaterType', 'getGreaterOrEqualType'] as $method) {
+			$r["$name $method"] = $view($subject->$method($objectPhpVersions[1]));
+		}
+		foreach ([\PHPStan\Type\GeneralizePrecision::lessSpecific(), \PHPStan\Type\GeneralizePrecision::moreSpecific(), \PHPStan\Type\GeneralizePrecision::templateArgument()] as $i => $precision) {
+			$r["$name generalize $i"] = $view($subject->generalize($precision));
+		}
+		$r["$name toCoercedArgumentType"] = [$view($subject->toCoercedArgumentType(true)), $view($subject->toCoercedArgumentType(false))];
+		$r["$name toClassConstantType"] = $view($subject->toClassConstantType($stringReflectionProvider));
+		$r["$name traverse identity"] = $subject->traverse(static fn ($t) => $t) === $subject;
+		$r["$name traverse replaced"] = $view($subject->traverse(static fn ($t) => new $objectClass(\stdClass::class)));
+		$r["$name traverse null"] = $attemptClass(static fn () => $subject->traverse(static fn ($t) => null));
+		foreach ([[\Traversable::class, 'TKey'], [\Traversable::class, 'TValue'], [\Iterator::class, 'TValue'], [\ArrayIterator::class, 'TKey'], [\IteratorAggregate::class, 'TValue'], ['Foo', 'T'], [\ArrayIterator::class, 'Nope']] as [$ancestorClassName, $templateTypeName]) {
+			$r["$name getTemplateType $ancestorClassName $templateTypeName"] = $view($subject->getTemplateType($ancestorClassName, $templateTypeName));
+		}
+		foreach (['name', 'value', 'x', 'message', 'storage'] as $propertyName) {
+			$r["$name hasProperty $propertyName"] = $view($subject->hasProperty($propertyName));
+			$r["$name hasInstanceProperty $propertyName"] = $view($subject->hasInstanceProperty($propertyName));
+			$r["$name hasStaticProperty $propertyName"] = $view($subject->hasStaticProperty($propertyName));
+			foreach (['out' => $outOfClassScope, 'in' => $inClassScope] as $scopeName => $scope) {
+				foreach (['getProperty', 'getInstanceProperty', 'getStaticProperty', 'getUnresolvedPropertyPrototype', 'getUnresolvedInstancePropertyPrototype', 'getUnresolvedStaticPropertyPrototype'] as $method) {
+					$r["$name $method $propertyName $scopeName"] = $attempt(static fn () => $subject->$method($propertyName, $scope));
+					$r["$name $method $propertyName $scopeName again"] = $attempt(static fn () => $subject->$method($propertyName, $scope));
+				}
+			}
+		}
+		foreach (['count', 'current', 'key', 'getIterator', '__toString', '__invoke', 'offsetGet', 'offsetSet', 'x', 'yes', 'getMessage', 'cases', 'from'] as $methodName) {
+			$r["$name hasMethod $methodName"] = $view($subject->hasMethod($methodName));
+			foreach (['out' => $outOfClassScope, 'in' => $inClassScope] as $scopeName => $scope) {
+				$r["$name getMethod $methodName $scopeName"] = $attempt(static fn () => $subject->getMethod($methodName, $scope));
+				$r["$name getMethod $methodName $scopeName again"] = $attempt(static fn () => $subject->getMethod($methodName, $scope));
+				$r["$name getUnresolvedMethodPrototype $methodName $scopeName"] = $attempt(static fn () => $subject->getUnresolvedMethodPrototype($methodName, $scope));
+			}
+		}
+		foreach (['X', 'EQUAL_UNION_CLASSES', 'FOO', 'CASE_ONE'] as $constantName) {
+			$r["$name hasConstant $constantName"] = $view($subject->hasConstant($constantName));
+			$r["$name getConstant $constantName"] = $attempt(static fn () => $subject->getConstant($constantName));
+		}
+		foreach (['out' => $outOfClassScope, 'in' => $inClassScope] as $scopeName => $scope) {
+			$r["$name getCallableParametersAcceptors $scopeName"] = $attempt(static fn () => $subject->getCallableParametersAcceptors($scope));
+		}
+		$r["$name mapValueType"] = $view($subject->mapValueType(static fn ($t) => $t));
+		$r["$name changeKeyCaseArray"] = $view($subject->changeKeyCaseArray(null));
+		if ($subject instanceof $genericClass) {
+			$r["$name getTypes"] = $ov($subject->getTypes());
+			$r["$name getVariances"] = $ov($subject->getVariances());
+			$r["$name changeVariances"] = [$attemptClass(static fn () => $subject->changeVariances([\PHPStan\Type\Generic\TemplateTypeVariance::createContravariant()])), $view($subject->changeVariances([])), $subject->changeVariances([])->getVariances() === []];
+		}
+		if ($subject instanceof $caseClass) {
+			$r["$name getEnumCaseName"] = $subject->getEnumCaseName();
+			$r["$name getBackingValueType"] = $view($subject->getBackingValueType());
+		}
+		if ($subject instanceof \PHPStan\Type\Generic\TemplateType) {
+			$r["$name template"] = [$subject->getName(), $view($subject->getBound()), $view($subject->getDefault()), $view($subject->toArgument()), $subject->isArgument()];
+		}
+	}
+	// the family through the compound types and the combinator, the way the
+	// analysis exercises it
+	foreach (['stdClass', 'exception', 'throwable', 'throwableMinusException', 'enum', 'enumMinusFoo', 'genericArrayIterator', 'genericIteratorCovariant', 'caseFoo', 'caseBacked', 'templateObject', 'unknown'] as $name) {
+		$subject = $subjects[$name];
+		foreach (['stdClass', 'exception', 'runtimeException', 'throwable', 'iterator', 'enum', 'caseFoo', 'caseBar', 'unionCases', 'genericArrayIterator', 'genericIteratorCovariant', 'union', 'unionNullable', 'mixed', 'never', 'null', 'objectWithoutClass', 'intersection', 'static', 'templateObject'] as $otherName) {
+			$other = $others[$otherName];
+			$r["combinator union $name $otherName"] = $view(\PHPStan\Type\TypeCombinator::union($subject, $other));
+			$r["combinator intersect $name $otherName"] = $view(\PHPStan\Type\TypeCombinator::intersect($subject, $other));
+			$r["combinator remove $name $otherName"] = $view(\PHPStan\Type\TypeCombinator::remove($subject, $other));
+			$r["combinator remove-reverse $name $otherName"] = $view(\PHPStan\Type\TypeCombinator::remove($other, $subject));
+			$r["other isSuperTypeOf $name $otherName"] = $view($other->isSuperTypeOf($subject));
+			$r["other accepts $name $otherName"] = $view($other->accepts($subject, true));
+			$r["other equals $name $otherName"] = $other->equals($subject);
+		}
+		$r["combinator removeNull $name"] = $view(\PHPStan\Type\TypeCombinator::removeNull($subject));
+		$r["combinator addNull $name"] = $view(\PHPStan\Type\TypeCombinator::addNull($subject));
+	}
+	// removing every case of an enum from its own type, one at a time
+	$remaining = $subjects['enum'];
+	foreach (['FOO', 'BAR', 'BAZ'] as $caseName) {
+		$remaining = \PHPStan\Type\TypeCombinator::remove($remaining, new $caseClass($objectEnum, $caseName));
+		$r["enum minus cases $caseName"] = $view($remaining);
+	}
+	$r['equal union classes'] = [$view($subjects['throwable']->tryRemove(new $objectClass(\Error::class))), $view($subjects['dateTimeInterface']->tryRemove(new $objectClass(\DateTime::class))), $view($subjects['dateTimeInterface']->tryRemove(new $objectClass(\DateTimeImmutable::class)))];
+	$r['object equals object'] = [(new $objectClass(\stdClass::class))->equals(new $objectClass(\stdClass::class)), (new $objectClass(\stdClass::class))->equals(new $objectClass('stdclass')), (new $objectClass(\stdClass::class))->equals(new $genericClass(\stdClass::class, [])), (new $genericClass(\stdClass::class, []))->equals(new $objectClass(\stdClass::class)), (new $caseClass($objectEnum, 'FOO'))->equals(new $caseClass($objectEnum, 'FOO')), (new $caseClass($objectEnum, 'FOO'))->equals(new $objectClass($objectEnum))];
+	// the constructors by named arguments
+	$r['object named'] = $view(new $objectClass(className: \stdClass::class, classReflection: null));
+	$r['object named subtracted'] = $view(new $objectClass(className: \Throwable::class, subtractedType: new $objectClass(\Exception::class)));
+	$r['generic named'] = $view(new $genericClass(mainType: \ArrayIterator::class, types: [new \PHPStan\Type\IntegerType()], variances: [\PHPStan\Type\Generic\TemplateTypeVariance::createCovariant()]));
+	$r['case named'] = $view(new $caseClass(className: $objectEnum, enumCaseName: 'BAZ'));
+	// the readonly enum case name: a second constructor call fails
+	try {
+		$subjects['caseFoo']->__construct($objectEnum, 'BAR');
+		$r['case reconstruct'] = 'no throw';
+	} catch (\Error $e) {
+		$r['case reconstruct'] = [get_class($e), $e->getMessage()];
+	}
+	// uninitialized instances: every typed-slot read raises the same Error
+	foreach ([$objectClass, $genericClass, $caseClass] as $uninitializedClass) {
+		$uninitialized = (new \ReflectionClass($uninitializedClass))->newInstanceWithoutConstructor();
+		foreach (['describe' => [\PHPStan\Type\VerbosityLevel::precise()], 'describeTypeOnly' => [\PHPStan\Type\VerbosityLevel::typeOnly()], 'isSuperTypeOf' => [$others['int']], 'equals' => [$uninitialized], 'getClassName' => [], 'getSubtractedType' => [], 'getReferencedClasses' => [], 'getTypes' => [], 'getVariances' => [], 'getEnumCaseName' => [], 'toPhpDocNode' => [], 'hasTemplateOrLateResolvableType' => [], 'traverse' => [static fn ($t) => $t]] as $method => $args) {
+			$realMethod = $method === 'describeTypeOnly' ? 'describe' : $method;
+			if (!method_exists($uninitialized, $realMethod)) {
+				continue;
+			}
+			try {
+				$r["uninitialized $uninitializedClass $method"] = $view($uninitialized->$realMethod(...$args));
+			} catch (\Error $e) {
+				$r["uninitialized $uninitializedClass $method"] = [get_class($e), $e->getMessage()];
+			}
+		}
+	}
+	// PHP subclasses overriding what the natives call through $this
+	$anonymousObject = new class (\Exception::class) extends \PHPStan\Type\ObjectType {
+
+		public function getClassReflection(): ?\PHPStan\Reflection\ClassReflection
+		{
+			return null;
+		}
+
+		protected function describeAdditionalCacheKey(): string
+		{
+			return '<anonymous>';
+		}
+
+		public function isInstanceOf(string $className): \PHPStan\TrinaryLogic
+		{
+			return \PHPStan\TrinaryLogic::createYes();
+		}
+
+	};
+	$r['anonymous object describe'] = [$anonymousObject->describe(\PHPStan\Type\VerbosityLevel::precise()), $anonymousObject->describe(\PHPStan\Type\VerbosityLevel::cache())];
+	$r['anonymous object hasMethod'] = $view($anonymousObject->hasMethod('getMessage'));
+	$r['anonymous object toNumber'] = $view($anonymousObject->toNumber());
+	$r['anonymous object toBoolean'] = $view($anonymousObject->toBoolean());
+	$r['anonymous object isIterable'] = $view($anonymousObject->isIterable());
+	$r['anonymous object getArraySize'] = $view($anonymousObject->getArraySize());
+	$r['anonymous object accepts'] = [$view($anonymousObject->accepts($others['closureType'], true)), $view($anonymousObject->accepts($others['runtimeException'], true))];
+	$r['anonymous object isSuperTypeOf'] = [$view($anonymousObject->isSuperTypeOf($others['runtimeException'])), $view($subjects['exception']->isSuperTypeOf($anonymousObject)), $view($subjects['throwable']->isSuperTypeOf($anonymousObject))];
+	$r['anonymous object getAncestorWithClassName'] = $view($anonymousObject->getAncestorWithClassName(\Throwable::class));
+	$r['anonymous object getMethod'] = $attempt(static fn () => $anonymousObject->getMethod('getMessage', $outOfClassScope));
+	$r['anonymous object equals'] = [$anonymousObject->equals(new $objectClass(\Exception::class)), (new $objectClass(\Exception::class))->equals($anonymousObject)];
+	$anonymousGeneric = new class (\ArrayIterator::class, [new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()]) extends \PHPStan\Type\Generic\GenericObjectType {
+
+		public function getTypes(): array
+		{
+			return [new \PHPStan\Type\FloatType(), new \PHPStan\Type\FloatType()];
+		}
+
+		protected function recreate(string $className, array $types, ?\PHPStan\Type\Type $subtractedType, array $variances = []): \PHPStan\Type\Generic\GenericObjectType
+		{
+			return new \PHPStan\Type\Generic\GenericObjectType(\Iterator::class, $types, $subtractedType, null, $variances);
+		}
+
+	};
+	$r['anonymous generic describe'] = [$anonymousGeneric->describe(\PHPStan\Type\VerbosityLevel::precise()), $anonymousGeneric->describe(\PHPStan\Type\VerbosityLevel::cache())];
+	$r['anonymous generic traverse'] = $view($anonymousGeneric->traverse(static fn ($t) => new \PHPStan\Type\MixedType()));
+	$r['anonymous generic changeVariances'] = $view($anonymousGeneric->changeVariances([\PHPStan\Type\Generic\TemplateTypeVariance::createCovariant()]));
+	$r['anonymous generic inferTemplateTypes'] = $view($anonymousGeneric->inferTemplateTypes($subjects['genericArrayIterator']));
+	$r['anonymous generic isSuperTypeOf'] = [$view($anonymousGeneric->isSuperTypeOf($subjects['genericArrayIterator'])), $view($subjects['genericArrayIterator']->isSuperTypeOf($anonymousGeneric))];
+	$r['anonymous generic equals'] = [$anonymousGeneric->equals($subjects['genericArrayIterator']), $subjects['genericArrayIterator']->equals($anonymousGeneric)];
+	$anonymousCase = new class ($objectEnum, 'FOO') extends \PHPStan\Type\Enum\EnumCaseObjectType {
+
+		public function getEnumCaseName(): string
+		{
+			return 'OVERRIDDEN';
+		}
+
+		public function getSubtractedType(): ?\PHPStan\Type\Type
+		{
+			return new \PHPStan\Type\Enum\EnumCaseObjectType(\ObjectTypeEnums\FooEnum::class, 'BAR');
+		}
+
+	};
+	$r['anonymous case describe'] = [$anonymousCase->describe(\PHPStan\Type\VerbosityLevel::precise()), $anonymousCase->describe(\PHPStan\Type\VerbosityLevel::cache())];
+	$r['anonymous case toPhpDocNode'] = $view($anonymousCase->toPhpDocNode());
+	$r['anonymous case isSuperTypeOf'] = [$view($anonymousCase->isSuperTypeOf($subjects['caseFoo'])), $view($anonymousCase->isSuperTypeOf($subjects['enum'])), $view($subjects['caseFoo']->isSuperTypeOf($anonymousCase)), $view($subjects['enum']->isSuperTypeOf($anonymousCase))];
+	$r['anonymous case equals'] = [$anonymousCase->equals($subjects['caseFoo']), $subjects['caseFoo']->equals($anonymousCase)];
+	$r['anonymous case getEnumCases'] = $view($anonymousCase->getEnumCases());
+	// the static caches reset: the answers must not change
+	$objectClass::resetCaches();
+	$r['after reset isSuperTypeOf'] = $view($subjects['throwable']->isSuperTypeOf($others['exception']));
+	$r['after reset getMethod'] = $attempt(static fn () => $subjects['trinary']->getMethod('yes', $outOfClassScope));
+	$r['after reset getEnumCases'] = $view($subjects['enum']->getEnumCases());
+	$r['after reset getAncestorWithClassName'] = $view((new $objectClass(\ArrayIterator::class))->getAncestorWithClassName(\Traversable::class));
+	foreach ($r as $key => $value) {
+		$observations["object $key"] = $value;
 	}
 }
 

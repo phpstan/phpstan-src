@@ -3,6 +3,7 @@
 namespace PHPStan\Broker;
 
 use PHPStan\AnalysedCodeException;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use function sprintf;
 
 /**
@@ -12,6 +13,7 @@ use function sprintf;
  * in case the user does not check the existence of the class beforehand
  * with `hasClass()` or similar.
  */
+#[ReferencedByTurboExtension(key: 'classNotFoundException')]
 final class ClassNotFoundException extends AnalysedCodeException
 {
 

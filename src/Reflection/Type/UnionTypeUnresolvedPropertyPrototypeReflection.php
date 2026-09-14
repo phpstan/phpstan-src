@@ -4,9 +4,11 @@ namespace PHPStan\Reflection\Type;
 
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Type;
 use function array_map;
 
+#[ReferencedByTurboExtension(key: 'unionTypeUnresolvedPropertyPrototypeReflection')]
 final class UnionTypeUnresolvedPropertyPrototypeReflection implements UnresolvedPropertyPrototypeReflection
 {
 

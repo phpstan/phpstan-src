@@ -1154,7 +1154,7 @@ private:
 		if (UNEXPECTED(v == NULL)) return zv::Val();
 		zval valueZv;
 		ZVAL_STR(&valueZv, v);
-		return pt_type_new(PT_CLASS_OBJECT_TYPE, 1, &valueZv);
+		return pt_type_new_object_type(&valueZv);
 	}
 
 	/* ReflectionProviderStaticAccessor::getInstance() */

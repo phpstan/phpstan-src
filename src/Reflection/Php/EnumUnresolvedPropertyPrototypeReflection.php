@@ -4,8 +4,10 @@ namespace PHPStan\Reflection\Php;
 
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Type;
 
+#[ReferencedByTurboExtension(key: 'enumUnresolvedPropertyPrototypeReflection')]
 final class EnumUnresolvedPropertyPrototypeReflection implements UnresolvedPropertyPrototypeReflection
 {
 

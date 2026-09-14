@@ -37,6 +37,7 @@
  * literals — the engine references them for the process lifetime) */
 
 namespace ptcls {
+inline constexpr const char *classReflection = "PHPStan\\Reflection\\ClassReflection";
 
 inline constexpr const char *type = "PHPStan\\Type\\Type";
 inline constexpr const char *trinaryLogic = "PHPStan\\TrinaryLogic";
@@ -119,6 +120,12 @@ zv::Val pt_type_new(int classIdx, uint32_t argc, zval *argv);
 /* $value instanceof Class for a class-map class or interface; false with
  * an exception pending when the class cannot be resolved */
 bool pt_type_instanceof(zval *value, int classIdx, bool &out);
+/* the same against a shadowing class entry (never fails) */
+inline bool pt_type_instanceof_ce(zval *value, zend_class_entry *ce, bool &out)
+{
+	out = Z_TYPE_P(value) == IS_OBJECT && instanceof_function(Z_OBJCE_P(value), ce);
+	return true;
+}
 
 /* TrinaryLogic::create*() / AcceptsResult::create*() /
  * IsSuperTypeOfResult::create*() for a PT_TRI_* value (createFromBoolean()
@@ -494,6 +501,49 @@ zv::Val pt_type_new_identifier_type_node(const char *name, size_t len);
 
 /* }}} */
 
+/* merged from the parallel port branch */
+namespace ptret {
+inline constexpr reg::Arg nullableClassReflection = reg::obj("", "PHPStan\\Reflection\\ClassReflection", true);
+inline constexpr reg::Arg nullableObjectType = reg::obj("", "PHPStan\\Type\\ObjectType", true);
+inline constexpr reg::Arg genericObjectType = reg::obj("", "PHPStan\\Type\\Generic\\GenericObjectType");
+} // namespace ptret
+
+/* {{{ the object family (ObjectType.cpp, GenericObjectType.cpp,
+ * EnumCaseObjectType.cpp) */
+/* new ObjectType($className) (the shadowing class), $className a string
+ * zval; UNDEF = pending exception */
+zv::Val pt_type_new_object_type(zval *className);
+/* the private slots of an ObjectType instance, read as the twin reads
+ * `$type->className` / `$type->subtractedType` / `$type->classReflection`
+ * from inside the class: the class name (NULL with an Error pending when
+ * uninitialized), the subtracted type (IS_NULL or an object; NULL with an
+ * Error pending when uninitialized), the constructor's class reflection
+ * (IS_NULL or an object); all borrowed */
+[[nodiscard]] zend_string *pt_object_type_class_name(zend_object *object);
+zval *pt_object_type_subtracted_type(zend_object *object);
+zval *pt_object_type_class_reflection(zend_object *object);
+/* the body of ObjectType::__construct(), for the children's
+ * parent::__construct() ($subtractedType / $classReflection borrowed, NULL
+ * for null) */
+void pt_object_type_construct(zend_object *self, zend_string *className, zval *subtractedType, zval *classReflection);
+/* the bodies of ObjectType's methods the children call through parent::;
+ * UNDEF = pending exception (equals(): false = pending exception) */
+zv::Val pt_object_type_describe(zend_object *self, zval *level);
+zv::Val pt_object_type_get_class_reflection(zend_object *self);
+bool pt_object_type_equals(zend_object *self, zval *type, bool &out);
+zv::Val pt_object_type_get_referenced_classes(zend_object *self);
+zv::Val pt_object_type_is_super_type_of(zend_object *self, zval *type);
+zv::Val pt_object_type_get_unresolved_property_prototype(zend_object *self, zval *propertyName, zval *scope);
+zv::Val pt_object_type_get_unresolved_instance_property_prototype(zend_object *self, zval *propertyName, zval *scope);
+zv::Val pt_object_type_get_unresolved_static_property_prototype(zend_object *self, zval *propertyName, zval *scope);
+zv::Val pt_object_type_get_unresolved_method_prototype(zend_object *self, zval *methodName, zval *scope);
+zv::Val pt_object_type_change_subtracted_type(zend_object *self, zval *subtractedType);
+zv::Val pt_object_type_to_php_doc_node(zend_object *self);
+/* `static fn () => $type->getReferencedClasses()` — a Closure over the
+ * object family's internal callback holder, for
+ * RecursionGuard::runOnObjectIdentity(); UNDEF = pending exception */
+zv::Val pt_object_type_referenced_classes_callback(zval *type);
+
 /* {{{ bodies the Type ports share verbatim — their members forward here */
 
 /* $this as an owned value (a new reference) */
@@ -608,6 +658,28 @@ inline zv::Val pt_type_sub_type_to_accepts_result(zv::Val result)
 		return zv::Val();
 	}
 	return result;
+}
+
+/*
+ * $this->method(...$args) from a handle: the native member (direct) when the
+ * object is exactly the handle's class (exact) or its method of that name is
+ * still the native handler — a PHP subclass that does not override it —
+ * and through the object's class entry otherwise. The one rule every
+ * $this-call of a non-final native class follows; the _bool / _trinary
+ * variants read the dispatched result as the direct member returns it.
+ */
+template <typename Direct>
+zend_always_inline zv::Val pt_this_call(zend_object *self, bool exact, const char *lcname, size_t len, zif_handler handler, uint32_t argc, zval *argv, Direct direct)
+{
+	if (EXPECTED(exact || pt_type_method_is(self, lcname, len, handler))) return direct();
+	return pt_type_call(self, lcname, len, argc, argv);
+}
+
+template <typename Direct>
+[[nodiscard]] zend_always_inline zend_long pt_this_call_trinary(zend_object *self, bool exact, const char *lcname, size_t len, zif_handler handler, uint32_t argc, zval *argv, Direct direct)
+{
+	if (EXPECTED(exact || pt_type_method_is(self, lcname, len, handler))) return direct();
+	return pt_type_call_trinary(self, lcname, len, argc, argv);
 }
 
 /* $object->method(...$args) of a method declared to return Type, with the

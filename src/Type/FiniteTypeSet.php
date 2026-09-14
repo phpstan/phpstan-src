@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
 use function array_diff_key;
@@ -30,6 +31,7 @@ use function is_string;
  *
  * @see UnionType::getFiniteTypeSet()
  */
+#[ReferencedByTurboExtension(key: 'finiteTypeSet')]
 final class FiniteTypeSet
 {
 

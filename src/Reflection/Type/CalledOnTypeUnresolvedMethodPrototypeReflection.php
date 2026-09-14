@@ -10,6 +10,7 @@ use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\Php\ExtendedDummyParameter;
 use PHPStan\Reflection\ResolvedMethodReflection;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Generic\GenericStaticType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\ThisType;
@@ -18,6 +19,7 @@ use PHPStan\Type\TypeTraverser;
 use function array_map;
 use function count;
 
+#[ReferencedByTurboExtension(key: 'calledOnTypeUnresolvedMethodPrototypeReflection')]
 final class CalledOnTypeUnresolvedMethodPrototypeReflection implements UnresolvedMethodPrototypeReflection
 {
 

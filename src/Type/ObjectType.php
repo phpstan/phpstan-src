@@ -35,7 +35,7 @@ use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
@@ -70,7 +70,7 @@ use function strtolower;
 
 /** @api */
 #[InstanceofDeprecated(insteadUse: 'Type::isObject() or Type::getObjectClassNames()')]
-#[ReferencedByTurboExtension(key: 'objectType')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ObjectType.cpp')]
 class ObjectType implements TypeWithClassName, SubtractableType
 {
 

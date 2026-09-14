@@ -120,13 +120,9 @@ public:
 			zv::Val name = pt_type_call(Z_OBJ_P(reflection), PT_LC("getname"), 0, NULL);
 			if (UNEXPECTED(name.isUndef())) return zv::Val();
 			/* new GenericObjectType($name, $this->types, $this->subtractedType, $this->classReflection, $this->variances) */
-			zval args[5];
-			ZVAL_COPY_VALUE(&args[0], name.raw());
-			ZVAL_COPY_VALUE(&args[1], ownTypes);
-			ZVAL_COPY_VALUE(&args[2], subtracted);
-			ZVAL_COPY_VALUE(&args[3], reflection);
-			ZVAL_COPY_VALUE(&args[4], ownVariances);
-			objectType = pt_type_new(PT_CLASS_GENERIC_OBJECT_TYPE, 5, args);
+			zval genericRaw;
+			if (UNEXPECTED(!pt_generic_object_type_new(&genericRaw, Z_STR_P(name.raw()), ownTypes, subtracted, reflection, ownVariances))) return zv::Val();
+			objectType = zv::Val::adopt(genericRaw);
 		} else {
 			objectType = pt_static_type_get_static_object_type(self);
 		}
@@ -189,10 +185,8 @@ public:
 		if (UNEXPECTED(templateTypeMap.isUndef())) return zv::Val();
 		zv::Val newTypes = pt_type_call(Z_OBJ_P(classReflection), PT_LC("typemaptolist"), 1, templateTypeMap.raw());
 		if (UNEXPECTED(newTypes.isUndef())) return zv::Val();
-		zval newTypeArgs[2];
-		ZVAL_COPY_VALUE(&newTypeArgs[0], newName.raw());
-		ZVAL_COPY_VALUE(&newTypeArgs[1], newTypes.raw());
-		zv::Val newType = pt_type_new(PT_CLASS_GENERIC_OBJECT_TYPE, 2, newTypeArgs);
+		zval newTypeRaw;
+		zv::Val newType = pt_generic_object_type_new(&newTypeRaw, Z_STR_P(newName.raw()), newTypes.raw()) ? zv::Val::adopt(newTypeRaw) : zv::Val();
 		if (UNEXPECTED(newType.isUndef())) return zv::Val();
 		zv::Val ancestorType = pt_type_call(Z_OBJ_P(newType.raw()), PT_LC("getancestorwithclassname"), 1, ownClassName.raw());
 		if (UNEXPECTED(ancestorType.isUndef())) return zv::Val();
@@ -417,8 +411,7 @@ public:
 					return zv::Val();
 				}
 				if (zv::Ref(objectType.raw()).instanceOf(pt_ce_never_type)) return objectType;
-				bool isObjectType;
-				if (UNEXPECTED(!pt_type_instanceof(objectType.raw(), PT_CLASS_OBJECT_TYPE, isObjectType))) return zv::Val();
+				bool isObjectType = Z_TYPE_P(objectType.raw()) == IS_OBJECT && instanceof_function(Z_OBJCE_P(objectType.raw()), pt_ce_object_type);
 				if (isObjectType) {
 					zv::Val remaining = pt_type_call(Z_OBJ_P(objectType.raw()), PT_LC("getsubtractedtype"), 0, NULL);
 					if (UNEXPECTED(remaining.isUndef())) return zv::Val();

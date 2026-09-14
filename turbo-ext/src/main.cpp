@@ -190,6 +190,9 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_never_type();
 	pt_register_mixed_type();
 	pt_register_strict_mixed_type();
+	pt_register_object_type();
+	pt_register_generic_object_type();
+	pt_register_enum_case_object_type();
 	pt_register_object_without_class_type();
 	pt_register_static_type();
 	pt_register_this_type();
@@ -236,6 +239,7 @@ static PHP_RINIT_FUNCTION(phpstan_turbo)
 	pt_accepts_result_rinit();
 	pt_integer_range_type_rinit();
 	pt_constant_string_type_rinit();
+	pt_object_type_rinit();
 
 	return SUCCESS;
 }
@@ -248,6 +252,7 @@ static PHP_RSHUTDOWN_FUNCTION(phpstan_turbo)
 	pt_is_super_type_of_result_rshutdown();
 	pt_accepts_result_rshutdown();
 	pt_support_rshutdown();
+	pt_object_type_rshutdown();
 
 	return SUCCESS;
 }

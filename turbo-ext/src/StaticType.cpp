@@ -185,20 +185,14 @@ public:
 			if (UNEXPECTED(variances.isUndef())) return zv::Val();
 			/* new GenericObjectType($name, $types, $this->subtractedType, variances: $variances)
 			 * — the skipped $classReflection at its default null */
-			zval args[5];
-			ZVAL_COPY_VALUE(&args[0], name.raw());
-			ZVAL_COPY_VALUE(&args[1], types.raw());
-			ZVAL_COPY_VALUE(&args[2], subtracted);
-			ZVAL_NULL(&args[3]);
-			ZVAL_COPY_VALUE(&args[4], variances.raw());
-			objectType = pt_type_new(PT_CLASS_GENERIC_OBJECT_TYPE, 5, args);
+			zval genericRaw;
+			if (UNEXPECTED(!pt_generic_object_type_new(&genericRaw, Z_STR_P(name.raw()), types.raw(), subtracted, NULL, variances.raw()))) return zv::Val();
+			objectType = zv::Val::adopt(genericRaw);
 		} else {
 			/* new ObjectType($name, $this->subtractedType, $this->classReflection) */
-			zval args[3];
-			ZVAL_COPY_VALUE(&args[0], name.raw());
-			ZVAL_COPY_VALUE(&args[1], subtracted);
-			ZVAL_COPY_VALUE(&args[2], reflection);
-			objectType = pt_type_new(PT_CLASS_OBJECT_TYPE, 3, args);
+			zval objectRaw;
+			if (UNEXPECTED(!pt_object_type_new(&objectRaw, Z_STR_P(name.raw()), subtracted, reflection))) return zv::Val();
+			objectType = zv::Val::adopt(objectRaw);
 		}
 		if (UNEXPECTED(objectType.isUndef())) return zv::Val();
 		zv::ObjRef(self).propAtWrite(slots::staticObjectType, zv::Val::copyOf(zv::Ref(objectType.raw())));
@@ -242,7 +236,7 @@ public:
 		if (instanceof_function(Z_OBJCE_P(type), pt_ce_static_type)) return delegate(PT_LC("issupertypeof"), 1, type);
 		if (instanceof_function(Z_OBJCE_P(type), pt_ce_object_without_class_type)) return pt_type_is_super_type_of_result(PT_TRI_MAYBE);
 		bool objectType;
-		if (UNEXPECTED(!pt_type_instanceof(type, PT_CLASS_OBJECT_TYPE, objectType))) return zv::Val();
+		if (UNEXPECTED(!pt_type_instanceof_ce(type, pt_ce_object_type, objectType))) return zv::Val();
 		if (objectType) {
 			zv::Val result = delegate(PT_LC("issupertypeof"), 1, type);
 			if (UNEXPECTED(result.isUndef())) return zv::Val();
@@ -618,7 +612,7 @@ public:
 				}
 				if (zv::Ref(objectType.raw()).instanceOf(pt_ce_never_type)) return objectType;
 				bool isObjectType;
-				if (UNEXPECTED(!pt_type_instanceof(objectType.raw(), PT_CLASS_OBJECT_TYPE, isObjectType))) return zv::Val();
+				if (UNEXPECTED(!pt_type_instanceof_ce(objectType.raw(), pt_ce_object_type, isObjectType))) return zv::Val();
 				if (isObjectType) {
 					zv::Val remaining = pt_type_call(Z_OBJ_P(objectType.raw()), PT_LC("getsubtractedtype"), 0, NULL);
 					if (UNEXPECTED(remaining.isUndef())) return zv::Val();

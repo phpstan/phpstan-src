@@ -35,6 +35,7 @@ use PhpParser\NodeVisitorAbstract;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprFloatNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprIntegerNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
+use PHPStan\PhpDocParser\Ast\ConstExpr\ConstFetchNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
@@ -128,6 +129,7 @@ final class TurboAttributeCollector
 		'thisTypeNode' => ThisTypeNode::class,
 		'objectShapeNode' => ObjectShapeNode::class,
 		'objectShapeItemNode' => ObjectShapeItemNode::class,
+		'constFetchNode' => ConstFetchNode::class,
 	];
 
 	private string $realRoot;

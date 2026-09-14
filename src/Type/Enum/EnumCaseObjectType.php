@@ -15,6 +15,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\CompoundType;
@@ -33,6 +34,7 @@ use function sprintf;
 
 /** @api */
 #[InstanceofDeprecated(insteadUse: 'Type::getEnumCaseObject() or Type::getEnumCases()')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/EnumCaseObjectType.cpp')]
 class EnumCaseObjectType extends ObjectType
 {
 

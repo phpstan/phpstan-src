@@ -748,7 +748,7 @@ public:
 			if (UNEXPECTED(array.isUndef())) return -1;
 			types.push(std::move(array));
 			zv::Val className = zv::Val::string("ArrayAccess", sizeof("ArrayAccess") - 1);
-			zv::Val arrayAccess = pt_type_new(PT_CLASS_OBJECT_TYPE, 1, className.raw());
+			zv::Val arrayAccess = pt_type_new_object_type(className.raw());
 			if (UNEXPECTED(arrayAccess.isUndef())) return -1;
 			types.push(std::move(arrayAccess));
 			zv::Val offsetAccessibles = pt_type_new_union(std::move(types));

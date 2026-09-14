@@ -2,10 +2,12 @@
 
 namespace PHPStan\Type\Generic;
 
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
+#[ReferencedByTurboExtension(key: 'typeProjectionHelper')]
 final class TypeProjectionHelper
 {
 

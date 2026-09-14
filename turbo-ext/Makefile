@@ -57,6 +57,10 @@ OBJECTS := $(SOURCES:.cpp=.o)
 
 phpstan_turbo.so: $(OBJECTS)
 	$(CXX) `$(PHP_CONFIG) --ldflags` -shared $(LINK_FLAGS) -o $@ $(OBJECTS)
+	@# a shared object links with undefined symbols allowed (the engine's are
+	@# resolved at load time), so a helper declared but never defined only
+	@# surfaces as a jump to NULL at run time — fail the build instead
+	@if nm -u $@ | grep -E 'pt_[a-z_]+|phpstanturbo' > /dev/null; then echo "undefined extension symbols in $@:"; nm -u $@ | grep -E 'pt_[a-z_]+|phpstanturbo'; rm -f $@; exit 1; fi
 
 src/%.o: src/%.cpp src/support.h src/zv.h src/reg.h $(wildcard src/generated/*.h)
 	$(CXX) $(CXXFLAGS) -c -o $@ $<

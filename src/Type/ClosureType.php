@@ -34,6 +34,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -55,6 +56,7 @@ use function array_merge;
 use function count;
 
 /** @api */
+#[ReferencedByTurboExtension(key: 'closureType')]
 class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 {
 

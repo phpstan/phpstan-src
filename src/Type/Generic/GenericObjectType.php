@@ -13,7 +13,7 @@ use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ErrorType;
@@ -33,7 +33,7 @@ use function sprintf;
 
 /** @api */
 #[InstanceofDeprecated]
-#[ReferencedByTurboExtension(key: 'genericObjectType')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/GenericObjectType.cpp')]
 class GenericObjectType extends ObjectType
 {
 

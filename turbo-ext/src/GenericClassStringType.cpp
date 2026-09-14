@@ -399,7 +399,7 @@ public:
 						zv::Val allowedSubTypes = pt_type_call(Z_OBJ_P(classReflection.raw()), PT_LC("getallowedsubtypes"), 0, NULL);
 						if (UNEXPECTED(allowedSubTypes.isUndef())) return zv::Val();
 						if (!zv::Ref(allowedSubTypes.raw()).isNull()) {
-							zv::Val objectTypeToRemove = pt_type_new(PT_CLASS_OBJECT_TYPE, 1, removedValue.raw());
+							zv::Val objectTypeToRemove = pt_type_new_object_type(removedValue.raw());
 							if (UNEXPECTED(objectTypeToRemove.isUndef())) return zv::Val();
 							zv::Args args{generic.raw(), objectTypeToRemove.raw()};
 							zv::Val remainingType = pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("remove"), 2, args);
@@ -412,7 +412,7 @@ public:
 						}
 					}
 				} else if (names.size() > 1) {
-					zv::Val objectTypeToRemove = pt_type_new(PT_CLASS_OBJECT_TYPE, 1, removedValue.raw());
+					zv::Val objectTypeToRemove = pt_type_new_object_type(removedValue.raw());
 					if (UNEXPECTED(objectTypeToRemove.isUndef())) return zv::Val();
 					zv::Val hasClass = pt_type_call(provider, PT_LC("hasclass"), 1, removedValue.raw());
 					if (UNEXPECTED(hasClass.isUndef())) return zv::Val();
@@ -490,7 +490,7 @@ private:
 	{
 		zv::Val value = pt_constant_string_get_value(constantString);
 		if (UNEXPECTED(value.isUndef())) return zv::Val();
-		return pt_type_new(PT_CLASS_OBJECT_TYPE, 1, value.raw());
+		return pt_type_new_object_type(value.raw());
 	}
 
 	/* new ClassNameToObjectTypeResult($type, $uncertainty) */

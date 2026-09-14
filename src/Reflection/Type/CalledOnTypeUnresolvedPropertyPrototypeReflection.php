@@ -6,10 +6,12 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Dummy\ChangedTypePropertyReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\ResolvedPropertyReflection;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 
+#[ReferencedByTurboExtension(key: 'calledOnTypeUnresolvedPropertyPrototypeReflection')]
 final class CalledOnTypeUnresolvedPropertyPrototypeReflection implements UnresolvedPropertyPrototypeReflection
 {
 

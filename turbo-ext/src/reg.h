@@ -869,6 +869,43 @@ public:
 		return *this;
 	}
 
+	/* a `private ?string $x = null` scalar-typed property defaulting to null;
+	 * typeMask is the MAY_BE_* mask without the null bit */
+	Class &privateTypedPropertyDefaultNull(const char *propertyName, uint32_t typeMask)
+	{
+		properties.push_back({ propertyName, PropertyKind::TypedNull, ZEND_ACC_PRIVATE, (zend_long) (typeMask | MAY_BE_NULL) });
+		return *this;
+	}
+
+	/* the twin's `private static array $x = []` / `private static ?Foo $x =
+	 * null` / `private static ?string $x = null` typed static properties */
+	Class &privateStaticTypedArrayPropertyDefaultEmpty(const char *propertyName)
+	{
+		properties.push_back({ propertyName, PropertyKind::TypedEmptyArray, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, (zend_long) MAY_BE_ARRAY });
+		return *this;
+	}
+
+	Class &privateStaticTypedClassPropertyDefaultNull(const char *propertyName, const char *className)
+	{
+		properties.push_back({ propertyName, PropertyKind::TypedNull, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, (zend_long) MAY_BE_NULL, className });
+		return *this;
+	}
+
+	Class &privateStaticTypedPropertyDefaultNull(const char *propertyName, uint32_t typeMask)
+	{
+		properties.push_back({ propertyName, PropertyKind::TypedNull, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, (zend_long) (typeMask | MAY_BE_NULL) });
+		return *this;
+	}
+
+	/* a `private readonly` typed property with no default (IS_PROP_UNINIT),
+	 * as a promoted `private readonly string $value` declares; typeMask is
+	 * a MAY_BE_* mask */
+	Class &privateReadonlyTypedProperty(const char *propertyName, uint32_t typeMask)
+	{
+		properties.push_back({ propertyName, PropertyKind::Typed, ZEND_ACC_PRIVATE | ZEND_ACC_READONLY, (zend_long) typeMask });
+		return *this;
+	}
+
 	/* a public long class constant (zend_declare_class_constant_long) */
 	Class &classConstantLong(const char *constantName, zend_long value)
 	{

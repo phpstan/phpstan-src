@@ -116,7 +116,7 @@ public:
 			if (UNEXPECTED(otherCallable < 0)) return zv::Val();
 			if (otherCallable == PT_TRI_YES) {
 				zv::Val className = zv::Val::string(PT_LC("Closure"));
-				zv::Val closure = pt_type_new(PT_CLASS_OBJECT_TYPE, 1, className.raw());
+				zv::Val closure = pt_type_new_object_type(className.raw());
 				if (UNEXPECTED(closure.isUndef())) return zv::Val();
 				zv::Val isClosure = pt_type_call(Z_OBJ_P(closure.raw()), PT_LC("issupertypeof"), 1, otherType);
 				if (UNEXPECTED(isClosure.isUndef())) return zv::Val();

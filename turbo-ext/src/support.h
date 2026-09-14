@@ -103,7 +103,6 @@ enum {
 	PT_CLASS_GENERIC_TYPE_NODE,
 	PT_CLASS_CONST_TYPE_NODE,
 	PT_CLASS_CONST_EXPR_INTEGER_NODE,
-	PT_CLASS_OBJECT_TYPE,
 	PT_CLASS_REFLECTION_PROVIDER_STATIC_ACCESSOR,
 	PT_CLASS_PHP_VERSION_STATIC_ACCESSOR,
 	PT_CLASS_REPORT_UNSAFE_ARRAY_STRING_KEY_CASTING_TOGGLE,
@@ -130,7 +129,6 @@ enum {
 	PT_CLASS_ITERABLE_TYPE,
 	PT_CLASS_TYPE_TRAVERSER,
 	PT_CLASS_TEMPLATE_TYPE_HELPER,
-	PT_CLASS_GENERIC_OBJECT_TYPE,
 	PT_CLASS_TYPE_WITH_CLASS_NAME,
 	PT_CLASS_OBJECT_SHAPE_PROPERTY_REFLECTION,
 	PT_CLASS_UNIVERSAL_OBJECT_CRATES_CLASS_REFLECTION_EXTENSION,
@@ -143,7 +141,19 @@ enum {
 	PT_CLASS_UNSAFE_ARRAY_STRING_KEY_CASTING_TRAVERSER,
 	PT_CLASS_ALLOWED_ARRAY_KEYS_TYPES,
 	PT_CLASS_CONSTANT_ARRAY_TYPE_BUILDER,
+	PT_CLASS_LRU_CACHE,
 	PT_CLASS_TYPE_UTILS,
+	PT_CLASS_UNRESOLVED_TEMPLATE_ARGUMENT_TYPE,
+	PT_CLASS_TYPE_PROJECTION_HELPER,
+	PT_CLASS_CLASS_NOT_FOUND_EXCEPTION,
+	PT_CLASS_CALLED_ON_TYPE_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION,
+	PT_CLASS_CALLED_ON_TYPE_UNRESOLVED_PROPERTY_PROTOTYPE_REFLECTION,
+	PT_CLASS_UNION_TYPE_UNRESOLVED_PROPERTY_PROTOTYPE_REFLECTION,
+	PT_CLASS_ENUM_UNRESOLVED_PROPERTY_PROTOTYPE_REFLECTION,
+	PT_CLASS_ENUM_PROPERTY_REFLECTION,
+	PT_CLASS_CLOSURE_TYPE,
+	PT_CLASS_CONST_FETCH_NODE,
+	PT_CLASS_FINITE_TYPE_SET,
 	PT_CLASS_COUNT
 };
 
@@ -632,5 +642,28 @@ bool pt_accessory_uppercase_string_type_new(zval *out);
 bool pt_accessory_decimal_integer_string_type_new(zval *out, bool inverse = false);
 bool pt_has_method_type_new(zval *out, zend_string *methodName);
 bool pt_has_property_type_new(zval *out, zend_string *propertyName);
+
+/* merged from the parallel port branch */
+/* the object family (ObjectType.cpp, GenericObjectType.cpp, EnumCaseObjectType.cpp) */
+extern zend_class_entry *pt_ce_object_type;
+extern zend_class_entry *pt_ce_generic_object_type;
+extern zend_class_entry *pt_ce_enum_case_object_type;
+/* registered after the never/mixed family (their bodies instantiate
+ * its classes); ObjectType before its children GenericObjectType and
+ * EnumCaseObjectType */
+void pt_register_object_type();
+void pt_register_generic_object_type();
+void pt_register_enum_case_object_type();
+void pt_object_type_rinit();
+void pt_object_type_rshutdown();
+/* new ObjectType($className, $subtractedType, $classReflection) / new
+ * GenericObjectType($mainType, $types, $subtractedType, $classReflection,
+ * $variances) / new EnumCaseObjectType($className, $enumCaseName,
+ * $classReflection) — instances of the shadowing classes (ObjectType.cpp /
+ * GenericObjectType.cpp / EnumCaseObjectType.cpp; every argument borrowed,
+ * NULL for a null or a default); false = pending exception */
+[[nodiscard]] bool pt_object_type_new(zval *out, zend_string *className, zval *subtractedType = NULL, zval *classReflection = NULL);
+bool pt_generic_object_type_new(zval *out, zend_string *mainType, zval *types, zval *subtractedType = NULL, zval *classReflection = NULL, zval *variances = NULL);
+bool pt_enum_case_object_type_new(zval *out, zend_string *className, zend_string *enumCaseName, zval *classReflection = NULL);
 
 #endif /* PHPSTANTURBO_SUPPORT_H */

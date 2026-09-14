@@ -40,7 +40,7 @@ public:
 		if (compound) {
 			zval thisValue;
 			ZVAL_OBJ(&thisValue, self);
-			return pt_type_call(Z_OBJ_P(type), PT_LC("issubtypeof"), 1, &thisValue);
+			return pt_type_op(Z_OBJ_P(type), PT_OP_IS_SUB_TYPE_OF, 1, &thisValue);
 		}
 
 		zv::Val result = pt_type_just_nullable_is_super_type_of(self, pt_ce_string_type, type);
@@ -49,7 +49,7 @@ public:
 		if (!instanceof_function(Z_OBJCE_P(type), pt_ce_string_never_accepting_object_with_to_string_type)) {
 			zv::Val maybe = pt_type_is_super_type_of_result(PT_TRI_MAYBE);
 			if (UNEXPECTED(maybe.isUndef())) return zv::Val();
-			result = pt_type_call(Z_OBJ_P(result.raw()), PT_LC("and"), 1, maybe.raw());
+			result = pt_type_op(Z_OBJ_P(result.raw()), PT_OP_AND, 1, maybe.raw());
 		}
 
 		return result;

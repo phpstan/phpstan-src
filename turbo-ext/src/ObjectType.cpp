@@ -210,7 +210,7 @@ static void pt_ot_cache_unset(zval *cache, zend_string *key)
  * `static fn (Type $type): Type => $type` of the prototype reflections */
 
 static zend_class_entry *pt_ce_object_type_callback = nullptr;
-static zend_function *pt_object_type_callback_invoke = nullptr;
+static zend_function *pt_object_type_callback_invoke_fn = nullptr;
 static zend_function *pt_object_type_callback_identity = nullptr;
 
 enum pt_ot_callback_kind
@@ -258,9 +258,9 @@ static zv::Val pt_ot_callback(pt_ot_callback_kind kind, zval *object, zval *arg,
 	zval closure;
 #if PHP_VERSION_ID >= 80600
 	/* php-src fbb2e1f23d6: $this is passed as zend_object* from 8.6 on */
-	zend_create_closure(&closure, pt_object_type_callback_invoke, pt_ce_object_type_callback, pt_ce_object_type_callback, Z_OBJ(holder));
+	zend_create_closure(&closure, pt_object_type_callback_invoke_fn, pt_ce_object_type_callback, pt_ce_object_type_callback, Z_OBJ(holder));
 #else
-	zend_create_closure(&closure, pt_object_type_callback_invoke, pt_ce_object_type_callback, pt_ce_object_type_callback, &holder);
+	zend_create_closure(&closure, pt_object_type_callback_invoke_fn, pt_ce_object_type_callback, pt_ce_object_type_callback, &holder);
 #endif
 	if (holderOut != NULL) {
 		ZVAL_COPY_VALUE(holderOut, &holder); /* the closure holds its own reference */
@@ -828,7 +828,7 @@ public:
 		if (UNEXPECTED(!pt_type_instanceof_ce(type, pt_ce_object_without_class_type, is))) return zv::Val();
 		if (is) return pt_type_accepts_result(PT_TRI_MAYBE);
 
-		zv::Val thatClassNames = pt_type_call(Z_OBJ_P(type), PT_LC("getobjectclassnames"), 0, NULL);
+		zv::Val thatClassNames = pt_type_op(Z_OBJ_P(type), PT_OP_GET_OBJECT_CLASS_NAMES, 0, NULL);
 		if (UNEXPECTED(thatClassNames.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(thatClassNames.raw()).isArray())) {
 			zend_type_error("phpstan_turbo: getObjectClassNames() must return array");
@@ -848,7 +848,7 @@ public:
 	/* UNDEF = pending exception */
 	zv::Val isSuperTypeOf(zval *type) const
 	{
-		zv::Val thatClassNames = pt_type_call(Z_OBJ_P(type), PT_LC("getobjectclassnames"), 0, NULL);
+		zv::Val thatClassNames = pt_type_op(Z_OBJ_P(type), PT_OP_GET_OBJECT_CLASS_NAMES, 0, NULL);
 		if (UNEXPECTED(thatClassNames.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(thatClassNames.raw()).isArray())) {
 			zend_type_error("phpstan_turbo: getObjectClassNames() must return array");
@@ -869,7 +869,7 @@ public:
 		} else {
 			zv::Val cacheLevel = pt_type_verbosity_level(PT_VERBOSITY_LEVEL_CACHE);
 			if (UNEXPECTED(cacheLevel.isUndef())) return zv::Val();
-			description = pt_type_call(Z_OBJ_P(type), PT_LC("describe"), 1, cacheLevel.raw());
+			description = pt_type_op(Z_OBJ_P(type), PT_OP_DESCRIBE, 1, cacheLevel.raw());
 		}
 		if (UNEXPECTED(description.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(description.raw()).isString())) {
@@ -886,7 +886,7 @@ public:
 
 		zval selfZv;
 		ZVAL_OBJ(&selfZv, self);
-		if (isCompound) return storeSuperType(thisDescriptionStr, descriptionStr, pt_type_call(Z_OBJ_P(type), PT_LC("issubtypeof"), 1, &selfZv));
+		if (isCompound) return storeSuperType(thisDescriptionStr, descriptionStr, pt_type_op(Z_OBJ_P(type), PT_OP_IS_SUB_TYPE_OF, 1, &selfZv));
 
 		bool isClosure;
 		if (UNEXPECTED(!pt_type_instanceof_ce(type, pt_ce_closure_type, isClosure))) return zv::Val();
@@ -1193,7 +1193,7 @@ public:
 		if (object->ce != pt_ce_object_type) {
 			zv::Val cacheLevel = pt_type_verbosity_level(PT_VERBOSITY_LEVEL_CACHE);
 			if (UNEXPECTED(cacheLevel.isUndef())) return zv::Val();
-			zv::Val description = pt_type_call(object, PT_LC("describe"), 1, cacheLevel.raw());
+			zv::Val description = pt_type_op(object, PT_OP_DESCRIBE, 1, cacheLevel.raw());
 			if (UNEXPECTED(description.isUndef())) return zv::Val();
 			if (UNEXPECTED(!zv::Ref(description.raw()).isString())) {
 				zend_type_error("phpstan_turbo: describe() must return string");
@@ -2965,7 +2965,7 @@ private:
 	/* $a->isSuperTypeOf($b)'s trinary; -1 = pending exception */
 	[[nodiscard]] static zend_long isSuperTypeOfTrinary(zval *a, zval *b)
 	{
-		zv::Val result = pt_type_call(Z_OBJ_P(a), PT_LC("issupertypeof"), 1, b);
+		zv::Val result = pt_type_op(Z_OBJ_P(a), PT_OP_IS_SUPER_TYPE_OF, 1, b);
 		if (UNEXPECTED(result.isUndef())) return -1;
 		return pt_type_result_trinary(result.raw());
 	}
@@ -3110,7 +3110,7 @@ private:
 		if (UNEXPECTED(result.isUndef()) || !andMaybe) return result;
 		zv::Val maybe = pt_type_is_super_type_of_result(PT_TRI_MAYBE);
 		if (UNEXPECTED(maybe.isUndef())) return zv::Val();
-		return pt_type_call(Z_OBJ_P(result.raw()), PT_LC("and"), 1, maybe.raw());
+		return pt_type_op(Z_OBJ_P(result.raw()), PT_OP_AND, 1, maybe.raw());
 	}
 
 	/* $this->className . $this->describeSubtractedType($this->subtractedType, $level);
@@ -3280,14 +3280,11 @@ zv::Val pt_object_type_referenced_classes_callback(zval *type)
 
 #define PT_THIS ObjectType(Z_OBJ_P(ZEND_THIS))
 
-/* ObjectTypeCallback::__invoke(...$args): replays the captured call */
-static void ZEND_FASTCALL objectTypeCallbackInvoke(INTERNAL_FUNCTION_PARAMETERS)
+/* the body of ObjectTypeCallback::__invoke(...$args): replays the captured
+ * call (the arguments are ignored, as the twins' closures ignore them);
+ * UNDEF = pending exception */
+zv::Val pt_object_type_callback_invoke(zend_object *holder)
 {
-	if (UNEXPECTED(Z_TYPE_P(ZEND_THIS) != IS_OBJECT)) {
-		zend_throw_error(NULL, "phpstan_turbo: ObjectTypeCallback called without its holder");
-		RETURN_THROWS();
-	}
-	zend_object *holder = Z_OBJ_P(ZEND_THIS);
 	zend_long kind = Z_LVAL_P(OBJ_PROP_NUM(holder, slots::subtractedType));
 	zval *object = OBJ_PROP_NUM(holder, slots::cachedParent);
 	zval *arg = OBJ_PROP_NUM(holder, slots::cachedInterfaces);
@@ -3295,94 +3292,112 @@ static void ZEND_FASTCALL objectTypeCallbackInvoke(INTERNAL_FUNCTION_PARAMETERS)
 	zv::Args args{arg, scope};
 	switch (kind) {
 		case PT_OTC_HAS_PROPERTY:
-			PT_RETURN_VAL(pt_type_call(Z_OBJ_P(object), PT_LC("hasproperty"), 1, arg));
+			return pt_type_call(Z_OBJ_P(object), PT_LC("hasproperty"), 1, arg);
 		case PT_OTC_HAS_INSTANCE_PROPERTY:
-			PT_RETURN_VAL(pt_type_call(Z_OBJ_P(object), PT_LC("hasinstanceproperty"), 1, arg));
+			return pt_type_call(Z_OBJ_P(object), PT_LC("hasinstanceproperty"), 1, arg);
 		case PT_OTC_HAS_STATIC_PROPERTY:
-			PT_RETURN_VAL(pt_type_call(Z_OBJ_P(object), PT_LC("hasstaticproperty"), 1, arg));
+			return pt_type_call(Z_OBJ_P(object), PT_LC("hasstaticproperty"), 1, arg);
 		case PT_OTC_GET_PROPERTY:
-			PT_RETURN_VAL(pt_type_call(Z_OBJ_P(object), PT_LC("getproperty"), 2, args));
+			return pt_type_call(Z_OBJ_P(object), PT_LC("getproperty"), 2, args);
 		case PT_OTC_GET_INSTANCE_PROPERTY:
-			PT_RETURN_VAL(pt_type_call(Z_OBJ_P(object), PT_LC("getinstanceproperty"), 2, args));
+			return pt_type_call(Z_OBJ_P(object), PT_LC("getinstanceproperty"), 2, args);
 		case PT_OTC_GET_STATIC_PROPERTY:
-			PT_RETURN_VAL(pt_type_call(Z_OBJ_P(object), PT_LC("getstaticproperty"), 1, arg));
+			return pt_type_call(Z_OBJ_P(object), PT_LC("getstaticproperty"), 1, arg);
 		case PT_OTC_METHOD_RETURN_TYPE:
-			PT_RETURN_VAL(ObjectType(Z_OBJ_P(object)).methodReturnType(arg));
+			return ObjectType(Z_OBJ_P(object)).methodReturnType(arg);
 		case PT_OTC_METHOD_RETURN_ITERABLE_KEY_TYPE:
 		case PT_OTC_METHOD_RETURN_ITERABLE_VALUE_TYPE: {
 			zv::Val returnType = ObjectType(Z_OBJ_P(object)).methodReturnType(arg);
-			if (UNEXPECTED(returnType.isUndef())) RETURN_THROWS();
+			if (UNEXPECTED(returnType.isUndef())) return zv::Val();
 			if (UNEXPECTED(!zv::Ref(returnType.raw()).isObject())) {
 				zend_type_error("phpstan_turbo: getReturnType() must return %s", ptcls::type);
-				RETURN_THROWS();
+				return zv::Val();
 			}
-			if (kind == PT_OTC_METHOD_RETURN_ITERABLE_KEY_TYPE) {
-				PT_RETURN_VAL(pt_type_call(Z_OBJ_P(returnType.raw()), PT_LC("getiterablekeytype"), 0, NULL));
-			}
-			PT_RETURN_VAL(pt_type_call(Z_OBJ_P(returnType.raw()), PT_LC("getiterablevaluetype"), 0, NULL));
+			if (kind == PT_OTC_METHOD_RETURN_ITERABLE_KEY_TYPE) return pt_type_op(Z_OBJ_P(returnType.raw()), PT_OP_GET_ITERABLE_KEY_TYPE, 0, NULL);
+			return pt_type_op(Z_OBJ_P(returnType.raw()), PT_OP_GET_ITERABLE_VALUE_TYPE, 0, NULL);
 		}
 		case PT_OTC_OFFSET_SET_PARAMETER_TYPE:
 		case PT_OTC_OFFSET_SET_PARAMETER_TYPES: {
 			/* $parameters = $this->getMethod('offsetSet', new OutOfClassScope())->getOnlyVariant()->getParameters() */
 			zv::Val outOfClassScope = pt_type_new(PT_CLASS_OUT_OF_CLASS_SCOPE, 0, NULL);
-			if (UNEXPECTED(outOfClassScope.isUndef())) RETURN_THROWS();
+			if (UNEXPECTED(outOfClassScope.isUndef())) return zv::Val();
 			zv::Val offsetSet = zv::Val::string(PT_LC("offsetSet"));
 			zv::Args methodArgs{offsetSet.raw(), outOfClassScope.raw()};
 			zend_object *type = Z_OBJ_P(object);
 			zv::Val method = (type->ce == pt_ce_object_type || pt_type_method_is(type, PT_LC("getmethod"), otGetMethod))
 				? ObjectType(type).getMethod(offsetSet.raw(), outOfClassScope.raw())
 				: pt_type_call(type, PT_LC("getmethod"), 2, methodArgs);
-			if (UNEXPECTED(method.isUndef())) RETURN_THROWS();
+			if (UNEXPECTED(method.isUndef())) return zv::Val();
 			if (UNEXPECTED(!zv::Ref(method.raw()).isObject())) {
 				zend_type_error("phpstan_turbo: getMethod() must return an object");
-				RETURN_THROWS();
+				return zv::Val();
 			}
 			zv::Val variant = pt_type_call(Z_OBJ_P(method.raw()), PT_LC("getonlyvariant"), 0, NULL);
-			if (UNEXPECTED(variant.isUndef())) RETURN_THROWS();
+			if (UNEXPECTED(variant.isUndef())) return zv::Val();
 			if (UNEXPECTED(!zv::Ref(variant.raw()).isObject())) {
 				zend_type_error("phpstan_turbo: getOnlyVariant() must return an object");
-				RETURN_THROWS();
+				return zv::Val();
 			}
 			zv::Val parameters = pt_type_call(Z_OBJ_P(variant.raw()), PT_LC("getparameters"), 0, NULL);
-			if (UNEXPECTED(parameters.isUndef())) RETURN_THROWS();
+			if (UNEXPECTED(parameters.isUndef())) return zv::Val();
 			if (UNEXPECTED(!zv::Ref(parameters.raw()).isArray())) {
 				zend_type_error("phpstan_turbo: getParameters() must return array");
-				RETURN_THROWS();
+				return zv::Val();
 			}
 			if (zv::ArrRef(parameters.raw()).size() < 2) {
 				/* throw new ShouldNotHappenException(sprintf('Method %s::%s() has less than 2 parameters.', $this->className, 'offsetSet')) */
 				zend_string *className = ObjectType::classNameOf(type);
-				if (UNEXPECTED(className == NULL)) RETURN_THROWS();
+				if (UNEXPECTED(className == NULL)) return zv::Val();
 				zv::Val message = zv::Val::adoptString(zend_strpprintf(0, "Method %s::%s() has less than 2 parameters.", ZSTR_VAL(className), "offsetSet"));
 				zv::Val exception = pt_type_new(PT_CLASS_SHOULD_NOT_HAPPEN, 1, message.raw());
-				if (UNEXPECTED(exception.isUndef())) RETURN_THROWS();
+				if (UNEXPECTED(exception.isUndef())) return zv::Val();
 				zend_throw_exception_object(exception.raw());
 				(void) exception.take(); /* thrown: the engine owns it now */
-				RETURN_THROWS();
+				return zv::Val();
 			}
 			zval *offsetParameter = zend_hash_index_find(Z_ARRVAL_P(parameters.raw()), 0);
 			zval *valueParameter = zend_hash_index_find(Z_ARRVAL_P(parameters.raw()), 1);
 			if (UNEXPECTED(offsetParameter == NULL || valueParameter == NULL || Z_TYPE_P(offsetParameter) != IS_OBJECT || Z_TYPE_P(valueParameter) != IS_OBJECT)) {
 				zend_type_error("phpstan_turbo: getParameters() must return a list of objects");
-				RETURN_THROWS();
+				return zv::Val();
 			}
 			if (kind == PT_OTC_OFFSET_SET_PARAMETER_TYPES) {
 				zv::Val acceptedValueType = pt_type_call(Z_OBJ_P(valueParameter), PT_LC("gettype"), 0, NULL);
-				if (UNEXPECTED(acceptedValueType.isUndef())) RETURN_THROWS();
+				if (UNEXPECTED(acceptedValueType.isUndef())) return zv::Val();
 				zv::ObjRef(holder).propAtWrite(slots::cachedDescription, std::move(acceptedValueType));
 			}
-			PT_RETURN_VAL(pt_type_call(Z_OBJ_P(offsetParameter), PT_LC("gettype"), 0, NULL));
+			return pt_type_call(Z_OBJ_P(offsetParameter), PT_LC("gettype"), 0, NULL);
 		}
 		case PT_OTC_FIND_CALLABLE_PARAMETERS_ACCEPTORS:
-			PT_RETURN_VAL(ObjectType(Z_OBJ_P(object)).findCallableParametersAcceptors());
+			return ObjectType(Z_OBJ_P(object)).findCallableParametersAcceptors();
 		case PT_OTC_REFERENCED_CLASSES:
-			PT_RETURN_VAL(pt_type_call(Z_OBJ_P(object), PT_LC("getreferencedclasses"), 0, NULL));
+			return pt_type_call(Z_OBJ_P(object), PT_LC("getreferencedclasses"), 0, NULL);
 		case PT_OTC_ERROR_TYPE:
-			PT_RETURN_VAL(pt_type_new_error_type());
+			return pt_type_new_error_type();
 		default:
 			zend_throw_error(NULL, "phpstan_turbo: unknown ObjectTypeCallback kind");
-			RETURN_THROWS();
+			return zv::Val();
 	}
+}
+
+/* ObjectTypeCallback::__invoke(...$args) */
+static void ZEND_FASTCALL objectTypeCallbackInvoke(INTERNAL_FUNCTION_PARAMETERS)
+{
+	if (UNEXPECTED(Z_TYPE_P(ZEND_THIS) != IS_OBJECT)) {
+		zend_throw_error(NULL, "phpstan_turbo: ObjectTypeCallback called without its holder");
+		RETURN_THROWS();
+	}
+	PT_RETURN_VAL(pt_object_type_callback_invoke(Z_OBJ_P(ZEND_THIS)));
+}
+
+zif_handler pt_object_type_callback_invoke_handler()
+{
+	return objectTypeCallbackInvoke;
+}
+
+zend_class_entry *pt_object_type_callback_ce()
+{
+	return pt_ce_object_type_callback;
 }
 
 /* ObjectTypeCallback::identity(Type $type): Type */
@@ -3566,9 +3581,9 @@ void pt_register_object_type()
 	holder.method("identity", reg::PublicStatic, 1, { reg::obj("type", ptcls::type) }, objectTypeCallbackIdentity, &ptret::type);
 	pt_ce_object_type_callback = holder.register_();
 	pt_ce_object_type_callback->ce_flags |= ZEND_ACC_FINAL;
-	pt_object_type_callback_invoke = (zend_function *) zend_hash_str_find_ptr(&pt_ce_object_type_callback->function_table, PT_LC("__invoke"));
+	pt_object_type_callback_invoke_fn = (zend_function *) zend_hash_str_find_ptr(&pt_ce_object_type_callback->function_table, PT_LC("__invoke"));
 	pt_object_type_callback_identity = (zend_function *) zend_hash_str_find_ptr(&pt_ce_object_type_callback->function_table, PT_LC("identity"));
-	ZEND_ASSERT(pt_object_type_callback_invoke != NULL && pt_object_type_callback_identity != NULL);
+	ZEND_ASSERT(pt_object_type_callback_invoke_fn != NULL && pt_object_type_callback_identity != NULL);
 
 	reg::Class cls("PHPStan\\Type\\ObjectType");
 	ptdecl::ObjectType::declareClass(cls);
@@ -3632,17 +3647,22 @@ void pt_register_object_type()
 	cls.method(sigs::getObjectClassNames, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ot_value(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ObjectType::getObjectClassNames);
 	});
+	cls.op<PT_OP_GET_OBJECT_CLASS_NAMES, &ObjectType::getObjectClassNames>();
 	cls.method(sigs::getObjectClassReflections, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ot_value(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ObjectType::getObjectClassReflections);
 	});
 
 	cls.method<&ObjectType::accepts, zp::Obj, zp::Bool>(sigs::accepts);
+	cls.op(PT_OP_ACCEPTS, PT_OP_LAMBDA { return ObjectType(self).accepts(argv, (Z_TYPE(argv[1]) == IS_TRUE)); });
 
 	cls.method(sigs::isSuperTypeOf, otIsSuperTypeOf);
+	cls.op<PT_OP_IS_SUPER_TYPE_OF, &ObjectType::isSuperTypeOf>();
 
 	cls.method<&ObjectType::equals, zp::Obj>(sigs::equals);
+	cls.op<PT_OP_EQUALS, &ObjectType::equals>();
 
 	cls.method<&ObjectType::describe, zp::Obj>(sigs::describe);
+	cls.op<PT_OP_DESCRIBE, &ObjectType::describe>();
 
 	cls.method(sigs::describeAdditionalCacheKey, otDescribeAdditionalCacheKey);
 
@@ -3677,6 +3697,7 @@ void pt_register_object_type()
 		pt_ot_value(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ObjectType::toArray);
 	});
 	cls.method(sigs::toArrayKey, otError0);
+	cls.op(PT_OP_TO_ARRAY_KEY, PT_OP_LAMBDA { return pt_type_new_error_type(); });
 	cls.method<&ObjectType::toCoercedArgumentType, zp::Bool>(sigs::toCoercedArgumentType);
 	cls.method(sigs::toBoolean, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ot_value(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ObjectType::toBoolean);
@@ -3714,10 +3735,12 @@ void pt_register_object_type()
 	cls.method(sigs::isIterableAtLeastOnce, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ot_trinary(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ObjectType::isIterableAtLeastOnce);
 	});
+	cls.op<PT_OP_IS_ITERABLE_AT_LEAST_ONCE, &ObjectType::isIterableAtLeastOnce>();
 	cls.method(sigs::getArraySize, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ot_value(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ObjectType::getArraySize);
 	});
 	cls.method(sigs::getIterableKeyType, otGetIterableKeyType);
+	cls.op<PT_OP_GET_ITERABLE_KEY_TYPE, &ObjectType::getIterableKeyType>();
 	cls.method(sigs::getFirstIterableKeyType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ot_value(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ObjectType::thisGetIterableKeyType);
 	});
@@ -3725,6 +3748,7 @@ void pt_register_object_type()
 		pt_ot_value(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ObjectType::thisGetIterableKeyType);
 	});
 	cls.method(sigs::getIterableValueType, otGetIterableValueType);
+	cls.op<PT_OP_GET_ITERABLE_VALUE_TYPE, &ObjectType::getIterableValueType>();
 	cls.method(sigs::getFirstIterableValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ot_value(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ObjectType::thisGetIterableValueType);
 	});
@@ -3733,16 +3757,23 @@ void pt_register_object_type()
 	});
 
 	cls.method(sigs::isNull, otNo0);
+	cls.op(PT_OP_IS_NULL, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isConstantValue, otNo0);
 	cls.method(sigs::isConstantScalarValue, otNo0);
+	cls.op(PT_OP_IS_CONSTANT_SCALAR_VALUE, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::getConstantScalarTypes, otEmptyArray0);
 	cls.method(sigs::getConstantScalarValues, otEmptyArray0);
+	cls.op(PT_OP_GET_CONSTANT_SCALAR_VALUES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::isTrue, otNo0);
 	cls.method(sigs::isFalse, otNo0);
 	cls.method(sigs::isBoolean, otNo0);
+	cls.op(PT_OP_IS_BOOLEAN, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isFloat, otNo0);
+	cls.op(PT_OP_IS_FLOAT, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isInteger, otNo0);
+	cls.op(PT_OP_IS_INTEGER, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isString, otNo0);
+	cls.op(PT_OP_IS_STRING, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isNumericString, otNo0);
 	cls.method(sigs::isDecimalIntegerString, otNo0);
 	cls.method(sigs::isNonEmptyString, otNo0);
@@ -3754,6 +3785,7 @@ void pt_register_object_type()
 	cls.method(sigs::getClassStringObjectType, otError0);
 	cls.method(sigs::getObjectTypeOrClassStringObjectType, otThis0);
 	cls.method(sigs::isVoid, otNo0);
+	cls.op(PT_OP_IS_VOID, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isScalar, otNo0);
 
 	cls.method(sigs::looseCompare, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -3797,6 +3829,7 @@ void pt_register_object_type()
 	cls.method(sigs::isCallable, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ot_trinary(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ObjectType::isCallable);
 	});
+	cls.op<PT_OP_IS_CALLABLE, &ObjectType::isCallable>();
 	cls.method(sigs::getCallableParametersAcceptors, [](INTERNAL_FUNCTION_PARAMETERS) {
 		PT_ARGS(1, 1);
 		PT_RETURN_VAL(PT_THIS.getCallableParametersAcceptors());
@@ -3827,6 +3860,7 @@ void pt_register_object_type()
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(PT_THIS.traverse(&fci, &fcc));
 	});
+	cls.op(PT_OP_TRAVERSE, PT_OP_LAMBDA { return pt_op_traverse_with<ObjectType>(self, argv); });
 	cls.method(sigs::traverseSimultaneously, [](INTERNAL_FUNCTION_PARAMETERS) {
 		PT_ARGS(2, 2);
 		PT_RETURN_VAL(PT_THIS.traverseSimultaneously());
@@ -3849,6 +3883,7 @@ void pt_register_object_type()
 		pt_ot_value(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ObjectType::toPhpDocNode);
 	});
 	cls.method<&ObjectType::hasTemplateOrLateResolvableType>(sigs::hasTemplateOrLateResolvableType);
+	cls.op<PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, &ObjectType::hasTemplateOrLateResolvableType>();
 
 	/* the traits, in the twin's `use` order; the class body above wins over
 	 * every name it declares */

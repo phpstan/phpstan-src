@@ -26,7 +26,7 @@
 #define PHPSTANTURBO_REG_H
 
 #include "support.h"
-#include "zv.h"
+#include "TypeOps.h"
 
 #include <cstring>
 #include <initializer_list>
@@ -411,6 +411,11 @@ struct ShadowPlan
 	std::vector<Constant> constants;
 	zend_class_entry **out;
 	zend_class_entry *ce;
+	/* the direct entries registered with op() / traitOp(), per pt_type_op_id
+	 * (NULL = none); the linked table with the inherited entries is built
+	 * at activation (Shadow.cpp) and kept here for the children */
+	pt_type_op_fn opFns[PT_OP_COUNT];
+	const pt_type_ops *ops;
 };
 
 /* declares the builder's properties and constants on a registered or
@@ -566,6 +571,8 @@ struct BoundSignature<R (C::*)(P...)>
 	using Return = R;
 	using Class = C;
 	static constexpr size_t arity = sizeof...(P);
+	template <size_t I>
+	using Param = std::tuple_element_t<I, std::tuple<P...>>;
 };
 
 template <typename R, typename C, typename... P>
@@ -579,6 +586,76 @@ struct BoundSignature<R (*)(P...)>
 	using Return = R;
 	using Class = void;
 	static constexpr size_t arity = sizeof...(P);
+	template <size_t I>
+	using Param = std::tuple_element_t<I, std::tuple<P...>>;
+};
+
+/*
+ * The direct entry (TypeOps.h) of a hot operation, generated from the handle
+ * member the method delegates to: the op's arguments become the member's
+ * parameters (a zval * parameter takes &argv[i], a bool the truthiness of
+ * argv[i], a zend_string * its string, a HashTable * its array), and the
+ * member's result becomes the entry's zv::Val — a PT_TRI_* zend_long through
+ * pt_op_trinary(), a bool with a trailing `bool &` out parameter through
+ * pt_op_bool(). What the hand-written PT_OP_LAMBDA spelled out.
+ */
+template <auto M>
+struct BoundOp
+{
+	using Signature = BoundSignature<decltype(M)>;
+	using Result = typename Signature::Return;
+	static constexpr bool boolOut = std::is_same_v<Result, bool>;
+	static constexpr size_t params = Signature::arity - (boolOut ? 1 : 0);
+
+	template <size_t I>
+	static zend_always_inline typename Signature::template Param<I> argument(zval *argv)
+	{
+		using P = typename Signature::template Param<I>;
+		if constexpr (std::is_same_v<P, zval *>) {
+			return &argv[I];
+		} else if constexpr (std::is_same_v<P, bool>) {
+			return Z_TYPE(argv[I]) == IS_TRUE;
+		} else if constexpr (std::is_same_v<P, zend_string *>) {
+			return Z_STR(argv[I]);
+		} else if constexpr (std::is_same_v<P, HashTable *>) {
+			return Z_ARR(argv[I]);
+		} else {
+			static_assert(std::is_same_v<P, zend_long>, "the direct entry cannot pass this parameter type");
+			return Z_LVAL(argv[I]);
+		}
+	}
+
+	template <typename... A>
+	static zend_always_inline decltype(auto) invoke(zend_object *self, A &&...args)
+	{
+		if constexpr (std::is_void_v<typename Signature::Class>) {
+			return M(std::forward<A>(args)...);
+		} else {
+			return (typename Signature::Class(self).*M)(std::forward<A>(args)...);
+		}
+	}
+
+	template <size_t... I>
+	static zend_always_inline zv::Val run(zend_object *self, zval *argv, std::index_sequence<I...>)
+	{
+		if constexpr (boolOut) {
+			bool out = false;
+			bool ok = invoke(self, argument<I>(argv)..., out);
+			return pt_op_bool(ok, out);
+		} else if constexpr (std::is_same_v<Result, zend_long>) {
+			return pt_op_trinary(invoke(self, argument<I>(argv)...));
+		} else {
+			static_assert(std::is_same_v<Result, zv::Val>, "a direct entry returns zv::Val, a PT_TRI_* zend_long, or bool with a trailing bool & out parameter");
+			return invoke(self, argument<I>(argv)...);
+		}
+	}
+
+	static zv::Val fn(zend_object *self, zend_class_entry *scope, uint32_t argc, zval *argv)
+	{
+		(void) scope;
+		(void) argc;
+		return run(self, argv, std::make_index_sequence<params>{});
+	}
 };
 
 /*
@@ -790,14 +867,73 @@ public:
 	 */
 	Class &traitMethod(const char *methodName, uint32_t flags, uint32_t requiredArgs, std::initializer_list<Arg> args, zif_handler handler, const Arg *returns = NULL)
 	{
-		if (hasMethod(methodName)) return *this;
+		lastTraitMethodAdded = !hasMethod(methodName);
+		if (!lastTraitMethodAdded) return *this;
 		return method(methodName, flags, requiredArgs, args, handler, returns);
 	}
 
 	Class &traitMethod(const Sig &sig, zif_handler handler)
 	{
-		if (hasMethod(sig.name)) return *this;
+		lastTraitMethodAdded = !hasMethod(sig.name);
+		if (!lastTraitMethodAdded) return *this;
 		return method(sig, handler);
+	}
+
+	/*
+	 * The direct entry of a hot operation (TypeOps.h) — declared right next
+	 * to the cls.method(...) line of the method it mirrors, delegating to
+	 * the same handle-class member. The class must declare the method
+	 * itself (an inherited method's entry is inherited with it at
+	 * activation; registering an entry for a method the class does not
+	 * declare would shadow the parent's body).
+	 */
+	/* the direct entry generated from the handle member the op's method
+	 * delegates to (detail::BoundOp) */
+	template <pt_type_op_id Op, auto M>
+	Class &op()
+	{
+		checkOpArity(Op, detail::BoundOp<M>::params);
+		return op(Op, &detail::BoundOp<M>::fn);
+	}
+
+	template <pt_type_op_id Op, auto M>
+	Class &traitOp()
+	{
+		checkOpArity(Op, detail::BoundOp<M>::params);
+		return traitOp(Op, &detail::BoundOp<M>::fn);
+	}
+
+	/* a generated entry whose member takes fewer or more arguments than the
+	 * op passes would silently read the wrong argv slots */
+	/* the member may take fewer parameters than the op passes — it ignores
+	 * the trailing arguments, as the hand-written lambda did — but never
+	 * more: those would read past the argv the op gives it */
+	void checkOpArity(pt_type_op_id op, size_t params) const
+	{
+		if (UNEXPECTED(params > pt_type_op_infos[op].argc)) {
+			zend_error_noreturn(E_CORE_ERROR, "phpstan_turbo: %s's direct entry for %s() takes %u arguments, the op passes only %u", name, pt_type_op_infos[op].lcname, (unsigned) params, (unsigned) pt_type_op_infos[op].argc);
+		}
+	}
+
+	Class &op(pt_type_op_id op, pt_type_op_fn fn)
+	{
+		if (UNEXPECTED(!hasMethod(pt_type_op_infos[op].lcname))) {
+			zend_error_noreturn(E_CORE_ERROR, "phpstan_turbo: %s registers a direct entry for %s() without declaring the method", name, pt_type_op_infos[op].lcname);
+		}
+		opFns[op] = fn;
+		return *this;
+	}
+
+	/* the direct entry of the trait method registered by the immediately
+	 * preceding traitMethod() call — recorded only when that call added
+	 * the method (the class body, or an earlier trait, wins otherwise,
+	 * together with its own entry) */
+	Class &traitOp(pt_type_op_id op, pt_type_op_fn fn)
+	{
+		if (lastTraitMethodAdded) {
+			opFns[op] = fn;
+		}
+		return *this;
 	}
 
 	/* declaration order defines the OBJ_PROP_NUM slot, as with the macros */
@@ -1034,6 +1170,8 @@ public:
 		plan.constants = std::move(constants);
 		plan.out = out;
 		plan.ce = NULL;
+		memcpy(plan.opFns, opFns, sizeof(opFns));
+		plan.ops = NULL;
 		pt_shadow_plan_add(std::move(plan));
 	}
 
@@ -1060,6 +1198,8 @@ private:
 	std::vector<zend_function_entry> entries;
 	std::vector<Property> properties;
 	std::vector<Constant> constants;
+	pt_type_op_fn opFns[PT_OP_COUNT] = {};
+	bool lastTraitMethodAdded = false;
 };
 
 } // namespace reg

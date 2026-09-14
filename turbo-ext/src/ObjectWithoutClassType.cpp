@@ -125,7 +125,7 @@ public:
 		if (compound) {
 			zval selfZv;
 			ZVAL_OBJ(&selfZv, self);
-			return pt_type_call(Z_OBJ_P(type), PT_LC("issubtypeof"), 1, &selfZv);
+			return pt_type_op(Z_OBJ_P(type), PT_OP_IS_SUB_TYPE_OF, 1, &selfZv);
 		}
 
 		if (instanceof_function(Z_OBJCE_P(type), pt_ce_object_without_class_type)) {
@@ -135,7 +135,7 @@ public:
 			zval *typeSubtracted = subtractedTypeOf(Z_OBJ_P(type));
 			if (UNEXPECTED(typeSubtracted == NULL)) return zv::Val();
 			if (Z_TYPE_P(typeSubtracted) != IS_NULL) {
-				zv::Val isSuperType = pt_type_call(Z_OBJ_P(typeSubtracted), PT_LC("issupertypeof"), 1, subtracted);
+				zv::Val isSuperType = pt_type_op(Z_OBJ_P(typeSubtracted), PT_OP_IS_SUPER_TYPE_OF, 1, subtracted);
 				if (UNEXPECTED(isSuperType.isUndef())) return zv::Val();
 				zend_long value = pt_type_result_trinary(isSuperType.raw());
 				if (UNEXPECTED(value < 0)) return zv::Val();
@@ -155,7 +155,7 @@ public:
 		if (Z_TYPE_P(subtracted) == IS_NULL) return pt_type_is_super_type_of_result(PT_TRI_YES);
 
 		/* $this->subtractedType->isSuperTypeOf($type)->negate() */
-		zv::Val isSuperType = pt_type_call(Z_OBJ_P(subtracted), PT_LC("issupertypeof"), 1, type);
+		zv::Val isSuperType = pt_type_op(Z_OBJ_P(subtracted), PT_OP_IS_SUPER_TYPE_OF, 1, type);
 		if (UNEXPECTED(isSuperType.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(isSuperType.raw()).isObject())) {
 			zend_type_error("phpstan_turbo: isSuperTypeOf() must return %s", ZSTR_VAL(pt_ce_is_super_type_of_result->name));
@@ -184,7 +184,7 @@ public:
 			out = false;
 			return true;
 		}
-		return pt_type_call_bool(Z_OBJ_P(subtracted), PT_LC("equals"), 1, typeSubtracted, out);
+		return pt_type_op_bool(Z_OBJ_P(subtracted), PT_OP_EQUALS, 1, typeSubtracted, out);
 	}
 
 	/* $level->handle(): 'object' for the type-only and value levels, with
@@ -318,7 +318,7 @@ private:
 	/* $type->getObjectClassNames() !== []; false = pending exception */
 	[[nodiscard]] static bool objectClassNamesNotEmpty(zval *type, bool &out)
 	{
-		zv::Val classNames = pt_type_call(Z_OBJ_P(type), PT_LC("getobjectclassnames"), 0, NULL);
+		zv::Val classNames = pt_type_op(Z_OBJ_P(type), PT_OP_GET_OBJECT_CLASS_NAMES, 0, NULL);
 		if (UNEXPECTED(classNames.isUndef())) return false;
 		out = !zv::Ref(classNames.raw()).isArray() || zv::ArrRef(classNames.raw()).size() != 0;
 		return true;
@@ -328,7 +328,7 @@ private:
 	 * -1 = pending exception */
 	[[nodiscard]] zend_long thisIsSuperTypeOf(zval *type) const
 	{
-		zv::Val result = isExact() ? isSuperTypeOf(type) : pt_type_call(self, PT_LC("issupertypeof"), 1, type);
+		zv::Val result = isExact() ? isSuperTypeOf(type) : pt_type_op(self, PT_OP_IS_SUPER_TYPE_OF, 1, type);
 		if (UNEXPECTED(result.isUndef())) return -1;
 		return pt_type_result_trinary(result.raw());
 	}
@@ -368,17 +368,22 @@ void pt_register_object_without_class_type()
 
 	cls.method(sigs::getReferencedClasses, owctEmptyArray0);
 	cls.method(sigs::getObjectClassNames, owctEmptyArray0);
+	cls.op(PT_OP_GET_OBJECT_CLASS_NAMES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getObjectClassReflections, owctEmptyArray0);
 
 	cls.method<&ObjectWithoutClassType::getClassStringType>(sigs::getClassStringType);
 
 	cls.method<&ObjectWithoutClassType::accepts, zp::Obj, zp::Bool>(sigs::accepts);
+	cls.op(PT_OP_ACCEPTS, PT_OP_LAMBDA { return ObjectWithoutClassType(self).accepts(argv, (Z_TYPE(argv[1]) == IS_TRUE)); });
 
 	cls.method<&ObjectWithoutClassType::isSuperTypeOf, zp::Obj>(sigs::isSuperTypeOf);
+	cls.op<PT_OP_IS_SUPER_TYPE_OF, &ObjectWithoutClassType::isSuperTypeOf>();
 
 	cls.method<&ObjectWithoutClassType::equals, zp::Obj>(sigs::equals);
+	cls.op<PT_OP_EQUALS, &ObjectWithoutClassType::equals>();
 
 	cls.method<&ObjectWithoutClassType::describe, zp::Obj>(sigs::describe);
+	cls.op<PT_OP_DESCRIBE, &ObjectWithoutClassType::describe>();
 
 	cls.method(sigs::getEnumCases, owctEmptyArray0);
 	cls.method(sigs::getEnumCaseObject, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -407,6 +412,7 @@ void pt_register_object_without_class_type()
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(PT_THIS.traverse(&fci, &fcc));
 	});
+	cls.op(PT_OP_TRAVERSE, PT_OP_LAMBDA { return pt_op_traverse_with<ObjectWithoutClassType>(self, argv); });
 
 	cls.method(sigs::traverseSimultaneously, [](INTERNAL_FUNCTION_PARAMETERS) {
 		PT_ARGS(2, 2);
@@ -425,6 +431,7 @@ void pt_register_object_without_class_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_FALSE;
 	});
+	cls.op(PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, PT_OP_LAMBDA { return zv::Val::boolean(false); });
 
 	/* the traits, in the twin's `use` order (ObjectTypeTrait brings the
 	 * MaybeCallable, MaybeIterable, MaybeOffsetAccessible, NonArray and

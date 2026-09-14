@@ -290,9 +290,9 @@ public:
 			if (isTemplate) {
 				zv::Val bound = pt_type_call(Z_OBJ_P(genericType.raw()), PT_LC("getbound"), 0, NULL);
 				if (UNEXPECTED(bound.isUndef())) return zv::Val();
-				isSuperType = pt_type_call(Z_OBJ_P(bound.raw()), PT_LC("issupertypeof"), 1, objectType);
+				isSuperType = pt_type_op(Z_OBJ_P(bound.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, objectType);
 			} else {
-				isSuperType = pt_type_call(Z_OBJ_P(genericType.raw()), PT_LC("issupertypeof"), 1, objectType);
+				isSuperType = pt_type_op(Z_OBJ_P(genericType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, objectType);
 			}
 			if (UNEXPECTED(isSuperType.isUndef())) return zv::Val();
 			zend_long verdict = pt_type_result_trinary(isSuperType.raw());
@@ -325,7 +325,7 @@ public:
 		if (compound) {
 			zval selfZv;
 			ZVAL_OBJ(&selfZv, self);
-			return pt_type_call(Z_OBJ_P(type), PT_LC("issubtypeof"), 1, &selfZv);
+			return pt_type_op(Z_OBJ_P(type), PT_OP_IS_SUB_TYPE_OF, 1, &selfZv);
 		}
 
 		return pt_type_is_super_type_of_result(PT_TRI_NO);
@@ -512,7 +512,7 @@ public:
 	{
 		zend_string *v = value();
 		if (UNEXPECTED(v == NULL)) return zv::Val();
-		zv::Val classNamesRaw = pt_type_call(Z_OBJ_P(objectOrClassType), PT_LC("getobjectclassnames"), 0, NULL);
+		zv::Val classNamesRaw = pt_type_op(Z_OBJ_P(objectOrClassType), PT_OP_GET_OBJECT_CLASS_NAMES, 0, NULL);
 		if (UNEXPECTED(classNamesRaw.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(classNamesRaw.raw()).isArray())) {
 			zend_type_error("phpstan_turbo: %s::getObjectClassNames() must return array", ZSTR_VAL(Z_OBJCE_P(objectOrClassType)->name));
@@ -606,7 +606,7 @@ public:
 				 * $objectOrClassType->isSuperTypeOf($this)->yes() */
 				zval selfZv;
 				ZVAL_OBJ(&selfZv, self);
-				zv::Val isSuperType = pt_type_call(Z_OBJ_P(objectOrClassType), PT_LC("issupertypeof"), 1, &selfZv);
+				zv::Val isSuperType = pt_type_op(Z_OBJ_P(objectOrClassType), PT_OP_IS_SUPER_TYPE_OF, 1, &selfZv);
 				if (UNEXPECTED(isSuperType.isUndef())) return zv::Val();
 				zend_long verdict = pt_type_result_trinary(isSuperType.raw());
 				if (UNEXPECTED(verdict < 0)) return zv::Val();
@@ -762,12 +762,12 @@ public:
 	 * = pending exception */
 	zv::Val hasOffsetValueType(zval *offsetType) const
 	{
-		zend_long isInteger = pt_type_call_trinary(Z_OBJ_P(offsetType), PT_LC("isinteger"), 0, NULL);
+		zend_long isInteger = pt_type_op_trinary(Z_OBJ_P(offsetType), PT_OP_IS_INTEGER, 0, NULL);
 		if (UNEXPECTED(isInteger < 0)) return zv::Val();
 		if (isInteger == PT_TRI_YES) {
 			zv::Val strLenType = offsetRangeType();
 			if (UNEXPECTED(strLenType.isUndef())) return zv::Val();
-			zv::Val isSuperType = pt_type_call(Z_OBJ_P(strLenType.raw()), PT_LC("issupertypeof"), 1, offsetType);
+			zv::Val isSuperType = pt_type_op(Z_OBJ_P(strLenType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, offsetType);
 			if (UNEXPECTED(isSuperType.isUndef())) return zv::Val();
 			/* ->result */
 			zend_long verdict = pt_type_result_trinary(isSuperType.raw());
@@ -786,7 +786,7 @@ public:
 	 * pending exception */
 	zv::Val getOffsetValueType(zval *offsetType) const
 	{
-		zend_long isInteger = pt_type_call_trinary(Z_OBJ_P(offsetType), PT_LC("isinteger"), 0, NULL);
+		zend_long isInteger = pt_type_op_trinary(Z_OBJ_P(offsetType), PT_OP_IS_INTEGER, 0, NULL);
 		if (UNEXPECTED(isInteger < 0)) return zv::Val();
 		if (isInteger == PT_TRI_YES) {
 			zend_string *v = value();
@@ -1178,7 +1178,7 @@ private:
 	 * exception */
 	[[nodiscard]] static zend_long superTypeVerdict(zval *range, zval *offsetType)
 	{
-		zv::Val isSuperType = pt_type_call(Z_OBJ_P(range), PT_LC("issupertypeof"), 1, offsetType);
+		zv::Val isSuperType = pt_type_op(Z_OBJ_P(range), PT_OP_IS_SUPER_TYPE_OF, 1, offsetType);
 		if (UNEXPECTED(isSuperType.isUndef())) return -1;
 		return pt_type_result_trinary(isSuperType.raw());
 	}
@@ -1367,13 +1367,16 @@ void pt_register_constant_string_type()
 	cls.method<&ConstantStringType::getObjectTypeOrClassStringObjectType>(sigs::getObjectTypeOrClassStringObjectType);
 
 	cls.method<&ConstantStringType::describe, zp::Obj>(sigs::describe);
+	cls.op<PT_OP_DESCRIBE, &ConstantStringType::describe>();
 
 	cls.method<&ConstantStringType::isSuperTypeOf, zp::Obj>(sigs::isSuperTypeOf);
+	cls.op<PT_OP_IS_SUPER_TYPE_OF, &ConstantStringType::isSuperTypeOf>();
 
 	cls.method(sigs::isCallable, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		PT_RETURN_TRINARY_OR_THROW(PT_THIS.isCallable());
 	});
+	cls.op<PT_OP_IS_CALLABLE, &ConstantStringType::isCallable>();
 
 	cls.method<&ConstantStringType::getCallableParametersAcceptors, zp::Obj>(sigs::getCallableParametersAcceptors);
 
@@ -1392,11 +1395,13 @@ void pt_register_constant_string_type()
 	cls.method<&ConstantStringType::toFloat>(sigs::toFloat);
 
 	cls.method<&ConstantStringType::toArrayKey>(sigs::toArrayKey);
+	cls.op<PT_OP_TO_ARRAY_KEY, &ConstantStringType::toArrayKey>();
 
 	cls.method(sigs::isString, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_COPY(pt_trinary_singleton(ConstantStringType::isString()));
 	});
+	cls.op(PT_OP_IS_STRING, PT_OP_LAMBDA { return pt_op_trinary(ConstantStringType::isString()); });
 
 	cls.method(sigs::isNumericString, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();

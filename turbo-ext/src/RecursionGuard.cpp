@@ -51,7 +51,7 @@ public:
 	{
 		zval *level = pt_verbosity_level_singleton(PT_VERBOSITY_LEVEL_VALUE);
 		if (UNEXPECTED(level == NULL)) return zv::Val();
-		zv::Val key = pt_type_call(Z_OBJ_P(type), PT_LC("describe"), 1, level);
+		zv::Val key = pt_type_op(Z_OBJ_P(type), PT_OP_DESCRIBE, 1, level);
 		if (UNEXPECTED(key.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(key.raw()).isString())) {
 			zend_type_error("phpstan_turbo: describe() must return string");

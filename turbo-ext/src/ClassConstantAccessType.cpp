@@ -96,7 +96,7 @@ public:
 			zend_type_error("phpstan_turbo: resolve() must return %s", ptcls::type);
 			return zv::Val();
 		}
-		return pt_type_call(Z_OBJ_P(resolved.raw()), PT_LC("describe"), 1, level);
+		return pt_type_op(Z_OBJ_P(resolved.raw()), PT_OP_DESCRIBE, 1, level);
 	}
 
 	/* !TypeUtils::containsTemplateType($this->type); false = pending exception */

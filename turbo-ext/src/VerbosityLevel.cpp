@@ -193,7 +193,7 @@ static void moreVerboseCallback(zval *state0, zval *state1, uint32_t argc, zval 
 		RETURN_COPY(type);
 	}
 
-	zend_long isCallable = pt_type_call_trinary(object, PT_LC("iscallable"), 0, NULL);
+	zend_long isCallable = pt_type_op_trinary(object, PT_OP_IS_CALLABLE, 0, NULL);
 	if (UNEXPECTED(isCallable < 0)) return;
 	if (isCallable == PT_TRI_YES) {
 		ZVAL_TRUE(state0);
@@ -210,7 +210,7 @@ static void moreVerboseCallback(zval *state0, zval *state1, uint32_t argc, zval 
 		return;
 	}
 
-	zend_long isConstantArray = pt_type_call_trinary(object, PT_LC("isconstantarray"), 0, NULL);
+	zend_long isConstantArray = pt_type_op_trinary(object, PT_OP_IS_CONSTANT_ARRAY, 0, NULL);
 	if (UNEXPECTED(isConstantArray < 0)) return;
 	if (isConstantArray == PT_TRI_YES) {
 		ZVAL_TRUE(state0);
@@ -222,11 +222,11 @@ static void moreVerboseCallback(zval *state0, zval *state1, uint32_t argc, zval 
 	zend_long isConstantValue = pt_type_call_trinary(object, PT_LC("isconstantvalue"), 0, NULL);
 	if (UNEXPECTED(isConstantValue < 0)) return;
 	if (isConstantValue == PT_TRI_YES) {
-		zend_long isNull = pt_type_call_trinary(object, PT_LC("isnull"), 0, NULL);
+		zend_long isNull = pt_type_op_trinary(object, PT_OP_IS_NULL, 0, NULL);
 		if (UNEXPECTED(isNull < 0)) return;
 		if (isNull == PT_TRI_NO) {
 			ZVAL_TRUE(state0);
-			zend_long isArray = pt_type_call_trinary(object, PT_LC("isarray"), 0, NULL);
+			zend_long isArray = pt_type_op_trinary(object, PT_OP_IS_ARRAY, 0, NULL);
 			if (UNEXPECTED(isArray < 0)) return;
 			if (isArray != PT_TRI_NO) {
 				(void) pt_type_traverser_traverse(return_value, traverse, type);

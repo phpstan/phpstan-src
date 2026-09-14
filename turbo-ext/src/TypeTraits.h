@@ -1134,6 +1134,15 @@ zend_always_inline zv::Val pt_val_of()
 	return zv::Val::adopt(result);
 }
 
+/* a type op's result read as a bool; false = pending exception */
+[[nodiscard]] static zend_always_inline bool pt_type_op_bool(zend_object *object, pt_type_op_id op, uint32_t argc, zval *argv, bool &out)
+{
+	zv::Val result = pt_type_op(object, op, argc, argv);
+	if (UNEXPECTED(result.isUndef())) return false;
+	out = zend_is_true(result.raw());
+	return true;
+}
+
 /* ->toAcceptsResult() of an isSubTypeOf() result, the result checked to be
  * an object as the Type interface's return type does; UNDEF = pending exception */
 inline zv::Val pt_type_sub_type_to_accepts_result(zv::Val result)
@@ -1158,7 +1167,7 @@ inline bool pt_type_is_union_or_intersection(zval *type, bool &out)
  * -1 = pending exception */
 [[nodiscard]] inline zend_long pt_type_string_has_offset_value_type(zval *offsetType)
 {
-	zend_long isInteger = pt_type_call_trinary(Z_OBJ_P(offsetType), PT_LC("isinteger"), 0, NULL);
+	zend_long isInteger = pt_type_op_trinary(Z_OBJ_P(offsetType), PT_OP_IS_INTEGER, 0, NULL);
 	if (UNEXPECTED(isInteger < 0)) return -1;
 	return isInteger < PT_TRI_MAYBE ? isInteger : PT_TRI_MAYBE;
 }
@@ -1278,6 +1287,44 @@ zv::Val pt_type_utils_get_integer_ranges(zval *type);
 /* $this->resolve() of a class using LateResolvableTypeTrait: `$this->result
  * ??= $this->getResult()`, the $result slot the class (scope) declares,
  * getResult() through the object's class entry; UNDEF = pending exception */
+
+/* }}} */
+
+/* merged from the parallel port branch */
+/* {{{ direct dispatch (TypeOps.h): the callables native code hands around
+ * — the PHPStanTurbo\NativeCallback and PHPStanTurbo\ObjectTypeCallback
+ * holders' __invoke() and TypeTraverser::mapInternal() /
+ * traverseInternal() — entered without a frame by pt_call_fci() and
+ * pt_type_call_callable() when a resolved callable is one of them */
+
+/* the handlers, for identifying a resolved callable (a Closure over one
+ * carries the same handler in its function copy) */
+zif_handler pt_native_callback_invoke_handler();
+zif_handler pt_object_type_callback_invoke_handler(); /* ObjectType.cpp */
+zif_handler pt_type_traverser_map_internal_handler(); /* TypeTraverser.cpp */
+zif_handler pt_type_traverser_traverse_internal_handler();
+
+/* the bodies: __invoke(...$args) of a holder (*retval as the engine would
+ * deliver it — NULL when the body sets none; false = pending exception,
+ * *retval released), and mapInternal($type) / traverseInternal($type) of
+ * a TypeTraverser instance (UNDEF = pending exception) */
+[[nodiscard]] bool pt_native_callback_invoke(zend_object *holder, uint32_t argc, zval *argv, zval *retval);
+zv::Val pt_object_type_callback_invoke(zend_object *holder);
+zv::Val pt_type_traverser_map_internal(zend_object *traverser, zval *type);
+zv::Val pt_type_traverser_traverse_internal(zend_object *traverser, zval *type);
+
+/* the holders' class entries, for identifying a Closure over one of their
+ * methods: zend_create_closure() replaces the handler of an internal
+ * function's copy by its own trampoline, so a closure is recognised by the
+ * copy's scope and name, a plain callable by its handler */
+zend_class_entry *pt_native_callback_ce();
+zend_class_entry *pt_object_type_callback_ce(); /* ObjectType.cpp */
+
+/* the direct call of a resolved internal callable (its function and bound
+ * object) when it is one of the four; handled = false when it is not
+ * (nothing was called); false with handled = true when the call threw
+ * (*retval released) */
+bool pt_direct_invoke(const zend_function *fn, zend_object *object, uint32_t argc, zval *argv, zval *retval, bool &handled);
 
 /* }}} */
 

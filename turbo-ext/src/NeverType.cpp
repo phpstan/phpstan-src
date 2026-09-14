@@ -102,7 +102,7 @@ public:
 	 * pending exception */
 	zv::Val isAcceptedBy(zval *acceptingType) const
 	{
-		zv::Val result = isExact() ? isSubTypeOf() : pt_type_call(self, PT_LC("issubtypeof"), 1, acceptingType);
+		zv::Val result = isExact() ? isSubTypeOf() : pt_type_op(self, PT_OP_IS_SUB_TYPE_OF, 1, acceptingType);
 		if (UNEXPECTED(result.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(result.raw()).isObject())) {
 			zend_type_error("phpstan_turbo: isSubTypeOf() must return %s", ZSTR_VAL(pt_ce_is_super_type_of_result->name));
@@ -303,7 +303,9 @@ void pt_register_never_type()
 	cls.method(sigs::getReferencedClasses, ntEmptyArray0);
 	cls.method(sigs::getArrays, ntEmptyArray0);
 	cls.method(sigs::getConstantArrays, ntEmptyArray0);
+	cls.op(PT_OP_GET_CONSTANT_ARRAYS, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getObjectClassNames, ntEmptyArray0);
+	cls.op(PT_OP_GET_OBJECT_CLASS_NAMES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getObjectClassReflections, ntEmptyArray0);
 	cls.method(sigs::getConstantStrings, ntEmptyArray0);
 
@@ -311,19 +313,23 @@ void pt_register_never_type()
 		PT_ARGS(2, 2);
 		PT_RETURN_VAL(NeverType::accepts());
 	});
+	cls.op(PT_OP_ACCEPTS, PT_OP_LAMBDA { return NeverType::accepts(); });
 
 	cls.method<&NeverType::isSuperTypeOf, zp::Obj>(sigs::isSuperTypeOf);
+	cls.op(PT_OP_IS_SUPER_TYPE_OF, PT_OP_LAMBDA { return NeverType::isSuperTypeOf(argv); });
 
 	cls.method(sigs::equals, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *type;
 		if (!zp::parse<zp::Obj>(execute_data, type)) RETURN_THROWS();
 		RETURN_BOOL(NeverType::equals(type));
 	});
+	cls.op(PT_OP_EQUALS, PT_OP_LAMBDA { return zv::Val::boolean(NeverType::equals(argv)); });
 
 	cls.method(sigs::isSubTypeOf, [](INTERNAL_FUNCTION_PARAMETERS) {
 		PT_ARGS(1, 1);
 		PT_RETURN_VAL(NeverType::isSubTypeOf());
 	});
+	cls.op(PT_OP_IS_SUB_TYPE_OF, PT_OP_LAMBDA { return NeverType::isSubTypeOf(); });
 
 	cls.method(sigs::isAcceptedBy, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *acceptingType;
@@ -336,6 +342,7 @@ void pt_register_never_type()
 		PT_ARGS(1, 1);
 		RETURN_STRING(NeverType::describe());
 	});
+	cls.op(PT_OP_DESCRIBE, PT_OP_LAMBDA { return pt_op_string(NeverType::describe()); });
 
 	cls.method(sigs::getTemplateType, ntNever2);
 	cls.method(sigs::isObject, ntNo0);
@@ -360,17 +367,23 @@ void pt_register_never_type()
 	cls.method(sigs::getConstant, ntShouldNotHappen1);
 	cls.method(sigs::isIterable, ntYes0);
 	cls.method(sigs::isIterableAtLeastOnce, ntMaybe0);
+	cls.op(PT_OP_IS_ITERABLE_AT_LEAST_ONCE, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_MAYBE); });
 	cls.method(sigs::getArraySize, ntNever0);
 	cls.method(sigs::getIterableKeyType, ntNever0);
+	cls.op(PT_OP_GET_ITERABLE_KEY_TYPE, PT_OP_LAMBDA { return NeverType::never(); });
 	cls.method(sigs::getFirstIterableKeyType, ntNever0);
 	cls.method(sigs::getLastIterableKeyType, ntNever0);
 	cls.method(sigs::getIterableValueType, ntNever0);
+	cls.op(PT_OP_GET_ITERABLE_VALUE_TYPE, PT_OP_LAMBDA { return NeverType::never(); });
 	cls.method(sigs::getFirstIterableValueType, ntNever0);
 	cls.method(sigs::getLastIterableValueType, ntNever0);
 	cls.method(sigs::isArray, ntNo0);
+	cls.op(PT_OP_IS_ARRAY, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isConstantArray, ntNo0);
+	cls.op(PT_OP_IS_CONSTANT_ARRAY, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isOversizedArray, ntNo0);
 	cls.method(sigs::isList, ntNo0);
+	cls.op(PT_OP_IS_LIST, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isOffsetAccessible, ntYes0);
 	cls.method(sigs::isOffsetAccessLegal, ntYes0);
 	cls.method(sigs::hasOffsetValueType, ntYes1);
@@ -411,6 +424,7 @@ void pt_register_never_type()
 	cls.method(sigs::changeKeyCaseArray, ntNever1);
 	cls.method(sigs::filterArrayRemovingFalsey, ntNever0);
 	cls.method(sigs::isCallable, ntNo0);
+	cls.op(PT_OP_IS_CALLABLE, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::getCallableParametersAcceptors, ntShouldNotHappen1);
 	cls.method(sigs::isCloneable, ntYes0);
 	cls.method(sigs::toNumber, ntThis0);
@@ -431,23 +445,32 @@ void pt_register_never_type()
 	cls.method(sigs::toFloat, ntThis0);
 	cls.method(sigs::toArray, ntThis0);
 	cls.method(sigs::toArrayKey, ntThis0);
+	cls.op(PT_OP_TO_ARRAY_KEY, PT_OP_LAMBDA { return pt_op_this(self); });
 	cls.method(sigs::toCoercedArgumentType, ntThis1);
 	cls.method("traverse", reg::Public, 1, { reg::callableArg("cb") }, pt_type_identity_traverse_handler(), &ptret::type);
+	cls.op(PT_OP_TRAVERSE, PT_OP_LAMBDA { return pt_op_traverse_identity(self); });
 	cls.method(sigs::traverseSimultaneously, [](INTERNAL_FUNCTION_PARAMETERS) {
 		PT_ARGS(2, 2);
 		RETURN_OBJ_COPY(Z_OBJ_P(ZEND_THIS));
 	});
 	cls.method(sigs::isNull, ntNo0);
+	cls.op(PT_OP_IS_NULL, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isConstantValue, ntNo0);
 	cls.method(sigs::isConstantScalarValue, ntNo0);
+	cls.op(PT_OP_IS_CONSTANT_SCALAR_VALUE, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::getConstantScalarTypes, ntEmptyArray0);
 	cls.method(sigs::getConstantScalarValues, ntEmptyArray0);
+	cls.op(PT_OP_GET_CONSTANT_SCALAR_VALUES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::isTrue, ntNo0);
 	cls.method(sigs::isFalse, ntNo0);
 	cls.method(sigs::isBoolean, ntNo0);
+	cls.op(PT_OP_IS_BOOLEAN, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isFloat, ntNo0);
+	cls.op(PT_OP_IS_FLOAT, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isInteger, ntNo0);
+	cls.op(PT_OP_IS_INTEGER, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isString, ntNo0);
+	cls.op(PT_OP_IS_STRING, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isNumericString, ntNo0);
 	cls.method(sigs::isDecimalIntegerString, ntNo0);
 	cls.method(sigs::isNonEmptyString, ntNo0);
@@ -459,6 +482,7 @@ void pt_register_never_type()
 	cls.method(sigs::getClassStringObjectType, ntError0);
 	cls.method(sigs::getObjectTypeOrClassStringObjectType, ntError0);
 	cls.method(sigs::isVoid, ntNo0);
+	cls.op(PT_OP_IS_VOID, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isScalar, ntNo0);
 
 	cls.method(sigs::looseCompare, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -480,6 +504,7 @@ void pt_register_never_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_FALSE;
 	});
+	cls.op(PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, PT_OP_LAMBDA { return zv::Val::boolean(false); });
 
 	/* the traits, in the twin's `use` order (UndecidedComparisonCompoundTypeTrait
 	 * brings UndecidedComparisonTypeTrait with it); the class body above wins

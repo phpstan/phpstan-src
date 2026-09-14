@@ -166,7 +166,7 @@ public:
 		if (compound) {
 			zval selfZv;
 			ZVAL_OBJ(&selfZv, self);
-			return pt_type_call(Z_OBJ_P(type), PT_LC("issubtypeof"), 1, &selfZv);
+			return pt_type_op(Z_OBJ_P(type), PT_OP_IS_SUB_TYPE_OF, 1, &selfZv);
 		}
 
 		zend_class_entry *typeCe = Z_OBJCE_P(type);
@@ -197,9 +197,9 @@ public:
 			if (isTemplate) {
 				zv::Val bound = pt_type_call(Z_OBJ_P(genericType.raw()), PT_LC("getbound"), 0, NULL);
 				if (UNEXPECTED(bound.isUndef())) return zv::Val();
-				isSuperType = pt_type_call(Z_OBJ_P(bound.raw()), PT_LC("issupertypeof"), 1, objectType.raw());
+				isSuperType = pt_type_op(Z_OBJ_P(bound.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, objectType.raw());
 			} else {
-				isSuperType = pt_type_call(Z_OBJ_P(genericType.raw()), PT_LC("issupertypeof"), 1, objectType.raw());
+				isSuperType = pt_type_op(Z_OBJ_P(genericType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, objectType.raw());
 			}
 			if (UNEXPECTED(isSuperType.isUndef())) return zv::Val();
 
@@ -209,7 +209,7 @@ public:
 				/* $isSuperType->and(IsSuperTypeOfResult::createMaybe()) */
 				zv::Val maybe = pt_type_is_super_type_of_result(PT_TRI_MAYBE);
 				if (UNEXPECTED(maybe.isUndef())) return zv::Val();
-				isSuperType = pt_type_call(Z_OBJ_P(isSuperType.raw()), PT_LC("and"), 1, maybe.raw());
+				isSuperType = pt_type_op(Z_OBJ_P(isSuperType.raw()), PT_OP_AND, 1, maybe.raw());
 			}
 
 			return isSuperType;
@@ -364,7 +364,7 @@ public:
 				zv::Val generic = thisGenericType();
 				if (UNEXPECTED(generic.isUndef())) return zv::Val();
 
-				zv::Val genericObjectClassNames = pt_type_call(Z_OBJ_P(generic.raw()), PT_LC("getobjectclassnames"), 0, NULL);
+				zv::Val genericObjectClassNames = pt_type_op(Z_OBJ_P(generic.raw()), PT_OP_GET_OBJECT_CLASS_NAMES, 0, NULL);
 				if (UNEXPECTED(genericObjectClassNames.isUndef())) return zv::Val();
 				if (UNEXPECTED(!zv::Ref(genericObjectClassNames.raw()).isArray())) {
 					zend_type_error("phpstan_turbo: %s::getObjectClassNames() must return array", ZSTR_VAL(Z_OBJCE_P(generic.raw())->name));
@@ -406,7 +406,7 @@ public:
 							if (UNEXPECTED(remainingType.isUndef())) return zv::Val();
 							if (zv::Ref(remainingType.raw()).instanceOf(pt_ce_never_type)) return pt_type_new_never_type();
 
-							zv::Val equal = pt_type_call(Z_OBJ_P(remainingType.raw()), PT_LC("equals"), 1, generic.raw());
+							zv::Val equal = pt_type_op(Z_OBJ_P(remainingType.raw()), PT_OP_EQUALS, 1, generic.raw());
 							if (UNEXPECTED(equal.isUndef())) return zv::Val();
 							if (!zend_is_true(equal.raw())) return create(remainingType.raw());
 						}
@@ -560,10 +560,13 @@ void pt_register_generic_class_string_type()
 	cls.method<&GenericClassStringType::getObjectTypeOrClassStringObjectType>(sigs::getObjectTypeOrClassStringObjectType);
 
 	cls.method<&GenericClassStringType::describe, zp::Obj>(sigs::describe);
+	cls.op<PT_OP_DESCRIBE, &GenericClassStringType::describe>();
 
 	cls.method<&GenericClassStringType::accepts, zp::Obj, zp::Bool>(sigs::accepts);
+	cls.op(PT_OP_ACCEPTS, PT_OP_LAMBDA { return GenericClassStringType(self).accepts(argv, (Z_TYPE(argv[1]) == IS_TRUE)); });
 
 	cls.method<&GenericClassStringType::isSuperTypeOf, zp::Obj>(sigs::isSuperTypeOf);
+	cls.op<PT_OP_IS_SUPER_TYPE_OF, &GenericClassStringType::isSuperTypeOf>();
 
 	cls.method(sigs::traverse, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_fcall_info fci;
@@ -573,6 +576,7 @@ void pt_register_generic_class_string_type()
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(PT_THIS.traverse(&fci, &fcc));
 	});
+	cls.op(PT_OP_TRAVERSE, PT_OP_LAMBDA { return pt_op_traverse_with<GenericClassStringType>(self, argv); });
 
 	cls.method(sigs::traverseSimultaneously, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *right;
@@ -588,14 +592,17 @@ void pt_register_generic_class_string_type()
 	cls.method<&GenericClassStringType::inferTemplateTypes, zp::Obj>(sigs::inferTemplateTypes);
 
 	cls.method<&GenericClassStringType::getReferencedTemplateTypes, zp::Obj>(sigs::getReferencedTemplateTypes);
+	cls.op<PT_OP_GET_REFERENCED_TEMPLATE_TYPES, &GenericClassStringType::getReferencedTemplateTypes>();
 
 	cls.method<&GenericClassStringType::equals, zp::Obj>(sigs::equals);
+	cls.op<PT_OP_EQUALS, &GenericClassStringType::equals>();
 
 	cls.method<&GenericClassStringType::toPhpDocNode>(sigs::toPhpDocNode);
 
 	cls.method<&GenericClassStringType::tryRemove, zp::Obj>(sigs::tryRemove);
 
 	cls.method<&GenericClassStringType::hasTemplateOrLateResolvableType>(sigs::hasTemplateOrLateResolvableType);
+	cls.op<PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, &GenericClassStringType::hasTemplateOrLateResolvableType>();
 
 	cls.shadow(&pt_ce_generic_class_string_type);
 }

@@ -163,7 +163,7 @@ public:
 			zval *typeSubtracted = subtractedTypeOf(Z_OBJ_P(type));
 			if (UNEXPECTED(typeSubtracted == NULL)) return zv::Val();
 			if (Z_TYPE_P(typeSubtracted) == IS_NULL) return pt_type_is_super_type_of_result(PT_TRI_MAYBE);
-			zv::Val isSuperType = pt_type_call(Z_OBJ_P(typeSubtracted), PT_LC("issupertypeof"), 1, subtracted);
+			zv::Val isSuperType = pt_type_op(Z_OBJ_P(typeSubtracted), PT_OP_IS_SUPER_TYPE_OF, 1, subtracted);
 			if (UNEXPECTED(isSuperType.isUndef())) return zv::Val();
 			zend_long value = pt_type_result_trinary(isSuperType.raw());
 			if (UNEXPECTED(value < 0)) return zv::Val();
@@ -173,7 +173,7 @@ public:
 		}
 
 		/* $this->subtractedType->isSuperTypeOf($type)->negate() */
-		zv::Val isSuperType = pt_type_call(Z_OBJ_P(subtracted), PT_LC("issupertypeof"), 1, type);
+		zv::Val isSuperType = pt_type_op(Z_OBJ_P(subtracted), PT_OP_IS_SUPER_TYPE_OF, 1, type);
 		if (UNEXPECTED(isSuperType.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(isSuperType.raw()).isObject())) {
 			zend_type_error("phpstan_turbo: isSuperTypeOf() must return %s", ZSTR_VAL(pt_ce_is_super_type_of_result->name));
@@ -192,7 +192,7 @@ public:
 			zv::Val subtractedDescription = zv::Val::adopt(subtractedDescriptionRaw);
 			zv::Val typeOnly = pt_type_verbosity_level(PT_VERBOSITY_LEVEL_TYPE_ONLY);
 			if (UNEXPECTED(typeOnly.isUndef())) return zv::Val();
-			zv::Val ownDescription = isExact() ? describe(typeOnly.raw()) : pt_type_call(self, PT_LC("describe"), 1, typeOnly.raw());
+			zv::Val ownDescription = isExact() ? describe(typeOnly.raw()) : pt_type_op(self, PT_OP_DESCRIBE, 1, typeOnly.raw());
 			if (UNEXPECTED(ownDescription.isUndef())) return zv::Val();
 			if (UNEXPECTED(!zv::Ref(subtractedDescription.raw()).isString() || !zv::Ref(ownDescription.raw()).isString())) {
 				zend_type_error("phpstan_turbo: describe() must return string");
@@ -279,9 +279,9 @@ public:
 		bool notArray;
 		if (UNEXPECTED(!thisIsArrayNo(notArray))) return zv::Val();
 		if (notArray) return errorType();
-		zv::Val iterableValueType = isExact() ? withoutSubtractedType() : pt_type_call(self, PT_LC("getiterablevaluetype"), 0, NULL);
+		zv::Val iterableValueType = isExact() ? withoutSubtractedType() : pt_type_op(self, PT_OP_GET_ITERABLE_VALUE_TYPE, 0, NULL);
 		if (UNEXPECTED(iterableValueType.isUndef())) return zv::Val();
-		zv::Val keyType = pt_type_call(Z_OBJ_P(iterableValueType.raw()), PT_LC("toarraykey"), 0, NULL);
+		zv::Val keyType = pt_type_op(Z_OBJ_P(iterableValueType.raw()), PT_OP_TO_ARRAY_KEY, 0, NULL);
 		if (UNEXPECTED(keyType.isUndef())) return zv::Val();
 		return arrayType(std::move(keyType), zv::Val::copyOf(zv::Ref(valueType)));
 	}
@@ -374,7 +374,7 @@ public:
 			out = false;
 			return true;
 		}
-		return pt_type_call_bool(Z_OBJ_P(subtracted), PT_LC("equals"), 1, typeSubtracted, out);
+		return pt_type_op_bool(Z_OBJ_P(subtracted), PT_OP_EQUALS, 1, typeSubtracted, out);
 	}
 
 	/* yes for a MixedType that is no TemplateMixedType, no when the
@@ -403,7 +403,7 @@ public:
 	 * no, yes otherwise; UNDEF = pending exception */
 	zv::Val isAcceptedBy(zval *acceptingType) const
 	{
-		zv::Val isSuperType = isExact() ? isSuperTypeOf(acceptingType) : pt_type_call(self, PT_LC("issupertypeof"), 1, acceptingType);
+		zv::Val isSuperType = isExact() ? isSuperTypeOf(acceptingType) : pt_type_op(self, PT_OP_IS_SUPER_TYPE_OF, 1, acceptingType);
 		if (UNEXPECTED(isSuperType.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(isSuperType.raw()).isObject())) {
 			zend_type_error("phpstan_turbo: isSuperTypeOf() must return %s", ZSTR_VAL(pt_ce_is_super_type_of_result->name));
@@ -830,7 +830,7 @@ public:
 	[[nodiscard]] zend_long isConstantArray() const
 	{
 		if (EXPECTED(isExact())) return isArray();
-		return pt_type_call_trinary(self, PT_LC("isarray"), 0, NULL);
+		return pt_type_op_trinary(self, PT_OP_IS_ARRAY, 0, NULL);
 	}
 
 	/* no when the subtracted type covers every oversized array, maybe
@@ -966,7 +966,7 @@ public:
 		types.push(std::move(classString));
 		zv::Val objectOrClass = pt_type_new_union(std::move(types));
 		if (UNEXPECTED(objectOrClass.isUndef())) return zv::Val();
-		zv::Val isSuperType = isExact() ? isSuperTypeOf(objectOrClass.raw()) : pt_type_call(self, PT_LC("issupertypeof"), 1, objectOrClass.raw());
+		zv::Val isSuperType = isExact() ? isSuperTypeOf(objectOrClass.raw()) : pt_type_op(self, PT_OP_IS_SUPER_TYPE_OF, 1, objectOrClass.raw());
 		if (UNEXPECTED(isSuperType.isUndef())) return zv::Val();
 		zend_long value = pt_type_result_trinary(isSuperType.raw());
 		if (UNEXPECTED(value < 0)) return zv::Val();
@@ -1000,7 +1000,7 @@ public:
 	 * $this->subtract($typeToRemove); UNDEF = pending exception */
 	zv::Val tryRemove(zval *typeToRemove) const
 	{
-		zv::Val isSuperType = isExact() ? isSuperTypeOf(typeToRemove) : pt_type_call(self, PT_LC("issupertypeof"), 1, typeToRemove);
+		zv::Val isSuperType = isExact() ? isSuperTypeOf(typeToRemove) : pt_type_op(self, PT_OP_IS_SUPER_TYPE_OF, 1, typeToRemove);
 		if (UNEXPECTED(isSuperType.isUndef())) return zv::Val();
 		zend_long value = pt_type_result_trinary(isSuperType.raw());
 		if (UNEXPECTED(value < 0)) return zv::Val();
@@ -1056,7 +1056,7 @@ private:
 	/* $a->isSuperTypeOf($b)'s trinary; -1 = pending exception */
 	[[nodiscard]] static zend_long isSuperTypeOfTrinary(zval *a, zval *b)
 	{
-		zv::Val result = pt_type_call(Z_OBJ_P(a), PT_LC("issupertypeof"), 1, b);
+		zv::Val result = pt_type_op(Z_OBJ_P(a), PT_OP_IS_SUPER_TYPE_OF, 1, b);
 		if (UNEXPECTED(result.isUndef())) return -1;
 		return pt_type_result_trinary(result.raw());
 	}
@@ -1151,7 +1151,7 @@ private:
 	 * exception */
 	[[nodiscard]] bool thisIsArrayNo(bool &out) const
 	{
-		zend_long array = isExact() ? isArray() : pt_type_call_trinary(self, PT_LC("isarray"), 0, NULL);
+		zend_long array = isExact() ? isArray() : pt_type_op_trinary(self, PT_OP_IS_ARRAY, 0, NULL);
 		if (UNEXPECTED(array < 0)) return false;
 		out = array == PT_TRI_NO;
 		return true;
@@ -1503,15 +1503,18 @@ void pt_register_mixed_type()
 
 	cls.method(sigs::getReferencedClasses, mtEmptyArray0);
 	cls.method(sigs::getObjectClassNames, mtEmptyArray0);
+	cls.op(PT_OP_GET_OBJECT_CLASS_NAMES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getObjectClassReflections, mtEmptyArray0);
 	cls.method(sigs::getArrays, mtEmptyArray0);
 	cls.method(sigs::getConstantArrays, mtEmptyArray0);
+	cls.op(PT_OP_GET_CONSTANT_ARRAYS, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getConstantStrings, mtEmptyArray0);
 
 	cls.method(sigs::accepts, [](INTERNAL_FUNCTION_PARAMETERS) {
 		PT_ARGS(2, 2);
 		PT_RETURN_VAL(MixedType::accepts());
 	});
+	cls.op(PT_OP_ACCEPTS, PT_OP_LAMBDA { return MixedType::accepts(); });
 
 	cls.method(sigs::isSuperTypeOfMixed, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *type;
@@ -1522,6 +1525,7 @@ void pt_register_mixed_type()
 	});
 
 	cls.method<&MixedType::isSuperTypeOf, zp::Obj>(sigs::isSuperTypeOf);
+	cls.op<PT_OP_IS_SUPER_TYPE_OF, &MixedType::isSuperTypeOf>();
 
 	cls.method(sigs::setOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		PT_ARGS(2, 3);
@@ -1583,6 +1587,7 @@ void pt_register_mixed_type()
 	cls.method(sigs::isCallable, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_mt_trinary(INTERNAL_FUNCTION_PARAM_PASSTHRU, &MixedType::isCallable);
 	});
+	cls.op<PT_OP_IS_CALLABLE, &MixedType::isCallable>();
 
 	cls.method(sigs::getEnumCases, mtEmptyArray0);
 	cls.method(sigs::getEnumCaseObject, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -1596,8 +1601,10 @@ void pt_register_mixed_type()
 	});
 
 	cls.method<&MixedType::equals, zp::Obj>(sigs::equals);
+	cls.op<PT_OP_EQUALS, &MixedType::equals>();
 
 	cls.method<&MixedType::isSubTypeOf, zp::Obj>(sigs::isSubTypeOf);
+	cls.op<PT_OP_IS_SUB_TYPE_OF, &MixedType::isSubTypeOf>();
 
 	cls.method(sigs::isAcceptedBy, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *acceptingType;
@@ -1665,6 +1672,7 @@ void pt_register_mixed_type()
 	cls.method(sigs::isCloneable, mtYes0);
 
 	cls.method<&MixedType::describe, zp::Obj>(sigs::describe);
+	cls.op<PT_OP_DESCRIBE, &MixedType::describe>();
 
 	cls.method<&MixedType::toBoolean>(sigs::toBoolean);
 
@@ -1696,6 +1704,7 @@ void pt_register_mixed_type()
 	cls.method<&MixedType::toArray>(sigs::toArray);
 
 	cls.method<&MixedType::toArrayKey>(sigs::toArrayKey);
+	cls.op(PT_OP_TO_ARRAY_KEY, PT_OP_LAMBDA { return MixedType::toArrayKey(); });
 
 	cls.method(sigs::toCoercedArgumentType, mtThis1);
 
@@ -1706,13 +1715,16 @@ void pt_register_mixed_type()
 	cls.method(sigs::isIterableAtLeastOnce, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_mt_trinary(INTERNAL_FUNCTION_PARAM_PASSTHRU, &MixedType::isIterableAtLeastOnce);
 	});
+	cls.op<PT_OP_IS_ITERABLE_AT_LEAST_ONCE, &MixedType::isIterableAtLeastOnce>();
 
 	cls.method<&MixedType::getArraySize>(sigs::getArraySize);
 
 	cls.method(sigs::getIterableKeyType, mtWithoutSubtractedType0);
+	cls.op<PT_OP_GET_ITERABLE_KEY_TYPE, &MixedType::withoutSubtractedType>();
 	cls.method(sigs::getFirstIterableKeyType, mtWithoutSubtractedType0);
 	cls.method(sigs::getLastIterableKeyType, mtWithoutSubtractedType0);
 	cls.method(sigs::getIterableValueType, mtWithoutSubtractedType0);
+	cls.op<PT_OP_GET_ITERABLE_VALUE_TYPE, &MixedType::withoutSubtractedType>();
 	cls.method(sigs::getFirstIterableValueType, mtWithoutSubtractedType0);
 	cls.method(sigs::getLastIterableValueType, mtWithoutSubtractedType0);
 
@@ -1747,6 +1759,7 @@ void pt_register_mixed_type()
 	});
 
 	cls.method("traverse", reg::Public, 1, { reg::callableArg("cb") }, pt_type_identity_traverse_handler(), &ptret::type);
+	cls.op(PT_OP_TRAVERSE, PT_OP_LAMBDA { return pt_op_traverse_identity(self); });
 	cls.method(sigs::traverseSimultaneously, [](INTERNAL_FUNCTION_PARAMETERS) {
 		PT_ARGS(2, 2);
 		RETURN_OBJ_COPY(Z_OBJ_P(ZEND_THIS));
@@ -1755,22 +1768,28 @@ void pt_register_mixed_type()
 	cls.method(sigs::isArray, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_mt_trinary(INTERNAL_FUNCTION_PARAM_PASSTHRU, &MixedType::isArray);
 	});
+	cls.op<PT_OP_IS_ARRAY, &MixedType::isArray>();
 	cls.method(sigs::isConstantArray, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_mt_trinary(INTERNAL_FUNCTION_PARAM_PASSTHRU, &MixedType::isConstantArray);
 	});
+	cls.op<PT_OP_IS_CONSTANT_ARRAY, &MixedType::isConstantArray>();
 	cls.method(sigs::isOversizedArray, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_mt_trinary(INTERNAL_FUNCTION_PARAM_PASSTHRU, &MixedType::isOversizedArray);
 	});
 	cls.method(sigs::isList, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_mt_trinary(INTERNAL_FUNCTION_PARAM_PASSTHRU, &MixedType::isList);
 	});
+	cls.op<PT_OP_IS_LIST, &MixedType::isList>();
 	cls.method(sigs::isNull, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_mt_trinary(INTERNAL_FUNCTION_PARAM_PASSTHRU, &MixedType::isNull);
 	});
+	cls.op<PT_OP_IS_NULL, &MixedType::isNull>();
 	cls.method(sigs::isConstantValue, mtNo0);
 	cls.method(sigs::isConstantScalarValue, mtNo0);
+	cls.op(PT_OP_IS_CONSTANT_SCALAR_VALUE, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::getConstantScalarTypes, mtEmptyArray0);
 	cls.method(sigs::getConstantScalarValues, mtEmptyArray0);
+	cls.op(PT_OP_GET_CONSTANT_SCALAR_VALUES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::isTrue, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_mt_trinary(INTERNAL_FUNCTION_PARAM_PASSTHRU, &MixedType::isTrue);
 	});
@@ -1780,15 +1799,19 @@ void pt_register_mixed_type()
 	cls.method(sigs::isBoolean, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_mt_trinary(INTERNAL_FUNCTION_PARAM_PASSTHRU, &MixedType::isBoolean);
 	});
+	cls.op<PT_OP_IS_BOOLEAN, &MixedType::isBoolean>();
 	cls.method(sigs::isFloat, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_mt_trinary(INTERNAL_FUNCTION_PARAM_PASSTHRU, &MixedType::isFloat);
 	});
+	cls.op<PT_OP_IS_FLOAT, &MixedType::isFloat>();
 	cls.method(sigs::isInteger, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_mt_trinary(INTERNAL_FUNCTION_PARAM_PASSTHRU, &MixedType::isInteger);
 	});
+	cls.op<PT_OP_IS_INTEGER, &MixedType::isInteger>();
 	cls.method(sigs::isString, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_mt_trinary(INTERNAL_FUNCTION_PARAM_PASSTHRU, &MixedType::isString);
 	});
+	cls.op<PT_OP_IS_STRING, &MixedType::isString>();
 	cls.method(sigs::isNumericString, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_mt_trinary(INTERNAL_FUNCTION_PARAM_PASSTHRU, &MixedType::isNumericString);
 	});
@@ -1821,6 +1844,7 @@ void pt_register_mixed_type()
 	cls.method(sigs::isVoid, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_mt_trinary(INTERNAL_FUNCTION_PARAM_PASSTHRU, &MixedType::isVoid);
 	});
+	cls.op<PT_OP_IS_VOID, &MixedType::isVoid>();
 	cls.method(sigs::isScalar, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_mt_trinary(INTERNAL_FUNCTION_PARAM_PASSTHRU, &MixedType::isScalar);
 	});
@@ -1845,6 +1869,7 @@ void pt_register_mixed_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_FALSE;
 	});
+	cls.op(PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, PT_OP_LAMBDA { return zv::Val::boolean(false); });
 
 	/* the traits, in the twin's `use` order (UndecidedComparisonCompoundTypeTrait
 	 * brings UndecidedComparisonTypeTrait with it); the class body above wins

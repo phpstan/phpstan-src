@@ -294,7 +294,7 @@ private:
 /* $a->isSuperTypeOf($b)'s trinary value; -1 = pending exception */
 [[nodiscard]] static zend_long isSuperTypeOfValue(zval *a, zval *b)
 {
-	zv::Val result = pt_type_call(Z_OBJ_P(a), PT_LC("issupertypeof"), 1, b);
+	zv::Val result = pt_type_op(Z_OBJ_P(a), PT_OP_IS_SUPER_TYPE_OF, 1, b);
 	if (UNEXPECTED(result.isUndef())) return -1;
 	return pt_type_result_trinary(result.raw());
 }
@@ -436,9 +436,9 @@ zv::Val TemplateTypeVariance::isValidVariance(zval *templateType, zval *a, zval 
 		return pt_type_new_ce(pt_ce_is_super_type_of_result, 2, args);
 	}
 
-	if (thisValue == COVARIANT) return pt_type_call(Z_OBJ_P(a), PT_LC("issupertypeof"), 1, b);
+	if (thisValue == COVARIANT) return pt_type_op(Z_OBJ_P(a), PT_OP_IS_SUPER_TYPE_OF, 1, b);
 
-	if (thisValue == CONTRAVARIANT) return pt_type_call(Z_OBJ_P(b), PT_LC("issupertypeof"), 1, a);
+	if (thisValue == CONTRAVARIANT) return pt_type_op(Z_OBJ_P(b), PT_OP_IS_SUPER_TYPE_OF, 1, a);
 
 	if (thisValue == BIVARIANT) return pt_type_is_super_type_of_result(PT_TRI_YES);
 

@@ -269,14 +269,14 @@ public:
 		if (compound) {
 			zval selfZv;
 			ZVAL_OBJ(&selfZv, self);
-			return pt_type_call(Z_OBJ_P(type), PT_LC("issubtypeof"), 1, &selfZv);
+			return pt_type_op(Z_OBJ_P(type), PT_OP_IS_SUB_TYPE_OF, 1, &selfZv);
 		}
 		if (instanceof_function(Z_OBJCE_P(type), pt_ce_generic_static_type)) {
 			zv::Val staticObject = pt_static_type_this_static_object_type(self);
 			if (UNEXPECTED(staticObject.isUndef())) return zv::Val();
 			zv::Val typeStaticObject = pt_type_call(Z_OBJ_P(type), PT_LC("getstaticobjecttype"), 0, NULL);
 			if (UNEXPECTED(typeStaticObject.isUndef())) return zv::Val();
-			return pt_type_call(Z_OBJ_P(staticObject.raw()), PT_LC("issupertypeof"), 1, typeStaticObject.raw());
+			return pt_type_op(Z_OBJ_P(staticObject.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, typeStaticObject.raw());
 		}
 		zv::Val result = pt_static_type_is_super_type_of(self, type);
 		if (UNEXPECTED(result.isUndef())) return zv::Val();
@@ -286,7 +286,7 @@ public:
 		}
 		zv::Val maybe = pt_type_is_super_type_of_result(PT_TRI_MAYBE);
 		if (UNEXPECTED(maybe.isUndef())) return zv::Val();
-		return pt_type_call(Z_OBJ_P(result.raw()), PT_LC("and"), 1, maybe.raw());
+		return pt_type_op(Z_OBJ_P(result.raw()), PT_OP_AND, 1, maybe.raw());
 	}
 
 	/* new self over the mapped subtracted type and types when the callback
@@ -467,7 +467,7 @@ public:
 		zval *ownTypes = types();
 		if (UNEXPECTED(ownTypes == NULL)) return false;
 		for (zv::ArrayEntry entry : zv::ArrRef(ownTypes)) {
-			zv::Val has = pt_type_call(Z_OBJ_P(entry.value().raw()), PT_LC("hastemplateorlateresolvabletype"), 0, NULL);
+			zv::Val has = pt_type_op(Z_OBJ_P(entry.value().raw()), PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, 0, NULL);
 			if (UNEXPECTED(has.isUndef())) return false;
 			if (zend_is_true(has.raw())) {
 				out = true;
@@ -480,7 +480,7 @@ public:
 			out = false;
 			return true;
 		}
-		return pt_type_call_bool(Z_OBJ_P(subtracted), PT_LC("hastemplateorlateresolvabletype"), 0, NULL, out);
+		return pt_type_op_bool(Z_OBJ_P(subtracted), PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, 0, NULL, out);
 	}
 
 private:

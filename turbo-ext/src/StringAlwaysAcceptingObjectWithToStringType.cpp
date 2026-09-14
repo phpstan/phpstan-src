@@ -41,7 +41,7 @@ public:
 		if (compound) {
 			zval thisValue;
 			ZVAL_OBJ(&thisValue, self);
-			return pt_type_call(Z_OBJ_P(type), PT_LC("issubtypeof"), 1, &thisValue);
+			return pt_type_op(Z_OBJ_P(type), PT_OP_IS_SUB_TYPE_OF, 1, &thisValue);
 		}
 
 		zv::Val thatClassNames = objectClassNames(type);
@@ -69,7 +69,7 @@ private:
 	 * pending exception */
 	static zv::Val objectClassNames(zval *type)
 	{
-		zv::Val thatClassNames = pt_type_call(Z_OBJ_P(type), PT_LC("getobjectclassnames"), 0, NULL);
+		zv::Val thatClassNames = pt_type_op(Z_OBJ_P(type), PT_OP_GET_OBJECT_CLASS_NAMES, 0, NULL);
 		if (UNEXPECTED(thatClassNames.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(thatClassNames.raw()).isArray())) {
 			zend_type_error("phpstan_turbo: %s::getObjectClassNames() must return array", ZSTR_VAL(Z_OBJCE_P(type)->name));

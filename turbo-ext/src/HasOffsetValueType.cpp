@@ -122,7 +122,7 @@ public:
 		zval *ownValue = valueType();
 		if (UNEXPECTED(ownValue == NULL)) return zv::Val();
 		zv::Args args{offsetValue.raw(), strictTypes};
-		zv::Val accepts = pt_type_call(Z_OBJ_P(ownValue), PT_LC("accepts"), 2, args);
+		zv::Val accepts = pt_type_op(Z_OBJ_P(ownValue), PT_OP_ACCEPTS, 2, args);
 		if (UNEXPECTED(accepts.isUndef())) return zv::Val();
 		zend_long acceptsValue = pt_type_result_trinary(accepts.raw());
 		if (UNEXPECTED(acceptsValue < 0)) return zv::Val();
@@ -145,7 +145,7 @@ public:
 		if (UNEXPECTED(offsetValue.isUndef())) return zv::Val();
 		zval *ownValue = valueType();
 		if (UNEXPECTED(ownValue == NULL)) return zv::Val();
-		zv::Val valueResult = pt_type_call(Z_OBJ_P(ownValue), PT_LC("issupertypeof"), 1, offsetValue.raw());
+		zv::Val valueResult = pt_type_op(Z_OBJ_P(ownValue), PT_OP_IS_SUPER_TYPE_OF, 1, offsetValue.raw());
 		if (UNEXPECTED(valueResult.isUndef())) return zv::Val();
 		return pt_type_result_and(std::move(result), valueResult.raw());
 	}
@@ -161,7 +161,7 @@ public:
 		if (unionOrIntersection) {
 			zval selfZv;
 			ZVAL_OBJ(&selfZv, self);
-			return pt_type_call(Z_OBJ_P(otherType), PT_LC("issupertypeof"), 1, &selfZv);
+			return pt_type_op(Z_OBJ_P(otherType), PT_OP_IS_SUPER_TYPE_OF, 1, &selfZv);
 		}
 		zend_long value = accessibleAndHasOffset(otherType);
 		if (UNEXPECTED(value < 0)) return zv::Val();
@@ -174,7 +174,7 @@ public:
 		if (UNEXPECTED(offsetValue.isUndef())) return zv::Val();
 		zval *ownValue = valueType();
 		if (UNEXPECTED(ownValue == NULL)) return zv::Val();
-		zv::Val valueResult = pt_type_call(Z_OBJ_P(offsetValue.raw()), PT_LC("issupertypeof"), 1, ownValue);
+		zv::Val valueResult = pt_type_op(Z_OBJ_P(offsetValue.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, ownValue);
 		if (UNEXPECTED(valueResult.isUndef())) return zv::Val();
 		return pt_type_result_and(std::move(result), valueResult.raw());
 	}
@@ -182,7 +182,7 @@ public:
 	/* $this->isSubTypeOf($acceptingType)->toAcceptsResult() */
 	zv::Val isAcceptedBy(zval *acceptingType) const
 	{
-		return pt_type_sub_type_to_accepts_result(isExact() ? isSubTypeOf(acceptingType) : pt_type_call(self, PT_LC("issubtypeof"), 1, acceptingType));
+		return pt_type_sub_type_to_accepts_result(isExact() ? isSubTypeOf(acceptingType) : pt_type_op(self, PT_OP_IS_SUB_TYPE_OF, 1, acceptingType));
 	}
 
 	/* $type instanceof self && $this->offsetType->equals($type->offsetType) && $this->valueType->equals($type->valueType);
@@ -196,7 +196,7 @@ public:
 		zval *offset = offsetType();
 		zval *otherOffset = offset != NULL ? slotOf(Z_OBJ_P(type), slots::offsetType, "offsetType") : NULL;
 		if (UNEXPECTED(otherOffset == NULL)) return false;
-		zv::Val offsetsEqual = pt_type_call(Z_OBJ_P(offset), PT_LC("equals"), 1, otherOffset);
+		zv::Val offsetsEqual = pt_type_op(Z_OBJ_P(offset), PT_OP_EQUALS, 1, otherOffset);
 		if (UNEXPECTED(offsetsEqual.isUndef())) return false;
 		if (!zend_is_true(offsetsEqual.raw())) {
 			out = false;
@@ -205,7 +205,7 @@ public:
 		zval *value = valueType();
 		zval *otherValue = value != NULL ? slotOf(Z_OBJ_P(type), slots::valueType, "valueType") : NULL;
 		if (UNEXPECTED(otherValue == NULL)) return false;
-		return pt_type_call_bool(Z_OBJ_P(value), PT_LC("equals"), 1, otherValue, out);
+		return pt_type_op_bool(Z_OBJ_P(value), PT_OP_EQUALS, 1, otherValue, out);
 	}
 
 	/* sprintf('hasOffsetValue(%s, %s)', $this->offsetType->describe($level), $this->valueType->describe($level)) */
@@ -289,7 +289,7 @@ public:
 			if (UNEXPECTED(offset == NULL)) return zv::Val();
 			zv::Val otherOffset = pt_has_offset_value_type_get_offset_type(Z_OBJ_P(typeToRemove));
 			if (UNEXPECTED(otherOffset.isUndef())) return zv::Val();
-			zv::Val equal = pt_type_call(Z_OBJ_P(offset), PT_LC("equals"), 1, otherOffset.raw());
+			zv::Val equal = pt_type_op(Z_OBJ_P(offset), PT_OP_EQUALS, 1, otherOffset.raw());
 			if (UNEXPECTED(equal.isUndef())) return zv::Val();
 			if (zend_is_true(equal.raw())) {
 				zval *value = valueType();
@@ -311,7 +311,7 @@ public:
 	{
 		zval *value = valueType();
 		if (UNEXPECTED(value == NULL)) return zv::Val();
-		zv::Val arrayKey = pt_type_call(Z_OBJ_P(value), PT_LC("toarraykey"), 0, NULL);
+		zv::Val arrayKey = pt_type_op(Z_OBJ_P(value), PT_OP_TO_ARRAY_KEY, 0, NULL);
 		if (UNEXPECTED(arrayKey.isUndef())) return zv::Val();
 		if (zv::Ref(arrayKey.raw()).isObject() && (instanceof_function(Z_OBJCE_P(arrayKey.raw()), pt_ce_constant_integer_type) || instanceof_function(Z_OBJCE_P(arrayKey.raw()), pt_ce_constant_string_type))) {
 			zval *offset = offsetType();
@@ -396,7 +396,7 @@ public:
 		zend_long covers = offsetIsSuperTypeOf(offsetTypeArg);
 		if (UNEXPECTED(covers < 0)) return zv::Val();
 		if (covers == PT_TRI_YES) {
-			zend_long lengthIsNull = pt_type_call_trinary(Z_OBJ_P(lengthType), PT_LC("isnull"), 0, NULL);
+			zend_long lengthIsNull = pt_type_op_trinary(Z_OBJ_P(lengthType), PT_OP_IS_NULL, 0, NULL);
 			if (UNEXPECTED(lengthIsNull < 0)) return zv::Val();
 			bool lengthFits = lengthIsNull == PT_TRI_YES;
 			if (!lengthFits) {
@@ -486,7 +486,7 @@ public:
 	{
 		zval *offset = offsetType();
 		if (UNEXPECTED(offset == NULL)) return -1;
-		zend_long isString = pt_type_call_trinary(Z_OBJ_P(offset), PT_LC("isstring"), 0, NULL);
+		zend_long isString = pt_type_op_trinary(Z_OBJ_P(offset), PT_OP_IS_STRING, 0, NULL);
 		if (UNEXPECTED(isString < 0)) return -1;
 		return isString == PT_TRI_YES ? PT_TRI_NO : PT_TRI_MAYBE;
 	}
@@ -556,13 +556,13 @@ public:
 		zval *offset = offsetType();
 		zval *value = offset != NULL ? valueType() : NULL; /* one Error at a time, as the twin's first read raises */
 		if (UNEXPECTED(value == NULL)) return false;
-		zv::Val offsetHas = pt_type_call(Z_OBJ_P(offset), PT_LC("hastemplateorlateresolvabletype"), 0, NULL);
+		zv::Val offsetHas = pt_type_op(Z_OBJ_P(offset), PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, 0, NULL);
 		if (UNEXPECTED(offsetHas.isUndef())) return false;
 		if (zend_is_true(offsetHas.raw())) {
 			out = true;
 			return true;
 		}
-		return pt_type_call_bool(Z_OBJ_P(value), PT_LC("hastemplateorlateresolvabletype"), 0, NULL, out);
+		return pt_type_op_bool(Z_OBJ_P(value), PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, 0, NULL, out);
 	}
 
 private:
@@ -577,7 +577,7 @@ private:
 	[[nodiscard]] bool thisEquals(zval *type, bool &out) const
 	{
 		if (EXPECTED(isExact())) return equals(type, out);
-		return pt_type_call_bool(self, PT_LC("equals"), 1, type, out);
+		return pt_type_op_bool(self, PT_OP_EQUALS, 1, type, out);
 	}
 
 	/* TrinaryLogic::and(): the minimum */
@@ -593,7 +593,7 @@ private:
 	/* $type->describe($level) as an owned string; UNDEF = pending exception */
 	static zv::Val describeOf(zval *type, zval *level)
 	{
-		zv::Val description = pt_type_call(Z_OBJ_P(type), PT_LC("describe"), 1, level);
+		zv::Val description = pt_type_op(Z_OBJ_P(type), PT_OP_DESCRIBE, 1, level);
 		if (UNEXPECTED(description.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(description.raw()).isString())) {
 			zend_type_error("phpstan_turbo: describe() must return string");
@@ -644,7 +644,7 @@ private:
 	{
 		zval *offset = offsetType();
 		if (UNEXPECTED(offset == NULL)) return false;
-		return pt_type_call_bool(Z_OBJ_P(type), PT_LC("equals"), 1, offset, out);
+		return pt_type_op_bool(Z_OBJ_P(type), PT_OP_EQUALS, 1, offset, out);
 	}
 
 	/* $arrayKeyType = $offsetType->toArrayKey();
@@ -652,13 +652,13 @@ private:
 	 * false = pending exception */
 	[[nodiscard]] bool arrayKeyMatchesOffset(zval *offsetTypeArg, bool &out) const
 	{
-		zv::Val arrayKey = pt_type_call(Z_OBJ_P(offsetTypeArg), PT_LC("toarraykey"), 0, NULL);
+		zv::Val arrayKey = pt_type_op(Z_OBJ_P(offsetTypeArg), PT_OP_TO_ARRAY_KEY, 0, NULL);
 		if (UNEXPECTED(arrayKey.isUndef())) return false;
 		if (UNEXPECTED(!zv::Ref(arrayKey.raw()).isObject())) {
 			zend_type_error("phpstan_turbo: toArrayKey() must return %s", ptcls::type);
 			return false;
 		}
-		zend_long isConstantScalar = pt_type_call_trinary(Z_OBJ_P(arrayKey.raw()), PT_LC("isconstantscalarvalue"), 0, NULL);
+		zend_long isConstantScalar = pt_type_op_trinary(Z_OBJ_P(arrayKey.raw()), PT_OP_IS_CONSTANT_SCALAR_VALUE, 0, NULL);
 		if (UNEXPECTED(isConstantScalar < 0)) return false;
 		if (isConstantScalar != PT_TRI_YES) {
 			out = false;
@@ -840,17 +840,21 @@ void pt_register_has_offset_value_type()
 
 	cls.method(sigs::getReferencedClasses, hovtEmptyArray0);
 	cls.method(sigs::getObjectClassNames, hovtEmptyArray0);
+	cls.op(PT_OP_GET_OBJECT_CLASS_NAMES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getObjectClassReflections, hovtEmptyArray0);
 
 	cls.method<&HasOffsetValueType::accepts, zp::Obj, zp::Bool>(sigs::accepts);
+	cls.op(PT_OP_ACCEPTS, PT_OP_LAMBDA { return HasOffsetValueType(self).accepts(argv, (Z_TYPE(argv[1]) == IS_TRUE)); });
 
 	cls.method(sigs::isSuperTypeOf, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_hovt_one_type(INTERNAL_FUNCTION_PARAM_PASSTHRU, &HasOffsetValueType::isSuperTypeOf);
 	});
+	cls.op<PT_OP_IS_SUPER_TYPE_OF, &HasOffsetValueType::isSuperTypeOf>();
 
 	cls.method(sigs::isSubTypeOf, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_hovt_one_type(INTERNAL_FUNCTION_PARAM_PASSTHRU, &HasOffsetValueType::isSubTypeOf);
 	});
+	cls.op<PT_OP_IS_SUB_TYPE_OF, &HasOffsetValueType::isSubTypeOf>();
 
 	cls.method(sigs::isAcceptedBy, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *acceptingType;
@@ -860,8 +864,10 @@ void pt_register_has_offset_value_type()
 	});
 
 	cls.method<&HasOffsetValueType::equals, zp::Obj>(sigs::equals);
+	cls.op<PT_OP_EQUALS, &HasOffsetValueType::equals>();
 
 	cls.method<&HasOffsetValueType::describe, zp::Obj>(sigs::describe);
+	cls.op<PT_OP_DESCRIBE, &HasOffsetValueType::describe>();
 
 	cls.method(sigs::isOffsetAccessible, hovtYes0);
 	cls.method(sigs::isOffsetAccessLegal, hovtYes0);
@@ -957,25 +963,34 @@ void pt_register_has_offset_value_type()
 	cls.method<&HasOffsetValueType::filterArrayRemovingFalsey>(sigs::filterArrayRemovingFalsey);
 
 	cls.method(sigs::isIterableAtLeastOnce, hovtYes0);
+	cls.op(PT_OP_IS_ITERABLE_AT_LEAST_ONCE, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_YES); });
 
 	cls.method(sigs::isList, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		PT_RETURN_TRINARY_OR_THROW(PT_THIS.isList());
 	});
+	cls.op<PT_OP_IS_LIST, &HasOffsetValueType::isList>();
 
 	cls.method(sigs::isNull, hovtNo0);
+	cls.op(PT_OP_IS_NULL, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isConstantValue, hovtNo0);
 	cls.method(sigs::isConstantScalarValue, hovtNo0);
+	cls.op(PT_OP_IS_CONSTANT_SCALAR_VALUE, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::getConstantScalarTypes, hovtEmptyArray0);
 	cls.method(sigs::getConstantScalarValues, hovtEmptyArray0);
+	cls.op(PT_OP_GET_CONSTANT_SCALAR_VALUES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::isTrue, hovtNo0);
 	cls.method(sigs::isFalse, hovtNo0);
 	cls.method(sigs::isBoolean, hovtNo0);
+	cls.op(PT_OP_IS_BOOLEAN, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isFloat, hovtNo0);
+	cls.op(PT_OP_IS_FLOAT, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isInteger, hovtNo0);
+	cls.op(PT_OP_IS_INTEGER, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::getClassStringObjectType, hovtObjectWithoutClass0);
 	cls.method(sigs::getObjectTypeOrClassStringObjectType, hovtObjectWithoutClass0);
 	cls.method(sigs::isVoid, hovtNo0);
+	cls.op(PT_OP_IS_VOID, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 
 	cls.method(sigs::looseCompare, [](INTERNAL_FUNCTION_PARAMETERS) {
 		PT_ARGS(2, 2);
@@ -993,6 +1008,7 @@ void pt_register_has_offset_value_type()
 	cls.method(sigs::toString, hovtError0);
 	cls.method(sigs::toArray, hovtMixed0);
 	cls.method(sigs::toArrayKey, hovtError0);
+	cls.op(PT_OP_TO_ARRAY_KEY, PT_OP_LAMBDA { return pt_type_new_error_type(); });
 	cls.method(sigs::toCoercedArgumentType, hovtThis1);
 	cls.method(sigs::getEnumCases, hovtEmptyArray0);
 	cls.method(sigs::getEnumCaseObject, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -1008,6 +1024,7 @@ void pt_register_has_offset_value_type()
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(PT_THIS.traverse(&fci, &fcc));
 	});
+	cls.op(PT_OP_TRAVERSE, PT_OP_LAMBDA { return pt_op_traverse_with<HasOffsetValueType>(self, argv); });
 
 	cls.method(sigs::traverseSimultaneously, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *right;
@@ -1028,6 +1045,7 @@ void pt_register_has_offset_value_type()
 	cls.method<&HasOffsetValueType::toPhpDocNode>(sigs::toPhpDocNode);
 
 	cls.method<&HasOffsetValueType::hasTemplateOrLateResolvableType>(sigs::hasTemplateOrLateResolvableType);
+	cls.op<PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, &HasOffsetValueType::hasTemplateOrLateResolvableType>();
 
 	/* the traits, in the twin's `use` order (UndecidedComparisonCompoundTypeTrait
 	 * brings UndecidedComparisonTypeTrait with it); the class body above wins

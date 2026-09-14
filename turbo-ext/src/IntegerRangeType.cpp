@@ -324,7 +324,7 @@ public:
 	{
 		/* $type instanceof parent */
 		if (instanceof_function(Z_OBJCE_P(type), pt_ce_integer_type)) {
-			zv::Val result = isExact() ? isSuperTypeOf(type) : pt_type_call(self, PT_LC("issupertypeof"), 1, type);
+			zv::Val result = isExact() ? isSuperTypeOf(type) : pt_type_op(self, PT_OP_IS_SUPER_TYPE_OF, 1, type);
 			if (UNEXPECTED(result.isUndef())) return zv::Val();
 			return toAcceptsResult(std::move(result));
 		}
@@ -371,7 +371,7 @@ public:
 		if (compound) {
 			zval selfZv;
 			ZVAL_OBJ(&selfZv, self);
-			return pt_type_call(Z_OBJ_P(type), PT_LC("issubtypeof"), 1, &selfZv);
+			return pt_type_op(Z_OBJ_P(type), PT_OP_IS_SUB_TYPE_OF, 1, &selfZv);
 		}
 
 		return pt_type_is_super_type_of_result(PT_TRI_NO);
@@ -386,7 +386,7 @@ public:
 		ZVAL_OBJ(&selfZv, self);
 
 		/* $otherType instanceof parent */
-		if (instanceof_function(Z_OBJCE_P(otherType), pt_ce_integer_type)) return pt_type_call(Z_OBJ_P(otherType), PT_LC("issupertypeof"), 1, &selfZv);
+		if (instanceof_function(Z_OBJCE_P(otherType), pt_ce_integer_type)) return pt_type_op(Z_OBJ_P(otherType), PT_OP_IS_SUPER_TYPE_OF, 1, &selfZv);
 
 		bool isUnion;
 		if (UNEXPECTED(!pt_union_type_instanceof(otherType, isUnion))) return zv::Val();
@@ -394,7 +394,7 @@ public:
 
 		bool isIntersection;
 		if (UNEXPECTED(!pt_intersection_type_instanceof(otherType, isIntersection))) return zv::Val();
-		if (isIntersection) return pt_type_call(Z_OBJ_P(otherType), PT_LC("issupertypeof"), 1, &selfZv);
+		if (isIntersection) return pt_type_op(Z_OBJ_P(otherType), PT_OP_IS_SUPER_TYPE_OF, 1, &selfZv);
 
 		return pt_type_is_super_type_of_result(PT_TRI_NO);
 	}
@@ -445,7 +445,7 @@ public:
 				zend_type_error("phpstan_turbo: UnionType::getTypes() must return %s instances", ZSTR_VAL(pt_ce_integer_type->name));
 				return zv::Val();
 			}
-			zv::Val result = isExact() ? isSubTypeOf(innerType) : pt_type_call(self, PT_LC("issubtypeof"), 1, innerType);
+			zv::Val result = isExact() ? isSubTypeOf(innerType) : pt_type_op(self, PT_OP_IS_SUB_TYPE_OF, 1, innerType);
 			if (UNEXPECTED(result.isUndef())) return zv::Val();
 			results.push(std::move(result));
 		}
@@ -456,7 +456,7 @@ public:
 	 * pending exception */
 	zv::Val isAcceptedBy(zval *acceptingType) const
 	{
-		zv::Val result = isExact() ? isSubTypeOf(acceptingType) : pt_type_call(self, PT_LC("issubtypeof"), 1, acceptingType);
+		zv::Val result = isExact() ? isSubTypeOf(acceptingType) : pt_type_op(self, PT_OP_IS_SUB_TYPE_OF, 1, acceptingType);
 		if (UNEXPECTED(result.isUndef())) return zv::Val();
 		return toAcceptsResult(std::move(result));
 	}
@@ -1438,14 +1438,18 @@ void pt_register_integer_range_type()
 		if (!zp::parse<zp::Obj>(execute_data, level)) RETURN_THROWS();
 		PT_RETURN_VAL(PT_THIS.describe());
 	});
+	cls.op<PT_OP_DESCRIBE, &IntegerRangeType::describe>();
 
 	cls.method<&IntegerRangeType::shift, zp::Long>(sigs::shift);
 
 	cls.method<&IntegerRangeType::accepts, zp::Obj, zp::Bool>(sigs::accepts);
+	cls.op(PT_OP_ACCEPTS, PT_OP_LAMBDA { return IntegerRangeType(self).accepts(argv, (Z_TYPE(argv[1]) == IS_TRUE)); });
 
 	cls.method<&IntegerRangeType::isSuperTypeOf, zp::Obj>(sigs::isSuperTypeOf);
+	cls.op<PT_OP_IS_SUPER_TYPE_OF, &IntegerRangeType::isSuperTypeOf>();
 
 	cls.method<&IntegerRangeType::isSubTypeOf, zp::Obj>(sigs::isSubTypeOf);
+	cls.op<PT_OP_IS_SUB_TYPE_OF, &IntegerRangeType::isSubTypeOf>();
 
 	cls.method(sigs::isAcceptedBy, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *acceptingType;
@@ -1455,6 +1459,7 @@ void pt_register_integer_range_type()
 	});
 
 	cls.method<&IntegerRangeType::equals, zp::Obj>(sigs::equals);
+	cls.op<PT_OP_EQUALS, &IntegerRangeType::equals>();
 
 	cls.method(sigs::generalize, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *precision;

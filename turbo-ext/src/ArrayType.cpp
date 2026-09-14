@@ -141,7 +141,7 @@ public:
 		if (isBenevolent) {
 			zv::Val level = pt_type_verbosity_level(PT_VERBOSITY_LEVEL_VALUE);
 			if (UNEXPECTED(level.isUndef())) return false;
-			zv::Val description = pt_type_call(Z_OBJ_P(keyType.raw()), PT_LC("describe"), 1, level.raw());
+			zv::Val description = pt_type_op(Z_OBJ_P(keyType.raw()), PT_OP_DESCRIBE, 1, level.raw());
 			if (UNEXPECTED(description.isUndef())) return false;
 			zv::Ref d(description.raw());
 			if (d.stringEquals("(int|string)") || d.stringEquals("(int|non-decimal-int-string)")) {
@@ -258,10 +258,10 @@ public:
 					return zv::Val();
 				}
 				zv::Args args{keyType, strictTypes};
-				zv::Val acceptsKey = pt_type_call(Z_OBJ_P(thisKeyType), PT_LC("accepts"), 2, args);
+				zv::Val acceptsKey = pt_type_op(Z_OBJ_P(thisKeyType), PT_OP_ACCEPTS, 2, args);
 				if (UNEXPECTED(acceptsKey.isUndef())) return zv::Val();
 				ZVAL_COPY_VALUE(&args[0], valueType.deref().raw());
-				zv::Val acceptsValue = pt_type_call(Z_OBJ_P(itemType.raw()), PT_LC("accepts"), 2, args);
+				zv::Val acceptsValue = pt_type_op(Z_OBJ_P(itemType.raw()), PT_OP_ACCEPTS, 2, args);
 				if (UNEXPECTED(acceptsValue.isUndef())) return zv::Val();
 				result = pt_type_result_and(pt_type_result_and(std::move(result), acceptsKey.raw()), acceptsValue.raw());
 				if (UNEXPECTED(result.isUndef())) return zv::Val();
@@ -275,7 +275,7 @@ public:
 			zv::Val thatItemType = pt_array_type_get_item_type(Z_OBJ_P(type));
 			if (UNEXPECTED(thatItemType.isUndef())) return zv::Val();
 			zv::Args args{thatItemType.raw(), strictTypes};
-			zv::Val acceptsItem = pt_type_call(Z_OBJ_P(itemType.raw()), PT_LC("accepts"), 2, args);
+			zv::Val acceptsItem = pt_type_op(Z_OBJ_P(itemType.raw()), PT_OP_ACCEPTS, 2, args);
 			if (UNEXPECTED(acceptsItem.isUndef())) return zv::Val();
 			/* $this->keyType->accepts($type->keyType, $strictTypes) — the
 			 * private slots, on a subclass instance too */
@@ -283,7 +283,7 @@ public:
 			zval *thatKeyType = slotOf(Z_OBJ_P(type), slots::keyType, "keyType");
 			if (UNEXPECTED(thisKeyType == NULL || thatKeyType == NULL)) return zv::Val();
 			ZVAL_COPY_VALUE(&args[0], thatKeyType);
-			zv::Val acceptsKey = pt_type_call(Z_OBJ_P(thisKeyType), PT_LC("accepts"), 2, args);
+			zv::Val acceptsKey = pt_type_op(Z_OBJ_P(thisKeyType), PT_OP_ACCEPTS, 2, args);
 			if (UNEXPECTED(acceptsKey.isUndef())) return zv::Val();
 			return pt_type_result_and(std::move(acceptsItem), acceptsKey.raw());
 		}
@@ -304,23 +304,23 @@ public:
 			if (UNEXPECTED(itemType.isUndef())) return zv::Val();
 			zv::Val thatItemType = callType(Z_OBJ_P(type), PT_LC("getitemtype"), 0, NULL);
 			if (UNEXPECTED(thatItemType.isUndef())) return zv::Val();
-			zv::Val result = pt_type_call(Z_OBJ_P(itemType.raw()), PT_LC("issupertypeof"), 1, thatItemType.raw());
+			zv::Val result = pt_type_op(Z_OBJ_P(itemType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, thatItemType.raw());
 			if (UNEXPECTED(result.isUndef())) return zv::Val();
 			zv::Val keyType = thisGetIterableKeyType();
 			if (UNEXPECTED(keyType.isUndef())) return zv::Val();
 			zv::Val thatKeyType = callType(Z_OBJ_P(type), PT_LC("getiterablekeytype"), 0, NULL);
 			if (UNEXPECTED(thatKeyType.isUndef())) return zv::Val();
-			zv::Val keyResult = pt_type_call(Z_OBJ_P(keyType.raw()), PT_LC("issupertypeof"), 1, thatKeyType.raw());
+			zv::Val keyResult = pt_type_op(Z_OBJ_P(keyType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, thatKeyType.raw());
 			if (UNEXPECTED(keyResult.isUndef())) return zv::Val();
 			result = pt_type_result_and(std::move(result), keyResult.raw());
 			if (UNEXPECTED(result.isUndef())) return zv::Val();
 			zend_long value = pt_type_result_trinary(result.raw());
 			if (UNEXPECTED(value < 0)) return zv::Val();
 			if (value == PT_TRI_NO) {
-				zend_long constantArray = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isconstantarray"), 0, NULL);
+				zend_long constantArray = pt_type_op_trinary(Z_OBJ_P(type), PT_OP_IS_CONSTANT_ARRAY, 0, NULL);
 				if (UNEXPECTED(constantArray < 0)) return zv::Val();
 				if (constantArray == PT_TRI_YES) {
-					zend_long atLeastOnce = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isiterableatleastonce"), 0, NULL);
+					zend_long atLeastOnce = pt_type_op_trinary(Z_OBJ_P(type), PT_OP_IS_ITERABLE_AT_LEAST_ONCE, 0, NULL);
 					if (UNEXPECTED(atLeastOnce < 0)) return zv::Val();
 					if (atLeastOnce != PT_TRI_YES) {
 						/* A possibly-empty constant array admits `[]`, a subtype
@@ -338,7 +338,7 @@ public:
 		if (compound) {
 			zval selfZv;
 			ZVAL_OBJ(&selfZv, self);
-			return pt_type_call(Z_OBJ_P(type), PT_LC("issubtypeof"), 1, &selfZv);
+			return pt_type_op(Z_OBJ_P(type), PT_OP_IS_SUB_TYPE_OF, 1, &selfZv);
 		}
 
 		return pt_type_is_super_type_of_result(PT_TRI_NO);
@@ -356,7 +356,7 @@ public:
 		if (UNEXPECTED(itemType.isUndef())) return false;
 		zv::Val thatValueType = callType(Z_OBJ_P(type), PT_LC("getiterablevaluetype"), 0, NULL);
 		if (UNEXPECTED(thatValueType.isUndef())) return false;
-		zv::Val itemsEqual = pt_type_call(Z_OBJ_P(itemType.raw()), PT_LC("equals"), 1, thatValueType.raw());
+		zv::Val itemsEqual = pt_type_op(Z_OBJ_P(itemType.raw()), PT_OP_EQUALS, 1, thatValueType.raw());
 		if (UNEXPECTED(itemsEqual.isUndef())) return false;
 		if (!zend_is_true(itemsEqual.raw())) {
 			out = false;
@@ -365,7 +365,7 @@ public:
 		zval *thisKeyType = keyType();
 		zval *thatKeyType = slotOf(Z_OBJ_P(type), slots::keyType, "keyType");
 		if (UNEXPECTED(thisKeyType == NULL || thatKeyType == NULL)) return false;
-		return pt_type_call_bool(Z_OBJ_P(thisKeyType), PT_LC("equals"), 1, thatKeyType, out);
+		return pt_type_op_bool(Z_OBJ_P(thisKeyType), PT_OP_EQUALS, 1, thatKeyType, out);
 	}
 
 	/* $level->handle($valueHandler, $valueHandler, $preciseHandler): 'array'
@@ -524,7 +524,7 @@ public:
 	 * otherwise; UNDEF = pending exception */
 	static zv::Val looseCompare(zval *type)
 	{
-		zend_long isInteger = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isinteger"), 0, NULL);
+		zend_long isInteger = pt_type_op_trinary(Z_OBJ_P(type), PT_OP_IS_INTEGER, 0, NULL);
 		if (UNEXPECTED(isInteger < 0)) return zv::Val();
 		if (isInteger == PT_TRI_YES) return constantBoolean(false);
 		return pt_val_of<pt_boolean_type_new>();
@@ -607,7 +607,7 @@ public:
 		if (UNEXPECTED(i == NULL)) return zv::Val();
 		zv::Val offsetType;
 		if (offsetTypeArg == NULL) {
-			zend_long isKeyTypeInteger = pt_type_call_trinary(Z_OBJ_P(k), PT_LC("isinteger"), 0, NULL);
+			zend_long isKeyTypeInteger = pt_type_op_trinary(Z_OBJ_P(k), PT_OP_IS_INTEGER, 0, NULL);
 			if (UNEXPECTED(isKeyTypeInteger < 0)) return zv::Val();
 			if (isKeyTypeInteger == PT_TRI_NO) {
 				offsetType = integerType();
@@ -708,10 +708,10 @@ public:
 		zval *k = keyType();
 		zval *i = k != NULL ? itemType() : NULL; /* one Error at a time, as the twin's first read raises */
 		if (UNEXPECTED(i == NULL)) return zv::Val();
-		zend_long itemIsConstantArray = pt_type_call_trinary(Z_OBJ_P(i), PT_LC("isconstantarray"), 0, NULL);
+		zend_long itemIsConstantArray = pt_type_op_trinary(Z_OBJ_P(i), PT_OP_IS_CONSTANT_ARRAY, 0, NULL);
 		if (UNEXPECTED(itemIsConstantArray < 0)) return zv::Val();
 		if (itemIsConstantArray == PT_TRI_YES) {
-			zend_long valueIsConstantArray = pt_type_call_trinary(Z_OBJ_P(valueType), PT_LC("isconstantarray"), 0, NULL);
+			zend_long valueIsConstantArray = pt_type_op_trinary(Z_OBJ_P(valueType), PT_OP_IS_CONSTANT_ARRAY, 0, NULL);
 			if (UNEXPECTED(valueIsConstantArray < 0)) return zv::Val();
 			if (valueIsConstantArray == PT_TRI_YES) {
 				zv::Val itemConstantArrays = pt_type_call_array(Z_OBJ_P(i), PT_LC("getconstantarrays"), 0, NULL);
@@ -859,7 +859,7 @@ public:
 	{
 		zv::Val itemType = thisGetItemType();
 		if (UNEXPECTED(itemType.isUndef())) return zv::Val();
-		zend_long isInteger = pt_type_call_trinary(Z_OBJ_P(itemType.raw()), PT_LC("isinteger"), 0, NULL);
+		zend_long isInteger = pt_type_op_trinary(Z_OBJ_P(itemType.raw()), PT_OP_IS_INTEGER, 0, NULL);
 		if (UNEXPECTED(isInteger < 0)) return zv::Val();
 		if (isInteger == PT_TRI_NO) {
 			zv::Val stringKeyType = callType(Z_OBJ_P(itemType.raw()), PT_LC("tostring"), 0, NULL);
@@ -867,11 +867,11 @@ public:
 			bool isError;
 			if (UNEXPECTED(!isInstance(stringKeyType.raw(), pt_ce_error_type, isError))) return zv::Val();
 			if (isError) return stringKeyType;
-			zv::Val stringArrayKey = callType(Z_OBJ_P(stringKeyType.raw()), PT_LC("toarraykey"), 0, NULL);
+			zv::Val stringArrayKey = pt_type_op(Z_OBJ_P(stringKeyType.raw()), PT_OP_TO_ARRAY_KEY, 0, NULL);
 			if (UNEXPECTED(stringArrayKey.isUndef())) return zv::Val();
 			return create(stringArrayKey.raw(), valueType);
 		}
-		zv::Val itemArrayKey = callType(Z_OBJ_P(itemType.raw()), PT_LC("toarraykey"), 0, NULL);
+		zv::Val itemArrayKey = pt_type_op(Z_OBJ_P(itemType.raw()), PT_OP_TO_ARRAY_KEY, 0, NULL);
 		if (UNEXPECTED(itemArrayKey.isUndef())) return zv::Val();
 		return create(itemArrayKey.raw(), valueType);
 	}
@@ -1045,7 +1045,7 @@ public:
 			zval *k = keyType();
 			zval *i = k != NULL ? itemType() : NULL;
 			if (UNEXPECTED(i == NULL)) return zv::Val();
-			zend_long keyIsInteger = pt_type_call_trinary(Z_OBJ_P(k), PT_LC("isinteger"), 0, NULL);
+			zend_long keyIsInteger = pt_type_op_trinary(Z_OBJ_P(k), PT_OP_IS_INTEGER, 0, NULL);
 			if (UNEXPECTED(keyIsInteger < 0)) return zv::Val();
 			if (keyIsInteger == PT_TRI_YES) return listIntersection(thisWithTypes(nonNegativeIntegers(), zv::Val::copyOf(zv::Ref(i))));
 		}
@@ -1061,13 +1061,13 @@ public:
 	{
 		zv::Val replacementArrayType = callType(Z_OBJ_P(replacementType), PT_LC("toarray"), 0, NULL);
 		if (UNEXPECTED(replacementArrayType.isUndef())) return zv::Val();
-		zend_long replacementAtLeastOnce = pt_type_call_trinary(Z_OBJ_P(replacementArrayType.raw()), PT_LC("isiterableatleastonce"), 0, NULL);
+		zend_long replacementAtLeastOnce = pt_type_op_trinary(Z_OBJ_P(replacementArrayType.raw()), PT_OP_IS_ITERABLE_AT_LEAST_ONCE, 0, NULL);
 		if (UNEXPECTED(replacementAtLeastOnce < 0)) return zv::Val();
 
 		zend_long offsetIsZero;
 		if (UNEXPECTED(!zeroIsSuperTypeOf(offsetType, offsetIsZero))) return zv::Val();
 		if (offsetIsZero == PT_TRI_YES) {
-			zend_long lengthIsNull = pt_type_call_trinary(Z_OBJ_P(lengthType), PT_LC("isnull"), 0, NULL);
+			zend_long lengthIsNull = pt_type_op_trinary(Z_OBJ_P(lengthType), PT_OP_IS_NULL, 0, NULL);
 			if (UNEXPECTED(lengthIsNull < 0)) return zv::Val();
 			if (lengthIsNull == PT_TRI_YES && replacementAtLeastOnce == PT_TRI_NO) return emptyConstantArray();
 		}
@@ -1096,7 +1096,7 @@ public:
 			if (UNEXPECTED(nonEmpty.isUndef())) return zv::Val();
 			accessories.push(std::move(nonEmpty));
 		}
-		zend_long existingKeyIsInteger = pt_type_call_trinary(Z_OBJ_P(existingArrayKeyType.raw()), PT_LC("isinteger"), 0, NULL);
+		zend_long existingKeyIsInteger = pt_type_op_trinary(Z_OBJ_P(existingArrayKeyType.raw()), PT_OP_IS_INTEGER, 0, NULL);
 		if (UNEXPECTED(existingKeyIsInteger < 0)) return zv::Val();
 		if (existingKeyIsInteger == PT_TRI_YES) {
 			zv::Val list = accessoryList();
@@ -1182,7 +1182,7 @@ public:
 
 			zv::Val builtArray = pt_type_call(Z_OBJ_P(builder.raw()), PT_LC("getarray"), 0, NULL);
 			if (UNEXPECTED(builtArray.isUndef())) return zv::Val();
-			zv::Val isList = pt_type_call(Z_OBJ_P(builder.raw()), PT_LC("islist"), 0, NULL);
+			zv::Val isList = pt_type_op(Z_OBJ_P(builder.raw()), PT_OP_IS_LIST, 0, NULL);
 			if (UNEXPECTED(isList.isUndef())) return zv::Val();
 			if (!zend_is_true(isList.raw())) {
 				if (UNEXPECTED(!zv::Ref(builtArray.raw()).isObject())) {
@@ -1295,7 +1295,7 @@ public:
 	{
 		zval *i = itemType();
 		if (UNEXPECTED(i == NULL)) return -1;
-		zend_long isString = pt_type_call_trinary(Z_OBJ_P(i), PT_LC("isstring"), 0, NULL);
+		zend_long isString = pt_type_op_trinary(Z_OBJ_P(i), PT_OP_IS_STRING, 0, NULL);
 		if (UNEXPECTED(isString < 0)) return -1;
 		if (isString != PT_TRI_NO) return PT_TRI_MAYBE;
 		/* StrictMixedType denies isString() even though it is a supertype of
@@ -1317,7 +1317,7 @@ public:
 		if (EXPECTED(isExact())) {
 			callable = isCallable();
 		} else {
-			callable = pt_type_call_trinary(self, PT_LC("iscallable"), 0, NULL);
+			callable = pt_type_op_trinary(self, PT_OP_IS_CALLABLE, 0, NULL);
 		}
 		if (UNEXPECTED(callable < 0)) return zv::Val();
 		if (callable == PT_TRI_NO) {
@@ -1368,7 +1368,7 @@ public:
 			return pt_type_call(Z_OBJ_P(receivedType), PT_LC("infertemplatetypeson"), 1, &selfZv);
 		}
 
-		zend_long isArray = pt_type_call_trinary(Z_OBJ_P(receivedType), PT_LC("isarray"), 0, NULL);
+		zend_long isArray = pt_type_op_trinary(Z_OBJ_P(receivedType), PT_OP_IS_ARRAY, 0, NULL);
 		if (UNEXPECTED(isArray < 0)) return zv::Val();
 		if (isArray == PT_TRI_YES) {
 			zv::Val keyType = thisGetIterableKeyType();
@@ -1462,13 +1462,13 @@ public:
 		zval *k = keyType();
 		zval *i = k != NULL ? itemType() : NULL; /* one Error at a time, as the twin's first read raises */
 		if (UNEXPECTED(i == NULL)) return zv::Val();
-		zv::Val rightKey = pt_type_call(Z_OBJ_P(right), PT_LC("getiterablekeytype"), 0, NULL);
+		zv::Val rightKey = pt_type_op(Z_OBJ_P(right), PT_OP_GET_ITERABLE_KEY_TYPE, 0, NULL);
 		if (UNEXPECTED(rightKey.isUndef())) return zv::Val();
 		zv::Args args{k, rightKey.raw()};
 		zval newKeyType;
 		if (UNEXPECTED(!pt_call_fci(fci, fcc, 2, args, &newKeyType))) return zv::Val();
 		zv::Val keyType = zv::Val::adopt(newKeyType);
-		zv::Val rightValue = pt_type_call(Z_OBJ_P(right), PT_LC("getiterablevaluetype"), 0, NULL);
+		zv::Val rightValue = pt_type_op(Z_OBJ_P(right), PT_OP_GET_ITERABLE_VALUE_TYPE, 0, NULL);
 		if (UNEXPECTED(rightValue.isUndef())) return zv::Val();
 		ZVAL_COPY_VALUE(&args[0], i);
 		ZVAL_COPY_VALUE(&args[1], rightValue.raw());
@@ -1524,13 +1524,13 @@ public:
 		zval *k = keyType();
 		zval *i = k != NULL ? itemType() : NULL; /* one Error at a time, as the twin's first read raises */
 		if (UNEXPECTED(i == NULL)) return false;
-		zv::Val keyHas = pt_type_call(Z_OBJ_P(k), PT_LC("hastemplateorlateresolvabletype"), 0, NULL);
+		zv::Val keyHas = pt_type_op(Z_OBJ_P(k), PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, 0, NULL);
 		if (UNEXPECTED(keyHas.isUndef())) return false;
 		if (zend_is_true(keyHas.raw())) {
 			out = true;
 			return true;
 		}
-		return pt_type_call_bool(Z_OBJ_P(i), PT_LC("hastemplateorlateresolvabletype"), 0, NULL, out);
+		return pt_type_op_bool(Z_OBJ_P(i), PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, 0, NULL, out);
 	}
 
 private:
@@ -1620,7 +1620,7 @@ private:
 	/* $type->describe($level) as an owned string; UNDEF = pending exception */
 	static zv::Val describeOf(zval *type, zval *level)
 	{
-		zv::Val description = pt_type_call(Z_OBJ_P(type), PT_LC("describe"), 1, level);
+		zv::Val description = pt_type_op(Z_OBJ_P(type), PT_OP_DESCRIBE, 1, level);
 		if (UNEXPECTED(description.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(description.raw()).isString())) {
 			zend_type_error("phpstan_turbo: describe() must return string");
@@ -1746,13 +1746,13 @@ private:
 			out = false;
 			return true;
 		}
-		zend_long isString = pt_type_call_trinary(Z_OBJ_P(offsetType), PT_LC("isstring"), 0, NULL);
+		zend_long isString = pt_type_op_trinary(Z_OBJ_P(offsetType), PT_OP_IS_STRING, 0, NULL);
 		if (UNEXPECTED(isString < 0)) return false;
 		if (isString == PT_TRI_NO) {
 			out = true;
 			return true;
 		}
-		zend_long isConstantScalar = pt_type_call_trinary(Z_OBJ_P(offsetType), PT_LC("isconstantscalarvalue"), 0, NULL);
+		zend_long isConstantScalar = pt_type_op_trinary(Z_OBJ_P(offsetType), PT_OP_IS_CONSTANT_SCALAR_VALUE, 0, NULL);
 		if (UNEXPECTED(isConstantScalar < 0)) return false;
 		out = isConstantScalar != PT_TRI_NO;
 		return true;
@@ -1802,7 +1802,7 @@ private:
 		(void) state1;
 		bool handled;
 		if (!traverseUnion(argc, argv, return_value, handled) || handled) return;
-		zend_long isInteger = pt_type_call_trinary(Z_OBJ_P(&argv[0]), PT_LC("isinteger"), 0, NULL);
+		zend_long isInteger = pt_type_op_trinary(Z_OBJ_P(&argv[0]), PT_OP_IS_INTEGER, 0, NULL);
 		if (UNEXPECTED(isInteger < 0)) return;
 		if (isInteger == PT_TRI_YES) {
 			if (Z_TYPE_P(integerTypes) != IS_ARRAY) {
@@ -1835,7 +1835,7 @@ private:
 		(void) state1;
 		bool handled;
 		if (!traverseUnion(argc, argv, return_value, handled) || handled) return;
-		zend_long isInteger = pt_type_call_trinary(Z_OBJ_P(&argv[0]), PT_LC("isinteger"), 0, NULL);
+		zend_long isInteger = pt_type_op_trinary(Z_OBJ_P(&argv[0]), PT_OP_IS_INTEGER, 0, NULL);
 		if (UNEXPECTED(isInteger < 0)) return;
 		if (isInteger == PT_TRI_YES) {
 			zv::Val range = nonNegativeIntegers();
@@ -1913,7 +1913,7 @@ private:
 			return;
 		}
 
-		zend_long isString = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isstring"), 0, NULL);
+		zend_long isString = pt_type_op_trinary(Z_OBJ_P(type), PT_OP_IS_STRING, 0, NULL);
 		if (UNEXPECTED(isString < 0)) return;
 		if (isString == PT_TRI_YES) {
 			zv::Val string = stringType();
@@ -2090,14 +2090,19 @@ void pt_register_array_type()
 	cls.method<&ArrayType::getReferencedClasses>(sigs::getReferencedClasses);
 
 	cls.method(sigs::getConstantArrays, atEmptyArray0);
+	cls.op(PT_OP_GET_CONSTANT_ARRAYS, PT_OP_LAMBDA { return pt_op_empty_array(); });
 
 	cls.method<&ArrayType::accepts, zp::Obj, zp::Bool>(sigs::accepts);
+	cls.op(PT_OP_ACCEPTS, PT_OP_LAMBDA { return ArrayType(self).accepts(argv, (Z_TYPE(argv[1]) == IS_TRUE)); });
 
 	cls.method<&ArrayType::isSuperTypeOf, zp::Obj>(sigs::isSuperTypeOf);
+	cls.op<PT_OP_IS_SUPER_TYPE_OF, &ArrayType::isSuperTypeOf>();
 
 	cls.method<&ArrayType::equals, zp::Obj>(sigs::equals);
+	cls.op<PT_OP_EQUALS, &ArrayType::equals>();
 
 	cls.method<&ArrayType::describe, zp::Obj>(sigs::describe);
+	cls.op<PT_OP_DESCRIBE, &ArrayType::describe>();
 
 	cls.method<&ArrayType::generalizeValues>(sigs::generalizeValues);
 
@@ -2111,22 +2116,27 @@ void pt_register_array_type()
 	cls.method<&ArrayType::getValuesArray>(sigs::getValuesArray);
 
 	cls.method(sigs::isIterableAtLeastOnce, atMaybe0);
+	cls.op(PT_OP_IS_ITERABLE_AT_LEAST_ONCE, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_MAYBE); });
 
 	cls.method<&ArrayType::getArraySize>(sigs::getArraySize);
 
 	cls.method<&ArrayType::getIterableKeyType>(sigs::getIterableKeyType);
+	cls.op<PT_OP_GET_ITERABLE_KEY_TYPE, &ArrayType::getIterableKeyType>();
 	cls.method(sigs::getFirstIterableKeyType, atThisGetIterableKeyType0);
 	cls.method(sigs::getLastIterableKeyType, atThisGetIterableKeyType0);
 	cls.method(sigs::getIterableValueType, atThisGetItemType0);
+	cls.op<PT_OP_GET_ITERABLE_VALUE_TYPE, &ArrayType::getIterableValueType>();
 	cls.method(sigs::getFirstIterableValueType, atThisGetItemType0);
 	cls.method(sigs::getLastIterableValueType, atThisGetItemType0);
 
 	cls.method(sigs::isConstantArray, atNo0);
+	cls.op(PT_OP_IS_CONSTANT_ARRAY, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 
 	cls.method(sigs::isList, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		PT_RETURN_TRINARY_OR_THROW(PT_THIS.isList());
 	});
+	cls.op<PT_OP_IS_LIST, &ArrayType::isList>();
 
 	cls.method(sigs::isConstantValue, atNo0);
 
@@ -2229,6 +2239,7 @@ void pt_register_array_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		PT_RETURN_TRINARY_OR_THROW(PT_THIS.isCallable());
 	});
+	cls.op<PT_OP_IS_CALLABLE, &ArrayType::isCallable>();
 
 	cls.method(sigs::getCallableParametersAcceptors, [](INTERNAL_FUNCTION_PARAMETERS) {
 		PT_ARGS(1, 1);
@@ -2242,6 +2253,7 @@ void pt_register_array_type()
 	cls.method<&ArrayType::inferTemplateTypes, zp::Obj>(sigs::inferTemplateTypes);
 
 	cls.method<&ArrayType::getReferencedTemplateTypes, zp::Obj>(sigs::getReferencedTemplateTypes);
+	cls.op<PT_OP_GET_REFERENCED_TEMPLATE_TYPES, &ArrayType::getReferencedTemplateTypes>();
 
 	cls.method(sigs::traverse, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_fcall_info fci;
@@ -2251,6 +2263,7 @@ void pt_register_array_type()
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(PT_THIS.traverse(&fci, &fcc));
 	});
+	cls.op(PT_OP_TRAVERSE, PT_OP_LAMBDA { return pt_op_traverse_with<ArrayType>(self, argv); });
 
 	cls.method<&ArrayType::toPhpDocNode>(sigs::toPhpDocNode);
 
@@ -2272,6 +2285,7 @@ void pt_register_array_type()
 	cls.method(sigs::getFiniteTypes, atEmptyArray0);
 
 	cls.method<&ArrayType::hasTemplateOrLateResolvableType>(sigs::hasTemplateOrLateResolvableType);
+	cls.op<PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, &ArrayType::hasTemplateOrLateResolvableType>();
 
 	/* the traits, in the twin's `use` order; the class body above wins over
 	 * every name it declares (isCallable, getCallableParametersAcceptors,

@@ -158,7 +158,7 @@ public:
 		if (UNEXPECTED(!pt_type_instanceof(type, PT_CLASS_COMPOUND_TYPE, compound))) return zv::Val();
 		zval selfZv;
 		ZVAL_OBJ(&selfZv, self);
-		if (compound) return pt_type_call(Z_OBJ_P(type), PT_LC("issubtypeof"), 1, &selfZv);
+		if (compound) return pt_type_op(Z_OBJ_P(type), PT_OP_IS_SUB_TYPE_OF, 1, &selfZv);
 
 		bool subtractable;
 		if (UNEXPECTED(!pt_type_instanceof(type, PT_CLASS_SUBTRACTABLE_TYPE, subtractable))) return zv::Val();
@@ -166,7 +166,7 @@ public:
 			zv::Val subtracted = pt_type_call(Z_OBJ_P(type), PT_LC("getsubtractedtype"), 0, NULL);
 			if (UNEXPECTED(subtracted.isUndef())) return zv::Val();
 			if (!subtracted.isNull()) {
-				zv::Val isSuperType = pt_type_call(Z_OBJ_P(subtracted.raw()), PT_LC("issupertypeof"), 1, &selfZv);
+				zv::Val isSuperType = pt_type_op(Z_OBJ_P(subtracted.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, &selfZv);
 				if (UNEXPECTED(isSuperType.isUndef())) return zv::Val();
 				zend_long value = pt_type_result_trinary(isSuperType.raw());
 				if (UNEXPECTED(value < 0)) return zv::Val();
@@ -181,7 +181,7 @@ public:
 		if (UNEXPECTED(isSuperType.isUndef())) return zv::Val();
 		zv::Val maybe = pt_type_is_super_type_of_result(PT_TRI_MAYBE);
 		if (UNEXPECTED(maybe.isUndef())) return zv::Val();
-		return pt_type_call(Z_OBJ_P(isSuperType.raw()), PT_LC("and"), 1, maybe.raw());
+		return pt_type_op(Z_OBJ_P(isSuperType.raw()), PT_OP_AND, 1, maybe.raw());
 	}
 
 	/* $this->changeSubtractedType($type); UNDEF = pending exception */
@@ -557,14 +557,18 @@ void pt_register_enum_case_object_type()
 	cls.method(sigs::describe, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ecot_value_of(INTERNAL_FUNCTION_PARAM_PASSTHRU, &EnumCaseObjectType::describe);
 	});
+	cls.op<PT_OP_DESCRIBE, &EnumCaseObjectType::describe>();
 	cls.method(sigs::equals, ecotEquals);
+	cls.op<PT_OP_EQUALS, &EnumCaseObjectType::equals>();
 	cls.method(sigs::accepts, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *type;
 		bool strictTypes;
 		if (!zp::parse<zp::Obj, zp::Bool>(execute_data, type, strictTypes)) RETURN_THROWS();
 		PT_RETURN_VAL(PT_THIS.accepts(type));
 	});
+	cls.op<PT_OP_ACCEPTS, &EnumCaseObjectType::accepts>();
 	cls.method(sigs::isSuperTypeOf, ecotIsSuperTypeOf);
+	cls.op<PT_OP_IS_SUPER_TYPE_OF, &EnumCaseObjectType::isSuperTypeOf>();
 	cls.method(sigs::subtract, ecotSubtract);
 	cls.method(sigs::getTypeWithoutSubtractedType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();

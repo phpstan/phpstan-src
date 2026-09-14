@@ -212,7 +212,7 @@ private:
 			zend_type_error("phpstan_turbo: getBound() must return %s", ptcls::type);
 			return -1;
 		}
-		zv::Val result = pt_type_call(Z_OBJ_P(backedEnum.raw()), PT_LC("issupertypeof"), 1, bound.raw());
+		zv::Val result = pt_type_op(Z_OBJ_P(backedEnum.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, bound.raw());
 		if (UNEXPECTED(result.isUndef())) return -1;
 		zend_long value = pt_type_result_trinary(result.raw());
 		if (UNEXPECTED(value < 0)) return -1;

@@ -1,5 +1,6 @@
 #include "support.h"
 #include "zv.h"
+#include "TypeOps.h"
 
 #include <cstring>
 
@@ -327,18 +328,11 @@ zend_function *pt_find_method(zend_class_entry *ce, const char *lcname, size_t l
 
 bool pt_call_type_equals(zval *type_a, zval *type_b)
 {
-	zend_class_entry *ce = Z_OBJCE_P(type_a);
-	zend_function *fn = pt_find_method(ce, "equals", sizeof("equals") - 1);
-	zval ret, args[1];
-	bool result;
-
-	if (UNEXPECTED(fn == NULL)) return false;
-	ZVAL_COPY_VALUE(&args[0], type_b);
-	zend_call_known_function(fn, Z_OBJ_P(type_a), ce, &ret, 1, args, NULL);
-	if (UNEXPECTED(EG(exception))) return false;
-	result = Z_TYPE(ret) == IS_TRUE;
-	zval_ptr_dtor(&ret);
-	return result;
+	/* $a->equals($b) — directly for a native class registering the op
+	 * (TypeOps.h), through the engine otherwise */
+	zv::Val ret = pt_type_op(Z_OBJ_P(type_a), PT_OP_EQUALS, 1, type_b);
+	if (UNEXPECTED(ret.isUndef())) return false;
+	return Z_TYPE_P(ret.raw()) == IS_TRUE;
 }
 
 bool pt_types_identical_or_equal(zval *type_a, zval *type_b)
@@ -361,20 +355,14 @@ bool pt_type_combinator_binary(const char *lcname, size_t len, zval *type_a, zva
 
 bool pt_type_describe_precise(zval *type, zval *result)
 {
-	zend_class_entry *ce;
-	zend_function *fn;
-	zval args[1];
-
 	/* the shadowing VerbosityLevel's precise() singleton (VerbosityLevel.cpp) */
 	zval *precise = pt_verbosity_level_singleton(PT_VERBOSITY_LEVEL_PRECISE);
 	if (UNEXPECTED(precise == NULL)) return false;
 
-	ce = Z_OBJCE_P(type);
-	fn = pt_find_method(ce, "describe", sizeof("describe") - 1);
-	if (UNEXPECTED(fn == NULL)) return false;
-	ZVAL_COPY_VALUE(&args[0], precise);
-	zend_call_known_function(fn, Z_OBJ_P(type), ce, result, 1, args, NULL);
-	return !EG(exception);
+	zv::Val described = pt_type_op(Z_OBJ_P(type), PT_OP_DESCRIBE, 1, precise);
+	if (UNEXPECTED(described.isUndef())) return false;
+	*result = described.take();
+	return true;
 }
 
 void pt_throw_should_not_happen()

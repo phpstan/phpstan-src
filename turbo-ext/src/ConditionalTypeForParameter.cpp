@@ -158,7 +158,7 @@ public:
 	 * unresolved. UNDEF = pending exception */
 	static zv::Val resolveInType(zval *type, zval *getSubjectType, zval *passedArgs)
 	{
-		zv::Val has = pt_type_call(Z_OBJ_P(type), PT_LC("hastemplateorlateresolvabletype"), 0, NULL);
+		zv::Val has = pt_type_op(Z_OBJ_P(type), PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, 0, NULL);
 		if (UNEXPECTED(has.isUndef())) return zv::Val();
 		if (!zend_is_true(has.raw())) return zv::Val::copyOf(zv::Ref(type));
 		zv::Val callback = pt_type_native_callback(resolveInTypeCallback, getSubjectType, passedArgs);
@@ -176,13 +176,13 @@ public:
 			if (UNEXPECTED(i == NULL)) return zv::Val();
 			zval *theirIf = slot(Z_OBJ_P(type), slots::if_, "if");
 			if (UNEXPECTED(theirIf == NULL)) return zv::Val();
-			zv::Val ifResult = pt_type_call(Z_OBJ_P(i), PT_LC("issupertypeof"), 1, theirIf);
+			zv::Val ifResult = pt_type_op(Z_OBJ_P(i), PT_OP_IS_SUPER_TYPE_OF, 1, theirIf);
 			if (UNEXPECTED(ifResult.isUndef())) return zv::Val();
 			zval *e = elseType();
 			if (UNEXPECTED(e == NULL)) return zv::Val();
 			zval *theirElse = slot(Z_OBJ_P(type), slots::else_, "else");
 			if (UNEXPECTED(theirElse == NULL)) return zv::Val();
-			zv::Val elseResult = pt_type_call(Z_OBJ_P(e), PT_LC("issupertypeof"), 1, theirElse);
+			zv::Val elseResult = pt_type_op(Z_OBJ_P(e), PT_OP_IS_SUPER_TYPE_OF, 1, theirElse);
 			if (UNEXPECTED(elseResult.isUndef())) return zv::Val();
 			return pt_type_result_and(std::move(ifResult), elseResult.raw());
 		}
@@ -219,7 +219,7 @@ public:
 			if (UNEXPECTED(mine == NULL)) return false;
 			zval *theirs = slot(Z_OBJ_P(type), parts[i], names[i]);
 			if (UNEXPECTED(theirs == NULL)) return false;
-			zv::Val equal = pt_type_call(Z_OBJ_P(mine), PT_LC("equals"), 1, theirs);
+			zv::Val equal = pt_type_op(Z_OBJ_P(mine), PT_OP_EQUALS, 1, theirs);
 			if (UNEXPECTED(equal.isUndef())) return false;
 			if (!zend_is_true(equal.raw())) {
 				out = false;
@@ -391,7 +391,7 @@ private:
 	{
 		zval *part = slot(self, index, name);
 		if (UNEXPECTED(part == NULL)) return zv::Val();
-		zv::Val description = pt_type_call(Z_OBJ_P(part), PT_LC("describe"), 1, level);
+		zv::Val description = pt_type_op(Z_OBJ_P(part), PT_OP_DESCRIBE, 1, level);
 		if (UNEXPECTED(description.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(description.raw()).isString())) {
 			zend_type_error("phpstan_turbo: describe() must return a string");

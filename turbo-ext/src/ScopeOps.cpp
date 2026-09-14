@@ -15,6 +15,7 @@
 #include "support.h"
 #include "generated/ScopeOps.h"
 #include "zv.h"
+#include "TypeOps.h"
 
 #include <cstring>
 
@@ -1289,19 +1290,6 @@ private:
 		return true;
 	}
 
-	/* Calls a (possibly private) method on the object with the given args. */
-	static bool callObjectMethod(zval *obj, const char *lcname, size_t len, uint32_t argc, zval *argv, zval *retval)
-	{
-		zend_class_entry *ce = Z_OBJCE_P(obj);
-		zend_function *fn = (zend_function *) zend_hash_str_find_ptr(&ce->function_table, lcname, len);
-		if (UNEXPECTED(fn == NULL)) {
-			zend_throw_error(NULL, "phpstan_turbo: method %s::%s not found", ZSTR_VAL(ce->name), lcname);
-			return false;
-		}
-		zend_call_known_function(fn, Z_OBJ_P(obj), ce, retval, argc, argv, NULL);
-		return !EG(exception);
-	}
-
 	/* TypeCombinator::remove($fromType, $typeToRemove) */
 	static zv::Val typeCombinatorRemove(zval *fromType, zval *typeToRemove)
 	{
@@ -1318,10 +1306,8 @@ private:
 	/* $type->isSuperTypeOf($otherType)->result->value */
 	static bool isSuperTypeOfValue(zval *type, zval *otherType, zend_long *out)
 	{
-		zval arg, retval;
-		ZVAL_COPY_VALUE(&arg, otherType);
-		if (UNEXPECTED(!callObjectMethod(type, "issupertypeof", sizeof("issupertypeof") - 1, 1, &arg, &retval))) return false;
-		zv::Val result = zv::Val::adopt(retval);
+		zv::Val result = pt_type_op(Z_OBJ_P(type), PT_OP_IS_SUPER_TYPE_OF, 1, otherType);
+		if (UNEXPECTED(result.isUndef())) return false;
 		if (UNEXPECTED(!result.ref().isObject())) {
 			zend_throw_error(NULL, "phpstan_turbo: isSuperTypeOf did not return an object");
 			return false;
@@ -1343,9 +1329,8 @@ private:
 	/* $type->isConstantArray()->yes() */
 	static bool isConstantArrayYes(zval *type, bool *out)
 	{
-		zval retval;
-		if (UNEXPECTED(!callObjectMethod(type, "isconstantarray", sizeof("isconstantarray") - 1, 0, NULL, &retval))) return false;
-		zv::Val result = zv::Val::adopt(retval);
+		zv::Val result = pt_type_op(Z_OBJ_P(type), PT_OP_IS_CONSTANT_ARRAY, 0, NULL);
+		if (UNEXPECTED(result.isUndef())) return false;
 		if (UNEXPECTED(!result.ref().instanceOf(pt_ce_trinary))) {
 			zend_throw_error(NULL, "phpstan_turbo: isConstantArray did not return a TrinaryLogic");
 			return false;

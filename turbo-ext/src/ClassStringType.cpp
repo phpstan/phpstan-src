@@ -56,7 +56,7 @@ public:
 		if (compound) {
 			zval selfZv;
 			ZVAL_OBJ(&selfZv, self);
-			return pt_type_call(Z_OBJ_P(type), PT_LC("issubtypeof"), 1, &selfZv);
+			return pt_type_op(Z_OBJ_P(type), PT_OP_IS_SUB_TYPE_OF, 1, &selfZv);
 		}
 
 		zend_long isClassString = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isclassstring"), 0, NULL);
@@ -118,15 +118,19 @@ void pt_register_class_string_type()
 		if (!zp::parse<zp::Obj>(execute_data, level)) RETURN_THROWS();
 		RETURN_STRING(ClassStringType::describe());
 	});
+	cls.op(PT_OP_DESCRIBE, PT_OP_LAMBDA { return pt_op_string(ClassStringType::describe()); });
 
 	cls.method<&ClassStringType::accepts, zp::Obj, zp::Bool>(sigs::accepts);
+	cls.op(PT_OP_ACCEPTS, PT_OP_LAMBDA { return ClassStringType(self).accepts(argv, (Z_TYPE(argv[1]) == IS_TRUE)); });
 
 	cls.method<&ClassStringType::isSuperTypeOf, zp::Obj>(sigs::isSuperTypeOf);
+	cls.op<PT_OP_IS_SUPER_TYPE_OF, &ClassStringType::isSuperTypeOf>();
 
 	cls.method(sigs::isString, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_COPY(pt_trinary_singleton(ClassStringType::isString()));
 	});
+	cls.op(PT_OP_IS_STRING, PT_OP_LAMBDA { return pt_op_trinary(ClassStringType::isString()); });
 
 	cls.method(sigs::isNumericString, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();

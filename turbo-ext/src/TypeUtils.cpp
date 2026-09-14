@@ -175,7 +175,7 @@ public:
 			return zv::Val(std::move(types));
 		}
 
-		zv::Val constantArrays = pt_type_call(Z_OBJ_P(type), PT_LC("getconstantarrays"), 0, NULL);
+		zv::Val constantArrays = pt_type_op(Z_OBJ_P(type), PT_OP_GET_CONSTANT_ARRAYS, 0, NULL);
 		if (UNEXPECTED(constantArrays.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(constantArrays.raw()).isArray())) {
 			zend_type_error("phpstan_turbo: %s::getConstantArrays() must return array", ZSTR_VAL(Z_OBJCE_P(type)->name));
@@ -291,7 +291,7 @@ public:
 	 * union, null otherwise; UNDEF = pending exception */
 	static zv::Val findCallableType(zval *type)
 	{
-		zend_long isCallable = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("iscallable"), 0, NULL);
+		zend_long isCallable = pt_type_op_trinary(Z_OBJ_P(type), PT_OP_IS_CALLABLE, 0, NULL);
 		if (UNEXPECTED(isCallable < 0)) return zv::Val();
 		if (isCallable == PT_TRI_YES) return zv::Val::copyOf(zv::Ref(type));
 
@@ -372,7 +372,7 @@ public:
 	 * otherwise; UNDEF = pending exception */
 	static zv::Val resolveLateResolvableTypes(zval *type, bool resolveUnresolvableTypes)
 	{
-		zv::Val has = pt_type_call(Z_OBJ_P(type), PT_LC("hastemplateorlateresolvabletype"), 0, NULL);
+		zv::Val has = pt_type_op(Z_OBJ_P(type), PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, 0, NULL);
 		if (UNEXPECTED(has.isUndef())) return zv::Val();
 		if (!zend_is_true(has.raw())) return zv::Val::copyOf(zv::Ref(type));
 

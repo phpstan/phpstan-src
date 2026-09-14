@@ -695,7 +695,7 @@ static bool builderCall0(zval *builder, const char *lcname, size_t len)
 /* $builder->isList(); false = pending exception */
 [[nodiscard]] static bool builderIsList(zval *builder, bool &out)
 {
-	return pt_type_call_bool(Z_OBJ_P(builder), PT_LC("islist"), 0, NULL, out);
+	return pt_type_op_bool(Z_OBJ_P(builder), PT_OP_IS_LIST, 0, NULL, out);
 }
 
 /* [$key, $value] = $unsealed: the pair's two Types (borrowed); false with
@@ -889,7 +889,7 @@ public:
 					if (explicitNever) {
 						value = PT_TRI_YES;
 					} else {
-						zend_long isInteger = pt_type_call_trinary(Z_OBJ_P(unsealedKeyType), PT_LC("isinteger"), 0, NULL);
+						zend_long isInteger = pt_type_op_trinary(Z_OBJ_P(unsealedKeyType), PT_OP_IS_INTEGER, 0, NULL);
 						if (UNEXPECTED(isInteger < 0)) return false;
 						value = isInteger == PT_TRI_YES ? PT_TRI_MAYBE : PT_TRI_NO;
 					}
@@ -1459,7 +1459,7 @@ public:
 
 		zv::Val result = checkOurKeys(type, strictTypes);
 		if (UNEXPECTED(result.isUndef())) return zv::Val();
-		zv::Val isArray = pt_type_call(Z_OBJ_P(type), PT_LC("isarray"), 0, NULL);
+		zv::Val isArray = pt_type_op(Z_OBJ_P(type), PT_OP_IS_ARRAY, 0, NULL);
 		if (UNEXPECTED(isArray.isUndef())) return zv::Val();
 		if (UNEXPECTED(trinaryOf(isArray.raw()) < 0)) return zv::Val();
 		zval emptyReasons, isArrayResult;
@@ -1488,7 +1488,7 @@ public:
 		zval *unsealedKeyType, *unsealedValueType;
 		if (UNEXPECTED(!unsealedPair(unsealed, unsealedKeyType, unsealedValueType))) return zv::Val();
 
-		zend_long typeIsConstantArray = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isconstantarray"), 0, NULL);
+		zend_long typeIsConstantArray = pt_type_op_trinary(Z_OBJ_P(type), PT_OP_IS_CONSTANT_ARRAY, 0, NULL);
 		if (UNEXPECTED(typeIsConstantArray < 0)) return zv::Val();
 
 		if (isUnsealed == PT_TRI_NO) {
@@ -1542,14 +1542,14 @@ public:
 			zv::Val typeKey = callType(Z_OBJ_P(type), PT_LC("getiterablekeytype"), 0, NULL);
 			if (UNEXPECTED(typeKey.isUndef())) return zv::Val();
 			zv::Args args{typeKey.raw(), strictTypes};
-			zv::Val acceptsKey = pt_type_call(Z_OBJ_P(unsealedKeyType), PT_LC("accepts"), 2, args);
+			zv::Val acceptsKey = pt_type_op(Z_OBJ_P(unsealedKeyType), PT_OP_ACCEPTS, 2, args);
 			if (UNEXPECTED(acceptsKey.isUndef())) return zv::Val();
 			result = pt_type_result_and(std::move(result), acceptsKey.raw());
 			if (UNEXPECTED(result.isUndef())) return zv::Val();
 			zv::Val typeValue = callType(Z_OBJ_P(type), PT_LC("getiterablevaluetype"), 0, NULL);
 			if (UNEXPECTED(typeValue.isUndef())) return zv::Val();
 			ZVAL_COPY_VALUE(&args[0], typeValue.raw());
-			zv::Val acceptsValue = pt_type_call(Z_OBJ_P(unsealedValueType), PT_LC("accepts"), 2, args);
+			zv::Val acceptsValue = pt_type_op(Z_OBJ_P(unsealedValueType), PT_OP_ACCEPTS, 2, args);
 			if (UNEXPECTED(acceptsValue.isUndef())) return zv::Val();
 			return pt_type_result_and(std::move(result), acceptsValue.raw());
 		}
@@ -1592,7 +1592,7 @@ public:
 			zval *extraKeyType = zend_hash_index_find(Z_ARRVAL_P(pair), 1);
 			ZEND_ASSERT(iZv != NULL && extraKeyType != NULL);
 			zv::Args args{extraKeyType, strictTypes};
-			zv::Val acceptsKey = pt_type_call(Z_OBJ_P(unsealedKeyType), PT_LC("accepts"), 2, args);
+			zv::Val acceptsKey = pt_type_op(Z_OBJ_P(unsealedKeyType), PT_OP_ACCEPTS, 2, args);
 			if (UNEXPECTED(acceptsKey.isUndef())) return zv::Val();
 			acceptsKey = decorateReasons(acceptsKey.raw(), unsealedKeyReasonCallback, unsealedKeyType, extraKeyType);
 			if (UNEXPECTED(acceptsKey.isUndef())) return zv::Val();
@@ -1613,7 +1613,7 @@ public:
 			zval *extraValueType = arrayIndexObject(otherValueTypes.raw(), Z_LVAL_P(iZv), "valueTypes");
 			if (UNEXPECTED(extraValueType == NULL)) return zv::Val();
 			ZVAL_COPY_VALUE(&args[0], extraValueType);
-			zv::Val acceptsValue = pt_type_call(Z_OBJ_P(unsealedValueType), PT_LC("accepts"), 2, args);
+			zv::Val acceptsValue = pt_type_op(Z_OBJ_P(unsealedValueType), PT_OP_ACCEPTS, 2, args);
 			if (UNEXPECTED(acceptsValue.isUndef())) return zv::Val();
 			zv::Val captured = tripleOf(unsealedValueType, extraKeyType, extraValueType);
 			acceptsValue = decorateReasons(acceptsValue.raw(), unsealedValueReasonCallback, captured.raw(), NULL);
@@ -1642,7 +1642,7 @@ public:
 				zval *otherUnsealedKeyType, *otherUnsealedValueType;
 				if (UNEXPECTED(!unsealedPair(otherUnsealed, otherUnsealedKeyType, otherUnsealedValueType))) return zv::Val();
 				zv::Args args{otherUnsealedKeyType, strictTypes};
-				zv::Val acceptsUnsealedKey = pt_type_call(Z_OBJ_P(unsealedKeyType), PT_LC("accepts"), 2, args);
+				zv::Val acceptsUnsealedKey = pt_type_op(Z_OBJ_P(unsealedKeyType), PT_OP_ACCEPTS, 2, args);
 				if (UNEXPECTED(acceptsUnsealedKey.isUndef())) return zv::Val();
 				acceptsUnsealedKey = decorateReasons(acceptsUnsealedKey.raw(), unsealedKeyPairReasonCallback, unsealedKeyType, otherUnsealedKeyType);
 				if (UNEXPECTED(acceptsUnsealedKey.isUndef())) return zv::Val();
@@ -1656,7 +1656,7 @@ public:
 				if (UNEXPECTED(result.isUndef())) return zv::Val();
 
 				ZVAL_COPY_VALUE(&args[0], otherUnsealedValueType);
-				zv::Val acceptsUnsealedValue = pt_type_call(Z_OBJ_P(unsealedValueType), PT_LC("accepts"), 2, args);
+				zv::Val acceptsUnsealedValue = pt_type_op(Z_OBJ_P(unsealedValueType), PT_OP_ACCEPTS, 2, args);
 				if (UNEXPECTED(acceptsUnsealedValue.isUndef())) return zv::Val();
 				acceptsUnsealedValue = decorateReasons(acceptsUnsealedValue.raw(), unsealedValuePairReasonCallback, unsealedValueType, otherUnsealedValueType);
 				if (UNEXPECTED(acceptsUnsealedValue.isUndef())) return zv::Val();
@@ -1695,7 +1695,7 @@ public:
 			/* $hasOffsetValueType->yes() || !$type->isConstantArray()->yes() ? [] : ['Array %s have offset %s.'] */
 			zv::Arr reasons = zv::Arr::empty();
 			if (has != PT_TRI_YES) {
-				zend_long typeIsConstantArray = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isconstantarray"), 0, NULL);
+				zend_long typeIsConstantArray = pt_type_op_trinary(Z_OBJ_P(type), PT_OP_IS_CONSTANT_ARRAY, 0, NULL);
 				if (UNEXPECTED(typeIsConstantArray < 0)) return zv::Val();
 				if (typeIsConstantArray == PT_TRI_YES) {
 					zv::Val keyDescription = describeValue(keyType);
@@ -1730,7 +1730,7 @@ public:
 			zv::Val verbosity = pt_type_verbosity_recommended(valueType, otherValueType.raw());
 			if (UNEXPECTED(verbosity.isUndef())) return zv::Val();
 			zv::Args args{otherValueType.raw(), strictTypes};
-			zv::Val acceptsValue = pt_type_call(Z_OBJ_P(valueType), PT_LC("accepts"), 2, args);
+			zv::Val acceptsValue = pt_type_op(Z_OBJ_P(valueType), PT_OP_ACCEPTS, 2, args);
 			if (UNEXPECTED(acceptsValue.isUndef())) return zv::Val();
 			zv::Val captured = quadOf(keyType, valueType, verbosity.raw(), otherValueType.raw());
 			acceptsValue = decorateReasons(acceptsValue.raw(), offsetReasonCallback, captured.raw(), NULL);
@@ -1738,7 +1738,7 @@ public:
 			bool reasonless;
 			if (UNEXPECTED(!isNonYesWithoutReasons(acceptsValue.raw(), reasonless))) return zv::Val();
 			if (reasonless) {
-				zend_long typeIsConstantArray = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isconstantarray"), 0, NULL);
+				zend_long typeIsConstantArray = pt_type_op_trinary(Z_OBJ_P(type), PT_OP_IS_CONSTANT_ARRAY, 0, NULL);
 				if (UNEXPECTED(typeIsConstantArray < 0)) return zv::Val();
 				if (typeIsConstantArray == PT_TRI_YES) {
 					acceptsValue = acceptsResultWithReason(acceptsValue.raw(), offsetReason(keyType, valueType, verbosity.raw(), otherValueType.raw(), NULL));
@@ -1782,7 +1782,7 @@ public:
 
 			if (arrayCount(k) == 0) {
 				if (!bothDefinite || thisUnsealedness == PT_TRI_NO) {
-					zend_long atLeastOnce = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isiterableatleastonce"), 0, NULL);
+					zend_long atLeastOnce = pt_type_op_trinary(Z_OBJ_P(type), PT_OP_IS_ITERABLE_AT_LEAST_ONCE, 0, NULL);
 					if (UNEXPECTED(atLeastOnce < 0)) return zv::Val();
 					return pt_type_new_is_super_type_of_result(trinaryNegate(atLeastOnce));
 				}
@@ -1836,7 +1836,7 @@ public:
 				}
 				zval *valueType = arrayIndexObject(v, i, "valueTypes");
 				if (UNEXPECTED(valueType == NULL)) return zv::Val();
-				zv::Val isValueSuperType = pt_type_call(Z_OBJ_P(valueType), PT_LC("issupertypeof"), 1, otherValueType.raw());
+				zv::Val isValueSuperType = pt_type_op(Z_OBJ_P(valueType), PT_OP_IS_SUPER_TYPE_OF, 1, otherValueType.raw());
 				if (UNEXPECTED(isValueSuperType.isUndef())) return zv::Val();
 				zend_long valueSuper = pt_type_result_trinary(isValueSuperType.raw());
 				if (UNEXPECTED(valueSuper < 0)) return zv::Val();
@@ -1879,7 +1879,7 @@ public:
 
 					zval *thisUnsealedKey, *thisUnsealedValue;
 					if (UNEXPECTED(!unsealedPair(unsealed, thisUnsealedKey, thisUnsealedValue))) return zv::Val();
-					zv::Val keyCheck = pt_type_call(Z_OBJ_P(thisUnsealedKey), PT_LC("issupertypeof"), 1, typeKey);
+					zv::Val keyCheck = pt_type_op(Z_OBJ_P(thisUnsealedKey), PT_OP_IS_SUPER_TYPE_OF, 1, typeKey);
 					if (UNEXPECTED(keyCheck.isUndef())) return zv::Val();
 					zend_long keyCheckValue = pt_type_result_trinary(keyCheck.raw());
 					if (UNEXPECTED(keyCheckValue < 0)) return zv::Val();
@@ -1900,7 +1900,7 @@ public:
 					}
 					zval *typeValue = arrayIndexObject(typeValueTypes.raw(), i, "valueTypes");
 					if (UNEXPECTED(typeValue == NULL)) return zv::Val();
-					zv::Val valueCheck = pt_type_call(Z_OBJ_P(thisUnsealedValue), PT_LC("issupertypeof"), 1, typeValue);
+					zv::Val valueCheck = pt_type_op(Z_OBJ_P(thisUnsealedValue), PT_OP_IS_SUPER_TYPE_OF, 1, typeValue);
 					if (UNEXPECTED(valueCheck.isUndef())) return zv::Val();
 					zend_long valueCheckValue = pt_type_result_trinary(valueCheck.raw());
 					if (UNEXPECTED(valueCheckValue < 0)) return zv::Val();
@@ -1930,10 +1930,10 @@ public:
 						if (UNEXPECTED(!unsealedPair(unsealed, thisUnsealedKey, thisUnsealedValue) || !unsealedPair(typeUnsealed, typeUnsealedKey, typeUnsealedValue))) {
 							return zv::Val();
 						}
-						zv::Val keyCheck = pt_type_call(Z_OBJ_P(thisUnsealedKey), PT_LC("issupertypeof"), 1, typeUnsealedKey);
+						zv::Val keyCheck = pt_type_op(Z_OBJ_P(thisUnsealedKey), PT_OP_IS_SUPER_TYPE_OF, 1, typeUnsealedKey);
 						if (UNEXPECTED(keyCheck.isUndef())) return zv::Val();
 						results.push(std::move(keyCheck));
-						zv::Val valueCheck = pt_type_call(Z_OBJ_P(thisUnsealedValue), PT_LC("issupertypeof"), 1, typeUnsealedValue);
+						zv::Val valueCheck = pt_type_op(Z_OBJ_P(thisUnsealedValue), PT_OP_IS_SUPER_TYPE_OF, 1, typeUnsealedValue);
 						if (UNEXPECTED(valueCheck.isUndef())) return zv::Val();
 						results.push(std::move(valueCheck));
 					}
@@ -1956,7 +1956,7 @@ public:
 			if (UNEXPECTED(keyType.isUndef())) return zv::Val();
 			zv::Val typeKeyType = pt_array_type_get_key_type(Z_OBJ_P(type));
 			if (UNEXPECTED(typeKeyType.isUndef())) return zv::Val();
-			zv::Val isKeySuperType = pt_type_call(Z_OBJ_P(keyType.raw()), PT_LC("issupertypeof"), 1, typeKeyType.raw());
+			zv::Val isKeySuperType = pt_type_op(Z_OBJ_P(keyType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, typeKeyType.raw());
 			if (UNEXPECTED(isKeySuperType.isUndef())) return zv::Val();
 			zend_long keySuper = pt_type_result_trinary(isKeySuperType.raw());
 			if (UNEXPECTED(keySuper < 0)) return zv::Val();
@@ -1966,16 +1966,16 @@ public:
 			if (UNEXPECTED(itemType.isUndef())) return zv::Val();
 			zv::Val typeItemType = pt_array_type_get_item_type(Z_OBJ_P(type));
 			if (UNEXPECTED(typeItemType.isUndef())) return zv::Val();
-			zv::Val isItemSuperType = pt_type_call(Z_OBJ_P(itemType.raw()), PT_LC("issupertypeof"), 1, typeItemType.raw());
+			zv::Val isItemSuperType = pt_type_op(Z_OBJ_P(itemType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, typeItemType.raw());
 			if (UNEXPECTED(isItemSuperType.isUndef())) return zv::Val();
 			/* $result->and($isKeySuperType, $this->getItemType()->isSuperTypeOf(...)) */
 			zv::Args args{isKeySuperType.raw(), isItemSuperType.raw()};
-			return pt_type_call(Z_OBJ_P(result.raw()), PT_LC("and"), 2, args);
+			return pt_type_op(Z_OBJ_P(result.raw()), PT_OP_AND, 2, args);
 		}
 
 		bool compound;
 		if (UNEXPECTED(!isInstance(type, PT_CLASS_COMPOUND_TYPE, compound))) return zv::Val();
-		if (compound) return pt_type_call(Z_OBJ_P(type), PT_LC("issubtypeof"), 1, thisZv());
+		if (compound) return pt_type_op(Z_OBJ_P(type), PT_OP_IS_SUB_TYPE_OF, 1, thisZv());
 
 		return pt_type_is_super_type_of_result(PT_TRI_NO);
 	}
@@ -1997,14 +1997,14 @@ public:
 	 * values with []; new BooleanType() otherwise; UNDEF = pending exception */
 	zv::Val looseCompare(zval *type) const
 	{
-		zend_long isInteger = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isinteger"), 0, NULL);
+		zend_long isInteger = pt_type_op_trinary(Z_OBJ_P(type), PT_OP_IS_INTEGER, 0, NULL);
 		if (UNEXPECTED(isInteger < 0)) return zv::Val();
 		if (isInteger == PT_TRI_YES) return constantBoolean(false);
 
 		zend_long atLeastOnce = thisIsIterableAtLeastOnce();
 		if (UNEXPECTED(atLeastOnce < 0)) return zv::Val();
 		if (atLeastOnce == PT_TRI_NO) {
-			zend_long typeAtLeastOnce = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isiterableatleastonce"), 0, NULL);
+			zend_long typeAtLeastOnce = pt_type_op_trinary(Z_OBJ_P(type), PT_OP_IS_ITERABLE_AT_LEAST_ONCE, 0, NULL);
 			if (UNEXPECTED(typeAtLeastOnce < 0)) return zv::Val();
 			if (typeAtLeastOnce == PT_TRI_YES) return constantBoolean(false);
 
@@ -2363,7 +2363,7 @@ public:
 				zv::Val supports = pt_type_call(Z_OBJ_P(phpVersion.raw()), PT_LC("supportscallableinstancemethods"), 0, NULL);
 				if (UNEXPECTED(supports.isUndef())) return zv::Val();
 				if (!zend_is_true(supports.raw())) {
-					zend_long isString = pt_type_call_trinary(Z_OBJ_P(classOrObject.raw()), PT_LC("isstring"), 0, NULL);
+					zend_long isString = pt_type_op_trinary(Z_OBJ_P(classOrObject.raw()), PT_OP_IS_STRING, 0, NULL);
 					if (UNEXPECTED(isString < 0)) return zv::Val();
 					if (isString == PT_TRI_YES) {
 						zv::Val outOfClassScope = pt_type_new(PT_CLASS_OUT_OF_CLASS_SCOPE, 0, NULL);
@@ -2472,10 +2472,10 @@ public:
 			 * definitely a non-decimal-integer string — those stay as strings
 			 * and can never collide with an int key. */
 			if (Z_TYPE_P(keyType) == IS_OBJECT && instanceof_function(Z_OBJCE_P(keyType), pt_ce_constant_integer_type)) {
-				zend_long isString = pt_type_call_trinary(Z_OBJ_P(offsetType), PT_LC("isstring"), 0, NULL);
+				zend_long isString = pt_type_op_trinary(Z_OBJ_P(offsetType), PT_OP_IS_STRING, 0, NULL);
 				if (UNEXPECTED(isString < 0)) return -1;
 				if (isString != PT_TRI_NO) {
-					zend_long isConstantScalar = pt_type_call_trinary(Z_OBJ_P(offsetType), PT_LC("isconstantscalarvalue"), 0, NULL);
+					zend_long isConstantScalar = pt_type_op_trinary(Z_OBJ_P(offsetType), PT_OP_IS_CONSTANT_SCALAR_VALUE, 0, NULL);
 					if (UNEXPECTED(isConstantScalar < 0)) return -1;
 					if (isConstantScalar == PT_TRI_NO) {
 						zend_long isDecimalIntegerString = pt_type_call_trinary(Z_OBJ_P(offsetType), PT_LC("isdecimalintegerstring"), 0, NULL);
@@ -2571,10 +2571,10 @@ public:
 				all = false;
 
 				if (Z_TYPE_P(keyType) == IS_OBJECT && instanceof_function(Z_OBJCE_P(keyType), pt_ce_constant_integer_type)) {
-					zend_long isString = pt_type_call_trinary(Z_OBJ_P(offsetType.raw()), PT_LC("isstring"), 0, NULL);
+					zend_long isString = pt_type_op_trinary(Z_OBJ_P(offsetType.raw()), PT_OP_IS_STRING, 0, NULL);
 					if (UNEXPECTED(isString < 0)) return zv::Val();
 					if (isString != PT_TRI_NO) {
-						zend_long isConstantScalar = pt_type_call_trinary(Z_OBJ_P(offsetType.raw()), PT_LC("isconstantscalarvalue"), 0, NULL);
+						zend_long isConstantScalar = pt_type_op_trinary(Z_OBJ_P(offsetType.raw()), PT_OP_IS_CONSTANT_SCALAR_VALUE, 0, NULL);
 						if (UNEXPECTED(isConstantScalar < 0)) return zv::Val();
 						if (isConstantScalar == PT_TRI_NO) continue;
 					}
@@ -2975,7 +2975,7 @@ public:
 				zend_type_error("phpstan_turbo: valueTypes[" ZEND_LONG_FMT "] must be a %s", i, ptcls::type);
 				return zv::Val();
 			}
-			zend_long isInteger = pt_type_call_trinary(Z_OBJ_P(keyType), PT_LC("isinteger"), 0, NULL);
+			zend_long isInteger = pt_type_op_trinary(Z_OBJ_P(keyType), PT_OP_IS_INTEGER, 0, NULL);
 			if (UNEXPECTED(isInteger < 0)) return zv::Val();
 			zv::Val offset;
 			if (isInteger == PT_TRI_NO) {
@@ -3136,7 +3136,7 @@ public:
 			if (UNEXPECTED(valueType == NULL)) return zv::Val();
 			zval *offsetType = keyType;
 			if (preserve != PT_TRI_YES) {
-				zend_long isInteger = pt_type_call_trinary(Z_OBJ_P(keyType), PT_LC("isinteger"), 0, NULL);
+				zend_long isInteger = pt_type_op_trinary(Z_OBJ_P(keyType), PT_OP_IS_INTEGER, 0, NULL);
 				if (UNEXPECTED(isInteger < 0)) return zv::Val();
 				if (isInteger != PT_TRI_NO) {
 					offsetType = NULL;
@@ -3303,7 +3303,7 @@ public:
 			if (UNEXPECTED(!pt_constant_integer_get_value(Z_OBJ_P(lengthType), value))) return zv::Val();
 			length = NullableLong::of(value);
 		} else {
-			zend_long isNull = pt_type_call_trinary(Z_OBJ_P(lengthType), PT_LC("isnull"), 0, NULL);
+			zend_long isNull = pt_type_op_trinary(Z_OBJ_P(lengthType), PT_OP_IS_NULL, 0, NULL);
 			if (UNEXPECTED(isNull < 0)) return zv::Val();
 			if (isNull == PT_TRI_YES) {
 				length = NullableLong::of(keyTypesCount);
@@ -3417,7 +3417,7 @@ public:
 			if (UNEXPECTED(valueType == NULL)) return zv::Val();
 			zval *offsetType = keyType;
 			if (preserve != PT_TRI_YES) {
-				zend_long isInteger = pt_type_call_trinary(Z_OBJ_P(keyType), PT_LC("isinteger"), 0, NULL);
+				zend_long isInteger = pt_type_op_trinary(Z_OBJ_P(keyType), PT_OP_IS_INTEGER, 0, NULL);
 				if (UNEXPECTED(isInteger < 0)) return zv::Val();
 				if (isInteger != PT_TRI_NO) {
 					offsetType = NULL;
@@ -3473,7 +3473,7 @@ public:
 			if (UNEXPECTED(!pt_constant_integer_get_value(Z_OBJ_P(lengthType), value))) return zv::Val();
 			length = NullableLong::of(value);
 		} else {
-			zend_long isNull = pt_type_call_trinary(Z_OBJ_P(lengthType), PT_LC("isnull"), 0, NULL);
+			zend_long isNull = pt_type_op_trinary(Z_OBJ_P(lengthType), PT_OP_IS_NULL, 0, NULL);
 			if (UNEXPECTED(isNull < 0)) return zv::Val();
 			if (isNull == PT_TRI_YES) {
 				length = NullableLong::of(keyTypesCount);
@@ -3489,7 +3489,7 @@ public:
 
 		zv::Val iterableKeyType = thisGetIterableKeyType();
 		if (UNEXPECTED(iterableKeyType.isUndef())) return zv::Val();
-		zend_long keysInteger = pt_type_call_trinary(Z_OBJ_P(iterableKeyType.raw()), PT_LC("isinteger"), 0, NULL);
+		zend_long keysInteger = pt_type_op_trinary(Z_OBJ_P(iterableKeyType.raw()), PT_OP_IS_INTEGER, 0, NULL);
 		if (UNEXPECTED(keysInteger < 0)) return zv::Val();
 		bool allKeysInteger = keysInteger == PT_TRI_YES;
 
@@ -3602,7 +3602,7 @@ public:
 					}
 				}
 
-				zend_long isInteger = pt_type_call_trinary(Z_OBJ_P(keyType), PT_LC("isinteger"), 0, NULL);
+				zend_long isInteger = pt_type_op_trinary(Z_OBJ_P(keyType), PT_OP_IS_INTEGER, 0, NULL);
 				if (UNEXPECTED(isInteger < 0)) return zv::Val();
 				zval *valueType = arrayIndexObject(v, i, "valueTypes");
 				if (UNEXPECTED(valueType == NULL)) return zv::Val();
@@ -3628,7 +3628,7 @@ public:
 			zv::Val builtType = builderGetArray(builder.raw());
 			if (UNEXPECTED(builtType.isUndef())) return zv::Val();
 			if (allKeysInteger) {
-				zend_long builtIsList = pt_type_call_trinary(Z_OBJ_P(builtType.raw()), PT_LC("islist"), 0, NULL);
+				zend_long builtIsList = pt_type_op_trinary(Z_OBJ_P(builtType.raw()), PT_OP_IS_LIST, 0, NULL);
 				if (UNEXPECTED(builtIsList < 0)) return zv::Val();
 				if (builtIsList != PT_TRI_YES) {
 					zv::Val list = accessoryList();
@@ -4431,7 +4431,7 @@ public:
 			return typeMap;
 		}
 
-		zend_long isArray = pt_type_call_trinary(Z_OBJ_P(receivedType), PT_LC("isarray"), 0, NULL);
+		zend_long isArray = pt_type_op_trinary(Z_OBJ_P(receivedType), PT_OP_IS_ARRAY, 0, NULL);
 		if (UNEXPECTED(isArray < 0)) return zv::Val();
 		if (isArray == PT_TRI_YES) {
 			zv::Val keyType = thisGetIterableKeyType();
@@ -4487,10 +4487,10 @@ public:
 	 * otherwise; UNDEF = pending exception */
 	zv::Val tryRemove(zval *typeToRemove) const
 	{
-		zend_long removeIsConstantArray = pt_type_call_trinary(Z_OBJ_P(typeToRemove), PT_LC("isconstantarray"), 0, NULL);
+		zend_long removeIsConstantArray = pt_type_op_trinary(Z_OBJ_P(typeToRemove), PT_OP_IS_CONSTANT_ARRAY, 0, NULL);
 		if (UNEXPECTED(removeIsConstantArray < 0)) return zv::Val();
 		if (removeIsConstantArray == PT_TRI_YES) {
-			zend_long atLeastOnce = pt_type_call_trinary(Z_OBJ_P(typeToRemove), PT_LC("isiterableatleastonce"), 0, NULL);
+			zend_long atLeastOnce = pt_type_op_trinary(Z_OBJ_P(typeToRemove), PT_OP_IS_ITERABLE_AT_LEAST_ONCE, 0, NULL);
 			if (UNEXPECTED(atLeastOnce < 0)) return zv::Val();
 			if (atLeastOnce == PT_TRI_NO) return intersectedWithNonEmpty();
 		}
@@ -4600,7 +4600,7 @@ public:
 	 * pair) as the callback's second argument; UNDEF = pending exception */
 	zv::Val traverseSimultaneously(zval *right, zend_fcall_info *fci, zend_fcall_info_cache *fcc) const
 	{
-		zend_long rightIsArray = pt_type_call_trinary(Z_OBJ_P(right), PT_LC("isarray"), 0, NULL);
+		zend_long rightIsArray = pt_type_op_trinary(Z_OBJ_P(right), PT_OP_IS_ARRAY, 0, NULL);
 		if (UNEXPECTED(rightIsArray < 0)) return zv::Val();
 		if (rightIsArray != PT_TRI_YES) return zv::Val::copyOf(zv::Ref(thisZv()));
 
@@ -5126,7 +5126,7 @@ public:
 	[[nodiscard]] bool findVerifiedKeyIndex(zval *offsetType, NullableLong &out) const
 	{
 		out = NullableLong::null();
-		zend_long isConstantScalar = pt_type_call_trinary(Z_OBJ_P(offsetType), PT_LC("isconstantscalarvalue"), 0, NULL);
+		zend_long isConstantScalar = pt_type_op_trinary(Z_OBJ_P(offsetType), PT_OP_IS_CONSTANT_SCALAR_VALUE, 0, NULL);
 		if (UNEXPECTED(isConstantScalar < 0)) return false;
 		if (isConstantScalar != PT_TRI_YES) return true;
 
@@ -5532,7 +5532,7 @@ public:
 
 		/* `array_change_key_case` only folds string keys — int keys (e.g.
 		 * `...<int, ...>`) pass through unchanged. */
-		zend_long isString = pt_type_call_trinary(Z_OBJ_P(key), PT_LC("isstring"), 0, NULL);
+		zend_long isString = pt_type_op_trinary(Z_OBJ_P(key), PT_OP_IS_STRING, 0, NULL);
 		if (UNEXPECTED(isString < 0)) return zv::Val();
 		if (isString != PT_TRI_YES) return zv::Val::copyOf(zv::Ref(key));
 
@@ -5839,7 +5839,7 @@ public:
 				zend_type_error("phpstan_turbo: valueTypes must hold %s instances", ptcls::type);
 				return false;
 			}
-			zv::Val has = pt_type_call(Z_OBJ_P(valueType), PT_LC("hastemplateorlateresolvabletype"), 0, NULL);
+			zv::Val has = pt_type_op(Z_OBJ_P(valueType), PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, 0, NULL);
 			if (UNEXPECTED(has.isUndef())) return false;
 			if (!zend_is_true(has.raw())) continue;
 			out = true;
@@ -5861,13 +5861,13 @@ public:
 		if (Z_TYPE_P(u) != IS_NULL) {
 			zval *unsealedKey, *unsealedValue;
 			if (UNEXPECTED(!unsealedPair(u, unsealedKey, unsealedValue))) return false;
-			zv::Val keyHas = pt_type_call(Z_OBJ_P(unsealedKey), PT_LC("hastemplateorlateresolvabletype"), 0, NULL);
+			zv::Val keyHas = pt_type_op(Z_OBJ_P(unsealedKey), PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, 0, NULL);
 			if (UNEXPECTED(keyHas.isUndef())) return false;
 			if (zend_is_true(keyHas.raw())) {
 				out = true;
 				return true;
 			}
-			zv::Val valueHas = pt_type_call(Z_OBJ_P(unsealedValue), PT_LC("hastemplateorlateresolvabletype"), 0, NULL);
+			zv::Val valueHas = pt_type_op(Z_OBJ_P(unsealedValue), PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, 0, NULL);
 			if (UNEXPECTED(valueHas.isUndef())) return false;
 			if (zend_is_true(valueHas.raw())) {
 				out = true;
@@ -6041,7 +6041,7 @@ private:
 	zend_long thisIsIterableAtLeastOnce() const
 	{
 		if (EXPECTED(ownMethod(PT_LC("isiterableatleastonce"), catIsIterableAtLeastOnce))) return isIterableAtLeastOnce();
-		return pt_type_call_trinary(self, PT_LC("isiterableatleastonce"), 0, NULL);
+		return pt_type_op_trinary(self, PT_OP_IS_ITERABLE_AT_LEAST_ONCE, 0, NULL);
 	}
 
 	zend_long thisIsList() const
@@ -6050,7 +6050,7 @@ private:
 			zval *l = isListSlot();
 			return l == NULL ? -1 : trinaryOf(l);
 		}
-		return pt_type_call_trinary(self, PT_LC("islist"), 0, NULL);
+		return pt_type_op_trinary(self, PT_OP_IS_LIST, 0, NULL);
 	}
 
 	zend_long thisHasOffsetValueType(zval *offsetType) const
@@ -6597,7 +6597,7 @@ private:
 		zend_long isListValue = trinaryOf(isListSlotValue);
 		if (UNEXPECTED(isListValue < 0)) return zv::Val();
 		if (isListValue == PT_TRI_YES) {
-			zend_long resultIsList = pt_type_call_trinary(Z_OBJ_P(unsetResult.raw()), PT_LC("islist"), 0, NULL);
+			zend_long resultIsList = pt_type_op_trinary(Z_OBJ_P(unsetResult.raw()), PT_OP_IS_LIST, 0, NULL);
 			if (UNEXPECTED(resultIsList < 0)) return zv::Val();
 			if (resultIsList == PT_TRI_NO) return neverType();
 		}
@@ -7239,13 +7239,16 @@ void pt_register_constant_array_type()
 	cls.method(sigs::getConstantArrays, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_cat_no_args(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ConstantArrayType::getConstantArrays);
 	});
+	cls.op<PT_OP_GET_CONSTANT_ARRAYS, &ConstantArrayType::getConstantArrays>();
 
 	cls.method(sigs::getReferencedClasses, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_cat_no_args(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ConstantArrayType::getReferencedClasses);
 	});
 
 	cls.method(sigs::getIterableKeyType, catGetIterableKeyType);
+	cls.op<PT_OP_GET_ITERABLE_KEY_TYPE, &ConstantArrayType::getIterableKeyType>();
 	cls.method(sigs::getIterableValueType, catGetIterableValueType);
+	cls.op<PT_OP_GET_ITERABLE_VALUE_TYPE, &ConstantArrayType::getIterableValueType>();
 	cls.method(sigs::getKeyType, catGetKeyType);
 	cls.method(sigs::getItemType, catGetItemType);
 
@@ -7275,10 +7278,12 @@ void pt_register_constant_array_type()
 	});
 
 	cls.method<&ConstantArrayType::accepts, zp::Obj, zp::Bool>(sigs::accepts);
+	cls.op(PT_OP_ACCEPTS, PT_OP_LAMBDA { return ConstantArrayType(self).accepts(argv, (Z_TYPE(argv[1]) == IS_TRUE)); });
 
 	cls.method(sigs::isSuperTypeOf, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_cat_one_type(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ConstantArrayType::isSuperTypeOf);
 	});
+	cls.op<PT_OP_IS_SUPER_TYPE_OF, &ConstantArrayType::isSuperTypeOf>();
 
 	cls.method(sigs::looseCompare, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *type, *phpVersion;
@@ -7291,11 +7296,13 @@ void pt_register_constant_array_type()
 		if (!zp::parse<zp::Obj>(execute_data, type)) RETURN_THROWS();
 		PT_RETURN_BOOL_OR_THROW(PT_THIS.equals(type, pt_out__));
 	});
+	cls.op<PT_OP_EQUALS, &ConstantArrayType::equals>();
 
 	cls.method(sigs::isCallable, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		PT_RETURN_TRINARY_OR_THROW(PT_THIS.isCallable());
 	});
+	cls.op<PT_OP_IS_CALLABLE, &ConstantArrayType::isCallable>();
 
 	cls.method<&ConstantArrayType::getCallableParametersAcceptors, zp::Obj>(sigs::getCallableParametersAcceptors);
 
@@ -7360,6 +7367,7 @@ void pt_register_constant_array_type()
 	cls.method<&ConstantArrayType::extractTruncateListBounds, zp::Obj>(sigs::extractTruncateListBounds);
 
 	cls.method(sigs::isIterableAtLeastOnce, catIsIterableAtLeastOnce);
+	cls.op<PT_OP_IS_ITERABLE_AT_LEAST_ONCE, &ConstantArrayType::isIterableAtLeastOnce>();
 	cls.method(sigs::getArraySize, catGetArraySize);
 
 	cls.method(sigs::getFirstIterableKeyType, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -7382,8 +7390,10 @@ void pt_register_constant_array_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_COPY(pt_trinary_singleton(ConstantArrayType::isConstantArray()));
 	});
+	cls.op(PT_OP_IS_CONSTANT_ARRAY, PT_OP_LAMBDA { return pt_op_trinary(ConstantArrayType::isConstantArray()); });
 
 	cls.method(sigs::isList, catIsList);
+	cls.op<PT_OP_IS_LIST, &ConstantArrayType::isList>();
 	cls.method(sigs::toBoolean, catToBoolean);
 
 	cls.method(sigs::toInteger, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -7414,6 +7424,7 @@ void pt_register_constant_array_type()
 	cls.method(sigs::getValuesArray, catGetValuesArray);
 
 	cls.method(sigs::describe, catDescribe);
+	cls.op<PT_OP_DESCRIBE, &ConstantArrayType::describe>();
 
 	cls.method(sigs::inferTemplateTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_cat_one_type(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ConstantArrayType::inferTemplateTypes);
@@ -7422,12 +7433,14 @@ void pt_register_constant_array_type()
 	cls.method(sigs::getReferencedTemplateTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_cat_one_type(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ConstantArrayType::getReferencedTemplateTypes);
 	});
+	cls.op<PT_OP_GET_REFERENCED_TEMPLATE_TYPES, &ConstantArrayType::getReferencedTemplateTypes>();
 
 	cls.method(sigs::tryRemove, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_cat_one_type(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ConstantArrayType::tryRemove);
 	});
 
 	cls.method(sigs::traverse, catTraverse);
+	cls.op(PT_OP_TRAVERSE, PT_OP_LAMBDA { return pt_op_traverse_with<ConstantArrayType>(self, argv); });
 
 	cls.method(sigs::traverseSimultaneously, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *right;
@@ -7516,6 +7529,7 @@ void pt_register_constant_array_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		PT_RETURN_BOOL_OR_THROW(PT_THIS.hasTemplateOrLateResolvableType(pt_out__));
 	});
+	cls.op<PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, &ConstantArrayType::hasTemplateOrLateResolvableType>();
 
 	/* `use ArrayTypeTrait { chunkArray as traitChunkArray; }`: the trait's
 	 * chunkArray() under its alias (the trait's own name is overridden by

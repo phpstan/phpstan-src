@@ -290,7 +290,7 @@ public:
 		if (compound) {
 			zval selfZv;
 			ZVAL_OBJ(&selfZv, self);
-			return pt_type_call(Z_OBJ_P(type), PT_LC("issubtypeof"), 1, &selfZv);
+			return pt_type_op(Z_OBJ_P(type), PT_OP_IS_SUB_TYPE_OF, 1, &selfZv);
 		}
 
 		return isSuperTypeOfInternal(type, false);
@@ -397,7 +397,7 @@ public:
 				zend_type_error("phpstan_turbo: and() must return %s", ZSTR_VAL(pt_ce_is_super_type_of_result->name));
 				return zv::Val();
 			}
-			result = pt_type_call(Z_OBJ_P(result.raw()), PT_LC("and"), 1, entry.value().raw());
+			result = pt_type_op(Z_OBJ_P(result.raw()), PT_OP_AND, 1, entry.value().raw());
 			if (UNEXPECTED(result.isUndef())) return zv::Val();
 		}
 
@@ -590,7 +590,7 @@ public:
 				zend_type_error("phpstan_turbo: a type argument must be %s", ptcls::type);
 				return zv::Val();
 			}
-			zv::Val referenced = pt_type_call(type.asObject(), PT_LC("getreferencedtemplatetypes"), 1, variance.raw());
+			zv::Val referenced = pt_type_op(type.asObject(), PT_OP_GET_REFERENCED_TEMPLATE_TYPES, 1, variance.raw());
 			if (UNEXPECTED(referenced.isUndef())) return zv::Val();
 			if (UNEXPECTED(!zv::Ref(referenced.raw()).isArray())) {
 				zend_type_error("phpstan_turbo: getReferencedTemplateTypes() must return array");
@@ -942,7 +942,7 @@ private:
 	{
 		zv::Val maybe = pt_type_is_super_type_of_result(PT_TRI_MAYBE);
 		if (UNEXPECTED(maybe.isUndef())) return zv::Val();
-		return pt_type_call(Z_OBJ_P(result.raw()), PT_LC("and"), 1, maybe.raw());
+		return pt_type_op(Z_OBJ_P(result.raw()), PT_OP_AND, 1, maybe.raw());
 	}
 
 	/* array_map(fn ($x) => $x->method(), $array) — keys kept, as
@@ -1051,8 +1051,10 @@ void pt_register_generic_object_type()
 	cls.method(sigs::describe, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_got_value_of(INTERNAL_FUNCTION_PARAM_PASSTHRU, &GenericObjectType::describe);
 	});
+	cls.op<PT_OP_DESCRIBE, &GenericObjectType::describe>();
 
 	cls.method<&GenericObjectType::equals, zp::Obj>(sigs::equals);
+	cls.op<PT_OP_EQUALS, &GenericObjectType::equals>();
 
 	cls.method(sigs::getReferencedClasses, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_got_value(INTERNAL_FUNCTION_PARAM_PASSTHRU, &GenericObjectType::getReferencedClasses);
@@ -1063,9 +1065,11 @@ void pt_register_generic_object_type()
 	});
 
 	cls.method<&GenericObjectType::accepts, zp::Obj, zp::Bool>(sigs::accepts);
+	cls.op(PT_OP_ACCEPTS, PT_OP_LAMBDA { return GenericObjectType(self).accepts(argv, (Z_TYPE(argv[1]) == IS_TRUE)); });
 	cls.method(sigs::isSuperTypeOf, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_got_value_of(INTERNAL_FUNCTION_PARAM_PASSTHRU, &GenericObjectType::isSuperTypeOf);
 	});
+	cls.op<PT_OP_IS_SUPER_TYPE_OF, &GenericObjectType::isSuperTypeOf>();
 
 	cls.method(sigs::getClassReflection, gotGetClassReflection);
 
@@ -1092,6 +1096,7 @@ void pt_register_generic_object_type()
 	cls.method(sigs::getReferencedTemplateTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_got_value_of(INTERNAL_FUNCTION_PARAM_PASSTHRU, &GenericObjectType::getReferencedTemplateTypes);
 	});
+	cls.op<PT_OP_GET_REFERENCED_TEMPLATE_TYPES, &GenericObjectType::getReferencedTemplateTypes>();
 
 	cls.method(sigs::traverse, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_fcall_info fci;
@@ -1101,6 +1106,7 @@ void pt_register_generic_object_type()
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(PT_THIS.traverse(&fci, &fcc));
 	});
+	cls.op(PT_OP_TRAVERSE, PT_OP_LAMBDA { return pt_op_traverse_with<GenericObjectType>(self, argv); });
 	cls.method(sigs::traverseSimultaneously, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *right;
 		zend_fcall_info fci;
@@ -1131,6 +1137,7 @@ void pt_register_generic_object_type()
 		pt_got_value(INTERNAL_FUNCTION_PARAM_PASSTHRU, &GenericObjectType::toPhpDocNode);
 	});
 	cls.method<&GenericObjectType::hasTemplateOrLateResolvableType>(sigs::hasTemplateOrLateResolvableType);
+	cls.op<PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, &GenericObjectType::hasTemplateOrLateResolvableType>();
 
 	cls.shadow(&pt_ce_generic_object_type);
 }

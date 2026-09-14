@@ -48,7 +48,7 @@ public:
 			return zv::Val();
 		}
 		ZVAL_COPY_VALUE(&args[0], right);
-		zv::Val boundAccepts = pt_type_call(Z_OBJ_P(bound.raw()), PT_LC("accepts"), 2, args);
+		zv::Val boundAccepts = pt_type_op(Z_OBJ_P(bound.raw()), PT_OP_ACCEPTS, 2, args);
 		if (UNEXPECTED(boundAccepts.isUndef())) return zv::Val();
 		zv::Val maybe = pt_type_accepts_result(PT_TRI_MAYBE);
 		if (UNEXPECTED(maybe.isUndef())) return zv::Val();
@@ -65,7 +65,7 @@ public:
 		/* new AcceptsResult($accepts->result, array_merge($accepts->reasons, [sprintf('Type %s is not always the same as %s. It breaks the contract for some argument types, typically subtypes.', $right->describe(VerbosityLevel::getRecommendedLevelByType($left, $right)), $left->getName())])) */
 		zv::Val verbosity = pt_type_verbosity_recommended(left, right);
 		if (UNEXPECTED(verbosity.isUndef())) return zv::Val();
-		zv::Val rightDescription = pt_type_call(Z_OBJ_P(right), PT_LC("describe"), 1, verbosity.raw());
+		zv::Val rightDescription = pt_type_op(Z_OBJ_P(right), PT_OP_DESCRIBE, 1, verbosity.raw());
 		if (UNEXPECTED(rightDescription.isUndef())) return zv::Val();
 		zv::Val leftName = pt_type_call(Z_OBJ_P(left), PT_LC("getname"), 0, NULL);
 		if (UNEXPECTED(leftName.isUndef())) return zv::Val();

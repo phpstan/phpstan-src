@@ -154,7 +154,7 @@ public:
 
 		/* $phpDocType !== null && $type->isNull()->no() → removeNull($phpDocType) */
 		if (!zv::Ref(phpDocType.raw()).isNull()) {
-			zend_long isNullTrinary = pt_type_call_trinary(Z_OBJ_P(type.raw()), PT_LC("isnull"), 0, NULL);
+			zend_long isNullTrinary = pt_type_op_trinary(Z_OBJ_P(type.raw()), PT_OP_IS_NULL, 0, NULL);
 			if (UNEXPECTED(isNullTrinary < 0)) return zv::Val();
 			if (isNullTrinary == PT_TRI_NO) {
 				phpDocType = combinator1(PT_LC("removenull"), phpDocType.raw());
@@ -175,7 +175,7 @@ public:
 				bool explicitMixed;
 				if (UNEXPECTED(!isExplicitMixed(type.raw(), explicitMixed))) return zv::Val();
 				if (!explicitMixed) {
-					zend_long isVoid = pt_type_call_trinary(Z_OBJ_P(phpDocType.raw()), PT_LC("isvoid"), 0, NULL);
+					zend_long isVoid = pt_type_op_trinary(Z_OBJ_P(phpDocType.raw()), PT_OP_IS_VOID, 0, NULL);
 					if (UNEXPECTED(isVoid < 0)) return zv::Val();
 					if (isVoid == PT_TRI_YES) return phpDocType;
 				}
@@ -203,7 +203,7 @@ public:
 						if (UNEXPECTED(!isArrayWithMixedKey(innerType.raw(), mixedKeyedArray))) return zv::Val();
 						if (mixedKeyedArray) {
 							/* new IterableType($innerType->getIterableKeyType(), $innerType->getItemType()) */
-							zv::Val keyType = pt_type_call(Z_OBJ_P(innerType.raw()), PT_LC("getiterablekeytype"), 0, NULL);
+							zv::Val keyType = pt_type_op(Z_OBJ_P(innerType.raw()), PT_OP_GET_ITERABLE_KEY_TYPE, 0, NULL);
 							if (UNEXPECTED(keyType.isUndef())) return zv::Val();
 							zv::Val itemType = pt_array_type_get_item_type(Z_OBJ_P(innerType.raw()));
 							if (UNEXPECTED(itemType.isUndef())) return zv::Val();
@@ -256,7 +256,7 @@ public:
 						zend_type_error("phpstan_turbo: UnionType::getTypes() must return a list of Type");
 						return zv::Val();
 					}
-					zv::Val isSuperType = pt_type_call(Z_OBJ_P(innerType.raw()), PT_LC("issupertypeof"), 1, resultType.raw());
+					zv::Val isSuperType = pt_type_op(Z_OBJ_P(innerType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, resultType.raw());
 					if (UNEXPECTED(isSuperType.isUndef())) return zv::Val();
 					zend_long trinary = pt_type_result_trinary(isSuperType.raw());
 					if (UNEXPECTED(trinary < 0)) return zv::Val();
@@ -342,7 +342,7 @@ private:
 		}
 		zval *level = pt_verbosity_level_singleton(PT_VERBOSITY_LEVEL_TYPE_ONLY);
 		if (UNEXPECTED(level == NULL)) return false;
-		zv::Val description = pt_type_call(Z_OBJ_P(keyType.raw()), PT_LC("describe"), 1, level);
+		zv::Val description = pt_type_op(Z_OBJ_P(keyType.raw()), PT_OP_DESCRIBE, 1, level);
 		if (UNEXPECTED(description.isUndef())) return false;
 		out = zv::Ref(description.raw()).isString() && zend_string_equals_literal(Z_STR_P(description.raw()), "mixed");
 		return true;
@@ -354,10 +354,10 @@ private:
 	 * — short-circuited as the twin evaluates it; false = pending exception */
 	[[nodiscard]] static bool decidesForPhpDoc(zval *type, zval *phpDocType, bool &out)
 	{
-		zend_long typeCallable = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("iscallable"), 0, NULL);
+		zend_long typeCallable = pt_type_op_trinary(Z_OBJ_P(type), PT_OP_IS_CALLABLE, 0, NULL);
 		if (UNEXPECTED(typeCallable < 0)) return false;
 		if (typeCallable == PT_TRI_YES) {
-			zend_long phpDocCallable = pt_type_call_trinary(Z_OBJ_P(phpDocType), PT_LC("iscallable"), 0, NULL);
+			zend_long phpDocCallable = pt_type_op_trinary(Z_OBJ_P(phpDocType), PT_OP_IS_CALLABLE, 0, NULL);
 			if (UNEXPECTED(phpDocCallable < 0)) return false;
 			if (phpDocCallable == PT_TRI_YES) {
 				out = true;
@@ -381,7 +381,7 @@ private:
 
 		zv::Val bounds = pt_type_template_type_helper_resolve_to_bounds(phpDocType);
 		if (UNEXPECTED(bounds.isUndef())) return false;
-		zv::Val isSuperType = pt_type_call(Z_OBJ_P(type), PT_LC("issupertypeof"), 1, bounds.raw());
+		zv::Val isSuperType = pt_type_op(Z_OBJ_P(type), PT_OP_IS_SUPER_TYPE_OF, 1, bounds.raw());
 		if (UNEXPECTED(isSuperType.isUndef())) return false;
 		zend_long trinary = pt_type_result_trinary(isSuperType.raw());
 		if (UNEXPECTED(trinary < 0)) return false;

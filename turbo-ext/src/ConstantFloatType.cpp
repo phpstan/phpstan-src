@@ -248,8 +248,10 @@ void pt_register_constant_float_type()
 	});
 
 	cls.method<&ConstantFloatType::equals, zp::Obj>(sigs::equals);
+	cls.op<PT_OP_EQUALS, &ConstantFloatType::equals>();
 
 	cls.method<&ConstantFloatType::describe, zp::Obj>(sigs::describe);
+	cls.op<PT_OP_DESCRIBE, &ConstantFloatType::describe>();
 
 	cls.method<&ConstantFloatType::toString>(sigs::toString);
 
@@ -260,6 +262,7 @@ void pt_register_constant_float_type()
 	cls.method<&ConstantFloatType::toAbsoluteNumber>(sigs::toAbsoluteNumber);
 
 	cls.method<&ConstantFloatType::toArrayKey>(sigs::toArrayKey);
+	cls.op<PT_OP_TO_ARRAY_KEY, &ConstantFloatType::toArrayKey>();
 
 	cls.method<&ConstantFloatType::getFiniteTypes>(sigs::getFiniteTypes);
 

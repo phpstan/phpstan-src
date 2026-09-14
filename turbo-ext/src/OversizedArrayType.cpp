@@ -49,7 +49,7 @@ public:
 		if (compound) {
 			zval selfZv;
 			ZVAL_OBJ(&selfZv, self);
-			return pt_type_call(Z_OBJ_P(type), PT_LC("issubtypeof"), 1, &selfZv);
+			return pt_type_op(Z_OBJ_P(type), PT_OP_IS_SUB_TYPE_OF, 1, &selfZv);
 		}
 		zend_long value = arrayAnd(type, PT_LC("isoversizedarray"));
 		if (UNEXPECTED(value < 0)) return zv::Val();
@@ -66,7 +66,7 @@ public:
 		if (unionOrIntersection) {
 			zval selfZv;
 			ZVAL_OBJ(&selfZv, self);
-			return pt_type_call(Z_OBJ_P(otherType), PT_LC("issupertypeof"), 1, &selfZv);
+			return pt_type_op(Z_OBJ_P(otherType), PT_OP_IS_SUPER_TYPE_OF, 1, &selfZv);
 		}
 		zend_long value = arrayAnd(otherType, PT_LC("isoversizedarray"));
 		if (UNEXPECTED(value < 0)) return zv::Val();
@@ -79,7 +79,7 @@ public:
 	/* $this->isSubTypeOf($acceptingType)->toAcceptsResult() */
 	zv::Val isAcceptedBy(zval *acceptingType) const
 	{
-		return pt_type_sub_type_to_accepts_result(isExact() ? isSubTypeOf(acceptingType) : pt_type_call(self, PT_LC("issubtypeof"), 1, acceptingType));
+		return pt_type_sub_type_to_accepts_result(isExact() ? isSubTypeOf(acceptingType) : pt_type_op(self, PT_OP_IS_SUB_TYPE_OF, 1, acceptingType));
 	}
 
 	/* $type instanceof self */
@@ -125,7 +125,7 @@ private:
 			out = equals(type);
 			return true;
 		}
-		return pt_type_call_bool(self, PT_LC("equals"), 1, type, out);
+		return pt_type_op_bool(self, PT_OP_EQUALS, 1, type, out);
 	}
 
 	/* TrinaryLogic::and(): the minimum */
@@ -133,7 +133,7 @@ private:
 	/* $type->isArray()->and($type-><second>()); -1 = pending exception */
 	[[nodiscard]] static zend_long arrayAnd(zval *type, const char *secondLcname, size_t secondLen)
 	{
-		zend_long isArray = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isarray"), 0, NULL);
+		zend_long isArray = pt_type_op_trinary(Z_OBJ_P(type), PT_OP_IS_ARRAY, 0, NULL);
 		if (UNEXPECTED(isArray < 0)) return -1;
 		zend_long second = pt_type_call_trinary(Z_OBJ_P(type), secondLcname, secondLen, 0, NULL);
 		if (UNEXPECTED(second < 0)) return -1;
@@ -273,20 +273,25 @@ void pt_register_oversized_array_type()
 
 	cls.method(sigs::getReferencedClasses, oaEmptyArray0);
 	cls.method(sigs::getObjectClassNames, oaEmptyArray0);
+	cls.op(PT_OP_GET_OBJECT_CLASS_NAMES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getObjectClassReflections, oaEmptyArray0);
 	cls.method(sigs::getArrays, oaEmptyArray0);
 	cls.method(sigs::getConstantArrays, oaEmptyArray0);
+	cls.op(PT_OP_GET_CONSTANT_ARRAYS, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getConstantStrings, oaEmptyArray0);
 
 	cls.method<&OversizedArrayType::accepts, zp::Obj, zp::Bool>(sigs::accepts);
+	cls.op(PT_OP_ACCEPTS, PT_OP_LAMBDA { return OversizedArrayType(self).accepts(argv, (Z_TYPE(argv[1]) == IS_TRUE)); });
 
 	cls.method(sigs::isSuperTypeOf, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_oa_one_type(INTERNAL_FUNCTION_PARAM_PASSTHRU, &OversizedArrayType::isSuperTypeOf);
 	});
+	cls.op<PT_OP_IS_SUPER_TYPE_OF, &OversizedArrayType::isSuperTypeOf>();
 
 	cls.method(sigs::isSubTypeOf, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_oa_one_type(INTERNAL_FUNCTION_PARAM_PASSTHRU, &OversizedArrayType::isSubTypeOf);
 	});
+	cls.op<PT_OP_IS_SUB_TYPE_OF, &OversizedArrayType::isSubTypeOf>();
 
 	cls.method(sigs::isAcceptedBy, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *acceptingType;
@@ -300,11 +305,13 @@ void pt_register_oversized_array_type()
 		if (!zp::parse<zp::Obj>(execute_data, type)) RETURN_THROWS();
 		RETURN_BOOL(OversizedArrayType::equals(type));
 	});
+	cls.op(PT_OP_EQUALS, PT_OP_LAMBDA { return zv::Val::boolean(OversizedArrayType::equals(argv)); });
 
 	cls.method(sigs::describe, [](INTERNAL_FUNCTION_PARAMETERS) {
 		PT_ARGS(1, 1);
 		RETURN_STRINGL("oversized-array", sizeof("oversized-array") - 1);
 	});
+	cls.op(PT_OP_DESCRIBE, PT_OP_LAMBDA { return zv::Val::string("oversized-array", sizeof("oversized-array") - 1); });
 
 	cls.method(sigs::isOffsetAccessible, oaYes0);
 	cls.method(sigs::isOffsetAccessLegal, oaYes0);
@@ -348,30 +355,43 @@ void pt_register_oversized_array_type()
 	cls.method(sigs::filterArrayRemovingFalsey, oaThis0);
 	cls.method(sigs::isIterable, oaYes0);
 	cls.method(sigs::isIterableAtLeastOnce, oaMaybe0);
+	cls.op(PT_OP_IS_ITERABLE_AT_LEAST_ONCE, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_MAYBE); });
 
 	cls.method<&OversizedArrayType::getArraySize>(sigs::getArraySize);
 
 	cls.method(sigs::getIterableKeyType, oaMixed0);
+	cls.op(PT_OP_GET_ITERABLE_KEY_TYPE, PT_OP_LAMBDA { return pt_type_new_mixed_type(); });
 	cls.method(sigs::getFirstIterableKeyType, oaMixed0);
 	cls.method(sigs::getLastIterableKeyType, oaMixed0);
 	cls.method(sigs::getIterableValueType, oaMixed0);
+	cls.op(PT_OP_GET_ITERABLE_VALUE_TYPE, PT_OP_LAMBDA { return pt_type_new_mixed_type(); });
 	cls.method(sigs::getFirstIterableValueType, oaMixed0);
 	cls.method(sigs::getLastIterableValueType, oaMixed0);
 	cls.method(sigs::isArray, oaYes0);
+	cls.op(PT_OP_IS_ARRAY, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_YES); });
 	cls.method(sigs::isConstantArray, oaMaybe0);
+	cls.op(PT_OP_IS_CONSTANT_ARRAY, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_MAYBE); });
 	cls.method(sigs::isOversizedArray, oaYes0);
 	cls.method(sigs::isList, oaMaybe0);
+	cls.op(PT_OP_IS_LIST, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_MAYBE); });
 	cls.method(sigs::isNull, oaNo0);
+	cls.op(PT_OP_IS_NULL, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isConstantValue, oaMaybe0);
 	cls.method(sigs::isConstantScalarValue, oaNo0);
+	cls.op(PT_OP_IS_CONSTANT_SCALAR_VALUE, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::getConstantScalarTypes, oaEmptyArray0);
 	cls.method(sigs::getConstantScalarValues, oaEmptyArray0);
+	cls.op(PT_OP_GET_CONSTANT_SCALAR_VALUES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::isTrue, oaNo0);
 	cls.method(sigs::isFalse, oaNo0);
 	cls.method(sigs::isBoolean, oaNo0);
+	cls.op(PT_OP_IS_BOOLEAN, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isFloat, oaNo0);
+	cls.op(PT_OP_IS_FLOAT, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isInteger, oaNo0);
+	cls.op(PT_OP_IS_INTEGER, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isString, oaNo0);
+	cls.op(PT_OP_IS_STRING, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isNumericString, oaNo0);
 	cls.method(sigs::isDecimalIntegerString, oaNo0);
 	cls.method(sigs::isNonEmptyString, oaNo0);
@@ -383,6 +403,7 @@ void pt_register_oversized_array_type()
 	cls.method(sigs::getClassStringObjectType, oaError0);
 	cls.method(sigs::getObjectTypeOrClassStringObjectType, oaError0);
 	cls.method(sigs::isVoid, oaNo0);
+	cls.op(PT_OP_IS_VOID, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isScalar, oaNo0);
 
 	cls.method(sigs::looseCompare, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -404,8 +425,10 @@ void pt_register_oversized_array_type()
 	cls.method(sigs::toString, oaError0);
 	cls.method(sigs::toArray, oaMixed0);
 	cls.method(sigs::toArrayKey, oaError0);
+	cls.op(PT_OP_TO_ARRAY_KEY, PT_OP_LAMBDA { return pt_type_new_error_type(); });
 	cls.method(sigs::toCoercedArgumentType, oaThis1);
 	cls.method("traverse", reg::Public, 1, { reg::callableArg("cb") }, pt_type_identity_traverse_handler(), &ptret::type);
+	cls.op(PT_OP_TRAVERSE, PT_OP_LAMBDA { return pt_op_traverse_identity(self); });
 	cls.method(sigs::traverseSimultaneously, oaThis2);
 	cls.method(sigs::exponentiate, oaError1);
 	cls.method(sigs::getFiniteTypes, oaEmptyArray0);
@@ -418,6 +441,7 @@ void pt_register_oversized_array_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_FALSE;
 	});
+	cls.op(PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, PT_OP_LAMBDA { return zv::Val::boolean(false); });
 
 	/* the traits, in the twin's `use` order (UndecidedComparisonCompoundTypeTrait
 	 * brings UndecidedComparisonTypeTrait with it); the class body above wins

@@ -612,6 +612,9 @@ void pt_register_is_super_type_of_result()
 	cls.method("and", reg::Public, 0, { reg::variadicObj("others", IS_SUPER_TYPE_OF_RESULT_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_is_super_type_of_result_and_or(INTERNAL_FUNCTION_PARAM_PASSTHRU, true);
 	});
+	/* the one-operand call native code makes; the operand checked as the
+	 * variadic `self` parameter is */
+	cls.op(PT_OP_AND, PT_OP_LAMBDA { if (UNEXPECTED(pt_verify_is_super_type_of_result_variadic(argv, 1, 1) != SUCCESS)) { return zv::Val(); } return IsSuperTypeOfResult(self).and_(argv, 1); });
 
 	cls.method("or", reg::Public, 0, { reg::variadicObj("others", IS_SUPER_TYPE_OF_RESULT_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_is_super_type_of_result_and_or(INTERNAL_FUNCTION_PARAM_PASSTHRU, false);

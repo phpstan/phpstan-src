@@ -36,7 +36,7 @@ public:
 	{
 		/* $type instanceof self */
 		if (instanceof_function(Z_OBJCE_P(type), pt_ce_float_type)) return pt_type_accepts_result(PT_TRI_YES);
-		zend_long isInteger = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isinteger"), 0, NULL);
+		zend_long isInteger = pt_type_op_trinary(Z_OBJ_P(type), PT_OP_IS_INTEGER, 0, NULL);
 		if (UNEXPECTED(isInteger < 0)) return zv::Val();
 		if (isInteger == PT_TRI_YES) return pt_type_accepts_result(PT_TRI_YES);
 
@@ -62,7 +62,7 @@ public:
 		if (compound) {
 			zval selfZv;
 			ZVAL_OBJ(&selfZv, self);
-			return pt_type_call(Z_OBJ_P(type), PT_LC("issubtypeof"), 1, &selfZv);
+			return pt_type_op(Z_OBJ_P(type), PT_OP_IS_SUB_TYPE_OF, 1, &selfZv);
 		}
 
 		return pt_type_is_super_type_of_result(PT_TRI_NO);
@@ -237,26 +237,31 @@ void pt_register_float_type()
 	cls.method<&FloatType::getReferencedClasses>(sigs::getReferencedClasses);
 
 	cls.method<&FloatType::getObjectClassNames>(sigs::getObjectClassNames);
+	cls.op(PT_OP_GET_OBJECT_CLASS_NAMES, PT_OP_LAMBDA { return FloatType::getObjectClassNames(); });
 
 	cls.method<&FloatType::getObjectClassReflections>(sigs::getObjectClassReflections);
 
 	cls.method<&FloatType::getConstantStrings>(sigs::getConstantStrings);
 
 	cls.method<&FloatType::accepts, zp::Obj, zp::Bool>(sigs::accepts);
+	cls.op(PT_OP_ACCEPTS, PT_OP_LAMBDA { return FloatType(self).accepts(argv, (Z_TYPE(argv[1]) == IS_TRUE)); });
 
 	cls.method<&FloatType::isSuperTypeOf, zp::Obj>(sigs::isSuperTypeOf);
+	cls.op<PT_OP_IS_SUPER_TYPE_OF, &FloatType::isSuperTypeOf>();
 
 	cls.method(sigs::equals, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *type;
 		if (!zp::parse<zp::Obj>(execute_data, type)) RETURN_THROWS();
 		RETURN_BOOL(PT_THIS.equals(type));
 	});
+	cls.op(PT_OP_EQUALS, PT_OP_LAMBDA { return zv::Val::boolean(FloatType(self).equals(argv)); });
 
 	cls.method(sigs::describe, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *level;
 		if (!zp::parse<zp::Obj>(execute_data, level)) RETURN_THROWS();
 		RETURN_STRING(FloatType::describe());
 	});
+	cls.op(PT_OP_DESCRIBE, PT_OP_LAMBDA { return pt_op_string(FloatType::describe()); });
 
 	cls.method<&FloatType::toNumber>(sigs::toNumber);
 
@@ -273,6 +278,7 @@ void pt_register_float_type()
 	cls.method<&FloatType::toArray>(sigs::toArray);
 
 	cls.method<&FloatType::toArrayKey>(sigs::toArrayKey);
+	cls.op(PT_OP_TO_ARRAY_KEY, PT_OP_LAMBDA { return FloatType::toArrayKey(); });
 
 	cls.method<&FloatType::toCoercedArgumentType, zp::Bool>(sigs::toCoercedArgumentType);
 
@@ -285,6 +291,7 @@ void pt_register_float_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_COPY(pt_trinary_singleton(FloatType::isNull()));
 	});
+	cls.op(PT_OP_IS_NULL, PT_OP_LAMBDA { return pt_op_trinary(FloatType::isNull()); });
 
 	cls.method(sigs::isConstantValue, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
@@ -295,10 +302,12 @@ void pt_register_float_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_COPY(pt_trinary_singleton(FloatType::isConstantScalarValue()));
 	});
+	cls.op(PT_OP_IS_CONSTANT_SCALAR_VALUE, PT_OP_LAMBDA { return pt_op_trinary(FloatType::isConstantScalarValue()); });
 
 	cls.method<&FloatType::getConstantScalarTypes>(sigs::getConstantScalarTypes);
 
 	cls.method<&FloatType::getConstantScalarValues>(sigs::getConstantScalarValues);
+	cls.op(PT_OP_GET_CONSTANT_SCALAR_VALUES, PT_OP_LAMBDA { return FloatType::getConstantScalarValues(); });
 
 	cls.method(sigs::isTrue, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
@@ -314,21 +323,25 @@ void pt_register_float_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_COPY(pt_trinary_singleton(FloatType::isBoolean()));
 	});
+	cls.op(PT_OP_IS_BOOLEAN, PT_OP_LAMBDA { return pt_op_trinary(FloatType::isBoolean()); });
 
 	cls.method(sigs::isFloat, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_COPY(pt_trinary_singleton(FloatType::isFloat()));
 	});
+	cls.op(PT_OP_IS_FLOAT, PT_OP_LAMBDA { return pt_op_trinary(FloatType::isFloat()); });
 
 	cls.method(sigs::isInteger, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_COPY(pt_trinary_singleton(FloatType::isInteger()));
 	});
+	cls.op(PT_OP_IS_INTEGER, PT_OP_LAMBDA { return pt_op_trinary(FloatType::isInteger()); });
 
 	cls.method(sigs::isString, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_COPY(pt_trinary_singleton(FloatType::isString()));
 	});
+	cls.op(PT_OP_IS_STRING, PT_OP_LAMBDA { return pt_op_trinary(FloatType::isString()); });
 
 	cls.method(sigs::isNumericString, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
@@ -378,6 +391,7 @@ void pt_register_float_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_COPY(pt_trinary_singleton(FloatType::isVoid()));
 	});
+	cls.op(PT_OP_IS_VOID, PT_OP_LAMBDA { return pt_op_trinary(FloatType::isVoid()); });
 
 	cls.method(sigs::isScalar, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
@@ -398,6 +412,7 @@ void pt_register_float_type()
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(PT_THIS.traverse());
 	});
+	cls.op(PT_OP_TRAVERSE, PT_OP_LAMBDA { zend_fcall_info fci; zend_fcall_info_cache fcc; if (UNEXPECTED(!pt_op_parse_callable(argv, fci, fcc))) { return pt_type_call_engine(self, "traverse", sizeof("traverse") - 1, 1, argv); } return FloatType(self).traverse(); });
 
 	cls.method(sigs::traverseSimultaneously, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *right;
@@ -420,6 +435,7 @@ void pt_register_float_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_BOOL(FloatType::hasTemplateOrLateResolvableType());
 	});
+	cls.op(PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, PT_OP_LAMBDA { return zv::Val::boolean(FloatType::hasTemplateOrLateResolvableType()); });
 
 	/* the traits, in the twin's `use` order; the class body above wins over
 	 * every name it declares */

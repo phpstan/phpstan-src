@@ -20,6 +20,7 @@
 #include "support.h"
 #include "generated/AcceptsResult.h"
 #include "zv.h"
+#include "TypeTraits.h"
 
 #include <cstring>
 
@@ -396,6 +397,15 @@ bool pt_reasons_merge_operands(zval *result, zend_object *self, zval *operands, 
  * released). */
 [[nodiscard]] bool pt_call_fci(zend_fcall_info *fci, zend_fcall_info_cache *fcc, uint32_t argc, zval *argv, zval *retval)
 {
+	/* a callable native code handed out — a holder's __invoke(), a
+	 * TypeTraverser's mapInternal()/traverseInternal() — is entered
+	 * directly (TypeOps.h, pt_direct_invoke) */
+	const zend_function *fn = fcc->function_handler;
+	if (fn != NULL && fn->type == ZEND_INTERNAL_FUNCTION) {
+		bool handled;
+		bool ok = pt_direct_invoke(fn, fcc->object, argc, argv, retval, handled);
+		if (handled) return ok;
+	}
 	fci->retval = retval;
 	fci->param_count = argc;
 	fci->params = argv;
@@ -621,39 +631,27 @@ using phpstanturbo::AcceptsResult;
  * createNo()); owned copy in *out, false = pending exception */
 [[nodiscard]] bool pt_accepts_result_singleton(zval *out, zend_long value)
 {
-	zv::Val result = AcceptsResult::singleton(value);
-	if (UNEXPECTED(result.isUndef())) return false;
-	*out = result.take();
-	return true;
+	return pt_val_into(AcceptsResult::singleton(value), out);
 }
 
 /* $self->and($other); false = pending exception */
 [[nodiscard]] bool pt_accepts_result_and(zval *out, zval *self, zval *other)
 {
-	zv::Val result = AcceptsResult(Z_OBJ_P(self)).and_(other);
-	if (UNEXPECTED(result.isUndef())) return false;
-	*out = result.take();
-	return true;
+	return pt_val_into(AcceptsResult(Z_OBJ_P(self)).and_(other), out);
 }
 
 /* new AcceptsResult($trinary, $reasons) — IsSuperTypeOfResult::toAcceptsResult();
  * reasons is owned and consumed; false = pending exception */
 [[nodiscard]] bool pt_accepts_result_create(zval *out, zval *trinary, zval *reasons)
 {
-	zv::Val created = AcceptsResult::create(trinary, zv::Val::adopt(*reasons));
-	if (UNEXPECTED(created.isUndef())) return false;
-	*out = created.take();
-	return true;
+	return pt_val_into(AcceptsResult::create(trinary, zv::Val::adopt(*reasons)), out);
 }
 
 /* $cb($reason) over an array of reasons — the decorateReasons() loop both
  * twins share; false = pending exception */
 [[nodiscard]] bool pt_reasons_decorate(zval *out, zval *reasons, zend_fcall_info *fci, zend_fcall_info_cache *fcc)
 {
-	zv::Val decorated = AcceptsResult::decorate(zv::ArrRef(reasons), fci, fcc);
-	if (UNEXPECTED(decorated.isUndef())) return false;
-	*out = decorated.take();
-	return true;
+	return pt_val_into(AcceptsResult::decorate(zv::ArrRef(reasons), fci, fcc), out);
 }
 
 void pt_accepts_result_rinit()
@@ -786,6 +784,9 @@ void pt_register_accepts_result()
 	cls.method("and", reg::Public, 1, { reg::obj("other", ACCEPTS_RESULT_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_accepts_result_and_or(INTERNAL_FUNCTION_PARAM_PASSTHRU, true);
 	});
+	/* the operand's class checked as Z_PARAM_OBJECT_OF_CLASS does; any other
+	 * object takes the engine path, which raises the TypeError */
+	cls.op(PT_OP_AND, PT_OP_LAMBDA { if (UNEXPECTED(!instanceof_function(Z_OBJCE_P(argv), pt_ce_accepts_result))) { return pt_type_call_engine(self, "and", sizeof("and") - 1, 1, argv); } return AcceptsResult(self).and_(argv); });
 
 	cls.method("or", reg::Public, 1, { reg::obj("other", ACCEPTS_RESULT_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_accepts_result_and_or(INTERNAL_FUNCTION_PARAM_PASSTHRU, false);

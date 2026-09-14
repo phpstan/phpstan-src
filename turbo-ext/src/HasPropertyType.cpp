@@ -93,7 +93,7 @@ public:
 		if (compound) {
 			zval selfZv;
 			ZVAL_OBJ(&selfZv, self);
-			return pt_type_call(Z_OBJ_P(type), PT_LC("issubtypeof"), 1, &selfZv);
+			return pt_type_op(Z_OBJ_P(type), PT_OP_IS_SUB_TYPE_OF, 1, &selfZv);
 		}
 		zend_long has = otherHasProperty(type);
 		if (UNEXPECTED(has < 0)) return zv::Val();
@@ -110,7 +110,7 @@ public:
 		if (unionOrIntersection) {
 			zval selfZv;
 			ZVAL_OBJ(&selfZv, self);
-			return pt_type_call(Z_OBJ_P(otherType), PT_LC("issupertypeof"), 1, &selfZv);
+			return pt_type_op(Z_OBJ_P(otherType), PT_OP_IS_SUPER_TYPE_OF, 1, &selfZv);
 		}
 		zend_long limit = instanceof_function(Z_OBJCE_P(otherType), pt_ce_has_property_type) ? PT_TRI_YES : PT_TRI_MAYBE;
 		zend_long has = otherHasProperty(otherType);
@@ -121,7 +121,7 @@ public:
 	/* $this->isSubTypeOf($acceptingType)->toAcceptsResult() */
 	zv::Val isAcceptedBy(zval *acceptingType) const
 	{
-		return pt_type_sub_type_to_accepts_result(isExact() ? isSubTypeOf(acceptingType) : pt_type_call(self, PT_LC("issubtypeof"), 1, acceptingType));
+		return pt_type_sub_type_to_accepts_result(isExact() ? isSubTypeOf(acceptingType) : pt_type_op(self, PT_OP_IS_SUB_TYPE_OF, 1, acceptingType));
 	}
 
 	/* $type instanceof self && $this->propertyName === $type->propertyName;
@@ -191,7 +191,7 @@ private:
 	[[nodiscard]] bool thisEquals(zval *type, bool &out) const
 	{
 		if (EXPECTED(isExact())) return equals(type, out);
-		return pt_type_call_bool(self, PT_LC("equals"), 1, type, out);
+		return pt_type_op_bool(self, PT_OP_EQUALS, 1, type, out);
 	}
 
 	/* $type->hasInstanceProperty($this->propertyName)->or($type->hasStaticProperty($this->propertyName));

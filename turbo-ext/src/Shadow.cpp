@@ -82,6 +82,17 @@ static reg::ShadowPlan *pt_shadow_plan_by_name(const char *realName)
 
 static bool pt_shadow_materialize(reg::ShadowPlan &plan, HashTable *twinFiles, zend_string *prefix);
 
+/* whether the plan declares a method of that (lowercase) name itself —
+ * its own or one of a trait registrar; case-insensitive like the engine's
+ * function table */
+static bool pt_shadow_plan_declares(const reg::ShadowPlan &plan, const char *lcname)
+{
+	for (const zend_function_entry &entry : plan.entries) {
+		if (entry.fname != NULL && strcasecmp(entry.fname, lcname) == 0) return true;
+	}
+	return false;
+}
+
 /* declares one plan; a parent that is itself a plan is declared first */
 static bool pt_shadow_materialize(reg::ShadowPlan &plan, HashTable *twinFiles, zend_string *prefix)
 {
@@ -169,6 +180,23 @@ static bool pt_shadow_materialize(reg::ShadowPlan &plan, HashTable *twinFiles, z
 	if (plan.out != NULL) {
 		*plan.out = linked;
 	}
+
+	/* the direct entries (TypeOps.h): the plan's own with this class as
+	 * their scope, and for every method the plan does not declare itself
+	 * the parent plan's entry with the parent's scope — the inherited
+	 * internal method keeps its declaring scope in the engine too */
+	pt_type_ops *ops = (pt_type_ops *) pecalloc(1, sizeof(pt_type_ops), 1);
+	reg::ShadowPlan *parentPlan = plan.parentName != NULL ? pt_shadow_plan_by_name(plan.parentName) : NULL;
+	for (int op = 0; op < PT_OP_COUNT; op++) {
+		if (plan.opFns[op] != NULL) {
+			ops->entries[op].fn = plan.opFns[op];
+			ops->entries[op].scope = linked;
+		} else if (parentPlan != NULL && parentPlan->ops != NULL && parentPlan->ops->entries[op].fn != NULL && !pt_shadow_plan_declares(plan, pt_type_op_infos[op].lcname)) {
+			ops->entries[op] = parentPlan->ops->entries[op];
+		}
+	}
+	plan.ops = ops;
+	pt_type_ops_attach(linked, ops);
 	return true;
 }
 

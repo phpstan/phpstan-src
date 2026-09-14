@@ -46,7 +46,7 @@ public:
 			return zv::Val();
 		}
 		ZVAL_COPY_VALUE(&args[0], right);
-		return pt_type_call(Z_OBJ_P(bound.raw()), PT_LC("accepts"), 2, args);
+		return pt_type_op(Z_OBJ_P(bound.raw()), PT_OP_ACCEPTS, 2, args);
 	}
 
 	static bool isArgument() { return false; }

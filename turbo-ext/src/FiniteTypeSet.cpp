@@ -114,7 +114,7 @@ public:
 			return zv::Val::adoptString(str.s);
 		}
 
-		zv::Val scalarValues = pt_type_call(Z_OBJ_P(type), PT_LC("getconstantscalarvalues"), 0, NULL);
+		zv::Val scalarValues = pt_type_op(Z_OBJ_P(type), PT_OP_GET_CONSTANT_SCALAR_VALUES, 0, NULL);
 		if (UNEXPECTED(scalarValues.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(scalarValues.raw()).isArray())) {
 			zend_type_error("phpstan_turbo: getConstantScalarValues() must return array");

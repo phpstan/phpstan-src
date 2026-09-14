@@ -154,9 +154,12 @@ void pt_register_error_type()
 	});
 
 	cls.method<&ErrorType::describe, zp::Obj>(sigs::describe);
+	cls.op<PT_OP_DESCRIBE, &ErrorType::describe>();
 
 	cls.method(sigs::getIterableKeyType, etError0);
+	cls.op(PT_OP_GET_ITERABLE_KEY_TYPE, PT_OP_LAMBDA { return ErrorType::create(); });
 	cls.method(sigs::getIterableValueType, etError0);
+	cls.op(PT_OP_GET_ITERABLE_VALUE_TYPE, PT_OP_LAMBDA { return ErrorType::create(); });
 
 	cls.method(sigs::subtract, [](INTERNAL_FUNCTION_PARAMETERS) {
 		PT_ARGS(1, 1);
@@ -168,6 +171,7 @@ void pt_register_error_type()
 		if (!zp::parse<zp::Obj>(execute_data, type)) RETURN_THROWS();
 		RETURN_BOOL(ErrorType::equals(type));
 	});
+	cls.op(PT_OP_EQUALS, PT_OP_LAMBDA { return zv::Val::boolean(ErrorType::equals(argv)); });
 
 	cls.shadow(&pt_ce_error_type);
 }

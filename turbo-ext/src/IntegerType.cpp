@@ -121,7 +121,7 @@ public:
 	 * new BooleanType() otherwise. UNDEF = pending exception */
 	static zv::Val looseCompare(zval *type, zval *phpVersion)
 	{
-		zend_long isArray = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isarray"), 0, NULL);
+		zend_long isArray = pt_type_op_trinary(Z_OBJ_P(type), PT_OP_IS_ARRAY, 0, NULL);
 		if (UNEXPECTED(isArray < 0)) return zv::Val();
 		if (isArray == PT_TRI_YES) return constantBoolean(false);
 
@@ -132,7 +132,7 @@ public:
 		zv::Val nonNumeric = pt_type_call(Z_OBJ_P(phpVersion), PT_LC("nonnumericstringandintegerisfalseonloosecomparison"), 0, NULL);
 		if (UNEXPECTED(nonNumeric.isUndef())) return zv::Val();
 		if (zend_is_true(nonNumeric.raw())) {
-			zend_long isString = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isstring"), 0, NULL);
+			zend_long isString = pt_type_op_trinary(Z_OBJ_P(type), PT_OP_IS_STRING, 0, NULL);
 			if (UNEXPECTED(isString < 0)) return zv::Val();
 			if (isString == PT_TRI_YES) {
 				zend_long isNumericString = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isnumericstring"), 0, NULL);
@@ -256,6 +256,7 @@ void pt_register_integer_type()
 		if (!zp::parse<zp::Obj>(execute_data, level)) RETURN_THROWS();
 		RETURN_STRING(IntegerType::describe());
 	});
+	cls.op(PT_OP_DESCRIBE, PT_OP_LAMBDA { return pt_op_string(IntegerType::describe()); });
 
 	cls.method<&IntegerType::getConstantStrings>(sigs::getConstantStrings);
 
@@ -274,6 +275,7 @@ void pt_register_integer_type()
 	cls.method<&IntegerType::toArray>(sigs::toArray);
 
 	cls.method<&IntegerType::toArrayKey>(sigs::toArrayKey);
+	cls.op<PT_OP_TO_ARRAY_KEY, &IntegerType::toArrayKey>();
 
 	cls.method<&IntegerType::toCoercedArgumentType, zp::Bool>(sigs::toCoercedArgumentType);
 
@@ -286,6 +288,7 @@ void pt_register_integer_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_COPY(pt_trinary_singleton(IntegerType::isNull()));
 	});
+	cls.op(PT_OP_IS_NULL, PT_OP_LAMBDA { return pt_op_trinary(IntegerType::isNull()); });
 
 	cls.method(sigs::isTrue, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
@@ -301,16 +304,19 @@ void pt_register_integer_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_COPY(pt_trinary_singleton(IntegerType::isBoolean()));
 	});
+	cls.op(PT_OP_IS_BOOLEAN, PT_OP_LAMBDA { return pt_op_trinary(IntegerType::isBoolean()); });
 
 	cls.method(sigs::isFloat, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_COPY(pt_trinary_singleton(IntegerType::isFloat()));
 	});
+	cls.op(PT_OP_IS_FLOAT, PT_OP_LAMBDA { return pt_op_trinary(IntegerType::isFloat()); });
 
 	cls.method(sigs::isInteger, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_COPY(pt_trinary_singleton(IntegerType::isInteger()));
 	});
+	cls.op(PT_OP_IS_INTEGER, PT_OP_LAMBDA { return pt_op_trinary(IntegerType::isInteger()); });
 
 	cls.method(sigs::isScalar, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
@@ -331,6 +337,7 @@ void pt_register_integer_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_BOOL(IntegerType::hasTemplateOrLateResolvableType());
 	});
+	cls.op(PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, PT_OP_LAMBDA { return zv::Val::boolean(IntegerType::hasTemplateOrLateResolvableType()); });
 
 	/* the traits, in the twin's `use` order; the class body above wins over
 	 * every name it declares (getConstantStrings, isNull, isTrue, isFalse,

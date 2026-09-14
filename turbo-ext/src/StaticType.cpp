@@ -262,7 +262,7 @@ public:
 		if (compound) {
 			zval selfZv;
 			ZVAL_OBJ(&selfZv, self);
-			return pt_type_call(Z_OBJ_P(type), PT_LC("issubtypeof"), 1, &selfZv);
+			return pt_type_op(Z_OBJ_P(type), PT_OP_IS_SUB_TYPE_OF, 1, &selfZv);
 		}
 		return pt_type_is_super_type_of_result(PT_TRI_NO);
 	}
@@ -277,7 +277,7 @@ public:
 		}
 		zv::Val maybe = pt_type_is_super_type_of_result(PT_TRI_MAYBE);
 		if (UNEXPECTED(maybe.isUndef())) return zv::Val();
-		return pt_type_call(Z_OBJ_P(result.raw()), PT_LC("and"), 1, maybe.raw());
+		return pt_type_op(Z_OBJ_P(result.raw()), PT_OP_AND, 1, maybe.raw());
 	}
 
 	/* the same class (get_class($type) === static::class) with equal static
@@ -1014,12 +1014,16 @@ void pt_register_static_type()
 	});
 
 	cls.method<&StaticType::accepts, zp::Obj, zp::Bool>(sigs::accepts);
+	cls.op(PT_OP_ACCEPTS, PT_OP_LAMBDA { return StaticType(self).accepts(argv, (Z_TYPE(argv[1]) == IS_TRUE)); });
 
 	cls.method<&StaticType::isSuperTypeOf, zp::Obj>(sigs::isSuperTypeOf);
+	cls.op<PT_OP_IS_SUPER_TYPE_OF, &StaticType::isSuperTypeOf>();
 
 	cls.method<&StaticType::equals, zp::Obj>(sigs::equals);
+	cls.op<PT_OP_EQUALS, &StaticType::equals>();
 
 	cls.method<&StaticType::describe, zp::Obj>(sigs::describe);
+	cls.op<PT_OP_DESCRIBE, &StaticType::describe>();
 
 	cls.method(sigs::getTemplateType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("gettemplatetype"), 2, 2);
@@ -1375,6 +1379,7 @@ void pt_register_static_type()
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(PT_THIS.traverse(&fci, &fcc));
 	});
+	cls.op(PT_OP_TRAVERSE, PT_OP_LAMBDA { return pt_op_traverse_with<StaticType>(self, argv); });
 
 	cls.method(sigs::traverseSimultaneously, [](INTERNAL_FUNCTION_PARAMETERS) {
 		PT_ARGS(2, 2);

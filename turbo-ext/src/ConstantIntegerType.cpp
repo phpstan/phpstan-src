@@ -98,7 +98,7 @@ public:
 		if (compound) {
 			zval selfZv;
 			ZVAL_OBJ(&selfZv, self);
-			return pt_type_call(Z_OBJ_P(type), PT_LC("issubtypeof"), 1, &selfZv);
+			return pt_type_op(Z_OBJ_P(type), PT_OP_IS_SUB_TYPE_OF, 1, &selfZv);
 		}
 
 		return pt_type_is_super_type_of_result(PT_TRI_NO);
@@ -267,8 +267,10 @@ void pt_register_constant_integer_type()
 	});
 
 	cls.method<&ConstantIntegerType::isSuperTypeOf, zp::Obj>(sigs::isSuperTypeOf);
+	cls.op<PT_OP_IS_SUPER_TYPE_OF, &ConstantIntegerType::isSuperTypeOf>();
 
 	cls.method<&ConstantIntegerType::describe, zp::Obj>(sigs::describe);
+	cls.op<PT_OP_DESCRIBE, &ConstantIntegerType::describe>();
 
 	cls.method<&ConstantIntegerType::toFloat>(sigs::toFloat);
 
@@ -279,6 +281,7 @@ void pt_register_constant_integer_type()
 	cls.method<&ConstantIntegerType::toString>(sigs::toString);
 
 	cls.method<&ConstantIntegerType::toArrayKey>(sigs::toArrayKey);
+	cls.op<PT_OP_TO_ARRAY_KEY, &ConstantIntegerType::toArrayKey>();
 
 	cls.method<&ConstantIntegerType::toCoercedArgumentType, zp::Bool>(sigs::toCoercedArgumentType);
 

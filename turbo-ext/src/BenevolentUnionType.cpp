@@ -233,7 +233,7 @@ public:
 		ZVAL_BOOL(&strictZv, strictTypes);
 		for (zv::ArrayEntry entry : zv::ArrRef(types.raw())) {
 			zv::Args args{entry.value().deref().raw(), &strictZv};
-			zv::Val accepts = pt_type_call(Z_OBJ_P(acceptingType), PT_LC("accepts"), 2, args);
+			zv::Val accepts = pt_type_op(Z_OBJ_P(acceptingType), PT_OP_ACCEPTS, 2, args);
 			if (UNEXPECTED(accepts.isUndef())) return zv::Val();
 			if (UNEXPECTED(!zv::Ref(result.raw()).isObject())) {
 				zend_type_error("phpstan_turbo: expected %s", ZSTR_VAL(pt_ce_accepts_result->name));
@@ -508,6 +508,7 @@ void pt_register_benevolent_union_type()
 	cls.method<&BenevolentUnionType::tryRemove, zp::Obj>(sigs::tryRemove);
 
 	cls.method<&BenevolentUnionType::describe, zp::Obj>(sigs::describe);
+	cls.op<PT_OP_DESCRIBE, &BenevolentUnionType::describe>();
 
 	cls.method(sigs::unionTypes, buUnionTypes);
 	cls.method(sigs::pickFromTypes, buPickFromTypes);
@@ -530,6 +531,7 @@ void pt_register_benevolent_union_type()
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(PT_THIS.traverse(&fci, &fcc));
 	});
+	cls.op(PT_OP_TRAVERSE, PT_OP_LAMBDA { return pt_op_traverse_with<BenevolentUnionType>(self, argv); });
 
 	cls.method(sigs::traverseSimultaneously, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *right;

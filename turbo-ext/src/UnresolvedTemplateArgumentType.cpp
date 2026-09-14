@@ -147,7 +147,7 @@ public:
 		zend_long isObject = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isobject"), 0, NULL);
 		if (UNEXPECTED(isObject < 0)) return zv::Val();
 		if (isObject == PT_TRI_YES) return zv::Val::copyOf(zv::Ref(type));
-		zv::Val has = pt_type_call(Z_OBJ_P(type), PT_LC("hastemplateorlateresolvabletype"), 0, NULL);
+		zv::Val has = pt_type_op(Z_OBJ_P(type), PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, 0, NULL);
 		if (UNEXPECTED(has.isUndef())) return zv::Val();
 		if (!zend_is_true(has.raw())) {
 			bool containsBare;
@@ -197,7 +197,7 @@ public:
 		}
 		zv::Val delegate = getDelegate();
 		if (UNEXPECTED(delegate.isUndef())) return zv::Val();
-		zv::Val description = pt_type_call(Z_OBJ_P(delegate.raw()), PT_LC("describe"), 1, level);
+		zv::Val description = pt_type_op(Z_OBJ_P(delegate.raw()), PT_OP_DESCRIBE, 1, level);
 		if (UNEXPECTED(description.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(description.raw()).isString())) {
 			zend_type_error("phpstan_turbo: describe() must return a string");
@@ -244,7 +244,7 @@ public:
 		zv::Val target = getDelegate();
 		if (UNEXPECTED(target.isUndef())) return zv::Val();
 		zv::Args args{target.raw(), strictTypes};
-		return pt_type_call(Z_OBJ_P(acceptingType), PT_LC("accepts"), 2, args);
+		return pt_type_op(Z_OBJ_P(acceptingType), PT_OP_ACCEPTS, 2, args);
 	}
 
 	/* $otherType->isSuperTypeOf($this->getDelegate()) */
@@ -335,13 +335,13 @@ private:
 			out = false;
 			return true;
 		}
-		zv::Val valueType = pt_type_call(Z_OBJ_P(type), PT_LC("getiterablevaluetype"), 0, NULL);
+		zv::Val valueType = pt_type_op(Z_OBJ_P(type), PT_OP_GET_ITERABLE_VALUE_TYPE, 0, NULL);
 		if (UNEXPECTED(valueType.isUndef())) return false;
 		if (zv::Ref(valueType.raw()).instanceOf(pt_ce_unresolved_template_argument_type)) {
 			out = true;
 			return true;
 		}
-		zv::Val keyType = pt_type_call(Z_OBJ_P(type), PT_LC("getiterablekeytype"), 0, NULL);
+		zv::Val keyType = pt_type_op(Z_OBJ_P(type), PT_OP_GET_ITERABLE_KEY_TYPE, 0, NULL);
 		if (UNEXPECTED(keyType.isUndef())) return false;
 		out = zv::Ref(keyType.raw()).instanceOf(pt_ce_unresolved_template_argument_type);
 		return true;

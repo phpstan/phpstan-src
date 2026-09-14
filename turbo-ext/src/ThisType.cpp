@@ -66,7 +66,7 @@ public:
 	{
 		zv::Val staticObject = pt_static_type_this_static_object_type(self);
 		if (UNEXPECTED(staticObject.isUndef())) return zv::Val();
-		zv::Val inner = pt_type_call(Z_OBJ_P(staticObject.raw()), PT_LC("describe"), 1, level);
+		zv::Val inner = pt_type_op(Z_OBJ_P(staticObject.raw()), PT_OP_DESCRIBE, 1, level);
 		if (UNEXPECTED(inner.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(inner.raw()).isString())) {
 			zend_type_error("phpstan_turbo: describe() must return string");
@@ -88,14 +88,14 @@ public:
 		if (instanceof_function(Z_OBJCE_P(type), pt_ce_this_type)) {
 			zv::Val staticObject = pt_static_type_this_static_object_type(self);
 			if (UNEXPECTED(staticObject.isUndef())) return zv::Val();
-			return pt_type_call(Z_OBJ_P(staticObject.raw()), PT_LC("issupertypeof"), 1, type);
+			return pt_type_op(Z_OBJ_P(staticObject.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, type);
 		}
 		bool compound;
 		if (UNEXPECTED(!pt_type_instanceof(type, PT_CLASS_COMPOUND_TYPE, compound))) return zv::Val();
 		if (compound) {
 			zval selfZv;
 			ZVAL_OBJ(&selfZv, self);
-			return pt_type_call(Z_OBJ_P(type), PT_LC("issubtypeof"), 1, &selfZv);
+			return pt_type_op(Z_OBJ_P(type), PT_OP_IS_SUB_TYPE_OF, 1, &selfZv);
 		}
 
 		/* $parent = new parent($this->getClassReflection(), $this->getSubtractedType()) */
@@ -116,7 +116,7 @@ public:
 		}
 		zv::Val maybe = pt_type_is_super_type_of_result(PT_TRI_MAYBE);
 		if (UNEXPECTED(maybe.isUndef())) return zv::Val();
-		return pt_type_call(Z_OBJ_P(result.raw()), PT_LC("and"), 1, maybe.raw());
+		return pt_type_op(Z_OBJ_P(result.raw()), PT_OP_AND, 1, maybe.raw());
 	}
 
 	/* parent::changeSubtractedType($subtractedType), re-wrapped as a
@@ -237,8 +237,10 @@ void pt_register_this_type()
 	cls.method<&ThisType::changeBaseClass, zp::Obj>(sigs::changeBaseClass);
 
 	cls.method<&ThisType::describe, zp::Obj>(sigs::describe);
+	cls.op<PT_OP_DESCRIBE, &ThisType::describe>();
 
 	cls.method<&ThisType::isSuperTypeOf, zp::Obj>(sigs::isSuperTypeOf);
+	cls.op<PT_OP_IS_SUPER_TYPE_OF, &ThisType::isSuperTypeOf>();
 
 	cls.method(sigs::changeSubtractedType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *subtractedType;
@@ -259,6 +261,7 @@ void pt_register_this_type()
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(PT_THIS.traverse(&fci, &fcc));
 	});
+	cls.op(PT_OP_TRAVERSE, PT_OP_LAMBDA { return pt_op_traverse_with<ThisType>(self, argv); });
 
 	cls.method(sigs::traverseSimultaneously, [](INTERNAL_FUNCTION_PARAMETERS) {
 		PT_ARGS(2, 2);

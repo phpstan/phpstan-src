@@ -116,7 +116,7 @@ public:
 		handle.construct(keyTypes.raw(), valueTypes.raw(), nextAutoIndexes.raw(), optionalKeys.raw(), isList.raw(), unsealed.raw());
 
 		/* $builder->isNonEmpty = $startArrayType->isIterableAtLeastOnce() */
-		zv::Val isNonEmpty = pt_type_call(array, PT_LC("isiterableatleastonce"), 0, NULL);
+		zv::Val isNonEmpty = pt_type_op(array, PT_OP_IS_ITERABLE_AT_LEAST_ONCE, 0, NULL);
 		if (UNEXPECTED(isNonEmpty.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(isNonEmpty.raw()).isObject())) {
 			zend_type_error("phpstan_turbo: %s::isIterableAtLeastOnce() must return %s", ZSTR_VAL(array->ce->name), ptcls::trinaryLogic);
@@ -357,7 +357,7 @@ public:
 			if (UNEXPECTED(!pt_constant_array_type_new(&raw, keyTypes, valueTypes, nextAutoIndexes, optionalKeys, isList, unsealed))) return zv::Val();
 			zv::Val array = zv::Val::adopt(raw);
 			if (isNonEmpty == PT_TRI_YES) {
-				zend_long atLeastOnce = pt_type_call_trinary(Z_OBJ_P(array.raw()), PT_LC("isiterableatleastonce"), 0, NULL);
+				zend_long atLeastOnce = pt_type_op_trinary(Z_OBJ_P(array.raw()), PT_OP_IS_ITERABLE_AT_LEAST_ONCE, 0, NULL);
 				if (UNEXPECTED(atLeastOnce < 0)) return zv::Val();
 				if (atLeastOnce != PT_TRI_YES) return intersectWithNonEmpty(array.raw());
 			}
@@ -674,7 +674,7 @@ private:
 				zend_type_error("phpstan_turbo: %s::$keyTypes must hold Types", ZSTR_VAL(self->ce->name));
 				return false;
 			}
-			zv::Val covers = pt_type_call(Z_OBJ_P(offsetType), PT_LC("issupertypeof"), 1, keyType.raw());
+			zv::Val covers = pt_type_op(Z_OBJ_P(offsetType), PT_OP_IS_SUPER_TYPE_OF, 1, keyType.raw());
 			if (UNEXPECTED(covers.isUndef())) return false;
 			zend_long coversValue = pt_type_result_trinary(covers.raw());
 			if (UNEXPECTED(coversValue < 0)) return false;

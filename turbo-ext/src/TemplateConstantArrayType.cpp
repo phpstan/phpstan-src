@@ -38,7 +38,7 @@ public:
 		if (UNEXPECTED(nextAutoIndexes.isUndef())) return false;
 		zv::Val optionalKeys = pt_type_call(Z_OBJ_P(bound), PT_LC("getoptionalkeys"), 0, NULL);
 		if (UNEXPECTED(optionalKeys.isUndef())) return false;
-		zv::Val isList = pt_type_call(Z_OBJ_P(bound), PT_LC("islist"), 0, NULL);
+		zv::Val isList = pt_type_op(Z_OBJ_P(bound), PT_OP_IS_LIST, 0, NULL);
 		if (UNEXPECTED(isList.isUndef())) return false;
 		zv::Args args{keyTypes.raw(), valueTypes.raw(), nextAutoIndexes.raw(), optionalKeys.raw(), isList.raw()};
 		if (UNEXPECTED(!pt_template_type_parent_construct(self, pt_ce_template_constant_array_type, 5, args))) return false;

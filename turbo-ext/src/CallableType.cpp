@@ -163,7 +163,7 @@ public:
 		if (compound) {
 			zval selfZv;
 			ZVAL_OBJ(&selfZv, self);
-			return pt_type_call(Z_OBJ_P(type), PT_LC("issubtypeof"), 1, &selfZv);
+			return pt_type_op(Z_OBJ_P(type), PT_OP_IS_SUB_TYPE_OF, 1, &selfZv);
 		}
 		return isSuperTypeOfInternal(type, false, true);
 	}
@@ -174,7 +174,7 @@ public:
 	 * UNDEF = pending exception */
 	zv::Val isSuperTypeOfInternal(zval *type, bool treatMixedAsAny, bool strictTypes) const
 	{
-		zv::Val callable = pt_type_call(Z_OBJ_P(type), PT_LC("iscallable"), 0, NULL);
+		zv::Val callable = pt_type_op(Z_OBJ_P(type), PT_OP_IS_CALLABLE, 0, NULL);
 		if (UNEXPECTED(callable.isUndef())) return zv::Val();
 		zv::Val isCallable = pt_callable_is_super_type_of_result_of(callable.raw());
 		if (UNEXPECTED(isCallable.isUndef())) return zv::Val();
@@ -204,7 +204,7 @@ public:
 				}
 				zv::Val pureResult = pt_type_new_is_super_type_of_result(typePure);
 				if (UNEXPECTED(pureResult.isUndef())) return zv::Val();
-				return pt_type_call(Z_OBJ_P(isCallable.raw()), PT_LC("and"), 1, pureResult.raw());
+				return pt_type_op(Z_OBJ_P(isCallable.raw()), PT_OP_AND, 1, pureResult.raw());
 			}
 			return isCallable;
 		}
@@ -244,7 +244,7 @@ public:
 			pt_throw_should_not_happen();
 			return zv::Val();
 		}
-		return pt_type_call(Z_OBJ_P(isCallable.raw()), PT_LC("and"), 1, variantsResult.raw());
+		return pt_type_op(Z_OBJ_P(isCallable.raw()), PT_OP_AND, 1, variantsResult.raw());
 	}
 
 	/* a union or intersection's answer over $this; else the other type's
@@ -259,9 +259,9 @@ public:
 		if (isIntersection || isUnion) {
 			zval selfZv;
 			ZVAL_OBJ(&selfZv, self);
-			return pt_type_call(Z_OBJ_P(otherType), PT_LC("issupertypeof"), 1, &selfZv);
+			return pt_type_op(Z_OBJ_P(otherType), PT_OP_IS_SUPER_TYPE_OF, 1, &selfZv);
 		}
-		zend_long callable = pt_type_call_trinary(Z_OBJ_P(otherType), PT_LC("iscallable"), 0, NULL);
+		zend_long callable = pt_type_op_trinary(Z_OBJ_P(otherType), PT_OP_IS_CALLABLE, 0, NULL);
 		if (UNEXPECTED(callable < 0)) return zv::Val();
 		/* ->and($otherType instanceof self ? yes : maybe): the minimum */
 		zend_long limit = instanceof_function(Z_OBJCE_P(otherType), pt_ce_callable_type) ? PT_TRI_YES : PT_TRI_MAYBE;
@@ -477,7 +477,7 @@ public:
 			ZVAL_OBJ(&selfZv, self);
 			return pt_type_call(Z_OBJ_P(receivedType), PT_LC("infertemplatetypeson"), 1, &selfZv);
 		}
-		zend_long callable = pt_type_call_trinary(Z_OBJ_P(receivedType), PT_LC("iscallable"), 0, NULL);
+		zend_long callable = pt_type_op_trinary(Z_OBJ_P(receivedType), PT_OP_IS_CALLABLE, 0, NULL);
 		if (UNEXPECTED(callable < 0)) return zv::Val();
 		if (callable != PT_TRI_YES) return pt_callable_template_type_map_empty();
 		zv::Val scope = pt_callable_out_of_class_scope();
@@ -536,7 +536,7 @@ public:
 		int common = isCommonCallable();
 		if (UNEXPECTED(common < 0)) return zv::Val();
 		if (common == 1) return thisValue();
-		zend_long callable = pt_type_call_trinary(Z_OBJ_P(right), PT_LC("iscallable"), 0, NULL);
+		zend_long callable = pt_type_op_trinary(Z_OBJ_P(right), PT_OP_IS_CALLABLE, 0, NULL);
 		if (UNEXPECTED(callable < 0)) return zv::Val();
 		if (callable != PT_TRI_YES) return thisValue();
 		zv::Val scope = pt_callable_out_of_class_scope();
@@ -628,7 +628,7 @@ public:
 			zend_type_error("phpstan_turbo: getReturnType() must return an object");
 			return false;
 		}
-		return pt_type_call_bool(Z_OBJ_P(returnType.raw()), PT_LC("hastemplateorlateresolvabletype"), 0, NULL, out);
+		return pt_type_op_bool(Z_OBJ_P(returnType.raw()), PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, 0, NULL, out);
 	}
 
 	/* the $this-calls a subclass may answer differently, with the direct
@@ -672,7 +672,7 @@ public:
 	zv::Val thisIsSubTypeOf(zval *otherType) const
 	{
 		if (EXPECTED(pt_type_method_is(self, PT_LC("issubtypeof"), ctIsSubTypeOf))) return isSubTypeOf(otherType);
-		return pt_type_call(self, PT_LC("issubtypeof"), 1, otherType);
+		return pt_type_op(self, PT_OP_IS_SUB_TYPE_OF, 1, otherType);
 	}
 
 	/* the getters the shared helpers take */
@@ -729,7 +729,7 @@ private:
 			zend_type_error("phpstan_turbo: expected a type, %s given", zend_zval_value_name(a));
 			return -1;
 		}
-		zv::Val equal = pt_type_call(Z_OBJ_P(a), PT_LC("equals"), 1, b);
+		zv::Val equal = pt_type_op(Z_OBJ_P(a), PT_OP_EQUALS, 1, b);
 		if (UNEXPECTED(equal.isUndef())) return -1;
 		return zend_is_true(equal.raw()) ? 1 : 0;
 	}
@@ -1052,14 +1052,18 @@ void pt_register_callable_type()
 
 	cls.method<&CallableType::getReferencedClasses>(sigs::getReferencedClasses);
 	cls.method(sigs::getObjectClassNames, ctEmptyArray0);
+	cls.op(PT_OP_GET_OBJECT_CLASS_NAMES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getObjectClassReflections, ctEmptyArray0);
 	cls.method(sigs::getConstantStrings, ctEmptyArray0);
 
 	cls.method<&CallableType::accepts, zp::Obj, zp::Bool>(sigs::accepts);
+	cls.op(PT_OP_ACCEPTS, PT_OP_LAMBDA { return CallableType(self).accepts(argv, (Z_TYPE(argv[1]) == IS_TRUE)); });
 
 	cls.method<&CallableType::isSuperTypeOf, zp::Obj>(sigs::isSuperTypeOf);
+	cls.op<PT_OP_IS_SUPER_TYPE_OF, &CallableType::isSuperTypeOf>();
 
 	cls.method(sigs::isSubTypeOf, ctIsSubTypeOf);
+	cls.op<PT_OP_IS_SUB_TYPE_OF, &CallableType::isSubTypeOf>();
 
 	cls.method(sigs::isAcceptedBy, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *acceptingType;
@@ -1069,10 +1073,13 @@ void pt_register_callable_type()
 	});
 
 	cls.method<&CallableType::equals, zp::Obj>(sigs::equals);
+	cls.op<PT_OP_EQUALS, &CallableType::equals>();
 
 	cls.method<&CallableType::describe, zp::Obj>(sigs::describe);
+	cls.op<PT_OP_DESCRIBE, &CallableType::describe>();
 
 	cls.method(sigs::isCallable, ctTrinaryYes0);
+	cls.op(PT_OP_IS_CALLABLE, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_YES); });
 	cls.method(sigs::getCallableParametersAcceptors, [](INTERNAL_FUNCTION_PARAMETERS) {
 		PT_ARGS(1, 1);
 		PT_RETURN_VAL(pt_callable_self_list(Z_OBJ_P(ZEND_THIS)));
@@ -1097,6 +1104,7 @@ void pt_register_callable_type()
 	cls.method(sigs::toFloat, ctError0);
 	cls.method<&CallableType::toArray>(sigs::toArray);
 	cls.method(sigs::toArrayKey, ctError0);
+	cls.op(PT_OP_TO_ARRAY_KEY, PT_OP_LAMBDA { return pt_type_new_error_type(); });
 	cls.method(sigs::toCoercedArgumentType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		bool strictTypes;
 		if (!zp::parse<zp::Bool>(execute_data, strictTypes)) RETURN_THROWS();
@@ -1122,6 +1130,7 @@ void pt_register_callable_type()
 	cls.method<&CallableType::inferTemplateTypes, zp::Obj>(sigs::inferTemplateTypes);
 
 	cls.method<&CallableType::getReferencedTemplateTypes, zp::Obj>(sigs::getReferencedTemplateTypes);
+	cls.op<PT_OP_GET_REFERENCED_TEMPLATE_TYPES, &CallableType::getReferencedTemplateTypes>();
 
 	cls.method(sigs::traverse, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_fcall_info fci;
@@ -1131,6 +1140,7 @@ void pt_register_callable_type()
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(PT_THIS.traverse(&fci, &fcc));
 	});
+	cls.op(PT_OP_TRAVERSE, PT_OP_LAMBDA { return pt_op_traverse_with<CallableType>(self, argv); });
 
 	cls.method(sigs::traverseSimultaneously, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *right;
@@ -1145,16 +1155,23 @@ void pt_register_callable_type()
 
 	cls.method(sigs::isOversizedArray, ctTrinaryNo0);
 	cls.method(sigs::isNull, ctTrinaryNo0);
+	cls.op(PT_OP_IS_NULL, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isConstantValue, ctTrinaryNo0);
 	cls.method(sigs::isConstantScalarValue, ctTrinaryNo0);
+	cls.op(PT_OP_IS_CONSTANT_SCALAR_VALUE, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::getConstantScalarTypes, ctEmptyArray0);
 	cls.method(sigs::getConstantScalarValues, ctEmptyArray0);
+	cls.op(PT_OP_GET_CONSTANT_SCALAR_VALUES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::isTrue, ctTrinaryNo0);
 	cls.method(sigs::isFalse, ctTrinaryNo0);
 	cls.method(sigs::isBoolean, ctTrinaryNo0);
+	cls.op(PT_OP_IS_BOOLEAN, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isFloat, ctTrinaryNo0);
+	cls.op(PT_OP_IS_FLOAT, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isInteger, ctTrinaryNo0);
+	cls.op(PT_OP_IS_INTEGER, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isString, ctTrinaryMaybe0);
+	cls.op(PT_OP_IS_STRING, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_MAYBE); });
 	cls.method(sigs::isNumericString, ctTrinaryNo0);
 	cls.method(sigs::isDecimalIntegerString, ctTrinaryNo0);
 	cls.method(sigs::isNonEmptyString, ctTrinaryMaybe0);
@@ -1166,6 +1183,7 @@ void pt_register_callable_type()
 	cls.method(sigs::getClassStringObjectType, ctObjectWithoutClass0);
 	cls.method(sigs::getObjectTypeOrClassStringObjectType, ctObjectWithoutClass0);
 	cls.method(sigs::isVoid, ctTrinaryNo0);
+	cls.op(PT_OP_IS_VOID, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isScalar, ctTrinaryMaybe0);
 
 	cls.method(sigs::looseCompare, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -1194,6 +1212,7 @@ void pt_register_callable_type()
 	cls.method<&CallableType::toPhpDocNode>(sigs::toPhpDocNode);
 
 	cls.method<&CallableType::hasTemplateOrLateResolvableType>(sigs::hasTemplateOrLateResolvableType);
+	cls.op<PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, &CallableType::hasTemplateOrLateResolvableType>();
 
 	/* the traits, in the twin's `use` order; the class body above wins over
 	 * every name it declares */

@@ -61,7 +61,7 @@ public:
 	{
 		zend_long isDecimalIntegerString = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isdecimalintegerstring"), 0, NULL);
 		if (UNEXPECTED(isDecimalIntegerString < 0)) return zv::Val();
-		zend_long isString = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isstring"), 0, NULL);
+		zend_long isString = pt_type_op_trinary(Z_OBJ_P(type), PT_OP_IS_STRING, 0, NULL);
 		if (UNEXPECTED(isString < 0)) return zv::Val();
 		bool inverse = false;
 		if (UNEXPECTED(!this->inverse(inverse))) return zv::Val();
@@ -86,14 +86,14 @@ public:
 		if (compound) {
 			zval selfZv;
 			ZVAL_OBJ(&selfZv, self);
-			return pt_type_call(Z_OBJ_P(type), PT_LC("issubtypeof"), 1, &selfZv);
+			return pt_type_op(Z_OBJ_P(type), PT_OP_IS_SUB_TYPE_OF, 1, &selfZv);
 		}
 		bool equal;
 		if (UNEXPECTED(!thisEquals(type, equal))) return zv::Val();
 		if (equal) return pt_type_is_super_type_of_result(PT_TRI_YES);
 		zend_long isDecimalIntegerString = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isdecimalintegerstring"), 0, NULL);
 		if (UNEXPECTED(isDecimalIntegerString < 0)) return zv::Val();
-		zend_long isString = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isstring"), 0, NULL);
+		zend_long isString = pt_type_op_trinary(Z_OBJ_P(type), PT_OP_IS_STRING, 0, NULL);
 		if (UNEXPECTED(isString < 0)) return zv::Val();
 		bool inverse = false;
 		if (UNEXPECTED(!this->inverse(inverse))) return zv::Val();
@@ -111,7 +111,7 @@ public:
 		if (unionOrIntersection) {
 			zval selfZv;
 			ZVAL_OBJ(&selfZv, self);
-			return pt_type_call(Z_OBJ_P(otherType), PT_LC("issupertypeof"), 1, &selfZv);
+			return pt_type_op(Z_OBJ_P(otherType), PT_OP_IS_SUPER_TYPE_OF, 1, &selfZv);
 		}
 		zend_class_entry *otherCe = Z_OBJCE_P(otherType);
 		if (instanceof_function(otherCe, pt_ce_accessory_numeric_string_type)
@@ -122,7 +122,7 @@ public:
 			if (UNEXPECTED(!this->inverse(inverse))) return zv::Val();
 			if (!inverse) return pt_type_is_super_type_of_result(PT_TRI_YES);
 		}
-		zend_long isString = pt_type_call_trinary(Z_OBJ_P(otherType), PT_LC("isstring"), 0, NULL);
+		zend_long isString = pt_type_op_trinary(Z_OBJ_P(otherType), PT_OP_IS_STRING, 0, NULL);
 		if (UNEXPECTED(isString < 0)) return zv::Val();
 		bool inverse = false;
 		if (UNEXPECTED(!this->inverse(inverse))) return zv::Val();
@@ -132,7 +132,7 @@ public:
 		/* $otherType->equals($this) */
 		zval selfZv;
 		ZVAL_OBJ(&selfZv, self);
-		zv::Val equal = pt_type_call(Z_OBJ_P(otherType), PT_LC("equals"), 1, &selfZv);
+		zv::Val equal = pt_type_op(Z_OBJ_P(otherType), PT_OP_EQUALS, 1, &selfZv);
 		if (UNEXPECTED(equal.isUndef())) return zv::Val();
 		return pt_type_new_is_super_type_of_result(pt_trinary_and(otherTypeResult, zend_is_true(equal.raw()) ? PT_TRI_YES : PT_TRI_MAYBE));
 	}
@@ -140,7 +140,7 @@ public:
 	/* $this->isSubTypeOf($acceptingType)->toAcceptsResult() */
 	zv::Val isAcceptedBy(zval *acceptingType) const
 	{
-		return pt_type_sub_type_to_accepts_result(isExact() ? isSubTypeOf(acceptingType) : pt_type_call(self, PT_LC("issubtypeof"), 1, acceptingType));
+		return pt_type_sub_type_to_accepts_result(isExact() ? isSubTypeOf(acceptingType) : pt_type_op(self, PT_OP_IS_SUB_TYPE_OF, 1, acceptingType));
 	}
 
 	/* $type instanceof self && $this->inverse === $type->inverse; false =
@@ -375,13 +375,13 @@ public:
 		if (UNEXPECTED(!this->inverse(inverse))) return zv::Val();
 		zval result;
 		if (!inverse) {
-			zend_long isNull = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isnull"), 0, NULL);
+			zend_long isNull = pt_type_op_trinary(Z_OBJ_P(type), PT_OP_IS_NULL, 0, NULL);
 			if (UNEXPECTED(isNull < 0)) return zv::Val();
 			if (isNull == PT_TRI_YES) {
 				if (UNEXPECTED(!pt_constant_boolean_type_new(&result, false))) return zv::Val();
 				return zv::Val::adopt(result);
 			}
-			zend_long isString = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isstring"), 0, NULL);
+			zend_long isString = pt_type_op_trinary(Z_OBJ_P(type), PT_OP_IS_STRING, 0, NULL);
 			if (UNEXPECTED(isString < 0)) return zv::Val();
 			if (isString == PT_TRI_YES) {
 				zend_long isNumericString = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isnumericstring"), 0, NULL);
@@ -424,7 +424,7 @@ private:
 	[[nodiscard]] bool thisEquals(zval *type, bool &out) const
 	{
 		if (EXPECTED(isExact())) return equals(type, out);
-		return pt_type_call_bool(self, PT_LC("equals"), 1, type, out);
+		return pt_type_op_bool(self, PT_OP_EQUALS, 1, type, out);
 	}
 
 	/* $this->hasOffsetValueType($offsetType) — through the object's class;
@@ -566,18 +566,22 @@ void pt_register_accessory_decimal_integer_string_type()
 
 	cls.method(sigs::getReferencedClasses, adisEmptyArray0);
 	cls.method(sigs::getObjectClassNames, adisEmptyArray0);
+	cls.op(PT_OP_GET_OBJECT_CLASS_NAMES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getObjectClassReflections, adisEmptyArray0);
 	cls.method(sigs::getConstantStrings, adisEmptyArray0);
 
 	cls.method<&AccessoryDecimalIntegerStringType::accepts, zp::Obj, zp::Bool>(sigs::accepts);
+	cls.op(PT_OP_ACCEPTS, PT_OP_LAMBDA { return AccessoryDecimalIntegerStringType(self).accepts(argv, (Z_TYPE(argv[1]) == IS_TRUE)); });
 
 	cls.method(sigs::isSuperTypeOf, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_adis_one_type(INTERNAL_FUNCTION_PARAM_PASSTHRU, &AccessoryDecimalIntegerStringType::isSuperTypeOf);
 	});
+	cls.op<PT_OP_IS_SUPER_TYPE_OF, &AccessoryDecimalIntegerStringType::isSuperTypeOf>();
 
 	cls.method(sigs::isSubTypeOf, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_adis_one_type(INTERNAL_FUNCTION_PARAM_PASSTHRU, &AccessoryDecimalIntegerStringType::isSubTypeOf);
 	});
+	cls.op<PT_OP_IS_SUB_TYPE_OF, &AccessoryDecimalIntegerStringType::isSubTypeOf>();
 
 	cls.method(sigs::isAcceptedBy, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *acceptingType;
@@ -587,11 +591,13 @@ void pt_register_accessory_decimal_integer_string_type()
 	});
 
 	cls.method<&AccessoryDecimalIntegerStringType::equals, zp::Obj>(sigs::equals);
+	cls.op<PT_OP_EQUALS, &AccessoryDecimalIntegerStringType::equals>();
 
 	cls.method(sigs::describe, [](INTERNAL_FUNCTION_PARAMETERS) {
 		PT_ARGS(1, 1);
 		PT_RETURN_VAL(PT_THIS.describe());
 	});
+	cls.op<PT_OP_DESCRIBE, &AccessoryDecimalIntegerStringType::describe>();
 
 	cls.method(sigs::isOffsetAccessible, adisYes0);
 	cls.method(sigs::isOffsetAccessLegal, adisYes0);
@@ -654,19 +660,24 @@ void pt_register_accessory_decimal_integer_string_type()
 	cls.method(sigs::toArrayKey, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_adis_no_args(INTERNAL_FUNCTION_PARAM_PASSTHRU, &AccessoryDecimalIntegerStringType::toArrayKey);
 	});
+	cls.op<PT_OP_TO_ARRAY_KEY, &AccessoryDecimalIntegerStringType::toArrayKey>();
 
 	cls.method<&AccessoryDecimalIntegerStringType::toCoercedArgumentType, zp::Bool>(sigs::toCoercedArgumentType);
 
 	cls.method(sigs::isNull, adisNo0);
+	cls.op(PT_OP_IS_NULL, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isConstantValue, adisMaybe0);
 	cls.method(sigs::isConstantScalarValue, adisMaybe0);
+	cls.op(PT_OP_IS_CONSTANT_SCALAR_VALUE, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_MAYBE); });
 	cls.method(sigs::getConstantScalarTypes, adisEmptyArray0);
 	cls.method(sigs::getConstantScalarValues, adisEmptyArray0);
+	cls.op(PT_OP_GET_CONSTANT_SCALAR_VALUES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 
 	cls.method(sigs::isCallable, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		PT_RETURN_TRINARY_OR_THROW(PT_THIS.isCallable());
 	});
+	cls.op<PT_OP_IS_CALLABLE, &AccessoryDecimalIntegerStringType::isCallable>();
 
 	cls.method(sigs::getCallableParametersAcceptors, [](INTERNAL_FUNCTION_PARAMETERS) {
 		PT_ARGS(1, 1);
@@ -676,9 +687,13 @@ void pt_register_accessory_decimal_integer_string_type()
 	cls.method(sigs::isTrue, adisNo0);
 	cls.method(sigs::isFalse, adisNo0);
 	cls.method(sigs::isBoolean, adisNo0);
+	cls.op(PT_OP_IS_BOOLEAN, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isFloat, adisNo0);
+	cls.op(PT_OP_IS_FLOAT, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isInteger, adisNo0);
+	cls.op(PT_OP_IS_INTEGER, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isString, adisYes0);
+	cls.op(PT_OP_IS_STRING, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_YES); });
 	cls.method(sigs::isNumericString, adisMaybeWhenInverse0);
 
 	cls.method(sigs::isDecimalIntegerString, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -695,6 +710,7 @@ void pt_register_accessory_decimal_integer_string_type()
 	cls.method(sigs::getClassStringObjectType, adisError0);
 	cls.method(sigs::getObjectTypeOrClassStringObjectType, adisError0);
 	cls.method(sigs::isVoid, adisNo0);
+	cls.op(PT_OP_IS_VOID, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isScalar, adisYes0);
 
 	cls.method(sigs::looseCompare, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -704,6 +720,7 @@ void pt_register_accessory_decimal_integer_string_type()
 	});
 
 	cls.method("traverse", reg::Public, 1, { reg::callableArg("cb") }, pt_type_identity_traverse_handler(), &ptret::type);
+	cls.op(PT_OP_TRAVERSE, PT_OP_LAMBDA { return pt_op_traverse_identity(self); });
 	cls.method(sigs::traverseSimultaneously, adisThis2);
 	cls.method(sigs::generalize, adisString1);
 
@@ -727,6 +744,7 @@ void pt_register_accessory_decimal_integer_string_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_FALSE;
 	});
+	cls.op(PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, PT_OP_LAMBDA { return zv::Val::boolean(false); });
 
 	/* the traits, in the twin's `use` order (UndecidedComparisonCompoundTypeTrait
 	 * brings UndecidedComparisonTypeTrait with it); the class body above wins

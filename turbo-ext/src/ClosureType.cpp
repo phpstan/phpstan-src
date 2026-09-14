@@ -286,7 +286,7 @@ public:
 		if (compound) {
 			zval selfZv;
 			ZVAL_OBJ(&selfZv, self);
-			return pt_type_call(Z_OBJ_P(type), PT_LC("issubtypeof"), 1, &selfZv);
+			return pt_type_op(Z_OBJ_P(type), PT_OP_IS_SUB_TYPE_OF, 1, &selfZv);
 		}
 		return isSuperTypeOfInternal(type, false, true);
 	}
@@ -314,7 +314,7 @@ public:
 			return pt_callable_type_helper_is_parameters_acceptor_super_type_of(&selfZv, variant.raw(), treatMixedAsAny, strictTypes);
 		}
 		/* $type->getObjectClassNames() === [Closure::class] */
-		zv::Val classNames = pt_type_call(Z_OBJ_P(type), PT_LC("getobjectclassnames"), 0, NULL);
+		zv::Val classNames = pt_type_op(Z_OBJ_P(type), PT_OP_GET_OBJECT_CLASS_NAMES, 0, NULL);
 		if (UNEXPECTED(classNames.isUndef())) return zv::Val();
 		if (zv::Ref(classNames.raw()).isArray() && zend_hash_num_elements(Z_ARRVAL_P(classNames.raw())) == 1) {
 			zval *first = zend_hash_index_find(Z_ARRVAL_P(classNames.raw()), 0);
@@ -335,7 +335,7 @@ public:
 		if (UNEXPECTED(precise.isUndef())) return false;
 		zv::Val ownDescription = thisDescribe(precise.raw());
 		if (UNEXPECTED(ownDescription.isUndef())) return false;
-		zv::Val theirDescription = pt_type_call(Z_OBJ_P(type), PT_LC("describe"), 1, precise.raw());
+		zv::Val theirDescription = pt_type_op(Z_OBJ_P(type), PT_OP_DESCRIBE, 1, precise.raw());
 		if (UNEXPECTED(theirDescription.isUndef())) return false;
 		if (!zend_is_identical(ownDescription.raw(), theirDescription.raw())) {
 			out = false;
@@ -477,7 +477,7 @@ public:
 			ZVAL_OBJ(&selfZv, self);
 			return pt_type_call(Z_OBJ_P(receivedType), PT_LC("infertemplatetypeson"), 1, &selfZv);
 		}
-		zend_long callable = pt_type_call_trinary(Z_OBJ_P(receivedType), PT_LC("iscallable"), 0, NULL);
+		zend_long callable = pt_type_op_trinary(Z_OBJ_P(receivedType), PT_OP_IS_CALLABLE, 0, NULL);
 		if (UNEXPECTED(callable < 0)) return zv::Val();
 		if (callable == PT_TRI_NO || !instanceof_function(Z_OBJCE_P(receivedType), pt_ce_closure_type)) return pt_callable_template_type_map_empty();
 		zv::Val scope = pt_callable_out_of_class_scope();
@@ -610,7 +610,7 @@ public:
 			zend_type_error("phpstan_turbo: getReturnType() must return an object");
 			return false;
 		}
-		return pt_type_call_bool(Z_OBJ_P(returnType.raw()), PT_LC("hastemplateorlateresolvabletype"), 0, NULL, out);
+		return pt_type_op_bool(Z_OBJ_P(returnType.raw()), PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, 0, NULL, out);
 	}
 
 	/* the $this-calls a subclass may answer differently, with the direct
@@ -656,7 +656,7 @@ public:
 	zv::Val thisDescribe(zval *level) const
 	{
 		if (EXPECTED(pt_type_method_is(self, PT_LC("describe"), cltDescribe))) return describe(level);
-		return pt_type_call(self, PT_LC("describe"), 1, level);
+		return pt_type_op(self, PT_OP_DESCRIBE, 1, level);
 	}
 
 	zv::Val thisClassStringType() const
@@ -903,12 +903,16 @@ void pt_register_closure_type()
 	});
 
 	cls.method<&ClosureType::accepts, zp::Obj, zp::Bool>(sigs::accepts);
+	cls.op(PT_OP_ACCEPTS, PT_OP_LAMBDA { return ClosureType(self).accepts(argv, (Z_TYPE(argv[1]) == IS_TRUE)); });
 
 	cls.method<&ClosureType::isSuperTypeOf, zp::Obj>(sigs::isSuperTypeOf);
+	cls.op<PT_OP_IS_SUPER_TYPE_OF, &ClosureType::isSuperTypeOf>();
 
 	cls.method<&ClosureType::equals, zp::Obj>(sigs::equals);
+	cls.op<PT_OP_EQUALS, &ClosureType::equals>();
 
 	cls.method(sigs::describe, cltDescribe);
+	cls.op<PT_OP_DESCRIBE, &ClosureType::describe>();
 
 	cls.method(sigs::isOffsetAccessLegal, cltTrinaryNo0);
 	cls.method(sigs::isObject, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -982,7 +986,9 @@ void pt_register_closure_type()
 
 	cls.method(sigs::isIterable, cltTrinaryNo0);
 	cls.method(sigs::isIterableAtLeastOnce, cltTrinaryNo0);
+	cls.op(PT_OP_IS_ITERABLE_AT_LEAST_ONCE, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isCallable, cltTrinaryYes0);
+	cls.op(PT_OP_IS_CALLABLE, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_YES); });
 	cls.method(sigs::getEnumCases, cltEmptyArray0);
 	cls.method(sigs::getEnumCaseObject, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
@@ -1057,6 +1063,7 @@ void pt_register_closure_type()
 		PT_RETURN_VAL(pt_type_string_accessory_to_array(Z_OBJ_P(ZEND_THIS)));
 	});
 	cls.method(sigs::toArrayKey, cltError0);
+	cls.op(PT_OP_TO_ARRAY_KEY, PT_OP_LAMBDA { return pt_type_new_error_type(); });
 	cls.method(sigs::toCoercedArgumentType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		bool strictTypes;
 		if (!zp::parse<zp::Bool>(execute_data, strictTypes)) RETURN_THROWS();
@@ -1082,6 +1089,7 @@ void pt_register_closure_type()
 	cls.method<&ClosureType::inferTemplateTypes, zp::Obj>(sigs::inferTemplateTypes);
 
 	cls.method<&ClosureType::getReferencedTemplateTypes, zp::Obj>(sigs::getReferencedTemplateTypes);
+	cls.op<PT_OP_GET_REFERENCED_TEMPLATE_TYPES, &ClosureType::getReferencedTemplateTypes>();
 
 	cls.method(sigs::traverse, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_fcall_info fci;
@@ -1091,6 +1099,7 @@ void pt_register_closure_type()
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(PT_THIS.traverse(&fci, &fcc));
 	});
+	cls.op(PT_OP_TRAVERSE, PT_OP_LAMBDA { return pt_op_traverse_with<ClosureType>(self, argv); });
 
 	cls.method(sigs::traverseSimultaneously, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *right;
@@ -1104,16 +1113,23 @@ void pt_register_closure_type()
 	});
 
 	cls.method(sigs::isNull, cltTrinaryNo0);
+	cls.op(PT_OP_IS_NULL, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isConstantValue, cltTrinaryNo0);
 	cls.method(sigs::isConstantScalarValue, cltTrinaryNo0);
+	cls.op(PT_OP_IS_CONSTANT_SCALAR_VALUE, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::getConstantScalarTypes, cltEmptyArray0);
 	cls.method(sigs::getConstantScalarValues, cltEmptyArray0);
+	cls.op(PT_OP_GET_CONSTANT_SCALAR_VALUES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::isTrue, cltTrinaryNo0);
 	cls.method(sigs::isFalse, cltTrinaryNo0);
 	cls.method(sigs::isBoolean, cltTrinaryNo0);
+	cls.op(PT_OP_IS_BOOLEAN, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isFloat, cltTrinaryNo0);
+	cls.op(PT_OP_IS_FLOAT, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isInteger, cltTrinaryNo0);
+	cls.op(PT_OP_IS_INTEGER, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isString, cltTrinaryNo0);
+	cls.op(PT_OP_IS_STRING, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isNumericString, cltTrinaryNo0);
 	cls.method(sigs::isDecimalIntegerString, cltTrinaryNo0);
 	cls.method(sigs::isNonEmptyString, cltTrinaryNo0);
@@ -1128,6 +1144,7 @@ void pt_register_closure_type()
 		RETURN_OBJ_COPY(Z_OBJ_P(ZEND_THIS));
 	});
 	cls.method(sigs::isVoid, cltTrinaryNo0);
+	cls.op(PT_OP_IS_VOID, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isScalar, cltTrinaryNo0);
 
 	cls.method(sigs::looseCompare, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -1147,6 +1164,7 @@ void pt_register_closure_type()
 	cls.method<&ClosureType::toPhpDocNode>(sigs::toPhpDocNode);
 
 	cls.method<&ClosureType::hasTemplateOrLateResolvableType>(sigs::hasTemplateOrLateResolvableType);
+	cls.op<PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, &ClosureType::hasTemplateOrLateResolvableType>();
 
 	/* the traits, in the twin's `use` order; the class body above wins over
 	 * every name it declares */

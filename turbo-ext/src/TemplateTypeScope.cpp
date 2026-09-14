@@ -146,7 +146,7 @@ bool pt_template_type_scope_equals(zval *self, zval *other, bool &out)
 	}
 	/* the PHP twin declared next to the native class in the differential
 	 * tests: its equals() */
-	return pt_type_call_bool(Z_OBJ_P(self), PT_LC("equals"), 1, other, out);
+	return pt_type_op_bool(Z_OBJ_P(self), PT_OP_EQUALS, 1, other, out);
 }
 
 bool pt_template_type_scope_is_anonymous(zval *scope, bool &out)

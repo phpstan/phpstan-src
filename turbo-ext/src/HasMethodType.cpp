@@ -86,7 +86,7 @@ public:
 		if (compound) {
 			zval selfZv;
 			ZVAL_OBJ(&selfZv, self);
-			return pt_type_call(Z_OBJ_P(type), PT_LC("issubtypeof"), 1, &selfZv);
+			return pt_type_op(Z_OBJ_P(type), PT_OP_IS_SUB_TYPE_OF, 1, &selfZv);
 		}
 		zend_long has = otherHasMethod(type);
 		if (UNEXPECTED(has < 0)) return zv::Val();
@@ -104,21 +104,21 @@ public:
 		if (unionOrIntersection) {
 			zval selfZv;
 			ZVAL_OBJ(&selfZv, self);
-			return pt_type_call(Z_OBJ_P(otherType), PT_LC("issupertypeof"), 1, &selfZv);
+			return pt_type_op(Z_OBJ_P(otherType), PT_OP_IS_SUPER_TYPE_OF, 1, &selfZv);
 		}
 		/* $this->isCallable()->yes() && $otherType->isCallable()->yes()
 		 * && !(new ObjectType(Closure::class))->isSuperTypeOf($otherType)->yes()
 		 * — short-circuiting like the twin */
-		zend_long callable = isExact() ? isCallable() : pt_type_call_trinary(self, PT_LC("iscallable"), 0, NULL);
+		zend_long callable = isExact() ? isCallable() : pt_type_op_trinary(self, PT_OP_IS_CALLABLE, 0, NULL);
 		if (UNEXPECTED(callable < 0)) return zv::Val();
 		if (callable == PT_TRI_YES) {
-			zend_long otherCallable = pt_type_call_trinary(Z_OBJ_P(otherType), PT_LC("iscallable"), 0, NULL);
+			zend_long otherCallable = pt_type_op_trinary(Z_OBJ_P(otherType), PT_OP_IS_CALLABLE, 0, NULL);
 			if (UNEXPECTED(otherCallable < 0)) return zv::Val();
 			if (otherCallable == PT_TRI_YES) {
 				zv::Val className = zv::Val::string(PT_LC("Closure"));
 				zv::Val closure = pt_type_new_object_type(className.raw());
 				if (UNEXPECTED(closure.isUndef())) return zv::Val();
-				zv::Val isClosure = pt_type_call(Z_OBJ_P(closure.raw()), PT_LC("issupertypeof"), 1, otherType);
+				zv::Val isClosure = pt_type_op(Z_OBJ_P(closure.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, otherType);
 				if (UNEXPECTED(isClosure.isUndef())) return zv::Val();
 				zend_long isClosureValue = pt_type_result_trinary(isClosure.raw());
 				if (UNEXPECTED(isClosureValue < 0)) return zv::Val();
@@ -134,7 +134,7 @@ public:
 	/* $this->isSubTypeOf($acceptingType)->toAcceptsResult() */
 	zv::Val isAcceptedBy(zval *acceptingType) const
 	{
-		return pt_type_sub_type_to_accepts_result(isExact() ? isSubTypeOf(acceptingType) : pt_type_call(self, PT_LC("issubtypeof"), 1, acceptingType));
+		return pt_type_sub_type_to_accepts_result(isExact() ? isSubTypeOf(acceptingType) : pt_type_op(self, PT_OP_IS_SUB_TYPE_OF, 1, acceptingType));
 	}
 
 	/* $type instanceof self && the canonical (lowercased) names are equal;
@@ -242,7 +242,7 @@ private:
 	[[nodiscard]] bool thisEquals(zval *type, bool &out) const
 	{
 		if (EXPECTED(isExact())) return equals(type, out);
-		return pt_type_call_bool(self, PT_LC("equals"), 1, type, out);
+		return pt_type_op_bool(self, PT_OP_EQUALS, 1, type, out);
 	}
 
 	/* $type->hasMethod($this->methodName); -1 = pending exception */

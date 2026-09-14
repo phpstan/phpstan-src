@@ -74,7 +74,7 @@ public:
 		if (UNEXPECTED(t == NULL)) return false;
 		zval *theirType = slot(Z_OBJ_P(type), slots::type, "type");
 		if (UNEXPECTED(theirType == NULL)) return false;
-		zv::Val typesEqual = pt_type_call(Z_OBJ_P(t), PT_LC("equals"), 1, theirType);
+		zv::Val typesEqual = pt_type_op(Z_OBJ_P(t), PT_OP_EQUALS, 1, theirType);
 		if (UNEXPECTED(typesEqual.isUndef())) return false;
 		if (!zend_is_true(typesEqual.raw())) {
 			out = false;
@@ -84,7 +84,7 @@ public:
 		if (UNEXPECTED(o == NULL)) return false;
 		zval *theirOffset = slot(Z_OBJ_P(type), slots::offset, "offset");
 		if (UNEXPECTED(theirOffset == NULL)) return false;
-		return pt_type_call_bool(Z_OBJ_P(o), PT_LC("equals"), 1, theirOffset, out);
+		return pt_type_op_bool(Z_OBJ_P(o), PT_OP_EQUALS, 1, theirOffset, out);
 	}
 
 	/* (new Printer())->print($this->toPhpDocNode()) */

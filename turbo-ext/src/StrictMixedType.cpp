@@ -228,6 +228,7 @@ void pt_register_strict_mixed_type()
 
 	cls.method(sigs::getReferencedClasses, smtEmptyArray0);
 	cls.method(sigs::getObjectClassNames, smtEmptyArray0);
+	cls.op(PT_OP_GET_OBJECT_CLASS_NAMES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getObjectClassReflections, smtEmptyArray0);
 	cls.method(sigs::getConstantStrings, smtEmptyArray0);
 
@@ -235,6 +236,7 @@ void pt_register_strict_mixed_type()
 		PT_ARGS(2, 2);
 		PT_RETURN_VAL(StrictMixedType::accepts());
 	});
+	cls.op(PT_OP_ACCEPTS, PT_OP_LAMBDA { return StrictMixedType::accepts(); });
 
 	cls.method(sigs::isAcceptedBy, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *acceptingType;
@@ -247,24 +249,28 @@ void pt_register_strict_mixed_type()
 		PT_ARGS(1, 1);
 		PT_RETURN_VAL(StrictMixedType::isSuperTypeOf());
 	});
+	cls.op(PT_OP_IS_SUPER_TYPE_OF, PT_OP_LAMBDA { return StrictMixedType::isSuperTypeOf(); });
 
 	cls.method(sigs::isSubTypeOf, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *otherType;
 		if (!zp::parse<zp::Obj>(execute_data, otherType)) RETURN_THROWS();
 		PT_RETURN_VAL(StrictMixedType::isSubTypeOf(otherType));
 	});
+	cls.op(PT_OP_IS_SUB_TYPE_OF, PT_OP_LAMBDA { return StrictMixedType::isSubTypeOf(argv); });
 
 	cls.method(sigs::equals, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *type;
 		if (!zp::parse<zp::Obj>(execute_data, type)) RETURN_THROWS();
 		RETURN_BOOL(StrictMixedType::equals(type));
 	});
+	cls.op(PT_OP_EQUALS, PT_OP_LAMBDA { return zv::Val::boolean(StrictMixedType::equals(argv)); });
 
 	cls.method(sigs::describe, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *level;
 		if (!zp::parse<zp::Obj>(execute_data, level)) RETURN_THROWS();
 		PT_RETURN_VAL(StrictMixedType::describe(level));
 	});
+	cls.op(PT_OP_DESCRIBE, PT_OP_LAMBDA { return StrictMixedType::describe(argv); });
 
 	cls.method(sigs::getTemplateType, smtError2);
 	cls.method(sigs::isObject, smtNo0);
@@ -289,19 +295,29 @@ void pt_register_strict_mixed_type()
 	cls.method(sigs::getConstant, smtShouldNotHappen1);
 	cls.method(sigs::isIterable, smtNo0);
 	cls.method(sigs::isIterableAtLeastOnce, smtNo0);
+	cls.op(PT_OP_IS_ITERABLE_AT_LEAST_ONCE, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::getIterableKeyType, smtThis0);
+	cls.op(PT_OP_GET_ITERABLE_KEY_TYPE, PT_OP_LAMBDA { return pt_op_this(self); });
 	cls.method(sigs::getIterableValueType, smtThis0);
+	cls.op(PT_OP_GET_ITERABLE_VALUE_TYPE, PT_OP_LAMBDA { return pt_op_this(self); });
 	cls.method(sigs::isNull, smtNo0);
+	cls.op(PT_OP_IS_NULL, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isConstantValue, smtNo0);
 	cls.method(sigs::isConstantScalarValue, smtNo0);
+	cls.op(PT_OP_IS_CONSTANT_SCALAR_VALUE, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::getConstantScalarTypes, smtEmptyArray0);
 	cls.method(sigs::getConstantScalarValues, smtEmptyArray0);
+	cls.op(PT_OP_GET_CONSTANT_SCALAR_VALUES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::isTrue, smtNo0);
 	cls.method(sigs::isFalse, smtNo0);
 	cls.method(sigs::isBoolean, smtNo0);
+	cls.op(PT_OP_IS_BOOLEAN, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isFloat, smtNo0);
+	cls.op(PT_OP_IS_FLOAT, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isInteger, smtNo0);
+	cls.op(PT_OP_IS_INTEGER, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isString, smtNo0);
+	cls.op(PT_OP_IS_STRING, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isNumericString, smtNo0);
 	cls.method(sigs::isDecimalIntegerString, smtNo0);
 	cls.method(sigs::isNonEmptyString, smtNo0);
@@ -313,6 +329,7 @@ void pt_register_strict_mixed_type()
 	cls.method(sigs::getClassStringObjectType, smtError0);
 	cls.method(sigs::getObjectTypeOrClassStringObjectType, smtError0);
 	cls.method(sigs::isVoid, smtNo0);
+	cls.op(PT_OP_IS_VOID, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isScalar, smtNo0);
 
 	cls.method(sigs::looseCompare, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -331,6 +348,7 @@ void pt_register_strict_mixed_type()
 	cls.method(sigs::setExistingOffsetValueType, smtError2);
 	cls.method(sigs::unsetOffset, smtError1);
 	cls.method(sigs::isCallable, smtNo0);
+	cls.op(PT_OP_IS_CALLABLE, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::getCallableParametersAcceptors, smtEmptyArray1);
 	cls.method(sigs::isCloneable, smtNo0);
 
@@ -367,6 +385,7 @@ void pt_register_strict_mixed_type()
 	cls.method(sigs::toString, smtError0);
 	cls.method(sigs::toArray, smtError0);
 	cls.method(sigs::toArrayKey, smtError0);
+	cls.op(PT_OP_TO_ARRAY_KEY, PT_OP_LAMBDA { return StrictMixedType::error(); });
 	cls.method(sigs::toCoercedArgumentType, smtThis1);
 
 	cls.method(sigs::inferTemplateTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -375,12 +394,14 @@ void pt_register_strict_mixed_type()
 	});
 
 	cls.method(sigs::getReferencedTemplateTypes, smtEmptyArray1);
+	cls.op(PT_OP_GET_REFERENCED_TEMPLATE_TYPES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getEnumCases, smtEmptyArray0);
 	cls.method(sigs::getEnumCaseObject, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_NULL();
 	});
 	cls.method("traverse", reg::Public, 1, { reg::callableArg("cb") }, pt_type_identity_traverse_handler(), &ptret::type);
+	cls.op(PT_OP_TRAVERSE, PT_OP_LAMBDA { return pt_op_traverse_identity(self); });
 	cls.method(sigs::traverseSimultaneously, [](INTERNAL_FUNCTION_PARAMETERS) {
 		PT_ARGS(2, 2);
 		RETURN_OBJ_COPY(Z_OBJ_P(ZEND_THIS));
@@ -397,6 +418,7 @@ void pt_register_strict_mixed_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_FALSE;
 	});
+	cls.op(PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, PT_OP_LAMBDA { return zv::Val::boolean(false); });
 
 	/* the traits, in the twin's `use` order (UndecidedComparisonCompoundTypeTrait
 	 * brings UndecidedComparisonTypeTrait with it); the class body above wins

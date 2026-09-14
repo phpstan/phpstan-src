@@ -84,7 +84,7 @@ public:
 		if (UNEXPECTED(t == NULL)) return false;
 		zval *theirType = slot(Z_OBJ_P(other), slots::type, IS_OBJECT, "type");
 		if (UNEXPECTED(theirType == NULL)) return false;
-		return pt_type_call_bool(Z_OBJ_P(t), PT_LC("equals"), 1, theirType, out);
+		return pt_type_op_bool(Z_OBJ_P(t), PT_OP_EQUALS, 1, theirType, out);
 	}
 
 	/* sprintf('template-type<%s, %s, %s>', $this->type->describe($level), $this->ancestorClassName, $this->templateTypeName) */
@@ -92,7 +92,7 @@ public:
 	{
 		zval *t = type();
 		if (UNEXPECTED(t == NULL)) return zv::Val();
-		zv::Val description = pt_type_call(Z_OBJ_P(t), PT_LC("describe"), 1, level);
+		zv::Val description = pt_type_op(Z_OBJ_P(t), PT_OP_DESCRIBE, 1, level);
 		if (UNEXPECTED(description.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(description.raw()).isString())) {
 			zend_type_error("phpstan_turbo: %s::describe() must return a string", ZSTR_VAL(Z_OBJCE_P(t)->name));

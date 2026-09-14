@@ -594,7 +594,7 @@ public:
 					if (UNEXPECTED(representatives.isUndef())) return zv::Val();
 					for (zv::ArrayEntry entry : zv::ArrRef(representatives.raw())) {
 						zv::Args args{type, &strictZv};
-						zv::Val inner = pt_type_call(entry.value().deref().asObject(), PT_LC("accepts"), 2, args);
+						zv::Val inner = pt_type_op(entry.value().deref().asObject(), PT_OP_ACCEPTS, 2, args);
 						if (UNEXPECTED(inner.isUndef())) return zv::Val();
 						result = acceptsOr(std::move(result), inner.raw());
 						if (UNEXPECTED(result.isUndef())) return zv::Val();
@@ -665,7 +665,7 @@ public:
 		zend_long i = 0;
 		for (zv::ArrayEntry entry : zv::ArrRef(sorted.raw())) {
 			zv::Args args{type, &strictZv};
-			zv::Val innerResult = pt_type_call(entry.value().deref().asObject(), PT_LC("accepts"), 2, args);
+			zv::Val innerResult = pt_type_op(entry.value().deref().asObject(), PT_OP_ACCEPTS, 2, args);
 			if (UNEXPECTED(innerResult.isUndef())) return zv::Val();
 			zv::Val decorated = decorateReasons(innerResult.raw(), i + 1);
 			if (UNEXPECTED(decorated.isUndef())) return zv::Val();
@@ -784,7 +784,7 @@ public:
 		if (!delegate) {
 			delegate = instanceof_function(Z_OBJCE_P(otherType), pt_ce_never_type) || instanceof_function(Z_OBJCE_P(otherType), pt_ce_integer_range_type);
 		}
-		if (delegate) return pt_type_call(Z_OBJ_P(otherType), PT_LC("issubtypeof"), 1, &selfZv);
+		if (delegate) return pt_type_op(Z_OBJ_P(otherType), PT_OP_IS_SUB_TYPE_OF, 1, &selfZv);
 
 		zv::Val types = getTypes();
 		if (UNEXPECTED(types.isUndef())) return zv::Val();
@@ -808,7 +808,7 @@ public:
 
 		zv::Arr results = zv::Arr::create(zv::ArrRef(types.raw()).size());
 		for (zv::ArrayEntry entry : zv::ArrRef(types.raw())) {
-			zv::Val result = pt_type_call(entry.value().deref().asObject(), PT_LC("issupertypeof"), 1, otherType);
+			zv::Val result = pt_type_op(entry.value().deref().asObject(), PT_OP_IS_SUPER_TYPE_OF, 1, otherType);
 			if (UNEXPECTED(result.isUndef())) return zv::Val();
 			zend_long value = pt_type_result_trinary(result.raw());
 			if (UNEXPECTED(value < 0)) return zv::Val();
@@ -834,7 +834,7 @@ public:
 			}
 		}
 		if (orWithSubType) {
-			zv::Val subType = pt_type_call(Z_OBJ_P(otherType), PT_LC("issubtypeof"), 1, &selfZv);
+			zv::Val subType = pt_type_op(Z_OBJ_P(otherType), PT_OP_IS_SUB_TYPE_OF, 1, &selfZv);
 			if (UNEXPECTED(subType.isUndef())) return zv::Val();
 			return pt_type_call(Z_OBJ_P(result.raw()), PT_LC("or"), 1, subType.raw());
 		}
@@ -1043,7 +1043,7 @@ public:
 	zv::Val thisDescribe(zval *level) const
 	{
 		if (EXPECTED(own(PT_LC("describe"), utDescribe))) return describe(level);
-		zv::Val result = pt_type_call(self, PT_LC("describe"), 1, level);
+		zv::Val result = pt_type_op(self, PT_OP_DESCRIBE, 1, level);
 		if (UNEXPECTED(result.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(result.raw()).isString())) {
 			zend_type_error("phpstan_turbo: describe() must return string");
@@ -1535,7 +1535,7 @@ public:
 		zv::Arr acceptors = zv::Arr::create(0);
 		for (zv::ArrayEntry entry : zv::ArrRef(typesCopy.raw())) {
 			zend_object *type = entry.value().deref().asObject();
-			zend_long callable = pt_type_call_trinary(type, PT_LC("iscallable"), 0, NULL);
+			zend_long callable = pt_type_op_trinary(type, PT_OP_IS_CALLABLE, 0, NULL);
 			if (UNEXPECTED(callable < 0)) return zv::Val();
 			if (callable == PT_TRI_NO) continue;
 			zv::Val inner = pt_type_call_array(type, PT_LC("getcallableparametersacceptors"), 1, scope);
@@ -1582,7 +1582,7 @@ public:
 	zend_long thisIsInteger() const
 	{
 		if (EXPECTED(own(PT_LC("isinteger"), utIsInteger))) return isInteger();
-		return pt_type_call_trinary(self, PT_LC("isinteger"), 0, NULL);
+		return pt_type_op_trinary(self, PT_OP_IS_INTEGER, 0, NULL);
 	}
 
 	zv::Val getSmallerType(zval *phpVersion) const { return unionTypes(UnionMemberOp::call(PT_LC("getsmallertype"), 1, phpVersion)); }
@@ -2233,7 +2233,7 @@ public:
 	{
 		if (EXPECTED(own(PT_LC("accepts"), utAccepts))) return accepts(type, strictTypes);
 		zv::Args args{type, strictTypes};
-		return pt_type_call(self, PT_LC("accepts"), 2, args);
+		return pt_type_op(self, PT_OP_ACCEPTS, 2, args);
 	}
 
 	/* the op applied to one member, the result checked to be a Type / an
@@ -2419,7 +2419,7 @@ private:
 	/* $type->describe($level), a string; UNDEF = pending exception */
 	static zv::Val describeOf(zval *type, zval *level)
 	{
-		zv::Val description = pt_type_call(Z_OBJ_P(type), PT_LC("describe"), 1, level);
+		zv::Val description = pt_type_op(Z_OBJ_P(type), PT_OP_DESCRIBE, 1, level);
 		if (UNEXPECTED(description.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(description.raw()).isString())) {
 			zend_type_error("phpstan_turbo: %s::describe() must return string", ZSTR_VAL(Z_OBJCE_P(type)->name));
@@ -2559,7 +2559,7 @@ zv::Val pt_union_apply_op(const UnionMemberOp &op, zval *type)
 		default:
 			/* $type instanceof StringType ? $type : $type->toArrayKey() */
 			if (instanceof_function(Z_OBJCE_P(type), pt_ce_string_type)) return zv::Val::copyOf(zv::Ref(type));
-			return pt_type_call(Z_OBJ_P(type), PT_LC("toarraykey"), 0, NULL);
+			return pt_type_op(Z_OBJ_P(type), PT_OP_TO_ARRAY_KEY, 0, NULL);
 	}
 }
 
@@ -3018,6 +3018,7 @@ void pt_register_union_type()
 	cls.method(sigs::getObjectClassNames, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::getObjectClassNames);
 	});
+	cls.op<PT_OP_GET_OBJECT_CLASS_NAMES, &UnionType::getObjectClassNames>();
 	cls.method(sigs::getObjectClassReflections, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::getObjectClassReflections);
 	});
@@ -3027,25 +3028,31 @@ void pt_register_union_type()
 	cls.method(sigs::getConstantArrays, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::getConstantArrays);
 	});
+	cls.op<PT_OP_GET_CONSTANT_ARRAYS, &UnionType::getConstantArrays>();
 	cls.method(sigs::getConstantStrings, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::getConstantStrings);
 	});
 
 	cls.method(sigs::accepts, utAccepts);
+	cls.op(PT_OP_ACCEPTS, PT_OP_LAMBDA { return UnionType(self).accepts(argv, (Z_TYPE(argv[1]) == IS_TRUE)); });
 
 	cls.method(sigs::isSuperTypeOf, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_value_object(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::isSuperTypeOf);
 	});
+	cls.op<PT_OP_IS_SUPER_TYPE_OF, &UnionType::isSuperTypeOf>();
 
 	cls.method(sigs::isSubTypeOf, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_value_object(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::isSubTypeOf);
 	});
+	cls.op<PT_OP_IS_SUB_TYPE_OF, &UnionType::isSubTypeOf>();
 
 	cls.method<&UnionType::isAcceptedBy, zp::Obj, zp::Bool>(sigs::isAcceptedBy);
 
 	cls.method<&UnionType::equals, zp::Obj>(sigs::equals);
+	cls.op<PT_OP_EQUALS, &UnionType::equals>();
 
 	cls.method(sigs::describe, utDescribe);
+	cls.op<PT_OP_DESCRIBE, &UnionType::describe>();
 
 	cls.method(sigs::getTemplateType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *ancestorClassName, *templateTypeName;
@@ -3125,12 +3132,14 @@ void pt_register_union_type()
 	cls.method(sigs::isIterableAtLeastOnce, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::isIterableAtLeastOnce);
 	});
+	cls.op<PT_OP_IS_ITERABLE_AT_LEAST_ONCE, &UnionType::isIterableAtLeastOnce>();
 	cls.method(sigs::getArraySize, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::getArraySize);
 	});
 	cls.method(sigs::getIterableKeyType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::getIterableKeyType);
 	});
+	cls.op<PT_OP_GET_ITERABLE_KEY_TYPE, &UnionType::getIterableKeyType>();
 	cls.method(sigs::getFirstIterableKeyType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::getIterableKeyType);
 	});
@@ -3140,6 +3149,7 @@ void pt_register_union_type()
 	cls.method(sigs::getIterableValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::getIterableValueType);
 	});
+	cls.op<PT_OP_GET_ITERABLE_VALUE_TYPE, &UnionType::getIterableValueType>();
 	cls.method(sigs::getFirstIterableValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::getIterableValueType);
 	});
@@ -3150,18 +3160,22 @@ void pt_register_union_type()
 	cls.method(sigs::isArray, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::isArray);
 	});
+	cls.op<PT_OP_IS_ARRAY, &UnionType::isArray>();
 	cls.method(sigs::isConstantArray, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::isConstantArray);
 	});
+	cls.op<PT_OP_IS_CONSTANT_ARRAY, &UnionType::isConstantArray>();
 	cls.method(sigs::isOversizedArray, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::isOversizedArray);
 	});
 	cls.method(sigs::isList, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::isList);
 	});
+	cls.op<PT_OP_IS_LIST, &UnionType::isList>();
 	cls.method(sigs::isString, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::isString);
 	});
+	cls.op<PT_OP_IS_STRING, &UnionType::isString>();
 	cls.method(sigs::isNumericString, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::isNumericString);
 	});
@@ -3195,6 +3209,7 @@ void pt_register_union_type()
 	cls.method(sigs::isVoid, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::isVoid);
 	});
+	cls.op<PT_OP_IS_VOID, &UnionType::isVoid>();
 	cls.method(sigs::isScalar, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::isScalar);
 	});
@@ -3314,6 +3329,7 @@ void pt_register_union_type()
 	cls.method(sigs::isCallable, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::isCallable);
 	});
+	cls.op<PT_OP_IS_CALLABLE, &UnionType::isCallable>();
 	cls.method(sigs::getCallableParametersAcceptors, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_value_object(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::getCallableParametersAcceptors);
 	});
@@ -3331,18 +3347,21 @@ void pt_register_union_type()
 	cls.method(sigs::isNull, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::isNull);
 	});
+	cls.op<PT_OP_IS_NULL, &UnionType::isNull>();
 	cls.method(sigs::isConstantValue, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::isConstantValue);
 	});
 	cls.method(sigs::isConstantScalarValue, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::isConstantScalarValue);
 	});
+	cls.op<PT_OP_IS_CONSTANT_SCALAR_VALUE, &UnionType::isConstantScalarValue>();
 	cls.method(sigs::getConstantScalarTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::getConstantScalarTypes);
 	});
 	cls.method(sigs::getConstantScalarValues, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::getConstantScalarValues);
 	});
+	cls.op<PT_OP_GET_CONSTANT_SCALAR_VALUES, &UnionType::getConstantScalarValues>();
 	cls.method(sigs::isTrue, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::isTrue);
 	});
@@ -3352,10 +3371,13 @@ void pt_register_union_type()
 	cls.method(sigs::isBoolean, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::isBoolean);
 	});
+	cls.op<PT_OP_IS_BOOLEAN, &UnionType::isBoolean>();
 	cls.method(sigs::isFloat, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::isFloat);
 	});
+	cls.op<PT_OP_IS_FLOAT, &UnionType::isFloat>();
 	cls.method(sigs::isInteger, utIsInteger);
+	cls.op<PT_OP_IS_INTEGER, &UnionType::isInteger>();
 
 	cls.method(sigs::getSmallerType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_value_object(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::getSmallerType);
@@ -3413,6 +3435,7 @@ void pt_register_union_type()
 	cls.method(sigs::toArrayKey, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::toArrayKey);
 	});
+	cls.op<PT_OP_TO_ARRAY_KEY, &UnionType::toArrayKey>();
 	cls.method<&UnionType::toCoercedArgumentType, zp::Bool>(sigs::toCoercedArgumentType);
 
 	cls.method(sigs::inferTemplateTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -3424,6 +3447,7 @@ void pt_register_union_type()
 	cls.method(sigs::getReferencedTemplateTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_value_object(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::getReferencedTemplateTypes);
 	});
+	cls.op<PT_OP_GET_REFERENCED_TEMPLATE_TYPES, &UnionType::getReferencedTemplateTypes>();
 
 	cls.method(sigs::traverse, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_fcall_info fci;
@@ -3433,6 +3457,7 @@ void pt_register_union_type()
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(PT_THIS.traverse(&fci, &fcc));
 	});
+	cls.op(PT_OP_TRAVERSE, PT_OP_LAMBDA { return pt_op_traverse_with<UnionType>(self, argv); });
 	cls.method(sigs::traverseSimultaneously, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *right;
 		zend_fcall_info fci;
@@ -3467,6 +3492,7 @@ void pt_register_union_type()
 		if (UNEXPECTED(has < 0)) RETURN_THROWS();
 		RETURN_BOOL(has == 1);
 	});
+	cls.op(PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, PT_OP_LAMBDA { int has = UnionType(self).hasTemplateOrLateResolvableType(); return has < 0 ? zv::Val() : zv::Val::boolean(has == 1); });
 
 	/* the trait: the class body above wins over every name it declares */
 	ptdecl::UnionType::registerTraits(cls);

@@ -247,12 +247,14 @@ void pt_register_boolean_type()
 	cls.method<&BooleanType::getConstantScalarTypes>(sigs::getConstantScalarTypes);
 
 	cls.method<&BooleanType::getConstantScalarValues>(sigs::getConstantScalarValues);
+	cls.op(PT_OP_GET_CONSTANT_SCALAR_VALUES, PT_OP_LAMBDA { return BooleanType::getConstantScalarValues(); });
 
 	cls.method(sigs::describe, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *level;
 		if (!zp::parse<zp::Obj>(execute_data, level)) RETURN_THROWS();
 		RETURN_STRING(BooleanType::describe());
 	});
+	cls.op(PT_OP_DESCRIBE, PT_OP_LAMBDA { return pt_op_string(BooleanType::describe()); });
 
 	cls.method<&BooleanType::toNumber>(sigs::toNumber);
 
@@ -269,6 +271,7 @@ void pt_register_boolean_type()
 	cls.method<&BooleanType::toArray>(sigs::toArray);
 
 	cls.method<&BooleanType::toArrayKey>(sigs::toArrayKey);
+	cls.op(PT_OP_TO_ARRAY_KEY, PT_OP_LAMBDA { return BooleanType::toArrayKey(); });
 
 	cls.method<&BooleanType::toCoercedArgumentType, zp::Bool>(sigs::toCoercedArgumentType);
 
@@ -281,6 +284,7 @@ void pt_register_boolean_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_COPY(pt_trinary_singleton(BooleanType::isNull()));
 	});
+	cls.op(PT_OP_IS_NULL, PT_OP_LAMBDA { return pt_op_trinary(BooleanType::isNull()); });
 
 	cls.method(sigs::isTrue, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
@@ -296,6 +300,7 @@ void pt_register_boolean_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_COPY(pt_trinary_singleton(BooleanType::isBoolean()));
 	});
+	cls.op(PT_OP_IS_BOOLEAN, PT_OP_LAMBDA { return pt_op_trinary(BooleanType::isBoolean()); });
 
 	cls.method(sigs::isScalar, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
@@ -327,6 +332,7 @@ void pt_register_boolean_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_BOOL(BooleanType::hasTemplateOrLateResolvableType());
 	});
+	cls.op(PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, PT_OP_LAMBDA { return zv::Val::boolean(BooleanType::hasTemplateOrLateResolvableType()); });
 
 	/* the traits, in the twin's `use` order; the class body above wins over
 	 * every name it declares (getConstantStrings, getConstantScalarTypes,

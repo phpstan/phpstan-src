@@ -30,7 +30,7 @@ public:
 			zend_argument_type_error(1, "must be of type %s, %s given", ptcls::type, zend_zval_value_name(type));
 			return zv::Val();
 		}
-		zv::Val describedType = pt_type_call(Z_OBJ_P(type), PT_LC("describe"), 1, level);
+		zv::Val describedType = pt_type_op(Z_OBJ_P(type), PT_OP_DESCRIBE, 1, level);
 		if (UNEXPECTED(describedType.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(describedType.raw()).isString())) {
 			zend_type_error("phpstan_turbo: %s::describe() must return string", ZSTR_VAL(Z_OBJCE_P(type)->name));
@@ -47,7 +47,7 @@ public:
 		if (zend_is_true(bivariant.raw())) return zv::Val::string("*", 1);
 
 		/* sprintf('%s %s', $variance->describe(), $describedType) */
-		zv::Val varianceDescription = pt_type_call(Z_OBJ_P(variance), PT_LC("describe"), 0, NULL);
+		zv::Val varianceDescription = pt_type_op(Z_OBJ_P(variance), PT_OP_DESCRIBE, 0, NULL);
 		if (UNEXPECTED(varianceDescription.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(varianceDescription.raw()).isString())) {
 			zend_type_error("phpstan_turbo: %s::describe() must return string", ZSTR_VAL(Z_OBJCE_P(variance)->name));

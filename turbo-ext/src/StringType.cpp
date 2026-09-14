@@ -37,7 +37,7 @@ public:
 	 * bitwise and TrinaryLogic::and() is; -1 = pending exception */
 	[[nodiscard]] static zend_long hasOffsetValueType(zval *offsetType)
 	{
-		zend_long isInteger = pt_type_call_trinary(Z_OBJ_P(offsetType), PT_LC("isinteger"), 0, NULL);
+		zend_long isInteger = pt_type_op_trinary(Z_OBJ_P(offsetType), PT_OP_IS_INTEGER, 0, NULL);
 		if (UNEXPECTED(isInteger < 0)) return -1;
 		return isInteger & PT_TRI_MAYBE;
 	}
@@ -73,7 +73,7 @@ public:
 		if (UNEXPECTED(!pt_type_instanceof_ce(valueStringType.raw(), pt_ce_error_type, isError))) return zv::Val();
 		if (isError) return pt_type_new_error_type();
 
-		zend_long isInteger = pt_type_call_trinary(Z_OBJ_P(offsetType), PT_LC("isinteger"), 0, NULL);
+		zend_long isInteger = pt_type_op_trinary(Z_OBJ_P(offsetType), PT_OP_IS_INTEGER, 0, NULL);
 		if (UNEXPECTED(isInteger < 0)) return zv::Val();
 		if (isInteger == PT_TRI_YES || instanceof_function(Z_OBJCE_P(offsetType), pt_ce_mixed_type)) return nonEmptyString();
 
@@ -100,7 +100,7 @@ public:
 			return pt_type_call(Z_OBJ_P(type), PT_LC("isacceptedby"), 2, args);
 		}
 
-		zv::Val thatClassNames = pt_type_call(Z_OBJ_P(type), PT_LC("getobjectclassnames"), 0, NULL);
+		zv::Val thatClassNames = pt_type_op(Z_OBJ_P(type), PT_OP_GET_OBJECT_CLASS_NAMES, 0, NULL);
 		if (UNEXPECTED(thatClassNames.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(thatClassNames.raw()).isArray())) {
 			zend_type_error("phpstan_turbo: %s::getObjectClassNames() must return array", ZSTR_VAL(Z_OBJCE_P(type)->name));
@@ -267,7 +267,7 @@ public:
 	 * otherwise; UNDEF = pending exception */
 	static zv::Val looseCompare(zval *type)
 	{
-		zend_long isArray = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isarray"), 0, NULL);
+		zend_long isArray = pt_type_op_trinary(Z_OBJ_P(type), PT_OP_IS_ARRAY, 0, NULL);
 		if (UNEXPECTED(isArray < 0)) return zv::Val();
 		zval result;
 		if (isArray == PT_TRI_YES) {
@@ -427,6 +427,7 @@ void pt_register_string_type()
 		if (!zp::parse<zp::Obj>(execute_data, level)) RETURN_THROWS();
 		RETURN_STRING(StringType::describe());
 	});
+	cls.op(PT_OP_DESCRIBE, PT_OP_LAMBDA { return pt_op_string(StringType::describe()); });
 
 	cls.method<&StringType::getConstantStrings>(sigs::getConstantStrings);
 
@@ -469,6 +470,7 @@ void pt_register_string_type()
 	});
 
 	cls.method<&StringType::accepts, zp::Obj, zp::Bool>(sigs::accepts);
+	cls.op(PT_OP_ACCEPTS, PT_OP_LAMBDA { return StringType(self).accepts(argv, (Z_TYPE(argv[1]) == IS_TRUE)); });
 
 	cls.method<&StringType::toNumber>(sigs::toNumber);
 
@@ -485,6 +487,7 @@ void pt_register_string_type()
 	cls.method<&StringType::toArray>(sigs::toArray);
 
 	cls.method<&StringType::toArrayKey>(sigs::toArrayKey);
+	cls.op<PT_OP_TO_ARRAY_KEY, &StringType::toArrayKey>();
 
 	cls.method<&StringType::toCoercedArgumentType, zp::Bool>(sigs::toCoercedArgumentType);
 
@@ -492,6 +495,7 @@ void pt_register_string_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_COPY(pt_trinary_singleton(StringType::isNull()));
 	});
+	cls.op(PT_OP_IS_NULL, PT_OP_LAMBDA { return pt_op_trinary(StringType::isNull()); });
 
 	cls.method(sigs::isTrue, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
@@ -507,21 +511,25 @@ void pt_register_string_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_COPY(pt_trinary_singleton(StringType::isBoolean()));
 	});
+	cls.op(PT_OP_IS_BOOLEAN, PT_OP_LAMBDA { return pt_op_trinary(StringType::isBoolean()); });
 
 	cls.method(sigs::isFloat, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_COPY(pt_trinary_singleton(StringType::isFloat()));
 	});
+	cls.op(PT_OP_IS_FLOAT, PT_OP_LAMBDA { return pt_op_trinary(StringType::isFloat()); });
 
 	cls.method(sigs::isInteger, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_COPY(pt_trinary_singleton(StringType::isInteger()));
 	});
+	cls.op(PT_OP_IS_INTEGER, PT_OP_LAMBDA { return pt_op_trinary(StringType::isInteger()); });
 
 	cls.method(sigs::isString, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_COPY(pt_trinary_singleton(StringType::isString()));
 	});
+	cls.op(PT_OP_IS_STRING, PT_OP_LAMBDA { return pt_op_trinary(StringType::isString()); });
 
 	cls.method(sigs::isNumericString, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
@@ -598,6 +606,7 @@ void pt_register_string_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_BOOL(StringType::hasTemplateOrLateResolvableType());
 	});
+	cls.op(PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, PT_OP_LAMBDA { return zv::Val::boolean(StringType::hasTemplateOrLateResolvableType()); });
 
 	/* the traits, in the twin's `use` order; the class body above wins over
 	 * every name it declares (getConstantStrings, isNull, isTrue, isFalse,

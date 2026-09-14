@@ -65,7 +65,7 @@ public:
 		bool isTraverserCallable;
 		if (UNEXPECTED(!pt_type_instanceof(cb, PT_CLASS_TYPE_TRAVERSER_CALLABLE, isTraverserCallable))) return zv::Val();
 		zv::Val result = isTraverserCallable
-			? pt_type_call(Z_OBJ_P(cb), PT_LC("traverse"), 2, args)
+			? pt_type_op(Z_OBJ_P(cb), PT_OP_TRAVERSE, 2, args)
 			: pt_type_call_callable(cb, 2, args);
 		if (UNEXPECTED(result.isUndef())) return zv::Val();
 		/* the twin's `: Type` return type */
@@ -83,7 +83,7 @@ public:
 	zv::Val traverseInternal(zval *type) const
 	{
 		zv::Val map = boundCallable(pt_tt_str_map_internal);
-		return pt_type_call(Z_OBJ_P(type), PT_LC("traverse"), 1, map.raw());
+		return pt_type_op(Z_OBJ_P(type), PT_OP_TRAVERSE, 1, map.raw());
 	}
 
 private:
@@ -119,28 +119,47 @@ bool pt_type_traverser_map(zval *out, zval *type, zval *cb)
 
 bool pt_type_traverser_traverse(zval *out, zval *traverse, zval *type)
 {
-	zval *callable = traverse;
-	ZVAL_DEREF(callable);
-	zv::Val result;
-	if (Z_TYPE_P(callable) == IS_ARRAY && zend_hash_num_elements(Z_ARRVAL_P(callable)) == 2) {
-		zval *object = zend_hash_index_find(Z_ARRVAL_P(callable), 0);
-		zval *method = zend_hash_index_find(Z_ARRVAL_P(callable), 1);
-		if (object != NULL && method != NULL) {
-			ZVAL_DEREF(object);
-			ZVAL_DEREF(method);
-			if (Z_TYPE_P(object) == IS_OBJECT && Z_OBJCE_P(object) == pt_ce_type_traverser
-				&& Z_TYPE_P(method) == IS_STRING && zend_string_equals(Z_STR_P(method), pt_tt_str_traverse_internal)) {
-				result = TypeTraverser(Z_OBJ_P(object)).traverseInternal(type);
-				if (UNEXPECTED(result.isUndef())) return false;
-				result.intoReturnValue(out);
-				return true;
-			}
-		}
-	}
-	result = pt_type_call_callable(traverse, 1, type);
+	/* the [$this, 'traverseInternal'] array is entered directly by
+	 * pt_type_call_callable() */
+	zv::Val result = pt_type_call_callable(traverse, 1, type);
 	if (UNEXPECTED(result.isUndef())) return false;
 	result.intoReturnValue(out);
 	return true;
+}
+
+zv::Val pt_type_traverser_map_internal(zend_object *traverser, zval *type)
+{
+	return TypeTraverser(traverser).mapInternal(type);
+}
+
+zv::Val pt_type_traverser_traverse_internal(zend_object *traverser, zval *type)
+{
+	return TypeTraverser(traverser).traverseInternal(type);
+}
+
+/* the handlers of mapInternal() / traverseInternal(), for pt_direct_invoke() */
+static void ZEND_FASTCALL ttMapInternal(INTERNAL_FUNCTION_PARAMETERS)
+{
+	zval *type;
+	if (!zp::parse<zp::Obj>(execute_data, type)) RETURN_THROWS();
+	PT_RETURN_VAL(TypeTraverser(Z_OBJ_P(ZEND_THIS)).mapInternal(type));
+}
+
+static void ZEND_FASTCALL ttTraverseInternal(INTERNAL_FUNCTION_PARAMETERS)
+{
+	zval *type;
+	if (!zp::parse<zp::Obj>(execute_data, type)) RETURN_THROWS();
+	PT_RETURN_VAL(TypeTraverser(Z_OBJ_P(ZEND_THIS)).traverseInternal(type));
+}
+
+zif_handler pt_type_traverser_map_internal_handler()
+{
+	return ttMapInternal;
+}
+
+zif_handler pt_type_traverser_traverse_internal_handler()
+{
+	return ttTraverseInternal;
 }
 
 /* }}} */
@@ -188,21 +207,9 @@ void pt_register_type_traverser()
 		TypeTraverser(Z_OBJ_P(ZEND_THIS)).construct(cb);
 	});
 
-	cls.method(sigs::mapInternal, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *type;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(type)
-		ZEND_PARSE_PARAMETERS_END();
-		PT_RETURN_VAL(TypeTraverser(Z_OBJ_P(ZEND_THIS)).mapInternal(type));
-	});
+	cls.method(sigs::mapInternal, ttMapInternal);
 
-	cls.method(sigs::traverseInternal, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *type;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(type)
-		ZEND_PARSE_PARAMETERS_END();
-		PT_RETURN_VAL(TypeTraverser(Z_OBJ_P(ZEND_THIS)).traverseInternal(type));
-	});
+	cls.method(sigs::traverseInternal, ttTraverseInternal);
 
 	cls.shadow(&pt_ce_type_traverser);
 }

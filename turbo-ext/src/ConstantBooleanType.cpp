@@ -276,6 +276,7 @@ void pt_register_constant_boolean_type()
 		if (UNEXPECTED(described == NULL)) RETURN_THROWS();
 		RETURN_STRING(described);
 	});
+	cls.op(PT_OP_DESCRIBE, PT_OP_LAMBDA { const char *described = ConstantBooleanType(self).describe(); return described == NULL ? zv::Val() : pt_op_string(described); });
 
 	cls.method(sigs::getSmallerType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_cbt_comparison_type(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ConstantBooleanType::getSmallerType);
@@ -308,6 +309,7 @@ void pt_register_constant_boolean_type()
 	cls.method<&ConstantBooleanType::toFloat>(sigs::toFloat);
 
 	cls.method<&ConstantBooleanType::toArrayKey>(sigs::toArrayKey);
+	cls.op<PT_OP_TO_ARRAY_KEY, &ConstantBooleanType::toArrayKey>();
 
 	cls.method<&ConstantBooleanType::toCoercedArgumentType, zp::Bool>(sigs::toCoercedArgumentType);
 

@@ -425,7 +425,7 @@ public:
 			}
 			keyType = resolved.raw();
 		}
-		zv::Val arrayKeyType = pt_type_call(Z_OBJ_P(keyType), PT_LC("toarraykey"), 0, NULL);
+		zv::Val arrayKeyType = pt_type_op(Z_OBJ_P(keyType), PT_OP_TO_ARRAY_KEY, 0, NULL);
 		if (UNEXPECTED(arrayKeyType.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(arrayKeyType.raw()).isObject())) {
 			zend_type_error("phpstan_turbo: toArrayKey() must return %s", ptcls::type);
@@ -434,7 +434,7 @@ public:
 		if (instanceof_function(Z_OBJCE_P(arrayKeyType.raw()), pt_ce_error_type)) {
 			zv::Val level = pt_type_verbosity_level(PT_VERBOSITY_LEVEL_TYPE_ONLY);
 			if (UNEXPECTED(level.isUndef())) return zv::Val();
-			zv::Val description = pt_type_call(Z_OBJ_P(keyType), PT_LC("describe"), 1, level.raw());
+			zv::Val description = pt_type_op(Z_OBJ_P(keyType), PT_OP_DESCRIBE, 1, level.raw());
 			if (UNEXPECTED(description.isUndef())) return zv::Val();
 			if (UNEXPECTED(!zv::Ref(description.raw()).isString())) {
 				zend_type_error("phpstan_turbo: describe() must return a string");
@@ -483,7 +483,7 @@ public:
 		types.push(std::move(string));
 		zv::Val benevolent = pt_union_benevolent_of(std::move(types));
 		if (UNEXPECTED(benevolent.isUndef())) return zv::Val();
-		return pt_type_call(Z_OBJ_P(benevolent.raw()), PT_LC("toarraykey"), 0, NULL);
+		return pt_type_op(Z_OBJ_P(benevolent.raw()), PT_OP_TO_ARRAY_KEY, 0, NULL);
 	}
 
 	/* $type instanceof MixedType && !$type->isExplicitMixed() &&
@@ -543,7 +543,7 @@ public:
 		}
 		zv::Val level = pt_type_verbosity_level(PT_VERBOSITY_LEVEL_PRECISE);
 		if (UNEXPECTED(level.isUndef())) return zv::Val();
-		zv::Val description = pt_type_call(Z_OBJ_P(keyType), PT_LC("describe"), 1, level.raw());
+		zv::Val description = pt_type_op(Z_OBJ_P(keyType), PT_OP_DESCRIBE, 1, level.raw());
 		if (UNEXPECTED(description.isUndef())) return zv::Val();
 		return pt_type_new(PT_CLASS_IDENTIFIER_TYPE_NODE, 1, description.raw());
 	}
@@ -631,7 +631,7 @@ private:
 	/* $a->equals($b); false = pending exception */
 	[[nodiscard]] static bool typesEqual(zval *a, zval *b, bool &out)
 	{
-		return pt_type_call_bool(Z_OBJ_P(a), PT_LC("equals"), 1, b, out);
+		return pt_type_op_bool(Z_OBJ_P(a), PT_OP_EQUALS, 1, b, out);
 	}
 
 	/* $type->method(), checked to return an array; UNDEF = pending exception */

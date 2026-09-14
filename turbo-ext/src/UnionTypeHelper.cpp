@@ -212,16 +212,16 @@ private:
 			return compareDescriptions(a, b, PT_VERBOSITY_LEVEL_VALUE, out);
 		}
 
-		zend_long aConstantArray = pt_type_call_trinary(a, PT_LC("isconstantarray"), 0, NULL);
+		zend_long aConstantArray = pt_type_op_trinary(a, PT_OP_IS_CONSTANT_ARRAY, 0, NULL);
 		if (UNEXPECTED(aConstantArray < 0)) return false;
 		if (aConstantArray == PT_TRI_YES) {
-			zend_long bConstantArray = pt_type_call_trinary(b, PT_LC("isconstantarray"), 0, NULL);
+			zend_long bConstantArray = pt_type_op_trinary(b, PT_OP_IS_CONSTANT_ARRAY, 0, NULL);
 			if (UNEXPECTED(bConstantArray < 0)) return false;
 			if (bConstantArray == PT_TRI_YES) {
-				zend_long aAtLeastOnce = pt_type_call_trinary(a, PT_LC("isiterableatleastonce"), 0, NULL);
+				zend_long aAtLeastOnce = pt_type_op_trinary(a, PT_OP_IS_ITERABLE_AT_LEAST_ONCE, 0, NULL);
 				if (UNEXPECTED(aAtLeastOnce < 0)) return false;
 				if (aAtLeastOnce == PT_TRI_NO) {
-					zend_long bAtLeastOnce = pt_type_call_trinary(b, PT_LC("isiterableatleastonce"), 0, NULL);
+					zend_long bAtLeastOnce = pt_type_op_trinary(b, PT_OP_IS_ITERABLE_AT_LEAST_ONCE, 0, NULL);
 					if (UNEXPECTED(bAtLeastOnce < 0)) return false;
 					if (bAtLeastOnce == PT_TRI_NO) {
 						out = 0;
@@ -230,7 +230,7 @@ private:
 					out = -1;
 					return true;
 				}
-				zend_long bAtLeastOnce = pt_type_call_trinary(b, PT_LC("isiterableatleastonce"), 0, NULL);
+				zend_long bAtLeastOnce = pt_type_op_trinary(b, PT_OP_IS_ITERABLE_AT_LEAST_ONCE, 0, NULL);
 				if (UNEXPECTED(bAtLeastOnce < 0)) return false;
 				if (bAtLeastOnce == PT_TRI_NO) {
 					out = 1;
@@ -240,10 +240,10 @@ private:
 			}
 		}
 
-		zend_long aString = pt_type_call_trinary(a, PT_LC("isstring"), 0, NULL);
+		zend_long aString = pt_type_op_trinary(a, PT_OP_IS_STRING, 0, NULL);
 		if (UNEXPECTED(aString < 0)) return false;
 		if (aString == PT_TRI_YES) {
-			zend_long bString = pt_type_call_trinary(b, PT_LC("isstring"), 0, NULL);
+			zend_long bString = pt_type_op_trinary(b, PT_OP_IS_STRING, 0, NULL);
 			if (UNEXPECTED(bString < 0)) return false;
 			if (bString == PT_TRI_YES) return compareDescriptions(a, b, PT_VERBOSITY_LEVEL_PRECISE, out);
 		}
@@ -269,7 +269,7 @@ private:
 	/* $type->describe($level), a string; UNDEF = pending exception */
 	static zv::Val describe(zend_object *type, zval *level)
 	{
-		zv::Val description = pt_type_call(type, PT_LC("describe"), 1, level);
+		zv::Val description = pt_type_op(type, PT_OP_DESCRIBE, 1, level);
 		if (UNEXPECTED(description.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(description.raw()).isString())) {
 			zend_type_error("phpstan_turbo: %s::describe() must return a string", ZSTR_VAL(type->ce->name));

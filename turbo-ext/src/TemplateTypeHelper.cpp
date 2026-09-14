@@ -180,11 +180,11 @@ private:
 
 zv::Val TemplateTypeHelper::resolveTemplateTypes(zval *type, zval *standins, zval *callSiteVariances, zval *positionVariance, bool keepErrorTypes)
 {
-	zv::Val hasTemplate = pt_type_call(Z_OBJ_P(type), PT_LC("hastemplateorlateresolvabletype"), 0, NULL);
+	zv::Val hasTemplate = pt_type_op(Z_OBJ_P(type), PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, 0, NULL);
 	if (UNEXPECTED(hasTemplate.isUndef())) return zv::Val();
 	if (!zend_is_true(hasTemplate.raw())) return zv::Val::copyOf(zv::Ref(type));
 
-	zv::Val references = pt_type_call(Z_OBJ_P(type), PT_LC("getreferencedtemplatetypes"), 1, positionVariance);
+	zv::Val references = pt_type_op(Z_OBJ_P(type), PT_OP_GET_REFERENCED_TEMPLATE_TYPES, 1, positionVariance);
 	if (UNEXPECTED(references.isUndef())) return zv::Val();
 	if (UNEXPECTED(!zv::Ref(references.raw()).isArray())) {
 		zend_type_error("phpstan_turbo: getReferencedTemplateTypes() must return array");

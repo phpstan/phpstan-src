@@ -49,7 +49,7 @@ public:
 		if (compound) {
 			zval selfZv;
 			ZVAL_OBJ(&selfZv, self);
-			return pt_type_call(Z_OBJ_P(type), PT_LC("issubtypeof"), 1, &selfZv);
+			return pt_type_op(Z_OBJ_P(type), PT_OP_IS_SUB_TYPE_OF, 1, &selfZv);
 		}
 		bool equal;
 		if (UNEXPECTED(!thisEquals(type, equal))) return zv::Val();
@@ -70,7 +70,7 @@ public:
 		if (unionOrIntersection) {
 			zval selfZv;
 			ZVAL_OBJ(&selfZv, self);
-			return pt_type_call(Z_OBJ_P(otherType), PT_LC("issupertypeof"), 1, &selfZv);
+			return pt_type_op(Z_OBJ_P(otherType), PT_OP_IS_SUPER_TYPE_OF, 1, &selfZv);
 		}
 		if (instanceof_function(Z_OBJCE_P(otherType), pt_ce_accessory_non_empty_string_type)) return pt_type_is_super_type_of_result(PT_TRI_YES);
 		zend_long value = pt_type_call_trinary(Z_OBJ_P(otherType), PT_LC("isnonfalsystring"), 0, NULL);
@@ -84,7 +84,7 @@ public:
 	/* $this->isSubTypeOf($acceptingType)->toAcceptsResult() */
 	zv::Val isAcceptedBy(zval *acceptingType) const
 	{
-		return pt_type_sub_type_to_accepts_result(isExact() ? isSubTypeOf(acceptingType) : pt_type_call(self, PT_LC("issubtypeof"), 1, acceptingType));
+		return pt_type_sub_type_to_accepts_result(isExact() ? isSubTypeOf(acceptingType) : pt_type_op(self, PT_OP_IS_SUB_TYPE_OF, 1, acceptingType));
 	}
 
 	/* $type instanceof self */
@@ -185,7 +185,7 @@ public:
 			zend_type_error("phpstan_turbo: TypeCombinator::union() must return %s", ptcls::type);
 			return zv::Val();
 		}
-		zv::Val covers = pt_type_call(Z_OBJ_P(dominated.raw()), PT_LC("issupertypeof"), 1, type);
+		zv::Val covers = pt_type_op(Z_OBJ_P(dominated.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, type);
 		if (UNEXPECTED(covers.isUndef())) return zv::Val();
 		zend_long coversValue = pt_type_result_trinary(covers.raw());
 		if (UNEXPECTED(coversValue < 0)) return zv::Val();
@@ -222,7 +222,7 @@ private:
 			out = equals(type);
 			return true;
 		}
-		return pt_type_call_bool(self, PT_LC("equals"), 1, type, out);
+		return pt_type_op_bool(self, PT_OP_EQUALS, 1, type, out);
 	}
 
 	/* $this->hasOffsetValueType($offsetType) — through the object's class;
@@ -336,18 +336,22 @@ void pt_register_accessory_non_falsy_string_type()
 
 	cls.method(sigs::getReferencedClasses, anfsEmptyArray0);
 	cls.method(sigs::getObjectClassNames, anfsEmptyArray0);
+	cls.op(PT_OP_GET_OBJECT_CLASS_NAMES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getObjectClassReflections, anfsEmptyArray0);
 	cls.method(sigs::getConstantStrings, anfsEmptyArray0);
 
 	cls.method<&AccessoryNonFalsyStringType::accepts, zp::Obj, zp::Bool>(sigs::accepts);
+	cls.op(PT_OP_ACCEPTS, PT_OP_LAMBDA { return AccessoryNonFalsyStringType(self).accepts(argv, (Z_TYPE(argv[1]) == IS_TRUE)); });
 
 	cls.method(sigs::isSuperTypeOf, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_anfs_one_type(INTERNAL_FUNCTION_PARAM_PASSTHRU, &AccessoryNonFalsyStringType::isSuperTypeOf);
 	});
+	cls.op<PT_OP_IS_SUPER_TYPE_OF, &AccessoryNonFalsyStringType::isSuperTypeOf>();
 
 	cls.method(sigs::isSubTypeOf, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_anfs_one_type(INTERNAL_FUNCTION_PARAM_PASSTHRU, &AccessoryNonFalsyStringType::isSubTypeOf);
 	});
+	cls.op<PT_OP_IS_SUB_TYPE_OF, &AccessoryNonFalsyStringType::isSubTypeOf>();
 
 	cls.method(sigs::isAcceptedBy, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *acceptingType;
@@ -361,11 +365,13 @@ void pt_register_accessory_non_falsy_string_type()
 		if (!zp::parse<zp::Obj>(execute_data, type)) RETURN_THROWS();
 		RETURN_BOOL(AccessoryNonFalsyStringType::equals(type));
 	});
+	cls.op(PT_OP_EQUALS, PT_OP_LAMBDA { return zv::Val::boolean(AccessoryNonFalsyStringType::equals(argv)); });
 
 	cls.method(sigs::describe, [](INTERNAL_FUNCTION_PARAMETERS) {
 		PT_ARGS(1, 1);
 		RETURN_STRINGL("non-falsy-string", sizeof("non-falsy-string") - 1);
 	});
+	cls.op(PT_OP_DESCRIBE, PT_OP_LAMBDA { return zv::Val::string("non-falsy-string", sizeof("non-falsy-string") - 1); });
 
 	cls.method(sigs::isOffsetAccessible, anfsYes0);
 	cls.method(sigs::isOffsetAccessLegal, anfsYes0);
@@ -411,20 +417,28 @@ void pt_register_accessory_non_falsy_string_type()
 	cls.method<&AccessoryNonFalsyStringType::toArray>(sigs::toArray);
 
 	cls.method(sigs::toArrayKey, anfsThis0);
+	cls.op(PT_OP_TO_ARRAY_KEY, PT_OP_LAMBDA { return pt_op_this(self); });
 
 	cls.method<&AccessoryNonFalsyStringType::toCoercedArgumentType, zp::Bool>(sigs::toCoercedArgumentType);
 
 	cls.method(sigs::isNull, anfsNo0);
+	cls.op(PT_OP_IS_NULL, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isConstantValue, anfsMaybe0);
 	cls.method(sigs::isConstantScalarValue, anfsMaybe0);
+	cls.op(PT_OP_IS_CONSTANT_SCALAR_VALUE, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_MAYBE); });
 	cls.method(sigs::getConstantScalarTypes, anfsEmptyArray0);
 	cls.method(sigs::getConstantScalarValues, anfsEmptyArray0);
+	cls.op(PT_OP_GET_CONSTANT_SCALAR_VALUES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::isTrue, anfsNo0);
 	cls.method(sigs::isFalse, anfsNo0);
 	cls.method(sigs::isBoolean, anfsNo0);
+	cls.op(PT_OP_IS_BOOLEAN, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isFloat, anfsNo0);
+	cls.op(PT_OP_IS_FLOAT, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isInteger, anfsNo0);
+	cls.op(PT_OP_IS_INTEGER, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isString, anfsYes0);
+	cls.op(PT_OP_IS_STRING, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_YES); });
 	cls.method(sigs::isNumericString, anfsMaybe0);
 	cls.method(sigs::isDecimalIntegerString, anfsMaybe0);
 	cls.method(sigs::isNonEmptyString, anfsYes0);
@@ -436,6 +450,7 @@ void pt_register_accessory_non_falsy_string_type()
 	cls.method(sigs::getClassStringObjectType, anfsObjectWithoutClass0);
 	cls.method(sigs::getObjectTypeOrClassStringObjectType, anfsObjectWithoutClass0);
 	cls.method(sigs::isVoid, anfsNo0);
+	cls.op(PT_OP_IS_VOID, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isScalar, anfsYes0);
 
 	cls.method(sigs::looseCompare, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -445,6 +460,7 @@ void pt_register_accessory_non_falsy_string_type()
 	});
 
 	cls.method("traverse", reg::Public, 1, { reg::callableArg("cb") }, pt_type_identity_traverse_handler(), &ptret::type);
+	cls.op(PT_OP_TRAVERSE, PT_OP_LAMBDA { return pt_op_traverse_identity(self); });
 	cls.method(sigs::traverseSimultaneously, anfsThis2);
 	cls.method(sigs::generalize, anfsString1);
 
@@ -466,6 +482,7 @@ void pt_register_accessory_non_falsy_string_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_FALSE;
 	});
+	cls.op(PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, PT_OP_LAMBDA { return zv::Val::boolean(false); });
 
 	/* the traits, in the twin's `use` order (UndecidedComparisonCompoundTypeTrait
 	 * brings UndecidedComparisonTypeTrait with it); the class body above wins

@@ -68,7 +68,7 @@ public:
 		if (compound) {
 			zval selfZv;
 			ZVAL_OBJ(&selfZv, self);
-			return pt_type_call(Z_OBJ_P(type), PT_LC("issubtypeof"), 1, &selfZv);
+			return pt_type_op(Z_OBJ_P(type), PT_OP_IS_SUB_TYPE_OF, 1, &selfZv);
 		}
 
 		return pt_type_is_super_type_of_result(PT_TRI_NO);
@@ -242,10 +242,10 @@ public:
 			return pt_type_call_static(PT_CLASS_LOOSE_COMPARISON_HELPER, PT_LC("compareconstantscalars"), 3, args);
 		}
 
-		zend_long isConstantArray = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isconstantarray"), 0, NULL);
+		zend_long isConstantArray = pt_type_op_trinary(Z_OBJ_P(type), PT_OP_IS_CONSTANT_ARRAY, 0, NULL);
 		if (UNEXPECTED(isConstantArray < 0)) return zv::Val();
 		if (isConstantArray == PT_TRI_YES) {
-			zend_long atLeastOnce = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isiterableatleastonce"), 0, NULL);
+			zend_long atLeastOnce = pt_type_op_trinary(Z_OBJ_P(type), PT_OP_IS_ITERABLE_AT_LEAST_ONCE, 0, NULL);
 			if (UNEXPECTED(atLeastOnce < 0)) return zv::Val();
 			if (atLeastOnce == PT_TRI_NO) {
 				zv::Val value = thisGetValue();
@@ -429,6 +429,7 @@ void pt_register_null_type()
 	cls.method<&NullType::getReferencedClasses>(sigs::getReferencedClasses);
 
 	cls.method<&NullType::getObjectClassNames>(sigs::getObjectClassNames);
+	cls.op(PT_OP_GET_OBJECT_CLASS_NAMES, PT_OP_LAMBDA { return NullType::getObjectClassNames(); });
 
 	cls.method<&NullType::getObjectClassReflections>(sigs::getObjectClassReflections);
 
@@ -444,14 +445,17 @@ void pt_register_null_type()
 	});
 
 	cls.method<&NullType::accepts, zp::Obj, zp::Bool>(sigs::accepts);
+	cls.op(PT_OP_ACCEPTS, PT_OP_LAMBDA { return NullType(self).accepts(argv, (Z_TYPE(argv[1]) == IS_TRUE)); });
 
 	cls.method<&NullType::isSuperTypeOf, zp::Obj>(sigs::isSuperTypeOf);
+	cls.op<PT_OP_IS_SUPER_TYPE_OF, &NullType::isSuperTypeOf>();
 
 	cls.method(sigs::equals, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *type;
 		if (!zp::parse<zp::Obj>(execute_data, type)) RETURN_THROWS();
 		RETURN_BOOL(NullType::equals(type));
 	});
+	cls.op(PT_OP_EQUALS, PT_OP_LAMBDA { return zv::Val::boolean(NullType::equals(argv)); });
 
 	cls.method(sigs::isSmallerThan, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *otherType, *phpVersion;
@@ -470,6 +474,7 @@ void pt_register_null_type()
 		if (!zp::parse<zp::Obj>(execute_data, level)) RETURN_THROWS();
 		RETURN_STRING(NullType::describe());
 	});
+	cls.op(PT_OP_DESCRIBE, PT_OP_LAMBDA { return pt_op_string(NullType::describe()); });
 
 	cls.method<&NullType::toNumber>(sigs::toNumber);
 
@@ -492,6 +497,7 @@ void pt_register_null_type()
 	cls.method<&NullType::toArray>(sigs::toArray);
 
 	cls.method<&NullType::toArrayKey>(sigs::toArrayKey);
+	cls.op(PT_OP_TO_ARRAY_KEY, PT_OP_LAMBDA { return NullType::toArrayKey(); });
 
 	cls.method(sigs::toCoercedArgumentType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		bool strictTypes;
@@ -548,6 +554,7 @@ void pt_register_null_type()
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(PT_THIS.traverse());
 	});
+	cls.op(PT_OP_TRAVERSE, PT_OP_LAMBDA { zend_fcall_info fci; zend_fcall_info_cache fcc; if (UNEXPECTED(!pt_op_parse_callable(argv, fci, fcc))) { return pt_type_call_engine(self, "traverse", sizeof("traverse") - 1, 1, argv); } return NullType(self).traverse(); });
 
 	cls.method(sigs::traverseSimultaneously, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *right;
@@ -564,6 +571,7 @@ void pt_register_null_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_COPY(pt_trinary_singleton(NullType::isNull()));
 	});
+	cls.op(PT_OP_IS_NULL, PT_OP_LAMBDA { return pt_op_trinary(NullType::isNull()); });
 
 	cls.method(sigs::isConstantValue, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
@@ -574,10 +582,12 @@ void pt_register_null_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_COPY(pt_trinary_singleton(NullType::isConstantScalarValue()));
 	});
+	cls.op(PT_OP_IS_CONSTANT_SCALAR_VALUE, PT_OP_LAMBDA { return pt_op_trinary(NullType::isConstantScalarValue()); });
 
 	cls.method<&NullType::getConstantScalarTypes>(sigs::getConstantScalarTypes);
 
 	cls.method<&NullType::getConstantScalarValues>(sigs::getConstantScalarValues);
+	cls.op<PT_OP_GET_CONSTANT_SCALAR_VALUES, &NullType::getConstantScalarValues>();
 
 	cls.method(sigs::isTrue, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
@@ -593,21 +603,25 @@ void pt_register_null_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_COPY(pt_trinary_singleton(NullType::isBoolean()));
 	});
+	cls.op(PT_OP_IS_BOOLEAN, PT_OP_LAMBDA { return pt_op_trinary(NullType::isBoolean()); });
 
 	cls.method(sigs::isFloat, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_COPY(pt_trinary_singleton(NullType::isFloat()));
 	});
+	cls.op(PT_OP_IS_FLOAT, PT_OP_LAMBDA { return pt_op_trinary(NullType::isFloat()); });
 
 	cls.method(sigs::isInteger, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_COPY(pt_trinary_singleton(NullType::isInteger()));
 	});
+	cls.op(PT_OP_IS_INTEGER, PT_OP_LAMBDA { return pt_op_trinary(NullType::isInteger()); });
 
 	cls.method(sigs::isString, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_COPY(pt_trinary_singleton(NullType::isString()));
 	});
+	cls.op(PT_OP_IS_STRING, PT_OP_LAMBDA { return pt_op_trinary(NullType::isString()); });
 
 	cls.method(sigs::isNumericString, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
@@ -657,6 +671,7 @@ void pt_register_null_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_COPY(pt_trinary_singleton(NullType::isVoid()));
 	});
+	cls.op(PT_OP_IS_VOID, PT_OP_LAMBDA { return pt_op_trinary(NullType::isVoid()); });
 
 	cls.method(sigs::isScalar, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
@@ -695,6 +710,7 @@ void pt_register_null_type()
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_BOOL(NullType::hasTemplateOrLateResolvableType());
 	});
+	cls.op(PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, PT_OP_LAMBDA { return zv::Val::boolean(NullType::hasTemplateOrLateResolvableType()); });
 
 	/* the traits, in the twin's `use` order; the class body above wins over
 	 * every name it declares (toClassConstantType, getConstantStrings) */

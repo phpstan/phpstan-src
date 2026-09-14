@@ -486,7 +486,7 @@ public:
 		ZVAL_BOOL(&strictZv, strictTypes);
 		for (zv::ArrayEntry entry : zv::ArrRef(typesCopy.raw())) {
 			zv::Args args{otherType, &strictZv};
-			zv::Val accepts = pt_type_call(entry.value().deref().asObject(), PT_LC("accepts"), 2, args);
+			zv::Val accepts = pt_type_op(entry.value().deref().asObject(), PT_OP_ACCEPTS, 2, args);
 			if (UNEXPECTED(accepts.isUndef())) return zv::Val();
 			result = pt_type_result_and(std::move(result), accepts.raw());
 			if (UNEXPECTED(result.isUndef())) return zv::Val();
@@ -495,7 +495,7 @@ public:
 		zend_long value = pt_type_result_trinary(result.raw());
 		if (UNEXPECTED(value < 0)) return zv::Val();
 		if (value != PT_TRI_YES) {
-			zend_long isList = pt_type_call_trinary(Z_OBJ_P(otherType), PT_LC("islist"), 0, NULL);
+			zend_long isList = pt_type_op_trinary(Z_OBJ_P(otherType), PT_OP_IS_LIST, 0, NULL);
 			if (UNEXPECTED(isList < 0)) return zv::Val();
 			zv::Val reasons = resultReasons(result.raw());
 			if (UNEXPECTED(reasons.isUndef())) return zv::Val();
@@ -520,7 +520,7 @@ public:
 				added = true;
 			}
 
-			zend_long isNonEmpty = pt_type_call_trinary(Z_OBJ_P(otherType), PT_LC("isiterableatleastonce"), 0, NULL);
+			zend_long isNonEmpty = pt_type_op_trinary(Z_OBJ_P(otherType), PT_OP_IS_ITERABLE_AT_LEAST_ONCE, 0, NULL);
 			if (UNEXPECTED(isNonEmpty < 0)) return zv::Val();
 			zend_long thisNonEmpty = thisTrinary(PT_LC("isiterableatleastonce"), &IntersectionType::isIterableAtLeastOnce);
 			if (UNEXPECTED(thisNonEmpty < 0)) return zv::Val();
@@ -570,7 +570,7 @@ public:
 		if (zv::Ref(otherType).instanceOf(pt_ce_intersection_type) || zv::Ref(otherType).instanceOf(pt_ce_union_type)) {
 			bool isTemplate;
 			if (UNEXPECTED(!isInstance(otherType, PT_CLASS_TEMPLATE_TYPE, isTemplate))) return zv::Val();
-			if (!isTemplate) return pt_type_call(Z_OBJ_P(otherType), PT_LC("issupertypeof"), 1, &selfZv);
+			if (!isTemplate) return pt_type_op(Z_OBJ_P(otherType), PT_OP_IS_SUPER_TYPE_OF, 1, &selfZv);
 		}
 
 		zv::Val result = lazyMaxMin(pt_ce_is_super_type_of_result, PT_LC("issupertypeof"), otherType, NULL);
@@ -581,7 +581,7 @@ public:
 			zend_long oversized = thisTrinary(PT_LC("isoversizedarray"), &IntersectionType::isOversizedArray);
 			if (UNEXPECTED(oversized < 0)) return zv::Val();
 			if (oversized == PT_TRI_YES) {
-				zend_long otherNonEmpty = pt_type_call_trinary(Z_OBJ_P(otherType), PT_LC("isiterableatleastonce"), 0, NULL);
+				zend_long otherNonEmpty = pt_type_op_trinary(Z_OBJ_P(otherType), PT_OP_IS_ITERABLE_AT_LEAST_ONCE, 0, NULL);
 				if (UNEXPECTED(otherNonEmpty < 0)) return zv::Val();
 				if (otherNonEmpty != PT_TRI_NO) return pt_type_is_super_type_of_result(PT_TRI_YES);
 			}
@@ -604,7 +604,7 @@ public:
 		zend_long value = pt_type_result_trinary(result.raw());
 		if (UNEXPECTED(value < 0)) return zv::Val();
 		if (value == PT_TRI_YES) {
-			zv::Val isSuperType = pt_type_call(Z_OBJ_P(acceptingType), PT_LC("issupertypeof"), 1, &selfZv);
+			zv::Val isSuperType = pt_type_op(Z_OBJ_P(acceptingType), PT_OP_IS_SUPER_TYPE_OF, 1, &selfZv);
 			if (UNEXPECTED(isSuperType.isUndef())) return zv::Val();
 			if (UNEXPECTED(!zv::Ref(isSuperType.raw()).isObject())) {
 				zend_type_error("phpstan_turbo: isSuperTypeOf() must return %s", ZSTR_VAL(pt_ce_is_super_type_of_result->name));
@@ -957,7 +957,7 @@ public:
 					size_t kindLength = startsWithList ? 4 : 5;
 					smart_str described = {NULL, 0};
 					if (isNonEmptyArray) {
-						zend_long typeNonEmpty = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isiterableatleastonce"), 0, NULL);
+						zend_long typeNonEmpty = pt_type_op_trinary(Z_OBJ_P(type), PT_OP_IS_ITERABLE_AT_LEAST_ONCE, 0, NULL);
 						if (UNEXPECTED(typeNonEmpty < 0)) return zv::Val();
 						if (typeNonEmpty != PT_TRI_YES) {
 							smart_str_appendl(&described, "non-empty-", 10);
@@ -1176,7 +1176,7 @@ public:
 		if (callableArray == 1) return PT_TRI_YES;
 		zval *slot = OBJ_PROP_NUM(self, slots::isIterableAtLeastOnce);
 		if (Z_TYPE_P(slot) == IS_OBJECT) return pt_type_trinary_value(slot);
-		zend_long value = intersectResults([](zval *type) { return pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isiterableatleastonce"), 0, NULL); }, [](zval *type, bool &keep) {
+		zend_long value = intersectResults([](zval *type) { return pt_type_op_trinary(Z_OBJ_P(type), PT_OP_IS_ITERABLE_AT_LEAST_ONCE, 0, NULL); }, [](zval *type, bool &keep) {
 			zend_long iterable = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isiterable"), 0, NULL);
 			if (UNEXPECTED(iterable < 0)) return false;
 			keep = iterable != PT_TRI_NO;
@@ -1540,7 +1540,7 @@ public:
 			zend_long isList = thisTrinary(PT_LC("islist"), &IntersectionType::isList);
 			if (UNEXPECTED(isList < 0)) return zv::Val();
 			if (isList == PT_TRI_YES) {
-				zend_long resultIsList = pt_type_call_trinary(Z_OBJ_P(result.raw()), PT_LC("islist"), 0, NULL);
+				zend_long resultIsList = pt_type_op_trinary(Z_OBJ_P(result.raw()), PT_OP_IS_LIST, 0, NULL);
 				if (UNEXPECTED(resultIsList < 0)) return zv::Val();
 				if (resultIsList != PT_TRI_YES) {
 					bool keepList = false;
@@ -1592,12 +1592,12 @@ public:
 		if (isList == PT_TRI_YES && offsetType != NULL) {
 			zv::Val arrayKey = callType(Z_OBJ_P(offsetType), PT_LC("toarraykey"), 0, NULL);
 			if (UNEXPECTED(arrayKey.isUndef())) return zv::Val();
-			zend_long isInteger = pt_type_call_trinary(Z_OBJ_P(arrayKey.raw()), PT_LC("isinteger"), 0, NULL);
+			zend_long isInteger = pt_type_op_trinary(Z_OBJ_P(arrayKey.raw()), PT_OP_IS_INTEGER, 0, NULL);
 			if (UNEXPECTED(isInteger < 0)) return zv::Val();
 			if (isInteger == PT_TRI_YES) {
 				zv::Val iterableValueType = thisType(PT_LC("getiterablevaluetype"), &IntersectionType::getIterableValueType);
 				if (UNEXPECTED(iterableValueType.isUndef())) return zv::Val();
-				zend_long valueIsArray = pt_type_call_trinary(Z_OBJ_P(iterableValueType.raw()), PT_LC("isarray"), 0, NULL);
+				zend_long valueIsArray = pt_type_op_trinary(Z_OBJ_P(iterableValueType.raw()), PT_OP_IS_ARRAY, 0, NULL);
 				if (UNEXPECTED(valueIsArray < 0)) return zv::Val();
 				if (valueIsArray == PT_TRI_YES) {
 					result = intersectWithNew(result.raw(), pt_accessory_array_list_type_new);
@@ -1777,7 +1777,7 @@ public:
 		zv::Arr yesAcceptors = zv::Arr::create(0);
 		for (zv::ArrayEntry entry : zv::ArrRef(typesCopy.raw())) {
 			zend_object *type = entry.value().deref().asObject();
-			zend_long callable = pt_type_call_trinary(type, PT_LC("iscallable"), 0, NULL);
+			zend_long callable = pt_type_op_trinary(type, PT_OP_IS_CALLABLE, 0, NULL);
 			if (UNEXPECTED(callable < 0)) return zv::Val();
 			if (callable != PT_TRI_YES) continue;
 			zv::Val acceptors = pt_type_call_array(type, PT_LC("getcallableparametersacceptors"), 1, scope);
@@ -1986,7 +1986,7 @@ public:
 		zend_long thisIsArray = thisTrinary(PT_LC("isarray"), &IntersectionType::isArray);
 		if (UNEXPECTED(thisIsArray < 0)) return zv::Val();
 		if (thisIsArray != PT_TRI_YES) return thisValue();
-		zend_long rightIsArray = pt_type_call_trinary(Z_OBJ_P(right), PT_LC("isarray"), 0, NULL);
+		zend_long rightIsArray = pt_type_op_trinary(Z_OBJ_P(right), PT_OP_IS_ARRAY, 0, NULL);
 		if (UNEXPECTED(rightIsArray < 0)) return zv::Val();
 		if (rightIsArray != PT_TRI_YES) return thisValue();
 
@@ -2260,7 +2260,7 @@ public:
 						bool typeNonEmptyKnown = false;
 						bool typeNonEmpty = false;
 						if (isNonEmptyArray) {
-							zend_long value = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isiterableatleastonce"), 0, NULL);
+							zend_long value = pt_type_op_trinary(Z_OBJ_P(type), PT_OP_IS_ITERABLE_AT_LEAST_ONCE, 0, NULL);
 							if (UNEXPECTED(value < 0)) return zv::Val();
 							typeNonEmptyKnown = true;
 							typeNonEmpty = value == PT_TRI_YES;
@@ -3113,6 +3113,7 @@ void pt_register_intersection_type()
 	cls.method(sigs::getObjectClassNames, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::getObjectClassNames);
 	});
+	cls.op<PT_OP_GET_OBJECT_CLASS_NAMES, &IntersectionType::getObjectClassNames>();
 	cls.method(sigs::getObjectClassReflections, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::getObjectClassReflections);
 	});
@@ -3122,23 +3123,29 @@ void pt_register_intersection_type()
 	cls.method(sigs::getConstantArrays, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::getConstantArrays);
 	});
+	cls.op<PT_OP_GET_CONSTANT_ARRAYS, &IntersectionType::getConstantArrays>();
 	cls.method(sigs::getConstantStrings, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::getConstantStrings);
 	});
 
 	cls.method<&IntersectionType::accepts, zp::Obj, zp::Bool>(sigs::accepts);
+	cls.op(PT_OP_ACCEPTS, PT_OP_LAMBDA { return IntersectionType(self).accepts(argv, (Z_TYPE(argv[1]) == IS_TRUE)); });
 
 	cls.method(sigs::isSuperTypeOf, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_value_object(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::isSuperTypeOf);
 	});
+	cls.op<PT_OP_IS_SUPER_TYPE_OF, &IntersectionType::isSuperTypeOf>();
 	cls.method(sigs::isSubTypeOf, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_value_object(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::isSubTypeOf);
 	});
+	cls.op<PT_OP_IS_SUB_TYPE_OF, &IntersectionType::isSubTypeOf>();
 	cls.method<&IntersectionType::isAcceptedBy, zp::Obj, zp::Bool>(sigs::isAcceptedBy);
 
 	cls.method<&IntersectionType::equals, zp::Obj>(sigs::equals);
+	cls.op<PT_OP_EQUALS, &IntersectionType::equals>();
 
 	cls.method<&IntersectionType::describe, zp::Obj>(sigs::describe);
+	cls.op<PT_OP_DESCRIBE, &IntersectionType::describe>();
 
 	cls.method(sigs::getTemplateType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *ancestorClassName, *templateTypeName;
@@ -3220,12 +3227,14 @@ void pt_register_intersection_type()
 	cls.method(sigs::isIterableAtLeastOnce, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::isIterableAtLeastOnce);
 	});
+	cls.op<PT_OP_IS_ITERABLE_AT_LEAST_ONCE, &IntersectionType::isIterableAtLeastOnce>();
 	cls.method(sigs::getArraySize, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::getArraySize);
 	});
 	cls.method(sigs::getIterableKeyType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::getIterableKeyType);
 	});
+	cls.op<PT_OP_GET_ITERABLE_KEY_TYPE, &IntersectionType::getIterableKeyType>();
 	cls.method(sigs::getFirstIterableKeyType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::getFirstIterableKeyType);
 	});
@@ -3235,6 +3244,7 @@ void pt_register_intersection_type()
 	cls.method(sigs::getIterableValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::getIterableValueType);
 	});
+	cls.op<PT_OP_GET_ITERABLE_VALUE_TYPE, &IntersectionType::getIterableValueType>();
 	cls.method(sigs::getFirstIterableValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::getFirstIterableValueType);
 	});
@@ -3245,18 +3255,22 @@ void pt_register_intersection_type()
 	cls.method(sigs::isArray, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::isArray);
 	});
+	cls.op<PT_OP_IS_ARRAY, &IntersectionType::isArray>();
 	cls.method(sigs::isConstantArray, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::isConstantArray);
 	});
+	cls.op<PT_OP_IS_CONSTANT_ARRAY, &IntersectionType::isConstantArray>();
 	cls.method(sigs::isOversizedArray, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::isOversizedArray);
 	});
 	cls.method(sigs::isList, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::isList);
 	});
+	cls.op<PT_OP_IS_LIST, &IntersectionType::isList>();
 	cls.method(sigs::isString, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::isString);
 	});
+	cls.op<PT_OP_IS_STRING, &IntersectionType::isString>();
 	cls.method(sigs::isNumericString, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::isNumericString);
 	});
@@ -3288,6 +3302,7 @@ void pt_register_intersection_type()
 		pt_it_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::getObjectTypeOrClassStringObjectType);
 	});
 	cls.method(sigs::isVoid, itNo0);
+	cls.op(PT_OP_IS_VOID, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isScalar, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::isScalar);
 	});
@@ -3409,6 +3424,7 @@ void pt_register_intersection_type()
 	cls.method(sigs::isCallable, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::isCallable);
 	});
+	cls.op<PT_OP_IS_CALLABLE, &IntersectionType::isCallable>();
 	cls.method(sigs::getCallableParametersAcceptors, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_value_object(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::getCallableParametersAcceptors);
 	});
@@ -3426,18 +3442,21 @@ void pt_register_intersection_type()
 	cls.method(sigs::isNull, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::isNull);
 	});
+	cls.op<PT_OP_IS_NULL, &IntersectionType::isNull>();
 	cls.method(sigs::isConstantValue, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::isConstantValue);
 	});
 	cls.method(sigs::isConstantScalarValue, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::isConstantScalarValue);
 	});
+	cls.op<PT_OP_IS_CONSTANT_SCALAR_VALUE, &IntersectionType::isConstantScalarValue>();
 	cls.method(sigs::getConstantScalarTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::getConstantScalarTypes);
 	});
 	cls.method(sigs::getConstantScalarValues, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::getConstantScalarValues);
 	});
+	cls.op<PT_OP_GET_CONSTANT_SCALAR_VALUES, &IntersectionType::getConstantScalarValues>();
 	cls.method(sigs::isTrue, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::isTrue);
 	});
@@ -3447,12 +3466,15 @@ void pt_register_intersection_type()
 	cls.method(sigs::isBoolean, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::isBoolean);
 	});
+	cls.op<PT_OP_IS_BOOLEAN, &IntersectionType::isBoolean>();
 	cls.method(sigs::isFloat, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::isFloat);
 	});
+	cls.op<PT_OP_IS_FLOAT, &IntersectionType::isFloat>();
 	cls.method(sigs::isInteger, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::isInteger);
 	});
+	cls.op<PT_OP_IS_INTEGER, &IntersectionType::isInteger>();
 	cls.method(sigs::isGreaterThan, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_trinary_type_version(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::isGreaterThan);
 	});
@@ -3510,6 +3532,7 @@ void pt_register_intersection_type()
 	cls.method(sigs::toArrayKey, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::toArrayKey);
 	});
+	cls.op<PT_OP_TO_ARRAY_KEY, &IntersectionType::toArrayKey>();
 	cls.method<&IntersectionType::toCoercedArgumentType, zp::Bool>(sigs::toCoercedArgumentType);
 
 	cls.method(sigs::inferTemplateTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -3518,6 +3541,7 @@ void pt_register_intersection_type()
 	cls.method(sigs::getReferencedTemplateTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_value_object(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::getReferencedTemplateTypes);
 	});
+	cls.op<PT_OP_GET_REFERENCED_TEMPLATE_TYPES, &IntersectionType::getReferencedTemplateTypes>();
 
 	cls.method(sigs::traverse, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_fcall_info fci;
@@ -3527,6 +3551,7 @@ void pt_register_intersection_type()
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(PT_THIS.traverse(&fci, &fcc));
 	});
+	cls.op(PT_OP_TRAVERSE, PT_OP_LAMBDA { return pt_op_traverse_with<IntersectionType>(self, argv); });
 	cls.method(sigs::traverseSimultaneously, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *right;
 		zend_fcall_info fci;
@@ -3557,6 +3582,7 @@ void pt_register_intersection_type()
 		if (UNEXPECTED(has < 0)) RETURN_THROWS();
 		RETURN_BOOL(has == 1);
 	});
+	cls.op(PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, PT_OP_LAMBDA { int has = IntersectionType(self).hasTemplateOrLateResolvableType(); return has < 0 ? zv::Val() : zv::Val::boolean(has == 1); });
 
 	/* the traits, in the twin's `use` order: the class body above wins over
 	 * every name it declares (tryRemove) */

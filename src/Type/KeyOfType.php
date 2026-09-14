@@ -5,12 +5,14 @@ namespace PHPStan\Type;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\LateResolvableTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use function sprintf;
 
 /** @api */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/KeyOfType.cpp')]
 class KeyOfType implements CompoundType, LateResolvableType
 {
 

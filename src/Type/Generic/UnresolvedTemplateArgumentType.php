@@ -14,7 +14,7 @@ use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ClassNameToObjectTypeResult;
@@ -49,7 +49,7 @@ use function sprintf;
  * Immutable: turbo's TypeCombinatorCache hashes the object structurally over
  * its properties (the site node by identity) and caches the hash per instance.
  */
-#[ReferencedByTurboExtension(key: 'unresolvedTemplateArgumentType')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/UnresolvedTemplateArgumentType.cpp')]
 final class UnresolvedTemplateArgumentType implements CompoundType
 {
 

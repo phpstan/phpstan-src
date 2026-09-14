@@ -877,6 +877,49 @@ zv::Val pt_type_template_type_helper_to_argument(zval *type);
 
 /* }}} */
 
+/* merged from the parallel port branch */
+/* merged from the parallel port branch */
+/* {{{ the late-resolvable family (KeyOfType.cpp, ValueOfType.cpp,
+ * OffsetAccessType.cpp, ClassConstantAccessType.cpp, NewObjectType.cpp,
+ * ConditionalType.cpp, ConditionalTypeForParameter.cpp,
+ * LateResolvableArrayShapeType.cpp, UnresolvedTemplateArgumentType.cpp) */
+
+/* src/Type/Traits/LateResolvableTypeTrait.php — declares the trait's
+ * `private ?Type $result = null` on the class too, behind the class's own
+ * properties as PHP binds a trait's properties, so run it after the
+ * class's own methods and properties */
+void pt_type_trait_late_resolvable(reg::Class &cls);
+/* $this->resolve() on an object of a class using the trait: the trait's
+ * body (`$this->result ??= $this->getResult()`) directly when the
+ * object's resolve() is the native one, the object's own method otherwise;
+ * scope is the class the trait is used in (where its $result slot lives);
+ * UNDEF = pending exception */
+zv::Val pt_type_late_resolvable_resolve(zend_object *self, zend_class_entry *scope);
+/* the trait's private isSuperTypeOfDefault($type) body, for the classes
+ * whose own isSuperTypeOf() falls back to it; UNDEF = pending exception */
+zv::Val pt_type_late_resolvable_is_super_type_of_default(zend_object *self, zend_class_entry *scope, zval *type);
+/* TypeUtils::containsTemplateType($type) — the shadowing class's body
+ * (TypeUtils.cpp); false = pending exception */
+[[nodiscard]] bool pt_type_utils_contains_template_type(zval *type, bool &out);
+/* sprintf('<identifier><%s>', $type->describe($level)) — the describe()
+ * body key-of<>, value-of<> and new<> share; UNDEF = pending exception */
+zv::Val pt_type_describe_generic_of(const char *identifier, size_t identifierLen, zval *type, zval *level);
+/* new GenericTypeNode(new IdentifierTypeNode($identifier), [$type->toPhpDocNode()]);
+ * UNDEF = pending exception */
+zv::Val pt_type_generic_node_of(const char *identifier, size_t identifierLen, zval *type);
+/* $cb($type) / $cb($type, $right) for a zpp-parsed traverse callback,
+ * checked to return an object (the twins' `callable(Type): Type`); UNDEF =
+ * pending exception */
+zv::Val pt_type_traverse_call(zend_fcall_info *fci, zend_fcall_info_cache *fcc, zval *type, zval *right = NULL);
+/* `$a === $b` on two type zvals (the twins' identity checks after a
+ * traverse) */
+static inline bool pt_type_same_object(zval *a, zval *b)
+{
+	return Z_TYPE_P(a) == IS_OBJECT && Z_TYPE_P(b) == IS_OBJECT && Z_OBJ_P(a) == Z_OBJ_P(b);
+}
+
+/* }}} */
+
 /* {{{ bodies the Type ports share verbatim — their members forward here */
 
 /* $this as an owned value (a new reference) */

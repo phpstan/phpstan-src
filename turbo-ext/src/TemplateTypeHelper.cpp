@@ -274,7 +274,7 @@ void TemplateTypeHelper::resolveTemplateTypesCallback(zval *state0, zval *state1
 			if (varianceCovariant) {
 				/* a bare unresolved argument read out of the object (Foo<T>::get(): T)
 				 * is a derived value - see UnresolvedTemplateArgumentType::unwrapBare() */
-				newType = pt_type_call_static(PT_CLASS_UNRESOLVED_TEMPLATE_ARGUMENT_TYPE, PT_LC("unwrapbare"), 1, newType.raw());
+				newType = pt_type_call_static_ce(pt_ce_unresolved_template_argument_type, PT_LC("unwrapbare"), 1, newType.raw());
 				if (UNEXPECTED(newType.isUndef())) return;
 			}
 

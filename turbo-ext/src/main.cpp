@@ -241,6 +241,15 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_template_type_scope();
 	pt_register_template_type_reference();
 	pt_register_template_type_helper();
+	pt_register_key_of_type();
+	pt_register_value_of_type();
+	pt_register_offset_access_type();
+	pt_register_class_constant_access_type();
+	pt_register_new_object_type();
+	pt_register_conditional_type();
+	pt_register_conditional_type_for_parameter();
+	pt_register_late_resolvable_array_shape_type();
+	pt_register_unresolved_template_argument_type();
 
 	return SUCCESS;
 }

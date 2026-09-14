@@ -88,7 +88,7 @@ public:
 	{
 		bool excluded;
 		if (UNEXPECTED(!pt_type_instanceof(type, PT_CLASS_TEMPLATE_TYPE, excluded))) return zv::Val();
-		if (!excluded && UNEXPECTED(!pt_type_instanceof(type, PT_CLASS_UNRESOLVED_TEMPLATE_ARGUMENT_TYPE, excluded))) return zv::Val();
+		if (!excluded && UNEXPECTED(!pt_type_instanceof_ce(type, pt_ce_unresolved_template_argument_type, excluded))) return zv::Val();
 		if (excluded || instanceof_function(Z_OBJCE_P(type), pt_ce_union_type) || instanceof_function(Z_OBJCE_P(type), pt_ce_intersection_type)) {
 			return zv::Val::null();
 		}

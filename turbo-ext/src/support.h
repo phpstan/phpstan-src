@@ -128,7 +128,6 @@ enum {
 	PT_CLASS_ALLOWED_ARRAY_KEYS_TYPES,
 	PT_CLASS_CONSTANT_ARRAY_TYPE_BUILDER,
 	PT_CLASS_LRU_CACHE,
-	PT_CLASS_UNRESOLVED_TEMPLATE_ARGUMENT_TYPE,
 	PT_CLASS_TYPE_PROJECTION_HELPER,
 	PT_CLASS_CLASS_NOT_FOUND_EXCEPTION,
 	PT_CLASS_CALLED_ON_TYPE_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION,
@@ -182,6 +181,9 @@ enum {
 	PT_CLASS_TURBO_EXTENSION_ENABLER,
 	PT_CLASS_TEMPLATE_TYPE_FACTORY,
 	PT_CLASS_PARAMETERS_ACCEPTOR,
+	PT_CLASS_OFFSET_ACCESS_TYPE_NODE,
+	PT_CLASS_CONDITIONAL_TYPE_NODE,
+	PT_CLASS_CONDITIONAL_TYPE_FOR_PARAMETER_NODE,
 	PT_CLASS_COUNT
 };
 
@@ -965,5 +967,58 @@ bool pt_template_type_map_new(zval *out, zval *types, zval *lowerBoundTypes = NU
  * natively for a native scope, through the scope's own class otherwise;
  * false = pending exception */
 [[nodiscard]] bool pt_template_type_scope_is_anonymous(zval *scope, bool &out);
+
+/* merged from the parallel port branch */
+/* merged from the parallel port branch */
+/* the late-resolvable family (KeyOfType.cpp, ValueOfType.cpp,
+ * OffsetAccessType.cpp, ClassConstantAccessType.cpp, NewObjectType.cpp,
+ * ConditionalType.cpp, ConditionalTypeForParameter.cpp,
+ * LateResolvableArrayShapeType.cpp) and the observation-pass marker
+ * (UnresolvedTemplateArgumentType.cpp) */
+extern zend_class_entry *pt_ce_key_of_type;
+extern zend_class_entry *pt_ce_value_of_type;
+extern zend_class_entry *pt_ce_offset_access_type;
+extern zend_class_entry *pt_ce_class_constant_access_type;
+extern zend_class_entry *pt_ce_new_object_type;
+extern zend_class_entry *pt_ce_conditional_type;
+extern zend_class_entry *pt_ce_conditional_type_for_parameter;
+extern zend_class_entry *pt_ce_late_resolvable_array_shape_type;
+extern zend_class_entry *pt_ce_unresolved_template_argument_type;
+/* registered at the end of the Type block (their bodies instantiate the
+ * scalar, compound and array classes); ConditionalType before
+ * ConditionalTypeForParameter (whose toConditional() instantiates it) */
+void pt_register_key_of_type();
+void pt_register_value_of_type();
+void pt_register_offset_access_type();
+void pt_register_class_constant_access_type();
+void pt_register_new_object_type();
+void pt_register_conditional_type();
+void pt_register_conditional_type_for_parameter();
+void pt_register_late_resolvable_array_shape_type();
+void pt_register_unresolved_template_argument_type();
+/* new KeyOfType($type) / new ValueOfType($type) / new OffsetAccessType($type,
+ * $offset) / new ClassConstantAccessType($type, $constantName) / new
+ * NewObjectType($type) / new ConditionalType($subject, $target, $if, $else,
+ * $negated) / new ConditionalTypeForParameter($parameterName, $target, $if,
+ * $else, $negated) / LateResolvableArrayShapeType::create($items, $unsealed,
+ * $kind) ($unsealed NULL for null) / new UnresolvedTemplateArgumentType($site,
+ * $templateType, $initialType) ($initialType NULL for null) — instances of
+ * the shadowing classes (every argument borrowed, checked as the twins'
+ * typed parameters check them); false = pending exception */
+[[nodiscard]] bool pt_key_of_type_new(zval *out, zval *type);
+bool pt_value_of_type_new(zval *out, zval *type);
+bool pt_offset_access_type_new(zval *out, zval *type, zval *offset);
+bool pt_class_constant_access_type_new(zval *out, zval *type, zend_string *constantName);
+bool pt_new_object_type_new(zval *out, zval *type);
+bool pt_conditional_type_new(zval *out, zval *subject, zval *target, zval *ifType, zval *elseType, bool negated);
+bool pt_conditional_type_for_parameter_new(zval *out, zend_string *parameterName, zval *target, zval *ifType, zval *elseType, bool negated);
+/* ConditionalTypeForParameter::resolveInType($type, fn ($name) => $passedArgs[$name] ?? null); UNDEF = pending exception */
+zv::Val pt_conditional_type_for_parameter_resolve_in_type_with_args(zval *type, zval *passedArgs);
+/* ConditionalTypeForParameter::resolveInType($type, $getSubjectType); UNDEF = pending exception */
+zv::Val pt_conditional_type_for_parameter_resolve_in_type(zval *type, zval *getSubjectType);
+/* $type->narrowTemplateType($templateType) for a ConditionalTypeForParameter; UNDEF = pending exception */
+zv::Val pt_conditional_type_for_parameter_narrow_template_type(zval *type, zval *templateType);
+bool pt_late_resolvable_array_shape_type_create(zval *out, zval *items, zval *unsealed, zend_string *kind);
+bool pt_unresolved_template_argument_type_new(zval *out, zval *site, zval *templateType, zval *initialType);
 
 #endif /* PHPSTANTURBO_SUPPORT_H */

@@ -35,6 +35,7 @@
 #include "generated/MaybeArrayTypeTrait.h"
 #include "generated/MaybeObjectTypeTrait.h"
 #include "generated/MaybeStringTypeTrait.h"
+#include "generated/LateResolvableTypeTrait.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpragmas"
@@ -3118,6 +3119,462 @@ zv::Val pt_type_just_nullable_is_super_type_of(zend_object *self, zend_class_ent
 		return pt_type_call(Z_OBJ_P(type), PT_LC("issubtypeof"), 1, &thisValue);
 	}
 	return pt_type_is_super_type_of_result(PT_TRI_NO);
+}
+
+/* }}} */
+
+/* merged from the parallel port branch */
+/* {{{ LateResolvableTypeTrait (src/Type/Traits/LateResolvableTypeTrait.php) */
+
+/* resolve()'s handler, the fast-path identity for the trait's own
+ * `$this->resolve()` calls */
+static void ZEND_FASTCALL lrResolve(INTERNAL_FUNCTION_PARAMETERS);
+
+namespace phpstanturbo {
+
+/* Mirrors the trait on an object of a class using it. `self` is that class
+ * (scope), which declares the trait's private ?Type $result slot; the
+ * $this-calls the trait makes — resolve(), isResolvable(), getResult() —
+ * go through the object's class entry (a PHP subclass of a non-final
+ * shadowing class may override them), resolve() directly when it is the
+ * native one. */
+class LateResolvable
+{
+public:
+	LateResolvable(zend_object *self, zend_class_entry *scope) : self(self), scope(scope) {}
+
+	/* $this->result: the slot the trait declares on scope (found there, so
+	 * it is right for a PHP subclass of the shadowing class too); NULL with
+	 * an Error pending when scope declares none */
+	zval *resultSlot() const
+	{
+		zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&scope->properties_info, PT_LC("result"));
+		if (UNEXPECTED(info == NULL || (info->flags & ZEND_ACC_STATIC) != 0)) {
+			zend_throw_error(NULL, "phpstan_turbo: %s declares no $result property for LateResolvableTypeTrait", ZSTR_VAL(scope->name));
+			return NULL;
+		}
+		return OBJ_PROP(self, info->offset);
+	}
+
+	/* $this->result ??= $this->getResult() */
+	zv::Val resolve() const
+	{
+		zval *slot = resultSlot();
+		if (UNEXPECTED(slot == NULL)) return zv::Val();
+		if (Z_TYPE_P(slot) == IS_OBJECT) return zv::Val::copyOf(zv::Ref(slot));
+		zv::Val result = pt_type_call(self, PT_LC("getresult"), 0, NULL);
+		if (UNEXPECTED(result.isUndef())) return zv::Val();
+		if (UNEXPECTED(!zv::Ref(result.raw()).isObject())) {
+			zend_type_error("phpstan_turbo: %s::getResult() must return %s", ZSTR_VAL(self->ce->name), ptcls::type);
+			return zv::Val();
+		}
+		/* the slot survives the call (the properties table is part of the
+		 * object); the typed ?Type property takes the Type returned */
+		zv::Ref(slot).assign(zv::Val::copyOf(zv::Ref(result.raw())));
+		return result;
+	}
+
+	/* $this->resolve() through the object's class entry, direct when native */
+	zv::Val thisResolve() const
+	{
+		if (EXPECTED(pt_type_method_is(self, PT_LC("resolve"), lrResolve))) return resolve();
+		return pt_type_call(self, PT_LC("resolve"), 0, NULL);
+	}
+
+	/* $this->resolve() checked to be a Type; UNDEF = pending exception */
+	zv::Val resolved() const
+	{
+		zv::Val result = thisResolve();
+		if (UNEXPECTED(result.isUndef())) return zv::Val();
+		if (UNEXPECTED(!zv::Ref(result.raw()).isObject())) {
+			zend_type_error("phpstan_turbo: %s::resolve() must return %s", ZSTR_VAL(self->ce->name), ptcls::type);
+			return zv::Val();
+		}
+		return result;
+	}
+
+	/* $this->resolve()->method(...$args) */
+	zv::Val delegate(const char *lcname, size_t len, uint32_t argc, zval *argv) const
+	{
+		zv::Val result = resolved();
+		if (UNEXPECTED(result.isUndef())) return zv::Val();
+		return pt_type_call(Z_OBJ_P(result.raw()), lcname, len, argc, argv);
+	}
+
+	/* the same with the method named by the trait method's own frame (the
+	 * one forward every `return $this->resolve()->x(...)` body is) */
+	zv::Val delegateNamed(zend_string *name, uint32_t argc, zval *argv) const
+	{
+		zv::Val result = resolved();
+		if (UNEXPECTED(result.isUndef())) return zv::Val();
+		zend_object *target = Z_OBJ_P(result.raw());
+		zend_function *fn = (zend_function *) zend_hash_find_ptr_lc(&target->ce->function_table, name);
+		if (UNEXPECTED(fn == NULL)) {
+			zend_throw_error(NULL, "Call to undefined method %s::%s()", ZSTR_VAL(target->ce->name), ZSTR_VAL(name));
+			return zv::Val();
+		}
+		zval ret;
+		zend_call_known_function(fn, target, target->ce, &ret, argc, argv, NULL);
+		if (UNEXPECTED(EG(exception))) {
+			zval_ptr_dtor(&ret);
+			return zv::Val();
+		}
+		return zv::Val::adopt(ret);
+	}
+
+	/* yes for a NeverType; a late-resolvable $type resolved first; the
+	 * resolved type's answer, held to maybe while $this is not resolvable */
+	zv::Val isSuperTypeOfDefault(zval *type) const
+	{
+		if (instanceof_function(Z_OBJCE_P(type), pt_ce_never_type)) return pt_type_is_super_type_of_result(PT_TRI_YES);
+		bool lateResolvable;
+		if (UNEXPECTED(!pt_type_instanceof(type, PT_CLASS_LATE_RESOLVABLE_TYPE, lateResolvable))) return zv::Val();
+		zv::Val resolvedType;
+		if (lateResolvable) {
+			resolvedType = pt_type_call(Z_OBJ_P(type), PT_LC("resolve"), 0, NULL);
+			if (UNEXPECTED(resolvedType.isUndef())) return zv::Val();
+			if (UNEXPECTED(!zv::Ref(resolvedType.raw()).isObject())) {
+				zend_type_error("phpstan_turbo: %s::resolve() must return %s", ZSTR_VAL(Z_OBJCE_P(type)->name), ptcls::type);
+				return zv::Val();
+			}
+			type = resolvedType.raw();
+		}
+		zv::Val isSuperType = delegate(PT_LC("issupertypeof"), 1, type);
+		if (UNEXPECTED(isSuperType.isUndef())) return zv::Val();
+		zv::Val resolvable = pt_type_call(self, PT_LC("isresolvable"), 0, NULL);
+		if (UNEXPECTED(resolvable.isUndef())) return zv::Val();
+		if (!zend_is_true(resolvable.raw())) {
+			zv::Val maybe = pt_type_is_super_type_of_result(PT_TRI_MAYBE);
+			if (UNEXPECTED(maybe.isUndef())) return zv::Val();
+			return pt_type_result_and(std::move(isSuperType), maybe.raw());
+		}
+		return isSuperType;
+	}
+
+	/* $result->isSubTypeOf($otherType) for a compound result, else
+	 * $otherType->isSuperTypeOf($result) */
+	zv::Val isSubTypeOf(zval *otherType) const
+	{
+		return compoundOrReversed(PT_LC("issubtypeof"), PT_LC("issupertypeof"), 1, otherType);
+	}
+
+	/* $result->isAcceptedBy($acceptingType, $strictTypes) for a compound
+	 * result, else $acceptingType->accepts($result, $strictTypes) */
+	zv::Val isAcceptedBy(zval *acceptingType, bool strictTypes) const
+	{
+		zv::Args args{acceptingType, strictTypes};
+		return compoundOrReversed(PT_LC("isacceptedby"), PT_LC("accepts"), 2, args);
+	}
+
+	/* $result->isGreaterThan($otherType, $phpVersion) for a compound
+	 * result, else $otherType->isSmallerThan($result, $phpVersion) */
+	zv::Val isGreaterThan(zval *otherType, zval *phpVersion) const
+	{
+		zv::Args args{otherType, phpVersion};
+		return compoundOrReversed(PT_LC("isgreaterthan"), PT_LC("issmallerthan"), 2, args);
+	}
+
+	zv::Val isGreaterThanOrEqual(zval *otherType, zval *phpVersion) const
+	{
+		zv::Args args{otherType, phpVersion};
+		return compoundOrReversed(PT_LC("isgreaterthanorequal"), PT_LC("issmallerthanorequal"), 2, args);
+	}
+
+private:
+	zend_object *self;
+	zend_class_entry *scope;
+
+	/* $result = $this->resolve(); a CompoundType result answers
+	 * $result->compound(...$args), any other is asked the other way round:
+	 * $args[0]->reversed($result, ...$args[1..]) */
+	zv::Val compoundOrReversed(const char *compoundLcname, size_t compoundLen, const char *reversedLcname, size_t reversedLen, uint32_t argc, zval *argv) const
+	{
+		zv::Val result = resolved();
+		if (UNEXPECTED(result.isUndef())) return zv::Val();
+		bool compound;
+		if (UNEXPECTED(!pt_type_instanceof(result.raw(), PT_CLASS_COMPOUND_TYPE, compound))) return zv::Val();
+		if (compound) return pt_type_call(Z_OBJ_P(result.raw()), compoundLcname, compoundLen, argc, argv);
+		if (UNEXPECTED(Z_TYPE(argv[0]) != IS_OBJECT)) {
+			zend_type_error("phpstan_turbo: expected %s, %s given", ptcls::type, zend_zval_value_name(&argv[0]));
+			return zv::Val();
+		}
+		zval reversedArgs[2];
+		ZVAL_COPY_VALUE(&reversedArgs[0], result.raw());
+		if (argc > 1) {
+			ZVAL_COPY_VALUE(&reversedArgs[1], &argv[1]);
+		}
+		return pt_type_call(Z_OBJ_P(&argv[0]), reversedLcname, reversedLen, argc, reversedArgs);
+	}
+};
+
+} // namespace phpstanturbo
+
+using phpstanturbo::LateResolvable;
+
+zv::Val pt_type_late_resolvable_resolve(zend_object *self, zend_class_entry *scope)
+{
+	return LateResolvable(self, scope).thisResolve();
+}
+
+zv::Val pt_type_late_resolvable_is_super_type_of_default(zend_object *self, zend_class_entry *scope, zval *type)
+{
+	return LateResolvable(self, scope).isSuperTypeOfDefault(type);
+}
+
+zv::Val pt_type_describe_generic_of(const char *identifier, size_t identifierLen, zval *type, zval *level)
+{
+	if (UNEXPECTED(Z_TYPE_P(type) != IS_OBJECT)) {
+		zend_type_error("phpstan_turbo: expected %s, %s given", ptcls::type, zend_zval_value_name(type));
+		return zv::Val();
+	}
+	zv::Val description = pt_type_call(Z_OBJ_P(type), PT_LC("describe"), 1, level);
+	if (UNEXPECTED(description.isUndef())) return zv::Val();
+	if (UNEXPECTED(!zv::Ref(description.raw()).isString())) {
+		zend_type_error("phpstan_turbo: describe() must return a string");
+		return zv::Val();
+	}
+	return zv::Val::adoptString(zend_strpprintf(0, "%.*s<%s>", (int) identifierLen, identifier, ZSTR_VAL(Z_STR_P(description.raw()))));
+}
+
+zv::Val pt_type_generic_node_of(const char *identifier, size_t identifierLen, zval *type)
+{
+	if (UNEXPECTED(Z_TYPE_P(type) != IS_OBJECT)) {
+		zend_type_error("phpstan_turbo: expected %s, %s given", ptcls::type, zend_zval_value_name(type));
+		return zv::Val();
+	}
+	zv::Val identifierNode = pt_type_new_identifier_type_node(identifier, identifierLen);
+	if (UNEXPECTED(identifierNode.isUndef())) return zv::Val();
+	zv::Val typeNode = pt_type_call(Z_OBJ_P(type), PT_LC("tophpdocnode"), 0, NULL);
+	if (UNEXPECTED(typeNode.isUndef())) return zv::Val();
+	zv::Arr genericTypes = zv::Arr::create(1);
+	genericTypes.push(std::move(typeNode));
+	zv::Args args{identifierNode.raw(), genericTypes.raw()};
+	return pt_type_new(PT_CLASS_GENERIC_TYPE_NODE, 2, args);
+}
+
+zv::Val pt_type_traverse_call(zend_fcall_info *fci, zend_fcall_info_cache *fcc, zval *type, zval *right)
+{
+	zval args[2];
+	ZVAL_COPY_VALUE(&args[0], type);
+	if (right != NULL) {
+		ZVAL_COPY_VALUE(&args[1], right);
+	}
+	zval mapped;
+	if (UNEXPECTED(!pt_call_fci(fci, fcc, right != NULL ? 2 : 1, args, &mapped))) return zv::Val();
+	zv::Val result = zv::Val::adopt(mapped);
+	if (UNEXPECTED(!zv::Ref(result.raw()).isObject())) {
+		zend_type_error("phpstan_turbo: the traverse callback must return %s, %s returned", ptcls::type, zend_zval_value_name(result.raw()));
+		return zv::Val();
+	}
+	return result;
+}
+
+#define PT_LR_THIS LateResolvable(PT_THIS_OBJ, PT_SCOPE)
+
+static void ZEND_FASTCALL lrResolve(INTERNAL_FUNCTION_PARAMETERS)
+{
+	ZEND_PARSE_PARAMETERS_NONE();
+	PT_RETURN_VAL(PT_LR_THIS.resolve());
+}
+
+/* `return $this->resolve()->x(...$args)` — the body of every forwarding
+ * method, for every arity: the method is the frame's own, the arguments
+ * the frame's (counted as the twin counts them, their types checked by the
+ * resolved type's method as the twin's typed parameters would) */
+static void ZEND_FASTCALL lrDelegate(INTERNAL_FUNCTION_PARAMETERS)
+{
+	const zend_function *fn = EX(func);
+	uint32_t argc = ZEND_NUM_ARGS();
+	if (UNEXPECTED(argc < fn->common.required_num_args || argc > fn->common.num_args)) {
+		zend_wrong_parameters_count_error(fn->common.required_num_args, fn->common.num_args);
+		RETURN_THROWS();
+	}
+	PT_RETURN_VAL(PT_LR_THIS.delegateNamed(fn->common.function_name, argc, argc > 0 ? ZEND_CALL_ARG(execute_data, 1) : NULL));
+}
+
+/* getFirstIterableKeyType() / getLastIterableKeyType(): $this->resolve()->getIterableKeyType() */
+static void ZEND_FASTCALL lrIterableKeyType(INTERNAL_FUNCTION_PARAMETERS)
+{
+	ZEND_PARSE_PARAMETERS_NONE();
+	PT_RETURN_VAL(PT_LR_THIS.delegate(PT_LC("getiterablekeytype"), 0, NULL));
+}
+
+/* getFirstIterableValueType() / getLastIterableValueType(): $this->resolve()->getIterableValueType() */
+static void ZEND_FASTCALL lrIterableValueType(INTERNAL_FUNCTION_PARAMETERS)
+{
+	ZEND_PARSE_PARAMETERS_NONE();
+	PT_RETURN_VAL(PT_LR_THIS.delegate(PT_LC("getiterablevaluetype"), 0, NULL));
+}
+
+static void ZEND_FASTCALL lrIsSuperTypeOfDefault(INTERNAL_FUNCTION_PARAMETERS)
+{
+	zval *type;
+	if (!zp::parse<zp::Obj>(execute_data, type)) RETURN_THROWS();
+	PT_RETURN_VAL(PT_LR_THIS.isSuperTypeOfDefault(type));
+}
+
+void pt_type_trait_late_resolvable(reg::Class &cls)
+{
+	namespace sigs = ptdecl::LateResolvableTypeTrait::sig;
+	/* the trait's `private ?Type $result = null`, bound behind the class's
+	 * own properties as PHP binds a trait's */
+	cls.privateTypedClassPropertyDefaultNull("result", ptcls::type);
+
+	cls.traitMethod(sigs::getObjectClassNames, lrDelegate);
+	cls.traitMethod(sigs::getObjectClassReflections, lrDelegate);
+	cls.traitMethod(sigs::getArrays, lrDelegate);
+	cls.traitMethod(sigs::getConstantArrays, lrDelegate);
+	cls.traitMethod(sigs::getConstantStrings, lrDelegate);
+	cls.traitMethod(sigs::accepts, lrDelegate);
+	cls.traitMethod(sigs::isSuperTypeOf, lrIsSuperTypeOfDefault);
+	cls.traitMethod(sigs::isSuperTypeOfDefault, lrIsSuperTypeOfDefault);
+	cls.traitMethod(sigs::getTemplateType, lrDelegate);
+	cls.traitMethod(sigs::isObject, lrDelegate);
+	cls.traitMethod(sigs::getClassStringType, lrDelegate);
+	cls.traitMethod(sigs::isEnum, lrDelegate);
+	cls.traitMethod(sigs::canAccessProperties, lrDelegate);
+	cls.traitMethod(sigs::hasProperty, lrDelegate);
+	cls.traitMethod(sigs::getProperty, lrDelegate);
+	cls.traitMethod(sigs::getUnresolvedPropertyPrototype, lrDelegate);
+	cls.traitMethod(sigs::hasInstanceProperty, lrDelegate);
+	cls.traitMethod(sigs::getInstanceProperty, lrDelegate);
+	cls.traitMethod(sigs::getUnresolvedInstancePropertyPrototype, lrDelegate);
+	cls.traitMethod(sigs::hasStaticProperty, lrDelegate);
+	cls.traitMethod(sigs::getStaticProperty, lrDelegate);
+	cls.traitMethod(sigs::getUnresolvedStaticPropertyPrototype, lrDelegate);
+	cls.traitMethod(sigs::canCallMethods, lrDelegate);
+	cls.traitMethod(sigs::hasMethod, lrDelegate);
+	cls.traitMethod(sigs::getMethod, lrDelegate);
+	cls.traitMethod(sigs::getUnresolvedMethodPrototype, lrDelegate);
+	cls.traitMethod(sigs::canAccessConstants, lrDelegate);
+	cls.traitMethod(sigs::hasConstant, lrDelegate);
+	cls.traitMethod(sigs::getConstant, lrDelegate);
+	cls.traitMethod(sigs::isIterable, lrDelegate);
+	cls.traitMethod(sigs::isIterableAtLeastOnce, lrDelegate);
+	cls.traitMethod(sigs::getArraySize, lrDelegate);
+	cls.traitMethod(sigs::getIterableKeyType, lrDelegate);
+	cls.traitMethod(sigs::getFirstIterableKeyType, lrIterableKeyType);
+	cls.traitMethod(sigs::getLastIterableKeyType, lrIterableKeyType);
+	cls.traitMethod(sigs::getIterableValueType, lrDelegate);
+	cls.traitMethod(sigs::getFirstIterableValueType, lrIterableValueType);
+	cls.traitMethod(sigs::getLastIterableValueType, lrIterableValueType);
+	cls.traitMethod(sigs::isArray, lrDelegate);
+	cls.traitMethod(sigs::isConstantArray, lrDelegate);
+	cls.traitMethod(sigs::isOversizedArray, lrDelegate);
+	cls.traitMethod(sigs::isList, lrDelegate);
+	cls.traitMethod(sigs::isOffsetAccessible, lrDelegate);
+	cls.traitMethod(sigs::isOffsetAccessLegal, lrDelegate);
+	cls.traitMethod(sigs::hasOffsetValueType, lrDelegate);
+	cls.traitMethod(sigs::getOffsetValueType, lrDelegate);
+	cls.traitMethod(sigs::setOffsetValueType, lrDelegate);
+	cls.traitMethod(sigs::setExistingOffsetValueType, lrDelegate);
+	cls.traitMethod(sigs::unsetOffset, lrDelegate);
+	cls.traitMethod(sigs::getKeysArrayFiltered, lrDelegate);
+	cls.traitMethod(sigs::getKeysArray, lrDelegate);
+	cls.traitMethod(sigs::getValuesArray, lrDelegate);
+	cls.traitMethod(sigs::chunkArray, lrDelegate);
+	cls.traitMethod(sigs::fillKeysArray, lrDelegate);
+	cls.traitMethod(sigs::flipArray, lrDelegate);
+	cls.traitMethod(sigs::intersectKeyArray, lrDelegate);
+	cls.traitMethod(sigs::popArray, lrDelegate);
+	cls.traitMethod(sigs::reverseArray, lrDelegate);
+	cls.traitMethod(sigs::searchArray, lrDelegate);
+	cls.traitMethod(sigs::shiftArray, lrDelegate);
+	cls.traitMethod(sigs::shuffleArray, lrDelegate);
+	cls.traitMethod(sigs::sliceArray, lrDelegate);
+	cls.traitMethod(sigs::spliceArray, lrDelegate);
+	cls.traitMethod(sigs::truncateListToSize, lrDelegate);
+	cls.traitMethod(sigs::makeListMaybe, lrDelegate);
+	cls.traitMethod(sigs::mapValueType, lrDelegate);
+	cls.traitMethod(sigs::mapKeyType, lrDelegate);
+	cls.traitMethod(sigs::makeAllArrayKeysOptional, lrDelegate);
+	cls.traitMethod(sigs::changeKeyCaseArray, lrDelegate);
+	cls.traitMethod(sigs::filterArrayRemovingFalsey, lrDelegate);
+	cls.traitMethod(sigs::isCallable, lrDelegate);
+	cls.traitMethod(sigs::getEnumCases, lrDelegate);
+	cls.traitMethod(sigs::getEnumCaseObject, lrDelegate);
+	cls.traitMethod(sigs::getCallableParametersAcceptors, lrDelegate);
+	cls.traitMethod(sigs::isCloneable, lrDelegate);
+	cls.traitMethod(sigs::toBoolean, lrDelegate);
+	cls.traitMethod(sigs::toNumber, lrDelegate);
+	cls.traitMethod(sigs::toBitwiseNotType, lrDelegate);
+	cls.traitMethod(sigs::toGetClassResultType, lrDelegate);
+	cls.traitMethod(sigs::toClassConstantType, lrDelegate);
+	cls.traitMethod(sigs::toObjectTypeForInstanceofCheck, lrDelegate);
+	cls.traitMethod(sigs::toObjectTypeForIsACheck, lrDelegate);
+	cls.traitMethod(sigs::toAbsoluteNumber, lrDelegate);
+	cls.traitMethod(sigs::toInteger, lrDelegate);
+	cls.traitMethod(sigs::toFloat, lrDelegate);
+	cls.traitMethod(sigs::toString, lrDelegate);
+	cls.traitMethod(sigs::toArray, lrDelegate);
+	cls.traitMethod(sigs::toArrayKey, lrDelegate);
+	cls.traitMethod(sigs::toCoercedArgumentType, lrDelegate);
+	cls.traitMethod(sigs::isSmallerThan, lrDelegate);
+	cls.traitMethod(sigs::isSmallerThanOrEqual, lrDelegate);
+	cls.traitMethod(sigs::isNull, lrDelegate);
+	cls.traitMethod(sigs::isConstantValue, lrDelegate);
+	cls.traitMethod(sigs::isConstantScalarValue, lrDelegate);
+	cls.traitMethod(sigs::getConstantScalarTypes, lrDelegate);
+	cls.traitMethod(sigs::getConstantScalarValues, lrDelegate);
+	cls.traitMethod(sigs::isTrue, lrDelegate);
+	cls.traitMethod(sigs::isFalse, lrDelegate);
+	cls.traitMethod(sigs::isBoolean, lrDelegate);
+	cls.traitMethod(sigs::isFloat, lrDelegate);
+	cls.traitMethod(sigs::isInteger, lrDelegate);
+	cls.traitMethod(sigs::isString, lrDelegate);
+	cls.traitMethod(sigs::isNumericString, lrDelegate);
+	cls.traitMethod(sigs::isDecimalIntegerString, lrDelegate);
+	cls.traitMethod(sigs::isNonEmptyString, lrDelegate);
+	cls.traitMethod(sigs::isNonFalsyString, lrDelegate);
+	cls.traitMethod(sigs::isLiteralString, lrDelegate);
+	cls.traitMethod(sigs::isLowercaseString, lrDelegate);
+	cls.traitMethod(sigs::isUppercaseString, lrDelegate);
+	cls.traitMethod(sigs::isClassString, lrDelegate);
+	cls.traitMethod(sigs::getClassStringObjectType, lrDelegate);
+	cls.traitMethod(sigs::getObjectTypeOrClassStringObjectType, lrDelegate);
+	cls.traitMethod(sigs::isVoid, lrDelegate);
+	cls.traitMethod(sigs::isScalar, lrDelegate);
+	cls.traitMethod(sigs::looseCompare, [](INTERNAL_FUNCTION_PARAMETERS) {
+		PT_ARGS(2, 2);
+		/* new BooleanType() — the shadowing class */
+		zval result;
+		if (UNEXPECTED(!pt_boolean_type_new(&result))) RETURN_THROWS();
+		RETURN_COPY_VALUE(&result);
+	});
+	cls.traitMethod(sigs::getSmallerType, lrDelegate);
+	cls.traitMethod(sigs::getSmallerOrEqualType, lrDelegate);
+	cls.traitMethod(sigs::getGreaterType, lrDelegate);
+	cls.traitMethod(sigs::getGreaterOrEqualType, lrDelegate);
+	cls.traitMethod(sigs::inferTemplateTypes, lrDelegate);
+	cls.traitMethod(sigs::tryRemove, lrDelegate);
+	cls.traitMethod(sigs::isSubTypeOf, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *otherType;
+		if (!zp::parse<zp::Obj>(execute_data, otherType)) RETURN_THROWS();
+		PT_RETURN_VAL(PT_LR_THIS.isSubTypeOf(otherType));
+	});
+	cls.traitMethod(sigs::isAcceptedBy, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *acceptingType;
+		bool strictTypes;
+		if (!zp::parse<zp::Obj, zp::Bool>(execute_data, acceptingType, strictTypes)) RETURN_THROWS();
+		PT_RETURN_VAL(PT_LR_THIS.isAcceptedBy(acceptingType, strictTypes));
+	});
+	cls.traitMethod(sigs::isGreaterThan, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *otherType, *phpVersion;
+		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, otherType, phpVersion)) RETURN_THROWS();
+		PT_RETURN_VAL(PT_LR_THIS.isGreaterThan(otherType, phpVersion));
+	});
+	cls.traitMethod(sigs::isGreaterThanOrEqual, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *otherType, *phpVersion;
+		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, otherType, phpVersion)) RETURN_THROWS();
+		PT_RETURN_VAL(PT_LR_THIS.isGreaterThanOrEqual(otherType, phpVersion));
+	});
+	cls.traitMethod(sigs::exponentiate, lrDelegate);
+	cls.traitMethod(sigs::getFiniteTypes, lrDelegate);
+	cls.traitMethod(sigs::resolve, lrResolve);
+	cls.traitMethod(sigs::hasTemplateOrLateResolvableType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		RETURN_TRUE;
+	});
 }
 
 /* }}} */

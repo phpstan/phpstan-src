@@ -13,6 +13,7 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\PhpDocParser\Printer\Printer;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -32,6 +33,7 @@ use function sprintf;
  * shape collapses into a ConstantArrayType (or an ErrorType when the resolved
  * key cannot be used as an array key at all).
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/LateResolvableArrayShapeType.cpp')]
 final class LateResolvableArrayShapeType implements CompoundType, LateResolvableType
 {
 

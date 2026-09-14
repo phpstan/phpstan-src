@@ -90,7 +90,6 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_ALLOWED_ARRAY_KEYS_TYPES */ {"allowedArrayKeysTypes", "PHPStan\\Rules\\Arrays\\AllowedArrayKeysTypes"},
 	/* PT_CLASS_CONSTANT_ARRAY_TYPE_BUILDER */ {"constantArrayTypeBuilder", "PHPStan\\Type\\Constant\\ConstantArrayTypeBuilder"},
 	/* PT_CLASS_LRU_CACHE */ {"lruCache", "PHPStan\\Internal\\LruCache"},
-	/* PT_CLASS_UNRESOLVED_TEMPLATE_ARGUMENT_TYPE */ {"unresolvedTemplateArgumentType", "PHPStan\\Type\\Generic\\UnresolvedTemplateArgumentType"},
 	/* PT_CLASS_TYPE_PROJECTION_HELPER */ {"typeProjectionHelper", "PHPStan\\Type\\Generic\\TypeProjectionHelper"},
 	/* PT_CLASS_CLASS_NOT_FOUND_EXCEPTION */ {"classNotFoundException", "PHPStan\\Broker\\ClassNotFoundException"},
 	/* PT_CLASS_CALLED_ON_TYPE_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION */ {"calledOnTypeUnresolvedMethodPrototypeReflection", "PHPStan\\Reflection\\Type\\CalledOnTypeUnresolvedMethodPrototypeReflection"},
@@ -144,6 +143,9 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_TURBO_EXTENSION_ENABLER */ {"turboExtensionEnabler", "PHPStan\\Turbo\\TurboExtensionEnabler"},
 	/* PT_CLASS_TEMPLATE_TYPE_FACTORY */ {"templateTypeFactory", "PHPStan\\Type\\Generic\\TemplateTypeFactory"},
 	/* PT_CLASS_PARAMETERS_ACCEPTOR */ {"parametersAcceptor", "PHPStan\\Reflection\\ParametersAcceptor"},
+	/* PT_CLASS_OFFSET_ACCESS_TYPE_NODE */ {"offsetAccessTypeNode", "PHPStan\\PhpDocParser\\Ast\\Type\\OffsetAccessTypeNode"},
+	/* PT_CLASS_CONDITIONAL_TYPE_NODE */ {"conditionalTypeNode", "PHPStan\\PhpDocParser\\Ast\\Type\\ConditionalTypeNode"},
+	/* PT_CLASS_CONDITIONAL_TYPE_FOR_PARAMETER_NODE */ {"conditionalTypeForParameterNode", "PHPStan\\PhpDocParser\\Ast\\Type\\ConditionalTypeForParameterNode"},
 };
 
 zend_class_entry *pt_class(int idx)

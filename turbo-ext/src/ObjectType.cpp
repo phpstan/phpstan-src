@@ -1683,7 +1683,7 @@ public:
 		if (UNEXPECTED(type.isUndef())) return zv::Val();
 		if (type.isNull()) return pt_type_new_error_type();
 		bool is;
-		if (UNEXPECTED(!pt_type_instanceof(type.raw(), PT_CLASS_UNRESOLVED_TEMPLATE_ARGUMENT_TYPE, is))) return zv::Val();
+		if (UNEXPECTED(!pt_type_instanceof_ce(type.raw(), pt_ce_unresolved_template_argument_type, is))) return zv::Val();
 		if (is) {
 			/* read out of the object as a derived value - see TemplateTypeHelper::resolveTemplateTypes() */
 			return pt_type_call(Z_OBJ_P(type.raw()), PT_LC("getdelegate"), 0, NULL);

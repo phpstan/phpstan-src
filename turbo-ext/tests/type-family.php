@@ -56,7 +56,7 @@ $observations = [];
 // which implementation answered: smoke.php holds the php run to false and
 // the native run to true, so the two sets can never be one implementation
 // compared against itself
-foreach ([\PHPStan\Type\BooleanType::class, \PHPStan\Type\Constant\ConstantBooleanType::class, \PHPStan\Type\IntegerType::class, \PHPStan\Type\Constant\ConstantIntegerType::class, \PHPStan\Type\IntegerRangeType::class, \PHPStan\Type\StringType::class, \PHPStan\Type\Constant\ConstantStringType::class, \PHPStan\Type\ClassStringType::class, \PHPStan\Type\Generic\GenericClassStringType::class, \PHPStan\Type\FloatType::class, \PHPStan\Type\Constant\ConstantFloatType::class, \PHPStan\Type\NullType::class, \PHPStan\Type\VoidType::class, \PHPStan\Type\NeverType::class, \PHPStan\Type\MixedType::class, \PHPStan\Type\StrictMixedType::class, \PHPStan\Type\ObjectWithoutClassType::class, \PHPStan\Type\StaticType::class, \PHPStan\Type\ThisType::class, \PHPStan\Type\Generic\GenericStaticType::class, \PHPStan\Type\ObjectShapeType::class, \PHPStan\Type\NonexistentParentClassType::class, \PHPStan\Type\ArrayType::class, \PHPStan\Type\Accessory\NonEmptyArrayType::class, \PHPStan\Type\Accessory\AccessoryArrayListType::class, \PHPStan\Type\Accessory\OversizedArrayType::class, \PHPStan\Type\Accessory\HasOffsetType::class, \PHPStan\Type\Accessory\HasOffsetValueType::class, \PHPStan\Type\Accessory\AccessoryNumericStringType::class, \PHPStan\Type\Accessory\AccessoryNonEmptyStringType::class, \PHPStan\Type\Accessory\AccessoryNonFalsyStringType::class, \PHPStan\Type\Accessory\AccessoryLiteralStringType::class, \PHPStan\Type\Accessory\AccessoryLowercaseStringType::class, \PHPStan\Type\Accessory\AccessoryUppercaseStringType::class, \PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType::class, \PHPStan\Type\Accessory\HasMethodType::class, \PHPStan\Type\Accessory\HasPropertyType::class, \PHPStan\Type\ObjectType::class, \PHPStan\Type\Generic\GenericObjectType::class, \PHPStan\Type\Enum\EnumCaseObjectType::class, \PHPStan\Type\IterableType::class, \PHPStan\Type\CallableType::class, \PHPStan\Type\ClosureType::class, \PHPStan\Type\Constant\ConstantArrayType::class, \PHPStan\Type\UnionType::class, \PHPStan\Type\BenevolentUnionType::class, \PHPStan\Type\IntersectionType::class, \PHPStan\Type\ErrorType::class, \PHPStan\Type\CircularTypeAliasErrorType::class, \PHPStan\Type\Generic\AbsorbedTemplateArgumentType::class, \PHPStan\Type\NonAcceptingNeverType::class, \PHPStan\Type\StringAlwaysAcceptingObjectWithToStringType::class, \PHPStan\Type\StringNeverAcceptingObjectWithToStringType::class, \PHPStan\Type\ResourceType::class] as $typeClass) {
+foreach ([\PHPStan\Type\BooleanType::class, \PHPStan\Type\Constant\ConstantBooleanType::class, \PHPStan\Type\IntegerType::class, \PHPStan\Type\Constant\ConstantIntegerType::class, \PHPStan\Type\IntegerRangeType::class, \PHPStan\Type\StringType::class, \PHPStan\Type\Constant\ConstantStringType::class, \PHPStan\Type\ClassStringType::class, \PHPStan\Type\Generic\GenericClassStringType::class, \PHPStan\Type\FloatType::class, \PHPStan\Type\Constant\ConstantFloatType::class, \PHPStan\Type\NullType::class, \PHPStan\Type\VoidType::class, \PHPStan\Type\NeverType::class, \PHPStan\Type\MixedType::class, \PHPStan\Type\StrictMixedType::class, \PHPStan\Type\ObjectWithoutClassType::class, \PHPStan\Type\StaticType::class, \PHPStan\Type\ThisType::class, \PHPStan\Type\Generic\GenericStaticType::class, \PHPStan\Type\ObjectShapeType::class, \PHPStan\Type\NonexistentParentClassType::class, \PHPStan\Type\ArrayType::class, \PHPStan\Type\Accessory\NonEmptyArrayType::class, \PHPStan\Type\Accessory\AccessoryArrayListType::class, \PHPStan\Type\Accessory\OversizedArrayType::class, \PHPStan\Type\Accessory\HasOffsetType::class, \PHPStan\Type\Accessory\HasOffsetValueType::class, \PHPStan\Type\Accessory\AccessoryNumericStringType::class, \PHPStan\Type\Accessory\AccessoryNonEmptyStringType::class, \PHPStan\Type\Accessory\AccessoryNonFalsyStringType::class, \PHPStan\Type\Accessory\AccessoryLiteralStringType::class, \PHPStan\Type\Accessory\AccessoryLowercaseStringType::class, \PHPStan\Type\Accessory\AccessoryUppercaseStringType::class, \PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType::class, \PHPStan\Type\Accessory\HasMethodType::class, \PHPStan\Type\Accessory\HasPropertyType::class, \PHPStan\Type\ObjectType::class, \PHPStan\Type\Generic\GenericObjectType::class, \PHPStan\Type\Enum\EnumCaseObjectType::class, \PHPStan\Type\IterableType::class, \PHPStan\Type\CallableType::class, \PHPStan\Type\ClosureType::class, \PHPStan\Type\Constant\ConstantArrayType::class, \PHPStan\Type\UnionType::class, \PHPStan\Type\BenevolentUnionType::class, \PHPStan\Type\IntersectionType::class, \PHPStan\Type\ErrorType::class, \PHPStan\Type\CircularTypeAliasErrorType::class, \PHPStan\Type\Generic\AbsorbedTemplateArgumentType::class, \PHPStan\Type\NonAcceptingNeverType::class, \PHPStan\Type\StringAlwaysAcceptingObjectWithToStringType::class, \PHPStan\Type\StringNeverAcceptingObjectWithToStringType::class, \PHPStan\Type\ResourceType::class, \PHPStan\Type\KeyOfType::class, \PHPStan\Type\ValueOfType::class, \PHPStan\Type\OffsetAccessType::class, \PHPStan\Type\ClassConstantAccessType::class, \PHPStan\Type\NewObjectType::class, \PHPStan\Type\ConditionalType::class, \PHPStan\Type\ConditionalTypeForParameter::class, \PHPStan\Type\LateResolvableArrayShapeType::class, \PHPStan\Type\Generic\UnresolvedTemplateArgumentType::class] as $typeClass) {
 	$observations["native $typeClass"] = (new ReflectionMethod($typeClass, 'describe'))->isInternal();
 }
 
@@ -4879,6 +4879,336 @@ $observations['native PHPStan\Type\TypeCombinator'] = (new ReflectionMethod(\PHP
 		$observations["template helper $key"] = $value;
 	}
 	$observations['native ' . \PHPStan\Type\Generic\TemplateTypeHelper::class] = (new ReflectionMethod(\PHPStan\Type\Generic\TemplateTypeHelper::class, 'resolveToBounds'))->isInternal();
+}
+
+
+// ---- KeyOfType / ValueOfType / OffsetAccessType / ClassConstantAccessType / NewObjectType / ConditionalType / ConditionalTypeForParameter / LateResolvableArrayShapeType / UnresolvedTemplateArgumentType ----
+// the late-resolvable family over the shared LateResolvableTypeTrait
+// registrar (resolve() memoized in the trait's $result slot, the hundred
+// forwards to the resolved type, isSuperTypeOfDefault() held to maybe while
+// unresolvable, the CompoundType reversals), each class's own resolution:
+// key-of/value-of over arrays, shapes, enums and templates, offset access,
+// class constant access through the reflection provider (still registered
+// from the string section), new<>, the conditional types with their
+// normalized branches, the late-resolvable array shape collapsing into a
+// ConstantArrayType (or an ErrorType), and the observation-pass marker
+// delegating to its initial type or the template's bound; PHP subclasses
+// over the two non-final natives come along
+$latePhpVersion = new \PHPStan\Php\PhpVersion(80400);
+$lateScope = \PHPStan\Type\Generic\TemplateTypeScope::createWithFunction('late');
+$lateOutOfClassScope = new \PHPStan\Analyser\OutOfClassScope();
+$lateTemplate = static fn (string $name, ?\PHPStan\Type\Type $bound, ?\PHPStan\Type\Type $default = null): \PHPStan\Type\Type => \PHPStan\Type\Generic\TemplateTypeFactory::create($lateScope, $name, $bound, \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant(), null, $default);
+$lateT = $lateTemplate('T', null);
+$lateTArray = $lateTemplate('TArray', new \PHPStan\Type\ArrayType(new \PHPStan\Type\MixedType(), new \PHPStan\Type\MixedType()));
+$lateTKey = $lateTemplate('TKey', new \PHPStan\Type\UnionType([new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()]));
+$lateTString = $lateTemplate('TString', new \PHPStan\Type\StringType());
+$lateTInt = $lateTemplate('TInt', new \PHPStan\Type\IntegerType());
+$lateTBackedEnum = $lateTemplate('TBackedEnum', new \PHPStan\Type\ObjectType(\BackedEnum::class));
+$lateTEnum = $lateTemplate('TEnum', new \PHPStan\Type\ObjectType($objectEnum));
+$lateTObject = $lateTemplate('TObject', new \PHPStan\Type\ObjectType(\Exception::class));
+$lateTShapeNode = $lateTemplate('TShapeNode', new \PHPStan\Type\ObjectType(\PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode::class));
+$lateTDefault = $lateTemplate('TDefault', new \PHPStan\Type\StringType(), new \PHPStan\Type\Constant\ConstantStringType('dflt'));
+$lateShape = new \PHPStan\Type\Constant\ConstantArrayType([new \PHPStan\Type\Constant\ConstantStringType('a'), new \PHPStan\Type\Constant\ConstantStringType('b')], [new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()], [2], [1]);
+$lateList = new \PHPStan\Type\IntersectionType([new \PHPStan\Type\ArrayType(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()), new \PHPStan\Type\Accessory\AccessoryArrayListType()]);
+$lateShapeNodeStatic = new \PHPStan\Type\StaticType($stringReflectionProvider->getClass(\PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode::class));
+$lateShapeNodeObject = new \PHPStan\Type\ObjectType(\PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode::class);
+$lateSiteA = new \PhpParser\Node\Expr\Variable('a');
+$lateSiteB = new \PhpParser\Node\Expr\Variable('b');
+$lateSubjects = static fn (): array => [
+	'keyOfArray' => new \PHPStan\Type\KeyOfType(new \PHPStan\Type\ArrayType(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType())),
+	'keyOfShape' => new \PHPStan\Type\KeyOfType($lateShape),
+	'keyOfList' => new \PHPStan\Type\KeyOfType($lateList),
+	'keyOfT' => new \PHPStan\Type\KeyOfType($lateT),
+	'keyOfTArray' => new \PHPStan\Type\KeyOfType($lateTArray),
+	'keyOfMixed' => new \PHPStan\Type\KeyOfType(new \PHPStan\Type\MixedType()),
+	'keyOfInt' => new \PHPStan\Type\KeyOfType(new \PHPStan\Type\IntegerType()),
+	'keyOfKeyOfShape' => new \PHPStan\Type\KeyOfType(new \PHPStan\Type\KeyOfType($lateShape)),
+	'keyOfEnum' => new \PHPStan\Type\KeyOfType(new \PHPStan\Type\ObjectType($objectEnum)),
+	'valueOfArray' => new \PHPStan\Type\ValueOfType(new \PHPStan\Type\ArrayType(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType())),
+	'valueOfShape' => new \PHPStan\Type\ValueOfType($lateShape),
+	'valueOfEnum' => new \PHPStan\Type\ValueOfType(new \PHPStan\Type\ObjectType($objectEnum)),
+	'valueOfBackedEnum' => new \PHPStan\Type\ValueOfType(new \PHPStan\Type\ObjectType($objectBackedEnum)),
+	'valueOfEnumCase' => new \PHPStan\Type\ValueOfType(new \PHPStan\Type\Enum\EnumCaseObjectType($objectBackedEnum, 'CASE_ONE')),
+	'valueOfTBackedEnum' => new \PHPStan\Type\ValueOfType($lateTBackedEnum),
+	'valueOfTEnum' => new \PHPStan\Type\ValueOfType($lateTEnum),
+	'valueOfT' => new \PHPStan\Type\ValueOfType($lateT),
+	'valueOfMixed' => new \PHPStan\Type\ValueOfType(new \PHPStan\Type\MixedType()),
+	'valueOfString' => new \PHPStan\Type\ValueOfType(new \PHPStan\Type\StringType()),
+	'offsetShapeA' => new \PHPStan\Type\OffsetAccessType($lateShape, new \PHPStan\Type\Constant\ConstantStringType('a')),
+	'offsetShapeMissing' => new \PHPStan\Type\OffsetAccessType($lateShape, new \PHPStan\Type\Constant\ConstantStringType('missing')),
+	'offsetArrayInt' => new \PHPStan\Type\OffsetAccessType(new \PHPStan\Type\ArrayType(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()), new \PHPStan\Type\IntegerType()),
+	'offsetTArrayTKey' => new \PHPStan\Type\OffsetAccessType($lateTArray, $lateTKey),
+	'offsetShapeTKey' => new \PHPStan\Type\OffsetAccessType($lateShape, $lateTKey),
+	'offsetStringInt' => new \PHPStan\Type\OffsetAccessType(new \PHPStan\Type\StringType(), new \PHPStan\Type\IntegerType()),
+	'offsetMixedInt' => new \PHPStan\Type\OffsetAccessType(new \PHPStan\Type\MixedType(), new \PHPStan\Type\IntegerType()),
+	'constantStaticKindList' => new \PHPStan\Type\ClassConstantAccessType($lateShapeNodeStatic, 'KIND_LIST'),
+	'constantObjectKindArray' => new \PHPStan\Type\ClassConstantAccessType($lateShapeNodeObject, 'KIND_ARRAY'),
+	'constantMissing' => new \PHPStan\Type\ClassConstantAccessType($lateShapeNodeObject, 'KIND_NONEXISTENT'),
+	'constantTShapeNode' => new \PHPStan\Type\ClassConstantAccessType($lateTShapeNode, 'KIND_LIST'),
+	'constantOnInt' => new \PHPStan\Type\ClassConstantAccessType(new \PHPStan\Type\IntegerType(), 'KIND_LIST'),
+	'newException' => new \PHPStan\Type\NewObjectType(new \PHPStan\Type\ObjectType(\Exception::class)),
+	'newClassString' => new \PHPStan\Type\NewObjectType(new \PHPStan\Type\Generic\GenericClassStringType(new \PHPStan\Type\ObjectType(\Exception::class))),
+	'newTObject' => new \PHPStan\Type\NewObjectType($lateTObject),
+	'newT' => new \PHPStan\Type\NewObjectType($lateT),
+	'newString' => new \PHPStan\Type\NewObjectType(new \PHPStan\Type\StringType()),
+	'newMixed' => new \PHPStan\Type\NewObjectType(new \PHPStan\Type\MixedType()),
+	'condIntIsInt' => new \PHPStan\Type\ConditionalType(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType(), new \PHPStan\Type\BooleanType(), false),
+	'condIntIsIntNegated' => new \PHPStan\Type\ConditionalType(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType(), new \PHPStan\Type\BooleanType(), true),
+	'condStringIsInt' => new \PHPStan\Type\ConditionalType(new \PHPStan\Type\StringType(), new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType(), new \PHPStan\Type\BooleanType(), false),
+	'condUnionIsInt' => new \PHPStan\Type\ConditionalType(new \PHPStan\Type\UnionType([new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()]), new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType(), new \PHPStan\Type\BooleanType(), false),
+	'condTIsInt' => new \PHPStan\Type\ConditionalType($lateT, new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType(), new \PHPStan\Type\BooleanType(), false),
+	'condTIsIntSubject' => new \PHPStan\Type\ConditionalType($lateT, new \PHPStan\Type\IntegerType(), $lateT, new \PHPStan\Type\ArrayType(new \PHPStan\Type\IntegerType(), $lateT), false),
+	'condTIsIntSubjectNegated' => new \PHPStan\Type\ConditionalType($lateT, new \PHPStan\Type\IntegerType(), $lateT, new \PHPStan\Type\ArrayType(new \PHPStan\Type\IntegerType(), $lateT), true),
+	'condTKeyIsInt' => new \PHPStan\Type\ConditionalType($lateTKey, new \PHPStan\Type\IntegerType(), $lateTKey, $lateTKey, false),
+	'condTIntIsInt' => new \PHPStan\Type\ConditionalType($lateTInt, new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType(), new \PHPStan\Type\BooleanType(), false),
+	'condTStringIsInt' => new \PHPStan\Type\ConditionalType($lateTString, new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType(), new \PHPStan\Type\BooleanType(), false),
+	'condIntIsT' => new \PHPStan\Type\ConditionalType(new \PHPStan\Type\IntegerType(), $lateT, new \PHPStan\Type\StringType(), new \PHPStan\Type\BooleanType(), false),
+	'condParamIsInt' => new \PHPStan\Type\ConditionalTypeForParameter('$x', new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType(), new \PHPStan\Type\BooleanType(), false),
+	'condParamIsIntNegated' => new \PHPStan\Type\ConditionalTypeForParameter('$x', new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType(), new \PHPStan\Type\BooleanType(), true),
+	'condParamYIsT' => new \PHPStan\Type\ConditionalTypeForParameter('$y', $lateT, new \PHPStan\Type\StringType(), new \PHPStan\Type\NullType(), false),
+	'shapeTKeyInt' => \PHPStan\Type\LateResolvableArrayShapeType::create([[$lateTKey, new \PHPStan\Type\IntegerType(), false]], null, \PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode::KIND_ARRAY),
+	'shapeTKeyIntOptionalUnsealedMixed' => \PHPStan\Type\LateResolvableArrayShapeType::create([[$lateTKey, new \PHPStan\Type\IntegerType(), true], [null, new \PHPStan\Type\StringType(), false]], [null, new \PHPStan\Type\MixedType()], \PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode::KIND_ARRAY),
+	'shapeTKeyUnsealedString' => \PHPStan\Type\LateResolvableArrayShapeType::create([[$lateTKey, new \PHPStan\Type\IntegerType(), false], [new \PHPStan\Type\Constant\ConstantStringType('b'), new \PHPStan\Type\StringType(), false]], [null, new \PHPStan\Type\StringType()], \PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode::KIND_NON_EMPTY_ARRAY),
+	'shapeTKeyUnsealedTKeyBool' => \PHPStan\Type\LateResolvableArrayShapeType::create([[$lateTKey, new \PHPStan\Type\IntegerType(), false]], [$lateTKey, new \PHPStan\Type\BooleanType()], \PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode::KIND_ARRAY),
+	'shapeListTIntKey' => \PHPStan\Type\LateResolvableArrayShapeType::create([[$lateTInt, new \PHPStan\Type\StringType(), false]], null, \PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode::KIND_LIST),
+	'shapeNonEmptyListTIntKeyUnsealed' => \PHPStan\Type\LateResolvableArrayShapeType::create([[$lateTInt, new \PHPStan\Type\StringType(), false]], [null, new \PHPStan\Type\StringType()], \PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode::KIND_NON_EMPTY_LIST),
+	'shapeTObjectKey' => \PHPStan\Type\LateResolvableArrayShapeType::create([[$lateTObject, new \PHPStan\Type\IntegerType(), false]], null, \PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode::KIND_ARRAY),
+	'shapeUnsealedTObjectKey' => \PHPStan\Type\LateResolvableArrayShapeType::create([[new \PHPStan\Type\Constant\ConstantStringType('a'), new \PHPStan\Type\IntegerType(), false]], [$lateTObject, new \PHPStan\Type\IntegerType()], \PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode::KIND_ARRAY),
+	'shapeTKeyAndConstKeys' => \PHPStan\Type\LateResolvableArrayShapeType::create([[new \PHPStan\Type\Constant\ConstantIntegerType(0), new \PHPStan\Type\IntegerType(), false], [$lateTKey, new \PHPStan\Type\StringType(), false], [new \PHPStan\Type\Constant\ConstantStringType('class-name'), new \PHPStan\Type\BooleanType(), true]], [new \PHPStan\Type\UnionType([new \PHPStan\Type\Constant\ConstantIntegerType(0), new \PHPStan\Type\Constant\ConstantStringType('x')]), new \PHPStan\Type\FloatType()], \PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode::KIND_ARRAY),
+	'shapeTDefaultKey' => \PHPStan\Type\LateResolvableArrayShapeType::create([[$lateTDefault, new \PHPStan\Type\IntegerType(), false]], null, \PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode::KIND_ARRAY),
+	'unresolvedNull' => new \PHPStan\Type\Generic\UnresolvedTemplateArgumentType($lateSiteA, $lateTObject, null),
+	'unresolvedInt' => new \PHPStan\Type\Generic\UnresolvedTemplateArgumentType($lateSiteA, $lateT, new \PHPStan\Type\IntegerType()),
+	'unresolvedIntSiteB' => new \PHPStan\Type\Generic\UnresolvedTemplateArgumentType($lateSiteB, $lateT, new \PHPStan\Type\IntegerType()),
+	'unresolvedDefault' => new \PHPStan\Type\Generic\UnresolvedTemplateArgumentType($lateSiteA, $lateTDefault, null),
+	'unresolvedArrayOfT' => new \PHPStan\Type\Generic\UnresolvedTemplateArgumentType($lateSiteA, $lateT, new \PHPStan\Type\ArrayType(new \PHPStan\Type\IntegerType(), $lateT)),
+	'unresolvedEnum' => new \PHPStan\Type\Generic\UnresolvedTemplateArgumentType($lateSiteB, $lateTEnum, new \PHPStan\Type\ObjectType($objectEnum)),
+];
+$lateOthers = static fn (array $subjects): array => [
+	'int' => new \PHPStan\Type\IntegerType(),
+	'int1' => new \PHPStan\Type\Constant\ConstantIntegerType(1),
+	'string' => new \PHPStan\Type\StringType(),
+	'stringA' => new \PHPStan\Type\Constant\ConstantStringType('a'),
+	'stringList' => new \PHPStan\Type\Constant\ConstantStringType('list'),
+	'bool' => new \PHPStan\Type\BooleanType(),
+	'null' => new \PHPStan\Type\NullType(),
+	'never' => new \PHPStan\Type\NeverType(),
+	'mixed' => new \PHPStan\Type\MixedType(),
+	'union' => new \PHPStan\Type\UnionType([new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()]),
+	'array' => new \PHPStan\Type\ArrayType(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()),
+	'shape' => $lateShape,
+	'exception' => new \PHPStan\Type\ObjectType(\Exception::class),
+	'enum' => new \PHPStan\Type\ObjectType($objectEnum),
+	'templateT' => $lateT,
+	'templateTKey' => $lateTKey,
+	'keyOfShape' => $subjects['keyOfShape'],
+	'valueOfShape' => $subjects['valueOfShape'],
+	'condTIsInt' => $subjects['condTIsInt'],
+	'unresolvedInt' => $subjects['unresolvedInt'],
+];
+{
+	$r = [];
+	$subjects = $lateSubjects();
+	$others = $lateOthers($subjects);
+	$lateView = static function (mixed $v) use ($view): mixed {
+		$v = $view($v);
+		// the site's spl_object_id (the marker's cache-level description)
+		// depends on the allocation order, which differs per implementation
+		return is_string($v) ? preg_replace('~unresolved#\d+~', 'unresolved#N', $v) : (is_array($v) ? array_map(static fn ($e) => is_string($e) ? preg_replace('~unresolved#\d+~', 'unresolved#N', $e) : $e, $v) : $v);
+	};
+	$attempt = static function (callable $body) use ($lateView): mixed {
+		try {
+			return $lateView($body());
+		} catch (\Throwable $e) {
+			return [get_class($e), preg_replace('~#\d+~', '#N', $e->getMessage())];
+		}
+	};
+	$identity = static fn (\PHPStan\Type\Type $t): \PHPStan\Type\Type => $t;
+	$resolveTemplates = static fn (\PHPStan\Type\Type $t): \PHPStan\Type\Type => $t instanceof \PHPStan\Type\Generic\TemplateType ? \PHPStan\Type\Generic\TemplateTypeHelper::resolveToBounds($t) : $t->traverse(static fn (\PHPStan\Type\Type $i): \PHPStan\Type\Type => $i instanceof \PHPStan\Type\Generic\TemplateType ? \PHPStan\Type\Generic\TemplateTypeHelper::resolveToBounds($i) : $i);
+	$toInt = static fn (\PHPStan\Type\Type $t): \PHPStan\Type\Type => new \PHPStan\Type\IntegerType();
+	foreach ($subjects as $name => $subject) {
+		$reflection = new ReflectionClass($subject);
+		$r["$name class"] = [get_class($subject), $reflection->isFinal(), $reflection->getInterfaceNames(), $subject instanceof \PHPStan\Type\CompoundType, $subject instanceof \PHPStan\Type\LateResolvableType];
+		foreach (['typeOnly' => \PHPStan\Type\VerbosityLevel::typeOnly(), 'value' => \PHPStan\Type\VerbosityLevel::value(), 'precise' => \PHPStan\Type\VerbosityLevel::precise(), 'cache' => \PHPStan\Type\VerbosityLevel::cache()] as $levelName => $level) {
+			$r["$name describe $levelName"] = $attempt(static fn () => $subject->describe($level));
+		}
+		if ($subject instanceof \PHPStan\Type\LateResolvableType) {
+			$r["$name isResolvable"] = $subject->isResolvable();
+			$r["$name resolve"] = $attempt(static fn () => $subject->resolve());
+			$r["$name resolve again"] = $attempt(static fn () => $subject->resolve() === $subject->resolve());
+		}
+		$r["$name hasTemplateOrLateResolvableType"] = $subject->hasTemplateOrLateResolvableType();
+		$r["$name getReferencedClasses"] = $lateView($subject->getReferencedClasses());
+		$r["$name getReferencedTemplateTypes"] = $lateView($subject->getReferencedTemplateTypes(\PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()));
+		$r["$name toPhpDocNode"] = $attempt(static fn () => $subject->toPhpDocNode());
+		$r["$name traverse identity"] = $attempt(static fn () => $subject->traverse($identity) === $subject);
+		$r["$name traverse resolveTemplates"] = $attempt(static fn () => [$subject->traverse($resolveTemplates), $subject->traverse($resolveTemplates) === $subject]);
+		$r["$name traverse toInt"] = $attempt(static fn () => $subject->traverse($toInt));
+		$r["$name generalize"] = [$attempt(static fn () => $subject->generalize(\PHPStan\Type\GeneralizePrecision::lessSpecific())), $attempt(static fn () => $subject->generalize(\PHPStan\Type\GeneralizePrecision::moreSpecific()))];
+		foreach ($others as $otherName => $other) {
+			$r["$name isSuperTypeOf $otherName"] = $attempt(static fn () => $subject->isSuperTypeOf($other));
+			$r["$name accepts $otherName"] = $attempt(static fn () => [$subject->accepts($other, true), $subject->accepts($other, false)]);
+			$r["$name equals $otherName"] = $attempt(static fn () => [$subject->equals($other), $other->equals($subject)]);
+			$r["$otherName isSuperTypeOf $name"] = $attempt(static fn () => $other->isSuperTypeOf($subject));
+			$r["$otherName accepts $name"] = $attempt(static fn () => [$other->accepts($subject, true), $other->accepts($subject, false)]);
+			$r["$name isSubTypeOf $otherName"] = $attempt(static fn () => $subject->isSubTypeOf($other));
+			$r["$name isAcceptedBy $otherName"] = $attempt(static fn () => [$subject->isAcceptedBy($other, true), $subject->isAcceptedBy($other, false)]);
+			$r["$name tryRemove $otherName"] = $attempt(static fn () => $subject->tryRemove($other));
+			$r["$name union $otherName"] = $attempt(static fn () => \PHPStan\Type\TypeCombinator::union($subject, $other));
+			$r["$name intersect $otherName"] = $attempt(static fn () => \PHPStan\Type\TypeCombinator::intersect($subject, $other));
+			$r["$name remove $otherName"] = $attempt(static fn () => \PHPStan\Type\TypeCombinator::remove($subject, $other));
+			$r["$name traverseSimultaneously $otherName"] = $attempt(static fn () => [$subject->traverseSimultaneously($other, static fn ($a, $b) => $b), $subject->traverseSimultaneously($other, static fn ($a, $b) => $a) === $subject]);
+			$r["$name isGreaterThan $otherName"] = $attempt(static fn () => [$subject->isGreaterThan($other, $latePhpVersion), $subject->isGreaterThanOrEqual($other, $latePhpVersion), $subject->isSmallerThan($other, $latePhpVersion), $subject->isSmallerThanOrEqual($other, $latePhpVersion)]);
+			$r["$name looseCompare $otherName"] = $attempt(static fn () => $subject->looseCompare($other, $latePhpVersion));
+			$r["$name hasOffsetValueType $otherName"] = $attempt(static fn () => [$subject->hasOffsetValueType($other), $subject->getOffsetValueType($other)]);
+			$r["$name inferTemplateTypes $otherName"] = $attempt(static fn () => $subject->inferTemplateTypes($other));
+		}
+		foreach (['toBoolean', 'toNumber', 'toInteger', 'toFloat', 'toString', 'toArray', 'toArrayKey', 'toBitwiseNotType', 'toAbsoluteNumber', 'toGetClassResultType', 'toObjectTypeForInstanceofCheck',
+			'isTrue', 'isFalse', 'isBoolean', 'isScalar', 'isNull', 'isInteger', 'isFloat', 'isString', 'isNumericString', 'isDecimalIntegerString', 'isNonEmptyString', 'isNonFalsyString', 'isLiteralString', 'isLowercaseString', 'isUppercaseString', 'isClassString', 'isVoid',
+			'isConstantValue', 'isConstantScalarValue', 'getConstantScalarTypes', 'getConstantScalarValues', 'getFiniteTypes', 'isObject', 'isEnum', 'getArrays', 'getConstantArrays', 'getConstantStrings', 'getObjectClassNames', 'getObjectClassReflections',
+			'getClassStringType', 'getClassStringObjectType', 'getObjectTypeOrClassStringObjectType', 'canAccessProperties', 'canCallMethods', 'canAccessConstants', 'isIterable', 'isIterableAtLeastOnce', 'getArraySize', 'getIterableKeyType', 'getFirstIterableKeyType', 'getLastIterableKeyType',
+			'getIterableValueType', 'getFirstIterableValueType', 'getLastIterableValueType', 'isArray', 'isConstantArray', 'isOversizedArray', 'isList', 'isOffsetAccessible', 'isOffsetAccessLegal', 'getKeysArray', 'getValuesArray', 'flipArray', 'popArray', 'shiftArray', 'shuffleArray',
+			'makeListMaybe', 'makeAllArrayKeysOptional', 'filterArrayRemovingFalsey', 'getEnumCases', 'getEnumCaseObject', 'isCallable', 'isCloneable'] as $method) {
+			$r["$name $method"] = $attempt(static fn () => $subject->$method());
+		}
+		$r["$name toCoercedArgumentType"] = $attempt(static fn () => [$subject->toCoercedArgumentType(true), $subject->toCoercedArgumentType(false)]);
+		$r["$name exponentiate"] = $attempt(static fn () => $subject->exponentiate($others['int1']));
+		$r["$name setOffsetValueType"] = $attempt(static fn () => [$subject->setOffsetValueType($others['stringA'], $others['int']), $subject->setOffsetValueType(null, $others['int'], false), $subject->setOffsetValueType(offsetType: null, valueType: $others['bool'])]);
+		$r["$name setExistingOffsetValueType"] = $attempt(static fn () => $subject->setExistingOffsetValueType($others['stringA'], $others['int']));
+		$r["$name unsetOffset"] = $attempt(static fn () => $subject->unsetOffset($others['stringA']));
+		$r["$name getKeysArrayFiltered"] = $attempt(static fn () => $subject->getKeysArrayFiltered($others['int'], \PHPStan\TrinaryLogic::createYes()));
+		$r["$name chunkArray"] = $attempt(static fn () => $subject->chunkArray($others['int1'], \PHPStan\TrinaryLogic::createNo()));
+		$r["$name fillKeysArray"] = $attempt(static fn () => $subject->fillKeysArray($others['int']));
+		$r["$name intersectKeyArray"] = $attempt(static fn () => $subject->intersectKeyArray($others['shape']));
+		$r["$name reverseArray"] = $attempt(static fn () => $subject->reverseArray(\PHPStan\TrinaryLogic::createMaybe()));
+		$r["$name searchArray"] = $attempt(static fn () => [$subject->searchArray($others['int1']), $subject->searchArray($others['int1'], \PHPStan\TrinaryLogic::createYes()), $subject->searchArray(needleType: $others['stringA'])]);
+		$r["$name sliceArray"] = $attempt(static fn () => $subject->sliceArray($others['int1'], $others['int1'], \PHPStan\TrinaryLogic::createNo()));
+		$r["$name spliceArray"] = $attempt(static fn () => $subject->spliceArray($others['int1'], $others['int1'], $others['array']));
+		$r["$name truncateListToSize"] = $attempt(static fn () => $subject->truncateListToSize($others['int1']));
+		$r["$name mapValueType"] = $attempt(static fn () => [$subject->mapValueType($toInt), $subject->mapKeyType($toInt)]);
+		$r["$name changeKeyCaseArray"] = $attempt(static fn () => [$subject->changeKeyCaseArray(null), $subject->changeKeyCaseArray(1)]);
+		$r["$name getTemplateType"] = $attempt(static fn () => $subject->getTemplateType(\ArrayIterator::class, 'TKey'));
+		$r["$name getSmallerType"] = $attempt(static fn () => [$subject->getSmallerType($latePhpVersion), $subject->getSmallerOrEqualType($latePhpVersion), $subject->getGreaterType($latePhpVersion), $subject->getGreaterOrEqualType($latePhpVersion)]);
+		$r["$name toClassConstantType"] = $attempt(static fn () => $subject->toClassConstantType($stringReflectionProvider));
+		$r["$name toObjectTypeForIsACheck"] = $attempt(static fn () => $subject->toObjectTypeForIsACheck($others['exception'], true, false));
+		$r["$name getCallableParametersAcceptors"] = $attempt(static fn () => $subject->getCallableParametersAcceptors($lateOutOfClassScope));
+		foreach (['value', 'name', 'nonexistent'] as $memberName) {
+			$r["$name hasProperty $memberName"] = $attempt(static fn () => [$subject->hasProperty($memberName), $subject->hasInstanceProperty($memberName), $subject->hasStaticProperty($memberName)]);
+			$r["$name getProperty $memberName"] = $attempt(static fn () => $subject->getProperty($memberName, $lateOutOfClassScope)->getReadableType());
+			$r["$name getInstanceProperty $memberName"] = $attempt(static fn () => $subject->getInstanceProperty($memberName, $lateOutOfClassScope)->getReadableType());
+			$r["$name getStaticProperty $memberName"] = $attempt(static fn () => $subject->getStaticProperty($memberName, $lateOutOfClassScope)->getReadableType());
+			$r["$name getUnresolvedPropertyPrototype $memberName"] = $attempt(static fn () => [get_class($subject->getUnresolvedPropertyPrototype($memberName, $lateOutOfClassScope)), get_class($subject->getUnresolvedInstancePropertyPrototype($memberName, $lateOutOfClassScope)), get_class($subject->getUnresolvedStaticPropertyPrototype($memberName, $lateOutOfClassScope))]);
+		}
+		foreach (['getMessage', 'cases', 'nonexistent'] as $methodName) {
+			$r["$name hasMethod $methodName"] = $attempt(static fn () => $subject->hasMethod($methodName));
+			$r["$name getMethod $methodName"] = $attempt(static fn () => $subject->getMethod($methodName, $lateOutOfClassScope)->getName());
+			$r["$name getUnresolvedMethodPrototype $methodName"] = $attempt(static fn () => get_class($subject->getUnresolvedMethodPrototype($methodName, $lateOutOfClassScope)));
+		}
+		foreach (['KIND_LIST', 'FOO', 'NONEXISTENT'] as $constantName) {
+			$r["$name hasConstant $constantName"] = $attempt(static fn () => $subject->hasConstant($constantName));
+			$r["$name getConstant $constantName"] = $attempt(static fn () => $subject->getConstant($constantName)->getValueType());
+		}
+	}
+	// the class-specific getters
+	foreach (['keyOfArray', 'keyOfT', 'newException', 'newT'] as $name) {
+		$r["$name getType"] = $lateView($subjects[$name]->getType());
+	}
+	foreach (['condIntIsInt', 'condTIsIntSubjectNegated'] as $name) {
+		$r["$name getters"] = $lateView([$subjects[$name]->getSubject(), $subjects[$name]->getTarget(), $subjects[$name]->getIf(), $subjects[$name]->getElse(), $subjects[$name]->isNegated()]);
+	}
+	foreach (['condParamIsInt', 'condParamIsIntNegated', 'condParamYIsT'] as $name) {
+		$r["$name getters"] = $lateView([$subjects[$name]->getParameterName(), $subjects[$name]->getTarget(), $subjects[$name]->getIf(), $subjects[$name]->getElse(), $subjects[$name]->isNegated()]);
+		$r["$name changeParameterName"] = $lateView([$subjects[$name]->changeParameterName('$z'), $subjects[$name]->changeParameterName('$z')->describe(\PHPStan\Type\VerbosityLevel::precise()), $subjects[$name]->changeParameterName('$z')->equals($subjects[$name])]);
+		foreach (['int', 'string', 'templateT', 'union'] as $otherName) {
+			$r["$name toConditional $otherName"] = $lateView([$subjects[$name]->toConditional($others[$otherName]), $subjects[$name]->toConditional($others[$otherName])->resolve(), $subjects[$name]->toConditional($others[$otherName])->isResolvable()]);
+		}
+	}
+	// a conditional's if/else pair compared to another conditional's, and
+	// the normalized branches (the subject replaced) through resolve()
+	$r['cond pairs'] = $lateView([
+		$subjects['condIntIsInt']->isSuperTypeOf($subjects['condIntIsIntNegated']),
+		$subjects['condTIsInt']->isSuperTypeOf($subjects['condIntIsInt']),
+		$subjects['condTIsIntSubject']->isSuperTypeOf($subjects['condTIsIntSubjectNegated']),
+		$subjects['condParamIsInt']->isSuperTypeOf($subjects['condParamIsIntNegated']),
+		$subjects['condParamYIsT']->isSuperTypeOf($subjects['condParamIsInt']),
+		$subjects['condIntIsInt']->equals($subjects['condIntIsIntNegated']),
+		$subjects['condParamIsInt']->equals($subjects['condParamIsIntNegated']),
+	]);
+	// the observation-pass marker
+	foreach (['unresolvedNull', 'unresolvedInt', 'unresolvedIntSiteB', 'unresolvedDefault', 'unresolvedArrayOfT', 'unresolvedEnum'] as $name) {
+		$marker = $subjects[$name];
+		$r["$name getters"] = $lateView([get_class($marker->getSite()), $marker->getSite() === $lateSiteA, $marker->getTemplateName(), $marker->getTemplate(), $marker->getInitialType(), $marker->getDelegate()]);
+		$r["$name withInitialType"] = $lateView([$marker->withInitialType(null), $marker->withInitialType($others['string']), $marker->withInitialType($others['string'])->getInitialType(), $marker->withInitialType(null)->equals($marker)]);
+		$r["$name withSite"] = $lateView([$marker->withSite($lateSiteB, $lateTKey), $marker->withSite($lateSiteB, $lateTKey)->getTemplateName(), $marker->withSite($lateSiteB, $lateTKey)->getInitialType(), $marker->withSite($lateSiteA, $lateTString)->equals($marker)]);
+		$r["$name unwrapBare"] = $lateView([\PHPStan\Type\Generic\UnresolvedTemplateArgumentType::unwrapBare($marker), \PHPStan\Type\Generic\UnresolvedTemplateArgumentType::unwrapBare(new \PHPStan\Type\UnionType([$marker, new \PHPStan\Type\NullType()])), \PHPStan\Type\Generic\UnresolvedTemplateArgumentType::unwrapBare(new \PHPStan\Type\ArrayType(new \PHPStan\Type\IntegerType(), $marker)), \PHPStan\Type\Generic\UnresolvedTemplateArgumentType::unwrapBare(new \PHPStan\Type\Generic\GenericObjectType(\ArrayIterator::class, [new \PHPStan\Type\IntegerType(), $marker])), \PHPStan\Type\Generic\UnresolvedTemplateArgumentType::unwrapBare(new \PHPStan\Type\IterableType(new \PHPStan\Type\IntegerType(), $marker)), \PHPStan\Type\Generic\UnresolvedTemplateArgumentType::unwrapBare($others['int']) === $others['int'], \PHPStan\Type\Generic\UnresolvedTemplateArgumentType::unwrapBare($others['array']) === $others['array']]);
+		$r["$name traverse toMarker"] = $attempt(static fn () => $marker->traverse(static fn (\PHPStan\Type\Type $t): \PHPStan\Type\Type => $t instanceof \PHPStan\Type\Generic\TemplateType ? $subjects['unresolvedIntSiteB'] : $t));
+		$r["$name traverseSimultaneously toRight"] = $attempt(static fn () => $marker->traverseSimultaneously($others['string'], static fn ($a, $b) => $b));
+	}
+	$r['marker nested initial type'] = $attempt(static fn () => new \PHPStan\Type\Generic\UnresolvedTemplateArgumentType($lateSiteA, $lateT, $subjects['unresolvedInt']));
+	$r['marker equals'] = [$subjects['unresolvedInt']->equals($subjects['unresolvedIntSiteB']), $subjects['unresolvedInt']->equals(new \PHPStan\Type\Generic\UnresolvedTemplateArgumentType($lateSiteA, $lateT, new \PHPStan\Type\StringType())), $subjects['unresolvedInt']->equals(new \PHPStan\Type\Generic\UnresolvedTemplateArgumentType($lateSiteA, $lateTKey, new \PHPStan\Type\IntegerType())), $subjects['unresolvedInt']->equals($subjects['unresolvedNull'])];
+	// the shape factory resolving right away, and its private constructor
+	$r['shape create resolved'] = $lateView([
+		\PHPStan\Type\LateResolvableArrayShapeType::create([[new \PHPStan\Type\Constant\ConstantStringType('a'), new \PHPStan\Type\IntegerType(), false], [null, new \PHPStan\Type\StringType(), true]], null, \PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode::KIND_ARRAY),
+		\PHPStan\Type\LateResolvableArrayShapeType::create([[null, new \PHPStan\Type\IntegerType(), false]], [null, new \PHPStan\Type\MixedType()], \PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode::KIND_LIST),
+		\PHPStan\Type\LateResolvableArrayShapeType::create([[null, new \PHPStan\Type\IntegerType(), false]], [new \PHPStan\Type\StringType(), new \PHPStan\Type\BooleanType()], \PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode::KIND_NON_EMPTY_ARRAY),
+		\PHPStan\Type\LateResolvableArrayShapeType::create([[new \PHPStan\Type\ObjectType(\stdClass::class), new \PHPStan\Type\IntegerType(), false]], null, \PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode::KIND_ARRAY),
+		\PHPStan\Type\LateResolvableArrayShapeType::create([[new \PHPStan\Type\ErrorType('bad key'), new \PHPStan\Type\IntegerType(), false]], null, \PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode::KIND_ARRAY),
+		\PHPStan\Type\LateResolvableArrayShapeType::create([[$lateTKey, new \PHPStan\Type\IntegerType(), false]], [null, new \PHPStan\Type\StringType()], \PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode::KIND_NON_EMPTY_LIST),
+		\PHPStan\Type\LateResolvableArrayShapeType::create([], null, \PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode::KIND_ARRAY),
+		\PHPStan\Type\LateResolvableArrayShapeType::create([], [null, new \PHPStan\Type\StringType()], \PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode::KIND_LIST),
+	]);
+	$r['shape constructor'] = $attempt(static fn () => (new ReflectionClass(\PHPStan\Type\LateResolvableArrayShapeType::class))->getConstructor()->isPrivate());
+	$r['shape new'] = $attempt(static fn () => new \PHPStan\Type\LateResolvableArrayShapeType([], null, 'array'));
+	$r['shape equals'] = $lateView([
+		$subjects['shapeTKeyInt']->equals(\PHPStan\Type\LateResolvableArrayShapeType::create([[$lateTKey, new \PHPStan\Type\IntegerType(), false]], null, \PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode::KIND_ARRAY)),
+		$subjects['shapeTKeyInt']->equals(\PHPStan\Type\LateResolvableArrayShapeType::create([[$lateTKey, new \PHPStan\Type\IntegerType(), true]], null, \PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode::KIND_ARRAY)),
+		$subjects['shapeTKeyInt']->equals(\PHPStan\Type\LateResolvableArrayShapeType::create([[$lateTKey, new \PHPStan\Type\IntegerType(), false]], null, \PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode::KIND_LIST)),
+		$subjects['shapeTKeyInt']->equals(\PHPStan\Type\LateResolvableArrayShapeType::create([[$lateTKey, new \PHPStan\Type\IntegerType(), false]], [null, new \PHPStan\Type\MixedType()], \PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode::KIND_ARRAY)),
+		$subjects['shapeTKeyUnsealedTKeyBool']->equals(\PHPStan\Type\LateResolvableArrayShapeType::create([[$lateTKey, new \PHPStan\Type\IntegerType(), false]], [$lateTKey, new \PHPStan\Type\BooleanType()], \PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode::KIND_ARRAY)),
+		$subjects['shapeTKeyUnsealedTKeyBool']->equals(\PHPStan\Type\LateResolvableArrayShapeType::create([[$lateTKey, new \PHPStan\Type\IntegerType(), false]], [null, new \PHPStan\Type\BooleanType()], \PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode::KIND_ARRAY)),
+		$subjects['shapeTKeyUnsealedTKeyBool']->equals(\PHPStan\Type\LateResolvableArrayShapeType::create([[$lateTKey, new \PHPStan\Type\IntegerType(), false]], [$lateTKey, new \PHPStan\Type\StringType()], \PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode::KIND_ARRAY)),
+		$subjects['shapeTKeyInt']->traverseSimultaneously($subjects['shapeTKeyUnsealedTKeyBool'], static fn ($a, $b) => $b),
+		$subjects['shapeTKeyUnsealedTKeyBool']->traverseSimultaneously($subjects['shapeTKeyIntOptionalUnsealedMixed'], static fn ($a, $b) => $b) === $subjects['shapeTKeyUnsealedTKeyBool'],
+	]);
+	// the uninitialized-slot reads the twins' typed properties raise
+	foreach (['keyOfArray' => \PHPStan\Type\KeyOfType::class, 'valueOfArray' => \PHPStan\Type\ValueOfType::class, 'offsetShapeA' => \PHPStan\Type\OffsetAccessType::class, 'constantMissing' => \PHPStan\Type\ClassConstantAccessType::class, 'newException' => \PHPStan\Type\NewObjectType::class, 'condIntIsInt' => \PHPStan\Type\ConditionalType::class, 'condParamIsInt' => \PHPStan\Type\ConditionalTypeForParameter::class, 'shapeTKeyInt' => \PHPStan\Type\LateResolvableArrayShapeType::class, 'unresolvedInt' => \PHPStan\Type\Generic\UnresolvedTemplateArgumentType::class] as $name => $class) {
+		$uninitialized = (new ReflectionClass($class))->newInstanceWithoutConstructor();
+		$r["$name uninitialized describe"] = $attempt(static fn () => $uninitialized->describe(\PHPStan\Type\VerbosityLevel::precise()));
+		$r["$name uninitialized isString"] = $attempt(static fn () => $uninitialized->isString());
+		$r["$name uninitialized equals"] = $attempt(static fn () => $subjects[$name]->equals($uninitialized));
+		$r["$name uninitialized getReferencedClasses"] = $attempt(static fn () => $uninitialized->getReferencedClasses());
+	}
+	// a repeated constructor call overwrites the slots in place
+	$reconstructed = new \PHPStan\Type\KeyOfType($others['array']);
+	$reconstructed->__construct($lateShape);
+	$r['keyOf reconstruct'] = $lateView([$reconstructed->getType(), $reconstructed->resolve()]);
+	// PHP subclasses over the two non-final natives: what the trait's
+	// forwards call through $this (resolve(), isResolvable(), getResult())
+	$anonymousKeyOf = new class ($lateT) extends \PHPStan\Type\KeyOfType {
+
+		protected function getResult(): \PHPStan\Type\Type
+		{
+			return new \PHPStan\Type\Constant\ConstantStringType('overridden');
+		}
+
+		public function isResolvable(): bool
+		{
+			return true;
+		}
+
+	};
+	$r['anonymous keyOf'] = $lateView([$anonymousKeyOf->resolve(), $anonymousKeyOf->isString(), $anonymousKeyOf->getConstantScalarValues(), $anonymousKeyOf->isSuperTypeOf($others['stringA']), $anonymousKeyOf->isSuperTypeOf($others['int']), $anonymousKeyOf->isSubTypeOf($others['string']), $anonymousKeyOf->isAcceptedBy($others['int'], true), $anonymousKeyOf->describe(\PHPStan\Type\VerbosityLevel::precise()), $anonymousKeyOf->equals($subjects['keyOfT']), $subjects['keyOfT']->equals($anonymousKeyOf), $anonymousKeyOf->traverse($identity) === $anonymousKeyOf, get_class($anonymousKeyOf->traverse($toInt)), $anonymousKeyOf->generalize(\PHPStan\Type\GeneralizePrecision::lessSpecific()), $anonymousKeyOf->getType(), $anonymousKeyOf->hasTemplateOrLateResolvableType()]);
+	$anonymousNew = new class ($lateTObject) extends \PHPStan\Type\NewObjectType {
+
+		public function resolve(): \PHPStan\Type\Type
+		{
+			return new \PHPStan\Type\ObjectType(\stdClass::class);
+		}
+
+	};
+	$r['anonymous new'] = $lateView([$anonymousNew->resolve(), $anonymousNew->isObject(), $anonymousNew->getObjectClassNames(), $anonymousNew->isSuperTypeOf(new \PHPStan\Type\ObjectType(\stdClass::class)), $anonymousNew->isSuperTypeOf($others['exception']), $anonymousNew->accepts($others['exception'], true), $anonymousNew->isSubTypeOf($others['exception']), $anonymousNew->isGreaterThan($others['int'], $latePhpVersion), $anonymousNew->describe(\PHPStan\Type\VerbosityLevel::precise()), $anonymousNew->toPhpDocNode(), $subjects['newTObject']->equals($anonymousNew), $anonymousNew->equals($subjects['newTObject']), $anonymousNew->isResolvable(), $anonymousNew->traverseSimultaneously($subjects['newException'], static fn ($a, $b) => $b)]);
+	foreach ($r as $key => $value) {
+		$observations["late $key"] = $value;
+	}
 }
 
 

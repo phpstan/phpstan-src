@@ -4,6 +4,7 @@ namespace PHPStan\Type;
 
 use PHPStan\PhpDocParser\Ast\Type\ConditionalTypeForParameterNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\LateResolvableTypeTrait;
@@ -12,6 +13,7 @@ use function array_merge;
 use function sprintf;
 
 /** @api */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ConditionalTypeForParameter.cpp')]
 final class ConditionalTypeForParameter implements CompoundType, LateResolvableType
 {
 

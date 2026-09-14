@@ -46,12 +46,15 @@ use PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeUnsealedTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\CallableTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\CallableTypeParameterNode;
+use PHPStan\PhpDocParser\Ast\Type\ConditionalTypeForParameterNode;
+use PHPStan\PhpDocParser\Ast\Type\ConditionalTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IntersectionTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\ObjectShapeItemNode;
 use PHPStan\PhpDocParser\Ast\Type\ObjectShapeNode;
+use PHPStan\PhpDocParser\Ast\Type\OffsetAccessTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\ThisTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\UnionTypeNode;
 use PHPStan\PhpDocParser\Printer\Printer;
@@ -156,6 +159,9 @@ final class TurboAttributeCollector
 		'reflectionIntersectionType' => ReflectionIntersectionType::class,
 		'reflectionNamedType' => ReflectionNamedType::class,
 		'fullyQualified' => FullyQualified::class,
+		'offsetAccessTypeNode' => OffsetAccessTypeNode::class,
+		'conditionalTypeNode' => ConditionalTypeNode::class,
+		'conditionalTypeForParameterNode' => ConditionalTypeForParameterNode::class,
 	];
 
 	private string $realRoot;

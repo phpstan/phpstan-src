@@ -440,6 +440,11 @@ zv::Val pt_type_utils_flatten_types(zval *type)
 	return TypeUtils::flattenTypes(type);
 }
 
+bool pt_type_utils_contains_template_type(zval *type, bool &out)
+{
+	return TypeUtils::containsTemplateType(type, out);
+}
+
 /* {{{ engine ABI glue: parameter parsing + registration */
 
 /* one handler per Type-taking static returning through fn */

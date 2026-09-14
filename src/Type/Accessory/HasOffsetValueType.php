@@ -8,6 +8,7 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
@@ -45,6 +46,7 @@ use function strtoupper;
 use const CASE_LOWER;
 use const CASE_UPPER;
 
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/HasOffsetValueType.cpp')]
 class HasOffsetValueType implements CompoundType, AccessoryType
 {
 

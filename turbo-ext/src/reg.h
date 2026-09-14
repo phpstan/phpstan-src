@@ -853,6 +853,15 @@ public:
 		return *this;
 	}
 
+	/* a `private Foo|Bar $x` union-of-classes typed property with no default
+	 * (IS_PROP_UNINIT until the constructor writes it); classNames is a
+	 * persistent `|`-separated literal */
+	Class &privateTypedClassUnionProperty(const char *propertyName, const char *classNames)
+	{
+		properties.push_back({ propertyName, PropertyKind::TypedClassUnion, ZEND_ACC_PRIVATE, 0, classNames });
+		return *this;
+	}
+
 	/* a `private array $x = []` typed property */
 	Class &privateTypedArrayPropertyDefaultEmpty(const char *propertyName)
 	{

@@ -6,7 +6,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
@@ -30,7 +30,7 @@ use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
 #[InstanceofDeprecated(insteadUse: 'Type::isOversizedArray()')]
-#[ReferencedByTurboExtension(key: 'oversizedArrayType')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/OversizedArrayType.cpp')]
 class OversizedArrayType implements CompoundType, AccessoryType
 {
 

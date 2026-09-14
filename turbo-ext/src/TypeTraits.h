@@ -48,6 +48,7 @@ inline constexpr const char *reflectionProvider = "PHPStan\\Reflection\\Reflecti
 inline constexpr const char *templateTypeVariance = "PHPStan\\Type\\Generic\\TemplateTypeVariance";
 inline constexpr const char *mixedType = "PHPStan\\Type\\MixedType";
 
+inline constexpr const char *constantStringOrIntegerType = "PHPStan\\Type\\Constant\\ConstantStringType|PHPStan\\Type\\Constant\\ConstantIntegerType";
 } // namespace ptcls
 
 /* }}} */
@@ -78,6 +79,7 @@ inline constexpr reg::Arg nullableInteger = reg::longArg("", true);
 inline constexpr reg::Arg array = reg::arrayArg("");
 inline constexpr reg::Arg floating = reg::doubleArg("");
 
+inline constexpr reg::Arg constantStringOrIntegerType = reg::obj("", ptcls::constantStringOrIntegerType);
 } // namespace ptret
 
 /* }}} */
@@ -409,6 +411,56 @@ zv::Val pt_static_type_this_class_name(zend_object *self);
 
 /* }}} */
 
+/* merged from the parallel port branch */
+
+/* {{{ helpers of the array family (ArrayType.cpp, NonEmptyArrayType.cpp,
+ * AccessoryArrayListType.cpp, OversizedArrayType.cpp, HasOffsetType.cpp,
+ * HasOffsetValueType.cpp) */
+/* the `ConstantStringType|ConstantIntegerType` the offset accessories
+ * declare — a `|`-separated literal the engine turns into a union type */
+/* static fn (Type $type): Type => $type — the Closure over
+ * IdentityCallback::identity() (MixedType.cpp) the prototype reflections
+ * of MixedType and MaybeObjectTypeTrait take */
+/* A native body behind a PHP callable: the `static function (Type $type,
+ * callable $traverse) use (...)` closures the twins hand to
+ * TypeTraverser::map(). The callable is an instance of the internal
+ * PHPStanTurbo\NativeCallback class (no PHP twin, like the generalize()
+ * holder) whose __invoke(...$args) runs fn with the holder's two state
+ * slots (the closure's `use` variables — state0 by reference, for a
+ * `use (&$collected)`) and the call's arguments; an exception the body
+ * leaves pending propagates. state0/state1 are borrowed, NULL = null. */
+typedef void (*pt_native_callback)(zval *state0, zval *state1, uint32_t argc, zval *argv, zval *return_value);
+zv::Val pt_type_native_callback(pt_native_callback fn, zval *state0, zval *state1);
+/* the holder's state slot (0 or 1), for reading a by-reference `use` back
+ * after the call; borrowed */
+zval *pt_type_native_callback_state(zval *callback, int index);
+/* new IsSuperTypeOfResult($trinary, []) / new AcceptsResult($trinary, [])
+ * for a PT_TRI_* value — fresh instances, as the accessories' `new` spells
+ * them (not the create*() singletons); UNDEF = pending exception */
+zv::Val pt_type_new_is_super_type_of_result(zend_long value);
+zv::Val pt_type_new_accepts_result(zend_long value);
+/* $result->and($other) on two result objects, natively for two
+ * AcceptsResults; UNDEF = pending exception (also for an UNDEF $result) */
+zv::Val pt_type_result_and(zv::Val result, zval *other);
+/* $array->getKeyType() / $array->getItemType() of an ArrayType instance —
+ * class entry otherwise (ArrayType.cpp); UNDEF = pending exception */
+zv::Val pt_array_type_get_key_type(zend_object *object);
+zv::Val pt_array_type_get_item_type(zend_object *object);
+/* $accessory->getOffsetType() / ->getValueType() of a HasOffsetType /
+ * HasOffsetValueType instance, the same way (HasOffsetType.cpp,
+ * HasOffsetValueType.cpp); UNDEF = pending exception */
+zv::Val pt_has_offset_type_get_offset_type(zend_object *object);
+zv::Val pt_has_offset_value_type_get_offset_type(zend_object *object);
+zv::Val pt_has_offset_value_type_get_value_type(zend_object *object);
+/* src/Type/Traits/ArrayTypeTrait.php */
+void pt_type_trait_array(reg::Class &cls);
+/* src/Type/Traits/MaybeArrayTypeTrait.php */
+void pt_type_trait_maybe_array(reg::Class &cls);
+/* src/Type/Traits/MaybeObjectTypeTrait.php */
+void pt_type_trait_maybe_object(reg::Class &cls);
+/* src/Type/Traits/MaybeStringTypeTrait.php */
+void pt_type_trait_maybe_string(reg::Class &cls);
+
 /* {{{ bodies the Type ports share verbatim — their members forward here */
 
 /* $this as an owned value (a new reference) */
@@ -471,6 +523,18 @@ zend_always_inline zv::Val pt_val_of()
 	return zv::Val::adopt(result);
 }
 
+/* ->toAcceptsResult() of an isSubTypeOf() result, the result checked to be
+ * an object as the Type interface's return type does; UNDEF = pending exception */
+inline zv::Val pt_type_sub_type_to_accepts_result(zv::Val result)
+{
+	if (UNEXPECTED(result.isUndef())) return zv::Val();
+	if (UNEXPECTED(!zv::Ref(result.raw()).isObject())) {
+		zend_type_error("phpstan_turbo: isSubTypeOf() must return %s", ZSTR_VAL(pt_ce_is_super_type_of_result->name));
+		return zv::Val();
+	}
+	return pt_type_call(Z_OBJ_P(result.raw()), PT_LC("toacceptsresult"), 0, NULL);
+}
+
 /* $object->method(...$args) read as a bool; false = pending exception. These four
  * are static (a copy per translation unit, no inline hint) like the
  * file-local helpers they replaced, so the inliner decides as it did. */
@@ -480,6 +544,42 @@ zend_always_inline zv::Val pt_val_of()
 	if (UNEXPECTED(result.isUndef())) return false;
 	out = zend_is_true(result.raw());
 	return true;
+}
+
+/* the PT_TRI_* value of the result object of $object->method(...$args)
+ * (an AcceptsResult / IsSuperTypeOfResult / TrinaryLogic); -1 = pending exception */
+[[nodiscard, maybe_unused]] static zend_long pt_type_call_result_trinary(zend_object *object, const char *lcname, size_t len, uint32_t argc, zval *argv)
+{
+	zv::Val result = pt_type_call(object, lcname, len, argc, argv);
+	if (UNEXPECTED(result.isUndef())) return -1;
+	return pt_type_result_trinary(result.raw());
+}
+
+/* $object->method(...$args) of a method declared to return array, with the
+ * TypeError a PHP override returning anything else gets; UNDEF = pending exception */
+[[maybe_unused]] static zv::Val pt_type_call_array(zend_object *object, const char *lcname, size_t len, uint32_t argc, zval *argv)
+{
+	zv::Val result = pt_type_call(object, lcname, len, argc, argv);
+	if (UNEXPECTED(result.isUndef())) return zv::Val();
+	if (UNEXPECTED(!zv::Ref(result.raw()).isArray())) {
+		zend_type_error("phpstan_turbo: %s::%s() must return array, %s returned", ZSTR_VAL(object->ce->name), lcname, zend_zval_value_name(result.raw()));
+		return zv::Val();
+	}
+	return result;
+}
+
+/* $object->method(...$args) of a method declared to return Type, with the
+ * TypeError the engine raises when a PHP override returns anything else;
+ * UNDEF = pending exception */
+inline zv::Val pt_type_call_type(zend_object *object, const char *lcname, size_t len, uint32_t argc, zval *argv)
+{
+	zv::Val result = pt_type_call(object, lcname, len, argc, argv);
+	if (UNEXPECTED(result.isUndef())) return zv::Val();
+	if (UNEXPECTED(!zv::Ref(result.raw()).isObject())) {
+		zend_type_error("phpstan_turbo: %s::%s() must return %s, %s returned", ZSTR_VAL(object->ce->name), lcname, ptcls::type, zend_zval_value_name(result.raw()));
+		return zv::Val();
+	}
+	return result;
 }
 
 /* }}} */

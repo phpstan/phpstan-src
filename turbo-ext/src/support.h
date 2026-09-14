@@ -127,8 +127,6 @@ enum {
 	PT_CLASS_CONST_EXPR_FLOAT_NODE,
 	PT_CLASS_TEMPLATE_MIXED_TYPE,
 	PT_CLASS_SUBTRACTABLE_TYPE,
-	PT_CLASS_ARRAY_TYPE,
-	PT_CLASS_ACCESSORY_ARRAY_LIST_TYPE,
 	PT_CLASS_CALLABLE_TYPE,
 	PT_CLASS_DUMMY_PROPERTY_REFLECTION,
 	PT_CLASS_CALLBACK_UNRESOLVED_PROPERTY_PROTOTYPE_REFLECTION,
@@ -137,7 +135,6 @@ enum {
 	PT_CLASS_DUMMY_CLASS_CONSTANT_REFLECTION,
 	PT_CLASS_BENEVOLENT_UNION_TYPE,
 	PT_CLASS_ITERABLE_TYPE,
-	PT_CLASS_OVERSIZED_ARRAY_TYPE,
 	PT_CLASS_TYPE_TRAVERSER,
 	PT_CLASS_TEMPLATE_TYPE_HELPER,
 	PT_CLASS_GENERIC_OBJECT_TYPE,
@@ -150,6 +147,11 @@ enum {
 	PT_CLASS_THIS_TYPE_NODE,
 	PT_CLASS_OBJECT_SHAPE_NODE,
 	PT_CLASS_OBJECT_SHAPE_ITEM_NODE,
+	PT_CLASS_TEMPLATE_STRICT_MIXED_TYPE,
+	PT_CLASS_UNSAFE_ARRAY_STRING_KEY_CASTING_TRAVERSER,
+	PT_CLASS_ALLOWED_ARRAY_KEYS_TYPES,
+	PT_CLASS_CONSTANT_ARRAY_TYPE_BUILDER,
+	PT_CLASS_TYPE_UTILS,
 	PT_CLASS_COUNT
 };
 
@@ -336,6 +338,9 @@ bool pt_trusted_types_set_prefix(zend_string *prefix);
 #define PT_TRI_YES 3
 #define PT_TRI_MAYBE 1
 #define PT_TRI_NO 0
+
+/* TrinaryLogic::and() / or() of two PT_TRI_* values (yes > maybe > no) */
+static constexpr zend_long pt_trinary_and(zend_long a, zend_long b) { return a < b ? a : b; }
 
 #define PT_TRI_PROP_VALUE 0
 #define PT_ETH_PROP_EXPR 0
@@ -558,5 +563,37 @@ zend_string *pt_ceh_key_build(HashTable *conds, zval *type_holder);
 bool pt_call_scope_bool(zval *scope, const char *lcname, size_t len, uint32_t argc, zval *argv, bool *out);
 
 /* }}} */
+
+/* merged from the parallel port branch */
+/* the array family (ArrayType.cpp, NonEmptyArrayType.cpp,
+ * AccessoryArrayListType.cpp, OversizedArrayType.cpp, HasOffsetType.cpp,
+ * HasOffsetValueType.cpp) */
+extern zend_class_entry *pt_ce_array_type;
+extern zend_class_entry *pt_ce_non_empty_array_type;
+extern zend_class_entry *pt_ce_accessory_array_list_type;
+extern zend_class_entry *pt_ce_oversized_array_type;
+extern zend_class_entry *pt_ce_has_offset_type;
+extern zend_class_entry *pt_ce_has_offset_value_type;
+/* the array family after the never/mixed family (ArrayType's constructor
+ * probes MixedType and StrictMixedType); ArrayType first, then the five
+ * accessories (their getDefaultBaseType() instantiates ArrayType) */
+void pt_register_array_type();
+void pt_register_non_empty_array_type();
+void pt_register_accessory_array_list_type();
+void pt_register_oversized_array_type();
+void pt_register_has_offset_type();
+void pt_register_has_offset_value_type();
+/* new ArrayType($keyType, $itemType) / new NonEmptyArrayType() /
+ * new AccessoryArrayListType() / new OversizedArrayType() /
+ * new HasOffsetType($offsetType) / new HasOffsetValueType($offsetType, $valueType)
+ * — instances of the shadowing classes (ArrayType.cpp and the accessory
+ * files; the Type arguments borrowed, checked as the twins' typed
+ * parameters check them); false = pending exception */
+[[nodiscard]] bool pt_array_type_new(zval *out, zval *keyType, zval *itemType);
+bool pt_non_empty_array_type_new(zval *out);
+bool pt_accessory_array_list_type_new(zval *out);
+bool pt_oversized_array_type_new(zval *out);
+bool pt_has_offset_type_new(zval *out, zval *offsetType);
+bool pt_has_offset_value_type_new(zval *out, zval *offsetType, zval *valueType);
 
 #endif /* PHPSTANTURBO_SUPPORT_H */

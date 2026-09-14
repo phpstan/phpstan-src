@@ -56,7 +56,7 @@ $observations = [];
 // which implementation answered: smoke.php holds the php run to false and
 // the native run to true, so the two sets can never be one implementation
 // compared against itself
-foreach ([\PHPStan\Type\BooleanType::class, \PHPStan\Type\Constant\ConstantBooleanType::class, \PHPStan\Type\IntegerType::class, \PHPStan\Type\Constant\ConstantIntegerType::class, \PHPStan\Type\IntegerRangeType::class, \PHPStan\Type\StringType::class, \PHPStan\Type\Constant\ConstantStringType::class, \PHPStan\Type\ClassStringType::class, \PHPStan\Type\Generic\GenericClassStringType::class, \PHPStan\Type\FloatType::class, \PHPStan\Type\Constant\ConstantFloatType::class, \PHPStan\Type\NullType::class, \PHPStan\Type\VoidType::class, \PHPStan\Type\NeverType::class, \PHPStan\Type\MixedType::class, \PHPStan\Type\StrictMixedType::class, \PHPStan\Type\ObjectWithoutClassType::class, \PHPStan\Type\StaticType::class, \PHPStan\Type\ThisType::class, \PHPStan\Type\Generic\GenericStaticType::class, \PHPStan\Type\ObjectShapeType::class, \PHPStan\Type\NonexistentParentClassType::class] as $typeClass) {
+foreach ([\PHPStan\Type\BooleanType::class, \PHPStan\Type\Constant\ConstantBooleanType::class, \PHPStan\Type\IntegerType::class, \PHPStan\Type\Constant\ConstantIntegerType::class, \PHPStan\Type\IntegerRangeType::class, \PHPStan\Type\StringType::class, \PHPStan\Type\Constant\ConstantStringType::class, \PHPStan\Type\ClassStringType::class, \PHPStan\Type\Generic\GenericClassStringType::class, \PHPStan\Type\FloatType::class, \PHPStan\Type\Constant\ConstantFloatType::class, \PHPStan\Type\NullType::class, \PHPStan\Type\VoidType::class, \PHPStan\Type\NeverType::class, \PHPStan\Type\MixedType::class, \PHPStan\Type\StrictMixedType::class, \PHPStan\Type\ObjectWithoutClassType::class, \PHPStan\Type\StaticType::class, \PHPStan\Type\ThisType::class, \PHPStan\Type\Generic\GenericStaticType::class, \PHPStan\Type\ObjectShapeType::class, \PHPStan\Type\NonexistentParentClassType::class, \PHPStan\Type\ArrayType::class, \PHPStan\Type\Accessory\NonEmptyArrayType::class, \PHPStan\Type\Accessory\AccessoryArrayListType::class, \PHPStan\Type\Accessory\OversizedArrayType::class, \PHPStan\Type\Accessory\HasOffsetType::class, \PHPStan\Type\Accessory\HasOffsetValueType::class] as $typeClass) {
 	$observations["native $typeClass"] = (new ReflectionMethod($typeClass, 'describe'))->isInternal();
 }
 
@@ -1688,6 +1688,454 @@ $objectOthers = static fn (string $object, string $static, string $thisType, str
 		$observations["object $key"] = $value;
 	}
 }
+
+// ---- ArrayType / NonEmptyArrayType / AccessoryArrayListType / OversizedArrayType / HasOffsetType / HasOffsetValueType ----
+// the string family's reflection provider and PhpVersion accessors stay
+// registered from the section above (ObjectType members consult them); the
+// PHP compound types (UnionType, IntersectionType, ConstantArrayType,
+// TemplateArrayType over the native ArrayType) come along
+$arrayPhpVersions = [new \PHPStan\Php\PhpVersion(70400), new \PHPStan\Php\PhpVersion(80400)];
+$arrayTemplateScope = \PHPStan\Type\Generic\TemplateTypeScope::createWithFunction('foo');
+$arrayTemplateT = \PHPStan\Type\Generic\TemplateTypeFactory::create($arrayTemplateScope, 'T', null, \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant());
+$arrayTemplateK = \PHPStan\Type\Generic\TemplateTypeFactory::create($arrayTemplateScope, 'K', new \PHPStan\Type\UnionType([new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()]), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant());
+$arrayTemplateV = \PHPStan\Type\Generic\TemplateTypeFactory::create($arrayTemplateScope, 'V', new \PHPStan\Type\IntegerType(), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant());
+$arrayConstShape = static function (array $entries, array $optionalKeys = []): \PHPStan\Type\Constant\ConstantArrayType {
+	$keyTypes = [];
+	$valueTypes = [];
+	foreach ($entries as $key => $valueType) {
+		$keyTypes[] = is_int($key) ? new \PHPStan\Type\Constant\ConstantIntegerType($key) : new \PHPStan\Type\Constant\ConstantStringType($key);
+		$valueTypes[] = $valueType;
+	}
+	return new \PHPStan\Type\Constant\ConstantArrayType($keyTypes, $valueTypes, [count($keyTypes)], $optionalKeys);
+};
+$arrayUnsealedShape = static function (array $entries, \PHPStan\Type\Type $keyType, \PHPStan\Type\Type $valueType) use ($arrayConstShape): \PHPStan\Type\Type {
+	$builder = \PHPStan\Type\Constant\ConstantArrayTypeBuilder::createFromConstantArray($arrayConstShape($entries));
+	$builder->makeUnsealed($keyType, $valueType);
+	return $builder->getArray();
+};
+$arrayOthers = static fn (string $array, string $nonEmpty, string $list, string $oversized, string $hasOffset, string $hasOffsetValue): array => [
+	'int' => new \PHPStan\Type\IntegerType(),
+	'int0' => new \PHPStan\Type\Constant\ConstantIntegerType(0),
+	'int1' => new \PHPStan\Type\Constant\ConstantIntegerType(1),
+	'int5' => new \PHPStan\Type\Constant\ConstantIntegerType(5),
+	'int-1' => new \PHPStan\Type\Constant\ConstantIntegerType(-1),
+	'intMax' => new \PHPStan\Type\Constant\ConstantIntegerType(PHP_INT_MAX),
+	'range0-max' => \PHPStan\Type\IntegerRangeType::fromInterval(0, null),
+	'range1-max' => \PHPStan\Type\IntegerRangeType::fromInterval(1, null),
+	'range0-3' => \PHPStan\Type\IntegerRangeType::fromInterval(0, 3),
+	'range2-4' => \PHPStan\Type\IntegerRangeType::fromInterval(2, 4),
+	'range3-max' => \PHPStan\Type\IntegerRangeType::fromInterval(3, null),
+	'range0-300' => \PHPStan\Type\IntegerRangeType::fromInterval(0, 300),
+	'range300-max' => \PHPStan\Type\IntegerRangeType::fromInterval(300, null),
+	'string' => new \PHPStan\Type\StringType(),
+	'stringA' => new \PHPStan\Type\Constant\ConstantStringType('a'),
+	'stringAbc' => new \PHPStan\Type\Constant\ConstantStringType('abc'),
+	'stringUpper' => new \PHPStan\Type\Constant\ConstantStringType('ABC'),
+	'stringEmpty' => new \PHPStan\Type\Constant\ConstantStringType(''),
+	'string0' => new \PHPStan\Type\Constant\ConstantStringType('0'),
+	'string123' => new \PHPStan\Type\Constant\ConstantStringType('123'),
+	'nonEmptyString' => new \PHPStan\Type\IntersectionType([new \PHPStan\Type\StringType(), new \PHPStan\Type\Accessory\AccessoryNonEmptyStringType()]),
+	'numericString' => new \PHPStan\Type\IntersectionType([new \PHPStan\Type\StringType(), new \PHPStan\Type\Accessory\AccessoryNumericStringType()]),
+	'classString' => new \PHPStan\Type\ClassStringType(),
+	'float' => new \PHPStan\Type\FloatType(),
+	'float1.5' => new \PHPStan\Type\Constant\ConstantFloatType(1.5),
+	'bool' => new \PHPStan\Type\BooleanType(),
+	'true' => new \PHPStan\Type\Constant\ConstantBooleanType(true),
+	'false' => new \PHPStan\Type\Constant\ConstantBooleanType(false),
+	'null' => new \PHPStan\Type\NullType(),
+	'mixed' => new \PHPStan\Type\MixedType(),
+	'mixedExplicit' => new \PHPStan\Type\MixedType(true),
+	'mixedMinusArray' => new \PHPStan\Type\MixedType(false, new $array(new \PHPStan\Type\MixedType(), new \PHPStan\Type\MixedType())),
+	'strictMixed' => new \PHPStan\Type\StrictMixedType(),
+	'never' => new \PHPStan\Type\NeverType(),
+	'error' => new \PHPStan\Type\ErrorType(),
+	'union' => new \PHPStan\Type\UnionType([new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()]),
+	'unionNullable' => new \PHPStan\Type\UnionType([new \PHPStan\Type\IntegerType(), new \PHPStan\Type\NullType()]),
+	'unionConsts' => new \PHPStan\Type\UnionType([new \PHPStan\Type\Constant\ConstantIntegerType(1), new \PHPStan\Type\Constant\ConstantIntegerType(2)]),
+	'unionArrays' => new \PHPStan\Type\UnionType([new $array(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()), new \PHPStan\Type\NullType()]),
+	'benevolent' => new \PHPStan\Type\BenevolentUnionType([new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()]),
+	'array' => new $array(new \PHPStan\Type\MixedType(), new \PHPStan\Type\MixedType()),
+	'arrayIntString' => new $array(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()),
+	'arrayStringInt' => new $array(new \PHPStan\Type\StringType(), new \PHPStan\Type\IntegerType()),
+	'arrayIntInt' => new $array(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\IntegerType()),
+	'arrayNested' => new $array(new \PHPStan\Type\IntegerType(), new $array(new \PHPStan\Type\StringType(), new \PHPStan\Type\IntegerType())),
+	'arrayTemplates' => new $array($arrayTemplateK, $arrayTemplateV),
+	'arrayTemplateValue' => new $array(new \PHPStan\Type\IntegerType(), $arrayTemplateT),
+	'list' => new \PHPStan\Type\IntersectionType([new $array(\PHPStan\Type\IntegerRangeType::createAllGreaterThanOrEqualTo(0), new \PHPStan\Type\StringType()), new $list()]),
+	'nonEmptyArray' => new \PHPStan\Type\IntersectionType([new $array(new \PHPStan\Type\MixedType(), new \PHPStan\Type\MixedType()), new $nonEmpty()]),
+	'nonEmptyList' => new \PHPStan\Type\IntersectionType([new $array(\PHPStan\Type\IntegerRangeType::createAllGreaterThanOrEqualTo(0), new \PHPStan\Type\IntegerType()), new $nonEmpty(), new $list()]),
+	'oversizedArray' => new \PHPStan\Type\IntersectionType([new $array(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()), new $oversized()]),
+	'arrayWithOffsetA' => new \PHPStan\Type\IntersectionType([new $array(new \PHPStan\Type\StringType(), new \PHPStan\Type\IntegerType()), new $hasOffsetValue(new \PHPStan\Type\Constant\ConstantStringType('a'), new \PHPStan\Type\IntegerType()), new $nonEmpty()]),
+	'arrayWithOffset0' => new \PHPStan\Type\IntersectionType([new $array(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()), new $hasOffset(new \PHPStan\Type\Constant\ConstantIntegerType(0)), new $nonEmpty()]),
+	'emptyArray' => new \PHPStan\Type\Constant\ConstantArrayType([], []),
+	'constArray' => $arrayConstShape(['a' => new \PHPStan\Type\IntegerType()]),
+	'constArrayInts' => $arrayConstShape([0 => new \PHPStan\Type\Constant\ConstantStringType('x'), 1 => new \PHPStan\Type\Constant\ConstantStringType('y')]),
+	'constArrayOptional' => $arrayConstShape(['a' => new \PHPStan\Type\IntegerType(), 'b' => new \PHPStan\Type\StringType()], [0]),
+	'constArrayNested' => $arrayConstShape(['a' => $arrayConstShape(['b' => new \PHPStan\Type\IntegerType()])]),
+	'constArrayUnsealed' => $arrayUnsealedShape(['a' => new \PHPStan\Type\IntegerType()], new \PHPStan\Type\StringType(), new \PHPStan\Type\IntegerType()),
+	'object' => new \PHPStan\Type\ObjectType(\stdClass::class),
+	'objectTrinary' => new \PHPStan\Type\ObjectType(\PHPStan\TrinaryLogic::class),
+	'objectWithoutClass' => new \PHPStan\Type\ObjectWithoutClassType(),
+	'arrayAccess' => new \PHPStan\Type\ObjectType(\ArrayAccess::class),
+	'callable' => new \PHPStan\Type\CallableType(),
+	'iterable' => new \PHPStan\Type\IterableType(new \PHPStan\Type\MixedType(), new \PHPStan\Type\MixedType()),
+	'templateT' => $arrayTemplateT,
+	'templateV' => $arrayTemplateV,
+	'templateArray' => \PHPStan\Type\Generic\TemplateTypeFactory::create($arrayTemplateScope, 'A', new $array(new \PHPStan\Type\MixedType(), new \PHPStan\Type\MixedType()), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()),
+	'nonEmpty' => new $nonEmpty(),
+	'listAccessory' => new $list(),
+	'oversized' => new $oversized(),
+	'hasOffsetA' => new $hasOffset(new \PHPStan\Type\Constant\ConstantStringType('a')),
+	'hasOffset0' => new $hasOffset(new \PHPStan\Type\Constant\ConstantIntegerType(0)),
+	'hasOffsetValueA' => new $hasOffsetValue(new \PHPStan\Type\Constant\ConstantStringType('a'), new \PHPStan\Type\IntegerType()),
+	'hasOffsetValueAString' => new $hasOffsetValue(new \PHPStan\Type\Constant\ConstantStringType('a'), new \PHPStan\Type\StringType()),
+	'hasOffsetValue0' => new $hasOffsetValue(new \PHPStan\Type\Constant\ConstantIntegerType(0), new \PHPStan\Type\Constant\ConstantStringType('x')),
+	'hasOffsetValue1' => new $hasOffsetValue(new \PHPStan\Type\Constant\ConstantIntegerType(1), new \PHPStan\Type\Constant\ConstantStringType('y')),
+	'falsey' => \PHPStan\Type\StaticTypeFactory::falsey(),
+];
+{
+	$arrayClass = \PHPStan\Type\ArrayType::class;
+	$nonEmptyClass = \PHPStan\Type\Accessory\NonEmptyArrayType::class;
+	$listClass = \PHPStan\Type\Accessory\AccessoryArrayListType::class;
+	$oversizedClass = \PHPStan\Type\Accessory\OversizedArrayType::class;
+	$hasOffsetClass = \PHPStan\Type\Accessory\HasOffsetType::class;
+	$hasOffsetValueClass = \PHPStan\Type\Accessory\HasOffsetValueType::class;
+	$r = [];
+	$others = $arrayOthers($arrayClass, $nonEmptyClass, $listClass, $oversizedClass, $hasOffsetClass, $hasOffsetValueClass);
+	$subjects = [
+		'arrayMixed' => new $arrayClass(new \PHPStan\Type\MixedType(), new \PHPStan\Type\MixedType()),
+		'arrayExplicitMixed' => new $arrayClass(new \PHPStan\Type\MixedType(true), new \PHPStan\Type\MixedType(true)),
+		'arrayIntString' => new $arrayClass(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()),
+		'arrayStringObject' => new $arrayClass(new \PHPStan\Type\StringType(), new \PHPStan\Type\ObjectType(\PHPStan\TrinaryLogic::class)),
+		'arrayStringInt' => new $arrayClass(new \PHPStan\Type\StringType(), new \PHPStan\Type\IntegerType()),
+		'arrayNested' => new $arrayClass(new \PHPStan\Type\IntegerType(), new $arrayClass(new \PHPStan\Type\StringType(), new \PHPStan\Type\IntegerType())),
+		'arrayListKeys' => new $arrayClass(\PHPStan\Type\IntegerRangeType::createAllGreaterThanOrEqualTo(0), new \PHPStan\Type\MixedType()),
+		'arrayRangeKeys' => new $arrayClass(\PHPStan\Type\IntegerRangeType::fromInterval(0, 3), new \PHPStan\Type\StringType()),
+		'arrayConstKeys' => new $arrayClass(new \PHPStan\Type\UnionType([new \PHPStan\Type\Constant\ConstantIntegerType(1), new \PHPStan\Type\Constant\ConstantIntegerType(2)]), new \PHPStan\Type\StringType()),
+		'arrayMaxKey' => new $arrayClass(new \PHPStan\Type\Constant\ConstantIntegerType(PHP_INT_MAX), new \PHPStan\Type\StringType()),
+		'arrayUnionKeys' => new $arrayClass(new \PHPStan\Type\UnionType([new \PHPStan\Type\IntegerType(), new \PHPStan\Type\Constant\ConstantStringType('a')]), new \PHPStan\Type\IntegerType()),
+		'arrayStringKeys' => new $arrayClass(new \PHPStan\Type\UnionType([new \PHPStan\Type\Constant\ConstantStringType('Ab'), new \PHPStan\Type\Constant\ConstantStringType('cD')]), new \PHPStan\Type\IntegerType()),
+		'arrayAccessoryStringKeys' => new $arrayClass(new \PHPStan\Type\IntersectionType([new \PHPStan\Type\StringType(), new \PHPStan\Type\Accessory\AccessoryNonEmptyStringType(), new \PHPStan\Type\Accessory\AccessoryNumericStringType()]), new \PHPStan\Type\IntegerType()),
+		'arrayNonFalsyStringKeys' => new $arrayClass(new \PHPStan\Type\IntersectionType([new \PHPStan\Type\StringType(), new \PHPStan\Type\Accessory\AccessoryNonFalsyStringType()]), new \PHPStan\Type\IntegerType()),
+		'arrayBenevolent' => new $arrayClass(new \PHPStan\Type\BenevolentUnionType([new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()]), new \PHPStan\Type\MixedType()),
+		'arrayStrictMixed' => new $arrayClass(new \PHPStan\Type\StrictMixedType(), new \PHPStan\Type\StrictMixedType()),
+		'arrayNever' => new $arrayClass(new \PHPStan\Type\NeverType(), new \PHPStan\Type\NeverType()),
+		'arrayNeverKey' => new $arrayClass(new \PHPStan\Type\NeverType(), new \PHPStan\Type\IntegerType()),
+		'arrayErrorItem' => new $arrayClass(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\ErrorType()),
+		'arrayConstArrayItem' => new $arrayClass(new \PHPStan\Type\IntegerType(), $arrayConstShape(['a' => new \PHPStan\Type\IntegerType()])),
+		'arrayTemplates' => new $arrayClass($arrayTemplateK, $arrayTemplateV),
+		'arrayTemplateMixedKey' => new $arrayClass($arrayTemplateT, new \PHPStan\Type\StringType()),
+		'arrayCallableItems' => new $arrayClass(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\UnionType([new \PHPStan\Type\StringType(), new \PHPStan\Type\ObjectWithoutClassType()])),
+		'templateArray' => new \PHPStan\Type\Generic\TemplateArrayType($arrayTemplateScope, new \PHPStan\Type\Generic\TemplateTypeParameterStrategy(), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant(), 'T', new $arrayClass(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()), null),
+		'nonEmpty' => new $nonEmptyClass(),
+		'list' => new $listClass(),
+		'oversized' => new $oversizedClass(),
+		'hasOffsetA' => new $hasOffsetClass(new \PHPStan\Type\Constant\ConstantStringType('a')),
+		'hasOffsetAbc' => new $hasOffsetClass(new \PHPStan\Type\Constant\ConstantStringType('Abc')),
+		'hasOffset0' => new $hasOffsetClass(new \PHPStan\Type\Constant\ConstantIntegerType(0)),
+		'hasOffset1' => new $hasOffsetClass(new \PHPStan\Type\Constant\ConstantIntegerType(1)),
+		'hasOffsetValueA' => new $hasOffsetValueClass(new \PHPStan\Type\Constant\ConstantStringType('a'), new \PHPStan\Type\IntegerType()),
+		'hasOffsetValueAbcString' => new $hasOffsetValueClass(new \PHPStan\Type\Constant\ConstantStringType('Abc'), new \PHPStan\Type\Constant\ConstantStringType('x')),
+		'hasOffsetValue0' => new $hasOffsetValueClass(new \PHPStan\Type\Constant\ConstantIntegerType(0), new \PHPStan\Type\Constant\ConstantStringType('x')),
+		'hasOffsetValue0Int1' => new $hasOffsetValueClass(new \PHPStan\Type\Constant\ConstantIntegerType(0), new \PHPStan\Type\Constant\ConstantIntegerType(1)),
+		'hasOffsetValue1Nullable' => new $hasOffsetValueClass(new \PHPStan\Type\Constant\ConstantIntegerType(1), new \PHPStan\Type\UnionType([new \PHPStan\Type\IntegerType(), new \PHPStan\Type\NullType()])),
+		'hasOffsetValueFalse' => new $hasOffsetValueClass(new \PHPStan\Type\Constant\ConstantStringType('f'), new \PHPStan\Type\Constant\ConstantBooleanType(false)),
+		'hasOffsetValueTemplate' => new $hasOffsetValueClass(new \PHPStan\Type\Constant\ConstantStringType('t'), $arrayTemplateT),
+		'nonEmptyList' => new \PHPStan\Type\IntersectionType([new $arrayClass(\PHPStan\Type\IntegerRangeType::createAllGreaterThanOrEqualTo(0), new \PHPStan\Type\StringType()), new $nonEmptyClass(), new $listClass()]),
+		'arrayWithOffsetValue' => new \PHPStan\Type\IntersectionType([new $arrayClass(new \PHPStan\Type\StringType(), new \PHPStan\Type\IntegerType()), new $hasOffsetValueClass(new \PHPStan\Type\Constant\ConstantStringType('a'), new \PHPStan\Type\IntegerType()), new $nonEmptyClass()]),
+		'arrayWithOffset' => new \PHPStan\Type\IntersectionType([new $arrayClass(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()), new $hasOffsetClass(new \PHPStan\Type\Constant\ConstantIntegerType(0)), new $nonEmptyClass()]),
+		'oversizedArray' => new \PHPStan\Type\IntersectionType([new $arrayClass(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()), new $oversizedClass()]),
+	];
+	$outOfClassScope = new \PHPStan\Analyser\OutOfClassScope();
+	$identity = static fn ($t) => $t;
+	$toObject = static fn ($t) => new \PHPStan\Type\ObjectType(\stdClass::class);
+	$toNever = static fn ($t) => new \PHPStan\Type\NeverType();
+	foreach ($subjects as $name => $subject) {
+		$r["$name class"] = $view($subject);
+		$r["$name instanceof"] = [$subject instanceof \PHPStan\Type\Type, $subject instanceof $arrayClass, $subject instanceof \PHPStan\Type\CompoundType, $subject instanceof \PHPStan\Type\Accessory\AccessoryType, $subject instanceof $nonEmptyClass, $subject instanceof $listClass, $subject instanceof $oversizedClass, $subject instanceof $hasOffsetClass, $subject instanceof $hasOffsetValueClass];
+		foreach (['typeOnly' => \PHPStan\Type\VerbosityLevel::typeOnly(), 'value' => \PHPStan\Type\VerbosityLevel::value(), 'precise' => \PHPStan\Type\VerbosityLevel::precise(), 'cache' => \PHPStan\Type\VerbosityLevel::cache()] as $levelName => $level) {
+			$r["$name describe $levelName"] = $subject->describe($level);
+		}
+		foreach ($others as $otherName => $other) {
+			$r["$name isSuperTypeOf $otherName"] = $view($subject->isSuperTypeOf($other));
+			$r["$name accepts $otherName"] = $view($subject->accepts($other, true));
+			$r["$name accepts-loose $otherName"] = $view($subject->accepts($other, false));
+			$r["$name equals $otherName"] = $subject->equals($other);
+			$r["$name tryRemove $otherName"] = $view($subject->tryRemove($other));
+			foreach ($arrayPhpVersions as $vi => $phpVersion) {
+				$r["$name looseCompare $otherName $vi"] = $view($subject->looseCompare($other, $phpVersion));
+				$r["$name isSmallerThan $otherName $vi"] = $view($subject->isSmallerThan($other, $phpVersion));
+				$r["$name isSmallerThanOrEqual $otherName $vi"] = $view($subject->isSmallerThanOrEqual($other, $phpVersion));
+			}
+			$r["$name traverseSimultaneously $otherName"] = $view($subject->traverseSimultaneously($other, static fn ($a, $b) => $a));
+			$r["$name traverseSimultaneously-right $otherName"] = $view($subject->traverseSimultaneously($other, static fn ($a, $b) => $b));
+			$r["$name getOffsetValueType $otherName"] = $view($subject->getOffsetValueType($other));
+			$r["$name hasOffsetValueType $otherName"] = $view($subject->hasOffsetValueType($other));
+			try {
+				$r["$name setOffsetValueType $otherName"] = [$view($subject->setOffsetValueType($other, $others['int1'])), $view($subject->setOffsetValueType($other, $others['stringAbc'], false)), $view($subject->setOffsetValueType($other, $others['constArray']))];
+			} catch (\PHPStan\ShouldNotHappenException $e) {
+				$r["$name setOffsetValueType $otherName"] = 'ShouldNotHappenException';
+			}
+			$r["$name setExistingOffsetValueType $otherName"] = [$view($subject->setExistingOffsetValueType($other, $others['int1'])), $view($subject->setExistingOffsetValueType($other, $others['constArrayOptional'])), $view($subject->setExistingOffsetValueType($other, $others['constArrayNested']))];
+			$r["$name unsetOffset $otherName"] = $view($subject->unsetOffset($other));
+			$r["$name inferTemplateTypes $otherName"] = $view($subject->inferTemplateTypes($other));
+			$r["$name fillKeysArray $otherName"] = $view($subject->fillKeysArray($other));
+			$r["$name intersectKeyArray $otherName"] = $view($subject->intersectKeyArray($other));
+			$r["$name truncateListToSize $otherName"] = $view($subject->truncateListToSize($other));
+			$r["$name searchArray $otherName"] = [$view($subject->searchArray($other)), $view($subject->searchArray($other, \PHPStan\TrinaryLogic::createYes())), $view($subject->searchArray($other, \PHPStan\TrinaryLogic::createNo()))];
+			$r["$name chunkArray $otherName"] = [$view($subject->chunkArray($other, \PHPStan\TrinaryLogic::createNo())), $view($subject->chunkArray($other, \PHPStan\TrinaryLogic::createYes()))];
+			$r["$name sliceArray $otherName"] = [$view($subject->sliceArray($other, $other, \PHPStan\TrinaryLogic::createMaybe())), $view($subject->sliceArray($others['int0'], $other, \PHPStan\TrinaryLogic::createNo())), $view($subject->sliceArray($other, $others['null'], \PHPStan\TrinaryLogic::createYes())), $view($subject->sliceArray($other, $others['range1-max'], \PHPStan\TrinaryLogic::createYes()))];
+			$r["$name spliceArray $otherName"] = [$view($subject->spliceArray($other, $other, $other)), $view($subject->spliceArray($others['int0'], $others['null'], $other)), $view($subject->spliceArray($others['int1'], $others['int0'], $other))];
+			$r["$name getKeysArrayFiltered $otherName"] = $view($subject->getKeysArrayFiltered($other, \PHPStan\TrinaryLogic::createYes()));
+			$r["$name exponentiate $otherName"] = $view($subject->exponentiate($other));
+			if ($subject instanceof \PHPStan\Type\CompoundType) {
+				$r["$name isSubTypeOf $otherName"] = $view($subject->isSubTypeOf($other));
+				$r["$name isAcceptedBy $otherName"] = $view($subject->isAcceptedBy($other, true));
+				$r["$name isAcceptedBy-loose $otherName"] = $view($subject->isAcceptedBy($other, false));
+				foreach ($arrayPhpVersions as $vi => $phpVersion) {
+					$r["$name isGreaterThan $otherName $vi"] = $view($subject->isGreaterThan($other, $phpVersion));
+					$r["$name isGreaterThanOrEqual $otherName $vi"] = $view($subject->isGreaterThanOrEqual($other, $phpVersion));
+				}
+			}
+		}
+		foreach (['toBoolean', 'toNumber', 'toInteger', 'toFloat', 'toString', 'toArray', 'toArrayKey', 'toBitwiseNotType', 'toAbsoluteNumber', 'toGetClassResultType', 'toObjectTypeForInstanceofCheck',
+			'isTrue', 'isFalse', 'isBoolean', 'isScalar', 'isNull', 'isInteger', 'isFloat', 'isString', 'isNumericString', 'isDecimalIntegerString', 'isNonEmptyString', 'isNonFalsyString', 'isLiteralString', 'isLowercaseString', 'isUppercaseString', 'isClassString', 'isVoid',
+			'isConstantValue', 'isConstantScalarValue', 'getConstantScalarTypes', 'getConstantScalarValues', 'getFiniteTypes', 'isObject', 'isEnum', 'getArrays', 'getConstantArrays', 'getConstantStrings', 'getReferencedClasses', 'getObjectClassNames', 'getObjectClassReflections',
+			'getClassStringType', 'getClassStringObjectType', 'getObjectTypeOrClassStringObjectType', 'canAccessProperties', 'canCallMethods', 'canAccessConstants', 'isIterable', 'isIterableAtLeastOnce', 'getArraySize', 'getIterableKeyType', 'getFirstIterableKeyType', 'getLastIterableKeyType',
+			'getIterableValueType', 'getFirstIterableValueType', 'getLastIterableValueType', 'isArray', 'isConstantArray', 'isOversizedArray', 'isList', 'isOffsetAccessible', 'isOffsetAccessLegal', 'getKeysArray', 'getValuesArray', 'flipArray', 'popArray', 'shiftArray', 'shuffleArray',
+			'makeListMaybe', 'makeAllArrayKeysOptional', 'filterArrayRemovingFalsey', 'getEnumCases', 'getEnumCaseObject', 'isCallable', 'isCloneable', 'toPhpDocNode', 'getReferencedTemplateTypes', 'hasTemplateOrLateResolvableType'] as $method) {
+			if ($method === 'getReferencedTemplateTypes') {
+				foreach ([\PHPStan\Type\Generic\TemplateTypeVariance::createInvariant(), \PHPStan\Type\Generic\TemplateTypeVariance::createCovariant(), \PHPStan\Type\Generic\TemplateTypeVariance::createContravariant()] as $vi => $variance) {
+					$r["$name $method $vi"] = $view($subject->$method($variance));
+				}
+				continue;
+			}
+			$r["$name $method"] = $view($subject->$method());
+			// the memoized answers (isList, getIterableKeyType) must read back the same
+			$r["$name $method again"] = $view($subject->$method());
+		}
+		foreach (['getSmallerType', 'getSmallerOrEqualType', 'getGreaterType', 'getGreaterOrEqualType'] as $method) {
+			$r["$name $method"] = $view($subject->$method($arrayPhpVersions[1]));
+		}
+		foreach ([\PHPStan\Type\GeneralizePrecision::lessSpecific(), \PHPStan\Type\GeneralizePrecision::moreSpecific(), \PHPStan\Type\GeneralizePrecision::templateArgument()] as $i => $precision) {
+			$r["$name generalize $i"] = $view($subject->generalize($precision));
+		}
+		$r["$name toCoercedArgumentType"] = [$view($subject->toCoercedArgumentType(true)), $view($subject->toCoercedArgumentType(false))];
+		$r["$name traverse identity"] = $subject->traverse($identity) === $subject;
+		$r["$name traverse replaced"] = $view($subject->traverse($toObject));
+		$r["$name traverse never"] = $view($subject->traverse($toNever));
+		$r["$name traverseSimultaneously never"] = $view($subject->traverseSimultaneously($others['arrayIntString'], $toNever));
+		$r["$name getTemplateType"] = $view($subject->getTemplateType('Foo', 'T'));
+		$r["$name hasProperty"] = $view($subject->hasProperty('x'));
+		$r["$name hasInstanceProperty"] = $view($subject->hasInstanceProperty('x'));
+		$r["$name hasStaticProperty"] = $view($subject->hasStaticProperty('x'));
+		$r["$name hasMethod"] = $view($subject->hasMethod('x'));
+		$r["$name hasConstant"] = $view($subject->hasConstant('X'));
+		$r["$name setOffsetValueType null"] = [$view($subject->setOffsetValueType(null, $others['int1'])), $view($subject->setOffsetValueType(null, $others['stringAbc'], false)), $view($subject->setOffsetValueType(null, $others['constArray'], unionValues: true))];
+		$r["$name mapValueType"] = [$view($subject->mapValueType($identity)), $view($subject->mapValueType($toObject))];
+		$r["$name mapKeyType"] = [$view($subject->mapKeyType($identity)), $view($subject->mapKeyType(static fn ($t) => new \PHPStan\Type\StringType()))];
+		$r["$name changeKeyCaseArray"] = [$view($subject->changeKeyCaseArray(null)), $view($subject->changeKeyCaseArray(CASE_LOWER)), $view($subject->changeKeyCaseArray(CASE_UPPER))];
+		$r["$name reverseArray"] = [$view($subject->reverseArray(\PHPStan\TrinaryLogic::createYes())), $view($subject->reverseArray(\PHPStan\TrinaryLogic::createNo()))];
+		$r["$name toClassConstantType"] = $view($subject->toClassConstantType($stringReflectionProvider));
+		$r["$name toObjectTypeForIsACheck"] = [$view($subject->toObjectTypeForIsACheck($others['mixed'], true, true)), $view($subject->toObjectTypeForIsACheck($others['object'], false, false))];
+		foreach (['getProperty', 'getInstanceProperty', 'getStaticProperty', 'getMethod', 'getConstant'] as $method) {
+			try {
+				$args = $method === 'getConstant' ? ['x'] : ['x', $outOfClassScope];
+				$member = $subject->$method(...$args);
+				$r["$name $method"] = [get_class($member), $member->getName(), $member->getDeclaringClass()->getName()];
+			} catch (\Throwable $e) {
+				// the PHP intersection subjects throw on an unresolvable member
+				$r["$name $method"] = get_class($e);
+			}
+		}
+		foreach (['getUnresolvedPropertyPrototype', 'getUnresolvedInstancePropertyPrototype', 'getUnresolvedStaticPropertyPrototype', 'getUnresolvedMethodPrototype'] as $method) {
+			try {
+				$prototype = $subject->$method('x', $outOfClassScope);
+				$transformed = $method === 'getUnresolvedMethodPrototype' ? $prototype->getTransformedMethod() : $prototype->getTransformedProperty();
+				$naive = $method === 'getUnresolvedMethodPrototype' ? $prototype->getNakedMethod() : $prototype->getNakedProperty();
+				$withStatic = $prototype->doNotResolveTemplateTypeMapToBounds();
+				$r["$name $method"] = [get_class($prototype), get_class($transformed), $transformed->getName(), get_class($naive), get_class($withStatic)];
+			} catch (\Throwable $e) {
+				$r["$name $method"] = get_class($e);
+			}
+		}
+		try {
+			$acceptors = $subject->getCallableParametersAcceptors($outOfClassScope);
+			$r["$name getCallableParametersAcceptors"] = array_map(static fn ($acceptor) => [get_class($acceptor), $acceptor->getReturnType()->describe(\PHPStan\Type\VerbosityLevel::precise()), count($acceptor->getParameters())], $acceptors);
+		} catch (\Throwable $e) {
+			$r["$name getCallableParametersAcceptors"] = get_class($e);
+		}
+		if ($subject instanceof $arrayClass) {
+			$r["$name getKeyType/getItemType"] = [$view($subject->getKeyType()), $view($subject->getItemType())];
+			$r["$name generalizeValues"] = $view($subject->generalizeValues());
+		}
+		if ($subject instanceof \PHPStan\Type\Accessory\AccessoryType) {
+			$r["$name getDefaultBaseType"] = $view($subject->getDefaultBaseType());
+		}
+		if ($subject instanceof $hasOffsetClass || $subject instanceof $hasOffsetValueClass) {
+			$r["$name getOffsetType"] = $view($subject->getOffsetType());
+		}
+		if ($subject instanceof $hasOffsetValueClass) {
+			$r["$name getValueType"] = $view($subject->getValueType());
+		}
+	}
+	// the family through the compound types and the combinator, the way the
+	// analysis exercises it
+	foreach (['arrayMixed', 'arrayIntString', 'arrayStringInt', 'arrayListKeys', 'arrayConstKeys', 'nonEmpty', 'list', 'oversized', 'hasOffsetA', 'hasOffset0', 'hasOffsetValueA', 'hasOffsetValue0', 'templateArray'] as $name) {
+		$subject = $subjects[$name];
+		foreach (['int', 'null', 'union', 'unionNullable', 'mixed', 'never', 'array', 'arrayIntString', 'arrayStringInt', 'list', 'nonEmptyArray', 'nonEmptyList', 'oversizedArray', 'arrayWithOffsetA', 'arrayWithOffset0', 'emptyArray', 'constArray', 'constArrayInts', 'constArrayOptional', 'object', 'arrayAccess', 'string', 'callable', 'iterable', 'nonEmpty', 'listAccessory', 'oversized', 'hasOffsetA', 'hasOffset0', 'hasOffsetValueA', 'hasOffsetValue0', 'templateArray'] as $otherName) {
+			$other = $others[$otherName];
+			$r["combinator union $name $otherName"] = $view(\PHPStan\Type\TypeCombinator::union($subject, $other));
+			$r["combinator intersect $name $otherName"] = $view(\PHPStan\Type\TypeCombinator::intersect($subject, $other));
+			$r["combinator remove $name $otherName"] = $view(\PHPStan\Type\TypeCombinator::remove($subject, $other));
+			$r["combinator remove-reverse $name $otherName"] = $view(\PHPStan\Type\TypeCombinator::remove($other, $subject));
+			$r["union isSuperTypeOf $name $otherName"] = $view($others['unionArrays']->isSuperTypeOf($subject));
+			$r["union accepts $name $otherName"] = $view($others['unionArrays']->accepts($subject, true));
+			$r["other isSuperTypeOf $name $otherName"] = $view($other->isSuperTypeOf($subject));
+			$r["other accepts $name $otherName"] = $view($other->accepts($subject, true));
+			$r["other equals $name $otherName"] = $other->equals($subject);
+		}
+		$r["combinator removeNull $name"] = $view(\PHPStan\Type\TypeCombinator::removeNull($subject));
+		$r["combinator addNull $name"] = $view(\PHPStan\Type\TypeCombinator::addNull($subject));
+	}
+	// equality over fresh instances
+	$r['array equals array'] = [(new $arrayClass(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()))->equals(new $arrayClass(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType())), (new $arrayClass(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()))->equals(new $arrayClass(new \PHPStan\Type\StringType(), new \PHPStan\Type\StringType())), (new $arrayClass(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()))->equals($subjects['templateArray']), $subjects['templateArray']->equals(new $arrayClass(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()))];
+	$r['hasOffset equals hasOffset'] = [(new $hasOffsetClass(new \PHPStan\Type\Constant\ConstantStringType('a')))->equals(new $hasOffsetClass(new \PHPStan\Type\Constant\ConstantStringType('a'))), (new $hasOffsetClass(new \PHPStan\Type\Constant\ConstantStringType('a')))->equals(new $hasOffsetClass(new \PHPStan\Type\Constant\ConstantIntegerType(0)))];
+	$r['hasOffsetValue equals hasOffsetValue'] = [(new $hasOffsetValueClass(new \PHPStan\Type\Constant\ConstantStringType('a'), new \PHPStan\Type\IntegerType()))->equals(new $hasOffsetValueClass(new \PHPStan\Type\Constant\ConstantStringType('a'), new \PHPStan\Type\IntegerType())), (new $hasOffsetValueClass(new \PHPStan\Type\Constant\ConstantStringType('a'), new \PHPStan\Type\IntegerType()))->equals(new $hasOffsetValueClass(new \PHPStan\Type\Constant\ConstantStringType('a'), new \PHPStan\Type\StringType()))];
+	// the typed constructor parameters: wrong classes and non-objects are TypeErrors (the message differs in its "called in" suffix, so only the class is observed)
+	foreach ([[$arrayClass, [new \PHPStan\Type\IntegerType()]], [$arrayClass, ['x', new \PHPStan\Type\IntegerType()]], [$arrayClass, [new \PHPStan\Type\IntegerType(), null]], [$hasOffsetClass, [new \PHPStan\Type\IntegerType()]], [$hasOffsetClass, ['a']], [$hasOffsetValueClass, [new \PHPStan\Type\StringType(), new \PHPStan\Type\IntegerType()]], [$hasOffsetValueClass, [new \PHPStan\Type\Constant\ConstantIntegerType(0), 'x']], [$hasOffsetValueClass, [new \PHPStan\Type\Constant\ConstantIntegerType(0)]]] as $i => [$class, $args]) {
+		try {
+			$r["construct $i"] = $view(new $class(...$args));
+		} catch (\TypeError $e) {
+			$r["construct $i"] = 'TypeError';
+		} catch (\ArgumentCountError $e) {
+			$r["construct $i"] = 'ArgumentCountError';
+		}
+	}
+	// the constructors by named arguments
+	$r['array named'] = $view(new $arrayClass(itemType: new \PHPStan\Type\StringType(), keyType: new \PHPStan\Type\IntegerType()));
+	$r['hasOffsetValue named'] = $view(new $hasOffsetValueClass(valueType: new \PHPStan\Type\StringType(), offsetType: new \PHPStan\Type\Constant\ConstantIntegerType(3)));
+	// an uninitialized instance: every typed-slot read raises the same Error
+	foreach ([$arrayClass, $hasOffsetClass, $hasOffsetValueClass] as $uninitializedClass) {
+		$uninitialized = (new \ReflectionClass($uninitializedClass))->newInstanceWithoutConstructor();
+		foreach (['describe' => [\PHPStan\Type\VerbosityLevel::precise()], 'isSuperTypeOf' => [$others['int']], 'equals' => [$uninitialized], 'getKeyType' => [], 'getItemType' => [], 'getOffsetType' => [], 'getValueType' => [], 'getIterableKeyType' => [], 'isList' => [], 'toPhpDocNode' => [], 'hasTemplateOrLateResolvableType' => [], 'getReferencedClasses' => [], 'isCallable' => [], 'unsetOffset' => [$others['int0']]] as $method => $args) {
+			if (!method_exists($uninitialized, $method)) {
+				continue;
+			}
+			try {
+				$r["uninitialized $uninitializedClass $method"] = $view($uninitialized->$method(...$args));
+			} catch (\Error $e) {
+				$r["uninitialized $uninitializedClass $method"] = [get_class($e), $e->getMessage()];
+			}
+		}
+	}
+	// PHP subclasses overriding what the natives call through $this
+	$anonymousArray = new class (new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()) extends \PHPStan\Type\ArrayType {
+
+		protected function withTypes(\PHPStan\Type\Type $keyType, \PHPStan\Type\Type $itemType): \PHPStan\Type\ArrayType
+		{
+			return new \PHPStan\Type\ArrayType(new \PHPStan\Type\StringType(), $itemType);
+		}
+
+		public function getItemType(): \PHPStan\Type\Type
+		{
+			return new \PHPStan\Type\FloatType();
+		}
+
+		public function getIterableKeyType(): \PHPStan\Type\Type
+		{
+			return new \PHPStan\Type\Constant\ConstantIntegerType(7);
+		}
+
+		public function isCallable(): \PHPStan\TrinaryLogic
+		{
+			return \PHPStan\TrinaryLogic::createNo();
+		}
+
+		public function getKeysArray(): \PHPStan\Type\Type
+		{
+			return new \PHPStan\Type\NullType();
+		}
+
+	};
+	foreach (['getValuesArray', 'getKeysArray', 'flipArray', 'shuffleArray', 'popArray', 'getFirstIterableKeyType', 'getLastIterableValueType', 'generalizeValues', 'filterArrayRemovingFalsey', 'isList', 'toPhpDocNode'] as $method) {
+		$r["anonymous array $method"] = $view($anonymousArray->$method());
+	}
+	$r['anonymous array describe'] = $anonymousArray->describe(\PHPStan\Type\VerbosityLevel::precise());
+	$r['anonymous array getKeysArrayFiltered'] = $view($anonymousArray->getKeysArrayFiltered($others['int'], \PHPStan\TrinaryLogic::createYes()));
+	$r['anonymous array setOffsetValueType'] = [$view($anonymousArray->setOffsetValueType($others['int5'], $others['int1'])), $view($anonymousArray->setOffsetValueType($others['string'], $others['int1'])), $view($anonymousArray->setOffsetValueType(null, $others['int1']))];
+	$r['anonymous array mapValueType'] = $view($anonymousArray->mapValueType($toObject));
+	$r['anonymous array mapKeyType'] = $view($anonymousArray->mapKeyType($toObject));
+	$r['anonymous array traverse'] = [$view($anonymousArray->traverse($identity)), $view($anonymousArray->traverse($toObject))];
+	$r['anonymous array changeKeyCaseArray'] = $view($anonymousArray->changeKeyCaseArray(CASE_LOWER));
+	$r['anonymous array sliceArray'] = $view($anonymousArray->sliceArray($others['int1'], $others['int1'], \PHPStan\TrinaryLogic::createNo()));
+	$r['anonymous array spliceArray'] = $view($anonymousArray->spliceArray($others['int1'], $others['int1'], $others['constArray']));
+	$r['anonymous array intersectKeyArray'] = [$view($anonymousArray->intersectKeyArray($others['arrayStringInt'])), $view($anonymousArray->intersectKeyArray($others['constArray']))];
+	$r['anonymous array isSuperTypeOf'] = [$view($anonymousArray->isSuperTypeOf($others['arrayIntString'])), $view($subjects['arrayIntString']->isSuperTypeOf($anonymousArray)), $view($anonymousArray->isSuperTypeOf($others['constArrayInts']))];
+	$r['anonymous array accepts'] = [$view($anonymousArray->accepts($others['arrayIntString'], true)), $view($subjects['arrayIntString']->accepts($anonymousArray, true))];
+	$r['anonymous array equals'] = [$anonymousArray->equals($subjects['arrayIntString']), $subjects['arrayIntString']->equals($anonymousArray)];
+	$r['anonymous array inferTemplateTypes'] = $view($subjects['arrayTemplates']->inferTemplateTypes($anonymousArray));
+	$r['anonymous array searchArray'] = $view($anonymousArray->searchArray($others['int1'], \PHPStan\TrinaryLogic::createYes()));
+	try {
+		$r['anonymous array getCallableParametersAcceptors'] = $view($anonymousArray->getCallableParametersAcceptors($outOfClassScope));
+	} catch (\PHPStan\ShouldNotHappenException $e) {
+		$r['anonymous array getCallableParametersAcceptors'] = 'ShouldNotHappenException';
+	}
+	$r['anonymous array truncateListToSize'] = [$view($anonymousArray->truncateListToSize($others['range2-4'])), $view($anonymousArray->truncateListToSize($others['range3-max']))];
+	$anonymousNonEmpty = new class extends \PHPStan\Type\Accessory\NonEmptyArrayType {
+
+		public function equals(\PHPStan\Type\Type $type): bool
+		{
+			return $type instanceof \PHPStan\Type\IntegerType;
+		}
+
+		public function isSubTypeOf(\PHPStan\Type\Type $otherType): \PHPStan\Type\IsSuperTypeOfResult
+		{
+			return \PHPStan\Type\IsSuperTypeOfResult::createNo(['anonymous']);
+		}
+
+	};
+	$r['anonymous nonEmpty isSuperTypeOf'] = [$view($anonymousNonEmpty->isSuperTypeOf($others['int'])), $view($anonymousNonEmpty->isSuperTypeOf($others['nonEmpty'])), $view($subjects['nonEmpty']->isSuperTypeOf($anonymousNonEmpty))];
+	$r['anonymous nonEmpty isAcceptedBy'] = $view($anonymousNonEmpty->isAcceptedBy($others['array'], true));
+	$r['anonymous nonEmpty equals'] = [$anonymousNonEmpty->equals($subjects['nonEmpty']), $subjects['nonEmpty']->equals($anonymousNonEmpty)];
+	$anonymousList = new class extends \PHPStan\Type\Accessory\AccessoryArrayListType {
+
+		public function getIterableKeyType(): \PHPStan\Type\Type
+		{
+			return new \PHPStan\Type\Constant\ConstantIntegerType(0);
+		}
+
+		public function hasOffsetValueType(\PHPStan\Type\Type $offsetType): \PHPStan\TrinaryLogic
+		{
+			return \PHPStan\TrinaryLogic::createYes();
+		}
+
+	};
+	$r['anonymous list getLastIterableKeyType'] = $view($anonymousList->getLastIterableKeyType());
+	$r['anonymous list unsetOffset'] = [$view($anonymousList->unsetOffset($others['int0'])), $view($anonymousList->unsetOffset($others['string']))];
+	$r['anonymous list isSubTypeOf'] = [$view($anonymousList->isSubTypeOf($subjects['list'])), $view($subjects['list']->isSubTypeOf($anonymousList)), $view($subjects['list']->isSuperTypeOf($anonymousList))];
+	$anonymousHasOffsetValue = new class (new \PHPStan\Type\Constant\ConstantStringType('a'), new \PHPStan\Type\IntegerType()) extends \PHPStan\Type\Accessory\HasOffsetValueType {
+
+		public function getKeysArray(): \PHPStan\Type\Type
+		{
+			return new \PHPStan\Type\NullType();
+		}
+
+		public function getOffsetType(): \PHPStan\Type\Constant\ConstantStringType|\PHPStan\Type\Constant\ConstantIntegerType
+		{
+			return new \PHPStan\Type\Constant\ConstantStringType('overridden');
+		}
+
+	};
+	$r['anonymous hasOffsetValue getKeysArrayFiltered'] = $view($anonymousHasOffsetValue->getKeysArrayFiltered($others['int'], \PHPStan\TrinaryLogic::createYes()));
+	$r['anonymous hasOffsetValue tryRemove'] = [$view($subjects['hasOffsetValueA']->tryRemove($anonymousHasOffsetValue)), $view($anonymousHasOffsetValue->tryRemove($subjects['hasOffsetValueA'])), $view($subjects['arrayStringInt']->tryRemove($anonymousHasOffsetValue))];
+	$r['anonymous hasOffsetValue equals'] = [$anonymousHasOffsetValue->equals($subjects['hasOffsetValueA']), $subjects['hasOffsetValueA']->equals($anonymousHasOffsetValue)];
+	$r['anonymous hasOffsetValue describe'] = $anonymousHasOffsetValue->describe(\PHPStan\Type\VerbosityLevel::precise());
+	foreach ($r as $key => $value) {
+		$observations["array $key"] = $value;
+	}
+}
+
 
 // observations holding bytes that are not UTF-8 (the invalid-UTF-8 subject's
 // descriptions) go out base64-encoded so json_encode() keeps every byte; the

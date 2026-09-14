@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PHPStan\Internal\CombinationsHelper;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -18,6 +19,7 @@ use const PHP_INT_MAX;
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'typeUtils')]
 final class TypeUtils
 {
 

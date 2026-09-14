@@ -847,7 +847,7 @@ public:
 			zv::Val array = mixedArray(false);
 			if (UNEXPECTED(array.isUndef())) return -1;
 			types.push(std::move(array));
-			if (UNEXPECTED(!pushNew(types, PT_CLASS_OVERSIZED_ARRAY_TYPE))) return -1;
+			if (UNEXPECTED(!pushNew(types, pt_oversized_array_type_new))) return -1;
 			zv::Val oversizedArray = intersectionOf(std::move(types));
 			if (UNEXPECTED(oversizedArray.isUndef())) return -1;
 			zend_long isSuperType = isSuperTypeOfTrinary(subtracted, oversizedArray.raw());
@@ -1238,14 +1238,13 @@ private:
 		return true;
 	}
 
-	/* new ArrayType($keyType, $valueType) */
+	/* new ArrayType($keyType, $valueType) — the shadowing class */
 	static zv::Val arrayType(zv::Val keyType, zv::Val valueType)
 	{
 		if (UNEXPECTED(keyType.isUndef() || valueType.isUndef())) return zv::Val();
-		zval args[2];
-		ZVAL_COPY_VALUE(&args[0], keyType.raw());
-		ZVAL_COPY_VALUE(&args[1], valueType.raw());
-		return pt_type_new(PT_CLASS_ARRAY_TYPE, 2, args);
+		zval result;
+		if (UNEXPECTED(!pt_array_type_new(&result, keyType.raw(), valueType.raw()))) return zv::Val();
+		return zv::Val::adopt(result);
 	}
 
 	/* new IntersectionType($types) */
@@ -1260,7 +1259,7 @@ private:
 		if (UNEXPECTED(array.isUndef())) return zv::Val();
 		zv::Arr types = zv::Arr::create(2);
 		types.push(std::move(array));
-		if (UNEXPECTED(!pushNew(types, PT_CLASS_ACCESSORY_ARRAY_LIST_TYPE))) return zv::Val();
+		if (UNEXPECTED(!pushNew(types, pt_accessory_array_list_type_new))) return zv::Val();
 		return intersectionOf(std::move(types));
 	}
 
@@ -1302,6 +1301,13 @@ public:
 
 using phpstanturbo::MixedType;
 using phpstanturbo::NullableLong;
+
+zv::Val pt_type_identity_callback()
+{
+	zval closure;
+	zend_create_closure(&closure, pt_identity_callback_fn, pt_ce_identity_callback, pt_ce_identity_callback, NULL);
+	return zv::Val::adopt(closure);
+}
 
 bool pt_mixed_type_new(zval *out, bool isExplicitMixed, zval *subtractedType)
 {
@@ -1846,8 +1852,4 @@ void pt_register_mixed_type()
 
 /* {{{ shared with the object family (TypeTraits.h) */
 
-zv::Val pt_type_identity_callback()
-{
-	return MixedType::identityCallback();
-}
 /* }}} */

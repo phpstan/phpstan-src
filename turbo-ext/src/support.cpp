@@ -88,8 +88,6 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_CONST_EXPR_FLOAT_NODE */ {"constExprFloatNode", "PHPStan\\PhpDocParser\\Ast\\ConstExpr\\ConstExprFloatNode"},
 	/* PT_CLASS_TEMPLATE_MIXED_TYPE */ {"templateMixedType", "PHPStan\\Type\\Generic\\TemplateMixedType"},
 	/* PT_CLASS_SUBTRACTABLE_TYPE */ {"subtractableType", "PHPStan\\Type\\SubtractableType"},
-	/* PT_CLASS_ARRAY_TYPE */ {"arrayType", "PHPStan\\Type\\ArrayType"},
-	/* PT_CLASS_ACCESSORY_ARRAY_LIST_TYPE */ {"accessoryArrayListType", "PHPStan\\Type\\Accessory\\AccessoryArrayListType"},
 	/* PT_CLASS_CALLABLE_TYPE */ {"callableType", "PHPStan\\Type\\CallableType"},
 	/* PT_CLASS_DUMMY_PROPERTY_REFLECTION */ {"dummyPropertyReflection", "PHPStan\\Reflection\\Dummy\\DummyPropertyReflection"},
 	/* PT_CLASS_CALLBACK_UNRESOLVED_PROPERTY_PROTOTYPE_REFLECTION */ {"callbackUnresolvedPropertyPrototypeReflection", "PHPStan\\Reflection\\Type\\CallbackUnresolvedPropertyPrototypeReflection"},
@@ -98,7 +96,6 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_DUMMY_CLASS_CONSTANT_REFLECTION */ {"dummyClassConstantReflection", "PHPStan\\Reflection\\Dummy\\DummyClassConstantReflection"},
 	/* PT_CLASS_BENEVOLENT_UNION_TYPE */ {"benevolentUnionType", "PHPStan\\Type\\BenevolentUnionType"},
 	/* PT_CLASS_ITERABLE_TYPE */ {"iterableType", "PHPStan\\Type\\IterableType"},
-	/* PT_CLASS_OVERSIZED_ARRAY_TYPE */ {"oversizedArrayType", "PHPStan\\Type\\Accessory\\OversizedArrayType"},
 	/* PT_CLASS_TYPE_TRAVERSER */ {"typeTraverser", "PHPStan\\Type\\TypeTraverser"},
 	/* PT_CLASS_TEMPLATE_TYPE_HELPER */ {"templateTypeHelper", "PHPStan\\Type\\Generic\\TemplateTypeHelper"},
 	/* PT_CLASS_GENERIC_OBJECT_TYPE */ {"genericObjectType", "PHPStan\\Type\\Generic\\GenericObjectType"},
@@ -111,6 +108,11 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_THIS_TYPE_NODE */ {"thisTypeNode", "PHPStan\\PhpDocParser\\Ast\\Type\\ThisTypeNode"},
 	/* PT_CLASS_OBJECT_SHAPE_NODE */ {"objectShapeNode", "PHPStan\\PhpDocParser\\Ast\\Type\\ObjectShapeNode"},
 	/* PT_CLASS_OBJECT_SHAPE_ITEM_NODE */ {"objectShapeItemNode", "PHPStan\\PhpDocParser\\Ast\\Type\\ObjectShapeItemNode"},
+	/* PT_CLASS_TEMPLATE_STRICT_MIXED_TYPE */ {"templateStrictMixedType", "PHPStan\\Type\\Generic\\TemplateStrictMixedType"},
+	/* PT_CLASS_UNSAFE_ARRAY_STRING_KEY_CASTING_TRAVERSER */ {"unsafeArrayStringKeyCastingTraverser", "PHPStan\\Type\\Traverser\\UnsafeArrayStringKeyCastingTraverser"},
+	/* PT_CLASS_ALLOWED_ARRAY_KEYS_TYPES */ {"allowedArrayKeysTypes", "PHPStan\\Rules\\Arrays\\AllowedArrayKeysTypes"},
+	/* PT_CLASS_CONSTANT_ARRAY_TYPE_BUILDER */ {"constantArrayTypeBuilder", "PHPStan\\Type\\Constant\\ConstantArrayTypeBuilder"},
+	/* PT_CLASS_TYPE_UTILS */ {"typeUtils", "PHPStan\\Type\\TypeUtils"},
 };
 
 zend_class_entry *pt_class(int idx)

@@ -3,6 +3,7 @@
 namespace PHPStan\Type\Traverser;
 
 use PHPStan\DependencyInjection\ReportUnsafeArrayStringKeyCastingToggle;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\Type;
@@ -19,6 +20,7 @@ use PHPStan\Type\UnionType;
  * array (cast key) against a constant-array shape (raw key) yields a spurious
  * `Maybe`.
  */
+#[ReferencedByTurboExtension(key: 'unsafeArrayStringKeyCastingTraverser')]
 final class UnsafeArrayStringKeyCastingTraverser implements TypeTraverserCallable
 {
 

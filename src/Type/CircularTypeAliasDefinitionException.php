@@ -3,7 +3,9 @@
 namespace PHPStan\Type;
 
 use Exception;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
+#[ReferencedByTurboExtension(key: 'circularTypeAliasDefinitionException')]
 final class CircularTypeAliasDefinitionException extends Exception
 {
 

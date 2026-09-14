@@ -680,8 +680,16 @@ function checkStructure(array $manifest): array
 	$cppClasses = [];
 	$declaredNames = [];
 	foreach (array_merge(glob('turbo-ext/src/*.cpp'), glob('turbo-ext/src/parser/*.cpp')) as $file) {
-		preg_match_all('~reg::Class\s+\w+\("((?:PHPStan|PhpParser)\\\\[^"]+)"\)~', file_get_contents($file), $m);
+		$source = file_get_contents($file);
+		preg_match_all('~reg::Class\s+\w+\("((?:PHPStan|PhpParser)\\\\[^"]+)"\)~', $source, $m);
 		if ($m[1] === []) {
+			continue;
+		}
+		// A port awaiting its flip declares its class differential-only
+		// (reg::Class::shadowDifferentialOnly()): the prefixed harness
+		// compares it against the twin while the twin stays the live class,
+		// so no attribute names it yet — parity is checked once it lands.
+		if (str_contains($source, 'shadowDifferentialOnly(')) {
 			continue;
 		}
 		$cppClasses[] = basename($file, '.cpp');

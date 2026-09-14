@@ -7,6 +7,7 @@ use JsonException;
 use Nette\Utils\RegexpException;
 use Nette\Utils\Strings;
 use PhpParser\Node;
+use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\ArrayDimFetch;
@@ -37,6 +38,7 @@ use PhpParser\Node\VariadicPlaceholder;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnumBackedCase;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionIntersectionType;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionNamedType;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionUnionType;
@@ -170,6 +172,8 @@ final class TurboAttributeCollector
 		'nullsafeMethodCall' => NullsafeMethodCall::class,
 		'staticPropertyFetch' => StaticPropertyFetch::class,
 		'listExpr' => List_::class,
+		'reflectionEnumBackedCase' => ReflectionEnumBackedCase::class,
+		'arg' => Arg::class,
 	];
 
 	private string $realRoot;

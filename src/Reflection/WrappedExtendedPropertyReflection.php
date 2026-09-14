@@ -4,9 +4,11 @@ namespace PHPStan\Reflection;
 
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 
+#[ReferencedByTurboExtension(key: 'wrappedExtendedPropertyReflection')]
 final class WrappedExtendedPropertyReflection implements ExtendedPropertyReflection
 {
 

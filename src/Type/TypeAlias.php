@@ -6,7 +6,9 @@ use PHPStan\Analyser\NameScope;
 use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
+#[ReferencedByTurboExtension(key: 'typeAlias')]
 final class TypeAlias
 {
 

@@ -177,9 +177,21 @@ enum {
 	PT_CLASS_RESOLVED_PROPERTY_REFLECTION,
 	PT_CLASS_CHANGED_TYPE_METHOD_REFLECTION,
 	PT_CLASS_CHANGED_TYPE_PROPERTY_REFLECTION,
+	PT_CLASS_INITIALIZER_EXPR_CONTEXT,
 	PT_CLASS_NULLSAFE_METHOD_CALL,
 	PT_CLASS_STATIC_PROPERTY_FETCH,
+	PT_CLASS_EXTENDED_METHOD_REFLECTION,
+	PT_CLASS_ARG,
+	PT_CLASS_WRAPPED_EXTENDED_METHOD_REFLECTION,
+	PT_CLASS_EXTENDED_PROPERTY_REFLECTION,
+	PT_CLASS_WRAPPED_EXTENDED_PROPERTY_REFLECTION,
 	PT_CLASS_VARIABLE_ACCESS_FLOW,
+	PT_CLASS_ENUM_CASE_REFLECTION,
+	PT_CLASS_REFLECTION_ENUM_BACKED_CASE,
+	PT_CLASS_REAL_CLASS_CLASS_CONSTANT_REFLECTION,
+	PT_CLASS_TYPE_ALIAS,
+	PT_CLASS_CIRCULAR_TYPE_ALIAS_DEFINITION_EXCEPTION,
+	PT_CLASS_ARGUMENTS_NORMALIZER,
 	PT_CLASS_VARIABLE_SEQUENCE_FLOW,
 	PT_CLASS_VARIABLE_CONTROL_FLOW,
 	PT_CLASS_VARIABLE_INPUT_FLOW,
@@ -1303,6 +1315,19 @@ extern zend_class_entry *pt_ce_expression_result_storage;
  * calls its statics directly) */
 extern zend_class_entry *pt_ce_volatile_expression_helper;
 zv::Val pt_expression_result_storage_find(zval *storage, zval *expr);
+
+/* merged from the parallel port branch */
+/* the native ClassReflection (ClassReflection.cpp); until the flip the
+ * plan is declared by the prefixed activation of the differential tests
+ * only (reg::Class::shadowDifferentialOnly()), so pt_ce_class_reflection
+ * stays NULL in a production run and the slot readers of
+ * ClassReflectionAccess.cpp keep serving the Type kernel */
+extern zend_class_entry *pt_ce_class_reflection;
+void pt_register_class_reflection();
+/* TypehintHelper::decideTypeFromReflection() for native callers (every
+ * argument borrowed, NULL for a null / the default); UNDEF = pending
+ * exception */
+zv::Val pt_typehint_helper_decide_type_from_reflection(zval *reflectionType, zval *phpDocType = NULL, zval *selfClass = NULL, bool isVariadic = false);
 
 /* merged from the parallel port branch */
 extern zend_string *pt_str_end_file_pos;

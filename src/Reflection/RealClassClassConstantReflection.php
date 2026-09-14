@@ -7,10 +7,12 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClassConstant;
 use PHPStan\Internal\DeprecatedAttributeHelper;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use function sprintf;
 
+#[ReferencedByTurboExtension(key: 'realClassClassConstantReflection')]
 final class RealClassClassConstantReflection implements ClassConstantReflection
 {
 

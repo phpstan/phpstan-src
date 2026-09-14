@@ -7,12 +7,14 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnumUnitCase;
 use PHPStan\Internal\DeprecatedAttributeHelper;
 use PHPStan\Reflection\Deprecation\DeprecationProvider;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Type;
 
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'enumCaseReflection')]
 final class EnumCaseReflection
 {
 

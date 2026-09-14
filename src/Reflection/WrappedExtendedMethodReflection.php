@@ -5,11 +5,13 @@ namespace PHPStan\Reflection;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\Reflection\Php\ExtendedDummyParameter;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use function array_map;
 
+#[ReferencedByTurboExtension(key: 'wrappedExtendedMethodReflection')]
 final class WrappedExtendedMethodReflection implements ExtendedMethodReflection
 {
 

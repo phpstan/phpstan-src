@@ -394,6 +394,14 @@ private:
 
 using phpstanturbo::TypehintHelper;
 
+/* TypehintHelper::decideTypeFromReflection($reflectionType, $phpDocType,
+ * $selfClass, $isVariadic) for native callers (every argument borrowed,
+ * NULL for a null / the default); UNDEF = pending exception */
+zv::Val pt_typehint_helper_decide_type_from_reflection(zval *reflectionType, zval *phpDocType, zval *selfClass, bool isVariadic)
+{
+	return phpstanturbo::TypehintHelper::decideTypeFromReflection(reflectionType, phpDocType, selfClass, isVariadic);
+}
+
 /* {{{ engine ABI glue: parameter parsing + registration */
 
 void pt_register_typehint_helper()

@@ -429,6 +429,10 @@ struct ShadowPlan
 	 * at activation (Shadow.cpp) and kept here for the children */
 	pt_type_op_fn opFns[PT_OP_COUNT];
 	const pt_type_ops *ops;
+	/* declared only by a prefixed activation (the differential tests): a
+	 * class whose port is still incomplete — never under the twin's real
+	 * name (reg::Class::shadowDifferentialOnly()) */
+	bool differentialOnly;
 };
 
 /* declares the builder's properties and constants on a registered or
@@ -1208,6 +1212,7 @@ public:
 		plan.ce = NULL;
 		memcpy(plan.opFns, opFns, sizeof(opFns));
 		plan.ops = NULL;
+		plan.differentialOnly = differentialOnly;
 		pt_shadow_plan_add(std::move(plan));
 	}
 
@@ -1226,6 +1231,17 @@ public:
 		return *this;
 	}
 
+	/* a plan for a class whose port is incomplete: declared next to the
+	 * twin by the prefixed activation of the differential tests only, so
+	 * the partial native class can be compared method by method, and never
+	 * under the real name (the twin keeps running everywhere else). The
+	 * finished port replaces this call by shadow(). */
+	void shadowDifferentialOnly(zend_class_entry **out)
+	{
+		differentialOnly = true;
+		shadow(out);
+	}
+
 private:
 	const char *name;
 	uint32_t flags = 0;
@@ -1236,6 +1252,7 @@ private:
 	std::vector<Constant> constants;
 	pt_type_op_fn opFns[PT_OP_COUNT] = {};
 	bool lastTraitMethodAdded = false;
+	bool differentialOnly = false;
 };
 
 } // namespace reg

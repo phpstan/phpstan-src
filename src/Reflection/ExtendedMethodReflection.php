@@ -4,6 +4,7 @@ namespace PHPStan\Reflection;
 
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Type;
 
 /**
@@ -28,6 +29,7 @@ use PHPStan\Type\Type;
  * @api
  * @api-do-not-implement
  */
+#[ReferencedByTurboExtension(key: 'extendedMethodReflection')]
 interface ExtendedMethodReflection extends MethodReflection
 {
 

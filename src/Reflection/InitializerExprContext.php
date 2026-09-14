@@ -11,6 +11,7 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
 use PHPStan\BetterReflection\Reflection\ReflectionConstant;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use function array_slice;
 use function count;
 use function explode;
@@ -20,6 +21,7 @@ use function sprintf;
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'initializerExprContext')]
 final class InitializerExprContext implements NamespaceAnswerer
 {
 

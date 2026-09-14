@@ -213,6 +213,9 @@ static bool pt_shadow_materialize(reg::ShadowPlan &plan, HashTable *twinFiles, z
 		return false;
 	}
 	for (reg::ShadowPlan &plan : pt_shadow_plans()) {
+		/* an incomplete port is declared only next to its twin, under the
+		 * prefix, for the differential tests (reg::Class::shadowDifferentialOnly()) */
+		if (plan.differentialOnly && prefix == NULL) continue;
 		if (!pt_shadow_materialize(plan, twinFiles, prefix)) return false;
 	}
 	pt_shadow_active = true;

@@ -67,6 +67,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function array_flip;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
@@ -128,6 +129,9 @@ class ConstantArrayType implements Type
 
 	/** @var array<int|string, int>|null */
 	private ?array $keyIndexMap = null;
+
+	/** @var array<int, int>|null */
+	private ?array $optionalKeySet = null;
 
 	/**
 	 * @api
@@ -480,7 +484,9 @@ class ConstantArrayType implements Type
 
 	public function isOptionalKey(int $i): bool
 	{
-		return in_array($i, $this->optionalKeys, true);
+		$this->optionalKeySet ??= array_flip($this->optionalKeys);
+
+		return isset($this->optionalKeySet[$i]);
 	}
 
 	public function sortKeys(): self
@@ -1186,6 +1192,17 @@ class ConstantArrayType implements Type
 			}
 		}
 
+		// Constant offsets against constant keys resolve by value: a hit at the
+		// indexed slot is verified before use, a miss falls through to the scan
+		// (which also covers the unsealed extras below).
+		$index = $this->findVerifiedKeyIndex($offsetType);
+		if ($index !== null) {
+			if ($this->isOptionalKey($index)) {
+				return TrinaryLogic::createMaybe();
+			}
+			return TrinaryLogic::createYes();
+		}
+
 		$result = TrinaryLogic::createNo();
 		foreach ($this->keyTypes as $i => $keyType) {
 			// PHP coerces decimal-integer strings to int when used as array
@@ -1240,6 +1257,21 @@ class ConstantArrayType implements Type
 		}
 
 		$offsetType = $offsetType->toArrayKey();
+		if (count($this->keyTypes) > 1) {
+			// Same result as the scan below for a verified hit: exactly one explicit
+			// key matches a constant offset, so neither the all-keys nor the
+			// maybe-all fallbacks apply and the unsealed extras cannot contribute.
+			$index = $this->findVerifiedKeyIndex($offsetType);
+			if ($index !== null) {
+				$type = TypeCombinator::union($this->valueTypes[$index]);
+				if ($type instanceof ErrorType) {
+					return new MixedType();
+				}
+
+				return $type;
+			}
+		}
+
 		$matchingValueTypes = [];
 		$all = true;
 		$maybeAll = true;
@@ -3159,6 +3191,30 @@ class ConstantArrayType implements Type
 		}
 
 		return $this->keyIndexMap = $map;
+	}
+
+	/**
+	 * Index of the explicit key a constant scalar offset (already passed through
+	 * toArrayKey()) resolves to, or null when the offset is not a constant scalar
+	 * or no explicit key is a supertype of it.
+	 */
+	private function findVerifiedKeyIndex(Type $offsetType): ?int
+	{
+		if (!$offsetType->isConstantScalarValue()->yes()) {
+			return null;
+		}
+
+		$value = $offsetType->getConstantScalarValues()[0] ?? null;
+		if (!is_int($value) && !is_string($value)) {
+			return null;
+		}
+
+		$index = $this->getKeyIndexMap()[$value] ?? null;
+		if ($index === null || !$this->keyTypes[$index]->isSuperTypeOf($offsetType)->yes()) {
+			return null;
+		}
+
+		return $index;
 	}
 
 	/**

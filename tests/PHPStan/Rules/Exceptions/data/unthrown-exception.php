@@ -790,3 +790,51 @@ class TestIntdivWithRange
 	}
 
 }
+
+class TestReflectionClassConstant
+{
+	public const FOO = 1;
+
+	public function doFoo(): void
+	{
+		try {
+			new \ReflectionClassConstant(self::class, 'FOO');
+		} catch (\Exception $e) {
+
+		}
+	}
+
+	public function doBar(): void
+	{
+		try {
+			new \ReflectionClassConstant(self::class, 'BAR');
+		} catch (\Exception $e) {
+
+		}
+		try {
+			new \ReflectionClassConstant(\DateTime::class, 'BAR');
+		} catch (\Exception $e) {
+
+		}
+	}
+
+	public function doBaz(string $string): void
+	{
+		try {
+			new \ReflectionClassConstant($string, $string);
+		} catch (\Exception $e) {
+
+		}
+		try {
+			new \ReflectionClassConstant(self::class, $string);
+		} catch (\Exception $e) {
+
+		}
+		try {
+			new \ReflectionClassConstant($string, 'FOO');
+		} catch (\Exception $e) {
+
+		}
+	}
+
+}

@@ -31,31 +31,7 @@ class CallToMethodStatementWithoutSideEffectsRuleTest extends RuleTestCase
 		);
 	}
 
-	#[RequiresPhp('>= 8.0.0')]
 	public function testRule(): void
-	{
-		$this->analyse([__DIR__ . '/data/method-call-statement-no-side-effects.php'], [
-			[
-				'Call to method DateTimeImmutable::modify() on a separate line has no effect.',
-				15,
-			],
-			[
-				'Call to method Exception::getCode() on a separate line has no effect.',
-				21,
-			],
-			[
-				'Call to method MethodCallStatementNoSideEffects\Bar::doPure() on a separate line has no effect.',
-				63,
-			],
-			[
-				'Call to method MethodCallStatementNoSideEffects\Bar::doPureWithThrowsVoid() on a separate line has no effect.',
-				64,
-			],
-		]);
-	}
-
-	#[RequiresPhp('< 8.0.0')]
-	public function testRulePhp7(): void
 	{
 		$this->analyse([__DIR__ . '/data/method-call-statement-no-side-effects.php'], [
 			[

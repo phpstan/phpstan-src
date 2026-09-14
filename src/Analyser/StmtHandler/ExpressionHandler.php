@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser\StmtHandler;
 
+use Error;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt;
@@ -22,6 +23,7 @@ use PHPStan\Node\NoopExpressionNode;
 use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Node\VariableAssignNode;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\ObjectType;
 use function array_filter;
 use function count;
 
@@ -73,7 +75,11 @@ final class ExpressionHandler implements StmtHandler
 		}
 
 		$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $entryScope, $storage);
-		$throwPoints = array_filter($result->getThrowPoints(), static fn ($throwPoint) => $throwPoint->isExplicit());
+		// Errors signal programmer mistakes (ValueError, TypeError, DivisionByZeroError...),
+		// nobody calls an otherwise pure expression just to have them thrown, so they
+		// do not make the expression statement meaningful.
+		$errorType = new ObjectType(Error::class);
+		$throwPoints = array_filter($result->getThrowPoints(), static fn ($throwPoint) => $throwPoint->isExplicit() && !$errorType->isSuperTypeOf($throwPoint->getType())->yes());
 		if (
 			count($result->getImpurePoints()) === 0
 			&& count($throwPoints) === 0

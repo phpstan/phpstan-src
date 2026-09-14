@@ -6275,6 +6275,272 @@ $templateMapView = static fn (\PHPStan\Type\Generic\TemplateTypeMap $map) => arr
 }
 
 
+// ---- UnresolvableTypeHelper ----
+// getUnresolvableType() over types with an ErrorType or an implicit
+// NeverType somewhere inside (unions, arrays, generics, callables and
+// closures built from the shadowed classes — the traversal is the native
+// TypeTraverser's on both sides, the callback the twin's closure on one
+// and the native body on the other): null or the distinct reasons, in
+// order of first occurrence; the explicit never, a plain type and an
+// intersection give null
+$observations['native ' . \PHPStan\Rules\PhpDoc\UnresolvableTypeHelper::class] = (new ReflectionMethod(\PHPStan\Rules\PhpDoc\UnresolvableTypeHelper::class, 'getUnresolvableType'))->isInternal();
+{
+	$r = [];
+	$helper = new \PHPStan\Rules\PhpDoc\UnresolvableTypeHelper();
+	$int = new \PHPStan\Type\IntegerType();
+	$string = new \PHPStan\Type\StringType();
+	$errorParameter = new \PHPStan\Reflection\Native\NativeParameterReflection('e', false, new \PHPStan\Type\ErrorType('param'), \PHPStan\Reflection\PassedByReference::createNo(), false, null);
+	$subjects = [
+		'int' => $int,
+		'error' => new \PHPStan\Type\ErrorType(),
+		'errorReason' => new \PHPStan\Type\ErrorType('bad'),
+		'never' => new \PHPStan\Type\NeverType(),
+		'neverReason' => new \PHPStan\Type\NeverType(false, 'why'),
+		'explicitNever' => new \PHPStan\Type\NeverType(true),
+		'explicitNeverReason' => new \PHPStan\Type\NeverType(true, 'ignored'),
+		'nonAcceptingNever' => new \PHPStan\Type\NonAcceptingNeverType(),
+		'unionWithError' => new \PHPStan\Type\UnionType([$int, new \PHPStan\Type\ErrorType('u')]),
+		'arrayOfNever' => new \PHPStan\Type\ArrayType($int, new \PHPStan\Type\NeverType(false, 'v')),
+		'genericWithErrors' => new \PHPStan\Type\Generic\GenericObjectType(\ArrayObject::class, [new \PHPStan\Type\ErrorType('g'), new \PHPStan\Type\NeverType(false, 'g2')]),
+		'duplicateReasons' => new \PHPStan\Type\UnionType([new \PHPStan\Type\ErrorType('dup'), new \PHPStan\Type\ArrayType($int, new \PHPStan\Type\ErrorType('dup')), new \PHPStan\Type\ErrorType('other'), new \PHPStan\Type\NeverType(false, 'dup')]),
+		'nested' => new \PHPStan\Type\ArrayType(new \PHPStan\Type\ErrorType('k'), new \PHPStan\Type\UnionType([new \PHPStan\Type\NeverType(false, 'n'), $int])),
+		'nullReasonMix' => new \PHPStan\Type\UnionType([new \PHPStan\Type\ErrorType(), new \PHPStan\Type\ErrorType('x'), new \PHPStan\Type\NeverType()]),
+		'callable' => new \PHPStan\Type\CallableType([$errorParameter], new \PHPStan\Type\NeverType(false, 'ret'), false),
+		'closure' => new \PHPStan\Type\ClosureType([$errorParameter], new \PHPStan\Type\ErrorType('closure'), false),
+		'intersection' => new \PHPStan\Type\IntersectionType([new \PHPStan\Type\ArrayType($int, $int), new \PHPStan\Type\Accessory\NonEmptyArrayType()]),
+		'constantArray' => new \PHPStan\Type\Constant\ConstantArrayType([new \PHPStan\Type\Constant\ConstantStringType('a')], [new \PHPStan\Type\ErrorType('shape')]),
+		'circularAlias' => new \PHPStan\Type\CircularTypeAliasErrorType(),
+	];
+	foreach ($subjects as $name => $subject) {
+		$result = $helper->getUnresolvableType($subject);
+		$r[$name] = $result === null ? null : [get_class($result), $result->reasons];
+	}
+	foreach ($r as $key => $value) {
+		$observations["unresolvable type helper $key"] = $value;
+	}
+}
+
+// ---- NativeParameterReflection ----
+// The value class over a parameter's name, optionality, type, by-reference
+// mode, variadicness and default: the getters, toOptional() (identity for
+// an optional parameter), union() (both optional / both variadic, the
+// union of the types, the combined by-reference mode, this default only
+// when both are optional), named arguments, and the errors of an
+// unconstructed instance and of a wrong union() operand
+$observations['native ' . \PHPStan\Reflection\Native\NativeParameterReflection::class] = (new ReflectionMethod(\PHPStan\Reflection\Native\NativeParameterReflection::class, 'getName'))->isInternal();
+$viewParameter = static function (\PHPStan\Reflection\ParameterReflection $p) use ($view): array {
+	$byRef = $p->passedByReference();
+	$r = [get_class($p), $p->getName(), $p->isOptional(), $view($p->getType()), [$byRef->no(), $byRef->yes(), $byRef->createsNewVariable()], $p->isVariadic(), $view($p->getDefaultValue())];
+	if ($p instanceof \PHPStan\Reflection\ExtendedParameterReflection) {
+		$r[] = [$view($p->getNativeType()), $view($p->getPhpDocType()), $view($p->getOutType()), $view($p->isImmediatelyInvokedCallable()), $view($p->getClosureThisType()), count($p->getAttributes()), $p->getAllowedConstants() === null ? null : get_class($p->getAllowedConstants()), $view($p->isPureUnlessCallableIsImpureParameter()), $p->hasNativeType()];
+	}
+	return $r;
+};
+{
+	$r = [];
+	$int = new \PHPStan\Type\IntegerType();
+	$string = new \PHPStan\Type\StringType();
+	$parameters = [
+		'required' => new \PHPStan\Reflection\Native\NativeParameterReflection('a', false, $int, \PHPStan\Reflection\PassedByReference::createNo(), false, null),
+		'optional' => new \PHPStan\Reflection\Native\NativeParameterReflection('a', true, $string, \PHPStan\Reflection\PassedByReference::createReadsArgument(), false, new \PHPStan\Type\Constant\ConstantStringType('x')),
+		'variadic' => new \PHPStan\Reflection\Native\NativeParameterReflection('rest', true, new \PHPStan\Type\UnionType([$int, $string]), \PHPStan\Reflection\PassedByReference::createCreatesNewVariable(), true, null),
+		'named' => new \PHPStan\Reflection\Native\NativeParameterReflection(defaultValue: new \PHPStan\Type\NullType(), variadic: false, passedByReference: \PHPStan\Reflection\PassedByReference::createNo(), type: new \PHPStan\Type\MixedType(), optional: true, name: 'n'),
+	];
+	foreach ($parameters as $name => $parameter) {
+		$r["$name getters"] = $viewParameter($parameter);
+		$optional = $parameter->toOptional();
+		$r["$name toOptional"] = [$viewParameter($optional), $optional === $parameter, $optional->toOptional() === $optional];
+		foreach ($parameters as $otherName => $other) {
+			$r["$name union $otherName"] = $viewParameter($parameter->union($other));
+		}
+	}
+	$raw = (new \ReflectionClass(\PHPStan\Reflection\Native\NativeParameterReflection::class))->newInstanceWithoutConstructor();
+	foreach (['getName', 'isOptional', 'getType', 'passedByReference', 'isVariadic', 'getDefaultValue', 'toOptional'] as $method) {
+		try {
+			$raw->$method();
+			$r["unconstructed $method"] = 'no error';
+		} catch (\Error $e) {
+			$r["unconstructed $method"] = [get_class($e), $e->getMessage()];
+		}
+	}
+	try {
+		$parameters['required']->union($raw);
+		$r['union unconstructed'] = 'no error';
+	} catch (\Error $e) {
+		$r['union unconstructed'] = [get_class($e), $e->getMessage()];
+	}
+	try {
+		$parameters['required']->union(new \PHPStan\Reflection\Php\DummyParameter('d', $int, false, null, false, null));
+		$r['union wrong class'] = 'no error';
+	} catch (\TypeError $e) {
+		// the userland twin's message names the call site (", called in ... on
+		// line N"), the internal one does not
+		$r['union wrong class'] = [get_class($e), preg_replace('~, called in .+ on line \d+$~', '', $e->getMessage())];
+	}
+	foreach ($r as $key => $value) {
+		$observations["native parameter reflection $key"] = $value;
+	}
+}
+
+// ---- CalledOnTypeUnresolvedMethodPrototypeReflection / CalledOnTypeUnresolvedPropertyPrototypeReflection / CallbackUnresolvedMethodPrototypeReflection / CallbackUnresolvedPropertyPrototypeReflection ----
+// The lazy member prototypes over the fixture's methods and properties
+// (static / $this / static<U> return types, static parameters, self-out,
+// asserts, out and closure-this types, a template-typed property), each
+// transformed for a set of called-on types on the CalledOnType side and
+// through a static-rewriting or the identity callback on the Callback
+// side, with and without resolving the template map to bounds: the
+// transformed member (its variants, parameters, self-out, throw type and
+// asserts), the memoization identities, the doNotResolve... and with...
+// derivatives, and the errors of unconstructed instances
+foreach ([\PHPStan\Reflection\Type\CalledOnTypeUnresolvedMethodPrototypeReflection::class => 'getTransformedMethod', \PHPStan\Reflection\Type\CalledOnTypeUnresolvedPropertyPrototypeReflection::class => 'getTransformedProperty', \PHPStan\Reflection\Type\CallbackUnresolvedMethodPrototypeReflection::class => 'getTransformedMethod', \PHPStan\Reflection\Type\CallbackUnresolvedPropertyPrototypeReflection::class => 'getTransformedProperty'] as $prototypeClass => $prototypeMethod) {
+	$observations['native ' . $prototypeClass] = (new ReflectionMethod($prototypeClass, $prototypeMethod))->isInternal();
+}
+require_once __DIR__ . '/type-family-prototype-fixture.php';
+{
+	$r = [];
+	$int = new \PHPStan\Type\IntegerType();
+	$string = new \PHPStan\Type\StringType();
+	$fixture = $stringReflectionProvider->getClass(\PHPStanTurboTests\PrototypeFixture::class);
+	$subFixture = $stringReflectionProvider->getClass(\PHPStanTurboTests\PrototypeSubFixture::class);
+	$genericFixture = $stringReflectionProvider->getClass(\PHPStanTurboTests\PrototypeFixture::class)->withTypes([$int]);
+	$calledOnTypes = [
+		'object' => new \PHPStan\Type\ObjectType(\PHPStanTurboTests\PrototypeFixture::class),
+		'sub' => new \PHPStan\Type\ObjectType(\PHPStanTurboTests\PrototypeSubFixture::class),
+		'generic' => new \PHPStan\Type\Generic\GenericObjectType(\PHPStanTurboTests\PrototypeFixture::class, [$int]),
+		'static' => new \PHPStan\Type\StaticType($fixture),
+		'this' => new \PHPStan\Type\ThisType($subFixture),
+		'genericStatic' => new \PHPStan\Type\Generic\GenericStaticType($fixture, [$string], null, []),
+		'union' => new \PHPStan\Type\UnionType([new \PHPStan\Type\ObjectType(\PHPStanTurboTests\PrototypeFixture::class), new \PHPStan\Type\ObjectType(\PHPStanTurboTests\PrototypeSubFixture::class)]),
+	];
+	$viewVariant = static function (\PHPStan\Reflection\ParametersAcceptor $v) use ($view, $viewParameter): array {
+		$r = ['class' => get_class($v), 'return' => $view($v->getReturnType()), 'variadic' => $v->isVariadic(), 'templateTypeMap' => $view($v->getTemplateTypeMap()), 'resolvedTemplateTypeMap' => $view($v->getResolvedTemplateTypeMap()), 'parameters' => array_map($viewParameter, $v->getParameters())];
+		if ($v instanceof \PHPStan\Reflection\ExtendedParametersAcceptor) {
+			$r['phpDocReturn'] = $view($v->getPhpDocReturnType());
+			$r['nativeReturn'] = $view($v->getNativeReturnType());
+			$r['callSiteVarianceMap'] = get_class($v->getCallSiteVarianceMap());
+		}
+		return $r;
+	};
+	$viewMethod = static function (\PHPStan\Reflection\ExtendedMethodReflection $m) use ($view, $viewVariant): array {
+		return [
+			'class' => get_class($m),
+			'name' => $m->getName(),
+			'declaringClass' => $m->getDeclaringClass()->getName(),
+			'variants' => array_map($viewVariant, $m->getVariants()),
+			'namedArgumentsVariants' => $m->getNamedArgumentsVariants() === null ? null : array_map($viewVariant, $m->getNamedArgumentsVariants()),
+			'selfOut' => $view($m->getSelfOutType()),
+			'throw' => $view($m->getThrowType()),
+			'asserts' => array_map(static fn (\PHPStan\PhpDoc\Tag\AssertTag $tag): array => [$tag->getIf(), $tag->getParameter()->describe(), $view($tag->getType()), $tag->isNegated(), $tag->isEquality()], $m->getAsserts()->getAll()),
+			'assertsIfTrue' => count($m->getAsserts()->getAssertsIfTrue()),
+		];
+	};
+	$viewProperty = static function (\PHPStan\Reflection\ExtendedPropertyReflection $p) use ($view): array {
+		return [get_class($p), $p->getName(), $p->getDeclaringClass()->getName(), $view($p->getReadableType()), $view($p->getWritableType()), $view($p->getPhpDocType()), $view($p->getNativeType()), $p->isStatic(), $p->isPublic()];
+	};
+	$staticRewriter = static fn (\PHPStan\Type\Type $to): \Closure => static fn (\PHPStan\Type\Type $type): \PHPStan\Type\Type => \PHPStan\Type\TypeTraverser::map($type, static fn (\PHPStan\Type\Type $type, callable $traverse): \PHPStan\Type\Type => $type instanceof \PHPStan\Type\StaticType ? $to : $traverse($type));
+	$identity = static fn (\PHPStan\Type\Type $type): \PHPStan\Type\Type => $type;
+	// a userland function's argument TypeError names the call site (", called
+	// in ... on line N"), an internal function's does not: the message compared
+	// without it
+	$catching = static function (callable $fn): mixed {
+		try {
+			return $fn();
+		} catch (\Throwable $e) {
+			return [get_class($e), preg_replace('~, called in .+ on line \d+$~', '', $e->getMessage())];
+		}
+	};
+	foreach (['returnsStatic', 'returnsThis', 'takesStatic', 'withValue', 'assertStatic', 'get', 'each', 'fails'] as $methodName) {
+		$method = $fixture->getNativeMethod($methodName);
+		$genericMethod = $genericFixture->getNativeMethod($methodName);
+		foreach ($calledOnTypes as $calledOnName => $calledOnType) {
+			foreach ([true, false] as $resolveToBounds) {
+				$key = "$methodName $calledOnName " . ($resolveToBounds ? 'bounds' : 'nobounds');
+				foreach (['plain' => [$method, $fixture], 'generic' => [$genericMethod, $genericFixture]] as $declaringName => [$declaringMethod, $declaringClass]) {
+					$prototype = new \PHPStan\Reflection\Type\CalledOnTypeUnresolvedMethodPrototypeReflection($declaringMethod, $declaringClass, $resolveToBounds, $calledOnType);
+					$transformed = $catching(static fn () => $prototype->getTransformedMethod());
+					$r["calledOnType $declaringName $key"] = [
+						is_object($transformed) ? $viewMethod($transformed) : $transformed,
+						$catching(static fn () => $prototype->getTransformedMethod() === $prototype->getTransformedMethod()),
+						$prototype->getNakedMethod() === $declaringMethod,
+					];
+					$doNotResolve = $prototype->doNotResolveTemplateTypeMapToBounds();
+					$r["calledOnType $declaringName $key doNotResolve"] = [get_class($doNotResolve), $doNotResolve === $prototype->doNotResolveTemplateTypeMapToBounds(), $doNotResolve->doNotResolveTemplateTypeMapToBounds() === $doNotResolve, $catching(static fn () => $viewMethod($doNotResolve->getTransformedMethod()))];
+					$with = $prototype->withCalledOnType($calledOnTypes['sub']);
+					$r["calledOnType $declaringName $key withCalledOnType"] = [get_class($with), $with === $prototype, $catching(static fn () => $viewMethod($with->getTransformedMethod()))];
+				}
+				foreach (['rewrite' => $staticRewriter($calledOnType), 'identity' => $identity] as $callbackName => $callback) {
+					$prototype = new \PHPStan\Reflection\Type\CallbackUnresolvedMethodPrototypeReflection($method, $fixture, $resolveToBounds, $callback);
+					$transformed = $catching(static fn () => $prototype->getTransformedMethod());
+					$r["callback $callbackName $key"] = [
+						is_object($transformed) ? $viewMethod($transformed) : $transformed,
+						$catching(static fn () => $prototype->getTransformedMethod() === $prototype->getTransformedMethod()),
+						$prototype->getNakedMethod() === $method,
+					];
+					$doNotResolve = $prototype->doNotResolveTemplateTypeMapToBounds();
+					$r["callback $callbackName $key doNotResolve"] = [get_class($doNotResolve), $doNotResolve === $prototype->doNotResolveTemplateTypeMapToBounds(), $catching(static fn () => $viewMethod($doNotResolve->getTransformedMethod()))];
+					$with = $prototype->withCalledOnType($calledOnTypes['generic']);
+					$r["callback $callbackName $key withCalledOnType"] = [get_class($with), $catching(static fn () => $viewMethod($with->getTransformedMethod()))];
+				}
+			}
+		}
+	}
+	foreach (['sibling', 'value'] as $propertyName) {
+		$property = $fixture->getNativeProperty($propertyName);
+		$genericProperty = $genericFixture->getNativeProperty($propertyName);
+		foreach ($calledOnTypes as $calledOnName => $calledOnType) {
+			foreach ([true, false] as $resolveToBounds) {
+				$key = "$propertyName $calledOnName " . ($resolveToBounds ? 'bounds' : 'nobounds');
+				foreach (['plain' => [$property, $fixture], 'generic' => [$genericProperty, $genericFixture]] as $declaringName => [$declaringProperty, $declaringClass]) {
+					$prototype = new \PHPStan\Reflection\Type\CalledOnTypeUnresolvedPropertyPrototypeReflection($declaringProperty, $declaringClass, $resolveToBounds, $calledOnType);
+					$transformed = $catching(static fn () => $prototype->getTransformedProperty());
+					$r["calledOnType property $declaringName $key"] = [
+						is_object($transformed) ? $viewProperty($transformed) : $transformed,
+						$catching(static fn () => $prototype->getTransformedProperty() === $prototype->getTransformedProperty()),
+						$prototype->getNakedProperty() === $declaringProperty,
+					];
+					$doNotResolve = $prototype->doNotResolveTemplateTypeMapToBounds();
+					$r["calledOnType property $declaringName $key doNotResolve"] = [get_class($doNotResolve), $doNotResolve === $prototype->doNotResolveTemplateTypeMapToBounds(), $catching(static fn () => $viewProperty($doNotResolve->getTransformedProperty()))];
+					$with = $prototype->withFechedOnType($calledOnTypes['sub']);
+					$r["calledOnType property $declaringName $key withFechedOnType"] = [get_class($with), $with === $prototype, $catching(static fn () => $viewProperty($with->getTransformedProperty()))];
+				}
+				foreach (['rewrite' => $staticRewriter($calledOnType), 'identity' => $identity] as $callbackName => $callback) {
+					$prototype = new \PHPStan\Reflection\Type\CallbackUnresolvedPropertyPrototypeReflection($property, $fixture, $resolveToBounds, $callback);
+					$transformed = $catching(static fn () => $prototype->getTransformedProperty());
+					$r["callback property $callbackName $key"] = [
+						is_object($transformed) ? $viewProperty($transformed) : $transformed,
+						$catching(static fn () => $prototype->getTransformedProperty() === $prototype->getTransformedProperty()),
+						$prototype->getNakedProperty() === $property,
+					];
+					$doNotResolve = $prototype->doNotResolveTemplateTypeMapToBounds();
+					$r["callback property $callbackName $key doNotResolve"] = [get_class($doNotResolve), $doNotResolve === $prototype->doNotResolveTemplateTypeMapToBounds(), $catching(static fn () => $viewProperty($doNotResolve->getTransformedProperty()))];
+					$with = $prototype->withFechedOnType($calledOnTypes['generic']);
+					$r["callback property $callbackName $key withFechedOnType"] = [get_class($with), $catching(static fn () => $viewProperty($with->getTransformedProperty()))];
+				}
+			}
+		}
+	}
+	// a callback returning a non-Type, a non-callable constructor argument,
+	// unconstructed instances
+	$badCallback = static fn (\PHPStan\Type\Type $type): string => 'nope';
+	$badPrototype = new \PHPStan\Reflection\Type\CallbackUnresolvedMethodPrototypeReflection($fixture->getNativeMethod('returnsStatic'), $fixture, true, $badCallback);
+	$r['callback returning a string'] = $catching(static fn () => $badPrototype->getTransformedMethod());
+	$badPropertyPrototype = new \PHPStan\Reflection\Type\CallbackUnresolvedPropertyPrototypeReflection($fixture->getNativeProperty('sibling'), $fixture, true, $badCallback);
+	$r['callback property returning a string'] = $catching(static fn () => $badPropertyPrototype->getTransformedProperty());
+	foreach ([\PHPStan\Reflection\Type\CallbackUnresolvedMethodPrototypeReflection::class => $fixture->getNativeMethod('get'), \PHPStan\Reflection\Type\CallbackUnresolvedPropertyPrototypeReflection::class => $fixture->getNativeProperty('value')] as $callbackClass => $member) {
+		$r["$callbackClass not callable"] = $catching(static fn () => new $callbackClass($member, $fixture, true, 'no such function'));
+	}
+	foreach ([\PHPStan\Reflection\Type\CalledOnTypeUnresolvedMethodPrototypeReflection::class => ['getNakedMethod', 'getTransformedMethod', 'doNotResolveTemplateTypeMapToBounds', 'withCalledOnType'], \PHPStan\Reflection\Type\CalledOnTypeUnresolvedPropertyPrototypeReflection::class => ['getNakedProperty', 'getTransformedProperty', 'doNotResolveTemplateTypeMapToBounds', 'withFechedOnType'], \PHPStan\Reflection\Type\CallbackUnresolvedMethodPrototypeReflection::class => ['getNakedMethod', 'getTransformedMethod', 'doNotResolveTemplateTypeMapToBounds', 'withCalledOnType'], \PHPStan\Reflection\Type\CallbackUnresolvedPropertyPrototypeReflection::class => ['getNakedProperty', 'getTransformedProperty', 'doNotResolveTemplateTypeMapToBounds', 'withFechedOnType']] as $prototypeClass => $methods) {
+		$raw = (new \ReflectionClass($prototypeClass))->newInstanceWithoutConstructor();
+		foreach ($methods as $rawMethod) {
+			$r["$prototypeClass unconstructed $rawMethod"] = $catching(static fn () => $raw->$rawMethod(...(str_starts_with($rawMethod, 'with') ? [$int] : [])));
+		}
+	}
+	foreach ($r as $key => $value) {
+		$observations["unresolved prototype reflections $key"] = $value;
+	}
+}
+
+
 // observations holding bytes that are not UTF-8 (the invalid-UTF-8 subject's
 // descriptions) go out base64-encoded so json_encode() keeps every byte; the
 // non-finite floats (the NAN and infinity subjects' values) as their names

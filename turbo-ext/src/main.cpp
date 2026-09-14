@@ -282,6 +282,12 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_callable_type_helper();
 	pt_register_get_template_type_type();
 	pt_register_lru_cache();
+	pt_register_unresolvable_type_helper();
+	pt_register_native_parameter_reflection();
+	pt_register_called_on_type_unresolved_method_prototype_reflection();
+	pt_register_called_on_type_unresolved_property_prototype_reflection();
+	pt_register_callback_unresolved_method_prototype_reflection();
+	pt_register_callback_unresolved_property_prototype_reflection();
 
 	return SUCCESS;
 }
@@ -309,6 +315,7 @@ static PHP_RINIT_FUNCTION(phpstan_turbo)
 	pt_object_type_rinit();
 	pt_static_type_factory_rinit();
 	pt_class_reflection_access_rinit();
+	pt_reflection_access_rinit();
 
 	return SUCCESS;
 }

@@ -9,8 +9,10 @@ use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\NamespaceAnswerer;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use function strtolower;
 
+#[ReferencedByTurboExtension(key: 'memoizingReflectionProvider')]
 final class MemoizingReflectionProvider implements ReflectionProvider
 {
 

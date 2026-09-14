@@ -1359,6 +1359,40 @@ zv::Val pt_is_super_type_of_result_spread(zend_object *self, bool isAnd, HashTab
 zv::Val pt_is_super_type_of_result_extreme_identity_spread(HashTable *args);
 zv::Val pt_accepts_result_extreme_identity_spread(HashTable *args);
 
+/* {{{ helpers of the unresolved prototype reflections
+ * (CalledOnTypeUnresolved{Method,Property}PrototypeReflection.cpp,
+ * CallbackUnresolved{Method,Property}PrototypeReflection.cpp) */
+
+namespace phpstanturbo {
+
+/* a prototype's transformStaticType($type): fn over its context (the
+ * prototype object, whose slots the body reads); UNDEF = pending exception */
+struct PrototypeTransformer
+{
+	zv::Val (*fn)(void *context, zval *type);
+	void *context;
+	zv::Val transform(zval *type) const { return fn(context, type); }
+};
+
+/* whose body: the CalledOnType twins transform every type, the Callback
+ * twins reuse a transformed type for one equal to it */
+enum PrototypeKind : uint8_t
+{
+	PT_PROTOTYPE_CALLED_ON_TYPE,
+	PT_PROTOTYPE_CALLBACK,
+};
+
+} // namespace phpstanturbo
+
+/* the body of getTransformedMethod() / getTransformedProperty() after the
+ * memo miss: new Resolved{Method,Property}Reflection(transform…WithStaticType(
+ * $resolvedDeclaringClass, $member), the declaring class's active template
+ * type map (resolved to bounds when asked), its call-site variance map);
+ * $assertsCallback is the callable Assertions::mapTypes() receives (methods
+ * only); UNDEF = pending exception */
+zv::Val pt_prototype_resolved_method(phpstanturbo::PrototypeKind kind, const phpstanturbo::PrototypeTransformer &transformer, zend_object *resolvedDeclaringClass, zend_object *method, bool resolveTemplateTypeMapToBounds, zval *assertsCallback);
+zv::Val pt_prototype_resolved_property(phpstanturbo::PrototypeKind kind, const phpstanturbo::PrototypeTransformer &transformer, zend_object *resolvedDeclaringClass, zend_object *property, bool resolveTemplateTypeMapToBounds);
+
 /* }}} */
 
 #endif /* PHPSTANTURBO_TYPETRAITS_H */

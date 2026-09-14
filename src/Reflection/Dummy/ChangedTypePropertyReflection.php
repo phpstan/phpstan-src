@@ -7,8 +7,10 @@ use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\WrapperPropertyReflection;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Type;
 
+#[ReferencedByTurboExtension(key: 'changedTypePropertyReflection')]
 final class ChangedTypePropertyReflection implements WrapperPropertyReflection
 {
 

@@ -1672,10 +1672,10 @@ void pt_type_trait_object(reg::Class &cls)
 		if (zv::ArrRef(classNames.raw()).size() == 1) {
 			zval *className = zend_hash_index_find(zv::ArrRef(classNames.raw()).table(), 0);
 			if (className != NULL) {
-				zv::Val hasClass = pt_type_call(Z_OBJ_P(reflectionProvider), PT_LC("hasclass"), 1, className);
+				zv::Val hasClass = pt_reflection_provider_has_class_zv(Z_OBJ_P(reflectionProvider), className);
 				if (UNEXPECTED(hasClass.isUndef())) RETURN_THROWS();
 				if (zend_is_true(hasClass.raw())) {
-					zv::Val reflection = pt_type_call(Z_OBJ_P(reflectionProvider), PT_LC("getclass"), 1, className);
+					zv::Val reflection = pt_reflection_provider_get_class(Z_OBJ_P(reflectionProvider), className);
 					if (UNEXPECTED(reflection.isUndef())) RETURN_THROWS();
 					if (UNEXPECTED(!zv::Ref(reflection.raw()).isObject())) {
 						zend_type_error("phpstan_turbo: getClass() must return an object");
@@ -1860,7 +1860,7 @@ zv::Val pt_type_dummy_unresolved_prototype(bool isMethod, zval *name)
 	if (UNEXPECTED(declaringClass.isUndef())) return zv::Val();
 	zv::Val callback = pt_type_identity_callback();
 	zv::Args args{member.raw(), declaringClass.raw(), false, callback.raw()};
-	return pt_type_new(isMethod ? PT_CLASS_CALLBACK_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION : PT_CLASS_CALLBACK_UNRESOLVED_PROPERTY_PROTOTYPE_REFLECTION, 4, args);
+	return (isMethod ? pt_callback_unresolved_method_prototype_reflection_new(4, args) : pt_callback_unresolved_property_prototype_reflection_new(4, args));
 }
 
 zv::Val pt_type_transformed_member(zend_object *self, const char *prototypeLcname, size_t prototypeLen, bool isMethod, zval *name, zval *scope)
@@ -2377,7 +2377,7 @@ static zv::Val maybeObjectUnresolvedPrototype(bool isMethod, zval *name)
 	if (UNEXPECTED(declaringClass.isUndef())) return zv::Val();
 	zv::Val callback = pt_type_identity_callback();
 	zv::Args args{member.raw(), declaringClass.raw(), false, callback.raw()};
-	return pt_type_new(isMethod ? PT_CLASS_CALLBACK_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION : PT_CLASS_CALLBACK_UNRESOLVED_PROPERTY_PROTOTYPE_REFLECTION, 4, args);
+	return pt_type_new_ce(isMethod ? pt_ce_callback_unresolved_method_prototype_reflection : pt_ce_callback_unresolved_property_prototype_reflection, 4, args);
 }
 
 static void pt_maybe_object_unresolved_prototype(INTERNAL_FUNCTION_PARAMETERS, bool isMethod)
@@ -2388,6 +2388,14 @@ static void pt_maybe_object_unresolved_prototype(INTERNAL_FUNCTION_PARAMETERS, b
 	zval nameZv;
 	ZVAL_STR(&nameZv, name);
 	PT_RETURN_VAL(maybeObjectUnresolvedPrototype(isMethod, &nameZv));
+
+	zv::Val member = pt_type_new(isMethod ? PT_CLASS_DUMMY_METHOD_REFLECTION : PT_CLASS_DUMMY_PROPERTY_REFLECTION, 1, &nameZv);
+	if (UNEXPECTED(member.isUndef())) RETURN_THROWS();
+	zv::Val declaringClass = pt_type_call(Z_OBJ_P(member.raw()), PT_LC("getdeclaringclass"), 0, NULL);
+	if (UNEXPECTED(declaringClass.isUndef())) RETURN_THROWS();
+	zv::Val callback = pt_type_identity_callback();
+	zv::Args args{member.raw(), declaringClass.raw(), false, callback.raw()};
+	PT_RETURN_VAL((isMethod ? pt_callback_unresolved_method_prototype_reflection_new(4, args) : pt_callback_unresolved_property_prototype_reflection_new(4, args)));
 }
 
 /* $this->getUnresolved*Prototype($name, $scope)->getTransformedProperty() /
@@ -3186,7 +3194,7 @@ zv::Val pt_callable_infer_template_types_on_acceptors(zend_object *self, pt_call
 static zv::Val pt_callable_new_native_parameter(zval *name, zval *optional, zval *type, zval *passedByReference, zval *variadic, zval *defaultValue)
 {
 	zv::Args args{name, optional, type, passedByReference, variadic, defaultValue};
-	return pt_type_new(PT_CLASS_NATIVE_PARAMETER_REFLECTION, 6, args);
+	return pt_native_parameter_reflection_new(6, args);
 }
 
 zv::Val pt_callable_traverse_parameters(zval *parameters, zend_fcall_info *fci, zend_fcall_info_cache *fcc)
@@ -4447,10 +4455,10 @@ public:
 		if (zv::ArrRef(classNames.raw()).size() == 1) {
 			zv::Ref className = zv::ArrRef(classNames.raw()).findIndex(0);
 			if (className.raw() != NULL && className.isString()) {
-				zv::Val hasClass = pt_type_call(Z_OBJ_P(reflectionProvider), PT_LC("hasclass"), 1, className.raw());
+				zv::Val hasClass = pt_reflection_provider_has_class_zv(Z_OBJ_P(reflectionProvider), className.raw());
 				if (UNEXPECTED(hasClass.isUndef())) return zv::Val();
 				if (zend_is_true(hasClass.raw())) {
-					zv::Val reflection = pt_type_call(Z_OBJ_P(reflectionProvider), PT_LC("getclass"), 1, className.raw());
+					zv::Val reflection = pt_reflection_provider_get_class(Z_OBJ_P(reflectionProvider), className.raw());
 					if (UNEXPECTED(reflection.isUndef())) return zv::Val();
 					if (UNEXPECTED(!zv::Ref(reflection.raw()).isObject())) {
 						zend_type_error("phpstan_turbo: ReflectionProvider::getClass() must return an object");
@@ -4996,6 +5004,362 @@ void pt_type_trait_template_type(reg::Class &cls)
 		RETURN_TRUE;
 	});
 	cls.traitOp(PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, PT_OP_LAMBDA { return zv::Val::boolean(true); });
+}
+
+/* }}} */
+
+/* {{{ helpers of the unresolved prototype reflections
+ * (CalledOnTypeUnresolved{Method,Property}PrototypeReflection.cpp,
+ * CallbackUnresolved{Method,Property}PrototypeReflection.cpp) */
+
+using phpstanturbo::PrototypeKind;
+using phpstanturbo::PrototypeTransformer;
+
+namespace {
+
+/* what a reflection getter's declared return type allows */
+enum ProtoReturn : uint8_t
+{
+	PROTO_ANY,
+	PROTO_OBJECT,
+	PROTO_OBJECT_OR_NULL,
+	PROTO_ARRAY,
+	PROTO_ARRAY_OR_NULL,
+};
+
+/* $object->method() with the twin's declared return type held (a PHP
+ * implementation's is checked by the engine on return); UNDEF = pending
+ * exception */
+zv::Val protoCall(zend_object *object, const char *lcname, size_t len, ProtoReturn expected)
+{
+	zv::Val result = pt_type_call(object, lcname, len, 0, NULL);
+	if (UNEXPECTED(result.isUndef())) return result;
+	zend_uchar type = Z_TYPE_P(result.raw());
+	bool ok;
+	const char *expectedName;
+	switch (expected) {
+		case PROTO_OBJECT:
+			ok = type == IS_OBJECT;
+			expectedName = "an object";
+			break;
+		case PROTO_OBJECT_OR_NULL:
+			ok = type == IS_OBJECT || type == IS_NULL;
+			expectedName = "an object or null";
+			break;
+		case PROTO_ARRAY:
+			ok = type == IS_ARRAY;
+			expectedName = "an array";
+			break;
+		case PROTO_ARRAY_OR_NULL:
+			ok = type == IS_ARRAY || type == IS_NULL;
+			expectedName = "an array or null";
+			break;
+		default:
+			ok = true;
+			expectedName = "";
+			break;
+	}
+	if (UNEXPECTED(!ok)) {
+		zend_type_error("phpstan_turbo: %s::%s() must return %s, %s returned", ZSTR_VAL(object->ce->name), lcname, expectedName, zend_zval_value_name(result.raw()));
+		return zv::Val();
+	}
+	return result;
+}
+
+/* $a->equals($b); -1 = pending exception */
+int protoEquals(zval *a, zval *b)
+{
+	zv::Val result = pt_type_op(Z_OBJ_P(a), PT_OP_EQUALS, 1, b);
+	if (UNEXPECTED(result.isUndef())) return -1;
+	return zend_is_true(result.raw()) ? 1 : 0;
+}
+
+/* $type !== null ? $this->transformStaticType($type) : null */
+zv::Val protoTransformNullable(const PrototypeTransformer &transformer, zval *type)
+{
+	if (Z_TYPE_P(type) == IS_NULL) return zv::Val::null();
+	return transformer.transform(type);
+}
+
+/* the Callback twins' `$original->equals($type) ? $transformedOriginal :
+ * $this->transformStaticType($type)`; the CalledOnType twins transform
+ * every type */
+zv::Val protoTransformUnlessEqual(PrototypeKind kind, const PrototypeTransformer &transformer, zval *original, zval *transformedOriginal, zval *type)
+{
+	if (kind == phpstanturbo::PT_PROTOTYPE_CALLBACK) {
+		int equal = protoEquals(original, type);
+		if (UNEXPECTED(equal < 0)) return zv::Val();
+		if (equal == 1) return zv::Val::copyOf(zv::Ref(transformedOriginal));
+	}
+	return transformer.transform(type);
+}
+
+/* array_map($fn, $array) over an array of objects, the keys kept as
+ * array_map() keeps them for a single array; UNDEF = pending exception */
+template <typename F>
+zv::Val protoMap(zval *array, const char *what, F fn)
+{
+	zv::Arr result = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(array)));
+	for (zv::ArrayEntry entry : zv::ArrRef(array)) {
+		zv::Ref value = entry.value().deref();
+		if (UNEXPECTED(!value.isObject())) {
+			zend_type_error("phpstan_turbo: %s must hold objects, %s given", what, zend_zval_value_name(value.raw()));
+			return zv::Val();
+		}
+		zv::Val mapped = fn(value.asObject());
+		if (UNEXPECTED(mapped.isUndef())) return zv::Val();
+		zval v = mapped.take();
+		if (entry.hasStringKey()) {
+			zend_hash_update(result.table(), entry.stringKey(), &v);
+		} else {
+			zend_hash_index_update(result.table(), entry.indexKey(), &v);
+		}
+	}
+	return zv::Val(std::move(result));
+}
+
+/* the parameter callback of the twins' array_map(): new
+ * ExtendedDummyParameter($parameter->getName(), transform($parameter->getType()),
+ * ...) — each getter called once (the twins call getOutType() and
+ * getClosureThisType() twice; pure getters); UNDEF = pending exception */
+zv::Val protoParameter(PrototypeKind kind, const PrototypeTransformer &transformer, zend_object *parameter)
+{
+	zv::Val name = protoCall(parameter, PT_LC("getname"), PROTO_ANY);
+	if (UNEXPECTED(name.isUndef())) return zv::Val();
+	zv::Val originalType = protoCall(parameter, PT_LC("gettype"), PROTO_OBJECT);
+	if (UNEXPECTED(originalType.isUndef())) return zv::Val();
+	zv::Val transformedType = transformer.transform(originalType.raw());
+	if (UNEXPECTED(transformedType.isUndef())) return zv::Val();
+	zv::Val optional = protoCall(parameter, PT_LC("isoptional"), PROTO_ANY);
+	if (UNEXPECTED(optional.isUndef())) return zv::Val();
+	zv::Val passedByReference = protoCall(parameter, PT_LC("passedbyreference"), PROTO_ANY);
+	if (UNEXPECTED(passedByReference.isUndef())) return zv::Val();
+	zv::Val variadic = protoCall(parameter, PT_LC("isvariadic"), PROTO_ANY);
+	if (UNEXPECTED(variadic.isUndef())) return zv::Val();
+	zv::Val defaultValue = protoCall(parameter, PT_LC("getdefaultvalue"), PROTO_ANY);
+	if (UNEXPECTED(defaultValue.isUndef())) return zv::Val();
+	zv::Val nativeType = protoCall(parameter, PT_LC("getnativetype"), PROTO_ANY);
+	if (UNEXPECTED(nativeType.isUndef())) return zv::Val();
+	zv::Val phpDocType = protoCall(parameter, PT_LC("getphpdoctype"), PROTO_OBJECT);
+	if (UNEXPECTED(phpDocType.isUndef())) return zv::Val();
+	zv::Val transformedPhpDocType = protoTransformUnlessEqual(kind, transformer, originalType.raw(), transformedType.raw(), phpDocType.raw());
+	if (UNEXPECTED(transformedPhpDocType.isUndef())) return zv::Val();
+	zv::Val outType = protoCall(parameter, PT_LC("getouttype"), PROTO_OBJECT_OR_NULL);
+	if (UNEXPECTED(outType.isUndef())) return zv::Val();
+	zv::Val transformedOutType = protoTransformNullable(transformer, outType.raw());
+	if (UNEXPECTED(transformedOutType.isUndef())) return zv::Val();
+	zv::Val immediatelyInvokedCallable = protoCall(parameter, PT_LC("isimmediatelyinvokedcallable"), PROTO_ANY);
+	if (UNEXPECTED(immediatelyInvokedCallable.isUndef())) return zv::Val();
+	zv::Val closureThisType = protoCall(parameter, PT_LC("getclosurethistype"), PROTO_OBJECT_OR_NULL);
+	if (UNEXPECTED(closureThisType.isUndef())) return zv::Val();
+	zv::Val transformedClosureThisType = protoTransformNullable(transformer, closureThisType.raw());
+	if (UNEXPECTED(transformedClosureThisType.isUndef())) return zv::Val();
+	zv::Val attributes = protoCall(parameter, PT_LC("getattributes"), PROTO_ANY);
+	if (UNEXPECTED(attributes.isUndef())) return zv::Val();
+	zv::Val allowedConstants = protoCall(parameter, PT_LC("getallowedconstants"), PROTO_ANY);
+	if (UNEXPECTED(allowedConstants.isUndef())) return zv::Val();
+	zv::Val pureUnlessCallableIsImpure = protoCall(parameter, PT_LC("ispureunlesscallableisimpureparameter"), PROTO_ANY);
+	if (UNEXPECTED(pureUnlessCallableIsImpure.isUndef())) return zv::Val();
+	zval args[14];
+	ZVAL_COPY_VALUE(&args[0], name.raw());
+	ZVAL_COPY_VALUE(&args[1], transformedType.raw());
+	ZVAL_COPY_VALUE(&args[2], optional.raw());
+	ZVAL_COPY_VALUE(&args[3], passedByReference.raw());
+	ZVAL_COPY_VALUE(&args[4], variadic.raw());
+	ZVAL_COPY_VALUE(&args[5], defaultValue.raw());
+	ZVAL_COPY_VALUE(&args[6], nativeType.raw());
+	ZVAL_COPY_VALUE(&args[7], transformedPhpDocType.raw());
+	ZVAL_COPY_VALUE(&args[8], transformedOutType.raw());
+	ZVAL_COPY_VALUE(&args[9], immediatelyInvokedCallable.raw());
+	ZVAL_COPY_VALUE(&args[10], transformedClosureThisType.raw());
+	ZVAL_COPY_VALUE(&args[11], attributes.raw());
+	ZVAL_COPY_VALUE(&args[12], allowedConstants.raw());
+	ZVAL_COPY_VALUE(&args[13], pureUnlessCallableIsImpure.raw());
+	return pt_type_new(PT_CLASS_EXTENDED_DUMMY_PARAMETER, 14, args);
+}
+
+/* the twins' $variantFn: new ExtendedFunctionVariant(...) over $acceptor;
+ * $selfOutType is the transformed self-out type — the Callback twin's
+ * `use (&$selfOutType)`, narrowed by each $this-returning variant;
+ * UNDEF = pending exception */
+zv::Val protoVariant(PrototypeKind kind, const PrototypeTransformer &transformer, zend_object *acceptor, zv::Val &selfOutType)
+{
+	zv::Val originalReturnType = protoCall(acceptor, PT_LC("getreturntype"), PROTO_OBJECT);
+	if (UNEXPECTED(originalReturnType.isUndef())) return zv::Val();
+	bool returnsThis;
+	pt_type_instanceof_ce(originalReturnType.raw(), pt_ce_this_type, returnsThis);
+	zv::Val returnType, transformedReturnType;
+	if (kind == phpstanturbo::PT_PROTOTYPE_CALLED_ON_TYPE) {
+		/* $originalReturnType instanceof ThisType && $selfOutType !== null ? $selfOutType : transform($originalReturnType) */
+		if (returnsThis && !selfOutType.isNull()) {
+			returnType = zv::Val::copyOf(zv::Ref(selfOutType.raw()));
+		} else {
+			returnType = transformer.transform(originalReturnType.raw());
+			if (UNEXPECTED(returnType.isUndef())) return zv::Val();
+		}
+	} else {
+		transformedReturnType = transformer.transform(originalReturnType.raw());
+		if (UNEXPECTED(transformedReturnType.isUndef())) return zv::Val();
+		if (returnsThis && !selfOutType.isNull()) {
+			/* $returnType = TypeCombinator::intersect($selfOutType, $transformedReturnType); $selfOutType = $returnType; */
+			zv::Args args{selfOutType.raw(), transformedReturnType.raw()};
+			returnType = pt_type_combinator_call(PT_LC("intersect"), 2, args);
+			if (UNEXPECTED(returnType.isUndef())) return zv::Val();
+			selfOutType = zv::Val::copyOf(zv::Ref(returnType.raw()));
+		} else {
+			returnType = zv::Val::copyOf(zv::Ref(transformedReturnType.raw()));
+		}
+	}
+	zv::Val phpDocReturnType = protoCall(acceptor, PT_LC("getphpdocreturntype"), PROTO_OBJECT);
+	if (UNEXPECTED(phpDocReturnType.isUndef())) return zv::Val();
+	zv::Val nativeReturnType = protoCall(acceptor, PT_LC("getnativereturntype"), PROTO_OBJECT);
+	if (UNEXPECTED(nativeReturnType.isUndef())) return zv::Val();
+	zv::Val templateTypeMap = protoCall(acceptor, PT_LC("gettemplatetypemap"), PROTO_ANY);
+	if (UNEXPECTED(templateTypeMap.isUndef())) return zv::Val();
+	zv::Val resolvedTemplateTypeMap = protoCall(acceptor, PT_LC("getresolvedtemplatetypemap"), PROTO_ANY);
+	if (UNEXPECTED(resolvedTemplateTypeMap.isUndef())) return zv::Val();
+	zv::Val parameters = protoCall(acceptor, PT_LC("getparameters"), PROTO_ARRAY);
+	if (UNEXPECTED(parameters.isUndef())) return zv::Val();
+	zv::Val mappedParameters = protoMap(parameters.raw(), "getParameters()", [&](zend_object *parameter) { return protoParameter(kind, transformer, parameter); });
+	if (UNEXPECTED(mappedParameters.isUndef())) return zv::Val();
+	zv::Val variadic = protoCall(acceptor, PT_LC("isvariadic"), PROTO_ANY);
+	if (UNEXPECTED(variadic.isUndef())) return zv::Val();
+	/* the Callback twin reuses the transformed return type for an equal
+	 * PHPDoc / native return type; the CalledOnType twin transforms both */
+	zval *transformedOriginal = kind == phpstanturbo::PT_PROTOTYPE_CALLBACK ? transformedReturnType.raw() : NULL;
+	zv::Val transformedPhpDocReturnType = protoTransformUnlessEqual(kind, transformer, originalReturnType.raw(), transformedOriginal, phpDocReturnType.raw());
+	if (UNEXPECTED(transformedPhpDocReturnType.isUndef())) return zv::Val();
+	zv::Val transformedNativeReturnType = protoTransformUnlessEqual(kind, transformer, originalReturnType.raw(), transformedOriginal, nativeReturnType.raw());
+	if (UNEXPECTED(transformedNativeReturnType.isUndef())) return zv::Val();
+	zv::Val callSiteVarianceMap = protoCall(acceptor, PT_LC("getcallsitevariancemap"), PROTO_ANY);
+	if (UNEXPECTED(callSiteVarianceMap.isUndef())) return zv::Val();
+	zval args[8];
+	ZVAL_COPY_VALUE(&args[0], templateTypeMap.raw());
+	ZVAL_COPY_VALUE(&args[1], resolvedTemplateTypeMap.raw());
+	ZVAL_COPY_VALUE(&args[2], mappedParameters.raw());
+	ZVAL_COPY_VALUE(&args[3], variadic.raw());
+	ZVAL_COPY_VALUE(&args[4], returnType.raw());
+	ZVAL_COPY_VALUE(&args[5], transformedPhpDocReturnType.raw());
+	ZVAL_COPY_VALUE(&args[6], transformedNativeReturnType.raw());
+	ZVAL_COPY_VALUE(&args[7], callSiteVarianceMap.raw());
+	return pt_type_new(PT_CLASS_EXTENDED_FUNCTION_VARIANT, 8, args);
+}
+
+/* transformMethodWithStaticType($declaringClass, $method): new
+ * ChangedTypeMethodReflection(...) over the transformed variants; UNDEF =
+ * pending exception */
+zv::Val protoTransformMethod(PrototypeKind kind, const PrototypeTransformer &transformer, zval *declaringClass, zend_object *method, zval *assertsCallback)
+{
+	/* $selfOutType = $method->getSelfOutType() !== null ? transform(...) : null */
+	zv::Val selfOut = protoCall(method, PT_LC("getselfouttype"), PROTO_OBJECT_OR_NULL);
+	if (UNEXPECTED(selfOut.isUndef())) return zv::Val();
+	zv::Val selfOutType = protoTransformNullable(transformer, selfOut.raw());
+	if (UNEXPECTED(selfOutType.isUndef())) return zv::Val();
+	zv::Val variants = protoCall(method, PT_LC("getvariants"), PROTO_ARRAY);
+	if (UNEXPECTED(variants.isUndef())) return zv::Val();
+	zv::Val mappedVariants = protoMap(variants.raw(), "getVariants()", [&](zend_object *acceptor) { return protoVariant(kind, transformer, acceptor, selfOutType); });
+	if (UNEXPECTED(mappedVariants.isUndef())) return zv::Val();
+	zv::Val namedArgumentsVariants = protoCall(method, PT_LC("getnamedargumentsvariants"), PROTO_ARRAY_OR_NULL);
+	if (UNEXPECTED(namedArgumentsVariants.isUndef())) return zv::Val();
+	zv::Val mappedNamedArgumentsVariants = zv::Val::null();
+	if (!namedArgumentsVariants.isNull()) {
+		mappedNamedArgumentsVariants = protoMap(namedArgumentsVariants.raw(), "getNamedArgumentsVariants()", [&](zend_object *acceptor) { return protoVariant(kind, transformer, acceptor, selfOutType); });
+		if (UNEXPECTED(mappedNamedArgumentsVariants.isUndef())) return zv::Val();
+	}
+	zv::Val throwType = protoCall(method, PT_LC("getthrowtype"), PROTO_OBJECT_OR_NULL);
+	if (UNEXPECTED(throwType.isUndef())) return zv::Val();
+	zv::Val transformedThrowType = protoTransformNullable(transformer, throwType.raw());
+	if (UNEXPECTED(transformedThrowType.isUndef())) return zv::Val();
+	/* $method->getAsserts()->mapTypes($callback) */
+	zv::Val asserts = protoCall(method, PT_LC("getasserts"), PROTO_OBJECT);
+	if (UNEXPECTED(asserts.isUndef())) return zv::Val();
+	zv::Val mappedAsserts = pt_type_call(Z_OBJ_P(asserts.raw()), PT_LC("maptypes"), 1, assertsCallback);
+	if (UNEXPECTED(mappedAsserts.isUndef())) return zv::Val();
+	zval methodZv;
+	ZVAL_OBJ(&methodZv, method);
+	zval args[7];
+	ZVAL_COPY_VALUE(&args[0], declaringClass);
+	ZVAL_COPY_VALUE(&args[1], &methodZv);
+	ZVAL_COPY_VALUE(&args[2], mappedVariants.raw());
+	ZVAL_COPY_VALUE(&args[3], mappedNamedArgumentsVariants.raw());
+	ZVAL_COPY_VALUE(&args[4], selfOutType.raw());
+	ZVAL_COPY_VALUE(&args[5], transformedThrowType.raw());
+	ZVAL_COPY_VALUE(&args[6], mappedAsserts.raw());
+	return pt_type_new(PT_CLASS_CHANGED_TYPE_METHOD_REFLECTION, 7, args);
+}
+
+/* transformPropertyWithStaticType($declaringClass, $property): new
+ * ChangedTypePropertyReflection(...) over the four transformed types;
+ * UNDEF = pending exception */
+zv::Val protoTransformProperty(PrototypeKind kind, const PrototypeTransformer &transformer, zval *declaringClass, zend_object *property)
+{
+	zv::Val readableType = protoCall(property, PT_LC("getreadabletype"), PROTO_OBJECT);
+	if (UNEXPECTED(readableType.isUndef())) return zv::Val();
+	zv::Val transformedReadableType = transformer.transform(readableType.raw());
+	if (UNEXPECTED(transformedReadableType.isUndef())) return zv::Val();
+	zv::Val writableType = protoCall(property, PT_LC("getwritabletype"), PROTO_OBJECT);
+	if (UNEXPECTED(writableType.isUndef())) return zv::Val();
+	/* the Callback twin: $readableType->equals($writableType) ? $transformedReadableType : transform($writableType) */
+	zv::Val transformedWritableType = protoTransformUnlessEqual(kind, transformer, readableType.raw(), transformedReadableType.raw(), writableType.raw());
+	if (UNEXPECTED(transformedWritableType.isUndef())) return zv::Val();
+	zv::Val phpDocType = protoCall(property, PT_LC("getphpdoctype"), PROTO_OBJECT);
+	if (UNEXPECTED(phpDocType.isUndef())) return zv::Val();
+	zv::Val transformedPhpDocType = transformer.transform(phpDocType.raw());
+	if (UNEXPECTED(transformedPhpDocType.isUndef())) return zv::Val();
+	zv::Val nativeType = protoCall(property, PT_LC("getnativetype"), PROTO_OBJECT);
+	if (UNEXPECTED(nativeType.isUndef())) return zv::Val();
+	/* the Callback twin: $phpDocType->equals($nativeType) ? $transformedPhpDocType : transform($nativeType) */
+	zv::Val transformedNativeType = protoTransformUnlessEqual(kind, transformer, phpDocType.raw(), transformedPhpDocType.raw(), nativeType.raw());
+	if (UNEXPECTED(transformedNativeType.isUndef())) return zv::Val();
+	zval propertyZv;
+	ZVAL_OBJ(&propertyZv, property);
+	zval args[6];
+	ZVAL_COPY_VALUE(&args[0], declaringClass);
+	ZVAL_COPY_VALUE(&args[1], &propertyZv);
+	ZVAL_COPY_VALUE(&args[2], transformedReadableType.raw());
+	ZVAL_COPY_VALUE(&args[3], transformedWritableType.raw());
+	ZVAL_COPY_VALUE(&args[4], transformedPhpDocType.raw());
+	ZVAL_COPY_VALUE(&args[5], transformedNativeType.raw());
+	return pt_type_new(PT_CLASS_CHANGED_TYPE_PROPERTY_REFLECTION, 6, args);
+}
+
+/* the shared body of getTransformedMethod() / getTransformedProperty():
+ * the declaring class's maps first (as the twins read them), then the
+ * transformed member, then the resolved wrapper over the two */
+zv::Val protoResolved(bool isMethod, PrototypeKind kind, const PrototypeTransformer &transformer, zend_object *resolvedDeclaringClass, zend_object *member, bool resolveTemplateTypeMapToBounds, zval *assertsCallback)
+{
+	zv::Val templateTypeMap = protoCall(resolvedDeclaringClass, PT_LC("getactivetemplatetypemap"), PROTO_OBJECT);
+	if (UNEXPECTED(templateTypeMap.isUndef())) return zv::Val();
+	zv::Val callSiteVarianceMap = protoCall(resolvedDeclaringClass, PT_LC("getcallsitevariancemap"), PROTO_ANY);
+	if (UNEXPECTED(callSiteVarianceMap.isUndef())) return zv::Val();
+	zval declaringClassZv;
+	ZVAL_OBJ(&declaringClassZv, resolvedDeclaringClass);
+	zv::Val transformed = isMethod
+		? protoTransformMethod(kind, transformer, &declaringClassZv, member, assertsCallback)
+		: protoTransformProperty(kind, transformer, &declaringClassZv, member);
+	if (UNEXPECTED(transformed.isUndef())) return zv::Val();
+	/* $this->resolveTemplateTypeMapToBounds ? $templateTypeMap->resolveToBounds() : $templateTypeMap */
+	zv::Val map;
+	if (resolveTemplateTypeMapToBounds) {
+		map = pt_type_call(Z_OBJ_P(templateTypeMap.raw()), PT_LC("resolvetobounds"), 0, NULL);
+		if (UNEXPECTED(map.isUndef())) return zv::Val();
+	} else {
+		map = zv::Val::copyOf(zv::Ref(templateTypeMap.raw()));
+	}
+	zv::Args args{transformed.raw(), map.raw(), callSiteVarianceMap.raw()};
+	return pt_type_new(isMethod ? PT_CLASS_RESOLVED_METHOD_REFLECTION : PT_CLASS_RESOLVED_PROPERTY_REFLECTION, 3, args);
+}
+
+} // namespace
+
+zv::Val pt_prototype_resolved_method(PrototypeKind kind, const PrototypeTransformer &transformer, zend_object *resolvedDeclaringClass, zend_object *method, bool resolveTemplateTypeMapToBounds, zval *assertsCallback)
+{
+	return protoResolved(true, kind, transformer, resolvedDeclaringClass, method, resolveTemplateTypeMapToBounds, assertsCallback);
+}
+
+zv::Val pt_prototype_resolved_property(PrototypeKind kind, const PrototypeTransformer &transformer, zend_object *resolvedDeclaringClass, zend_object *property, bool resolveTemplateTypeMapToBounds)
+{
+	return protoResolved(false, kind, transformer, resolvedDeclaringClass, property, resolveTemplateTypeMapToBounds, NULL);
 }
 
 /* }}} */

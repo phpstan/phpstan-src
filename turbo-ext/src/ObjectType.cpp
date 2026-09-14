@@ -593,7 +593,7 @@ public:
 			if (UNEXPECTED(declaringClass.isUndef())) return zv::Val();
 			zv::Val callback = pt_ot_identity_callback();
 			zv::Args args{property.raw(), declaringClass.raw(), false, callback.raw()};
-			return pt_type_new(PT_CLASS_CALLBACK_UNRESOLVED_PROPERTY_PROTOTYPE_REFLECTION, 4, args);
+			return pt_callback_unresolved_property_prototype_reflection_new(4, args);
 		}
 		if (UNEXPECTED(!zv::Ref(property.raw()).isObject())) {
 			zend_type_error("phpstan_turbo: getProperty() must return an object");
@@ -649,7 +649,7 @@ public:
 		}
 
 		zv::Args args{property.raw(), resolvedClassReflection.raw(), true, self};
-		zv::Val result = pt_type_new(PT_CLASS_CALLED_ON_TYPE_UNRESOLVED_PROPERTY_PROTOTYPE_REFLECTION, 4, args);
+		zv::Val result = pt_called_on_type_unresolved_property_prototype_reflection_new(4, args);
 		if (UNEXPECTED(result.isUndef())) return zv::Val();
 		pt_ot_cache_put3(cache, descriptionStr, propertyNameStr, canAccessStr, result.raw());
 		return result;
@@ -762,7 +762,7 @@ public:
 		}
 
 		zv::Args ctorArgs{method.raw(), resolvedClassReflection.raw(), true, self};
-		zv::Val result = pt_type_new(PT_CLASS_CALLED_ON_TYPE_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION, 4, ctorArgs);
+		zv::Val result = pt_called_on_type_unresolved_method_prototype_reflection_new(4, ctorArgs);
 		if (UNEXPECTED(result.isUndef())) return zv::Val();
 		pt_ot_cache_put3(pt_ot_methods(), descriptionStr, methodNameStr, canCallStr, result.raw());
 		return result;
@@ -1080,7 +1080,7 @@ public:
 		if (UNEXPECTED(thisReflection.isUndef())) return zv::Val();
 		bool hasClass = false;
 		if (!thisReflection.isNull()) {
-			if (UNEXPECTED(!pt_type_call_bool(Z_OBJ_P(provider.raw()), PT_LC("hasclass"), 1, thatClass, hasClass))) return zv::Val();
+			if (UNEXPECTED(!pt_reflection_provider_has_class(Z_OBJ_P(provider.raw()), thatClass, hasClass))) return zv::Val();
 		}
 		if (thisReflection.isNull() || !hasClass) return pt_type_accepts_result(PT_TRI_NO);
 
@@ -1090,7 +1090,7 @@ public:
 			zend_type_error("phpstan_turbo: getClassReflection() must return an object");
 			return zv::Val();
 		}
-		zv::Val thatReflection = pt_type_call(Z_OBJ_P(provider.raw()), PT_LC("getclass"), 1, thatClass);
+		zv::Val thatReflection = pt_reflection_provider_get_class(Z_OBJ_P(provider.raw()), thatClass);
 		if (UNEXPECTED(thatReflection.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(thatReflection.raw()).isObject())) {
 			zend_type_error("phpstan_turbo: getClass() must return an object");
@@ -1279,9 +1279,9 @@ public:
 		zend_string *name = className();
 		if (UNEXPECTED(name == NULL)) return zv::Val();
 		bool hasClass;
-		if (UNEXPECTED(!pt_type_call_bool(Z_OBJ_P(reflectionProvider), PT_LC("hasclass"), 1, OBJ_PROP_NUM(self, slots::className), hasClass))) return zv::Val();
+		if (UNEXPECTED(!pt_reflection_provider_has_class(Z_OBJ_P(reflectionProvider), OBJ_PROP_NUM(self, slots::className), hasClass))) return zv::Val();
 		if (hasClass) {
-			zv::Val reflection = pt_type_call(Z_OBJ_P(reflectionProvider), PT_LC("getclass"), 1, OBJ_PROP_NUM(self, slots::className));
+			zv::Val reflection = pt_reflection_provider_get_class(Z_OBJ_P(reflectionProvider), OBJ_PROP_NUM(self, slots::className));
 			if (UNEXPECTED(reflection.isUndef())) return zv::Val();
 			if (UNEXPECTED(!zv::Ref(reflection.raw()).isObject())) {
 				zend_type_error("phpstan_turbo: getClass() must return an object");
@@ -1468,7 +1468,7 @@ public:
 				if (UNEXPECTED(nativeDeclaringClass.isUndef())) return zv::Val();
 				zv::Val nativeDeclaringName = pt_type_call(Z_OBJ_P(nativeDeclaringClass.raw()), PT_LC("getname"), 0, NULL);
 				if (UNEXPECTED(nativeDeclaringName.isUndef())) return zv::Val();
-				zv::Val declaringClass = pt_type_call(Z_OBJ_P(provider.raw()), PT_LC("getclass"), 1, nativeDeclaringName.raw());
+				zv::Val declaringClass = pt_reflection_provider_get_class(Z_OBJ_P(provider.raw()), nativeDeclaringName.raw());
 				if (UNEXPECTED(declaringClass.isUndef())) return zv::Val();
 				zv::Val nativeName = pt_type_call(nativeProperty.asObject(), PT_LC("getname"), 0, NULL);
 				if (UNEXPECTED(nativeName.isUndef())) return zv::Val();
@@ -2199,9 +2199,9 @@ public:
 		zv::Val provider = reflectionProvider();
 		if (UNEXPECTED(provider.isUndef())) return -1;
 		bool hasClass;
-		if (UNEXPECTED(!pt_type_call_bool(Z_OBJ_P(provider.raw()), PT_LC("hasclass"), 1, className, hasClass))) return -1;
+		if (UNEXPECTED(!pt_reflection_provider_has_class(Z_OBJ_P(provider.raw()), className, hasClass))) return -1;
 		if (hasClass) {
-			zv::Val thatClassReflection = pt_type_call(Z_OBJ_P(provider.raw()), PT_LC("getclass"), 1, className);
+			zv::Val thatClassReflection = pt_reflection_provider_get_class(Z_OBJ_P(provider.raw()), className);
 			if (UNEXPECTED(thatClassReflection.isUndef())) return -1;
 			bool isFinal;
 			if (UNEXPECTED(!pt_type_call_bool(Z_OBJ_P(thatClassReflection.raw()), PT_LC("isfinal"), 0, NULL, isFinal))) return -1;
@@ -2574,9 +2574,9 @@ public:
 		zv::Val provider = reflectionProvider();
 		if (UNEXPECTED(provider.isUndef())) return zv::Val();
 		bool hasClass;
-		if (UNEXPECTED(!pt_type_call_bool(Z_OBJ_P(provider.raw()), PT_LC("hasclass"), 1, className, hasClass))) return zv::Val();
+		if (UNEXPECTED(!pt_reflection_provider_has_class(Z_OBJ_P(provider.raw()), className, hasClass))) return zv::Val();
 		if (!hasClass) return storeAncestor(descriptionStr, classNameStr, zv::Val::null());
-		zv::Val theirReflection = pt_type_call(Z_OBJ_P(provider.raw()), PT_LC("getclass"), 1, className);
+		zv::Val theirReflection = pt_reflection_provider_get_class(Z_OBJ_P(provider.raw()), className);
 		if (UNEXPECTED(theirReflection.isUndef())) return zv::Val();
 
 		zv::Val thisReflection = thisGetClassReflection();
@@ -2940,7 +2940,7 @@ private:
 	/* ReflectionProviderStaticAccessor::getInstance() */
 	static zv::Val reflectionProvider()
 	{
-		return pt_type_call_static(PT_CLASS_REFLECTION_PROVIDER_STATIC_ACCESSOR, PT_LC("getinstance"), 0, NULL);
+		return pt_reflection_provider_instance();
 	}
 
 	/* the provider's reflection of $this->className, null when it has no
@@ -2952,9 +2952,9 @@ private:
 		zv::Val provider = reflectionProvider();
 		if (UNEXPECTED(provider.isUndef())) return zv::Val();
 		bool hasClass;
-		if (UNEXPECTED(!pt_type_call_bool(Z_OBJ_P(provider.raw()), PT_LC("hasclass"), 1, OBJ_PROP_NUM(self, slots::className), hasClass))) return zv::Val();
+		if (UNEXPECTED(!pt_reflection_provider_has_class(Z_OBJ_P(provider.raw()), OBJ_PROP_NUM(self, slots::className), hasClass))) return zv::Val();
 		if (!hasClass) return zv::Val::null();
-		zv::Val classReflection = pt_type_call(Z_OBJ_P(provider.raw()), PT_LC("getclass"), 1, OBJ_PROP_NUM(self, slots::className));
+		zv::Val classReflection = pt_reflection_provider_get_class(Z_OBJ_P(provider.raw()), OBJ_PROP_NUM(self, slots::className));
 		if (UNEXPECTED(classReflection.isUndef())) return zv::Val();
 		if (memo != NULL) {
 			zv::Ref(memo).assign(zv::Val::copyOf(zv::Ref(classReflection.raw())));
@@ -3152,7 +3152,7 @@ private:
 		zv::Val provider = reflectionProvider();
 		if (UNEXPECTED(provider.isUndef())) return zv::Val();
 		bool hasClass;
-		if (UNEXPECTED(!pt_type_call_bool(Z_OBJ_P(provider.raw()), PT_LC("hasclass"), 1, OBJ_PROP_NUM(self, slots::className), hasClass))) return zv::Val();
+		if (UNEXPECTED(!pt_reflection_provider_has_class(Z_OBJ_P(provider.raw()), OBJ_PROP_NUM(self, slots::className), hasClass))) return zv::Val();
 		zv::Val precise;
 		if (!hasClass) {
 			precise = zv::Val::string(name);

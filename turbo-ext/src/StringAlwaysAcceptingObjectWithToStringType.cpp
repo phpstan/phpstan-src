@@ -87,7 +87,7 @@ private:
 	{
 		zv::Val result = resultOf(PT_TRI_NO);
 		if (UNEXPECTED(result.isUndef())) return zv::Val();
-		zv::Val reflectionProvider = pt_type_call_static(PT_CLASS_REFLECTION_PROVIDER_STATIC_ACCESSOR, PT_LC("getinstance"), 0, NULL);
+		zv::Val reflectionProvider = pt_reflection_provider_instance();
 		if (UNEXPECTED(reflectionProvider.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(reflectionProvider.raw()).isObject())) {
 			zend_type_error("phpstan_turbo: ReflectionProviderStaticAccessor::getInstance() must return an object");
@@ -99,11 +99,11 @@ private:
 				zend_type_error("phpstan_turbo: getObjectClassNames() must return a list of strings");
 				return zv::Val();
 			}
-			zv::Val hasClass = pt_type_call(Z_OBJ_P(reflectionProvider.raw()), PT_LC("hasclass"), 1, thatClassName.raw());
+			zv::Val hasClass = pt_reflection_provider_has_class_zv(Z_OBJ_P(reflectionProvider.raw()), thatClassName.raw());
 			if (UNEXPECTED(hasClass.isUndef())) return zv::Val();
 			if (!zend_is_true(hasClass.raw())) return resultOf(PT_TRI_NO);
 
-			zv::Val typeClass = pt_type_call(Z_OBJ_P(reflectionProvider.raw()), PT_LC("getclass"), 1, thatClassName.raw());
+			zv::Val typeClass = pt_reflection_provider_get_class(Z_OBJ_P(reflectionProvider.raw()), thatClassName.raw());
 			if (UNEXPECTED(typeClass.isUndef())) return zv::Val();
 			if (UNEXPECTED(!zv::Ref(typeClass.raw()).isObject())) {
 				zend_type_error("phpstan_turbo: ReflectionProvider::getClass() must return an object");

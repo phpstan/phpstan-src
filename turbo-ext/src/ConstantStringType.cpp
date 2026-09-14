@@ -191,7 +191,7 @@ public:
 		if (UNEXPECTED(reflectionProvider.isUndef())) return -1;
 		zval valueZv;
 		ZVAL_STR(&valueZv, v);
-		zv::Val hasClass = pt_type_call(Z_OBJ_P(reflectionProvider.raw()), PT_LC("hasclass"), 1, &valueZv);
+		zv::Val hasClass = pt_reflection_provider_has_class_zv(Z_OBJ_P(reflectionProvider.raw()), &valueZv);
 		if (UNEXPECTED(hasClass.isUndef())) return -1;
 		return zend_is_true(hasClass.raw()) ? PT_TRI_YES : PT_TRI_NO;
 	}
@@ -359,11 +359,11 @@ public:
 		if (matchStaticCallable((const unsigned char *) ZSTR_VAL(v), ZSTR_LEN(v), classLen, methodStart)) {
 			zv::Val className = zv::Val::string(ZSTR_VAL(v), classLen);
 			zv::Val methodName = zv::Val::string(ZSTR_VAL(v) + methodStart, ZSTR_LEN(v) - methodStart);
-			zv::Val hasClass = pt_type_call(provider, PT_LC("hasclass"), 1, className.raw());
+			zv::Val hasClass = pt_reflection_provider_has_class_zv(provider, className.raw());
 			if (UNEXPECTED(hasClass.isUndef())) return -1;
 			if (!zend_is_true(hasClass.raw())) return PT_TRI_MAYBE;
 
-			zv::Val classRef = pt_type_call(provider, PT_LC("getclass"), 1, className.raw());
+			zv::Val classRef = pt_reflection_provider_get_class(provider, className.raw());
 			if (UNEXPECTED(classRef.isUndef())) return -1;
 			bool hasMethod;
 			if (UNEXPECTED(!pt_class_reflection_has_method(Z_OBJ_P(classRef.raw()), methodName.raw(), hasMethod))) return -1;
@@ -429,11 +429,11 @@ public:
 		if (matchStaticCallable((const unsigned char *) ZSTR_VAL(v), ZSTR_LEN(v), classLen, methodStart)) {
 			zv::Val className = zv::Val::string(ZSTR_VAL(v), classLen);
 			zv::Val methodName = zv::Val::string(ZSTR_VAL(v) + methodStart, ZSTR_LEN(v) - methodStart);
-			zv::Val hasClass = pt_type_call(provider, PT_LC("hasclass"), 1, className.raw());
+			zv::Val hasClass = pt_reflection_provider_has_class_zv(provider, className.raw());
 			if (UNEXPECTED(hasClass.isUndef())) return zv::Val();
 			if (!zend_is_true(hasClass.raw())) return trivialAcceptors();
 
-			zv::Val classReflection = pt_type_call(provider, PT_LC("getclass"), 1, className.raw());
+			zv::Val classReflection = pt_reflection_provider_get_class(provider, className.raw());
 			if (UNEXPECTED(classReflection.isUndef())) return zv::Val();
 			bool hasMethod;
 			if (UNEXPECTED(!pt_class_reflection_has_method(Z_OBJ_P(classReflection.raw()), methodName.raw(), hasMethod))) return zv::Val();
@@ -1128,7 +1128,7 @@ private:
 	/* ReflectionProviderStaticAccessor::getInstance() */
 	static zv::Val reflectionProviderInstance()
 	{
-		return pt_type_call_static(PT_CLASS_REFLECTION_PROVIDER_STATIC_ACCESSOR, PT_LC("getinstance"), 0, NULL);
+		return pt_reflection_provider_instance();
 	}
 
 	/* new Name($name) */

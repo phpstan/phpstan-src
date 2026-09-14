@@ -2,6 +2,9 @@
 
 namespace PHPStan\Rules\PhpDoc;
 
+use PHPStan\Turbo\ReferencedByTurboExtension;
+
+#[ReferencedByTurboExtension(key: 'unresolvableTypeResult')]
 final class UnresolvableTypeResult
 {
 

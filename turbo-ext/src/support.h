@@ -110,9 +110,7 @@ enum {
 	PT_CLASS_CONST_EXPR_FLOAT_NODE,
 	PT_CLASS_SUBTRACTABLE_TYPE,
 	PT_CLASS_DUMMY_PROPERTY_REFLECTION,
-	PT_CLASS_CALLBACK_UNRESOLVED_PROPERTY_PROTOTYPE_REFLECTION,
 	PT_CLASS_DUMMY_METHOD_REFLECTION,
-	PT_CLASS_CALLBACK_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION,
 	PT_CLASS_DUMMY_CLASS_CONSTANT_REFLECTION,
 	PT_CLASS_TYPE_WITH_CLASS_NAME,
 	PT_CLASS_OBJECT_SHAPE_PROPERTY_REFLECTION,
@@ -124,8 +122,6 @@ enum {
 	PT_CLASS_UNSAFE_ARRAY_STRING_KEY_CASTING_TRAVERSER,
 	PT_CLASS_ALLOWED_ARRAY_KEYS_TYPES,
 	PT_CLASS_CLASS_NOT_FOUND_EXCEPTION,
-	PT_CLASS_CALLED_ON_TYPE_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION,
-	PT_CLASS_CALLED_ON_TYPE_UNRESOLVED_PROPERTY_PROTOTYPE_REFLECTION,
 	PT_CLASS_UNION_TYPE_UNRESOLVED_PROPERTY_PROTOTYPE_REFLECTION,
 	PT_CLASS_ENUM_UNRESOLVED_PROPERTY_PROTOTYPE_REFLECTION,
 	PT_CLASS_ENUM_PROPERTY_REFLECTION,
@@ -137,7 +133,6 @@ enum {
 	PT_CLASS_SIMPLE_IMPURE_POINT,
 	PT_CLASS_SIMPLE_THROW_POINT,
 	PT_CLASS_DUMMY_PARAMETER,
-	PT_CLASS_NATIVE_PARAMETER_REFLECTION,
 	PT_CLASS_PASSED_BY_REFERENCE,
 	PT_CLASS_EXTENDED_PARAMETER_REFLECTION,
 	PT_CLASS_CLOSURE_CALL_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION,
@@ -174,6 +169,14 @@ enum {
 	PT_CLASS_CLASS_REFLECTION,
 	PT_CLASS_MUTATING_SCOPE,
 	PT_CLASS_REFLECTION_ENUM,
+	PT_CLASS_MEMOIZING_REFLECTION_PROVIDER,
+	PT_CLASS_UNRESOLVABLE_TYPE_RESULT,
+	PT_CLASS_EXTENDED_DUMMY_PARAMETER,
+	PT_CLASS_EXTENDED_FUNCTION_VARIANT,
+	PT_CLASS_RESOLVED_METHOD_REFLECTION,
+	PT_CLASS_RESOLVED_PROPERTY_REFLECTION,
+	PT_CLASS_CHANGED_TYPE_METHOD_REFLECTION,
+	PT_CLASS_CHANGED_TYPE_PROPERTY_REFLECTION,
 	PT_CLASS_COUNT
 };
 
@@ -1230,5 +1233,53 @@ zv::Val pt_lru_cache_set(zval *cache, zend_string *key, zval *value, zend_long w
 bool pt_lru_cache_replace(zval *cache, zend_string *key, zval *value);
 zend_long pt_lru_cache_count(zval *cache);
 zv::Val pt_lru_cache_all(zval *cache);
+
+/* {{{ ReflectionAccess.cpp: slot readers of the PHP reflection provider */
+
+void pt_reflection_access_rinit();
+/* ReflectionProviderStaticAccessor::getInstance() — the registered provider
+ * out of the static slot; the method (which throws) while none is
+ * registered; UNDEF = pending exception */
+zv::Val pt_reflection_provider_instance();
+/* $provider->hasClass($className) / ->getClass($className) — the memoized
+ * answer of a MemoizingReflectionProvider, the method on a miss or on any
+ * other provider; false / UNDEF = pending exception */
+[[nodiscard]] bool pt_reflection_provider_has_class(zend_object *provider, zval *className, bool &out);
+zv::Val pt_reflection_provider_has_class_zv(zend_object *provider, zval *className);
+zv::Val pt_reflection_provider_get_class(zend_object *provider, zval *className);
+
+/* }}} */
+
+/* {{{ the shadowing reflection value classes (UnresolvableTypeHelper.cpp,
+ * NativeParameterReflection.cpp, CalledOnTypeUnresolved{Method,Property}PrototypeReflection.cpp,
+ * CallbackUnresolved{Method,Property}PrototypeReflection.cpp) */
+
+extern zend_class_entry *pt_ce_unresolvable_type_helper;
+extern zend_class_entry *pt_ce_native_parameter_reflection;
+extern zend_class_entry *pt_ce_called_on_type_unresolved_method_prototype_reflection;
+extern zend_class_entry *pt_ce_called_on_type_unresolved_property_prototype_reflection;
+extern zend_class_entry *pt_ce_callback_unresolved_method_prototype_reflection;
+extern zend_class_entry *pt_ce_callback_unresolved_property_prototype_reflection;
+
+/* registered after the Type family: their signatures name TemplateTypeMap
+ * and the Type interface */
+void pt_register_unresolvable_type_helper();
+void pt_register_native_parameter_reflection();
+void pt_register_called_on_type_unresolved_method_prototype_reflection();
+void pt_register_called_on_type_unresolved_property_prototype_reflection();
+void pt_register_callback_unresolved_method_prototype_reflection();
+void pt_register_callback_unresolved_property_prototype_reflection();
+
+/* new <Class>(...$argv) — instances of the shadowing classes over values
+ * as PHP code hands them (borrowed): directly when the arguments already
+ * have the constructor's parameter types, through its parameter parsing
+ * otherwise; UNDEF = pending exception */
+zv::Val pt_native_parameter_reflection_new(uint32_t argc, zval *argv);
+zv::Val pt_called_on_type_unresolved_method_prototype_reflection_new(uint32_t argc, zval *argv);
+zv::Val pt_called_on_type_unresolved_property_prototype_reflection_new(uint32_t argc, zval *argv);
+zv::Val pt_callback_unresolved_method_prototype_reflection_new(uint32_t argc, zval *argv);
+zv::Val pt_callback_unresolved_property_prototype_reflection_new(uint32_t argc, zval *argv);
+
+/* }}} */
 
 #endif /* PHPSTANTURBO_SUPPORT_H */

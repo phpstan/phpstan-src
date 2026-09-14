@@ -413,17 +413,17 @@ public:
 		if (UNEXPECTED(cached == NULL)) return zv::Val();
 		if (Z_TYPE_P(cached) == IS_OBJECT) return zv::Val::copyOf(zv::Ref(cached));
 
-		zv::Val provider = pt_type_call_static(PT_CLASS_REFLECTION_PROVIDER_STATIC_ACCESSOR, PT_LC("getinstance"), 0, NULL);
+		zv::Val provider = pt_reflection_provider_instance();
 		if (UNEXPECTED(provider.isUndef())) return zv::Val();
 		zv::Val className = thisGetClassName();
 		if (UNEXPECTED(className.isUndef())) return zv::Val();
 		bool hasClass;
-		if (UNEXPECTED(!pt_type_call_bool(Z_OBJ_P(provider.raw()), PT_LC("hasclass"), 1, className.raw(), hasClass))) return zv::Val();
+		if (UNEXPECTED(!pt_reflection_provider_has_class(Z_OBJ_P(provider.raw()), className.raw(), hasClass))) return zv::Val();
 		if (!hasClass) return zv::Val::null();
 
 		className = thisGetClassName();
 		if (UNEXPECTED(className.isUndef())) return zv::Val();
-		zv::Val reflection = pt_type_call(Z_OBJ_P(provider.raw()), PT_LC("getclass"), 1, className.raw());
+		zv::Val reflection = pt_reflection_provider_get_class(Z_OBJ_P(provider.raw()), className.raw());
 		if (UNEXPECTED(reflection.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(reflection.raw()).isObject())) {
 			zend_type_error("phpstan_turbo: getClass() must return an object");

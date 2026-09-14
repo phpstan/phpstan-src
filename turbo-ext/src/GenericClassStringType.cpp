@@ -370,7 +370,7 @@ public:
 					zend_type_error("phpstan_turbo: %s::getObjectClassNames() must return array", ZSTR_VAL(Z_OBJCE_P(generic.raw())->name));
 					return zv::Val();
 				}
-				zv::Val reflectionProvider = pt_type_call_static(PT_CLASS_REFLECTION_PROVIDER_STATIC_ACCESSOR, PT_LC("getinstance"), 0, NULL);
+				zv::Val reflectionProvider = pt_reflection_provider_instance();
 				if (UNEXPECTED(reflectionProvider.isUndef())) return zv::Val();
 				zend_object *provider = Z_OBJ_P(reflectionProvider.raw());
 				zv::Val removedValue = pt_constant_string_get_value(Z_OBJ_P(typeToRemove));
@@ -387,10 +387,10 @@ public:
 					zval nullZv;
 					ZVAL_NULL(&nullZv);
 					zval *classNameZv = className.raw() != NULL ? className.raw() : &nullZv;
-					zv::Val hasClass = pt_type_call(provider, PT_LC("hasclass"), 1, classNameZv);
+					zv::Val hasClass = pt_reflection_provider_has_class_zv(provider, classNameZv);
 					if (UNEXPECTED(hasClass.isUndef())) return zv::Val();
 					if (zend_is_true(hasClass.raw())) {
-						zv::Val classReflection = pt_type_call(provider, PT_LC("getclass"), 1, classNameZv);
+						zv::Val classReflection = pt_reflection_provider_get_class(provider, classNameZv);
 						if (UNEXPECTED(classReflection.isUndef())) return zv::Val();
 						zv::Val isFinal = pt_type_call(Z_OBJ_P(classReflection.raw()), PT_LC("isfinal"), 0, NULL);
 						if (UNEXPECTED(isFinal.isUndef())) return zv::Val();
@@ -414,10 +414,10 @@ public:
 				} else if (names.size() > 1) {
 					zv::Val objectTypeToRemove = pt_type_new_object_type(removedValue.raw());
 					if (UNEXPECTED(objectTypeToRemove.isUndef())) return zv::Val();
-					zv::Val hasClass = pt_type_call(provider, PT_LC("hasclass"), 1, removedValue.raw());
+					zv::Val hasClass = pt_reflection_provider_has_class_zv(provider, removedValue.raw());
 					if (UNEXPECTED(hasClass.isUndef())) return zv::Val();
 					if (zend_is_true(hasClass.raw())) {
-						zv::Val classReflection = pt_type_call(provider, PT_LC("getclass"), 1, removedValue.raw());
+						zv::Val classReflection = pt_reflection_provider_get_class(provider, removedValue.raw());
 						if (UNEXPECTED(classReflection.isUndef())) return zv::Val();
 						zv::Val isFinal = pt_type_call(Z_OBJ_P(classReflection.raw()), PT_LC("isfinal"), 0, NULL);
 						if (UNEXPECTED(isFinal.isUndef())) return zv::Val();

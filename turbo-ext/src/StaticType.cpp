@@ -389,7 +389,7 @@ public:
 		ZVAL_COPY_VALUE(&args[1], classReflection.raw());
 		ZVAL_FALSE(&args[2]);
 		ZVAL_COPY_VALUE(&args[3], callback.raw());
-		return pt_type_new(isMethod ? PT_CLASS_CALLBACK_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION : PT_CLASS_CALLBACK_UNRESOLVED_PROPERTY_PROTOTYPE_REFLECTION, 4, args);
+		return (isMethod ? pt_callback_unresolved_method_prototype_reflection_new(4, args) : pt_callback_unresolved_property_prototype_reflection_new(4, args));
 	}
 
 	/* $this->methodCache[$key] ??= $this->getUnresolvedMethodPrototype($methodName, $scope)->getTransformedMethod(),

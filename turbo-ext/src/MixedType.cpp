@@ -457,7 +457,7 @@ public:
 		if (UNEXPECTED(declaringClass.isUndef())) return zv::Val();
 		zv::Val callback = identityCallback();
 		zv::Args args{member.raw(), declaringClass.raw(), false, callback.raw()};
-		return pt_type_new(isMethod ? PT_CLASS_CALLBACK_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION : PT_CLASS_CALLBACK_UNRESOLVED_PROPERTY_PROTOTYPE_REFLECTION, 4, args);
+		return (isMethod ? pt_callback_unresolved_method_prototype_reflection_new(4, args) : pt_callback_unresolved_property_prototype_reflection_new(4, args));
 	}
 
 	/* new DummyClassConstantReflection($constantName) */

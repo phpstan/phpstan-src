@@ -144,7 +144,7 @@ public:
 		ZVAL_COPY_VALUE(&args[1], declaringClass.raw());
 		ZVAL_FALSE(&args[2]);
 		ZVAL_COPY_VALUE(&args[3], callback.raw());
-		return pt_type_new(PT_CLASS_CALLBACK_UNRESOLVED_PROPERTY_PROTOTYPE_REFLECTION, 4, args);
+		return pt_callback_unresolved_property_prototype_reflection_new(4, args);
 	}
 
 	/* the CompoundType callback; maybe for a universal object crate; else
@@ -885,7 +885,7 @@ private:
 	 * static reflection provider); false with an exception pending */
 	[[nodiscard]] static bool isUniversalObjectCrate(zval *type, bool &out)
 	{
-		zv::Val reflectionProvider = pt_type_call_static(PT_CLASS_REFLECTION_PROVIDER_STATIC_ACCESSOR, PT_LC("getinstance"), 0, NULL);
+		zv::Val reflectionProvider = pt_reflection_provider_instance();
 		if (UNEXPECTED(reflectionProvider.isUndef())) return false;
 		zv::Val reflections = pt_type_call(Z_OBJ_P(type), PT_LC("getobjectclassreflections"), 0, NULL);
 		if (UNEXPECTED(reflections.isUndef())) return false;

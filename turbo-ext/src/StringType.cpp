@@ -121,13 +121,13 @@ public:
 			return zv::Val();
 		}
 
-		zv::Val reflectionProvider = pt_type_call_static(PT_CLASS_REFLECTION_PROVIDER_STATIC_ACCESSOR, PT_LC("getinstance"), 0, NULL);
+		zv::Val reflectionProvider = pt_reflection_provider_instance();
 		if (UNEXPECTED(reflectionProvider.isUndef())) return zv::Val();
-		zv::Val hasClass = pt_type_call(Z_OBJ_P(reflectionProvider.raw()), PT_LC("hasclass"), 1, className.raw());
+		zv::Val hasClass = pt_reflection_provider_has_class_zv(Z_OBJ_P(reflectionProvider.raw()), className.raw());
 		if (UNEXPECTED(hasClass.isUndef())) return zv::Val();
 		if (!zend_is_true(hasClass.raw())) return pt_type_accepts_result(PT_TRI_NO);
 
-		zv::Val typeClass = pt_type_call(Z_OBJ_P(reflectionProvider.raw()), PT_LC("getclass"), 1, className.raw());
+		zv::Val typeClass = pt_reflection_provider_get_class(Z_OBJ_P(reflectionProvider.raw()), className.raw());
 		if (UNEXPECTED(typeClass.isUndef())) return zv::Val();
 		zv::Val toString = zv::Val::string("__toString", sizeof("__toString") - 1);
 		zv::Val hasNativeMethod = pt_type_call(Z_OBJ_P(typeClass.raw()), PT_LC("hasnativemethod"), 1, toString.raw());

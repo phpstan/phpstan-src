@@ -4,11 +4,11 @@ namespace PHPStan\Reflection\Native;
 
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\PassedByReference;
-use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 
-#[ReferencedByTurboExtension(key: 'nativeParameterReflection')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/NativeParameterReflection.cpp')]
 final class NativeParameterReflection implements ParameterReflection
 {
 

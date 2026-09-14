@@ -227,7 +227,7 @@ public:
 		zv::Val unioned;
 		if (Z_TYPE_P(subtracted) != IS_NULL) {
 			zv::Args args{subtracted, type};
-			unioned = pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), 2, args);
+			unioned = pt_type_combinator_call(PT_LC("union"), 2, args);
 			if (UNEXPECTED(unioned.isUndef())) return zv::Val();
 			type = unioned.raw();
 		}
@@ -285,7 +285,7 @@ public:
 			if (UNEXPECTED(isSuperType < 0)) return zv::Val();
 			if (isSuperType != PT_TRI_NO) {
 				zv::Args args{self, exponent};
-				return pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), 2, args);
+				return pt_type_combinator_call(PT_LC("union"), 2, args);
 			}
 		}
 		/* new BenevolentUnionType([new FloatType(), new IntegerType()]) */

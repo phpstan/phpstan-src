@@ -55,8 +55,7 @@ typedef struct _pt_class_ref {
 } pt_class_ref;
 
 enum {
-	PT_CLASS_TYPE_COMBINATOR = 0,
-	PT_CLASS_SHOULD_NOT_HAPPEN,
+	PT_CLASS_SHOULD_NOT_HAPPEN = 0,
 	PT_CLASS_VARIABLE,
 	PT_CLASS_FUNC_CALL,
 	PT_CLASS_VIRTUAL_NODE,
@@ -183,6 +182,8 @@ enum {
 	PT_CLASS_REFLECTION_NAMED_TYPE,
 	PT_CLASS_FULLY_QUALIFIED,
 	PT_CLASS_PARSER_NODE_TYPE_TO_PHPSTAN_TYPE,
+	PT_CLASS_TURBO_EXTENSION_ENABLER,
+	PT_CLASS_TEMPLATE_TYPE_FACTORY,
 	PT_CLASS_COUNT
 };
 
@@ -857,5 +858,46 @@ void pt_register_type_utils();
  * the Type block */
 extern zend_class_entry *pt_ce_typehint_helper;
 void pt_register_typehint_helper();
+
+/* merged from the parallel port branch */
+/* the static combinator (TypeCombinator.cpp) */
+extern zend_class_entry *pt_ce_type_combinator;
+/* TypeCombinator after the whole Type family (its bodies instantiate the
+ * compound, array and accessory classes); TypeCombinatorCache.cpp calls its
+ * do*() entry points directly */
+void pt_register_type_combinator();
+namespace zv { class Val; }
+/* TypeCombinator::<lcname>(...$args) — the public entry points answered in
+ * C++ (union, intersect, remove, removeNull, addNull, containsNull,
+ * removeFalsey, removeTruthy, countConstantArrayValueTypes, clearCache),
+ * anything else through the class entry; the arguments borrowed; UNDEF =
+ * pending exception */
+zv::Val pt_type_combinator_call(const char *lcname, size_t len, uint32_t argc, zval *argv);
+/* the same with the arguments spread from a PHP array
+ * (`TypeCombinator::union(...$types)`) */
+zv::Val pt_type_combinator_call_spread(const char *lcname, size_t len, HashTable *args);
+/* the hot entry points directly: TypeCombinator::union(...$types) /
+ * intersect(...$types) (memoized when the twin's $cacheEnabled says so) /
+ * remove($fromType, $typeToRemove) / removeNull($type) / addNull($type) /
+ * containsNull($type) (false = pending exception), and the unmemoized
+ * doUnion() / doIntersect() / doRemove() bodies TypeCombinatorCache
+ * computes a miss with; the arguments borrowed; UNDEF = pending exception */
+zv::Val pt_type_combinator_union(uint32_t argc, zval *argv);
+zv::Val pt_type_combinator_intersect(uint32_t argc, zval *argv);
+zv::Val pt_type_combinator_remove(zval *fromType, zval *typeToRemove);
+zv::Val pt_type_combinator_remove_null(zval *type);
+zv::Val pt_type_combinator_add_null(zval *type);
+bool pt_type_combinator_contains_null(zval *type, bool &out);
+zv::Val pt_type_combinator_do_union(uint32_t argc, zval *argv);
+zv::Val pt_type_combinator_do_intersect(uint32_t argc, zval *argv);
+zv::Val pt_type_combinator_do_remove(zval *fromType, zval *typeToRemove);
+/* TypeCombinatorCache::union(...$types) / intersect(...$types) /
+ * remove($fromType, $typeToRemove) / clearCache() (TypeCombinatorCache.cpp):
+ * the memoized operations, the arguments borrowed; UNDEF = pending
+ * exception */
+zv::Val pt_type_combinator_cache_union(uint32_t argc, zval *argv);
+zv::Val pt_type_combinator_cache_intersect(uint32_t argc, zval *argv);
+zv::Val pt_type_combinator_cache_remove(zval *fromType, zval *typeToRemove);
+void pt_type_combinator_cache_clear();
 
 #endif /* PHPSTANTURBO_SUPPORT_H */

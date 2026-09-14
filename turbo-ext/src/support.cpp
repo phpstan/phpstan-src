@@ -1,4 +1,5 @@
 #include "support.h"
+#include "zv.h"
 
 #include <cstring>
 
@@ -16,7 +17,6 @@ typedef struct _pt_class_template {
 } pt_class_template;
 
 static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
-	/* PT_CLASS_TYPE_COMBINATOR */ {"typeCombinator", "PHPStan\\Type\\TypeCombinator"},
 	/* PT_CLASS_SHOULD_NOT_HAPPEN */ {"shouldNotHappenException", "PHPStan\\ShouldNotHappenException"},
 	/* PT_CLASS_VARIABLE */ {"variable", "PhpParser\\Node\\Expr\\Variable"},
 	/* PT_CLASS_FUNC_CALL */ {"funcCall", "PhpParser\\Node\\Expr\\FuncCall"},
@@ -144,6 +144,8 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_REFLECTION_NAMED_TYPE */ {"reflectionNamedType", "PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionNamedType"},
 	/* PT_CLASS_FULLY_QUALIFIED */ {"fullyQualified", "PhpParser\\Node\\Name\\FullyQualified"},
 	/* PT_CLASS_PARSER_NODE_TYPE_TO_PHPSTAN_TYPE */ {"parserNodeTypeToPHPStanType", "PHPStan\\Type\\ParserNodeTypeToPHPStanType"},
+	/* PT_CLASS_TURBO_EXTENSION_ENABLER */ {"turboExtensionEnabler", "PHPStan\\Turbo\\TurboExtensionEnabler"},
+	/* PT_CLASS_TEMPLATE_TYPE_FACTORY */ {"templateTypeFactory", "PHPStan\\Type\\Generic\\TemplateTypeFactory"},
 };
 
 zend_class_entry *pt_class(int idx)
@@ -333,17 +335,14 @@ bool pt_types_identical_or_equal(zval *type_a, zval *type_b)
 
 bool pt_type_combinator_binary(const char *lcname, size_t len, zval *type_a, zval *type_b, zval *result)
 {
-	zend_class_entry *ce = pt_class(PT_CLASS_TYPE_COMBINATOR);
-	zend_function *fn;
 	zval args[2];
 
-	if (UNEXPECTED(ce == NULL)) return false;
-	fn = pt_find_method(ce, lcname, len);
-	if (UNEXPECTED(fn == NULL)) return false;
 	ZVAL_COPY_VALUE(&args[0], type_a);
 	ZVAL_COPY_VALUE(&args[1], type_b);
-	zend_call_known_function(fn, NULL, ce, result, 2, args, NULL);
-	return !EG(exception);
+	zv::Val value = pt_type_combinator_call(lcname, len, 2, args);
+	if (UNEXPECTED(value.isUndef())) return false;
+	*result = value.take();
+	return true;
 }
 
 bool pt_type_describe_precise(zval *type, zval *result)

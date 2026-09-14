@@ -84,7 +84,7 @@ public:
 		if (UNEXPECTED(generic.isUndef())) return zv::Val();
 		if (allowString) {
 			zv::Args args{generic.raw(), self};
-			zv::Val unionType = pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), 2, args);
+			zv::Val unionType = pt_type_combinator_call(PT_LC("union"), 2, args);
 			if (UNEXPECTED(unionType.isUndef())) return zv::Val();
 			return classNameToObjectTypeResult(unionType.raw(), false);
 		}
@@ -297,7 +297,7 @@ public:
 			zv::Val objectWithoutClass = pt_type_new_object_without_class_type();
 			if (UNEXPECTED(objectWithoutClass.isUndef())) return zv::Val();
 			zv::Args args{typeToInfer.raw(), objectWithoutClass.raw()};
-			typeToInfer = pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("intersect"), 2, args);
+			typeToInfer = pt_type_combinator_call(PT_LC("intersect"), 2, args);
 		}
 		if (UNEXPECTED(typeToInfer.isUndef())) return zv::Val();
 
@@ -402,7 +402,7 @@ public:
 							zv::Val objectTypeToRemove = pt_type_new_object_type(removedValue.raw());
 							if (UNEXPECTED(objectTypeToRemove.isUndef())) return zv::Val();
 							zv::Args args{generic.raw(), objectTypeToRemove.raw()};
-							zv::Val remainingType = pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("remove"), 2, args);
+							zv::Val remainingType = pt_type_combinator_call(PT_LC("remove"), 2, args);
 							if (UNEXPECTED(remainingType.isUndef())) return zv::Val();
 							if (zv::Ref(remainingType.raw()).instanceOf(pt_ce_never_type)) return pt_type_new_never_type();
 
@@ -423,7 +423,7 @@ public:
 						if (UNEXPECTED(isFinal.isUndef())) return zv::Val();
 						if (zend_is_true(isFinal.raw())) {
 							zv::Args args{generic.raw(), objectTypeToRemove.raw()};
-							zv::Val remainingType = pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("remove"), 2, args);
+							zv::Val remainingType = pt_type_combinator_call(PT_LC("remove"), 2, args);
 							if (UNEXPECTED(remainingType.isUndef())) return zv::Val();
 							if (zv::Ref(remainingType.raw()).instanceOf(pt_ce_never_type)) return pt_type_new_never_type();
 

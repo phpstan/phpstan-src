@@ -66,7 +66,7 @@ public:
 				if (UNEXPECTED(inner.isUndef())) return zv::Val();
 				types.push(std::move(inner));
 			}
-			zv::Val type = pt_type_call_static_spread(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), Z_ARRVAL_P(types.raw()));
+			zv::Val type = pt_type_combinator_call_spread(PT_LC("union"), Z_ARRVAL_P(types.raw()));
 			if (UNEXPECTED(type.isUndef())) return zv::Val();
 			return decideType(type.raw(), phpDocType);
 		}
@@ -86,7 +86,7 @@ public:
 				if (isObject != PT_TRI_YES) return pt_type_new_never_type();
 				types.push(std::move(innerType));
 			}
-			zv::Val intersected = pt_type_call_static_spread(PT_CLASS_TYPE_COMBINATOR, PT_LC("intersect"), Z_ARRVAL_P(types.raw()));
+			zv::Val intersected = pt_type_combinator_call_spread(PT_LC("intersect"), Z_ARRVAL_P(types.raw()));
 			if (UNEXPECTED(intersected.isUndef())) return zv::Val();
 			return decideType(intersected.raw(), phpDocType);
 		}
@@ -266,14 +266,14 @@ public:
 				}
 				if (addToUnionTypes > 0) {
 					/* TypeCombinator::union($resultType, ...$addToUnionTypes) */
-					type = pt_type_call_static_spread(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), Z_ARRVAL_P(unionArguments.raw()));
+					type = pt_type_combinator_call_spread(PT_LC("union"), Z_ARRVAL_P(unionArguments.raw()));
 					if (UNEXPECTED(type.isUndef())) return zv::Val();
 				} else {
 					type = std::move(resultType);
 				}
 			} else {
 				/* TypeCombinator::containsNull($type) → addNull($resultType) */
-				zv::Val containsNull = pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("containsnull"), 1, type.raw());
+				zv::Val containsNull = pt_type_combinator_call(PT_LC("containsnull"), 1, type.raw());
 				if (UNEXPECTED(containsNull.isUndef())) return zv::Val();
 				if (zend_is_true(containsNull.raw())) {
 					type = combinator1(PT_LC("addnull"), resultType.raw());
@@ -294,7 +294,7 @@ private:
 	/* TypeCombinator::<method>($type); UNDEF = pending exception */
 	static zv::Val combinator1(const char *lcname, size_t len, zval *type)
 	{
-		return pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, lcname, len, 1, type);
+		return pt_type_combinator_call(lcname, len, 1, type);
 	}
 
 	/* $reflectionType->getTypes(), checked to be an array of objects; UNDEF

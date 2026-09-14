@@ -659,7 +659,7 @@ public:
 			if (UNEXPECTED(value < 0)) return zv::Val();
 			if (value != PT_TRI_NO) {
 				zv::Args args{self, exponent};
-				return pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), 2, args);
+				return pt_type_combinator_call(PT_LC("union"), 2, args);
 			}
 		}
 		/* new BenevolentUnionType([new FloatType(), new IntegerType()]) */

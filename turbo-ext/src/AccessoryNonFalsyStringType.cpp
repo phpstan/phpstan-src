@@ -155,7 +155,7 @@ public:
 		zv::Val boolean = pt_type_call(self, PT_LC("toboolean"), 0, NULL);
 		if (UNEXPECTED(boolean.isUndef())) return zv::Val();
 		zv::Args args{integer.raw(), floating.raw(), self, boolean.raw()};
-		return pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), 4, args);
+		return pt_type_combinator_call(PT_LC("union"), 4, args);
 	}
 
 	/* new ConstantBooleanType(false) when null|false|''|array{} covers the
@@ -179,7 +179,7 @@ public:
 		zv::Val emptyArray = pt_constant_array_type_new(&emptyArrayRaw, &emptyArrayArgs[0], &emptyArrayArgs[1]) ? zv::Val::adopt(emptyArrayRaw) : zv::Val();
 		if (UNEXPECTED(emptyArray.isUndef())) return zv::Val();
 		zv::Args args{nullType.raw(), falseType.raw(), emptyString.raw(), emptyArray.raw()};
-		zv::Val dominated = pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), 4, args);
+		zv::Val dominated = pt_type_combinator_call(PT_LC("union"), 4, args);
 		if (UNEXPECTED(dominated.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(dominated.raw()).isObject())) {
 			zend_type_error("phpstan_turbo: TypeCombinator::union() must return %s", ptcls::type);

@@ -98,14 +98,14 @@ static zend_long trinaryOf(zv::Val value)
 /* TypeCombinator::union(...$types) over a PHP array of types */
 static zv::Val combinatorUnion(HashTable *types)
 {
-	return pt_type_call_static_spread(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), types);
+	return pt_type_combinator_call_spread(PT_LC("union"), types);
 }
 
 /* TypeCombinator::<method>($a, $b); UNDEF = pending exception */
 static zv::Val combinator2(const char *lcname, size_t len, zval *a, zval *b)
 {
 	zv::Args args{a, b};
-	return pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, lcname, len, 2, args);
+	return pt_type_combinator_call(lcname, len, 2, args);
 }
 
 /* Class::method(...$args) on a class entry the native code holds, the

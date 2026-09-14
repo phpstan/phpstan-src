@@ -198,7 +198,7 @@ public:
 		zv::Val boolean = pt_type_call(self, PT_LC("toboolean"), 0, NULL);
 		if (UNEXPECTED(boolean.isUndef())) return zv::Val();
 		zv::Args args{integer.raw(), floating.raw(), self, boolean.raw()};
-		return pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), 4, args);
+		return pt_type_combinator_call(PT_LC("union"), 4, args);
 	}
 
 	/* new ConstantBooleanType(false) for null and for a string that is not

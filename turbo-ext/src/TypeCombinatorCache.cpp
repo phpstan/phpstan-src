@@ -5,8 +5,9 @@
  * TypeCombinator::union()/intersect()/remove() route through this class when the
  * extension is active. Roughly 91% of the calls in an analysis run repeat an
  * argument tuple whose result was already computed, so each operation is memoized
- * on a structural key of its arguments; a miss calls back into the PHP twin
- * (TypeCombinator::doUnion() and friends), which stays the reference implementation.
+ * on a structural key of its arguments; a miss computes the operation through
+ * the native TypeCombinator's doUnion() and friends (TypeCombinator.cpp) — a
+ * direct C++ call, no engine frame.
  *
  * The results are NOT interned: no canonical instance per type value is kept, and
  * operations that arrive at the same value by different routes hand back
@@ -155,9 +156,6 @@ static bool pt_cache_inited = false;
 static bool pt_invalidate_active = false;
 
 
-static zend_function *pt_fn_do_union = NULL;
-static zend_function *pt_fn_do_intersect = NULL;
-static zend_function *pt_fn_do_remove = NULL;
 
 /* {{{ 128-bit FNV-1a, two independent accumulators fed by one walk */
 
@@ -560,7 +558,11 @@ public:
 		REMOVE = 3,
 	};
 
-	static void run(INTERNAL_FUNCTION_PARAMETERS, Op op, zend_function *fn, zval *args, uint32_t argc)
+	/* the unmemoized computation of a miss: the native TypeCombinator's
+	 * do*() body over the argument vector */
+	typedef zv::Val (*Compute)(uint32_t argc, zval *argv);
+
+	static zv::Val run(Op op, Compute compute, zval *args, uint32_t argc)
 	{
 		Hash128 key = { FNV_OFFSET_A, FNV_OFFSET_B };
 		bool memoizable = argc > 0 && argc <= MEMO_ARGS_LIMIT && !guardActive();
@@ -589,19 +591,17 @@ public:
 					/* every argument hashed above is an object */
 					zval *operand = &args[operandTag - 1];
 					ZVAL_DEREF(operand);
-					RETVAL_COPY(operand);
-					return;
+					return zv::Val::copyOf(zv::Ref(operand));
 				}
 				GC_ADDREF(slot->result);
-				RETVAL_OBJ(slot->result);
-				return;
+				zval hit;
+				ZVAL_OBJ(&hit, slot->result);
+				return zv::Val::adopt(hit);
 			}
 		}
 
-		zend_class_entry *ce = pt_class(PT_CLASS_TYPE_COMBINATOR);
-		if (UNEXPECTED(ce == NULL || fn == NULL)) return;
-		zend_call_known_function(fn, NULL, ce, return_value, argc, args, NULL);
-		if (UNEXPECTED(EG(exception)) || Z_TYPE_P(return_value) != IS_OBJECT) return;
+		zv::Val result = compute(argc, args);
+		if (UNEXPECTED(result.isUndef()) || Z_TYPE_P(result.raw()) != IS_OBJECT) return result;
 
 		uintptr_t operandTag = 0;
 		if (memoizable) {
@@ -611,7 +611,7 @@ public:
 			for (uint32_t i = 0; i < argc; i++) {
 				zval *arg = &args[i];
 				ZVAL_DEREF(arg);
-				if (Z_OBJ_P(arg) != Z_OBJ_P(return_value)) continue;
+				if (Z_OBJ_P(arg) != Z_OBJ_P(result.raw())) continue;
 				if (operandTag != 0 || i >= MEMO_OPERAND_POSITIONS_LIMIT) {
 					memoizable = false;
 					break;
@@ -629,15 +629,24 @@ public:
 					pt_memo_tombstones--;
 				}
 				slot->key = key;
-				slot->result = (zend_object *) ((uintptr_t) Z_OBJ_P(return_value) | operandTag);
+				slot->result = (zend_object *) ((uintptr_t) Z_OBJ_P(result.raw()) | operandTag);
 				pt_memo_count++;
-				memoTrackResult(Z_OBJ_P(return_value), key);
+				memoTrackResult(Z_OBJ_P(result.raw()), key);
 
 				if ((uint64_t) (pt_memo_count + pt_memo_tombstones) * 4 > (uint64_t) (pt_memo_mask + 1) * 3) {
 					memoGrow();
 				}
 			}
 		}
+
+		return result;
+	}
+
+	/* doRemove($fromType, $typeToRemove) over the two-argument vector */
+	static zv::Val computeRemove(uint32_t argc, zval *argv)
+	{
+		(void) argc;
+		return pt_type_combinator_do_remove(&argv[0], &argv[1]);
 	}
 
 	static void clear()
@@ -661,9 +670,6 @@ public:
 using phpstanturbo::TypeCombinatorCache;
 using phpstanturbo::pt_cache_inited;
 using phpstanturbo::pt_ce_kinds;
-using phpstanturbo::pt_fn_do_intersect;
-using phpstanturbo::pt_fn_do_remove;
-using phpstanturbo::pt_fn_do_union;
 using phpstanturbo::pt_memo_slots;
 using phpstanturbo::pt_memo_mask;
 using phpstanturbo::pt_memo_count;
@@ -710,9 +716,6 @@ void pt_type_combinator_cache_rshutdown()
 	pt_weakrefs_hash_destroy(&pt_type_hashes);
 	pt_weakrefs_hash_destroy(&pt_obj_serials);
 	zend_hash_destroy(&pt_ce_kinds);
-	pt_fn_do_union = NULL;
-	pt_fn_do_intersect = NULL;
-	pt_fn_do_remove = NULL;
 	pt_cache_inited = false;
 }
 
@@ -722,14 +725,25 @@ void pt_type_combinator_cache_rshutdown()
 
 zend_class_entry *pt_ce_type_combinator_cache = NULL;
 
-static zend_function *resolveOp(zend_function **slot, const char *lcname, size_t len)
+zv::Val pt_type_combinator_cache_union(uint32_t argc, zval *argv)
 {
-	if (*slot == NULL) {
-		zend_class_entry *ce = pt_class(PT_CLASS_TYPE_COMBINATOR);
-		if (ce == NULL) return NULL;
-		*slot = pt_find_method(ce, lcname, len);
-	}
-	return *slot;
+	return TypeCombinatorCache::run(TypeCombinatorCache::UNION, pt_type_combinator_do_union, argv, argc);
+}
+
+zv::Val pt_type_combinator_cache_intersect(uint32_t argc, zval *argv)
+{
+	return TypeCombinatorCache::run(TypeCombinatorCache::INTERSECT, pt_type_combinator_do_intersect, argv, argc);
+}
+
+zv::Val pt_type_combinator_cache_remove(zval *fromType, zval *typeToRemove)
+{
+	zv::Args args{fromType, typeToRemove};
+	return TypeCombinatorCache::run(TypeCombinatorCache::REMOVE, TypeCombinatorCache::computeRemove, args, 2);
+}
+
+void pt_type_combinator_cache_clear()
+{
+	TypeCombinatorCache::clear();
 }
 
 void pt_register_type_combinator_cache()
@@ -746,12 +760,7 @@ void pt_register_type_combinator_cache()
 		ZEND_PARSE_PARAMETERS_START(0, -1)
 			Z_PARAM_VARIADIC('*', types, count)
 		ZEND_PARSE_PARAMETERS_END();
-		TypeCombinatorCache::run(
-			INTERNAL_FUNCTION_PARAM_PASSTHRU,
-			TypeCombinatorCache::UNION,
-			resolveOp(&pt_fn_do_union, "dounion", sizeof("dounion") - 1),
-			types,
-			count);
+		PT_RETURN_VAL(pt_type_combinator_cache_union(count, types));
 	});
 
 	cls.method("intersect", reg::PublicStatic, 0, { reg::variadicObj("types", TYPE_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -760,26 +769,13 @@ void pt_register_type_combinator_cache()
 		ZEND_PARSE_PARAMETERS_START(0, -1)
 			Z_PARAM_VARIADIC('*', types, count)
 		ZEND_PARSE_PARAMETERS_END();
-		TypeCombinatorCache::run(
-			INTERNAL_FUNCTION_PARAM_PASSTHRU,
-			TypeCombinatorCache::INTERSECT,
-			resolveOp(&pt_fn_do_intersect, "dointersect", sizeof("dointersect") - 1),
-			types,
-			count);
+		PT_RETURN_VAL(pt_type_combinator_cache_intersect(count, types));
 	});
 
 	cls.method("remove", reg::PublicStatic, 2, { reg::obj("fromType", TYPE_CLASS), reg::obj("typeToRemove", TYPE_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *fromType, *typeToRemove;
 		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, fromType, typeToRemove)) RETURN_THROWS();
-		zval args[2];
-		ZVAL_COPY_VALUE(&args[0], fromType);
-		ZVAL_COPY_VALUE(&args[1], typeToRemove);
-		TypeCombinatorCache::run(
-			INTERNAL_FUNCTION_PARAM_PASSTHRU,
-			TypeCombinatorCache::REMOVE,
-			resolveOp(&pt_fn_do_remove, "doremove", sizeof("doremove") - 1),
-			args,
-			2);
+		PT_RETURN_VAL(pt_type_combinator_cache_remove(fromType, typeToRemove));
 	});
 
 	cls.method("clearCache", reg::PublicStatic, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {

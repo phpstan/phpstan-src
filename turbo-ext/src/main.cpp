@@ -234,6 +234,7 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_resource_type();
 	pt_register_type_utils();
 	pt_register_typehint_helper();
+	pt_register_type_combinator();
 
 	return SUCCESS;
 }

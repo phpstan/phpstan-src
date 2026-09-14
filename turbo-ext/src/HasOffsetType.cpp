@@ -384,7 +384,7 @@ private:
 		zv::Val nonEmpty = nonEmptyArray();
 		if (UNEXPECTED(nonEmpty.isUndef())) return zv::Val();
 		zv::Args args{self, nonEmpty.raw()};
-		return pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("intersect"), 2, args);
+		return pt_type_combinator_call(PT_LC("intersect"), 2, args);
 	}
 
 	/* new self(new ConstantStringType($owned)) */

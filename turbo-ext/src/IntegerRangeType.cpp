@@ -697,7 +697,7 @@ public:
 		}
 		if (zend_hash_num_elements(Z_ARRVAL_P(finiteTypes.raw())) > 0) {
 			/* TypeCombinator::union(...$finiteTypes)->toString() */
-			zv::Val unionType = pt_type_call_static_spread(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), Z_ARRVAL_P(finiteTypes.raw()));
+			zv::Val unionType = pt_type_combinator_call_spread(PT_LC("union"), Z_ARRVAL_P(finiteTypes.raw()));
 			if (UNEXPECTED(unionType.isUndef())) return zv::Val();
 			if (UNEXPECTED(!zv::Ref(unionType.raw()).isObject())) {
 				zend_type_error("phpstan_turbo: TypeCombinator::union() must return %s", ZSTR_VAL(pt_ce_integer_type->name));
@@ -831,7 +831,7 @@ public:
 
 			if (!lowerPart.isUndef() && !upperPart.isUndef()) {
 				zv::Args args{lowerPart.raw(), upperPart.raw()};
-				return pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), 2, args);
+				return pt_type_combinator_call(PT_LC("union"), 2, args);
 			}
 
 			if (!lowerPart.isUndef()) return lowerPart;
@@ -869,7 +869,7 @@ public:
 				if (UNEXPECTED(result.isUndef())) return zv::Val();
 				results.push(std::move(result));
 			}
-			return pt_type_call_static_spread(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), results.table());
+			return pt_type_combinator_call_spread(PT_LC("union"), results.table());
 		}
 
 		/* $this->getMin() / $this->getMax() — through the object's class */

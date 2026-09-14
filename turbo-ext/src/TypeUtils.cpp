@@ -243,7 +243,7 @@ public:
 						continue;
 					}
 					zv::Args args{intersected.raw(), memberEntry.value().raw()};
-					intersected = pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("intersect"), 2, args);
+					intersected = pt_type_combinator_call(PT_LC("intersect"), 2, args);
 					if (UNEXPECTED(intersected.isUndef())) return zv::Val();
 				}
 				if (UNEXPECTED(first)) {

@@ -807,7 +807,7 @@ public:
 			}
 
 			zv::Args args{strLenType.raw(), offsetType};
-			zv::Val intersected = pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("intersect"), 2, args);
+			zv::Val intersected = pt_type_combinator_call(PT_LC("intersect"), 2, args);
 			if (UNEXPECTED(intersected.isUndef())) return zv::Val();
 			if (zv::Ref(intersected.raw()).instanceOf(pt_ce_integer_range_type)) {
 				zv::Val finiteTypes = pt_type_call(Z_OBJ_P(intersected.raw()), PT_LC("getfinitetypes"), 0, NULL);
@@ -839,7 +839,7 @@ public:
 					chars.push(std::move(empty));
 				}
 
-				return pt_type_call_static_spread(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), chars.table());
+				return pt_type_combinator_call_spread(PT_LC("union"), chars.table());
 			}
 		}
 

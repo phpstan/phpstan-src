@@ -29,6 +29,7 @@ use function phpversion;
  * enforced by the phar.yml turbo-version job; the native classes must
  * behave exactly like the PHP implementations, hence the gate.
  */
+#[ReferencedByTurboExtension(key: 'turboExtensionEnabler')]
 final class TurboExtensionEnabler
 {
 

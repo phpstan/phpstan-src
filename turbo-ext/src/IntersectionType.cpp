@@ -79,13 +79,13 @@ static zv::Val callString(zend_object *object, const char *lcname, size_t len, u
 static zv::Val combinator2(const char *lcname, size_t len, zval *a, zval *b)
 {
 	zv::Args args{a, b};
-	return pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, lcname, len, 2, args);
+	return pt_type_combinator_call(lcname, len, 2, args);
 }
 
 /* TypeCombinator::intersect(...$types) over a PHP array of types */
 static zv::Val combinatorIntersect(HashTable *types)
 {
-	return pt_type_call_static_spread(PT_CLASS_TYPE_COMBINATOR, PT_LC("intersect"), types);
+	return pt_type_combinator_call_spread(PT_LC("intersect"), types);
 }
 
 /* throw new ShouldNotHappenException($message) ($message NULL = the

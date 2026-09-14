@@ -171,7 +171,7 @@ public:
 			zv::Val string = isExact() ? toString() : pt_type_call(self, PT_LC("tostring"), 0, NULL);
 			if (UNEXPECTED(string.isUndef())) return zv::Val();
 			zv::Args args{integer.raw(), floatType.raw(), string.raw(), self};
-			return pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), 4, args);
+			return pt_type_combinator_call(PT_LC("union"), 4, args);
 		}
 		return thisValue();
 	}

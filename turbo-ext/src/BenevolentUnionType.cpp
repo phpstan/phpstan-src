@@ -47,7 +47,7 @@ static zv::Val callType(zend_object *object, const char *lcname, size_t len, uin
 /* TypeCombinator::union(...$types) over a PHP array of types */
 static zv::Val combinatorUnion(HashTable *types)
 {
-	return pt_type_call_static_spread(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), types);
+	return pt_type_combinator_call_spread(PT_LC("union"), types);
 }
 
 /* Mirrors PHPStan\Type\BenevolentUnionType. State is the parent's. */

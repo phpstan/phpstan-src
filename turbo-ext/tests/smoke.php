@@ -256,53 +256,59 @@ try {
 
 // ---- TypeCombinatorCache ----
 $covered[\PHPStan\Type\TypeCombinatorCache::class] = true;
-// The native class memoizes on a structural key of the arguments and calls back into
-// TypeCombinator::doUnion() and friends on a miss. TypeCombinator itself is unshadowed
-// here (the enabler never ran), so it is the unmemoized reference implementation.
-$cacheLevel = \PHPStan\Type\VerbosityLevel::cache();
+// The native class memoizes on a structural key of the arguments and computes a miss
+// through the native TypeCombinator's doUnion() and friends (a direct C++ call). The
+// prefixed PHPStanTurbo\TypeCombinator runs unmemoized here (the enabler never ran, so
+// its $cacheEnabled reads false), which makes it the reference the memoized results
+// are held against; the combinator's own behaviour against the PHP twin is the
+// type-family differential's job (the prefixed declaration cannot mix the two
+// implementations' compound types). The inputs are the native Type classes: the
+// native combinator describes its arguments with the native VerbosityLevel, which
+// the PHP twins' typed describe() parameter rejects in this prefixed process.
+$cacheLevel = \PHPStanTurbo\VerbosityLevel::cache();
 $describe = static fn (\PHPStan\Type\Type $t): string => $t->describe($cacheLevel);
 
-$intT = new \PHPStan\Type\IntegerType();
-$stringT = new \PHPStan\Type\StringType();
-$nullT = new \PHPStan\Type\NullType();
-$oneT = new \PHPStan\Type\Constant\ConstantIntegerType(1);
-$tenT = new \PHPStan\Type\Constant\ConstantIntegerType(10);
-$arrayT = new \PHPStan\Type\ArrayType(new \PHPStan\Type\MixedType(), new \PHPStan\Type\MixedType());
-$nonEmpty = new \PHPStan\Type\Accessory\NonEmptyArrayType();
+$intT = new \PHPStanTurbo\IntegerType();
+$stringT = new \PHPStanTurbo\StringType();
+$nullT = new \PHPStanTurbo\NullType();
+$oneT = new \PHPStanTurbo\ConstantIntegerType(1);
+$tenT = new \PHPStanTurbo\ConstantIntegerType(10);
+$arrayT = new \PHPStanTurbo\ArrayType(new \PHPStanTurbo\MixedType(), new \PHPStanTurbo\MixedType());
+$nonEmpty = new \PHPStanTurbo\NonEmptyArrayType();
 
 $unions = [
 	[$intT, $stringT],
 	[$oneT, $tenT, $nullT],
-	[new \PHPStan\Type\UnionType([$oneT, $tenT]), $nullT],
+	[new \PHPStanTurbo\UnionType([$oneT, $tenT]), $nullT],
 ];
 foreach ($unions as $i => $args) {
 	$native = \PHPStanTurbo\TypeCombinatorCache::union(...$args);
-	$php = \PHPStan\Type\TypeCombinator::union(...$args);
+	$php = \PHPStanTurbo\TypeCombinator::union(...$args);
 	check($describe($native) === $describe($php), "TCC union #$i: {$describe($native)} vs {$describe($php)}");
 }
 
 $native = \PHPStanTurbo\TypeCombinatorCache::intersect($arrayT, $nonEmpty);
-$php = \PHPStan\Type\TypeCombinator::intersect($arrayT, $nonEmpty);
+$php = \PHPStanTurbo\TypeCombinator::intersect($arrayT, $nonEmpty);
 check($describe($native) === $describe($php), 'TCC intersect: ' . $describe($native) . ' vs ' . $describe($php));
 
-$nullable = \PHPStan\Type\TypeCombinator::union($intT, $nullT);
+$nullable = \PHPStanTurbo\TypeCombinator::union($intT, $nullT);
 $native = \PHPStanTurbo\TypeCombinatorCache::remove($nullable, $nullT);
-$php = \PHPStan\Type\TypeCombinator::remove($nullable, $nullT);
+$php = \PHPStanTurbo\TypeCombinator::remove($nullable, $nullT);
 check($describe($native) === $describe($php), 'TCC remove: ' . $describe($native) . ' vs ' . $describe($php));
 
 // a repeated call must hit the memo and hand back the very same instance
 $first = \PHPStanTurbo\TypeCombinatorCache::union($intT, $stringT);
-$second = \PHPStanTurbo\TypeCombinatorCache::union(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType());
+$second = \PHPStanTurbo\TypeCombinatorCache::union(new \PHPStanTurbo\IntegerType(), new \PHPStanTurbo\StringType());
 check($first === $second, 'TCC memo hit on structurally equal arguments');
 
 // explicit and implicit mixed are different values and must not share a memo entry
-$explicit = \PHPStanTurbo\TypeCombinatorCache::union(new \PHPStan\Type\MixedType(true), $intT);
-$implicit = \PHPStanTurbo\TypeCombinatorCache::union(new \PHPStan\Type\MixedType(false), $intT);
+$explicit = \PHPStanTurbo\TypeCombinatorCache::union(new \PHPStanTurbo\MixedType(true), $intT);
+$implicit = \PHPStanTurbo\TypeCombinatorCache::union(new \PHPStanTurbo\MixedType(false), $intT);
 check($describe($explicit) !== $describe($implicit), 'TCC keeps explicit/implicit mixed apart');
 
 // no interning: argument tuples with different memo keys that arrive at the same
 // value hand back distinct instances, as the PHP implementation does
-$wider = \PHPStanTurbo\TypeCombinatorCache::union($intT, $stringT, new \PHPStan\Type\NeverType());
+$wider = \PHPStanTurbo\TypeCombinatorCache::union($intT, $stringT, new \PHPStanTurbo\NeverType());
 check($describe($wider) === $describe($first), 'TCC: the extra never collapses to the same value');
 check($wider !== $first, 'TCC: no shared instance across memo keys');
 check(\PHPStanTurbo\TypeCombinatorCache::union($stringT, $intT) !== $first, 'TCC: another argument order is another memo key');
@@ -981,7 +987,7 @@ function observeTypeFamily(string $mode): array
 
 $typeFamilyPhp = observeTypeFamily('php');
 $typeFamilyNative = observeTypeFamily('native');
-foreach ([\PHPStan\Type\BooleanType::class, \PHPStan\Type\Constant\ConstantBooleanType::class, \PHPStan\Type\IntegerType::class, \PHPStan\Type\Constant\ConstantIntegerType::class, \PHPStan\Type\IntegerRangeType::class, \PHPStan\Type\StringType::class, \PHPStan\Type\Constant\ConstantStringType::class, \PHPStan\Type\ClassStringType::class, \PHPStan\Type\Generic\GenericClassStringType::class, \PHPStan\Type\FloatType::class, \PHPStan\Type\Constant\ConstantFloatType::class, \PHPStan\Type\NullType::class, \PHPStan\Type\VoidType::class, \PHPStan\Type\NeverType::class, \PHPStan\Type\MixedType::class, \PHPStan\Type\StrictMixedType::class, \PHPStan\Type\ObjectWithoutClassType::class, \PHPStan\Type\StaticType::class, \PHPStan\Type\ThisType::class, \PHPStan\Type\Generic\GenericStaticType::class, \PHPStan\Type\ObjectShapeType::class, \PHPStan\Type\NonexistentParentClassType::class, \PHPStan\Type\ArrayType::class, \PHPStan\Type\Accessory\NonEmptyArrayType::class, \PHPStan\Type\Accessory\AccessoryArrayListType::class, \PHPStan\Type\Accessory\OversizedArrayType::class, \PHPStan\Type\Accessory\HasOffsetType::class, \PHPStan\Type\Accessory\HasOffsetValueType::class, \PHPStan\Type\Accessory\AccessoryNumericStringType::class, \PHPStan\Type\Accessory\AccessoryNonEmptyStringType::class, \PHPStan\Type\Accessory\AccessoryNonFalsyStringType::class, \PHPStan\Type\Accessory\AccessoryLiteralStringType::class, \PHPStan\Type\Accessory\AccessoryLowercaseStringType::class, \PHPStan\Type\Accessory\AccessoryUppercaseStringType::class, \PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType::class, \PHPStan\Type\Accessory\HasMethodType::class, \PHPStan\Type\Accessory\HasPropertyType::class, \PHPStan\Type\ObjectType::class, \PHPStan\Type\Generic\GenericObjectType::class, \PHPStan\Type\Enum\EnumCaseObjectType::class, \PHPStan\Type\IterableType::class, \PHPStan\Type\CallableType::class, \PHPStan\Type\ClosureType::class, \PHPStan\Type\Constant\ConstantArrayType::class, \PHPStan\Type\UnionType::class, \PHPStan\Type\BenevolentUnionType::class, \PHPStan\Type\IntersectionType::class, \PHPStan\Type\ErrorType::class, \PHPStan\Type\CircularTypeAliasErrorType::class, \PHPStan\Type\Generic\AbsorbedTemplateArgumentType::class, \PHPStan\Type\NonAcceptingNeverType::class, \PHPStan\Type\StringAlwaysAcceptingObjectWithToStringType::class, \PHPStan\Type\StringNeverAcceptingObjectWithToStringType::class, \PHPStan\Type\ResourceType::class, \PHPStan\Type\TypeUtils::class, \PHPStan\Type\TypehintHelper::class] as $typeClass) {
+foreach ([\PHPStan\Type\BooleanType::class, \PHPStan\Type\Constant\ConstantBooleanType::class, \PHPStan\Type\IntegerType::class, \PHPStan\Type\Constant\ConstantIntegerType::class, \PHPStan\Type\IntegerRangeType::class, \PHPStan\Type\StringType::class, \PHPStan\Type\Constant\ConstantStringType::class, \PHPStan\Type\ClassStringType::class, \PHPStan\Type\Generic\GenericClassStringType::class, \PHPStan\Type\FloatType::class, \PHPStan\Type\Constant\ConstantFloatType::class, \PHPStan\Type\NullType::class, \PHPStan\Type\VoidType::class, \PHPStan\Type\NeverType::class, \PHPStan\Type\MixedType::class, \PHPStan\Type\StrictMixedType::class, \PHPStan\Type\ObjectWithoutClassType::class, \PHPStan\Type\StaticType::class, \PHPStan\Type\ThisType::class, \PHPStan\Type\Generic\GenericStaticType::class, \PHPStan\Type\ObjectShapeType::class, \PHPStan\Type\NonexistentParentClassType::class, \PHPStan\Type\ArrayType::class, \PHPStan\Type\Accessory\NonEmptyArrayType::class, \PHPStan\Type\Accessory\AccessoryArrayListType::class, \PHPStan\Type\Accessory\OversizedArrayType::class, \PHPStan\Type\Accessory\HasOffsetType::class, \PHPStan\Type\Accessory\HasOffsetValueType::class, \PHPStan\Type\Accessory\AccessoryNumericStringType::class, \PHPStan\Type\Accessory\AccessoryNonEmptyStringType::class, \PHPStan\Type\Accessory\AccessoryNonFalsyStringType::class, \PHPStan\Type\Accessory\AccessoryLiteralStringType::class, \PHPStan\Type\Accessory\AccessoryLowercaseStringType::class, \PHPStan\Type\Accessory\AccessoryUppercaseStringType::class, \PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType::class, \PHPStan\Type\Accessory\HasMethodType::class, \PHPStan\Type\Accessory\HasPropertyType::class, \PHPStan\Type\ObjectType::class, \PHPStan\Type\Generic\GenericObjectType::class, \PHPStan\Type\Enum\EnumCaseObjectType::class, \PHPStan\Type\IterableType::class, \PHPStan\Type\CallableType::class, \PHPStan\Type\ClosureType::class, \PHPStan\Type\Constant\ConstantArrayType::class, \PHPStan\Type\UnionType::class, \PHPStan\Type\BenevolentUnionType::class, \PHPStan\Type\IntersectionType::class, \PHPStan\Type\ErrorType::class, \PHPStan\Type\CircularTypeAliasErrorType::class, \PHPStan\Type\Generic\AbsorbedTemplateArgumentType::class, \PHPStan\Type\NonAcceptingNeverType::class, \PHPStan\Type\StringAlwaysAcceptingObjectWithToStringType::class, \PHPStan\Type\StringNeverAcceptingObjectWithToStringType::class, \PHPStan\Type\ResourceType::class, \PHPStan\Type\TypeUtils::class, \PHPStan\Type\TypehintHelper::class, \PHPStan\Type\TypeCombinator::class] as $typeClass) {
 	check(($typeFamilyPhp["native $typeClass"] ?? null) === false, "type-family.php php: $typeClass is the PHP twin");
 	check(($typeFamilyNative["native $typeClass"] ?? null) === true, "type-family.php native: $typeClass is the native class");
 	unset($typeFamilyPhp["native $typeClass"], $typeFamilyNative["native $typeClass"]);
@@ -1337,6 +1343,7 @@ $covered[\PHPStan\Type\TypeTraverser::class] = true;
 $covered[\PHPStan\Type\VerbosityLevel::class] = true;
 $covered[\PHPStan\Type\RecursionGuard::class] = true;
 $covered[\PHPStan\Type\FiniteTypeSet::class] = true;
+$covered[\PHPStan\Type\TypeCombinator::class] = true;
 
 // ---- differential coverage completeness ----
 // Every shadowed class must be exercised by one of the tests/ scripts; the

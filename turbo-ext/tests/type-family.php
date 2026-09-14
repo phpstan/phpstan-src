@@ -4455,6 +4455,210 @@ require_once __DIR__ . '/type-family-typehint-fixture.php';
 }
 
 
+// ---- TypeCombinator ----
+// the static combinator over a broad matrix of the family above: every pair
+// of subjects unioned, intersected and subtracted, the null/falsey/truthy
+// helpers per subject, a sample of triples, the wide unions (the >16-member
+// dedup, the constant-array count limit with its same-signature collapse
+// and the list-variant fold), enum cases against their enum, template
+// unions and arrays, subtracted types, offset accessories against constant
+// arrays, object shapes against HasPropertyType; the compound section's
+// reflection provider stays registered
+$observations['native PHPStan\Type\TypeCombinator'] = (new ReflectionMethod(\PHPStan\Type\TypeCombinator::class, 'union'))->isInternal();
+{
+	$tc = \PHPStan\Type\TypeCombinator::class;
+	$r = [];
+	$unionClass = \PHPStan\Type\UnionType::class;
+	$benevolentClass = \PHPStan\Type\BenevolentUnionType::class;
+	$intersectionClass = \PHPStan\Type\IntersectionType::class;
+	$subjects = $compoundOthers($unionClass, $benevolentClass, $intersectionClass);
+	$unsealedShape = static function (array $entries, \PHPStan\Type\Type $keyType, \PHPStan\Type\Type $valueType, array $optionalKeys = []): \PHPStan\Type\Type {
+		$builder = \PHPStan\Type\Constant\ConstantArrayTypeBuilder::createEmpty();
+		$i = 0;
+		foreach ($entries as $key => $entryType) {
+			$builder->setOffsetValueType(is_int($key) ? new \PHPStan\Type\Constant\ConstantIntegerType($key) : new \PHPStan\Type\Constant\ConstantStringType($key), $entryType, in_array($i, $optionalKeys, true));
+			$i++;
+		}
+		$builder->makeUnsealed($keyType, $valueType);
+		return $builder->getArray();
+	};
+	$subjects += [
+		'range5-10' => \PHPStan\Type\IntegerRangeType::fromInterval(5, 10),
+		'rangeMin-0' => \PHPStan\Type\IntegerRangeType::fromInterval(null, 0),
+		'range2-4' => \PHPStan\Type\IntegerRangeType::fromInterval(2, 4),
+		'int3' => new \PHPStan\Type\Constant\ConstantIntegerType(3),
+		'string0' => new \PHPStan\Type\Constant\ConstantStringType('0'),
+		'stringUpper' => new \PHPStan\Type\Constant\ConstantStringType('ABC'),
+		'nonFalsyString' => new $intersectionClass([new \PHPStan\Type\StringType(), new \PHPStan\Type\Accessory\AccessoryNonEmptyStringType(), new \PHPStan\Type\Accessory\AccessoryNonFalsyStringType()]),
+		'nonFalsyLowercase' => new $intersectionClass([new \PHPStan\Type\StringType(), new \PHPStan\Type\Accessory\AccessoryNonEmptyStringType(), new \PHPStan\Type\Accessory\AccessoryNonFalsyStringType(), new \PHPStan\Type\Accessory\AccessoryLowercaseStringType()]),
+		'nonEmptyUppercase' => new $intersectionClass([new \PHPStan\Type\StringType(), new \PHPStan\Type\Accessory\AccessoryNonEmptyStringType(), new \PHPStan\Type\Accessory\AccessoryUppercaseStringType()]),
+		'decimalIntString' => new $intersectionClass([new \PHPStan\Type\StringType(), new \PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType()]),
+		'nonDecimalNumericString' => new $intersectionClass([new \PHPStan\Type\StringType(), new \PHPStan\Type\Accessory\AccessoryNumericStringType(), new \PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType(true)]),
+		'literalString' => new $intersectionClass([new \PHPStan\Type\StringType(), new \PHPStan\Type\Accessory\AccessoryLiteralStringType()]),
+		'enum' => new \PHPStan\Type\ObjectType('Random\\IntervalBoundary'),
+		'enumCaseClosedOpen' => new \PHPStan\Type\Enum\EnumCaseObjectType('Random\\IntervalBoundary', 'ClosedOpen'),
+		'enumCaseOpenClosed' => new \PHPStan\Type\Enum\EnumCaseObjectType('Random\\IntervalBoundary', 'OpenClosed'),
+		'enumCasesUnion' => new $unionClass([new \PHPStan\Type\Enum\EnumCaseObjectType('Random\\IntervalBoundary', 'ClosedClosed'), new \PHPStan\Type\Enum\EnumCaseObjectType('Random\\IntervalBoundary', 'OpenOpen')]),
+		'enumMinusCase' => (new \PHPStan\Type\ObjectType('Random\\IntervalBoundary'))->tryRemove(new \PHPStan\Type\Enum\EnumCaseObjectType('Random\\IntervalBoundary', 'ClosedOpen')),
+		'mixedMinusInt' => new \PHPStan\Type\MixedType(false, new \PHPStan\Type\IntegerType()),
+		'mixedMinusIntString' => new \PHPStan\Type\MixedType(false, new $unionClass([new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()])),
+		'objectMinusStd' => new \PHPStan\Type\ObjectWithoutClassType(new \PHPStan\Type\ObjectType(\stdClass::class)),
+		'throwableMinusError' => new \PHPStan\Type\ObjectType(\Throwable::class, new \PHPStan\Type\ObjectType(\Error::class)),
+		'exception' => new \PHPStan\Type\ObjectType(\Exception::class),
+		'errorObject' => new \PHPStan\Type\ObjectType(\Error::class),
+		'templateUnion' => \PHPStan\Type\Generic\TemplateTypeFactory::create($compoundScope, 'U', new $unionClass([new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()]), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()),
+		'templateBenevolentUnion' => \PHPStan\Type\Generic\TemplateTypeFactory::create($compoundScope, 'B', new $benevolentClass([new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()]), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()),
+		'templateArray' => \PHPStan\Type\Generic\TemplateTypeFactory::create($compoundScope, 'A', new \PHPStan\Type\ArrayType(new \PHPStan\Type\MixedType(), new \PHPStan\Type\MixedType()), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()),
+		'templateArrayInt' => \PHPStan\Type\Generic\TemplateTypeFactory::create($compoundScope, 'A', new \PHPStan\Type\ArrayType(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\IntegerType()), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()),
+		'templateMixed' => \PHPStan\Type\Generic\TemplateTypeFactory::create($compoundScope, 'M', new \PHPStan\Type\MixedType(), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()),
+		'constShapeOptionalB' => $compoundConstShape(['a' => new \PHPStan\Type\IntegerType(), 'b' => new \PHPStan\Type\StringType()], [1]),
+		'constShapeAB' => $compoundConstShape(['a' => new \PHPStan\Type\StringType(), 'b' => new \PHPStan\Type\IntegerType()]),
+		'constShapeC' => $compoundConstShape(['c' => new \PHPStan\Type\BooleanType()]),
+		'constShapeAOptional' => $compoundConstShape(['a' => new \PHPStan\Type\IntegerType()], [0]),
+		'constListInts' => $compoundConstShape([0 => new \PHPStan\Type\IntegerType(), 1 => new \PHPStan\Type\IntegerType()]),
+		'constListOptionalTail' => $compoundConstShape([0 => new \PHPStan\Type\IntegerType(), 1 => new \PHPStan\Type\StringType()], [1]),
+		'unsealedShape' => $unsealedShape(['k' => new \PHPStan\Type\IntegerType()], new \PHPStan\Type\StringType(), new \PHPStan\Type\IntegerType()),
+		'unsealedShapeOptional' => $unsealedShape(['k' => new \PHPStan\Type\IntegerType(), 'l' => new \PHPStan\Type\StringType()], new \PHPStan\Type\StringType(), new \PHPStan\Type\MixedType(), [1]),
+		'unsealedEmpty' => $unsealedShape([], new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()),
+		'hasOffsetValueA' => new \PHPStan\Type\Accessory\HasOffsetValueType(new \PHPStan\Type\Constant\ConstantStringType('a'), new \PHPStan\Type\IntegerType()),
+		'hasOffsetValueAString' => new \PHPStan\Type\Accessory\HasOffsetValueType(new \PHPStan\Type\Constant\ConstantStringType('a'), new \PHPStan\Type\StringType()),
+		'hasOffsetValueZero' => new \PHPStan\Type\Accessory\HasOffsetValueType(new \PHPStan\Type\Constant\ConstantIntegerType(0), new \PHPStan\Type\Constant\ConstantStringType('x')),
+		'hasOffsetA' => new \PHPStan\Type\Accessory\HasOffsetType(new \PHPStan\Type\Constant\ConstantStringType('a')),
+		'arrayWithOffsetAString' => new $intersectionClass([new \PHPStan\Type\ArrayType(new \PHPStan\Type\StringType(), new \PHPStan\Type\MixedType()), new \PHPStan\Type\Accessory\HasOffsetValueType(new \PHPStan\Type\Constant\ConstantStringType('a'), new \PHPStan\Type\StringType()), new \PHPStan\Type\Accessory\NonEmptyArrayType()]),
+		'listWithOffsets' => new $intersectionClass([new \PHPStan\Type\ArrayType(\PHPStan\Type\IntegerRangeType::createAllGreaterThanOrEqualTo(0), new \PHPStan\Type\StringType()), new \PHPStan\Type\Accessory\AccessoryArrayListType(), new \PHPStan\Type\Accessory\HasOffsetValueType(new \PHPStan\Type\Constant\ConstantIntegerType(0), new \PHPStan\Type\Constant\ConstantStringType('x')), new \PHPStan\Type\Accessory\HasOffsetType(new \PHPStan\Type\Constant\ConstantIntegerType(1)), new \PHPStan\Type\Accessory\NonEmptyArrayType()]),
+		'oversized' => new $intersectionClass([new \PHPStan\Type\ArrayType(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()), new \PHPStan\Type\Accessory\OversizedArrayType()]),
+		'objectShape' => new \PHPStan\Type\ObjectShapeType(['bar' => new \PHPStan\Type\IntegerType(), 'baz' => new \PHPStan\Type\StringType()], ['bar']),
+		'objectShapeRequired' => new \PHPStan\Type\ObjectShapeType(['bar' => new \PHPStan\Type\IntegerType()], []),
+		'hasPropertyBaz' => new \PHPStan\Type\Accessory\HasPropertyType('baz'),
+		'iterableIntString' => new \PHPStan\Type\IterableType(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()),
+		'iterableStringInt' => new \PHPStan\Type\IterableType(new \PHPStan\Type\StringType(), new \PHPStan\Type\IntegerType()),
+		'classStringStd' => new \PHPStan\Type\Generic\GenericClassStringType(new \PHPStan\Type\ObjectType(\stdClass::class)),
+		'classStringThrowable' => new \PHPStan\Type\Generic\GenericClassStringType(new \PHPStan\Type\ObjectType(\Throwable::class)),
+		'unionOfIntersections' => new $unionClass([new $intersectionClass([new \PHPStan\Type\ArrayType(new \PHPStan\Type\StringType(), new \PHPStan\Type\IntegerType()), new \PHPStan\Type\Accessory\HasOffsetValueType(new \PHPStan\Type\Constant\ConstantStringType('a'), new \PHPStan\Type\IntegerType())]), new $intersectionClass([new \PHPStan\Type\ArrayType(new \PHPStan\Type\StringType(), new \PHPStan\Type\IntegerType()), new \PHPStan\Type\Accessory\HasOffsetValueType(new \PHPStan\Type\Constant\ConstantStringType('a'), new \PHPStan\Type\StringType())])]),
+		'unionOfShapes' => new $unionClass([$compoundConstShape(['a' => new \PHPStan\Type\IntegerType()]), $compoundConstShape(['b' => new \PHPStan\Type\StringType()])]),
+		'unionRanges' => new $unionClass([\PHPStan\Type\IntegerRangeType::fromInterval(0, 3), \PHPStan\Type\IntegerRangeType::fromInterval(10, 20)]),
+		'nullableString' => new $unionClass([new \PHPStan\Type\StringType(), new \PHPStan\Type\NullType()]),
+		'truthy' => \PHPStan\Type\StaticTypeFactory::truthy(),
+	];
+
+	// every pair: union, intersect, remove
+	foreach ($subjects as $aName => $a) {
+		foreach ($subjects as $bName => $b) {
+			$r["union $aName $bName"] = $view($tc::union($a, $b));
+			$r["intersect $aName $bName"] = $view($tc::intersect($a, $b));
+			$r["remove $aName $bName"] = $view($tc::remove($a, $b));
+		}
+	}
+
+	// the single-type helpers
+	foreach ($subjects as $name => $type) {
+		$r["removeNull $name"] = $view($tc::removeNull($type));
+		$r["addNull $name"] = $view($tc::addNull($type));
+		$r["containsNull $name"] = $tc::containsNull($type);
+		$r["removeFalsey $name"] = $view($tc::removeFalsey($type));
+		$r["removeTruthy $name"] = $view($tc::removeTruthy($type));
+		$r["union single $name"] = $view($tc::union($type));
+		$r["intersect single $name"] = $view($tc::intersect($type));
+		$r["doUnion single $name"] = $view($tc::doUnion($type));
+		$r["doIntersect single $name"] = $view($tc::doIntersect($type));
+		$r["countConstantArrayValueTypes $name"] = $tc::countConstantArrayValueTypes([$type]);
+	}
+
+	// a sample of triples, and the unmemoized bodies over the pairs of it
+	$tripleNames = ['int', 'int1', 'range0-3', 'string', 'stringA', 'stringEmpty', 'string0', 'nonEmptyString', 'nonFalsyString', 'null', 'mixed', 'mixedMinusInt', 'never', 'union', 'benevolent', 'array', 'list', 'nonEmptyArray', 'constArray', 'constShapeOptionalB', 'hasOffsetValueA', 'object', 'objectWithoutClass', 'enum', 'enumCaseClosedOpen', 'templateT', 'templateUnion', 'iterable', 'callable', 'true', 'false'];
+	foreach ($tripleNames as $aName) {
+		foreach ($tripleNames as $bName) {
+			$r["doUnion $aName $bName"] = $view($tc::doUnion($subjects[$aName], $subjects[$bName]));
+			$r["doIntersect $aName $bName"] = $view($tc::doIntersect($subjects[$aName], $subjects[$bName]));
+			$r["doRemove $aName $bName"] = $view($tc::doRemove($subjects[$aName], $subjects[$bName]));
+			foreach ($tripleNames as $cName) {
+				$r["union3 $aName $bName $cName"] = $view($tc::union($subjects[$aName], $subjects[$bName], $subjects[$cName]));
+				$r["intersect3 $aName $bName $cName"] = $view($tc::intersect($subjects[$aName], $subjects[$bName], $subjects[$cName]));
+			}
+		}
+	}
+
+	// the empty operations
+	$r['union none'] = $view($tc::union());
+	$r['intersect none'] = $view($tc::intersect());
+	$r['countConstantArrayValueTypes none'] = $tc::countConstantArrayValueTypes([]);
+	$tc::clearCache();
+	$r['clearCache'] = 'no throw';
+
+	// wide unions: more than 16 members (the description dedup), the
+	// constant-array count limit (same-signature records collapse
+	// losslessly, differing shapes generalize), and the list-variant fold
+	$manyStrings = array_map(static fn (int $i) => new \PHPStan\Type\Constant\ConstantStringType('s' . $i), range(1, 20));
+	$r['union many strings'] = $view($tc::union(...$manyStrings, ...[new \PHPStan\Type\IntegerType(), new \PHPStan\Type\Constant\ConstantStringType('s3')]));
+	$r['union many strings with string'] = $view($tc::union(...$manyStrings, ...[new \PHPStan\Type\StringType()]));
+	$manyInts = array_map(static fn (int $i) => new \PHPStan\Type\Constant\ConstantIntegerType($i), range(1, 30));
+	$r['union many ints'] = $view($tc::union(...$manyInts));
+	$r['union many ints with range'] = $view($tc::union(...$manyInts, ...[\PHPStan\Type\IntegerRangeType::fromInterval(25, 40)]));
+	$r['intersect many ints with union'] = $view($tc::intersect($tc::union(...$manyInts), new $unionClass([new \PHPStan\Type\Constant\ConstantIntegerType(2), new \PHPStan\Type\Constant\ConstantIntegerType(31)])));
+	$manyObjects = array_map(static fn (string $class) => new \PHPStan\Type\ObjectType($class), [\stdClass::class, \DateTime::class, \DateTimeImmutable::class, \DateTimeInterface::class, \Exception::class, \Error::class, \Throwable::class, \ArrayObject::class, \ArrayIterator::class, \Iterator::class, \Traversable::class, \Countable::class, \Stringable::class, \Closure::class, \Generator::class, \SplStack::class, \SplQueue::class, \WeakMap::class]);
+	$r['union many objects'] = $view($tc::union(...$manyObjects));
+	$r['intersect many objects'] = $view($tc::intersect(...$manyObjects));
+	$sameShapeRecords = array_map(static fn (int $i) => $compoundConstShape(['id' => new \PHPStan\Type\Constant\ConstantIntegerType($i), 'name' => new \PHPStan\Type\Constant\ConstantStringType('n' . $i), 'flag' => new \PHPStan\Type\Constant\ConstantBooleanType($i % 2 === 0)]), range(1, 100));
+	$r['union same-shape records'] = $view($tc::union(...$sameShapeRecords));
+	$r['countConstantArrayValueTypes same-shape records'] = $tc::countConstantArrayValueTypes($sameShapeRecords);
+	$differingShapes = array_map(static fn (int $i) => $compoundConstShape(array_combine(array_map(static fn (int $k) => 'k' . $k, range($i, $i + 3)), array_map(static fn (int $k) => new \PHPStan\Type\Constant\ConstantIntegerType($k), range($i, $i + 3)))), range(1, 80));
+	$r['union differing shapes'] = $view($tc::union(...$differingShapes));
+	$r['union differing shapes with list'] = $view($tc::union(...$differingShapes, ...[$subjects['list']]));
+	$nestedShapes = array_map(static fn (int $i) => $compoundConstShape(['row' => $compoundConstShape(['a' => new \PHPStan\Type\Constant\ConstantIntegerType($i), 'b' => $compoundConstShape([])]), 'k' . ($i % 7) => new \PHPStan\Type\Constant\ConstantStringType('v' . $i)]), range(1, 90));
+	$r['union nested shapes'] = $view($tc::union(...$nestedShapes));
+	$listVariants = [];
+	for ($i = 1; $i <= 25; $i++) {
+		$entries = [];
+		for ($k = 0; $k < $i; $k++) {
+			$entries[$k] = new \PHPStan\Type\Constant\ConstantIntegerType($k * $i);
+		}
+		$listVariants[] = $compoundConstShape($entries);
+	}
+	$r['union list variants'] = $view($tc::union(...$listVariants));
+	$r['union list variants with empty'] = $view($tc::union(...$listVariants, ...[$compoundConstShape([])]));
+	$r['union list variants with general'] = $view($tc::union(...$listVariants, ...[new \PHPStan\Type\ArrayType(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType())]));
+	$optionalVariants = array_map(static fn (int $i) => $compoundConstShape(['a' => new \PHPStan\Type\IntegerType(), 'b' => new \PHPStan\Type\Constant\ConstantIntegerType($i)], $i % 2 === 0 ? [1] : []), range(1, 12));
+	$r['union optional variants'] = $view($tc::union(...$optionalVariants));
+	$r['union optional variants with empty'] = $view($tc::union(...$optionalVariants, ...[$compoundConstShape([])]));
+	$r['union unsealed shapes'] = $view($tc::union($subjects['unsealedShape'], $subjects['unsealedShapeOptional'], $subjects['unsealedEmpty'], $compoundConstShape([])));
+	$r['union shapes and general'] = $view($tc::union($subjects['constShapeAB'], $subjects['constShapeC'], $subjects['arrayStringInt'], $subjects['templateArray']));
+	$r['union template arrays'] = $view($tc::union($subjects['templateArray'], $subjects['templateArrayInt']));
+	$r['union enum cases'] = $view($tc::union($subjects['enumCaseClosedOpen'], $subjects['enumCaseOpenClosed'], new \PHPStan\Type\Enum\EnumCaseObjectType('Random\\IntervalBoundary', 'ClosedClosed'), new \PHPStan\Type\Enum\EnumCaseObjectType('Random\\IntervalBoundary', 'OpenOpen')));
+	$r['remove enum cases'] = $view($tc::remove($subjects['enum'], $tc::union($subjects['enumCaseClosedOpen'], $subjects['enumCaseOpenClosed'])));
+	$r['remove all enum cases'] = $view($tc::remove($subjects['enum'], $tc::union($subjects['enumCaseClosedOpen'], $subjects['enumCaseOpenClosed'], $subjects['enumCasesUnion'])));
+	$r['union benevolent members'] = $view($tc::union(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType(), $subjects['benevolent']));
+	$r['union benevolent nullable'] = $view($tc::union($subjects['benevolentNullable'], $subjects['benevolent']));
+	$r['intersect benevolent with consts'] = $view($tc::intersect($subjects['benevolent'], $subjects['unionConstMixed']));
+	$r['intersect template union with int'] = $view($tc::intersect($subjects['templateUnion'], new \PHPStan\Type\IntegerType()));
+	$r['intersect template benevolent with int'] = $view($tc::intersect($subjects['templateBenevolentUnion'], new \PHPStan\Type\IntegerType()));
+	$r['intersect unions of unions'] = $view($tc::intersect($subjects['unionArrays'], $subjects['unionConstMixed'], $subjects['templateUnion']));
+	$r['intersect offsets and shape'] = $view($tc::intersect($subjects['constShapeOptionalB'], new \PHPStan\Type\Accessory\HasOffsetType(new \PHPStan\Type\Constant\ConstantStringType('b')), $subjects['nonEmpty']));
+	$r['intersect offset values and shape'] = $view($tc::intersect($subjects['constShapeAB'], $subjects['hasOffsetValueAString'], $subjects['listAccessory']));
+	$r['intersect shape with property'] = $view($tc::intersect($subjects['objectShape'], $subjects['hasPropertyBar'], $subjects['hasPropertyBaz']));
+	$r['intersect many offset values'] = $view($tc::intersect($subjects['array'], ...array_map(static fn (int $i) => new \PHPStan\Type\Accessory\HasOffsetValueType(new \PHPStan\Type\Constant\ConstantIntegerType($i), new \PHPStan\Type\IntegerType()), range(0, 40))));
+	$r['intersect many offsets'] = $view($tc::intersect($subjects['array'], ...array_map(static fn (int $i) => new \PHPStan\Type\Accessory\HasOffsetType(new \PHPStan\Type\Constant\ConstantIntegerType($i)), range(0, 10))));
+	$r['intersect accessories only'] = $view($tc::intersect($subjects['nonEmpty'], $subjects['listAccessory'], $subjects['hasOffset0']));
+	$r['intersect string accessories only'] = $view($tc::intersect(new \PHPStan\Type\Accessory\AccessoryNonEmptyStringType(), new \PHPStan\Type\Accessory\AccessoryLowercaseStringType()));
+	$r['union subtracted mixed'] = $view($tc::union($subjects['mixedMinusInt'], $subjects['mixedMinusIntString'], $subjects['string']));
+	$r['union subtracted objects'] = $view($tc::union($subjects['objectMinusStd'], $subjects['throwableMinusError'], $subjects['errorObject']));
+	$r['intersect subtracted objects'] = $view($tc::intersect($subjects['objectMinusStd'], $subjects['throwableMinusError'], $subjects['objectThrowable']));
+	$r['remove subtracted'] = $view($tc::remove($subjects['mixedMinusInt'], $subjects['string']));
+	$r['remove from union of shapes'] = $view($tc::remove($subjects['unionOfShapes'], $subjects['constShapeC']));
+	$r['remove ranges'] = $view($tc::remove($subjects['unionRanges'], $subjects['range2-4']));
+	$r['remove union from union'] = $view($tc::remove($subjects['unionConstMixed'], $subjects['unionConsts']));
+	$r['union iterables'] = $view($tc::union($subjects['iterableIntString'], $subjects['iterableStringInt'], $subjects['arrayIntString']));
+	$r['intersect iterables'] = $view($tc::intersect($subjects['iterableIntString'], $subjects['arrayIntString'], $subjects['list']));
+	$r['intersect class strings'] = $view($tc::intersect($subjects['classStringStd'], $subjects['classStringThrowable'], $subjects['classString']));
+	$r['union empty and non-empty strings'] = $view($tc::union($subjects['stringEmpty'], $subjects['nonFalsyLowercase'], $subjects['string0']));
+	$r['union zero and non-falsy'] = $view($tc::union($subjects['string0'], $subjects['nonFalsyString']));
+	$r['union decimal and non-decimal'] = $view($tc::union($subjects['decimalIntString'], $subjects['nonDecimalNumericString']));
+
+	foreach ($r as $key => $value) {
+		$observations["combinator $key"] = $value;
+	}
+}
+
+
 // observations holding bytes that are not UTF-8 (the invalid-UTF-8 subject's
 // descriptions) go out base64-encoded so json_encode() keeps every byte; the
 // non-finite floats (the NAN and infinity subjects' values) as their names

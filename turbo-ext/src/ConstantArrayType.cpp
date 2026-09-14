@@ -86,13 +86,13 @@ static bool isInstance(zval *value, zend_class_entry *ce, bool &out)
 static zv::Val combinator2(const char *lcname, size_t len, zval *a, zval *b)
 {
 	zv::Args args{a, b};
-	return pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, lcname, len, 2, args);
+	return pt_type_combinator_call(lcname, len, 2, args);
 }
 
 /* TypeCombinator::<method>(...$types) over an owned array */
 static zv::Val combinatorSpread(const char *lcname, size_t len, HashTable *types)
 {
-	return pt_type_call_static_spread(PT_CLASS_TYPE_COMBINATOR, lcname, len, types);
+	return pt_type_combinator_call_spread(lcname, len, types);
 }
 
 /* new IntersectionType($types) ($types consumed) */

@@ -567,7 +567,7 @@ public:
 		zv::Val unioned;
 		if (Z_TYPE_P(subtracted) != IS_NULL) {
 			zv::Args args{subtracted, type};
-			unioned = pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), 2, args);
+			unioned = pt_type_combinator_call(PT_LC("union"), 2, args);
 			if (UNEXPECTED(unioned.isUndef())) return zv::Val();
 			type = unioned.raw();
 		}
@@ -613,7 +613,7 @@ public:
 					if (!remaining.isNull()) return create(classReflection.raw(), remaining.raw());
 				}
 				zv::Args args{self, objectType.raw()};
-				return pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("intersect"), 2, args);
+				return pt_type_combinator_call(PT_LC("intersect"), 2, args);
 			}
 		}
 		zval *reflection = classReflection();

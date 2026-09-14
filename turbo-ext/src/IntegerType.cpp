@@ -102,9 +102,9 @@ public:
 			}
 			ZVAL_COPY_VALUE(&args[2], string.raw());
 			ZVAL_COPY_VALUE(&args[3], boolean.raw());
-			return pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), 4, args);
+			return pt_type_combinator_call(PT_LC("union"), 4, args);
 		}
-		return pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), 2, args);
+		return pt_type_combinator_call(PT_LC("union"), 2, args);
 	}
 
 	static zend_long isOffsetAccessLegal() { return PT_TRI_YES; }

@@ -463,7 +463,7 @@ public:
 		if (UNEXPECTED(!pt_callable_type_new(&callableRaw))) return zv::Val();
 		zv::Val callable = zv::Val::adopt(callableRaw);
 		zv::Args args{self, callable.raw()};
-		return pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), 2, args);
+		return pt_type_combinator_call(PT_LC("union"), 2, args);
 	}
 
 	/* the union or intersection's inferTemplateTypesOn($this); nothing for

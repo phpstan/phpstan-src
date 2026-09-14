@@ -463,7 +463,7 @@ public:
 		if (UNEXPECTED(!created)) return zv::Val();
 		zv::Val closure = zv::Val::adopt(closureRaw);
 		zv::Args args{self, nonEmptyString.raw(), array.raw(), closure.raw()};
-		return pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), 4, args);
+		return pt_type_combinator_call(PT_LC("union"), 4, args);
 	}
 
 	/* the union or intersection's inferTemplateTypesOn($this); nothing for

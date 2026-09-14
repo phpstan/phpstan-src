@@ -135,7 +135,7 @@ public:
 				if (UNEXPECTED(boolean.isUndef())) return zv::Val();
 			}
 			zv::Args args{integer.raw(), self, string.raw(), boolean.raw()};
-			return pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), 4, args);
+			return pt_type_combinator_call(PT_LC("union"), 4, args);
 		}
 		return thisValue();
 	}

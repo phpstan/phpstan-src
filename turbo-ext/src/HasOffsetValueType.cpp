@@ -297,7 +297,7 @@ public:
 				zv::Val otherValue = pt_has_offset_value_type_get_value_type(Z_OBJ_P(typeToRemove));
 				if (UNEXPECTED(otherValue.isUndef())) return zv::Val();
 				zv::Args args{value, otherValue.raw()};
-				zv::Val remaining = pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("remove"), 2, args);
+				zv::Val remaining = pt_type_combinator_call(PT_LC("remove"), 2, args);
 				if (UNEXPECTED(remaining.isUndef())) return zv::Val();
 				return create(offset, remaining.raw());
 			}
@@ -682,7 +682,7 @@ private:
 		zv::Val nonEmpty = nonEmptyArray();
 		if (UNEXPECTED(nonEmpty.isUndef())) return zv::Val();
 		zv::Args args{self, nonEmpty.raw()};
-		return pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("intersect"), 2, args);
+		return pt_type_combinator_call(PT_LC("intersect"), 2, args);
 	}
 
 	/* new self(new ConstantStringType($owned), $this->valueType) */

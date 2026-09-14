@@ -368,7 +368,7 @@ public:
 		zv::Val keyUnion = pt_type_new_union(std::move(keyTypes));
 		if (UNEXPECTED(keyUnion.isUndef())) return zv::Val();
 		zv::Args intersectArgs{arrayKey.raw(), keyUnion.raw()};
-		zv::Val coercedKey = pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("intersect"), 2, intersectArgs);
+		zv::Val coercedKey = pt_type_combinator_call(PT_LC("intersect"), 2, intersectArgs);
 		if (UNEXPECTED(coercedKey.isUndef())) return zv::Val();
 		zval *i = itemType();
 		if (UNEXPECTED(i == NULL)) return zv::Val();
@@ -377,7 +377,7 @@ public:
 		zv::Val traversable = genericTraversable(k, i);
 		if (UNEXPECTED(traversable.isUndef())) return zv::Val();
 		zv::Args args{self, array.raw(), traversable.raw()};
-		return pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), 3, args);
+		return pt_type_combinator_call(PT_LC("union"), 3, args);
 	}
 
 	/* IntegerRangeType::fromInterval(0, null) */

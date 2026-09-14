@@ -229,8 +229,10 @@ zend_long pt_type_result_trinary(zval *result)
 	zend_object *object = Z_OBJ_P(result);
 	if (EXPECTED(object->ce == pt_ce_is_super_type_of_result || object->ce == pt_ce_accepts_result)) return pt_result_value(object);
 	/* the PHP twin declared next to the native class in the differential
-	 * tests: its public readonly $result */
+	 * tests: its public readonly $result (rv is only written for a magic
+	 * read, so it starts UNDEF for the release below to be a no-op) */
 	zval rv;
+	ZVAL_UNDEF(&rv);
 	zval *trinary = zend_read_property(object->ce, object, PT_LC("result"), 0, &rv);
 	if (UNEXPECTED(trinary == NULL || EG(exception))) return -1;
 	zend_long value = pt_type_trinary_value(trinary);
@@ -293,10 +295,10 @@ zv::Val pt_type_mixed_minus(HashTable *subtractedTypes)
 {
 	zv::Val mixed = pt_type_new_mixed_type();
 	if (UNEXPECTED(mixed.isUndef())) return zv::Val();
-	zv::Val unionType = pt_type_call_static_spread(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), subtractedTypes);
+	zv::Val unionType = pt_type_combinator_call_spread(PT_LC("union"), subtractedTypes);
 	if (UNEXPECTED(unionType.isUndef())) return zv::Val();
 	zv::Args args{mixed.raw(), unionType.raw()};
-	return pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("remove"), 2, args);
+	return pt_type_combinator_call(PT_LC("remove"), 2, args);
 }
 
 /* $this->isObject()->yes(); false = pending exception. The fast path
@@ -1722,7 +1724,7 @@ void pt_type_trait_object(reg::Class &cls)
 		zv::Val string = pt_type_call(PT_THIS_OBJ, PT_LC("tostring"), 0, NULL);
 		if (UNEXPECTED(string.isUndef())) RETURN_THROWS();
 		zv::Args args{ZEND_THIS, string.raw()};
-		PT_RETURN_VAL(pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), 2, args));
+		PT_RETURN_VAL(pt_type_combinator_call(PT_LC("union"), 2, args));
 	});
 }
 
@@ -1973,7 +1975,7 @@ static zv::Val pt_trait_intersect_non_empty(zval *type)
 	zval nonEmpty;
 	if (UNEXPECTED(!pt_non_empty_array_type_new(&nonEmpty))) return zv::Val();
 	zv::Args args{type, &nonEmpty};
-	zv::Val result = pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("intersect"), 2, args);
+	zv::Val result = pt_type_combinator_call(PT_LC("intersect"), 2, args);
 	zval_ptr_dtor(&nonEmpty);
 	return result;
 }

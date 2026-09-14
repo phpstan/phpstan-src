@@ -231,7 +231,7 @@ public:
 			zv::Val emptyArray = emptyConstantArray();
 			if (UNEXPECTED(emptyArray.isUndef())) return zv::Val();
 			zv::Args args{subtracted, emptyArray.raw()};
-			zv::Val remaining = pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("remove"), 2, args);
+			zv::Val remaining = pt_type_combinator_call(PT_LC("remove"), 2, args);
 			if (UNEXPECTED(remaining.isUndef())) return zv::Val();
 			bool explicitMixed = false;
 			if (UNEXPECTED(!isExplicitMixed(explicitMixed))) return zv::Val();
@@ -531,7 +531,7 @@ public:
 		zv::Val floatType = isExact() ? toFloat() : pt_type_call(self, PT_LC("tofloat"), 0, NULL);
 		if (UNEXPECTED(floatType.isUndef())) return zv::Val();
 		zv::Args args{integer.raw(), floatType.raw()};
-		return pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), 2, args);
+		return pt_type_combinator_call(PT_LC("union"), 2, args);
 	}
 
 	/* false when $this->isObject() is no, $this->getClassStringType() when
@@ -791,7 +791,7 @@ public:
 		zv::Val unioned;
 		if (Z_TYPE_P(subtracted) != IS_NULL) {
 			zv::Args args{subtracted, type};
-			unioned = pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), 2, args);
+			unioned = pt_type_combinator_call(PT_LC("union"), 2, args);
 			if (UNEXPECTED(unioned.isUndef())) return zv::Val();
 			type = unioned.raw();
 		}

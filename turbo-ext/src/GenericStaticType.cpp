@@ -418,7 +418,7 @@ public:
 					if (!remaining.isNull()) return create(classReflection.raw(), ownTypes, remaining.raw(), ownVariances);
 				}
 				zv::Args args{self, objectType.raw()};
-				return pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("intersect"), 2, args);
+				return pt_type_combinator_call(PT_LC("intersect"), 2, args);
 			}
 		}
 		zval *reflection = classReflection();

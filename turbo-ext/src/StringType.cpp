@@ -195,7 +195,7 @@ public:
 		zv::Val accessory = zv::Val::adopt(accessoryRaw);
 		if (UNEXPECTED(accessory.isUndef())) return zv::Val();
 		zv::Args args{self, accessory.raw()};
-		zv::Val intersected = pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("intersect"), 2, args);
+		zv::Val intersected = pt_type_combinator_call(PT_LC("intersect"), 2, args);
 		if (UNEXPECTED(intersected.isUndef())) return zv::Val();
 		zv::Arr types = zv::Arr::create(2);
 		types.push(std::move(integer));
@@ -230,7 +230,7 @@ public:
 		}
 		if (isNumeric == PT_TRI_NO) {
 			zv::Args args{self, boolean.raw()};
-			return pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), 2, args);
+			return pt_type_combinator_call(PT_LC("union"), 2, args);
 		}
 
 		zv::Val integer = isExact() ? toInteger() : pt_type_call(self, PT_LC("tointeger"), 0, NULL);
@@ -238,7 +238,7 @@ public:
 		zv::Val floatType = isExact() ? toFloat() : pt_type_call(self, PT_LC("tofloat"), 0, NULL);
 		if (UNEXPECTED(floatType.isUndef())) return zv::Val();
 		zv::Args args{integer.raw(), floatType.raw(), self, boolean.raw()};
-		return pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), 4, args);
+		return pt_type_combinator_call(PT_LC("union"), 4, args);
 	}
 
 	static zend_long isNull() { return PT_TRI_NO; }
@@ -305,7 +305,7 @@ public:
 				zv::Val accessory = pt_type_new_shadowed(pt_accessory_non_empty_string_type_new);
 				if (UNEXPECTED(accessory.isUndef())) return zv::Val();
 				zv::Args args{self, accessory.raw()};
-				return pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("intersect"), 2, args);
+				return pt_type_combinator_call(PT_LC("intersect"), 2, args);
 			}
 		}
 

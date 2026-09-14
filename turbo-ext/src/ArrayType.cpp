@@ -50,7 +50,7 @@ static bool isInstance(zval *value, zend_class_entry *ce, bool &out)
 static zv::Val combinator2(const char *lcname, size_t len, zval *a, zval *b)
 {
 	zv::Args args{a, b};
-	return pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, lcname, len, 2, args);
+	return pt_type_combinator_call(lcname, len, 2, args);
 }
 
 /* new ConstantArrayType([], []) */
@@ -643,7 +643,7 @@ public:
 						if (UNEXPECTED(next.isUndef())) return zv::Val();
 						all.push(std::move(next));
 					}
-					offsetType = pt_type_call_static_spread(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), all.table());
+					offsetType = pt_type_combinator_call_spread(PT_LC("union"), all.table());
 				} else {
 					offsetType = zv::Val::copyOf(zv::Ref(k));
 				}
@@ -653,7 +653,7 @@ public:
 				if (zend_hash_num_elements(Z_ARRVAL_P(integerTypes.raw())) == 0) {
 					offsetType = zv::Val::copyOf(zv::Ref(k));
 				} else {
-					offsetType = pt_type_call_static_spread(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), Z_ARRVAL_P(integerTypes.raw()));
+					offsetType = pt_type_combinator_call_spread(PT_LC("union"), Z_ARRVAL_P(integerTypes.raw()));
 				}
 			}
 		} else {
@@ -776,7 +776,7 @@ public:
 						for (zv::ArrayEntry accessoryEntry : zv::ArrRef(accessories.raw())) {
 							intersectArgs.push(accessoryEntry.value());
 						}
-						zv::Val intersected = pt_type_call_static_spread(PT_CLASS_TYPE_COMBINATOR, PT_LC("intersect"), intersectArgs.table());
+						zv::Val intersected = pt_type_combinator_call_spread(PT_LC("intersect"), intersectArgs.table());
 						if (UNEXPECTED(intersected.isUndef())) return zv::Val();
 						newItemTypes.push(std::move(intersected));
 						continue;
@@ -813,7 +813,7 @@ public:
 					}
 					newItemTypes.push(std::move(newItemType));
 				}
-				zv::Val newItemType = pt_type_call_static_spread(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), newItemTypes.table());
+				zv::Val newItemType = pt_type_combinator_call_spread(PT_LC("union"), newItemTypes.table());
 				if (UNEXPECTED(newItemType.isUndef())) return zv::Val();
 				/* $newItemType !== $this->itemType */
 				if (!zv::Ref(newItemType.raw()).isObject() || Z_OBJ_P(newItemType.raw()) != Z_OBJ_P(i)) {
@@ -940,7 +940,7 @@ public:
 					if (UNEXPECTED(result.isUndef())) return zv::Val();
 					results.push(std::move(result));
 				}
-				return pt_type_call_static_spread(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), results.table());
+				return pt_type_combinator_call_spread(PT_LC("union"), results.table());
 			}
 		}
 
@@ -1233,7 +1233,7 @@ public:
 			intersectionTypes.push(zv::Val::adopt(accessory));
 			added++;
 		}
-		return pt_type_call_static_spread(PT_CLASS_TYPE_COMBINATOR, PT_LC("intersect"), intersectionTypes.table());
+		return pt_type_combinator_call_spread(PT_LC("intersect"), intersectionTypes.table());
 	}
 
 	/* $this->withTypes($this->keyType, $cb($this->getItemType())) */
@@ -1926,7 +1926,7 @@ private:
 				if (UNEXPECTED(one.isUndef())) return;
 				folded.push(std::move(one));
 			}
-			zv::Val unionType = pt_type_call_static_spread(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), folded.table());
+			zv::Val unionType = pt_type_combinator_call_spread(PT_LC("union"), folded.table());
 			if (UNEXPECTED(unionType.isUndef())) return;
 			unionType.intoReturnValue(return_value);
 			return;

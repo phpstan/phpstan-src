@@ -1561,7 +1561,7 @@ public:
 			zv::Val string = thisCall(PT_LC("tostring"), otToString, 0, NULL, [&]() { return toString(); });
 			if (UNEXPECTED(string.isUndef())) return zv::Val();
 			zv::Args args{self, string.raw()};
-			return pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), 2, args);
+			return pt_type_combinator_call(PT_LC("union"), 2, args);
 		}
 
 		return thisValue();
@@ -2251,7 +2251,7 @@ public:
 		if (!matched.isNull()) return matched;
 
 		zv::Args args{subtracted, type};
-		zv::Val unioned = pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), 2, args);
+		zv::Val unioned = pt_type_combinator_call(PT_LC("union"), 2, args);
 		if (UNEXPECTED(unioned.isUndef())) return zv::Val();
 		return thisChangeSubtractedType(unioned.raw());
 	}
@@ -2734,7 +2734,7 @@ public:
 						if (UNEXPECTED(objectType.isUndef())) return zv::Val();
 						objectTypes.push(std::move(objectType));
 					}
-					return pt_type_call_static_spread(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), objectTypes.table());
+					return pt_type_combinator_call_spread(PT_LC("union"), objectTypes.table());
 				}
 			}
 		}
@@ -2813,7 +2813,7 @@ public:
 				if (UNEXPECTED(exponentIsObject < 0)) return zv::Val();
 				if (exponentIsObject != PT_TRI_NO) {
 					zv::Args args{self, exponent};
-					return pt_type_call_static(PT_CLASS_TYPE_COMBINATOR, PT_LC("union"), 2, args);
+					return pt_type_combinator_call(PT_LC("union"), 2, args);
 				}
 			}
 		}

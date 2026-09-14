@@ -28,6 +28,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateStrictMixedType;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\ArrayTypeTrait;
@@ -406,7 +407,7 @@ class ArrayType implements Type
 
 			return new IntersectionType([
 				$this->withTypes(
-					TypeCombinator::union($this->keyType, $offsetType),
+					$this->unionKeyTypeWithConstantOffset($offsetType),
 					TypeCombinator::union($this->itemType, $valueType),
 				),
 				new HasOffsetValueType($offsetType, $valueType),
@@ -421,6 +422,30 @@ class ArrayType implements Type
 			),
 			new NonEmptyArrayType(),
 		]);
+	}
+
+	/**
+	 * The key type with a constant offset written into the array.
+	 *
+	 * A key union that already holds the offset is handed back as it is. Unioning would
+	 * rebuild the same members, and an array keyed by a union of a few hundred literals
+	 * pays that rebuild for every key written. The array type - and its key union - lives
+	 * on across the writes, so the membership check pays for the union's finite value
+	 * index once; asking it of every union TypeCombinator sees would build that index for
+	 * short-lived unions that are never asked again.
+	 */
+	private function unionKeyTypeWithConstantOffset(Type $offsetType): Type
+	{
+		if (
+			$this->keyType instanceof UnionType
+			&& !$this->keyType instanceof BenevolentUnionType
+			&& !$this->keyType instanceof TemplateType
+			&& $this->keyType->isSuperTypeOf($offsetType)->yes()
+		) {
+			return $this->keyType;
+		}
+
+		return TypeCombinator::union($this->keyType, $offsetType);
 	}
 
 	public function setExistingOffsetValueType(Type $offsetType, Type $valueType): Type

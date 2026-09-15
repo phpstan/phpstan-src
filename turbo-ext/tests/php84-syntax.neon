@@ -1,0 +1,5 @@
+# The fixtures use PHP 8.4 syntax (property hooks, asymmetric visibility). On
+# an older PHP only the emulating lexer reads it, and PHPStan picks that lexer
+# when phpVersion differs from the running PHP.
+parameters:
+	phpVersion: 80400

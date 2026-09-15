@@ -5,9 +5,11 @@ namespace PHPStan\Node\Expr;
 use Override;
 use PhpParser\Node\Expr;
 use PHPStan\Node\VirtualNode;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Type;
 
 /** Wraps an expression so its type is always remembered in the scope, bypassing impurity checks. */
+#[ReferencedByTurboExtension(key: 'alwaysRememberedExpr')]
 final class AlwaysRememberedExpr extends Expr implements VirtualNode
 {
 

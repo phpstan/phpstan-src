@@ -1248,6 +1248,13 @@ zend_always_inline zv::Val pt_this_call(zend_object *self, bool exact, const cha
 }
 
 template <typename Direct>
+[[nodiscard]] zend_always_inline bool pt_this_call_bool(zend_object *self, bool exact, const char *lcname, size_t len, zif_handler handler, uint32_t argc, zval *argv, bool &out, Direct direct)
+{
+	if (EXPECTED(exact || pt_type_method_is(self, lcname, len, handler))) return direct(out);
+	return pt_type_call_bool(self, lcname, len, argc, argv, out);
+}
+
+template <typename Direct>
 [[nodiscard]] zend_always_inline zend_long pt_this_call_trinary(zend_object *self, bool exact, const char *lcname, size_t len, zif_handler handler, uint32_t argc, zval *argv, Direct direct)
 {
 	if (EXPECTED(exact || pt_type_method_is(self, lcname, len, handler))) return direct();
@@ -1394,5 +1401,10 @@ zv::Val pt_prototype_resolved_method(phpstanturbo::PrototypeKind kind, const php
 zv::Val pt_prototype_resolved_property(phpstanturbo::PrototypeKind kind, const phpstanturbo::PrototypeTransformer &transformer, zend_object *resolvedDeclaringClass, zend_object *property, bool resolveTemplateTypeMapToBounds);
 
 /* }}} */
+
+/* TypeUtils::resolveLateResolvableTypes($type) with the default
+ * $resolveUnresolvableTypes = true — the shadowing class's body
+ * (TypeUtils.cpp); UNDEF = pending exception */
+zv::Val pt_type_utils_resolve_late_resolvable_types(zval *type);
 
 #endif /* PHPSTANTURBO_TYPETRAITS_H */

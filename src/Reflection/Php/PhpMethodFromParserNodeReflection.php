@@ -13,6 +13,7 @@ use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\MissingMethodFromReflectionException;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -32,6 +33,7 @@ use function strtolower;
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'phpMethodFromParserNodeReflection')]
 final class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflection implements ExtendedMethodReflection
 {
 

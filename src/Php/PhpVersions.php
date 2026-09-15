@@ -3,6 +3,7 @@
 namespace PHPStan\Php;
 
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\Type;
 
@@ -17,6 +18,7 @@ use PHPStan\Type\Type;
  *
  * @api
  */
+#[ReferencedByTurboExtension(key: 'phpVersions')]
 final class PhpVersions
 {
 

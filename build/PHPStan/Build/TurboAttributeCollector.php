@@ -14,13 +14,20 @@ use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\ArrowFunction;
 use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\CallLike;
+use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Expr\Closure;
+use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\List_;
+use PhpParser\Node\Expr\Match_;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Expr\NullsafeMethodCall;
 use PhpParser\Node\Expr\NullsafePropertyFetch;
+use PhpParser\Node\Expr\PostDec;
+use PhpParser\Node\Expr\PostInc;
+use PhpParser\Node\Expr\PreDec;
+use PhpParser\Node\Expr\PreInc;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\StaticPropertyFetch;
@@ -32,14 +39,20 @@ use PhpParser\Node\FunctionLike;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Name\FullyQualified;
+use PhpParser\Node\Param;
 use PhpParser\Node\Scalar;
+use PhpParser\Node\Scalar\Float_;
+use PhpParser\Node\Scalar\Int_;
+use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Declare_;
 use PhpParser\Node\Stmt\Expression;
+use PhpParser\Node\Stmt\HaltCompiler;
 use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\Node\VariadicPlaceholder;
+use PhpParser\Node\VarLikeIdentifier;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum;
@@ -175,11 +188,24 @@ final class TurboAttributeCollector
 		'conditionalTypeNode' => ConditionalTypeNode::class,
 		'conditionalTypeForParameterNode' => ConditionalTypeForParameterNode::class,
 		'reflectionEnum' => ReflectionEnum::class,
+		'constFetch' => ConstFetch::class,
+		'haltCompiler' => HaltCompiler::class,
+		'match' => Match_::class,
 		'nullsafeMethodCall' => NullsafeMethodCall::class,
 		'staticPropertyFetch' => StaticPropertyFetch::class,
+		'classConstFetch' => ClassConstFetch::class,
+		'scalarString' => String_::class,
+		'scalarInt' => Int_::class,
+		'scalarFloat' => Float_::class,
+		'varLikeIdentifier' => VarLikeIdentifier::class,
 		'listExpr' => List_::class,
 		'reflectionEnumBackedCase' => ReflectionEnumBackedCase::class,
 		'arg' => Arg::class,
+		'param' => Param::class,
+		'preInc' => PreInc::class,
+		'preDec' => PreDec::class,
+		'postInc' => PostInc::class,
+		'postDec' => PostDec::class,
 		'adapterReflectionMethod' => ReflectionMethod::class,
 		'expressionStmt' => Expression::class,
 		'assignExpr' => Assign::class,

@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection;
 
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Type;
 
 /**
@@ -21,6 +22,7 @@ use PHPStan\Type\Type;
  * @api
  * @api-do-not-implement
  */
+#[ReferencedByTurboExtension(key: 'functionReflection')]
 interface FunctionReflection
 {
 

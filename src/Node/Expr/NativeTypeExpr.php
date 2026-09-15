@@ -5,11 +5,13 @@ namespace PHPStan\Node\Expr;
 use Override;
 use PhpParser\Node\Expr;
 use PHPStan\Node\VirtualNode;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Type;
 
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'nativeTypeExpr')]
 final class NativeTypeExpr extends Expr implements VirtualNode
 {
 

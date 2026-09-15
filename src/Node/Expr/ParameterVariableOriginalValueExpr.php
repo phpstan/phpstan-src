@@ -5,7 +5,9 @@ namespace PHPStan\Node\Expr;
 use Override;
 use PhpParser\Node\Expr;
 use PHPStan\Node\VirtualNode;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
+#[ReferencedByTurboExtension(key: 'parameterVariableOriginalValueExpr')]
 final class ParameterVariableOriginalValueExpr extends Expr implements VirtualNode
 {
 

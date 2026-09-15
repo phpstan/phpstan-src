@@ -7,12 +7,14 @@ use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Type;
 use WeakReference;
 use function array_pop;
 use function count;
 use function spl_object_id;
 
+#[ReferencedByTurboExtension(key: 'nodeCallbackScope')]
 final class NodeCallbackScope extends MutatingScope
 {
 

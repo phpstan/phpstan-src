@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\AnalysedCodeException;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use function sprintf;
 
 /**
@@ -11,6 +12,7 @@ use function sprintf;
  * Unchecked exception thrown from `PHPStan\Analyser\Scope::getVariableType()`
  * in case the user doesn't check `hasVariableType()` is not `no()`.
  */
+#[ReferencedByTurboExtension(key: 'undefinedVariableException')]
 final class UndefinedVariableException extends AnalysedCodeException
 {
 

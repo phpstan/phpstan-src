@@ -5,7 +5,9 @@ namespace PHPStan\Node\Expr;
 use Override;
 use PhpParser\Node\Expr;
 use PHPStan\Node\VirtualNode;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
+#[ReferencedByTurboExtension(key: 'propertyInitializationExpr')]
 final class PropertyInitializationExpr extends Expr implements VirtualNode
 {
 

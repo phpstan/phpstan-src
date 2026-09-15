@@ -6,11 +6,13 @@ use Override;
 use PhpParser\Node;
 use PhpParser\NodeAbstract;
 use PHPStan\Collectors\Collector;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * @template TNodeType of Node
  * @template TValue
  */
+#[ReferencedByTurboExtension(key: 'emitCollectedDataNode')]
 final class EmitCollectedDataNode extends NodeAbstract implements VirtualNode
 {
 

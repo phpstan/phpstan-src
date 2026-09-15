@@ -176,11 +176,34 @@ enum {
 	PT_CLASS_RESOLVED_PROPERTY_REFLECTION,
 	PT_CLASS_CHANGED_TYPE_METHOD_REFLECTION,
 	PT_CLASS_CHANGED_TYPE_PROPERTY_REFLECTION,
+	PT_CLASS_UNDEFINED_VARIABLE_EXCEPTION,
+	PT_CLASS_NODE_CALLBACK_SCOPE,
+	PT_CLASS_PROPERTY_INITIALIZATION_EXPR,
+	PT_CLASS_POSSIBLY_IMPURE_CALL_EXPR,
+	PT_CLASS_CONST_FETCH,
+	PT_CLASS_HALT_COMPILER,
+	PT_CLASS_NODE_SCOPE_RESOLVER,
+	PT_CLASS_EXPR_HANDLER_REGISTRY,
+	PT_CLASS_TEMPLATE_ARGUMENT_FRAME,
 	PT_CLASS_INITIALIZER_EXPR_CONTEXT,
+	PT_CLASS_EXTENDED_PARAMETERS_ACCEPTOR,
+	PT_CLASS_MATCH,
 	PT_CLASS_NULLSAFE_METHOD_CALL,
 	PT_CLASS_STATIC_PROPERTY_FETCH,
+	PT_CLASS_CLASS_CONST_FETCH,
+	PT_CLASS_SCALAR_STRING,
+	PT_CLASS_SCALAR_INT,
+	PT_CLASS_SCALAR_FLOAT,
+	PT_CLASS_VAR_LIKE_IDENTIFIER,
 	PT_CLASS_EXTENDED_METHOD_REFLECTION,
 	PT_CLASS_ARG,
+	PT_CLASS_FUNCTION_REFLECTION,
+	PT_CLASS_PHP_VERSIONS,
+	PT_CLASS_PARAM,
+	PT_CLASS_TRANSFORM_STATIC_TYPE_TRAVERSER,
+	PT_CLASS_PHP_METHOD_FROM_PARSER_NODE_REFLECTION,
+	PT_CLASS_PHP_FUNCTION_FROM_PARSER_NODE_REFLECTION,
+	PT_CLASS_PARAMETER_VARIABLE_ORIGINAL_VALUE_EXPR,
 	PT_CLASS_WRAPPED_EXTENDED_METHOD_REFLECTION,
 	PT_CLASS_EXTENDED_PROPERTY_REFLECTION,
 	PT_CLASS_WRAPPED_EXTENDED_PROPERTY_REFLECTION,
@@ -202,6 +225,7 @@ enum {
 	PT_CLASS_VOID_TO_NULL_TRAVERSER,
 	PT_CLASS_ISSETABILITY_RESOLUTION,
 	PT_CLASS_ISSETABILITY_LINK_INFO,
+	PT_CLASS_ALWAYS_REMEMBERED_EXPR,
 	PT_CLASS_PHP_PROPERTY_REFLECTION,
 	PT_CLASS_NATIVE_METHOD_REFLECTION,
 	PT_CLASS_EXTENDED_NATIVE_PARAMETER_REFLECTION,
@@ -216,6 +240,18 @@ enum {
 	PT_CLASS_CLASS_METHOD_STMT,
 	PT_CLASS_ADAPTER_REFLECTION_CLASS,
 	PT_CLASS_BETTER_REFLECTION_CLASS,
+	PT_CLASS_ORIGINAL_FOREACH_VALUE_EXPR,
+	PT_CLASS_ORIGINAL_FOREACH_KEY_EXPR,
+	PT_CLASS_SET_EXISTING_OFFSET_VALUE_TYPE_EXPR,
+	PT_CLASS_NATIVE_TYPE_EXPR,
+	PT_CLASS_CLONE_REINITIALIZATION_EXPR,
+	PT_CLASS_METHOD_REFLECTION,
+	PT_CLASS_PRE_INC,
+	PT_CLASS_PRE_DEC,
+	PT_CLASS_POST_INC,
+	PT_CLASS_POST_DEC,
+	PT_CLASS_ISSET_EXPR,
+	PT_CLASS_EMIT_COLLECTED_DATA_NODE,
 	PT_CLASS_COUNT
 };
 
@@ -226,6 +262,7 @@ zend_class_entry *pt_class(int idx);
  * an `instanceof` against an undeclared class sees; throws only when the
  * key has neither a configured nor a default name */
 zend_class_entry *pt_class_loaded(int idx);
+
 
 /* Called by Runtime::configure() */
 void pt_class_map_configure(zend_string *key, zend_string *value);
@@ -1057,6 +1094,7 @@ zv::Val pt_conditional_type_for_parameter_narrow_template_type(zval *type, zval 
 bool pt_late_resolvable_array_shape_type_create(zval *out, zval *items, zval *unsealed, zend_string *kind);
 bool pt_unresolved_template_argument_type_new(zval *out, zval *site, zval *templateType, zval *initialType);
 
+
 /* merged from the parallel port branch */
 /* the template family (TemplateTypeArgumentStrategy.cpp,
  * TemplateTypeParameterStrategy.cpp, the Template*Type.cpp files) */
@@ -1304,17 +1342,64 @@ zv::Val pt_callback_unresolved_property_prototype_reflection_new(uint32_t argc, 
 
 /* }}} */
 
+/* the native MutatingScope (MutatingScope.cpp); until the flip the plan
+ * is declared by the prefixed activation of the differential tests only
+ * (reg::Class::shadowDifferentialOnly()), so pt_ce_mutating_scope stays
+ * NULL in a production run */
+extern zend_class_entry *pt_ce_mutating_scope;
+void pt_register_mutating_scope();
+/* the file / traitReflection slots of a native ScopeContext, next to
+ * pt_scope_context_class_reflection() (ScopeContext.cpp) */
+zval *pt_scope_context_file(zend_object *context);
+zval *pt_scope_context_trait_reflection(zend_object *context);
+/* ScopeOps::hasVariableType($scope, $variableName) /
+ * ScopeOps::hasExpressionType($scope, $node, $exprPrinter) natively
+ * (ScopeOps.cpp); the TrinaryLogic singleton, UNDEF = pending exception */
+zv::Val pt_scope_ops_has_variable_type(zval *scope, zend_string *variableName);
+zv::Val pt_scope_ops_has_expression_type(zval *scope, zend_object *node, zval *exprPrinter);
+/* StaticTypeFactory::argc() / argv() — copies of the memoized types;
+ * UNDEF = pending exception */
+zv::Val pt_static_type_factory_argc();
+zv::Val pt_static_type_factory_argv();
+/* StaticTypeFactory::generalOffsetAccessibleType() /
+ * intOffsetAccessibleType() — copies of the memoized types; UNDEF =
+ * pending exception */
+zv::Val pt_static_type_factory_general_offset_accessible();
+zv::Val pt_static_type_factory_int_offset_accessible();
+/* ScopeOps::getTypeFromCache($scope, $node, $key) /
+ * ScopeOps::expressionTypeByKey($scope, $node, $exprString) natively
+ * (ScopeOps.cpp), for the native MutatingScope's getType() / resolveType():
+ * the memoized type (null on a miss, *keyOut the owned node key either
+ * way, NULL only with an exception pending) / the tracked type of a
+ * certainty-yes holder (null otherwise); UNDEF = pending exception */
+zv::Val pt_scope_ops_get_type_from_cache(zval *scope, zend_object *node, zend_string **keyOut);
+zv::Val pt_scope_ops_expression_type_by_key(zval *scope, zend_object *node, zend_string *exprString);
+/* ScopeOps::scopeWith() / ::invalidateExpressionEntries() /
+ * ::invalidateMethodsOnExpression() / ::getIntertwinedRefRootVariableName()
+ * natively (ScopeOps.cpp), for the native MutatingScope's assignment and
+ * invalidation family; UNDEF = pending exception */
+zv::Val pt_scope_ops_scope_with(zval *scope, HashTable *expressionTypes, HashTable *nativeExpressionTypes, HashTable *conditionalExpressions, HashTable *currentlyAssignedExpressions, HashTable *currentlyAllowedUndefinedExpressions, HashTable *inFunctionCallsStack, bool inFirstLevelStatement, bool afterExtractCall);
+zv::Val pt_scope_ops_invalidate_expression_entries(zval *scope, zval *exprPrinter, zend_string *exprStringToInvalidate, zval *expressionToInvalidate, bool requireMoreCharacters, zval *invalidatingClass, HashTable *expressionTypes, HashTable *nativeExpressionTypes, HashTable *conditionalExpressions, bool keepPropertyFetches);
+zv::Val pt_scope_ops_invalidate_methods_on_expression(zval *exprPrinter, zend_string *exprStringToInvalidate, HashTable *expressionTypes, HashTable *nativeExpressionTypes);
+zv::Val pt_scope_ops_intertwined_ref_root_variable_name(zend_object *expr);
+zv::Val pt_scope_ops_match_conditional_expressions(HashTable *conditionalExpressions, HashTable *specifiedExpressions);
+zv::Val pt_scope_ops_merge_variable_holders(HashTable *ourVariableTypeHolders, HashTable *theirVariableTypeHolders, HashTable *differingKeys);
+zv::Val pt_scope_ops_finish_merge(HashTable *mergedExpressionTypes, HashTable *ourExpressionTypes, HashTable *theirExpressionTypes, HashTable *ourNativeExpressionTypes, HashTable *theirNativeExpressionTypes);
+zv::Val pt_scope_ops_intersect_conditional_expressions(HashTable *ourConditionalExpressions, HashTable *theirConditionalExpressions);
+zv::Val pt_scope_ops_create_conditional_expressions(HashTable *conditionalExpressions, HashTable *ourExpressionTypes, HashTable *theirExpressionTypes, HashTable *mergedExpressionTypes, HashTable *differingKeys);
+bool pt_scope_ops_should_invalidate_expression(zval *scope, zval *exprPrinter, zend_string *exprStringToInvalidate, zval *exprToInvalidate, zend_object *expr, zend_string *exprString, bool requireMoreCharacters, zval *invalidatingClass, bool keepPropertyFetches, bool *failed);
 /* the shadowing ExpressionResultStorage (ExpressionResultStorage.cpp) — new
- * ExpressionResultStorage() and $storage->findExpressionResult($expr): the
- * native bodies for a native storage, the methods of anything else (the
- * PHP twin under the prefixed differential activation); UNDEF = pending
- * exception */
+ * ExpressionResultStorage(), $storage->findExpressionResult($expr) and
+ * $storage->duplicate(): the native bodies for a native storage, the
+ * methods of anything else (the PHP twin under the prefixed differential
+ * activation); UNDEF = pending exception */
 extern zend_class_entry *pt_ce_expression_result_storage;
 /* VolatileExpressionHelper.cpp — the shadowing class entry (MutatingScope
  * calls its statics directly) */
 extern zend_class_entry *pt_ce_volatile_expression_helper;
 zv::Val pt_expression_result_storage_new();
 zv::Val pt_expression_result_storage_find(zval *storage, zval *expr);
+zv::Val pt_expression_result_storage_duplicate(zval *storage);
 
 /* merged from the parallel port branch */
 /* the native ClassReflection (ClassReflection.cpp), shadowing
@@ -1410,6 +1495,7 @@ zv::Val pt_variable_flow_dead(zval *flow);
 zv::Val pt_variable_flow_throwing(zval *type, bool canContinue, bool canContainAnyThrowable);
 
 /* }}} */
+
 
 /* PhpClassReflectionExtension.cpp — the shadowing member factory behind
  * ClassReflection's has*()/get*() methods; registered at the END of the

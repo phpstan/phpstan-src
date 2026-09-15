@@ -3,11 +3,13 @@
 namespace PHPStan\Analyser\Traverser;
 
 use PHPStan\Analyser\Scope;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverserCallable;
 
+#[ReferencedByTurboExtension(key: 'transformStaticTypeTraverser')]
 final class TransformStaticTypeTraverser implements TypeTraverserCallable
 {
 

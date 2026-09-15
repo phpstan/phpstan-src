@@ -164,6 +164,26 @@ zv::Val pt_static_type_factory_truthy()
 	return StaticTypeFactory::truthy();
 }
 
+zv::Val pt_static_type_factory_argc()
+{
+	return StaticTypeFactory::argc();
+}
+
+zv::Val pt_static_type_factory_argv()
+{
+	return StaticTypeFactory::argv();
+}
+
+zv::Val pt_static_type_factory_general_offset_accessible()
+{
+	return StaticTypeFactory::generalOffsetAccessibleType();
+}
+
+zv::Val pt_static_type_factory_int_offset_accessible()
+{
+	return StaticTypeFactory::intOffsetAccessibleType();
+}
+
 void pt_static_type_factory_rinit()
 {
 	ZVAL_UNDEF(&pt_stf_falsey);

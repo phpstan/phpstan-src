@@ -160,4 +160,10 @@ zv::Val pt_expression_result_storage_new()
 	return pt_type_new_ce(pt_ce_expression_result_storage, 0, NULL);
 }
 
+zv::Val pt_expression_result_storage_duplicate(zval *storage)
+{
+	if (EXPECTED(Z_OBJCE_P(storage) == pt_ce_expression_result_storage)) return ExpressionResultStorage(storage).duplicate();
+	return pt_type_call(Z_OBJ_P(storage), "duplicate", sizeof("duplicate") - 1, 0, NULL);
+}
+
 /* }}} */

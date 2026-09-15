@@ -4,10 +4,12 @@ namespace PHPStan\Node;
 
 use Override;
 use PhpParser\Node\Expr;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'issetExpr')]
 final class IssetExpr extends Expr implements VirtualNode
 {
 

@@ -5,6 +5,7 @@ namespace PHPStan\Node\Expr;
 use Override;
 use PhpParser\Node\Expr;
 use PHPStan\Node\VirtualNode;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * Tracks that a readonly property has been re-assigned within the current __clone() body.
@@ -17,6 +18,7 @@ use PHPStan\Node\VirtualNode;
  * __clone, and is excluded from rememberConstructorExpressions() so it never leaks into
  * __clone's entry scope.
  */
+#[ReferencedByTurboExtension(key: 'cloneReinitializationExpr')]
 final class CloneReinitializationExpr extends Expr implements VirtualNode
 {
 

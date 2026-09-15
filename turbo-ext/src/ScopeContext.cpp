@@ -28,6 +28,16 @@ zval *pt_scope_context_class_reflection(zend_object *context)
 	return OBJ_PROP_NUM(context, slots::classReflection);
 }
 
+zval *pt_scope_context_file(zend_object *context)
+{
+	return OBJ_PROP_NUM(context, slots::file);
+}
+
+zval *pt_scope_context_trait_reflection(zend_object *context)
+{
+	return OBJ_PROP_NUM(context, slots::traitReflection);
+}
+
 namespace phpstanturbo {
 
 /* Mirrors PHPStan\Analyser\ScopeContext. State lives in the PHP object's

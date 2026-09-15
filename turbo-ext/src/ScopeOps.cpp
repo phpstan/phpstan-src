@@ -2014,3 +2014,82 @@ void pt_register_scope_ops()
 }
 
 /* }}} */
+
+/* {{{ direct entries for the native MutatingScope (MutatingScope.cpp): the
+ * bodies the twin reaches through ScopeOps::hasVariableType() /
+ * ScopeOps::hasExpressionType() static calls, without the method-call ABI */
+
+zv::Val pt_scope_ops_has_variable_type(zval *scope, zend_string *variableName)
+{
+	return ScopeOps::hasVariableType(scope, variableName);
+}
+
+zv::Val pt_scope_ops_has_expression_type(zval *scope, zend_object *node, zval *exprPrinter)
+{
+	return ScopeOps::hasExpressionType(scope, node, exprPrinter);
+}
+
+zv::Val pt_scope_ops_get_type_from_cache(zval *scope, zend_object *node, zend_string **keyOut)
+{
+	return ScopeOps::getTypeFromCache(scope, node, keyOut);
+}
+
+zv::Val pt_scope_ops_expression_type_by_key(zval *scope, zend_object *node, zend_string *exprString)
+{
+	return ScopeOps::expressionTypeByKey(scope, node, exprString);
+}
+
+zv::Val pt_scope_ops_scope_with(zval *scope, HashTable *expressionTypes, HashTable *nativeExpressionTypes, HashTable *conditionalExpressions, HashTable *currentlyAssignedExpressions, HashTable *currentlyAllowedUndefinedExpressions, HashTable *inFunctionCallsStack, bool inFirstLevelStatement, bool afterExtractCall)
+{
+	return ScopeOps::scopeWith(scope, expressionTypes, nativeExpressionTypes, conditionalExpressions, currentlyAssignedExpressions, currentlyAllowedUndefinedExpressions, inFunctionCallsStack, inFirstLevelStatement, afterExtractCall);
+}
+
+zv::Val pt_scope_ops_invalidate_expression_entries(zval *scope, zval *exprPrinter, zend_string *exprStringToInvalidate, zval *expressionToInvalidate, bool requireMoreCharacters, zval *invalidatingClass, HashTable *expressionTypes, HashTable *nativeExpressionTypes, HashTable *conditionalExpressions, bool keepPropertyFetches)
+{
+	pt_init_strs();
+	return ScopeOps::invalidateExpressionEntries(scope, exprPrinter, exprStringToInvalidate, expressionToInvalidate, requireMoreCharacters, invalidatingClass, zv::TableRef(expressionTypes), zv::TableRef(nativeExpressionTypes), zv::TableRef(conditionalExpressions), keepPropertyFetches);
+}
+
+zv::Val pt_scope_ops_invalidate_methods_on_expression(zval *exprPrinter, zend_string *exprStringToInvalidate, HashTable *expressionTypes, HashTable *nativeExpressionTypes)
+{
+	pt_init_strs();
+	return ScopeOps::invalidateMethodsOnExpression(exprPrinter, exprStringToInvalidate, zv::TableRef(expressionTypes), zv::TableRef(nativeExpressionTypes));
+}
+
+zv::Val pt_scope_ops_intertwined_ref_root_variable_name(zend_object *expr)
+{
+	return ScopeOps::getIntertwinedRefRootVariableName(expr);
+}
+
+zv::Val pt_scope_ops_match_conditional_expressions(HashTable *conditionalExpressions, HashTable *specifiedExpressions)
+{
+	return ScopeOps::matchConditionalExpressions(zv::TableRef(conditionalExpressions), zv::TableRef(specifiedExpressions));
+}
+
+zv::Val pt_scope_ops_merge_variable_holders(HashTable *ourVariableTypeHolders, HashTable *theirVariableTypeHolders, HashTable *differingKeys)
+{
+	return ScopeOps::mergeVariableHolders(zv::TableRef(ourVariableTypeHolders), zv::TableRef(theirVariableTypeHolders), differingKeys);
+}
+
+zv::Val pt_scope_ops_finish_merge(HashTable *mergedExpressionTypes, HashTable *ourExpressionTypes, HashTable *theirExpressionTypes, HashTable *ourNativeExpressionTypes, HashTable *theirNativeExpressionTypes)
+{
+	return ScopeOps::finishMerge(zv::TableRef(mergedExpressionTypes), zv::TableRef(ourExpressionTypes), zv::TableRef(theirExpressionTypes), zv::TableRef(ourNativeExpressionTypes), zv::TableRef(theirNativeExpressionTypes));
+}
+
+zv::Val pt_scope_ops_intersect_conditional_expressions(HashTable *ourConditionalExpressions, HashTable *theirConditionalExpressions)
+{
+	return ScopeOps::intersectConditionalExpressions(zv::TableRef(ourConditionalExpressions), zv::TableRef(theirConditionalExpressions));
+}
+
+zv::Val pt_scope_ops_create_conditional_expressions(HashTable *conditionalExpressions, HashTable *ourExpressionTypes, HashTable *theirExpressionTypes, HashTable *mergedExpressionTypes, HashTable *differingKeys)
+{
+	return ScopeOps::createConditionalExpressions(zv::TableRef(conditionalExpressions), zv::TableRef(ourExpressionTypes), zv::TableRef(theirExpressionTypes), zv::TableRef(mergedExpressionTypes), zv::TableRef(differingKeys));
+}
+
+bool pt_scope_ops_should_invalidate_expression(zval *scope, zval *exprPrinter, zend_string *exprStringToInvalidate, zval *exprToInvalidate, zend_object *expr, zend_string *exprString, bool requireMoreCharacters, zval *invalidatingClass, bool keepPropertyFetches, bool *failed)
+{
+	pt_init_strs();
+	return ScopeOps::shouldInvalidateExpression(scope, exprPrinter, exprStringToInvalidate, exprToInvalidate, expr, exprString, requireMoreCharacters, invalidatingClass, keepPropertyFetches, failed);
+}
+
+/* }}} */

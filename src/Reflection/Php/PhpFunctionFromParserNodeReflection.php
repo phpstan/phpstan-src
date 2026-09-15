@@ -17,6 +17,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\MixedType;
@@ -30,6 +31,7 @@ use function strtolower;
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'phpFunctionFromParserNodeReflection')]
 class PhpFunctionFromParserNodeReflection implements FunctionReflection, ExtendedParametersAcceptor
 {
 

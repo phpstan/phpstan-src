@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection;
 
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\Type;
 
@@ -19,6 +20,7 @@ use PHPStan\Type\Type;
  * @api
  * @api-do-not-implement
  */
+#[ReferencedByTurboExtension(key: 'extendedParametersAcceptor')]
 interface ExtendedParametersAcceptor extends ParametersAcceptor
 {
 

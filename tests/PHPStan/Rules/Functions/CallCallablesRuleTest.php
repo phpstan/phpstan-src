@@ -449,6 +449,10 @@ class CallCallablesRuleTest extends RuleTestCase
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-11935.php'], [
 			[
+				'Parameter #1 of callable callable(A): A expects A, mixed given.',
+				16,
+			],
+			[
 				'Parameter #1 of callable callable(Bug11935\Inv<A>): Bug11935\Inv<A> expects Bug11935\Inv<A>, Bug11935\Inv<mixed> given.',
 				34,
 			],

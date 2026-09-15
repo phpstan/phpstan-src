@@ -129,7 +129,6 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_OFFSET_ACCESS_TYPE_NODE */ {"offsetAccessTypeNode", "PHPStan\\PhpDocParser\\Ast\\Type\\OffsetAccessTypeNode"},
 	/* PT_CLASS_CONDITIONAL_TYPE_NODE */ {"conditionalTypeNode", "PHPStan\\PhpDocParser\\Ast\\Type\\ConditionalTypeNode"},
 	/* PT_CLASS_CONDITIONAL_TYPE_FOR_PARAMETER_NODE */ {"conditionalTypeForParameterNode", "PHPStan\\PhpDocParser\\Ast\\Type\\ConditionalTypeForParameterNode"},
-	/* PT_CLASS_MUTATING_SCOPE */ {"mutatingScope", "PHPStan\\Analyser\\MutatingScope"},
 	/* PT_CLASS_REFLECTION_ENUM */ {"reflectionEnum", "PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionEnum"},
 	/* PT_CLASS_MEMOIZING_REFLECTION_PROVIDER */ {"memoizingReflectionProvider", "PHPStan\\Reflection\\ReflectionProvider\\MemoizingReflectionProvider"},
 	/* PT_CLASS_UNRESOLVABLE_TYPE_RESULT */ {"unresolvableTypeResult", "PHPStan\\Rules\\PhpDoc\\UnresolvableTypeResult"},

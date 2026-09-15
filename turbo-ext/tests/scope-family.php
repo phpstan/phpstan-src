@@ -3,8 +3,9 @@
 /**
  * Differential test of the native MutatingScope against the PHP twin,
  * under the prefixed activation: PHPStanTurbo\MutatingScope is declared
- * next to PHPStan\Analyser\MutatingScope
- * (reg::Class::shadowDifferentialOnly()), so both sides live in one process.
+ * next to PHPStan\Analyser\MutatingScope (which keeps its real name and
+ * its PHP body there), so both sides live in one process. In a
+ * production run the native class carries the real name instead.
  *
  * Realistic scopes come from a real NodeScopeResolver walk over
  * scope-family-fixture.php through the DI container; every distinct walk
@@ -17,11 +18,11 @@
  * bodies read them through their slots; the PHP twin's typed returns
  * need PHP TrinaryLogic on its side), normalized before comparison.
  *
- * The three union-filtering member lookups a native body dispatches
+ * The three union-filtering member lookups a ported body dispatches
  * through $this over the walk's own PHP types (getMethodReflection() and
  * the two property lookups) are routed to the original walk scope by the
- * PartialNativeScope test subclass — see the barrier below; their native
- * bodies are probed directly, with types of the side under test.
+ * NativeScope test subclass on both sides — see the barrier below; their
+ * native bodies are probed directly, with types of the side under test.
  *
  * The prefix is a type barrier: the engine collaborators the type
  * resolution core hands the walk scope to (NodeScopeResolver::processExprOnDemand(),
@@ -30,7 +31,7 @@
  * not. Both sides therefore override the (non-final, dispatched)
  * toWalkScope() to answer the original walk scope — the native side must,
  * and the PHP side does the same so the two walks stay symmetric (the
- * PartialPhpScope subclass); the native bodies are still observed
+ * PhpScope subclass); the native bodies are still observed
  * through their own toWalkScope() dispatch. A body that passes $this
  * itself (TemplateArgumentFrame::returnTypeOfCall() from
  * resolveScopeStateType(), `new ExpressionResultStorage()` for the
@@ -150,55 +151,16 @@ final class RecordingScopeFactory implements InternalScopeFactory
 }
 
 /**
- * The native class subclassed for the harness: it implements the twin's
- * interfaces (the class declares them itself from the flip on), so the
- * PHP collaborators typed Scope / NamespaceAnswerer accept it; a generated
- * delegate to the original walk scope covers any interface method the
- * native class lacks (none: every method is ported).
+ * The native class under test, subclassed for the harness: it answers
+ * toWalkScope() with the original walk scope, which the PHP collaborators
+ * typed with the twin's class name accept, and routes the three
+ * union-filtering member lookups there too (see the file comment). The
+ * class itself carries the twin's interfaces.
  */
-/** A reflected type rendered for an eval()'d declaration: class names fully qualified. */
-function qualifyType(string $type): string
+function declareNativeScope(): void
 {
-	$builtin = ['string', 'int', 'bool', 'array', 'void', 'null', 'mixed', 'float', 'callable', 'iterable', 'object', 'never', 'false', 'true'];
-	return preg_replace_callback('~[A-Za-z_][A-Za-z0-9_\\\\]*~', static fn (array $m): string => in_array(strtolower($m[0]), $builtin, true) ? $m[0] : '\\' . $m[0], $type);
-}
-
-function declarePartialNativeScope(): void
-{
-	$native = new \ReflectionClass(\PHPStanTurbo\MutatingScope::class);
-	$twin = new \ReflectionClass(MutatingScope::class);
-	$methods = '';
-	foreach ($twin->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
-		if ($method->isStatic() || $method->isConstructor() || $native->hasMethod($method->getName())) {
-			continue;
-		}
-		$params = [];
-		$args = [];
-		foreach ($method->getParameters() as $parameter) {
-			$param = $parameter->hasType() ? qualifyType((string) $parameter->getType()) . ' ' : '';
-			$param .= $parameter->isPassedByReference() ? '&' : '';
-			$param .= $parameter->isVariadic() ? '...' : '';
-			$param .= '$' . $parameter->getName();
-			if ($parameter->isDefaultValueAvailable()) {
-				$param .= ' = ' . ($parameter->isDefaultValueConstant() ? '\\' . $parameter->getDefaultValueConstantName() : var_export($parameter->getDefaultValue(), true));
-			}
-			$params[] = $param;
-			$args[] = ($parameter->isVariadic() ? '...' : '') . '$' . $parameter->getName();
-		}
-		$returnType = $method->hasReturnType() ? (string) $method->getReturnType() : '';
-		$returnType = str_replace(['self', 'static'], MutatingScope::class, $returnType);
-		$methods .= sprintf(
-			"\tpublic function %s(%s)%s { %s\$this->twin->%s(%s); }\n",
-			$method->getName(),
-			implode(', ', $params),
-			$returnType === '' ? '' : ': ' . qualifyType($returnType),
-			$returnType === 'void' ? '' : 'return ',
-			$method->getName(),
-			implode(', ', $args),
-		);
-	}
-	eval(sprintf(
-		"namespace ScopeFamily; final class PartialNativeScope extends \\PHPStanTurbo\\MutatingScope implements \\PHPStan\\Analyser\\Scope, \\PHPStan\\Analyser\\NodeCallbackInvoker, \\PHPStan\\Analyser\\CollectedDataEmitter {\n"
+	eval(
+		"namespace ScopeFamily; final class NativeScope extends \\PHPStanTurbo\\MutatingScope {\n"
 		. "\tpublic ?\\PHPStan\\Analyser\\MutatingScope \$twin = null;\n"
 		. "\t/** the walk scope the engine collaborators accept (see the file comment); the native method declares the twin's return type */\n"
 		. "\tpublic function toWalkScope(): \\PHPStan\\Analyser\\MutatingScope { return \$this->twin; }\n"
@@ -217,15 +179,14 @@ function declarePartialNativeScope(): void
 		. "\tpublic function nativeGetMethodReflection(\\PHPStan\\Type\\Type \$typeWithMethod, string \$methodName): ?\\PHPStan\\Reflection\\ExtendedMethodReflection { return parent::getMethodReflection(\$typeWithMethod, \$methodName); }\n"
 		. "\tpublic function nativeGetInstancePropertyReflection(\\PHPStan\\Type\\Type \$typeWithProperty, string \$propertyName): ?\\PHPStan\\Reflection\\ExtendedPropertyReflection { return parent::getInstancePropertyReflection(\$typeWithProperty, \$propertyName); }\n"
 		. "\tpublic function nativeGetStaticPropertyReflection(\\PHPStan\\Type\\Type \$typeWithProperty, string \$propertyName): ?\\PHPStan\\Reflection\\ExtendedPropertyReflection { return parent::getStaticPropertyReflection(\$typeWithProperty, \$propertyName); }\n"
-		. "%s}",
-		$methods,
-	));
+		. "}"
+	);
 }
 
-declarePartialNativeScope();
+declareNativeScope();
 
 /** The PHP side's counterpart: the same walk-scope delegation over the twin. */
-final class PartialPhpScope extends MutatingScope
+final class PhpScope extends MutatingScope
 {
 
 	public ?MutatingScope $inner = null;
@@ -240,7 +201,7 @@ final class PartialPhpScope extends MutatingScope
 		return parent::toWalkScope();
 	}
 
-	/** The PHP counterparts of PartialNativeScope's native<Name>() accessors. */
+	/** The PHP counterparts of NativeScope's native<Name>() accessors. */
 	public function nativeGetMethodReflection(Type $typeWithMethod, string $methodName): ?\PHPStan\Reflection\ExtendedMethodReflection
 	{
 		return parent::getMethodReflection($typeWithMethod, $methodName);
@@ -374,8 +335,8 @@ final class Harness
 			$this->classNorm[$entry['turboClass']] = $shadowedClass;
 		}
 		$this->classNorm[\PHPStanTurbo\MutatingScope::class] = MutatingScope::class;
-		$this->classNorm[PartialNativeScope::class] = MutatingScope::class;
-		$this->classNorm[PartialPhpScope::class] = MutatingScope::class;
+		$this->classNorm[NativeScope::class] = MutatingScope::class;
+		$this->classNorm[PhpScope::class] = MutatingScope::class;
 		$this->exprPrinter = $container->getByType(\PHPStan\Node\Printer\ExprPrinter::class);
 	}
 
@@ -493,7 +454,7 @@ final class Harness
 			echo 'THROW: ', get_class($value), ': ', $value->getMessage(), "\n";
 		}
 		if ($value instanceof \TypeError && (
-			preg_match('~must be of type \??PHPStan\\\\[A-Za-z\\\\]+, (PHPStanTurbo\\\\|ScopeFamily\\\\PartialNativeScope)~', $value->getMessage()) === 1
+			preg_match('~must be of type \??PHPStan\\\\[A-Za-z\\\\]+, (PHPStanTurbo\\\\|ScopeFamily\\\\NativeScope)~', $value->getMessage()) === 1
 			|| preg_match('~^phpstan_turbo: .*\\(\\) must return PHPStanTurbo\\\\~', $value->getMessage()) === 1
 		)) {
 			return self::BARRIER;
@@ -563,8 +524,8 @@ final class Harness
 namespace {
 
 use ScopeFamily\Harness;
-use ScopeFamily\PartialNativeScope;
-use ScopeFamily\PartialPhpScope;
+use ScopeFamily\NativeScope;
+use ScopeFamily\PhpScope;
 use ScopeFamily\RecordingScopeFactory;
 
 $sfManifest = json_decode(file_get_contents(dirname(__DIR__, 2) . '/vendor/turbo-shadowed-classes.json'), true, 8, JSON_THROW_ON_ERROR);
@@ -1305,10 +1266,10 @@ foreach ($sfScopes as $sfId => [$sfWalkScope, $sfExprs, $sfStorage]) {
 			$args['conditionalExpressions'] = $sfHarness->nativeConditionalExpressions($args['conditionalExpressions']);
 		}
 		if ($side === 'native') {
-			$scope = new PartialNativeScope(...array_values($args));
+			$scope = new NativeScope(...array_values($args));
 			$scope->twin = $sfWalkScope;
 		} else {
-			$scope = new PartialPhpScope(...array_values($args));
+			$scope = new PhpScope(...array_values($args));
 			$scope->inner = $sfWalkScope;
 		}
 		$other = $sfPrevious[$side] ?? $scope;
@@ -2183,7 +2144,7 @@ foreach ($sfScopes as $sfId => [$sfWalkScope, $sfExprs, $sfStorage]) {
 				if ($ctor['parentScope'] instanceof \PHPStanTurbo\MutatingScope) {
 					$ctor['parentScope'] = $sfWalkScope;
 				}
-				$built = new PartialPhpScope(...array_values($ctor));
+				$built = new PhpScope(...array_values($ctor));
 				$built->inner = $sfWalkScope;
 
 				return $built;

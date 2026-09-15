@@ -288,8 +288,6 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_called_on_type_unresolved_property_prototype_reflection();
 	pt_register_callback_unresolved_method_prototype_reflection();
 	pt_register_callback_unresolved_property_prototype_reflection();
-	/* differential-only until the flip (declared by the prefixed
-	 * activation of the tests, never under the real name) — see MutatingScope.cpp */
 	pt_register_mutating_scope();
 	pt_register_class_reflection();
 	pt_register_volatile_expression_helper();

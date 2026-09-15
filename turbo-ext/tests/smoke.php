@@ -2859,11 +2859,11 @@ foreach ($vlrResults['php'] as $label => $described) {
 }
 check(count($vlrResults['php']['function / loops']['variableOverwritingLoops']) === 2 && $vlrResults['php']['function / read all']['readVariableNames'] !== [], 'VariableLivenessResolver: the fixture exercises binding probes and READ_ALL');
 
-// ---- MutatingScope (differential-only plan) ----
-// Not in the manifest yet: the plan is declared only by this prefixed
-// activation (reg::Class::shadowDifferentialOnly()) until the flip.
-// scope-family.php rebuilds real walk scopes on both sides and compares
-// every method; it registers nothing in $covered.
+// ---- MutatingScope ----
+// scope-family.php rebuilds real walk scopes on both sides — the PHP twin
+// under its real name, the native class under the prefix — and compares
+// every method, every create() argument list and the scopes they answer.
+$covered[\PHPStan\Analyser\MutatingScope::class] = true;
 require __DIR__ . '/scope-family.php';
 
 // ---- ClassReflection ----

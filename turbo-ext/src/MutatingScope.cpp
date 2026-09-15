@@ -1,20 +1,18 @@
 /*
  * PHPStanTurbo\MutatingScope — native implementation of
- * PHPStan\Analyser\MutatingScope. Every method of the twin is ported, but
- * the plan is differential-only (reg::Class::shadowDifferentialOnly()) —
- * declared next to the twin as PHPStanTurbo\MutatingScope by the prefixed
- * activation of tests/scope-family.php, never under the real name, so a
- * production run keeps the PHP twin and pt_ce_mutating_scope stays NULL
- * there until the flip to shadow(). The design notes below follow the
- * twin's file order, one family of methods per section.
+ * PHPStan\Analyser\MutatingScope, the class PHPStan\Analyser\MutatingScope
+ * IS in a production run (reg::Class::shadow()); the PHP twin keeps its
+ * body as the reference implementation and is what the prefixed
+ * activation of tests/scope-family.php compares against, one process
+ * holding both. The design notes below follow the twin's file order,
+ * one family of methods per section.
  *
  * Design: the class, its layout, dispatch and collaborators
  * ---------------------------------------------------------
  * Class shape. Not final: NodeCallbackScope (final, PHP) extends it and a
- * third party may too. The twin's interfaces (Scope, NodeCallbackInvoker,
- * CollectedDataEmitter) join the plan with the flip — a linked class must
- * carry every interface method; every method already declares the twin's
- * exact return type (reg.h's `returns`).
+ * third party may too. The class carries the twin's interfaces (Scope,
+ * NodeCallbackInvoker, CollectedDataEmitter), so every one of their
+ * methods must be declared here — linking checks that.
  *
  * Layout. The twin's properties are declared typed property slots in the
  * twin's declaration order — the five class-body properties first
@@ -270,7 +268,7 @@
  */
 
 #include "TypeTraits.h"
-#include "MutatingScopeDeclarations.h"
+#include "generated/MutatingScope.h"
 
 namespace sigs = ptdecl::MutatingScope::sig;
 #include "TypeOps.h"
@@ -11198,9 +11196,10 @@ void pt_register_mutating_scope()
 	using namespace pt_ms;
 
 	reg::Class cls("PHPStan\\Analyser\\MutatingScope");
-	/* not final; the interfaces (Scope, NodeCallbackInvoker,
-	 * CollectedDataEmitter) join the plan with the flip — a linked
-	 * class must carry every interface method */
+	/* not final: NodeCallbackScope extends it in PHP (and a third party
+	 * may too), so every method stays dispatched through the object's
+	 * class entry */
+	ptdecl::MutatingScope::declareClass(cls);
 
 	/* {{{ the slots, in the twin's declaration order (the PT_MS_PROP_*
 	 * enum): the class-body properties with their defaults, then the
@@ -12227,7 +12226,7 @@ void pt_register_mutating_scope()
 
 	cls.method(sigs::isInFirstLevelStatement, msIsInFirstLevelStatement);
 
-	cls.shadowDifferentialOnly(&pt_ce_mutating_scope);
+	cls.shadow(&pt_ce_mutating_scope);
 }
 
 /* }}} */

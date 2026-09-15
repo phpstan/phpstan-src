@@ -166,7 +166,6 @@ enum {
 	PT_CLASS_OFFSET_ACCESS_TYPE_NODE,
 	PT_CLASS_CONDITIONAL_TYPE_NODE,
 	PT_CLASS_CONDITIONAL_TYPE_FOR_PARAMETER_NODE,
-	PT_CLASS_MUTATING_SCOPE,
 	PT_CLASS_REFLECTION_ENUM,
 	PT_CLASS_MEMOIZING_REFLECTION_PROVIDER,
 	PT_CLASS_UNRESOLVABLE_TYPE_RESULT,
@@ -1342,10 +1341,8 @@ zv::Val pt_callback_unresolved_property_prototype_reflection_new(uint32_t argc, 
 
 /* }}} */
 
-/* the native MutatingScope (MutatingScope.cpp); until the flip the plan
- * is declared by the prefixed activation of the differential tests only
- * (reg::Class::shadowDifferentialOnly()), so pt_ce_mutating_scope stays
- * NULL in a production run */
+/* the native MutatingScope (MutatingScope.cpp): PHPStan\Analyser\MutatingScope
+ * itself once activateShadowing() ran, NULL before that */
 extern zend_class_entry *pt_ce_mutating_scope;
 void pt_register_mutating_scope();
 /* the file / traitReflection slots of a native ScopeContext, next to

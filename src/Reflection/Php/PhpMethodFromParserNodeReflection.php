@@ -73,6 +73,7 @@ final class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeR
 		private bool $isConstructor,
 		array $attributes,
 		array $pureUnlessCallableIsImpureParameters,
+		array $pureUnlessParameterPassedParameters,
 	)
 	{
 		if ($this->classMethod instanceof Node\PropertyHook) {
@@ -140,6 +141,7 @@ final class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeR
 			$phpDocClosureThisTypeParameters,
 			$attributes,
 			$pureUnlessCallableIsImpureParameters,
+			$pureUnlessParameterPassedParameters,
 		);
 	}
 

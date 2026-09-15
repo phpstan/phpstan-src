@@ -3,8 +3,9 @@
 /**
  * Differential test of the native ClassReflection against the PHP twin,
  * under the prefixed activation: PHPStanTurbo\ClassReflection is declared
- * next to PHPStan\Reflection\ClassReflection
- * (reg::Class::shadowDifferentialOnly()), so both sides live in one process.
+ * next to PHPStan\Reflection\ClassReflection (which keeps its real name
+ * and its PHP body there), so both sides live in one process. In a
+ * production run the native class carries the real name instead.
  *
  * Real class reflections come from the DI container's reflection provider
  * over reflection-family-fixture.php (interfaces, traits, enums, generics
@@ -13,9 +14,9 @@
  * with stubs; generic instances and final-keyword overrides are derived
  * through withTypes()/withVariances()/asFinal(). Every sample is rebuilt
  * from its own constructor arguments (read by reflection) three times:
- * the PHP twin under test, a delegate twin, and the native class — the
- * native one through the PartialNativeClassReflection subclass, which
- * carries the twin's collaborators until the flip makes the class final.
+ * the PHP twin under test, a delegate twin (which the duck collaborators
+ * below hand to the PHP-typed extension points in place of the native
+ * object), and the native class itself.
  *
  * The twin is final and every PHP collaborator types its parameters with
  * it, so the native object cannot be handed to them under the prefix. The
@@ -422,52 +423,6 @@ function declareStandIn(string $realClass, string $standInName, array $swapIndex
 declareStandIn(\PHPStan\Reflection\EnumCaseReflection::class, 'DuckEnumCaseReflection', [0]);
 declareStandIn(\PHPStan\Reflection\RealClassClassConstantReflection::class, 'DuckRealClassClassConstantReflection', [1]);
 
-/**
- * The native class subclassed for the harness: a generated delegate to the
- * delegate twin covers any public method of the twin the native class
- * lacks (none: every method is ported).
- */
-function declarePartialNativeClassReflection(): void
-{
-	$native = new \ReflectionClass(\PHPStanTurbo\ClassReflection::class);
-	$twin = new \ReflectionClass(ClassReflection::class);
-	$methods = '';
-	foreach ($twin->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
-		if ($method->isStatic() || $method->isConstructor() || $native->hasMethod($method->getName())) {
-			continue;
-		}
-		$params = [];
-		$args = [];
-		foreach ($method->getParameters() as $parameter) {
-			$param = $parameter->hasType() ? qualifyType((string) $parameter->getType()) . ' ' : '';
-			$param .= $parameter->isPassedByReference() ? '&' : '';
-			$param .= $parameter->isVariadic() ? '...' : '';
-			$param .= '$' . $parameter->getName();
-			if ($parameter->isDefaultValueAvailable()) {
-				$param .= ' = ' . ($parameter->isDefaultValueConstant() ? '\\' . $parameter->getDefaultValueConstantName() : var_export($parameter->getDefaultValue(), true));
-			}
-			$params[] = $param;
-			$args[] = ($parameter->isVariadic() ? '...' : '') . '$' . $parameter->getName();
-		}
-		$returnType = $method->hasReturnType() ? (string) $method->getReturnType() : '';
-		$methods .= sprintf(
-			"\tpublic function %s(%s)%s { %s\$this->twin->%s(%s); }\n",
-			$method->getName(),
-			implode(', ', $params),
-			$returnType === '' ? '' : ': ' . qualifyType($returnType),
-			$returnType === 'void' ? '' : 'return ',
-			$method->getName(),
-			implode(', ', $args),
-		);
-	}
-	eval(sprintf(
-		"namespace ReflectionFamily; final class PartialNativeClassReflection extends \\PHPStanTurbo\\ClassReflection {\n\tpublic ?\\PHPStan\\Reflection\\ClassReflection \$twin = null;\n%s}",
-		$methods,
-	));
-}
-
-declarePartialNativeClassReflection();
-
 final class Harness
 {
 
@@ -482,7 +437,6 @@ final class Harness
 			$this->classNorm[$entry['turboClass']] = $shadowedClass;
 		}
 		$this->classNorm[\PHPStanTurbo\ClassReflection::class] = ClassReflection::class;
-		$this->classNorm[PartialNativeClassReflection::class] = ClassReflection::class;
 		$this->classNorm[DuckEnumCaseReflection::class] = \PHPStan\Reflection\EnumCaseReflection::class;
 		$this->classNorm[DuckRealClassClassConstantReflection::class] = \PHPStan\Reflection\RealClassClassConstantReflection::class;
 	}
@@ -585,7 +539,6 @@ namespace {
 use ReflectionFamily\DuckRegistryProvider;
 use ReflectionFamily\DuckUniversalObjectCrates;
 use ReflectionFamily\Harness;
-use ReflectionFamily\PartialNativeClassReflection;
 use ReflectionFamily\Twins;
 
 $rfManifest = json_decode(file_get_contents(dirname(__DIR__, 2) . '/vendor/turbo-shadowed-classes.json'), true, 8, JSON_THROW_ON_ERROR);
@@ -713,8 +666,7 @@ foreach ($rfSamples as $rfLabel => $rfOriginal) {
 			$args['classReflectionExtensionRegistryProvider'] = new DuckRegistryProvider($rfRegistryProvider);
 			$args['phpDocInheritanceResolver'] = new \ReflectionFamily\DuckPhpDocInheritanceResolver($args['phpDocInheritanceResolver']);
 			$args['classReflectionFactory'] = new \ReflectionFamily\DuckClassReflectionFactory($args['classReflectionFactory']);
-			$classReflection = new PartialNativeClassReflection(...array_values($args));
-			$classReflection->twin = $delegate;
+			$classReflection = new \PHPStanTurbo\ClassReflection(...array_values($args));
 			Twins::register($classReflection, $delegate);
 			$rfKeepAlive[] = $classReflection;
 			$rfKeepAlive[] = $delegate;

@@ -1,26 +1,20 @@
 /*
  * PHPStanTurbo\ClassReflection — native implementation of
- * PHPStan\Reflection\ClassReflection. Every method of the twin has a
- * native body, but the plan is differential-only
- * (reg::Class::shadowDifferentialOnly()) — declared next to the twin as
- * PHPStanTurbo\ClassReflection by the prefixed activation of
- * tests/reflection-family.php, never under the real name, so a production
- * run keeps the PHP twin, pt_ce_class_reflection stays NULL there, and the
- * slot readers of ClassReflectionAccess.cpp keep serving the Type kernel
- * (they read the twin's properties by name; the names and their meaning
- * are preserved here, so they work on the native class too — the flip to
- * shadow() deletes them in favour of direct calls).
+ * PHPStan\Reflection\ClassReflection, declared as that class itself at
+ * activation (reg::Class::shadow(), final like the twin). The seven
+ * getters the Type kernel calls millions of times per run
+ * (getName/getCacheKey/getNativeReflection/isGeneric/hasMethod/
+ * hasFinalByKeywordOverride/isEnum) are re-exported below the class as
+ * pt_class_reflection_*() — a direct call into the native body, the PHP
+ * method for a foreign object.
  *
  * Design
  * ------
  * Class shape. The twin is final: no PHP subclass exists, so every
  * `$this->method()` is a direct C++ call — no Z_OBJCE dispatch, no handler
- * identity checks. The final flag itself joins the plan with the flip: the
- * differential harness derives a subclass from the plan (empty now that
- * nothing is left to delegate) to carry the twin's collaborators.
- * The DI container never instantiates this class directly: the
- * generated ClassReflectionFactory does (GenerateFactory), reflecting the
- * constructor for the eleven autowired services — the arginfo therefore
+ * identity checks. The DI container never instantiates this class directly:
+ * the generated ClassReflectionFactory does (GenerateFactory), reflecting
+ * the constructor for the eleven autowired services — the arginfo therefore
  * declares the twin's exact parameter class names (README rule 6).
  *
  * Layout. The twin's properties are declared typed property slots in the
@@ -29,9 +23,7 @@
  * $resolvingTypeAliasImports in its place (no instance slot), then the 19
  * promoted constructor properties in parameter order, uninitialized until
  * the constructor writes them. The std object handlers do GC/clone/free.
- * The names are load-bearing: ClassReflectionAccess.cpp resolves name /
- * isGeneric / cacheKey / hasMethodCache / finalByKeywordOverride /
- * reflection by name, and the differential harness reads every slot by
+ * The names are load-bearing: the differential harness reads every slot by
  * reflection to compare the memo state of both sides.
  *
  * Collaborators. The eleven injected services (ClassReflectionFactory,
@@ -42,8 +34,9 @@
  * adapter ($reflection) are PHP objects held in their slots and called by
  * name (pt_type_call). The reflection provider goes through the slot
  * readers of ReflectionAccess.cpp (a memoizing provider answers from its
- * cache), a ClassMemberAccessAnswerer scope through those of
- * ClassReflectionAccess.cpp (a MutatingScope's context slot). Other
+ * cache), a ClassMemberAccessAnswerer scope through
+ * pt_scope_get_class_reflection() of ScopeContext.cpp (a MutatingScope's
+ * context slot). Other
  * ClassReflection instances (parents, interfaces, the provider's answers)
  * are called directly when they are exactly this class and by name
  * otherwise (crCall()) — under the prefixed harness they are PHP twins.
@@ -94,7 +87,7 @@
  */
 
 #include "TypeTraits.h"
-#include "ClassReflectionDeclarations.h"
+#include "generated/ClassReflection.h"
 
 namespace sigs = ptdecl::ClassReflection::sig;
 #include "TypeOps.h"
@@ -122,6 +115,8 @@ enum : uint32_t
 	PT_CR_PROP_CLASS_HIERARCHY_DISTANCES,
 	PT_CR_PROP_DEPRECATED_DESCRIPTION,
 	PT_CR_PROP_IS_DEPRECATED,
+	PT_CR_PROP_ALLOWED_SUB_TYPES,
+	PT_CR_PROP_ALLOWED_SUB_TYPES_RESOLVED,
 	PT_CR_PROP_IS_GENERIC,
 	PT_CR_PROP_IS_INTERNAL,
 	PT_CR_PROP_IS_FINAL,
@@ -142,6 +137,7 @@ enum : uint32_t
 	PT_CR_PROP_TRAIT_CONTEXT_RESOLVED_PHP_DOC_BLOCK,
 	PT_CR_PROP_CACHED_INTERFACES,
 	PT_CR_PROP_CACHED_PARENT_CLASS,
+	PT_CR_PROP_CIRCULAR_PARENT_CLASS_NAME,
 	PT_CR_PROP_TYPE_ALIASES,
 	PT_CR_PROP_HAS_METHOD_CACHE,
 	PT_CR_PROP_HAS_PROPERTY_CACHE,
@@ -570,13 +566,23 @@ public:
 
 	/* $type->getClassReflection() of an object type: natively for a native
 	 * ObjectType (GenericObjectType included), by name otherwise */
+	/* $type->getClassReflection() — the op entry of the RECEIVER's own class
+	 * (GenericObjectType and StaticType override ObjectType's body, so a
+	 * pt_object_type_get_class_reflection() shortcut would silently run the
+	 * parent's), the PHP method for anything else */
 	static zv::Val typeGetClassReflection(zv::Ref type)
 	{
 		zv::Ref v = type.deref();
-		if (EXPECTED(v.isObject() && pt_ce_object_type != NULL && instanceof_function(v.asObject()->ce, pt_ce_object_type))) {
-			return pt_object_type_get_class_reflection(v.asObject());
+		if (UNEXPECTED(!v.isObject())) {
+			zend_throw_error(NULL, "Call to a member function getClassReflection() on %s", zend_zval_value_name(v.raw()));
+			return zv::Val();
 		}
-		return callOn(type, PT_LC("getclassreflection"), 0, NULL);
+		const pt_type_ops *ops = pt_type_ops_of(v.asObject()->ce);
+		if (EXPECTED(ops != NULL)) {
+			const pt_type_op_entry &entry = ops->entries[PT_OP_GET_CLASS_REFLECTION];
+			if (EXPECTED(entry.fn != NULL)) return entry.fn(v.asObject(), entry.scope, 0, NULL);
+		}
+		return pt_type_call(v.asObject(), PT_LC("getclassreflection"), 0, NULL);
 	}
 
 	/* TemplateTypeHelper::resolveTemplateTypes($type,
@@ -895,15 +901,22 @@ public:
 			return zv::Val::null();
 		}
 
-		zv::Val extendsTag = getFirstExtendsTag();
-		if (UNEXPECTED(extendsTag.isUndef())) return zv::Val();
-
 		/* $parentClass->getName() — the adapter's getter, pure: read once
-		 * for the three uses the twin makes of it */
+		 * for the uses the twin makes of it */
 		zv::Val parentName = callOn(parentClass.ref(), PT_LC("getname"), 0, NULL);
 		if (UNEXPECTED(parentName.isUndef())) return zv::Val();
 		zend_string *parentNameStr = zval_get_string(parentName.raw());
 		zv::Str parentNameOwned = zv::Str::adopt(parentNameStr);
+
+		zv::Val circularParentClassName = findCircularParentClassName(parentNameStr);
+		if (UNEXPECTED(circularParentClassName.isUndef())) return zv::Val();
+		if (!circularParentClassName.isNull()) {
+			throwCircularReference(circularParentClassName.ref());
+			return zv::Val();
+		}
+
+		zv::Val extendsTag = getFirstExtendsTag();
+		if (UNEXPECTED(extendsTag.isUndef())) return zv::Val();
 
 		if (!extendsTag.isNull()) {
 			zv::Val extendedType = callOn(extendsTag.ref(), PT_LC("gettype"), 0, NULL);
@@ -938,6 +951,71 @@ public:
 		writeSlot(PT_CR_PROP_CACHED_PARENT_CLASS, zv::Val::copyOf(parentReflection.ref()));
 
 		return parentReflection;
+	}
+
+	/* private: the class the parent class chain loops back to, null when
+	 * the chain ends. BetterReflection only rejects a class extending
+	 * itself directly; a cycle spanning several classes would make every
+	 * walk over the hierarchy run forever */
+	zv::Val findCircularParentClassName(zend_string *parentClassName)
+	{
+		zv::Ref memo = slot(PT_CR_PROP_CIRCULAR_PARENT_CLASS_NAME);
+		if (!memo.isBool()) return zv::Val::copyOf(memo);
+
+		writeSlot(PT_CR_PROP_CIRCULAR_PARENT_CLASS_NAME, zv::Val::null());
+
+		zv::Val name = getName();
+		if (UNEXPECTED(name.isUndef())) return zv::Val();
+		zv::Arr visitedClassNames = zv::Arr::create(4);
+		{
+			zv::Str nameStr = zv::Str::adopt(zval_get_string(name.raw()));
+			zv::Str lowercased = zv::Str::adopt(zend_string_tolower(nameStr.get()));
+			visitedClassNames.set(lowercased.get(), zv::Val::boolean(true));
+		}
+
+		zv::Str currentClassName = zv::Str::copyOf(parentClassName);
+		while (true) {
+			zv::Str lowercased = zv::Str::adopt(zend_string_tolower(currentClassName.get()));
+			if (visitedClassNames.arrRef().exists(lowercased.get())) {
+				writeSlot(PT_CR_PROP_CIRCULAR_PARENT_CLASS_NAME, zv::Val::string(currentClassName.get()));
+				return zv::Val::string(currentClassName.get());
+			}
+
+			visitedClassNames.set(lowercased.get(), zv::Val::boolean(true));
+
+			bool has;
+			if (UNEXPECTED(!providerHasClass(currentClassName.get(), has))) return zv::Val();
+			if (!has) return zv::Val::null();
+
+			/* $this->reflectionProvider->getClass($currentClassName)->reflection->getParentClass() */
+			zv::Val classReflection = providerGetClass(currentClassName.get());
+			if (UNEXPECTED(classReflection.isUndef())) return zv::Val();
+			zv::Val reflection = crGetNativeReflection(classReflection.ref());
+			if (UNEXPECTED(reflection.isUndef())) return zv::Val();
+			zv::Val parentClass = callOn(reflection.ref(), PT_LC("getparentclass"), 0, NULL);
+			if (UNEXPECTED(parentClass.isUndef())) return zv::Val();
+			if (parentClass.ref().isFalse()) return zv::Val::null();
+
+			zv::Val parentName = callOn(parentClass.ref(), PT_LC("getname"), 0, NULL);
+			if (UNEXPECTED(parentName.isUndef())) return zv::Val();
+			currentClassName = zv::Str::adopt(zval_get_string(parentName.raw()));
+		}
+	}
+
+	/* throw CircularReference::fromClassName($className) */
+	static void throwCircularReference(zv::Ref className)
+	{
+		static const char circularReference[] = "PHPStan\\BetterReflection\\Reflection\\Exception\\CircularReference";
+		zv::Str name = zv::Str::adopt(zend_string_init(circularReference, sizeof(circularReference) - 1, 0));
+		zend_class_entry *ce = zend_lookup_class(name.get());
+		if (UNEXPECTED(ce == NULL)) {
+			if (!EG(exception)) zend_throw_error(NULL, "Class \"%s\" not found", circularReference);
+			return;
+		}
+		zv::Val exception = pt_type_call_static_ce(ce, PT_LC("fromclassname"), 1, className.raw());
+		if (UNEXPECTED(exception.isUndef())) return;
+		zval thrown = exception.take();
+		zend_throw_exception_object(&thrown);
 	}
 
 	zv::Val getName()
@@ -1061,26 +1139,33 @@ public:
 			zv::Val name = getName();
 			if (UNEXPECTED(name.isUndef())) return zv::Val();
 			distances.set(Z_STR_P(name.raw()), zv::Val::integer(distance));
-			zv::Val current = getNativeReflection();
-			if (UNEXPECTED(current.isUndef())) return zv::Val();
-			if (UNEXPECTED(!addTraitDistances(current.ref(), distance, distances))) return zv::Val();
+			zval selfZv;
+			ZVAL_OBJ(&selfZv, self);
+			zv::Val current = zv::Val::copyOf(zv::Ref(&selfZv));
+			zv::Val ownReflection = getNativeReflection();
+			if (UNEXPECTED(ownReflection.isUndef())) return zv::Val();
+			if (UNEXPECTED(!addTraitDistances(ownReflection.ref(), distance, distances))) return zv::Val();
 
-			/* while ($currentClassReflection->getParentClass() !== false) —
-			 * the adapter's getParentClass() is pure: read once per level */
+			/* while (($currentClassReflection = $currentClassReflection->getParentClass()) !== null):
+			 * walking the parents through getParentClass() and not through
+			 * the native reflection makes a cyclic class hierarchy end in a
+			 * CircularReference exception instead of looping forever */
 			while (true) {
-				zv::Val parent = callOn(current.ref(), PT_LC("getparentclass"), 0, NULL);
+				zv::Val parent = crGetParentClass(current.ref());
 				if (UNEXPECTED(parent.isUndef())) return zv::Val();
-				if (parent.ref().isFalse()) break;
+				if (parent.isNull()) break;
+				current = std::move(parent);
 				distance++;
-				zv::Val parentName = callOn(parent.ref(), PT_LC("getname"), 0, NULL);
+				zv::Val parentName = crGetName(current.ref());
 				if (UNEXPECTED(parentName.isUndef())) return zv::Val();
 				zend_string *parentNameStr = zval_get_string(parentName.raw());
 				if (!distances.arrRef().exists(parentNameStr)) {
 					distances.set(parentNameStr, zv::Val::integer(distance));
 				}
 				zend_string_release(parentNameStr);
-				current = std::move(parent);
-				if (UNEXPECTED(!addTraitDistances(current.ref(), distance, distances))) return zv::Val();
+				zv::Val parentReflection = crGetNativeReflection(current.ref());
+				if (UNEXPECTED(parentReflection.isUndef())) return zv::Val();
+				if (UNEXPECTED(!addTraitDistances(parentReflection.ref(), distance, distances))) return zv::Val();
 			}
 
 			zv::Val nativeReflection = getNativeReflection();
@@ -1128,9 +1213,10 @@ public:
 	}
 
 	/* private; a list of the class's traits, breadth-first through the
-	 * traits' own traits (the twin's reset()/array_shift() queue), a
-	 * sub-trait already collected — the same adapter instance — skipped;
-	 * UNDEF = pending exception */
+	 * traits' own traits (the twin's array_shift() queue), each trait name
+	 * once - traits can use each other in a cycle and the reflection
+	 * objects are not guaranteed to be identical; UNDEF = pending
+	 * exception */
 	zv::Val collectTraits(zv::Ref classReflection)
 	{
 		zv::Arr traits = zv::Arr::create(4);
@@ -1144,29 +1230,30 @@ public:
 		}
 
 		for (size_t head = 0; head < queue.size(); head++) {
-			zv::Ref trait = queue[head].ref();
-			traits.push(trait);
+			zv::Val trait = zv::Val::copyOf(queue[head].ref());
+			/* $trait->getName() — the adapter's getter, pure: read once for
+			 * both uses */
+			zv::Val traitName = callOn(trait.ref(), PT_LC("getname"), 0, NULL);
+			if (UNEXPECTED(traitName.isUndef())) return zv::Val();
+			zv::Str traitNameStr = zv::Str::adopt(zval_get_string(traitName.raw()));
+			if (traits.arrRef().exists(traitNameStr.get())) continue;
 
-			zv::Val subTraits = callOn(trait, PT_LC("gettraits"), 0, NULL);
+			traits.set(traitNameStr.get(), zv::Val::copyOf(trait.ref()));
+
+			zv::Val subTraits = callOn(trait.ref(), PT_LC("gettraits"), 0, NULL);
 			if (UNEXPECTED(subTraits.isUndef())) return zv::Val();
 			if (!subTraits.ref().isArray()) continue;
 			for (auto entry : zv::ArrRef(subTraits.raw())) {
-				/* in_array($subTrait, $traits, true): the same object */
-				zv::Ref subTrait = entry.value().deref();
-				bool collected = false;
-				for (auto known : traits.arrRef()) {
-					zv::Ref k = known.value().deref();
-					if (k.isObject() && subTrait.isObject() && k.asObject() == subTrait.asObject()) {
-						collected = true;
-						break;
-					}
-				}
-				if (collected) continue;
 				queue.push_back(zv::Val::copyOf(entry.value()));
 			}
 		}
 
-		return zv::Val(std::move(traits));
+		/* array_values($traits) */
+		zv::Arr list = zv::Arr::create(zend_hash_num_elements(traits.table()));
+		for (auto entry : traits.arrRef()) {
+			list.push(entry.value());
+		}
+		return zv::Val(std::move(list));
 	}
 
 	bool allowsDynamicProperties(bool &out)
@@ -2489,16 +2576,10 @@ public:
 
 		if (!recursive) return zv::Val(std::move(traits));
 
-		zv::Val parentClass = callOn(nativeReflection.ref(), PT_LC("getparentclass"), 0, NULL);
-		if (UNEXPECTED(parentClass.isUndef())) return zv::Val();
-		if (parentClass.ref().isFalse()) return zv::Val(std::move(traits));
-
-		zv::Val parentName = callOn(parentClass.ref(), PT_LC("getname"), 0, NULL);
-		if (UNEXPECTED(parentName.isUndef())) return zv::Val();
-		zend_string *parentNameStr = zval_get_string(parentName.raw());
-		zv::Val parent = providerGetClass(parentNameStr);
-		zend_string_release(parentNameStr);
+		zv::Val parent = getParentClass();
 		if (UNEXPECTED(parent.isUndef())) return zv::Val();
+		if (parent.isNull()) return zv::Val(std::move(traits));
+
 		zv::Val parentTraits = crGetTraits(parent.ref(), true);
 		if (UNEXPECTED(parentTraits.isUndef())) return zv::Val();
 
@@ -3904,72 +3985,82 @@ public:
 		ancestors.set(nameStr, zv::Val::copyOf(zv::Ref(&self_)));
 		zend_string_release(nameStr);
 
-		zv::Val interfaces = getInterfaces();
-		if (UNEXPECTED(interfaces.isUndef())) return zv::Val();
-		if (UNEXPECTED(!addAncestorsOf(ancestors, interfaces.ref()))) return zv::Val();
-
-		zv::Val traits = getTraits(false);
-		if (UNEXPECTED(traits.isUndef())) return zv::Val();
-		if (UNEXPECTED(!addAncestorsOf(ancestors, traits.ref()))) return zv::Val();
-
-		zv::Val parent = getParentClass();
-		if (UNEXPECTED(parent.isUndef())) return zv::Val();
-		if (!parent.isNull()) {
-			if (UNEXPECTED(!addAncestor(ancestors, parent.ref()))) return zv::Val();
-			zv::Val parentAncestors = crGetAncestors(parent.ref());
-			if (UNEXPECTED(parentAncestors.isUndef())) return zv::Val();
-			if (UNEXPECTED(!addAncestorEntries(ancestors, parentAncestors.ref()))) return zv::Val();
-		}
+		if (UNEXPECTED(!collectAncestors(ancestors))) return zv::Val();
 
 		writeSlot(PT_CR_PROP_ANCESTORS, zv::Val::copyOf(ancestors.ref()));
 
 		return zv::Val(std::move(ancestors));
 	}
 
-	/* foreach ($classReflections as $cr) { $add($cr->getName(), $cr); foreach
-	 * ($cr->getAncestors() as $name => $a) $add($name, $a); } */
-	static bool addAncestorsOf(zv::Arr &ancestors, zv::Ref classReflections)
+	/* private: descends into the interfaces, traits and parent class, the
+	 * collected ancestors doubling as the set of already visited classes -
+	 * traits can use each other in a cycle, a fatal error in PHP that must
+	 * not make this walk run forever; false = pending exception */
+	[[nodiscard]] bool collectAncestors(zv::Arr &ancestors)
+	{
+		zv::Val interfaces = getInterfaces();
+		if (UNEXPECTED(interfaces.isUndef())) return false;
+		if (UNEXPECTED(!addAllToAncestors(ancestors, interfaces.ref()))) return false;
+
+		zv::Val traits = getTraits(false);
+		if (UNEXPECTED(traits.isUndef())) return false;
+		if (UNEXPECTED(!addAllToAncestors(ancestors, traits.ref()))) return false;
+
+		zv::Val parent = getParentClass();
+		if (UNEXPECTED(parent.isUndef())) return false;
+		if (parent.isNull()) return true;
+
+		return addToAncestors(ancestors, parent.ref());
+	}
+
+	/* $classReflection->collectAncestors($ancestors): the native body for
+	 * exactly this class, the same walk through the public methods of any
+	 * other ClassReflection (the PHP twins of the differential harness) */
+	static bool collectAncestorsOf(zv::Ref classReflection, zv::Arr &ancestors)
+	{
+		zv::Ref value = classReflection.deref();
+		if (UNEXPECTED(!value.isObject())) {
+			zend_throw_error(NULL, "Call to a member function collectAncestors() on %s", zend_zval_value_name(value.raw()));
+			return false;
+		}
+		if (EXPECTED(isNative(value.asObject()))) return ClassReflection(value.asObject()).collectAncestors(ancestors);
+
+		zv::Val interfaces = pt_type_call(value.asObject(), PT_LC("getinterfaces"), 0, NULL);
+		if (UNEXPECTED(interfaces.isUndef())) return false;
+		if (UNEXPECTED(!addAllToAncestors(ancestors, interfaces.ref()))) return false;
+
+		zv::Val traits = pt_type_call(value.asObject(), PT_LC("gettraits"), 0, NULL);
+		if (UNEXPECTED(traits.isUndef())) return false;
+		if (UNEXPECTED(!addAllToAncestors(ancestors, traits.ref()))) return false;
+
+		zv::Val parent = pt_type_call(value.asObject(), PT_LC("getparentclass"), 0, NULL);
+		if (UNEXPECTED(parent.isUndef())) return false;
+		if (parent.isNull()) return true;
+
+		return addToAncestors(ancestors, parent.ref());
+	}
+
+	/* foreach ($classReflections as $classReflection) $addToAncestors($classReflection) */
+	static bool addAllToAncestors(zv::Arr &ancestors, zv::Ref classReflections)
 	{
 		if (!classReflections.isArray()) return true;
 		for (auto entry : zv::ArrRef(classReflections.raw())) {
-			if (UNEXPECTED(!addAncestor(ancestors, entry.value()))) return false;
-			zv::Val inner = crGetAncestors(entry.value());
-			if (UNEXPECTED(inner.isUndef())) return false;
-			if (UNEXPECTED(!addAncestorEntries(ancestors, inner.ref()))) return false;
+			if (UNEXPECTED(!addToAncestors(ancestors, entry.value()))) return false;
 		}
 		return true;
 	}
 
-	/* $addToAncestors($classReflection->getName(), $classReflection) */
-	static bool addAncestor(zv::Arr &ancestors, zv::Ref classReflection)
+	/* $addToAncestors($classReflection): a class not collected yet is added
+	 * and descended into */
+	static bool addToAncestors(zv::Arr &ancestors, zv::Ref classReflection)
 	{
 		zv::Val name = crGetName(classReflection);
 		if (UNEXPECTED(name.isUndef())) return false;
-		zend_string *nameStr = zval_get_string(name.raw());
-		if (!ancestors.arrRef().exists(nameStr)) {
-			ancestors.set(nameStr, zv::Val::copyOf(classReflection));
-		}
-		zend_string_release(nameStr);
-		return true;
-	}
+		zv::Str nameStr = zv::Str::adopt(zval_get_string(name.raw()));
+		if (ancestors.arrRef().exists(nameStr.get())) return true;
 
-	/* foreach ($other as $name => $ancestor) $addToAncestors($name, $ancestor) */
-	static bool addAncestorEntries(zv::Arr &ancestors, zv::Ref other)
-	{
-		if (!other.isArray()) return true;
-		for (auto entry : zv::ArrRef(other.raw())) {
-			zend_string *key = entry.stringKeyOrNull();
-			if (key != NULL) {
-				if (!ancestors.arrRef().exists(key)) {
-					ancestors.set(key, zv::Val::copyOf(entry.value()));
-				}
-				continue;
-			}
-			if (ancestors.arrRef().findIndex(entry.indexKey()).raw() == NULL) {
-				ancestors.arrRef().setIndex(entry.indexKey(), entry.value());
-			}
-		}
-		return true;
+		ancestors.set(nameStr.get(), zv::Val::copyOf(classReflection));
+		return collectAncestorsOf(classReflection, ancestors);
 	}
 
 	zv::Val getAncestorWithClassName(zend_string *className)
@@ -4015,9 +4106,12 @@ public:
 		return zv::Val(std::move(types));
 	}
 
-	/* array<Type>|null */
+	/* array<Type>|null, memoized in $allowedSubTypes once resolved */
 	zv::Val getAllowedSubTypes()
 	{
+		if (slot(PT_CR_PROP_ALLOWED_SUB_TYPES_RESOLVED).isTrue()) return zv::Val::copyOf(slot(PT_CR_PROP_ALLOWED_SUB_TYPES));
+
+		writeSlot(PT_CR_PROP_ALLOWED_SUB_TYPES_RESOLVED, zv::Val::boolean(true));
 		zv::Val extensions = registryGet(PT_LC("getallowedsubtypesclassreflectionextensions"));
 		if (UNEXPECTED(extensions.isUndef())) return zv::Val();
 		if (extensions.ref().isArray()) {
@@ -4026,7 +4120,16 @@ public:
 				ZVAL_OBJ(&arg, self);
 				bool supports;
 				if (UNEXPECTED(!callBool(entry.value(), PT_LC("supports"), 1, &arg, supports))) return zv::Val();
-				if (supports) return callOn(entry.value(), PT_LC("getallowedsubtypes"), 1, &arg);
+				if (supports) {
+					zv::Val allowedSubTypes = callOn(entry.value(), PT_LC("getallowedsubtypes"), 1, &arg);
+					if (UNEXPECTED(allowedSubTypes.isUndef())) return zv::Val();
+					if (UNEXPECTED(Z_TYPE_P(allowedSubTypes.raw()) != IS_ARRAY && Z_TYPE_P(allowedSubTypes.raw()) != IS_NULL)) {
+						zend_type_error("Cannot assign %s to property PHPStan\\Reflection\\ClassReflection::$allowedSubTypes of type ?array", zend_zval_value_name(allowedSubTypes.raw()));
+						return zv::Val();
+					}
+					writeSlot(PT_CR_PROP_ALLOWED_SUB_TYPES, zv::Val::copyOf(zv::Ref(allowedSubTypes.raw())));
+					return allowedSubTypes;
+				}
 			}
 		}
 
@@ -4213,6 +4316,78 @@ private:
 
 using phpstanturbo::ClassReflection;
 
+/* {{{ the getters the Type kernel calls millions of times per run
+ *
+ * getName() 1.3M, isGeneric() 1.6M, hasMethod() 0.8M, getCacheKey() 0.6M in
+ * a self-analysis of src/Analyser, src/Rules and src/Type. The shadowing
+ * class is final, so an object of exactly pt_ce_class_reflection runs the
+ * native body directly — no zend_call_function, no frame. A foreign object
+ * (a test double, a class reflection built by something else) still goes
+ * through the PHP method, which is what the twin's callers would do. */
+
+/* $classReflection->getName(); UNDEF = pending exception */
+zv::Val pt_class_reflection_get_name(zend_object *classReflection)
+{
+	if (EXPECTED(classReflection->ce == pt_ce_class_reflection)) return ClassReflection(classReflection).getName();
+	return pt_type_call(classReflection, PT_LC("getname"), 0, NULL);
+}
+
+/* $classReflection->getCacheKey(); UNDEF = pending exception */
+zv::Val pt_class_reflection_get_cache_key(zend_object *classReflection)
+{
+	if (EXPECTED(classReflection->ce == pt_ce_class_reflection)) return ClassReflection(classReflection).getCacheKey();
+	return pt_type_call(classReflection, PT_LC("getcachekey"), 0, NULL);
+}
+
+/* $classReflection->getNativeReflection(); UNDEF = pending exception */
+zv::Val pt_class_reflection_get_native_reflection(zend_object *classReflection)
+{
+	if (EXPECTED(classReflection->ce == pt_ce_class_reflection)) return ClassReflection(classReflection).getNativeReflection();
+	return pt_type_call(classReflection, PT_LC("getnativereflection"), 0, NULL);
+}
+
+/* $method(...) on a foreign object, coerced to bool; false = pending
+ * exception */
+[[nodiscard]] static bool pt_cr_foreign_bool(zend_object *classReflection, const char *lcname, size_t len, uint32_t argc, zval *argv, bool &out)
+{
+	zv::Val result = pt_type_call(classReflection, lcname, len, argc, argv);
+	if (UNEXPECTED(result.isUndef())) return false;
+	out = zend_is_true(result.raw());
+	return true;
+}
+
+/* $classReflection->isGeneric(); false = pending exception */
+[[nodiscard]] bool pt_class_reflection_is_generic(zend_object *classReflection, bool &out)
+{
+	if (EXPECTED(classReflection->ce == pt_ce_class_reflection)) return ClassReflection(classReflection).isGeneric(out);
+	return pt_cr_foreign_bool(classReflection, PT_LC("isgeneric"), 0, NULL, out);
+}
+
+/* $classReflection->hasMethod($methodName); false = pending exception */
+[[nodiscard]] bool pt_class_reflection_has_method(zend_object *classReflection, zval *methodName, bool &out)
+{
+	if (EXPECTED(classReflection->ce == pt_ce_class_reflection && Z_TYPE_P(methodName) == IS_STRING)) {
+		return ClassReflection(classReflection).hasMethod(Z_STR_P(methodName), out);
+	}
+	return pt_cr_foreign_bool(classReflection, PT_LC("hasmethod"), 1, methodName, out);
+}
+
+/* $classReflection->hasFinalByKeywordOverride(); false = pending exception */
+[[nodiscard]] bool pt_class_reflection_has_final_by_keyword_override(zend_object *classReflection, bool &out)
+{
+	if (EXPECTED(classReflection->ce == pt_ce_class_reflection)) return ClassReflection(classReflection).hasFinalByKeywordOverride(out);
+	return pt_cr_foreign_bool(classReflection, PT_LC("hasfinalbykeywordoverride"), 0, NULL, out);
+}
+
+/* $classReflection->isEnum(); false = pending exception */
+[[nodiscard]] bool pt_class_reflection_is_enum(zend_object *classReflection, bool &out)
+{
+	if (EXPECTED(classReflection->ce == pt_ce_class_reflection)) return ClassReflection(classReflection).isEnum(out);
+	return pt_cr_foreign_bool(classReflection, PT_LC("isenum"), 0, NULL, out);
+}
+
+/* }}} */
+
 /* {{{ engine ABI glue: parameter parsing + registration */
 
 #define PT_THIS ClassReflection(Z_OBJ_P(ZEND_THIS))
@@ -4248,24 +4423,12 @@ inline constexpr const char *resolvedPhpDocBlock = "PHPStan\\PhpDoc\\ResolvedPhp
 
 } // namespace pt_cr
 
-/* a `bool method(string $name)` handler */
-#define PT_CR_STRING_BOOL_METHOD(name, body) \
-	cls.method(name, reg::Public, 1, { reg::stringArg("methodName") }, [](INTERNAL_FUNCTION_PARAMETERS) { \
-		zend_string *methodName; \
-		ZEND_PARSE_PARAMETERS_START(1, 1) \
-			Z_PARAM_STR(methodName) \
-		ZEND_PARSE_PARAMETERS_END(); \
-		PT_CR_RETURN_BOOL(PT_THIS.body(methodName, out_)); \
-	}, &returnsBool)
-
 void pt_register_class_reflection()
 {
 	using namespace pt_cr;
 
 	reg::Class cls("PHPStan\\Reflection\\ClassReflection");
-	/* the twin is final; the flag joins the plan with the flip — the
-	 * differential harness subclasses the class until then (see the
-	 * design note) */
+	ptdecl::ClassReflection::declareClass(cls);
 
 	/* {{{ the slots, in the twin's declaration order (the PT_CR_PROP_*
 	 * enum): the class-body properties with their defaults, the static
@@ -4280,6 +4443,8 @@ void pt_register_class_reflection()
 	cls.property("classHierarchyDistances", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_ARRAY | MAY_BE_NULL);
 	cls.property("deprecatedDescription", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_STRING | MAY_BE_NULL);
 	cls.property("isDeprecated", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_BOOL | MAY_BE_NULL);
+	cls.property("allowedSubTypes", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_ARRAY | MAY_BE_NULL);
+	cls.property("allowedSubTypesResolved", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedBool, 0);
 	cls.property("isGeneric", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_BOOL | MAY_BE_NULL);
 	cls.property("isInternal", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_BOOL | MAY_BE_NULL);
 	cls.property("isFinal", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_BOOL | MAY_BE_NULL);
@@ -4300,6 +4465,7 @@ void pt_register_class_reflection()
 	cls.property("traitContextResolvedPhpDocBlock", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedFalse, MAY_BE_FALSE, "PHPStan\\PhpDoc\\ResolvedPhpDocBlock");
 	cls.property("cachedInterfaces", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_ARRAY | MAY_BE_NULL);
 	cls.property("cachedParentClass", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedFalse, MAY_BE_FALSE | MAY_BE_NULL, "self");
+	cls.property("circularParentClassName", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedFalse, MAY_BE_STRING | MAY_BE_FALSE | MAY_BE_NULL);
 	cls.property("typeAliases", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_ARRAY | MAY_BE_NULL);
 	cls.privateStaticTypedArrayPropertyDefaultEmpty("resolvingTypeAliasImports");
 	cls.property("hasMethodCache", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
@@ -4393,6 +4559,29 @@ void pt_register_class_reflection()
 	cls.method<&ClassReflection::getCacheKey>(sigs::getCacheKey);
 
 	cls.method<&ClassReflection::getClassHierarchyDistances>(sigs::getClassHierarchyDistances);
+
+	cls.method(sigs::findCircularParentClassName, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zend_string *parentClassName;
+		if (!zp::parse<zp::Str>(execute_data, parentClassName)) RETURN_THROWS();
+		PT_RETURN_VAL(PT_THIS.findCircularParentClassName(parentClassName));
+	});
+
+	cls.method(sigs::collectAncestors, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *ancestorsArg;
+		if (!zp::parse<zp::Zval>(execute_data, ancestorsArg)) RETURN_THROWS();
+		zval *ancestorsZv = ancestorsArg;
+		ZVAL_DEREF(ancestorsZv);
+		if (UNEXPECTED(Z_TYPE_P(ancestorsZv) != IS_ARRAY)) {
+			zend_argument_type_error(1, "must be of type array, %s given", zend_zval_value_name(ancestorsZv));
+			RETURN_THROWS();
+		}
+		zv::Arr ancestors = zv::Arr::copyOfTable(Z_ARRVAL_P(ancestorsZv));
+		bool collected = PT_THIS.collectAncestors(ancestors);
+		zval written = ancestors.take();
+		zval_ptr_dtor(ancestorsZv);
+		ZVAL_COPY_VALUE(ancestorsZv, &written);
+		if (UNEXPECTED(!collected)) RETURN_THROWS();
+	});
 
 	cls.method(sigs::collectTraits, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *classReflection;
@@ -4686,7 +4875,7 @@ void pt_register_class_reflection()
 
 	cls.method<&ClassReflection::getActiveTemplateTypeMapForAncestorResolution>(sigs::getActiveTemplateTypeMapForAncestorResolution);
 
-	cls.shadowDifferentialOnly(&pt_ce_class_reflection);
+	cls.shadow(&pt_ce_class_reflection);
 }
 
 /* }}} */

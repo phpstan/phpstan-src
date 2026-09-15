@@ -7,6 +7,11 @@
  *
  * State lives in the three declared private property slots, so the standard
  * object handlers do GC/free/clone — no custom object struct.
+ *
+ * The file also carries pt_scope_is_in_class() / pt_scope_get_class_reflection(),
+ * the native readers of MutatingScope::isInClass()/getClassReflection(): both
+ * answer out of a native ScopeContext's $classReflection slot, so they live
+ * next to the slot readers above (see the block at the end of the file).
  */
 
 #include "support.h"
@@ -14,6 +19,7 @@
 
 namespace slots = ptdecl::ScopeContext::slot;
 #include "zv.h"
+#include "TypeTraits.h"
 
 zend_class_entry *pt_ce_scope_context = nullptr;
 
@@ -167,8 +173,8 @@ private:
 		return pt_call_scope_bool(reflection.raw(), lcname, len, 0, NULL, &out);
 	}
 
-	/* $reflection->getName() — a ClassReflection's memoized name read
-	 * natively (ClassReflectionAccess.cpp); UNDEF = pending exception */
+	/* $reflection->getName() — the native ClassReflection's body called
+	 * directly (ClassReflection.cpp); UNDEF = pending exception */
 	static zv::Val callGetName(zv::Ref reflection)
 	{
 		return pt_class_reflection_get_name(reflection.asObject());
@@ -280,6 +286,124 @@ void pt_register_scope_context()
 	});
 
 	cls.shadow(&pt_ce_scope_context);
+}
+
+/* }}} */
+
+/* {{{ MutatingScope::isInClass() / getClassReflection() for native callers
+ *
+ * Both read $this->context->getClassReflection(): when the scope is exactly
+ * a MutatingScope (a PHP subclass may override them) holding a native
+ * ScopeContext, the class reflection comes straight out of the context's
+ * slot; anything else goes through the PHP method as before. The class
+ * entry is looked up without autoloading — an object of a class that is not
+ * declared cannot exist, so an undeclared MutatingScope simply means "not
+ * this class". */
+
+namespace {
+
+/* the property slot offset of a class entry, resolved once; a user class's
+ * entry is per request without opcache, so rinit forgets it */
+struct ScopeSlots
+{
+	zend_class_entry *ce;
+	uint32_t context;
+};
+
+ScopeSlots pt_ms_slots = { NULL, 0 };
+
+/* the subclass of MutatingScope last approved by the inheritance check */
+zend_class_entry *pt_ms_inherited_ce = NULL;
+
+/* whether a subclass inherits isInClass() and getClassReflection() from
+ * MutatingScope itself (declared there, not re-declared below it) */
+bool inheritsScopeGetters(zend_class_entry *ce, zend_class_entry *mutatingScope)
+{
+	static const struct { const char *name; size_t len; } methods[] = { { "isinclass", sizeof("isinclass") - 1 }, { "getclassreflection", sizeof("getclassreflection") - 1 } };
+	for (const auto &method : methods) {
+		zend_function *fn = (zend_function *) zend_hash_str_find_ptr(&ce->function_table, method.name, method.len);
+		if (fn == NULL || fn->common.scope != mutatingScope) return false;
+	}
+	return true;
+}
+
+/* the $classReflection slot of the scope's context when the fast path
+ * applies (the scope exactly a MutatingScope, its context a native
+ * ScopeContext); NULL otherwise, with `error` set when the class map
+ * failed */
+zval *scopeClassReflectionSlot(zend_object *scope, bool &error)
+{
+	error = false;
+	if (scope->ce != pt_ms_slots.ce && scope->ce != pt_ms_inherited_ce) {
+		zend_class_entry *ce = pt_class_loaded(PT_CLASS_MUTATING_SCOPE);
+		if (ce == NULL) {
+			error = EG(exception) != NULL;
+			return NULL;
+		}
+		if (scope->ce != ce) {
+			/* a subclass (NodeCallbackScope) qualifies when it inherits both
+			 * methods from MutatingScope unchanged: the bodies are then the
+			 * twin's, reading the same inherited $context slot; the last
+			 * such class is remembered (one subclass exists in practice) */
+			if (!instanceof_function(scope->ce, ce) || !inheritsScopeGetters(scope->ce, ce)) return NULL;
+		}
+		int32_t context = pt_instance_prop_offset(ce, "context", sizeof("context") - 1);
+		if (UNEXPECTED(context < 0)) return NULL;
+		if (scope->ce == ce) {
+			pt_ms_slots = { ce, (uint32_t) context };
+		} else {
+			pt_ms_slots.context = (uint32_t) context;
+			pt_ms_inherited_ce = scope->ce;
+		}
+	}
+	zval *context = OBJ_PROP(scope, pt_ms_slots.context);
+	if (Z_TYPE_P(context) != IS_OBJECT || Z_OBJCE_P(context) != pt_ce_scope_context) return NULL;
+	return pt_scope_context_class_reflection(Z_OBJ_P(context));
+}
+
+} // namespace
+
+void pt_scope_access_rinit()
+{
+	pt_ms_slots.ce = NULL;
+	pt_ms_inherited_ce = NULL;
+}
+
+/* return $this->context->getClassReflection() !== null; */
+bool pt_scope_is_in_class(zend_object *scope, bool &out)
+{
+	bool error;
+	zval *classReflection = scopeClassReflectionSlot(scope, error);
+	if (classReflection != NULL) {
+		if (Z_TYPE_P(classReflection) == IS_NULL) {
+			out = false;
+			return true;
+		}
+		if (EXPECTED(Z_TYPE_P(classReflection) == IS_OBJECT)) {
+			out = true;
+			return true;
+		}
+	} else if (UNEXPECTED(error)) {
+		return false;
+	}
+	zv::Val result = pt_type_call(scope, "isinclass", sizeof("isinclass") - 1, 0, NULL);
+	if (UNEXPECTED(result.isUndef())) return false;
+	out = zend_is_true(result.raw());
+	return true;
+}
+
+/* return $this->context->getClassReflection(); */
+zv::Val pt_scope_get_class_reflection(zend_object *scope)
+{
+	bool error;
+	zval *classReflection = scopeClassReflectionSlot(scope, error);
+	if (classReflection != NULL) {
+		if (Z_TYPE_P(classReflection) == IS_NULL) return zv::Val::null();
+		if (EXPECTED(Z_TYPE_P(classReflection) == IS_OBJECT)) return zv::Val::copyOf(zv::Ref(classReflection));
+	} else if (UNEXPECTED(error)) {
+		return zv::Val();
+	}
+	return pt_type_call(scope, "getclassreflection", sizeof("getclassreflection") - 1, 0, NULL);
 }
 
 /* }}} */

@@ -2859,11 +2859,11 @@ foreach ($vlrResults['php'] as $label => $described) {
 }
 check(count($vlrResults['php']['function / loops']['variableOverwritingLoops']) === 2 && $vlrResults['php']['function / read all']['readVariableNames'] !== [], 'VariableLivenessResolver: the fixture exercises binding probes and READ_ALL');
 
-// ---- ClassReflection (differential-only plan) ----
-// Not in the manifest yet: the plan is declared only by this prefixed
-// activation (reg::Class::shadowDifferentialOnly()) until the flip.
-// reflection-family.php rebuilds real class reflections on both sides and
-// compares every method; it registers nothing in $covered.
+// ---- ClassReflection ----
+// reflection-family.php rebuilds real class reflections on both sides —
+// the PHP twin under its real name, the native class under the prefix —
+// and compares every method and every memo slot.
+$covered[\PHPStan\Reflection\ClassReflection::class] = true;
 require __DIR__ . '/reflection-family.php';
 
 // ---- ExpressionResult ----

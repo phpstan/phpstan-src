@@ -166,7 +166,6 @@ enum {
 	PT_CLASS_OFFSET_ACCESS_TYPE_NODE,
 	PT_CLASS_CONDITIONAL_TYPE_NODE,
 	PT_CLASS_CONDITIONAL_TYPE_FOR_PARAMETER_NODE,
-	PT_CLASS_CLASS_REFLECTION,
 	PT_CLASS_MUTATING_SCOPE,
 	PT_CLASS_REFLECTION_ENUM,
 	PT_CLASS_MEMOIZING_REFLECTION_PROVIDER,
@@ -1209,27 +1208,12 @@ void pt_register_template_key_of_type();
  * against KeyOfType); false = pending exception */
 [[nodiscard]] bool pt_template_key_of_type_new(zval *out, zval *scope, zval *strategy, zval *variance, zend_string *name, zval *bound, zval *defaultType);
 
-/* ClassReflectionAccess.cpp — native readers of the memo slots of
- * PHPStan\Reflection\ClassReflection (a userland final class) and of a
- * MutatingScope's ScopeContext: the Type kernel's hottest native->PHP calls
- * (getName()/isGeneric()/hasMethod()/getCacheKey() on class reflections,
- * isInClass()/getClassReflection() on scopes), answered from the twin's own
- * property slot when it holds the memoized answer and through the PHP
- * method otherwise, so the observable behaviour (lazy computation, the
- * Error on an uninitialized slot, a subclass's override) stays the twin's */
-void pt_class_reflection_access_rinit();
-/* $classReflection->getName() / ->getCacheKey() / ->getNativeReflection();
- * UNDEF = pending exception */
-zv::Val pt_class_reflection_get_name(zend_object *classReflection);
-zv::Val pt_class_reflection_get_cache_key(zend_object *classReflection);
-zv::Val pt_class_reflection_get_native_reflection(zend_object *classReflection);
-/* $classReflection->isGeneric() / ->hasMethod($methodName) /
- * ->hasFinalByKeywordOverride() / ->isEnum(), coerced to bool as the call
- * sites always did; false = pending exception */
-[[nodiscard]] bool pt_class_reflection_is_generic(zend_object *classReflection, bool &out);
-bool pt_class_reflection_has_method(zend_object *classReflection, zval *methodName, bool &out);
-bool pt_class_reflection_has_final_by_keyword_override(zend_object *classReflection, bool &out);
-bool pt_class_reflection_is_enum(zend_object *classReflection, bool &out);
+/* ScopeContext.cpp — $scope->isInClass() / ->getClassReflection() for
+ * native callers: when the scope is exactly a MutatingScope (or a subclass
+ * inheriting both bodies) holding a native ScopeContext, the answer comes
+ * out of the context's $classReflection slot, otherwise the PHP method
+ * decides; the per-request slot cache is reset by the rinit */
+void pt_scope_access_rinit();
 /* $scope->isInClass() (coerced to bool) / ->getClassReflection(); false /
  * UNDEF = pending exception */
 [[nodiscard]] bool pt_scope_is_in_class(zend_object *scope, bool &out);
@@ -1317,13 +1301,25 @@ extern zend_class_entry *pt_ce_volatile_expression_helper;
 zv::Val pt_expression_result_storage_find(zval *storage, zval *expr);
 
 /* merged from the parallel port branch */
-/* the native ClassReflection (ClassReflection.cpp); until the flip the
- * plan is declared by the prefixed activation of the differential tests
- * only (reg::Class::shadowDifferentialOnly()), so pt_ce_class_reflection
- * stays NULL in a production run and the slot readers of
- * ClassReflectionAccess.cpp keep serving the Type kernel */
+/* the native ClassReflection (ClassReflection.cpp), shadowing
+ * PHPStan\Reflection\ClassReflection */
 extern zend_class_entry *pt_ce_class_reflection;
 void pt_register_class_reflection();
+/* the getters the Type kernel calls millions of times per run: a direct
+ * C++ call into the native body when the object is the shadowing class
+ * (the common case), the PHP method when it is a foreign object.
+ * $classReflection->getName() / ->getCacheKey() / ->getNativeReflection();
+ * UNDEF = pending exception */
+zv::Val pt_class_reflection_get_name(zend_object *classReflection);
+zv::Val pt_class_reflection_get_cache_key(zend_object *classReflection);
+zv::Val pt_class_reflection_get_native_reflection(zend_object *classReflection);
+/* $classReflection->isGeneric() / ->hasMethod($methodName) /
+ * ->hasFinalByKeywordOverride() / ->isEnum(), coerced to bool as the call
+ * sites always did; false = pending exception */
+[[nodiscard]] bool pt_class_reflection_is_generic(zend_object *classReflection, bool &out);
+bool pt_class_reflection_has_method(zend_object *classReflection, zval *methodName, bool &out);
+bool pt_class_reflection_has_final_by_keyword_override(zend_object *classReflection, bool &out);
+bool pt_class_reflection_is_enum(zend_object *classReflection, bool &out);
 /* TypehintHelper::decideTypeFromReflection() for native callers (every
  * argument borrowed, NULL for a null / the default); UNDEF = pending
  * exception */

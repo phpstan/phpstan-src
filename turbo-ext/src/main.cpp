@@ -288,8 +288,6 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_called_on_type_unresolved_property_prototype_reflection();
 	pt_register_callback_unresolved_method_prototype_reflection();
 	pt_register_callback_unresolved_property_prototype_reflection();
-	/* differential-only until the flip (declared by the prefixed
-	 * activation of the tests, never under the real name) — see ClassReflection.cpp */
 	pt_register_class_reflection();
 	pt_register_volatile_expression_helper();
 	pt_register_variable_flow();
@@ -322,7 +320,7 @@ static PHP_RINIT_FUNCTION(phpstan_turbo)
 	pt_integer_range_type_rinit();
 	pt_object_type_rinit();
 	pt_static_type_factory_rinit();
-	pt_class_reflection_access_rinit();
+	pt_scope_access_rinit();
 	pt_reflection_access_rinit();
 	pt_variable_flow_rinit();
 

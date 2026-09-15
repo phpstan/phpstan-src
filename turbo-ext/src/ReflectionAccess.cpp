@@ -10,7 +10,7 @@
  *   answer from $knownClasses / $unknownClasses / $classes (the method,
  *   which asks the decorated provider and memoizes, on a miss).
  *
- * Same contract as ClassReflectionAccess.cpp: only an object of exactly
+ * Same contract as the scope readers of ScopeContext.cpp: only an object of exactly
  * the twin's class entry (resolved once through the class map, without
  * autoloading — an object of an undeclared class cannot exist) takes the
  * fast path, its slot offsets cached per class entry and forgotten at

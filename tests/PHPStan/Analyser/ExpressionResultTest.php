@@ -204,6 +204,7 @@ class ExpressionResultTest extends PHPStanTestCase
 			->assignVariable('x', new IntegerType(), new IntegerType(), TrinaryLogic::createYes())
 			->assignVariable('arr', new ArrayType(new MixedType(), new MixedType()), new ArrayType(new MixedType(), new MixedType()), TrinaryLogic::createYes());
 
+		$nodeScopeResolver->resetPerFileAnalysisState();
 		$result = $nodeScopeResolver->processExprNode(
 			$stmt,
 			$expr,

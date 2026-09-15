@@ -9,6 +9,7 @@ use PHPStan\PhpDoc\Tag\ExtendsTag;
 use PHPStan\PhpDoc\Tag\ImplementsTag;
 use PHPStan\PhpDoc\Tag\MethodTag;
 use PHPStan\PhpDoc\Tag\MixinTag;
+use PHPStan\PhpDoc\Tag\ParamClosureScopeTag;
 use PHPStan\PhpDoc\Tag\ParamClosureThisTag;
 use PHPStan\PhpDoc\Tag\ParamOutTag;
 use PHPStan\PhpDoc\Tag\ParamTag;
@@ -102,6 +103,9 @@ final class ResolvedPhpDocBlock
 
 	/** @var array<string, ParamClosureThisTag>|false */
 	private array|false $paramClosureThisTags = false;
+
+	/** @var array<string, ParamClosureScopeTag>|false */
+	private array|false $paramClosureScopeTags = false;
 
 	private ReturnTag|false|null $returnTag = false;
 
@@ -226,6 +230,7 @@ final class ResolvedPhpDocBlock
 		$self->paramsImmediatelyInvokedCallable = [];
 		$self->paramsPureUnlessCallableIsImpure = [];
 		$self->paramClosureThisTags = [];
+		$self->paramClosureScopeTags = [];
 		$self->returnTag = null;
 		$self->throwsTag = null;
 		$self->mixinTags = [];
@@ -283,6 +288,7 @@ final class ResolvedPhpDocBlock
 		$result->paramsImmediatelyInvokedCallable = self::mergeParamsImmediatelyInvokedCallable($this->getParamsImmediatelyInvokedCallable(), $parent, $parameterMapping);
 		$result->paramsPureUnlessCallableIsImpure = self::mergeParamsPureUnlessCallableIsImpure($this->getParamsPureUnlessCallableIsImpure(), $parent, $parameterMapping);
 		$result->paramClosureThisTags = self::mergeParamClosureThisTags($this->getParamClosureThisTags(), $parent, $parameterMapping, $parentClass);
+		$result->paramClosureScopeTags = self::mergeParamClosureScopeTags($this->getParamClosureScopeTags(), $parent, $parameterMapping, $parentClass);
 		$result->returnTag = self::mergeReturnTags($this->getReturnTag(), $declaringClass, $parent, $parameterMapping, $parentClass);
 		$result->throwsTag = self::mergeThrowsTags($this->getThrowsTag(), $parent);
 		$result->mixinTags = $this->getMixinTags();
@@ -369,6 +375,17 @@ final class ResolvedPhpDocBlock
 			$newParamClosureThisTags[$parameterNameMapping[$key]] = $paramClosureThisTag->withType($transformedType);
 		}
 
+		$paramClosureScopeTags = $this->getParamClosureScopeTags();
+		$newParamClosureScopeTags = [];
+		foreach ($paramClosureScopeTags as $key => $paramClosureScopeTag) {
+			if (!array_key_exists($key, $parameterNameMapping)) {
+				continue;
+			}
+
+			$transformedType = TypeTraverser::map($paramClosureScopeTag->getType(), $mapParameterCb);
+			$newParamClosureScopeTags[$parameterNameMapping[$key]] = $paramClosureScopeTag->withType($transformedType);
+		}
+
 		$returnTag = $this->getReturnTag();
 		if ($returnTag !== null) {
 			$transformedType = TypeTraverser::map($returnTag->getType(), $mapParameterCb);
@@ -406,6 +423,7 @@ final class ResolvedPhpDocBlock
 		$self->paramOutTags = $newParamOutTags;
 		$self->paramsImmediatelyInvokedCallable = $newParamsImmediatelyInvokedCallable;
 		$self->paramClosureThisTags = $newParamClosureThisTags;
+		$self->paramClosureScopeTags = $newParamClosureScopeTags;
 		$self->returnTag = $returnTag;
 		$self->throwsTag = $this->throwsTag;
 		$self->mixinTags = $this->mixinTags;
@@ -619,6 +637,21 @@ final class ResolvedPhpDocBlock
 		}
 
 		return $this->paramClosureThisTags;
+	}
+
+	/**
+	 * @return array<string, ParamClosureScopeTag>
+	 */
+	public function getParamClosureScopeTags(): array
+	{
+		if ($this->paramClosureScopeTags === false) {
+			$this->paramClosureScopeTags = $this->phpDocNodeResolver->resolveParamClosureScopeTags(
+				$this->phpDocNode,
+				$this->getNameScope(),
+			);
+		}
+
+		return $this->paramClosureScopeTags;
 	}
 
 	public function getReturnTag(): ?ReturnTag
@@ -1167,6 +1200,40 @@ final class ResolvedPhpDocBlock
 		}
 
 		return $paramsClosureThisTags;
+	}
+
+	/**
+	 * @param array<string, ParamClosureScopeTag> $paramsClosureScopeTags
+	 * @return array<string, ParamClosureScopeTag>
+	 */
+	private static function mergeParamClosureScopeTags(array $paramsClosureScopeTags, self $parent, InheritedPhpDocParameterMapping $parameterMapping, ClassReflection $parentClass): array
+	{
+		return self::mergeOneParentParamClosureScopeTag($paramsClosureScopeTags, $parent, $parameterMapping, $parentClass);
+	}
+
+	/**
+	 * @param array<string, ParamClosureScopeTag> $paramsClosureScopeTags
+	 * @return array<string, ParamClosureScopeTag>
+	 */
+	private static function mergeOneParentParamClosureScopeTag(array $paramsClosureScopeTags, self $parent, InheritedPhpDocParameterMapping $parameterMapping, ClassReflection $parentClass): array
+	{
+		$parentClosureScopeTags = $parameterMapping->transformArrayKeysWithParameterNameMapping($parent->getParamClosureScopeTags());
+
+		foreach ($parentClosureScopeTags as $name => $parentParamClosureScopeTag) {
+			if (array_key_exists($name, $paramsClosureScopeTags)) {
+				continue;
+			}
+
+			$paramsClosureScopeTags[$name] = self::resolveTemplateTypeInTag(
+				$parentParamClosureScopeTag->withType(
+					$parameterMapping->transformConditionalReturnTypeWithParameterNameMapping($parentParamClosureScopeTag->getType()),
+				),
+				$parentClass,
+				TemplateTypeVariance::createContravariant(),
+			);
+		}
+
+		return $paramsClosureScopeTags;
 	}
 
 	private static function mergePureTags(?bool $isPure, self $parent): ?bool

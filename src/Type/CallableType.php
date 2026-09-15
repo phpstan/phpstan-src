@@ -864,6 +864,9 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 			if ($parameter->getClosureThisType() !== null && $parameter->getClosureThisType()->hasTemplateOrLateResolvableType()) {
 				return true;
 			}
+			if ($parameter->getClosureScopeType() !== null && $parameter->getClosureScopeType()->hasTemplateOrLateResolvableType()) {
+				return true;
+			}
 		}
 
 		foreach ($this->assertions->getAll() as $assertTag) {

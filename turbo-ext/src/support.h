@@ -387,6 +387,7 @@ void pt_register_try_catch_type_visitor();
 void pt_register_type_traverser_instanceof_visitor();
 void pt_register_scope_ops();
 void pt_register_node_scanner();
+void pt_register_expr_printer();
 void pt_register_parser_runner();
 void pt_register_type_combinator_cache();
 void pt_register_arena_cache();
@@ -659,7 +660,17 @@ void pt_init_strs();
 zval *pt_node_attribute(zend_object *node, zend_string *name);
 bool pt_node_set_attribute(zend_object *node, zend_string *name, zval *value);
 
-/* Expression key for the node (MutatingScope::getNodeKey semantics); the PHP
+/* the shadowing ExprPrinter (ExprPrinter.cpp) — the miss half of
+ * ExprPrinter::printExpr(): $exprPrinter->printer->prettyPrintExpr($node)
+ * plus the cache write, for a caller that has already taken the Variable
+ * and attribute-cache fast paths. The native body for the shadowing
+ * ExprPrinter, the twin's printExpr() (which re-takes those fast paths, to
+ * the same result) for anything else. Returned string owned by caller; NULL
+ * on failure (exception thrown). */
+extern zend_class_entry *pt_ce_expr_printer;
+zend_string *pt_expr_printer_print_uncached(zval *exprPrinter, zend_object *node);
+
+/* Expression key for the node (MutatingScope::getNodeKey semantics); the
  * ExprPrinter is called on cache misses. Returned string owned by caller;
  * NULL on failure (exception thrown). */
 zend_string *pt_node_key(zend_object *node, zval *expr_printer);

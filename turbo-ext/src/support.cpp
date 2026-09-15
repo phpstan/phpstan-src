@@ -650,30 +650,6 @@ bool pt_node_set_attribute(zend_object *node, zend_string *name, zval *value)
 
 /* {{{ node key */
 
-static bool pt_call_print_expr(zval *expr_printer, zend_object *node, zval *result)
-{
-	zend_class_entry *ce = Z_OBJCE_P(expr_printer);
-	zend_function *fn = (zend_function *) zend_hash_str_find_ptr(&ce->function_table, "printexpr", sizeof("printexpr") - 1);
-	zval arg;
-
-	if (UNEXPECTED(fn == NULL)) {
-		zend_throw_error(NULL, "phpstan_turbo: printExpr not found");
-		return false;
-	}
-	ZVAL_OBJ(&arg, node);
-	zend_call_known_function(fn, Z_OBJ_P(expr_printer), ce, result, 1, &arg, NULL);
-	if (UNEXPECTED(EG(exception))) {
-		zval_ptr_dtor(result);
-		return false;
-	}
-	if (UNEXPECTED(Z_TYPE_P(result) != IS_STRING)) {
-		zval_ptr_dtor(result);
-		zend_throw_error(NULL, "phpstan_turbo: printExpr did not return a string");
-		return false;
-	}
-	return true;
-}
-
 /* The printed form of the expression, without pt_node_key's attribute-derived
  * suffixes — the equivalent of a plain $exprPrinter->printExpr($node) call
  * (which caches through the printer attribute). Owned string; NULL on
@@ -701,9 +677,7 @@ static zend_string *pt_node_printed_expr(zend_object *node, zval *expr_printer)
 	zval *attr = pt_node_attribute(node, pt_str_cache_printer);
 	if (attr != NULL && Z_TYPE_P(attr) == IS_STRING) return zend_string_copy(Z_STR_P(attr));
 
-	zval printed;
-	if (!pt_call_print_expr(expr_printer, node, &printed)) return NULL;
-	return Z_STR(printed); /* take ownership */
+	return pt_expr_printer_print_uncached(expr_printer, node);
 }
 
 zend_string *pt_node_key(zend_object *node, zval *expr_printer)

@@ -181,6 +181,7 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_type_traverser_instanceof_visitor();
 	pt_register_scope_ops();
 	pt_register_node_scanner();
+	pt_register_expr_printer();
 	pt_register_parser_runner();
 	pt_register_type_combinator_cache();
 	pt_register_arena_cache();

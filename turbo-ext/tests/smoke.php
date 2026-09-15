@@ -436,6 +436,88 @@ foreach ($nodeScannerSnippets as $si => $code) {
 	}
 }
 
+// ---- ExprPrinter ----
+// Printing fills a cache attribute on the node itself, so each side prints
+// its own fresh, structurally identical fixture: the parsed expressions of a
+// few snippets plus PHPStan's own virtual expressions. Compared are the
+// printed strings, the attribute each implementation leaves behind, and what
+// a second call to the same node returns.
+$covered[\PHPStan\Node\Printer\ExprPrinter::class] = true;
+$epCacheKey = \PHPStan\Node\Printer\ExprPrinter::ATTRIBUTE_CACHE_KEY;
+$epSnippets = [
+	'<?php $a = $b + 1; $c = $a->d->e()[0] ?? Foo\Bar::BAZ;',
+	'<?php $x = f(1, ...$args) . "pre{$y}post" . \'q\' . <<<T' . "\n" . 'body' . "\n" . 'T;',
+	'<?php $r = new C(fn ($p) => $p ? -$p : +$p); $s = $r instanceof C ? clone $r : null;',
+	'<?php $o->{\'weird name\'} = $o->{\'plain\'}(); $o?->m()?->p; $q = [1, \'k\' => $z, ...$w];',
+	'<?php $i = match ($v) { 1, 2 => "a", default => "b" }; $j = (int) $i; $k = $i <=> $j;',
+	'<?php $c = function () { $inner = 1; return $inner; }; static::m(); self::$p; C::class;',
+	'<?php list($a, [$b]) = $t; $a **= 2; $b ??= 3; print $a; @$und; $g = &$a; yield $a => $b;',
+];
+$epBuildExprs = static function () use ($smokeParser, $nodeFinder, $epSnippets): array {
+	$exprs = [];
+	foreach ($epSnippets as $si => $code) {
+		$ast = $smokeParser->parse($code);
+		foreach ($nodeFinder->find($ast, static fn (\PhpParser\Node $n): bool => $n instanceof \PhpParser\Node\Expr) as $ni => $node) {
+			$exprs["snippet #$si expr #$ni (" . $node->getType() . ')'] = $node;
+		}
+	}
+
+	$var = new \PhpParser\Node\Expr\Variable('v');
+	$dim = new \PhpParser\Node\Scalar\String_('k');
+	$exprs['Variable'] = new \PhpParser\Node\Expr\Variable('plain');
+	$exprs['Variable with an Expr name'] = new \PhpParser\Node\Expr\Variable(new \PhpParser\Node\Expr\Variable('indirect'));
+	$exprs['TypeExpr'] = new \PHPStan\Node\Expr\TypeExpr(new \PHPStan\Type\IntegerType());
+	$exprs['NativeTypeExpr'] = new \PHPStan\Node\Expr\NativeTypeExpr(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType());
+	$exprs['UnsetOffsetExpr'] = new \PHPStan\Node\Expr\UnsetOffsetExpr($var, $dim);
+	$exprs['ExistingArrayDimFetch'] = new \PHPStan\Node\Expr\ExistingArrayDimFetch($var, $dim);
+	$exprs['SetOffsetValueTypeExpr'] = new \PHPStan\Node\Expr\SetOffsetValueTypeExpr($var, null, $dim);
+	$exprs['SetExistingOffsetValueTypeExpr'] = new \PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr($var, $dim, $var);
+	$exprs['AlwaysRememberedExpr'] = new \PHPStan\Node\Expr\AlwaysRememberedExpr($var, new \PHPStan\Type\IntegerType(), new \PHPStan\Type\IntegerType());
+	$exprs['PossiblyImpureCallExpr'] = new \PHPStan\Node\Expr\PossiblyImpureCallExpr($var, $dim, 'call');
+	$exprs['PropertyInitializationExpr'] = new \PHPStan\Node\Expr\PropertyInitializationExpr('prop');
+	$exprs['CloneReinitializationExpr'] = new \PHPStan\Node\Expr\CloneReinitializationExpr('prop');
+	$exprs['ForeachValueByRefExpr'] = new \PHPStan\Node\Expr\ForeachValueByRefExpr($var);
+	$exprs['ParameterVariableOriginalValueExpr'] = new \PHPStan\Node\Expr\ParameterVariableOriginalValueExpr('p');
+	$exprs['OriginalForeachKeyExpr'] = new \PHPStan\Node\Expr\OriginalForeachKeyExpr('k');
+	$exprs['OriginalForeachValueExpr'] = new \PHPStan\Node\Expr\OriginalForeachValueExpr('v');
+	$exprs['IntertwinedVariableByReferenceWithExpr'] = new \PHPStan\Node\Expr\IntertwinedVariableByReferenceWithExpr('r', $var, $dim);
+	$exprs['IssetExpr'] = new \PHPStan\Node\IssetExpr($var);
+	// a form containing a newline: printExpr() remembers it even though
+	// Printer::p() would not
+	$exprs['multi-line closure'] = $smokeParser->parse('<?php function () { $a = 1; return $a; };')[0]->expr;
+
+	return $exprs;
+};
+
+$epResults = [];
+foreach (['php' => \PHPStan\Node\Printer\ExprPrinter::class, 'native' => \PHPStanTurbo\ExprPrinter::class] as $epSide => $epClass) {
+	$epPrinter = new $epClass(new \PHPStan\Node\Printer\Printer());
+	$rows = [];
+	foreach ($epBuildExprs() as $label => $expr) {
+		$printed = $epPrinter->printExpr($expr);
+		$rows[$label] = [$printed, $expr->getAttribute($epCacheKey), $epPrinter->printExpr($expr)];
+	}
+
+	// the cache is consulted, not bypassed: a seeded attribute wins over the
+	// printer, and a Variable is answered before the cache is even read
+	$seeded = new \PhpParser\Node\Expr\ConstFetch(new \PhpParser\Node\Name('SEEDED'));
+	$seeded->setAttribute($epCacheKey, 'from the cache');
+	$seededVariable = new \PhpParser\Node\Expr\Variable('cached');
+	$seededVariable->setAttribute($epCacheKey, 'from the cache');
+	$rows['seeded cache'] = $epPrinter->printExpr($seeded);
+	$rows['seeded cache on a Variable'] = $epPrinter->printExpr($seededVariable);
+	$epResults[$epSide] = $rows;
+}
+foreach ($epResults['php'] as $label => $row) {
+	check(
+		$row === ($epResults['native'][$label] ?? null),
+		"ExprPrinter parity ($label): " . json_encode($row) . ' vs ' . json_encode($epResults['native'][$label] ?? null),
+	);
+}
+check(count($epResults['php']) > 100, 'ExprPrinter: the fixture covers the expression shapes');
+check($epResults['php']['Variable'] === ['$plain', null, '$plain'], 'ExprPrinter: the Variable fast path leaves no cache entry');
+check(str_contains((string) $epResults['php']['multi-line closure'][1], "\n"), 'ExprPrinter: a multi-line form is remembered too');
+
 // ---- NodeTraverser ----
 $covered[\PhpParser\NodeTraverser::class] = true;
 // Fresh ASTs per side (visitors mutate them); the visitors themselves are

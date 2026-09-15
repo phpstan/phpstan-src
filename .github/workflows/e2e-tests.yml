@@ -1031,6 +1031,32 @@ jobs:
               ../bashunit -a contains 'Composer packages changed (psr/log); re-analysing the files depending on them and the files with errors.' "$OUTPUT"
               ../bashunit -a not_contains 'has invalid type Psr\Log\PluginProvidedLogger' "$OUTPUT"
           - script: |
+              cd e2e/ext-ds-version
+              cp composer-json/v1-platform.json composer.json
+              composer install --ignore-platform-reqs
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Foo.php:12:Instantiated class Ds\Seq not found.' "$OUTPUT"
+              # Only composer.json changes - composer.lock and installed.php stay as they are - and it now
+              # selects the ext-ds 2 stubs. src/Bar.php has no error with ext-ds 1, so only its dependency on
+              # ext-ds re-analyses it; src/Baz.php does not use ext-ds and stays cached.
+              cp composer-json/v2-platform.json composer.json
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'PHP extension versions changed (ext-ds); re-analysing the files depending on them and the files with errors.' "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 2 files will be reanalysed.' "$OUTPUT"
+              ../bashunit -a contains 'Foo.php:11:Instantiated class Ds\Vector not found.' "$OUTPUT"
+              ../bashunit -a contains 'Bar.php:15:Call to an undefined method Ds\Pair<string, int>::copy().' "$OUTPUT"
+              ../bashunit -a not_contains 'Ds\Seq' "$OUTPUT"
+              cp composer-json/v1-platform.json composer.json
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'PHP extension versions changed (ext-ds); re-analysing the files depending on them and the files with errors.' "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 2 files will be reanalysed.' "$OUTPUT"
+              ../bashunit -a contains 'Foo.php:12:Instantiated class Ds\Seq not found.' "$OUTPUT"
+              ../bashunit -a not_contains 'Ds\Vector' "$OUTPUT"
+              ../bashunit -a not_contains 'Bar.php' "$OUTPUT"
+          - script: |
               cd e2e/result-cache-extension-path-package
               composer install
               # The rule comes from a package Composer symlinked out of the project, so the file the
@@ -1522,6 +1548,56 @@ jobs:
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --no-progress")
               echo "$OUTPUT"
               ../bashunit -a contains 'killed by signal 9 (SIGKILL)' "$OUTPUT"
+          - script: |
+              # config.platform selects the ext-ds 1 stubs: Ds\Vector exists, Ds\Seq does not.
+              cd e2e/ext-ds-version
+              cp composer-json/v1-platform.json composer.json
+              composer install --ignore-platform-reqs
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --no-progress --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Foo.php:12:Instantiated class Ds\Seq not found.' "$OUTPUT"
+              ../bashunit -a not_contains 'Ds\Vector' "$OUTPUT"
+              ../bashunit -a not_contains 'Bar.php' "$OUTPUT"
+          - script: |
+              # config.platform selects the ext-ds 2 stubs: Ds\Seq exists, Ds\Vector and Ds\Pair::copy() do not.
+              cd e2e/ext-ds-version
+              cp composer-json/v2-platform.json composer.json
+              composer install --ignore-platform-reqs
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --no-progress --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Foo.php:11:Instantiated class Ds\Vector not found.' "$OUTPUT"
+              ../bashunit -a contains 'Bar.php:15:Call to an undefined method Ds\Pair<string, int>::copy().' "$OUTPUT"
+              ../bashunit -a not_contains 'Ds\Seq' "$OUTPUT"
+          - script: |
+              # Without a config.platform entry, the major version of the required ext-ds is selected.
+              cd e2e/ext-ds-version
+              cp composer-json/v2-require.json composer.json
+              composer install --ignore-platform-reqs
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --no-progress --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Foo.php:11:Instantiated class Ds\Vector not found.' "$OUTPUT"
+              ../bashunit -a contains 'Bar.php:15:Call to an undefined method Ds\Pair<string, int>::copy().' "$OUTPUT"
+              ../bashunit -a not_contains 'Ds\Seq' "$OUTPUT"
+          - script: |
+              # A constraint whose alternatives all stay within one major version (^2.0 || ^2.1) selects that version.
+              cd e2e/ext-ds-version
+              cp composer-json/v2-same-major-or-require.json composer.json
+              composer install --ignore-platform-reqs
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --no-progress --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Foo.php:11:Instantiated class Ds\Vector not found.' "$OUTPUT"
+              ../bashunit -a contains 'Bar.php:15:Call to an undefined method Ds\Pair<string, int>::copy().' "$OUTPUT"
+              ../bashunit -a not_contains 'Ds\Seq' "$OUTPUT"
+          - script: |
+              # config.platform names ext-ds 3, which has no stubs, so the required ^2.0 decides instead.
+              cd e2e/ext-ds-version
+              cp composer-json/v2-unknown-platform.json composer.json
+              composer install --ignore-platform-reqs
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --no-progress --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Foo.php:11:Instantiated class Ds\Vector not found.' "$OUTPUT"
+              ../bashunit -a contains 'Bar.php:15:Call to an undefined method Ds\Pair<string, int>::copy().' "$OUTPUT"
+              ../bashunit -a not_contains 'Ds\Seq' "$OUTPUT"
 
     steps:
       - name: Harden the runner (Audit all outbound calls)

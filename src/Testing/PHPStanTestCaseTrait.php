@@ -26,7 +26,8 @@ trait PHPStanTestCaseTrait
 		foreach (static::getAdditionalConfigFiles() as $configFile) {
 			$additionalConfigFiles[] = $configFile;
 		}
-		$cacheKey = hash('sha256', implode("\n", $additionalConfigFiles));
+		$composerAutoloaderProjectPaths = static::getComposerAutoloaderProjectPaths();
+		$cacheKey = hash('sha256', implode("\n", $additionalConfigFiles) . "\0" . implode("\n", $composerAutoloaderProjectPaths));
 
 		if (!isset(self::$containers[$cacheKey])) {
 			$tmpDir = sys_get_temp_dir() . '/phpstan-tests';
@@ -42,7 +43,7 @@ trait PHPStanTestCaseTrait
 			$containerFactory = new ContainerFactory($rootDir);
 			$container = $containerFactory->create($tmpDir, array_merge([
 				$containerFactory->getConfigDirectory() . '/config.level8.neon',
-			], $additionalConfigFiles), []);
+			], $additionalConfigFiles), [], $composerAutoloaderProjectPaths);
 			self::$containers[$cacheKey] = $container;
 
 			foreach ($container->getParameter('bootstrapFiles') as $bootstrapFile) {
@@ -69,6 +70,14 @@ trait PHPStanTestCaseTrait
 	 * @return string[]
 	 */
 	public static function getAdditionalConfigFiles(): array
+	{
+		return [];
+	}
+
+	/**
+	 * @return string[]
+	 */
+	public static function getComposerAutoloaderProjectPaths(): array
 	{
 		return [];
 	}

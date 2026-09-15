@@ -46,13 +46,10 @@ namespace ParamClosureThisStubs
 			});
 		}
 
-		/**
-		 * @param \Ds\Deque<int> $deque
-		 */
-		public function doFoo4(\Ds\Deque $deque): void
+		public function doFoo4(\SQLite3 $sqlite): void
 		{
-			$deque->filter(function () {
-				assertType('Ds\Deque<int>', $this);
+			$sqlite->createFunction('foo', function () {
+				assertType('SQLite3', $this);
 			});
 		}
 	}

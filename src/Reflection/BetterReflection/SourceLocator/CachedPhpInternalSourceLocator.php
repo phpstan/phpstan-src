@@ -16,6 +16,7 @@ use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\Cache\Cache;
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Reflection\BetterReflection\SourceStubber\ExtensionVersionProvider;
 use function array_key_exists;
 use function is_array;
 use function is_file;
@@ -35,8 +36,8 @@ use function substr;
  * entry, and shared across a run's parallel workers through the arena.
  *
  * The stubber's output depends on the stubs package, the reflection library
- * and the target PHP version (stub members are version-filtered), so all
- * three are part of the cache key.
+ * and the target PHP and extension versions (stub members are version-filtered),
+ * so all four are part of the cache key.
  *
  * The exported blob contains the absolute path of the stub file, but the
  * cache key deliberately contains no paths - the same entries are shared by
@@ -61,6 +62,7 @@ final class CachedPhpInternalSourceLocator implements SourceLocator
 		private Cache $cache,
 		private PhpVersion $phpVersion,
 		private PhpStormStubsSourceStubber $stubber,
+		private ExtensionVersionProvider $extensionVersionProvider,
 	)
 	{
 	}
@@ -178,10 +180,11 @@ final class CachedPhpInternalSourceLocator implements SourceLocator
 	private function getVariableCacheKey(): string
 	{
 		return $this->variableCacheKey ??= sprintf(
-			'v2-%s-%s-%s',
+			'v3-%s-%s-%s-%s',
 			ComposerHelper::getBetterReflectionVersion(),
 			ComposerHelper::getPhpStormStubsVersion(),
 			$this->phpVersion->getVersionString(),
+			$this->extensionVersionProvider->getCacheKey(),
 		);
 	}
 

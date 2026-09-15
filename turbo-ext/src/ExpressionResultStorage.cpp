@@ -17,11 +17,11 @@
  */
 
 #include "generated/ExpressionResultStorage.h"
+
+namespace slots = ptdecl::ExpressionResultStorage::slot;
 #include "support.h"
 #include "zv.h"
 
-#define PT_ERS_PROP_EXPRS 0
-#define PT_ERS_PROP_RESULTS 1
 #define PT_ERS_PROP_FALLBACK 2
 
 namespace phpstanturbo {
@@ -45,12 +45,12 @@ public:
 	{
 		zv::ObjRef src(other);
 		zv::ObjRef dst(self);
-		zv::ArrRef dstExprs(dst.propAt(PT_ERS_PROP_EXPRS).raw());
-		zv::ArrRef dstResults(dst.propAt(PT_ERS_PROP_RESULTS).raw());
-		for (auto entry : zv::ArrRef(src.propAt(PT_ERS_PROP_EXPRS).raw())) {
+		zv::ArrRef dstExprs(dst.propAt(slots::exprResults).raw());
+		zv::ArrRef dstResults(dst.propAt(slots::fallback).raw());
+		for (auto entry : zv::ArrRef(src.propAt(slots::exprResults).raw())) {
 			dstExprs.setIndex(entry.indexKey(), entry.value());
 		}
-		for (auto entry : zv::ArrRef(src.propAt(PT_ERS_PROP_RESULTS).raw())) {
+		for (auto entry : zv::ArrRef(src.propAt(slots::fallback).raw())) {
 			dstResults.setIndex(entry.indexKey(), entry.value());
 		}
 	}
@@ -59,8 +59,8 @@ public:
 	{
 		zend_ulong id = Z_OBJ_HANDLE_P(expr);
 		zv::ObjRef obj(self);
-		zv::ArrRef(obj.propAt(PT_ERS_PROP_EXPRS).raw()).setIndex(id, zv::Ref(expr));
-		zv::ArrRef(obj.propAt(PT_ERS_PROP_RESULTS).raw()).setIndex(id, zv::Ref(expressionResult));
+		zv::ArrRef(obj.propAt(slots::exprResults).raw()).setIndex(id, zv::Ref(expr));
+		zv::ArrRef(obj.propAt(slots::fallback).raw()).setIndex(id, zv::Ref(expressionResult));
 	}
 
 	zv::Val findExpressionResult(zval *expr) const
@@ -69,7 +69,7 @@ public:
 		zval *cur = self;
 		for (;;) {
 			zv::ObjRef obj(cur);
-			zv::Ref found = zv::ArrRef(obj.propAt(PT_ERS_PROP_RESULTS).raw()).findIndex(id);
+			zv::Ref found = zv::ArrRef(obj.propAt(slots::fallback).raw()).findIndex(id);
 			if (found.raw() != NULL) return zv::Val::copyOf(found);
 			/* the twin recurses into ?self $fallback; iterate the chain */
 			zval *fallback = obj.propAt(PT_ERS_PROP_FALLBACK).raw();

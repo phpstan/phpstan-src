@@ -15,12 +15,11 @@
 
 #include "support.h"
 #include "generated/NodeTraverser.h"
+
+namespace slots = ptdecl::NodeTraverser::slot;
 #include "zv.h"
 
 static zend_class_entry *pt_ce_node_traverser;
-
-#define PT_NT_PROP_VISITORS 0
-#define PT_NT_PROP_STOP 1
 
 /* {{{ pt_* traversal substrate */
 
@@ -221,7 +220,7 @@ public:
 			}
 			list.push(visitor);
 		}
-		zv::ObjRef(self).propAtWrite(PT_NT_PROP_VISITORS, std::move(list));
+		zv::ObjRef(self).propAtWrite(slots::visitors, std::move(list));
 		return true;
 	}
 
@@ -273,7 +272,7 @@ public:
 		zv::ObjRef selfObj(self);
 
 		/* $this->stopTraversal = false */
-		selfObj.propAtWrite(PT_NT_PROP_STOP, zv::Val::boolean(false));
+		selfObj.propAtWrite(slots::stopTraversal, zv::Val::boolean(false));
 
 		if (UNEXPECTED(!buildVisitorPlan())) return zv::Val();
 
@@ -311,7 +310,7 @@ public:
 		}
 
 		/* persist stopTraversal like the PHP implementation */
-		selfObj.propAtWrite(PT_NT_PROP_STOP, zv::Val::boolean(stop));
+		selfObj.propAtWrite(slots::stopTraversal, zv::Val::boolean(stop));
 
 		return zv::Val(std::move(nodes));
 	}
@@ -779,7 +778,7 @@ private:
 
 	zv::Ref visitorsProp() const
 	{
-		return zv::ObjRef(self).propAt(PT_NT_PROP_VISITORS).deref();
+		return zv::ObjRef(self).propAt(slots::visitors).deref();
 	}
 
 	zend_object *self;

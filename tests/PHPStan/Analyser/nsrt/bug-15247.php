@@ -99,7 +99,7 @@ function unionSpreadWithSameSize(bool $b, int $x): void
 	$list = $b ? [1, 2] : [3, 4];
 	$a = [...$list, &$x];
 	$x = 5;
-	assertType('array{1|3, 2|4, 5}', $a);
+	assertType('array{1, 2, 5}|array{3, 4, 5}', $a);
 }
 
 /** @param Generator<int, int> $g */

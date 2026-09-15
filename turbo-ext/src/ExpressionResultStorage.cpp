@@ -35,9 +35,7 @@ public:
 	zv::Val duplicate() const
 	{
 		zval newObj;
-		if (UNEXPECTED(object_init_ex(&newObj, Z_OBJCE_P(self)) != SUCCESS)) {
-			return zv::Val();
-		}
+		if (UNEXPECTED(object_init_ex(&newObj, Z_OBJCE_P(self)) != SUCCESS)) return zv::Val();
 		zv::ObjRef(&newObj).propAtWrite(PT_ERS_PROP_FALLBACK, zv::Val::copyOf(zv::Ref(self)));
 		return zv::Val::adopt(newObj);
 	}
@@ -71,14 +69,10 @@ public:
 		for (;;) {
 			zv::ObjRef obj(cur);
 			zv::Ref found = zv::ArrRef(obj.propAt(PT_ERS_PROP_RESULTS).raw()).findIndex(id);
-			if (found.raw() != NULL) {
-				return zv::Val::copyOf(found);
-			}
+			if (found.raw() != NULL) return zv::Val::copyOf(found);
 			/* the twin recurses into ?self $fallback; iterate the chain */
 			zval *fallback = obj.propAt(PT_ERS_PROP_FALLBACK).raw();
-			if (Z_TYPE_P(fallback) != IS_OBJECT) {
-				return zv::Val::null();
-			}
+			if (Z_TYPE_P(fallback) != IS_OBJECT) return zv::Val::null();
 			cur = fallback;
 		}
 	}
@@ -114,9 +108,7 @@ void pt_register_expression_result_storage()
 	cls.method("duplicate", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		zv::Val result = ExpressionResultStorage(ZEND_THIS).duplicate();
-		if (UNEXPECTED(result.isUndef())) {
-			RETURN_THROWS();
-		}
+		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
 	});
 

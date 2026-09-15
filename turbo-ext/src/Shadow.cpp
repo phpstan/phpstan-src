@@ -68,18 +68,14 @@ static const char *pt_short_name(const char *fqcn)
 /* the declared name: the twin's real name, or the prefixed short name */
 static std::string pt_shadow_declared_name(const char *realName, zend_string *prefix)
 {
-	if (prefix == NULL) {
-		return realName;
-	}
+	if (prefix == NULL) return realName;
 	return std::string(ZSTR_VAL(prefix), ZSTR_LEN(prefix)) + pt_short_name(realName);
 }
 
 static reg::ShadowPlan *pt_shadow_plan_by_name(const char *realName)
 {
 	for (reg::ShadowPlan &plan : pt_shadow_plans()) {
-		if (strcmp(plan.name, realName) == 0) {
-			return &plan;
-		}
+		if (strcmp(plan.name, realName) == 0) return &plan;
 	}
 	return NULL;
 }
@@ -89,16 +85,12 @@ static bool pt_shadow_materialize(reg::ShadowPlan &plan, HashTable *twinFiles, z
 /* declares one plan; a parent that is itself a plan is declared first */
 static bool pt_shadow_materialize(reg::ShadowPlan &plan, HashTable *twinFiles, zend_string *prefix)
 {
-	if (plan.ce != NULL) {
-		return true;
-	}
+	if (plan.ce != NULL) return true;
 
 	std::string parentDeclared;
 	if (plan.parentName != NULL) {
 		reg::ShadowPlan *parentPlan = pt_shadow_plan_by_name(plan.parentName);
-		if (parentPlan != NULL && !pt_shadow_materialize(*parentPlan, twinFiles, prefix)) {
-			return false;
-		}
+		if (parentPlan != NULL && !pt_shadow_materialize(*parentPlan, twinFiles, prefix)) return false;
 		parentDeclared = parentPlan != NULL ? pt_shadow_declared_name(plan.parentName, prefix) : std::string(plan.parentName);
 	}
 
@@ -193,9 +185,7 @@ bool pt_shadow_activate(HashTable *twinFiles, zend_string *prefix)
 		return false;
 	}
 	for (reg::ShadowPlan &plan : pt_shadow_plans()) {
-		if (!pt_shadow_materialize(plan, twinFiles, prefix)) {
-			return false;
-		}
+		if (!pt_shadow_materialize(plan, twinFiles, prefix)) return false;
 	}
 	pt_shadow_active = true;
 	return true;

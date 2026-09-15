@@ -81,9 +81,7 @@ inline bool equalsIgnoreCase(const char *a, const char *lowercaseB, size_t n)
 		if (c >= 'A' && c <= 'Z') {
 			c = (char) (c - 'A' + 'a');
 		}
-		if (c != lowercaseB[i]) {
-			return false;
-		}
+		if (c != lowercaseB[i]) return false;
 	}
 	return true;
 }
@@ -134,9 +132,7 @@ private:
 	 * keyword starts with one) and must not be $, : or >. */
 	bool prevByteOpensKeyword(size_t at) const
 	{
-		if (at == 0 || at > len) {
-			return false;
-		}
+		if (at == 0 || at > len) return false;
 		unsigned char prev = (unsigned char) contents[at - 1];
 		return !isWordByte(prev) && prev != '$' && prev != ':' && prev != '>';
 	}
@@ -151,9 +147,7 @@ private:
 		while (p < len && isSpaceByte((unsigned char) contents[p])) {
 			p++;
 		}
-		if (p == from || p >= len || !isNameStart((unsigned char) contents[p])) {
-			return false;
-		}
+		if (p == from || p >= len || !isNameStart((unsigned char) contents[p])) return false;
 		p++;
 		while (p < len && isNameByte((unsigned char) contents[p])) {
 			p++;
@@ -213,9 +207,7 @@ inline void PhpFileCleaner::skipString(char delimiter)
 		while (index < len && contents[index] != '\\' && contents[index] != delimiter) {
 			index++;
 		}
-		if (index >= len) {
-			break;
-		}
+		if (index >= len) break;
 		if (contents[index] == '\\' && (peek('\\') || peek(delimiter))) {
 			index += 2;
 			continue;
@@ -256,9 +248,7 @@ inline void PhpFileCleaner::skipToNewline()
 inline bool PhpFileCleaner::matchHeredocStart(size_t *labelStart, size_t *labelLen, size_t *end) const
 {
 	size_t p = index;
-	if (p + 3 > len || contents[p] != '<' || contents[p + 1] != '<' || contents[p + 2] != '<') {
-		return false;
-	}
+	if (p + 3 > len || contents[p] != '<' || contents[p + 1] != '<' || contents[p + 2] != '<') return false;
 	p += 3;
 	while (p < len && (contents[p] == ' ' || contents[p] == '\t')) {
 		p++;
@@ -268,9 +258,7 @@ inline bool PhpFileCleaner::matchHeredocStart(size_t *labelStart, size_t *labelL
 		quote = contents[p];
 		p++;
 	}
-	if (p >= len || !isLabelStart((unsigned char) contents[p])) {
-		return false;
-	}
+	if (p >= len || !isLabelStart((unsigned char) contents[p])) return false;
 	size_t start = p;
 	p++;
 	while (p < len && isLabelByte((unsigned char) contents[p])) {
@@ -279,9 +267,7 @@ inline bool PhpFileCleaner::matchHeredocStart(size_t *labelStart, size_t *labelL
 	*labelStart = start;
 	*labelLen = p - start;
 	if (quote != '\0') {
-		if (p >= len || contents[p] != quote) {
-			return false;
-		}
+		if (p >= len || contents[p] != quote) return false;
 		p++;
 	}
 	if (p < len && contents[p] == '\r') {
@@ -453,9 +439,7 @@ inline void PhpFileCleaner::clean(zend_long maxMatches, std::string &out)
 			}
 
 			for (const TypeConfig &type : types) {
-				if (type.firstByte != c) {
-					continue;
-				}
+				if (type.firstByte != c) continue;
 
 				if (index + type.length <= len && memcmp(contents + index, type.name, type.length) == 0) {
 					if (maxMatches == 1 && prevByteOpensKeyword(index)) {
@@ -532,17 +516,13 @@ private:
 	/* length of the open tag at `at`, or 0 if there is none */
 	size_t openTagLength(size_t at) const
 	{
-		if (at + 1 >= len || contents[at] != '<' || contents[at + 1] != '?') {
-			return 0;
-		}
+		if (at + 1 >= len || contents[at] != '<' || contents[at + 1] != '?') return 0;
 		if (at + 4 < len && equalsIgnoreCase(contents + at + 2, "php", 3)
 			&& (at + 5 >= len || isSpaceByte((unsigned char) contents[at + 5]))
 		) {
 			return 5;
 		}
-		if (at + 2 < len && contents[at + 2] == '=') {
-			return 3;
-		}
+		if (at + 2 < len && contents[at + 2] == '=') return 3;
 
 		return shortOpenTag ? 2 : 0;
 	}
@@ -553,12 +533,8 @@ private:
 	{
 		while (index < len) {
 			char c = contents[index];
-			if (c == '\n' || c == '\r') {
-				return;
-			}
-			if (c == '?' && index + 1 < len && contents[index + 1] == '>') {
-				return;
-			}
+			if (c == '\n' || c == '\r') return;
+			if (c == '?' && index + 1 < len && contents[index + 1] == '>') return;
 			index++;
 		}
 	}
@@ -589,9 +565,7 @@ private:
 				continue;
 			}
 			index++;
-			if (c == delimiter) {
-				break;
-			}
+			if (c == delimiter) break;
 		}
 		out.append(contents + start, index - start);
 	}
@@ -621,9 +595,7 @@ inline void CommentStripper::copyHeredoc(std::string &out)
 	}
 	size_t labelLen = p - labelStart;
 	if (quote != '\0') {
-		if (p >= len || contents[p] != quote) {
-			return;
-		}
+		if (p >= len || contents[p] != quote) return;
 		p++;
 	}
 	if (p < len && contents[p] == '\r') {
@@ -674,15 +646,11 @@ inline void CommentStripper::strip(std::string &out)
 		size_t tagLength = 0;
 		while (index < len) {
 			tagLength = openTagLength(index);
-			if (tagLength != 0) {
-				break;
-			}
+			if (tagLength != 0) break;
 			index++;
 		}
 		out.append(contents + htmlStart, index - htmlStart);
-		if (index >= len) {
-			return;
-		}
+		if (index >= len) return;
 		out.append(contents + index, tagLength);
 		index += tagLength;
 
@@ -723,9 +691,7 @@ inline void CommentStripper::strip(std::string &out)
 			if (c == '<' && index + 2 < len && contents[index + 1] == '<' && contents[index + 2] == '<') {
 				size_t before = index;
 				copyHeredoc(out);
-				if (index != before) {
-					continue;
-				}
+				if (index != before) continue;
 			}
 
 			size_t start = index;
@@ -787,9 +753,7 @@ inline size_t prefilterCount(const char *contents, size_t len, bool supportsEnum
 					break;
 				}
 			}
-			if (matched) {
-				continue;
-			}
+			if (matched) continue;
 		}
 
 		/* the define branch carries no \b — `mydefine(` counts too */
@@ -850,9 +814,7 @@ private:
 
 	bool guard(size_t at) const
 	{
-		if (at == 0) {
-			return true;
-		}
+		if (at == 0) return true;
 		unsigned char prev = (unsigned char) contents[at - 1];
 		return !isWordByte(prev) && prev != '$' && prev != ':' && prev != '>';
 	}
@@ -874,9 +836,7 @@ private:
 	/* [a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\-]*+ */
 	size_t readName(size_t at) const
 	{
-		if (at >= len || !isNameStart((unsigned char) contents[at])) {
-			return 0;
-		}
+		if (at >= len || !isNameStart((unsigned char) contents[at])) return 0;
 		size_t end = at + 1;
 		while (end < len && isNameByte((unsigned char) contents[end])) {
 			end++;
@@ -887,9 +847,7 @@ private:
 	/* the define() name: identifiers joined by one or two backslashes */
 	size_t readDefineName(size_t at) const
 	{
-		if (at >= len || !isNameStart((unsigned char) contents[at])) {
-			return 0;
-		}
+		if (at >= len || !isNameStart((unsigned char) contents[at])) return 0;
 		size_t end = at + 1;
 		while (end < len && isDefineNameByte((unsigned char) contents[end])) {
 			end++;
@@ -901,9 +859,7 @@ private:
 				p++;
 				slashes++;
 			}
-			if (slashes == 0 || p >= len || !isNameStart((unsigned char) contents[p])) {
-				break;
-			}
+			if (slashes == 0 || p >= len || !isNameStart((unsigned char) contents[p])) break;
 			p++;
 			while (p < len && isDefineNameByte((unsigned char) contents[p])) {
 				p++;
@@ -940,9 +896,7 @@ private:
 	 * constant's own name keeps its case */
 	static std::string normalizeConstantName(const std::string &name)
 	{
-		if (name.find('\\') == std::string::npos) {
-			return name;
-		}
+		if (name.find('\\') == std::string::npos) return name;
 
 		std::vector<std::string> parts;
 		size_t start = 0;
@@ -954,9 +908,7 @@ private:
 				start = i + 1;
 			}
 		}
-		if (parts.empty()) {
-			return std::string("\\");
-		}
+		if (parts.empty()) return std::string("\\");
 
 		std::string result;
 		for (size_t i = 0; i + 1 < parts.size(); i++) {
@@ -1001,21 +953,13 @@ inline void SymbolMatcher::match(Symbols &out)
 		static const size_t typeLengths[] = { 5, 9, 5, 4 };
 		bool matched = false;
 		for (size_t t = 0; t < 4; t++) {
-			if (t == 3 && !supportsEnums) {
-				break;
-			}
-			if (!keyword(i, typeNames[t], typeLengths[t])) {
-				continue;
-			}
+			if (t == 3 && !supportsEnums) break;
+			if (!keyword(i, typeNames[t], typeLengths[t])) continue;
 			size_t after = i + typeLengths[t];
 			size_t nameStart = skipSpaces(after);
-			if (nameStart == after) {
-				break;
-			}
+			if (nameStart == after) break;
 			size_t nameEnd = readName(nameStart);
-			if (nameEnd == 0) {
-				break;
-			}
+			if (nameEnd == 0) break;
 			size_t nameLen = nameEnd - nameStart;
 			/* skip anonymous classes: `new class extends X` captures the
 			 * keyword that follows as if it were the name */
@@ -1028,9 +972,7 @@ inline void SymbolMatcher::match(Symbols &out)
 			matched = true;
 			break;
 		}
-		if (matched) {
-			continue;
-		}
+		if (matched) continue;
 
 		/* function \s++ (&\s*)? NAME \s*+ [&(] */
 		if (keyword(i, "function", 8)) {
@@ -1098,13 +1040,9 @@ inline void SymbolMatcher::match(Symbols &out)
 				}
 				for (;;) {
 					size_t p = skipSpaces(nameEnd);
-					if (p >= len || contents[p] != '\\') {
-						break;
-					}
+					if (p >= len || contents[p] != '\\') break;
 					p = skipSpaces(p + 1);
-					if (p >= len || !isNameStart((unsigned char) contents[p])) {
-						break;
-					}
+					if (p >= len || !isNameStart((unsigned char) contents[p])) break;
 					p++;
 					while (p < len && isDefineNameByte((unsigned char) contents[p])) {
 						p++;
@@ -1121,9 +1059,7 @@ inline void SymbolMatcher::match(Symbols &out)
 				currentNamespace.clear();
 				for (size_t p = nameStart; p < nameEnd; p++) {
 					char ch = contents[p];
-					if (isSpaceByte((unsigned char) ch)) {
-						continue;
-					}
+					if (isSpaceByte((unsigned char) ch)) continue;
 					currentNamespace.push_back(ch >= 'A' && ch <= 'Z' ? (char) (ch - 'A' + 'a') : ch);
 				}
 				currentNamespace.push_back('\\');

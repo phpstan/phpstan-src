@@ -89,9 +89,7 @@ static bool pt_tt_signature_coerces(const zend_op_array *op_array)
 {
 	uint32_t count = op_array->num_args + ((op_array->fn_flags & ZEND_ACC_VARIADIC) ? 1 : 0);
 	for (uint32_t i = 0; i < count; i++) {
-		if (pt_tt_type_coerces(&op_array->arg_info[i].type)) {
-			return true;
-		}
+		if (pt_tt_type_coerces(&op_array->arg_info[i].type)) return true;
 	}
 	if ((op_array->fn_flags & ZEND_ACC_HAS_RETURN_TYPE)
 		&& pt_tt_type_coerces(&op_array->arg_info[-1].type)) {
@@ -107,12 +105,8 @@ static void pt_tt_strip(zend_op_array *op_array)
 		pt_tt_strip(op_array->dynamic_func_defs[i]);
 	}
 	/* top-level code has no signature */
-	if (op_array->function_name == NULL) {
-		return;
-	}
-	if (pt_tt_signature_coerces(op_array)) {
-		return;
-	}
+	if (op_array->function_name == NULL) return;
+	if (pt_tt_signature_coerces(op_array)) return;
 
 	op_array->fn_flags &= ~ZEND_ACC_HAS_TYPE_HINTS;
 
@@ -153,9 +147,7 @@ static void pt_tt_strip_class(zend_class_entry *ce)
 #if PHP_VERSION_ID >= 80400
 	ZEND_HASH_FOREACH_VAL(&ce->properties_info, zv) {
 		zend_property_info *prop = (zend_property_info *) Z_PTR_P(zv);
-		if (prop->ce != ce || prop->hooks == NULL) {
-			continue;
-		}
+		if (prop->ce != ce || prop->hooks == NULL) continue;
 		for (int i = 0; i < ZEND_PROPERTY_HOOK_COUNT; i++) {
 			if (prop->hooks[i] != NULL && prop->hooks[i]->type == ZEND_USER_FUNCTION) {
 				pt_tt_strip(&prop->hooks[i]->op_array);
@@ -168,9 +160,7 @@ static void pt_tt_strip_class(zend_class_entry *ce)
 static void pt_tt_pass(zend_script *script, void *ctx)
 {
 	(void) ctx;
-	if (!pt_tt_matches(script->filename)) {
-		return;
-	}
+	if (!pt_tt_matches(script->filename)) return;
 
 	pt_tt_strip(&script->main_op_array);
 
@@ -194,9 +184,7 @@ static void pt_tt_pass(zend_script *script, void *ctx)
  * is absent on hosts without OPcache, so it is resolved by name, not linked. */
 static bool pt_tt_register_pass()
 {
-	if (pt_tt_pass_registered) {
-		return true;
-	}
+	if (pt_tt_pass_registered) return true;
 
 	pt_tt_register_pass_t register_pass = NULL;
 #ifdef PHP_WIN32
@@ -215,13 +203,9 @@ static bool pt_tt_register_pass()
 #else
 	register_pass = reinterpret_cast<pt_tt_register_pass_t>(dlsym(RTLD_DEFAULT, "zend_optimizer_register_pass"));
 #endif
-	if (register_pass == NULL) {
-		return false;
-	}
+	if (register_pass == NULL) return false;
 	/* -1 when the (32-slot) table is full */
-	if (register_pass(pt_tt_pass) < 0) {
-		return false;
-	}
+	if (register_pass(pt_tt_pass) < 0) return false;
 	pt_tt_pass_registered = true;
 	return true;
 }
@@ -229,12 +213,8 @@ static bool pt_tt_register_pass()
 bool pt_trusted_types_set_prefix(zend_string *prefix)
 {
 	PT_G(trusted_types_prefix_len) = 0;
-	if (ZSTR_LEN(prefix) == 0 || ZSTR_LEN(prefix) >= sizeof(PT_G(trusted_types_prefix))) {
-		return false;
-	}
-	if (!pt_tt_register_pass()) {
-		return false;
-	}
+	if (ZSTR_LEN(prefix) == 0 || ZSTR_LEN(prefix) >= sizeof(PT_G(trusted_types_prefix))) return false;
+	if (!pt_tt_register_pass()) return false;
 	memcpy(PT_G(trusted_types_prefix), ZSTR_VAL(prefix), ZSTR_LEN(prefix));
 	PT_G(trusted_types_prefix_len) = ZSTR_LEN(prefix);
 	return true;

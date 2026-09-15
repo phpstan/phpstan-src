@@ -49,9 +49,7 @@ static void ZEND_FASTCALL runtimeConfigure(INTERNAL_FUNCTION_PARAMETERS)
 	zval *value;
 	ZEND_HASH_FOREACH_STR_KEY_VAL(map, key, value) {
 		ZVAL_DEREF(value);
-		if (key == NULL || Z_TYPE_P(value) != IS_STRING) {
-			continue;
-		}
+		if (key == NULL || Z_TYPE_P(value) != IS_STRING) continue;
 		pt_class_map_configure(key, Z_STR_P(value));
 	} ZEND_HASH_FOREACH_END();
 }
@@ -72,9 +70,7 @@ static void ZEND_FASTCALL runtimeActivateShadowing(INTERNAL_FUNCTION_PARAMETERS)
 		Z_PARAM_STR_OR_NULL(prefix)
 	ZEND_PARSE_PARAMETERS_END();
 
-	if (!pt_shadow_activate(twinFiles, prefix)) {
-		RETURN_THROWS();
-	}
+	if (!pt_shadow_activate(twinFiles, prefix)) RETURN_THROWS();
 }
 
 /* PHPStanTurbo\Runtime::isShadowing() — whether activateShadowing() ran */

@@ -56,9 +56,7 @@ public:
 	zv::Val and_(zval *other) const
 	{
 		zval result;
-		if (UNEXPECTED(!pt_holder_and(self, other, &result))) {
-			return zv::Val();
-		}
+		if (UNEXPECTED(!pt_holder_and(self, other, &result))) return zv::Val();
 		return zv::Val::adopt(result);
 	}
 
@@ -124,9 +122,7 @@ void pt_register_expression_type_holder()
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_OBJECT_OF_CLASS(other, pt_ce_expr_type_holder)
 		ZEND_PARSE_PARAMETERS_END();
-		if (UNEXPECTED(!ExpressionTypeHolder(ZEND_THIS).equalTypes(other, out))) {
-			RETURN_THROWS();
-		}
+		if (UNEXPECTED(!ExpressionTypeHolder(ZEND_THIS).equalTypes(other, out))) RETURN_THROWS();
 		RETURN_BOOL(out);
 	});
 
@@ -136,9 +132,7 @@ void pt_register_expression_type_holder()
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_OBJECT_OF_CLASS(other, pt_ce_expr_type_holder)
 		ZEND_PARSE_PARAMETERS_END();
-		if (UNEXPECTED(!ExpressionTypeHolder(ZEND_THIS).equals(other, out))) {
-			RETURN_THROWS();
-		}
+		if (UNEXPECTED(!ExpressionTypeHolder(ZEND_THIS).equals(other, out))) RETURN_THROWS();
 		RETURN_BOOL(out);
 	});
 
@@ -148,9 +142,7 @@ void pt_register_expression_type_holder()
 			Z_PARAM_OBJECT_OF_CLASS(other, pt_ce_expr_type_holder)
 		ZEND_PARSE_PARAMETERS_END();
 		zv::Val result = ExpressionTypeHolder(ZEND_THIS).and_(other);
-		if (UNEXPECTED(result.isUndef())) {
-			RETURN_THROWS();
-		}
+		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
 	});
 

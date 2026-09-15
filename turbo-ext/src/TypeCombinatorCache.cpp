@@ -247,9 +247,7 @@ static uint64_t objSerial(zend_object *obj)
 	 * results non-deterministic. Each such object instead gets a serial that is
 	 * never reused, held as a plain IS_LONG in the weak map. */
 	zval *known = zend_hash_index_find(&pt_obj_serials, zend_object_to_weakref_key(obj));
-	if (known != NULL) {
-		return (uint64_t) Z_LVAL_P(known);
-	}
+	if (known != NULL) return (uint64_t) Z_LVAL_P(known);
 
 	uint64_t serial = pt_next_serial;
 	zval value;
@@ -316,9 +314,7 @@ static bool hashZval(zval *value, Hash128 &h, uint32_t depth)
 					mixU64(h, (uint64_t) entry.indexKey());
 				}
 				zval *slot = entry.value().raw();
-				if (!hashZval(slot, h, depth + 1)) {
-					return false;
-				}
+				if (!hashZval(slot, h, depth + 1)) return false;
 			}
 			return true;
 		}
@@ -326,9 +322,7 @@ static bool hashZval(zval *value, Hash128 &h, uint32_t depth)
 			zend_object *obj = Z_OBJ_P(value);
 			if (cePlan(obj->ce).kind == CE_STRUCTURAL) {
 				Hash128 inner;
-				if (!hashObject(obj, inner, depth + 1)) {
-					return false;
-				}
+				if (!hashObject(obj, inner, depth + 1)) return false;
 				mixByte(h, 11);
 				mixU64(h, inner.a);
 				mixU64(h, inner.b);
@@ -348,9 +342,7 @@ static bool hashZval(zval *value, Hash128 &h, uint32_t depth)
  * guarantee the object is CE_STRUCTURAL, so the plan does not need consulting. */
 static zend_always_inline bool hashZeroSlotObject(zend_object *obj, Hash128 &out)
 {
-	if (obj->ce->default_properties_count != 0) {
-		return false;
-	}
+	if (obj->ce->default_properties_count != 0) return false;
 	Hash128 h = { FNV_OFFSET_A, FNV_OFFSET_B };
 	mixU64(h, (uint64_t) (uintptr_t) obj->ce);
 	out = h;
@@ -360,17 +352,13 @@ static zend_always_inline bool hashZeroSlotObject(zend_object *obj, Hash128 &out
 
 static bool hashObject(zend_object *obj, Hash128 &out, uint32_t depth)
 {
-	if (UNEXPECTED(depth > HASH_DEPTH_LIMIT)) {
-		return false;
-	}
+	if (UNEXPECTED(depth > HASH_DEPTH_LIMIT)) return false;
 
 	/* Argless leaf types (MixedType, NullType, …) are ~30% of hashed objects;
 	 * recomputing their class-only hash is cheaper than a table lookup, and
 	 * caching it would spend a map entry plus an EG(weakrefs) registration per
 	 * instance to save nothing. */
-	if (hashZeroSlotObject(obj, out)) {
-		return true;
-	}
+	if (hashZeroSlotObject(obj, out)) return true;
 
 	Hash128 *cached = (Hash128 *) zend_hash_index_find_ptr(&pt_type_hashes, zend_object_to_weakref_key(obj));
 	if (cached != NULL) {
@@ -384,9 +372,7 @@ static bool hashObject(zend_object *obj, Hash128 &out, uint32_t depth)
 	mixU64(h, (uint64_t) (uintptr_t) obj->ce);
 
 	for (uint32_t i = 0; i < plan.slots; i++) {
-		if (!hashZval(OBJ_PROP_NUM(obj, i), h, depth + 1)) {
-			return false;
-		}
+		if (!hashZval(OBJ_PROP_NUM(obj, i), h, depth + 1)) return false;
 	}
 
 	/* The 16 hash bytes live behind a real IS_PTR value; they cannot go into the
@@ -425,22 +411,16 @@ static bool guardActive()
 		pt_guard_unavailable = true;
 
 		zend_class_entry *ce = pt_class(PT_CLASS_RECURSION_GUARD);
-		if (ce == NULL) {
-			return true;
-		}
+		if (ce == NULL) return true;
 		zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&ce->properties_info, "context", sizeof("context") - 1);
-		if (info == NULL || (info->flags & ZEND_ACC_STATIC) == 0) {
-			return true;
-		}
+		if (info == NULL || (info->flags & ZEND_ACC_STATIC) == 0) return true;
 
 		pt_guard_ce = ce;
 		pt_guard_offset = info->offset;
 		pt_guard_unavailable = false;
 	}
 
-	if (UNEXPECTED(pt_guard_unavailable)) {
-		return true;
-	}
+	if (UNEXPECTED(pt_guard_unavailable)) return true;
 
 	if (UNEXPECTED(CE_STATIC_MEMBERS(pt_guard_ce) == NULL)) {
 		zend_class_init_statics(pt_guard_ce);
@@ -472,12 +452,8 @@ static zend_always_inline MemoSlot *memoLookup(Hash128 key)
 	uint32_t idx = (uint32_t) (key.a ^ (key.a >> 32)) & pt_memo_mask;
 	for (;;) {
 		MemoSlot *slot = &pt_memo_slots[idx];
-		if (slot->result == NULL) {
-			return NULL;
-		}
-		if (slot->result != MEMO_TOMBSTONE && slot->key.a == key.a && slot->key.b == key.b) {
-			return slot;
-		}
+		if (slot->result == NULL) return NULL;
+		if (slot->result != MEMO_TOMBSTONE && slot->key.a == key.a && slot->key.b == key.b) return slot;
 		idx = (idx + 1) & pt_memo_mask;
 	}
 }
@@ -490,9 +466,7 @@ static zend_always_inline MemoSlot *memoInsertPos(Hash128 key)
 	MemoSlot *tombstone = NULL;
 	for (;;) {
 		MemoSlot *slot = &pt_memo_slots[idx];
-		if (slot->result == NULL) {
-			return tombstone != NULL ? tombstone : slot;
-		}
+		if (slot->result == NULL) return tombstone != NULL ? tombstone : slot;
 		if (slot->result == MEMO_TOMBSTONE) {
 			if (tombstone == NULL) {
 				tombstone = slot;
@@ -532,9 +506,7 @@ static void memoInvalidate(const KeyList *list)
 		uint32_t idx = (uint32_t) (key.a ^ (key.a >> 32)) & pt_memo_mask;
 		for (;;) {
 			MemoSlot *slot = &pt_memo_slots[idx];
-			if (slot->result == NULL) {
-				break;
-			}
+			if (slot->result == NULL) break;
 			if (slot->result != MEMO_TOMBSTONE && memoSlotObject(slot->result) == list->obj && slot->key.a == key.a && slot->key.b == key.b) {
 				slot->result = MEMO_TOMBSTONE;
 				pt_memo_count--;
@@ -652,13 +624,9 @@ public:
 		}
 
 		zend_class_entry *ce = pt_class(PT_CLASS_TYPE_COMBINATOR);
-		if (UNEXPECTED(ce == NULL || fn == NULL)) {
-			return;
-		}
+		if (UNEXPECTED(ce == NULL || fn == NULL)) return;
 		zend_call_known_function(fn, NULL, ce, return_value, argc, args, NULL);
-		if (UNEXPECTED(EG(exception)) || Z_TYPE_P(return_value) != IS_OBJECT) {
-			return;
-		}
+		if (UNEXPECTED(EG(exception)) || Z_TYPE_P(return_value) != IS_OBJECT) return;
 
 		uintptr_t operandTag = 0;
 		if (memoizable) {
@@ -668,9 +636,7 @@ public:
 			for (uint32_t i = 0; i < argc; i++) {
 				zval *arg = &args[i];
 				ZVAL_DEREF(arg);
-				if (Z_OBJ_P(arg) != Z_OBJ_P(return_value)) {
-					continue;
-				}
+				if (Z_OBJ_P(arg) != Z_OBJ_P(return_value)) continue;
 				if (operandTag != 0 || i >= MEMO_OPERAND_POSITIONS_LIMIT) {
 					memoizable = false;
 					break;
@@ -701,9 +667,7 @@ public:
 
 	static void clear()
 	{
-		if (!pt_cache_inited) {
-			return;
-		}
+		if (!pt_cache_inited) return;
 		memoResultsClean();
 		if (pt_memo_mask + 1 > MEMO_INITIAL_CAPACITY_LIMIT) {
 			efree(pt_memo_slots);
@@ -746,9 +710,7 @@ using phpstanturbo::MEMO_INITIAL_CAPACITY_LIMIT;
 
 void pt_type_combinator_cache_rinit()
 {
-	if (pt_cache_inited) {
-		return;
-	}
+	if (pt_cache_inited) return;
 	zend_hash_init(&pt_type_hashes, 4096, NULL, typeHashDtor, 0);
 	zend_hash_init(&pt_ce_kinds, 128, NULL, NULL, 0);
 	zend_hash_init(&pt_obj_serials, 1024, NULL, NULL, 0);
@@ -767,9 +729,7 @@ void pt_type_combinator_cache_rinit()
 
 void pt_type_combinator_cache_rshutdown()
 {
-	if (!pt_cache_inited) {
-		return;
-	}
+	if (!pt_cache_inited) return;
 	TypeCombinatorCache::clear();
 	phpstanturbo::pt_invalidate_active = false;
 	pt_weakrefs_hash_destroy(&pt_memo_results);
@@ -799,9 +759,7 @@ static zend_function *resolveOp(zend_function **slot, const char *lcname, size_t
 {
 	if (*slot == NULL) {
 		zend_class_entry *ce = pt_class(PT_CLASS_TYPE_COMBINATOR);
-		if (ce == NULL) {
-			return NULL;
-		}
+		if (ce == NULL) return NULL;
 		*slot = pt_find_method(ce, lcname, len);
 	}
 	return *slot;

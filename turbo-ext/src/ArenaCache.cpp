@@ -280,30 +280,20 @@ struct SerializeCtx
  * cases are process singletons that a flat record cannot represent. */
 static bool objectClassCodecable(zend_class_entry *ce)
 {
-	if (ce->type == ZEND_INTERNAL_CLASS && ce != zend_standard_class_def) {
-		return false;
-	}
-	if ((ce->ce_flags & (ZEND_ACC_INTERFACE | ZEND_ACC_ABSTRACT | ZEND_ACC_ENUM)) != 0) {
-		return false;
-	}
-	if (ce->__serialize != NULL || ce->__unserialize != NULL) {
-		return false;
-	}
+	if (ce->type == ZEND_INTERNAL_CLASS && ce != zend_standard_class_def) return false;
+	if ((ce->ce_flags & (ZEND_ACC_INTERFACE | ZEND_ACC_ABSTRACT | ZEND_ACC_ENUM)) != 0) return false;
+	if (ce->__serialize != NULL || ce->__unserialize != NULL) return false;
 	if (zend_hash_str_exists(&ce->function_table, "__wakeup", sizeof("__wakeup") - 1)
 		|| zend_hash_str_exists(&ce->function_table, "__sleep", sizeof("__sleep") - 1)) {
 		return false;
 	}
-	if (ce->create_object != NULL) {
-		return false;
-	}
+	if (ce->create_object != NULL) return false;
 	return true;
 }
 
 static bool serializeValue(WriteBuffer &out, zval *value, uint32_t depth, SerializeCtx &ctx)
 {
-	if (depth > SERIALIZE_DEPTH_LIMIT) {
-		return false;
-	}
+	if (depth > SERIALIZE_DEPTH_LIMIT) return false;
 	ZVAL_DEREF(value);
 	switch (Z_TYPE_P(value)) {
 		case IS_NULL:
@@ -343,18 +333,14 @@ static bool serializeValue(WriteBuffer &out, zval *value, uint32_t depth, Serial
 					out.u8(0);
 					out.u64((uint64_t) entry.indexKey());
 				}
-				if (!serializeValue(out, entry.value().raw(), depth + 1, ctx)) {
-					return false;
-				}
+				if (!serializeValue(out, entry.value().raw(), depth + 1, ctx)) return false;
 			}
 			return true;
 		}
 		case IS_OBJECT: {
 			zend_object *obj = Z_OBJ_P(value);
 			zend_class_entry *ce = obj->ce;
-			if (!objectClassCodecable(ce)) {
-				return false;
-			}
+			if (!objectClassCodecable(ce)) return false;
 
 			if (!ctx.seenInited) {
 				zend_hash_init(&ctx.seenObjects, 8, NULL, NULL, 0);
@@ -383,27 +369,19 @@ static bool serializeValue(WriteBuffer &out, zval *value, uint32_t depth, Serial
 			for (zv::ArrayEntry entry : zv::TableRef(props)) {
 				zval *propValue = entry.value().raw();
 				ZVAL_DEINDIRECT(propValue);
-				if (Z_ISUNDEF_P(propValue)) {
-					continue;
-				}
-				if (entry.stringKeyOrNull() == NULL) {
-					return false; /* numeric-keyed dynamic prop: not worth supporting */
-				}
+				if (Z_ISUNDEF_P(propValue)) continue;
+				if (entry.stringKeyOrNull() == NULL) return false; /* numeric-keyed dynamic prop: not worth supporting */
 				propCount++;
 			}
 			out.u32(propCount);
 			for (zv::ArrayEntry entry : zv::TableRef(props)) {
 				zval *propValue = entry.value().raw();
 				ZVAL_DEINDIRECT(propValue);
-				if (Z_ISUNDEF_P(propValue)) {
-					continue;
-				}
+				if (Z_ISUNDEF_P(propValue)) continue;
 				zend_string *propKey = entry.stringKey();
 				out.u32((uint32_t) ZSTR_LEN(propKey));
 				out.blob(ZSTR_VAL(propKey), ZSTR_LEN(propKey));
-				if (!serializeValue(out, propValue, depth + 1, ctx)) {
-					return false;
-				}
+				if (!serializeValue(out, propValue, depth + 1, ctx)) return false;
 			}
 			return true;
 		}
@@ -432,18 +410,14 @@ struct ReadCursor
 
 	bool u8(uint8_t *out)
 	{
-		if (!need(1)) {
-			return false;
-		}
+		if (!need(1)) return false;
 		*out = *p++;
 		return true;
 	}
 
 	bool u32(uint32_t *out)
 	{
-		if (!need(sizeof(*out))) {
-			return false;
-		}
+		if (!need(sizeof(*out))) return false;
 		memcpy(out, p, sizeof(*out));
 		p += sizeof(*out);
 		return true;
@@ -451,9 +425,7 @@ struct ReadCursor
 
 	bool u64(uint64_t *out)
 	{
-		if (!need(sizeof(*out))) {
-			return false;
-		}
+		if (!need(sizeof(*out))) return false;
 		memcpy(out, p, sizeof(*out));
 		p += sizeof(*out);
 		return true;
@@ -489,9 +461,7 @@ static zend_string *internString(DeserializeCtx &ctx, const char *bytes, size_t 
 		ctx.internsInited = true;
 	}
 	zend_string *existing = (zend_string *) zend_hash_str_find_ptr(&ctx.interns, bytes, len);
-	if (existing != NULL) {
-		return existing;
-	}
+	if (existing != NULL) return existing;
 	zend_string *created = zend_string_init(bytes, len, 0);
 	zend_hash_add_new_ptr(&ctx.interns, created, created);
 	zend_string_release(created); /* the table's key reference keeps it alive */
@@ -500,13 +470,9 @@ static zend_string *internString(DeserializeCtx &ctx, const char *bytes, size_t 
 
 static bool deserializeValue(ReadCursor &in, zval *out, uint32_t depth, DeserializeCtx &ctx)
 {
-	if (depth > SERIALIZE_DEPTH_LIMIT) {
-		return false;
-	}
+	if (depth > SERIALIZE_DEPTH_LIMIT) return false;
 	uint8_t tag;
-	if (!in.u8(&tag)) {
-		return false;
-	}
+	if (!in.u8(&tag)) return false;
 	switch (tag) {
 		case TAG_NULL:
 			ZVAL_NULL(out);
@@ -519,16 +485,12 @@ static bool deserializeValue(ReadCursor &in, zval *out, uint32_t depth, Deserial
 			return true;
 		case TAG_INT: {
 			uint64_t v;
-			if (!in.u64(&v)) {
-				return false;
-			}
+			if (!in.u64(&v)) return false;
 			ZVAL_LONG(out, (zend_long) v);
 			return true;
 		}
 		case TAG_DOUBLE: {
-			if (!in.need(sizeof(double))) {
-				return false;
-			}
+			if (!in.need(sizeof(double))) return false;
 			double d;
 			memcpy(&d, in.p, sizeof(d));
 			in.p += sizeof(d);
@@ -537,23 +499,17 @@ static bool deserializeValue(ReadCursor &in, zval *out, uint32_t depth, Deserial
 		}
 		case TAG_STRING: {
 			uint32_t len;
-			if (!in.u32(&len) || !in.need(len)) {
-				return false;
-			}
+			if (!in.u32(&len) || !in.need(len)) return false;
 			ZVAL_STR_COPY(out, internString(ctx, (const char *) in.p, len));
 			in.p += len;
 			return true;
 		}
 		case TAG_ARRAY: {
 			uint32_t count;
-			if (!in.u32(&count)) {
-				return false;
-			}
+			if (!in.u32(&count)) return false;
 			/* every entry costs >= 2 stream bytes; rejects corrupt counts
 			 * before they turn into a giant preallocation */
-			if ((size_t) count > (size_t) (in.end - in.p)) {
-				return false;
-			}
+			if ((size_t) count > (size_t) (in.end - in.p)) return false;
 			zend_array *arr = zend_new_array(count);
 			for (uint32_t i = 0; i < count; i++) {
 				uint8_t keyKind;
@@ -593,19 +549,13 @@ static bool deserializeValue(ReadCursor &in, zval *out, uint32_t depth, Deserial
 		}
 		case TAG_OBJECT: {
 			uint32_t nameLen;
-			if (!in.u32(&nameLen) || !in.need(nameLen)) {
-				return false;
-			}
+			if (!in.u32(&nameLen) || !in.need(nameLen)) return false;
 			zend_string *className = internString(ctx, (const char *) in.p, nameLen);
 			in.p += nameLen;
 			zend_class_entry *ce = zend_lookup_class(className);
-			if (ce == NULL || EG(exception) != NULL || !objectClassCodecable(ce)) {
-				return false;
-			}
+			if (ce == NULL || EG(exception) != NULL || !objectClassCodecable(ce)) return false;
 			zval objZv;
-			if (object_init_ex(&objZv, ce) != SUCCESS) {
-				return false;
-			}
+			if (object_init_ex(&objZv, ce) != SUCCESS) return false;
 			/* registered before the children parse so cycles resolve */
 			ctx.objects.push_back(Z_OBJ(objZv));
 			uint32_t propCount;
@@ -659,9 +609,7 @@ static bool deserializeValue(ReadCursor &in, zval *out, uint32_t depth, Deserial
 		}
 		case TAG_OBJREF: {
 			uint32_t objectId;
-			if (!in.u32(&objectId) || (size_t) objectId >= ctx.objects.size()) {
-				return false;
-			}
+			if (!in.u32(&objectId) || (size_t) objectId >= ctx.objects.size()) return false;
 			ZVAL_OBJ_COPY(out, ctx.objects[objectId]);
 			return true;
 		}
@@ -690,14 +638,10 @@ struct RecordView
 
 static bool recordAt(uint64_t offset, RecordView *view)
 {
-	if (offset < arenaDataStart() || offset + sizeof(RecordHeader) > pt_arena_total) {
-		return false;
-	}
+	if (offset < arenaDataStart() || offset + sizeof(RecordHeader) > pt_arena_total) return false;
 	const RecordHeader *header = (const RecordHeader *) ((char *) pt_arena_base + offset);
 	uint64_t payloadStart = alignUp8(offset + sizeof(RecordHeader) + header->keyLen);
-	if (payloadStart > pt_arena_total || header->payloadLen > pt_arena_total - payloadStart) {
-		return false;
-	}
+	if (payloadStart > pt_arena_total || header->payloadLen > pt_arena_total - payloadStart) return false;
 	view->header = header;
 	view->key = (const char *) (header + 1);
 	view->payload = (const uint8_t *) pt_arena_base + payloadStart;
@@ -707,23 +651,15 @@ static bool recordAt(uint64_t offset, RecordView *view)
 /* Probes the index for key; fills view on hit. */
 static bool findRecord(const char *key, size_t keyLen, RecordView *view)
 {
-	if (pt_arena_base == NULL) {
-		return false;
-	}
+	if (pt_arena_base == NULL) return false;
 	uint64_t hash = fnv1a64(key, keyLen);
 	uint64_t mask = INDEX_SLOT_COUNT - 1;
 	uint64_t *slots = indexSlots();
 	for (uint32_t probe = 0; probe < INDEX_PROBE_LIMIT; probe++) {
 		uint64_t offset = atomicLoadAcquire(&slots[(hash + probe) & mask]);
-		if (offset == 0) {
-			return false;
-		}
-		if (!recordAt(offset, view)) {
-			return false;
-		}
-		if (view->header->keyLen == keyLen && memcmp(view->key, key, keyLen) == 0) {
-			return true;
-		}
+		if (offset == 0) return false;
+		if (!recordAt(offset, view)) return false;
+		if (view->header->keyLen == keyLen && memcmp(view->key, key, keyLen) == 0) return true;
 	}
 	return false;
 }
@@ -732,15 +668,11 @@ static bool findRecord(const char *key, size_t keyLen, RecordView *view)
  * gracefully to a concurrent publisher of the same key, as late as it can. */
 static void publishRecord(const char *key, size_t keyLen, uint32_t kind, const WriteBuffer &payload)
 {
-	if (pt_arena_base == NULL || keyLen > UINT32_MAX) {
-		return;
-	}
+	if (pt_arena_base == NULL || keyLen > UINT32_MAX) return;
 
 	uint64_t recordSize = alignUp8(sizeof(RecordHeader) + keyLen) + payload.bytes.size();
 	uint64_t offset = atomicFetchAdd(&arenaHeader()->allocCursor, alignUp8(recordSize));
-	if (offset > pt_arena_total || recordSize > pt_arena_total - offset) {
-		return; /* arena full: analysis continues, just unshared */
-	}
+	if (offset > pt_arena_total || recordSize > pt_arena_total - offset) return; /* arena full: analysis continues, just unshared */
 
 	/* The callers checked the index before building the payload; check it once
 	 * more before writing it. Building a record takes long enough for another
@@ -748,9 +680,7 @@ static void publishRecord(const char *key, size_t keyLen, uint32_t kind, const W
 	 * here is a page the backing store commits for good - a loser that returns
 	 * now costs nothing but the bump it already took. */
 	RecordView published;
-	if (findRecord(key, keyLen, &published)) {
-		return;
-	}
+	if (findRecord(key, keyLen, &published)) return;
 
 	char *record = (char *) pt_arena_base + offset;
 	RecordHeader header;
@@ -768,18 +698,12 @@ static void publishRecord(const char *key, size_t keyLen, uint32_t kind, const W
 		uint64_t *slot = &slots[(hash + probe) & mask];
 		uint64_t current = atomicLoadAcquire(slot);
 		if (current == 0) {
-			if (atomicCasRelease(slot, 0, offset)) {
-				return;
-			}
+			if (atomicCasRelease(slot, 0, offset)) return;
 			current = atomicLoadAcquire(slot);
 		}
 		RecordView existing;
-		if (!recordAt(current, &existing)) {
-			return;
-		}
-		if (existing.header->keyLen == keyLen && memcmp(existing.key, key, keyLen) == 0) {
-			return; /* lost the race: someone published this key first */
-		}
+		if (!recordAt(current, &existing)) return;
+		if (existing.header->keyLen == keyLen && memcmp(existing.key, key, keyLen) == 0) return; /* lost the race: someone published this key first */
 	}
 	/* index congested — give up on this record, it stays dead space */
 }
@@ -825,9 +749,7 @@ static bool hashRecordBuild(WriteBuffer &out, HashTable *entries)
 		/* each entry stream is self-contained — object ids and OBJREFs must
 		 * not cross entry boundaries, entries deserialize independently */
 		SerializeCtx entryCtx;
-		if (!serializeValue(out, entry.value().raw(), 0, entryCtx)) {
-			return false;
-		}
+		if (!serializeValue(out, entry.value().raw(), 0, entryCtx)) return false;
 
 		uint64_t hash = fnv1a64(keyBytes, keyLen);
 		uint64_t mask = slotCount - 1;
@@ -853,9 +775,7 @@ static bool hashRecordAll(const RecordView &view, zval *result)
 {
 	const uint8_t *payload = view.payload;
 	uint64_t payloadLen = view.header->payloadLen;
-	if (payloadLen < sizeof(uint64_t)) {
-		return false;
-	}
+	if (payloadLen < sizeof(uint64_t)) return false;
 	uint64_t slotCount;
 	memcpy(&slotCount, payload, sizeof(slotCount));
 	if (slotCount == 0 || (slotCount & (slotCount - 1)) != 0
@@ -907,9 +827,7 @@ static bool hashRecordFind(const RecordView &view, const char *entryKey, size_t 
 {
 	const uint8_t *payload = view.payload;
 	uint64_t payloadLen = view.header->payloadLen;
-	if (payloadLen < sizeof(uint64_t)) {
-		return false;
-	}
+	if (payloadLen < sizeof(uint64_t)) return false;
 	uint64_t slotCount;
 	memcpy(&slotCount, payload, sizeof(slotCount));
 	if (slotCount == 0 || (slotCount & (slotCount - 1)) != 0
@@ -924,17 +842,11 @@ static bool hashRecordFind(const RecordView &view, const char *entryKey, size_t 
 	for (uint64_t probe = 0; probe < slotCount; probe++) {
 		uint64_t entryOffset;
 		memcpy(&entryOffset, slots + ((hash + probe) & mask) * sizeof(uint64_t), sizeof(entryOffset));
-		if (entryOffset == 0) {
-			return false;
-		}
-		if (entryOffset < entriesStart || entryOffset + sizeof(uint32_t) > payloadLen) {
-			return false;
-		}
+		if (entryOffset == 0) return false;
+		if (entryOffset < entriesStart || entryOffset + sizeof(uint32_t) > payloadLen) return false;
 		uint32_t keyLen;
 		memcpy(&keyLen, payload + entryOffset, sizeof(keyLen));
-		if (keyLen > payloadLen - entryOffset - sizeof(uint32_t)) {
-			return false;
-		}
+		if (keyLen > payloadLen - entryOffset - sizeof(uint32_t)) return false;
 		const char *keyBytes = (const char *) payload + entryOffset + sizeof(uint32_t);
 		if (keyLen == entryKeyLen && memcmp(keyBytes, entryKey, entryKeyLen) == 0) {
 			ReadCursor in;
@@ -965,15 +877,11 @@ static void arenaResetState()
 
 static bool runIdValid(zend_string *runId)
 {
-	if (ZSTR_LEN(runId) == 0 || ZSTR_LEN(runId) > RUN_ID_LENGTH_LIMIT) {
-		return false;
-	}
+	if (ZSTR_LEN(runId) == 0 || ZSTR_LEN(runId) > RUN_ID_LENGTH_LIMIT) return false;
 	for (size_t i = 0; i < ZSTR_LEN(runId); i++) {
 		char c = ZSTR_VAL(runId)[i];
 		bool alnum = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9');
-		if (!alnum) {
-			return false;
-		}
+		if (!alnum) return false;
 	}
 	return true;
 }
@@ -996,23 +904,15 @@ static bool headerValid(const ArenaHeader *header, uint64_t mappedSize)
 static uint64_t backedArenaSize(int fd)
 {
 	struct statvfs backing;
-	if (fstatvfs(fd, &backing) != 0) {
-		return ARENA_SIZE_LIMIT;
-	}
+	if (fstatvfs(fd, &backing) != 0) return ARENA_SIZE_LIMIT;
 
 	uint64_t blockSize = backing.f_frsize != 0 ? (uint64_t) backing.f_frsize : (uint64_t) backing.f_bsize;
 	uint64_t available = (uint64_t) backing.f_bavail * blockSize;
-	if (blockSize == 0 || available <= ARENA_BACKING_RESERVE_LIMIT) {
-		return 0;
-	}
+	if (blockSize == 0 || available <= ARENA_BACKING_RESERVE_LIMIT) return 0;
 
 	uint64_t size = available - ARENA_BACKING_RESERVE_LIMIT;
-	if (size < ARENA_MIN_SIZE_LIMIT) {
-		return 0;
-	}
-	if (size > ARENA_SIZE_LIMIT) {
-		return ARENA_SIZE_LIMIT;
-	}
+	if (size < ARENA_MIN_SIZE_LIMIT) return 0;
+	if (size > ARENA_SIZE_LIMIT) return ARENA_SIZE_LIMIT;
 
 	/* the index is indexed off page-aligned offsets; keep the tail whole */
 	return size & ~(uint64_t) 4095;
@@ -1025,9 +925,7 @@ public:
 	static void create(zend_string *runId, zval *return_value)
 	{
 		RETVAL_NULL();
-		if (pt_arena_base != NULL || !runIdValid(runId)) {
-			return;
-		}
+		if (pt_arena_base != NULL || !runIdValid(runId)) return;
 
 #ifdef _WIN32
 		// a pagefile-backed section is committed when it is created, so
@@ -1042,9 +940,7 @@ public:
 			(DWORD) (ARENA_SIZE_LIMIT >> 32),
 			(DWORD) (ARENA_SIZE_LIMIT & 0xFFFFFFFF),
 			name);
-		if (section == NULL) {
-			return;
-		}
+		if (section == NULL) return;
 		if (GetLastError() == ERROR_ALREADY_EXISTS) {
 			CloseHandle(section);
 			return;
@@ -1059,9 +955,7 @@ public:
 		char name[64];
 		snprintf(name, sizeof(name), "/phpstan-%s", ZSTR_VAL(runId));
 		int fd = shm_open(name, O_CREAT | O_EXCL | O_RDWR, 0600);
-		if (fd < 0) {
-			return;
-		}
+		if (fd < 0) return;
 		uint64_t size = backedArenaSize(fd);
 		if (size == 0) {
 			close(fd);
@@ -1107,19 +1001,13 @@ public:
 			/* already mapped — a forked child inherits the parent's mapping */
 			return true;
 		}
-		if (ZSTR_LEN(name) == 0 || ZSTR_LEN(name) >= sizeof(pt_arena_name)) {
-			return false;
-		}
+		if (ZSTR_LEN(name) == 0 || ZSTR_LEN(name) >= sizeof(pt_arena_name)) return false;
 
 #ifdef _WIN32
-		if (strncmp(ZSTR_VAL(name), "Local\\phpstan-", 14) != 0) {
-			return false;
-		}
+		if (strncmp(ZSTR_VAL(name), "Local\\phpstan-", 14) != 0) return false;
 		uint64_t size = ARENA_SIZE_LIMIT;
 		HANDLE section = OpenFileMappingA(FILE_MAP_READ | FILE_MAP_WRITE, FALSE, ZSTR_VAL(name));
-		if (section == NULL) {
-			return false;
-		}
+		if (section == NULL) return false;
 		void *base = MapViewOfFile(section, FILE_MAP_READ | FILE_MAP_WRITE, 0, 0, 0);
 		if (base == NULL) {
 			CloseHandle(section);
@@ -1132,13 +1020,9 @@ public:
 		}
 		pt_arena_section = section;
 #else
-		if (strncmp(ZSTR_VAL(name), "/phpstan-", 9) != 0) {
-			return false;
-		}
+		if (strncmp(ZSTR_VAL(name), "/phpstan-", 9) != 0) return false;
 		int fd = shm_open(ZSTR_VAL(name), O_RDWR, 0);
-		if (fd < 0) {
-			return false;
-		}
+		if (fd < 0) return false;
 		/* the creator sized the object to what its filesystem could back, so
 		 * the object itself says how much there is to map */
 		struct stat objectStat;
@@ -1153,9 +1037,7 @@ public:
 		}
 		void *base = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 		close(fd);
-		if (base == MAP_FAILED) {
-			return false;
-		}
+		if (base == MAP_FAILED) return false;
 		if (!headerValid((const ArenaHeader *) base, size)) {
 			munmap(base, size);
 			return false;
@@ -1184,9 +1066,7 @@ public:
 
 	static void destroy()
 	{
-		if (pt_arena_base == NULL) {
-			return;
-		}
+		if (pt_arena_base == NULL) return;
 		unlinkName();
 #ifdef _WIN32
 		UnmapViewOfFile(pt_arena_base);
@@ -1207,34 +1087,24 @@ public:
 	{
 		RETVAL_NULL();
 		RecordView view;
-		if (!findRecord(ZSTR_VAL(key), ZSTR_LEN(key), &view) || view.header->kind != RECORD_KIND_VALUE) {
-			return;
-		}
+		if (!findRecord(ZSTR_VAL(key), ZSTR_LEN(key), &view) || view.header->kind != RECORD_KIND_VALUE) return;
 		ReadCursor in;
 		in.p = view.payload;
 		in.end = view.payload + view.header->payloadLen;
 		zval result;
 		DeserializeCtx ctx;
-		if (!deserializeValue(in, &result, 0, ctx)) {
-			return;
-		}
+		if (!deserializeValue(in, &result, 0, ctx)) return;
 		RETVAL_ZVAL(&result, 0, 0);
 	}
 
 	static void publish(zend_string *key, zval *value)
 	{
-		if (pt_arena_base == NULL) {
-			return;
-		}
+		if (pt_arena_base == NULL) return;
 		RecordView existing;
-		if (findRecord(ZSTR_VAL(key), ZSTR_LEN(key), &existing)) {
-			return;
-		}
+		if (findRecord(ZSTR_VAL(key), ZSTR_LEN(key), &existing)) return;
 		WriteBuffer payload;
 		SerializeCtx ctx;
-		if (!serializeValue(payload, value, 0, ctx)) {
-			return;
-		}
+		if (!serializeValue(payload, value, 0, ctx)) return;
 		publishRecord(ZSTR_VAL(key), ZSTR_LEN(key), RECORD_KIND_VALUE, payload);
 	}
 
@@ -1242,13 +1112,9 @@ public:
 	{
 		RETVAL_NULL();
 		RecordView view;
-		if (!findRecord(ZSTR_VAL(recordKey), ZSTR_LEN(recordKey), &view) || view.header->kind != RECORD_KIND_HASH) {
-			return;
-		}
+		if (!findRecord(ZSTR_VAL(recordKey), ZSTR_LEN(recordKey), &view) || view.header->kind != RECORD_KIND_HASH) return;
 		zval result;
-		if (!hashRecordFind(view, ZSTR_VAL(entryKey), ZSTR_LEN(entryKey), &result)) {
-			return;
-		}
+		if (!hashRecordFind(view, ZSTR_VAL(entryKey), ZSTR_LEN(entryKey), &result)) return;
 		RETVAL_ZVAL(&result, 0, 0);
 	}
 
@@ -1256,29 +1122,19 @@ public:
 	{
 		RETVAL_NULL();
 		RecordView view;
-		if (!findRecord(ZSTR_VAL(recordKey), ZSTR_LEN(recordKey), &view) || view.header->kind != RECORD_KIND_HASH) {
-			return;
-		}
+		if (!findRecord(ZSTR_VAL(recordKey), ZSTR_LEN(recordKey), &view) || view.header->kind != RECORD_KIND_HASH) return;
 		zval result;
-		if (!hashRecordAll(view, &result)) {
-			return;
-		}
+		if (!hashRecordAll(view, &result)) return;
 		RETVAL_ZVAL(&result, 0, 0);
 	}
 
 	static void publishHash(zend_string *recordKey, HashTable *entries)
 	{
-		if (pt_arena_base == NULL) {
-			return;
-		}
+		if (pt_arena_base == NULL) return;
 		RecordView existing;
-		if (findRecord(ZSTR_VAL(recordKey), ZSTR_LEN(recordKey), &existing)) {
-			return;
-		}
+		if (findRecord(ZSTR_VAL(recordKey), ZSTR_LEN(recordKey), &existing)) return;
 		WriteBuffer payload;
-		if (!hashRecordBuild(payload, entries)) {
-			return;
-		}
+		if (!hashRecordBuild(payload, entries)) return;
 		publishRecord(ZSTR_VAL(recordKey), ZSTR_LEN(recordKey), RECORD_KIND_HASH, payload);
 	}
 };

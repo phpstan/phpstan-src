@@ -141,9 +141,7 @@ static pt_trav_class_info *pt_trav_class_info_for(zend_object *obj)
 	}
 
 	info = (pt_trav_class_info *) zend_hash_find_ptr(&pt_trav_class_cache, ce->name);
-	if (EXPECTED(info != NULL)) {
-		return info;
-	}
+	if (EXPECTED(info != NULL)) return info;
 
 	info = (pt_trav_class_info *) ecalloc(1, sizeof(pt_trav_class_info));
 
@@ -157,13 +155,9 @@ static pt_trav_class_info *pt_trav_class_info_for(zend_object *obj)
 			info->names = (zend_string **) emalloc(sizeof(zend_string *) * (capacity > 0 ? capacity : 1));
 			ZEND_HASH_FOREACH_VAL(Z_ARRVAL(names), name_zv) {
 				zend_property_info *prop;
-				if (Z_TYPE_P(name_zv) != IS_STRING) {
-					continue;
-				}
+				if (Z_TYPE_P(name_zv) != IS_STRING) continue;
 				prop = (zend_property_info *) zend_hash_find_ptr(&ce->properties_info, Z_STR_P(name_zv));
-				if (prop == NULL || (prop->flags & ZEND_ACC_STATIC) != 0) {
-					continue;
-				}
+				if (prop == NULL || (prop->flags & ZEND_ACC_STATIC) != 0) continue;
 				info->offsets[info->count] = (uint32_t) prop->offset;
 				info->names[info->count] = zend_string_copy(Z_STR_P(name_zv));
 				info->count++;
@@ -243,9 +237,7 @@ public:
 	void removeVisitor(zv::Ref visitor)
 	{
 		zv::Ref prop = visitorsProp();
-		if (!prop.isArray()) {
-			return;
-		}
+		if (!prop.isArray()) return;
 
 		/* array_search() with loose comparison, like the PHP implementation */
 		bool found = false;
@@ -260,9 +252,7 @@ public:
 			}
 			pos++;
 		}
-		if (!found) {
-			return;
-		}
+		if (!found) return;
 
 		/* array_splice($visitors, $index, 1, []) — reindexes */
 		zv::ArrRef old(prop.raw());
@@ -284,9 +274,7 @@ public:
 		/* $this->stopTraversal = false */
 		selfObj.propAtWrite(PT_NT_PROP_STOP, zv::Val::boolean(false));
 
-		if (UNEXPECTED(!buildVisitorPlan())) {
-			return zv::Val();
-		}
+		if (UNEXPECTED(!buildVisitorPlan())) return zv::Val();
 
 		/* work on our own copy of the nodes array */
 		zv::Arr nodes = zv::Arr::adoptTable(zend_array_dup(nodesTable));
@@ -294,13 +282,9 @@ public:
 		/* beforeTraverse */
 		for (uint32_t vi = 0; vi < nvisitors; vi++) {
 			const pt_visitor_plan *p = &plan[vi];
-			if (p->before_fn == NULL) {
-				continue;
-			}
+			if (p->before_fn == NULL) continue;
 			zv::Val ret = callVisitorHook(p, p->before_fn, nodes.ref());
-			if (UNEXPECTED(ret.isUndef())) {
-				return zv::Val();
-			}
+			if (UNEXPECTED(ret.isUndef())) return zv::Val();
 			if (ret.ref().isArray()) {
 				nodes = zv::Arr::adoptVal(std::move(ret));
 				nodes.separate();
@@ -309,9 +293,7 @@ public:
 
 		nodes.separate();
 		zv::Arr replacement = traverseArray(nodes.arrRef());
-		if (UNEXPECTED(failed)) {
-			return zv::Val();
-		}
+		if (UNEXPECTED(failed)) return zv::Val();
 		if (!replacement.isUndef()) {
 			nodes = std::move(replacement);
 		}
@@ -319,13 +301,9 @@ public:
 		/* afterTraverse, in reverse */
 		for (int64_t vi = (int64_t) nvisitors - 1; vi >= 0; vi--) {
 			const pt_visitor_plan *p = &plan[vi];
-			if (p->after_fn == NULL) {
-				continue;
-			}
+			if (p->after_fn == NULL) continue;
 			zv::Val ret = callVisitorHook(p, p->after_fn, nodes.ref());
-			if (UNEXPECTED(ret.isUndef())) {
-				return zv::Val();
-			}
+			if (UNEXPECTED(ret.isUndef())) return zv::Val();
 			if (ret.ref().isArray()) {
 				nodes = zv::Arr::adoptVal(std::move(ret));
 			}
@@ -377,21 +355,15 @@ private:
 				 * array it started with. */
 				zv::Val arrayGuard = zv::Val::copyOf(zv::Ref(value.raw()));
 				zv::Arr replacement = traverseArray(zv::ArrRef(value.raw()));
-				if (UNEXPECTED(failed)) {
-					return;
-				}
+				if (UNEXPECTED(failed)) return;
 				if (!replacement.isUndef()) {
 					value.assign(std::move(replacement));
 				}
-				if (stop) {
-					return;
-				}
+				if (stop) return;
 				continue;
 			}
 
-			if (!value.instanceOf(nodeIface)) {
-				continue;
-			}
+			if (!value.instanceOf(nodeIface)) continue;
 			/* Own a reference for the whole block: a visitor writing to the
 			 * parent's property from a hook can otherwise drop the node's
 			 * last reference while later hooks still run on it. The PHP twin
@@ -407,27 +379,21 @@ private:
 			for (uint32_t vi = 0; vi < nvisitors; vi++) {
 				const pt_visitor_plan *p = &plan[vi];
 				visitorIndex = vi;
-				if (!p->call_enter) {
-					continue;
-				}
+				if (!p->call_enter) continue;
 				zv::Val ret = callVisitorHook(p, p->enter_fn, subNode);
 				if (UNEXPECTED(ret.isUndef())) {
 					failed = true;
 					return;
 				}
 				zv::Ref retRef = ret.ref();
-				if (retRef.isNull()) {
-					continue;
-				}
+				if (retRef.isNull()) continue;
 				if (retRef.instanceOf(nodeIface)) {
 					if (UNEXPECTED(!ensureReplacementReasonable(subNode, retRef.asObject()))) {
 						failed = true;
 						return;
 					}
 					/* $node->$name = $subNode = $return */
-					if (UNEXPECTED(!writeSubnode(node, info->names[i], retRef))) {
-						return;
-					}
+					if (UNEXPECTED(!writeSubnode(node, info->names[i], retRef))) return;
 					subNodeOwned = zv::Val::copyOf(retRef);
 					subNode = retRef.asObject();
 					continue;
@@ -447,9 +413,7 @@ private:
 						return;
 					}
 					if (code == REPLACE_WITH_NULL) {
-						if (UNEXPECTED(!writeSubnodeNull(node, info->names[i]))) {
-							return;
-						}
+						if (UNEXPECTED(!writeSubnodeNull(node, info->names[i]))) return;
 						skipToNext = true;
 						break;
 					}
@@ -459,40 +423,30 @@ private:
 				return;
 			}
 
-			if (skipToNext) {
-				continue;
-			}
+			if (skipToNext) continue;
 
 			if (traverseChildren) {
 				traverseNode(subNode);
-				if (UNEXPECTED(failed) || stop) {
-					return;
-				}
+				if (UNEXPECTED(failed) || stop) return;
 			}
 
 			/* leaveNode, in reverse from the last visitor whose enterNode ran */
 			for (int64_t vi = visitorIndex; vi >= 0; vi--) {
 				const pt_visitor_plan *p = &plan[vi];
-				if (!p->call_leave) {
-					continue;
-				}
+				if (!p->call_leave) continue;
 				zv::Val ret = callVisitorHook(p, p->leave_fn, subNode);
 				if (UNEXPECTED(ret.isUndef())) {
 					failed = true;
 					return;
 				}
 				zv::Ref retRef = ret.ref();
-				if (retRef.isNull()) {
-					continue;
-				}
+				if (retRef.isNull()) continue;
 				if (retRef.instanceOf(nodeIface)) {
 					if (UNEXPECTED(!ensureReplacementReasonable(subNode, retRef.asObject()))) {
 						failed = true;
 						return;
 					}
-					if (UNEXPECTED(!writeSubnode(node, info->names[i], retRef))) {
-						return;
-					}
+					if (UNEXPECTED(!writeSubnode(node, info->names[i], retRef))) return;
 					subNodeOwned = zv::Val::copyOf(retRef);
 					subNode = retRef.asObject();
 					continue;
@@ -504,9 +458,7 @@ private:
 						return;
 					}
 					if (code == REPLACE_WITH_NULL) {
-						if (UNEXPECTED(!writeSubnodeNull(node, info->names[i]))) {
-							return;
-						}
+						if (UNEXPECTED(!writeSubnodeNull(node, info->names[i]))) return;
 						break;
 					}
 				}
@@ -561,18 +513,14 @@ private:
 			for (uint32_t vi = 0; vi < nvisitors; vi++) {
 				const pt_visitor_plan *p = &plan[vi];
 				visitorIndex = vi;
-				if (!p->call_enter) {
-					continue;
-				}
+				if (!p->call_enter) continue;
 				zv::Val ret = callVisitorHook(p, p->enter_fn, node);
 				if (UNEXPECTED(ret.isUndef())) {
 					failed = true;
 					break;
 				}
 				zv::Ref retRef = ret.ref();
-				if (retRef.isNull()) {
-					continue;
-				}
+				if (retRef.isNull()) continue;
 				if (retRef.instanceOf(nodeIface)) {
 					if (UNEXPECTED(!ensureReplacementReasonable(node, retRef.asObject()))) {
 						failed = true;
@@ -618,35 +566,25 @@ private:
 				break;
 			}
 
-			if (UNEXPECTED(failed) || stop) {
-				break;
-			}
-			if (skipToNext) {
-				continue;
-			}
+			if (UNEXPECTED(failed) || stop) break;
+			if (skipToNext) continue;
 
 			if (traverseChildren) {
 				traverseNode(node);
-				if (UNEXPECTED(failed) || stop) {
-					break;
-				}
+				if (UNEXPECTED(failed) || stop) break;
 			}
 
 			/* leaveNode, in reverse from the last visitor whose enterNode ran */
 			for (int64_t vi = visitorIndex; vi >= 0; vi--) {
 				const pt_visitor_plan *p = &plan[vi];
-				if (!p->call_leave) {
-					continue;
-				}
+				if (!p->call_leave) continue;
 				zv::Val ret = callVisitorHook(p, p->leave_fn, node);
 				if (UNEXPECTED(ret.isUndef())) {
 					failed = true;
 					break;
 				}
 				zv::Ref retRef = ret.ref();
-				if (retRef.isNull()) {
-					continue;
-				}
+				if (retRef.isNull()) continue;
 				if (retRef.instanceOf(nodeIface)) {
 					if (UNEXPECTED(!ensureReplacementReasonable(node, retRef.asObject()))) {
 						failed = true;
@@ -681,9 +619,7 @@ private:
 				break;
 			}
 
-			if (UNEXPECTED(failed) || stop) {
-				break;
-			}
+			if (UNEXPECTED(failed) || stop) break;
 		}
 
 		if (UNEXPECTED(failed)) {
@@ -724,9 +660,7 @@ private:
 	{
 		zend_class_entry *stmtCe = pt_class(PT_CLASS_STMT);
 		zend_class_entry *exprCe = pt_class(PT_CLASS_EXPR);
-		if (UNEXPECTED(stmtCe == NULL || exprCe == NULL)) {
-			return false;
-		}
+		if (UNEXPECTED(stmtCe == NULL || exprCe == NULL)) return false;
 
 		zv::ObjRef oldRef(oldNode);
 		zv::ObjRef newRef(newNode);
@@ -814,9 +748,7 @@ private:
 	{
 		zval retval;
 		zend_call_known_function(hook, p->visitor, p->ce, &retval, 1, arg.raw(), NULL);
-		if (UNEXPECTED(EG(exception))) {
-			return zv::Val();
-		}
+		if (UNEXPECTED(EG(exception))) return zv::Val();
 		return zv::Val::adopt(retval);
 	}
 
@@ -888,9 +820,7 @@ void pt_register_node_traverser()
 			Z_PARAM_VARIADIC('+', visitors, count)
 		ZEND_PARSE_PARAMETERS_END();
 		NodeTraverser self(Z_OBJ_P(ZEND_THIS));
-		if (UNEXPECTED(!self.construct(visitors, count))) {
-			RETURN_THROWS();
-		}
+		if (UNEXPECTED(!self.construct(visitors, count))) RETURN_THROWS();
 	});
 
 	static const reg::Arg voidReturn = { "", MAY_BE_VOID, nullptr };
@@ -919,9 +849,7 @@ void pt_register_node_traverser()
 		ZEND_PARSE_PARAMETERS_END();
 		NodeTraverser self(Z_OBJ_P(ZEND_THIS));
 		zv::Val result = self.traverse(nodes);
-		if (UNEXPECTED(result.isUndef())) {
-			RETURN_THROWS();
-		}
+		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
 	}, &arrayReturn);
 

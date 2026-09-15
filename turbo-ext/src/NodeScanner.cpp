@@ -61,9 +61,7 @@ void pt_register_node_scanner()
 		ZEND_PARSE_PARAMETERS_END();
 		bool failed = false;
 		bool result = NodeScanner::nodeIsOrContainsYield(zv::ObjRef(node), failed);
-		if (UNEXPECTED(failed)) {
-			RETURN_THROWS();
-		}
+		if (UNEXPECTED(failed)) RETURN_THROWS();
 		RETURN_BOOL(result);
 	});
 

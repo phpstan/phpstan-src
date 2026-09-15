@@ -50,15 +50,11 @@ public:
 		zv::Ref typeHolder = obj.propAt(PT_CEH_PROP_TYPEHOLDER);
 
 		for (auto entry : zv::ArrRef(conds.raw())) {
-			if (UNEXPECTED(!pt_check_holder(entry.value().deref().raw()))) {
-				return zv::Val();
-			}
+			if (UNEXPECTED(!pt_check_holder(entry.value().deref().raw()))) return zv::Val();
 		}
 
 		zend_string *key = pt_ceh_key_build(conds.asArrayTable(), typeHolder.raw());
-		if (UNEXPECTED(key == NULL)) {
-			return zv::Val();
-		}
+		if (UNEXPECTED(key == NULL)) return zv::Val();
 		return zv::Val::adoptString(key);
 	}
 
@@ -91,9 +87,7 @@ void pt_register_conditional_expression_holder()
 			Z_PARAM_ARRAY(holders)
 			Z_PARAM_OBJECT_OF_CLASS(typeHolder, pt_ce_expr_type_holder)
 		ZEND_PARSE_PARAMETERS_END();
-		if (UNEXPECTED(!ConditionalExpressionHolder(ZEND_THIS).construct(zv::ArrRef(holders), zv::Ref(typeHolder)))) {
-			RETURN_THROWS();
-		}
+		if (UNEXPECTED(!ConditionalExpressionHolder(ZEND_THIS).construct(zv::ArrRef(holders), zv::Ref(typeHolder)))) RETURN_THROWS();
 	});
 
 	cls.method("getConditionExpressionTypeHolders", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -109,9 +103,7 @@ void pt_register_conditional_expression_holder()
 	cls.method("getKey", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		zv::Val key = ConditionalExpressionHolder(ZEND_THIS).getKey();
-		if (UNEXPECTED(key.isUndef())) {
-			RETURN_THROWS();
-		}
+		if (UNEXPECTED(key.isUndef())) RETURN_THROWS();
 		key.intoReturnValue(return_value);
 	});
 

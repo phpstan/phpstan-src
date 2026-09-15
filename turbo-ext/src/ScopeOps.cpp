@@ -60,9 +60,7 @@ static pt_scope_offsets *pt_scope_offsets_for(zend_class_entry *ce)
 		pt_scope_offsets_cache_inited = true;
 	}
 	off = (pt_scope_offsets *) zend_hash_find_ptr(&pt_scope_offsets_cache, ce->name);
-	if (EXPECTED(off != NULL)) {
-		return off;
-	}
+	if (EXPECTED(off != NULL)) return off;
 
 	off = (pt_scope_offsets *) emalloc(sizeof(pt_scope_offsets));
 	off->expression_types = pt_instance_prop_offset(ce, "expressionTypes", sizeof("expressionTypes") - 1);
@@ -103,9 +101,7 @@ public:
 	static zv::Val nodeKey(zend_object *node, zval *exprPrinter)
 	{
 		zend_string *key = pt_node_key(node, exprPrinter);
-		if (UNEXPECTED(key == NULL)) {
-			return zv::Val();
-		}
+		if (UNEXPECTED(key == NULL)) return zv::Val();
 		return zv::Val::adoptString(key);
 	}
 
@@ -121,23 +117,17 @@ public:
 		*keyOut = NULL;
 
 		zval *exprPrinter = scopeProp(scope, "exprPrinter", sizeof("exprPrinter") - 1);
-		if (UNEXPECTED(exprPrinter == NULL)) {
-			return zv::Val();
-		}
+		if (UNEXPECTED(exprPrinter == NULL)) return zv::Val();
 		if (UNEXPECTED(Z_TYPE_P(exprPrinter) != IS_OBJECT)) {
 			zend_throw_error(NULL, "phpstan_turbo: exprPrinter is not an object");
 			return zv::Val();
 		}
 
 		zv::Str key = zv::Str::adopt(pt_node_key(node, exprPrinter));
-		if (UNEXPECTED(key.isNull())) {
-			return zv::Val();
-		}
+		if (UNEXPECTED(key.isNull())) return zv::Val();
 
 		zval *table = scopeProp(scope, "resolvedTypes", sizeof("resolvedTypes") - 1);
-		if (UNEXPECTED(table == NULL)) {
-			return zv::Val();
-		}
+		if (UNEXPECTED(table == NULL)) return zv::Val();
 		if (EXPECTED(Z_TYPE_P(table) == IS_ARRAY)) {
 			zval *found = zend_symtable_find(Z_ARRVAL_P(table), key.get());
 			if (found != NULL && Z_TYPE_P(found) != IS_NULL) {
@@ -161,9 +151,7 @@ public:
 		zend_class_entry *variableCe = pt_class(PT_CLASS_VARIABLE);
 		zend_class_entry *closureCe = pt_class(PT_CLASS_CLOSURE_EXPR);
 		zend_class_entry *arrowFunctionCe = pt_class(PT_CLASS_ARROW_FUNCTION);
-		if (UNEXPECTED(variableCe == NULL || closureCe == NULL || arrowFunctionCe == NULL)) {
-			return zv::Val();
-		}
+		if (UNEXPECTED(variableCe == NULL || closureCe == NULL || arrowFunctionCe == NULL)) return zv::Val();
 
 		if (instanceof_function(node->ce, variableCe)
 			|| instanceof_function(node->ce, closureCe)
@@ -172,20 +160,12 @@ public:
 		}
 
 		zval *table = scopeArrayProp(scope, "expressionTypes", sizeof("expressionTypes") - 1);
-		if (UNEXPECTED(table == NULL)) {
-			return zv::Val();
-		}
+		if (UNEXPECTED(table == NULL)) return zv::Val();
 		zval *found = zend_symtable_find(Z_ARRVAL_P(table), exprString);
-		if (found == NULL) {
-			return zv::Val::null();
-		}
+		if (found == NULL) return zv::Val::null();
 		zv::Ref holder = zv::Ref(found).deref();
-		if (UNEXPECTED(!pt_check_holder(holder.raw()))) {
-			return zv::Val();
-		}
-		if (pt_holder_certainty_value(holder.asObject()) != PT_TRI_YES) {
-			return zv::Val::null();
-		}
+		if (UNEXPECTED(!pt_check_holder(holder.raw()))) return zv::Val();
+		if (pt_holder_certainty_value(holder.asObject()) != PT_TRI_YES) return zv::Val::null();
 		return zv::Val::copyOf(zv::ObjRef(holder.asObject()).propAt(PT_ETH_PROP_TYPE));
 	}
 
@@ -193,62 +173,42 @@ public:
 	static zv::Val hasExpressionType(zval *scope, zend_object *node, zval *exprPrinter)
 	{
 		pt_node_class_info *info = pt_get_node_class_info(node->ce);
-		if (UNEXPECTED(info == NULL)) {
-			return zv::Val();
-		}
+		if (UNEXPECTED(info == NULL)) return zv::Val();
 		if (info->is_variable && info->name_offset >= 0) {
 			zv::Ref name = zv::ObjRef(node).propAtOffset((uint32_t) info->name_offset).deref();
-			if (name.isString()) {
-				return hasVariableType(scope, name.asString());
-			}
+			if (name.isString()) return hasVariableType(scope, name.asString());
 		}
 
 		zv::Str key = zv::Str::adopt(pt_node_key(node, exprPrinter));
-		if (UNEXPECTED(key.isNull())) {
-			return zv::Val();
-		}
+		if (UNEXPECTED(key.isNull())) return zv::Val();
 		zval *table = scopeArrayProp(scope, "expressionTypes", sizeof("expressionTypes") - 1);
-		if (UNEXPECTED(table == NULL)) {
-			return zv::Val();
-		}
+		if (UNEXPECTED(table == NULL)) return zv::Val();
 		zval *found = zend_symtable_find(Z_ARRVAL_P(table), key.get());
-		if (found == NULL) {
-			return trinarySingleton(PT_TRI_NO);
-		}
+		if (found == NULL) return trinarySingleton(PT_TRI_NO);
 		zv::Ref holder = zv::Ref(found).deref();
-		if (UNEXPECTED(!pt_check_holder(holder.raw()))) {
-			return zv::Val();
-		}
+		if (UNEXPECTED(!pt_check_holder(holder.raw()))) return zv::Val();
 		return zv::Val::copyOf(zv::ObjRef(holder.asObject()).propAt(PT_ETH_PROP_CERTAINTY));
 	}
 
 	/* Mirrors ScopeOps::hasVariableType(). */
 	static zv::Val hasVariableType(zval *scope, zend_string *variableName)
 	{
-		if (pt_is_superglobal_name(variableName)) {
-			return trinarySingleton(PT_TRI_YES);
-		}
+		if (pt_is_superglobal_name(variableName)) return trinarySingleton(PT_TRI_YES);
 
 		zval *table = scopeProp(scope, "expressionTypes", sizeof("expressionTypes") - 1);
-		if (UNEXPECTED(table == NULL)) {
-			return zv::Val();
-		}
+		if (UNEXPECTED(table == NULL)) return zv::Val();
 		if (EXPECTED(Z_TYPE_P(table) == IS_ARRAY)) {
 			zv::Str varKey = dollarPrefixed(variableName);
 			zval *found = zend_hash_find(Z_ARRVAL_P(table), varKey.get());
 			if (found != NULL) {
 				zv::Ref holder = zv::Ref(found).deref();
-				if (UNEXPECTED(!pt_check_holder(holder.raw()))) {
-					return zv::Val();
-				}
+				if (UNEXPECTED(!pt_check_holder(holder.raw()))) return zv::Val();
 				return zv::Val::copyOf(zv::ObjRef(holder.asObject()).propAt(PT_ETH_PROP_CERTAINTY));
 			}
 		}
 
 		bool canExist;
-		if (UNEXPECTED(!pt_call_scope_bool(scope, "cananyvariableexist", sizeof("cananyvariableexist") - 1, 0, NULL, &canExist))) {
-			return zv::Val();
-		}
+		if (UNEXPECTED(!pt_call_scope_bool(scope, "cananyvariableexist", sizeof("cananyvariableexist") - 1, 0, NULL, &canExist))) return zv::Val();
 		return trinarySingleton(canExist ? PT_TRI_MAYBE : PT_TRI_NO);
 	}
 
@@ -283,9 +243,7 @@ public:
 		}
 
 		zend_object *clone = zend_objects_clone_obj(Z_OBJ_P(scope));
-		if (UNEXPECTED(EG(exception))) {
-			return zv::Val();
-		}
+		if (UNEXPECTED(EG(exception))) return zv::Val();
 		zv::ObjRef cloneObj(clone);
 
 		setTableProp(cloneObj, off->expression_types, expressionTypes);
@@ -322,9 +280,7 @@ public:
 	static zv::Val mergeVariableHolders(zv::TableRef ours, zv::TableRef theirs, HashTable *differing)
 	{
 		zv::Arr merged = zv::Arr::create(ours.size());
-		if (UNEXPECTED(!mergeVariableHoldersInto(merged, ours, theirs, differing))) {
-			return zv::Val();
-		}
+		if (UNEXPECTED(!mergeVariableHoldersInto(merged, ours, theirs, differing))) return zv::Val();
 		return zv::Val(std::move(merged));
 	}
 
@@ -332,9 +288,7 @@ public:
 	static zv::Val finishMerge(zv::TableRef merged, zv::TableRef oursExpr, zv::TableRef theirsExpr, zv::TableRef oursNative, zv::TableRef theirsNative)
 	{
 		zv::Arr filteredMerged;
-		if (UNEXPECTED(!filterHolders(merged, filteredMerged))) {
-			return zv::Val();
-		}
+		if (UNEXPECTED(!filterHolders(merged, filteredMerged))) return zv::Val();
 
 		zv::Arr oursNativeRemaining = zv::Arr::adoptTable(zend_array_dup(oursNative.table()));
 		zv::Arr theirsNativeRemaining = zv::Arr::adoptTable(zend_array_dup(theirsNative.table()));
@@ -345,54 +299,32 @@ public:
 			zend_ulong idx = entry.indexKey();
 			zv::Ref holder = entry.value().deref();
 
-			if (UNEXPECTED(!pt_check_holder(holder.raw()))) {
-				return zv::Val();
-			}
+			if (UNEXPECTED(!pt_check_holder(holder.raw()))) return zv::Val();
 
 			zval *theirNativeSlot = pt_ht_find(theirsNative.table(), key, idx);
-			if (theirNativeSlot == NULL) {
-				continue;
-			}
+			if (theirNativeSlot == NULL) continue;
 			zval *ourExprSlot = pt_ht_find(oursExpr.table(), key, idx);
-			if (ourExprSlot == NULL) {
-				continue;
-			}
+			if (ourExprSlot == NULL) continue;
 			zval *theirExprSlot = pt_ht_find(theirsExpr.table(), key, idx);
-			if (theirExprSlot == NULL) {
-				continue;
-			}
+			if (theirExprSlot == NULL) continue;
 
 			bool equal;
 			{
 				zv::Ref ourExprHolder = zv::Ref(ourExprSlot).deref();
-				if (UNEXPECTED(!pt_check_holder(ourExprHolder.raw()))) {
-					return zv::Val();
-				}
-				if (UNEXPECTED(!pt_holder_equals(holder.raw(), ourExprHolder.raw(), &equal))) {
-					return zv::Val();
-				}
+				if (UNEXPECTED(!pt_check_holder(ourExprHolder.raw()))) return zv::Val();
+				if (UNEXPECTED(!pt_holder_equals(holder.raw(), ourExprHolder.raw(), &equal))) return zv::Val();
 			}
-			if (!equal) {
-				continue;
-			}
+			if (!equal) continue;
 			{
 				zv::Ref theirNativeHolder = zv::Ref(theirNativeSlot).deref();
 				zv::Ref theirExprHolder = zv::Ref(theirExprSlot).deref();
-				if (UNEXPECTED(!pt_check_holder(theirNativeHolder.raw())) || UNEXPECTED(!pt_check_holder(theirExprHolder.raw()))) {
-					return zv::Val();
-				}
-				if (UNEXPECTED(!pt_holder_equals(theirNativeHolder.raw(), theirExprHolder.raw(), &equal))) {
-					return zv::Val();
-				}
+				if (UNEXPECTED(!pt_check_holder(theirNativeHolder.raw())) || UNEXPECTED(!pt_check_holder(theirExprHolder.raw()))) return zv::Val();
+				if (UNEXPECTED(!pt_holder_equals(theirNativeHolder.raw(), theirExprHolder.raw(), &equal))) return zv::Val();
 			}
-			if (!equal) {
-				continue;
-			}
+			if (!equal) continue;
 
 			zval *mergedHolder = pt_ht_find(filteredMerged.table(), key, idx);
-			if (mergedHolder == NULL) {
-				continue;
-			}
+			if (mergedHolder == NULL) continue;
 
 			tableUpdateCopy(mergedNative.table(), key, idx, zv::Ref(mergedHolder));
 			pt_ht_del(oursNativeRemaining.table(), key, idx);
@@ -402,13 +334,9 @@ public:
 		/* mergedNative += filter(mergeVariableHolders(oursRemaining, theirsRemaining)) */
 		{
 			zv::Val remainingMerged = mergeVariableHolders(zv::TableRef(oursNativeRemaining.table()), zv::TableRef(theirsNativeRemaining.table()), NULL);
-			if (UNEXPECTED(remainingMerged.isUndef())) {
-				return zv::Val();
-			}
+			if (UNEXPECTED(remainingMerged.isUndef())) return zv::Val();
 			zv::Arr remainingFiltered;
-			if (UNEXPECTED(!filterHolders(zv::TableRef(Z_ARRVAL_P(remainingMerged.raw())), remainingFiltered))) {
-				return zv::Val();
-			}
+			if (UNEXPECTED(!filterHolders(zv::TableRef(Z_ARRVAL_P(remainingMerged.raw())), remainingFiltered))) return zv::Val();
 			for (auto entry : zv::ArrRef(remainingFiltered.raw())) {
 				tableUpdateCopy(mergedNative.table(), entry.stringKeyOrNull(), entry.indexKey(), entry.value());
 			}
@@ -430,32 +358,24 @@ public:
 			zend_ulong idx = entry.indexKey();
 
 			zval *otherHoldersSlot = pt_ht_find(theirs.table(), key, idx);
-			if (otherHoldersSlot == NULL) {
-				continue;
-			}
+			if (otherHoldersSlot == NULL) continue;
 			zv::Ref holders = entry.value().deref();
 			zv::Ref otherHolders = zv::Ref(otherHoldersSlot).deref();
-			if (!holders.isArray() || !otherHolders.isArray()) {
-				continue;
-			}
+			if (!holders.isArray() || !otherHolders.isArray()) continue;
 			HashTable *otherTable = otherHolders.asArrayTable();
 
 			zv::Arr intersected; /* stays UNDEF until the first shared holder */
 			for (auto holderEntry : zv::TableRef(holders.asArrayTable())) {
 				zend_string *holderKey = holderEntry.stringKeyOrNull();
 				zend_ulong holderIdx = holderEntry.indexKey();
-				if (!pt_ht_exists(otherTable, holderKey, holderIdx)) {
-					continue;
-				}
+				if (!pt_ht_exists(otherTable, holderKey, holderIdx)) continue;
 				if (intersected.isUndef()) {
 					intersected = zv::Arr::create(0);
 				}
 				tableAddNewCopy(intersected.table(), holderKey, holderIdx, holderEntry.value());
 			}
 
-			if (intersected.isUndef()) {
-				continue;
-			}
+			if (intersected.isUndef()) continue;
 			tableAddNew(result.table(), key, idx, std::move(intersected));
 		}
 
@@ -472,9 +392,7 @@ public:
 	{
 		zend_class_entry *virtualNodeCe = pt_class(PT_CLASS_VIRTUAL_NODE);
 		zend_class_entry *neverTypeCe = pt_class(PT_CLASS_NEVER_TYPE);
-		if (UNEXPECTED(virtualNodeCe == NULL || neverTypeCe == NULL)) {
-			return zv::Val();
-		}
+		if (UNEXPECTED(virtualNodeCe == NULL || neverTypeCe == NULL)) return zv::Val();
 
 		/* A guard is only ever consumed paired with a target: a *different* key
 		 * in the first target loop below, any key in the second one. Deriving a
@@ -494,9 +412,7 @@ public:
 			if (ourSlot == NULL) {
 				if (mergedSlot != NULL) {
 					zv::Ref mergedHolder = zv::Ref(mergedSlot).deref();
-					if (UNEXPECTED(!pt_check_holder(mergedHolder.raw()))) {
-						return zv::Val();
-					}
+					if (UNEXPECTED(!pt_check_holder(mergedHolder.raw()))) return zv::Val();
 					if (!instanceof_function(holderExpr(mergedHolder)->ce, virtualNodeCe)) {
 						hasUndefinedTarget = true;
 					}
@@ -504,29 +420,19 @@ public:
 				continue;
 			}
 			zv::Ref holder = zv::Ref(ourSlot).deref();
-			if (UNEXPECTED(!pt_check_holder(holder.raw()))) {
-				return zv::Val();
-			}
-			if (instanceof_function(holderExpr(holder)->ce, virtualNodeCe)) {
-				continue;
-			}
+			if (UNEXPECTED(!pt_check_holder(holder.raw()))) return zv::Val();
+			if (instanceof_function(holderExpr(holder)->ce, virtualNodeCe)) continue;
 			if (mergedSlot != NULL) {
 				zv::Ref mergedHolder = zv::Ref(mergedSlot).deref();
 				bool equal;
-				if (UNEXPECTED(!pt_holder_equals(mergedHolder.raw(), holder.raw(), &equal))) {
-					return zv::Val();
-				}
-				if (equal) {
-					continue;
-				}
+				if (UNEXPECTED(!pt_holder_equals(mergedHolder.raw(), holder.raw(), &equal))) return zv::Val();
+				if (equal) continue;
 			}
 			zval targetTrue;
 			ZVAL_TRUE(&targetTrue);
 			pt_ht_update(targets.table(), key, idx, &targetTrue);
 		}
-		if (!hasUndefinedTarget && targets.size() == 0) {
-			return zv::Arr::copyOfTable(conditional.table());
-		}
+		if (!hasUndefinedTarget && targets.size() == 0) return zv::Arr::copyOfTable(conditional.table());
 		bool onlySelfIsTarget = !hasUndefinedTarget && targets.size() == 1;
 
 		zv::ScratchTable guardsToExclude(8);
@@ -545,45 +451,27 @@ public:
 			zend_ulong idx = diffEntry.indexKey();
 
 			zval *theirSlot = pt_ht_find(theirs.table(), key, idx);
-			if (theirSlot == NULL) {
-				continue;
-			}
+			if (theirSlot == NULL) continue;
 			zval *mergedSlot = pt_ht_find(merged.table(), key, idx);
-			if (mergedSlot == NULL) {
-				continue;
-			}
+			if (mergedSlot == NULL) continue;
 			zv::Ref holder = zv::Ref(theirSlot).deref();
-			if (UNEXPECTED(!pt_check_holder(holder.raw()))) {
-				return zv::Val();
-			}
+			if (UNEXPECTED(!pt_check_holder(holder.raw()))) return zv::Val();
 			bool equalTypes;
 			{
 				zv::Ref mergedHolder = zv::Ref(mergedSlot).deref();
-				if (UNEXPECTED(!pt_check_holder(mergedHolder.raw()))) {
-					return zv::Val();
-				}
-				if (UNEXPECTED(!pt_holder_equal_types(mergedHolder.raw(), holder.raw(), &equalTypes))) {
-					return zv::Val();
-				}
+				if (UNEXPECTED(!pt_check_holder(mergedHolder.raw()))) return zv::Val();
+				if (UNEXPECTED(!pt_holder_equal_types(mergedHolder.raw(), holder.raw(), &equalTypes))) return zv::Val();
 			}
-			if (!equalTypes) {
-				continue;
-			}
+			if (!equalTypes) continue;
 
 			zval *ourSlot = pt_ht_find(ours.table(), key, idx);
 			if (ourSlot != NULL) {
 				zv::Ref ourHolder = zv::Ref(ourSlot).deref();
-				if (UNEXPECTED(!pt_check_holder(ourHolder.raw()))) {
-					return zv::Val();
-				}
+				if (UNEXPECTED(!pt_check_holder(ourHolder.raw()))) return zv::Val();
 				if (pt_holder_certainty_value(ourHolder.asObject()) != pt_holder_certainty_value(holder.asObject())) {
 					bool ourEqualTypes;
-					if (UNEXPECTED(!pt_holder_equal_types(ourHolder.raw(), holder.raw(), &ourEqualTypes))) {
-						return zv::Val();
-					}
-					if (ourEqualTypes) {
-						continue;
-					}
+					if (UNEXPECTED(!pt_holder_equal_types(ourHolder.raw(), holder.raw(), &ourEqualTypes))) return zv::Val();
+					if (ourEqualTypes) continue;
 				}
 			}
 
@@ -598,26 +486,14 @@ public:
 			zend_ulong idx = diffEntry.indexKey();
 
 			zval *ourSlot = pt_ht_find(ours.table(), key, idx);
-			if (ourSlot == NULL) {
-				continue;
-			}
+			if (ourSlot == NULL) continue;
 			zv::Ref holder = zv::Ref(ourSlot).deref();
-			if (UNEXPECTED(!pt_check_holder(holder.raw()))) {
-				return zv::Val();
-			}
-			if (instanceof_function(holderExpr(holder)->ce, virtualNodeCe)) {
-				continue;
-			}
+			if (UNEXPECTED(!pt_check_holder(holder.raw()))) return zv::Val();
+			if (instanceof_function(holderExpr(holder)->ce, virtualNodeCe)) continue;
 			zval *mergedSlot = pt_ht_find(merged.table(), key, idx);
-			if (mergedSlot == NULL) {
-				continue;
-			}
-			if (pt_holder_certainty_value(holder.asObject()) != PT_TRI_YES) {
-				continue;
-			}
-			if (pt_ht_exists(guardsToExclude.table(), key, idx)) {
-				continue;
-			}
+			if (mergedSlot == NULL) continue;
+			if (pt_holder_certainty_value(holder.asObject()) != PT_TRI_YES) continue;
+			if (pt_ht_exists(guardsToExclude.table(), key, idx)) continue;
 			zval *theirSlot = pt_ht_find(theirs.table(), key, idx);
 			if (theirSlot == NULL) {
 				/* with no their-branch entry the merged holder keeps our type
@@ -626,19 +502,11 @@ public:
 				continue;
 			}
 			zv::Ref theirHolder = zv::Ref(theirSlot).deref();
-			if (UNEXPECTED(!pt_check_holder(theirHolder.raw()))) {
-				return zv::Val();
-			}
-			if (pt_holder_certainty_value(theirHolder.asObject()) != PT_TRI_YES) {
-				continue;
-			}
+			if (UNEXPECTED(!pt_check_holder(theirHolder.raw()))) return zv::Val();
+			if (pt_holder_certainty_value(theirHolder.asObject()) != PT_TRI_YES) continue;
 			bool equalTypes;
-			if (UNEXPECTED(!pt_holder_equal_types(holder.raw(), theirHolder.raw(), &equalTypes))) {
-				return zv::Val();
-			}
-			if (equalTypes) {
-				continue;
-			}
+			if (UNEXPECTED(!pt_holder_equal_types(holder.raw(), theirHolder.raw(), &equalTypes))) return zv::Val();
+			if (equalTypes) continue;
 
 			if (onlySelfIsTarget && pt_ht_exists(targets.table(), key, idx)) {
 				/* the sole target is this very key, which the target loop unsets
@@ -649,24 +517,14 @@ public:
 			/* the branch set difference — see the twin for why an unchanged
 			 * remainder falls back to the merged-type comparison */
 			zv::Val remainder = typeCombinatorRemove(holderType(holder), holderType(theirHolder));
-			if (UNEXPECTED(remainder.isUndef())) {
-				return zv::Val();
-			}
-			if (remainder.ref().instanceOf(neverTypeCe)) {
-				continue;
-			}
+			if (UNEXPECTED(remainder.isUndef())) return zv::Val();
+			if (remainder.ref().instanceOf(neverTypeCe)) continue;
 			{
 				zv::Ref mergedHolder = zv::Ref(mergedSlot).deref();
-				if (UNEXPECTED(!pt_check_holder(mergedHolder.raw()))) {
-					return zv::Val();
-				}
+				if (UNEXPECTED(!pt_check_holder(mergedHolder.raw()))) return zv::Val();
 				bool mergedEqualsRemainder = pt_types_identical_or_equal(holderType(mergedHolder), remainder.raw());
-				if (UNEXPECTED(EG(exception))) {
-					return zv::Val();
-				}
-				if (mergedEqualsRemainder) {
-					continue;
-				}
+				if (UNEXPECTED(EG(exception))) return zv::Val();
+				if (mergedEqualsRemainder) continue;
 			}
 
 			if (Z_OBJ_P(remainder.raw()) == Z_OBJ_P(holderType(holder))) {
@@ -689,9 +547,7 @@ public:
 			}
 		}
 
-		if (typeGuards.size() == 0) {
-			return zv::Arr::copyOfTable(conditional.table());
-		}
+		if (typeGuards.size() == 0) return zv::Arr::copyOfTable(conditional.table());
 
 		/* Both isSuperTypeOf() results depend only on the guard, not on the
 		 * target expression — cache them per guard across the target loop. */
@@ -707,15 +563,11 @@ public:
 			zend_ulong idx = targetEntry.indexKey();
 
 			zval *ourSlot = pt_ht_find(ours.table(), key, idx);
-			if (UNEXPECTED(ourSlot == NULL)) {
-				continue;
-			}
+			if (UNEXPECTED(ourSlot == NULL)) continue;
 			zv::Ref holder = zv::Ref(ourSlot).deref();
 
 			bool hasSelfGuard = pt_ht_exists(typeGuards.table(), key, idx);
-			if (typeGuards.size() - (hasSelfGuard ? 1 : 0) == 0) {
-				continue;
-			}
+			if (typeGuards.size() - (hasSelfGuard ? 1 : 0) == 0) continue;
 			bool exprIsGuardExcluded = pt_ht_exists(guardsToExclude.table(), key, idx);
 
 			for (auto guardEntry : zv::TableRef(typeGuards.table())) {
@@ -723,9 +575,7 @@ public:
 				zend_ulong guardIdx = guardEntry.indexKey();
 				zv::Ref guardHolder = guardEntry.value();
 
-				if (sameDualKey(guardKey, guardIdx, key, idx)) {
-					continue;
-				}
+				if (sameDualKey(guardKey, guardIdx, key, idx)) continue;
 
 				if (exprIsGuardExcluded) {
 					/* a subtype-absorbed target paired with a constant-array
@@ -735,16 +585,12 @@ public:
 					if (cached != NULL) {
 						isConstantArray = Z_TYPE_P(cached) == IS_TRUE;
 					} else {
-						if (UNEXPECTED(!isConstantArrayYes(holderType(guardHolder), &isConstantArray))) {
-							return zv::Val();
-						}
+						if (UNEXPECTED(!isConstantArrayYes(holderType(guardHolder), &isConstantArray))) return zv::Val();
 						zval cacheVal;
 						ZVAL_BOOL(&cacheVal, isConstantArray);
 						pt_ht_update(guardIsConstantArrayCache.table(), guardKey, guardIdx, &cacheVal);
 					}
-					if (isConstantArray) {
-						continue;
-					}
+					if (isConstantArray) continue;
 				}
 
 				zval *theirGuardSlot = pt_ht_find(theirs.table(), guardKey, guardIdx);
@@ -764,9 +610,7 @@ public:
 							pt_ht_update(guardIsSuperTypeOfTheirExprCache.table(), guardKey, guardIdx, &cacheVal);
 						}
 
-						if (guardIsSuperTypeOfTheirExpr == PT_TRI_YES) {
-							continue;
-						}
+						if (guardIsSuperTypeOfTheirExpr == PT_TRI_YES) continue;
 
 						bool skip = false;
 						zval *theirExprSlot = pt_ht_find(theirs.table(), key, idx);
@@ -777,9 +621,7 @@ public:
 							}
 						} else if (guardIsSuperTypeOfTheirExpr != PT_TRI_NO) {
 							bool typesEqual = pt_types_identical_or_equal(holderType(holder), holderType(guardHolder));
-							if (UNEXPECTED(EG(exception))) {
-								return zv::Val();
-							}
+							if (UNEXPECTED(EG(exception))) return zv::Val();
 							if (typesEqual) {
 								skip = true;
 							}
@@ -805,15 +647,11 @@ public:
 							}
 						}
 
-						if (skip) {
-							continue;
-						}
+						if (skip) continue;
 					}
 				}
 
-				if (UNEXPECTED(!appendConditional(result, conditional, key, idx, guardKey, guardIdx, guardHolder, holder))) {
-					return zv::Val();
-				}
+				if (UNEXPECTED(!appendConditional(result, conditional, key, idx, guardKey, guardIdx, guardHolder, holder))) return zv::Val();
 			}
 		}
 
@@ -823,34 +661,22 @@ public:
 			zend_ulong idx = diffEntry.indexKey();
 
 			zval *mergedSlot = pt_ht_find(merged.table(), key, idx);
-			if (mergedSlot == NULL) {
-				continue;
-			}
-			if (pt_ht_exists(ours.table(), key, idx)) {
-				continue;
-			}
+			if (mergedSlot == NULL) continue;
+			if (pt_ht_exists(ours.table(), key, idx)) continue;
 			zv::Ref mergedHolder = zv::Ref(mergedSlot).deref();
-			if (UNEXPECTED(!pt_check_holder(mergedHolder.raw()))) {
-				return zv::Val();
-			}
-			if (instanceof_function(holderExpr(mergedHolder)->ce, virtualNodeCe)) {
-				continue;
-			}
+			if (UNEXPECTED(!pt_check_holder(mergedHolder.raw()))) return zv::Val();
+			if (instanceof_function(holderExpr(mergedHolder)->ce, virtualNodeCe)) continue;
 
 			for (auto guardEntry : zv::TableRef(typeGuards.table())) {
 				zv::Val noHolder = createNoErrorHolder(zv::ObjRef(mergedHolder.asObject()).propAt(PT_ETH_PROP_EXPR).raw());
-				if (UNEXPECTED(noHolder.isUndef())) {
-					return zv::Val();
-				}
+				if (UNEXPECTED(noHolder.isUndef())) return zv::Val();
 				if (UNEXPECTED(!appendConditional(result, conditional, key, idx, guardEntry.stringKeyOrNull(), guardEntry.indexKey(), guardEntry.value(), noHolder.ref()))) {
 					return zv::Val();
 				}
 			}
 		}
 
-		if (!result.isUndef()) {
-			return zv::Val(std::move(result));
-		}
+		if (!result.isUndef()) return zv::Val(std::move(result));
 		return zv::Arr::copyOfTable(conditional.table());
 	}
 
@@ -862,9 +688,7 @@ public:
 	static zv::Val invalidateMethodsOnExpression(zval *exprPrinter, zend_string *exprStringToInvalidate, zv::TableRef expressionTypes, zv::TableRef nativeExpressionTypes)
 	{
 		zend_class_entry *methodCallCe = pt_class(PT_CLASS_METHOD_CALL);
-		if (UNEXPECTED(methodCallCe == NULL)) {
-			return zv::Val();
-		}
+		if (UNEXPECTED(methodCallCe == NULL)) return zv::Val();
 
 		bool invalidated = false;
 		zv::Arr resultExpr, resultNative; /* stay UNDEF until the first hit */
@@ -884,28 +708,16 @@ public:
 				continue;
 			}
 			zv::Ref holder = entry.value().deref();
-			if (UNEXPECTED(!pt_check_holder(holder.raw()))) {
-				return zv::Val();
-			}
+			if (UNEXPECTED(!pt_check_holder(holder.raw()))) return zv::Val();
 			zend_object *expr = holderExpr(holder);
-			if (!instanceof_function(expr->ce, methodCallCe)) {
-				continue;
-			}
+			if (!instanceof_function(expr->ce, methodCallCe)) continue;
 			int32_t varOffset = pt_instance_prop_offset(expr->ce, "var", sizeof("var") - 1);
-			if (varOffset < 0) {
-				continue;
-			}
+			if (varOffset < 0) continue;
 			zv::Ref var = zv::ObjRef(expr).propAtOffset((uint32_t) varOffset).deref();
-			if (!var.isObject()) {
-				continue;
-			}
+			if (!var.isObject()) continue;
 			zv::Str varKey = zv::Str::adopt(pt_node_key(var.asObject(), exprPrinter));
-			if (UNEXPECTED(varKey.isNull())) {
-				return zv::Val();
-			}
-			if (!zend_string_equals(varKey.get(), exprStringToInvalidate)) {
-				continue;
-			}
+			if (UNEXPECTED(varKey.isNull())) return zv::Val();
+			if (!zend_string_equals(varKey.get(), exprStringToInvalidate)) continue;
 
 			if (resultExpr.isUndef()) {
 				resultExpr = zv::Arr::adoptTable(zend_array_dup(expressionTypes.table()));
@@ -916,9 +728,7 @@ public:
 			invalidated = true;
 		}
 
-		if (!invalidated) {
-			return zv::Val::null();
-		}
+		if (!invalidated) return zv::Val::null();
 
 		zv::Arr result = zv::Arr::create(2);
 		result.push(std::move(resultExpr));
@@ -978,9 +788,7 @@ public:
 
 			zv::Ref holder = entry.value().deref();
 
-			if (UNEXPECTED(!pt_check_holder(holder.raw()))) {
-				return zv::Val();
-			}
+			if (UNEXPECTED(!pt_check_holder(holder.raw()))) return zv::Val();
 			zend_object *expr = holderExpr(holder);
 			zend_string *entryKey = key != NULL ? key : zend_long_to_str((zend_long) idx);
 			bool failed = false;
@@ -989,9 +797,7 @@ public:
 				zend_string_release(entryKey);
 			}
 			if (!should) {
-				if (UNEXPECTED(failed)) {
-					return zv::Val();
-				}
+				if (UNEXPECTED(failed)) return zv::Val();
 				continue;
 			}
 			if (resultExpr.isUndef()) {
@@ -1009,13 +815,9 @@ public:
 			zend_ulong idx = entry.indexKey();
 			zv::Ref holders = entry.value().deref();
 
-			if (!holders.isArray()) {
-				continue;
-			}
+			if (!holders.isArray()) continue;
 			zv::TableRef holdersTable(holders.asArrayTable());
-			if (holdersTable.size() == 0) {
-				continue;
-			}
+			if (holdersTable.size() == 0) continue;
 
 			/* first holder's type-holder expr decides whole-group invalidation */
 			if (!canUseKeyPrefilter
@@ -1028,19 +830,13 @@ public:
 					return zv::Val();
 				}
 				zv::Ref firstTypeHolder = zv::ObjRef(firstHolder.asObject()).propAt(PT_CEH_PROP_TYPEHOLDER).deref();
-				if (UNEXPECTED(!pt_check_holder(firstTypeHolder.raw()))) {
-					return zv::Val();
-				}
+				if (UNEXPECTED(!pt_check_holder(firstTypeHolder.raw()))) return zv::Val();
 				zend_object *firstExpr = holderExpr(firstTypeHolder);
 				zv::Str firstKey = zv::Str::adopt(pt_node_key(firstExpr, exprPrinter));
-				if (UNEXPECTED(firstKey.isNull())) {
-					return zv::Val();
-				}
+				if (UNEXPECTED(firstKey.isNull())) return zv::Val();
 				bool failed = false;
 				bool drop = shouldInvalidate(query, firstKey.get(), firstExpr, requireMoreCharacters, &failed);
-				if (UNEXPECTED(failed)) {
-					return zv::Val();
-				}
+				if (UNEXPECTED(failed)) return zv::Val();
 				if (drop) {
 					invalidated = true;
 					continue;
@@ -1080,9 +876,7 @@ public:
 				if (conditions.isArray()) {
 					for (auto conditionEntry : zv::TableRef(conditions.asArrayTable())) {
 						zv::Ref conditionHolder = conditionEntry.value().deref();
-						if (UNEXPECTED(!pt_check_holder(conditionHolder.raw()))) {
-							return zv::Val();
-						}
+						if (UNEXPECTED(!pt_check_holder(conditionHolder.raw()))) return zv::Val();
 						zend_object *conditionExpr = holderExpr(conditionHolder);
 						zend_string *conditionKey = conditionEntry.stringKeyOrNull();
 						zend_string *conditionKeyStr = conditionKey != NULL ? conditionKey : zend_long_to_str((zend_long) conditionEntry.indexKey());
@@ -1096,9 +890,7 @@ public:
 							keep = false;
 							break;
 						}
-						if (UNEXPECTED(failed)) {
-							return zv::Val();
-						}
+						if (UNEXPECTED(failed)) return zv::Val();
 					}
 				}
 				if (keep) {
@@ -1115,9 +907,7 @@ public:
 					filtered = zv::Arr::create(keptCount);
 					uint32_t copied = 0;
 					for (auto keptEntry : holdersTable) {
-						if (copied == keptCount) {
-							break;
-						}
+						if (copied == keptCount) break;
 						tableAddNewCopy(filtered.table(), keptEntry.stringKeyOrNull(), keptEntry.indexKey(), keptEntry.value().deref());
 						copied++;
 					}
@@ -1129,15 +919,11 @@ public:
 				tableAddNewCopy(resultConditional.table(), key, idx, holders);
 				continue;
 			}
-			if (zend_hash_num_elements(filtered.table()) == 0) {
-				continue;
-			}
+			if (zend_hash_num_elements(filtered.table()) == 0) continue;
 			tableAddNew(resultConditional.table(), key, idx, std::move(filtered));
 		}
 
-		if (!invalidated) {
-			return zv::Val::null();
-		}
+		if (!invalidated) return zv::Val::null();
 
 		if (resultExpr.isUndef()) {
 			/* only conditional expressions were invalidated */
@@ -1175,9 +961,7 @@ public:
 			/* borrowed (points into a property) — copy for the caller */
 			return zv::Val::string(name);
 		}
-		if (UNEXPECTED(EG(exception))) {
-			return zv::Val();
-		}
+		if (UNEXPECTED(EG(exception))) return zv::Val();
 		return zv::Val::null();
 	}
 
@@ -1211,13 +995,9 @@ public:
 				zend_string *conditionalKey = entry.stringKeyOrNull();
 				zend_ulong conditionalIdx = entry.indexKey();
 
-				if (pt_ht_exists(conditions.table(), conditionalKey, conditionalIdx)) {
-					continue;
-				}
+				if (pt_ht_exists(conditions.table(), conditionalKey, conditionalIdx)) continue;
 				zv::Ref holders = entry.value().deref();
-				if (UNEXPECTED(!holders.isArray())) {
-					continue;
-				}
+				if (UNEXPECTED(!holders.isArray())) continue;
 				zv::TableRef holdersTable(holders.asArrayTable());
 
 				/* Pass 1: prefer exact matches */
@@ -1233,9 +1013,7 @@ public:
 						continue;
 					}
 					zv::Ref conditionHolders = zv::ObjRef(holder.asObject()).propAt(PT_CEH_PROP_CONDS);
-					if (UNEXPECTED(!conditionHolders.isArray())) {
-						continue;
-					}
+					if (UNEXPECTED(!conditionHolders.isArray())) continue;
 					bool all = true;
 					for (auto conditionEntry : zv::TableRef(conditionHolders.asArrayTable())) {
 						zval *specifiedSlot = pt_ht_find(specified.table(), conditionEntry.stringKeyOrNull(), conditionEntry.indexKey());
@@ -1245,40 +1023,28 @@ public:
 						}
 						zv::Ref conditionHolder = conditionEntry.value().deref();
 						zv::Ref specifiedHolder = zv::Ref(specifiedSlot).deref();
-						if (UNEXPECTED(!pt_check_holder(conditionHolder.raw())) || UNEXPECTED(!pt_check_holder(specifiedHolder.raw()))) {
-							return zv::Val();
-						}
+						if (UNEXPECTED(!pt_check_holder(conditionHolder.raw())) || UNEXPECTED(!pt_check_holder(specifiedHolder.raw()))) return zv::Val();
 						bool equal;
-						if (UNEXPECTED(!pt_holder_equals(conditionHolder.raw(), specifiedHolder.raw(), &equal))) {
-							return zv::Val();
-						}
+						if (UNEXPECTED(!pt_holder_equals(conditionHolder.raw(), specifiedHolder.raw(), &equal))) return zv::Val();
 						if (!equal) {
 							all = false;
 							break;
 						}
 					}
-					if (!all) {
-						continue;
-					}
+					if (!all) continue;
 
 					recordMatchedCondition(conditions, specified, conditionalKey, conditionalIdx, holder, typeHolder);
 				}
 
-				if (pt_ht_exists(conditions.table(), conditionalKey, conditionalIdx)) {
-					continue;
-				}
+				if (pt_ht_exists(conditions.table(), conditionalKey, conditionalIdx)) continue;
 
 				/* Pass 2: supertype match, only when Pass 1 found nothing */
 				for (auto holderEntry : holdersTable) {
 					zv::Ref holder = holderEntry.value().deref();
 					zv::Ref typeHolder = zv::ObjRef(holder.asObject()).propAt(PT_CEH_PROP_TYPEHOLDER);
-					if (pt_holder_certainty_value(typeHolder.asObject()) == PT_TRI_NO) {
-						continue;
-					}
+					if (pt_holder_certainty_value(typeHolder.asObject()) == PT_TRI_NO) continue;
 					zv::Ref conditionHolders = zv::ObjRef(holder.asObject()).propAt(PT_CEH_PROP_CONDS);
-					if (UNEXPECTED(!conditionHolders.isArray())) {
-						continue;
-					}
+					if (UNEXPECTED(!conditionHolders.isArray())) continue;
 					bool all = true;
 					for (auto conditionEntry : zv::TableRef(conditionHolders.asArrayTable())) {
 						zval *specifiedSlot = pt_ht_find(specified.table(), conditionEntry.stringKeyOrNull(), conditionEntry.indexKey());
@@ -1291,25 +1057,19 @@ public:
 						/* Pass 1 validates only the entries it reaches before
 						 * its first mismatch, so these can be unchecked here;
 						 * the twin raises a catchable Error on wrong types */
-						if (UNEXPECTED(!pt_check_holder(conditionHolder.raw()) || !pt_check_holder(specifiedHolder.raw()))) {
-							return zv::Val();
-						}
+						if (UNEXPECTED(!pt_check_holder(conditionHolder.raw()) || !pt_check_holder(specifiedHolder.raw()))) return zv::Val();
 						if (pt_holder_certainty_value(conditionHolder.asObject()) != pt_holder_certainty_value(specifiedHolder.asObject())) {
 							all = false;
 							break;
 						}
 						zend_long superTypeOf;
-						if (UNEXPECTED(!isSuperTypeOfValue(holderType(conditionHolder), holderType(specifiedHolder), &superTypeOf))) {
-							return zv::Val();
-						}
+						if (UNEXPECTED(!isSuperTypeOfValue(holderType(conditionHolder), holderType(specifiedHolder), &superTypeOf))) return zv::Val();
 						if (superTypeOf != PT_TRI_YES) {
 							all = false;
 							break;
 						}
 					}
-					if (!all) {
-						continue;
-					}
+					if (!all) continue;
 
 					recordMatchedCondition(conditions, specified, conditionalKey, conditionalIdx, holder, typeHolder);
 				}
@@ -1345,9 +1105,7 @@ private:
 	static zval *scopeArrayProp(zval *scope, const char *name, size_t len)
 	{
 		zval *table = scopeProp(scope, name, len);
-		if (UNEXPECTED(table == NULL)) {
-			return NULL;
-		}
+		if (UNEXPECTED(table == NULL)) return NULL;
 		if (UNEXPECTED(Z_TYPE_P(table) != IS_ARRAY)) {
 			zend_throw_error(NULL, "phpstan_turbo: %s is not an array", name);
 			return NULL;
@@ -1395,18 +1153,14 @@ private:
 	/* $obj->prop = [] — a memo reset to the fresh-constructor default */
 	static void resetToEmptyArray(zv::ObjRef obj, int32_t offset)
 	{
-		if (offset < 0) {
-			return;
-		}
+		if (offset < 0) return;
 		obj.propAtOffset((uint32_t) offset).assign(zv::Arr::empty());
 	}
 
 	/* $obj->prop = null — a memo reset to the fresh-constructor default */
 	static void resetToNull(zv::ObjRef obj, int32_t offset)
 	{
-		if (offset < 0) {
-			return;
-		}
+		if (offset < 0) return;
 		obj.propAtOffset((uint32_t) offset).assign(zv::Val::null());
 	}
 
@@ -1439,9 +1193,7 @@ private:
 	/* $differing[$key] = true (marker insert, overwrites) */
 	static void markDiffering(HashTable *differing, zend_string *skey, zend_ulong idx)
 	{
-		if (differing == NULL) {
-			return;
-		}
+		if (differing == NULL) return;
 		zval trueZv;
 		ZVAL_TRUE(&trueZv);
 		pt_ht_update(differing, skey, idx, &trueZv);
@@ -1455,35 +1207,25 @@ private:
 			zend_ulong idx = entry.indexKey();
 			zv::Ref holder = entry.value().deref();
 
-			if (UNEXPECTED(!pt_check_holder(holder.raw()))) {
-				return false;
-			}
+			if (UNEXPECTED(!pt_check_holder(holder.raw()))) return false;
 
 			zval *theirSlot = pt_ht_find(theirs.table(), key, idx);
 			if (theirSlot != NULL) {
 				zv::Ref theirHolder = zv::Ref(theirSlot).deref();
-				if (UNEXPECTED(!pt_check_holder(theirHolder.raw()))) {
-					return false;
-				}
+				if (UNEXPECTED(!pt_check_holder(theirHolder.raw()))) return false;
 				if (holder.asObject() == theirHolder.asObject()) {
 					tableAddNewCopy(merged.table(), key, idx, holder);
 				} else {
 					markDiffering(differing, key, idx);
 					zval andHolder;
-					if (UNEXPECTED(!pt_holder_and(holder.raw(), theirHolder.raw(), &andHolder))) {
-						return false;
-					}
+					if (UNEXPECTED(!pt_holder_and(holder.raw(), theirHolder.raw(), &andHolder))) return false;
 					tableAddNew(merged.table(), key, idx, zv::Val::adopt(andHolder));
 				}
 			} else {
 				markDiffering(differing, key, idx);
 				bool containsSuperGlobal = pt_expr_contains_superglobal(holderExpr(holder));
-				if (UNEXPECTED(EG(exception))) {
-					return false;
-				}
-				if (containsSuperGlobal) {
-					continue;
-				}
+				if (UNEXPECTED(EG(exception))) return false;
+				if (containsSuperGlobal) continue;
 				tableAddNew(merged.table(), key, idx, createMaybeHolder(holder));
 			}
 		}
@@ -1492,21 +1234,13 @@ private:
 			zend_string *key = entry.stringKeyOrNull();
 			zend_ulong idx = entry.indexKey();
 
-			if (pt_ht_exists(merged.table(), key, idx)) {
-				continue;
-			}
+			if (pt_ht_exists(merged.table(), key, idx)) continue;
 			markDiffering(differing, key, idx);
 			zv::Ref holder = entry.value().deref();
-			if (UNEXPECTED(!pt_check_holder(holder.raw()))) {
-				return false;
-			}
+			if (UNEXPECTED(!pt_check_holder(holder.raw()))) return false;
 			bool containsSuperGlobal = pt_expr_contains_superglobal(holderExpr(holder));
-			if (UNEXPECTED(EG(exception))) {
-				return false;
-			}
-			if (containsSuperGlobal) {
-				continue;
-			}
+			if (UNEXPECTED(EG(exception))) return false;
+			if (containsSuperGlobal) continue;
 			tableAddNew(merged.table(), key, idx, createMaybeHolder(holder));
 		}
 
@@ -1523,9 +1257,7 @@ private:
 		zend_class_entry *variableCe = pt_class(PT_CLASS_VARIABLE);
 		zend_class_entry *funcCallCe = pt_class(PT_CLASS_FUNC_CALL);
 		zend_class_entry *virtualNodeCe = pt_class(PT_CLASS_VIRTUAL_NODE);
-		if (UNEXPECTED(variableCe == NULL || funcCallCe == NULL || virtualNodeCe == NULL)) {
-			return false;
-		}
+		if (UNEXPECTED(variableCe == NULL || funcCallCe == NULL || virtualNodeCe == NULL)) return false;
 		zend_class_entry *exprCe = zv::ObjRef(holder).propAt(PT_ETH_PROP_EXPR).asObject()->ce;
 		*keep = instanceof_function(exprCe, variableCe)
 			|| instanceof_function(exprCe, funcCallCe)
@@ -1539,13 +1271,9 @@ private:
 		filtered = zv::Arr::create(input.size());
 		for (auto entry : input) {
 			zv::Ref holder = entry.value().deref();
-			if (UNEXPECTED(!pt_check_holder(holder.raw()))) {
-				return false;
-			}
+			if (UNEXPECTED(!pt_check_holder(holder.raw()))) return false;
 			bool keep;
-			if (UNEXPECTED(!filterKeepsHolder(holder.asObject(), &keep))) {
-				return false;
-			}
+			if (UNEXPECTED(!filterKeepsHolder(holder.asObject(), &keep))) return false;
 			if (keep) {
 				tableAddNewCopy(filtered.table(), entry.stringKeyOrNull(), entry.indexKey(), holder);
 			}
@@ -1570,9 +1298,7 @@ private:
 	static zv::Val typeCombinatorRemove(zval *fromType, zval *typeToRemove)
 	{
 		zval retval;
-		if (UNEXPECTED(!pt_type_combinator_binary("remove", sizeof("remove") - 1, fromType, typeToRemove, &retval))) {
-			return zv::Val();
-		}
+		if (UNEXPECTED(!pt_type_combinator_binary("remove", sizeof("remove") - 1, fromType, typeToRemove, &retval))) return zv::Val();
 		zv::Val result = zv::Val::adopt(retval);
 		if (UNEXPECTED(!result.ref().isObject())) {
 			zend_throw_error(NULL, "phpstan_turbo: TypeCombinator::remove did not return an object");
@@ -1586,9 +1312,7 @@ private:
 	{
 		zval arg, retval;
 		ZVAL_COPY_VALUE(&arg, otherType);
-		if (UNEXPECTED(!callObjectMethod(type, "issupertypeof", sizeof("issupertypeof") - 1, 1, &arg, &retval))) {
-			return false;
-		}
+		if (UNEXPECTED(!callObjectMethod(type, "issupertypeof", sizeof("issupertypeof") - 1, 1, &arg, &retval))) return false;
 		zv::Val result = zv::Val::adopt(retval);
 		if (UNEXPECTED(!result.ref().isObject())) {
 			zend_throw_error(NULL, "phpstan_turbo: isSuperTypeOf did not return an object");
@@ -1612,9 +1336,7 @@ private:
 	static bool isConstantArrayYes(zval *type, bool *out)
 	{
 		zval retval;
-		if (UNEXPECTED(!callObjectMethod(type, "isconstantarray", sizeof("isconstantarray") - 1, 0, NULL, &retval))) {
-			return false;
-		}
+		if (UNEXPECTED(!callObjectMethod(type, "isconstantarray", sizeof("isconstantarray") - 1, 0, NULL, &retval))) return false;
 		zv::Val result = zv::Val::adopt(retval);
 		if (UNEXPECTED(!result.ref().instanceOf(pt_ce_trinary))) {
 			zend_throw_error(NULL, "phpstan_turbo: isConstantArray did not return a TrinaryLogic");
@@ -1628,17 +1350,13 @@ private:
 	static zv::Val createNoErrorHolder(zval *exprSlot)
 	{
 		zend_class_entry *errorTypeCe = pt_class(PT_CLASS_ERROR_TYPE);
-		if (UNEXPECTED(errorTypeCe == NULL)) {
-			return zv::Val();
-		}
+		if (UNEXPECTED(errorTypeCe == NULL)) return zv::Val();
 		zval errorTypeRaw;
 		object_init_ex(&errorTypeRaw, errorTypeCe);
 		zv::Val errorType = zv::Val::adopt(errorTypeRaw);
 		if (errorTypeCe->constructor != NULL) {
 			zend_call_known_instance_method(errorTypeCe->constructor, errorType.ref().asObject(), NULL, 0, NULL);
-			if (UNEXPECTED(EG(exception))) {
-				return zv::Val();
-			}
+			if (UNEXPECTED(EG(exception))) return zv::Val();
 		}
 		/* pt_holder_create copies the type; the local ErrorType ref is released */
 		zval holder;
@@ -1657,9 +1375,7 @@ private:
 		tableAddNewCopy(conditions.table(), guardKey, guardIdx, guardHolder);
 
 		zv::Str cehKey = zv::Str::adopt(pt_ceh_key_build(conditions.table(), typeHolder.raw()));
-		if (UNEXPECTED(cehKey.isNull())) {
-			return false;
-		}
+		if (UNEXPECTED(cehKey.isNull())) return false;
 
 		zval cehRaw;
 		object_init_ex(&cehRaw, pt_ce_cond_expr_holder);
@@ -1732,9 +1448,7 @@ private:
 		const char *end = pos + ZSTR_LEN(key);
 		for (;;) {
 			const char *found = zend_memnstr(pos, "__phpstan", sizeof("__phpstan") - 1, end);
-			if (found == NULL) {
-				return false;
-			}
+			if (found == NULL) return false;
 			bool isCompositional = false;
 			for (const auto &candidate : compositionalPrefixes) {
 				if ((size_t) (end - found) >= candidate.len && memcmp(found, candidate.prefix, candidate.len) == 0) {
@@ -1743,9 +1457,7 @@ private:
 					break;
 				}
 			}
-			if (!isCompositional) {
-				return true;
-			}
+			if (!isCompositional) return true;
 		}
 	}
 
@@ -1832,16 +1544,12 @@ private:
 						return false;
 					}
 					zv::Val isRet = zv::Val::adopt(isRetRaw);
-					if (zend_is_true(isRet.raw())) {
-						return true;
-					}
+					if (zend_is_true(isRet.raw())) return true;
 				}
 			}
 		}
 
-		if (!instanceof_function(node->ce, ctx->target_ce)) {
-			return false;
-		}
+		if (!instanceof_function(node->ce, ctx->target_ce)) return false;
 
 		zv::Str nodeKey = zv::Str::adopt(pt_node_key(node, ctx->expr_printer));
 		if (UNEXPECTED(nodeKey.isNull())) {
@@ -1868,40 +1576,26 @@ private:
 			return false;
 		}
 
-		if (!instanceof_function(expr->ce, propertyFetchCe) && !instanceof_function(expr->ce, nullsafeCe)) {
-			return false;
-		}
+		if (!instanceof_function(expr->ce, propertyFetchCe) && !instanceof_function(expr->ce, nullsafeCe)) return false;
 
 		while (instanceof_function(expr->ce, propertyFetchCe) || instanceof_function(expr->ce, nullsafeCe)) {
 			int32_t nameOffset = pt_instance_prop_offset(expr->ce, "name", sizeof("name") - 1);
 			int32_t varOffset = pt_instance_prop_offset(expr->ce, "var", sizeof("var") - 1);
-			if (UNEXPECTED(nameOffset < 0 || varOffset < 0)) {
-				return false;
-			}
+			if (UNEXPECTED(nameOffset < 0 || varOffset < 0)) return false;
 
 			zv::Ref name = zv::ObjRef(expr).propAtOffset((uint32_t) nameOffset).deref();
-			if (!name.isObject()) {
-				return false;
-			}
+			if (!name.isObject()) return false;
 			zend_class_entry *nameCe = name.asObject()->ce;
 			if (!instanceof_function(nameCe, identifierCe)) {
-				if (!instanceof_function(nameCe, variableCe)) {
-					return false;
-				}
+				if (!instanceof_function(nameCe, variableCe)) return false;
 				pt_node_class_info *nameInfo = pt_get_node_class_info(nameCe);
-				if (nameInfo == NULL || nameInfo->name_offset < 0) {
-					return false;
-				}
+				if (nameInfo == NULL || nameInfo->name_offset < 0) return false;
 				zv::Ref variableName = zv::ObjRef(name.asObject()).propAtOffset((uint32_t) nameInfo->name_offset).deref();
-				if (!variableName.isString()) {
-					return false;
-				}
+				if (!variableName.isString()) return false;
 			}
 
 			zv::Ref var = zv::ObjRef(expr).propAtOffset((uint32_t) varOffset).deref();
-			if (!var.isObject()) {
-				return false;
-			}
+			if (!var.isObject()) return false;
 			expr = var.asObject();
 		}
 
@@ -1944,26 +1638,20 @@ private:
 						int32_t assignedExprOffset = pt_instance_prop_offset(expr->ce, "assignedExpr", sizeof("assignedExpr") - 1);
 						if (variableNameOffset >= 0) {
 							zv::Ref variableName = zv::ObjRef(expr).propAtOffset((uint32_t) variableNameOffset).deref();
-							if (variableName.isString() && zend_string_equals(variableName.asString(), name)) {
-								return false;
-							}
+							if (variableName.isString() && zend_string_equals(variableName.asString(), name)) return false;
 						}
 						if (exprOffset >= 0) {
 							zv::Ref innerExpr = zv::ObjRef(expr).propAtOffset((uint32_t) exprOffset).deref();
 							if (innerExpr.isObject()) {
 								zend_string *root = intertwinedRootVariableName(innerExpr.asObject());
-								if (root != NULL && zend_string_equals(root, name)) {
-									return false;
-								}
+								if (root != NULL && zend_string_equals(root, name)) return false;
 							}
 						}
 						if (assignedExprOffset >= 0) {
 							zv::Ref assignedExpr = zv::ObjRef(expr).propAtOffset((uint32_t) assignedExprOffset).deref();
 							if (assignedExpr.isObject()) {
 								zend_string *root = intertwinedRootVariableName(assignedExpr.asObject());
-								if (root != NULL && zend_string_equals(root, name)) {
-									return false;
-								}
+								if (root != NULL && zend_string_equals(root, name)) return false;
 							}
 						}
 					}
@@ -1971,9 +1659,7 @@ private:
 			}
 		}
 
-		if (requireMoreCharacters && zend_string_equals(query.exprStringToInvalidate, exprString)) {
-			return false;
-		}
+		if (requireMoreCharacters && zend_string_equals(query.exprStringToInvalidate, exprString)) return false;
 
 		/* Variables will not contain traversable expressions: direct compare */
 		{
@@ -1995,9 +1681,7 @@ private:
 
 		if (query.keepPropertyFetches) {
 			bool isChain = isPropertyFetchChainOn(expr, query.exprStringToInvalidate, query.exprPrinter, failed);
-			if (UNEXPECTED(*failed) || isChain) {
-				return false;
-			}
+			if (UNEXPECTED(*failed) || isChain) return false;
 		}
 
 		/* Compositional-key substring gate */
@@ -2030,9 +1714,7 @@ private:
 				*failed = true;
 				return false;
 			}
-			if (found == NULL) {
-				return false;
-			}
+			if (found == NULL) return false;
 		}
 
 		/* Post-checks calling back into the scope (rare paths) */
@@ -2051,9 +1733,7 @@ private:
 					*failed = true;
 					return false;
 				}
-				if (isReadonly) {
-					return false;
-				}
+				if (isReadonly) return false;
 			}
 
 			if (query.invalidatingClass != NULL && Z_TYPE_P(query.invalidatingClass) == IS_OBJECT) {
@@ -2065,9 +1745,7 @@ private:
 					*failed = true;
 					return false;
 				}
-				if (isPrivateOfOtherClass) {
-					return false;
-				}
+				if (isPrivateOfOtherClass) return false;
 			}
 		}
 
@@ -2080,28 +1758,20 @@ private:
 		zend_class_entry *variableCe = pt_class(PT_CLASS_VARIABLE);
 		zend_class_entry *arrayDimFetchCe = pt_class(PT_CLASS_ARRAY_DIM_FETCH);
 
-		if (UNEXPECTED(variableCe == NULL || arrayDimFetchCe == NULL)) {
-			return NULL;
-		}
+		if (UNEXPECTED(variableCe == NULL || arrayDimFetchCe == NULL)) return NULL;
 
 		for (;;) {
 			if (instanceof_function(expr->ce, variableCe)) {
 				pt_node_class_info *info = pt_get_node_class_info(expr->ce);
-				if (info == NULL || info->name_offset < 0) {
-					return NULL;
-				}
+				if (info == NULL || info->name_offset < 0) return NULL;
 				zv::Ref name = zv::ObjRef(expr).propAtOffset((uint32_t) info->name_offset).deref();
 				return name.isString() ? name.asString() : NULL; /* borrowed */
 			}
 			if (instanceof_function(expr->ce, arrayDimFetchCe)) {
 				int32_t varOffset = pt_instance_prop_offset(expr->ce, "var", sizeof("var") - 1);
-				if (varOffset < 0) {
-					return NULL;
-				}
+				if (varOffset < 0) return NULL;
 				zv::Ref var = zv::ObjRef(expr).propAtOffset((uint32_t) varOffset).deref();
-				if (!var.isObject()) {
-					return NULL;
-				}
+				if (!var.isObject()) return NULL;
 				expr = var.asObject();
 				continue;
 			}
@@ -2181,9 +1851,7 @@ void pt_register_scope_ops()
 			differing = Z_ARRVAL_P(inner);
 		}
 		zv::Val result = ScopeOps::mergeVariableHolders(zv::TableRef(ours), zv::TableRef(theirs), differing);
-		if (UNEXPECTED(result.isUndef())) {
-			RETURN_THROWS();
-		}
+		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
 	});
 
@@ -2197,9 +1865,7 @@ void pt_register_scope_ops()
 			Z_PARAM_ARRAY_HT(theirs_native)
 		ZEND_PARSE_PARAMETERS_END();
 		zv::Val result = ScopeOps::finishMerge(zv::TableRef(merged), zv::TableRef(ours_expr), zv::TableRef(theirs_expr), zv::TableRef(ours_native), zv::TableRef(theirs_native));
-		if (UNEXPECTED(result.isUndef())) {
-			RETURN_THROWS();
-		}
+		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
 	});
 
@@ -2233,9 +1899,7 @@ void pt_register_scope_ops()
 		ZEND_PARSE_PARAMETERS_END();
 		pt_init_strs();
 		zv::Val result = ScopeOps::invalidateExpressionEntries(scope, expr_printer, invalidate_str, expr_to_invalidate, require_more_characters, invalidating_class, zv::TableRef(expression_types), zv::TableRef(native_expression_types), zv::TableRef(conditional_expressions), keep_property_fetches);
-		if (UNEXPECTED(result.isUndef())) {
-			RETURN_THROWS();
-		}
+		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
 	});
 
@@ -2259,9 +1923,7 @@ void pt_register_scope_ops()
 		pt_init_strs();
 		bool failed = false;
 		bool result = ScopeOps::shouldInvalidateExpression(scope, expr_printer, invalidate_str, expr_to_invalidate, Z_OBJ_P(expr), expr_string, require_more_characters, invalidating_class, keep_property_fetches, &failed);
-		if (UNEXPECTED(failed)) {
-			RETURN_THROWS();
-		}
+		if (UNEXPECTED(failed)) RETURN_THROWS();
 		RETURN_BOOL(result);
 	});
 
@@ -2271,9 +1933,7 @@ void pt_register_scope_ops()
 			Z_PARAM_OBJECT(expr)
 		ZEND_PARSE_PARAMETERS_END();
 		zv::Val result = ScopeOps::getIntertwinedRefRootVariableName(Z_OBJ_P(expr));
-		if (UNEXPECTED(result.isUndef())) {
-			RETURN_THROWS();
-		}
+		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
 	});
 
@@ -2284,9 +1944,7 @@ void pt_register_scope_ops()
 			Z_PARAM_ARRAY_HT(specified_input)
 		ZEND_PARSE_PARAMETERS_END();
 		zv::Val result = ScopeOps::matchConditionalExpressions(zv::TableRef(conditional), zv::TableRef(specified_input));
-		if (UNEXPECTED(result.isUndef())) {
-			RETURN_THROWS();
-		}
+		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
 	});
 
@@ -2300,9 +1958,7 @@ void pt_register_scope_ops()
 			Z_PARAM_ARRAY_HT(differing_keys)
 		ZEND_PARSE_PARAMETERS_END();
 		zv::Val result = ScopeOps::createConditionalExpressions(zv::TableRef(conditional), zv::TableRef(ours), zv::TableRef(theirs), zv::TableRef(merged), zv::TableRef(differing_keys));
-		if (UNEXPECTED(result.isUndef())) {
-			RETURN_THROWS();
-		}
+		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
 	});
 
@@ -2313,9 +1969,7 @@ void pt_register_scope_ops()
 			Z_PARAM_OBJECT(expr_printer)
 		ZEND_PARSE_PARAMETERS_END();
 		zv::Val result = ScopeOps::nodeKey(Z_OBJ_P(node), expr_printer);
-		if (UNEXPECTED(result.isUndef())) {
-			RETURN_THROWS();
-		}
+		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
 	});
 
@@ -2328,9 +1982,7 @@ void pt_register_scope_ops()
 		ZEND_PARSE_PARAMETERS_END();
 		zend_string *key = NULL;
 		zv::Val result = ScopeOps::getTypeFromCache(scope, Z_OBJ_P(node), &key);
-		if (UNEXPECTED(result.isUndef())) {
-			RETURN_THROWS();
-		}
+		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		if (key != NULL) {
 			/* hand the computed key to the by-ref parameter (hit and miss) */
 			if (Z_ISREF_P(key_out)) {
@@ -2350,9 +2002,7 @@ void pt_register_scope_ops()
 			Z_PARAM_STR(variable_name)
 		ZEND_PARSE_PARAMETERS_END();
 		zv::Val result = ScopeOps::hasVariableType(scope, variable_name);
-		if (UNEXPECTED(result.isUndef())) {
-			RETURN_THROWS();
-		}
+		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
 	});
 
@@ -2373,9 +2023,7 @@ void pt_register_scope_ops()
 			Z_PARAM_BOOL(after_extract_call)
 		ZEND_PARSE_PARAMETERS_END();
 		zv::Val result = ScopeOps::scopeWith(scope, expression_types, native_expression_types, conditional_expressions, currently_assigned, currently_allowed_undefined, in_function_calls_stack, in_first_level_statement, after_extract_call);
-		if (UNEXPECTED(result.isUndef())) {
-			RETURN_THROWS();
-		}
+		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
 	});
 
@@ -2391,9 +2039,7 @@ void pt_register_scope_ops()
 		ZEND_PARSE_PARAMETERS_END();
 		pt_init_strs();
 		zv::Val result = ScopeOps::invalidateMethodsOnExpression(expr_printer, invalidate_str, zv::TableRef(expression_types), zv::TableRef(native_expression_types));
-		if (UNEXPECTED(result.isUndef())) {
-			RETURN_THROWS();
-		}
+		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
 	});
 
@@ -2406,9 +2052,7 @@ void pt_register_scope_ops()
 			Z_PARAM_STR(expr_string)
 		ZEND_PARSE_PARAMETERS_END();
 		zv::Val result = ScopeOps::expressionTypeByKey(scope, Z_OBJ_P(node), expr_string);
-		if (UNEXPECTED(result.isUndef())) {
-			RETURN_THROWS();
-		}
+		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
 	});
 
@@ -2420,9 +2064,7 @@ void pt_register_scope_ops()
 			Z_PARAM_OBJECT(expr_printer)
 		ZEND_PARSE_PARAMETERS_END();
 		zv::Val result = ScopeOps::hasExpressionType(scope, Z_OBJ_P(node), expr_printer);
-		if (UNEXPECTED(result.isUndef())) {
-			RETURN_THROWS();
-		}
+		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
 	});
 

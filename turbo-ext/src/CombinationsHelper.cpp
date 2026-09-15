@@ -121,9 +121,7 @@ private:
 
 			/* odometer: advance the rightmost index, carrying leftwards */
 			for (int64_t j = (int64_t) n - 1; j >= 0; j--) {
-				if (++indices[j] < sizes[j]) {
-					break;
-				}
+				if (++indices[j] < sizes[j]) break;
 				indices[j] = 0;
 			}
 		}
@@ -154,9 +152,7 @@ void pt_register_combinations_helper()
 		zval arraysZv;
 		ZVAL_ARR(&arraysZv, arrays);
 		zv::Val result = CombinationsHelper::combinations(zv::ArrRef(&arraysZv));
-		if (UNEXPECTED(result.isUndef())) {
-			RETURN_THROWS();
-		}
+		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
 	});
 

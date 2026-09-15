@@ -534,9 +534,7 @@ public:
 	Ref prop(const char *name, size_t len) const
 	{
 		int32_t offset = pt_instance_prop_offset(obj->ce, name, len);
-		if (offset < 0) {
-			return Ref(NULL);
-		}
+		if (offset < 0) return Ref(NULL);
 		zval *slot = OBJ_PROP(obj, (uint32_t) offset);
 		ZVAL_DEINDIRECT(slot);
 		return Ref(slot);

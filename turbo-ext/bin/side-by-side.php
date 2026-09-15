@@ -378,8 +378,91 @@ function checkWindowsSources(): array
 	return $problems;
 }
 
+/**
+ * Every lowercase identifier the native code passes as PT_LC("...") — the
+ * lowercased method names of by-name calls into userland, $this-dispatch and
+ * function-table lookups — must name something that exists: a method of a
+ * PHP class (trait `as` aliases included), a property or constant, an
+ * internal function or member, a type keyword, or a method the extension
+ * registers itself. A misspelt name would otherwise only fail when that
+ * path first runs.
+ *
+ * @return list<string> problems
+ */
+function checkLowercaseNameLiterals(): array
+{
+	$known = array_fill_keys(['array', 'bool', 'callable', 'false', 'float', 'int', 'iterable', 'mixed', 'never', 'null', 'object', 'resource', 'self', 'static', 'string', 'true', 'void', 'parent'], true);
+	$remember = static function (string $name) use (&$known): void {
+		$known[strtolower($name)] = true;
+	};
+	foreach (['src', 'vendor/nikic/php-parser/lib', 'vendor/ondrejmirtes/better-reflection/src', 'vendor/phpstan/phpdoc-parser/src'] as $dir) {
+		foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir, FilesystemIterator::SKIP_DOTS)) as $file) {
+			if ($file->getExtension() !== 'php') {
+				continue;
+			}
+			$code = file_get_contents($file->getPathname());
+			preg_match_all('~\bfunction\s+&?\s*(\w+)\s*\(|\bas\s+(?:(?:public|protected|private)\s+)?(\w+)\s*;|\$(\w+)|\bconst\s+(?:\w+\s+)?(\w+)\s*=~', $code, $m);
+			foreach ([1, 2, 3, 4] as $group) {
+				foreach (array_filter($m[$group]) as $name) {
+					$remember($name);
+				}
+			}
+		}
+	}
+	foreach (array_merge(get_declared_classes(), get_declared_interfaces(), get_declared_traits()) as $className) {
+		$class = new ReflectionClass($className);
+		if (!$class->isInternal()) {
+			continue;
+		}
+		foreach ($class->getMethods() as $method) {
+			$remember($method->getName());
+		}
+		foreach ($class->getProperties() as $property) {
+			$remember($property->getName());
+		}
+	}
+	foreach (get_defined_functions()['internal'] as $function) {
+		$remember($function);
+	}
+	$sources = array_merge(glob('turbo-ext/src/*.cpp'), glob('turbo-ext/src/*.h'), glob('turbo-ext/src/parser/*.cpp'), glob('turbo-ext/src/parser/*.h'));
+	foreach ($sources as $source) {
+		preg_match_all('~\.(?:method|traitMethod)(?:<[^(]*>)?\("(\w+)"~', file_get_contents($source), $m);
+		foreach ($m[1] as $name) {
+			$remember($name);
+		}
+	}
+
+	foreach (['__construct', '__destruct', '__call', '__callstatic', '__get', '__set', '__isset', '__unset', '__sleep', '__wakeup', '__serialize', '__unserialize', '__tostring', '__invoke', '__set_state', '__clone', '__debuginfo'] as $magic) {
+		$known[$magic] = true;
+	}
+	// consumers of string data rather than member names
+	$dataConsumers = array_fill_keys(['zend_string_init', 'zend_string_init_interned', 'smart_str_appendl', 'Val::string', 'zv::Val::string'], true);
+
+	$problems = [];
+	foreach ($sources as $source) {
+		foreach (file($source) as $i => $line) {
+			preg_match_all('~PT_LC\("([a-z_][a-z0-9_]*)"\)~', $line, $m, PREG_OFFSET_CAPTURE);
+			foreach ($m[1] as [$name, $offset]) {
+				if (isset($known[$name])) {
+					continue;
+				}
+				$before = substr($line, 0, $offset - strlen('PT_LC("'));
+				if (preg_match('~\{\s*$~', $before) === 1) {
+					continue; // an entry of a { PT_LC("..."), ... } lookup table
+				}
+				if (preg_match('~([\w:]+)\s*\((?:[^()]*,\s*)?$~', $before, $consumer) === 1 && isset($dataConsumers[$consumer[1]])) {
+					continue;
+				}
+				$problems[] = sprintf('%s:%d: PT_LC("%s") names no method, property, constant or function', $source, $i + 1, $name);
+			}
+		}
+	}
+
+	return $problems;
+}
+
 $failed = false;
-foreach (array_merge(checkStructure($manifest), checkGeneratedArtifacts($collector, $collected), checkWindowsSources()) as $problem) {
+foreach (array_merge(checkStructure($manifest), checkGeneratedArtifacts($collector, $collected), checkWindowsSources(), checkLowercaseNameLiterals()) as $problem) {
 	printf("✗ %s\n", $problem);
 	$failed = true;
 }

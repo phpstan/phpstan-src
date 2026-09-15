@@ -2,9 +2,8 @@
  * PHPStanTurbo\ConditionalExpressionHolder — native implementation of
  * PHPStan\Analyser\ConditionalExpressionHolder.
  *
- * Declared as PHPStan\Analyser\ConditionalExpressionHolder itself at
- * activation (final, like the twin). The getKey() string is built by
- * pt_ceh_key_build() in support.cpp, shared with ScopeOps.
+ * The getKey() string is built by pt_ceh_key_build() in support.cpp, shared
+ * with ScopeOps.
  */
 
 #include "support.h"

@@ -522,7 +522,14 @@ class ConstantArrayType implements Type
 		$isUnsealed = $this->isUnsealed();
 		if (!$isUnsealed->yes()) {
 			if ($type instanceof self && count($this->keyTypes) === 0) {
-				return AcceptsResult::createFromBoolean(count($type->keyTypes) === 0);
+				if (count($type->keyTypes) === 0) {
+					return AcceptsResult::createYes();
+				}
+
+				return AcceptsResult::createNo($isUnsealed->no() ? array_map(
+					static fn (Type $extraKeyType): string => sprintf('Sealed array shape does not accept array with extra key %s.', $extraKeyType->describe(VerbosityLevel::precise())),
+					$type->keyTypes,
+				) : []);
 			}
 		}
 
@@ -537,19 +544,43 @@ class ConstantArrayType implements Type
 			return $result;
 		}
 
-		if ($result->no()) {
-			return $result;
-		}
-
 		[$unsealedKeyType, $unsealedValueType] = $this->unsealed;
 
-		if ($isUnsealed->no()) {
-			if (!$type->isConstantArray()->yes()) {
+		// Checked before bailing out on an already-failing $result: how the shape handles keys
+		// it does not declare explains the rejection on its own, and checkOurKeys() often
+		// returns "no" without giving any reason at all.
+		if (!$type->isArray()->no() && !$type->isConstantArray()->yes()) {
+			if ($isUnsealed->no()) {
 				return $result->and(AcceptsResult::createNo([
 					'Sealed array shape can only accept a constant array. Extra keys are not allowed.',
 				]));
 			}
 
+			$otherKeyType = $type->getIterableKeyType();
+			$otherValueType = $type->getIterableValueType();
+
+			return $result->and(self::decorateUnsealedReasons(
+				$unsealedKeyType->accepts($otherKeyType, $strictTypes),
+				static fn (): string => sprintf(
+					'Unsealed array key type %s does not accept key type %s',
+					$unsealedKeyType->describe(VerbosityLevel::value()),
+					$otherKeyType->describe(VerbosityLevel::value()),
+				),
+			))->and(self::decorateUnsealedReasons(
+				$unsealedValueType->accepts($otherValueType, $strictTypes),
+				static fn (): string => sprintf(
+					'Unsealed array value type %s does not accept value type %s',
+					$unsealedValueType->describe(VerbosityLevel::value()),
+					$otherValueType->describe(VerbosityLevel::value()),
+				),
+			));
+		}
+
+		if ($result->no()) {
+			return $result;
+		}
+
+		if ($isUnsealed->no()) {
 			$constantArrays = $type->getConstantArrays();
 			if (count($constantArrays) !== 1) {
 				throw new ShouldNotHappenException('Type with more than one constant array occurred, should have been eliminated with `instanceof CompoundType` above.');
@@ -579,11 +610,6 @@ class ConstantArrayType implements Type
 			return $result;
 		}
 
-		if (!$type->isConstantArray()->yes()) {
-			return $result->and($unsealedKeyType->accepts($type->getIterableKeyType(), $strictTypes))
-				->and($unsealedValueType->accepts($type->getIterableValueType(), $strictTypes));
-		}
-
 		$constantArrays = $type->getConstantArrays();
 		if (count($constantArrays) !== 1) {
 			throw new ShouldNotHappenException('Type with more than one constant array occurred, should have been eliminated with `instanceof CompoundType` above.');
@@ -600,92 +626,71 @@ class ConstantArrayType implements Type
 		}
 
 		foreach ($keys as [$i, $extraKeyType]) {
-			$acceptsKey = $unsealedKeyType->accepts($extraKeyType, $strictTypes)->decorateReasons(
-				static fn (string $reason) => sprintf(
-					'Unsealed array key type %s does not accept extra key type %s: %s',
+			$result = $result->and(self::decorateUnsealedReasons(
+				$unsealedKeyType->accepts($extraKeyType, $strictTypes),
+				static fn (): string => sprintf(
+					'Unsealed array key type %s does not accept extra key type %s',
 					$unsealedKeyType->describe(VerbosityLevel::value()),
 					$extraKeyType->describe(VerbosityLevel::value()),
-					$reason,
 				),
-			);
-			if (!$acceptsKey->yes() && count($acceptsKey->reasons) === 0) {
-				$acceptsKey = new AcceptsResult($acceptsKey->result, [
-					sprintf(
-						'Unsealed array key type %s does not accept extra key type %s.',
-						$unsealedKeyType->describe(VerbosityLevel::value()),
-						$extraKeyType->describe(VerbosityLevel::value()),
-					),
-				]);
-			}
-			$result = $result->and($acceptsKey);
+			));
 
 			$extraValueType = $constantArray->getValueTypes()[$i];
-			$acceptsValue = $unsealedValueType->accepts($extraValueType, $strictTypes)->decorateReasons(
-				static fn (string $reason) => sprintf(
-					'Unsealed array value type %s does not accept extra offset %s with value type %s: %s',
+			$result = $result->and(self::decorateUnsealedReasons(
+				$unsealedValueType->accepts($extraValueType, $strictTypes),
+				static fn (): string => sprintf(
+					'Unsealed array value type %s does not accept extra offset %s with value type %s',
 					$unsealedValueType->describe(VerbosityLevel::value()),
 					$extraKeyType->describe(VerbosityLevel::value()),
 					$extraValueType->describe(VerbosityLevel::value()),
-					$reason,
 				),
-			);
-			if (!$acceptsValue->yes() && count($acceptsValue->reasons) === 0) {
-				$acceptsValue = new AcceptsResult($acceptsValue->result, [
-					sprintf(
-						'Unsealed array value type %s does not accept extra offset %s with value type %s.',
-						$unsealedValueType->describe(VerbosityLevel::value()),
-						$extraKeyType->describe(VerbosityLevel::value()),
-						$extraValueType->describe(VerbosityLevel::value()),
-					),
-				]);
-			}
-			$result = $result->and($acceptsValue);
+			));
 		}
 
 		$otherUnsealed = $constantArray->unsealed;
 		if ($otherUnsealed !== null && !$constantArray->isUnsealed()->no()) {
 			[$otherUnsealedKeyType, $otherUnsealedValueType] = $otherUnsealed;
 
-			$acceptsUnsealedKey = $unsealedKeyType->accepts($otherUnsealedKeyType, $strictTypes)->decorateReasons(
-				static fn (string $reason) => sprintf(
-					'Unsealed array key type %s does not accept unsealed array key type %s: %s',
+			$result = $result->and(self::decorateUnsealedReasons(
+				$unsealedKeyType->accepts($otherUnsealedKeyType, $strictTypes),
+				static fn (): string => sprintf(
+					'Unsealed array key type %s does not accept unsealed array key type %s',
 					$unsealedKeyType->describe(VerbosityLevel::value()),
 					$otherUnsealedKeyType->describe(VerbosityLevel::value()),
-					$reason,
 				),
-			);
-			if (!$acceptsUnsealedKey->yes() && count($acceptsUnsealedKey->reasons) === 0) {
-				$acceptsUnsealedKey = new AcceptsResult($acceptsUnsealedKey->result, [
-					sprintf(
-						'Unsealed array key type %s does not accept unsealed array key type %s.',
-						$unsealedKeyType->describe(VerbosityLevel::value()),
-						$otherUnsealedKeyType->describe(VerbosityLevel::value()),
-					),
-				]);
-			}
-			$result = $result->and($acceptsUnsealedKey);
+			));
 
-			$acceptsUnsealedValue = $unsealedValueType->accepts($otherUnsealedValueType, $strictTypes)->decorateReasons(
-				static fn (string $reason) => sprintf(
-					'Unsealed array value type %s does not accept unsealed array value type %s: %s',
+			$result = $result->and(self::decorateUnsealedReasons(
+				$unsealedValueType->accepts($otherUnsealedValueType, $strictTypes),
+				static fn (): string => sprintf(
+					'Unsealed array value type %s does not accept unsealed array value type %s',
 					$unsealedValueType->describe(VerbosityLevel::value()),
 					$otherUnsealedValueType->describe(VerbosityLevel::value()),
-					$reason,
 				),
-			);
-			if (!$acceptsUnsealedValue->yes() && count($acceptsUnsealedValue->reasons) === 0) {
-				$acceptsUnsealedValue = new AcceptsResult($acceptsUnsealedValue->result, [
-					sprintf(
-						'Unsealed array value type %s does not accept unsealed array value type %s.',
-						$unsealedValueType->describe(VerbosityLevel::value()),
-						$otherUnsealedValueType->describe(VerbosityLevel::value()),
-					),
-				]);
-			}
-			$result = $result->and($acceptsUnsealedValue);
+			));
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Makes sure a failing unsealed-part check is never reported without an explanation:
+	 * inner reasons are prefixed with $describeFailure, which also becomes the only reason
+	 * when the inner check produced none.
+	 *
+	 * @param callable(): string $describeFailure
+	 */
+	private static function decorateUnsealedReasons(AcceptsResult $result, callable $describeFailure): AcceptsResult
+	{
+		if ($result->yes()) {
+			return $result;
+		}
+
+		if (count($result->reasons) === 0) {
+			return new AcceptsResult($result->result, [sprintf('%s.', $describeFailure())]);
+		}
+
+		return $result->decorateReasons(static fn (string $reason): string => sprintf('%s: %s', $describeFailure(), $reason));
 	}
 
 	private function checkOurKeys(Type $type, bool $strictTypes): AcceptsResult

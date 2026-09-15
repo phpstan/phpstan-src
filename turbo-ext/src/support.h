@@ -264,6 +264,22 @@ enum {
 	PT_CLASS_INSTANCEOF_EXPR,
 	PT_CLASS_TRY_CATCH_STMT,
 	PT_CLASS_CATCH_STMT,
+	PT_CLASS_CLASS_PROPERTY_NODE,
+	PT_CLASS_PROPERTY_ASSIGN_NODE,
+	PT_CLASS_METHOD_RETURN_STATEMENTS_NODE,
+	PT_CLASS_METHOD_CALLABLE_NODE,
+	PT_CLASS_STATIC_METHOD_CALLABLE_NODE,
+	PT_CLASS_FUNCTION_CALLABLE_NODE,
+	PT_CLASS_INSTANTIATION_CALLABLE_NODE,
+	PT_CLASS_SET_OFFSET_VALUE_TYPE_EXPR,
+	PT_CLASS_GATHERED_METHOD_CALL,
+	PT_CLASS_PROPERTY_READ,
+	PT_CLASS_PROPERTY_WRITE,
+	PT_CLASS_PROPERTY_ASSIGN,
+	PT_CLASS_GATHERED_CLASS_METHOD,
+	PT_CLASS_CLASS_CONSTANT_FETCH,
+	PT_CLASS_COALESCE_ASSIGN_OP_EXPR,
+	PT_CLASS_CLASS_CONST_STMT,
 	PT_CLASS_COUNT
 };
 
@@ -393,6 +409,7 @@ void pt_register_type_combinator_cache();
 void pt_register_arena_cache();
 void pt_register_expression_result_storage();
 void pt_register_expression_result_storage_stack();
+void pt_register_class_statements_gatherer();
 void pt_register_php_file_cleaner();
 void pt_register_symbol_finder_in_files();
 void pt_register_scope_context();
@@ -1351,6 +1368,15 @@ void pt_scope_access_rinit();
  * UNDEF = pending exception */
 [[nodiscard]] bool pt_scope_is_in_class(zend_object *scope, bool &out);
 zv::Val pt_scope_get_class_reflection(zend_object *scope);
+
+/* MutatingScope.cpp — $scope->isInExpressionAssign($expr) / ->isInTrait() /
+ * ->isInAnonymousFunction() / ->getFunction() for native callers: the native
+ * body while the scope's method is MutatingScope's own handler, the method
+ * by name otherwise; false / UNDEF = pending exception */
+[[nodiscard]] bool pt_mutating_scope_is_in_expression_assign(zend_object *scope, zend_object *expr, bool &out);
+bool pt_mutating_scope_is_in_trait(zend_object *scope, bool &out);
+bool pt_mutating_scope_is_in_anonymous_function(zend_object *scope, bool &out);
+zv::Val pt_mutating_scope_get_function(zend_object *scope);
 
 /* ScopeContext.cpp: the shadowing class entry, and the $classReflection
  * slot of one of its instances (borrowed; IS_NULL outside a class) */

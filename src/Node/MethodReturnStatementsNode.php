@@ -12,11 +12,13 @@ use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\StatementResult;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use function count;
 
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'methodReturnStatementsNode')]
 final class MethodReturnStatementsNode extends NodeAbstract implements ReturnStatementsNode
 {
 

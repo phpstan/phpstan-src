@@ -14,6 +14,7 @@ use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\ArrowFunction;
 use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\AssignOp;
+use PhpParser\Node\Expr\AssignOp\Coalesce;
 use PhpParser\Node\Expr\AssignRef;
 use PhpParser\Node\Expr\CallLike;
 use PhpParser\Node\Expr\ClassConstFetch;
@@ -52,6 +53,7 @@ use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Catch_;
 use PhpParser\Node\Stmt\Class_;
+use PhpParser\Node\Stmt\ClassConst;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Declare_;
 use PhpParser\Node\Stmt\Expression;
@@ -232,6 +234,8 @@ final class TurboAttributeCollector
 		'instanceofExpr' => Instanceof_::class,
 		'tryCatchStmt' => TryCatch::class,
 		'catchStmt' => Catch_::class,
+		'coalesceAssignOpExpr' => Coalesce::class,
+		'classConstStmt' => ClassConst::class,
 	];
 
 	private string $realRoot;

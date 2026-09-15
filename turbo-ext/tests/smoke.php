@@ -3007,6 +3007,11 @@ check(count($vlrResults['php']['function / loops']['variableOverwritingLoops']) 
 $covered[\PHPStan\Analyser\MutatingScope::class] = true;
 require __DIR__ . '/scope-family.php';
 
+// ---- ClassStatementsGatherer ----
+// replays a real walk's (node, scope) stream into both gatherers
+$covered[\PHPStan\Node\ClassStatementsGatherer::class] = true;
+require __DIR__ . '/class-statements-gatherer.php';
+
 // ---- ClassReflection ----
 // reflection-family.php rebuilds real class reflections on both sides —
 // the PHP twin under its real name, the native class under the prefix —

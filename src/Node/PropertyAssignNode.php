@@ -10,8 +10,10 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\UnsetOffsetExpr;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\ObjectType;
 
+#[ReferencedByTurboExtension(key: 'propertyAssignNode')]
 final class PropertyAssignNode extends NodeAbstract implements VirtualNode
 {
 

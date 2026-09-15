@@ -226,6 +226,22 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_INSTANCEOF_EXPR */ {"instanceofExpr", "PhpParser\\Node\\Expr\\Instanceof_"},
 	/* PT_CLASS_TRY_CATCH_STMT */ {"tryCatchStmt", "PhpParser\\Node\\Stmt\\TryCatch"},
 	/* PT_CLASS_CATCH_STMT */ {"catchStmt", "PhpParser\\Node\\Stmt\\Catch_"},
+	/* PT_CLASS_CLASS_PROPERTY_NODE */ {"classPropertyNode", "PHPStan\\Node\\ClassPropertyNode"},
+	/* PT_CLASS_PROPERTY_ASSIGN_NODE */ {"propertyAssignNode", "PHPStan\\Node\\PropertyAssignNode"},
+	/* PT_CLASS_METHOD_RETURN_STATEMENTS_NODE */ {"methodReturnStatementsNode", "PHPStan\\Node\\MethodReturnStatementsNode"},
+	/* PT_CLASS_METHOD_CALLABLE_NODE */ {"methodCallableNode", "PHPStan\\Node\\MethodCallableNode"},
+	/* PT_CLASS_STATIC_METHOD_CALLABLE_NODE */ {"staticMethodCallableNode", "PHPStan\\Node\\StaticMethodCallableNode"},
+	/* PT_CLASS_FUNCTION_CALLABLE_NODE */ {"functionCallableNode", "PHPStan\\Node\\FunctionCallableNode"},
+	/* PT_CLASS_INSTANTIATION_CALLABLE_NODE */ {"instantiationCallableNode", "PHPStan\\Node\\InstantiationCallableNode"},
+	/* PT_CLASS_SET_OFFSET_VALUE_TYPE_EXPR */ {"setOffsetValueTypeExpr", "PHPStan\\Node\\Expr\\SetOffsetValueTypeExpr"},
+	/* PT_CLASS_GATHERED_METHOD_CALL */ {"gatheredMethodCall", "PHPStan\\Node\\Method\\MethodCall"},
+	/* PT_CLASS_PROPERTY_READ */ {"propertyRead", "PHPStan\\Node\\Property\\PropertyRead"},
+	/* PT_CLASS_PROPERTY_WRITE */ {"propertyWrite", "PHPStan\\Node\\Property\\PropertyWrite"},
+	/* PT_CLASS_PROPERTY_ASSIGN */ {"propertyAssign", "PHPStan\\Node\\Property\\PropertyAssign"},
+	/* PT_CLASS_GATHERED_CLASS_METHOD */ {"gatheredClassMethod", "PHPStan\\Node\\ClassMethod"},
+	/* PT_CLASS_CLASS_CONSTANT_FETCH */ {"classConstantFetch", "PHPStan\\Node\\Constant\\ClassConstantFetch"},
+	/* PT_CLASS_COALESCE_ASSIGN_OP_EXPR */ {"coalesceAssignOpExpr", "PhpParser\\Node\\Expr\\AssignOp\\Coalesce"},
+	/* PT_CLASS_CLASS_CONST_STMT */ {"classConstStmt", "PhpParser\\Node\\Stmt\\ClassConst"},
 };
 
 zend_class_entry *pt_class(int idx)

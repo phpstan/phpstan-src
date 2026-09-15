@@ -5,10 +5,12 @@ namespace PHPStan\Node;
 use Override;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Identifier;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'methodCallableNode')]
 final class MethodCallableNode extends Expr implements VirtualNode
 {
 

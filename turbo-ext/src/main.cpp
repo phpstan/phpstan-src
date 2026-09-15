@@ -187,6 +187,7 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_arena_cache();
 	pt_register_expression_result_storage();
 	pt_register_expression_result_storage_stack();
+	pt_register_class_statements_gatherer();
 	pt_register_php_file_cleaner();
 	pt_register_symbol_finder_in_files();
 	pt_register_scope_context();

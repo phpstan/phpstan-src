@@ -4,10 +4,12 @@ namespace PHPStan\Node\Property;
 
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\PropertyAssignNode;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'propertyAssign')]
 final class PropertyAssign
 {
 

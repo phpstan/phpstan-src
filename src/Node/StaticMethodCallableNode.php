@@ -6,10 +6,12 @@ use Override;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'staticMethodCallableNode')]
 final class StaticMethodCallableNode extends Expr implements VirtualNode
 {
 

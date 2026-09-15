@@ -8,10 +8,12 @@ use PhpParser\Node\Expr\StaticPropertyFetch;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Node\PropertyAssignNode;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'propertyWrite')]
 final class PropertyWrite
 {
 

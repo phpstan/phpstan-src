@@ -11401,6 +11401,64 @@ static void ZEND_FASTCALL msFilterTypeWithMethod(INTERNAL_FUNCTION_PARAMETERS)
 	PT_RETURN_VAL(PT_THIS.filterTypeWithMethod(typeWithMethod, methodName));
 }
 
+/* named handlers: the direct entries below identify the native bodies by
+ * them */
+static void ZEND_FASTCALL msIsInExpressionAssign(INTERNAL_FUNCTION_PARAMETERS)
+{
+	PT_MS_PARSE_EXPR(expr);
+	PT_MS_RETURN_BOOL(PT_THIS.isInExpressionAssign(Z_OBJ_P(expr), out_));
+}
+
+static void ZEND_FASTCALL msIsInTrait(INTERNAL_FUNCTION_PARAMETERS)
+{
+	ZEND_PARSE_PARAMETERS_NONE();
+	PT_MS_RETURN_BOOL(PT_THIS.isInTrait(out_));
+}
+
+/* {{{ direct entries for native callers (ClassStatementsGatherer.cpp): the
+ * native body while the scope's method is still the native handler (a
+ * MutatingScope, or a subclass not overriding it such as NodeCallbackScope),
+ * the method by name otherwise */
+
+static bool msCallBool(zend_object *scope, const char *lcname, size_t len, uint32_t argc, zval *argv, bool &out)
+{
+	zv::Val result = pt_type_call(scope, lcname, len, argc, argv);
+	if (UNEXPECTED(result.isUndef())) return false;
+	out = zend_is_true(result.raw());
+	return true;
+}
+
+bool pt_mutating_scope_is_in_expression_assign(zend_object *scope, zend_object *expr, bool &out)
+{
+	if (EXPECTED(pt_type_method_is(scope, PT_LC("isinexpressionassign"), msIsInExpressionAssign))) return MutatingScope(scope).isInExpressionAssign(expr, out);
+	zval exprZv;
+	ZVAL_OBJ(&exprZv, expr);
+	return msCallBool(scope, PT_LC("isinexpressionassign"), 1, &exprZv, out);
+}
+
+bool pt_mutating_scope_is_in_trait(zend_object *scope, bool &out)
+{
+	if (EXPECTED(pt_type_method_is(scope, PT_LC("isintrait"), msIsInTrait))) return MutatingScope(scope).isInTrait(out);
+	return msCallBool(scope, PT_LC("isintrait"), 0, NULL, out);
+}
+
+bool pt_mutating_scope_is_in_anonymous_function(zend_object *scope, bool &out)
+{
+	if (EXPECTED(pt_type_method_is(scope, PT_LC("isinanonymousfunction"), msIsInAnonymousFunction))) {
+		out = MutatingScope(scope).isInAnonymousFunction();
+		return true;
+	}
+	return msCallBool(scope, PT_LC("isinanonymousfunction"), 0, NULL, out);
+}
+
+zv::Val pt_mutating_scope_get_function(zend_object *scope)
+{
+	if (EXPECTED(pt_type_method_is(scope, PT_LC("getfunction"), msGetFunction))) return MutatingScope(scope).getFunction();
+	return pt_type_call(scope, PT_LC("getfunction"), 0, NULL);
+}
+
+/* }}} */
+
 void pt_register_mutating_scope()
 {
 	using namespace pt_ms;
@@ -11558,10 +11616,7 @@ void pt_register_mutating_scope()
 	cls.method(sigs::isReadonlyPropertyFetch, msIsReadonlyPropertyFetch);
 	cls.method(sigs::isInClass, msIsInClass);
 
-	cls.method(sigs::isInTrait, [](INTERNAL_FUNCTION_PARAMETERS) {
-		ZEND_PARSE_PARAMETERS_NONE();
-		PT_MS_RETURN_BOOL(PT_THIS.isInTrait(out_));
-	});
+	cls.method(sigs::isInTrait, msIsInTrait);
 
 	cls.method(sigs::getClassReflection, msGetClassReflection);
 
@@ -12177,10 +12232,7 @@ void pt_register_mutating_scope()
 		PT_RETURN_VAL(PT_THIS.exitExpressionAssign(Z_OBJ_P(expr)));
 	});
 
-	cls.method(sigs::isInExpressionAssign, [](INTERNAL_FUNCTION_PARAMETERS) {
-		PT_MS_PARSE_EXPR(expr);
-		PT_MS_RETURN_BOOL(PT_THIS.isInExpressionAssign(Z_OBJ_P(expr), out_));
-	});
+	cls.method(sigs::isInExpressionAssign, msIsInExpressionAssign);
 
 	cls.method(sigs::isInWriteExpressionAssign, [](INTERNAL_FUNCTION_PARAMETERS) {
 		PT_MS_PARSE_EXPR(expr);

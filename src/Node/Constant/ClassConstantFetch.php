@@ -4,10 +4,12 @@ namespace PHPStan\Node\Constant;
 
 use PhpParser\Node\Expr\ClassConstFetch;
 use PHPStan\Analyser\Scope;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'classConstantFetch')]
 final class ClassConstantFetch
 {
 

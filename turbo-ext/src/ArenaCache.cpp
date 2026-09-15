@@ -1157,17 +1157,13 @@ void pt_register_arena_cache()
 
 	cls.method("create", reg::PublicStatic, 1, { reg::stringArg("runId") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *runId;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_STR(runId)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Str>(execute_data, runId)) RETURN_THROWS();
 		phpstanturbo::ArenaCache::create(runId, return_value);
 	});
 
 	cls.method("attach", reg::PublicStatic, 1, { reg::stringArg("name") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *name;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_STR(name)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Str>(execute_data, name)) RETURN_THROWS();
 		RETURN_BOOL(phpstanturbo::ArenaCache::attach(name));
 	});
 
@@ -1183,55 +1179,39 @@ void pt_register_arena_cache()
 
 	cls.method("hasRecord", reg::PublicStatic, 1, { reg::stringArg("key") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *key;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_STR(key)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Str>(execute_data, key)) RETURN_THROWS();
 		RETURN_BOOL(phpstanturbo::ArenaCache::hasRecord(key));
 	});
 
 	cls.method("lookup", reg::PublicStatic, 1, { reg::stringArg("key") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *key;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_STR(key)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Str>(execute_data, key)) RETURN_THROWS();
 		phpstanturbo::ArenaCache::lookup(key, return_value);
 	});
 
 	cls.method("publish", reg::PublicStatic, 2, { reg::stringArg("key"), reg::any("value") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *key;
 		zval *value;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_STR(key)
-			Z_PARAM_ZVAL(value)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Str, zp::Zval>(execute_data, key, value)) RETURN_THROWS();
 		phpstanturbo::ArenaCache::publish(key, value);
 	});
 
 	cls.method("lookupHash", reg::PublicStatic, 2, { reg::stringArg("recordKey"), reg::stringArg("entryKey") }, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zend_string *recordKey;
-		zend_string *entryKey;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_STR(recordKey)
-			Z_PARAM_STR(entryKey)
-		ZEND_PARSE_PARAMETERS_END();
+		zend_string *recordKey, *entryKey;
+		if (!zp::parse<zp::Str, zp::Str>(execute_data, recordKey, entryKey)) RETURN_THROWS();
 		phpstanturbo::ArenaCache::lookupHash(recordKey, entryKey, return_value);
 	});
 
 	cls.method("lookupHashAll", reg::PublicStatic, 1, { reg::stringArg("recordKey") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *recordKey;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_STR(recordKey)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Str>(execute_data, recordKey)) RETURN_THROWS();
 		phpstanturbo::ArenaCache::lookupHashAll(recordKey, return_value);
 	});
 
 	cls.method("publishHash", reg::PublicStatic, 2, { reg::stringArg("recordKey"), reg::arrayArg("entries") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *recordKey;
 		HashTable *entries;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_STR(recordKey)
-			Z_PARAM_ARRAY_HT(entries)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Str, zp::Ht>(execute_data, recordKey, entries)) RETURN_THROWS();
 		phpstanturbo::ArenaCache::publishHash(recordKey, entries);
 	});
 

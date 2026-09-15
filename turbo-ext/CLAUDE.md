@@ -42,9 +42,15 @@ being ≥0.5% faster is. When the estimate is marginal, don't port.
    phpstan_turbo` that mirrors the PHP twin method for method (see
    `TrinaryLogic.cpp` as the reference; `and`/`or` keyword clashes get a
    trailing underscore); registration goes through the `reg::Class` builder
-   in `reg.h` — one `cls.method("name", flags, requiredArgs, { args... },
-   lambda)` declaration per method, where the lambda body is only
-   ZEND_PARSE_PARAMETERS glue + one delegation line (see TrinaryLogic.cpp).
+   in `reg.h` — one declaration per method: a method that only parses its
+   parameters and hands them, in order, to a handle member returning
+   `zv::Val`, `void` or `bool` with a trailing `bool &` out parameter is
+   `cls.method<&Handle::member, zp::Obj, zp::Bool>("name", flags, { args... },
+   returns)` with a generated handler; any other glue is a
+   `cls.method("name", flags, requiredArgs, { args... }, lambda)` whose
+   lambda parses with `zp::parse<zp::Obj, zp::Opt<zp::Bool>>(execute_data,
+   ...)` (the raw ZEND_PARSE_PARAMETERS macros only for kinds zp does not
+   cover). Both expand to the engine's own ZPP macros.
    Never introduce per-call argument boxing in a registration path — raw
    handler pointers only. Use the zero-cost
    wrappers in `zv.h` — borrowed `zv::Ref` views vs owned move-only

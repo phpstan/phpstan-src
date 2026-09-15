@@ -801,12 +801,8 @@ void pt_register_type_combinator_cache()
 	});
 
 	cls.method("remove", reg::PublicStatic, 2, { reg::obj("fromType", TYPE_CLASS), reg::obj("typeToRemove", TYPE_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *fromType;
-		zval *typeToRemove;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(fromType)
-			Z_PARAM_OBJECT(typeToRemove)
-		ZEND_PARSE_PARAMETERS_END();
+		zval *fromType, *typeToRemove;
+		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, fromType, typeToRemove)) RETURN_THROWS();
 		zval args[2];
 		ZVAL_COPY_VALUE(&args[0], fromType);
 		ZVAL_COPY_VALUE(&args[1], typeToRemove);

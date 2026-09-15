@@ -1234,11 +1234,7 @@ void pt_register_parser_runner(void)
 
 	cls.method("parse", reg::PublicStatic, 3, { reg::objectArg("parser"), reg::stringArg("sourceCode"), reg::objectArg("errorHandler") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *parserObj, *code, *errorHandler;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
-			Z_PARAM_OBJECT(parserObj)
-			Z_PARAM_ZVAL(code)
-			Z_PARAM_OBJECT(errorHandler)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Obj, zp::Zval, zp::Obj>(execute_data, parserObj, code, errorHandler)) RETURN_THROWS();
 
 		if (Z_TYPE_P(code) == IS_STRING && ParserEngine::prepareTables(parserObj)) {
 			ParserEngine engine(parserObj, errorHandler);

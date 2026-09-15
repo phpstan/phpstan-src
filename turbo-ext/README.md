@@ -379,7 +379,12 @@ interleaved A/B benchmark), so readability costs nothing. Classes register
 through the fluent builder in `src/reg.h`, which emits the raw zend
 structures with raw handler pointers — no per-call trampoline or argument
 boxing; each method's name, flags, signature and parameter-parsing glue live
-together in one declaration.
+together in one declaration. A method that only parses its parameters and
+delegates them is declared by its handle member and parameter kinds
+(`cls.method<&UnionType::accepts, zp::Obj, zp::Bool>(...)`) and gets a
+generated handler; other glue parses with `zp::parse<...>()`. Both expand to
+the engine's own `ZEND_PARSE_PARAMETERS` macros, so the handlers compile to
+what the hand-written glue did.
 Raw zend form remains where an abstraction would not be provably free —
 always with a comment saying so.
 

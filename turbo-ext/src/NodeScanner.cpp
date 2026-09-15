@@ -56,9 +56,7 @@ void pt_register_node_scanner()
 
 	cls.method("nodeIsOrContainsYield", reg::PublicStatic, 1, { reg::objectArg("node") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *node;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(node)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Obj>(execute_data, node)) RETURN_THROWS();
 		bool failed = false;
 		bool result = NodeScanner::nodeIsOrContainsYield(zv::ObjRef(node), failed);
 		if (UNEXPECTED(failed)) RETURN_THROWS();

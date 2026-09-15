@@ -828,25 +828,19 @@ void pt_register_node_traverser()
 
 	cls.method("addVisitor", reg::Public, 1, { reg::obj("visitor", NODE_VISITOR_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *visitor;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(visitor)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Obj>(execute_data, visitor)) RETURN_THROWS();
 		NodeTraverser(Z_OBJ_P(ZEND_THIS)).addVisitor(zv::Ref(visitor));
 	}, &voidReturn);
 
 	cls.method("removeVisitor", reg::Public, 1, { reg::obj("visitor", NODE_VISITOR_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *visitor;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(visitor)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Obj>(execute_data, visitor)) RETURN_THROWS();
 		NodeTraverser(Z_OBJ_P(ZEND_THIS)).removeVisitor(zv::Ref(visitor));
 	}, &voidReturn);
 
 	cls.method("traverse", reg::Public, 1, { reg::arrayArg("nodes") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		HashTable *nodes;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_ARRAY_HT(nodes)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Ht>(execute_data, nodes)) RETURN_THROWS();
 		NodeTraverser self(Z_OBJ_P(ZEND_THIS));
 		zv::Val result = self.traverse(nodes);
 		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();

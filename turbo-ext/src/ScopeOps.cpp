@@ -1833,12 +1833,7 @@ void pt_register_scope_ops()
 	cls.method("mergeVariableHolders", reg::PublicStatic, 2, { reg::arrayArg("ourVariableTypeHolders"), reg::arrayArg("theirVariableTypeHolders"), reg::any("differingKeys", true) }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		HashTable *ours, *theirs;
 		zval *differing_zv = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 3)
-			Z_PARAM_ARRAY_HT(ours)
-			Z_PARAM_ARRAY_HT(theirs)
-			Z_PARAM_OPTIONAL
-			Z_PARAM_ZVAL(differing_zv)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Ht, zp::Ht, zp::Opt<zp::Zval>>(execute_data, ours, theirs, differing_zv)) RETURN_THROWS();
 		HashTable *differing = NULL;
 		if (differing_zv != NULL && Z_ISREF_P(differing_zv)) {
 			/* the twin declares `array &$differingKeys = []`; vivify like PHP
@@ -1857,13 +1852,7 @@ void pt_register_scope_ops()
 
 	cls.method("finishMerge", reg::PublicStatic, 5, { reg::arrayArg("mergedExpressionTypes"), reg::arrayArg("ourExpressionTypes"), reg::arrayArg("theirExpressionTypes"), reg::arrayArg("ourNativeExpressionTypes"), reg::arrayArg("theirNativeExpressionTypes") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		HashTable *merged, *ours_expr, *theirs_expr, *ours_native, *theirs_native;
-		ZEND_PARSE_PARAMETERS_START(5, 5)
-			Z_PARAM_ARRAY_HT(merged)
-			Z_PARAM_ARRAY_HT(ours_expr)
-			Z_PARAM_ARRAY_HT(theirs_expr)
-			Z_PARAM_ARRAY_HT(ours_native)
-			Z_PARAM_ARRAY_HT(theirs_native)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Ht, zp::Ht, zp::Ht, zp::Ht, zp::Ht>(execute_data, merged, ours_expr, theirs_expr, ours_native, theirs_native)) RETURN_THROWS();
 		zv::Val result = ScopeOps::finishMerge(zv::TableRef(merged), zv::TableRef(ours_expr), zv::TableRef(theirs_expr), zv::TableRef(ours_native), zv::TableRef(theirs_native));
 		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
@@ -1871,10 +1860,7 @@ void pt_register_scope_ops()
 
 	cls.method("intersectConditionalExpressions", reg::PublicStatic, 2, { reg::arrayArg("ourConditionalExpressions"), reg::arrayArg("theirConditionalExpressions") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		HashTable *ours, *theirs;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_ARRAY_HT(ours)
-			Z_PARAM_ARRAY_HT(theirs)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Ht, zp::Ht>(execute_data, ours, theirs)) RETURN_THROWS();
 		ScopeOps::intersectConditionalExpressions(zv::TableRef(ours), zv::TableRef(theirs)).intoReturnValue(return_value);
 	});
 
@@ -1929,9 +1915,7 @@ void pt_register_scope_ops()
 
 	cls.method("getIntertwinedRefRootVariableName", reg::PublicStatic, 1, { reg::objectArg("expr") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *expr;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(expr)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Obj>(execute_data, expr)) RETURN_THROWS();
 		zv::Val result = ScopeOps::getIntertwinedRefRootVariableName(Z_OBJ_P(expr));
 		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
@@ -1939,10 +1923,7 @@ void pt_register_scope_ops()
 
 	cls.method("matchConditionalExpressions", reg::PublicStatic, 2, { reg::arrayArg("conditionalExpressions"), reg::arrayArg("specifiedExpressions") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		HashTable *conditional, *specified_input;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_ARRAY_HT(conditional)
-			Z_PARAM_ARRAY_HT(specified_input)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Ht, zp::Ht>(execute_data, conditional, specified_input)) RETURN_THROWS();
 		zv::Val result = ScopeOps::matchConditionalExpressions(zv::TableRef(conditional), zv::TableRef(specified_input));
 		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
@@ -1950,13 +1931,7 @@ void pt_register_scope_ops()
 
 	cls.method("createConditionalExpressions", reg::PublicStatic, 5, { reg::arrayArg("conditionalExpressions"), reg::arrayArg("ourExpressionTypes"), reg::arrayArg("theirExpressionTypes"), reg::arrayArg("mergedExpressionTypes"), reg::arrayArg("differingKeys") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		HashTable *conditional, *ours, *theirs, *merged, *differing_keys;
-		ZEND_PARSE_PARAMETERS_START(5, 5)
-			Z_PARAM_ARRAY_HT(conditional)
-			Z_PARAM_ARRAY_HT(ours)
-			Z_PARAM_ARRAY_HT(theirs)
-			Z_PARAM_ARRAY_HT(merged)
-			Z_PARAM_ARRAY_HT(differing_keys)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Ht, zp::Ht, zp::Ht, zp::Ht, zp::Ht>(execute_data, conditional, ours, theirs, merged, differing_keys)) RETURN_THROWS();
 		zv::Val result = ScopeOps::createConditionalExpressions(zv::TableRef(conditional), zv::TableRef(ours), zv::TableRef(theirs), zv::TableRef(merged), zv::TableRef(differing_keys));
 		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
@@ -1964,10 +1939,7 @@ void pt_register_scope_ops()
 
 	cls.method("nodeKey", reg::PublicStatic, 2, { reg::objectArg("node"), reg::objectArg("exprPrinter") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *node, *expr_printer;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(node)
-			Z_PARAM_OBJECT(expr_printer)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, node, expr_printer)) RETURN_THROWS();
 		zv::Val result = ScopeOps::nodeKey(Z_OBJ_P(node), expr_printer);
 		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
@@ -1975,11 +1947,7 @@ void pt_register_scope_ops()
 
 	cls.method("getTypeFromCache", reg::PublicStatic, 3, { reg::objectArg("scope"), reg::objectArg("node"), reg::any("key", true) }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *scope, *node, *key_out;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
-			Z_PARAM_OBJECT(scope)
-			Z_PARAM_OBJECT(node)
-			Z_PARAM_ZVAL(key_out)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Zval>(execute_data, scope, node, key_out)) RETURN_THROWS();
 		zend_string *key = NULL;
 		zv::Val result = ScopeOps::getTypeFromCache(scope, Z_OBJ_P(node), &key);
 		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
@@ -1997,10 +1965,7 @@ void pt_register_scope_ops()
 	cls.method("hasVariableType", reg::PublicStatic, 2, { reg::objectArg("scope"), reg::stringArg("variableName") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *scope;
 		zend_string *variable_name;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(scope)
-			Z_PARAM_STR(variable_name)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Obj, zp::Str>(execute_data, scope, variable_name)) RETURN_THROWS();
 		zv::Val result = ScopeOps::hasVariableType(scope, variable_name);
 		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
@@ -2031,12 +1996,7 @@ void pt_register_scope_ops()
 		zval *expr_printer;
 		zend_string *invalidate_str;
 		HashTable *expression_types, *native_expression_types;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
-			Z_PARAM_OBJECT(expr_printer)
-			Z_PARAM_STR(invalidate_str)
-			Z_PARAM_ARRAY_HT(expression_types)
-			Z_PARAM_ARRAY_HT(native_expression_types)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Obj, zp::Str, zp::Ht, zp::Ht>(execute_data, expr_printer, invalidate_str, expression_types, native_expression_types)) RETURN_THROWS();
 		pt_init_strs();
 		zv::Val result = ScopeOps::invalidateMethodsOnExpression(expr_printer, invalidate_str, zv::TableRef(expression_types), zv::TableRef(native_expression_types));
 		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
@@ -2046,11 +2006,7 @@ void pt_register_scope_ops()
 	cls.method("expressionTypeByKey", reg::PublicStatic, 3, { reg::objectArg("scope"), reg::objectArg("node"), reg::stringArg("exprString") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *scope, *node;
 		zend_string *expr_string;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
-			Z_PARAM_OBJECT(scope)
-			Z_PARAM_OBJECT(node)
-			Z_PARAM_STR(expr_string)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Str>(execute_data, scope, node, expr_string)) RETURN_THROWS();
 		zv::Val result = ScopeOps::expressionTypeByKey(scope, Z_OBJ_P(node), expr_string);
 		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
@@ -2058,11 +2014,7 @@ void pt_register_scope_ops()
 
 	cls.method("hasExpressionType", reg::PublicStatic, 3, { reg::objectArg("scope"), reg::objectArg("node"), reg::objectArg("exprPrinter") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *scope, *node, *expr_printer;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
-			Z_PARAM_OBJECT(scope)
-			Z_PARAM_OBJECT(node)
-			Z_PARAM_OBJECT(expr_printer)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj>(execute_data, scope, node, expr_printer)) RETURN_THROWS();
 		zv::Val result = ScopeOps::hasExpressionType(scope, Z_OBJ_P(node), expr_printer);
 		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);

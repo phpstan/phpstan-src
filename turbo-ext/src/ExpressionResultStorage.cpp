@@ -114,26 +114,19 @@ void pt_register_expression_result_storage()
 
 	cls.method("mergeResults", reg::Public, 1, { reg::any("other") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *other;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(other)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Obj>(execute_data, other)) RETURN_THROWS();
 		ExpressionResultStorage(ZEND_THIS).mergeResults(other);
 	});
 
 	cls.method("storeExpressionResult", reg::Public, 2, { reg::any("expr"), reg::any("expressionResult") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *expr, *expressionResult;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(expr)
-			Z_PARAM_OBJECT(expressionResult)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, expr, expressionResult)) RETURN_THROWS();
 		ExpressionResultStorage(ZEND_THIS).storeExpressionResult(expr, expressionResult);
 	});
 
 	cls.method("findExpressionResult", reg::Public, 1, { reg::any("expr") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *expr;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(expr)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Obj>(execute_data, expr)) RETURN_THROWS();
 		ExpressionResultStorage(ZEND_THIS).findExpressionResult(expr).intoReturnValue(return_value);
 	});
 

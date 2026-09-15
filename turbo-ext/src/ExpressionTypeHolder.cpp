@@ -100,19 +100,13 @@ void pt_register_expression_type_holder()
 
 	cls.method("createYes", reg::PublicStatic, 2, { reg::any("expr"), reg::any("type") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *expr, *type;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(expr)
-			Z_PARAM_OBJECT(type)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, expr, type)) RETURN_THROWS();
 		ExpressionTypeHolder::createYes(expr, type).intoReturnValue(return_value);
 	});
 
 	cls.method("createMaybe", reg::PublicStatic, 2, { reg::any("expr"), reg::any("type") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *expr, *type;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(expr)
-			Z_PARAM_OBJECT(type)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, expr, type)) RETURN_THROWS();
 		ExpressionTypeHolder::createMaybe(expr, type).intoReturnValue(return_value);
 	});
 

@@ -320,9 +320,7 @@ void pt_register_trinary_logic()
 
 	cls.method("__construct", reg::Private, 1, { reg::longArg("value") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_long value;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_LONG(value)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Long>(execute_data, value)) RETURN_THROWS();
 		ZVAL_LONG(OBJ_PROP_NUM(Z_OBJ_P(ZEND_THIS), PT_TRI_PROP_VALUE), value);
 	});
 
@@ -343,9 +341,7 @@ void pt_register_trinary_logic()
 
 	cls.method("createFromBoolean", reg::PublicStatic, 1, { reg::boolArg("value") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		bool value;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_BOOL(value)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Bool>(execute_data, value)) RETURN_THROWS();
 		TrinaryLogic::createFromBoolean(value).intoReturnValue(return_value);
 	});
 

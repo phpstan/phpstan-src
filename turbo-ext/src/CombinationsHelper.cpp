@@ -146,9 +146,7 @@ void pt_register_combinations_helper()
 
 	cls.method("combinations", reg::PublicStatic, 1, { reg::arrayArg("arrays") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		HashTable *arrays;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_ARRAY_HT(arrays)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Ht>(execute_data, arrays)) RETURN_THROWS();
 		zval arraysZv;
 		ZVAL_ARR(&arraysZv, arrays);
 		zv::Val result = CombinationsHelper::combinations(zv::ArrRef(&arraysZv));

@@ -32,10 +32,7 @@ void pt_register_php_file_cleaner()
 	cls.method("clean", reg::Public, 2, { reg::stringArg("contents"), reg::longArg("maxMatches") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *contents;
 		zend_long maxMatches;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_STR(contents)
-			Z_PARAM_LONG(maxMatches)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Str, zp::Long>(execute_data, contents, maxMatches)) RETURN_THROWS();
 
 		phpstanturbo::PhpFileCleaner cleaner(ZSTR_VAL(contents), ZSTR_LEN(contents));
 		std::string cleaned;

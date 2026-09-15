@@ -189,19 +189,14 @@ void pt_register_symbol_finder_in_files()
 	 * this constructor while compiling the container (rule 6) */
 	cls.method("__construct", reg::Public, 1, { reg::obj("cleaner", CLEANER_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *cleaner;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(cleaner)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Obj>(execute_data, cleaner)) RETURN_THROWS();
 		(void) cleaner;
 	});
 
 	cls.method("findSymbols", reg::Public, 2, { reg::arrayArg("files"), reg::boolArg("supportsEnums") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		HashTable *files;
 		bool supportsEnums;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_ARRAY_HT(files)
-			Z_PARAM_BOOL(supportsEnums)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Ht, zp::Bool>(execute_data, files, supportsEnums)) RETURN_THROWS();
 
 		phpstanturbo::SymbolFinderInFiles finder;
 		finder.findSymbols(files, supportsEnums).intoReturnValue(return_value);

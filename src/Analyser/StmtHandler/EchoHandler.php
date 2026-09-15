@@ -47,7 +47,7 @@ final class EchoHandler implements StmtHandler
 		$impurePoints = [];
 		$isAlwaysTerminating = false;
 		foreach ($stmt->exprs as $echoExpr) {
-			$result = $nodeScopeResolver->processExprNode($stmt, $echoExpr, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			$result = $nodeScopeResolver->processExprNode($stmt, $echoExpr, $scope, $storage, $nodeCallback, ExpressionContext::createDeep(), null);
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
 			$toStringResult = $this->implicitToStringCallHelper->processImplicitToStringCall($echoExpr, $scope);

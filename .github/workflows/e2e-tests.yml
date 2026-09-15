@@ -745,6 +745,10 @@ jobs:
               ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-full-baseline.neon"
               ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-full-baseline.neon"
           - script: |
+              cd e2e/bug-12585
+              composer install
+              ../../bin/phpstan
+          - script: |
               cd e2e/result-cache-meta-extension
               composer install
               ../../bin/phpstan -vvv
@@ -1522,6 +1526,10 @@ jobs:
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --no-progress")
               echo "$OUTPUT"
               ../bashunit -a contains 'killed by signal 9 (SIGKILL)' "$OUTPUT"
+          - script: |
+              cd e2e/parameter-type-extension
+              composer install
+              ../../bin/phpstan analyze
 
     steps:
       - name: Harden the runner (Audit all outbound calls)

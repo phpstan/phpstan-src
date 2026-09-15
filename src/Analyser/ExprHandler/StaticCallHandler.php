@@ -81,7 +81,7 @@ final class StaticCallHandler implements ExprHandler
 		return $expr instanceof StaticCall && !$expr->isFirstClassCallable();
 	}
 
-	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context, ?Type $overriddenType): ExpressionResult
 	{
 		$beforeScope = $scope;
 		$hasYield = false;
@@ -90,7 +90,7 @@ final class StaticCallHandler implements ExprHandler
 		$isAlwaysTerminating = false;
 		$containsNullsafe = false;
 		if ($expr->class instanceof Expr) {
-			$classResult = $nodeScopeResolver->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$classResult = $nodeScopeResolver->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep(), null);
 			$hasYield = $classResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $classResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $classResult->getImpurePoints());
@@ -179,7 +179,7 @@ final class StaticCallHandler implements ExprHandler
 				}
 			}
 		} else {
-			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep(), null);
 			$hasYield = $hasYield || $nameResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $nameResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $nameResult->getImpurePoints());
@@ -192,7 +192,7 @@ final class StaticCallHandler implements ExprHandler
 				$objectClasses = $scope->getType(new New_($expr->class))->getObjectClassNames();
 			}
 			if (count($objectClasses) === 1) {
-				$objectExprResult = $nodeScopeResolver->processExprNode($stmt, new StaticCall(new Name($objectClasses[0]), $expr->name, []), $scope, $storage, new NoopNodeCallback(), $context->enterDeep());
+				$objectExprResult = $nodeScopeResolver->processExprNode($stmt, new StaticCall(new Name($objectClasses[0]), $expr->name, []), $scope, $storage, new NoopNodeCallback(), $context->enterDeep(), null);
 				$additionalThrowPoints = $objectExprResult->getThrowPoints();
 			} else {
 				$additionalThrowPoints = [InternalThrowPoint::createImplicit($scope, $expr)];

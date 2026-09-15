@@ -22,6 +22,8 @@ use PHPStan\Reflection\ParameterReflection;
  * ```
  *
  * @api
+ * @deprecated
+ * @see \PHPStan\Type\DynamicStaticMethodParameterTypeExtension
  */
 #[ExtensionInterface(tag: 'phpstan.staticMethodParameterClosureTypeExtension')]
 interface StaticMethodParameterClosureTypeExtension

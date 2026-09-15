@@ -60,7 +60,7 @@ final class PropertyHandler implements StmtHandler
 		foreach ($stmt->props as $prop) {
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $prop, $scope, $storage);
 			if ($prop->default !== null) {
-				$nodeScopeResolver->processExprNode($stmt, $prop->default, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+				$nodeScopeResolver->processExprNode($stmt, $prop->default, $scope, $storage, $nodeCallback, ExpressionContext::createDeep(), null);
 			}
 
 			if (!$scope->isInClass()) {

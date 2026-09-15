@@ -7,6 +7,7 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\ArrowFunction;
 use PhpParser\NodeAbstract;
 use PHPStan\Type\ClosureType;
+use PHPStan\Type\Type;
 
 /**
  * @api
@@ -16,7 +17,11 @@ final class InArrowFunctionNode extends NodeAbstract implements VirtualNode
 
 	private Node\Expr\ArrowFunction $originalNode;
 
-	public function __construct(private ClosureType $closureType, ArrowFunction $originalNode)
+	public function __construct(
+		private ClosureType $closureType,
+		ArrowFunction $originalNode,
+		private ?Type $overriddenType = null,
+	)
 	{
 		parent::__construct($originalNode->getAttributes());
 		$this->originalNode = $originalNode;
@@ -30,6 +35,11 @@ final class InArrowFunctionNode extends NodeAbstract implements VirtualNode
 	public function getOriginalNode(): Node\Expr\ArrowFunction
 	{
 		return $this->originalNode;
+	}
+
+	public function getOverriddenType(): ?Type
+	{
+		return $this->overriddenType;
 	}
 
 	#[Override]

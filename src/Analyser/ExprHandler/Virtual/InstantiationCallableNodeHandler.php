@@ -36,7 +36,7 @@ final class InstantiationCallableNodeHandler implements ExprHandler
 		return $expr instanceof InstantiationCallableNode;
 	}
 
-	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context, ?Type $overriddenType): ExpressionResult
 	{
 		$beforeScope = $scope;
 		$throwPoints = [];
@@ -44,7 +44,7 @@ final class InstantiationCallableNodeHandler implements ExprHandler
 		$hasYield = false;
 		$isAlwaysTerminating = false;
 		if ($expr->getClass() instanceof Expr) {
-			$classResult = $nodeScopeResolver->processExprNode($stmt, $expr->getClass(), $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			$classResult = $nodeScopeResolver->processExprNode($stmt, $expr->getClass(), $scope, $storage, $nodeCallback, ExpressionContext::createDeep(), null);
 			$scope = $classResult->getScope();
 			$hasYield = $classResult->hasYield();
 			$throwPoints = $classResult->getThrowPoints();

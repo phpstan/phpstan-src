@@ -108,6 +108,7 @@ final class CallMethodsRule implements Rule
 				$declaringClass->getName(),
 				$methodReflection->getName(),
 			] : null,
+			$methodReflection,
 		));
 	}
 

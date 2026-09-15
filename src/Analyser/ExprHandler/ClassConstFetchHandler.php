@@ -56,7 +56,7 @@ final class ClassConstFetchHandler implements ExprHandler
 		);
 	}
 
-	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context, ?Type $overriddenType): ExpressionResult
 	{
 		$beforeScope = $scope;
 		$hasYield = false;
@@ -65,7 +65,7 @@ final class ClassConstFetchHandler implements ExprHandler
 		$isAlwaysTerminating = false;
 
 		if ($expr->class instanceof Expr) {
-			$classResult = $nodeScopeResolver->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$classResult = $nodeScopeResolver->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep(), null);
 			$scope = $classResult->getScope();
 			$hasYield = $classResult->hasYield();
 			$throwPoints = $classResult->getThrowPoints();
@@ -78,7 +78,7 @@ final class ClassConstFetchHandler implements ExprHandler
 		if ($expr->name instanceof Identifier) {
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $expr->name, $scope, $storage);
 		} else {
-			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep(), null);
 			$scope = $nameResult->getScope();
 			$hasYield = $hasYield || $nameResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $nameResult->getThrowPoints());

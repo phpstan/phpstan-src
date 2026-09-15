@@ -1,0 +1,9 @@
+parameters:
+	level: 9
+	paths:
+		- src
+services:
+	-
+		class: App\ParameterTypeExtension
+		tags:
+			- phpstan.dynamicMethodParameterTypeExtension

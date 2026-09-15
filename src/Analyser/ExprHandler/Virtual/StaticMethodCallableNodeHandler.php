@@ -37,7 +37,7 @@ final class StaticMethodCallableNodeHandler implements ExprHandler
 		return $expr instanceof StaticMethodCallableNode;
 	}
 
-	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context, ?Type $overriddenType): ExpressionResult
 	{
 		$beforeScope = $scope;
 		$throwPoints = [];
@@ -45,7 +45,7 @@ final class StaticMethodCallableNodeHandler implements ExprHandler
 		$hasYield = false;
 		$isAlwaysTerminating = false;
 		if ($expr->getClass() instanceof Expr) {
-			$classResult = $nodeScopeResolver->processExprNode($stmt, $expr->getClass(), $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			$classResult = $nodeScopeResolver->processExprNode($stmt, $expr->getClass(), $scope, $storage, $nodeCallback, ExpressionContext::createDeep(), null);
 			$scope = $classResult->getScope();
 			$hasYield = $classResult->hasYield();
 			$throwPoints = $classResult->getThrowPoints();
@@ -53,7 +53,7 @@ final class StaticMethodCallableNodeHandler implements ExprHandler
 			$isAlwaysTerminating = $classResult->isAlwaysTerminating();
 		}
 		if ($expr->getName() instanceof Expr) {
-			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->getName(), $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->getName(), $scope, $storage, $nodeCallback, ExpressionContext::createDeep(), null);
 			$scope = $nameResult->getScope();
 			$hasYield = $hasYield || $nameResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $nameResult->getThrowPoints());

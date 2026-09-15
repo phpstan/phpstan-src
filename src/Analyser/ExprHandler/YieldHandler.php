@@ -57,7 +57,7 @@ final class YieldHandler implements ExprHandler
 		return $generatorSendType;
 	}
 
-	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context, ?Type $overriddenType): ExpressionResult
 	{
 		$beforeScope = $scope;
 		$throwPoints = [
@@ -74,14 +74,14 @@ final class YieldHandler implements ExprHandler
 		];
 		$isAlwaysTerminating = false;
 		if ($expr->key !== null) {
-			$keyResult = $nodeScopeResolver->processExprNode($stmt, $expr->key, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$keyResult = $nodeScopeResolver->processExprNode($stmt, $expr->key, $scope, $storage, $nodeCallback, $context->enterDeep(), null);
 			$scope = $keyResult->getScope();
 			$throwPoints = $keyResult->getThrowPoints();
 			$impurePoints = array_merge($impurePoints, $keyResult->getImpurePoints());
 			$isAlwaysTerminating = $keyResult->isAlwaysTerminating();
 		}
 		if ($expr->value !== null) {
-			$valueResult = $nodeScopeResolver->processExprNode($stmt, $expr->value, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$valueResult = $nodeScopeResolver->processExprNode($stmt, $expr->value, $scope, $storage, $nodeCallback, $context->enterDeep(), null);
 			$scope = $valueResult->getScope();
 			$throwPoints = array_merge($throwPoints, $valueResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $valueResult->getImpurePoints());

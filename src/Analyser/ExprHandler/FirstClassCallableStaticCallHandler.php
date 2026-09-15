@@ -47,6 +47,7 @@ final class FirstClassCallableStaticCallHandler implements ExprHandler
 		ExpressionResultStorage $storage,
 		callable $nodeCallback,
 		ExpressionContext $context,
+		?Type $overriddenType,
 	): ExpressionResult
 	{
 		// handled in NodeScopeResolver before ExprHandlers are called

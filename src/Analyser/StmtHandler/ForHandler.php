@@ -126,7 +126,7 @@ final class ForHandler implements StmtHandler
 		$throwPoints = [];
 		$impurePoints = [];
 		foreach ($stmt->init as $initExpr) {
-			$initResult = $nodeScopeResolver->processExprNode($stmt, $initExpr, $initScope, $storage, $nodeCallback, ExpressionContext::createTopLevel());
+			$initResult = $nodeScopeResolver->processExprNode($stmt, $initExpr, $initScope, $storage, $nodeCallback, ExpressionContext::createTopLevel(), null);
 			$initScope = $initResult->getScope();
 			$hasYield = $hasYield || $initResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $initResult->getThrowPoints());
@@ -141,7 +141,7 @@ final class ForHandler implements StmtHandler
 		if (count($stmt->cond) > 0) {
 			$storage = $originalStorage->duplicate();
 			foreach ($stmt->cond as $condExpr) {
-				$condResult = $nodeScopeResolver->processExprNode($stmt, $condExpr, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep());
+				$condResult = $nodeScopeResolver->processExprNode($stmt, $condExpr, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep(), null);
 				$initScope = $condResult->getScope();
 
 				// only the last condition expression is relevant whether the loop continues
@@ -173,7 +173,7 @@ final class ForHandler implements StmtHandler
 				}
 				$prevEntryScope = $bodyScope;
 				if ($lastCondExpr !== null) {
-					$bodyScope = $nodeScopeResolver->processExprNode($stmt, $lastCondExpr, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep())->getTruthyScope();
+					$bodyScope = $nodeScopeResolver->processExprNode($stmt, $lastCondExpr, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep(), null)->getTruthyScope();
 				}
 				$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, new NoopNodeCallback(), $context->enterDeep())->filterOutLoopExitPoints();
 				$bodyScope = $bodyScopeResult->getScope();
@@ -182,7 +182,7 @@ final class ForHandler implements StmtHandler
 				}
 
 				foreach ($stmt->loop as $loopExpr) {
-					$exprResult = $nodeScopeResolver->processExprNode($stmt, $loopExpr, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createTopLevel());
+					$exprResult = $nodeScopeResolver->processExprNode($stmt, $loopExpr, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createTopLevel(), null);
 					$bodyScope = $exprResult->getScope();
 					$hasYield = $hasYield || $exprResult->hasYield();
 					$throwPoints = array_merge($throwPoints, $exprResult->getThrowPoints());
@@ -210,7 +210,7 @@ final class ForHandler implements StmtHandler
 			// storage miss (the condition was only stored into discarded
 			// convergence duplicates) that re-priced it on demand
 			$alwaysIterates = $alwaysIterates->and($bodyScope->getType($lastCondExpr)->toBoolean()->isTrue());
-			$bodyScope = $nodeScopeResolver->processExprNode($stmt, $lastCondExpr, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep())->getTruthyScope();
+			$bodyScope = $nodeScopeResolver->processExprNode($stmt, $lastCondExpr, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep(), null)->getTruthyScope();
 			$bodyScope = $this->inferForLoopExpressions($stmt, $lastCondExpr, $bodyScope);
 		}
 
@@ -222,7 +222,7 @@ final class ForHandler implements StmtHandler
 
 		$loopScope = $finalScope;
 		foreach ($stmt->loop as $loopExpr) {
-			$loopScope = $nodeScopeResolver->processExprNode($stmt, $loopExpr, $loopScope, $storage, $nodeCallback, ExpressionContext::createTopLevel())->getScope();
+			$loopScope = $nodeScopeResolver->processExprNode($stmt, $loopExpr, $loopScope, $storage, $nodeCallback, ExpressionContext::createTopLevel(), null)->getScope();
 		}
 		$finalScope = $finalScope->generalizeWith($loopScope);
 

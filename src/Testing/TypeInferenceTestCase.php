@@ -21,6 +21,7 @@ use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ConstantScalarType;
+use PHPStan\Type\DynamicParameterTypeResolver;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\FunctionParameterClosureThisExtension;
 use PHPStan\Type\FunctionParameterClosureTypeExtension;
@@ -72,6 +73,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			$container->getExtensionsCollection(FunctionParameterClosureThisExtension::class),
 			$container->getExtensionsCollection(MethodParameterClosureThisExtension::class),
 			$container->getExtensionsCollection(StaticMethodParameterClosureThisExtension::class),
+			$container->getByType(DynamicParameterTypeResolver::class),
 			$container->getExtensionsCollection(FunctionParameterClosureTypeExtension::class),
 			$container->getExtensionsCollection(MethodParameterClosureTypeExtension::class),
 			$container->getExtensionsCollection(StaticMethodParameterClosureTypeExtension::class),

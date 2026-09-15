@@ -20,6 +20,8 @@
 
 #include "support.h"
 #include "generated/SymbolFinderInFiles.h"
+
+namespace sigs = ptdecl::SymbolFinderInFiles::sig;
 #include "zv.h"
 #include "SymbolScan.h"
 
@@ -188,7 +190,7 @@ void pt_register_symbol_finder_in_files()
 
 	/* the arginfo has to keep the real parameter class name: Nette reflects
 	 * this constructor while compiling the container (rule 6) */
-	cls.method("__construct", reg::Public, 1, { reg::obj("cleaner", CLEANER_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *cleaner;
 		if (!zp::parse<zp::Obj>(execute_data, cleaner)) RETURN_THROWS();
 		(void) cleaner;

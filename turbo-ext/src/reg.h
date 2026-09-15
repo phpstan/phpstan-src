@@ -234,7 +234,7 @@ struct Arg
 
 /* an optional parameter with its default value's PHP source (e.g. "[]") —
  * without it the engine refuses to skip the parameter via named arguments */
-inline Arg withDefault(Arg arg, const char *defaultValue)
+constexpr Arg withDefault(Arg arg, const char *defaultValue)
 {
 	arg.defaultValue = defaultValue;
 	return arg;
@@ -242,12 +242,12 @@ inline Arg withDefault(Arg arg, const char *defaultValue)
 
 namespace detail {
 
-inline uint32_t flagBits(bool byRef, bool variadic)
+constexpr uint32_t flagBits(bool byRef, bool variadic)
 {
 	return _ZEND_ARG_INFO_FLAGS(byRef ? ZEND_SEND_BY_REF : ZEND_SEND_BY_VAL, variadic ? 1 : 0, 0);
 }
 
-inline uint32_t codeMask(zend_uchar code, bool nullable)
+constexpr uint32_t codeMask(zend_uchar code, bool nullable)
 {
 	uint32_t mask = code == _IS_BOOL ? MAY_BE_BOOL : (uint32_t) (1u << code);
 	return mask | (nullable ? MAY_BE_NULL : 0);
@@ -256,51 +256,74 @@ inline uint32_t codeMask(zend_uchar code, bool nullable)
 } // namespace detail
 
 /* an untyped parameter (ZEND_ARG_INFO) */
-inline Arg any(const char *name, bool byRef = false)
+constexpr Arg any(const char *name, bool byRef = false)
 {
 	return { name, detail::flagBits(byRef, false), nullptr };
 }
 
-inline Arg longArg(const char *name)
+constexpr Arg longArg(const char *name)
 {
 	return { name, detail::codeMask(IS_LONG, false) | detail::flagBits(false, false), nullptr };
 }
 
-inline Arg boolArg(const char *name)
+constexpr Arg boolArg(const char *name)
 {
 	return { name, detail::codeMask(_IS_BOOL, false) | detail::flagBits(false, false), nullptr };
 }
 
-inline Arg stringArg(const char *name, bool nullable = false)
+constexpr Arg stringArg(const char *name, bool nullable = false)
 {
 	return { name, detail::codeMask(IS_STRING, nullable) | detail::flagBits(false, false), nullptr };
 }
 
-inline Arg arrayArg(const char *name)
+constexpr Arg arrayArg(const char *name)
 {
 	return { name, detail::codeMask(IS_ARRAY, false) | detail::flagBits(false, false), nullptr };
 }
 
-inline Arg callableArg(const char *name)
+constexpr Arg callableArg(const char *name)
 {
 	return { name, MAY_BE_CALLABLE | detail::flagBits(false, false), nullptr };
 }
 
-inline Arg objectArg(const char *name, bool nullable = false)
+constexpr Arg objectArg(const char *name, bool nullable = false)
 {
 	return { name, detail::codeMask(IS_OBJECT, nullable) | detail::flagBits(false, false), nullptr };
 }
 
 /* object of a specific class; className must be a persistent literal */
-inline Arg obj(const char *name, const char *className, bool nullable = false)
+constexpr Arg obj(const char *name, const char *className, bool nullable = false)
 {
 	return { name, _ZEND_TYPE_LITERAL_NAME_BIT | (nullable ? MAY_BE_NULL : 0) | detail::flagBits(false, false), className };
 }
 
-inline Arg variadicObj(const char *name, const char *className)
+constexpr Arg variadicObj(const char *name, const char *className)
 {
 	return { name, _ZEND_TYPE_LITERAL_NAME_BIT | detail::flagBits(false, true), className };
 }
+
+/* a parameter or return type the way a generated signature spells it
+ * (turbo-ext/src/generated): the MAY_BE_* mask, a persistent literal class
+ * name ("Foo", "Foo|Bar", "self") or nullptr, by reference / variadic, the
+ * PHP source of the default value or nullptr — the same bits the
+ * descriptors above produce */
+constexpr Arg typed(const char *name, uint32_t mask, const char *className = nullptr, bool byRef = false, bool variadic = false, const char *defaultValue = nullptr)
+{
+	return { name, mask | (className != nullptr ? _ZEND_TYPE_LITERAL_NAME_BIT : 0) | detail::flagBits(byRef, variadic), className, defaultValue };
+}
+
+/* a method's signature as generated from the PHP twin: name, ZEND_ACC_*
+ * flags, the required-parameter count, the parameters' arginfo and the
+ * declared return type (nullptr: none) */
+struct Sig
+{
+	const char *name;
+	uint32_t flags;
+	uint32_t requiredArgs;
+	const Arg *args;
+	uint32_t argc;
+	const Arg *returns;
+};
 
 enum class PropertyKind
 {
@@ -623,22 +646,25 @@ public:
 	 */
 	Class &method(const char *methodName, uint32_t flags, uint32_t requiredArgs, std::initializer_list<Arg> args, zif_handler handler, const Arg *returns = NULL)
 	{
+		return method(methodName, flags, requiredArgs, args.begin(), args.size(), handler, returns);
+	}
+
+	Class &method(const char *methodName, uint32_t flags, uint32_t requiredArgs, const Arg *args, size_t argc, zif_handler handler, const Arg *returns)
+	{
 		/* arginfo array: slot 0 is the return-info slot carrying the
 		 * required-args count, exactly as ZEND_BEGIN_ARG_INFO_EX emits.
 		 * A declared return type goes in the same slot's type — needed only
 		 * where the engine enforces it (implementing a userland interface). */
-		auto *argInfo = (zend_internal_arg_info *) pemalloc(sizeof(zend_internal_arg_info) * (args.size() + 1), 1);
+		auto *argInfo = (zend_internal_arg_info *) pemalloc(sizeof(zend_internal_arg_info) * (argc + 1), 1);
 		argInfo[0].name = (const char *) (uintptr_t) requiredArgs;
 		argInfo[0].type.ptr = returns != NULL ? (void *) returns->className : NULL;
 		argInfo[0].type.type_mask = returns != NULL ? returns->typeMask : 0;
 		argInfo[0].default_value = NULL;
-		size_t i = 1;
-		for (const Arg &arg : args) {
-			argInfo[i].name = arg.name;
-			argInfo[i].type.ptr = (void *) arg.className;
-			argInfo[i].type.type_mask = arg.typeMask;
-			argInfo[i].default_value = arg.defaultValue;
-			i++;
+		for (size_t i = 0; i < argc; i++) {
+			argInfo[i + 1].name = args[i].name;
+			argInfo[i + 1].type.ptr = (void *) args[i].className;
+			argInfo[i + 1].type.type_mask = args[i].typeMask;
+			argInfo[i + 1].default_value = args[i].defaultValue;
 		}
 
 		zend_function_entry entry;
@@ -646,7 +672,7 @@ public:
 		entry.fname = methodName;
 		entry.handler = handler;
 		entry.arg_info = argInfo;
-		entry.num_args = (uint32_t) args.size();
+		entry.num_args = (uint32_t) argc;
 		entry.flags = flags;
 		entries.push_back(entry);
 		return *this;
@@ -661,6 +687,24 @@ public:
 	Class &method(const char *methodName, uint32_t flags, std::initializer_list<Arg> args, const Arg *returns = NULL)
 	{
 		return method(methodName, flags, zp::required<K...>(), args, &detail::Bound<M, K...>::handle, returns);
+	}
+
+	/* the method of a generated signature (turbo-ext/src/generated) */
+	Class &method(const Sig &sig, zif_handler handler)
+	{
+		return method(sig.name, sig.flags, sig.requiredArgs, sig.args, sig.argc, handler, sig.returns);
+	}
+
+	/* the method of a generated signature with a generated handler; the
+	 * parameter kinds must match the signature — a mismatch (the twin's
+	 * signature changed, the binding did not) refuses to load the module */
+	template <auto M, typename... K>
+	Class &method(const Sig &sig)
+	{
+		if (UNEXPECTED(sig.argc != sizeof...(K) || sig.requiredArgs != zp::required<K...>())) {
+			zend_error_noreturn(E_CORE_ERROR, "phpstan_turbo: %s::%s() binds %u parameter kinds to a signature of %u (%u required)", name, sig.name, (unsigned) sizeof...(K), (unsigned) sig.argc, (unsigned) sig.requiredArgs);
+		}
+		return method(sig.name, sig.flags, sig.requiredArgs, sig.args, sig.argc, &detail::Bound<M, K...>::handle, sig.returns);
 	}
 
 	/* declaration order defines the OBJ_PROP_NUM slot, as with the macros */

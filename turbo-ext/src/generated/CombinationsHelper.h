@@ -19,6 +19,13 @@ inline void declareProperties(reg::Class &cls)
 	(void) cls;
 }
 
+/* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
+namespace sig {
+inline constexpr reg::Arg combinations_args[] = { reg::typed("arrays", MAY_BE_ARRAY) };
+inline constexpr reg::Arg combinations_return = reg::typed("", _ZEND_TYPE_ITERABLE_BIT);
+inline constexpr reg::Sig combinations = { "combinations", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, combinations_args, 1, &combinations_return };
+} // namespace sig
+
 } // namespace ptdecl::CombinationsHelper
 
 #endif

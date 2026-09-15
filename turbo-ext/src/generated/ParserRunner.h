@@ -19,6 +19,13 @@ inline void declareProperties(reg::Class &cls)
 	(void) cls;
 }
 
+/* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
+namespace sig {
+inline constexpr reg::Arg parse_args[] = { reg::typed("parser", 0, "PhpParser\\Parser"), reg::typed("sourceCode", MAY_BE_STRING), reg::typed("errorHandler", 0, "PhpParser\\ErrorHandler") };
+inline constexpr reg::Arg parse_return = reg::typed("", MAY_BE_NULL | MAY_BE_ARRAY);
+inline constexpr reg::Sig parse = { "parse", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 3, parse_args, 3, &parse_return };
+} // namespace sig
+
 } // namespace ptdecl::ParserRunner
 
 #endif

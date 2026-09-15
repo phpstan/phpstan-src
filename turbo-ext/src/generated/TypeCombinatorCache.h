@@ -19,6 +19,21 @@ inline void declareProperties(reg::Class &cls)
 	(void) cls;
 }
 
+/* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
+namespace sig {
+inline constexpr reg::Arg union__args[] = { reg::typed("types", 0, "PHPStan\\Type\\Type", false, true) };
+inline constexpr reg::Arg union__return = reg::typed("", 0, "PHPStan\\Type\\Type");
+inline constexpr reg::Sig union_ = { "union", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, union__args, 1, &union__return };
+inline constexpr reg::Arg intersect_args[] = { reg::typed("types", 0, "PHPStan\\Type\\Type", false, true) };
+inline constexpr reg::Arg intersect_return = reg::typed("", 0, "PHPStan\\Type\\Type");
+inline constexpr reg::Sig intersect = { "intersect", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, intersect_args, 1, &intersect_return };
+inline constexpr reg::Arg remove_args[] = { reg::typed("fromType", 0, "PHPStan\\Type\\Type"), reg::typed("typeToRemove", 0, "PHPStan\\Type\\Type") };
+inline constexpr reg::Arg remove_return = reg::typed("", 0, "PHPStan\\Type\\Type");
+inline constexpr reg::Sig remove = { "remove", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, remove_args, 2, &remove_return };
+inline constexpr reg::Arg clearCache_return = reg::typed("", MAY_BE_VOID);
+inline constexpr reg::Sig clearCache = { "clearCache", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &clearCache_return };
+} // namespace sig
+
 } // namespace ptdecl::TypeCombinatorCache
 
 #endif

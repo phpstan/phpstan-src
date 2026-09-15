@@ -19,6 +19,13 @@ inline void declareProperties(reg::Class &cls)
 	(void) cls;
 }
 
+/* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
+namespace sig {
+inline constexpr reg::Arg nodeIsOrContainsYield_args[] = { reg::typed("node", 0, "PhpParser\\Node") };
+inline constexpr reg::Arg nodeIsOrContainsYield_return = reg::typed("", MAY_BE_BOOL);
+inline constexpr reg::Sig nodeIsOrContainsYield = { "nodeIsOrContainsYield", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, nodeIsOrContainsYield_args, 1, &nodeIsOrContainsYield_return };
+} // namespace sig
+
 } // namespace ptdecl::NodeScanner
 
 #endif

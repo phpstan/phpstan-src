@@ -26,6 +26,30 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("stopTraversal", ZEND_ACC_PROTECTED, reg::PropertyKind::Typed, MAY_BE_BOOL);
 }
 
+/* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
+namespace sig {
+inline constexpr reg::Arg __construct_args[] = { reg::typed("visitors", 0, "PhpParser\\NodeVisitor", false, true) };
+inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 0, __construct_args, 1, nullptr };
+inline constexpr reg::Arg addVisitor_args[] = { reg::typed("visitor", 0, "PhpParser\\NodeVisitor") };
+inline constexpr reg::Arg addVisitor_return = reg::typed("", MAY_BE_VOID);
+inline constexpr reg::Sig addVisitor = { "addVisitor", ZEND_ACC_PUBLIC, 1, addVisitor_args, 1, &addVisitor_return };
+inline constexpr reg::Arg removeVisitor_args[] = { reg::typed("visitor", 0, "PhpParser\\NodeVisitor") };
+inline constexpr reg::Arg removeVisitor_return = reg::typed("", MAY_BE_VOID);
+inline constexpr reg::Sig removeVisitor = { "removeVisitor", ZEND_ACC_PUBLIC, 1, removeVisitor_args, 1, &removeVisitor_return };
+inline constexpr reg::Arg traverse_args[] = { reg::typed("nodes", MAY_BE_ARRAY) };
+inline constexpr reg::Arg traverse_return = reg::typed("", MAY_BE_ARRAY);
+inline constexpr reg::Sig traverse = { "traverse", ZEND_ACC_PUBLIC, 1, traverse_args, 1, &traverse_return };
+inline constexpr reg::Arg traverseNode_args[] = { reg::typed("node", 0, "PhpParser\\Node") };
+inline constexpr reg::Arg traverseNode_return = reg::typed("", MAY_BE_VOID);
+inline constexpr reg::Sig traverseNode = { "traverseNode", ZEND_ACC_PROTECTED, 1, traverseNode_args, 1, &traverseNode_return };
+inline constexpr reg::Arg traverseArray_args[] = { reg::typed("nodes", MAY_BE_ARRAY) };
+inline constexpr reg::Arg traverseArray_return = reg::typed("", MAY_BE_ARRAY);
+inline constexpr reg::Sig traverseArray = { "traverseArray", ZEND_ACC_PROTECTED, 1, traverseArray_args, 1, &traverseArray_return };
+inline constexpr reg::Arg ensureReplacementReasonable_args[] = { reg::typed("old", 0, "PhpParser\\Node"), reg::typed("new", 0, "PhpParser\\Node") };
+inline constexpr reg::Arg ensureReplacementReasonable_return = reg::typed("", MAY_BE_VOID);
+inline constexpr reg::Sig ensureReplacementReasonable = { "ensureReplacementReasonable", ZEND_ACC_PRIVATE, 2, ensureReplacementReasonable_args, 2, &ensureReplacementReasonable_return };
+} // namespace sig
+
 } // namespace ptdecl::NodeTraverser
 
 #endif

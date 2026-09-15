@@ -144,6 +144,31 @@ function parsePhpMethods(string $file): array
 }
 
 /**
+ * The method names behind the sig:: identifiers of a generated header
+ * (turbo-ext/src/generated/<Stem>.h): identifier => PHP method name.
+ *
+ * @return array<string, string>
+ */
+function generatedSignatureNames(string $stem): array
+{
+	static $cache = [];
+	if (isset($cache[$stem])) {
+		return $cache[$stem];
+	}
+	$header = 'turbo-ext/src/generated/' . $stem . '.h';
+	if (!is_file($header)) {
+		throw new RuntimeException(sprintf('%s does not exist — run php turbo-ext/bin/generate-declarations.php', $header));
+	}
+	preg_match_all('~inline constexpr reg::Sig (\w+) = \{ "(\w+)"~', file_get_contents($header), $m, PREG_SET_ORDER);
+	$names = [];
+	foreach ($m as [, $identifier, $name]) {
+		$names[$identifier] = $name;
+	}
+
+	return $cache[$stem] = $names;
+}
+
+/**
  * @return array<string, array{startLine: int, endLine: int}>
  *         PHP_METHOD implementations, in source order
  */
@@ -167,12 +192,21 @@ function parseCppMethods(string $file): array
 		}
 	}
 
+	// registrations by generated signature name their method through the
+	// file's `namespace sigs = ptdecl::<Stem>::sig;` alias
+	$signatures = preg_match('/^namespace sigs = ptdecl::(\w+)::sig;$/m', file_get_contents($file), $alias) === 1
+		? generatedSignatureNames($alias[1])
+		: [];
+
 	foreach ($lines as $i => $lineText) {
 		if (
 			preg_match('/^\s*(?:static\s+)?PHP_METHOD\(\s*\w+\s*,\s*(\w+)\s*\)/', $lineText, $m) !== 1
 			&& preg_match('/^\s*(?:cls\.|\.)method\("(\w+)"/', $lineText, $m) !== 1
 		) {
-			continue;
+			if (preg_match('/^\s*cls\.(?:method|traitMethod)(?:<[^(]*>)?\(sigs::(\w+)/', $lineText, $sm) !== 1) {
+				continue;
+			}
+			$m = [1 => $signatures[$sm[1]] ?? $sm[1]];
 		}
 		// prefer the handle-class member of the same (or underscore-suffixed) name
 		if (isset($handleClassMembers[$m[1]])) {

@@ -26,6 +26,18 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("typeHolder", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExpressionTypeHolder");
 }
 
+/* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
+namespace sig {
+inline constexpr reg::Arg __construct_args[] = { reg::typed("conditionExpressionTypeHolders", MAY_BE_ARRAY), reg::typed("typeHolder", 0, "PHPStan\\Analyser\\ExpressionTypeHolder") };
+inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 2, __construct_args, 2, nullptr };
+inline constexpr reg::Arg getConditionExpressionTypeHolders_return = reg::typed("", MAY_BE_ARRAY);
+inline constexpr reg::Sig getConditionExpressionTypeHolders = { "getConditionExpressionTypeHolders", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getConditionExpressionTypeHolders_return };
+inline constexpr reg::Arg getTypeHolder_return = reg::typed("", 0, "PHPStan\\Analyser\\ExpressionTypeHolder");
+inline constexpr reg::Sig getTypeHolder = { "getTypeHolder", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getTypeHolder_return };
+inline constexpr reg::Arg getKey_return = reg::typed("", MAY_BE_STRING);
+inline constexpr reg::Sig getKey = { "getKey", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getKey_return };
+} // namespace sig
+
 } // namespace ptdecl::ConditionalExpressionHolder
 
 #endif

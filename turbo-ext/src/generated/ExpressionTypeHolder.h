@@ -28,6 +28,33 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("certainty", ZEND_ACC_PRIVATE | ZEND_ACC_READONLY, reg::PropertyKind::Typed, 0, "PHPStan\\TrinaryLogic");
 }
 
+/* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
+namespace sig {
+inline constexpr reg::Arg __construct_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr"), reg::typed("type", 0, "PHPStan\\Type\\Type"), reg::typed("certainty", 0, "PHPStan\\TrinaryLogic") };
+inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 3, __construct_args, 3, nullptr };
+inline constexpr reg::Arg createYes_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr"), reg::typed("type", 0, "PHPStan\\Type\\Type") };
+inline constexpr reg::Arg createYes_return = reg::typed("", 0, "PHPStan\\Analyser\\ExpressionTypeHolder");
+inline constexpr reg::Sig createYes = { "createYes", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, createYes_args, 2, &createYes_return };
+inline constexpr reg::Arg createMaybe_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr"), reg::typed("type", 0, "PHPStan\\Type\\Type") };
+inline constexpr reg::Arg createMaybe_return = reg::typed("", 0, "PHPStan\\Analyser\\ExpressionTypeHolder");
+inline constexpr reg::Sig createMaybe = { "createMaybe", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, createMaybe_args, 2, &createMaybe_return };
+inline constexpr reg::Arg equalTypes_args[] = { reg::typed("other", 0, "PHPStan\\Analyser\\ExpressionTypeHolder") };
+inline constexpr reg::Arg equalTypes_return = reg::typed("", MAY_BE_BOOL);
+inline constexpr reg::Sig equalTypes = { "equalTypes", ZEND_ACC_PUBLIC, 1, equalTypes_args, 1, &equalTypes_return };
+inline constexpr reg::Arg equals_args[] = { reg::typed("other", 0, "PHPStan\\Analyser\\ExpressionTypeHolder") };
+inline constexpr reg::Arg equals_return = reg::typed("", MAY_BE_BOOL);
+inline constexpr reg::Sig equals = { "equals", ZEND_ACC_PUBLIC, 1, equals_args, 1, &equals_return };
+inline constexpr reg::Arg and__args[] = { reg::typed("other", 0, "PHPStan\\Analyser\\ExpressionTypeHolder") };
+inline constexpr reg::Arg and__return = reg::typed("", 0, "PHPStan\\Analyser\\ExpressionTypeHolder");
+inline constexpr reg::Sig and_ = { "and", ZEND_ACC_PUBLIC, 1, and__args, 1, &and__return };
+inline constexpr reg::Arg getExpr_return = reg::typed("", 0, "PhpParser\\Node\\Expr");
+inline constexpr reg::Sig getExpr = { "getExpr", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getExpr_return };
+inline constexpr reg::Arg getType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
+inline constexpr reg::Sig getType = { "getType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getType_return };
+inline constexpr reg::Arg getCertainty_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
+inline constexpr reg::Sig getCertainty = { "getCertainty", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getCertainty_return };
+} // namespace sig
+
 } // namespace ptdecl::ExpressionTypeHolder
 
 #endif

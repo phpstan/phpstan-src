@@ -28,6 +28,66 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("value", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_LONG);
 }
 
+/* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
+namespace sig {
+inline constexpr reg::Arg __construct_args[] = { reg::typed("value", MAY_BE_LONG) };
+inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PRIVATE, 1, __construct_args, 1, nullptr };
+inline constexpr reg::Arg createYes_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
+inline constexpr reg::Sig createYes = { "createYes", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &createYes_return };
+inline constexpr reg::Arg createNo_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
+inline constexpr reg::Sig createNo = { "createNo", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &createNo_return };
+inline constexpr reg::Arg createMaybe_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
+inline constexpr reg::Sig createMaybe = { "createMaybe", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &createMaybe_return };
+inline constexpr reg::Arg createFromBoolean_args[] = { reg::typed("value", MAY_BE_BOOL) };
+inline constexpr reg::Arg createFromBoolean_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
+inline constexpr reg::Sig createFromBoolean = { "createFromBoolean", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, createFromBoolean_args, 1, &createFromBoolean_return };
+inline constexpr reg::Arg create_args[] = { reg::typed("value", MAY_BE_LONG) };
+inline constexpr reg::Arg create_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
+inline constexpr reg::Sig create = { "create", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 1, create_args, 1, &create_return };
+inline constexpr reg::Arg yes_return = reg::typed("", MAY_BE_BOOL);
+inline constexpr reg::Sig yes = { "yes", ZEND_ACC_PUBLIC, 0, nullptr, 0, &yes_return };
+inline constexpr reg::Arg maybe_return = reg::typed("", MAY_BE_BOOL);
+inline constexpr reg::Sig maybe = { "maybe", ZEND_ACC_PUBLIC, 0, nullptr, 0, &maybe_return };
+inline constexpr reg::Arg no_return = reg::typed("", MAY_BE_BOOL);
+inline constexpr reg::Sig no = { "no", ZEND_ACC_PUBLIC, 0, nullptr, 0, &no_return };
+inline constexpr reg::Arg toBooleanType_return = reg::typed("", 0, "PHPStan\\Type\\BooleanType");
+inline constexpr reg::Sig toBooleanType = { "toBooleanType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toBooleanType_return };
+inline constexpr reg::Arg and__args[] = { reg::typed("operand", MAY_BE_NULL, "PHPStan\\TrinaryLogic", false, false, "null"), reg::typed("rest", 0, "PHPStan\\TrinaryLogic", false, true) };
+inline constexpr reg::Arg and__return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
+inline constexpr reg::Sig and_ = { "and", ZEND_ACC_PUBLIC, 0, and__args, 2, &and__return };
+inline constexpr reg::Arg lazyAnd_args[] = { reg::typed("objects", MAY_BE_ARRAY), reg::typed("callback", MAY_BE_CALLABLE) };
+inline constexpr reg::Arg lazyAnd_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
+inline constexpr reg::Sig lazyAnd = { "lazyAnd", ZEND_ACC_PUBLIC, 2, lazyAnd_args, 2, &lazyAnd_return };
+inline constexpr reg::Arg or__args[] = { reg::typed("operand", MAY_BE_NULL, "PHPStan\\TrinaryLogic", false, false, "null"), reg::typed("rest", 0, "PHPStan\\TrinaryLogic", false, true) };
+inline constexpr reg::Arg or__return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
+inline constexpr reg::Sig or_ = { "or", ZEND_ACC_PUBLIC, 0, or__args, 2, &or__return };
+inline constexpr reg::Arg lazyOr_args[] = { reg::typed("objects", MAY_BE_ARRAY), reg::typed("callback", MAY_BE_CALLABLE) };
+inline constexpr reg::Arg lazyOr_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
+inline constexpr reg::Sig lazyOr = { "lazyOr", ZEND_ACC_PUBLIC, 2, lazyOr_args, 2, &lazyOr_return };
+inline constexpr reg::Arg extremeIdentity_args[] = { reg::typed("operands", 0, "PHPStan\\TrinaryLogic", false, true) };
+inline constexpr reg::Arg extremeIdentity_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
+inline constexpr reg::Sig extremeIdentity = { "extremeIdentity", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, extremeIdentity_args, 1, &extremeIdentity_return };
+inline constexpr reg::Arg lazyExtremeIdentity_args[] = { reg::typed("objects", MAY_BE_ARRAY), reg::typed("callback", MAY_BE_CALLABLE) };
+inline constexpr reg::Arg lazyExtremeIdentity_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
+inline constexpr reg::Sig lazyExtremeIdentity = { "lazyExtremeIdentity", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, lazyExtremeIdentity_args, 2, &lazyExtremeIdentity_return };
+inline constexpr reg::Arg maxMin_args[] = { reg::typed("operands", 0, "PHPStan\\TrinaryLogic", false, true) };
+inline constexpr reg::Arg maxMin_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
+inline constexpr reg::Sig maxMin = { "maxMin", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, maxMin_args, 1, &maxMin_return };
+inline constexpr reg::Arg lazyMaxMin_args[] = { reg::typed("objects", MAY_BE_ARRAY), reg::typed("callback", MAY_BE_CALLABLE) };
+inline constexpr reg::Arg lazyMaxMin_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
+inline constexpr reg::Sig lazyMaxMin = { "lazyMaxMin", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, lazyMaxMin_args, 2, &lazyMaxMin_return };
+inline constexpr reg::Arg negate_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
+inline constexpr reg::Sig negate = { "negate", ZEND_ACC_PUBLIC, 0, nullptr, 0, &negate_return };
+inline constexpr reg::Arg equals_args[] = { reg::typed("other", 0, "PHPStan\\TrinaryLogic") };
+inline constexpr reg::Arg equals_return = reg::typed("", MAY_BE_BOOL);
+inline constexpr reg::Sig equals = { "equals", ZEND_ACC_PUBLIC, 1, equals_args, 1, &equals_return };
+inline constexpr reg::Arg compareTo_args[] = { reg::typed("other", 0, "PHPStan\\TrinaryLogic") };
+inline constexpr reg::Arg compareTo_return = reg::typed("", MAY_BE_NULL, "PHPStan\\TrinaryLogic");
+inline constexpr reg::Sig compareTo = { "compareTo", ZEND_ACC_PUBLIC, 1, compareTo_args, 1, &compareTo_return };
+inline constexpr reg::Arg describe_return = reg::typed("", MAY_BE_STRING);
+inline constexpr reg::Sig describe = { "describe", ZEND_ACC_PUBLIC, 0, nullptr, 0, &describe_return };
+} // namespace sig
+
 } // namespace ptdecl::TrinaryLogic
 
 #endif

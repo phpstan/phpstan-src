@@ -12,6 +12,8 @@
 
 #include "support.h"
 #include "generated/TrinaryLogic.h"
+
+namespace sigs = ptdecl::TrinaryLogic::sig;
 #include "zv.h"
 
 namespace phpstanturbo {
@@ -319,7 +321,7 @@ void pt_register_trinary_logic()
 	/* "value" must stay the first declared property (OBJ_PROP_NUM slot 0) */
 	cls.privateLongProperty("value", 0);
 
-	cls.method("__construct", reg::Private, 1, { reg::longArg("value") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_long value;
 		if (!zp::parse<zp::Long>(execute_data, value)) RETURN_THROWS();
 		ZVAL_LONG(OBJ_PROP_NUM(Z_OBJ_P(ZEND_THIS), PT_TRI_PROP_VALUE), value);

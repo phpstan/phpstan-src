@@ -81,8 +81,11 @@ being ≥0.5% faster is. When the estimate is marginal, don't port.
    writes `turbo-ext/src/generated/<Stem>.h` from the twin — `declareClass(cls)`
    (final/abstract, parent, the directly implemented interfaces),
    `declareProperties(cls)` (the twin's own properties, exactly) and the
-   `slot::` constants of its instance properties. Call both first in the
-   registration function instead of spelling them out; side-by-side.php
+   `slot::` constants of its instance properties, and `sig::` — each
+   method's name, flags, arginfo and return type. Call both functions first
+   in the registration function and register the methods by signature
+   (`cls.method(sigs::accepts, handler)`, `cls.method<&Handle::accepts,
+   zp::Obj, zp::Bool>(sigs::accepts)`) instead of spelling them out; side-by-side.php
    fails while a header is stale. A class whose native properties deliberately
    differ from the twin keeps declaring them by hand.
 6. **Check method parity**: `php bin/side-by-side.php` must pass (it also

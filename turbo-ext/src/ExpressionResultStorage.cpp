@@ -19,6 +19,7 @@
 #include "generated/ExpressionResultStorage.h"
 
 namespace slots = ptdecl::ExpressionResultStorage::slot;
+namespace sigs = ptdecl::ExpressionResultStorage::sig;
 #include "support.h"
 #include "zv.h"
 
@@ -102,7 +103,7 @@ void pt_register_expression_result_storage()
 
 	/* the twin's constructor only initialized its SplObjectStorage; the
 	 * native property defaults already cover that */
-	cls.method("__construct", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 	});
 

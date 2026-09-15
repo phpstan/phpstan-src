@@ -17,6 +17,7 @@
 #include "generated/NodeTraverser.h"
 
 namespace slots = ptdecl::NodeTraverser::slot;
+namespace sigs = ptdecl::NodeTraverser::sig;
 #include "zv.h"
 
 static zend_class_entry *pt_ce_node_traverser;
@@ -813,7 +814,7 @@ void pt_register_node_traverser()
 	cls.classConstantLong("REMOVE_NODE", NodeTraverser::REMOVE_NODE);
 	cls.classConstantLong("DONT_TRAVERSE_CURRENT_AND_CHILDREN", NodeTraverser::DONT_TRAVERSE_CURRENT_AND_CHILDREN);
 
-	cls.method("__construct", reg::Public, 0, { reg::variadicObj("visitors", NODE_VISITOR_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *visitors = NULL;
 		uint32_t count = 0;
 		ZEND_PARSE_PARAMETERS_START(0, -1)
@@ -823,29 +824,26 @@ void pt_register_node_traverser()
 		if (UNEXPECTED(!self.construct(visitors, count))) RETURN_THROWS();
 	});
 
-	static const reg::Arg voidReturn = { "", MAY_BE_VOID, nullptr };
-	static const reg::Arg arrayReturn = reg::arrayArg("");
-
-	cls.method("addVisitor", reg::Public, 1, { reg::obj("visitor", NODE_VISITOR_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::addVisitor, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *visitor;
 		if (!zp::parse<zp::Obj>(execute_data, visitor)) RETURN_THROWS();
 		NodeTraverser(Z_OBJ_P(ZEND_THIS)).addVisitor(zv::Ref(visitor));
-	}, &voidReturn);
+	});
 
-	cls.method("removeVisitor", reg::Public, 1, { reg::obj("visitor", NODE_VISITOR_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::removeVisitor, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *visitor;
 		if (!zp::parse<zp::Obj>(execute_data, visitor)) RETURN_THROWS();
 		NodeTraverser(Z_OBJ_P(ZEND_THIS)).removeVisitor(zv::Ref(visitor));
-	}, &voidReturn);
+	});
 
-	cls.method("traverse", reg::Public, 1, { reg::arrayArg("nodes") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::traverse, [](INTERNAL_FUNCTION_PARAMETERS) {
 		HashTable *nodes;
 		if (!zp::parse<zp::Ht>(execute_data, nodes)) RETURN_THROWS();
 		NodeTraverser self(Z_OBJ_P(ZEND_THIS));
 		zv::Val result = self.traverse(nodes);
 		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
-	}, &arrayReturn);
+	});
 
 	cls.shadow(&pt_ce_node_traverser);
 }

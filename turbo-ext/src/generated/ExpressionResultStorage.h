@@ -26,6 +26,22 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("fallback", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL, "PHPStan\\Analyser\\ExpressionResultStorage");
 }
 
+/* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
+namespace sig {
+inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 0, nullptr, 0, nullptr };
+inline constexpr reg::Arg duplicate_return = reg::typed("", 0, "PHPStan\\Analyser\\ExpressionResultStorage");
+inline constexpr reg::Sig duplicate = { "duplicate", ZEND_ACC_PUBLIC, 0, nullptr, 0, &duplicate_return };
+inline constexpr reg::Arg mergeResults_args[] = { reg::typed("other", 0, "PHPStan\\Analyser\\ExpressionResultStorage") };
+inline constexpr reg::Arg mergeResults_return = reg::typed("", MAY_BE_VOID);
+inline constexpr reg::Sig mergeResults = { "mergeResults", ZEND_ACC_PUBLIC, 1, mergeResults_args, 1, &mergeResults_return };
+inline constexpr reg::Arg storeExpressionResult_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr"), reg::typed("expressionResult", 0, "PHPStan\\Analyser\\ExpressionResult") };
+inline constexpr reg::Arg storeExpressionResult_return = reg::typed("", MAY_BE_VOID);
+inline constexpr reg::Sig storeExpressionResult = { "storeExpressionResult", ZEND_ACC_PUBLIC, 2, storeExpressionResult_args, 2, &storeExpressionResult_return };
+inline constexpr reg::Arg findExpressionResult_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr") };
+inline constexpr reg::Arg findExpressionResult_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\ExpressionResult");
+inline constexpr reg::Sig findExpressionResult = { "findExpressionResult", ZEND_ACC_PUBLIC, 1, findExpressionResult_args, 1, &findExpressionResult_return };
+} // namespace sig
+
 } // namespace ptdecl::ExpressionResultStorage
 
 #endif

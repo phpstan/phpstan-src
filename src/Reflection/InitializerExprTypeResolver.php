@@ -146,6 +146,8 @@ final class InitializerExprTypeResolver
 		private OversizedArrayBuilder $oversizedArrayBuilder,
 		#[AutowiredParameter]
 		private bool $usePathConstantsAsConstantString,
+		#[AutowiredParameter(ref: '%featureToggles.preciseArrayShapeUnpacking%')]
+		private bool $preciseArrayShapeUnpacking,
 	)
 	{
 	}
@@ -646,96 +648,97 @@ final class InitializerExprTypeResolver
 
 		$valueTypes = [];
 		$keyTypes = [];
-		$constantArrayVariantsByItemIndex = [];
-		$constantArraysCombinationsCount = 1;
-		$hasConstantArrayUnion = false;
-		$canResolveConstantArraysPrecisely = true;
-
-		foreach ($expr->items as $itemIndex => $arrayItem) {
-			$valueType = $getTypeCallback($arrayItem->value);
-			$valueTypes[$itemIndex] = $valueType;
-
-			if (!$arrayItem->unpack) {
-				$keyTypes[$itemIndex] = $arrayItem->key !== null
-					? $getTypeCallback($arrayItem->key)
-					: null;
-				continue;
-			}
-
-			$constantArrays = $valueType->getConstantArrays();
-			$constantArraysCount = count($constantArrays);
-			$constantArrayVariantsByItemIndex[$itemIndex] = $constantArrays;
-
-			if ($constantArraysCount === 0) {
-				$canResolveConstantArraysPrecisely = false;
-				continue;
-			}
-
-			if ($constantArraysCount > 1) {
-				$hasConstantArrayUnion = true;
-			}
-
-			if ($constantArraysCount > self::CALCULATE_ARRAYS_LIMIT
-				|| $constantArraysCombinationsCount > intdiv(self::CALCULATE_ARRAYS_LIMIT, $constantArraysCount)
-			) {
-				$canResolveConstantArraysPrecisely = false;
-				continue;
-			}
-
-			$constantArraysCombinationsCount *= $constantArraysCount;
-		}
-
-		if ($hasConstantArrayUnion && $canResolveConstantArraysPrecisely) {
-			$arrayBuilders = [ConstantArrayTypeBuilder::createEmpty()];
-			$keepStringKeys = $this->phpVersion->supportsArrayUnpackingWithStringKeys();
-
+		if ($this->preciseArrayShapeUnpacking) {
+			$constantArrayVariantsByItemIndex = [];
+			$constantArraysCombinationsCount = 1;
+			$hasConstantArrayUnion = false;
+			$canResolveConstantArraysPrecisely = true;
 			foreach ($expr->items as $itemIndex => $arrayItem) {
-				if (!$arrayItem->unpack) {
-					foreach ($arrayBuilders as $arrayBuilder) {
-						$arrayBuilder->setOffsetValueType(
-							$keyTypes[$itemIndex],
-							$valueTypes[$itemIndex],
-						);
-					}
+				$valueType = $getTypeCallback($arrayItem->value);
+				$valueTypes[$itemIndex] = $valueType;
 
+				if (!$arrayItem->unpack) {
+					$keyTypes[$itemIndex] = $arrayItem->key !== null
+						? $getTypeCallback($arrayItem->key)
+						: null;
 					continue;
 				}
 
-				$newArrayBuilders = [];
+				$constantArrays = $valueType->getConstantArrays();
+				$constantArraysCount = count($constantArrays);
+				$constantArrayVariantsByItemIndex[$itemIndex] = $constantArrays;
 
-				foreach ($arrayBuilders as $arrayBuilder) {
-					foreach ($constantArrayVariantsByItemIndex[$itemIndex] as $constantArray) {
-						$newArrayBuilder = clone $arrayBuilder;
+				if ($constantArraysCount === 0) {
+					$canResolveConstantArraysPrecisely = false;
+					continue;
+				}
 
-						foreach ($constantArray->getKeyTypes() as $j => $keyType) {
-							$newArrayBuilder->setOffsetValueType(
-								$keepStringKeys && $keyType->isString()->yes() ? $keyType : null,
-								$constantArray->getValueTypes()[$j],
-								$constantArray->isOptionalKey($j),
+				if ($constantArraysCount > 1) {
+					$hasConstantArrayUnion = true;
+				}
+
+				if ($constantArraysCount > self::CALCULATE_ARRAYS_LIMIT
+					|| $constantArraysCombinationsCount > intdiv(self::CALCULATE_ARRAYS_LIMIT, $constantArraysCount)
+				) {
+					$canResolveConstantArraysPrecisely = false;
+					continue;
+				}
+
+				$constantArraysCombinationsCount *= $constantArraysCount;
+			}
+
+			if ($hasConstantArrayUnion && $canResolveConstantArraysPrecisely) {
+				$arrayBuilders = [ConstantArrayTypeBuilder::createEmpty()];
+				$keepStringKeys = $this->phpVersion->supportsArrayUnpackingWithStringKeys();
+
+				foreach ($expr->items as $itemIndex => $arrayItem) {
+					if (!$arrayItem->unpack) {
+						foreach ($arrayBuilders as $arrayBuilder) {
+							$arrayBuilder->setOffsetValueType(
+								$keyTypes[$itemIndex],
+								$valueTypes[$itemIndex],
 							);
 						}
 
-						$newArrayBuilders[] = $newArrayBuilder;
+						continue;
 					}
+
+					$newArrayBuilders = [];
+
+					foreach ($arrayBuilders as $arrayBuilder) {
+						foreach ($constantArrayVariantsByItemIndex[$itemIndex] as $constantArray) {
+							$newArrayBuilder = clone $arrayBuilder;
+
+							foreach ($constantArray->getKeyTypes() as $j => $keyType) {
+								$newArrayBuilder->setOffsetValueType(
+									$keepStringKeys && $keyType->isString()->yes() ? $keyType : null,
+									$constantArray->getValueTypes()[$j],
+									$constantArray->isOptionalKey($j),
+								);
+							}
+
+							$newArrayBuilders[] = $newArrayBuilder;
+						}
+					}
+
+					$arrayBuilders = $newArrayBuilders;
 				}
 
-				$arrayBuilders = $newArrayBuilders;
+				$arrayTypes = [];
+
+				foreach ($arrayBuilders as $arrayBuilder) {
+					$arrayTypes[] = $arrayBuilder->getArray();
+				}
+
+				return TypeCombinator::union(...$arrayTypes);
 			}
-
-			$arrayTypes = [];
-
-			foreach ($arrayBuilders as $arrayBuilder) {
-				$arrayTypes[] = $arrayBuilder->getArray();
-			}
-
-			return TypeCombinator::union(...$arrayTypes);
 		}
 
 		$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 		$isList = null;
 		$hasOffsetValueTypes = [];
 		foreach ($expr->items as $itemIndex => $arrayItem) {
-			$valueType = $valueTypes[$itemIndex];
+			$valueType = $valueTypes[$itemIndex] ?? $getTypeCallback($arrayItem->value);
 			if ($arrayItem->unpack) {
 				$constantArrays = $valueType->getConstantArrays();
 				if (count($constantArrays) > 0) {
@@ -828,7 +831,9 @@ final class InitializerExprTypeResolver
 				}
 			} else {
 				$arrayBuilder->setOffsetValueType(
-					$keyTypes[$itemIndex],
+					array_key_exists($itemIndex, $keyTypes)
+						? $keyTypes[$itemIndex]
+						: ($arrayItem->key !== null ? $getTypeCallback($arrayItem->key) : null),
 					$valueType,
 				);
 			}

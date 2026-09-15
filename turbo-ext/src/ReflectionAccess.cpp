@@ -8,7 +8,12 @@
  *   $instance` (the method, which throws, while it is null);
  * - MemoizingReflectionProvider::hasClass() / getClass(): the memoized
  *   answer from $knownClasses / $unknownClasses / $classes (the method,
- *   which asks the decorated provider and memoizes, on a miss).
+ *   which asks the decorated provider and memoizes, on a miss);
+ * - LazyClassReflectionExtensionRegistryProvider::getRegistry() followed by
+ *   one ClassReflectionExtensionRegistry getter: the built registry from the
+ *   provider's $registry memo and the extension from the registry's own
+ *   constructor-written slot (the methods while the memo is still null, or
+ *   for any other provider implementation).
  *
  * Same contract as the scope readers of ScopeContext.cpp: only an object of exactly
  * the twin's class entry (resolved once through the class map, without
@@ -44,6 +49,39 @@ struct StaticSlot
 
 MemoizingProviderSlots pt_mrp_slots = { NULL, 0, 0, 0 };
 StaticSlot pt_rpsa_slot = { NULL, NULL };
+
+/* the $registry memo slot of the lazy registry provider's class entry */
+struct RegistryProviderSlots
+{
+	zend_class_entry *ce;
+	uint32_t registry;
+};
+
+/* the registry's constructor-written slots, in pt_registry_member order */
+struct RegistrySlots
+{
+	zend_class_entry *ce;
+	uint32_t members[PT_REGISTRY_MEMBER_COUNT];
+};
+
+RegistryProviderSlots pt_registry_provider_slots = { NULL, 0 };
+RegistrySlots pt_registry_slots = { NULL, { 0, 0, 0, 0, 0, 0 } };
+
+/* the registry property and the twin's getter behind each member */
+struct RegistryMemberNames
+{
+	const char *property;
+	const char *getter;
+};
+
+const RegistryMemberNames pt_registry_member_names[PT_REGISTRY_MEMBER_COUNT] = {
+	/* PT_REGISTRY_PHP_CLASS_REFLECTION_EXTENSION */ { "phpClassReflectionExtension", "getphpclassreflectionextension" },
+	/* PT_REGISTRY_METHODS_EXTENSIONS */ { "methodsClassReflectionExtensions", "getmethodsclassreflectionextensions" },
+	/* PT_REGISTRY_PROPERTIES_EXTENSIONS */ { "propertiesClassReflectionExtensions", "getpropertiesclassreflectionextensions" },
+	/* PT_REGISTRY_REQUIRE_EXTENDS_METHODS_EXTENSION */ { "requireExtendsMethodsClassReflectionExtension", "getrequireextendsmethodsclassreflectionextension" },
+	/* PT_REGISTRY_REQUIRE_EXTENDS_PROPERTIES_EXTENSION */ { "requireExtendsPropertiesClassReflectionExtension", "getrequireextendspropertyclassreflectionextension" },
+	/* PT_REGISTRY_ALLOWED_SUB_TYPES_EXTENSIONS */ { "allowedSubTypesClassReflectionExtensions", "getallowedsubtypesclassreflectionextensions" },
+};
 
 /* the static-property slot of a declared user class once the engine has
  * initialized its statics (the constants updated, the table allocated —
@@ -109,6 +147,8 @@ void pt_reflection_access_rinit()
 {
 	pt_mrp_slots.ce = NULL;
 	pt_rpsa_slot = { NULL, NULL };
+	pt_registry_provider_slots.ce = NULL;
+	pt_registry_slots.ce = NULL;
 }
 
 /* {{{ ReflectionProviderStaticAccessor */
@@ -196,6 +236,110 @@ zv::Val pt_reflection_provider_get_class(zend_object *provider, zval *className)
 		return zv::Val();
 	}
 	return pt_type_call(provider, PT_LC("getclass"), 1, className);
+}
+
+/* }}} */
+
+/* {{{ ClassReflectionExtensionRegistryProvider */
+
+namespace {
+
+/* the memo slot of an object that is exactly a
+ * LazyClassReflectionExtensionRegistryProvider; NULL when it is of some other
+ * class (the caller then calls getRegistry()) — or, with `error` set and an
+ * exception pending, when the class map cannot resolve the class at all */
+const RegistryProviderSlots *registryProviderSlots(zend_object *provider, bool &error)
+{
+	error = false;
+	if (EXPECTED(provider->ce == pt_registry_provider_slots.ce)) return &pt_registry_provider_slots;
+	zend_class_entry *ce = pt_class_loaded(PT_CLASS_LAZY_CLASS_REFLECTION_EXTENSION_REGISTRY_PROVIDER);
+	if (ce == NULL) {
+		error = EG(exception) != NULL;
+		return NULL;
+	}
+	if (provider->ce != ce) return NULL;
+	int32_t registry = pt_instance_prop_offset(ce, PT_LC("registry"));
+	if (UNEXPECTED(registry < 0)) {
+		/* not the twin this reader knows: every call goes through the method */
+		return NULL;
+	}
+	pt_registry_provider_slots = { ce, (uint32_t) registry };
+	return &pt_registry_provider_slots;
+}
+
+/* the slots of an object that is exactly a ClassReflectionExtensionRegistry;
+ * the same contract as registryProviderSlots() */
+const RegistrySlots *registrySlots(zend_object *registry, bool &error)
+{
+	error = false;
+	if (EXPECTED(registry->ce == pt_registry_slots.ce)) return &pt_registry_slots;
+	zend_class_entry *ce = pt_class_loaded(PT_CLASS_CLASS_REFLECTION_EXTENSION_REGISTRY);
+	if (ce == NULL) {
+		error = EG(exception) != NULL;
+		return NULL;
+	}
+	if (registry->ce != ce) return NULL;
+	RegistrySlots slots;
+	slots.ce = ce;
+	for (int i = 0; i < PT_REGISTRY_MEMBER_COUNT; i++) {
+		const char *property = pt_registry_member_names[i].property;
+		int32_t offset = pt_instance_prop_offset(ce, property, strlen(property));
+		if (UNEXPECTED(offset < 0)) return NULL;
+		slots.members[i] = (uint32_t) offset;
+	}
+	pt_registry_slots = slots;
+	return &pt_registry_slots;
+}
+
+} // namespace
+
+/*
+ * $this->classReflectionExtensionRegistryProvider->getRegistry()-><getter>()
+ * — the two accessor hops every member lookup of the native ClassReflection
+ * starts with, as property reads.
+ *
+ * The lazy provider builds its registry once and keeps it in $registry
+ * forever (it drops its container reference right after), and the registry is
+ * a final value class whose slots only its constructor writes — so a non-null
+ * memo and the slot behind the getter are what the two methods would answer,
+ * by construction. Anything else — the first call of a run, a provider or
+ * registry of some other class — takes the methods.
+ */
+zv::Val pt_class_reflection_extension_registry_member(zend_object *provider, pt_registry_member member)
+{
+	bool error;
+	zv::Val owned;
+	zval *registry = NULL;
+	const RegistryProviderSlots *providerSlots = registryProviderSlots(provider, error);
+	if (EXPECTED(providerSlots != NULL)) {
+		zval *memo = OBJ_PROP(provider, providerSlots->registry);
+		if (EXPECTED(Z_TYPE_P(memo) == IS_OBJECT)) {
+			registry = memo;
+		}
+	} else if (UNEXPECTED(error)) {
+		return zv::Val();
+	}
+	if (registry == NULL) {
+		owned = pt_type_call(provider, PT_LC("getregistry"), 0, NULL);
+		if (UNEXPECTED(owned.isUndef())) return zv::Val();
+		if (UNEXPECTED(Z_TYPE_P(owned.raw()) != IS_OBJECT)) {
+			zend_throw_error(NULL, "Call to a member function %s() on %s", pt_registry_member_names[member].getter, zend_zval_value_name(owned.raw()));
+			return zv::Val();
+		}
+		registry = owned.raw();
+	}
+
+	const RegistrySlots *slots = registrySlots(Z_OBJ_P(registry), error);
+	if (EXPECTED(slots != NULL)) {
+		zval *value = OBJ_PROP(Z_OBJ_P(registry), slots->members[member]);
+		if (EXPECTED(Z_TYPE_P(value) != IS_UNDEF)) return zv::Val::copyOf(zv::Ref(value));
+		/* a promoted property the constructor never wrote — the getter, which
+		 * raises the twin's Error */
+	} else if (UNEXPECTED(error)) {
+		return zv::Val();
+	}
+	const char *getter = pt_registry_member_names[member].getter;
+	return pt_type_call(Z_OBJ_P(registry), getter, strlen(getter), 0, NULL);
 }
 
 /* }}} */

@@ -5,7 +5,9 @@ namespace PHPStan\Reflection;
 use PHPStan\Reflection\Php\PhpClassReflectionExtension;
 use PHPStan\Reflection\RequireExtension\RequireExtendsMethodsClassReflectionExtension;
 use PHPStan\Reflection\RequireExtension\RequireExtendsPropertiesClassReflectionExtension;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
+#[ReferencedByTurboExtension(key: 'classReflectionExtensionRegistry')]
 final class ClassReflectionExtensionRegistry
 {
 

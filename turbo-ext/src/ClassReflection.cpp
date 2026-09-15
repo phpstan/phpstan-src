@@ -313,22 +313,23 @@ public:
 		return true;
 	}
 
-	/* the registry the eleventh service hands out, and its getters —
-	 * fetched afresh at every use, as the twin does */
-	zv::Val registry() const { return callService(PT_CR_PROP_CLASS_REFLECTION_EXTENSION_REGISTRY_PROVIDER, "classReflectionExtensionRegistryProvider", PT_LC("getregistry"), 0, NULL); }
-
-	zv::Val registryGet(const char *lcname, size_t len) const
+	/* the registry the eleventh service hands out, and its getters — fetched
+	 * afresh at every use, as the twin does, but out of the provider's memo
+	 * and the registry's own slots where those two final classes are what
+	 * holds them (ReflectionAccess.cpp); every member lookup below starts
+	 * with one of these */
+	zv::Val registryGet(pt_registry_member member) const
 	{
-		zv::Val reg = registry();
-		if (UNEXPECTED(reg.isUndef())) return zv::Val();
-		return callOn(reg.ref(), lcname, len, 0, NULL);
+		zend_object *provider = service(PT_CR_PROP_CLASS_REFLECTION_EXTENSION_REGISTRY_PROVIDER, "classReflectionExtensionRegistryProvider");
+		if (UNEXPECTED(provider == NULL)) return zv::Val();
+		return pt_class_reflection_extension_registry_member(provider, member);
 	}
 
-	zv::Val phpClassReflectionExtension() const { return registryGet(PT_LC("getphpclassreflectionextension")); }
-	zv::Val methodsClassReflectionExtensions() const { return registryGet(PT_LC("getmethodsclassreflectionextensions")); }
-	zv::Val propertiesClassReflectionExtensions() const { return registryGet(PT_LC("getpropertiesclassreflectionextensions")); }
-	zv::Val requireExtendsMethodsClassReflectionExtension() const { return registryGet(PT_LC("getrequireextendsmethodsclassreflectionextension")); }
-	zv::Val requireExtendsPropertyClassReflectionExtension() const { return registryGet(PT_LC("getrequireextendspropertyclassreflectionextension")); }
+	zv::Val phpClassReflectionExtension() const { return registryGet(PT_REGISTRY_PHP_CLASS_REFLECTION_EXTENSION); }
+	zv::Val methodsClassReflectionExtensions() const { return registryGet(PT_REGISTRY_METHODS_EXTENSIONS); }
+	zv::Val propertiesClassReflectionExtensions() const { return registryGet(PT_REGISTRY_PROPERTIES_EXTENSIONS); }
+	zv::Val requireExtendsMethodsClassReflectionExtension() const { return registryGet(PT_REGISTRY_REQUIRE_EXTENDS_METHODS_EXTENSION); }
+	zv::Val requireExtendsPropertyClassReflectionExtension() const { return registryGet(PT_REGISTRY_REQUIRE_EXTENDS_PROPERTIES_EXTENSION); }
 
 	/* $extension->method($this, $memberName) as bool / as value */
 	bool extensionBool(zv::Ref extension, const char *lcname, size_t len, zend_string *memberName, bool &out)
@@ -4112,7 +4113,7 @@ public:
 		if (slot(PT_CR_PROP_ALLOWED_SUB_TYPES_RESOLVED).isTrue()) return zv::Val::copyOf(slot(PT_CR_PROP_ALLOWED_SUB_TYPES));
 
 		writeSlot(PT_CR_PROP_ALLOWED_SUB_TYPES_RESOLVED, zv::Val::boolean(true));
-		zv::Val extensions = registryGet(PT_LC("getallowedsubtypesclassreflectionextensions"));
+		zv::Val extensions = registryGet(PT_REGISTRY_ALLOWED_SUB_TYPES_EXTENSIONS);
 		if (UNEXPECTED(extensions.isUndef())) return zv::Val();
 		if (extensions.ref().isArray()) {
 			for (auto entry : zv::ArrRef(extensions.raw())) {

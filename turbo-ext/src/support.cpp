@@ -214,6 +214,9 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_POST_DEC */ {"postDec", "PhpParser\\Node\\Expr\\PostDec"},
 	/* PT_CLASS_ISSET_EXPR */ {"issetExpr", "PHPStan\\Node\\IssetExpr"},
 	/* PT_CLASS_EMIT_COLLECTED_DATA_NODE */ {"emitCollectedDataNode", "PHPStan\\Node\\EmitCollectedDataNode"},
+	/* PT_CLASS_LAZY_CLASS_REFLECTION_EXTENSION_REGISTRY_PROVIDER */ {"lazyClassReflectionExtensionRegistryProvider", "PHPStan\\DependencyInjection\\Reflection\\LazyClassReflectionExtensionRegistryProvider"},
+	/* PT_CLASS_CLASS_REFLECTION_EXTENSION_REGISTRY */ {"classReflectionExtensionRegistry", "PHPStan\\Reflection\\ClassReflectionExtensionRegistry"},
+	/* PT_CLASS_LAZY_INTERNAL_SCOPE_FACTORY */ {"lazyInternalScopeFactory", "PHPStan\\Analyser\\LazyInternalScopeFactory"},
 };
 
 zend_class_entry *pt_class(int idx)

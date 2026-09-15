@@ -379,6 +379,40 @@ foreach (['php' => \PHPStan\Analyser\ExpressionResultStorage::class, 'native' =>
 
 }
 
+
+// ---- ExpressionResultStorageStack ----
+$covered[\PHPStan\Analyser\ExpressionResultStorageStack::class] = true;
+foreach (['php' => \PHPStan\Analyser\ExpressionResultStorageStack::class, 'native' => \PHPStanTurbo\ExpressionResultStorageStack::class] as $label => $stackClass) {
+	$stack = new $stackClass();
+	check($stack->getCurrent() === null, "ERSS $label: empty stack has no current storage");
+
+	$storageA = new \PHPStan\Analyser\ExpressionResultStorage();
+	$storageB = new \PHPStan\Analyser\ExpressionResultStorage();
+	$stack->push($storageA);
+	check($stack->getCurrent() === $storageA, "ERSS $label: getCurrent answers the pushed storage");
+	$stack->push($storageB);
+	check($stack->getCurrent() === $storageB, "ERSS $label: getCurrent answers the top of the stack");
+	$stack->pop();
+	check($stack->getCurrent() === $storageA, "ERSS $label: pop uncovers the one below");
+	$stack->push($storageA);
+	check($stack->getCurrent() === $storageA, "ERSS $label: the same storage may be pushed twice");
+	$stack->pop();
+	$stack->pop();
+	check($stack->getCurrent() === null, "ERSS $label: the emptied stack has no current storage");
+
+	$popped = null;
+	try {
+		$stack->pop();
+	} catch (\PHPStan\ShouldNotHappenException $e) {
+		$popped = $e->getMessage();
+	}
+	check($popped === 'Unbalanced ExpressionResultStorageStack pop.', "ERSS $label: popping an empty stack throws");
+
+	// the stack survives the failed pop and keeps working
+	$stack->push($storageB);
+	check($stack->getCurrent() === $storageB, "ERSS $label: usable again after the failed pop");
+}
+
 // ---- NodeScanner ----
 $covered[\PHPStan\Node\NodeScanner::class] = true;
 $smokeParserFactory = new \PhpParser\ParserFactory();

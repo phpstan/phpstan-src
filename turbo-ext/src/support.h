@@ -251,6 +251,9 @@ enum {
 	PT_CLASS_POST_DEC,
 	PT_CLASS_ISSET_EXPR,
 	PT_CLASS_EMIT_COLLECTED_DATA_NODE,
+	PT_CLASS_LAZY_CLASS_REFLECTION_EXTENSION_REGISTRY_PROVIDER,
+	PT_CLASS_CLASS_REFLECTION_EXTENSION_REGISTRY,
+	PT_CLASS_LAZY_INTERNAL_SCOPE_FACTORY,
 	PT_CLASS_COUNT
 };
 
@@ -356,6 +359,7 @@ void pt_register_parser_runner();
 void pt_register_type_combinator_cache();
 void pt_register_arena_cache();
 void pt_register_expression_result_storage();
+void pt_register_expression_result_storage_stack();
 void pt_register_php_file_cleaner();
 void pt_register_symbol_finder_in_files();
 void pt_register_scope_context();
@@ -1306,6 +1310,23 @@ zv::Val pt_reflection_provider_instance();
 [[nodiscard]] bool pt_reflection_provider_has_class(zend_object *provider, zval *className, bool &out);
 zv::Val pt_reflection_provider_has_class_zv(zend_object *provider, zval *className);
 zv::Val pt_reflection_provider_get_class(zend_object *provider, zval *className);
+/* the members of the ClassReflectionExtensionRegistry the native
+ * ClassReflection asks for, each naming the registry property holding it and
+ * the twin's getter */
+enum pt_registry_member
+{
+	PT_REGISTRY_PHP_CLASS_REFLECTION_EXTENSION = 0,
+	PT_REGISTRY_METHODS_EXTENSIONS,
+	PT_REGISTRY_PROPERTIES_EXTENSIONS,
+	PT_REGISTRY_REQUIRE_EXTENDS_METHODS_EXTENSION,
+	PT_REGISTRY_REQUIRE_EXTENDS_PROPERTIES_EXTENSION,
+	PT_REGISTRY_ALLOWED_SUB_TYPES_EXTENSIONS,
+	PT_REGISTRY_MEMBER_COUNT
+};
+/* $provider->getRegistry()-><getter>() — both hops out of property slots for
+ * the classes the twins declare, the methods for anything else; UNDEF =
+ * pending exception */
+zv::Val pt_class_reflection_extension_registry_member(zend_object *provider, pt_registry_member member);
 
 /* }}} */
 
@@ -1345,6 +1366,8 @@ zv::Val pt_callback_unresolved_property_prototype_reflection_new(uint32_t argc, 
  * itself once activateShadowing() ran, NULL before that */
 extern zend_class_entry *pt_ce_mutating_scope;
 void pt_register_mutating_scope();
+/* forgets the internal scope factory's slot offsets */
+void pt_mutating_scope_rinit();
 /* the file / traitReflection slots of a native ScopeContext, next to
  * pt_scope_context_class_reflection() (ScopeContext.cpp) */
 zval *pt_scope_context_file(zend_object *context);
@@ -1397,6 +1420,11 @@ extern zend_class_entry *pt_ce_volatile_expression_helper;
 zv::Val pt_expression_result_storage_new();
 zv::Val pt_expression_result_storage_find(zval *storage, zval *expr);
 zv::Val pt_expression_result_storage_duplicate(zval *storage);
+/* the shadowing ExpressionResultStorageStack (ExpressionResultStorageStack.cpp)
+ * — $stack->getCurrent(): the native body for a native stack, the method for
+ * anything else; UNDEF = pending exception */
+extern zend_class_entry *pt_ce_expression_result_storage_stack;
+zv::Val pt_expression_result_storage_stack_current(zval *stack);
 
 /* merged from the parallel port branch */
 /* the native ClassReflection (ClassReflection.cpp), shadowing

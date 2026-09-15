@@ -387,6 +387,111 @@ static void ZEND_FASTCALL msFilterByFalseyValue(INTERNAL_FUNCTION_PARAMETERS);
 static void ZEND_FASTCALL msApplySpecifiedTypes(INTERNAL_FUNCTION_PARAMETERS);
 static void ZEND_FASTCALL msFilterTypeWithMethod(INTERNAL_FUNCTION_PARAMETERS);
 
+/* {{{ the internal scope factory's own state (LazyInternalScopeFactory)
+
+ * Every scope the native code derives goes through
+ * $this->scopeFactory->create(...), whose twin only resolves its services out
+ * of the container once and then news the scope class. The services live in
+ * the factory's own property slots after that first create(), so the whole
+ * method is those slots plus a `new` — which is what factoryCreate() below
+ * does, leaving the twin's create() to the first call of each factory (while
+ * the memos are still null) and to any other InternalScopeFactory. */
+
+/* the services create() passes on, in the scope constructor's parameter
+ * order; all of them are `??=` memos the first create() fills */
+enum : uint32_t
+{
+	PT_ISF_REFLECTION_PROVIDER = 0,
+	PT_ISF_INITIALIZER_EXPR_TYPE_RESOLVER,
+	PT_ISF_EXPRESSION_TYPE_RESOLVER_EXTENSIONS,
+	PT_ISF_EXPR_PRINTER,
+	PT_ISF_TYPE_SPECIFIER,
+	PT_ISF_PROPERTY_REFLECTION_FINDER,
+	PT_ISF_CONSTANT_RESOLVER,
+	PT_ISF_PHP_VERSION,
+	PT_ISF_ATTRIBUTE_REFLECTION_FACTORY,
+	PT_ISF_CONFIGURED_PHP_VERSION_RANGE_HELPER,
+	PT_ISF_MEMO_COUNT
+};
+
+static const char *const pt_isf_memo_names[PT_ISF_MEMO_COUNT] = {
+	"reflectionProvider",
+	"initializerExprTypeResolver",
+	"expressionTypeResolverExtensions",
+	"exprPrinter",
+	"typeSpecifier",
+	"propertyReflectionFinder",
+	"constantResolver",
+	"phpVersionType",
+	"attributeReflectionFactory",
+	"configuredPhpVersionRangeHelper",
+};
+
+/* the instance-property slot offsets of the factory's class entry, resolved
+ * once (the twin is final, so there is one) and forgotten at rinit */
+struct InternalScopeFactorySlots
+{
+	zend_class_entry *ce;
+	uint32_t memos[PT_ISF_MEMO_COUNT];
+	uint32_t container;
+	uint32_t parser;
+	uint32_t expressionResultStorageStack;
+	uint32_t nodeCallback;
+	uint32_t createsNodeCallbackScopes;
+};
+
+static InternalScopeFactorySlots pt_isf_slots = {};
+
+void pt_mutating_scope_rinit()
+{
+	pt_isf_slots.ce = NULL;
+}
+
+/* the slots of an object that is exactly a LazyInternalScopeFactory; NULL
+ * when it is of some other class (the caller then calls create()) — or, with
+ * `error` set and an exception pending, when the class map cannot resolve the
+ * class at all */
+static const InternalScopeFactorySlots *internalScopeFactorySlots(zend_object *factory, bool &error)
+{
+	error = false;
+	if (EXPECTED(factory->ce == pt_isf_slots.ce)) return &pt_isf_slots;
+	zend_class_entry *ce = pt_class_loaded(PT_CLASS_LAZY_INTERNAL_SCOPE_FACTORY);
+	if (ce == NULL) {
+		error = EG(exception) != NULL;
+		return NULL;
+	}
+	if (factory->ce != ce) return NULL;
+	InternalScopeFactorySlots slots;
+	slots.ce = ce;
+	int32_t offsets[PT_ISF_MEMO_COUNT + 5];
+	for (uint32_t i = 0; i < PT_ISF_MEMO_COUNT; i++) {
+		offsets[i] = pt_instance_prop_offset(ce, pt_isf_memo_names[i], strlen(pt_isf_memo_names[i]));
+	}
+	offsets[PT_ISF_MEMO_COUNT + 0] = pt_instance_prop_offset(ce, PT_LC("container"));
+	offsets[PT_ISF_MEMO_COUNT + 1] = pt_instance_prop_offset(ce, PT_LC("currentSimpleVersionParser"));
+	offsets[PT_ISF_MEMO_COUNT + 2] = pt_instance_prop_offset(ce, PT_LC("expressionResultStorageStack"));
+	offsets[PT_ISF_MEMO_COUNT + 3] = pt_instance_prop_offset(ce, PT_LC("nodeCallback"));
+	offsets[PT_ISF_MEMO_COUNT + 4] = pt_instance_prop_offset(ce, PT_LC("createsNodeCallbackScopes"));
+	for (uint32_t i = 0; i < PT_ISF_MEMO_COUNT + 5; i++) {
+		if (UNEXPECTED(offsets[i] < 0)) {
+			/* not the twin this reader knows: every call goes through the method */
+			return NULL;
+		}
+	}
+	for (uint32_t i = 0; i < PT_ISF_MEMO_COUNT; i++) {
+		slots.memos[i] = (uint32_t) offsets[i];
+	}
+	slots.container = (uint32_t) offsets[PT_ISF_MEMO_COUNT + 0];
+	slots.parser = (uint32_t) offsets[PT_ISF_MEMO_COUNT + 1];
+	slots.expressionResultStorageStack = (uint32_t) offsets[PT_ISF_MEMO_COUNT + 2];
+	slots.nodeCallback = (uint32_t) offsets[PT_ISF_MEMO_COUNT + 3];
+	slots.createsNodeCallbackScopes = (uint32_t) offsets[PT_ISF_MEMO_COUNT + 4];
+	pt_isf_slots = slots;
+	return &pt_isf_slots;
+}
+
+/* }}} */
+
 namespace phpstanturbo {
 
 /* the 18 arguments of InternalScopeFactory::create(), in its parameter
@@ -670,12 +775,117 @@ public:
 
 	static zv::Val trinary(zend_long value) { return zv::Val::copyOf(zv::Ref(pt_trinary_singleton(value))); }
 
+	/*
+	 * $factory->create(...$args) — the twin's LazyInternalScopeFactory::create()
+	 * without its frame: the memoized services out of the factory's slots and
+	 * the scope built here, which is all that method does once its `??=` memos
+	 * are filled.
+	 *
+	 * The method itself answers whenever that is not provably the same thing:
+	 * another InternalScopeFactory implementation, a factory whose memos the
+	 * first create() has not filled yet, and — the differential tests'
+	 * prefixed activation, where NodeCallbackScope extends the PHP twin
+	 * instead of the native class — a run in which the classes create() would
+	 * instantiate are not the native ones. UNDEF = pending exception.
+	 */
+	/* $factory->create(...$args) through the method */
+	static zv::Val factoryCreateCall(zend_object *factory, CreateArgs &args)
+	{
+		return pt_type_call(factory, PT_LC("create"), CreateArgs::COUNT, args.argv);
+	}
+
+	static zv::Val factoryCreate(zend_object *factory, CreateArgs &args)
+	{
+		bool error;
+		const InternalScopeFactorySlots *slots = internalScopeFactorySlots(factory, error);
+		if (UNEXPECTED(error)) return zv::Val();
+		zend_class_entry *nodeCallbackScope = slots != NULL ? pt_class_loaded(PT_CLASS_NODE_CALLBACK_SCOPE) : NULL;
+		if (UNEXPECTED(nodeCallbackScope == NULL || pt_ce_mutating_scope == NULL || nodeCallbackScope->parent != pt_ce_mutating_scope)) {
+			if (UNEXPECTED(slots != NULL && EG(exception) != NULL)) return zv::Val();
+			return factoryCreateCall(factory, args);
+		}
+		for (uint32_t i = 0; i < PT_ISF_MEMO_COUNT; i++) {
+			if (UNEXPECTED(Z_TYPE_P(OBJ_PROP(factory, slots->memos[i])) != IS_OBJECT)) return factoryCreateCall(factory, args);
+		}
+		zval *container = OBJ_PROP(factory, slots->container);
+		zval *parser = OBJ_PROP(factory, slots->parser);
+		zval *storageStack = OBJ_PROP(factory, slots->expressionResultStorageStack);
+		if (UNEXPECTED(Z_TYPE_P(container) != IS_OBJECT || Z_TYPE_P(parser) != IS_OBJECT || Z_TYPE_P(storageStack) != IS_OBJECT)) {
+			/* an uninitialized promoted property — the twin's Error, raised
+			 * by the method reading it */
+			return factoryCreateCall(factory, args);
+		}
+
+		/* the argument types the twin's create() signature would enforce and
+		 * the new scope reads without checking; anything else is the method's
+		 * TypeError to raise */
+		static const uint32_t arrayArgs[] = {
+			CreateArgs::EXPRESSION_TYPES,
+			CreateArgs::NATIVE_EXPRESSION_TYPES,
+			CreateArgs::CONDITIONAL_EXPRESSIONS,
+			CreateArgs::IN_CLOSURE_BIND_SCOPE_CLASSES,
+			CreateArgs::CURRENTLY_ASSIGNED_EXPRESSIONS,
+			CreateArgs::CURRENTLY_ALLOWED_UNDEFINED_EXPRESSIONS,
+			CreateArgs::IN_FUNCTION_CALLS_STACK,
+		};
+		if (UNEXPECTED(Z_TYPE(args.argv[CreateArgs::CONTEXT]) != IS_OBJECT)) return factoryCreateCall(factory, args);
+		for (uint32_t i = 0; i < sizeof(arrayArgs) / sizeof(arrayArgs[0]); i++) {
+			if (UNEXPECTED(Z_TYPE(args.argv[arrayArgs[i]]) != IS_ARRAY)) return factoryCreateCall(factory, args);
+		}
+
+		/* $className = $this->createsNodeCallbackScopes ? NodeCallbackScope::class : MutatingScope::class; */
+		zend_class_entry *className = Z_TYPE_P(OBJ_PROP(factory, slots->createsNodeCallbackScopes)) == IS_TRUE
+			? nodeCallbackScope
+			: pt_ce_mutating_scope;
+		zval scope;
+		if (UNEXPECTED(object_init_ex(&scope, className) != SUCCESS)) return zv::Val();
+
+		ConstructArgs a = {};
+		zval factoryZval;
+		ZVAL_OBJ(&factoryZval, factory);
+		a.container = container;
+		a.scopeFactory = &factoryZval;
+		a.reflectionProvider = OBJ_PROP(factory, slots->memos[PT_ISF_REFLECTION_PROVIDER]);
+		a.initializerExprTypeResolver = OBJ_PROP(factory, slots->memos[PT_ISF_INITIALIZER_EXPR_TYPE_RESOLVER]);
+		a.expressionTypeResolverExtensions = OBJ_PROP(factory, slots->memos[PT_ISF_EXPRESSION_TYPE_RESOLVER_EXTENSIONS]);
+		a.exprPrinter = OBJ_PROP(factory, slots->memos[PT_ISF_EXPR_PRINTER]);
+		a.typeSpecifier = OBJ_PROP(factory, slots->memos[PT_ISF_TYPE_SPECIFIER]);
+		a.propertyReflectionFinder = OBJ_PROP(factory, slots->memos[PT_ISF_PROPERTY_REFLECTION_FINDER]);
+		a.parser = parser;
+		a.constantResolver = OBJ_PROP(factory, slots->memos[PT_ISF_CONSTANT_RESOLVER]);
+		a.expressionResultStorageStack = storageStack;
+		a.context = &args.argv[CreateArgs::CONTEXT];
+		a.phpVersion = OBJ_PROP(factory, slots->memos[PT_ISF_PHP_VERSION]);
+		a.attributeReflectionFactory = OBJ_PROP(factory, slots->memos[PT_ISF_ATTRIBUTE_REFLECTION_FACTORY]);
+		a.configuredPhpVersionRangeHelper = OBJ_PROP(factory, slots->memos[PT_ISF_CONFIGURED_PHP_VERSION_RANGE_HELPER]);
+		a.nodeCallback = OBJ_PROP(factory, slots->nodeCallback);
+		a.declareStrictTypes = Z_TYPE(args.argv[CreateArgs::DECLARE_STRICT_TYPES]) == IS_TRUE;
+		a.function = &args.argv[CreateArgs::FUNCTION];
+		a.ns = Z_TYPE(args.argv[CreateArgs::NAMESPACE_]) == IS_STRING ? Z_STR(args.argv[CreateArgs::NAMESPACE_]) : NULL;
+		a.expressionTypes = &args.argv[CreateArgs::EXPRESSION_TYPES];
+		a.nativeExpressionTypes = &args.argv[CreateArgs::NATIVE_EXPRESSION_TYPES];
+		a.conditionalExpressions = &args.argv[CreateArgs::CONDITIONAL_EXPRESSIONS];
+		a.inClosureBindScopeClasses = &args.argv[CreateArgs::IN_CLOSURE_BIND_SCOPE_CLASSES];
+		a.anonymousFunctionReflection = &args.argv[CreateArgs::ANONYMOUS_FUNCTION_REFLECTION];
+		a.inFirstLevelStatement = Z_TYPE(args.argv[CreateArgs::IN_FIRST_LEVEL_STATEMENT]) == IS_TRUE;
+		a.currentlyAssignedExpressions = &args.argv[CreateArgs::CURRENTLY_ASSIGNED_EXPRESSIONS];
+		a.currentlyAllowedUndefinedExpressions = &args.argv[CreateArgs::CURRENTLY_ALLOWED_UNDEFINED_EXPRESSIONS];
+		a.inFunctionCallsStack = &args.argv[CreateArgs::IN_FUNCTION_CALLS_STACK];
+		a.afterExtractCall = Z_TYPE(args.argv[CreateArgs::AFTER_EXTRACT_CALL]) == IS_TRUE;
+		a.parentScope = &args.argv[CreateArgs::PARENT_SCOPE];
+		a.nativeTypesPromoted = Z_TYPE(args.argv[CreateArgs::NATIVE_TYPES_PROMOTED]) == IS_TRUE;
+		a.templateArgumentFrame = &args.argv[CreateArgs::TEMPLATE_ARGUMENT_FRAME];
+		a.templateArgumentConstraints = &args.argv[CreateArgs::TEMPLATE_ARGUMENT_CONSTRAINTS];
+		MutatingScope(Z_OBJ(scope)).construct(a);
+		return zv::Val::adopt(scope);
+	}
+
 	/* $this->scopeFactory->create(...$args); UNDEF = pending exception */
 	zv::Val scopeFactoryCreate(CreateArgs &args)
 	{
 		zv::Ref factory = slot(PT_MS_PROP_SCOPE_FACTORY);
 		if (UNEXPECTED(!factory.isObject())) return uninitializedProperty("scopeFactory");
-		return pt_type_call(factory.asObject(), PT_LC("create"), CreateArgs::COUNT, args.argv);
+		return factoryCreate(factory.asObject(), args);
 	}
 
 	/* the arguments every twin site passes from the slots unchanged; the
@@ -812,7 +1022,7 @@ public:
 			zend_throw_error(NULL, "Call to a member function create() on %s", zend_zval_value_name(nodeCallbackScopeFactory.raw()));
 			return zv::Val();
 		}
-		zv::Val nodeCallbackScope = pt_type_call(Z_OBJ_P(nodeCallbackScopeFactory.raw()), PT_LC("create"), CreateArgs::COUNT, a.argv);
+		zv::Val nodeCallbackScope = factoryCreate(Z_OBJ_P(nodeCallbackScopeFactory.raw()), a);
 		if (UNEXPECTED(nodeCallbackScope.isUndef())) return zv::Val();
 		bool isNodeCallbackScope;
 		if (UNEXPECTED(!isInstance(nodeCallbackScope.ref(), PT_CLASS_NODE_CALLBACK_SCOPE, isNodeCallbackScope))) return zv::Val();
@@ -1756,7 +1966,7 @@ public:
 	{
 		zv::Ref stack = slot(PT_MS_PROP_EXPRESSION_RESULT_STORAGE_STACK);
 		if (UNEXPECTED(!stack.isObject())) return uninitializedProperty("expressionResultStorageStack");
-		return pt_type_call(stack.asObject(), PT_LC("getcurrent"), 0, NULL);
+		return pt_expression_result_storage_stack_current(stack.raw());
 	}
 
 	/* $storage->findExpressionResult($node) for the (non-null) result of
@@ -7088,7 +7298,7 @@ public:
 			zend_throw_error(NULL, "Call to a member function create() on %s", zend_zval_value_name(factory));
 			return zv::Val();
 		}
-		return pt_type_call(Z_OBJ_P(factory), PT_LC("create"), CreateArgs::COUNT, args.argv);
+		return factoryCreate(Z_OBJ_P(factory), args);
 	}
 
 	/* $a->isSuperTypeOf($b)->no(); false = pending exception */

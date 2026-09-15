@@ -18,9 +18,11 @@ use PHPStan\Reflection\PropertiesClassReflectionExtension;
 use PHPStan\Reflection\RequireExtension\RequireExtendsMethodsClassReflectionExtension;
 use PHPStan\Reflection\RequireExtension\RequireExtendsPropertiesClassReflectionExtension;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use function array_merge;
 
 #[AutowiredService(as: ClassReflectionExtensionRegistryProvider::class)]
+#[ReferencedByTurboExtension(key: 'lazyClassReflectionExtensionRegistryProvider')]
 final class LazyClassReflectionExtensionRegistryProvider implements ClassReflectionExtensionRegistryProvider
 {
 

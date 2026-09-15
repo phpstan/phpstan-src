@@ -17,11 +17,13 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\ExpressionTypeResolverExtension;
 use WeakReference;
 
 #[GenerateFactory(interface: InternalScopeFactoryFactory::class, resultType: LazyInternalScopeFactory::class)]
+#[ReferencedByTurboExtension(key: 'lazyInternalScopeFactory')]
 final class LazyInternalScopeFactory implements InternalScopeFactory
 {
 

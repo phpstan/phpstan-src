@@ -421,9 +421,7 @@ static zval makeErrorObject(zend_string *msg, zval *attrsBorrowed)
 {
 	zval error;
 	object_init_ex(&error, g_errorCe);
-	zval args[2];
-	ZVAL_STR(&args[0], msg);
-	ZVAL_COPY_VALUE(&args[1], attrsBorrowed);
+	zv::Args args{msg, attrsBorrowed};
 	zend_call_known_function(g_errorCe->constructor, Z_OBJ(error), g_errorCe, NULL, 2, args, NULL);
 	return error;
 }
@@ -1167,9 +1165,7 @@ bool ParserEngine::parse(zval *code, zval *return_value)
 	zend_function *tokenizeFn = pt_find_method(Z_OBJCE_P(lexer.raw()), "tokenize", sizeof("tokenize") - 1);
 	if (tokenizeFn == NULL) return false;
 	zval tokensLocal;
-	zval args[2];
-	ZVAL_COPY_VALUE(&args[0], code);
-	ZVAL_COPY_VALUE(&args[1], errorHandler);
+	zv::Args args{code, errorHandler};
 	zend_call_known_function(tokenizeFn, Z_OBJ_P(lexer.raw()), Z_OBJCE_P(lexer.raw()), &tokensLocal, 2, args, NULL);
 	if (EG(exception) != NULL) {
 		RETVAL_NULL();
@@ -1247,9 +1243,7 @@ void pt_register_parser_runner(void)
 			pt_throw_should_not_happen();
 			RETURN_THROWS();
 		}
-		zval args[2];
-		ZVAL_COPY_VALUE(&args[0], code);
-		ZVAL_COPY_VALUE(&args[1], errorHandler);
+		zv::Args args{code, errorHandler};
 		zend_call_known_function(parseFn, Z_OBJ_P(parserObj), Z_OBJCE_P(parserObj), return_value, 2, args, NULL);
 	});
 

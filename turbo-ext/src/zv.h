@@ -559,6 +559,46 @@ public:
 	}
 };
 
+/* the argument vector of an engine call, filled from typed values the way
+ * the ZVAL_* macros fill a `zval args[N]`: nothing is addref'ed (a zval *
+ * is copied by value, an object / string / array stored borrowed), the
+ * type picks the macro, and the pack converts to the zval * the call takes.
+ * `zv::Args args{type, strictTypes};` replaces the declaration plus one
+ * ZVAL_* line per slot. */
+struct NullArg
+{
+};
+inline constexpr NullArg null{};
+
+template <size_t N>
+class Args
+{
+public:
+	template <typename... T>
+	zend_always_inline Args(T &&...values)
+	{
+		zval *slot = argv;
+		((set(slot++, std::forward<T>(values))), ...);
+	}
+
+	zend_always_inline operator zval *() { return argv; }
+
+private:
+	zval argv[N];
+
+	static zend_always_inline void set(zval *slot, const zval *value) { ZVAL_COPY_VALUE(slot, value); }
+	static zend_always_inline void set(zval *slot, zend_object *value) { ZVAL_OBJ(slot, value); }
+	static zend_always_inline void set(zval *slot, zend_string *value) { ZVAL_STR(slot, value); }
+	static zend_always_inline void set(zval *slot, HashTable *value) { ZVAL_ARR(slot, value); }
+	static zend_always_inline void set(zval *slot, bool value) { ZVAL_BOOL(slot, value); }
+	static zend_always_inline void set(zval *slot, zend_long value) { ZVAL_LONG(slot, value); }
+	static zend_always_inline void set(zval *slot, double value) { ZVAL_DOUBLE(slot, value); }
+	static zend_always_inline void set(zval *slot, NullArg) { ZVAL_NULL(slot); }
+};
+
+template <typename... T>
+Args(T &&...) -> Args<sizeof...(T)>;
+
 } // namespace zv
 
 #endif

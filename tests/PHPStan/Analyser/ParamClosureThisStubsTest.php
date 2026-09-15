@@ -33,4 +33,9 @@ class ParamClosureThisStubsTest extends TypeInferenceTestCase
 		];
 	}
 
+	public static function getComposerAutoloaderProjectPaths(): array
+	{
+		return [__DIR__ . '/data/ext-ds-v1-platform'];
+	}
+
 }

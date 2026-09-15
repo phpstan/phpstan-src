@@ -20,6 +20,7 @@ final class PhpStormStubsSourceStubberFactory
 		private PhpVersion $phpVersion,
 		#[AutowiredParameter(ref: '%cache.phpStormStubsNodesCountMax%')]
 		private int $phpStormStubsNodesCountMax,
+		private ExtensionVersionProvider $extensionVersionProvider,
 	)
 	{
 	}
@@ -31,6 +32,7 @@ final class PhpStormStubsSourceStubberFactory
 			$this->printer,
 			$this->phpVersion->getVersionId(),
 			$this->phpStormStubsNodesCountMax === 0 ? null : $this->phpStormStubsNodesCountMax,
+			$this->extensionVersionProvider->getExtensionVersions(),
 		);
 	}
 

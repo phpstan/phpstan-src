@@ -57,10 +57,10 @@ namespace CatchWithUnthrownExceptionStubs
 			}
 		}
 
-		public function doFoo4(\Ds\Deque $deque): void
+		public function doFoo4(\SQLite3 $sqlite): void
 		{
 			try {
-				$deque->filter(function () {
+				$sqlite->createFunction('foo', function () {
 					throw new \InvalidArgumentException();
 				});
 			} catch (\InvalidArgumentException $e) {

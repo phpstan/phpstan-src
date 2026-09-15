@@ -360,6 +360,11 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
+	public static function getComposerAutoloaderProjectPaths(): array
+	{
+		return [__DIR__ . '/data/ext-ds-v1-platform'];
+	}
+
 	/** @return string[] */
 	protected static function getAdditionalAnalysedFiles(): array
 	{

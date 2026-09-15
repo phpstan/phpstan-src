@@ -196,6 +196,7 @@ $ieResolver = new \PHPStanTurbo\InitializerExprTypeResolver(
 	$ieNoOperatorExtensions,
 	$ieBuilder,
 	false,
+	false,
 );
 $ieOversized = new \PhpParser\Node\Expr\Array_(array_map(static fn (int $i) => new \PhpParser\Node\ArrayItem(new \PhpParser\Node\Scalar\Int_($i)), range(0, 300)));
 $ieContext = \PHPStan\Reflection\InitializerExprContext::fromClass(\PHPStan\TrinaryLogic::class, null);

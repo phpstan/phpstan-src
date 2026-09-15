@@ -3779,7 +3779,7 @@ public:
 		uint32_t itemCount = zend_hash_num_elements(Z_ARRVAL_P(items));
 		std::vector<zv::Val> valueTypes(itemCount);
 		std::vector<zv::Val> keyTypes(itemCount);
-		{
+		if (zend_is_true(prop(slots::preciseArrayShapeUnpacking))) {
 			// $constantArrayVariantsByItemIndex: UNDEF for an item not unpacked
 			std::vector<zv::Val> constantArrayVariants(itemCount);
 			zend_long constantArraysCombinationsCount = 1;
@@ -5922,8 +5922,8 @@ PT_MINIT_REGISTRATION(pt_register_initializer_expr_type_resolver)
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *constantResolver, *reflectionProviderProvider, *phpVersion, *operatorTypeSpecifyingExtensionRegistry, *unaryOperatorTypeSpecifyingExtensionRegistry, *oversizedArrayBuilder;
-		bool usePathConstantsAsConstantString;
-		ZEND_PARSE_PARAMETERS_START(7, 7)
+		bool usePathConstantsAsConstantString, preciseArrayShapeUnpacking;
+		ZEND_PARSE_PARAMETERS_START(8, 8)
 			Z_PARAM_OBJECT(constantResolver)
 			Z_PARAM_OBJECT(reflectionProviderProvider)
 			Z_PARAM_OBJECT(phpVersion)
@@ -5931,6 +5931,7 @@ PT_MINIT_REGISTRATION(pt_register_initializer_expr_type_resolver)
 			Z_PARAM_OBJECT(unaryOperatorTypeSpecifyingExtensionRegistry)
 			Z_PARAM_OBJECT(oversizedArrayBuilder)
 			Z_PARAM_BOOL(usePathConstantsAsConstantString)
+			Z_PARAM_BOOL(preciseArrayShapeUnpacking)
 		ZEND_PARSE_PARAMETERS_END();
 		zend_object *self = Z_OBJ_P(ZEND_THIS);
 		pt_write_slot(self, slots::constantResolver, constantResolver);
@@ -5942,6 +5943,8 @@ PT_MINIT_REGISTRATION(pt_register_initializer_expr_type_resolver)
 		zval flag = {};
 		ZVAL_BOOL(&flag, usePathConstantsAsConstantString);
 		pt_write_slot(self, slots::usePathConstantsAsConstantString, &flag);
+		ZVAL_BOOL(&flag, preciseArrayShapeUnpacking);
+		pt_write_slot(self, slots::preciseArrayShapeUnpacking, &flag);
 	});
 
 	cls.method(sigs::getType, [](INTERNAL_FUNCTION_PARAMETERS) {

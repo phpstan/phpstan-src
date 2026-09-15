@@ -178,7 +178,7 @@ static bool pt_shadow_materialize(reg::ShadowPlan &plan, HashTable *twinFiles, z
  * the classes as "<prefix><short name>" instead of the real names. Returns
  * false with an exception pending when a class could not be declared.
  */
-bool pt_shadow_activate(HashTable *twinFiles, zend_string *prefix)
+[[nodiscard]] bool pt_shadow_activate(HashTable *twinFiles, zend_string *prefix)
 {
 	if (pt_shadow_active) {
 		zend_throw_error(NULL, "phpstan_turbo: the shadowing classes are already active");

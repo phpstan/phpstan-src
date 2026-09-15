@@ -88,7 +88,7 @@ public:
 };
 
 /* Owned zval: move-only RAII. Adopts an already-owned raw zval. */
-class Val
+class [[nodiscard]] Val
 {
 protected:
 	zval z;
@@ -210,7 +210,7 @@ inline void Ref::assign(Val owned)
 
 /* Owned zend_string: move-only RAII. NULL is the empty state, so a failed
  * producer (e.g. pt_node_key on exception) can be adopted and tested. */
-class Str
+class [[nodiscard]] Str
 {
 	zend_string *s;
 
@@ -397,7 +397,7 @@ public:
  * `return zv::Val(std::move(x));` — the glibc-2.35 baseline compiler
  * (gcc 11) predates P1825's implicit derived-to-base move on return and
  * would require the deleted copy constructor. */
-class Arr : public Val
+class [[nodiscard]] Arr : public Val
 {
 public:
 	Arr() = default;

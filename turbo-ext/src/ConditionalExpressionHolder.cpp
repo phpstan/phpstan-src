@@ -19,7 +19,7 @@ public:
 	explicit ConditionalExpressionHolder(zval *self) : self(self) {}
 
 	/* false = pending exception (the twin throws on empty conditions) */
-	bool construct(zv::ArrRef conditionExpressionTypeHolders, zv::Ref typeHolder)
+	[[nodiscard]] bool construct(zv::ArrRef conditionExpressionTypeHolders, zv::Ref typeHolder)
 	{
 		if (UNEXPECTED(conditionExpressionTypeHolders.size() == 0)) {
 			pt_throw_should_not_happen();

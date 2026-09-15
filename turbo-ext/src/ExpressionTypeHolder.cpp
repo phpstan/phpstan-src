@@ -47,10 +47,10 @@ public:
 	}
 
 	/* false = pending exception */
-	bool equalTypes(zval *other, bool &out) const { return pt_holder_equal_types(self, other, &out); }
+	[[nodiscard]] bool equalTypes(zval *other, bool &out) const { return pt_holder_equal_types(self, other, &out); }
 
 	/* false = pending exception */
-	bool equals(zval *other, bool &out) const { return pt_holder_equals(self, other, &out); }
+	[[nodiscard]] bool equals(zval *other, bool &out) const { return pt_holder_equals(self, other, &out); }
 
 	/* and() — a C++ keyword, hence the underscore; UNDEF = pending exception */
 	zv::Val and_(zval *other) const

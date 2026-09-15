@@ -16,6 +16,7 @@
  * fallback chain) into this one, like the twin's SplObjectStorage::addAll().
  */
 
+#include "TypeTraits.h"
 #include "generated/ExpressionResultStorage.h"
 
 namespace slots = ptdecl::ExpressionResultStorage::slot;
@@ -24,6 +25,8 @@ namespace sigs = ptdecl::ExpressionResultStorage::sig;
 #include "zv.h"
 
 #define PT_ERS_PROP_FALLBACK 2
+
+zend_class_entry *pt_ce_expression_result_storage = nullptr;
 
 namespace phpstanturbo {
 
@@ -87,6 +90,17 @@ private:
 
 using phpstanturbo::ExpressionResultStorage;
 
+#include "TypeTraits.h"
+
+zv::Val pt_expression_result_storage_find(zval *storage, zval *expr)
+{
+	/* the twin is final: an instance of the native class entry takes the
+	 * native path, anything else (the PHP twin declared next to the native
+	 * class in the differential tests) the method */
+	if (EXPECTED(Z_OBJCE_P(storage) == pt_ce_expression_result_storage)) return ExpressionResultStorage(storage).findExpressionResult(expr);
+	return pt_type_call(Z_OBJ_P(storage), "findexpressionresult", sizeof("findexpressionresult") - 1, 1, expr);
+}
+
 /* {{{ engine ABI glue: parameter parsing + registration */
 
 #include "reg.h"
@@ -132,7 +146,7 @@ void pt_register_expression_result_storage()
 		ExpressionResultStorage(ZEND_THIS).findExpressionResult(expr).intoReturnValue(return_value);
 	});
 
-	cls.shadow(NULL);
+	cls.shadow(&pt_ce_expression_result_storage);
 }
 
 /* }}} */

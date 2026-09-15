@@ -4,6 +4,7 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_key_exists;
 use function array_keys;
 use function count;
@@ -12,6 +13,7 @@ use function ltrim;
 use function str_starts_with;
 use function strtolower;
 
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/VolatileExpressionHelper.cpp')]
 final class VolatileExpressionHelper
 {
 

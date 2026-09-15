@@ -8,6 +8,7 @@ use PhpParser\Node\Stmt\Foreach_;
 use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\Node\VariableWritesNode;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use Throwable;
@@ -27,6 +28,7 @@ use function strlen;
 use function substr;
 
 /** Resolve liveness backwards over immutable body fragments. */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/VariableLivenessResolver.cpp')]
 final class VariableLivenessResolver
 {
 

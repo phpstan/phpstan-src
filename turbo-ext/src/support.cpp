@@ -140,6 +140,15 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_RESOLVED_PROPERTY_REFLECTION */ {"resolvedPropertyReflection", "PHPStan\\Reflection\\ResolvedPropertyReflection"},
 	/* PT_CLASS_CHANGED_TYPE_METHOD_REFLECTION */ {"changedTypeMethodReflection", "PHPStan\\Reflection\\Dummy\\ChangedTypeMethodReflection"},
 	/* PT_CLASS_CHANGED_TYPE_PROPERTY_REFLECTION */ {"changedTypePropertyReflection", "PHPStan\\Reflection\\Dummy\\ChangedTypePropertyReflection"},
+	/* PT_CLASS_STATIC_PROPERTY_FETCH */ {"staticPropertyFetch", "PhpParser\\Node\\Expr\\StaticPropertyFetch"},
+	/* PT_CLASS_VARIABLE_ACCESS_FLOW */ {"variableAccessFlow", "PHPStan\\Analyser\\VariableAccessFlow"},
+	/* PT_CLASS_VARIABLE_SEQUENCE_FLOW */ {"variableSequenceFlow", "PHPStan\\Analyser\\VariableSequenceFlow"},
+	/* PT_CLASS_VARIABLE_CONTROL_FLOW */ {"variableControlFlow", "PHPStan\\Analyser\\VariableControlFlow"},
+	/* PT_CLASS_VARIABLE_INPUT_FLOW */ {"variableInputFlow", "PHPStan\\Analyser\\VariableInputFlow"},
+	/* PT_CLASS_VARIABLE_WRITE */ {"variableWrite", "PHPStan\\Node\\Variable\\VariableWrite"},
+	/* PT_CLASS_VARIABLE_WRITE_OFFSET */ {"variableWriteOffset", "PHPStan\\Analyser\\VariableWriteOffset"},
+	/* PT_CLASS_LIST_EXPR */ {"listExpr", "PhpParser\\Node\\Expr\\List_"},
+	/* PT_CLASS_VARIABLE_WRITES_NODE */ {"variableWritesNode", "PHPStan\\Node\\VariableWritesNode"},
 };
 
 zend_class_entry *pt_class(int idx)
@@ -230,6 +239,7 @@ zend_string *pt_str_cache_printer = nullptr;
 zend_string *pt_str_contains_super_global = nullptr;
 zend_string *pt_str_array_map_args = nullptr;
 zend_string *pt_str_start_file_pos = nullptr;
+zend_string *pt_str_end_file_pos = nullptr;
 static bool pt_strs_inited = false;
 
 static HashTable pt_node_class_cache;
@@ -242,6 +252,7 @@ void pt_init_strs()
 	pt_str_contains_super_global = zend_string_init("containsSuperGlobal", sizeof("containsSuperGlobal") - 1, 0);
 	pt_str_array_map_args = zend_string_init("arrayMapArgs", sizeof("arrayMapArgs") - 1, 0);
 	pt_str_start_file_pos = zend_string_init("startFilePos", sizeof("startFilePos") - 1, 0);
+	pt_str_end_file_pos = zend_string_init("endFilePos", sizeof("endFilePos") - 1, 0);
 	pt_strs_inited = true;
 }
 
@@ -283,6 +294,7 @@ void pt_support_rshutdown()
 		zend_string_release(pt_str_contains_super_global);
 		zend_string_release(pt_str_array_map_args);
 		zend_string_release(pt_str_start_file_pos);
+		zend_string_release(pt_str_end_file_pos);
 		pt_strs_inited = false;
 	}
 	if (pt_node_class_cache_inited) {
@@ -694,7 +706,7 @@ zend_object *pt_find_first_recursive(zend_object *node, pt_node_matcher matcher,
 	return NULL;
 }
 
-static const struct { const char *name; size_t len; } pt_superglobals[] = {
+static const pt_superglobal_name pt_superglobals[] = {
 	{"GLOBALS", 7},
 	{"_SERVER", 7},
 	{"_GET", 4},
@@ -706,15 +718,42 @@ static const struct { const char *name; size_t len; } pt_superglobals[] = {
 	{"_ENV", 4},
 };
 
-bool pt_is_superglobal_name(zend_string *name)
+bool pt_is_superglobal_cstr(const char *name, size_t len)
 {
 	for (size_t i = 0; i < sizeof(pt_superglobals) / sizeof(pt_superglobals[0]); i++) {
-		if (ZSTR_LEN(name) == pt_superglobals[i].len
-			&& memcmp(ZSTR_VAL(name), pt_superglobals[i].name, pt_superglobals[i].len) == 0) {
-			return true;
-		}
+		if (len == pt_superglobals[i].len && memcmp(name, pt_superglobals[i].name, len) == 0) return true;
 	}
 	return false;
+}
+
+bool pt_is_superglobal_name(zend_string *name)
+{
+	return pt_is_superglobal_cstr(ZSTR_VAL(name), ZSTR_LEN(name));
+}
+
+const pt_superglobal_name *pt_superglobal_names(size_t *count)
+{
+	*count = sizeof(pt_superglobals) / sizeof(pt_superglobals[0]);
+	return pt_superglobals;
+}
+
+bool pt_call_like_is_first_class_callable(zend_object *call, bool &out)
+{
+	zend_class_entry *variadicPlaceholderCe = pt_class(PT_CLASS_VARIADIC_PLACEHOLDER);
+	if (UNEXPECTED(variadicPlaceholderCe == NULL)) return false;
+	out = false;
+	int32_t argsOffset = pt_instance_prop_offset(call->ce, "args", sizeof("args") - 1);
+	if (argsOffset < 0) return true;
+	zval *args = OBJ_PROP(call, (uint32_t) argsOffset);
+	ZVAL_DEINDIRECT(args);
+	ZVAL_DEREF(args);
+	if (Z_TYPE_P(args) != IS_ARRAY || zend_hash_num_elements(Z_ARRVAL_P(args)) != 1) return true;
+	/* current($rawArgs): the array's internal pointer, like the twin */
+	zval *first = zend_hash_get_current_data(Z_ARRVAL_P(args));
+	if (first == NULL) return true;
+	ZVAL_DEREF(first);
+	out = Z_TYPE_P(first) == IS_OBJECT && instanceof_function(Z_OBJCE_P(first), variadicPlaceholderCe);
+	return true;
 }
 
 static bool pt_superglobal_matcher(zend_object *node, void *ctx)

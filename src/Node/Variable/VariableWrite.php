@@ -3,6 +3,7 @@
 namespace PHPStan\Node\Variable;
 
 use PhpParser\Node;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * A write site of a local variable inside a function-like body.
@@ -12,6 +13,7 @@ use PhpParser\Node;
  *
  * @api
  */
+#[ReferencedByTurboExtension(key: 'variableWrite')]
 final class VariableWrite
 {
 

@@ -177,6 +177,15 @@ enum {
 	PT_CLASS_RESOLVED_PROPERTY_REFLECTION,
 	PT_CLASS_CHANGED_TYPE_METHOD_REFLECTION,
 	PT_CLASS_CHANGED_TYPE_PROPERTY_REFLECTION,
+	PT_CLASS_STATIC_PROPERTY_FETCH,
+	PT_CLASS_VARIABLE_ACCESS_FLOW,
+	PT_CLASS_VARIABLE_SEQUENCE_FLOW,
+	PT_CLASS_VARIABLE_CONTROL_FLOW,
+	PT_CLASS_VARIABLE_INPUT_FLOW,
+	PT_CLASS_VARIABLE_WRITE,
+	PT_CLASS_VARIABLE_WRITE_OFFSET,
+	PT_CLASS_LIST_EXPR,
+	PT_CLASS_VARIABLE_WRITES_NODE,
 	PT_CLASS_COUNT
 };
 
@@ -187,7 +196,6 @@ zend_class_entry *pt_class(int idx);
  * an `instanceof` against an undeclared class sees; throws only when the
  * key has neither a configured nor a default name */
 zend_class_entry *pt_class_loaded(int idx);
-
 
 /* Called by Runtime::configure() */
 void pt_class_map_configure(zend_string *key, zend_string *value);
@@ -1019,7 +1027,6 @@ zv::Val pt_conditional_type_for_parameter_narrow_template_type(zval *type, zval 
 bool pt_late_resolvable_array_shape_type_create(zval *out, zval *items, zval *unsealed, zend_string *kind);
 bool pt_unresolved_template_argument_type_new(zval *out, zval *site, zval *templateType, zval *initialType);
 
-
 /* merged from the parallel port branch */
 /* the template family (TemplateTypeArgumentStrategy.cpp,
  * TemplateTypeParameterStrategy.cpp, the Template*Type.cpp files) */
@@ -1279,6 +1286,79 @@ zv::Val pt_called_on_type_unresolved_method_prototype_reflection_new(uint32_t ar
 zv::Val pt_called_on_type_unresolved_property_prototype_reflection_new(uint32_t argc, zval *argv);
 zv::Val pt_callback_unresolved_method_prototype_reflection_new(uint32_t argc, zval *argv);
 zv::Val pt_callback_unresolved_property_prototype_reflection_new(uint32_t argc, zval *argv);
+
+/* }}} */
+
+/* the shadowing ExpressionResultStorage (ExpressionResultStorage.cpp) —
+ * $storage->findExpressionResult($expr): the native body for a native
+ * storage, the method of anything else (the PHP twin under the prefixed
+ * differential activation); UNDEF = pending exception */
+extern zend_class_entry *pt_ce_expression_result_storage;
+/* VolatileExpressionHelper.cpp — the shadowing class entry (MutatingScope
+ * calls its statics directly) */
+extern zend_class_entry *pt_ce_volatile_expression_helper;
+zv::Val pt_expression_result_storage_find(zval *storage, zval *expr);
+
+/* merged from the parallel port branch */
+extern zend_string *pt_str_end_file_pos;
+
+/* the same for a bare byte range */
+bool pt_is_superglobal_cstr(const char *name, size_t len);
+/* the superglobal names (Scope::SUPERGLOBAL_VARIABLES), in the twin's order */
+typedef struct _pt_superglobal_name { const char *name; size_t len; } pt_superglobal_name;
+const pt_superglobal_name *pt_superglobal_names(size_t *count);
+
+/* $call->isFirstClassCallable() of a PhpParser CallLike node, read from its
+ * args: a single VariadicPlaceholder argument; false = pending exception */
+[[nodiscard]] bool pt_call_like_is_first_class_callable(zend_object *call, bool &out);
+
+/* {{{ the NodeScopeResolver-adjacent helper services (VolatileExpressionHelper.cpp,
+ * VariableFlow.cpp, VariableFlowBuilder.cpp) — registered at the END of the
+ * sequence (their signatures name the Type interface and their own classes;
+ * VariableFlow before VariableFlowBuilder, whose return types name it) */
+
+extern zend_class_entry *pt_ce_variable_flow;
+void pt_register_volatile_expression_helper();
+void pt_register_variable_flow();
+void pt_register_variable_flow_builder();
+void pt_register_variable_liveness_resolver();
+/* the per-request slot cache of VariableFlow.cpp (the class entry of the
+ * PHP VariableWrite class) */
+void pt_variable_flow_rinit();
+/* the property slots (OBJ_PROP byte offsets) of PHPStan\Node\Variable\VariableWrite,
+ * a final PHP class whose getters return its promoted properties: for an
+ * object that is exactly that class with every slot initialized the slots
+ * answer the getters; NULL otherwise (the caller calls the getters, which
+ * answer — or throw — the way the twin's calls did), with `error` set when
+ * the class map cannot resolve the class at all (exception pending) */
+typedef struct _pt_variable_write_slots {
+	zend_class_entry *ce;
+	uint32_t variableName;
+	uint32_t node;
+	uint32_t id;
+	uint32_t kind;
+	uint32_t offsetWrite;
+	uint32_t offset;
+	uint32_t parentId;
+	uint32_t replacesOffset;
+} pt_variable_write_slots;
+const pt_variable_write_slots *pt_variable_write_slots_of(zend_object *write, bool &error);
+/* $storage->findExpressionResult($expr) — natively for a native storage,
+ * through the method otherwise ($expr borrowed); the result or null, UNDEF
+ * = pending exception */
+/* VariableFlow::sequence(...$flows) / read($name, $targetId, $container,
+ * $offset) / write($write, $redundantType) / escape($name) / dead($flow) /
+ * throwing($type, $canContinue, $canContainAnyThrowable) — the twin's
+ * factories (every argument borrowed, NULL for a null); a flow, PHP null
+ * where the twin returns null, UNDEF = pending exception */
+zv::Val pt_variable_flow_sequence(uint32_t argc, zval *argv);
+/* VariableFlow::sequence(...$flows) spread from a PHP list */
+zv::Val pt_variable_flow_sequence_list(HashTable *flows);
+zv::Val pt_variable_flow_read(zend_string *name, zval *targetId, bool container, zval *offset);
+zv::Val pt_variable_flow_write(zval *write, zval *redundantType);
+zv::Val pt_variable_flow_escape(zend_string *name);
+zv::Val pt_variable_flow_dead(zval *flow);
+zv::Val pt_variable_flow_throwing(zval *type, bool canContinue, bool canContainAnyThrowable);
 
 /* }}} */
 

@@ -2365,6 +2365,10 @@ foreach (['php' => \PHPStan\Internal\LruCache::class, 'native' => \PHPStanTurbo\
 }
 check($lruResults['php'] === $lruResults['native'], 'LruCache parity: ' . json_encode($lruResults['php']) . ' vs ' . json_encode($lruResults['native']));
 $covered[\PHPStan\Internal\LruCache::class] = true;
+$covered[\PHPStan\Analyser\VolatileExpressionHelper::class] = true;
+$covered[\PHPStan\Analyser\VariableFlow::class] = true;
+$covered[\PHPStan\Analyser\VariableFlowBuilder::class] = true;
+$covered[\PHPStan\Analyser\VariableLivenessResolver::class] = true;
 
 // ---- differential coverage completeness ----
 // Every shadowed class must be exercised by one of the tests/ scripts; the

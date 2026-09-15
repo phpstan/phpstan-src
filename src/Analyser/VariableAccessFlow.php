@@ -3,8 +3,10 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\Node\Variable\VariableWrite;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Type;
 
+#[ReferencedByTurboExtension(key: 'variableAccessFlow')]
 final class VariableAccessFlow extends VariableFlow
 {
 

@@ -2,6 +2,9 @@
 
 namespace PHPStan\Analyser;
 
+use PHPStan\Turbo\ReferencedByTurboExtension;
+
+#[ReferencedByTurboExtension(key: 'variableInputFlow')]
 final class VariableInputFlow extends VariableFlow
 {
 

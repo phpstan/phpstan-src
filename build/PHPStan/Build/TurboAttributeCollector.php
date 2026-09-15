@@ -14,11 +14,13 @@ use PhpParser\Node\Expr\ArrowFunction;
 use PhpParser\Node\Expr\CallLike;
 use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Expr\List_;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Expr\NullsafePropertyFetch;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticCall;
+use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Expr\UnaryMinus;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Expr\Yield_;
@@ -164,6 +166,8 @@ final class TurboAttributeCollector
 		'conditionalTypeNode' => ConditionalTypeNode::class,
 		'conditionalTypeForParameterNode' => ConditionalTypeForParameterNode::class,
 		'reflectionEnum' => ReflectionEnum::class,
+		'staticPropertyFetch' => StaticPropertyFetch::class,
+		'listExpr' => List_::class,
 	];
 
 	private string $realRoot;

@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\ArrowFunction;
 use PhpParser\Node\Stmt\For_;
 use PhpParser\Node\Stmt\Foreach_;
 use PHPStan\Node\Variable\VariableWrite;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
 use function count;
 use function in_array;
@@ -14,6 +15,7 @@ use function in_array;
  * Immutable source execution fragment, composed with expression and statement
  * results. Liveness is resolved at the body boundary, independently of types.
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/VariableFlow.cpp')]
 abstract class VariableFlow
 {
 

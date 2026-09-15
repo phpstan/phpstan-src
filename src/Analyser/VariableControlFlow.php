@@ -6,8 +6,10 @@ use PhpParser\Node\Expr\ArrowFunction;
 use PhpParser\Node\Stmt\For_;
 use PhpParser\Node\Stmt\Foreach_;
 use PHPStan\Node\Variable\VariableWrite;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Type;
 
+#[ReferencedByTurboExtension(key: 'variableControlFlow')]
 final class VariableControlFlow extends VariableFlow
 {
 

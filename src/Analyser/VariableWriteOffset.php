@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser;
 
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Type;
 use function count;
 use function is_int;
@@ -12,6 +13,7 @@ use function is_string;
  *
  * @internal
  */
+#[ReferencedByTurboExtension(key: 'variableWriteOffset')]
 final class VariableWriteOffset
 {
 

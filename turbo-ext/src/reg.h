@@ -295,9 +295,9 @@ constexpr Arg doubleArg(const char *name)
 	return { name, detail::codeMask(IS_DOUBLE, false) | detail::flagBits(false, false), nullptr };
 }
 
-constexpr Arg boolArg(const char *name)
+constexpr Arg boolArg(const char *name, bool nullable = false)
 {
-	return { name, detail::codeMask(_IS_BOOL, false) | detail::flagBits(false, false), nullptr };
+	return { name, detail::codeMask(_IS_BOOL, nullable) | detail::flagBits(false, false), nullptr };
 }
 
 constexpr Arg stringArg(const char *name, bool nullable = false)
@@ -335,6 +335,19 @@ constexpr Arg variadicObj(const char *name, const char *className)
 constexpr Arg mixedArg(const char *name)
 {
 	return { name, MAY_BE_ANY | detail::flagBits(false, false), nullptr };
+}
+
+/* an `array &$x` parameter (ZEND_ARG_TYPE_INFO with IS_ARRAY, by reference) */
+constexpr Arg arrayRefArg(const char *name)
+{
+	return { name, detail::codeMask(IS_ARRAY, false) | detail::flagBits(true, false), nullptr };
+}
+
+/* a `?Foo ...$x` nullable variadic of a specific class; className must be a
+ * persistent literal */
+constexpr Arg nullableVariadicObj(const char *name, const char *className)
+{
+	return { name, _ZEND_TYPE_LITERAL_NAME_BIT | MAY_BE_NULL | detail::flagBits(false, true), className };
 }
 
 /* a parameter or return type the way a generated signature spells it
@@ -763,6 +776,13 @@ public:
 		return *this;
 	}
 
+	/* the PHP twin is abstract — the declared class is too */
+	Class &abstract_()
+	{
+		flags |= ZEND_ACC_EXPLICIT_ABSTRACT_CLASS;
+		return *this;
+	}
+
 	/* the PHP twin's parent class (real name; a shadowed parent resolves to
 	 * its native class, anything else autoloads at activation) */
 	Class &parent(const char *parentName)
@@ -1118,6 +1138,14 @@ public:
 		return *this;
 	}
 
+	/* a `public const X = '<string>'` class constant; value is a persistent
+	 * literal */
+	Class &publicClassConstantString(const char *constantName, const char *value)
+	{
+		constants.push_back({ constantName, 0, ZEND_ACC_PUBLIC, value });
+		return *this;
+	}
+
 	/* a `public const X = [...]` class constant whose value the builder
 	 * fills in at declaration (a persistent, immutable value — the engine
 	 * references it for the process lifetime) */
@@ -1131,6 +1159,14 @@ public:
 	Class &classConstantValue(const char *constantName, void (*buildValue)(zval *out))
 	{
 		constants.push_back({ constantName, 0, ZEND_ACC_PUBLIC, nullptr, buildValue });
+		return *this;
+	}
+
+	/* a `private const X = [...]` class constant, filled in like
+	 * classConstantValue() */
+	Class &privateClassConstantValue(const char *constantName, void (*buildValue)(zval *out))
+	{
+		constants.push_back({ constantName, 0, ZEND_ACC_PRIVATE, nullptr, buildValue });
 		return *this;
 	}
 

@@ -217,6 +217,15 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_LAZY_CLASS_REFLECTION_EXTENSION_REGISTRY_PROVIDER */ {"lazyClassReflectionExtensionRegistryProvider", "PHPStan\\DependencyInjection\\Reflection\\LazyClassReflectionExtensionRegistryProvider"},
 	/* PT_CLASS_CLASS_REFLECTION_EXTENSION_REGISTRY */ {"classReflectionExtensionRegistry", "PHPStan\\Reflection\\ClassReflectionExtensionRegistry"},
 	/* PT_CLASS_LAZY_INTERNAL_SCOPE_FACTORY */ {"lazyInternalScopeFactory", "PHPStan\\Analyser\\LazyInternalScopeFactory"},
+	/* PT_CLASS_MAGIC_CONST */ {"magicConst", "PhpParser\\Node\\Scalar\\MagicConst"},
+	/* PT_CLASS_ASSIGN_REF_EXPR */ {"assignRefExpr", "PhpParser\\Node\\Expr\\AssignRef"},
+	/* PT_CLASS_ASSIGN_OP_EXPR */ {"assignOpExpr", "PhpParser\\Node\\Expr\\AssignOp"},
+	/* PT_CLASS_TRAIT_STMT */ {"traitStmt", "PhpParser\\Node\\Stmt\\Trait_"},
+	/* PT_CLASS_INLINE_HTML_STMT */ {"inlineHtmlStmt", "PhpParser\\Node\\Stmt\\InlineHTML"},
+	/* PT_CLASS_INTERPOLATED_STRING */ {"interpolatedString", "PhpParser\\Node\\Scalar\\InterpolatedString"},
+	/* PT_CLASS_INSTANCEOF_EXPR */ {"instanceofExpr", "PhpParser\\Node\\Expr\\Instanceof_"},
+	/* PT_CLASS_TRY_CATCH_STMT */ {"tryCatchStmt", "PhpParser\\Node\\Stmt\\TryCatch"},
+	/* PT_CLASS_CATCH_STMT */ {"catchStmt", "PhpParser\\Node\\Stmt\\Catch_"},
 };
 
 zend_class_entry *pt_class(int idx)
@@ -340,6 +349,7 @@ void pt_support_rinit()
 
 	pt_strs_inited = false;
 	pt_node_class_cache_inited = false;
+	pt_native_visitor_index_reset();
 }
 
 void pt_support_rshutdown()
@@ -369,6 +379,7 @@ void pt_support_rshutdown()
 		zend_hash_destroy(&pt_node_class_cache);
 		pt_node_class_cache_inited = false;
 	}
+	pt_native_visitor_index_reset();
 }
 
 /* }}} */
@@ -575,6 +586,50 @@ zval *pt_node_attribute(zend_object *node, zend_string *name)
 	if (Z_TYPE_P(attrs) != IS_ARRAY) return NULL;
 	return zend_hash_find(Z_ARRVAL_P(attrs), name);
 }
+
+/* {{{ natively dispatched node visitors */
+
+/* the registered entries (file-statics of the visitor ports, MINIT order)
+ * and the per-request index from class entry to entry */
+#define PT_NATIVE_VISITORS_LIMIT 64
+static const pt_native_visitor *pt_native_visitors[PT_NATIVE_VISITORS_LIMIT];
+static uint32_t pt_native_visitor_count = 0;
+static HashTable pt_native_visitor_index;
+static bool pt_native_visitor_index_inited = false;
+
+void pt_native_visitor_register(const pt_native_visitor *entry)
+{
+	if (UNEXPECTED(pt_native_visitor_count >= PT_NATIVE_VISITORS_LIMIT)) {
+		zend_error_noreturn(E_CORE_ERROR, "phpstan_turbo: more than %d natively dispatched node visitors", PT_NATIVE_VISITORS_LIMIT);
+	}
+	pt_native_visitors[pt_native_visitor_count++] = entry;
+}
+
+void pt_native_visitor_index_reset()
+{
+	if (pt_native_visitor_index_inited) {
+		zend_hash_destroy(&pt_native_visitor_index);
+		pt_native_visitor_index_inited = false;
+	}
+}
+
+const pt_native_visitor *pt_native_visitor_for(zend_class_entry *ce)
+{
+	if (UNEXPECTED(!pt_native_visitor_index_inited)) {
+		zend_hash_init(&pt_native_visitor_index, pt_native_visitor_count, NULL, NULL, 0);
+		for (uint32_t i = 0; i < pt_native_visitor_count; i++) {
+			/* NULL until activation declared the shadowing class */
+			zend_class_entry *declared = *pt_native_visitors[i]->ce;
+			if (declared != NULL) {
+				zend_hash_index_add_ptr(&pt_native_visitor_index, (zend_ulong) (uintptr_t) declared, (void *) pt_native_visitors[i]);
+			}
+		}
+		pt_native_visitor_index_inited = true;
+	}
+	return (const pt_native_visitor *) zend_hash_index_find_ptr(&pt_native_visitor_index, (zend_ulong) (uintptr_t) ce);
+}
+
+/* }}} */
 
 bool pt_node_set_attribute(zend_object *node, zend_string *name, zval *value)
 {

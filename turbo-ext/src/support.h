@@ -254,6 +254,16 @@ enum {
 	PT_CLASS_LAZY_CLASS_REFLECTION_EXTENSION_REGISTRY_PROVIDER,
 	PT_CLASS_CLASS_REFLECTION_EXTENSION_REGISTRY,
 	PT_CLASS_LAZY_INTERNAL_SCOPE_FACTORY,
+	/* the php-parser node classes the PHPStan\Parser\*Visitor ports check */
+	PT_CLASS_MAGIC_CONST,
+	PT_CLASS_ASSIGN_REF_EXPR,
+	PT_CLASS_ASSIGN_OP_EXPR,
+	PT_CLASS_TRAIT_STMT,
+	PT_CLASS_INLINE_HTML_STMT,
+	PT_CLASS_INTERPOLATED_STRING,
+	PT_CLASS_INSTANCEOF_EXPR,
+	PT_CLASS_TRY_CATCH_STMT,
+	PT_CLASS_CATCH_STMT,
 	PT_CLASS_COUNT
 };
 
@@ -353,6 +363,28 @@ void pt_register_expression_type_holder();
 void pt_register_conditional_expression_holder();
 void pt_register_combinations_helper();
 void pt_register_node_traverser();
+/* the PHPStan\Parser\*Visitor ports the native NodeTraverser dispatches
+ * without an engine call (pt_native_visitor, ParserVisitors.h) */
+void pt_register_array_filter_arg_visitor();
+void pt_register_array_find_arg_visitor();
+void pt_register_array_map_arg_visitor();
+void pt_register_array_offset_normalizing_visitor();
+void pt_register_array_walk_arg_visitor();
+void pt_register_arrow_function_arg_visitor();
+void pt_register_closure_arg_visitor();
+void pt_register_closure_bind_arg_visitor();
+void pt_register_closure_bind_to_var_visitor();
+void pt_register_curl_set_opt_arg_visitor();
+void pt_register_curl_set_opt_array_arg_visitor();
+void pt_register_declare_position_visitor();
+void pt_register_immediately_invoked_closure_visitor();
+void pt_register_implode_arg_visitor();
+void pt_register_magic_constant_param_default_visitor();
+void pt_register_new_assigned_to_property_visitor();
+void pt_register_parent_stmt_types_visitor();
+void pt_register_trait_collecting_visitor();
+void pt_register_try_catch_type_visitor();
+void pt_register_type_traverser_instanceof_visitor();
 void pt_register_scope_ops();
 void pt_register_node_scanner();
 void pt_register_parser_runner();
@@ -650,6 +682,41 @@ zend_object *pt_find_first_recursive(zend_object *node, pt_node_matcher matcher,
 bool pt_is_superglobal_name(zend_string *name);
 /* CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME-cached superglobal scan */
 bool pt_expr_contains_superglobal(zend_object *expr);
+
+/* }}} */
+
+/* {{{ natively dispatched node visitors */
+
+/*
+ * Node visitors the native NodeTraverser dispatches in C++ instead of
+ * crossing into the engine once per node: the PHPStan\Parser\*Visitor ports
+ * whose enterNode()/leaveNode() always return null and whose beforeTraverse()
+ * only resets state. Each native visitor registers its entry from its MINIT
+ * registrar; NodeTraverser's per-traverse visitor plan looks the entry up by
+ * class entry and calls the function pointers directly, so a visitor that
+ * only reacts to one node type costs a type check instead of a PHP frame.
+ *
+ * A NULL hook falls back to the engine call — the table is an optimisation,
+ * never the definition of what the visitor does (the PHP twin is).
+ */
+typedef bool (*pt_visitor_node_fn)(zend_object *visitor, zend_object *node); /* false = pending exception */
+typedef void (*pt_visitor_reset_fn)(zend_object *visitor);
+
+typedef struct _pt_native_visitor {
+	/* the shadowing class's entry, filled at activation (reg::Class::shadow()) */
+	zend_class_entry **ce;
+	pt_visitor_node_fn enter;
+	pt_visitor_node_fn leave;
+	pt_visitor_reset_fn before;
+} pt_native_visitor;
+
+/* MINIT only; the entry must outlive the process (a file-static) */
+void pt_native_visitor_register(const pt_native_visitor *entry);
+/* NULL when the class is not one of the natively dispatched visitors */
+const pt_native_visitor *pt_native_visitor_for(zend_class_entry *ce);
+/* drops the class-entry index; called per request and after activation
+ * declared the shadowing classes */
+void pt_native_visitor_index_reset();
 
 /* }}} */
 

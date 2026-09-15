@@ -6,9 +6,11 @@ use Override;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function count;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ClosureArgVisitor.cpp')]
 final class ClosureArgVisitor extends NodeVisitorAbstract
 {
 

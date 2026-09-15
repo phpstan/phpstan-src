@@ -538,6 +538,31 @@ foreach ([false, true] as $withStopper) {
 	check($pCode === $nCode, "NodeTraverser: transformed output$stopLabel");
 }
 
+// ---- the PHPStan\Parser\*Visitor ports ----
+// The native NodeTraverser dispatches these without an engine call, so they
+// are compared under both traversers and in both directions.
+$covered[\PHPStan\Parser\ArrayFilterArgVisitor::class] = true;
+$covered[\PHPStan\Parser\ArrayFindArgVisitor::class] = true;
+$covered[\PHPStan\Parser\ArrayMapArgVisitor::class] = true;
+$covered[\PHPStan\Parser\ArrayOffsetNormalizingVisitor::class] = true;
+$covered[\PHPStan\Parser\ArrayWalkArgVisitor::class] = true;
+$covered[\PHPStan\Parser\ArrowFunctionArgVisitor::class] = true;
+$covered[\PHPStan\Parser\ClosureArgVisitor::class] = true;
+$covered[\PHPStan\Parser\ClosureBindArgVisitor::class] = true;
+$covered[\PHPStan\Parser\ClosureBindToVarVisitor::class] = true;
+$covered[\PHPStan\Parser\CurlSetOptArgVisitor::class] = true;
+$covered[\PHPStan\Parser\CurlSetOptArrayArgVisitor::class] = true;
+$covered[\PHPStan\Parser\DeclarePositionVisitor::class] = true;
+$covered[\PHPStan\Parser\ImmediatelyInvokedClosureVisitor::class] = true;
+$covered[\PHPStan\Parser\ImplodeArgVisitor::class] = true;
+$covered[\PHPStan\Parser\MagicConstantParamDefaultVisitor::class] = true;
+$covered[\PHPStan\Parser\NewAssignedToPropertyVisitor::class] = true;
+$covered[\PHPStan\Parser\ParentStmtTypesVisitor::class] = true;
+$covered[\PHPStan\Parser\TraitCollectingVisitor::class] = true;
+$covered[\PHPStan\Parser\TryCatchTypeVisitor::class] = true;
+$covered[\PHPStan\Parser\TypeTraverserInstanceofVisitor::class] = true;
+require __DIR__ . '/parser-visitors.php';
+
 // ---- ScopeOps ----
 $covered[\PHPStan\Analyser\ScopeOps::class] = true;
 $scopeOpsClasses = ['php' => \PHPStan\Analyser\ScopeOps::class, 'native' => \PHPStanTurbo\ScopeOps::class];

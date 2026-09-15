@@ -10,7 +10,10 @@
  * engine ABI glue (parameter parsing + delegation). Additionally, visitors
  * that inherit enterNode()/leaveNode()/beforeTraverse()/afterTraverse()
  * unchanged from NodeVisitorAbstract are not called for that hook (the
- * inherited hook returns null, so skipping it is unobservable).
+ * inherited hook returns null, so skipping it is unobservable), and the
+ * natively ported PHPStan\Parser\*Visitor classes are dispatched through
+ * their pt_native_visitor entry, with no engine frame at all — visitor hooks
+ * were 46.5% of the run's native->PHP crossings.
  */
 
 #include "support.h"
@@ -37,6 +40,10 @@ typedef struct _pt_visitor_plan {
 	zend_function *after_fn;
 	bool call_enter;
 	bool call_leave;
+	/* the shadowed PHPStan\Parser\*Visitor ports, dispatched in C++ instead
+	 * of through the engine (support.h); NULL for every other visitor, and a
+	 * NULL hook inside it falls back to the engine call */
+	const pt_native_visitor *native;
 } pt_visitor_plan;
 
 /* The splices recorded by one traverseArray() pass ($doNodes in the twin). */
@@ -284,6 +291,10 @@ public:
 		for (uint32_t vi = 0; vi < nvisitors; vi++) {
 			const pt_visitor_plan *p = &plan[vi];
 			if (p->before_fn == NULL) continue;
+			if (p->native != NULL && p->native->before != NULL) {
+				p->native->before(p->visitor);
+				continue;
+			}
 			zv::Val ret = callVisitorHook(p, p->before_fn, nodes.ref());
 			if (UNEXPECTED(ret.isUndef())) return zv::Val();
 			if (ret.ref().isArray()) {
@@ -381,6 +392,15 @@ private:
 				const pt_visitor_plan *p = &plan[vi];
 				visitorIndex = vi;
 				if (!p->call_enter) continue;
+				if (p->native != NULL && p->native->enter != NULL) {
+					/* a natively dispatched port: no engine frame, and it
+					 * always returns null */
+					if (UNEXPECTED(!p->native->enter(p->visitor, subNode))) {
+						failed = true;
+						return;
+					}
+					continue;
+				}
 				zv::Val ret = callVisitorHook(p, p->enter_fn, subNode);
 				if (UNEXPECTED(ret.isUndef())) {
 					failed = true;
@@ -435,6 +455,15 @@ private:
 			for (int64_t vi = visitorIndex; vi >= 0; vi--) {
 				const pt_visitor_plan *p = &plan[vi];
 				if (!p->call_leave) continue;
+				if (p->native != NULL && p->native->leave != NULL) {
+					/* a natively dispatched port: no engine frame, and it
+					 * always returns null */
+					if (UNEXPECTED(!p->native->leave(p->visitor, subNode))) {
+						failed = true;
+						return;
+					}
+					continue;
+				}
 				zv::Val ret = callVisitorHook(p, p->leave_fn, subNode);
 				if (UNEXPECTED(ret.isUndef())) {
 					failed = true;
@@ -515,6 +544,15 @@ private:
 				const pt_visitor_plan *p = &plan[vi];
 				visitorIndex = vi;
 				if (!p->call_enter) continue;
+				if (p->native != NULL && p->native->enter != NULL) {
+					/* a natively dispatched port: no engine frame, and it
+					 * always returns null */
+					if (UNEXPECTED(!p->native->enter(p->visitor, node))) {
+						failed = true;
+						break;
+					}
+					continue;
+				}
 				zv::Val ret = callVisitorHook(p, p->enter_fn, node);
 				if (UNEXPECTED(ret.isUndef())) {
 					failed = true;
@@ -579,6 +617,15 @@ private:
 			for (int64_t vi = visitorIndex; vi >= 0; vi--) {
 				const pt_visitor_plan *p = &plan[vi];
 				if (!p->call_leave) continue;
+				if (p->native != NULL && p->native->leave != NULL) {
+					/* a natively dispatched port: no engine frame, and it
+					 * always returns null */
+					if (UNEXPECTED(!p->native->leave(p->visitor, node))) {
+						failed = true;
+						break;
+					}
+					continue;
+				}
 				zv::Val ret = callVisitorHook(p, p->leave_fn, node);
 				if (UNEXPECTED(ret.isUndef())) {
 					failed = true;
@@ -725,6 +772,7 @@ private:
 			p->call_leave = p->leave_fn != baseLeave;
 			p->before_fn = findHook(p->ce, "beforetraverse", sizeof("beforetraverse") - 1);
 			p->after_fn = findHook(p->ce, "aftertraverse", sizeof("aftertraverse") - 1);
+			p->native = pt_native_visitor_for(p->ce);
 			if (p->before_fn == baseBefore) {
 				p->before_fn = NULL;
 			}

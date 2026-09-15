@@ -13,11 +13,14 @@ use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\ArrowFunction;
 use PhpParser\Node\Expr\Assign;
+use PhpParser\Node\Expr\AssignOp;
+use PhpParser\Node\Expr\AssignRef;
 use PhpParser\Node\Expr\CallLike;
 use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Expr\Instanceof_;
 use PhpParser\Node\Expr\List_;
 use PhpParser\Node\Expr\Match_;
 use PhpParser\Node\Expr\MethodCall;
@@ -43,14 +46,20 @@ use PhpParser\Node\Param;
 use PhpParser\Node\Scalar;
 use PhpParser\Node\Scalar\Float_;
 use PhpParser\Node\Scalar\Int_;
+use PhpParser\Node\Scalar\InterpolatedString;
+use PhpParser\Node\Scalar\MagicConst;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt;
+use PhpParser\Node\Stmt\Catch_;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Declare_;
 use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\HaltCompiler;
+use PhpParser\Node\Stmt\InlineHTML;
 use PhpParser\Node\Stmt\Namespace_;
+use PhpParser\Node\Stmt\Trait_;
+use PhpParser\Node\Stmt\TryCatch;
 use PhpParser\Node\VariadicPlaceholder;
 use PhpParser\Node\VarLikeIdentifier;
 use PhpParser\NodeTraverser;
@@ -214,6 +223,15 @@ final class TurboAttributeCollector
 		'classMethodStmt' => ClassMethod::class,
 		'adapterReflectionClass' => \PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass::class,
 		'betterReflectionClass' => \PHPStan\BetterReflection\Reflection\ReflectionClass::class,
+		'magicConst' => MagicConst::class,
+		'assignRefExpr' => AssignRef::class,
+		'assignOpExpr' => AssignOp::class,
+		'traitStmt' => Trait_::class,
+		'inlineHtmlStmt' => InlineHTML::class,
+		'interpolatedString' => InterpolatedString::class,
+		'instanceofExpr' => Instanceof_::class,
+		'tryCatchStmt' => TryCatch::class,
+		'catchStmt' => Catch_::class,
 	];
 
 	private string $realRoot;

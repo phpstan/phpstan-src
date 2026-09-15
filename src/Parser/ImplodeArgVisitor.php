@@ -6,9 +6,11 @@ use Override;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function in_array;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ImplodeArgVisitor.cpp')]
 final class ImplodeArgVisitor extends NodeVisitorAbstract
 {
 

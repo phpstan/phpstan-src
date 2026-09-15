@@ -218,6 +218,9 @@ static bool pt_shadow_materialize(reg::ShadowPlan &plan, HashTable *twinFiles, z
 		if (plan.differentialOnly && prefix == NULL) continue;
 		if (!pt_shadow_materialize(plan, twinFiles, prefix)) return false;
 	}
+	/* the visitor ports' class entries are set now — the NodeTraverser's
+	 * index of natively dispatched visitors keys on them */
+	pt_native_visitor_index_reset();
 	pt_shadow_active = true;
 	return true;
 }

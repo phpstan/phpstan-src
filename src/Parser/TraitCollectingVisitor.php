@@ -5,7 +5,9 @@ namespace PHPStan\Parser;
 use Override;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/TraitCollectingVisitor.cpp')]
 final class TraitCollectingVisitor extends NodeVisitorAbstract
 {
 

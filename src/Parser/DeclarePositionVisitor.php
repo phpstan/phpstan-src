@@ -6,9 +6,11 @@ use Override;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function str_starts_with;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/DeclarePositionVisitor.cpp')]
 final class DeclarePositionVisitor extends NodeVisitorAbstract
 {
 

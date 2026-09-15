@@ -6,11 +6,13 @@ use Override;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_pop;
 use function count;
 use function get_class;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ParentStmtTypesVisitor.cpp')]
 final class ParentStmtTypesVisitor extends NodeVisitorAbstract
 {
 

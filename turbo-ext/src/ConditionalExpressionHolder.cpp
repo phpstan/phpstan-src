@@ -7,6 +7,7 @@
  */
 
 #include "support.h"
+#include "generated/ConditionalExpressionHolder.h"
 #include "zv.h"
 
 namespace phpstanturbo {
@@ -74,7 +75,7 @@ using phpstanturbo::ConditionalExpressionHolder;
 void pt_register_conditional_expression_holder()
 {
 	reg::Class cls("PHPStan\\Analyser\\ConditionalExpressionHolder");
-	cls.final();
+	ptdecl::ConditionalExpressionHolder::declareClass(cls);
 	/* conditionExpressionTypeHolders/typeHolder must stay in this order */
 	cls.privateNullProperty("conditionExpressionTypeHolders");
 	cls.privateNullProperty("typeHolder");

@@ -16,6 +16,7 @@
  * fallback chain) into this one, like the twin's SplObjectStorage::addAll().
  */
 
+#include "generated/ExpressionResultStorage.h"
 #include "support.h"
 #include "zv.h"
 
@@ -92,7 +93,7 @@ using phpstanturbo::ExpressionResultStorage;
 void pt_register_expression_result_storage()
 {
 	reg::Class cls("PHPStan\\Analyser\\ExpressionResultStorage");
-	cls.final();
+	ptdecl::ExpressionResultStorage::declareClass(cls);
 	/* exprsById/resultsById/fallback must stay in this order (OBJ_PROP_NUM
 	 * slots) */
 	cls.privateArrayProperty("exprsById");

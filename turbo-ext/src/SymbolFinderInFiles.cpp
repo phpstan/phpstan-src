@@ -19,6 +19,7 @@
  */
 
 #include "support.h"
+#include "generated/SymbolFinderInFiles.h"
 #include "zv.h"
 #include "SymbolScan.h"
 
@@ -183,7 +184,7 @@ zv::Val SymbolFinderInFiles::findSymbols(HashTable *files, bool supportsEnums)
 void pt_register_symbol_finder_in_files()
 {
 	reg::Class cls("PHPStan\\Reflection\\BetterReflection\\SourceLocator\\SymbolFinderInFiles");
-	cls.final();
+	ptdecl::SymbolFinderInFiles::declareClass(cls);
 
 	/* the arginfo has to keep the real parameter class name: Nette reflects
 	 * this constructor while compiling the container (rule 6) */

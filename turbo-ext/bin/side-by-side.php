@@ -349,6 +349,20 @@ function checkGeneratedArtifacts(PHPStan\Build\TurboAttributeCollector $collecto
 		}
 	}
 
+	// the declarations generated from the PHP twins
+	require_once 'build/PHPStan/Build/TurboDeclarationGenerator.php';
+	$generated = (new PHPStan\Build\TurboDeclarationGenerator($collected['manifest']))->render();
+	foreach ($generated as $file => $content) {
+		if (!is_file($file) || file_get_contents($file) !== $content) {
+			$problems[] = sprintf('%s is stale — run php turbo-ext/bin/generate-declarations.php', $file);
+		}
+	}
+	foreach (glob('turbo-ext/src/generated/*.h') ?: [] as $file) {
+		if (!isset($generated[$file])) {
+			$problems[] = sprintf('%s belongs to no shadowed class — run php turbo-ext/bin/generate-declarations.php', $file);
+		}
+	}
+
 	return $problems;
 }
 

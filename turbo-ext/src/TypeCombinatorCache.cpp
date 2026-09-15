@@ -58,6 +58,7 @@
  */
 
 #include "support.h"
+#include "generated/TypeCombinatorCache.h"
 #include "zv.h"
 
 #include <Zend/zend_weakrefs.h>
@@ -770,7 +771,8 @@ void pt_register_type_combinator_cache()
 	static const char *TYPE_CLASS = "PHPStan\\Type\\Type";
 
 	reg::Class cls("PHPStan\\Type\\TypeCombinatorCache");
-	cls.final();
+	ptdecl::TypeCombinatorCache::declareClass(cls);
+	ptdecl::TypeCombinatorCache::declareProperties(cls);
 
 	cls.method("union", reg::PublicStatic, 0, { reg::variadicObj("types", TYPE_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *types;

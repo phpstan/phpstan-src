@@ -11,6 +11,7 @@
  */
 
 #include "support.h"
+#include "generated/PhpFileCleaner.h"
 #include "zv.h"
 #include "SymbolScan.h"
 
@@ -23,7 +24,7 @@ static zend_class_entry *pt_ce_php_file_cleaner = nullptr;
 void pt_register_php_file_cleaner()
 {
 	reg::Class cls("PHPStan\\Reflection\\BetterReflection\\SourceLocator\\PhpFileCleaner");
-	cls.final();
+	ptdecl::PhpFileCleaner::declareClass(cls);
 
 	cls.method("__construct", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();

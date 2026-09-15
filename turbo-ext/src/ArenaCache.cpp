@@ -49,6 +49,7 @@
  */
 
 #include "support.h"
+#include "generated/ArenaCache.h"
 #include "reg.h"
 #include "zv.h"
 
@@ -1153,7 +1154,8 @@ void pt_arena_mshutdown()
 void pt_register_arena_cache()
 {
 	reg::Class cls("PHPStan\\Cache\\ArenaCache");
-	cls.final();
+	ptdecl::ArenaCache::declareClass(cls);
+	ptdecl::ArenaCache::declareProperties(cls);
 
 	cls.method("create", reg::PublicStatic, 1, { reg::stringArg("runId") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *runId;

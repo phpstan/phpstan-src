@@ -4,6 +4,7 @@
  */
 
 #include "support.h"
+#include "generated/CombinationsHelper.h"
 #include "zv.h"
 
 static zend_class_entry *pt_ce_combinations = nullptr;
@@ -142,7 +143,8 @@ using phpstanturbo::CombinationsHelper;
 void pt_register_combinations_helper()
 {
 	reg::Class cls("PHPStan\\Internal\\CombinationsHelper");
-	cls.final();
+	ptdecl::CombinationsHelper::declareClass(cls);
+	ptdecl::CombinationsHelper::declareProperties(cls);
 
 	cls.method("combinations", reg::PublicStatic, 1, { reg::arrayArg("arrays") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		HashTable *arrays;

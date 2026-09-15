@@ -22,8 +22,7 @@ being ≥0.5% faster is. When the estimate is marginal, don't port.
    matches nothing — use single quotes). Run the full test suite now, before
    any native work.
 2. **Note its parent and interfaces** — the native class is declared with
-   the twin's real name, final flag, parent and interfaces
-   (`cls.final()`, `cls.parent(...)`, `cls.implements({...})`), and linked
+   the twin's real name, final flag, parent and interfaces, and linked
    like a PHP declaration: interface methods need declared return types, a
    non-final class must dispatch its own non-final methods through the
    object's class entry (a PHP subclass may override them). If it is a DI
@@ -78,6 +77,14 @@ being ≥0.5% faster is. When the estimate is marginal, don't port.
    `vendor/turbo-class-map.php` from the attributes (shadowed classes
    living in vendor/ cannot carry the attribute and are hardcoded in
    `build/TurboAttributeCollector.php`).
+5a. **Generate its declarations**: `php turbo-ext/bin/generate-declarations.php`
+   writes `turbo-ext/src/generated/<Stem>.h` from the twin — `declareClass(cls)`
+   (final/abstract, parent, the directly implemented interfaces),
+   `declareProperties(cls)` (the twin's own properties, exactly) and the
+   `slot::` constants of its instance properties. Call both first in the
+   registration function instead of spelling them out; side-by-side.php
+   fails while a header is stale. A class whose native properties deliberately
+   differ from the twin keeps declaring them by hand.
 6. **Check method parity**: `php bin/side-by-side.php` must pass (it also
    re-derives the generated `vendor/turbo-*` files from the attributes and
    byte-compares them, so a stale autoloader dump fails there).

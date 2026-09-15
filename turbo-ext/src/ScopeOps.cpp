@@ -13,6 +13,7 @@
  */
 
 #include "support.h"
+#include "generated/ScopeOps.h"
 #include "zv.h"
 
 #include <cstring>
@@ -1828,7 +1829,8 @@ void pt_scope_ops_rshutdown()
 void pt_register_scope_ops()
 {
 	reg::Class cls("PHPStan\\Analyser\\ScopeOps");
-	cls.final();
+	ptdecl::ScopeOps::declareClass(cls);
+	ptdecl::ScopeOps::declareProperties(cls);
 
 	cls.method("mergeVariableHolders", reg::PublicStatic, 2, { reg::arrayArg("ourVariableTypeHolders"), reg::arrayArg("theirVariableTypeHolders"), reg::any("differingKeys", true) }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		HashTable *ours, *theirs;

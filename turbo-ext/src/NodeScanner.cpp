@@ -7,6 +7,7 @@
  */
 
 #include "support.h"
+#include "generated/NodeScanner.h"
 #include "zv.h"
 
 static zend_class_entry *pt_ce_node_scanner;
@@ -52,7 +53,8 @@ using phpstanturbo::NodeScanner;
 void pt_register_node_scanner()
 {
 	reg::Class cls("PHPStan\\Node\\NodeScanner");
-	cls.final();
+	ptdecl::NodeScanner::declareClass(cls);
+	ptdecl::NodeScanner::declareProperties(cls);
 
 	cls.method("nodeIsOrContainsYield", reg::PublicStatic, 1, { reg::objectArg("node") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *node;

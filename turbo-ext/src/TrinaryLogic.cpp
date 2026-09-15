@@ -11,6 +11,7 @@
  */
 
 #include "support.h"
+#include "generated/TrinaryLogic.h"
 #include "zv.h"
 
 namespace phpstanturbo {
@@ -314,7 +315,7 @@ static void pt_trinary_and_or(INTERNAL_FUNCTION_PARAMETERS, bool isAnd)
 void pt_register_trinary_logic()
 {
 	reg::Class cls("PHPStan\\TrinaryLogic");
-	cls.final();
+	ptdecl::TrinaryLogic::declareClass(cls);
 	/* "value" must stay the first declared property (OBJ_PROP_NUM slot 0) */
 	cls.privateLongProperty("value", 0);
 

@@ -11,6 +11,7 @@
  */
 
 #include "ParserEngine.h"
+#include "../generated/ParserRunner.h"
 #include "ParserRunnerActionsSplit.h"
 
 #pragma GCC diagnostic push
@@ -1226,7 +1227,8 @@ using phpstanturbo::ParserEngine;
 void pt_register_parser_runner(void)
 {
 	reg::Class cls("PHPStan\\Parser\\ParserRunner");
-	cls.final();
+	ptdecl::ParserRunner::declareClass(cls);
+	ptdecl::ParserRunner::declareProperties(cls);
 
 	cls.method("parse", reg::PublicStatic, 3, { reg::objectArg("parser"), reg::stringArg("sourceCode"), reg::objectArg("errorHandler") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *parserObj, *code, *errorHandler;

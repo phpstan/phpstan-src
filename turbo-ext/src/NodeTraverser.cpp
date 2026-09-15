@@ -14,6 +14,7 @@
  */
 
 #include "support.h"
+#include "generated/NodeTraverser.h"
 #include "zv.h"
 
 static zend_class_entry *pt_ce_node_traverser;
@@ -803,7 +804,7 @@ using phpstanturbo::NodeTraverser;
 void pt_register_node_traverser()
 {
 	reg::Class cls("PhpParser\\NodeTraverser");
-	cls.implements({ "PhpParser\\NodeTraverserInterface" });
+	ptdecl::NodeTraverser::declareClass(cls);
 	/* "visitors" must stay slot 0 and "stopTraversal" slot 1 (PT_NT_PROP_*) */
 	cls.protectedArrayProperty("visitors");
 	cls.protectedBoolProperty("stopTraversal", false);

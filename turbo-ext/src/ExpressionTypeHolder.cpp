@@ -13,6 +13,7 @@
  */
 
 #include "support.h"
+#include "generated/ExpressionTypeHolder.h"
 #include "zv.h"
 
 namespace phpstanturbo {
@@ -82,7 +83,7 @@ using phpstanturbo::ExpressionTypeHolder;
 void pt_register_expression_type_holder()
 {
 	reg::Class cls("PHPStan\\Analyser\\ExpressionTypeHolder");
-	cls.final();
+	ptdecl::ExpressionTypeHolder::declareClass(cls);
 	/* expr/type/certainty must stay in this order (OBJ_PROP_NUM slots) */
 	cls.privateNullProperty("expr");
 	cls.privateNullProperty("type");

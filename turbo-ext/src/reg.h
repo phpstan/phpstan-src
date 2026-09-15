@@ -308,7 +308,13 @@ enum class PropertyKind
 	Null,
 	Bool,
 	EmptyArray,
-	PublicReadonlyTyped, /* UNDEF default, defaultValue carries the MAY_BE_* type mask */
+	Typed, /* a typed property with no default (UNDEF, IS_PROP_UNINIT); defaultValue carries the MAY_BE_* type mask, visibility the ZEND_ACC_* flags */
+	TypedNull, /* a typed property defaulting to null (`private ?Foo $x = null`); defaultValue as for Typed */
+	TypedEmptyArray, /* a typed property defaulting to [] (`private array $x = []`); defaultValue as for Typed */
+	TypedClassUnion, /* a `private Foo|Bar $x` union-of-classes typed property with no default; className carries the `|`-separated names, defaultValue as for Typed */
+	TypedBool, /* a `private bool $x = false` typed property with a bool default; defaultValue carries the default (0/1), the type is bool */
+	TypedLong, /* a `private int $x = 0` typed property with an int default; defaultValue carries the default, the type is int */
+	TypedFalse, /* a typed property defaulting to false (`private string|false|null $x = false`, `private Foo|false|null $x = false`); defaultValue carries the MAY_BE_* mask (the scalar members next to a class name), className as for Typed */
 };
 
 struct Property
@@ -317,6 +323,7 @@ struct Property
 	PropertyKind kind;
 	uint32_t visibility;
 	zend_long defaultValue;
+	const char *className = nullptr; /* persistent literal: the class of a class-typed property (Typed* kinds), combined with a MAY_BE_NULL bit in defaultValue for `?Foo` */
 };
 
 struct Constant
@@ -368,12 +375,84 @@ inline void declareMembers(zend_class_entry *ce, const std::vector<Property> &pr
 				zend_declare_property(ce, property.name, len, &emptyArray, property.visibility);
 				break;
 			}
-			case PropertyKind::PublicReadonlyTyped: {
-				zend_string *nameStr = zend_string_init(property.name, len, ce->type == ZEND_INTERNAL_CLASS);
-				zval undef;
-				ZVAL_UNDEF(&undef);
-				zend_type type = ZEND_TYPE_INIT_MASK((uint32_t) property.defaultValue);
-				zend_declare_typed_property(ce, nameStr, &undef, ZEND_ACC_PUBLIC | ZEND_ACC_READONLY, NULL, type);
+			case PropertyKind::Typed:
+			case PropertyKind::TypedNull:
+			case PropertyKind::TypedEmptyArray:
+			case PropertyKind::TypedClassUnion:
+			case PropertyKind::TypedFalse: {
+				bool persistent = ce->type == ZEND_INTERNAL_CLASS;
+				zend_string *nameStr = zend_string_init(property.name, len, persistent);
+				zval defaultValue;
+				if (property.kind == PropertyKind::TypedNull) {
+					ZVAL_NULL(&defaultValue);
+				} else if (property.kind == PropertyKind::TypedEmptyArray) {
+					ZVAL_EMPTY_ARRAY(&defaultValue);
+				} else if (property.kind == PropertyKind::TypedFalse) {
+					ZVAL_FALSE(&defaultValue);
+				} else {
+					ZVAL_UNDEF(&defaultValue);
+				}
+				zend_type type;
+				if (property.kind == PropertyKind::TypedClassUnion) {
+					/* a `Foo|Bar` union of class names, declared the way the
+					 * compiler declares one: a type list of interned names
+					 * with class-entry cache slots (released with the class
+					 * by zend_type_release() — allocated with its
+					 * persistence) */
+					uint32_t count = 1;
+					for (const char *p = property.className; (p = strchr(p, '|')) != NULL; p++) {
+						count++;
+					}
+					zend_type_list *list = (zend_type_list *) pemalloc(ZEND_TYPE_LIST_SIZE(count), persistent);
+					list->num_types = count;
+					const char *start = property.className;
+					for (uint32_t i = 0; i < count; i++) {
+						const char *end = strchr(start, '|');
+						size_t partLen = end != NULL ? (size_t) (end - start) : strlen(start);
+						zend_string *className = zend_new_interned_string(zend_string_init(start, partLen, persistent));
+						zend_alloc_ce_cache(className);
+						list->types[i] = (zend_type) ZEND_TYPE_INIT_CLASS(className, 0, 0);
+						start = end != NULL ? end + 1 : start;
+					}
+					type = (zend_type) ZEND_TYPE_INIT_UNION(list, (property.defaultValue & MAY_BE_NULL) != 0 ? MAY_BE_NULL : 0);
+				} else if (property.className != NULL) {
+					/* a class-typed property, declared the way the compiler
+					 * declares one (zend_compile_single_typename): an interned
+					 * name with a class-entry cache slot; the engine dups it
+					 * for a persistent class. "self" is the declared class,
+					 * as the compiler resolves it (the twin's `private static
+					 * self $x`) */
+					zend_string *className = strcmp(property.className, "self") == 0
+						? zend_string_copy(ce->name)
+						: zend_new_interned_string(zend_string_init(property.className, strlen(property.className), persistent));
+					zend_alloc_ce_cache(className);
+					/* the bits beyond MAY_BE_NULL in defaultValue are the scalar
+					 * members of a `Foo|false|null` union */
+					type = (zend_type) ZEND_TYPE_INIT_CLASS(className, (property.defaultValue & MAY_BE_NULL) != 0, (uint32_t) property.defaultValue & ~(uint32_t) MAY_BE_NULL);
+				} else {
+					type = (zend_type) ZEND_TYPE_INIT_MASK((uint32_t) property.defaultValue);
+				}
+				zend_declare_typed_property(ce, nameStr, &defaultValue, property.visibility, NULL, type);
+				zend_string_release(nameStr);
+				break;
+			}
+			case PropertyKind::TypedBool: {
+				bool persistent = ce->type == ZEND_INTERNAL_CLASS;
+				zend_string *nameStr = zend_string_init(property.name, len, persistent);
+				zval defaultValue;
+				ZVAL_BOOL(&defaultValue, property.defaultValue != 0);
+				zend_type type = (zend_type) ZEND_TYPE_INIT_MASK(MAY_BE_BOOL);
+				zend_declare_typed_property(ce, nameStr, &defaultValue, property.visibility, NULL, type);
+				zend_string_release(nameStr);
+				break;
+			}
+			case PropertyKind::TypedLong: {
+				bool persistent = ce->type == ZEND_INTERNAL_CLASS;
+				zend_string *nameStr = zend_string_init(property.name, len, persistent);
+				zval defaultValue;
+				ZVAL_LONG(&defaultValue, property.defaultValue);
+				zend_type type = (zend_type) ZEND_TYPE_INIT_MASK(MAY_BE_LONG);
+				zend_declare_typed_property(ce, nameStr, &defaultValue, property.visibility, NULL, type);
 				zend_string_release(nameStr);
 				break;
 			}
@@ -630,7 +709,7 @@ public:
 	 * MAY_BE_* mask */
 	Class &publicReadonlyProperty(const char *propertyName, uint32_t typeMask)
 	{
-		properties.push_back({ propertyName, PropertyKind::PublicReadonlyTyped, ZEND_ACC_PUBLIC | ZEND_ACC_READONLY, (zend_long) typeMask });
+		properties.push_back({ propertyName, PropertyKind::Typed, ZEND_ACC_PUBLIC | ZEND_ACC_READONLY, (zend_long) typeMask });
 		return *this;
 	}
 
@@ -678,6 +757,21 @@ public:
 		plan.out = out;
 		plan.ce = NULL;
 		pt_shadow_plan_add(std::move(plan));
+	}
+
+	/* a typed property of any visibility and shape — the builders above
+	 * are the common cases; this spells the twin's declaration directly:
+	 * visibility is the ZEND_ACC_* flags (ZEND_ACC_PRIVATE | ZEND_ACC_STATIC,
+	 * ZEND_ACC_PUBLIC | ZEND_ACC_READONLY, ...), kind the shape, mask the
+	 * MAY_BE_* type mask (with MAY_BE_NULL for a nullable class type; the
+	 * bool/int default for TypedBool/TypedLong), className the persistent
+	 * literal of a class-typed property ("self" for the declared class) or
+	 * NULL. Promoted constructor properties are declared this way: they
+	 * never carry the parameter's default, so their kind is Typed. */
+	Class &property(const char *propertyName, uint32_t visibility, PropertyKind kind, zend_long mask, const char *className = nullptr)
+	{
+		properties.push_back({ propertyName, kind, visibility, mask, className });
+		return *this;
 	}
 
 private:

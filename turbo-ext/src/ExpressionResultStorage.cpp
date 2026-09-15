@@ -150,3 +150,14 @@ void pt_register_expression_result_storage()
 }
 
 /* }}} */
+
+/* {{{ direct entries: the native bodies for a native storage, the methods
+ * of anything else (the PHP twin under the prefixed differential
+ * activation) */
+
+zv::Val pt_expression_result_storage_new()
+{
+	return pt_type_new_ce(pt_ce_expression_result_storage, 0, NULL);
+}
+
+/* }}} */

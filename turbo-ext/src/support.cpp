@@ -165,6 +165,20 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_VOID_TO_NULL_TRAVERSER */ {"voidToNullTraverser", "PHPStan\\Analyser\\Traverser\\VoidToNullTraverser"},
 	/* PT_CLASS_ISSETABILITY_RESOLUTION */ {"issetabilityResolution", "PHPStan\\Analyser\\IssetabilityResolution"},
 	/* PT_CLASS_ISSETABILITY_LINK_INFO */ {"issetabilityLinkInfo", "PHPStan\\Analyser\\IssetabilityLinkInfo"},
+	/* PT_CLASS_PHP_PROPERTY_REFLECTION */ {"phpPropertyReflection", "PHPStan\\Reflection\\Php\\PhpPropertyReflection"},
+	/* PT_CLASS_NATIVE_METHOD_REFLECTION */ {"nativeMethodReflection", "PHPStan\\Reflection\\Native\\NativeMethodReflection"},
+	/* PT_CLASS_EXTENDED_NATIVE_PARAMETER_REFLECTION */ {"extendedNativeParameterReflection", "PHPStan\\Reflection\\Native\\ExtendedNativeParameterReflection"},
+	/* PT_CLASS_ENUM_CASES_METHOD_REFLECTION */ {"enumCasesMethodReflection", "PHPStan\\Reflection\\Php\\EnumCasesMethodReflection"},
+	/* PT_CLASS_PRIVATE_PROPERTY_ATTRIBUTE */ {"privatePropertyAttribute", "PHPStan\\Reflection\\Attribute\\PrivateProperty"},
+	/* PT_CLASS_PROTECTED_PROPERTY_ATTRIBUTE */ {"protectedPropertyAttribute", "PHPStan\\Reflection\\Attribute\\ProtectedProperty"},
+	/* PT_CLASS_ADAPTER_REFLECTION_METHOD */ {"adapterReflectionMethod", "PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionMethod"},
+	/* PT_CLASS_EXPRESSION_STMT */ {"expressionStmt", "PhpParser\\Node\\Stmt\\Expression"},
+	/* PT_CLASS_ASSIGN_EXPR */ {"assignExpr", "PhpParser\\Node\\Expr\\Assign"},
+	/* PT_CLASS_NAMESPACE_STMT */ {"namespaceStmt", "PhpParser\\Node\\Stmt\\Namespace_"},
+	/* PT_CLASS_DECLARE_STMT */ {"declareStmt", "PhpParser\\Node\\Stmt\\Declare_"},
+	/* PT_CLASS_CLASS_METHOD_STMT */ {"classMethodStmt", "PhpParser\\Node\\Stmt\\ClassMethod"},
+	/* PT_CLASS_ADAPTER_REFLECTION_CLASS */ {"adapterReflectionClass", "PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionClass"},
+	/* PT_CLASS_BETTER_REFLECTION_CLASS */ {"betterReflectionClass", "PHPStan\\BetterReflection\\Reflection\\ReflectionClass"},
 };
 
 zend_class_entry *pt_class(int idx)

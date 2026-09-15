@@ -202,6 +202,20 @@ enum {
 	PT_CLASS_VOID_TO_NULL_TRAVERSER,
 	PT_CLASS_ISSETABILITY_RESOLUTION,
 	PT_CLASS_ISSETABILITY_LINK_INFO,
+	PT_CLASS_PHP_PROPERTY_REFLECTION,
+	PT_CLASS_NATIVE_METHOD_REFLECTION,
+	PT_CLASS_EXTENDED_NATIVE_PARAMETER_REFLECTION,
+	PT_CLASS_ENUM_CASES_METHOD_REFLECTION,
+	PT_CLASS_PRIVATE_PROPERTY_ATTRIBUTE,
+	PT_CLASS_PROTECTED_PROPERTY_ATTRIBUTE,
+	PT_CLASS_ADAPTER_REFLECTION_METHOD,
+	PT_CLASS_EXPRESSION_STMT,
+	PT_CLASS_ASSIGN_EXPR,
+	PT_CLASS_NAMESPACE_STMT,
+	PT_CLASS_DECLARE_STMT,
+	PT_CLASS_CLASS_METHOD_STMT,
+	PT_CLASS_ADAPTER_REFLECTION_CLASS,
+	PT_CLASS_BETTER_REFLECTION_CLASS,
 	PT_CLASS_COUNT
 };
 
@@ -1290,14 +1304,16 @@ zv::Val pt_callback_unresolved_property_prototype_reflection_new(uint32_t argc, 
 
 /* }}} */
 
-/* the shadowing ExpressionResultStorage (ExpressionResultStorage.cpp) —
- * $storage->findExpressionResult($expr): the native body for a native
- * storage, the method of anything else (the PHP twin under the prefixed
- * differential activation); UNDEF = pending exception */
+/* the shadowing ExpressionResultStorage (ExpressionResultStorage.cpp) — new
+ * ExpressionResultStorage() and $storage->findExpressionResult($expr): the
+ * native bodies for a native storage, the methods of anything else (the
+ * PHP twin under the prefixed differential activation); UNDEF = pending
+ * exception */
 extern zend_class_entry *pt_ce_expression_result_storage;
 /* VolatileExpressionHelper.cpp — the shadowing class entry (MutatingScope
  * calls its statics directly) */
 extern zend_class_entry *pt_ce_volatile_expression_helper;
+zv::Val pt_expression_result_storage_new();
 zv::Val pt_expression_result_storage_find(zval *storage, zval *expr);
 
 /* merged from the parallel port branch */
@@ -1394,5 +1410,15 @@ zv::Val pt_variable_flow_dead(zval *flow);
 zv::Val pt_variable_flow_throwing(zval *type, bool canContinue, bool canContainAnyThrowable);
 
 /* }}} */
+
+/* PhpClassReflectionExtension.cpp — the shadowing member factory behind
+ * ClassReflection's has*()/get*() methods; registered at the END of the
+ * sequence (its signatures name ClassReflection and the Type family, and
+ * its constructor instantiates the native LruCache) */
+extern zend_class_entry *pt_ce_php_class_reflection_extension;
+void pt_register_php_class_reflection_extension();
+/* forgets the per-request class-entry/slot cache of the BetterReflection
+ * adapter memo readers */
+void pt_php_class_reflection_extension_rinit();
 
 #endif /* PHPSTANTURBO_SUPPORT_H */

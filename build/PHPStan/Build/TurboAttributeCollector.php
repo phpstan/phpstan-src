@@ -12,6 +12,7 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\ArrowFunction;
+use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\CallLike;
 use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Expr\FuncCall;
@@ -34,12 +35,17 @@ use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\Scalar;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Class_;
+use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\Node\Stmt\Declare_;
+use PhpParser\Node\Stmt\Expression;
+use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\Node\VariadicPlaceholder;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnumBackedCase;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionIntersectionType;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionNamedType;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionUnionType;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprFloatNode;
@@ -174,6 +180,14 @@ final class TurboAttributeCollector
 		'listExpr' => List_::class,
 		'reflectionEnumBackedCase' => ReflectionEnumBackedCase::class,
 		'arg' => Arg::class,
+		'adapterReflectionMethod' => ReflectionMethod::class,
+		'expressionStmt' => Expression::class,
+		'assignExpr' => Assign::class,
+		'namespaceStmt' => Namespace_::class,
+		'declareStmt' => Declare_::class,
+		'classMethodStmt' => ClassMethod::class,
+		'adapterReflectionClass' => \PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass::class,
+		'betterReflectionClass' => \PHPStan\BetterReflection\Reflection\ReflectionClass::class,
 	];
 
 	private string $realRoot;

@@ -3074,6 +3074,17 @@ foreach ($erResults['php'] as $label => $described) {
 }
 check($erResults['php']['extension calls'] > 0 && $erResults['php']['release'][4] === 2, 'ExpressionResult: the fixture exercises the extensions and the callback release');
 
+// ---- PhpClassReflectionExtension ----
+// Both sides built from the container's own collaborators with named
+// arguments; every public method compared over a fixture of inherited,
+// trait, magic, promoted, hooked, attributed, enum, interface and
+// signature-mapped members, plus the member-cache memo and eviction.
+$covered[\PHPStan\Reflection\Php\PhpClassReflectionExtension::class] = true;
+// the fixture declares property hooks and is loaded at run time: PHP 8.4+
+if (PHP_VERSION_ID >= 80400) {
+	require __DIR__ . '/php-class-reflection-family.php';
+}
+
 // ---- differential coverage completeness ----
 // Every shadowed class must be exercised by one of the tests/ scripts; the
 // classes not covered above have their own dedicated script.

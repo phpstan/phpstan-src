@@ -11,10 +11,12 @@ use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 
+#[ReferencedByTurboExtension(key: 'enumCasesMethodReflection')]
 final class EnumCasesMethodReflection implements ExtendedMethodReflection
 {
 

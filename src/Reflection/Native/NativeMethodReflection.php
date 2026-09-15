@@ -14,12 +14,14 @@ use PHPStan\Reflection\MethodPrototypeReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use ReflectionException;
 use function count;
 use function strtolower;
 
+#[ReferencedByTurboExtension(key: 'nativeMethodReflection')]
 final class NativeMethodReflection implements ExtendedMethodReflection
 {
 

@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection\Attribute;
 
 use Attribute;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * Marks a property the phar build made public that is private in the
@@ -13,6 +14,7 @@ use Attribute;
  * the phar cannot access it.
  */
 #[Attribute(flags: Attribute::TARGET_PROPERTY | Attribute::TARGET_PARAMETER)]
+#[ReferencedByTurboExtension(key: 'privatePropertyAttribute')]
 final class PrivateProperty
 {
 

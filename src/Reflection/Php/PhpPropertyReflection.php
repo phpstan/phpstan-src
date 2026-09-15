@@ -10,6 +10,7 @@ use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\MissingMethodFromReflectionException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
@@ -19,6 +20,7 @@ use function sprintf;
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'phpPropertyReflection')]
 final class PhpPropertyReflection implements ExtendedPropertyReflection
 {
 

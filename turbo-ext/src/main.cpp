@@ -294,6 +294,9 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_variable_flow_builder();
 	pt_register_variable_liveness_resolver();
 	pt_register_expression_result();
+	/* the DI service behind ClassReflection's member lookups — after the
+	 * Type family and LruCache, whose classes its signatures name */
+	pt_register_php_class_reflection_extension();
 
 	return SUCCESS;
 }
@@ -323,6 +326,7 @@ static PHP_RINIT_FUNCTION(phpstan_turbo)
 	pt_scope_access_rinit();
 	pt_reflection_access_rinit();
 	pt_variable_flow_rinit();
+	pt_php_class_reflection_extension_rinit();
 
 	return SUCCESS;
 }

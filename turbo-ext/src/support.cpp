@@ -140,6 +140,7 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_RESOLVED_PROPERTY_REFLECTION */ {"resolvedPropertyReflection", "PHPStan\\Reflection\\ResolvedPropertyReflection"},
 	/* PT_CLASS_CHANGED_TYPE_METHOD_REFLECTION */ {"changedTypeMethodReflection", "PHPStan\\Reflection\\Dummy\\ChangedTypeMethodReflection"},
 	/* PT_CLASS_CHANGED_TYPE_PROPERTY_REFLECTION */ {"changedTypePropertyReflection", "PHPStan\\Reflection\\Dummy\\ChangedTypePropertyReflection"},
+	/* PT_CLASS_NULLSAFE_METHOD_CALL */ {"nullsafeMethodCall", "PhpParser\\Node\\Expr\\NullsafeMethodCall"},
 	/* PT_CLASS_STATIC_PROPERTY_FETCH */ {"staticPropertyFetch", "PhpParser\\Node\\Expr\\StaticPropertyFetch"},
 	/* PT_CLASS_VARIABLE_ACCESS_FLOW */ {"variableAccessFlow", "PHPStan\\Analyser\\VariableAccessFlow"},
 	/* PT_CLASS_VARIABLE_SEQUENCE_FLOW */ {"variableSequenceFlow", "PHPStan\\Analyser\\VariableSequenceFlow"},
@@ -149,6 +150,10 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_VARIABLE_WRITE_OFFSET */ {"variableWriteOffset", "PHPStan\\Analyser\\VariableWriteOffset"},
 	/* PT_CLASS_LIST_EXPR */ {"listExpr", "PhpParser\\Node\\Expr\\List_"},
 	/* PT_CLASS_VARIABLE_WRITES_NODE */ {"variableWritesNode", "PHPStan\\Node\\VariableWritesNode"},
+	/* PT_CLASS_TYPE_SPECIFIER_CONTEXT */ {"typeSpecifierContext", "PHPStan\\Analyser\\TypeSpecifierContext"},
+	/* PT_CLASS_VOID_TO_NULL_TRAVERSER */ {"voidToNullTraverser", "PHPStan\\Analyser\\Traverser\\VoidToNullTraverser"},
+	/* PT_CLASS_ISSETABILITY_RESOLUTION */ {"issetabilityResolution", "PHPStan\\Analyser\\IssetabilityResolution"},
+	/* PT_CLASS_ISSETABILITY_LINK_INFO */ {"issetabilityLinkInfo", "PHPStan\\Analyser\\IssetabilityLinkInfo"},
 };
 
 zend_class_entry *pt_class(int idx)

@@ -2,11 +2,13 @@
 
 namespace PHPStan\Analyser\Traverser;
 
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverserCallable;
 use PHPStan\Type\UnionType;
 
+#[ReferencedByTurboExtension(key: 'voidToNullTraverser')]
 final class VoidToNullTraverser implements TypeTraverserCallable
 {
 

@@ -310,9 +310,9 @@ constexpr Arg arrayArg(const char *name, bool nullable = false)
 	return { name, detail::codeMask(IS_ARRAY, nullable) | detail::flagBits(false, false), nullptr };
 }
 
-constexpr Arg callableArg(const char *name)
+constexpr Arg callableArg(const char *name, bool nullable = false)
 {
-	return { name, MAY_BE_CALLABLE | detail::flagBits(false, false), nullptr };
+	return { name, MAY_BE_CALLABLE | (nullable ? MAY_BE_NULL : 0) | detail::flagBits(false, false), nullptr };
 }
 
 constexpr Arg objectArg(const char *name, bool nullable = false)

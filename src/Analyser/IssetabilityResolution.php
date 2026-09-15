@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser;
 
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Type;
 
 /**
@@ -11,6 +12,7 @@ use PHPStan\Type\Type;
  * the fold via isSet() and the rule (PHPStan\Rules\IssetCheck) renders messages
  * from the same links - neither re-walks the AST nor re-resolves types.
  */
+#[ReferencedByTurboExtension(key: 'issetabilityResolution')]
 final class IssetabilityResolution
 {
 

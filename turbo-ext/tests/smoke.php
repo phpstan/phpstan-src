@@ -2370,6 +2370,703 @@ $covered[\PHPStan\Analyser\VariableFlow::class] = true;
 $covered[\PHPStan\Analyser\VariableFlowBuilder::class] = true;
 $covered[\PHPStan\Analyser\VariableLivenessResolver::class] = true;
 
+// ---- VolatileExpressionHelper ----
+// The tables are the by-reference copies a MutatingScope hands in: holders of
+// the side's own class over shared expression nodes; the results are the
+// return value and the surviving keys of both tables.
+$vehScopeFactory = $scContainer->getByType(\PHPStan\Analyser\ScopeFactory::class);
+$vehScope = $vehScopeFactory->create(\PHPStan\Analyser\ScopeContext::create(__FILE__));
+$vehInputs = static function (string $side): array {
+	$holder = $side === 'php'
+		? static fn ($expr, $type, $certainty) => new \PHPStan\Analyser\ExpressionTypeHolder($expr, $type, $certainty)
+		: static fn ($expr, $type, $certainty) => new \PHPStanTurbo\ExpressionTypeHolder($expr, $type, $certainty);
+	$yes = $side === 'php' ? \PHPStan\TrinaryLogic::createYes() : \PHPStanTurbo\TrinaryLogic::createYes();
+	$maybe = $side === 'php' ? \PHPStan\TrinaryLogic::createMaybe() : \PHPStanTurbo\TrinaryLogic::createMaybe();
+	$int = new \PHPStanTurbo\IntegerType();
+	$string = new \PHPStanTurbo\StringType();
+	$true = new \PHPStanTurbo\ConstantBooleanType(true);
+	$false = new \PHPStanTurbo\ConstantBooleanType(false);
+	$bool = new \PHPStanTurbo\BooleanType();
+	$funcCall = static fn (string $name, array $args = [], bool $fullyQualified = false) => new \PhpParser\Node\Expr\FuncCall(
+		$fullyQualified ? new \PhpParser\Node\Name\FullyQualified($name) : new \PhpParser\Node\Name($name),
+		$args,
+	);
+	$arg = static fn (\PhpParser\Node\Expr $value) => new \PhpParser\Node\Arg($value);
+	$expressionTypes = [
+		'ob_get_level()' => $holder($funcCall('ob_get_level'), $int, $yes),
+		'\openssl_error_string()' => $holder($funcCall('openssl_error_string', [], true), $string, $yes),
+		'$_GET' => $holder(new \PhpParser\Node\Expr\Variable('_GET'), $int, $yes),
+		'$_GET[\'x\']' => $holder(new \PhpParser\Node\Expr\ArrayDimFetch(new \PhpParser\Node\Expr\Variable('_GET'), new \PhpParser\Node\Scalar\String_('x')), $string, $yes),
+		'$_SERVERx' => $holder(new \PhpParser\Node\Expr\Variable('_SERVERx'), $int, $yes),
+		'$a' => $holder(new \PhpParser\Node\Expr\Variable('a'), $int, $yes),
+		'class_exists(\'Foo\')' => $holder($funcCall('class_exists', [$arg(new \PhpParser\Node\Scalar\String_('Foo'))]), $false, $yes),
+		'function_exists(\'bar\')' => $holder($funcCall('function_exists', [$arg(new \PhpParser\Node\Scalar\String_('bar'))]), $bool, $maybe),
+		'\class_exists(\'Baz\')' => $holder($funcCall('class_exists', [$arg(new \PhpParser\Node\Scalar\String_('Baz'))], true), $true, $yes),
+		'class_exists(...)' => $holder($funcCall('class_exists', [new \PhpParser\Node\VariadicPlaceholder()]), $false, $yes),
+		'enum_exists($x)' => $holder($funcCall('enum_exists', [$arg(new \PhpParser\Node\Expr\Variable('x'))]), $false, $yes),
+		'interface_exists()' => $holder($funcCall('interface_exists'), $false, $yes),
+		'$f(\'x\')' => $holder(new \PhpParser\Node\Expr\FuncCall(new \PhpParser\Node\Expr\Variable('f'), [$arg(new \PhpParser\Node\Scalar\String_('x'))]), $false, $yes),
+		'strlen(\'x\')' => $holder($funcCall('strlen', [$arg(new \PhpParser\Node\Scalar\String_('x'))]), $int, $yes),
+	];
+	$nativeExpressionTypes = [
+		'ob_get_level()' => $expressionTypes['ob_get_level()'],
+		'$_GET' => $expressionTypes['$_GET'],
+		'$_GET[\'x\']' => $expressionTypes['$_GET[\'x\']'],
+		'class_exists(\'Foo\')' => $expressionTypes['class_exists(\'Foo\')'],
+		'$b' => $holder(new \PhpParser\Node\Expr\Variable('b'), $int, $yes),
+		'openssl_error_string()' => $holder($funcCall('openssl_error_string'), $string, $yes),
+	];
+
+	return [$expressionTypes, $nativeExpressionTypes];
+};
+$vehResults = [];
+foreach (['php' => \PHPStan\Analyser\VolatileExpressionHelper::class, 'native' => \PHPStanTurbo\VolatileExpressionHelper::class] as $side => $vehClass) {
+	$r = [];
+	[$e, $n] = $vehInputs($side);
+	$r[] = [$vehClass::invalidateVolatileFunctionCalls($e, $n), array_keys($e), array_keys($n)];
+	$e1 = [];
+	$n1 = [];
+	$r[] = [$vehClass::invalidateVolatileFunctionCalls($e1, $n1), $e1, $n1];
+	[$e, $n] = $vehInputs($side);
+	$r[] = [$vehClass::invalidateSuperglobals($e, $n), array_keys($e), array_keys($n)];
+	[$e, $n] = $vehInputs($side);
+	unset($e['$_GET'], $n['$_GET']);
+	$r[] = [$vehClass::invalidateSuperglobals($e, $n), array_keys($e), array_keys($n)];
+	[$e, $n] = $vehInputs($side);
+	$r[] = [$vehClass::invalidateNegativeExistenceChecks($vehScope, $e, $n), array_keys($e), array_keys($n)];
+	[$e, $n] = $vehInputs($side);
+	$r[] = [$vehClass::invalidateNegativeExistenceChecks($vehScope, $e, $n, ['function_exists']), array_keys($e), array_keys($n)];
+	[$e, $n] = $vehInputs($side);
+	$r[] = [$vehClass::invalidateNegativeExistenceChecks($vehScope, $e, $n, ['class_exists', 'enum_exists'], '\FOO'), array_keys($e), array_keys($n)];
+	[$e, $n] = $vehInputs($side);
+	$r[] = [$vehClass::invalidateNegativeExistenceChecks($vehScope, $e, $n, ['class_exists'], 'Other'), array_keys($e), array_keys($n)];
+	[$e, $n] = $vehInputs($side);
+	$r[] = [$vehClass::invalidateNegativeExistenceChecks($vehScope, $e, $n, ['strlen']), array_keys($e), array_keys($n)];
+	// the by-reference contract: the caller's copies change, the originals stay
+	[$e, $n] = $vehInputs($side);
+	$copyE = $e;
+	$copyN = $n;
+	$r[] = [$vehClass::invalidateVolatileFunctionCalls($copyE, $copyN), array_keys($e), array_keys($n), array_keys($copyE), array_keys($copyN)];
+	$vehResults[$side] = $r;
+}
+check($vehResults['php'] === $vehResults['native'], 'VolatileExpressionHelper parity: ' . json_encode($vehResults['php']) . ' vs ' . json_encode($vehResults['native']));
+check($vehResults['php'][0][0] === true && $vehResults['php'][2][0] === true && $vehResults['php'][4][0] === true && $vehResults['php'][3][0] === false, 'VolatileExpressionHelper: the fixture exercises removals and no-ops');
+
+// ---- VariableFlow ----
+// The factories build the PHP flow classes over shared nodes and writes;
+// flows are compared structurally (class names modulo the prefix).
+$vfDescribeWrite = static fn (?\PHPStan\Node\Variable\VariableWrite $write): ?array => $write === null ? null : [
+	$write->getVariableName(),
+	spl_object_id($write->getNode()),
+	$write->getId(),
+	$write->getKind(),
+	$write->isOffsetWrite(),
+	$write->getOffset(),
+	$write->getParentId(),
+	$write->replacesOffset(),
+];
+$vfDescribe = static function ($flow) use (&$vfDescribe, $vfDescribeWrite, $turboNorm) {
+	if ($flow === null) {
+		return null;
+	}
+	if (!$flow instanceof \PHPStan\Analyser\VariableFlow) {
+		return 'not a flow: ' . get_debug_type($flow);
+	}
+	$d = ['class' => $turboNorm(get_class($flow)), 'kind' => $flow->kind];
+	if ($flow instanceof \PHPStan\Analyser\VariableAccessFlow) {
+		$d += [
+			'name' => $flow->name,
+			'write' => $vfDescribeWrite($flow->write),
+			'type' => $flow->type?->describe(\PHPStan\Type\VerbosityLevel::precise()),
+			'targetId' => $flow->targetId,
+			'container' => $flow->container,
+			'offset' => $flow->offset,
+		];
+	} elseif ($flow instanceof \PHPStan\Analyser\VariableSequenceFlow) {
+		$d['children'] = array_map($vfDescribe, $flow->children);
+	} elseif ($flow instanceof \PHPStan\Analyser\VariableControlFlow) {
+		$d += [
+			'children' => array_map($vfDescribe, $flow->children),
+			'name' => $flow->name,
+			'type' => $flow->type?->describe(\PHPStan\Type\VerbosityLevel::precise()),
+			'level' => $flow->level,
+			'atLeastOnce' => $flow->atLeastOnce,
+			'canExit' => $flow->canExit,
+			'catches' => array_map(static fn (array $catch) => [$catch[0]->describe(\PHPStan\Type\VerbosityLevel::precise()), $vfDescribe($catch[1])], $flow->catches),
+			'arrow' => $flow->arrow !== null ? spl_object_id($flow->arrow) : null,
+			'cases' => array_map(static fn (array $case) => [$vfDescribe($case[0]), $vfDescribe($case[1]), $case[2]], $flow->cases),
+			'canRepeat' => $flow->canRepeat,
+			'canContainAnyThrowable' => $flow->canContainAnyThrowable,
+			'stmt' => $flow->stmt !== null ? spl_object_id($flow->stmt) : null,
+			'bindings' => array_map($vfDescribeWrite, $flow->bindings),
+			'ownWrites' => array_map($vfDescribeWrite, $flow->ownWrites),
+		];
+	} elseif ($flow instanceof \PHPStan\Analyser\VariableInputFlow) {
+		$d += ['writeId' => $flow->writeId, 'targetId' => $flow->targetId];
+	}
+
+	return $d;
+};
+check((new ReflectionClass(\PHPStanTurbo\VariableFlow::class))->isAbstract(), 'VariableFlow: the native class is abstract');
+check((new ReflectionClass(\PHPStanTurbo\VariableFlow::class))->getConstants() === (new ReflectionClass(\PHPStan\Analyser\VariableFlow::class))->getConstants(), 'VariableFlow: the kind constants');
+$vfNativeSubclass = new class('x') extends \PHPStanTurbo\VariableFlow {
+
+	public function __construct(string $kind)
+	{
+		parent::__construct($kind);
+	}
+
+	public function again(string $kind): void
+	{
+		parent::__construct($kind);
+	}
+
+};
+check($vfNativeSubclass->kind === 'x', 'VariableFlow: the protected constructor fills the readonly $kind slot');
+try {
+	$vfNativeSubclass->again('y');
+	check(false, 'VariableFlow: a second construction must throw');
+} catch (\Error $e) {
+	check(str_contains($e->getMessage(), 'readonly property'), 'VariableFlow: readonly $kind: ' . $e->getMessage());
+}
+try {
+	$vfNativeSubclass->kind = 'z';
+	check(false, 'VariableFlow: $kind is readonly');
+} catch (\Error $e) {
+	check(true, '');
+}
+$vfNodeA = new \PhpParser\Node\Expr\Variable('a');
+$vfNodeB = new \PhpParser\Node\Expr\Variable('b');
+$vfArrow = new \PhpParser\Node\Expr\ArrowFunction(['expr' => $vfNodeA]);
+$vfForeach = new \PhpParser\Node\Stmt\Foreach_($vfNodeA, $vfNodeB);
+$vfWriteA = new \PHPStan\Node\Variable\VariableWrite('a', $vfNodeA, 11, \PHPStan\Node\Variable\VariableWrite::KIND_ASSIGN);
+$vfWriteItem = new \PHPStan\Node\Variable\VariableWrite('b', $vfNodeB, 12, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_LITERAL_ITEM, false, null, 11);
+$vfWriteOffset = new \PHPStan\Node\Variable\VariableWrite('a', $vfNodeA, 13, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, 'k', null, false);
+$vfInt = new \PHPStanTurbo\IntegerType();
+$vfString = new \PHPStanTurbo\StringType();
+$vfResults = [];
+foreach (['php' => \PHPStan\Analyser\VariableFlow::class, 'native' => \PHPStanTurbo\VariableFlow::class] as $side => $vf) {
+	$r = [];
+	$readA = $vf::read('a');
+	$readB = $vf::read('b', 7, true, 'k');
+	$r[] = [$vfDescribe($readA), $vfDescribe($readB), $vfDescribe($vf::read('b', null, false, 3)), $vf::read('this'), $vf::read('_GET'), $vf::read('GLOBALS', 1)];
+	$r[] = [$vf::sequence(), $vf::sequence(null, null), $vf::sequence(null, $readA) === $readA, $vfDescribe($vf::sequence($readA, null, $readB)), $vfDescribe($vf::sequence(...[$readA, $readB, $readA]))];
+	$r[] = [$vf::choice(), $vf::choice($readA) === $readA, $vf::choice($readA, $readA) === $readA, $vf::choice(null, null), $vfDescribe($vf::choice($readA, null)), $vfDescribe($vf::choice($readA, $readB, null))];
+	$r[] = [$vfDescribe($vf::arrow($vfArrow, $readA, null)), $vfDescribe($vf::arrow($vfArrow, null, $readB))];
+	$r[] = [$vfDescribe($vf::conditional($readA, $readB, null, true)), $vfDescribe($vf::conditional($readA, $readB, $readA, false)), $vfDescribe($vf::conditional(null, $readB, $readA, null)), $vf::conditional(null, null, null, null), $vfDescribe($vf::conditional($readA, null, null, true))];
+	$r[] = [$vfDescribe($vf::switch($readA, [[$readB, $readA, false], [null, null, true]], true)), $vfDescribe($vf::switch(null, [], false))];
+	$r[] = [$vfDescribe($vf::write($vfWriteA)), $vfDescribe($vf::write($vfWriteItem, $vfInt)), $vfDescribe($vf::write($vfWriteOffset, null)), $vfDescribe($vf::discard($vfWriteA)), $vfDescribe($vf::discard($vfWriteItem))];
+	$r[] = [$vfDescribe($vf::inputs(11, null)), $vfDescribe($vf::inputs(12, 7))];
+	$r[] = [$vfDescribe($vf::escape('a')), $vfDescribe($vf::escape('this')), $vfDescribe($vf::mention('b')), $vfDescribe($vf::all($vf::READ_ALL)), $vfDescribe($vf::all($vf::MENTION_ALL)), $vfDescribe($vf::all($vf::OPAQUE))];
+	$r[] = [$vfDescribe($vf::exit($vf::RETURN)), $vfDescribe($vf::exit($vf::BREAK, 2)), $vfDescribe($vf::exit($vf::CONTINUE, 1, 'x')), $vfDescribe($vf::exit($vf::STOP, 3, null))];
+	$r[] = [$vfDescribe($vf::throwing($vfInt, true)), $vfDescribe($vf::throwing($vfString, false, true))];
+	$r[] = [$vf::dead(null), $vfDescribe($vf::dead($readA))];
+	$r[] = [$vfDescribe($vf::loop($readA, $readB, null, true, false)), $vfDescribe($vf::loop(null, null, $readA, false, true, false))];
+	$r[] = [$vf::loopStatement($vfForeach, $readA, [], [$vfWriteA]) === $readA, $vf::loopStatement($vfForeach, null, [], []), $vfDescribe($vf::loopStatement($vfForeach, $readA, [$vfWriteA], [$vfWriteA, $vfWriteOffset]))];
+	$r[] = [$vfDescribe($vf::tryCatch($readA, [[$vfInt, $readB], [$vfString, null]], null)), $vfDescribe($vf::tryCatch(null, [], $readB))];
+	$vfResults[$side] = $r;
+}
+check($vfResults['php'] === $vfResults['native'], 'VariableFlow parity: ' . json_encode($vfResults['php']) . ' vs ' . json_encode($vfResults['native']));
+// a VariableWrite that skipped its constructor: the twin's getters throw
+$vfRawWrite = (new ReflectionClass(\PHPStan\Node\Variable\VariableWrite::class))->newInstanceWithoutConstructor();
+$vfRawResults = [];
+foreach (['php' => \PHPStan\Analyser\VariableFlow::class, 'native' => \PHPStanTurbo\VariableFlow::class] as $side => $vf) {
+	try {
+		$vf::write($vfRawWrite);
+		$vfRawResults[$side] = 'no error';
+	} catch (\Error $e) {
+		$vfRawResults[$side] = [get_class($e), $e->getMessage()];
+	}
+}
+check($vfRawResults['php'] === $vfRawResults['native'], 'VariableFlow: write() over an unconstructed VariableWrite: ' . json_encode($vfRawResults));
+
+// ---- VariableFlowBuilder ----
+// Shared nodes and a scope; per side a storage of the side's class holding
+// ExpressionResults that carry a flow and a type (set through reflection —
+// the results' construction is not what is under test), and an ArgsResult.
+$vfbScope = $vehScope
+	->assignVariable('arr', new \PHPStan\Type\ArrayType($vfInt, $vfString), new \PHPStan\Type\ArrayType($vfInt, $vfString), \PHPStan\TrinaryLogic::createYes())
+	->assignVariable('str', $vfString, $vfString, \PHPStan\TrinaryLogic::createYes())
+	->assignVariable('int', $vfInt, $vfInt, \PHPStan\TrinaryLogic::createYes())
+	->assignVariable('maybe', $vfInt, $vfInt, \PHPStan\TrinaryLogic::createMaybe());
+$vfbResultReflection = new ReflectionClass(\PHPStan\Analyser\ExpressionResult::class);
+$vfbMakeResult = static function (?\PHPStan\Analyser\VariableFlow $flow, ?\PHPStan\Type\Type $type = null) use ($vfbResultReflection): \PHPStan\Analyser\ExpressionResult {
+	$result = $vfbResultReflection->newInstanceWithoutConstructor();
+	$vfbResultReflection->getProperty('variableFlow')->setValue($result, $flow);
+	$vfbResultReflection->getProperty('cachedType')->setValue($result, $type ?? new \PHPStanTurbo\MixedType());
+	return $result;
+};
+$vfbN = [
+	'a' => new \PhpParser\Node\Expr\Variable('a'),
+	'b' => new \PhpParser\Node\Expr\Variable('b'),
+	'this' => new \PhpParser\Node\Expr\Variable('this'),
+	'get' => new \PhpParser\Node\Expr\Variable('_GET'),
+	'arr' => new \PhpParser\Node\Expr\Variable('arr'),
+	'str' => new \PhpParser\Node\Expr\Variable('str'),
+	'int' => new \PhpParser\Node\Expr\Variable('int'),
+	'maybe' => new \PhpParser\Node\Expr\Variable('maybe'),
+	'unknown' => new \PhpParser\Node\Expr\Variable('unknown'),
+	'varVar' => new \PhpParser\Node\Expr\Variable(new \PhpParser\Node\Expr\Variable('name')),
+	'k' => new \PhpParser\Node\Scalar\String_('k'),
+	'one' => new \PhpParser\Node\Scalar\Int_(1),
+	'call' => new \PhpParser\Node\Expr\FuncCall(new \PhpParser\Node\Name('f')),
+	'closure' => new \PhpParser\Node\Expr\Closure(),
+	'arrow' => new \PhpParser\Node\Expr\ArrowFunction(['expr' => new \PhpParser\Node\Scalar\Int_(2)]),
+	'name' => new \PhpParser\Node\Name('Foo'),
+];
+$vfbN['dimArrK'] = new \PhpParser\Node\Expr\ArrayDimFetch($vfbN['arr'], $vfbN['k']);
+$vfbN['dimArrNested'] = new \PhpParser\Node\Expr\ArrayDimFetch($vfbN['dimArrK'], $vfbN['one']);
+$vfbN['dimArrNull'] = new \PhpParser\Node\Expr\ArrayDimFetch($vfbN['arr'], null);
+$vfbN['dimStr'] = new \PhpParser\Node\Expr\ArrayDimFetch($vfbN['str'], $vfbN['one']);
+$vfbN['dimInt'] = new \PhpParser\Node\Expr\ArrayDimFetch($vfbN['int'], $vfbN['one']);
+$vfbN['dimMaybe'] = new \PhpParser\Node\Expr\ArrayDimFetch($vfbN['maybe'], $vfbN['k']);
+$vfbN['dimUnknown'] = new \PhpParser\Node\Expr\ArrayDimFetch($vfbN['unknown'], $vfbN['k']);
+$vfbN['dimThis'] = new \PhpParser\Node\Expr\ArrayDimFetch($vfbN['this'], $vfbN['k']);
+$vfbN['dimGet'] = new \PhpParser\Node\Expr\ArrayDimFetch($vfbN['get'], $vfbN['k']);
+$vfbN['dimCall'] = new \PhpParser\Node\Expr\ArrayDimFetch($vfbN['call'], $vfbN['k']);
+$vfbN['dimVarVar'] = new \PhpParser\Node\Expr\ArrayDimFetch($vfbN['varVar'], $vfbN['k']);
+$vfbN['prop'] = new \PhpParser\Node\Expr\PropertyFetch($vfbN['a'], 'p');
+$vfbN['propExpr'] = new \PhpParser\Node\Expr\PropertyFetch($vfbN['a'], $vfbN['b']);
+$vfbN['nullsafeProp'] = new \PhpParser\Node\Expr\NullsafePropertyFetch($vfbN['a'], 'p');
+$vfbN['staticProp'] = new \PhpParser\Node\Expr\StaticPropertyFetch($vfbN['name'], 'p');
+$vfbN['staticPropExpr'] = new \PhpParser\Node\Expr\StaticPropertyFetch($vfbN['a'], $vfbN['b']);
+$vfbN['dimProp'] = new \PhpParser\Node\Expr\ArrayDimFetch($vfbN['prop'], $vfbN['k']);
+$vfbN['list'] = new \PhpParser\Node\Expr\List_([
+	new \PhpParser\Node\ArrayItem($vfbN['a'], $vfbN['k']),
+	null,
+	new \PhpParser\Node\ArrayItem($vfbN['b'], null, true),
+	new \PhpParser\Node\ArrayItem($vfbN['dimArrK']),
+	new \PhpParser\Node\ArrayItem(new \PhpParser\Node\Expr\List_([new \PhpParser\Node\ArrayItem($vfbN['str'])])),
+]);
+$vfbN['array'] = new \PhpParser\Node\Expr\Array_([new \PhpParser\Node\ArrayItem($vfbN['int'])]);
+$vfbN['emptyList'] = new \PhpParser\Node\Expr\List_([]);
+$vfbN['callArgs'] = new \PhpParser\Node\Expr\FuncCall(new \PhpParser\Node\Name('g'), [
+	new \PhpParser\Node\Arg($vfbN['a']),
+	new \PhpParser\Node\Arg($vfbN['b'], true),
+	new \PhpParser\Node\Arg($vfbN['dimArrK']),
+	new \PhpParser\Node\Arg($vfbN['closure']),
+	new \PhpParser\Node\Arg($vfbN['call']),
+	new \PhpParser\Node\Arg($vfbN['arrow']),
+]);
+$vfbN['callArgs']->setAttribute('startFilePos', 10);
+$vfbN['callArgs']->setAttribute('endFilePos', 20);
+$vfbN['samePos'] = new \PhpParser\Node\Expr\FuncCall(new \PhpParser\Node\Name('h'));
+$vfbN['samePos']->setAttribute('startFilePos', 10);
+$vfbN['samePos']->setAttribute('endFilePos', 20);
+$vfbN['otherPos'] = new \PhpParser\Node\Expr\FuncCall(new \PhpParser\Node\Name('h'));
+$vfbN['otherPos']->setAttribute('startFilePos', 10);
+$vfbN['otherPos']->setAttribute('endFilePos', 21);
+$vfbN['noPos'] = new \PhpParser\Node\Expr\FuncCall(new \PhpParser\Node\Name('h'));
+$vfbN['fcc'] = new \PhpParser\Node\Expr\FuncCall(new \PhpParser\Node\Name('g'), [new \PhpParser\Node\VariadicPlaceholder()]);
+$vfbN['fcc']->setAttribute('startFilePos', 30);
+$vfbN['fcc']->setAttribute('endFilePos', 40);
+$vfbThrowable = new \PHPStan\Type\ObjectType(\Throwable::class);
+$vfbThrowPoints = [
+	\PHPStan\Analyser\InternalThrowPoint::createExplicit($vfbScope, $vfInt, $vfbN['callArgs'], false),
+	\PHPStan\Analyser\InternalThrowPoint::createExplicit($vfbScope, $vfString, $vfbN['closure'], true),
+	\PHPStan\Analyser\InternalThrowPoint::createExplicit($vfbScope, $vfbThrowable, $vfbN['arrow'], false),
+	\PHPStan\Analyser\InternalThrowPoint::createExplicit($vfbScope, $vfInt, $vfbN['samePos'], true),
+	\PHPStan\Analyser\InternalThrowPoint::createExplicit($vfbScope, $vfString, $vfbN['otherPos'], false),
+	\PHPStan\Analyser\InternalThrowPoint::createExplicit($vfbScope, $vfInt, $vfbN['noPos'], false),
+	\PHPStan\Analyser\InternalThrowPoint::createImplicit($vfbScope, $vfbN['a']),
+];
+$vfbSides = [
+	'php' => [\PHPStan\Analyser\VariableFlowBuilder::class, \PHPStan\Analyser\VariableFlow::class, \PHPStan\Analyser\ExpressionResultStorage::class],
+	'native' => [\PHPStanTurbo\VariableFlowBuilder::class, \PHPStanTurbo\VariableFlow::class, \PHPStanTurbo\ExpressionResultStorage::class],
+	'native over a PHP storage' => [\PHPStanTurbo\VariableFlowBuilder::class, \PHPStanTurbo\VariableFlow::class, \PHPStan\Analyser\ExpressionResultStorage::class],
+];
+$vfbResults = [];
+foreach ($vfbSides as $side => [$builder, $vf, $storageClass]) {
+	$storage = new $storageClass();
+	$flowA = $vf::read('a');
+	$flowB = $vf::escape('b');
+	$flowK = $vf::mention('k');
+	$storage->storeExpressionResult($vfbN['a'], $vfbMakeResult($flowA, $vfInt));
+	$storage->storeExpressionResult($vfbN['b'], $vfbMakeResult($flowB));
+	$storage->storeExpressionResult($vfbN['k'], $vfbMakeResult($flowK, new \PHPStanTurbo\ConstantStringType('k')));
+	$storage->storeExpressionResult($vfbN['one'], $vfbMakeResult(null, new \PHPStanTurbo\ConstantIntegerType(1)));
+	$storage->storeExpressionResult($vfbN['call'], $vfbMakeResult($vf::all($vf::OPAQUE)));
+	$storage->storeExpressionResult($vfbN['varVar'], $vfbMakeResult($vf::mention('name')));
+	$storage->storeExpressionResult($vfbN['dimArrK'], $vfbMakeResult($vf::read('arr', null, false, 'k'), $vfString));
+	$storage->storeExpressionResult($vfbN['closure'], $vfbMakeResult($vf::escape('c')));
+	$storage->storeExpressionResult($vfbN['prop'], $vfbMakeResult($vf::mention('prop')));
+	$argsResult = new \PHPStan\Analyser\ArgsResult(
+		$vfbMakeResult(null),
+		null,
+		[spl_object_id($vfbN['a']) => $vfbMakeResult($vf::read('a', 99)), spl_object_id($vfbN['closure']) => $vfbMakeResult(null)],
+		[spl_object_id($vfbN['call']) => true],
+	);
+
+	$r = [];
+	$r[] = [$vfDescribe($builder::throws($vfbN['callArgs'], $vfbThrowPoints)), $vfDescribe($builder::throws($vfbN['fcc'], $vfbThrowPoints)), $builder::throws($vfbN['a'], []), $vfDescribe($builder::throws($vfbN['a'], $vfbThrowPoints))];
+	$r[] = [$vfDescribe($builder::arguments($vfbN['callArgs'], $argsResult, $storage)), $builder::arguments($vfbN['call'], $argsResult, $storage)];
+	$r[] = [$vfDescribe($builder::child($vfbN['a'], $storage)), $builder::child($vfbN['unknown'], $storage), $builder::child($vfbN['name'], $storage), $builder::child(null, $storage), $builder::child($vfbN['one'], $storage)];
+	foreach (['a', 'this', 'get', 'varVar', 'list', 'array', 'dimArrK', 'dimArrNested', 'dimArrNull', 'dimCall', 'dimVarVar', 'dimProp', 'prop', 'propExpr', 'nullsafeProp', 'staticProp', 'staticPropExpr', 'call', 'k'] as $key) {
+		$r[] = [$key, $vfDescribe($builder::targetRead($vfbN[$key], $storage, true)), $vfDescribe($builder::targetRead($vfbN[$key], $storage, false)), $vfDescribe($builder::targetRead($vfbN[$key], $storage, true, 5))];
+	}
+	foreach (['a', 'this', 'get', 'varVar', 'list', 'array', 'emptyList', 'dimArrK', 'dimArrNested', 'dimArrNull', 'dimStr', 'dimInt', 'dimMaybe', 'dimUnknown', 'dimThis', 'dimGet', 'dimCall', 'dimVarVar', 'dimProp', 'prop', 'call'] as $key) {
+		$write = $builder::targetWrite($vfbN[$key], \PHPStan\Node\Variable\VariableWrite::KIND_ASSIGN, $vfbScope, $storage);
+		$r[] = [$key, $vfDescribe($write), $vfDescribe($builder::targetWrite($vfbN[$key], \PHPStan\Node\Variable\VariableWrite::KIND_PRE_INC, $vfbScope, $storage, $vfInt)), $vfDescribeWrite($builder::writeSite($vfbN[$key], \PHPStan\Node\Variable\VariableWrite::KIND_ASSIGN, $vfbScope, $storage)), array_map($vfDescribeWrite, $builder::writes($write))];
+	}
+	$r[] = [$builder::writes(null), array_map($vfDescribeWrite, $builder::writes($vf::sequence($vf::write($vfWriteA), $vf::sequence($vf::escape('x'), $vf::write($vfWriteItem)), $vf::dead($vf::write($vfWriteOffset))))), $builder::writes($vf::all($vf::OPAQUE))];
+	foreach (['a', 'this', 'varVar', 'dimArrNested', 'dimCall', 'dimVarVar', 'prop', 'call'] as $key) {
+		$r[] = [$key, $vfDescribe($builder::escapeRoot($vfbN[$key]))];
+	}
+	$vfbResults[$side] = $r;
+}
+check($vfbResults['php'] === $vfbResults['native'], 'VariableFlowBuilder parity: ' . json_encode($vfbResults['php']) . ' vs ' . json_encode($vfbResults['native']));
+check($vfbResults['php'] === $vfbResults['native over a PHP storage'], 'VariableFlowBuilder parity over a PHP storage: ' . json_encode($vfbResults['php']) . ' vs ' . json_encode($vfbResults['native over a PHP storage']));
+
+// ---- VariableLivenessResolver ----
+// Flow trees built once (the PHP flow classes over shared nodes and writes)
+// and resolved by both sides; the VariableWritesNode is compared field by
+// field (writes and types described, loop statements by object id). A throw
+// that can contain any Throwable is only placed outside try/catch: inside,
+// the PHP twin instantiates the PHP ObjectType(Throwable) against the native
+// catch types, which the prefixed declaration cannot mix (see type-family.php).
+$vlrDescribe = static function (\PHPStan\Node\VariableWritesNode $node) use ($vfDescribeWrite): array {
+	$d = [];
+	foreach (['writes', 'readWriteIds', 'usedWriteIds', 'coveredWriteIds', 'readVariableNames', 'redundantWriteTypes', 'referencedVariableNames', 'untrackedVariableNames', 'variableOverwritingLoops', 'opaque', 'allVariableNamesReferenced'] as $property) {
+		$value = (new ReflectionProperty($node, $property))->getValue($node);
+		if ($property === 'writes') {
+			$value = array_map($vfDescribeWrite, $value);
+		} elseif ($property === 'redundantWriteTypes') {
+			$value = array_map(static fn (\PHPStan\Type\Type $type): string => $type->describe(\PHPStan\Type\VerbosityLevel::precise()), $value);
+		} elseif ($property === 'variableOverwritingLoops') {
+			$value = array_map(static fn (object $statement): int => spl_object_id($statement), $value);
+		}
+		$d[$property] = $value;
+	}
+	$d['functionLike'] = spl_object_id($node->getFunctionLike());
+
+	return $d;
+};
+$vlrF = \PHPStan\Analyser\VariableFlow::class;
+$vlrVar = static fn (string $name) => new \PhpParser\Node\Expr\Variable($name);
+$vlrWrite = static fn (string $name, int $id, int $kind = \PHPStan\Node\Variable\VariableWrite::KIND_ASSIGN, bool $offsetWrite = false, $offset = null, ?int $parentId = null, bool $replacesOffset = true) => new \PHPStan\Node\Variable\VariableWrite($name, $vlrVar($name), $id, $kind, $offsetWrite, $offset, $parentId, $replacesOffset);
+$vlrInt = new \PHPStanTurbo\IntegerType();
+$vlrString = new \PHPStanTurbo\StringType();
+$vlrException = new \PHPStanTurbo\ObjectType(\Exception::class);
+$vlrRuntime = new \PHPStanTurbo\ObjectType(\RuntimeException::class);
+$vlrThrowable = new \PHPStanTurbo\ObjectType(\Throwable::class);
+$vlrForeach = new \PhpParser\Node\Stmt\Foreach_($vlrVar('items'), $vlrVar('k'));
+$vlrFor = new \PhpParser\Node\Stmt\For_();
+$vlrArrow = new \PhpParser\Node\Expr\ArrowFunction(['params' => [new \PhpParser\Node\Param($vlrVar('p')), new \PhpParser\Node\Param($vlrVar('q'))], 'expr' => $vlrVar('p')]);
+$vlrFunctions = [
+	'function' => new \PhpParser\Node\Stmt\Function_('f', ['params' => [new \PhpParser\Node\Param($vlrVar('a')), new \PhpParser\Node\Param($vlrVar('r'), null, null, true), new \PhpParser\Node\Param($vlrVar('this'))]]),
+	'closure by ref' => new \PhpParser\Node\Expr\Closure(['byRef' => true, 'uses' => [new \PhpParser\Node\ClosureUse($vlrVar('u')), new \PhpParser\Node\ClosureUse($vlrVar('ur'), true)]]),
+	'method' => new \PhpParser\Node\Stmt\ClassMethod('m', ['params' => [new \PhpParser\Node\Param($vlrVar('promoted'), null, null, false, false, [], \PhpParser\Modifiers::PUBLIC)]]),
+];
+$vlrFlows = [
+	'empty' => null,
+	'plain' => $vlrF::sequence(
+		$vlrF::write($vlrWrite('a', 1)),
+		$vlrF::read('a'),
+		$vlrF::write($vlrWrite('b', 2), $vlrInt),
+		$vlrF::write($vlrWrite('c', 3)),
+		$vlrF::inputs(3, null),
+		$vlrF::write($vlrWrite('d', 4)),
+		$vlrF::inputs(4, 5),
+		$vlrF::write($vlrWrite('e', 5)),
+		$vlrF::read('e'),
+		$vlrF::write($vlrWrite('f', 6)),
+		$vlrF::write($vlrWrite('f', 7)),
+		$vlrF::read('f'),
+		$vlrF::discard($vlrWrite('g', 8)),
+		$vlrF::mention('m'),
+		$vlrF::escape('h'),
+		$vlrF::write($vlrWrite('h', 9)),
+		$vlrF::write($vlrWrite('this', 10)),
+		$vlrF::write($vlrWrite('_GET', 11)),
+		$vlrF::read('unknown'),
+	),
+	'branches' => $vlrF::sequence(
+		$vlrF::write($vlrWrite('a', 1)),
+		$vlrF::conditional($vlrF::read('a'), $vlrF::write($vlrWrite('d', 2)), $vlrF::write($vlrWrite('d', 3)), null),
+		$vlrF::read('d'),
+		$vlrF::conditional(null, $vlrF::write($vlrWrite('x', 4)), $vlrF::write($vlrWrite('x', 5)), true),
+		$vlrF::conditional(null, $vlrF::write($vlrWrite('y', 6)), $vlrF::write($vlrWrite('y', 7)), false),
+		$vlrF::choice($vlrF::read('x'), $vlrF::read('y'), null),
+		$vlrF::switch($vlrF::read('s'), [[$vlrF::read('c1'), $vlrF::sequence($vlrF::write($vlrWrite('sw', 8)), $vlrF::exit($vlrF::BREAK)), false], [null, $vlrF::sequence($vlrF::read('sw'), $vlrF::write($vlrWrite('sw', 9))), true]], false),
+		$vlrF::switch($vlrF::read('s'), [[$vlrF::read('c2'), $vlrF::write($vlrWrite('ex', 10)), false]], true),
+		$vlrF::read('ex'),
+		$vlrF::dead($vlrF::sequence($vlrF::write($vlrWrite('dead', 11)), $vlrF::read('dead'))),
+		$vlrF::exit($vlrF::RETURN, 1, 'a'),
+		$vlrF::write($vlrWrite('after', 12)),
+	),
+	'loops' => $vlrF::sequence(
+		$vlrF::write($vlrWrite('i', 1)),
+		$vlrF::write($vlrWrite('acc', 2)),
+		$vlrF::loop($vlrF::read('i'), $vlrF::sequence($vlrF::read('acc'), $vlrF::write($vlrWrite('acc', 3)), $vlrF::conditional($vlrF::read('stop'), $vlrF::exit($vlrF::BREAK), $vlrF::exit($vlrF::CONTINUE, 1), null), $vlrF::write($vlrWrite('unreached', 4))), $vlrF::write($vlrWrite('i', 5)), false, true),
+		$vlrF::read('acc'),
+		$vlrF::loop(null, $vlrF::sequence($vlrF::write($vlrWrite('w', 6)), $vlrF::exit($vlrF::STOP)), null, true, false, false),
+		$vlrF::write($vlrWrite('k', 7)),
+		$vlrF::loopStatement($vlrForeach, $vlrF::loop(null, $vlrF::sequence($vlrF::write($vlrWrite('k', 8, \PHPStan\Node\Variable\VariableWrite::KIND_FOREACH_KEY)), $vlrF::read('k')), null, false, true), [$vlrWrite('k', 8, \PHPStan\Node\Variable\VariableWrite::KIND_FOREACH_KEY)], [$vlrWrite('k', 8, \PHPStan\Node\Variable\VariableWrite::KIND_FOREACH_KEY)]),
+		$vlrF::read('k'),
+		$vlrF::write($vlrWrite('j', 9)),
+		$vlrF::loopStatement($vlrFor, $vlrF::loop($vlrF::read('j'), $vlrF::read('body'), $vlrF::write($vlrWrite('j', 11)), false, true), [$vlrWrite('j', 10)], [$vlrWrite('j', 10), $vlrWrite('j', 11)]),
+		$vlrF::escape('j'),
+		$vlrF::loopStatement($vlrForeach, null, [], []),
+	),
+	'exceptions' => $vlrF::sequence(
+		$vlrF::write($vlrWrite('t', 1)),
+		$vlrF::tryCatch(
+			$vlrF::sequence($vlrF::write($vlrWrite('t', 2)), $vlrF::throwing($vlrRuntime, true), $vlrF::write($vlrWrite('t', 3)), $vlrF::throwing($vlrString, false), $vlrF::write($vlrWrite('never', 4))),
+			[[$vlrException, $vlrF::sequence($vlrF::read('t'), $vlrF::write($vlrWrite('t', 5)))], [$vlrThrowable, $vlrF::read('caught')]],
+			$vlrF::sequence($vlrF::read('fin'), $vlrF::write($vlrWrite('fin', 6))),
+		),
+		$vlrF::read('t'),
+		$vlrF::tryCatch($vlrF::sequence($vlrF::write($vlrWrite('u', 7)), $vlrF::throwing($vlrInt, false)), [[$vlrInt, $vlrF::read('u')]], null),
+		$vlrF::loop(null, $vlrF::tryCatch($vlrF::sequence($vlrF::write($vlrWrite('l', 8)), $vlrF::exit($vlrF::BREAK, 1), $vlrF::exit($vlrF::CONTINUE, 2)), [], $vlrF::read('l')), null, true, true),
+		$vlrF::throwing($vlrString, false, true),
+		$vlrF::write($vlrWrite('unreachable', 9)),
+	),
+	'arrow and literals' => $vlrF::sequence(
+		$vlrF::write($vlrWrite('outer', 1)),
+		$vlrF::write($vlrWrite('p', 2)),
+		$vlrF::arrow($vlrArrow, $vlrF::sequence($vlrF::read('p'), $vlrF::read('outer'), $vlrF::write($vlrWrite('inner', 3))), $vlrF::read('res')),
+		$vlrF::read('p'),
+		$vlrF::write($vlrWrite('list', 4)),
+		$vlrF::write($vlrWrite('x', 5, \PHPStan\Node\Variable\VariableWrite::KIND_LIST_ITEM, false, null, 4)),
+		$vlrF::write($vlrWrite('y', 6, \PHPStan\Node\Variable\VariableWrite::KIND_LIST_ITEM, false, null, 4)),
+		$vlrF::read('x'),
+		$vlrF::inputs(4, null),
+		$vlrF::write($vlrWrite('o', 7, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, 'k')),
+		$vlrF::write($vlrWrite('o', 8, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, 1, null, false)),
+		$vlrF::write($vlrWrite('o', 9, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, null)),
+		$vlrF::read('o', null, false, 'k'),
+		$vlrF::read('o', 12, true),
+		$vlrF::read('o', 12),
+		$vlrF::write($vlrWrite('o', 10, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, 'k')),
+		$vlrF::escape('o'),
+	),
+	'read all' => $vlrF::sequence($vlrF::write($vlrWrite('a', 1)), $vlrF::write($vlrWrite('o', 2, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, 'k')), $vlrF::all($vlrF::READ_ALL), $vlrF::write($vlrWrite('b', 3)), $vlrF::mention('c')),
+	'mention all' => $vlrF::sequence($vlrF::write($vlrWrite('a', 1)), $vlrF::all($vlrF::MENTION_ALL)),
+	'opaque' => $vlrF::sequence($vlrF::write($vlrWrite('a', 1)), $vlrF::all($vlrF::OPAQUE), $vlrF::read('a')),
+];
+$vlrResults = [];
+foreach (['php' => \PHPStan\Analyser\VariableLivenessResolver::class, 'native' => \PHPStanTurbo\VariableLivenessResolver::class] as $side => $resolver) {
+	$r = [];
+	foreach ($vlrFunctions as $functionLabel => $function) {
+		foreach ($vlrFlows as $flowLabel => $flow) {
+			$r[$functionLabel . ' / ' . $flowLabel] = $vlrDescribe($resolver::resolve($function, $flow));
+		}
+	}
+	$vlrResults[$side] = $r;
+}
+foreach ($vlrResults['php'] as $label => $described) {
+	check($described === $vlrResults['native'][$label], "VariableLivenessResolver parity ($label): " . json_encode($described) . ' vs ' . json_encode($vlrResults['native'][$label]));
+}
+check(count($vlrResults['php']['function / loops']['variableOverwritingLoops']) === 2 && $vlrResults['php']['function / read all']['readVariableNames'] !== [], 'VariableLivenessResolver: the fixture exercises binding probes and READ_ALL');
+
+// ---- ExpressionResult ----
+// Results built by both sides from the same scopes, expressions, callbacks
+// and extension collections; every public method's answer is compared, and a
+// result's state is compared field by field through reflection.
+$covered[\PHPStan\Analyser\ExpressionResult::class] = true;
+$erScope = $vehScope
+	->assignVariable('a', $vfInt, $vfInt, \PHPStan\TrinaryLogic::createYes())
+	->assignVariable('s', $vfString, $vfString, \PHPStan\TrinaryLogic::createYes())
+	->assignVariable('m', $vfInt, $vfInt, \PHPStan\TrinaryLogic::createMaybe());
+$erOtherScope = $vehScope
+	->assignVariable('a', $vfString, $vfString, \PHPStan\TrinaryLogic::createYes())
+	->assignVariable('s', $vfString, $vfString, \PHPStan\TrinaryLogic::createYes());
+$erWiderScope = $vehScope
+	->assignVariable('a', new \PHPStanTurbo\UnionType([$vfInt, $vfString]), new \PHPStanTurbo\UnionType([$vfInt, $vfString]), \PHPStan\TrinaryLogic::createYes())
+	->assignVariable('s', $vfString, $vfString, \PHPStan\TrinaryLogic::createYes());
+$erNoExtensions = new \PHPStan\DependencyInjection\DirectExtensionsCollection([]);
+$erExtensionCalls = 0;
+$erHitExtensions = new \PHPStan\DependencyInjection\DirectExtensionsCollection([
+	new class($erExtensionCalls) implements \PHPStan\Type\ExpressionTypeResolverExtension {
+
+		public function __construct(private int &$calls)
+		{
+		}
+
+		public function getType(\PhpParser\Node\Expr $expr, \PHPStan\Analyser\Scope $scope): ?\PHPStan\Type\Type
+		{
+			$this->calls++;
+			return $expr instanceof \PhpParser\Node\Expr\Variable && $expr->name === 'ext' ? new \PHPStanTurbo\ConstantStringType('from extension') : null;
+		}
+
+	},
+]);
+$erN = [
+	'variable a' => new \PhpParser\Node\Expr\Variable('a'),
+	'variable unknown' => new \PhpParser\Node\Expr\Variable('nope'),
+	'variable ext' => new \PhpParser\Node\Expr\Variable('ext'),
+	'variable variable' => new \PhpParser\Node\Expr\Variable(new \PhpParser\Node\Expr\Variable('a')),
+	'func call' => new \PhpParser\Node\Expr\FuncCall(new \PhpParser\Node\Name('f'), [new \PhpParser\Node\Arg(new \PhpParser\Node\Expr\Variable('a'))]),
+	'func call fcc' => new \PhpParser\Node\Expr\FuncCall(new \PhpParser\Node\Name('f'), [new \PhpParser\Node\VariadicPlaceholder()]),
+	'dynamic func call' => new \PhpParser\Node\Expr\FuncCall(new \PhpParser\Node\Expr\Variable('f')),
+	'method call' => new \PhpParser\Node\Expr\MethodCall(new \PhpParser\Node\Expr\Variable('a'), 'm', [new \PhpParser\Node\Arg(new \PhpParser\Node\Expr\Variable('s'))]),
+	'nullsafe method call' => new \PhpParser\Node\Expr\NullsafeMethodCall(new \PhpParser\Node\Expr\Variable('m'), 'm'),
+	'static call' => new \PhpParser\Node\Expr\StaticCall(new \PhpParser\Node\Name('Foo'), 'm'),
+	'closure' => new \PhpParser\Node\Expr\Closure(['uses' => [new \PhpParser\Node\ClosureUse(new \PhpParser\Node\Expr\Variable('a'))], 'stmts' => [new \PhpParser\Node\Stmt\Expression(new \PhpParser\Node\Expr\Variable('inner'))]]),
+	'arrow' => new \PhpParser\Node\Expr\ArrowFunction(['expr' => new \PhpParser\Node\Expr\Variable('s')]),
+	'dim fetch' => new \PhpParser\Node\Expr\ArrayDimFetch(new \PhpParser\Node\Expr\Variable('a'), new \PhpParser\Node\Expr\Variable('s')),
+	'this fetch' => new \PhpParser\Node\Expr\PropertyFetch(new \PhpParser\Node\Expr\Variable('this'), 'p'),
+	'nullsafe fetch' => new \PhpParser\Node\Expr\NullsafePropertyFetch(new \PhpParser\Node\Expr\Variable('a'), 'p'),
+];
+$erTypes = [
+	'int' => [$vfInt, $vfInt],
+	'void' => [new \PHPStanTurbo\VoidType(), new \PHPStanTurbo\VoidType()],
+	'string' => [$vfString, $vfString],
+];
+$erKnownScopes = ['erScope' => $erScope, 'erOtherScope' => $erOtherScope, 'erWiderScope' => $erWiderScope, 'vehScope' => $vehScope];
+$erDescribeValue = static function ($value) use ($turboNorm, $erKnownScopes, &$erDescribeValue) {
+	if ($value === null || is_bool($value) || is_int($value) || is_string($value)) {
+		return $value;
+	}
+	if ($value instanceof \PHPStan\Type\Type) {
+		return 'type:' . $value->describe(\PHPStan\Type\VerbosityLevel::precise());
+	}
+	if ($value instanceof \Closure) {
+		return 'closure';
+	}
+	if (is_array($value)) {
+		return array_map($erDescribeValue, $value);
+	}
+	if ($value instanceof \PHPStan\Analyser\MutatingScope) {
+		// the fixture's scopes are shared between the sides: their identity
+		// matters; a scope derived by a side is described by class only
+		$known = array_search($value, $erKnownScopes, true);
+		return $known !== false ? 'scope:' . $known : $turboNorm(get_class($value));
+	}
+	if ($value instanceof \PhpParser\Node) {
+		// shared between the sides: the identity matters
+		return $turboNorm(get_class($value)) . '#' . spl_object_id($value);
+	}
+	if (is_object($value)) {
+		return $turboNorm(get_class($value));
+	}
+	return get_debug_type($value);
+};
+$erDescribeResult = static function (object $result) use ($erDescribeValue): array {
+	$d = [];
+	foreach ((new ReflectionObject($result))->getProperties() as $property) {
+		$d[$property->getName()] = $property->isInitialized($result) ? $erDescribeValue($property->getValue($result)) : 'uninitialized';
+	}
+	ksort($d);
+
+	return $d;
+};
+// the second constructor argument: the service both sides narrow equality checks through
+$erDefaultNarrowingHelper = $scContainer->getByType(\PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper::class);
+$erSides = ['php' => \PHPStan\Analyser\ExpressionResult::class, 'native' => \PHPStanTurbo\ExpressionResult::class];
+$erResults = [];
+foreach ($erSides as $side => $erClass) {
+	$r = [];
+	$erExtensionCalls = 0;
+	$flowA = \PHPStan\Analyser\VariableFlow::read('a');
+	foreach ($erN as $exprLabel => $expr) {
+		foreach ($erTypes as $typeLabel => [$type, $nativeType]) {
+			$calls = 0;
+			$typeCallback = static function (bool $native) use ($type, $nativeType, &$calls): \PHPStan\Type\Type {
+				$calls++;
+				return $native ? $nativeType : $type;
+			};
+			$specifyCalls = 0;
+			$specifyCallback = static function (\PHPStan\Analyser\TypeSpecifierContext $context, bool $native) use (&$specifyCalls): \PHPStan\Analyser\SpecifiedTypes {
+				$specifyCalls++;
+				return new \PHPStan\Analyser\SpecifiedTypes();
+			};
+			$extensions = $exprLabel === 'variable ext' ? $erHitExtensions : $erNoExtensions;
+			$lazy = new $erClass($extensions, $erDefaultNarrowingHelper, $erScope, $erScope, $expr, false, true, [], [], $typeCallback, $specifyCallback, variableFlow: $flowA);
+			$eager = new $erClass($extensions, $erDefaultNarrowingHelper, $erScope, $erScope, $expr, true, false, [], [], null, $specifyCallback, type: $type, nativeType: $nativeType, containsNullsafe: true);
+			$row = [];
+			foreach (['lazy' => $lazy, 'eager' => $eager] as $kind => $result) {
+				$row[$kind] = [
+					'type' => $result->getType()->describe(\PHPStan\Type\VerbosityLevel::precise()),
+					'type again' => $result->getType() === $result->getType(),
+					'nativeType' => $result->getNativeType()->describe(\PHPStan\Type\VerbosityLevel::precise()),
+					'keepVoid' => $result->getKeepVoidType(false)->describe(\PHPStan\Type\VerbosityLevel::precise()),
+					'keepVoidNative' => $result->getKeepVoidType(true)->describe(\PHPStan\Type\VerbosityLevel::precise()),
+					'canResolveOwnType' => $result->canResolveOwnType(),
+					'hasYield' => $result->hasYield(),
+					'isAlwaysTerminating' => $result->isAlwaysTerminating(),
+					'containsNullsafe' => $result->containsNullsafe(),
+					'scope' => $result->getScope() === $erScope,
+					'beforeScope' => $result->getBeforeScope() === $erScope,
+					'expr' => $result->getExpr() === $expr,
+					'throwPoints' => $result->getThrowPoints(),
+					'impurePoints' => $result->getImpurePoints(),
+					'variableFlow' => $result->getVariableFlow() === $flowA,
+					'argsResult' => $result->getArgsResult(),
+					'onScope' => $result->getTypeOnScope($erScope, false)->describe(\PHPStan\Type\VerbosityLevel::precise()),
+					'onScopeNative' => $result->getTypeOnScope($erScope, true)->describe(\PHPStan\Type\VerbosityLevel::precise()),
+					'onOtherScope' => $result->getTypeOnScope($erOtherScope, false)->describe(\PHPStan\Type\VerbosityLevel::precise()),
+					'onPromotedScope' => $result->getTypeOnScope($erOtherScope->doNotTreatPhpDocTypesAsCertain(), false)->describe(\PHPStan\Type\VerbosityLevel::precise()),
+					'answersSame' => $result->answersOnScope($erScope, false),
+					'answersOther' => $result->answersOnScope($erOtherScope, false),
+					'answersOtherNative' => $result->answersOnScope($erOtherScope, true),
+					'answersWider' => $result->answersOnScope($erWiderScope, false),
+					'askSame' => $result->askScopeVariableStateMatches($erScope, false),
+					'askOther' => $result->askScopeVariableStateMatches($erOtherScope, false),
+					'askOtherNative' => $result->askScopeVariableStateMatches($erOtherScope, true),
+					'askOtherRule' => $result->askScopeVariableStateMatches($erOtherScope, false, true),
+					'askWiderRule' => $result->askScopeVariableStateMatches($erWiderScope, false, true),
+					'askWider' => $result->askScopeVariableStateMatches($erWiderScope, false),
+					'askEmpty' => $result->askScopeVariableStateMatches($vehScope, false, true),
+					'specified' => get_class($result->getSpecifiedTypes(\PHPStan\Analyser\TypeSpecifierContext::createTruthy())),
+					'specified memo' => $result->getSpecifiedTypes(\PHPStan\Analyser\TypeSpecifierContext::createTruthy()) === $result->getSpecifiedTypes(\PHPStan\Analyser\TypeSpecifierContext::createTruthy()),
+					'specified for scope' => get_class($result->getSpecifiedTypesForScope($erScope, \PHPStan\Analyser\TypeSpecifierContext::createFalsey())),
+					'created' => $result->getCreatedTypes($vfInt, \PHPStan\Analyser\TypeSpecifierContext::createTruthy()),
+					'created for scope' => $result->getCreatedTypesForScope($erScope, $vfInt, \PHPStan\Analyser\TypeSpecifierContext::createTruthy()),
+					'truthy' => get_class($result->getTruthyScope()) . ($result->getTruthyScope() === $result->getTruthyScope() ? ' memo' : ''),
+					'falsey' => get_class($result->getFalseyScope()) . ($result->getFalseyScope() === $result->getFalseyScope() ? ' memo' : ''),
+					'issetability' => $erDescribeResult($result->getIssetabilityResolution($erScope, false)->getLink()),
+					'issetability native' => $erDescribeResult($result->getIssetabilityResolution($erScope, true, true)->getLink()),
+					'withScope same' => $result->withScope($erScope) === $result,
+					'withScope other' => $erDescribeResult($result->withScope($erOtherScope)),
+					'finalize' => $erDescribeResult($result->finalize($erOtherScope, true, true, ['t'], ['i'], null)),
+					'atAskPosition' => $erDescribeResult($result->atAskPosition($erOtherScope)),
+					'atAskPosition same' => $erDescribeResult($result->atAskPosition($erScope)),
+					'deviced' => $erDescribeResult($result->onNonNullabilityDevicedScopes($erOtherScope, $erScope)),
+					'state' => $erDescribeResult($result),
+					'callbackCalls' => $calls,
+					'specifyCalls' => $specifyCalls,
+				];
+			}
+			$r[$exprLabel . ' / ' . $typeLabel] = $row;
+		}
+	}
+	$r['extension calls'] = $erExtensionCalls;
+	// the constructor's invariants
+	foreach ([
+		'callback and type' => static fn () => new $erClass($erNoExtensions, $erDefaultNarrowingHelper, $erScope, $erScope, $erN['variable a'], false, false, [], [], static fn (bool $n) => $vfInt, static fn () => new \PHPStan\Analyser\SpecifiedTypes(), type: $vfInt, nativeType: $vfInt),
+		'nothing' => static fn () => new $erClass($erNoExtensions, $erDefaultNarrowingHelper, $erScope, $erScope, $erN['variable a'], false, false, [], [], null, static fn () => new \PHPStan\Analyser\SpecifiedTypes()),
+		'only resolved type' => static fn () => new $erClass($erNoExtensions, $erDefaultNarrowingHelper, $erScope, $erScope, $erN['variable a'], false, false, [], [], null, static fn () => new \PHPStan\Analyser\SpecifiedTypes(), resolvedType: $vfInt),
+		'type without native' => static fn () => new $erClass($erNoExtensions, $erDefaultNarrowingHelper, $erScope, $erScope, $erN['variable a'], false, false, [], [], null, static fn () => new \PHPStan\Analyser\SpecifiedTypes(), type: $vfInt),
+		'both resolved' => static fn () => new $erClass($erNoExtensions, $erDefaultNarrowingHelper, $erScope, $erScope, $erN['variable a'], false, false, [], [], null, static fn () => new \PHPStan\Analyser\SpecifiedTypes(), resolvedType: $vfInt, resolvedNativeType: $vfString),
+		'not callable' => static fn () => new $erClass($erNoExtensions, $erDefaultNarrowingHelper, $erScope, $erScope, $erN['variable a'], false, false, [], [], 'no-such-function', static fn () => new \PHPStan\Analyser\SpecifiedTypes()),
+	] as $label => $construct) {
+		try {
+			$result = $construct();
+			$r['invariant ' . $label] = ['ok', $result->getType()->describe(\PHPStan\Type\VerbosityLevel::precise()), $result->getNativeType()->describe(\PHPStan\Type\VerbosityLevel::precise()), $result->canResolveOwnType()];
+		} catch (\Throwable $e) {
+			// a userland TypeError appends ", called in <file> on line <n>"
+			$r['invariant ' . $label] = [get_class($e), preg_replace('~, called in .*$~', '', str_replace($erClass, 'ExpressionResult', $e->getMessage()))];
+		}
+	}
+	// the memoized type callback is released once both flavours are resolved
+	$releaseCalls = 0;
+	$released = new $erClass($erNoExtensions, $erDefaultNarrowingHelper, $erScope, $erScope, $erN['func call'], false, false, [], [], static function (bool $native) use (&$releaseCalls): \PHPStan\Type\Type {
+		$releaseCalls++;
+		return $native ? new \PHPStanTurbo\VoidType() : new \PHPStanTurbo\UnionType([new \PHPStanTurbo\VoidType(), new \PHPStanTurbo\IntegerType()]);
+	}, static fn () => new \PHPStan\Analyser\SpecifiedTypes());
+	$r['release'] = [$released->getType()->describe(\PHPStan\Type\VerbosityLevel::precise()), $released->getKeepVoidType(false)->describe(\PHPStan\Type\VerbosityLevel::precise()), $released->getNativeType()->describe(\PHPStan\Type\VerbosityLevel::precise()), $released->getKeepVoidType(true)->describe(\PHPStan\Type\VerbosityLevel::precise()), $releaseCalls, $erDescribeResult($released)];
+	// the override results derive the branch scopes lazily
+	$override = new $erClass($erNoExtensions, $erDefaultNarrowingHelper, $erScope, $erScope, $erN['variable a'], false, false, [], [], null, static fn () => new \PHPStan\Analyser\SpecifiedTypes(), type: $vfInt, nativeType: $vfInt);
+	$overridden = new $erClass($erNoExtensions, $erDefaultNarrowingHelper, $erOtherScope, $erOtherScope, $erN['func call'], false, false, [], [], null, static fn () => new \PHPStan\Analyser\SpecifiedTypes(), truthyScopeOverrideResult: $override, falseyScopeOverrideResult: $override, type: $vfInt, nativeType: $vfInt, createTypesCallback: static fn (\PHPStan\Type\Type $type, \PHPStan\Analyser\TypeSpecifierContext $context, bool $native) => new \PHPStan\Analyser\SpecifiedTypes([spl_object_id($type) => $native]));
+	$r['override'] = [$overridden->getTruthyScope() === $override->getTruthyScope(), $overridden->getFalseyScope() === $override->getFalseyScope(), $erDescribeResult($overridden->getCreatedTypes($vfInt, \PHPStan\Analyser\TypeSpecifierContext::createTruthy(), true)), $erDescribeResult($overridden->getCreatedTypesForScope($erScope, $vfString, \PHPStan\Analyser\TypeSpecifierContext::createTruthy())), $erDescribeResult($overridden->finalize($erScope, false, false, [], [], null))];
+	$erResults[$side] = $r;
+}
+foreach ($erResults['php'] as $label => $described) {
+	check($described === ($erResults['native'][$label] ?? null), "ExpressionResult parity ($label): " . json_encode($described) . ' vs ' . json_encode($erResults['native'][$label] ?? null));
+}
+check($erResults['php']['extension calls'] > 0 && $erResults['php']['release'][4] === 2, 'ExpressionResult: the fixture exercises the extensions and the callback release');
+
 // ---- differential coverage completeness ----
 // Every shadowed class must be exercised by one of the tests/ scripts; the
 // classes not covered above have their own dedicated script.

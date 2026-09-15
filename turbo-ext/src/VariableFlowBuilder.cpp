@@ -6,9 +6,10 @@
  * arguments: the node structure is read from the PhpParser nodes'
  * properties, the flows come from the native VariableFlow factories
  * (VariableFlow.cpp), stored results from the native
- * ExpressionResultStorage (the method for any other storage), and the
- * collaborators that stay PHP (ExpressionResult, ArgsResult, MutatingScope,
- * VariableWriteOffset, VariableWrite) are called through the engine.
+ * ExpressionResultStorage and their flows from the native ExpressionResult
+ * (the methods for any other class), and the collaborators that stay PHP
+ * (ArgsResult, MutatingScope, VariableWriteOffset, VariableWrite) are
+ * called through the engine.
  */
 
 #include "support.h"
@@ -103,7 +104,7 @@ zend_string *variableName(zend_object *variable)
 zv::Val resultFlow(zv::Val result)
 {
 	if (Z_TYPE_P(result.raw()) != IS_OBJECT) return zv::Val::null();
-	return pt_type_call(Z_OBJ_P(result.raw()), PT_LC("getvariableflow"), 0, NULL);
+	return pt_expression_result_variable_flow(result.raw());
 }
 
 /* VariableWriteOffset::fromType($result->getType()); UNDEF = pending

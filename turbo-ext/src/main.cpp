@@ -292,6 +292,7 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_variable_flow();
 	pt_register_variable_flow_builder();
 	pt_register_variable_liveness_resolver();
+	pt_register_expression_result();
 
 	return SUCCESS;
 }

@@ -177,6 +177,7 @@ enum {
 	PT_CLASS_RESOLVED_PROPERTY_REFLECTION,
 	PT_CLASS_CHANGED_TYPE_METHOD_REFLECTION,
 	PT_CLASS_CHANGED_TYPE_PROPERTY_REFLECTION,
+	PT_CLASS_NULLSAFE_METHOD_CALL,
 	PT_CLASS_STATIC_PROPERTY_FETCH,
 	PT_CLASS_VARIABLE_ACCESS_FLOW,
 	PT_CLASS_VARIABLE_SEQUENCE_FLOW,
@@ -186,6 +187,10 @@ enum {
 	PT_CLASS_VARIABLE_WRITE_OFFSET,
 	PT_CLASS_LIST_EXPR,
 	PT_CLASS_VARIABLE_WRITES_NODE,
+	PT_CLASS_TYPE_SPECIFIER_CONTEXT,
+	PT_CLASS_VOID_TO_NULL_TRAVERSER,
+	PT_CLASS_ISSETABILITY_RESOLUTION,
+	PT_CLASS_ISSETABILITY_LINK_INFO,
 	PT_CLASS_COUNT
 };
 
@@ -1322,6 +1327,13 @@ void pt_register_volatile_expression_helper();
 void pt_register_variable_flow();
 void pt_register_variable_flow_builder();
 void pt_register_variable_liveness_resolver();
+/* ExpressionResult.cpp — registered after VariableFlow (its signatures name
+ * it) */
+extern zend_class_entry *pt_ce_expression_result;
+void pt_register_expression_result();
+/* $result->getVariableFlow() — the slot of a native result, the method
+ * otherwise; UNDEF = pending exception */
+zv::Val pt_expression_result_variable_flow(zval *result);
 /* the per-request slot cache of VariableFlow.cpp (the class entry of the
  * PHP VariableWrite class) */
 void pt_variable_flow_rinit();

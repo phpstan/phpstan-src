@@ -374,6 +374,8 @@ enum {
 	PT_CLASS_CLONE_EXPR,
 	PT_CLASS_CLOSURE_RETURN_STATEMENTS_NODE,
 	PT_CLASS_BETTER_REFLECTION_PROVIDER,
+	PT_CLASS_NULLSAFE_PROPERTY_FETCH_EXPRESSION_NODE,
+	PT_CLASS_PHP_VERSION,
 	PT_CLASS_COUNT
 };
 
@@ -3071,6 +3073,77 @@ zv::Val pt_parameters_acceptor_selector_apply_intrinsic_arg_overrides(zval *args
  * pending exception */
 [[nodiscard]] bool pt_parameters_acceptor_selector_has_acceptor_template_or_late_resolvable_type(zval *acceptor, bool &out);
 [[nodiscard]] bool pt_parameters_acceptor_selector_has_acceptor_template_or_late_resolvable_parameter_type(zval *acceptor, bool &out);
+
+/* }}} */
+
+/* {{{ the property fetch handlers (PropertyHookThrowPointsResolver.cpp,
+ * PropertyFetchHandler.cpp, StaticPropertyFetchHandler.cpp,
+ * NullsafePropertyFetchHandler.cpp) — registered after FuncCallHandler */
+
+extern zend_class_entry *pt_ce_property_hook_throw_points_resolver;
+extern zend_class_entry *pt_ce_property_fetch_handler;
+extern zend_class_entry *pt_ce_static_property_fetch_handler;
+extern zend_class_entry *pt_ce_nullsafe_property_fetch_handler;
+void pt_register_property_hook_throw_points_resolver();
+void pt_register_property_fetch_handler();
+void pt_register_static_property_fetch_handler();
+void pt_register_nullsafe_property_fetch_handler();
+
+/* $resolver->getThrowPointsFromPropertyHook($scope, $propertyFetch,
+ * $propertyReflection, $hookName) — the native body for the shadowing class
+ * and a PhpPropertyReflection, the method otherwise; UNDEF = pending
+ * exception */
+zv::Val pt_property_hook_throw_points_resolver_get_throw_points_from_property_hook(zval *resolver, zval *scope, zval *propertyFetch, zval *propertyReflection, zend_string *hookName);
+
+/* $propertyFetchHandler->composeResult($nodeScopeResolver, $expr, $varResult,
+ * $nameResult, $scopeBeforeVar, $beforeScope) /
+ * $staticPropertyFetchHandler->composeResult($expr, $classResult,
+ * $nameResult, $beforeScope) — the native body for the shadowing class, the
+ * method otherwise ($classResult / $nameResult NULL or IS_NULL for null);
+ * UNDEF = pending exception */
+zv::Val pt_property_fetch_handler_compose_result(zval *handler, zval *nodeScopeResolver, zval *expr, zval *varResult, zval *nameResult, zval *scopeBeforeVar, zval *beforeScope);
+zv::Val pt_static_property_fetch_handler_compose_result(zval *handler, zval *expr, zval *classResult, zval *nameResult, zval *beforeScope);
+
+/* PropertyHookThrowPointsResolver.cpp — an ExtendedPropertyReflection's
+ * ->getDeclaringClass() / ->hasNativeType() / ->getNativeType() /
+ * ->getReadableType() / ->getWritableType(): the declared slots of the final
+ * ResolvedPropertyReflection / ChangedTypePropertyReflection /
+ * PhpPropertyReflection read in place where the getter only returns (or
+ * forwards to) one, a filled memo included; the method through a cached site
+ * otherwise. $phpVersion->supportsPropertyHooks(): the versionId slot of
+ * PhpVersion, the method otherwise. UNDEF / false = pending exception */
+zv::Val pt_property_reflection_get_declaring_class(zval *reflection);
+[[nodiscard]] bool pt_property_reflection_has_native_type(zval *reflection, bool &out);
+zv::Val pt_property_reflection_get_native_type(zval *reflection);
+zv::Val pt_property_reflection_get_readable_type(zval *reflection);
+zv::Val pt_property_reflection_get_writable_type(zval *reflection);
+[[nodiscard]] bool pt_php_version_supports_property_hooks(zval *phpVersion, bool &out);
+
+/* MutatingScope.cpp — $scope->getInstancePropertyReflection($type, $name) /
+ * ->isInWriteExpressionAssign($expr): the native body for exactly a
+ * MutatingScope, the method otherwise; UNDEF / false = pending exception */
+zv::Val pt_mutating_scope_get_instance_property_reflection(zend_object *scope, zval *typeWithProperty, zend_string *propertyName);
+[[nodiscard]] bool pt_mutating_scope_is_in_write_expression_assign(zend_object *scope, zend_object *expr, bool &out);
+
+/* ClassReflection.cpp — $classReflection->hasNativeProperty($name) /
+ * ->getNativeProperty($name): the native body for the shadowing class, the
+ * method otherwise; false / UNDEF = pending exception */
+[[nodiscard]] bool pt_class_reflection_has_native_property(zend_object *classReflection, zend_string *propertyName, bool &out);
+zv::Val pt_class_reflection_get_native_property(zend_object *classReflection, zend_string *propertyName);
+
+/* NonNullabilityHelper.cpp — $helper->getActiveEnsuredOriginalType($expr,
+ * $native) (a type or null) / ->ensureShallowNonNullability($scope,
+ * $originalScope, $exprToSpecify) / ->revertNonNullability($scope,
+ * $specifiedExpressions): the native body for the shadowing class, the method
+ * otherwise; UNDEF = pending exception */
+zv::Val pt_non_nullability_helper_get_active_ensured_original_type(zval *helper, zval *expr, bool native);
+zv::Val pt_non_nullability_helper_ensure_shallow_non_nullability(zval *helper, zval *scope, zval *originalScope, zval *exprToSpecify);
+zv::Val pt_non_nullability_helper_revert_non_nullability(zval *helper, zval *scope, zval *specifiedExpressions);
+
+/* NodeScopeResolver.cpp — $nodeScopeResolver->processExprNodeConsumingStored(...):
+ * the native body for exactly the native class, the method otherwise; UNDEF =
+ * pending exception */
+zv::Val pt_node_scope_resolver_process_expr_node_consuming_stored(zval *nodeScopeResolver, zval *stmt, zval *expr, zval *scope, zval *storage, zval *nodeCallback, zval *context);
 
 /* }}} */
 

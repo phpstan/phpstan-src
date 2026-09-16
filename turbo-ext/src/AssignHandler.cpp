@@ -513,17 +513,13 @@ zv::Val adfhComposeResult(zval *handler, zval *nsr, zval *stmt, zval *expr, zval
 /* $propertyFetchHandler->composeResult($nodeScopeResolver, $expr, $varResult, $nameResult, $scopeBeforeVar, $beforeScope) */
 zv::Val pfhComposeResult(zval *handler, zval *nsr, zval *expr, zval *varResult, zval *nameResult, zval *scopeBeforeVar, zval *beforeScope)
 {
-	static pt_method_site site;
-	zv::Args argv{nsr, expr, varResult, nameResult, scopeBeforeVar, beforeScope};
-	return pt_call_method_cached(site, Z_OBJ_P(handler), PT_LC("composeresult"), 6, argv);
+	return pt_property_fetch_handler_compose_result(handler, nsr, expr, varResult, nameResult, scopeBeforeVar, beforeScope);
 }
 
 /* $staticPropertyFetchHandler->composeResult($expr, $classResult, $nameResult, $beforeScope) */
 zv::Val spfhComposeResult(zval *handler, zval *expr, zval *classResult, zval *nameResult, zval *beforeScope)
 {
-	static pt_method_site site;
-	zv::Args argv{expr, classResult, nameResult, beforeScope};
-	return pt_call_method_cached(site, Z_OBJ_P(handler), PT_LC("composeresult"), 4, argv);
+	return pt_static_property_fetch_handler_compose_result(handler, expr, classResult, nameResult, beforeScope);
 }
 
 /* $defaultNarrowingHelper->createSubjectTypes($s, $subject, $subjectResult, $type, $context) */
@@ -640,10 +636,8 @@ zv::Val mtphGetThrowPointsForCallOnType(zval *helper, zval *scope, zval *context
 /* $propertyHookThrowPointsResolver->getThrowPointsFromPropertyHook($scope, $propertyFetch, $propertyReflection, 'set') */
 zv::Val phtprGetThrowPointsFromSetHook(zval *resolver, zval *scope, zval *propertyFetch, zval *propertyReflection)
 {
-	static pt_method_site site;
-	zv::Val hookType = zv::Val::string(PT_LC("set"));
-	zv::Args argv{scope, propertyFetch, propertyReflection, hookType.raw()};
-	return pt_call_method_cached(site, Z_OBJ_P(resolver), PT_LC("getthrowpointsfrompropertyhook"), 4, argv);
+	zv::Str hookType = zv::Str::adopt(zend_string_init(PT_LC("set"), 0));
+	return pt_property_hook_throw_points_resolver_get_throw_points_from_property_hook(resolver, scope, propertyFetch, propertyReflection, hookType.get());
 }
 
 /* $propertyReflectionFinder->findPropertyReflectionFromNodeWithHolderType($propertyFetch, $propertyHolderType, $scope) */
@@ -665,11 +659,7 @@ zv::Val vehCreateTypeExprResult(zval *helper, zval *scope, zval *expr)
 /* $phpVersion->supportsPropertyHooks(); false = pending exception */
 [[nodiscard]] bool phpVersionSupportsPropertyHooks(zval *phpVersion, bool &out)
 {
-	static pt_method_site site;
-	zv::Val result = pt_call_method_cached(site, Z_OBJ_P(phpVersion), PT_LC("supportspropertyhooks"), 0, NULL);
-	if (UNEXPECTED(result.isUndef())) return false;
-	out = zend_is_true(result.raw());
-	return true;
+	return pt_php_version_supports_property_hooks(phpVersion, out);
 }
 
 /* VirtualAssignNodeCallback::create($nodeCallback) */

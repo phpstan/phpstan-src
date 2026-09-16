@@ -879,6 +879,27 @@ bool pt_non_nullability_helper_reset_file_analysis_state(zval *resettable)
 	return !pt_type_call(Z_OBJ_P(resettable), PT_LC("resetfileanalysisstate"), 0, NULL).isUndef();
 }
 
+zv::Val pt_non_nullability_helper_get_active_ensured_original_type(zval *helper, zval *expr, bool native)
+{
+	if (EXPECTED(Z_OBJCE_P(helper) == pt_ce_non_nullability_helper)) return NonNullabilityHelper(Z_OBJ_P(helper)).getActiveEnsuredOriginalType(expr, native);
+	zv::Args argv{expr, native};
+	return pt_type_call(Z_OBJ_P(helper), PT_LC("getactiveensuredoriginaltype"), 2, argv);
+}
+
+zv::Val pt_non_nullability_helper_ensure_shallow_non_nullability(zval *helper, zval *scope, zval *originalScope, zval *exprToSpecify)
+{
+	if (EXPECTED(Z_OBJCE_P(helper) == pt_ce_non_nullability_helper)) return NonNullabilityHelper(Z_OBJ_P(helper)).ensureShallowNonNullability(scope, originalScope, exprToSpecify);
+	zv::Args argv{scope, originalScope, exprToSpecify};
+	return pt_type_call(Z_OBJ_P(helper), PT_LC("ensureshallownonnullability"), 3, argv);
+}
+
+zv::Val pt_non_nullability_helper_revert_non_nullability(zval *helper, zval *scope, zval *specifiedExpressions)
+{
+	if (EXPECTED(Z_OBJCE_P(helper) == pt_ce_non_nullability_helper && Z_TYPE_P(specifiedExpressions) == IS_ARRAY)) return NonNullabilityHelper(Z_OBJ_P(helper)).revertNonNullability(scope, specifiedExpressions);
+	zv::Args argv{scope, specifiedExpressions};
+	return pt_type_call(Z_OBJ_P(helper), PT_LC("revertnonnullability"), 2, argv);
+}
+
 /* }}} */
 
 /* {{{ engine ABI glue: parameter parsing + registration */

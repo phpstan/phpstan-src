@@ -5,6 +5,7 @@ namespace PHPStan\Node;
 use Override;
 use PhpParser\Node\Expr\NullsafePropertyFetch;
 use PhpParser\NodeAbstract;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Type;
 
 /**
@@ -15,6 +16,7 @@ use PHPStan\Type\Type;
  *
  * @internal
  */
+#[ReferencedByTurboExtension(key: 'nullsafePropertyFetchExpressionNode')]
 final class NullsafePropertyFetchExpressionNode extends NodeAbstract implements VirtualNode
 {
 

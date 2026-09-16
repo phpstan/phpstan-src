@@ -13131,3 +13131,26 @@ zv::Val pt_mutating_scope_to_walk_scope(zend_object *scope)
 }
 
 /* }}} */
+
+/* {{{ direct entries for the fetch handlers (PropertyFetchHandler.cpp,
+ * StaticPropertyFetchHandler.cpp, ConstFetchHandler.cpp):
+ * $scope->getInstancePropertyReflection($type, $name) /
+ * ->isInWriteExpressionAssign($expr) — the native body for exactly a
+ * MutatingScope, the method otherwise */
+
+zv::Val pt_mutating_scope_get_instance_property_reflection(zend_object *scope, zval *typeWithProperty, zend_string *propertyName)
+{
+	if (msExact(scope)) return MutatingScope(scope).getInstancePropertyReflection(typeWithProperty, propertyName);
+	zv::Args argv{typeWithProperty, propertyName};
+	return pt_type_call(scope, PT_LC("getinstancepropertyreflection"), 2, argv);
+}
+
+bool pt_mutating_scope_is_in_write_expression_assign(zend_object *scope, zend_object *expr, bool &out)
+{
+	if (msExact(scope)) return MutatingScope(scope).isInWriteExpressionAssign(expr, out);
+	zval exprZv;
+	ZVAL_OBJ(&exprZv, expr);
+	return msCallBool(scope, PT_LC("isinwriteexpressionassign"), 1, &exprZv, out);
+}
+
+/* }}} */

@@ -4279,6 +4279,10 @@ $coveredElsewhere = [
 	\PHPStan\Analyser\ExprHandler\Helper\OutputBufferHelper::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\Helper\FuncCallScopeEffectsHelper::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\FuncCallHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\PropertyHookThrowPointsResolver::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\PropertyFetchHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\StaticPropertyFetchHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\NullsafePropertyFetchHandler::class => 'walk-trace.php',
 ];
 foreach (array_keys($shadowedClasses) as $shadowedClass) {
 	check(

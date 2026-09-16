@@ -431,6 +431,12 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_output_buffer_helper();
 	pt_register_func_call_scope_effects_helper();
 	pt_register_func_call_handler();
+	/* the property fetch handlers (after the hook throw points resolver
+	 * their direct entries call) */
+	pt_register_property_hook_throw_points_resolver();
+	pt_register_property_fetch_handler();
+	pt_register_static_property_fetch_handler();
+	pt_register_nullsafe_property_fetch_handler();
 
 	return SUCCESS;
 }

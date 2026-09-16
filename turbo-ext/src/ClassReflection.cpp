@@ -4492,6 +4492,22 @@ zv::Val pt_class_reflection_with_types(zend_object *classReflection, zval *types
 	return pt_type_call(classReflection, PT_LC("withtypes"), 1, types);
 }
 
+[[nodiscard]] bool pt_class_reflection_has_native_property(zend_object *classReflection, zend_string *propertyName, bool &out)
+{
+	if (EXPECTED(classReflection->ce == pt_ce_class_reflection)) return ClassReflection(classReflection).hasNativeProperty(propertyName, out);
+	zval name;
+	ZVAL_STR(&name, propertyName);
+	return pt_cr_foreign_bool(classReflection, PT_LC("hasnativeproperty"), 1, &name, out);
+}
+
+zv::Val pt_class_reflection_get_native_property(zend_object *classReflection, zend_string *propertyName)
+{
+	if (EXPECTED(classReflection->ce == pt_ce_class_reflection)) return ClassReflection(classReflection).getNativeProperty(propertyName);
+	zval name;
+	ZVAL_STR(&name, propertyName);
+	return pt_type_call(classReflection, PT_LC("getnativeproperty"), 1, &name);
+}
+
 /* }}} */
 
 /* {{{ engine ABI glue: parameter parsing + registration */

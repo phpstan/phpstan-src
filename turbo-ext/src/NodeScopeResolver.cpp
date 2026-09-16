@@ -2174,6 +2174,14 @@ bool pt_node_scope_resolver_is_consuming_stored_expression_results(zval *nodeSco
 	return true;
 }
 
+/* the fetch handlers' (NullsafePropertyFetchHandler.cpp) */
+zv::Val pt_node_scope_resolver_process_expr_node_consuming_stored(zval *nodeScopeResolver, zval *stmt, zval *expr, zval *scope, zval *storage, zval *nodeCallback, zval *context)
+{
+	if (isNativeResolver(nodeScopeResolver)) return NodeScopeResolver(Z_OBJ_P(nodeScopeResolver)).processExprNodeConsumingStored(stmt, expr, scope, storage, nodeCallback, context);
+	zv::Args argv{stmt, expr, scope, storage, nodeCallback, context};
+	return pt_type_call(Z_OBJ_P(nodeScopeResolver), PT_LC("processexprnodeconsumingstored"), 6, argv);
+}
+
 /* }}} */
 
 /* {{{ engine ABI glue: parameter parsing + registration */

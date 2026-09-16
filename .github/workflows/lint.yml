@@ -85,17 +85,24 @@ jobs:
           coverage: "none"
           php-version: "8.5"
 
-      # The major version is pinned deliberately: a newer clang-tidy adds
-      # checks to the families turbo-ext/.clang-tidy enables, which can fail
-      # a tree that was clean before. The list was calibrated against 21, so
-      # an older one sees a subset of its checks.
-      - name: "Install clang-tidy"
+      # The pinned major version is read from the Makefile rather than
+      # repeated here, so CI and a local run gate on the same checks — the
+      # target refuses to run with any other version. Ubuntu ships an older
+      # clang-tidy than the pin, so it comes from apt.llvm.org.
+      - name: "Install the pinned clang-tidy"
         run: |
+          CLANG_TIDY_VERSION="$(make -s -C turbo-ext print-clang-tidy-version)"
+          echo "pinned clang-tidy: $CLANG_TIDY_VERSION"
+          # only the codename: /etc/os-release also defines VERSION
+          CODENAME="$(. /etc/os-release && echo "$VERSION_CODENAME")"
+          wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc > /dev/null
+          echo "deb https://apt.llvm.org/${CODENAME}/ llvm-toolchain-${CODENAME}-${CLANG_TIDY_VERSION} main" \
+            | sudo tee "/etc/apt/sources.list.d/llvm-${CLANG_TIDY_VERSION}.list"
           sudo apt-get update
-          sudo apt-get install -y clang-tidy-18
+          sudo apt-get install -y "clang-tidy-${CLANG_TIDY_VERSION}"
 
       - name: "Lint the native sources"
-        run: make lint-turbo CLANG_TIDY=clang-tidy-18
+        run: make lint-turbo
 
   turbo-sanitize:
     name: "Turbo Extension Sanitizers"

@@ -155,6 +155,12 @@ macros or to the handler signatures), disable it in `.clang-tidy` with the
 count it produced and the reason, the way the existing entries do. Generated
 sources are excluded from linting; fix their generator instead.
 
+The clang-tidy version is pinned by `CLANG_TIDY_VERSION` in
+`turbo-ext/Makefile` — CI reads that number and installs exactly it, and the
+target refuses to run with another major. Two versions report two different
+trees, so without the pin a green local run would not mean what a green CI
+run means, and the counts in `.clang-tidy` would hold for neither.
+
 ## Benchmark protocol
 
 Judge **user CPU**, never wall clock, on interleaved A/B pairs (the machine

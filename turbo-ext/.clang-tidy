@@ -53,9 +53,13 @@
 # reported 9 of them — `stackPos - (1 - 1)` is how the upstream grammar
 # spells its stack offsets).
 #
-# CI pins the clang-tidy major version (see .github/workflows/lint.yml). A
-# newer one adds checks to the enabled families and can fail a tree that was
-# clean before, so that bump is made deliberately.
+# The counts above hold for one clang-tidy version, so the version is pinned:
+# CLANG_TIDY_VERSION in the Makefile is the single pin, CI installs exactly
+# it, and `make lint-turbo` refuses to run with another — a green CI run and
+# a green local run are then the same evidence. A newer clang-tidy adds
+# checks to the enabled families and can fail a tree that was clean before,
+# so moving the pin is deliberate: raise the number, re-run, and fix or
+# exclude what the new checks report, with its count and reason.
 Checks: >
   -*,
   bugprone-*,

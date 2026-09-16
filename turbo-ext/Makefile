@@ -143,8 +143,25 @@ clean: pgo-clean
 GENERATED_SOURCES := src/parser/ParserRunnerActions1.cpp src/parser/ParserRunnerActions2.cpp src/parser/ParserRunnerActions3.cpp
 LINT_SOURCES := $(filter-out $(GENERATED_SOURCES),$(SOURCES))
 LINT_JOBS ?= $(shell getconf _NPROCESSORS_ONLN 2>/dev/null || echo 4)
-# Homebrew keeps LLVM off the PATH; CI pins a major version (lint.yml)
-CLANG_TIDY ?= $(shell command -v clang-tidy 2>/dev/null || ls /opt/homebrew/opt/llvm/bin/clang-tidy 2>/dev/null)
+
+# The one pin. clang-tidy gains checks in the enabled families between
+# releases, so two versions report two different trees: without a pin a green
+# CI run and a green local run would not be the same evidence. CI reads this
+# number (print-clang-tidy-version) and installs exactly it, and `lint`
+# refuses to run with another — drift fails loudly instead of quietly
+# changing what the gate means. To move it: raise the number, re-run, then
+# fix or exclude (with its count and reason, as .clang-tidy does) whatever
+# the new checks report.
+CLANG_TIDY_VERSION := 21
+# Homebrew keeps LLVM off the PATH, and parks the superseded majors in
+# llvm@N once its `llvm` moves on
+CLANG_TIDY ?= $(shell command -v clang-tidy-$(CLANG_TIDY_VERSION) 2>/dev/null \
+	|| ls /opt/homebrew/opt/llvm@$(CLANG_TIDY_VERSION)/bin/clang-tidy 2>/dev/null \
+	|| ls /opt/homebrew/opt/llvm/bin/clang-tidy 2>/dev/null \
+	|| command -v clang-tidy 2>/dev/null)
+
+print-clang-tidy-version:
+	@echo $(CLANG_TIDY_VERSION)
 
 # clang-tidy takes the compile flags from a compilation database, which a
 # plain Makefile build does not produce as a side effect
@@ -153,10 +170,18 @@ compile_commands.json: Makefile bin/generate-compile-commands.php
 
 lint: compile_commands.json
 	@if [ -z "$(CLANG_TIDY)" ]; then \
-		echo "clang-tidy not found — install it (brew install llvm, apt-get install clang-tidy) or pass CLANG_TIDY=/path/to/clang-tidy"; \
+		echo "clang-tidy $(CLANG_TIDY_VERSION) not found — install it (brew install llvm@$(CLANG_TIDY_VERSION), or apt.llvm.org) or pass CLANG_TIDY=/path/to/clang-tidy-$(CLANG_TIDY_VERSION)"; \
 		exit 1; \
 	fi
-	@echo "$$($(CLANG_TIDY) --version | sed -n 's/.*version \([0-9.]*\).*/clang-tidy \1/p' | head -1) over $(words $(LINT_SOURCES)) sources, $(LINT_JOBS) at a time"
+	@found="$$($(CLANG_TIDY) --version | sed -n 's/.*version \([0-9][0-9]*\).*/\1/p' | head -1)"; \
+	if [ "$$found" != "$(CLANG_TIDY_VERSION)" ]; then \
+		echo "$(CLANG_TIDY) is version $${found:-unknown}, but the check list is pinned to $(CLANG_TIDY_VERSION)."; \
+		echo "A different major reports a different tree, so this gate would stop meaning what CI's means."; \
+		echo "Install the pinned one (brew install llvm@$(CLANG_TIDY_VERSION), or apt.llvm.org) or pass CLANG_TIDY=/path/to/clang-tidy-$(CLANG_TIDY_VERSION)."; \
+		echo "To move the pin deliberately, raise CLANG_TIDY_VERSION in this Makefile."; \
+		exit 1; \
+	fi
+	@echo "clang-tidy $(CLANG_TIDY_VERSION) over $(words $(LINT_SOURCES)) sources, $(LINT_JOBS) at a time"
 	@printf '%s\n' $(LINT_SOURCES) | xargs -P $(LINT_JOBS) -n 1 $(CLANG_TIDY) -p . --quiet
 
 #
@@ -179,4 +204,4 @@ sanitize:
 	done
 	$(MAKE) clean
 
-.PHONY: clean lint pgo pgo-clean sanitize FORCE
+.PHONY: clean lint pgo pgo-clean print-clang-tidy-version sanitize FORCE

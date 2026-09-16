@@ -426,10 +426,17 @@ objects must never mix flags. This is the half that covers memory safety:
 the static checks cannot see zval lifetimes, and the differential tests
 already exercise the code paths that matter.
 
-Both run in CI on every pull request (`.github/workflows/lint.yml`), where
-the clang-tidy major version is pinned — a newer one adds checks to the
-enabled families and can fail a tree that was clean before, so that bump is
-made deliberately.
+Both run in CI on every pull request (`.github/workflows/lint.yml`). The
+clang-tidy version is pinned in one place, `CLANG_TIDY_VERSION` in the
+Makefile: CI reads that number and installs exactly it (Ubuntu ships an
+older one, so it comes from apt.llvm.org), and `make lint-turbo` refuses to
+run with a different major. Without that, a green CI run and a green local
+run would be two different check lists rather than the same evidence, and
+the finding counts recorded in `.clang-tidy` would hold for neither. Install
+the pinned version with `brew install llvm@<version>` or from apt.llvm.org.
+Moving the pin is deliberate: raise the number, re-run, and fix or exclude
+what the new checks report — with its count and reason, the way the existing
+entries carry theirs.
 
 ## Design rules for new ports
 

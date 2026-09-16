@@ -183,7 +183,6 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_VARIABLE_WRITE_OFFSET */ {"variableWriteOffset", "PHPStan\\Analyser\\VariableWriteOffset"},
 	/* PT_CLASS_LIST_EXPR */ {"listExpr", "PhpParser\\Node\\Expr\\List_"},
 	/* PT_CLASS_VARIABLE_WRITES_NODE */ {"variableWritesNode", "PHPStan\\Node\\VariableWritesNode"},
-	/* PT_CLASS_TYPE_SPECIFIER_CONTEXT */ {"typeSpecifierContext", "PHPStan\\Analyser\\TypeSpecifierContext"},
 	/* PT_CLASS_VOID_TO_NULL_TRAVERSER */ {"voidToNullTraverser", "PHPStan\\Analyser\\Traverser\\VoidToNullTraverser"},
 	/* PT_CLASS_ISSETABILITY_RESOLUTION */ {"issetabilityResolution", "PHPStan\\Analyser\\IssetabilityResolution"},
 	/* PT_CLASS_ISSETABILITY_LINK_INFO */ {"issetabilityLinkInfo", "PHPStan\\Analyser\\IssetabilityLinkInfo"},

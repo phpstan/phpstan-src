@@ -3102,10 +3102,29 @@ $erDescribeValue = static function ($value) use ($turboNorm, $erKnownScopes, &$e
 	}
 	return get_debug_type($value);
 };
-$erDescribeResult = static function (object $result) use ($erDescribeValue): array {
+// the getSpecifiedTypes() memo is keyed by the context's object id: each
+// side hands its results its own TypeSpecifierContext singletons (the native
+// result derives its branch scopes with the native class), so the keys are
+// described by the context they stand for
+$erContextLabels = [];
+foreach ([\PHPStan\Analyser\TypeSpecifierContext::class, \PHPStanTurbo\TypeSpecifierContext::class] as $erContextClass) {
+	foreach (['createTrue', 'createTruthy', 'createFalse', 'createFalsey', 'createNull'] as $erContextFactory) {
+		$erContextLabels[spl_object_id($erContextClass::$erContextFactory())] = $erContextFactory;
+	}
+}
+$erDescribeResult = static function (object $result) use ($erDescribeValue, $erContextLabels): array {
 	$d = [];
 	foreach ((new ReflectionObject($result))->getProperties() as $property) {
 		$d[$property->getName()] = $property->isInitialized($result) ? $erDescribeValue($property->getValue($result)) : 'uninitialized';
+		if ($property->getName() !== 'specifiedTypes' || !is_array($d['specifiedTypes'])) {
+			continue;
+		}
+		$memo = [];
+		foreach ($d['specifiedTypes'] as $key => $specified) {
+			$memo[($erContextLabels[$key >> 1] ?? 'unknown context') . (($key & 1) === 1 ? ' native' : '')] = $specified;
+		}
+		ksort($memo);
+		$d['specifiedTypes'] = $memo;
 	}
 	ksort($d);
 
@@ -3117,6 +3136,7 @@ $erSides = ['php' => \PHPStan\Analyser\ExpressionResult::class, 'native' => \PHP
 $erResults = [];
 foreach ($erSides as $side => $erClass) {
 	$r = [];
+	$erContext = $side === 'php' ? \PHPStan\Analyser\TypeSpecifierContext::class : \PHPStanTurbo\TypeSpecifierContext::class;
 	$erExtensionCalls = 0;
 	$flowA = \PHPStan\Analyser\VariableFlow::read('a');
 	foreach ($erN as $exprLabel => $expr) {
@@ -3127,7 +3147,9 @@ foreach ($erSides as $side => $erClass) {
 				return $native ? $nativeType : $type;
 			};
 			$specifyCalls = 0;
-			$specifyCallback = static function (\PHPStan\Analyser\TypeSpecifierContext $context, bool $native) use (&$specifyCalls): \PHPStan\Analyser\SpecifiedTypes {
+			// the context is the side's own class: the native result hands the
+			// callback the native (here prefixed) TypeSpecifierContext singleton
+			$specifyCallback = static function (object $context, bool $native) use (&$specifyCalls): \PHPStan\Analyser\SpecifiedTypes {
 				$specifyCalls++;
 				return new \PHPStan\Analyser\SpecifiedTypes();
 			};
@@ -3168,9 +3190,9 @@ foreach ($erSides as $side => $erClass) {
 					'askWiderRule' => $result->askScopeVariableStateMatches($erWiderScope, false, true),
 					'askWider' => $result->askScopeVariableStateMatches($erWiderScope, false),
 					'askEmpty' => $result->askScopeVariableStateMatches($vehScope, false, true),
-					'specified' => get_class($result->getSpecifiedTypes(\PHPStan\Analyser\TypeSpecifierContext::createTruthy())),
-					'specified memo' => $result->getSpecifiedTypes(\PHPStan\Analyser\TypeSpecifierContext::createTruthy()) === $result->getSpecifiedTypes(\PHPStan\Analyser\TypeSpecifierContext::createTruthy()),
-					'specified for scope' => get_class($result->getSpecifiedTypesForScope($erScope, \PHPStan\Analyser\TypeSpecifierContext::createFalsey())),
+					'specified' => get_class($result->getSpecifiedTypes($erContext::createTruthy())),
+					'specified memo' => $result->getSpecifiedTypes($erContext::createTruthy()) === $result->getSpecifiedTypes($erContext::createTruthy()),
+					'specified for scope' => get_class($result->getSpecifiedTypesForScope($erScope, $erContext::createFalsey())),
 					'created' => $result->getCreatedTypes($vfInt, \PHPStan\Analyser\TypeSpecifierContext::createTruthy()),
 					'created for scope' => $result->getCreatedTypesForScope($erScope, $vfInt, \PHPStan\Analyser\TypeSpecifierContext::createTruthy()),
 					'truthy' => get_class($result->getTruthyScope()) . ($result->getTruthyScope() === $result->getTruthyScope() ? ' memo' : ''),
@@ -3237,6 +3259,279 @@ $covered[\PHPStan\Reflection\Php\PhpClassReflectionExtension::class] = true;
 if (PHP_VERSION_ID >= 80400) {
 	require __DIR__ . '/php-class-reflection-family.php';
 }
+
+// ---- TypeSpecifierContext ----
+// The singletons and their queries, negate() over every reachable value
+// (and its identity with the factories), the constants, the null context's
+// negate() exception, the private constructor, an instance that never ran
+// its constructor, and the registry the factories fill.
+$tscObserve = static function (string $class) use ($turboNorm): array {
+	$norm = static fn (string $message): string => str_replace($class, 'TypeSpecifierContext', $message);
+	$valueProperty = new \ReflectionProperty($class, 'value');
+	$describe = static fn (object $context): array => [$valueProperty->getValue($context), $context->true(), $context->truthy(), $context->false(), $context->falsey(), $context->null()];
+	$o = [];
+	$factories = ['createTrue', 'createTruthy', 'createFalse', 'createFalsey', 'createNull'];
+	$singletons = [];
+	foreach ($factories as $factory) {
+		$singletons[$factory] = $class::$factory();
+		$o[$factory] = [$turboNorm(get_class($singletons[$factory])), $singletons[$factory] === $class::$factory(), $describe($singletons[$factory])];
+	}
+	$labelOf = static function (object $context) use ($singletons): string {
+		$label = array_search($context, $singletons, true);
+		return $label === false ? 'other' : $label;
+	};
+	// every context negate() reaches from the factories, breadth first
+	$queue = array_values(array_filter($singletons, static fn (object $context): bool => !$context->null()));
+	$seen = [];
+	while ($queue !== []) {
+		$context = array_shift($queue);
+		if (isset($seen[spl_object_id($context)])) {
+			continue;
+		}
+		$seen[spl_object_id($context)] = true;
+		$negated = $context->negate();
+		$o['negate ' . json_encode($describe($context))] = [$describe($negated), $labelOf($negated), $negated === $context->negate(), $negated->negate() === $context];
+		$queue[] = $negated;
+	}
+	try {
+		$class::createNull()->negate();
+		$o['null negate'] = 'none';
+	} catch (\Throwable $e) {
+		$o['null negate'] = [$turboNorm(get_class($e)), $e->getMessage()];
+	}
+	$o['constants'] = (new \ReflectionClass($class))->getConstants();
+	try {
+		new $class(1);
+		$o['private constructor'] = 'none';
+	} catch (\Throwable $e) {
+		$o['private constructor'] = [get_class($e), $norm($e->getMessage())];
+	}
+	$bare = (new \ReflectionClass($class))->newInstanceWithoutConstructor();
+	foreach (['true', 'truthy', 'false', 'falsey', 'null', 'negate'] as $query) {
+		try {
+			$bare->$query();
+			$o['uninitialized ' . $query] = 'none';
+		} catch (\Throwable $e) {
+			$o['uninitialized ' . $query] = [get_class($e), $norm($e->getMessage())];
+		}
+	}
+	$registry = (new \ReflectionProperty($class, 'registry'))->getValue();
+	// the fill order depends on which contexts earlier sections asked for first
+	ksort($registry);
+	$o['registry'] = array_map(static fn (object $context): array => $describe($context), $registry);
+
+	return $o;
+};
+$tscPhp = $tscObserve(\PHPStan\Analyser\TypeSpecifierContext::class);
+$tscNative = $tscObserve(\PHPStanTurbo\TypeSpecifierContext::class);
+foreach ($tscPhp as $label => $expected) {
+	check($expected === ($tscNative[$label] ?? null), "TypeSpecifierContext parity ($label): " . json_encode($expected) . ' vs ' . json_encode($tscNative[$label] ?? null));
+}
+check(array_keys($tscPhp) === array_keys($tscNative), 'TypeSpecifierContext: the same observations on both sides');
+check(count(array_filter(array_keys($tscPhp), static fn (string $label): bool => str_starts_with($label, 'negate '))) === 6, 'TypeSpecifierContext: negate() reached every context');
+$covered[\PHPStan\Analyser\TypeSpecifierContext::class] = true;
+
+// ---- SpecifiedTypes ----
+// Each side builds its narrowings from its own Type classes (the merges run
+// the side's TypeCombinator — the native one answers native types only) over
+// shared expression nodes and opaque holder/recipe/augment values, and every
+// public method's result is described structurally: entries by key, types
+// by precise description, nodes and opaque values by fixture label. The
+// merges cover same-kind folds, the alternative-form entries, their
+// conjunction with dedupe, the vacuous and impossible terms, the widening
+// past ALTERNATIVE_TERMS_LIMIT, the root-expression merge and the overwrite
+// flag; emptySpecifyCallback() is compared by identity and through a native
+// ExpressionResult invoking it.
+$stA = new \PhpParser\Node\Expr\Variable('a');
+$stB = new \PhpParser\Node\Expr\Variable('b');
+$stDim = new \PhpParser\Node\Expr\ArrayDimFetch($stA, new \PhpParser\Node\Expr\Variable('b'));
+$stHolderX = new \stdClass();
+$stHolderY = new \stdClass();
+$stRecipe1 = new \stdClass();
+$stRecipe2 = new \stdClass();
+$stAugment1 = new class implements \PHPStan\Analyser\DeferredSpecifiedTypesAugment {
+
+	public function evaluate(\PHPStan\Analyser\MutatingScope $scope): ?\PHPStan\Analyser\SpecifiedTypes
+	{
+		return null;
+	}
+
+};
+$stAugment2 = clone $stAugment1;
+$stLabels = ['a' => $stA, 'b' => $stB, 'dim' => $stDim, 'holderX' => $stHolderX, 'holderY' => $stHolderY, 'recipe1' => $stRecipe1, 'recipe2' => $stRecipe2, 'augment1' => $stAugment1, 'augment2' => $stAugment2];
+$stSides = [
+	'php' => ['PHPStan\\Analyser\\SpecifiedTypes', 'PHPStan\\Type\\', 'PHPStan\\Type\\Constant\\', \PHPStan\Type\VerbosityLevel::class, \PHPStan\Analyser\ExpressionResult::class, \PHPStan\Analyser\TypeSpecifierContext::class],
+	'native' => ['PHPStanTurbo\\SpecifiedTypes', 'PHPStanTurbo\\', 'PHPStanTurbo\\', \PHPStanTurbo\VerbosityLevel::class, \PHPStanTurbo\ExpressionResult::class, \PHPStanTurbo\TypeSpecifierContext::class],
+];
+$stObservations = [];
+foreach ($stSides as $side => [$stClass, $stNs, $stConstNs, $stLevel, $stResultClass, $stContextClass]) {
+	$precise = $stLevel::precise();
+	$label = static function ($value) use ($stLabels, $turboNorm, $precise, &$label) {
+		if ($value === null || is_scalar($value)) {
+			return $value;
+		}
+		if (is_array($value)) {
+			return array_map($label, $value);
+		}
+		if ($value instanceof \PHPStan\Type\Type) {
+			return 'type:' . $value->describe($precise);
+		}
+		$found = array_search($value, $stLabels, true);
+		return $found !== false ? $found : $turboNorm(get_class($value));
+	};
+	$describe = static function (object $specified) use ($label, $turboNorm): array {
+		return [
+			'class' => $turboNorm(get_class($specified)),
+			'sure' => $label($specified->getSureTypes()),
+			'sureNot' => $label($specified->getSureNotTypes()),
+			'alternative' => $label($specified->getAlternativeTypes()),
+			'overwrite' => $specified->shouldOverwrite(),
+			'root' => $label($specified->getRootExpr()),
+			'holders' => $label($specified->getNewConditionalExpressionHolders()),
+			'recipes' => $label($specified->getConditionalExpressionHolderRecipes()),
+			'augments' => $label($specified->getDeferredAugments()),
+		];
+	};
+	$int = new ($stNs . 'IntegerType')();
+	$string = new ($stNs . 'StringType')();
+	$null = new ($stNs . 'NullType')();
+	$c = static fn (string $value): object => new ($stConstNs . 'ConstantStringType')($value);
+	$i = static fn (int $value): object => new ($stConstNs . 'ConstantIntegerType')($value);
+	$union = static fn (object ...$types): object => new ($stNs . 'UnionType')($types);
+	$withAlternatives = static function (object $specified, array $alternatives) use ($stClass): object {
+		$clone = clone $specified;
+		(new \ReflectionProperty($stClass, 'alternativeTypes'))->setValue($clone, $alternatives);
+		return $clone;
+	};
+	$o = [];
+	$observe = static function (string $key, callable $producer) use (&$o, $describe, $label): void {
+		try {
+			$value = $producer();
+			$o[$key] = is_object($value) && !$value instanceof \Closure ? $describe($value) : $label($value);
+		} catch (\Throwable $e) {
+			$o[$key] = ['throws', get_class($e)];
+		}
+	};
+
+	$empty = new $stClass();
+	$sureA = new $stClass(['$a' => [$stA, $int]]);
+	$sureAString = new $stClass(['$a' => [$stA, $string], '$b' => [$stB, $null]]);
+	$sureNotA = new $stClass([], ['$a' => [$stA, $c('x')]]);
+	$sureNotAOther = new $stClass([], ['$a' => [$stA, $c('y')], '123' => [$stDim, $int]]);
+	$sureAndNotA = new $stClass(['$a' => [$stA, $union($c('x'), $c('y'), $int)]], ['$a' => [$stA, $c('y')]]);
+	$numeric = new $stClass(['123' => [$stDim, $string], '$b' => [$stB, $int]], ['123' => [$stDim, $c('')]]);
+	$observe('empty', static fn () => $empty);
+	$observe('construct sure', static fn () => $sureA);
+	$observe('construct numeric key', static fn () => $numeric);
+	$observe('construct both', static fn () => $sureAndNotA);
+
+	// the with*()/set*() copies leave the receiver untouched
+	$overwritten = $sureA->setAlwaysOverwriteTypes();
+	$observe('setAlwaysOverwriteTypes', static fn () => $overwritten);
+	$observe('setAlwaysOverwriteTypes receiver', static fn () => $sureA);
+	$o['setAlwaysOverwriteTypes copies'] = $overwritten !== $sureA;
+	$rooted = $sureA->setRootExpr($stA);
+	$observe('setRootExpr', static fn () => $rooted);
+	$observe('setRootExpr null', static fn () => $rooted->setRootExpr(null));
+	$observe('setRootExpr receiver', static fn () => $sureA);
+	$holders = $sureA->setNewConditionalExpressionHolders(['$a' => ['k1' => $stHolderX], '$b' => [$stHolderY]]);
+	$observe('setNewConditionalExpressionHolders', static fn () => $holders);
+	$recipes = $holders->setConditionalExpressionHolderRecipes([$stRecipe1]);
+	$observe('setConditionalExpressionHolderRecipes', static fn () => $recipes);
+	$augmented = $recipes->withDeferredAugment($stAugment1)->withDeferredAugment($stAugment2);
+	$observe('withDeferredAugment', static fn () => $augmented);
+	$observe('withDeferredAugment string-keyed', static function () use ($withAlternatives, $stClass, $stAugment1, $stAugment2, $sureA) {
+		$clone = clone $sureA;
+		(new \ReflectionProperty($stClass, 'deferredAugments'))->setValue($clone, ['x' => $stAugment1, 5 => $stAugment2]);
+		return $clone->withDeferredAugment($stAugment1);
+	});
+	$observe('withoutConditionalExpressionHolders', static fn () => $augmented->withoutConditionalExpressionHolders());
+	$observe('withoutConditionalExpressionHolders receiver', static fn () => $augmented);
+	$observe('removeExpr', static fn () => $sureAndNotA->removeExpr('$a'));
+	$observe('removeExpr numeric', static fn () => $numeric->removeExpr('123'));
+	$observe('removeExpr missing', static fn () => $numeric->removeExpr('$zzz'));
+	$observe('removeExpr alternative', static fn () => $withAlternatives($sureA, ['$a' => [$stA, [[$int, null]]], '$b' => [$stB, [[null, $string]]]])->removeExpr('$b'));
+	$observe('removeExpr receiver', static fn () => $numeric);
+
+	// unionWith(): the both-hold merge
+	$observe('unionWith sure', static fn () => $sureA->unionWith($sureAString));
+	$observe('unionWith sure reversed', static fn () => $sureAString->unionWith($sureA));
+	$observe('unionWith sureNot', static fn () => $sureNotA->unionWith($sureNotAOther));
+	$observe('unionWith empty', static fn () => $empty->unionWith($numeric));
+	$observe('unionWith mixed kinds', static fn () => $sureAndNotA->unionWith($numeric)->unionWith($sureNotAOther));
+	$observe('unionWith overwrite', static fn () => $sureA->unionWith($sureNotA->setAlwaysOverwriteTypes()));
+	$observe('unionWith root same', static fn () => $sureA->setRootExpr($stA)->unionWith($sureNotA->setRootExpr($stA)));
+	$observe('unionWith root one side', static fn () => $sureA->unionWith($sureNotA->setRootExpr($stB)));
+	$observe('unionWith root different', static fn () => $sureA->setRootExpr($stA)->unionWith($sureNotA->setRootExpr($stB)));
+	$observe('unionWith holders', static fn () => $augmented->unionWith(
+		$sureNotA->setNewConditionalExpressionHolders(['$a' => ['k1' => $stHolderY, 'k2' => $stHolderX, 7 => $stHolderX], '$c' => [$stHolderX]])
+			->setConditionalExpressionHolderRecipes([$stRecipe2, $stRecipe1])
+			->withDeferredAugment($stAugment1),
+	));
+	$altA = $withAlternatives($empty, ['$a' => [$stA, [[$int, null], [null, $c('x')]]]]);
+	$altAOther = $withAlternatives($empty, ['$a' => [$stA, [[$union($int, $string), null], [null, $c('y')], [$string, $c('z')]]], '$b' => [$stB, [[$null, null]]]]);
+	$observe('unionWith alternatives one side', static fn () => $empty->unionWith($altAOther));
+	$observe('unionWith alternatives conjoined', static fn () => $altA->unionWith($altAOther));
+	$observe('unionWith alternatives impossible', static fn () => $withAlternatives($empty, ['$a' => [$stA, [[$int, null]]]])->unionWith($withAlternatives($empty, ['$a' => [$stA, [[$string, null], [$c('x'), $string]]]])));
+	$observe('unionWith alternatives dedupe', static fn () => $withAlternatives($empty, ['$a' => [$stA, [[null, $c('x')], [null, $c('x')], [$int, null]]]])->unionWith($withAlternatives($empty, ['$a' => [$stA, [[null, null], [$int, null]]]])));
+	// past ALTERNATIVE_TERMS_LIMIT distinct terms: atomic constants keep the
+	// widening's own union/intersect cheap (intersecting unions distributes)
+	$names = array_map(static fn (int $n): string => 'n' . $n, range(1, 34));
+	$observe('unionWith alternatives widened subtracts', static fn () => $withAlternatives($empty, ['$a' => [$stA, array_map(static fn (string $name): array => [null, $c($name)], $names)]])
+		->unionWith($withAlternatives($empty, ['$a' => [$stA, [[null, null]]]])));
+	$observe('unionWith alternatives widened sures', static fn () => $withAlternatives($empty, ['$a' => [$stA, array_map(static fn (string $name): array => [$c($name), null], $names)]])
+		->unionWith($withAlternatives($empty, ['$a' => [$stA, [[null, null], [$string, null]]]])));
+	$observe('unionWith alternatives widened mixed', static fn () => $withAlternatives($empty, ['$a' => [$stA, [...array_map(static fn (string $name): array => [$c($name), null], $names), [null, $int]]]])
+		->unionWith($withAlternatives($empty, ['$a' => [$stA, [[null, null]]]])));
+
+	// intersectWith(): the either-branch merge
+	$observe('intersectWith sure', static fn () => $sureA->intersectWith($sureAString));
+	$observe('intersectWith sureNot', static fn () => $sureNotA->intersectWith($sureNotAOther));
+	$observe('intersectWith sureNot vacuous', static fn () => (new $stClass([], ['$a' => [$stA, $int]]))->intersectWith(new $stClass([], ['$a' => [$stA, $string]])));
+	$observe('intersectWith kinds differ', static fn () => $sureA->intersectWith($sureNotA));
+	$observe('intersectWith one side', static fn () => $sureA->intersectWith($empty));
+	$observe('intersectWith both kinds', static fn () => $sureAndNotA->intersectWith($sureAndNotA));
+	$observe('intersectWith numeric', static fn () => $numeric->intersectWith($numeric->removeExpr('$b')));
+	$observe('intersectWith alternatives', static fn () => $altA->intersectWith($altAOther));
+	$observe('intersectWith alternative folds', static fn () => $withAlternatives($sureAndNotA, ['$a' => [$stA, [[$string, null], [null, $c('q')], [null, null]]]])->intersectWith($altAOther));
+	$observe('intersectWith alternative pure', static fn () => $withAlternatives($empty, ['$a' => [$stA, [[$int, null]]]])->intersectWith($sureAString));
+	$observe('intersectWith overwrite one', static fn () => $sureA->setAlwaysOverwriteTypes()->intersectWith($sureAString));
+	$observe('intersectWith overwrite both', static fn () => $sureA->setAlwaysOverwriteTypes()->intersectWith($sureAString->setAlwaysOverwriteTypes()));
+	$observe('intersectWith root', static fn () => $sureA->setRootExpr($stA)->intersectWith($sureAString->setRootExpr($stA)));
+	$observe('intersectWith drops holders', static fn () => $augmented->intersectWith($augmented));
+
+	// argument and state errors
+	$observe('unionWith foreign', static fn () => $sureA->unionWith(new \stdClass()));
+	$observe('intersectWith foreign', static fn () => $sureA->intersectWith(new \stdClass()));
+	$observe('setRootExpr scalar', static fn () => $sureA->setRootExpr('$a'));
+	$bare = (new \ReflectionClass($stClass))->newInstanceWithoutConstructor();
+	$observe('uninitialized getSureTypes', static fn () => $bare->getSureTypes());
+	$observe('uninitialized getRootExpr', static fn () => $bare->getRootExpr());
+
+	// emptySpecifyCallback(): one process-wide closure, a fresh empty instance per call
+	$callback = $stClass::emptySpecifyCallback();
+	$o['emptySpecifyCallback'] = [$callback instanceof \Closure, $callback === $stClass::emptySpecifyCallback()];
+	$first = $callback($stContextClass::createTruthy(), false);
+	$second = $callback();
+	$o['emptySpecifyCallback call'] = [$describe($first), $first !== $second, $describe($second)];
+	$emptyResult = new $stResultClass($erNoExtensions, $erDefaultNarrowingHelper, $erScope, $erScope, $stA, false, false, [], [], null, $callback, type: $vfInt, nativeType: $vfInt);
+	$fromResult = $emptyResult->getSpecifiedTypes($stContextClass::createTruthy());
+	$o['emptySpecifyCallback via ExpressionResult'] = [$describe($fromResult), $fromResult === $emptyResult->getSpecifiedTypes($stContextClass::createTruthy()), $fromResult !== $emptyResult->getSpecifiedTypes($stContextClass::createFalsey())];
+
+	$stObservations[$side] = $o;
+}
+foreach ($stObservations['php'] as $label => $expected) {
+	check($expected === ($stObservations['native'][$label] ?? null), "SpecifiedTypes parity ($label): " . json_encode($expected) . ' vs ' . json_encode($stObservations['native'][$label] ?? null));
+}
+check(array_keys($stObservations['php']) === array_keys($stObservations['native']), 'SpecifiedTypes: the same observations on both sides');
+check(
+	count($stObservations['php']['unionWith alternatives widened subtracts']['alternative']['$a'][1]) === 1
+	&& count($stObservations['php']['unionWith alternatives widened sures']['alternative']['$a'][1]) === 1
+	&& $stObservations['php']['unionWith alternatives impossible']['alternative']['$a'][1] === [['type:*NEVER*', null]]
+	&& $stObservations['php']['intersectWith sureNot vacuous']['sureNot'] === [],
+	'SpecifiedTypes: the fixture reaches the widening, the impossible conjunction and the vacuous sure-not',
+);
+$covered[\PHPStan\Analyser\SpecifiedTypes::class] = true;
 
 // ---- differential coverage completeness ----
 // Every shadowed class must be exercised by one of the tests/ scripts; the

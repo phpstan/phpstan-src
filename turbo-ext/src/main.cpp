@@ -321,6 +321,10 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	/* the DI service behind ClassReflection's member lookups — after the
 	 * Type family and LruCache, whose classes its signatures name */
 	pt_register_php_class_reflection_extension();
+	/* the narrowing value classes — their signatures name PhpParser's Expr and
+	 * the augment interface only */
+	pt_register_type_specifier_context();
+	pt_register_specified_types();
 
 	return SUCCESS;
 }

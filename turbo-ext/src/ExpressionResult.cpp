@@ -309,13 +309,13 @@ public:
 	/* Mirrors getTruthyScope(). */
 	zv::Val getTruthyScope()
 	{
-		return branchScope(slots::truthyScope, slots::truthyScopeOverrideResult, PT_LC("gettruthyscope"), PT_LC("createtruthy"));
+		return branchScope(slots::truthyScope, slots::truthyScopeOverrideResult, PT_LC("gettruthyscope"), pt_type_specifier_context_create_truthy);
 	}
 
 	/* Mirrors getFalseyScope(). */
 	zv::Val getFalseyScope()
 	{
-		return branchScope(slots::falseyScope, slots::falseyScopeOverrideResult, PT_LC("getfalseyscope"), PT_LC("createfalsey"));
+		return branchScope(slots::falseyScope, slots::falseyScopeOverrideResult, PT_LC("getfalseyscope"), pt_type_specifier_context_create_falsey);
 	}
 
 	bool isAlwaysTerminating() const { return boolSlot(slots::isAlwaysTerminating); }
@@ -705,7 +705,7 @@ private:
 	}
 
 	/* the shared body of getTruthyScope() / getFalseyScope() */
-	zv::Val branchScope(uint32_t memoSlot, uint32_t overrideSlot, const char *getter, size_t getterLen, const char *contextFactory, size_t contextFactoryLen)
+	zv::Val branchScope(uint32_t memoSlot, uint32_t overrideSlot, const char *getter, size_t getterLen, zend_object *(*contextFactory)())
 	{
 		zval *memo = slot(memoSlot);
 		if (Z_TYPE_P(memo) == IS_OBJECT) return zv::Val::copyOf(zv::Ref(memo));
@@ -725,9 +725,12 @@ private:
 		zval *scope = slot(slots::scope);
 		bool nativeTypesPromoted;
 		if (UNEXPECTED(!scopeNativeTypesPromoted(scope, nativeTypesPromoted))) return zv::Val();
-		zv::Val context = pt_type_call_static(PT_CLASS_TYPE_SPECIFIER_CONTEXT, contextFactory, contextFactoryLen, 0, NULL);
-		if (UNEXPECTED(context.isUndef())) return zv::Val();
-		zv::Val specified = getSpecifiedTypes(context.raw(), nativeTypesPromoted);
+		/* the singleton, borrowed: the context registry holds it */
+		zend_object *contextObject = contextFactory();
+		if (UNEXPECTED(contextObject == NULL)) return zv::Val();
+		zval context;
+		ZVAL_OBJ(&context, contextObject);
+		zv::Val specified = getSpecifiedTypes(&context, nativeTypesPromoted);
 		if (UNEXPECTED(specified.isUndef())) return zv::Val();
 		specified = withEqualityCheckResult(std::move(specified), memoSlot == slots::truthyScope);
 		if (UNEXPECTED(specified.isUndef())) return zv::Val();
@@ -740,9 +743,9 @@ private:
 	 * makes a duplicate check in the branch report as always-true. */
 	zv::Val withEqualityCheckResult(zv::Val specifiedTypes, bool value)
 	{
-		zv::Val isEquality = pt_type_call(Z_OBJ_P(specifiedTypes.raw()), PT_LC("isequality"), 0, NULL);
-		if (UNEXPECTED(isEquality.isUndef())) return zv::Val();
-		if (!zend_is_true(isEquality.raw())) return specifiedTypes;
+		bool isEquality;
+		if (UNEXPECTED(!pt_specified_types_is_equality(specifiedTypes.raw(), isEquality))) return zv::Val();
+		if (!isEquality) return specifiedTypes;
 		zv::Val type = getType();
 		if (UNEXPECTED(type.isUndef())) return zv::Val();
 		zend_long isBoolean = pt_type_op_trinary(Z_OBJ_P(type.raw()), PT_OP_IS_BOOLEAN, 0, NULL);
@@ -752,9 +755,10 @@ private:
 		zval constantBoolean;
 		if (UNEXPECTED(!pt_constant_boolean_type_new(&constantBoolean, value))) return zv::Val();
 		zv::Val booleanType = zv::Val::adopt(constantBoolean);
-		zv::Val context = pt_type_call_static(PT_CLASS_TYPE_SPECIFIER_CONTEXT, PT_LC("createtrue"), 0, NULL);
-		if (UNEXPECTED(context.isUndef())) return zv::Val();
-		zval thisValue;
+		zend_object *trueContext = pt_type_specifier_context_create_true();
+		if (UNEXPECTED(trueContext == NULL)) return zv::Val();
+		zval context, thisValue;
+		ZVAL_OBJ(&context, trueContext);
 		ZVAL_OBJ(&thisValue, self);
 		zval *helper = slot(slots::defaultNarrowingHelper);
 		if (UNEXPECTED(Z_TYPE_P(helper) != IS_OBJECT)) {
@@ -766,10 +770,10 @@ private:
 		ZVAL_COPY_VALUE(&createArgs[1], slot(slots::expr));
 		ZVAL_COPY_VALUE(&createArgs[2], &thisValue);
 		ZVAL_COPY_VALUE(&createArgs[3], booleanType.raw());
-		ZVAL_COPY_VALUE(&createArgs[4], context.raw());
+		ZVAL_COPY_VALUE(&createArgs[4], &context);
 		zv::Val subjectTypes = pt_type_call(Z_OBJ_P(helper), PT_LC("createsubjecttypes"), 5, createArgs);
 		if (UNEXPECTED(subjectTypes.isUndef())) return zv::Val();
-		return pt_type_call(Z_OBJ_P(specifiedTypes.raw()), PT_LC("unionwith"), 1, subjectTypes.raw());
+		return pt_specified_types_union_with(Z_OBJ_P(specifiedTypes.raw()), subjectTypes.raw());
 	}
 
 	/* Mirrors consultExpressionTypeResolverExtensions(): the extension type,

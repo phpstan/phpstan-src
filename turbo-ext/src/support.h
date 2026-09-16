@@ -220,7 +220,6 @@ enum {
 	PT_CLASS_VARIABLE_WRITE_OFFSET,
 	PT_CLASS_LIST_EXPR,
 	PT_CLASS_VARIABLE_WRITES_NODE,
-	PT_CLASS_TYPE_SPECIFIER_CONTEXT,
 	PT_CLASS_VOID_TO_NULL_TRAVERSER,
 	PT_CLASS_ISSETABILITY_RESOLUTION,
 	PT_CLASS_ISSETABILITY_LINK_INFO,
@@ -1635,5 +1634,78 @@ void pt_register_php_class_reflection_extension();
 /* forgets the per-request class-entry/slot cache of the BetterReflection
  * adapter memo readers */
 void pt_php_class_reflection_extension_rinit();
+
+/* {{{ the narrowing value classes (TypeSpecifierContext.cpp,
+ * SpecifiedTypes.cpp) — registered at the END of the sequence */
+
+/* TypeSpecifierContext.cpp — the shadowing PHPStan\Analyser\TypeSpecifierContext */
+extern zend_class_entry *pt_ce_type_specifier_context;
+void pt_register_type_specifier_context();
+/* TypeSpecifierContext::CONTEXT_*; PT_TSC_NULL stands for the null
+ * context's $value, PT_TSC_UNINITIALIZED for a never-written one */
+#define PT_TSC_CONTEXT_TRUE 0b0001
+#define PT_TSC_CONTEXT_TRUTHY_BUT_NOT_TRUE 0b0010
+#define PT_TSC_CONTEXT_TRUTHY (PT_TSC_CONTEXT_TRUE | PT_TSC_CONTEXT_TRUTHY_BUT_NOT_TRUE)
+#define PT_TSC_CONTEXT_FALSE 0b0100
+#define PT_TSC_CONTEXT_FALSEY_BUT_NOT_FALSE 0b1000
+#define PT_TSC_CONTEXT_FALSEY (PT_TSC_CONTEXT_FALSE | PT_TSC_CONTEXT_FALSEY_BUT_NOT_FALSE)
+#define PT_TSC_CONTEXT_BITMASK 0b1111
+#define PT_TSC_NULL (-1)
+#define PT_TSC_UNINITIALIZED (-2)
+/* TypeSpecifierContext::createTrue() / createTruthy() / createFalse() /
+ * createFalsey() / createNull(): the process-wide singleton, borrowed (the
+ * class's static $registry holds it); NULL = pending exception */
+[[nodiscard]] zend_object *pt_type_specifier_context_create_true();
+[[nodiscard]] zend_object *pt_type_specifier_context_create_truthy();
+[[nodiscard]] zend_object *pt_type_specifier_context_create_false();
+[[nodiscard]] zend_object *pt_type_specifier_context_create_falsey();
+[[nodiscard]] zend_object *pt_type_specifier_context_create_null();
+/* $context->true() / truthy() / false() / falsey() / null() on any context
+ * object — the slot of a native context, the method of anything else;
+ * false = pending exception */
+[[nodiscard]] bool pt_type_specifier_context_true(zend_object *context, bool &out);
+[[nodiscard]] bool pt_type_specifier_context_truthy(zend_object *context, bool &out);
+[[nodiscard]] bool pt_type_specifier_context_false(zend_object *context, bool &out);
+[[nodiscard]] bool pt_type_specifier_context_falsey(zend_object *context, bool &out);
+[[nodiscard]] bool pt_type_specifier_context_falsey_but_not_false(zend_object *context, bool &out);
+[[nodiscard]] bool pt_type_specifier_context_null(zend_object *context, bool &out);
+/* $context->negate(); UNDEF = pending exception */
+zv::Val pt_type_specifier_context_negate(zend_object *context);
+
+/* SpecifiedTypes.cpp — the shadowing PHPStan\Analyser\SpecifiedTypes */
+extern zend_class_entry *pt_ce_specified_types;
+void pt_register_specified_types();
+/* new SpecifiedTypes($sureTypes, $sureNotTypes) — NULL for the [] defaults,
+ * the arrays borrowed; UNDEF = pending exception */
+zv::Val pt_specified_types_new(zval *sureTypes = NULL, zval *sureNotTypes = NULL);
+/* SpecifiedTypes::emptySpecifyCallback(): the process-wide Closure */
+zv::Val pt_specified_types_empty_specify_callback();
+/* the instance methods on any SpecifiedTypes object — the native body for a
+ * native instance, the method otherwise (the PHP twin in the differential
+ * tests); arguments borrowed ($rootExpr NULL for null), UNDEF = pending
+ * exception. intersectWith()/unionWith() take the other operand as a zval
+ * (the method's own argument check applies to a foreign one). */
+zv::Val pt_specified_types_set_always_overwrite_types(zend_object *specifiedTypes);
+zv::Val pt_specified_types_set_root_expr(zend_object *specifiedTypes, zval *rootExpr);
+zv::Val pt_specified_types_set_new_conditional_expression_holders(zend_object *specifiedTypes, zval *holders);
+zv::Val pt_specified_types_set_conditional_expression_holder_recipes(zend_object *specifiedTypes, zval *recipes);
+zv::Val pt_specified_types_get_conditional_expression_holder_recipes(zend_object *specifiedTypes);
+zv::Val pt_specified_types_with_deferred_augment(zend_object *specifiedTypes, zval *augment);
+zv::Val pt_specified_types_get_deferred_augments(zend_object *specifiedTypes);
+zv::Val pt_specified_types_get_sure_types(zend_object *specifiedTypes);
+zv::Val pt_specified_types_get_sure_not_types(zend_object *specifiedTypes);
+zv::Val pt_specified_types_get_alternative_types(zend_object *specifiedTypes);
+zv::Val pt_specified_types_without_conditional_expression_holders(zend_object *specifiedTypes);
+/* false = pending exception */
+[[nodiscard]] bool pt_specified_types_should_overwrite(zend_object *specifiedTypes, bool &out);
+zv::Val pt_specified_types_get_new_conditional_expression_holders(zend_object *specifiedTypes);
+zv::Val pt_specified_types_get_root_expr(zend_object *specifiedTypes);
+zv::Val pt_specified_types_remove_expr(zend_object *specifiedTypes, zend_string *exprString);
+zv::Val pt_specified_types_intersect_with(zend_object *specifiedTypes, zval *other);
+zv::Val pt_specified_types_union_with(zend_object *specifiedTypes, zval *other);
+/* $specifiedTypes->isEquality(); false = pending exception */
+[[nodiscard]] bool pt_specified_types_is_equality(zval *specifiedTypes, bool &out);
+
+/* }}} */
 
 #endif /* PHPSTANTURBO_SUPPORT_H */

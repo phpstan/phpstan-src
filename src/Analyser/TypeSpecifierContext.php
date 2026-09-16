@@ -3,12 +3,12 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @api
  */
-#[ReferencedByTurboExtension(key: 'typeSpecifierContext')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/TypeSpecifierContext.cpp')]
 final class TypeSpecifierContext
 {
 

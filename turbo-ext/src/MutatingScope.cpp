@@ -7390,23 +7390,19 @@ public:
 	{
 		zv::Ref typeSpecifier = slot(PT_MS_PROP_TYPE_SPECIFIER);
 		if (UNEXPECTED(!typeSpecifier.isObject())) return uninitializedProperty("typeSpecifier");
-		zv::Val context;
-		if (truthy) {
-			context = pt_type_call_static(PT_CLASS_TYPE_SPECIFIER_CONTEXT, PT_LC("createtruthy"), 0, NULL);
-		} else {
-			context = pt_type_call_static(PT_CLASS_TYPE_SPECIFIER_CONTEXT, PT_LC("createfalsey"), 0, NULL);
-		}
-		if (UNEXPECTED(context.isUndef())) return zv::Val();
-		zv::Args args{thisZval(), expr, context.raw()};
+		/* the singleton, borrowed: the context registry holds it */
+		zend_object *context = truthy ? pt_type_specifier_context_create_truthy() : pt_type_specifier_context_create_falsey();
+		if (UNEXPECTED(context == NULL)) return zv::Val();
+		zv::Args args{thisZval(), expr, context};
 		zv::Val specifiedTypes = pt_type_call(typeSpecifier.asObject(), PT_LC("specifytypesincondition"), 3, args);
 		if (UNEXPECTED(specifiedTypes.isUndef())) return zv::Val();
 
 		/* if ($specifiedTypes->isEquality() && $this->getType($expr)->isBoolean()->yes()) {
 		 *     $specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
 		 *         $expr, new ConstantBooleanType($truthy), TypeSpecifierContext::createTrue(), $this)); } */
-		zv::Val isEquality = pt_type_call(Z_OBJ_P(specifiedTypes.raw()), PT_LC("isequality"), 0, NULL);
-		if (UNEXPECTED(isEquality.isUndef())) return zv::Val();
-		if (zend_is_true(isEquality.raw())) {
+		bool isEquality;
+		if (UNEXPECTED(!pt_specified_types_is_equality(specifiedTypes.raw(), isEquality))) return zv::Val();
+		if (isEquality) {
 			zval exprValue;
 			ZVAL_OBJ(&exprValue, expr);
 			zv::Val exprType = thisGetType(&exprValue);
@@ -7417,16 +7413,16 @@ public:
 				zval constantBoolean;
 				if (UNEXPECTED(!pt_constant_boolean_type_new(&constantBoolean, truthy))) return zv::Val();
 				zv::Val booleanType = zv::Val::adopt(constantBoolean);
-				zv::Val trueContext = pt_type_call_static(PT_CLASS_TYPE_SPECIFIER_CONTEXT, PT_LC("createtrue"), 0, NULL);
-				if (UNEXPECTED(trueContext.isUndef())) return zv::Val();
+				zend_object *trueContext = pt_type_specifier_context_create_true();
+				if (UNEXPECTED(trueContext == NULL)) return zv::Val();
 				zval createArgs[4];
 				ZVAL_OBJ(&createArgs[0], expr);
 				ZVAL_COPY_VALUE(&createArgs[1], booleanType.raw());
-				ZVAL_COPY_VALUE(&createArgs[2], trueContext.raw());
+				ZVAL_OBJ(&createArgs[2], trueContext);
 				ZVAL_COPY_VALUE(&createArgs[3], thisZval());
 				zv::Val equalityTypes = pt_type_call(typeSpecifier.asObject(), PT_LC("create"), 4, createArgs);
 				if (UNEXPECTED(equalityTypes.isUndef())) return zv::Val();
-				specifiedTypes = pt_type_call(Z_OBJ_P(specifiedTypes.raw()), PT_LC("unionwith"), 1, equalityTypes.raw());
+				specifiedTypes = pt_specified_types_union_with(Z_OBJ_P(specifiedTypes.raw()), equalityTypes.raw());
 				if (UNEXPECTED(specifiedTypes.isUndef())) return zv::Val();
 			}
 		}
@@ -7521,10 +7517,7 @@ public:
 	/* $specifiedTypes->shouldOverwrite(); false = pending exception */
 	[[nodiscard]] static bool shouldOverwrite(zend_object *specifiedTypes, bool &out)
 	{
-		zv::Val result = pt_type_call(specifiedTypes, PT_LC("shouldoverwrite"), 0, NULL);
-		if (UNEXPECTED(result.isUndef())) return false;
-		out = zend_is_true(result.raw());
-		return true;
+		return pt_specified_types_should_overwrite(specifiedTypes, out);
 	}
 
 	/* $scope->isComplexUnionType($type) on any scope object */
@@ -7642,7 +7635,7 @@ public:
 
 		/* the deferred augments see this scope's pre-application state — the
 		 * application point of the narrowing; their entries join this batch */
-		zv::Val augments = pt_type_call(Z_OBJ_P(specifiedTypes.raw()), PT_LC("getdeferredaugments"), 0, NULL);
+		zv::Val augments = pt_specified_types_get_deferred_augments(Z_OBJ_P(specifiedTypes.raw()));
 		if (UNEXPECTED(augments.isUndef())) return zv::Val();
 		if (UNEXPECTED(Z_TYPE_P(augments.raw()) != IS_ARRAY)) {
 			zend_throw_error(NULL, "phpstan_turbo: getDeferredAugments() did not answer with an array");
@@ -7668,7 +7661,7 @@ public:
 					zend_throw_error(NULL, "Call to a member function getDeferredAugments() on %s", zend_zval_value_name(augmentTypes.raw()));
 					return zv::Val();
 				}
-				zv::Val nested = pt_type_call(Z_OBJ_P(augmentTypes.raw()), PT_LC("getdeferredaugments"), 0, NULL);
+				zv::Val nested = pt_specified_types_get_deferred_augments(Z_OBJ_P(augmentTypes.raw()));
 				if (UNEXPECTED(nested.isUndef())) return zv::Val();
 				if (UNEXPECTED(Z_TYPE_P(nested.raw()) != IS_ARRAY)) {
 					zend_throw_error(NULL, "phpstan_turbo: getDeferredAugments() did not answer with an array");
@@ -7677,7 +7670,7 @@ public:
 				for (auto entry : zv::ArrRef(nested.raw())) {
 					pending.push(entry.value().deref());
 				}
-				zv::Val united = pt_type_call(Z_OBJ_P(specifiedTypes.raw()), PT_LC("unionwith"), 1, augmentTypes.raw());
+				zv::Val united = pt_specified_types_union_with(Z_OBJ_P(specifiedTypes.raw()), augmentTypes.raw());
 				if (UNEXPECTED(united.isUndef())) return zv::Val();
 				if (UNEXPECTED(Z_TYPE_P(united.raw()) != IS_OBJECT)) {
 					zend_throw_error(NULL, "phpstan_turbo: unionWith() did not answer with an object");
@@ -7688,11 +7681,11 @@ public:
 		}
 
 		zend_object *specifiedTypesObject = Z_OBJ_P(specifiedTypes.raw());
-		zv::Val sureTypes = pt_type_call(specifiedTypesObject, PT_LC("getsuretypes"), 0, NULL);
+		zv::Val sureTypes = pt_specified_types_get_sure_types(specifiedTypesObject);
 		if (UNEXPECTED(sureTypes.isUndef())) return zv::Val();
-		zv::Val sureNotTypes = pt_type_call(specifiedTypesObject, PT_LC("getsurenottypes"), 0, NULL);
+		zv::Val sureNotTypes = pt_specified_types_get_sure_not_types(specifiedTypesObject);
 		if (UNEXPECTED(sureNotTypes.isUndef())) return zv::Val();
-		zv::Val alternativeTypes = pt_type_call(specifiedTypesObject, PT_LC("getalternativetypes"), 0, NULL);
+		zv::Val alternativeTypes = pt_specified_types_get_alternative_types(specifiedTypesObject);
 		if (UNEXPECTED(alternativeTypes.isUndef())) return zv::Val();
 
 		std::vector<TypeSpecification> typeSpecifications;
@@ -7929,14 +7922,14 @@ public:
 			scopeObject = processedObject;
 		}
 
-		zv::Val newHolders = pt_type_call(specifiedTypesObject, PT_LC("getnewconditionalexpressionholders"), 0, NULL);
+		zv::Val newHolders = pt_specified_types_get_new_conditional_expression_holders(specifiedTypesObject);
 		if (UNEXPECTED(newHolders.isUndef())) return zv::Val();
 		if (UNEXPECTED(Z_TYPE_P(newHolders.raw()) != IS_ARRAY)) {
 			zend_throw_error(NULL, "phpstan_turbo: getNewConditionalExpressionHolders() did not answer with an array");
 			return zv::Val();
 		}
 		zv::Arr newConditionalExpressionHolders = zv::Arr::copyOfTable(Z_ARRVAL_P(newHolders.raw()));
-		zv::Val recipes = pt_type_call(specifiedTypesObject, PT_LC("getconditionalexpressionholderrecipes"), 0, NULL);
+		zv::Val recipes = pt_specified_types_get_conditional_expression_holder_recipes(specifiedTypesObject);
 		if (UNEXPECTED(recipes.isUndef())) return zv::Val();
 		if (UNEXPECTED(Z_TYPE_P(recipes.raw()) != IS_ARRAY)) {
 			zend_throw_error(NULL, "phpstan_turbo: getConditionalExpressionHolderRecipes() did not answer with an array");

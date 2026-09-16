@@ -46,10 +46,9 @@ zv::Val returnTypeOfCall(zval *acceptor, zval *scope, zval *site)
  * reorderStaticCallArguments($acceptor, $call) */
 zv::Val reorderArguments(bool isMethodCall, zval *acceptor, zval *call)
 {
-	zv::Args args{acceptor, call};
 	return isMethodCall
-		? pt_type_call_static(PT_CLASS_ARGUMENTS_NORMALIZER, PT_LC("reordermethodarguments"), 2, args)
-		: pt_type_call_static(PT_CLASS_ARGUMENTS_NORMALIZER, PT_LC("reorderstaticcallarguments"), 2, args);
+		? pt_arguments_normalizer_reorder_method_arguments(acceptor, call)
+		: pt_arguments_normalizer_reorder_static_call_arguments(acceptor, call);
 }
 
 /* ParametersAcceptorSelector::selectFromArgs($scope, $call->getArgs(),

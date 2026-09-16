@@ -420,6 +420,9 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_passed_by_reference();
 	pt_register_dummy_parameter();
 	pt_register_extended_dummy_parameter();
+	/* the argument reordering of the call handlers — its signatures name
+	 * php-parser classes, ParametersAcceptor and Scope only */
+	pt_register_arguments_normalizer();
 
 	return SUCCESS;
 }

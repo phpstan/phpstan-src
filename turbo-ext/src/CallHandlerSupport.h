@@ -30,9 +30,6 @@ namespace ptcall {
 
 inline pt_method_site combineVariantsForNormalizationSite;
 inline pt_method_site combineAcceptorsSite;
-inline pt_method_site reorderMethodArgumentsSite;
-inline pt_method_site reorderStaticCallArgumentsSite;
-inline pt_method_site reorderNewArgumentsSite;
 inline pt_method_site acceptorReturnTypeSite;
 inline pt_method_site resolvedAcceptorReturnTypeSite;
 inline pt_method_site acceptorNativeReturnTypeSite;
@@ -58,22 +55,19 @@ inline zv::Val combineAcceptors(zval *acceptors)
 /* ArgumentsNormalizer::reorderMethodArguments($parametersAcceptor, $methodCall) */
 inline zv::Val reorderMethodArguments(zval *parametersAcceptor, zval *methodCall)
 {
-	zv::Args argv{parametersAcceptor, methodCall};
-	return pt_call_static_cached(reorderMethodArgumentsSite, PT_CLASS_ARGUMENTS_NORMALIZER, PT_LC("reordermethodarguments"), 2, argv);
+	return pt_arguments_normalizer_reorder_method_arguments(parametersAcceptor, methodCall);
 }
 
 /* ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $staticCall) */
 inline zv::Val reorderStaticCallArguments(zval *parametersAcceptor, zval *staticCall)
 {
-	zv::Args argv{parametersAcceptor, staticCall};
-	return pt_call_static_cached(reorderStaticCallArgumentsSite, PT_CLASS_ARGUMENTS_NORMALIZER, PT_LC("reorderstaticcallarguments"), 2, argv);
+	return pt_arguments_normalizer_reorder_static_call_arguments(parametersAcceptor, staticCall);
 }
 
 /* ArgumentsNormalizer::reorderNewArguments($parametersAcceptor, $new) */
 inline zv::Val reorderNewArguments(zval *parametersAcceptor, zval *new_)
 {
-	zv::Args argv{parametersAcceptor, new_};
-	return pt_call_static_cached(reorderNewArgumentsSite, PT_CLASS_ARGUMENTS_NORMALIZER, PT_LC("reordernewarguments"), 2, argv);
+	return pt_arguments_normalizer_reorder_new_arguments(parametersAcceptor, new_);
 }
 
 /* $parametersAcceptor->getReturnType() (the structural acceptor) */

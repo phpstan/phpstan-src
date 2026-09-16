@@ -203,7 +203,6 @@ enum {
 	PT_CLASS_REAL_CLASS_CLASS_CONSTANT_REFLECTION,
 	PT_CLASS_TYPE_ALIAS,
 	PT_CLASS_CIRCULAR_TYPE_ALIAS_DEFINITION_EXCEPTION,
-	PT_CLASS_ARGUMENTS_NORMALIZER,
 	PT_CLASS_VARIABLE_WRITE,
 	PT_CLASS_VARIABLE_WRITE_OFFSET,
 	PT_CLASS_LIST_EXPR,
@@ -2944,6 +2943,26 @@ zv::Val pt_dummy_parameter_new(zend_string *name, zval *type, bool optional, zva
  * (borrowed): directly when they already have the parameter types, through
  * the constructor's parameter parsing otherwise; UNDEF = pending exception */
 zv::Val pt_extended_dummy_parameter_new(uint32_t argc, zval *argv);
+
+/* }}} */
+
+/* {{{ ArgumentsNormalizer.cpp — the shadowing PHPStan\Analyser\ArgumentsNormalizer,
+ * registered at the END of the sequence */
+
+extern zend_class_entry *pt_ce_arguments_normalizer;
+void pt_register_arguments_normalizer();
+/* ArgumentsNormalizer::reorderArgs($parametersAcceptor, $callArgs) (the list
+ * or null) / ::reorderFuncArguments($acceptor, $functionCall) /
+ * ::reorderMethodArguments($acceptor, $methodCall) /
+ * ::reorderStaticCallArguments($acceptor, $staticCall) /
+ * ::reorderNewArguments($acceptor, $new) (the call itself when nothing was
+ * reordered, a rebuilt call, or null) — arguments borrowed, of the twin's
+ * parameter types; UNDEF = pending exception */
+zv::Val pt_arguments_normalizer_reorder_args(zval *parametersAcceptor, zval *callArgs);
+zv::Val pt_arguments_normalizer_reorder_func_arguments(zval *parametersAcceptor, zval *functionCall);
+zv::Val pt_arguments_normalizer_reorder_method_arguments(zval *parametersAcceptor, zval *methodCall);
+zv::Val pt_arguments_normalizer_reorder_static_call_arguments(zval *parametersAcceptor, zval *staticCall);
+zv::Val pt_arguments_normalizer_reorder_new_arguments(zval *parametersAcceptor, zval *newExpr);
 
 /* }}} */
 

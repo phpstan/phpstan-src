@@ -3319,8 +3319,7 @@ public:
 			zv::Args staticCallArgs{class_.raw(), constructorName.raw(), arguments.raw()};
 			zv::Val staticCallNode = pt_type_new(PT_CLASS_STATIC_CALL, 3, staticCallArgs);
 			if (UNEXPECTED(staticCallNode.isUndef())) return zv::Val();
-			zv::Args reorderArgs{attributeConstructorVariant.raw(), staticCallNode.raw()};
-			zv::Val staticCall = pt_type_call_static(PT_CLASS_ARGUMENTS_NORMALIZER, PT_LC("reorderstaticcallarguments"), 2, reorderArgs);
+			zv::Val staticCall = pt_arguments_normalizer_reorder_static_call_arguments(attributeConstructorVariant.raw(), staticCallNode.raw());
 			if (UNEXPECTED(staticCall.isUndef())) return zv::Val();
 			if (staticCall.isNull()) return zv::Val::null();
 

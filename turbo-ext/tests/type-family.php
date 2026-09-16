@@ -6825,6 +6825,100 @@ if (!class_exists('PHPStanTurboTests\DummyParameterSubclass', false)) {
 	}
 }
 
+// ---- ArgumentsNormalizer ----
+// reorderArgs() and the reorder*Arguments() methods over positional, named,
+// reordered, gapped, duplicate, unknown-named and unpacked arguments against
+// acceptors with optional defaults, a variadic tail, a variadic that is not
+// last and an optional parameter without a default: the reordered lists
+// (their values, names, original-argument attributes and the default-filled
+// TypeExprs), the identity of an unchanged call, the rebuilt call's class and
+// attributes (the printed-form cache dropped), and the exception of a missing
+// default
+$observations['native ' . \PHPStan\Analyser\ArgumentsNormalizer::class] = (new ReflectionMethod(\PHPStan\Analyser\ArgumentsNormalizer::class, 'reorderArgs'))->isInternal();
+{
+	$r = [];
+	$error = static function (callable $cb): array|string {
+		try {
+			$cb();
+			return 'no error';
+		} catch (\Throwable $e) {
+			return [get_class($e), preg_replace('~, called in .+ on line \d+$~', '', $e->getMessage())];
+		}
+	};
+	$int = new \PHPStan\Type\IntegerType();
+	$param = static fn (string $name, bool $optional = false, ?\PHPStan\Type\Type $default = null, bool $variadic = false): \PHPStan\Reflection\Php\DummyParameter => new \PHPStan\Reflection\Php\DummyParameter($name, $int, $optional, null, $variadic, $default);
+	$variant = static fn (array $parameters, bool $variadic = false): \PHPStan\Reflection\FunctionVariant => new \PHPStan\Reflection\FunctionVariant(\PHPStan\Type\Generic\TemplateTypeMap::createEmpty(), null, $parameters, $variadic, $int);
+	$acceptors = [
+		'defaults' => $variant([$param('a'), $param('b', true, new \PHPStan\Type\Constant\ConstantIntegerType(1)), $param('c', true, new \PHPStan\Type\Constant\ConstantIntegerType(2))]),
+		'variadic' => $variant([$param('a'), $param('rest', true, null, true)], true),
+		'variadicNotLast' => $variant([$param('rest', true, null, true), $param('after')], true),
+		'noDefault' => $variant([$param('a'), $param('b', true), $param('c')]),
+		'native' => $variant([new \PHPStan\Reflection\Native\NativeParameterReflection('a', false, $int, \PHPStan\Reflection\PassedByReference::createNo(), false, null), new \PHPStan\Reflection\Native\NativeParameterReflection('b', true, $int, \PHPStan\Reflection\PassedByReference::createNo(), false, new \PHPStan\Type\Constant\ConstantIntegerType(5))]),
+	];
+	$arg = static function (int $value, ?string $name = null, bool $unpack = false): \PhpParser\Node\Arg {
+		$node = new \PhpParser\Node\Arg(new \PhpParser\Node\Scalar\Int_($value), false, $unpack, ['startLine' => $value], $name === null ? null : new \PhpParser\Node\Identifier($name));
+		return $node;
+	};
+	$argSets = [
+		'empty' => [],
+		'positional' => [$arg(1), $arg(2)],
+		'nonList' => [1 => $arg(1), 3 => $arg(2)],
+		'namedInOrder' => [$arg(1, 'a'), $arg(2, 'b')],
+		'namedReordered' => [$arg(3, 'c'), $arg(1, 'a')],
+		'gap' => [$arg(1), $arg(3, 'c')],
+		'requiredGap' => [$arg(3, 'c')],
+		'duplicate' => [$arg(1, 'a'), $arg(2, 'a')],
+		'unknown' => [$arg(1), $arg(9, 'zzz')],
+		'unknownAndGap' => [$arg(9, 'zzz'), $arg(3, 'c'), $arg(1)],
+		'unpacked' => [$arg(1, null, true), $arg(2, 'b')],
+	];
+	$viewArgs = static function (?array $args) use ($view): array|string|null {
+		if ($args === null) {
+			return null;
+		}
+		$result = [];
+		foreach ($args as $key => $a) {
+			$value = $a->value;
+			$original = $a->getAttribute(\PHPStan\Analyser\ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE);
+			$result[] = [
+				$key,
+				$value instanceof \PHPStan\Node\Expr\TypeExpr ? ['TypeExpr', $view($value->getExprType())] : [get_class($value), $value instanceof \PhpParser\Node\Scalar\Int_ ? $value->value : null],
+				$a->name?->toString(),
+				$a->unpack,
+				$original === null ? null : [$original->name?->toString(), $original->value === $value],
+				array_keys($a->getAttributes()),
+			];
+		}
+		return $result;
+	};
+	foreach ($acceptors as $acceptorName => $acceptor) {
+		foreach ($argSets as $argSetName => $args) {
+			$r["reorderArgs $acceptorName $argSetName"] = $error(static function () use (&$r, $acceptor, $args, $viewArgs, $acceptorName, $argSetName): void {
+				$reordered = \PHPStan\Analyser\ArgumentsNormalizer::reorderArgs($acceptor, $args);
+				$r["reorderArgs $acceptorName $argSetName result"] = [$viewArgs($reordered), $reordered === $args, $reordered === null ? null : array_is_list($reordered)];
+			});
+			$attributes = ['startLine' => 7, \PHPStan\Node\Printer\ExprPrinter::ATTRIBUTE_CACHE_KEY => 'printed'];
+			$calls = [
+				'func' => [new \PhpParser\Node\Expr\FuncCall(new \PhpParser\Node\Name('f'), array_values($args) === $args ? $args : $args, $attributes), 'reorderFuncArguments'],
+				'method' => [new \PhpParser\Node\Expr\MethodCall(new \PhpParser\Node\Expr\Variable('o'), 'm', $args, $attributes), 'reorderMethodArguments'],
+				'static' => [new \PhpParser\Node\Expr\StaticCall(new \PhpParser\Node\Name('C'), 's', $args, $attributes), 'reorderStaticCallArguments'],
+				'new' => [new \PhpParser\Node\Expr\New_(new \PhpParser\Node\Name('C'), $args, $attributes), 'reorderNewArguments'],
+			];
+			foreach ($calls as $callName => [$call, $method]) {
+				$r["$method $acceptorName $argSetName"] = $error(static function () use (&$r, $call, $method, $acceptor, $viewArgs, $acceptorName, $argSetName): void {
+					$normalized = \PHPStan\Analyser\ArgumentsNormalizer::$method($acceptor, $call);
+					$r["$method $acceptorName $argSetName result"] = $normalized === null ? null : [get_class($normalized), $normalized === $call, $viewArgs($normalized->getArgs()), $normalized->getAttributes(), $normalized instanceof \PhpParser\Node\Expr\MethodCall || $normalized instanceof \PhpParser\Node\Expr\StaticCall ? $normalized->name->toString() : null];
+				});
+			}
+		}
+	}
+	$r['reorderMethodArguments wrong call'] = $error(static fn () => \PHPStan\Analyser\ArgumentsNormalizer::reorderMethodArguments($acceptors['defaults'], new \PhpParser\Node\Expr\FuncCall(new \PhpParser\Node\Name('f'))));
+	$r['ORIGINAL_ARG_ATTRIBUTE'] = \PHPStan\Analyser\ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE;
+	foreach ($r as $key => $value) {
+		$observations["arguments normalizer $key"] = $value;
+	}
+}
+
 // observations holding bytes that are not UTF-8 (the invalid-UTF-8 subject's
 // descriptions) go out base64-encoded so json_encode() keeps every byte; the
 // non-finite floats (the NAN and infinity subjects' values) as their names

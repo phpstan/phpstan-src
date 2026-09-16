@@ -155,6 +155,16 @@ void pt_register_expression_result_storage()
  * of anything else (the PHP twin under the prefixed differential
  * activation) */
 
+void pt_expression_result_storage_store(zval *storage, zval *expr, zval *expressionResult)
+{
+	if (EXPECTED(Z_OBJCE_P(storage) == pt_ce_expression_result_storage)) {
+		ExpressionResultStorage(storage).storeExpressionResult(expr, expressionResult);
+		return;
+	}
+	zv::Args argv{expr, expressionResult};
+	(void) pt_type_call(Z_OBJ_P(storage), "storeexpressionresult", sizeof("storeexpressionresult") - 1, 2, argv);
+}
+
 zv::Val pt_expression_result_storage_new()
 {
 	return pt_type_new_ce(pt_ce_expression_result_storage, 0, NULL);

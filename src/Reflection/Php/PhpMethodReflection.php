@@ -22,6 +22,7 @@ use PHPStan\Reflection\MethodPrototypeReflection;
 use PHPStan\Reflection\ParameterAllowedConstantsMapProvider;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -44,6 +45,7 @@ use const PHP_VERSION_ID;
  * @api
  */
 #[GenerateFactory(interface: PhpMethodReflectionFactory::class)]
+#[ReferencedByTurboExtension(key: 'phpMethodReflection')]
 final class PhpMethodReflection implements ExtendedMethodReflection
 {
 

@@ -3,7 +3,9 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
+#[ReferencedByTurboExtension(key: 'noopNodeCallback')]
 final class NoopNodeCallback
 {
 

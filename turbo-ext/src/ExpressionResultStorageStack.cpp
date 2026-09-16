@@ -151,4 +151,19 @@ zv::Val pt_expression_result_storage_stack_current(zval *stack)
 	return pt_type_call(Z_OBJ_P(stack), "getcurrent", sizeof("getcurrent") - 1, 0, NULL);
 }
 
+bool pt_expression_result_storage_stack_push(zval *stack, zval *storage)
+{
+	if (EXPECTED(Z_OBJCE_P(stack) == pt_ce_expression_result_storage_stack)) {
+		ExpressionResultStorageStack(stack).push(storage);
+		return true;
+	}
+	return !pt_type_call(Z_OBJ_P(stack), "push", sizeof("push") - 1, 1, storage).isUndef();
+}
+
+bool pt_expression_result_storage_stack_pop(zval *stack)
+{
+	if (EXPECTED(Z_OBJCE_P(stack) == pt_ce_expression_result_storage_stack)) return ExpressionResultStorageStack(stack).pop();
+	return !pt_type_call(Z_OBJ_P(stack), "pop", sizeof("pop") - 1, 0, NULL).isUndef();
+}
+
 /* }}} */

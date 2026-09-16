@@ -34,8 +34,7 @@ namespace {
 /* $nodeScopeResolver->requireScopeStateType($expr, $scope) */
 zv::Val requireScopeStateType(zval *nodeScopeResolver, zval *expr, zval *scope)
 {
-	zv::Args args{expr, scope};
-	return pt_type_call(Z_OBJ_P(nodeScopeResolver), PT_LC("requirescopestatetype"), 2, args);
+	return pt_node_scope_resolver_require_scope_state_type(nodeScopeResolver, expr, scope);
 }
 
 /* $defaultNarrowingHelper->createSubjectTypes($scope, $subject, null, $type, $context) */

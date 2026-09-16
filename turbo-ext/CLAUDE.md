@@ -207,6 +207,26 @@ VariableHandler.cpp are the reference handler ports.
   which exercises every direct entry's fallback path — see the ScalarHandler /
   VariableHandler section).
 
+- **The walk hub** (NodeScopeResolver.cpp, StatementsHandler.cpp): call
+  `pt_node_scope_resolver_process_expr_node()` / `_process_stmt_node()` /
+  `_process_stmt_nodes_internal()` / `_call_node_callback()` /
+  `_store_expression_result()` / `_process_expr_on_demand()` and the other
+  `pt_node_scope_resolver_*` / `pt_statements_handler_*` entries (support.h)
+  instead of the methods — NodeScopeResolver is not final, so they take the
+  native body only for exactly the native class.
+- **A twin's `finally` block** is `pt_finally([&]() { ... })` (Engine.h): it
+  runs with a pending exception set aside, so the calls it makes into PHP
+  execute, and chains an exception it throws itself like the engine does.
+- **Node callbacks and gatherer frames** go through
+  `pt_engine_call_node_callback()` (native closures and the native
+  ClassStatementsGatherer directly, any object callable without resolving it
+  by name). `pt_engine_node_get_attribute()` / `_set_attribute()` /
+  `_get_comments()` read a php-parser node's attributes array directly.
+- **Native recursion over the AST or the walk** wraps its step in
+  `pt_engine_with_stack([&]() { ... })`: when the C stack left above PHP's
+  limit runs low, the step continues on a fresh C stack segment — the PHP twin
+  recursed on the VM stack and must not become less robust natively.
+
 ## Build and verify commands
 
 ```bash

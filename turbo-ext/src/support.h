@@ -182,7 +182,6 @@ enum {
 	PT_CLASS_POSSIBLY_IMPURE_CALL_EXPR,
 	PT_CLASS_CONST_FETCH,
 	PT_CLASS_HALT_COMPILER,
-	PT_CLASS_NODE_SCOPE_RESOLVER,
 	PT_CLASS_INITIALIZER_EXPR_CONTEXT,
 	PT_CLASS_EXTENDED_PARAMETERS_ACCEPTOR,
 	PT_CLASS_MATCH,
@@ -294,6 +293,44 @@ enum {
 	PT_CLASS_COALESCE_EXPR,
 	PT_CLASS_TYPE_EXPR,
 	PT_CLASS_IDENTICAL_EXPR,
+	/* the walk hub (NodeScopeResolver.cpp, StatementsHandler.cpp,
+	 * NonNullabilityHelper.cpp) */
+	PT_CLASS_STATIC_STMT,
+	PT_CLASS_GLOBAL_STMT,
+	PT_CLASS_PROPERTY_STMT,
+	PT_CLASS_CONST_STMT,
+	PT_CLASS_CLASS_LIKE_STMT,
+	PT_CLASS_FUNCTION_STMT,
+	PT_CLASS_ECHO_STMT,
+	PT_CLASS_FOREACH_STMT,
+	PT_CLASS_IF_STMT,
+	PT_CLASS_RETURN_STMT,
+	PT_CLASS_SWITCH_STMT,
+	PT_CLASS_UNSET_STMT,
+	PT_CLASS_WHILE_STMT,
+	PT_CLASS_DO_STMT,
+	PT_CLASS_FOR_STMT,
+	PT_CLASS_LABEL_STMT,
+	PT_CLASS_NOP_STMT,
+	PT_CLASS_GOTO_STMT,
+	PT_CLASS_EVAL_EXPR,
+	PT_CLASS_INCLUDE_EXPR,
+	PT_CLASS_DOC_COMMENT,
+	PT_CLASS_NODE_FINDER,
+	PT_CLASS_NODE_ABSTRACT,
+	PT_CLASS_PHP_METHOD_REFLECTION,
+	PT_CLASS_NOOP_NODE_CALLBACK,
+	PT_CLASS_FUNCTION_CALL_EXPRESSION_NODE,
+	PT_CLASS_METHOD_CALL_EXPRESSION_NODE,
+	PT_CLASS_STATIC_METHOD_CALL_EXPRESSION_NODE,
+	PT_CLASS_EXECUTION_END_NODE,
+	PT_CLASS_UNREACHABLE_STATEMENT_NODE,
+	PT_CLASS_VAR_TAG_CHANGED_EXPRESSION_TYPE_NODE,
+	PT_CLASS_PROPERTY_HOOK_STATEMENT_NODE,
+	PT_CLASS_TEMPLATE_ARGUMENT_CONSTRAINTS,
+	PT_CLASS_TEMPLATE_ARGUMENT_STATS,
+	PT_CLASS_ENSURED_NON_NULLABILITY_RESULT,
+	PT_CLASS_ENSURED_NON_NULLABILITY_RESULT_EXPRESSION,
 	PT_CLASS_COUNT
 };
 
@@ -2183,6 +2220,126 @@ zv::Val pt_identical_narrowing_helper_specify_identical(zval *helper, zval *node
 zv::Val pt_identical_narrowing_helper_specify_equal(zval *helper, zval *nodeScopeResolver, zval *left, zval *right, zval *leftResult, zval *rightResult, zval *context, zval *evaluationScope, zval *leftArgResult, zval *rightArgResult);
 zv::Val pt_identical_narrowing_helper_specify_identical_against_type(zval *helper, zval *subject, zval *subjectResult, zval *constantExpr, zval *constantType, zval *context, zval *evaluationScope, zval *subjectArgResult, zval *identicalTypeCallback);
 zv::Val pt_identical_narrowing_helper_capture_first_arg_result(zval *helper, zval *side, zval *storage);
+/* {{{ the walk hub: NodeScopeResolver.cpp, StatementsHandler.cpp,
+ * StatementListWalkState.cpp, NonNullabilityHelper.cpp, and the direct
+ * entries they added to their collaborators */
+
+extern zend_class_entry *pt_ce_statement_list_walk_state;
+extern zend_class_entry *pt_ce_non_nullability_helper;
+extern zend_class_entry *pt_ce_statements_handler;
+extern zend_class_entry *pt_ce_node_scope_resolver;
+void pt_register_statement_list_walk_state();
+void pt_register_non_nullability_helper();
+void pt_register_statements_handler();
+void pt_register_node_scope_resolver();
+
+/* NodeScopeResolver.cpp — $nodeScopeResolver->processExprNode(...) /
+ * processStmtNode(...) / processStmtNodesInternal(...) /
+ * processExprOnDemand($expr, $scope, $storage) /
+ * processSyntheticOnDemand($expr, $scope) / findScopeStateType($expr,
+ * $scope) (a Type or null) / readScopeStateOrSyntheticType($expr, $scope) /
+ * requireScopeStateType($expr, $scope) /
+ * readTypeOfMaybeStored($expr, $scope) / storeExpressionResult(...) /
+ * callNodeCallback(...) / callNodeCallbackWithExpression(...) /
+ * suspendNodeGatherers() / restoreNodeGatherers($gatherers) /
+ * observingTemplateArgumentFrame($scope) (a frame or null) /
+ * replayRecordingRange(...): the native body for exactly the native class
+ * (not final: a PHP subclass may override), the method otherwise; every
+ * argument borrowed; UNDEF / false = pending exception */
+zv::Val pt_node_scope_resolver_process_expr_node(zval *nodeScopeResolver, zval *stmt, zval *expr, zval *scope, zval *storage, zval *nodeCallback, zval *context);
+zv::Val pt_node_scope_resolver_process_stmt_node(zval *nodeScopeResolver, zval *stmt, zval *scope, zval *storage, zval *nodeCallback, zval *context);
+zv::Val pt_node_scope_resolver_process_stmt_nodes_internal(zval *nodeScopeResolver, zval *parentNode, zval *stmts, zval *scope, zval *storage, zval *nodeCallback, zval *context);
+zv::Val pt_node_scope_resolver_process_expr_on_demand(zval *nodeScopeResolver, zval *expr, zval *scope, zval *storage);
+zv::Val pt_node_scope_resolver_process_synthetic_on_demand(zval *nodeScopeResolver, zval *expr, zval *scope);
+zv::Val pt_node_scope_resolver_find_scope_state_type(zval *nodeScopeResolver, zval *expr, zval *scope);
+zv::Val pt_node_scope_resolver_read_scope_state_or_synthetic_type(zval *nodeScopeResolver, zval *expr, zval *scope);
+zv::Val pt_node_scope_resolver_require_scope_state_type(zval *nodeScopeResolver, zval *expr, zval *scope);
+zv::Val pt_node_scope_resolver_read_type_of_maybe_stored(zval *nodeScopeResolver, zval *expr, zval *scope);
+[[nodiscard]] bool pt_node_scope_resolver_store_expression_result(zval *nodeScopeResolver, zval *storage, zval *expr, zval *expressionResult);
+[[nodiscard]] bool pt_node_scope_resolver_call_node_callback(zval *nodeScopeResolver, zval *nodeCallback, zval *node, zval *scope, zval *storage);
+[[nodiscard]] bool pt_node_scope_resolver_call_node_callback_with_expression(zval *nodeScopeResolver, zval *nodeCallback, zval *expr, zval *scope, zval *storage, zval *context);
+zv::Val pt_node_scope_resolver_suspend_node_gatherers(zval *nodeScopeResolver);
+[[nodiscard]] bool pt_node_scope_resolver_restore_node_gatherers(zval *nodeScopeResolver, zval *gatherers);
+zv::Val pt_node_scope_resolver_observing_template_argument_frame(zval *nodeScopeResolver, zval *scope);
+[[nodiscard]] bool pt_node_scope_resolver_replay_recording_range(zval *nodeScopeResolver, zval *recording, zend_long from, zend_long to, zval *nodeCallback, zval *storage, zval *scope);
+
+/* StatementsHandler.cpp — $statementsHandler->processNodesWithStorage(...) /
+ * doProcessStmtNodes(...) / processStmtVarAnnotation(...) ($defaultExpr
+ * NULL for null) / getOverridingThrowPoints($statement, $scope) (a list or
+ * null) / emitVarTagChangedNode(...) / getVariableMentionFlow($stmt): the
+ * native body for the native class, the method otherwise; UNDEF / false =
+ * pending exception */
+[[nodiscard]] bool pt_statements_handler_process_nodes_with_storage(zval *handler, zval *nodeScopeResolver, zval *nodes, zval *scope, zval *storage, zval *nodeCallback);
+zv::Val pt_statements_handler_do_process_stmt_nodes(zval *handler, zval *nodeScopeResolver, zval *parentNode, zval *stmts, zval *scope, zval *storage, zval *nodeCallback, zval *context);
+zv::Val pt_statements_handler_process_stmt_var_annotation(zval *handler, zval *nodeScopeResolver, zval *scope, zval *storage, zval *stmt, zval *defaultExpr, zval *nodeCallback);
+zv::Val pt_statements_handler_get_overriding_throw_points(zval *handler, zval *statement, zval *scope);
+zv::Val pt_statements_handler_emit_var_tag_changed_node(zval *handler, zval *nodeScopeResolver, zval *scope, zval *storage, zval *stmt, zval *defaultExpr, zval *nodeCallback);
+zv::Val pt_statements_handler_get_variable_mention_flow(zval *handler, zval *stmt);
+
+/* StatementListWalkState.cpp — new StatementListWalkState($scope) /
+ * $state->toResult(); UNDEF = pending exception */
+zv::Val pt_statement_list_walk_state_new(zval *scope);
+zv::Val pt_statement_list_walk_state_to_result(zval *state);
+
+/* NonNullabilityHelper.cpp — $helper->applyPendingEnsure($expr, $result)
+ * (the result itself while no ensure is pending) and
+ * $resettable->resetFileAnalysisState() of any PerFileAnalysisResettable
+ * (natively for the helper); UNDEF / false = pending exception */
+zv::Val pt_non_nullability_helper_apply_pending_ensure(zval *helper, zval *expr, zval *result);
+[[nodiscard]] bool pt_non_nullability_helper_reset_file_analysis_state(zval *resettable);
+
+/* MutatingScope.cpp — the walk's scope calls: the native body for exactly a
+ * MutatingScope, the method through the class entry for anything else
+ * (NodeCallbackScope, a third-party subclass); every argument borrowed;
+ * UNDEF / false = pending exception */
+zv::Val pt_mutating_scope_to_node_callback_scope(zend_object *scope);
+[[nodiscard]] bool pt_mutating_scope_push_expression_result_storage(zend_object *scope, zval *storage);
+[[nodiscard]] bool pt_mutating_scope_pop_expression_result_storage(zend_object *scope);
+zv::Val pt_mutating_scope_exit_first_level_statements(zend_object *scope);
+zv::Val pt_mutating_scope_with_template_argument_frame(zend_object *scope, zval *frame);
+zv::Val pt_mutating_scope_with_template_argument_constraints(zend_object *scope, zval *constraints);
+zv::Val pt_mutating_scope_get_tracked_expression_type(zend_object *scope, zend_object *expr);
+[[nodiscard]] bool pt_mutating_scope_equals(zend_object *scope, zend_object *otherScope, bool &out);
+zv::Val pt_mutating_scope_generalize_with(zend_object *scope, zend_object *otherScope);
+zv::Val pt_mutating_scope_get_differing_variable_roots(zend_object *scope, zend_object *other);
+zv::Val pt_mutating_scope_with_recorded_statement_delta(zend_object *scope, zend_object *recordedEntry, zend_object *recordedExit);
+zv::Val pt_mutating_scope_set_allowed_undefined_expression(zend_object *scope, zend_object *expr);
+zv::Val pt_mutating_scope_unset_allowed_undefined_expression(zend_object *scope, zend_object *expr);
+zv::Val pt_mutating_scope_get_anonymous_function_return_type(zend_object *scope);
+[[nodiscard]] bool pt_mutating_scope_is_in_class(zend_object *scope, bool &out);
+zv::Val pt_mutating_scope_get_class_reflection(zend_object *scope);
+zv::Val pt_mutating_scope_get_trait_reflection(zend_object *scope);
+zv::Val pt_mutating_scope_get_file(zend_object *scope);
+[[nodiscard]] bool pt_mutating_scope_can_any_variable_exist(zend_object *scope, bool &out);
+zv::Val pt_mutating_scope_assign_variable(zend_object *scope, zend_string *variableName, zval *type, zval *nativeType, zval *certainty);
+zv::Val pt_mutating_scope_assign_expression(zend_object *scope, zend_object *expr, zval *type, zval *nativeType);
+zv::Val pt_mutating_scope_specify_expression_type(zend_object *scope, zend_object *expr, zval *type, zval *nativeType, zval *certainty);
+zv::Val pt_mutating_scope_invalidate_expression(zend_object *scope, zval *expressionToInvalidate);
+
+/* ExpressionResult.cpp — $result->withScope($scope) / getArgsResult() /
+ * getTypeOnScope($scope, $useNativeTypes) /
+ * askScopeVariableStateMatches($scope, $useNativeTypes) / atAskPosition($scope)
+ * / onNonNullabilityDevicedScopes($beforeScope, $scope); UNDEF / false =
+ * pending exception */
+zv::Val pt_expression_result_with_scope(zval *result, zval *scope);
+zv::Val pt_expression_result_get_args_result(zval *result);
+[[nodiscard]] bool pt_expression_result_ask_scope_variable_state_matches(zval *result, zval *scope, bool useNativeTypes, bool &out);
+zv::Val pt_expression_result_at_ask_position(zval *result, zval *scope);
+zv::Val pt_expression_result_on_non_nullability_deviced_scopes(zval *result, zval *beforeScope, zval *scope);
+
+/* ExpressionResultStorage.cpp / ExpressionResultStorageStack.cpp —
+ * $storage->storeExpressionResult($expr, $result) (an exception of the
+ * method left pending) and $stack->push($storage) / pop(); false = pending
+ * exception */
+void pt_expression_result_storage_store(zval *storage, zval *expr, zval *expressionResult);
+[[nodiscard]] bool pt_expression_result_storage_stack_push(zval *stack, zval *storage);
+[[nodiscard]] bool pt_expression_result_storage_stack_pop(zval *stack);
+
+/* ExprPrinter.cpp — $exprPrinter->printExpr($expr); owned string, NULL =
+ * pending exception */
+
+/* VariableFlow.cpp — VariableFlow::all(VariableFlow::MENTION_ALL) */
+zv::Val pt_variable_flow_all_mention_all();
 
 /* }}} */
 

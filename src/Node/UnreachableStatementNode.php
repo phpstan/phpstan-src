@@ -4,10 +4,12 @@ namespace PHPStan\Node;
 
 use Override;
 use PhpParser\Node\Stmt;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'unreachableStatementNode')]
 final class UnreachableStatementNode extends Stmt implements VirtualNode
 {
 

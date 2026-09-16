@@ -25,6 +25,7 @@ use PHPStan\Node\VarTagChangedExpressionTypeNode;
 use PHPStan\Parser\GotoLabelVisitor;
 use PHPStan\PhpDoc\Tag\VarTag;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\MixedType;
@@ -48,6 +49,7 @@ use function sprintf;
  * by NodeScopeResolver::processStmtNode().
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/StatementsHandler.cpp')]
 final class StatementsHandler
 {
 

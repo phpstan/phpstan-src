@@ -7,6 +7,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\ArgsResult;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * Emitted by NodeScopeResolver once a (non-first-class) function call has been
@@ -17,6 +18,7 @@ use PHPStan\Analyser\ExpressionResult;
  *
  * @internal
  */
+#[ReferencedByTurboExtension(key: 'functionCallExpressionNode')]
 final class FunctionCallExpressionNode extends NodeAbstract implements VirtualNode
 {
 

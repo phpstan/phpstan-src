@@ -28,6 +28,7 @@
 namespace slots = ptdecl::ClassStatementsGatherer::slot;
 namespace sigs = ptdecl::ClassStatementsGatherer::sig;
 #include "TypeTraits.h"
+#include "Engine.h"
 
 static zend_class_entry *pt_ce_class_statements_gatherer = nullptr;
 
@@ -108,9 +109,7 @@ public:
 	 * exception */
 	[[nodiscard]] bool invoke(zval *node, zval *scope)
 	{
-		zv::Args args{node, scope};
-		zv::Val result = pt_type_call_callable(OBJ_PROP_NUM(self, slots::nodeCallback), 2, args);
-		if (UNEXPECTED(result.isUndef() || EG(exception))) return false;
+		if (UNEXPECTED(!pt_engine_call_node_callback(OBJ_PROP_NUM(self, slots::nodeCallback), node, scope))) return false;
 		return gatherNodes(Z_OBJ_P(node), scope);
 	}
 
@@ -648,6 +647,21 @@ void pt_register_class_statements_gatherer()
 	});
 
 	cls.shadow(&pt_ce_class_statements_gatherer);
+}
+
+/* }}} */
+
+/* {{{ direct entry for the native walk (Engine.h) */
+
+bool pt_class_statements_gatherer_invoke(zend_object *gatherer, zval *node, zval *scope, bool &handled)
+{
+	handled = gatherer->ce == pt_ce_class_statements_gatherer;
+	if (!handled) return false;
+	/* the engine keeps a called object alive for the duration of the call */
+	GC_ADDREF(gatherer);
+	bool ok = ClassStatementsGatherer(gatherer).invoke(node, scope);
+	OBJ_RELEASE(gatherer);
+	return ok;
 }
 
 /* }}} */

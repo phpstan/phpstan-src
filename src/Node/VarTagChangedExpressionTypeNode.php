@@ -6,7 +6,9 @@ use Override;
 use PhpParser\Node\Expr;
 use PhpParser\NodeAbstract;
 use PHPStan\PhpDoc\Tag\VarTag;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
+#[ReferencedByTurboExtension(key: 'varTagChangedExpressionTypeNode')]
 final class VarTagChangedExpressionTypeNode extends NodeAbstract implements VirtualNode
 {
 

@@ -13,13 +13,13 @@
  * literal's `static fn (): Type => $constantString` and the identical-type
  * callback handed to IdenticalNarrowingHelper::specifyIdentical().
  *
- * MutatingScope, ExpressionResult, ExpressionContext, VariableFlow,
- * SpecifiedTypes, TypeSpecifierContext, TypeCombinator, ImpurePoint and
- * IssetabilityDescriptor are called through their direct entries (the
- * ExpressionResult slot getters are the inline readers of AnalyserValues.h);
- * the collaborators that stay PHP for now (NodeScopeResolver, the narrowing
- * helpers, InitializerExprTypeResolver) through the cached method sites in the
- * block below, one helper each.
+ * NodeScopeResolver, MutatingScope, ExpressionResult, ExpressionContext,
+ * VariableFlow, SpecifiedTypes, TypeSpecifierContext, TypeCombinator,
+ * ImpurePoint and IssetabilityDescriptor are called through their direct
+ * entries (the ExpressionResult slot getters are the inline readers of
+ * AnalyserValues.h); the collaborators that stay PHP for now (the narrowing
+ * helpers, InitializerExprTypeResolver) through the cached method sites in
+ * the block below, one helper each.
  */
 
 #include "support.h"
@@ -41,7 +41,6 @@ namespace {
 /* {{{ the PHP collaborators (one site each; switch to their direct entries
  * once they are ported) */
 
-pt_method_site pt_vh_process_expr_node_site;
 pt_method_site pt_vh_resolve_identical_type_site;
 pt_method_site pt_vh_get_constant_strings_site;
 pt_property_site pt_vh_name_site;
@@ -50,8 +49,7 @@ pt_property_site pt_vh_name_site;
  * $nodeCallback, $context) */
 zv::Val processExprNode(zval *nodeScopeResolver, zval *stmt, zval *expr, zval *scope, zval *storage, zval *nodeCallback, zval *context)
 {
-	zv::Args argv{stmt, expr, scope, storage, nodeCallback, context};
-	return pt_call_method_cached(pt_vh_process_expr_node_site, Z_OBJ_P(nodeScopeResolver), PT_LC("processexprnode"), 6, argv);
+	return pt_node_scope_resolver_process_expr_node(nodeScopeResolver, stmt, expr, scope, storage, nodeCallback, context);
 }
 
 /* $identicalNarrowingHelper->captureFirstArgResult($side, $storage) */

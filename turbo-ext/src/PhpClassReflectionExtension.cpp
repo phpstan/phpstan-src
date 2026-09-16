@@ -2791,8 +2791,7 @@ public:
 			if (assignExprRef.raw() == NULL) continue;
 			zv::Val storage = pt_expression_result_storage_new();
 			if (UNEXPECTED(storage.isUndef())) return zv::Val();
-			zv::Args processArgs{assignExprRef.deref().raw(), methodScope.raw(), storage.raw()};
-			zv::Val result = call(slot(PT_PCRE_PROP_NODE_SCOPE_RESOLVER), PT_LC("processexprondemand"), 3, processArgs);
+			zv::Val result = pt_node_scope_resolver_process_expr_on_demand(slot(PT_PCRE_PROP_NODE_SCOPE_RESOLVER), assignExprRef.deref().raw(), methodScope.raw(), storage.raw());
 			if (UNEXPECTED(result.isUndef())) return zv::Val();
 			zv::Val propertyType = call(result.raw(), PT_LC("gettype"));
 			if (UNEXPECTED(propertyType.isUndef())) return zv::Val();

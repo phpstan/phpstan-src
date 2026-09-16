@@ -6,6 +6,7 @@ use FilesystemIterator;
 use JsonException;
 use Nette\Utils\RegexpException;
 use Nette\Utils\Strings;
+use PhpParser\Comment\Doc;
 use PhpParser\Node;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
@@ -25,7 +26,9 @@ use PhpParser\Node\Expr\CallLike;
 use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Expr\ConstFetch;
+use PhpParser\Node\Expr\Eval_;
 use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Expr\Include_;
 use PhpParser\Node\Expr\Instanceof_;
 use PhpParser\Node\Expr\Isset_;
 use PhpParser\Node\Expr\List_;
@@ -61,17 +64,37 @@ use PhpParser\Node\Stmt\Break_;
 use PhpParser\Node\Stmt\Catch_;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassConst;
+use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\Node\Stmt\Const_;
 use PhpParser\Node\Stmt\Continue_;
 use PhpParser\Node\Stmt\Declare_;
+use PhpParser\Node\Stmt\Do_;
+use PhpParser\Node\Stmt\Echo_;
 use PhpParser\Node\Stmt\Expression;
+use PhpParser\Node\Stmt\For_;
+use PhpParser\Node\Stmt\Foreach_;
+use PhpParser\Node\Stmt\Function_;
+use PhpParser\Node\Stmt\Global_;
+use PhpParser\Node\Stmt\Goto_;
 use PhpParser\Node\Stmt\HaltCompiler;
+use PhpParser\Node\Stmt\If_;
 use PhpParser\Node\Stmt\InlineHTML;
+use PhpParser\Node\Stmt\Label;
 use PhpParser\Node\Stmt\Namespace_;
+use PhpParser\Node\Stmt\Nop;
+use PhpParser\Node\Stmt\Property;
+use PhpParser\Node\Stmt\Return_;
+use PhpParser\Node\Stmt\Static_;
+use PhpParser\Node\Stmt\Switch_;
 use PhpParser\Node\Stmt\Trait_;
 use PhpParser\Node\Stmt\TryCatch;
+use PhpParser\Node\Stmt\Unset_;
+use PhpParser\Node\Stmt\While_;
 use PhpParser\Node\VariadicPlaceholder;
 use PhpParser\Node\VarLikeIdentifier;
+use PhpParser\NodeAbstract;
+use PhpParser\NodeFinder;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum;
@@ -253,6 +276,29 @@ final class TurboAttributeCollector
 		'parserIssetExpr' => Isset_::class,
 		'coalesceExpr' => \PhpParser\Node\Expr\BinaryOp\Coalesce::class,
 		'identicalExpr' => Identical::class,
+		'staticStmt' => Static_::class,
+		'globalStmt' => Global_::class,
+		'propertyStmt' => Property::class,
+		'constStmt' => Const_::class,
+		'classLikeStmt' => ClassLike::class,
+		'functionStmt' => Function_::class,
+		'echoStmt' => Echo_::class,
+		'foreachStmt' => Foreach_::class,
+		'ifStmt' => If_::class,
+		'returnStmt' => Return_::class,
+		'switchStmt' => Switch_::class,
+		'unsetStmt' => Unset_::class,
+		'whileStmt' => While_::class,
+		'doStmt' => Do_::class,
+		'forStmt' => For_::class,
+		'labelStmt' => Label::class,
+		'nopStmt' => Nop::class,
+		'gotoStmt' => Goto_::class,
+		'evalExpr' => Eval_::class,
+		'includeExpr' => Include_::class,
+		'docComment' => Doc::class,
+		'nodeFinder' => NodeFinder::class,
+		'nodeAbstract' => NodeAbstract::class,
 	];
 
 	private string $realRoot;

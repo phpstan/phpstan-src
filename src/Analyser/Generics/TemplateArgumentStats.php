@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser\Generics;
 
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use function array_keys;
 use function array_sum;
 use function file_put_contents;
@@ -24,6 +25,7 @@ use const STDERR;
  * STDERR). Forked workers exit without running shutdown functions, so collect
  * with --debug.
  */
+#[ReferencedByTurboExtension(key: 'templateArgumentStats')]
 final class TemplateArgumentStats
 {
 

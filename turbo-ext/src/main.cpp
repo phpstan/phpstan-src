@@ -376,6 +376,12 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	 * context classes their signatures name */
 	pt_register_default_narrowing_helper();
 	pt_register_identical_narrowing_helper();
+	/* the walk hub, after the scope, result, storage, context and handler
+	 * classes its signatures name */
+	pt_register_statement_list_walk_state();
+	pt_register_non_nullability_helper();
+	pt_register_statements_handler();
+	pt_register_node_scope_resolver();
 
 	return SUCCESS;
 }

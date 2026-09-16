@@ -2024,8 +2024,9 @@ public:
 		if (UNEXPECTED(resolver.isUndef())) return zv::Val();
 		zend_object *resolverObject = requireObject(resolver, "processExprOnDemand");
 		if (UNEXPECTED(resolverObject == NULL)) return zv::Val();
-		zv::Args args{node, scope, storage.raw()};
-		return pt_type_call(resolverObject, PT_LC("processexprondemand"), 3, args);
+		zval nodeZv;
+		ZVAL_OBJ(&nodeZv, node);
+		return pt_node_scope_resolver_process_expr_on_demand(resolver.raw(), &nodeZv, scope, storage.raw());
 	}
 
 	/* $scope->nativeTypesPromoted of any scope object (the walk scope a
@@ -2251,8 +2252,11 @@ public:
 	/* NodeScopeResolver::$<name>; NULL = pending exception */
 	[[nodiscard]] static zval *guardStatic(const char *name, size_t len)
 	{
-		zend_class_entry *ce = pt_class(PT_CLASS_NODE_SCOPE_RESOLVER);
-		if (UNEXPECTED(ce == NULL)) return NULL;
+		zend_class_entry *ce = pt_ce_node_scope_resolver;
+		if (UNEXPECTED(ce == NULL)) {
+			zend_throw_error(NULL, "phpstan_turbo: PHPStan\\Analyser\\NodeScopeResolver is not activated");
+			return NULL;
+		}
 		zval *value = zend_read_static_property(ce, name, len, 0);
 		if (UNEXPECTED(value == NULL)) return NULL;
 		ZVAL_DEREF(value);
@@ -2684,8 +2688,9 @@ public:
 		if (UNEXPECTED(resolverObject == NULL)) return zv::Val();
 		zv::Val onDemand = onDemandStorage(storage);
 		if (UNEXPECTED(onDemand.isUndef())) return zv::Val();
-		zv::Args args{node, scope.raw(), onDemand.raw()};
-		zv::Val onDemandResult = pt_type_call(resolverObject, PT_LC("processexprondemand"), 3, args);
+		zval onDemandNode;
+		ZVAL_OBJ(&onDemandNode, node);
+		zv::Val onDemandResult = pt_node_scope_resolver_process_expr_on_demand(resolver.raw(), &onDemandNode, scope.raw(), onDemand.raw());
 		if (UNEXPECTED(onDemandResult.isUndef())) return zv::Val();
 		zend_object *onDemandObject = requireObject(onDemandResult, "getTypeOnScope");
 		if (UNEXPECTED(onDemandObject == NULL)) return zv::Val();
@@ -2831,8 +2836,9 @@ public:
 		if (UNEXPECTED(resolverObject == NULL)) return zv::Val();
 		zv::Val onDemand = onDemandStorage(storage);
 		if (UNEXPECTED(onDemand.isUndef())) return zv::Val();
-		zv::Args args{node, scope.raw(), onDemand.raw()};
-		return pt_type_call(resolverObject, PT_LC("processexprondemand"), 3, args);
+		zval nodeZv;
+		ZVAL_OBJ(&nodeZv, node);
+		return pt_node_scope_resolver_process_expr_on_demand(resolver.raw(), &nodeZv, scope.raw(), onDemand.raw());
 	}
 
 	/* false = pending exception */
@@ -2843,7 +2849,7 @@ public:
 			(void) uninitializedProperty("expressionResultStorageStack");
 			return false;
 		}
-		return !pt_type_call(stack.asObject(), PT_LC("push"), 1, storage).isUndef();
+		return pt_expression_result_storage_stack_push(stack.raw(), storage);
 	}
 
 	bool popExpressionResultStorage()
@@ -2853,7 +2859,7 @@ public:
 			(void) uninitializedProperty("expressionResultStorageStack");
 			return false;
 		}
-		return !pt_type_call(stack.asObject(), PT_LC("pop"), 0, NULL).isUndef();
+		return pt_expression_result_storage_stack_pop(stack.raw());
 	}
 
 	/* protected: the settled stored result of the current storage -
@@ -3234,8 +3240,9 @@ public:
 			if (UNEXPECTED(scope.isUndef())) return zv::Val();
 			zv::Val onDemand = onDemandStorage(storage);
 			if (UNEXPECTED(onDemand.isUndef())) return zv::Val();
-			zv::Args args{node, scope.raw(), onDemand.raw()};
-			result = pt_type_call(resolverObject, PT_LC("processexprondemand"), 3, args);
+			zval nodeZv;
+			ZVAL_OBJ(&nodeZv, node);
+			result = pt_node_scope_resolver_process_expr_on_demand(resolver.raw(), &nodeZv, scope.raw(), onDemand.raw());
 			if (UNEXPECTED(result.isUndef())) return zv::Val();
 		}
 		zend_object *resultObject = requireObject(result, "getKeepVoidType");
@@ -11660,6 +11667,182 @@ zv::Val pt_mutating_scope_specify_types_of_new_world_handler_node(zend_object *s
 	zv::Args args{node, context};
 	return pt_type_call(scope, PT_LC("specifytypesofnewworldhandlernode"), 2, args);
 }
+/* }}} */
+
+/* {{{ direct entries for the NodeScopeResolver / StatementsHandler /
+ * NonNullabilityHelper ports: exactly a MutatingScope takes the native body,
+ * anything else (NodeCallbackScope, a third-party subclass) the method
+ * through its class entry */
+
+namespace {
+
+inline bool msExact(zend_object *scope)
+{
+	return EXPECTED(scope->ce == pt_ce_mutating_scope);
+}
+
+[[nodiscard]] bool msCallBoolResult(zend_object *scope, const char *lcname, size_t len, uint32_t argc, zval *argv, bool &out)
+{
+	zv::Val result = pt_type_call(scope, lcname, len, argc, argv);
+	if (UNEXPECTED(result.isUndef())) return false;
+	out = Z_TYPE_P(result.raw()) == IS_TRUE;
+	return true;
+}
+
+} // namespace
+
+zv::Val pt_mutating_scope_to_node_callback_scope(zend_object *scope)
+{
+	if (msExact(scope)) return MutatingScope(scope).toNodeCallbackScope();
+	return pt_type_call(scope, PT_LC("tonodecallbackscope"), 0, NULL);
+}
+
+bool pt_mutating_scope_push_expression_result_storage(zend_object *scope, zval *storage)
+{
+	if (msExact(scope)) return MutatingScope(scope).pushExpressionResultStorage(storage);
+	return !pt_type_call(scope, PT_LC("pushexpressionresultstorage"), 1, storage).isUndef();
+}
+
+bool pt_mutating_scope_pop_expression_result_storage(zend_object *scope)
+{
+	if (msExact(scope)) return MutatingScope(scope).popExpressionResultStorage();
+	return !pt_type_call(scope, PT_LC("popexpressionresultstorage"), 0, NULL).isUndef();
+}
+
+zv::Val pt_mutating_scope_exit_first_level_statements(zend_object *scope)
+{
+	if (msExact(scope)) return MutatingScope(scope).exitFirstLevelStatements();
+	return pt_type_call(scope, PT_LC("exitfirstlevelstatements"), 0, NULL);
+}
+
+zv::Val pt_mutating_scope_with_template_argument_frame(zend_object *scope, zval *frame)
+{
+	if (msExact(scope)) return MutatingScope(scope).withTemplateArgumentFrame(frame);
+	return pt_type_call(scope, PT_LC("withtemplateargumentframe"), 1, frame);
+}
+
+zv::Val pt_mutating_scope_with_template_argument_constraints(zend_object *scope, zval *constraints)
+{
+	if (msExact(scope)) return MutatingScope(scope).withTemplateArgumentConstraints(constraints);
+	return pt_type_call(scope, PT_LC("withtemplateargumentconstraints"), 1, constraints);
+}
+
+zv::Val pt_mutating_scope_get_tracked_expression_type(zend_object *scope, zend_object *expr)
+{
+	if (msExact(scope)) return MutatingScope(scope).getTrackedExpressionType(expr);
+	zv::Args argv{expr};
+	return pt_type_call(scope, PT_LC("gettrackedexpressiontype"), 1, argv);
+}
+
+bool pt_mutating_scope_equals(zend_object *scope, zend_object *otherScope, bool &out)
+{
+	if (msExact(scope)) return MutatingScope(scope).equals(otherScope, out);
+	zv::Args argv{otherScope};
+	return msCallBoolResult(scope, PT_LC("equals"), 1, argv, out);
+}
+
+zv::Val pt_mutating_scope_generalize_with(zend_object *scope, zend_object *otherScope)
+{
+	if (msExact(scope)) return MutatingScope(scope).generalizeWith(otherScope, NULL);
+	zv::Args argv{otherScope};
+	return pt_type_call(scope, PT_LC("generalizewith"), 1, argv);
+}
+
+zv::Val pt_mutating_scope_get_differing_variable_roots(zend_object *scope, zend_object *other)
+{
+	if (msExact(scope)) return MutatingScope(scope).getDifferingVariableRoots(other);
+	zv::Args argv{other};
+	return pt_type_call(scope, PT_LC("getdifferingvariableroots"), 1, argv);
+}
+
+zv::Val pt_mutating_scope_with_recorded_statement_delta(zend_object *scope, zend_object *recordedEntry, zend_object *recordedExit)
+{
+	if (msExact(scope)) return MutatingScope(scope).withRecordedStatementDelta(recordedEntry, recordedExit);
+	zv::Args argv{recordedEntry, recordedExit};
+	return pt_type_call(scope, PT_LC("withrecordedstatementdelta"), 2, argv);
+}
+
+zv::Val pt_mutating_scope_set_allowed_undefined_expression(zend_object *scope, zend_object *expr)
+{
+	if (msExact(scope)) return MutatingScope(scope).setAllowedUndefinedExpression(expr);
+	zv::Args argv{expr};
+	return pt_type_call(scope, PT_LC("setallowedundefinedexpression"), 1, argv);
+}
+
+zv::Val pt_mutating_scope_unset_allowed_undefined_expression(zend_object *scope, zend_object *expr)
+{
+	if (msExact(scope)) return MutatingScope(scope).unsetAllowedUndefinedExpression(expr);
+	zv::Args argv{expr};
+	return pt_type_call(scope, PT_LC("unsetallowedundefinedexpression"), 1, argv);
+}
+
+zv::Val pt_mutating_scope_get_anonymous_function_return_type(zend_object *scope)
+{
+	if (msExact(scope)) return MutatingScope(scope).getAnonymousFunctionReturnType();
+	return pt_type_call(scope, PT_LC("getanonymousfunctionreturntype"), 0, NULL);
+}
+
+bool pt_mutating_scope_is_in_class(zend_object *scope, bool &out)
+{
+	if (msExact(scope)) return MutatingScope(scope).isInClass(out);
+	return msCallBoolResult(scope, PT_LC("isinclass"), 0, NULL, out);
+}
+
+zv::Val pt_mutating_scope_get_class_reflection(zend_object *scope)
+{
+	if (msExact(scope)) return MutatingScope(scope).getClassReflection();
+	return pt_type_call(scope, PT_LC("getclassreflection"), 0, NULL);
+}
+
+zv::Val pt_mutating_scope_get_trait_reflection(zend_object *scope)
+{
+	if (msExact(scope)) return MutatingScope(scope).getTraitReflection();
+	return pt_type_call(scope, PT_LC("gettraitreflection"), 0, NULL);
+}
+
+zv::Val pt_mutating_scope_get_file(zend_object *scope)
+{
+	if (msExact(scope)) return MutatingScope(scope).getFile();
+	return pt_type_call(scope, PT_LC("getfile"), 0, NULL);
+}
+
+bool pt_mutating_scope_can_any_variable_exist(zend_object *scope, bool &out)
+{
+	if (msExact(scope)) return MutatingScope(scope).canAnyVariableExist(out);
+	return msCallBoolResult(scope, PT_LC("cananyvariableexist"), 0, NULL, out);
+}
+
+zv::Val pt_mutating_scope_assign_variable(zend_object *scope, zend_string *variableName, zval *type, zval *nativeType, zval *certainty)
+{
+	if (msExact(scope)) {
+		zval intertwinedPropagatedFrom;
+		ZVAL_EMPTY_ARRAY(&intertwinedPropagatedFrom);
+		return MutatingScope(scope).assignVariable(variableName, type, nativeType, certainty, &intertwinedPropagatedFrom);
+	}
+	zv::Args argv{variableName, type, nativeType, certainty};
+	return pt_type_call(scope, PT_LC("assignvariable"), 4, argv);
+}
+
+zv::Val pt_mutating_scope_assign_expression(zend_object *scope, zend_object *expr, zval *type, zval *nativeType)
+{
+	if (msExact(scope)) return MutatingScope(scope).assignExpression(expr, type, nativeType);
+	zv::Args argv{expr, type, nativeType};
+	return pt_type_call(scope, PT_LC("assignexpression"), 3, argv);
+}
+
+zv::Val pt_mutating_scope_specify_expression_type(zend_object *scope, zend_object *expr, zval *type, zval *nativeType, zval *certainty)
+{
+	if (msExact(scope)) return MutatingScope(scope).specifyExpressionType(expr, type, nativeType, certainty);
+	zv::Args argv{expr, type, nativeType, certainty};
+	return pt_type_call(scope, PT_LC("specifyexpressiontype"), 4, argv);
+}
+
+zv::Val pt_mutating_scope_invalidate_expression(zend_object *scope, zval *expressionToInvalidate)
+{
+	if (msExact(scope)) return MutatingScope(scope).invalidateExpression(expressionToInvalidate, false, NULL, false);
+	return pt_type_call(scope, PT_LC("invalidateexpression"), 1, expressionToInvalidate);
+}
+
 /* }}} */
 
 void pt_register_mutating_scope()

@@ -12,6 +12,8 @@
 
 #include <cstring>
 
+#include "zend_fibers.h"
+
 /* {{{ native closures */
 
 zend_class_entry *pt_ce_native_closure = nullptr;
@@ -420,6 +422,274 @@ void pt_engine_rinit()
 void pt_engine_rshutdown()
 {
 	pt_expression_result_rshutdown();
+}
+
+/* }}} */
+
+/* {{{ finally blocks, node callbacks and deep recursion */
+
+void pt_finally_rethrow(zend_object *pending)
+{
+	zend_object *thrown = EG(exception);
+	if (thrown == NULL) {
+		EG(exception) = pending;
+		return;
+	}
+	/* the engine's chaining of an exception thrown inside a finally block
+	 * (zend_dispatch_try_catch_finally_helper) */
+	if (zend_is_unwind_exit(thrown) || zend_is_graceful_exit(thrown)) {
+		OBJ_RELEASE(pending);
+		return;
+	}
+	zend_exception_set_previous(thrown, pending);
+}
+
+bool pt_engine_call_node_callback(zval *callback, zval *node, zval *scope)
+{
+	zval *target = callback;
+	ZVAL_DEREF(target);
+	zval argv[2];
+	ZVAL_COPY_VALUE(&argv[0], node);
+	ZVAL_COPY_VALUE(&argv[1], scope);
+	if (EXPECTED(Z_TYPE_P(target) == IS_OBJECT)) {
+		zend_object *object = Z_OBJ_P(target);
+		if (object->ce == pt_ce_native_closure) {
+			zval ret;
+			if (UNEXPECTED(!pt_native_closure_invoke(object, 2, argv, &ret))) return false;
+			zval_ptr_dtor(&ret);
+			return true;
+		}
+		if (object->ce == pt_ce_recording_node_callback) return pt_recording_node_callback_record(object, node, scope);
+		bool handled;
+		bool ok = pt_class_statements_gatherer_invoke(object, node, scope, handled);
+		if (handled) return ok;
+		if (EXPECTED(object->handlers->get_closure != NULL)) {
+			zend_class_entry *calledScope;
+			zend_function *fn;
+			zend_object *thisObject;
+			if (EXPECTED(object->handlers->get_closure(object, &calledScope, &fn, &thisObject, false) == SUCCESS)) {
+				zval ret;
+				zend_call_known_function(fn, thisObject, calledScope, &ret, 2, argv, NULL);
+				zval_ptr_dtor(&ret);
+				return EG(exception) == NULL;
+			}
+		}
+	}
+	return !pt_type_call_callable(callback, 2, argv).isUndef();
+}
+
+namespace {
+
+/* one call continued on a fresh stack: the body, and the VM state it left
+ * behind — zend_fiber_switch_context() restores the caller's state from
+ * before the switch, which the body may legitimately have changed */
+struct FreshStackCall
+{
+	void (*body)(void *);
+	void *data;
+	bool bailout;
+	zend_vm_stack vmStack;
+	zval *vmStackTop;
+	zval *vmStackEnd;
+	size_t vmStackPageSize;
+	int errorReporting;
+};
+
+/* the call the coroutine starting next runs (read once, at its start) */
+FreshStackCall *pt_fresh_stack_call = nullptr;
+
+/* identifies the contexts in fiber observers */
+char pt_fresh_stack_kind;
+
+ZEND_STACK_ALIGNED void freshStackCoroutine(zend_fiber_transfer *transfer)
+{
+	(void) transfer; /* already addresses the caller, which is where it returns */
+	FreshStackCall *call = pt_fresh_stack_call;
+	zend_fiber_context *context = EG(current_fiber_context);
+#ifdef ZEND_CHECK_STACK_LIMIT
+	EG(stack_base) = zend_fiber_stack_base(context->stack);
+	EG(stack_limit) = zend_fiber_stack_limit(context->stack);
+#endif
+	zend_try {
+		call->body(call->data);
+	} zend_catch {
+		call->bailout = true;
+	} zend_end_try();
+	call->vmStack = EG(vm_stack);
+	call->vmStackTop = EG(vm_stack_top);
+	call->vmStackEnd = EG(vm_stack_end);
+	call->vmStackPageSize = EG(vm_stack_page_size);
+	call->errorReporting = EG(error_reporting);
+}
+
+} // namespace
+
+void pt_engine_run_on_fresh_stack(void (*body)(void *), void *data)
+{
+	zend_fiber_context context;
+	memset(&context, 0, sizeof(context));
+	if (UNEXPECTED(zend_fiber_init_context(&context, &pt_fresh_stack_kind, freshStackCoroutine, PT_ENGINE_FRESH_STACK_SIZE_LIMIT) == FAILURE)) {
+		/* no stack to be had: continue here, where the engine's own stack
+		 * limit decides */
+		if (EG(exception) != NULL) {
+			zend_clear_exception();
+		}
+		body(data);
+		return;
+	}
+
+	FreshStackCall call = { body, data, false, NULL, NULL, NULL, 0, 0 };
+	FreshStackCall *previous = pt_fresh_stack_call;
+	pt_fresh_stack_call = &call;
+	zend_fiber_transfer transfer;
+	transfer.context = &context;
+	transfer.flags = 0;
+	ZVAL_NULL(&transfer.value);
+	/* returns once the body finished; the dead context is destroyed then */
+	zend_fiber_switch_context(&transfer);
+	pt_fresh_stack_call = previous;
+
+	EG(vm_stack) = call.vmStack;
+	EG(vm_stack_top) = call.vmStackTop;
+	EG(vm_stack_end) = call.vmStackEnd;
+	EG(vm_stack_page_size) = call.vmStackPageSize;
+	EG(error_reporting) = call.errorReporting;
+	if (UNEXPECTED(call.bailout)) {
+		zend_bailout();
+	}
+}
+
+/* }}} */
+
+/* {{{ node reads the walk makes per statement */
+
+namespace {
+
+/* NodeAbstract's attributes slot and its three methods, per request */
+struct NodeAbstractInfo
+{
+	uint32_t generation;
+	zend_class_entry *ce;
+	uint32_t attributesOffset;
+	zend_function *getAttribute;
+	zend_function *setAttribute;
+	zend_function *getComments;
+};
+
+NodeAbstractInfo pt_node_abstract_info;
+
+/* per class: whether it inherits NodeAbstract's methods unchanged */
+struct NodeClassEntry
+{
+	zend_class_entry *ce;
+	uint32_t generation;
+	bool inherits;
+};
+
+#define PT_NODE_CLASS_CACHE_BITS 8
+#define PT_NODE_CLASS_CACHE_SIZE (1u << PT_NODE_CLASS_CACHE_BITS)
+NodeClassEntry pt_node_class_cache[PT_NODE_CLASS_CACHE_SIZE];
+
+/* NULL = pending exception */
+const NodeAbstractInfo *nodeAbstractInfo()
+{
+	if (EXPECTED(pt_node_abstract_info.generation == pt_engine_generation && pt_node_abstract_info.ce != NULL)) return &pt_node_abstract_info;
+	zend_class_entry *ce = pt_class(PT_CLASS_NODE_ABSTRACT);
+	if (UNEXPECTED(ce == NULL)) return NULL;
+	zend_property_info *attributes = (zend_property_info *) zend_hash_str_find_ptr(&ce->properties_info, PT_LC("attributes"));
+	zend_function *getAttribute = (zend_function *) zend_hash_str_find_ptr(&ce->function_table, PT_LC("getattribute"));
+	zend_function *setAttribute = (zend_function *) zend_hash_str_find_ptr(&ce->function_table, PT_LC("setattribute"));
+	zend_function *getComments = (zend_function *) zend_hash_str_find_ptr(&ce->function_table, PT_LC("getcomments"));
+	if (UNEXPECTED(attributes == NULL || (attributes->flags & ZEND_ACC_STATIC) != 0 || getAttribute == NULL || setAttribute == NULL || getComments == NULL)) {
+		zend_throw_error(NULL, "phpstan_turbo: %s does not declare the attributes it is expected to", ZSTR_VAL(ce->name));
+		return NULL;
+	}
+	pt_node_abstract_info = { pt_engine_generation, ce, attributes->offset, getAttribute, setAttribute, getComments };
+	return &pt_node_abstract_info;
+}
+
+bool inheritsNodeAbstract(zend_class_entry *ce, const NodeAbstractInfo *info)
+{
+	uintptr_t h = ((uintptr_t) ce >> 4) * (uintptr_t) 0x9E3779B97F4A7C15ull;
+	NodeClassEntry &entry = pt_node_class_cache[(size_t) (h >> (sizeof(uintptr_t) * 8 - PT_NODE_CLASS_CACHE_BITS))];
+	if (EXPECTED(entry.ce == ce && entry.generation == pt_engine_generation)) return entry.inherits;
+	bool inherits = instanceof_function(ce, info->ce)
+		&& zend_hash_str_find_ptr(&ce->function_table, PT_LC("getattribute")) == info->getAttribute
+		&& zend_hash_str_find_ptr(&ce->function_table, PT_LC("setattribute")) == info->setAttribute
+		&& zend_hash_str_find_ptr(&ce->function_table, PT_LC("getcomments")) == info->getComments;
+	entry = { ce, pt_engine_generation, inherits };
+	return inherits;
+}
+
+/* the node's attributes array when it can be read directly, NULL otherwise
+ * (*failed = pending exception) */
+zval *directAttributes(zend_object *node, bool &failed)
+{
+	failed = false;
+	const NodeAbstractInfo *info = nodeAbstractInfo();
+	if (UNEXPECTED(info == NULL)) {
+		failed = true;
+		return NULL;
+	}
+	if (!inheritsNodeAbstract(node->ce, info)) return NULL;
+	zval *attributes = OBJ_PROP(node, info->attributesOffset);
+	ZVAL_DEREF(attributes);
+	return EXPECTED(Z_TYPE_P(attributes) == IS_ARRAY) ? attributes : NULL;
+}
+
+} // namespace
+
+zv::Val pt_engine_node_get_attribute(zend_object *node, const char *key, size_t len)
+{
+	bool failed;
+	zval *attributes = directAttributes(node, failed);
+	if (UNEXPECTED(failed)) return zv::Val();
+	if (EXPECTED(attributes != NULL)) {
+		zval *found = zend_hash_str_find(Z_ARRVAL_P(attributes), key, len);
+		if (found == NULL) return zv::Val::null();
+		return zv::Val::copyOf(zv::Ref(found).deref());
+	}
+	zval keyZv;
+	ZVAL_STRINGL(&keyZv, key, len);
+	zv::Val value = pt_type_call(node, PT_LC("getattribute"), 1, &keyZv);
+	zval_ptr_dtor(&keyZv);
+	return value;
+}
+
+bool pt_engine_node_set_attribute(zend_object *node, const char *key, size_t len, zval *value)
+{
+	bool failed;
+	zval *attributes = directAttributes(node, failed);
+	if (UNEXPECTED(failed)) return false;
+	if (EXPECTED(attributes != NULL)) {
+		SEPARATE_ARRAY(attributes);
+		Z_TRY_ADDREF_P(value);
+		zend_hash_str_update(Z_ARRVAL_P(attributes), key, len, value);
+		return true;
+	}
+	zval keyZv;
+	ZVAL_STRINGL(&keyZv, key, len);
+	zv::Args argv{&keyZv, value};
+	zv::Val result = pt_type_call(node, PT_LC("setattribute"), 2, argv);
+	zval_ptr_dtor(&keyZv);
+	return !result.isUndef();
+}
+
+zv::Val pt_engine_node_get_comments(zend_object *node)
+{
+	bool failed;
+	zval *attributes = directAttributes(node, failed);
+	if (UNEXPECTED(failed)) return zv::Val();
+	if (EXPECTED(attributes != NULL)) {
+		zval *found = zend_hash_str_find(Z_ARRVAL_P(attributes), PT_LC("comments"));
+		if (found != NULL) {
+			ZVAL_DEREF(found);
+			if (Z_TYPE_P(found) != IS_NULL) return zv::Val::copyOf(zv::Ref(found));
+		}
+		zv::Arr empty = zv::Arr::empty();
+		return zv::Val(std::move(empty));
+	}
+	return pt_type_call(node, PT_LC("getcomments"), 0, NULL);
 }
 
 /* }}} */

@@ -157,6 +157,27 @@ final class RecordingScopeFactory implements InternalScopeFactory
  * union-filtering member lookups there too (see the file comment). The
  * class itself carries the twin's interfaces.
  */
+/**
+ * Sets the NodeScopeResolver guard diagnostics the scope reads: the PHP twin
+ * reads PHPStan\Analyser\NodeScopeResolver's statics, the native scope those
+ * of the native NodeScopeResolver it is declared with (PHPStanTurbo\ under
+ * the prefix).
+ *
+ * @param array<int, true> $realExprIds
+ * @param array<int, true> $processedExprIds
+ */
+function setGuards(bool $newWorld, array $realExprIds, array $processedExprIds): void
+{
+	foreach ([\PHPStan\Analyser\NodeScopeResolver::class, 'PHPStanTurbo\\NodeScopeResolver'] as $class) {
+		if (!class_exists($class, false)) {
+			continue;
+		}
+		$class::$guardNewWorld = $newWorld;
+		$class::$guardRealExprIds = $realExprIds;
+		$class::$guardProcessedExprIds = $processedExprIds;
+	}
+}
+
 function declareNativeScope(): void
 {
 	eval(
@@ -1367,37 +1388,29 @@ foreach ($sfScopes as $sfId => [$sfWalkScope, $sfExprs, $sfStorage]) {
 			// the guard diagnostics: a real, unprocessed node
 			foreach ([$exprs[0], end($exprs)] as $i => $guardExpr) {
 				$observe("getType under guard#$i", static function () use ($scope, $guardExpr) {
-					\PHPStan\Analyser\NodeScopeResolver::$guardNewWorld = true;
-					\PHPStan\Analyser\NodeScopeResolver::$guardRealExprIds[spl_object_id($guardExpr)] = true;
+					\ScopeFamily\setGuards(true, [spl_object_id($guardExpr) => true], []);
 					try {
 						return $scope->getType($guardExpr);
 					} finally {
-						\PHPStan\Analyser\NodeScopeResolver::$guardNewWorld = false;
-						\PHPStan\Analyser\NodeScopeResolver::$guardRealExprIds = [];
+						\ScopeFamily\setGuards(false, [], []);
 					}
 				});
 				$observe("obtainResultForNode under guard#$i", static function () use ($scope, $guardExpr) {
-					\PHPStan\Analyser\NodeScopeResolver::$guardNewWorld = true;
-					\PHPStan\Analyser\NodeScopeResolver::$guardRealExprIds[spl_object_id($guardExpr)] = true;
+					\ScopeFamily\setGuards(true, [spl_object_id($guardExpr) => true], []);
 					try {
 						return $scope->obtainResultForNode($guardExpr);
 					} finally {
-						\PHPStan\Analyser\NodeScopeResolver::$guardNewWorld = false;
-						\PHPStan\Analyser\NodeScopeResolver::$guardRealExprIds = [];
+						\ScopeFamily\setGuards(false, [], []);
 					}
 				});
 			}
 			$observe('getType under guard, processed', static function () use ($scope, $exprs) {
 				$guardExpr = $exprs[0];
-				\PHPStan\Analyser\NodeScopeResolver::$guardNewWorld = true;
-				\PHPStan\Analyser\NodeScopeResolver::$guardRealExprIds[spl_object_id($guardExpr)] = true;
-				\PHPStan\Analyser\NodeScopeResolver::$guardProcessedExprIds[spl_object_id($guardExpr)] = true;
+				\ScopeFamily\setGuards(true, [spl_object_id($guardExpr) => true], [spl_object_id($guardExpr) => true]);
 				try {
 					return $scope->getType($guardExpr);
 				} finally {
-					\PHPStan\Analyser\NodeScopeResolver::$guardNewWorld = false;
-					\PHPStan\Analyser\NodeScopeResolver::$guardRealExprIds = [];
-					\PHPStan\Analyser\NodeScopeResolver::$guardProcessedExprIds = [];
+					\ScopeFamily\setGuards(false, [], []);
 				}
 			});
 

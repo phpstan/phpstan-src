@@ -1121,6 +1121,47 @@ zv::Val pt_expression_result_get_issetability_resolution(zval *result, zval *sco
 	return pt_type_call(Z_OBJ_P(result), PT_LC("getissetabilityresolution"), 3, argv);
 }
 
+/* the NodeScopeResolver / NonNullabilityHelper ports' reads and derivations */
+zv::Val pt_expression_result_with_scope(zval *result, zval *scope)
+{
+	if (isNativeResult(result)) return ExpressionResult(Z_OBJ_P(result)).withScope(scope);
+	return pt_type_call(Z_OBJ_P(result), PT_LC("withscope"), 1, scope);
+}
+
+zv::Val pt_expression_result_get_args_result(zval *result)
+{
+	if (isNativeResult(result)) return ExpressionResult(Z_OBJ_P(result)).getArgsResult();
+	return pt_type_call(Z_OBJ_P(result), PT_LC("getargsresult"), 0, NULL);
+}
+
+bool pt_expression_result_ask_scope_variable_state_matches(zval *result, zval *scope, bool useNativeTypes, bool &out)
+{
+	if (isNativeResult(result)) {
+		zend_long matches = ExpressionResult(Z_OBJ_P(result)).askScopeVariableStateMatches(scope, useNativeTypes, false);
+		if (UNEXPECTED(matches < 0)) return false;
+		out = matches == 1;
+		return true;
+	}
+	zv::Args argv{scope, useNativeTypes};
+	zv::Val value = pt_type_call(Z_OBJ_P(result), PT_LC("askscopevariablestatematches"), 2, argv);
+	if (UNEXPECTED(value.isUndef())) return false;
+	out = Z_TYPE_P(value.raw()) == IS_TRUE;
+	return true;
+}
+
+zv::Val pt_expression_result_at_ask_position(zval *result, zval *scope)
+{
+	if (isNativeResult(result)) return ExpressionResult(Z_OBJ_P(result)).atAskPosition(scope);
+	return pt_type_call(Z_OBJ_P(result), PT_LC("ataskposition"), 1, scope);
+}
+
+zv::Val pt_expression_result_on_non_nullability_deviced_scopes(zval *result, zval *beforeScope, zval *scope)
+{
+	if (isNativeResult(result)) return ExpressionResult(Z_OBJ_P(result)).onNonNullabilityDevicedScopes(beforeScope, scope);
+	zv::Args argv{beforeScope, scope};
+	return pt_type_call(Z_OBJ_P(result), PT_LC("onnonnullabilitydevicedscopes"), 2, argv);
+}
+
 /* }}} */
 
 /* {{{ ExpressionResult creation for native callers (Engine.h) */

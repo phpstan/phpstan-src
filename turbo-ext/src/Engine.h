@@ -24,7 +24,13 @@
 #include "zv.h"
 #include "AnalyserValues.h"
 
+#include <type_traits>
 #include <utility>
+
+#include "zend_exceptions.h"
+#ifdef ZEND_CHECK_STACK_LIMIT
+#include "zend_call_stack.h"
+#endif
 
 /* {{{ native closures
  *
@@ -268,6 +274,96 @@ static zend_always_inline zval *pt_property_cached(pt_property_site &site, zend_
 /* request lifecycle of the handler table and the method sites */
 void pt_engine_rinit();
 void pt_engine_rshutdown();
+
+/* }}} */
+
+/* {{{ finally blocks, node callbacks and deep recursion (the
+ * NodeScopeResolver port) */
+
+/* A PHP `finally` block spelled natively: cleanup() runs with a pending
+ * exception set aside (so the calls it makes into PHP execute, as they do in
+ * a PHP finally block), which is rethrown after it — chained as the previous
+ * exception of one the block throws itself. Like the engine, an exit()
+ * unwinding the stack skips the block. */
+/* the rethrow half of pt_finally() (Engine.cpp) */
+void pt_finally_rethrow(zend_object *pending);
+
+template <typename F>
+inline void pt_finally(F &&cleanup)
+{
+	zend_object *pending = EG(exception);
+	if (EXPECTED(pending == NULL)) {
+		cleanup();
+		return;
+	}
+	if (UNEXPECTED(zend_is_unwind_exit(pending))) return;
+	EG(exception) = NULL;
+	cleanup();
+	pt_finally_rethrow(pending);
+}
+
+
+/* $callback($node, $scope) of a node callback or gatherer frame, its
+ * return value discarded: a native closure, the native
+ * ClassStatementsGatherer, the native RecordingNodeCallback and any object
+ * callable (\Closure, __invoke) are
+ * entered without resolving the callable by name; anything else goes
+ * through the engine. false = pending exception */
+[[nodiscard]] bool pt_engine_call_node_callback(zval *callback, zval *node, zval *scope);
+
+/* ClassStatementsGatherer.cpp — $gatherer($node, $scope) of the native
+ * gatherer; handled = false (nothing called) for any other object */
+[[nodiscard]] bool pt_class_statements_gatherer_invoke(zend_object *gatherer, zval *node, zval *scope, bool &handled);
+
+/* Native recursion (processExprNode -> a PHP handler -> processExprNode)
+ * consumes the C stack where the PHP twin grew only the VM stack. When the C
+ * stack left above PHP's own limit (EG(stack_limit)) falls below the margin,
+ * the recursion continues on a fresh C stack segment (a zend_fiber_context
+ * sharing the VM stack), so a nesting depth the twin analyses stays
+ * analysable. */
+#define PT_ENGINE_STACK_MARGIN_LIMIT ((size_t) 512 * 1024)
+#define PT_ENGINE_FRESH_STACK_SIZE_LIMIT ((size_t) 16 * 1024 * 1024)
+
+static zend_always_inline bool pt_engine_stack_low()
+{
+#ifdef ZEND_CHECK_STACK_LIMIT
+	uintptr_t limit = (uintptr_t) EG(stack_limit);
+	if (limit == 0) return false;
+	uintptr_t position = (uintptr_t) zend_call_stack_position();
+	return position <= limit || position - limit < PT_ENGINE_STACK_MARGIN_LIMIT;
+#else
+	return false;
+#endif
+}
+
+/* body(data) on a fresh C stack segment (on the current stack when none can
+ * be allocated); a fatal error inside is re-raised on the caller's stack */
+void pt_engine_run_on_fresh_stack(void (*body)(void *), void *data);
+
+/* fn() — on a fresh C stack segment when the current one runs low */
+template <typename F>
+inline void pt_engine_with_stack(F &&fn)
+{
+	if (EXPECTED(!pt_engine_stack_low())) {
+		fn();
+		return;
+	}
+	using Fn = std::remove_reference_t<F>;
+	pt_engine_run_on_fresh_stack([](void *data) { (*static_cast<Fn *>(data))(); }, &fn);
+}
+
+/* }}} */
+
+/* {{{ node reads the walk makes per statement
+ *
+ * $node->getAttribute($key) / ->setAttribute($key, $value) /
+ * ->getComments() of php-parser's NodeAbstract, read from the node's
+ * attributes array when its class inherits the three methods (decided once
+ * per class), called through the engine otherwise. The key is a literal,
+ * never numeric. UNDEF / false = pending exception. */
+zv::Val pt_engine_node_get_attribute(zend_object *node, const char *key, size_t len);
+[[nodiscard]] bool pt_engine_node_set_attribute(zend_object *node, const char *key, size_t len, zval *value);
+zv::Val pt_engine_node_get_comments(zend_object *node);
 
 /* }}} */
 

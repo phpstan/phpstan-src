@@ -5,6 +5,7 @@ namespace PHPStan\Node;
 use Override;
 use PhpParser\Node\PropertyHook;
 use PhpParser\Node\Stmt;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * This class exists because PhpParser\Node\PropertyHook
@@ -18,6 +19,7 @@ use PhpParser\Node\Stmt;
  * The other one is Expr\Closure, but that one can
  * at least be wrapped in Stmt\Expression.
  */
+#[ReferencedByTurboExtension(key: 'propertyHookStatementNode')]
 final class PropertyHookStatementNode extends Stmt implements VirtualNode
 {
 

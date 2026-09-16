@@ -80,8 +80,6 @@ pt_method_site pt_dnh_assert_is_negated_site;
 pt_method_site pt_dnh_assert_is_equality_site;
 pt_method_site pt_dnh_assert_parameter_get_parameter_name_site;
 pt_method_site pt_dnh_assert_parameter_get_expr_site;
-pt_method_site pt_dnh_has_function_site;
-pt_method_site pt_dnh_get_function_site;
 pt_method_site pt_dnh_function_has_side_effects_site;
 
 /* the Error PHP raises for a method call on a non-object */
@@ -144,22 +142,17 @@ zv::Val callNoArgs(pt_method_site &site, zval *object, const char *method, const
 	return true;
 }
 
-/* $reflectionProvider->hasFunction($name, $scope) (coerced to bool); false =
- * pending exception */
+/* $reflectionProvider->hasFunction($name, $scope) (the memoized answer,
+ * FunctionReflectionAccess.cpp); false = pending exception */
 [[nodiscard]] bool reflectionProviderHasFunction(zval *reflectionProvider, zval *name, zval *scope, bool &out)
 {
-	zv::Args argv{name, scope};
-	zv::Val value = pt_call_method_cached(pt_dnh_has_function_site, Z_OBJ_P(reflectionProvider), PT_LC("hasfunction"), 2, argv);
-	if (UNEXPECTED(value.isUndef())) return false;
-	out = zend_is_true(value.raw());
-	return true;
+	return pt_reflection_provider_has_function(reflectionProvider, name, scope, out);
 }
 
-/* $reflectionProvider->getFunction($name, $scope) */
+/* $reflectionProvider->getFunction($name, $scope) (the memoized reflection) */
 zv::Val reflectionProviderGetFunction(zval *reflectionProvider, zval *name, zval *scope)
 {
-	zv::Args argv{name, scope};
-	return pt_call_method_cached(pt_dnh_get_function_site, Z_OBJ_P(reflectionProvider), PT_LC("getfunction"), 2, argv);
+	return pt_reflection_provider_get_function(reflectionProvider, name, scope);
 }
 
 /* }}} */

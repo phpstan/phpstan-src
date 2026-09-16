@@ -546,10 +546,9 @@ private:
 			throwUninitialized("reflectionProvider");
 			return -1;
 		}
-		zv::Args args{name, scope};
-		zv::Val has = pt_type_call(Z_OBJ_P(reflectionProvider), PT_LC("hasfunction"), 2, args);
-		if (UNEXPECTED(has.isUndef())) return -1;
-		return zend_is_true(has.raw()) ? 1 : 0;
+		bool has;
+		if (UNEXPECTED(!pt_reflection_provider_has_function(reflectionProvider, name, scope, has))) return -1;
+		return has ? 1 : 0;
 	}
 
 	/* Mirrors createForExpr(); UNDEF = pending exception */
@@ -734,9 +733,7 @@ private:
 			if (nameIsName) {
 				int has = hasFunction(name, scope);
 				if (has <= 0) return has;
-				zval *reflectionProvider = slot(slots::reflectionProvider);
-				zv::Args args{name, scope};
-				zv::Val functionReflection = pt_type_call(Z_OBJ_P(reflectionProvider), PT_LC("getfunction"), 2, args);
+				zv::Val functionReflection = pt_reflection_provider_get_function(slot(slots::reflectionProvider), name, scope);
 				if (UNEXPECTED(functionReflection.isUndef())) return -1;
 				zend_long hasSideEffects = trinaryOf(functionReflection.raw(), PT_LC("hassideeffects"), "hasSideEffects");
 				if (UNEXPECTED(hasSideEffects < 0)) return -1;

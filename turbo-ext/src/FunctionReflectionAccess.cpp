@@ -62,6 +62,10 @@ ClassSlots pt_fra_native_function_reflection;
 ClassSlots pt_fra_extended_function_variant;
 ClassSlots pt_fra_extended_native_parameter;
 ClassSlots pt_fra_assertions;
+ClassSlots pt_fra_memoizing_reflection_provider;
+ClassSlots pt_fra_better_reflection_provider;
+ClassSlots pt_fra_name;
+ClassSlots pt_fra_fully_qualified_name;
 
 /* the slots of an object of exactly the class-map class, NULL for any other
  * object (or when the class does not declare every named property) */
@@ -93,6 +97,9 @@ const char *const pt_fra_nfr_names[PT_FRA_NFR_SLOT_COUNT] = { "name", "variants"
 const char *const pt_fra_efv_names[PT_FRA_EFV_SLOT_COUNT] = { "returnType", "parameters" };
 const char *const pt_fra_enpr_names[1] = { "optional" };
 const char *const pt_fra_assertions_names[1] = { "asserts" };
+const char *const pt_fra_memoizing_names[1] = { "provider" };
+const char *const pt_fra_better_names[2] = { "resolvedFunctionNames", "functionReflections" };
+const char *const pt_fra_name_names[1] = { "name" };
 
 inline const ClassSlots *nativeFunctionReflectionSlots(zval *reflection)
 {
@@ -262,3 +269,162 @@ zval *pt_assertions_all(zval *assertions, zv::Val &hold)
 	}
 	return callGetter(assertions, PT_LC("getall"), "getAll", hold);
 }
+
+/* {{{ MemoizingReflectionProvider / BetterReflectionProvider function memo */
+
+namespace {
+
+/* the BetterReflectionProvider behind exactly a MemoizingReflectionProvider,
+ * NULL for anything else */
+zval *betterReflectionProviderOf(zval *provider, const ClassSlots *&slots)
+{
+	if (UNEXPECTED(Z_TYPE_P(provider) != IS_OBJECT)) return NULL;
+	const ClassSlots *memoizing = slotsOf(pt_fra_memoizing_reflection_provider, PT_CLASS_MEMOIZING_REFLECTION_PROVIDER, Z_OBJ_P(provider), pt_fra_memoizing_names, 1);
+	if (memoizing == NULL) return NULL;
+	zval *inner = initializedSlot(provider, memoizing, 0);
+	if (inner == NULL || Z_TYPE_P(inner) != IS_OBJECT) return NULL;
+	slots = slotsOf(pt_fra_better_reflection_provider, PT_CLASS_BETTER_REFLECTION_PROVIDER, Z_OBJ_P(inner), pt_fra_better_names, 2);
+	return slots != NULL ? inner : NULL;
+}
+
+/* the `name` of exactly a php-parser Name or Name\FullyQualified (whose
+ * toLowerString() / __toString() / isFullyQualified() the resolution
+ * reads), NULL for anything else */
+zend_string *plainName(zval *nameNode, bool &fullyQualified)
+{
+	if (UNEXPECTED(Z_TYPE_P(nameNode) != IS_OBJECT)) return NULL;
+	zend_object *object = Z_OBJ_P(nameNode);
+	const ClassSlots *slots = slotsOf(pt_fra_name, PT_CLASS_NAME, object, pt_fra_name_names, 1);
+	fullyQualified = false;
+	if (slots == NULL) {
+		slots = slotsOf(pt_fra_fully_qualified_name, PT_CLASS_FULLY_QUALIFIED, object, pt_fra_name_names, 1);
+		if (slots == NULL) return NULL;
+		fullyQualified = true;
+	}
+	zval *name = initializedSlot(nameNode, slots, 0);
+	if (name == NULL) return NULL;
+	ZVAL_DEREF(name);
+	return Z_TYPE_P(name) == IS_STRING ? Z_STR_P(name) : NULL;
+}
+
+enum MemoAnswer
+{
+	PT_FRA_MEMO_MISS,
+	PT_FRA_MEMO_UNRESOLVED,
+	PT_FRA_MEMO_RESOLVED,
+};
+
+/* BetterReflectionProvider::resolveFunctionName() on its memo:
+ * `exit`/`die` answer themselves, anything else the entry of
+ * nameResolutionCacheKey() when memoized; resolved borrowed from the memo
+ * or owned in hold; PT_FRA_MEMO_MISS also when the reader cannot tell
+ * (the caller then calls the method); false = pending exception */
+[[nodiscard]] bool memoizedFunctionName(zval *better, const ClassSlots *slots, zval *nameNode, zval *namespaceAnswerer, MemoAnswer &answer, zend_string *&resolved, zv::Str &hold)
+{
+	answer = PT_FRA_MEMO_MISS;
+	bool fullyQualified;
+	zend_string *name = plainName(nameNode, fullyQualified);
+	if (name == NULL) return true;
+	if (zend_string_equals_literal_ci(name, "exit") || zend_string_equals_literal_ci(name, "die")) {
+		hold = zv::Str::adopt(zend_string_tolower(name));
+		resolved = hold.get();
+		answer = PT_FRA_MEMO_RESOLVED;
+		return true;
+	}
+	zval *memo = initializedSlot(better, slots, 0);
+	if (memo == NULL || Z_TYPE_P(memo) != IS_ARRAY) return true;
+
+	zv::Val ns = zv::Val::null();
+	if (namespaceAnswerer != NULL && Z_TYPE_P(namespaceAnswerer) != IS_NULL) {
+		if (Z_TYPE_P(namespaceAnswerer) != IS_OBJECT) return true;
+		ns = pt_mutating_scope_get_namespace(Z_OBJ_P(namespaceAnswerer));
+		if (UNEXPECTED(ns.isUndef())) return false;
+		if (UNEXPECTED(!ns.isNull() && !ns.ref().isString())) return true;
+	}
+	zend_string *nsString = ns.isNull() ? ZSTR_EMPTY_ALLOC() : Z_STR_P(ns.raw());
+	size_t length = ZSTR_LEN(nsString) + 2 + (fullyQualified ? 1 : 0) + ZSTR_LEN(name);
+	zend_string *key = zend_string_alloc(length, 0);
+	char *cursor = ZSTR_VAL(key);
+	memcpy(cursor, ZSTR_VAL(nsString), ZSTR_LEN(nsString));
+	cursor += ZSTR_LEN(nsString);
+	*cursor++ = ':';
+	*cursor++ = ':';
+	if (fullyQualified) *cursor++ = '\\';
+	memcpy(cursor, ZSTR_VAL(name), ZSTR_LEN(name));
+	cursor += ZSTR_LEN(name);
+	*cursor = '\0';
+	zval *found = zend_symtable_find(Z_ARRVAL_P(memo), key);
+	zend_string_release(key);
+	if (found == NULL) return true;
+	ZVAL_DEREF(found);
+	if (Z_TYPE_P(found) == IS_FALSE) {
+		answer = PT_FRA_MEMO_UNRESOLVED;
+		return true;
+	}
+	if (Z_TYPE_P(found) != IS_STRING) return true;
+	resolved = Z_STR_P(found);
+	answer = PT_FRA_MEMO_RESOLVED;
+	return true;
+}
+
+/* $provider->method($nameNode, $namespaceAnswerer) through the engine */
+zv::Val callProvider(zval *provider, const char *lcname, size_t len, const char *name, zval *nameNode, zval *namespaceAnswerer)
+{
+	if (UNEXPECTED(Z_TYPE_P(provider) != IS_OBJECT)) {
+		zend_throw_error(NULL, "Call to a member function %s() on %s", name, zend_zval_value_name(provider));
+		return zv::Val();
+	}
+	zval null;
+	ZVAL_NULL(&null);
+	zv::Args argv{nameNode, namespaceAnswerer != NULL ? namespaceAnswerer : &null};
+	return pt_type_call(Z_OBJ_P(provider), lcname, len, 2, argv);
+}
+
+} // namespace
+
+bool pt_reflection_provider_has_function(zval *provider, zval *nameNode, zval *namespaceAnswerer, bool &out)
+{
+	const ClassSlots *slots = NULL;
+	zval *better = betterReflectionProviderOf(provider, slots);
+	if (EXPECTED(better != NULL)) {
+		MemoAnswer answer;
+		zend_string *resolved = NULL;
+		zv::Str hold;
+		if (UNEXPECTED(!memoizedFunctionName(better, slots, nameNode, namespaceAnswerer, answer, resolved, hold))) return false;
+		if (EXPECTED(answer != PT_FRA_MEMO_MISS)) {
+			/* return $this->resolveFunctionName($nameNode, $namespaceAnswerer) !== null; */
+			out = answer == PT_FRA_MEMO_RESOLVED;
+			return true;
+		}
+	}
+	zv::Val value = callProvider(provider, PT_LC("hasfunction"), "hasFunction", nameNode, namespaceAnswerer);
+	if (UNEXPECTED(value.isUndef())) return false;
+	out = zend_is_true(value.raw());
+	return true;
+}
+
+zv::Val pt_reflection_provider_get_function(zval *provider, zval *nameNode, zval *namespaceAnswerer)
+{
+	const ClassSlots *slots = NULL;
+	zval *better = betterReflectionProviderOf(provider, slots);
+	if (EXPECTED(better != NULL)) {
+		MemoAnswer answer;
+		zend_string *resolved = NULL;
+		zv::Str hold;
+		if (UNEXPECTED(!memoizedFunctionName(better, slots, nameNode, namespaceAnswerer, answer, resolved, hold))) return zv::Val();
+		zval *reflections = answer == PT_FRA_MEMO_RESOLVED ? initializedSlot(better, slots, 1) : NULL;
+		if (reflections != NULL && Z_TYPE_P(reflections) == IS_ARRAY) {
+			/* isset($this->functionReflections[strtolower($functionName)]) */
+			zend_string *lower = zend_string_tolower(resolved);
+			zval *found = zend_symtable_find(Z_ARRVAL_P(reflections), lower);
+			zend_string_release(lower);
+			if (found != NULL) {
+				ZVAL_DEREF(found);
+				if (EXPECTED(Z_TYPE_P(found) == IS_OBJECT)) return zv::Val::copyOf(zv::Ref(found));
+			}
+		}
+	}
+	return callProvider(provider, PT_LC("getfunction"), "getFunction", nameNode, namespaceAnswerer);
+}
+
+/* }}} */

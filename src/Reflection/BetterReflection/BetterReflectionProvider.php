@@ -53,6 +53,7 @@ use PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\IntegerRangeType;
@@ -67,6 +68,7 @@ use function strtolower;
 use const PHP_VERSION_ID;
 
 #[NonAutowiredService(name: 'betterReflectionProvider')]
+#[ReferencedByTurboExtension(key: 'betterReflectionProvider')]
 final class BetterReflectionProvider implements ReflectionProvider
 {
 

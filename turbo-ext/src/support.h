@@ -373,6 +373,7 @@ enum {
 	PT_CLASS_CLONE_HANDLER,
 	PT_CLASS_CLONE_EXPR,
 	PT_CLASS_CLOSURE_RETURN_STATEMENTS_NODE,
+	PT_CLASS_BETTER_REFLECTION_PROVIDER,
 	PT_CLASS_COUNT
 };
 
@@ -2930,6 +2931,14 @@ zv::Val pt_args_result_with_resolved_parameters_acceptor(zval *argsResult, zval 
  * pending exception */
 zv::Val pt_arguments_normalizer_reorder_call_user_func_arguments(zval *callUserFuncCall, zval *scope);
 zv::Val pt_arguments_normalizer_reorder_call_user_func_array_arguments(zval *callUserFuncArrayCall, zval *scope);
+
+/* FunctionReflectionAccess.cpp — $reflectionProvider->hasFunction($nameNode,
+ * $namespaceAnswerer) / ->getFunction(...): the memoized answer of a
+ * MemoizingReflectionProvider over a BetterReflectionProvider
+ * (resolvedFunctionNames / functionReflections), the method on a miss or for
+ * any other provider, name or answerer; false / UNDEF = pending exception */
+[[nodiscard]] bool pt_reflection_provider_has_function(zval *provider, zval *nameNode, zval *namespaceAnswerer, bool &out);
+zv::Val pt_reflection_provider_get_function(zval *provider, zval *nameNode, zval *namespaceAnswerer);
 
 /* }}} */
 

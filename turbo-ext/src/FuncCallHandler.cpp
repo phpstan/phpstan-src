@@ -63,8 +63,6 @@ constexpr uint32_t PT_FCH_POLY_SITE_SLOTS_LIMIT = 1u << PT_FCH_POLY_SITE_SLOT_BI
 /* {{{ the PHP collaborators (one site each; switch to their direct entries
  * once they are ported) */
 
-pt_method_site pt_fch_has_function_site;
-pt_method_site pt_fch_get_function_site;
 pt_method_site pt_fch_get_declared_closure_type_site;
 pt_method_site pt_fch_process_immediately_called_callable_site;
 pt_method_site pt_fch_resolve_clone_type_site;
@@ -77,22 +75,17 @@ pt_method_site pt_fch_find_specified_type_site;
 pt_method_site pt_fch_closure_expr_site;
 pt_method_site pt_fch_statement_result_site;
 
-/* $reflectionProvider->hasFunction($name, $scope) (coerced to bool); false
- * = pending exception */
+/* $reflectionProvider->hasFunction($name, $scope) (the memoized answer,
+ * FunctionReflectionAccess.cpp); false = pending exception */
 [[nodiscard]] bool hasFunction(zval *reflectionProvider, zval *name, zval *scope, bool &out)
 {
-	zv::Args argv{name, scope};
-	zv::Val value = pt_call_method_cached(pt_fch_has_function_site, Z_OBJ_P(reflectionProvider), PT_LC("hasfunction"), 2, argv);
-	if (UNEXPECTED(value.isUndef())) return false;
-	out = zend_is_true(value.raw());
-	return true;
+	return pt_reflection_provider_has_function(reflectionProvider, name, scope, out);
 }
 
-/* $reflectionProvider->getFunction($name, $scope) */
+/* $reflectionProvider->getFunction($name, $scope) (the memoized reflection) */
 zv::Val getFunction(zval *reflectionProvider, zval *name, zval *scope)
 {
-	zv::Args argv{name, scope};
-	return pt_call_method_cached(pt_fch_get_function_site, Z_OBJ_P(reflectionProvider), PT_LC("getfunction"), 2, argv);
+	return pt_reflection_provider_get_function(reflectionProvider, name, scope);
 }
 
 /* $closureTypeResolver->getDeclaredClosureType($scope, $closure) */

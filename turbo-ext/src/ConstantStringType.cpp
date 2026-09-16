@@ -349,10 +349,9 @@ public:
 		/* 'my_function' */
 		zv::Val name = newName(v);
 		if (UNEXPECTED(name.isUndef())) return -1;
-		zv::Args args{name.raw(), zv::null};
-		zv::Val hasFunction = pt_type_call(provider, PT_LC("hasfunction"), 2, args);
-		if (UNEXPECTED(hasFunction.isUndef())) return -1;
-		if (zend_is_true(hasFunction.raw())) return PT_TRI_YES;
+		bool hasFunction;
+		if (UNEXPECTED(!pt_reflection_provider_has_function(reflectionProvider.raw(), name.raw(), NULL, hasFunction))) return -1;
+		if (hasFunction) return PT_TRI_YES;
 
 		/* 'MyClass::myStaticFunction' */
 		size_t classLen, methodStart;
@@ -415,11 +414,10 @@ public:
 		/* 'my_function' */
 		zv::Val functionName = newName(v);
 		if (UNEXPECTED(functionName.isUndef())) return zv::Val();
-		zv::Args args{functionName.raw(), zv::null};
-		zv::Val hasFunction = pt_type_call(provider, PT_LC("hasfunction"), 2, args);
-		if (UNEXPECTED(hasFunction.isUndef())) return zv::Val();
-		if (zend_is_true(hasFunction.raw())) {
-			zv::Val function = pt_type_call(provider, PT_LC("getfunction"), 2, args);
+		bool hasFunction;
+		if (UNEXPECTED(!pt_reflection_provider_has_function(reflectionProvider.raw(), functionName.raw(), NULL, hasFunction))) return zv::Val();
+		if (hasFunction) {
+			zv::Val function = pt_reflection_provider_get_function(reflectionProvider.raw(), functionName.raw(), NULL);
 			if (UNEXPECTED(function.isUndef())) return zv::Val();
 			return callableVariants(function.raw());
 		}

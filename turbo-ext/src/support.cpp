@@ -331,6 +331,7 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_CLONE_HANDLER */ {"cloneHandler", "PHPStan\\Analyser\\ExprHandler\\CloneHandler"},
 	/* PT_CLASS_CLONE_EXPR */ {"cloneExpr", "PhpParser\\Node\\Expr\\Clone_"},
 	/* PT_CLASS_CLOSURE_RETURN_STATEMENTS_NODE */ {"closureReturnStatementsNode", "PHPStan\\Node\\ClosureReturnStatementsNode"},
+	/* PT_CLASS_BETTER_REFLECTION_PROVIDER */ {"betterReflectionProvider", "PHPStan\\Reflection\\BetterReflection\\BetterReflectionProvider"},
 };
 
 zend_class_entry *pt_class(int idx)

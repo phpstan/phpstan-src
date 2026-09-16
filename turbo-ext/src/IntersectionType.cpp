@@ -2951,7 +2951,6 @@ private:
 } // namespace phpstanturbo
 
 using phpstanturbo::IntersectionType;
-using phpstanturbo::NullableLong;
 
 /* {{{ shared with the other ports (TypeTraits.h) */
 

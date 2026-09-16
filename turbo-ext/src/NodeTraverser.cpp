@@ -31,7 +31,7 @@ static zend_class_entry *pt_ce_node_traverser;
  * its cached hook functions. NULL before_fn/after_fn and false
  * call_enter/call_leave mean "inherited no-op from NodeVisitorAbstract,
  * skip the call". */
-typedef struct _pt_visitor_plan {
+typedef struct {
 	zend_object *visitor;
 	zend_class_entry *ce;
 	zend_function *enter_fn;
@@ -47,12 +47,12 @@ typedef struct _pt_visitor_plan {
 } pt_visitor_plan;
 
 /* The splices recorded by one traverseArray() pass ($doNodes in the twin). */
-typedef struct _pt_do_node {
+typedef struct {
 	zend_ulong pos;
 	zval replacement; /* IS_ARRAY (owned) or IS_FALSE for remove */
 } pt_do_node;
 
-typedef struct _pt_do_nodes {
+typedef struct {
 	pt_do_node *items;
 	uint32_t count;
 	uint32_t capacity;
@@ -97,7 +97,7 @@ static void pt_trav_throw_logic(const char *format, const char *arg)
 }
 
 /* Node subnode info incl. names, resolved lazily per class. */
-typedef struct _pt_trav_class_info {
+typedef struct {
 	uint32_t *offsets;
 	zend_string **names;
 	uint32_t count;

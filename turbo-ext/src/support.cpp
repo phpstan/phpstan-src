@@ -12,7 +12,7 @@ zend_class_entry *pt_ce_cond_expr_holder = nullptr;
 
 /* {{{ class map */
 
-typedef struct _pt_class_template {
+typedef struct {
 	const char *key;
 	const char *default_name;
 } pt_class_template;

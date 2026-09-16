@@ -130,5 +130,53 @@ pgo-clean:
 	find src -name '*.gcda' -delete
 
 clean: pgo-clean
+	rm -f compile_commands.json
 
-.PHONY: clean pgo pgo-clean FORCE
+#
+# Static analysis of the hand-written sources. Which checks run, and the
+# measured reason for every exclusion, are in .clang-tidy. The generated
+# sources are left out entirely: src/generated/*.h comes from
+# bin/generate-declarations.php and the parser's action tables from
+# bin/generate-parser-actions.php, so a finding in them could only be fixed
+# in the generator, never in place.
+#
+GENERATED_SOURCES := src/parser/ParserRunnerActions1.cpp src/parser/ParserRunnerActions2.cpp src/parser/ParserRunnerActions3.cpp
+LINT_SOURCES := $(filter-out $(GENERATED_SOURCES),$(SOURCES))
+LINT_JOBS ?= $(shell getconf _NPROCESSORS_ONLN 2>/dev/null || echo 4)
+# Homebrew keeps LLVM off the PATH; CI pins a major version (lint.yml)
+CLANG_TIDY ?= $(shell command -v clang-tidy 2>/dev/null || ls /opt/homebrew/opt/llvm/bin/clang-tidy 2>/dev/null)
+
+# clang-tidy takes the compile flags from a compilation database, which a
+# plain Makefile build does not produce as a side effect
+compile_commands.json: Makefile bin/generate-compile-commands.php
+	PHP_CONFIG="$(PHP_CONFIG)" php bin/generate-compile-commands.php
+
+lint: compile_commands.json
+	@if [ -z "$(CLANG_TIDY)" ]; then \
+		echo "clang-tidy not found — install it (brew install llvm, apt-get install clang-tidy) or pass CLANG_TIDY=/path/to/clang-tidy"; \
+		exit 1; \
+	fi
+	@echo "$$($(CLANG_TIDY) --version | sed -n 's/.*version \([0-9.]*\).*/clang-tidy \1/p' | head -1) over $(words $(LINT_SOURCES)) sources, $(LINT_JOBS) at a time"
+	@printf '%s\n' $(LINT_SOURCES) | xargs -P $(LINT_JOBS) -n 1 $(CLANG_TIDY) -p . --quiet
+
+#
+# The differential tests under UndefinedBehaviorSanitizer. The sanitizer
+# runtime is linked into the .so, so an ordinary PHP loads it — no debug or
+# instrumented PHP build is needed. Objects never mix flags (the same rule
+# `make pgo` follows), so this builds from clean and cleans up after itself.
+#
+SANITIZE_FLAGS ?= -fsanitize=undefined -fno-omit-frame-pointer
+SANITIZE_TESTS ?= smoke arena-smoke signature-parity parser-corpus
+
+sanitize:
+	$(MAKE) clean
+	$(MAKE) PGO_FLAGS="$(SANITIZE_FLAGS)" phpstan_turbo.so
+	@set -e; for t in $(SANITIZE_TESTS); do \
+		echo "== $$t under UBSan =="; \
+		(cd .. && UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1 \
+			TURBO_DLL="$(CURDIR)/phpstan_turbo.so" \
+			php -d extension="$(CURDIR)/phpstan_turbo.so" -d memory_limit=4G "turbo-ext/tests/$$t.php"); \
+	done
+	$(MAKE) clean
+
+.PHONY: clean lint pgo pgo-clean sanitize FORCE

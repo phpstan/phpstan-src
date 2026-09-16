@@ -1,0 +1,94 @@
+# The check list `make lint-turbo` gates on.
+#
+# phpstan_turbo is a Zend extension: its values live in zvals (a tagged
+# union), its memory comes from emalloc, its handlers carry the engine's own
+# signatures, and the engine's headers are macro-heavy. Whole check families
+# object to exactly that, so the list below is curated rather than inherited.
+# Every exclusion was measured against this tree — the count in brackets is
+# what it produced when the list was calibrated (clang-tidy 21, 173
+# translation units, 2026-09-16), not a guess:
+#
+#   clang-analyzer-*  [66]  reads every zval access as an uninitialized union
+#       member: the type tag decides which member is live and the analyzer
+#       does not model that, so Z_TYPE_P/Z_OBJ_P/Z_LVAL_P in any helper
+#       taking a zval * is reported. It is also ~13x slower than the rest of
+#       the list put together (64s vs 4s on ConstantArrayType.cpp).
+#   misc-non-private-member-variables-in-classes  [83]  the descriptors
+#       (reg::Arg, reg::Sig, the pt_* structs) are deliberately C-style
+#       aggregates, initialised with brace initialisers.
+#   misc-use-anonymous-namespace  [~300]  and
+#   misc-use-internal-linkage  [15]  ask for the linkage of file-local
+#       helpers to change. That measurably changes inlining here: replacing
+#       file-local `static` helpers with shared `inline` ones cost 3.4 KB of
+#       __TEXT in ConstantArrayType.cpp. Linkage changes are made
+#       deliberately and proven with object sizes, never on a linter's word.
+#   bugprone-implicit-widening-of-multiplication-result  [27]  fires on the
+#       multiplication inside Zend's own ZEND_ALLOCATOR macro and attributes
+#       it to our call site — pemalloc(sizeof(HashTable), 1) is reported
+#       although it contains no multiplication at all.
+#   bugprone-not-null-terminated-result  [3]  all three were false: one is a
+#       memchr() search, and the two ParserRunner sites are each followed by
+#       a second memcpy that copies aliasLen + 1 bytes, terminator included.
+#   bugprone-multi-level-implicit-pointer-conversion  [11]  efree(void *) of
+#       a zval ** is how the engine's allocator API is used.
+#   performance-enum-size  [15]  would change the layout of hot structures on
+#       an unmeasured claim; this codebase changes layout only with numbers.
+#   misc-include-cleaner  [72]  wants a direct include per engine type, but
+#       php.h is an umbrella header and including its parts directly is
+#       unsupported.
+#   misc-unused-parameters  [64]  the engine's handler signatures; the build
+#       already passes -Wno-unused-parameter for exactly this reason.
+#   performance-no-int-to-ptr  [1]  a callback stored in a zend_long is
+#       recovered through uintptr_t, which is the correct idiom.
+#   misc-const-correctness, misc-no-recursion, misc-redundant-expression,
+#   bugprone-easily-swappable-parameters, bugprone-narrowing-conversions,
+#   bugprone-branch-clone, bugprone-switch-missing-default-case,
+#   cert-err58-cpp: style, or unavoidable in this codebase's idiom.
+#
+# Generated sources are not linted at all — the Makefile keeps them out of
+# the file list and HeaderFilterRegex out of the headers. src/generated/*.h
+# comes from bin/generate-declarations.php and the parser's action tables
+# from bin/generate-parser-actions.php; a finding there cannot be fixed in
+# place, only in the generator (misc-redundant-expression, disabled above,
+# reported 9 of them — `stackPos - (1 - 1)` is how the upstream grammar
+# spells its stack offsets).
+#
+# CI pins the clang-tidy major version (see .github/workflows/lint.yml). A
+# newer one adds checks to the enabled families and can fail a tree that was
+# clean before, so that bump is made deliberately.
+Checks: >
+  -*,
+  bugprone-*,
+  cert-*,
+  misc-*,
+  performance-*,
+  portability-*,
+  -bugprone-branch-clone,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-implicit-widening-of-multiplication-result,
+  -bugprone-multi-level-implicit-pointer-conversion,
+  -bugprone-narrowing-conversions,
+  -bugprone-not-null-terminated-result,
+  -bugprone-switch-missing-default-case,
+  -cert-err58-cpp,
+  -misc-const-correctness,
+  -misc-include-cleaner,
+  -misc-no-recursion,
+  -misc-non-private-member-variables-in-classes,
+  -misc-redundant-expression,
+  -misc-unused-parameters,
+  -misc-use-anonymous-namespace,
+  -misc-use-internal-linkage,
+  -performance-enum-size,
+  -performance-no-int-to-ptr
+
+# a finding fails the build; the tree is kept clean rather than baselined
+WarningsAsErrors: '*'
+
+# our own headers only: src/*.h and the parser engine's — never the 189
+# generated headers under src/generated/, nor the generated
+# src/parser/ParserRunnerActionsSplit.h (llvm::Regex has no lookahead, so
+# the hand-written set is spelled out instead of excluding the others)
+HeaderFilterRegex: '.*/src/([^/]*|parser/ParserEngine)\.h$'
+
+FormatStyle: none

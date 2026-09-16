@@ -46,7 +46,7 @@
  * holds exactly one (phar->fp), so the table is generous already. */
 #define PT_PFG_MAX_FDS 8
 
-typedef struct _pt_pfg_entry {
+typedef struct {
 	int fd;
 	off_t cursor;
 	int fd_flags; /* F_GETFD result, preserves FD_CLOEXEC across the dup2 */

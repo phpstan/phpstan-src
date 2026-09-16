@@ -140,6 +140,21 @@ The three `-Wno-` exemptions are for zend macro expansions only (documented in
 `.github/workflows/phar.yml`); new warnings in our code are fixed, not
 exempted. Zend header noise is handled by the pragma guards in `support.h`.
 
+Static analysis and sanitizers, from the repository root (both gate in CI,
+`.github/workflows/lint.yml`):
+
+```bash
+make lint-turbo       # clang-tidy, check list in turbo-ext/.clang-tidy
+make sanitize-turbo   # the differential tests under UBSan, from a clean build
+```
+
+A finding is fixed, never baselined and never silenced with `NOLINT` — if a
+check is wrong *for this codebase* (several are: the analyzer models a zval
+read as an uninitialized union access, and other checks object to engine
+macros or to the handler signatures), disable it in `.clang-tidy` with the
+count it produced and the reason, the way the existing entries do. Generated
+sources are excluded from linting; fix their generator instead.
+
 ## Benchmark protocol
 
 Judge **user CPU**, never wall clock, on interleaved A/B pairs (the machine

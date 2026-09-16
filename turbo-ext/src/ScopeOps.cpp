@@ -23,7 +23,7 @@ static zend_class_entry *pt_ce_scope_ops;
 
 /* {{{ scopeWith's cached property layout (owned by the request lifecycle) */
 
-typedef struct _pt_scope_offsets {
+typedef struct {
 	int32_t expression_types;
 	int32_t native_expression_types;
 	int32_t conditional_expressions;

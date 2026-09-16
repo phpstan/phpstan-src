@@ -62,6 +62,69 @@ jobs:
       - name: "Lint"
         run: "make lint"
 
+  turbo-lint:
+    name: "Turbo Extension Lint"
+
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 30
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+
+      - name: "Checkout"
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+
+      # only the PHP development headers are needed (php-config --includes);
+      # the extension is not built here
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240" # 2.37.2
+        with:
+          coverage: "none"
+          php-version: "8.5"
+
+      # The major version is pinned deliberately: a newer clang-tidy adds
+      # checks to the families turbo-ext/.clang-tidy enables, which can fail
+      # a tree that was clean before. The list was calibrated against 21, so
+      # an older one sees a subset of its checks.
+      - name: "Install clang-tidy"
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-tidy-18
+
+      - name: "Lint the native sources"
+        run: make lint-turbo CLANG_TIDY=clang-tidy-18
+
+  turbo-sanitize:
+    name: "Turbo Extension Sanitizers"
+
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 30
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+
+      - name: "Checkout"
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240" # 2.37.2
+        with:
+          coverage: "none"
+          php-version: "8.5"
+
+      # the differential tests compare the native results against the PHP
+      # twins, so the PHP side has to be installed
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
+
+      - name: "Differential tests under UndefinedBehaviorSanitizer"
+        run: make sanitize-turbo
+
   coding-standards:
     name: "Coding Standard"
 

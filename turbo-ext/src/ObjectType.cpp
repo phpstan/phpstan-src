@@ -3239,7 +3239,6 @@ private:
 } // namespace phpstanturbo
 
 using phpstanturbo::ObjectType;
-using phpstanturbo::NullableLong;
 
 /* {{{ the exports (support.h / TypeTraits.h) */
 

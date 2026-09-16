@@ -397,6 +397,40 @@ what the hand-written glue did.
 Raw zend form remains where an abstraction would not be provably free —
 always with a comment saying so.
 
+## Linting and sanitizers
+
+```bash
+make lint-turbo      # clang-tidy over the hand-written sources
+make sanitize-turbo  # the differential tests under UndefinedBehaviorSanitizer
+```
+
+`lint-turbo` runs clang-tidy with the curated check list in `.clang-tidy`; a
+finding fails the target, and there is no baseline. The list is curated
+because this is a Zend extension, and whole check families object to exactly
+that: the path-sensitive analyzer reads every `zval` access as an
+uninitialized union member (the type tag decides which member is live and it
+does not model that), others object to the engine's `do {} while (0)` macros,
+to `php.h` being an umbrella header, to the handler signatures' unused
+parameters, or propose linkage changes that measurably change inlining here.
+Every exclusion in `.clang-tidy` carries the number of findings it produced
+when the list was calibrated, so a future reader can re-judge it. Generated
+sources are not linted at all — a finding in `src/generated/*.h` or in the
+parser's action tables could only be fixed in their generator.
+
+`sanitize-turbo` rebuilds the extension with UndefinedBehaviorSanitizer and
+runs the differential tests under it (`smoke`, `arena-smoke`,
+`signature-parity`, `parser-corpus`). The sanitizer runtime is linked into
+the `.so`, so an ordinary interpreter loads it — no debug or instrumented PHP
+build is needed. It builds from clean and cleans up after itself, because
+objects must never mix flags. This is the half that covers memory safety:
+the static checks cannot see zval lifetimes, and the differential tests
+already exercise the code paths that matter.
+
+Both run in CI on every pull request (`.github/workflows/lint.yml`), where
+the clang-tidy major version is pinned — a newer one adds checks to the
+enabled families and can fail a tree that was clean before, so that bump is
+made deliberately.
+
 ## Design rules for new ports
 
 Measured in the July 2026 benchmarks (callback-free absorptions gained

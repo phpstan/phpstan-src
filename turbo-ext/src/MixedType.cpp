@@ -1297,7 +1297,6 @@ public:
 } // namespace phpstanturbo
 
 using phpstanturbo::MixedType;
-using phpstanturbo::NullableLong;
 
 zv::Val pt_type_identity_callback()
 {

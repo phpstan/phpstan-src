@@ -44,3 +44,7 @@
 /pgo/
 /src/*.gcda
 /src/parser/*.gcda
+
+# the compilation database clang-tidy reads (make lint-turbo), regenerated
+# from the Makefile's own flags by bin/generate-compile-commands.php
+/compile_commands.json

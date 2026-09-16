@@ -246,3 +246,19 @@ bump-turbo:
 		git commit -m "Bump expected turbo version" -- src/Turbo/TurboExtensionEnabler.php; \
 		echo "bumped: $$CURRENT -> $$EXPECTED"; \
 	fi
+
+# Static analysis of the native extension's hand-written C++ sources. The
+# enabled checks and the measured reason for every exclusion are in
+# turbo-ext/.clang-tidy; a finding fails the target rather than being
+# baselined.
+.PHONY: lint-turbo
+lint-turbo:
+	$(MAKE) -C turbo-ext lint
+
+# Builds the extension with UndefinedBehaviorSanitizer and runs the
+# differential tests under it: the native results must still equal the PHP
+# twins' with no sanitizer diagnostic. This is the memory-safety half of the
+# checks — the static ones cannot see zval lifetimes.
+.PHONY: sanitize-turbo
+sanitize-turbo:
+	$(MAKE) -C turbo-ext sanitize

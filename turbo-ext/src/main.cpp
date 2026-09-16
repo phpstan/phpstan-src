@@ -439,6 +439,8 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_nullsafe_property_fetch_handler();
 	pt_register_variable_write_offset();
 	pt_register_array_dim_fetch_handler();
+	pt_register_const_fetch_handler();
+	pt_register_class_const_fetch_handler();
 
 	return SUCCESS;
 }

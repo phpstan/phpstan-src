@@ -3166,4 +3166,14 @@ zv::Val pt_array_dim_fetch_handler_compose_result(zval *handler, zval *nodeScope
 
 /* }}} */
 
+/* {{{ ConstFetchHandler.cpp, ClassConstFetchHandler.cpp — registered after
+ * ArrayDimFetchHandler */
+
+extern zend_class_entry *pt_ce_const_fetch_handler;
+extern zend_class_entry *pt_ce_class_const_fetch_handler;
+void pt_register_const_fetch_handler();
+void pt_register_class_const_fetch_handler();
+
+/* }}} */
+
 #endif /* PHPSTANTURBO_SUPPORT_H */

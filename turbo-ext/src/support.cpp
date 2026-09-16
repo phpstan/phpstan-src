@@ -333,6 +333,7 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_BETTER_REFLECTION_PROVIDER */ {"betterReflectionProvider", "PHPStan\\Reflection\\BetterReflection\\BetterReflectionProvider"},
 	/* PT_CLASS_NULLSAFE_PROPERTY_FETCH_EXPRESSION_NODE */ {"nullsafePropertyFetchExpressionNode", "PHPStan\\Node\\NullsafePropertyFetchExpressionNode"},
 	/* PT_CLASS_PHP_VERSION */ {"phpVersion", "PHPStan\\Php\\PhpVersion"},
+	/* PT_CLASS_CLOSURE_PARAMETER_TYPES */ {"closureParameterTypes", "PHPStan\\Analyser\\ClosureParameterTypes"},
 };
 
 zend_class_entry *pt_class(int idx)

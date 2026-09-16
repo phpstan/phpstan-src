@@ -446,6 +446,12 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	 * provider; the processor after the handler its constructor names */
 	pt_register_attributes_handler();
 	pt_register_parameters_processor();
+	/* the closure resolvers — their signatures name the walk hub, MutatingScope,
+	 * the storage and the Type interface; each after the ones its constructor
+	 * names */
+	pt_register_contextual_closure_parameter_resolver();
+	pt_register_closure_type_resolver();
+	pt_register_closure_parameter_resolver();
 
 	return SUCCESS;
 }

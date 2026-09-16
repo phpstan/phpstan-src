@@ -373,17 +373,9 @@ inline zv::Val nsrReadTypeOfMaybeStored(zval *nodeScopeResolver, zval *expr, zva
 }
 
 /* the array-literal skeleton's PHP collaborators (gatherArrayArgTypeSkeleton()) */
-pt_method_site pt_ah_get_declared_closure_type_site;
 pt_method_site pt_ah_get_array_type_site;
 pt_method_site pt_ah_initializer_expr_get_type_site;
 pt_method_site pt_ah_context_from_scope_site;
-
-/* $closureTypeResolver->getDeclaredClosureType($scope, $expr) */
-zv::Val closureTypeResolverGetDeclaredClosureType(zval *closureTypeResolver, zval *scope, zval *expr)
-{
-	zv::Args argv{scope, expr};
-	return callOn(pt_ah_get_declared_closure_type_site, closureTypeResolver, PT_LC("getdeclaredclosuretype"), "getDeclaredClosureType", 2, argv);
-}
 
 /* $initializerExprTypeResolver->getArrayType($expr, $getTypeCallback) */
 zv::Val initializerExprTypeResolverGetArrayType(zval *initializerExprTypeResolver, zval *expr, zval *getTypeCallback)
@@ -405,36 +397,30 @@ zv::Val initializerExprContextFromScope(zval *scope)
 	return pt_call_static_cached(pt_ah_context_from_scope_site, PT_CLASS_INITIALIZER_EXPR_CONTEXT, PT_LC("fromscope"), 1, scope);
 }
 
-/* ClosureTypeResolver / ClosureParameterResolver */
-pt_method_site pt_ah_get_closure_type_site;
-pt_method_site pt_ah_build_closure_type_for_closure_site;
-pt_method_site pt_ah_build_closure_type_for_arrow_function_site;
-pt_method_site pt_ah_resolve_callable_type_for_scope_site;
+/* ClosureTypeResolver / ClosureParameterResolver (direct entries) */
 
 /* $closureTypeResolver->getClosureType($scope, $expr, $shallow, $storage) */
-zv::Val closureTypeResolverGetClosureType(zval *closureTypeResolver, zval *scope, zval *expr, bool shallow, zval *storage)
+inline zv::Val closureTypeResolverGetClosureType(zval *closureTypeResolver, zval *scope, zval *expr, bool shallow, zval *storage)
 {
-	zv::Args argv{scope, expr, shallow, storage};
-	return callOn(pt_ah_get_closure_type_site, closureTypeResolver, PT_LC("getclosuretype"), "getClosureType", 4, argv);
+	return pt_closure_type_resolver_get_closure_type(closureTypeResolver, scope, expr, shallow, storage);
 }
 
 /* $closureTypeResolver->buildClosureTypeForClosure(...) with its ten arguments */
-zv::Val closureTypeResolverBuildForClosure(zval *closureTypeResolver, zval *argv)
+inline zv::Val closureTypeResolverBuildForClosure(zval *closureTypeResolver, zval *argv)
 {
-	return callOn(pt_ah_build_closure_type_for_closure_site, closureTypeResolver, PT_LC("buildclosuretypeforclosure"), "buildClosureTypeForClosure", 10, argv);
+	return pt_closure_type_resolver_build_closure_type_for_closure(closureTypeResolver, &argv[0], &argv[1], &argv[2], &argv[3], &argv[4], &argv[5], &argv[6], &argv[7], zend_is_true(&argv[8]), &argv[9]);
 }
 
 /* $closureTypeResolver->buildClosureTypeForArrowFunction(...) with its eight arguments */
-zv::Val closureTypeResolverBuildForArrowFunction(zval *closureTypeResolver, zval *argv)
+inline zv::Val closureTypeResolverBuildForArrowFunction(zval *closureTypeResolver, zval *argv)
 {
-	return callOn(pt_ah_build_closure_type_for_arrow_function_site, closureTypeResolver, PT_LC("buildclosuretypeforarrowfunction"), "buildClosureTypeForArrowFunction", 8, argv);
+	return pt_closure_type_resolver_build_closure_type_for_arrow_function(closureTypeResolver, &argv[0], &argv[1], &argv[2], &argv[3], &argv[4], &argv[5], zend_is_true(&argv[6]), &argv[7]);
 }
 
 /* $closureParameterResolver->resolveCallableTypeForScope($expr, $scope) */
-zv::Val closureParameterResolverResolveCallableTypeForScope(zval *closureParameterResolver, zval *expr, zval *scope)
+inline zv::Val closureParameterResolverResolveCallableTypeForScope(zval *closureParameterResolver, zval *expr, zval *scope)
 {
-	zv::Args argv{expr, scope};
-	return callOn(pt_ah_resolve_callable_type_for_scope_site, closureParameterResolver, PT_LC("resolvecallabletypeforscope"), "resolveCallableTypeForScope", 2, argv);
+	return pt_closure_parameter_resolver_resolve_callable_type_for_scope(closureParameterResolver, expr, scope);
 }
 
 /* ClosureProcessor and its results */
@@ -929,7 +915,7 @@ private:
 		bool isClosure, isArrowFunction;
 		if (UNEXPECTED(!closureKind(inner, isClosure, isArrowFunction))) return zv::Val();
 		if (isClosure || isArrowFunction) {
-			return closureTypeResolverGetDeclaredClosureType(handler.slot(slots::closureTypeResolver), frame->scope, inner);
+			return pt_closure_type_resolver_get_declared_closure_type(handler.slot(slots::closureTypeResolver), frame->scope, inner);
 		}
 		zend_class_entry *arrayExpr = pt_class(PT_CLASS_ARRAY_EXPR);
 		if (UNEXPECTED(arrayExpr == NULL)) return zv::Val();

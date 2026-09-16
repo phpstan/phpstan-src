@@ -205,6 +205,29 @@ zv::Val pt_native_parameter_reflection_new(uint32_t argc, zval *argv)
 	return pt_type_new_ce(pt_ce_native_parameter_reflection, argc, argv);
 }
 
+/* $parameter->toOptional() / $parameter->union($other) — the native bodies
+ * for instances of the shadowing class, the methods otherwise (borrowed);
+ * UNDEF = pending exception */
+zv::Val pt_native_parameter_reflection_to_optional(zval *parameter)
+{
+	if (EXPECTED(Z_TYPE_P(parameter) == IS_OBJECT && Z_OBJCE_P(parameter) == pt_ce_native_parameter_reflection)) return NativeParameterReflection(Z_OBJ_P(parameter)).toOptional();
+	if (UNEXPECTED(Z_TYPE_P(parameter) != IS_OBJECT)) {
+		zend_throw_error(NULL, "Call to a member function toOptional() on %s", zend_zval_value_name(parameter));
+		return zv::Val();
+	}
+	return pt_type_call(Z_OBJ_P(parameter), PT_LC("tooptional"), 0, NULL);
+}
+
+zv::Val pt_native_parameter_reflection_union(zval *parameter, zval *other)
+{
+	if (EXPECTED(Z_TYPE_P(parameter) == IS_OBJECT && Z_OBJCE_P(parameter) == pt_ce_native_parameter_reflection && Z_TYPE_P(other) == IS_OBJECT && Z_OBJCE_P(other) == pt_ce_native_parameter_reflection)) return NativeParameterReflection(Z_OBJ_P(parameter)).union_(Z_OBJ_P(other));
+	if (UNEXPECTED(Z_TYPE_P(parameter) != IS_OBJECT)) {
+		zend_throw_error(NULL, "Call to a member function union() on %s", zend_zval_value_name(parameter));
+		return zv::Val();
+	}
+	return pt_type_call(Z_OBJ_P(parameter), PT_LC("union"), 1, other);
+}
+
 /* }}} */
 
 /* {{{ engine ABI glue: parameter parsing + registration */

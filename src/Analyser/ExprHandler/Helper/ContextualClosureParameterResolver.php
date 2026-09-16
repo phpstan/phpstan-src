@@ -14,6 +14,7 @@ use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\Php\DummyParameter;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use function array_key_exists;
@@ -28,6 +29,7 @@ use function max;
  * through it, while ClosureParameterResolver refines them from call arguments.
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/ContextualClosureParameterResolver.cpp')]
 final class ContextualClosureParameterResolver
 {
 

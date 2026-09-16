@@ -2666,8 +2666,9 @@ public:
 			if (UNEXPECTED(closureTypeResolver.isUndef())) return zv::Val();
 			zend_object *resolverObject = requireObject(closureTypeResolver, "getClosureType");
 			if (UNEXPECTED(resolverObject == NULL)) return zv::Val();
-			zv::Args args{scope.raw(), node, false, storage.raw()};
-			return pt_type_call(resolverObject, PT_LC("getclosuretype"), 4, args);
+			zval nodeArg;
+			ZVAL_OBJ(&nodeArg, node);
+			return pt_closure_type_resolver_get_closure_type(closureTypeResolver.raw(), scope.raw(), &nodeArg, false, storage.raw());
 		}
 
 		if (!counterfactualAsk && !storage.isNull()) {
@@ -5141,8 +5142,9 @@ public:
 		if (UNEXPECTED(resolverObject == NULL)) return zv::Val();
 		zv::Val storage = thisGetCurrentExpressionResultStorage();
 		if (UNEXPECTED(storage.isUndef())) return zv::Val();
-		zv::Args resolverArgs{thisZval(), closure, true, storage.raw()};
-		zv::Val anonymousFunctionReflection = pt_type_call(resolverObject, PT_LC("getclosuretype"), 4, resolverArgs);
+		zval closureArg;
+		ZVAL_OBJ(&closureArg, closure);
+		zv::Val anonymousFunctionReflection = pt_closure_type_resolver_get_closure_type(closureTypeResolver.raw(), thisZval(), &closureArg, true, storage.raw());
 		if (UNEXPECTED(anonymousFunctionReflection.isUndef())) return zv::Val();
 
 		zv::Val scope = thisEnterAnonymousFunctionWithoutReflection(closure, callableParameters, nativeCallableParameters);
@@ -5579,8 +5581,9 @@ public:
 		if (UNEXPECTED(resolverObject == NULL)) return zv::Val();
 		zv::Val storage = thisGetCurrentExpressionResultStorage();
 		if (UNEXPECTED(storage.isUndef())) return zv::Val();
-		zv::Args resolverArgs{thisZval(), arrowFunction, true, storage.raw()};
-		zv::Val anonymousFunctionReflection = pt_type_call(resolverObject, PT_LC("getclosuretype"), 4, resolverArgs);
+		zval arrowFunctionArg;
+		ZVAL_OBJ(&arrowFunctionArg, arrowFunction);
+		zv::Val anonymousFunctionReflection = pt_closure_type_resolver_get_closure_type(closureTypeResolver.raw(), thisZval(), &arrowFunctionArg, true, storage.raw());
 		if (UNEXPECTED(anonymousFunctionReflection.isUndef())) return zv::Val();
 
 		zv::Val scope = thisEnterArrowFunctionWithoutReflection(arrowFunction, callableParameters, nativeCallableParameters);
@@ -13151,6 +13154,96 @@ bool pt_mutating_scope_is_in_write_expression_assign(zend_object *scope, zend_ob
 	zval exprZv;
 	ZVAL_OBJ(&exprZv, expr);
 	return msCallBool(scope, PT_LC("isinwriteexpressionassign"), 1, &exprZv, out);
+}
+
+/* }}} */
+
+/* {{{ direct entries for the closure ports (ClosureTypeResolver.cpp,
+ * ClosureProcessor.cpp): exactly a MutatingScope takes the native body,
+ * anything else the method through its class entry ($callableParameters /
+ * $nativeCallableParameters / $relevantRoots NULL or IS_NULL for null) */
+
+namespace {
+
+inline zval *msNullableArray(zval *value)
+{
+	return value == NULL || Z_TYPE_P(value) == IS_NULL ? NULL : value;
+}
+
+inline zval *msNullOr(zval *value, zval *null)
+{
+	return value == NULL ? null : value;
+}
+
+} // namespace
+
+zv::Val pt_mutating_scope_get_function_type(zend_object *scope, zval *type, bool isNullable, bool isVariadic)
+{
+	if (msExact(scope)) return MutatingScope(scope).getFunctionType(type, isNullable, isVariadic);
+	zv::Args argv{type, isNullable, isVariadic};
+	return pt_type_call(scope, PT_LC("getfunctiontype"), 3, argv);
+}
+
+bool pt_mutating_scope_is_parameter_value_nullable(zend_object *scope, zval *parameter, bool &out)
+{
+	if (msExact(scope) && EXPECTED(Z_TYPE_P(parameter) == IS_OBJECT)) return MutatingScope(scope).isParameterValueNullable(Z_OBJ_P(parameter), out);
+	return msCallBoolResult(scope, PT_LC("isparametervaluenullable"), 1, parameter, out);
+}
+
+zv::Val pt_mutating_scope_get_closure_scope_cache_key(zend_object *scope, zval *relevantRoots)
+{
+	relevantRoots = msNullableArray(relevantRoots);
+	if (msExact(scope) && EXPECTED(relevantRoots == NULL || Z_TYPE_P(relevantRoots) == IS_ARRAY)) return MutatingScope(scope).getClosureScopeCacheKey(relevantRoots);
+	zval null = {};
+	ZVAL_NULL(&null);
+	return pt_type_call(scope, PT_LC("getclosurescopecachekey"), 1, msNullOr(relevantRoots, &null));
+}
+
+zv::Val pt_mutating_scope_enter_anonymous_function_without_reflection(zend_object *scope, zval *closure, zval *callableParameters, zval *nativeCallableParameters)
+{
+	callableParameters = msNullableArray(callableParameters);
+	nativeCallableParameters = msNullableArray(nativeCallableParameters);
+	if (msExact(scope) && EXPECTED(Z_TYPE_P(closure) == IS_OBJECT && (callableParameters == NULL || Z_TYPE_P(callableParameters) == IS_ARRAY) && (nativeCallableParameters == NULL || Z_TYPE_P(nativeCallableParameters) == IS_ARRAY))) {
+		return MutatingScope(scope).enterAnonymousFunctionWithoutReflection(Z_OBJ_P(closure), callableParameters, nativeCallableParameters);
+	}
+	zval null = {};
+	ZVAL_NULL(&null);
+	zv::Args argv{closure, msNullOr(callableParameters, &null), msNullOr(nativeCallableParameters, &null)};
+	return pt_type_call(scope, PT_LC("enteranonymousfunctionwithoutreflection"), 3, argv);
+}
+
+zv::Val pt_mutating_scope_enter_arrow_function_without_reflection(zend_object *scope, zval *arrowFunction, zval *callableParameters, zval *nativeCallableParameters)
+{
+	callableParameters = msNullableArray(callableParameters);
+	nativeCallableParameters = msNullableArray(nativeCallableParameters);
+	if (msExact(scope) && EXPECTED(Z_TYPE_P(arrowFunction) == IS_OBJECT && (callableParameters == NULL || Z_TYPE_P(callableParameters) == IS_ARRAY) && (nativeCallableParameters == NULL || Z_TYPE_P(nativeCallableParameters) == IS_ARRAY))) {
+		return MutatingScope(scope).enterArrowFunctionWithoutReflection(Z_OBJ_P(arrowFunction), callableParameters, nativeCallableParameters);
+	}
+	zval null = {};
+	ZVAL_NULL(&null);
+	zv::Args argv{arrowFunction, msNullOr(callableParameters, &null), msNullOr(nativeCallableParameters, &null)};
+	return pt_type_call(scope, PT_LC("enterarrowfunctionwithoutreflection"), 3, argv);
+}
+
+zv::Val pt_mutating_scope_get_keep_void_type(zend_object *scope, zval *node)
+{
+	zend_class_entry *exprCe = pt_class(PT_CLASS_EXPR);
+	if (UNEXPECTED(exprCe == NULL)) return zv::Val();
+	if (msExact(scope) && EXPECTED(Z_TYPE_P(node) == IS_OBJECT && instanceof_function(Z_OBJCE_P(node), exprCe))) return MutatingScope(scope).getKeepVoidType(Z_OBJ_P(node));
+	return pt_type_call(scope, PT_LC("getkeepvoidtype"), 1, node);
+}
+
+zv::Val pt_mutating_scope_intersect_but_not_never(zval *nativeType, zval *inferredType)
+{
+	return MutatingScope::intersectButNotNever(nativeType, inferredType);
+}
+
+zval *pt_mutating_scope_in_function_calls_stack(zend_object *scope)
+{
+	zval *stack = OBJ_PROP_NUM(scope, PT_MS_PROP_IN_FUNCTION_CALLS_STACK);
+	if (EXPECTED(Z_TYPE_P(stack) != IS_UNDEF)) return stack;
+	zend_throw_error(NULL, "Typed property PHPStan\\Analyser\\MutatingScope::$inFunctionCallsStack must not be accessed before initialization");
+	return NULL;
 }
 
 /* }}} */

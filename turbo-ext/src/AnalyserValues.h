@@ -32,6 +32,7 @@
 #include "generated/ImpurePoint.h"
 #include "generated/SimpleImpurePoint.h"
 #include "generated/StatementResult.h"
+#include "generated/ThrowPoint.h"
 
 zv::Val pt_type_call(zend_object *object, const char *lcname, size_t len, uint32_t argc, zval *argv);
 
@@ -501,6 +502,41 @@ inline zval *pt_statement_result_throw_points(zval *result, zv::Val &hold)
 inline zval *pt_statement_result_exit_points(zval *result, zv::Val &hold)
 {
 	return ptav::read(result, pt_ce_statement_result, ptdecl::StatementResult::slot::exitPoints, PT_LC("getexitpoints"), hold);
+}
+
+/* }}} */
+
+/* {{{ the closure ports' reads: ThrowPoint::isExplicit() / ->getType() /
+ * ->canContainAnyThrowable(), ImpurePoint::getIdentifier() / ->getDescription() */
+
+inline bool pt_throw_point_is_explicit(zval *throwPoint, bool &out)
+{
+	return ptav::readBool(throwPoint, pt_ce_throw_point, ptdecl::ThrowPoint::slot::explicit_, PT_LC("isexplicit"), out);
+}
+
+inline zval *pt_throw_point_type(zval *throwPoint, zv::Val &hold)
+{
+	return ptav::read(throwPoint, pt_ce_throw_point, ptdecl::ThrowPoint::slot::type, PT_LC("gettype"), hold);
+}
+
+inline bool pt_throw_point_can_contain_any_throwable(zval *throwPoint, bool &out)
+{
+	return ptav::readBool(throwPoint, pt_ce_throw_point, ptdecl::ThrowPoint::slot::canContainAnyThrowable, PT_LC("cancontainanythrowable"), out);
+}
+
+inline bool pt_throw_point_is_from_throw_expr(zval *throwPoint, bool &out)
+{
+	return ptav::readBool(throwPoint, pt_ce_throw_point, ptdecl::ThrowPoint::slot::fromThrowExpr, PT_LC("isfromthrowexpr"), out);
+}
+
+inline zval *pt_impure_point_identifier(zval *impurePoint, zv::Val &hold)
+{
+	return ptav::read(impurePoint, pt_ce_impure_point, ptdecl::ImpurePoint::slot::identifier, PT_LC("getidentifier"), hold);
+}
+
+inline zval *pt_impure_point_description(zval *impurePoint, zv::Val &hold)
+{
+	return ptav::read(impurePoint, pt_ce_impure_point, ptdecl::ImpurePoint::slot::description, PT_LC("getdescription"), hold);
 }
 
 /* }}} */

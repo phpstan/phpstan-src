@@ -3,7 +3,9 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\Reflection\ParameterReflection;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
+#[ReferencedByTurboExtension(key: 'closureParameterTypes')]
 final class ClosureParameterTypes
 {
 

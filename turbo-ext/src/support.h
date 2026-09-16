@@ -375,6 +375,7 @@ enum {
 	PT_CLASS_BETTER_REFLECTION_PROVIDER,
 	PT_CLASS_NULLSAFE_PROPERTY_FETCH_EXPRESSION_NODE,
 	PT_CLASS_PHP_VERSION,
+	PT_CLASS_CLOSURE_PARAMETER_TYPES,
 	PT_CLASS_COUNT
 };
 
@@ -3192,6 +3193,64 @@ void pt_register_parameters_processor();
  * exception */
 [[nodiscard]] bool pt_attributes_handler_process_attribute_groups(zval *handler, zval *nodeScopeResolver, zval *stmt, zval *attrGroups, zval *scope, zval *storage, zval *nodeCallback);
 [[nodiscard]] bool pt_parameters_processor_process_params(zval *processor, zval *nodeScopeResolver, zval *stmt, zval *params, zval *scope, zval *storage, zval *nodeCallback);
+
+/* }}} */
+
+/* {{{ ContextualClosureParameterResolver.cpp, ClosureParameterResolver.cpp,
+ * ClosureTypeResolver.cpp — the shadowing closure resolvers of
+ * PHPStan\Analyser\ExprHandler\Helper, registered at the END of the sequence
+ * (their signatures name the walk hub, MutatingScope and the Type interface) */
+
+extern zend_class_entry *pt_ce_contextual_closure_parameter_resolver;
+extern zend_class_entry *pt_ce_closure_parameter_resolver;
+extern zend_class_entry *pt_ce_closure_type_resolver;
+void pt_register_contextual_closure_parameter_resolver();
+void pt_register_closure_type_resolver();
+void pt_register_closure_parameter_resolver();
+/* $contextualClosureParameterResolver->hasIntrinsicArgs($expr) /
+ * ->resolve($scope, $expr, $storage, $passedToType, $nativePassedToType) and
+ * $closureParameterResolver->resolve($scope, $expr, $storage, $callArgs,
+ * $passedToType, $nativePassedToType): the two lists of the
+ * ClosureParameterTypes the methods return (each an array or null) — the
+ * native bodies for the shadowing classes, the methods otherwise (the
+ * nullable ones NULL or IS_NULL for null, everything borrowed); false =
+ * pending exception */
+[[nodiscard]] bool pt_contextual_closure_parameter_resolver_has_intrinsic_args(zval *resolver, zval *expr, bool &out);
+[[nodiscard]] bool pt_contextual_closure_parameter_resolver_resolve(zval *resolver, zval *scope, zval *expr, zval *storage, zval *passedToType, zval *nativePassedToType, zv::Val &parameters, zv::Val &nativeParameters);
+[[nodiscard]] bool pt_closure_parameter_resolver_resolve(zval *resolver, zval *scope, zval *expr, zval *storage, zval *callArgs, zval *passedToType, zval *nativePassedToType, zv::Val &parameters, zv::Val &nativeParameters);
+/* $closureParameterResolver->resolveCallableTypeForScope($expr, $scope);
+ * UNDEF = pending exception */
+zv::Val pt_closure_parameter_resolver_resolve_callable_type_for_scope(zval *resolver, zval *expr, zval *scope);
+/* $closureTypeResolver->getClosureType($scope, $expr, $shallow, $storage) /
+ * ->buildClosureTypeForClosure(...) / ->buildClosureTypeForArrowFunction(...)
+ * / ->getDeclaredClosureType($scope, $expr) — the native bodies for the
+ * shadowing class, the methods otherwise (the nullable ones NULL or IS_NULL
+ * for null, everything borrowed); UNDEF = pending exception */
+zv::Val pt_closure_type_resolver_get_closure_type(zval *resolver, zval *scope, zval *expr, bool shallow, zval *storage);
+zv::Val pt_closure_type_resolver_build_closure_type_for_closure(zval *resolver, zval *scope, zval *expr, zval *returnStatements, zval *yieldStatements, zval *executionEnds, zval *throwPoints, zval *impurePoints, zval *invalidateExpressions, bool native = false, zval *storage = NULL, zval *passedToType = NULL, zval *nativePassedToType = NULL);
+zv::Val pt_closure_type_resolver_build_closure_type_for_arrow_function(zval *resolver, zval *scope, zval *expr, zval *arrowScope, zval *throwPoints, zval *impurePoints, zval *invalidateExpressions, bool native = false, zval *storage = NULL, zval *passedToType = NULL, zval *nativePassedToType = NULL);
+zv::Val pt_closure_type_resolver_get_declared_closure_type(zval *resolver, zval *scope, zval *expr);
+/* MutatingScope.cpp — the scope calls of the closure ports:
+ * ->getFunctionType($type, $isNullable, $isVariadic) /
+ * ->isParameterValueNullable($param) / ->getClosureScopeCacheKey($roots) /
+ * ->enterAnonymousFunctionWithoutReflection(...) /
+ * ->enterArrowFunctionWithoutReflection(...) / ->getKeepVoidType($node) /
+ * MutatingScope::intersectButNotNever($nativeType, $inferredType) and the
+ * public $inFunctionCallsStack (the borrowed slot; NULL = the
+ * uninitialized-read Error) — the native body for exactly a MutatingScope,
+ * the method otherwise; UNDEF / false = pending exception */
+zv::Val pt_mutating_scope_get_function_type(zend_object *scope, zval *type, bool isNullable, bool isVariadic);
+[[nodiscard]] bool pt_mutating_scope_is_parameter_value_nullable(zend_object *scope, zval *parameter, bool &out);
+zv::Val pt_mutating_scope_get_closure_scope_cache_key(zend_object *scope, zval *relevantRoots);
+zv::Val pt_mutating_scope_enter_anonymous_function_without_reflection(zend_object *scope, zval *closure, zval *callableParameters, zval *nativeCallableParameters);
+zv::Val pt_mutating_scope_enter_arrow_function_without_reflection(zend_object *scope, zval *arrowFunction, zval *callableParameters, zval *nativeCallableParameters);
+zv::Val pt_mutating_scope_get_keep_void_type(zend_object *scope, zval *node);
+zv::Val pt_mutating_scope_intersect_but_not_never(zval *nativeType, zval *inferredType);
+zval *pt_mutating_scope_in_function_calls_stack(zend_object *scope);
+/* NativeParameterReflection.cpp — $parameter->toOptional() /
+ * $parameter->union($other); UNDEF = pending exception */
+zv::Val pt_native_parameter_reflection_to_optional(zval *parameter);
+zv::Val pt_native_parameter_reflection_union(zval *parameter, zval *other);
 
 /* }}} */
 

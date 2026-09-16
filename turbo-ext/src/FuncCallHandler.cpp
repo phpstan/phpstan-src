@@ -25,9 +25,9 @@
  * entries; the function reflection getters through
  * FunctionReflectionAccess.cpp. ArgumentsHandler / ArgumentsNormalizer /
  * ParametersAcceptorSelector and the acceptors' getters go through the call
- * handlers' shared sites (CallHandlerSupport.h); the analyser classes still
- * PHP only here — the reflection provider, ClosureTypeResolver,
- * ClosureProcessor, CloneHandler, SimpleThrowPoint,
+ * handlers' shared sites (CallHandlerSupport.h), ClosureTypeResolver
+ * through its direct entry; the analyser classes still PHP only here — the
+ * reflection provider, ClosureProcessor, CloneHandler, SimpleThrowPoint,
  * DynamicReturnTypeExtensionRegistry, ImpossibleCheckTypeHelper — through
  * the cached sites in the block below, one helper each; the dynamic
  * throw-type / return-type / type-specifying extensions (PHP forever)
@@ -63,7 +63,6 @@ constexpr uint32_t PT_FCH_POLY_SITE_SLOTS_LIMIT = 1u << PT_FCH_POLY_SITE_SLOT_BI
 /* {{{ the PHP collaborators (one site each; switch to their direct entries
  * once they are ported) */
 
-pt_method_site pt_fch_get_declared_closure_type_site;
 pt_method_site pt_fch_process_immediately_called_callable_site;
 pt_method_site pt_fch_resolve_clone_type_site;
 pt_method_site pt_fch_throw_point_explicit_site;
@@ -88,11 +87,10 @@ zv::Val getFunction(zval *reflectionProvider, zval *name, zval *scope)
 	return pt_reflection_provider_get_function(reflectionProvider, name, scope);
 }
 
-/* $closureTypeResolver->getDeclaredClosureType($scope, $closure) */
-zv::Val getDeclaredClosureType(zval *closureTypeResolver, zval *scope, zval *closure)
+/* $closureTypeResolver->getDeclaredClosureType($scope, $closure) (ClosureTypeResolver.cpp) */
+inline zv::Val getDeclaredClosureType(zval *closureTypeResolver, zval *scope, zval *closure)
 {
-	zv::Args argv{scope, closure};
-	return pt_call_method_cached(pt_fch_get_declared_closure_type_site, Z_OBJ_P(closureTypeResolver), PT_LC("getdeclaredclosuretype"), 2, argv);
+	return pt_closure_type_resolver_get_declared_closure_type(closureTypeResolver, scope, closure);
 }
 
 /* $argumentsHandler->processArgs($nodeScopeResolver, $stmt, $calleeReflection,

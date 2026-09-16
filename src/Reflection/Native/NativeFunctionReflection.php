@@ -115,6 +115,11 @@ final class NativeFunctionReflection implements FunctionReflection
 		return [];
 	}
 
+	public function getPureUnlessParameterPassedParameters(): array
+	{
+		return [];
+	}
+
 	private function isVoid(): bool
 	{
 		foreach ($this->variants as $variant) {

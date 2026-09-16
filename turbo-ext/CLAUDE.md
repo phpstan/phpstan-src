@@ -128,6 +128,80 @@ being ≥0.5% faster is. When the estimate is marginal, don't port.
     rebased). A PHP-twin-only edit needs no bump, but still needs the parity
     checks and the port.
 
+## Porting analysis-engine classes (handlers, NodeScopeResolver)
+
+NodeScopeResolver, StatementsHandler, the ExprHandler / StmtHandler classes,
+their processors and helpers and the analyser value classes they trade calls
+with are ported as one engine. Only rules and extensions (dynamic return type
+and type-specifying extensions, rule callbacks, third-party code) stay PHP
+for good; a native class calling into an analyser-internal PHP class pays a
+full userland call per crossing, so every such call is future work — write it
+so the next port can switch it in one place. The foundation is `src/Engine.h`
+(implemented in `Engine.cpp` and `ExpressionResult.cpp`); ScalarHandler.cpp and
+VariableHandler.cpp are the reference handler ports.
+
+- **Closures the twin creates** (typeCallback, specifyTypesCallback,
+  createTypesCallback, callbacks handed to helpers) are native closures:
+  `pt_native_closure(&body, captures...)` builds a
+  `PHPStanTurbo\NativeClosure` — the C++ body plus the captured values in one
+  allocation — with `body(zval *captures, uint32_t argc, zval *argv, zval
+  *return_value)`. Capture exactly what the PHP closure captures, in a fixed
+  order, `$this` (the handler object) included when the body reads its
+  properties: values are copied like `use ($x)`; `pt_native_closure_new(fn,
+  count, captures, byReferenceMask)` keeps masked IS_REFERENCE captures as
+  references (`use (&$x)`). The holder is callable from PHP like the closure
+  (`$cb()`, call_user_func, `callable` parameters, clone); native code calls
+  it through `pt_type_call_callable()` / `pt_call_fci()` without a frame.
+  Where a PHP signature demands `Closure`, pass
+  `pt_native_closure_to_closure(holder)`. Never compile or bind userland code.
+- **`$this->expressionResultFactory->create(...)`** is
+  `pt_expression_result_create(factory, args)`: the required parameters in the
+  `pt_expression_result_args` constructor (NULL = null, NULL throw/impure
+  points = `[]`), each named optional argument of the twin's call through its
+  `with*()` setter. For the container-generated factory the native
+  ExpressionResult is constructed directly (the extensions collection is
+  learned from the factory's first result and cached per factory object); any
+  other factory gets `create()` with the same named arguments. Read results
+  with `pt_expression_result_get_*()` / `_has_yield()` /
+  `_is_always_terminating()` / `pt_expression_result_variable_flow()`.
+- **Handler dispatch**: a native handler registers its processExpr() /
+  processStmt() body right after `cls.shadow(&pt_ce_x)` with
+  `pt_expr_handler_entry_register(&pt_ce_x, &X::processExprEntry)` /
+  `pt_stmt_handler_entry_register(...)`. Callers use
+  `pt_expr_handler_process(handler, nodeScopeResolver, stmt, expr, scope,
+  storage, nodeCallback, context)` / `pt_stmt_handler_process(...)`: the
+  registered body directly, a PHP handler's method through a zend_function
+  resolved once per class. Resolve handlers with
+  `pt_expr_handler_registry_resolve()` / `pt_stmt_handler_registry_resolve()`.
+  Other public handler methods called across handlers are exported as
+  `pt_<handler>_<method>(zval *handler, ...)` — the native body when
+  `Z_OBJCE_P(handler)` is the native class, the method by name otherwise
+  (`pt_variable_handler_compose_result()`).
+- **Contexts**: `pt_expression_context_*()` / `pt_statement_context_*()`
+  (factories, derivations, getters).
+- **PHP collaborators that are not ported yet**: one small helper per called
+  method, grouped in a block at the top of the file, each over a
+  file-level `pt_method_site` (`pt_call_method_cached()` /
+  `pt_call_static_cached()` resolve the zend_function once per class per
+  request); a PHP object's declared property through a `pt_property_site`.
+  Classes you instantiate or call statically go through the class map (rule
+  5); drop the key when their port lands.
+- **DI services** (`#[AutowiredService]`): register `__construct` by its
+  generated signature — Nette reflects the arginfo — and write the promoted
+  slots. The processExpr() glue parses its seven parameters with the raw
+  ZEND_PARSE_PARAMETERS macros (zp::parse stops at six).
+- **Verification**: `tests/walk-trace.php` records a whole NodeScopeResolver
+  walk (every node the callback sees, both type flavours of every expression,
+  the scope at every statement) once with the PHP classes and once with the
+  natives, in separate processes, and requires identical traces:
+  `TURBO_DLL=$PWD/turbo-ext/phpstan_turbo.so php turbo-ext/tests/walk-trace.php --shards=8`
+  (default corpus: NSRT, src/Analyser, src/Type/Constant; pass paths to narrow
+  it, `--keep=DIR` to inspect a divergence). Register engine classes in
+  smoke.php's `$coveredElsewhere` with `'walk-trace.php'`, or add a prefixed
+  differential next to the twin (the ports then run on the PHP collaborators,
+  which exercises every direct entry's fallback path — see the ScalarHandler /
+  VariableHandler section).
+
 ## Build and verify commands
 
 ```bash

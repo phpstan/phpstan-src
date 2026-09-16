@@ -242,6 +242,8 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_CLASS_CONST_STMT */ {"classConstStmt", "PhpParser\\Node\\Stmt\\ClassConst"},
 	/* PT_CLASS_EXPR_HANDLER */ {"exprHandler", "PHPStan\\Analyser\\ExprHandler"},
 	/* PT_CLASS_STMT_HANDLER */ {"stmtHandler", "PHPStan\\Analyser\\StmtHandler"},
+	/* PT_CLASS_IMPURE_POINT */ {"impurePoint", "PHPStan\\Analyser\\ImpurePoint"},
+	/* PT_CLASS_ISSETABILITY_DESCRIPTOR */ {"issetabilityDescriptor", "PHPStan\\Analyser\\IssetabilityDescriptor"},
 };
 
 zend_class_entry *pt_class(int idx)

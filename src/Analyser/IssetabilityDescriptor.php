@@ -12,6 +12,7 @@ use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Rules\Properties\FoundPropertyReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\NeverType;
 
 /**
@@ -25,6 +26,7 @@ use PHPStan\Type\NeverType;
  * (IssetabilityResolution::isSet) and the rule (PHPStan\Rules\IssetCheck) read
  * those facts; neither re-traverses the AST nor re-resolves types/reflections.
  */
+#[ReferencedByTurboExtension(key: 'issetabilityDescriptor')]
 final class IssetabilityDescriptor
 {
 

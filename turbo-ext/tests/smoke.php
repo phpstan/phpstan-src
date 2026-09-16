@@ -3755,6 +3755,127 @@ foreach ($hrResults['php'] as $label => $described) {
 }
 check(count($hrResults['php']['expr memo']) === 2 && count($hrResults['php']['stmt memo']) === 2, 'handler registries: the fixture exercises two containers');
 
+// ---- ScalarHandler / VariableHandler and their native closures ----
+// walk-trace.php compares the handler ports as the engine runs them; here the
+// prefixed ports run next to the twins on the same PHP collaborators (the
+// direct entries' fallback paths: PHP scope, context, results and factory),
+// and the closures they hand out are called every way PHP code calls one. A
+// dynamic name's type is not resolved here: the native typeCallback hands the
+// native TypeSpecifierContext to the PHP IdenticalNarrowingHelper, which the
+// prefixed declaration cannot satisfy — walk-trace.php covers that path
+// (nsrt/bug-12398.php, variable-variable-assign.php).
+$covered[\PHPStan\Analyser\ExprHandler\ScalarHandler::class] = true;
+$covered[\PHPStan\Analyser\ExprHandler\VariableHandler::class] = true;
+$hhNodeScopeResolver = $scContainer->getByType(\PHPStan\Analyser\NodeScopeResolver::class);
+$hhFactory = $scContainer->getByType(\PHPStan\Analyser\ExpressionResultFactory::class);
+$hhDefault = $scContainer->getByType(\PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper::class);
+$hhIdentical = $scContainer->getByType(\PHPStan\Analyser\ExprHandler\Helper\IdenticalNarrowingHelper::class);
+$hhInitializer = $scContainer->getByType(\PHPStan\Reflection\InitializerExprTypeResolver::class);
+$hhStmt = new \PhpParser\Node\Stmt\Nop();
+$hhName = new \PhpParser\Node\Expr\Variable('n');
+$hhScope = $erScope->assignVariable('n', new \PHPStanTurbo\ConstantStringType('a'), new \PHPStanTurbo\StringType(), \PHPStan\TrinaryLogic::createYes());
+$hhExprs = [
+	'variable' => new \PhpParser\Node\Expr\Variable('a'),
+	'variable maybe' => new \PhpParser\Node\Expr\Variable('m'),
+	'variable undefined' => new \PhpParser\Node\Expr\Variable('nope'),
+	'superglobal' => new \PhpParser\Node\Expr\Variable('_GET'),
+	'this' => new \PhpParser\Node\Expr\Variable('this'),
+	'dynamic name' => new \PhpParser\Node\Expr\Variable($hhName),
+	'string' => new \PhpParser\Node\Scalar\String_('s'),
+	'int' => new \PhpParser\Node\Scalar\Int_(5),
+	'float' => new \PhpParser\Node\Scalar\Float_(1.5),
+];
+$hhContexts = [
+	'top' => \PHPStan\Analyser\ExpressionContext::createTopLevel(),
+	'deep' => \PHPStan\Analyser\ExpressionContext::createDeep(),
+	'unset' => \PHPStan\Analyser\ExpressionContext::createDeep()->enterUnsetTarget(),
+	'dim root' => \PHPStan\Analyser\ExpressionContext::createDeep()->enterArrayDimFetchRoot(),
+	'value flow' => \PHPStan\Analyser\ExpressionContext::createDeep()->enterValueFlow(new \PHPStan\Node\Variable\VariableWrite('t', $hhName, 42, \PHPStan\Node\Variable\VariableWrite::KIND_ASSIGN), true),
+];
+$hhResults = [];
+foreach (['php' => [\PHPStan\Analyser\ExprHandler\ScalarHandler::class, \PHPStan\Analyser\ExprHandler\VariableHandler::class], 'native' => [\PHPStanTurbo\ScalarHandler::class, \PHPStanTurbo\VariableHandler::class]] as $side => [$scalarClass, $variableClass]) {
+	$r = [];
+	$scalar = new $scalarClass($hhInitializer, $hhFactory);
+	$variable = new $variableClass($hhFactory, $hhDefault, $hhIdentical, $hhInitializer);
+	$describeType = static fn ($type) => $type instanceof \PHPStan\Type\Type ? $type->describe(\PHPStan\Type\VerbosityLevel::precise()) : get_debug_type($type);
+	$describe = static function (\PHPStan\Analyser\ExpressionResult $result, bool $resolveTypes) use ($describeType, $vfDescribe, $hhScope, $turboNorm): array {
+		$callbacks = [];
+		foreach (['typeCallback', 'specifyTypesCallback', 'createTypesCallback'] as $property) {
+			$callbacks[$property] = (new \ReflectionProperty($result, $property))->getValue($result);
+		}
+		$typeCallback = $callbacks['typeCallback'];
+		$d = [
+			'type' => $resolveTypes ? $describeType($result->getType()) : null,
+			'native' => $resolveTypes ? $describeType($result->getNativeType()) : null,
+			'flow' => $vfDescribe($result->getVariableFlow()),
+			'impure' => array_map(static fn ($point) => [$point->getIdentifier(), $point->getDescription(), $point->isCertain()], $result->getImpurePoints()),
+			'throw' => count($result->getThrowPoints()),
+			'yield' => $result->hasYield(),
+			'terminating' => $result->isAlwaysTerminating(),
+			'scope' => $result->getScope() === $hhScope,
+			'issetability' => get_debug_type((new \ReflectionProperty($result, 'issetabilityDescriptor'))->getValue($result)),
+			'callable' => is_callable($typeCallback),
+			'createTypesCallback' => $callbacks['createTypesCallback'],
+		];
+		if ($typeCallback !== null && $resolveTypes) {
+			$d['call'] = $describeType($typeCallback(false));
+			$d['call native'] = $describeType($typeCallback(true));
+			$d['call_user_func'] = $describeType(call_user_func($typeCallback, false));
+			$d['call_user_func_array'] = $describeType(call_user_func_array($typeCallback, [true]));
+			$d['fromCallable'] = $describeType(\Closure::fromCallable($typeCallback)(false));
+			$d['first-class callable'] = $describeType($typeCallback(...)(true));
+			$d['callable parameter'] = $describeType((static fn (callable $callback) => $callback(false, 'surplus'))($typeCallback));
+			$d['clone'] = $describeType((clone $typeCallback)(false));
+			$d['equality'] = [$typeCallback == $typeCallback, $typeCallback == clone $typeCallback, $typeCallback === $typeCallback];
+		}
+		$specified = $callbacks['specifyTypesCallback'](\PHPStan\Analyser\TypeSpecifierContext::createTruthy(), false);
+		$d['specify'] = [$turboNorm(get_class($specified)), array_map($describeType, array_map(static fn ($pair) => $pair[1], $specified->getSureTypes()))];
+		return $d;
+	};
+	foreach ($hhExprs as $exprLabel => $expr) {
+		foreach ($hhContexts as $contextLabel => $context) {
+			$handler = $expr instanceof \PhpParser\Node\Scalar ? $scalar : $variable;
+			$calls = [
+				'' => static fn ($storage) => $handler->processExpr($hhNodeScopeResolver, $hhStmt, $expr, $hhScope, $storage, new \PHPStan\Analyser\NoopNodeCallback(), $context),
+			];
+			if ($handler === $variable) {
+				// no name result for a dynamic name: the twin's typeCallback throws
+				$calls[' / composed'] = static fn ($storage) => $variable->composeResult($hhNodeScopeResolver, $expr, null, $storage, $hhScope, $context);
+				$calls[' / composed without context'] = static fn ($storage) => $variable->composeResult($hhNodeScopeResolver, $expr, null, $storage, $hhScope);
+			}
+			foreach ($calls as $callLabel => $call) {
+				$storage = new \PHPStan\Analyser\ExpressionResultStorage();
+				$hhScope->pushExpressionResultStorage($storage);
+				try {
+					$r[$exprLabel . ' / ' . $contextLabel . $callLabel] = $describe($call($storage), $exprLabel !== 'dynamic name');
+				} catch (\Throwable $e) {
+					$r[$exprLabel . ' / ' . $contextLabel . $callLabel] = [get_class($e), $e->getMessage()];
+				} finally {
+					$hhScope->popExpressionResultStorage();
+				}
+			}
+		}
+	}
+	$hhResults[$side] = $r;
+}
+foreach ($hhResults['php'] as $label => $described) {
+	check($described === ($hhResults['native'][$label] ?? null), "ScalarHandler/VariableHandler parity ($label): " . json_encode($described) . ' vs ' . json_encode($hhResults['native'][$label] ?? null));
+}
+check(($hhResults['php']['variable / top']['type'] ?? null) === 'int' && ($hhResults['php']['dynamic name / top']['flow']['kind'] ?? null) === 'sequence', 'ScalarHandler/VariableHandler: the fixture resolves a variable and walks a dynamic name: ' . json_encode([$hhResults['php']['variable / top'] ?? null, $hhResults['php']['dynamic name / top'] ?? null]));
+// a native closure is not serializable and has no body when userland creates one
+try {
+	serialize((new \ReflectionProperty(\PHPStan\Analyser\ExpressionResult::class, 'typeCallback'))->getValue((new \PHPStanTurbo\ScalarHandler($hhInitializer, $hhFactory))->processExpr($hhNodeScopeResolver, $hhStmt, $hhExprs['int'], $hhScope, new \PHPStan\Analyser\ExpressionResultStorage(), new \PHPStan\Analyser\NoopNodeCallback(), $hhContexts['top'])));
+	check(false, 'NativeClosure: serialize() must refuse');
+} catch (\Exception $e) {
+	check(str_contains($e->getMessage(), 'is not allowed'), 'NativeClosure: serialize() message: ' . $e->getMessage());
+}
+try {
+	(new \PHPStanTurbo\NativeClosure())();
+	check(false, 'NativeClosure: a userland instance must not be callable');
+} catch (\Error $e) {
+	check($e->getMessage() === 'phpstan_turbo: native closure without a body', 'NativeClosure: userland instance message: ' . $e->getMessage());
+}
+
 // ---- differential coverage completeness ----
 // Every shadowed class must be exercised by one of the tests/ scripts; the
 // classes not covered above have their own dedicated script.

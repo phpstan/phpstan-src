@@ -10,6 +10,7 @@
 
 #include "support.h"
 #include "reg.h"
+#include "Engine.h"
 
 #ifdef PHP_WIN32
 #include <process.h>
@@ -330,6 +331,12 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_statement_context();
 	pt_register_expr_handler_registry();
 	pt_register_stmt_handler_registry();
+	/* the engine-port foundation (Engine.h) and the handler ports; the
+	 * handlers after the ExpressionResult and context classes their
+	 * signatures name */
+	pt_register_native_closure();
+	pt_register_scalar_handler();
+	pt_register_variable_handler();
 
 	return SUCCESS;
 }
@@ -361,6 +368,7 @@ static PHP_RINIT_FUNCTION(phpstan_turbo)
 	pt_mutating_scope_rinit();
 	pt_variable_flow_rinit();
 	pt_php_class_reflection_extension_rinit();
+	pt_engine_rinit();
 
 	return SUCCESS;
 }
@@ -375,6 +383,7 @@ static PHP_RSHUTDOWN_FUNCTION(phpstan_turbo)
 	pt_support_rshutdown();
 	pt_object_type_rshutdown();
 	pt_static_type_factory_rshutdown();
+	pt_engine_rshutdown();
 
 	return SUCCESS;
 }

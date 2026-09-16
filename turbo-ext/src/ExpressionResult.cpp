@@ -25,6 +25,9 @@ namespace sigs = ptdecl::ExpressionResult::sig;
 #include "zv.h"
 #include "TypeTraits.h"
 #include "TypeOps.h"
+#include "Engine.h"
+
+#include "zend_closures.h" /* zend_ce_closure */
 
 #include <cstring>
 
@@ -734,7 +737,7 @@ private:
 		if (UNEXPECTED(specified.isUndef())) return zv::Val();
 		specified = withEqualityCheckResult(std::move(specified), memoSlot == slots::truthyScope);
 		if (UNEXPECTED(specified.isUndef())) return zv::Val();
-		return memoize(memoSlot, pt_type_call(Z_OBJ_P(scope), PT_LC("applyspecifiedtypes"), 1, specified.raw()));
+		return memoize(memoSlot, pt_mutating_scope_apply_specified_types(Z_OBJ_P(scope), specified.raw()));
 	}
 
 	/* Mirrors withEqualityCheckResult() (private): an equality check narrows
@@ -1085,6 +1088,298 @@ zv::Val pt_expression_result_variable_flow(zval *result)
 	if (EXPECTED(Z_OBJCE_P(result) == pt_ce_expression_result)) return ExpressionResult(Z_OBJ_P(result)).getVariableFlow();
 	return pt_type_call(Z_OBJ_P(result), PT_LC("getvariableflow"), 0, NULL);
 }
+
+/* {{{ direct entries for native callers (Engine.h) */
+
+namespace {
+
+/* the twin is final: an instance of the native class entry is read
+ * natively, anything else (the PHP twin under the prefixed differential
+ * activation) through its method */
+inline bool isNativeResult(zval *result)
+{
+	return EXPECTED(Z_OBJCE_P(result) == pt_ce_expression_result);
+}
+
+} // namespace
+
+zv::Val pt_expression_result_get_type(zval *result)
+{
+	if (isNativeResult(result)) return ExpressionResult(Z_OBJ_P(result)).getType();
+	return pt_type_call(Z_OBJ_P(result), PT_LC("gettype"), 0, NULL);
+}
+
+zv::Val pt_expression_result_get_native_type(zval *result)
+{
+	if (isNativeResult(result)) return ExpressionResult(Z_OBJ_P(result)).getNativeType();
+	return pt_type_call(Z_OBJ_P(result), PT_LC("getnativetype"), 0, NULL);
+}
+
+zv::Val pt_expression_result_get_scope(zval *result)
+{
+	if (isNativeResult(result)) return ExpressionResult(Z_OBJ_P(result)).getScope();
+	return pt_type_call(Z_OBJ_P(result), PT_LC("getscope"), 0, NULL);
+}
+
+zv::Val pt_expression_result_get_before_scope(zval *result)
+{
+	if (isNativeResult(result)) return ExpressionResult(Z_OBJ_P(result)).getBeforeScope();
+	return pt_type_call(Z_OBJ_P(result), PT_LC("getbeforescope"), 0, NULL);
+}
+
+zv::Val pt_expression_result_get_throw_points(zval *result)
+{
+	if (isNativeResult(result)) return ExpressionResult(Z_OBJ_P(result)).getThrowPoints();
+	return pt_type_call(Z_OBJ_P(result), PT_LC("getthrowpoints"), 0, NULL);
+}
+
+zv::Val pt_expression_result_get_impure_points(zval *result)
+{
+	if (isNativeResult(result)) return ExpressionResult(Z_OBJ_P(result)).getImpurePoints();
+	return pt_type_call(Z_OBJ_P(result), PT_LC("getimpurepoints"), 0, NULL);
+}
+
+bool pt_expression_result_has_yield(zval *result, bool &out)
+{
+	if (isNativeResult(result)) {
+		out = ExpressionResult(Z_OBJ_P(result)).hasYield();
+		return true;
+	}
+	zv::Val value = pt_type_call(Z_OBJ_P(result), PT_LC("hasyield"), 0, NULL);
+	if (UNEXPECTED(value.isUndef())) return false;
+	out = Z_TYPE_P(value.raw()) == IS_TRUE;
+	return true;
+}
+
+bool pt_expression_result_is_always_terminating(zval *result, bool &out)
+{
+	if (isNativeResult(result)) {
+		out = ExpressionResult(Z_OBJ_P(result)).isAlwaysTerminating();
+		return true;
+	}
+	zv::Val value = pt_type_call(Z_OBJ_P(result), PT_LC("isalwaysterminating"), 0, NULL);
+	if (UNEXPECTED(value.isUndef())) return false;
+	out = Z_TYPE_P(value.raw()) == IS_TRUE;
+	return true;
+}
+
+/* }}} */
+
+/* {{{ ExpressionResult creation for native callers (Engine.h) */
+
+namespace {
+
+/* the extensions collection and the DefaultNarrowingHelper each recently
+ * used generated factory passes, learned from its first result; the entries
+ * hold the factory, so its object can never be reused by another factory
+ * while it is cached */
+struct FactoryCollection
+{
+	zend_object *factory;
+	zval collection;
+	zval defaultNarrowingHelper;
+};
+
+#define PT_ER_FACTORY_CACHE_LIMIT 4
+FactoryCollection pt_er_factories[PT_ER_FACTORY_CACHE_LIMIT];
+uint32_t pt_er_factory_next = 0;
+
+FactoryCollection *cachedCollection(zend_object *factory)
+{
+	for (FactoryCollection &entry : pt_er_factories) {
+		if (entry.factory == factory) return &entry;
+	}
+	return NULL;
+}
+
+void rememberCollection(zend_object *factory, zval *collection, zval *defaultNarrowingHelper)
+{
+	FactoryCollection &entry = pt_er_factories[pt_er_factory_next];
+	pt_er_factory_next = (pt_er_factory_next + 1) % PT_ER_FACTORY_CACHE_LIMIT;
+	zend_object *previousFactory = entry.factory;
+	zval previousCollection, previousHelper;
+	ZVAL_COPY_VALUE(&previousCollection, &entry.collection);
+	ZVAL_COPY_VALUE(&previousHelper, &entry.defaultNarrowingHelper);
+	GC_ADDREF(factory);
+	entry.factory = factory;
+	ZVAL_COPY(&entry.collection, collection);
+	ZVAL_COPY(&entry.defaultNarrowingHelper, defaultNarrowingHelper);
+	if (previousFactory != NULL) {
+		OBJ_RELEASE(previousFactory);
+		zval_ptr_dtor(&previousCollection);
+		zval_ptr_dtor(&previousHelper);
+	}
+}
+
+/* Whether the factory is the implementation Nette generates for
+ * #[GenerateFactory]: `new class ($this) implements <Factory> { private
+ * $container; ... create(...) { return new <Class>($this->container->
+ * getService(...), ...); } }`, declared inside the container class's file —
+ * an anonymous user class whose only property holds an object of a class
+ * declared in the same file. Its create() forwards every parameter to the
+ * constructor with the extensions collection as the first argument. */
+bool isGeneratedFactory(zend_object *factory)
+{
+	zend_class_entry *ce = factory->ce;
+	if ((ce->ce_flags & ZEND_ACC_ANON_CLASS) == 0 || ce->type != ZEND_USER_CLASS || ce->default_properties_count != 1 || ce->info.user.filename == NULL) return false;
+	zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&ce->properties_info, PT_LC("container"));
+	if (info == NULL || info->offset != OBJ_PROP_TO_OFFSET(0)) return false;
+	zval *container = OBJ_PROP_NUM(factory, 0);
+	if (Z_TYPE_P(container) != IS_OBJECT) return false;
+	zend_class_entry *containerCe = Z_OBJCE_P(container);
+	return containerCe->type == ZEND_USER_CLASS && containerCe->info.user.filename != NULL && zend_string_equals(containerCe->info.user.filename, ce->info.user.filename);
+}
+
+inline zval *nullable(zval *value)
+{
+	return value != NULL && Z_TYPE_P(value) != IS_NULL ? value : NULL;
+}
+
+/* a callable argument as the constructor's zpp checks it (a closure is
+ * callable without asking the engine); false with the TypeError pending */
+bool checkCallable(zval *value, uint32_t argNum, bool nullable)
+{
+	if (value == NULL) {
+		if (nullable) return true;
+	} else if (Z_TYPE_P(value) == IS_OBJECT && (Z_OBJCE_P(value) == pt_ce_native_closure || Z_OBJCE_P(value) == zend_ce_closure)) {
+		return true;
+	} else if (zend_is_callable(value, 0, NULL)) {
+		return true;
+	}
+	zend_type_error("PHPStan\\Analyser\\ExpressionResult::__construct(): Argument #%u must be of type %scallable, %s given", argNum, nullable ? "?" : "", value == NULL ? "null" : zend_zval_value_name(value));
+	return false;
+}
+
+/* new ExpressionResult($collection, $defaultNarrowingHelper, ...$args) */
+zv::Val constructDirect(zval *collection, zval *defaultNarrowingHelper, const pt_expression_result_args &args)
+{
+	zval emptyArray;
+	ZVAL_EMPTY_ARRAY(&emptyArray);
+	ConstructorArgs a;
+	a.expressionTypeResolverExtensions = collection;
+	a.defaultNarrowingHelper = defaultNarrowingHelper;
+	a.scope = args.scope;
+	a.beforeScope = args.beforeScope;
+	a.expr = args.expr;
+	a.hasYield = args.hasYield;
+	a.isAlwaysTerminating = args.isAlwaysTerminating;
+	a.throwPoints = args.throwPoints != NULL ? args.throwPoints : &emptyArray;
+	a.impurePoints = args.impurePoints != NULL ? args.impurePoints : &emptyArray;
+	a.typeCallback = nullable(args.typeCallback);
+	a.specifyTypesCallback = nullable(args.specifyTypesCallback);
+	a.containsNullsafe = args.containsNullsafe;
+	a.issetabilityDescriptor = nullable(args.issetabilityDescriptor);
+	a.truthyScopeOverrideResult = nullable(args.truthyScopeOverrideResult);
+	a.falseyScopeOverrideResult = nullable(args.falseyScopeOverrideResult);
+	a.createTypesCallback = nullable(args.createTypesCallback);
+	a.type = nullable(args.type);
+	a.nativeType = nullable(args.nativeType);
+	a.argsResult = nullable(args.argsResult);
+	a.variableFlow = nullable(args.variableFlow);
+	if (UNEXPECTED(Z_TYPE_P(a.throwPoints) != IS_ARRAY || Z_TYPE_P(a.impurePoints) != IS_ARRAY)) {
+		zend_type_error("PHPStan\\Analyser\\ExpressionResult::__construct(): Argument #%u must be of type array, %s given", Z_TYPE_P(a.throwPoints) != IS_ARRAY ? 8 : 9, zend_zval_value_name(Z_TYPE_P(a.throwPoints) != IS_ARRAY ? a.throwPoints : a.impurePoints));
+		return zv::Val();
+	}
+	if (UNEXPECTED(!checkCallable(a.typeCallback, 10, true) || !checkCallable(a.specifyTypesCallback, 11, false) || !checkCallable(a.createTypesCallback, 16, true))) return zv::Val();
+
+	zval object;
+	if (UNEXPECTED(object_init_ex(&object, pt_ce_expression_result) != SUCCESS)) return zv::Val();
+	if (UNEXPECTED(!ExpressionResult::construct(Z_OBJ(object), a))) {
+		zval_ptr_dtor(&object);
+		return zv::Val();
+	}
+	return zv::Val::adopt(object);
+}
+
+/* $factory->create(...) through the engine: the required parameters
+ * positionally, the optional ones the call names as named arguments */
+zv::Val createThroughFactory(zend_object *factory, const pt_expression_result_args &args)
+{
+	zend_function *create = pt_find_method(factory->ce, PT_LC("create"));
+	if (UNEXPECTED(create == NULL)) return zv::Val();
+
+	zval null, emptyArray;
+	ZVAL_NULL(&null);
+	ZVAL_EMPTY_ARRAY(&emptyArray);
+	auto orNull = [&null](zval *value) { return value != NULL ? value : &null; };
+	zv::Args argv{
+		orNull(args.scope),
+		orNull(args.beforeScope),
+		orNull(args.expr),
+		args.hasYield,
+		args.isAlwaysTerminating,
+		args.throwPoints != NULL ? args.throwPoints : &emptyArray,
+		args.impurePoints != NULL ? args.impurePoints : &emptyArray,
+		orNull(args.typeCallback),
+		orNull(args.specifyTypesCallback),
+	};
+
+	HashTable named;
+	zend_hash_init(&named, 8, NULL, NULL, 0);
+	zval containsNullsafe;
+	ZVAL_BOOL(&containsNullsafe, args.containsNullsafe);
+	const struct
+	{
+		uint32_t bit;
+		const char *name;
+		size_t len;
+		zval *value;
+	} optionals[] = {
+		{ PT_ER_NAMED_CONTAINS_NULLSAFE, PT_LC("containsNullsafe"), &containsNullsafe },
+		{ PT_ER_NAMED_ISSETABILITY_DESCRIPTOR, PT_LC("issetabilityDescriptor"), orNull(args.issetabilityDescriptor) },
+		{ PT_ER_NAMED_TRUTHY_SCOPE_OVERRIDE_RESULT, PT_LC("truthyScopeOverrideResult"), orNull(args.truthyScopeOverrideResult) },
+		{ PT_ER_NAMED_FALSEY_SCOPE_OVERRIDE_RESULT, PT_LC("falseyScopeOverrideResult"), orNull(args.falseyScopeOverrideResult) },
+		{ PT_ER_NAMED_CREATE_TYPES_CALLBACK, PT_LC("createTypesCallback"), orNull(args.createTypesCallback) },
+		{ PT_ER_NAMED_TYPE, PT_LC("type"), orNull(args.type) },
+		{ PT_ER_NAMED_NATIVE_TYPE, PT_LC("nativeType"), orNull(args.nativeType) },
+		{ PT_ER_NAMED_ARGS_RESULT, PT_LC("argsResult"), orNull(args.argsResult) },
+		{ PT_ER_NAMED_VARIABLE_FLOW, PT_LC("variableFlow"), orNull(args.variableFlow) },
+	};
+	for (const auto &optional : optionals) {
+		if ((args.named & optional.bit) != 0) {
+			zend_hash_str_add(&named, optional.name, optional.len, optional.value);
+		}
+	}
+
+	zval ret;
+	zend_call_known_function(create, factory, factory->ce, &ret, 9, argv, zend_hash_num_elements(&named) > 0 ? &named : NULL);
+	zend_hash_destroy(&named);
+	if (UNEXPECTED(EG(exception))) {
+		zval_ptr_dtor(&ret);
+		return zv::Val();
+	}
+
+	if (Z_TYPE(ret) == IS_OBJECT && Z_OBJCE(ret) == pt_ce_expression_result && isGeneratedFactory(factory)) {
+		rememberCollection(factory, OBJ_PROP_NUM(Z_OBJ(ret), slots::expressionTypeResolverExtensions), OBJ_PROP_NUM(Z_OBJ(ret), slots::defaultNarrowingHelper));
+	}
+	return zv::Val::adopt(ret);
+}
+
+} // namespace
+
+zv::Val pt_expression_result_create(zval *factory, const pt_expression_result_args &args)
+{
+	FactoryCollection *cached = cachedCollection(Z_OBJ_P(factory));
+	if (EXPECTED(cached != NULL)) return constructDirect(&cached->collection, &cached->defaultNarrowingHelper, args);
+	return createThroughFactory(Z_OBJ_P(factory), args);
+}
+
+void pt_expression_result_rshutdown()
+{
+	for (FactoryCollection &entry : pt_er_factories) {
+		if (entry.factory == NULL) continue;
+		zend_object *factory = entry.factory;
+		entry.factory = NULL;
+		OBJ_RELEASE(factory);
+		zval_ptr_dtor(&entry.collection);
+		ZVAL_UNDEF(&entry.collection);
+		zval_ptr_dtor(&entry.defaultNarrowingHelper);
+		ZVAL_UNDEF(&entry.defaultNarrowingHelper);
+	}
+	pt_er_factory_next = 0;
+}
+
+/* }}} */
 
 /* {{{ engine ABI glue: parameter parsing + registration */
 

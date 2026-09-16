@@ -280,6 +280,8 @@ enum {
 	PT_CLASS_CLASS_CONST_STMT,
 	PT_CLASS_EXPR_HANDLER,
 	PT_CLASS_STMT_HANDLER,
+	PT_CLASS_IMPURE_POINT,
+	PT_CLASS_ISSETABILITY_DESCRIPTOR,
 	PT_CLASS_COUNT
 };
 
@@ -1788,6 +1790,36 @@ zv::Val pt_statement_context_enter_unrolled_foreach(zval *context, zend_long tot
  * (both arguments borrowed); UNDEF = pending exception */
 zv::Val pt_expr_handler_registry_resolve(zend_object *expr, zval *container);
 zv::Val pt_stmt_handler_registry_resolve(zend_object *stmt, zval *container);
+
+/* }}} */
+
+/* {{{ the analysis-engine foundation (Engine.h / Engine.cpp) and its first
+ * handler ports (ScalarHandler.cpp, VariableHandler.cpp) */
+
+/* MutatingScope.cpp — $scope->doNotTreatPhpDocTypesAsCertain() /
+ * ->hasVariableType($name) (the TrinaryLogic singleton) /
+ * ->getVariableType($name) / ->applySpecifiedTypes($specifiedTypes) for the
+ * engine ports: the native body for a MutatingScope (or a subclass
+ * inheriting the method), the method otherwise; UNDEF = pending exception */
+zv::Val pt_mutating_scope_do_not_treat_phpdoc_types_as_certain(zend_object *scope);
+zv::Val pt_mutating_scope_has_variable_type(zend_object *scope, zend_string *variableName);
+zv::Val pt_mutating_scope_get_variable_type(zend_object *scope, zend_string *variableName);
+zv::Val pt_mutating_scope_apply_specified_types(zend_object *scope, zval *specifiedTypes);
+
+/* VariableFlow.cpp — VariableFlow::mention($name) / VariableFlow::all(
+ * VariableFlow::READ_ALL); UNDEF = pending exception */
+zv::Val pt_variable_flow_mention(zend_string *name);
+zv::Val pt_variable_flow_all_read_all();
+
+/* the handler ports */
+extern zend_class_entry *pt_ce_scalar_handler;
+extern zend_class_entry *pt_ce_variable_handler;
+void pt_register_scalar_handler();
+void pt_register_variable_handler();
+/* $variableHandler->composeResult($nodeScopeResolver, $expr, $nameResult,
+ * $storage, $beforeScope, $context) ($nameResult / $context NULL for null,
+ * everything borrowed); UNDEF = pending exception */
+zv::Val pt_variable_handler_compose_result(zval *handler, zval *nodeScopeResolver, zval *expr, zval *nameResult, zval *storage, zval *beforeScope, zval *context);
 
 /* }}} */
 

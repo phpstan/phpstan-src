@@ -9,6 +9,7 @@
  */
 
 #include "TypeTraits.h"
+#include "Engine.h"
 #include "generated/JustNullableTypeTrait.h"
 #include "generated/NonArrayTypeTrait.h"
 #include "generated/NonCallableTypeTrait.h"
@@ -1953,6 +1954,11 @@ zv::Val pt_type_call_callable(zval *callable, uint32_t argc, zval *argv)
 	ZVAL_DEREF(target);
 	if (Z_TYPE_P(target) == IS_OBJECT) {
 		zend_object *object = Z_OBJ_P(target);
+		/* the engine ports' closures (Engine.h) */
+		if (object->ce == pt_ce_native_closure) {
+			zval ret;
+			return pt_native_closure_invoke(object, argc, argv, &ret) ? zv::Val::adopt(ret) : zv::Val();
+		}
 		if (object->ce == pt_ce_native_callback) {
 			zval ret;
 			return pt_native_callback_invoke(object, argc, argv, &ret) ? zv::Val::adopt(ret) : zv::Val();
@@ -2067,7 +2073,9 @@ bool pt_direct_invoke(const zend_function *fn, zend_object *object, uint32_t arg
 	handled = true;
 	zif_handler handler = fn->internal_function.handler;
 	zend_class_entry *scope = fn->common.scope;
-	if (handler == invokeNativeCallback || (scope == pt_ce_native_callback && zend_string_equals_literal(fn->common.function_name, "__invoke"))) {
+	if (handler == pt_native_closure_invoke_handler() || (scope == pt_ce_native_closure && zend_string_equals_literal(fn->common.function_name, "__invoke"))) {
+		if (EXPECTED(object != NULL && object->ce == pt_ce_native_closure)) return pt_native_closure_invoke(object, argc, argv, retval);
+	} else if (handler == invokeNativeCallback || (scope == pt_ce_native_callback && zend_string_equals_literal(fn->common.function_name, "__invoke"))) {
 		if (EXPECTED(object != NULL && object->ce == pt_ce_native_callback)) return pt_native_callback_invoke(object, argc, argv, retval);
 	} else if (handler == pt_object_type_callback_invoke_handler() || (scope == pt_object_type_callback_ce() && zend_string_equals_literal(fn->common.function_name, "__invoke"))) {
 		if (EXPECTED(object != NULL && object->ce == pt_object_type_callback_ce())) {

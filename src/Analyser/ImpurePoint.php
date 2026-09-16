@@ -4,11 +4,13 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node;
 use PHPStan\Node\VirtualNode;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * @phpstan-type ImpurePointIdentifier = 'echo'|'die'|'exit'|'propertyAssign'|'propertyAssignByRef'|'propertyUnset'|'propertyHookCall'|'methodCall'|'new'|'functionCall'|'include'|'require'|'print'|'eval'|'superglobal'|'yield'|'yieldFrom'|'static'|'global'|'betweenPhpTags'|'staticPropertyAccess'
  * @api
  */
+#[ReferencedByTurboExtension(key: 'impurePoint')]
 final class ImpurePoint
 {
 

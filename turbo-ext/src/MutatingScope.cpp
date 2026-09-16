@@ -11450,6 +11450,36 @@ zv::Val pt_mutating_scope_get_function(zend_object *scope)
 	return pt_type_call(scope, PT_LC("getfunction"), 0, NULL);
 }
 
+/* the engine ports' reads (Engine.h): exactly a MutatingScope takes the
+ * native body without a lookup, a subclass inheriting the method too */
+zv::Val pt_mutating_scope_do_not_treat_phpdoc_types_as_certain(zend_object *scope)
+{
+	if (EXPECTED(scope->ce == pt_ce_mutating_scope || pt_type_method_is(scope, PT_LC("donottreatphpdoctypesascertain"), msDoNotTreatPhpDocTypesAsCertain))) return MutatingScope(scope).doNotTreatPhpDocTypesAsCertain();
+	return pt_type_call(scope, PT_LC("donottreatphpdoctypesascertain"), 0, NULL);
+}
+
+zv::Val pt_mutating_scope_has_variable_type(zend_object *scope, zend_string *variableName)
+{
+	if (EXPECTED(scope->ce == pt_ce_mutating_scope || pt_type_method_is(scope, PT_LC("hasvariabletype"), msHasVariableType))) return MutatingScope(scope).hasVariableType(variableName);
+	zval nameZv;
+	ZVAL_STR(&nameZv, variableName);
+	return pt_type_call(scope, PT_LC("hasvariabletype"), 1, &nameZv);
+}
+
+zv::Val pt_mutating_scope_get_variable_type(zend_object *scope, zend_string *variableName)
+{
+	if (EXPECTED(scope->ce == pt_ce_mutating_scope || pt_type_method_is(scope, PT_LC("getvariabletype"), msGetVariableType))) return MutatingScope(scope).getVariableType(variableName);
+	zval nameZv;
+	ZVAL_STR(&nameZv, variableName);
+	return pt_type_call(scope, PT_LC("getvariabletype"), 1, &nameZv);
+}
+
+zv::Val pt_mutating_scope_apply_specified_types(zend_object *scope, zval *specifiedTypes)
+{
+	if (EXPECTED(scope->ce == pt_ce_mutating_scope || pt_type_method_is(scope, PT_LC("applyspecifiedtypes"), msApplySpecifiedTypes))) return MutatingScope(scope).applySpecifiedTypes(specifiedTypes);
+	return pt_type_call(scope, PT_LC("applyspecifiedtypes"), 1, specifiedTypes);
+}
+
 /* }}} */
 
 void pt_register_mutating_scope()

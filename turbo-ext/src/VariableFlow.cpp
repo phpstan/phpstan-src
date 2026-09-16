@@ -547,6 +547,18 @@ zv::Val pt_variable_flow_escape(zend_string *name)
 	return VariableFlow::escape(&nameValue);
 }
 
+zv::Val pt_variable_flow_mention(zend_string *name)
+{
+	zval nameValue;
+	ZVAL_STR(&nameValue, name);
+	return VariableFlow::mention(&nameValue);
+}
+
+zv::Val pt_variable_flow_all_read_all()
+{
+	return VariableFlow::all(pt_vf_kind_strings[PT_VF_READ_ALL]);
+}
+
 zv::Val pt_variable_flow_dead(zval *flow)
 {
 	return VariableFlow::dead(flow);

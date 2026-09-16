@@ -441,6 +441,8 @@ enum {
 	PT_CLASS_PRINT_EXPR,
 	PT_CLASS_SHELL_EXEC_EXPR,
 	PT_CLASS_ERROR_SUPPRESS_EXPR,
+	PT_CLASS_LITERAL_ARRAY_ITEM,
+	PT_CLASS_LITERAL_ARRAY_NODE,
 	PT_CLASS_COUNT
 };
 
@@ -3813,6 +3815,16 @@ void pt_register_function_callable_node_handler();
 void pt_register_method_callable_node_handler();
 void pt_register_static_method_callable_node_handler();
 void pt_register_instantiation_callable_node_handler();
+
+/* }}} */
+
+/* {{{ InstanceofHandler.cpp, ArrayHandler.cpp — registered at the END of the
+ * sequence */
+
+extern zend_class_entry *pt_ce_instanceof_handler;
+extern zend_class_entry *pt_ce_array_handler;
+void pt_register_instanceof_handler();
+void pt_register_array_handler();
 
 /* }}} */
 

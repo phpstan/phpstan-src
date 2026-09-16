@@ -392,6 +392,8 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_PRINT_EXPR */ {"printExpr", "PhpParser\\Node\\Expr\\Print_"},
 	/* PT_CLASS_SHELL_EXEC_EXPR */ {"shellExecExpr", "PhpParser\\Node\\Expr\\ShellExec"},
 	/* PT_CLASS_ERROR_SUPPRESS_EXPR */ {"errorSuppressExpr", "PhpParser\\Node\\Expr\\ErrorSuppress"},
+	/* PT_CLASS_LITERAL_ARRAY_ITEM */ {"literalArrayItem", "PHPStan\\Node\\LiteralArrayItem"},
+	/* PT_CLASS_LITERAL_ARRAY_NODE */ {"literalArrayNode", "PHPStan\\Node\\LiteralArrayNode"},
 };
 
 zend_class_entry *pt_class(int idx)

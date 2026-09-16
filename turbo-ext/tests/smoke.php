@@ -4413,6 +4413,8 @@ $coveredElsewhere = [
 	\PHPStan\Analyser\ExprHandler\Virtual\MethodCallableNodeHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\Virtual\StaticMethodCallableNodeHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\Virtual\InstantiationCallableNodeHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\InstanceofHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\ArrayHandler::class => 'walk-trace.php',
 ];
 foreach (array_keys($shadowedClasses) as $shadowedClass) {
 	check(

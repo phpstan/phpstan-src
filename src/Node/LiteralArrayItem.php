@@ -4,10 +4,12 @@ namespace PHPStan\Node;
 
 use PhpParser\Node\ArrayItem;
 use PHPStan\Analyser\Scope;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'literalArrayItem')]
 final class LiteralArrayItem
 {
 

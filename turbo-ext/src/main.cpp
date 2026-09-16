@@ -551,6 +551,8 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_method_callable_node_handler();
 	pt_register_static_method_callable_node_handler();
 	pt_register_instantiation_callable_node_handler();
+	pt_register_instanceof_handler();
+	pt_register_array_handler();
 
 	return SUCCESS;
 }

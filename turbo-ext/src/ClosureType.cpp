@@ -27,6 +27,7 @@
  */
 
 #include "TypeTraits.h"
+#include "AnalyserValues.h"
 #include "generated/ClosureType.h"
 
 namespace slots = ptdecl::ClosureType::slot;
@@ -244,9 +245,9 @@ public:
 				zend_throw_error(NULL, "Call to a member function isCertain() on %s", zend_zval_value_name(entry.value().raw()));
 				return -1;
 			}
-			zv::Val certain = pt_type_call(entry.value().asObject(), PT_LC("iscertain"), 0, NULL);
-			if (UNEXPECTED(certain.isUndef())) return -1;
-			if (!zend_is_true(certain.raw())) continue;
+			bool certain = false;
+			if (UNEXPECTED(!pt_simple_impure_point_is_certain(entry.value().raw(), certain))) return -1;
+			if (!certain) continue;
 			certainCount++;
 		}
 		return certainCount > 0 ? PT_TRI_NO : PT_TRI_MAYBE;

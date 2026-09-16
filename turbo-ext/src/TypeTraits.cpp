@@ -3339,13 +3339,11 @@ zv::Val pt_callable_assertions_empty()
 
 zv::Val pt_callable_new_simple_impure_point(const char *identifier, size_t identifierLen, const char *description, size_t descriptionLen, bool certain)
 {
-	zval args[3];
-	ZVAL_STRINGL(&args[0], identifier, identifierLen);
-	ZVAL_STRINGL(&args[1], description, descriptionLen);
-	ZVAL_BOOL(&args[2], certain);
-	zv::Val point = pt_type_new(PT_CLASS_SIMPLE_IMPURE_POINT, 3, args);
-	zval_ptr_dtor(&args[0]);
-	zval_ptr_dtor(&args[1]);
+	zend_string *identifierString = zend_string_init(identifier, identifierLen, 0);
+	zend_string *descriptionString = zend_string_init(description, descriptionLen, 0);
+	zv::Val point = pt_simple_impure_point_new(identifierString, descriptionString, certain);
+	zend_string_release(identifierString);
+	zend_string_release(descriptionString);
 	return point;
 }
 

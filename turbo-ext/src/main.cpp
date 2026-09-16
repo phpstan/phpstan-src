@@ -386,6 +386,7 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	 * first, which ResolvedMethodReflection wraps */
 	pt_register_changed_type_method_reflection();
 	pt_register_resolved_method_reflection();
+	pt_register_simple_impure_point();
 
 	return SUCCESS;
 }

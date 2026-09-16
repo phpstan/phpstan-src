@@ -94,7 +94,6 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_CALLABLE_ASSERTIONS_HELPER */ {"callableAssertionsHelper", "PHPStan\\Type\\CallableAssertionsHelper"},
 	/* PT_CLASS_CALLABLE_PARAMETERS_ACCEPTOR */ {"callableParametersAcceptor", "PHPStan\\Reflection\\Callables\\CallableParametersAcceptor"},
 	/* PT_CLASS_ASSERTIONS */ {"assertions", "PHPStan\\Reflection\\Assertions"},
-	/* PT_CLASS_SIMPLE_IMPURE_POINT */ {"simpleImpurePoint", "PHPStan\\Reflection\\Callables\\SimpleImpurePoint"},
 	/* PT_CLASS_SIMPLE_THROW_POINT */ {"simpleThrowPoint", "PHPStan\\Reflection\\Callables\\SimpleThrowPoint"},
 	/* PT_CLASS_DUMMY_PARAMETER */ {"dummyParameter", "PHPStan\\Reflection\\Php\\DummyParameter"},
 	/* PT_CLASS_PASSED_BY_REFERENCE */ {"passedByReference", "PHPStan\\Reflection\\PassedByReference"},

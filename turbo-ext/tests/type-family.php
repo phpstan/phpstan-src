@@ -6672,6 +6672,80 @@ foreach ([\PHPStan\Reflection\ResolvedMethodReflection::class, \PHPStan\Reflecti
 	}
 }
 
+// ---- SimpleImpurePoint ----
+// The value class and its two statics over real function and method
+// reflections: pure / impure / void functions, the flip parameters of
+// print_r() and var_export() (positional and named, truthy, maybe and falsy
+// arguments), the pure-unless-callable-is-impure parameters of array_filter()
+// and array_reduce() fed pure, impure, maybe-pure, null, non-callable and
+// omitted callbacks (positional and named), the transformed and plain
+// fixture methods, a missing scope or variant, and unconstructed instances
+$observations['native ' . \PHPStan\Reflection\Callables\SimpleImpurePoint::class] = (new ReflectionMethod(\PHPStan\Reflection\Callables\SimpleImpurePoint::class, 'createFromVariant'))->isInternal();
+{
+	$r = [];
+	$viewImpurePoint = static fn (?\PHPStan\Reflection\Callables\SimpleImpurePoint $point): ?array => $point === null ? null : [$point->getIdentifier(), $point->getDescription(), $point->isCertain()];
+	$bool = new \PHPStan\Type\BooleanType();
+	$pureClosure = new \PHPStan\Type\ClosureType([], $int, false, impurePoints: []);
+	$impureClosure = new \PHPStan\Type\ClosureType([], $int, false, impurePoints: [new \PHPStan\Reflection\Callables\SimpleImpurePoint('functionCall', 'certain', true)]);
+	$maybeClosure = new \PHPStan\Type\ClosureType([], $int, false);
+	$sipScope = $stringContainer->getByType(\PHPStan\Analyser\ScopeFactory::class)->create(\PHPStan\Analyser\ScopeContext::create(__FILE__));
+	foreach (['true' => new \PHPStan\Type\Constant\ConstantBooleanType(true), 'false' => new \PHPStan\Type\Constant\ConstantBooleanType(false), 'bool' => $bool, 'null' => new \PHPStan\Type\NullType(), 'string' => $string, 'pure' => $pureClosure, 'impure' => $impureClosure, 'maybe' => $maybeClosure, 'pureOrImpure' => new \PHPStan\Type\UnionType([$pureClosure, $impureClosure]), 'array' => new \PHPStan\Type\ArrayType($int, $int)] as $variableName => $variableType) {
+		$sipScope = $sipScope->assignVariable($variableName, $variableType, $variableType, \PHPStan\TrinaryLogic::createYes());
+	}
+	$arg = static fn (string $variable, ?string $name = null): \PhpParser\Node\Arg => new \PhpParser\Node\Arg(new \PhpParser\Node\Expr\Variable($variable), name: $name === null ? null : new \PhpParser\Node\Identifier($name));
+	$argLists = [
+		'none' => [],
+		'array' => [$arg('array')],
+		'array true' => [$arg('array'), $arg('true')],
+		'array false' => [$arg('array'), $arg('false')],
+		'array bool' => [$arg('array'), $arg('bool')],
+		'named return true' => [$arg('array'), $arg('true', 'return')],
+		'named first return' => [$arg('true', 'return'), $arg('array')],
+		'named other' => [$arg('array'), $arg('true', 'other')],
+		'array pure' => [$arg('array'), $arg('pure')],
+		'array impure' => [$arg('array'), $arg('impure')],
+		'array maybe' => [$arg('array'), $arg('maybe')],
+		'array null' => [$arg('array'), $arg('null')],
+		'array string' => [$arg('array'), $arg('string')],
+		'array pureOrImpure' => [$arg('array'), $arg('pureOrImpure')],
+		'named callback impure' => [$arg('impure', 'callback'), $arg('array', 'array')],
+		'named callback pure' => [$arg('array', 'array'), $arg('pure', 'callback')],
+		'named two maybe' => [$arg('array', 'one'), $arg('maybe', 'two')],
+		'keyed' => [1 => $arg('impure'), 0 => $arg('array')],
+	];
+	$functions = [];
+	foreach (['strlen', 'usleep', 'print_r', 'var_export', 'highlight_string', 'array_filter', 'array_reduce', 'array_map', 'rand'] as $functionName) {
+		$functions[$functionName] = $stringReflectionProvider->getFunction(new \PhpParser\Node\Name($functionName), null);
+	}
+	foreach ($functions as $functionName => $function) {
+		$variant = $function->getVariants()[0];
+		$r["function $functionName no scope"] = $catching(static fn () => $viewImpurePoint(\PHPStan\Reflection\Callables\SimpleImpurePoint::createFromVariant($function, $variant)));
+		$r["function $functionName no variant"] = $catching(static fn () => $viewImpurePoint(\PHPStan\Reflection\Callables\SimpleImpurePoint::createFromVariant($function, null, $sipScope, $argLists['array true'])));
+		foreach ($argLists as $argListName => $args) {
+			$r["function $functionName $argListName"] = $catching(static fn () => $viewImpurePoint(\PHPStan\Reflection\Callables\SimpleImpurePoint::createFromVariant($function, $variant, $sipScope, $args)));
+			$r["function $functionName $argListName verdict"] = $catching(static fn () => $view(\PHPStan\Reflection\Callables\SimpleImpurePoint::resolvePureUnlessCallableIsImpureVerdict($variant, $sipScope, $args)));
+		}
+	}
+	foreach (['returnsStatic', 'withValue', 'each', 'fails'] as $methodName) {
+		$prototype = new \PHPStan\Reflection\Type\CalledOnTypeUnresolvedMethodPrototypeReflection($fixture->getNativeMethod($methodName), $fixture, true, $calledOnTypes['object']);
+		foreach (['transformed' => $prototype->getTransformedMethod(), 'plain' => $fixture->getNativeMethod($methodName), 'builtin' => $stringReflectionProvider->getClass(\ArrayObject::class)->getNativeMethod('append')] as $methodKind => $method) {
+			$variant = $method->getVariants()[0];
+			$r["method $methodName $methodKind"] = $catching(static fn () => $viewImpurePoint(\PHPStan\Reflection\Callables\SimpleImpurePoint::createFromVariant($method, $variant, $sipScope, $argLists['array impure'])));
+			$r["method $methodName $methodKind no variant"] = $catching(static fn () => $viewImpurePoint(\PHPStan\Reflection\Callables\SimpleImpurePoint::createFromVariant($method, null)));
+		}
+	}
+	$r['constructed'] = $viewImpurePoint(new \PHPStan\Reflection\Callables\SimpleImpurePoint('methodCall', 'a description', true));
+	$r['named constructor'] = $viewImpurePoint(new \PHPStan\Reflection\Callables\SimpleImpurePoint(certain: false, description: 'd', identifier: 'propertyAssign'));
+	$raw = (new \ReflectionClass(\PHPStan\Reflection\Callables\SimpleImpurePoint::class))->newInstanceWithoutConstructor();
+	foreach (['getIdentifier', 'getDescription', 'isCertain'] as $rawMethod) {
+		$r["unconstructed $rawMethod"] = $catching(static fn () => $raw->$rawMethod());
+	}
+	$r['constant'] = (new \ReflectionClassConstant(\PHPStan\Reflection\Callables\SimpleImpurePoint::class, 'SIDE_EFFECT_FLIP_PARAMETERS'))->getValue();
+	foreach ($r as $key => $value) {
+		$observations["simple impure point $key"] = $value;
+	}
+}
+
 
 // observations holding bytes that are not UTF-8 (the invalid-UTF-8 subject's
 // descriptions) go out base64-encoded so json_encode() keeps every byte; the

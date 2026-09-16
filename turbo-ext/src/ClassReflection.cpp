@@ -4387,6 +4387,22 @@ zv::Val pt_class_reflection_get_native_reflection(zend_object *classReflection)
 	return pt_cr_foreign_bool(classReflection, PT_LC("isenum"), 0, NULL, out);
 }
 
+/* $classReflection->getDisplayName($withTemplateTypes) / ->isBuiltin();
+ * UNDEF / false = pending exception */
+zv::Val pt_class_reflection_get_display_name(zend_object *classReflection, bool withTemplateTypes)
+{
+	if (EXPECTED(classReflection->ce == pt_ce_class_reflection)) return ClassReflection(classReflection).getDisplayName(withTemplateTypes);
+	zval withTemplateTypesZv;
+	ZVAL_BOOL(&withTemplateTypesZv, withTemplateTypes);
+	return pt_type_call(classReflection, PT_LC("getdisplayname"), 1, &withTemplateTypesZv);
+}
+
+[[nodiscard]] bool pt_class_reflection_is_builtin(zend_object *classReflection, bool &out)
+{
+	if (EXPECTED(classReflection->ce == pt_ce_class_reflection)) return ClassReflection(classReflection).isBuiltin(out);
+	return pt_cr_foreign_bool(classReflection, PT_LC("isbuiltin"), 0, NULL, out);
+}
+
 /* }}} */
 
 /* {{{ engine ABI glue: parameter parsing + registration */

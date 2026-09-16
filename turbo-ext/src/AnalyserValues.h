@@ -30,6 +30,7 @@
 #include "generated/PreparedAssignTarget.h"
 #include "generated/TemplateArgumentFrame.h"
 #include "generated/ImpurePoint.h"
+#include "generated/SimpleImpurePoint.h"
 
 zv::Val pt_type_call(zend_object *object, const char *lcname, size_t len, uint32_t argc, zval *argv);
 
@@ -393,6 +394,15 @@ inline zval *pt_impure_point_node(zval *impurePoint, zv::Val &hold)
 inline bool pt_impure_point_is_certain(zval *impurePoint, bool &out)
 {
 	return ptav::readBool(impurePoint, pt_ce_impure_point, ptdecl::ImpurePoint::slot::certain, PT_LC("iscertain"), out);
+}
+
+/* }}} */
+
+/* {{{ SimpleImpurePoint: $impurePoint->isCertain() */
+
+inline bool pt_simple_impure_point_is_certain(zval *impurePoint, bool &out)
+{
+	return ptav::readBool(impurePoint, pt_ce_simple_impure_point, ptdecl::SimpleImpurePoint::slot::certain, PT_LC("iscertain"), out);
 }
 
 /* }}} */

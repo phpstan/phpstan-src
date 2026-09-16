@@ -131,7 +131,6 @@ enum {
 	PT_CLASS_CALLABLE_ASSERTIONS_HELPER,
 	PT_CLASS_CALLABLE_PARAMETERS_ACCEPTOR,
 	PT_CLASS_ASSERTIONS,
-	PT_CLASS_SIMPLE_IMPURE_POINT,
 	PT_CLASS_SIMPLE_THROW_POINT,
 	PT_CLASS_DUMMY_PARAMETER,
 	PT_CLASS_PASSED_BY_REFERENCE,
@@ -2399,6 +2398,35 @@ zv::Val pt_resolved_method_reflection_call(zend_object *method, pt_method_reflec
 /* the TrinaryLogic value (PT_TRI_*) of a trinary member's answer; -1 =
  * pending exception */
 zend_long pt_extended_method_reflection_trinary(zval *method, pt_method_reflection_member member);
+
+/* ClassReflection.cpp — $classReflection->getDisplayName($withTemplateTypes)
+ * / ->isBuiltin() for native callers (the native body for the shadowing
+ * class, the method otherwise); UNDEF / false = pending exception */
+zv::Val pt_class_reflection_get_display_name(zend_object *classReflection, bool withTemplateTypes = true);
+[[nodiscard]] bool pt_class_reflection_is_builtin(zend_object *classReflection, bool &out);
+
+/* }}} */
+
+/* {{{ SimpleImpurePoint.cpp — registered after the method reflections */
+
+extern zend_class_entry *pt_ce_simple_impure_point;
+void pt_register_simple_impure_point();
+/* new SimpleImpurePoint($identifier, $description, $certain); UNDEF =
+ * pending exception */
+zv::Val pt_simple_impure_point_new(zend_string *identifier, zend_string *description, bool certain);
+/* SimpleImpurePoint::createFromVariant($function, $variant, $scope, $args)
+ * without the object: exists false for the twin's null, the three
+ * constructor arguments otherwise (identifier a permanent interned string,
+ * description owned by the caller, who releases it); $variant / $scope NULL
+ * or IS_NULL for null, $args an array; false = pending exception */
+struct pt_simple_impure_point_data
+{
+	bool exists = false;
+	zend_string *identifier = nullptr;
+	zend_string *description = nullptr;
+	bool certain = false;
+};
+[[nodiscard]] bool pt_simple_impure_point_resolve(zval *function, zval *variant, zval *scope, zval *args, pt_simple_impure_point_data &out);
 
 /* }}} */
 

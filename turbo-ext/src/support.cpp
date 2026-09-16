@@ -167,7 +167,6 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_TYPE_ALIAS */ {"typeAlias", "PHPStan\\Type\\TypeAlias"},
 	/* PT_CLASS_CIRCULAR_TYPE_ALIAS_DEFINITION_EXCEPTION */ {"circularTypeAliasDefinitionException", "PHPStan\\Type\\CircularTypeAliasDefinitionException"},
 	/* PT_CLASS_VARIABLE_WRITE */ {"variableWrite", "PHPStan\\Node\\Variable\\VariableWrite"},
-	/* PT_CLASS_VARIABLE_WRITE_OFFSET */ {"variableWriteOffset", "PHPStan\\Analyser\\VariableWriteOffset"},
 	/* PT_CLASS_LIST_EXPR */ {"listExpr", "PhpParser\\Node\\Expr\\List_"},
 	/* PT_CLASS_VARIABLE_WRITES_NODE */ {"variableWritesNode", "PHPStan\\Node\\VariableWritesNode"},
 	/* PT_CLASS_VOID_TO_NULL_TRAVERSER */ {"voidToNullTraverser", "PHPStan\\Analyser\\Traverser\\VoidToNullTraverser"},

@@ -203,7 +203,6 @@ enum {
 	PT_CLASS_TYPE_ALIAS,
 	PT_CLASS_CIRCULAR_TYPE_ALIAS_DEFINITION_EXCEPTION,
 	PT_CLASS_VARIABLE_WRITE,
-	PT_CLASS_VARIABLE_WRITE_OFFSET,
 	PT_CLASS_LIST_EXPR,
 	PT_CLASS_VARIABLE_WRITES_NODE,
 	PT_CLASS_VOID_TO_NULL_TRAVERSER,
@@ -3144,6 +3143,26 @@ zv::Val pt_non_nullability_helper_revert_non_nullability(zval *helper, zval *sco
  * the native body for exactly the native class, the method otherwise; UNDEF =
  * pending exception */
 zv::Val pt_node_scope_resolver_process_expr_node_consuming_stored(zval *nodeScopeResolver, zval *stmt, zval *expr, zval *scope, zval *storage, zval *nodeCallback, zval *context);
+
+/* }}} */
+
+/* {{{ ArrayDimFetchHandler.cpp, VariableWriteOffset.cpp — registered after
+ * the property fetch handlers */
+
+extern zend_class_entry *pt_ce_variable_write_offset;
+extern zend_class_entry *pt_ce_array_dim_fetch_handler;
+void pt_register_variable_write_offset();
+void pt_register_array_dim_fetch_handler();
+
+/* VariableWriteOffset::fromType($dimType): the int|string offset or PHP
+ * null; UNDEF = pending exception */
+zv::Val pt_variable_write_offset_from_type(zval *dimType);
+
+/* $arrayDimFetchHandler->composeResult($nodeScopeResolver, $stmt, $expr,
+ * $dimResult, $varResult, $storage, $context, $beforeScope) — the native body
+ * for the shadowing class, the method otherwise ($dimResult NULL or IS_NULL
+ * for null); UNDEF = pending exception */
+zv::Val pt_array_dim_fetch_handler_compose_result(zval *handler, zval *nodeScopeResolver, zval *stmt, zval *expr, zval *dimResult, zval *varResult, zval *storage, zval *context, zval *beforeScope);
 
 /* }}} */
 

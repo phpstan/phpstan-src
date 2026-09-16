@@ -29,6 +29,7 @@ use PHPStan\Analyser\VariableWriteOffset;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
@@ -41,6 +42,7 @@ use function is_string;
  * @implements ExprHandler<ArrayDimFetch>
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ArrayDimFetchHandler.cpp')]
 final class ArrayDimFetchHandler implements ExprHandler
 {
 

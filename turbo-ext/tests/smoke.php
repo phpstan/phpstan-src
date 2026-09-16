@@ -4237,6 +4237,51 @@ $covered[\PHPStan\Analyser\PreparedAssignTarget::class] = true;
 $covered[\PHPStan\Analyser\RecordingNodeCallback::class] = true;
 require __DIR__ . '/analyser-values.php';
 
+// ---- VariableWriteOffset ----
+// fromType() over the key shapes an offset can take, each side on its own
+// types (the natives here are the prefixed classes) and the native side also
+// on the PHP types (the op table's method fallback)
+$covered[\PHPStan\Analyser\VariableWriteOffset::class] = true;
+$vwoTypes = static function (string $side): array {
+	$ns = $side === 'php' ? '\\PHPStan\\Type\\' : '\\PHPStanTurbo\\';
+	$constantNs = $side === 'php' ? '\\PHPStan\\Type\\Constant\\' : '\\PHPStanTurbo\\';
+	$int = $constantNs . 'ConstantIntegerType';
+	$string = $constantNs . 'ConstantStringType';
+	$bool = $constantNs . 'ConstantBooleanType';
+	$float = $constantNs . 'ConstantFloatType';
+	$null = $ns . 'NullType';
+	$union = $ns . 'UnionType';
+	$integer = $ns . 'IntegerType';
+	$mixed = $ns . 'MixedType';
+
+	return [
+		'int' => new $int(5),
+		'negative int' => new $int(-3),
+		'string' => new $string('a'),
+		'numeric string' => new $string('5'),
+		'empty string' => new $string(''),
+		'true' => new $bool(true),
+		'float' => new $float(1.5),
+		'null' => new $null(),
+		'union' => new $union([new $int(1), new $int(2)]),
+		'integer' => new $integer(),
+		'mixed' => new $mixed(),
+	];
+};
+$vwoResults = [];
+foreach (['php' => [\PHPStan\Analyser\VariableWriteOffset::class, 'php'], 'native' => [\PHPStanTurbo\VariableWriteOffset::class, 'native'], 'native-on-php' => [\PHPStanTurbo\VariableWriteOffset::class, 'php']] as $vwoSide => [$vwoClass, $vwoTypeSide]) {
+	foreach ($vwoTypes($vwoTypeSide) as $vwoLabel => $vwoType) {
+		try {
+			$vwoResults[$vwoSide][$vwoLabel] = ['value', $vwoClass::fromType($vwoType)];
+		} catch (\Throwable $e) {
+			$vwoResults[$vwoSide][$vwoLabel] = [get_class($e), $e->getMessage()];
+		}
+	}
+}
+check($vwoResults['php'] === $vwoResults['native'], 'VariableWriteOffset::fromType on native types: ' . json_encode($vwoResults['php']) . ' vs ' . json_encode($vwoResults['native']));
+check($vwoResults['php'] === $vwoResults['native-on-php'], 'VariableWriteOffset::fromType on PHP types: ' . json_encode($vwoResults['php']) . ' vs ' . json_encode($vwoResults['native-on-php']));
+check($vwoResults['php']['int'] === ['value', 5] && $vwoResults['php']['numeric string'] === ['value', 5] && $vwoResults['php']['union'] === ['value', null], 'VariableWriteOffset::fromType observes the key shapes: ' . json_encode($vwoResults['php']));
+
 // ---- differential coverage completeness ----
 // Every shadowed class must be exercised by one of the tests/ scripts; the
 // classes not covered above have their own dedicated script.
@@ -4283,6 +4328,7 @@ $coveredElsewhere = [
 	\PHPStan\Analyser\ExprHandler\PropertyFetchHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\StaticPropertyFetchHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\NullsafePropertyFetchHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\ArrayDimFetchHandler::class => 'walk-trace.php',
 ];
 foreach (array_keys($shadowedClasses) as $shadowedClass) {
 	check(

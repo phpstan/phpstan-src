@@ -505,9 +505,7 @@ zv::Val nnhEnsureNonNullabilityScope(zval *helper, zval *scope, zval *expr)
 /* $arrayDimFetchHandler->composeResult($nodeScopeResolver, $stmt, $expr, $dimResult, $varResult, $storage, $context, $beforeScope) */
 zv::Val adfhComposeResult(zval *handler, zval *nsr, zval *stmt, zval *expr, zval *dimResult, zval *varResult, zval *storage, zval *context, zval *beforeScope)
 {
-	static pt_method_site site;
-	zv::Args argv{nsr, stmt, expr, dimResult, varResult, storage, context, beforeScope};
-	return pt_call_method_cached(site, Z_OBJ_P(handler), PT_LC("composeresult"), 8, argv);
+	return pt_array_dim_fetch_handler_compose_result(handler, nsr, stmt, expr, dimResult, varResult, storage, context, beforeScope);
 }
 
 /* $propertyFetchHandler->composeResult($nodeScopeResolver, $expr, $varResult, $nameResult, $scopeBeforeVar, $beforeScope) */

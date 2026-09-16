@@ -111,9 +111,9 @@ zv::Val resultFlow(zv::Val result)
  * exception */
 zv::Val writeOffsetOf(zval *result)
 {
-	zv::Val type = pt_type_call(Z_OBJ_P(result), PT_LC("gettype"), 0, NULL);
+	zv::Val type = pt_expression_result_get_type(result);
 	if (UNEXPECTED(type.isUndef())) return zv::Val();
-	return pt_type_call_static(PT_CLASS_VARIABLE_WRITE_OFFSET, PT_LC("fromtype"), 1, type.raw());
+	return pt_variable_write_offset_from_type(type.raw());
 }
 
 /* new VariableWrite($variableName, $node, spl_object_id($node), $kind,

@@ -12670,3 +12670,16 @@ void pt_register_mutating_scope()
 }
 
 /* }}} */
+
+/* {{{ direct entries for the narrowing helpers (DefaultNarrowingHelper.cpp):
+ * $scope->toWalkScope() — the native body while the scope's method is
+ * MutatingScope's own handler (NodeCallbackScope overrides it), the method
+ * by name otherwise */
+
+zv::Val pt_mutating_scope_to_walk_scope(zend_object *scope)
+{
+	if (EXPECTED(scope->ce == pt_ce_mutating_scope || pt_type_method_is(scope, PT_LC("towalkscope"), msToWalkScope))) return MutatingScope(scope).toWalkScope();
+	return pt_type_call(scope, PT_LC("towalkscope"), 0, NULL);
+}
+
+/* }}} */

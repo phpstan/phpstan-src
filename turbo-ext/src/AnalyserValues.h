@@ -29,6 +29,7 @@
 #include "generated/AssignTargetWalkMode.h"
 #include "generated/PreparedAssignTarget.h"
 #include "generated/TemplateArgumentFrame.h"
+#include "generated/ImpurePoint.h"
 
 zv::Val pt_type_call(zend_object *object, const char *lcname, size_t len, uint32_t argc, zval *argv);
 
@@ -379,6 +380,20 @@ PT_AV_PREPARED_ASSIGN_TARGET(variable_name_result, variableNameResult, "getvaria
 #undef PT_AV_PREPARED_ASSIGN_TARGET
 #undef PT_AV_PREPARED_ASSIGN_TARGET_REQUIRED
 #undef PT_AV_PREPARED_ASSIGN_TARGET_BOOL
+
+/* }}} */
+
+/* {{{ ImpurePoint: $impurePoint->getNode() / ->isCertain() */
+
+inline zval *pt_impure_point_node(zval *impurePoint, zv::Val &hold)
+{
+	return ptav::read(impurePoint, pt_ce_impure_point, ptdecl::ImpurePoint::slot::node, PT_LC("getnode"), hold);
+}
+
+inline bool pt_impure_point_is_certain(zval *impurePoint, bool &out)
+{
+	return ptav::readBool(impurePoint, pt_ce_impure_point, ptdecl::ImpurePoint::slot::certain, PT_LC("iscertain"), out);
+}
 
 /* }}} */
 

@@ -43,7 +43,6 @@ namespace {
 
 pt_method_site pt_vh_process_expr_node_site;
 pt_method_site pt_vh_capture_first_arg_result_site;
-pt_method_site pt_vh_specify_default_types_site;
 pt_method_site pt_vh_specify_identical_site;
 pt_method_site pt_vh_resolve_identical_type_site;
 pt_method_site pt_vh_get_constant_strings_site;
@@ -67,8 +66,7 @@ zv::Val captureFirstArgResult(zval *identicalNarrowingHelper, zval *side, zval *
 /* $defaultNarrowingHelper->specifyDefaultTypes($expr, $context) */
 zv::Val specifyDefaultTypes(zval *defaultNarrowingHelper, zval *expr, zval *context)
 {
-	zv::Args argv{expr, context};
-	return pt_call_method_cached(pt_vh_specify_default_types_site, Z_OBJ_P(defaultNarrowingHelper), PT_LC("specifydefaulttypes"), 2, argv);
+	return pt_default_narrowing_helper_specify_default_types(defaultNarrowingHelper, expr, context);
 }
 
 /* $identicalNarrowingHelper->specifyIdentical(...) with its ten arguments */

@@ -1114,7 +1114,7 @@ void pt_register_specified_types()
 
 /* }}} */
 
-/* {{{ direct entries for the native readers of an ExpressionResult's and a scope's narrowing */
+/* {{{ direct entries for the narrowing helpers (DefaultNarrowingHelper.cpp) */
 
 /* $specifiedTypes->isEquality() */
 bool pt_specified_types_is_equality(zval *specifiedTypes, bool &out)
@@ -1128,6 +1128,27 @@ bool pt_specified_types_is_equality(zval *specifiedTypes, bool &out)
 	if (UNEXPECTED(result.isUndef())) return false;
 	out = zend_is_true(result.raw());
 	return true;
+}
+
+/* $specifiedTypes->setEquality() */
+zv::Val pt_specified_types_set_equality(zend_object *specifiedTypes)
+{
+	if (EXPECTED(specifiedTypes->ce == pt_ce_specified_types)) return SpecifiedTypes(specifiedTypes).setEquality();
+	return pt_type_call(specifiedTypes, PT_LC("setequality"), 0, NULL);
+}
+
+/* (new SpecifiedTypes($sureTypes, $sureNotTypes))->setRootExpr($rootExpr) in
+ * one allocation: the fresh object is not shared, so the root expression is
+ * written in place of the clone setRootExpr() makes (NULL for the []
+ * defaults / a null root); UNDEF = pending exception */
+zv::Val pt_specified_types_new_with_root_expr(zval *sureTypes, zval *sureNotTypes, zval *rootExpr)
+{
+	zv::Val created = pt_specified_types_new(sureTypes, sureNotTypes);
+	if (UNEXPECTED(created.isUndef())) return zv::Val();
+	if (rootExpr != NULL && Z_TYPE_P(rootExpr) != IS_NULL) {
+		zv::ObjRef(Z_OBJ_P(created.raw())).propAtWrite(slots::rootExpr, zv::Val::copyOf(zv::Ref(rootExpr)));
+	}
+	return created;
 }
 
 /* }}} */

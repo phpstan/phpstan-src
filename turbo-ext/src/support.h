@@ -292,6 +292,8 @@ enum {
 	PT_CLASS_PARSER_ISSET_EXPR,
 	PT_CLASS_NULLSAFE_OPERATOR_HELPER,
 	PT_CLASS_COALESCE_EXPR,
+	PT_CLASS_TYPE_EXPR,
+	PT_CLASS_IDENTICAL_EXPR,
 	PT_CLASS_COUNT
 };
 
@@ -1721,6 +1723,8 @@ zv::Val pt_specified_types_get_root_expr(zend_object *specifiedTypes);
 zv::Val pt_specified_types_remove_expr(zend_object *specifiedTypes, zend_string *exprString);
 zv::Val pt_specified_types_intersect_with(zend_object *specifiedTypes, zval *other);
 zv::Val pt_specified_types_union_with(zend_object *specifiedTypes, zval *other);
+/* $specifiedTypes->setEquality(); UNDEF = pending exception */
+zv::Val pt_specified_types_set_equality(zend_object *specifiedTypes);
 /* $specifiedTypes->isEquality(); false = pending exception */
 [[nodiscard]] bool pt_specified_types_is_equality(zval *specifiedTypes, bool &out);
 
@@ -2108,6 +2112,66 @@ zv::Val pt_type_specifier_specify_types_in_condition(zend_object *typeSpecifier,
  * $reflectionProvider, $className): the static memo's list when computed,
  * the method otherwise (arguments borrowed); UNDEF = pending exception */
 zv::Val pt_extension_class_helper_get_extension_class_names(zval *reflectionProvider, zval *className);
+
+/* }}} */
+
+/* {{{ the narrowing helpers (DefaultNarrowingHelper.cpp,
+ * IdenticalNarrowingHelper.cpp) and the direct entries they read through */
+
+/* ExpressionResult.cpp — $result->getExpr() / ->containsNullsafe() /
+ * ->getTypeOnScope($scope, $useNativeTypes) / ->getCreatedTypesForScope($scope,
+ * $type, $context) / ->getSpecifiedTypesForScope($scope, $context) /
+ * ->getIssetabilityResolution($scope, $useNativeTypes): the native body for a
+ * native result, the method otherwise (everything borrowed); UNDEF / false =
+ * pending exception */
+[[nodiscard]] bool pt_expression_result_contains_nullsafe(zval *result, bool &out);
+zv::Val pt_expression_result_get_created_types_for_scope(zval *result, zval *scope, zval *type, zval *context);
+zv::Val pt_expression_result_get_specified_types_for_scope(zval *result, zval *scope, zval *context);
+
+/* MutatingScope.cpp — $scope->toWalkScope() /
+ * ->specifyTypesOfNewWorldHandlerNode($node, $context) /
+ * ->getCurrentExpressionResultStorage() / ->getStateType($expr) /
+ * ->hasExpressionType($node) / ->getMethodReflection($type, $methodName) /
+ * ->resolveTypeByName($name): the native body for exactly a MutatingScope,
+ * the method by name otherwise; $scope->nativeTypesPromoted of any scope
+ * object. UNDEF / false = pending exception */
+zv::Val pt_mutating_scope_to_walk_scope(zend_object *scope);
+
+/* ExprPrinter.cpp — $exprPrinter->printExpr($expr): the native body for the
+ * shadowing ExprPrinter, the method otherwise; owned string, NULL = pending
+ * exception */
+zend_string *pt_expr_printer_print(zval *exprPrinter, zend_object *expr);
+
+/* SpecifiedTypes.cpp — (new SpecifiedTypes($sureTypes,
+ * $sureNotTypes))->setRootExpr($rootExpr) in one allocation (NULL for the []
+ * defaults / a null root); UNDEF = pending exception */
+zv::Val pt_specified_types_new_with_root_expr(zval *sureTypes, zval *sureNotTypes, zval *rootExpr);
+
+/* DefaultNarrowingHelper.cpp — the shadowing class and the public methods
+ * for native callers: the native body for the native class, the method by
+ * name otherwise (everything borrowed; a nullable argument NULL or IS_NULL
+ * for null; $chainResults the by-reference array, IS_REFERENCE or not);
+ * UNDEF / false = pending exception */
+extern zend_class_entry *pt_ce_default_narrowing_helper;
+void pt_register_default_narrowing_helper();
+zv::Val pt_default_narrowing_helper_specify_types_for_node(zval *helper, zval *scope, zval *node, zval *context);
+zv::Val pt_default_narrowing_helper_specify_default_types(zval *helper, zval *expr, zval *context);
+zv::Val pt_default_narrowing_helper_specify_default_types_with_plain_twin(zval *helper, zval *expr, zval *exprResult, zval *context, zval *s);
+zv::Val pt_default_narrowing_helper_to_sure_types(zval *helper, zval *types, zval *evaluationScope);
+zv::Val pt_default_narrowing_helper_create_subject_types(zval *helper, zval *s, zval *subject, zval *subjectResult, zval *type, zval *context);
+zv::Val pt_default_narrowing_helper_create_subject_types_from_result_state(zval *helper, zval *s, zval *subject, zval *subjectResult, zval *type, zval *context);
+zv::Val pt_default_narrowing_helper_specify_default_types_with_nullsafe_fan(zval *helper, zval *expr, zval *context, zval *beforeScope, bool nativeTypesPromoted);
+zv::Val pt_default_narrowing_helper_create_nullsafe_receiver_only_types(zval *helper, zval *s, zval *subject, zval *subjectResult, zval *type, zval *context);
+/* $helper->callMayHaveBeenSkipped($receiverResult, $receiverType, $context);
+ * $receiverResult NULL (or a null zval) for null; false = pending exception */
+[[nodiscard]] bool pt_default_narrowing_helper_call_may_have_been_skipped(zval *helper, zval *receiverResult, zval *receiverType, zval *context, bool &out);
+zv::Val pt_default_narrowing_helper_create_for_subject(zval *helper, zval *subject, zval *type, zval *context, zval *scope, zval *resultFor = NULL);
+[[nodiscard]] bool pt_default_narrowing_helper_capture_chain_results(zval *helper, zval *node, zval *storage, zval *chainResults);
+zv::Val pt_default_narrowing_helper_build_chain_type_reader(zval *helper, zval *chainResults, zval *s);
+zv::Val pt_default_narrowing_helper_create_isset_truthy_chain_types(zval *helper, zval *s, zval *issetExpr, zval *readType, zval *rootExpr, zval *context);
+zv::Val pt_default_narrowing_helper_create_isset_single_subject_non_true_types(zval *helper, zval *s, zval *issetExpr, zval *varResult, zval *readType, zval *context, zval *rootExpr);
+zv::Val pt_default_narrowing_helper_specify_types_from_asserts(zval *helper, zval *context, zval *call, zval *assertions, zval *parametersAcceptor, zval *scope);
+zv::Val pt_default_narrowing_helper_specify_types_from_conditional_return_type(zval *helper, zval *context, zval *call, zval *parametersAcceptor, zval *scope);
 
 /* }}} */
 

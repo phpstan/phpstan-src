@@ -1692,3 +1692,37 @@ void pt_register_expression_result()
 }
 
 /* }}} */
+
+/* {{{ direct entries for the narrowing helpers (DefaultNarrowingHelper.cpp,
+ * IdenticalNarrowingHelper.cpp): $result->containsNullsafe() /
+ * ->getCreatedTypesForScope() / ->getSpecifiedTypesForScope() — the native
+ * body for a native result, the method otherwise (the result and the
+ * arguments borrowed) */
+
+bool pt_expression_result_contains_nullsafe(zval *result, bool &out)
+{
+	if (isNativeResult(result)) {
+		out = ExpressionResult(Z_OBJ_P(result)).containsNullsafe();
+		return true;
+	}
+	zv::Val value = pt_type_call(Z_OBJ_P(result), PT_LC("containsnullsafe"), 0, NULL);
+	if (UNEXPECTED(value.isUndef())) return false;
+	out = Z_TYPE_P(value.raw()) == IS_TRUE;
+	return true;
+}
+
+zv::Val pt_expression_result_get_created_types_for_scope(zval *result, zval *scope, zval *type, zval *context)
+{
+	if (isNativeResult(result)) return ExpressionResult(Z_OBJ_P(result)).getCreatedTypesForScope(scope, type, context);
+	zv::Args argv{scope, type, context};
+	return pt_type_call(Z_OBJ_P(result), PT_LC("getcreatedtypesforscope"), 3, argv);
+}
+
+zv::Val pt_expression_result_get_specified_types_for_scope(zval *result, zval *scope, zval *context)
+{
+	if (isNativeResult(result)) return ExpressionResult(Z_OBJ_P(result)).getSpecifiedTypesForScope(scope, context);
+	zv::Args argv{scope, context};
+	return pt_type_call(Z_OBJ_P(result), PT_LC("getspecifiedtypesforscope"), 2, argv);
+}
+
+/* }}} */

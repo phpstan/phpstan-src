@@ -18,6 +18,7 @@ use PhpParser\Node\Expr\AssignOp\Coalesce;
 use PhpParser\Node\Expr\AssignRef;
 use PhpParser\Node\Expr\BinaryOp\BooleanAnd;
 use PhpParser\Node\Expr\BinaryOp\BooleanOr;
+use PhpParser\Node\Expr\BinaryOp\Identical;
 use PhpParser\Node\Expr\BinaryOp\LogicalAnd;
 use PhpParser\Node\Expr\BinaryOp\LogicalOr;
 use PhpParser\Node\Expr\CallLike;
@@ -251,6 +252,7 @@ final class TurboAttributeCollector
 		'logicalOrExpr' => LogicalOr::class,
 		'parserIssetExpr' => Isset_::class,
 		'coalesceExpr' => \PhpParser\Node\Expr\BinaryOp\Coalesce::class,
+		'identicalExpr' => Identical::class,
 	];
 
 	private string $realRoot;

@@ -254,6 +254,8 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_PARSER_ISSET_EXPR */ {"parserIssetExpr", "PhpParser\\Node\\Expr\\Isset_"},
 	/* PT_CLASS_NULLSAFE_OPERATOR_HELPER */ {"nullsafeOperatorHelper", "PHPStan\\Analyser\\NullsafeOperatorHelper"},
 	/* PT_CLASS_COALESCE_EXPR */ {"coalesceExpr", "PhpParser\\Node\\Expr\\BinaryOp\\Coalesce"},
+	/* PT_CLASS_TYPE_EXPR */ {"typeExpr", "PHPStan\\Node\\Expr\\TypeExpr"},
+	/* PT_CLASS_IDENTICAL_EXPR */ {"identicalExpr", "PhpParser\\Node\\Expr\\BinaryOp\\Identical"},
 };
 
 zend_class_entry *pt_class(int idx)

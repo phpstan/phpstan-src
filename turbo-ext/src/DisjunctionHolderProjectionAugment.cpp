@@ -7,8 +7,9 @@
  * the twin's property slots (generated declarations); evaluate() walks the
  * scopes' conditional holders natively (MutatingScope.cpp, the native holder
  * slots), resolves the thunks at most once each, runs the Type gates through
- * the native ops and TypeCombinator, and calls the PHP NodeScopeResolver /
- * DefaultNarrowingHelper by name from local helpers.
+ * the native ops and TypeCombinator, and calls the PHP NodeScopeResolver by
+ * name and DefaultNarrowingHelper through its direct entries, from local
+ * helpers.
  *
  * MutatingScope::applySpecifiedTypes() reaches evaluate() through
  * pt_disjunction_holder_projection_augment_evaluate(); the narrowing helper
@@ -40,8 +41,9 @@ zv::Val requireScopeStateType(zval *nodeScopeResolver, zval *expr, zval *scope)
 /* $defaultNarrowingHelper->createSubjectTypes($scope, $subject, null, $type, $context) */
 zv::Val createSubjectTypes(zval *defaultNarrowingHelper, zval *scope, zval *subject, zval *type, zend_object *context)
 {
-	zv::Args args{scope, subject, zv::null, type, context};
-	return pt_type_call(Z_OBJ_P(defaultNarrowingHelper), PT_LC("createsubjecttypes"), 5, args);
+	zval contextZv;
+	ZVAL_OBJ(&contextZv, context);
+	return pt_default_narrowing_helper_create_subject_types(defaultNarrowingHelper, scope, subject, NULL, type, &contextZv);
 }
 
 /* }}} */

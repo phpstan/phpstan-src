@@ -168,3 +168,28 @@ void pt_register_expr_printer()
 }
 
 /* }}} */
+
+/* $exprPrinter->printExpr($expr) for native callers: the native body (both
+ * fast paths, then the printer) for the shadowing ExprPrinter, the method of
+ * anything else; owned string, NULL with an exception pending */
+zend_string *pt_expr_printer_print(zval *exprPrinter, zend_object *expr)
+{
+	if (EXPECTED(Z_TYPE_P(exprPrinter) == IS_OBJECT && Z_OBJCE_P(exprPrinter) == pt_ce_expr_printer)) {
+		pt_init_strs();
+		return ExprPrinter(exprPrinter).printExpr(expr);
+	}
+	if (UNEXPECTED(Z_TYPE_P(exprPrinter) != IS_OBJECT)) {
+		zend_throw_error(NULL, "Call to a member function printExpr() on %s", zend_zval_value_name(exprPrinter));
+		return NULL;
+	}
+	zval exprArg;
+	ZVAL_OBJ(&exprArg, expr);
+	zv::Val printed = pt_type_call(Z_OBJ_P(exprPrinter), PT_LC("printexpr"), 1, &exprArg);
+	if (UNEXPECTED(printed.isUndef())) return NULL;
+	if (UNEXPECTED(!printed.ref().isString())) {
+		zend_throw_error(NULL, "phpstan_turbo: printExpr did not return a string");
+		return NULL;
+	}
+	zval printedZv = printed.take();
+	return Z_STR(printedZv);
+}

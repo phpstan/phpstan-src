@@ -6,7 +6,8 @@
  * the twin's property slots (generated declarations); evaluate() runs the
  * applying-scope gates natively (MutatingScope.cpp's hasExpressionType(),
  * TypeUtils, the Type ops, the TypeCombinator) and calls the PHP
- * NodeScopeResolver / DefaultNarrowingHelper by name from local helpers.
+ * NodeScopeResolver by name and DefaultNarrowingHelper through its direct
+ * entries, from local helpers.
  *
  * MutatingScope::applySpecifiedTypes() reaches evaluate() through
  * pt_disjunction_branch_union_augment_evaluate(); the narrowing helper
@@ -38,8 +39,9 @@ zv::Val requireScopeStateType(zval *nodeScopeResolver, zval *expr, zval *scope)
 /* $defaultNarrowingHelper->createForSubject($subject, $type, $context, $scope) */
 zv::Val createForSubject(zval *defaultNarrowingHelper, zval *subject, zval *type, zend_object *context, zval *scope)
 {
-	zv::Args args{subject, type, context, scope};
-	return pt_type_call(Z_OBJ_P(defaultNarrowingHelper), PT_LC("createforsubject"), 4, args);
+	zval contextZv;
+	ZVAL_OBJ(&contextZv, context);
+	return pt_default_narrowing_helper_create_for_subject(defaultNarrowingHelper, subject, type, &contextZv, scope);
 }
 
 /* }}} */

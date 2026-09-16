@@ -372,6 +372,9 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	/* the narrowing service handed to the type-specifying extensions — its
 	 * signatures name SpecifiedTypes and TypeSpecifierContext */
 	pt_register_type_specifier();
+	/* the narrowing helpers, after the SpecifiedTypes, ExpressionResult and
+	 * context classes their signatures name */
+	pt_register_default_narrowing_helper();
 
 	return SUCCESS;
 }

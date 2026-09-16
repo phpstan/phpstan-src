@@ -32,98 +32,21 @@
 
 namespace slots = ptdecl::MethodCallHandler::slot;
 namespace sigs = ptdecl::MethodCallHandler::sig;
-#include "zv.h"
-#include "TypeTraits.h"
-#include "TypeOps.h"
-#include "Engine.h"
-#include "AnalyserValues.h"
+#include "CallHandlerSupport.h"
 
 zend_class_entry *pt_ce_method_call_handler = nullptr;
 
 namespace {
 
-/* {{{ the PHP collaborators (one site each; switch to their direct entries
- * once they are ported) */
+using namespace ptcall;
 
-pt_method_site pt_mch_combine_variants_for_normalization_site;
-pt_method_site pt_mch_combine_acceptors_site;
-pt_method_site pt_mch_reorder_method_arguments_site;
-pt_method_site pt_mch_acceptor_return_type_site;
-pt_method_site pt_mch_resolved_acceptor_return_type_site;
-pt_method_site pt_mch_acceptor_native_return_type_site;
-pt_method_site pt_mch_acceptor_resolved_template_type_map_site;
-pt_method_site pt_mch_acceptor_call_site_variance_map_site;
-pt_method_site pt_mch_process_args_site;
-pt_method_site pt_mch_process_dropped_args_site;
+/* {{{ the PHP collaborators only this handler calls (one site each; switch to
+ * their direct entries once they are ported); the shared ones are in
+ * CallHandlerSupport.h */
+
 pt_method_site pt_mch_process_called_method_site;
 pt_method_site pt_mch_is_method_supported_site;
 pt_method_site pt_mch_extension_specify_types_site;
-pt_method_site pt_mch_assertions_get_all_site;
-pt_method_site pt_mch_assertions_map_types_site;
-pt_method_site pt_mch_get_constant_strings_site;
-
-/* ParametersAcceptorSelector::combineVariantsForNormalization($args, $variants, $namedArgumentsVariants) */
-zv::Val combineVariantsForNormalization(zval *args, zval *variants, zval *namedArgumentsVariants)
-{
-	zv::Args argv{args, variants, namedArgumentsVariants};
-	return pt_call_static_cached(pt_mch_combine_variants_for_normalization_site, PT_CLASS_PARAMETERS_ACCEPTOR_SELECTOR, PT_LC("combinevariantsfornormalization"), 3, argv);
-}
-
-/* ParametersAcceptorSelector::combineAcceptors($acceptors) */
-zv::Val combineAcceptors(zval *acceptors)
-{
-	return pt_call_static_cached(pt_mch_combine_acceptors_site, PT_CLASS_PARAMETERS_ACCEPTOR_SELECTOR, PT_LC("combineacceptors"), 1, acceptors);
-}
-
-/* ArgumentsNormalizer::reorderMethodArguments($parametersAcceptor, $methodCall) */
-zv::Val reorderMethodArguments(zval *parametersAcceptor, zval *methodCall)
-{
-	zv::Args argv{parametersAcceptor, methodCall};
-	return pt_call_static_cached(pt_mch_reorder_method_arguments_site, PT_CLASS_ARGUMENTS_NORMALIZER, PT_LC("reordermethodarguments"), 2, argv);
-}
-
-/* $parametersAcceptor->getReturnType() (the structural acceptor) */
-zv::Val acceptorReturnType(zval *acceptor)
-{
-	return pt_call_method_cached(pt_mch_acceptor_return_type_site, Z_OBJ_P(acceptor), PT_LC("getreturntype"), 0, NULL);
-}
-
-/* $resolvedParametersAcceptor->getReturnType() */
-zv::Val resolvedAcceptorReturnType(zval *acceptor)
-{
-	return pt_call_method_cached(pt_mch_resolved_acceptor_return_type_site, Z_OBJ_P(acceptor), PT_LC("getreturntype"), 0, NULL);
-}
-
-/* $acceptor->getNativeReturnType() */
-zv::Val acceptorNativeReturnType(zval *acceptor)
-{
-	return pt_call_method_cached(pt_mch_acceptor_native_return_type_site, Z_OBJ_P(acceptor), PT_LC("getnativereturntype"), 0, NULL);
-}
-
-/* $acceptor->getResolvedTemplateTypeMap() */
-zv::Val acceptorResolvedTemplateTypeMap(zval *acceptor)
-{
-	return pt_call_method_cached(pt_mch_acceptor_resolved_template_type_map_site, Z_OBJ_P(acceptor), PT_LC("getresolvedtemplatetypemap"), 0, NULL);
-}
-
-/* $acceptor->getCallSiteVarianceMap() */
-zv::Val acceptorCallSiteVarianceMap(zval *acceptor)
-{
-	return pt_call_method_cached(pt_mch_acceptor_call_site_variance_map_site, Z_OBJ_P(acceptor), PT_LC("getcallsitevariancemap"), 0, NULL);
-}
-
-/* $argumentsHandler->processArgs(...) with the eleven arguments the twin passes */
-zv::Val processArgs(zval *argumentsHandler, zval *argv)
-{
-	return pt_call_method_cached(pt_mch_process_args_site, Z_OBJ_P(argumentsHandler), PT_LC("processargs"), 11, argv);
-}
-
-/* $argumentsHandler->processDroppedArgs($nodeScopeResolver, $stmt, $originalCall,
- * $normalizedCall, $scope, $storage, $context) */
-bool processDroppedArgs(zval *argumentsHandler, zval *argv)
-{
-	return !pt_call_method_cached(pt_mch_process_dropped_args_site, Z_OBJ_P(argumentsHandler), PT_LC("processdroppedargs"), 7, argv).isUndef();
-}
 
 /* $calledMethodProcessor->processCalledMethod($nodeScopeResolver, $methodReflection) */
 zv::Val processCalledMethod(zval *calledMethodProcessor, zval *nodeScopeResolver, zval *methodReflection)
@@ -149,24 +72,6 @@ zv::Val extensionSpecifyTypes(zval *extension, zval *methodReflection, zval *nor
 	return pt_call_method_cached(pt_mch_extension_specify_types_site, Z_OBJ_P(extension), PT_LC("specifytypes"), 4, argv);
 }
 
-/* $assertions->getAll() */
-zv::Val assertionsGetAll(zval *assertions)
-{
-	return pt_call_method_cached(pt_mch_assertions_get_all_site, Z_OBJ_P(assertions), PT_LC("getall"), 0, NULL);
-}
-
-/* $assertions->mapTypes($callable) */
-zv::Val assertionsMapTypes(zval *assertions, zval *callable)
-{
-	return pt_call_method_cached(pt_mch_assertions_map_types_site, Z_OBJ_P(assertions), PT_LC("maptypes"), 1, callable);
-}
-
-/* $type->getConstantStrings() */
-zv::Val getConstantStrings(zval *type)
-{
-	return pt_call_method_cached(pt_mch_get_constant_strings_site, Z_OBJ_P(type), PT_LC("getconstantstrings"), 0, NULL);
-}
-
 /* }}} */
 
 /* {{{ the PhpParser nodes' properties */
@@ -177,33 +82,11 @@ pt_property_site pt_mch_args_site;
 pt_property_site pt_mch_identifier_name_site;
 pt_property_site pt_mch_arg_value_site;
 
-/* $node->$name (dereferenced); NULL with the uninitialized-read Error pending */
-zval *nodeProperty(pt_property_site &site, zval *node, const char *name, size_t len)
-{
-	zval *value = pt_property_cached(site, Z_OBJ_P(node), name, len);
-	if (EXPECTED(value != NULL)) {
-		ZVAL_DEREF(value);
-		if (EXPECTED(Z_TYPE_P(value) != IS_UNDEF)) return value;
-		zend_throw_error(NULL, "Typed property %s::$%s must not be accessed before initialization", ZSTR_VAL(Z_OBJCE_P(node)->name), name);
-		return NULL;
-	}
-	zend_throw_error(NULL, "Undefined property: %s::$%s", ZSTR_VAL(Z_OBJCE_P(node)->name), name);
-	return NULL;
-}
-
 zval *exprVar(zval *expr) { return nodeProperty(pt_mch_var_site, expr, PT_LC("var")); }
 zval *exprName(zval *expr) { return nodeProperty(pt_mch_name_site, expr, PT_LC("name")); }
 /* $expr->getArgs() of a MethodCall that is not a first-class callable (the
  * handler never sees one): its $args */
 zval *exprArgs(zval *expr) { return nodeProperty(pt_mch_args_site, expr, PT_LC("args")); }
-
-/* whether $node instanceof Identifier; -1 = pending exception */
-int isIdentifier(zval *node)
-{
-	zend_class_entry *identifierCe = pt_class(PT_CLASS_IDENTIFIER);
-	if (UNEXPECTED(identifierCe == NULL)) return -1;
-	return Z_TYPE_P(node) == IS_OBJECT && instanceof_function(Z_OBJCE_P(node), identifierCe) ? 1 : 0;
-}
 
 /* $identifier->name */
 zval *identifierName(zval *identifier) { return nodeProperty(pt_mch_identifier_name_site, identifier, PT_LC("name")); }
@@ -215,47 +98,6 @@ zval *identifierName(zval *identifier) { return nodeProperty(pt_mch_identifier_n
 /* the twin's literals, permanent interned strings (module startup) */
 zend_string *pt_mch_method_call = nullptr;
 zend_string *pt_mch_unknown_method = nullptr;
-
-/* $array[] = $value (the array separated first) */
-void appendTo(zv::Val &array, zv::Val value)
-{
-	zval *arr = array.raw();
-	SEPARATE_ARRAY(arr);
-	zval item = value.take();
-	if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(arr), &item) == NULL)) {
-		zval_ptr_dtor(&item);
-	}
-}
-
-/* array_merge($a, $b) of two arrays (string keys kept, integer keys
- * renumbered), with array_merge()'s own shortcut: an empty side yields the
- * other array itself when that one is a hole-free list */
-zv::Val arrayMerge(zval *a, zval *b)
-{
-	HashTable *first = Z_ARRVAL_P(a);
-	HashTable *second = Z_ARRVAL_P(b);
-	zval *only = zend_hash_num_elements(first) == 0 ? b : (zend_hash_num_elements(second) == 0 ? a : NULL);
-	if (only != NULL && HT_IS_PACKED(Z_ARRVAL_P(only)) && HT_IS_WITHOUT_HOLES(Z_ARRVAL_P(only))) return zv::Val::copyOf(zv::Ref(only));
-	zv::Arr merged = zv::Arr::create(zend_hash_num_elements(first) + zend_hash_num_elements(second));
-	for (HashTable *source : { first, second }) {
-		for (zv::ArrayEntry entry : zv::TableRef(source)) {
-			if (entry.hasStringKey()) {
-				merged.set(entry.stringKey(), zv::Val::copyOf(entry.value()));
-			} else {
-				merged.push(entry.value());
-			}
-		}
-	}
-	return zv::Val(std::move(merged));
-}
-
-/* $type instanceof NeverType && $type->isExplicit(); false = pending exception */
-bool isExplicitNever(zval *type, bool &out)
-{
-	out = false;
-	if (Z_TYPE_P(type) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(type), pt_ce_never_type)) return true;
-	return pt_never_type_is_explicit(Z_OBJ_P(type), out);
-}
 
 /* the method reflection's trinary answer; -1 = pending exception */
 zend_long reflectionTrinary(zval *methodReflection, pt_method_reflection_member member)
@@ -484,7 +326,7 @@ public:
 		zv::Val argsResult;
 		{
 			zv::Args argv{nodeScopeResolver, stmt, methodReflection.raw(), nakedMethod.raw(), variants.raw(), namedArgumentsVariants.raw(), normalizedExpr.raw(), currentScope.raw(), storage, nodeCallback, currentContext.raw()};
-			argsResult = processArgs(OBJ_PROP_NUM(self, slots::argumentsHandler), argv);
+			argsResult = processArgs(OBJ_PROP_NUM(self, slots::argumentsHandler), 11, argv);
 		}
 		if (UNEXPECTED(argsResult.isUndef())) return zv::Val();
 		borrowed = pt_args_result_resolved_parameters_acceptor(argsResult.raw(), hold);
@@ -1114,49 +956,6 @@ private:
 		return zv::Val::null();
 	}
 
-	/* the sprintf('%s::%s()', $declaringClass->getDisplayName(), $name) of the
-	 * PossiblyImpureCallExpr */
-	static zv::Val possiblyImpureCallDescription(zval *methodReflection)
-	{
-		zv::Val declaringClass = pt_extended_method_reflection_call(methodReflection, PT_MR_GET_DECLARING_CLASS);
-		if (UNEXPECTED(declaringClass.isUndef())) return zv::Val();
-		zv::Val displayName = pt_class_reflection_get_display_name(Z_OBJ_P(declaringClass.raw()), true);
-		if (UNEXPECTED(displayName.isUndef())) return zv::Val();
-		zv::Val methodName = pt_extended_method_reflection_call(methodReflection, PT_MR_GET_NAME);
-		if (UNEXPECTED(methodName.isUndef())) return zv::Val();
-		zend_string *displayNameString = zval_get_string(displayName.raw());
-		zend_string *methodNameString = zval_get_string(methodName.raw());
-		smart_str description = {NULL, 0};
-		smart_str_append(&description, displayNameString);
-		smart_str_appends(&description, "::");
-		smart_str_append(&description, methodNameString);
-		smart_str_appends(&description, "()");
-		zend_string_release(displayNameString);
-		zend_string_release(methodNameString);
-		zval value;
-		ZVAL_STR(&value, smart_str_extract(&description));
-		return zv::Val::adopt(value);
-	}
-
-	/* TemplateTypeHelper::resolveTemplateTypes($type,
-	 * $acceptor->getResolvedTemplateTypeMap(), $acceptor instanceof
-	 * ExtendedParametersAcceptor ? $acceptor->getCallSiteVarianceMap() :
-	 * TemplateTypeVarianceMap::createEmpty(), TemplateTypeVariance::create<variance>()) */
-	static zv::Val resolveTemplateTypesAgainst(zval *type, zval *acceptor, zend_long variance)
-	{
-		zv::Val resolvedTemplateTypeMap = acceptorResolvedTemplateTypeMap(acceptor);
-		if (UNEXPECTED(resolvedTemplateTypeMap.isUndef())) return zv::Val();
-		zend_class_entry *extendedAcceptorCe = pt_class(PT_CLASS_EXTENDED_PARAMETERS_ACCEPTOR);
-		if (UNEXPECTED(extendedAcceptorCe == NULL)) return zv::Val();
-		zv::Val callSiteVarianceMap = instanceof_function(Z_OBJCE_P(acceptor), extendedAcceptorCe)
-			? acceptorCallSiteVarianceMap(acceptor)
-			: pt_type_template_type_variance_map_empty();
-		if (UNEXPECTED(callSiteVarianceMap.isUndef())) return zv::Val();
-		zval *positionVariance = pt_template_type_variance_singleton(variance);
-		if (UNEXPECTED(positionVariance == NULL)) return zv::Val();
-		return pt_type_template_type_helper_resolve_template_types(type, resolvedTemplateTypeMap.raw(), callSiteVarianceMap.raw(), positionVariance, false);
-	}
-
 	/* the purity gate of processCalledMethod(): $scope->isInClass() && the
 	 * class is the method's declaring class && the function is __construct
 	 * && the receiver is $this; false = pending exception */
@@ -1300,19 +1099,7 @@ private:
 	 * $resolvedParametersAcceptor */
 	static void resolveAssertTypeBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 	{
-		if (UNEXPECTED(argc < 1)) {
-			zend_throw_error(zend_ce_argument_count_error, "Too few arguments to function PHPStan\\Analyser\\ExprHandler\\MethodCallHandler::{closure}(), %u passed and exactly 1 expected", argc);
-			return;
-		}
-		zend_class_entry *typeCe = pt_class(PT_CLASS_TYPE);
-		if (UNEXPECTED(typeCe == NULL)) return;
-		if (UNEXPECTED(Z_TYPE(argv[0]) != IS_OBJECT || !instanceof_function(Z_OBJCE(argv[0]), typeCe))) {
-			zend_type_error("PHPStan\\Analyser\\ExprHandler\\MethodCallHandler::{closure}(): Argument #1 ($type) must be of type PHPStan\\Type\\Type, %s given", zend_zval_value_name(&argv[0]));
-			return;
-		}
-		zv::Val type = resolveTemplateTypesAgainst(&argv[0], &captures[0], PT_TEMPLATE_TYPE_VARIANCE_INVARIANT);
-		if (UNEXPECTED(type.isUndef())) return;
-		type.intoReturnValue(return_value);
+		resolveAssertType(captures, argc, argv, return_value, "PHPStan\\Analyser\\ExprHandler\\MethodCallHandler::{closure}");
 	}
 };
 

@@ -12026,6 +12026,28 @@ bool pt_mutating_scope_is_declare_strict_types(zend_object *scope, bool &out)
 	return msCallBool(scope, PT_LC("isdeclarestricttypes"), 0, NULL, out);
 }
 
+/* the static call and new handlers' scope calls */
+zv::Val pt_mutating_scope_resolve_name(zend_object *scope, zend_object *name)
+{
+	zend_class_entry *nameCe = pt_class(PT_CLASS_NAME);
+	if (UNEXPECTED(nameCe == NULL)) return zv::Val();
+	if (EXPECTED(instanceof_function(name->ce, nameCe)) && msNative(scope, PT_LC("resolvename"), msResolveName)) return MutatingScope(scope).resolveName(name);
+	zval nameZv;
+	ZVAL_OBJ(&nameZv, name);
+	return pt_type_call(scope, PT_LC("resolvename"), 1, &nameZv);
+}
+
+zv::Val pt_mutating_scope_enter_closure_bind(zend_object *scope, zval *thisType, zval *nativeThisType, zval *scopeClasses)
+{
+	zval nullZv;
+	ZVAL_NULL(&nullZv);
+	if (thisType == NULL) thisType = &nullZv;
+	if (nativeThisType == NULL) nativeThisType = &nullZv;
+	if (msExact(scope) && EXPECTED(Z_TYPE_P(scopeClasses) == IS_ARRAY)) return MutatingScope(scope).enterClosureBind(thisType, nativeThisType, scopeClasses);
+	zv::Args argv{thisType, nativeThisType, scopeClasses};
+	return pt_type_call(scope, PT_LC("enterclosurebind"), 3, argv);
+}
+
 /* }}} */
 
 void pt_register_mutating_scope()

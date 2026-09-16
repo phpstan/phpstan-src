@@ -1003,6 +1003,12 @@ zv::Val pt_type_specifier_get_method_type_specifying_extensions_for_class(zend_o
 	return pt_type_call(typeSpecifier, PT_LC("getmethodtypespecifyingextensionsforclass"), 1, className);
 }
 
+zv::Val pt_type_specifier_get_static_method_type_specifying_extensions_for_class(zend_object *typeSpecifier, zval *className)
+{
+	if (EXPECTED(typeSpecifier->ce == pt_ce_type_specifier && Z_TYPE_P(className) == IS_STRING)) return TypeSpecifier(typeSpecifier).getStaticMethodTypeSpecifyingExtensionsForClass(Z_STR_P(className));
+	return pt_type_call(typeSpecifier, PT_LC("getstaticmethodtypespecifyingextensionsforclass"), 1, className);
+}
+
 /* }}} */
 
 /* {{{ engine ABI glue: parameter parsing + registration */

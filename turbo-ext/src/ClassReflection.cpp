@@ -4437,6 +4437,20 @@ zv::Val pt_class_reflection_get_file_name(zend_object *classReflection)
 	return !pt_type_call(classReflection, PT_LC("evictprivatesymbols"), 0, NULL).isUndef();
 }
 
+/* $classReflection->is($className) / ->isSubclassOfClass($class); false =
+ * pending exception */
+[[nodiscard]] bool pt_class_reflection_is(zend_object *classReflection, zval *className, bool &out)
+{
+	if (EXPECTED(classReflection->ce == pt_ce_class_reflection && Z_TYPE_P(className) == IS_STRING)) return ClassReflection(classReflection).is(Z_STR_P(className), out);
+	return pt_cr_foreign_bool(classReflection, PT_LC("is"), 1, className, out);
+}
+
+[[nodiscard]] bool pt_class_reflection_is_subclass_of_class(zend_object *classReflection, zval *otherClassReflection, bool &out)
+{
+	if (EXPECTED(classReflection->ce == pt_ce_class_reflection && Z_TYPE_P(otherClassReflection) == IS_OBJECT)) return ClassReflection(classReflection).isSubclassOfClass(zv::Ref(otherClassReflection), out);
+	return pt_cr_foreign_bool(classReflection, PT_LC("issubclassofclass"), 1, otherClassReflection, out);
+}
+
 /* }}} */
 
 /* {{{ engine ABI glue: parameter parsing + registration */

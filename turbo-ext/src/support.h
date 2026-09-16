@@ -2720,4 +2720,32 @@ void pt_register_if_handler();
 
 /* }}} */
 
+/* {{{ StaticCallHandler.cpp — registered after MethodCallHandler; the call
+ * handlers share CallHandlerSupport.h */
+
+extern zend_class_entry *pt_ce_static_call_handler;
+void pt_register_static_call_handler();
+
+/* MutatingScope.cpp — $scope->resolveName($name) /
+ * ->enterClosureBind($thisType, $nativeThisType, $scopeClasses) ($thisType /
+ * $nativeThisType NULL or IS_NULL for null): the native body for exactly a
+ * MutatingScope (resolveName() also for a subclass inheriting it), the
+ * method otherwise; UNDEF = pending exception
+ * (assignInitializedProperty() is declared with the assignment handlers') */
+zv::Val pt_mutating_scope_resolve_name(zend_object *scope, zend_object *name);
+zv::Val pt_mutating_scope_enter_closure_bind(zend_object *scope, zval *thisType, zval *nativeThisType, zval *scopeClasses);
+
+/* ClassReflection.cpp — $classReflection->is($className) /
+ * ->isSubclassOfClass($class) for native callers (the native body for the
+ * shadowing class, the method otherwise); false = pending exception */
+[[nodiscard]] bool pt_class_reflection_is(zend_object *classReflection, zval *className, bool &out);
+[[nodiscard]] bool pt_class_reflection_is_subclass_of_class(zend_object *classReflection, zval *otherClassReflection, bool &out);
+
+/* TypeSpecifier.cpp — $typeSpecifier->getStaticMethodTypeSpecifyingExtensionsForClass($className):
+ * the native body for the shadowing class, the method otherwise; UNDEF =
+ * pending exception */
+zv::Val pt_type_specifier_get_static_method_type_specifying_extensions_for_class(zend_object *typeSpecifier, zval *className);
+
+/* }}} */
+
 #endif /* PHPSTANTURBO_SUPPORT_H */

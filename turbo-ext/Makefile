@@ -62,7 +62,6 @@ CXXFLAGS := $(WARN_FLAGS) -O2 -std=c++17 -fPIC \
 # linked in by them.
 PGO_DIR := pgo
 PGO_FLAGS ?=
-CXXFLAGS += $(PGO_FLAGS)
 CXX_IS_CLANG := $(shell $(CXX) --version 2>/dev/null | grep -qi clang && echo 1)
 ifeq ($(CXX_IS_CLANG),1)
 PGO_GEN_FLAGS := -fprofile-instr-generate
@@ -104,7 +103,81 @@ ifeq ($(UNAME_S),Darwin)
 LINK_FLAGS := -undefined dynamic_lookup
 else
 LINK_FLAGS := -static-libstdc++ -static-libgcc
+# the loader resolves and write-protects the GOT before handing control over,
+# and the stack is never executable
+LINK_FLAGS += -Wl,-z,relro,-z,now -Wl,-z,noexecstack
 endif
+
+# Size, measured rather than assumed (interleaved A/B, user CPU, 12-30 pairs).
+# A PHP extension only has to export get_module, which ZEND_GET_MODULE marks
+# visible explicitly, so hiding everything else costs nothing: __TEXT came out
+# byte-identical and the timing delta was +0.20% (t=+0.26, i.e. noise) while
+# the .so shrank 17.4%. The engine unwinds with longjmp, and this codebase
+# neither throws nor uses dynamic_cast — a style rule, not an accident — so
+# dropping the exception tables and RTTI removed a further 13.0% of __TEXT,
+# again with no measurable timing effect (+0.05%, t=+0.81 at n=29, sd 0.14s).
+# Both bind future code: a `throw` or a `dynamic_cast` becomes a compile
+# error, which is the intent. On ELF the visibility flag does far more than
+# it does on macOS: measured in the CI image (GCC 11.4), hiding the symbols
+# drops 8,866 of 9,907 dynamic symbols and 18.9% of __TEXT (5,760,996 ->
+# 4,672,730), because a default-visibility symbol may be interposed at load
+# time and so can be neither inlined nor garbage-collected. Mach-O's
+# two-level namespace already prevents that, which is why __TEXT there came
+# out byte-identical and only the symbol table shrank.
+# (config.m4's phpize path does not carry these, the same way it does not
+# carry the strict warnings: the Makefile is the primary build.)
+CXXFLAGS += -fvisibility=hidden -fvisibility-inlines-hidden -fno-exceptions -fno-rtti
+
+# Hardening. Every flag is probed against the compiler actually in use rather
+# than assumed, because the targets disagree: the CI floor is GCC 11.4, which
+# rejects -ftrivial-auto-var-init outright (GCC 12+); -fcf-protection is
+# x86-only while one gnu leg is arm64; and -fstack-clash-protection is
+# accepted but silently unused by Apple clang on arm64, which the -Werror in
+# the probe turns into a rejection. _FORTIFY_SOURCE is deliberately absent:
+# Ubuntu's GCC predefines it, so passing it again is a no-op at best and a
+# redefinition error under -Werror at worst.
+# These change codegen, unlike the warning flags, so they were measured
+# (__TEXT and an interleaved A/B) before being turned on by default. Override
+# with `make HARDENING_FLAGS=` to build without them.
+# the probe compiles at -O2 like the real build: _FORTIFY_SOURCE warns when
+# optimisation is off, and -Werror would then reject it for the wrong reason
+cxx-supports = $(shell $(CXX) -O2 $(1) -Werror -c -o /dev/null -x c++ /dev/null > /dev/null 2>&1 && echo $(1))
+# glibc predefines _FORTIFY_SOURCE, so it is undefined first rather than
+# redefined; level 3 where the libc supports it, otherwise 2, and nothing at
+# all where the probe rejects both (musl, macOS)
+FORTIFY_3 := $(call cxx-supports,-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3)
+FORTIFY := $(if $(FORTIFY_3),$(FORTIFY_3),$(call cxx-supports,-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2))
+# Array-bounds checks that trap instead of linking a sanitizer runtime — the
+# closest a shipped binary here gets to a bounds guarantee. The trap spelling
+# differs by compiler: -fsanitize-trap= exists from GCC 12, and the CI floor
+# is 11.4, which has only the older whole-program form.
+# NOT added: -fstrict-flex-arrays=3. It traps immediately on ordinary string
+# and property access, because the engine's public structures use the C
+# struct-hack (zend_string.val[1], zend_object.properties_table[1] behind
+# OBJ_PROP_NUM, smart_str). All 29 violation sites in our own code were that
+# macro expanding; none is fixable here short of abandoning the Zend API.
+BOUNDS_TRAP := $(call cxx-supports,-fsanitize=bounds -fsanitize-trap=bounds)
+BOUNDS := $(if $(BOUNDS_TRAP),$(BOUNDS_TRAP),$(call cxx-supports,-fsanitize=bounds -fsanitize-undefined-trap-on-error))
+HARDENING_FLAGS ?= $(call cxx-supports,-fstack-protector-strong) \
+	$(call cxx-supports,-fstack-clash-protection) \
+	$(call cxx-supports,-ftrivial-auto-var-init=zero) \
+	$(call cxx-supports,-fcf-protection=full) \
+	$(call cxx-supports,-fzero-call-used-regs=used-gpr) \
+	$(FORTIFY) \
+	$(BOUNDS) \
+	-D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST
+# libstdc++'s equivalent of that last one is -D_GLIBCXX_ASSERTIONS. It is
+# deliberately absent: the measurement above was taken against libc++, and a
+# flag is adopted here with its own number, not by analogy. Measure it on a
+# Linux host before adding it.
+CXXFLAGS += $(HARDENING_FLAGS)
+
+# PGO_FLAGS goes last on purpose: it is the injection hook `make pgo` and the
+# A/B harness use, and a flag only overrides an earlier one if it comes after
+# it. While this sat before the blocks above, `PGO_FLAGS=-fvisibility=default`
+# was silently outranked by the -fvisibility=hidden added later, so an
+# experiment measuring that flag compared two identical builds — twice.
+CXXFLAGS += $(PGO_FLAGS)
 
 SOURCES := $(wildcard src/*.cpp) $(wildcard src/parser/*.cpp)
 OBJECTS := $(SOURCES:.cpp=.o)
@@ -224,7 +297,12 @@ lint: compile_commands.json
 # instrumented PHP build is needed. Objects never mix flags (the same rule
 # `make pgo` follows), so this builds from clean and cleans up after itself.
 #
-SANITIZE_FLAGS ?= -fsanitize=undefined -fno-omit-frame-pointer
+# -fno-sanitize-trap matters here: the hardening set turns bounds checks into
+# traps, and since PGO_FLAGS lands last that trapping would still apply to
+# this build — a bounds violation would abort with no diagnostic, the exact
+# opposite of what a sanitizer run is for. Probed, because the spelling is
+# not available on every compiler this builds with.
+SANITIZE_FLAGS ?= -fsanitize=undefined $(call cxx-supports,-fno-sanitize-trap=all) -fno-omit-frame-pointer
 SANITIZE_TESTS ?= smoke arena-smoke signature-parity parser-corpus
 
 sanitize:

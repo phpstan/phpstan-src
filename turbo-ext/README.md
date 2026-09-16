@@ -366,6 +366,45 @@ environment, falling back to `VERSION.txt`).
 
 [php-sdk-binary-tools]: https://github.com/php/php-sdk-binary-tools
 
+### Build flags: hardening and size
+
+`make` applies protections by default, each *probed* against the compiler in
+use rather than assumed, because the targets disagree: GCC 11.4 (the CI
+floor) rejects `-ftrivial-auto-var-init`, `-fcf-protection` is x86-only, and
+`-fstack-clash-protection` is accepted but silently unused by Apple clang on
+arm64. What survives the probe on Linux is stack canaries, clash protection,
+`_FORTIFY_SOURCE=3`, register clearing on return, array-bounds checks that
+trap without linking a sanitizer runtime, and a GOT made read-only before
+control is handed over. `make HARDENING_FLAGS=` builds without them.
+
+Every flag was measured before adoption, on interleaved A/B pairs judged on
+user CPU: the protections together came to −0.16% (t=−0.70), and the size
+flags `-fvisibility=hidden` and `-fno-exceptions -fno-rtti` to +0.20% and
++0.05% — all inside the noise floor, while the shipped `.so` shrank ~26%.
+
+Those timings are from macOS, where `-fvisibility=hidden` changes no machine
+code at all: Mach-O's two-level namespace already prevents interposition, so
+only the symbol table shrinks. On ELF it is far from cosmetic — measured in
+the CI image, it removes 8,866 of 9,907 dynamic symbols and **18.9% of
+`__TEXT`**, because a default-visibility symbol can be interposed at load
+time and therefore neither inlined nor garbage-collected. The Linux binaries
+are where that matters, and where it has not been timed.
+
+`-fno-exceptions -fno-rtti` binds new code: a `throw` or a `dynamic_cast`
+becomes a compile error. That matches the style rules above — the engine
+unwinds with longjmp, and the ports neither throw nor use RTTI — but it is a
+constraint, not merely an optimisation.
+
+Measured and **not** adopted, so they are not re-tried: thin LTO (+1.76%
+slower, t=+3.44 — it inlines across translation units and loses more in
+locality than it gains), `-O3` (a wash at +4.63% code), PGO (no longer shows
+the benefit it was originally landed on, even measured on its own training
+corpus), and `-fstrict-flex-arrays=3`, which traps on ordinary string and
+property access because the engine's public structures use the C struct-hack
+(`zend_string.val[1]`, `zend_object.properties_table[1]` behind
+`OBJ_PROP_NUM`) — all 29 violation sites in this codebase were that macro
+expanding, none of them fixable here.
+
 ## Enabling
 
 Add to `php.ini` (recommended — parallel worker processes inherit it):

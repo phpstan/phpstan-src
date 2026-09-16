@@ -148,6 +148,18 @@ every translation unit with both compilers, and note that our files report
 relative paths while the engine's headers report absolute ones, which makes
 an our-code-vs-engine split easy to get backwards.
 
+`make` also applies hardening and size flags by default — `HARDENING_FLAGS`,
+and the `-fvisibility=hidden -fno-exceptions -fno-rtti` line in `CXXFLAGS` —
+each probed against the compiler in use, since the targets disagree about
+nearly all of them. **Adopt a codegen flag only with its own measurement**
+(interleaved A/B pairs on user CPU) and record the number beside it, the way
+the existing entries do; the full-workload runs have a ~±2% noise floor, so
+screen on a smaller target where the floor is ~0.35%. Measured and rejected
+so far: thin LTO (+1.76% slower), `-O3` (wash), PGO (no longer measurable),
+`-fstrict-flex-arrays=3` (traps on the engine's struct-hack), and
+`-D_GLIBCXX_ASSERTIONS` is absent only because it was never measured on a
+Linux host — the libc++ equivalent was.
+
 Static analysis and sanitizers, from the repository root (both gate in CI,
 `.github/workflows/lint.yml`):
 

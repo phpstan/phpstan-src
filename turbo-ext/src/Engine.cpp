@@ -380,6 +380,18 @@ zv::Val pt_call_method_cached(pt_method_site &site, zend_object *object, const c
 	return callKnown(site.fn, object, argc, argv);
 }
 
+static pt_method_site pt_conditional_type_resolver_resolve_for_call_site;
+
+zv::Val pt_conditional_type_resolver_resolve_for_call(zval *declaredType, zval *parametersAcceptor, zval *args, zval *scope)
+{
+	/* the twin's first statement, answered here without the call */
+	zv::Val has = pt_type_op(Z_OBJ_P(declaredType), PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, 0, NULL);
+	if (UNEXPECTED(has.isUndef())) return zv::Val();
+	if (!zend_is_true(has.raw())) return zv::Val::copyOf(zv::Ref(declaredType));
+	zv::Args argv{declaredType, parametersAcceptor, args, scope};
+	return pt_call_static_cached(pt_conditional_type_resolver_resolve_for_call_site, PT_CLASS_CONDITIONAL_TYPE_RESOLVER, PT_LC("resolveforcall"), 4, argv);
+}
+
 zv::Val pt_call_static_cached(pt_method_site &site, int classIdx, const char *lcname, size_t len, uint32_t argc, zval *argv)
 {
 	zend_class_entry *ce = pt_class(classIdx);

@@ -66,6 +66,7 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_INACCESSIBLE_METHOD */ {"inaccessibleMethod", "PHPStan\\Reflection\\InaccessibleMethod"},
 	/* PT_CLASS_TEMPLATE_TYPE */ {"templateType", "PHPStan\\Type\\Generic\\TemplateType"},
 	/* PT_CLASS_NARROWED_SUBJECT_TYPE */ {"narrowedSubjectType", "PHPStan\\Type\\NarrowedSubjectType"},
+	/* PT_CLASS_CONDITIONAL_TYPE_RESOLVER */ {"conditionalTypeResolver", "PHPStan\\Analyser\\ConditionalTypeResolver"},
 	/* PT_CLASS_GENERALIZE_PRECISION */ {"generalizePrecision", "PHPStan\\Type\\GeneralizePrecision"},
 	/* PT_CLASS_CONST_EXPR_STRING_NODE */ {"constExprStringNode", "PHPStan\\PhpDocParser\\Ast\\ConstExpr\\ConstExprStringNode"},
 	/* PT_CLASS_NETTE_STRINGS */ {"netteStrings", "Nette\\Utils\\Strings"},
@@ -244,6 +245,8 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_CONTINUE_STMT */ {"continueStmt", "PhpParser\\Node\\Stmt\\Continue_"},
 	/* PT_CLASS_BREAK_STMT */ {"breakStmt", "PhpParser\\Node\\Stmt\\Break_"},
 	/* PT_CLASS_RESOLVED_FUNCTION_VARIANT */ {"resolvedFunctionVariant", "PHPStan\\Reflection\\ResolvedFunctionVariant"},
+	/* PT_CLASS_EXTENSION_CLASS_HELPER */ {"extensionClassHelper", "PHPStan\\Type\\ExtensionClassHelper"},
+	/* PT_CLASS_LAZY_EXTENSIONS_COLLECTION */ {"lazyExtensionsCollection", "PHPStan\\DependencyInjection\\LazyExtensionsCollection"},
 };
 
 zend_class_entry *pt_class(int idx)

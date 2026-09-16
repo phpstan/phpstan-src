@@ -2,6 +2,7 @@
 
 namespace PHPStan\DependencyInjection;
 
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use function array_values;
 
 /**
@@ -11,6 +12,7 @@ use function array_values;
  * @template T of object
  * @implements ExtensionsCollection<T>
  */
+#[ReferencedByTurboExtension(key: 'lazyExtensionsCollection')]
 final class LazyExtensionsCollection implements ExtensionsCollection
 {
 

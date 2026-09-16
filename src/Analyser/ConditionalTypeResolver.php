@@ -7,6 +7,7 @@ use PhpParser\Node\Expr\Variable;
 use PHPStan\Reflection\GenericParametersAcceptorResolver;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ResolvedFunctionVariant;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
@@ -28,6 +29,7 @@ use function substr;
  * call site (so callers see the branch their arguments select), or against the
  * parameter variables inside the function body.
  */
+#[ReferencedByTurboExtension(key: 'conditionalTypeResolver')]
 final class ConditionalTypeResolver
 {
 

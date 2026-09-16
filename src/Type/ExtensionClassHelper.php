@@ -4,11 +4,13 @@ namespace PHPStan\Type;
 
 use PhpParser\Node;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use function array_key_exists;
 use function array_merge;
 use function class_implements;
 use function class_parents;
 
+#[ReferencedByTurboExtension(key: 'extensionClassHelper')]
 final class ExtensionClassHelper
 {
 

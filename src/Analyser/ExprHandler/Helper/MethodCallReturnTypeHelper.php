@@ -11,6 +11,7 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\DynamicReturnTypeExtensionRegistry;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
@@ -18,6 +19,7 @@ use PHPStan\Type\TypeCombinator;
 use function count;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/MethodCallReturnTypeHelper.cpp')]
 final class MethodCallReturnTypeHelper
 {
 

@@ -357,6 +357,11 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_assign_target_walk_mode();
 	pt_register_prepared_assign_target();
 	pt_register_recording_node_callback();
+	/* the analyser helper services — their signatures name MutatingScope,
+	 * SpecifiedTypes and PHP classes only */
+	pt_register_early_terminating_call_helper();
+	pt_register_method_call_return_type_helper();
+	pt_register_method_throw_point_helper();
 
 	return SUCCESS;
 }

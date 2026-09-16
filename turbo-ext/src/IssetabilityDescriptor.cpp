@@ -210,8 +210,7 @@ private:
 			zv::Val varExprHold;
 			zval *varExpr = pt_expression_result_expr(varResult, varExprHold);
 			if (UNEXPECTED(varExpr == NULL)) return zv::Val();
-			zv::Val tracked = pt_mutating_scope_has_expression_type(Z_OBJ_P(scope), varExpr);
-			zend_long isTracked = trinaryOf(tracked);
+			zend_long isTracked = pt_mutating_scope_has_expression_type(Z_OBJ_P(scope), varExpr);
 			if (UNEXPECTED(isTracked < 0)) return zv::Val();
 			reprocessVar = isTracked != PT_TRI_YES;
 		}
@@ -250,8 +249,7 @@ private:
 
 		zv::Val isOffsetAccessible = pt_type_call(varTypeObject, PT_LC("isoffsetaccessible"), 0, NULL);
 		if (UNEXPECTED(isOffsetAccessible.isUndef())) return zv::Val();
-		zv::Val exprTracked = pt_mutating_scope_has_expression_type(Z_OBJ_P(scope), expr);
-		zend_long isExprTracked = trinaryOf(exprTracked);
+		zend_long isExprTracked = pt_mutating_scope_has_expression_type(Z_OBJ_P(scope), expr);
 		if (UNEXPECTED(isExprTracked < 0)) return zv::Val();
 		zv::Args linkArgv{isOffsetAccessible.raw(), hasOffsetValue.raw(), isExprTracked == PT_TRI_YES, varType.raw(), dimType.raw(), valueType.raw()};
 		zv::Val link = pt_type_call_static(PT_CLASS_ISSETABILITY_LINK_INFO, PT_LC("offset"), 6, linkArgv);
@@ -330,8 +328,7 @@ private:
 					if (UNEXPECTED(propertyName.isUndef())) return zv::Val();
 					zv::Val initializationExpr = pt_type_new(PT_CLASS_PROPERTY_INITIALIZATION_EXPR, 1, propertyName.raw());
 					if (UNEXPECTED(initializationExpr.isUndef())) return zv::Val();
-					zv::Val tracked = pt_mutating_scope_has_expression_type(Z_OBJ_P(scope), initializationExpr.raw());
-					zend_long isTracked = trinaryOf(tracked);
+					zend_long isTracked = pt_mutating_scope_has_expression_type(Z_OBJ_P(scope), initializationExpr.raw());
 					if (UNEXPECTED(isTracked < 0)) return zv::Val();
 					initializedThisProperty = isTracked == PT_TRI_YES;
 				}
@@ -346,8 +343,7 @@ private:
 		if (UNEXPECTED(writableType.isUndef())) return zv::Val();
 		zv::Val nativeType = hasNativeType ? pt_type_call(reflection, PT_LC("getnativetype"), 0, NULL) : newNeverType();
 		if (UNEXPECTED(nativeType.isUndef())) return zv::Val();
-		zv::Val fetchTracked = pt_mutating_scope_has_expression_type(Z_OBJ_P(scope), propertyFetch);
-		zend_long isFetchTracked = trinaryOf(fetchTracked);
+		zend_long isFetchTracked = pt_mutating_scope_has_expression_type(Z_OBJ_P(scope), propertyFetch);
 		if (UNEXPECTED(isFetchTracked < 0)) return zv::Val();
 		bool nativeReflectionExists = Z_TYPE_P(nativeReflection.raw()) != IS_NULL;
 		bool nativeIsPromoted = false, nativeIsReadOnly = false, nativeIsHooked = false, nativeHasDefaultValue = false;

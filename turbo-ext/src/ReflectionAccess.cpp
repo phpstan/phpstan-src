@@ -65,6 +65,15 @@ struct RegistrySlots
 };
 
 RegistryProviderSlots pt_registry_provider_slots = { NULL, 0 };
+
+/* the $extensions memo slot of LazyExtensionsCollection's class entry */
+struct LazyExtensionsCollectionSlots
+{
+	zend_class_entry *ce;
+	uint32_t extensions;
+};
+
+LazyExtensionsCollectionSlots pt_lazy_extensions_collection_slots = { NULL, 0 };
 RegistrySlots pt_registry_slots = { NULL, { 0, 0, 0, 0, 0, 0 } };
 
 /* the registry property and the twin's getter behind each member */
@@ -149,6 +158,7 @@ void pt_reflection_access_rinit()
 	pt_rpsa_slot = { NULL, NULL };
 	pt_registry_provider_slots.ce = NULL;
 	pt_registry_slots.ce = NULL;
+	pt_lazy_extensions_collection_slots.ce = NULL;
 }
 
 /* {{{ ReflectionProviderStaticAccessor */
@@ -340,6 +350,36 @@ zv::Val pt_class_reflection_extension_registry_member(zend_object *provider, pt_
 	}
 	const char *getter = pt_registry_member_names[member].getter;
 	return pt_type_call(Z_OBJ_P(registry), getter, strlen(getter), 0, NULL);
+}
+
+/* }}} */
+
+/* {{{ LazyExtensionsCollection */
+
+/* return $this->extensions ??= array_values(...) — the memoized list out of
+ * the slot once the first getAll() filled it; the method before that and for
+ * any other ExtensionsCollection */
+zv::Val pt_extensions_collection_get_all(zend_object *collection)
+{
+	if (EXPECTED(collection->ce == pt_lazy_extensions_collection_slots.ce)) {
+		zval *extensions = OBJ_PROP(collection, pt_lazy_extensions_collection_slots.extensions);
+		if (EXPECTED(Z_TYPE_P(extensions) == IS_ARRAY)) return zv::Val::copyOf(zv::Ref(extensions));
+	} else if (pt_lazy_extensions_collection_slots.ce == NULL) {
+		zend_class_entry *ce = pt_class_loaded(PT_CLASS_LAZY_EXTENSIONS_COLLECTION);
+		if (ce == NULL) {
+			if (UNEXPECTED(EG(exception))) return zv::Val();
+		} else {
+			int32_t extensions = pt_instance_prop_offset(ce, PT_LC("extensions"));
+			if (EXPECTED(extensions >= 0)) {
+				pt_lazy_extensions_collection_slots = { ce, (uint32_t) extensions };
+				if (collection->ce == ce) {
+					zval *slot = OBJ_PROP(collection, (uint32_t) extensions);
+					if (Z_TYPE_P(slot) == IS_ARRAY) return zv::Val::copyOf(zv::Ref(slot));
+				}
+			}
+		}
+	}
+	return pt_type_call(collection, PT_LC("getall"), 0, NULL);
 }
 
 /* }}} */

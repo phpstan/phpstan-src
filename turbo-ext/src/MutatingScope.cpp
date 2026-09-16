@@ -11484,9 +11484,12 @@ zv::Val pt_mutating_scope_apply_specified_types(zend_object *scope, zval *specif
 
 /* the scope reads of the analyser value classes (IssetabilityDescriptor.cpp),
  * the same way ($node / $expr an Expr) */
-zv::Val pt_mutating_scope_has_expression_type(zend_object *scope, zval *node)
+zend_long pt_mutating_scope_has_expression_type(zend_object *scope, zval *node)
 {
-	return pt_this_call(scope, scope->ce == pt_ce_mutating_scope, PT_LC("hasexpressiontype"), msHasExpressionType, 1, node, [&]() { return MutatingScope(scope).hasExpressionType(Z_OBJ_P(node)); });
+	/* the PT_TRI_* value straight out of the singleton the body answers with */
+	zv::Val result = pt_this_call(scope, scope->ce == pt_ce_mutating_scope, PT_LC("hasexpressiontype"), msHasExpressionType, 1, node, [&]() { return MutatingScope(scope).hasExpressionType(Z_OBJ_P(node)); });
+	if (UNEXPECTED(result.isUndef())) return -1;
+	return pt_type_trinary_value(result.raw());
 }
 
 zv::Val pt_mutating_scope_get_type(zend_object *scope, zval *node)
@@ -11571,6 +11574,89 @@ zv::Val pt_mutating_scope_merge_with(zend_object *scope, zval *otherScope, bool 
 	}
 	ZVAL_BOOL(&argv[1], preserveVacuousConditionals);
 	return pt_type_call(scope, PT_LC("mergewith"), 2, argv);
+}
+
+/* the entries the helper ports call (MethodCallReturnTypeHelper.cpp,
+ * MethodThrowPointHelper.cpp, the narrowing helpers and augments,
+ * TypeSpecifier.cpp): the same contract, with the exact class tested before
+ * the function-table probe */
+
+static void ZEND_FASTCALL msGetStateType(INTERNAL_FUNCTION_PARAMETERS)
+{
+	PT_MS_PARSE_EXPR(expr);
+	PT_RETURN_VAL(PT_THIS.getStateType(Z_OBJ_P(expr)));
+}
+
+static void ZEND_FASTCALL msSpecifyTypesOfNewWorldHandlerNode(INTERNAL_FUNCTION_PARAMETERS)
+{
+	zval *node, *context;
+	zend_class_entry *exprCe = pt_class(PT_CLASS_EXPR);
+	if (UNEXPECTED(exprCe == NULL)) RETURN_THROWS();
+	ZEND_PARSE_PARAMETERS_START(2, 2)
+		Z_PARAM_OBJECT_OF_CLASS(node, exprCe)
+		Z_PARAM_OBJECT(context)
+	ZEND_PARSE_PARAMETERS_END();
+	PT_RETURN_VAL(PT_THIS.specifyTypesOfNewWorldHandlerNode(Z_OBJ_P(node), context));
+}
+
+static zend_always_inline bool msNative(zend_object *scope, const char *lcname, size_t len, zif_handler handler)
+{
+	return EXPECTED(scope->ce == pt_ce_mutating_scope) || pt_type_method_is(scope, lcname, len, handler);
+}
+
+zv::Val pt_mutating_scope_filter_type_with_method(zend_object *scope, zval *typeWithMethod, zend_string *methodName)
+{
+	if (EXPECTED(Z_TYPE_P(typeWithMethod) == IS_OBJECT) && msNative(scope, PT_LC("filtertypewithmethod"), msFilterTypeWithMethod)) return MutatingScope(scope).filterTypeWithMethod(typeWithMethod, methodName);
+	zv::Args args{typeWithMethod, methodName};
+	return pt_type_call(scope, PT_LC("filtertypewithmethod"), 2, args);
+}
+
+zv::Val pt_mutating_scope_get_method_reflection(zend_object *scope, zval *typeWithMethod, zend_string *methodName)
+{
+	if (EXPECTED(Z_TYPE_P(typeWithMethod) == IS_OBJECT) && msNative(scope, PT_LC("getmethodreflection"), &reg::detail::Bound<&MutatingScope::getMethodReflection, zp::Obj, zp::Str>::handle)) return MutatingScope(scope).getMethodReflection(typeWithMethod, methodName);
+	zv::Args args{typeWithMethod, methodName};
+	return pt_type_call(scope, PT_LC("getmethodreflection"), 2, args);
+}
+
+zv::Val pt_mutating_scope_get_state_type(zend_object *scope, zend_object *expr)
+{
+	zend_class_entry *exprCe = pt_class(PT_CLASS_EXPR);
+	if (UNEXPECTED(exprCe == NULL)) return zv::Val();
+	if (EXPECTED(instanceof_function(expr->ce, exprCe)) && msNative(scope, PT_LC("getstatetype"), msGetStateType)) return MutatingScope(scope).getStateType(expr);
+	zval exprZv;
+	ZVAL_OBJ(&exprZv, expr);
+	return pt_type_call(scope, PT_LC("getstatetype"), 1, &exprZv);
+}
+
+zv::Val pt_mutating_scope_get_conditional_expressions(zend_object *scope)
+{
+	if (EXPECTED(msNative(scope, PT_LC("getconditionalexpressions"), &reg::detail::Bound<&MutatingScope::getConditionalExpressions>::handle))) return MutatingScope(scope).getConditionalExpressions();
+	return pt_type_call(scope, PT_LC("getconditionalexpressions"), 0, NULL);
+}
+
+zv::Val pt_mutating_scope_get_current_expression_result_storage(zend_object *scope)
+{
+	if (EXPECTED(msNative(scope, PT_LC("getcurrentexpressionresultstorage"), &reg::detail::Bound<&MutatingScope::getCurrentExpressionResultStorage>::handle))) return MutatingScope(scope).getCurrentExpressionResultStorage();
+	return pt_type_call(scope, PT_LC("getcurrentexpressionresultstorage"), 0, NULL);
+}
+
+zv::Val pt_mutating_scope_resolve_type_by_name(zend_object *scope, zend_object *name)
+{
+	zend_class_entry *nameCe = pt_class(PT_CLASS_NAME);
+	if (UNEXPECTED(nameCe == NULL)) return zv::Val();
+	if (EXPECTED(instanceof_function(name->ce, nameCe)) && msNative(scope, PT_LC("resolvetypebyname"), msResolveTypeByName)) return MutatingScope(scope).resolveTypeByName(name);
+	zval nameZv;
+	ZVAL_OBJ(&nameZv, name);
+	return pt_type_call(scope, PT_LC("resolvetypebyname"), 1, &nameZv);
+}
+
+zv::Val pt_mutating_scope_specify_types_of_new_world_handler_node(zend_object *scope, zend_object *node, zval *context)
+{
+	zend_class_entry *exprCe = pt_class(PT_CLASS_EXPR);
+	if (UNEXPECTED(exprCe == NULL)) return zv::Val();
+	if (EXPECTED(instanceof_function(node->ce, exprCe) && Z_TYPE_P(context) == IS_OBJECT) && msNative(scope, PT_LC("specifytypesofnewworldhandlernode"), msSpecifyTypesOfNewWorldHandlerNode)) return MutatingScope(scope).specifyTypesOfNewWorldHandlerNode(node, context);
+	zv::Args args{node, context};
+	return pt_type_call(scope, PT_LC("specifytypesofnewworldhandlernode"), 2, args);
 }
 /* }}} */
 
@@ -11847,16 +11933,7 @@ void pt_register_mutating_scope()
 		PT_RETURN_VAL(PT_THIS.getClosureScopeCacheKey(relevantRoots));
 	});
 
-	cls.method(sigs::specifyTypesOfNewWorldHandlerNode, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *node, *context;
-		zend_class_entry *exprCe = pt_class(PT_CLASS_EXPR);
-		if (UNEXPECTED(exprCe == NULL)) RETURN_THROWS();
-		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT_OF_CLASS(node, exprCe)
-			Z_PARAM_OBJECT(context)
-		ZEND_PARSE_PARAMETERS_END();
-		PT_RETURN_VAL(PT_THIS.specifyTypesOfNewWorldHandlerNode(Z_OBJ_P(node), context));
-	});
+	cls.method(sigs::specifyTypesOfNewWorldHandlerNode, msSpecifyTypesOfNewWorldHandlerNode);
 
 	cls.method(sigs::obtainResultForNode, msObtainResultForNode);
 
@@ -12373,10 +12450,7 @@ void pt_register_mutating_scope()
 		reg::withDefault(reg::arrayArg("intertwinedPropagatedFrom"), "[]"),
 	}, msAssignVariable, &returnsSelf);
 
-	cls.method(sigs::getStateType, [](INTERNAL_FUNCTION_PARAMETERS) {
-		PT_MS_PARSE_EXPR(expr);
-		PT_RETURN_VAL(PT_THIS.getStateType(Z_OBJ_P(expr)));
-	});
+	cls.method(sigs::getStateType, msGetStateType);
 
 	cls.method("specifyExpressionType", reg::Public, 4, {
 		reg::obj("expr", expr),

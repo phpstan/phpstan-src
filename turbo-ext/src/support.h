@@ -103,6 +103,7 @@ enum {
 	PT_CLASS_INACCESSIBLE_METHOD,
 	PT_CLASS_TEMPLATE_TYPE,
 	PT_CLASS_NARROWED_SUBJECT_TYPE,
+	PT_CLASS_CONDITIONAL_TYPE_RESOLVER,
 	PT_CLASS_GENERALIZE_PRECISION,
 	PT_CLASS_CONST_EXPR_STRING_NODE,
 	PT_CLASS_NETTE_STRINGS,
@@ -282,6 +283,8 @@ enum {
 	PT_CLASS_CONTINUE_STMT,
 	PT_CLASS_BREAK_STMT,
 	PT_CLASS_RESOLVED_FUNCTION_VARIANT,
+	PT_CLASS_EXTENSION_CLASS_HELPER,
+	PT_CLASS_LAZY_EXTENSIONS_COLLECTION,
 	PT_CLASS_COUNT
 };
 
@@ -1569,6 +1572,10 @@ const pt_superglobal_name *pt_superglobal_names(size_t *count);
 /* $call->isFirstClassCallable() of a PhpParser CallLike node, read from its
  * args: a single VariadicPlaceholder argument; false = pending exception */
 [[nodiscard]] bool pt_call_like_is_first_class_callable(zend_object *call, bool &out);
+/* ConditionalTypeResolver::resolveForCall($declaredType, $parametersAcceptor,
+ * $args, $scope): `@throws` / `@phpstan-self-out` resolved against a call
+ * site; UNDEF = pending exception */
+zv::Val pt_conditional_type_resolver_resolve_for_call(zval *declaredType, zval *parametersAcceptor, zval *args, zval *scope);
 
 /* {{{ the NodeScopeResolver-adjacent helper services (VolatileExpressionHelper.cpp,
  * VariableFlow.cpp, VariableFlowBuilder.cpp) — registered at the END of the
@@ -1892,7 +1899,9 @@ zv::Val pt_expression_result_get_issetability_resolution(zval *result, zval *sco
  * doNotTreatPhpDocTypesAsCertain() entries above: the native body for a
  * MutatingScope (or a subclass inheriting the method), the method by name
  * otherwise */
-zv::Val pt_mutating_scope_has_expression_type(zend_object *scope, zval *node);
+/* (hasExpressionType(): the PT_TRI_* value of the answer, -1 = pending
+ * exception) */
+[[nodiscard]] zend_long pt_mutating_scope_has_expression_type(zend_object *scope, zval *node);
 zv::Val pt_mutating_scope_get_type(zend_object *scope, zval *node);
 zv::Val pt_mutating_scope_get_native_type(zend_object *scope, zval *expr);
 /* }}} */
@@ -2003,6 +2012,35 @@ void pt_register_recording_node_callback();
  * recorded (pt_type_call_callable() recognizes the class itself); false =
  * pending exception */
 [[nodiscard]] bool pt_recording_node_callback_record(zend_object *callback, zval *node, zval *scope);
+/* {{{ the analyser helper services (EarlyTerminatingCallHelper.cpp,
+ * MethodCallReturnTypeHelper.cpp, MethodThrowPointHelper.cpp) — registered
+ * at the END of the sequence (their signatures name MutatingScope, the Type
+ * interface and PHP classes only) */
+
+void pt_register_early_terminating_call_helper();
+void pt_register_method_call_return_type_helper();
+void pt_register_method_throw_point_helper();
+
+/* MutatingScope.cpp — $scope->filterTypeWithMethod($type, $methodName) /
+ * ->getMethodReflection($type, $methodName) / ->getStateType($expr) /
+ * ->getConditionalExpressions() / ->getCurrentExpressionResultStorage() /
+ * ->resolveTypeByName($name) / ->specifyTypesOfNewWorldHandlerNode($node,
+ * $context) for native callers, next to the value classes' getType() /
+ * hasExpressionType() / nativeTypesPromoted entries above: the native body
+ * while the scope's method is MutatingScope's own handler, the method by name
+ * otherwise (arguments borrowed); UNDEF = pending exception */
+zv::Val pt_mutating_scope_filter_type_with_method(zend_object *scope, zval *typeWithMethod, zend_string *methodName);
+zv::Val pt_mutating_scope_get_method_reflection(zend_object *scope, zval *typeWithMethod, zend_string *methodName);
+zv::Val pt_mutating_scope_get_state_type(zend_object *scope, zend_object *expr);
+zv::Val pt_mutating_scope_get_conditional_expressions(zend_object *scope);
+zv::Val pt_mutating_scope_get_current_expression_result_storage(zend_object *scope);
+zv::Val pt_mutating_scope_resolve_type_by_name(zend_object *scope, zend_object *name);
+zv::Val pt_mutating_scope_specify_types_of_new_world_handler_node(zend_object *scope, zend_object *node, zval *context);
+
+/* ReflectionAccess.cpp — $collection->getAll(): the memoized list out of a
+ * LazyExtensionsCollection's $extensions slot, the method on the first call
+ * and for any other ExtensionsCollection; UNDEF = pending exception */
+zv::Val pt_extensions_collection_get_all(zend_object *collection);
 
 /* }}} */
 

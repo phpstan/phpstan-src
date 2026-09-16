@@ -5,6 +5,7 @@ namespace PHPStan\Analyser\ExprHandler\Helper;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ExtensionClassHelper;
 use PHPStan\Type\Type;
 use function array_key_exists;
@@ -19,6 +20,7 @@ use function strtolower;
  * longer reaches Scope::getType() to find early-terminating expressions.
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/EarlyTerminatingCallHelper.cpp')]
 final class EarlyTerminatingCallHelper
 {
 

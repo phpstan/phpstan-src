@@ -436,6 +436,11 @@ private:
 
 using phpstanturbo::TypeUtils;
 
+zv::Val pt_type_utils_find_callable_type(zval *type)
+{
+	return TypeUtils::findCallableType(type);
+}
+
 zv::Val pt_type_utils_flatten_types(zval *type)
 {
 	return TypeUtils::flattenTypes(type);

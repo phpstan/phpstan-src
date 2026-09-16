@@ -11741,6 +11741,47 @@ zv::Val pt_mutating_scope_get_namespace(zend_object *scope)
 	if (EXPECTED(msNative(scope, PT_LC("getnamespace"), msGetNamespace))) return MutatingScope(scope).getNamespace();
 	return pt_type_call(scope, PT_LC("getnamespace"), 0, NULL);
 }
+
+/* the entries ArgumentsHandler.cpp calls: the same contract (the exact class
+ * first; a named handler probed for a subclass where the registration has
+ * one, the method by name otherwise) */
+
+zv::Val pt_mutating_scope_push_in_function_call(zend_object *scope, zval *reflection, zval *parameter, bool rememberTypes)
+{
+	if (EXPECTED(msNative(scope, PT_LC("pushinfunctioncall"), msPushInFunctionCall))) return MutatingScope(scope).pushInFunctionCall(reflection, parameter, rememberTypes);
+	zv::Args args{reflection, parameter, rememberTypes};
+	return pt_type_call(scope, PT_LC("pushinfunctioncall"), 3, args);
+}
+
+zv::Val pt_mutating_scope_pop_in_function_call(zend_object *scope)
+{
+	if (EXPECTED(msNative(scope, PT_LC("popinfunctioncall"), msPopInFunctionCall))) return MutatingScope(scope).popInFunctionCall();
+	return pt_type_call(scope, PT_LC("popinfunctioncall"), 0, NULL);
+}
+
+zv::Val pt_mutating_scope_with_closure_bind_scope_classes(zend_object *scope, zval *scopeClasses)
+{
+	if (EXPECTED(scope->ce == pt_ce_mutating_scope && Z_TYPE_P(scopeClasses) == IS_ARRAY)) return MutatingScope(scope).withClosureBindScopeClasses(scopeClasses);
+	return pt_type_call(scope, PT_LC("withclosurebindscopeclasses"), 1, scopeClasses);
+}
+
+zv::Val pt_mutating_scope_restore_this(zend_object *scope, zval *restoreThisScope)
+{
+	if (EXPECTED(scope->ce == pt_ce_mutating_scope && Z_TYPE_P(restoreThisScope) == IS_OBJECT && instanceof_function(Z_OBJCE_P(restoreThisScope), pt_ce_mutating_scope))) return MutatingScope(scope).restoreThis(Z_OBJ_P(restoreThisScope));
+	return pt_type_call(scope, PT_LC("restorethis"), 1, restoreThisScope);
+}
+
+zv::Val pt_mutating_scope_get_iterable_value_type(zend_object *scope, zval *type)
+{
+	if (EXPECTED(scope->ce == pt_ce_mutating_scope && Z_TYPE_P(type) == IS_OBJECT)) return MutatingScope(scope).getIterableValueType(type);
+	return pt_type_call(scope, PT_LC("getiterablevaluetype"), 1, type);
+}
+
+zv::Val pt_mutating_scope_get_iterable_key_type(zend_object *scope, zval *type)
+{
+	if (EXPECTED(scope->ce == pt_ce_mutating_scope && Z_TYPE_P(type) == IS_OBJECT)) return MutatingScope(scope).getIterableKeyType(type);
+	return pt_type_call(scope, PT_LC("getiterablekeytype"), 1, type);
+}
 /* }}} */
 
 /* {{{ direct entries for the NodeScopeResolver / StatementsHandler /

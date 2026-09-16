@@ -18,12 +18,14 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use function is_string;
 
 /**
  * @implements ExprHandler<Closure>
  */
 #[AutowiredService]
+#[ReferencedByTurboExtension(key: 'closureHandler')]
 final class ClosureHandler implements ExprHandler
 {
 

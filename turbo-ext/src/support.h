@@ -367,6 +367,7 @@ enum {
 	PT_CLASS_FILE_READER,
 	PT_CLASS_DUMMY_CONSTRUCTOR_REFLECTION,
 	PT_CLASS_GENERIC_TYPE_TEMPLATE_TRAVERSER,
+	PT_CLASS_CLOSURE_HANDLER,
 	PT_CLASS_COUNT
 };
 
@@ -2861,6 +2862,49 @@ zv::Val pt_variable_control_flow_new(zend_string *kind, const pt_variable_contro
 extern zend_class_entry *pt_ce_var_annotation_processor;
 void pt_register_var_annotation_processor();
 zv::Val pt_var_annotation_processor_process_var_annotation(zval *processor, zval *scope, zval *variableNames, zval *node, bool *changed);
+
+/* }}} */
+
+/* {{{ ArgumentsHandler.cpp — the shadowing PHPStan\Analyser\ArgumentsHandler,
+ * registered at the END of the sequence */
+
+extern zend_class_entry *pt_ce_arguments_handler;
+void pt_register_arguments_handler();
+/* $argumentsHandler->processArgs($nodeScopeResolver, $stmt, $calleeReflection,
+ * $nakedMethodReflection, $parametersAcceptors, $namedArgumentsVariants,
+ * $callLike, $scope, $storage, $nodeCallback, $context,
+ * $closureBindScopeFactory) — the native body for the shadowing class, the
+ * method otherwise ($calleeReflection / $nakedMethodReflection /
+ * $namedArgumentsVariants / $closureBindScopeFactory NULL or IS_NULL for
+ * null, everything borrowed); UNDEF = pending exception */
+zv::Val pt_arguments_handler_process_args(zval *handler, zval *nodeScopeResolver, zval *stmt, zval *calleeReflection, zval *nakedMethodReflection, zval *parametersAcceptors, zval *namedArgumentsVariants, zval *callLike, zval *scope, zval *storage, zval *nodeCallback, zval *context, zval *closureBindScopeFactory = NULL);
+/* $argumentsHandler->processDroppedArgs($nodeScopeResolver, $stmt,
+ * $originalCall, $normalizedCall, $scope, $storage, $context); false =
+ * pending exception */
+[[nodiscard]] bool pt_arguments_handler_process_dropped_args(zval *handler, zval *nodeScopeResolver, zval *stmt, zval *originalCall, zval *normalizedCall, zval *scope, zval *storage, zval *context);
+/* NodeScopeResolver.cpp — $nodeScopeResolver->lookForUnsetAllowedUndefinedExpressions($scope,
+ * $expr) / ->isReturningStoredExpressionResults() /
+ * ->isConsumingStoredExpressionResults(): the native body for the native
+ * class, the method otherwise; UNDEF / false = pending exception */
+zv::Val pt_node_scope_resolver_look_for_unset_allowed_undefined_expressions(zval *nodeScopeResolver, zval *scope, zval *expr);
+[[nodiscard]] bool pt_node_scope_resolver_is_returning_stored_expression_results(zval *nodeScopeResolver, bool &out);
+[[nodiscard]] bool pt_node_scope_resolver_is_consuming_stored_expression_results(zval *nodeScopeResolver, bool &out);
+/* MutatingScope.cpp — $scope->pushInFunctionCall($reflection, $parameter,
+ * $rememberTypes) ($reflection / $parameter IS_NULL for null) /
+ * ->popInFunctionCall() / ->withClosureBindScopeClasses($classes) /
+ * ->restoreThis($scope) / ->getIterableValueType($type) /
+ * ->getIterableKeyType($type): the native body
+ * for a MutatingScope (or a subclass inheriting the method), the method by
+ * name otherwise (arguments borrowed); UNDEF = pending exception */
+zv::Val pt_mutating_scope_push_in_function_call(zend_object *scope, zval *reflection, zval *parameter, bool rememberTypes);
+zv::Val pt_mutating_scope_pop_in_function_call(zend_object *scope);
+zv::Val pt_mutating_scope_with_closure_bind_scope_classes(zend_object *scope, zval *scopeClasses);
+zv::Val pt_mutating_scope_restore_this(zend_object *scope, zval *restoreThisScope);
+zv::Val pt_mutating_scope_get_iterable_value_type(zend_object *scope, zval *type);
+zv::Val pt_mutating_scope_get_iterable_key_type(zend_object *scope, zval *type);
+/* TypeUtils.cpp — TypeUtils::findCallableType($type) (the type or null);
+ * UNDEF = pending exception */
+zv::Val pt_type_utils_find_callable_type(zval *type);
 
 /* }}} */
 

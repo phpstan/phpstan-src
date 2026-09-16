@@ -2142,6 +2142,38 @@ zv::Val pt_node_scope_resolver_collect_return_send(zval *nodeScopeResolver, zval
 	return pt_type_call(Z_OBJ_P(nodeScopeResolver), PT_LC("collectreturnsend"), 2, argv);
 }
 
+/* the argument walk's (ArgumentsHandler.cpp) */
+zv::Val pt_node_scope_resolver_look_for_unset_allowed_undefined_expressions(zval *nodeScopeResolver, zval *scope, zval *expr)
+{
+	if (isNativeResolver(nodeScopeResolver)) return NodeScopeResolver(Z_OBJ_P(nodeScopeResolver)).lookForUnsetAllowedUndefinedExpressions(scope, expr);
+	zv::Args argv{scope, expr};
+	return pt_type_call(Z_OBJ_P(nodeScopeResolver), PT_LC("lookforunsetallowedundefinedexpressions"), 2, argv);
+}
+
+bool pt_node_scope_resolver_is_returning_stored_expression_results(zval *nodeScopeResolver, bool &out)
+{
+	if (isNativeResolver(nodeScopeResolver)) {
+		out = NodeScopeResolver(Z_OBJ_P(nodeScopeResolver)).isReturningStoredExpressionResults();
+		return true;
+	}
+	zv::Val result = pt_type_call(Z_OBJ_P(nodeScopeResolver), PT_LC("isreturningstoredexpressionresults"), 0, NULL);
+	if (UNEXPECTED(result.isUndef())) return false;
+	out = zend_is_true(result.raw());
+	return true;
+}
+
+bool pt_node_scope_resolver_is_consuming_stored_expression_results(zval *nodeScopeResolver, bool &out)
+{
+	if (isNativeResolver(nodeScopeResolver)) {
+		out = NodeScopeResolver(Z_OBJ_P(nodeScopeResolver)).isConsumingStoredExpressionResults();
+		return true;
+	}
+	zv::Val result = pt_type_call(Z_OBJ_P(nodeScopeResolver), PT_LC("isconsumingstoredexpressionresults"), 0, NULL);
+	if (UNEXPECTED(result.isUndef())) return false;
+	out = zend_is_true(result.raw());
+	return true;
+}
+
 /* }}} */
 
 /* {{{ engine ABI glue: parameter parsing + registration */

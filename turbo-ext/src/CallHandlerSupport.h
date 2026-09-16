@@ -38,8 +38,6 @@ inline pt_method_site resolvedAcceptorReturnTypeSite;
 inline pt_method_site acceptorNativeReturnTypeSite;
 inline pt_method_site acceptorResolvedTemplateTypeMapSite;
 inline pt_method_site acceptorCallSiteVarianceMapSite;
-inline pt_method_site processArgsSite;
-inline pt_method_site processDroppedArgsSite;
 inline pt_method_site assertionsGetAllSite;
 inline pt_method_site assertionsMapTypesSite;
 inline pt_method_site getConstantStringsSite;
@@ -109,17 +107,17 @@ inline zv::Val acceptorCallSiteVarianceMap(zval *acceptor)
 }
 
 /* $argumentsHandler->processArgs(...) with the arguments the twin passes
- * (eleven, or twelve with $closureBindScopeFactory) */
+ * (eleven, or twelve with $closureBindScopeFactory) — ArgumentsHandler.cpp */
 inline zv::Val processArgs(zval *argumentsHandler, uint32_t argc, zval *argv)
 {
-	return pt_call_method_cached(processArgsSite, Z_OBJ_P(argumentsHandler), PT_LC("processargs"), argc, argv);
+	return pt_arguments_handler_process_args(argumentsHandler, &argv[0], &argv[1], &argv[2], &argv[3], &argv[4], &argv[5], &argv[6], &argv[7], &argv[8], &argv[9], &argv[10], argc > 11 ? &argv[11] : NULL);
 }
 
 /* $argumentsHandler->processDroppedArgs($nodeScopeResolver, $stmt, $originalCall,
  * $normalizedCall, $scope, $storage, $context); false = pending exception */
 [[nodiscard]] inline bool processDroppedArgs(zval *argumentsHandler, zval *argv)
 {
-	return !pt_call_method_cached(processDroppedArgsSite, Z_OBJ_P(argumentsHandler), PT_LC("processdroppedargs"), 7, argv).isUndef();
+	return pt_arguments_handler_process_dropped_args(argumentsHandler, &argv[0], &argv[1], &argv[2], &argv[3], &argv[4], &argv[5], &argv[6]);
 }
 
 /* $assertions->getAll() */

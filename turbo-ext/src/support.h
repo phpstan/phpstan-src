@@ -201,16 +201,12 @@ enum {
 	PT_CLASS_WRAPPED_EXTENDED_METHOD_REFLECTION,
 	PT_CLASS_EXTENDED_PROPERTY_REFLECTION,
 	PT_CLASS_WRAPPED_EXTENDED_PROPERTY_REFLECTION,
-	PT_CLASS_VARIABLE_ACCESS_FLOW,
 	PT_CLASS_ENUM_CASE_REFLECTION,
 	PT_CLASS_REFLECTION_ENUM_BACKED_CASE,
 	PT_CLASS_REAL_CLASS_CLASS_CONSTANT_REFLECTION,
 	PT_CLASS_TYPE_ALIAS,
 	PT_CLASS_CIRCULAR_TYPE_ALIAS_DEFINITION_EXCEPTION,
 	PT_CLASS_ARGUMENTS_NORMALIZER,
-	PT_CLASS_VARIABLE_SEQUENCE_FLOW,
-	PT_CLASS_VARIABLE_CONTROL_FLOW,
-	PT_CLASS_VARIABLE_INPUT_FLOW,
 	PT_CLASS_VARIABLE_WRITE,
 	PT_CLASS_VARIABLE_WRITE_OFFSET,
 	PT_CLASS_LIST_EXPR,
@@ -2781,6 +2777,58 @@ zv::Val pt_template_type_map_map(zval *map, zval *cb);
  * $scope, $args): hasVerdict false for the twin's null, verdict the PT_TRI_*
  * value otherwise; false = pending exception */
 [[nodiscard]] bool pt_simple_impure_point_resolve_verdict(zval *variant, zval *scope, zval *args, bool &hasVerdict, zend_long &verdict);
+
+/* }}} */
+
+/* {{{ the VariableFlow subclasses (VariableAccessFlow.cpp,
+ * VariableSequenceFlow.cpp, VariableInputFlow.cpp, VariableControlFlow.cpp):
+ * final native subclasses of the native VariableFlow, registered after it.
+ * The factories construct a fresh instance with every promoted slot written
+ * (borrowed arguments; NULL for null, or [] for an array parameter); readers
+ * compare the class entry and read ptdecl::Variable*Flow::slot in place.
+ * UNDEF = pending exception */
+
+extern zend_class_entry *pt_ce_variable_access_flow;
+extern zend_class_entry *pt_ce_variable_sequence_flow;
+extern zend_class_entry *pt_ce_variable_input_flow;
+extern zend_class_entry *pt_ce_variable_control_flow;
+void pt_register_variable_access_flow();
+void pt_register_variable_sequence_flow();
+void pt_register_variable_input_flow();
+void pt_register_variable_control_flow();
+
+/* a constructor's assignment of a promoted readonly slot declared by
+ * `declaring`: the engine's "Cannot modify readonly property" Error when the
+ * slot is already initialized (false), the write otherwise */
+[[nodiscard]] bool pt_variable_flow_init_readonly(zend_object *self, uint32_t index, zval *value, zend_class_entry *declaring, const char *name);
+
+/* new VariableAccessFlow($kind, $name, $write, $type, $targetId, $container, $offset) */
+zv::Val pt_variable_access_flow_new(zend_string *kind, zval *name, zval *write, zval *type, zval *targetId, bool container, zval *offset);
+/* new VariableSequenceFlow($kind, $children) */
+zv::Val pt_variable_sequence_flow_new(zend_string *kind, zval *children);
+/* new VariableInputFlow($writeId, $targetId) */
+zv::Val pt_variable_input_flow_new(zend_long writeId, zval *targetId);
+
+/* the parameters of new VariableControlFlow($kind, ...) after $kind, at the
+ * twin's defaults */
+struct pt_variable_control_flow_args
+{
+	zval *children = NULL;
+	zend_string *name = NULL;
+	zval *type = NULL;
+	zend_long level = 1;
+	bool atLeastOnce = false;
+	bool canExit = true;
+	zval *catches = NULL;
+	zval *arrow = NULL;
+	zval *cases = NULL;
+	bool canRepeat = true;
+	bool canContainAnyThrowable = false;
+	zval *stmt = NULL;
+	zval *bindings = NULL;
+	zval *ownWrites = NULL;
+};
+zv::Val pt_variable_control_flow_new(zend_string *kind, const pt_variable_control_flow_args &args);
 
 /* }}} */
 

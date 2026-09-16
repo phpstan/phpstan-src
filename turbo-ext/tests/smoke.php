@@ -2597,8 +2597,13 @@ check($vehResults['php'] === $vehResults['native'], 'VolatileExpressionHelper pa
 check($vehResults['php'][0][0] === true && $vehResults['php'][2][0] === true && $vehResults['php'][4][0] === true && $vehResults['php'][3][0] === false, 'VolatileExpressionHelper: the fixture exercises removals and no-ops');
 
 // ---- VariableFlow ----
-// The factories build the PHP flow classes over shared nodes and writes;
-// flows are compared structurally (class names modulo the prefix).
+// The factories build each side's flow classes over shared nodes and writes
+// (the native flow classes are a separate hierarchy under the prefix); flows
+// are compared structurally (class names modulo the prefix).
+$covered[\PHPStan\Analyser\VariableAccessFlow::class] = true;
+$covered[\PHPStan\Analyser\VariableSequenceFlow::class] = true;
+$covered[\PHPStan\Analyser\VariableInputFlow::class] = true;
+$covered[\PHPStan\Analyser\VariableControlFlow::class] = true;
 $vfDescribeWrite = static fn (?\PHPStan\Node\Variable\VariableWrite $write): ?array => $write === null ? null : [
 	$write->getVariableName(),
 	spl_object_id($write->getNode()),
@@ -2613,11 +2618,12 @@ $vfDescribe = static function ($flow) use (&$vfDescribe, $vfDescribeWrite, $turb
 	if ($flow === null) {
 		return null;
 	}
-	if (!$flow instanceof \PHPStan\Analyser\VariableFlow) {
+	if (!$flow instanceof \PHPStan\Analyser\VariableFlow && !$flow instanceof \PHPStanTurbo\VariableFlow) {
 		return 'not a flow: ' . get_debug_type($flow);
 	}
-	$d = ['class' => $turboNorm(get_class($flow)), 'kind' => $flow->kind];
-	if ($flow instanceof \PHPStan\Analyser\VariableAccessFlow) {
+	$class = $turboNorm(get_class($flow));
+	$d = ['class' => $class, 'kind' => $flow->kind];
+	if ($class === \PHPStan\Analyser\VariableAccessFlow::class) {
 		$d += [
 			'name' => $flow->name,
 			'write' => $vfDescribeWrite($flow->write),
@@ -2626,9 +2632,9 @@ $vfDescribe = static function ($flow) use (&$vfDescribe, $vfDescribeWrite, $turb
 			'container' => $flow->container,
 			'offset' => $flow->offset,
 		];
-	} elseif ($flow instanceof \PHPStan\Analyser\VariableSequenceFlow) {
+	} elseif ($class === \PHPStan\Analyser\VariableSequenceFlow::class) {
 		$d['children'] = array_map($vfDescribe, $flow->children);
-	} elseif ($flow instanceof \PHPStan\Analyser\VariableControlFlow) {
+	} elseif ($class === \PHPStan\Analyser\VariableControlFlow::class) {
 		$d += [
 			'children' => array_map($vfDescribe, $flow->children),
 			'name' => $flow->name,
@@ -2645,11 +2651,44 @@ $vfDescribe = static function ($flow) use (&$vfDescribe, $vfDescribeWrite, $turb
 			'bindings' => array_map($vfDescribeWrite, $flow->bindings),
 			'ownWrites' => array_map($vfDescribeWrite, $flow->ownWrites),
 		];
-	} elseif ($flow instanceof \PHPStan\Analyser\VariableInputFlow) {
+	} elseif ($class === \PHPStan\Analyser\VariableInputFlow::class) {
 		$d += ['writeId' => $flow->writeId, 'targetId' => $flow->targetId];
 	}
 
 	return $d;
+};
+// a flow tree as the PHP flow classes — what a PHP ExpressionResult can hold
+// under the prefix — keeping PHP flows, writes, nodes and types as they are
+$vfToPhp = static function ($flow) use (&$vfToPhp) {
+	if (!$flow instanceof \PHPStanTurbo\VariableFlow) {
+		return $flow;
+	}
+	if ($flow instanceof \PHPStanTurbo\VariableAccessFlow) {
+		return new \PHPStan\Analyser\VariableAccessFlow($flow->kind, $flow->name, $flow->write, $flow->type, $flow->targetId, $flow->container, $flow->offset);
+	}
+	if ($flow instanceof \PHPStanTurbo\VariableSequenceFlow) {
+		return new \PHPStan\Analyser\VariableSequenceFlow($flow->kind, array_map($vfToPhp, $flow->children));
+	}
+	if ($flow instanceof \PHPStanTurbo\VariableInputFlow) {
+		return new \PHPStan\Analyser\VariableInputFlow($flow->writeId, $flow->targetId);
+	}
+	return new \PHPStan\Analyser\VariableControlFlow(
+		$flow->kind,
+		array_map($vfToPhp, $flow->children),
+		$flow->name,
+		$flow->type,
+		$flow->level,
+		$flow->atLeastOnce,
+		$flow->canExit,
+		array_map(static fn (array $catch) => [$catch[0], $vfToPhp($catch[1])], $flow->catches),
+		$flow->arrow,
+		array_map(static fn (array $case) => [$vfToPhp($case[0]), $vfToPhp($case[1]), $case[2]], $flow->cases),
+		$flow->canRepeat,
+		$flow->canContainAnyThrowable,
+		$flow->stmt,
+		$flow->bindings,
+		$flow->ownWrites,
+	);
 };
 check((new ReflectionClass(\PHPStanTurbo\VariableFlow::class))->isAbstract(), 'VariableFlow: the native class is abstract');
 check((new ReflectionClass(\PHPStanTurbo\VariableFlow::class))->getConstants() === (new ReflectionClass(\PHPStan\Analyser\VariableFlow::class))->getConstants(), 'VariableFlow: the kind constants');
@@ -2723,6 +2762,67 @@ foreach (['php' => \PHPStan\Analyser\VariableFlow::class, 'native' => \PHPStanTu
 	}
 }
 check($vfRawResults['php'] === $vfRawResults['native'], 'VariableFlow: write() over an unconstructed VariableWrite: ' . json_encode($vfRawResults));
+// the subclasses' constructors called from PHP: the promoted slots, defaults
+// and named arguments, a repeated construction (readonly), an instance whose
+// constructor never ran, and a readonly write from outside
+$vfCtorResults = [];
+foreach (['php' => 'PHPStan\\Analyser\\', 'native' => 'PHPStanTurbo\\'] as $side => $ns) {
+	$r = [];
+	$capture = static function (callable $callback) use ($vfDescribe, $turboNorm): mixed {
+		try {
+			return ['ok', $vfDescribe($callback())];
+		} catch (\Throwable $e) {
+			return [get_class($e), $turboNorm(preg_replace('~, called in .*$~', '', $e->getMessage()))];
+		}
+	};
+	$access = $ns . 'VariableAccessFlow';
+	$sequence = $ns . 'VariableSequenceFlow';
+	$input = $ns . 'VariableInputFlow';
+	$control = $ns . 'VariableControlFlow';
+	$r[] = $capture(static fn () => new $access('read', 'a'));
+	$r[] = $capture(static fn () => new $access('write', 'b', $vfWriteA, $vfInt, 3, true, 'k'));
+	$r[] = $capture(static fn () => new $access('read', 'c', offset: 5, container: true));
+	$r[] = $capture(static fn () => new $sequence('choice', [null, new $access('read', 'a')]));
+	$r[] = $capture(static fn () => new $input(4, null));
+	$r[] = $capture(static fn () => new $input(4, 9));
+	$r[] = $capture(static fn () => new $control('return'));
+	$r[] = $capture(static fn () => new $control('loopStatement', [new $input(1, 2)], 'n', $vfString, 2, true, false, [[$vfInt, null]], $vfArrow, [[null, null, true]], false, true, $vfForeach, [$vfWriteA], [$vfWriteItem]));
+	$r[] = $capture(static fn () => new $control('throw', type: $vfInt, canExit: false, canContainAnyThrowable: true));
+	$r[] = $capture(static fn () => new $control('stop', 'x'));
+	// constructor arguments of the right types for a second construction
+	$againArgs = [
+		'access' => ['stop', 'x'],
+		'sequence' => ['choice', []],
+		'input' => [2, 3],
+		'control' => ['stop', []],
+	];
+	foreach ([
+		'access' => static fn () => new $access('read', 'a'),
+		'sequence' => static fn () => new $sequence('sequence', []),
+		'input' => static fn () => new $input(1, null),
+		'control' => static fn () => new $control('dead'),
+	] as $label => $make) {
+		$flow = $make();
+		$args = $againArgs[$label];
+		$r[$label . ' again'] = $capture(static function () use ($flow, $args) {
+			$flow->__construct(...$args);
+			return $flow;
+		});
+		$r[$label . ' outside write'] = $capture(static function () use ($flow) {
+			$flow->kind = 'x';
+			return $flow;
+		});
+		$raw = (new \ReflectionClass($flow))->newInstanceWithoutConstructor();
+		$r[$label . ' uninitialized read'] = $capture(static fn () => $raw->kind);
+		$r[$label . ' late construction'] = $capture(static function () use ($raw, $args) {
+			$raw->__construct(...$args);
+			return $raw;
+		});
+	}
+	$r['final'] = [(new \ReflectionClass($access))->isFinal(), (new \ReflectionClass($control))->getParentClass()->getName() === $ns . 'VariableFlow'];
+	$vfCtorResults[$side] = $r;
+}
+check($vfCtorResults['php'] === $vfCtorResults['native'], 'VariableFlow subclasses: constructors: ' . json_encode($vfCtorResults['php']) . ' vs ' . json_encode($vfCtorResults['native']));
 
 // ---- VariableFlowBuilder ----
 // Shared nodes and a scope; per side a storage of the side's class holding
@@ -2821,23 +2921,26 @@ $vfbSides = [
 ];
 $vfbResults = [];
 foreach ($vfbSides as $side => [$builder, $vf, $storageClass]) {
+	// the stored results are PHP ExpressionResults, which under the prefix
+	// hold the PHP flow classes on every side
+	$storedVf = \PHPStan\Analyser\VariableFlow::class;
 	$storage = new $storageClass();
-	$flowA = $vf::read('a');
-	$flowB = $vf::escape('b');
-	$flowK = $vf::mention('k');
+	$flowA = $storedVf::read('a');
+	$flowB = $storedVf::escape('b');
+	$flowK = $storedVf::mention('k');
 	$storage->storeExpressionResult($vfbN['a'], $vfbMakeResult($flowA, $vfInt));
 	$storage->storeExpressionResult($vfbN['b'], $vfbMakeResult($flowB));
 	$storage->storeExpressionResult($vfbN['k'], $vfbMakeResult($flowK, new \PHPStanTurbo\ConstantStringType('k')));
 	$storage->storeExpressionResult($vfbN['one'], $vfbMakeResult(null, new \PHPStanTurbo\ConstantIntegerType(1)));
-	$storage->storeExpressionResult($vfbN['call'], $vfbMakeResult($vf::all($vf::OPAQUE)));
-	$storage->storeExpressionResult($vfbN['varVar'], $vfbMakeResult($vf::mention('name')));
-	$storage->storeExpressionResult($vfbN['dimArrK'], $vfbMakeResult($vf::read('arr', null, false, 'k'), $vfString));
-	$storage->storeExpressionResult($vfbN['closure'], $vfbMakeResult($vf::escape('c')));
-	$storage->storeExpressionResult($vfbN['prop'], $vfbMakeResult($vf::mention('prop')));
+	$storage->storeExpressionResult($vfbN['call'], $vfbMakeResult($storedVf::all($storedVf::OPAQUE)));
+	$storage->storeExpressionResult($vfbN['varVar'], $vfbMakeResult($storedVf::mention('name')));
+	$storage->storeExpressionResult($vfbN['dimArrK'], $vfbMakeResult($storedVf::read('arr', null, false, 'k'), $vfString));
+	$storage->storeExpressionResult($vfbN['closure'], $vfbMakeResult($storedVf::escape('c')));
+	$storage->storeExpressionResult($vfbN['prop'], $vfbMakeResult($storedVf::mention('prop')));
 	$argsResult = new \PHPStan\Analyser\ArgsResult(
 		$vfbMakeResult(null),
 		null,
-		[spl_object_id($vfbN['a']) => $vfbMakeResult($vf::read('a', 99)), spl_object_id($vfbN['closure']) => $vfbMakeResult(null)],
+		[spl_object_id($vfbN['a']) => $vfbMakeResult($storedVf::read('a', 99)), spl_object_id($vfbN['closure']) => $vfbMakeResult(null)],
 		[spl_object_id($vfbN['call']) => true],
 	);
 
@@ -2988,11 +3091,45 @@ $vlrFlows = [
 	'mention all' => $vlrF::sequence($vlrF::write($vlrWrite('a', 1)), $vlrF::all($vlrF::MENTION_ALL)),
 	'opaque' => $vlrF::sequence($vlrF::write($vlrWrite('a', 1)), $vlrF::all($vlrF::OPAQUE), $vlrF::read('a')),
 ];
+// the native side resolves native copies of the trees, over the same writes,
+// nodes and types (built through the native constructors)
+$vlrToNative = static function ($flow) use (&$vlrToNative) {
+	if ($flow === null) {
+		return null;
+	}
+	if ($flow instanceof \PHPStan\Analyser\VariableAccessFlow) {
+		return new \PHPStanTurbo\VariableAccessFlow($flow->kind, $flow->name, $flow->write, $flow->type, $flow->targetId, $flow->container, $flow->offset);
+	}
+	if ($flow instanceof \PHPStan\Analyser\VariableSequenceFlow) {
+		return new \PHPStanTurbo\VariableSequenceFlow($flow->kind, array_map($vlrToNative, $flow->children));
+	}
+	if ($flow instanceof \PHPStan\Analyser\VariableInputFlow) {
+		return new \PHPStanTurbo\VariableInputFlow($flow->writeId, $flow->targetId);
+	}
+	return new \PHPStanTurbo\VariableControlFlow(
+		$flow->kind,
+		array_map($vlrToNative, $flow->children),
+		$flow->name,
+		$flow->type,
+		$flow->level,
+		$flow->atLeastOnce,
+		$flow->canExit,
+		array_map(static fn (array $catch) => [$catch[0], $vlrToNative($catch[1])], $flow->catches),
+		$flow->arrow,
+		array_map(static fn (array $case) => [$vlrToNative($case[0]), $vlrToNative($case[1]), $case[2]], $flow->cases),
+		$flow->canRepeat,
+		$flow->canContainAnyThrowable,
+		$flow->stmt,
+		$flow->bindings,
+		$flow->ownWrites,
+	);
+};
+$vlrSideFlows = ['php' => $vlrFlows, 'native' => array_map($vlrToNative, $vlrFlows)];
 $vlrResults = [];
 foreach (['php' => \PHPStan\Analyser\VariableLivenessResolver::class, 'native' => \PHPStanTurbo\VariableLivenessResolver::class] as $side => $resolver) {
 	$r = [];
 	foreach ($vlrFunctions as $functionLabel => $function) {
-		foreach ($vlrFlows as $flowLabel => $flow) {
+		foreach ($vlrSideFlows[$side] as $flowLabel => $flow) {
 			$r[$functionLabel . ' / ' . $flowLabel] = $vlrDescribe($resolver::resolve($function, $flow));
 		}
 	}
@@ -3822,9 +3959,10 @@ $hhNativeFactory = new class ($hhFactory) implements \PHPStan\Analyser\Expressio
 		?\PHPStan\Type\Type $type = null,
 		?\PHPStan\Type\Type $nativeType = null,
 		?\PHPStan\Analyser\ArgsResult $argsResult = null,
-		?\PHPStan\Analyser\VariableFlow $variableFlow = null,
+		?object $variableFlow = null,
 	): \PHPStan\Analyser\ExpressionResult
 	{
+		$variableFlow = ($GLOBALS['vfToPhp'])($variableFlow);
 		if ($issetabilityDescriptor instanceof \PHPStanTurbo\IssetabilityDescriptor) {
 			$twin = (new \ReflectionClass(\PHPStan\Analyser\IssetabilityDescriptor::class))->newInstanceWithoutConstructor();
 			foreach ((new \ReflectionClass($issetabilityDescriptor))->getProperties() as $property) {

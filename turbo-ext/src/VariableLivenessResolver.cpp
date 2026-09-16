@@ -11,14 +11,19 @@
  * and never instantiates the PHP class; the private methods are C++ members
  * of the same names.
  *
- * The flow objects are the PHP flow classes (their readonly properties read
- * from the slots, per class entry), the writes are VariableWrite instances
+ * The flow objects are the native flow classes (their readonly properties
+ * read from the slots), the writes are VariableWrite instances
  * (slots when exactly that class, the getters otherwise), the Type queries
  * of the catch clauses go through the Type ops.
  */
 
 #include "support.h"
 #include "generated/VariableLivenessResolver.h"
+#include "generated/VariableFlow.h"
+#include "generated/VariableAccessFlow.h"
+#include "generated/VariableSequenceFlow.h"
+#include "generated/VariableControlFlow.h"
+#include "generated/VariableInputFlow.h"
 
 namespace sigs = ptdecl::VariableLivenessResolver::sig;
 #include "zv.h"
@@ -98,60 +103,43 @@ FlowKind kindOf(zend_string *kind)
 	return PT_VLR_OTHER;
 }
 
-/* the property slots of the four final PHP flow classes, resolved once per
- * resolve() (their class entries come from the class map) */
+/* the property slots (OBJ_PROP byte offsets) of the four final native flow
+ * classes (VariableAccessFlow.cpp, ...): the inherited $kind first, then each
+ * class's promoted properties in declaration order */
 struct FlowSlots
 {
-	zend_class_entry *accessCe;
-	zend_class_entry *sequenceCe;
-	zend_class_entry *controlCe;
-	zend_class_entry *inputCe;
 	/* VariableFlow::$kind */
-	uint32_t accessKind, sequenceKind, controlKind, inputKind;
+	static constexpr uint32_t accessKind = OBJ_PROP_TO_OFFSET(ptdecl::VariableFlow::slot::kind);
+	static constexpr uint32_t sequenceKind = accessKind;
+	static constexpr uint32_t controlKind = accessKind;
+	static constexpr uint32_t inputKind = accessKind;
 	/* VariableAccessFlow */
-	uint32_t accessName, accessWrite, accessType, accessTargetId, accessContainer, accessOffset;
+	static constexpr uint32_t accessName = OBJ_PROP_TO_OFFSET(ptdecl::VariableAccessFlow::slot::name);
+	static constexpr uint32_t accessWrite = OBJ_PROP_TO_OFFSET(ptdecl::VariableAccessFlow::slot::write);
+	static constexpr uint32_t accessType = OBJ_PROP_TO_OFFSET(ptdecl::VariableAccessFlow::slot::type);
+	static constexpr uint32_t accessTargetId = OBJ_PROP_TO_OFFSET(ptdecl::VariableAccessFlow::slot::targetId);
+	static constexpr uint32_t accessContainer = OBJ_PROP_TO_OFFSET(ptdecl::VariableAccessFlow::slot::container);
+	static constexpr uint32_t accessOffset = OBJ_PROP_TO_OFFSET(ptdecl::VariableAccessFlow::slot::offset);
 	/* VariableSequenceFlow */
-	uint32_t sequenceChildren;
+	static constexpr uint32_t sequenceChildren = OBJ_PROP_TO_OFFSET(ptdecl::VariableSequenceFlow::slot::children);
 	/* VariableControlFlow */
-	uint32_t controlChildren, controlName, controlType, controlLevel, controlAtLeastOnce, controlCanExit, controlCatches, controlArrow, controlCases, controlCanRepeat, controlCanContainAnyThrowable, controlStmt, controlBindings, controlOwnWrites;
+	static constexpr uint32_t controlChildren = OBJ_PROP_TO_OFFSET(ptdecl::VariableControlFlow::slot::children);
+	static constexpr uint32_t controlName = OBJ_PROP_TO_OFFSET(ptdecl::VariableControlFlow::slot::name);
+	static constexpr uint32_t controlType = OBJ_PROP_TO_OFFSET(ptdecl::VariableControlFlow::slot::type);
+	static constexpr uint32_t controlLevel = OBJ_PROP_TO_OFFSET(ptdecl::VariableControlFlow::slot::level);
+	static constexpr uint32_t controlAtLeastOnce = OBJ_PROP_TO_OFFSET(ptdecl::VariableControlFlow::slot::atLeastOnce);
+	static constexpr uint32_t controlCanExit = OBJ_PROP_TO_OFFSET(ptdecl::VariableControlFlow::slot::canExit);
+	static constexpr uint32_t controlCatches = OBJ_PROP_TO_OFFSET(ptdecl::VariableControlFlow::slot::catches);
+	static constexpr uint32_t controlArrow = OBJ_PROP_TO_OFFSET(ptdecl::VariableControlFlow::slot::arrow);
+	static constexpr uint32_t controlCases = OBJ_PROP_TO_OFFSET(ptdecl::VariableControlFlow::slot::cases);
+	static constexpr uint32_t controlCanRepeat = OBJ_PROP_TO_OFFSET(ptdecl::VariableControlFlow::slot::canRepeat);
+	static constexpr uint32_t controlCanContainAnyThrowable = OBJ_PROP_TO_OFFSET(ptdecl::VariableControlFlow::slot::canContainAnyThrowable);
+	static constexpr uint32_t controlStmt = OBJ_PROP_TO_OFFSET(ptdecl::VariableControlFlow::slot::stmt);
+	static constexpr uint32_t controlBindings = OBJ_PROP_TO_OFFSET(ptdecl::VariableControlFlow::slot::bindings);
+	static constexpr uint32_t controlOwnWrites = OBJ_PROP_TO_OFFSET(ptdecl::VariableControlFlow::slot::ownWrites);
 	/* VariableInputFlow */
-	uint32_t inputWriteId, inputTargetId;
-
-	static bool offsetOf(zend_class_entry *ce, const char *name, uint32_t &out)
-	{
-		int32_t offset = pt_instance_prop_offset(ce, name, strlen(name));
-		if (UNEXPECTED(offset < 0)) {
-			zend_throw_error(NULL, "phpstan_turbo: %s has no property $%s", ZSTR_VAL(ce->name), name);
-			return false;
-		}
-		out = (uint32_t) offset;
-		return true;
-	}
-
-	/* false = pending exception */
-	[[nodiscard]] bool resolve()
-	{
-		accessCe = pt_class(PT_CLASS_VARIABLE_ACCESS_FLOW);
-		sequenceCe = pt_class(PT_CLASS_VARIABLE_SEQUENCE_FLOW);
-		controlCe = pt_class(PT_CLASS_VARIABLE_CONTROL_FLOW);
-		inputCe = pt_class(PT_CLASS_VARIABLE_INPUT_FLOW);
-		if (UNEXPECTED(accessCe == NULL || sequenceCe == NULL || controlCe == NULL || inputCe == NULL)) return false;
-		return offsetOf(accessCe, "kind", accessKind) && offsetOf(sequenceCe, "kind", sequenceKind)
-			&& offsetOf(controlCe, "kind", controlKind) && offsetOf(inputCe, "kind", inputKind)
-			&& offsetOf(accessCe, "name", accessName) && offsetOf(accessCe, "write", accessWrite)
-			&& offsetOf(accessCe, "type", accessType) && offsetOf(accessCe, "targetId", accessTargetId)
-			&& offsetOf(accessCe, "container", accessContainer) && offsetOf(accessCe, "offset", accessOffset)
-			&& offsetOf(sequenceCe, "children", sequenceChildren)
-			&& offsetOf(controlCe, "children", controlChildren) && offsetOf(controlCe, "name", controlName)
-			&& offsetOf(controlCe, "type", controlType) && offsetOf(controlCe, "level", controlLevel)
-			&& offsetOf(controlCe, "atLeastOnce", controlAtLeastOnce) && offsetOf(controlCe, "canExit", controlCanExit)
-			&& offsetOf(controlCe, "catches", controlCatches) && offsetOf(controlCe, "arrow", controlArrow)
-			&& offsetOf(controlCe, "cases", controlCases) && offsetOf(controlCe, "canRepeat", controlCanRepeat)
-			&& offsetOf(controlCe, "canContainAnyThrowable", controlCanContainAnyThrowable)
-			&& offsetOf(controlCe, "stmt", controlStmt) && offsetOf(controlCe, "bindings", controlBindings)
-			&& offsetOf(controlCe, "ownWrites", controlOwnWrites)
-			&& offsetOf(inputCe, "writeId", inputWriteId) && offsetOf(inputCe, "targetId", inputTargetId);
-	}
+	static constexpr uint32_t inputWriteId = OBJ_PROP_TO_OFFSET(ptdecl::VariableInputFlow::slot::writeId);
+	static constexpr uint32_t inputTargetId = OBJ_PROP_TO_OFFSET(ptdecl::VariableInputFlow::slot::targetId);
 };
 
 /* a readonly property slot, dereferenced; NULL with the engine's Error
@@ -447,7 +435,6 @@ public:
 	static zv::Val resolve(zval *function, zval *flow)
 	{
 		VariableLivenessResolver self;
-		if (UNEXPECTED(!self.slots.resolve())) return zv::Val();
 		zend_class_entry *variableCe = pt_class(PT_CLASS_VARIABLE);
 		zend_class_entry *closureCe = pt_class(PT_CLASS_CLOSURE_EXPR);
 		if (UNEXPECTED(variableCe == NULL || closureCe == NULL)) return zv::Val();
@@ -612,10 +599,11 @@ private:
 		return kindOf(Z_STR_P(kind));
 	}
 
-	bool isAccess(zend_object *flow) const { return instanceof_function(flow->ce, slots.accessCe); }
-	bool isSequence(zend_object *flow) const { return instanceof_function(flow->ce, slots.sequenceCe); }
-	bool isControl(zend_object *flow) const { return instanceof_function(flow->ce, slots.controlCe); }
-	bool isInput(zend_object *flow) const { return instanceof_function(flow->ce, slots.inputCe); }
+	/* the flow classes are final */
+	static bool isAccess(zend_object *flow) { return flow->ce == pt_ce_variable_access_flow; }
+	static bool isSequence(zend_object *flow) { return flow->ce == pt_ce_variable_sequence_flow; }
+	static bool isControl(zend_object *flow) { return flow->ce == pt_ce_variable_control_flow; }
+	static bool isInput(zend_object *flow) { return flow->ce == pt_ce_variable_input_flow; }
 
 	/* the kind slot of whichever flow class this is */
 	uint32_t kindOffsetOf(zend_object *flow) const

@@ -15,6 +15,8 @@
 
 #include "support.h"
 #include "generated/VariableFlowBuilder.h"
+#include "generated/VariableAccessFlow.h"
+#include "generated/VariableSequenceFlow.h"
 
 namespace sigs = ptdecl::VariableFlowBuilder::sig;
 #include "zv.h"
@@ -62,8 +64,6 @@ struct NodeClasses
 	zend_class_entry *closure;
 	zend_class_entry *arrowFunction;
 	zend_class_entry *callLike;
-	zend_class_entry *accessFlow;
-	zend_class_entry *sequenceFlow;
 
 	/* false = pending exception (an unresolvable class-map entry) */
 	[[nodiscard]] bool resolve()
@@ -80,12 +80,9 @@ struct NodeClasses
 		closure = pt_class(PT_CLASS_CLOSURE_EXPR);
 		arrowFunction = pt_class(PT_CLASS_ARROW_FUNCTION);
 		callLike = pt_class(PT_CLASS_CALL_LIKE);
-		accessFlow = pt_class(PT_CLASS_VARIABLE_ACCESS_FLOW);
-		sequenceFlow = pt_class(PT_CLASS_VARIABLE_SEQUENCE_FLOW);
 		return node != NULL && expr != NULL && variable != NULL && list != NULL && array != NULL
 			&& arrayDimFetch != NULL && propertyFetch != NULL && nullsafePropertyFetch != NULL
-			&& staticPropertyFetch != NULL && closure != NULL && arrowFunction != NULL && callLike != NULL
-			&& accessFlow != NULL && sequenceFlow != NULL;
+			&& staticPropertyFetch != NULL && closure != NULL && arrowFunction != NULL && callLike != NULL;
 	}
 };
 
@@ -444,21 +441,21 @@ private:
 	[[nodiscard]] static bool collectWrites(zval *flow, zv::Arr &writes)
 	{
 		if (flow == NULL || Z_TYPE_P(flow) != IS_OBJECT) return true;
-		zend_class_entry *accessFlowCe = pt_class(PT_CLASS_VARIABLE_ACCESS_FLOW);
-		zend_class_entry *sequenceFlowCe = pt_class(PT_CLASS_VARIABLE_SEQUENCE_FLOW);
-		if (UNEXPECTED(accessFlowCe == NULL || sequenceFlowCe == NULL)) return false;
+		/* the flow classes are final and native: their readonly slots in place */
 		zend_object *flowObj = Z_OBJ_P(flow);
-		if (instanceof_function(flowObj->ce, accessFlowCe)) {
-			zv::Ref write = nodeProp(flowObj, PT_LC("write"));
-			if (write.raw() != NULL && write.isObject()) {
-				writes.push(write);
+		if (flowObj->ce == pt_ce_variable_access_flow) {
+			zval *write = pt_typed_slot(flowObj, ptdecl::VariableAccessFlow::slot::write, pt_ce_variable_access_flow, "write");
+			if (UNEXPECTED(write == NULL)) return false;
+			if (Z_TYPE_P(write) == IS_OBJECT) {
+				writes.push(zv::Ref(write));
 			}
 			return true;
 		}
-		if (!instanceof_function(flowObj->ce, sequenceFlowCe)) return true;
-		zv::Ref children = nodeProp(flowObj, PT_LC("children"));
-		if (children.raw() == NULL || !children.isArray()) return true;
-		for (auto entry : zv::TableRef(children.asArrayTable())) {
+		if (flowObj->ce != pt_ce_variable_sequence_flow) return true;
+		zval *children = pt_typed_slot(flowObj, ptdecl::VariableSequenceFlow::slot::children, pt_ce_variable_sequence_flow, "children");
+		if (UNEXPECTED(children == NULL)) return false;
+		if (Z_TYPE_P(children) != IS_ARRAY) return true;
+		for (auto entry : zv::TableRef(Z_ARRVAL_P(children))) {
 			if (UNEXPECTED(!collectWrites(entry.value().deref().raw(), writes))) return false;
 		}
 		return true;

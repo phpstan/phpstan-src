@@ -406,6 +406,11 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_if_handler();
 	pt_register_static_call_handler();
 	pt_register_new_handler();
+	/* the VariableFlow subclasses (after VariableFlow, their parent) */
+	pt_register_variable_access_flow();
+	pt_register_variable_sequence_flow();
+	pt_register_variable_input_flow();
+	pt_register_variable_control_flow();
 
 	return SUCCESS;
 }

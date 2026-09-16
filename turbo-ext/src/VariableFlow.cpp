@@ -3,13 +3,12 @@
  * PHPStan\Analyser\VariableFlow.
  *
  * Declared as PHPStan\Analyser\VariableFlow itself at activation (abstract,
- * like the twin): the four PHP flow classes (VariableAccessFlow,
- * VariableSequenceFlow, VariableControlFlow, VariableInputFlow) extend it,
- * call its protected constructor for the `public readonly string $kind`
- * slot, and are what the static factories here instantiate — through the
- * class map and their real constructors, with every optional constructor
- * parameter passed at its default, so the objects are the ones the twin's
- * `new` expressions create.
+ * like the twin): the four flow classes (VariableAccessFlow,
+ * VariableSequenceFlow, VariableControlFlow, VariableInputFlow) extend it and
+ * are native themselves; the static factories here construct them directly
+ * (pt_variable_*_flow_new()), with every optional constructor parameter at
+ * its default, so the objects are the ones the twin's `new` expressions
+ * create.
  *
  * The VariableFlow handle class below mirrors the twin method for method,
  * in the same order (`switch` and `exit` carry a trailing underscore
@@ -118,103 +117,24 @@ pt_variable_write_slots pt_vf_write_slots = { NULL, 0, 0, 0, 0, 0, 0, 0, 0 };
  * $offset) — NULL stands for a null argument */
 zv::Val newAccessFlow(pt_vf_kind kind, zval *name, zval *write, zval *type, zval *targetId, bool container, zval *offset)
 {
-	zval argv[7];
-	ZVAL_STR(&argv[0], pt_vf_kind_strings[kind]);
-	ZVAL_COPY_VALUE(&argv[1], name);
-	if (write != NULL) {
-		ZVAL_COPY_VALUE(&argv[2], write);
-	} else {
-		ZVAL_NULL(&argv[2]);
-	}
-	if (type != NULL) {
-		ZVAL_COPY_VALUE(&argv[3], type);
-	} else {
-		ZVAL_NULL(&argv[3]);
-	}
-	if (targetId != NULL) {
-		ZVAL_COPY_VALUE(&argv[4], targetId);
-	} else {
-		ZVAL_NULL(&argv[4]);
-	}
-	ZVAL_BOOL(&argv[5], container);
-	if (offset != NULL) {
-		ZVAL_COPY_VALUE(&argv[6], offset);
-	} else {
-		ZVAL_NULL(&argv[6]);
-	}
-	return pt_type_new(PT_CLASS_VARIABLE_ACCESS_FLOW, 7, argv);
+	return pt_variable_access_flow_new(pt_vf_kind_strings[kind], name, write, type, targetId, container, offset);
 }
 
 /* new VariableSequenceFlow($kind, $children) */
 zv::Val newSequenceFlow(pt_vf_kind kind, zval *children)
 {
-	zv::Args argv{pt_vf_kind_strings[kind], children};
-	return pt_type_new(PT_CLASS_VARIABLE_SEQUENCE_FLOW, 2, argv);
+	return pt_variable_sequence_flow_new(pt_vf_kind_strings[kind], children);
 }
 
 /* the optional constructor parameters of VariableControlFlow, NULL / the
  * twin's defaults where a factory leaves them out */
-struct ControlFlowArgs
-{
-	zval *children = NULL;
-	zend_string *name = NULL;
-	zval *type = NULL;
-	zend_long level = 1;
-	bool atLeastOnce = false;
-	bool canExit = true;
-	zval *catches = NULL;
-	zval *arrow = NULL;
-	zval *cases = NULL;
-	bool canRepeat = true;
-	bool canContainAnyThrowable = false;
-	zval *stmt = NULL;
-	zval *bindings = NULL;
-	zval *ownWrites = NULL;
-};
+using ControlFlowArgs = pt_variable_control_flow_args;
 
-void controlFlowArg(zval *slot, zval *value)
-{
-	if (value != NULL) {
-		ZVAL_COPY_VALUE(slot, value);
-	} else {
-		ZVAL_NULL(slot);
-	}
-}
-
-void controlFlowArrayArg(zval *slot, zval *value)
-{
-	if (value != NULL) {
-		ZVAL_COPY_VALUE(slot, value);
-	} else {
-		ZVAL_EMPTY_ARRAY(slot);
-	}
-}
-
-/* new VariableControlFlow($kind, ...) with every parameter positional;
- * $kind is the constant's value (all() and exit() take it as a parameter) */
+/* new VariableControlFlow($kind, ...); $kind is the constant's value (all()
+ * and exit() take it as a parameter) */
 zv::Val newControlFlow(zend_string *kind, const ControlFlowArgs &a)
 {
-	zval argv[15];
-	ZVAL_STR(&argv[0], kind);
-	controlFlowArrayArg(&argv[1], a.children);
-	if (a.name != NULL) {
-		ZVAL_STR(&argv[2], a.name);
-	} else {
-		ZVAL_NULL(&argv[2]);
-	}
-	controlFlowArg(&argv[3], a.type);
-	ZVAL_LONG(&argv[4], a.level);
-	ZVAL_BOOL(&argv[5], a.atLeastOnce);
-	ZVAL_BOOL(&argv[6], a.canExit);
-	controlFlowArrayArg(&argv[7], a.catches);
-	controlFlowArg(&argv[8], a.arrow);
-	controlFlowArrayArg(&argv[9], a.cases);
-	ZVAL_BOOL(&argv[10], a.canRepeat);
-	ZVAL_BOOL(&argv[11], a.canContainAnyThrowable);
-	controlFlowArg(&argv[12], a.stmt);
-	controlFlowArrayArg(&argv[13], a.bindings);
-	controlFlowArrayArg(&argv[14], a.ownWrites);
-	return pt_type_new(PT_CLASS_VARIABLE_CONTROL_FLOW, 15, argv);
+	return pt_variable_control_flow_new(kind, a);
 }
 
 zv::Val newControlFlow(pt_vf_kind kind, const ControlFlowArgs &a)
@@ -400,14 +320,7 @@ public:
 	/* Mirrors inputs(); $targetId NULL for null. */
 	static zv::Val inputs(zend_long writeId, zval *targetId)
 	{
-		zval argv[2];
-		ZVAL_LONG(&argv[0], writeId);
-		if (targetId != NULL) {
-			ZVAL_COPY_VALUE(&argv[1], targetId);
-		} else {
-			ZVAL_NULL(&argv[1]);
-		}
-		return pt_type_new(PT_CLASS_VARIABLE_INPUT_FLOW, 2, argv);
+		return pt_variable_input_flow_new(writeId, targetId);
 	}
 
 	/* Mirrors escape(). */
@@ -505,6 +418,18 @@ using phpstanturbo::VariableFlow;
 void pt_variable_flow_rinit()
 {
 	pt_vf_write_slots.ce = NULL;
+}
+
+bool pt_variable_flow_init_readonly(zend_object *self, uint32_t index, zval *value, zend_class_entry *declaring, const char *name)
+{
+	zval *slot = OBJ_PROP_NUM(self, index);
+	if (UNEXPECTED(Z_TYPE_P(slot) != IS_UNDEF)) {
+		zend_throw_error(NULL, "Cannot modify readonly property %s::$%s", ZSTR_VAL(declaring->name), name);
+		return false;
+	}
+	ZVAL_COPY(slot, value);
+	Z_PROP_FLAG_P(slot) = 0;
+	return true;
 }
 
 zv::Val pt_variable_flow_sequence(uint32_t argc, zval *argv)
@@ -643,12 +568,9 @@ void pt_register_variable_flow()
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *kind;
 		if (!zp::parse<zp::Str>(execute_data, kind)) RETURN_THROWS();
-		zval *slot = OBJ_PROP_NUM(Z_OBJ_P(ZEND_THIS), 0);
-		if (UNEXPECTED(Z_TYPE_P(slot) != IS_UNDEF)) {
-			zend_throw_error(NULL, "Cannot modify readonly property %s::$kind", ZSTR_VAL(Z_OBJCE_P(ZEND_THIS)->name));
-			RETURN_THROWS();
-		}
-		ZVAL_STR_COPY(slot, kind);
+		zval value;
+		ZVAL_STR(&value, kind);
+		if (UNEXPECTED(!pt_variable_flow_init_readonly(Z_OBJ_P(ZEND_THIS), ptdecl::VariableFlow::slot::kind, &value, pt_ce_variable_flow, "kind"))) RETURN_THROWS();
 	});
 
 	cls.method(sigs::sequence, [](INTERNAL_FUNCTION_PARAMETERS) {

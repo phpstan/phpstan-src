@@ -721,7 +721,7 @@ check($avRecordings['php']['count'] === 7, 'RecordingNodeCallback: the fixture r
 // answers over the PHP twins
 $avFlowThrowPoints = [];
 $avFlowCall = new \PhpParser\Node\Expr\FuncCall(new \PhpParser\Node\Name('g'), [new \PhpParser\Node\Arg($avN['a']), new \PhpParser\Node\Arg($avN['m'], true), new \PhpParser\Node\Arg($avN['arr'])]);
-$avFlowDescribe = static fn (?\PHPStan\Analyser\VariableFlow $flow): mixed => $flow === null ? null : $avDescribe($flow);
+$avFlowDescribe = static fn (?object $flow): mixed => $flow === null ? null : $avDescribe($flow);
 foreach (['php' => $avSides['php'], 'native' => $avSides['native']] as $side => $c) {
 	$throwPoints = [
 		$c['InternalThrowPoint']::createExplicit($avScope, $avThrowTypes[$side]['exception'], $avFlowCall, false),
@@ -729,8 +729,11 @@ foreach (['php' => $avSides['php'], 'native' => $avSides['native']] as $side => 
 		$c['InternalThrowPoint']::createImplicit($avScope, $avN['a']),
 	];
 	$storage = new \PHPStanTurbo\ExpressionResultStorage();
-	$newResult = static fn (\PhpParser\Node\Expr $expr, \PHPStan\Type\Type $type, ?\PHPStan\Analyser\VariableFlow $flow = null) => new $c['ExpressionResult']($avNoExtensions, $avDefaultNarrowingHelper, $avScope, $avScope, $expr, false, false, [], [], null, static fn () => new \PHPStan\Analyser\SpecifiedTypes(), type: $type, nativeType: $type, variableFlow: $flow);
-	$argsResult = new $c['ArgsResult']($newResult($avFlowCall, $avInt), null, [spl_object_id($avN['a']) => $newResult($avN['a'], $avInt, \PHPStanTurbo\VariableFlow::read('a'))], [spl_object_id($avN['arr']) => true]);
+	$newResult = static fn (\PhpParser\Node\Expr $expr, \PHPStan\Type\Type $type, ?object $flow = null) => new $c['ExpressionResult']($avNoExtensions, $avDefaultNarrowingHelper, $avScope, $avScope, $expr, false, false, [], [], null, static fn () => new \PHPStan\Analyser\SpecifiedTypes(), type: $type, nativeType: $type, variableFlow: $flow);
+	// each side's flow class: a PHP ExpressionResult holds only the PHP one
+	// under the prefix
+	$flowClass = $side === 'php' ? \PHPStan\Analyser\VariableFlow::class : \PHPStanTurbo\VariableFlow::class;
+	$argsResult = new $c['ArgsResult']($newResult($avFlowCall, $avInt), null, [spl_object_id($avN['a']) => $newResult($avN['a'], $avInt, $flowClass::read('a'))], [spl_object_id($avN['arr']) => true]);
 	$avFlowThrowPoints[$side] = [
 		$avFlowDescribe(\PHPStanTurbo\VariableFlowBuilder::throws($avFlowCall, $throwPoints)),
 		$avFlowDescribe(\PHPStanTurbo\VariableFlowBuilder::throws($avN['a'], $throwPoints)),

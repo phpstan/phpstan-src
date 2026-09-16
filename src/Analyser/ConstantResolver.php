@@ -164,6 +164,11 @@ final class ConstantResolver
 				new AccessoryNonFalsyStringType(),
 			]);
 		}
+		// added in PHP 8.5, and only when the build defines it - whatever the packager put
+		// there, including an empty string
+		if ($resolvedConstantName === 'PHP_BUILD_PROVIDER') {
+			return new StringType();
+		}
 		if ($resolvedConstantName === 'PHP_ZTS') {
 			return new UnionType([
 				new ConstantIntegerType(0),
@@ -251,6 +256,12 @@ final class ConstantResolver
 			]);
 		}
 		if ($resolvedConstantName === 'PHP_BINDIR') {
+			return new IntersectionType([
+				new StringType(),
+				new AccessoryNonFalsyStringType(),
+			]);
+		}
+		if ($resolvedConstantName === 'PHP_SBINDIR') {
 			return new IntersectionType([
 				new StringType(),
 				new AccessoryNonFalsyStringType(),

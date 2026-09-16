@@ -377,6 +377,10 @@ enum {
 	PT_CLASS_CLOSURE_PARAMETER_TYPES,
 	PT_CLASS_IN_CLOSURE_NODE,
 	PT_CLASS_IN_ARROW_FUNCTION_NODE,
+	PT_CLASS_BOOLEAN_AND_NODE,
+	PT_CLASS_BOOLEAN_OR_NODE,
+	PT_CLASS_BINARY_OP_EXPR,
+	PT_CLASS_BOOLEAN_NOT_EXPR,
 	PT_CLASS_COUNT
 };
 
@@ -3314,6 +3318,33 @@ zval *pt_mutating_scope_anonymous_function_reflection_slot(zend_object *scope);
 /* VariableFlow.cpp — VariableFlow::arrow($arrow, $body, $outputs) ($body /
  * $outputs IS_NULL for null); UNDEF = pending exception */
 zv::Val pt_variable_flow_arrow(zval *arrow, zval *body, zval *outputs);
+
+/* }}} */
+
+/* {{{ the operator handlers: BooleanAndHandler.cpp, BooleanOrHandler.cpp,
+ * BooleanNotHandler.cpp, TernaryHandler.cpp (OperatorHandlers.h) —
+ * registered after the statement and call handlers */
+
+extern zend_class_entry *pt_ce_boolean_and_handler;
+extern zend_class_entry *pt_ce_boolean_or_handler;
+extern zend_class_entry *pt_ce_boolean_not_handler;
+extern zend_class_entry *pt_ce_ternary_handler;
+void pt_register_boolean_and_handler();
+void pt_register_boolean_or_handler();
+void pt_register_boolean_not_handler();
+void pt_register_ternary_handler();
+/* $ternaryHandler->getCapturedResults($expr): [$condResult, $ifResult,
+ * $elseResult] or null — the native body for the native class, the method
+ * otherwise (borrowed); UNDEF = pending exception */
+zv::Val pt_ternary_handler_get_captured_results(zval *handler, zval *expr);
+
+/* ExpressionResult.cpp — $result->getSpecifiedTypes($context,
+ * $nativeTypesPromoted) / ->answersOnScope($scope, $useNativeTypes) (next to
+ * ->getTruthyScope() / ->getFalseyScope() declared with the statement
+ * handlers): the native body for a native result, the method otherwise
+ * (everything borrowed); UNDEF / false = pending exception */
+zv::Val pt_expression_result_get_specified_types(zval *result, zval *context, bool nativeTypesPromoted);
+[[nodiscard]] bool pt_expression_result_answers_on_scope(zval *result, zval *scope, bool useNativeTypes, bool &out);
 
 /* }}} */
 

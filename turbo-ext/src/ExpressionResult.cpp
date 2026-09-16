@@ -1767,6 +1767,31 @@ zv::Val pt_expression_result_get_specified_types_for_scope(zval *result, zval *s
 	return pt_type_call(Z_OBJ_P(result), PT_LC("getspecifiedtypesforscope"), 2, argv);
 }
 
+/* the operator handlers' (TernaryHandler.cpp, CoalesceCompositionHelper.cpp,
+ * ...): $result->getSpecifiedTypes($context, $nativeTypesPromoted) /
+ * ->answersOnScope($scope, $useNativeTypes) */
+zv::Val pt_expression_result_get_specified_types(zval *result, zval *context, bool nativeTypesPromoted)
+{
+	if (isNativeResult(result)) return ExpressionResult(Z_OBJ_P(result)).getSpecifiedTypes(context, nativeTypesPromoted);
+	zv::Args argv{context, nativeTypesPromoted};
+	return pt_type_call(Z_OBJ_P(result), PT_LC("getspecifiedtypes"), 2, argv);
+}
+
+bool pt_expression_result_answers_on_scope(zval *result, zval *scope, bool useNativeTypes, bool &out)
+{
+	if (isNativeResult(result)) {
+		zend_long answers = ExpressionResult(Z_OBJ_P(result)).answersOnScope(scope, useNativeTypes);
+		if (UNEXPECTED(answers < 0)) return false;
+		out = answers == 1;
+		return true;
+	}
+	zv::Args argv{scope, useNativeTypes};
+	zv::Val value = pt_type_call(Z_OBJ_P(result), PT_LC("answersonscope"), 2, argv);
+	if (UNEXPECTED(value.isUndef())) return false;
+	out = Z_TYPE_P(value.raw()) == IS_TRUE;
+	return true;
+}
+
 /* }}} */
 
 /* {{{ direct entries for the statement handlers (IfHandler.cpp):

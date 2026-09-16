@@ -565,8 +565,7 @@ zv::Val inhSpecifyIdenticalAgainstType(zval *helper, zval *subject, zval *subjec
 /* $ternaryHandler->getCapturedResults($expr) */
 zv::Val thGetCapturedResults(zval *handler, zval *expr)
 {
-	static pt_method_site site;
-	return pt_call_method_cached(site, Z_OBJ_P(handler), PT_LC("getcapturedresults"), 1, expr);
+	return pt_ternary_handler_get_captured_results(handler, expr);
 }
 
 /* $matchHandler->getCapturedArmScopesAndTypes($expr) */

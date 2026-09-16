@@ -7,10 +7,12 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\BinaryOp\BooleanOr;
 use PhpParser\Node\Expr\BinaryOp\LogicalOr;
 use PHPStan\Analyser\Scope;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'booleanOrNode')]
 final class BooleanOrNode extends Expr implements VirtualNode
 {
 

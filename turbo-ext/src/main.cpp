@@ -460,6 +460,10 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_closure_processor();
 	pt_register_closure_handler();
 	pt_register_arrow_function_handler();
+	pt_register_boolean_and_handler();
+	pt_register_boolean_or_handler();
+	pt_register_boolean_not_handler();
+	pt_register_ternary_handler();
 
 	return SUCCESS;
 }

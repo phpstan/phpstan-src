@@ -27,6 +27,7 @@ use PhpParser\Node\Expr\AssignOp\Pow;
 use PhpParser\Node\Expr\AssignOp\ShiftLeft;
 use PhpParser\Node\Expr\AssignOp\ShiftRight;
 use PhpParser\Node\Expr\AssignRef;
+use PhpParser\Node\Expr\BinaryOp;
 use PhpParser\Node\Expr\BinaryOp\BooleanAnd;
 use PhpParser\Node\Expr\BinaryOp\BooleanOr;
 use PhpParser\Node\Expr\BinaryOp\Identical;
@@ -35,6 +36,7 @@ use PhpParser\Node\Expr\BinaryOp\LogicalOr;
 use PhpParser\Node\Expr\BinaryOp\Minus;
 use PhpParser\Node\Expr\BinaryOp\NotIdentical;
 use PhpParser\Node\Expr\BinaryOp\Plus;
+use PhpParser\Node\Expr\BooleanNot;
 use PhpParser\Node\Expr\CallLike;
 use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Expr\Clone_;
@@ -344,6 +346,8 @@ final class TurboAttributeCollector
 		'locatedSource' => LocatedSource::class,
 		'betterReflectionEnum' => \PHPStan\BetterReflection\Reflection\ReflectionEnum::class,
 		'cloneExpr' => Clone_::class,
+		'binaryOpExpr' => BinaryOp::class,
+		'booleanNotExpr' => BooleanNot::class,
 	];
 
 	private string $realRoot;

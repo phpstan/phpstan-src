@@ -335,6 +335,10 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_CLOSURE_PARAMETER_TYPES */ {"closureParameterTypes", "PHPStan\\Analyser\\ClosureParameterTypes"},
 	/* PT_CLASS_IN_CLOSURE_NODE */ {"inClosureNode", "PHPStan\\Node\\InClosureNode"},
 	/* PT_CLASS_IN_ARROW_FUNCTION_NODE */ {"inArrowFunctionNode", "PHPStan\\Node\\InArrowFunctionNode"},
+	/* PT_CLASS_BOOLEAN_AND_NODE */ {"booleanAndNode", "PHPStan\\Node\\BooleanAndNode"},
+	/* PT_CLASS_BOOLEAN_OR_NODE */ {"booleanOrNode", "PHPStan\\Node\\BooleanOrNode"},
+	/* PT_CLASS_BINARY_OP_EXPR */ {"binaryOpExpr", "PhpParser\\Node\\Expr\\BinaryOp"},
+	/* PT_CLASS_BOOLEAN_NOT_EXPR */ {"booleanNotExpr", "PhpParser\\Node\\Expr\\BooleanNot"},
 };
 
 zend_class_entry *pt_class(int idx)

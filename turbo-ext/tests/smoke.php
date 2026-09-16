@@ -4341,6 +4341,10 @@ $coveredElsewhere = [
 	\PHPStan\Analyser\ClosureProcessor::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\ClosureHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\ArrowFunctionHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\BooleanAndHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\BooleanOrHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\BooleanNotHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\TernaryHandler::class => 'walk-trace.php',
 ];
 foreach (array_keys($shadowedClasses) as $shadowedClass) {
 	check(

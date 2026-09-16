@@ -1963,6 +1963,12 @@ zv::Val pt_type_call_callable(zval *callable, uint32_t argc, zval *argv)
 			zval ret;
 			return pt_native_callback_invoke(object, argc, argv, &ret) ? zv::Val::adopt(ret) : zv::Val();
 		}
+		/* a node callback recording a convergence pass
+		 * (RecordingNodeCallback.cpp): its __invoke(Node $node, Scope $scope)
+		 * without the call, when the arguments are what its parsing accepts */
+		if (object->ce == pt_ce_recording_node_callback && argc == 2 && Z_TYPE(argv[0]) == IS_OBJECT && Z_TYPE(argv[1]) == IS_OBJECT) {
+			return pt_recording_node_callback_record(object, &argv[0], &argv[1]) ? zv::Val::null() : zv::Val();
+		}
 		if (object->ce == zend_ce_closure) {
 			const zend_function *fn = zend_get_closure_method_def(object);
 			if (fn->type == ZEND_INTERNAL_FUNCTION) {

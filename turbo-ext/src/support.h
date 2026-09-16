@@ -1995,4 +1995,15 @@ zv::Val pt_prepared_assign_target_new(uint32_t argc, zval *argv);
 
 /* }}} */
 
+/* {{{ RecordingNodeCallback.cpp — registered after the value classes above */
+
+extern zend_class_entry *pt_ce_recording_node_callback;
+void pt_register_recording_node_callback();
+/* $callback($node, $scope) on an instance of the shadowing class: the pair
+ * recorded (pt_type_call_callable() recognizes the class itself); false =
+ * pending exception */
+[[nodiscard]] bool pt_recording_node_callback_record(zend_object *callback, zval *node, zval *scope);
+
+/* }}} */
+
 #endif /* PHPSTANTURBO_SUPPORT_H */

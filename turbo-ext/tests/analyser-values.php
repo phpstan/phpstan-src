@@ -7,7 +7,8 @@
  * ArgsResult, IssetabilityDescriptor, the statement results
  * (InternalStatementResult, InternalStatementExitPoint,
  * InternalEndStatementResult and their public counterparts),
- * TemplateArgumentFrame, AssignTargetWalkMode and PreparedAssignTarget.
+ * TemplateArgumentFrame, AssignTargetWalkMode, PreparedAssignTarget and
+ * RecordingNodeCallback.
  *
  * Each side builds its objects from the same scopes, nodes and types and
  * every public method's answer is compared, together with the objects' state
@@ -678,6 +679,42 @@ foreach ($avFrameResults['php'] as $label => $described) {
 }
 check(!str_contains(json_encode($avFrameResults['php']['return type frame with original true']), 'with original') && str_contains(json_encode($avFrameResults['php']['return type frame with original true']), 'site'), 'TemplateArgumentFrame: the fixture passes the original site');
 check(str_contains(json_encode($avFrameResults['php']['frame leaf']['or unconstrained site bound U']), 'array<int, string>'), 'TemplateArgumentFrame: the fixture resolves a bound through the frames (' . json_encode($avFrameResults['php']['frame leaf']['or unconstrained site bound U']) . ')');
+
+// ---- RecordingNodeCallback ----
+// Invoked the ways PHP invokes a callable object, and through a native
+// invoker of node callbacks (the native ClassStatementsGatherer forwards
+// each pair to its wrapped callback before it gathers; outside a class it
+// then throws). getPairs() hands out a copy the later recording must not
+// change.
+$avGathererClass = $avReflectionProvider->getClass(\PHPStan\Analyser\ArgsResult::class);
+$avRecordings = [];
+foreach (['php' => \PHPStan\Analyser\RecordingNodeCallback::class, 'native' => \PHPStanTurbo\RecordingNodeCallback::class] as $side => $recordingClass) {
+	$r = [];
+	$recording = new $recordingClass();
+	$r['empty'] = [$recording->count(), $recording->getPairs(), is_callable($recording)];
+	$recording($avN['a'], $avScope);
+	$before = $recording->getPairs();
+	call_user_func($recording, $avN['call'], $avOtherScope);
+	call_user_func_array($recording, [$avN['m'], $avScope]);
+	\Closure::fromCallable($recording)($avN['arr'], $avOtherScope);
+	$recording->__invoke(node: $avN['k'], scope: $avScope);
+	// an internal function words the argument count error differently
+	$r['too few arguments'] = $avCatch(static fn () => $recording($avN['one']))[0];
+	foreach (['native gatherer' => \PHPStanTurbo\ClassStatementsGatherer::class, 'php gatherer' => \PHPStan\Node\ClassStatementsGatherer::class] as $gathererLabel => $gathererClass) {
+		$gatherer = new $gathererClass($avGathererClass, $recording);
+		$r['through ' . $gathererLabel] = $avCatch(static fn () => $gatherer($avN['dim'], $avScope));
+	}
+	$r['pairs'] = array_map(static fn (array $pair): array => [$avDescribe($pair[0]), $avDescribe($pair[1]), array_keys($pair)], $recording->getPairs());
+	$r['count'] = $recording->count();
+	$r['copy kept'] = count($before);
+	$r['state'] = $avDescribe($recording);
+	$uninitialized = (new \ReflectionClass($recordingClass))->newInstanceWithoutConstructor();
+	(new \ReflectionProperty($recordingClass, 'pairs'))->setValue($uninitialized, []);
+	$r['reinitialized'] = [$avCatch(static fn () => $uninitialized($avN['a'], $avScope)), $uninitialized->count()];
+	$avRecordings[$side] = $r;
+}
+check($avRecordings['php'] === $avRecordings['native'], 'RecordingNodeCallback parity: ' . json_encode($avRecordings['php']) . ' vs ' . json_encode($avRecordings['native']));
+check($avRecordings['php']['count'] === 7, 'RecordingNodeCallback: the fixture records through every invocation (' . $avRecordings['php']['count'] . ')');
 
 // VariableFlowBuilder reads native throw points and argument results through
 // their direct entries: its answers over the native value classes equal its

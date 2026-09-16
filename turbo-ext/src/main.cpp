@@ -356,6 +356,7 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_template_argument_frame();
 	pt_register_assign_target_walk_mode();
 	pt_register_prepared_assign_target();
+	pt_register_recording_node_callback();
 
 	return SUCCESS;
 }

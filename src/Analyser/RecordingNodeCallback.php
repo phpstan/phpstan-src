@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function count;
 
 /**
@@ -17,6 +18,7 @@ use function count;
  * storage binding. NodeScopeResolver::replayRecording()
  * wraps each pair the way callNodeCallback() would have.
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/RecordingNodeCallback.cpp')]
 final class RecordingNodeCallback
 {
 

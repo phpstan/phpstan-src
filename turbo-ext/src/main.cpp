@@ -465,6 +465,8 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_boolean_not_handler();
 	pt_register_ternary_handler();
 	pt_register_binary_op_handler();
+	pt_register_coalesce_composition_helper();
+	pt_register_coalesce_handler();
 
 	return SUCCESS;
 }

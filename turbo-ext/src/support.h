@@ -3375,4 +3375,24 @@ void pt_register_binary_op_handler();
 
 /* }}} */
 
+/* {{{ CoalesceHandler.cpp, CoalesceCompositionHelper.cpp (OperatorHandlers.h)
+ * — registered after the binary operator handler */
+
+extern zend_class_entry *pt_ce_coalesce_composition_helper;
+extern zend_class_entry *pt_ce_coalesce_handler;
+void pt_register_coalesce_composition_helper();
+void pt_register_coalesce_handler();
+/* $helper->getFalseySpecifiedTypes($s, $evaluationScope, $leftExpr,
+ * $leftResult, $rootExpr, $context) / ->getRightSideScopeSpecifiedTypes($s,
+ * $leftExpr, $leftResult, $chainResults, $rootExpr) / ->composeType(
+ * $nodeScopeResolver, $leftExpr, $leftResult, $rightResult,
+ * $evaluationScope, $chainResults, $rootExpr, $nativeTypesPromoted) — the
+ * native bodies for the native class, the methods otherwise (everything
+ * borrowed, $chainResults an array); UNDEF = pending exception */
+zv::Val pt_coalesce_composition_helper_get_falsey_specified_types(zval *helper, zval *s, zval *evaluationScope, zval *leftExpr, zval *leftResult, zval *rootExpr, zval *context);
+zv::Val pt_coalesce_composition_helper_get_right_side_scope_specified_types(zval *helper, zval *s, zval *leftExpr, zval *leftResult, zval *chainResults, zval *rootExpr);
+zv::Val pt_coalesce_composition_helper_compose_type(zval *helper, zval *nodeScopeResolver, zval *leftExpr, zval *leftResult, zval *rightResult, zval *evaluationScope, zval *chainResults, zval *rootExpr, bool nativeTypesPromoted);
+
+/* }}} */
+
 #endif /* PHPSTANTURBO_SUPPORT_H */

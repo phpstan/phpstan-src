@@ -11,7 +11,7 @@
  * PHP closures capture.
  *
  * The collaborators that stay PHP for now (NodeScopeResolver,
- * CoalesceCompositionHelper, ImplicitToStringCallHelper,
+ * ImplicitToStringCallHelper,
  * InitializerExprTypeResolver, DefaultNarrowingHelper, PreparedAssignTarget,
  * AssignTargetWalkMode, InternalThrowPoint) are called through the helpers in
  * the block below, one per called method.
@@ -232,17 +232,13 @@ zv::Val nsrProcessSyntheticOnDemand(zval *nsr, zval *expr, zval *scope)
 /* $coalesceCompositionHelper->getRightSideScopeSpecifiedTypes($s, $leftExpr, $leftResult, $chainResults, $rootExpr) */
 zv::Val cchGetRightSideScopeSpecifiedTypes(zval *helper, zval *scope, zval *leftExpr, zval *leftResult, zval *chainResults, zval *rootExpr)
 {
-	static pt_method_site site;
-	zv::Args argv{scope, leftExpr, leftResult, chainResults, rootExpr};
-	return pt_call_method_cached(site, Z_OBJ_P(helper), PT_LC("getrightsidescopespecifiedtypes"), 5, argv);
+	return pt_coalesce_composition_helper_get_right_side_scope_specified_types(helper, scope, leftExpr, leftResult, chainResults, rootExpr);
 }
 
 /* $coalesceCompositionHelper->composeType($nodeScopeResolver, $leftExpr, $leftResult, $rightResult, $evaluationScope, $chainResults, $rootExpr, $nativeTypesPromoted) */
 zv::Val cchComposeType(zval *helper, zval *nsr, zval *leftExpr, zval *leftResult, zval *rightResult, zval *evaluationScope, zval *chainResults, zval *rootExpr, bool nativeTypesPromoted)
 {
-	static pt_method_site site;
-	zv::Args argv{nsr, leftExpr, leftResult, rightResult, evaluationScope, chainResults, rootExpr, nativeTypesPromoted};
-	return pt_call_method_cached(site, Z_OBJ_P(helper), PT_LC("composetype"), 8, argv);
+	return pt_coalesce_composition_helper_compose_type(helper, nsr, leftExpr, leftResult, rightResult, evaluationScope, chainResults, rootExpr, nativeTypesPromoted);
 }
 
 /* $implicitToStringCallHelper->processImplicitToStringCall($expr, $scope, $exprResult) */

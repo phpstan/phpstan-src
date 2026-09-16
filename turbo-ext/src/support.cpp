@@ -96,8 +96,6 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_CALLABLE_PARAMETERS_ACCEPTOR */ {"callableParametersAcceptor", "PHPStan\\Reflection\\Callables\\CallableParametersAcceptor"},
 	/* PT_CLASS_ASSERTIONS */ {"assertions", "PHPStan\\Reflection\\Assertions"},
 	/* PT_CLASS_SIMPLE_THROW_POINT */ {"simpleThrowPoint", "PHPStan\\Reflection\\Callables\\SimpleThrowPoint"},
-	/* PT_CLASS_DUMMY_PARAMETER */ {"dummyParameter", "PHPStan\\Reflection\\Php\\DummyParameter"},
-	/* PT_CLASS_PASSED_BY_REFERENCE */ {"passedByReference", "PHPStan\\Reflection\\PassedByReference"},
 	/* PT_CLASS_EXTENDED_PARAMETER_REFLECTION */ {"extendedParameterReflection", "PHPStan\\Reflection\\ExtendedParameterReflection"},
 	/* PT_CLASS_CLOSURE_CALL_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION */ {"closureCallUnresolvedMethodPrototypeReflection", "PHPStan\\Reflection\\Php\\ClosureCallUnresolvedMethodPrototypeReflection"},
 	/* PT_CLASS_PHPDOC_PRINTER */ {"phpDocPrinter", "PHPStan\\PhpDocParser\\Printer\\Printer"},
@@ -133,7 +131,6 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_REFLECTION_ENUM */ {"reflectionEnum", "PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionEnum"},
 	/* PT_CLASS_MEMOIZING_REFLECTION_PROVIDER */ {"memoizingReflectionProvider", "PHPStan\\Reflection\\ReflectionProvider\\MemoizingReflectionProvider"},
 	/* PT_CLASS_UNRESOLVABLE_TYPE_RESULT */ {"unresolvableTypeResult", "PHPStan\\Rules\\PhpDoc\\UnresolvableTypeResult"},
-	/* PT_CLASS_EXTENDED_DUMMY_PARAMETER */ {"extendedDummyParameter", "PHPStan\\Reflection\\Php\\ExtendedDummyParameter"},
 	/* PT_CLASS_EXTENDED_FUNCTION_VARIANT */ {"extendedFunctionVariant", "PHPStan\\Reflection\\ExtendedFunctionVariant"},
 	/* PT_CLASS_RESOLVED_PROPERTY_REFLECTION */ {"resolvedPropertyReflection", "PHPStan\\Reflection\\ResolvedPropertyReflection"},
 	/* PT_CLASS_CHANGED_TYPE_PROPERTY_REFLECTION */ {"changedTypePropertyReflection", "PHPStan\\Reflection\\Dummy\\ChangedTypePropertyReflection"},
@@ -328,6 +325,7 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_DUMMY_CONSTRUCTOR_REFLECTION */ {"dummyConstructorReflection", "PHPStan\\Reflection\\Dummy\\DummyConstructorReflection"},
 	/* PT_CLASS_GENERIC_TYPE_TEMPLATE_TRAVERSER */ {"genericTypeTemplateTraverser", "PHPStan\\Analyser\\Traverser\\GenericTypeTemplateTraverser"},
 	/* PT_CLASS_CLOSURE_HANDLER */ {"closureHandler", "PHPStan\\Analyser\\ExprHandler\\ClosureHandler"},
+	/* PT_CLASS_ALLOWED_CONSTANTS_RESULT */ {"allowedConstantsResult", "PHPStan\\Reflection\\AllowedConstantsResult"},
 };
 
 zend_class_entry *pt_class(int idx)

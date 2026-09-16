@@ -39,6 +39,7 @@ namespace sigs = ptdecl::ArgumentsHandler::sig;
 #include "TypeOps.h"
 #include "Engine.h"
 #include "AnalyserValues.h"
+#include "ParameterValues.h"
 
 #include <new>
 
@@ -585,8 +586,6 @@ pt_method_site pt_ah_parameter_get_native_type_site;
 pt_method_site pt_ah_parameter_is_immediately_invoked_callable_site;
 pt_method_site pt_ah_parameter_get_out_type_site;
 pt_method_site pt_ah_parameter_get_closure_this_type_site;
-pt_method_site pt_ah_passed_by_reference_creates_new_variable_site;
-pt_method_site pt_ah_passed_by_reference_no_site;
 pt_method_site pt_ah_acceptor_get_parameters_site;
 pt_method_site pt_ah_acceptor_is_variadic_site;
 pt_method_site pt_ah_acceptor_get_return_type_site;
@@ -595,55 +594,73 @@ pt_method_site pt_ah_acceptor_get_resolved_template_type_map_site;
 pt_method_site pt_ah_acceptor_get_call_site_variance_map_site;
 pt_method_site pt_ah_callee_is_builtin_site;
 
+/* the parameter getters: the slot of a DummyParameter / ExtendedDummyParameter
+ * (ParameterValues.h), the method through the site otherwise */
+
+/* a copy of a borrowed slot */
+inline zv::Val copySlot(zval *value)
+{
+	return zv::Val::copyOf(zv::Ref(value));
+}
+
 /* $parameter->getName() */
 zv::Val parameterGetName(zval *parameter)
 {
+	zval *name = pt_dummy_parameter_slot(parameter, ptdecl::DummyParameter::slot::name);
+	if (EXPECTED(name != NULL)) return copySlot(name);
 	return callOn(pt_ah_parameter_get_name_site, parameter, PT_LC("getname"), "getName", 0, NULL);
 }
 
-/* $parameter->passedByReference() */
-zv::Val parameterPassedByReference(zval *parameter)
+/* the PT_PASSED_BY_REFERENCE_* mode of $parameter->passedByReference(); -1 =
+ * pending exception */
+zend_long parameterPassedByReferenceMode(zval *parameter)
 {
-	return callOn(pt_ah_parameter_passed_by_reference_site, parameter, PT_LC("passedbyreference"), "passedByReference", 0, NULL);
+	zval *passedByReference = pt_dummy_parameter_slot(parameter, ptdecl::DummyParameter::slot::passedByReference);
+	if (EXPECTED(passedByReference != NULL)) return pt_passed_by_reference_mode(passedByReference);
+	zv::Val returned = callOn(pt_ah_parameter_passed_by_reference_site, parameter, PT_LC("passedbyreference"), "passedByReference", 0, NULL);
+	if (UNEXPECTED(returned.isUndef())) return -1;
+	return pt_passed_by_reference_mode(returned.raw());
 }
 
 /* $parameter->passedByReference()->createsNewVariable(); false = pending exception */
 bool parameterCreatesNewVariable(zval *parameter, bool &out)
 {
-	zv::Val passedByReference = parameterPassedByReference(parameter);
-	if (UNEXPECTED(passedByReference.isUndef())) return false;
-	zv::Val result = callOn(pt_ah_passed_by_reference_creates_new_variable_site, passedByReference.raw(), PT_LC("createsnewvariable"), "createsNewVariable", 0, NULL);
-	if (UNEXPECTED(result.isUndef())) return false;
-	out = zend_is_true(result.raw());
+	zend_long mode = parameterPassedByReferenceMode(parameter);
+	if (UNEXPECTED(mode < 0)) return false;
+	out = mode == PT_PASSED_BY_REFERENCE_CREATES_NEW_VARIABLE;
 	return true;
 }
 
 /* $parameter->passedByReference()->no(); false = pending exception */
 bool parameterPassedByReferenceNo(zval *parameter, bool &out)
 {
-	zv::Val passedByReference = parameterPassedByReference(parameter);
-	if (UNEXPECTED(passedByReference.isUndef())) return false;
-	zv::Val result = callOn(pt_ah_passed_by_reference_no_site, passedByReference.raw(), PT_LC("no"), "no", 0, NULL);
-	if (UNEXPECTED(result.isUndef())) return false;
-	out = zend_is_true(result.raw());
+	zend_long mode = parameterPassedByReferenceMode(parameter);
+	if (UNEXPECTED(mode < 0)) return false;
+	out = mode == PT_PASSED_BY_REFERENCE_NO;
 	return true;
 }
 
 /* $parameter->getType() */
 zv::Val parameterGetType(zval *parameter)
 {
+	zval *type = pt_dummy_parameter_slot(parameter, ptdecl::DummyParameter::slot::type);
+	if (EXPECTED(type != NULL)) return copySlot(type);
 	return callOn(pt_ah_parameter_get_type_site, parameter, PT_LC("gettype"), "getType", 0, NULL);
 }
 
 /* $parameter->getNativeType() */
 zv::Val parameterGetNativeType(zval *parameter)
 {
+	zval *nativeType = pt_extended_dummy_parameter_slot(parameter, ptdecl::ExtendedDummyParameter::slot::nativeType);
+	if (EXPECTED(nativeType != NULL)) return copySlot(nativeType);
 	return callOn(pt_ah_parameter_get_native_type_site, parameter, PT_LC("getnativetype"), "getNativeType", 0, NULL);
 }
 
 /* $parameter->isImmediatelyInvokedCallable() (the PT_TRI_* value); -1 = pending exception */
 zend_long parameterIsImmediatelyInvokedCallable(zval *parameter)
 {
+	zval *immediately = pt_extended_dummy_parameter_slot(parameter, ptdecl::ExtendedDummyParameter::slot::immediatelyInvokedCallable);
+	if (EXPECTED(immediately != NULL)) return pt_type_trinary_value(immediately);
 	zv::Val result = callOn(pt_ah_parameter_is_immediately_invoked_callable_site, parameter, PT_LC("isimmediatelyinvokedcallable"), "isImmediatelyInvokedCallable", 0, NULL);
 	return trinaryOf(result);
 }
@@ -651,12 +668,16 @@ zend_long parameterIsImmediatelyInvokedCallable(zval *parameter)
 /* $parameter->getOutType() */
 zv::Val parameterGetOutType(zval *parameter)
 {
+	zval *outType = pt_extended_dummy_parameter_slot(parameter, ptdecl::ExtendedDummyParameter::slot::outType);
+	if (EXPECTED(outType != NULL)) return copySlot(outType);
 	return callOn(pt_ah_parameter_get_out_type_site, parameter, PT_LC("getouttype"), "getOutType", 0, NULL);
 }
 
 /* $parameter->getClosureThisType() */
 zv::Val parameterGetClosureThisType(zval *parameter)
 {
+	zval *closureThisType = pt_extended_dummy_parameter_slot(parameter, ptdecl::ExtendedDummyParameter::slot::closureThisType);
+	if (EXPECTED(closureThisType != NULL)) return copySlot(closureThisType);
 	return callOn(pt_ah_parameter_get_closure_this_type_site, parameter, PT_LC("getclosurethistype"), "getClosureThisType", 0, NULL);
 }
 

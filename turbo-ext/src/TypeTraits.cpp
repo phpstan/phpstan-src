@@ -2868,14 +2868,21 @@ zv::Val pt_callable_dummy_parameters(zval *parameters, zval *assertions)
 			if (UNEXPECTED(variadic < 0)) return zv::Val();
 			optional = variadic == 1 ? 0 : 1;
 		}
-		zv::Val passedByReference = pt_type_call_static(PT_CLASS_PASSED_BY_REFERENCE, PT_LC("createno"), 0, NULL);
-		if (UNEXPECTED(passedByReference.isUndef())) return zv::Val();
+		zend_object *passedByReference = pt_passed_by_reference_create_no();
+		if (UNEXPECTED(passedByReference == NULL)) return zv::Val();
 		int variadic = pt_callable_call_bool(p, PT_LC("isvariadic"), 0, NULL);
 		if (UNEXPECTED(variadic < 0)) return zv::Val();
 		zv::Val defaultValue = pt_type_call(p, PT_LC("getdefaultvalue"), 0, NULL);
 		if (UNEXPECTED(defaultValue.isUndef())) return zv::Val();
-		zv::Args args{dummyName.raw(), type.raw(), bool(optional == 1), passedByReference.raw(), bool(variadic == 1), defaultValue.raw()};
-		zv::Val dummy = pt_type_new(PT_CLASS_DUMMY_PARAMETER, 6, args);
+		zv::Val dummy;
+		if (EXPECTED(dummyName.ref().isString() && type.ref().isObject() && (defaultValue.ref().isObject() || Z_TYPE_P(defaultValue.raw()) == IS_NULL))) {
+			zval passedByReferenceZv;
+			ZVAL_OBJ(&passedByReferenceZv, passedByReference);
+			dummy = pt_dummy_parameter_new(Z_STR_P(dummyName.raw()), type.raw(), optional == 1, &passedByReferenceZv, variadic == 1, Z_TYPE_P(defaultValue.raw()) == IS_NULL ? NULL : defaultValue.raw());
+		} else {
+			zv::Args args{dummyName.raw(), type.raw(), bool(optional == 1), passedByReference, bool(variadic == 1), defaultValue.raw()};
+			dummy = pt_type_new_ce(pt_ce_dummy_parameter, 6, args);
+		}
 		if (UNEXPECTED(dummy.isUndef())) return zv::Val();
 		if (entry.hasStringKey()) {
 			dummies.set(entry.stringKey(), std::move(dummy));
@@ -5187,7 +5194,7 @@ zv::Val protoParameter(PrototypeKind kind, const PrototypeTransformer &transform
 	ZVAL_COPY_VALUE(&args[11], attributes.raw());
 	ZVAL_COPY_VALUE(&args[12], allowedConstants.raw());
 	ZVAL_COPY_VALUE(&args[13], pureUnlessCallableIsImpure.raw());
-	return pt_type_new(PT_CLASS_EXTENDED_DUMMY_PARAMETER, 14, args);
+	return pt_extended_dummy_parameter_new(14, args);
 }
 
 /* the twins' $variantFn: new ExtendedFunctionVariant(...) over $acceptor;

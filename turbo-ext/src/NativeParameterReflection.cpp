@@ -124,11 +124,7 @@ public:
 		if (UNEXPECTED(passedByReference == NULL)) return zv::Val();
 		zval *otherPassedByReference = that.slot(slots::passedByReference, "passedByReference");
 		if (UNEXPECTED(otherPassedByReference == NULL)) return zv::Val();
-		if (UNEXPECTED(Z_TYPE_P(passedByReference) != IS_OBJECT)) {
-			zend_throw_error(NULL, "Call to a member function combine() on %s", zend_zval_value_name(passedByReference));
-			return zv::Val();
-		}
-		zv::Val combined = pt_type_call(Z_OBJ_P(passedByReference), PT_LC("combine"), 1, otherPassedByReference);
+		zv::Val combined = pt_passed_by_reference_combine(passedByReference, otherPassedByReference);
 		if (UNEXPECTED(combined.isUndef())) return zv::Val();
 		/* $this->variadic && $other->variadic */
 		zval *variadic = slot(slots::variadic, "variadic");

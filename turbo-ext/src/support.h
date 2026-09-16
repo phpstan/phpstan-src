@@ -132,8 +132,6 @@ enum {
 	PT_CLASS_CALLABLE_PARAMETERS_ACCEPTOR,
 	PT_CLASS_ASSERTIONS,
 	PT_CLASS_SIMPLE_THROW_POINT,
-	PT_CLASS_DUMMY_PARAMETER,
-	PT_CLASS_PASSED_BY_REFERENCE,
 	PT_CLASS_EXTENDED_PARAMETER_REFLECTION,
 	PT_CLASS_CLOSURE_CALL_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION,
 	PT_CLASS_PHPDOC_PRINTER,
@@ -169,7 +167,6 @@ enum {
 	PT_CLASS_REFLECTION_ENUM,
 	PT_CLASS_MEMOIZING_REFLECTION_PROVIDER,
 	PT_CLASS_UNRESOLVABLE_TYPE_RESULT,
-	PT_CLASS_EXTENDED_DUMMY_PARAMETER,
 	PT_CLASS_EXTENDED_FUNCTION_VARIANT,
 	PT_CLASS_RESOLVED_PROPERTY_REFLECTION,
 	PT_CLASS_CHANGED_TYPE_PROPERTY_REFLECTION,
@@ -368,6 +365,7 @@ enum {
 	PT_CLASS_DUMMY_CONSTRUCTOR_REFLECTION,
 	PT_CLASS_GENERIC_TYPE_TEMPLATE_TRAVERSER,
 	PT_CLASS_CLOSURE_HANDLER,
+	PT_CLASS_ALLOWED_CONSTANTS_RESULT,
 	PT_CLASS_COUNT
 };
 
@@ -2905,6 +2903,47 @@ zv::Val pt_mutating_scope_get_iterable_key_type(zend_object *scope, zval *type);
 /* TypeUtils.cpp — TypeUtils::findCallableType($type) (the type or null);
  * UNDEF = pending exception */
 zv::Val pt_type_utils_find_callable_type(zval *type);
+
+/* }}} */
+
+/* {{{ the parameter value classes (PassedByReference.cpp, DummyParameter.cpp,
+ * ExtendedDummyParameter.cpp) — registered at the END of the sequence, the
+ * parent before the child; the slot readers are inline in ParameterValues.h */
+
+extern zend_class_entry *pt_ce_passed_by_reference;
+extern zend_class_entry *pt_ce_dummy_parameter;
+extern zend_class_entry *pt_ce_extended_dummy_parameter;
+void pt_register_passed_by_reference();
+void pt_register_dummy_parameter();
+void pt_register_extended_dummy_parameter();
+/* the twin's private mode constants */
+#define PT_PASSED_BY_REFERENCE_NO 1
+#define PT_PASSED_BY_REFERENCE_READS_ARGUMENT 2
+#define PT_PASSED_BY_REFERENCE_CREATES_NEW_VARIABLE 3
+/* PassedByReference::createNo() / createReadsArgument() /
+ * createCreatesNewVariable(): the process-wide singleton, borrowed (the
+ * class's static $registry holds it); NULL = pending exception */
+[[nodiscard]] zend_object *pt_passed_by_reference_create_no();
+[[nodiscard]] zend_object *pt_passed_by_reference_create_reads_argument();
+[[nodiscard]] zend_object *pt_passed_by_reference_create_creates_new_variable();
+/* the PT_PASSED_BY_REFERENCE_* mode of a PassedByReference — the slot of the
+ * native class, no() / createsNewVariable() of anything else; -1 = pending
+ * exception */
+[[nodiscard]] zend_long pt_passed_by_reference_mode(zval *passedByReference);
+/* $passedByReference->combine($other) — natively for two native instances,
+ * the method otherwise (borrowed); UNDEF = pending exception */
+zv::Val pt_passed_by_reference_combine(zval *passedByReference, zval *other);
+/* new DummyParameter($name, $type, $optional, $passedByReference, $variadic,
+ * $defaultValue) ($passedByReference / $defaultValue NULL for null, the rest
+ * borrowed) / DummyParameter's constructor body on an object of it or of a
+ * subclass (ExtendedDummyParameter's parent::__construct()); UNDEF / false =
+ * pending exception */
+zv::Val pt_dummy_parameter_new(zend_string *name, zval *type, bool optional, zval *passedByReference, bool variadic, zval *defaultValue);
+[[nodiscard]] bool pt_dummy_parameter_construct(zend_object *object, zend_string *name, zval *type, bool optional, zval *passedByReference, bool variadic, zval *defaultValue);
+/* new ExtendedDummyParameter(...$argv) over values as PHP code hands them
+ * (borrowed): directly when they already have the parameter types, through
+ * the constructor's parameter parsing otherwise; UNDEF = pending exception */
+zv::Val pt_extended_dummy_parameter_new(uint32_t argc, zval *argv);
 
 /* }}} */
 

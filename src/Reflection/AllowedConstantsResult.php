@@ -2,6 +2,8 @@
 
 namespace PHPStan\Reflection;
 
+use PHPStan\Turbo\ReferencedByTurboExtension;
+
 /**
  * Result of checking constants passed to a parameter against its allowed set.
  *
@@ -11,6 +13,7 @@ namespace PHPStan\Reflection;
  *
  * @api
  */
+#[ReferencedByTurboExtension(key: 'allowedConstantsResult')]
 final class AllowedConstantsResult
 {
 

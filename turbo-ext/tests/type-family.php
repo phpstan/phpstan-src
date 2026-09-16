@@ -6747,6 +6747,84 @@ $observations['native ' . \PHPStan\Reflection\Callables\SimpleImpurePoint::class
 }
 
 
+// ---- PassedByReference / DummyParameter / ExtendedDummyParameter ----
+// The by-reference mode singletons (their identity, the queries, equals()
+// and combine() over every pair, the private constructor, an unconstructed
+// instance), and the dummy parameters over them: the getters of plain,
+// by-reference, named-argument and extended instances (hasNativeType() over
+// a plain, an explicit and a real native type), checkAllowedConstants() with
+// and without allowed constants, a PHP subclass overriding a getter, the
+// errors of unconstructed instances and of a wrong argument type
+foreach ([\PHPStan\Reflection\PassedByReference::class => 'no', \PHPStan\Reflection\Php\DummyParameter::class => 'getName', \PHPStan\Reflection\Php\ExtendedDummyParameter::class => 'getNativeType'] as $parameterValueClass => $parameterValueMethod) {
+	$observations['native ' . $parameterValueClass] = (new ReflectionMethod($parameterValueClass, $parameterValueMethod))->isInternal();
+}
+if (!class_exists('PHPStanTurboTests\DummyParameterSubclass', false)) {
+	eval('namespace PHPStanTurboTests; class DummyParameterSubclass extends \PHPStan\Reflection\Php\DummyParameter { public function getName(): string { return "sub:" . parent::getName(); } }');
+}
+{
+	$r = [];
+	$error = static function (callable $cb): array|string {
+		try {
+			$cb();
+			return 'no error';
+		} catch (\Throwable $e) {
+			return [get_class($e), preg_replace('~, called in .+ on line \d+$~', '', $e->getMessage())];
+		}
+	};
+	$modes = [
+		'no' => \PHPStan\Reflection\PassedByReference::createNo(),
+		'reads' => \PHPStan\Reflection\PassedByReference::createReadsArgument(),
+		'creates' => \PHPStan\Reflection\PassedByReference::createCreatesNewVariable(),
+	];
+	$r['singletons'] = [\PHPStan\Reflection\PassedByReference::createNo() === $modes['no'], \PHPStan\Reflection\PassedByReference::createReadsArgument() === $modes['reads'], \PHPStan\Reflection\PassedByReference::createCreatesNewVariable() === $modes['creates'], $modes['no'] !== $modes['reads']];
+	foreach ($modes as $name => $mode) {
+		$r["mode $name"] = [$mode->no(), $mode->yes(), $mode->createsNewVariable()];
+		foreach ($modes as $otherName => $other) {
+			$r["mode $name equals $otherName"] = $mode->equals($other);
+			$r["mode $name combine $otherName"] = array_search($mode->combine($other), $modes, true);
+		}
+	}
+	$r['private constructor'] = $error(static fn () => (new \ReflectionClass(\PHPStan\Reflection\PassedByReference::class))->newInstance(1));
+	$rawMode = (new \ReflectionClass(\PHPStan\Reflection\PassedByReference::class))->newInstanceWithoutConstructor();
+	foreach (['no', 'yes', 'createsNewVariable'] as $method) {
+		$r["unconstructed mode $method"] = $error(static fn () => $rawMode->$method());
+	}
+	$r['unconstructed mode equals'] = $error(static fn () => $modes['no']->equals($rawMode));
+	$r['unconstructed mode combine'] = $error(static fn () => $modes['no']->combine($rawMode));
+
+	$int = new \PHPStan\Type\IntegerType();
+	$string = new \PHPStan\Type\StringType();
+	$allowed = new \PHPStan\Reflection\ParameterAllowedConstants('list', [], []);
+	$dummies = [
+		'plain' => new \PHPStan\Reflection\Php\DummyParameter('a', $int, false, null, false, null),
+		'byRef' => new \PHPStan\Reflection\Php\DummyParameter('b', $string, true, $modes['creates'], true, new \PHPStan\Type\Constant\ConstantStringType('x')),
+		'named' => new \PHPStan\Reflection\Php\DummyParameter(defaultValue: null, variadic: false, passedByReference: null, optional: true, type: new \PHPStan\Type\MixedType(), name: 'n'),
+		'extended' => new \PHPStan\Reflection\Php\ExtendedDummyParameter('e', $int, false, $modes['reads'], false, null, new \PHPStan\Type\MixedType(), $int, $string, \PHPStan\TrinaryLogic::createYes(), new \PHPStan\Type\ObjectType(\stdClass::class), [], null, \PHPStan\TrinaryLogic::createMaybe()),
+		'extendedExplicitMixed' => new \PHPStan\Reflection\Php\ExtendedDummyParameter('x', $int, true, null, true, $int, new \PHPStan\Type\MixedType(true), $int, null, \PHPStan\TrinaryLogic::createNo(), null, [], $allowed, \PHPStan\TrinaryLogic::createNo()),
+		'extendedNative' => new \PHPStan\Reflection\Php\ExtendedDummyParameter(pureUnlessCallableIsImpureParameter: \PHPStan\TrinaryLogic::createYes(), allowedConstants: null, attributes: [], closureThisType: null, immediatelyInvokedCallable: \PHPStan\TrinaryLogic::createMaybe(), outType: null, phpDocType: $string, nativeType: $string, defaultValue: null, variadic: false, passedByReference: $modes['no'], optional: false, type: $string, name: 's'),
+		'subclass' => new \PHPStanTurboTests\DummyParameterSubclass('sub', $int, false, null, false, null),
+	];
+	foreach ($dummies as $name => $dummy) {
+		$r["dummy $name"] = $viewParameter($dummy);
+		$r["dummy $name by-ref identity"] = array_search($dummy->passedByReference(), $modes, true);
+	}
+	foreach (['extended', 'extendedExplicitMixed', 'extendedNative'] as $name) {
+		$result = $dummies[$name]->checkAllowedConstants([]);
+		$r["dummy $name checkAllowedConstants"] = [get_class($result), $result->isOk(), $result->isBitmaskNotAllowed(), $result->getDisallowedConstants(), $result->getViolatedExclusiveGroups()];
+	}
+	foreach ([\PHPStan\Reflection\Php\DummyParameter::class => ['getName', 'isOptional', 'getType', 'passedByReference', 'isVariadic', 'getDefaultValue'], \PHPStan\Reflection\Php\ExtendedDummyParameter::class => ['getName', 'getPhpDocType', 'hasNativeType', 'getNativeType', 'getOutType', 'isImmediatelyInvokedCallable', 'getClosureThisType', 'getAttributes', 'getAllowedConstants', 'isPureUnlessCallableIsImpureParameter']] as $class => $methods) {
+		$raw = (new \ReflectionClass($class))->newInstanceWithoutConstructor();
+		foreach ($methods as $method) {
+			$r["unconstructed $class $method"] = $error(static fn () => $raw->$method());
+		}
+	}
+	$r['dummy wrong name'] = $error(static fn () => new \PHPStan\Reflection\Php\DummyParameter([], $int, false, null, false, null));
+	$r['extended wrong attributes'] = $error(static fn () => new \PHPStan\Reflection\Php\ExtendedDummyParameter('e', $int, false, null, false, null, $int, $int, null, \PHPStan\TrinaryLogic::createYes(), null, 'x', null, \PHPStan\TrinaryLogic::createNo()));
+	foreach ($r as $key => $value) {
+		$observations["parameter values $key"] = $value;
+	}
+}
+
 // observations holding bytes that are not UTF-8 (the invalid-UTF-8 subject's
 // descriptions) go out base64-encoded so json_encode() keeps every byte; the
 // non-finite floats (the NAN and infinity subjects' values) as their names

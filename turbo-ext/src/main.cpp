@@ -415,6 +415,11 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	/* the argument walk of the call handlers — its signatures name the
 	 * analyser value classes and PHP classes only */
 	pt_register_arguments_handler();
+	/* the parameter value classes — their signatures name the Type interface,
+	 * TrinaryLogic and PHP reflection classes only; the parent before the child */
+	pt_register_passed_by_reference();
+	pt_register_dummy_parameter();
+	pt_register_extended_dummy_parameter();
 
 	return SUCCESS;
 }

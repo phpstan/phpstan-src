@@ -4,10 +4,10 @@ namespace PHPStan\Reflection\Php;
 
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\PassedByReference;
-use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
 
-#[ReferencedByTurboExtension(key: 'dummyParameter')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/DummyParameter.cpp')]
 class DummyParameter implements ParameterReflection
 {
 

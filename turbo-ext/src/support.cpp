@@ -247,6 +247,11 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_RESOLVED_FUNCTION_VARIANT */ {"resolvedFunctionVariant", "PHPStan\\Reflection\\ResolvedFunctionVariant"},
 	/* PT_CLASS_EXTENSION_CLASS_HELPER */ {"extensionClassHelper", "PHPStan\\Type\\ExtensionClassHelper"},
 	/* PT_CLASS_LAZY_EXTENSIONS_COLLECTION */ {"lazyExtensionsCollection", "PHPStan\\DependencyInjection\\LazyExtensionsCollection"},
+	/* PT_CLASS_BOOLEAN_AND_EXPR */ {"booleanAndExpr", "PhpParser\\Node\\Expr\\BinaryOp\\BooleanAnd"},
+	/* PT_CLASS_LOGICAL_AND_EXPR */ {"logicalAndExpr", "PhpParser\\Node\\Expr\\BinaryOp\\LogicalAnd"},
+	/* PT_CLASS_BOOLEAN_OR_EXPR */ {"booleanOrExpr", "PhpParser\\Node\\Expr\\BinaryOp\\BooleanOr"},
+	/* PT_CLASS_LOGICAL_OR_EXPR */ {"logicalOrExpr", "PhpParser\\Node\\Expr\\BinaryOp\\LogicalOr"},
+	/* PT_CLASS_PARSER_ISSET_EXPR */ {"parserIssetExpr", "PhpParser\\Node\\Expr\\Isset_"},
 };
 
 zend_class_entry *pt_class(int idx)

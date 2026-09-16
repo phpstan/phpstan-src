@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node\Expr;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -18,6 +19,7 @@ use function array_key_exists;
  * (MutatingScope::applySpecifiedTypes()), never the scope the composition ran
  * on.
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ConditionalExpressionHolderRecipe.cpp')]
 final class ConditionalExpressionHolderRecipe
 {
 

@@ -4,6 +4,7 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
@@ -17,6 +18,7 @@ use PHPStan\Type\TypeUtils;
  * union actually narrows anything depends on the expression's current type,
  * so those gates run against the applying scope.
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/DisjunctionBranchUnionAugment.cpp')]
 final class DisjunctionBranchUnionAugment implements DeferredSpecifiedTypesAugment
 {
 

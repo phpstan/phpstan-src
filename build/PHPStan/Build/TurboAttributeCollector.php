@@ -16,12 +16,17 @@ use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\AssignOp;
 use PhpParser\Node\Expr\AssignOp\Coalesce;
 use PhpParser\Node\Expr\AssignRef;
+use PhpParser\Node\Expr\BinaryOp\BooleanAnd;
+use PhpParser\Node\Expr\BinaryOp\BooleanOr;
+use PhpParser\Node\Expr\BinaryOp\LogicalAnd;
+use PhpParser\Node\Expr\BinaryOp\LogicalOr;
 use PhpParser\Node\Expr\CallLike;
 use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Instanceof_;
+use PhpParser\Node\Expr\Isset_;
 use PhpParser\Node\Expr\List_;
 use PhpParser\Node\Expr\Match_;
 use PhpParser\Node\Expr\MethodCall;
@@ -240,6 +245,11 @@ final class TurboAttributeCollector
 		'classConstStmt' => ClassConst::class,
 		'continueStmt' => Continue_::class,
 		'breakStmt' => Break_::class,
+		'booleanAndExpr' => BooleanAnd::class,
+		'logicalAndExpr' => LogicalAnd::class,
+		'booleanOrExpr' => BooleanOr::class,
+		'logicalOrExpr' => LogicalOr::class,
+		'parserIssetExpr' => Isset_::class,
 	];
 
 	private string $realRoot;

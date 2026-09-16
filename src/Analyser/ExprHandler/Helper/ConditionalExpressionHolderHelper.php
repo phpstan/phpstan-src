@@ -14,6 +14,7 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function is_string;
 
 /**
@@ -22,6 +23,7 @@ use function is_string;
  * BooleanAndHandler and BooleanOrHandler.
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/ConditionalExpressionHolderHelper.cpp')]
 final class ConditionalExpressionHolderHelper
 {
 

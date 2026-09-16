@@ -362,6 +362,13 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_early_terminating_call_helper();
 	pt_register_method_call_return_type_helper();
 	pt_register_method_throw_point_helper();
+	/* the boolean narrowing cluster: the value classes before the helpers
+	 * whose signatures and bodies name them */
+	pt_register_conditional_expression_holder_recipe();
+	pt_register_disjunction_branch_union_augment();
+	pt_register_disjunction_holder_projection_augment();
+	pt_register_conditional_expression_holder_helper();
+	pt_register_boolean_narrowing_helper();
 
 	return SUCCESS;
 }

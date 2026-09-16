@@ -9,6 +9,7 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
 use function array_filter;
 use function array_keys;
@@ -22,6 +23,7 @@ use function is_string;
  * a multi-subject isset()) reuse it without synthesizing BooleanAnd chains.
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/BooleanNarrowingHelper.cpp')]
 final class BooleanNarrowingHelper
 {
 

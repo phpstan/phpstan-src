@@ -7654,7 +7654,10 @@ public:
 					zend_throw_error(NULL, "Call to a member function evaluate() on %s", zend_zval_value_name(augment.raw()));
 					return zv::Val();
 				}
-				zv::Val augmentTypes = pt_type_call(Z_OBJ_P(augment.raw()), PT_LC("evaluate"), 1, thisZval());
+				zend_object *augmentObject = Z_OBJ_P(augment.raw());
+				zv::Val augmentTypes = augmentObject->ce == pt_ce_disjunction_holder_projection_augment
+					? pt_disjunction_holder_projection_augment_evaluate(augmentObject, thisZval())
+					: pt_disjunction_branch_union_augment_evaluate(augmentObject, thisZval());
 				if (UNEXPECTED(augmentTypes.isUndef())) return zv::Val();
 				if (Z_TYPE_P(augmentTypes.raw()) == IS_NULL) continue;
 				if (UNEXPECTED(Z_TYPE_P(augmentTypes.raw()) != IS_OBJECT)) {
@@ -7943,7 +7946,7 @@ public:
 			}
 			/* the recipes' state-dependent math runs here, against this
 			 * scope's pre-application state */
-			zv::Val evaluated = pt_type_call(recipe.asObject(), PT_LC("evaluate"), 1, thisZval());
+			zv::Val evaluated = pt_conditional_expression_holder_recipe_evaluate(recipe.asObject(), thisZval());
 			if (UNEXPECTED(evaluated.isUndef())) return zv::Val();
 			if (UNEXPECTED(Z_TYPE_P(evaluated.raw()) != IS_ARRAY)) {
 				zend_throw_error(NULL, "phpstan_turbo: a ConditionalExpressionHolderRecipe did not answer with an array");

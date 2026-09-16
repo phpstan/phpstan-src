@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\TypeCombinator;
 use function array_key_first;
 
@@ -15,6 +16,7 @@ use function array_key_first;
  * against the applying scope; the branch reads use the operand-walk truthy
  * scopes captured at compose time.
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/DisjunctionHolderProjectionAugment.cpp')]
 final class DisjunctionHolderProjectionAugment implements DeferredSpecifiedTypesAugment
 {
 

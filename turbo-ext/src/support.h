@@ -285,6 +285,11 @@ enum {
 	PT_CLASS_RESOLVED_FUNCTION_VARIANT,
 	PT_CLASS_EXTENSION_CLASS_HELPER,
 	PT_CLASS_LAZY_EXTENSIONS_COLLECTION,
+	PT_CLASS_BOOLEAN_AND_EXPR,
+	PT_CLASS_LOGICAL_AND_EXPR,
+	PT_CLASS_BOOLEAN_OR_EXPR,
+	PT_CLASS_LOGICAL_OR_EXPR,
+	PT_CLASS_PARSER_ISSET_EXPR,
 	PT_CLASS_COUNT
 };
 
@@ -2041,6 +2046,49 @@ zv::Val pt_mutating_scope_specify_types_of_new_world_handler_node(zend_object *s
  * LazyExtensionsCollection's $extensions slot, the method on the first call
  * and for any other ExtensionsCollection; UNDEF = pending exception */
 zv::Val pt_extensions_collection_get_all(zend_object *collection);
+
+/* }}} */
+
+/* {{{ the boolean narrowing cluster (ConditionalExpressionHolderRecipe.cpp,
+ * DisjunctionBranchUnionAugment.cpp, DisjunctionHolderProjectionAugment.cpp,
+ * ConditionalExpressionHolderHelper.cpp, BooleanNarrowingHelper.cpp) —
+ * registered at the END of the sequence, the value classes before the
+ * helpers constructing them */
+
+extern zend_class_entry *pt_ce_conditional_expression_holder_recipe;
+extern zend_class_entry *pt_ce_disjunction_branch_union_augment;
+extern zend_class_entry *pt_ce_disjunction_holder_projection_augment;
+extern zend_class_entry *pt_ce_conditional_expression_holder_helper;
+extern zend_class_entry *pt_ce_boolean_narrowing_helper;
+void pt_register_conditional_expression_holder_recipe();
+void pt_register_disjunction_branch_union_augment();
+void pt_register_disjunction_holder_projection_augment();
+void pt_register_conditional_expression_holder_helper();
+void pt_register_boolean_narrowing_helper();
+/* new ConditionalExpressionHolderRecipe($conditionEntries, $holderEntries,
+ * $holdersFromSureTypes) / new DisjunctionBranchUnionAugment($nodeScopeResolver,
+ * $defaultNarrowingHelper, $candidates) / new DisjunctionHolderProjectionAugment(
+ * $nodeScopeResolver, $defaultNarrowingHelper, $leftTruthyScope, $leftFalseyScope,
+ * $rightTruthyScope, $alternativeKeys) — instances of the shadowing classes
+ * (arguments borrowed); UNDEF = pending exception */
+zv::Val pt_conditional_expression_holder_recipe_new(zval *conditionEntries, zval *holderEntries, bool holdersFromSureTypes);
+zv::Val pt_disjunction_branch_union_augment_new(zval *nodeScopeResolver, zval *defaultNarrowingHelper, zval *candidates);
+zv::Val pt_disjunction_holder_projection_augment_new(zval *nodeScopeResolver, zval *defaultNarrowingHelper, zval *leftTruthyScope, zval *leftFalseyScope, zval *rightTruthyScope, zval *alternativeKeys);
+/* $recipe->evaluate($scope) / $augment->evaluate($scope) — the native body
+ * for an instance of the shadowing class, the method otherwise; UNDEF =
+ * pending exception */
+zv::Val pt_conditional_expression_holder_recipe_evaluate(zend_object *recipe, zval *scope);
+zv::Val pt_disjunction_branch_union_augment_evaluate(zend_object *augment, zval *scope);
+zv::Val pt_disjunction_holder_projection_augment_evaluate(zend_object *augment, zval *scope);
+/* $helper->buildBranchUnionAugment(...) / ->buildConditionalHolderRecipe(...)
+ * ($nonVariableTargetScope / $holderSideExpr NULL for null) /
+ * BooleanNarrowingHelper's ->specifyConjunction(...) / ->specifyDisjunction(...)
+ * — the native bodies for the shadowing classes, the methods otherwise
+ * (arguments borrowed); UNDEF = pending exception */
+zv::Val pt_conditional_expression_holder_helper_build_branch_union_augment(zend_object *helper, zval *nodeScopeResolver, zval *leftTypes, zval *rightTypes, zval *leftFilteredScope, zval *rightFilteredScope, zval *types);
+zv::Val pt_conditional_expression_holder_helper_build_conditional_holder_recipe(zend_object *helper, zval *composeScope, zval *conditionSpecifiedTypes, zval *holderSpecifiedTypes, bool holdersFromSureTypes, bool holderSideIsNegated, zval *nonVariableTargetScope, zval *holderSideExpr);
+zv::Val pt_boolean_narrowing_helper_specify_conjunction(zend_object *helper, zval *nodeScopeResolver, zval *s, zval *context, zval *rootExpr, zval *leftExpr, zval *leftTypesCallback, zval *leftTruthyScope, zval *leftFalseyScope, zval *rightExpr, zval *rightTypesCallback, zval *rightFalseyScope);
+zv::Val pt_boolean_narrowing_helper_specify_disjunction(zend_object *helper, zval *nodeScopeResolver, zval *s, zval *context, zval *rootExpr, zval *leftExpr, zval *leftTypesCallback, zval *leftTypeCallback, zval *leftTruthyScope, zval *leftFalseyScope, zval *rightExpr, zval *rightTypesCallback, zval *rightTypeCallback, zval *rightTruthyScope);
 
 /* }}} */
 

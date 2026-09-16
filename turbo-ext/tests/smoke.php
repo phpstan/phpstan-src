@@ -316,14 +316,14 @@ check(\PHPStanTurbo\TypeCombinatorCache::union($intT, $nullT) !== $first, 'TCC: 
 
 // a result that is an operand is the operand of the call at hand, as TypeCombinator
 // returns it - callers test that identity (ArrayType::setExistingOffsetValueType())
-$shape = static fn (): \PHPStan\Type\Type => new \PHPStan\Type\Constant\ConstantArrayType([new \PHPStan\Type\Constant\ConstantStringType('a')], [$intT]);
+$shape = static fn () => new \PHPStanTurbo\ConstantArrayType([new \PHPStanTurbo\ConstantStringType('a')], [new \PHPStanTurbo\IntegerType()]);
 $firstShape = $shape();
 check(\PHPStanTurbo\TypeCombinatorCache::union($firstShape, $shape()) === $firstShape, 'TCC: the union of equal shapes is the first operand');
 $secondShape = $shape();
 check(\PHPStanTurbo\TypeCombinatorCache::union($secondShape, $shape()) === $secondShape, 'TCC: a memo hit returns the operand of the call at hand');
-$firstInt = new \PHPStan\Type\IntegerType();
+$firstInt = new \PHPStanTurbo\IntegerType();
 check(\PHPStanTurbo\TypeCombinatorCache::remove($firstInt, $nullT) === $firstInt, 'TCC: removing nothing returns the operand');
-$secondInt = new \PHPStan\Type\IntegerType();
+$secondInt = new \PHPStanTurbo\IntegerType();
 check(\PHPStanTurbo\TypeCombinatorCache::remove($secondInt, $nullT) === $secondInt, 'TCC: a memo hit on removing nothing returns the operand of the call at hand');
 
 \PHPStanTurbo\TypeCombinatorCache::clearCache();

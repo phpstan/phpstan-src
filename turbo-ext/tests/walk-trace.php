@@ -138,6 +138,7 @@ if ($paths === []) {
 		$root . '/tests/PHPStan/Analyser/nsrt',
 		$root . '/src/Analyser',
 		$root . '/src/Type/Constant',
+		$root . '/turbo-ext/tests/walk-trace-fixtures',
 	];
 }
 foreach ($paths as $i => $path) {

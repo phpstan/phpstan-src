@@ -7,10 +7,12 @@ use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\Callables\SimpleThrowPoint;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\Type;
 
+#[ReferencedByTurboExtension(key: 'extendedCallableFunctionVariant')]
 final class ExtendedCallableFunctionVariant extends ExtendedFunctionVariant implements CallableParametersAcceptor
 {
 

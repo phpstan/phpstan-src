@@ -313,8 +313,7 @@ public:
 			if (UNEXPECTED(parameterTypes.isUndef())) return zv::Val();
 			zv::Arr single = zv::Arr::create(1);
 			single.push(zv::Ref(type));
-			zv::Args selectArgs{parameterTypes.raw(), single.raw(), false};
-			zv::Val variant = pt_type_call_static(PT_CLASS_PARAMETERS_ACCEPTOR_SELECTOR, PT_LC("selectfromtypes"), 3, selectArgs);
+			zv::Val variant = pt_parameters_acceptor_selector_select_from_types(parameterTypes.raw(), single.raw(), false);
 			if (UNEXPECTED(variant.isUndef())) return zv::Val();
 			bool isCallableAcceptor;
 			if (UNEXPECTED(!pt_type_instanceof(variant.raw(), PT_CLASS_CALLABLE_PARAMETERS_ACCEPTOR, isCallableAcceptor))) return zv::Val();

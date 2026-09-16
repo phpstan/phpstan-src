@@ -6919,6 +6919,101 @@ $observations['native ' . \PHPStan\Analyser\ArgumentsNormalizer::class] = (new R
 	}
 }
 
+// ---- ParametersAcceptorSelector ----
+// selectFromTypes() over single and multiple variants (arity filtering, the
+// unpack shortcut, the mixed-parameter maybe, the winning certainty and the
+// combination of ties / of all acceptable ones), combineAcceptors() over
+// plain, extended and callable acceptors (names, optionality, defaults,
+// by-reference modes, native / phpdoc / out / closure-this types, attributes,
+// allowed constants and the variadic cut-off), combineVariantsForNormalization()
+// with and without named arguments, the template predicates, and the
+// errors of an empty variant list
+$observations['native ' . \PHPStan\Reflection\ParametersAcceptorSelector::class] = (new ReflectionMethod(\PHPStan\Reflection\ParametersAcceptorSelector::class, 'selectFromTypes'))->isInternal();
+{
+	$r = [];
+	$error = static function (callable $cb): array|string {
+		try {
+			$cb();
+			return 'no error';
+		} catch (\Throwable $e) {
+			return [get_class($e), preg_replace('~, called in .+ on line \d+$~', '', $e->getMessage())];
+		}
+	};
+	$int = new \PHPStan\Type\IntegerType();
+	$string = new \PHPStan\Type\StringType();
+	$mixed = new \PHPStan\Type\MixedType();
+	$template = \PHPStan\Type\Generic\TemplateTypeFactory::create(\PHPStan\Type\Generic\TemplateTypeScope::createWithFunction('foo'), 'T', null, \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant());
+	$emptyMap = \PHPStan\Type\Generic\TemplateTypeMap::createEmpty();
+	$param = static fn (string $name, \PHPStan\Type\Type $type, bool $optional = false, bool $variadic = false, ?\PHPStan\Type\Type $default = null, ?\PHPStan\Reflection\PassedByReference $byRef = null): \PHPStan\Reflection\Php\DummyParameter => new \PHPStan\Reflection\Php\DummyParameter($name, $type, $optional, $byRef, $variadic, $default);
+	$extParam = static fn (string $name, \PHPStan\Type\Type $type, bool $optional = false, bool $variadic = false, ?\PHPStan\Type\Type $out = null, ?\PHPStan\Type\Type $closureThis = null, ?\PHPStan\Reflection\ParameterAllowedConstants $allowed = null, ?\PHPStan\TrinaryLogic $immediately = null, ?\PHPStan\TrinaryLogic $pure = null): \PHPStan\Reflection\Php\ExtendedDummyParameter => new \PHPStan\Reflection\Php\ExtendedDummyParameter($name, $type, $optional, \PHPStan\Reflection\PassedByReference::createReadsArgument(), $variadic, $optional ? $type : null, $type, $type, $out, $immediately ?? \PHPStan\TrinaryLogic::createMaybe(), $closureThis, [], $allowed, $pure ?? \PHPStan\TrinaryLogic::createNo());
+	$variant = static fn (array $parameters, bool $variadic = false, ?\PHPStan\Type\Type $return = null): \PHPStan\Reflection\FunctionVariant => new \PHPStan\Reflection\FunctionVariant($emptyMap, null, $parameters, $variadic, $return ?? $int);
+	$extVariant = static fn (array $parameters, bool $variadic = false, ?\PHPStan\Type\Type $return = null): \PHPStan\Reflection\ExtendedFunctionVariant => new \PHPStan\Reflection\ExtendedFunctionVariant($emptyMap, null, $parameters, $variadic, $return ?? $int, $return ?? $int, $mixed);
+	$allowedA = new \PHPStan\Reflection\ParameterAllowedConstants('list', [], []);
+	$allowedB = new \PHPStan\Reflection\ParameterAllowedConstants('bitmask', [], []);
+	$acceptorSets = [
+		'intOrString' => [$variant([$param('a', $int)]), $variant([$param('a', $string)])],
+		'arity' => [$variant([$param('a', $int)]), $variant([$param('a', $int), $param('b', $int)]), $variant([$param('a', $int), $param('b', $int, true), $param('c', $int, true)])],
+		'variadic' => [$variant([$param('a', $int)]), $variant([$param('a', $int), $param('rest', $string, true, true)], true)],
+		'mixedParams' => [$variant([$param('a', $mixed)]), $variant([$param('b', $mixed)])],
+		'extended' => [$extVariant([$extParam('a', $int, false, false, $int, $int, $allowedA, \PHPStan\TrinaryLogic::createYes())]), $extVariant([$extParam('b', $string, true, false, $string, null, $allowedA), $extParam('c', $int, true, true)], true)],
+		'extendedAllowed' => [$extVariant([$extParam('a', $int, false, false, null, null, $allowedA)]), $extVariant([$extParam('a', $int, false, false, null, null, $allowedB, null, \PHPStan\TrinaryLogic::createYes())])],
+		'mixedKinds' => [$variant([$param('x', $int, false, false, $int, \PHPStan\Reflection\PassedByReference::createCreatesNewVariable())]), $extVariant([$extParam('y', $string, true)])],
+		'template' => [$variant([$param('a', $template)], false, $template)],
+		'closure' => [new \PHPStan\Type\ClosureType([$param('a', $int)], $int, false), new \PHPStan\Type\ClosureType([$param('a', $string), $param('b', $int)], $string, false)],
+		'single' => [$variant([$param('a', $int)])],
+	];
+	$typeSets = [
+		'none' => [],
+		'int' => [$int],
+		'string' => [new \PHPStan\Type\Constant\ConstantStringType('s')],
+		'intInt' => [$int, $int],
+		'three' => [$int, $int, $int],
+		'named' => ['a' => $int],
+		'mixedValue' => [$mixed],
+	];
+	$viewAcceptor = static function ($acceptor) use ($view, $viewParameter): array {
+		$result = [get_class($acceptor), $view($acceptor->getReturnType()), $acceptor->isVariadic(), array_map($viewParameter, $acceptor->getParameters())];
+		if ($acceptor instanceof \PHPStan\Reflection\ExtendedParametersAcceptor) {
+			$result[] = [$view($acceptor->getPhpDocReturnType()), $view($acceptor->getNativeReturnType())];
+		}
+		if ($acceptor instanceof \PHPStan\Reflection\Callables\CallableParametersAcceptor) {
+			$result[] = [count($acceptor->getThrowPoints()), $acceptor->isPure()->describe(), count($acceptor->getImpurePoints()), $acceptor->acceptsNamedArguments()->describe(), $acceptor->mustUseReturnValue()->describe(), $acceptor->isStaticClosure()->describe()];
+		}
+		return $result;
+	};
+	foreach ($acceptorSets as $setName => $acceptors) {
+		$r["combineAcceptors $setName"] = $error(static function () use (&$r, $setName, $acceptors, $viewAcceptor): void {
+			$r["combineAcceptors $setName result"] = $viewAcceptor(\PHPStan\Reflection\ParametersAcceptorSelector::combineAcceptors($acceptors));
+		});
+		foreach ([false, true] as $unpack) {
+			foreach ($typeSets as $typesName => $types) {
+				$key = "selectFromTypes $setName $typesName " . ($unpack ? 'unpack' : 'plain');
+				$r[$key] = $error(static function () use (&$r, $key, $types, $acceptors, $unpack, $viewAcceptor): void {
+					$r["$key result"] = $viewAcceptor(\PHPStan\Reflection\ParametersAcceptorSelector::selectFromTypes($types, $acceptors, $unpack));
+				});
+			}
+		}
+		foreach ($acceptors as $i => $acceptor) {
+			$r["hasAcceptorTemplate $setName $i"] = [\PHPStan\Reflection\ParametersAcceptorSelector::hasAcceptorTemplateOrLateResolvableType($acceptor), \PHPStan\Reflection\ParametersAcceptorSelector::hasAcceptorTemplateOrLateResolvableParameterType($acceptor)];
+		}
+		$named = [new \PhpParser\Node\Arg(new \PhpParser\Node\Scalar\Int_(1), false, false, [], new \PhpParser\Node\Identifier('a'))];
+		$positional = [new \PhpParser\Node\Arg(new \PhpParser\Node\Scalar\Int_(1))];
+		foreach (['named' => $named, 'positional' => $positional] as $argsName => $args) {
+			foreach (['withNamed' => [$acceptors[0]], 'withoutNamed' => null] as $namedName => $namedVariants) {
+				$key = "combineVariantsForNormalization $setName $argsName $namedName";
+				$r[$key] = $error(static function () use (&$r, $key, $args, $acceptors, $namedVariants, $viewAcceptor): void {
+					$r["$key result"] = $viewAcceptor(\PHPStan\Reflection\ParametersAcceptorSelector::combineVariantsForNormalization($args, $acceptors, $namedVariants));
+				});
+			}
+		}
+	}
+	$r['combineAcceptors empty'] = $error(static fn () => \PHPStan\Reflection\ParametersAcceptorSelector::combineAcceptors([]));
+	$r['selectFromTypes empty'] = $error(static fn () => \PHPStan\Reflection\ParametersAcceptorSelector::selectFromTypes([], [], false));
+	foreach ($r as $key => $value) {
+		$observations["parameters acceptor selector $key"] = $value;
+	}
+}
+
 // observations holding bytes that are not UTF-8 (the invalid-UTF-8 subject's
 // descriptions) go out base64-encoded so json_encode() keeps every byte; the
 // non-finite floats (the NAN and infinity subjects' values) as their names

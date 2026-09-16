@@ -10643,7 +10643,7 @@ public:
 					ZVAL_EMPTY_ARRAY(&selectArgs[1]);
 					ZVAL_COPY_VALUE(&selectArgs[2], variants.raw());
 					ZVAL_COPY_VALUE(&selectArgs[3], namedArgumentsVariants.raw());
-					zv::Val variant = pt_type_call_static(PT_CLASS_PARAMETERS_ACCEPTOR_SELECTOR, PT_LC("selectfromargs"), 4, selectArgs);
+					zv::Val variant = pt_parameters_acceptor_selector_select_from_args(&selectArgs[0], &selectArgs[1], &selectArgs[2], &selectArgs[3]);
 					if (UNEXPECTED(variant.isUndef())) return zv::Val();
 
 					if (native) {

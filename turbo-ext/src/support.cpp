@@ -91,7 +91,6 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_ENUM_UNRESOLVED_PROPERTY_PROTOTYPE_REFLECTION */ {"enumUnresolvedPropertyPrototypeReflection", "PHPStan\\Reflection\\Php\\EnumUnresolvedPropertyPrototypeReflection"},
 	/* PT_CLASS_ENUM_PROPERTY_REFLECTION */ {"enumPropertyReflection", "PHPStan\\Reflection\\Php\\EnumPropertyReflection"},
 	/* PT_CLASS_CONST_FETCH_NODE */ {"constFetchNode", "PHPStan\\PhpDocParser\\Ast\\ConstExpr\\ConstFetchNode"},
-	/* PT_CLASS_PARAMETERS_ACCEPTOR_SELECTOR */ {"parametersAcceptorSelector", "PHPStan\\Reflection\\ParametersAcceptorSelector"},
 	/* PT_CLASS_CALLABLE_ASSERTIONS_HELPER */ {"callableAssertionsHelper", "PHPStan\\Type\\CallableAssertionsHelper"},
 	/* PT_CLASS_CALLABLE_PARAMETERS_ACCEPTOR */ {"callableParametersAcceptor", "PHPStan\\Reflection\\Callables\\CallableParametersAcceptor"},
 	/* PT_CLASS_ASSERTIONS */ {"assertions", "PHPStan\\Reflection\\Assertions"},
@@ -325,6 +324,9 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_GENERIC_TYPE_TEMPLATE_TRAVERSER */ {"genericTypeTemplateTraverser", "PHPStan\\Analyser\\Traverser\\GenericTypeTemplateTraverser"},
 	/* PT_CLASS_CLOSURE_HANDLER */ {"closureHandler", "PHPStan\\Analyser\\ExprHandler\\ClosureHandler"},
 	/* PT_CLASS_ALLOWED_CONSTANTS_RESULT */ {"allowedConstantsResult", "PHPStan\\Reflection\\AllowedConstantsResult"},
+	/* PT_CLASS_GENERIC_PARAMETERS_ACCEPTOR_RESOLVER */ {"genericParametersAcceptorResolver", "PHPStan\\Reflection\\GenericParametersAcceptorResolver"},
+	/* PT_CLASS_FUNCTION_VARIANT */ {"functionVariant", "PHPStan\\Reflection\\FunctionVariant"},
+	/* PT_CLASS_EXTENDED_CALLABLE_FUNCTION_VARIANT */ {"extendedCallableFunctionVariant", "PHPStan\\Reflection\\ExtendedCallableFunctionVariant"},
 };
 
 zend_class_entry *pt_class(int idx)

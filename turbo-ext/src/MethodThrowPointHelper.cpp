@@ -236,8 +236,7 @@ public:
 		if (UNEXPECTED(variants.isUndef())) return zv::Val();
 		zv::Val namedArgumentsVariants = pt_extended_method_reflection_call(methodReflection.raw(), PT_MR_GET_NAMED_ARGUMENTS_VARIANTS);
 		if (UNEXPECTED(namedArgumentsVariants.isUndef())) return zv::Val();
-		zv::Args combineArgs{args, variants.raw(), namedArgumentsVariants.raw()};
-		zv::Val parametersAcceptor = pt_type_call_static(PT_CLASS_PARAMETERS_ACCEPTOR_SELECTOR, PT_LC("combinevariantsfornormalization"), 3, combineArgs);
+		zv::Val parametersAcceptor = pt_parameters_acceptor_selector_combine_variants_for_normalization(args, variants.raw(), namedArgumentsVariants.raw());
 		if (UNEXPECTED(parametersAcceptor.isUndef())) return zv::Val();
 		zv::Val returnType = callOn(parametersAcceptor.raw(), PT_LC("getreturntype"), "getReturnType", 0, NULL);
 		if (UNEXPECTED(returnType.isUndef())) return zv::Val();

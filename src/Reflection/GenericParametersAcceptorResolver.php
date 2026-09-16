@@ -6,6 +6,7 @@ use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\Php\ExtendedDummyParameter;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\CallableAssertionsHelper;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\ErrorType;
@@ -25,6 +26,7 @@ use function array_merge;
 use function count;
 use function is_int;
 
+#[ReferencedByTurboExtension(key: 'genericParametersAcceptorResolver')]
 final class GenericParametersAcceptorResolver
 {
 

@@ -1798,7 +1798,7 @@ public:
 		if (UNEXPECTED(combinations.isUndef())) return zv::Val();
 		zv::Arr result = zv::Arr::create(zv::ArrRef(combinations.raw()).size());
 		for (zv::ArrayEntry entry : zv::ArrRef(combinations.raw())) {
-			zv::Val combined = pt_type_call_static(PT_CLASS_PARAMETERS_ACCEPTOR_SELECTOR, PT_LC("combineacceptors"), 1, entry.value().deref().raw());
+			zv::Val combined = pt_parameters_acceptor_selector_combine_acceptors(entry.value().deref().raw());
 			if (UNEXPECTED(combined.isUndef())) return zv::Val();
 			bool isCallableAcceptor;
 			if (UNEXPECTED(!isInstance(combined.raw(), PT_CLASS_CALLABLE_PARAMETERS_ACCEPTOR, isCallableAcceptor))) return zv::Val();

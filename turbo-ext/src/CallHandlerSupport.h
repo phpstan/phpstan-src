@@ -1,8 +1,8 @@
 /*
  * What the call handler ports (MethodCallHandler.cpp, StaticCallHandler.cpp,
- * NewHandler.cpp) share: the calls into the PHP collaborators that are not
- * ported yet — ArgumentsHandler, ArgumentsNormalizer,
- * ParametersAcceptorSelector, the parameters acceptors, Assertions — each over
+ * NewHandler.cpp) share: the calls into their collaborators — ArgumentsHandler,
+ * ArgumentsNormalizer and ParametersAcceptorSelector through their direct
+ * entries, the parameters acceptors and Assertions (still PHP) each over
  * one cached method site (C++17 inline variables: one site per helper for the
  * whole extension, so a later port switches the helper to a direct entry in
  * one place), the php-parser node property reads, and the small value helpers
@@ -25,11 +25,9 @@
 
 namespace ptcall {
 
-/* {{{ the PHP collaborators (one site each; switch to their direct entries
- * once they are ported) */
+/* {{{ the collaborators (the PHP ones one site each; switch to their direct
+ * entries once they are ported) */
 
-inline pt_method_site combineVariantsForNormalizationSite;
-inline pt_method_site combineAcceptorsSite;
 inline pt_method_site acceptorReturnTypeSite;
 inline pt_method_site resolvedAcceptorReturnTypeSite;
 inline pt_method_site acceptorNativeReturnTypeSite;
@@ -42,14 +40,13 @@ inline pt_method_site getConstantStringsSite;
 /* ParametersAcceptorSelector::combineVariantsForNormalization($args, $variants, $namedArgumentsVariants) */
 inline zv::Val combineVariantsForNormalization(zval *args, zval *variants, zval *namedArgumentsVariants)
 {
-	zv::Args argv{args, variants, namedArgumentsVariants};
-	return pt_call_static_cached(combineVariantsForNormalizationSite, PT_CLASS_PARAMETERS_ACCEPTOR_SELECTOR, PT_LC("combinevariantsfornormalization"), 3, argv);
+	return pt_parameters_acceptor_selector_combine_variants_for_normalization(args, variants, namedArgumentsVariants);
 }
 
 /* ParametersAcceptorSelector::combineAcceptors($acceptors) */
 inline zv::Val combineAcceptors(zval *acceptors)
 {
-	return pt_call_static_cached(combineAcceptorsSite, PT_CLASS_PARAMETERS_ACCEPTOR_SELECTOR, PT_LC("combineacceptors"), 1, acceptors);
+	return pt_parameters_acceptor_selector_combine_acceptors(acceptors);
 }
 
 /* ArgumentsNormalizer::reorderMethodArguments($parametersAcceptor, $methodCall) */

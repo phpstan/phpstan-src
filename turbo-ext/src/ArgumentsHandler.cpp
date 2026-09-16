@@ -540,41 +540,24 @@ zv::Val templateArgumentObserverCollectCall(zval *observer, zval *site, zval *ac
 	return callOn(pt_ah_collect_call_site, observer, PT_LC("collectcall"), "collectCall", 4, argv);
 }
 
-/* ParametersAcceptorSelector */
-pt_method_site pt_ah_has_acceptor_template_site;
-pt_method_site pt_ah_has_acceptor_template_parameter_site;
-pt_method_site pt_ah_apply_intrinsic_arg_overrides_site;
-pt_method_site pt_ah_select_from_types_site;
+/* ParametersAcceptorSelector (direct entries) */
 
 /* ParametersAcceptorSelector::hasAcceptorTemplateOrLateResolvableType($acceptor); false = pending exception */
-bool selectorHasAcceptorTemplateOrLateResolvableType(zval *acceptor, bool &out)
+inline bool selectorHasAcceptorTemplateOrLateResolvableType(zval *acceptor, bool &out)
 {
-	zv::Val result = pt_call_static_cached(pt_ah_has_acceptor_template_site, PT_CLASS_PARAMETERS_ACCEPTOR_SELECTOR, PT_LC("hasacceptortemplateorlateresolvabletype"), 1, acceptor);
-	if (UNEXPECTED(result.isUndef())) return false;
-	out = zend_is_true(result.raw());
-	return true;
+	return pt_parameters_acceptor_selector_has_acceptor_template_or_late_resolvable_type(acceptor, out);
 }
 
 /* ParametersAcceptorSelector::hasAcceptorTemplateOrLateResolvableParameterType($acceptor); false = pending exception */
-bool selectorHasAcceptorTemplateOrLateResolvableParameterType(zval *acceptor, bool &out)
+inline bool selectorHasAcceptorTemplateOrLateResolvableParameterType(zval *acceptor, bool &out)
 {
-	zv::Val result = pt_call_static_cached(pt_ah_has_acceptor_template_parameter_site, PT_CLASS_PARAMETERS_ACCEPTOR_SELECTOR, PT_LC("hasacceptortemplateorlateresolvableparametertype"), 1, acceptor);
-	if (UNEXPECTED(result.isUndef())) return false;
-	out = zend_is_true(result.raw());
-	return true;
-}
-
-/* ParametersAcceptorSelector::applyIntrinsicArgOverrides(...) with its eight arguments */
-zv::Val selectorApplyIntrinsicArgOverrides(zval *argv)
-{
-	return pt_call_static_cached(pt_ah_apply_intrinsic_arg_overrides_site, PT_CLASS_PARAMETERS_ACCEPTOR_SELECTOR, PT_LC("applyintrinsicargoverrides"), 8, argv);
+	return pt_parameters_acceptor_selector_has_acceptor_template_or_late_resolvable_parameter_type(acceptor, out);
 }
 
 /* ParametersAcceptorSelector::selectFromTypes($types, $parametersAcceptors, $unpack) */
-zv::Val selectorSelectFromTypes(zval *types, zval *parametersAcceptors, bool unpack)
+inline zv::Val selectorSelectFromTypes(zval *types, zval *parametersAcceptors, bool unpack)
 {
-	zv::Args argv{types, parametersAcceptors, unpack};
-	return pt_call_static_cached(pt_ah_select_from_types_site, PT_CLASS_PARAMETERS_ACCEPTOR_SELECTOR, PT_LC("selectfromtypes"), 3, argv);
+	return pt_parameters_acceptor_selector_select_from_types(types, parametersAcceptors, unpack);
 }
 
 /* the reflections: parameters, their PassedByReference, the acceptors and
@@ -1220,16 +1203,13 @@ private:
 	/* Mirrors selectArgsMetadataAcceptor() */
 	static zv::Val selectArgsMetadataAcceptor(zval *nodeScopeResolver, zval *args, zval *gatheredTypes, zval *parametersAcceptors, zval *namedArgumentsVariants, bool hasName, bool unpack, zval *scope)
 	{
-		zv::Val typeGetter = pt_native_closure_to_closure(pt_native_closure(&typeGetterBody, nodeScopeResolver, scope).raw());
-		if (UNEXPECTED(typeGetter.isUndef())) return zv::Val();
-		zv::Val nativeTypeGetter = pt_native_closure_to_closure(pt_native_closure(&nativeTypeGetterBody, nodeScopeResolver, scope).raw());
-		if (UNEXPECTED(nativeTypeGetter.isUndef())) return zv::Val();
-		zv::Val iterableValueTypeGetter = pt_native_closure_to_closure(pt_native_closure(&iterableValueTypeGetterBody, scope).raw());
-		if (UNEXPECTED(iterableValueTypeGetter.isUndef())) return zv::Val();
-		zv::Val iterableKeyTypeGetter = pt_native_closure_to_closure(pt_native_closure(&iterableKeyTypeGetterBody, scope).raw());
-		if (UNEXPECTED(iterableKeyTypeGetter.isUndef())) return zv::Val();
-		zv::Args overrideArgs{args, parametersAcceptors, namedArgumentsVariants, scope, typeGetter.raw(), nativeTypeGetter.raw(), iterableValueTypeGetter.raw(), iterableKeyTypeGetter.raw()};
-		zv::Val overridden = selectorApplyIntrinsicArgOverrides(overrideArgs);
+		/* the native entry takes the holders as they are (the public method's
+		 * \Closure parameter types do not apply to it) */
+		zv::Val typeGetter = pt_native_closure(&typeGetterBody, nodeScopeResolver, scope);
+		zv::Val nativeTypeGetter = pt_native_closure(&nativeTypeGetterBody, nodeScopeResolver, scope);
+		zv::Val iterableValueTypeGetter = pt_native_closure(&iterableValueTypeGetterBody, scope);
+		zv::Val iterableKeyTypeGetter = pt_native_closure(&iterableKeyTypeGetterBody, scope);
+		zv::Val overridden = pt_parameters_acceptor_selector_apply_intrinsic_arg_overrides(args, parametersAcceptors, namedArgumentsVariants, scope, typeGetter.raw(), nativeTypeGetter.raw(), iterableValueTypeGetter.raw(), iterableKeyTypeGetter.raw());
 		if (UNEXPECTED(overridden.isUndef())) return zv::Val();
 
 		return selectArgsAcceptor(gatheredTypes, overridden.raw(), namedArgumentsVariants, hasName, unpack);

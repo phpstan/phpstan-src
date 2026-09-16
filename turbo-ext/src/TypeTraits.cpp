@@ -3125,8 +3125,7 @@ zv::Val pt_callable_infer_template_types_on_parameters_acceptor(zend_object *sel
 	/* $parametersAcceptor = ParametersAcceptorSelector::selectFromTypes($parameterTypes, [$parametersAcceptor], false) */
 	zv::Arr acceptors = zv::Arr::create(1);
 	acceptors.push(zv::Ref(parametersAcceptor));
-	zv::Args selectArgs{parameterTypes.raw(), acceptors.raw(), false};
-	zv::Val selected = pt_type_call_static(PT_CLASS_PARAMETERS_ACCEPTOR_SELECTOR, PT_LC("selectfromtypes"), 3, selectArgs);
+	zv::Val selected = pt_parameters_acceptor_selector_select_from_types(parameterTypes.raw(), acceptors.raw(), false);
 	if (UNEXPECTED(selected.isUndef())) return zv::Val();
 	if (UNEXPECTED(!zv::Ref(selected.raw()).isObject())) {
 		zend_type_error("phpstan_turbo: ParametersAcceptorSelector::selectFromTypes() must return an object");

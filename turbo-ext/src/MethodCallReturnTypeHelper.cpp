@@ -66,8 +66,7 @@ zv::Val selectFromArgs(zval *scope, zval *call, zval *methodReflection)
 	if (UNEXPECTED(variants.isUndef())) return zv::Val();
 	zv::Val namedArgumentsVariants = pt_extended_method_reflection_call(methodReflection, PT_MR_GET_NAMED_ARGUMENTS_VARIANTS);
 	if (UNEXPECTED(namedArgumentsVariants.isUndef())) return zv::Val();
-	zv::Args selectArgs{scope, args, variants.raw(), namedArgumentsVariants.raw()};
-	return pt_type_call_static(PT_CLASS_PARAMETERS_ACCEPTOR_SELECTOR, PT_LC("selectfromargs"), 4, selectArgs);
+	return pt_parameters_acceptor_selector_select_from_args(scope, args, variants.raw(), namedArgumentsVariants.raw());
 }
 
 /* $type->getMethod($methodName, $scope) */

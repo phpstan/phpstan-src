@@ -423,6 +423,9 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	/* the argument reordering of the call handlers — its signatures name
 	 * php-parser classes, ParametersAcceptor and Scope only */
 	pt_register_arguments_normalizer();
+	/* the variant selection — its signatures name Scope and the reflection
+	 * interfaces only */
+	pt_register_parameters_acceptor_selector();
 
 	return SUCCESS;
 }

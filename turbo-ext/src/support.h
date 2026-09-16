@@ -127,7 +127,6 @@ enum {
 	PT_CLASS_ENUM_UNRESOLVED_PROPERTY_PROTOTYPE_REFLECTION,
 	PT_CLASS_ENUM_PROPERTY_REFLECTION,
 	PT_CLASS_CONST_FETCH_NODE,
-	PT_CLASS_PARAMETERS_ACCEPTOR_SELECTOR,
 	PT_CLASS_CALLABLE_ASSERTIONS_HELPER,
 	PT_CLASS_CALLABLE_PARAMETERS_ACCEPTOR,
 	PT_CLASS_ASSERTIONS,
@@ -365,6 +364,9 @@ enum {
 	PT_CLASS_GENERIC_TYPE_TEMPLATE_TRAVERSER,
 	PT_CLASS_CLOSURE_HANDLER,
 	PT_CLASS_ALLOWED_CONSTANTS_RESULT,
+	PT_CLASS_GENERIC_PARAMETERS_ACCEPTOR_RESOLVER,
+	PT_CLASS_FUNCTION_VARIANT,
+	PT_CLASS_EXTENDED_CALLABLE_FUNCTION_VARIANT,
 	PT_CLASS_COUNT
 };
 
@@ -2963,6 +2965,34 @@ zv::Val pt_arguments_normalizer_reorder_func_arguments(zval *parametersAcceptor,
 zv::Val pt_arguments_normalizer_reorder_method_arguments(zval *parametersAcceptor, zval *methodCall);
 zv::Val pt_arguments_normalizer_reorder_static_call_arguments(zval *parametersAcceptor, zval *staticCall);
 zv::Val pt_arguments_normalizer_reorder_new_arguments(zval *parametersAcceptor, zval *newExpr);
+
+/* }}} */
+
+/* {{{ ParametersAcceptorSelector.cpp — the shadowing
+ * PHPStan\Reflection\ParametersAcceptorSelector, registered at the END of the
+ * sequence */
+
+extern zend_class_entry *pt_ce_parameters_acceptor_selector;
+void pt_register_parameters_acceptor_selector();
+/* ParametersAcceptorSelector::selectFromArgs($scope, $args, $acceptors,
+ * $namedArgumentsVariants) / ::selectFromTypes($types, $acceptors, $unpack) /
+ * ::combineVariantsForNormalization($args, $variants, $namedArgumentsVariants)
+ * / ::combineAcceptors($acceptors) — the native bodies for arguments of the
+ * twin's parameter types, the method otherwise ($namedArgumentsVariants NULL
+ * or IS_NULL for null, everything borrowed); UNDEF = pending exception */
+zv::Val pt_parameters_acceptor_selector_select_from_args(zval *scope, zval *args, zval *parametersAcceptors, zval *namedArgumentsVariants);
+zv::Val pt_parameters_acceptor_selector_select_from_types(zval *types, zval *parametersAcceptors, bool unpack);
+zv::Val pt_parameters_acceptor_selector_combine_variants_for_normalization(zval *args, zval *variants, zval *namedArgumentsVariants);
+zv::Val pt_parameters_acceptor_selector_combine_acceptors(zval *acceptors);
+/* ::applyIntrinsicArgOverrides(...) over arrays, with the four getters any
+ * callables (a native closure holder included — the public method's \Closure
+ * types are not re-checked) */
+zv::Val pt_parameters_acceptor_selector_apply_intrinsic_arg_overrides(zval *args, zval *parametersAcceptors, zval *namedArgumentsVariants, zval *scope, zval *typeGetter, zval *nativeTypeGetter, zval *iterableValueTypeGetter, zval *iterableKeyTypeGetter);
+/* ::hasAcceptorTemplateOrLateResolvableType($acceptor) /
+ * ::hasAcceptorTemplateOrLateResolvableParameterType($acceptor); false =
+ * pending exception */
+[[nodiscard]] bool pt_parameters_acceptor_selector_has_acceptor_template_or_late_resolvable_type(zval *acceptor, bool &out);
+[[nodiscard]] bool pt_parameters_acceptor_selector_has_acceptor_template_or_late_resolvable_parameter_type(zval *acceptor, bool &out);
 
 /* }}} */
 

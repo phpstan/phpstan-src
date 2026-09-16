@@ -227,7 +227,6 @@ pt_method_site pt_an_parameter_is_variadic_site;
 pt_method_site pt_an_parameter_is_optional_site;
 pt_method_site pt_an_parameter_get_default_value_site;
 pt_method_site pt_an_acceptor_get_parameters_site;
-pt_method_site pt_an_select_from_args_site;
 pt_method_site pt_an_get_callable_parameters_acceptors_site;
 pt_method_site pt_an_accepts_named_arguments_site;
 
@@ -283,10 +282,7 @@ zv::Val acceptorGetParameters(zval *acceptor)
 /* ParametersAcceptorSelector::selectFromArgs($scope, $args, $acceptors, null) */
 zv::Val selectFromArgs(zval *scope, zval *args, zval *acceptors)
 {
-	zval null = {};
-	ZVAL_NULL(&null);
-	zv::Args argv{scope, args, acceptors, &null};
-	return pt_call_static_cached(pt_an_select_from_args_site, PT_CLASS_PARAMETERS_ACCEPTOR_SELECTOR, PT_LC("selectfromargs"), 4, argv);
+	return pt_parameters_acceptor_selector_select_from_args(scope, args, acceptors, NULL);
 }
 
 /* }}} */

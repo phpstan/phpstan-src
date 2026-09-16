@@ -591,6 +591,23 @@ zv::Val pt_variable_flow_choice(uint32_t argc, zval *argv)
 	return VariableFlow::choice(argc, argv);
 }
 
+zv::Val pt_variable_flow_exit(pt_variable_flow_exit_kind kind, zend_long level, zend_string *name)
+{
+	static const pt_vf_kind kinds[] = { PT_VF_RETURN, PT_VF_BREAK, PT_VF_CONTINUE, PT_VF_STOP };
+	return VariableFlow::exit_(pt_vf_kind_strings[kinds[kind]], level, name);
+}
+
+zv::Val pt_variable_flow_conditional(zval *condition, zval *ifFlow, zval *elseFlow, int truthy)
+{
+	zval truthyValue;
+	if (truthy < 0) {
+		ZVAL_NULL(&truthyValue);
+	} else {
+		ZVAL_BOOL(&truthyValue, truthy != 0);
+	}
+	return VariableFlow::conditional(condition, ifFlow, elseFlow, &truthyValue);
+}
+
 /* {{{ engine ABI glue: parameter parsing + registration */
 
 #include "reg.h"

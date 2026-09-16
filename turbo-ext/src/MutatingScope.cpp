@@ -11667,6 +11667,13 @@ zv::Val pt_mutating_scope_specify_types_of_new_world_handler_node(zend_object *s
 	zv::Args args{node, context};
 	return pt_type_call(scope, PT_LC("specifytypesofnewworldhandlernode"), 2, args);
 }
+
+/* the statement handlers' reads (ExpressionHandler.cpp, ...) */
+zv::Val pt_mutating_scope_get_anonymous_function_reflection(zend_object *scope)
+{
+	if (EXPECTED(msNative(scope, PT_LC("getanonymousfunctionreflection"), &reg::detail::Bound<&MutatingScope::getAnonymousFunctionReflection>::handle))) return MutatingScope(scope).getAnonymousFunctionReflection();
+	return pt_type_call(scope, PT_LC("getanonymousfunctionreflection"), 0, NULL);
+}
 /* }}} */
 
 /* {{{ direct entries for the NodeScopeResolver / StatementsHandler /

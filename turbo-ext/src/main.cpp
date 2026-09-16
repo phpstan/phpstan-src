@@ -393,6 +393,13 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	 * signatures name */
 	pt_register_assign_handler();
 	pt_register_assign_op_handler();
+	/* the statement handlers, after the MutatingScope, context and
+	 * statement-result classes their signatures name */
+	pt_register_expression_handler();
+	pt_register_return_handler();
+	pt_register_echo_handler();
+	pt_register_block_handler();
+	pt_register_nop_handler();
 
 	return SUCCESS;
 }

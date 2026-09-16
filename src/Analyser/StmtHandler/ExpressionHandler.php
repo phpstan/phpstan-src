@@ -23,6 +23,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\NoopExpressionNode;
 use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Node\VariableAssignNode;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
@@ -33,6 +34,7 @@ use function count;
  * @implements StmtHandler<Expression>
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ExpressionHandler.cpp')]
 final class ExpressionHandler implements StmtHandler
 {
 

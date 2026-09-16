@@ -310,6 +310,9 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_VARIABLE_ASSIGN_NODE */ {"variableAssignNode", "PHPStan\\Node\\VariableAssignNode"},
 	/* PT_CLASS_VIRTUAL_ASSIGN_NODE_CALLBACK */ {"virtualAssignNodeCallback", "PHPStan\\Analyser\\VirtualAssignNodeCallback"},
 	/* PT_CLASS_COALESCE_EXPRESSION_NODE */ {"coalesceExpressionNode", "PHPStan\\Node\\CoalesceExpressionNode"},
+	/* PT_CLASS_THROW_EXPR */ {"throwExpr", "PhpParser\\Node\\Expr\\Throw_"},
+	/* PT_CLASS_NOOP_EXPRESSION_NODE */ {"noopExpressionNode", "PHPStan\\Node\\NoopExpressionNode"},
+	/* PT_CLASS_BLOCK_STMT */ {"blockStmt", "PhpParser\\Node\\Stmt\\Block"},
 };
 
 zend_class_entry *pt_class(int idx)

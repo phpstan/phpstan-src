@@ -58,6 +58,7 @@ use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Expr\Ternary;
+use PhpParser\Node\Expr\Throw_;
 use PhpParser\Node\Expr\UnaryMinus;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Expr\Yield_;
@@ -74,6 +75,7 @@ use PhpParser\Node\Scalar\InterpolatedString;
 use PhpParser\Node\Scalar\MagicConst;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt;
+use PhpParser\Node\Stmt\Block;
 use PhpParser\Node\Stmt\Break_;
 use PhpParser\Node\Stmt\Catch_;
 use PhpParser\Node\Stmt\Class_;
@@ -329,6 +331,8 @@ final class TurboAttributeCollector
 		'assignOpPow' => Pow::class,
 		'assignOpShiftLeft' => ShiftLeft::class,
 		'assignOpShiftRight' => ShiftRight::class,
+		'throwExpr' => Throw_::class,
+		'blockStmt' => Block::class,
 	];
 
 	private string $realRoot;

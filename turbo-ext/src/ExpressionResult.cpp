@@ -1768,3 +1768,21 @@ zv::Val pt_expression_result_get_specified_types_for_scope(zval *result, zval *s
 }
 
 /* }}} */
+
+/* {{{ direct entries for the statement handlers (IfHandler.cpp):
+ * $result->getTruthyScope() / ->getFalseyScope() — the native body for a
+ * native result, the method otherwise (the result borrowed) */
+
+zv::Val pt_expression_result_get_truthy_scope(zval *result)
+{
+	if (isNativeResult(result)) return ExpressionResult(Z_OBJ_P(result)).getTruthyScope();
+	return pt_type_call(Z_OBJ_P(result), PT_LC("gettruthyscope"), 0, NULL);
+}
+
+zv::Val pt_expression_result_get_falsey_scope(zval *result)
+{
+	if (isNativeResult(result)) return ExpressionResult(Z_OBJ_P(result)).getFalseyScope();
+	return pt_type_call(Z_OBJ_P(result), PT_LC("getfalseyscope"), 0, NULL);
+}
+
+/* }}} */

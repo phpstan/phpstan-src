@@ -2115,6 +2115,33 @@ bool pt_node_scope_resolver_replay_recording_range(zval *nodeScopeResolver, zval
 	return NodeScopeResolver(Z_OBJ_P(nodeScopeResolver)).thisReplayRecordingRange(recording, from, to, nodeCallback, storage, scope);
 }
 
+/* the statement handlers' (ExpressionHandler.cpp, ReturnHandler.cpp,
+ * ClassMethodHandler.cpp, FunctionHandler.cpp) */
+bool pt_node_scope_resolver_push_node_gatherer(zval *nodeScopeResolver, zval *gatherer)
+{
+	if (isNativeResolver(nodeScopeResolver)) {
+		NodeScopeResolver(Z_OBJ_P(nodeScopeResolver)).pushNodeGatherer(gatherer);
+		return true;
+	}
+	return !pt_type_call(Z_OBJ_P(nodeScopeResolver), PT_LC("pushnodegatherer"), 1, gatherer).isUndef();
+}
+
+bool pt_node_scope_resolver_pop_node_gatherer(zval *nodeScopeResolver)
+{
+	if (isNativeResolver(nodeScopeResolver)) {
+		NodeScopeResolver(Z_OBJ_P(nodeScopeResolver)).popNodeGatherer();
+		return true;
+	}
+	return !pt_type_call(Z_OBJ_P(nodeScopeResolver), PT_LC("popnodegatherer"), 0, NULL).isUndef();
+}
+
+zv::Val pt_node_scope_resolver_collect_return_send(zval *nodeScopeResolver, zval *scope, zval *returnedResult)
+{
+	if (isNativeResolver(nodeScopeResolver)) return NodeScopeResolver(Z_OBJ_P(nodeScopeResolver)).collectReturnSend(scope, returnedResult);
+	zv::Args argv{scope, returnedResult};
+	return pt_type_call(Z_OBJ_P(nodeScopeResolver), PT_LC("collectreturnsend"), 2, argv);
+}
+
 /* }}} */
 
 /* {{{ engine ABI glue: parameter parsing + registration */

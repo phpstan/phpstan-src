@@ -16,12 +16,14 @@ use PHPStan\Analyser\StatementsHandler;
 use PHPStan\Analyser\StmtHandler;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function is_string;
 
 /**
  * @implements StmtHandler<Return_>
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ReturnHandler.cpp')]
 final class ReturnHandler implements StmtHandler
 {
 

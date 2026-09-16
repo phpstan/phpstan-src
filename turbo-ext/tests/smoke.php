@@ -3977,6 +3977,11 @@ $coveredElsewhere = [
 	\PHPStan\Analyser\ExprHandler\Helper\DynamicReturnTypeStoragePrimer::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\AssignHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\AssignOpHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\StmtHandler\ExpressionHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\StmtHandler\ReturnHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\StmtHandler\EchoHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\StmtHandler\BlockHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\StmtHandler\NopHandler::class => 'walk-trace.php',
 ];
 foreach (array_keys($shadowedClasses) as $shadowedClass) {
 	check(

@@ -351,6 +351,9 @@ enum {
 	PT_CLASS_VARIABLE_ASSIGN_NODE,
 	PT_CLASS_VIRTUAL_ASSIGN_NODE_CALLBACK,
 	PT_CLASS_COALESCE_EXPRESSION_NODE,
+	PT_CLASS_THROW_EXPR,
+	PT_CLASS_NOOP_EXPRESSION_NODE,
+	PT_CLASS_BLOCK_STMT,
 	PT_CLASS_COUNT
 };
 
@@ -2579,6 +2582,59 @@ zv::Val pt_assign_handler_process_virtual_assign(zval *handler, zval *nodeScopeR
 /* AssignOpHandler.cpp — registered after AssignHandler */
 extern zend_class_entry *pt_ce_assign_op_handler;
 void pt_register_assign_op_handler();
+
+/* }}} */
+
+/* {{{ the statement handlers (ExpressionHandler.cpp, ReturnHandler.cpp,
+ * EchoHandler.cpp, BlockHandler.cpp, NopHandler.cpp) and the direct entries
+ * they read through — registered at the END of the sequence (their
+ * signatures name MutatingScope, the contexts and the statement results) */
+
+extern zend_class_entry *pt_ce_expression_handler;
+extern zend_class_entry *pt_ce_return_handler;
+extern zend_class_entry *pt_ce_echo_handler;
+extern zend_class_entry *pt_ce_block_handler;
+extern zend_class_entry *pt_ce_nop_handler;
+void pt_register_expression_handler();
+void pt_register_return_handler();
+void pt_register_echo_handler();
+void pt_register_block_handler();
+void pt_register_nop_handler();
+
+/* ExpressionResult.cpp — $result->getTruthyScope() / ->getFalseyScope()
+ * (withScope() is declared with the walk hub's entries): the native body for
+ * a native result, the method otherwise (everything borrowed); UNDEF =
+ * pending exception */
+zv::Val pt_expression_result_get_truthy_scope(zval *result);
+zv::Val pt_expression_result_get_falsey_scope(zval *result);
+
+/* VariableFlow.cpp — VariableFlow::exit($kind, $level, $name) for the kind
+ * constants RETURN / BREAK / CONTINUE / STOP ($name NULL for null) and
+ * VariableFlow::conditional($condition, $if, $else, $truthy) (the flows NULL
+ * or IS_NULL for null, $truthy -1 for null, else 0/1); UNDEF = pending
+ * exception */
+enum pt_variable_flow_exit_kind
+{
+	PT_VARIABLE_FLOW_EXIT_RETURN,
+	PT_VARIABLE_FLOW_EXIT_BREAK,
+	PT_VARIABLE_FLOW_EXIT_CONTINUE,
+	PT_VARIABLE_FLOW_EXIT_STOP,
+};
+zv::Val pt_variable_flow_exit(pt_variable_flow_exit_kind kind, zend_long level = 1, zend_string *name = NULL);
+zv::Val pt_variable_flow_conditional(zval *condition, zval *ifFlow, zval *elseFlow, int truthy);
+
+/* MutatingScope.cpp — $scope->getAnonymousFunctionReflection(): the native
+ * body for a MutatingScope (or a subclass inheriting the method), the
+ * method by name otherwise; UNDEF = pending exception */
+zv::Val pt_mutating_scope_get_anonymous_function_reflection(zend_object *scope);
+
+/* NodeScopeResolver.cpp — $nodeScopeResolver->pushNodeGatherer($gatherer) /
+ * ->popNodeGatherer() / ->collectReturnSend($scope, $returnedResult): the
+ * native body for exactly the native class, the method otherwise (everything
+ * borrowed); false / UNDEF = pending exception */
+[[nodiscard]] bool pt_node_scope_resolver_push_node_gatherer(zval *nodeScopeResolver, zval *gatherer);
+[[nodiscard]] bool pt_node_scope_resolver_pop_node_gatherer(zval *nodeScopeResolver);
+zv::Val pt_node_scope_resolver_collect_return_send(zval *nodeScopeResolver, zval *scope, zval *returnedResult);
 
 /* }}} */
 

@@ -12089,6 +12089,25 @@ zv::Val pt_mutating_scope_enter_closure_bind(zend_object *scope, zval *thisType,
 	return pt_type_call(scope, PT_LC("enterclosurebind"), 3, argv);
 }
 
+zv::Val pt_mutating_scope_after_extract_call(zend_object *scope)
+{
+	if (msExact(scope)) return MutatingScope(scope).afterExtractCall();
+	return pt_type_call(scope, PT_LC("afterextractcall"), 0, NULL);
+}
+
+zv::Val pt_mutating_scope_after_clearstatcache_call(zend_object *scope)
+{
+	if (msExact(scope)) return MutatingScope(scope).afterClearstatcacheCall();
+	return pt_type_call(scope, PT_LC("afterclearstatcachecall"), 0, NULL);
+}
+
+zv::Val pt_mutating_scope_after_open_ssl_call(zend_object *scope, zend_string *openSslFunctionName)
+{
+	if (msExact(scope)) return MutatingScope(scope).afterOpenSslCall(openSslFunctionName);
+	zv::Args argv{openSslFunctionName};
+	return pt_type_call(scope, PT_LC("afteropensslcall"), 1, argv);
+}
+
 /* }}} */
 
 void pt_register_mutating_scope()

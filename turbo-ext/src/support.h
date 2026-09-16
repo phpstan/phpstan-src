@@ -367,6 +367,9 @@ enum {
 	PT_CLASS_GENERIC_PARAMETERS_ACCEPTOR_RESOLVER,
 	PT_CLASS_FUNCTION_VARIANT,
 	PT_CLASS_EXTENDED_CALLABLE_FUNCTION_VARIANT,
+	/* the function-call cluster (FuncCallHandler.cpp,
+	 * FuncCallScopeEffectsHelper.cpp, FunctionReflectionAccess.cpp) */
+	PT_CLASS_NATIVE_FUNCTION_REFLECTION,
 	PT_CLASS_COUNT
 };
 
@@ -2861,6 +2864,48 @@ zv::Val pt_variable_control_flow_new(zend_string *kind, const pt_variable_contro
 extern zend_class_entry *pt_ce_var_annotation_processor;
 void pt_register_var_annotation_processor();
 zv::Val pt_var_annotation_processor_process_var_annotation(zval *processor, zval *scope, zval *variableNames, zval *node, bool *changed);
+/* {{{ the function-call cluster (FunctionReflectionAccess.cpp,
+ * OutputBufferHelper.cpp, FuncCallScopeEffectsHelper.cpp) */
+
+/* FunctionReflectionAccess.cpp — the getters of the PHP function reflection
+ * classes the call handlers read on every call: the constructor-written slot
+ * of exactly NativeFunctionReflection / ExtendedFunctionVariant /
+ * ExtendedNativeParameterReflection / Assertions, the method (its result
+ * kept in hold) for anything else; NULL / false = pending exception */
+zval *pt_function_reflection_name(zval *reflection, zv::Val &hold);
+zval *pt_function_reflection_variants(zval *reflection, zv::Val &hold);
+zval *pt_function_reflection_named_arguments_variants(zval *reflection, zv::Val &hold);
+zval *pt_function_reflection_throw_type(zval *reflection, zv::Val &hold);
+zval *pt_function_reflection_asserts(zval *reflection, zv::Val &hold);
+[[nodiscard]] bool pt_function_reflection_is_builtin(zval *reflection, bool &out);
+/* $reflection->hasSideEffects(): the TrinaryLogic (borrowed or in hold) */
+zval *pt_function_reflection_has_side_effects(zval *reflection, zv::Val &hold);
+zval *pt_parameters_acceptor_return_type(zval *acceptor, zv::Val &hold);
+zval *pt_parameters_acceptor_parameters(zval *acceptor, zv::Val &hold);
+[[nodiscard]] bool pt_parameter_reflection_is_optional(zval *parameter, bool &out);
+zval *pt_assertions_all(zval *assertions, zv::Val &hold);
+
+/* MutatingScope.cpp — $scope->afterExtractCall() /
+ * afterClearstatcacheCall() / afterOpenSslCall($name); UNDEF = pending
+ * exception */
+zv::Val pt_mutating_scope_after_extract_call(zend_object *scope);
+zv::Val pt_mutating_scope_after_clearstatcache_call(zend_object *scope);
+zv::Val pt_mutating_scope_after_open_ssl_call(zend_object *scope, zend_string *openSslFunctionName);
+
+/* OutputBufferHelper.cpp — the shadowing class and its public methods for
+ * native callers (the native body for the native class, the method by name
+ * otherwise); ok = false / UNDEF = pending exception */
+extern zend_class_entry *pt_ce_output_buffer_helper;
+void pt_register_output_buffer_helper();
+zend_long pt_output_buffer_helper_get_level_delta(zval *helper, zend_string *functionName, bool &ok);
+zv::Val pt_output_buffer_helper_apply_level_delta(zval *helper, zval *nodeScopeResolver, zval *scope, zend_long delta);
+
+/* FuncCallScopeEffectsHelper.cpp — the same; $functionReflection /
+ * $parametersAcceptor NULL (or IS_NULL) for null */
+extern zend_class_entry *pt_ce_func_call_scope_effects_helper;
+void pt_register_func_call_scope_effects_helper();
+zv::Val pt_func_call_scope_effects_helper_apply_array_walk_result(zval *helper, zval *nodeScopeResolver, zval *stmt, zval *arrayWalkArrayArg, zval *arrayWalkValueTypes, zval *argsResult, zval *scope, zval *storage, zval *nodeCallback);
+zv::Val pt_func_call_scope_effects_helper_apply_call_scope_effects(zval *helper, zval *nodeScopeResolver, zval *stmt, zval *normalizedExpr, zval *functionReflection, zval *parametersAcceptor, zval *argsResult, zval *scope, zval *scopeBeforeArgs, zval *storage, zval *nodeCallback);
 
 /* }}} */
 

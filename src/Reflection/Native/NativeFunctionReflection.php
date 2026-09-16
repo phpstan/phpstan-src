@@ -8,10 +8,12 @@ use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Type;
 use function count;
 use function strtolower;
 
+#[ReferencedByTurboExtension(key: 'nativeFunctionReflection')]
 final class NativeFunctionReflection implements FunctionReflection
 {
 

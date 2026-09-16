@@ -426,6 +426,10 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	/* the variant selection — its signatures name Scope and the reflection
 	 * interfaces only */
 	pt_register_parameters_acceptor_selector();
+	/* the function-call cluster, after the walk hub, scope and result
+	 * classes its signatures name */
+	pt_register_output_buffer_helper();
+	pt_register_func_call_scope_effects_helper();
 
 	return SUCCESS;
 }

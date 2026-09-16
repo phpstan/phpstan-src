@@ -327,6 +327,7 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_GENERIC_PARAMETERS_ACCEPTOR_RESOLVER */ {"genericParametersAcceptorResolver", "PHPStan\\Reflection\\GenericParametersAcceptorResolver"},
 	/* PT_CLASS_FUNCTION_VARIANT */ {"functionVariant", "PHPStan\\Reflection\\FunctionVariant"},
 	/* PT_CLASS_EXTENDED_CALLABLE_FUNCTION_VARIANT */ {"extendedCallableFunctionVariant", "PHPStan\\Reflection\\ExtendedCallableFunctionVariant"},
+	/* PT_CLASS_NATIVE_FUNCTION_REFLECTION */ {"nativeFunctionReflection", "PHPStan\\Reflection\\Native\\NativeFunctionReflection"},
 };
 
 zend_class_entry *pt_class(int idx)

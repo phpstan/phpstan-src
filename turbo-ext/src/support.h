@@ -172,9 +172,7 @@ enum {
 	PT_CLASS_UNRESOLVABLE_TYPE_RESULT,
 	PT_CLASS_EXTENDED_DUMMY_PARAMETER,
 	PT_CLASS_EXTENDED_FUNCTION_VARIANT,
-	PT_CLASS_RESOLVED_METHOD_REFLECTION,
 	PT_CLASS_RESOLVED_PROPERTY_REFLECTION,
-	PT_CLASS_CHANGED_TYPE_METHOD_REFLECTION,
 	PT_CLASS_CHANGED_TYPE_PROPERTY_REFLECTION,
 	PT_CLASS_UNDEFINED_VARIABLE_EXCEPTION,
 	PT_CLASS_NODE_CALLBACK_SCOPE,
@@ -331,6 +329,7 @@ enum {
 	PT_CLASS_TEMPLATE_ARGUMENT_STATS,
 	PT_CLASS_ENSURED_NON_NULLABILITY_RESULT,
 	PT_CLASS_ENSURED_NON_NULLABILITY_RESULT_EXPRESSION,
+	PT_CLASS_RESOLVED_FUNCTION_VARIANT_WITH_ORIGINAL,
 	PT_CLASS_COUNT
 };
 
@@ -2340,6 +2339,66 @@ void pt_expression_result_storage_store(zval *storage, zval *expr, zval *express
 
 /* VariableFlow.cpp — VariableFlow::all(VariableFlow::MENTION_ALL) */
 zv::Val pt_variable_flow_all_mention_all();
+
+/* }}} */
+
+/* {{{ ChangedTypeMethodReflection.cpp, ResolvedMethodReflection.cpp — the
+ * method reflections the member prototypes create (TypeTraits.cpp), which
+ * every method call's reflection goes through; registered after the Type
+ * family and ClassReflection, whose classes their signatures name */
+
+extern zend_class_entry *pt_ce_changed_type_method_reflection;
+extern zend_class_entry *pt_ce_resolved_method_reflection;
+void pt_register_changed_type_method_reflection();
+void pt_register_resolved_method_reflection();
+/* new ChangedTypeMethodReflection(...) / new ResolvedMethodReflection(...)
+ * (borrowed, already of the constructor's parameter types; NULL or IS_NULL
+ * for a nullable null); UNDEF = pending exception */
+zv::Val pt_changed_type_method_reflection_new(zval *declaringClass, zval *reflection, zval *variants, zval *namedArgumentsVariants, zval *selfOutType, zval *throwType, zval *assertions);
+zv::Val pt_resolved_method_reflection_new(zval *reflection, zval *resolvedTemplateTypeMap, zval *callSiteVarianceMap);
+/* the ExtendedMethodReflection interface's methods */
+enum pt_method_reflection_member
+{
+	PT_MR_GET_NAME = 0,
+	PT_MR_GET_PROTOTYPE,
+	PT_MR_GET_VARIANTS,
+	PT_MR_GET_ONLY_VARIANT,
+	PT_MR_GET_NAMED_ARGUMENTS_VARIANTS,
+	PT_MR_GET_DECLARING_CLASS,
+	PT_MR_IS_STATIC,
+	PT_MR_IS_PRIVATE,
+	PT_MR_IS_PUBLIC,
+	PT_MR_GET_DOC_COMMENT,
+	PT_MR_IS_DEPRECATED,
+	PT_MR_GET_DEPRECATED_DESCRIPTION,
+	PT_MR_IS_FINAL,
+	PT_MR_IS_FINAL_BY_KEYWORD,
+	PT_MR_IS_INTERNAL,
+	PT_MR_IS_BUILTIN,
+	PT_MR_GET_THROW_TYPE,
+	PT_MR_HAS_SIDE_EFFECTS,
+	PT_MR_IS_PURE,
+	PT_MR_GET_PURE_UNLESS_CALLABLE_IS_IMPURE_PARAMETERS,
+	PT_MR_GET_ASSERTS,
+	PT_MR_ACCEPTS_NAMED_ARGUMENTS,
+	PT_MR_GET_SELF_OUT_TYPE,
+	PT_MR_RETURNS_BY_REFERENCE,
+	PT_MR_IS_ABSTRACT,
+	PT_MR_GET_ATTRIBUTES,
+	PT_MR_MUST_USE_RETURN_VALUE,
+	PT_MR_GET_RESOLVED_PHP_DOC,
+	PT_MR_MEMBER_COUNT
+};
+/* $method-><member>() of any method reflection (borrowed): the native body
+ * of a ResolvedMethodReflection / ChangedTypeMethodReflection, the method
+ * through one cached site per member otherwise; UNDEF = pending exception.
+ * The per-class _call entries take that native class's body unconditionally. */
+zv::Val pt_extended_method_reflection_call(zval *method, pt_method_reflection_member member);
+zv::Val pt_changed_type_method_reflection_call(zend_object *method, pt_method_reflection_member member);
+zv::Val pt_resolved_method_reflection_call(zend_object *method, pt_method_reflection_member member);
+/* the TrinaryLogic value (PT_TRI_*) of a trinary member's answer; -1 =
+ * pending exception */
+zend_long pt_extended_method_reflection_trinary(zval *method, pt_method_reflection_member member);
 
 /* }}} */
 

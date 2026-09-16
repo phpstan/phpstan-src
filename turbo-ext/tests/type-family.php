@@ -6540,6 +6540,138 @@ require_once __DIR__ . '/type-family-prototype-fixture.php';
 	}
 }
 
+// ---- ResolvedMethodReflection / ChangedTypeMethodReflection ----
+// The method reflections the prototypes above hand out, observed through
+// every method of the interface: the transformed fixture methods
+// (ResolvedMethodReflection over ChangedTypeMethodReflection over the PHP
+// reflection), both classes constructed directly over the PHP, built-in and
+// dummy reflections and over each other (the by-name delegation paths), a
+// wrapped reflection answering isBuiltin()/isAbstract() with bools, the
+// memoization identities, getOnlyVariant()'s errors and unconstructed
+// instances
+foreach ([\PHPStan\Reflection\ResolvedMethodReflection::class, \PHPStan\Reflection\Dummy\ChangedTypeMethodReflection::class] as $methodReflectionClass) {
+	$observations['native ' . $methodReflectionClass] = (new ReflectionMethod($methodReflectionClass, 'getName'))->isInternal();
+}
+{
+	$r = [];
+	$viewAttributes = static fn (array $attributes): array => array_map(static fn (\PHPStan\Reflection\AttributeReflection $attribute): string => $attribute->getName(), $attributes);
+	$viewAllMethod = static function (\PHPStan\Reflection\ExtendedMethodReflection $m) use ($view, $viewMethod, $viewVariant, $catching, $viewAttributes): array {
+		return [
+			'base' => $catching(static fn () => $viewMethod($m)),
+			'onlyVariant' => $catching(static fn () => $viewVariant($m->getOnlyVariant())),
+			'prototype' => $catching(static fn () => [get_class($m->getPrototype()), $m->getPrototype()->getDeclaringClass()->getName()]),
+			'flags' => $catching(static fn () => [$m->isStatic(), $m->isPrivate(), $m->isPublic(), $m->getDocComment(), $view($m->isDeprecated()), $m->getDeprecatedDescription(), $view($m->isFinal()), $view($m->isFinalByKeyword()), $view($m->isInternal()), $view($m->isBuiltin())]),
+			'purity' => $catching(static fn () => [$view($m->hasSideEffects()), $view($m->isPure()), $m->getPureUnlessCallableIsImpureParameters(), $view($m->acceptsNamedArguments()), $view($m->returnsByReference()), $view($m->isAbstract()), $view($m->mustUseReturnValue())]),
+			'attributes' => $catching(static fn () => $viewAttributes($m->getAttributes())),
+			'phpDoc' => $catching(static fn () => $view($m->getResolvedPhpDoc())),
+			'memo' => $catching(static fn () => [$m->getVariants() === $m->getVariants(), $m->getNamedArgumentsVariants() === $m->getNamedArgumentsVariants(), $m->getAsserts() === $m->getAsserts(), $m->getSelfOutType() === $m->getSelfOutType(), $m->hasSideEffects() === $m->hasSideEffects(), $m->getDeclaringClass() === $m->getDeclaringClass()]),
+		];
+	};
+	foreach (['returnsStatic', 'takesStatic', 'withValue', 'assertStatic', 'get', 'each', 'fails'] as $methodName) {
+		foreach (['object', 'generic', 'static'] as $calledOnName) {
+			foreach ([true, false] as $resolveToBounds) {
+				$prototype = new \PHPStan\Reflection\Type\CalledOnTypeUnresolvedMethodPrototypeReflection($genericFixture->getNativeMethod($methodName), $genericFixture, $resolveToBounds, $calledOnTypes[$calledOnName]);
+				$transformed = $prototype->getTransformedMethod();
+				$key = "$methodName $calledOnName " . ($resolveToBounds ? 'bounds' : 'nobounds');
+				$r["transformed $key"] = [get_class($transformed), $viewAllMethod($transformed)];
+			}
+		}
+	}
+	$varianceMaps = ['empty' => \PHPStan\Type\Generic\TemplateTypeVarianceMap::createEmpty(), 'covariant' => new \PHPStan\Type\Generic\TemplateTypeVarianceMap(['T' => \PHPStan\Type\Generic\TemplateTypeVariance::createCovariant(), 'U' => \PHPStan\Type\Generic\TemplateTypeVariance::createContravariant()])];
+	$templateMaps = ['empty' => \PHPStan\Type\Generic\TemplateTypeMap::createEmpty(), 'fixture' => $genericFixture->getActiveTemplateTypeMap(), 'u' => new \PHPStan\Type\Generic\TemplateTypeMap(['U' => $string, 'T' => $int])];
+	$innerReflections = [
+		'php withValue' => $fixture->getNativeMethod('withValue'),
+		'php assertStatic' => $fixture->getNativeMethod('assertStatic'),
+		'php fails' => $fixture->getNativeMethod('fails'),
+		'builtin' => $stringReflectionProvider->getClass(\ArrayObject::class)->getNativeMethod('count'),
+		'builtin overloaded' => $stringReflectionProvider->getClass(\DateTime::class)->getNativeMethod('setTime'),
+		'dummy' => new \PHPStan\Reflection\Dummy\DummyMethodReflection('__call'),
+	];
+	// a wrapped reflection answering the bool alternatives of the interface
+	$boolAnswering = static fn (\PHPStan\Reflection\ExtendedMethodReflection $inner, bool $answer): \PHPStan\Reflection\ExtendedMethodReflection => new class ($inner, $answer) implements \PHPStan\Reflection\ExtendedMethodReflection {
+
+		public function __construct(private \PHPStan\Reflection\ExtendedMethodReflection $inner, private bool $answer)
+		{
+		}
+
+		public function getDeclaringClass(): \PHPStan\Reflection\ClassReflection { return $this->inner->getDeclaringClass(); }
+		public function isStatic(): bool { return !$this->answer; }
+		public function isPrivate(): bool { return $this->answer; }
+		public function isPublic(): bool { return !$this->answer; }
+		public function getDocComment(): ?string { return $this->answer ? '/** doc */' : null; }
+		public function getName(): string { return 'boolAnswering'; }
+		public function getPrototype(): \PHPStan\Reflection\ClassMemberReflection { return $this; }
+		public function getVariants(): array { return $this->inner->getVariants(); }
+		public function getOnlyVariant(): \PHPStan\Reflection\ExtendedParametersAcceptor { return $this->inner->getOnlyVariant(); }
+		public function getNamedArgumentsVariants(): ?array { return $this->answer ? $this->inner->getVariants() : null; }
+		public function isDeprecated(): \PHPStan\TrinaryLogic { return \PHPStan\TrinaryLogic::createMaybe(); }
+		public function getDeprecatedDescription(): ?string { return $this->answer ? 'old' : null; }
+		public function isFinal(): \PHPStan\TrinaryLogic { return \PHPStan\TrinaryLogic::createFromBoolean($this->answer); }
+		public function isFinalByKeyword(): \PHPStan\TrinaryLogic { return \PHPStan\TrinaryLogic::createNo(); }
+		public function isInternal(): \PHPStan\TrinaryLogic { return \PHPStan\TrinaryLogic::createYes(); }
+		public function isBuiltin(): \PHPStan\TrinaryLogic|bool { return $this->answer; }
+		public function getThrowType(): ?\PHPStan\Type\Type { return $this->answer ? new \PHPStan\Type\ObjectType(\LogicException::class) : null; }
+		public function hasSideEffects(): \PHPStan\TrinaryLogic { return \PHPStan\TrinaryLogic::createFromBoolean(!$this->answer); }
+		public function isPure(): \PHPStan\TrinaryLogic { return \PHPStan\TrinaryLogic::createMaybe(); }
+		public function getPureUnlessCallableIsImpureParameters(): array { return $this->answer ? ['callback' => true] : []; }
+		public function getAsserts(): \PHPStan\Reflection\Assertions { return $this->inner->getAsserts(); }
+		public function acceptsNamedArguments(): \PHPStan\TrinaryLogic { return \PHPStan\TrinaryLogic::createFromBoolean($this->answer); }
+		public function getSelfOutType(): ?\PHPStan\Type\Type { return $this->answer ? new \PHPStan\Type\Generic\GenericObjectType(\PHPStanTurboTests\PrototypeFixture::class, [(new \PHPStan\Type\Generic\TemplateTypeReference(\PHPStan\Type\Generic\TemplateTypeFactory::create(\PHPStan\Type\Generic\TemplateTypeScope::createWithClass(\PHPStanTurboTests\PrototypeFixture::class), 'T', null, \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()))->getType()]) : null; }
+		public function returnsByReference(): \PHPStan\TrinaryLogic { return \PHPStan\TrinaryLogic::createNo(); }
+		public function isAbstract(): \PHPStan\TrinaryLogic|bool { return !$this->answer; }
+		public function getAttributes(): array { return []; }
+		public function mustUseReturnValue(): \PHPStan\TrinaryLogic { return \PHPStan\TrinaryLogic::createMaybe(); }
+		public function getResolvedPhpDoc(): ?\PHPStan\PhpDoc\ResolvedPhpDocBlock { return null; }
+
+	};
+	$innerReflections['bool answering true'] = $boolAnswering($fixture->getNativeMethod('withValue'), true);
+	$innerReflections['bool answering false'] = $boolAnswering($fixture->getNativeMethod('get'), false);
+	$assertions = $fixture->getNativeMethod('assertStatic')->getAsserts();
+	foreach ($innerReflections as $innerName => $inner) {
+		foreach ($templateMaps as $templateMapName => $templateMap) {
+			foreach ($varianceMaps as $varianceMapName => $varianceMap) {
+				$resolved = new \PHPStan\Reflection\ResolvedMethodReflection($inner, $templateMap, $varianceMap);
+				$r["resolved over $innerName $templateMapName $varianceMapName"] = $viewAllMethod($resolved);
+			}
+		}
+		$changed = new \PHPStan\Reflection\Dummy\ChangedTypeMethodReflection($genericFixture, $inner, $catching(static fn () => $inner->getVariants()), null, $int, new \PHPStan\Type\ObjectType(\RuntimeException::class), $assertions);
+		if (is_array($changed->getVariants())) {
+			$r["changed over $innerName"] = $viewAllMethod($changed);
+			$r["resolved over changed over $innerName"] = $viewAllMethod(new \PHPStan\Reflection\ResolvedMethodReflection($changed, $templateMaps['u'], $varianceMaps['covariant']));
+			$r["changed over resolved over $innerName"] = $viewAllMethod(new \PHPStan\Reflection\Dummy\ChangedTypeMethodReflection(namedArgumentsVariants: [], selfOutType: null, throwType: null, assertions: \PHPStan\Reflection\Assertions::createEmpty(), declaringClass: $fixture, reflection: new \PHPStan\Reflection\ResolvedMethodReflection($inner, $templateMaps['fixture'], $varianceMaps['empty']), variants: []));
+		}
+	}
+	// getOnlyVariant(): no variant, two variants, a variant under another key
+	// (the warning converted to an exception, and left a warning)
+	$variant = $fixture->getNativeMethod('get')->getOnlyVariant();
+	foreach (['none' => [], 'two' => [$variant, $variant], 'key 1' => [1 => $variant]] as $variantsName => $variants) {
+		$changed = new \PHPStan\Reflection\Dummy\ChangedTypeMethodReflection($fixture, $fixture->getNativeMethod('get'), $variants, $variants, null, null, $assertions);
+		set_error_handler(static function (int $errno, string $errstr): bool {
+			throw new \ErrorException($errstr, 0, $errno);
+		});
+		try {
+			$r["changed getOnlyVariant $variantsName"] = $catching(static fn () => $viewVariant($changed->getOnlyVariant()));
+			$resolved = new \PHPStan\Reflection\ResolvedMethodReflection($changed, $templateMaps['empty'], $varianceMaps['empty']);
+			$r["resolved getOnlyVariant $variantsName"] = $catching(static fn () => $viewVariant($resolved->getOnlyVariant()));
+		} finally {
+			restore_error_handler();
+		}
+		if ($variantsName === 'key 1') {
+			$r["changed getOnlyVariant $variantsName warning"] = $catching(static fn () => @$changed->getOnlyVariant());
+		}
+	}
+	foreach ([\PHPStan\Reflection\ResolvedMethodReflection::class, \PHPStan\Reflection\Dummy\ChangedTypeMethodReflection::class] as $methodReflectionClass) {
+		$raw = (new \ReflectionClass($methodReflectionClass))->newInstanceWithoutConstructor();
+		foreach ((new \ReflectionClass(\PHPStan\Reflection\ExtendedMethodReflection::class))->getMethods() as $interfaceMethod) {
+			$methodName = $interfaceMethod->getName();
+			$r["$methodReflectionClass unconstructed $methodName"] = $catching(static fn () => $view($raw->$methodName()));
+		}
+	}
+	foreach ($r as $key => $value) {
+		$observations["method reflections $key"] = $value;
+	}
+}
+
 
 // observations holding bytes that are not UTF-8 (the invalid-UTF-8 subject's
 // descriptions) go out base64-encoded so json_encode() keeps every byte; the

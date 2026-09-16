@@ -382,6 +382,10 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_non_nullability_helper();
 	pt_register_statements_handler();
 	pt_register_node_scope_resolver();
+	/* the method reflections of the member prototypes — ChangedTypeMethodReflection
+	 * first, which ResolvedMethodReflection wraps */
+	pt_register_changed_type_method_reflection();
+	pt_register_resolved_method_reflection();
 
 	return SUCCESS;
 }

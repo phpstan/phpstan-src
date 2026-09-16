@@ -135,9 +135,7 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_UNRESOLVABLE_TYPE_RESULT */ {"unresolvableTypeResult", "PHPStan\\Rules\\PhpDoc\\UnresolvableTypeResult"},
 	/* PT_CLASS_EXTENDED_DUMMY_PARAMETER */ {"extendedDummyParameter", "PHPStan\\Reflection\\Php\\ExtendedDummyParameter"},
 	/* PT_CLASS_EXTENDED_FUNCTION_VARIANT */ {"extendedFunctionVariant", "PHPStan\\Reflection\\ExtendedFunctionVariant"},
-	/* PT_CLASS_RESOLVED_METHOD_REFLECTION */ {"resolvedMethodReflection", "PHPStan\\Reflection\\ResolvedMethodReflection"},
 	/* PT_CLASS_RESOLVED_PROPERTY_REFLECTION */ {"resolvedPropertyReflection", "PHPStan\\Reflection\\ResolvedPropertyReflection"},
-	/* PT_CLASS_CHANGED_TYPE_METHOD_REFLECTION */ {"changedTypeMethodReflection", "PHPStan\\Reflection\\Dummy\\ChangedTypeMethodReflection"},
 	/* PT_CLASS_CHANGED_TYPE_PROPERTY_REFLECTION */ {"changedTypePropertyReflection", "PHPStan\\Reflection\\Dummy\\ChangedTypePropertyReflection"},
 	/* PT_CLASS_UNDEFINED_VARIABLE_EXCEPTION */ {"undefinedVariableException", "PHPStan\\Analyser\\UndefinedVariableException"},
 	/* PT_CLASS_NODE_CALLBACK_SCOPE */ {"nodeCallbackScope", "PHPStan\\Analyser\\NodeCallbackScope"},
@@ -291,6 +289,7 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_TEMPLATE_ARGUMENT_STATS */ {"templateArgumentStats", "PHPStan\\Analyser\\Generics\\TemplateArgumentStats"},
 	/* PT_CLASS_ENSURED_NON_NULLABILITY_RESULT */ {"ensuredNonNullabilityResult", "PHPStan\\Analyser\\EnsuredNonNullabilityResult"},
 	/* PT_CLASS_ENSURED_NON_NULLABILITY_RESULT_EXPRESSION */ {"ensuredNonNullabilityResultExpression", "PHPStan\\Analyser\\EnsuredNonNullabilityResultExpression"},
+	/* PT_CLASS_RESOLVED_FUNCTION_VARIANT_WITH_ORIGINAL */ {"resolvedFunctionVariantWithOriginal", "PHPStan\\Reflection\\ResolvedFunctionVariantWithOriginal"},
 };
 
 zend_class_entry *pt_class(int idx)

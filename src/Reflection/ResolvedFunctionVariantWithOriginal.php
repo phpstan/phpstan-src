@@ -5,6 +5,7 @@ namespace PHPStan\Reflection;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Generics\TemplateArgumentFrame;
 use PHPStan\Reflection\Php\ExtendedDummyParameter;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\GenericObjectType;
@@ -23,6 +24,7 @@ use PHPStan\Type\TypeUtils;
 use WeakReference;
 use function array_map;
 
+#[ReferencedByTurboExtension(key: 'resolvedFunctionVariantWithOriginal')]
 final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVariant
 {
 

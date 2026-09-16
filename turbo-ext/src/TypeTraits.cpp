@@ -5291,15 +5291,7 @@ zv::Val protoTransformMethod(PrototypeKind kind, const PrototypeTransformer &tra
 	if (UNEXPECTED(mappedAsserts.isUndef())) return zv::Val();
 	zval methodZv;
 	ZVAL_OBJ(&methodZv, method);
-	zval args[7];
-	ZVAL_COPY_VALUE(&args[0], declaringClass);
-	ZVAL_COPY_VALUE(&args[1], &methodZv);
-	ZVAL_COPY_VALUE(&args[2], mappedVariants.raw());
-	ZVAL_COPY_VALUE(&args[3], mappedNamedArgumentsVariants.raw());
-	ZVAL_COPY_VALUE(&args[4], selfOutType.raw());
-	ZVAL_COPY_VALUE(&args[5], transformedThrowType.raw());
-	ZVAL_COPY_VALUE(&args[6], mappedAsserts.raw());
-	return pt_type_new(PT_CLASS_CHANGED_TYPE_METHOD_REFLECTION, 7, args);
+	return pt_changed_type_method_reflection_new(declaringClass, &methodZv, mappedVariants.raw(), mappedNamedArgumentsVariants.raw(), selfOutType.raw(), transformedThrowType.raw(), mappedAsserts.raw());
 }
 
 /* transformPropertyWithStaticType($declaringClass, $property): new
@@ -5360,8 +5352,9 @@ zv::Val protoResolved(bool isMethod, PrototypeKind kind, const PrototypeTransfor
 	} else {
 		map = zv::Val::copyOf(zv::Ref(templateTypeMap.raw()));
 	}
+	if (isMethod) return pt_resolved_method_reflection_new(transformed.raw(), map.raw(), callSiteVarianceMap.raw());
 	zv::Args args{transformed.raw(), map.raw(), callSiteVarianceMap.raw()};
-	return pt_type_new(isMethod ? PT_CLASS_RESOLVED_METHOD_REFLECTION : PT_CLASS_RESOLVED_PROPERTY_REFLECTION, 3, args);
+	return pt_type_new(PT_CLASS_RESOLVED_PROPERTY_REFLECTION, 3, args);
 }
 
 } // namespace

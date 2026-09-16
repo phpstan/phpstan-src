@@ -406,6 +406,10 @@ enum {
 	PT_CLASS_BREAKLESS_WHILE_LOOP_NODE,
 	PT_CLASS_DO_WHILE_LOOP_CONDITION_NODE,
 	PT_CLASS_LOOP_WRITTEN_VARIABLE_NAMES,
+	PT_CLASS_SWITCH_CONDITION_ARM,
+	PT_CLASS_SWITCH_CONDITION_NODE,
+	PT_CLASS_CATCH_WITH_UNTHROWN_EXCEPTION_NODE,
+	PT_CLASS_FINALLY_EXIT_POINTS_NODE,
 	PT_CLASS_COUNT
 };
 
@@ -3419,6 +3423,10 @@ extern zend_class_entry *pt_ce_for_handler;
 void pt_register_while_handler();
 void pt_register_do_while_handler();
 void pt_register_for_handler();
+extern zend_class_entry *pt_ce_switch_handler;
+extern zend_class_entry *pt_ce_try_catch_handler;
+void pt_register_switch_handler();
+void pt_register_try_catch_handler();
 
 /* VariableFlow.cpp — VariableFlow::all(VariableFlow::OPAQUE) /
  * ::loop($condition, $body, $update, $atLeastOnce, $canExit, $canRepeat) /

@@ -4,6 +4,7 @@ namespace PHPStan\Node;
 
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * A single non-default `case` of a `switch`, paired with the scope captured
@@ -12,6 +13,7 @@ use PHPStan\Analyser\Scope;
  *
  * @api
  */
+#[ReferencedByTurboExtension(key: 'switchConditionArm')]
 final class SwitchConditionArm
 {
 

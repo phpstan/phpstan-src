@@ -361,6 +361,10 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_BREAKLESS_WHILE_LOOP_NODE */ {"breaklessWhileLoopNode", "PHPStan\\Node\\BreaklessWhileLoopNode"},
 	/* PT_CLASS_DO_WHILE_LOOP_CONDITION_NODE */ {"doWhileLoopConditionNode", "PHPStan\\Node\\DoWhileLoopConditionNode"},
 	/* PT_CLASS_LOOP_WRITTEN_VARIABLE_NAMES */ {"loopWrittenVariableNames", "PHPStan\\Analyser\\LoopWrittenVariableNames"},
+	/* PT_CLASS_SWITCH_CONDITION_ARM */ {"switchConditionArm", "PHPStan\\Node\\SwitchConditionArm"},
+	/* PT_CLASS_SWITCH_CONDITION_NODE */ {"switchConditionNode", "PHPStan\\Node\\SwitchConditionNode"},
+	/* PT_CLASS_CATCH_WITH_UNTHROWN_EXCEPTION_NODE */ {"catchWithUnthrownExceptionNode", "PHPStan\\Node\\CatchWithUnthrownExceptionNode"},
+	/* PT_CLASS_FINALLY_EXIT_POINTS_NODE */ {"finallyExitPointsNode", "PHPStan\\Node\\FinallyExitPointsNode"},
 };
 
 zend_class_entry *pt_class(int idx)

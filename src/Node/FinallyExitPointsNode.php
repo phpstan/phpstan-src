@@ -5,10 +5,12 @@ namespace PHPStan\Node;
 use Override;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\StatementExitPoint;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'finallyExitPointsNode')]
 final class FinallyExitPointsNode extends NodeAbstract implements VirtualNode
 {
 

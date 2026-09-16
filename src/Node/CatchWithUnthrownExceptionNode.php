@@ -5,11 +5,13 @@ namespace PHPStan\Node;
 use Override;
 use PhpParser\Node\Stmt\Catch_;
 use PhpParser\NodeAbstract;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Type;
 
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'catchWithUnthrownExceptionNode')]
 final class CatchWithUnthrownExceptionNode extends NodeAbstract implements VirtualNode
 {
 

@@ -23,6 +23,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Node\SwitchConditionArm;
 use PHPStan\Node\SwitchConditionNode;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\NeverType;
 use function array_merge;
 
@@ -30,6 +31,7 @@ use function array_merge;
  * @implements StmtHandler<Switch_>
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/SwitchHandler.cpp')]
 final class SwitchHandler implements StmtHandler
 {
 

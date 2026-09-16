@@ -6,6 +6,7 @@ use Override;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt\Switch_;
 use PhpParser\NodeAbstract;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * Virtual node emitted once per `switch` statement. It pairs the switch subject
@@ -15,6 +16,7 @@ use PhpParser\NodeAbstract;
  *
  * @api
  */
+#[ReferencedByTurboExtension(key: 'switchConditionNode')]
 final class SwitchConditionNode extends NodeAbstract implements VirtualNode
 {
 

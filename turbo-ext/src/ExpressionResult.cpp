@@ -105,18 +105,12 @@ void throwShouldNotHappen(const char *message)
 	zend_throw_exception(ce, message, 0);
 }
 
-/* $scope->nativeTypesPromoted (a public property of MutatingScope); false =
- * pending exception */
+/* $scope->nativeTypesPromoted (a public property of MutatingScope): the slot
+ * of a MutatingScope, the property of any other scope object
+ * (pt_mutating_scope_native_types_promoted()); false = pending exception */
 bool scopeNativeTypesPromoted(zval *scope, bool &out)
 {
-	zval rv;
-	zval *value = zend_read_property(Z_OBJCE_P(scope), Z_OBJ_P(scope), PT_LC("nativeTypesPromoted"), 0, &rv);
-	if (UNEXPECTED(EG(exception))) return false;
-	out = value != NULL && zend_is_true(value);
-	if (value == &rv) {
-		zval_ptr_dtor(&rv);
-	}
-	return true;
+	return pt_mutating_scope_native_types_promoted(Z_OBJ_P(scope), out);
 }
 
 /* $scope->doNotTreatPhpDocTypesAsCertain(); UNDEF = pending exception */

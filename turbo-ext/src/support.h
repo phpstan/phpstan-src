@@ -439,6 +439,10 @@ enum {
 	PT_CLASS_ERROR_SUPPRESS_EXPR,
 	PT_CLASS_LITERAL_ARRAY_ITEM,
 	PT_CLASS_LITERAL_ARRAY_NODE,
+	PT_CLASS_ISSET_EXPRESSION_NODE,
+	PT_CLASS_EMPTY_EXPRESSION_NODE,
+	PT_CLASS_NULLSAFE_METHOD_CALL_EXPRESSION_NODE,
+	PT_CLASS_EMPTY_EXPR,
 	PT_CLASS_COUNT
 };
 
@@ -3871,6 +3875,18 @@ enum pt_issetability_link_kind
 zv::Val pt_issetability_resolution_new(zval *link, zval *inner);
 zv::Val pt_issetability_resolution_is_set(zval *resolution, zval *typeCallback);
 zv::Val pt_issetability_resolution_not_empty(zval *resolution);
+
+/* }}} */
+
+/* {{{ IssetHandler.cpp, EmptyHandler.cpp, NullsafeMethodCallHandler.cpp —
+ * registered after IssetabilityResolution */
+
+extern zend_class_entry *pt_ce_isset_handler;
+extern zend_class_entry *pt_ce_empty_handler;
+extern zend_class_entry *pt_ce_nullsafe_method_call_handler;
+void pt_register_isset_handler();
+void pt_register_empty_handler();
+void pt_register_nullsafe_method_call_handler();
 
 /* }}} */
 

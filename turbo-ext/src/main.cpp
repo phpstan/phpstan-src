@@ -557,6 +557,9 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_ensured_non_nullability_result_expression();
 	pt_register_issetability_link_info();
 	pt_register_issetability_resolution();
+	pt_register_isset_handler();
+	pt_register_empty_handler();
+	pt_register_nullsafe_method_call_handler();
 
 	return SUCCESS;
 }

@@ -26,6 +26,7 @@ use PHPStan\Analyser\VariableFlow;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\NullsafeMethodCallExpressionNode;
 use PHPStan\Node\Printer\ExprPrinter;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -35,6 +36,7 @@ use function array_merge;
  * @implements ExprHandler<NullsafeMethodCall>
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/NullsafeMethodCallHandler.cpp')]
 final class NullsafeMethodCallHandler implements ExprHandler
 {
 

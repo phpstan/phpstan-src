@@ -56,6 +56,7 @@ use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Expr\Clone_;
 use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Expr\ConstFetch;
+use PhpParser\Node\Expr\Empty_;
 use PhpParser\Node\Expr\ErrorSuppress;
 use PhpParser\Node\Expr\Eval_;
 use PhpParser\Node\Expr\Exit_;
@@ -414,6 +415,7 @@ final class TurboAttributeCollector
 		'printExpr' => Print_::class,
 		'shellExecExpr' => ShellExec::class,
 		'errorSuppressExpr' => ErrorSuppress::class,
+		'emptyExpr' => Empty_::class,
 	];
 
 	private string $realRoot;

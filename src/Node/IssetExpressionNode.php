@@ -6,6 +6,7 @@ use Override;
 use PhpParser\Node\Expr\Isset_;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * Emitted by IssetHandler once each isset() subject is processed, so IssetRule
@@ -14,6 +15,7 @@ use PHPStan\Analyser\ExpressionResult;
  *
  * @internal
  */
+#[ReferencedByTurboExtension(key: 'issetExpressionNode')]
 final class IssetExpressionNode extends NodeAbstract implements VirtualNode
 {
 

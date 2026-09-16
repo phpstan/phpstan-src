@@ -390,6 +390,10 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_ERROR_SUPPRESS_EXPR */ {"errorSuppressExpr", "PhpParser\\Node\\Expr\\ErrorSuppress"},
 	/* PT_CLASS_LITERAL_ARRAY_ITEM */ {"literalArrayItem", "PHPStan\\Node\\LiteralArrayItem"},
 	/* PT_CLASS_LITERAL_ARRAY_NODE */ {"literalArrayNode", "PHPStan\\Node\\LiteralArrayNode"},
+	/* PT_CLASS_ISSET_EXPRESSION_NODE */ {"issetExpressionNode", "PHPStan\\Node\\IssetExpressionNode"},
+	/* PT_CLASS_EMPTY_EXPRESSION_NODE */ {"emptyExpressionNode", "PHPStan\\Node\\EmptyExpressionNode"},
+	/* PT_CLASS_NULLSAFE_METHOD_CALL_EXPRESSION_NODE */ {"nullsafeMethodCallExpressionNode", "PHPStan\\Node\\NullsafeMethodCallExpressionNode"},
+	/* PT_CLASS_EMPTY_EXPR */ {"emptyExpr", "PhpParser\\Node\\Expr\\Empty_"},
 };
 
 zend_class_entry *pt_class(int idx)

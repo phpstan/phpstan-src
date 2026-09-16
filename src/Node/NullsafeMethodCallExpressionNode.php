@@ -5,6 +5,7 @@ namespace PHPStan\Node;
 use Override;
 use PhpParser\Node\Expr\NullsafeMethodCall;
 use PhpParser\NodeAbstract;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Type;
 
 /**
@@ -14,6 +15,7 @@ use PHPStan\Type\Type;
  *
  * @internal
  */
+#[ReferencedByTurboExtension(key: 'nullsafeMethodCallExpressionNode')]
 final class NullsafeMethodCallExpressionNode extends NodeAbstract implements VirtualNode
 {
 

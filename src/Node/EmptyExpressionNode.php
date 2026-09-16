@@ -6,6 +6,7 @@ use Override;
 use PhpParser\Node\Expr\Empty_;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * Emitted by EmptyHandler once the empty() subject is processed, so EmptyRule
@@ -14,6 +15,7 @@ use PHPStan\Analyser\ExpressionResult;
  *
  * @internal
  */
+#[ReferencedByTurboExtension(key: 'emptyExpressionNode')]
 final class EmptyExpressionNode extends NodeAbstract implements VirtualNode
 {
 

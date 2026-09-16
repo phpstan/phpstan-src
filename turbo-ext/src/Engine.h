@@ -194,6 +194,20 @@ void pt_expression_result_rshutdown();
 zv::Val pt_expression_result_get_type(zval *result);
 zv::Val pt_expression_result_get_native_type(zval *result);
 
+/* $result->containsNullsafe() && TypeCombinator::containsNull($type): whether
+ * a link of a `?->` chain may short-circuit to null before it runs. $type NULL
+ * reads $result->getType(), only once the first operand holds - the twin's
+ * `&&` does not evaluate it otherwise; false = pending exception */
+[[nodiscard]] inline bool pt_expression_result_may_short_circuit(zval *result, zval *type, bool &out)
+{
+	if (UNEXPECTED(!pt_expression_result_contains_nullsafe(result, out))) return false;
+	if (!out) return true;
+	if (type != NULL) return pt_type_combinator_contains_null(type, out);
+	zv::Val resultType = pt_expression_result_get_type(result);
+	if (UNEXPECTED(resultType.isUndef())) return false;
+	return pt_type_combinator_contains_null(resultType.raw(), out);
+}
+
 /* }}} */
 
 /* {{{ handler entries

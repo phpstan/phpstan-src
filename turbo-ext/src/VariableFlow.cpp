@@ -574,6 +574,11 @@ zv::Val pt_variable_flow_throwing(zval *type, bool canContinue, bool canContainA
 	return VariableFlow::throwing(type, canContinue, canContainAnyThrowable);
 }
 
+zv::Val pt_variable_flow_exit_stop()
+{
+	return VariableFlow::exit_(pt_vf_kind_strings[PT_VF_STOP], 1, NULL);
+}
+
 /* {{{ engine ABI glue: parameter parsing + registration */
 
 #include "reg.h"

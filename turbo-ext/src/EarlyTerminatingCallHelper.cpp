@@ -184,6 +184,22 @@ private:
 
 using phpstanturbo::EarlyTerminatingCallHelper;
 
+/* {{{ direct entries (support.h) */
+
+bool pt_early_terminating_call_helper_is_early_terminating_method_call(zval *helper, zval *methodName, zval *calledOnType, bool &out)
+{
+	if (EXPECTED(Z_OBJCE_P(helper) == pt_ce_early_terminating_call_helper && Z_TYPE_P(methodName) == IS_STRING && Z_TYPE_P(calledOnType) == IS_OBJECT)) {
+		return EarlyTerminatingCallHelper(Z_OBJ_P(helper)).isEarlyTerminatingMethodCall(Z_STR_P(methodName), calledOnType, out);
+	}
+	zv::Args argv{methodName, calledOnType};
+	zv::Val result = pt_type_call(Z_OBJ_P(helper), PT_LC("isearlyterminatingmethodcall"), 2, argv);
+	if (UNEXPECTED(result.isUndef())) return false;
+	out = zend_is_true(result.raw());
+	return true;
+}
+
+/* }}} */
+
 /* {{{ engine ABI glue: parameter parsing + registration */
 
 #include "reg.h"

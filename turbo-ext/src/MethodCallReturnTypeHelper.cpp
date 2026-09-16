@@ -11,15 +11,13 @@
  * TemplateArgumentFrame::returnTypeOfCall(). The dynamic return type
  * extensions stay PHP and are called through the engine, as are the
  * analyser classes still PHP (DynamicReturnTypeExtensionRegistry,
- * DynamicReturnTypeStoragePrimer and the pop closure it hands out,
- * ArgumentsNormalizer, ParametersAcceptorSelector, the method reflections),
- * each from one small local helper — the place to switch to a direct entry
- * once its class is native.
+ * ArgumentsNormalizer, ParametersAcceptorSelector), each from one small
+ * local helper — the place to switch to a direct entry once its class is
+ * native. The method reflections and DynamicReturnTypeStoragePrimer are
+ * reached through their direct entries (the primer's push/pop without the
+ * pop closure).
  *
- * The twin's try/finally around the extension dispatch is spelled out: the
- * pop closure runs with a pending exception saved and restored the way the
- * engine runs a finally block (an exception it throws gets the pending one
- * as its previous).
+ * The twin's try/finally around the extension dispatch is pt_finally().
  */
 
 #include "support.h"
@@ -30,6 +28,7 @@ namespace sigs = ptdecl::MethodCallReturnTypeHelper::sig;
 #include "zv.h"
 #include "TypeTraits.h"
 #include "TypeOps.h"
+#include "Engine.h"
 
 static zend_class_entry *pt_ce_method_call_return_type_helper;
 
@@ -63,9 +62,9 @@ zv::Val selectFromArgs(zval *scope, zval *call, zval *methodReflection)
 		zend_throw_error(NULL, "Call to a member function getVariants() on %s", zend_zval_value_name(methodReflection));
 		return zv::Val();
 	}
-	zv::Val variants = pt_type_call(Z_OBJ_P(methodReflection), PT_LC("getvariants"), 0, NULL);
+	zv::Val variants = pt_extended_method_reflection_call(methodReflection, PT_MR_GET_VARIANTS);
 	if (UNEXPECTED(variants.isUndef())) return zv::Val();
-	zv::Val namedArgumentsVariants = pt_type_call(Z_OBJ_P(methodReflection), PT_LC("getnamedargumentsvariants"), 0, NULL);
+	zv::Val namedArgumentsVariants = pt_extended_method_reflection_call(methodReflection, PT_MR_GET_NAMED_ARGUMENTS_VARIANTS);
 	if (UNEXPECTED(namedArgumentsVariants.isUndef())) return zv::Val();
 	zv::Args selectArgs{scope, args.raw(), variants.raw(), namedArgumentsVariants.raw()};
 	return pt_type_call_static(PT_CLASS_PARAMETERS_ACCEPTOR_SELECTOR, PT_LC("selectfromargs"), 4, selectArgs);
@@ -79,28 +78,6 @@ zv::Val getMethod(zval *type, zval *methodName, zval *scope)
 }
 
 /* }}} */
-
-/* $callable() in the twin's `finally`: a pending exception is set aside for
- * the call (the engine refuses to call anything while one is pending) and
- * put back after it — as the previous exception of one the call throws,
- * the way the engine chains an exception thrown in a finally block; false =
- * an exception is pending afterwards */
-[[nodiscard]] bool callInFinally(zval *callable)
-{
-	zend_object *pending = EG(exception);
-	EG(exception) = NULL;
-	{
-		zv::Val result = pt_type_call_callable(callable, 0, NULL);
-	}
-	if (pending != NULL) {
-		if (EG(exception) != NULL) {
-			zend_exception_set_previous(EG(exception), pending);
-		} else {
-			EG(exception) = pending;
-		}
-	}
-	return EG(exception) == NULL;
-}
 
 } // namespace
 
@@ -153,17 +130,13 @@ public:
 		// current when the return type is asked lazily)
 		zval *storagePrimer = slot(slots::storagePrimer);
 		if (UNEXPECTED(Z_TYPE_P(storagePrimer) != IS_OBJECT)) return uninitialized("storagePrimer");
-		zval nullZv = {};
-		ZVAL_NULL(&nullZv);
-		zv::Args pushArgs{scope, argsResult != NULL ? argsResult : &nullZv};
-		zv::Val popPrimedStorage = pt_type_call(Z_OBJ_P(storagePrimer), PT_LC("pushprimedstorage"), 2, pushArgs);
-		if (UNEXPECTED(popPrimedStorage.isUndef())) return zv::Val();
+		pt_primed_storage primed;
+		if (UNEXPECTED(!pt_dynamic_return_type_storage_primer_push(storagePrimer, scope, argsResult, primed))) return zv::Val();
 
 		bool returned = false;
 		zv::Val result = dispatchExtensions(scope, typeWithMethod.raw(), &methodNameZv, methodCall, methodReflection.raw(), normalizedMethodCall.raw(), isMethodCall, returned);
-		/* finally */
-		if (UNEXPECTED(!callInFinally(popPrimedStorage.raw()))) return zv::Val();
-		if (UNEXPECTED(result.isUndef())) return zv::Val();
+		pt_finally([&]() { (void) pt_dynamic_return_type_storage_primer_pop(primed); });
+		if (UNEXPECTED(result.isUndef() || EG(exception) != NULL)) return zv::Val();
 		if (returned) return result;
 
 		return returnTypeOfCall(parametersAcceptor, scope, methodCall);
@@ -274,6 +247,23 @@ private:
 } // namespace phpstanturbo
 
 using phpstanturbo::MethodCallReturnTypeHelper;
+
+/* {{{ direct entries (support.h) */
+
+zv::Val pt_method_call_return_type_helper_method_call_return_type(zval *helper, zval *scope, zval *typeWithMethod, zval *methodName, zval *methodCall, zval *preResolvedAcceptor, zval *argsResult)
+{
+	if (preResolvedAcceptor != NULL && Z_TYPE_P(preResolvedAcceptor) == IS_NULL) preResolvedAcceptor = NULL;
+	if (argsResult != NULL && Z_TYPE_P(argsResult) == IS_NULL) argsResult = NULL;
+	if (EXPECTED(Z_OBJCE_P(helper) == pt_ce_method_call_return_type_helper && Z_TYPE_P(methodName) == IS_STRING)) {
+		return MethodCallReturnTypeHelper(Z_OBJ_P(helper)).methodCallReturnType(scope, typeWithMethod, Z_STR_P(methodName), methodCall, preResolvedAcceptor, argsResult);
+	}
+	zval null;
+	ZVAL_NULL(&null);
+	zv::Args argv{scope, typeWithMethod, methodName, methodCall, preResolvedAcceptor != NULL ? preResolvedAcceptor : &null, argsResult != NULL ? argsResult : &null};
+	return pt_type_call(Z_OBJ_P(helper), PT_LC("methodcallreturntype"), 6, argv);
+}
+
+/* }}} */
 
 /* {{{ engine ABI glue: parameter parsing + registration */
 

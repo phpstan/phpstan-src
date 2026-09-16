@@ -528,7 +528,11 @@ private:
 	int methodIsNotPure(zval *methodReflection) const
 	{
 		if (Z_TYPE_P(methodReflection) == IS_NULL) return 1;
-		zend_long hasSideEffects = trinaryOf(methodReflection, PT_LC("hassideeffects"), "hasSideEffects");
+		if (UNEXPECTED(Z_TYPE_P(methodReflection) != IS_OBJECT)) {
+			zend_throw_error(NULL, "Call to a member function hasSideEffects() on %s", zend_zval_value_name(methodReflection));
+			return -1;
+		}
+		zend_long hasSideEffects = pt_extended_method_reflection_trinary(methodReflection, PT_MR_HAS_SIDE_EFFECTS);
 		if (UNEXPECTED(hasSideEffects < 0)) return -1;
 		return isNotPure(hasSideEffects);
 	}
@@ -991,6 +995,12 @@ zv::Val pt_type_specifier_specify_types_in_condition(zend_object *typeSpecifier,
 	if (EXPECTED(typeSpecifier->ce == pt_ce_type_specifier && Z_TYPE_P(scope) == IS_OBJECT)) return TypeSpecifier(typeSpecifier).specifyTypesInCondition(scope, &exprZv, &contextZv);
 	zv::Args args{scope, expr, context};
 	return pt_type_call(typeSpecifier, PT_LC("specifytypesincondition"), 3, args);
+}
+
+zv::Val pt_type_specifier_get_method_type_specifying_extensions_for_class(zend_object *typeSpecifier, zval *className)
+{
+	if (EXPECTED(typeSpecifier->ce == pt_ce_type_specifier && Z_TYPE_P(className) == IS_STRING)) return TypeSpecifier(typeSpecifier).getMethodTypeSpecifyingExtensionsForClass(Z_STR_P(className));
+	return pt_type_call(typeSpecifier, PT_LC("getmethodtypespecifyingextensionsforclass"), 1, className);
 }
 
 /* }}} */

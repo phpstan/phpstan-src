@@ -1128,6 +1128,25 @@ zv::Val pt_expression_result_with_scope(zval *result, zval *scope)
 	return pt_type_call(Z_OBJ_P(result), PT_LC("withscope"), 1, scope);
 }
 
+/* the method call handler's (MethodCallHandler.cpp) */
+zv::Val pt_expression_result_finalize(zval *result, zval *scope, bool hasYield, bool isAlwaysTerminating, zval *throwPoints, zval *impurePoints, zval *variableFlow)
+{
+	if (variableFlow != NULL && Z_TYPE_P(variableFlow) == IS_NULL) variableFlow = NULL;
+	if (isNativeResult(result)) return ExpressionResult(Z_OBJ_P(result)).finalize(scope, hasYield, isAlwaysTerminating, throwPoints, impurePoints, variableFlow);
+	zval null;
+	ZVAL_NULL(&null);
+	zv::Args argv{scope, hasYield, isAlwaysTerminating, throwPoints, impurePoints, variableFlow != NULL ? variableFlow : &null};
+	return pt_type_call(Z_OBJ_P(result), PT_LC("finalize"), 6, argv);
+}
+
+zv::Val pt_expression_result_get_keep_void_type(zval *result, bool nativeTypesPromoted)
+{
+	if (isNativeResult(result)) return ExpressionResult(Z_OBJ_P(result)).getKeepVoidType(nativeTypesPromoted);
+	zval argv;
+	ZVAL_BOOL(&argv, nativeTypesPromoted);
+	return pt_type_call(Z_OBJ_P(result), PT_LC("getkeepvoidtype"), 1, &argv);
+}
+
 zv::Val pt_expression_result_get_args_result(zval *result)
 {
 	if (isNativeResult(result)) return ExpressionResult(Z_OBJ_P(result)).getArgsResult();
@@ -1729,22 +1748,10 @@ void pt_register_expression_result()
 /* }}} */
 
 /* {{{ direct entries for the narrowing helpers (DefaultNarrowingHelper.cpp,
- * IdenticalNarrowingHelper.cpp): $result->containsNullsafe() /
- * ->getCreatedTypesForScope() / ->getSpecifiedTypesForScope() — the native
- * body for a native result, the method otherwise (the result and the
- * arguments borrowed) */
-
-bool pt_expression_result_contains_nullsafe(zval *result, bool &out)
-{
-	if (isNativeResult(result)) {
-		out = ExpressionResult(Z_OBJ_P(result)).containsNullsafe();
-		return true;
-	}
-	zv::Val value = pt_type_call(Z_OBJ_P(result), PT_LC("containsnullsafe"), 0, NULL);
-	if (UNEXPECTED(value.isUndef())) return false;
-	out = Z_TYPE_P(value.raw()) == IS_TRUE;
-	return true;
-}
+ * IdenticalNarrowingHelper.cpp): $result->getCreatedTypesForScope() /
+ * ->getSpecifiedTypesForScope() — the native body for a native result, the
+ * method otherwise (the result and the arguments borrowed);
+ * ->containsNullsafe() is the inline slot reader of AnalyserValues.h */
 
 zv::Val pt_expression_result_get_created_types_for_scope(zval *result, zval *scope, zval *type, zval *context)
 {

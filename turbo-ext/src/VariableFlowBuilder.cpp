@@ -499,6 +499,16 @@ namespace {
 
 } // namespace
 
+zv::Val pt_variable_flow_builder_throws(zval *expr, HashTable *throwPoints)
+{
+	return VariableFlowBuilder::throws(expr, throwPoints);
+}
+
+zv::Val pt_variable_flow_builder_arguments(zval *call, zval *argsResult, zval *storage)
+{
+	return VariableFlowBuilder::arguments(call, argsResult, storage);
+}
+
 void pt_register_variable_flow_builder()
 {
 	reg::Class cls("PHPStan\\Analyser\\VariableFlowBuilder");

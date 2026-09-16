@@ -83,7 +83,6 @@ pt_method_site pt_dnh_assert_parameter_get_expr_site;
 pt_method_site pt_dnh_has_function_site;
 pt_method_site pt_dnh_get_function_site;
 pt_method_site pt_dnh_function_has_side_effects_site;
-pt_method_site pt_dnh_method_has_side_effects_site;
 
 /* the Error PHP raises for a method call on a non-object */
 zv::Val callOnNonObject(const char *method, zval *value)
@@ -1863,7 +1862,7 @@ private:
 				out = false;
 				return true;
 			}
-			hasSideEffects = callNoArgs(pt_dnh_method_has_side_effects_site, methodReflection.raw(), "hasSideEffects", PT_LC("hassideeffects"));
+			hasSideEffects = pt_extended_method_reflection_call(methodReflection.raw(), PT_MR_HAS_SIDE_EFFECTS);
 		} else if (isA(expr, PT_CLASS_STATIC_CALL) && isA(nameOf(expr), PT_CLASS_IDENTIFIER) && isA(classOf(expr), PT_CLASS_NAME)) {
 			zv::Val classType = pt_mutating_scope_resolve_type_by_name(Z_OBJ_P(scope), Z_OBJ_P(classOf(expr)));
 			if (UNEXPECTED(classType.isUndef())) return false;
@@ -1878,7 +1877,7 @@ private:
 				out = false;
 				return true;
 			}
-			hasSideEffects = callNoArgs(pt_dnh_method_has_side_effects_site, methodReflection.raw(), "hasSideEffects", PT_LC("hassideeffects"));
+			hasSideEffects = pt_extended_method_reflection_call(methodReflection.raw(), PT_MR_HAS_SIDE_EFFECTS);
 		} else {
 			if (UNEXPECTED(EG(exception))) return false;
 			out = false;

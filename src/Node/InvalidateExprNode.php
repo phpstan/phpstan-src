@@ -5,10 +5,12 @@ namespace PHPStan\Node;
 use Override;
 use PhpParser\Node\Expr;
 use PhpParser\NodeAbstract;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'invalidateExprNode')]
 final class InvalidateExprNode extends NodeAbstract implements VirtualNode
 {
 

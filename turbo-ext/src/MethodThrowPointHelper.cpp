@@ -11,8 +11,9 @@
  * engine; the extension lists come out of the LazyExtensionsCollection memo
  * slot (ReflectionAccess.cpp), the Type queries go through the native ops,
  * ExpressionContext and InternalThrowPoint through their direct entries.
- * The analyser classes still PHP — the method reflections,
- * ParametersAcceptorSelector — are called by name.
+ * The method reflections are asked through their direct entry; the
+ * analyser classes still PHP — ParametersAcceptorSelector — are called by
+ * name.
  */
 
 #include "support.h"
@@ -61,6 +62,17 @@ zv::Val callOn(zval *value, const char *lcname, size_t len, const char *name, ui
 		return zv::Val();
 	}
 	return pt_type_call(Z_OBJ_P(value), lcname, len, argc, argv);
+}
+
+/* $methodReflection->method() of a value that must be an object — through
+ * the method reflections' direct entry (ResolvedMethodReflection.cpp) */
+zv::Val reflectionCall(zval *methodReflection, pt_method_reflection_member member, const char *name)
+{
+	if (UNEXPECTED(Z_TYPE_P(methodReflection) != IS_OBJECT)) {
+		zend_throw_error(NULL, "Call to a member function %s() on %s", name, zend_zval_value_name(methodReflection));
+		return zv::Val();
+	}
+	return pt_extended_method_reflection_call(methodReflection, member);
 }
 
 /* in_array($value, [$a, $b], true) for a string pair */
@@ -127,10 +139,10 @@ public:
 		}
 
 		if (isMethodCall) {
-			zv::Val name = callOn(methodReflection, PT_LC("getname"), "getName", 0, NULL);
+			zv::Val name = reflectionCall(methodReflection, PT_MR_GET_NAME, "getName");
 			if (UNEXPECTED(name.isUndef())) return zv::Val();
 			if (isOneOf(name.raw(), pt_mtph_invoke, pt_mtph_invoke_args)) {
-				zv::Val declaringClass = pt_type_call(Z_OBJ_P(methodReflection), PT_LC("getdeclaringclass"), 0, NULL);
+				zv::Val declaringClass = pt_extended_method_reflection_call(methodReflection, PT_MR_GET_DECLARING_CLASS);
 				if (UNEXPECTED(declaringClass.isUndef())) return zv::Val();
 				if (UNEXPECTED(Z_TYPE_P(declaringClass.raw()) != IS_OBJECT)) {
 					zend_throw_error(NULL, "Call to a member function getName() on %s", zend_zval_value_name(declaringClass.raw()));
@@ -142,7 +154,7 @@ public:
 			}
 		}
 
-		zv::Val throwType = callOn(methodReflection, PT_LC("getthrowtype"), "getThrowType", 0, NULL);
+		zv::Val throwType = reflectionCall(methodReflection, PT_MR_GET_THROW_TYPE, "getThrowType");
 		if (UNEXPECTED(throwType.isUndef())) return zv::Val();
 		if (Z_TYPE_P(throwType.raw()) != IS_NULL) {
 			zv::Val callArgs = pt_type_call(Z_OBJ_P(normalizedMethodCall), PT_LC("getargs"), 0, NULL);
@@ -218,9 +230,9 @@ public:
 
 		zv::Val args = pt_type_call(Z_OBJ_P(methodCall), PT_LC("getargs"), 0, NULL);
 		if (UNEXPECTED(args.isUndef())) return zv::Val();
-		zv::Val variants = callOn(methodReflection.raw(), PT_LC("getvariants"), "getVariants", 0, NULL);
+		zv::Val variants = reflectionCall(methodReflection.raw(), PT_MR_GET_VARIANTS, "getVariants");
 		if (UNEXPECTED(variants.isUndef())) return zv::Val();
-		zv::Val namedArgumentsVariants = pt_type_call(Z_OBJ_P(methodReflection.raw()), PT_LC("getnamedargumentsvariants"), 0, NULL);
+		zv::Val namedArgumentsVariants = pt_extended_method_reflection_call(methodReflection.raw(), PT_MR_GET_NAMED_ARGUMENTS_VARIANTS);
 		if (UNEXPECTED(namedArgumentsVariants.isUndef())) return zv::Val();
 		zv::Args combineArgs{args.raw(), variants.raw(), namedArgumentsVariants.raw()};
 		zv::Val parametersAcceptor = pt_type_call_static(PT_CLASS_PARAMETERS_ACCEPTOR_SELECTOR, PT_LC("combinevariantsfornormalization"), 3, combineArgs);
@@ -263,6 +275,17 @@ private:
 } // namespace phpstanturbo
 
 using phpstanturbo::MethodThrowPointHelper;
+
+/* {{{ direct entries (support.h) */
+
+zv::Val pt_method_throw_point_helper_get_throw_point(zval *helper, zval *methodReflection, zval *parametersAcceptor, zval *normalizedMethodCall, zval *scope, zval *context, zval *methodCallReturnType)
+{
+	if (EXPECTED(Z_OBJCE_P(helper) == pt_ce_method_throw_point_helper)) return MethodThrowPointHelper(Z_OBJ_P(helper)).getThrowPoint(methodReflection, parametersAcceptor, normalizedMethodCall, scope, context, methodCallReturnType);
+	zv::Args argv{methodReflection, parametersAcceptor, normalizedMethodCall, scope, context, methodCallReturnType};
+	return pt_type_call(Z_OBJ_P(helper), PT_LC("getthrowpoint"), 6, argv);
+}
+
+/* }}} */
 
 /* {{{ engine ABI glue: parameter parsing + registration */
 

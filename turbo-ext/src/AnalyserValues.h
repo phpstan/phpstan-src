@@ -95,7 +95,7 @@ inline zv::Val own(zval *value)
 
 /* {{{ ExpressionResult: $result->getScope() / ->getBeforeScope() /
  * ->getExpr() / ->hasYield() / ->isAlwaysTerminating() / ->getThrowPoints()
- * / ->getImpurePoints() */
+ * / ->getImpurePoints() / ->containsNullsafe() */
 
 inline zval *pt_expression_result_scope(zval *result, zv::Val &hold)
 {
@@ -130,6 +130,11 @@ inline zval *pt_expression_result_throw_points(zval *result, zv::Val &hold)
 inline zval *pt_expression_result_impure_points(zval *result, zv::Val &hold)
 {
 	return ptav::read(result, pt_ce_expression_result, ptdecl::ExpressionResult::slot::impurePoints, PT_LC("getimpurepoints"), hold);
+}
+
+inline bool pt_expression_result_contains_nullsafe(zval *result, bool &out)
+{
+	return ptav::readBool(result, pt_ce_expression_result, ptdecl::ExpressionResult::slot::containsNullsafe, PT_LC("containsnullsafe"), out);
 }
 
 /* }}} */
@@ -201,6 +206,57 @@ inline bool pt_args_result_is_passed_by_reference(zval *argsResult, zval *arg, b
 inline zval *pt_args_result_resolved_parameters_acceptor(zval *argsResult, zv::Val &hold)
 {
 	return ptav::read(argsResult, pt_ce_args_result, ptdecl::ArgsResult::slot::resolvedParametersAcceptor, PT_LC("getresolvedparametersacceptor"), hold);
+}
+
+/* $argsResult->getArgResults() and the wrapped result's getScope() /
+ * hasYield() / isAlwaysTerminating() / getThrowPoints() / getImpurePoints()
+ * the args result forwards */
+inline zval *pt_args_result_arg_results(zval *argsResult, zv::Val &hold)
+{
+	return ptav::read(argsResult, pt_ce_args_result, ptdecl::ArgsResult::slot::argResults, PT_LC("getargresults"), hold);
+}
+
+inline zval *pt_args_result_scope(zval *argsResult, zv::Val &hold)
+{
+	zval *expressionResult = ptav::slotOf(argsResult, pt_ce_args_result, ptdecl::ArgsResult::slot::expressionResult);
+	if (EXPECTED(expressionResult != NULL)) return pt_expression_result_scope(expressionResult, hold);
+	return ptav::callGetter(argsResult, PT_LC("getscope"), hold);
+}
+
+inline bool pt_args_result_has_yield(zval *argsResult, bool &out)
+{
+	zval *expressionResult = ptav::slotOf(argsResult, pt_ce_args_result, ptdecl::ArgsResult::slot::expressionResult);
+	if (EXPECTED(expressionResult != NULL)) return pt_expression_result_has_yield(expressionResult, out);
+	zv::Val hold;
+	zval *value = ptav::callGetter(argsResult, PT_LC("hasyield"), hold);
+	if (UNEXPECTED(value == NULL)) return false;
+	out = zend_is_true(value);
+	return true;
+}
+
+inline bool pt_args_result_is_always_terminating(zval *argsResult, bool &out)
+{
+	zval *expressionResult = ptav::slotOf(argsResult, pt_ce_args_result, ptdecl::ArgsResult::slot::expressionResult);
+	if (EXPECTED(expressionResult != NULL)) return pt_expression_result_is_always_terminating(expressionResult, out);
+	zv::Val hold;
+	zval *value = ptav::callGetter(argsResult, PT_LC("isalwaysterminating"), hold);
+	if (UNEXPECTED(value == NULL)) return false;
+	out = zend_is_true(value);
+	return true;
+}
+
+inline zval *pt_args_result_throw_points(zval *argsResult, zv::Val &hold)
+{
+	zval *expressionResult = ptav::slotOf(argsResult, pt_ce_args_result, ptdecl::ArgsResult::slot::expressionResult);
+	if (EXPECTED(expressionResult != NULL)) return pt_expression_result_throw_points(expressionResult, hold);
+	return ptav::callGetter(argsResult, PT_LC("getthrowpoints"), hold);
+}
+
+inline zval *pt_args_result_impure_points(zval *argsResult, zv::Val &hold)
+{
+	zval *expressionResult = ptav::slotOf(argsResult, pt_ce_args_result, ptdecl::ArgsResult::slot::expressionResult);
+	if (EXPECTED(expressionResult != NULL)) return pt_expression_result_impure_points(expressionResult, hold);
+	return ptav::callGetter(argsResult, PT_LC("getimpurepoints"), hold);
 }
 
 /* }}} */

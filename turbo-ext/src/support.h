@@ -329,6 +329,7 @@ enum {
 	PT_CLASS_ENSURED_NON_NULLABILITY_RESULT,
 	PT_CLASS_ENSURED_NON_NULLABILITY_RESULT_EXPRESSION,
 	PT_CLASS_RESOLVED_FUNCTION_VARIANT_WITH_ORIGINAL,
+	PT_CLASS_INVALIDATE_EXPR_NODE,
 	PT_CLASS_COUNT
 };
 
@@ -2159,7 +2160,6 @@ zv::Val pt_extension_class_helper_get_extension_class_names(zval *reflectionProv
  * ->getIssetabilityResolution($scope, $useNativeTypes): the native body for a
  * native result, the method otherwise (everything borrowed); UNDEF / false =
  * pending exception */
-[[nodiscard]] bool pt_expression_result_contains_nullsafe(zval *result, bool &out);
 zv::Val pt_expression_result_get_created_types_for_scope(zval *result, zval *scope, zval *type, zval *context);
 zv::Val pt_expression_result_get_specified_types_for_scope(zval *result, zval *scope, zval *context);
 
@@ -2312,7 +2312,7 @@ zv::Val pt_mutating_scope_get_file(zend_object *scope);
 zv::Val pt_mutating_scope_assign_variable(zend_object *scope, zend_string *variableName, zval *type, zval *nativeType, zval *certainty);
 zv::Val pt_mutating_scope_assign_expression(zend_object *scope, zend_object *expr, zval *type, zval *nativeType);
 zv::Val pt_mutating_scope_specify_expression_type(zend_object *scope, zend_object *expr, zval *type, zval *nativeType, zval *certainty);
-zv::Val pt_mutating_scope_invalidate_expression(zend_object *scope, zval *expressionToInvalidate);
+zv::Val pt_mutating_scope_invalidate_expression(zend_object *scope, zval *expressionToInvalidate, bool requireMoreCharacters = false, zval *invalidatingClass = NULL, bool keepPropertyFetches = false);
 
 /* ExpressionResult.cpp — $result->withScope($scope) / getArgsResult() /
  * getTypeOnScope($scope, $useNativeTypes) /
@@ -2427,6 +2427,73 @@ struct pt_simple_impure_point_data
 	bool certain = false;
 };
 [[nodiscard]] bool pt_simple_impure_point_resolve(zval *function, zval *variant, zval *scope, zval *args, pt_simple_impure_point_data &out);
+
+/* }}} */
+
+/* {{{ MethodCallHandler.cpp, DynamicReturnTypeStoragePrimer.cpp — registered
+ * after the method reflections and SimpleImpurePoint */
+
+extern zend_class_entry *pt_ce_method_call_handler;
+extern zend_class_entry *pt_ce_dynamic_return_type_storage_primer;
+void pt_register_dynamic_return_type_storage_primer();
+void pt_register_method_call_handler();
+/* $popPrimedStorage = $primer->pushPrimedStorage($scope, $argsResult) and,
+ * in the caller's finally, $popPrimedStorage(): the native primer pushes
+ * and records whether it did (no closure), any other primer's method runs
+ * and its closure is kept in pop (owned, UNDEF otherwise). push false /
+ * pop false = pending exception; pop releases the closure either way. */
+struct pt_primed_storage
+{
+	zend_object *scope = nullptr;
+	bool pushed = false;
+	zval pop;
+};
+[[nodiscard]] bool pt_dynamic_return_type_storage_primer_push(zval *primer, zval *scope, zval *argsResult, pt_primed_storage &out);
+[[nodiscard]] bool pt_dynamic_return_type_storage_primer_pop(pt_primed_storage &primed);
+
+/* MutatingScope.cpp — the method call handler's scope calls, next to the
+ * walk's above ($scope->invalidateExpression() with its optional parameters
+ * is declared there): the native body for exactly a MutatingScope, the
+ * method through the class entry otherwise; UNDEF = pending exception */
+zv::Val pt_mutating_scope_get_naked_method(zend_object *scope, zval *typeWithMethod, zend_string *methodName);
+zv::Val pt_mutating_scope_invalidate_volatile_expressions(zend_object *scope);
+zv::Val pt_mutating_scope_enter_closure_call(zend_object *scope, zval *thisType, zval *nativeThisType);
+zv::Val pt_mutating_scope_restore_original_scope_after_closure_bind(zend_object *scope, zval *originalScope);
+zv::Val pt_mutating_scope_merge_initialized_properties(zend_object *scope, zval *calledMethodScope);
+zv::Val pt_mutating_scope_get_function_name(zend_object *scope);
+
+/* ExpressionResult.cpp — $result->finalize(...) /
+ * ->getKeepVoidType($nativeTypesPromoted) ($variableFlow NULL or IS_NULL
+ * for null); UNDEF = pending exception */
+zv::Val pt_expression_result_finalize(zval *result, zval *scope, bool hasYield, bool isAlwaysTerminating, zval *throwPoints, zval *impurePoints, zval *variableFlow);
+zv::Val pt_expression_result_get_keep_void_type(zval *result, bool nativeTypesPromoted);
+
+/* VariableFlow.cpp — VariableFlow::exit(VariableFlow::STOP);
+ * VariableFlowBuilder.cpp — VariableFlowBuilder::throws($expr, $throwPoints)
+ * / ::arguments($call, $argsResult, $storage); UNDEF = pending exception */
+zv::Val pt_variable_flow_exit_stop();
+zv::Val pt_variable_flow_builder_throws(zval *expr, HashTable *throwPoints);
+zv::Val pt_variable_flow_builder_arguments(zval *call, zval *argsResult, zval *storage);
+
+/* TypeUtils.cpp — TypeUtils::findThisType($type) (the ThisType or null);
+ * UNDEF = pending exception */
+zv::Val pt_type_utils_find_this_type(zval *type);
+
+/* the method call handler's collaborators: EarlyTerminatingCallHelper.cpp —
+ * $helper->isEarlyTerminatingMethodCall($methodName, $calledOnType);
+ * MethodCallReturnTypeHelper.cpp — $helper->methodCallReturnType($scope,
+ * $typeWithMethod, $methodName, $methodCall, $preResolvedAcceptor,
+ * $argsResult) (the type or null; the last two NULL or IS_NULL for null);
+ * MethodThrowPointHelper.cpp — $helper->getThrowPoint($methodReflection,
+ * $parametersAcceptor, $normalizedMethodCall, $scope, $context,
+ * $methodCallReturnType) (the throw point or null); TypeSpecifier.cpp —
+ * $typeSpecifier->getMethodTypeSpecifyingExtensionsForClass($className):
+ * the native body for the shadowing class, the method otherwise (everything
+ * borrowed); UNDEF / false = pending exception */
+[[nodiscard]] bool pt_early_terminating_call_helper_is_early_terminating_method_call(zval *helper, zval *methodName, zval *calledOnType, bool &out);
+zv::Val pt_method_call_return_type_helper_method_call_return_type(zval *helper, zval *scope, zval *typeWithMethod, zval *methodName, zval *methodCall, zval *preResolvedAcceptor, zval *argsResult);
+zv::Val pt_method_throw_point_helper_get_throw_point(zval *helper, zval *methodReflection, zval *parametersAcceptor, zval *normalizedMethodCall, zval *scope, zval *context, zval *methodCallReturnType);
+zv::Val pt_type_specifier_get_method_type_specifying_extensions_for_class(zend_object *typeSpecifier, zval *className);
 
 /* }}} */
 

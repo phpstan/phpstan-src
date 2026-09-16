@@ -11837,10 +11837,62 @@ zv::Val pt_mutating_scope_specify_expression_type(zend_object *scope, zend_objec
 	return pt_type_call(scope, PT_LC("specifyexpressiontype"), 4, argv);
 }
 
-zv::Val pt_mutating_scope_invalidate_expression(zend_object *scope, zval *expressionToInvalidate)
+zv::Val pt_mutating_scope_invalidate_expression(zend_object *scope, zval *expressionToInvalidate, bool requireMoreCharacters, zval *invalidatingClass, bool keepPropertyFetches)
 {
-	if (msExact(scope)) return MutatingScope(scope).invalidateExpression(expressionToInvalidate, false, NULL, false);
-	return pt_type_call(scope, PT_LC("invalidateexpression"), 1, expressionToInvalidate);
+	if (invalidatingClass != NULL && Z_TYPE_P(invalidatingClass) == IS_NULL) invalidatingClass = NULL;
+	if (msExact(scope)) return MutatingScope(scope).invalidateExpression(expressionToInvalidate, requireMoreCharacters, invalidatingClass, keepPropertyFetches);
+	if (!requireMoreCharacters && invalidatingClass == NULL && !keepPropertyFetches) return pt_type_call(scope, PT_LC("invalidateexpression"), 1, expressionToInvalidate);
+	zval argv[4];
+	ZVAL_COPY_VALUE(&argv[0], expressionToInvalidate);
+	ZVAL_BOOL(&argv[1], requireMoreCharacters);
+	if (invalidatingClass != NULL) {
+		ZVAL_COPY_VALUE(&argv[2], invalidatingClass);
+	} else {
+		ZVAL_NULL(&argv[2]);
+	}
+	ZVAL_BOOL(&argv[3], keepPropertyFetches);
+	return pt_type_call(scope, PT_LC("invalidateexpression"), 4, argv);
+}
+
+/* the method call handler's (MethodCallHandler.cpp) */
+zv::Val pt_mutating_scope_get_naked_method(zend_object *scope, zval *typeWithMethod, zend_string *methodName)
+{
+	if (msExact(scope)) return MutatingScope(scope).getNakedMethod(typeWithMethod, methodName);
+	zv::Args argv{typeWithMethod, methodName};
+	return pt_type_call(scope, PT_LC("getnakedmethod"), 2, argv);
+}
+
+zv::Val pt_mutating_scope_invalidate_volatile_expressions(zend_object *scope)
+{
+	if (msExact(scope)) return MutatingScope(scope).invalidateVolatileExpressions();
+	return pt_type_call(scope, PT_LC("invalidatevolatileexpressions"), 0, NULL);
+}
+
+zv::Val pt_mutating_scope_enter_closure_call(zend_object *scope, zval *thisType, zval *nativeThisType)
+{
+	if (msExact(scope)) return MutatingScope(scope).enterClosureCall(thisType, nativeThisType);
+	zv::Args argv{thisType, nativeThisType};
+	return pt_type_call(scope, PT_LC("enterclosurecall"), 2, argv);
+}
+
+zv::Val pt_mutating_scope_restore_original_scope_after_closure_bind(zend_object *scope, zval *originalScope)
+{
+	/* the handler's Z_PARAM_OBJECT_OF_CLASS check */
+	if (msExact(scope) && EXPECTED(instanceof_function(Z_OBJCE_P(originalScope), pt_ce_mutating_scope))) return MutatingScope(scope).restoreOriginalScopeAfterClosureBind(Z_OBJ_P(originalScope));
+	return pt_type_call(scope, PT_LC("restoreoriginalscopeafterclosurebind"), 1, originalScope);
+}
+
+zv::Val pt_mutating_scope_merge_initialized_properties(zend_object *scope, zval *calledMethodScope)
+{
+	/* the handler's Z_PARAM_OBJECT_OF_CLASS check */
+	if (msExact(scope) && EXPECTED(instanceof_function(Z_OBJCE_P(calledMethodScope), pt_ce_mutating_scope))) return MutatingScope(scope).mergeInitializedProperties(Z_OBJ_P(calledMethodScope));
+	return pt_type_call(scope, PT_LC("mergeinitializedproperties"), 1, calledMethodScope);
+}
+
+zv::Val pt_mutating_scope_get_function_name(zend_object *scope)
+{
+	if (msExact(scope)) return MutatingScope(scope).getFunctionName();
+	return pt_type_call(scope, PT_LC("getfunctionname"), 0, NULL);
 }
 
 /* }}} */

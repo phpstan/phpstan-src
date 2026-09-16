@@ -289,6 +289,7 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_ENSURED_NON_NULLABILITY_RESULT */ {"ensuredNonNullabilityResult", "PHPStan\\Analyser\\EnsuredNonNullabilityResult"},
 	/* PT_CLASS_ENSURED_NON_NULLABILITY_RESULT_EXPRESSION */ {"ensuredNonNullabilityResultExpression", "PHPStan\\Analyser\\EnsuredNonNullabilityResultExpression"},
 	/* PT_CLASS_RESOLVED_FUNCTION_VARIANT_WITH_ORIGINAL */ {"resolvedFunctionVariantWithOriginal", "PHPStan\\Reflection\\ResolvedFunctionVariantWithOriginal"},
+	/* PT_CLASS_INVALIDATE_EXPR_NODE */ {"invalidateExprNode", "PHPStan\\Node\\InvalidateExprNode"},
 };
 
 zend_class_entry *pt_class(int idx)

@@ -456,6 +456,11 @@ zv::Val pt_type_utils_resolve_late_resolvable_types(zval *type)
 	return TypeUtils::resolveLateResolvableTypes(type, true);
 }
 
+zv::Val pt_type_utils_find_this_type(zval *type)
+{
+	return TypeUtils::findThisType(type);
+}
+
 /* {{{ engine ABI glue: parameter parsing + registration */
 
 /* one handler per Type-taking static returning through fn */

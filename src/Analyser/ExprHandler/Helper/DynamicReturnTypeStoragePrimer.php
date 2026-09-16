@@ -9,6 +9,7 @@ use PHPStan\Analyser\ArgsResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * Re-exposes a call's already-processed arguments in the current storage frame
@@ -19,6 +20,7 @@ use PHPStan\DependencyInjection\AutowiredService;
  * statement), so those arguments would otherwise miss and be re-priced.
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/DynamicReturnTypeStoragePrimer.cpp')]
 final class DynamicReturnTypeStoragePrimer
 {
 

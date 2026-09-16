@@ -2182,6 +2182,24 @@ zv::Val pt_node_scope_resolver_process_expr_node_consuming_stored(zval *nodeScop
 	return pt_type_call(Z_OBJ_P(nodeScopeResolver), PT_LC("processexprnodeconsumingstored"), 6, argv);
 }
 
+/* the closure walk's (ClosureProcessor.cpp) */
+bool pt_node_scope_resolver_is_replayable_convergence_body(zval *nodeScopeResolver, zval *loopNode, zval *bodyStmts, bool &out)
+{
+	if (isNativeResolver(nodeScopeResolver) && EXPECTED(Z_TYPE_P(loopNode) == IS_OBJECT && Z_TYPE_P(bodyStmts) == IS_ARRAY)) return NodeScopeResolver(Z_OBJ_P(nodeScopeResolver)).isReplayableConvergenceBody(loopNode, Z_ARRVAL_P(bodyStmts), out);
+	zv::Args argv{loopNode, bodyStmts};
+	zv::Val result = pt_type_call(Z_OBJ_P(nodeScopeResolver), PT_LC("isreplayableconvergencebody"), 2, argv);
+	if (UNEXPECTED(result.isUndef())) return false;
+	out = zend_is_true(result.raw());
+	return true;
+}
+
+bool pt_node_scope_resolver_replay_recording(zval *nodeScopeResolver, zval *recording, zval *nodeCallback, zval *storage, zval *scope)
+{
+	if (isNativeResolver(nodeScopeResolver)) return NodeScopeResolver(Z_OBJ_P(nodeScopeResolver)).replayRecording(recording, nodeCallback, storage, scope);
+	zv::Args argv{recording, nodeCallback, storage, scope};
+	return !pt_type_call(Z_OBJ_P(nodeScopeResolver), PT_LC("replayrecording"), 4, argv).isUndef();
+}
+
 /* }}} */
 
 /* {{{ engine ABI glue: parameter parsing + registration */

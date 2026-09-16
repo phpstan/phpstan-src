@@ -6,11 +6,13 @@ use Override;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Closure;
 use PhpParser\NodeAbstract;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\ClosureType;
 
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'inClosureNode')]
 final class InClosureNode extends NodeAbstract implements VirtualNode
 {
 

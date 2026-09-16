@@ -176,4 +176,13 @@ zv::Val pt_expression_result_storage_duplicate(zval *storage)
 	return pt_type_call(Z_OBJ_P(storage), "duplicate", sizeof("duplicate") - 1, 0, NULL);
 }
 
+bool pt_expression_result_storage_merge_results(zval *storage, zval *other)
+{
+	if (EXPECTED(Z_OBJCE_P(storage) == pt_ce_expression_result_storage && Z_TYPE_P(other) == IS_OBJECT && Z_OBJCE_P(other) == pt_ce_expression_result_storage)) {
+		ExpressionResultStorage(storage).mergeResults(other);
+		return true;
+	}
+	return !pt_type_call(Z_OBJ_P(storage), "mergeresults", sizeof("mergeresults") - 1, 1, other).isUndef();
+}
+
 /* }}} */

@@ -321,7 +321,6 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_FILE_READER */ {"fileReader", "PHPStan\\File\\FileReader"},
 	/* PT_CLASS_DUMMY_CONSTRUCTOR_REFLECTION */ {"dummyConstructorReflection", "PHPStan\\Reflection\\Dummy\\DummyConstructorReflection"},
 	/* PT_CLASS_GENERIC_TYPE_TEMPLATE_TRAVERSER */ {"genericTypeTemplateTraverser", "PHPStan\\Analyser\\Traverser\\GenericTypeTemplateTraverser"},
-	/* PT_CLASS_CLOSURE_HANDLER */ {"closureHandler", "PHPStan\\Analyser\\ExprHandler\\ClosureHandler"},
 	/* PT_CLASS_ALLOWED_CONSTANTS_RESULT */ {"allowedConstantsResult", "PHPStan\\Reflection\\AllowedConstantsResult"},
 	/* PT_CLASS_GENERIC_PARAMETERS_ACCEPTOR_RESOLVER */ {"genericParametersAcceptorResolver", "PHPStan\\Reflection\\GenericParametersAcceptorResolver"},
 	/* PT_CLASS_FUNCTION_VARIANT */ {"functionVariant", "PHPStan\\Reflection\\FunctionVariant"},
@@ -334,6 +333,8 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_NULLSAFE_PROPERTY_FETCH_EXPRESSION_NODE */ {"nullsafePropertyFetchExpressionNode", "PHPStan\\Node\\NullsafePropertyFetchExpressionNode"},
 	/* PT_CLASS_PHP_VERSION */ {"phpVersion", "PHPStan\\Php\\PhpVersion"},
 	/* PT_CLASS_CLOSURE_PARAMETER_TYPES */ {"closureParameterTypes", "PHPStan\\Analyser\\ClosureParameterTypes"},
+	/* PT_CLASS_IN_CLOSURE_NODE */ {"inClosureNode", "PHPStan\\Node\\InClosureNode"},
+	/* PT_CLASS_IN_ARROW_FUNCTION_NODE */ {"inArrowFunctionNode", "PHPStan\\Node\\InArrowFunctionNode"},
 };
 
 zend_class_entry *pt_class(int idx)

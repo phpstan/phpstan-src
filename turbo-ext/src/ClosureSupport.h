@@ -22,6 +22,7 @@
 #include "CallHandlerSupport.h"
 #include "ParameterValues.h"
 #include "generated/NativeParameterReflection.h"
+#include "StmtHandlerCalls.h"
 
 namespace ptclosure {
 
@@ -207,6 +208,92 @@ inline zv::Val newClosureParameterTypes(zval *parameters, zval *nativeParameters
 		}
 	}
 	return true;
+}
+
+/* }}} */
+
+/* {{{ the walk gatherers the closure ports share */
+
+/* the 'propertyAssign' / 'property assignment' literals of the property-assign
+ * impure point, permanent interned strings (initStrings() at module startup) */
+inline zend_string *propertyAssignIdentifier = nullptr;
+inline zend_string *propertyAssignDescription = nullptr;
+
+inline void initStrings()
+{
+	if (propertyAssignIdentifier != nullptr) return;
+	propertyAssignIdentifier = zend_string_init_interned(PT_LC("propertyAssign"), 1);
+	propertyAssignDescription = zend_string_init_interned(PT_LC("property assignment"), 1);
+}
+
+/* $scope->getAnonymousFunctionReflection() !== $enteredScope->getAnonymousFunctionReflection():
+ * 1 different, 0 the same; -1 = pending exception. Two exact MutatingScopes
+ * compare their slots. */
+inline int differentAnonymousFunction(zval *scope, zval *enteredScope)
+{
+	if (EXPECTED(Z_TYPE_P(scope) == IS_OBJECT && Z_TYPE_P(enteredScope) == IS_OBJECT)) {
+		zval *reflection = pt_mutating_scope_anonymous_function_reflection_slot(Z_OBJ_P(scope));
+		zval *enteredReflection = reflection != NULL ? pt_mutating_scope_anonymous_function_reflection_slot(Z_OBJ_P(enteredScope)) : NULL;
+		if (EXPECTED(enteredReflection != NULL)) return zend_is_identical(reflection, enteredReflection) ? 0 : 1;
+	}
+	if (UNEXPECTED(Z_TYPE_P(scope) != IS_OBJECT || Z_TYPE_P(enteredScope) != IS_OBJECT)) {
+		zend_throw_error(NULL, "Call to a member function getAnonymousFunctionReflection() on %s", zend_zval_value_name(Z_TYPE_P(scope) != IS_OBJECT ? scope : enteredScope));
+		return -1;
+	}
+	zv::Val reflection = pt_mutating_scope_get_anonymous_function_reflection(Z_OBJ_P(scope));
+	if (UNEXPECTED(reflection.isUndef())) return -1;
+	zv::Val enteredReflection = pt_mutating_scope_get_anonymous_function_reflection(Z_OBJ_P(enteredScope));
+	if (UNEXPECTED(enteredReflection.isUndef())) return -1;
+	return zend_is_identical(reflection.raw(), enteredReflection.raw()) ? 0 : 1;
+}
+
+inline pt_property_site propertyFetchSite;
+
+/* $list[] = new ImpurePoint($scope, $node, 'propertyAssign', 'property assignment', true);
+ * $invalidateExpressions[] = new InvalidateExprNode($node->getPropertyFetch());
+ * — on the by-reference captures of a gatherer; false = pending exception */
+[[nodiscard]] inline bool gatherPropertyAssign(zval *node, zval *scope, zval *impurePointsReference, zval *invalidateExpressionsReference)
+{
+	zv::Val impurePoint = pt_impure_point_new(scope, node, propertyAssignIdentifier, propertyAssignDescription, true);
+	if (UNEXPECTED(impurePoint.isUndef())) return false;
+	ptsh::appendToReference(impurePointsReference, impurePoint.raw());
+	zval *propertyFetch = prop(propertyFetchSite, node, PT_LC("propertyFetch"));
+	if (UNEXPECTED(propertyFetch == NULL)) return false;
+	zv::Val invalidateExprNode = pt_type_new(PT_CLASS_INVALIDATE_EXPR_NODE, 1, propertyFetch);
+	if (UNEXPECTED(invalidateExprNode.isUndef())) return false;
+	ptsh::appendToReference(invalidateExpressionsReference, invalidateExprNode.raw());
+	return true;
+}
+
+/* [$node, $scope] */
+inline zv::Val pairOf(zval *node, zval *scope)
+{
+	zv::Arr pair = zv::Arr::create(2);
+	pair.push(zv::Ref(node));
+	pair.push(zv::Ref(scope));
+	return zv::Val(std::move(pair));
+}
+
+/* the arrow-function gatherer the twins spell alike:
+ * static function (Node $node, Scope $scope) use ($arrowScope,
+ * &$impurePoints, &$invalidateExpressions): void — captures in that order;
+ * closureName names the twin's closure in the ArgumentCountError */
+inline void arrowFunctionGatherer(zval *captures, uint32_t argc, zval *argv, const char *closureName)
+{
+	if (UNEXPECTED(!ptcall::requireArguments(argc, 2, closureName))) return;
+	zval *node = &argv[0];
+	zval *scope = &argv[1];
+	if (differentAnonymousFunction(scope, &captures[0]) != 0) return;
+
+	int is = instanceOf(node, PT_CLASS_INVALIDATE_EXPR_NODE);
+	if (UNEXPECTED(is < 0)) return;
+	if (is) {
+		ptsh::appendToReference(&captures[2], node);
+		return;
+	}
+	is = instanceOf(node, PT_CLASS_PROPERTY_ASSIGN_NODE);
+	if (UNEXPECTED(is < 0) || !is) return;
+	(void) gatherPropertyAssign(node, scope, &captures[1], &captures[2]);
 }
 
 /* }}} */

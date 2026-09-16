@@ -3,7 +3,9 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\Node\InvalidateExprNode;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ProcessArrowFunctionResult.cpp')]
 final class ProcessArrowFunctionResult
 {
 

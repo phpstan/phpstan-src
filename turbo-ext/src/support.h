@@ -361,7 +361,6 @@ enum {
 	PT_CLASS_FILE_READER,
 	PT_CLASS_DUMMY_CONSTRUCTOR_REFLECTION,
 	PT_CLASS_GENERIC_TYPE_TEMPLATE_TRAVERSER,
-	PT_CLASS_CLOSURE_HANDLER,
 	PT_CLASS_ALLOWED_CONSTANTS_RESULT,
 	PT_CLASS_GENERIC_PARAMETERS_ACCEPTOR_RESOLVER,
 	PT_CLASS_FUNCTION_VARIANT,
@@ -376,6 +375,8 @@ enum {
 	PT_CLASS_NULLSAFE_PROPERTY_FETCH_EXPRESSION_NODE,
 	PT_CLASS_PHP_VERSION,
 	PT_CLASS_CLOSURE_PARAMETER_TYPES,
+	PT_CLASS_IN_CLOSURE_NODE,
+	PT_CLASS_IN_ARROW_FUNCTION_NODE,
 	PT_CLASS_COUNT
 };
 
@@ -3251,6 +3252,68 @@ zval *pt_mutating_scope_in_function_calls_stack(zend_object *scope);
  * $parameter->union($other); UNDEF = pending exception */
 zv::Val pt_native_parameter_reflection_to_optional(zval *parameter);
 zv::Val pt_native_parameter_reflection_union(zval *parameter, zval *other);
+
+/* }}} */
+
+/* {{{ ProcessClosureResult.cpp, ProcessArrowFunctionResult.cpp,
+ * ClosureProcessor.cpp, ClosureHandler.cpp, ArrowFunctionHandler.cpp — the
+ * shadowing closure walk, registered at the END of the sequence (the result
+ * classes before the processor whose signatures name them, the handlers
+ * after the processor their constructors name) */
+
+extern zend_class_entry *pt_ce_process_closure_result;
+extern zend_class_entry *pt_ce_process_arrow_function_result;
+extern zend_class_entry *pt_ce_closure_processor;
+extern zend_class_entry *pt_ce_closure_handler;
+extern zend_class_entry *pt_ce_arrow_function_handler;
+void pt_register_process_closure_result();
+void pt_register_process_arrow_function_result();
+void pt_register_closure_processor();
+void pt_register_closure_handler();
+void pt_register_arrow_function_handler();
+/* new ProcessClosureResult(...) / new ProcessArrowFunctionResult(...) (every
+ * argument borrowed and of the constructor's type; $byRefClosureResultScope
+ * NULL or IS_NULL for null, $byRefUses NULL for []); the slot readers are in
+ * AnalyserValues.h. $result->applyByRefUseScope($scope): the native body for
+ * the shadowing class, the method otherwise. UNDEF = pending exception */
+zv::Val pt_process_closure_result_new(zval *scope, zval *throwPoints, zval *impurePoints, zval *invalidateExpressions, zval *gatheredReturnStatements, zval *gatheredYieldStatements, zval *executionEnds, zval *closureTypeImpurePoints, zval *byRefClosureResultScope = NULL, zval *byRefUses = NULL);
+zv::Val pt_process_closure_result_apply_by_ref_use_scope(zval *result, zval *scope);
+zv::Val pt_process_arrow_function_result_new(zval *expressionResult, zval *arrowFunctionScope, zval *closureTypeThrowPoints, zval *closureTypeImpurePoints, zval *invalidateExpressions);
+/* $closureProcessor->processClosureNode(...) / ->processArrowFunctionNode(...) /
+ * ->processImmediatelyCalledCallable($scope, $invalidatedExpressions, $uses) —
+ * the native bodies for the shadowing class, the methods otherwise (the
+ * nullable ones NULL or IS_NULL for null, everything borrowed); UNDEF =
+ * pending exception */
+zv::Val pt_closure_processor_process_closure_node(zval *processor, zval *nodeScopeResolver, zval *stmt, zval *expr, zval *scope, zval *storage, zval *nodeCallback, zval *context, zval *passedToType, zval *nativePassedToType = NULL);
+zv::Val pt_closure_processor_process_arrow_function_node(zval *processor, zval *nodeScopeResolver, zval *stmt, zval *expr, zval *scope, zval *storage, zval *nodeCallback, zval *passedToType, zval *nativePassedToType = NULL, zval *context = NULL);
+zv::Val pt_closure_processor_process_immediately_called_callable(zval *processor, zval *scope, zval *invalidatedExpressions, zval *uses);
+/* ClosureHandler::getVariableFlow($closure) / ArrowFunctionHandler::getVariableFlow($arrowFunction,
+ * $bodyResult) (the flow or null); UNDEF = pending exception */
+zv::Val pt_closure_handler_get_variable_flow(zval *expr);
+zv::Val pt_arrow_function_handler_get_variable_flow(zval *expr, zval *bodyResult);
+/* MutatingScope.cpp — ->enterAnonymousFunction(...) / ->enterArrowFunction(...)
+ * / ->processClosureScope($closureScope, $prevScope, $byRefUses) /
+ * ->withAnonymousFunctionReflection($closureType): the native body for
+ * exactly a MutatingScope, the method otherwise (the nullable ones NULL or
+ * IS_NULL for null); UNDEF = pending exception. The anonymous function
+ * reflection slot of exactly a MutatingScope (borrowed; NULL for any other
+ * scope or an uninitialized slot — ask the method then). */
+zv::Val pt_mutating_scope_enter_anonymous_function(zend_object *scope, zval *closure, zval *callableParameters, zval *nativeCallableParameters);
+zv::Val pt_mutating_scope_enter_arrow_function(zend_object *scope, zval *arrowFunction, zval *callableParameters, zval *nativeCallableParameters);
+zv::Val pt_mutating_scope_process_closure_scope(zend_object *scope, zval *closureScope, zval *prevScope, zval *byRefUses);
+zv::Val pt_mutating_scope_with_anonymous_function_reflection(zend_object *scope, zval *anonymousFunctionReflection);
+zval *pt_mutating_scope_anonymous_function_reflection_slot(zend_object *scope);
+/* ExpressionResultStorage.cpp — $storage->mergeResults($other); false =
+ * pending exception */
+[[nodiscard]] bool pt_expression_result_storage_merge_results(zval *storage, zval *other);
+/* NodeScopeResolver.cpp — ->isReplayableConvergenceBody($loopNode,
+ * $bodyStmts) / ->replayRecording($recording, $nodeCallback, $storage,
+ * $scope); false = pending exception */
+[[nodiscard]] bool pt_node_scope_resolver_is_replayable_convergence_body(zval *nodeScopeResolver, zval *loopNode, zval *bodyStmts, bool &out);
+[[nodiscard]] bool pt_node_scope_resolver_replay_recording(zval *nodeScopeResolver, zval *recording, zval *nodeCallback, zval *storage, zval *scope);
+/* VariableFlow.cpp — VariableFlow::arrow($arrow, $body, $outputs) ($body /
+ * $outputs IS_NULL for null); UNDEF = pending exception */
+zv::Val pt_variable_flow_arrow(zval *arrow, zval *body, zval *outputs);
 
 /* }}} */
 

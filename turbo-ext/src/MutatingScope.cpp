@@ -13246,4 +13246,55 @@ zval *pt_mutating_scope_in_function_calls_stack(zend_object *scope)
 	return NULL;
 }
 
+zval *pt_mutating_scope_anonymous_function_reflection_slot(zend_object *scope)
+{
+	if (UNEXPECTED(!msExact(scope))) return NULL;
+	zval *reflection = OBJ_PROP_NUM(scope, PT_MS_PROP_ANONYMOUS_FUNCTION_REFLECTION);
+	return EXPECTED(Z_TYPE_P(reflection) != IS_UNDEF) ? reflection : NULL;
+}
+
+zv::Val pt_mutating_scope_enter_anonymous_function(zend_object *scope, zval *closure, zval *callableParameters, zval *nativeCallableParameters)
+{
+	callableParameters = msNullableArray(callableParameters);
+	nativeCallableParameters = msNullableArray(nativeCallableParameters);
+	if (msExact(scope) && EXPECTED(Z_TYPE_P(closure) == IS_OBJECT && (callableParameters == NULL || Z_TYPE_P(callableParameters) == IS_ARRAY) && (nativeCallableParameters == NULL || Z_TYPE_P(nativeCallableParameters) == IS_ARRAY))) {
+		return MutatingScope(scope).enterAnonymousFunction(Z_OBJ_P(closure), callableParameters, nativeCallableParameters);
+	}
+	zval null = {};
+	ZVAL_NULL(&null);
+	zv::Args argv{closure, msNullOr(callableParameters, &null), msNullOr(nativeCallableParameters, &null)};
+	return pt_type_call(scope, PT_LC("enteranonymousfunction"), 3, argv);
+}
+
+zv::Val pt_mutating_scope_enter_arrow_function(zend_object *scope, zval *arrowFunction, zval *callableParameters, zval *nativeCallableParameters)
+{
+	callableParameters = msNullableArray(callableParameters);
+	nativeCallableParameters = msNullableArray(nativeCallableParameters);
+	if (msExact(scope) && EXPECTED(Z_TYPE_P(arrowFunction) == IS_OBJECT && (callableParameters == NULL || Z_TYPE_P(callableParameters) == IS_ARRAY) && (nativeCallableParameters == NULL || Z_TYPE_P(nativeCallableParameters) == IS_ARRAY))) {
+		return MutatingScope(scope).enterArrowFunction(Z_OBJ_P(arrowFunction), callableParameters, nativeCallableParameters);
+	}
+	zval null = {};
+	ZVAL_NULL(&null);
+	zv::Args argv{arrowFunction, msNullOr(callableParameters, &null), msNullOr(nativeCallableParameters, &null)};
+	return pt_type_call(scope, PT_LC("enterarrowfunction"), 3, argv);
+}
+
+zv::Val pt_mutating_scope_process_closure_scope(zend_object *scope, zval *closureScope, zval *prevScope, zval *byRefUses)
+{
+	prevScope = prevScope != NULL && Z_TYPE_P(prevScope) == IS_NULL ? NULL : prevScope;
+	if (msExact(scope) && EXPECTED(Z_TYPE_P(closureScope) == IS_OBJECT && instanceof_function(Z_OBJCE_P(closureScope), pt_ce_mutating_scope) && (prevScope == NULL || (Z_TYPE_P(prevScope) == IS_OBJECT && instanceof_function(Z_OBJCE_P(prevScope), pt_ce_mutating_scope))) && Z_TYPE_P(byRefUses) == IS_ARRAY)) {
+		return MutatingScope(scope).processClosureScope(Z_OBJ_P(closureScope), prevScope, Z_ARRVAL_P(byRefUses));
+	}
+	zval null = {};
+	ZVAL_NULL(&null);
+	zv::Args argv{closureScope, msNullOr(prevScope, &null), byRefUses};
+	return pt_type_call(scope, PT_LC("processclosurescope"), 3, argv);
+}
+
+zv::Val pt_mutating_scope_with_anonymous_function_reflection(zend_object *scope, zval *anonymousFunctionReflection)
+{
+	if (msExact(scope) && EXPECTED(Z_TYPE_P(anonymousFunctionReflection) == IS_OBJECT && instanceof_function(Z_OBJCE_P(anonymousFunctionReflection), pt_ce_closure_type))) return MutatingScope(scope).withAnonymousFunctionReflection(anonymousFunctionReflection);
+	return pt_type_call(scope, PT_LC("withanonymousfunctionreflection"), 1, anonymousFunctionReflection);
+}
+
 /* }}} */

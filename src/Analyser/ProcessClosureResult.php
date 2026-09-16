@@ -8,7 +8,9 @@ use PhpParser\Node\Expr\YieldFrom;
 use PhpParser\Node\Stmt\Return_;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\InvalidateExprNode;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ProcessClosureResult.cpp')]
 final class ProcessClosureResult
 {
 

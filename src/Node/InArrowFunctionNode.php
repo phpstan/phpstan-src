@@ -6,11 +6,13 @@ use Override;
 use PhpParser\Node;
 use PhpParser\Node\Expr\ArrowFunction;
 use PhpParser\NodeAbstract;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\ClosureType;
 
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'inArrowFunctionNode')]
 final class InArrowFunctionNode extends NodeAbstract implements VirtualNode
 {
 

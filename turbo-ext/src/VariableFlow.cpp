@@ -453,6 +453,11 @@ zv::Val pt_variable_flow_sequence_list(HashTable *flows)
 	return result;
 }
 
+zv::Val pt_variable_flow_arrow(zval *arrow, zval *body, zval *outputs)
+{
+	return VariableFlow::arrow(arrow, body, outputs);
+}
+
 zv::Val pt_variable_flow_read(zend_string *name, zval *targetId, bool container, zval *offset)
 {
 	zval nameValue;

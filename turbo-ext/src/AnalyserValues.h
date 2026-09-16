@@ -33,6 +33,8 @@
 #include "generated/SimpleImpurePoint.h"
 #include "generated/StatementResult.h"
 #include "generated/ThrowPoint.h"
+#include "generated/ProcessClosureResult.h"
+#include "generated/ProcessArrowFunctionResult.h"
 
 zv::Val pt_type_call(zend_object *object, const char *lcname, size_t len, uint32_t argc, zval *argv);
 
@@ -538,6 +540,38 @@ inline zval *pt_impure_point_description(zval *impurePoint, zv::Val &hold)
 {
 	return ptav::read(impurePoint, pt_ce_impure_point, ptdecl::ImpurePoint::slot::description, PT_LC("getdescription"), hold);
 }
+
+/* }}} */
+
+/* {{{ ProcessClosureResult / ProcessArrowFunctionResult: their getters */
+
+#define PT_AV_PROCESS_CLOSURE_RESULT(reader, slotName, getter) \
+	inline zval *pt_process_closure_result_##reader(zval *result, zv::Val &hold) \
+	{ \
+		return ptav::read(result, pt_ce_process_closure_result, ptdecl::ProcessClosureResult::slot::slotName, PT_LC(getter), hold); \
+	}
+#define PT_AV_PROCESS_ARROW_FUNCTION_RESULT(reader, slotName, getter) \
+	inline zval *pt_process_arrow_function_result_##reader(zval *result, zv::Val &hold) \
+	{ \
+		return ptav::read(result, pt_ce_process_arrow_function_result, ptdecl::ProcessArrowFunctionResult::slot::slotName, PT_LC(getter), hold); \
+	}
+
+PT_AV_PROCESS_CLOSURE_RESULT(scope, scope, "getscope")
+PT_AV_PROCESS_CLOSURE_RESULT(throw_points, throwPoints, "getthrowpoints")
+PT_AV_PROCESS_CLOSURE_RESULT(impure_points, impurePoints, "getimpurepoints")
+PT_AV_PROCESS_CLOSURE_RESULT(invalidate_expressions, invalidateExpressions, "getinvalidateexpressions")
+PT_AV_PROCESS_CLOSURE_RESULT(gathered_return_statements, gatheredReturnStatements, "getgatheredreturnstatements")
+PT_AV_PROCESS_CLOSURE_RESULT(gathered_yield_statements, gatheredYieldStatements, "getgatheredyieldstatements")
+PT_AV_PROCESS_CLOSURE_RESULT(execution_ends, executionEnds, "getexecutionends")
+PT_AV_PROCESS_CLOSURE_RESULT(closure_type_impure_points, closureTypeImpurePoints, "getclosuretypeimpurepoints")
+PT_AV_PROCESS_ARROW_FUNCTION_RESULT(expression_result, expressionResult, "getexpressionresult")
+PT_AV_PROCESS_ARROW_FUNCTION_RESULT(arrow_function_scope, arrowFunctionScope, "getarrowfunctionscope")
+PT_AV_PROCESS_ARROW_FUNCTION_RESULT(closure_type_throw_points, closureTypeThrowPoints, "getclosuretypethrowpoints")
+PT_AV_PROCESS_ARROW_FUNCTION_RESULT(closure_type_impure_points, closureTypeImpurePoints, "getclosuretypeimpurepoints")
+PT_AV_PROCESS_ARROW_FUNCTION_RESULT(invalidate_expressions, invalidateExpressions, "getinvalidateexpressions")
+
+#undef PT_AV_PROCESS_CLOSURE_RESULT
+#undef PT_AV_PROCESS_ARROW_FUNCTION_RESULT
 
 /* }}} */
 

@@ -33,7 +33,6 @@
 namespace slots = ptdecl::ClosureTypeResolver::slot;
 namespace sigs = ptdecl::ClosureTypeResolver::sig;
 #include "ClosureSupport.h"
-#include "StmtHandlerCalls.h"
 
 #include "zend_smart_str.h"
 
@@ -44,8 +43,6 @@ namespace {
 /* the literals, permanent interned strings (module startup) */
 zend_string *pt_ctr_free_variable_roots = nullptr;
 zend_string *pt_ctr_this_root = nullptr;
-zend_string *pt_ctr_property_assign = nullptr;
-zend_string *pt_ctr_property_assignment = nullptr;
 zend_string *pt_ctr_function_call = nullptr;
 zend_string *pt_ctr_by_ref_use = nullptr;
 zend_string *pt_ctr_by_ref_parameter = nullptr;
@@ -116,7 +113,6 @@ pt_property_site pt_ctr_yield_key_site;
 pt_property_site pt_ctr_yield_value_site;
 pt_property_site pt_ctr_yield_from_expr_site;
 pt_property_site pt_ctr_execution_end_statement_result_site;
-pt_property_site pt_ctr_property_fetch_site;
 pt_property_site pt_ctr_attrs_site;
 pt_property_site pt_ctr_attr_name_site;
 pt_property_site pt_ctr_name_name_site;
@@ -199,73 +195,13 @@ zv::Val mergeLists(zval *a, zval *b)
 	return zv::Val(std::move(merged));
 }
 
-/* $identical: $a === $b of two reads that are objects or null */
-inline bool identical(zval *a, zval *b)
-{
-	return zend_is_identical(a, b);
-}
-
-/* [$node, $scope] */
-zv::Val pairOf(zval *node, zval *scope)
-{
-	zv::Arr pair = zv::Arr::create(2);
-	pair.push(zv::Ref(node));
-	pair.push(zv::Ref(scope));
-	return zv::Val(std::move(pair));
-}
-
-/* $scope->getAnonymousFunctionReflection() !== $enteredScope->getAnonymousFunctionReflection();
- * -1 = pending exception */
-int differentAnonymousFunction(zval *scope, zval *enteredScope)
-{
-	if (UNEXPECTED(Z_TYPE_P(scope) != IS_OBJECT)) {
-		zend_throw_error(NULL, "Call to a member function getAnonymousFunctionReflection() on %s", zend_zval_value_name(scope));
-		return -1;
-	}
-	zv::Val reflection = pt_mutating_scope_get_anonymous_function_reflection(Z_OBJ_P(scope));
-	if (UNEXPECTED(reflection.isUndef())) return -1;
-	zv::Val enteredReflection = pt_mutating_scope_get_anonymous_function_reflection(Z_OBJ_P(enteredScope));
-	if (UNEXPECTED(enteredReflection.isUndef())) return -1;
-	return identical(reflection.raw(), enteredReflection.raw()) ? 0 : 1;
-}
-
-/* the PropertyAssignNode branch the gatherers share: the property-assign
- * impure point and the property fetch's InvalidateExprNode appended;
- * false = pending exception */
-[[nodiscard]] bool gatherPropertyAssign(zval *node, zval *scope, zval *impurePointsReference, zval *invalidateExpressionsReference)
-{
-	zv::Val impurePoint = pt_impure_point_new(scope, node, pt_ctr_property_assign, pt_ctr_property_assignment, true);
-	if (UNEXPECTED(impurePoint.isUndef())) return false;
-	ptsh::appendToReference(impurePointsReference, impurePoint.raw());
-	zval *propertyFetch = ptclosure::prop(pt_ctr_property_fetch_site, node, PT_LC("propertyFetch"));
-	if (UNEXPECTED(propertyFetch == NULL)) return false;
-	zv::Val invalidateExprNode = pt_type_new(PT_CLASS_INVALIDATE_EXPR_NODE, 1, propertyFetch);
-	if (UNEXPECTED(invalidateExprNode.isUndef())) return false;
-	ptsh::appendToReference(invalidateExpressionsReference, invalidateExprNode.raw());
-	return true;
-}
-
 /* static function (Node $node, Scope $scope) use ($arrowScope,
  * &$arrowFunctionImpurePoints, &$invalidateExpressions): void — captures in
  * that order */
 void arrowFunctionWalkCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 {
 	(void) return_value;
-	if (UNEXPECTED(!ptcall::requireArguments(argc, 2, "PHPStan\\Analyser\\ExprHandler\\Helper\\ClosureTypeResolver::{closure}"))) return;
-	zval *node = &argv[0];
-	zval *scope = &argv[1];
-	int different = differentAnonymousFunction(scope, &captures[0]);
-	if (different != 0) return;
-
-	int is = ptclosure::instanceOf(node, PT_CLASS_INVALIDATE_EXPR_NODE);
-	if (UNEXPECTED(is < 0)) return;
-	if (is) {
-		ptsh::appendToReference(&captures[2], node);
-		return;
-	}
-	is = ptclosure::instanceOf(node, PT_CLASS_PROPERTY_ASSIGN_NODE);
-	if (UNEXPECTED(is < 0) || !is) return;
-	(void) gatherPropertyAssign(node, scope, &captures[1], &captures[2]);
+	ptclosure::arrowFunctionGatherer(captures, argc, argv, "PHPStan\\Analyser\\ExprHandler\\Helper\\ClosureTypeResolver::{closure}");
 }
 
 /* static function (Node $node, Scope $scope) use ($closureScope,
@@ -278,8 +214,7 @@ void closureWalkCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *re
 	if (UNEXPECTED(!ptcall::requireArguments(argc, 2, "PHPStan\\Analyser\\ExprHandler\\Helper\\ClosureTypeResolver::{closure}"))) return;
 	zval *node = &argv[0];
 	zval *scope = &argv[1];
-	int different = differentAnonymousFunction(scope, &captures[0]);
-	if (different != 0) return;
+	if (ptclosure::differentAnonymousFunction(scope, &captures[0]) != 0) return;
 
 	int is = ptclosure::instanceOf(node, PT_CLASS_INVALIDATE_EXPR_NODE);
 	if (UNEXPECTED(is < 0)) return;
@@ -290,7 +225,7 @@ void closureWalkCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *re
 	is = ptclosure::instanceOf(node, PT_CLASS_PROPERTY_ASSIGN_NODE);
 	if (UNEXPECTED(is < 0)) return;
 	if (is) {
-		(void) gatherPropertyAssign(node, scope, &captures[4], &captures[5]);
+		(void) ptclosure::gatherPropertyAssign(node, scope, &captures[4], &captures[5]);
 		return;
 	}
 	is = ptclosure::instanceOf(node, PT_CLASS_EXECUTION_END_NODE);
@@ -302,7 +237,7 @@ void closureWalkCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *re
 	is = ptclosure::instanceOf(node, PT_CLASS_RETURN_STMT);
 	if (UNEXPECTED(is < 0)) return;
 	if (is) {
-		zv::Val pair = pairOf(node, scope);
+		zv::Val pair = ptclosure::pairOf(node, scope);
 		ptsh::appendToReference(&captures[1], pair.raw());
 	}
 	is = ptclosure::instanceOf(node, PT_CLASS_YIELD);
@@ -311,7 +246,7 @@ void closureWalkCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *re
 		is = ptclosure::instanceOf(node, PT_CLASS_YIELD_FROM);
 		if (UNEXPECTED(is < 0) || !is) return;
 	}
-	zv::Val pair = pairOf(node, scope);
+	zv::Val pair = ptclosure::pairOf(node, scope);
 	ptsh::appendToReference(&captures[2], pair.raw());
 }
 
@@ -1587,8 +1522,7 @@ void pt_register_closure_type_resolver()
 {
 	pt_ctr_free_variable_roots = zend_string_init_interned(PT_LC("phpstanFreeVariableRoots"), 1);
 	pt_ctr_this_root = zend_string_init_interned(PT_LC("$this"), 1);
-	pt_ctr_property_assign = zend_string_init_interned(PT_LC("propertyAssign"), 1);
-	pt_ctr_property_assignment = zend_string_init_interned(PT_LC("property assignment"), 1);
+	ptclosure::initStrings();
 	pt_ctr_function_call = zend_string_init_interned(PT_LC("functionCall"), 1);
 	pt_ctr_by_ref_use = zend_string_init_interned(PT_LC("call to a Closure with by-ref use"), 1);
 	pt_ctr_by_ref_parameter = zend_string_init_interned(PT_LC("call to a Closure with by-ref parameter"), 1);

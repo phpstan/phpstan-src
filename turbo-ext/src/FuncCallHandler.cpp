@@ -25,9 +25,9 @@
  * entries; the function reflection getters through
  * FunctionReflectionAccess.cpp. ArgumentsHandler / ArgumentsNormalizer /
  * ParametersAcceptorSelector and the acceptors' getters go through the call
- * handlers' shared sites (CallHandlerSupport.h), ClosureTypeResolver
- * through its direct entry; the analyser classes still PHP only here — the
- * reflection provider, ClosureProcessor, CloneHandler, SimpleThrowPoint,
+ * handlers' shared sites (CallHandlerSupport.h), ClosureTypeResolver and
+ * ClosureProcessor through their direct entries; the analyser classes still
+ * PHP only here — the reflection provider, CloneHandler, SimpleThrowPoint,
  * DynamicReturnTypeExtensionRegistry, ImpossibleCheckTypeHelper — through
  * the cached sites in the block below, one helper each; the dynamic
  * throw-type / return-type / type-specifying extensions (PHP forever)
@@ -63,7 +63,6 @@ constexpr uint32_t PT_FCH_POLY_SITE_SLOTS_LIMIT = 1u << PT_FCH_POLY_SITE_SLOT_BI
 /* {{{ the PHP collaborators (one site each; switch to their direct entries
  * once they are ported) */
 
-pt_method_site pt_fch_process_immediately_called_callable_site;
 pt_method_site pt_fch_resolve_clone_type_site;
 pt_method_site pt_fch_throw_point_explicit_site;
 pt_method_site pt_fch_throw_point_type_site;
@@ -112,11 +111,10 @@ zv::Val processArgs(zval *argumentsHandler, zval *nodeScopeResolver, zval *stmt,
 	return ptcall::processDroppedArgs(argumentsHandler, argv);
 }
 
-/* $closureProcessor->processImmediatelyCalledCallable($scope, $invalidatedExpressions, $uses) */
-zv::Val processImmediatelyCalledCallable(zval *closureProcessor, zval *scope, zval *invalidatedExpressions, zval *uses)
+/* $closureProcessor->processImmediatelyCalledCallable($scope, $invalidatedExpressions, $uses) (ClosureProcessor.cpp) */
+inline zv::Val processImmediatelyCalledCallable(zval *closureProcessor, zval *scope, zval *invalidatedExpressions, zval *uses)
 {
-	zv::Args argv{scope, invalidatedExpressions, uses};
-	return pt_call_method_cached(pt_fch_process_immediately_called_callable_site, Z_OBJ_P(closureProcessor), PT_LC("processimmediatelycalledcallable"), 3, argv);
+	return pt_closure_processor_process_immediately_called_callable(closureProcessor, scope, invalidatedExpressions, uses);
 }
 
 /* CloneHandler::resolveCloneType($exprType) */

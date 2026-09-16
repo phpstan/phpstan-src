@@ -7,8 +7,8 @@
  * ArgsResult, IssetabilityDescriptor, the statement results
  * (InternalStatementResult, InternalStatementExitPoint,
  * InternalEndStatementResult and their public counterparts),
- * TemplateArgumentFrame, AssignTargetWalkMode, PreparedAssignTarget and
- * RecordingNodeCallback.
+ * TemplateArgumentFrame, AssignTargetWalkMode, PreparedAssignTarget,
+ * RecordingNodeCallback, ProcessClosureResult and ProcessArrowFunctionResult.
  *
  * Each side builds its objects from the same scopes, nodes and types and
  * every public method's answer is compared, together with the objects' state
@@ -741,6 +741,55 @@ foreach (['php' => $avSides['php'], 'native' => $avSides['native']] as $side => 
 	];
 }
 check($avFlowThrowPoints['php'] === $avFlowThrowPoints['native'], 'VariableFlowBuilder over the native value classes: ' . json_encode($avFlowThrowPoints));
+
+// ProcessClosureResult / ProcessArrowFunctionResult: every getter, the
+// by-ref use scope application (with and without by-ref uses) and the
+// uninitialized reads, the native classes over the PHP scopes (their by-name
+// processClosureScope() path) against the twins
+$avClosureResults = [];
+$avByRefUse = new \PhpParser\Node\ClosureUse($avN['a'], true);
+foreach (['php' => [\PHPStan\Analyser\ProcessClosureResult::class, \PHPStan\Analyser\ProcessArrowFunctionResult::class, $avSides['php']], 'native' => [\PHPStanTurbo\ProcessClosureResult::class, \PHPStanTurbo\ProcessArrowFunctionResult::class, $avSides['native']]] as $side => [$closureResultClass, $arrowResultClass, $c]) {
+	$r = [];
+	$impure = new $c['ImpurePoint']($avScope, $avN['call'], 'functionCall', 'call to function f', true);
+	$throwPoint = $c['InternalThrowPoint']::createImplicit($avScope, $avN['call']);
+	$plain = new $closureResultClass($avScope, [$throwPoint], [$impure], [], [[$avN['stmt'], $avScope]], [], [], [$impure, $impure]);
+	$byRef = new $closureResultClass(scope: $avOtherScope, throwPoints: [], impurePoints: [], invalidateExpressions: [], gatheredReturnStatements: [], gatheredYieldStatements: [[$avN['call'], $avOtherScope]], executionEnds: [], closureTypeImpurePoints: [], byRefClosureResultScope: $avOtherScope, byRefUses: [$avByRefUse]);
+	foreach (['plain' => $plain, 'by ref' => $byRef] as $label => $result) {
+		$r['closure result ' . $label] = [
+			$result->getScope() === ($label === 'plain' ? $avScope : $avOtherScope),
+			$avDescribe($result->getThrowPoints()),
+			$avDescribe($result->getImpurePoints()),
+			$avDescribe($result->getInvalidateExpressions()),
+			$avDescribe($result->getGatheredReturnStatements()),
+			$avDescribe($result->getGatheredYieldStatements()),
+			$avDescribe($result->getExecutionEnds()),
+			$avDescribe($result->getClosureTypeImpurePoints()),
+			$result->applyByRefUseScope($avScope) === $avScope,
+			$avCatch(static fn () => $result->applyByRefUseScope($avScope)),
+			$avDescribe($result),
+		];
+	}
+	$r['closure result uninitialized'] = [
+		$avCatch(static fn () => (new \ReflectionClass($closureResultClass))->newInstanceWithoutConstructor()->getScope()),
+		$avCatch(static fn () => (new \ReflectionClass($closureResultClass))->newInstanceWithoutConstructor()->applyByRefUseScope($avScope)),
+	];
+	$exprResult = new $c['ExpressionResult']($avNoExtensions, $avDefaultNarrowingHelper, $avScope, $avScope, $avN['a'], false, false, [], [], null, static fn () => new \PHPStan\Analyser\SpecifiedTypes(), type: $avInt, nativeType: $avInt);
+	$arrow = new $arrowResultClass($exprResult, $avOtherScope, [$throwPoint->toPublic()], [$impure], []);
+	$arrowNamed = new $arrowResultClass(invalidateExpressions: [], closureTypeImpurePoints: [], closureTypeThrowPoints: [], arrowFunctionScope: $avScope, expressionResult: $exprResult);
+	foreach (['positional' => $arrow, 'named' => $arrowNamed] as $label => $result) {
+		$r['arrow result ' . $label] = [
+			$result->getExpressionResult() === $exprResult,
+			$result->getArrowFunctionScope() === ($label === 'positional' ? $avOtherScope : $avScope),
+			$avDescribe($result->getClosureTypeThrowPoints()),
+			$avDescribe($result->getClosureTypeImpurePoints()),
+			$avDescribe($result->getInvalidateExpressions()),
+			$avDescribe($result),
+		];
+	}
+	$r['arrow result uninitialized'] = $avCatch(static fn () => (new \ReflectionClass($arrowResultClass))->newInstanceWithoutConstructor()->getExpressionResult());
+	$avClosureResults[$side] = $r;
+}
+check($avClosureResults['php'] === $avClosureResults['native'], 'ProcessClosureResult / ProcessArrowFunctionResult parity: ' . json_encode($avClosureResults['php']) . ' vs ' . json_encode($avClosureResults['native']));
 
 if (isset($avStandalone)) {
 	echo $failures === 0 ? "ALL OK\n" : "$failures FAILURE(S)\n";

@@ -20,12 +20,12 @@
  *
  * MutatingScope, ExpressionResult, ExpressionResultStorage, ExpressionContext,
  * InternalThrowPoint, ImpurePoint, ArgsResult, SpecifiedTypes, TypeCombinator,
- * TypeUtils and the Type kernel are called through their direct entries; the
- * collaborators that stay PHP for now (NodeScopeResolver, ClosureProcessor and
- * its results, ClosureTypeResolver, ClosureParameterResolver, AssignHandler,
- * TemplateArgumentObserver, ParametersAcceptorSelector, the reflections) through
- * the cached sites in the block below, one helper each. The extensions stay PHP
- * for good and are called by name.
+ * TypeUtils, NodeScopeResolver, ClosureProcessor and its results,
+ * ClosureTypeResolver, ClosureParameterResolver, ClosureHandler, AssignHandler,
+ * ParametersAcceptorSelector and the Type kernel are called through their direct
+ * entries; the collaborators that stay PHP for now (TemplateArgumentObserver,
+ * the reflections) through the cached sites in the block below, one helper
+ * each. The extensions stay PHP for good and are called by name.
  */
 
 #include "support.h"
@@ -423,79 +423,59 @@ inline zv::Val closureParameterResolverResolveCallableTypeForScope(zval *closure
 	return pt_closure_parameter_resolver_resolve_callable_type_for_scope(closureParameterResolver, expr, scope);
 }
 
-/* ClosureProcessor and its results */
-pt_method_site pt_ah_process_closure_node_site;
-pt_method_site pt_ah_process_arrow_function_node_site;
-pt_method_site pt_ah_process_immediately_called_callable_site;
-pt_method_site pt_ah_apply_by_ref_use_scope_site;
-pt_property_site pt_ah_pcr_scope_site;
-pt_property_site pt_ah_pcr_throw_points_site;
-pt_property_site pt_ah_pcr_impure_points_site;
-pt_property_site pt_ah_pcr_invalidate_expressions_site;
-pt_property_site pt_ah_pcr_gathered_return_statements_site;
-pt_property_site pt_ah_pcr_gathered_yield_statements_site;
-pt_property_site pt_ah_pcr_execution_ends_site;
-pt_property_site pt_ah_pcr_closure_type_impure_points_site;
-pt_property_site pt_ah_pafr_expression_result_site;
-pt_property_site pt_ah_pafr_arrow_function_scope_site;
-pt_property_site pt_ah_pafr_closure_type_throw_points_site;
-pt_property_site pt_ah_pafr_closure_type_impure_points_site;
-pt_property_site pt_ah_pafr_invalidate_expressions_site;
+/* ClosureProcessor and its results (direct entries; the result getters are
+ * the slot readers of AnalyserValues.h) */
 
 /* $closureProcessor->processClosureNode($nodeScopeResolver, $stmt, $expr, $scope, $storage, $nodeCallback, $context, $passedToType, $nativePassedToType) */
-zv::Val closureProcessorProcessClosureNode(zval *closureProcessor, zval *argv)
+inline zv::Val closureProcessorProcessClosureNode(zval *closureProcessor, zval *argv)
 {
-	return callOn(pt_ah_process_closure_node_site, closureProcessor, PT_LC("processclosurenode"), "processClosureNode", 9, argv);
+	return pt_closure_processor_process_closure_node(closureProcessor, &argv[0], &argv[1], &argv[2], &argv[3], &argv[4], &argv[5], &argv[6], &argv[7], &argv[8]);
 }
 
 /* $closureProcessor->processArrowFunctionNode($nodeScopeResolver, $stmt, $expr, $scope, $storage, $nodeCallback, $passedToType, $nativePassedToType, $context) */
-zv::Val closureProcessorProcessArrowFunctionNode(zval *closureProcessor, zval *argv)
+inline zv::Val closureProcessorProcessArrowFunctionNode(zval *closureProcessor, zval *argv)
 {
-	return callOn(pt_ah_process_arrow_function_node_site, closureProcessor, PT_LC("processarrowfunctionnode"), "processArrowFunctionNode", 9, argv);
+	return pt_closure_processor_process_arrow_function_node(closureProcessor, &argv[0], &argv[1], &argv[2], &argv[3], &argv[4], &argv[5], &argv[6], &argv[7], &argv[8]);
 }
 
 /* $closureProcessor->processImmediatelyCalledCallable($scope, $invalidateExpressions, $uses) */
-zv::Val closureProcessorProcessImmediatelyCalledCallable(zval *closureProcessor, zval *scope, zval *invalidateExpressions, zval *uses)
+inline zv::Val closureProcessorProcessImmediatelyCalledCallable(zval *closureProcessor, zval *scope, zval *invalidateExpressions, zval *uses)
 {
-	zv::Args argv{scope, invalidateExpressions, uses};
-	return callOn(pt_ah_process_immediately_called_callable_site, closureProcessor, PT_LC("processimmediatelycalledcallable"), "processImmediatelyCalledCallable", 3, argv);
+	return pt_closure_processor_process_immediately_called_callable(closureProcessor, scope, invalidateExpressions, uses);
 }
 
 /* $closureResult->applyByRefUseScope($scope) */
-zv::Val processClosureResultApplyByRefUseScope(zval *closureResult, zval *scope)
+inline zv::Val processClosureResultApplyByRefUseScope(zval *closureResult, zval *scope)
 {
-	return callOn(pt_ah_apply_by_ref_use_scope_site, closureResult, PT_LC("applybyrefusescope"), "applyByRefUseScope", 1, scope);
+	return pt_process_closure_result_apply_by_ref_use_scope(closureResult, scope);
 }
 
-/* the getters of the final ProcessClosureResult / ProcessArrowFunctionResult
- * return their promoted properties: read through a property site each
- * (borrowed, or kept alive in hold); NULL = pending exception */
-#define PT_AH_RESULT_GETTER(fn, site, property) \
+/* the getters of ProcessClosureResult / ProcessArrowFunctionResult (borrowed,
+ * or kept alive in hold); NULL = pending exception */
+#define PT_AH_RESULT_GETTER(fn, reader) \
 	inline zval *fn(zval *result, zv::Val &hold) \
 	{ \
-		return readProperty(site, result, PT_LC(property), hold); \
+		return reader(result, hold); \
 	}
-PT_AH_RESULT_GETTER(closureResultScope, pt_ah_pcr_scope_site, "scope")
-PT_AH_RESULT_GETTER(closureResultThrowPoints, pt_ah_pcr_throw_points_site, "throwPoints")
-PT_AH_RESULT_GETTER(closureResultImpurePoints, pt_ah_pcr_impure_points_site, "impurePoints")
-PT_AH_RESULT_GETTER(closureResultInvalidateExpressions, pt_ah_pcr_invalidate_expressions_site, "invalidateExpressions")
-PT_AH_RESULT_GETTER(closureResultGatheredReturnStatements, pt_ah_pcr_gathered_return_statements_site, "gatheredReturnStatements")
-PT_AH_RESULT_GETTER(closureResultGatheredYieldStatements, pt_ah_pcr_gathered_yield_statements_site, "gatheredYieldStatements")
-PT_AH_RESULT_GETTER(closureResultExecutionEnds, pt_ah_pcr_execution_ends_site, "executionEnds")
-PT_AH_RESULT_GETTER(closureResultClosureTypeImpurePoints, pt_ah_pcr_closure_type_impure_points_site, "closureTypeImpurePoints")
-PT_AH_RESULT_GETTER(arrowResultExpressionResult, pt_ah_pafr_expression_result_site, "expressionResult")
-PT_AH_RESULT_GETTER(arrowResultArrowFunctionScope, pt_ah_pafr_arrow_function_scope_site, "arrowFunctionScope")
-PT_AH_RESULT_GETTER(arrowResultClosureTypeThrowPoints, pt_ah_pafr_closure_type_throw_points_site, "closureTypeThrowPoints")
-PT_AH_RESULT_GETTER(arrowResultClosureTypeImpurePoints, pt_ah_pafr_closure_type_impure_points_site, "closureTypeImpurePoints")
-PT_AH_RESULT_GETTER(arrowResultInvalidateExpressions, pt_ah_pafr_invalidate_expressions_site, "invalidateExpressions")
+PT_AH_RESULT_GETTER(closureResultScope, pt_process_closure_result_scope)
+PT_AH_RESULT_GETTER(closureResultThrowPoints, pt_process_closure_result_throw_points)
+PT_AH_RESULT_GETTER(closureResultImpurePoints, pt_process_closure_result_impure_points)
+PT_AH_RESULT_GETTER(closureResultInvalidateExpressions, pt_process_closure_result_invalidate_expressions)
+PT_AH_RESULT_GETTER(closureResultGatheredReturnStatements, pt_process_closure_result_gathered_return_statements)
+PT_AH_RESULT_GETTER(closureResultGatheredYieldStatements, pt_process_closure_result_gathered_yield_statements)
+PT_AH_RESULT_GETTER(closureResultExecutionEnds, pt_process_closure_result_execution_ends)
+PT_AH_RESULT_GETTER(closureResultClosureTypeImpurePoints, pt_process_closure_result_closure_type_impure_points)
+PT_AH_RESULT_GETTER(arrowResultExpressionResult, pt_process_arrow_function_result_expression_result)
+PT_AH_RESULT_GETTER(arrowResultArrowFunctionScope, pt_process_arrow_function_result_arrow_function_scope)
+PT_AH_RESULT_GETTER(arrowResultClosureTypeThrowPoints, pt_process_arrow_function_result_closure_type_throw_points)
+PT_AH_RESULT_GETTER(arrowResultClosureTypeImpurePoints, pt_process_arrow_function_result_closure_type_impure_points)
+PT_AH_RESULT_GETTER(arrowResultInvalidateExpressions, pt_process_arrow_function_result_invalidate_expressions)
 #undef PT_AH_RESULT_GETTER
 
 /* ClosureHandler::getVariableFlow($expr) */
-pt_method_site pt_ah_closure_handler_get_variable_flow_site;
-
-zv::Val closureHandlerGetVariableFlow(zval *expr)
+inline zv::Val closureHandlerGetVariableFlow(zval *expr)
 {
-	return pt_call_static_cached(pt_ah_closure_handler_get_variable_flow_site, PT_CLASS_CLOSURE_HANDLER, PT_LC("getvariableflow"), 1, expr);
+	return pt_closure_handler_get_variable_flow(expr);
 }
 
 /* $assignHandler->processVirtualAssign($nodeScopeResolver, $scope, $storage, $stmt, $var, $assignedExpr, $nodeCallback) */

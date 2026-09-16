@@ -58,9 +58,12 @@ public:
 			return pt_contextual_closure_parameter_resolver_resolve(contextual, scope, expr, storage, passedToType, nativePassedToType, parameters, nativeParameters);
 		}
 
-		parameters = createCallArgsParameters(scope, expr, callArgs, false);
+		/* the arguments are node attributes a nested closure type's walk may
+		 * rehash (freeVariableRoots() writes one): held for both passes */
+		zv::Val callArgsHold = zv::Val::copyOf(zv::Ref(callArgs));
+		parameters = createCallArgsParameters(scope, expr, callArgsHold.raw(), false);
 		if (UNEXPECTED(parameters.isUndef())) return false;
-		nativeParameters = createCallArgsParameters(scope, expr, callArgs, true);
+		nativeParameters = createCallArgsParameters(scope, expr, callArgsHold.raw(), true);
 		return !nativeParameters.isUndef();
 	}
 

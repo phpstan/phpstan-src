@@ -452,6 +452,14 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_contextual_closure_parameter_resolver();
 	pt_register_closure_type_resolver();
 	pt_register_closure_parameter_resolver();
+	/* the closure walk — the result classes before the processor whose
+	 * signatures name them, the handlers after the processor their
+	 * constructors name */
+	pt_register_process_closure_result();
+	pt_register_process_arrow_function_result();
+	pt_register_closure_processor();
+	pt_register_closure_handler();
+	pt_register_arrow_function_handler();
 
 	return SUCCESS;
 }

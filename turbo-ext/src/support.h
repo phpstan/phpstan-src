@@ -369,6 +369,8 @@ enum {
 	PT_CLASS_CLASS_METHODS_NODE,
 	PT_CLASS_CLASS_CONSTANTS_NODE,
 	PT_CLASS_FILE_READER,
+	PT_CLASS_DUMMY_CONSTRUCTOR_REFLECTION,
+	PT_CLASS_GENERIC_TYPE_TEMPLATE_TRAVERSER,
 	PT_CLASS_COUNT
 };
 
@@ -2745,6 +2747,40 @@ zv::Val pt_mutating_scope_enter_closure_bind(zend_object *scope, zval *thisType,
  * the native body for the shadowing class, the method otherwise; UNDEF =
  * pending exception */
 zv::Val pt_type_specifier_get_static_method_type_specifying_extensions_for_class(zend_object *typeSpecifier, zval *className);
+
+/* }}} */
+
+/* {{{ NewHandler.cpp — registered after StaticCallHandler */
+
+extern zend_class_entry *pt_ce_new_handler;
+void pt_register_new_handler();
+
+/* ClassReflection.cpp — $classReflection->isFinal() (false = pending
+ * exception) / ->asFinal() / ->getTemplateTypeMap() /
+ * ->getActiveTemplateTypeMap() / ->typeMapToList($typeMap) /
+ * ->withTypes($types) (UNDEF = pending exception): the native body for the
+ * shadowing class, the method otherwise (hasConstructor() /
+ * getConstructor() are declared with the declaration statement handlers') */
+[[nodiscard]] bool pt_class_reflection_is_final(zend_object *classReflection, bool &out);
+zv::Val pt_class_reflection_as_final(zend_object *classReflection);
+zv::Val pt_class_reflection_get_template_type_map(zend_object *classReflection);
+zv::Val pt_class_reflection_get_active_template_type_map(zend_object *classReflection);
+zv::Val pt_class_reflection_type_map_to_list(zend_object *classReflection, zval *typeMap);
+zv::Val pt_class_reflection_with_types(zend_object *classReflection, zval *types);
+
+/* TemplateTypeMap.cpp — $map->getTypes() / ->getType($name) (the type or
+ * null) / ->resolveToBounds() / ->map($cb): the native body for the
+ * shadowing class, the method otherwise; UNDEF = pending exception */
+zv::Val pt_template_type_map_get_types(zval *map);
+zv::Val pt_template_type_map_get_type(zval *map, zend_string *name);
+zv::Val pt_template_type_map_resolve_to_bounds(zval *map);
+zv::Val pt_template_type_map_map(zval *map, zval *cb);
+
+/* SimpleImpurePoint.cpp —
+ * SimpleImpurePoint::resolvePureUnlessCallableIsImpureVerdict($variant,
+ * $scope, $args): hasVerdict false for the twin's null, verdict the PT_TRI_*
+ * value otherwise; false = pending exception */
+[[nodiscard]] bool pt_simple_impure_point_resolve_verdict(zval *variant, zval *scope, zval *args, bool &hasVerdict, zend_long &verdict);
 
 /* }}} */
 

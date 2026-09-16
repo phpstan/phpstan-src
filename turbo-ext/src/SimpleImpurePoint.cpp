@@ -457,6 +457,11 @@ bool pt_simple_impure_point_resolve(zval *function, zval *variant, zval *scope, 
 	return SimpleImpurePoint::resolve(function, variant, scope, args, out);
 }
 
+bool pt_simple_impure_point_resolve_verdict(zval *variant, zval *scope, zval *args, bool &hasVerdict, zend_long &verdict)
+{
+	return SimpleImpurePoint::resolveVerdict(variant, scope, args, hasVerdict, verdict);
+}
+
 /* }}} */
 
 /* {{{ engine ABI glue: parameter parsing + registration */

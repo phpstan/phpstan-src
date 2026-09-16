@@ -405,6 +405,7 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_class_like_handler();
 	pt_register_if_handler();
 	pt_register_static_call_handler();
+	pt_register_new_handler();
 
 	return SUCCESS;
 }

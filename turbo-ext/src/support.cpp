@@ -328,6 +328,8 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_CLASS_METHODS_NODE */ {"classMethodsNode", "PHPStan\\Node\\ClassMethodsNode"},
 	/* PT_CLASS_CLASS_CONSTANTS_NODE */ {"classConstantsNode", "PHPStan\\Node\\ClassConstantsNode"},
 	/* PT_CLASS_FILE_READER */ {"fileReader", "PHPStan\\File\\FileReader"},
+	/* PT_CLASS_DUMMY_CONSTRUCTOR_REFLECTION */ {"dummyConstructorReflection", "PHPStan\\Reflection\\Dummy\\DummyConstructorReflection"},
+	/* PT_CLASS_GENERIC_TYPE_TEMPLATE_TRAVERSER */ {"genericTypeTemplateTraverser", "PHPStan\\Analyser\\Traverser\\GenericTypeTemplateTraverser"},
 };
 
 zend_class_entry *pt_class(int idx)

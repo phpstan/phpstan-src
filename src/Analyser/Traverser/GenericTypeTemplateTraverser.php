@@ -4,6 +4,7 @@ namespace PHPStan\Analyser\Traverser;
 
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Generics\TemplateArgumentFrame;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
@@ -26,6 +27,7 @@ use PHPStan\Type\TypeTraverserCallable;
  * resolution. An inferred argument that already carries another site's marker
  * passes through - the outer result then resolves the inner site.
  */
+#[ReferencedByTurboExtension(key: 'genericTypeTemplateTraverser')]
 final class GenericTypeTemplateTraverser implements TypeTraverserCallable
 {
 

@@ -465,7 +465,7 @@ inline bool pt_simple_impure_point_is_certain(zval *impurePoint, bool &out)
 /* }}} */
 
 /* {{{ StatementResult: $result->getScope() / ->isAlwaysTerminating() /
- * ->getImpurePoints() */
+ * ->getImpurePoints() / ->getThrowPoints() */
 
 inline zval *pt_statement_result_scope(zval *result, zv::Val &hold)
 {
@@ -480,6 +480,11 @@ inline bool pt_statement_result_is_always_terminating(zval *result, bool &out)
 inline zval *pt_statement_result_impure_points(zval *result, zv::Val &hold)
 {
 	return ptav::read(result, pt_ce_statement_result, ptdecl::StatementResult::slot::impurePoints, PT_LC("getimpurepoints"), hold);
+}
+
+inline zval *pt_statement_result_throw_points(zval *result, zv::Val &hold)
+{
+	return ptav::read(result, pt_ce_statement_result, ptdecl::StatementResult::slot::throwPoints, PT_LC("getthrowpoints"), hold);
 }
 
 /* }}} */

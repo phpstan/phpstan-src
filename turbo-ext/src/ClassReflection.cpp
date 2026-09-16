@@ -4451,6 +4451,46 @@ zv::Val pt_class_reflection_get_file_name(zend_object *classReflection)
 	return pt_cr_foreign_bool(classReflection, PT_LC("issubclassofclass"), 1, otherClassReflection, out);
 }
 
+/* $classReflection->isFinal() (false = pending exception) / ->asFinal() /
+ * ->getTemplateTypeMap() / ->getActiveTemplateTypeMap() /
+ * ->typeMapToList($typeMap) / ->withTypes($types) (UNDEF = pending
+ * exception) */
+[[nodiscard]] bool pt_class_reflection_is_final(zend_object *classReflection, bool &out)
+{
+	if (EXPECTED(classReflection->ce == pt_ce_class_reflection)) return ClassReflection(classReflection).isFinal(out);
+	return pt_cr_foreign_bool(classReflection, PT_LC("isfinal"), 0, NULL, out);
+}
+
+zv::Val pt_class_reflection_as_final(zend_object *classReflection)
+{
+	if (EXPECTED(classReflection->ce == pt_ce_class_reflection)) return ClassReflection(classReflection).asFinal();
+	return pt_type_call(classReflection, PT_LC("asfinal"), 0, NULL);
+}
+
+zv::Val pt_class_reflection_get_template_type_map(zend_object *classReflection)
+{
+	if (EXPECTED(classReflection->ce == pt_ce_class_reflection)) return ClassReflection(classReflection).getTemplateTypeMap();
+	return pt_type_call(classReflection, PT_LC("gettemplatetypemap"), 0, NULL);
+}
+
+zv::Val pt_class_reflection_get_active_template_type_map(zend_object *classReflection)
+{
+	if (EXPECTED(classReflection->ce == pt_ce_class_reflection)) return ClassReflection(classReflection).getActiveTemplateTypeMap();
+	return pt_type_call(classReflection, PT_LC("getactivetemplatetypemap"), 0, NULL);
+}
+
+zv::Val pt_class_reflection_type_map_to_list(zend_object *classReflection, zval *typeMap)
+{
+	if (EXPECTED(classReflection->ce == pt_ce_class_reflection && Z_TYPE_P(typeMap) == IS_OBJECT)) return ClassReflection(classReflection).typeMapToList(zv::Ref(typeMap));
+	return pt_type_call(classReflection, PT_LC("typemaptolist"), 1, typeMap);
+}
+
+zv::Val pt_class_reflection_with_types(zend_object *classReflection, zval *types)
+{
+	if (EXPECTED(classReflection->ce == pt_ce_class_reflection && Z_TYPE_P(types) == IS_ARRAY)) return ClassReflection(classReflection).withTypes(zv::Ref(types));
+	return pt_type_call(classReflection, PT_LC("withtypes"), 1, types);
+}
+
 /* }}} */
 
 /* {{{ engine ABI glue: parameter parsing + registration */

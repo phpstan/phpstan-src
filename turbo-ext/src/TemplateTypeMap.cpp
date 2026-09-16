@@ -439,6 +439,35 @@ zv::Val pt_type_template_type_map_empty()
 	return pt_val_of<pt_template_type_map_empty>();
 }
 
+/* $map->getTypes() / ->getType($name) / ->resolveToBounds() / ->map($cb):
+ * the native body for the shadowing class, the method otherwise; UNDEF =
+ * pending exception */
+zv::Val pt_template_type_map_get_types(zval *map)
+{
+	if (EXPECTED(Z_OBJCE_P(map) == pt_ce_template_type_map)) return TemplateTypeMap(Z_OBJ_P(map)).getTypes();
+	return pt_type_call(Z_OBJ_P(map), PT_LC("gettypes"), 0, NULL);
+}
+
+zv::Val pt_template_type_map_get_type(zval *map, zend_string *name)
+{
+	if (EXPECTED(Z_OBJCE_P(map) == pt_ce_template_type_map)) return TemplateTypeMap(Z_OBJ_P(map)).getType(name);
+	zval nameZv;
+	ZVAL_STR(&nameZv, name);
+	return pt_type_call(Z_OBJ_P(map), PT_LC("gettype"), 1, &nameZv);
+}
+
+zv::Val pt_template_type_map_resolve_to_bounds(zval *map)
+{
+	if (EXPECTED(Z_OBJCE_P(map) == pt_ce_template_type_map)) return TemplateTypeMap(Z_OBJ_P(map)).resolveToBounds();
+	return pt_type_call(Z_OBJ_P(map), PT_LC("resolvetobounds"), 0, NULL);
+}
+
+zv::Val pt_template_type_map_map(zval *map, zval *cb)
+{
+	if (EXPECTED(Z_OBJCE_P(map) == pt_ce_template_type_map)) return TemplateTypeMap(Z_OBJ_P(map)).map(cb);
+	return pt_type_call(Z_OBJ_P(map), PT_LC("map"), 1, cb);
+}
+
 zv::Val pt_type_template_type_map_new(zval *types, zval *lowerBoundTypes)
 {
 	zval out;

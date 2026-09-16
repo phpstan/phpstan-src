@@ -4331,6 +4331,8 @@ $coveredElsewhere = [
 	\PHPStan\Analyser\ExprHandler\ArrayDimFetchHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\ConstFetchHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\ClassConstFetchHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\AttributesHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ParametersProcessor::class => 'walk-trace.php',
 ];
 foreach (array_keys($shadowedClasses) as $shadowedClass) {
 	check(

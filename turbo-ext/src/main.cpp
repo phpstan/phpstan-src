@@ -441,6 +441,11 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_array_dim_fetch_handler();
 	pt_register_const_fetch_handler();
 	pt_register_class_const_fetch_handler();
+	/* the attribute and parameter walks of the declarations and closures —
+	 * their signatures name the walk hub, ArgumentsHandler and the reflection
+	 * provider; the processor after the handler its constructor names */
+	pt_register_attributes_handler();
+	pt_register_parameters_processor();
 
 	return SUCCESS;
 }

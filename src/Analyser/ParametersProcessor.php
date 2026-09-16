@@ -4,8 +4,10 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ParametersProcessor.cpp')]
 final class ParametersProcessor
 {
 

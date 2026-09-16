@@ -3,11 +3,11 @@
  * ReturnHandler.cpp, EchoHandler.cpp, BlockHandler.cpp, NopHandler.cpp,
  * ClassMethodHandler.cpp, FunctionHandler.cpp, ClassLikeHandler.cpp,
  * IfHandler.cpp): the AST-node property reads and class tests they all make,
- * and their calls into the declaration processors that are not ported yet
- * (AttributesHandler, PhpDocsResolver, ParametersProcessor,
- * DeprecatedAttributeResolver) — one inline helper per called method over
- * one shared cached method site (Engine.h), so the port of any of them
- * switches every handler to its direct entries here, in one place.
+ * and their calls into the declaration processors — AttributesHandler and
+ * ParametersProcessor through their direct entries, the ones not ported yet
+ * (PhpDocsResolver, DeprecatedAttributeResolver) one inline helper per called
+ * method over one shared cached method site (Engine.h), so the port of any of
+ * them switches every handler to its direct entries here, in one place.
  * NodeScopeResolver and StatementsHandler are called through their direct
  * entries (support.h), the twins' try/finally through pt_finally()
  * (Engine.h).
@@ -26,17 +26,15 @@ namespace ptsh {
  * ClassLikeHandler): AttributesHandler, PhpDocsResolver, ParametersProcessor,
  * DeprecatedAttributeResolver */
 
-inline pt_method_site processAttributeGroupsSite;
 inline pt_method_site getPhpDocsSite;
-inline pt_method_site processParamsSite;
 inline pt_method_site getDeprecatedAttributeSite;
 
 /* $attributesHandler->processAttributeGroups($nodeScopeResolver, $stmt,
- * $attrGroups, $scope, $storage, $nodeCallback); false = pending exception */
+ * $attrGroups, $scope, $storage, $nodeCallback) (AttributesHandler.cpp);
+ * false = pending exception */
 [[nodiscard]] inline bool processAttributeGroups(zval *attributesHandler, zval *nodeScopeResolver, zval *stmt, zval *attrGroups, zval *scope, zval *storage, zval *nodeCallback)
 {
-	zv::Args argv{nodeScopeResolver, stmt, attrGroups, scope, storage, nodeCallback};
-	return !pt_call_method_cached(processAttributeGroupsSite, Z_OBJ_P(attributesHandler), PT_LC("processattributegroups"), 6, argv).isUndef();
+	return pt_attributes_handler_process_attribute_groups(attributesHandler, nodeScopeResolver, stmt, attrGroups, scope, storage, nodeCallback);
 }
 
 /* $phpDocsResolver->getPhpDocs($scope, $node) */
@@ -47,11 +45,11 @@ inline zv::Val getPhpDocs(zval *phpDocsResolver, zval *scope, zval *node)
 }
 
 /* $parametersProcessor->processParams($nodeScopeResolver, $stmt, $params,
- * $scope, $storage, $nodeCallback); false = pending exception */
+ * $scope, $storage, $nodeCallback) (ParametersProcessor.cpp); false = pending
+ * exception */
 [[nodiscard]] inline bool processParams(zval *parametersProcessor, zval *nodeScopeResolver, zval *stmt, zval *params, zval *scope, zval *storage, zval *nodeCallback)
 {
-	zv::Args argv{nodeScopeResolver, stmt, params, scope, storage, nodeCallback};
-	return !pt_call_method_cached(processParamsSite, Z_OBJ_P(parametersProcessor), PT_LC("processparams"), 6, argv).isUndef();
+	return pt_parameters_processor_process_params(parametersProcessor, nodeScopeResolver, stmt, params, scope, storage, nodeCallback);
 }
 
 /* $deprecatedAttributeResolver->getDeprecatedAttribute($scope, $stmt) */

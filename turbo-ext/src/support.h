@@ -3176,4 +3176,23 @@ void pt_register_class_const_fetch_handler();
 
 /* }}} */
 
+/* {{{ AttributesHandler.cpp, ParametersProcessor.cpp — the shadowing
+ * PHPStan\Analyser\AttributesHandler / ParametersProcessor, registered at the
+ * END of the sequence (the processor after the handler its constructor names) */
+
+extern zend_class_entry *pt_ce_attributes_handler;
+extern zend_class_entry *pt_ce_parameters_processor;
+void pt_register_attributes_handler();
+void pt_register_parameters_processor();
+/* $attributesHandler->processAttributeGroups($nodeScopeResolver, $stmt,
+ * $attrGroups, $scope, $storage, $nodeCallback) /
+ * $parametersProcessor->processParams($nodeScopeResolver, $stmt, $params,
+ * $scope, $storage, $nodeCallback) — the native body for the shadowing class
+ * and an array, the method otherwise (everything borrowed); false = pending
+ * exception */
+[[nodiscard]] bool pt_attributes_handler_process_attribute_groups(zval *handler, zval *nodeScopeResolver, zval *stmt, zval *attrGroups, zval *scope, zval *storage, zval *nodeCallback);
+[[nodiscard]] bool pt_parameters_processor_process_params(zval *processor, zval *nodeScopeResolver, zval *stmt, zval *params, zval *scope, zval *storage, zval *nodeCallback);
+
+/* }}} */
+
 #endif /* PHPSTANTURBO_SUPPORT_H */

@@ -17,6 +17,7 @@ use PHPStan\Analyser\VariableFlow;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\MixedType;
 use function array_merge;
 use function is_string;
@@ -25,6 +26,7 @@ use function is_string;
  * @implements StmtHandler<Static_>
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/StaticVariableHandler.cpp')]
 final class StaticVariableHandler implements StmtHandler
 {
 

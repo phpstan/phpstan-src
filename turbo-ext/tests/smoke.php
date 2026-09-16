@@ -4367,6 +4367,14 @@ $coveredElsewhere = [
 	\PHPStan\Analyser\StmtHandler\EnumCaseHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\StmtHandler\TraitUseHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\StmtHandler\TraitHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\StmtHandler\NamespaceHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\StmtHandler\UseHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\StmtHandler\GroupUseHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\StmtHandler\DeclareHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\StmtHandler\InlineHtmlHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\StmtHandler\GlobalHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\StmtHandler\StaticVariableHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\StmtHandler\UnsetHandler::class => 'walk-trace.php',
 ];
 foreach (array_keys($shadowedClasses) as $shadowedClass) {
 	check(

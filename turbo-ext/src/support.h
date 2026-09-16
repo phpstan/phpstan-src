@@ -421,6 +421,9 @@ enum {
 	PT_CLASS_ENUM_CASE_STMT,
 	PT_CLASS_TRAIT_USE_ADAPTATION_ALIAS,
 	PT_CLASS_IN_TRAIT_NODE,
+	PT_CLASS_USE_STMT,
+	PT_CLASS_GROUP_USE_STMT,
+	PT_CLASS_UNSET_OFFSET_EXPR,
 	PT_CLASS_COUNT
 };
 
@@ -3616,6 +3619,34 @@ void pt_register_const_handler();
 void pt_register_enum_case_handler();
 void pt_register_trait_use_handler();
 void pt_register_trait_handler();
+
+/* }}} */
+
+/* {{{ NamespaceHandler.cpp, UseHandler.cpp, GroupUseHandler.cpp,
+ * DeclareHandler.cpp, InlineHtmlHandler.cpp, GlobalHandler.cpp,
+ * StaticVariableHandler.cpp, UnsetHandler.cpp — the remaining statement
+ * handlers, registered after VarAnnotationProcessor and AssignHandler their
+ * constructors name */
+
+extern zend_class_entry *pt_ce_namespace_handler;
+extern zend_class_entry *pt_ce_use_handler;
+extern zend_class_entry *pt_ce_group_use_handler;
+extern zend_class_entry *pt_ce_declare_handler;
+extern zend_class_entry *pt_ce_inline_html_handler;
+extern zend_class_entry *pt_ce_global_handler;
+extern zend_class_entry *pt_ce_static_variable_handler;
+extern zend_class_entry *pt_ce_unset_handler;
+void pt_register_namespace_handler();
+void pt_register_use_handler();
+void pt_register_group_use_handler();
+void pt_register_declare_handler();
+void pt_register_inline_html_handler();
+void pt_register_global_handler();
+void pt_register_static_variable_handler();
+void pt_register_unset_handler();
+/* VariableFlow.cpp — VariableFlow::discard($write) (borrowed); UNDEF =
+ * pending exception */
+zv::Val pt_variable_flow_discard(zval *write);
 
 /* }}} */
 

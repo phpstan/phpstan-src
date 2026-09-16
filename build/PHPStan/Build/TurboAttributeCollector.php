@@ -108,6 +108,7 @@ use PhpParser\Node\Stmt\Foreach_;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\Global_;
 use PhpParser\Node\Stmt\Goto_;
+use PhpParser\Node\Stmt\GroupUse;
 use PhpParser\Node\Stmt\HaltCompiler;
 use PhpParser\Node\Stmt\If_;
 use PhpParser\Node\Stmt\InlineHTML;
@@ -124,6 +125,7 @@ use PhpParser\Node\Stmt\TraitUse;
 use PhpParser\Node\Stmt\TraitUseAdaptation\Alias;
 use PhpParser\Node\Stmt\TryCatch;
 use PhpParser\Node\Stmt\Unset_;
+use PhpParser\Node\Stmt\Use_;
 use PhpParser\Node\Stmt\While_;
 use PhpParser\Node\VariadicPlaceholder;
 use PhpParser\Node\VarLikeIdentifier;
@@ -384,6 +386,8 @@ final class TurboAttributeCollector
 		'traitUseStmt' => TraitUse::class,
 		'enumCaseStmt' => EnumCase::class,
 		'traitUseAdaptationAlias' => Alias::class,
+		'useStmt' => Use_::class,
+		'groupUseStmt' => GroupUse::class,
 	];
 
 	private string $realRoot;

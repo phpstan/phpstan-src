@@ -477,6 +477,11 @@ zv::Val pt_variable_flow_escape(zend_string *name)
 	return VariableFlow::escape(&nameValue);
 }
 
+zv::Val pt_variable_flow_discard(zval *write)
+{
+	return VariableFlow::discard(write);
+}
+
 zv::Val pt_variable_flow_mention(zend_string *name)
 {
 	zval nameValue;

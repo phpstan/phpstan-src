@@ -375,6 +375,9 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_ENUM_CASE_STMT */ {"enumCaseStmt", "PhpParser\\Node\\Stmt\\EnumCase"},
 	/* PT_CLASS_TRAIT_USE_ADAPTATION_ALIAS */ {"traitUseAdaptationAlias", "PhpParser\\Node\\Stmt\\TraitUseAdaptation\\Alias"},
 	/* PT_CLASS_IN_TRAIT_NODE */ {"inTraitNode", "PHPStan\\Node\\InTraitNode"},
+	/* PT_CLASS_USE_STMT */ {"useStmt", "PhpParser\\Node\\Stmt\\Use_"},
+	/* PT_CLASS_GROUP_USE_STMT */ {"groupUseStmt", "PhpParser\\Node\\Stmt\\GroupUse"},
+	/* PT_CLASS_UNSET_OFFSET_EXPR */ {"unsetOffsetExpr", "PHPStan\\Node\\Expr\\UnsetOffsetExpr"},
 };
 
 zend_class_entry *pt_class(int idx)

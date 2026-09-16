@@ -30,6 +30,7 @@ use PHPStan\Node\Expr\ForeachValueByRefExpr;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\Expr\UnsetOffsetExpr;
 use PHPStan\Node\Variable\VariableWrite;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ResourceType;
 use PHPStan\Type\Type;
@@ -41,6 +42,7 @@ use function spl_object_id;
  * @implements StmtHandler<Unset_>
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/UnsetHandler.cpp')]
 final class UnsetHandler implements StmtHandler
 {
 

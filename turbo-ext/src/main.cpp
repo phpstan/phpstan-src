@@ -493,6 +493,16 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_enum_case_handler();
 	pt_register_trait_use_handler();
 	pt_register_trait_handler();
+	/* the remaining statement handlers, after VarAnnotationProcessor and
+	 * AssignHandler their constructors name */
+	pt_register_namespace_handler();
+	pt_register_use_handler();
+	pt_register_group_use_handler();
+	pt_register_declare_handler();
+	pt_register_inline_html_handler();
+	pt_register_global_handler();
+	pt_register_static_variable_handler();
+	pt_register_unset_handler();
 
 	return SUCCESS;
 }

@@ -23,6 +23,7 @@ namespace sigs = ptdecl::VariableFlowBuilder::sig;
 #include "TypeTraits.h"
 #include "TypeOps.h"
 #include "AnalyserValues.h"
+#include "Engine.h"
 
 #include <cstring>
 
@@ -263,8 +264,18 @@ public:
 		return zv::Val::null();
 	}
 
-	/* Mirrors targetRead(); $targetId NULL for null. */
+	/* Mirrors targetRead(); $targetId NULL for null. The recursion follows
+	 * the target's nesting (the twin recursed on the VM stack): it moves to a
+	 * fresh C stack segment when the current one runs low. */
 	static zv::Val targetRead(zval *target, zval *storage, bool read, zval *targetId)
+	{
+		if (EXPECTED(!pt_engine_stack_low())) return targetReadBody(target, storage, read, targetId);
+		zv::Val result;
+		pt_engine_with_stack([&]() { result = targetReadBody(target, storage, read, targetId); });
+		return result;
+	}
+
+	static zv::Val targetReadBody(zval *target, zval *storage, bool read, zval *targetId)
 	{
 		NodeClasses classes;
 		if (UNEXPECTED(!classes.resolve())) return zv::Val();
@@ -316,8 +327,17 @@ public:
 		return zv::Val(std::move(writes));
 	}
 
-	/* Mirrors targetWrite(); $redundant NULL for null. */
+	/* Mirrors targetWrite(); $redundant NULL for null. On a fresh C stack
+	 * segment when the current one runs low, as targetRead(). */
 	static zv::Val targetWrite(zval *target, zend_long kind, zval *scope, zval *storage, zval *redundant)
+	{
+		if (EXPECTED(!pt_engine_stack_low())) return targetWriteBody(target, kind, scope, storage, redundant);
+		zv::Val result;
+		pt_engine_with_stack([&]() { result = targetWriteBody(target, kind, scope, storage, redundant); });
+		return result;
+	}
+
+	static zv::Val targetWriteBody(zval *target, zend_long kind, zval *scope, zval *storage, zval *redundant)
 	{
 		NodeClasses classes;
 		if (UNEXPECTED(!classes.resolve())) return zv::Val();
@@ -443,6 +463,14 @@ private:
 	/* the recursion of writes(): appends the flow's writes to $writes;
 	 * false = pending exception */
 	[[nodiscard]] static bool collectWrites(zval *flow, zv::Arr &writes)
+	{
+		if (EXPECTED(!pt_engine_stack_low())) return collectWritesBody(flow, writes);
+		bool ok = false;
+		pt_engine_with_stack([&]() { ok = collectWritesBody(flow, writes); });
+		return ok;
+	}
+
+	[[nodiscard]] static bool collectWritesBody(zval *flow, zv::Arr &writes)
 	{
 		if (flow == NULL || Z_TYPE_P(flow) != IS_OBJECT) return true;
 		/* the flow classes are final and native: their readonly slots in place */

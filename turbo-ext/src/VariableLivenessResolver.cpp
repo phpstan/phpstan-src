@@ -29,6 +29,7 @@ namespace sigs = ptdecl::VariableLivenessResolver::sig;
 #include "zv.h"
 #include "TypeTraits.h"
 #include "TypeOps.h"
+#include "Engine.h"
 
 #include <cstring>
 #include <utility>
@@ -631,8 +632,19 @@ private:
 
 	/* }}} */
 
-	/* Mirrors collect(). */
+	/* Mirrors collect(). The flow tree nests as deep as the source (a
+	 * 10000-operand `$a + $a + ...` is a 10000-deep sequence) where the twin
+	 * recursed on the VM stack: the recursion moves to a fresh C stack
+	 * segment when the current one runs low. */
 	bool collect(zval *flowValue, bool dead)
+	{
+		if (EXPECTED(!pt_engine_stack_low())) return collectBody(flowValue, dead);
+		bool ok = false;
+		pt_engine_with_stack([&]() { ok = collectBody(flowValue, dead); });
+		return ok;
+	}
+
+	bool collectBody(zval *flowValue, bool dead)
 	{
 		if (flowValue == NULL) return true;
 		zend_object *flow = Z_OBJ_P(flowValue);
@@ -751,8 +763,17 @@ private:
 		return true;
 	}
 
-	/* Mirrors liveBefore(); $next is consumed, the result owned. */
+	/* Mirrors liveBefore(); $next is consumed, the result owned. On a fresh
+	 * C stack segment when the current one runs low, as collect(). */
 	zv::Val liveBefore(zval *flowValue, zv::Val next, const Context &context)
+	{
+		if (EXPECTED(!pt_engine_stack_low())) return liveBeforeBody(flowValue, std::move(next), context);
+		zv::Val result;
+		pt_engine_with_stack([&]() { result = liveBeforeBody(flowValue, std::move(next), context); });
+		return result;
+	}
+
+	zv::Val liveBeforeBody(zval *flowValue, zv::Val next, const Context &context)
 	{
 		if (flowValue == NULL) return next;
 		zend_object *flow = Z_OBJ_P(flowValue);

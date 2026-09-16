@@ -512,6 +512,13 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_unary_minus_handler();
 	pt_register_unary_plus_handler();
 	pt_register_bitwise_not_handler();
+	/* the increment / decrement handlers, after AssignHandler whose virtual
+	 * assignment they call */
+	pt_register_inc_dec_type_helper();
+	pt_register_pre_inc_handler();
+	pt_register_pre_dec_handler();
+	pt_register_post_inc_handler();
+	pt_register_post_dec_handler();
 
 	return SUCCESS;
 }

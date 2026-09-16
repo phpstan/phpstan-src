@@ -88,6 +88,70 @@ inline zv::Val impurePointsOf(zval *result)
 	return true;
 }
 
+/* $result->getScope() as an owned value */
+inline zv::Val scopeOf(zval *result)
+{
+	zv::Val hold;
+	zval *value = pt_expression_result_scope(result, hold);
+	if (UNEXPECTED(value == NULL)) return zv::Val();
+	return hold.isUndef() ? zv::Val::copyOf(zv::Ref(value)) : std::move(hold);
+}
+
+/* }}} */
+
+/* {{{ the inc/dec handlers' value flow */
+
+/* $write->getId() of a VariableWrite */
+inline zv::Val variableWriteId(zval *write)
+{
+	bool error = false;
+	const pt_variable_write_slots *writeSlots = pt_variable_write_slots_of(Z_OBJ_P(write), error);
+	if (writeSlots != NULL) return zv::Val::copyOf(zv::ObjRef(write).propAtOffset(writeSlots->id));
+	if (UNEXPECTED(error)) return zv::Val();
+	return pt_type_call(Z_OBJ_P(write), PT_LC("getid"), 0, NULL);
+}
+
+/* $valueFlowWrite !== null ? $context->enterDeep()->enterValueFlow($valueFlowWrite,
+ * false) : $context->enterDeep() */
+inline zv::Val valueFlowContext(zval *context, zval *valueFlowWrite)
+{
+	zv::Val deep = pt_expression_context_enter_deep(context);
+	if (UNEXPECTED(deep.isUndef()) || Z_TYPE_P(valueFlowWrite) == IS_NULL) return deep;
+	return pt_expression_context_enter_value_flow(deep.raw(), valueFlowWrite, false);
+}
+
+/* VariableFlow::sequence($varResult->getVariableFlow(), $valueFlowWrite !==
+ * null && $context->isValueConsumed() ? VariableFlow::inputs($valueFlowWrite->getId(),
+ * $context->getValueFlowTarget() !== null ? $context->getValueFlowTarget()->getId() : null)
+ * : null, VariableFlowBuilder::targetWrite($var, $kind, $assignedScope, $storage)) */
+inline zv::Val incDecFlow(zval *varFlow, zval *valueFlowWrite, zval *context, zval *var, zend_long kind, zval *assignedScope, zval *storage)
+{
+	zv::Val inputsFlow = zv::Val::null();
+	if (Z_TYPE_P(valueFlowWrite) != IS_NULL) {
+		bool consumed;
+		if (UNEXPECTED(!pt_expression_context_is_value_consumed(context, consumed))) return zv::Val();
+		if (consumed) {
+			zv::Val writeId = variableWriteId(valueFlowWrite);
+			if (UNEXPECTED(writeId.isUndef())) return zv::Val();
+			zv::Val valueFlowTarget = pt_expression_context_get_value_flow_target(context);
+			if (UNEXPECTED(valueFlowTarget.isUndef())) return zv::Val();
+			zv::Val targetId = zv::Val::null();
+			if (!valueFlowTarget.isNull()) {
+				zv::Val target = pt_expression_context_get_value_flow_target(context);
+				if (UNEXPECTED(target.isUndef())) return zv::Val();
+				targetId = variableWriteId(target.raw());
+				if (UNEXPECTED(targetId.isUndef())) return zv::Val();
+			}
+			inputsFlow = pt_variable_flow_inputs(zval_get_long(writeId.raw()), targetId.raw());
+			if (UNEXPECTED(inputsFlow.isUndef())) return zv::Val();
+		}
+	}
+	zv::Val targetWriteFlow = pt_variable_flow_builder_target_write(var, kind, assignedScope, storage, NULL);
+	if (UNEXPECTED(targetWriteFlow.isUndef())) return zv::Val();
+	zv::Args flows{varFlow, inputsFlow.raw(), targetWriteFlow.raw()};
+	return pt_variable_flow_sequence(3, flows);
+}
+
 /* }}} */
 
 /* {{{ the closures */

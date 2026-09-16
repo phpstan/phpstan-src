@@ -3694,4 +3694,27 @@ zv::Val pt_mutating_scope_obtain_result_for_node(zend_object *scope, zend_object
 
 /* }}} */
 
+/* {{{ the increment / decrement handlers (PreIncHandler.cpp, PreDecHandler.cpp,
+ * PostIncHandler.cpp, PostDecHandler.cpp — SimpleExprHandlers.h) and
+ * IncDecTypeHelper.cpp — registered at the END of the sequence */
+
+extern zend_class_entry *pt_ce_inc_dec_type_helper;
+extern zend_class_entry *pt_ce_pre_inc_handler;
+extern zend_class_entry *pt_ce_pre_dec_handler;
+extern zend_class_entry *pt_ce_post_inc_handler;
+extern zend_class_entry *pt_ce_post_dec_handler;
+void pt_register_inc_dec_type_helper();
+void pt_register_pre_inc_handler();
+void pt_register_pre_dec_handler();
+void pt_register_post_inc_handler();
+void pt_register_post_dec_handler();
+
+/* $incDecTypeHelper->getTypeCallback($varExpr, $varResult, $increment): the
+ * native closure holder for the native class (callable wherever the twin's
+ * \Closure is — the handlers only hand it on as a typeCallback), the method's
+ * \Closure otherwise (everything borrowed); UNDEF = pending exception */
+zv::Val pt_inc_dec_type_helper_get_type_callback(zval *helper, zval *varExpr, zval *varResult, bool increment);
+
+/* }}} */
+
 #endif /* PHPSTANTURBO_SUPPORT_H */

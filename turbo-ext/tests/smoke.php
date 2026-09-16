@@ -4382,6 +4382,11 @@ $coveredElsewhere = [
 	\PHPStan\Analyser\ExprHandler\UnaryMinusHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\UnaryPlusHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\BitwiseNotHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\Helper\IncDecTypeHelper::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\PreIncHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\PreDecHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\PostIncHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\PostDecHandler::class => 'walk-trace.php',
 ];
 foreach (array_keys($shadowedClasses) as $shadowedClass) {
 	check(

@@ -3792,11 +3792,53 @@ $hhContexts = [
 	'dim root' => \PHPStan\Analyser\ExpressionContext::createDeep()->enterArrayDimFetchRoot(),
 	'value flow' => \PHPStan\Analyser\ExpressionContext::createDeep()->enterValueFlow(new \PHPStan\Node\Variable\VariableWrite('t', $hhName, 42, \PHPStan\Node\Variable\VariableWrite::KIND_ASSIGN), true),
 ];
+// The native VariableHandler creates the native IssetabilityDescriptor, which
+// the container's PHP factory type-hints away under the prefix: the native
+// side's factory hands it a PHP twin carrying the same state.
+$hhNativeFactory = new class ($hhFactory) implements \PHPStan\Analyser\ExpressionResultFactory {
+
+	public function __construct(private \PHPStan\Analyser\ExpressionResultFactory $factory)
+	{
+	}
+
+	public function create(
+		\PHPStan\Analyser\MutatingScope $scope,
+		\PHPStan\Analyser\MutatingScope $beforeScope,
+		\PhpParser\Node\Expr $expr,
+		bool $hasYield,
+		bool $isAlwaysTerminating,
+		array $throwPoints,
+		array $impurePoints,
+		?callable $typeCallback,
+		callable $specifyTypesCallback,
+		bool $containsNullsafe = false,
+		?object $issetabilityDescriptor = null,
+		?\PHPStan\Analyser\ExpressionResult $truthyScopeOverrideResult = null,
+		?\PHPStan\Analyser\ExpressionResult $falseyScopeOverrideResult = null,
+		?callable $createTypesCallback = null,
+		?\PHPStan\Type\Type $type = null,
+		?\PHPStan\Type\Type $nativeType = null,
+		?\PHPStan\Analyser\ArgsResult $argsResult = null,
+		?\PHPStan\Analyser\VariableFlow $variableFlow = null,
+	): \PHPStan\Analyser\ExpressionResult
+	{
+		if ($issetabilityDescriptor instanceof \PHPStanTurbo\IssetabilityDescriptor) {
+			$twin = (new \ReflectionClass(\PHPStan\Analyser\IssetabilityDescriptor::class))->newInstanceWithoutConstructor();
+			foreach ((new \ReflectionClass($issetabilityDescriptor))->getProperties() as $property) {
+				(new \ReflectionProperty(\PHPStan\Analyser\IssetabilityDescriptor::class, $property->getName()))->setValue($twin, $property->getValue($issetabilityDescriptor));
+			}
+			$issetabilityDescriptor = $twin;
+		}
+
+		return $this->factory->create($scope, $beforeScope, $expr, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints, $typeCallback, $specifyTypesCallback, $containsNullsafe, $issetabilityDescriptor, $truthyScopeOverrideResult, $falseyScopeOverrideResult, $createTypesCallback, $type, $nativeType, $argsResult, $variableFlow);
+	}
+
+};
 $hhResults = [];
-foreach (['php' => [\PHPStan\Analyser\ExprHandler\ScalarHandler::class, \PHPStan\Analyser\ExprHandler\VariableHandler::class], 'native' => [\PHPStanTurbo\ScalarHandler::class, \PHPStanTurbo\VariableHandler::class]] as $side => [$scalarClass, $variableClass]) {
+foreach (['php' => [\PHPStan\Analyser\ExprHandler\ScalarHandler::class, \PHPStan\Analyser\ExprHandler\VariableHandler::class, $hhFactory], 'native' => [\PHPStanTurbo\ScalarHandler::class, \PHPStanTurbo\VariableHandler::class, $hhNativeFactory]] as $side => [$scalarClass, $variableClass, $variableFactory]) {
 	$r = [];
 	$scalar = new $scalarClass($hhInitializer, $hhFactory);
-	$variable = new $variableClass($hhFactory, $hhDefault, $hhIdentical, $hhInitializer);
+	$variable = new $variableClass($variableFactory, $hhDefault, $hhIdentical, $hhInitializer);
 	$describeType = static fn ($type) => $type instanceof \PHPStan\Type\Type ? $type->describe(\PHPStan\Type\VerbosityLevel::precise()) : get_debug_type($type);
 	$describe = static function (\PHPStan\Analyser\ExpressionResult $result, bool $resolveTypes) use ($describeType, $vfDescribe, $hhScope, $turboNorm): array {
 		$callbacks = [];
@@ -3813,7 +3855,16 @@ foreach (['php' => [\PHPStan\Analyser\ExprHandler\ScalarHandler::class, \PHPStan
 			'yield' => $result->hasYield(),
 			'terminating' => $result->isAlwaysTerminating(),
 			'scope' => $result->getScope() === $hhScope,
-			'issetability' => get_debug_type((new \ReflectionProperty($result, 'issetabilityDescriptor'))->getValue($result)),
+			'issetability' => (static function (?object $descriptor): mixed {
+				if ($descriptor === null) {
+					return null;
+				}
+				$state = [get_class($descriptor)];
+				foreach (['kind', 'variableName'] as $property) {
+					$state[$property] = (new \ReflectionProperty($descriptor, $property))->getValue($descriptor);
+				}
+				return $state;
+			})((new \ReflectionProperty($result, 'issetabilityDescriptor'))->getValue($result)),
 			'callable' => is_callable($typeCallback),
 			'createTypesCallback' => $callbacks['createTypesCallback'],
 		];
@@ -3875,6 +3926,16 @@ try {
 } catch (\Error $e) {
 	check($e->getMessage() === 'phpstan_turbo: native closure without a body', 'NativeClosure: userland instance message: ' . $e->getMessage());
 }
+
+// ---- the analyser value classes ----
+// analyser-values.php builds the value objects on both sides from the same
+// scopes, nodes and types and compares every method's answer and the state.
+$covered[\PHPStan\Analyser\ImpurePoint::class] = true;
+$covered[\PHPStan\Analyser\ThrowPoint::class] = true;
+$covered[\PHPStan\Analyser\InternalThrowPoint::class] = true;
+$covered[\PHPStan\Analyser\ArgsResult::class] = true;
+$covered[\PHPStan\Analyser\IssetabilityDescriptor::class] = true;
+require __DIR__ . '/analyser-values.php';
 
 // ---- differential coverage completeness ----
 // Every shadowed class must be exercised by one of the tests/ scripts; the

@@ -22,6 +22,7 @@
 
 #include "support.h"
 #include "zv.h"
+#include "AnalyserValues.h"
 
 #include <utility>
 
@@ -177,17 +178,15 @@ zv::Val pt_expression_result_create(zval *factory, const pt_expression_result_ar
 /* releases the per-factory collection cache (RSHUTDOWN) */
 void pt_expression_result_rshutdown();
 
-/* the getters of an ExpressionResult for native callers: the native body for
- * a native result, the method otherwise (the result borrowed); UNDEF / false
- * = pending exception */
+/* $result->getType() / ->getNativeType() for native callers: the native body
+ * for a native result, the method otherwise (the result borrowed); UNDEF =
+ * pending exception. The getters that only read a slot — getScope(),
+ * getBeforeScope(), getExpr(), getThrowPoints(), getImpurePoints(),
+ * hasYield(), isAlwaysTerminating() — are the inline borrowed readers of
+ * AnalyserValues.h (pt_expression_result_scope(result, hold), ...), which
+ * this header includes. */
 zv::Val pt_expression_result_get_type(zval *result);
 zv::Val pt_expression_result_get_native_type(zval *result);
-zv::Val pt_expression_result_get_scope(zval *result);
-zv::Val pt_expression_result_get_before_scope(zval *result);
-zv::Val pt_expression_result_get_throw_points(zval *result);
-zv::Val pt_expression_result_get_impure_points(zval *result);
-[[nodiscard]] bool pt_expression_result_has_yield(zval *result, bool &out);
-[[nodiscard]] bool pt_expression_result_is_always_terminating(zval *result, bool &out);
 
 /* }}} */
 

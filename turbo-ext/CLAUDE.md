@@ -162,8 +162,13 @@ VariableHandler.cpp are the reference handler ports.
   ExpressionResult is constructed directly (the extensions collection is
   learned from the factory's first result and cached per factory object); any
   other factory gets `create()` with the same named arguments. Read results
-  with `pt_expression_result_get_*()` / `_has_yield()` /
-  `_is_always_terminating()` / `pt_expression_result_variable_flow()`.
+  with `pt_expression_result_get_type()` / `_get_native_type()` /
+  `pt_expression_result_variable_flow()` and the inline borrowed slot readers
+  of `AnalyserValues.h` (`pt_expression_result_scope(result, hold)`,
+  `_before_scope()`, `_expr()`, `_throw_points()`, `_impure_points()`,
+  `_has_yield(result, out)`, `_is_always_terminating()`) — the same readers
+  the other analyser value classes (throw points, statement results, args
+  results, ...) have there.
 - **Handler dispatch**: a native handler registers its processExpr() /
   processStmt() body right after `cls.shadow(&pt_ce_x)` with
   `pt_expr_handler_entry_register(&pt_ce_x, &X::processExprEntry)` /

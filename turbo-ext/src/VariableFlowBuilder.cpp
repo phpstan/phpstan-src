@@ -6,9 +6,10 @@
  * arguments: the node structure is read from the PhpParser nodes'
  * properties, the flows come from the native VariableFlow factories
  * (VariableFlow.cpp), stored results from the native
- * ExpressionResultStorage and their flows from the native ExpressionResult
- * (the methods for any other class), and the collaborators that stay PHP
- * (ArgsResult, MutatingScope, VariableWriteOffset, VariableWrite) are
+ * ExpressionResultStorage and their flows from the native ExpressionResult,
+ * the throw points and argument results from the native InternalThrowPoint
+ * and ArgsResult (the methods for any other class), and the collaborators
+ * that stay PHP (MutatingScope, VariableWriteOffset, VariableWrite) are
  * called through the engine.
  */
 
@@ -19,6 +20,7 @@ namespace sigs = ptdecl::VariableFlowBuilder::sig;
 #include "zv.h"
 #include "TypeTraits.h"
 #include "TypeOps.h"
+#include "AnalyserValues.h"
 
 #include <cstring>
 
@@ -186,20 +188,22 @@ public:
 				zend_type_error("phpstan_turbo: expected InternalThrowPoint, got %s", zend_zval_value_name(throwPoint.raw()));
 				return zv::Val();
 			}
-			zv::Val node = pt_type_call(throwPoint.asObject(), PT_LC("getnode"), 0, NULL);
-			if (UNEXPECTED(node.isUndef())) return zv::Val();
-			zend_object *throwNode = Z_OBJ_P(node.raw());
+			zv::Val nodeHold;
+			zval *node = pt_internal_throw_point_node(throwPoint.raw(), nodeHold);
+			if (UNEXPECTED(node == NULL)) return zv::Val();
+			zend_object *throwNode = Z_OBJ_P(node);
 			if (throwNode != Z_OBJ_P(expr)
 				&& !zend_hash_index_exists(callbackArguments.table(), throwNode->handle)
 				&& (filePos(throwNode, pt_str_start_file_pos) != exprStart || filePos(throwNode, pt_str_end_file_pos) != exprEnd)) {
 				continue;
 			}
 
-			zv::Val type = pt_type_call(throwPoint.asObject(), PT_LC("gettype"), 0, NULL);
-			if (UNEXPECTED(type.isUndef())) return zv::Val();
-			zv::Val canContainAnyThrowable = pt_type_call(throwPoint.asObject(), PT_LC("cancontainanythrowable"), 0, NULL);
-			if (UNEXPECTED(canContainAnyThrowable.isUndef())) return zv::Val();
-			zv::Val flow = pt_variable_flow_throwing(type.raw(), true, Z_TYPE_P(canContainAnyThrowable.raw()) == IS_TRUE);
+			zv::Val typeHold;
+			zval *type = pt_internal_throw_point_type(throwPoint.raw(), typeHold);
+			if (UNEXPECTED(type == NULL)) return zv::Val();
+			bool canContainAnyThrowable;
+			if (UNEXPECTED(!pt_internal_throw_point_can_contain_any_throwable(throwPoint.raw(), canContainAnyThrowable))) return zv::Val();
+			zv::Val flow = pt_variable_flow_throwing(type, true, canContainAnyThrowable);
 			if (UNEXPECTED(flow.isUndef())) return zv::Val();
 			throws.push(std::move(flow));
 		}
@@ -220,8 +224,10 @@ public:
 				zend_type_error("phpstan_turbo: expected an Arg with an Expr value");
 				return zv::Val();
 			}
-			zv::Val result = pt_type_call(Z_OBJ_P(argsResult), PT_LC("findargresult"), 1, value.raw());
-			if (UNEXPECTED(result.isUndef())) return zv::Val();
+			zv::Val resultHold;
+			zval *found = pt_args_result_find_arg_result(argsResult, value.raw(), resultHold);
+			if (UNEXPECTED(found == NULL)) return zv::Val();
+			zv::Val result = zv::Val::copyOf(zv::Ref(found));
 			if (Z_TYPE_P(result.raw()) == IS_NULL) {
 				result = pt_expression_result_storage_find(storage, value.raw());
 				if (UNEXPECTED(result.isUndef())) return zv::Val();
@@ -231,9 +237,9 @@ public:
 			flows.push(std::move(flow));
 			zv::Ref byRef = nodeProp(arg.asObject(), PT_LC("byRef"));
 			if (byRef.raw() == NULL || !byRef.isTrue()) {
-				zv::Val passedByReference = pt_type_call(Z_OBJ_P(argsResult), PT_LC("ispassedbyreference"), 1, value.raw());
-				if (UNEXPECTED(passedByReference.isUndef())) return zv::Val();
-				if (Z_TYPE_P(passedByReference.raw()) != IS_TRUE) continue;
+				bool passedByReference;
+				if (UNEXPECTED(!pt_args_result_is_passed_by_reference(argsResult, value.raw(), passedByReference))) return zv::Val();
+				if (!passedByReference) continue;
 			}
 
 			zv::Val escape = escapeRoot(value.raw());

@@ -337,6 +337,14 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_native_closure();
 	pt_register_scalar_handler();
 	pt_register_variable_handler();
+	/* the analyser value classes — after MutatingScope and ExpressionResult,
+	 * whose classes their signatures name; ThrowPoint before
+	 * InternalThrowPoint, whose toPublic() returns it */
+	pt_register_impure_point();
+	pt_register_throw_point();
+	pt_register_internal_throw_point();
+	pt_register_args_result();
+	pt_register_issetability_descriptor();
 
 	return SUCCESS;
 }

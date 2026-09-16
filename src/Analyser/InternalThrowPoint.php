@@ -3,11 +3,13 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use Throwable;
 
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/InternalThrowPoint.cpp')]
 final class InternalThrowPoint
 {
 

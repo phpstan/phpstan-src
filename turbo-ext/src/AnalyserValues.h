@@ -1,0 +1,191 @@
+/*
+ * Inline readers of the analyser value classes the engine trades results
+ * with (ExpressionResult.cpp, InternalThrowPoint.cpp, ArgsResult.cpp, ...).
+ *
+ * The classes are final and their getters return promoted property slots,
+ * so a native caller holding an instance of the native class reads the slot
+ * in place — borrowed, no call, no addref — and inlines the read. Anything
+ * else (the PHP twin declared next to the native class in the differential
+ * tests, or an instance whose constructor never ran) takes the cold path:
+ * the getter by name, its result kept alive in the caller's `hold`, which
+ * also raises the twin's uninitialized-read Error. NULL = pending exception.
+ *
+ * The factories and the behaviourful entries (toPublic(), resolve(), ...)
+ * are declared in support.h.
+ */
+
+#ifndef PHPSTANTURBO_ANALYSER_VALUES_H
+#define PHPSTANTURBO_ANALYSER_VALUES_H
+
+#include "support.h"
+#include "zv.h"
+#include "generated/ArgsResult.h"
+#include "generated/ExpressionResult.h"
+#include "generated/InternalThrowPoint.h"
+
+zv::Val pt_type_call(zend_object *object, const char *lcname, size_t len, uint32_t argc, zval *argv);
+
+namespace ptav {
+
+/* the declared slot of an instance of exactly ce, borrowed; NULL for any
+ * other object or a slot never initialized */
+inline zval *slotOf(zval *object, zend_class_entry *ce, uint32_t index)
+{
+	if (EXPECTED(Z_OBJCE_P(object) == ce)) {
+		zval *value = OBJ_PROP_NUM(Z_OBJ_P(object), index);
+		if (EXPECTED(Z_TYPE_P(value) != IS_UNDEF)) return value;
+	}
+	return NULL;
+}
+
+/* $object->getter(...$argv) through the engine, the result kept alive in
+ * hold; NULL = pending exception */
+inline zend_never_inline ZEND_COLD zval *callGetter(zval *object, const char *lcname, size_t len, zv::Val &hold, uint32_t argc = 0, zval *argv = NULL)
+{
+	hold = pt_type_call(Z_OBJ_P(object), lcname, len, argc, argv);
+	return hold.isUndef() ? NULL : hold.raw();
+}
+
+/* the slot, or the getter's result */
+inline zval *read(zval *object, zend_class_entry *ce, uint32_t index, const char *lcname, size_t len, zv::Val &hold)
+{
+	zval *value = slotOf(object, ce, index);
+	return EXPECTED(value != NULL) ? value : callGetter(object, lcname, len, hold);
+}
+
+/* a bool getter; false = pending exception */
+inline bool readBool(zval *object, zend_class_entry *ce, uint32_t index, const char *lcname, size_t len, bool &out)
+{
+	zval *value = slotOf(object, ce, index);
+	if (EXPECTED(value != NULL)) {
+		out = Z_TYPE_P(value) == IS_TRUE;
+		return true;
+	}
+	zv::Val hold;
+	value = callGetter(object, lcname, len, hold);
+	if (UNEXPECTED(value == NULL)) return false;
+	out = zend_is_true(value);
+	return true;
+}
+
+/* a borrowed read as an owned value (a getter's return value) */
+inline zv::Val own(zval *value)
+{
+	return value != NULL ? zv::Val::copyOf(zv::Ref(value)) : zv::Val();
+}
+
+} // namespace ptav
+
+/* {{{ ExpressionResult: $result->getScope() / ->getBeforeScope() /
+ * ->getExpr() / ->hasYield() / ->isAlwaysTerminating() / ->getThrowPoints()
+ * / ->getImpurePoints() */
+
+inline zval *pt_expression_result_scope(zval *result, zv::Val &hold)
+{
+	return ptav::read(result, pt_ce_expression_result, ptdecl::ExpressionResult::slot::scope, PT_LC("getscope"), hold);
+}
+
+inline zval *pt_expression_result_before_scope(zval *result, zv::Val &hold)
+{
+	return ptav::read(result, pt_ce_expression_result, ptdecl::ExpressionResult::slot::beforeScope, PT_LC("getbeforescope"), hold);
+}
+
+inline zval *pt_expression_result_expr(zval *result, zv::Val &hold)
+{
+	return ptav::read(result, pt_ce_expression_result, ptdecl::ExpressionResult::slot::expr, PT_LC("getexpr"), hold);
+}
+
+inline bool pt_expression_result_has_yield(zval *result, bool &out)
+{
+	return ptav::readBool(result, pt_ce_expression_result, ptdecl::ExpressionResult::slot::hasYield, PT_LC("hasyield"), out);
+}
+
+inline bool pt_expression_result_is_always_terminating(zval *result, bool &out)
+{
+	return ptav::readBool(result, pt_ce_expression_result, ptdecl::ExpressionResult::slot::isAlwaysTerminating, PT_LC("isalwaysterminating"), out);
+}
+
+inline zval *pt_expression_result_throw_points(zval *result, zv::Val &hold)
+{
+	return ptav::read(result, pt_ce_expression_result, ptdecl::ExpressionResult::slot::throwPoints, PT_LC("getthrowpoints"), hold);
+}
+
+inline zval *pt_expression_result_impure_points(zval *result, zv::Val &hold)
+{
+	return ptav::read(result, pt_ce_expression_result, ptdecl::ExpressionResult::slot::impurePoints, PT_LC("getimpurepoints"), hold);
+}
+
+/* }}} */
+
+/* {{{ InternalThrowPoint: $throwPoint->getScope() / ->getType() / ->getNode()
+ * / ->isExplicit() / ->canContainAnyThrowable() */
+
+inline zval *pt_internal_throw_point_scope(zval *throwPoint, zv::Val &hold)
+{
+	return ptav::read(throwPoint, pt_ce_internal_throw_point, ptdecl::InternalThrowPoint::slot::scope, PT_LC("getscope"), hold);
+}
+
+inline zval *pt_internal_throw_point_type(zval *throwPoint, zv::Val &hold)
+{
+	return ptav::read(throwPoint, pt_ce_internal_throw_point, ptdecl::InternalThrowPoint::slot::type, PT_LC("gettype"), hold);
+}
+
+inline zval *pt_internal_throw_point_node(zval *throwPoint, zv::Val &hold)
+{
+	return ptav::read(throwPoint, pt_ce_internal_throw_point, ptdecl::InternalThrowPoint::slot::node, PT_LC("getnode"), hold);
+}
+
+inline bool pt_internal_throw_point_is_explicit(zval *throwPoint, bool &out)
+{
+	return ptav::readBool(throwPoint, pt_ce_internal_throw_point, ptdecl::InternalThrowPoint::slot::explicit_, PT_LC("isexplicit"), out);
+}
+
+inline bool pt_internal_throw_point_can_contain_any_throwable(zval *throwPoint, bool &out)
+{
+	return ptav::readBool(throwPoint, pt_ce_internal_throw_point, ptdecl::InternalThrowPoint::slot::canContainAnyThrowable, PT_LC("cancontainanythrowable"), out);
+}
+
+inline bool pt_internal_throw_point_is_from_throw_expr(zval *throwPoint, bool &out)
+{
+	return ptav::readBool(throwPoint, pt_ce_internal_throw_point, ptdecl::InternalThrowPoint::slot::fromThrowExpr, PT_LC("isfromthrowexpr"), out);
+}
+
+/* }}} */
+
+/* {{{ ArgsResult: $argsResult->findArgResult($argValue) (the stored result
+ * or a borrowed null) / ->isPassedByReference($arg) /
+ * ->getResolvedParametersAcceptor() */
+
+inline zval *pt_args_result_find_arg_result(zval *argsResult, zval *argValue, zv::Val &hold)
+{
+	zval *argResults = ptav::slotOf(argsResult, pt_ce_args_result, ptdecl::ArgsResult::slot::argResults);
+	if (EXPECTED(argResults != NULL)) {
+		zval *found = zend_hash_index_find(Z_ARRVAL_P(argResults), Z_OBJ_HANDLE_P(argValue));
+		return found != NULL ? found : &EG(uninitialized_zval);
+	}
+	return ptav::callGetter(argsResult, PT_LC("findargresult"), hold, 1, argValue);
+}
+
+inline bool pt_args_result_is_passed_by_reference(zval *argsResult, zval *arg, bool &out)
+{
+	zval *byRefArguments = ptav::slotOf(argsResult, pt_ce_args_result, ptdecl::ArgsResult::slot::byRefArguments);
+	if (EXPECTED(byRefArguments != NULL)) {
+		zval *found = zend_hash_index_find(Z_ARRVAL_P(byRefArguments), Z_OBJ_HANDLE_P(arg));
+		out = found != NULL && Z_TYPE_P(found) != IS_NULL;
+		return true;
+	}
+	zv::Val hold;
+	zval *value = ptav::callGetter(argsResult, PT_LC("ispassedbyreference"), hold, 1, arg);
+	if (UNEXPECTED(value == NULL)) return false;
+	out = zend_is_true(value);
+	return true;
+}
+
+inline zval *pt_args_result_resolved_parameters_acceptor(zval *argsResult, zv::Val &hold)
+{
+	return ptav::read(argsResult, pt_ce_args_result, ptdecl::ArgsResult::slot::resolvedParametersAcceptor, PT_LC("getresolvedparametersacceptor"), hold);
+}
+
+/* }}} */
+
+#endif

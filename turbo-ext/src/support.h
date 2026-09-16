@@ -280,8 +280,6 @@ enum {
 	PT_CLASS_CLASS_CONST_STMT,
 	PT_CLASS_EXPR_HANDLER,
 	PT_CLASS_STMT_HANDLER,
-	PT_CLASS_IMPURE_POINT,
-	PT_CLASS_ISSETABILITY_DESCRIPTOR,
 	PT_CLASS_COUNT
 };
 
@@ -1821,6 +1819,80 @@ void pt_register_variable_handler();
  * everything borrowed); UNDEF = pending exception */
 zv::Val pt_variable_handler_compose_result(zval *handler, zval *nodeScopeResolver, zval *expr, zval *nameResult, zval *storage, zval *beforeScope, zval *context);
 
+/* }}} */
+
+/* {{{ the analyser value classes the handlers trade results with
+ * (ImpurePoint.cpp, ThrowPoint.cpp, InternalThrowPoint.cpp, ArgsResult.cpp,
+ * IssetabilityDescriptor.cpp) — registered at the END of the sequence, after
+ * MutatingScope and ExpressionResult, whose classes their signatures name.
+ * The classes are final: an entry taking an instance answers natively for
+ * the native class entry and through the method for anything else (the PHP
+ * twin declared next to the native class in the differential tests). Every
+ * argument is borrowed, NULL for a null where noted; UNDEF / false = pending
+ * exception. The getters that only read a slot are inline in
+ * AnalyserValues.h. */
+
+extern zend_class_entry *pt_ce_impure_point;
+void pt_register_impure_point();
+/* new ImpurePoint($scope, $node, $identifier, $description, $certain) */
+zv::Val pt_impure_point_new(zval *scope, zval *node, zend_string *identifier, zend_string *description, bool certain);
+
+extern zend_class_entry *pt_ce_throw_point;
+void pt_register_throw_point();
+/* ThrowPoint::createExplicit($scope, $type, $node, $canContainAnyThrowable) /
+ * ThrowPoint::createImplicit($scope, $node, $type) ($type NULL for null) */
+zv::Val pt_throw_point_create_explicit(zval *scope, zval *type, zval *node, bool canContainAnyThrowable, bool fromThrowExpr);
+zv::Val pt_throw_point_create_implicit(zval *scope, zval *node, zval *type = NULL);
+
+extern zend_class_entry *pt_ce_internal_throw_point;
+void pt_register_internal_throw_point();
+/* InternalThrowPoint::createExplicit(...) / ::createImplicit($scope, $node,
+ * $type) ($type NULL for null) / ::createFromPublic($throwPoint, $scope) */
+zv::Val pt_internal_throw_point_create_explicit(zval *scope, zval *type, zval *node, bool canContainAnyThrowable, bool fromThrowExpr);
+zv::Val pt_internal_throw_point_create_implicit(zval *scope, zval *node, zval *type = NULL);
+zv::Val pt_internal_throw_point_create_from_public(zval *throwPoint, zval *scope);
+/* $throwPoint->toPublic() / ->subtractCatchType($catchType) (the getters
+ * are inline in AnalyserValues.h) */
+zv::Val pt_internal_throw_point_to_public(zval *throwPoint);
+zv::Val pt_internal_throw_point_subtract_catch_type(zval *throwPoint, zval *catchType);
+
+extern zend_class_entry *pt_ce_args_result;
+void pt_register_args_result();
+/* new ArgsResult($expressionResult, $resolvedParametersAcceptor, $argResults,
+ * $byRefArguments) ($resolvedParametersAcceptor NULL for null,
+ * $byRefArguments NULL for []) */
+zv::Val pt_args_result_new(zval *expressionResult, zval *resolvedParametersAcceptor, zval *argResults, zval *byRefArguments = NULL);
+/* $argsResult->requireArgResult($argValue) (findArgResult(),
+ * isPassedByReference() and the getters are inline in AnalyserValues.h) */
+zv::Val pt_args_result_require_arg_result(zval *argsResult, zval *argValue);
+
+extern zend_class_entry *pt_ce_issetability_descriptor;
+void pt_register_issetability_descriptor();
+/* IssetabilityDescriptor::variable($variableName) / ::offset($varResult,
+ * $dimResult) / ::property($innerResult, $reflectionResolver, $propertyFetch)
+ * ($innerResult NULL for null; the resolver any callable — the twin's
+ * factory types it Closure, the slot is never re-checked) */
+zv::Val pt_issetability_descriptor_variable(zend_string *variableName);
+zv::Val pt_issetability_descriptor_offset(zval *varResult, zval *dimResult);
+zv::Val pt_issetability_descriptor_property(zval *innerResult, zval *reflectionResolver, zval *propertyFetch);
+/* $descriptor->resolve($scope, $useNativeTypes, $expr, $reprocessUntrackedLinks) */
+zv::Val pt_issetability_descriptor_resolve(zval *descriptor, zval *scope, bool useNativeTypes, zval *expr, bool reprocessUntrackedLinks = false);
+
+/* ExpressionResult.cpp — $result->getTypeOnScope($scope, $useNativeTypes) /
+ * ->getIssetabilityResolution($scope, $useNativeTypes, $reprocessUntrackedLinks)
+ * (the slot getters are inline in AnalyserValues.h) */
+zv::Val pt_expression_result_get_type_on_scope(zval *result, zval *scope, bool useNativeTypes);
+zv::Val pt_expression_result_get_issetability_resolution(zval *result, zval *scope, bool useNativeTypes, bool reprocessUntrackedLinks);
+
+/* MutatingScope.cpp — $scope->hasExpressionType($node) / ->getType($node) /
+ * ->getNativeType($expr) ($node / $expr an Expr), next to the engine
+ * foundation's hasVariableType() / getVariableType() /
+ * doNotTreatPhpDocTypesAsCertain() entries above: the native body for a
+ * MutatingScope (or a subclass inheriting the method), the method by name
+ * otherwise */
+zv::Val pt_mutating_scope_has_expression_type(zend_object *scope, zval *node);
+zv::Val pt_mutating_scope_get_type(zend_object *scope, zval *node);
+zv::Val pt_mutating_scope_get_native_type(zend_object *scope, zval *expr);
 /* }}} */
 
 #endif /* PHPSTANTURBO_SUPPORT_H */

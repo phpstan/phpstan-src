@@ -272,10 +272,7 @@ public:
 	{
 		zval *descriptor = slot(slots::issetabilityDescriptor);
 		zval *expr = slot(slots::expr);
-		if (Z_TYPE_P(descriptor) == IS_OBJECT) {
-			zv::Args argv{scope, useNativeTypes, expr, reprocessUntrackedLinks};
-			return pt_type_call(Z_OBJ_P(descriptor), PT_LC("resolve"), 4, argv);
-		}
+		if (Z_TYPE_P(descriptor) == IS_OBJECT) return pt_issetability_descriptor_resolve(descriptor, scope, useNativeTypes, expr, reprocessUntrackedLinks);
 
 		zv::Val type;
 		bool tracked = true;
@@ -1089,7 +1086,8 @@ zv::Val pt_expression_result_variable_flow(zval *result)
 	return pt_type_call(Z_OBJ_P(result), PT_LC("getvariableflow"), 0, NULL);
 }
 
-/* {{{ direct entries for native callers (Engine.h) */
+/* {{{ direct entries for native callers (Engine.h, the analyser value
+ * classes); the slot getters are inline in AnalyserValues.h */
 
 namespace {
 
@@ -1115,52 +1113,18 @@ zv::Val pt_expression_result_get_native_type(zval *result)
 	return pt_type_call(Z_OBJ_P(result), PT_LC("getnativetype"), 0, NULL);
 }
 
-zv::Val pt_expression_result_get_scope(zval *result)
+zv::Val pt_expression_result_get_type_on_scope(zval *result, zval *scope, bool useNativeTypes)
 {
-	if (isNativeResult(result)) return ExpressionResult(Z_OBJ_P(result)).getScope();
-	return pt_type_call(Z_OBJ_P(result), PT_LC("getscope"), 0, NULL);
+	if (EXPECTED(Z_OBJCE_P(result) == pt_ce_expression_result)) return ExpressionResult(Z_OBJ_P(result)).getTypeOnScope(scope, useNativeTypes);
+	zv::Args argv{scope, useNativeTypes};
+	return pt_type_call(Z_OBJ_P(result), PT_LC("gettypeonscope"), 2, argv);
 }
 
-zv::Val pt_expression_result_get_before_scope(zval *result)
+zv::Val pt_expression_result_get_issetability_resolution(zval *result, zval *scope, bool useNativeTypes, bool reprocessUntrackedLinks)
 {
-	if (isNativeResult(result)) return ExpressionResult(Z_OBJ_P(result)).getBeforeScope();
-	return pt_type_call(Z_OBJ_P(result), PT_LC("getbeforescope"), 0, NULL);
-}
-
-zv::Val pt_expression_result_get_throw_points(zval *result)
-{
-	if (isNativeResult(result)) return ExpressionResult(Z_OBJ_P(result)).getThrowPoints();
-	return pt_type_call(Z_OBJ_P(result), PT_LC("getthrowpoints"), 0, NULL);
-}
-
-zv::Val pt_expression_result_get_impure_points(zval *result)
-{
-	if (isNativeResult(result)) return ExpressionResult(Z_OBJ_P(result)).getImpurePoints();
-	return pt_type_call(Z_OBJ_P(result), PT_LC("getimpurepoints"), 0, NULL);
-}
-
-bool pt_expression_result_has_yield(zval *result, bool &out)
-{
-	if (isNativeResult(result)) {
-		out = ExpressionResult(Z_OBJ_P(result)).hasYield();
-		return true;
-	}
-	zv::Val value = pt_type_call(Z_OBJ_P(result), PT_LC("hasyield"), 0, NULL);
-	if (UNEXPECTED(value.isUndef())) return false;
-	out = Z_TYPE_P(value.raw()) == IS_TRUE;
-	return true;
-}
-
-bool pt_expression_result_is_always_terminating(zval *result, bool &out)
-{
-	if (isNativeResult(result)) {
-		out = ExpressionResult(Z_OBJ_P(result)).isAlwaysTerminating();
-		return true;
-	}
-	zv::Val value = pt_type_call(Z_OBJ_P(result), PT_LC("isalwaysterminating"), 0, NULL);
-	if (UNEXPECTED(value.isUndef())) return false;
-	out = Z_TYPE_P(value.raw()) == IS_TRUE;
-	return true;
+	if (EXPECTED(Z_OBJCE_P(result) == pt_ce_expression_result)) return ExpressionResult(Z_OBJ_P(result)).getIssetabilityResolution(scope, useNativeTypes, reprocessUntrackedLinks);
+	zv::Args argv{scope, useNativeTypes, reprocessUntrackedLinks};
+	return pt_type_call(Z_OBJ_P(result), PT_LC("getissetabilityresolution"), 3, argv);
 }
 
 /* }}} */
@@ -1380,7 +1344,6 @@ void pt_expression_result_rshutdown()
 }
 
 /* }}} */
-
 /* {{{ engine ABI glue: parameter parsing + registration */
 
 #include "reg.h"

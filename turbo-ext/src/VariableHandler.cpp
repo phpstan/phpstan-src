@@ -14,10 +14,11 @@
  * callback handed to IdenticalNarrowingHelper::specifyIdentical().
  *
  * MutatingScope, ExpressionResult, ExpressionContext, VariableFlow,
- * SpecifiedTypes, TypeSpecifierContext and TypeCombinator are called through
- * their direct entries; the collaborators that stay PHP for now
- * (NodeScopeResolver, the narrowing helpers, InitializerExprTypeResolver,
- * ImpurePoint, IssetabilityDescriptor) through the cached method sites in the
+ * SpecifiedTypes, TypeSpecifierContext, TypeCombinator, ImpurePoint and
+ * IssetabilityDescriptor are called through their direct entries (the
+ * ExpressionResult slot getters are the inline readers of AnalyserValues.h);
+ * the collaborators that stay PHP for now (NodeScopeResolver, the narrowing
+ * helpers, InitializerExprTypeResolver) through the cached method sites in the
  * block below, one helper each.
  */
 
@@ -31,6 +32,7 @@ namespace sigs = ptdecl::VariableHandler::sig;
 #include "TypeTraits.h"
 #include "TypeOps.h"
 #include "Engine.h"
+#include "AnalyserValues.h"
 
 zend_class_entry *pt_ce_variable_handler = nullptr;
 
@@ -44,7 +46,6 @@ pt_method_site pt_vh_capture_first_arg_result_site;
 pt_method_site pt_vh_specify_default_types_site;
 pt_method_site pt_vh_specify_identical_site;
 pt_method_site pt_vh_resolve_identical_type_site;
-pt_method_site pt_vh_issetability_variable_site;
 pt_method_site pt_vh_get_constant_strings_site;
 pt_property_site pt_vh_name_site;
 
@@ -83,18 +84,10 @@ zv::Val resolveIdenticalType(zval *initializerExprTypeResolver, zval *leftType, 
 	return pt_call_method_cached(pt_vh_resolve_identical_type_site, Z_OBJ_P(initializerExprTypeResolver), PT_LC("resolveidenticaltype"), 2, argv);
 }
 
-/* new ImpurePoint($scope, $node, $identifier, $description, $certain) */
-zv::Val newImpurePoint(zval *scope, zval *node, zval *identifier, zval *description, bool certain)
-{
-	zv::Args argv{scope, node, identifier, description, certain};
-	return pt_type_new(PT_CLASS_IMPURE_POINT, 5, argv);
-}
-
-/* IssetabilityDescriptor::variable($variableName) */
-zv::Val issetabilityDescriptorVariable(zval *variableName)
-{
-	return pt_call_static_cached(pt_vh_issetability_variable_site, PT_CLASS_ISSETABILITY_DESCRIPTOR, PT_LC("variable"), 1, variableName);
-}
+/* the superglobal impure point's 'superglobal' / 'access to superglobal
+ * variable' literals, permanent interned strings (module startup) */
+zend_string *pt_vh_superglobal_identifier = nullptr;
+zend_string *pt_vh_superglobal_description = nullptr;
 
 /* $type->getConstantStrings() */
 zv::Val getConstantStrings(zval *type)
@@ -191,11 +184,13 @@ public:
 		if (nameResult != NULL && Z_TYPE_P(nameResult) == IS_NULL) nameResult = NULL;
 		if (context != NULL && Z_TYPE_P(context) == IS_NULL) context = NULL;
 
-		zv::Val scopeValue;
+		/* the name result's scope and points are borrowed from its slots (the
+		 * holds keep a foreign result's getter values alive) */
+		zv::Val scopeHold, throwPointsHold, impurePointsHold;
 		zval *scope = beforeScope;
 		bool hasYield = false;
-		zv::Val throwPoints;
-		zv::Val impurePoints;
+		zval *throwPoints = NULL;
+		zval *impurePoints = NULL;
 		bool isAlwaysTerminating = false;
 		zv::Val variableFlow = zv::Val::null();
 		zval *name = variableName(expr);
@@ -220,13 +215,12 @@ public:
 			}
 			if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
 			if (pt_is_superglobal_name(Z_STR_P(name))) {
-				zv::Val identifier = zv::Val::string(PT_LC("superglobal"));
-				zv::Val description = zv::Val::string(PT_LC("access to superglobal variable"));
-				zv::Val impurePoint = newImpurePoint(scope, expr, identifier.raw(), description.raw(), true);
+				zv::Val impurePoint = pt_impure_point_new(scope, expr, pt_vh_superglobal_identifier, pt_vh_superglobal_description, true);
 				if (UNEXPECTED(impurePoint.isUndef())) return zv::Val();
 				zv::Arr points = zv::Arr::create(1);
 				points.push(std::move(impurePoint));
-				impurePoints = zv::Val(std::move(points));
+				impurePointsHold = zv::Val(std::move(points));
+				impurePoints = impurePointsHold.raw();
 			}
 		} else if (nameResult != NULL) {
 			zv::Val nameType = pt_expression_result_get_type(nameResult);
@@ -246,19 +240,18 @@ public:
 			variableFlow = pt_variable_flow_sequence(2, flows);
 			if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
 			if (UNEXPECTED(!pt_expression_result_has_yield(nameResult, hasYield))) return zv::Val();
-			throwPoints = pt_expression_result_get_throw_points(nameResult);
-			if (UNEXPECTED(throwPoints.isUndef())) return zv::Val();
-			impurePoints = pt_expression_result_get_impure_points(nameResult);
-			if (UNEXPECTED(impurePoints.isUndef())) return zv::Val();
+			throwPoints = pt_expression_result_throw_points(nameResult, throwPointsHold);
+			if (UNEXPECTED(throwPoints == NULL)) return zv::Val();
+			impurePoints = pt_expression_result_impure_points(nameResult, impurePointsHold);
+			if (UNEXPECTED(impurePoints == NULL)) return zv::Val();
 			if (UNEXPECTED(!pt_expression_result_is_always_terminating(nameResult, isAlwaysTerminating))) return zv::Val();
-			scopeValue = pt_expression_result_get_scope(nameResult);
-			if (UNEXPECTED(scopeValue.isUndef())) return zv::Val();
-			scope = scopeValue.raw();
+			scope = pt_expression_result_scope(nameResult, scopeHold);
+			if (UNEXPECTED(scope == NULL)) return zv::Val();
 		}
 
 		zv::Val issetabilityDescriptor = zv::Val::null();
 		if (Z_TYPE_P(name) == IS_STRING) {
-			issetabilityDescriptor = issetabilityDescriptorVariable(name);
+			issetabilityDescriptor = pt_issetability_descriptor_variable(Z_STR_P(name));
 			if (UNEXPECTED(issetabilityDescriptor.isUndef())) return zv::Val();
 		}
 		zv::Val nameArgResult = zv::Val::null();
@@ -271,7 +264,7 @@ public:
 		zv::Val typeCallback = pt_native_closure(&typeCallbackBody, self, expr, nameResult != NULL ? nameResult : &null, nameArgResult.raw(), nodeScopeResolver, beforeScope);
 		zv::Val specifyTypesCallback = pt_native_closure(&specifyTypesCallbackBody, self, expr);
 
-		pt_expression_result_args args(scope, beforeScope, expr, hasYield, isAlwaysTerminating, throwPoints.isUndef() ? NULL : throwPoints.raw(), impurePoints.isUndef() ? NULL : impurePoints.raw(), typeCallback.raw(), specifyTypesCallback.raw());
+		pt_expression_result_args args(scope, beforeScope, expr, hasYield, isAlwaysTerminating, throwPoints, impurePoints, typeCallback.raw(), specifyTypesCallback.raw());
 		args.withVariableFlow(variableFlow.raw()).withIssetabilityDescriptor(issetabilityDescriptor.raw());
 		return pt_expression_result_create(OBJ_PROP_NUM(self, slots::expressionResultFactory), args);
 	}
@@ -541,6 +534,9 @@ zv::Val pt_variable_handler_compose_result(zval *handler, zval *nodeScopeResolve
 
 void pt_register_variable_handler()
 {
+	pt_vh_superglobal_identifier = zend_string_init_interned(PT_LC("superglobal"), 1);
+	pt_vh_superglobal_description = zend_string_init_interned(PT_LC("access to superglobal variable"), 1);
+
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\VariableHandler");
 	ptdecl::VariableHandler::declareClass(cls);
 	ptdecl::VariableHandler::declareProperties(cls);

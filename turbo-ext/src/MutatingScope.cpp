@@ -11480,6 +11480,23 @@ zv::Val pt_mutating_scope_apply_specified_types(zend_object *scope, zval *specif
 	return pt_type_call(scope, PT_LC("applyspecifiedtypes"), 1, specifiedTypes);
 }
 
+/* the scope reads of the analyser value classes (IssetabilityDescriptor.cpp),
+ * the same way ($node / $expr an Expr) */
+zv::Val pt_mutating_scope_has_expression_type(zend_object *scope, zval *node)
+{
+	return pt_this_call(scope, scope->ce == pt_ce_mutating_scope, PT_LC("hasexpressiontype"), msHasExpressionType, 1, node, [&]() { return MutatingScope(scope).hasExpressionType(Z_OBJ_P(node)); });
+}
+
+zv::Val pt_mutating_scope_get_type(zend_object *scope, zval *node)
+{
+	return pt_this_call(scope, scope->ce == pt_ce_mutating_scope, PT_LC("gettype"), msGetType, 1, node, [&]() { return MutatingScope(scope).getType(Z_OBJ_P(node)); });
+}
+
+zv::Val pt_mutating_scope_get_native_type(zend_object *scope, zval *expr)
+{
+	return pt_this_call(scope, scope->ce == pt_ce_mutating_scope, PT_LC("getnativetype"), msGetNativeType, 1, expr, [&]() { return MutatingScope(scope).getNativeType(expr); });
+}
+
 /* }}} */
 
 void pt_register_mutating_scope()

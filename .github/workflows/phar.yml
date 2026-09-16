@@ -514,6 +514,16 @@ jobs:
       - name: "Smoke test (differential: native vs PHP implementations)"
         run: php -d extension="$PWD/turbo-ext/phpstan_turbo.so" turbo-ext/tests/smoke.php
 
+      # One NodeScopeResolver walk over the default corpus with the native
+      # classes and one with the PHP implementations, in separate processes;
+      # the traces must be identical. It compares the engine ports as the
+      # engine runs them (native calling native under the real class names),
+      # which the prefixed single-process harnesses in smoke.php cannot. One
+      # leg is enough: it checks engine behaviour, not the platform.
+      - name: "Walk trace (differential: whole NodeScopeResolver walks, native vs PHP)"
+        if: matrix.target.family == 'gnu' && matrix.target.name == 'linux-gnu-x86_64' && matrix.php-version == '8.5'
+        run: php -d extension="$PWD/turbo-ext/phpstan_turbo.so" turbo-ext/tests/walk-trace.php --shards="$(nproc)"
+
       - name: "Arena smoke test (cross-process shared-memory records)"
         run: php -d extension="$PWD/turbo-ext/phpstan_turbo.so" turbo-ext/tests/arena-smoke.php
 

@@ -2222,15 +2222,16 @@ public:
 	/* !$call->isFirstClassCallable() && $call->getArgs() === []; false = pending exception */
 	[[nodiscard]] static bool isArgumentLessPlainCall(zend_object *call, bool &out)
 	{
-		zv::Val fcc = pt_type_call(call, PT_LC("isfirstclasscallable"), 0, NULL);
-		if (UNEXPECTED(fcc.isUndef())) return false;
-		if (zend_is_true(fcc.raw())) {
+		bool fcc;
+		if (UNEXPECTED(!pt_call_like_is_first_class_callable(call, fcc))) return false;
+		if (fcc) {
 			out = false;
 			return true;
 		}
-		zv::Val args = pt_type_call(call, PT_LC("getargs"), 0, NULL);
-		if (UNEXPECTED(args.isUndef())) return false;
-		out = Z_TYPE_P(args.raw()) == IS_ARRAY && zend_hash_num_elements(Z_ARRVAL_P(args.raw())) == 0;
+		zv::Val hold;
+		zval *args = pt_call_like_args(call, hold);
+		if (UNEXPECTED(args == NULL)) return false;
+		out = Z_TYPE_P(args) == IS_ARRAY && zend_hash_num_elements(Z_ARRVAL_P(args)) == 0;
 		return true;
 	}
 
@@ -2601,9 +2602,9 @@ public:
 		bool isCallLike;
 		if (UNEXPECTED(!isInstance(zv::Ref(&nodeZv), PT_CLASS_CALL_LIKE, isCallLike))) return zv::Val();
 		if (isCallLike) {
-			zv::Val fcc = pt_type_call(node, PT_LC("isfirstclasscallable"), 0, NULL);
-			if (UNEXPECTED(fcc.isUndef())) return zv::Val();
-			if (zend_is_true(fcc.raw())) return resolveTypeOfNewWorldHandlerNode(node);
+			bool fcc;
+			if (UNEXPECTED(!pt_call_like_is_first_class_callable(node, fcc))) return zv::Val();
+			if (fcc) return resolveTypeOfNewWorldHandlerNode(node);
 		}
 
 		zv::Ref container = slot(PT_MS_PROP_CONTAINER);
@@ -3209,9 +3210,7 @@ public:
 				if (isCall) break;
 			}
 			if (isCall) {
-				zv::Val fcc = pt_type_call(node, PT_LC("isfirstclasscallable"), 0, NULL);
-				if (UNEXPECTED(fcc.isUndef())) return zv::Val();
-				plain = zend_is_true(fcc.raw());
+				if (UNEXPECTED(!pt_call_like_is_first_class_callable(node, plain))) return zv::Val();
 			}
 		}
 		if (plain) return getScopeStateType(node);
@@ -5489,9 +5488,9 @@ public:
 		if (UNEXPECTED(!isInstance(expr.ref(), PT_CLASS_FUNC_CALL, isFuncCall))) return false;
 		if (!isFuncCall) return true;
 		zend_object *call = expr.ref().asObject();
-		zv::Val firstClassCallable = pt_type_call(call, PT_LC("isfirstclasscallable"), 0, NULL);
-		if (UNEXPECTED(firstClassCallable.isUndef())) return false;
-		if (zend_is_true(firstClassCallable.raw())) return true;
+		bool firstClassCallable;
+		if (UNEXPECTED(!pt_call_like_is_first_class_callable(call, firstClassCallable))) return false;
+		if (firstClassCallable) return true;
 		zv::Ref name = nodeProp(call, PT_LC("name"));
 		if (UNEXPECTED(name.raw() == NULL)) return false;
 		bool isFullyQualified;
@@ -5512,9 +5511,10 @@ public:
 			}
 		}
 		if (!isExistenceCheck) return true;
-		zv::Val args = pt_type_call(call, PT_LC("getargs"), 0, NULL);
-		if (UNEXPECTED(args.isUndef())) return false;
-		zval *firstArg = zend_hash_index_find(Z_ARRVAL_P(args.raw()), 0);
+		zv::Val argsHold;
+		zval *args = pt_call_like_args(call, argsHold);
+		if (UNEXPECTED(args == NULL)) return false;
+		zval *firstArg = zend_hash_index_find(Z_ARRVAL_P(args), 0);
 		if (firstArg == NULL || Z_TYPE_P(firstArg) == IS_NULL) return true;
 		zv::Ref value = nodeProp(Z_OBJ_P(firstArg), PT_LC("value"));
 		if (UNEXPECTED(value.raw() == NULL)) return false;

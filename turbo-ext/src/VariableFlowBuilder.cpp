@@ -161,9 +161,11 @@ public:
 			bool isFirstClassCallable;
 			if (UNEXPECTED(!pt_call_like_is_first_class_callable(Z_OBJ_P(expr), isFirstClassCallable))) return zv::Val();
 			if (!isFirstClassCallable) {
-				zv::Ref args = nodeProp(Z_OBJ_P(expr), PT_LC("args"));
-				if (args.raw() != NULL && args.isArray()) {
-					for (auto entry : zv::TableRef(args.asArrayTable())) {
+				zv::Val argsHold;
+				zval *args = pt_call_like_args(Z_OBJ_P(expr), argsHold);
+				if (UNEXPECTED(args == NULL)) return zv::Val();
+				if (Z_TYPE_P(args) == IS_ARRAY) {
+					for (auto entry : zv::TableRef(Z_ARRVAL_P(args))) {
 						zv::Ref arg = entry.value().deref();
 						if (!arg.isObject()) continue;
 						zv::Ref value = nodeProp(arg.asObject(), PT_LC("value"));
@@ -210,10 +212,12 @@ public:
 	/* Mirrors arguments(). */
 	static zv::Val arguments(zval *call, zval *argsResult, zval *storage)
 	{
-		zv::Ref args = nodeProp(Z_OBJ_P(call), PT_LC("args"));
-		if (UNEXPECTED(args.raw() == NULL || !args.isArray())) return zv::Val::null();
-		zv::Arr flows = zv::Arr::create(zend_hash_num_elements(args.asArrayTable()));
-		for (auto entry : zv::TableRef(args.asArrayTable())) {
+		zv::Val argsHold;
+		zval *args = pt_call_like_args(Z_OBJ_P(call), argsHold);
+		if (UNEXPECTED(args == NULL)) return zv::Val();
+		if (UNEXPECTED(Z_TYPE_P(args) != IS_ARRAY)) return zv::Val::null();
+		zv::Arr flows = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(args)));
+		for (auto entry : zv::TableRef(Z_ARRVAL_P(args))) {
 			zv::Ref arg = entry.value().deref();
 			if (UNEXPECTED(!arg.isObject())) continue;
 			zv::Ref value = nodeProp(arg.asObject(), PT_LC("value"));

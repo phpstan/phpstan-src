@@ -3,6 +3,7 @@
 #include "TypeOps.h"
 
 #include <cstring>
+#include <initializer_list>
 
 pt_globals_t pt_globals;
 
@@ -937,24 +938,126 @@ const pt_superglobal_name *pt_superglobal_names(size_t *count)
 	return pt_superglobals;
 }
 
-bool pt_call_like_is_first_class_callable(zend_object *call, bool &out)
+/* {{{ PhpParser CallLike reads */
+
+/* the per-request generation of the engine's caches (Engine.cpp) */
+extern uint32_t pt_engine_generation;
+
+namespace {
+
+/* a class entry's verdict: the byte offset of its `args` slot when
+ * getRawArgs() is a php-parser call class's `return $this->args;` and
+ * isFirstClassCallable() / getArgs() are CallLike's own; -1 = call the
+ * methods */
+struct pt_call_like_class
 {
-	zend_class_entry *variadicPlaceholderCe = pt_class(PT_CLASS_VARIADIC_PLACEHOLDER);
-	if (UNEXPECTED(variadicPlaceholderCe == NULL)) return false;
-	out = false;
-	int32_t argsOffset = pt_instance_prop_offset(call->ce, "args", sizeof("args") - 1);
-	if (argsOffset < 0) return true;
+	zend_class_entry *ce;
+	int32_t argsOffset;
+	uint32_t generation;
+};
+
+/* a handful of call classes alternate (FuncCall, MethodCall, StaticCall,
+ * New_, NullsafeMethodCall): a small table scanned linearly, replaced
+ * round-robin */
+constexpr uint32_t PT_CALL_LIKE_CLASSES_LIMIT = 8;
+pt_call_like_class pt_call_like_classes[PT_CALL_LIKE_CLASSES_LIMIT];
+uint32_t pt_call_like_classes_next = 0;
+
+/* the method's declaring class is one of the class-map classes */
+bool pt_call_like_declared_by(zend_class_entry *ce, const char *lcname, size_t len, std::initializer_list<int> classIdxs)
+{
+	zend_function *fn = (zend_function *) zend_hash_str_find_ptr(&ce->function_table, lcname, len);
+	if (fn == NULL) return false;
+	for (int classIdx : classIdxs) {
+		if (fn->common.scope == pt_class_loaded(classIdx)) return true;
+	}
+	return false;
+}
+
+int32_t pt_call_like_resolve(zend_class_entry *ce)
+{
+	for (pt_call_like_class &entry : pt_call_like_classes) {
+		if (entry.ce == ce && entry.generation == pt_engine_generation) return entry.argsOffset;
+	}
+	int32_t argsOffset = -1;
+	zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&ce->properties_info, "args", sizeof("args") - 1);
+	if (info != NULL && (info->flags & ZEND_ACC_STATIC) == 0
+		&& pt_call_like_declared_by(ce, PT_LC("getrawargs"), { PT_CLASS_FUNC_CALL, PT_CLASS_METHOD_CALL, PT_CLASS_NULLSAFE_METHOD_CALL, PT_CLASS_STATIC_CALL, PT_CLASS_NEW })
+		&& pt_call_like_declared_by(ce, PT_LC("isfirstclasscallable"), { PT_CLASS_CALL_LIKE })
+		&& pt_call_like_declared_by(ce, PT_LC("getargs"), { PT_CLASS_CALL_LIKE })) {
+		argsOffset = (int32_t) info->offset;
+	}
+	pt_call_like_classes[pt_call_like_classes_next] = { ce, argsOffset, pt_engine_generation };
+	pt_call_like_classes_next = (pt_call_like_classes_next + 1) % PT_CALL_LIKE_CLASSES_LIMIT;
+	return argsOffset;
+}
+
+/* the initialized `args` slot (dereferenced), NULL when the methods must
+ * answer */
+zval *pt_call_like_args_slot(zend_object *call)
+{
+	int32_t argsOffset = pt_call_like_resolve(call->ce);
+	if (UNEXPECTED(argsOffset < 0)) return NULL;
 	zval *args = OBJ_PROP(call, (uint32_t) argsOffset);
-	ZVAL_DEINDIRECT(args);
 	ZVAL_DEREF(args);
-	if (Z_TYPE_P(args) != IS_ARRAY || zend_hash_num_elements(Z_ARRVAL_P(args)) != 1) return true;
+	return EXPECTED(Z_TYPE_P(args) == IS_ARRAY) ? args : NULL;
+}
+
+/* count($rawArgs) === 1 && current($rawArgs) instanceof VariadicPlaceholder;
+ * false = pending exception */
+bool pt_call_like_raw_args_are_first_class_callable(zval *rawArgs, bool &out)
+{
+	out = false;
+	if (Z_TYPE_P(rawArgs) != IS_ARRAY || zend_hash_num_elements(Z_ARRVAL_P(rawArgs)) != 1) return true;
 	/* current($rawArgs): the array's internal pointer, like the twin */
-	zval *first = zend_hash_get_current_data(Z_ARRVAL_P(args));
+	zval *first = zend_hash_get_current_data(Z_ARRVAL_P(rawArgs));
 	if (first == NULL) return true;
 	ZVAL_DEREF(first);
-	out = Z_TYPE_P(first) == IS_OBJECT && instanceof_function(Z_OBJCE_P(first), variadicPlaceholderCe);
+	if (Z_TYPE_P(first) != IS_OBJECT) return true;
+	zend_class_entry *variadicPlaceholderCe = pt_class(PT_CLASS_VARIADIC_PLACEHOLDER);
+	if (UNEXPECTED(variadicPlaceholderCe == NULL)) return false;
+	out = instanceof_function(Z_OBJCE_P(first), variadicPlaceholderCe);
 	return true;
 }
+
+/* $call->method() by name, kept in hold; NULL = pending exception */
+zend_never_inline ZEND_COLD zval *pt_call_like_call(zend_object *call, const char *lcname, size_t len, zv::Val &hold)
+{
+	hold = pt_type_call(call, lcname, len, 0, NULL);
+	return hold.isUndef() ? NULL : hold.raw();
+}
+
+} // namespace
+
+zval *pt_call_like_raw_args(zend_object *call, zv::Val &hold)
+{
+	zval *args = pt_call_like_args_slot(call);
+	return EXPECTED(args != NULL) ? args : pt_call_like_call(call, PT_LC("getrawargs"), hold);
+}
+
+bool pt_call_like_is_first_class_callable(zend_object *call, bool &out)
+{
+	zval *args = pt_call_like_args_slot(call);
+	if (EXPECTED(args != NULL)) return pt_call_like_raw_args_are_first_class_callable(args, out);
+	zv::Val hold;
+	zval *result = pt_call_like_call(call, PT_LC("isfirstclasscallable"), hold);
+	if (UNEXPECTED(result == NULL)) return false;
+	out = zend_is_true(result);
+	return true;
+}
+
+zval *pt_call_like_args(zend_object *call, zv::Val &hold)
+{
+	zval *args = pt_call_like_args_slot(call);
+	if (EXPECTED(args != NULL)) {
+		bool firstClassCallable;
+		if (UNEXPECTED(!pt_call_like_raw_args_are_first_class_callable(args, firstClassCallable))) return NULL;
+		if (EXPECTED(!firstClassCallable)) return args;
+	}
+	return pt_call_like_call(call, PT_LC("getargs"), hold);
+}
+
+/* }}} */
 
 static bool pt_superglobal_matcher(zend_object *node, void *ctx)
 {

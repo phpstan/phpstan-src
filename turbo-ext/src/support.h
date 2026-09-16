@@ -1652,13 +1652,32 @@ bool pt_is_superglobal_cstr(const char *name, size_t len);
 typedef struct _pt_superglobal_name { const char *name; size_t len; } pt_superglobal_name;
 const pt_superglobal_name *pt_superglobal_names(size_t *count);
 
-/* $call->isFirstClassCallable() of a PhpParser CallLike node, read from its
- * args: a single VariadicPlaceholder argument; false = pending exception */
+/* {{{ PhpParser CallLike reads without a call: $call->getRawArgs(),
+ * ->isFirstClassCallable() and ->getArgs() of a FuncCall, MethodCall,
+ * NullsafeMethodCall, StaticCall or New_ (or a subclass keeping those three
+ * methods) answered from its `args` slot, exactly what the methods return —
+ * the class is checked once per class entry per request. A class overriding
+ * one of the methods, or an instance whose `args` was never initialized,
+ * gets the methods by name. */
+
+/* $call->getRawArgs(): the `args` slot (borrowed, dereferenced), or the
+ * method's result kept alive in hold; NULL = pending exception */
+zval *pt_call_like_raw_args(zend_object *call, zv::Val &hold);
+/* $call->isFirstClassCallable(): a single VariadicPlaceholder argument;
+ * false = pending exception */
 [[nodiscard]] bool pt_call_like_is_first_class_callable(zend_object *call, bool &out);
+/* $call->getArgs(): the `args` slot of a call that is not a first-class
+ * callable (borrowed, dereferenced); a first-class callable gets the method,
+ * whose assert() throws under zend.assertions=1 and returns the raw
+ * arguments otherwise, its result kept alive in hold; NULL = pending
+ * exception */
+zval *pt_call_like_args(zend_object *call, zv::Val &hold);
 /* ConditionalTypeResolver::resolveForCall($declaredType, $parametersAcceptor,
  * $args, $scope): `@throws` / `@phpstan-self-out` resolved against a call
  * site; UNDEF = pending exception */
 zv::Val pt_conditional_type_resolver_resolve_for_call(zval *declaredType, zval *parametersAcceptor, zval *args, zval *scope);
+
+/* }}} */
 
 /* {{{ the NodeScopeResolver-adjacent helper services (VolatileExpressionHelper.cpp,
  * VariableFlow.cpp, VariableFlowBuilder.cpp) — registered at the END of the

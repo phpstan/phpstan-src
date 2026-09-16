@@ -157,9 +157,10 @@ public:
 		zv::Val throwType = reflectionCall(methodReflection, PT_MR_GET_THROW_TYPE, "getThrowType");
 		if (UNEXPECTED(throwType.isUndef())) return zv::Val();
 		if (Z_TYPE_P(throwType.raw()) != IS_NULL) {
-			zv::Val callArgs = pt_type_call(Z_OBJ_P(normalizedMethodCall), PT_LC("getargs"), 0, NULL);
-			if (UNEXPECTED(callArgs.isUndef())) return zv::Val();
-			throwType = pt_conditional_type_resolver_resolve_for_call(throwType.raw(), parametersAcceptor, callArgs.raw(), scope);
+			zv::Val argsHold;
+			zval *callArgs = pt_call_like_args(Z_OBJ_P(normalizedMethodCall), argsHold);
+			if (UNEXPECTED(callArgs == NULL)) return zv::Val();
+			throwType = pt_conditional_type_resolver_resolve_for_call(throwType.raw(), parametersAcceptor, callArgs, scope);
 			if (UNEXPECTED(throwType.isUndef())) return zv::Val();
 		}
 		if (Z_TYPE_P(throwType.raw()) == IS_NULL && instanceof_function(Z_OBJCE_P(methodCallReturnType), pt_ce_never_type)) {
@@ -228,13 +229,14 @@ public:
 			return zv::Val(std::move(list));
 		}
 
-		zv::Val args = pt_type_call(Z_OBJ_P(methodCall), PT_LC("getargs"), 0, NULL);
-		if (UNEXPECTED(args.isUndef())) return zv::Val();
+		zv::Val argsHold;
+		zval *args = pt_call_like_args(Z_OBJ_P(methodCall), argsHold);
+		if (UNEXPECTED(args == NULL)) return zv::Val();
 		zv::Val variants = reflectionCall(methodReflection.raw(), PT_MR_GET_VARIANTS, "getVariants");
 		if (UNEXPECTED(variants.isUndef())) return zv::Val();
 		zv::Val namedArgumentsVariants = pt_extended_method_reflection_call(methodReflection.raw(), PT_MR_GET_NAMED_ARGUMENTS_VARIANTS);
 		if (UNEXPECTED(namedArgumentsVariants.isUndef())) return zv::Val();
-		zv::Args combineArgs{args.raw(), variants.raw(), namedArgumentsVariants.raw()};
+		zv::Args combineArgs{args, variants.raw(), namedArgumentsVariants.raw()};
 		zv::Val parametersAcceptor = pt_type_call_static(PT_CLASS_PARAMETERS_ACCEPTOR_SELECTOR, PT_LC("combinevariantsfornormalization"), 3, combineArgs);
 		if (UNEXPECTED(parametersAcceptor.isUndef())) return zv::Val();
 		zv::Val returnType = callOn(parametersAcceptor.raw(), PT_LC("getreturntype"), "getReturnType", 0, NULL);

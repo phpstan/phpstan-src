@@ -486,9 +486,10 @@ public:
 					zval *acceptorForGenerics = resolvedParametersAcceptor.isNull() ? parametersAcceptor.raw() : resolvedParametersAcceptor.raw();
 					zval *normalizedVar = exprVar(normalizedExpr.raw());
 					if (UNEXPECTED(normalizedVar == NULL)) return zv::Val();
-					zv::Val callArgs = pt_type_call(Z_OBJ_P(normalizedExpr.raw()), PT_LC("getargs"), 0, NULL);
-					if (UNEXPECTED(callArgs.isUndef())) return zv::Val();
-					zv::Val resolvedSelfOutType = pt_conditional_type_resolver_resolve_for_call(selfOutType.raw(), acceptorForGenerics, callArgs.raw(), currentScope.raw());
+					zv::Val argsHold;
+					zval *callArgs = pt_call_like_args(Z_OBJ_P(normalizedExpr.raw()), argsHold);
+					if (UNEXPECTED(callArgs == NULL)) return zv::Val();
+					zv::Val resolvedSelfOutType = pt_conditional_type_resolver_resolve_for_call(selfOutType.raw(), acceptorForGenerics, callArgs, currentScope.raw());
 					if (UNEXPECTED(resolvedSelfOutType.isUndef())) return zv::Val();
 					zv::Val varNativeType = pt_expression_result_get_native_type(varResult.raw());
 					if (UNEXPECTED(varNativeType.isUndef())) return zv::Val();

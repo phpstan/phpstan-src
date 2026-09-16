@@ -2904,6 +2904,28 @@ $vfbN['noPos'] = new \PhpParser\Node\Expr\FuncCall(new \PhpParser\Node\Name('h')
 $vfbN['fcc'] = new \PhpParser\Node\Expr\FuncCall(new \PhpParser\Node\Name('g'), [new \PhpParser\Node\VariadicPlaceholder()]);
 $vfbN['fcc']->setAttribute('startFilePos', 30);
 $vfbN['fcc']->setAttribute('endFilePos', 40);
+// a call class whose raw arguments are not its `args` slot, and one whose
+// first-class-callable verdict is not its arguments' either
+$vfbN['overridingCall'] = new class (new \PhpParser\Node\Name('g'), [new \PhpParser\Node\Arg($vfbN['a']), new \PhpParser\Node\Arg($vfbN['closure'])]) extends \PhpParser\Node\Expr\FuncCall {
+
+	public function getRawArgs(): array
+	{
+		return [new \PhpParser\Node\Arg($this->args[1]->value, true)];
+	}
+
+};
+$vfbN['overridingCall']->setAttribute('startFilePos', 10);
+$vfbN['overridingCall']->setAttribute('endFilePos', 20);
+$vfbN['overridingFcc'] = new class (new \PhpParser\Node\Name('g'), [new \PhpParser\Node\Arg($vfbN['closure'])]) extends \PhpParser\Node\Expr\FuncCall {
+
+	public function isFirstClassCallable(): bool
+	{
+		return true;
+	}
+
+};
+$vfbN['overridingFcc']->setAttribute('startFilePos', 10);
+$vfbN['overridingFcc']->setAttribute('endFilePos', 20);
 $vfbThrowable = new \PHPStan\Type\ObjectType(\Throwable::class);
 $vfbThrowPoints = [
 	\PHPStan\Analyser\InternalThrowPoint::createExplicit($vfbScope, $vfInt, $vfbN['callArgs'], false),
@@ -2947,6 +2969,24 @@ foreach ($vfbSides as $side => [$builder, $vf, $storageClass]) {
 	$r = [];
 	$r[] = [$vfDescribe($builder::throws($vfbN['callArgs'], $vfbThrowPoints)), $vfDescribe($builder::throws($vfbN['fcc'], $vfbThrowPoints)), $builder::throws($vfbN['a'], []), $vfDescribe($builder::throws($vfbN['a'], $vfbThrowPoints))];
 	$r[] = [$vfDescribe($builder::arguments($vfbN['callArgs'], $argsResult, $storage)), $builder::arguments($vfbN['call'], $argsResult, $storage)];
+	// the CallLike readers (support.cpp): getArgs() of a first-class callable
+	// asserts, a call class overriding getRawArgs() answers through it
+	$previousAssertions = ini_get('zend.assertions');
+	if ($previousAssertions === '-1') {
+		// compiled out: only php.ini can turn them on
+		$r[] = 'assertions compiled out';
+	} else {
+		ini_set('zend.assertions', '1');
+		try {
+			$builder::arguments($vfbN['fcc'], $argsResult, $storage);
+			$r[] = 'no assertion';
+		} catch (\AssertionError $e) {
+			$r[] = [get_class($e), $e->getMessage()];
+		} finally {
+			ini_set('zend.assertions', $previousAssertions);
+		}
+	}
+	$r[] = [$vfDescribe($builder::arguments($vfbN['overridingCall'], $argsResult, $storage)), $vfDescribe($builder::throws($vfbN['overridingCall'], $vfbThrowPoints)), $vfDescribe($builder::throws($vfbN['overridingFcc'], $vfbThrowPoints))];
 	$r[] = [$vfDescribe($builder::child($vfbN['a'], $storage)), $builder::child($vfbN['unknown'], $storage), $builder::child($vfbN['name'], $storage), $builder::child(null, $storage), $builder::child($vfbN['one'], $storage)];
 	foreach (['a', 'this', 'get', 'varVar', 'list', 'array', 'dimArrK', 'dimArrNested', 'dimArrNull', 'dimCall', 'dimVarVar', 'dimProp', 'prop', 'propExpr', 'nullsafeProp', 'staticProp', 'staticPropExpr', 'call', 'k'] as $key) {
 		$r[] = [$key, $vfDescribe($builder::targetRead($vfbN[$key], $storage, true)), $vfDescribe($builder::targetRead($vfbN[$key], $storage, false)), $vfDescribe($builder::targetRead($vfbN[$key], $storage, true, 5))];

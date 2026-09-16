@@ -397,10 +397,11 @@ private:
 
 	bool tryToApplyPropertyReads(zend_object *node, zval *scope)
 	{
-		zv::Val args = pt_type_call(node, PT_LC("getargs"), 0, NULL);
-		if (UNEXPECTED(args.isUndef())) return false;
-		if (Z_TYPE_P(args.raw()) != IS_ARRAY || zend_hash_num_elements(Z_ARRVAL_P(args.raw())) == 0) return true;
-		zend_object *firstArg = visitors::argAt(args.raw(), 0);
+		zv::Val argsHold;
+		zval *args = pt_call_like_args(node, argsHold);
+		if (UNEXPECTED(args == NULL)) return false;
+		if (Z_TYPE_P(args) != IS_ARRAY || zend_hash_num_elements(Z_ARRVAL_P(args)) == 0) return true;
+		zend_object *firstArg = visitors::argAt(args, 0);
 		zval *firstArgValue = firstArg != NULL ? pt_csg_arg_value.of(firstArg) : NULL;
 		if (UNEXPECTED(firstArgValue == NULL)) {
 			if (!EG(exception)) {

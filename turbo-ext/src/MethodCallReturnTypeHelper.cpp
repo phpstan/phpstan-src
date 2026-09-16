@@ -56,8 +56,9 @@ zv::Val reorderArguments(bool isMethodCall, zval *acceptor, zval *call)
  * $methodReflection->getVariants(), $methodReflection->getNamedArgumentsVariants()) */
 zv::Val selectFromArgs(zval *scope, zval *call, zval *methodReflection)
 {
-	zv::Val args = pt_type_call(Z_OBJ_P(call), PT_LC("getargs"), 0, NULL);
-	if (UNEXPECTED(args.isUndef())) return zv::Val();
+	zv::Val argsHold;
+	zval *args = pt_call_like_args(Z_OBJ_P(call), argsHold);
+	if (UNEXPECTED(args == NULL)) return zv::Val();
 	if (UNEXPECTED(Z_TYPE_P(methodReflection) != IS_OBJECT)) {
 		zend_throw_error(NULL, "Call to a member function getVariants() on %s", zend_zval_value_name(methodReflection));
 		return zv::Val();
@@ -66,7 +67,7 @@ zv::Val selectFromArgs(zval *scope, zval *call, zval *methodReflection)
 	if (UNEXPECTED(variants.isUndef())) return zv::Val();
 	zv::Val namedArgumentsVariants = pt_extended_method_reflection_call(methodReflection, PT_MR_GET_NAMED_ARGUMENTS_VARIANTS);
 	if (UNEXPECTED(namedArgumentsVariants.isUndef())) return zv::Val();
-	zv::Args selectArgs{scope, args.raw(), variants.raw(), namedArgumentsVariants.raw()};
+	zv::Args selectArgs{scope, args, variants.raw(), namedArgumentsVariants.raw()};
 	return pt_type_call_static(PT_CLASS_PARAMETERS_ACCEPTOR_SELECTOR, PT_LC("selectfromargs"), 4, selectArgs);
 }
 

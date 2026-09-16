@@ -3324,9 +3324,11 @@ public:
 			if (UNEXPECTED(staticCall.isUndef())) return zv::Val();
 			if (staticCall.isNull()) return zv::Val::null();
 
-			zv::Val callArgs = callOn(staticCall.ref(), PT_LC("getargs"), 0, NULL);
-			if (UNEXPECTED(callArgs.isUndef())) return zv::Val();
-			zval *firstArg = callArgs.ref().isArray() ? zend_hash_index_find(callArgs.ref().asArrayTable(), 0) : NULL;
+			if (UNEXPECTED(!staticCall.ref().isObject())) return callOn(staticCall.ref(), PT_LC("getargs"), 0, NULL);
+			zv::Val callArgsHold;
+			zval *callArgs = pt_call_like_args(staticCall.ref().asObject(), callArgsHold);
+			if (UNEXPECTED(callArgs == NULL)) return zv::Val();
+			zval *firstArg = Z_TYPE_P(callArgs) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(callArgs), 0) : NULL;
 			if (UNEXPECTED(firstArg == NULL || Z_TYPE_P(firstArg) != IS_OBJECT)) return zv::Val::null();
 			zv::Ref flagExpr = zv::ObjRef(Z_OBJ_P(firstArg)).prop(PT_LC("value"));
 			if (UNEXPECTED(flagExpr.raw() == NULL)) {

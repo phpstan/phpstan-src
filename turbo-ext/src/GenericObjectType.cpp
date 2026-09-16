@@ -22,7 +22,34 @@ namespace sigs = ptdecl::GenericObjectType::sig;
 
 #include <vector>
 
+#ifdef ZEND_CHECK_STACK_LIMIT
+# include "zend_call_stack.h"
+#endif
+
 zend_class_entry *pt_ce_generic_object_type = nullptr;
+
+/* The twin describes its type arguments through an array_map() closure, and
+ * the engine checks the C stack on entering it: a describe() recursion
+ * without end (a template bound mentioning `static` of its own class) throws
+ * "Maximum call stack size ... reached" there. The native recursion checks at
+ * the same point, so it throws the twin's Error instead of overflowing the C
+ * stack. true = the Error is pending */
+[[nodiscard]] static zend_always_inline bool pt_generic_object_type_call_stack_overflowed()
+{
+#ifdef ZEND_CHECK_STACK_LIMIT
+	if (UNEXPECTED(zend_call_stack_overflowed(EG(stack_limit)))) {
+#if PHP_VERSION_ID >= 80400
+		zend_call_stack_size_error();
+#else
+		/* static in PHP 8.3; the same message */
+		zend_throw_error(nullptr, "Maximum call stack size of %zu bytes (zend.max_allowed_stack_size - zend.reserved_stack_size) reached. Infinite recursion?",
+			(size_t) ((uintptr_t) EG(stack_base) - (uintptr_t) EG(stack_limit)));
+#endif
+		return true;
+	}
+#endif
+	return false;
+}
 
 /* OBJ_PROP_NUM slots: the parent's ten first (ObjectType.cpp), then the
  * twin's promoted properties in parameter order */
@@ -145,6 +172,10 @@ public:
 		zval null;
 		ZVAL_NULL(&null);
 		for (size_t i = 0; i < count; i++) {
+			if (UNEXPECTED(pt_generic_object_type_call_stack_overflowed())) {
+				smart_str_free(&description);
+				return zv::Val();
+			}
 			zv::Val projected = pt_type_projection_helper_describe(i < typeValues.size() ? typeValues[i] : &null, i < varianceValues.size() ? varianceValues[i] : &null, level);
 			if (UNEXPECTED(projected.isUndef())) {
 				smart_str_free(&description);

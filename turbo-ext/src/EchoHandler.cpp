@@ -7,9 +7,8 @@
  * statement-handler entry (Engine.h).
  *
  * ExpressionResult, the contexts, ImpurePoint, VariableFlow, the statement
- * results and NodeScopeResolver are called through their direct entries;
- * ImplicitToStringCallHelper, which stays PHP for now, through the cached
- * site below.
+ * results, ImplicitToStringCallHelper and NodeScopeResolver are called
+ * through their direct entries.
  */
 
 #include "support.h"
@@ -27,20 +26,12 @@ zend_class_entry *pt_ce_echo_handler = nullptr;
 
 namespace {
 
-/* {{{ the PHP collaborators (one site each; switch to their direct entries
- * once they are ported) */
-
-pt_method_site pt_eh_process_implicit_to_string_call_site;
-
 /* $implicitToStringCallHelper->processImplicitToStringCall($expr, $scope,
  * $exprResult) */
 zv::Val processImplicitToStringCall(zval *implicitToStringCallHelper, zval *expr, zval *scope, zval *exprResult)
 {
-	zv::Args argv{expr, scope, exprResult};
-	return pt_call_method_cached(pt_eh_process_implicit_to_string_call_site, Z_OBJ_P(implicitToStringCallHelper), PT_LC("processimplicittostringcall"), 3, argv);
+	return pt_implicit_to_string_call_helper_process_implicit_to_string_call(implicitToStringCallHelper, expr, scope, exprResult);
 }
-
-/* }}} */
 
 pt_property_site pt_eh_exprs_site;
 

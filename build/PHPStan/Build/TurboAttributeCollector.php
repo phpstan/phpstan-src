@@ -45,8 +45,13 @@ use PhpParser\Node\Expr\BinaryOp\Plus;
 use PhpParser\Node\Expr\BinaryOp\Smaller;
 use PhpParser\Node\Expr\BinaryOp\SmallerOrEqual;
 use PhpParser\Node\Expr\BinaryOp\Spaceship;
+use PhpParser\Node\Expr\BitwiseNot;
 use PhpParser\Node\Expr\BooleanNot;
 use PhpParser\Node\Expr\CallLike;
+use PhpParser\Node\Expr\Cast;
+use PhpParser\Node\Expr\Cast\Bool_;
+use PhpParser\Node\Expr\Cast\Double;
+use PhpParser\Node\Expr\Cast\Object_;
 use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Expr\Clone_;
 use PhpParser\Node\Expr\Closure;
@@ -72,11 +77,13 @@ use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Expr\Ternary;
 use PhpParser\Node\Expr\Throw_;
 use PhpParser\Node\Expr\UnaryMinus;
+use PhpParser\Node\Expr\UnaryPlus;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Expr\Yield_;
 use PhpParser\Node\Expr\YieldFrom;
 use PhpParser\Node\FunctionLike;
 use PhpParser\Node\Identifier;
+use PhpParser\Node\InterpolatedStringPart;
 use PhpParser\Node\Name;
 use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\Param;
@@ -388,6 +395,17 @@ final class TurboAttributeCollector
 		'traitUseAdaptationAlias' => Alias::class,
 		'useStmt' => Use_::class,
 		'groupUseStmt' => GroupUse::class,
+		'castExpr' => Cast::class,
+		'castString' => \PhpParser\Node\Expr\Cast\String_::class,
+		'castUnset' => \PhpParser\Node\Expr\Cast\Unset_::class,
+		'castBool' => Bool_::class,
+		'castInt' => \PhpParser\Node\Expr\Cast\Int_::class,
+		'castDouble' => Double::class,
+		'castArray' => \PhpParser\Node\Expr\Cast\Array_::class,
+		'castObject' => Object_::class,
+		'unaryPlus' => UnaryPlus::class,
+		'bitwiseNot' => BitwiseNot::class,
+		'interpolatedStringPart' => InterpolatedStringPart::class,
 	];
 
 	private string $realRoot;

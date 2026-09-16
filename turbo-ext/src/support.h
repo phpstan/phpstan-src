@@ -424,6 +424,18 @@ enum {
 	PT_CLASS_USE_STMT,
 	PT_CLASS_GROUP_USE_STMT,
 	PT_CLASS_UNSET_OFFSET_EXPR,
+	/* the unary, cast and string expression handlers */
+	PT_CLASS_CAST_EXPR,
+	PT_CLASS_CAST_STRING,
+	PT_CLASS_CAST_UNSET,
+	PT_CLASS_CAST_BOOL,
+	PT_CLASS_CAST_INT,
+	PT_CLASS_CAST_DOUBLE,
+	PT_CLASS_CAST_ARRAY,
+	PT_CLASS_CAST_OBJECT,
+	PT_CLASS_UNARY_PLUS,
+	PT_CLASS_BITWISE_NOT,
+	PT_CLASS_INTERPOLATED_STRING_PART,
 	PT_CLASS_COUNT
 };
 
@@ -3647,6 +3659,38 @@ void pt_register_unset_handler();
 /* VariableFlow.cpp — VariableFlow::discard($write) (borrowed); UNDEF =
  * pending exception */
 zv::Val pt_variable_flow_discard(zval *write);
+
+/* }}} */
+
+/* {{{ the unary, cast and string expression handlers (CastHandler.cpp,
+ * CastStringHandler.cpp, InterpolatedStringHandler.cpp, UnaryMinusHandler.cpp,
+ * UnaryPlusHandler.cpp, BitwiseNotHandler.cpp — SimpleExprHandlers.h) and
+ * ImplicitToStringCallHelper.cpp — registered at the END of the sequence */
+
+extern zend_class_entry *pt_ce_implicit_to_string_call_helper;
+extern zend_class_entry *pt_ce_cast_handler;
+extern zend_class_entry *pt_ce_cast_string_handler;
+extern zend_class_entry *pt_ce_interpolated_string_handler;
+extern zend_class_entry *pt_ce_unary_minus_handler;
+extern zend_class_entry *pt_ce_unary_plus_handler;
+extern zend_class_entry *pt_ce_bitwise_not_handler;
+void pt_register_implicit_to_string_call_helper();
+void pt_register_cast_handler();
+void pt_register_cast_string_handler();
+void pt_register_interpolated_string_handler();
+void pt_register_unary_minus_handler();
+void pt_register_unary_plus_handler();
+void pt_register_bitwise_not_handler();
+
+/* $implicitToStringCallHelper->processImplicitToStringCall($expr, $scope,
+ * $exprResult): the native body for the native class, the method otherwise
+ * (everything borrowed); UNDEF = pending exception */
+zv::Val pt_implicit_to_string_call_helper_process_implicit_to_string_call(zval *helper, zval *expr, zval *scope, zval *exprResult);
+
+/* MutatingScope.cpp — $scope->obtainResultForNode($node): the native body
+ * while the scope's method is MutatingScope's own handler, the method by
+ * name otherwise; UNDEF = pending exception */
+zv::Val pt_mutating_scope_obtain_result_for_node(zend_object *scope, zend_object *node);
 
 /* }}} */
 

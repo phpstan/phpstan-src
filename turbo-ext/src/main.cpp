@@ -503,6 +503,15 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_global_handler();
 	pt_register_static_variable_handler();
 	pt_register_unset_handler();
+	/* the unary, cast and string expression handlers and the implicit
+	 * __toString() helper they share with concatenation and echo */
+	pt_register_implicit_to_string_call_helper();
+	pt_register_cast_handler();
+	pt_register_cast_string_handler();
+	pt_register_interpolated_string_handler();
+	pt_register_unary_minus_handler();
+	pt_register_unary_plus_handler();
+	pt_register_bitwise_not_handler();
 
 	return SUCCESS;
 }

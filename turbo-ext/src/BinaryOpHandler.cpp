@@ -29,8 +29,9 @@
  * IdenticalNarrowingHelper, DefaultNarrowingHelper, TypeCombinator and the
  * Type kernel are called through their direct entries; the collaborators
  * that stay PHP for now (InitializerExprTypeResolver,
- * RicherScopeGetTypeHelper, ImplicitToStringCallHelper, CountNarrowingHelper)
- * through the cached method sites in the block below, one helper each.
+ * RicherScopeGetTypeHelper, CountNarrowingHelper) through the cached method
+ * sites in the block below, one helper each; ImplicitToStringCallHelper
+ * through its direct entry.
  */
 
 #include "support.h"
@@ -142,7 +143,6 @@ int kindOf(zval *expr)
 /* {{{ the PHP collaborators (one site each; switch to their direct entries
  * once they are ported) */
 
-pt_method_site pt_boh_process_implicit_to_string_call_site;
 pt_method_site pt_boh_resolve_concat_type_site;
 pt_method_site pt_boh_resolve_equal_type_site;
 pt_method_site pt_boh_get_identical_result_site;
@@ -154,8 +154,7 @@ pt_method_site pt_boh_operator_type_sites[KIND_OTHER];
 /* $implicitToStringCallHelper->processImplicitToStringCall($expr, $scope, $exprResult) */
 zv::Val processImplicitToStringCall(zval *helper, zval *expr, zval *scope, zval *exprResult)
 {
-	zv::Args argv{expr, scope, exprResult};
-	return pt_call_method_cached(pt_boh_process_implicit_to_string_call_site, Z_OBJ_P(helper), PT_LC("processimplicittostringcall"), 3, argv);
+	return pt_implicit_to_string_call_helper_process_implicit_to_string_call(helper, expr, scope, exprResult);
 }
 
 /* $initializerExprTypeResolver->resolveConcatType($left, $right) */

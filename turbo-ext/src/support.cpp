@@ -378,6 +378,17 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_USE_STMT */ {"useStmt", "PhpParser\\Node\\Stmt\\Use_"},
 	/* PT_CLASS_GROUP_USE_STMT */ {"groupUseStmt", "PhpParser\\Node\\Stmt\\GroupUse"},
 	/* PT_CLASS_UNSET_OFFSET_EXPR */ {"unsetOffsetExpr", "PHPStan\\Node\\Expr\\UnsetOffsetExpr"},
+	/* PT_CLASS_CAST_EXPR */ {"castExpr", "PhpParser\\Node\\Expr\\Cast"},
+	/* PT_CLASS_CAST_STRING */ {"castString", "PhpParser\\Node\\Expr\\Cast\\String_"},
+	/* PT_CLASS_CAST_UNSET */ {"castUnset", "PhpParser\\Node\\Expr\\Cast\\Unset_"},
+	/* PT_CLASS_CAST_BOOL */ {"castBool", "PhpParser\\Node\\Expr\\Cast\\Bool_"},
+	/* PT_CLASS_CAST_INT */ {"castInt", "PhpParser\\Node\\Expr\\Cast\\Int_"},
+	/* PT_CLASS_CAST_DOUBLE */ {"castDouble", "PhpParser\\Node\\Expr\\Cast\\Double"},
+	/* PT_CLASS_CAST_ARRAY */ {"castArray", "PhpParser\\Node\\Expr\\Cast\\Array_"},
+	/* PT_CLASS_CAST_OBJECT */ {"castObject", "PhpParser\\Node\\Expr\\Cast\\Object_"},
+	/* PT_CLASS_UNARY_PLUS */ {"unaryPlus", "PhpParser\\Node\\Expr\\UnaryPlus"},
+	/* PT_CLASS_BITWISE_NOT */ {"bitwiseNot", "PhpParser\\Node\\Expr\\BitwiseNot"},
+	/* PT_CLASS_INTERPOLATED_STRING_PART */ {"interpolatedStringPart", "PhpParser\\Node\\InterpolatedStringPart"},
 };
 
 zend_class_entry *pt_class(int idx)

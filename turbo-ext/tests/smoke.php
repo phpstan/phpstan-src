@@ -4375,6 +4375,13 @@ $coveredElsewhere = [
 	\PHPStan\Analyser\StmtHandler\GlobalHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\StmtHandler\StaticVariableHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\StmtHandler\UnsetHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\CastHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\CastStringHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\InterpolatedStringHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\UnaryMinusHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\UnaryPlusHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\BitwiseNotHandler::class => 'walk-trace.php',
 ];
 foreach (array_keys($shadowedClasses) as $shadowedClass) {
 	check(

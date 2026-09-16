@@ -11,7 +11,6 @@
  * PHP closures capture.
  *
  * The collaborators that stay PHP for now (NodeScopeResolver,
- * ImplicitToStringCallHelper,
  * InitializerExprTypeResolver, DefaultNarrowingHelper, PreparedAssignTarget,
  * AssignTargetWalkMode, InternalThrowPoint) are called through the helpers in
  * the block below, one per called method.
@@ -244,9 +243,7 @@ zv::Val cchComposeType(zval *helper, zval *nsr, zval *leftExpr, zval *leftResult
 /* $implicitToStringCallHelper->processImplicitToStringCall($expr, $scope, $exprResult) */
 zv::Val itschProcessImplicitToStringCall(zval *helper, zval *expr, zval *scope, zval *exprResult)
 {
-	static pt_method_site site;
-	zv::Args argv{expr, scope, exprResult};
-	return pt_call_method_cached(site, Z_OBJ_P(helper), PT_LC("processimplicittostringcall"), 3, argv);
+	return pt_implicit_to_string_call_helper_process_implicit_to_string_call(helper, expr, scope, exprResult);
 }
 
 /* $defaultNarrowingHelper->specifyDefaultTypes($expr, $context) */

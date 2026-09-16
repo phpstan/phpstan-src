@@ -1,0 +1,132 @@
+/*
+ * What the small expression handler ports share (CastHandler.cpp,
+ * CastStringHandler.cpp, InterpolatedStringHandler.cpp,
+ * UnaryMinusHandler.cpp, UnaryPlusHandler.cpp, BitwiseNotHandler.cpp, the
+ * inc/dec handlers, the clone/eval/exit/include/print/shell-exec/throw/
+ * error-suppress/pipe handlers and the yield handlers): the reads of a
+ * processed child's result the twins hand straight to
+ * ExpressionResultFactory::create(), the `$nativeTypesPromoted ?
+ * $result->getNativeType() : $result->getType()` read, and the
+ * `fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) =>
+ * $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context)`
+ * closure most of them create.
+ */
+
+#ifndef PHPSTANTURBO_SIMPLE_EXPR_HANDLERS_H
+#define PHPSTANTURBO_SIMPLE_EXPR_HANDLERS_H
+
+#include "OperatorHandlers.h"
+#include "CallHandlerSupport.h"
+
+namespace ptse {
+
+/* {{{ a processed child's result */
+
+/* $result->getScope() / ->getVariableFlow() / ->hasYield() /
+ * ->isAlwaysTerminating() / ->getThrowPoints() / ->getImpurePoints() — the
+ * borrowed readers (kept alive by the result and the holds) */
+struct ChildResult
+{
+	zval *scope = NULL;
+	zval *throwPoints = NULL;
+	zval *impurePoints = NULL;
+	zv::Val variableFlow;
+	bool hasYield = false;
+	bool isAlwaysTerminating = false;
+	zv::Val scopeHold;
+	zv::Val throwPointsHold;
+	zv::Val impurePointsHold;
+
+	/* false = pending exception */
+	[[nodiscard]] bool read(zval *result)
+	{
+		scope = pt_expression_result_scope(result, scopeHold);
+		if (UNEXPECTED(scope == NULL)) return false;
+		variableFlow = pt_expression_result_variable_flow(result);
+		if (UNEXPECTED(variableFlow.isUndef())) return false;
+		if (UNEXPECTED(!pt_expression_result_has_yield(result, hasYield))) return false;
+		if (UNEXPECTED(!pt_expression_result_is_always_terminating(result, isAlwaysTerminating))) return false;
+		throwPoints = pt_expression_result_throw_points(result, throwPointsHold);
+		if (UNEXPECTED(throwPoints == NULL)) return false;
+		impurePoints = pt_expression_result_impure_points(result, impurePointsHold);
+		return impurePoints != NULL;
+	}
+};
+
+/* $nativeTypesPromoted ? $result->getNativeType() : $result->getType() */
+inline zv::Val typeOf(zval *result, bool nativeTypesPromoted)
+{
+	return nativeTypesPromoted ? pt_expression_result_get_native_type(result) : pt_expression_result_get_type(result);
+}
+
+/* $result->getThrowPoints() / ->getImpurePoints() as an owned array (the
+ * borrowed reader copied) */
+inline zv::Val throwPointsOf(zval *result)
+{
+	zv::Val hold;
+	zval *value = pt_expression_result_throw_points(result, hold);
+	if (UNEXPECTED(value == NULL)) return zv::Val();
+	return hold.isUndef() ? zv::Val::copyOf(zv::Ref(value)) : std::move(hold);
+}
+
+inline zv::Val impurePointsOf(zval *result)
+{
+	zv::Val hold;
+	zval *value = pt_expression_result_impure_points(result, hold);
+	if (UNEXPECTED(value == NULL)) return zv::Val();
+	return hold.isUndef() ? zv::Val::copyOf(zv::Ref(value)) : std::move(hold);
+}
+
+/* $into = array_merge($into, $more) of two arrays; false = pending exception */
+[[nodiscard]] inline bool mergeInto(zv::Val &into, zval *more)
+{
+	if (UNEXPECTED(Z_TYPE_P(more) != IS_ARRAY)) {
+		zend_type_error("array_merge(): Argument #2 must be of type array, %s given", zend_zval_value_name(more));
+		return false;
+	}
+	into = ptcall::arrayMerge(into.raw(), more);
+	return true;
+}
+
+/* }}} */
+
+/* {{{ the closures */
+
+/* the ArgumentCountError of a closure body called with too few arguments;
+ * false = raised */
+[[nodiscard]] inline bool requireArgs(uint32_t argc, uint32_t expected, const char *closureName)
+{
+	return ptcall::requireArguments(argc, expected, closureName);
+}
+
+/* fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) =>
+ * $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context) —
+ * captures: $this, $expr. H names the handler: `H::defaultNarrowingHelperSlot`
+ * and `H::closureName`. */
+template <typename H>
+void specifyDefaultTypesBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
+{
+	if (UNEXPECTED(!requireArgs(argc, 2, H::closureName))) return;
+	zv::Val types = pt_default_narrowing_helper_specify_default_types(OBJ_PROP_NUM(Z_OBJ(captures[0]), H::defaultNarrowingHelperSlot), &captures[1], &argv[0]);
+	if (UNEXPECTED(types.isUndef())) return;
+	types.intoReturnValue(return_value);
+}
+
+/* static fn (bool $nativeTypesPromoted): Type => ($nativeTypesPromoted ?
+ * $result->getNativeType() : $result->getType()) — captures: $result */
+template <typename H>
+void childTypeBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
+{
+	if (UNEXPECTED(!requireArgs(argc, 1, H::closureName))) return;
+	bool nativeTypesPromoted = zend_is_true(&argv[0]);
+	zv::Val type;
+	pt_engine_with_stack([&]() { type = typeOf(&captures[0], nativeTypesPromoted); });
+	if (UNEXPECTED(type.isUndef())) return;
+	type.intoReturnValue(return_value);
+}
+
+/* }}} */
+
+} // namespace ptse
+
+#endif /* PHPSTANTURBO_SIMPLE_EXPR_HANDLERS_H */

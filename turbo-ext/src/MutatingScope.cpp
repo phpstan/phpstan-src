@@ -13428,3 +13428,14 @@ zv::Val pt_mutating_scope_enter_property_hook(zend_object *scope, zval *hook, zv
 }
 
 /* }}} */
+
+/* {{{ the unary, cast and string expression handlers' reads */
+
+zv::Val pt_mutating_scope_obtain_result_for_node(zend_object *scope, zend_object *node)
+{
+	if (EXPECTED(scope->ce == pt_ce_mutating_scope || pt_type_method_is(scope, PT_LC("obtainresultfornode"), msObtainResultForNode))) return MutatingScope(scope).obtainResultForNode(node);
+	zv::Args argv{node};
+	return pt_type_call(scope, PT_LC("obtainresultfornode"), 1, argv);
+}
+
+/* }}} */

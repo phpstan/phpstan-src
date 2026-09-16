@@ -14,12 +14,14 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_merge;
 
 /**
  * @implements StmtHandler<Const_>
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ConstHandler.cpp')]
 final class ConstHandler implements StmtHandler
 {
 

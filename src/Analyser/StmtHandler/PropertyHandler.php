@@ -17,6 +17,7 @@ use PHPStan\Analyser\StmtHandler;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\ClassPropertyNode;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ParserNodeTypeToPHPStanType;
 use function count;
 
@@ -24,6 +25,7 @@ use function count;
  * @implements StmtHandler<Property>
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/PropertyHandler.cpp')]
 final class PropertyHandler implements StmtHandler
 {
 

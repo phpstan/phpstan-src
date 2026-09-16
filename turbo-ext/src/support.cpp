@@ -371,6 +371,10 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_IN_PROPERTY_HOOK_NODE */ {"inPropertyHookNode", "PHPStan\\Node\\InPropertyHookNode"},
 	/* PT_CLASS_PROPERTY_HOOK_RETURN_STATEMENTS_NODE */ {"propertyHookReturnStatementsNode", "PHPStan\\Node\\PropertyHookReturnStatementsNode"},
 	/* PT_CLASS_LINE_ATTRIBUTES_VISITOR */ {"lineAttributesVisitor", "PHPStan\\Parser\\LineAttributesVisitor"},
+	/* PT_CLASS_TRAIT_USE_STMT */ {"traitUseStmt", "PhpParser\\Node\\Stmt\\TraitUse"},
+	/* PT_CLASS_ENUM_CASE_STMT */ {"enumCaseStmt", "PhpParser\\Node\\Stmt\\EnumCase"},
+	/* PT_CLASS_TRAIT_USE_ADAPTATION_ALIAS */ {"traitUseAdaptationAlias", "PhpParser\\Node\\Stmt\\TraitUseAdaptation\\Alias"},
+	/* PT_CLASS_IN_TRAIT_NODE */ {"inTraitNode", "PHPStan\\Node\\InTraitNode"},
 };
 
 zend_class_entry *pt_class(int idx)

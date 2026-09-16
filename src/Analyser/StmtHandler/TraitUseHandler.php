@@ -23,6 +23,7 @@ use PHPStan\Parser\Parser;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_key_exists;
 use function is_array;
 use function strtolower;
@@ -31,6 +32,7 @@ use function strtolower;
  * @implements StmtHandler<TraitUse>
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TraitUseHandler.cpp')]
 final class TraitUseHandler implements StmtHandler
 {
 

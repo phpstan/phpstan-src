@@ -101,6 +101,7 @@ use PhpParser\Node\Stmt\Declare_;
 use PhpParser\Node\Stmt\Do_;
 use PhpParser\Node\Stmt\Echo_;
 use PhpParser\Node\Stmt\Enum_;
+use PhpParser\Node\Stmt\EnumCase;
 use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\For_;
 use PhpParser\Node\Stmt\Foreach_;
@@ -119,6 +120,8 @@ use PhpParser\Node\Stmt\Return_;
 use PhpParser\Node\Stmt\Static_;
 use PhpParser\Node\Stmt\Switch_;
 use PhpParser\Node\Stmt\Trait_;
+use PhpParser\Node\Stmt\TraitUse;
+use PhpParser\Node\Stmt\TraitUseAdaptation\Alias;
 use PhpParser\Node\Stmt\TryCatch;
 use PhpParser\Node\Stmt\Unset_;
 use PhpParser\Node\Stmt\While_;
@@ -378,6 +381,9 @@ final class TurboAttributeCollector
 		'shiftRightExpr' => \PhpParser\Node\Expr\BinaryOp\ShiftRight::class,
 		'pipeExpr' => Pipe::class,
 		'propertyHook' => PropertyHook::class,
+		'traitUseStmt' => TraitUse::class,
+		'enumCaseStmt' => EnumCase::class,
+		'traitUseAdaptationAlias' => Alias::class,
 	];
 
 	private string $realRoot;

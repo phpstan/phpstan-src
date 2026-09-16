@@ -5,10 +5,12 @@ namespace PHPStan\Node;
 use Override;
 use PhpParser\Node;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'inTraitNode')]
 final class InTraitNode extends Node\Stmt implements VirtualNode
 {
 

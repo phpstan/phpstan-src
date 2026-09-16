@@ -417,6 +417,10 @@ enum {
 	PT_CLASS_IN_PROPERTY_HOOK_NODE,
 	PT_CLASS_PROPERTY_HOOK_RETURN_STATEMENTS_NODE,
 	PT_CLASS_LINE_ATTRIBUTES_VISITOR,
+	PT_CLASS_TRAIT_USE_STMT,
+	PT_CLASS_ENUM_CASE_STMT,
+	PT_CLASS_TRAIT_USE_ADAPTATION_ALIAS,
+	PT_CLASS_IN_TRAIT_NODE,
 	PT_CLASS_COUNT
 };
 
@@ -3548,9 +3552,10 @@ struct pt_php_docs
 zv::Val pt_node_doc_comment_text(zval *node);
 
 /* $deprecatedAttributeResolver->getDeprecatedAttribute($scope, $stmt) without
- * the array: $isDeprecated and $deprecatedDescription (owned); any other resolver's method runs and its array
- * is unpacked like the callers' list() (the warning for a missing key, null
- * for a non-array); false = pending exception */
+ * the array: $isDeprecated and $deprecatedDescription (owned); any other
+ * resolver's method runs and its array is unpacked like the callers' list()
+ * (the warning for a missing key, null for a non-array); false = pending
+ * exception */
 [[nodiscard]] bool pt_deprecated_attribute_resolver_get_deprecated_attribute(zval *resolver, zval *scope, zval *stmt, zv::Val &isDeprecated, zv::Val &deprecatedDescription);
 
 /* $propertyHooksProcessor->processPropertyHooks($nodeScopeResolver, $stmt,
@@ -3591,6 +3596,26 @@ extern zend_class_entry *pt_ce_node_traverser;
 /* NodeScopeResolver.cpp — $nodeScopeResolver->isAnalysedFile($fileName);
  * false = pending exception */
 [[nodiscard]] bool pt_node_scope_resolver_is_analysed_file(zval *nodeScopeResolver, zval *fileName, bool &out);
+
+/* }}} */
+
+/* {{{ PropertyHandler.cpp, ClassConstHandler.cpp, ConstHandler.cpp,
+ * EnumCaseHandler.cpp, TraitUseHandler.cpp, TraitHandler.cpp — the
+ * declaration statement handlers, registered after the declaration
+ * processors their constructors name */
+
+extern zend_class_entry *pt_ce_property_handler;
+extern zend_class_entry *pt_ce_class_const_handler;
+extern zend_class_entry *pt_ce_const_handler;
+extern zend_class_entry *pt_ce_enum_case_handler;
+extern zend_class_entry *pt_ce_trait_use_handler;
+extern zend_class_entry *pt_ce_trait_handler;
+void pt_register_property_handler();
+void pt_register_class_const_handler();
+void pt_register_const_handler();
+void pt_register_enum_case_handler();
+void pt_register_trait_use_handler();
+void pt_register_trait_handler();
 
 /* }}} */
 

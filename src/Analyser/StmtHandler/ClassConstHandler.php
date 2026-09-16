@@ -16,12 +16,14 @@ use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_merge;
 
 /**
  * @implements StmtHandler<ClassConst>
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ClassConstHandler.cpp')]
 final class ClassConstHandler implements StmtHandler
 {
 

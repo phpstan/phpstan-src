@@ -485,6 +485,14 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_deprecated_attribute_resolver();
 	pt_register_property_hooks_processor();
 	pt_register_called_method_processor();
+	/* the declaration statement handlers, after the processors their
+	 * constructors name */
+	pt_register_property_handler();
+	pt_register_class_const_handler();
+	pt_register_const_handler();
+	pt_register_enum_case_handler();
+	pt_register_trait_use_handler();
+	pt_register_trait_handler();
 
 	return SUCCESS;
 }

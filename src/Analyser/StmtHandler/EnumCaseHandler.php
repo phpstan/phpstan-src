@@ -13,11 +13,13 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @implements StmtHandler<EnumCase>
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/EnumCaseHandler.cpp')]
 final class EnumCaseHandler implements StmtHandler
 {
 

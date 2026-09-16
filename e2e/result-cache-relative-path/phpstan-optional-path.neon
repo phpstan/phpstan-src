@@ -1,0 +1,24 @@
+# The same sources as phpstan.neon plus optional-src/, with optional excludePaths added.
+# `- path (?)` used to be absolutized whatever the loader was asked to expand, so it reached the
+# result cache metadata as an absolute path while the required entries stayed as written.
+#
+# One entry points at a directory that exists and holds an error, so the scenario fails if the
+# entry stops excluding. The other points at nothing, which is what `(?)` is for.
+#
+# Its own tmpDir: two configs sharing one would write the same %tmpDir%/resultCache.php and discard
+# each other's cache, which is https://github.com/phpstan/phpstan/issues/15232 and not what this
+# scenario is about.
+parameters:
+    level: 8
+    tmpDir: tmp-optional-path
+    paths:
+        - src
+        - optional-src
+    excludePaths:
+        analyse:
+            - optional-src (?)
+            - src/NotThere (?)
+    ignoreErrors:
+        -
+            identifier: booleanNot.alwaysFalse
+            path: src/TraitWithConstantCondition.php

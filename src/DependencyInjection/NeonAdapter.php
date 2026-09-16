@@ -161,6 +161,15 @@ final class NeonAdapter implements Adapter
 			return null;
 		}
 
+		// Expanded and absolutized only where a plain path entry under the same key would be. A
+		// loader given a narrower list - CommandHelper reads the project config for the result cache
+		// metadata with only paths and tmpDir in it - keeps the value exactly as written, so the
+		// optional entry and the required one beside it are stored the same way and a move of the
+		// anchor directory leaves both alone.
+		if (!in_array($keyToResolve, $this->expandRelativePaths, true)) {
+			return new OptionalPath($entity->value);
+		}
+
 		$path = $this->expandKnownParameters($entity->value);
 		if ($path === null) {
 			return null;

@@ -3941,6 +3941,9 @@ $covered[\PHPStan\Analyser\EndStatementResult::class] = true;
 $covered[\PHPStan\Analyser\InternalStatementExitPoint::class] = true;
 $covered[\PHPStan\Analyser\InternalStatementResult::class] = true;
 $covered[\PHPStan\Analyser\InternalEndStatementResult::class] = true;
+$covered[\PHPStan\Analyser\Generics\TemplateArgumentFrame::class] = true;
+$covered[\PHPStan\Analyser\AssignTargetWalkMode::class] = true;
+$covered[\PHPStan\Analyser\PreparedAssignTarget::class] = true;
 require __DIR__ . '/analyser-values.php';
 
 // ---- differential coverage completeness ----

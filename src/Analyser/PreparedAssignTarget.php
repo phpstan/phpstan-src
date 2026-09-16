@@ -6,6 +6,7 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\ArrayDimFetch;
 use PHPStan\Node\Expr\ExistingArrayDimFetch;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
 
 /**
@@ -18,6 +19,7 @@ use PHPStan\Type\Type;
  *
  * @internal
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/PreparedAssignTarget.cpp')]
 final class PreparedAssignTarget
 {
 

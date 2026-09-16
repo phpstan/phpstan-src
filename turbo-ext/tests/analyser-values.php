@@ -4,9 +4,10 @@
  * Differential test of the native analyser value classes against their PHP
  * twins, under the prefixed activation (PHPStanTurbo\<Short> next to
  * PHPStan\Analyser\<Short>): ImpurePoint, ThrowPoint, InternalThrowPoint,
- * ArgsResult, IssetabilityDescriptor and the statement results
+ * ArgsResult, IssetabilityDescriptor, the statement results
  * (InternalStatementResult, InternalStatementExitPoint,
- * InternalEndStatementResult and their public counterparts).
+ * InternalEndStatementResult and their public counterparts),
+ * TemplateArgumentFrame, AssignTargetWalkMode and PreparedAssignTarget.
  *
  * Each side builds its objects from the same scopes, nodes and types and
  * every public method's answer is compared, together with the objects' state
@@ -482,6 +483,201 @@ foreach (['native', 'native over PHP collaborators'] as $side) {
 	}
 }
 check(count(array_filter($avStatementResults['php'], static fn ($row) => is_array($row) && ($row[0] ?? null) === 'ok')) >= 70, 'statement results: the fixture constructs the result matrix');
+
+// ---- TemplateArgumentFrame, AssignTargetWalkMode, PreparedAssignTarget ----
+// Frames resolve through their parents by the site's object id; the
+// unconstrained resolution maps a template bound through the traverser (PHP
+// template types on both sides — the resolver callback is what differs).
+// returnTypeOfCall() runs on the PHP scope with a PHP frame installed (the
+// PHP scope type-hints the PHP frame) against a recording acceptor.
+$avAcceptor = new class implements \PHPStan\Reflection\ResolvedFunctionVariant {
+
+	public function getOriginalParametersAcceptor(): \PHPStan\Reflection\ParametersAcceptor
+	{
+		return $this;
+	}
+
+	public function getReturnTypeWithUnresolvableTemplateTypes(): \PHPStan\Type\Type
+	{
+		return new \PHPStan\Type\MixedType();
+	}
+
+	public function getReturnTypeWithUnresolvedTemplateArguments(\PhpParser\Node\Expr $site, \PHPStan\Analyser\Generics\TemplateArgumentFrame $frame, bool $allowUnresolved): \PHPStan\Type\Type
+	{
+		return new \PHPStan\Type\Constant\ConstantStringType(json_encode([get_class($site), $site->getAttribute('label'), spl_object_id($frame), $allowUnresolved]));
+	}
+
+	public function getTemplateTypeMap(): \PHPStan\Type\Generic\TemplateTypeMap
+	{
+		return \PHPStan\Type\Generic\TemplateTypeMap::createEmpty();
+	}
+
+	public function getResolvedTemplateTypeMap(): \PHPStan\Type\Generic\TemplateTypeMap
+	{
+		return \PHPStan\Type\Generic\TemplateTypeMap::createEmpty();
+	}
+
+	public function getCallSiteVarianceMap(): \PHPStan\Type\Generic\TemplateTypeVarianceMap
+	{
+		return \PHPStan\Type\Generic\TemplateTypeVarianceMap::createEmpty();
+	}
+
+	public function getParameters(): array
+	{
+		return [];
+	}
+
+	public function isVariadic(): bool
+	{
+		return false;
+	}
+
+	public function getReturnType(): \PHPStan\Type\Type
+	{
+		return new \PHPStan\Type\Constant\ConstantStringType('plain return type');
+	}
+
+	public function getPhpDocReturnType(): \PHPStan\Type\Type
+	{
+		return new \PHPStan\Type\MixedType();
+	}
+
+	public function getNativeReturnType(): \PHPStan\Type\Type
+	{
+		return new \PHPStan\Type\MixedType();
+	}
+
+	public function hasBoundArgs(): bool
+	{
+		return false;
+	}
+
+	public function resolveConditionalTypes(\PHPStan\Type\Type $type): \PHPStan\Type\Type
+	{
+		return $type;
+	}
+
+};
+$avTemplateScope = \PHPStan\Type\Generic\TemplateTypeScope::createWithFunction('f');
+$avOtherTemplateScope = \PHPStan\Type\Generic\TemplateTypeScope::createWithFunction('g');
+$avInvariant = \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant();
+$avTemplates = [
+	'U' => \PHPStan\Type\Generic\TemplateTypeFactory::create($avTemplateScope, 'U', null, $avInvariant),
+	'V' => \PHPStan\Type\Generic\TemplateTypeFactory::create($avTemplateScope, 'V', null, $avInvariant, null, new \PHPStan\Type\StringType()),
+	'W' => \PHPStan\Type\Generic\TemplateTypeFactory::create($avOtherTemplateScope, 'W', null, $avInvariant),
+];
+$avTemplates['defaulted'] = \PHPStan\Type\Generic\TemplateTypeFactory::create($avTemplateScope, 'D', $avInt, $avInvariant, null, $avString);
+$avTemplates['plain bound'] = \PHPStan\Type\Generic\TemplateTypeFactory::create($avTemplateScope, 'P', $avInt, $avInvariant);
+$avTemplates['bound U'] = \PHPStan\Type\Generic\TemplateTypeFactory::create($avTemplateScope, 'T', new \PHPStan\Type\ArrayType($avInt, $avTemplates['U']), $avInvariant);
+$avTemplates['bound V W'] = \PHPStan\Type\Generic\TemplateTypeFactory::create($avTemplateScope, 'T2', new \PHPStan\Type\UnionType([new \PHPStan\Type\ArrayType($avInt, $avTemplates['V']), new \PHPStan\Type\ArrayType($avString, $avTemplates['W'])]), $avInvariant);
+$avSites = [
+	'site' => new \PhpParser\Node\Expr\FuncCall(new \PhpParser\Node\Name('f')),
+	'other site' => new \PhpParser\Node\Expr\FuncCall(new \PhpParser\Node\Name('g')),
+];
+$avSites['with original'] = new \PhpParser\Node\Expr\FuncCall(new \PhpParser\Node\Name('h'), [], ['templateArgumentOriginalSite' => $avSites['site']]);
+$avSites['with non-expr original'] = new \PhpParser\Node\Expr\FuncCall(new \PhpParser\Node\Name('i'), [], ['templateArgumentOriginalSite' => new \PhpParser\Node\Name('x')]);
+foreach ($avSites as $label => $site) {
+	$site->setAttribute('label', $label);
+}
+$avFramedScope = $avScope->withTemplateArgumentFrame(new \PHPStan\Analyser\Generics\TemplateArgumentFrame(null, []));
+$avFrameResults = [];
+foreach (['php' => [\PHPStan\Analyser\Generics\TemplateArgumentFrame::class, \PHPStan\Analyser\AssignTargetWalkMode::class, \PHPStan\Analyser\PreparedAssignTarget::class], 'native' => [\PHPStanTurbo\TemplateArgumentFrame::class, \PHPStanTurbo\AssignTargetWalkMode::class, \PHPStanTurbo\PreparedAssignTarget::class]] as $side => [$frameClass, $modeClass, $targetClass]) {
+	$r = [];
+	$id = static fn (string $site): int => spl_object_id($avSites[$site]);
+	$root = new $frameClass(null, [$id('site') . '#U' => $avString, $id('other site') . '#T' => $avInt, $id('site') . '#N' => null], [3 => true, 1 => true, 7 => true]);
+	$observing = new $frameClass($root);
+	$observingTop = new $frameClass(null);
+	$leaf = new $frameClass(siteStatementIndexes: [5 => true, 'x' => true, 2 => true], resolutions: [$id('site') . '#V' => $avArray], parent: $observing);
+	$frames = ['root' => $root, 'observing' => $observing, 'observing top' => $observingTop, 'leaf' => $leaf];
+	$frameLabel = static function (string $suffix) use ($frames): string {
+		foreach ($frames as $label => $frame) {
+			if ($suffix === '|templateArguments:' . spl_object_id($frame)) {
+				return 'suffix of ' . $label;
+			}
+		}
+		return $suffix;
+	};
+	foreach ($frames as $label => $frame) {
+		$row = [
+			'observing' => $frame->isObserving(),
+			'first' => $frame->firstSiteStatementIndex(),
+			'owns' => [$frame->ownsSiteInStatement(1), $frame->ownsSiteInStatement(2), $frame->ownsSiteInStatement(4)],
+			'at or after' => [$frame->hasSiteAtOrAfter(0), $frame->hasSiteAtOrAfter(6), $frame->hasSiteAtOrAfter(8)],
+			'suffix' => $frameLabel($frame->getResolutionCacheKeySuffix()),
+		];
+		foreach ($avSites as $siteLabel => $site) {
+			foreach (['U', 'T', 'V', 'N', 'Z'] as $name) {
+				$row['resolve ' . $siteLabel . ' ' . $name] = $avDescribe($frame->resolve($site, $name));
+			}
+			foreach ($avTemplates as $templateLabel => $template) {
+				$row['or unconstrained ' . $siteLabel . ' ' . $templateLabel] = $avCatch(static fn () => $frame->resolveOrUnconstrained($site, $template));
+			}
+		}
+		$r['frame ' . $label] = $row;
+	}
+	foreach ($avTemplates as $templateLabel => $template) {
+		$r['unconstrained ' . $templateLabel] = [
+			$avCatch(static fn () => $frameClass::resolveUnconstrained($avSites['site'], $template, static fn (\PhpParser\Node\Expr $site, string $name): ?\PHPStan\Type\Type => $name === 'U' ? $avInt : null)),
+			$avCatch(static fn () => $frameClass::resolveUnconstrained($avSites['site'], $template, static fn (\PhpParser\Node\Expr $site, string $name): ?\PHPStan\Type\Type => throw new \RuntimeException('resolver ' . $name))),
+		];
+	}
+	foreach (['no frame' => $avScope, 'frame' => $avFramedScope, 'frame promoted' => $avFramedScope->doNotTreatPhpDocTypesAsCertain()] as $scopeLabel => $scope) {
+		foreach ($avSites as $siteLabel => $site) {
+			foreach ([null, true, false] as $allow) {
+				$r['return type ' . $scopeLabel . ' ' . $siteLabel . ' ' . var_export($allow, true)] = [
+					$avCatch(static fn () => $frameClass::returnTypeOfCall($avAcceptor, $scope, $site, $allow)),
+					$avCatch(static fn () => $frameClass::returnTypeOfCall(new \PHPStan\Reflection\TrivialParametersAcceptor(), $scope, $site, $allow)),
+				];
+			}
+		}
+	}
+	$r['frame constants'] = [$frameClass::SYNTHETIC_SITE_ATTRIBUTE, $frameClass::ORIGINAL_SITE_ATTRIBUTE];
+	$r['frame uninitialized'] = [
+		$avCatch(static fn () => (new \ReflectionClass($frameClass))->newInstanceWithoutConstructor()->isObserving()),
+		$avCatch(static fn () => (new \ReflectionClass($frameClass))->newInstanceWithoutConstructor()->ownsSiteInStatement(1)),
+		$avCatch(static fn () => (new \ReflectionClass($frameClass))->newInstanceWithoutConstructor()->resolve($avSites['site'], 'U')),
+		$avCatch(static fn () => (new \ReflectionClass($frameClass))->newInstanceWithoutConstructor()->getResolutionCacheKeySuffix()),
+		$avCatch(static function () use ($frameClass) {
+			$frame = new $frameClass(null);
+			$frame->__construct(null);
+			return $frame;
+		}),
+	];
+
+	// AssignTargetWalkMode: fresh instances with the four flag sets
+	foreach (['assign', 'virtualAssign', 'readModifyWrite', 'coalesceReadModifyWrite'] as $factory) {
+		$mode = $modeClass::$factory();
+		$r['mode ' . $factory] = [$mode->enterExpressionAssign(), $mode->producesTargetReadResult(), $mode->issetSemanticsForRead(), $mode !== $modeClass::$factory(), $avDescribe($mode)];
+	}
+	$r['mode private constructor'] = $avCatch(static fn () => new $modeClass(true, true, true));
+
+	// PreparedAssignTarget: the required arguments only, then every one
+	$getters = ['getKind', 'getVar', 'getAssignedExpr', 'getBeforeScope', 'getScope', 'enterExpressionAssign', 'isAssignOp', 'hasYield', 'getThrowPoints', 'getImpurePoints', 'isAlwaysTerminating', 'getRootVar', 'getVarResult', 'getDimFetchStack', 'getAssignedPropertyExpr', 'getOffsetTypes', 'getOffsetNativeTypes', 'getExistingOffsetTypes', 'getExistingOffsetNativeTypes', 'getOffsetSetTargetResult', 'getObjectResult', 'getPropertyName', 'getPropertyHolderType', 'getTargetReadResult', 'getTargetChainResults', 'getVariableNameResult'];
+	$minimal = new $targetClass($targetClass::KIND_VARIABLE, $avN['a'], $avN['call'], $avScope, $avOtherScope, true, false, true, ['t'], ['i'], false);
+	$someResult = $newResult($avN['a'], $avInt);
+	$full = new $targetClass(
+		$targetClass::KIND_ARRAY_DIM_FETCH, $avN['dim'], $avN['one'], $avOtherScope, $avScope, false, true, false, [], [], true,
+		$avN['arr'], $someResult, [$avN['dim']], $avN['a'], [[null, $avN['dim']]], [[$avInt, $avN['dim']]], [[$avString, $avN['dim']]], [[$avArray, $avN['dim']]],
+		$someResult, $someResult, 'prop', $avString, $someResult, [$someResult], $someResult,
+	);
+	$named = new $targetClass(kind: $targetClass::KIND_PROPERTY_FETCH, var: $avN['thisParent'], assignedExpr: $avN['a'], beforeScope: $avScope, scope: $avScope, enterExpressionAssign: false, isAssignOp: false, hasYield: false, throwPoints: [], impurePoints: [], isAlwaysTerminating: false, propertyName: null, objectResult: $someResult, targetChainResults: [$someResult]);
+	foreach (['minimal' => $minimal, 'full' => $full, 'named' => $named] as $label => $target) {
+		$row = [];
+		foreach ($getters as $getter) {
+			$row[$getter] = $avCatch(static fn () => $target->$getter());
+		}
+		$row['state'] = $avDescribe($target);
+		$r['target ' . $label] = $row;
+	}
+	$r['target constants'] = [$targetClass::KIND_VARIABLE, $targetClass::KIND_ARRAY_DIM_FETCH, $targetClass::KIND_PROPERTY_FETCH, $targetClass::KIND_STATIC_PROPERTY_FETCH, $targetClass::KIND_LIST, $targetClass::KIND_EXISTING_ARRAY_DIM_FETCH, $targetClass::KIND_FALLBACK];
+	$r['target uninitialized'] = $avCatch(static fn () => (new \ReflectionClass($targetClass))->newInstanceWithoutConstructor()->getRootVar());
+	$avFrameResults[$side] = $r;
+}
+foreach ($avFrameResults['php'] as $label => $described) {
+	check($described === ($avFrameResults['native'][$label] ?? null), "frame / walk mode / assign target parity ($label): " . json_encode($described) . ' vs ' . json_encode($avFrameResults['native'][$label] ?? null));
+}
+check(!str_contains(json_encode($avFrameResults['php']['return type frame with original true']), 'with original') && str_contains(json_encode($avFrameResults['php']['return type frame with original true']), 'site'), 'TemplateArgumentFrame: the fixture passes the original site');
+check(str_contains(json_encode($avFrameResults['php']['frame leaf']['or unconstrained site bound U']), 'array<int, string>'), 'TemplateArgumentFrame: the fixture resolves a bound through the frames (' . json_encode($avFrameResults['php']['frame leaf']['or unconstrained site bound U']) . ')');
 
 // VariableFlowBuilder reads native throw points and argument results through
 // their direct entries: its answers over the native value classes equal its

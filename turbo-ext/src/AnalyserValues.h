@@ -26,6 +26,9 @@
 #include "generated/InternalStatementExitPoint.h"
 #include "generated/InternalStatementResult.h"
 #include "generated/StatementExitPoint.h"
+#include "generated/AssignTargetWalkMode.h"
+#include "generated/PreparedAssignTarget.h"
+#include "generated/TemplateArgumentFrame.h"
 
 zv::Val pt_type_call(zend_object *object, const char *lcname, size_t len, uint32_t argc, zval *argv);
 
@@ -55,6 +58,14 @@ inline zval *read(zval *object, zend_class_entry *ce, uint32_t index, const char
 {
 	zval *value = slotOf(object, ce, index);
 	return EXPECTED(value != NULL) ? value : callGetter(object, lcname, len, hold);
+}
+
+/* a getter throwing for a null slot: the slot when it holds a value, the
+ * getter (and its exception) otherwise */
+inline zval *readRequired(zval *object, zend_class_entry *ce, uint32_t index, const char *lcname, size_t len, zv::Val &hold)
+{
+	zval *value = slotOf(object, ce, index);
+	return EXPECTED(value != NULL && Z_TYPE_P(value) != IS_NULL) ? value : callGetter(object, lcname, len, hold);
 }
 
 /* a bool getter; false = pending exception */
@@ -277,6 +288,97 @@ inline zval *pt_internal_end_statement_result_result(zval *endStatement, zv::Val
 {
 	return ptav::read(endStatement, pt_ce_internal_end_statement_result, ptdecl::InternalEndStatementResult::slot::result, PT_LC("getresult"), hold);
 }
+
+/* }}} */
+
+/* {{{ TemplateArgumentFrame: $frame->isObserving() */
+
+inline bool pt_template_argument_frame_is_observing(zval *frame, bool &out)
+{
+	zval *resolutions = ptav::slotOf(frame, pt_ce_template_argument_frame, ptdecl::TemplateArgumentFrame::slot::resolutions);
+	if (EXPECTED(resolutions != NULL)) {
+		out = Z_TYPE_P(resolutions) == IS_NULL;
+		return true;
+	}
+	zv::Val hold;
+	zval *value = ptav::callGetter(frame, PT_LC("isobserving"), hold);
+	if (UNEXPECTED(value == NULL)) return false;
+	out = zend_is_true(value);
+	return true;
+}
+
+/* }}} */
+
+/* {{{ AssignTargetWalkMode: $mode->enterExpressionAssign() /
+ * ->producesTargetReadResult() / ->issetSemanticsForRead() */
+
+inline bool pt_assign_target_walk_mode_enter_expression_assign(zval *mode, bool &out)
+{
+	return ptav::readBool(mode, pt_ce_assign_target_walk_mode, ptdecl::AssignTargetWalkMode::slot::enterExpressionAssign, PT_LC("enterexpressionassign"), out);
+}
+
+inline bool pt_assign_target_walk_mode_produces_target_read_result(zval *mode, bool &out)
+{
+	return ptav::readBool(mode, pt_ce_assign_target_walk_mode, ptdecl::AssignTargetWalkMode::slot::producesTargetReadResult, PT_LC("producestargetreadresult"), out);
+}
+
+inline bool pt_assign_target_walk_mode_isset_semantics_for_read(zval *mode, bool &out)
+{
+	return ptav::readBool(mode, pt_ce_assign_target_walk_mode, ptdecl::AssignTargetWalkMode::slot::issetSemanticsForRead, PT_LC("issetsemanticsforread"), out);
+}
+
+/* }}} */
+
+/* {{{ PreparedAssignTarget: every getter — the bool ones as bools, the
+ * kind-specific ones (getRootVar() ... getTargetReadResult()) through the
+ * getter when null (its ShouldNotHappenException) */
+
+#define PT_AV_PREPARED_ASSIGN_TARGET(reader, slotName, getter) \
+	inline zval *pt_prepared_assign_target_##reader(zval *target, zv::Val &hold) \
+	{ \
+		return ptav::read(target, pt_ce_prepared_assign_target, ptdecl::PreparedAssignTarget::slot::slotName, PT_LC(getter), hold); \
+	}
+#define PT_AV_PREPARED_ASSIGN_TARGET_REQUIRED(reader, slotName, getter) \
+	inline zval *pt_prepared_assign_target_##reader(zval *target, zv::Val &hold) \
+	{ \
+		return ptav::readRequired(target, pt_ce_prepared_assign_target, ptdecl::PreparedAssignTarget::slot::slotName, PT_LC(getter), hold); \
+	}
+#define PT_AV_PREPARED_ASSIGN_TARGET_BOOL(reader, slotName, getter) \
+	inline bool pt_prepared_assign_target_##reader(zval *target, bool &out) \
+	{ \
+		return ptav::readBool(target, pt_ce_prepared_assign_target, ptdecl::PreparedAssignTarget::slot::slotName, PT_LC(getter), out); \
+	}
+
+PT_AV_PREPARED_ASSIGN_TARGET(kind, kind, "getkind")
+PT_AV_PREPARED_ASSIGN_TARGET(var, var, "getvar")
+PT_AV_PREPARED_ASSIGN_TARGET(assigned_expr, assignedExpr, "getassignedexpr")
+PT_AV_PREPARED_ASSIGN_TARGET(before_scope, beforeScope, "getbeforescope")
+PT_AV_PREPARED_ASSIGN_TARGET(scope, scope, "getscope")
+PT_AV_PREPARED_ASSIGN_TARGET_BOOL(enter_expression_assign, enterExpressionAssign, "enterexpressionassign")
+PT_AV_PREPARED_ASSIGN_TARGET_BOOL(is_assign_op, isAssignOp, "isassignop")
+PT_AV_PREPARED_ASSIGN_TARGET_BOOL(has_yield, hasYield, "hasyield")
+PT_AV_PREPARED_ASSIGN_TARGET(throw_points, throwPoints, "getthrowpoints")
+PT_AV_PREPARED_ASSIGN_TARGET(impure_points, impurePoints, "getimpurepoints")
+PT_AV_PREPARED_ASSIGN_TARGET_BOOL(is_always_terminating, isAlwaysTerminating, "isalwaysterminating")
+PT_AV_PREPARED_ASSIGN_TARGET_REQUIRED(root_var, rootVar, "getrootvar")
+PT_AV_PREPARED_ASSIGN_TARGET_REQUIRED(var_result, varResult, "getvarresult")
+PT_AV_PREPARED_ASSIGN_TARGET_REQUIRED(dim_fetch_stack, dimFetchStack, "getdimfetchstack")
+PT_AV_PREPARED_ASSIGN_TARGET_REQUIRED(assigned_property_expr, assignedPropertyExpr, "getassignedpropertyexpr")
+PT_AV_PREPARED_ASSIGN_TARGET_REQUIRED(offset_types, offsetTypes, "getoffsettypes")
+PT_AV_PREPARED_ASSIGN_TARGET_REQUIRED(offset_native_types, offsetNativeTypes, "getoffsetnativetypes")
+PT_AV_PREPARED_ASSIGN_TARGET_REQUIRED(existing_offset_types, existingOffsetTypes, "getexistingoffsettypes")
+PT_AV_PREPARED_ASSIGN_TARGET_REQUIRED(existing_offset_native_types, existingOffsetNativeTypes, "getexistingoffsetnativetypes")
+PT_AV_PREPARED_ASSIGN_TARGET_REQUIRED(offset_set_target_result, offsetSetTargetResult, "getoffsetsettargetresult")
+PT_AV_PREPARED_ASSIGN_TARGET_REQUIRED(object_result, objectResult, "getobjectresult")
+PT_AV_PREPARED_ASSIGN_TARGET(property_name, propertyName, "getpropertyname")
+PT_AV_PREPARED_ASSIGN_TARGET_REQUIRED(property_holder_type, propertyHolderType, "getpropertyholdertype")
+PT_AV_PREPARED_ASSIGN_TARGET_REQUIRED(target_read_result, targetReadResult, "gettargetreadresult")
+PT_AV_PREPARED_ASSIGN_TARGET(target_chain_results, targetChainResults, "gettargetchainresults")
+PT_AV_PREPARED_ASSIGN_TARGET(variable_name_result, variableNameResult, "getvariablenameresult")
+
+#undef PT_AV_PREPARED_ASSIGN_TARGET
+#undef PT_AV_PREPARED_ASSIGN_TARGET_REQUIRED
+#undef PT_AV_PREPARED_ASSIGN_TARGET_BOOL
 
 /* }}} */
 

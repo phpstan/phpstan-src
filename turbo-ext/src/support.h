@@ -182,7 +182,6 @@ enum {
 	PT_CLASS_CONST_FETCH,
 	PT_CLASS_HALT_COMPILER,
 	PT_CLASS_NODE_SCOPE_RESOLVER,
-	PT_CLASS_TEMPLATE_ARGUMENT_FRAME,
 	PT_CLASS_INITIALIZER_EXPR_CONTEXT,
 	PT_CLASS_EXTENDED_PARAMETERS_ACCEPTOR,
 	PT_CLASS_MATCH,
@@ -282,6 +281,7 @@ enum {
 	PT_CLASS_STMT_HANDLER,
 	PT_CLASS_CONTINUE_STMT,
 	PT_CLASS_BREAK_STMT,
+	PT_CLASS_RESOLVED_FUNCTION_VARIANT,
 	PT_CLASS_COUNT
 };
 
@@ -1952,6 +1952,46 @@ zv::Val pt_internal_statement_result_to_public(zval *result);
 zv::Val pt_mutating_scope_get_template_argument_constraints(zend_object *scope);
 zv::Val pt_mutating_scope_add_template_argument_constraints(zend_object *scope, zval *constraints);
 zv::Val pt_mutating_scope_merge_with(zend_object *scope, zval *otherScope, bool preserveVacuousConditionals = false);
+
+/* }}} */
+
+/* {{{ TemplateArgumentFrame.cpp, AssignTargetWalkMode.cpp,
+ * PreparedAssignTarget.cpp — registered after the statement results.
+ * Conventions as above; the slot getters are inline in AnalyserValues.h. */
+
+extern zend_class_entry *pt_ce_template_argument_frame;
+void pt_register_template_argument_frame();
+/* TemplateArgumentFrame::returnTypeOfCall($acceptor, $scope, $site,
+ * $allowUnresolved) ($allowUnresolved -1 for null, else 0/1) */
+zv::Val pt_template_argument_frame_return_type_of_call(zval *acceptor, zval *scope, zval *site, int allowUnresolved = -1);
+/* new TemplateArgumentFrame($parent, $resolutions, $siteStatementIndexes)
+ * ($parent / $resolutions NULL or IS_NULL for null, $siteStatementIndexes
+ * NULL for []) */
+zv::Val pt_template_argument_frame_new(zval *parent, zval *resolutions = NULL, zval *siteStatementIndexes = NULL);
+/* $frame->resolve($site, $templateName) (the type or null) /
+ * ->resolveOrUnconstrained($site, $template) /
+ * ->getResolutionCacheKeySuffix() */
+zv::Val pt_template_argument_frame_resolve(zval *frame, zval *site, zend_string *templateName);
+zv::Val pt_template_argument_frame_resolve_or_unconstrained(zval *frame, zval *site, zval *templateType);
+zv::Val pt_template_argument_frame_resolution_cache_key_suffix(zval *frame);
+
+/* MutatingScope.cpp — $scope->getCurrentTemplateArgumentFrame() / the
+ * $scope->nativeTypesPromoted property */
+zv::Val pt_mutating_scope_get_current_template_argument_frame(zend_object *scope);
+[[nodiscard]] bool pt_mutating_scope_native_types_promoted(zend_object *scope, bool &out);
+
+extern zend_class_entry *pt_ce_assign_target_walk_mode;
+void pt_register_assign_target_walk_mode();
+/* new AssignTargetWalkMode(...) — what assign() / virtualAssign() /
+ * readModifyWrite() / coalesceReadModifyWrite() return fresh each call */
+zv::Val pt_assign_target_walk_mode_new(bool enterExpressionAssign, bool producesTargetReadResult, bool issetSemanticsForRead);
+
+extern zend_class_entry *pt_ce_prepared_assign_target;
+void pt_register_prepared_assign_target();
+/* new PreparedAssignTarget(...$argv): the constructor's positional
+ * arguments in the twin's order (at least the 11 required ones), an
+ * omitted or UNDEF optional one taking its default */
+zv::Val pt_prepared_assign_target_new(uint32_t argc, zval *argv);
 
 /* }}} */
 

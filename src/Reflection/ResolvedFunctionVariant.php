@@ -4,8 +4,10 @@ namespace PHPStan\Reflection;
 
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Generics\TemplateArgumentFrame;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Type;
 
+#[ReferencedByTurboExtension(key: 'resolvedFunctionVariant')]
 interface ResolvedFunctionVariant extends ExtendedParametersAcceptor
 {
 

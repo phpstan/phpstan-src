@@ -6,7 +6,7 @@ use PhpParser\Node\Expr;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ResolvedFunctionVariant;
-use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
@@ -18,7 +18,7 @@ use function sprintf;
  * Immutable template inference context carried by a scope. The observation walk
  * and the resolved walk use distinct instances, including in saved callbacks.
  */
-#[ReferencedByTurboExtension(key: 'templateArgumentFrame')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TemplateArgumentFrame.cpp')]
 final class TemplateArgumentFrame
 {
 

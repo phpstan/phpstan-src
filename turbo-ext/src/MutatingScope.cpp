@@ -10642,8 +10642,10 @@ public:
 						if (UNEXPECTED(!isInstance(variant.ref(), PT_CLASS_EXTENDED_PARAMETERS_ACCEPTOR, isExtended))) return zv::Val();
 						if (isExtended) return pt_type_call(Z_OBJ_P(variant.raw()), PT_LC("getnativereturntype"), 0, NULL);
 					}
-					zv::Args callArgs{variant.raw(), self, expr, true};
-					return pt_type_call_static(PT_CLASS_TEMPLATE_ARGUMENT_FRAME, PT_LC("returntypeofcall"), 4, callArgs);
+					zval selfZv, siteZv;
+					ZVAL_OBJ(&selfZv, self);
+					ZVAL_OBJ(&siteZv, expr);
+					return pt_template_argument_frame_return_type_of_call(variant.raw(), &selfZv, &siteZv, 1);
 				}
 			}
 		}
@@ -11540,6 +11542,18 @@ zv::Val pt_mutating_scope_add_template_argument_constraints(zend_object *scope, 
 	return pt_this_call(scope, scope->ce == pt_ce_mutating_scope, PT_LC("addtemplateargumentconstraints"), msAddTemplateArgumentConstraints, 1, constraints, [&]() { return MutatingScope(scope).addTemplateArgumentConstraints(constraints); });
 }
 
+/* the template-frame reads of TemplateArgumentFrame::returnTypeOfCall()
+ * (TemplateArgumentFrame.cpp) */
+zv::Val pt_mutating_scope_get_current_template_argument_frame(zend_object *scope)
+{
+	return pt_this_call(scope, scope->ce == pt_ce_mutating_scope, PT_LC("getcurrenttemplateargumentframe"), &reg::detail::Bound<&MutatingScope::getCurrentTemplateArgumentFrame>::handle, 0, NULL, [&]() { return MutatingScope(scope).getCurrentTemplateArgumentFrame(); });
+}
+
+bool pt_mutating_scope_native_types_promoted(zend_object *scope, bool &out)
+{
+	return MutatingScope::scopeNativeTypesPromoted(scope, out);
+}
+
 zv::Val pt_mutating_scope_merge_with(zend_object *scope, zval *otherScope, bool preserveVacuousConditionals)
 {
 	if (otherScope != NULL && Z_TYPE_P(otherScope) == IS_NULL) {
@@ -11866,11 +11880,16 @@ void pt_register_mutating_scope()
 
 	cls.method(sigs::withTemplateArgumentFrame, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *frame;
-		zend_class_entry *frameCe = pt_class(PT_CLASS_TEMPLATE_ARGUMENT_FRAME);
-		if (UNEXPECTED(frameCe == NULL)) RETURN_THROWS();
 		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT_OF_CLASS_OR_NULL(frame, frameCe)
+			Z_PARAM_OBJECT_OR_NULL(frame)
 		ZEND_PARSE_PARAMETERS_END();
+		/* the twin's ?TemplateArgumentFrame parameter: the shadowing class,
+		 * or the class of that name (the PHP twin next to the prefixed
+		 * native classes in the differential tests) */
+		if (UNEXPECTED(frame != NULL && Z_OBJCE_P(frame) != pt_ce_template_argument_frame && !zend_string_equals_literal(Z_OBJCE_P(frame)->name, "PHPStan\\Analyser\\Generics\\TemplateArgumentFrame"))) {
+			zend_argument_type_error(1, "must be of type ?PHPStan\\Analyser\\Generics\\TemplateArgumentFrame, %s given", zend_zval_value_name(frame));
+			RETURN_THROWS();
+		}
 		zval nullZv;
 		if (frame == NULL) {
 			ZVAL_NULL(&nullZv);

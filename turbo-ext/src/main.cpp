@@ -353,6 +353,9 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_internal_statement_exit_point();
 	pt_register_internal_statement_result();
 	pt_register_internal_end_statement_result();
+	pt_register_template_argument_frame();
+	pt_register_assign_target_walk_mode();
+	pt_register_prepared_assign_target();
 
 	return SUCCESS;
 }

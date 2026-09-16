@@ -40,6 +40,14 @@
 #       already passes -Wno-unused-parameter for exactly this reason.
 #   performance-no-int-to-ptr  [1]  a callback stored in a zend_long is
 #       recovered through uintptr_t, which is the correct idiom.
+#   bugprone-macro-parentheses  [1]  the one site is a macro that *declares*
+#       its parameter (`zval *var, ...` in MutatingScope.cpp), and the fix
+#       this check asks for — parenthesising the declarator, `zval *(var)` —
+#       makes GCC warn "unnecessary parentheses in declaration" under
+#       -Wparentheses, which is part of -Wall and therefore an error in the
+#       CI compile legs (-Werror). The two tools contradict each other and
+#       the compiler wins: it gates the build that ships the binaries.
+#       Verified against GCC 11.4, the CI floor, in the turbo-build image.
 #   misc-const-correctness, misc-no-recursion, misc-redundant-expression,
 #   bugprone-easily-swappable-parameters, bugprone-narrowing-conversions,
 #   bugprone-branch-clone, bugprone-switch-missing-default-case,
@@ -70,6 +78,7 @@ Checks: >
   -bugprone-branch-clone,
   -bugprone-easily-swappable-parameters,
   -bugprone-implicit-widening-of-multiplication-result,
+  -bugprone-macro-parentheses,
   -bugprone-multi-level-implicit-pointer-conversion,
   -bugprone-narrowing-conversions,
   -bugprone-not-null-terminated-result,

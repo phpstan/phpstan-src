@@ -13,8 +13,39 @@
 PHP_CONFIG ?= php-config
 
 CXX ?= c++
-# CI overrides with stricter settings, e.g. WARN_FLAGS="-Wall -Wextra -Werror"
-# (the Zend engine headers are exempted via the pragma guard in src/support.h)
+# The strict set the CI compile legs build with, defined once here and read
+# by the workflows (`make -s print-warn-flags`) instead of being spelled out
+# in each of them. The three -Wno- exemptions cover third-party macro
+# expansions, never our own code:
+#   -Wno-assume            zend's parameter-parsing macros expand
+#                          __builtin_assume with (potential) side effects
+#   -Wno-unused-parameter  PHP_METHOD's fixed signature — execute_data and
+#                          return_value are not used by every method
+#   -Wno-unicode           zend arginfo macros stringify namespaced class
+#                          names; clang lexes the \N in
+#                          "PhpParser\NodeVisitor" as a universal character
+#                          name (GCC ignores the unknown -Wno- flag)
+# The four warnings beyond -Wall -Wextra were each measured over every
+# translation unit with both compilers before being enabled, and produce
+# nothing today. Three more were tried and rejected, with the counts that
+# rejected them (distinct sites in our own code, GCC 11.4 — the CI floor —
+# over all 173 sources; measure any candidate the same way, and beware that
+# our files report relative paths while the engine's headers report absolute
+# ones, which is easy to mis-split):
+#   -Wshadow      142 sites. GCC also warns when a parameter shadows a
+#                 global or a member function, which clang does not (clang
+#                 finds 5, all in reg.h). GCC's narrower -Wshadow=local
+#                 matches clang's meaning and may be worth revisiting.
+#   -Wcast-qual   14 sites under clang, 9 under GCC — nearly all expansions
+#                 of the engine's own ZVAL_EMPTY_ARRAY, which casts the
+#                 shared const empty array to zend_array *. Not ours to fix.
+#   -Wzero-as-null-pointer-constant  3 sites; not worth a gate on its own.
+STRICT_WARN_FLAGS := -Wall -Wextra -Werror \
+	-Wno-assume -Wno-unused-parameter -Wno-unicode \
+	-Wsuggest-override -Wnon-virtual-dtor -Wdouble-promotion -Wextra-semi
+# A plain local build stays lenient on purpose: a contributor's compiler may
+# warn where the versions CI pins do not, and -Werror would turn that into a
+# build failure for them.
 WARN_FLAGS ?= -Wall
 # ZEND_ENABLE_STATIC_TSRMLS_CACHE: on ZTS builds EG()/CG() go through the
 # per-thread cache main.cpp defines instead of a ts_resource lookup per
@@ -163,6 +194,9 @@ CLANG_TIDY ?= $(shell command -v clang-tidy-$(CLANG_TIDY_VERSION) 2>/dev/null \
 print-clang-tidy-version:
 	@echo $(CLANG_TIDY_VERSION)
 
+print-warn-flags:
+	@echo '$(STRICT_WARN_FLAGS)'
+
 # clang-tidy takes the compile flags from a compilation database, which a
 # plain Makefile build does not produce as a side effect
 compile_commands.json: Makefile bin/generate-compile-commands.php
@@ -204,4 +238,4 @@ sanitize:
 	done
 	$(MAKE) clean
 
-.PHONY: clean lint pgo pgo-clean print-clang-tidy-version sanitize FORCE
+.PHONY: clean lint pgo pgo-clean print-clang-tidy-version print-warn-flags sanitize FORCE

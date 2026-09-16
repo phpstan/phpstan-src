@@ -484,16 +484,12 @@ jobs:
         # its own sources with that build loaded, then the final build using
         # the recorded profile — the same three stages `make pgo` runs
         # locally, so a profile-guided binary can be reproduced outside CI.
-        # Exemptions, each caused by third-party macro expansions, not our code:
-        # -Wno-assume: zend's parameter-parsing macros expand __builtin_assume
-        #   with (potential) side effects
-        # -Wno-unused-parameter: PHP_METHOD's fixed signature
-        #   (execute_data/return_value are not used by every method)
-        # -Wno-unicode: zend arginfo macros stringify namespaced class names;
-        #   clang lexes the \N in "PhpParser\NodeVisitor" as a universal
-        #   character name (GCC ignores the unknown -Wno- flag)
+        # The strict set itself lives in turbo-ext/Makefile
+        # (STRICT_WARN_FLAGS), which documents why each exemption is there —
+        # every one is a third-party macro expansion, not our code. Reading
+        # it here keeps one definition instead of three copies that drift.
         run: |
-          make pgo WARN_FLAGS="-Wall -Wextra -Werror -Wno-assume -Wno-unused-parameter -Wno-unicode" -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || nproc)"
+          make pgo WARN_FLAGS="$(make -s print-warn-flags)" -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || nproc)"
 
       # On arm64 AMFI refuses to map unsigned code, so the binary must carry
       # at least an ad-hoc signature. The linker applies one itself, but
@@ -629,7 +625,7 @@ jobs:
       - name: "Compile phpstan_turbo with strict warnings (profile-guided)"
         run: |
           docker exec -i -w /work/turbo-ext alpine-build sh -e <<'EOF'
-          make pgo WARN_FLAGS="-Wall -Wextra -Werror -Wno-assume -Wno-unused-parameter -Wno-unicode" -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || nproc)"
+          make pgo WARN_FLAGS="$(make -s print-warn-flags)" -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || nproc)"
           EOF
 
       - name: "Verify the built extension reports the expected version"

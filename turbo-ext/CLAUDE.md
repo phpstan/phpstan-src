@@ -132,13 +132,21 @@ being ≥0.5% faster is. When the estimate is marginal, don't port.
 
 ```bash
 cd turbo-ext
-make WARN_FLAGS="-Wall -Wextra -Werror -Wno-assume -Wno-unused-parameter -Wno-unicode"
+make WARN_FLAGS="$(make -s print-warn-flags)"
 php -d extension=$(pwd)/phpstan_turbo.so tests/smoke.php   # must print ALL OK
 ```
 
-The three `-Wno-` exemptions are for zend macro expansions only (documented in
-`.github/workflows/phar.yml`); new warnings in our code are fixed, not
-exempted. Zend header noise is handled by the pragma guards in `support.h`.
+`print-warn-flags` prints the strict set the CI compile legs build with. It
+is defined once, as `STRICT_WARN_FLAGS` in the Makefile, so this command and
+the workflows cannot drift apart. The three `-Wno-` exemptions there are for
+zend macro expansions only; new warnings in our code are fixed, not exempted.
+Zend header noise is handled by the pragma guards in `support.h`.
+
+That comment also records the warnings measured and **rejected**, with the
+counts that rejected them — add a candidate only after measuring it over
+every translation unit with both compilers, and note that our files report
+relative paths while the engine's headers report absolute ones, which makes
+an our-code-vs-engine split easy to get backwards.
 
 Static analysis and sanitizers, from the repository root (both gate in CI,
 `.github/workflows/lint.yml`):

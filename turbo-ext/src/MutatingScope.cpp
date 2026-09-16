@@ -11297,7 +11297,7 @@ static void ZEND_FASTCALL msGetCurrentExpressionResultStorage(INTERNAL_FUNCTION_
 /* the ($functionLike, ?array, ?array) argument list of the two
  * *WithoutReflection() entries */
 #define PT_MS_PARSE_FUNCTION_ENTRY(var, classIdx) \
-	zval *(var), *callableParameters = NULL, *nativeCallableParameters = NULL; \
+	zval *var, *callableParameters = NULL, *nativeCallableParameters = NULL; \
 	do { \
 		zend_class_entry *ce_ = pt_class(classIdx); \
 		if (UNEXPECTED(ce_ == NULL)) { \

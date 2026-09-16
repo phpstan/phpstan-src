@@ -182,7 +182,6 @@ enum {
 	PT_CLASS_CONST_FETCH,
 	PT_CLASS_HALT_COMPILER,
 	PT_CLASS_NODE_SCOPE_RESOLVER,
-	PT_CLASS_EXPR_HANDLER_REGISTRY,
 	PT_CLASS_TEMPLATE_ARGUMENT_FRAME,
 	PT_CLASS_INITIALIZER_EXPR_CONTEXT,
 	PT_CLASS_EXTENDED_PARAMETERS_ACCEPTOR,
@@ -279,6 +278,8 @@ enum {
 	PT_CLASS_CLASS_CONSTANT_FETCH,
 	PT_CLASS_COALESCE_ASSIGN_OP_EXPR,
 	PT_CLASS_CLASS_CONST_STMT,
+	PT_CLASS_EXPR_HANDLER,
+	PT_CLASS_STMT_HANDLER,
 	PT_CLASS_COUNT
 };
 
@@ -1705,6 +1706,88 @@ zv::Val pt_specified_types_intersect_with(zend_object *specifiedTypes, zval *oth
 zv::Val pt_specified_types_union_with(zend_object *specifiedTypes, zval *other);
 /* $specifiedTypes->isEquality(); false = pending exception */
 [[nodiscard]] bool pt_specified_types_is_equality(zval *specifiedTypes, bool &out);
+
+/* }}} */
+
+/* {{{ the analysis-engine value classes and handler registries
+ * (ExpressionContext.cpp, StatementContext.cpp, ExprHandlerRegistry.cpp,
+ * StmtHandlerRegistry.cpp) — registered at the END of the sequence (their
+ * signatures name the Type interface and PHP analyser classes only) */
+
+extern zend_class_entry *pt_ce_expression_context;
+extern zend_class_entry *pt_ce_statement_context;
+extern zend_class_entry *pt_ce_expr_handler_registry;
+extern zend_class_entry *pt_ce_stmt_handler_registry;
+void pt_register_expression_context();
+void pt_register_statement_context();
+void pt_register_expr_handler_registry();
+void pt_register_stmt_handler_registry();
+
+/* ExpressionContext::createTopLevel($resolveTemplateArguments) /
+ * createDeep($resolveTemplateArguments); UNDEF = pending exception */
+zv::Val pt_expression_context_create_top_level(bool resolveTemplateArguments = true);
+zv::Val pt_expression_context_create_deep(bool resolveTemplateArguments = true);
+/* $context->enterDeep() / enterDeepKeepingValueFlow() / withoutValueFlow() /
+ * enterMatchArm() / withoutTemplateArgumentResolution() / enterThrow() /
+ * enterArrayDimFetchRoot() / enterUnsetTarget() / enterPassedToType($type,
+ * $nativeType) / enterRightSideAssign($variableName, $expr) /
+ * enterAssignRightSideCallArgs($acceptor) / enterValueFlow($target, $direct)
+ * — the native bodies for a native context, the methods of anything else
+ * (every argument borrowed, NULL for a null); UNDEF = pending exception */
+zv::Val pt_expression_context_enter_deep(zval *context);
+zv::Val pt_expression_context_enter_deep_keeping_value_flow(zval *context);
+zv::Val pt_expression_context_without_value_flow(zval *context);
+zv::Val pt_expression_context_enter_match_arm(zval *context);
+zv::Val pt_expression_context_without_template_argument_resolution(zval *context);
+zv::Val pt_expression_context_enter_throw(zval *context);
+zv::Val pt_expression_context_enter_array_dim_fetch_root(zval *context);
+zv::Val pt_expression_context_enter_unset_target(zval *context);
+zv::Val pt_expression_context_enter_passed_to_type(zval *context, zval *type, zval *nativeType);
+zv::Val pt_expression_context_enter_right_side_assign(zval *context, zend_string *variableName, zval *expr);
+zv::Val pt_expression_context_enter_assign_right_side_call_args(zval *context, zval *acceptor);
+zv::Val pt_expression_context_enter_value_flow(zval *context, zval *target, bool direct);
+/* $context->isDeep() / isValueConsumed() / shouldResolveTemplateArguments() /
+ * isInThrow() / isValueFlowDirect() / isArrayDimFetchRoot() /
+ * isUnsetTarget(); false = pending exception */
+[[nodiscard]] bool pt_expression_context_is_deep(zval *context, bool &out);
+[[nodiscard]] bool pt_expression_context_is_value_consumed(zval *context, bool &out);
+[[nodiscard]] bool pt_expression_context_should_resolve_template_arguments(zval *context, bool &out);
+[[nodiscard]] bool pt_expression_context_is_in_throw(zval *context, bool &out);
+[[nodiscard]] bool pt_expression_context_is_value_flow_direct(zval *context, bool &out);
+[[nodiscard]] bool pt_expression_context_is_array_dim_fetch_root(zval *context, bool &out);
+[[nodiscard]] bool pt_expression_context_is_unset_target(zval *context, bool &out);
+/* $context->getPassedToType() / getNativePassedToType() /
+ * getInAssignRightSideVariableName() / getInAssignRightSideExpr() /
+ * getInAssignRightSideType() / getInAssignRightSideNativeType() /
+ * getValueFlowTarget(); the value or null, UNDEF = pending exception */
+zv::Val pt_expression_context_get_passed_to_type(zval *context);
+zv::Val pt_expression_context_get_native_passed_to_type(zval *context);
+zv::Val pt_expression_context_get_in_assign_right_side_variable_name(zval *context);
+zv::Val pt_expression_context_get_in_assign_right_side_expr(zval *context);
+zv::Val pt_expression_context_get_in_assign_right_side_type(zval *context);
+zv::Val pt_expression_context_get_in_assign_right_side_native_type(zval *context);
+zv::Val pt_expression_context_get_value_flow_target(zval *context);
+
+/* StatementContext::createTopLevel($resolveTemplateArguments) /
+ * createDeep($resolveTemplateArguments), and $context->isTopLevel() /
+ * shouldResolveTemplateArguments() / getForeachUnrollFactor() /
+ * withoutTemplateArgumentResolution() / enterDeep() /
+ * enterUnrolledForeach($totalKeys) — natively for a native context, the
+ * methods otherwise; UNDEF / false = pending exception */
+zv::Val pt_statement_context_create_top_level(bool resolveTemplateArguments = true);
+zv::Val pt_statement_context_create_deep(bool resolveTemplateArguments = true);
+[[nodiscard]] bool pt_statement_context_is_top_level(zval *context, bool &out);
+[[nodiscard]] bool pt_statement_context_should_resolve_template_arguments(zval *context, bool &out);
+[[nodiscard]] bool pt_statement_context_get_foreach_unroll_factor(zval *context, zend_long &out);
+zv::Val pt_statement_context_without_template_argument_resolution(zval *context);
+zv::Val pt_statement_context_enter_deep(zval *context);
+zv::Val pt_statement_context_enter_unrolled_foreach(zval *context, zend_long totalKeys);
+
+/* ExprHandlerRegistry::resolve($expr, $container) /
+ * StmtHandlerRegistry::resolve($stmt, $container): the handler or null
+ * (both arguments borrowed); UNDEF = pending exception */
+zv::Val pt_expr_handler_registry_resolve(zend_object *expr, zval *container);
+zv::Val pt_stmt_handler_registry_resolve(zend_object *stmt, zval *container);
 
 /* }}} */
 

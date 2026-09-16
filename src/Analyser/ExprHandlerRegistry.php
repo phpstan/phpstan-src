@@ -4,7 +4,7 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node\Expr;
 use PHPStan\DependencyInjection\Container;
-use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function get_class;
 use function spl_object_id;
 
@@ -13,7 +13,7 @@ use function spl_object_id;
  * Expr class so dispatch does not re-scan every tagged handler (a linear
  * supports() sweep) on each call.
  */
-#[ReferencedByTurboExtension(key: 'exprHandlerRegistry')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ExprHandlerRegistry.cpp')]
 final class ExprHandlerRegistry
 {
 

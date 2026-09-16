@@ -2,6 +2,8 @@
 
 namespace PHPStan\Analyser;
 
+use PHPStan\Turbo\ShadowedByTurboExtension;
+
 /**
  * Object of this class is one of the parameters of `NodeScopeResolver::processStmtNodes()`.
  *
@@ -10,6 +12,7 @@ namespace PHPStan\Analyser;
  *
  * When in doubt, use `StatementContext::createTopLevel()`.
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/StatementContext.cpp')]
 final class StatementContext
 {
 

@@ -3533,6 +3533,228 @@ check(
 );
 $covered[\PHPStan\Analyser\SpecifiedTypes::class] = true;
 
+// ---- ExpressionContext / StatementContext ----
+// Every derivation applied two levels deep to every factory's context on
+// both sides; each context is compared getter by getter, a derivation that
+// returns its receiver is recorded as such, and the private constructors
+// must refuse userland instantiation.
+$covered[\PHPStan\Analyser\ExpressionContext::class] = true;
+$covered[\PHPStan\Analyser\StatementContext::class] = true;
+$ecInt = new \PHPStanTurbo\IntegerType();
+$ecString = new \PHPStanTurbo\StringType();
+$ecExpr = new \PhpParser\Node\Expr\Variable('x');
+$ecWrite = new \PHPStan\Node\Variable\VariableWrite('x', $ecExpr, 7, \PHPStan\Node\Variable\VariableWrite::KIND_ASSIGN);
+$ecTemplateAcceptor = new \PHPStan\Reflection\TrivialParametersAcceptor();
+$ecExtendedAcceptor = new \PHPStan\Reflection\ExtendedFunctionVariant(
+	\PHPStan\Type\Generic\TemplateTypeMap::createEmpty(),
+	null,
+	[],
+	false,
+	$ecInt,
+	$ecInt,
+	$ecString,
+);
+$ecResults = [];
+foreach (['php' => [\PHPStan\Analyser\ExpressionContext::class, \PHPStan\Analyser\StatementContext::class], 'native' => [\PHPStanTurbo\ExpressionContext::class, \PHPStanTurbo\StatementContext::class]] as $side => [$ecClass, $stcClass]) {
+	$r = [];
+	$describeObject = static function (?object $object) use ($turboNorm, $ecExpr, $ecWrite): ?string {
+		if ($object === null) {
+			return null;
+		}
+		if ($object === $ecExpr) {
+			return 'expr';
+		}
+		if ($object === $ecWrite) {
+			return 'write';
+		}
+		if ($object instanceof \PHPStan\Type\Type) {
+			return $turboNorm(get_class($object)) . ':' . $object->describe(\PHPStan\Type\VerbosityLevel::precise());
+		}
+		return $turboNorm(get_class($object));
+	};
+	$describe = static fn (object $c): array => [
+		$turboNorm(get_class($c)),
+		$c->isDeep(),
+		$c->isValueConsumed(),
+		$describeObject($c->getPassedToType()),
+		$describeObject($c->getNativePassedToType()),
+		$c->shouldResolveTemplateArguments(),
+		$c->isInThrow(),
+		$c->getInAssignRightSideVariableName(),
+		$describeObject($c->getInAssignRightSideExpr()),
+		$describeObject($c->getInAssignRightSideType()),
+		$describeObject($c->getInAssignRightSideNativeType()),
+		$describeObject($c->getValueFlowTarget()),
+		$c->isValueFlowDirect(),
+		$c->isArrayDimFetchRoot(),
+		$c->isUnsetTarget(),
+	];
+	$derivations = [
+		'enterDeep' => static fn ($c) => $c->enterDeep(),
+		'enterDeepKeepingValueFlow' => static fn ($c) => $c->enterDeepKeepingValueFlow(),
+		'withoutValueFlow' => static fn ($c) => $c->withoutValueFlow(),
+		'enterMatchArm' => static fn ($c) => $c->enterMatchArm(),
+		'enterPassedToType' => static fn ($c) => $c->enterPassedToType($ecInt, $ecString),
+		'enterPassedToType same' => static fn ($c) => $c->enterPassedToType($c->getPassedToType(), $c->getNativePassedToType()),
+		'enterPassedToType null' => static fn ($c) => $c->enterPassedToType(null, null),
+		'withoutTemplateArgumentResolution' => static fn ($c) => $c->withoutTemplateArgumentResolution(),
+		'enterThrow' => static fn ($c) => $c->enterThrow(),
+		'enterRightSideAssign' => static fn ($c) => $c->enterRightSideAssign('x', $ecExpr),
+		'enterAssignRightSideCallArgs trivial' => static fn ($c) => $c->enterAssignRightSideCallArgs($ecTemplateAcceptor),
+		'enterAssignRightSideCallArgs extended' => static fn ($c) => $c->enterAssignRightSideCallArgs($ecExtendedAcceptor),
+		'enterValueFlow direct' => static fn ($c) => $c->enterValueFlow($ecWrite, true),
+		'enterValueFlow' => static fn ($c) => $c->enterValueFlow($ecWrite, false),
+		'enterArrayDimFetchRoot' => static fn ($c) => $c->enterArrayDimFetchRoot(),
+		'enterUnsetTarget' => static fn ($c) => $c->enterUnsetTarget(),
+	];
+	foreach ([
+		'topLevel' => $ecClass::createTopLevel(),
+		'topLevel false' => $ecClass::createTopLevel(false),
+		'topLevel named' => $ecClass::createTopLevel(resolveTemplateArguments: false),
+		'deep' => $ecClass::createDeep(),
+		'deep false' => $ecClass::createDeep(false),
+	] as $startLabel => $start) {
+		$r[$startLabel] = $describe($start);
+		foreach ($derivations as $label1 => $derive1) {
+			$first = $derive1($start);
+			$r[$startLabel . ' > ' . $label1] = [$first === $start, $describe($first)];
+			foreach ($derivations as $label2 => $derive2) {
+				$second = $derive2($first);
+				$r[$startLabel . ' > ' . $label1 . ' > ' . $label2] = [$second === $first, $describe($second)];
+			}
+		}
+	}
+	try {
+		new $ecClass(false, null, null);
+		$r['ctor'] = 'callable';
+	} catch (\Error $e) {
+		$r['ctor'] = get_class($e);
+	}
+
+	$stcDescribe = static fn (object $c): array => [$turboNorm(get_class($c)), $c->isTopLevel(), $c->getForeachUnrollFactor(), $c->shouldResolveTemplateArguments()];
+	$stcDerivations = [
+		'withoutTemplateArgumentResolution' => static fn ($c) => $c->withoutTemplateArgumentResolution(),
+		'enterDeep' => static fn ($c) => $c->enterDeep(),
+		'enterUnrolledForeach 3' => static fn ($c) => $c->enterUnrolledForeach(3),
+		'enterUnrolledForeach 0' => static fn ($c) => $c->enterUnrolledForeach(0),
+	];
+	foreach ([
+		'stmt topLevel' => $stcClass::createTopLevel(),
+		'stmt topLevel false' => $stcClass::createTopLevel(false),
+		'stmt deep' => $stcClass::createDeep(),
+		'stmt deep false' => $stcClass::createDeep(resolveTemplateArguments: false),
+	] as $startLabel => $start) {
+		$r[$startLabel] = $stcDescribe($start);
+		foreach ($stcDerivations as $label1 => $derive1) {
+			$first = $derive1($start);
+			foreach ($stcDerivations as $label2 => $derive2) {
+				$second = $derive2($first);
+				$r[$startLabel . ' > ' . $label1 . ' > ' . $label2] = [$first === $start, $second === $first, $stcDescribe($second)];
+			}
+		}
+	}
+	try {
+		$stcClass::createDeep()->enterUnrolledForeach(PHP_INT_MAX)->enterUnrolledForeach(3);
+		$r['stmt overflow'] = 'no exception';
+	} catch (\TypeError $e) {
+		// a userland TypeError appends ", called in <file> on line <n>"
+		$r['stmt overflow'] = preg_replace('~, called in .*$~', '', str_replace($stcClass, 'StatementContext', $e->getMessage()));
+	}
+	try {
+		new $stcClass(true);
+		$r['stmt ctor'] = 'callable';
+	} catch (\Error $e) {
+		$r['stmt ctor'] = get_class($e);
+	}
+	$ecResults[$side] = $r;
+}
+foreach ($ecResults['php'] as $label => $described) {
+	check($described === ($ecResults['native'][$label] ?? null), "ExpressionContext/StatementContext parity ($label): " . json_encode($described) . ' vs ' . json_encode($ecResults['native'][$label] ?? null));
+}
+
+// ---- ExprHandlerRegistry / StmtHandlerRegistry ----
+// Both registries resolve the same nodes against the same container (and a
+// second one); the answers and the memo each side leaves in its private
+// static array must match.
+$covered[\PHPStan\Analyser\ExprHandlerRegistry::class] = true;
+$covered[\PHPStan\Analyser\StmtHandlerRegistry::class] = true;
+$hrSecondContainer = $scContainerFactory->create(sys_get_temp_dir() . '/phpstan-turbo-smoke', [$scContainerFactory->getConfigDirectory() . '/config.level8.neon'], []);
+$hrVar = new \PhpParser\Node\Expr\Variable('a');
+$hrExprs = [
+	'variable' => $hrVar,
+	'variable variable' => new \PhpParser\Node\Expr\Variable($hrVar),
+	'string' => new \PhpParser\Node\Scalar\String_('s'),
+	'int' => new \PhpParser\Node\Scalar\Int_(1),
+	'interpolated' => new \PhpParser\Node\Scalar\InterpolatedString([new \PhpParser\Node\InterpolatedStringPart('a'), $hrVar]),
+	'func call' => new \PhpParser\Node\Expr\FuncCall(new \PhpParser\Node\Name('f')),
+	'func call fcc' => new \PhpParser\Node\Expr\FuncCall(new \PhpParser\Node\Name('f'), [new \PhpParser\Node\VariadicPlaceholder()]),
+	'func call two args' => new \PhpParser\Node\Expr\FuncCall(new \PhpParser\Node\Name('f'), [new \PhpParser\Node\VariadicPlaceholder(), new \PhpParser\Node\Arg($hrVar)]),
+	'method call' => new \PhpParser\Node\Expr\MethodCall($hrVar, 'm'),
+	'method call fcc' => new \PhpParser\Node\Expr\MethodCall($hrVar, 'm', [new \PhpParser\Node\VariadicPlaceholder()]),
+	'nullsafe method call' => new \PhpParser\Node\Expr\NullsafeMethodCall($hrVar, 'm'),
+	'static call' => new \PhpParser\Node\Expr\StaticCall(new \PhpParser\Node\Name('A'), 'm'),
+	'new name' => new \PhpParser\Node\Expr\New_(new \PhpParser\Node\Name('A')),
+	'new expr' => new \PhpParser\Node\Expr\New_($hrVar),
+	'new class' => new \PhpParser\Node\Expr\New_(new \PhpParser\Node\Stmt\Class_(null)),
+	'new fcc' => new \PhpParser\Node\Expr\New_(new \PhpParser\Node\Name('A'), [new \PhpParser\Node\VariadicPlaceholder()]),
+	'type expr' => new \PHPStan\Node\Expr\TypeExpr($ecInt),
+	'unhandled' => new class extends \PhpParser\Node\Expr {
+
+		public function getType(): string
+		{
+			return 'Unhandled';
+		}
+
+		public function getSubNodeNames(): array
+		{
+			return [];
+		}
+
+	},
+];
+$hrStmts = [
+	'echo' => new \PhpParser\Node\Stmt\Echo_([$hrVar]),
+	'expression' => new \PhpParser\Node\Stmt\Expression($hrVar),
+	'if' => new \PhpParser\Node\Stmt\If_($hrVar),
+	'nop' => new \PhpParser\Node\Stmt\Nop(),
+	'halt compiler' => new \PhpParser\Node\Stmt\HaltCompiler(''),
+	'class' => new \PhpParser\Node\Stmt\Class_('A'),
+];
+$hrResults = [];
+foreach (['php' => [\PHPStan\Analyser\ExprHandlerRegistry::class, \PHPStan\Analyser\StmtHandlerRegistry::class], 'native' => [\PHPStanTurbo\ExprHandlerRegistry::class, \PHPStanTurbo\StmtHandlerRegistry::class]] as $side => [$ehrClass, $shrClass]) {
+	$r = [];
+	// earlier sections walked code through the PHP registries: start both
+	// memos empty (they are caches — dropping them changes no answer)
+	(new \ReflectionProperty($ehrClass, 'exprHandlersByClass'))->setValue(null, []);
+	(new \ReflectionProperty($shrClass, 'stmtHandlersByClass'))->setValue(null, []);
+	foreach ([1 => $scContainer, 2 => $hrSecondContainer, 3 => $scContainer] as $round => $container) {
+		foreach ($hrExprs as $label => $expr) {
+			$handler = $ehrClass::resolve($expr, $container);
+			$r[] = [$round, $label, $handler === null ? null : get_class($handler), $handler === $ehrClass::resolve($expr, $container)];
+		}
+		foreach ($hrStmts as $label => $stmt) {
+			$handler = $shrClass::resolve($stmt, $container);
+			$r[] = [$round, $label, $handler === null ? null : get_class($handler), $handler === $shrClass::resolve($stmt, $container)];
+		}
+	}
+	$memo = static function (string $class, string $property): array {
+		$described = [];
+		foreach ((new \ReflectionProperty($class, $property))->getValue() as $containerId => $byKey) {
+			foreach ($byKey as $key => $handler) {
+				$described[$containerId][str_replace('PHPStanTurbo\\', 'PHPStan\\Analyser\\', (string) $key)] = $handler === false ? false : get_class($handler);
+			}
+		}
+		return $described;
+	};
+	$r['expr memo'] = $memo($ehrClass, 'exprHandlersByClass');
+	$r['stmt memo'] = $memo($shrClass, 'stmtHandlersByClass');
+	$hrResults[$side] = $r;
+}
+foreach ($hrResults['php'] as $label => $described) {
+	check($described === ($hrResults['native'][$label] ?? null), "ExprHandlerRegistry/StmtHandlerRegistry parity ($label): " . json_encode($described) . ' vs ' . json_encode($hrResults['native'][$label] ?? null));
+}
+check(count($hrResults['php']['expr memo']) === 2 && count($hrResults['php']['stmt memo']) === 2, 'handler registries: the fixture exercises two containers');
+
 // ---- differential coverage completeness ----
 // Every shadowed class must be exercised by one of the tests/ scripts; the
 // classes not covered above have their own dedicated script.

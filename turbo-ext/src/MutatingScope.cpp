@@ -77,8 +77,9 @@
  * through pt_type_utils_resolve_late_resolvable_types(), and writes the
  * $resolvedTypes memo into its slot. The NodeScopeResolver::$guard*
  * diagnostics are read as the static properties they are (class map).
- * resolveType()'s ExpressionTypeResolverExtension sweep and
- * ExprHandlerRegistry::resolve() stay by-name / static calls; the on-demand
+ * resolveType()'s ExpressionTypeResolverExtension sweep stays a by-name
+ * call, ExprHandlerRegistry::resolve() is its direct entry
+ * (pt_expr_handler_registry_resolve()); the on-demand
  * pricing (resolveTypeOfNewWorldHandlerNode & co.) goes through
  * $this->container->getByType() with the twin's compile-time class-name
  * strings, `new ExpressionResultStorage()` / findExpressionResult() /
@@ -2603,8 +2604,7 @@ public:
 
 		zv::Ref container = slot(PT_MS_PROP_CONTAINER);
 		if (UNEXPECTED(!container.isObject())) return uninitializedProperty("container");
-		zv::Args resolveArgs{node, container.raw()};
-		zv::Val exprHandler = pt_type_call_static(PT_CLASS_EXPR_HANDLER_REGISTRY, PT_LC("resolve"), 2, resolveArgs);
+		zv::Val exprHandler = pt_expr_handler_registry_resolve(node, container.raw());
 		if (UNEXPECTED(exprHandler.isUndef())) return zv::Val();
 		if (!exprHandler.isNull()) return resolveTypeOfNewWorldHandlerNode(node);
 

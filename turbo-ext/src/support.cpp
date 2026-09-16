@@ -145,7 +145,6 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_CONST_FETCH */ {"constFetch", "PhpParser\\Node\\Expr\\ConstFetch"},
 	/* PT_CLASS_HALT_COMPILER */ {"haltCompiler", "PhpParser\\Node\\Stmt\\HaltCompiler"},
 	/* PT_CLASS_NODE_SCOPE_RESOLVER */ {"nodeScopeResolver", "PHPStan\\Analyser\\NodeScopeResolver"},
-	/* PT_CLASS_EXPR_HANDLER_REGISTRY */ {"exprHandlerRegistry", "PHPStan\\Analyser\\ExprHandlerRegistry"},
 	/* PT_CLASS_TEMPLATE_ARGUMENT_FRAME */ {"templateArgumentFrame", "PHPStan\\Analyser\\Generics\\TemplateArgumentFrame"},
 	/* PT_CLASS_INITIALIZER_EXPR_CONTEXT */ {"initializerExprContext", "PHPStan\\Reflection\\InitializerExprContext"},
 	/* PT_CLASS_EXTENDED_PARAMETERS_ACCEPTOR */ {"extendedParametersAcceptor", "PHPStan\\Reflection\\ExtendedParametersAcceptor"},
@@ -241,6 +240,8 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_CLASS_CONSTANT_FETCH */ {"classConstantFetch", "PHPStan\\Node\\Constant\\ClassConstantFetch"},
 	/* PT_CLASS_COALESCE_ASSIGN_OP_EXPR */ {"coalesceAssignOpExpr", "PhpParser\\Node\\Expr\\AssignOp\\Coalesce"},
 	/* PT_CLASS_CLASS_CONST_STMT */ {"classConstStmt", "PhpParser\\Node\\Stmt\\ClassConst"},
+	/* PT_CLASS_EXPR_HANDLER */ {"exprHandler", "PHPStan\\Analyser\\ExprHandler"},
+	/* PT_CLASS_STMT_HANDLER */ {"stmtHandler", "PHPStan\\Analyser\\StmtHandler"},
 };
 
 zend_class_entry *pt_class(int idx)

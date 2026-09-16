@@ -6,11 +6,13 @@ use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt;
 use PHPStan\DependencyInjection\ExtensionInterface;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * @template T of Expr
  */
 #[ExtensionInterface(tag: 'phpstan.exprHandler')]
+#[ReferencedByTurboExtension(key: 'exprHandler')]
 interface ExprHandler
 {
 

@@ -325,6 +325,11 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	 * the augment interface only */
 	pt_register_type_specifier_context();
 	pt_register_specified_types();
+	/* the analysis-engine value classes and handler registries */
+	pt_register_expression_context();
+	pt_register_statement_context();
+	pt_register_expr_handler_registry();
+	pt_register_stmt_handler_registry();
 
 	return SUCCESS;
 }

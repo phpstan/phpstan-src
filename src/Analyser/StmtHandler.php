@@ -5,11 +5,13 @@ namespace PHPStan\Analyser;
 use PhpParser\Node;
 use PhpParser\Node\Stmt;
 use PHPStan\DependencyInjection\ExtensionInterface;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * @template T of Stmt
  */
 #[ExtensionInterface(tag: 'phpstan.stmtHandler')]
+#[ReferencedByTurboExtension(key: 'stmtHandler')]
 interface StmtHandler
 {
 

@@ -6,9 +6,11 @@ use PhpParser\Node\Expr;
 use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Type;
 
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ExpressionContext.cpp')]
 final class ExpressionContext
 {
 

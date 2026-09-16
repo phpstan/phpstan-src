@@ -2566,7 +2566,7 @@ public:
 	{
 		zv::Ref extensions = slot(PT_MS_PROP_EXPRESSION_TYPE_RESOLVER_EXTENSIONS);
 		if (UNEXPECTED(!extensions.isObject())) return uninitializedProperty("expressionTypeResolverExtensions");
-		zv::Val all = pt_type_call(extensions.asObject(), PT_LC("getall"), 0, NULL);
+		zv::Val all = pt_extensions_collection_get_all(extensions.asObject());
 		if (UNEXPECTED(all.isUndef())) return zv::Val();
 		if (EXPECTED(Z_TYPE_P(all.raw()) == IS_ARRAY)) {
 			zv::Args args{node, self};

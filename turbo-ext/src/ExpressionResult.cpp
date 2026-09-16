@@ -782,7 +782,7 @@ private:
 	{
 		if (boolSlot(slots::extensionsDeclined)) return zv::Val::null();
 
-		zv::Val extensions = pt_type_call(Z_OBJ_P(slot(slots::expressionTypeResolverExtensions)), PT_LC("getall"), 0, NULL);
+		zv::Val extensions = pt_extensions_collection_get_all(Z_OBJ_P(slot(slots::expressionTypeResolverExtensions)));
 		if (UNEXPECTED(extensions.isUndef())) return zv::Val();
 		if (Z_TYPE_P(extensions.raw()) == IS_ARRAY) {
 			zv::Args argv{slot(slots::expr), readScope};

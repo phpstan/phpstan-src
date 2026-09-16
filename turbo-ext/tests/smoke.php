@@ -3985,6 +3985,7 @@ $coveredElsewhere = [
 	\PHPStan\Analyser\StmtHandler\ClassMethodHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\StmtHandler\FunctionHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\StmtHandler\ClassLikeHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\StmtHandler\IfHandler::class => 'walk-trace.php',
 ];
 foreach (array_keys($shadowedClasses) as $shadowedClass) {
 	check(

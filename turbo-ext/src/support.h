@@ -2713,4 +2713,11 @@ zv::Val pt_class_statements_gatherer_get(zval *gatherer, pt_class_statements_gat
 
 /* }}} */
 
+/* {{{ IfHandler.cpp — registered at the END of the sequence */
+
+extern zend_class_entry *pt_ce_if_handler;
+void pt_register_if_handler();
+
+/* }}} */
+
 #endif /* PHPSTANTURBO_SUPPORT_H */

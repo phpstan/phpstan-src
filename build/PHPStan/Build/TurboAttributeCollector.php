@@ -9,6 +9,7 @@ use Nette\Utils\Strings;
 use PhpParser\Comment\Doc;
 use PhpParser\Node;
 use PhpParser\Node\Arg;
+use PhpParser\Node\ArrayItem;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\ArrayDimFetch;
@@ -416,6 +417,7 @@ final class TurboAttributeCollector
 		'shellExecExpr' => ShellExec::class,
 		'errorSuppressExpr' => ErrorSuppress::class,
 		'emptyExpr' => Empty_::class,
+		'arrayItem' => ArrayItem::class,
 	];
 
 	private string $realRoot;

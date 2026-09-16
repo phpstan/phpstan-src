@@ -6,10 +6,12 @@ use Override;
 use PhpParser\Node\Expr;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\Scope;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'matchExpressionNode')]
 final class MatchExpressionNode extends NodeAbstract implements VirtualNode
 {
 

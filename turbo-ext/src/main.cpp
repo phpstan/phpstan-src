@@ -560,6 +560,7 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_isset_handler();
 	pt_register_empty_handler();
 	pt_register_nullsafe_method_call_handler();
+	pt_register_match_handler();
 
 	return SUCCESS;
 }

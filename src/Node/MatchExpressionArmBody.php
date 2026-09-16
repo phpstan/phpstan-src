@@ -4,10 +4,12 @@ namespace PHPStan\Node;
 
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'matchExpressionArmBody')]
 final class MatchExpressionArmBody
 {
 

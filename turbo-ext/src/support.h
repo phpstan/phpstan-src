@@ -443,6 +443,11 @@ enum {
 	PT_CLASS_EMPTY_EXPRESSION_NODE,
 	PT_CLASS_NULLSAFE_METHOD_CALL_EXPRESSION_NODE,
 	PT_CLASS_EMPTY_EXPR,
+	PT_CLASS_MATCH_EXPRESSION_ARM,
+	PT_CLASS_MATCH_EXPRESSION_ARM_BODY,
+	PT_CLASS_MATCH_EXPRESSION_ARM_CONDITION,
+	PT_CLASS_MATCH_EXPRESSION_NODE,
+	PT_CLASS_ARRAY_ITEM,
 	PT_CLASS_COUNT
 };
 
@@ -3887,6 +3892,26 @@ extern zend_class_entry *pt_ce_nullsafe_method_call_handler;
 void pt_register_isset_handler();
 void pt_register_empty_handler();
 void pt_register_nullsafe_method_call_handler();
+
+/* }}} */
+
+/* {{{ MatchHandler.cpp — registered after NullsafeMethodCallHandler */
+
+extern zend_class_entry *pt_ce_match_handler;
+void pt_register_match_handler();
+
+/* $matchHandler->getCapturedArmScopesAndTypes($expr): the native body for
+ * the native class, the method otherwise; the list of [scope, type] pairs or
+ * PHP null, UNDEF = pending exception */
+zv::Val pt_match_handler_get_captured_arm_scopes_and_types(zval *handler, zval *expr);
+
+/* MutatingScope.cpp — $scope->enterMatch($expr, $condType, $condNativeType) /
+ * ->addTypeToExpression($expr, $type) / ->removeTypeFromExpression($expr,
+ * $typeToRemove): the native body for exactly a MutatingScope, the method
+ * otherwise (everything borrowed); UNDEF = pending exception */
+zv::Val pt_mutating_scope_enter_match(zend_object *scope, zend_object *expr, zval *condType, zval *condNativeType);
+zv::Val pt_mutating_scope_add_type_to_expression(zend_object *scope, zend_object *expr, zval *type);
+zv::Val pt_mutating_scope_remove_type_from_expression(zend_object *scope, zend_object *expr, zval *typeToRemove);
 
 /* }}} */
 

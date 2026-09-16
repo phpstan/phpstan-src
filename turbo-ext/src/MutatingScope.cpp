@@ -13439,3 +13439,47 @@ zv::Val pt_mutating_scope_obtain_result_for_node(zend_object *scope, zend_object
 }
 
 /* }}} */
+
+/* {{{ the match expression's scope calls (MatchHandler.cpp): the native body
+ * for exactly a MutatingScope, the method otherwise */
+
+zv::Val pt_mutating_scope_enter_match(zend_object *scope, zend_object *expr, zval *condType, zval *condNativeType)
+{
+	if (msExact(scope)) {
+		zend_class_entry *matchCe = pt_class(PT_CLASS_MATCH);
+		if (UNEXPECTED(matchCe == NULL)) return zv::Val();
+		if (EXPECTED(instanceof_function(expr->ce, matchCe) && Z_TYPE_P(condType) == IS_OBJECT && Z_TYPE_P(condNativeType) == IS_OBJECT)) return MutatingScope(scope).enterMatch(expr, condType, condNativeType);
+	}
+	zval exprZv;
+	ZVAL_OBJ(&exprZv, expr);
+	zv::Args argv{&exprZv, condType, condNativeType};
+	return pt_type_call(scope, PT_LC("entermatch"), 3, argv);
+}
+
+zv::Val pt_mutating_scope_add_type_to_expression(zend_object *scope, zend_object *expr, zval *type)
+{
+	if (msExact(scope)) {
+		zend_class_entry *exprCe = pt_class(PT_CLASS_EXPR);
+		if (UNEXPECTED(exprCe == NULL)) return zv::Val();
+		if (EXPECTED(instanceof_function(expr->ce, exprCe) && Z_TYPE_P(type) == IS_OBJECT)) return MutatingScope(scope).addTypeToExpression(expr, type);
+	}
+	zval exprZv;
+	ZVAL_OBJ(&exprZv, expr);
+	zv::Args argv{&exprZv, type};
+	return pt_type_call(scope, PT_LC("addtypetoexpression"), 2, argv);
+}
+
+zv::Val pt_mutating_scope_remove_type_from_expression(zend_object *scope, zend_object *expr, zval *typeToRemove)
+{
+	if (msExact(scope)) {
+		zend_class_entry *exprCe = pt_class(PT_CLASS_EXPR);
+		if (UNEXPECTED(exprCe == NULL)) return zv::Val();
+		if (EXPECTED(instanceof_function(expr->ce, exprCe) && Z_TYPE_P(typeToRemove) == IS_OBJECT)) return MutatingScope(scope).removeTypeFromExpression(expr, typeToRemove);
+	}
+	zval exprZv;
+	ZVAL_OBJ(&exprZv, expr);
+	zv::Args argv{&exprZv, typeToRemove};
+	return pt_type_call(scope, PT_LC("removetypefromexpression"), 2, argv);
+}
+
+/* }}} */

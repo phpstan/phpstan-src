@@ -394,6 +394,11 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_EMPTY_EXPRESSION_NODE */ {"emptyExpressionNode", "PHPStan\\Node\\EmptyExpressionNode"},
 	/* PT_CLASS_NULLSAFE_METHOD_CALL_EXPRESSION_NODE */ {"nullsafeMethodCallExpressionNode", "PHPStan\\Node\\NullsafeMethodCallExpressionNode"},
 	/* PT_CLASS_EMPTY_EXPR */ {"emptyExpr", "PhpParser\\Node\\Expr\\Empty_"},
+	/* PT_CLASS_MATCH_EXPRESSION_ARM */ {"matchExpressionArm", "PHPStan\\Node\\MatchExpressionArm"},
+	/* PT_CLASS_MATCH_EXPRESSION_ARM_BODY */ {"matchExpressionArmBody", "PHPStan\\Node\\MatchExpressionArmBody"},
+	/* PT_CLASS_MATCH_EXPRESSION_ARM_CONDITION */ {"matchExpressionArmCondition", "PHPStan\\Node\\MatchExpressionArmCondition"},
+	/* PT_CLASS_MATCH_EXPRESSION_NODE */ {"matchExpressionNode", "PHPStan\\Node\\MatchExpressionNode"},
+	/* PT_CLASS_ARRAY_ITEM */ {"arrayItem", "PhpParser\\Node\\ArrayItem"},
 };
 
 zend_class_entry *pt_class(int idx)

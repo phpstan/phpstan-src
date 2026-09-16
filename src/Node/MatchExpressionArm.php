@@ -2,9 +2,12 @@
 
 namespace PHPStan\Node;
 
+use PHPStan\Turbo\ReferencedByTurboExtension;
+
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'matchExpressionArm')]
 final class MatchExpressionArm
 {
 

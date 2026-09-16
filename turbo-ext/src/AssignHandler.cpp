@@ -568,11 +568,10 @@ zv::Val thGetCapturedResults(zval *handler, zval *expr)
 	return pt_ternary_handler_get_captured_results(handler, expr);
 }
 
-/* $matchHandler->getCapturedArmScopesAndTypes($expr) */
+/* $matchHandler->getCapturedArmScopesAndTypes($expr) (MatchHandler.cpp) */
 zv::Val mhGetCapturedArmScopesAndTypes(zval *handler, zval *expr)
 {
-	static pt_method_site site;
-	return pt_call_method_cached(site, Z_OBJ_P(handler), PT_LC("getcapturedarmscopesandtypes"), 1, expr);
+	return pt_match_handler_get_captured_arm_scopes_and_types(handler, expr);
 }
 
 /* $varAnnotationProcessor->processVarAnnotation($scope, $variableNames, $stmt, $changed) — $changed by reference */

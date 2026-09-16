@@ -38,6 +38,7 @@ use PHPStan\Node\MatchExpressionArmBody;
 use PHPStan\Node\MatchExpressionArmCondition;
 use PHPStan\Node\MatchExpressionNode;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
@@ -59,6 +60,7 @@ use const SORT_NUMERIC;
  * @implements ExprHandler<Match_>
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/MatchHandler.cpp')]
 final class MatchHandler implements ExprHandler, PerFileAnalysisResettable
 {
 

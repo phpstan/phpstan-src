@@ -472,6 +472,9 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_break_continue_handler();
 	pt_register_label_handler();
 	pt_register_goto_handler();
+	pt_register_while_handler();
+	pt_register_do_while_handler();
+	pt_register_for_handler();
 
 	return SUCCESS;
 }

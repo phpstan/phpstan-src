@@ -19,6 +19,7 @@ use PHPStan\Analyser\VariableFlow;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\DoWhileLoopConditionNode;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_merge;
 use function count;
 
@@ -26,6 +27,7 @@ use function count;
  * @implements StmtHandler<Do_>
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/DoWhileHandler.cpp')]
 final class DoWhileHandler implements StmtHandler
 {
 

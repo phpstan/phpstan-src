@@ -530,6 +530,18 @@ zv::Val pt_variable_flow_builder_write_site(zval *target, zend_long kind, zval *
 	return VariableFlowBuilder::writeSite(target, kind, scope, storage);
 }
 
+/* the loop and control-flow statement handlers' (ForHandler.cpp,
+ * SwitchHandler.cpp, ForeachHandler.cpp) */
+zv::Val pt_variable_flow_builder_child(zval *node, zval *storage)
+{
+	return VariableFlowBuilder::child(node != NULL && Z_TYPE_P(node) == IS_NULL ? NULL : node, storage);
+}
+
+zv::Val pt_variable_flow_builder_writes(zval *flow)
+{
+	return VariableFlowBuilder::writes(flow);
+}
+
 zv::Val pt_variable_flow_builder_escape_root(zval *expr)
 {
 	return VariableFlowBuilder::escapeRoot(expr);

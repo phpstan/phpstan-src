@@ -500,6 +500,26 @@ zv::Val pt_variable_flow_all_opaque()
 	return VariableFlow::all(pt_vf_kind_strings[PT_VF_OPAQUE]);
 }
 
+zv::Val pt_variable_flow_loop(zval *condition, zval *body, zval *update, bool atLeastOnce, bool canExit, bool canRepeat)
+{
+	return VariableFlow::loop(condition, body, update, atLeastOnce, canExit, canRepeat);
+}
+
+zv::Val pt_variable_flow_loop_statement(zval *stmt, zval *flow, zval *bindings, zval *ownWrites)
+{
+	return VariableFlow::loopStatement(stmt, flow, bindings, ownWrites);
+}
+
+zv::Val pt_variable_flow_switch(zval *condition, zval *cases, bool exhaustive)
+{
+	return VariableFlow::switch_(condition, cases, exhaustive);
+}
+
+zv::Val pt_variable_flow_try_catch(zval *body, zval *catches, zval *finally)
+{
+	return VariableFlow::tryCatch(body, catches, finally);
+}
+
 zv::Val pt_variable_flow_dead(zval *flow)
 {
 	return VariableFlow::dead(flow);

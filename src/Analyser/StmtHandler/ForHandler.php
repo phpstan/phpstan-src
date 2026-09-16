@@ -28,6 +28,7 @@ use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_last;
 use function array_merge;
 use function count;
@@ -39,6 +40,7 @@ use function spl_object_id;
  * @implements StmtHandler<For_>
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ForHandler.cpp')]
 final class ForHandler implements StmtHandler
 {
 

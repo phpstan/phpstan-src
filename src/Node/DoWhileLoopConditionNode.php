@@ -6,7 +6,9 @@ use Override;
 use PhpParser\Node\Expr;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\StatementExitPoint;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
+#[ReferencedByTurboExtension(key: 'doWhileLoopConditionNode')]
 final class DoWhileLoopConditionNode extends NodeAbstract implements VirtualNode
 {
 

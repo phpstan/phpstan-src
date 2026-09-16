@@ -358,6 +358,9 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_SHIFT_LEFT_EXPR */ {"shiftLeftExpr", "PhpParser\\Node\\Expr\\BinaryOp\\ShiftLeft"},
 	/* PT_CLASS_SHIFT_RIGHT_EXPR */ {"shiftRightExpr", "PhpParser\\Node\\Expr\\BinaryOp\\ShiftRight"},
 	/* PT_CLASS_PIPE_EXPR */ {"pipeExpr", "PhpParser\\Node\\Expr\\BinaryOp\\Pipe"},
+	/* PT_CLASS_BREAKLESS_WHILE_LOOP_NODE */ {"breaklessWhileLoopNode", "PHPStan\\Node\\BreaklessWhileLoopNode"},
+	/* PT_CLASS_DO_WHILE_LOOP_CONDITION_NODE */ {"doWhileLoopConditionNode", "PHPStan\\Node\\DoWhileLoopConditionNode"},
+	/* PT_CLASS_LOOP_WRITTEN_VARIABLE_NAMES */ {"loopWrittenVariableNames", "PHPStan\\Analyser\\LoopWrittenVariableNames"},
 };
 
 zend_class_entry *pt_class(int idx)

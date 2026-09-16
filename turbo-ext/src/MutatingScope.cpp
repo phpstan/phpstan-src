@@ -13298,3 +13298,78 @@ zv::Val pt_mutating_scope_with_anonymous_function_reflection(zend_object *scope,
 }
 
 /* }}} */
+
+/* {{{ direct entries for the loop and control-flow statement handlers
+ * (WhileHandler.cpp, ForHandler.cpp, ForeachHandler.cpp, TryCatchHandler.cpp,
+ * ...): the native body for exactly a MutatingScope, the method through the
+ * class entry for anything else (every argument borrowed) */
+
+zv::Val pt_mutating_scope_generalize_with_names(zend_object *scope, zend_object *otherScope, zval *writableVariableNames)
+{
+	if (writableVariableNames != NULL && Z_TYPE_P(writableVariableNames) == IS_NULL) writableVariableNames = NULL;
+	if (msExact(scope) && EXPECTED(otherScope->ce == pt_ce_mutating_scope || instanceof_function(otherScope->ce, pt_ce_mutating_scope)) && EXPECTED(writableVariableNames == NULL || Z_TYPE_P(writableVariableNames) == IS_ARRAY)) {
+		return MutatingScope(scope).generalizeWith(otherScope, writableVariableNames != NULL ? Z_ARRVAL_P(writableVariableNames) : NULL);
+	}
+	zval argv[2];
+	ZVAL_OBJ(&argv[0], otherScope);
+	if (writableVariableNames != NULL) {
+		ZVAL_COPY_VALUE(&argv[1], writableVariableNames);
+	} else {
+		ZVAL_NULL(&argv[1]);
+	}
+	return pt_type_call(scope, PT_LC("generalizewith"), 2, argv);
+}
+
+zv::Val pt_mutating_scope_enter_foreach(zend_object *scope, zend_object *originalScope, zval *iteratee, zval *iterateeType, zval *nativeIterateeType, zend_string *valueName, zend_string *keyName, bool valueByRef)
+{
+	if (msExact(scope) && EXPECTED(instanceof_function(originalScope->ce, pt_ce_mutating_scope))) return MutatingScope(scope).enterForeach(originalScope, iteratee, iterateeType, nativeIterateeType, valueName, keyName, valueByRef);
+	zval argv[7];
+	ZVAL_OBJ(&argv[0], originalScope);
+	ZVAL_COPY_VALUE(&argv[1], iteratee);
+	ZVAL_COPY_VALUE(&argv[2], iterateeType);
+	ZVAL_COPY_VALUE(&argv[3], nativeIterateeType);
+	ZVAL_STR(&argv[4], valueName);
+	if (keyName != NULL) {
+		ZVAL_STR(&argv[5], keyName);
+	} else {
+		ZVAL_NULL(&argv[5]);
+	}
+	ZVAL_BOOL(&argv[6], valueByRef);
+	return pt_type_call(scope, PT_LC("enterforeach"), 7, argv);
+}
+
+zv::Val pt_mutating_scope_enter_foreach_key(zend_object *scope, zend_object *originalScope, zval *iteratee, zval *iterateeType, zval *nativeIterateeType, zend_string *keyName)
+{
+	if (msExact(scope) && EXPECTED(instanceof_function(originalScope->ce, pt_ce_mutating_scope))) return MutatingScope(scope).enterForeachKey(originalScope, iteratee, iterateeType, nativeIterateeType, keyName);
+	zv::Args argv{originalScope, iteratee, iterateeType, nativeIterateeType, keyName};
+	return pt_type_call(scope, PT_LC("enterforeachkey"), 5, argv);
+}
+
+zv::Val pt_mutating_scope_enter_catch_type(zend_object *scope, zval *catchType, zend_string *variableName)
+{
+	if (msExact(scope)) return MutatingScope(scope).enterCatchType(catchType, variableName);
+	zval argv[2];
+	ZVAL_COPY_VALUE(&argv[0], catchType);
+	if (variableName != NULL) {
+		ZVAL_STR(&argv[1], variableName);
+	} else {
+		ZVAL_NULL(&argv[1]);
+	}
+	return pt_type_call(scope, PT_LC("entercatchtype"), 2, argv);
+}
+
+zv::Val pt_mutating_scope_process_finally_scope(zend_object *scope, zend_object *finallyScope, zend_object *originalFinallyScope)
+{
+	if (msExact(scope) && EXPECTED(instanceof_function(finallyScope->ce, pt_ce_mutating_scope) && instanceof_function(originalFinallyScope->ce, pt_ce_mutating_scope))) return MutatingScope(scope).processFinallyScope(finallyScope, originalFinallyScope);
+	zv::Args argv{finallyScope, originalFinallyScope};
+	return pt_type_call(scope, PT_LC("processfinallyscope"), 2, argv);
+}
+
+zv::Val pt_mutating_scope_process_always_iterable_foreach_scope_without_pollute(zend_object *scope, zend_object *finalScope)
+{
+	if (msExact(scope) && EXPECTED(instanceof_function(finalScope->ce, pt_ce_mutating_scope))) return MutatingScope(scope).processAlwaysIterableForeachScopeWithoutPollute(finalScope);
+	zv::Args argv{finalScope};
+	return pt_type_call(scope, PT_LC("processalwaysiterableforeachscopewithoutpollute"), 1, argv);
+}
+
+/* }}} */

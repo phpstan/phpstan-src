@@ -2200,6 +2200,15 @@ bool pt_node_scope_resolver_replay_recording(zval *nodeScopeResolver, zval *reco
 	return !pt_type_call(Z_OBJ_P(nodeScopeResolver), PT_LC("replayrecording"), 4, argv).isUndef();
 }
 
+/* the loop and control-flow statement handlers' (SwitchHandler.cpp,
+ * ForeachHandler.cpp) */
+zv::Val pt_node_scope_resolver_narrow_scope_with_condition(zval *nodeScopeResolver, zval *scope, zval *expr, zval *context)
+{
+	if (isNativeResolver(nodeScopeResolver)) return NodeScopeResolver(Z_OBJ_P(nodeScopeResolver)).narrowScopeWithCondition(scope, expr, context);
+	zv::Args argv{scope, expr, context};
+	return pt_type_call(Z_OBJ_P(nodeScopeResolver), PT_LC("narrowscopewithcondition"), 3, argv);
+}
+
 /* }}} */
 
 /* {{{ engine ABI glue: parameter parsing + registration */

@@ -5,6 +5,7 @@ namespace PHPStan\Analyser;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use function array_pop;
 use function in_array;
 use function is_array;
@@ -18,6 +19,7 @@ use function is_string;
  * narrowing by the loop's conditions. Widening such a variable loses its type
  * for nothing.
  */
+#[ReferencedByTurboExtension(key: 'loopWrittenVariableNames')]
 final class LoopWrittenVariableNames
 {
 

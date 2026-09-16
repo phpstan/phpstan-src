@@ -400,6 +400,12 @@ enum {
 	PT_CLASS_SHIFT_LEFT_EXPR,
 	PT_CLASS_SHIFT_RIGHT_EXPR,
 	PT_CLASS_PIPE_EXPR,
+	/* the loop and control-flow statement handlers (WhileHandler.cpp,
+	 * DoWhileHandler.cpp, ForHandler.cpp, SwitchHandler.cpp, TryCatchHandler.cpp,
+	 * ForeachHandler.cpp) */
+	PT_CLASS_BREAKLESS_WHILE_LOOP_NODE,
+	PT_CLASS_DO_WHILE_LOOP_CONDITION_NODE,
+	PT_CLASS_LOOP_WRITTEN_VARIABLE_NAMES,
 	PT_CLASS_COUNT
 };
 
@@ -3407,10 +3413,54 @@ extern zend_class_entry *pt_ce_goto_handler;
 void pt_register_break_continue_handler();
 void pt_register_label_handler();
 void pt_register_goto_handler();
+extern zend_class_entry *pt_ce_while_handler;
+extern zend_class_entry *pt_ce_do_while_handler;
+extern zend_class_entry *pt_ce_for_handler;
+void pt_register_while_handler();
+void pt_register_do_while_handler();
+void pt_register_for_handler();
 
-/* VariableFlow.cpp — VariableFlow::all(VariableFlow::OPAQUE); UNDEF = pending
+/* VariableFlow.cpp — VariableFlow::all(VariableFlow::OPAQUE) /
+ * ::loop($condition, $body, $update, $atLeastOnce, $canExit, $canRepeat) /
+ * ::loopStatement($stmt, $flow, $bindings, $ownWrites) /
+ * ::switch($condition, $cases, $exhaustive) / ::tryCatch($body, $catches,
+ * $finally) (flows NULL or IS_NULL for null, arrays borrowed);
+ * VariableFlowBuilder.cpp — VariableFlowBuilder::child($node, $storage)
+ * ($node NULL or IS_NULL for null) / ::writes($flow); UNDEF = pending
  * exception */
 zv::Val pt_variable_flow_all_opaque();
+zv::Val pt_variable_flow_loop(zval *condition, zval *body, zval *update, bool atLeastOnce, bool canExit, bool canRepeat = true);
+zv::Val pt_variable_flow_loop_statement(zval *stmt, zval *flow, zval *bindings, zval *ownWrites);
+zv::Val pt_variable_flow_switch(zval *condition, zval *cases, bool exhaustive);
+zv::Val pt_variable_flow_try_catch(zval *body, zval *catches, zval *finally);
+zv::Val pt_variable_flow_builder_child(zval *node, zval *storage);
+zv::Val pt_variable_flow_builder_writes(zval *flow);
+
+/* MutatingScope.cpp — $scope->generalizeWith($otherScope,
+ * $writableVariableNames) ($writableVariableNames NULL or IS_NULL for null) /
+ * ->enterForeach($originalScope, $iteratee, $iterateeType,
+ * $nativeIterateeType, $valueName, $keyName, $valueByRef) ($keyName NULL for
+ * null) / ->enterForeachKey(...) / ->enterCatchType($catchType,
+ * $variableName) ($variableName NULL for null) /
+ * ->processFinallyScope($finallyScope, $originalFinallyScope) /
+ * ->processAlwaysIterableForeachScopeWithoutPollute($finalScope): the native
+ * body for exactly a MutatingScope, the method otherwise (everything
+ * borrowed); UNDEF = pending exception */
+zv::Val pt_mutating_scope_generalize_with_names(zend_object *scope, zend_object *otherScope, zval *writableVariableNames);
+zv::Val pt_mutating_scope_enter_foreach(zend_object *scope, zend_object *originalScope, zval *iteratee, zval *iterateeType, zval *nativeIterateeType, zend_string *valueName, zend_string *keyName, bool valueByRef);
+zv::Val pt_mutating_scope_enter_foreach_key(zend_object *scope, zend_object *originalScope, zval *iteratee, zval *iterateeType, zval *nativeIterateeType, zend_string *keyName);
+zv::Val pt_mutating_scope_enter_catch_type(zend_object *scope, zval *catchType, zend_string *variableName);
+zv::Val pt_mutating_scope_process_finally_scope(zend_object *scope, zend_object *finallyScope, zend_object *originalFinallyScope);
+zv::Val pt_mutating_scope_process_always_iterable_foreach_scope_without_pollute(zend_object *scope, zend_object *finalScope);
+
+/* NodeScopeResolver.cpp — $nodeScopeResolver->narrowScopeWithCondition($scope,
+ * $expr, $context): the native body for exactly the native class, the method
+ * otherwise (everything borrowed); UNDEF = pending exception. (The loop
+ * handlers also call pt_node_scope_resolver_is_replayable_convergence_body(),
+ * _replay_recording(), pt_expression_result_storage_merge_results() and
+ * pt_expression_result_answers_on_scope(), declared with the closure and
+ * operator handlers.) */
+zv::Val pt_node_scope_resolver_narrow_scope_with_condition(zval *nodeScopeResolver, zval *scope, zval *expr, zval *context);
 
 /* }}} */
 

@@ -6,10 +6,12 @@ use Override;
 use PhpParser\Node\Stmt\While_;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\StatementExitPoint;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'breaklessWhileLoopNode')]
 final class BreaklessWhileLoopNode extends NodeAbstract implements VirtualNode
 {
 

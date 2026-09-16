@@ -413,6 +413,10 @@ enum {
 	/* ForeachHandler.cpp */
 	PT_CLASS_IN_FOREACH_NODE,
 	PT_CLASS_FOREACH_VALUE_BY_REF_EXPR,
+	PT_CLASS_PROPERTY_HOOK,
+	PT_CLASS_IN_PROPERTY_HOOK_NODE,
+	PT_CLASS_PROPERTY_HOOK_RETURN_STATEMENTS_NODE,
+	PT_CLASS_LINE_ATTRIBUTES_VISITOR,
 	PT_CLASS_COUNT
 };
 
@@ -3474,6 +3478,119 @@ zv::Val pt_mutating_scope_process_always_iterable_foreach_scope_without_pollute(
  * pt_expression_result_answers_on_scope(), declared with the closure and
  * operator handlers.) */
 zv::Val pt_node_scope_resolver_narrow_scope_with_condition(zval *nodeScopeResolver, zval *scope, zval *expr, zval *context);
+
+/* }}} */
+
+/* {{{ PhpDocsResolver.cpp, DeprecatedAttributeResolver.cpp,
+ * PropertyHooksProcessor.cpp, CalledMethodProcessor.cpp — the declaration
+ * processors, registered after the declaration handlers (the processors
+ * before the ones whose constructors name them) */
+
+extern zend_class_entry *pt_ce_php_docs_resolver;
+extern zend_class_entry *pt_ce_deprecated_attribute_resolver;
+extern zend_class_entry *pt_ce_property_hooks_processor;
+extern zend_class_entry *pt_ce_called_method_processor;
+void pt_register_php_docs_resolver();
+void pt_register_deprecated_attribute_resolver();
+void pt_register_property_hooks_processor();
+void pt_register_called_method_processor();
+
+/* $phpDocsResolver->getPhpDocs($scope, $node) without the array: the 21
+ * values of the twin's list, owned. For the shadowing class every item is
+ * set; any other resolver's method runs and its array is unpacked like the
+ * caller's list() — an item it lacks stays UNDEF, unless its bit (1 << index)
+ * is in `destructured`, where the list() warning is raised and null stored.
+ * false = pending exception */
+enum : uint32_t
+{
+	PT_PHP_DOCS_COUNT = 21,
+	PT_PHP_DOCS_TEMPLATE_TYPE_MAP = 0,
+	PT_PHP_DOCS_PARAMETER_TYPES,
+	PT_PHP_DOCS_IMMEDIATELY_INVOKED_CALLABLE_PARAMETERS,
+	PT_PHP_DOCS_CLOSURE_THIS_TYPE_PARAMETERS,
+	PT_PHP_DOCS_RETURN_TYPE,
+	PT_PHP_DOCS_THROW_TYPE,
+	PT_PHP_DOCS_DEPRECATED_DESCRIPTION,
+	PT_PHP_DOCS_IS_DEPRECATED,
+	PT_PHP_DOCS_IS_INTERNAL,
+	PT_PHP_DOCS_IS_FINAL,
+	PT_PHP_DOCS_IS_PURE,
+	PT_PHP_DOCS_ACCEPTS_NAMED_ARGUMENTS,
+	PT_PHP_DOCS_IS_READ_ONLY,
+	PT_PHP_DOCS_DOC_COMMENT,
+	PT_PHP_DOCS_ASSERTS,
+	PT_PHP_DOCS_SELF_OUT_TYPE,
+	PT_PHP_DOCS_PARAMETER_OUT_TYPES,
+	PT_PHP_DOCS_VAR_TAGS,
+	PT_PHP_DOCS_IS_ALLOWED_PRIVATE_MUTATION,
+	PT_PHP_DOCS_RESOLVED_PHP_DOC,
+	PT_PHP_DOCS_PURE_UNLESS_CALLABLE_IS_IMPURE_PARAMETERS,
+};
+struct pt_php_docs
+{
+	zval items[PT_PHP_DOCS_COUNT];
+
+	pt_php_docs()
+	{
+		for (zval &item : items) ZVAL_UNDEF(&item);
+	}
+	pt_php_docs(const pt_php_docs &) = delete;
+	pt_php_docs &operator=(const pt_php_docs &) = delete;
+	~pt_php_docs()
+	{
+		for (zval &item : items) zval_ptr_dtor(&item);
+	}
+};
+[[nodiscard]] bool pt_php_docs_resolver_get_php_docs(zval *resolver, zval *scope, zval *node, uint32_t destructured, pt_php_docs &out);
+
+/* $node->getDocComment()?->getText() of a php-parser node: the text or null
+ * (PhpDocsResolver.cpp); UNDEF = pending exception */
+zv::Val pt_node_doc_comment_text(zval *node);
+
+/* $deprecatedAttributeResolver->getDeprecatedAttribute($scope, $stmt) without
+ * the array: $isDeprecated and $deprecatedDescription (owned); any other resolver's method runs and its array
+ * is unpacked like the callers' list() (the warning for a missing key, null
+ * for a non-array); false = pending exception */
+[[nodiscard]] bool pt_deprecated_attribute_resolver_get_deprecated_attribute(zval *resolver, zval *scope, zval *stmt, zv::Val &isDeprecated, zv::Val &deprecatedDescription);
+
+/* $propertyHooksProcessor->processPropertyHooks($nodeScopeResolver, $stmt,
+ * $nativeTypeNode, $phpDocType, $propertyName, $hooks, $scope, $storage,
+ * $nodeCallback) / $calledMethodProcessor->processCalledMethod($nodeScopeResolver,
+ * $methodReflection) (the end scope or null) / ->clearCalledMethodResults():
+ * the native body for the shadowing class, the method otherwise (everything
+ * borrowed, the nullable ones IS_NULL for null); false / UNDEF = pending
+ * exception */
+[[nodiscard]] bool pt_property_hooks_processor_process_property_hooks(zval *processor, zval *nodeScopeResolver, zval *stmt, zval *nativeTypeNode, zval *phpDocType, zval *propertyName, zval *hooks, zval *scope, zval *storage, zval *nodeCallback);
+zv::Val pt_called_method_processor_process_called_method(zval *processor, zval *nodeScopeResolver, zval *methodReflection);
+[[nodiscard]] bool pt_called_method_processor_clear_called_method_results(zval *processor);
+
+/* ClassReflection.cpp — $classReflection->isImmutable() /
+ * ->acceptsNamedArguments() / ->isAnonymous() (false = pending exception) /
+ * ->getResolvedPhpDoc() (UNDEF = pending exception): the native body for
+ * the shadowing class, the method otherwise */
+[[nodiscard]] bool pt_class_reflection_is_immutable(zend_object *classReflection, bool &out);
+[[nodiscard]] bool pt_class_reflection_accepts_named_arguments(zend_object *classReflection, bool &out);
+[[nodiscard]] bool pt_class_reflection_is_anonymous(zend_object *classReflection, bool &out);
+zv::Val pt_class_reflection_get_resolved_php_doc(zend_object *classReflection);
+
+/* MutatingScope.cpp — ->getParentScope() / ->enterTrait($traitReflection) /
+ * ->enterNamespace($namespaceName) / ->enterDeclareStrictTypes() /
+ * ->enterPropertyHook(...) (every argument a zval, IS_NULL for null): the
+ * native body for exactly a MutatingScope and arguments of the parameter
+ * types, the method otherwise; UNDEF = pending exception */
+zv::Val pt_mutating_scope_get_parent_scope(zend_object *scope);
+zv::Val pt_mutating_scope_enter_trait(zend_object *scope, zval *traitReflection);
+zv::Val pt_mutating_scope_enter_namespace(zend_object *scope, zval *namespaceName);
+zv::Val pt_mutating_scope_enter_declare_strict_types(zend_object *scope);
+zv::Val pt_mutating_scope_enter_property_hook(zend_object *scope, zval *hook, zval *propertyName, zval *nativePropertyTypeNode, zval *phpDocPropertyType, zval *phpDocParameterTypes, zval *throwType, zval *deprecatedDescription, zval *isDeprecated, zval *isPure, zval *phpDocComment, zval *resolvedPhpDocBlock);
+
+/* NodeTraverser.cpp — the shadowing PhpParser\NodeTraverser (instantiated
+ * by PropertyHooksProcessor.cpp) */
+extern zend_class_entry *pt_ce_node_traverser;
+
+/* NodeScopeResolver.cpp — $nodeScopeResolver->isAnalysedFile($fileName);
+ * false = pending exception */
+[[nodiscard]] bool pt_node_scope_resolver_is_analysed_file(zval *nodeScopeResolver, zval *fileName, bool &out);
 
 /* }}} */
 

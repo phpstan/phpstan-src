@@ -11,10 +11,10 @@
  * captures: $nodeScopeResolver and $methodScope by value, the five gathered
  * lists by reference. MutatingScope, ClassReflection, TypeUtils,
  * ImpurePoint, the statement results, ExpressionResultStorage,
- * VariableLivenessResolver and NodeScopeResolver are called through their
- * direct entries; the declaration processors through the shared cached
- * sites of StmtHandlerCalls.h, PropertyHooksProcessor and the PHP
- * reflection and node classes through the sites below.
+ * VariableLivenessResolver, PropertyHooksProcessor and NodeScopeResolver are
+ * called through their direct entries, the other declaration processors
+ * through the shared helpers of StmtHandlerCalls.h; the PHP reflection and
+ * node classes through the sites below.
  */
 
 #include "support.h"
@@ -35,7 +35,6 @@ namespace {
 /* {{{ the PHP collaborators (one site each; switch to their direct entries
  * once they are ported) */
 
-pt_method_site pt_cmh_process_property_hooks_site;
 pt_method_site pt_cmh_get_doc_comment_site;
 pt_method_site pt_cmh_get_text_site;
 pt_method_site pt_cmh_parser_node_type_resolve_site;
@@ -44,12 +43,6 @@ pt_method_site pt_cmh_get_name_site;
 pt_method_site pt_cmh_get_return_node_site;
 pt_method_site pt_cmh_get_statement_result_site;
 pt_method_site pt_cmh_return_statement_get_scope_site;
-
-/* $propertyHooksProcessor->processPropertyHooks(...) with its nine arguments */
-[[nodiscard]] bool processPropertyHooks(zval *propertyHooksProcessor, zval *argv)
-{
-	return !pt_call_method_cached(pt_cmh_process_property_hooks_site, Z_OBJ_P(propertyHooksProcessor), PT_LC("processpropertyhooks"), 9, argv).isUndef();
-}
 
 /* $param->getDocComment() */
 zv::Val getDocComment(zval *param)
@@ -189,15 +182,11 @@ public:
 		zval *attrGroups = ptsh::readNodeProperty(pt_cmh_attr_groups_site, stmt, PT_LC("attrGroups"));
 		if (UNEXPECTED(attrGroups == NULL)) return zv::Val();
 		if (UNEXPECTED(!ptsh::processAttributeGroups(OBJ_PROP_NUM(self, slots::attributesHandler), nodeScopeResolver, stmt, attrGroups, scope, storage, nodeCallback))) return zv::Val();
-		zv::Val phpDocs = ptsh::getPhpDocs(OBJ_PROP_NUM(self, slots::phpDocsResolver), scope, stmt);
-		if (UNEXPECTED(phpDocs.isUndef())) return zv::Val();
 		/* [$templateTypeMap, ..., $phpDocParameterOutTypes, , , , $pureUnlessCallableIsImpureParameters] */
-		static const zend_ulong listIndexes[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 20 };
-		zval *docs[21] = {};
-		for (zend_ulong index : listIndexes) {
-			docs[index] = ptsh::listItem(phpDocs.raw(), index);
-			if (UNEXPECTED(docs[index] == NULL)) return zv::Val();
-		}
+		pt_php_docs phpDocs;
+		if (UNEXPECTED(!ptsh::getPhpDocs(OBJ_PROP_NUM(self, slots::phpDocsResolver), scope, stmt, 0x1FFFFu | (1u << 20), phpDocs))) return zv::Val();
+		zval *docs[PT_PHP_DOCS_COUNT];
+		for (uint32_t index = 0; index < PT_PHP_DOCS_COUNT; index++) docs[index] = &phpDocs.items[index];
 		zval *templateTypeMap = docs[0];
 		zval *phpDocParameterTypes = docs[1];
 		zval *phpDocImmediatelyInvokedCallableParameters = docs[2];
@@ -227,14 +216,12 @@ public:
 			if (UNEXPECTED(!pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, returnType, scope, storage))) return zv::Val();
 		}
 
-		zv::Val deprecatedAttribute;
+		zv::Val attributeIsDeprecated;
+		zv::Val attributeDeprecatedDescription;
 		if (!zend_is_true(isDeprecated)) {
-			deprecatedAttribute = ptsh::getDeprecatedAttribute(OBJ_PROP_NUM(self, slots::deprecatedAttributeResolver), scope, stmt);
-			if (UNEXPECTED(deprecatedAttribute.isUndef())) return zv::Val();
-			isDeprecated = ptsh::listItem(deprecatedAttribute.raw(), 0);
-			if (UNEXPECTED(isDeprecated == NULL)) return zv::Val();
-			deprecatedDescription = ptsh::listItem(deprecatedAttribute.raw(), 1);
-			if (UNEXPECTED(deprecatedDescription == NULL)) return zv::Val();
+			if (UNEXPECTED(!ptsh::getDeprecatedAttribute(OBJ_PROP_NUM(self, slots::deprecatedAttributeResolver), scope, stmt, attributeIsDeprecated, attributeDeprecatedDescription))) return zv::Val();
+			isDeprecated = attributeIsDeprecated.raw();
+			deprecatedDescription = attributeDeprecatedDescription.raw();
 		}
 
 		zval falseValue;
@@ -454,17 +441,7 @@ private:
 		zval *hooks = ptsh::readNodeProperty(pt_cmh_param_hooks_site, param, PT_LC("hooks"));
 		if (UNEXPECTED(hooks == NULL)) return false;
 		zv::Val hooksHold = zv::Val::copyOf(zv::Ref(hooks));
-		zval hooksArgv[9];
-		ZVAL_COPY_VALUE(&hooksArgv[0], nodeScopeResolver);
-		ZVAL_COPY_VALUE(&hooksArgv[1], stmt);
-		ZVAL_COPY_VALUE(&hooksArgv[2], hookTypeHold.raw());
-		ZVAL_COPY_VALUE(&hooksArgv[3], phpDocType);
-		ZVAL_COPY_VALUE(&hooksArgv[4], propertyName.raw());
-		ZVAL_COPY_VALUE(&hooksArgv[5], hooksHold.raw());
-		ZVAL_COPY_VALUE(&hooksArgv[6], scope);
-		ZVAL_COPY_VALUE(&hooksArgv[7], storage);
-		ZVAL_COPY_VALUE(&hooksArgv[8], nodeCallback);
-		if (UNEXPECTED(!processPropertyHooks(OBJ_PROP_NUM(self, slots::propertyHooksProcessor), hooksArgv))) return false;
+		if (UNEXPECTED(!pt_property_hooks_processor_process_property_hooks(OBJ_PROP_NUM(self, slots::propertyHooksProcessor), nodeScopeResolver, stmt, hookTypeHold.raw(), phpDocType, propertyName.raw(), hooksHold.raw(), scope, storage, nodeCallback))) return false;
 
 		zv::Args exprArgv{propertyName.raw()};
 		zv::Val initializationExpr = pt_type_new(PT_CLASS_PROPERTY_INITIALIZATION_EXPR, 1, exprArgv);

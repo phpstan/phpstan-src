@@ -478,6 +478,13 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_switch_handler();
 	pt_register_try_catch_handler();
 	pt_register_foreach_handler();
+	/* the declaration processors — their signatures name the walk hub,
+	 * MutatingScope, the storage and PHP classes; each after the ones its
+	 * constructor names */
+	pt_register_php_docs_resolver();
+	pt_register_deprecated_attribute_resolver();
+	pt_register_property_hooks_processor();
+	pt_register_called_method_processor();
 
 	return SUCCESS;
 }

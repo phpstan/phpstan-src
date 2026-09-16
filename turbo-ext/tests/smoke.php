@@ -4357,6 +4357,10 @@ $coveredElsewhere = [
 	\PHPStan\Analyser\StmtHandler\SwitchHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\StmtHandler\TryCatchHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\StmtHandler\ForeachHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\PhpDocsResolver::class => 'walk-trace.php',
+	\PHPStan\Analyser\DeprecatedAttributeResolver::class => 'walk-trace.php',
+	\PHPStan\Analyser\PropertyHooksProcessor::class => 'walk-trace.php',
+	\PHPStan\Analyser\CalledMethodProcessor::class => 'walk-trace.php',
 ];
 foreach (array_keys($shadowedClasses) as $shadowedClass) {
 	check(

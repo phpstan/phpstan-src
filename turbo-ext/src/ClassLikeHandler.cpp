@@ -10,11 +10,10 @@
  * The class-member ordering usort() runs zend_hash_sort() — the engine's
  * own sort usort() uses — with the twin's comparator natively and the
  * engine's stable fallback. MutatingScope, ClassReflection,
- * ClassStatementsGatherer and NodeScopeResolver are called through their
- * direct entries; AttributesHandler through the shared cached site of
- * StmtHandlerCalls.h; ReflectionProvider, ClassReflectionFactory,
- * CalledMethodProcessor, BetterReflection and the php-parser node methods
- * through the sites below.
+ * ClassStatementsGatherer, CalledMethodProcessor and NodeScopeResolver are
+ * called through their direct entries; AttributesHandler through the shared
+ * helper of StmtHandlerCalls.h; ReflectionProvider, ClassReflectionFactory,
+ * BetterReflection and the php-parser node methods through the sites below.
  */
 
 #include "support.h"
@@ -40,7 +39,6 @@ pt_method_site pt_clh_is_anonymous_site;
 pt_method_site pt_clh_has_class_site;
 pt_method_site pt_clh_get_class_site;
 pt_method_site pt_clh_get_anonymous_class_reflection_site;
-pt_method_site pt_clh_clear_called_method_results_site;
 pt_method_site pt_clh_native_start_line_site;
 pt_method_site pt_clh_node_start_line_site;
 pt_method_site pt_clh_node_to_reflection_invoke_site;
@@ -77,12 +75,6 @@ zv::Val getAnonymousClassReflection(zval *reflectionProvider, zval *classNode, z
 {
 	zv::Args argv{classNode, scope};
 	return pt_call_method_cached(pt_clh_get_anonymous_class_reflection_site, Z_OBJ_P(reflectionProvider), PT_LC("getanonymousclassreflection"), 2, argv);
-}
-
-/* $calledMethodProcessor->clearCalledMethodResults() */
-[[nodiscard]] bool clearCalledMethodResults(zval *calledMethodProcessor)
-{
-	return !pt_call_method_cached(pt_clh_clear_called_method_results_site, Z_OBJ_P(calledMethodProcessor), PT_LC("clearcalledmethodresults"), 0, NULL).isUndef();
 }
 
 /* $nativeReflection->getStartLine() */
@@ -386,7 +378,7 @@ public:
 			return zv::Val();
 		}
 		if (UNEXPECTED(!pt_class_reflection_evict_private_symbols(Z_OBJ_P(classReflection.raw())))) return zv::Val();
-		if (UNEXPECTED(!clearCalledMethodResults(OBJ_PROP_NUM(self, slots::calledMethodProcessor)))) return zv::Val();
+		if (UNEXPECTED(!pt_called_method_processor_clear_called_method_results(OBJ_PROP_NUM(self, slots::calledMethodProcessor)))) return zv::Val();
 
 		return pt_internal_statement_result_new(resultScope, false, false, &emptyArray, &emptyArray, &emptyArray);
 	}

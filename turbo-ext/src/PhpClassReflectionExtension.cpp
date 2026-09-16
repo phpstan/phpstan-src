@@ -2716,18 +2716,12 @@ public:
 		classScope = call(classScope.raw(), PT_LC("enterclass"), 1, declaringClass.raw());
 		if (UNEXPECTED(classScope.isUndef())) return zv::Val();
 
-		zv::Args phpDocsArgs{classScope.raw(), methodNode.raw()};
-		zv::Val phpDocs = call(slot(PT_PCRE_PROP_PHP_DOCS_RESOLVER), PT_LC("getphpdocs"), 2, phpDocsArgs);
-		if (UNEXPECTED(phpDocs.isUndef()) || Z_TYPE_P(phpDocs.raw()) != IS_ARRAY) return zv::Val();
-		zval *docs[21];
-		for (uint32_t i = 0; i < 21; i++) {
-			docs[i] = zend_hash_index_find(Z_ARRVAL_P(phpDocs.raw()), i);
-			if (docs[i] == NULL) {
-				throwShouldNotHappen();
-				return zv::Val();
-			}
-			ZVAL_DEREF(docs[i]);
-		}
+		/* [$templateTypeMap, ..., $acceptsNamedArguments, , $phpDocComment, ...,
+		 * $phpDocParameterOutTypes, , , , $phpDocPureUnlessCallableIsImpureParameters] */
+		pt_php_docs phpDocs;
+		if (UNEXPECTED(!pt_php_docs_resolver_get_php_docs(slot(PT_PCRE_PROP_PHP_DOCS_RESOLVER), classScope.raw(), methodNode.raw(), 0x1EFFFu | (1u << 20), phpDocs))) return zv::Val();
+		zval *docs[PT_PHP_DOCS_COUNT];
+		for (uint32_t i = 0; i < PT_PHP_DOCS_COUNT; i++) docs[i] = &phpDocs.items[i];
 
 		zval enterArgs[20];
 		ZVAL_COPY_VALUE(&enterArgs[0], methodNode.raw());

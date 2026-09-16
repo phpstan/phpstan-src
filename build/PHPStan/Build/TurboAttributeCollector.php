@@ -80,6 +80,7 @@ use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\Param;
+use PhpParser\Node\PropertyHook;
 use PhpParser\Node\Scalar;
 use PhpParser\Node\Scalar\Float_;
 use PhpParser\Node\Scalar\Int_;
@@ -376,6 +377,7 @@ final class TurboAttributeCollector
 		'shiftLeftExpr' => \PhpParser\Node\Expr\BinaryOp\ShiftLeft::class,
 		'shiftRightExpr' => \PhpParser\Node\Expr\BinaryOp\ShiftRight::class,
 		'pipeExpr' => Pipe::class,
+		'propertyHook' => PropertyHook::class,
 	];
 
 	private string $realRoot;

@@ -11,9 +11,8 @@
  * the five gathered lists by reference. MutatingScope, ImpurePoint, the
  * statement results, ExpressionResultStorage, VariableLivenessResolver and
  * NodeScopeResolver are called through their direct entries; the
- * declaration processors through the shared cached sites of
- * StmtHandlerCalls.h, the PHP reflection and node classes through the sites
- * below.
+ * declaration processors through the shared helpers of StmtHandlerCalls.h,
+ * the PHP reflection and node classes through the sites below.
  */
 
 #include "support.h"
@@ -101,16 +100,15 @@ public:
 		zval *attrGroups = ptsh::readNodeProperty(pt_fh_attr_groups_site, stmt, PT_LC("attrGroups"));
 		if (UNEXPECTED(attrGroups == NULL)) return zv::Val();
 		if (UNEXPECTED(!ptsh::processAttributeGroups(OBJ_PROP_NUM(self, slots::attributesHandler), nodeScopeResolver, stmt, attrGroups, scope, storage, nodeCallback))) return zv::Val();
-		zv::Val phpDocs = ptsh::getPhpDocs(OBJ_PROP_NUM(self, slots::phpDocsResolver), scope, stmt);
-		if (UNEXPECTED(phpDocs.isUndef())) return zv::Val();
 		/* [$templateTypeMap, ..., $isInternal, , $isPure, $acceptsNamedArguments, ,
 		 * $phpDocComment, $asserts,, $phpDocParameterOutTypes, , , , $pureUnlessCallableIsImpureParameters] */
-		static const zend_ulong listIndexes[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 13, 14, 16, 20 };
-		zval *docs[21] = {};
-		for (zend_ulong index : listIndexes) {
-			docs[index] = ptsh::listItem(phpDocs.raw(), index);
-			if (UNEXPECTED(docs[index] == NULL)) return zv::Val();
-		}
+		static constexpr uint32_t listIndexes[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 13, 14, 16, 20 };
+		uint32_t destructured = 0;
+		for (uint32_t index : listIndexes) destructured |= 1u << index;
+		pt_php_docs phpDocs;
+		if (UNEXPECTED(!ptsh::getPhpDocs(OBJ_PROP_NUM(self, slots::phpDocsResolver), scope, stmt, destructured, phpDocs))) return zv::Val();
+		zval *docs[PT_PHP_DOCS_COUNT];
+		for (uint32_t index = 0; index < PT_PHP_DOCS_COUNT; index++) docs[index] = &phpDocs.items[index];
 		zval *deprecatedDescription = docs[6];
 		zval *isDeprecated = docs[7];
 
@@ -124,14 +122,12 @@ public:
 			if (UNEXPECTED(!pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, returnType, scope, storage))) return zv::Val();
 		}
 
-		zv::Val deprecatedAttribute;
+		zv::Val attributeIsDeprecated;
+		zv::Val attributeDeprecatedDescription;
 		if (!zend_is_true(isDeprecated)) {
-			deprecatedAttribute = ptsh::getDeprecatedAttribute(OBJ_PROP_NUM(self, slots::deprecatedAttributeResolver), scope, stmt);
-			if (UNEXPECTED(deprecatedAttribute.isUndef())) return zv::Val();
-			isDeprecated = ptsh::listItem(deprecatedAttribute.raw(), 0);
-			if (UNEXPECTED(isDeprecated == NULL)) return zv::Val();
-			deprecatedDescription = ptsh::listItem(deprecatedAttribute.raw(), 1);
-			if (UNEXPECTED(deprecatedDescription == NULL)) return zv::Val();
+			if (UNEXPECTED(!ptsh::getDeprecatedAttribute(OBJ_PROP_NUM(self, slots::deprecatedAttributeResolver), scope, stmt, attributeIsDeprecated, attributeDeprecatedDescription))) return zv::Val();
+			isDeprecated = attributeIsDeprecated.raw();
+			deprecatedDescription = attributeDeprecatedDescription.raw();
 		}
 
 		zval enterArgv[16];

@@ -2209,6 +2209,19 @@ zv::Val pt_node_scope_resolver_narrow_scope_with_condition(zval *nodeScopeResolv
 	return pt_type_call(Z_OBJ_P(nodeScopeResolver), PT_LC("narrowscopewithcondition"), 3, argv);
 }
 
+/* the declaration processors' (TraitUseHandler.cpp, CalledMethodProcessor.cpp) */
+bool pt_node_scope_resolver_is_analysed_file(zval *nodeScopeResolver, zval *fileName, bool &out)
+{
+	if (isNativeResolver(nodeScopeResolver) && EXPECTED(Z_TYPE_P(fileName) == IS_STRING)) {
+		out = NodeScopeResolver(Z_OBJ_P(nodeScopeResolver)).isAnalysedFile(Z_STR_P(fileName));
+		return true;
+	}
+	zv::Val result = pt_type_call(Z_OBJ_P(nodeScopeResolver), PT_LC("isanalysedfile"), 1, fileName);
+	if (UNEXPECTED(result.isUndef())) return false;
+	out = zend_is_true(result.raw());
+	return true;
+}
+
 /* }}} */
 
 /* {{{ engine ABI glue: parameter parsing + registration */

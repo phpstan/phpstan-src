@@ -3,11 +3,9 @@
  * ReturnHandler.cpp, EchoHandler.cpp, BlockHandler.cpp, NopHandler.cpp,
  * ClassMethodHandler.cpp, FunctionHandler.cpp, ClassLikeHandler.cpp,
  * IfHandler.cpp): the AST-node property reads and class tests they all make,
- * and their calls into the declaration processors — AttributesHandler and
- * ParametersProcessor through their direct entries, the ones not ported yet
- * (PhpDocsResolver, DeprecatedAttributeResolver) one inline helper per called
- * method over one shared cached method site (Engine.h), so the port of any of
- * them switches every handler to its direct entries here, in one place.
+ * and their calls into the declaration processors (AttributesHandler,
+ * ParametersProcessor, PhpDocsResolver, DeprecatedAttributeResolver) through
+ * their direct entries, one inline helper per called method.
  * NodeScopeResolver and StatementsHandler are called through their direct
  * entries (support.h), the twins' try/finally through pt_finally()
  * (Engine.h).
@@ -26,9 +24,6 @@ namespace ptsh {
  * ClassLikeHandler): AttributesHandler, PhpDocsResolver, ParametersProcessor,
  * DeprecatedAttributeResolver */
 
-inline pt_method_site getPhpDocsSite;
-inline pt_method_site getDeprecatedAttributeSite;
-
 /* $attributesHandler->processAttributeGroups($nodeScopeResolver, $stmt,
  * $attrGroups, $scope, $storage, $nodeCallback) (AttributesHandler.cpp);
  * false = pending exception */
@@ -37,11 +32,12 @@ inline pt_method_site getDeprecatedAttributeSite;
 	return pt_attributes_handler_process_attribute_groups(attributesHandler, nodeScopeResolver, stmt, attrGroups, scope, storage, nodeCallback);
 }
 
-/* $phpDocsResolver->getPhpDocs($scope, $node) */
-inline zv::Val getPhpDocs(zval *phpDocsResolver, zval *scope, zval *node)
+/* list(...) = $phpDocsResolver->getPhpDocs($scope, $node), the list's
+ * items (1 << index) in `destructured` (PhpDocsResolver.cpp); false = pending
+ * exception */
+[[nodiscard]] inline bool getPhpDocs(zval *phpDocsResolver, zval *scope, zval *node, uint32_t destructured, pt_php_docs &docs)
 {
-	zv::Args argv{scope, node};
-	return pt_call_method_cached(getPhpDocsSite, Z_OBJ_P(phpDocsResolver), PT_LC("getphpdocs"), 2, argv);
+	return pt_php_docs_resolver_get_php_docs(phpDocsResolver, scope, node, destructured, docs);
 }
 
 /* $parametersProcessor->processParams($nodeScopeResolver, $stmt, $params,
@@ -52,11 +48,12 @@ inline zv::Val getPhpDocs(zval *phpDocsResolver, zval *scope, zval *node)
 	return pt_parameters_processor_process_params(parametersProcessor, nodeScopeResolver, stmt, params, scope, storage, nodeCallback);
 }
 
-/* $deprecatedAttributeResolver->getDeprecatedAttribute($scope, $stmt) */
-inline zv::Val getDeprecatedAttribute(zval *deprecatedAttributeResolver, zval *scope, zval *stmt)
+/* [$isDeprecated, $deprecatedDescription] =
+ * $deprecatedAttributeResolver->getDeprecatedAttribute($scope, $stmt)
+ * (DeprecatedAttributeResolver.cpp); false = pending exception */
+[[nodiscard]] inline bool getDeprecatedAttribute(zval *deprecatedAttributeResolver, zval *scope, zval *stmt, zv::Val &isDeprecated, zv::Val &deprecatedDescription)
 {
-	zv::Args argv{scope, stmt};
-	return pt_call_method_cached(getDeprecatedAttributeSite, Z_OBJ_P(deprecatedAttributeResolver), PT_LC("getdeprecatedattribute"), 2, argv);
+	return pt_deprecated_attribute_resolver_get_deprecated_attribute(deprecatedAttributeResolver, scope, stmt, isDeprecated, deprecatedDescription);
 }
 
 /* }}} */

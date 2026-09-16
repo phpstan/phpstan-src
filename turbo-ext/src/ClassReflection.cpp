@@ -4508,6 +4508,34 @@ zv::Val pt_class_reflection_get_native_property(zend_object *classReflection, ze
 	return pt_type_call(classReflection, PT_LC("getnativeproperty"), 1, &name);
 }
 
+/* the declaration processors' reads (PhpDocsResolver.cpp,
+ * CalledMethodProcessor.cpp): $classReflection->isImmutable() /
+ * ->acceptsNamedArguments() / ->isAnonymous() (false = pending exception) /
+ * ->getResolvedPhpDoc() (UNDEF = pending exception) */
+[[nodiscard]] bool pt_class_reflection_is_immutable(zend_object *classReflection, bool &out)
+{
+	if (EXPECTED(classReflection->ce == pt_ce_class_reflection)) return ClassReflection(classReflection).isImmutable(out);
+	return pt_cr_foreign_bool(classReflection, PT_LC("isimmutable"), 0, NULL, out);
+}
+
+[[nodiscard]] bool pt_class_reflection_accepts_named_arguments(zend_object *classReflection, bool &out)
+{
+	if (EXPECTED(classReflection->ce == pt_ce_class_reflection)) return ClassReflection(classReflection).acceptsNamedArguments(out);
+	return pt_cr_foreign_bool(classReflection, PT_LC("acceptsnamedarguments"), 0, NULL, out);
+}
+
+[[nodiscard]] bool pt_class_reflection_is_anonymous(zend_object *classReflection, bool &out)
+{
+	if (EXPECTED(classReflection->ce == pt_ce_class_reflection)) return ClassReflection(classReflection).isAnonymous(out);
+	return pt_cr_foreign_bool(classReflection, PT_LC("isanonymous"), 0, NULL, out);
+}
+
+zv::Val pt_class_reflection_get_resolved_php_doc(zend_object *classReflection)
+{
+	if (EXPECTED(classReflection->ce == pt_ce_class_reflection)) return ClassReflection(classReflection).getResolvedPhpDoc();
+	return pt_type_call(classReflection, PT_LC("getresolvedphpdoc"), 0, NULL);
+}
+
 /* }}} */
 
 /* {{{ engine ABI glue: parameter parsing + registration */

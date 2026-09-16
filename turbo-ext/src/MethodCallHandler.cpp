@@ -20,9 +20,9 @@
  * ImpurePoint, InternalThrowPoint, TemplateArgumentFrame, SpecifiedTypes,
  * TypeSpecifierContext, TypeSpecifier, DefaultNarrowingHelper,
  * EarlyTerminatingCallHelper, MethodCallReturnTypeHelper,
- * MethodThrowPointHelper and the Type kernel are called through their direct
- * entries; the collaborators that stay PHP for now (ArgumentsHandler,
- * CalledMethodProcessor, ParametersAcceptorSelector, ArgumentsNormalizer, the
+ * MethodThrowPointHelper, CalledMethodProcessor and the Type kernel are called
+ * through their direct entries; the collaborators that stay PHP for now
+ * (ArgumentsHandler, ParametersAcceptorSelector, ArgumentsNormalizer, the
  * parameters acceptors, Assertions and the extensions) through the cached
  * method sites in the block below, one helper each.
  */
@@ -44,16 +44,8 @@ using namespace ptcall;
  * their direct entries once they are ported); the shared ones are in
  * CallHandlerSupport.h */
 
-pt_method_site pt_mch_process_called_method_site;
 pt_method_site pt_mch_is_method_supported_site;
 pt_method_site pt_mch_extension_specify_types_site;
-
-/* $calledMethodProcessor->processCalledMethod($nodeScopeResolver, $methodReflection) */
-zv::Val processCalledMethod(zval *calledMethodProcessor, zval *nodeScopeResolver, zval *methodReflection)
-{
-	zv::Args argv{nodeScopeResolver, methodReflection};
-	return pt_call_method_cached(pt_mch_process_called_method_site, Z_OBJ_P(calledMethodProcessor), PT_LC("processcalledmethod"), 2, argv);
-}
 
 /* $extension->isMethodSupported($methodReflection, $normalizedExpr, $context) */
 bool extensionIsMethodSupported(zval *extension, zval *methodReflection, zval *normalizedExpr, zval *context, bool &out)
@@ -595,7 +587,7 @@ public:
 		bool processCalled = false;
 		if (UNEXPECTED(!shouldProcessCalledMethod(currentScope.raw(), methodReflection.raw(), calledOnType.raw(), processCalled))) return zv::Val();
 		if (processCalled) {
-			zv::Val calledMethodScope = processCalledMethod(OBJ_PROP_NUM(self, slots::calledMethodProcessor), nodeScopeResolver, methodReflection.raw());
+			zv::Val calledMethodScope = pt_called_method_processor_process_called_method(OBJ_PROP_NUM(self, slots::calledMethodProcessor), nodeScopeResolver, methodReflection.raw());
 			if (UNEXPECTED(calledMethodScope.isUndef())) return zv::Val();
 			if (!calledMethodScope.isNull()) {
 				currentScope = pt_mutating_scope_merge_initialized_properties(Z_OBJ_P(currentScope.raw()), calledMethodScope.raw());

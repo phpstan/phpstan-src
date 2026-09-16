@@ -10,10 +10,12 @@ use PHPStan\Analyser\StatementResult;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpPropertyReflection;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'propertyHookReturnStatementsNode')]
 final class PropertyHookReturnStatementsNode extends NodeAbstract implements ReturnStatementsNode
 {
 

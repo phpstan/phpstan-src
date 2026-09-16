@@ -5,7 +5,9 @@ namespace PHPStan\Parser;
 use Override;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
+#[ReferencedByTurboExtension(key: 'lineAttributesVisitor')]
 final class LineAttributesVisitor extends NodeVisitorAbstract
 {
 

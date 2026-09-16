@@ -13373,3 +13373,58 @@ zv::Val pt_mutating_scope_process_always_iterable_foreach_scope_without_pollute(
 }
 
 /* }}} */
+
+/* {{{ the declaration handlers' scope calls (TraitUseHandler.cpp,
+ * PropertyHooksProcessor.cpp, NamespaceHandler.cpp, DeclareHandler.cpp):
+ * the native body for exactly a MutatingScope, the method otherwise */
+
+zv::Val pt_mutating_scope_get_parent_scope(zend_object *scope)
+{
+	if (msExact(scope)) return MutatingScope(scope).getParentScope();
+	return pt_type_call(scope, PT_LC("getparentscope"), 0, NULL);
+}
+
+zv::Val pt_mutating_scope_enter_trait(zend_object *scope, zval *traitReflection)
+{
+	/* the handler's ClassReflection parameter check */
+	if (msExact(scope) && EXPECTED(Z_TYPE_P(traitReflection) == IS_OBJECT && instanceof_function(Z_OBJCE_P(traitReflection), pt_ce_class_reflection))) return MutatingScope(scope).enterTrait(traitReflection);
+	return pt_type_call(scope, PT_LC("entertrait"), 1, traitReflection);
+}
+
+zv::Val pt_mutating_scope_enter_namespace(zend_object *scope, zval *namespaceName)
+{
+	if (msExact(scope) && EXPECTED(Z_TYPE_P(namespaceName) == IS_STRING)) return MutatingScope(scope).enterNamespace(Z_STR_P(namespaceName));
+	return pt_type_call(scope, PT_LC("enternamespace"), 1, namespaceName);
+}
+
+zv::Val pt_mutating_scope_enter_declare_strict_types(zend_object *scope)
+{
+	if (msExact(scope)) return MutatingScope(scope).enterDeclareStrictTypes();
+	return pt_type_call(scope, PT_LC("enterdeclarestricttypes"), 0, NULL);
+}
+
+zv::Val pt_mutating_scope_enter_property_hook(zend_object *scope, zval *hook, zval *propertyName, zval *nativePropertyTypeNode, zval *phpDocPropertyType, zval *phpDocParameterTypes, zval *throwType, zval *deprecatedDescription, zval *isDeprecated, zval *isPure, zval *phpDocComment, zval *resolvedPhpDocBlock)
+{
+	auto objectOrNull = [](zval *value) { return Z_TYPE_P(value) == IS_OBJECT || Z_TYPE_P(value) == IS_NULL; };
+	auto stringOrNull = [](zval *value) { return Z_TYPE_P(value) == IS_STRING || Z_TYPE_P(value) == IS_NULL; };
+	/* the handler's parameter checks; anything else takes the method and its
+	 * coercion or TypeError */
+	if (msExact(scope) && EXPECTED(Z_TYPE_P(hook) == IS_OBJECT && Z_TYPE_P(propertyName) == IS_STRING && objectOrNull(nativePropertyTypeNode) && objectOrNull(phpDocPropertyType) && Z_TYPE_P(phpDocParameterTypes) == IS_ARRAY && objectOrNull(throwType) && stringOrNull(deprecatedDescription) && (Z_TYPE_P(isDeprecated) == IS_TRUE || Z_TYPE_P(isDeprecated) == IS_FALSE) && (Z_TYPE_P(isPure) == IS_TRUE || Z_TYPE_P(isPure) == IS_FALSE || Z_TYPE_P(isPure) == IS_NULL) && stringOrNull(phpDocComment) && objectOrNull(resolvedPhpDocBlock))) {
+		return MutatingScope(scope).enterPropertyHook(hook, Z_STR_P(propertyName), nativePropertyTypeNode, phpDocPropertyType, phpDocParameterTypes, throwType, deprecatedDescription, Z_TYPE_P(isDeprecated) == IS_TRUE, isPure, phpDocComment, resolvedPhpDocBlock);
+	}
+	zval argv[11];
+	ZVAL_COPY_VALUE(&argv[0], hook);
+	ZVAL_COPY_VALUE(&argv[1], propertyName);
+	ZVAL_COPY_VALUE(&argv[2], nativePropertyTypeNode);
+	ZVAL_COPY_VALUE(&argv[3], phpDocPropertyType);
+	ZVAL_COPY_VALUE(&argv[4], phpDocParameterTypes);
+	ZVAL_COPY_VALUE(&argv[5], throwType);
+	ZVAL_COPY_VALUE(&argv[6], deprecatedDescription);
+	ZVAL_COPY_VALUE(&argv[7], isDeprecated);
+	ZVAL_COPY_VALUE(&argv[8], isPure);
+	ZVAL_COPY_VALUE(&argv[9], phpDocComment);
+	ZVAL_COPY_VALUE(&argv[10], resolvedPhpDocBlock);
+	return pt_type_call(scope, PT_LC("enterpropertyhook"), 11, argv);
+}
+
+/* }}} */

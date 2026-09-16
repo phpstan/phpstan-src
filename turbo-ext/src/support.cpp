@@ -367,6 +367,10 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_FINALLY_EXIT_POINTS_NODE */ {"finallyExitPointsNode", "PHPStan\\Node\\FinallyExitPointsNode"},
 	/* PT_CLASS_IN_FOREACH_NODE */ {"inForeachNode", "PHPStan\\Node\\InForeachNode"},
 	/* PT_CLASS_FOREACH_VALUE_BY_REF_EXPR */ {"foreachValueByRefExpr", "PHPStan\\Node\\Expr\\ForeachValueByRefExpr"},
+	/* PT_CLASS_PROPERTY_HOOK */ {"propertyHook", "PhpParser\\Node\\PropertyHook"},
+	/* PT_CLASS_IN_PROPERTY_HOOK_NODE */ {"inPropertyHookNode", "PHPStan\\Node\\InPropertyHookNode"},
+	/* PT_CLASS_PROPERTY_HOOK_RETURN_STATEMENTS_NODE */ {"propertyHookReturnStatementsNode", "PHPStan\\Node\\PropertyHookReturnStatementsNode"},
+	/* PT_CLASS_LINE_ATTRIBUTES_VISITOR */ {"lineAttributesVisitor", "PHPStan\\Parser\\LineAttributesVisitor"},
 };
 
 zend_class_entry *pt_class(int idx)

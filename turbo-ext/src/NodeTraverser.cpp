@@ -23,7 +23,7 @@ namespace slots = ptdecl::NodeTraverser::slot;
 namespace sigs = ptdecl::NodeTraverser::sig;
 #include "zv.h"
 
-static zend_class_entry *pt_ce_node_traverser;
+zend_class_entry *pt_ce_node_traverser = nullptr;
 
 /* {{{ pt_* traversal substrate */
 

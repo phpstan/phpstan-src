@@ -99,6 +99,7 @@ struct Base<Opt<K>>
 template <typename K, typename Kind>
 constexpr bool is = std::is_same_v<typename Base<K>::type, Kind>;
 
+
 } // namespace detail
 
 template <typename... K>

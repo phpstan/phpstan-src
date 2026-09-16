@@ -20,6 +20,8 @@ use function basename;
 use function class_exists;
 use function count;
 use function dirname;
+use function explode;
+use function file_get_contents;
 use function implode;
 use function in_array;
 use function is_array;
@@ -27,14 +29,23 @@ use function is_bool;
 use function is_int;
 use function is_string;
 use function ksort;
+use function max;
+use function preg_match_all;
 use function preg_replace;
 use function sprintf;
 use function str_replace;
 use function str_starts_with;
 use function strlen;
+use function strpos;
+use function strrchr;
+use function strrpos;
+use function strtolower;
 use function strtoupper;
 use function substr;
+use function trait_exists;
+use function trim;
 use function var_export;
+use const PREG_SET_ORDER;
 
 /**
  * Derives the declarative half of every shadowing class from its PHP twin
@@ -63,6 +74,9 @@ final class TurboDeclarationGenerator
 		'unsigned', 'using', 'virtual', 'void', 'volatile', 'while', 'xor',
 		'major', 'minor', 'makedev', 'stdin', 'stdout', 'stderr', 'errno', 'assert', 'unix', 'linux',
 	];
+
+	/** @var array<string, true>|null pt_type_trait_*() registrar names, read from TypeTraits.cpp */
+	private ?array $registrars = null;
 
 	/**
 	 * @param array<string, array{php: string, cpp: string, ...}> $manifest
@@ -213,6 +227,18 @@ final class TurboDeclarationGenerator
 			$out[] = '}';
 		}
 
+		$registrars = $this->traitRegistrars($class);
+		if ($registrars !== []) {
+			$out[] = '';
+			$out[] = '/* the shared registrars of the traits the twin uses, in its own order (a used trait\'s own traits after it) */';
+			$out[] = 'inline void registerTraits(reg::Class &cls)';
+			$out[] = '{';
+			foreach ($registrars as $registrar) {
+				$out[] = sprintf("\tpt_type_trait_%s(cls);", $registrar);
+			}
+			$out[] = '}';
+		}
+
 		$signatures = $this->renderSignatures($class);
 		if ($signatures !== []) {
 			$out[] = '';
@@ -265,6 +291,120 @@ final class TurboDeclarationGenerator
 		$out[] = '';
 
 		return implode("\n", $out);
+	}
+
+	/**
+	 * The shared trait registrars the twin's `use` declarations imply: its
+	 * traits in declaration order, each followed by the traits it uses
+	 * itself, mapped to their pt_type_trait_*() registrar and deduplicated
+	 * (reg::Class::traitMethod() lets the first registrar win, as PHP lets
+	 * the class body win over a used trait).
+	 *
+	 * @param ReflectionClass<object> $class
+	 * @return list<string>
+	 */
+	private function traitRegistrars(ReflectionClass $class): array
+	{
+		$file = $class->getFileName();
+		if ($file === false) {
+			return [];
+		}
+		$seen = [];
+
+		return $this->flattenTraitUses($file, $seen);
+	}
+
+	/**
+	 * @param array<string, true> $seen
+	 * @return list<string>
+	 */
+	private function flattenTraitUses(string $file, array &$seen): array
+	{
+		$registrars = [];
+		foreach ($this->traitUses($file) as $trait) {
+			if (isset($seen[$trait])) {
+				continue;
+			}
+			$seen[$trait] = true;
+			$registrar = $this->registrarOf($trait);
+			if ($registrar !== null) {
+				$registrars[] = $registrar;
+			}
+			if (!trait_exists($trait)) {
+				continue;
+			}
+			$traitFile = (new ReflectionClass($trait))->getFileName();
+			if ($traitFile === false) {
+				continue;
+			}
+
+			foreach ($this->flattenTraitUses($traitFile, $seen) as $nested) {
+				$registrars[] = $nested;
+			}
+		}
+
+		return $registrars;
+	}
+
+	/**
+	 * The `use Trait;` and `use Trait { ... }` declarations of the first
+	 * class-like in the file, resolved through its imports.
+	 *
+	 * @return list<string>
+	 */
+	private function traitUses(string $file): array
+	{
+		$source = file_get_contents($file);
+		if ($source === false) {
+			return [];
+		}
+		$imports = [];
+		preg_match_all('~^use ([\w\\\\]+)(?:\s+as\s+(\w+))?;~m', $source, $importMatches, PREG_SET_ORDER);
+		foreach ($importMatches as $match) {
+			$imports[($match[2] ?? '') !== '' ? $match[2] : substr((string) strrchr('\\' . $match[1], '\\'), 1)] = $match[1];
+		}
+		$start = max(strpos($source, 'trait ') === false ? -1 : strpos($source, 'trait '), strpos($source, 'class ') === false ? -1 : strpos($source, 'class '));
+		if ($start < 0) {
+			return [];
+		}
+		$bodyStart = strpos($source, '{', $start);
+		$body = $bodyStart === false ? '' : substr($source, $bodyStart);
+		$names = [];
+		preg_match_all('~^\t+use ([\w\\\\,\s]+?)\s*(?:;|\{)~m', $body, $useMatches, PREG_SET_ORDER);
+		foreach ($useMatches as $match) {
+			foreach (explode(',', $match[1]) as $name) {
+				$name = trim($name);
+				if ($name === '') {
+					continue;
+				}
+				$names[] = $imports[$name] ?? $name;
+			}
+		}
+
+		return $names;
+	}
+
+	/** the pt_type_trait_*() registrar implementing a trait, if the extension has one */
+	private function registrarOf(string $trait): ?string
+	{
+		if ($this->registrars === null) {
+			$source = (string) file_get_contents(dirname(__DIR__, 3) . '/turbo-ext/src/TypeTraits.cpp');
+			$this->registrars = [];
+			preg_match_all('~^void pt_type_trait_(\w+)\(reg::Class &cls\)$~m', $source, $registrarMatches, PREG_SET_ORDER);
+			foreach ($registrarMatches as $match) {
+				$this->registrars[$match[1]] = true;
+			}
+		}
+		$separator = strrpos($trait, '\\');
+		$short = $separator === false ? $trait : substr($trait, $separator + 1);
+		foreach ([preg_replace('~(Type)?Trait$~', '', $short), preg_replace('~Trait$~', '', $short)] as $base) {
+			$name = strtolower((string) preg_replace('~(?<!^)(?=[A-Z])~', '_', (string) $base));
+			if (isset($this->registrars[$name])) {
+				return $name;
+			}
+		}
+
+		return null;
 	}
 
 	/**

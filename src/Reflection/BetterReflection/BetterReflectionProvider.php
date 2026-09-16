@@ -419,14 +419,24 @@ final class BetterReflectionProvider implements ReflectionProvider
 		$isDeprecated = $deprecation !== null;
 		$deprecatedDescription = $deprecation === null ? null : $deprecation->getDescription();
 
-		if ($isDeprecated === false && $docComment !== null) {
-			$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc($fileName, null, null, null, $docComment);
+		$resolvedPhpDoc = null;
+		if ($isDeprecated === false) {
+			$resolvedPhpDoc = $this->stubPhpDocProvider->findGlobalConstantPhpDoc($constantName);
+			if ($resolvedPhpDoc === null && $docComment !== null) {
+				$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc($fileName, null, null, null, $docComment);
+			}
+		}
+
+		if ($resolvedPhpDoc !== null) {
 			$isDeprecated = $resolvedPhpDoc->isDeprecated();
 
 			if ($isDeprecated && $resolvedPhpDoc->getDeprecatedTag() !== null) {
 				$deprecatedMessage = $resolvedPhpDoc->getDeprecatedTag()->getMessage();
 
-				$matches = Strings::match($deprecatedMessage ?? '', '#^(\d+)\.(\d+)(?:\.(\d+))?$#');
+				// the version number in messages like in
+				// https://github.com/JetBrains/phpstorm-stubs/blob/9608c953230b08f07b703ecfe459cc58d5421437/filter/filter.php#L478
+				// says since which PHP version the constant is deprecated, the rest is the description
+				$matches = Strings::match($deprecatedMessage ?? '', '#^(\d+)\.(\d+)(?:\.(\d+))?(?:\s+(\S.*))?$#s');
 				if ($matches !== null) {
 					$major = (int) $matches[1];
 					$minor = (int) $matches[2];
@@ -438,9 +448,11 @@ final class BetterReflectionProvider implements ReflectionProvider
 					} else {
 						$isDeprecated = $this->phpVersion->getVersionId() >= $versionId;
 					}
+
+					if ($isDeprecated && ($matches[4] ?? '') !== '') {
+						$deprecatedDescription = $matches[4];
+					}
 				} else {
-					// filter raw version number messages like in
-					// https://github.com/JetBrains/phpstorm-stubs/blob/9608c953230b08f07b703ecfe459cc58d5421437/filter/filter.php#L478
 					$deprecatedDescription = $deprecatedMessage;
 				}
 			} elseif (!$isDeprecated) {

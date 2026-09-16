@@ -26,6 +26,30 @@ class RuntimeConstantReflectionTest extends PHPStanTestCase
 		];
 
 		yield [
+			new Name('\MB_ONIGURUMA_VERSION'),
+			PHP_VERSION_ID >= 80600 ? TrinaryLogic::createYes() : TrinaryLogic::createNo(),
+			null,
+		];
+
+		yield [
+			new Name('\SORT_LOCALE_STRING'),
+			PHP_VERSION_ID >= 80600 ? TrinaryLogic::createYes() : TrinaryLogic::createNo(),
+			null,
+		];
+
+		yield [
+			new Name('\FILTER_DEFAULT'),
+			PHP_VERSION_ID >= 80500 ? TrinaryLogic::createYes() : TrinaryLogic::createNo(),
+			PHP_VERSION_ID >= 80500 ? 'use FILTER_UNSAFE_RAW instead' : null,
+		];
+
+		yield [
+			new Name('\INTL_IDNA_VARIANT_2003'),
+			TrinaryLogic::createYes(),
+			'Use {@see INTL_IDNA_VARIANT_UTS46} instead.',
+		];
+
+		yield [
 			new Name('\DeprecatedConst\FINE'),
 			TrinaryLogic::createNo(),
 			null,

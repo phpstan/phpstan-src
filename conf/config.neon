@@ -175,6 +175,7 @@ parameters:
 		- ../stubs/stream_socket_client.stub
 		- ../stubs/stream_socket_server.stub
 		- ../stubs/ctype.stub
+		- ../stubs/mbstring.stub
 	earlyTerminatingMethodCalls: []
 	earlyTerminatingFunctionCalls: []
 	resultCachePath: %tmpDir%/resultCache.php

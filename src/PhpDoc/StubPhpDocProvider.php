@@ -15,6 +15,7 @@ use PHPStan\Type\FileTypeMapper;
 use function array_key_exists;
 use function array_map;
 use function is_string;
+use function ltrim;
 
 #[AutowiredService(name: 'stubPhpDocProvider')]
 final class StubPhpDocProvider
@@ -35,6 +36,9 @@ final class StubPhpDocProvider
 	/** @var array<string, ResolvedPhpDocBlock|null> */
 	private array $functionMap = [];
 
+	/** @var array<string, ResolvedPhpDocBlock|null> */
+	private array $globalConstantMap = [];
+
 	private bool $initialized = false;
 
 	private bool $initializing = false;
@@ -44,6 +48,9 @@ final class StubPhpDocProvider
 
 	/** @var array<string, array{string, string}> */
 	private array $knownFunctionsDocComments = [];
+
+	/** @var array<string, array{string, string}> */
+	private array $knownGlobalConstantsDocComments = [];
 
 	/** @var array<string, array<string, array{string, string}>> */
 	private array $knownPropertiesDocComments = [];
@@ -246,6 +253,28 @@ final class StubPhpDocProvider
 		return null;
 	}
 
+	public function findGlobalConstantPhpDoc(string $constantName): ?ResolvedPhpDocBlock
+	{
+		$constantName = ltrim($constantName, '\\');
+		if (!$this->isKnownGlobalConstant($constantName)) {
+			return null;
+		}
+
+		if (array_key_exists($constantName, $this->globalConstantMap)) {
+			return $this->globalConstantMap[$constantName];
+		}
+
+		[$file, $docComment] = $this->knownGlobalConstantsDocComments[$constantName];
+
+		return $this->globalConstantMap[$constantName] = $this->fileTypeMapper->getResolvedPhpDoc(
+			$file,
+			null,
+			null,
+			null,
+			$docComment,
+		);
+	}
+
 	public function isKnownClass(string $className): bool
 	{
 		$this->initializeKnownElements();
@@ -255,6 +284,17 @@ final class StubPhpDocProvider
 		}
 
 		return array_key_exists($className, $this->knownClassesDocComments);
+	}
+
+	private function isKnownGlobalConstant(string $constantName): bool
+	{
+		$this->initializeKnownElements();
+
+		if (array_key_exists($constantName, $this->globalConstantMap)) {
+			return true;
+		}
+
+		return array_key_exists($constantName, $this->knownGlobalConstantsDocComments);
 	}
 
 	private function isKnownFunction(string $functionName): bool
@@ -298,6 +338,22 @@ final class StubPhpDocProvider
 			foreach ($node->stmts as $stmt) {
 				$this->initializeKnownElementNode($stubFile, $stmt);
 			}
+			return;
+		}
+
+		if ($node instanceof Node\Stmt\Const_) {
+			$docComment = $node->getDocComment();
+
+			foreach ($node->consts as $const) {
+				$constantName = ltrim((string) $const->namespacedName, '\\');
+				if ($docComment === null) {
+					$this->globalConstantMap[$constantName] = null;
+					continue;
+				}
+
+				$this->knownGlobalConstantsDocComments[$constantName] = [$stubFile, $docComment->getText()];
+			}
+
 			return;
 		}
 

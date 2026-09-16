@@ -1,0 +1,6 @@
+<?php
+
+/**
+ * @deprecated 8.6
+ */
+const MB_ONIGURUMA_VERSION = '';

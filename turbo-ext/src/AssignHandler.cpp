@@ -585,16 +585,7 @@ zv::Val mhGetCapturedArmScopesAndTypes(zval *handler, zval *expr)
 /* $varAnnotationProcessor->processVarAnnotation($scope, $variableNames, $stmt, $changed) — $changed by reference */
 zv::Val vapProcessVarAnnotation(zval *processor, zval *scope, zval *variableNames, zval *stmt, bool &changed)
 {
-	static pt_method_site site;
-	zval flag;
-	ZVAL_BOOL(&flag, changed);
-	zval reference;
-	ZVAL_NEW_REF(&reference, &flag);
-	zv::Args argv{scope, variableNames, stmt, &reference};
-	zv::Val result = pt_call_method_cached(site, Z_OBJ_P(processor), PT_LC("processvarannotation"), 4, argv);
-	changed = zend_is_true(Z_REFVAL(reference));
-	zval_ptr_dtor(&reference);
-	return result;
+	return pt_var_annotation_processor_process_var_annotation(processor, scope, variableNames, stmt, &changed);
 }
 
 /* $arrayUnpackingHelper->getImplicitIndexCount($type) */

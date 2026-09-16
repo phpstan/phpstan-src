@@ -684,7 +684,10 @@ zv::Val pt_engine_node_get_comments(zend_object *node)
 		zval *found = zend_hash_str_find(Z_ARRVAL_P(attributes), PT_LC("comments"));
 		if (found != NULL) {
 			ZVAL_DEREF(found);
-			if (Z_TYPE_P(found) != IS_NULL) return zv::Val::copyOf(zv::Ref(found));
+			if (EXPECTED(Z_TYPE_P(found) == IS_ARRAY)) return zv::Val::copyOf(zv::Ref(found));
+			/* anything but an array or null: the method's return-type
+			 * TypeError */
+			if (UNEXPECTED(Z_TYPE_P(found) != IS_NULL)) return pt_type_call(node, PT_LC("getcomments"), 0, NULL);
 		}
 		zv::Arr empty = zv::Arr::empty();
 		return zv::Val(std::move(empty));

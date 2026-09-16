@@ -2851,4 +2851,17 @@ zv::Val pt_variable_control_flow_new(zend_string *kind, const pt_variable_contro
 
 /* }}} */
 
+/* {{{ VarAnnotationProcessor.cpp — the shadowing DI service and
+ * $processor->processVarAnnotation($scope, $variableNames, $node, $changed)
+ * for native callers: the native body for the native class, the method by
+ * name otherwise (everything borrowed; $variableNames an array zval;
+ * *changed set to true when a tag assigns, NULL when the caller does not
+ * pass $changed). The resulting scope, UNDEF = pending exception */
+
+extern zend_class_entry *pt_ce_var_annotation_processor;
+void pt_register_var_annotation_processor();
+zv::Val pt_var_annotation_processor_process_var_annotation(zval *processor, zval *scope, zval *variableNames, zval *node, bool *changed);
+
+/* }}} */
+
 #endif /* PHPSTANTURBO_SUPPORT_H */

@@ -411,6 +411,7 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_variable_sequence_flow();
 	pt_register_variable_input_flow();
 	pt_register_variable_control_flow();
+	pt_register_var_annotation_processor();
 
 	return SUCCESS;
 }

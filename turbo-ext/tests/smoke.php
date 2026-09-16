@@ -4108,6 +4108,110 @@ try {
 	check($e->getMessage() === 'phpstan_turbo: native closure without a body', 'NativeClosure: userland instance message: ' . $e->getMessage());
 }
 
+// ---- VarAnnotationProcessor ----
+// Both sides over the container's FileTypeMapper and the same scopes and
+// statements. The scopes are PHP scopes recording the assignVariable() calls
+// they get (the native side hands them the native MixedType and TrinaryLogic,
+// which a PHP scope refuses under the prefix), so the native body's scope
+// readers take their by-name paths here; walk-trace.php covers the native
+// scope. A statement without comments, with a plain comment, with @var tags
+// by name, by position and not matching, a comments attribute that is not an
+// array, a node class overriding getComments(), and $changed passed or not.
+$covered[\PHPStan\Analyser\VarAnnotationProcessor::class] = true;
+$vapFileTypeMapper = $scContainer->getByType(\PHPStan\Type\FileTypeMapper::class);
+$vapRecordingScope = static fn (\PHPStan\Analyser\MutatingScope $scope): \PHPStan\Analyser\MutatingScope => new class (...array_values($sfHarness->constructorArgs($scope))) extends \PHPStan\Analyser\MutatingScope {
+
+	/** @var list<array{string, string, string, string}> */
+	public array $assigned = [];
+
+	public function assignVariable(string $variableName, $type, $nativeType, $certainty, array $intertwinedPropagatedFrom = []): self
+	{
+		$this->assigned[] = [$variableName, $type->describe(\PHPStan\Type\VerbosityLevel::precise()), $nativeType->describe(\PHPStan\Type\VerbosityLevel::precise()), $certainty->describe(), func_num_args()];
+		return $this;
+	}
+
+};
+$vapScopes = [
+	'file' => $vapRecordingScope($vehScope),
+	'class' => $vapRecordingScope($sfAssignScope),
+];
+$vapStmt = static function (array $comments): \PhpParser\Node\Stmt\Expression {
+	return new \PhpParser\Node\Stmt\Expression(new \PhpParser\Node\Expr\Variable('a'), $comments === [] ? [] : ['comments' => $comments]);
+};
+$vapDoc = static fn (string $text): \PhpParser\Comment\Doc => new \PhpParser\Comment\Doc($text);
+$vapStmts = [
+	'none' => $vapStmt([]),
+	'plain comment' => $vapStmt([new \PhpParser\Comment('// @var int $a')]),
+	'named' => $vapStmt([$vapDoc('/** @var int $a */')]),
+	'positional' => $vapStmt([$vapDoc('/** @var string */')]),
+	'two docs' => $vapStmt([$vapDoc('/** @var int $a */'), new \PhpParser\Comment('// x'), $vapDoc('/** @var string $b */')]),
+	'not matching' => $vapStmt([$vapDoc('/** @var int $zzz */')]),
+	'no var tag' => $vapStmt([$vapDoc('/** just text */')]),
+	'null comments' => new \PhpParser\Node\Stmt\Expression(new \PhpParser\Node\Expr\Variable('a'), ['comments' => null]),
+	'string comments' => new \PhpParser\Node\Stmt\Expression(new \PhpParser\Node\Expr\Variable('a'), ['comments' => 'nope']),
+	'overriding node' => new class (new \PhpParser\Node\Expr\Variable('a')) extends \PhpParser\Node\Stmt\Expression {
+
+		public function getComments(): array
+		{
+			return [new \PhpParser\Comment\Doc('/** @var float $a */')];
+		}
+
+	},
+];
+$vapNames = [
+	'a' => ['a'],
+	'b' => ['b'],
+	'a b' => ['a', 'b'],
+	'keyed' => [3 => 'b'],
+	'none' => [],
+];
+$vapResults = [];
+foreach (['php' => \PHPStan\Analyser\VarAnnotationProcessor::class, 'native' => \PHPStanTurbo\VarAnnotationProcessor::class] as $side => $vapClass) {
+	$processor = new $vapClass($vapFileTypeMapper);
+	$r = [];
+	foreach ($vapScopes as $scopeLabel => $scope) {
+		foreach ($vapStmts as $stmtLabel => $stmt) {
+			foreach ($vapNames as $namesLabel => $names) {
+				$label = $scopeLabel . ' / ' . $stmtLabel . ' / ' . $namesLabel;
+				foreach (['by ref' => true, 'without' => false] as $refLabel => $byRef) {
+					$warnings = [];
+					set_error_handler(static function (int $level, string $message) use (&$warnings): bool {
+						$warnings[] = [$level, $message];
+						return true;
+					});
+					$scope->assigned = [];
+					try {
+						$changed = false;
+						$result = $byRef ? $processor->processVarAnnotation($scope, $names, $stmt, $changed) : $processor->processVarAnnotation($scope, $names, $stmt);
+						$r[$label . ' / ' . $refLabel] = [$result === $scope, $changed, $scope->assigned];
+					} catch (\Throwable $e) {
+						$r[$label . ' / ' . $refLabel] = [get_class($e), preg_replace('~, called in .*$~', '', $e->getMessage()), $changed, $scope->assigned];
+					} finally {
+						restore_error_handler();
+					}
+					if ($warnings !== []) {
+						$r[$label . ' / ' . $refLabel][] = $warnings;
+					}
+				}
+			}
+		}
+	}
+	$vapResults[$side] = $r;
+}
+foreach ($vapResults['php'] as $label => $described) {
+	check($described === ($vapResults['native'][$label] ?? null), "VarAnnotationProcessor parity ($label): " . json_encode($described) . ' vs ' . json_encode($vapResults['native'][$label] ?? null));
+}
+check(
+	count($vapResults['php']['class / two docs / a b / by ref'][2] ?? []) === 2
+	&& ($vapResults['php']['file / string comments / a / by ref'][0] ?? null) === \TypeError::class
+	&& ($vapResults['php']['file / overriding node / a / without'][2][0][1] ?? null) === 'float'
+	&& ($vapResults['php']['file / plain comment / a / by ref'] ?? null) === [true, false, []]
+	&& ($vapResults['php']['file / positional / a b / by ref'][2] ?? null) === []
+	&& ($vapResults['php']['file / positional / keyed / by ref'][0] ?? null) === \TypeError::class,
+	'VarAnnotationProcessor: the fixture exercises every arm: ' . json_encode(array_intersect_key($vapResults['php'], array_flip(['class / two docs / a b / by ref', 'file / string comments / a / by ref', 'file / overriding node / a / without', 'file / plain comment / a / by ref', 'file / positional / a b / by ref', 'file / positional / keyed / by ref']))),
+);
+check(($vapResults['php']['file / named / a / by ref'][1] ?? null) === true && ($vapResults['php']['class / positional / b / by ref'][2][0][1] ?? null) === 'string', 'VarAnnotationProcessor: the fixture assigns through named and positional tags: ' . json_encode([$vapResults['php']['file / named / a / by ref'] ?? null, $vapResults['php']['class / positional / b / by ref'] ?? null]));
+
 // ---- the analyser value classes ----
 // analyser-values.php builds the value objects on both sides from the same
 // scopes, nodes and types and compares every method's answer and the state.

@@ -576,6 +576,29 @@ private:
 
 using phpstanturbo::ClassStatementsGatherer;
 
+/* {{{ direct entries for ClassLikeHandler.cpp */
+
+zv::Val pt_class_statements_gatherer_new(zval *classReflection, zval *nodeCallback)
+{
+	zval object;
+	if (UNEXPECTED(object_init_ex(&object, pt_ce_class_statements_gatherer) != SUCCESS)) return zv::Val();
+	zv::Val gatherer = zv::Val::adopt(object);
+	if (UNEXPECTED(!zend_is_callable(nodeCallback, 0, NULL))) {
+		zend_type_error("PHPStan\\Node\\ClassStatementsGatherer::__construct(): Argument #2 ($nodeCallback) must be of type callable, %s given", zend_zval_value_name(nodeCallback));
+		return zv::Val();
+	}
+	ClassStatementsGatherer(Z_OBJ_P(gatherer.raw())).construct(classReflection, nodeCallback);
+	return gatherer;
+}
+
+zv::Val pt_class_statements_gatherer_get(zval *gatherer, pt_class_statements_gatherer_list list)
+{
+	static const uint32_t listSlots[] = { slots::properties, slots::methods, slots::methodCalls, slots::propertyUsages, slots::constants, slots::constantFetches, slots::returnStatementNodes, slots::propertyAssigns };
+	return zv::Val::copyOf(zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(gatherer), listSlots[list])));
+}
+
+/* }}} */
+
 /* {{{ engine ABI glue: parameter parsing + registration */
 
 void pt_register_class_statements_gatherer()

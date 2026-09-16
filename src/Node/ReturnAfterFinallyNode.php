@@ -5,12 +5,14 @@ namespace PHPStan\Node;
 use Override;
 use PhpParser\Node\Stmt\Return_;
 use PhpParser\NodeAbstract;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * Emitted for a return statement in a try or catch block once the following
  * finally block has been analysed. The scope it's emitted with is the scope
  * at the return statement with the changes made by the finally block applied.
  */
+#[ReferencedByTurboExtension(key: 'returnAfterFinallyNode')]
 final class ReturnAfterFinallyNode extends NodeAbstract implements VirtualNode
 {
 

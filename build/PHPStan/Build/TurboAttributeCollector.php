@@ -87,6 +87,7 @@ use PhpParser\Node\Stmt\Continue_;
 use PhpParser\Node\Stmt\Declare_;
 use PhpParser\Node\Stmt\Do_;
 use PhpParser\Node\Stmt\Echo_;
+use PhpParser\Node\Stmt\Enum_;
 use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\For_;
 use PhpParser\Node\Stmt\Foreach_;
@@ -96,6 +97,7 @@ use PhpParser\Node\Stmt\Goto_;
 use PhpParser\Node\Stmt\HaltCompiler;
 use PhpParser\Node\Stmt\If_;
 use PhpParser\Node\Stmt\InlineHTML;
+use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\Label;
 use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\Node\Stmt\Nop;
@@ -119,6 +121,8 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionIntersectionType;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionNamedType;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionUnionType;
+use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
+use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprFloatNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprIntegerNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
@@ -333,6 +337,11 @@ final class TurboAttributeCollector
 		'assignOpShiftRight' => ShiftRight::class,
 		'throwExpr' => Throw_::class,
 		'blockStmt' => Block::class,
+		'interfaceStmt' => Interface_::class,
+		'enumStmt' => Enum_::class,
+		'nodeToReflection' => NodeToReflection::class,
+		'locatedSource' => LocatedSource::class,
+		'betterReflectionEnum' => \PHPStan\BetterReflection\Reflection\ReflectionEnum::class,
 	];
 
 	private string $realRoot;

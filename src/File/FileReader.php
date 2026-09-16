@@ -2,9 +2,11 @@
 
 namespace PHPStan\File;
 
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use function file_get_contents;
 use function stream_resolve_include_path;
 
+#[ReferencedByTurboExtension(key: 'fileReader')]
 final class FileReader
 {
 

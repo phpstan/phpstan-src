@@ -313,6 +313,21 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_THROW_EXPR */ {"throwExpr", "PhpParser\\Node\\Expr\\Throw_"},
 	/* PT_CLASS_NOOP_EXPRESSION_NODE */ {"noopExpressionNode", "PHPStan\\Node\\NoopExpressionNode"},
 	/* PT_CLASS_BLOCK_STMT */ {"blockStmt", "PhpParser\\Node\\Stmt\\Block"},
+	/* PT_CLASS_INTERFACE_STMT */ {"interfaceStmt", "PhpParser\\Node\\Stmt\\Interface_"},
+	/* PT_CLASS_ENUM_STMT */ {"enumStmt", "PhpParser\\Node\\Stmt\\Enum_"},
+	/* PT_CLASS_NODE_TO_REFLECTION */ {"nodeToReflection", "PHPStan\\BetterReflection\\SourceLocator\\Ast\\Strategy\\NodeToReflection"},
+	/* PT_CLASS_LOCATED_SOURCE */ {"locatedSource", "PHPStan\\BetterReflection\\SourceLocator\\Located\\LocatedSource"},
+	/* PT_CLASS_BETTER_REFLECTION_ENUM */ {"betterReflectionEnum", "PHPStan\\BetterReflection\\Reflection\\ReflectionEnum"},
+	/* PT_CLASS_IN_CLASS_METHOD_NODE */ {"inClassMethodNode", "PHPStan\\Node\\InClassMethodNode"},
+	/* PT_CLASS_IN_FUNCTION_NODE */ {"inFunctionNode", "PHPStan\\Node\\InFunctionNode"},
+	/* PT_CLASS_FUNCTION_RETURN_STATEMENTS_NODE */ {"functionReturnStatementsNode", "PHPStan\\Node\\FunctionReturnStatementsNode"},
+	/* PT_CLASS_RETURN_AFTER_FINALLY_NODE */ {"returnAfterFinallyNode", "PHPStan\\Node\\ReturnAfterFinallyNode"},
+	/* PT_CLASS_RETURN_STATEMENT */ {"returnStatement", "PHPStan\\Node\\ReturnStatement"},
+	/* PT_CLASS_IN_CLASS_NODE */ {"inClassNode", "PHPStan\\Node\\InClassNode"},
+	/* PT_CLASS_CLASS_PROPERTIES_NODE */ {"classPropertiesNode", "PHPStan\\Node\\ClassPropertiesNode"},
+	/* PT_CLASS_CLASS_METHODS_NODE */ {"classMethodsNode", "PHPStan\\Node\\ClassMethodsNode"},
+	/* PT_CLASS_CLASS_CONSTANTS_NODE */ {"classConstantsNode", "PHPStan\\Node\\ClassConstantsNode"},
+	/* PT_CLASS_FILE_READER */ {"fileReader", "PHPStan\\File\\FileReader"},
 };
 
 zend_class_entry *pt_class(int idx)

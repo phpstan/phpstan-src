@@ -31,6 +31,7 @@
 #include "generated/TemplateArgumentFrame.h"
 #include "generated/ImpurePoint.h"
 #include "generated/SimpleImpurePoint.h"
+#include "generated/StatementResult.h"
 
 zv::Val pt_type_call(zend_object *object, const char *lcname, size_t len, uint32_t argc, zval *argv);
 
@@ -459,6 +460,26 @@ inline bool pt_impure_point_is_certain(zval *impurePoint, bool &out)
 inline bool pt_simple_impure_point_is_certain(zval *impurePoint, bool &out)
 {
 	return ptav::readBool(impurePoint, pt_ce_simple_impure_point, ptdecl::SimpleImpurePoint::slot::certain, PT_LC("iscertain"), out);
+}
+
+/* }}} */
+
+/* {{{ StatementResult: $result->getScope() / ->isAlwaysTerminating() /
+ * ->getImpurePoints() */
+
+inline zval *pt_statement_result_scope(zval *result, zv::Val &hold)
+{
+	return ptav::read(result, pt_ce_statement_result, ptdecl::StatementResult::slot::scope, PT_LC("getscope"), hold);
+}
+
+inline bool pt_statement_result_is_always_terminating(zval *result, bool &out)
+{
+	return ptav::readBool(result, pt_ce_statement_result, ptdecl::StatementResult::slot::isAlwaysTerminating, PT_LC("isalwaysterminating"), out);
+}
+
+inline zval *pt_statement_result_impure_points(zval *result, zv::Val &hold)
+{
+	return ptav::read(result, pt_ce_statement_result, ptdecl::StatementResult::slot::impurePoints, PT_LC("getimpurepoints"), hold);
 }
 
 /* }}} */

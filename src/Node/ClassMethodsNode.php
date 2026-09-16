@@ -7,10 +7,12 @@ use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\NodeAbstract;
 use PHPStan\Node\Method\MethodCall;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'classMethodsNode')]
 final class ClassMethodsNode extends NodeAbstract implements VirtualNode
 {
 

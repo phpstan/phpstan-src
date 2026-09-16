@@ -29,12 +29,14 @@ use PHPStan\Node\ReturnAfterFinallyNode;
 use PHPStan\Node\ReturnStatement;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_merge;
 
 /**
  * @implements StmtHandler<Function_>
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/FunctionHandler.cpp')]
 final class FunctionHandler implements StmtHandler
 {
 

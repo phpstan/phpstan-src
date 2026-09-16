@@ -8,10 +8,12 @@ use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\NodeAbstract;
 use PHPStan\Node\Constant\ClassConstantFetch;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'classConstantsNode')]
 final class ClassConstantsNode extends NodeAbstract implements VirtualNode
 {
 

@@ -22,6 +22,7 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\TypeUtils;
 use function array_diff_key;
@@ -33,6 +34,7 @@ use function strtolower;
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'classPropertiesNode')]
 final class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 {
 

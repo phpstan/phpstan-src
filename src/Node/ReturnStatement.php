@@ -5,10 +5,12 @@ namespace PHPStan\Node;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\Scope;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'returnStatement')]
 final class ReturnStatement
 {
 

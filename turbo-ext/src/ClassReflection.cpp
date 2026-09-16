@@ -4403,6 +4403,40 @@ zv::Val pt_class_reflection_get_display_name(zend_object *classReflection, bool 
 	return pt_cr_foreign_bool(classReflection, PT_LC("isbuiltin"), 0, NULL, out);
 }
 
+/* the statement handlers' reads (ClassMethodHandler.cpp, ClassLikeHandler.cpp):
+ * $classReflection->hasConstructor() / ->getConstructor() / ->isReadOnly() /
+ * ->getFileName() / ->evictPrivateSymbols(); UNDEF / false = pending
+ * exception */
+[[nodiscard]] bool pt_class_reflection_has_constructor(zend_object *classReflection, bool &out)
+{
+	if (EXPECTED(classReflection->ce == pt_ce_class_reflection)) return ClassReflection(classReflection).hasConstructor(out);
+	return pt_cr_foreign_bool(classReflection, PT_LC("hasconstructor"), 0, NULL, out);
+}
+
+zv::Val pt_class_reflection_get_constructor(zend_object *classReflection)
+{
+	if (EXPECTED(classReflection->ce == pt_ce_class_reflection)) return ClassReflection(classReflection).getConstructor();
+	return pt_type_call(classReflection, PT_LC("getconstructor"), 0, NULL);
+}
+
+[[nodiscard]] bool pt_class_reflection_is_read_only(zend_object *classReflection, bool &out)
+{
+	if (EXPECTED(classReflection->ce == pt_ce_class_reflection)) return ClassReflection(classReflection).isReadOnly(out);
+	return pt_cr_foreign_bool(classReflection, PT_LC("isreadonly"), 0, NULL, out);
+}
+
+zv::Val pt_class_reflection_get_file_name(zend_object *classReflection)
+{
+	if (EXPECTED(classReflection->ce == pt_ce_class_reflection)) return ClassReflection(classReflection).getFileName();
+	return pt_type_call(classReflection, PT_LC("getfilename"), 0, NULL);
+}
+
+[[nodiscard]] bool pt_class_reflection_evict_private_symbols(zend_object *classReflection)
+{
+	if (EXPECTED(classReflection->ce == pt_ce_class_reflection)) return ClassReflection(classReflection).evictPrivateSymbols();
+	return !pt_type_call(classReflection, PT_LC("evictprivatesymbols"), 0, NULL).isUndef();
+}
+
 /* }}} */
 
 /* {{{ engine ABI glue: parameter parsing + registration */

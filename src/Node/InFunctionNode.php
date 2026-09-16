@@ -5,10 +5,12 @@ namespace PHPStan\Node;
 use Override;
 use PhpParser\Node;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'inFunctionNode')]
 final class InFunctionNode extends Node\Stmt implements VirtualNode
 {
 

@@ -11,11 +11,13 @@ use PhpParser\NodeAbstract;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\StatementResult;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use function count;
 
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'functionReturnStatementsNode')]
 final class FunctionReturnStatementsNode extends NodeAbstract implements ReturnStatementsNode
 {
 

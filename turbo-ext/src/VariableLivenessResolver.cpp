@@ -1521,6 +1521,11 @@ private:
 
 using phpstanturbo::VariableLivenessResolver;
 
+zv::Val pt_variable_liveness_resolver_resolve(zval *function, zval *flow)
+{
+	return VariableLivenessResolver::resolve(function, flow != NULL && Z_TYPE_P(flow) == IS_NULL ? NULL : flow);
+}
+
 /* {{{ engine ABI glue: parameter parsing + registration */
 
 #include "reg.h"

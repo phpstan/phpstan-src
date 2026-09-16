@@ -11448,7 +11448,7 @@ bool pt_mutating_scope_is_in_trait(zend_object *scope, bool &out)
 
 bool pt_mutating_scope_is_in_anonymous_function(zend_object *scope, bool &out)
 {
-	if (EXPECTED(pt_type_method_is(scope, PT_LC("isinanonymousfunction"), msIsInAnonymousFunction))) {
+	if (EXPECTED(scope->ce == pt_ce_mutating_scope || pt_type_method_is(scope, PT_LC("isinanonymousfunction"), msIsInAnonymousFunction))) {
 		out = MutatingScope(scope).isInAnonymousFunction();
 		return true;
 	}
@@ -11457,7 +11457,7 @@ bool pt_mutating_scope_is_in_anonymous_function(zend_object *scope, bool &out)
 
 zv::Val pt_mutating_scope_get_function(zend_object *scope)
 {
-	if (EXPECTED(pt_type_method_is(scope, PT_LC("getfunction"), msGetFunction))) return MutatingScope(scope).getFunction();
+	if (EXPECTED(scope->ce == pt_ce_mutating_scope || pt_type_method_is(scope, PT_LC("getfunction"), msGetFunction))) return MutatingScope(scope).getFunction();
 	return pt_type_call(scope, PT_LC("getfunction"), 0, NULL);
 }
 
@@ -11673,6 +11673,73 @@ zv::Val pt_mutating_scope_get_anonymous_function_reflection(zend_object *scope)
 {
 	if (EXPECTED(msNative(scope, PT_LC("getanonymousfunctionreflection"), &reg::detail::Bound<&MutatingScope::getAnonymousFunctionReflection>::handle))) return MutatingScope(scope).getAnonymousFunctionReflection();
 	return pt_type_call(scope, PT_LC("getanonymousfunctionreflection"), 0, NULL);
+}
+
+/* the statement handlers' scope derivations (ClassMethodHandler.cpp,
+ * FunctionHandler.cpp, ClassLikeHandler.cpp): the native body for exactly a
+ * MutatingScope whose arguments pass the glue's parameter checks, the method
+ * by name otherwise (which raises the checks' errors) */
+
+namespace {
+
+inline bool msIsObjectOrNull(zval *value) { return Z_TYPE_P(value) == IS_OBJECT || Z_TYPE_P(value) == IS_NULL; }
+inline bool msIsStringOrNull(zval *value) { return Z_TYPE_P(value) == IS_STRING || Z_TYPE_P(value) == IS_NULL; }
+inline bool msIsBool(zval *value) { return Z_TYPE_P(value) == IS_TRUE || Z_TYPE_P(value) == IS_FALSE; }
+inline bool msIsBoolOrNull(zval *value) { return msIsBool(value) || Z_TYPE_P(value) == IS_NULL; }
+
+} // namespace
+
+zv::Val pt_mutating_scope_enter_class_method(zend_object *scope, zval *argv)
+{
+	if (EXPECTED(scope->ce == pt_ce_mutating_scope
+		&& Z_TYPE(argv[0]) == IS_OBJECT && Z_TYPE(argv[1]) == IS_OBJECT && Z_TYPE(argv[2]) == IS_ARRAY
+		&& msIsObjectOrNull(&argv[3]) && msIsObjectOrNull(&argv[4]) && msIsStringOrNull(&argv[5])
+		&& msIsBool(&argv[6]) && msIsBool(&argv[7]) && msIsBool(&argv[8]) && msIsBoolOrNull(&argv[9]) && msIsBool(&argv[10])
+		&& msIsObjectOrNull(&argv[11]) && msIsObjectOrNull(&argv[12]) && msIsStringOrNull(&argv[13])
+		&& Z_TYPE(argv[14]) == IS_ARRAY && Z_TYPE(argv[15]) == IS_ARRAY && Z_TYPE(argv[16]) == IS_ARRAY
+		&& msIsBool(&argv[17]) && msIsObjectOrNull(&argv[18]) && Z_TYPE(argv[19]) == IS_ARRAY)) {
+		return MutatingScope(scope).enterClassMethod(&argv[0], &argv[1], &argv[2], &argv[3], &argv[4], &argv[5], Z_TYPE(argv[6]) == IS_TRUE, Z_TYPE(argv[7]) == IS_TRUE, Z_TYPE(argv[8]) == IS_TRUE, &argv[9], Z_TYPE(argv[10]) == IS_TRUE, &argv[11], &argv[12], &argv[13], &argv[14], &argv[15], &argv[16], Z_TYPE(argv[17]) == IS_TRUE, &argv[18], &argv[19]);
+	}
+	return pt_type_call(scope, PT_LC("enterclassmethod"), 20, argv);
+}
+
+zv::Val pt_mutating_scope_enter_function(zend_object *scope, zval *argv)
+{
+	if (EXPECTED(scope->ce == pt_ce_mutating_scope
+		&& Z_TYPE(argv[0]) == IS_OBJECT && Z_TYPE(argv[1]) == IS_OBJECT && Z_TYPE(argv[2]) == IS_ARRAY
+		&& msIsObjectOrNull(&argv[3]) && msIsObjectOrNull(&argv[4]) && msIsStringOrNull(&argv[5])
+		&& msIsBool(&argv[6]) && msIsBool(&argv[7]) && msIsBoolOrNull(&argv[8]) && msIsBool(&argv[9])
+		&& msIsObjectOrNull(&argv[10]) && msIsStringOrNull(&argv[11])
+		&& Z_TYPE(argv[12]) == IS_ARRAY && Z_TYPE(argv[13]) == IS_ARRAY && Z_TYPE(argv[14]) == IS_ARRAY && Z_TYPE(argv[15]) == IS_ARRAY)) {
+		return MutatingScope(scope).enterFunction(&argv[0], &argv[1], &argv[2], &argv[3], &argv[4], &argv[5], Z_TYPE(argv[6]) == IS_TRUE, Z_TYPE(argv[7]) == IS_TRUE, &argv[8], Z_TYPE(argv[9]) == IS_TRUE, &argv[10], &argv[11], &argv[12], &argv[13], &argv[14], &argv[15]);
+	}
+	return pt_type_call(scope, PT_LC("enterfunction"), 16, argv);
+}
+
+zv::Val pt_mutating_scope_enter_class(zend_object *scope, zval *classReflection)
+{
+	zend_class_entry *classReflectionCe = msClassReflectionCe();
+	if (EXPECTED(scope->ce == pt_ce_mutating_scope && classReflectionCe != NULL && Z_TYPE_P(classReflection) == IS_OBJECT && instanceof_function(Z_OBJCE_P(classReflection), classReflectionCe))) return MutatingScope(scope).enterClass(classReflection);
+	return pt_type_call(scope, PT_LC("enterclass"), 1, classReflection);
+}
+
+zv::Val pt_mutating_scope_remember_constructor_scope(zend_object *scope)
+{
+	if (EXPECTED(msNative(scope, PT_LC("rememberconstructorscope"), &reg::detail::Bound<&MutatingScope::rememberConstructorScope>::handle))) return MutatingScope(scope).rememberConstructorScope();
+	return pt_type_call(scope, PT_LC("rememberconstructorscope"), 0, NULL);
+}
+
+zv::Val pt_mutating_scope_invalidate_existence_check_expressions(zend_object *scope, zval *functionNames, zval *declaredSymbolName)
+{
+	if (EXPECTED(scope->ce == pt_ce_mutating_scope && Z_TYPE_P(functionNames) == IS_ARRAY && msIsStringOrNull(declaredSymbolName))) return MutatingScope(scope).invalidateExistenceCheckExpressions(functionNames, declaredSymbolName);
+	zv::Args args{functionNames, declaredSymbolName};
+	return pt_type_call(scope, PT_LC("invalidateexistencecheckexpressions"), 2, args);
+}
+
+zv::Val pt_mutating_scope_get_namespace(zend_object *scope)
+{
+	if (EXPECTED(msNative(scope, PT_LC("getnamespace"), msGetNamespace))) return MutatingScope(scope).getNamespace();
+	return pt_type_call(scope, PT_LC("getnamespace"), 0, NULL);
 }
 /* }}} */
 

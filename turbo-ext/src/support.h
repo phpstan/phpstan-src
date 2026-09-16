@@ -354,6 +354,21 @@ enum {
 	PT_CLASS_THROW_EXPR,
 	PT_CLASS_NOOP_EXPRESSION_NODE,
 	PT_CLASS_BLOCK_STMT,
+	PT_CLASS_INTERFACE_STMT,
+	PT_CLASS_ENUM_STMT,
+	PT_CLASS_NODE_TO_REFLECTION,
+	PT_CLASS_LOCATED_SOURCE,
+	PT_CLASS_BETTER_REFLECTION_ENUM,
+	PT_CLASS_IN_CLASS_METHOD_NODE,
+	PT_CLASS_IN_FUNCTION_NODE,
+	PT_CLASS_FUNCTION_RETURN_STATEMENTS_NODE,
+	PT_CLASS_RETURN_AFTER_FINALLY_NODE,
+	PT_CLASS_RETURN_STATEMENT,
+	PT_CLASS_IN_CLASS_NODE,
+	PT_CLASS_CLASS_PROPERTIES_NODE,
+	PT_CLASS_CLASS_METHODS_NODE,
+	PT_CLASS_CLASS_CONSTANTS_NODE,
+	PT_CLASS_FILE_READER,
 	PT_CLASS_COUNT
 };
 
@@ -2635,6 +2650,66 @@ zv::Val pt_mutating_scope_get_anonymous_function_reflection(zend_object *scope);
 [[nodiscard]] bool pt_node_scope_resolver_push_node_gatherer(zval *nodeScopeResolver, zval *gatherer);
 [[nodiscard]] bool pt_node_scope_resolver_pop_node_gatherer(zval *nodeScopeResolver);
 zv::Val pt_node_scope_resolver_collect_return_send(zval *nodeScopeResolver, zval *scope, zval *returnedResult);
+
+/* }}} */
+
+/* {{{ the declaration statement handlers (ClassMethodHandler.cpp,
+ * FunctionHandler.cpp, ClassLikeHandler.cpp) and the direct entries they
+ * call — registered at the END of the sequence */
+
+extern zend_class_entry *pt_ce_class_method_handler;
+extern zend_class_entry *pt_ce_function_handler;
+extern zend_class_entry *pt_ce_class_like_handler;
+void pt_register_class_method_handler();
+void pt_register_function_handler();
+void pt_register_class_like_handler();
+
+/* MutatingScope.cpp — $scope->enterClassMethod(...$argv) (the 20 positional
+ * arguments) / ->enterFunction(...$argv) (the 16 positional arguments) /
+ * ->enterClass($classReflection) / ->rememberConstructorScope() /
+ * ->invalidateExistenceCheckExpressions($functionNames, $declaredSymbolName)
+ * (IS_NULL for null) / ->getNamespace(), next to the walk hub's
+ * push/popExpressionResultStorage(), assignExpression() and getFile(): the
+ * native body for exactly a MutatingScope (or one inheriting a named
+ * handler) with arguments passing the glue's checks, the method by name
+ * otherwise (everything borrowed); UNDEF = pending exception */
+zv::Val pt_mutating_scope_enter_class_method(zend_object *scope, zval *argv);
+zv::Val pt_mutating_scope_enter_function(zend_object *scope, zval *argv);
+zv::Val pt_mutating_scope_enter_class(zend_object *scope, zval *classReflection);
+zv::Val pt_mutating_scope_remember_constructor_scope(zend_object *scope);
+zv::Val pt_mutating_scope_invalidate_existence_check_expressions(zend_object *scope, zval *functionNames, zval *declaredSymbolName);
+zv::Val pt_mutating_scope_get_namespace(zend_object *scope);
+
+/* ClassReflection.cpp — $classReflection->hasConstructor() /
+ * ->getConstructor() / ->isReadOnly() / ->getFileName() /
+ * ->evictPrivateSymbols(): the native body for the shadowing class, the
+ * method otherwise; false / UNDEF = pending exception */
+[[nodiscard]] bool pt_class_reflection_has_constructor(zend_object *classReflection, bool &out);
+zv::Val pt_class_reflection_get_constructor(zend_object *classReflection);
+[[nodiscard]] bool pt_class_reflection_is_read_only(zend_object *classReflection, bool &out);
+zv::Val pt_class_reflection_get_file_name(zend_object *classReflection);
+[[nodiscard]] bool pt_class_reflection_evict_private_symbols(zend_object *classReflection);
+
+/* VariableLivenessResolver.cpp — VariableLivenessResolver::resolve($function,
+ * $flow) ($flow NULL or IS_NULL for null); UNDEF = pending exception */
+zv::Val pt_variable_liveness_resolver_resolve(zval *function, zval *flow);
+
+/* ClassStatementsGatherer.cpp — new ClassStatementsGatherer($classReflection,
+ * $nodeCallback) / its collected lists (getProperties() ... getPropertyAssigns()
+ * of an instance of the shadowing class); UNDEF = pending exception */
+enum pt_class_statements_gatherer_list
+{
+	PT_CSG_LIST_PROPERTIES,
+	PT_CSG_LIST_METHODS,
+	PT_CSG_LIST_METHOD_CALLS,
+	PT_CSG_LIST_PROPERTY_USAGES,
+	PT_CSG_LIST_CONSTANTS,
+	PT_CSG_LIST_CONSTANT_FETCHES,
+	PT_CSG_LIST_RETURN_STATEMENT_NODES,
+	PT_CSG_LIST_PROPERTY_ASSIGNS,
+};
+zv::Val pt_class_statements_gatherer_new(zval *classReflection, zval *nodeCallback);
+zv::Val pt_class_statements_gatherer_get(zval *gatherer, pt_class_statements_gatherer_list list);
 
 /* }}} */
 

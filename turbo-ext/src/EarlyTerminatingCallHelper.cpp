@@ -198,6 +198,16 @@ bool pt_early_terminating_call_helper_is_early_terminating_method_call(zval *hel
 	return true;
 }
 
+bool pt_early_terminating_call_helper_is_early_terminating_function_call(zval *helper, zend_string *functionName, bool &out)
+{
+	if (EXPECTED(Z_OBJCE_P(helper) == pt_ce_early_terminating_call_helper)) return EarlyTerminatingCallHelper(Z_OBJ_P(helper)).isEarlyTerminatingFunctionCall(functionName, out);
+	zv::Args argv{functionName};
+	zv::Val result = pt_type_call(Z_OBJ_P(helper), PT_LC("isearlyterminatingfunctioncall"), 1, argv);
+	if (UNEXPECTED(result.isUndef())) return false;
+	out = zend_is_true(result.raw());
+	return true;
+}
+
 /* }}} */
 
 /* {{{ engine ABI glue: parameter parsing + registration */

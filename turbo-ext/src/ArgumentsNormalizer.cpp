@@ -827,6 +827,16 @@ zv::Val pt_arguments_normalizer_reorder_new_arguments(zval *parametersAcceptor, 
 	return ArgumentsNormalizer::reorderCallArguments(ArgumentsNormalizer::NEW_CALL, parametersAcceptor, newExpr);
 }
 
+zv::Val pt_arguments_normalizer_reorder_call_user_func_arguments(zval *callUserFuncCall, zval *scope)
+{
+	return ArgumentsNormalizer::reorderCallUserFuncArguments(callUserFuncCall, scope);
+}
+
+zv::Val pt_arguments_normalizer_reorder_call_user_func_array_arguments(zval *callUserFuncArrayCall, zval *scope)
+{
+	return ArgumentsNormalizer::reorderCallUserFuncArrayArguments(callUserFuncArrayCall, scope);
+}
+
 /* }}} */
 
 /* {{{ engine ABI glue: parameter parsing + registration */

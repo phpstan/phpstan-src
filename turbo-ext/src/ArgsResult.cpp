@@ -191,6 +191,15 @@ zv::Val pt_args_result_new(zval *expressionResult, zval *resolvedParametersAccep
 	return ArgsResult::create(expressionResult, resolvedParametersAcceptor != NULL && Z_TYPE_P(resolvedParametersAcceptor) == IS_NULL ? NULL : resolvedParametersAcceptor, argResults, byRefArguments);
 }
 
+zv::Val pt_args_result_with_resolved_parameters_acceptor(zval *argsResult, zval *resolvedParametersAcceptor)
+{
+	if (resolvedParametersAcceptor != NULL && Z_TYPE_P(resolvedParametersAcceptor) == IS_NULL) resolvedParametersAcceptor = NULL;
+	if (EXPECTED(Z_OBJCE_P(argsResult) == pt_ce_args_result)) return ArgsResult(Z_OBJ_P(argsResult)).withResolvedParametersAcceptor(resolvedParametersAcceptor);
+	zval null;
+	ZVAL_NULL(&null);
+	return pt_type_call(Z_OBJ_P(argsResult), PT_LC("withresolvedparametersacceptor"), 1, resolvedParametersAcceptor != NULL ? resolvedParametersAcceptor : &null);
+}
+
 zv::Val pt_args_result_require_arg_result(zval *argsResult, zval *argValue)
 {
 	if (EXPECTED(Z_OBJCE_P(argsResult) == pt_ce_args_result)) return ArgsResult(Z_OBJ_P(argsResult)).requireArgResult(argValue);

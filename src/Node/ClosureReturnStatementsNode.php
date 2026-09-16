@@ -10,11 +10,13 @@ use PhpParser\Node\Expr\YieldFrom;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\StatementResult;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use function count;
 
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'closureReturnStatementsNode')]
 final class ClosureReturnStatementsNode extends NodeAbstract implements ReturnStatementsNode
 {
 

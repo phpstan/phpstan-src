@@ -370,6 +370,9 @@ enum {
 	/* the function-call cluster (FuncCallHandler.cpp,
 	 * FuncCallScopeEffectsHelper.cpp, FunctionReflectionAccess.cpp) */
 	PT_CLASS_NATIVE_FUNCTION_REFLECTION,
+	PT_CLASS_CLONE_HANDLER,
+	PT_CLASS_CLONE_EXPR,
+	PT_CLASS_CLOSURE_RETURN_STATEMENTS_NODE,
 	PT_CLASS_COUNT
 };
 
@@ -2906,6 +2909,27 @@ extern zend_class_entry *pt_ce_func_call_scope_effects_helper;
 void pt_register_func_call_scope_effects_helper();
 zv::Val pt_func_call_scope_effects_helper_apply_array_walk_result(zval *helper, zval *nodeScopeResolver, zval *stmt, zval *arrayWalkArrayArg, zval *arrayWalkValueTypes, zval *argsResult, zval *scope, zval *storage, zval *nodeCallback);
 zv::Val pt_func_call_scope_effects_helper_apply_call_scope_effects(zval *helper, zval *nodeScopeResolver, zval *stmt, zval *normalizedExpr, zval *functionReflection, zval *parametersAcceptor, zval *argsResult, zval *scope, zval *scopeBeforeArgs, zval *storage, zval *nodeCallback);
+
+/* FuncCallHandler.cpp — the shadowing class (processExpr() is its handler
+ * entry) */
+extern zend_class_entry *pt_ce_func_call_handler;
+void pt_register_func_call_handler();
+
+/* TypeSpecifier.cpp — $typeSpecifier->getFunctionTypeSpecifyingExtensions();
+ * EarlyTerminatingCallHelper.cpp —
+ * $helper->isEarlyTerminatingFunctionCall($name); ArgsResult.cpp —
+ * $argsResult->withResolvedParametersAcceptor($acceptor (NULL or IS_NULL =
+ * null)); UNDEF / false = pending exception */
+zv::Val pt_type_specifier_get_function_type_specifying_extensions(zval *typeSpecifier);
+[[nodiscard]] bool pt_early_terminating_call_helper_is_early_terminating_function_call(zval *helper, zend_string *functionName, bool &out);
+zv::Val pt_args_result_with_resolved_parameters_acceptor(zval *argsResult, zval *resolvedParametersAcceptor);
+
+/* ArgumentsNormalizer.cpp — ArgumentsNormalizer::reorderCallUserFuncArguments($call,
+ * $scope) / ::reorderCallUserFuncArrayArguments($call, $scope) ([$callbackArg,
+ * $innerFuncCall] or null; a FuncCall and a scope, borrowed); UNDEF =
+ * pending exception */
+zv::Val pt_arguments_normalizer_reorder_call_user_func_arguments(zval *callUserFuncCall, zval *scope);
+zv::Val pt_arguments_normalizer_reorder_call_user_func_array_arguments(zval *callUserFuncArrayCall, zval *scope);
 
 /* }}} */
 

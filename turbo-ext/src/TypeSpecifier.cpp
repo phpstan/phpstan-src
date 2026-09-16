@@ -1017,6 +1017,12 @@ zv::Val pt_type_specifier_get_static_method_type_specifying_extensions_for_class
 
 #define PT_TS_THIS TypeSpecifier(Z_OBJ_P(ZEND_THIS))
 
+zv::Val pt_type_specifier_get_function_type_specifying_extensions(zval *typeSpecifier)
+{
+	if (EXPECTED(Z_OBJCE_P(typeSpecifier) == pt_ce_type_specifier)) return TypeSpecifier(Z_OBJ_P(typeSpecifier)).getFunctionTypeSpecifyingExtensions();
+	return pt_type_call(Z_OBJ_P(typeSpecifier), PT_LC("getfunctiontypespecifyingextensions"), 0, NULL);
+}
+
 void pt_register_type_specifier()
 {
 	reg::Class cls("PHPStan\\Analyser\\TypeSpecifier");

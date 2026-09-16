@@ -37,6 +37,7 @@ use PhpParser\Node\Expr\BinaryOp\NotIdentical;
 use PhpParser\Node\Expr\BinaryOp\Plus;
 use PhpParser\Node\Expr\CallLike;
 use PhpParser\Node\Expr\ClassConstFetch;
+use PhpParser\Node\Expr\Clone_;
 use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\Eval_;
@@ -342,6 +343,7 @@ final class TurboAttributeCollector
 		'nodeToReflection' => NodeToReflection::class,
 		'locatedSource' => LocatedSource::class,
 		'betterReflectionEnum' => \PHPStan\BetterReflection\Reflection\ReflectionEnum::class,
+		'cloneExpr' => Clone_::class,
 	];
 
 	private string $realRoot;

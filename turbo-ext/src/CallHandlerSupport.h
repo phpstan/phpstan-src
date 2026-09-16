@@ -1,6 +1,6 @@
 /*
  * What the call handler ports (MethodCallHandler.cpp, StaticCallHandler.cpp,
- * NewHandler.cpp) share: the calls into their collaborators — ArgumentsHandler,
+ * NewHandler.cpp, FuncCallHandler.cpp) share: the calls into their collaborators — ArgumentsHandler,
  * ArgumentsNormalizer and ParametersAcceptorSelector through their direct
  * entries, the parameters acceptors and Assertions (still PHP) each over
  * one cached method site (C++17 inline variables: one site per helper for the
@@ -65,6 +65,24 @@ inline zv::Val reorderStaticCallArguments(zval *parametersAcceptor, zval *static
 inline zv::Val reorderNewArguments(zval *parametersAcceptor, zval *new_)
 {
 	return pt_arguments_normalizer_reorder_new_arguments(parametersAcceptor, new_);
+}
+
+/* ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $functionCall) */
+inline zv::Val reorderFuncArguments(zval *parametersAcceptor, zval *functionCall)
+{
+	return pt_arguments_normalizer_reorder_func_arguments(parametersAcceptor, functionCall);
+}
+
+/* ArgumentsNormalizer::reorderCallUserFuncArguments($callUserFuncCall, $scope) */
+inline zv::Val reorderCallUserFuncArguments(zval *callUserFuncCall, zval *scope)
+{
+	return pt_arguments_normalizer_reorder_call_user_func_arguments(callUserFuncCall, scope);
+}
+
+/* ArgumentsNormalizer::reorderCallUserFuncArrayArguments($callUserFuncArrayCall, $scope) */
+inline zv::Val reorderCallUserFuncArrayArguments(zval *callUserFuncArrayCall, zval *scope)
+{
+	return pt_arguments_normalizer_reorder_call_user_func_array_arguments(callUserFuncArrayCall, scope);
 }
 
 /* $parametersAcceptor->getReturnType() (the structural acceptor) */

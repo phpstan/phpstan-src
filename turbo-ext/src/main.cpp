@@ -430,6 +430,7 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	 * classes its signatures name */
 	pt_register_output_buffer_helper();
 	pt_register_func_call_scope_effects_helper();
+	pt_register_func_call_handler();
 
 	return SUCCESS;
 }

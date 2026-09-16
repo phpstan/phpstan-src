@@ -455,11 +455,22 @@ inline bool pt_impure_point_is_certain(zval *impurePoint, bool &out)
 
 /* }}} */
 
-/* {{{ SimpleImpurePoint: $impurePoint->isCertain() */
+/* {{{ SimpleImpurePoint: $impurePoint->isCertain() / ->getIdentifier() /
+ * ->getDescription() */
 
 inline bool pt_simple_impure_point_is_certain(zval *impurePoint, bool &out)
 {
 	return ptav::readBool(impurePoint, pt_ce_simple_impure_point, ptdecl::SimpleImpurePoint::slot::certain, PT_LC("iscertain"), out);
+}
+
+inline zval *pt_simple_impure_point_identifier(zval *impurePoint, zv::Val &hold)
+{
+	return ptav::read(impurePoint, pt_ce_simple_impure_point, ptdecl::SimpleImpurePoint::slot::identifier, PT_LC("getidentifier"), hold);
+}
+
+inline zval *pt_simple_impure_point_description(zval *impurePoint, zv::Val &hold)
+{
+	return ptav::read(impurePoint, pt_ce_simple_impure_point, ptdecl::SimpleImpurePoint::slot::description, PT_LC("getdescription"), hold);
 }
 
 /* }}} */
@@ -485,6 +496,11 @@ inline zval *pt_statement_result_impure_points(zval *result, zv::Val &hold)
 inline zval *pt_statement_result_throw_points(zval *result, zv::Val &hold)
 {
 	return ptav::read(result, pt_ce_statement_result, ptdecl::StatementResult::slot::throwPoints, PT_LC("getthrowpoints"), hold);
+}
+
+inline zval *pt_statement_result_exit_points(zval *result, zv::Val &hold)
+{
+	return ptav::read(result, pt_ce_statement_result, ptdecl::StatementResult::slot::exitPoints, PT_LC("getexitpoints"), hold);
 }
 
 /* }}} */

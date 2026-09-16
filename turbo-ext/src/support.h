@@ -381,6 +381,25 @@ enum {
 	PT_CLASS_BOOLEAN_OR_NODE,
 	PT_CLASS_BINARY_OP_EXPR,
 	PT_CLASS_BOOLEAN_NOT_EXPR,
+	PT_CLASS_SMALLER_EXPR,
+	PT_CLASS_SMALLER_OR_EQUAL_EXPR,
+	PT_CLASS_GREATER_EXPR,
+	PT_CLASS_GREATER_OR_EQUAL_EXPR,
+	PT_CLASS_EQUAL_EXPR,
+	PT_CLASS_NOT_EQUAL_EXPR,
+	PT_CLASS_LOGICAL_XOR_EXPR,
+	PT_CLASS_SPACESHIP_EXPR,
+	PT_CLASS_CONCAT_EXPR,
+	PT_CLASS_BITWISE_AND_EXPR,
+	PT_CLASS_BITWISE_OR_EXPR,
+	PT_CLASS_BITWISE_XOR_EXPR,
+	PT_CLASS_DIV_EXPR,
+	PT_CLASS_MOD_EXPR,
+	PT_CLASS_MUL_EXPR,
+	PT_CLASS_POW_EXPR,
+	PT_CLASS_SHIFT_LEFT_EXPR,
+	PT_CLASS_SHIFT_RIGHT_EXPR,
+	PT_CLASS_PIPE_EXPR,
 	PT_CLASS_COUNT
 };
 
@@ -3345,6 +3364,14 @@ zv::Val pt_ternary_handler_get_captured_results(zval *handler, zval *expr);
  * (everything borrowed); UNDEF / false = pending exception */
 zv::Val pt_expression_result_get_specified_types(zval *result, zval *context, bool nativeTypesPromoted);
 [[nodiscard]] bool pt_expression_result_answers_on_scope(zval *result, zval *scope, bool useNativeTypes, bool &out);
+
+/* }}} */
+
+/* {{{ BinaryOpHandler.cpp (OperatorHandlers.h) — registered after the
+ * boolean operator handlers */
+
+extern zend_class_entry *pt_ce_binary_op_handler;
+void pt_register_binary_op_handler();
 
 /* }}} */
 

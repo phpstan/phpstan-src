@@ -30,12 +30,21 @@ use PhpParser\Node\Expr\AssignRef;
 use PhpParser\Node\Expr\BinaryOp;
 use PhpParser\Node\Expr\BinaryOp\BooleanAnd;
 use PhpParser\Node\Expr\BinaryOp\BooleanOr;
+use PhpParser\Node\Expr\BinaryOp\Equal;
+use PhpParser\Node\Expr\BinaryOp\Greater;
+use PhpParser\Node\Expr\BinaryOp\GreaterOrEqual;
 use PhpParser\Node\Expr\BinaryOp\Identical;
 use PhpParser\Node\Expr\BinaryOp\LogicalAnd;
 use PhpParser\Node\Expr\BinaryOp\LogicalOr;
+use PhpParser\Node\Expr\BinaryOp\LogicalXor;
 use PhpParser\Node\Expr\BinaryOp\Minus;
+use PhpParser\Node\Expr\BinaryOp\NotEqual;
 use PhpParser\Node\Expr\BinaryOp\NotIdentical;
+use PhpParser\Node\Expr\BinaryOp\Pipe;
 use PhpParser\Node\Expr\BinaryOp\Plus;
+use PhpParser\Node\Expr\BinaryOp\Smaller;
+use PhpParser\Node\Expr\BinaryOp\SmallerOrEqual;
+use PhpParser\Node\Expr\BinaryOp\Spaceship;
 use PhpParser\Node\Expr\BooleanNot;
 use PhpParser\Node\Expr\CallLike;
 use PhpParser\Node\Expr\ClassConstFetch;
@@ -348,6 +357,25 @@ final class TurboAttributeCollector
 		'cloneExpr' => Clone_::class,
 		'binaryOpExpr' => BinaryOp::class,
 		'booleanNotExpr' => BooleanNot::class,
+		'smallerExpr' => Smaller::class,
+		'smallerOrEqualExpr' => SmallerOrEqual::class,
+		'greaterExpr' => Greater::class,
+		'greaterOrEqualExpr' => GreaterOrEqual::class,
+		'equalExpr' => Equal::class,
+		'notEqualExpr' => NotEqual::class,
+		'logicalXorExpr' => LogicalXor::class,
+		'spaceshipExpr' => Spaceship::class,
+		'concatExpr' => \PhpParser\Node\Expr\BinaryOp\Concat::class,
+		'bitwiseAndExpr' => \PhpParser\Node\Expr\BinaryOp\BitwiseAnd::class,
+		'bitwiseOrExpr' => \PhpParser\Node\Expr\BinaryOp\BitwiseOr::class,
+		'bitwiseXorExpr' => \PhpParser\Node\Expr\BinaryOp\BitwiseXor::class,
+		'divExpr' => \PhpParser\Node\Expr\BinaryOp\Div::class,
+		'modExpr' => \PhpParser\Node\Expr\BinaryOp\Mod::class,
+		'mulExpr' => \PhpParser\Node\Expr\BinaryOp\Mul::class,
+		'powExpr' => \PhpParser\Node\Expr\BinaryOp\Pow::class,
+		'shiftLeftExpr' => \PhpParser\Node\Expr\BinaryOp\ShiftLeft::class,
+		'shiftRightExpr' => \PhpParser\Node\Expr\BinaryOp\ShiftRight::class,
+		'pipeExpr' => Pipe::class,
 	];
 
 	private string $realRoot;

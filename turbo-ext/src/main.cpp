@@ -467,6 +467,11 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_binary_op_handler();
 	pt_register_coalesce_composition_helper();
 	pt_register_coalesce_handler();
+	/* the loop and control-flow statement handlers, after the walk hub,
+	 * scope, context and statement-result classes their signatures name */
+	pt_register_break_continue_handler();
+	pt_register_label_handler();
+	pt_register_goto_handler();
 
 	return SUCCESS;
 }

@@ -494,6 +494,12 @@ zv::Val pt_variable_flow_all_mention_all()
 	return VariableFlow::all(pt_vf_kind_strings[PT_VF_MENTION_ALL]);
 }
 
+/* the loop and control-flow statement handlers' (GotoHandler.cpp, ...) */
+zv::Val pt_variable_flow_all_opaque()
+{
+	return VariableFlow::all(pt_vf_kind_strings[PT_VF_OPAQUE]);
+}
+
 zv::Val pt_variable_flow_dead(zval *flow)
 {
 	return VariableFlow::dead(flow);

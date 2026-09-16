@@ -4348,6 +4348,9 @@ $coveredElsewhere = [
 	\PHPStan\Analyser\ExprHandler\BinaryOpHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\CoalesceHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\Helper\CoalesceCompositionHelper::class => 'walk-trace.php',
+	\PHPStan\Analyser\StmtHandler\BreakContinueHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\StmtHandler\LabelHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\StmtHandler\GotoHandler::class => 'walk-trace.php',
 ];
 foreach (array_keys($shadowedClasses) as $shadowedClass) {
 	check(

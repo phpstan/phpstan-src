@@ -3395,4 +3395,23 @@ zv::Val pt_coalesce_composition_helper_compose_type(zval *helper, zval *nodeScop
 
 /* }}} */
 
+/* {{{ the loop and control-flow statement handlers (BreakContinueHandler.cpp,
+ * LabelHandler.cpp, GotoHandler.cpp, WhileHandler.cpp, DoWhileHandler.cpp,
+ * ForHandler.cpp, SwitchHandler.cpp, TryCatchHandler.cpp, ForeachHandler.cpp)
+ * and the direct entries they added to their collaborators — registered at
+ * the END of the sequence */
+
+extern zend_class_entry *pt_ce_break_continue_handler;
+extern zend_class_entry *pt_ce_label_handler;
+extern zend_class_entry *pt_ce_goto_handler;
+void pt_register_break_continue_handler();
+void pt_register_label_handler();
+void pt_register_goto_handler();
+
+/* VariableFlow.cpp — VariableFlow::all(VariableFlow::OPAQUE); UNDEF = pending
+ * exception */
+zv::Val pt_variable_flow_all_opaque();
+
+/* }}} */
+
 #endif /* PHPSTANTURBO_SUPPORT_H */

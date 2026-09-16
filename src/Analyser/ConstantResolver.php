@@ -164,6 +164,11 @@ final class ConstantResolver
 				new AccessoryNonFalsyStringType(),
 			]);
 		}
+		// added in PHP 8.5, and only when the build defines it - whatever the packager put
+		// there, including an empty string
+		if ($resolvedConstantName === 'PHP_BUILD_PROVIDER') {
+			return new StringType();
+		}
 		if ($resolvedConstantName === 'PHP_ZTS') {
 			return new UnionType([
 				new ConstantIntegerType(0),
@@ -238,61 +243,19 @@ final class ConstantResolver
 		if ($resolvedConstantName === 'PHP_FLOAT_DIG') {
 			return IntegerRangeType::fromInterval(1, null);
 		}
-		if ($resolvedConstantName === 'PHP_EXTENSION_DIR') {
-			return new IntersectionType([
-				new StringType(),
-				new AccessoryNonFalsyStringType(),
-			]);
-		}
-		if ($resolvedConstantName === 'PHP_PREFIX') {
-			return new IntersectionType([
-				new StringType(),
-				new AccessoryNonFalsyStringType(),
-			]);
-		}
-		if ($resolvedConstantName === 'PHP_BINDIR') {
-			return new IntersectionType([
-				new StringType(),
-				new AccessoryNonFalsyStringType(),
-			]);
-		}
-		if ($resolvedConstantName === 'PHP_BINARY') {
-			return new IntersectionType([
-				new StringType(),
-				new AccessoryNonFalsyStringType(),
-			]);
-		}
-		if ($resolvedConstantName === 'PHP_MANDIR') {
-			return new IntersectionType([
-				new StringType(),
-				new AccessoryNonFalsyStringType(),
-			]);
-		}
-		if ($resolvedConstantName === 'PHP_LIBDIR') {
-			return new IntersectionType([
-				new StringType(),
-				new AccessoryNonFalsyStringType(),
-			]);
-		}
-		if ($resolvedConstantName === 'PHP_DATADIR') {
-			return new IntersectionType([
-				new StringType(),
-				new AccessoryNonFalsyStringType(),
-			]);
-		}
-		if ($resolvedConstantName === 'PHP_SYSCONFDIR') {
-			return new IntersectionType([
-				new StringType(),
-				new AccessoryNonFalsyStringType(),
-			]);
-		}
-		if ($resolvedConstantName === 'PHP_LOCALSTATEDIR') {
-			return new IntersectionType([
-				new StringType(),
-				new AccessoryNonFalsyStringType(),
-			]);
-		}
-		if ($resolvedConstantName === 'PHP_CONFIG_FILE_PATH') {
+		if (in_array($resolvedConstantName, [
+			'PHP_EXTENSION_DIR',
+			'PHP_PREFIX',
+			'PHP_BINDIR',
+			'PHP_SBINDIR',
+			'PHP_BINARY',
+			'PHP_MANDIR',
+			'PHP_LIBDIR',
+			'PHP_DATADIR',
+			'PHP_SYSCONFDIR',
+			'PHP_LOCALSTATEDIR',
+			'PHP_CONFIG_FILE_PATH',
+		], true)) {
 			return new IntersectionType([
 				new StringType(),
 				new AccessoryNonFalsyStringType(),

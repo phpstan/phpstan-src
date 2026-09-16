@@ -2173,6 +2173,17 @@ zv::Val pt_default_narrowing_helper_create_isset_single_subject_non_true_types(z
 zv::Val pt_default_narrowing_helper_specify_types_from_asserts(zval *helper, zval *context, zval *call, zval *assertions, zval *parametersAcceptor, zval *scope);
 zv::Val pt_default_narrowing_helper_specify_types_from_conditional_return_type(zval *helper, zval *context, zval *call, zval *parametersAcceptor, zval *scope);
 
+/* IdenticalNarrowingHelper.cpp — the shadowing class and the public methods
+ * for native callers: the native body for the native class, the method by
+ * name otherwise (everything borrowed; a nullable argument NULL or IS_NULL
+ * for null); UNDEF = pending exception */
+extern zend_class_entry *pt_ce_identical_narrowing_helper;
+void pt_register_identical_narrowing_helper();
+zv::Val pt_identical_narrowing_helper_specify_identical(zval *helper, zval *nodeScopeResolver, zval *left, zval *right, zval *leftResult, zval *rightResult, zval *context, zval *evaluationScope, zval *leftArgResult, zval *rightArgResult, zval *identicalTypeCallback);
+zv::Val pt_identical_narrowing_helper_specify_equal(zval *helper, zval *nodeScopeResolver, zval *left, zval *right, zval *leftResult, zval *rightResult, zval *context, zval *evaluationScope, zval *leftArgResult, zval *rightArgResult);
+zv::Val pt_identical_narrowing_helper_specify_identical_against_type(zval *helper, zval *subject, zval *subjectResult, zval *constantExpr, zval *constantType, zval *context, zval *evaluationScope, zval *subjectArgResult, zval *identicalTypeCallback);
+zv::Val pt_identical_narrowing_helper_capture_first_arg_result(zval *helper, zval *side, zval *storage);
+
 /* }}} */
 
 #endif /* PHPSTANTURBO_SUPPORT_H */

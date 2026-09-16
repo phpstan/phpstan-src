@@ -3965,6 +3965,7 @@ $coveredElsewhere = [
 	\PHPStan\Analyser\ExprHandler\Helper\BooleanNarrowingHelper::class => 'walk-trace.php',
 	\PHPStan\Analyser\TypeSpecifier::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\Helper\IdenticalNarrowingHelper::class => 'walk-trace.php',
 ];
 foreach (array_keys($shadowedClasses) as $shadowedClass) {
 	check(

@@ -42,8 +42,6 @@ namespace {
  * once they are ported) */
 
 pt_method_site pt_vh_process_expr_node_site;
-pt_method_site pt_vh_capture_first_arg_result_site;
-pt_method_site pt_vh_specify_identical_site;
 pt_method_site pt_vh_resolve_identical_type_site;
 pt_method_site pt_vh_get_constant_strings_site;
 pt_property_site pt_vh_name_site;
@@ -59,8 +57,7 @@ zv::Val processExprNode(zval *nodeScopeResolver, zval *stmt, zval *expr, zval *s
 /* $identicalNarrowingHelper->captureFirstArgResult($side, $storage) */
 zv::Val captureFirstArgResult(zval *identicalNarrowingHelper, zval *side, zval *storage)
 {
-	zv::Args argv{side, storage};
-	return pt_call_method_cached(pt_vh_capture_first_arg_result_site, Z_OBJ_P(identicalNarrowingHelper), PT_LC("capturefirstargresult"), 2, argv);
+	return pt_identical_narrowing_helper_capture_first_arg_result(identicalNarrowingHelper, side, storage);
 }
 
 /* $defaultNarrowingHelper->specifyDefaultTypes($expr, $context) */
@@ -72,7 +69,7 @@ zv::Val specifyDefaultTypes(zval *defaultNarrowingHelper, zval *expr, zval *cont
 /* $identicalNarrowingHelper->specifyIdentical(...) with its ten arguments */
 zv::Val specifyIdentical(zval *identicalNarrowingHelper, zval *argv)
 {
-	return pt_call_method_cached(pt_vh_specify_identical_site, Z_OBJ_P(identicalNarrowingHelper), PT_LC("specifyidentical"), 10, argv);
+	return pt_identical_narrowing_helper_specify_identical(identicalNarrowingHelper, &argv[0], &argv[1], &argv[2], &argv[3], &argv[4], &argv[5], &argv[6], &argv[7], &argv[8], &argv[9]);
 }
 
 /* $initializerExprTypeResolver->resolveIdenticalType($leftType, $rightType) */

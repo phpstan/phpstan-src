@@ -375,6 +375,7 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	/* the narrowing helpers, after the SpecifiedTypes, ExpressionResult and
 	 * context classes their signatures name */
 	pt_register_default_narrowing_helper();
+	pt_register_identical_narrowing_helper();
 
 	return SUCCESS;
 }

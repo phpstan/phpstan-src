@@ -18,6 +18,13 @@
  * Without paths it walks the default corpus below. The children locate the
  * extension through TURBO_DLL (default: turbo-ext/phpstan_turbo.so), like
  * smoke.php's Type-family children. Exits 0 when every shard matches.
+ *
+ * A file the parser rejects still gets its walk (recording FILE-EX) but is
+ * kept out of the analysed paths: the reflection's source locators parse the
+ * analysed files when they look a class up, and a rejection there (the name
+ * resolver's PhpParser\Error, which FileNodesFetcher does not catch) would
+ * break the walk of every other file of the run that looks up a class. One
+ * child parses the corpus up front and hands the rejected files to the others.
  */
 
 use PhpParser\Node;
@@ -26,6 +33,7 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\ScopeContext;
 use PHPStan\Analyser\ScopeFactory;
+use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ContainerFactory;
 use PHPStan\File\FileHelper;
 use PHPStan\Turbo\TurboExtensionEnabler;
@@ -54,10 +62,45 @@ function walkTraceFiles(string $root, array $paths): array
 	return array_values(array_unique($files));
 }
 
+/** @param list<string> $analysedFiles */
+function walkTraceContainer(string $root, string $mode, array $analysedFiles): Container
+{
+	$containerFactory = new ContainerFactory($root);
+
+	return $containerFactory->create(
+		sys_get_temp_dir() . '/phpstan-turbo-walk-trace-' . $mode,
+		[$containerFactory->getConfigDirectory() . '/config.level8.neon', $containerFactory->getConfigDirectory() . '/bleedingEdge.neon'],
+		$analysedFiles,
+	);
+}
+
+if (($argv[1] ?? '') === '--parse-check') {
+	// parse check: --parse-check <out> <path>... — writes the files the
+	// parser rejects, one per line, parsed the way the walk parses them
+	$out = $argv[2];
+	$paths = array_slice($argv, 3);
+	require $root . '/vendor/autoload.php';
+
+	$allFiles = walkTraceFiles($root, $paths);
+	$container = walkTraceContainer($root, 'php', $allFiles);
+	$parser = $container->getService('pathRoutingParser');
+	$parser->setAnalysedFiles($allFiles);
+	$rejected = [];
+	foreach ($allFiles as $file) {
+		try {
+			$parser->parseFile($file);
+		} catch (Throwable) {
+			$rejected[] = $file . "\n";
+		}
+	}
+	file_put_contents($out, implode('', $rejected));
+	exit(0);
+}
+
 if (($argv[1] ?? '') === '--child') {
-	// child: --child <mode> <shard> <shards> <out> <path>...
-	[, , $mode, $shard, $shards, $out] = $argv;
-	$paths = array_slice($argv, 6);
+	// child: --child <mode> <shard> <shards> <out> <rejected-files-list> <path>...
+	[, , $mode, $shard, $shards, $out, $rejectedList] = $argv;
+	$paths = array_slice($argv, 7);
 	require $root . '/vendor/autoload.php';
 	if ($mode === 'native') {
 		TurboExtensionEnabler::activateIfCompatible();
@@ -75,12 +118,8 @@ if (($argv[1] ?? '') === '--child') {
 		}
 	}
 
-	$containerFactory = new ContainerFactory($root);
-	$container = $containerFactory->create(
-		sys_get_temp_dir() . '/phpstan-turbo-walk-trace-' . $mode,
-		[$containerFactory->getConfigDirectory() . '/config.level8.neon', $containerFactory->getConfigDirectory() . '/bleedingEdge.neon'],
-		$allFiles,
-	);
+	$rejectedFiles = file($rejectedList, FILE_IGNORE_NEW_LINES);
+	$container = walkTraceContainer($root, $mode, array_values(array_diff($allFiles, $rejectedFiles)));
 	$fileHelper = $container->getByType(FileHelper::class);
 	$resolver = $container->getByType(NodeScopeResolver::class);
 	$resolver->setAnalysedFiles($allFiles);
@@ -157,12 +196,32 @@ if (!is_string($extension) || $extension === '') {
 $dir = $keep ?? sys_get_temp_dir() . '/phpstan-turbo-walk-trace-' . getmypid();
 @mkdir($dir, 0777, true);
 
+$rejectedList = $dir . '/rejected-files.list';
+$cmd = sprintf(
+	'%s -d memory_limit=-1 -d extension=%s %s --parse-check %s %s',
+	escapeshellarg(PHP_BINARY),
+	escapeshellarg($extension),
+	escapeshellarg(__FILE__),
+	escapeshellarg($rejectedList),
+	implode(' ', array_map('escapeshellarg', $paths)),
+);
+$process = proc_open($cmd, [1 => ['file', $rejectedList . '.stdout', 'w'], 2 => ['file', $rejectedList . '.stderr', 'w']], $pipes);
+if ($process === false) {
+	fwrite(STDERR, "proc_open failed\n");
+	exit(2);
+}
+$exitCode = proc_close($process);
+if ($exitCode !== 0) {
+	fwrite(STDERR, sprintf("walk-trace parse check failed with exit code %d:\n%s\n", $exitCode, file_get_contents($rejectedList . '.stderr') . file_get_contents($rejectedList . '.stdout')));
+	exit(2);
+}
+
 $processes = [];
 foreach (['php', 'native'] as $mode) {
 	for ($shard = 0; $shard < $shards; $shard++) {
 		$out = sprintf('%s/%s-%d.trace', $dir, $mode, $shard);
 		$cmd = sprintf(
-			'%s -d memory_limit=-1 -d extension=%s %s --child %s %d %d %s %s',
+			'%s -d memory_limit=-1 -d extension=%s %s --child %s %d %d %s %s %s',
 			escapeshellarg(PHP_BINARY),
 			escapeshellarg($extension),
 			escapeshellarg(__FILE__),
@@ -170,6 +229,7 @@ foreach (['php', 'native'] as $mode) {
 			$shard,
 			$shards,
 			escapeshellarg($out),
+			escapeshellarg($rejectedList),
 			implode(' ', array_map('escapeshellarg', $paths)),
 		);
 		$process = proc_open($cmd, [1 => ['file', $out . '.stdout', 'w'], 2 => ['file', $out . '.stderr', 'w']], $pipes);

@@ -477,6 +477,7 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_for_handler();
 	pt_register_switch_handler();
 	pt_register_try_catch_handler();
+	pt_register_foreach_handler();
 
 	return SUCCESS;
 }

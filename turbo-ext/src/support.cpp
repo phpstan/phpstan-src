@@ -365,6 +365,8 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_SWITCH_CONDITION_NODE */ {"switchConditionNode", "PHPStan\\Node\\SwitchConditionNode"},
 	/* PT_CLASS_CATCH_WITH_UNTHROWN_EXCEPTION_NODE */ {"catchWithUnthrownExceptionNode", "PHPStan\\Node\\CatchWithUnthrownExceptionNode"},
 	/* PT_CLASS_FINALLY_EXIT_POINTS_NODE */ {"finallyExitPointsNode", "PHPStan\\Node\\FinallyExitPointsNode"},
+	/* PT_CLASS_IN_FOREACH_NODE */ {"inForeachNode", "PHPStan\\Node\\InForeachNode"},
+	/* PT_CLASS_FOREACH_VALUE_BY_REF_EXPR */ {"foreachValueByRefExpr", "PHPStan\\Node\\Expr\\ForeachValueByRefExpr"},
 };
 
 zend_class_entry *pt_class(int idx)

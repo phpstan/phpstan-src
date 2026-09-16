@@ -5,7 +5,9 @@ namespace PHPStan\Node;
 use Override;
 use PhpParser\Node\Stmt\Foreach_;
 use PhpParser\NodeAbstract;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
+#[ReferencedByTurboExtension(key: 'inForeachNode')]
 final class InForeachNode extends NodeAbstract implements VirtualNode
 {
 

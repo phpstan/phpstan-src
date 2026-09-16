@@ -50,6 +50,7 @@ use PHPStan\Node\InForeachNode;
 use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\Node\VariableAssignNode;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -73,6 +74,7 @@ use function sprintf;
  * @implements StmtHandler<Foreach_>
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ForeachHandler.cpp')]
 final class ForeachHandler implements StmtHandler
 {
 

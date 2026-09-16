@@ -410,6 +410,9 @@ enum {
 	PT_CLASS_SWITCH_CONDITION_NODE,
 	PT_CLASS_CATCH_WITH_UNTHROWN_EXCEPTION_NODE,
 	PT_CLASS_FINALLY_EXIT_POINTS_NODE,
+	/* ForeachHandler.cpp */
+	PT_CLASS_IN_FOREACH_NODE,
+	PT_CLASS_FOREACH_VALUE_BY_REF_EXPR,
 	PT_CLASS_COUNT
 };
 
@@ -3427,6 +3430,8 @@ extern zend_class_entry *pt_ce_switch_handler;
 extern zend_class_entry *pt_ce_try_catch_handler;
 void pt_register_switch_handler();
 void pt_register_try_catch_handler();
+extern zend_class_entry *pt_ce_foreach_handler;
+void pt_register_foreach_handler();
 
 /* VariableFlow.cpp — VariableFlow::all(VariableFlow::OPAQUE) /
  * ::loop($condition, $body, $update, $atLeastOnce, $canExit, $canRepeat) /

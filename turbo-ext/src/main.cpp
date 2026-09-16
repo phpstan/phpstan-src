@@ -369,6 +369,9 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_disjunction_holder_projection_augment();
 	pt_register_conditional_expression_holder_helper();
 	pt_register_boolean_narrowing_helper();
+	/* the narrowing service handed to the type-specifying extensions — its
+	 * signatures name SpecifiedTypes and TypeSpecifierContext */
+	pt_register_type_specifier();
 
 	return SUCCESS;
 }

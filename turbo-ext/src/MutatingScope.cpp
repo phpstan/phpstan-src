@@ -7393,8 +7393,7 @@ public:
 		/* the singleton, borrowed: the context registry holds it */
 		zend_object *context = truthy ? pt_type_specifier_context_create_truthy() : pt_type_specifier_context_create_falsey();
 		if (UNEXPECTED(context == NULL)) return zv::Val();
-		zv::Args args{thisZval(), expr, context};
-		zv::Val specifiedTypes = pt_type_call(typeSpecifier.asObject(), PT_LC("specifytypesincondition"), 3, args);
+		zv::Val specifiedTypes = pt_type_specifier_specify_types_in_condition(typeSpecifier.asObject(), thisZval(), expr, context);
 		if (UNEXPECTED(specifiedTypes.isUndef())) return zv::Val();
 
 		/* if ($specifiedTypes->isEquality() && $this->getType($expr)->isBoolean()->yes()) {

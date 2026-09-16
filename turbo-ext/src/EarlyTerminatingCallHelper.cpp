@@ -9,7 +9,8 @@
  * the common call — a method name no configured class lists — with one
  * symtable probe on the lowercased name, without a frame; the configured
  * names go through the Type's getObjectClassNames() op, the memoized
- * reflection provider and the PHP ExtensionClassHelper.
+ * reflection provider and ExtensionClassHelper's memo
+ * (ReflectionAccess.cpp).
  */
 
 #include "support.h"
@@ -90,8 +91,7 @@ public:
 			if (UNEXPECTED(!pt_reflection_provider_has_class(Z_OBJ_P(reflectionProvider), referencedClass, hasClass))) return false;
 			if (!hasClass) continue;
 
-			zv::Args args{reflectionProvider, referencedClass};
-			zv::Val extensionClassNames = pt_type_call_static(PT_CLASS_EXTENSION_CLASS_HELPER, PT_LC("getextensionclassnames"), 2, args);
+			zv::Val extensionClassNames = pt_extension_class_helper_get_extension_class_names(reflectionProvider, referencedClass);
 			if (UNEXPECTED(extensionClassNames.isUndef())) return false;
 			if (UNEXPECTED(Z_TYPE_P(extensionClassNames.raw()) != IS_ARRAY)) continue;
 

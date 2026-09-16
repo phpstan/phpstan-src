@@ -250,6 +250,7 @@ final class TurboAttributeCollector
 		'booleanOrExpr' => BooleanOr::class,
 		'logicalOrExpr' => LogicalOr::class,
 		'parserIssetExpr' => Isset_::class,
+		'coalesceExpr' => \PhpParser\Node\Expr\BinaryOp\Coalesce::class,
 	];
 
 	private string $realRoot;

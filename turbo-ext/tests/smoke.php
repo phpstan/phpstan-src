@@ -3963,6 +3963,7 @@ $coveredElsewhere = [
 	\PHPStan\Analyser\DisjunctionHolderProjectionAugment::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\Helper\ConditionalExpressionHolderHelper::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\Helper\BooleanNarrowingHelper::class => 'walk-trace.php',
+	\PHPStan\Analyser\TypeSpecifier::class => 'walk-trace.php',
 ];
 foreach (array_keys($shadowedClasses) as $shadowedClass) {
 	check(

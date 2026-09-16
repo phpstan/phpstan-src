@@ -3,9 +3,11 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node\Expr;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\TypeCombinator;
 use function array_reverse;
 
+#[ReferencedByTurboExtension(key: 'nullsafeOperatorHelper')]
 final class NullsafeOperatorHelper
 {
 

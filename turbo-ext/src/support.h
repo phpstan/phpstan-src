@@ -290,6 +290,8 @@ enum {
 	PT_CLASS_BOOLEAN_OR_EXPR,
 	PT_CLASS_LOGICAL_OR_EXPR,
 	PT_CLASS_PARSER_ISSET_EXPR,
+	PT_CLASS_NULLSAFE_OPERATOR_HELPER,
+	PT_CLASS_COALESCE_EXPR,
 	PT_CLASS_COUNT
 };
 
@@ -680,6 +682,7 @@ int32_t pt_instance_prop_offset(zend_class_entry *ce, const char *name, size_t l
 /* cached attribute-name strings, created lazily per request */
 extern zend_string *pt_str_cache_printer;
 extern zend_string *pt_str_contains_super_global;
+extern zend_string *pt_str_contains_call;
 extern zend_string *pt_str_array_map_args;
 extern zend_string *pt_str_start_file_pos;
 void pt_init_strs();
@@ -2089,6 +2092,22 @@ zv::Val pt_conditional_expression_holder_helper_build_branch_union_augment(zend_
 zv::Val pt_conditional_expression_holder_helper_build_conditional_holder_recipe(zend_object *helper, zval *composeScope, zval *conditionSpecifiedTypes, zval *holderSpecifiedTypes, bool holdersFromSureTypes, bool holderSideIsNegated, zval *nonVariableTargetScope, zval *holderSideExpr);
 zv::Val pt_boolean_narrowing_helper_specify_conjunction(zend_object *helper, zval *nodeScopeResolver, zval *s, zval *context, zval *rootExpr, zval *leftExpr, zval *leftTypesCallback, zval *leftTruthyScope, zval *leftFalseyScope, zval *rightExpr, zval *rightTypesCallback, zval *rightFalseyScope);
 zv::Val pt_boolean_narrowing_helper_specify_disjunction(zend_object *helper, zval *nodeScopeResolver, zval *s, zval *context, zval *rootExpr, zval *leftExpr, zval *leftTypesCallback, zval *leftTypeCallback, zval *leftTruthyScope, zval *leftFalseyScope, zval *rightExpr, zval *rightTypesCallback, zval *rightTypeCallback, zval *rightTruthyScope);
+
+/* }}} */
+
+/* {{{ TypeSpecifier.cpp — the shadowing PHPStan\Analyser\TypeSpecifier,
+ * registered at the END of the sequence */
+
+extern zend_class_entry *pt_ce_type_specifier;
+void pt_register_type_specifier();
+/* $typeSpecifier->specifyTypesInCondition($scope, $expr, $context) — the
+ * native body for the shadowing class, the method otherwise (arguments
+ * borrowed); UNDEF = pending exception */
+zv::Val pt_type_specifier_specify_types_in_condition(zend_object *typeSpecifier, zval *scope, zend_object *expr, zend_object *context);
+/* ReflectionAccess.cpp — ExtensionClassHelper::getExtensionClassNames(
+ * $reflectionProvider, $className): the static memo's list when computed,
+ * the method otherwise (arguments borrowed); UNDEF = pending exception */
+zv::Val pt_extension_class_helper_get_extension_class_names(zval *reflectionProvider, zval *className);
 
 /* }}} */
 

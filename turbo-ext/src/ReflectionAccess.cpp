@@ -74,6 +74,9 @@ struct LazyExtensionsCollectionSlots
 };
 
 LazyExtensionsCollectionSlots pt_lazy_extensions_collection_slots = { NULL, 0 };
+
+/* ExtensionClassHelper's `private static array $extensionClassNames` memo */
+StaticSlot pt_extension_class_names_slot = { NULL, NULL };
 RegistrySlots pt_registry_slots = { NULL, { 0, 0, 0, 0, 0, 0 } };
 
 /* the registry property and the twin's getter behind each member */
@@ -159,6 +162,7 @@ void pt_reflection_access_rinit()
 	pt_registry_provider_slots.ce = NULL;
 	pt_registry_slots.ce = NULL;
 	pt_lazy_extensions_collection_slots.ce = NULL;
+	pt_extension_class_names_slot = { NULL, NULL };
 }
 
 /* {{{ ReflectionProviderStaticAccessor */
@@ -380,6 +384,40 @@ zv::Val pt_extensions_collection_get_all(zend_object *collection)
 		}
 	}
 	return pt_type_call(collection, PT_LC("getall"), 0, NULL);
+}
+
+/* }}} */
+
+/* {{{ ExtensionClassHelper */
+
+/* ExtensionClassHelper::getExtensionClassNames($reflectionProvider, $className):
+ * the memoized list out of the static $extensionClassNames once computed for
+ * the class, the method (which computes and memoizes it) otherwise */
+zv::Val pt_extension_class_helper_get_extension_class_names(zval *reflectionProvider, zval *className)
+{
+	if (EXPECTED(Z_TYPE_P(className) == IS_STRING)) {
+		if (UNEXPECTED(pt_extension_class_names_slot.slot == NULL)) {
+			zend_class_entry *ce = pt_class_loaded(PT_CLASS_EXTENSION_CLASS_HELPER);
+			if (ce == NULL) {
+				if (UNEXPECTED(EG(exception))) return zv::Val();
+			} else {
+				zval *slot = staticSlot(ce, PT_LC("extensionClassNames"));
+				if (slot != NULL) {
+					pt_extension_class_names_slot = { ce, slot };
+				}
+			}
+		}
+		if (EXPECTED(pt_extension_class_names_slot.slot != NULL)) {
+			zval *memo = pt_extension_class_names_slot.slot;
+			ZVAL_DEREF(memo);
+			if (EXPECTED(Z_TYPE_P(memo) == IS_ARRAY)) {
+				zval *names = zend_symtable_find(Z_ARRVAL_P(memo), Z_STR_P(className));
+				if (EXPECTED(names != NULL)) return zv::Val::copyOf(zv::Ref(names).deref());
+			}
+		}
+	}
+	zv::Args args{reflectionProvider, className};
+	return pt_type_call_static(PT_CLASS_EXTENSION_CLASS_HELPER, PT_LC("getextensionclassnames"), 2, args);
 }
 
 /* }}} */

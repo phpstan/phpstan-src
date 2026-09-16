@@ -252,6 +252,8 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_BOOLEAN_OR_EXPR */ {"booleanOrExpr", "PhpParser\\Node\\Expr\\BinaryOp\\BooleanOr"},
 	/* PT_CLASS_LOGICAL_OR_EXPR */ {"logicalOrExpr", "PhpParser\\Node\\Expr\\BinaryOp\\LogicalOr"},
 	/* PT_CLASS_PARSER_ISSET_EXPR */ {"parserIssetExpr", "PhpParser\\Node\\Expr\\Isset_"},
+	/* PT_CLASS_NULLSAFE_OPERATOR_HELPER */ {"nullsafeOperatorHelper", "PHPStan\\Analyser\\NullsafeOperatorHelper"},
+	/* PT_CLASS_COALESCE_EXPR */ {"coalesceExpr", "PhpParser\\Node\\Expr\\BinaryOp\\Coalesce"},
 };
 
 zend_class_entry *pt_class(int idx)
@@ -340,6 +342,7 @@ void pt_class_refs_dump(zval *return_value)
 
 zend_string *pt_str_cache_printer = nullptr;
 zend_string *pt_str_contains_super_global = nullptr;
+zend_string *pt_str_contains_call = nullptr;
 zend_string *pt_str_array_map_args = nullptr;
 zend_string *pt_str_start_file_pos = nullptr;
 zend_string *pt_str_end_file_pos = nullptr;
@@ -353,6 +356,7 @@ void pt_init_strs()
 	if (pt_strs_inited) return;
 	pt_str_cache_printer = zend_string_init("phpstan_cache_printer", sizeof("phpstan_cache_printer") - 1, 0);
 	pt_str_contains_super_global = zend_string_init("containsSuperGlobal", sizeof("containsSuperGlobal") - 1, 0);
+	pt_str_contains_call = zend_string_init("containsCall", sizeof("containsCall") - 1, 0);
 	pt_str_array_map_args = zend_string_init("arrayMapArgs", sizeof("arrayMapArgs") - 1, 0);
 	pt_str_start_file_pos = zend_string_init("startFilePos", sizeof("startFilePos") - 1, 0);
 	pt_str_end_file_pos = zend_string_init("endFilePos", sizeof("endFilePos") - 1, 0);
@@ -396,6 +400,7 @@ void pt_support_rshutdown()
 	if (pt_strs_inited) {
 		zend_string_release(pt_str_cache_printer);
 		zend_string_release(pt_str_contains_super_global);
+		zend_string_release(pt_str_contains_call);
 		zend_string_release(pt_str_array_map_args);
 		zend_string_release(pt_str_start_file_pos);
 		zend_string_release(pt_str_end_file_pos);

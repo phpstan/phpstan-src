@@ -17,6 +17,7 @@ use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ExtensionClassHelper;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\MethodTypeSpecifyingExtension;
@@ -29,6 +30,7 @@ use function array_merge;
 use function is_array;
 
 #[AutowiredService(name: 'typeSpecifier', factory: '@typeSpecifierFactory::create')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/TypeSpecifier.cpp')]
 final class TypeSpecifier
 {
 

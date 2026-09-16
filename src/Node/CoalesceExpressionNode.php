@@ -6,6 +6,7 @@ use Override;
 use PhpParser\Node\Expr;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * Emitted by CoalesceHandler (for ??) and AssignOpHandler (for ??=) once the left
@@ -15,6 +16,7 @@ use PHPStan\Analyser\ExpressionResult;
  *
  * @internal
  */
+#[ReferencedByTurboExtension(key: 'coalesceExpressionNode')]
 final class CoalesceExpressionNode extends NodeAbstract implements VirtualNode
 {
 

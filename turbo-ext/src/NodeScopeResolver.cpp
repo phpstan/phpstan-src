@@ -2090,6 +2090,26 @@ zv::Val pt_node_scope_resolver_observing_template_argument_frame(zval *nodeScope
 	return NodeScopeResolver(Z_OBJ_P(nodeScopeResolver)).thisObservingTemplateArgumentFrame(scope);
 }
 
+/* the assignment handlers' (AssignHandler.cpp) */
+zv::Val pt_node_scope_resolver_get_assigned_variables(zval *nodeScopeResolver, zval *expr)
+{
+	return NodeScopeResolver(Z_OBJ_P(nodeScopeResolver)).thisGetAssignedVariables(expr);
+}
+
+zv::Val pt_node_scope_resolver_read_stored_result(zval *nodeScopeResolver, zval *expr, zval *storage)
+{
+	if (isNativeResolver(nodeScopeResolver)) return NodeScopeResolver(Z_OBJ_P(nodeScopeResolver)).readStoredResult(expr, storage);
+	zv::Args argv{expr, storage};
+	return pt_type_call(Z_OBJ_P(nodeScopeResolver), PT_LC("readstoredresult"), 2, argv);
+}
+
+zv::Val pt_node_scope_resolver_look_for_set_allowed_undefined_expressions(zval *nodeScopeResolver, zval *scope, zval *expr)
+{
+	if (isNativeResolver(nodeScopeResolver)) return NodeScopeResolver(Z_OBJ_P(nodeScopeResolver)).lookForSetAllowedUndefinedExpressions(scope, expr);
+	zv::Args argv{scope, expr};
+	return pt_type_call(Z_OBJ_P(nodeScopeResolver), PT_LC("lookforsetallowedundefinedexpressions"), 2, argv);
+}
+
 bool pt_node_scope_resolver_replay_recording_range(zval *nodeScopeResolver, zval *recording, zend_long from, zend_long to, zval *nodeCallback, zval *storage, zval *scope)
 {
 	return NodeScopeResolver(Z_OBJ_P(nodeScopeResolver)).thisReplayRecordingRange(recording, from, to, nodeCallback, storage, scope);

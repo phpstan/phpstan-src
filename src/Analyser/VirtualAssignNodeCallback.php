@@ -5,7 +5,9 @@ namespace PHPStan\Analyser;
 use PhpParser\Node;
 use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Node\VariableAssignNode;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
+#[ReferencedByTurboExtension(key: 'virtualAssignNodeCallback')]
 final class VirtualAssignNodeCallback
 {
 

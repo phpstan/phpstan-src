@@ -5,7 +5,9 @@ namespace PHPStan\Node;
 use Override;
 use PhpParser\Node\Expr;
 use PhpParser\NodeAbstract;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
+#[ReferencedByTurboExtension(key: 'variableAssignNode')]
 final class VariableAssignNode extends NodeAbstract implements VirtualNode
 {
 

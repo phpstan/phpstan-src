@@ -389,6 +389,10 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_simple_impure_point();
 	pt_register_dynamic_return_type_storage_primer();
 	pt_register_method_call_handler();
+	/* the assignment handlers, after the walk hub and the value classes their
+	 * signatures name */
+	pt_register_assign_handler();
+	pt_register_assign_op_handler();
 
 	return SUCCESS;
 }

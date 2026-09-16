@@ -579,6 +579,18 @@ zv::Val pt_variable_flow_exit_stop()
 	return VariableFlow::exit_(pt_vf_kind_strings[PT_VF_STOP], 1, NULL);
 }
 
+/* the assignment handlers' (AssignHandler.cpp, AssignOpHandler.cpp) */
+zv::Val pt_variable_flow_inputs(zend_long writeId, zval *targetId)
+{
+	if (targetId != NULL && Z_TYPE_P(targetId) == IS_NULL) targetId = NULL;
+	return VariableFlow::inputs(writeId, targetId);
+}
+
+zv::Val pt_variable_flow_choice(uint32_t argc, zval *argv)
+{
+	return VariableFlow::choice(argc, argv);
+}
+
 /* {{{ engine ABI glue: parameter parsing + registration */
 
 #include "reg.h"

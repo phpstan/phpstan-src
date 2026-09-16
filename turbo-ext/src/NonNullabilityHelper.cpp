@@ -851,6 +851,14 @@ using phpstanturbo::NonNullabilityHelper;
 
 /* {{{ direct entries for native callers (support.h) */
 
+/* the assignment handlers' (AssignHandler.cpp) */
+zv::Val pt_non_nullability_helper_ensure_non_nullability(zval *helper, zval *scope, zval *expr)
+{
+	if (EXPECTED(Z_OBJCE_P(helper) == pt_ce_non_nullability_helper)) return NonNullabilityHelper(Z_OBJ_P(helper)).ensureNonNullability(scope, expr);
+	zv::Args argv{scope, expr};
+	return pt_type_call(Z_OBJ_P(helper), PT_LC("ensurenonnullability"), 2, argv);
+}
+
 zv::Val pt_non_nullability_helper_apply_pending_ensure(zval *helper, zval *expr, zval *result)
 {
 	if (EXPECTED(Z_OBJCE_P(helper) == pt_ce_non_nullability_helper)) {

@@ -3975,6 +3975,8 @@ $coveredElsewhere = [
 	\PHPStan\Analyser\ExprHandler\Helper\NonNullabilityHelper::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\MethodCallHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\Helper\DynamicReturnTypeStoragePrimer::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\AssignHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\AssignOpHandler::class => 'walk-trace.php',
 ];
 foreach (array_keys($shadowedClasses) as $shadowedClass) {
 	check(

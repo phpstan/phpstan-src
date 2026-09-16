@@ -708,7 +708,7 @@ public:
 			if (mayShortCircuit) {
 				// the short-circuited world evaluates none of the arguments
 				zv::Args choiceArgv{argumentsFlow.raw(), zv::null};
-				zv::Val choice = pt_type_call_static_ce(pt_ce_variable_flow, PT_LC("choice"), 2, choiceArgv);
+				zv::Val choice = pt_variable_flow_choice(2, choiceArgv);
 				if (UNEXPECTED(choice.isUndef())) return zv::Val();
 				argumentsFlow = std::move(choice);
 			}

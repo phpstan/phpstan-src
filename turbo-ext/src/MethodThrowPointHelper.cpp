@@ -285,6 +285,14 @@ zv::Val pt_method_throw_point_helper_get_throw_point(zval *helper, zval *methodR
 	return pt_type_call(Z_OBJ_P(helper), PT_LC("getthrowpoint"), 6, argv);
 }
 
+/* the assignment handlers' (AssignHandler.cpp) */
+zv::Val pt_method_throw_point_helper_get_throw_points_for_call_on_type(zval *helper, zval *scope, zval *context, zval *calledOnType, zval *methodCall)
+{
+	if (EXPECTED(Z_OBJCE_P(helper) == pt_ce_method_throw_point_helper)) return MethodThrowPointHelper(Z_OBJ_P(helper)).getThrowPointsForCallOnType(scope, context, calledOnType, methodCall);
+	zv::Args argv{scope, context, calledOnType, methodCall};
+	return pt_type_call(Z_OBJ_P(helper), PT_LC("getthrowpointsforcallontype"), 4, argv);
+}
+
 /* }}} */
 
 /* {{{ engine ABI glue: parameter parsing + registration */

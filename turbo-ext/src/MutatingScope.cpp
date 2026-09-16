@@ -11895,6 +11895,63 @@ zv::Val pt_mutating_scope_get_function_name(zend_object *scope)
 	return pt_type_call(scope, PT_LC("getfunctionname"), 0, NULL);
 }
 
+/* the assignment handlers' (AssignHandler.cpp, AssignOpHandler.cpp) */
+zv::Val pt_mutating_scope_enter_expression_assign(zend_object *scope, zend_object *expr, bool isPlainWrite)
+{
+	if (msExact(scope)) return MutatingScope(scope).enterExpressionAssign(expr, isPlainWrite);
+	zv::Args argv{expr, isPlainWrite};
+	return pt_type_call(scope, PT_LC("enterexpressionassign"), 2, argv);
+}
+
+zv::Val pt_mutating_scope_exit_expression_assign(zend_object *scope, zend_object *expr)
+{
+	if (msExact(scope)) return MutatingScope(scope).exitExpressionAssign(expr);
+	zv::Args argv{expr};
+	return pt_type_call(scope, PT_LC("exitexpressionassign"), 1, argv);
+}
+
+zv::Val pt_mutating_scope_assign_initialized_property(zend_object *scope, zval *fetchedOnType, zend_string *propertyName)
+{
+	if (msExact(scope)) return MutatingScope(scope).assignInitializedProperty(fetchedOnType, propertyName);
+	zv::Args argv{fetchedOnType, propertyName};
+	return pt_type_call(scope, PT_LC("assigninitializedproperty"), 2, argv);
+}
+
+zv::Val pt_mutating_scope_add_conditional_expressions(zend_object *scope, zend_string *exprString, HashTable *conditionalExpressionHolders)
+{
+	if (msExact(scope)) return MutatingScope(scope).addConditionalExpressions(exprString, conditionalExpressionHolders);
+	zv::Args argv{exprString, conditionalExpressionHolders};
+	return pt_type_call(scope, PT_LC("addconditionalexpressions"), 2, argv);
+}
+
+zv::Val pt_mutating_scope_get_static_property_reflection(zend_object *scope, zval *typeWithProperty, zend_string *propertyName)
+{
+	if (msExact(scope)) return MutatingScope(scope).getStaticPropertyReflection(typeWithProperty, propertyName);
+	zv::Args argv{typeWithProperty, propertyName};
+	return pt_type_call(scope, PT_LC("getstaticpropertyreflection"), 2, argv);
+}
+
+zv::Val pt_mutating_scope_get_defined_variables(zend_object *scope)
+{
+	if (msExact(scope)) return MutatingScope(scope).getDefinedVariables();
+	return pt_type_call(scope, PT_LC("getdefinedvariables"), 0, NULL);
+}
+
+zv::Val pt_mutating_scope_get_maybe_defined_variables(zend_object *scope)
+{
+	if (msExact(scope)) return MutatingScope(scope).getMaybeDefinedVariables();
+	return pt_type_call(scope, PT_LC("getmaybedefinedvariables"), 0, NULL);
+}
+
+bool pt_mutating_scope_is_declare_strict_types(zend_object *scope, bool &out)
+{
+	if (EXPECTED(msExact(scope) || pt_type_method_is(scope, PT_LC("isdeclarestricttypes"), msIsDeclareStrictTypes))) {
+		out = MutatingScope(scope).isDeclareStrictTypes();
+		return true;
+	}
+	return msCallBool(scope, PT_LC("isdeclarestricttypes"), 0, NULL, out);
+}
+
 /* }}} */
 
 void pt_register_mutating_scope()

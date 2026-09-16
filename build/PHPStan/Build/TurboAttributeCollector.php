@@ -15,13 +15,26 @@ use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\ArrowFunction;
 use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\AssignOp;
+use PhpParser\Node\Expr\AssignOp\BitwiseAnd;
+use PhpParser\Node\Expr\AssignOp\BitwiseOr;
+use PhpParser\Node\Expr\AssignOp\BitwiseXor;
 use PhpParser\Node\Expr\AssignOp\Coalesce;
+use PhpParser\Node\Expr\AssignOp\Concat;
+use PhpParser\Node\Expr\AssignOp\Div;
+use PhpParser\Node\Expr\AssignOp\Mod;
+use PhpParser\Node\Expr\AssignOp\Mul;
+use PhpParser\Node\Expr\AssignOp\Pow;
+use PhpParser\Node\Expr\AssignOp\ShiftLeft;
+use PhpParser\Node\Expr\AssignOp\ShiftRight;
 use PhpParser\Node\Expr\AssignRef;
 use PhpParser\Node\Expr\BinaryOp\BooleanAnd;
 use PhpParser\Node\Expr\BinaryOp\BooleanOr;
 use PhpParser\Node\Expr\BinaryOp\Identical;
 use PhpParser\Node\Expr\BinaryOp\LogicalAnd;
 use PhpParser\Node\Expr\BinaryOp\LogicalOr;
+use PhpParser\Node\Expr\BinaryOp\Minus;
+use PhpParser\Node\Expr\BinaryOp\NotIdentical;
+use PhpParser\Node\Expr\BinaryOp\Plus;
 use PhpParser\Node\Expr\CallLike;
 use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Expr\Closure;
@@ -44,6 +57,7 @@ use PhpParser\Node\Expr\PreInc;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\StaticPropertyFetch;
+use PhpParser\Node\Expr\Ternary;
 use PhpParser\Node\Expr\UnaryMinus;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Expr\Yield_;
@@ -299,6 +313,22 @@ final class TurboAttributeCollector
 		'docComment' => Doc::class,
 		'nodeFinder' => NodeFinder::class,
 		'nodeAbstract' => NodeAbstract::class,
+		'ternaryExpr' => Ternary::class,
+		'binaryOpMinus' => Minus::class,
+		'binaryOpPlus' => Plus::class,
+		'binaryOpNotIdentical' => NotIdentical::class,
+		'assignOpConcat' => Concat::class,
+		'assignOpBitwiseAnd' => BitwiseAnd::class,
+		'assignOpBitwiseOr' => BitwiseOr::class,
+		'assignOpBitwiseXor' => BitwiseXor::class,
+		'assignOpDiv' => Div::class,
+		'assignOpMod' => Mod::class,
+		'assignOpPlus' => \PhpParser\Node\Expr\AssignOp\Plus::class,
+		'assignOpMinus' => \PhpParser\Node\Expr\AssignOp\Minus::class,
+		'assignOpMul' => Mul::class,
+		'assignOpPow' => Pow::class,
+		'assignOpShiftLeft' => ShiftLeft::class,
+		'assignOpShiftRight' => ShiftRight::class,
 	];
 
 	private string $realRoot;

@@ -27,6 +27,7 @@ use PHPStan\Node\CoalesceExpressionNode;
 use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
@@ -41,6 +42,7 @@ use function sprintf;
  * @implements ExprHandler<AssignOp>
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/AssignOpHandler.cpp')]
 final class AssignOpHandler implements ExprHandler
 {
 

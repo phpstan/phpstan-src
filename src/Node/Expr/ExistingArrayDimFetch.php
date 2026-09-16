@@ -5,6 +5,7 @@ namespace PHPStan\Node\Expr;
 use Override;
 use PhpParser\Node\Expr;
 use PHPStan\Node\VirtualNode;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * The chain links reference the original, already-processed AST nodes, so
@@ -12,6 +13,7 @@ use PHPStan\Node\VirtualNode;
  * carried here: these wrappers end up inside scope-held synthetic expressions,
  * and a carried result would pin its whole scope graph.
  */
+#[ReferencedByTurboExtension(key: 'existingArrayDimFetch')]
 final class ExistingArrayDimFetch extends Expr implements VirtualNode
 {
 

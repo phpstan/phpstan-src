@@ -330,6 +330,27 @@ enum {
 	PT_CLASS_ENSURED_NON_NULLABILITY_RESULT_EXPRESSION,
 	PT_CLASS_RESOLVED_FUNCTION_VARIANT_WITH_ORIGINAL,
 	PT_CLASS_INVALIDATE_EXPR_NODE,
+	/* the assignment handlers (AssignHandler.cpp, AssignOpHandler.cpp) */
+	PT_CLASS_TERNARY_EXPR,
+	PT_CLASS_BINARY_OP_MINUS,
+	PT_CLASS_BINARY_OP_PLUS,
+	PT_CLASS_BINARY_OP_NOT_IDENTICAL,
+	PT_CLASS_ASSIGN_OP_CONCAT,
+	PT_CLASS_ASSIGN_OP_BITWISE_AND,
+	PT_CLASS_ASSIGN_OP_BITWISE_OR,
+	PT_CLASS_ASSIGN_OP_BITWISE_XOR,
+	PT_CLASS_ASSIGN_OP_DIV,
+	PT_CLASS_ASSIGN_OP_MOD,
+	PT_CLASS_ASSIGN_OP_PLUS,
+	PT_CLASS_ASSIGN_OP_MINUS,
+	PT_CLASS_ASSIGN_OP_MUL,
+	PT_CLASS_ASSIGN_OP_POW,
+	PT_CLASS_ASSIGN_OP_SHIFT_LEFT,
+	PT_CLASS_ASSIGN_OP_SHIFT_RIGHT,
+	PT_CLASS_EXISTING_ARRAY_DIM_FETCH,
+	PT_CLASS_VARIABLE_ASSIGN_NODE,
+	PT_CLASS_VIRTUAL_ASSIGN_NODE_CALLBACK,
+	PT_CLASS_COALESCE_EXPRESSION_NODE,
 	PT_CLASS_COUNT
 };
 
@@ -2494,6 +2515,70 @@ zv::Val pt_type_utils_find_this_type(zval *type);
 zv::Val pt_method_call_return_type_helper_method_call_return_type(zval *helper, zval *scope, zval *typeWithMethod, zval *methodName, zval *methodCall, zval *preResolvedAcceptor, zval *argsResult);
 zv::Val pt_method_throw_point_helper_get_throw_point(zval *helper, zval *methodReflection, zval *parametersAcceptor, zval *normalizedMethodCall, zval *scope, zval *context, zval *methodCallReturnType);
 zv::Val pt_type_specifier_get_method_type_specifying_extensions_for_class(zend_object *typeSpecifier, zval *className);
+
+/* }}} */
+
+/* {{{ the assignment handlers (AssignHandler.cpp, AssignOpHandler.cpp) and
+ * the direct entries they added to the native classes they call */
+
+/* MutatingScope.cpp — $scope->enterExpressionAssign($expr, $isPlainWrite) /
+ * exitExpressionAssign($expr) / assignInitializedProperty($fetchedOnType,
+ * $propertyName) / addConditionalExpressions($exprString, $holders) /
+ * getStaticPropertyReflection($type, $propertyName) / getDefinedVariables() /
+ * getMaybeDefinedVariables() / isDeclareStrictTypes(): the native body for
+ * exactly a MutatingScope, the method by name otherwise (every argument
+ * borrowed); UNDEF / false = pending exception */
+zv::Val pt_mutating_scope_enter_expression_assign(zend_object *scope, zend_object *expr, bool isPlainWrite);
+zv::Val pt_mutating_scope_exit_expression_assign(zend_object *scope, zend_object *expr);
+zv::Val pt_mutating_scope_assign_initialized_property(zend_object *scope, zval *fetchedOnType, zend_string *propertyName);
+zv::Val pt_mutating_scope_add_conditional_expressions(zend_object *scope, zend_string *exprString, HashTable *conditionalExpressionHolders);
+zv::Val pt_mutating_scope_get_static_property_reflection(zend_object *scope, zval *typeWithProperty, zend_string *propertyName);
+zv::Val pt_mutating_scope_get_defined_variables(zend_object *scope);
+zv::Val pt_mutating_scope_get_maybe_defined_variables(zend_object *scope);
+[[nodiscard]] bool pt_mutating_scope_is_declare_strict_types(zend_object *scope, bool &out);
+
+/* NodeScopeResolver.cpp — $nodeScopeResolver->getAssignedVariables($expr) /
+ * ->readStoredResult($expr, $storage) /
+ * ->lookForSetAllowedUndefinedExpressions($scope, $expr); NonNullabilityHelper.cpp
+ * — $helper->ensureNonNullability($scope, $expr): the native body for the
+ * native class, the method otherwise (everything borrowed); UNDEF = pending
+ * exception */
+zv::Val pt_node_scope_resolver_get_assigned_variables(zval *nodeScopeResolver, zval *expr);
+zv::Val pt_node_scope_resolver_read_stored_result(zval *nodeScopeResolver, zval *expr, zval *storage);
+zv::Val pt_node_scope_resolver_look_for_set_allowed_undefined_expressions(zval *nodeScopeResolver, zval *scope, zval *expr);
+zv::Val pt_non_nullability_helper_ensure_non_nullability(zval *helper, zval *scope, zval *expr);
+/* MethodThrowPointHelper.cpp — $helper->getThrowPointsForCallOnType($scope,
+ * $context, $calledOnType, $methodCall); UNDEF = pending exception */
+zv::Val pt_method_throw_point_helper_get_throw_points_for_call_on_type(zval *helper, zval *scope, zval *context, zval *calledOnType, zval *methodCall);
+
+/* VariableFlowBuilder.cpp — VariableFlowBuilder::targetRead($target, $storage,
+ * $read, $targetId) / targetWrite($target, $kind, $scope, $storage,
+ * $redundant) / writeSite($target, $kind, $scope, $storage) /
+ * escapeRoot($expr) (NULL or an IS_NULL zval for null, everything borrowed);
+ * a flow / VariableWrite or null, UNDEF = pending exception */
+zv::Val pt_variable_flow_builder_target_read(zval *target, zval *storage, bool read, zval *targetId);
+zv::Val pt_variable_flow_builder_target_write(zval *target, zend_long kind, zval *scope, zval *storage, zval *redundant);
+zv::Val pt_variable_flow_builder_write_site(zval *target, zend_long kind, zval *scope, zval *storage);
+zv::Val pt_variable_flow_builder_escape_root(zval *expr);
+/* VariableFlow.cpp — VariableFlow::inputs($writeId, $targetId) /
+ * choice(...$branches); UNDEF = pending exception */
+zv::Val pt_variable_flow_inputs(zend_long writeId, zval *targetId);
+zv::Val pt_variable_flow_choice(uint32_t argc, zval *argv);
+
+/* AssignHandler.cpp — the shadowing class entry, its registrar and
+ * $assignHandler->prepareTarget(...) / ->applyWrite(...) /
+ * ->processVirtualAssign(...) for native callers: the native body for the
+ * shadowing class, the method otherwise (everything borrowed,
+ * $assignedValueResult / $assignedExprResult NULL for null); UNDEF = pending
+ * exception */
+extern zend_class_entry *pt_ce_assign_handler;
+void pt_register_assign_handler();
+zv::Val pt_assign_handler_prepare_target(zval *handler, zval *nodeScopeResolver, zval *scope, zval *storage, zval *stmt, zval *var, zval *assignedExpr, zval *nodeCallback, zval *context, zval *mode);
+zv::Val pt_assign_handler_apply_write(zval *handler, zval *nodeScopeResolver, zval *target, zval *valueResult, zval *assignedValueResult, zval *stmt, zval *storage, zval *nodeCallback, zval *context);
+zv::Val pt_assign_handler_process_virtual_assign(zval *handler, zval *nodeScopeResolver, zval *scope, zval *storage, zval *stmt, zval *var, zval *assignedExpr, zval *nodeCallback, zval *assignedExprResult);
+/* AssignOpHandler.cpp — registered after AssignHandler */
+extern zend_class_entry *pt_ce_assign_op_handler;
+void pt_register_assign_op_handler();
 
 /* }}} */
 

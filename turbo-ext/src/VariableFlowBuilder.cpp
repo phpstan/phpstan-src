@@ -482,6 +482,30 @@ private:
 
 using phpstanturbo::VariableFlowBuilder;
 
+/* the AssignHandler port's calls (support.h) */
+
+zv::Val pt_variable_flow_builder_target_read(zval *target, zval *storage, bool read, zval *targetId)
+{
+	if (targetId != NULL && Z_TYPE_P(targetId) == IS_NULL) targetId = NULL;
+	return VariableFlowBuilder::targetRead(target, storage, read, targetId);
+}
+
+zv::Val pt_variable_flow_builder_target_write(zval *target, zend_long kind, zval *scope, zval *storage, zval *redundant)
+{
+	if (redundant != NULL && Z_TYPE_P(redundant) == IS_NULL) redundant = NULL;
+	return VariableFlowBuilder::targetWrite(target, kind, scope, storage, redundant);
+}
+
+zv::Val pt_variable_flow_builder_write_site(zval *target, zend_long kind, zval *scope, zval *storage)
+{
+	return VariableFlowBuilder::writeSite(target, kind, scope, storage);
+}
+
+zv::Val pt_variable_flow_builder_escape_root(zval *expr)
+{
+	return VariableFlowBuilder::escapeRoot(expr);
+}
+
 /* {{{ engine ABI glue: parameter parsing + registration */
 
 #include "reg.h"

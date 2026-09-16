@@ -206,8 +206,6 @@ enum {
 	PT_CLASS_LIST_EXPR,
 	PT_CLASS_VARIABLE_WRITES_NODE,
 	PT_CLASS_VOID_TO_NULL_TRAVERSER,
-	PT_CLASS_ISSETABILITY_RESOLUTION,
-	PT_CLASS_ISSETABILITY_LINK_INFO,
 	PT_CLASS_ALWAYS_REMEMBERED_EXPR,
 	PT_CLASS_PHP_PROPERTY_REFLECTION,
 	PT_CLASS_NATIVE_METHOD_REFLECTION,
@@ -316,8 +314,6 @@ enum {
 	PT_CLASS_PROPERTY_HOOK_STATEMENT_NODE,
 	PT_CLASS_TEMPLATE_ARGUMENT_CONSTRAINTS,
 	PT_CLASS_TEMPLATE_ARGUMENT_STATS,
-	PT_CLASS_ENSURED_NON_NULLABILITY_RESULT,
-	PT_CLASS_ENSURED_NON_NULLABILITY_RESULT_EXPRESSION,
 	PT_CLASS_RESOLVED_FUNCTION_VARIANT_WITH_ORIGINAL,
 	PT_CLASS_INVALIDATE_EXPR_NODE,
 	/* the assignment handlers (AssignHandler.cpp, AssignOpHandler.cpp) */
@@ -3825,6 +3821,56 @@ extern zend_class_entry *pt_ce_instanceof_handler;
 extern zend_class_entry *pt_ce_array_handler;
 void pt_register_instanceof_handler();
 void pt_register_array_handler();
+
+/* }}} */
+
+/* {{{ EnsuredNonNullabilityResult.cpp, EnsuredNonNullabilityResultExpression.cpp,
+ * IssetabilityLinkInfo.cpp, IssetabilityResolution.cpp — registered after
+ * ArrayHandler (their signatures name MutatingScope, TrinaryLogic and the
+ * Type family); the readers are in AnalyserValues.h */
+
+extern zend_class_entry *pt_ce_ensured_non_nullability_result;
+extern zend_class_entry *pt_ce_ensured_non_nullability_result_expression;
+extern zend_class_entry *pt_ce_issetability_link_info;
+extern zend_class_entry *pt_ce_issetability_resolution;
+void pt_register_ensured_non_nullability_result();
+void pt_register_ensured_non_nullability_result_expression();
+void pt_register_issetability_link_info();
+void pt_register_issetability_resolution();
+
+/* new EnsuredNonNullabilityResult($scope, $specifiedExpressions) / new
+ * EnsuredNonNullabilityResultExpression($expression, $originalType,
+ * $originalNativeType, $certainty) — the arguments borrowed; UNDEF = pending
+ * exception */
+zv::Val pt_ensured_non_nullability_result_new(zval *scope, zval *specifiedExpressions);
+zv::Val pt_ensured_non_nullability_result_expression_new(zval *expression, zval *originalType, zval *originalNativeType, zval *certainty);
+
+/* IssetabilityLinkInfo::variable() / offset() / property() ($propertyReflection
+ * NULL or an IS_NULL zval for null) / leaf() — the arguments borrowed; UNDEF =
+ * pending exception */
+zv::Val pt_issetability_link_info_variable(zend_string *variableName, zval *hasVariable, zval *valueType);
+zv::Val pt_issetability_link_info_offset(zval *isOffsetAccessible, zval *hasOffsetValue, bool hasExpressionTypeOfExpr, zval *varType, zval *dimType, zval *valueType);
+zv::Val pt_issetability_link_info_property(zval *propertyReflection, zval *propertyFetch, bool reflectionNative, bool hasNativeType, zval *isVirtual, zval *writableType, zval *nativeType, bool hasExpressionTypeOfFetch, bool initializedThisProperty, bool nativeReflectionExists, bool nativeIsPromoted, bool nativeIsReadOnly, bool nativeIsHooked, bool nativeHasDefaultValue);
+zv::Val pt_issetability_link_info_leaf(zval *valueType, zval *leafExpr, bool leafIsNullsafePropertyFetch);
+
+/* $link->isVariable() / ->isOffset() / ->isProperty() of an object: the kind
+ * slot of the native link, the method of anything else; false = pending
+ * exception */
+enum pt_issetability_link_kind
+{
+	PT_ISSETABILITY_LINK_VARIABLE,
+	PT_ISSETABILITY_LINK_OFFSET,
+	PT_ISSETABILITY_LINK_PROPERTY,
+};
+[[nodiscard]] bool pt_issetability_link_info_is_kind(zval *link, pt_issetability_link_kind kind, bool &out);
+
+/* new IssetabilityResolution($link, $inner) ($inner NULL or an IS_NULL zval
+ * for null) / $resolution->isSet($typeCallback) / ->notEmpty() — the native
+ * body for the native class, the method of anything else; the ?bool answer
+ * as a PHP bool or null, UNDEF = pending exception */
+zv::Val pt_issetability_resolution_new(zval *link, zval *inner);
+zv::Val pt_issetability_resolution_is_set(zval *resolution, zval *typeCallback);
+zv::Val pt_issetability_resolution_not_empty(zval *resolution);
 
 /* }}} */
 

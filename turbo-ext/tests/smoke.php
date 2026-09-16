@@ -4237,6 +4237,10 @@ $covered[\PHPStan\Analyser\PreparedAssignTarget::class] = true;
 $covered[\PHPStan\Analyser\RecordingNodeCallback::class] = true;
 $covered[\PHPStan\Analyser\ProcessClosureResult::class] = true;
 $covered[\PHPStan\Analyser\ProcessArrowFunctionResult::class] = true;
+$covered[\PHPStan\Analyser\EnsuredNonNullabilityResult::class] = true;
+$covered[\PHPStan\Analyser\EnsuredNonNullabilityResultExpression::class] = true;
+$covered[\PHPStan\Analyser\IssetabilityLinkInfo::class] = true;
+$covered[\PHPStan\Analyser\IssetabilityResolution::class] = true;
 require __DIR__ . '/analyser-values.php';
 
 // ---- VariableWriteOffset ----

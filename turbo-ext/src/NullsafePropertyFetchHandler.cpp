@@ -17,10 +17,10 @@
  *
  * NodeScopeResolver, NonNullabilityHelper, MutatingScope, ExpressionResult,
  * ExpressionContext, VariableFlow, SpecifiedTypes, TypeSpecifierContext,
- * DefaultNarrowingHelper, BooleanNarrowingHelper, TypeCombinator and the Type
- * kernel are called through their direct entries; the collaborators that
- * stay PHP for now (EnsuredNonNullabilityResult, NodeAbstract::getAttributes())
- * through the cached method sites in the block below, one helper each.
+ * DefaultNarrowingHelper, BooleanNarrowingHelper, EnsuredNonNullabilityResult,
+ * TypeCombinator and the Type kernel are called through their direct entries;
+ * NodeAbstract::getAttributes() through the cached method site in the block
+ * below.
  */
 
 #include "support.h"
@@ -41,18 +41,19 @@ constexpr const char *pt_npfh_closure_name = "PHPStan\\Analyser\\ExprHandler\\Nu
 /* {{{ the PHP collaborators (one site each; switch to their direct entries
  * once they are ported) */
 
-pt_method_site pt_npfh_result_get_scope_site;
-pt_method_site pt_npfh_result_get_specified_expressions_site;
 pt_method_site pt_npfh_get_attributes_site;
 
-/* $nonNullabilityResult->getScope() */
+/* $nonNullabilityResult->getScope() (EnsuredNonNullabilityResult.cpp) */
 zv::Val ensuredResultScope(zval *result)
 {
 	if (UNEXPECTED(Z_TYPE_P(result) != IS_OBJECT)) {
 		zend_throw_error(NULL, "Call to a member function getScope() on %s", zend_zval_value_name(result));
 		return zv::Val();
 	}
-	return pt_call_method_cached(pt_npfh_result_get_scope_site, Z_OBJ_P(result), PT_LC("getscope"), 0, NULL);
+	zv::Val hold;
+	zval *scope = pt_ensured_non_nullability_result_scope(result, hold);
+	if (UNEXPECTED(scope == NULL)) return zv::Val();
+	return hold.isUndef() ? zv::Val::copyOf(zv::Ref(scope)) : std::move(hold);
 }
 
 /* $nonNullabilityResult->getSpecifiedExpressions() */
@@ -62,7 +63,10 @@ zv::Val ensuredResultSpecifiedExpressions(zval *result)
 		zend_throw_error(NULL, "Call to a member function getSpecifiedExpressions() on %s", zend_zval_value_name(result));
 		return zv::Val();
 	}
-	return pt_call_method_cached(pt_npfh_result_get_specified_expressions_site, Z_OBJ_P(result), PT_LC("getspecifiedexpressions"), 0, NULL);
+	zv::Val hold;
+	zval *specifiedExpressions = pt_ensured_non_nullability_result_specified_expressions(result, hold);
+	if (UNEXPECTED(specifiedExpressions == NULL)) return zv::Val();
+	return hold.isUndef() ? zv::Val::copyOf(zv::Ref(specifiedExpressions)) : std::move(hold);
 }
 
 /* $expr->getAttributes() */

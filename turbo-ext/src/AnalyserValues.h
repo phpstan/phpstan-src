@@ -35,6 +35,10 @@
 #include "generated/ThrowPoint.h"
 #include "generated/ProcessClosureResult.h"
 #include "generated/ProcessArrowFunctionResult.h"
+#include "generated/EnsuredNonNullabilityResult.h"
+#include "generated/EnsuredNonNullabilityResultExpression.h"
+#include "generated/IssetabilityResolution.h"
+#include "generated/IssetabilityLinkInfo.h"
 
 zv::Val pt_type_call(zend_object *object, const char *lcname, size_t len, uint32_t argc, zval *argv);
 
@@ -543,6 +547,43 @@ inline zval *pt_impure_point_description(zval *impurePoint, zv::Val &hold)
 
 /* }}} */
 
+/* {{{ EnsuredNonNullabilityResult: $result->getScope() /
+ * ->getSpecifiedExpressions(); EnsuredNonNullabilityResultExpression:
+ * $expression->getExpression() / ->getOriginalType() /
+ * ->getOriginalNativeType() / ->getCertainty() */
+
+inline zval *pt_ensured_non_nullability_result_scope(zval *result, zv::Val &hold)
+{
+	return ptav::read(result, pt_ce_ensured_non_nullability_result, ptdecl::EnsuredNonNullabilityResult::slot::scope, PT_LC("getscope"), hold);
+}
+
+inline zval *pt_ensured_non_nullability_result_specified_expressions(zval *result, zv::Val &hold)
+{
+	return ptav::read(result, pt_ce_ensured_non_nullability_result, ptdecl::EnsuredNonNullabilityResult::slot::specifiedExpressions, PT_LC("getspecifiedexpressions"), hold);
+}
+
+inline zval *pt_ensured_non_nullability_result_expression_expression(zval *expression, zv::Val &hold)
+{
+	return ptav::read(expression, pt_ce_ensured_non_nullability_result_expression, ptdecl::EnsuredNonNullabilityResultExpression::slot::expression, PT_LC("getexpression"), hold);
+}
+
+inline zval *pt_ensured_non_nullability_result_expression_original_type(zval *expression, zv::Val &hold)
+{
+	return ptav::read(expression, pt_ce_ensured_non_nullability_result_expression, ptdecl::EnsuredNonNullabilityResultExpression::slot::originalType, PT_LC("getoriginaltype"), hold);
+}
+
+inline zval *pt_ensured_non_nullability_result_expression_original_native_type(zval *expression, zv::Val &hold)
+{
+	return ptav::read(expression, pt_ce_ensured_non_nullability_result_expression, ptdecl::EnsuredNonNullabilityResultExpression::slot::originalNativeType, PT_LC("getoriginalnativetype"), hold);
+}
+
+inline zval *pt_ensured_non_nullability_result_expression_certainty(zval *expression, zv::Val &hold)
+{
+	return ptav::read(expression, pt_ce_ensured_non_nullability_result_expression, ptdecl::EnsuredNonNullabilityResultExpression::slot::certainty, PT_LC("getcertainty"), hold);
+}
+
+/* }}} */
+
 /* {{{ ProcessClosureResult / ProcessArrowFunctionResult: their getters */
 
 #define PT_AV_PROCESS_CLOSURE_RESULT(reader, slotName, getter) \
@@ -572,6 +613,61 @@ PT_AV_PROCESS_ARROW_FUNCTION_RESULT(invalidate_expressions, invalidateExpression
 
 #undef PT_AV_PROCESS_CLOSURE_RESULT
 #undef PT_AV_PROCESS_ARROW_FUNCTION_RESULT
+
+/* }}} */
+
+/* {{{ IssetabilityResolution: $resolution->getLink() / ->getInner();
+ * IssetabilityLinkInfo: the facts IssetabilityResolution::isSet() and
+ * DefaultNarrowingHelper read — the getters throwing
+ * ShouldNotHappenException for a null slot through the getter when null
+ * (isVariable() / isOffset() / isProperty() are
+ * pt_issetability_link_info_is_kind(), support.h) */
+
+inline zval *pt_issetability_resolution_link(zval *resolution, zv::Val &hold)
+{
+	return ptav::read(resolution, pt_ce_issetability_resolution, ptdecl::IssetabilityResolution::slot::link, PT_LC("getlink"), hold);
+}
+
+inline zval *pt_issetability_resolution_inner(zval *resolution, zv::Val &hold)
+{
+	return ptav::read(resolution, pt_ce_issetability_resolution, ptdecl::IssetabilityResolution::slot::inner, PT_LC("getinner"), hold);
+}
+
+#define PT_AV_ISSETABILITY_LINK_INFO(reader, slotName, getter) \
+	inline zval *pt_issetability_link_info_##reader(zval *link, zv::Val &hold) \
+	{ \
+		return ptav::read(link, pt_ce_issetability_link_info, ptdecl::IssetabilityLinkInfo::slot::slotName, PT_LC(getter), hold); \
+	}
+#define PT_AV_ISSETABILITY_LINK_INFO_REQUIRED(reader, slotName, getter) \
+	inline zval *pt_issetability_link_info_##reader(zval *link, zv::Val &hold) \
+	{ \
+		return ptav::readRequired(link, pt_ce_issetability_link_info, ptdecl::IssetabilityLinkInfo::slot::slotName, PT_LC(getter), hold); \
+	}
+#define PT_AV_ISSETABILITY_LINK_INFO_BOOL(reader, slotName, getter) \
+	inline bool pt_issetability_link_info_##reader(zval *link, bool &out) \
+	{ \
+		return ptav::readBool(link, pt_ce_issetability_link_info, ptdecl::IssetabilityLinkInfo::slot::slotName, PT_LC(getter), out); \
+	}
+
+PT_AV_ISSETABILITY_LINK_INFO_REQUIRED(variable_name, variableName, "getvariablename")
+PT_AV_ISSETABILITY_LINK_INFO_REQUIRED(has_variable, hasVariable, "gethasvariable")
+PT_AV_ISSETABILITY_LINK_INFO_REQUIRED(value_type, valueType, "getvaluetype")
+PT_AV_ISSETABILITY_LINK_INFO_REQUIRED(is_offset_accessible, isOffsetAccessible, "getisoffsetaccessible")
+PT_AV_ISSETABILITY_LINK_INFO_REQUIRED(has_offset_value, hasOffsetValue, "gethasoffsetvalue")
+PT_AV_ISSETABILITY_LINK_INFO(property_reflection, propertyReflection, "getpropertyreflection")
+PT_AV_ISSETABILITY_LINK_INFO_BOOL(is_reflection_native, reflectionNative, "isreflectionnative")
+PT_AV_ISSETABILITY_LINK_INFO_BOOL(has_native_type, hasNativeType, "hasnativetype")
+PT_AV_ISSETABILITY_LINK_INFO_REQUIRED(is_virtual, isVirtual, "isvirtual")
+PT_AV_ISSETABILITY_LINK_INFO_BOOL(has_expression_type_of_fetch, hasExpressionTypeOfFetch, "hasexpressiontypeoffetch")
+PT_AV_ISSETABILITY_LINK_INFO_BOOL(native_reflection_exists, nativeReflectionExists, "nativereflectionexists")
+PT_AV_ISSETABILITY_LINK_INFO_BOOL(native_is_promoted, nativeIsPromoted, "nativeispromoted")
+PT_AV_ISSETABILITY_LINK_INFO_BOOL(native_is_read_only, nativeIsReadOnly, "nativeisreadonly")
+PT_AV_ISSETABILITY_LINK_INFO_BOOL(native_is_hooked, nativeIsHooked, "nativeishooked")
+PT_AV_ISSETABILITY_LINK_INFO_BOOL(native_has_default_value, nativeHasDefaultValue, "nativehasdefaultvalue")
+
+#undef PT_AV_ISSETABILITY_LINK_INFO
+#undef PT_AV_ISSETABILITY_LINK_INFO_REQUIRED
+#undef PT_AV_ISSETABILITY_LINK_INFO_BOOL
 
 /* }}} */
 

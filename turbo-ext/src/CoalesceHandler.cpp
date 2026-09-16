@@ -14,10 +14,9 @@
  * NodeScopeResolver, NonNullabilityHelper, ExpressionResult,
  * ExpressionContext, MutatingScope, VariableFlow, SpecifiedTypes,
  * TypeSpecifierContext, DefaultNarrowingHelper, CoalesceCompositionHelper and
- * the Type kernel are called through their direct entries; the value classes
- * that stay PHP for now (EnsuredNonNullabilityResult's slots, the virtual
- * CoalesceExpressionNode, IssetabilityResolution::isSet()) through property
- * sites, the class map and a cached method site.
+ * the Type kernel, EnsuredNonNullabilityResult and IssetabilityResolution are
+ * called through their direct entries; the virtual CoalesceExpressionNode
+ * through the class map.
  */
 
 #include "support.h"
@@ -31,33 +30,28 @@ zend_class_entry *pt_ce_coalesce_handler = nullptr;
 
 namespace {
 
-pt_method_site pt_ch_is_set_site;
-pt_property_site pt_ch_ensured_scope_site;
-pt_property_site pt_ch_ensured_specified_expressions_site;
-
-/* $resolution->isSet($typeCallback): the ?bool verdict */
+/* $resolution->isSet($typeCallback) (IssetabilityResolution.cpp): the ?bool
+ * verdict */
 zv::Val resolutionIsSet(zval *resolution, zval *typeCallback)
 {
 	if (UNEXPECTED(Z_TYPE_P(resolution) != IS_OBJECT)) {
 		zend_throw_error(NULL, "Call to a member function isSet() on %s", zend_zval_value_name(resolution));
 		return zv::Val();
 	}
-	return pt_call_method_cached(pt_ch_is_set_site, Z_OBJ_P(resolution), PT_LC("isset"), 1, typeCallback);
+	return pt_issetability_resolution_is_set(resolution, typeCallback);
 }
 
-/* $ensuredNonNullabilityResult->getScope() / ->getSpecifiedExpressions() of
- * the final PHP value class: its promoted slots (borrowed); NULL with the
- * engine's Error pending */
-zval *ensuredSlot(pt_property_site &site, zval *result, const char *name, size_t len, const char *getter)
+/* $ensuredNonNullabilityResult->getScope() / ->getSpecifiedExpressions()
+ * (EnsuredNonNullabilityResult.cpp's AnalyserValues.h readers, borrowed —
+ * kept alive in hold when a getter answered); NULL with the engine's Error
+ * pending */
+zval *ensuredSlot(zval *(*read)(zval *, zv::Val &), zval *result, zv::Val &hold, const char *getter)
 {
 	if (UNEXPECTED(Z_TYPE_P(result) != IS_OBJECT)) {
 		zend_throw_error(NULL, "Call to a member function %s() on %s", getter, zend_zval_value_name(result));
 		return NULL;
 	}
-	zval *value = pt_property_cached(site, Z_OBJ_P(result), name, len);
-	if (EXPECTED(value != NULL && Z_TYPE_P(value) != IS_UNDEF)) return value;
-	zend_throw_error(NULL, "Typed property %s::$%s must not be accessed before initialization", ZSTR_VAL(Z_OBJCE_P(result)->name), name);
-	return NULL;
+	return read(result, hold);
 }
 
 /* a TypeSpecifierContext singleton as a zval (borrowed) */
@@ -112,7 +106,9 @@ public:
 		if (UNEXPECTED(left == NULL)) return zv::Val();
 		zv::Val nonNullabilityResult = pt_non_nullability_helper_ensure_non_nullability(nonNullabilityHelper, scopeArg, left);
 		if (UNEXPECTED(nonNullabilityResult.isUndef())) return zv::Val();
-		zval *ensuredScope = ensuredSlot(pt_ch_ensured_scope_site, nonNullabilityResult.raw(), PT_LC("scope"), "getScope");
+		zv::Val ensuredScopeHold;
+		zv::Val specifiedExpressionsHold;
+		zval *ensuredScope = ensuredSlot(pt_ensured_non_nullability_result_scope, nonNullabilityResult.raw(), ensuredScopeHold, "getScope");
 		if (UNEXPECTED(ensuredScope == NULL)) return zv::Val();
 		zv::Val condScope = pt_node_scope_resolver_look_for_set_allowed_undefined_expressions(nodeScopeResolver, ensuredScope, left);
 		if (UNEXPECTED(condScope.isUndef())) return zv::Val();
@@ -123,7 +119,7 @@ public:
 		zv::Val hold;
 		zval *condResultScope = pt_expression_result_scope(condResult.raw(), hold);
 		if (UNEXPECTED(condResultScope == NULL)) return zv::Val();
-		zval *specifiedExpressions = ensuredSlot(pt_ch_ensured_specified_expressions_site, nonNullabilityResult.raw(), PT_LC("specifiedExpressions"), "getSpecifiedExpressions");
+		zval *specifiedExpressions = ensuredSlot(pt_ensured_non_nullability_result_specified_expressions, nonNullabilityResult.raw(), specifiedExpressionsHold, "getSpecifiedExpressions");
 		if (UNEXPECTED(specifiedExpressions == NULL)) return zv::Val();
 		zv::Val scope = pt_non_nullability_helper_revert_non_nullability(nonNullabilityHelper, condResultScope, specifiedExpressions);
 		if (UNEXPECTED(scope.isUndef())) return zv::Val();

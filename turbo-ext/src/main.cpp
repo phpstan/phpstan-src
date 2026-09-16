@@ -553,6 +553,10 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_instantiation_callable_node_handler();
 	pt_register_instanceof_handler();
 	pt_register_array_handler();
+	pt_register_ensured_non_nullability_result();
+	pt_register_ensured_non_nullability_result_expression();
+	pt_register_issetability_link_info();
+	pt_register_issetability_resolution();
 
 	return SUCCESS;
 }

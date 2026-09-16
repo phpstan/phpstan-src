@@ -11,10 +11,9 @@
  * $leftIsSetType closure is only called in place and is inlined.
  *
  * ExpressionResult, ExpressionResultStorage, MutatingScope, NodeScopeResolver,
- * SpecifiedTypes, TypeSpecifierContext, DefaultNarrowingHelper, TypeCombinator
- * and the Type kernel are called through their direct entries; the
- * IssetabilityResolution value class that stays PHP for now through a cached
- * method site.
+ * SpecifiedTypes, TypeSpecifierContext, DefaultNarrowingHelper, TypeCombinator,
+ * IssetabilityResolution and the Type kernel are called through their direct
+ * entries.
  */
 
 #include "support.h"
@@ -28,16 +27,15 @@ zend_class_entry *pt_ce_coalesce_composition_helper = nullptr;
 
 namespace {
 
-pt_method_site pt_cch_is_set_site;
-
-/* $resolution->isSet($typeCallback): the ?bool verdict */
+/* $resolution->isSet($typeCallback) (IssetabilityResolution.cpp): the ?bool
+ * verdict */
 zv::Val resolutionIsSet(zval *resolution, zval *typeCallback)
 {
 	if (UNEXPECTED(Z_TYPE_P(resolution) != IS_OBJECT)) {
 		zend_throw_error(NULL, "Call to a member function isSet() on %s", zend_zval_value_name(resolution));
 		return zv::Val();
 	}
-	return pt_call_method_cached(pt_cch_is_set_site, Z_OBJ_P(resolution), PT_LC("isset"), 1, typeCallback);
+	return pt_issetability_resolution_is_set(resolution, typeCallback);
 }
 
 /* a TypeSpecifierContext singleton as a zval (borrowed) */

@@ -11,8 +11,8 @@
  * The closure ensureNonNullability() hands to the private
  * lookForExpressionCallback() never escapes: it is a C++ callback over the
  * by-reference accumulators it captures. EnsuredNonNullabilityResult and
- * EnsuredNonNullabilityResultExpression stay PHP for now and are reached
- * through the cached method sites in the block below.
+ * EnsuredNonNullabilityResultExpression are created and read through their
+ * native entries (AnalyserValues.h).
  */
 
 #include "support.h"
@@ -32,15 +32,9 @@ zend_class_entry *pt_ce_non_nullability_helper = nullptr;
 
 namespace {
 
-/* {{{ the PHP collaborators (one site each; switch to their direct entries
- * once they are ported) */
+/* {{{ the value classes (EnsuredNonNullabilityResult.cpp,
+ * EnsuredNonNullabilityResultExpression.cpp) and the node property sites */
 
-pt_method_site pt_nnh_get_specified_expressions_site;
-pt_method_site pt_nnh_result_get_scope_site;
-pt_method_site pt_nnh_get_expression_site;
-pt_method_site pt_nnh_get_original_type_site;
-pt_method_site pt_nnh_get_original_native_type_site;
-pt_method_site pt_nnh_get_certainty_site;
 pt_property_site pt_nnh_name_site;
 pt_property_site pt_nnh_var_site;
 pt_property_site pt_nnh_dim_site;
@@ -48,30 +42,36 @@ pt_property_site pt_nnh_class_site;
 pt_property_site pt_nnh_items_site;
 pt_property_site pt_nnh_item_value_site;
 
-zv::Val callOn(pt_method_site &site, zval *object, const char *lcname, size_t len, const char *displayName)
+/* a borrowed AnalyserValues.h read of a value object as an owned value;
+ * UNDEF = pending exception */
+template <typename Reader>
+zv::Val ownedRead(Reader read, zval *object, const char *displayName)
 {
 	if (UNEXPECTED(Z_TYPE_P(object) != IS_OBJECT)) {
 		zend_throw_error(NULL, "Call to a member function %s() on %s", displayName, zend_zval_value_name(object));
 		return zv::Val();
 	}
-	return pt_call_method_cached(site, Z_OBJ_P(object), lcname, len, 0, NULL);
+	zv::Val hold;
+	zval *value = read(object, hold);
+	if (UNEXPECTED(value == NULL)) return zv::Val();
+	if (!hold.isUndef()) return hold;
+	return zv::Val::copyOf(zv::Ref(value));
 }
 
 /* EnsuredNonNullabilityResult::getSpecifiedExpressions() / getScope() */
-zv::Val resultGetSpecifiedExpressions(zval *result) { return callOn(pt_nnh_get_specified_expressions_site, result, PT_LC("getspecifiedexpressions"), "getSpecifiedExpressions"); }
-zv::Val resultGetScope(zval *result) { return callOn(pt_nnh_result_get_scope_site, result, PT_LC("getscope"), "getScope"); }
+zv::Val resultGetSpecifiedExpressions(zval *result) { return ownedRead(pt_ensured_non_nullability_result_specified_expressions, result, "getSpecifiedExpressions"); }
+zv::Val resultGetScope(zval *result) { return ownedRead(pt_ensured_non_nullability_result_scope, result, "getScope"); }
 
 /* EnsuredNonNullabilityResultExpression's getters */
-zv::Val expressionGetExpression(zval *expression) { return callOn(pt_nnh_get_expression_site, expression, PT_LC("getexpression"), "getExpression"); }
-zv::Val expressionGetOriginalType(zval *expression) { return callOn(pt_nnh_get_original_type_site, expression, PT_LC("getoriginaltype"), "getOriginalType"); }
-zv::Val expressionGetOriginalNativeType(zval *expression) { return callOn(pt_nnh_get_original_native_type_site, expression, PT_LC("getoriginalnativetype"), "getOriginalNativeType"); }
-zv::Val expressionGetCertainty(zval *expression) { return callOn(pt_nnh_get_certainty_site, expression, PT_LC("getcertainty"), "getCertainty"); }
+zv::Val expressionGetExpression(zval *expression) { return ownedRead(pt_ensured_non_nullability_result_expression_expression, expression, "getExpression"); }
+zv::Val expressionGetOriginalType(zval *expression) { return ownedRead(pt_ensured_non_nullability_result_expression_original_type, expression, "getOriginalType"); }
+zv::Val expressionGetOriginalNativeType(zval *expression) { return ownedRead(pt_ensured_non_nullability_result_expression_original_native_type, expression, "getOriginalNativeType"); }
+zv::Val expressionGetCertainty(zval *expression) { return ownedRead(pt_ensured_non_nullability_result_expression_certainty, expression, "getCertainty"); }
 
 /* new EnsuredNonNullabilityResult($scope, $specifiedExpressions) */
 zv::Val newResult(zval *scope, zval *specifiedExpressions)
 {
-	zv::Args argv{scope, specifiedExpressions};
-	return pt_type_new(PT_CLASS_ENSURED_NON_NULLABILITY_RESULT, 2, argv);
+	return pt_ensured_non_nullability_result_new(scope, specifiedExpressions);
 }
 
 zv::Val newEmptyResult(zval *scope)
@@ -85,8 +85,7 @@ zv::Val newEmptyResult(zval *scope)
  * $originalNativeType, $certainty) */
 zv::Val newResultExpression(zval *expression, zval *originalType, zval *originalNativeType, zval *certainty)
 {
-	zv::Args argv{expression, originalType, originalNativeType, certainty};
-	return pt_type_new(PT_CLASS_ENSURED_NON_NULLABILITY_RESULT_EXPRESSION, 4, argv);
+	return pt_ensured_non_nullability_result_expression_new(expression, originalType, originalNativeType, certainty);
 }
 
 /* }}} */

@@ -12,8 +12,9 @@
  *
  * resolve() asks the scope through MutatingScope's direct entries, the
  * chain links' results through ExpressionResult's, and the Type queries
- * through the Type ops; the link and resolution value objects, the property
- * reflection resolver and the property reflections stay PHP.
+ * through the Type ops, the link and resolution value objects through their
+ * native factories; the property reflection resolver and the property
+ * reflections stay PHP.
  */
 
 #include "support.h"
@@ -156,8 +157,7 @@ private:
 	static zv::Val newResolution(zv::Val link, zv::Val inner)
 	{
 		if (UNEXPECTED(link.isUndef() || inner.isUndef())) return zv::Val();
-		zv::Args argv{link.raw(), inner.raw()};
-		return pt_type_new(PT_CLASS_ISSETABILITY_RESOLUTION, 2, argv);
+		return pt_issetability_resolution_new(link.raw(), inner.raw());
 	}
 
 	zv::Val resolveVariable(zval *scope, bool useNativeTypes) const
@@ -190,8 +190,8 @@ private:
 		}
 		if (UNEXPECTED(valueType.isUndef())) return zv::Val();
 
-		zv::Args linkArgv{variableName, hasVariable.raw(), valueType.raw()};
-		zv::Val link = pt_type_call_static(PT_CLASS_ISSETABILITY_LINK_INFO, PT_LC("variable"), 3, linkArgv);
+		if (UNEXPECTED(hasVariable.isUndef())) return zv::Val();
+		zv::Val link = pt_issetability_link_info_variable(Z_STR_P(variableName), hasVariable.raw(), valueType.raw());
 		return newResolution(std::move(link), zv::Val::null());
 	}
 
@@ -251,8 +251,7 @@ private:
 		if (UNEXPECTED(isOffsetAccessible.isUndef())) return zv::Val();
 		zend_long isExprTracked = pt_mutating_scope_has_expression_type(Z_OBJ_P(scope), expr);
 		if (UNEXPECTED(isExprTracked < 0)) return zv::Val();
-		zv::Args linkArgv{isOffsetAccessible.raw(), hasOffsetValue.raw(), isExprTracked == PT_TRI_YES, varType.raw(), dimType.raw(), valueType.raw()};
-		zv::Val link = pt_type_call_static(PT_CLASS_ISSETABILITY_LINK_INFO, PT_LC("offset"), 6, linkArgv);
+		zv::Val link = pt_issetability_link_info_offset(isOffsetAccessible.raw(), hasOffsetValue.raw(), isExprTracked == PT_TRI_YES, varType.raw(), dimType.raw(), valueType.raw());
 		if (UNEXPECTED(link.isUndef())) return zv::Val();
 		zv::Val inner = pt_expression_result_get_issetability_resolution(varResult, scope, useNativeTypes, reprocessUntrackedLinks);
 		return newResolution(std::move(link), std::move(inner));
@@ -287,18 +286,7 @@ private:
 			if (UNEXPECTED(never.isUndef())) return zv::Val();
 			zv::Val nativeNever = newNeverType();
 			if (UNEXPECTED(nativeNever.isUndef())) return zv::Val();
-			zval linkArgv[14];
-			ZVAL_NULL(&linkArgv[0]);
-			ZVAL_COPY_VALUE(&linkArgv[1], propertyFetch);
-			ZVAL_FALSE(&linkArgv[2]);
-			ZVAL_FALSE(&linkArgv[3]);
-			ZVAL_COPY_VALUE(&linkArgv[4], pt_trinary_singleton(PT_TRI_NO));
-			ZVAL_COPY_VALUE(&linkArgv[5], never.raw());
-			ZVAL_COPY_VALUE(&linkArgv[6], nativeNever.raw());
-			for (int i = 7; i < 14; i++) {
-				ZVAL_FALSE(&linkArgv[i]);
-			}
-			zv::Val link = pt_type_call_static(PT_CLASS_ISSETABILITY_LINK_INFO, PT_LC("property"), 14, linkArgv);
+			zv::Val link = pt_issetability_link_info_property(NULL, propertyFetch, false, false, pt_trinary_singleton(PT_TRI_NO), never.raw(), nativeNever.raw(), false, false, false, false, false, false, false);
 			return newResolution(std::move(link), std::move(inner));
 		}
 		if (UNEXPECTED(Z_TYPE_P(propertyReflection.raw()) != IS_OBJECT)) {
@@ -365,22 +353,12 @@ private:
 			if (UNEXPECTED(!callTruthy(Z_OBJ_P(phpReflection.raw()), PT_LC("hasdefaultvalue"), nativeHasDefaultValue))) return zv::Val();
 		}
 
-		zval linkArgv[14];
-		ZVAL_COPY_VALUE(&linkArgv[0], propertyReflection.raw());
-		ZVAL_COPY_VALUE(&linkArgv[1], propertyFetch);
-		ZVAL_COPY_VALUE(&linkArgv[2], reflectionNative.raw());
-		ZVAL_BOOL(&linkArgv[3], hasNativeType);
-		ZVAL_COPY_VALUE(&linkArgv[4], isVirtual.raw());
-		ZVAL_COPY_VALUE(&linkArgv[5], writableType.raw());
-		ZVAL_COPY_VALUE(&linkArgv[6], nativeType.raw());
-		ZVAL_BOOL(&linkArgv[7], isFetchTracked == PT_TRI_YES);
-		ZVAL_BOOL(&linkArgv[8], initializedThisProperty);
-		ZVAL_BOOL(&linkArgv[9], nativeReflectionExists);
-		ZVAL_BOOL(&linkArgv[10], nativeIsPromoted);
-		ZVAL_BOOL(&linkArgv[11], nativeIsReadOnly);
-		ZVAL_BOOL(&linkArgv[12], nativeIsHooked);
-		ZVAL_BOOL(&linkArgv[13], nativeHasDefaultValue);
-		zv::Val link = pt_type_call_static(PT_CLASS_ISSETABILITY_LINK_INFO, PT_LC("property"), 14, linkArgv);
+		// IssetabilityLinkInfo::property()'s bool $reflectionNative
+		if (UNEXPECTED(Z_TYPE_P(reflectionNative.raw()) != IS_TRUE && Z_TYPE_P(reflectionNative.raw()) != IS_FALSE)) {
+			zend_type_error("PHPStan\\Analyser\\IssetabilityLinkInfo::property(): Argument #3 ($reflectionNative) must be of type bool, %s given", zend_zval_value_name(reflectionNative.raw()));
+			return zv::Val();
+		}
+		zv::Val link = pt_issetability_link_info_property(propertyReflection.raw(), propertyFetch, Z_TYPE_P(reflectionNative.raw()) == IS_TRUE, hasNativeType, isVirtual.raw(), writableType.raw(), nativeType.raw(), isFetchTracked == PT_TRI_YES, initializedThisProperty, nativeReflectionExists, nativeIsPromoted, nativeIsReadOnly, nativeIsHooked, nativeHasDefaultValue);
 		return newResolution(std::move(link), std::move(inner));
 	}
 };

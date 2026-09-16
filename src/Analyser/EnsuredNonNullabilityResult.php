@@ -2,9 +2,9 @@
 
 namespace PHPStan\Analyser;
 
-use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
-#[ReferencedByTurboExtension(key: 'ensuredNonNullabilityResult')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/EnsuredNonNullabilityResult.cpp')]
 final class EnsuredNonNullabilityResult
 {
 

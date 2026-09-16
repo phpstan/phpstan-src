@@ -8,7 +8,9 @@
  * (InternalStatementResult, InternalStatementExitPoint,
  * InternalEndStatementResult and their public counterparts),
  * TemplateArgumentFrame, AssignTargetWalkMode, PreparedAssignTarget,
- * RecordingNodeCallback, ProcessClosureResult and ProcessArrowFunctionResult.
+ * RecordingNodeCallback, ProcessClosureResult, ProcessArrowFunctionResult,
+ * IssetabilityLinkInfo, IssetabilityResolution and
+ * EnsuredNonNullabilityResult(Expression).
  *
  * Each side builds its objects from the same scopes, nodes and types and
  * every public method's answer is compared, together with the objects' state
@@ -790,6 +792,155 @@ foreach (['php' => [\PHPStan\Analyser\ProcessClosureResult::class, \PHPStan\Anal
 	$avClosureResults[$side] = $r;
 }
 check($avClosureResults['php'] === $avClosureResults['native'], 'ProcessClosureResult / ProcessArrowFunctionResult parity: ' . json_encode($avClosureResults['php']) . ' vs ' . json_encode($avClosureResults['native']));
+
+// ---- the issetability and non-nullability value classes ----
+// IssetabilityLinkInfo's factories and getters, IssetabilityResolution's
+// isSet() / notEmpty() folds over every link kind and inner chain, and the
+// EnsuredNonNullabilityResult(Expression) carriers; the resolution over PHP
+// links and inner resolutions takes its readers' by-name fallbacks.
+$avIssetSides = [
+	'php' => ['IssetabilityResolution' => \PHPStan\Analyser\IssetabilityResolution::class, 'IssetabilityLinkInfo' => \PHPStan\Analyser\IssetabilityLinkInfo::class, 'InnerResolution' => \PHPStan\Analyser\IssetabilityResolution::class, 'EnsuredNonNullabilityResult' => \PHPStan\Analyser\EnsuredNonNullabilityResult::class, 'EnsuredNonNullabilityResultExpression' => \PHPStan\Analyser\EnsuredNonNullabilityResultExpression::class],
+	'native' => ['IssetabilityResolution' => \PHPStanTurbo\IssetabilityResolution::class, 'IssetabilityLinkInfo' => \PHPStanTurbo\IssetabilityLinkInfo::class, 'InnerResolution' => \PHPStanTurbo\IssetabilityResolution::class, 'EnsuredNonNullabilityResult' => \PHPStanTurbo\EnsuredNonNullabilityResult::class, 'EnsuredNonNullabilityResultExpression' => \PHPStanTurbo\EnsuredNonNullabilityResultExpression::class],
+	'native over PHP collaborators' => ['IssetabilityResolution' => \PHPStanTurbo\IssetabilityResolution::class, 'IssetabilityLinkInfo' => \PHPStan\Analyser\IssetabilityLinkInfo::class, 'InnerResolution' => \PHPStan\Analyser\IssetabilityResolution::class, 'EnsuredNonNullabilityResult' => \PHPStanTurbo\EnsuredNonNullabilityResult::class, 'EnsuredNonNullabilityResultExpression' => \PHPStanTurbo\EnsuredNonNullabilityResultExpression::class],
+];
+$avIssetResults = [];
+$avYes = \PHPStan\TrinaryLogic::createYes();
+$avMaybe = \PHPStan\TrinaryLogic::createMaybe();
+$avNo = \PHPStan\TrinaryLogic::createNo();
+$avNull = new \PHPStan\Type\NullType();
+$avNullableInt = new \PHPStan\Type\UnionType([$avInt, $avNull]);
+$avFalse = new \PHPStan\Type\Constant\ConstantBooleanType(false);
+$avZero = new \PHPStan\Type\Constant\ConstantIntegerType(0);
+foreach ($avIssetSides as $side => $c) {
+	$r = [];
+	$L = $c['IssetabilityLinkInfo'];
+	$links = [
+		'variable yes' => $L::variable('a', $avYes, $avInt),
+		'variable yes null' => $L::variable('a', $avYes, $avNull),
+		'variable yes nullable' => $L::variable('a', $avYes, $avNullableInt),
+		'variable maybe' => $L::variable('m', $avMaybe, $avString),
+		'variable no' => $L::variable('nope', $avNo, new \PHPStan\Type\NeverType()),
+		'variable session' => $L::variable('_SESSION', $avYes, $avArray),
+		'variable falsey' => $L::variable('a', $avYes, $avZero),
+		'offset accessible yes' => $L::offset($avYes, $avYes, true, $avArray, $avInt, $avString),
+		'offset accessible nullable' => $L::offset($avYes, $avYes, false, $avArray, $avInt, $avNullableInt),
+		'offset maybe value' => $L::offset($avYes, $avMaybe, false, $avArray, $avInt, $avString),
+		'offset no value' => $L::offset($avYes, $avNo, false, $avArray, $avInt, $avString),
+		'offset not accessible' => $L::offset($avMaybe, $avYes, false, $avInt, $avInt, $avString),
+		'offset false' => $L::offset($avYes, $avYes, false, $avArray, $avInt, $avFalse),
+		'property no reflection' => $L::property(null, $avN['thisParent'], false, false, $avNo, $avInt, $avInt, false, false, false, false, false, false, false),
+		'property not native' => $L::property($avFound['parent'], $avN['thisParent'], false, true, $avNo, $avInt, $avInt, false, false, true, true, true, false, false),
+		'property uninitialized' => $L::property($avFound['parent'], $avN['thisParent'], true, true, $avNo, $avInt, $avInt, false, false, false, false, false, false, false),
+		'property promoted readonly' => $L::property($avFound['parent'], $avN['thisParent'], true, true, $avNo, $avNullableInt, $avInt, false, true, true, true, true, false, false),
+		'property promoted hooked' => $L::property($avFound['parent'], $avN['thisParent'], true, true, $avNo, $avInt, $avInt, false, false, true, true, false, true, false),
+		'property promoted plain' => $L::property($avFound['parent'], $avN['thisParent'], true, true, $avNo, $avInt, $avInt, false, false, true, true, false, false, false),
+		'property virtual' => $L::property($avFound['truthyScope'], $avN['thisTruthy'], true, true, $avYes, $avNullableInt, $avInt, false, false, true, false, false, false, false),
+		'property tracked' => $L::property($avFound['truthyScope'], $avN['thisTruthy'], true, true, $avMaybe, $avInt, $avInt, true, false, true, false, false, false, false),
+		'property default' => $L::property($avFound['truthyScope'], $avN['thisTruthy'], true, true, $avNo, $avNull, $avInt, false, false, true, false, false, false, true),
+		'property untyped' => $L::property($avFound['truthyScope'], $avN['otherParent'], true, false, $avNo, $avString, $avInt, false, false, false, false, false, false, false),
+		'property static fetch' => $L::property($avFound['parent'], new \PhpParser\Node\Expr\StaticPropertyFetch(new \PhpParser\Node\Name('A'), 'b'), true, false, $avNo, $avInt, $avInt, false, false, false, false, false, false, false),
+		'property expr fetch' => $L::property($avFound['parent'], $avN['a'], true, false, $avNo, $avInt, $avInt, false, false, false, false, false, false, false),
+		'leaf' => $L::leaf($avInt, $avN['call'], false),
+		'leaf nullable' => $L::leaf($avNullableInt, $avN['a'], true),
+		'leaf null' => $L::leaf($avNull, $avN['a'], false),
+	];
+	$getters = ['isVariable', 'isOffset', 'isProperty', 'getVariableName', 'getHasVariable', 'getValueType', 'getIsOffsetAccessible', 'getHasOffsetValue', 'hasExpressionTypeOfExpr', 'getVarType', 'getDimType', 'getPropertyReflection', 'getPropertyFetch', 'isReflectionNative', 'hasNativeType', 'isVirtual', 'getNativeType', 'hasExpressionTypeOfFetch', 'isInitializedThisProperty', 'nativeReflectionExists', 'nativeIsPromoted', 'nativeIsReadOnly', 'nativeIsHooked', 'nativeHasDefaultValue', 'getLeafExpr', 'leafIsNullsafePropertyFetch'];
+	foreach ($links as $label => $link) {
+		$row = ['state' => $avDescribe($link)];
+		foreach ($getters as $getter) {
+			$row[$getter] = $avCatch(static fn () => $link->$getter());
+		}
+		$r['link ' . $label] = $row;
+	}
+	$r['link private constructor'] = $avCatch(static fn () => new $L('variable'));
+	$r['link uninitialized'] = $avCatch(static fn () => (new \ReflectionClass($L))->newInstanceWithoutConstructor()->isVariable());
+	$r['link uninitialized getter'] = $avCatch(static fn () => (new \ReflectionClass($L))->newInstanceWithoutConstructor()->getValueType());
+	$r['link named'] = $avDescribe($L::offset(valueType: $avString, dimType: $avInt, varType: $avArray, hasExpressionTypeOfExpr: true, hasOffsetValue: $avMaybe, isOffsetAccessible: $avYes));
+
+	$callbacks = [
+		'not null' => static function (\PHPStan\Type\Type $type): ?bool {
+			$isNull = $type->isNull();
+			if ($isNull->maybe()) {
+				return null;
+			}
+			return !$isNull->yes();
+		},
+		'always true' => static fn (): bool => true,
+		'always false' => static fn (): bool => false,
+		'always null' => static fn (): ?bool => null,
+	];
+	$R = $c['IssetabilityResolution'];
+	$I = $c['InnerResolution'];
+	$chains = [];
+	foreach ($links as $label => $link) {
+		$chains[$label] = new $R($link, null);
+	}
+	foreach (['variable yes', 'variable yes nullable', 'variable maybe', 'variable no', 'offset maybe value', 'offset no value', 'offset not accessible', 'property no reflection', 'property promoted plain', 'leaf nullable'] as $innerLabel) {
+		$innerLinks = [$innerLabel => $links[$innerLabel]];
+		foreach (['offset accessible yes', 'offset accessible nullable', 'offset maybe value', 'offset no value', 'offset not accessible', 'property no reflection', 'property uninitialized', 'property promoted plain', 'property promoted readonly', 'property default'] as $outerLabel) {
+			$chains[$outerLabel . ' / ' . $innerLabel] = new $R($links[$outerLabel], new $I($links[$innerLabel], null));
+		}
+	}
+	// a three-link chain: the verdict threads through the middle link
+	$chains['offset / offset / variable'] = new $R($links['offset accessible yes'], new $I($links['offset accessible nullable'], new $I($links['variable yes'], null)));
+	$chains['property / offset no value / variable'] = new $R($links['property promoted plain'], new $I($links['offset no value'], new $I($links['variable maybe'], null)));
+	foreach ($chains as $label => $resolution) {
+		$row = [
+			'link' => $resolution->getLink() === ($links[explode(' / ', $label)[0]] ?? null),
+			'inner' => $avDescribe($resolution->getInner()),
+			'not empty' => $avCatch(static fn () => $resolution->notEmpty()),
+		];
+		foreach ($callbacks as $callbackLabel => $callback) {
+			$row[$callbackLabel] = $avCatch(static fn () => $resolution->isSet($callback));
+			$row[$callbackLabel . ' true'] = $avCatch(static fn () => $resolution->isSet($callback, true));
+			$row[$callbackLabel . ' false'] = $avCatch(static fn () => $resolution->isSet(result: false, typeCallback: $callback));
+		}
+		$r['resolution ' . $label] = $row;
+	}
+	$r['resolution callback calls'] = (static function () use ($chains): array {
+		$calls = [];
+		$chains['offset / offset / variable']->isSet(static function (\PHPStan\Type\Type $type) use (&$calls): bool {
+			$calls[] = $type->describe(\PHPStan\Type\VerbosityLevel::precise());
+			return true;
+		});
+		return $calls;
+	})();
+	$r['resolution callback returns int'] = $avCatch(static fn () => $chains['variable yes']->isSet(static fn () => 1));
+	$r['resolution callback throws'] = $avCatch(static fn () => $chains['offset accessible yes / variable yes']->isSet(static function (): bool {
+		throw new \RuntimeException('callback failed');
+	}));
+	$r['resolution not callable'] = $avCatch(static fn () => $chains['variable yes']->isSet('no such function'));
+	$r['resolution bad result'] = $avCatch(static fn () => $chains['variable yes']->isSet(static fn () => true, 1));
+	$r['resolution uninitialized'] = $avCatch(static fn () => (new \ReflectionClass($R))->newInstanceWithoutConstructor()->isSet(static fn () => true));
+	$r['resolution uninitialized not empty'] = $avCatch(static fn () => (new \ReflectionClass($R))->newInstanceWithoutConstructor()->notEmpty());
+	$r['resolution uninitialized link'] = $avCatch(static fn () => (new \ReflectionClass($R))->newInstanceWithoutConstructor()->getLink());
+	$r['resolution named'] = $avDescribe(new $R(inner: null, link: $links['leaf']));
+
+	$E = $c['EnsuredNonNullabilityResultExpression'];
+	$expression = new $E($avN['a'], $avNullableInt, $avInt, $avMaybe);
+	$named = new $E(certainty: $avYes, originalNativeType: $avString, originalType: $avString, expression: $avN['dim']);
+	$ensured = new $c['EnsuredNonNullabilityResult']($avOtherScope, [$expression, $named]);
+	$r['ensured expression'] = [$avDescribe($expression), $expression->getExpression() === $avN['a'], $avDescribe($expression->getOriginalType()), $avDescribe($expression->getOriginalNativeType()), $expression->getCertainty() === $avMaybe, $avDescribe($named)];
+	$r['ensured result'] = [$avDescribe($ensured), $ensured->getScope() === $avOtherScope, $ensured->getSpecifiedExpressions()[1] === $named, count($ensured->getSpecifiedExpressions())];
+	$r['ensured result empty'] = $avDescribe(new $c['EnsuredNonNullabilityResult'](specifiedExpressions: [], scope: $avScope));
+	$r['ensured expression uninitialized'] = $avCatch(static fn () => (new \ReflectionClass($E))->newInstanceWithoutConstructor()->getCertainty());
+	$r['ensured result uninitialized'] = $avCatch(static fn () => (new \ReflectionClass($c['EnsuredNonNullabilityResult']))->newInstanceWithoutConstructor()->getSpecifiedExpressions());
+
+	$avIssetResults[$side] = $r;
+}
+foreach ($avIssetResults['php'] as $label => $described) {
+	foreach (['native', 'native over PHP collaborators'] as $otherSide) {
+		if (is_array($described) && is_array($avIssetResults[$otherSide][$label] ?? null) && getenv('AV_DEBUG')) {
+			foreach ($described as $k => $v) {
+				if ($v !== ($avIssetResults[$otherSide][$label][$k] ?? null)) {
+					echo "DEBUG $otherSide $label [$k]: " . json_encode($v) . ' vs ' . json_encode($avIssetResults[$otherSide][$label][$k] ?? null) . "\n";
+				}
+			}
+		}
+		check($described === ($avIssetResults[$otherSide][$label] ?? null), "issetability value classes parity, $otherSide ($label): " . json_encode($described) . ' vs ' . json_encode($avIssetResults[$otherSide][$label] ?? null));
+	}
+}
+check(count(array_filter($avIssetResults['php'], static fn ($row) => is_array($row) && ($row['not null'] ?? null) === ['ok', true])) > 5 && count(array_filter($avIssetResults['php'], static fn ($row) => is_array($row) && ($row['not null'] ?? null) === ['ok', null])) > 5 && count(array_filter($avIssetResults['php'], static fn ($row) => is_array($row) && ($row['not null'] ?? null) === ['ok', false])) > 5, 'issetability value classes: the fixture reaches every isSet() verdict');
 
 if (isset($avStandalone)) {
 	echo $failures === 0 ? "ALL OK\n" : "$failures FAILURE(S)\n";

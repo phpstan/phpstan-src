@@ -6,7 +6,7 @@ use PhpParser\Node\Expr;
 use PHPStan\Rules\Properties\FoundPropertyReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
 
 /**
@@ -16,7 +16,7 @@ use PHPStan\Type\Type;
  * (IssetabilityResolution::isSet) and the rule (PHPStan\Rules\IssetCheck) read the
  * facts instead of re-walking and re-resolving.
  */
-#[ReferencedByTurboExtension(key: 'issetabilityLinkInfo')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/IssetabilityLinkInfo.cpp')]
 final class IssetabilityLinkInfo
 {
 

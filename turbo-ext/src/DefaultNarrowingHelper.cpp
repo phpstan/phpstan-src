@@ -22,8 +22,9 @@
  * SpecifiedTypes, TypeSpecifierContext, ExpressionResult, MutatingScope,
  * ExpressionResultStorage, ExprPrinter, TypeCombinator, TypeTraverser,
  * StaticTypeFactory and the Type classes are called through their direct
- * entries / ops; the collaborators that stay PHP for now (ImpurePoint,
- * IssetabilityResolution, IssetabilityLinkInfo, NullsafeOperatorHelper,
+ * entries / ops, IssetabilityResolution and IssetabilityLinkInfo through
+ * their native entries and readers; the collaborators that stay PHP for now
+ * (ImpurePoint, NullsafeOperatorHelper,
  * AllowedArrayKeysTypes, the reflection provider, AssertTag and the
  * parameters acceptors) through the cached method sites in the block below,
  * one helper each.
@@ -57,14 +58,6 @@ namespace {
 
 pt_method_site pt_dnh_nullsafe_shortcircuited_site;
 pt_method_site pt_dnh_narrow_offset_key_type_site;
-pt_method_site pt_dnh_resolution_is_set_site;
-pt_method_site pt_dnh_resolution_get_link_site;
-pt_method_site pt_dnh_resolution_get_inner_site;
-pt_method_site pt_dnh_inner_is_set_site;
-pt_method_site pt_dnh_link_is_property_site;
-pt_method_site pt_dnh_link_is_reflection_native_site;
-pt_method_site pt_dnh_link_has_native_type_site;
-pt_method_site pt_dnh_link_is_virtual_site;
 pt_method_site pt_dnh_get_asserts_site;
 pt_method_site pt_dnh_get_asserts_if_true_site;
 pt_method_site pt_dnh_get_asserts_if_false_site;
@@ -119,11 +112,21 @@ zv::Val narrowOffsetKeyType(zval *varType, zval *dimType)
 	return pt_call_static_cached(pt_dnh_narrow_offset_key_type_site, PT_CLASS_ALLOWED_ARRAY_KEYS_TYPES, PT_LC("narrowoffsetkeytype"), 2, argv);
 }
 
-/* $resolution->isSet($typeCallback) through a site; the ?bool answer */
-zv::Val resolutionIsSet(pt_method_site &site, zval *resolution, zval *typeCallback)
+/* $resolution->isSet($typeCallback) (IssetabilityResolution.cpp); the ?bool
+ * answer */
+zv::Val resolutionIsSet(zval *resolution, zval *typeCallback)
 {
 	if (UNEXPECTED(Z_TYPE_P(resolution) != IS_OBJECT)) return callOnNonObject("isSet", resolution);
-	return pt_call_method_cached(site, Z_OBJ_P(resolution), PT_LC("isset"), 1, typeCallback);
+	return pt_issetability_resolution_is_set(resolution, typeCallback);
+}
+
+/* a borrowed AnalyserValues.h read as an owned value; UNDEF = pending
+ * exception */
+zv::Val ownedRead(zval *value, zv::Val &hold)
+{
+	if (UNEXPECTED(value == NULL)) return zv::Val();
+	if (!hold.isUndef()) return std::move(hold);
+	return zv::Val::copyOf(zv::Ref(value));
 }
 
 /* a no-argument method of a PHP collaborator through its site */
@@ -991,7 +994,7 @@ public:
 		zv::Val resolution = pt_expression_result_get_issetability_resolution(varResult, s, false, false);
 		if (UNEXPECTED(resolution.isUndef())) return zv::Val();
 		zv::Val alwaysTrue = pt_native_closure(&alwaysTrueBody);
-		zv::Val issetValue = resolutionIsSet(pt_dnh_resolution_is_set_site, resolution.raw(), alwaysTrue.raw());
+		zv::Val issetValue = resolutionIsSet(resolution.raw(), alwaysTrue.raw());
 		if (UNEXPECTED(issetValue.isUndef())) return zv::Val();
 		/* ?bool: IS_TRUE / IS_FALSE / IS_NULL */
 		zend_uchar isset = Z_TYPE_P(issetValue.raw());
@@ -1049,24 +1052,29 @@ public:
 		if (isset == IS_NULL && isNullable) {
 			zv::Val resolution2 = pt_expression_result_get_issetability_resolution(varResult, s, false, false);
 			if (UNEXPECTED(resolution2.isUndef())) return zv::Val();
-			zv::Val link = callNoArgs(pt_dnh_resolution_get_link_site, resolution2.raw(), "getLink", PT_LC("getlink"));
+			if (UNEXPECTED(!resolution2.ref().isObject())) return callOnNonObject("getLink", resolution2.raw());
+			zv::Val linkHold;
+			zv::Val link = ownedRead(pt_issetability_resolution_link(resolution2.raw(), linkHold), linkHold);
 			if (UNEXPECTED(link.isUndef())) return zv::Val();
-			zv::Val inner = callNoArgs(pt_dnh_resolution_get_inner_site, resolution2.raw(), "getInner", PT_LC("getinner"));
+			zv::Val innerHold;
+			zv::Val inner = ownedRead(pt_issetability_resolution_inner(resolution2.raw(), innerHold), innerHold);
 			if (UNEXPECTED(inner.isUndef())) return zv::Val();
+			if (UNEXPECTED(!link.ref().isObject())) return callOnNonObject("isProperty", link.raw());
 			bool matches;
-			if (UNEXPECTED(!callNoArgsBool(pt_dnh_link_is_property_site, link.raw(), "isProperty", PT_LC("isproperty"), matches))) return zv::Val();
-			if (matches && UNEXPECTED(!callNoArgsBool(pt_dnh_link_is_reflection_native_site, link.raw(), "isReflectionNative", PT_LC("isreflectionnative"), matches))) return zv::Val();
-			if (matches && UNEXPECTED(!callNoArgsBool(pt_dnh_link_has_native_type_site, link.raw(), "hasNativeType", PT_LC("hasnativetype"), matches))) return zv::Val();
+			if (UNEXPECTED(!pt_issetability_link_info_is_kind(link.raw(), PT_ISSETABILITY_LINK_PROPERTY, matches))) return zv::Val();
+			if (matches && UNEXPECTED(!pt_issetability_link_info_is_reflection_native(link.raw(), matches))) return zv::Val();
+			if (matches && UNEXPECTED(!pt_issetability_link_info_has_native_type(link.raw(), matches))) return zv::Val();
 			if (matches) {
-				zv::Val isVirtual = callNoArgs(pt_dnh_link_is_virtual_site, link.raw(), "isVirtual", PT_LC("isvirtual"));
-				if (UNEXPECTED(isVirtual.isUndef())) return zv::Val();
-				zend_long virtualValue = pt_type_trinary_value(isVirtual.raw());
+				zv::Val virtualHold;
+				zval *isVirtual = pt_issetability_link_info_is_virtual(link.raw(), virtualHold);
+				if (UNEXPECTED(isVirtual == NULL)) return zv::Val();
+				zend_long virtualValue = pt_type_trinary_value(isVirtual);
 				if (UNEXPECTED(virtualValue < 0)) return zv::Val();
 				matches = virtualValue != PT_TRI_YES;
 			}
 			if (matches && !inner.isNull()) {
 				zv::Val innerAlwaysTrue = pt_native_closure(&alwaysTrueBody);
-				zv::Val innerIsSet = resolutionIsSet(pt_dnh_inner_is_set_site, inner.raw(), innerAlwaysTrue.raw());
+				zv::Val innerIsSet = resolutionIsSet(inner.raw(), innerAlwaysTrue.raw());
 				if (UNEXPECTED(innerIsSet.isUndef())) return zv::Val();
 				matches = Z_TYPE_P(innerIsSet.raw()) == IS_TRUE;
 			}

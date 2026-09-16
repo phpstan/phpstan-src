@@ -290,11 +290,9 @@ public:
 
 		zend_class_entry *nullsafePropertyFetchCe = pt_class(PT_CLASS_NULLSAFE_PROPERTY_FETCH);
 		if (UNEXPECTED(nullsafePropertyFetchCe == NULL)) return zv::Val();
-		zv::Args leafArgv{type.raw(), expr, bool(instanceof_function(Z_OBJCE_P(expr), nullsafePropertyFetchCe))};
-		zv::Val link = pt_type_call_static(PT_CLASS_ISSETABILITY_LINK_INFO, PT_LC("leaf"), 3, leafArgv);
+		zv::Val link = pt_issetability_link_info_leaf(type.raw(), expr, instanceof_function(Z_OBJCE_P(expr), nullsafePropertyFetchCe));
 		if (UNEXPECTED(link.isUndef())) return zv::Val();
-		zv::Args resolutionArgv{link.raw(), zv::null};
-		return pt_type_new(PT_CLASS_ISSETABILITY_RESOLUTION, 2, resolutionArgv);
+		return pt_issetability_resolution_new(link.raw(), NULL);
 	}
 
 	zv::Val getThrowPoints() const { return copySlot(slots::throwPoints); }

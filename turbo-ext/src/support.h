@@ -280,6 +280,8 @@ enum {
 	PT_CLASS_CLASS_CONST_STMT,
 	PT_CLASS_EXPR_HANDLER,
 	PT_CLASS_STMT_HANDLER,
+	PT_CLASS_CONTINUE_STMT,
+	PT_CLASS_BREAK_STMT,
 	PT_CLASS_COUNT
 };
 
@@ -1893,6 +1895,64 @@ zv::Val pt_expression_result_get_issetability_resolution(zval *result, zval *sco
 zv::Val pt_mutating_scope_has_expression_type(zend_object *scope, zval *node);
 zv::Val pt_mutating_scope_get_type(zend_object *scope, zval *node);
 zv::Val pt_mutating_scope_get_native_type(zend_object *scope, zval *expr);
+/* }}} */
+
+/* {{{ the statement results (StatementExitPoint.cpp, StatementResult.cpp,
+ * EndStatementResult.cpp, InternalStatementExitPoint.cpp,
+ * InternalStatementResult.cpp, InternalEndStatementResult.cpp) — registered
+ * after the value classes above, the public ones before the internal ones
+ * whose toPublic() return them. Conventions as above; the slot getters are
+ * inline in AnalyserValues.h. */
+
+extern zend_class_entry *pt_ce_statement_exit_point;
+extern zend_class_entry *pt_ce_statement_result;
+extern zend_class_entry *pt_ce_end_statement_result;
+extern zend_class_entry *pt_ce_internal_statement_exit_point;
+extern zend_class_entry *pt_ce_internal_statement_result;
+extern zend_class_entry *pt_ce_internal_end_statement_result;
+void pt_register_statement_exit_point();
+void pt_register_statement_result();
+void pt_register_end_statement_result();
+void pt_register_internal_statement_exit_point();
+void pt_register_internal_statement_result();
+void pt_register_internal_end_statement_result();
+
+/* new StatementExitPoint($statement, $scope) / new EndStatementResult($statement,
+ * $result) / new StatementResult($scope, $hasYield, $isAlwaysTerminating,
+ * $exitPoints, $throwPoints, $impurePoints, $endStatements) ($endStatements
+ * NULL for []) */
+zv::Val pt_statement_exit_point_new(zval *statement, zval *scope);
+zv::Val pt_end_statement_result_new(zval *statement, zval *result);
+zv::Val pt_statement_result_new(zval *scope, bool hasYield, bool isAlwaysTerminating, zval *exitPoints, zval *throwPoints, zval *impurePoints, zval *endStatements = NULL);
+
+/* new InternalStatementExitPoint($statement, $scope) / ->toPublic() */
+zv::Val pt_internal_statement_exit_point_new(zval *statement, zval *scope);
+zv::Val pt_internal_statement_exit_point_to_public(zval *exitPoint);
+/* new InternalEndStatementResult($statement, $result) / ->toPublic() */
+zv::Val pt_internal_end_statement_result_new(zval *statement, zval *result);
+zv::Val pt_internal_end_statement_result_to_public(zval *endStatement);
+/* new InternalStatementResult($scope, $hasYield, $isAlwaysTerminating,
+ * $exitPoints, $throwPoints, $impurePoints, $endStatements, $variableFlow,
+ * $endReachable) ($endStatements NULL for [], $variableFlow NULL for null,
+ * $endReachable -1 for null, else 0/1) */
+zv::Val pt_internal_statement_result_new(zval *scope, bool hasYield, bool isAlwaysTerminating, zval *exitPoints, zval *throwPoints, zval *impurePoints, zval *endStatements = NULL, zval *variableFlow = NULL, int endReachable = -1);
+/* $result->filterOutLoopExitPoints() / ->getExitPointsByType($stmtClass)
+ * (the class entry) / ->getExitPointsForOuterLoop() /
+ * ->getLoopBackEdgeScope() (the scope or null) / ->toPublic() */
+zv::Val pt_internal_statement_result_filter_out_loop_exit_points(zval *result);
+zv::Val pt_internal_statement_result_exit_points_by_type(zval *result, zend_class_entry *stmtClass);
+zv::Val pt_internal_statement_result_exit_points_for_outer_loop(zval *result);
+zv::Val pt_internal_statement_result_loop_back_edge_scope(zval *result);
+zv::Val pt_internal_statement_result_to_public(zval *result);
+
+/* MutatingScope.cpp — $scope->getTemplateArgumentConstraints() /
+ * ->addTemplateArgumentConstraints($constraints) / ->mergeWith($otherScope,
+ * $preserveVacuousConditionals) ($constraints / $otherScope NULL or IS_NULL
+ * for null) */
+zv::Val pt_mutating_scope_get_template_argument_constraints(zend_object *scope);
+zv::Val pt_mutating_scope_add_template_argument_constraints(zend_object *scope, zval *constraints);
+zv::Val pt_mutating_scope_merge_with(zend_object *scope, zval *otherScope, bool preserveVacuousConditionals = false);
+
 /* }}} */
 
 #endif /* PHPSTANTURBO_SUPPORT_H */

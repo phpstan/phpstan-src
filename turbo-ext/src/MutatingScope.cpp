@@ -11497,6 +11497,67 @@ zv::Val pt_mutating_scope_get_native_type(zend_object *scope, zval *expr)
 	return pt_this_call(scope, scope->ce == pt_ce_mutating_scope, PT_LC("getnativetype"), msGetNativeType, 1, expr, [&]() { return MutatingScope(scope).getNativeType(expr); });
 }
 
+/* the template-inference and merge entries of the statement results
+ * (InternalStatementResult.cpp): addTemplateArgumentConstraints() and
+ * mergeWith() by their named handlers, getTemplateArgumentConstraints() by
+ * its generated one; $constraints / $otherScope IS_NULL or NULL for null */
+static void ZEND_FASTCALL msAddTemplateArgumentConstraints(INTERNAL_FUNCTION_PARAMETERS)
+{
+	zval *constraints;
+	if (!zp::parse<zp::ObjOrNull>(execute_data, constraints)) RETURN_THROWS();
+	zval nullZv;
+	if (constraints == NULL) {
+		ZVAL_NULL(&nullZv);
+		constraints = &nullZv;
+	}
+	PT_RETURN_VAL(PT_THIS.addTemplateArgumentConstraints(constraints));
+}
+
+static void ZEND_FASTCALL msMergeWith(INTERNAL_FUNCTION_PARAMETERS)
+{
+	zval *otherScope;
+	bool preserveVacuousConditionals = false;
+	ZEND_PARSE_PARAMETERS_START(1, 2)
+		Z_PARAM_OBJECT_OF_CLASS_OR_NULL(otherScope, pt_ce_mutating_scope)
+		Z_PARAM_OPTIONAL
+		Z_PARAM_BOOL(preserveVacuousConditionals)
+	ZEND_PARSE_PARAMETERS_END();
+	PT_RETURN_VAL(PT_THIS.mergeWith(otherScope, preserveVacuousConditionals));
+}
+
+zv::Val pt_mutating_scope_get_template_argument_constraints(zend_object *scope)
+{
+	return pt_this_call(scope, scope->ce == pt_ce_mutating_scope, PT_LC("gettemplateargumentconstraints"), &reg::detail::Bound<&MutatingScope::getTemplateArgumentConstraints>::handle, 0, NULL, [&]() { return MutatingScope(scope).getTemplateArgumentConstraints(); });
+}
+
+zv::Val pt_mutating_scope_add_template_argument_constraints(zend_object *scope, zval *constraints)
+{
+	zval nullZv;
+	if (constraints == NULL) {
+		ZVAL_NULL(&nullZv);
+		constraints = &nullZv;
+	}
+	return pt_this_call(scope, scope->ce == pt_ce_mutating_scope, PT_LC("addtemplateargumentconstraints"), msAddTemplateArgumentConstraints, 1, constraints, [&]() { return MutatingScope(scope).addTemplateArgumentConstraints(constraints); });
+}
+
+zv::Val pt_mutating_scope_merge_with(zend_object *scope, zval *otherScope, bool preserveVacuousConditionals)
+{
+	if (otherScope != NULL && Z_TYPE_P(otherScope) == IS_NULL) {
+		otherScope = NULL;
+	}
+	if (EXPECTED(scope->ce == pt_ce_mutating_scope || pt_type_method_is(scope, PT_LC("mergewith"), msMergeWith))) {
+		/* the handler's Z_PARAM_OBJECT_OF_CLASS_OR_NULL check */
+		if (EXPECTED(otherScope == NULL || instanceof_function(Z_OBJCE_P(otherScope), pt_ce_mutating_scope))) return MutatingScope(scope).mergeWith(otherScope, preserveVacuousConditionals);
+	}
+	zval argv[2];
+	if (otherScope != NULL) {
+		ZVAL_COPY_VALUE(&argv[0], otherScope);
+	} else {
+		ZVAL_NULL(&argv[0]);
+	}
+	ZVAL_BOOL(&argv[1], preserveVacuousConditionals);
+	return pt_type_call(scope, PT_LC("mergewith"), 2, argv);
+}
 /* }}} */
 
 void pt_register_mutating_scope()
@@ -11824,16 +11885,7 @@ void pt_register_mutating_scope()
 
 	cls.method(sigs::withTemplateArgumentConstraints, msWithTemplateArgumentConstraints);
 
-	cls.method(sigs::addTemplateArgumentConstraints, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *constraints;
-		if (!zp::parse<zp::ObjOrNull>(execute_data, constraints)) RETURN_THROWS();
-		zval nullZv;
-		if (constraints == NULL) {
-			ZVAL_NULL(&nullZv);
-			constraints = &nullZv;
-		}
-		PT_RETURN_VAL(PT_THIS.addTemplateArgumentConstraints(constraints));
-	});
+	cls.method(sigs::addTemplateArgumentConstraints, msAddTemplateArgumentConstraints);
 
 	cls.method(sigs::withoutMemoizedTypes, msWithoutMemoizedTypes);
 
@@ -12374,16 +12426,7 @@ void pt_register_mutating_scope()
 
 	cls.method<&MutatingScope::exitFirstLevelStatements>(sigs::exitFirstLevelStatements);
 
-	cls.method(sigs::mergeWith, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *otherScope;
-		bool preserveVacuousConditionals = false;
-		ZEND_PARSE_PARAMETERS_START(1, 2)
-			Z_PARAM_OBJECT_OF_CLASS_OR_NULL(otherScope, pt_ce_mutating_scope)
-			Z_PARAM_OPTIONAL
-			Z_PARAM_BOOL(preserveVacuousConditionals)
-		ZEND_PARSE_PARAMETERS_END();
-		PT_RETURN_VAL(PT_THIS.mergeWith(otherScope, preserveVacuousConditionals));
-	});
+	cls.method(sigs::mergeWith, msMergeWith);
 
 	cls.method(sigs::mergeInitializedProperties, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *calledMethodScope;

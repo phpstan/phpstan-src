@@ -3935,6 +3935,12 @@ $covered[\PHPStan\Analyser\ThrowPoint::class] = true;
 $covered[\PHPStan\Analyser\InternalThrowPoint::class] = true;
 $covered[\PHPStan\Analyser\ArgsResult::class] = true;
 $covered[\PHPStan\Analyser\IssetabilityDescriptor::class] = true;
+$covered[\PHPStan\Analyser\StatementExitPoint::class] = true;
+$covered[\PHPStan\Analyser\StatementResult::class] = true;
+$covered[\PHPStan\Analyser\EndStatementResult::class] = true;
+$covered[\PHPStan\Analyser\InternalStatementExitPoint::class] = true;
+$covered[\PHPStan\Analyser\InternalStatementResult::class] = true;
+$covered[\PHPStan\Analyser\InternalEndStatementResult::class] = true;
 require __DIR__ . '/analyser-values.php';
 
 // ---- differential coverage completeness ----

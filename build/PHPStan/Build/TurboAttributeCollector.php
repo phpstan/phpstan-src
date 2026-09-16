@@ -51,10 +51,12 @@ use PhpParser\Node\Scalar\InterpolatedString;
 use PhpParser\Node\Scalar\MagicConst;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt;
+use PhpParser\Node\Stmt\Break_;
 use PhpParser\Node\Stmt\Catch_;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassConst;
 use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\Node\Stmt\Continue_;
 use PhpParser\Node\Stmt\Declare_;
 use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\HaltCompiler;
@@ -236,6 +238,8 @@ final class TurboAttributeCollector
 		'catchStmt' => Catch_::class,
 		'coalesceAssignOpExpr' => Coalesce::class,
 		'classConstStmt' => ClassConst::class,
+		'continueStmt' => Continue_::class,
+		'breakStmt' => Break_::class,
 	];
 
 	private string $realRoot;

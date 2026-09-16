@@ -4,7 +4,9 @@
  * Differential test of the native analyser value classes against their PHP
  * twins, under the prefixed activation (PHPStanTurbo\<Short> next to
  * PHPStan\Analyser\<Short>): ImpurePoint, ThrowPoint, InternalThrowPoint,
- * ArgsResult and IssetabilityDescriptor.
+ * ArgsResult, IssetabilityDescriptor and the statement results
+ * (InternalStatementResult, InternalStatementExitPoint,
+ * InternalEndStatementResult and their public counterparts).
  *
  * Each side builds its objects from the same scopes, nodes and types and
  * every public method's answer is compared, together with the objects' state
@@ -102,11 +104,20 @@ $avDescribe = static function ($value) use (&$avDescribe, $avKnownScopes, $avN, 
 	}
 	if ($value instanceof \PHPStan\Analyser\MutatingScope) {
 		$known = array_search($value, $avKnownScopes, true);
-		return $known !== false ? 'scope:' . $known : 'scope:' . get_class($value);
+		// a scope a side derived: its variables and its inference facts
+		return $known !== false ? 'scope:' . $known : ['scope', $value->debug(), $avDescribe($value->getTemplateArgumentConstraints())];
 	}
 	if ($value instanceof \PhpParser\Node) {
 		$known = array_search($value, $avN, true);
-		return $known !== false ? 'node:' . $known : 'node:' . get_class($value);
+		if ($known !== false) {
+			return 'node:' . $known;
+		}
+		// a node a side built
+		$subNodes = [];
+		foreach ($value->getSubNodeNames() as $name) {
+			$subNodes[$name] = $avDescribe($value->$name);
+		}
+		return ['node', get_class($value), $subNodes];
 	}
 	if ($value instanceof \Closure) {
 		return 'closure';
@@ -127,13 +138,25 @@ $avDescribe = static function ($value) use (&$avDescribe, $avKnownScopes, $avN, 
 	}
 	return $class;
 };
-// a thrown exception's class and message, the side's class names normalized
+// a thrown exception's class and message, the side's class names normalized,
+// and the warnings raised on the way
 $avCatch = static function (callable $callback) use ($avDescribe, $turboNorm): mixed {
+	$warnings = [];
+	set_error_handler(static function (int $level, string $message) use (&$warnings, $turboNorm): bool {
+		$warnings[] = [$level, $turboNorm($message)];
+		return true;
+	});
 	try {
-		return ['ok', $avDescribe($callback())];
+		$outcome = ['ok', $avDescribe($callback())];
 	} catch (\Throwable $e) {
-		return [get_class($e), $turboNorm(preg_replace('~, called in .*$~', '', $e->getMessage()))];
+		$outcome = [get_class($e), $turboNorm(preg_replace('~, called in .*$~', '', $e->getMessage()))];
+	} finally {
+		restore_error_handler();
 	}
+	if ($warnings !== []) {
+		$outcome[] = $warnings;
+	}
+	return $outcome;
 };
 
 $avSides = [
@@ -327,6 +350,138 @@ foreach ($avResults['native over PHP collaborators'] as $label => $described) {
 }
 check($avResults['php']['issetability resolver calls'] > 10, 'analyser value classes: the fixture exercises the property resolver');
 check($avResults['php']['issetability property parent'][0][0] === 'ok' && $avResults['php']['issetability offset'][0][0] === 'ok', 'analyser value classes: the fixture resolves properties and offsets (' . json_encode([$avResults['php']['issetability property parent'][0], $avResults['php']['issetability offset'][0]]) . ')');
+
+// ---- the statement results ----
+// Exit points leaving the loop at every depth, scopes carrying inference
+// facts (the constructor joins them into the result's scope), end
+// statements, and keyed throw points (toPublic() preserves the keys).
+$avFacts = \Closure::bind(static fn (string $name) => new \PHPStan\Analyser\Generics\TemplateArgumentConstraints(null, null, [$name, null, null, true]), null, \PHPStan\Analyser\Generics\TemplateArgumentConstraints::class);
+$avFactScopes = [
+	'f1' => $avScope->withTemplateArgumentConstraints($avFacts('f1')),
+	'f2' => $avOtherScope->withTemplateArgumentConstraints($avFacts('f2')),
+	'f3' => $avScope->assignVariable('c', $avInt, $avInt, \PHPStan\TrinaryLogic::createYes())->withTemplateArgumentConstraints($avFacts('f3')),
+];
+$avKnownScopes += $avFactScopes;
+$avStmt = [
+	'return' => new \PhpParser\Node\Stmt\Return_(),
+	'break' => new \PhpParser\Node\Stmt\Break_(),
+	'break1' => new \PhpParser\Node\Stmt\Break_(new \PhpParser\Node\Scalar\Int_(1)),
+	'break2' => new \PhpParser\Node\Stmt\Break_(new \PhpParser\Node\Scalar\Int_(2)),
+	'break3' => new \PhpParser\Node\Stmt\Break_(new \PhpParser\Node\Scalar\Int_(3)),
+	'breakVar' => new \PhpParser\Node\Stmt\Break_(new \PhpParser\Node\Expr\Variable('n')),
+	'continue' => new \PhpParser\Node\Stmt\Continue_(),
+	'continue1' => new \PhpParser\Node\Stmt\Continue_(new \PhpParser\Node\Scalar\Int_(1)),
+	'continue2' => new \PhpParser\Node\Stmt\Continue_(new \PhpParser\Node\Scalar\Int_(2)),
+	'continue4' => new \PhpParser\Node\Stmt\Continue_(new \PhpParser\Node\Scalar\Int_(4)),
+	'continueVar' => new \PhpParser\Node\Stmt\Continue_(new \PhpParser\Node\Expr\Variable('n')),
+];
+$avN += $avStmt;
+$avStatementSides = [
+	'php' => ['InternalStatementResult' => \PHPStan\Analyser\InternalStatementResult::class, 'InternalStatementExitPoint' => \PHPStan\Analyser\InternalStatementExitPoint::class, 'InternalEndStatementResult' => \PHPStan\Analyser\InternalEndStatementResult::class, 'StatementResult' => \PHPStan\Analyser\StatementResult::class, 'StatementExitPoint' => \PHPStan\Analyser\StatementExitPoint::class, 'EndStatementResult' => \PHPStan\Analyser\EndStatementResult::class, 'InternalThrowPoint' => \PHPStan\Analyser\InternalThrowPoint::class, 'ImpurePoint' => \PHPStan\Analyser\ImpurePoint::class, 'inner' => \PHPStan\Analyser\InternalStatementResult::class],
+	'native' => ['InternalStatementResult' => \PHPStanTurbo\InternalStatementResult::class, 'InternalStatementExitPoint' => \PHPStanTurbo\InternalStatementExitPoint::class, 'InternalEndStatementResult' => \PHPStanTurbo\InternalEndStatementResult::class, 'StatementResult' => \PHPStanTurbo\StatementResult::class, 'StatementExitPoint' => \PHPStanTurbo\StatementExitPoint::class, 'EndStatementResult' => \PHPStanTurbo\EndStatementResult::class, 'InternalThrowPoint' => \PHPStanTurbo\InternalThrowPoint::class, 'ImpurePoint' => \PHPStanTurbo\ImpurePoint::class, 'inner' => \PHPStanTurbo\InternalStatementResult::class],
+	// a native result over the PHP twins of the exit points, end statements
+	// (holding PHP results) and throw points: the readers' by-name fallbacks
+	'native over PHP collaborators' => ['InternalStatementResult' => \PHPStanTurbo\InternalStatementResult::class, 'InternalStatementExitPoint' => \PHPStan\Analyser\InternalStatementExitPoint::class, 'InternalEndStatementResult' => \PHPStan\Analyser\InternalEndStatementResult::class, 'StatementResult' => \PHPStanTurbo\StatementResult::class, 'StatementExitPoint' => \PHPStan\Analyser\StatementExitPoint::class, 'EndStatementResult' => \PHPStanTurbo\EndStatementResult::class, 'InternalThrowPoint' => \PHPStan\Analyser\InternalThrowPoint::class, 'ImpurePoint' => \PHPStan\Analyser\ImpurePoint::class, 'inner' => \PHPStan\Analyser\InternalStatementResult::class],
+];
+$avStatementResults = [];
+foreach ($avStatementSides as $side => $c) {
+	$r = [];
+	$types = $avThrowTypes[$side === 'php' ? 'php' : 'native'];
+	$flow = \PHPStan\Analyser\VariableFlow::read('a');
+	$exit = static fn (string $stmt, string $scope) => new $c['InternalStatementExitPoint']($avStmt[$stmt], $avKnownScopes[$scope]);
+	$exitPoint = $exit('return', 'f1');
+	$r['exit point'] = [$exitPoint->getStatement() === $avStmt['return'], $exitPoint->getScope() === $avFactScopes['f1'], $avDescribe($exitPoint->toPublic()), $avDescribe($exitPoint)];
+	$r['exit point uninitialized'] = $avCatch(static fn () => (new \ReflectionClass($c['InternalStatementExitPoint']))->newInstanceWithoutConstructor()->toPublic());
+
+	$inner = new $c['inner']($avFactScopes['f3'], true, true, [$exit('return', 'avScope')], [], [], variableFlow: $flow);
+	$endStatement = new $c['InternalEndStatementResult']($avStmt['return'], $inner);
+	$r['end statement'] = [$endStatement->getStatement() === $avStmt['return'], $endStatement->getResult() === $inner, $avDescribe($endStatement->toPublic()), $avDescribe($endStatement)];
+	$r['end statement uninitialized'] = $avCatch(static fn () => (new \ReflectionClass($c['InternalEndStatementResult']))->newInstanceWithoutConstructor()->toPublic());
+
+	$throwPoints = ['x' => $c['InternalThrowPoint']::createImplicit($avScope, $avN['call']), 5 => $c['InternalThrowPoint']::createExplicit($avScope, $types['exception'], $avN['call'], false)];
+	$impurePoints = [new $c['ImpurePoint']($avScope, $avN['call'], 'functionCall', 'f', true)];
+	$exitSets = [
+		'none' => [],
+		'return' => [$exit('return', 'f1')],
+		'break' => [$exit('return', 'avScope'), $exit('break', 'f1')],
+		'break1' => [$exit('break1', 'f2'), $exit('return', 'f1')],
+		'break2' => [$exit('break2', 'f1'), $exit('break3', 'f2')],
+		'breakVar' => [$exit('return', 'avScope'), $exit('breakVar', 'f2')],
+		'continue' => [$exit('continue', 'f1'), $exit('continue2', 'f2'), $exit('continue1', 'f3')],
+		'continue deep' => [$exit('continue4', 'avScope'), $exit('continueVar', 'f1'), $exit('break2', 'f3')],
+		'keyed' => ['a' => $exit('continue', 'f2'), 7 => $exit('return', 'f3')],
+	];
+	foreach ($exitSets as $setLabel => $exitPoints) {
+		foreach ([[false, null], [true, null], [true, true], [false, false]] as [$terminating, $endReachable]) {
+			foreach ([false, true] as $withEnds) {
+				$label = sprintf('result %s terminating=%s endReachable=%s ends=%s', $setLabel, var_export($terminating, true), var_export($endReachable, true), var_export($withEnds, true));
+				$r[$label] = $avCatch(static function () use ($c, $avScope, $terminating, $endReachable, $withEnds, $exitPoints, $throwPoints, $impurePoints, $endStatement, $flow, $avDescribe, $avStmt, $avCatch): array {
+					$result = new $c['InternalStatementResult']($avScope, $withEnds, $terminating, $exitPoints, $throwPoints, $impurePoints, $withEnds ? [$endStatement, 'e' => $endStatement] : [], $withEnds ? null : $flow, $endReachable);
+					$filtered = $result->filterOutLoopExitPoints();
+					return [
+						'scope' => $avDescribe($result->getScope()),
+						'hasYield' => $result->hasYield(),
+						'isAlwaysTerminating' => $result->isAlwaysTerminating(),
+						'isEndReachable' => $result->isEndReachable(),
+						'variableFlow' => $result->getVariableFlow() === $flow,
+						'exitPoints' => $result->getExitPoints() === $exitPoints,
+						'throwPoints' => $result->getThrowPoints() === $throwPoints,
+						'impurePoints' => $result->getImpurePoints() === $impurePoints,
+						'endStatements' => count($result->getEndStatements()),
+						'continue' => $avDescribe($result->getExitPointsByType(\PhpParser\Node\Stmt\Continue_::class)),
+						'break' => $avDescribe($result->getExitPointsByType(\PhpParser\Node\Stmt\Break_::class)),
+						'return' => $avDescribe($result->getExitPointsByType(\PhpParser\Node\Stmt\Return_::class)),
+						'undeclared' => $avDescribe($result->getExitPointsByType('AnalyserValuesNoSuchStatement')),
+						'outer' => $avDescribe($result->getExitPointsForOuterLoop()),
+						'back edge' => $avCatch(static fn () => $result->getLoopBackEdgeScope()),
+						'filtered same' => $filtered === $result,
+						'filtered' => $avDescribe($filtered),
+						'filtered back edge' => $avCatch(static fn () => $filtered->getLoopBackEdgeScope()),
+						'public' => $avDescribe($result->toPublic()),
+						'public filtered' => $avDescribe($result->toPublic()->filterOutLoopExitPoints()),
+						'public outer' => $avDescribe($result->toPublic()->getExitPointsForOuterLoop()),
+						'public continue' => $avDescribe($result->toPublic()->getExitPointsByType(\PhpParser\Node\Stmt\Continue_::class)),
+						'state' => $avDescribe($result),
+					];
+				});
+			}
+		}
+	}
+	$r['result named'] = $avDescribe(new $c['InternalStatementResult'](endReachable: true, impurePoints: [], throwPoints: [], exitPoints: [$exit('continue', 'f2')], isAlwaysTerminating: true, hasYield: false, scope: $avFactScopes['f1']));
+	$r['result non-object exit point'] = $avCatch(static fn () => new $c['InternalStatementResult']($avScope, false, false, [1], [], []));
+	$r['result non-object end statement'] = $avCatch(static fn () => new $c['InternalStatementResult']($avScope, false, false, [], [], [], ['x']));
+	$r['result non-object throw point'] = $avCatch(static fn () => (new $c['InternalStatementResult']($avScope, false, false, [], [null], []))->toPublic());
+	$r['result uninitialized'] = [
+		$avCatch(static fn () => (new \ReflectionClass($c['InternalStatementResult']))->newInstanceWithoutConstructor()->toPublic()),
+		$avCatch(static fn () => (new \ReflectionClass($c['InternalStatementResult']))->newInstanceWithoutConstructor()->getLoopBackEdgeScope()),
+		$avCatch(static fn () => (new \ReflectionClass($c['InternalStatementResult']))->newInstanceWithoutConstructor()->filterOutLoopExitPoints()),
+		$avCatch(static fn () => (new \ReflectionClass($c['InternalStatementResult']))->newInstanceWithoutConstructor()->getExitPointsByType('x')),
+	];
+
+	// the public classes directly
+	$publicExit = new $c['StatementExitPoint']($avStmt['break2'], $avScope);
+	$publicResult = new $c['StatementResult']($avOtherScope, true, true, [$publicExit, 'k' => new $c['StatementExitPoint']($avStmt['continueVar'], $avScope)], [], []);
+	$r['public result'] = [
+		$publicExit->getStatement() === $avStmt['break2'],
+		$publicExit->getScope() === $avScope,
+		$avDescribe($publicResult),
+		$avDescribe($publicResult->filterOutLoopExitPoints()),
+		$publicResult->filterOutLoopExitPoints() === $publicResult,
+		$avDescribe($publicResult->getExitPointsForOuterLoop()),
+		$avDescribe($publicResult->getExitPointsByType(\PhpParser\Node\Stmt\Continue_::class)),
+		$avDescribe((new $c['EndStatementResult']($avStmt['return'], $publicResult))->getResult()),
+		$avCatch(static fn () => (new \ReflectionClass($c['StatementResult']))->newInstanceWithoutConstructor()->filterOutLoopExitPoints()),
+		$avCatch(static fn () => (new \ReflectionClass($c['EndStatementResult']))->newInstanceWithoutConstructor()->getResult()),
+		$avCatch(static fn () => (new \ReflectionClass($c['StatementExitPoint']))->newInstanceWithoutConstructor()->getScope()),
+	];
+	$avStatementResults[$side] = $r;
+}
+foreach (['native', 'native over PHP collaborators'] as $side) {
+	foreach ($avStatementResults['php'] as $label => $described) {
+		check($described === ($avStatementResults[$side][$label] ?? null), "statement results parity, $side ($label): " . json_encode($described) . ' vs ' . json_encode($avStatementResults[$side][$label] ?? null));
+	}
+}
+check(count(array_filter($avStatementResults['php'], static fn ($row) => is_array($row) && ($row[0] ?? null) === 'ok')) >= 70, 'statement results: the fixture constructs the result matrix');
 
 // VariableFlowBuilder reads native throw points and argument results through
 // their direct entries: its answers over the native value classes equal its

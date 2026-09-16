@@ -345,6 +345,14 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_internal_throw_point();
 	pt_register_args_result();
 	pt_register_issetability_descriptor();
+	/* the statement results — the public ones before the internal ones
+	 * whose toPublic() return them */
+	pt_register_statement_exit_point();
+	pt_register_statement_result();
+	pt_register_end_statement_result();
+	pt_register_internal_statement_exit_point();
+	pt_register_internal_statement_result();
+	pt_register_internal_end_statement_result();
 
 	return SUCCESS;
 }

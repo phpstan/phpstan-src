@@ -4,8 +4,10 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node\Scalar\Int_;
 use PhpParser\Node\Stmt;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_map;
 
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/InternalStatementResult.cpp')]
 final class InternalStatementResult
 {
 

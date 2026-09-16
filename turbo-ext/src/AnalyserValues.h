@@ -22,6 +22,10 @@
 #include "generated/ArgsResult.h"
 #include "generated/ExpressionResult.h"
 #include "generated/InternalThrowPoint.h"
+#include "generated/InternalEndStatementResult.h"
+#include "generated/InternalStatementExitPoint.h"
+#include "generated/InternalStatementResult.h"
+#include "generated/StatementExitPoint.h"
 
 zv::Val pt_type_call(zend_object *object, const char *lcname, size_t len, uint32_t argc, zval *argv);
 
@@ -184,6 +188,94 @@ inline bool pt_args_result_is_passed_by_reference(zval *argsResult, zval *arg, b
 inline zval *pt_args_result_resolved_parameters_acceptor(zval *argsResult, zv::Val &hold)
 {
 	return ptav::read(argsResult, pt_ce_args_result, ptdecl::ArgsResult::slot::resolvedParametersAcceptor, PT_LC("getresolvedparametersacceptor"), hold);
+}
+
+/* }}} */
+
+/* {{{ InternalStatementResult: $result->getScope() / ->hasYield() /
+ * ->isAlwaysTerminating() / ->isEndReachable() / ->getExitPoints() /
+ * ->getThrowPoints() / ->getImpurePoints() / ->getEndStatements() /
+ * ->getVariableFlow() */
+
+inline zval *pt_internal_statement_result_scope(zval *result, zv::Val &hold)
+{
+	return ptav::read(result, pt_ce_internal_statement_result, ptdecl::InternalStatementResult::slot::scope, PT_LC("getscope"), hold);
+}
+
+inline bool pt_internal_statement_result_has_yield(zval *result, bool &out)
+{
+	return ptav::readBool(result, pt_ce_internal_statement_result, ptdecl::InternalStatementResult::slot::hasYield, PT_LC("hasyield"), out);
+}
+
+inline bool pt_internal_statement_result_is_always_terminating(zval *result, bool &out)
+{
+	return ptav::readBool(result, pt_ce_internal_statement_result, ptdecl::InternalStatementResult::slot::isAlwaysTerminating, PT_LC("isalwaysterminating"), out);
+}
+
+inline bool pt_internal_statement_result_is_end_reachable(zval *result, bool &out)
+{
+	return ptav::readBool(result, pt_ce_internal_statement_result, ptdecl::InternalStatementResult::slot::endReachable, PT_LC("isendreachable"), out);
+}
+
+inline zval *pt_internal_statement_result_exit_points(zval *result, zv::Val &hold)
+{
+	return ptav::read(result, pt_ce_internal_statement_result, ptdecl::InternalStatementResult::slot::exitPoints, PT_LC("getexitpoints"), hold);
+}
+
+inline zval *pt_internal_statement_result_throw_points(zval *result, zv::Val &hold)
+{
+	return ptav::read(result, pt_ce_internal_statement_result, ptdecl::InternalStatementResult::slot::throwPoints, PT_LC("getthrowpoints"), hold);
+}
+
+inline zval *pt_internal_statement_result_impure_points(zval *result, zv::Val &hold)
+{
+	return ptav::read(result, pt_ce_internal_statement_result, ptdecl::InternalStatementResult::slot::impurePoints, PT_LC("getimpurepoints"), hold);
+}
+
+inline zval *pt_internal_statement_result_end_statements(zval *result, zv::Val &hold)
+{
+	return ptav::read(result, pt_ce_internal_statement_result, ptdecl::InternalStatementResult::slot::endStatements, PT_LC("getendstatements"), hold);
+}
+
+inline zval *pt_internal_statement_result_variable_flow(zval *result, zv::Val &hold)
+{
+	return ptav::read(result, pt_ce_internal_statement_result, ptdecl::InternalStatementResult::slot::variableFlow, PT_LC("getvariableflow"), hold);
+}
+
+/* }}} */
+
+/* {{{ InternalStatementExitPoint / StatementExitPoint: $exitPoint->getStatement()
+ * / ->getScope(); InternalEndStatementResult: $endStatement->getStatement() /
+ * ->getResult() */
+
+inline zval *pt_internal_statement_exit_point_statement(zval *exitPoint, zv::Val &hold)
+{
+	return ptav::read(exitPoint, pt_ce_internal_statement_exit_point, ptdecl::InternalStatementExitPoint::slot::statement, PT_LC("getstatement"), hold);
+}
+
+inline zval *pt_internal_statement_exit_point_scope(zval *exitPoint, zv::Val &hold)
+{
+	return ptav::read(exitPoint, pt_ce_internal_statement_exit_point, ptdecl::InternalStatementExitPoint::slot::scope, PT_LC("getscope"), hold);
+}
+
+inline zval *pt_statement_exit_point_statement(zval *exitPoint, zv::Val &hold)
+{
+	return ptav::read(exitPoint, pt_ce_statement_exit_point, ptdecl::StatementExitPoint::slot::statement, PT_LC("getstatement"), hold);
+}
+
+inline zval *pt_statement_exit_point_scope(zval *exitPoint, zv::Val &hold)
+{
+	return ptav::read(exitPoint, pt_ce_statement_exit_point, ptdecl::StatementExitPoint::slot::scope, PT_LC("getscope"), hold);
+}
+
+inline zval *pt_internal_end_statement_result_statement(zval *endStatement, zv::Val &hold)
+{
+	return ptav::read(endStatement, pt_ce_internal_end_statement_result, ptdecl::InternalEndStatementResult::slot::statement, PT_LC("getstatement"), hold);
+}
+
+inline zval *pt_internal_end_statement_result_result(zval *endStatement, zv::Val &hold)
+{
+	return ptav::read(endStatement, pt_ce_internal_end_statement_result, ptdecl::InternalEndStatementResult::slot::result, PT_LC("getresult"), hold);
 }
 
 /* }}} */

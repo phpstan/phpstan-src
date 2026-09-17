@@ -61,6 +61,18 @@ class OversizedArrayBuilderTest extends PHPStanTestCase
 			'[1, \'FOO\' => 2, 3]',
 			'non-empty-array<int|(literal-string&non-falsy-string&uppercase-string), int>&oversized-array',
 		];
+		yield [
+			'[9223372036854775807 => 1, 2]',
+			'non-empty-array<int, int>&oversized-array',
+		];
+		yield [
+			'[9223372036854775806 => 1, 2, 3]',
+			'non-empty-array<int, int>&oversized-array',
+		];
+		yield [
+			'[9223372036854775807 => 1, ...[2, 3]]',
+			'non-empty-array<int, int>&oversized-array',
+		];
 	}
 
 	#[DataProvider('dataBuild')]

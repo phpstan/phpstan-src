@@ -480,13 +480,33 @@ private:
 		return frame->nativeTypesPromoted ? pt_expression_result_get_native_type(itemResult) : pt_expression_result_get_type(itemResult);
 	}
 
+	/* the callback as a PHP callable that outlives the call (the resolver
+	 * hands it to OversizedArrayBuilder): the closure over copies of
+	 * $itemResults and $nativeTypesPromoted */
+	static zv::Val itemTypeCallable(void *data)
+	{
+		ItemTypeFrame *frame = static_cast<ItemTypeFrame *>(data);
+		return pt_native_closure(&itemTypeCallbackBody, frame->itemResults, frame->nativeTypesPromoted);
+	}
+
+	/* the same closure called from PHP — captures: $itemResults,
+	 * $nativeTypesPromoted */
+	static void itemTypeCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
+	{
+		if (UNEXPECTED(!requireArguments(argc, 1, pt_arh_closure_name))) return;
+		ItemTypeFrame frame{&captures[0], Z_TYPE(captures[1]) == IS_TRUE};
+		zv::Val type = itemTypeCallback(&frame, &argv[0]);
+		if (UNEXPECTED(type.isUndef())) return;
+		type.intoReturnValue(return_value);
+	}
+
 	/* the typeCallback's body */
 	zv::Val resolveType(bool nativeTypesPromoted, zval *expr, zval *itemResults, zval *beforeScope) const
 	{
 		zv::Val type;
 		{
 			ItemTypeFrame frame{itemResults, nativeTypesPromoted};
-			pt_ietr_get_type getTypeCallback{&itemTypeCallback, &frame};
+			pt_ietr_get_type getTypeCallback{&itemTypeCallback, &frame, &itemTypeCallable};
 			type = getArrayType(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), expr, getTypeCallback);
 			if (UNEXPECTED(type.isUndef())) return zv::Val();
 		}

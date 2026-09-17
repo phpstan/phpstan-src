@@ -4146,13 +4146,19 @@ void pt_register_initializer_expr_type_resolver();
 #define PT_INITIALIZER_EXPR_TYPE_RESOLVER_CALCULATE_SCALARS_LIMIT 128
 /* the twin's `callable(Expr): Type $getTypeCallback` for native callers:
  * fn(data, $expr) answers the Expr's type (UNDEF = pending exception). The
- * resolver calls it only synchronously, so data may point at the caller's
- * stack; a PHP receiver or collaborator needing a callable gets a
- * NativeClosure over it for the call's duration. */
+ * native resolver calls fn only synchronously, so data may point at the
+ * caller's stack. Where the callback escapes into PHP — a collaborator or a
+ * receiver that is handed a callable and may keep it (OversizedArrayBuilder,
+ * a resolver that is not the native class) — the resolver asks
+ * toCallable(data) instead: a PHP callable answering like fn that owns
+ * copies of everything fn reads through data (a NativeClosure capturing
+ * the values the twin's closure captures), so it stays valid after the call
+ * returns; UNDEF = pending exception. */
 struct pt_ietr_get_type
 {
 	zv::Val (*fn)(void *data, zval *expr);
 	void *data;
+	zv::Val (*toCallable)(void *data);
 };
 /* the binary operators of pt_initializer_expr_type_resolver_get_binary_op_type():
  * get<Operator>Type($left, $right, $getTypeCallback) */

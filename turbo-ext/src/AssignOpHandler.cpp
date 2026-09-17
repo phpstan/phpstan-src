@@ -647,7 +647,7 @@ private:
 		ZVAL_COPY_VALUE(&getTypeCaptures[3], targetReadResult);
 		ZVAL_COPY_VALUE(&getTypeCaptures[4], rhsResult);
 		ZVAL_BOOL(&getTypeCaptures[5], nativeTypesPromoted);
-		pt_ietr_get_type getType{&getTypeCallback, getTypeCaptures};
+		pt_ietr_get_type getType{&getTypeCallback, getTypeCaptures, &getTypeCallable};
 
 		if (aohIs(expr, PT_CLASS_COALESCE_ASSIGN_OP_EXPR)) {
 			return cchComposeType(OBJ_PROP_NUM(handler, slots::coalesceCompositionHelper), nsr, AOH_PROP(expr, var), condResult, rightResult, beforeScope, chainResults, expr, nativeTypesPromoted);
@@ -675,6 +675,28 @@ private:
 		zv::Val type;
 		pt_engine_with_stack([&]() { type = operandType(static_cast<zval *>(data), e); });
 		return type;
+	}
+
+	/* the $getType as a PHP callable that outlives the call: a native
+	 * closure over copies of the captures */
+	static zv::Val getTypeCallable(void *data)
+	{
+		return pt_native_closure_new(&getTypeCallbackBody, 6, static_cast<zval *>(data));
+	}
+
+	/* the same closure called from PHP — captures: $expr, $nodeScopeResolver,
+	 * $beforeScope, $targetReadResult, $rhsResult, $nativeTypesPromoted */
+	static void getTypeCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
+	{
+		if (UNEXPECTED(argc < 1)) {
+			zend_throw_error(zend_ce_argument_count_error, "Too few arguments to function PHPStan\\Analyser\\ExprHandler\\AssignOpHandler::{closure}(), %u passed and exactly 1 expected", argc);
+			return;
+		}
+		zval *e = &argv[0];
+		ZVAL_DEREF(e);
+		zv::Val type = getTypeCallback(captures, e);
+		if (UNEXPECTED(type.isUndef())) return;
+		type.intoReturnValue(return_value);
 	}
 
 	static zv::Val operandType(zval *captures, zval *e)

@@ -13,10 +13,11 @@
  * caller hands the resolver its operand reader without allocating a closure
  * (the twin only ever calls the callback synchronously). A PHP callable
  * passed to the registered methods becomes such a callback over the value;
- * where a PHP collaborator needs a real callable (OversizedArrayBuilder, a
- * PHP receiver of an entry) a native callback is wrapped in a
- * PHPStanTurbo\NativeClosure holding a pointer to it for the call's duration.
- * The twin's own `fn (Expr $expr): Type => $this->getType($expr, $context)`
+ * where a PHP collaborator needs a real callable it may keep
+ * (OversizedArrayBuilder, a PHP receiver of an entry), the callback's
+ * toCallable() builds one that owns what it reads — the caller's NativeClosure
+ * over copies of its captures, never a pointer into a stack frame. The
+ * twin's own `fn (Expr $expr): Type => $this->getType($expr, $context)`
  * closures are callbacks over the resolver and the context.
  *
  * The arithmetic runs on the engine's own operator functions
@@ -813,15 +814,21 @@ inline zv::Val contextGetProperty(zval *context) { return contextGetter(pt_ietr_
 
 /* {{{ the getTypeCallback */
 
-/* $callback($expr) of a PHP callable handed to a registered method */
+/* $callback($expr) of a PHP callable handed to a registered method; the
+ * callable itself (another reference to it) where it escapes */
 zv::Val callableGetType(void *data, zval *expr)
 {
 	return pt_type_call_callable(static_cast<zval *>(data), 1, expr);
 }
 
+zv::Val callableToCallable(void *data)
+{
+	return zv::Val::copyOf(zv::Ref(static_cast<zval *>(data)));
+}
+
 inline pt_ietr_get_type callableCallback(zval *callable)
 {
-	return { &callableGetType, callable };
+	return { &callableGetType, callable, &callableToCallable };
 }
 
 inline zv::Val getTypeOf(const pt_ietr_get_type &callback, zval *expr)
@@ -829,26 +836,11 @@ inline zv::Val getTypeOf(const pt_ietr_get_type &callback, zval *expr)
 	return callback.fn(callback.data, expr);
 }
 
-/* the body of the NativeClosure bridging a native callback to a PHP
- * callable parameter — captures: the callback's address */
-void bridgeGetTypeBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
+/* the callback as a PHP callable for a collaborator that may keep it: the
+ * caller's owning callable (pt_ietr_get_type::toCallable) */
+inline zv::Val callbackCallable(const pt_ietr_get_type &callback)
 {
-	if (UNEXPECTED(argc < 1)) {
-		zend_throw_error(zend_ce_argument_count_error, "Too few arguments to function PHPStan\\Reflection\\InitializerExprTypeResolver::{closure}(), %u passed and exactly 1 expected", argc);
-		return;
-	}
-	const pt_ietr_get_type *callback = (const pt_ietr_get_type *) (uintptr_t) Z_LVAL(captures[0]);
-	zv::Val type = getTypeOf(*callback, &argv[0]);
-	if (UNEXPECTED(type.isUndef())) return;
-	type.intoReturnValue(return_value);
-}
-
-/* a PHP callable answering like the callback (the callable itself when the
- * callback wraps one); valid while the callback lives */
-zv::Val callbackCallable(const pt_ietr_get_type &callback)
-{
-	if (callback.fn == &callableGetType) return zv::Val::copyOf(zv::Ref(static_cast<zval *>(callback.data)));
-	return pt_native_closure(&bridgeGetTypeBody, (zend_long) (uintptr_t) &callback);
+	return callback.toCallable(callback.data);
 }
 
 /* }}} */
@@ -3203,7 +3195,7 @@ public:
 		uint64_t mask;
 		if (UNEXPECTED(!getTypeArmsOf(Z_OBJCE_P(expr), mask))) return zv::Val();
 		GetTypeFrame frame{self, context};
-		pt_ietr_get_type callback{&getTypeCallbackBody, &frame};
+		pt_ietr_get_type callback{&getTypeCallbackBody, &frame, &getTypeCallbackCallable};
 
 		for (unsigned arm = 0; mask != 0; arm++, mask >>= 1) {
 			if ((mask & 1) == 0) continue;
@@ -5047,6 +5039,36 @@ private:
 	static zv::Val getTypeCallbackBody(void *data, zval *expr)
 	{
 		GetTypeFrame *frame = static_cast<GetTypeFrame *>(data);
+		return getTypeOfExpr(frame->self, frame->context, expr);
+	}
+
+	/* the closure as a PHP callable that outlives the call: a NativeClosure
+	 * capturing $this and $context, like the twin's */
+	static zv::Val getTypeCallbackCallable(void *data)
+	{
+		GetTypeFrame *frame = static_cast<GetTypeFrame *>(data);
+		return pt_native_closure(&getTypeClosureBody, frame->self, frame->context);
+	}
+
+	/* fn (Expr $expr): Type => $this->getType($expr, $context) — captures:
+	 * $this, $context */
+	static void getTypeClosureBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
+	{
+		if (UNEXPECTED(argc < 1)) {
+			zend_throw_error(zend_ce_argument_count_error, "Too few arguments to function PHPStan\\Reflection\\InitializerExprTypeResolver::{closure}(), %u passed and exactly 1 expected", argc);
+			return;
+		}
+		zval *expr = &argv[0];
+		ZVAL_DEREF(expr);
+		zv::Val type = getTypeOfExpr(Z_OBJ(captures[0]), &captures[1], expr);
+		if (UNEXPECTED(type.isUndef())) return;
+		type.intoReturnValue(return_value);
+	}
+
+	/* the closure's body: the Expr parameter check, then getType() on a fresh
+	 * C stack segment when the current one runs low */
+	static zv::Val getTypeOfExpr(zend_object *self, zval *context, zval *expr)
+	{
 		zend_class_entry *exprCe = pt_class(PT_CLASS_EXPR);
 		if (UNEXPECTED(exprCe == NULL)) return zv::Val();
 		if (UNEXPECTED(Z_TYPE_P(expr) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(expr), exprCe))) {
@@ -5054,7 +5076,7 @@ private:
 			return zv::Val();
 		}
 		zv::Val type;
-		pt_engine_with_stack([&]() { type = InitializerExprTypeResolver(frame->self).getType(expr, frame->context); });
+		pt_engine_with_stack([&]() { type = InitializerExprTypeResolver(self).getType(expr, context); });
 		return type;
 	}
 

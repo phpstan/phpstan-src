@@ -825,6 +825,36 @@ private:
 		return operandType(frame->expr, frame->leftResult, frame->rightResult, frame->nativeTypesPromoted, frame->beforeScope, frame->nodeScopeResolver, e);
 	}
 
+	/* the $getType as a PHP callable that outlives the call (the resolver
+	 * hands it to a collaborator that may keep it): a native closure over
+	 * copies of the frame's values */
+	static zv::Val operandTypeCallable(void *data)
+	{
+		OperandTypeFrame *frame = static_cast<OperandTypeFrame *>(data);
+		zval getTypeCaptures[6];
+		ZVAL_COPY_VALUE(&getTypeCaptures[0], frame->expr);
+		ZVAL_COPY_VALUE(&getTypeCaptures[1], frame->leftResult);
+		ZVAL_COPY_VALUE(&getTypeCaptures[2], frame->rightResult);
+		ZVAL_BOOL(&getTypeCaptures[3], frame->nativeTypesPromoted);
+		ZVAL_COPY_VALUE(&getTypeCaptures[4], frame->beforeScope);
+		ZVAL_COPY_VALUE(&getTypeCaptures[5], frame->nodeScopeResolver);
+		return pt_native_closure_new(&getTypeBody, 6, getTypeCaptures);
+	}
+
+	/* static function (Expr $e) use ($expr, $leftResult, $rightResult,
+	 * $nativeTypesPromoted, $beforeScope, $nodeScopeResolver): Type —
+	 * captures in that order */
+	static void getTypeBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
+	{
+		if (UNEXPECTED(!ptoh::requireArgs(argc, 1, closureName))) return;
+		OperandTypeFrame frame{&captures[0], &captures[1], &captures[2], Z_TYPE(captures[3]) == IS_TRUE, &captures[4], &captures[5]};
+		zval *e = &argv[0];
+		ZVAL_DEREF(e);
+		zv::Val type = operandTypeCallback(&frame, e);
+		if (UNEXPECTED(type.isUndef())) return;
+		type.intoReturnValue(return_value);
+	}
+
 	/* function (bool $nativeTypesPromoted) use ($expr, $leftResult,
 	 * $rightResult, $nodeScopeResolver, $beforeScope): Type — captures:
 	 * $this, $expr, $leftResult, $rightResult, $nodeScopeResolver,
@@ -958,7 +988,7 @@ private:
 			}
 			default: {
 				OperandTypeFrame frame{expr, leftResult, rightResult, nativeTypesPromoted, beforeScope, nodeScopeResolver};
-				pt_ietr_get_type getTypeCallback{&operandTypeCallback, &frame};
+				pt_ietr_get_type getTypeCallback{&operandTypeCallback, &frame, &operandTypeCallable};
 				return operatorType(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), (uint8_t) kind, left, right, getTypeCallback);
 			}
 		}

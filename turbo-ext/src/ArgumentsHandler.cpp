@@ -856,7 +856,7 @@ private:
 		zend_class_entry *arrayExpr = pt_class(PT_CLASS_ARRAY_EXPR);
 		if (UNEXPECTED(arrayExpr == NULL)) return zv::Val();
 		if (instanceof_function(Z_OBJCE_P(inner), arrayExpr)) {
-			pt_ietr_get_type getTypeCallback{&skeletonType, frame};
+			pt_ietr_get_type getTypeCallback{&skeletonType, frame, &skeletonTypeCallable};
 			return pt_initializer_expr_type_resolver_get_array_type(handler.slot(slots::initializerExprTypeResolver), inner, getTypeCallback);
 		}
 		zv::Val stateType = pt_node_scope_resolver_find_scope_state_type(frame->nodeScopeResolver, inner, frame->scope);
@@ -1020,7 +1020,7 @@ private:
 		zv::Val initializerContext = initializerExprContextFromScope(scope);
 		if (UNEXPECTED(initializerContext.isUndef())) return zv::Val();
 		SkeletonFrame frame{self, nodeScopeResolver, scope, initializerContext.raw()};
-		pt_ietr_get_type getTypeCallback{&skeletonType, &frame};
+		pt_ietr_get_type getTypeCallback{&skeletonType, &frame, &skeletonTypeCallable};
 		return pt_initializer_expr_type_resolver_get_array_type(slot(slots::initializerExprTypeResolver), expr, getTypeCallback);
 	}
 

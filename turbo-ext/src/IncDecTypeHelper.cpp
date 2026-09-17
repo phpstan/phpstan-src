@@ -233,7 +233,7 @@ private:
 		ZVAL_COPY_VALUE(&getTypeCaptures[1], varExpr);
 		ZVAL_COPY_VALUE(&getTypeCaptures[2], varResult);
 		ZVAL_COPY_VALUE(&getTypeCaptures[3], one.raw());
-		pt_ietr_get_type getType{&getTypeCallback, getTypeCaptures};
+		pt_ietr_get_type getType{&getTypeCallback, getTypeCaptures, &getTypeCallable};
 
 		zval *resolver = OBJ_PROP_NUM(Z_OBJ(captures[0]), slots::initializerExprTypeResolver);
 		return pt_initializer_expr_type_resolver_get_binary_op_type(resolver, increment ? PT_IETR_OP_PLUS : PT_IETR_OP_MINUS, varExpr, one.raw(), getType);
@@ -259,6 +259,13 @@ private:
 			return zv::Val();
 		}
 		return zv::Val::adopt(type);
+	}
+
+	/* the $getType as a PHP callable that outlives the call: the closure over
+	 * copies of the captures */
+	static zv::Val getTypeCallable(void *data)
+	{
+		return pt_native_closure_new(&getTypeCallbackBody, 4, static_cast<zval *>(data));
 	}
 
 	/* static function (Expr $e) use ($nativeTypesPromoted, $varExpr,

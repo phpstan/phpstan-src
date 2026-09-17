@@ -214,7 +214,7 @@ private:
 		zval classTypeCaptures[2];
 		ZVAL_COPY_VALUE(&classTypeCaptures[0], &captures[2]);
 		ZVAL_BOOL(&classTypeCaptures[1], zend_is_true(&argv[0]));
-		pt_ietr_get_type getTypeCallback{&classTypeCallback, classTypeCaptures};
+		pt_ietr_get_type getTypeCallback{&classTypeCallback, classTypeCaptures, &classTypeCallable};
 		zv::Val type = getClassConstFetchTypeByReflection(OBJ_PROP_NUM(Z_OBJ(captures[0]), slots::initializerExprTypeResolver), class_, constantName, &captures[3], getTypeCallback);
 		if (UNEXPECTED(type.isUndef())) return;
 		type.intoReturnValue(return_value);
@@ -232,6 +232,23 @@ private:
 			return zv::Val();
 		}
 		return Z_TYPE(captures[1]) == IS_TRUE ? pt_expression_result_get_native_type(classResult) : pt_expression_result_get_type(classResult);
+	}
+
+	/* the callback as a PHP callable that outlives the call: the closure over
+	 * copies of the captures */
+	static zv::Val classTypeCallable(void *data)
+	{
+		return pt_native_closure_new(&classTypeCallbackBody, 2, static_cast<zval *>(data));
+	}
+
+	/* the same closure called from PHP — captures: $classResult,
+	 * $nativeTypesPromoted */
+	static void classTypeCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
+	{
+		if (UNEXPECTED(!requireArguments(argc, 1, pt_ccfh_closure_name))) return;
+		zv::Val type = classTypeCallback(captures, &argv[0]);
+		if (UNEXPECTED(type.isUndef())) return;
+		type.intoReturnValue(return_value);
 	}
 
 	/* fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) =>

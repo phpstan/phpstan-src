@@ -4297,6 +4297,11 @@ check($vwoResults['php'] === $vwoResults['native'], 'VariableWriteOffset::fromTy
 check($vwoResults['php'] === $vwoResults['native-on-php'], 'VariableWriteOffset::fromType on PHP types: ' . json_encode($vwoResults['php']) . ' vs ' . json_encode($vwoResults['native-on-php']));
 check($vwoResults['php']['int'] === ['value', 5] && $vwoResults['php']['numeric string'] === ['value', 5] && $vwoResults['php']['union'] === ['value', null], 'VariableWriteOffset::fromType observes the key shapes: ' . json_encode($vwoResults['php']));
 
+// ---- InitializerExprTypeResolver: an escaping $getTypeCallback ----
+// the stack-backed operand readers the native callers hand the resolver,
+// kept by PHP collaborators and called after the call returned
+require __DIR__ . '/initializer-escape.php';
+
 // ---- differential coverage completeness ----
 // Every shadowed class must be exercised by one of the tests/ scripts; the
 // classes not covered above have their own dedicated script.

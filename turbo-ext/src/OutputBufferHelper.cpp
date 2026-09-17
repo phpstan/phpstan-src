@@ -70,6 +70,26 @@ zv::Val typeExprTypeCallback(void *data, zval *expr)
 	return zv::Val::adopt(mixed);
 }
 
+/* the same closure called from PHP (it captures nothing) */
+void typeExprTypeCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
+{
+	(void) captures;
+	if (UNEXPECTED(argc < 1)) {
+		zend_throw_error(zend_ce_argument_count_error, "Too few arguments to function PHPStan\\Analyser\\ExprHandler\\Helper\\OutputBufferHelper::{closure}(), %u passed and exactly 1 expected", argc);
+		return;
+	}
+	zv::Val type = typeExprTypeCallback(NULL, &argv[0]);
+	if (UNEXPECTED(type.isUndef())) return;
+	type.intoReturnValue(return_value);
+}
+
+/* the callback as a PHP callable that outlives the call */
+zv::Val typeExprTypeCallable(void *data)
+{
+	(void) data;
+	return pt_native_closure(&typeExprTypeCallbackBody);
+}
+
 } // namespace
 
 namespace phpstanturbo {
@@ -148,7 +168,7 @@ private:
 		zv::Val deltaTypeHold = zv::Val::adopt(deltaType);
 		zv::Val right = pt_type_new(PT_CLASS_TYPE_EXPR, 1, deltaTypeHold.raw());
 		if (UNEXPECTED(right.isUndef())) return zv::Val();
-		pt_ietr_get_type callback{&typeExprTypeCallback, NULL};
+		pt_ietr_get_type callback{&typeExprTypeCallback, NULL, &typeExprTypeCallable};
 		return getPlusType(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), left.raw(), right.raw(), callback);
 	}
 };

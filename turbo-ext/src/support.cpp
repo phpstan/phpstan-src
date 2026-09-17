@@ -326,7 +326,6 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_FUNCTION_VARIANT */ {"functionVariant", "PHPStan\\Reflection\\FunctionVariant"},
 	/* PT_CLASS_EXTENDED_CALLABLE_FUNCTION_VARIANT */ {"extendedCallableFunctionVariant", "PHPStan\\Reflection\\ExtendedCallableFunctionVariant"},
 	/* PT_CLASS_NATIVE_FUNCTION_REFLECTION */ {"nativeFunctionReflection", "PHPStan\\Reflection\\Native\\NativeFunctionReflection"},
-	/* PT_CLASS_CLONE_HANDLER */ {"cloneHandler", "PHPStan\\Analyser\\ExprHandler\\CloneHandler"},
 	/* PT_CLASS_CLONE_EXPR */ {"cloneExpr", "PhpParser\\Node\\Expr\\Clone_"},
 	/* PT_CLASS_CLOSURE_RETURN_STATEMENTS_NODE */ {"closureReturnStatementsNode", "PHPStan\\Node\\ClosureReturnStatementsNode"},
 	/* PT_CLASS_BETTER_REFLECTION_PROVIDER */ {"betterReflectionProvider", "PHPStan\\Reflection\\BetterReflection\\BetterReflectionProvider"},
@@ -389,6 +388,10 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_UNARY_PLUS */ {"unaryPlus", "PhpParser\\Node\\Expr\\UnaryPlus"},
 	/* PT_CLASS_BITWISE_NOT */ {"bitwiseNot", "PhpParser\\Node\\Expr\\BitwiseNot"},
 	/* PT_CLASS_INTERPOLATED_STRING_PART */ {"interpolatedStringPart", "PhpParser\\Node\\InterpolatedStringPart"},
+	/* PT_CLASS_EXIT_EXPR */ {"exitExpr", "PhpParser\\Node\\Expr\\Exit_"},
+	/* PT_CLASS_PRINT_EXPR */ {"printExpr", "PhpParser\\Node\\Expr\\Print_"},
+	/* PT_CLASS_SHELL_EXEC_EXPR */ {"shellExecExpr", "PhpParser\\Node\\Expr\\ShellExec"},
+	/* PT_CLASS_ERROR_SUPPRESS_EXPR */ {"errorSuppressExpr", "PhpParser\\Node\\Expr\\ErrorSuppress"},
 };
 
 zend_class_entry *pt_class(int idx)

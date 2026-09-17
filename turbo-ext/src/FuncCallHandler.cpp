@@ -26,9 +26,10 @@
  * FunctionReflectionAccess.cpp. ArgumentsHandler / ArgumentsNormalizer /
  * ParametersAcceptorSelector and the acceptors' getters go through the call
  * handlers' shared sites (CallHandlerSupport.h), ClosureTypeResolver and
- * ClosureProcessor through their direct entries; the analyser classes still
- * PHP only here — the reflection provider, CloneHandler, SimpleThrowPoint,
- * DynamicReturnTypeExtensionRegistry, ImpossibleCheckTypeHelper — through
+ * ClosureProcessor and CloneHandler through their direct entries; the
+ * analyser classes still PHP only here — the reflection provider,
+ * SimpleThrowPoint, DynamicReturnTypeExtensionRegistry,
+ * ImpossibleCheckTypeHelper — through
  * the cached sites in the block below, one helper each; the dynamic
  * throw-type / return-type / type-specifying extensions (PHP forever)
  * through per-class polymorphic sites.
@@ -63,7 +64,6 @@ constexpr uint32_t PT_FCH_POLY_SITE_SLOTS_LIMIT = 1u << PT_FCH_POLY_SITE_SLOT_BI
 /* {{{ the PHP collaborators (one site each; switch to their direct entries
  * once they are ported) */
 
-pt_method_site pt_fch_resolve_clone_type_site;
 pt_method_site pt_fch_throw_point_explicit_site;
 pt_method_site pt_fch_throw_point_type_site;
 pt_method_site pt_fch_throw_point_any_throwable_site;
@@ -120,7 +120,7 @@ inline zv::Val processImmediatelyCalledCallable(zval *closureProcessor, zval *sc
 /* CloneHandler::resolveCloneType($exprType) */
 zv::Val resolveCloneType(zval *exprType)
 {
-	return pt_call_static_cached(pt_fch_resolve_clone_type_site, PT_CLASS_CLONE_HANDLER, PT_LC("resolveclonetype"), 1, exprType);
+	return pt_clone_handler_resolve_clone_type(exprType);
 }
 
 /* $assignHandler->processVirtualAssign($nodeScopeResolver, $scope, $storage,

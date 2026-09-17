@@ -16,7 +16,7 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\Traverser\CloneTypeTraverser;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -26,7 +26,7 @@ use PHPStan\Type\TypeTraverser;
  * @implements ExprHandler<Clone_>
  */
 #[AutowiredService]
-#[ReferencedByTurboExtension(key: 'cloneHandler')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/CloneHandler.cpp')]
 final class CloneHandler implements ExprHandler
 {
 

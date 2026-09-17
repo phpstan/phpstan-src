@@ -27,6 +27,7 @@ use PHPStan\Node\MethodCallableNode;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\StaticMethodCallableNode;
 use PHPStan\Parser\ReversePipeTransformerVisitor;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
 use function array_merge;
 
@@ -34,6 +35,7 @@ use function array_merge;
  * @implements ExprHandler<Pipe>
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/PipeHandler.cpp')]
 final class PipeHandler implements ExprHandler
 {
 

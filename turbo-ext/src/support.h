@@ -368,7 +368,6 @@ enum {
 	/* the function-call cluster (FuncCallHandler.cpp,
 	 * FuncCallScopeEffectsHelper.cpp, FunctionReflectionAccess.cpp) */
 	PT_CLASS_NATIVE_FUNCTION_REFLECTION,
-	PT_CLASS_CLONE_HANDLER,
 	PT_CLASS_CLONE_EXPR,
 	PT_CLASS_CLOSURE_RETURN_STATEMENTS_NODE,
 	PT_CLASS_BETTER_REFLECTION_PROVIDER,
@@ -436,6 +435,12 @@ enum {
 	PT_CLASS_UNARY_PLUS,
 	PT_CLASS_BITWISE_NOT,
 	PT_CLASS_INTERPOLATED_STRING_PART,
+	/* the clone, eval, exit, include, print, shell-exec, throw,
+	 * error-suppress and pipe handlers */
+	PT_CLASS_EXIT_EXPR,
+	PT_CLASS_PRINT_EXPR,
+	PT_CLASS_SHELL_EXEC_EXPR,
+	PT_CLASS_ERROR_SUPPRESS_EXPR,
 	PT_CLASS_COUNT
 };
 
@@ -3714,6 +3719,37 @@ void pt_register_post_dec_handler();
  * \Closure is — the handlers only hand it on as a typeCallback), the method's
  * \Closure otherwise (everything borrowed); UNDEF = pending exception */
 zv::Val pt_inc_dec_type_helper_get_type_callback(zval *helper, zval *varExpr, zval *varResult, bool increment);
+
+/* }}} */
+
+/* {{{ the clone, eval, exit, include, print, shell-exec, throw,
+ * error-suppress and pipe handlers (CloneHandler.cpp, EvalHandler.cpp,
+ * ExitHandler.cpp, IncludeHandler.cpp, PrintHandler.cpp, ShellExecHandler.cpp,
+ * ThrowHandler.cpp, ErrorSuppressHandler.cpp, PipeHandler.cpp —
+ * SimpleExprHandlers.h) — registered at the END of the sequence */
+
+extern zend_class_entry *pt_ce_clone_handler;
+extern zend_class_entry *pt_ce_eval_handler;
+extern zend_class_entry *pt_ce_exit_handler;
+extern zend_class_entry *pt_ce_include_handler;
+extern zend_class_entry *pt_ce_print_handler;
+extern zend_class_entry *pt_ce_shell_exec_handler;
+extern zend_class_entry *pt_ce_throw_handler;
+extern zend_class_entry *pt_ce_error_suppress_handler;
+extern zend_class_entry *pt_ce_pipe_handler;
+void pt_register_clone_handler();
+void pt_register_eval_handler();
+void pt_register_exit_handler();
+void pt_register_include_handler();
+void pt_register_print_handler();
+void pt_register_shell_exec_handler();
+void pt_register_throw_handler();
+void pt_register_error_suppress_handler();
+void pt_register_pipe_handler();
+
+/* CloneHandler::resolveCloneType($exprType) (borrowed); UNDEF = pending
+ * exception */
+zv::Val pt_clone_handler_resolve_clone_type(zval *exprType);
 
 /* }}} */
 

@@ -88,6 +88,18 @@ inline zv::Val impurePointsOf(zval *result)
 	return true;
 }
 
+/* array_merge($points, [$value]) */
+inline zv::Val mergeOne(zval *points, zv::Val value)
+{
+	if (UNEXPECTED(Z_TYPE_P(points) != IS_ARRAY)) {
+		zend_type_error("array_merge(): Argument #1 must be of type array, %s given", zend_zval_value_name(points));
+		return zv::Val();
+	}
+	zv::Arr one = zv::Arr::create(1);
+	one.push(std::move(value));
+	return ptcall::arrayMerge(points, one.raw());
+}
+
 /* $result->getScope() as an owned value */
 inline zv::Val scopeOf(zval *result)
 {
@@ -187,6 +199,28 @@ void childTypeBody(zval *captures, uint32_t argc, zval *argv, zval *return_value
 	pt_engine_with_stack([&]() { type = typeOf(&captures[0], nativeTypesPromoted); });
 	if (UNEXPECTED(type.isUndef())) return;
 	type.intoReturnValue(return_value);
+}
+
+/* static fn (bool $nativeTypesPromoted): Type => new MixedType() /
+ * new NonAcceptingNeverType() — captures nothing */
+template <typename H>
+void mixedTypeBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
+{
+	(void) captures;
+	(void) argv;
+	if (UNEXPECTED(!requireArgs(argc, 1, H::closureName))) return;
+	zv::Val type = pt_type_new_mixed_type();
+	if (UNEXPECTED(type.isUndef())) return;
+	type.intoReturnValue(return_value);
+}
+
+template <typename H>
+void nonAcceptingNeverTypeBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
+{
+	(void) captures;
+	(void) argv;
+	if (UNEXPECTED(!requireArgs(argc, 1, H::closureName))) return;
+	if (UNEXPECTED(!pt_non_accepting_never_type_new(return_value))) ZVAL_NULL(return_value);
 }
 
 /* }}} */

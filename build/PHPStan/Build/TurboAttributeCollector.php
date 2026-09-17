@@ -56,7 +56,9 @@ use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Expr\Clone_;
 use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Expr\ConstFetch;
+use PhpParser\Node\Expr\ErrorSuppress;
 use PhpParser\Node\Expr\Eval_;
+use PhpParser\Node\Expr\Exit_;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Include_;
 use PhpParser\Node\Expr\Instanceof_;
@@ -71,7 +73,9 @@ use PhpParser\Node\Expr\PostDec;
 use PhpParser\Node\Expr\PostInc;
 use PhpParser\Node\Expr\PreDec;
 use PhpParser\Node\Expr\PreInc;
+use PhpParser\Node\Expr\Print_;
 use PhpParser\Node\Expr\PropertyFetch;
+use PhpParser\Node\Expr\ShellExec;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Expr\Ternary;
@@ -406,6 +410,10 @@ final class TurboAttributeCollector
 		'unaryPlus' => UnaryPlus::class,
 		'bitwiseNot' => BitwiseNot::class,
 		'interpolatedStringPart' => InterpolatedStringPart::class,
+		'exitExpr' => Exit_::class,
+		'printExpr' => Print_::class,
+		'shellExecExpr' => ShellExec::class,
+		'errorSuppressExpr' => ErrorSuppress::class,
 	];
 
 	private string $realRoot;

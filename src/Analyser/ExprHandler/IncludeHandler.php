@@ -18,6 +18,7 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use function array_merge;
@@ -27,6 +28,7 @@ use function in_array;
  * @implements ExprHandler<Include_>
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/IncludeHandler.cpp')]
 final class IncludeHandler implements ExprHandler
 {
 

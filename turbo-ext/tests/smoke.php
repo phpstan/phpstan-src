@@ -4387,6 +4387,15 @@ $coveredElsewhere = [
 	\PHPStan\Analyser\ExprHandler\PreDecHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\PostIncHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\PostDecHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\CloneHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\EvalHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\ExitHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\IncludeHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\PrintHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\ShellExecHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\ThrowHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\ErrorSuppressHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\PipeHandler::class => 'walk-trace.php',
 ];
 foreach (array_keys($shadowedClasses) as $shadowedClass) {
 	check(

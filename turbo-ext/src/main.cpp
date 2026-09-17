@@ -519,6 +519,17 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_pre_dec_handler();
 	pt_register_post_inc_handler();
 	pt_register_post_dec_handler();
+	/* the clone, eval, exit, include, print, shell-exec, throw,
+	 * error-suppress and pipe handlers */
+	pt_register_clone_handler();
+	pt_register_eval_handler();
+	pt_register_exit_handler();
+	pt_register_include_handler();
+	pt_register_print_handler();
+	pt_register_shell_exec_handler();
+	pt_register_throw_handler();
+	pt_register_error_suppress_handler();
+	pt_register_pipe_handler();
 
 	return SUCCESS;
 }

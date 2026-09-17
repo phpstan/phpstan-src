@@ -13,12 +13,14 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Accessory\OversizedArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\GeneralizePrecision;
+use PHPStan\Type\IntegerType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
 use function array_splice;
 use function array_values;
 use function count;
+use const PHP_INT_MAX;
 
 #[AutowiredService]
 final class OversizedArrayBuilder
@@ -72,13 +74,16 @@ final class OversizedArrayBuilder
 					$isList = false;
 				} elseif ($itemKeyType->getValue() !== $nextAutoIndex) {
 					$isList = false;
-					$nextAutoIndex = $itemKeyType->getValue() + 1;
+					$nextAutoIndex = $this->advanceAutoIndex($itemKeyType->getValue());
 				} else {
-					$nextAutoIndex++;
+					$nextAutoIndex = $this->advanceAutoIndex($nextAutoIndex);
 				}
+			} elseif ($nextAutoIndex === null) {
+				$isList = false;
+				$itemKeyType = new IntegerType();
 			} else {
 				$itemKeyType = new ConstantIntegerType($nextAutoIndex);
-				$nextAutoIndex++;
+				$nextAutoIndex = $this->advanceAutoIndex($nextAutoIndex);
 			}
 
 			$generalizedKeyType = $itemKeyType->generalize(GeneralizePrecision::moreSpecific());
@@ -99,6 +104,16 @@ final class OversizedArrayBuilder
 		}
 
 		return TypeCombinator::intersect($arrayType, new NonEmptyArrayType(), new OversizedArrayType(), ...$accessories);
+	}
+
+	/**
+	 * Null means the next implicit key is unpredictable: PHP throws
+	 * "Cannot add element to the array as the next element is already occupied"
+	 * instead of wrapping the auto-index around to a float.
+	 */
+	private function advanceAutoIndex(int $index): ?int
+	{
+		return $index === PHP_INT_MAX ? null : $index + 1;
 	}
 
 }

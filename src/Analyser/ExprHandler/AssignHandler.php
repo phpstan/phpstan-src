@@ -92,6 +92,7 @@ use function is_float;
 use function is_int;
 use function is_nan;
 use function is_string;
+use const PHP_INT_MAX;
 
 /**
  * @implements ExprHandler<Assign|AssignRef>
@@ -1932,6 +1933,12 @@ final class AssignHandler implements ExprHandler
 	{
 		$implicitIndex = 0;
 		foreach ($arrayExpr->items as $arrayItem) {
+			if ($arrayItem->unpack) {
+				// An unpacked array contributes an unknown number of renumbered
+				// integer keys, so subsequent implicit indices are unpredictable
+				$implicitIndex = null;
+			}
+
 			if ($arrayItem->key !== null) {
 				$keyType = $scope->getType($arrayItem->key)->toArrayKey();
 
@@ -1940,7 +1947,7 @@ final class AssignHandler implements ExprHandler
 					if (count($keyValues) === 1) {
 						$keyValue = $keyValues[0];
 						if (is_int($keyValue) && $keyValue >= $implicitIndex) {
-							$implicitIndex = $keyValue + 1;
+							$implicitIndex = $this->advanceImplicitIndex($keyValue);
 						}
 					} elseif (!$keyType->isInteger()->no()) {
 						// Key could be an integer, but we don't know which one,
@@ -1952,7 +1959,7 @@ final class AssignHandler implements ExprHandler
 				$dimExpr = $arrayItem->key;
 			} elseif ($implicitIndex !== null) {
 				$dimExpr = new Node\Scalar\Int_($implicitIndex);
-				$implicitIndex++;
+				$implicitIndex = $this->advanceImplicitIndex($implicitIndex);
 			} else {
 				$dimExpr = new TypeExpr(new IntegerType());
 			}
@@ -1990,6 +1997,16 @@ final class AssignHandler implements ExprHandler
 	}
 
 	private const ARRAY_DIM_FETCH_WRITE_DEPTH_LIMIT = 5;
+
+	/**
+	 * Null means the next implicit key is unpredictable: PHP throws
+	 * "Cannot add element to the array as the next element is already occupied"
+	 * instead of wrapping the auto-index around to a float.
+	 */
+	private function advanceImplicitIndex(int $index): ?int
+	{
+		return $index === PHP_INT_MAX ? null : $index + 1;
+	}
 
 	/**
 	 * @param non-empty-list<ArrayDimFetch> $dimFetchStack

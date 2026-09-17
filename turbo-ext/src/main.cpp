@@ -547,6 +547,10 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_possibly_impure_call_expr_handler();
 	pt_register_set_existing_offset_value_type_expr_handler();
 	pt_register_set_offset_value_type_expr_handler();
+	pt_register_function_callable_node_handler();
+	pt_register_method_callable_node_handler();
+	pt_register_static_method_callable_node_handler();
+	pt_register_instantiation_callable_node_handler();
 
 	return SUCCESS;
 }

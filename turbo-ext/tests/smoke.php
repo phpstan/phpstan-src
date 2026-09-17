@@ -4409,6 +4409,10 @@ $coveredElsewhere = [
 	\PHPStan\Analyser\ExprHandler\Virtual\PossiblyImpureCallExprHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\Virtual\SetExistingOffsetValueTypeExprHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\Virtual\SetOffsetValueTypeExprHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\Virtual\FunctionCallableNodeHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\Virtual\MethodCallableNodeHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\Virtual\StaticMethodCallableNodeHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\Virtual\InstantiationCallableNodeHandler::class => 'walk-trace.php',
 ];
 foreach (array_keys($shadowedClasses) as $shadowedClass) {
 	check(

@@ -3805,6 +3805,15 @@ void pt_register_set_offset_value_type_expr_handler();
 zv::Val pt_virtual_expr_result_helper_create_type_expr_result(zval *helper, zval *scope, zval *expr);
 zv::Val pt_virtual_expr_result_helper_create_unset_offset_expr_result(zval *helper, zval *scope, zval *expr, zval *varResult, zval *dimResult);
 
+extern zend_class_entry *pt_ce_function_callable_node_handler;
+extern zend_class_entry *pt_ce_method_callable_node_handler;
+extern zend_class_entry *pt_ce_static_method_callable_node_handler;
+extern zend_class_entry *pt_ce_instantiation_callable_node_handler;
+void pt_register_function_callable_node_handler();
+void pt_register_method_callable_node_handler();
+void pt_register_static_method_callable_node_handler();
+void pt_register_instantiation_callable_node_handler();
+
 /* }}} */
 
 #endif /* PHPSTANTURBO_SUPPORT_H */

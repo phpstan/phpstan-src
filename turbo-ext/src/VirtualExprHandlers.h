@@ -4,7 +4,8 @@
  * VirtualExprResultHelper.cpp share: the reads of the virtual nodes they
  * handle, the `fn (TypeSpecifierContext $context, bool $nativeTypesPromoted)
  * => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context)`
- * specifyTypesCallback most of them create and the sub-result reads.
+ * specifyTypesCallback most of them create, the sub-result reads and the
+ * "Closure" class-name literal.
  *
  * The virtual node classes (PHPStan\Node\Expr\TypeExpr, ...) stay PHP: they
  * are final and their getters return private promoted properties, so an
@@ -47,6 +48,20 @@ inline NodeProp setOffsetValueTypeExprValue = PT_NODE_PROP(PT_CLASS_SET_OFFSET_V
 inline NodeProp setExistingOffsetValueTypeExprVar = PT_NODE_PROP(PT_CLASS_SET_EXISTING_OFFSET_VALUE_TYPE_EXPR, "var");
 inline NodeProp setExistingOffsetValueTypeExprDim = PT_NODE_PROP(PT_CLASS_SET_EXISTING_OFFSET_VALUE_TYPE_EXPR, "dim");
 inline NodeProp setExistingOffsetValueTypeExprValue = PT_NODE_PROP(PT_CLASS_SET_EXISTING_OFFSET_VALUE_TYPE_EXPR, "value");
+inline NodeProp functionCallableNodeName = PT_NODE_PROP(PT_CLASS_FUNCTION_CALLABLE_NODE, "name");
+inline NodeProp functionCallableNodeOriginalNode = PT_NODE_PROP(PT_CLASS_FUNCTION_CALLABLE_NODE, "originalNode");
+inline NodeProp methodCallableNodeVar = PT_NODE_PROP(PT_CLASS_METHOD_CALLABLE_NODE, "var");
+inline NodeProp methodCallableNodeName = PT_NODE_PROP(PT_CLASS_METHOD_CALLABLE_NODE, "name");
+inline NodeProp methodCallableNodeOriginalNode = PT_NODE_PROP(PT_CLASS_METHOD_CALLABLE_NODE, "originalNode");
+inline NodeProp staticMethodCallableNodeClass = PT_NODE_PROP(PT_CLASS_STATIC_METHOD_CALLABLE_NODE, "class");
+inline NodeProp staticMethodCallableNodeName = PT_NODE_PROP(PT_CLASS_STATIC_METHOD_CALLABLE_NODE, "name");
+inline NodeProp staticMethodCallableNodeOriginalNode = PT_NODE_PROP(PT_CLASS_STATIC_METHOD_CALLABLE_NODE, "originalNode");
+inline NodeProp instantiationCallableNodeClass = PT_NODE_PROP(PT_CLASS_INSTANTIATION_CALLABLE_NODE, "class");
+inline NodeProp instantiationCallableNodeOriginalNode = PT_NODE_PROP(PT_CLASS_INSTANTIATION_CALLABLE_NODE, "originalNode");
+/* the php-parser nodes' public properties the callable handlers read */
+inline NodeProp funcCallName = PT_NODE_PROP(PT_CLASS_FUNC_CALL, "name");
+inline NodeProp methodCallName = PT_NODE_PROP(PT_CLASS_METHOD_CALL, "name");
+inline NodeProp identifierName = PT_NODE_PROP(PT_CLASS_IDENTIFIER, "name");
 
 /* $node->getter() of a virtual node (an object) whose final class returns
  * the private property: the slot (dereferenced, borrowed) for an instance of
@@ -105,6 +120,51 @@ inline int isInstance(zval *value, int classIdx)
 	return true;
 }
 
+/* $node->$name of a php-parser node the twin's parameter type guarantees to
+ * be an instance of the property's class (dereferenced, borrowed); NULL with
+ * the engine's Error pending */
+inline zval *nodeRead(NodeProp &prop, zval *node)
+{
+	zval *value = prop.of(Z_OBJ_P(node));
+	if (EXPECTED(value != NULL && Z_TYPE_P(value) != IS_UNDEF)) return value;
+	if (EG(exception) != NULL) return NULL;
+	if (value == NULL) {
+		zend_throw_error(NULL, "Undefined property: %s::$%s", ZSTR_VAL(Z_OBJCE_P(node)->name), prop.name);
+		return NULL;
+	}
+	zend_throw_error(NULL, "Typed property %s::$%s must not be accessed before initialization", ZSTR_VAL(Z_OBJCE_P(node)->name), prop.name);
+	return NULL;
+}
+
+/* }}} */
+
+/* {{{ the PHP collaborators (one site each; switch to their direct entries
+ * once they are ported) */
+
+inline pt_method_site createFirstClassCallableSite;
+inline pt_method_site getFirstClassCallableTypeSite;
+inline pt_method_site initializerExprContextFromScopeSite;
+
+/* $initializerExprTypeResolver->createFirstClassCallable($function, $variants, $nativeTypesPromoted) */
+inline zv::Val createFirstClassCallable(zval *initializerExprTypeResolver, zval *function, zval *variants, bool nativeTypesPromoted)
+{
+	zv::Args argv{function, variants, nativeTypesPromoted};
+	return pt_call_method_cached(createFirstClassCallableSite, Z_OBJ_P(initializerExprTypeResolver), PT_LC("createfirstclasscallable"), 3, argv);
+}
+
+/* $initializerExprTypeResolver->getFirstClassCallableType($expr, $context, $nativeTypesPromoted) */
+inline zv::Val getFirstClassCallableType(zval *initializerExprTypeResolver, zval *expr, zval *context, bool nativeTypesPromoted)
+{
+	zv::Args argv{expr, context, nativeTypesPromoted};
+	return pt_call_method_cached(getFirstClassCallableTypeSite, Z_OBJ_P(initializerExprTypeResolver), PT_LC("getfirstclasscallabletype"), 3, argv);
+}
+
+/* InitializerExprContext::fromScope($scope) */
+inline zv::Val initializerExprContextFromScope(zval *scope)
+{
+	return pt_call_static_cached(initializerExprContextFromScopeSite, PT_CLASS_INITIALIZER_EXPR_CONTEXT, PT_LC("fromscope"), 1, scope);
+}
+
 /* }}} */
 
 /* {{{ closures and small value helpers */
@@ -144,6 +204,32 @@ inline zval *promotedScope(zval *scope, bool nativeTypesPromoted, zv::Val &hold)
 	if (!nativeTypesPromoted) return scope;
 	hold = pt_mutating_scope_do_not_treat_phpdoc_types_as_certain(Z_OBJ_P(scope));
 	return hold.isUndef() ? NULL : hold.raw();
+}
+
+/* ExpressionContext::createDeep($context->shouldResolveTemplateArguments());
+ * UNDEF = pending exception */
+inline zv::Val createDeepContext(zval *context)
+{
+	bool resolveTemplateArguments;
+	if (UNEXPECTED(!pt_expression_context_should_resolve_template_arguments(context, resolveTemplateArguments))) return zv::Val();
+	return pt_expression_context_create_deep(resolveTemplateArguments);
+}
+
+/* the "Closure" class-name literal (a permanent interned string, module
+ * startup) */
+inline zend_string *closureClassName = nullptr;
+
+inline void initLiterals()
+{
+	if (closureClassName == nullptr) closureClassName = zend_string_init_interned(PT_LC("Closure"), 1);
+}
+
+/* new ObjectType(Closure::class); UNDEF = pending exception */
+inline zv::Val closureObjectType()
+{
+	zval out;
+	if (UNEXPECTED(!pt_object_type_new(&out, closureClassName))) return zv::Val();
+	return zv::Val::adopt(out);
 }
 
 /* }}} */

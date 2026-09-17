@@ -1938,9 +1938,13 @@ final class AssignHandler implements ExprHandler
 		$implicitIndex = 0;
 		foreach ($arrayExpr->items as $arrayItem) {
 			if ($arrayItem->unpack) {
-				// An unpacked array contributes an unknown number of renumbered
-				// integer keys, so subsequent implicit indices are unpredictable
-				$implicitIndex = null;
+				// An unpacked item adds an unknown number of elements, so the
+				// following implicit indices are only predictable when the
+				// unpacked array has a known shape.
+				if ($implicitIndex !== null) {
+					$implicitIndex = $this->advanceImplicitIndexByUnpackedArray($implicitIndex, $scope->getType($arrayItem->value));
+				}
+				continue;
 			}
 
 			if ($arrayItem->key !== null) {
@@ -2010,6 +2014,39 @@ final class AssignHandler implements ExprHandler
 	private function advanceImplicitIndex(int $index): ?int
 	{
 		return $index === PHP_INT_MAX ? null : $index + 1;
+	}
+
+	private function advanceImplicitIndexByUnpackedArray(int $implicitIndex, Type $unpackedType): ?int
+	{
+		$constantArrays = $unpackedType->getConstantArrays();
+		if (count($constantArrays) !== 1) {
+			return null;
+		}
+
+		$constantArray = $constantArrays[0];
+		if (count($constantArray->getOptionalKeys()) > 0 || !$constantArray->isUnsealed()->no()) {
+			return null;
+		}
+
+		foreach ($constantArray->getKeyTypes() as $keyType) {
+			// String keys are preserved by unpacking, only integer keys are renumbered
+			if ($keyType->isString()->yes()) {
+				continue;
+			}
+
+			if (!$keyType->isInteger()->yes()) {
+				return null;
+			}
+
+			$nextIndex = $this->advanceImplicitIndex($implicitIndex);
+			if ($nextIndex === null) {
+				return null;
+			}
+
+			$implicitIndex = $nextIndex;
+		}
+
+		return $implicitIndex;
 	}
 
 	/**

@@ -129,4 +129,14 @@ class DuplicateKeysInLiteralArraysRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug15248(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15248.php'], [
+			[
+				"Array has 2 duplicate keys with value 'a' ('a', 'a').",
+				20,
+			],
+		]);
+	}
+
 }

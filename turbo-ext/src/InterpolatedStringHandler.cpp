@@ -10,9 +10,9 @@
  * specifyTypesCallback ($this, $expr).
  *
  * NodeScopeResolver, ExpressionResult, ExpressionContext,
- * ImplicitToStringCallHelper, VariableFlow, DefaultNarrowingHelper and the
- * Type kernel are called through their direct entries;
- * InitializerExprTypeResolver::resolveConcatType() through a cached site.
+ * ImplicitToStringCallHelper, VariableFlow, DefaultNarrowingHelper,
+ * InitializerExprTypeResolver::resolveConcatType() and the Type kernel are
+ * called through their direct entries.
  */
 
 #include "support.h"
@@ -31,13 +31,10 @@ using phpstanturbo::visitors::NodeProp;
 NodeProp pt_ish_parts = PT_NODE_PROP(PT_CLASS_INTERPOLATED_STRING, "parts");
 NodeProp pt_ish_part_value = PT_NODE_PROP(PT_CLASS_INTERPOLATED_STRING_PART, "value");
 
-pt_method_site pt_ish_resolve_concat_type_site;
-
 /* $initializerExprTypeResolver->resolveConcatType($left, $right) */
 zv::Val resolveConcatType(zval *resolver, zval *left, zval *right)
 {
-	zv::Args argv{left, right};
-	return pt_call_method_cached(pt_ish_resolve_concat_type_site, Z_OBJ_P(resolver), PT_LC("resolveconcattype"), 2, argv);
+	return pt_initializer_expr_type_resolver_resolve_concat_type(resolver, left, right);
 }
 
 /* foreach ($expr->parts as $part): the array iterated (an addref'ed copy,

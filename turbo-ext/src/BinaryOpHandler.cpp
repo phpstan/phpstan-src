@@ -8,8 +8,9 @@
  * what the PHP closures capture: the typeCallback ($this, $expr, $leftResult,
  * $rightResult, $nodeScopeResolver, $beforeScope), its operand reader
  * $getType ($expr, $leftResult, $rightResult, $nativeTypesPromoted,
- * $beforeScope, $nodeScopeResolver — created only where the twin hands it to
- * InitializerExprTypeResolver; the typeCallback's own asks read the operands
+ * $beforeScope, $nodeScopeResolver — a pt_ietr_get_type over the
+ * typeCallback's frame where the twin hands it to InitializerExprTypeResolver,
+ * which calls it synchronously; the typeCallback's own asks read the operands
  * directly), the specifyTypesCallback ($this, $expr, $leftResult,
  * $rightResult, $nodeScopeResolver, $beforeScope, $specifySubResults,
  * $leftArgResult, $rightArgResult, $typeCallback) and its identical-type
@@ -28,10 +29,10 @@
  * InternalThrowPoint, SpecifiedTypes, TypeSpecifierContext, ExprPrinter,
  * IdenticalNarrowingHelper, DefaultNarrowingHelper, TypeCombinator and the
  * Type kernel are called through their direct entries; the collaborators
- * that stay PHP for now (InitializerExprTypeResolver,
- * RicherScopeGetTypeHelper) through the cached method sites in the block
- * below, one helper each; ImplicitToStringCallHelper and CountNarrowingHelper
- * through their direct entries.
+ * that stay PHP for now (RicherScopeGetTypeHelper) through the cached method
+ * sites in the block below, one helper each; InitializerExprTypeResolver,
+ * ImplicitToStringCallHelper and CountNarrowingHelper through their direct
+ * entries.
  */
 
 #include "support.h"
@@ -143,11 +144,8 @@ int kindOf(zval *expr)
 /* {{{ the PHP collaborators (one site each; switch to their direct entries
  * once they are ported) */
 
-pt_method_site pt_boh_resolve_concat_type_site;
-pt_method_site pt_boh_resolve_equal_type_site;
 pt_method_site pt_boh_get_identical_result_site;
 pt_method_site pt_boh_get_not_identical_result_site;
-pt_method_site pt_boh_operator_type_sites[KIND_OTHER];
 
 /* $implicitToStringCallHelper->processImplicitToStringCall($expr, $scope, $exprResult) */
 zv::Val processImplicitToStringCall(zval *helper, zval *expr, zval *scope, zval *exprResult)
@@ -158,43 +156,36 @@ zv::Val processImplicitToStringCall(zval *helper, zval *expr, zval *scope, zval 
 /* $initializerExprTypeResolver->resolveConcatType($left, $right) */
 zv::Val resolveConcatType(zval *resolver, zval *left, zval *right)
 {
-	zv::Args argv{left, right};
-	return pt_call_method_cached(pt_boh_resolve_concat_type_site, Z_OBJ_P(resolver), PT_LC("resolveconcattype"), 2, argv);
+	return pt_initializer_expr_type_resolver_resolve_concat_type(resolver, left, right);
 }
 
 /* $initializerExprTypeResolver->resolveEqualType($leftType, $rightType) */
 zv::Val resolverEqualType(zval *resolver, zval *leftType, zval *rightType)
 {
-	zv::Args argv{leftType, rightType};
-	return pt_call_method_cached(pt_boh_resolve_equal_type_site, Z_OBJ_P(resolver), PT_LC("resolveequaltype"), 2, argv);
+	return pt_initializer_expr_type_resolver_resolve_equal_type(resolver, leftType, rightType);
 }
 
 /* $initializerExprTypeResolver->get<Operator>Type($left, $right, $getType) of
  * the operators the twin delegates wholesale */
-zv::Val operatorType(zval *resolver, uint8_t kind, zval *left, zval *right, zval *getType)
+zv::Val operatorType(zval *resolver, uint8_t kind, zval *left, zval *right, const pt_ietr_get_type &getType)
 {
-	static constexpr struct
-	{
-		const char *lcname;
-		size_t len;
-	} names[KIND_OTHER] = {
-		{ NULL, 0 }, { NULL, 0 }, { NULL, 0 }, { NULL, 0 }, { NULL, 0 }, { NULL, 0 }, { NULL, 0 }, { NULL, 0 }, { NULL, 0 },
-		{ PT_LC("getspaceshiptype") },
-		{ PT_LC("getconcattype") },
-		{ PT_LC("getbitwiseandtype") },
-		{ PT_LC("getbitwiseortype") },
-		{ PT_LC("getbitwisexortype") },
-		{ PT_LC("getdivtype") },
-		{ PT_LC("getmodtype") },
-		{ PT_LC("getplustype") },
-		{ PT_LC("getminustype") },
-		{ PT_LC("getmultype") },
-		{ PT_LC("getpowtype") },
-		{ PT_LC("getshiftlefttype") },
-		{ PT_LC("getshiftrighttype") },
+	static constexpr pt_ietr_binary_operator operators[KIND_OTHER] = {
+		PT_IETR_OP_CONCAT, PT_IETR_OP_CONCAT, PT_IETR_OP_CONCAT, PT_IETR_OP_CONCAT, PT_IETR_OP_CONCAT, PT_IETR_OP_CONCAT, PT_IETR_OP_CONCAT, PT_IETR_OP_CONCAT, PT_IETR_OP_CONCAT,
+		PT_IETR_OP_SPACESHIP,
+		PT_IETR_OP_CONCAT,
+		PT_IETR_OP_BITWISE_AND,
+		PT_IETR_OP_BITWISE_OR,
+		PT_IETR_OP_BITWISE_XOR,
+		PT_IETR_OP_DIV,
+		PT_IETR_OP_MOD,
+		PT_IETR_OP_PLUS,
+		PT_IETR_OP_MINUS,
+		PT_IETR_OP_MUL,
+		PT_IETR_OP_POW,
+		PT_IETR_OP_SHIFT_LEFT,
+		PT_IETR_OP_SHIFT_RIGHT,
 	};
-	zv::Args argv{left, right, getType};
-	return pt_call_method_cached(pt_boh_operator_type_sites[kind], Z_OBJ_P(resolver), names[kind].lcname, names[kind].len, 3, argv);
+	return pt_initializer_expr_type_resolver_get_binary_op_type(resolver, operators[kind], left, right, getType);
 }
 
 /* $richerScopeGetTypeHelper->getIdenticalResult($scope, $expr, $nodeScopeResolver,
@@ -809,20 +800,29 @@ private:
 	}
 
 	/* static function (Expr $e) use ($expr, $leftResult, $rightResult,
-	 * $nativeTypesPromoted, $beforeScope, $nodeScopeResolver): Type —
-	 * captures in that order */
-	static void getTypeBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
+	 * $nativeTypesPromoted, $beforeScope, $nodeScopeResolver): Type — the
+	 * $getType InitializerExprTypeResolver calls synchronously, over the
+	 * typeCallback's frame */
+	struct OperandTypeFrame
 	{
-		if (UNEXPECTED(!ptoh::requireArgs(argc, 1, closureName))) return;
+		zval *expr;
+		zval *leftResult;
+		zval *rightResult;
+		bool nativeTypesPromoted;
+		zval *beforeScope;
+		zval *nodeScopeResolver;
+	};
+
+	static zv::Val operandTypeCallback(void *data, zval *e)
+	{
+		OperandTypeFrame *frame = static_cast<OperandTypeFrame *>(data);
 		zend_class_entry *exprCe = pt_class(PT_CLASS_EXPR);
-		if (UNEXPECTED(exprCe == NULL)) return;
-		if (UNEXPECTED(Z_TYPE(argv[0]) != IS_OBJECT || !instanceof_function(Z_OBJCE(argv[0]), exprCe))) {
-			zend_type_error("%s(): Argument #1 ($e) must be of type PhpParser\\Node\\Expr, %s given", closureName, zend_zval_value_name(&argv[0]));
-			return;
+		if (UNEXPECTED(exprCe == NULL)) return zv::Val();
+		if (UNEXPECTED(Z_TYPE_P(e) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(e), exprCe))) {
+			zend_type_error("%s(): Argument #1 ($e) must be of type PhpParser\\Node\\Expr, %s given", closureName, zend_zval_value_name(e));
+			return zv::Val();
 		}
-		zv::Val type = operandType(&captures[0], &captures[1], &captures[2], Z_TYPE(captures[3]) == IS_TRUE, &captures[4], &captures[5], &argv[0]);
-		if (UNEXPECTED(type.isUndef())) return;
-		type.intoReturnValue(return_value);
+		return operandType(frame->expr, frame->leftResult, frame->rightResult, frame->nativeTypesPromoted, frame->beforeScope, frame->nodeScopeResolver, e);
 	}
 
 	/* function (bool $nativeTypesPromoted) use ($expr, $leftResult,
@@ -957,15 +957,9 @@ private:
 				return zv::Val();
 			}
 			default: {
-				zval getTypeCaptures[6];
-				ZVAL_COPY_VALUE(&getTypeCaptures[0], expr);
-				ZVAL_COPY_VALUE(&getTypeCaptures[1], leftResult);
-				ZVAL_COPY_VALUE(&getTypeCaptures[2], rightResult);
-				ZVAL_BOOL(&getTypeCaptures[3], nativeTypesPromoted);
-				ZVAL_COPY_VALUE(&getTypeCaptures[4], beforeScope);
-				ZVAL_COPY_VALUE(&getTypeCaptures[5], nodeScopeResolver);
-				zv::Val getTypeClosure = pt_native_closure_new(&getTypeBody, 6, getTypeCaptures);
-				return operatorType(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), (uint8_t) kind, left, right, getTypeClosure.raw());
+				OperandTypeFrame frame{expr, leftResult, rightResult, nativeTypesPromoted, beforeScope, nodeScopeResolver};
+				pt_ietr_get_type getTypeCallback{&operandTypeCallback, &frame};
+				return operatorType(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), (uint8_t) kind, left, right, getTypeCallback);
 			}
 		}
 	}

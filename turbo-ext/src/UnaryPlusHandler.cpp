@@ -6,14 +6,16 @@
  * arginfo so Nette autowires it. processExpr() is registered as the class's
  * handler entry (Engine.h). The twin's closures are native closures capturing
  * what the PHP closures capture: the typeCallback ($this, $expr, $exprResult),
- * the $getTypeCallback it hands InitializerExprTypeResolver
- * ($nativeTypesPromoted, $expr, $exprResult) and the specifyTypesCallback
+ * the $getTypeCallback it hands InitializerExprTypeResolver (a stack
+ * capture array:
+ * $nativeTypesPromoted, $expr, $exprResult) and the specifyTypesCallback
  * ($this, $expr).
  *
  * NodeScopeResolver, ExpressionResult, ExpressionContext,
  * DefaultNarrowingHelper and the Type kernel are called through their direct
- * entries; InitializerExprTypeResolver::getUnaryPlusType() (which consults
- * the unary operator extensions) through a cached site.
+ * entries, and so is InitializerExprTypeResolver::getUnaryPlusType() (which
+ * consults the unary operator extensions), handed the $getTypeCallback as a
+ * pt_ietr_get_type over the captures (it calls it synchronously).
  */
 
 #include "support.h"
@@ -31,7 +33,6 @@ using phpstanturbo::visitors::NodeProp;
 
 NodeProp pt_uph_expr = PT_NODE_PROP(PT_CLASS_UNARY_PLUS, "expr");
 
-pt_method_site pt_uph_get_unary_plus_type_site;
 
 } // namespace
 
@@ -104,12 +105,31 @@ private:
 		pt_engine_with_stack([&]() {
 			zval *inner = ptoh::operand(pt_uph_expr, &captures[1]);
 			if (UNEXPECTED(inner == NULL)) return;
-			zv::Val getType = pt_native_closure(&getTypeCallbackBody, &nativeTypesPromoted, &captures[1], &captures[2]);
-			zv::Args callArgs{inner, getType.raw()};
-			type = pt_call_method_cached(pt_uph_get_unary_plus_type_site, Z_OBJ_P(OBJ_PROP_NUM(Z_OBJ(captures[0]), slots::initializerExprTypeResolver)), PT_LC("getunaryplustype"), 2, callArgs);
+			// $getType's captures ($nativeTypesPromoted, $expr, $exprResult),
+			// borrowed: the resolver calls it synchronously
+			zval getTypeCaptures[3];
+			ZVAL_COPY_VALUE(&getTypeCaptures[0], &nativeTypesPromoted);
+			ZVAL_COPY_VALUE(&getTypeCaptures[1], &captures[1]);
+			ZVAL_COPY_VALUE(&getTypeCaptures[2], &captures[2]);
+			pt_ietr_get_type getType{&getTypeCallback, getTypeCaptures};
+			type = pt_initializer_expr_type_resolver_get_unary_plus_type(OBJ_PROP_NUM(Z_OBJ(captures[0]), slots::initializerExprTypeResolver), inner, getType);
 		});
 		if (UNEXPECTED(type.isUndef())) return;
 		type.intoReturnValue(return_value);
+	}
+
+	/* the $getType as InitializerExprTypeResolver calls it — data: the
+	 * captures */
+	static zv::Val getTypeCallback(void *data, zval *e)
+	{
+		zval type;
+		ZVAL_NULL(&type);
+		getTypeCallbackBody(static_cast<zval *>(data), 1, e, &type);
+		if (UNEXPECTED(EG(exception) != NULL)) {
+			zval_ptr_dtor(&type);
+			return zv::Val();
+		}
+		return zv::Val::adopt(type);
 	}
 
 	/* static function (Expr $e) use ($nativeTypesPromoted, $expr,

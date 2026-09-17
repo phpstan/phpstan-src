@@ -13,8 +13,9 @@
  * call. The twin builds the InitializerExprContext first; it is built here
  * right before the first argument type is resolved, the only use it has
  * (its factory is pure, so nothing observable moves). InitializerExprContext
- * and InitializerExprTypeResolver stay PHP and are called through the cached
- * sites below; the php-parser Name / Identifier toString() too.
+ * stays PHP and is called through the cached sites below, the php-parser Name
+ * / Identifier toString() too; InitializerExprTypeResolver through its direct
+ * entry.
  */
 
 #include "support.h"
@@ -34,7 +35,6 @@ namespace {
 /* {{{ the PHP collaborators (one site each) */
 
 pt_method_site pt_dar_from_stub_parameter_site;
-pt_method_site pt_dar_get_type_site;
 pt_method_site pt_dar_attr_name_to_string_site;
 pt_method_site pt_dar_arg_name_to_string_site;
 
@@ -48,8 +48,7 @@ zv::Val initializerExprContextFromStubParameter(zval *className, zval *stubFile,
 /* $initializerExprTypeResolver->getType($expr, $context) */
 zv::Val initializerExprType(zval *initializerExprTypeResolver, zval *expr, zval *context)
 {
-	zv::Args argv{expr, context};
-	return pt_call_method_cached(pt_dar_get_type_site, Z_OBJ_P(initializerExprTypeResolver), PT_LC("gettype"), 2, argv);
+	return pt_initializer_expr_type_resolver_get_type(initializerExprTypeResolver, expr, context);
 }
 
 /* }}} */

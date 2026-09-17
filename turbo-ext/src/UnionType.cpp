@@ -2047,10 +2047,8 @@ public:
 			}
 			uniquedTypes.set(zv::Ref(key.raw()).asString(), zv::Val::copyOf(zv::Ref(type)));
 		}
-		zval *limit = classConstant(PT_CLASS_INITIALIZER_EXPR_TYPE_RESOLVER, PT_LC("CALCULATE_SCALARS_LIMIT"));
-		if (UNEXPECTED(limit == NULL)) return zv::Val();
 		zv::Val result;
-		if ((zend_long) zend_hash_num_elements(uniquedTypes.table()) > zval_get_long(limit)) {
+		if ((zend_long) zend_hash_num_elements(uniquedTypes.table()) > PT_INITIALIZER_EXPR_TYPE_RESOLVER_CALCULATE_SCALARS_LIMIT) {
 			result = zv::Val(zv::Arr::empty());
 		} else {
 			zv::Arr values = zv::Arr::create(zend_hash_num_elements(uniquedTypes.table()));

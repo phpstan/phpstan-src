@@ -374,23 +374,7 @@ inline zv::Val nsrReadTypeOfMaybeStored(zval *nodeScopeResolver, zval *expr, zva
 }
 
 /* the array-literal skeleton's PHP collaborators (gatherArrayArgTypeSkeleton()) */
-pt_method_site pt_ah_get_array_type_site;
-pt_method_site pt_ah_initializer_expr_get_type_site;
 pt_method_site pt_ah_context_from_scope_site;
-
-/* $initializerExprTypeResolver->getArrayType($expr, $getTypeCallback) */
-zv::Val initializerExprTypeResolverGetArrayType(zval *initializerExprTypeResolver, zval *expr, zval *getTypeCallback)
-{
-	zv::Args argv{expr, getTypeCallback};
-	return callOn(pt_ah_get_array_type_site, initializerExprTypeResolver, PT_LC("getarraytype"), "getArrayType", 2, argv);
-}
-
-/* $initializerExprTypeResolver->getType($expr, $context) */
-zv::Val initializerExprTypeResolverGetType(zval *initializerExprTypeResolver, zval *expr, zval *context)
-{
-	zv::Args argv{expr, context};
-	return callOn(pt_ah_initializer_expr_get_type_site, initializerExprTypeResolver, PT_LC("gettype"), "getType", 2, argv);
-}
 
 /* InitializerExprContext::fromScope($scope) */
 zv::Val initializerExprContextFromScope(zval *scope)
@@ -845,8 +829,8 @@ private:
 	zval *slot(uint32_t index) const { return OBJ_PROP_NUM(self, index); }
 
 	/* the `$getType = function (Expr $inner) use (&$getType, $nodeScopeResolver,
-	 * $scope, $initializerContext): Type` of gatherArrayArgTypeSkeleton(), over
-	 * the native closure's captures */
+	 * $scope, $initializerContext): Type` of gatherArrayArgTypeSkeleton() —
+	 * InitializerExprTypeResolver calls it synchronously, over this frame */
 	struct SkeletonFrame
 	{
 		zend_object *self;
@@ -872,14 +856,13 @@ private:
 		zend_class_entry *arrayExpr = pt_class(PT_CLASS_ARRAY_EXPR);
 		if (UNEXPECTED(arrayExpr == NULL)) return zv::Val();
 		if (instanceof_function(Z_OBJCE_P(inner), arrayExpr)) {
-			zv::Val getTypeCallback = skeletonTypeCallable(frame);
-			if (UNEXPECTED(getTypeCallback.isUndef())) return zv::Val();
-			return initializerExprTypeResolverGetArrayType(handler.slot(slots::initializerExprTypeResolver), inner, getTypeCallback.raw());
+			pt_ietr_get_type getTypeCallback{&skeletonType, frame};
+			return pt_initializer_expr_type_resolver_get_array_type(handler.slot(slots::initializerExprTypeResolver), inner, getTypeCallback);
 		}
 		zv::Val stateType = pt_node_scope_resolver_find_scope_state_type(frame->nodeScopeResolver, inner, frame->scope);
 		if (UNEXPECTED(stateType.isUndef())) return zv::Val();
 		if (!stateType.isNull()) return stateType;
-		return initializerExprTypeResolverGetType(handler.slot(slots::initializerExprTypeResolver), inner, frame->initializerContext);
+		return pt_initializer_expr_type_resolver_get_type(handler.slot(slots::initializerExprTypeResolver), inner, frame->initializerContext);
 	}
 
 	/* the callback as a PHP callable that outlives the call: the closure
@@ -1037,9 +1020,8 @@ private:
 		zv::Val initializerContext = initializerExprContextFromScope(scope);
 		if (UNEXPECTED(initializerContext.isUndef())) return zv::Val();
 		SkeletonFrame frame{self, nodeScopeResolver, scope, initializerContext.raw()};
-		zv::Val getTypeCallback = skeletonTypeCallable(&frame);
-		if (UNEXPECTED(getTypeCallback.isUndef())) return zv::Val();
-		return initializerExprTypeResolverGetArrayType(slot(slots::initializerExprTypeResolver), expr, getTypeCallback.raw());
+		pt_ietr_get_type getTypeCallback{&skeletonType, &frame};
+		return pt_initializer_expr_type_resolver_get_array_type(slot(slots::initializerExprTypeResolver), expr, getTypeCallback);
 	}
 
 	/* Mirrors gatherClosureArgType() */

@@ -7426,6 +7426,354 @@ $observations['native ' . \PHPStan\Reflection\Assertions::class] = (new Reflecti
 	}
 }
 
+// ---- InitializerExprTypeResolver ----
+// the DI service out of the string section's container: the arithmetic,
+// bitwise, comparison and concatenation type methods over a matrix of
+// operand types (constant ints / floats / strings incl. numeric and
+// decimal-int ones, unions, benevolent unions, integer ranges, mixed,
+// never, arrays), the unary and cast methods, array literals with
+// unpacking, function types, first-class callables, the private helpers
+// through a bound closure, and getType() over a parsed corpus of constant
+// expressions in an empty, a class and a trait context (class constants of
+// the fixture: typed / untyped / final / enum / cyclic)
+require_once __DIR__ . '/type-family-initializer-fixture.php';
+$observations['native PHPStan\Reflection\InitializerExprTypeResolver'] = (new ReflectionMethod(\PHPStan\Reflection\InitializerExprTypeResolver::class, 'getType'))->isInternal();
+{
+	$resolver = $stringContainer->getByType(\PHPStan\Reflection\InitializerExprTypeResolver::class);
+	$r = [];
+	$catching = static function (callable $cb) use ($view): mixed {
+		try {
+			return $view($cb());
+		} catch (\Throwable $e) {
+			return ['throws', get_class($e)];
+		}
+	};
+	$viewResult = static fn (\PHPStan\Type\TypeResult $result): array => [$view($result->type), $result->reasons];
+	$te = static fn (\PHPStan\Type\Type $type): \PHPStan\Node\Expr\TypeExpr => new \PHPStan\Node\Expr\TypeExpr($type);
+	$getType = null;
+	$getType = static function (\PhpParser\Node\Expr $e) use (&$getType, $resolver): \PHPStan\Type\Type {
+		if ($e instanceof \PHPStan\Node\Expr\TypeExpr) {
+			return $e->getExprType();
+		}
+		if ($e instanceof \PhpParser\Node\Expr\BinaryOp\Mod) {
+			return $resolver->getModType($e->left, $e->right, $getType);
+		}
+		if ($e instanceof \PhpParser\Node\Expr\BinaryOp\Mul) {
+			return $resolver->getMulType($e->left, $e->right, $getType);
+		}
+		if ($e instanceof \PhpParser\Node\Scalar\Int_) {
+			return new \PHPStan\Type\Constant\ConstantIntegerType($e->value);
+		}
+		return new \PHPStan\Type\MixedType();
+	};
+	$int = static fn (int $value): \PHPStan\Type\Type => new \PHPStan\Type\Constant\ConstantIntegerType($value);
+	$str = static fn (string $value): \PHPStan\Type\Type => new \PHPStan\Type\Constant\ConstantStringType($value);
+	$range = static fn (?int $min, ?int $max): \PHPStan\Type\Type => \PHPStan\Type\IntegerRangeType::fromInterval($min, $max);
+	$operands = [
+		'int0' => $int(0),
+		'int1' => $int(1),
+		'int7' => $int(7),
+		'int-3' => $int(-3),
+		'intMax' => $int(PHP_INT_MAX),
+		'intMin' => $int(PHP_INT_MIN),
+		'float0' => new \PHPStan\Type\Constant\ConstantFloatType(0.0),
+		'float2.5' => new \PHPStan\Type\Constant\ConstantFloatType(2.5),
+		'string5' => $str('5'),
+		'string-2' => $str('-2'),
+		'stringAbc' => $str('abc'),
+		'stringEmpty' => $str(''),
+		'string1.5' => $str('1.5'),
+		'true' => new \PHPStan\Type\Constant\ConstantBooleanType(true),
+		'null' => new \PHPStan\Type\NullType(),
+		'int' => new \PHPStan\Type\IntegerType(),
+		'float' => new \PHPStan\Type\FloatType(),
+		'string' => new \PHPStan\Type\StringType(),
+		'numericString' => new \PHPStan\Type\IntersectionType([new \PHPStan\Type\StringType(), new \PHPStan\Type\Accessory\AccessoryNumericStringType()]),
+		'decimalIntString' => new \PHPStan\Type\IntersectionType([new \PHPStan\Type\StringType(), new \PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType()]),
+		'nonEmptyLowercase' => new \PHPStan\Type\IntersectionType([new \PHPStan\Type\StringType(), new \PHPStan\Type\Accessory\AccessoryNonEmptyStringType(), new \PHPStan\Type\Accessory\AccessoryLowercaseStringType(), new \PHPStan\Type\Accessory\AccessoryLiteralStringType()]),
+		'range0-10' => $range(0, 10),
+		'rangeMin--1' => $range(null, -1),
+		'range5-max' => $range(5, null),
+		'range-4-6' => $range(-4, 6),
+		'unionConsts' => new \PHPStan\Type\UnionType([$int(1), $int(2), $int(4)]),
+		'unionRangeConst' => new \PHPStan\Type\UnionType([$range(0, 5), $int(10)]),
+		'unionIntFloat' => new \PHPStan\Type\UnionType([new \PHPStan\Type\IntegerType(), new \PHPStan\Type\FloatType()]),
+		'benevolent' => new \PHPStan\Type\BenevolentUnionType([new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()]),
+		'mixed' => new \PHPStan\Type\MixedType(),
+		'never' => new \PHPStan\Type\NeverType(),
+		'neverExplicit' => new \PHPStan\Type\NeverType(true),
+		'constArray' => new \PHPStan\Type\Constant\ConstantArrayType([$int(0), $int(1)], [$int(1), $str('a')], [2]),
+		'constShape' => new \PHPStan\Type\Constant\ConstantArrayType([$str('a'), $str('b')], [new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()], [0], [1]),
+		'arrayStringInt' => new \PHPStan\Type\ArrayType(new \PHPStan\Type\StringType(), new \PHPStan\Type\IntegerType()),
+		'nonEmptyList' => new \PHPStan\Type\IntersectionType([new \PHPStan\Type\ArrayType(\PHPStan\Type\IntegerRangeType::createAllGreaterThanOrEqualTo(0), new \PHPStan\Type\IntegerType()), new \PHPStan\Type\Accessory\AccessoryArrayListType(), new \PHPStan\Type\Accessory\NonEmptyArrayType()]),
+		'enumCase' => new \PHPStan\Type\Enum\EnumCaseObjectType(\PHPStanTurboTests\InitializerEnum::class, 'One'),
+		'object' => new \PHPStan\Type\ObjectType(\stdClass::class),
+	];
+	foreach (['getPlusType', 'getMinusType', 'getMulType', 'getDivType', 'getModType', 'getPowType', 'getShiftLeftType', 'getShiftRightType', 'getBitwiseAndType', 'getBitwiseOrType', 'getBitwiseXorType', 'getSpaceshipType', 'getConcatType'] as $method) {
+		foreach ($operands as $leftName => $left) {
+			foreach ($operands as $rightName => $right) {
+				$r["$method $leftName $rightName"] = $catching(static fn () => $resolver->$method($te($left), $te($right), $getType));
+			}
+		}
+	}
+	foreach ($operands as $leftName => $left) {
+		foreach ($operands as $rightName => $right) {
+			$r["resolveIdenticalType $leftName $rightName"] = $catching(static fn () => $viewResult($resolver->resolveIdenticalType($left, $right)));
+			$r["resolveEqualType $leftName $rightName"] = $catching(static fn () => $viewResult($resolver->resolveEqualType($left, $right)));
+		}
+	}
+	$castClasses = [
+		'int' => \PhpParser\Node\Expr\Cast\Int_::class,
+		'bool' => \PhpParser\Node\Expr\Cast\Bool_::class,
+		'double' => \PhpParser\Node\Expr\Cast\Double::class,
+		'string' => \PhpParser\Node\Expr\Cast\String_::class,
+		'array' => \PhpParser\Node\Expr\Cast\Array_::class,
+		'object' => \PhpParser\Node\Expr\Cast\Object_::class,
+		'unset' => \PhpParser\Node\Expr\Cast\Unset_::class,
+	];
+	foreach ($operands as $name => $operand) {
+		$r["getUnaryMinusType $name"] = $catching(static fn () => $resolver->getUnaryMinusType($te($operand), $getType));
+		$r["getUnaryPlusType $name"] = $catching(static fn () => $resolver->getUnaryPlusType($te($operand), $getType));
+		$r["getBitwiseNotType $name"] = $catching(static fn () => $resolver->getBitwiseNotType($te($operand), $getType));
+		$r["getUnaryMinusTypeFromType $name"] = $catching(static fn () => $resolver->getUnaryMinusTypeFromType($te($operand), $operand));
+		$r["getBitwiseNotTypeFromType $name"] = $catching(static fn () => $resolver->getBitwiseNotTypeFromType($operand));
+		$r["getCastObjectType $name"] = $catching(static fn () => $resolver->getCastObjectType($operand));
+		foreach ($castClasses as $castName => $castClass) {
+			$r["getCastType $castName $name"] = $catching(static fn () => $resolver->getCastType(new $castClass($te($operand)), $getType));
+		}
+	}
+	$r['getCastObjectType union of shapes'] = $catching(static fn () => $resolver->getCastObjectType(new \PHPStan\Type\UnionType([$operands['constArray'], $operands['constShape'], new \PHPStan\Type\ObjectType(\stdClass::class)])));
+
+	// the private helpers, called in the class's scope
+	$private = static fn (string $method, mixed ...$args): mixed => (fn () => $this->$method(...$args))->call($resolver);
+	$staticPrivate = static fn (string $method, mixed ...$args): mixed => \Closure::bind(static fn () => self::$method(...$args), null, \PHPStan\Reflection\InitializerExprTypeResolver::class)();
+	$nodes = [
+		'plus' => new \PhpParser\Node\Expr\BinaryOp\Plus($te($int(1)), $te($int(1))),
+		'minus' => new \PhpParser\Node\Expr\BinaryOp\Minus($te($int(1)), $te($int(1))),
+		'mul' => new \PhpParser\Node\Expr\BinaryOp\Mul($te($int(1)), $te($int(1))),
+		'div' => new \PhpParser\Node\Expr\BinaryOp\Div($te($int(1)), $te($int(1))),
+		'shiftLeft' => new \PhpParser\Node\Expr\BinaryOp\ShiftLeft($te($int(1)), $te($int(1))),
+		'shiftRight' => new \PhpParser\Node\Expr\BinaryOp\ShiftRight($te($int(1)), $te($int(1))),
+		'mod' => new \PhpParser\Node\Expr\BinaryOp\Mod($te($int(1)), $te($int(1))),
+	];
+	$integerOperands = ['int0' => $int(0), 'int7' => $int(7), 'int-3' => $int(-3), 'intMax' => $int(PHP_INT_MAX), 'intMin' => $int(PHP_INT_MIN), 'range0-10' => $range(0, 10), 'rangeMin--1' => $range(null, -1), 'range5-max' => $range(5, null), 'range-4-6' => $range(-4, 6), 'rangeMin-max' => $range(-1000, null), 'unionRangeConst' => $operands['unionRangeConst'], 'benevolentRanges' => new \PHPStan\Type\BenevolentUnionType([$range(0, 3), $int(-8)])];
+	foreach ($nodes as $nodeName => $node) {
+		foreach ($integerOperands as $leftName => $left) {
+			foreach ($integerOperands as $rightName => $right) {
+				$r["integerRangeMath $nodeName $leftName $rightName"] = $catching(static fn () => $left instanceof \PHPStan\Type\UnionType ? 'skip' : $private('integerRangeMath', $left, $node, $right));
+				$r["resolveCommonMath $nodeName $leftName $rightName"] = $catching(static fn () => $private('resolveCommonMath', $node, $left, $right));
+			}
+		}
+	}
+	foreach ($operands as $name => $operand) {
+		$r["optimizeScalarType $name"] = $catching(static fn () => $private('optimizeScalarType', $operand));
+		$r["getNonNegativeIntegerBounds $name"] = $catching(static fn () => $private('getNonNegativeIntegerBounds', $operand));
+		$r["computeBitwiseAndRange $name range0-10"] = $catching(static fn () => $private('computeBitwiseAndRange', $operand, $range(0, 10)));
+		$r["computeBitwiseOrXorRange $name int7"] = $catching(static fn () => $private('computeBitwiseOrXorRange', $operand, $int(7)));
+		$r["getNeverType $name never"] = $catching(static fn () => $private('getNeverType', $operand, $operands['neverExplicit']));
+		$r["getFiniteOrConstantScalarTypes $name unionConsts"] = $catching(static fn () => $private('getFiniteOrConstantScalarTypes', $operand, $operands['unionConsts'], static fn ($a, $b) => $a | $b));
+	}
+	foreach ([0, 1, 5, 200, 1000, PHP_INT_MAX] as $value) {
+		$r["allBitsMask $value"] = $catching(static fn () => $staticPrivate('allBitsMask', $value));
+	}
+	foreach ([null, true, 1, 1.5, 'x'] as $i => $value) {
+		$r["getTypeFromValue $i"] = $catching(static fn () => $private('getTypeFromValue', $value));
+	}
+	$r['resolveConstantArrayTypeComparison callback'] = $catching(static fn () => $viewResult($private('resolveConstantArrayTypeComparison', $operands['constArray'], $operands['constArray'], static fn ($a, $b) => new \PHPStan\Type\TypeResult(new \PHPStan\Type\BooleanType(), ['reason']))));
+	$shapes = [
+		'empty' => new \PHPStan\Type\Constant\ConstantArrayType([], []),
+		'a' => new \PHPStan\Type\Constant\ConstantArrayType([$str('a')], [$int(1)]),
+		'aOptional' => new \PHPStan\Type\Constant\ConstantArrayType([$str('a')], [$int(1)], [0], [0]),
+		'ab' => new \PHPStan\Type\Constant\ConstantArrayType([$str('a'), $str('b')], [$int(1), $str('x')]),
+		'aOptionalB' => new \PHPStan\Type\Constant\ConstantArrayType([$str('a'), $str('b')], [$int(1), $str('x')], [0], [0]),
+		'ba' => new \PHPStan\Type\Constant\ConstantArrayType([$str('b'), $str('a')], [$str('x'), $int(1)]),
+		'aString' => new \PHPStan\Type\Constant\ConstantArrayType([$str('a')], [$str('1')]),
+		'aInt' => new \PHPStan\Type\Constant\ConstantArrayType([$str('a')], [new \PHPStan\Type\IntegerType()]),
+	];
+	foreach ($shapes as $leftName => $left) {
+		foreach ($shapes as $rightName => $right) {
+			$r["shape identical $leftName $rightName"] = $catching(static fn () => $viewResult($resolver->resolveIdenticalType($left, $right)));
+			$r["shape equal $leftName $rightName"] = $catching(static fn () => $viewResult($resolver->resolveEqualType($left, $right)));
+		}
+	}
+
+	// array literals
+	$item = static fn (\PHPStan\Type\Type $value, ?\PHPStan\Type\Type $key = null, bool $unpack = false): \PhpParser\Node\ArrayItem => new \PhpParser\Node\ArrayItem($te($value), $key === null ? null : $te($key), false, [], $unpack);
+	$arrays = [
+		'empty' => [],
+		'list' => [$item($int(1)), $item($str('a'))],
+		'keyed' => [$item($int(1), $str('a')), $item($int(2), $int(5)), $item($int(3))],
+		'keyedGeneral' => [$item($int(1), new \PHPStan\Type\StringType()), $item($int(2))],
+		'unpackConst' => [$item($int(0)), $item($operands['constArray'], null, true), $item($operands['constShape'], null, true), $item($int(9), $str('b'))],
+		'unpackUnion' => [$item(new \PHPStan\Type\UnionType([$operands['constArray'], $operands['constShape']]), null, true)],
+		'unpackStringKeys' => [$item($operands['constShape'], null, true), $item($operands['arrayStringInt'], null, true)],
+		'unpackList' => [$item($int(1)), $item($operands['nonEmptyList'], null, true)],
+		'unpackMixed' => [$item($int(1), $str('x')), $item(new \PHPStan\Type\MixedType(), null, true)],
+		'unpackOptional' => [$item(new \PHPStan\Type\UnionType([$operands['constShape'], new \PHPStan\Type\Constant\ConstantArrayType([$str('a'), $str('c')], [$str('z'), $int(3)])]), null, true)],
+		'oversized' => array_map(static fn (int $i) => $item($int($i)), range(0, 300)),
+		'oversizedUnpack' => array_merge(array_map(static fn (int $i) => $item($int($i)), range(0, 260)), [$item($operands['constShape'], null, true)]),
+	];
+	foreach ([70400, 80400] as $phpVersionId) {
+		$versionContainer = (new \PHPStan\DependencyInjection\ContainerFactory($root))->create(sys_get_temp_dir() . '/phpstan-turbo-type-family-' . $phpVersionId, [], [], [], [], \PHPStan\Command\CommandHelper::DEFAULT_LEVEL, null, null, null, null, ['phpVersion' => $phpVersionId]);
+		$versionResolver = $versionContainer->getByType(\PHPStan\Reflection\InitializerExprTypeResolver::class);
+		foreach ($arrays as $name => $items) {
+			$r["getArrayType $phpVersionId $name"] = $catching(static fn () => $versionResolver->getArrayType(new \PhpParser\Node\Expr\Array_($items), $getType));
+		}
+	}
+
+	// function types
+	$parserFactory = new \PhpParser\ParserFactory();
+	$phpParser = $parserFactory->createForNewestSupportedVersion();
+	$contexts = [
+		'empty' => \PHPStan\Reflection\InitializerExprContext::createEmpty(),
+		'final' => \PHPStan\Reflection\InitializerExprContext::fromClass(\PHPStanTurboTests\InitializerFinal::class, __DIR__ . '/type-family-initializer-fixture.php'),
+		'open' => \PHPStan\Reflection\InitializerExprContext::fromClass(\PHPStanTurboTests\InitializerOpen::class, null),
+		'parentless' => \PHPStan\Reflection\InitializerExprContext::fromClass(\PHPStanTurboTests\InitializerParent::class, null),
+		'enum' => \PHPStan\Reflection\InitializerExprContext::fromClass(\PHPStanTurboTests\InitializerEnum::class, null),
+		'missingClass' => \PHPStan\Reflection\InitializerExprContext::fromClass('PHPStanTurboTests\\NoSuchClass', null),
+		'function' => \PHPStan\Reflection\InitializerExprContext::fromFunction('PHPStanTurboTests\\someFunction', '/tmp/x.php'),
+		'method' => \PHPStan\Reflection\InitializerExprContext::fromClassMethod(\PHPStanTurboTests\InitializerOpen::class, \PHPStanTurboTests\InitializerTrait::class, 'method', null),
+	];
+	$typeNodes = [];
+	foreach (['int', '?string', 'self', 'parent', 'static', '\\stdClass', 'int|string|null', 'Countable&Traversable', 'array', 'mixed', 'callable', 'iterable', 'void', 'never', 'false', 'null'] as $typeString) {
+		$stmts = $phpParser->parse('<?php function f(): ' . $typeString . ' {}');
+		$typeNodes[$typeString] = $stmts[0]->returnType;
+	}
+	$typeNodes['none'] = null;
+	foreach ($typeNodes as $typeName => $typeNode) {
+		foreach ($contexts as $contextName => $context) {
+			foreach ([[false, false], [true, false], [false, true], [true, true]] as [$nullable, $variadic]) {
+				$flags = ($nullable ? 'nullable' : '') . ($variadic ? 'variadic' : '');
+				$r["getFunctionType $typeName $contextName $flags"] = $catching(static fn () => $resolver->getFunctionType($typeNode, $nullable, $variadic, $context));
+			}
+		}
+	}
+
+	// getType over a corpus of constant expressions
+	$corpus = <<<'PHP'
+<?php
+namespace PHPStanTurboTests\Corpus;
+1; -1; 1.5; 'a'; "b"; true; FALSE; null; NULL; PHP_INT_MAX; PHP_EOL; \PHP_VERSION_ID; NO_SUCH_CONSTANT; \M_PI;
+__FILE__; __DIR__; __LINE__; __CLASS__; __NAMESPACE__; __METHOD__; __FUNCTION__; __TRAIT__; __PROPERTY__;
+new \stdClass(); new $x(); new class {};
+[1, 2]; ['a' => 1, ...[2, 3]]; [...['a' => 1], ...['a' => 'x']]; [1, 'k' => 2, 5 => 3, 4]; [[1], [2, [3]]];
+(int) '5'; (bool) 0; (float) '1.5'; (string) 5; (array) 'x'; (object) ['a' => 1]; (int) [1];
+strlen(...); \array_map(...); \PHPStan\TrinaryLogic::createYes(...); \PHPStanTurboTests\InitializerOpen::nope(...); $x(...); $o->m(...);
+static fn (int $a, string ...$b): int => 1; static function (?int $x = null, &$y = 5, $z = [1]) {}; fn () => 1; function () {}; static function (int $a = 1, $b, ...$c): void {};
+[1, 2][0]; ['a' => 'b']['a']; [1][5]; 'abc'[1];
+\PHPStan\Type\Constant\ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT; \PHPStanTurboTests\InitializerOpen::UNTYPED; \PHPStanTurboTests\InitializerOpen::TYPED;
+\PHPStanTurboTests\InitializerOpen::DOCUMENTED; \PHPStanTurboTests\InitializerOpen::FINAL_CONST; \PHPStanTurboTests\InitializerOpen::SELF_REF; \PHPStanTurboTests\InitializerOpen::STATIC_LIST;
+\PHPStanTurboTests\InitializerOpen::CYCLE_A; \PHPStanTurboTests\InitializerOpen::EXPR; \PHPStanTurboTests\InitializerOpen::STR; \PHPStanTurboTests\InitializerOpen::PARENT_CONST; \PHPStanTurboTests\InitializerOpen::OVERRIDDEN;
+\PHPStanTurboTests\InitializerFinal::UNTYPED; \PHPStanTurboTests\InitializerFinal::NESTED; \PHPStanTurboTests\InitializerFinal::ENUM_CASE; \PHPStanTurboTests\InitializerFinal::CLASS_NAME; \PHPStanTurboTests\InitializerFinal::PARENT_NAME;
+\PHPStanTurboTests\InitializerEnum::One; \PHPStanTurboTests\InitializerEnum::ALIAS; \PHPStanTurboTests\InitializerEnum::class; \PHPStanTurboTests\InitializerTrait::TRAIT_CONST;
+\Attribute::TARGET_CONSTANT; \Attribute::TARGET_CLASS; \DateTimeInterface::ATOM; \Random\IntervalBoundary::ClosedOpen; NoSuchClass::FOO; NoSuchClass::class; 'stdClass'::class; $x::class; $x::FOO; (1 + 2)::FOO;
+self::class; static::class; parent::class; self::UNTYPED; static::UNTYPED; parent::PARENT_CONST; self::ENUM_CASE; static::NESTED; self::One; static::ALIAS;
++'5'; -'5'; -PHP_INT_MIN; -(1 + 2); -(-5); -\PHP_INT_MAX; ~5; ~'abc'; ~1.5; +[1];
+null ?? 5; 1 ?: 2; true ? 1 : 'a'; 0 ? 1 : 'a'; constant('PHP_EOL'); constant('FOO'); \constant('PHP_INT_SIZE'); constant(1); CONSTANT('M_PI'); !true; !0; !'a'; !$x;
+'a' . 'b'; 'a' . 1 . 2.5; '' . ''; 5 & 3; 5 | 3; 5 ^ 3; 'a' & 'b'; 1 <=> 2; 'b' <=> 'a'; true && false; true and false; true || false; true or false;
+10 / 4; 10 / 0; 10 % 3; 10 % 0; 1 + 2; [1] + [2]; [1] + 1; 5 - 3; 2 * 3; 2 ** 10; 2 ** -1; 1 << 3; 16 >> 2; 1 << -1; PHP_INT_MAX + 1; PHP_INT_MIN - 1; PHP_INT_MAX * 2;
+1 === 1; 1 !== 2; 1 == '1'; 1 != 2; 1 < 2; 1 <= 2; 1 > 2; 1 >= 2; 'a' < 'b'; [1] == [1]; [1] === ['1']; true xor false; 1 xor 0;
+(new \stdClass())->foo; \PHPStanTurboTests\InitializerEnum::One->name; \PHPStanTurboTests\InitializerEnum::One->value; \PHPStanTurboTests\InitializerEnum::One->nope; $x->y; \PHPStan\TrinaryLogic::createYes()->yes();
+PHP;
+	$stmts = $phpParser->parse($corpus);
+	$exprs = [];
+	foreach ($stmts[0]->stmts as $i => $stmt) {
+		if (!$stmt instanceof \PhpParser\Node\Stmt\Expression) {
+			continue;
+		}
+		$exprs[$i] = $stmt->expr;
+	}
+	// class constant fetches walked twice: the memo arrays answer the second time
+	foreach ([1, 2] as $round) {
+		foreach ($contexts as $contextName => $context) {
+			foreach ($exprs as $i => $expr) {
+				$r["getType $round $contextName $i"] = $catching(static fn () => $resolver->getType($expr, $context));
+			}
+		}
+	}
+	$pathContainer = (new \PHPStan\DependencyInjection\ContainerFactory($root))->create(sys_get_temp_dir() . '/phpstan-turbo-type-family-paths', [], [], [], [], \PHPStan\Command\CommandHelper::DEFAULT_LEVEL, null, null, null, null, ['usePathConstantsAsConstantString' => true]);
+	$pathResolver = $pathContainer->getByType(\PHPStan\Reflection\InitializerExprTypeResolver::class);
+	foreach ($exprs as $i => $expr) {
+		if (!$expr instanceof \PhpParser\Node\Scalar\MagicConst\File && !$expr instanceof \PhpParser\Node\Scalar\MagicConst\Dir) {
+			continue;
+		}
+		foreach ($contexts as $contextName => $context) {
+			$r["getType paths $contextName $i"] = $catching(static fn () => $pathResolver->getType($expr, $context));
+		}
+	}
+
+	// class constant fetches through the public methods
+	$classReflections = [
+		'none' => null,
+		'open' => $stringReflectionProvider->getClass(\PHPStanTurboTests\InitializerOpen::class),
+		'final' => $stringReflectionProvider->getClass(\PHPStanTurboTests\InitializerFinal::class),
+		'enum' => $stringReflectionProvider->getClass(\PHPStanTurboTests\InitializerEnum::class),
+	];
+	$classNodes = [
+		'self' => new \PhpParser\Node\Name('self'),
+		'static' => new \PhpParser\Node\Name('static'),
+		'parent' => new \PhpParser\Node\Name('parent'),
+		'open' => new \PhpParser\Node\Name\FullyQualified(\PHPStanTurboTests\InitializerOpen::class),
+		'string' => new \PhpParser\Node\Scalar\String_(\PHPStanTurboTests\InitializerFinal::class),
+		'classStringType' => $te($str(\PHPStanTurboTests\InitializerFinal::class)),
+		'objectType' => $te(new \PHPStan\Type\ObjectType(\PHPStanTurboTests\InitializerOpen::class)),
+		'genericClassString' => $te(new \PHPStan\Type\Generic\GenericClassStringType(new \PHPStan\Type\ObjectType(\PHPStanTurboTests\InitializerOpen::class))),
+		'union' => $te(new \PHPStan\Type\UnionType([new \PHPStan\Type\ObjectType(\PHPStanTurboTests\InitializerOpen::class), new \PHPStan\Type\ObjectType(\PHPStanTurboTests\InitializerFinal::class)])),
+	];
+	foreach ($classReflections as $reflectionName => $classReflection) {
+		foreach ($classNodes as $classNodeName => $classNode) {
+			foreach (['class', 'CLASS', 'UNTYPED', 'TYPED', 'DOCUMENTED', 'FINAL_CONST', 'SELF_REF', 'PARENT_CONST', 'One', 'ALIAS', 'NOPE'] as $constantName) {
+				$r["getClassConstFetchTypeByReflection $reflectionName $classNodeName $constantName"] = $catching(static fn () => $resolver->getClassConstFetchTypeByReflection($classNode, $constantName, $classReflection, $getType));
+			}
+		}
+	}
+	foreach ([null, \PHPStanTurboTests\InitializerOpen::class, 'PHPStanTurboTests\\Missing'] as $className) {
+		$r['getClassConstFetchType ' . ($className ?? 'null')] = $catching(static fn () => $resolver->getClassConstFetchType(new \PhpParser\Node\Name('self'), 'UNTYPED', $className, $getType));
+	}
+
+	// first-class callables
+	$functions = [
+		'strlen' => $stringReflectionProvider->getFunction(new \PhpParser\Node\Name('strlen'), null),
+		'array_map' => $stringReflectionProvider->getFunction(new \PhpParser\Node\Name('array_map'), null),
+		'is_int' => $stringReflectionProvider->getFunction(new \PhpParser\Node\Name('is_int'), null),
+		'exit' => $stringReflectionProvider->getFunction(new \PhpParser\Node\Name('trigger_error'), null),
+	];
+	foreach ($functions as $name => $function) {
+		foreach ([false, true] as $nativeTypesPromoted) {
+			$r["createFirstClassCallable $name " . ($nativeTypesPromoted ? 'native' : 'phpdoc')] = $catching(static fn () => $resolver->createFirstClassCallable($function, $function->getVariants(), $nativeTypesPromoted));
+		}
+	}
+	$prototypeFixtureReflection = $stringReflectionProvider->getClass(\PHPStanTurboTests\PrototypeFixture::class);
+	foreach ($prototypeFixtureReflection->getNativeReflection()->getMethods() as $nativeMethod) {
+		$method = $prototypeFixtureReflection->getNativeMethod($nativeMethod->getName());
+		$r['createFirstClassCallable method ' . $nativeMethod->getName()] = $catching(static fn () => $resolver->createFirstClassCallable($method, $method->getVariants(), false));
+	}
+	$r['createFirstClassCallable closure variants'] = $catching(static fn () => $resolver->createFirstClassCallable(null, (new \PHPStan\Type\ClosureType([], new \PHPStan\Type\IntegerType(), false))->getCallableParametersAcceptors(new \PHPStan\Analyser\OutOfClassScope()), false));
+	$r['createFirstClassCallable no variants'] = $catching(static fn () => $resolver->createFirstClassCallable(null, [], false));
+	foreach ($exprs as $i => $expr) {
+		if (!$expr instanceof \PhpParser\Node\Expr\CallLike || !$expr->isFirstClassCallable()) {
+			continue;
+		}
+		foreach ($contexts as $contextName => $context) {
+			foreach ([false, true] as $nativeTypesPromoted) {
+				$r["getFirstClassCallableType $i $contextName " . ($nativeTypesPromoted ? 'native' : 'phpdoc')] = $catching(static fn () => $resolver->getFirstClassCallableType($expr, $context, $nativeTypesPromoted));
+			}
+		}
+	}
+
+	// the parameter checks of the public methods
+	$r['getType non-expr'] = $catching(static fn () => $resolver->getType(new \PhpParser\Node\Name('x'), $contexts['empty']));
+	$r['getPlusType not callable'] = $catching(static fn () => $resolver->getPlusType($te($int(1)), $te($int(1)), 'no such function'));
+	$r['getPlusType callback returning null'] = $catching(static fn () => $resolver->getPlusType($te($int(1)), $te($int(1)), static fn () => null));
+	$r['resolveConcatType non-type'] = $catching(static fn () => $resolver->resolveConcatType($te($int(1)), $int(1)));
+	$r['createFirstClassCallable wrong function'] = $catching(static fn () => $resolver->createFirstClassCallable(new \stdClass(), [], false));
+	$r['memo arrays'] = (static fn () => [array_keys($this->currentlyResolvingClassConstant), array_map(static fn ($t) => $t->describe(\PHPStan\Type\VerbosityLevel::precise()), $this->classConstantValueTypeCache)])->call($resolver);
+
+	foreach ($r as $key => $value) {
+		$observations["initializer $key"] = $value;
+	}
+}
+
 // observations holding bytes that are not UTF-8 (the invalid-UTF-8 subject's
 // descriptions) go out base64-encoded so json_encode() keeps every byte; the
 // non-finite floats (the NAN and infinity subjects' values) as their names

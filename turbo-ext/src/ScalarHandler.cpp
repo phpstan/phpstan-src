@@ -9,9 +9,9 @@
  * what the twin's arrow function captures ($this, $expr and the initializer
  * context); the result is built through pt_expression_result_create().
  *
- * SpecifiedTypes is called through its direct entry; the collaborators that
- * stay PHP for now — InitializerExprContext and InitializerExprTypeResolver —
- * through the cached method sites in the block below, one helper each.
+ * SpecifiedTypes and InitializerExprTypeResolver are called through their
+ * direct entries; InitializerExprContext, which stays PHP for now, through the
+ * cached method site in the block below.
  */
 
 #include "support.h"
@@ -31,7 +31,6 @@ namespace {
  * once they are ported) */
 
 pt_method_site pt_sh_from_scope_site;
-pt_method_site pt_sh_get_type_site;
 
 /* InitializerExprContext::fromScope($scope) */
 zv::Val initializerExprContextFromScope(zval *scope)
@@ -42,8 +41,7 @@ zv::Val initializerExprContextFromScope(zval *scope)
 /* $initializerExprTypeResolver->getType($expr, $context) */
 zv::Val initializerExprType(zval *initializerExprTypeResolver, zval *expr, zval *context)
 {
-	zv::Args argv{expr, context};
-	return pt_call_method_cached(pt_sh_get_type_site, Z_OBJ_P(initializerExprTypeResolver), PT_LC("gettype"), 2, argv);
+	return pt_initializer_expr_type_resolver_get_type(initializerExprTypeResolver, expr, context);
 }
 
 /* }}} */

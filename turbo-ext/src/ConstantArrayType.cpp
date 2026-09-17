@@ -53,11 +53,6 @@ bool pt_result_object_create(zval *out, zend_class_entry *ce, zval *trinary, zva
 #define PT_CAT_CASE_LOWER 0
 #define PT_CAT_CASE_UPPER 1
 
-/* InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT, read once per class
- * entry */
-static zend_class_entry *pt_carr_calculate_scalars_limit_ce = nullptr;
-static zend_long pt_carr_calculate_scalars_limit = 0;
-
 /* isValidIdentifier()'s pattern (interned once) and the internal
  * preg_match() it is matched with (resolved once; the pcre extension
  * caches the compiled pattern per request) */
@@ -310,30 +305,6 @@ static zv::Val substituteMixedUnsealedKey(zval *unsealedKeyType)
 	return zv::Val::copyOf(zv::Ref(unsealedKeyType));
 }
 
-/* Class::CONSTANT of a class-map class, an int read once per class entry;
- * false = pending exception */
-[[nodiscard]] static bool classConstantLong(int classIdx, const char *name, size_t len, zend_class_entry *&cachedCe, zend_long &cached, zend_long &out)
-{
-	zend_class_entry *ce = pt_class(classIdx);
-	if (UNEXPECTED(ce == NULL)) return false;
-	if (UNEXPECTED(ce != cachedCe)) {
-		zend_class_constant *constant = (zend_class_constant *) zend_hash_str_find_ptr(&ce->constants_table, name, len);
-		if (UNEXPECTED(constant == NULL)) {
-			zend_throw_error(NULL, "phpstan_turbo: %s::%s not found", ZSTR_VAL(ce->name), name);
-			return false;
-		}
-		if (UNEXPECTED(Z_TYPE(constant->value) == IS_CONSTANT_AST && zval_update_constant_ex(&constant->value, ce) != SUCCESS)) return false;
-		if (UNEXPECTED(Z_TYPE(constant->value) != IS_LONG)) {
-			zend_type_error("phpstan_turbo: %s::%s must be an int", ZSTR_VAL(ce->name), name);
-			return false;
-		}
-		cached = Z_LVAL(constant->value);
-		cachedCe = ce;
-	}
-	out = cached;
-	return true;
-}
-
 /* ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT — the shadowed class's
  * constant, shared as a native constant */
 static bool arrayCountLimit(zend_long &out)
@@ -342,10 +313,12 @@ static bool arrayCountLimit(zend_long &out)
 	return true;
 }
 
-/* InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT */
+/* InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT — the shadowed
+ * class's constant, shared as a native constant */
 static bool calculateScalarsLimit(zend_long &out)
 {
-	return classConstantLong(PT_CLASS_INITIALIZER_EXPR_TYPE_RESOLVER, PT_LC("CALCULATE_SCALARS_LIMIT"), pt_carr_calculate_scalars_limit_ce, pt_carr_calculate_scalars_limit, out);
+	out = PT_INITIALIZER_EXPR_TYPE_RESOLVER_CALCULATE_SCALARS_LIMIT;
+	return true;
 }
 
 /* BleedingEdgeToggle::isBleedingEdge(): the private static the final class

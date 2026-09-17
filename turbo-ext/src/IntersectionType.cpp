@@ -2117,9 +2117,7 @@ public:
 		}
 		zv::Val result = intersectKeysOf(compare);
 		if (UNEXPECTED(result.isUndef())) return zv::Val();
-		zval *limit = classConstant(PT_CLASS_INITIALIZER_EXPR_TYPE_RESOLVER, PT_LC("CALCULATE_SCALARS_LIMIT"));
-		if (UNEXPECTED(limit == NULL)) return zv::Val();
-		if ((zend_long) zv::ArrRef(result.raw()).size() > zval_get_long(limit)) return zv::Val(zv::Arr::empty());
+		if ((zend_long) zv::ArrRef(result.raw()).size() > PT_INITIALIZER_EXPR_TYPE_RESOLVER_CALCULATE_SCALARS_LIMIT) return zv::Val(zv::Arr::empty());
 		return result;
 	}
 

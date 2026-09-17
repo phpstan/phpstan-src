@@ -6,17 +6,18 @@
  * arginfo so Nette autowires it. processExpr() is registered as the class's
  * handler entry (Engine.h). The twin's closures are native closures capturing
  * what the PHP closures capture: the typeCallback ($this, $expr,
- * $itemResults, $beforeScope) and the item-type callback it hands to
+ * $itemResults, $beforeScope); the item-type callback it hands to
  * InitializerExprTypeResolver::getArrayType() ($itemResults,
- * $nativeTypesPromoted); the specifyTypesCallback is
+ * $nativeTypesPromoted) is a pt_ietr_get_type over the typeCallback's frame
+ * (the resolver calls it synchronously); the specifyTypesCallback is
  * SpecifiedTypes::emptySpecifyCallback(), as in the twin.
  *
  * NodeScopeResolver, MutatingScope, ExpressionResult, ExpressionContext,
  * VariableFlow(Builder), VariableWriteOffset, TypeCombinator and the Type
  * kernel are called through their direct entries; the VariableWrite value
- * target through its slots (VariableFlow.cpp's pt_variable_write_slots_of());
- * InitializerExprTypeResolver::getArrayType() stays PHP (one cached method
- * site); the LiteralArrayItem / LiteralArrayNode / VariableWrite virtual
+ * target through its slots (VariableFlow.cpp's pt_variable_write_slots_of()),
+ * InitializerExprTypeResolver::getArrayType() through its direct entry; the
+ * LiteralArrayItem / LiteralArrayNode / VariableWrite virtual
  * nodes and the synthetic is_callable() call are instantiated through the
  * class map.
  *
@@ -46,13 +47,10 @@ constexpr zend_long PT_ARH_KIND_ARRAY_LITERAL_ITEM = 14;
 /* {{{ the PHP collaborators (one site each; switch to their direct entries
  * once they are ported) */
 
-pt_method_site pt_arh_get_array_type_site;
-
 /* $initializerExprTypeResolver->getArrayType($expr, $getTypeCallback) */
-zv::Val getArrayType(zval *initializerExprTypeResolver, zval *expr, zval *getTypeCallback)
+zv::Val getArrayType(zval *initializerExprTypeResolver, zval *expr, const pt_ietr_get_type &getTypeCallback)
 {
-	zv::Args argv{expr, getTypeCallback};
-	return pt_call_method_cached(pt_arh_get_array_type_site, Z_OBJ_P(initializerExprTypeResolver), PT_LC("getarraytype"), 2, argv);
+	return pt_initializer_expr_type_resolver_get_array_type(initializerExprTypeResolver, expr, getTypeCallback);
 }
 
 /* }}} */
@@ -456,26 +454,30 @@ private:
 	}
 
 	/* static function (Expr $inner) use ($itemResults, $nativeTypesPromoted):
-	 * Type — captures: $itemResults, $nativeTypesPromoted */
-	static void itemTypeCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
+	 * Type — InitializerExprTypeResolver calls it synchronously, over the
+	 * typeCallback's frame */
+	struct ItemTypeFrame
 	{
-		if (UNEXPECTED(!requireArguments(argc, 1, pt_arh_closure_name))) return;
-		zval *inner = &argv[0];
+		zval *itemResults;
+		bool nativeTypesPromoted;
+	};
+
+	static zv::Val itemTypeCallback(void *data, zval *inner)
+	{
+		ItemTypeFrame *frame = static_cast<ItemTypeFrame *>(data);
 		ZVAL_DEREF(inner);
 		zend_class_entry *exprCe = pt_class(PT_CLASS_EXPR);
-		if (UNEXPECTED(exprCe == NULL)) return;
+		if (UNEXPECTED(exprCe == NULL)) return zv::Val();
 		if (UNEXPECTED(Z_TYPE_P(inner) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(inner), exprCe))) {
 			zend_type_error("%s(): Argument #1 ($inner) must be of type PhpParser\\Node\\Expr, %s given", pt_arh_closure_name, zend_zval_value_name(inner));
-			return;
+			return zv::Val();
 		}
-		zval *itemResult = zend_hash_index_find(Z_ARRVAL(captures[0]), Z_OBJ_HANDLE_P(inner));
+		zval *itemResult = zend_hash_index_find(Z_ARRVAL_P(frame->itemResults), Z_OBJ_HANDLE_P(inner));
 		if (UNEXPECTED(itemResult == NULL)) {
 			pt_throw_should_not_happen();
-			return;
+			return zv::Val();
 		}
-		zv::Val type = Z_TYPE(captures[1]) == IS_TRUE ? pt_expression_result_get_native_type(itemResult) : pt_expression_result_get_type(itemResult);
-		if (UNEXPECTED(type.isUndef())) return;
-		type.intoReturnValue(return_value);
+		return frame->nativeTypesPromoted ? pt_expression_result_get_native_type(itemResult) : pt_expression_result_get_type(itemResult);
 	}
 
 	/* the typeCallback's body */
@@ -483,8 +485,9 @@ private:
 	{
 		zv::Val type;
 		{
-			zv::Val getTypeCallback = pt_native_closure(&itemTypeCallbackBody, itemResults, nativeTypesPromoted);
-			type = getArrayType(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), expr, getTypeCallback.raw());
+			ItemTypeFrame frame{itemResults, nativeTypesPromoted};
+			pt_ietr_get_type getTypeCallback{&itemTypeCallback, &frame};
+			type = getArrayType(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), expr, getTypeCallback);
 			if (UNEXPECTED(type.isUndef())) return zv::Val();
 		}
 

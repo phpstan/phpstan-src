@@ -2,12 +2,14 @@
 
 namespace PHPStan\PhpDoc\Tag;
 
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Type;
 
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'templateTag')]
 final class TemplateTag
 {
 

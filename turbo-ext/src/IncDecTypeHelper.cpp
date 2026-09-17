@@ -16,9 +16,10 @@
  * a non-integer) and calls str_increment() / str_decrement() through the
  * function table, catching their ValueError like the twin.
  *
- * ExpressionResult, ConstantTypeHelper, TypeCombinator and the Type kernel
- * are called through their direct entries; InitializerExprTypeResolver's
- * getPlusType() / getMinusType() through cached sites.
+ * ExpressionResult, ConstantTypeHelper, TypeCombinator, the Type kernel and
+ * InitializerExprTypeResolver's getPlusType() / getMinusType() are called
+ * through their direct entries (the operand reader handed to the latter is a
+ * pt_ietr_get_type over the captures, which it calls synchronously).
  */
 
 #include "support.h"
@@ -31,9 +32,6 @@ namespace sigs = ptdecl::IncDecTypeHelper::sig;
 zend_class_entry *pt_ce_inc_dec_type_helper = nullptr;
 
 namespace {
-
-pt_method_site pt_idth_get_plus_type_site;
-pt_method_site pt_idth_get_minus_type_site;
 
 /* $varValue = str_increment($varValue) / str_decrement($varValue) through
  * the function table (the internal function, or a polyfill); 1 = stepped
@@ -228,15 +226,17 @@ private:
 		ZVAL_LONG(&oneZv, 1);
 		zv::Val one = pt_type_new(PT_CLASS_SCALAR_INT, 1, &oneZv);
 		if (UNEXPECTED(one.isUndef())) return zv::Val();
-		zval nativeFlag = {};
-		ZVAL_BOOL(&nativeFlag, nativeTypesPromoted);
-		zv::Val getType = pt_native_closure(&getTypeCallbackBody, &nativeFlag, varExpr, varResult, one.raw());
+		// $getType's captures ($nativeTypesPromoted, $varExpr, $varResult,
+		// $one), borrowed: InitializerExprTypeResolver calls it synchronously
+		zval getTypeCaptures[4];
+		ZVAL_BOOL(&getTypeCaptures[0], nativeTypesPromoted);
+		ZVAL_COPY_VALUE(&getTypeCaptures[1], varExpr);
+		ZVAL_COPY_VALUE(&getTypeCaptures[2], varResult);
+		ZVAL_COPY_VALUE(&getTypeCaptures[3], one.raw());
+		pt_ietr_get_type getType{&getTypeCallback, getTypeCaptures};
 
 		zval *resolver = OBJ_PROP_NUM(Z_OBJ(captures[0]), slots::initializerExprTypeResolver);
-		zv::Args callArgs{varExpr, one.raw(), getType.raw()};
-		return increment
-			? pt_call_method_cached(pt_idth_get_plus_type_site, Z_OBJ_P(resolver), PT_LC("getplustype"), 3, callArgs)
-			: pt_call_method_cached(pt_idth_get_minus_type_site, Z_OBJ_P(resolver), PT_LC("getminustype"), 3, callArgs);
+		return pt_initializer_expr_type_resolver_get_binary_op_type(resolver, increment ? PT_IETR_OP_PLUS : PT_IETR_OP_MINUS, varExpr, one.raw(), getType);
 	}
 
 	/* new NeverType() */
@@ -245,6 +245,20 @@ private:
 		zval never;
 		if (UNEXPECTED(!pt_never_type_new(&never))) return zv::Val();
 		return zv::Val::adopt(never);
+	}
+
+	/* the $getType as InitializerExprTypeResolver calls it — data: the
+	 * captures */
+	static zv::Val getTypeCallback(void *data, zval *e)
+	{
+		zval type;
+		ZVAL_NULL(&type);
+		getTypeCallbackBody(static_cast<zval *>(data), 1, e, &type);
+		if (UNEXPECTED(EG(exception) != NULL)) {
+			zval_ptr_dtor(&type);
+			return zv::Val();
+		}
+		return zv::Val::adopt(type);
 	}
 
 	/* static function (Expr $e) use ($nativeTypesPromoted, $varExpr,

@@ -10,9 +10,8 @@
  *
  * NodeScopeResolver, ExpressionResult, ExpressionContext, VariableFlow,
  * MutatingScope, SpecifiedTypes, DefaultNarrowingHelper, the method
- * reflection and the Type kernel are called through their direct entries;
- * InitializerExprTypeResolver, which stays PHP for now, through the cached
- * method site of VirtualExprHandlers.h.
+ * reflection, InitializerExprTypeResolver and the Type kernel are called
+ * through their direct entries.
  */
 
 #include "support.h"

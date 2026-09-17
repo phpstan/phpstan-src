@@ -9,10 +9,9 @@
  * $beforeScope) and the specifyTypesCallback ($this, $expr).
  *
  * NodeScopeResolver, ExpressionResult, ExpressionContext, VariableFlow,
- * SpecifiedTypes and DefaultNarrowingHelper are called through their direct
- * entries; the collaborators that stay PHP for now (InitializerExprTypeResolver,
- * InitializerExprContext) through the cached method sites of
- * VirtualExprHandlers.h.
+ * SpecifiedTypes, DefaultNarrowingHelper and InitializerExprTypeResolver are
+ * called through their direct entries; InitializerExprContext, which stays PHP
+ * for now, through the cached method site of VirtualExprHandlers.h.
  */
 
 #include "support.h"

@@ -99,6 +99,10 @@ use PhpParser\Node\Scalar\Float_;
 use PhpParser\Node\Scalar\Int_;
 use PhpParser\Node\Scalar\InterpolatedString;
 use PhpParser\Node\Scalar\MagicConst;
+use PhpParser\Node\Scalar\MagicConst\Dir;
+use PhpParser\Node\Scalar\MagicConst\File;
+use PhpParser\Node\Scalar\MagicConst\Line;
+use PhpParser\Node\Scalar\MagicConst\Method;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Block;
@@ -418,6 +422,15 @@ final class TurboAttributeCollector
 		'errorSuppressExpr' => ErrorSuppress::class,
 		'emptyExpr' => Empty_::class,
 		'arrayItem' => ArrayItem::class,
+		'magicConstFile' => File::class,
+		'magicConstDir' => Dir::class,
+		'magicConstLine' => Line::class,
+		'magicConstClass' => \PhpParser\Node\Scalar\MagicConst\Class_::class,
+		'magicConstNamespace' => \PhpParser\Node\Scalar\MagicConst\Namespace_::class,
+		'magicConstMethod' => Method::class,
+		'magicConstFunction' => \PhpParser\Node\Scalar\MagicConst\Function_::class,
+		'magicConstTrait' => \PhpParser\Node\Scalar\MagicConst\Trait_::class,
+		'magicConstProperty' => \PhpParser\Node\Scalar\MagicConst\Property::class,
 	];
 
 	private string $realRoot;

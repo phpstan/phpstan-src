@@ -7,8 +7,8 @@
  * two memo slots ($type, $nativeType) in the twin's order. The name,
  * optionality, variadicness, by-reference mode and the native / default
  * types are the adapter's answers (still PHP, one cached method site per
- * adapter method); InitializerExprTypeResolver and InitializerExprContext
- * stay PHP too. Native callers reach the getters through
+ * adapter method); InitializerExprContext stays PHP too,
+ * InitializerExprTypeResolver is called through its direct entry. Native callers reach the getters through
  * pt_parameter_reflection_call() (ParameterValues.h) without a frame.
  */
 
@@ -36,7 +36,6 @@ pt_method_site pt_ppr_get_default_value_expression_site;
 pt_method_site pt_ppr_get_type_site;
 pt_method_site pt_ppr_is_passed_by_reference_site;
 pt_method_site pt_ppr_is_variadic_site;
-pt_method_site pt_ppr_initializer_get_type_site;
 pt_method_site pt_ppr_context_from_reflection_parameter_site;
 
 /* $reflection->method() of the adapter parameter */
@@ -57,8 +56,7 @@ inline bool adapterBool(pt_method_site &site, zval *reflection, const char *lcna
 /* $initializerExprTypeResolver->getType($expr, $context) */
 inline zv::Val initializerGetType(zval *resolver, zval *expr, zval *context)
 {
-	zv::Args argv{expr, context};
-	return pt_call_method_cached(pt_ppr_initializer_get_type_site, Z_OBJ_P(resolver), PT_LC("gettype"), 2, argv);
+	return pt_initializer_expr_type_resolver_get_type(resolver, expr, context);
 }
 
 /* InitializerExprContext::fromReflectionParameter($reflection) */

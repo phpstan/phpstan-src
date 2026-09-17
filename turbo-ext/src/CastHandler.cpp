@@ -15,9 +15,9 @@
  *
  * NodeScopeResolver, ExpressionResult, ExpressionContext, MutatingScope,
  * SpecifiedTypes, TypeSpecifierContext, IdenticalNarrowingHelper,
- * DefaultNarrowingHelper and the Type kernel are called through their direct
- * entries; InitializerExprTypeResolver::getCastObjectType() and the Type
- * conversions through cached sites / the engine.
+ * DefaultNarrowingHelper, InitializerExprTypeResolver::getCastObjectType()
+ * and the Type kernel are called through their direct entries; the Type
+ * conversions through the engine.
  */
 
 #include "support.h"
@@ -35,12 +35,10 @@ using phpstanturbo::visitors::NodeProp;
 
 NodeProp pt_ch_cast_expr = PT_NODE_PROP(PT_CLASS_CAST_EXPR, "expr");
 
-pt_method_site pt_ch_get_cast_object_type_site;
-
 /* $initializerExprTypeResolver->getCastObjectType($exprType) */
 zv::Val getCastObjectType(zval *resolver, zval *exprType)
 {
-	return pt_call_method_cached(pt_ch_get_cast_object_type_site, Z_OBJ_P(resolver), PT_LC("getcastobjecttype"), 1, exprType);
+	return pt_initializer_expr_type_resolver_get_cast_object_type(resolver, exprType);
 }
 
 /* the cast classes, in the order getCastType() tests them (Unset_ first:

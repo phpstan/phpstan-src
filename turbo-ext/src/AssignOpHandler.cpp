@@ -301,26 +301,23 @@ inline zv::Val targetRead(zval *(*reader)(zval *, zv::Val &), zval *target)
 struct OperatorMethod
 {
 	int classIdx;
-	const char *lcname;
-	size_t len;
+	pt_ietr_binary_operator op;
 };
 
 const OperatorMethod pt_aoh_operator_methods[] = {
-	{ PT_CLASS_ASSIGN_OP_CONCAT, PT_LC("getconcattype") },
-	{ PT_CLASS_ASSIGN_OP_BITWISE_AND, PT_LC("getbitwiseandtype") },
-	{ PT_CLASS_ASSIGN_OP_BITWISE_OR, PT_LC("getbitwiseortype") },
-	{ PT_CLASS_ASSIGN_OP_BITWISE_XOR, PT_LC("getbitwisexortype") },
-	{ PT_CLASS_ASSIGN_OP_DIV, PT_LC("getdivtype") },
-	{ PT_CLASS_ASSIGN_OP_MOD, PT_LC("getmodtype") },
-	{ PT_CLASS_ASSIGN_OP_PLUS, PT_LC("getplustype") },
-	{ PT_CLASS_ASSIGN_OP_MINUS, PT_LC("getminustype") },
-	{ PT_CLASS_ASSIGN_OP_MUL, PT_LC("getmultype") },
-	{ PT_CLASS_ASSIGN_OP_POW, PT_LC("getpowtype") },
-	{ PT_CLASS_ASSIGN_OP_SHIFT_LEFT, PT_LC("getshiftlefttype") },
-	{ PT_CLASS_ASSIGN_OP_SHIFT_RIGHT, PT_LC("getshiftrighttype") },
+	{ PT_CLASS_ASSIGN_OP_CONCAT, PT_IETR_OP_CONCAT },
+	{ PT_CLASS_ASSIGN_OP_BITWISE_AND, PT_IETR_OP_BITWISE_AND },
+	{ PT_CLASS_ASSIGN_OP_BITWISE_OR, PT_IETR_OP_BITWISE_OR },
+	{ PT_CLASS_ASSIGN_OP_BITWISE_XOR, PT_IETR_OP_BITWISE_XOR },
+	{ PT_CLASS_ASSIGN_OP_DIV, PT_IETR_OP_DIV },
+	{ PT_CLASS_ASSIGN_OP_MOD, PT_IETR_OP_MOD },
+	{ PT_CLASS_ASSIGN_OP_PLUS, PT_IETR_OP_PLUS },
+	{ PT_CLASS_ASSIGN_OP_MINUS, PT_IETR_OP_MINUS },
+	{ PT_CLASS_ASSIGN_OP_MUL, PT_IETR_OP_MUL },
+	{ PT_CLASS_ASSIGN_OP_POW, PT_IETR_OP_POW },
+	{ PT_CLASS_ASSIGN_OP_SHIFT_LEFT, PT_IETR_OP_SHIFT_LEFT },
+	{ PT_CLASS_ASSIGN_OP_SHIFT_RIGHT, PT_IETR_OP_SHIFT_RIGHT },
 };
-
-pt_method_site pt_aoh_operator_sites[sizeof(pt_aoh_operator_methods) / sizeof(pt_aoh_operator_methods[0])];
 
 } // namespace
 
@@ -640,9 +637,17 @@ private:
 		// the operands' results are in hand: the target read from
 		// prepareTarget(), the value expr from the phase between
 		// prepareTarget() and applyWrite() - no storage round-trip
-		zval nativeFlag = {};
-		ZVAL_BOOL(&nativeFlag, nativeTypesPromoted);
-		zv::Val getType = pt_native_closure(&getTypeCallbackBody, expr, nsr, beforeScope, targetReadResult, rhsResult, &nativeFlag);
+		// $getType's captures ($expr, $nodeScopeResolver, $beforeScope,
+		// $targetReadResult, $rhsResult, $nativeTypesPromoted), borrowed:
+		// InitializerExprTypeResolver calls it synchronously
+		zval getTypeCaptures[6];
+		ZVAL_COPY_VALUE(&getTypeCaptures[0], expr);
+		ZVAL_COPY_VALUE(&getTypeCaptures[1], nsr);
+		ZVAL_COPY_VALUE(&getTypeCaptures[2], beforeScope);
+		ZVAL_COPY_VALUE(&getTypeCaptures[3], targetReadResult);
+		ZVAL_COPY_VALUE(&getTypeCaptures[4], rhsResult);
+		ZVAL_BOOL(&getTypeCaptures[5], nativeTypesPromoted);
+		pt_ietr_get_type getType{&getTypeCallback, getTypeCaptures};
 
 		if (aohIs(expr, PT_CLASS_COALESCE_ASSIGN_OP_EXPR)) {
 			return cchComposeType(OBJ_PROP_NUM(handler, slots::coalesceCompositionHelper), nsr, AOH_PROP(expr, var), condResult, rightResult, beforeScope, chainResults, expr, nativeTypesPromoted);
@@ -652,8 +657,7 @@ private:
 			const OperatorMethod &method = pt_aoh_operator_methods[i];
 			if (!aohIs(expr, method.classIdx)) continue;
 			zval *resolver = OBJ_PROP_NUM(handler, slots::initializerExprTypeResolver);
-			zv::Args callArgs{AOH_PROP(expr, var), AOH_PROP(expr, expr), getType.raw()};
-			return pt_call_method_cached(pt_aoh_operator_sites[i], Z_OBJ_P(resolver), method.lcname, method.len, 3, callArgs);
+			return pt_initializer_expr_type_resolver_get_binary_op_type(resolver, method.op, AOH_PROP(expr, var), AOH_PROP(expr, expr), getType);
 		}
 
 		zend_class_entry *shouldNotHappen = pt_class(PT_CLASS_SHOULD_NOT_HAPPEN);
@@ -664,19 +668,13 @@ private:
 	}
 
 	/* static function (Expr $e) use ($expr, $nodeScopeResolver, $beforeScope,
-	 * $targetReadResult, $rhsResult, $nativeTypesPromoted): Type — captures:
-	 * $expr, $nodeScopeResolver, $beforeScope, $targetReadResult, $rhsResult,
-	 * $nativeTypesPromoted */
-	static void getTypeCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
+	 * $targetReadResult, $rhsResult, $nativeTypesPromoted): Type — data: the
+	 * captures, in that order */
+	static zv::Val getTypeCallback(void *data, zval *e)
 	{
-		if (UNEXPECTED(argc < 1)) {
-			zend_throw_error(zend_ce_argument_count_error, "Too few arguments to function PHPStan\\Analyser\\ExprHandler\\AssignOpHandler::{closure}(), %u passed and exactly 1 expected", argc);
-			return;
-		}
 		zv::Val type;
-		pt_engine_with_stack([&]() { type = operandType(captures, &argv[0]); });
-		if (UNEXPECTED(type.isUndef())) return;
-		type.intoReturnValue(return_value);
+		pt_engine_with_stack([&]() { type = operandType(static_cast<zval *>(data), e); });
+		return type;
 	}
 
 	static zv::Val operandType(zval *captures, zval *e)

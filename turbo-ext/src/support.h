@@ -90,7 +90,6 @@ enum {
 	PT_CLASS_EXPONENTIATE_HELPER,
 	PT_CLASS_COMPOUND_TYPE,
 	PT_CLASS_CONSTANT_SCALAR_TYPE,
-	PT_CLASS_INITIALIZER_EXPR_TYPE_RESOLVER,
 	PT_CLASS_GENERIC_TYPE_NODE,
 	PT_CLASS_CONST_TYPE_NODE,
 	PT_CLASS_CONST_EXPR_INTEGER_NODE,
@@ -442,6 +441,16 @@ enum {
 	PT_CLASS_ARRAY_ITEM,
 	PT_CLASS_ASSERT_TAG,
 	PT_CLASS_RESOLVED_PHP_DOC_BLOCK,
+	PT_CLASS_MAGIC_CONST_FILE,
+	PT_CLASS_MAGIC_CONST_DIR,
+	PT_CLASS_MAGIC_CONST_LINE,
+	PT_CLASS_MAGIC_CONST_CLASS,
+	PT_CLASS_MAGIC_CONST_NAMESPACE,
+	PT_CLASS_MAGIC_CONST_METHOD,
+	PT_CLASS_MAGIC_CONST_FUNCTION,
+	PT_CLASS_MAGIC_CONST_TRAIT,
+	PT_CLASS_MAGIC_CONST_PROPERTY,
+	PT_CLASS_TEMPLATE_TAG,
 	PT_CLASS_COUNT
 };
 
@@ -4126,6 +4135,72 @@ zv::Val pt_mutating_scope_parent_pop_in_function_call(zend_object *scope);
 zv::Val pt_mutating_scope_parent_get_parent_scope(zend_object *scope);
 zv::Val pt_mutating_scope_create_walk_scope(zend_object *scope);
 zv::Val pt_mutating_scope_filter_by_value(zend_object *scope, zend_object *expr, bool truthy);
+/* {{{ InitializerExprTypeResolver.cpp — the shadowing
+ * PHPStan\Reflection\InitializerExprTypeResolver (a final DI service),
+ * registered after Assertions */
+
+extern zend_class_entry *pt_ce_initializer_expr_type_resolver;
+void pt_register_initializer_expr_type_resolver();
+/* the twin's public const CALCULATE_SCALARS_LIMIT — the one place the native
+ * code reads it from (the class constant is declared with the same value) */
+#define PT_INITIALIZER_EXPR_TYPE_RESOLVER_CALCULATE_SCALARS_LIMIT 128
+/* the twin's `callable(Expr): Type $getTypeCallback` for native callers:
+ * fn(data, $expr) answers the Expr's type (UNDEF = pending exception). The
+ * resolver calls it only synchronously, so data may point at the caller's
+ * stack; a PHP receiver or collaborator needing a callable gets a
+ * NativeClosure over it for the call's duration. */
+struct pt_ietr_get_type
+{
+	zv::Val (*fn)(void *data, zval *expr);
+	void *data;
+};
+/* the binary operators of pt_initializer_expr_type_resolver_get_binary_op_type():
+ * get<Operator>Type($left, $right, $getTypeCallback) */
+enum pt_ietr_binary_operator : uint8_t
+{
+	PT_IETR_OP_CONCAT,
+	PT_IETR_OP_BITWISE_AND,
+	PT_IETR_OP_BITWISE_OR,
+	PT_IETR_OP_BITWISE_XOR,
+	PT_IETR_OP_SPACESHIP,
+	PT_IETR_OP_DIV,
+	PT_IETR_OP_MOD,
+	PT_IETR_OP_PLUS,
+	PT_IETR_OP_MINUS,
+	PT_IETR_OP_MUL,
+	PT_IETR_OP_POW,
+	PT_IETR_OP_SHIFT_LEFT,
+	PT_IETR_OP_SHIFT_RIGHT,
+};
+/* $resolver->getType($expr, $context) / ->get<Operator>Type($left, $right,
+ * $getTypeCallback) / ->resolveConcatType($left, $right) /
+ * ->resolveIdenticalType($leftType, $rightType) / ->resolveEqualType(...)
+ * (a TypeResult) / ->getArrayType($expr, $getTypeCallback) /
+ * ->getCastType($expr, $getTypeCallback) / ->getCastObjectType($exprType) /
+ * ->getFunctionType($type, $isNullable, $isVariadic, $context) /
+ * ->getFirstClassCallableType($expr, $context, $nativeTypesPromoted) /
+ * ->createFirstClassCallable($function, $variants, $nativeTypesPromoted) /
+ * ->getClassConstFetchTypeByReflection($class, $constantName,
+ * $classReflection, $getTypeCallback) / ->getUnaryPlusType($expr,
+ * $getTypeCallback) / ->getUnaryMinusType(...) / ->getBitwiseNotType(...):
+ * the native body for the native class, the method otherwise (every value
+ * borrowed and of the twin's parameter types, NULL-free: PHP null as an
+ * IS_NULL zval; $constantName a string zval); UNDEF = pending exception */
+zv::Val pt_initializer_expr_type_resolver_get_type(zval *resolver, zval *expr, zval *context);
+zv::Val pt_initializer_expr_type_resolver_get_binary_op_type(zval *resolver, pt_ietr_binary_operator op, zval *left, zval *right, const pt_ietr_get_type &getTypeCallback);
+zv::Val pt_initializer_expr_type_resolver_resolve_concat_type(zval *resolver, zval *left, zval *right);
+zv::Val pt_initializer_expr_type_resolver_resolve_identical_type(zval *resolver, zval *leftType, zval *rightType);
+zv::Val pt_initializer_expr_type_resolver_resolve_equal_type(zval *resolver, zval *leftType, zval *rightType);
+zv::Val pt_initializer_expr_type_resolver_get_array_type(zval *resolver, zval *expr, const pt_ietr_get_type &getTypeCallback);
+zv::Val pt_initializer_expr_type_resolver_get_cast_type(zval *resolver, zval *expr, const pt_ietr_get_type &getTypeCallback);
+zv::Val pt_initializer_expr_type_resolver_get_cast_object_type(zval *resolver, zval *exprType);
+zv::Val pt_initializer_expr_type_resolver_get_function_type(zval *resolver, zval *type, bool isNullable, bool isVariadic, zval *context);
+zv::Val pt_initializer_expr_type_resolver_get_first_class_callable_type(zval *resolver, zval *expr, zval *context, bool nativeTypesPromoted);
+zv::Val pt_initializer_expr_type_resolver_create_first_class_callable(zval *resolver, zval *function, zval *variants, bool nativeTypesPromoted);
+zv::Val pt_initializer_expr_type_resolver_get_class_const_fetch_type_by_reflection(zval *resolver, zval *class_, zval *constantName, zval *classReflection, const pt_ietr_get_type &getTypeCallback);
+zv::Val pt_initializer_expr_type_resolver_get_unary_plus_type(zval *resolver, zval *expr, const pt_ietr_get_type &getTypeCallback);
+zv::Val pt_initializer_expr_type_resolver_get_unary_minus_type(zval *resolver, zval *expr, const pt_ietr_get_type &getTypeCallback);
+zv::Val pt_initializer_expr_type_resolver_get_bitwise_not_type(zval *resolver, zval *expr, const pt_ietr_get_type &getTypeCallback);
 
 /* }}} */
 

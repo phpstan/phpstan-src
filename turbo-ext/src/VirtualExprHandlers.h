@@ -141,22 +141,18 @@ inline zval *nodeRead(NodeProp &prop, zval *node)
 /* {{{ the PHP collaborators (one site each; switch to their direct entries
  * once they are ported) */
 
-inline pt_method_site createFirstClassCallableSite;
-inline pt_method_site getFirstClassCallableTypeSite;
 inline pt_method_site initializerExprContextFromScopeSite;
 
 /* $initializerExprTypeResolver->createFirstClassCallable($function, $variants, $nativeTypesPromoted) */
 inline zv::Val createFirstClassCallable(zval *initializerExprTypeResolver, zval *function, zval *variants, bool nativeTypesPromoted)
 {
-	zv::Args argv{function, variants, nativeTypesPromoted};
-	return pt_call_method_cached(createFirstClassCallableSite, Z_OBJ_P(initializerExprTypeResolver), PT_LC("createfirstclasscallable"), 3, argv);
+	return pt_initializer_expr_type_resolver_create_first_class_callable(initializerExprTypeResolver, function, variants, nativeTypesPromoted);
 }
 
 /* $initializerExprTypeResolver->getFirstClassCallableType($expr, $context, $nativeTypesPromoted) */
 inline zv::Val getFirstClassCallableType(zval *initializerExprTypeResolver, zval *expr, zval *context, bool nativeTypesPromoted)
 {
-	zv::Args argv{expr, context, nativeTypesPromoted};
-	return pt_call_method_cached(getFirstClassCallableTypeSite, Z_OBJ_P(initializerExprTypeResolver), PT_LC("getfirstclasscallabletype"), 3, argv);
+	return pt_initializer_expr_type_resolver_get_first_class_callable_type(initializerExprTypeResolver, expr, context, nativeTypesPromoted);
 }
 
 /* InitializerExprContext::fromScope($scope) */

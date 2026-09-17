@@ -4095,8 +4095,7 @@ public:
 	{
 		zv::Ref resolver = slot(PT_MS_PROP_INITIALIZER_EXPR_TYPE_RESOLVER);
 		if (UNEXPECTED(!resolver.isObject())) return uninitializedProperty("initializerExprTypeResolver");
-		zv::Args argv{type, isNullable, bool(false), context};
-		return pt_type_call(resolver.asObject(), PT_LC("getfunctiontype"), 4, argv);
+		return pt_initializer_expr_type_resolver_get_function_type(resolver.raw(), type, isNullable, false, context);
 	}
 
 	/* }}} */
@@ -4234,8 +4233,7 @@ public:
 			if (UNEXPECTED(context.isUndef())) return zv::Val();
 			zv::Ref resolver = slot(PT_MS_PROP_INITIALIZER_EXPR_TYPE_RESOLVER);
 			if (UNEXPECTED(!resolver.isObject())) return uninitializedProperty("initializerExprTypeResolver");
-			zv::Args argv{defaultValue.deref().raw(), context.raw()};
-			zv::Val type = pt_type_call(resolver.asObject(), PT_LC("gettype"), 2, argv);
+			zv::Val type = pt_initializer_expr_type_resolver_get_type(resolver.raw(), defaultValue.deref().raw(), context.raw());
 			if (UNEXPECTED(type.isUndef())) return zv::Val();
 			defaultValues.set(ownedName.get(), std::move(type));
 		}
@@ -10811,8 +10809,7 @@ public:
 			ZVAL_OBJ(&selfZv, self);
 			zv::Val context = pt_type_call_static(PT_CLASS_INITIALIZER_EXPR_CONTEXT, PT_LC("fromscope"), 1, &selfZv);
 			if (UNEXPECTED(context.isUndef())) return zv::Val();
-			zv::Args args{expr, context.raw()};
-			return pt_type_call(resolver.asObject(), PT_LC("gettype"), 2, args);
+			return pt_initializer_expr_type_resolver_get_type(resolver.raw(), &exprZv, context.raw());
 		}
 
 		/* genuinely non-narrowed expressions (calls, ...) have no

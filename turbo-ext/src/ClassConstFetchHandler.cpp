@@ -6,14 +6,14 @@
  * arginfo so Nette autowires it. processExpr() is registered as the class's
  * handler entry (Engine.h). The twin's closures are native closures capturing
  * what the PHP closures capture: the typeCallback ($this, $expr, $classResult,
- * $classReflection), the class-type callback it hands to
- * InitializerExprTypeResolver ($classResult, $nativeTypesPromoted) and the
- * specifyTypesCallback ($this, $expr).
+ * $classReflection) and the specifyTypesCallback ($this, $expr); the
+ * class-type callback it hands to InitializerExprTypeResolver ($classResult,
+ * $nativeTypesPromoted) is a pt_ietr_get_type over a stack capture array (the
+ * resolver calls it synchronously).
  *
  * NodeScopeResolver, MutatingScope, ExpressionResult, ExpressionContext,
- * VariableFlow and DefaultNarrowingHelper are called through their direct
- * entries; InitializerExprTypeResolver stays PHP for now (one cached method
- * site).
+ * VariableFlow, DefaultNarrowingHelper and InitializerExprTypeResolver are
+ * called through their direct entries.
  */
 
 #include "support.h"
@@ -34,14 +34,11 @@ constexpr const char *pt_ccfh_closure_name = "PHPStan\\Analyser\\ExprHandler\\Cl
 /* {{{ the PHP collaborators (one site each; switch to their direct entries
  * once they are ported) */
 
-pt_method_site pt_ccfh_get_class_const_fetch_type_by_reflection_site;
-
 /* $initializerExprTypeResolver->getClassConstFetchTypeByReflection($class,
  * $constantName, $classReflection, $getTypeCallback) */
-zv::Val getClassConstFetchTypeByReflection(zval *initializerExprTypeResolver, zval *class_, zval *constantName, zval *classReflection, zval *getTypeCallback)
+zv::Val getClassConstFetchTypeByReflection(zval *initializerExprTypeResolver, zval *class_, zval *constantName, zval *classReflection, const pt_ietr_get_type &getTypeCallback)
 {
-	zv::Args argv{class_, constantName, classReflection, getTypeCallback};
-	return pt_call_method_cached(pt_ccfh_get_class_const_fetch_type_by_reflection_site, Z_OBJ_P(initializerExprTypeResolver), PT_LC("getclassconstfetchtypebyreflection"), 4, argv);
+	return pt_initializer_expr_type_resolver_get_class_const_fetch_type_by_reflection(initializerExprTypeResolver, class_, constantName, classReflection, getTypeCallback);
 }
 
 /* }}} */
@@ -212,28 +209,29 @@ private:
 		if (UNEXPECTED(class_ == NULL)) return;
 		zval *constantName = identifierName(name);
 		if (UNEXPECTED(constantName == NULL)) return;
-		zval nativeTypesPromoted = {};
-		ZVAL_BOOL(&nativeTypesPromoted, zend_is_true(&argv[0]));
-		zv::Val getTypeCallback = pt_native_closure(&classTypeCallbackBody, &captures[2], &nativeTypesPromoted);
-		zv::Val type = getClassConstFetchTypeByReflection(OBJ_PROP_NUM(Z_OBJ(captures[0]), slots::initializerExprTypeResolver), class_, constantName, &captures[3], getTypeCallback.raw());
+		// the class-type callback's captures ($classResult,
+		// $nativeTypesPromoted), borrowed: the resolver calls it synchronously
+		zval classTypeCaptures[2];
+		ZVAL_COPY_VALUE(&classTypeCaptures[0], &captures[2]);
+		ZVAL_BOOL(&classTypeCaptures[1], zend_is_true(&argv[0]));
+		pt_ietr_get_type getTypeCallback{&classTypeCallback, classTypeCaptures};
+		zv::Val type = getClassConstFetchTypeByReflection(OBJ_PROP_NUM(Z_OBJ(captures[0]), slots::initializerExprTypeResolver), class_, constantName, &captures[3], getTypeCallback);
 		if (UNEXPECTED(type.isUndef())) return;
 		type.intoReturnValue(return_value);
 	}
 
 	/* static function (Expr $e) use ($classResult, $nativeTypesPromoted): Type
-	 * — captures: $classResult, $nativeTypesPromoted */
-	static void classTypeCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
+	 * — data: the captures $classResult, $nativeTypesPromoted */
+	static zv::Val classTypeCallback(void *data, zval *e)
 	{
-		(void) argv;
-		if (UNEXPECTED(!requireArguments(argc, 1, pt_ccfh_closure_name))) return;
+		(void) e;
+		zval *captures = static_cast<zval *>(data);
 		zval *classResult = &captures[0];
 		if (Z_TYPE_P(classResult) == IS_NULL) {
 			pt_throw_should_not_happen();
-			return;
+			return zv::Val();
 		}
-		zv::Val type = Z_TYPE(captures[1]) == IS_TRUE ? pt_expression_result_get_native_type(classResult) : pt_expression_result_get_type(classResult);
-		if (UNEXPECTED(type.isUndef())) return;
-		type.intoReturnValue(return_value);
+		return Z_TYPE(captures[1]) == IS_TRUE ? pt_expression_result_get_native_type(classResult) : pt_expression_result_get_type(classResult);
 	}
 
 	/* fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) =>

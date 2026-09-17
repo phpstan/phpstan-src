@@ -9,10 +9,10 @@
  * $expr, $nameResult) and the specifyTypesCallback ($this, $expr).
  *
  * NodeScopeResolver, ExpressionResult, ExpressionContext, MutatingScope,
- * SpecifiedTypes, DefaultNarrowingHelper and the Type kernel are called
- * through their direct entries; the collaborators that stay PHP for now
- * (InitializerExprTypeResolver, InitializerExprContext) through the cached
- * method sites of VirtualExprHandlers.h.
+ * SpecifiedTypes, DefaultNarrowingHelper, InitializerExprTypeResolver and the
+ * Type kernel are called through their direct entries; InitializerExprContext,
+ * which stays PHP for now, through the cached method site of
+ * VirtualExprHandlers.h.
  */
 
 #include "support.h"

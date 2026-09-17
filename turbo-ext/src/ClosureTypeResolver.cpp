@@ -22,8 +22,8 @@
  *
  * ContextualClosureParameterResolver, MutatingScope, NodeScopeResolver, the
  * statement / expression results and throw / impure points, ClosureType,
- * NativeParameterReflection and the Type kernel are called through their
- * direct entries; InitializerExprTypeResolver, InitializerExprContext,
+ * NativeParameterReflection, InitializerExprTypeResolver and the Type kernel
+ * are called through their direct entries; InitializerExprContext,
  * SimpleThrowPoint and TemplateArgumentStats stay PHP (cached sites below).
  */
 
@@ -61,7 +61,6 @@ int pt_ctr_resolve_closure_type_depth = 0;
 /* {{{ the PHP collaborators (one site each; switch to their direct entries
  * once they are ported) */
 
-pt_method_site pt_ctr_initializer_get_type_site;
 pt_method_site pt_ctr_context_from_scope_site;
 pt_method_site pt_ctr_simple_throw_point_explicit_site;
 pt_method_site pt_ctr_simple_throw_point_implicit_site;
@@ -72,8 +71,7 @@ zv::Val initializerExprType(zval *initializerExprTypeResolver, zval *expr, zval 
 {
 	zv::Val context = pt_call_static_cached(pt_ctr_context_from_scope_site, PT_CLASS_INITIALIZER_EXPR_CONTEXT, PT_LC("fromscope"), 1, scope);
 	if (UNEXPECTED(context.isUndef())) return zv::Val();
-	zv::Args argv{expr, context.raw()};
-	return pt_call_method_cached(pt_ctr_initializer_get_type_site, Z_OBJ_P(initializerExprTypeResolver), PT_LC("gettype"), 2, argv);
+	return pt_initializer_expr_type_resolver_get_type(initializerExprTypeResolver, expr, context.raw());
 }
 
 /* SimpleThrowPoint::createExplicit($type, $canContainAnyThrowable, $fromThrowExpr) / ::createImplicit() */

@@ -578,6 +578,9 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	 * ResolvedPhpDocBlock only */
 	pt_register_assertions();
 	pt_register_node_callback_scope();
+	/* the DI service resolving constant expressions — after Assertions and the
+	 * Type family its bodies instantiate */
+	pt_register_initializer_expr_type_resolver();
 
 	return SUCCESS;
 }

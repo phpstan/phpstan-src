@@ -6,10 +6,11 @@
  * function call asks getLevelDelta() (FuncCallScopeEffectsHelper), so its
  * direct entry pt_output_buffer_helper_get_level_delta() compares the name
  * against the two constant lists without a call. applyLevelDelta() runs for
- * the ob_* functions only; addDelta()'s type callback is a native closure,
- * NodeScopeResolver and MutatingScope are called through their direct
- * entries, InitializerExprTypeResolver::getPlusType() and
- * TypeExpr::getExprType() stay PHP behind cached method sites.
+ * the ob_* functions only; addDelta()'s type callback is a native
+ * pt_ietr_get_type (InitializerExprTypeResolver calls it synchronously),
+ * NodeScopeResolver, MutatingScope and InitializerExprTypeResolver are called
+ * through their direct entries, TypeExpr::getExprType() stays PHP behind a
+ * cached method site.
  */
 
 #include "support.h"
@@ -28,18 +29,16 @@ namespace {
 
 /* {{{ the PHP collaborators (one site each) */
 
-pt_method_site pt_obh_get_plus_type_site;
 pt_method_site pt_obh_get_expr_type_site;
 
 /* $this->initializerExprTypeResolver->getPlusType($left, $right, $getTypeCallback) */
-zv::Val getPlusType(zval *initializerExprTypeResolver, zval *left, zval *right, zval *getTypeCallback)
+zv::Val getPlusType(zval *initializerExprTypeResolver, zval *left, zval *right, const pt_ietr_get_type &getTypeCallback)
 {
 	if (UNEXPECTED(Z_TYPE_P(initializerExprTypeResolver) != IS_OBJECT)) {
 		zend_throw_error(NULL, "Typed property PHPStan\\Analyser\\ExprHandler\\Helper\\OutputBufferHelper::$initializerExprTypeResolver must not be accessed before initialization");
 		return zv::Val();
 	}
-	zv::Args argv{left, right, getTypeCallback};
-	return pt_call_method_cached(pt_obh_get_plus_type_site, Z_OBJ_P(initializerExprTypeResolver), PT_LC("getplustype"), 3, argv);
+	return pt_initializer_expr_type_resolver_get_binary_op_type(initializerExprTypeResolver, PT_IETR_OP_PLUS, left, right, getTypeCallback);
 }
 
 /* $typeExpr->getExprType() */
@@ -51,33 +50,24 @@ zv::Val getExprType(zval *typeExpr)
 /* }}} */
 
 /* static fn (Expr $expr): Type => $expr instanceof TypeExpr ? $expr->getExprType() : new MixedType() */
-void typeExprTypeCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
+zv::Val typeExprTypeCallback(void *data, zval *expr)
 {
-	(void) captures;
-	if (UNEXPECTED(argc < 1)) {
-		zend_throw_error(zend_ce_argument_count_error, "Too few arguments to function PHPStan\\Analyser\\ExprHandler\\Helper\\OutputBufferHelper::{closure}(), %u passed and exactly 1 expected", argc);
-		return;
-	}
-	zval *expr = &argv[0];
+	(void) data;
 	ZVAL_DEREF(expr);
 	zend_class_entry *exprCe = pt_class(PT_CLASS_EXPR);
-	if (UNEXPECTED(exprCe == NULL)) return;
+	if (UNEXPECTED(exprCe == NULL)) return zv::Val();
 	if (UNEXPECTED(Z_TYPE_P(expr) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(expr), exprCe))) {
 		zend_type_error("PHPStan\\Analyser\\ExprHandler\\Helper\\OutputBufferHelper::{closure}(): Argument #1 ($expr) must be of type PhpParser\\Node\\Expr, %s given", zend_zval_value_name(expr));
-		return;
+		return zv::Val();
 	}
 	zend_class_entry *typeExprCe = pt_class_loaded(PT_CLASS_TYPE_EXPR);
-	if (UNEXPECTED(EG(exception))) return;
-	zv::Val type;
+	if (UNEXPECTED(EG(exception))) return zv::Val();
 	if (typeExprCe != NULL && instanceof_function(Z_OBJCE_P(expr), typeExprCe)) {
-		type = getExprType(expr);
-	} else {
-		zval mixed;
-		if (UNEXPECTED(!pt_mixed_type_new(&mixed))) return;
-		type = zv::Val::adopt(mixed);
+		return getExprType(expr);
 	}
-	if (UNEXPECTED(type.isUndef())) return;
-	type.intoReturnValue(return_value);
+	zval mixed;
+	if (UNEXPECTED(!pt_mixed_type_new(&mixed))) return zv::Val();
+	return zv::Val::adopt(mixed);
 }
 
 } // namespace
@@ -158,8 +148,8 @@ private:
 		zv::Val deltaTypeHold = zv::Val::adopt(deltaType);
 		zv::Val right = pt_type_new(PT_CLASS_TYPE_EXPR, 1, deltaTypeHold.raw());
 		if (UNEXPECTED(right.isUndef())) return zv::Val();
-		zv::Val callback = pt_native_closure(&typeExprTypeCallbackBody);
-		return getPlusType(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), left.raw(), right.raw(), callback.raw());
+		pt_ietr_get_type callback{&typeExprTypeCallback, NULL};
+		return getPlusType(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), left.raw(), right.raw(), callback);
 	}
 };
 

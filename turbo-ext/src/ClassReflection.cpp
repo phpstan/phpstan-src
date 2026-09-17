@@ -242,6 +242,16 @@ public:
 
 	zv::Val reflectionCall(const char *lcname, size_t len, uint32_t argc, zval *argv) const { return callService(PT_CR_PROP_REFLECTION, "reflection", lcname, len, argc, argv); }
 
+	/* $this->initializerExprTypeResolver->getType($expr, $context) */
+	zv::Val initializerExprType(zval *expr, zval *context) const
+	{
+		zend_object *object = service(PT_CR_PROP_INITIALIZER_EXPR_TYPE_RESOLVER, "initializerExprTypeResolver");
+		if (UNEXPECTED(object == NULL)) return zv::Val();
+		zval resolver;
+		ZVAL_OBJ(&resolver, object);
+		return pt_initializer_expr_type_resolver_get_type(&resolver, expr, context);
+	}
+
 	bool reflectionCallBool(const char *lcname, size_t len, bool &out) const
 	{
 		zv::Val result = reflectionCall(lcname, len, 0, NULL);
@@ -2181,8 +2191,7 @@ public:
 			context = ownContext.raw();
 		}
 
-		zv::Args args{valueExpression.raw(), context};
-		return callService(PT_CR_PROP_INITIALIZER_EXPR_TYPE_RESOLVER, "initializerExprTypeResolver", PT_LC("gettype"), 2, args);
+		return initializerExprType(valueExpression.raw(), context);
 	}
 
 	/* $this->attributeReflectionFactory->fromNativeReflection($case->getAttributes(),
@@ -3359,8 +3368,7 @@ public:
 			}
 			zv::Val context = initializerExprContextFromClassReflection();
 			if (UNEXPECTED(context.isUndef())) return zv::Val();
-			zv::Args typeArgs{flagExpr.raw(), context.raw()};
-			flagType = callService(PT_CR_PROP_INITIALIZER_EXPR_TYPE_RESOLVER, "initializerExprTypeResolver", PT_LC("gettype"), 2, typeArgs);
+			flagType = initializerExprType(flagExpr.raw(), context.raw());
 			if (UNEXPECTED(flagType.isUndef())) return zv::Val();
 		}
 

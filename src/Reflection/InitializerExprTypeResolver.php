@@ -42,7 +42,7 @@ use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
@@ -127,7 +127,7 @@ use const INF;
 use const PHP_INT_MIN;
 
 #[AutowiredService]
-#[ReferencedByTurboExtension(key: 'initializerExprTypeResolver')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/InitializerExprTypeResolver.cpp')]
 final class InitializerExprTypeResolver
 {
 

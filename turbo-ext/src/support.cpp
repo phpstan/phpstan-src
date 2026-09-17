@@ -54,7 +54,6 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_EXPONENTIATE_HELPER */ {"exponentiateHelper", "PHPStan\\Type\\ExponentiateHelper"},
 	/* PT_CLASS_COMPOUND_TYPE */ {"compoundType", "PHPStan\\Type\\CompoundType"},
 	/* PT_CLASS_CONSTANT_SCALAR_TYPE */ {"constantScalarType", "PHPStan\\Type\\ConstantScalarType"},
-	/* PT_CLASS_INITIALIZER_EXPR_TYPE_RESOLVER */ {"initializerExprTypeResolver", "PHPStan\\Reflection\\InitializerExprTypeResolver"},
 	/* PT_CLASS_GENERIC_TYPE_NODE */ {"genericTypeNode", "PHPStan\\PhpDocParser\\Ast\\Type\\GenericTypeNode"},
 	/* PT_CLASS_CONST_TYPE_NODE */ {"constTypeNode", "PHPStan\\PhpDocParser\\Ast\\Type\\ConstTypeNode"},
 	/* PT_CLASS_CONST_EXPR_INTEGER_NODE */ {"constExprIntegerNode", "PHPStan\\PhpDocParser\\Ast\\ConstExpr\\ConstExprIntegerNode"},
@@ -393,6 +392,16 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_ARRAY_ITEM */ {"arrayItem", "PhpParser\\Node\\ArrayItem"},
 	/* PT_CLASS_ASSERT_TAG */ {"assertTag", "PHPStan\\PhpDoc\\Tag\\AssertTag"},
 	/* PT_CLASS_RESOLVED_PHP_DOC_BLOCK */ {"resolvedPhpDocBlock", "PHPStan\\PhpDoc\\ResolvedPhpDocBlock"},
+	/* PT_CLASS_MAGIC_CONST_FILE */ {"magicConstFile", "PhpParser\\Node\\Scalar\\MagicConst\\File"},
+	/* PT_CLASS_MAGIC_CONST_DIR */ {"magicConstDir", "PhpParser\\Node\\Scalar\\MagicConst\\Dir"},
+	/* PT_CLASS_MAGIC_CONST_LINE */ {"magicConstLine", "PhpParser\\Node\\Scalar\\MagicConst\\Line"},
+	/* PT_CLASS_MAGIC_CONST_CLASS */ {"magicConstClass", "PhpParser\\Node\\Scalar\\MagicConst\\Class_"},
+	/* PT_CLASS_MAGIC_CONST_NAMESPACE */ {"magicConstNamespace", "PhpParser\\Node\\Scalar\\MagicConst\\Namespace_"},
+	/* PT_CLASS_MAGIC_CONST_METHOD */ {"magicConstMethod", "PhpParser\\Node\\Scalar\\MagicConst\\Method"},
+	/* PT_CLASS_MAGIC_CONST_FUNCTION */ {"magicConstFunction", "PhpParser\\Node\\Scalar\\MagicConst\\Function_"},
+	/* PT_CLASS_MAGIC_CONST_TRAIT */ {"magicConstTrait", "PhpParser\\Node\\Scalar\\MagicConst\\Trait_"},
+	/* PT_CLASS_MAGIC_CONST_PROPERTY */ {"magicConstProperty", "PhpParser\\Node\\Scalar\\MagicConst\\Property"},
+	/* PT_CLASS_TEMPLATE_TAG */ {"templateTag", "PHPStan\\PhpDoc\\Tag\\TemplateTag"},
 };
 
 zend_class_entry *pt_class(int idx)

@@ -27,14 +27,10 @@ namespace sigs = ptdecl::IntegerRangeType::sig;
 
 zend_class_entry *pt_ce_integer_range_type = nullptr;
 
-/* InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT, read once per
- * request from the class */
-static bool pt_calculate_scalars_limit_known = false;
-static zend_long pt_calculate_scalars_limit = 0;
-
+/* nothing is memoized per request since InitializerExprTypeResolver's
+ * CALCULATE_SCALARS_LIMIT became a native constant */
 void pt_integer_range_type_rinit()
 {
-	pt_calculate_scalars_limit_known = false;
 }
 
 namespace phpstanturbo {
@@ -1173,30 +1169,10 @@ private:
 		return !EG(exception);
 	}
 
+	/* InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT */
 	static bool calculateScalarsLimit(zend_long &out)
 	{
-		if (EXPECTED(pt_calculate_scalars_limit_known)) {
-			out = pt_calculate_scalars_limit;
-			return true;
-		}
-		zend_class_entry *ce = pt_class(PT_CLASS_INITIALIZER_EXPR_TYPE_RESOLVER);
-		if (UNEXPECTED(ce == NULL)) return false;
-		zend_string *name = zend_string_init(PT_LC("CALCULATE_SCALARS_LIMIT"), 0);
-		zval *value = zend_get_class_constant_ex(ce->name, name, NULL, 0);
-		zend_string_release(name);
-		if (UNEXPECTED(value == NULL)) {
-			if (!EG(exception)) {
-				zend_throw_error(NULL, "phpstan_turbo: %s::CALCULATE_SCALARS_LIMIT not found", ZSTR_VAL(ce->name));
-			}
-			return false;
-		}
-		if (UNEXPECTED(Z_TYPE_P(value) != IS_LONG)) {
-			zend_type_error("phpstan_turbo: %s::CALCULATE_SCALARS_LIMIT must be an int", ZSTR_VAL(ce->name));
-			return false;
-		}
-		pt_calculate_scalars_limit = Z_LVAL_P(value);
-		pt_calculate_scalars_limit_known = true;
-		out = pt_calculate_scalars_limit;
+		out = PT_INITIALIZER_EXPR_TYPE_RESOLVER_CALCULATE_SCALARS_LIMIT;
 		return true;
 	}
 

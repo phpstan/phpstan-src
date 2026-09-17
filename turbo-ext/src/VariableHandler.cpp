@@ -17,8 +17,8 @@
  * VariableFlow, SpecifiedTypes, TypeSpecifierContext, TypeCombinator,
  * ImpurePoint and IssetabilityDescriptor are called through their direct
  * entries (the ExpressionResult slot getters are the inline readers of
- * AnalyserValues.h); the collaborators that stay PHP for now (the narrowing
- * helpers, InitializerExprTypeResolver) through the cached method sites in
+ * AnalyserValues.h), InitializerExprTypeResolver too; the collaborators that
+ * stay PHP for now (the narrowing helpers) through the cached method sites in
  * the block below, one helper each.
  */
 
@@ -41,7 +41,6 @@ namespace {
 /* {{{ the PHP collaborators (one site each; switch to their direct entries
  * once they are ported) */
 
-pt_method_site pt_vh_resolve_identical_type_site;
 pt_method_site pt_vh_get_constant_strings_site;
 pt_property_site pt_vh_name_site;
 
@@ -73,8 +72,7 @@ zv::Val specifyIdentical(zval *identicalNarrowingHelper, zval *argv)
 /* $initializerExprTypeResolver->resolveIdenticalType($leftType, $rightType) */
 zv::Val resolveIdenticalType(zval *initializerExprTypeResolver, zval *leftType, zval *rightType)
 {
-	zv::Args argv{leftType, rightType};
-	return pt_call_method_cached(pt_vh_resolve_identical_type_site, Z_OBJ_P(initializerExprTypeResolver), PT_LC("resolveidenticaltype"), 2, argv);
+	return pt_initializer_expr_type_resolver_resolve_identical_type(initializerExprTypeResolver, leftType, rightType);
 }
 
 /* the superglobal impure point's 'superglobal' / 'access to superglobal

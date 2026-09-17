@@ -25,6 +25,7 @@ parameters:
 			tooWideImplicitThrowType: false
 			throwTypeCovariance: false
 	featureToggles:
+		adaptiveParallelWorkerCount: false
 		bleedingEdge: false
 		checkNonStringableDynamicAccess: false
 		checkParameterCastableToNumberFunctions: false

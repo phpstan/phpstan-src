@@ -386,4 +386,10 @@ class MissingReturnRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5681.php'], []);
 	}
 
+	public function testDynamicNameYield(): void
+	{
+		$this->checkExplicitMixedMissingReturn = true;
+		$this->analyse([__DIR__ . '/data/dynamic-name-yield.php'], []);
+	}
+
 }

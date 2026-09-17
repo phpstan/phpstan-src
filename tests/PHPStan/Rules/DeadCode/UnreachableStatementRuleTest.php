@@ -434,4 +434,31 @@ class UnreachableStatementRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testDynamicNameAlwaysTerminating(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/dynamic-name-always-terminating.php'], [
+			[
+				'Unreachable statement - code above always terminates.',
+				21,
+			],
+			[
+				'Unreachable statement - code above always terminates.',
+				27,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testFirstClassCallableTerminatingVar(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/first-class-callable-terminating-var.php'], [
+			[
+				'Unreachable statement - code above always terminates.',
+				19,
+			],
+		]);
+	}
+
 }

@@ -183,6 +183,7 @@ final class StaticCallHandler implements ExprHandler
 			$hasYield = $hasYield || $nameResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $nameResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $nameResult->getImpurePoints());
+			$isAlwaysTerminating = $isAlwaysTerminating || $nameResult->isAlwaysTerminating();
 			$scope = $nameResult->getScope();
 		}
 

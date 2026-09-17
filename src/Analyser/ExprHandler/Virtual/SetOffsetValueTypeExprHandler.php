@@ -14,12 +14,14 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
 
 /**
  * @implements ExprHandler<SetOffsetValueTypeExpr>
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/SetOffsetValueTypeExprHandler.cpp')]
 final class SetOffsetValueTypeExprHandler implements ExprHandler
 {
 

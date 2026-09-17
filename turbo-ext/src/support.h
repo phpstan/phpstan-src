@@ -3773,6 +3773,38 @@ void pt_register_count_narrowing_helper();
 zend_long pt_count_narrowing_helper_is_normal_count_call(zval *helper, zval *countFuncCall, zval *typeToCount, zval *scope);
 zv::Val pt_count_narrowing_helper_specify_count_size(zval *helper, zval *countFuncCall, zval *type, zval *sizeType, zval *context, zval *scope, zval *rootExpr);
 
+/* {{{ the virtual expression handlers (ExprHandler\Virtual\*: AlwaysRememberedExprHandler.cpp
+ * ... UnsetOffsetExprHandler.cpp) and VirtualExprResultHelper.cpp — registered
+ * at the END of the sequence */
+
+extern zend_class_entry *pt_ce_virtual_expr_result_helper;
+extern zend_class_entry *pt_ce_type_expr_handler;
+extern zend_class_entry *pt_ce_native_type_expr_handler;
+extern zend_class_entry *pt_ce_unset_offset_expr_handler;
+extern zend_class_entry *pt_ce_always_remembered_expr_handler;
+extern zend_class_entry *pt_ce_existing_array_dim_fetch_handler;
+extern zend_class_entry *pt_ce_isset_expr_handler;
+extern zend_class_entry *pt_ce_possibly_impure_call_expr_handler;
+extern zend_class_entry *pt_ce_set_existing_offset_value_type_expr_handler;
+extern zend_class_entry *pt_ce_set_offset_value_type_expr_handler;
+void pt_register_virtual_expr_result_helper();
+void pt_register_type_expr_handler();
+void pt_register_native_type_expr_handler();
+void pt_register_unset_offset_expr_handler();
+void pt_register_always_remembered_expr_handler();
+void pt_register_existing_array_dim_fetch_handler();
+void pt_register_isset_expr_handler();
+void pt_register_possibly_impure_call_expr_handler();
+void pt_register_set_existing_offset_value_type_expr_handler();
+void pt_register_set_offset_value_type_expr_handler();
+
+/* VirtualExprResultHelper.cpp — $helper->createTypeExprResult($scope, $expr)
+ * / ->createUnsetOffsetExprResult($scope, $expr, $varResult, $dimResult): the
+ * native body for the native class, the method otherwise (everything
+ * borrowed); UNDEF = pending exception */
+zv::Val pt_virtual_expr_result_helper_create_type_expr_result(zval *helper, zval *scope, zval *expr);
+zv::Val pt_virtual_expr_result_helper_create_unset_offset_expr_result(zval *helper, zval *scope, zval *expr, zval *varResult, zval *dimResult);
+
 /* }}} */
 
 #endif /* PHPSTANTURBO_SUPPORT_H */

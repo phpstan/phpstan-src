@@ -4399,6 +4399,16 @@ $coveredElsewhere = [
 	\PHPStan\Analyser\ExprHandler\YieldHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\YieldFromHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\Helper\CountNarrowingHelper::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\Helper\VirtualExprResultHelper::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\Virtual\TypeExprHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\Virtual\NativeTypeExprHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\Virtual\UnsetOffsetExprHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\Virtual\AlwaysRememberedExprHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\Virtual\ExistingArrayDimFetchHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\Virtual\IssetExprHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\Virtual\PossiblyImpureCallExprHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\Virtual\SetExistingOffsetValueTypeExprHandler::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\Virtual\SetOffsetValueTypeExprHandler::class => 'walk-trace.php',
 ];
 foreach (array_keys($shadowedClasses) as $shadowedClass) {
 	check(

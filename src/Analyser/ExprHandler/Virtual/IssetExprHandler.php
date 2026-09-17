@@ -15,6 +15,7 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\IssetExpr;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
 
 /**
@@ -28,6 +29,7 @@ use PHPStan\Type\Type;
  * @implements ExprHandler<IssetExpr>
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/IssetExprHandler.cpp')]
 final class IssetExprHandler implements ExprHandler
 {
 

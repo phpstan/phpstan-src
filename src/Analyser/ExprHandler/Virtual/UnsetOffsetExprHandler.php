@@ -13,11 +13,13 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\UnsetOffsetExpr;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @implements ExprHandler<UnsetOffsetExpr>
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/UnsetOffsetExprHandler.cpp')]
 final class UnsetOffsetExprHandler implements ExprHandler
 {
 

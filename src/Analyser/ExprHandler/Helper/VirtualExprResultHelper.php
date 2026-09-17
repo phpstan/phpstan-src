@@ -11,6 +11,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\Expr\UnsetOffsetExpr;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
 
 /**
@@ -20,6 +21,7 @@ use PHPStan\Type\Type;
  * one are identical by construction.
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/VirtualExprResultHelper.cpp')]
 final class VirtualExprResultHelper
 {
 

@@ -10,9 +10,9 @@
  * built by a native recursion (under pt_engine_with_stack()).
  * NodeScopeResolver, AssignHandler, MethodThrowPointHelper, ExpressionResult,
  * ExpressionResultStorage, VariableFlow(Builder), VariableWriteOffset,
- * ImpurePoint, MutatingScope, the Type kernel, the contexts and the
- * statement results are called through their direct entries; the container
- * and VirtualExprResultHelper through the sites below.
+ * ImpurePoint, MutatingScope, VirtualExprResultHelper, the Type kernel, the
+ * contexts and the statement results are called through their direct
+ * entries; the container through the site below.
  */
 
 #include "support.h"
@@ -34,7 +34,6 @@ namespace {
 /* {{{ the PHP collaborators (one site each) */
 
 pt_method_site pt_uh_get_by_type_site;
-pt_method_site pt_uh_create_unset_offset_expr_result_site;
 
 /* $container->getByType($className) */
 zv::Val containerGetByType(zval *container, zend_string *className)
@@ -439,8 +438,7 @@ private:
 		if (UNEXPECTED(varResult.isUndef())) return false;
 		zv::Val dimResult = pt_node_scope_resolver_read_stored_result(nodeScopeResolver, dimHold.raw(), storage);
 		if (UNEXPECTED(dimResult.isUndef())) return false;
-		zv::Args createArgv{state.scope.raw(), unsetOffsetExpr.raw(), varResult.raw(), dimResult.raw()};
-		zv::Val assignedExprResult = pt_call_method_cached(pt_uh_create_unset_offset_expr_result_site, Z_OBJ_P(helper.raw()), PT_LC("createunsetoffsetexprresult"), 4, createArgv);
+		zv::Val assignedExprResult = pt_virtual_expr_result_helper_create_unset_offset_expr_result(helper.raw(), state.scope.raw(), unsetOffsetExpr.raw(), varResult.raw(), dimResult.raw());
 		if (UNEXPECTED(assignedExprResult.isUndef())) return false;
 
 		zv::Val assignResult = pt_assign_handler_process_virtual_assign(OBJ_PROP_NUM(self, slots::assignHandler), nodeScopeResolver, state.scope.raw(), storage, stmt, clonedVar.raw(), unsetOffsetExpr.raw(), nodeCallback, assignedExprResult.raw());

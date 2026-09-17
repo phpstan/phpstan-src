@@ -534,6 +534,19 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_yield_handler();
 	pt_register_yield_from_handler();
 	pt_register_count_narrowing_helper();
+	/* the virtual expression handlers, after the walk hub, result and
+	 * narrowing classes their signatures name; the helper before the handlers
+	 * its constructor is handed to */
+	pt_register_virtual_expr_result_helper();
+	pt_register_type_expr_handler();
+	pt_register_native_type_expr_handler();
+	pt_register_unset_offset_expr_handler();
+	pt_register_always_remembered_expr_handler();
+	pt_register_existing_array_dim_fetch_handler();
+	pt_register_isset_expr_handler();
+	pt_register_possibly_impure_call_expr_handler();
+	pt_register_set_existing_offset_value_type_expr_handler();
+	pt_register_set_offset_value_type_expr_handler();
 
 	return SUCCESS;
 }

@@ -648,9 +648,7 @@ zv::Val prfFindPropertyReflectionFromNodeWithHolderType(zval *finder, zval *prop
 /* $virtualExprResultHelper->createTypeExprResult($scope, $expr) */
 zv::Val vehCreateTypeExprResult(zval *helper, zval *scope, zval *expr)
 {
-	static pt_method_site site;
-	zv::Args argv{scope, expr};
-	return pt_call_method_cached(site, Z_OBJ_P(helper), PT_LC("createtypeexprresult"), 2, argv);
+	return pt_virtual_expr_result_helper_create_type_expr_result(helper, scope, expr);
 }
 
 /* $phpVersion->supportsPropertyHooks(); false = pending exception */

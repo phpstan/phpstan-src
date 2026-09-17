@@ -12,11 +12,13 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\ParameterAllowedConstants;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypehintHelper;
 
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/PhpParameterReflection.cpp')]
 final class PhpParameterReflection implements ExtendedParameterReflection
 {
 

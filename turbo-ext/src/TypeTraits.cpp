@@ -10,6 +10,7 @@
 
 #include "TypeTraits.h"
 #include "Engine.h"
+#include "ParameterValues.h"
 #include "generated/JustNullableTypeTrait.h"
 #include "generated/NonArrayTypeTrait.h"
 #include "generated/NonCallableTypeTrait.h"
@@ -5048,9 +5049,8 @@ enum ProtoReturn : uint8_t
 /* $object->method() with the twin's declared return type held (a PHP
  * implementation's is checked by the engine on return); UNDEF = pending
  * exception */
-zv::Val protoCall(zend_object *object, const char *lcname, size_t len, ProtoReturn expected)
+zv::Val protoChecked(zend_object *object, const char *lcname, zv::Val result, ProtoReturn expected)
 {
-	zv::Val result = pt_type_call(object, lcname, len, 0, NULL);
 	if (UNEXPECTED(result.isUndef())) return result;
 	zend_uchar type = Z_TYPE_P(result.raw());
 	bool ok;
@@ -5082,6 +5082,20 @@ zv::Val protoCall(zend_object *object, const char *lcname, size_t len, ProtoRetu
 		return zv::Val();
 	}
 	return result;
+}
+
+zv::Val protoCall(zend_object *object, const char *lcname, size_t len, ProtoReturn expected)
+{
+	return protoChecked(object, lcname, pt_type_call(object, lcname, len, 0, NULL), expected);
+}
+
+/* the same for a parameter reflection's getter, through
+ * pt_parameter_reflection_call() (ParameterValues.h) */
+zv::Val protoParameterCall(zend_object *parameter, pt_parameter_reflection_member member, const char *lcname, ProtoReturn expected)
+{
+	zval parameterZv;
+	ZVAL_OBJ(&parameterZv, parameter);
+	return protoChecked(parameter, lcname, pt_parameter_reflection_call(&parameterZv, member), expected);
 }
 
 /* $a->equals($b); -1 = pending exception */
@@ -5142,41 +5156,41 @@ zv::Val protoMap(zval *array, const char *what, F fn)
  * getClosureThisType() twice; pure getters); UNDEF = pending exception */
 zv::Val protoParameter(PrototypeKind kind, const PrototypeTransformer &transformer, zend_object *parameter)
 {
-	zv::Val name = protoCall(parameter, PT_LC("getname"), PROTO_ANY);
+	zv::Val name = protoParameterCall(parameter, PT_PR_GET_NAME, "getname", PROTO_ANY);
 	if (UNEXPECTED(name.isUndef())) return zv::Val();
-	zv::Val originalType = protoCall(parameter, PT_LC("gettype"), PROTO_OBJECT);
+	zv::Val originalType = protoParameterCall(parameter, PT_PR_GET_TYPE, "gettype", PROTO_OBJECT);
 	if (UNEXPECTED(originalType.isUndef())) return zv::Val();
 	zv::Val transformedType = transformer.transform(originalType.raw());
 	if (UNEXPECTED(transformedType.isUndef())) return zv::Val();
-	zv::Val optional = protoCall(parameter, PT_LC("isoptional"), PROTO_ANY);
+	zv::Val optional = protoParameterCall(parameter, PT_PR_IS_OPTIONAL, "isoptional", PROTO_ANY);
 	if (UNEXPECTED(optional.isUndef())) return zv::Val();
-	zv::Val passedByReference = protoCall(parameter, PT_LC("passedbyreference"), PROTO_ANY);
+	zv::Val passedByReference = protoParameterCall(parameter, PT_PR_PASSED_BY_REFERENCE, "passedbyreference", PROTO_ANY);
 	if (UNEXPECTED(passedByReference.isUndef())) return zv::Val();
-	zv::Val variadic = protoCall(parameter, PT_LC("isvariadic"), PROTO_ANY);
+	zv::Val variadic = protoParameterCall(parameter, PT_PR_IS_VARIADIC, "isvariadic", PROTO_ANY);
 	if (UNEXPECTED(variadic.isUndef())) return zv::Val();
-	zv::Val defaultValue = protoCall(parameter, PT_LC("getdefaultvalue"), PROTO_ANY);
+	zv::Val defaultValue = protoParameterCall(parameter, PT_PR_GET_DEFAULT_VALUE, "getdefaultvalue", PROTO_ANY);
 	if (UNEXPECTED(defaultValue.isUndef())) return zv::Val();
-	zv::Val nativeType = protoCall(parameter, PT_LC("getnativetype"), PROTO_ANY);
+	zv::Val nativeType = protoParameterCall(parameter, PT_PR_GET_NATIVE_TYPE, "getnativetype", PROTO_ANY);
 	if (UNEXPECTED(nativeType.isUndef())) return zv::Val();
-	zv::Val phpDocType = protoCall(parameter, PT_LC("getphpdoctype"), PROTO_OBJECT);
+	zv::Val phpDocType = protoParameterCall(parameter, PT_PR_GET_PHPDOC_TYPE, "getphpdoctype", PROTO_OBJECT);
 	if (UNEXPECTED(phpDocType.isUndef())) return zv::Val();
 	zv::Val transformedPhpDocType = protoTransformUnlessEqual(kind, transformer, originalType.raw(), transformedType.raw(), phpDocType.raw());
 	if (UNEXPECTED(transformedPhpDocType.isUndef())) return zv::Val();
-	zv::Val outType = protoCall(parameter, PT_LC("getouttype"), PROTO_OBJECT_OR_NULL);
+	zv::Val outType = protoParameterCall(parameter, PT_PR_GET_OUT_TYPE, "getouttype", PROTO_OBJECT_OR_NULL);
 	if (UNEXPECTED(outType.isUndef())) return zv::Val();
 	zv::Val transformedOutType = protoTransformNullable(transformer, outType.raw());
 	if (UNEXPECTED(transformedOutType.isUndef())) return zv::Val();
-	zv::Val immediatelyInvokedCallable = protoCall(parameter, PT_LC("isimmediatelyinvokedcallable"), PROTO_ANY);
+	zv::Val immediatelyInvokedCallable = protoParameterCall(parameter, PT_PR_IS_IMMEDIATELY_INVOKED_CALLABLE, "isimmediatelyinvokedcallable", PROTO_ANY);
 	if (UNEXPECTED(immediatelyInvokedCallable.isUndef())) return zv::Val();
-	zv::Val closureThisType = protoCall(parameter, PT_LC("getclosurethistype"), PROTO_OBJECT_OR_NULL);
+	zv::Val closureThisType = protoParameterCall(parameter, PT_PR_GET_CLOSURE_THIS_TYPE, "getclosurethistype", PROTO_OBJECT_OR_NULL);
 	if (UNEXPECTED(closureThisType.isUndef())) return zv::Val();
 	zv::Val transformedClosureThisType = protoTransformNullable(transformer, closureThisType.raw());
 	if (UNEXPECTED(transformedClosureThisType.isUndef())) return zv::Val();
-	zv::Val attributes = protoCall(parameter, PT_LC("getattributes"), PROTO_ANY);
+	zv::Val attributes = protoParameterCall(parameter, PT_PR_GET_ATTRIBUTES, "getattributes", PROTO_ANY);
 	if (UNEXPECTED(attributes.isUndef())) return zv::Val();
-	zv::Val allowedConstants = protoCall(parameter, PT_LC("getallowedconstants"), PROTO_ANY);
+	zv::Val allowedConstants = protoParameterCall(parameter, PT_PR_GET_ALLOWED_CONSTANTS, "getallowedconstants", PROTO_ANY);
 	if (UNEXPECTED(allowedConstants.isUndef())) return zv::Val();
-	zv::Val pureUnlessCallableIsImpure = protoCall(parameter, PT_LC("ispureunlesscallableisimpureparameter"), PROTO_ANY);
+	zv::Val pureUnlessCallableIsImpure = protoParameterCall(parameter, PT_PR_IS_PURE_UNLESS_CALLABLE_IS_IMPURE_PARAMETER, "ispureunlesscallableisimpureparameter", PROTO_ANY);
 	if (UNEXPECTED(pureUnlessCallableIsImpure.isUndef())) return zv::Val();
 	zval args[14];
 	ZVAL_COPY_VALUE(&args[0], name.raw());

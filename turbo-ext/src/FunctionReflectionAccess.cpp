@@ -10,7 +10,7 @@
  * - FunctionVariant::getReturnType() / getParameters() of an
  *   ExtendedFunctionVariant (ExtendedFunctionVariant::getParameters() is
  *   parent::getParameters());
- * - ExtendedNativeParameterReflection::isOptional();
+ * - ParameterReflection::isOptional() (pt_parameter_reflection_bool());
  * - Assertions::getAll().
  *
  * Same contract as ReflectionAccess.cpp: only an object of exactly the
@@ -25,6 +25,7 @@
 #include "TypeTraits.h"
 #include "TypeOps.h"
 #include "Engine.h"
+#include "ParameterValues.h"
 
 namespace {
 
@@ -60,7 +61,6 @@ struct ClassSlots
 
 ClassSlots pt_fra_native_function_reflection;
 ClassSlots pt_fra_extended_function_variant;
-ClassSlots pt_fra_extended_native_parameter;
 ClassSlots pt_fra_assertions;
 ClassSlots pt_fra_memoizing_reflection_provider;
 ClassSlots pt_fra_better_reflection_provider;
@@ -95,7 +95,6 @@ const ClassSlots *slotsOf(ClassSlots &cache, int classIdx, zend_object *object, 
 
 const char *const pt_fra_nfr_names[PT_FRA_NFR_SLOT_COUNT] = { "name", "variants", "namedArgumentsVariants", "throwType", "hasSideEffects", "assertions" };
 const char *const pt_fra_efv_names[PT_FRA_EFV_SLOT_COUNT] = { "returnType", "parameters" };
-const char *const pt_fra_enpr_names[1] = { "optional" };
 const char *const pt_fra_assertions_names[1] = { "asserts" };
 const char *const pt_fra_memoizing_names[1] = { "provider" };
 const char *const pt_fra_better_names[2] = { "resolvedFunctionNames", "functionReflections" };
@@ -241,21 +240,7 @@ zval *pt_parameters_acceptor_parameters(zval *acceptor, zv::Val &hold)
 
 bool pt_parameter_reflection_is_optional(zval *parameter, bool &out)
 {
-	if (EXPECTED(Z_TYPE_P(parameter) == IS_OBJECT)) {
-		const ClassSlots *slots = slotsOf(pt_fra_extended_native_parameter, PT_CLASS_EXTENDED_NATIVE_PARAMETER_REFLECTION, Z_OBJ_P(parameter), pt_fra_enpr_names, 1);
-		if (EXPECTED(slots != NULL)) {
-			zval *value = initializedSlot(parameter, slots, 0);
-			if (EXPECTED(value != NULL)) {
-				out = Z_TYPE_P(value) == IS_TRUE;
-				return true;
-			}
-		}
-	}
-	zv::Val hold;
-	zval *value = callGetter(parameter, PT_LC("isoptional"), "isOptional", hold);
-	if (UNEXPECTED(value == NULL)) return false;
-	out = zend_is_true(value);
-	return true;
+	return pt_parameter_reflection_bool(parameter, PT_PR_IS_OPTIONAL, out);
 }
 
 zval *pt_assertions_all(zval *assertions, zv::Val &hold)

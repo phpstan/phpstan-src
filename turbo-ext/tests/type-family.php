@@ -7014,6 +7014,119 @@ $observations['native ' . \PHPStan\Reflection\ParametersAcceptorSelector::class]
 	}
 }
 
+// ---- PhpParameterReflection / ExtendedNativeParameterReflection ----
+// The parameter reflections of userland and built-in functions: every
+// getter of the fixture methods' and function's parameters (untyped,
+// PHPDoc-typed with null / non-null / array defaults, by-reference, union,
+// variadic, out, closure-this, immediately-invoked, pure-unless-callable-
+// is-impure), the memoized types' identity, the by-reference singletons,
+// checkAllowedConstants() and hasNativeType(); PhpParameterReflection
+// constructed directly over adapter parameters (with and without a PHPDoc
+// type and declaring class, named arguments); the built-in functions'
+// parameters and ExtendedNativeParameterReflection constructed directly
+// (explicit / implicit mixed and real native types, allowed constants,
+// named arguments); both through the native dispatch the call handlers use
+// (FunctionVariant getParameters() under ParametersAcceptorSelector); and
+// the errors of unconstructed instances and wrong constructor arguments
+foreach ([\PHPStan\Reflection\Php\PhpParameterReflection::class, \PHPStan\Reflection\Native\ExtendedNativeParameterReflection::class] as $parameterReflectionClass) {
+	$observations['native ' . $parameterReflectionClass] = (new ReflectionMethod($parameterReflectionClass, 'getName'))->isInternal();
+}
+require_once __DIR__ . '/type-family-signature-fixture.php';
+{
+	$r = [];
+	$modes = [
+		'no' => \PHPStan\Reflection\PassedByReference::createNo(),
+		'reads' => \PHPStan\Reflection\PassedByReference::createReadsArgument(),
+		'creates' => \PHPStan\Reflection\PassedByReference::createCreatesNewVariable(),
+	];
+	$viewFullParameter = static function (\PHPStan\Reflection\ParameterReflection $p) use ($viewParameter, $modes, $catching): array {
+		$r = $viewParameter($p);
+		$r[] = array_search($p->passedByReference(), $modes, true);
+		$r[] = [$p->getType() === $p->getType(), $p->passedByReference() === $p->passedByReference()];
+		if ($p instanceof \PHPStan\Reflection\ExtendedParameterReflection) {
+			$r[] = [$p->getNativeType() === $p->getNativeType(), $p->getPhpDocType() === $p->getPhpDocType(), $p->getDefaultValue() === $p->getDefaultValue()];
+			$r[] = $catching(static function () use ($p): array {
+				$result = $p->checkAllowedConstants([]);
+				return [get_class($result), $result->isOk(), $result->isBitmaskNotAllowed(), $result->getDisallowedConstants(), $result->getViolatedExclusiveGroups()];
+			});
+			$r[] = array_map(static fn (\PHPStan\Reflection\AttributeReflection $attribute): string => $attribute->getName(), $p->getAttributes());
+		}
+		return $r;
+	};
+	$signatureFixture = $stringReflectionProvider->getClass(\PHPStanTurboTests\SignatureFixture::class);
+	foreach (['defaults', 'byRefAndVariadic', 'callables', 'templated', 'asserting'] as $methodName) {
+		foreach ($signatureFixture->getNativeMethod($methodName)->getVariants() as $i => $variant) {
+			foreach ($variant->getParameters() as $j => $parameter) {
+				$r["method $methodName $i $j"] = $catching(static fn () => $viewFullParameter($parameter));
+			}
+		}
+	}
+	$signatureFunction = $stringReflectionProvider->getFunction(new \PhpParser\Node\Name('PHPStanTurboTests\signatureFixtureFunction'), null);
+	foreach ($signatureFunction->getVariants() as $i => $variant) {
+		foreach ($variant->getParameters() as $j => $parameter) {
+			$r["function $i $j"] = $catching(static fn () => $viewFullParameter($parameter));
+		}
+	}
+	// direct construction over the adapter parameters
+	$initializerExprTypeResolver = $stringContainer->getByType(\PHPStan\Reflection\InitializerExprTypeResolver::class);
+	$adapterParameters = $signatureFixture->getNativeReflection()->getMethod('defaults')->getParameters();
+	$adapterParameters = array_merge($adapterParameters, $signatureFixture->getNativeReflection()->getMethod('byRefAndVariadic')->getParameters());
+	foreach ($adapterParameters as $k => $adapterParameter) {
+		foreach (['none' => null, 'string' => $string, 'nullable' => new \PHPStan\Type\UnionType([$string, new \PHPStan\Type\NullType()])] as $phpDocName => $phpDocType) {
+			foreach (['noClass' => null, 'class' => $signatureFixture] as $className => $declaringClass) {
+				$constructed = new \PHPStan\Reflection\Php\PhpParameterReflection($initializerExprTypeResolver, $adapterParameter, $phpDocType, $declaringClass, $phpDocName === 'string' ? $int : null, \PHPStan\TrinaryLogic::createMaybe(), $phpDocName === 'nullable' ? new \PHPStan\Type\ObjectType(\stdClass::class) : null, [], $phpDocName === 'string' ? new \PHPStan\Reflection\ParameterAllowedConstants('list', [], []) : null, \PHPStan\TrinaryLogic::createNo());
+				$r["constructed $k $phpDocName $className"] = $catching(static fn () => $viewFullParameter($constructed));
+			}
+		}
+	}
+	$named = new \PHPStan\Reflection\Php\PhpParameterReflection(pureUnlessCallableIsImpureParameter: \PHPStan\TrinaryLogic::createYes(), allowedConstants: null, attributes: [], closureThisType: null, immediatelyInvokedCallable: \PHPStan\TrinaryLogic::createYes(), outType: null, declaringClass: null, phpDocType: $int, reflection: $adapterParameters[2], initializerExprTypeResolver: $initializerExprTypeResolver);
+	$r['constructed named'] = $catching(static fn () => $viewFullParameter($named));
+	// the order of the memoized reads: getNativeType() before getType()
+	$nativeFirst = new \PHPStan\Reflection\Php\PhpParameterReflection($initializerExprTypeResolver, $adapterParameters[1], $string, $signatureFixture, null, \PHPStan\TrinaryLogic::createNo(), null, [], null, \PHPStan\TrinaryLogic::createNo());
+	$r['native first'] = [$view($nativeFirst->getNativeType()), $view($nativeFirst->getType()), $nativeFirst->getNativeType() === $nativeFirst->getNativeType()];
+	$r['constructor wrong attributes'] = $catching(static fn () => new \PHPStan\Reflection\Php\PhpParameterReflection($initializerExprTypeResolver, $adapterParameters[0], null, null, null, \PHPStan\TrinaryLogic::createNo(), null, 'x', null, \PHPStan\TrinaryLogic::createNo()));
+
+	// the built-in functions' parameters
+	foreach (['array_map', 'str_replace', 'preg_match', 'sprintf', 'json_decode', 'array_filter', 'usort', 'strlen', 'htmlspecialchars', 'array_walk'] as $functionName) {
+		$function = $stringReflectionProvider->getFunction(new \PhpParser\Node\Name($functionName), null);
+		foreach ($function->getVariants() as $i => $variant) {
+			foreach ($variant->getParameters() as $j => $parameter) {
+				$r["builtin $functionName $i $j"] = $catching(static fn () => $viewFullParameter($parameter));
+			}
+		}
+	}
+	$allowed = new \PHPStan\Reflection\ParameterAllowedConstants('bitmask', [], []);
+	$nativeParameters = [
+		'plain' => new \PHPStan\Reflection\Native\ExtendedNativeParameterReflection('a', false, $int, $int, $int, $modes['no'], false, null, null, \PHPStan\TrinaryLogic::createNo(), null, [], null, \PHPStan\TrinaryLogic::createNo()),
+		'implicitMixed' => new \PHPStan\Reflection\Native\ExtendedNativeParameterReflection('b', true, new \PHPStan\Type\MixedType(), new \PHPStan\Type\MixedType(), new \PHPStan\Type\MixedType(), $modes['creates'], true, new \PHPStan\Type\Constant\ConstantIntegerType(1), $string, \PHPStan\TrinaryLogic::createYes(), new \PHPStan\Type\ObjectType(\stdClass::class), [], $allowed, \PHPStan\TrinaryLogic::createMaybe()),
+		'explicitMixed' => new \PHPStan\Reflection\Native\ExtendedNativeParameterReflection('c', false, $string, $string, new \PHPStan\Type\MixedType(true), $modes['reads'], false, null, null, \PHPStan\TrinaryLogic::createMaybe(), null, [], null, \PHPStan\TrinaryLogic::createYes()),
+		'named' => new \PHPStan\Reflection\Native\ExtendedNativeParameterReflection(pureUnlessCallableIsImpureParameter: \PHPStan\TrinaryLogic::createNo(), allowedConstants: $allowed, attributes: [], closureThisType: null, immediatelyInvokedCallable: \PHPStan\TrinaryLogic::createNo(), outType: $int, defaultValue: null, variadic: false, passedByReference: $modes['no'], nativeType: $string, phpDocType: $int, type: $int, optional: true, name: 'n'),
+	];
+	foreach ($nativeParameters as $name => $parameter) {
+		$r["native constructed $name"] = $catching(static fn () => $viewFullParameter($parameter));
+	}
+	$r['native wrong attributes'] = $catching(static fn () => new \PHPStan\Reflection\Native\ExtendedNativeParameterReflection('a', false, $int, $int, $int, $modes['no'], false, null, null, \PHPStan\TrinaryLogic::createNo(), null, 'x', null, \PHPStan\TrinaryLogic::createNo()));
+	$r['native wrong name'] = $catching(static fn () => new \PHPStan\Reflection\Native\ExtendedNativeParameterReflection([], false, $int, $int, $int, $modes['no'], false, null, null, \PHPStan\TrinaryLogic::createNo(), null, [], null, \PHPStan\TrinaryLogic::createNo()));
+
+	// the native dispatch: ParametersAcceptorSelector over variants whose
+	// parameters are these reflections
+	foreach (['PhpParameterReflection' => $signatureFixture->getNativeMethod('defaults')->getVariants(), 'ExtendedNativeParameterReflection' => $stringReflectionProvider->getFunction(new \PhpParser\Node\Name('str_replace'), null)->getVariants(), 'constructed' => [new \PHPStan\Reflection\ExtendedFunctionVariant(\PHPStan\Type\Generic\TemplateTypeMap::createEmpty(), null, array_values($nativeParameters), false, $int, $int, $int)]] as $setName => $variants) {
+		$r["select $setName"] = $catching(static fn () => $viewVariant(\PHPStan\Reflection\ParametersAcceptorSelector::selectFromTypes([$int, $string, $int], $variants, false)));
+		$r["combine $setName"] = $catching(static fn () => $viewVariant(\PHPStan\Reflection\ParametersAcceptorSelector::combineAcceptors($variants)));
+	}
+
+	foreach ([\PHPStan\Reflection\Php\PhpParameterReflection::class, \PHPStan\Reflection\Native\ExtendedNativeParameterReflection::class] as $class) {
+		$raw = (new \ReflectionClass($class))->newInstanceWithoutConstructor();
+		foreach (['getName', 'isOptional', 'getType', 'passedByReference', 'isVariadic', 'getDefaultValue', 'getPhpDocType', 'hasNativeType', 'getNativeType', 'getOutType', 'isImmediatelyInvokedCallable', 'getClosureThisType', 'getAttributes', 'getAllowedConstants', 'isPureUnlessCallableIsImpureParameter'] as $method) {
+			$r["unconstructed $class $method"] = $catching(static fn () => $view($raw->$method()));
+		}
+		$r["unconstructed $class checkAllowedConstants"] = $catching(static fn () => get_class($raw->checkAllowedConstants([])));
+	}
+	foreach ($r as $key => $value) {
+		$observations["parameter reflections $key"] = $value;
+	}
+}
+
 // observations holding bytes that are not UTF-8 (the invalid-UTF-8 subject's
 // descriptions) go out base64-encoded so json_encode() keeps every byte; the
 // non-finite floats (the NAN and infinity subjects' values) as their names

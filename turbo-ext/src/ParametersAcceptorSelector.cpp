@@ -259,49 +259,38 @@ struct GetterInfo
 	const char *lcname;
 	size_t len;
 	const char *name;
-	int dummySlot; /* -1: none */
-	int extendedSlot; /* -1: none */
 };
 
-#define PT_PAS_GETTER(lc, name, dummy, extended) { lc, sizeof(lc) - 1, name, dummy, extended }
+#define PT_PAS_GETTER(lc, name) { lc, sizeof(lc) - 1, name }
 
-const GetterInfo pt_pas_parameter_getters[PG_COUNT] = {
-	PT_PAS_GETTER("getname", "getName", (int) ptdecl::DummyParameter::slot::name, -1),
-	PT_PAS_GETTER("gettype", "getType", (int) ptdecl::DummyParameter::slot::type, -1),
-	PT_PAS_GETTER("isoptional", "isOptional", (int) ptdecl::DummyParameter::slot::optional, -1),
-	PT_PAS_GETTER("isvariadic", "isVariadic", (int) ptdecl::DummyParameter::slot::variadic, -1),
-	PT_PAS_GETTER("passedbyreference", "passedByReference", (int) ptdecl::DummyParameter::slot::passedByReference, -1),
-	PT_PAS_GETTER("getdefaultvalue", "getDefaultValue", (int) ptdecl::DummyParameter::slot::defaultValue, -1),
-	PT_PAS_GETTER("getnativetype", "getNativeType", -1, (int) ptdecl::ExtendedDummyParameter::slot::nativeType),
-	PT_PAS_GETTER("getphpdoctype", "getPhpDocType", -1, (int) ptdecl::ExtendedDummyParameter::slot::phpDocType),
-	PT_PAS_GETTER("getouttype", "getOutType", -1, (int) ptdecl::ExtendedDummyParameter::slot::outType),
-	PT_PAS_GETTER("isimmediatelyinvokedcallable", "isImmediatelyInvokedCallable", -1, (int) ptdecl::ExtendedDummyParameter::slot::immediatelyInvokedCallable),
-	PT_PAS_GETTER("getclosurethistype", "getClosureThisType", -1, (int) ptdecl::ExtendedDummyParameter::slot::closureThisType),
-	PT_PAS_GETTER("getattributes", "getAttributes", -1, (int) ptdecl::ExtendedDummyParameter::slot::attributes),
-	PT_PAS_GETTER("getallowedconstants", "getAllowedConstants", -1, (int) ptdecl::ExtendedDummyParameter::slot::allowedConstants),
-	PT_PAS_GETTER("ispureunlesscallableisimpureparameter", "isPureUnlessCallableIsImpureParameter", -1, (int) ptdecl::ExtendedDummyParameter::slot::pureUnlessCallableIsImpureParameter),
+/* the PT_PR_* member of each parameter getter */
+const pt_parameter_reflection_member pt_pas_parameter_members[PG_COUNT] = {
+	PT_PR_GET_NAME,
+	PT_PR_GET_TYPE,
+	PT_PR_IS_OPTIONAL,
+	PT_PR_IS_VARIADIC,
+	PT_PR_PASSED_BY_REFERENCE,
+	PT_PR_GET_DEFAULT_VALUE,
+	PT_PR_GET_NATIVE_TYPE,
+	PT_PR_GET_PHPDOC_TYPE,
+	PT_PR_GET_OUT_TYPE,
+	PT_PR_IS_IMMEDIATELY_INVOKED_CALLABLE,
+	PT_PR_GET_CLOSURE_THIS_TYPE,
+	PT_PR_GET_ATTRIBUTES,
+	PT_PR_GET_ALLOWED_CONSTANTS,
+	PT_PR_IS_PURE_UNLESS_CALLABLE_IS_IMPURE_PARAMETER,
 };
 
-pt_method_site pt_pas_parameter_sites[PG_COUNT];
-
-/* $parameter->getX() */
+/* $parameter->getX() (ParameterValues.h) */
 zv::Val parameterGet(zval *parameter, ParameterGetter getter)
 {
-	const GetterInfo &info = pt_pas_parameter_getters[getter];
-	zval *slot = info.dummySlot >= 0
-		? pt_dummy_parameter_slot(parameter, (uint32_t) info.dummySlot)
-		: pt_extended_dummy_parameter_slot(parameter, (uint32_t) info.extendedSlot);
-	if (EXPECTED(slot != NULL)) return zv::Val::copyOf(zv::Ref(slot));
-	return callOn(pt_pas_parameter_sites[getter], parameter, info.lcname, info.len, info.name, 0, NULL);
+	return pt_parameter_reflection_call(parameter, pt_pas_parameter_members[getter]);
 }
 
 /* a bool getter's truthiness; false = pending exception */
 bool parameterBool(zval *parameter, ParameterGetter getter, bool &out)
 {
-	zv::Val value = parameterGet(parameter, getter);
-	if (UNEXPECTED(value.isUndef())) return false;
-	out = zend_is_true(value.raw());
-	return true;
+	return pt_parameter_reflection_bool(parameter, pt_pas_parameter_members[getter], out);
 }
 
 enum AcceptorGetter
@@ -327,23 +316,23 @@ enum AcceptorGetter
 };
 
 const GetterInfo pt_pas_acceptor_getters[AG_COUNT] = {
-	PT_PAS_GETTER("getparameters", "getParameters", -1, -1),
-	PT_PAS_GETTER("isvariadic", "isVariadic", -1, -1),
-	PT_PAS_GETTER("getreturntype", "getReturnType", -1, -1),
-	PT_PAS_GETTER("gettemplatetypemap", "getTemplateTypeMap", -1, -1),
-	PT_PAS_GETTER("getresolvedtemplatetypemap", "getResolvedTemplateTypeMap", -1, -1),
-	PT_PAS_GETTER("getcallsitevariancemap", "getCallSiteVarianceMap", -1, -1),
-	PT_PAS_GETTER("getphpdocreturntype", "getPhpDocReturnType", -1, -1),
-	PT_PAS_GETTER("getnativereturntype", "getNativeReturnType", -1, -1),
-	PT_PAS_GETTER("getthrowpoints", "getThrowPoints", -1, -1),
-	PT_PAS_GETTER("ispure", "isPure", -1, -1),
-	PT_PAS_GETTER("getimpurepoints", "getImpurePoints", -1, -1),
-	PT_PAS_GETTER("getinvalidateexpressions", "getInvalidateExpressions", -1, -1),
-	PT_PAS_GETTER("getusedvariables", "getUsedVariables", -1, -1),
-	PT_PAS_GETTER("acceptsnamedarguments", "acceptsNamedArguments", -1, -1),
-	PT_PAS_GETTER("mustusereturnvalue", "mustUseReturnValue", -1, -1),
-	PT_PAS_GETTER("getasserts", "getAsserts", -1, -1),
-	PT_PAS_GETTER("isstaticclosure", "isStaticClosure", -1, -1),
+	PT_PAS_GETTER("getparameters", "getParameters"),
+	PT_PAS_GETTER("isvariadic", "isVariadic"),
+	PT_PAS_GETTER("getreturntype", "getReturnType"),
+	PT_PAS_GETTER("gettemplatetypemap", "getTemplateTypeMap"),
+	PT_PAS_GETTER("getresolvedtemplatetypemap", "getResolvedTemplateTypeMap"),
+	PT_PAS_GETTER("getcallsitevariancemap", "getCallSiteVarianceMap"),
+	PT_PAS_GETTER("getphpdocreturntype", "getPhpDocReturnType"),
+	PT_PAS_GETTER("getnativereturntype", "getNativeReturnType"),
+	PT_PAS_GETTER("getthrowpoints", "getThrowPoints"),
+	PT_PAS_GETTER("ispure", "isPure"),
+	PT_PAS_GETTER("getimpurepoints", "getImpurePoints"),
+	PT_PAS_GETTER("getinvalidateexpressions", "getInvalidateExpressions"),
+	PT_PAS_GETTER("getusedvariables", "getUsedVariables"),
+	PT_PAS_GETTER("acceptsnamedarguments", "acceptsNamedArguments"),
+	PT_PAS_GETTER("mustusereturnvalue", "mustUseReturnValue"),
+	PT_PAS_GETTER("getasserts", "getAsserts"),
+	PT_PAS_GETTER("isstaticclosure", "isStaticClosure"),
 };
 
 #undef PT_PAS_GETTER

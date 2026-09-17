@@ -77,58 +77,20 @@ inline int instanceOf(zval *value, int classIdx)
 
 /* {{{ ParameterReflection getters */
 
-inline pt_method_site parameterGetNameSite;
-inline pt_method_site parameterIsOptionalSite;
-inline pt_method_site parameterGetTypeSite;
-inline pt_method_site parameterPassedByReferenceSite;
-inline pt_method_site parameterIsVariadicSite;
-inline pt_method_site parameterGetDefaultValueSite;
-inline pt_method_site parameterGetNativeTypeSite;
-
-/* the slot of a NativeParameterReflection (final) or a DummyParameter /
- * ExtendedDummyParameter (whose getters return the slots); NULL otherwise */
-inline zval *parameterSlot(zval *parameter, uint32_t nativeIndex, uint32_t dummyIndex)
-{
-	if (EXPECTED(Z_TYPE_P(parameter) == IS_OBJECT && Z_OBJCE_P(parameter) == pt_ce_native_parameter_reflection)) {
-		zval *value = OBJ_PROP_NUM(Z_OBJ_P(parameter), nativeIndex);
-		return Z_TYPE_P(value) != IS_UNDEF ? value : NULL;
-	}
-	return pt_dummy_parameter_slot(parameter, dummyIndex);
-}
-
-/* $parameter->method() through its site, with the Error of a member call on a
- * non-object */
-inline zv::Val parameterCall(pt_method_site &site, zval *parameter, const char *lcname, size_t len, const char *name)
-{
-	if (UNEXPECTED(Z_TYPE_P(parameter) != IS_OBJECT)) {
-		zend_throw_error(NULL, "Call to a member function %s() on %s", name, zend_zval_value_name(parameter));
-		return zv::Val();
-	}
-	return pt_call_method_cached(site, Z_OBJ_P(parameter), lcname, len, 0, NULL);
-}
-
-#define PT_CLOSURE_PARAMETER_GETTER(fn, slotName, site, lcname, name) \
+/* the getters through pt_parameter_reflection_call() (ParameterValues.h) */
+#define PT_CLOSURE_PARAMETER_GETTER(fn, member) \
 	inline zv::Val fn(zval *parameter) \
 	{ \
-		zval *value = parameterSlot(parameter, ptdecl::NativeParameterReflection::slot::slotName, ptdecl::DummyParameter::slot::slotName); \
-		if (EXPECTED(value != NULL)) return zv::Val::copyOf(zv::Ref(value)); \
-		return parameterCall(site, parameter, PT_LC(lcname), name); \
+		return pt_parameter_reflection_call(parameter, member); \
 	}
-PT_CLOSURE_PARAMETER_GETTER(parameterGetName, name, parameterGetNameSite, "getname", "getName")
-PT_CLOSURE_PARAMETER_GETTER(parameterIsOptional, optional, parameterIsOptionalSite, "isoptional", "isOptional")
-PT_CLOSURE_PARAMETER_GETTER(parameterGetType, type, parameterGetTypeSite, "gettype", "getType")
-PT_CLOSURE_PARAMETER_GETTER(parameterPassedByReference, passedByReference, parameterPassedByReferenceSite, "passedbyreference", "passedByReference")
-PT_CLOSURE_PARAMETER_GETTER(parameterIsVariadic, variadic, parameterIsVariadicSite, "isvariadic", "isVariadic")
-PT_CLOSURE_PARAMETER_GETTER(parameterGetDefaultValue, defaultValue, parameterGetDefaultValueSite, "getdefaultvalue", "getDefaultValue")
+PT_CLOSURE_PARAMETER_GETTER(parameterGetName, PT_PR_GET_NAME)
+PT_CLOSURE_PARAMETER_GETTER(parameterIsOptional, PT_PR_IS_OPTIONAL)
+PT_CLOSURE_PARAMETER_GETTER(parameterGetType, PT_PR_GET_TYPE)
+PT_CLOSURE_PARAMETER_GETTER(parameterPassedByReference, PT_PR_PASSED_BY_REFERENCE)
+PT_CLOSURE_PARAMETER_GETTER(parameterIsVariadic, PT_PR_IS_VARIADIC)
+PT_CLOSURE_PARAMETER_GETTER(parameterGetDefaultValue, PT_PR_GET_DEFAULT_VALUE)
+PT_CLOSURE_PARAMETER_GETTER(parameterGetNativeType, PT_PR_GET_NATIVE_TYPE)
 #undef PT_CLOSURE_PARAMETER_GETTER
-
-/* $parameter->getNativeType() (an ExtendedParameterReflection) */
-inline zv::Val parameterGetNativeType(zval *parameter)
-{
-	zval *value = pt_extended_dummy_parameter_slot(parameter, ptdecl::ExtendedDummyParameter::slot::nativeType);
-	if (EXPECTED(value != NULL)) return zv::Val::copyOf(zv::Ref(value));
-	return parameterCall(parameterGetNativeTypeSite, parameter, PT_LC("getnativetype"), "getNativeType");
-}
 
 /* new NativeParameterReflection($parameter->getName(), $parameter->isOptional(),
  * $type, $parameter->passedByReference(), $parameter->isVariadic(),

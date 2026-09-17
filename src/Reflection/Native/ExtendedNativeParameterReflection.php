@@ -8,11 +8,11 @@ use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\ParameterAllowedConstants;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 
-#[ReferencedByTurboExtension(key: 'extendedNativeParameterReflection')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ExtendedNativeParameterReflection.cpp')]
 final class ExtendedNativeParameterReflection implements ExtendedParameterReflection
 {
 

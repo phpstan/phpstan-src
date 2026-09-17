@@ -250,9 +250,25 @@ final class Describer
 		];
 	}
 
+	/**
+	 * A native class declared under the prefix by the prefixed activation
+	 * (the native extension instantiating a shadowed value class) is compared
+	 * as its twin, named by the manifest.
+	 */
 	public function normalizeClass(string $class): string
 	{
-		return str_starts_with($class, 'PHPStanTurbo\\') ? substr($class, strlen('PHPStanTurbo\\')) : $class;
+		if (!str_starts_with($class, 'PHPStanTurbo\\')) {
+			return $class;
+		}
+		static $twins = null;
+		if ($twins === null) {
+			$twins = [];
+			$manifest = json_decode((string) file_get_contents(dirname(__DIR__, 2) . '/vendor/turbo-shadowed-classes.json'), true);
+			foreach (is_array($manifest) ? $manifest : [] as $twin => $entry) {
+				$twins[$entry['turboClass']] = $twin;
+			}
+		}
+		return $twins[$class] ?? substr($class, strlen('PHPStanTurbo\\'));
 	}
 
 }

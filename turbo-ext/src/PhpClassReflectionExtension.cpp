@@ -2082,7 +2082,7 @@ public:
 			ZVAL_EMPTY_ARRAY(&args[11]);
 			ZVAL_COPY_VALUE(&args[12], allowedConstants.raw());
 			ZVAL_COPY_VALUE(&args[13], pureUnlessCallableIsImpure.raw());
-			zv::Val parameter = pt_type_new(PT_CLASS_EXTENDED_NATIVE_PARAMETER_REFLECTION, 14, args);
+			zv::Val parameter = pt_extended_native_parameter_reflection_new(14, args);
 			if (UNEXPECTED(parameter.isUndef())) return zv::Val();
 			parameters.push(std::move(parameter));
 		}

@@ -209,7 +209,6 @@ enum {
 	PT_CLASS_ALWAYS_REMEMBERED_EXPR,
 	PT_CLASS_PHP_PROPERTY_REFLECTION,
 	PT_CLASS_NATIVE_METHOD_REFLECTION,
-	PT_CLASS_EXTENDED_NATIVE_PARAMETER_REFLECTION,
 	PT_CLASS_ENUM_CASES_METHOD_REFLECTION,
 	PT_CLASS_PRIVATE_PROPERTY_ATTRIBUTE,
 	PT_CLASS_PROTECTED_PROPERTY_ATTRIBUTE,
@@ -3912,6 +3911,50 @@ zv::Val pt_match_handler_get_captured_arm_scopes_and_types(zval *handler, zval *
 zv::Val pt_mutating_scope_enter_match(zend_object *scope, zend_object *expr, zval *condType, zval *condNativeType);
 zv::Val pt_mutating_scope_add_type_to_expression(zend_object *scope, zend_object *expr, zval *type);
 zv::Val pt_mutating_scope_remove_type_from_expression(zend_object *scope, zend_object *expr, zval *typeToRemove);
+/* {{{ PhpParameterReflection.cpp, ExtendedNativeParameterReflection.cpp —
+ * the parameter reflections of userland and built-in functions, registered
+ * after the parameter value classes (PassedByReference, DummyParameter) */
+
+extern zend_class_entry *pt_ce_php_parameter_reflection;
+extern zend_class_entry *pt_ce_extended_native_parameter_reflection;
+void pt_register_php_parameter_reflection();
+void pt_register_extended_native_parameter_reflection();
+/* the ParameterReflection / ExtendedParameterReflection interfaces' methods */
+enum pt_parameter_reflection_member
+{
+	PT_PR_GET_NAME = 0,
+	PT_PR_IS_OPTIONAL,
+	PT_PR_GET_TYPE,
+	PT_PR_PASSED_BY_REFERENCE,
+	PT_PR_IS_VARIADIC,
+	PT_PR_GET_DEFAULT_VALUE,
+	PT_PR_GET_PHPDOC_TYPE,
+	PT_PR_HAS_NATIVE_TYPE,
+	PT_PR_GET_NATIVE_TYPE,
+	PT_PR_GET_OUT_TYPE,
+	PT_PR_IS_IMMEDIATELY_INVOKED_CALLABLE,
+	PT_PR_GET_CLOSURE_THIS_TYPE,
+	PT_PR_GET_ATTRIBUTES,
+	PT_PR_GET_ALLOWED_CONSTANTS,
+	PT_PR_IS_PURE_UNLESS_CALLABLE_IS_IMPURE_PARAMETER,
+	PT_PR_MEMBER_COUNT
+};
+/* $parameter-><member>() of any parameter reflection (borrowed): callers
+ * use the inline pt_parameter_reflection_call() / _bool() of
+ * ParameterValues.h, which read the value classes' slots in place and come
+ * here for everything else — the native body of a PhpParameterReflection /
+ * ExtendedNativeParameterReflection, the method through one cached site per
+ * member otherwise (the engine's Error for a non-object); UNDEF = pending
+ * exception. The per-class _call entries take that class's body
+ * unconditionally. */
+zv::Val pt_parameter_reflection_call_slow(zval *parameter, pt_parameter_reflection_member member);
+zv::Val pt_php_parameter_reflection_call(zend_object *parameter, pt_parameter_reflection_member member);
+zv::Val pt_extended_native_parameter_reflection_call(zend_object *parameter, pt_parameter_reflection_member member);
+/* new ExtendedNativeParameterReflection(...$argv) over values as PHP code
+ * hands them (borrowed): directly when they already have the parameter
+ * types, through the constructor's parameter parsing otherwise; UNDEF =
+ * pending exception */
+zv::Val pt_extended_native_parameter_reflection_new(uint32_t argc, zval *argv);
 
 /* }}} */
 

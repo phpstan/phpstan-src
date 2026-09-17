@@ -561,6 +561,11 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_empty_handler();
 	pt_register_nullsafe_method_call_handler();
 	pt_register_match_handler();
+	/* the parameter reflections of userland and built-in functions — their
+	 * signatures name the Type interface, TrinaryLogic, PassedByReference and
+	 * PHP reflection classes only */
+	pt_register_php_parameter_reflection();
+	pt_register_extended_native_parameter_reflection();
 
 	return SUCCESS;
 }

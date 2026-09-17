@@ -43,6 +43,7 @@ namespace sigs = ptdecl::DefaultNarrowingHelper::sig;
 #include "TypeTraits.h"
 #include "TypeOps.h"
 #include "Engine.h"
+#include "ParameterValues.h"
 #include "AnalyserValues.h"
 
 #include "zend_closures.h" /* zend_ce_closure */
@@ -1134,9 +1135,9 @@ public:
 			for (zv::ArrayEntry entry : zv::ArrRef(parameters.raw())) {
 				zval *parameter = entry.value().deref().raw();
 				if (UNEXPECTED(Z_TYPE_P(parameter) != IS_OBJECT)) return callOnNonObject("getName", parameter);
-				zv::Val name = pt_type_call(Z_OBJ_P(parameter), PT_LC("getname"), 0, NULL);
+				zv::Val name = pt_parameter_reflection_call(parameter, PT_PR_GET_NAME);
 				if (UNEXPECTED(name.isUndef())) return zv::Val();
-				zv::Val defaultValue = pt_type_call(Z_OBJ_P(parameter), PT_LC("getdefaultvalue"), 0, NULL);
+				zv::Val defaultValue = pt_parameter_reflection_call(parameter, PT_PR_GET_DEFAULT_VALUE);
 				if (UNEXPECTED(defaultValue.isUndef())) return zv::Val();
 				if (UNEXPECTED(Z_TYPE_P(name.raw()) != IS_STRING)) {
 					zend_throw_error(NULL, "phpstan_turbo: a parameter name is not a string");
@@ -1351,7 +1352,7 @@ public:
 					zval *parameter = Z_TYPE_P(parameters.raw()) == IS_ARRAY ? parameterAt(parameters.raw(), entry) : NULL;
 					if (parameter == NULL) continue;
 					if (UNEXPECTED(Z_TYPE_P(parameter) != IS_OBJECT)) return callOnNonObject("getName", parameter);
-					paramName = pt_type_call(Z_OBJ_P(parameter), PT_LC("getname"), 0, NULL);
+					paramName = pt_parameter_reflection_call(parameter, PT_PR_GET_NAME);
 					if (UNEXPECTED(paramName.isUndef())) return zv::Val();
 				}
 
@@ -1704,7 +1705,7 @@ private:
 				paramName = name != NULL ? zv::Val::string(name) : zv::Val::null();
 			} else if (parameter != NULL) {
 				if (UNEXPECTED(Z_TYPE_P(parameter) != IS_OBJECT)) return !callOnNonObject("getName", parameter).isUndef();
-				paramName = pt_type_call(Z_OBJ_P(parameter), PT_LC("getname"), 0, NULL);
+				paramName = pt_parameter_reflection_call(parameter, PT_PR_GET_NAME);
 				if (UNEXPECTED(paramName.isUndef())) return false;
 			} else {
 				if (!variadicFallback || Z_TYPE_P(parameters) != IS_ARRAY || zend_hash_num_elements(Z_ARRVAL_P(parameters)) == 0) continue;

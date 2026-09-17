@@ -24,6 +24,7 @@ namespace sigs = ptdecl::SimpleImpurePoint::sig;
 #include "TypeTraits.h"
 #include "TypeOps.h"
 #include "Engine.h"
+#include "ParameterValues.h"
 
 zend_class_entry *pt_ce_simple_impure_point = nullptr;
 
@@ -33,8 +34,6 @@ namespace {
 
 pt_method_site pt_sip_get_return_type_site;
 pt_method_site pt_sip_get_parameters_site;
-pt_method_site pt_sip_is_pure_unless_callable_is_impure_parameter_site;
-pt_method_site pt_sip_parameter_get_name_site;
 pt_property_site pt_sip_arg_name_site;
 pt_property_site pt_sip_arg_value_site;
 pt_property_site pt_sip_identifier_name_site;
@@ -54,13 +53,13 @@ zv::Val variantParameters(zval *variant)
 /* $parameter->isPureUnlessCallableIsImpureParameter() */
 zv::Val parameterIsPureUnlessCallableIsImpure(zval *parameter)
 {
-	return pt_call_method_cached(pt_sip_is_pure_unless_callable_is_impure_parameter_site, Z_OBJ_P(parameter), PT_LC("ispureunlesscallableisimpureparameter"), 0, NULL);
+	return pt_parameter_reflection_call(parameter, PT_PR_IS_PURE_UNLESS_CALLABLE_IS_IMPURE_PARAMETER);
 }
 
 /* $parameter->getName() */
 zv::Val parameterName(zval *parameter)
 {
-	return pt_call_method_cached(pt_sip_parameter_get_name_site, Z_OBJ_P(parameter), PT_LC("getname"), 0, NULL);
+	return pt_parameter_reflection_call(parameter, PT_PR_GET_NAME);
 }
 
 /* }}} */

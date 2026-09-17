@@ -222,55 +222,31 @@ bool arraysIdentical(zval *a, zval *b)
 
 /* {{{ the PHP collaborators (one site each) */
 
-pt_method_site pt_an_parameter_get_name_site;
-pt_method_site pt_an_parameter_is_variadic_site;
-pt_method_site pt_an_parameter_is_optional_site;
-pt_method_site pt_an_parameter_get_default_value_site;
 pt_method_site pt_an_acceptor_get_parameters_site;
 pt_method_site pt_an_get_callable_parameters_acceptors_site;
 pt_method_site pt_an_accepts_named_arguments_site;
 
-/* $parameter->getName() */
+/* $parameter->getName() (ParameterValues.h) */
 zv::Val parameterGetName(zval *parameter)
 {
-	zval *name = pt_dummy_parameter_slot(parameter, ptdecl::DummyParameter::slot::name);
-	if (EXPECTED(name != NULL)) return zv::Val::copyOf(zv::Ref(name));
-	return callOn(pt_an_parameter_get_name_site, parameter, PT_LC("getname"), "getName", 0, NULL);
+	return pt_parameter_reflection_call(parameter, PT_PR_GET_NAME);
 }
 
 /* $parameter->isVariadic() / ->isOptional() (truthiness); false = pending exception */
 bool parameterIsVariadic(zval *parameter, bool &out)
 {
-	zval *variadic = pt_dummy_parameter_slot(parameter, ptdecl::DummyParameter::slot::variadic);
-	if (EXPECTED(variadic != NULL)) {
-		out = Z_TYPE_P(variadic) == IS_TRUE;
-		return true;
-	}
-	zv::Val result = callOn(pt_an_parameter_is_variadic_site, parameter, PT_LC("isvariadic"), "isVariadic", 0, NULL);
-	if (UNEXPECTED(result.isUndef())) return false;
-	out = zend_is_true(result.raw());
-	return true;
+	return pt_parameter_reflection_bool(parameter, PT_PR_IS_VARIADIC, out);
 }
 
 bool parameterIsOptional(zval *parameter, bool &out)
 {
-	zval *optional = pt_dummy_parameter_slot(parameter, ptdecl::DummyParameter::slot::optional);
-	if (EXPECTED(optional != NULL)) {
-		out = Z_TYPE_P(optional) == IS_TRUE;
-		return true;
-	}
-	zv::Val result = callOn(pt_an_parameter_is_optional_site, parameter, PT_LC("isoptional"), "isOptional", 0, NULL);
-	if (UNEXPECTED(result.isUndef())) return false;
-	out = zend_is_true(result.raw());
-	return true;
+	return pt_parameter_reflection_bool(parameter, PT_PR_IS_OPTIONAL, out);
 }
 
 /* $parameter->getDefaultValue() */
 zv::Val parameterGetDefaultValue(zval *parameter)
 {
-	zval *defaultValue = pt_dummy_parameter_slot(parameter, ptdecl::DummyParameter::slot::defaultValue);
-	if (EXPECTED(defaultValue != NULL)) return zv::Val::copyOf(zv::Ref(defaultValue));
-	return callOn(pt_an_parameter_get_default_value_site, parameter, PT_LC("getdefaultvalue"), "getDefaultValue", 0, NULL);
+	return pt_parameter_reflection_call(parameter, PT_PR_GET_DEFAULT_VALUE);
 }
 
 /* $acceptor->getParameters() */

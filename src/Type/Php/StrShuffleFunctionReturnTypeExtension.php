@@ -6,15 +6,12 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
 use function count;
-use function strrev;
 
 #[AutowiredService]
-final class StrrevFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class StrShuffleFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function __construct(private StringBytesReturnTypeHelper $stringBytesReturnTypeHelper)
@@ -23,7 +20,7 @@ final class StrrevFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
-		return $functionReflection->getName() === 'strrev';
+		return $functionReflection->getName() === 'str_shuffle';
 	}
 
 	public function getTypeFromFunctionCall(
@@ -37,18 +34,7 @@ final class StrrevFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 			return null;
 		}
 
-		$inputType = $scope->getType($args[0]->value);
-		$constantStrings = $inputType->getConstantStrings();
-		if (count($constantStrings) > 0) {
-			$resultTypes = [];
-			foreach ($constantStrings as $constantString) {
-				$resultTypes[] = new ConstantStringType(strrev($constantString->getValue()));
-			}
-
-			return TypeCombinator::union(...$resultTypes);
-		}
-
-		return $this->stringBytesReturnTypeHelper->getReorderedStringType($inputType);
+		return $this->stringBytesReturnTypeHelper->getReorderedStringType($scope->getType($args[0]->value));
 	}
 
 }

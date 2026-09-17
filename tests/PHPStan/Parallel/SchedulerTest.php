@@ -9,6 +9,7 @@ use function array_keys;
 use function array_map;
 use function array_merge;
 use function count;
+use function range;
 use function sort;
 use function sprintf;
 
@@ -193,6 +194,86 @@ class SchedulerTest extends TestCase
 		$schedule = $scheduler->scheduleWork(32, array_fill(0, 40, 'file.php'), static fn (string $file): int => 0);
 
 		$this->assertSame(1, $schedule->getNumberOfProcesses());
+	}
+
+	public function testAdaptiveWorkerCountLeavesFullRunsAlone(): void
+	{
+		// from ~800 files the sqrt rule saturates at the usable cores, so a full
+		// run is scheduled exactly as it is without the toggle
+		foreach ([800, 4524] as $numberOfFiles) {
+			$files = array_fill(0, $numberOfFiles, 'file.php');
+			$legacy = (new Scheduler(20, Scheduler::AUTO, 2))->scheduleWork(14, $files, static fn (string $file): int => 0);
+			$adaptive = (new Scheduler(20, Scheduler::AUTO, 2, true))->scheduleWork(14, $files, static fn (string $file): int => 0);
+
+			$this->assertSame($legacy->getNumberOfProcesses(), $adaptive->getNumberOfProcesses());
+			$this->assertSame($legacy->getJobs(), $adaptive->getJobs());
+		}
+	}
+
+	public function testAdaptiveWorkerCountParallelisesSmallRuns(): void
+	{
+		// 50 files is one worker today, because jobSize 20 and 2 jobs per process
+		// ask for 40 files before a second worker is allowed
+		$files = array_fill(0, 50, 'file.php');
+		$callback = static fn (string $file): int => 0;
+
+		$this->assertSame(1, (new Scheduler(20, Scheduler::AUTO, 2))->scheduleWork(14, $files, $callback)->getNumberOfProcesses());
+		$this->assertSame(4, (new Scheduler(20, Scheduler::AUTO, 2, true))->scheduleWork(14, $files, $callback)->getNumberOfProcesses());
+	}
+
+	public function testAdaptiveWorkerCountKeepsTinyRunsSerial(): void
+	{
+		// below the threshold a second worker does not pay for its own startup
+		$callback = static fn (string $file): int => 0;
+		$scheduler = new Scheduler(20, Scheduler::AUTO, 2, true);
+
+		$this->assertSame(1, $scheduler->scheduleWork(14, array_fill(0, 1, 'file.php'), $callback)->getNumberOfProcesses());
+		$this->assertSame(1, $scheduler->scheduleWork(14, array_fill(0, 8, 'file.php'), $callback)->getNumberOfProcesses());
+		$this->assertSame(2, $scheduler->scheduleWork(14, array_fill(0, 9, 'file.php'), $callback)->getNumberOfProcesses());
+	}
+
+	public function testAdaptiveWorkerCountNeverExceedsTheJobCount(): void
+	{
+		// a worker with no job never starts, so the schedule must not claim one
+		$callback = static fn (string $file): int => 0;
+		$schedule = (new Scheduler(20, Scheduler::AUTO, 2, true))->scheduleWork(14, array_fill(0, 3, 'file.php'), $callback);
+
+		$this->assertLessThanOrEqual(count($schedule->getJobs()), $schedule->getNumberOfProcesses());
+	}
+
+	public function testAdaptiveWorkerCountStillRespectsAnExplicitLimit(): void
+	{
+		$callback = static fn (string $file): int => 0;
+		$schedule = (new Scheduler(20, 2, 2, true))->scheduleWork(14, array_fill(0, 200, 'file.php'), $callback);
+
+		$this->assertSame(2, $schedule->getNumberOfProcesses());
+	}
+
+	public function testAdaptiveWorkerCountLeavesSingleWorkerRunsAlone(): void
+	{
+		// a worker analyses its jobs one after another, largest file's job first, and only
+		// the order within a job follows the input order - so splitting one worker's files
+		// into more jobs would change the order they are analysed in
+		$fileSizes = [
+			'bootstrap.php' => 327,
+			'src/Middleware.php' => 560,
+		];
+		$files = array_keys($fileSizes);
+		$callback = static fn (string $file): int => $fileSizes[$file] ?? 0;
+
+		$legacy = (new Scheduler(20, Scheduler::AUTO, 2))->scheduleWork(14, $files, $callback);
+		$adaptive = (new Scheduler(20, Scheduler::AUTO, 2, true))->scheduleWork(14, $files, $callback);
+		$this->assertSame([['bootstrap.php', 'src/Middleware.php']], $adaptive->getJobs());
+		$this->assertSame($legacy->getJobs(), $adaptive->getJobs());
+		$this->assertSame(1, $adaptive->getNumberOfProcesses());
+
+		// the same holds when a configured limit leaves a single worker
+		$files = array_map(static fn (int $i): string => sprintf('file-%02d.php', $i), range(1, 15));
+		$callback = static fn (string $file): int => 0;
+		$legacy = (new Scheduler(20, 1, 2))->scheduleWork(14, $files, $callback);
+		$adaptive = (new Scheduler(20, 1, 2, true))->scheduleWork(14, $files, $callback);
+		$this->assertSame($legacy->getJobs(), $adaptive->getJobs());
+		$this->assertSame(1, $adaptive->getNumberOfProcesses());
 	}
 
 	public function testAnExplicitLimitStillWins(): void

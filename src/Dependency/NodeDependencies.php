@@ -92,6 +92,12 @@ final class NodeDependencies
 	 * Files inside a PHAR belong to the running PHPStan itself and cannot change without its version
 	 * changing, so they are left out of both.
 	 *
+	 * Built-in symbols of an extension whose stubs differ between its major versions are recorded in
+	 * "packages" too, under the extension's platform package name (ext-<name>), so that selecting a
+	 * different version re-analyses only the files using the extension. Their file is the PhpStorm stub
+	 * they were read from - inside the PHAR, or in PHPStan's own vendor directory - which does not change
+	 * with the selected version.
+	 *
 	 * @param array<string, true> $analysedFiles
 	 * @return array{packages: list<string>, files: list<string>}
 	 */
@@ -101,6 +107,11 @@ final class NodeDependencies
 		$files = [];
 
 		foreach ($this->reflections as $dependencyReflection) {
+			$extensionPackage = $packageDependencyResolver->resolveVersionedExtensionPackage($dependencyReflection);
+			if ($extensionPackage !== null) {
+				$packages[$extensionPackage] = $extensionPackage;
+			}
+
 			$dependencyFile = $dependencyReflection->getFileName();
 			if ($dependencyFile === null) {
 				continue;

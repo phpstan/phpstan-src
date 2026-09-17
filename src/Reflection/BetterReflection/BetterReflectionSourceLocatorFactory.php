@@ -61,6 +61,7 @@ final class BetterReflectionSourceLocatorFactory
 		private FileHelper $fileHelper,
 		private PhpVersion $phpVersion,
 		private PhpStormStubsSourceStubber $phpstormStubsSourceStubber,
+		private SourceStubber\ExtensionVersionProvider $extensionVersionProvider,
 		private ReflectionSourceStubber $reflectionSourceStubber,
 		private OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
 		private OptimizedDirectorySourceLocatorRepository $optimizedDirectorySourceLocatorRepository,
@@ -186,6 +187,7 @@ final class BetterReflectionSourceLocatorFactory
 				$this->cache,
 				$this->phpVersion,
 				$this->phpstormStubsSourceStubber,
+				$this->extensionVersionProvider,
 			));
 
 			$locators[] = $this->skipBundledPolyfills(new AutoloadSourceLocator($this->fileNodesFetcher, true));

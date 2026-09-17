@@ -2,12 +2,16 @@
 
 namespace PHPStan\Dependency;
 
+use JetBrains\PHPStormStub\PhpStormStubsMap;
 use Nette\Utils\Json;
 use Nette\Utils\JsonException;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\FileHelper;
 use PHPStan\Internal\ComposerHelper;
+use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ConstantReflection;
+use PHPStan\Reflection\FunctionReflection;
 use function array_key_exists;
 use function array_keys;
 use function array_values;
@@ -18,6 +22,7 @@ use function is_string;
 use function realpath;
 use function str_starts_with;
 use function strlen;
+use function strtolower;
 use function uksort;
 
 /**
@@ -41,6 +46,9 @@ final class PackageDependencyResolver
 
 	/** @var array<string, true>|null names of the installed packages that came from a path repository */
 	private ?array $pathPackages = null;
+
+	/** @var array{classes: array<string, string>, functions: array<string, string>, constants: array<string, string>}|null symbol => extension name */
+	private ?array $versionedExtensionSymbols = null;
 
 	/** @param string[] $composerAutoloaderProjectPaths */
 	public function __construct(
@@ -128,6 +136,101 @@ final class PackageDependencyResolver
 		}
 
 		return array_values($changed);
+	}
+
+	/**
+	 * The platform package (ext-<name>) of a built-in symbol belonging to an extension whose stubs
+	 * differ between its major versions. The stubs of any other extension change only together with
+	 * PHPStan itself, so their symbols are not tracked. A symbol of the same name declared in userland
+	 * code, like a polyfill, is not built-in and stays tracked through its file.
+	 */
+	public function resolveVersionedExtensionPackage(ClassReflection|FunctionReflection|ConstantReflection $reflection): ?string
+	{
+		$symbols = $this->getVersionedExtensionSymbols();
+		if ($reflection instanceof ClassReflection) {
+			if (!$reflection->isBuiltin()) {
+				return null;
+			}
+			$extensionName = $symbols['classes'][strtolower($reflection->getName())] ?? null;
+		} elseif ($reflection instanceof FunctionReflection) {
+			if (!$reflection->isBuiltin()) {
+				return null;
+			}
+			$extensionName = $symbols['functions'][strtolower($reflection->getName())] ?? null;
+		} else {
+			if (!$reflection->isBuiltin()->yes()) {
+				return null;
+			}
+			$extensionName = $symbols['constants'][$reflection->getName()] ?? null;
+		}
+
+		if ($extensionName === null) {
+			return null;
+		}
+
+		return 'ext-' . $extensionName;
+	}
+
+	/**
+	 * Platform packages (ext-<name>) of the extensions whose selected stubs version differs between two
+	 * result-cache metas, or null when either meta does not record the versions - a cache written before
+	 * they were recorded holds no ext-<name> dependencies to re-analyse from.
+	 *
+	 * @param mixed[] $cachedMeta
+	 * @param mixed[] $currentMeta
+	 * @return list<string>|null
+	 */
+	public function getChangedExtensionPackages(array $cachedMeta, array $currentMeta): ?array
+	{
+		$cached = $cachedMeta['extensionVersions'] ?? null;
+		$current = $currentMeta['extensionVersions'] ?? null;
+		if (!is_array($cached) || !is_array($current)) {
+			return null;
+		}
+
+		$changed = [];
+		foreach (array_keys($cached + $current) as $extensionName) {
+			if (($cached[$extensionName] ?? null) === ($current[$extensionName] ?? null)) {
+				continue;
+			}
+
+			$changed[] = 'ext-' . $extensionName;
+		}
+
+		return $changed;
+	}
+
+	/**
+	 * @return array{classes: array<string, string>, functions: array<string, string>, constants: array<string, string>}
+	 */
+	private function getVersionedExtensionSymbols(): array
+	{
+		if ($this->versionedExtensionSymbols !== null) {
+			return $this->versionedExtensionSymbols;
+		}
+
+		$classes = [];
+		$functions = [];
+		$constants = [];
+		foreach (PhpStormStubsMap::EXTENSION_VERSIONS as $extensionName => $versionMaps) {
+			foreach ($versionMaps as $versionMap) {
+				foreach (array_keys($versionMap['classes']) as $className) {
+					$classes[strtolower($className)] = $extensionName;
+				}
+				foreach (array_keys($versionMap['functions']) as $functionName) {
+					$functions[strtolower($functionName)] = $extensionName;
+				}
+				foreach (array_keys($versionMap['constants']) as $constantName) {
+					$constants[$constantName] = $extensionName;
+				}
+			}
+		}
+
+		return $this->versionedExtensionSymbols = [
+			'classes' => $classes,
+			'functions' => $functions,
+			'constants' => $constants,
+		];
 	}
 
 	/**

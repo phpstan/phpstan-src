@@ -62,7 +62,7 @@ final class PropertyHooksProcessor
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $hook, $scope, $storage);
 			$this->attributesHandler->processAttributeGroups($nodeScopeResolver, $stmt, $hook->attrGroups, $scope, $storage, $nodeCallback);
 
-			[, $phpDocParameterTypes,,,, $phpDocThrowType,,,,,,,, $phpDocComment,,,,,, $resolvedPhpDoc] = $this->phpDocsResolver->getPhpDocs($scope, $hook);
+			[, $phpDocParameterTypes,,,, $phpDocThrowType,,,,, $isPure,,, $phpDocComment,,,,,, $resolvedPhpDoc] = $this->phpDocsResolver->getPhpDocs($scope, $hook);
 
 			$this->parametersProcessor->processParams($nodeScopeResolver, $stmt, $hook->params, $scope, $storage, $nodeCallback);
 
@@ -77,6 +77,7 @@ final class PropertyHooksProcessor
 				$phpDocThrowType,
 				$deprecatedDescription,
 				$isDeprecated,
+				$isPure,
 				$phpDocComment,
 				$resolvedPhpDoc,
 			);
@@ -100,7 +101,9 @@ final class PropertyHooksProcessor
 
 			$stmts = $hook->getStmts();
 			if ($stmts === null) {
-				return;
+				// abstract hook - the sibling hook of the same property may still
+				// have a body, so keep going
+				continue;
 			}
 
 			if ($hook->body instanceof Expr) {
@@ -114,7 +117,7 @@ final class PropertyHooksProcessor
 			$gatheredReturnStatements = [];
 			$gatheredReturnStatementsAfterFinally = [];
 			$executionEnds = [];
-			$methodImpurePoints = [];
+			$hookImpurePoints = [];
 			$nodeScopeResolver->pushNodeGatherer(static function (Node $node, Scope $scope) use ($hookScope, &$gatheredReturnStatements, &$gatheredReturnStatementsAfterFinally, &$executionEnds, &$hookImpurePoints): void {
 				if ($scope->getFunction() !== $hookScope->getFunction()) {
 					return;
@@ -159,7 +162,7 @@ final class PropertyHooksProcessor
 				$gatheredReturnStatementsAfterFinally,
 				$statementResult,
 				$executionEnds,
-				array_merge($statementResult->getImpurePoints(), $methodImpurePoints),
+				array_merge($statementResult->getImpurePoints(), $hookImpurePoints),
 				$classReflection,
 				$hookReflection,
 				$propertyReflection,

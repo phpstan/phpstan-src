@@ -19,6 +19,11 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 	/** @var string[] */
 	private array $uncheckedExceptionClasses = [];
 
+	public static function getComposerAutoloaderProjectPaths(): array
+	{
+		return [__DIR__ . '/../../Analyser/data/ext-ds-v1-platform'];
+	}
+
 	protected function getRule(): Rule
 	{
 		return new CatchWithUnthrownExceptionRule(new DefaultExceptionTypeResolver(

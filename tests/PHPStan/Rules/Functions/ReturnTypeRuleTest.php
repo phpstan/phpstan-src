@@ -18,6 +18,11 @@ class ReturnTypeRuleTest extends RuleTestCase
 
 	private bool $checkExplicitMixed;
 
+	public static function getComposerAutoloaderProjectPaths(): array
+	{
+		return [__DIR__ . '/../../Analyser/data/ext-ds-v1-platform'];
+	}
+
 	protected function getRule(): Rule
 	{
 		return new ReturnTypeRule(new FunctionReturnTypeCheck(

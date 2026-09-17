@@ -40,14 +40,12 @@ namespace {
 	}
 }
 
-namespace Ds {
-	class Deque {
+namespace {
+	class SQLite3 {
 		/**
-		 * @param (callable(TValue): bool)|null $callback
-		 * @return Deque<TValue>
 		 * @param-closure-this $this $callback
 		 */
-		public function filter(callable $callback = null): Deque
+		public function createFunction(string $name, callable $callback, int $argCount = -1, int $flags = 0): bool
 		{
 		}
 	}

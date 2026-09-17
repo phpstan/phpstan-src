@@ -27,6 +27,7 @@ use PHPStan\Internal\ComposerHelper;
 use PHPStan\Php\ComposerPhpVersionFactory;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\StubFilesProvider;
+use PHPStan\Reflection\BetterReflection\SourceStubber\ExtensionVersionProvider;
 use PHPStan\ShouldNotHappenException;
 use ReflectionClass;
 use ReflectionException;
@@ -119,7 +120,7 @@ final class ResultCacheManager
 	 * deliberately not here: they are executed, not just read, so a change in one of them can affect
 	 * anything about the analysis. They stay in the fully invalidating executedFilesHashes entry.
 	 */
-	private const PARTIALLY_INVALIDATING_META_KEYS = ['composerLocks', 'composerInstalled', 'scannedFiles'];
+	private const PARTIALLY_INVALIDATING_META_KEYS = ['composerLocks', 'composerInstalled', 'extensionVersions', 'scannedFiles'];
 
 	/**
 	 * The cache file is serialize() output, but an older PHPStan reading it would
@@ -172,6 +173,7 @@ final class ResultCacheManager
 		private StubFilesProvider $stubFilesProvider,
 		private FileHelper $fileHelper,
 		private PackageDependencyResolver $packageDependencyResolver,
+		private ExtensionVersionProvider $extensionVersionProvider,
 		#[AutowiredParameter(ref: '%resultCachePath%')]
 		private string $cacheFilePath,
 		#[AutowiredParameter]
@@ -389,7 +391,8 @@ final class ResultCacheManager
 
 			// Some metadata differences do not invalidate the whole analysis, because the code they
 			// affect can be pinpointed: a Composer lock change only affects the files depending on a
-			// package whose version changed, and a scanned file change only affects the files depending
+			// package whose version changed, a different selected version of a PHP extension only the
+			// files using that extension, and a scanned file change only affects the files depending
 			// on that file. Any other difference falls back to a full re-analysis.
 			if (array_diff($diffs, self::PARTIALLY_INVALIDATING_META_KEYS) !== []) {
 				return $this->fullAnalysis(
@@ -461,7 +464,14 @@ final class ResultCacheManager
 				? $this->packageDependencyResolver->getChangedComposerPackages($data['meta'], $meta)
 				: [];
 
-			if ($changedPackages === null) {
+			// The same goes for a PHP extension whose stubs differ between its major versions: the files
+			// using its symbols recorded a dependency on its platform package (ext-<name>), so switching
+			// the version composer.json selects re-analyses just those.
+			$changedExtensionPackages = in_array('extensionVersions', $diffs, true)
+				? $this->packageDependencyResolver->getChangedExtensionPackages($data['meta'], $meta)
+				: [];
+
+			if ($changedPackages === null || $changedExtensionPackages === null) {
 				return $this->fullAnalysis(
 					'Result cache not used because the metadata do not match: ' . implode(', ', $diffs),
 					$allAnalysedFiles,
@@ -505,14 +515,25 @@ final class ResultCacheManager
 						implode(', ', $changedPackages),
 					));
 				}
+			}
 
+			if ($changedExtensionPackages !== [] && $output->isVeryVerbose()) {
+				$output->writeLineFormatted(sprintf(
+					'PHP extension versions changed (%s); re-analysing the files depending on them and the files with errors.',
+					implode(', ', $changedExtensionPackages),
+				));
+			}
+
+			if ($changedPackages !== [] || $changedExtensionPackages !== []) {
 				// The files depending on a changed package are seeded below, but a file whose error is
 				// that a class does not exist depends on nothing: there was no file to record an edge to.
 				// An installed package is exactly where such a class tends to arrive from - Composer
-				// unpacking a new version, or a plugin writing into vendor/ while it does - so the files
-				// with errors are re-analysed too, the same way a new analysed file makes them.
+				// unpacking a new version, or a plugin writing into vendor/ while it does - and so is a
+				// newly selected extension version, so the files with errors are re-analysed too, the
+				// same way a new analysed file makes them.
 				$notAnalysedFileSymbolsChanged = true;
 
+				$changedPackagesLookup = array_fill_keys(array_merge($changedPackages, $changedExtensionPackages), true);
 				foreach ($packageDependencies as $packageDependentFile => $filePackages) {
 					foreach ($filePackages as $filePackage) {
 						if (isset($changedPackagesLookup[$filePackage])) {
@@ -2084,6 +2105,7 @@ final class ResultCacheManager
 			'composerInstalled' => $this->getComposerInstalled(),
 			'executedFilesHashes' => $this->getExecutedFileHashes(),
 			'phpExtensions' => $extensions,
+			'extensionVersions' => $this->extensionVersionProvider->getExtensionVersions(),
 			// only the statically configured stub files - the full list including the ones
 			// from StubFilesExtensions is recorded at save time (see save()), because the
 			// extensions may only run after the bootstrapFiles. This entry catches a changed

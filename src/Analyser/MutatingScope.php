@@ -2081,6 +2081,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		?Type $throwType,
 		?string $deprecatedDescription,
 		bool $isDeprecated,
+		?bool $isPure,
 		?string $phpDocComment,
 		?ResolvedPhpDocBlock $resolvedPhpDocBlock = null,
 	): self
@@ -2142,7 +2143,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				$isDeprecated,
 				false,
 				false,
-				false,
+				$isPure,
 				true,
 				Assertions::createEmpty(),
 				null,

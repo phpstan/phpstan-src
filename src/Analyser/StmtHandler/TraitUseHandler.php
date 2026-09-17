@@ -23,8 +23,8 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use function array_key_exists;
-use function in_array;
 use function is_array;
+use function strtolower;
 
 /**
  * @implements StmtHandler<TraitUse>
@@ -32,6 +32,13 @@ use function is_array;
 #[AutowiredService]
 final class TraitUseHandler implements StmtHandler
 {
+
+	/**
+	 * Names of traits whose statements are currently being processed, keyed by lowercased name.
+	 *
+	 * @var array<string, true>
+	 */
+	private array $currentlyProcessedTraits = [];
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
@@ -67,18 +74,11 @@ final class TraitUseHandler implements StmtHandler
 	 */
 	private function processTraitUse(NodeScopeResolver $nodeScopeResolver, Node\Stmt\TraitUse $node, MutatingScope $classScope, ExpressionResultStorage $storage, callable $nodeCallback): void
 	{
-		$parentTraitNames = [];
-		$parent = $classScope->getParentScope();
-		while ($parent !== null) {
-			if ($parent->isInTrait()) {
-				$parentTraitNames[] = $parent->getTraitReflection()->getName();
-			}
-			$parent = $parent->getParentScope();
-		}
-
 		foreach ($node->traits as $trait) {
 			$traitName = (string) $trait;
-			if (in_array($traitName, $parentTraitNames, true)) {
+			// traits can use each other in a cycle (even use themselves) which is a runtime
+			// fatal error in PHP, but must not send the analyser into an endless recursion
+			if (array_key_exists(strtolower($traitName), $this->currentlyProcessedTraits)) {
 				continue;
 			}
 			if (!$this->reflectionProvider->hasClass($traitName)) {
@@ -106,7 +106,12 @@ final class TraitUseHandler implements StmtHandler
 				$adaptations[] = $adaptation;
 			}
 			$parserNodes = $this->parser->parseFile($fileName);
-			$this->processNodesForTraitUse($nodeScopeResolver, $parserNodes, $traitReflection, $classScope, $storage, $adaptations, $nodeCallback);
+			$this->currentlyProcessedTraits[strtolower($traitName)] = true;
+			try {
+				$this->processNodesForTraitUse($nodeScopeResolver, $parserNodes, $traitReflection, $classScope, $storage, $adaptations, $nodeCallback);
+			} finally {
+				unset($this->currentlyProcessedTraits[strtolower($traitName)]);
+			}
 		}
 	}
 

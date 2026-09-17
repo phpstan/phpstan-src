@@ -1,0 +1,5 @@
+# References an env var whose name contains a dash (%env.PHPSTAN_TEST_W1-DASH%) - a valid Nette
+# reference (Nette's parameter-name grammar is %([\w.-]*)%). The env-name extraction must keep such
+# names in the container cache key too, otherwise changing this var would reuse a stale container.
+parameters:
+	tmpDir: %env.PHPSTAN_TEST_W1-DASH%

@@ -17,7 +17,7 @@ use function strrev;
 final class StrrevFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
-	public function __construct(private StringBytesReturnTypeHelper $stringBytesReturnTypeHelper)
+	public function __construct(private StrShuffleFunctionReturnTypeExtension $strShuffleExtension)
 	{
 	}
 
@@ -48,7 +48,8 @@ final class StrrevFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 			return TypeCombinator::union(...$resultTypes);
 		}
 
-		return $this->stringBytesReturnTypeHelper->getReorderedStringType($inputType);
+		// Reversing a string reorders its bytes, just like shuffling it.
+		return $this->strShuffleExtension->getShuffledStringType($inputType);
 	}
 
 }

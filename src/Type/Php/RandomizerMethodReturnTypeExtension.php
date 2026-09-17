@@ -12,14 +12,19 @@ use Random\Randomizer;
 use function count;
 use function in_array;
 
+/**
+ * Randomizer methods mirror global functions PHPStan already describes:
+ * shuffleArray() is shuffle(), pickArrayKeys() is array_rand(),
+ * shuffleBytes() is str_shuffle() and getInt() is random_int().
+ */
 #[AutowiredService]
 final class RandomizerMethodReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
 
 	public function __construct(
-		private RandomArrayKeysReturnTypeHelper $randomArrayKeysReturnTypeHelper,
-		private StringBytesReturnTypeHelper $stringBytesReturnTypeHelper,
-		private RandomIntRangeHelper $randomIntRangeHelper,
+		private ArrayRandFunctionReturnTypeExtension $arrayRandExtension,
+		private StrShuffleFunctionReturnTypeExtension $strShuffleExtension,
+		private RandomIntFunctionReturnTypeExtension $randomIntExtension,
 	)
 	{
 	}
@@ -53,16 +58,16 @@ final class RandomizerMethodReturnTypeExtension implements DynamicMethodReturnTy
 				return $firstArgType->shuffleArray();
 			case 'pickArrayKeys':
 				// $num is validated to be between 1 and the size of the array,
-				// so a successful call always returns at least one key.
-				return $this->randomArrayKeysReturnTypeHelper->getPickedKeysListType($firstArgType);
+				// so unlike array_rand() a successful call always returns a list.
+				return $this->arrayRandExtension->getPickedKeysListType($firstArgType);
 			case 'shuffleBytes':
-				return $this->stringBytesReturnTypeHelper->getReorderedStringType($firstArgType);
+				return $this->strShuffleExtension->getShuffledStringType($firstArgType);
 			case 'getInt':
 				if (count($args) < 2) {
 					return null;
 				}
 
-				return $this->randomIntRangeHelper->createRange(
+				return $this->randomIntExtension->createRange(
 					$firstArgType->toInteger(),
 					$scope->getType($args[1]->value)->toInteger(),
 				);

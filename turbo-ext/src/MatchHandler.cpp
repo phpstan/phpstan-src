@@ -53,7 +53,6 @@ constexpr const char *pt_mh_closure_name = "PHPStan\\Analyser\\ExprHandler\\Matc
 /* {{{ the PHP collaborators (one site each; switch to their direct entries
  * once they are ported) */
 
-pt_method_site pt_mh_get_identical_result_site;
 pt_method_site pt_mh_get_expr_site;
 pt_method_site pt_mh_get_start_line_site;
 
@@ -61,8 +60,7 @@ pt_method_site pt_mh_get_start_line_site;
  * $nodeScopeResolver, $leftType, $rightType)->type */
 zv::Val identicalResultType(zval *richerScopeGetTypeHelper, zval *scope, zval *expr, zval *nodeScopeResolver, zval *leftType, zval *rightType)
 {
-	zv::Args argv{scope, expr, nodeScopeResolver, leftType, rightType};
-	zv::Val result = pt_call_method_cached(pt_mh_get_identical_result_site, Z_OBJ_P(richerScopeGetTypeHelper), PT_LC("getidenticalresult"), 5, argv);
+	zv::Val result = pt_richer_scope_get_type_helper_get_identical_result(richerScopeGetTypeHelper, scope, expr, nodeScopeResolver, leftType, rightType);
 	if (UNEXPECTED(result.isUndef())) return zv::Val();
 	if (EXPECTED(Z_TYPE_P(result.raw()) == IS_OBJECT && Z_OBJCE_P(result.raw()) == pt_ce_type_result)) return zv::Val::copyOf(zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(result.raw()), ptdecl::TypeResult::slot::type)));
 	if (UNEXPECTED(Z_TYPE_P(result.raw()) != IS_OBJECT)) {

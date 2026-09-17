@@ -7997,6 +7997,143 @@ foreach ([\PHPStan\Analyser\Generics\TemplateArgumentConstraints::class => 'isEm
 	}
 }
 
+// ---- RicherScopeGetTypeHelper / NullsafeOperatorHelper / LoopWrittenVariableNames ----
+// The `===` / `!==` pricing on a scope with constants, nulls, same-variable
+// shortcuts, given operand types and untyped native properties compared
+// with null; the nullsafe rewrite of chains (method calls, fetches, offsets,
+// static accesses, first-class callables) with its attribute memo on the
+// original levels, alone and against the scope; and the loop-written names
+// over parsed loops (every write form, the unknown-name bail-outs, nested
+// functions and classes, the attribute memo) joined with pass flows of every
+// shape
+foreach ([\PHPStan\Analyser\RicherScopeGetTypeHelper::class => 'getIdenticalResult', \PHPStan\Analyser\NullsafeOperatorHelper::class => 'getNullsafeShortcircuitedExpr', \PHPStan\Analyser\LoopWrittenVariableNames::class => 'collect'] as $helperClass => $helperMethod) {
+	$observations['native ' . $helperClass] = (new ReflectionMethod($helperClass, $helperMethod))->isInternal();
+}
+{
+	$r = [];
+	$helperCatching = static function (callable $fn): mixed {
+		try {
+			return $fn();
+		} catch (\Throwable $e) {
+			return [get_class($e), preg_replace('~, called in .+ on line \d+$~', '', $e->getMessage())];
+		}
+	};
+	$precise = \PHPStan\Type\VerbosityLevel::precise();
+	$parser = (new \PhpParser\ParserFactory())->createForNewestSupportedVersion();
+	$printer = new \PhpParser\PrettyPrinter\Standard();
+	$exprOf = static fn (string $code): \PhpParser\Node\Expr => $parser->parse('<?php ' . $code . ';')[0]->expr;
+	$yes = \PHPStan\TrinaryLogic::createYes();
+	$helperScope = $stringContainer->getByType(\PHPStan\Analyser\ScopeFactory::class)->create(\PHPStan\Analyser\ScopeContext::create(__FILE__));
+	foreach ([
+		'a' => new \PHPStan\Type\Constant\ConstantIntegerType(1),
+		'b' => new \PHPStan\Type\IntegerType(),
+		'n' => new \PHPStan\Type\NullType(),
+		's' => new \PHPStan\Type\StringType(),
+		'o' => new \PHPStan\Type\UnionType([new \PHPStan\Type\ObjectType(\stdClass::class), new \PHPStan\Type\NullType()]),
+		'e' => new \PHPStan\Type\ObjectType(\Exception::class),
+		'f' => new \PHPStan\Type\ObjectType(\PHPStan\Type\IntegerType::class),
+	] as $name => $type) {
+		$helperScope = $helperScope->assignVariable($name, $type, $type, $yes);
+	}
+
+	// RicherScopeGetTypeHelper
+	$helper = $stringContainer->getByType(\PHPStan\Analyser\RicherScopeGetTypeHelper::class);
+	$viewResult = static fn (\PHPStan\Type\TypeResult $result): array => [$result->type->describe($precise), $result->reasons];
+	foreach (['$a === $a', '$a === $b', '$a === 1', '$n === null', '$s === $a', '$o === null', '$o->p === null', 'null === $o->p', '$e->message === null', 'null === $e->message', '$e->message === $a', '\Exception::$nope === null', '$x === $x', '$$a === $$a', '1 === 1', '$f->unknown === null'] as $code) {
+		$identical = $exprOf($code);
+		$notIdentical = new \PhpParser\Node\Expr\BinaryOp\NotIdentical($identical->left, $identical->right);
+		$r["richer $code"] = $helperCatching(static fn () => $viewResult($helper->getIdenticalResult($helperScope, $identical)));
+		$r["richer not $code"] = $helperCatching(static fn () => $viewResult($helper->getNotIdenticalResult($helperScope, $notIdentical)));
+		$r["richer typed $code"] = $helperCatching(static fn () => $viewResult($helper->getIdenticalResult($helperScope, $identical, null, new \PHPStan\Type\Constant\ConstantIntegerType(1), new \PHPStan\Type\Constant\ConstantIntegerType(1))));
+		$r["richer typed null $code"] = $helperCatching(static fn () => $viewResult($helper->getIdenticalResult($helperScope, $identical, null, new \PHPStan\Type\NullType(), null)));
+		$r["richer typed not $code"] = $helperCatching(static fn () => $viewResult($helper->getNotIdenticalResult($helperScope, $notIdentical, null, new \PHPStan\Type\IntegerType(), new \PHPStan\Type\NullType())));
+	}
+	$someIdentical = $exprOf('$a === $b');
+	$r['richer wrong expr'] = $helperCatching(static fn () => $helper->getIdenticalResult($helperScope, new \PhpParser\Node\Expr\BinaryOp\NotIdentical($someIdentical->left, $someIdentical->right)));
+	$r['richer wrong type'] = $helperCatching(static fn () => $helper->getNotIdenticalResult($helperScope, new \PhpParser\Node\Expr\BinaryOp\NotIdentical($someIdentical->left, $someIdentical->right), null, $precise));
+
+	// NullsafeOperatorHelper
+	$levels = static function (\PhpParser\Node\Expr $expr): array {
+		$marks = [];
+		for ($level = $expr; $level !== null;) {
+			$marks[] = [get_class($level), $level->getAttribute('phpstan_nullsafeShortcircuited')];
+			if ($level instanceof \PhpParser\Node\Expr\MethodCall || $level instanceof \PhpParser\Node\Expr\NullsafeMethodCall || $level instanceof \PhpParser\Node\Expr\PropertyFetch || $level instanceof \PhpParser\Node\Expr\NullsafePropertyFetch || $level instanceof \PhpParser\Node\Expr\ArrayDimFetch) {
+				$level = $level->var;
+			} elseif (($level instanceof \PhpParser\Node\Expr\StaticCall || $level instanceof \PhpParser\Node\Expr\StaticPropertyFetch) && $level->class instanceof \PhpParser\Node\Expr) {
+				$level = $level->class;
+			} else {
+				$level = null;
+			}
+		}
+		return $marks;
+	};
+	foreach (['$o?->a', '$o?->a->b', '$o->a?->b()->c[1]', '$o->a->b', 'A::$x', '$o::$x', '$o?->a::$y', '$o?->a::m(1)', '$o?->m(1, 2)->n(3)', '$x[0]?->a', 'f()', '$o?->a->m(...)', '$o?->a[$i]->b', '$o->a::$b?->c', '($o?->a)->b', '$o?->a->b?->c->d'] as $code) {
+		foreach (['plain', 'respecting'] as $mode) {
+			$r["nullsafe $mode $code"] = $helperCatching(static function () use ($code, $mode, $exprOf, $helperScope, $printer, $levels): array {
+				$expr = $exprOf($code);
+				$call = static fn () => $mode === 'plain' ? \PHPStan\Analyser\NullsafeOperatorHelper::getNullsafeShortcircuitedExpr($expr) : \PHPStan\Analyser\NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($helperScope, $expr);
+				$first = $call();
+				$firstMarks = $levels($expr);
+				$second = $call();
+				return [$printer->prettyPrintExpr($first), $first === $expr, $firstMarks, $printer->prettyPrintExpr($second), $second === $expr, $second === $first, $levels($expr), $first === $expr ? null : $levels($first)];
+			});
+		}
+	}
+	$r['nullsafe wrong'] = $helperCatching(static fn () => \PHPStan\Analyser\NullsafeOperatorHelper::getNullsafeShortcircuitedExpr(new \PhpParser\Node\Name('x')));
+
+	// LoopWrittenVariableNames
+	$write = static fn (string $name, int $id, ?int $parentId = null): \PHPStan\Node\Variable\VariableWrite => new \PHPStan\Node\Variable\VariableWrite($name, new \PhpParser\Node\Expr\Variable($name), $id, \PHPStan\Node\Variable\VariableWrite::KIND_ASSIGN, false, null, $parentId);
+	$foreachStmt = $parser->parse('<?php foreach ($xs as $v) {}')[0];
+	$flows = [
+		'none' => null,
+		'read' => \PHPStan\Analyser\VariableFlow::read('r1'),
+		'write' => \PHPStan\Analyser\VariableFlow::write($write('w1', 1)),
+		'define' => \PHPStan\Analyser\VariableFlow::write($write('d1', 2, 1)),
+		'escape' => \PHPStan\Analyser\VariableFlow::escape('e1'),
+		'mention' => \PHPStan\Analyser\VariableFlow::mention('m1'),
+		'discard' => \PHPStan\Analyser\VariableFlow::discard($write('x1', 3)),
+		'sequence' => \PHPStan\Analyser\VariableFlow::sequence(\PHPStan\Analyser\VariableFlow::write($write('s1', 4)), \PHPStan\Analyser\VariableFlow::read('s2'), \PHPStan\Analyser\VariableFlow::escape('s3')),
+		'nested' => \PHPStan\Analyser\VariableFlow::loop(\PHPStan\Analyser\VariableFlow::choice(\PHPStan\Analyser\VariableFlow::write($write('c1', 5)), \PHPStan\Analyser\VariableFlow::escape('c2')), \PHPStan\Analyser\VariableFlow::tryCatch(\PHPStan\Analyser\VariableFlow::write($write('t1', 6)), [[new \PHPStan\Type\ObjectType(\Exception::class), \PHPStan\Analyser\VariableFlow::write($write('t2', 7))], [new \PHPStan\Type\ObjectType(\Error::class), null]], \PHPStan\Analyser\VariableFlow::escape('t3')), \PHPStan\Analyser\VariableFlow::switch(\PHPStan\Analyser\VariableFlow::write($write('sw0', 8)), [[\PHPStan\Analyser\VariableFlow::write($write('sw1', 9)), \PHPStan\Analyser\VariableFlow::write($write('sw2', 10)), false], [null, \PHPStan\Analyser\VariableFlow::escape('sw3'), true]], false), false, true),
+		'loop statement' => \PHPStan\Analyser\VariableFlow::loopStatement($foreachStmt, \PHPStan\Analyser\VariableFlow::write($write('ls1', 11)), [$write('b1', 12), $write('b2', 13)], [$write('o1', 14), $write('b1', 15)]),
+		'dead' => \PHPStan\Analyser\VariableFlow::dead(\PHPStan\Analyser\VariableFlow::write($write('dd', 16))),
+		'inputs' => \PHPStan\Analyser\VariableFlow::inputs(1, 2),
+	];
+	foreach ([
+		'foreach ($xs as $k => $v) { $a = 1; $b[] = 2; $c->d = 3; list($e, [$f]) = $g; $h++; }',
+		'while (true) { static $s1, $s2 = 3; global $gl; unset($u, $w[1]); $fn = function () use (&$ref, $noref) {}; try {} catch (E $ex) {} catch (F) {} }',
+		'for (;;) { $$dyn = 1; }',
+		'do { extract($arr); } while (1);',
+		'while (1) { include "x.php"; }',
+		'while (1) { eval("1"); }',
+		'while (1) { function inner() { $ignored = 1; } class K { function m() { $alsoIgnored = 1; } } $after = 1; }',
+		'foreach ($xs as &$ref) { $ref = 1; }',
+		'foreach ($xs->items[0] as &$byRefTarget) {}',
+		'while (1) { [$p, [, $q], "k" => $r] = $pair; $obj?->prop = 1; }',
+		'while (1) { ${"x"} = 2; }',
+		'while (1) { PARSE_STR($s, $out); \Extract($y); }',
+		'while (1) { $a .= "x"; $b ??= 1; $c =& $d; --$e; $f--; $g[$h]->i::$j = 1; }',
+		'while (1) { [$m[$n], $o->p] = $q; foo($written); }',
+		'while (1) { $fn = fn () => $arrowWrite = 1; }',
+		'while (1) { [$good, [$$bad]] = $pair; }',
+	] as $code) {
+		$loop = $parser->parse('<?php ' . $code)[0];
+		foreach ($flows as $flowName => $flow) {
+			$r["loop names $code / $flowName"] = $helperCatching(static fn () => \PHPStan\Analyser\LoopWrittenVariableNames::collect($loop, $flow));
+		}
+		$r["loop attribute $code"] = $loop->getAttribute('phpstanLoopWrittenVariableNames');
+		$fresh = $parser->parse('<?php ' . $code)[0];
+		$fresh->setAttribute('phpstanLoopWrittenVariableNames', ['preset' => true]);
+		$r["loop preset $code"] = $helperCatching(static fn () => \PHPStan\Analyser\LoopWrittenVariableNames::collect($fresh, $flows['write']));
+		$fresh->setAttribute('phpstanLoopWrittenVariableNames', false);
+		$r["loop preset false $code"] = $helperCatching(static fn () => \PHPStan\Analyser\LoopWrittenVariableNames::collect($fresh, $flows['write']));
+	}
+	$r['loop wrong flow'] = $helperCatching(static fn () => \PHPStan\Analyser\LoopWrittenVariableNames::collect(new \PhpParser\Node\Stmt\Nop(), new \stdClass()));
+
+	foreach ($r as $key => $value) {
+		$observations["analyser helpers $key"] = $value;
+	}
+}
+
 // observations holding bytes that are not UTF-8 (the invalid-UTF-8 subject's
 // descriptions) go out base64-encoded so json_encode() keeps every byte; the
 // non-finite floats (the NAN and infinity subjects' values) as their names

@@ -8,6 +8,7 @@ use PhpParser\Node\Expr\Variable;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Type;
@@ -15,6 +16,7 @@ use PHPStan\Type\TypeResult;
 use function is_string;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/RicherScopeGetTypeHelper.cpp')]
 final class RicherScopeGetTypeHelper
 {
 

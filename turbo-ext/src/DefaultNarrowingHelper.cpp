@@ -58,7 +58,6 @@ namespace {
 /* {{{ the PHP collaborators (one site each; switch to their direct entries
  * once they are ported) */
 
-pt_method_site pt_dnh_nullsafe_shortcircuited_site;
 pt_method_site pt_dnh_narrow_offset_key_type_site;
 pt_method_site pt_dnh_assert_get_parameter_site;
 pt_method_site pt_dnh_assert_get_type_site;
@@ -96,7 +95,7 @@ zval *impurePointGetNode(zval *impurePoint, zv::Val &hold)
 /* NullsafeOperatorHelper::getNullsafeShortcircuitedExpr($expr) */
 zv::Val getNullsafeShortcircuitedExpr(zval *expr)
 {
-	return pt_call_static_cached(pt_dnh_nullsafe_shortcircuited_site, PT_CLASS_NULLSAFE_OPERATOR_HELPER, PT_LC("getnullsafeshortcircuitedexpr"), 1, expr);
+	return pt_nullsafe_operator_helper_get_nullsafe_shortcircuited_expr(expr);
 }
 
 /* AllowedArrayKeysTypes::narrowOffsetKeyType($varType, $dimType) */

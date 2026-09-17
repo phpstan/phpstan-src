@@ -589,6 +589,11 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_template_argument_constraints();
 	pt_register_template_argument_observer();
 	pt_register_template_argument_resolver();
+	/* the analyser helpers — their signatures name the Scope interface,
+	 * php-parser, the Type interface, NodeScopeResolver and VariableFlow */
+	pt_register_richer_scope_get_type_helper();
+	pt_register_nullsafe_operator_helper();
+	pt_register_loop_written_variable_names();
 
 	return SUCCESS;
 }

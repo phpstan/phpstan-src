@@ -144,8 +144,6 @@ int kindOf(zval *expr)
 /* {{{ the PHP collaborators (one site each; switch to their direct entries
  * once they are ported) */
 
-pt_method_site pt_boh_get_identical_result_site;
-pt_method_site pt_boh_get_not_identical_result_site;
 
 /* $implicitToStringCallHelper->processImplicitToStringCall($expr, $scope, $exprResult) */
 zv::Val processImplicitToStringCall(zval *helper, zval *expr, zval *scope, zval *exprResult)
@@ -192,10 +190,9 @@ zv::Val operatorType(zval *resolver, uint8_t kind, zval *left, zval *right, cons
  * $leftType, $rightType) / ->getNotIdenticalResult(...) */
 zv::Val identicalResult(zval *helper, bool negated, zval *scope, zval *expr, zval *nodeScopeResolver, zval *leftType, zval *rightType)
 {
-	zv::Args argv{scope, expr, nodeScopeResolver, leftType, rightType};
 	return negated
-		? pt_call_method_cached(pt_boh_get_not_identical_result_site, Z_OBJ_P(helper), PT_LC("getnotidenticalresult"), 5, argv)
-		: pt_call_method_cached(pt_boh_get_identical_result_site, Z_OBJ_P(helper), PT_LC("getidenticalresult"), 5, argv);
+		? pt_richer_scope_get_type_helper_get_not_identical_result(helper, scope, expr, nodeScopeResolver, leftType, rightType)
+		: pt_richer_scope_get_type_helper_get_identical_result(helper, scope, expr, nodeScopeResolver, leftType, rightType);
 }
 
 /* $countNarrowingHelper->specifyCountSize($countFuncCall, $type, $sizeType,

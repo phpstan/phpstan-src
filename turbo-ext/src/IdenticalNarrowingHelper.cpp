@@ -45,7 +45,6 @@ namespace {
 /* {{{ the PHP collaborators (one site each; switch to their direct entries
  * once they are ported) */
 
-pt_method_site pt_inh_get_identical_result_site;
 pt_method_site pt_inh_as_final_site;
 
 /* the Error PHP raises for a method call on a non-object */
@@ -65,8 +64,7 @@ zv::Val specifyCountSize(zval *countNarrowingHelper, zval *countFuncCall, zval *
 /* $richerScopeGetTypeHelper->getIdenticalResult($scope, $expr, $nodeScopeResolver) */
 zv::Val getIdenticalResult(zval *richerScopeGetTypeHelper, zval *scope, zval *expr, zval *nodeScopeResolver)
 {
-	zv::Args argv{scope, expr, nodeScopeResolver};
-	return pt_call_method_cached(pt_inh_get_identical_result_site, Z_OBJ_P(richerScopeGetTypeHelper), PT_LC("getidenticalresult"), 3, argv);
+	return pt_richer_scope_get_type_helper_get_identical_result(richerScopeGetTypeHelper, scope, expr, nodeScopeResolver, NULL, NULL);
 }
 
 /* $classReflection->asFinal() */

@@ -61,7 +61,7 @@ NodeProp pt_ts_static_property_fetch_class = PT_NODE_PROP(PT_CLASS_STATIC_PROPER
 /* NullsafeOperatorHelper::getNullsafeShortcircuitedExpr($expr) */
 zv::Val nullsafeShortcircuitedExpr(zval *expr)
 {
-	return pt_type_call_static(PT_CLASS_NULLSAFE_OPERATOR_HELPER, PT_LC("getnullsafeshortcircuitedexpr"), 1, expr);
+	return pt_nullsafe_operator_helper_get_nullsafe_shortcircuited_expr(expr);
 }
 
 /* }}} */

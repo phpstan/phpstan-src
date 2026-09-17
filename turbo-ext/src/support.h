@@ -267,7 +267,6 @@ enum {
 	PT_CLASS_BOOLEAN_OR_EXPR,
 	PT_CLASS_LOGICAL_OR_EXPR,
 	PT_CLASS_PARSER_ISSET_EXPR,
-	PT_CLASS_NULLSAFE_OPERATOR_HELPER,
 	PT_CLASS_COALESCE_EXPR,
 	PT_CLASS_TYPE_EXPR,
 	PT_CLASS_IDENTICAL_EXPR,
@@ -389,7 +388,6 @@ enum {
 	 * ForeachHandler.cpp) */
 	PT_CLASS_BREAKLESS_WHILE_LOOP_NODE,
 	PT_CLASS_DO_WHILE_LOOP_CONDITION_NODE,
-	PT_CLASS_LOOP_WRITTEN_VARIABLE_NAMES,
 	PT_CLASS_SWITCH_CONDITION_ARM,
 	PT_CLASS_SWITCH_CONDITION_NODE,
 	PT_CLASS_CATCH_WITH_UNTHROWN_EXCEPTION_NODE,
@@ -4284,6 +4282,37 @@ zv::Val pt_template_argument_observer_collect_send(zval *observer, zval *declare
 zv::Val pt_template_argument_observer_collect_argument(zval *observer, zval *parameterType, zval *argumentType, bool isPure);
 zv::Val pt_template_argument_observer_collect_call(zval *observer, zval *site, zval *acceptor, zval *argumentTypes, zval *classTemplates);
 zv::Val pt_template_argument_resolver_resolve(zval *resolver, zval *constraints, zval *parent, zval *statementStartTokenPositions);
+
+/* }}} */
+
+/* {{{ the analyser helpers RicherScopeGetTypeHelper.cpp,
+ * NullsafeOperatorHelper.cpp and LoopWrittenVariableNames.cpp, registered
+ * after the template argument inference (their signatures name the Scope
+ * interface, php-parser, the Type interface, NodeScopeResolver and
+ * VariableFlow) */
+
+extern zend_class_entry *pt_ce_richer_scope_get_type_helper;
+extern zend_class_entry *pt_ce_nullsafe_operator_helper;
+extern zend_class_entry *pt_ce_loop_written_variable_names;
+void pt_register_richer_scope_get_type_helper();
+void pt_register_nullsafe_operator_helper();
+void pt_register_loop_written_variable_names();
+/* $helper->getIdenticalResult($scope, $expr, $nodeScopeResolver, $leftType,
+ * $rightType) / ->getNotIdenticalResult(...) ($nodeScopeResolver, $leftType,
+ * $rightType NULL or IS_NULL for null): the native body for the native
+ * service, the method otherwise (borrowed); the TypeResult, UNDEF = pending
+ * exception */
+zv::Val pt_richer_scope_get_type_helper_get_identical_result(zval *helper, zval *scope, zval *expr, zval *nodeScopeResolver, zval *leftType, zval *rightType);
+zv::Val pt_richer_scope_get_type_helper_get_not_identical_result(zval *helper, zval *scope, zval *expr, zval *nodeScopeResolver, zval *leftType, zval *rightType);
+/* NullsafeOperatorHelper::getNullsafeShortcircuitedExpr($expr) /
+ * ::getNullsafeShortcircuitedExprRespectingScope($scope, $expr) ($expr a
+ * php-parser Expr, $scope a Scope; borrowed); UNDEF = pending exception */
+zv::Val pt_nullsafe_operator_helper_get_nullsafe_shortcircuited_expr(zval *expr);
+zv::Val pt_nullsafe_operator_helper_get_nullsafe_shortcircuited_expr_respecting_scope(zval *scope, zval *expr);
+/* LoopWrittenVariableNames::collect($loop, $passFlow) ($loop a php-parser
+ * node, $passFlow NULL or IS_NULL for null; borrowed): the names array or
+ * null, UNDEF = pending exception */
+zv::Val pt_loop_written_variable_names_collect(zval *loop, zval *passFlow);
 
 /* }}} */
 

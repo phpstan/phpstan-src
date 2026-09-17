@@ -29,7 +29,6 @@ namespace ptlh {
 
 /* {{{ the PHP collaborators */
 
-inline pt_method_site loopWrittenVariableNamesCollectSite;
 inline pt_method_site nameToLowerStringSite;
 inline pt_method_site containerGetByTypeSite;
 
@@ -37,8 +36,7 @@ inline pt_method_site containerGetByTypeSite;
  * for null) */
 inline zv::Val loopWrittenVariableNames(zval *loop, zval *passFlow)
 {
-	zv::Args argv{loop, passFlow};
-	return pt_call_static_cached(loopWrittenVariableNamesCollectSite, PT_CLASS_LOOP_WRITTEN_VARIABLE_NAMES, PT_LC("collect"), 2, argv);
+	return pt_loop_written_variable_names_collect(loop, passFlow);
 }
 
 /* $name->toLowerString() */

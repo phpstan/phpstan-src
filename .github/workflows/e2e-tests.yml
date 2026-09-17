@@ -1711,7 +1711,7 @@ jobs:
           directory: "e2e"
 
       - name: "Build the turbo extension"
-        run: make -C turbo-ext -j"$(nproc)"
+        run: make build-turbo
 
       - name: "Load the turbo extension through php.ini"
         # TurboProcessRestarter re-executes the process with the loaded php.ini
@@ -1829,7 +1829,7 @@ jobs:
           directory: "e2e"
 
       - name: "Build the turbo extension"
-        run: make -C turbo-ext -j"$(nproc)"
+        run: make build-turbo
 
       - name: "Build the fork-unsafe extension"
         # a model of ext-grpc without grpc.enable_fork_support: its module

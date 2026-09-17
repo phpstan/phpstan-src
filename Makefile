@@ -217,6 +217,35 @@ download-coverage:
 	cp tmp/coverage-download/clover.xml tmp/coverage/clover.xml
 
 
+# Builds turbo-ext/phpstan_turbo.so for the machine and the PHP this runs on,
+# in parallel over the local cores — plain `make -C turbo-ext` builds one
+# translation unit at a time, and there are ~170 of them. The interpreter it
+# builds against is whatever `php-config` is on PATH; point it elsewhere with
+# `make build-turbo PHP_CONFIG=/path/to/php-config` (command-line variables
+# reach the sub-make through MAKEFLAGS). Nothing is installed: load the
+# result with `php -d extension=...`, or from the ini scan dir when the run
+# re-executes itself (TurboProcessRestarter drops a -d extension).
+TURBO_JOBS ?= $(shell getconf _NPROCESSORS_ONLN 2>/dev/null || echo 4)
+
+.PHONY: build-turbo
+build-turbo:
+	$(MAKE) -C turbo-ext -j$(TURBO_JOBS)
+	@# The binary bakes its version from `git log -- turbo-ext/src`, and
+	@# TurboExtensionEnabler activates only the version it expects — a build
+	@# from a shallow clone ("dev"), or one made between a turbo-ext/src
+	@# commit and its `make bump-turbo`, loads but stays inactive, which
+	@# otherwise only shows up as "nothing got faster".
+	@# -n: the machine's php.ini usually loads the extension already, and
+	@# the "Module is already loaded" warning that a second -d then prints
+	@# goes to stdout, i.e. into the version being read. An ini-less probe
+	@# also guarantees the version reported is the binary just built.
+	@BUILT="$$(php -n -d display_errors=stderr -d extension="$(CURDIR)/turbo-ext/phpstan_turbo.so" -r 'echo phpversion("phpstan_turbo");' 2>/dev/null)"; \
+	EXPECTED="$$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"; \
+	echo "built $(CURDIR)/turbo-ext/phpstan_turbo.so$${BUILT:+ (version $$BUILT)}"; \
+	if [ -n "$$BUILT" ] && [ "$$BUILT" != "$$EXPECTED" ]; then \
+		echo "warning: TurboExtensionEnabler expects $$EXPECTED, so this build would load but stay inactive (run 'make bump-turbo' once the turbo-ext/src commit is in)"; \
+	fi
+
 # The expected turbo version is the short SHA of the last commit touching
 # turbo-ext/src (enforced by the phar.yml turbo-version job), so the bump can
 # never be part of the commit it points at. Refreshes an unpushed bump commit

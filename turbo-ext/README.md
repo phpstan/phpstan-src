@@ -331,11 +331,18 @@ cd turbo-ext
 make          # builds phpstan_turbo.so
 ```
 
+or, from the repository root, `make build-turbo` — the same build, run in
+parallel over the machine's cores and followed by a check that the binary's
+baked version is the one `TurboExtensionEnabler` activates (a build made
+between a `turbo-ext/src` commit and its `make bump-turbo` loads but stays
+inactive).
+
 The only requirements are a C++17 compiler and `php-config` on PATH (or
-passed as `make PHP_CONFIG=...`). Both NTS and ZTS interpreters are
-supported — the build inherits thread-safety from the `php-config` it is
-pointed at (ZTS hosts like PMMP's bundled PHP get a matching build; PHPStan
-itself only ever runs the native code single-threaded).
+passed as `make PHP_CONFIG=...`, `make build-turbo PHP_CONFIG=...` from the
+root). Both NTS and ZTS interpreters are supported — the build inherits
+thread-safety from the `php-config` it is pointed at (ZTS hosts like PMMP's
+bundled PHP get a matching build; PHPStan itself only ever runs the native
+code single-threaded).
 
 The standard `phpize && ./configure && make` pipeline works too
 (`config.m4`) — it is what [PIE] drives when it builds the phpstan/turbo

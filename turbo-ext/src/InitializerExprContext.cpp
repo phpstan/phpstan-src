@@ -8,9 +8,10 @@
  * factories. fromScope() is asked ~90K times per self-analysis by the
  * handlers and MutatingScope; it asks the scope through MutatingScope's
  * direct entries and the function reflection (a PHP
- * Php*FromParserNodeReflection) through cached method sites. The
- * BetterReflection adapters fromReflectionParameter() reads stay PHP behind
- * cached sites too. Native callers use the pt_initializer_expr_context_*
+ * Php*FromParserNodeReflection) through cached method sites.
+ * fromReflectionParameter() reads a method's BetterReflection adapters
+ * through the readers of BetterReflectionAccess.cpp, a function's through
+ * cached sites. Native callers use the pt_initializer_expr_context_*
  * entries (support.h) and the inline slot readers of AnalyserValues.h.
  */
 
@@ -41,12 +42,6 @@ pt_method_site pt_iec_function_get_hooked_property_name_site;
 pt_method_site pt_iec_parameter_get_declaring_function_site;
 pt_method_site pt_iec_declaring_function_get_file_name_site;
 pt_method_site pt_iec_declaring_function_get_name_site;
-pt_method_site pt_iec_declaring_function_get_better_reflection_site;
-pt_method_site pt_iec_declaring_function_get_declaring_class_site;
-pt_method_site pt_iec_better_reflection_get_declaring_class_site;
-pt_method_site pt_iec_class_get_name_site;
-pt_method_site pt_iec_better_class_get_name_site;
-pt_method_site pt_iec_better_class_is_trait_site;
 pt_method_site pt_iec_constant_get_file_name_site;
 pt_method_site pt_iec_constant_get_namespace_name_site;
 
@@ -390,42 +385,42 @@ public:
 
 		zv::Val file = callOn(pt_iec_declaring_function_get_file_name_site, functionZv, PT_LC("getfilename"), "getFileName");
 		if (UNEXPECTED(file.isUndef())) return zv::Val();
-		zv::Val betterReflection = callOn(pt_iec_declaring_function_get_better_reflection_site, functionZv, PT_LC("getbetterreflection"), "getBetterReflection");
+		zv::Val betterReflection = pt_reflection_adapter_get_better_reflection(functionZv);
 		if (UNEXPECTED(betterReflection.isUndef())) return zv::Val();
 
 		/* self::parseNamespace($betterReflection->getDeclaringClass()->getName()) */
-		zv::Val betterClass = callOn(pt_iec_better_reflection_get_declaring_class_site, betterReflection.raw(), PT_LC("getdeclaringclass"), "getDeclaringClass");
+		zv::Val betterClass = pt_better_reflection_member_get_declaring_class(betterReflection.raw());
 		if (UNEXPECTED(betterClass.isUndef())) return zv::Val();
-		zv::Val betterClassName = callOn(pt_iec_better_class_get_name_site, betterClass.raw(), PT_LC("getname"), "getName");
+		zv::Val betterClassName = pt_better_reflection_class_get_name(betterClass.raw());
 		if (UNEXPECTED(betterClassName.isUndef())) return zv::Val();
 		if (UNEXPECTED(!requireParseNamespaceString(betterClassName.raw()))) return zv::Val();
 		zv::Val namespace_;
 		if (UNEXPECTED(!parseNamespace(Z_STR_P(betterClassName.raw()), namespace_))) return zv::Val();
 
 		/* $declaringFunction->getDeclaringClass()->getName() */
-		zv::Val className = declaringClassName(functionZv);
+		zv::Val className = pt_member_adapter_get_declaring_class_name(functionZv);
 		if (UNEXPECTED(className.isUndef())) return zv::Val();
 
 		/* $betterReflection->getDeclaringClass()->isTrait() ? $betterReflection->getDeclaringClass()->getName() : null */
-		betterClass = callOn(pt_iec_better_reflection_get_declaring_class_site, betterReflection.raw(), PT_LC("getdeclaringclass"), "getDeclaringClass");
+		betterClass = pt_better_reflection_member_get_declaring_class(betterReflection.raw());
 		if (UNEXPECTED(betterClass.isUndef())) return zv::Val();
-		zv::Val isTrait = callOn(pt_iec_better_class_is_trait_site, betterClass.raw(), PT_LC("istrait"), "isTrait");
-		if (UNEXPECTED(isTrait.isUndef())) return zv::Val();
+		bool isTrait;
+		if (UNEXPECTED(!pt_better_reflection_class_is_trait(betterClass.raw(), isTrait))) return zv::Val();
 		zv::Val traitName = zv::Val::null();
-		if (zend_is_true(isTrait.raw())) {
-			betterClass = callOn(pt_iec_better_reflection_get_declaring_class_site, betterReflection.raw(), PT_LC("getdeclaringclass"), "getDeclaringClass");
+		if (isTrait) {
+			betterClass = pt_better_reflection_member_get_declaring_class(betterReflection.raw());
 			if (UNEXPECTED(betterClass.isUndef())) return zv::Val();
-			traitName = callOn(pt_iec_better_class_get_name_site, betterClass.raw(), PT_LC("getname"), "getName");
+			traitName = pt_better_reflection_class_get_name(betterClass.raw());
 			if (UNEXPECTED(traitName.isUndef())) return zv::Val();
 		}
 
-		zv::Val functionName = callOn(pt_iec_declaring_function_get_name_site, functionZv, PT_LC("getname"), "getName");
+		zv::Val functionName = pt_method_adapter_get_name(functionZv);
 		if (UNEXPECTED(functionName.isUndef())) return zv::Val();
 
 		/* sprintf('%s::%s', $declaringFunction->getDeclaringClass()->getName(), $declaringFunction->getName()) */
-		zv::Val methodClassName = declaringClassName(functionZv);
+		zv::Val methodClassName = pt_member_adapter_get_declaring_class_name(functionZv);
 		if (UNEXPECTED(methodClassName.isUndef())) return zv::Val();
-		zv::Val methodName = callOn(pt_iec_declaring_function_get_name_site, functionZv, PT_LC("getname"), "getName");
+		zv::Val methodName = pt_method_adapter_get_name(functionZv);
 		if (UNEXPECTED(methodName.isUndef())) return zv::Val();
 		zv::Val method = sprintfDoubleColon(methodClassName.raw(), methodName.raw());
 		if (UNEXPECTED(method.isUndef())) return zv::Val();
@@ -594,14 +589,6 @@ private:
 			return zv::Val();
 		}
 		return fromClass(Z_STR_P(className), fileName);
-	}
-
-	/* $declaringFunction->getDeclaringClass()->getName() */
-	static zv::Val declaringClassName(zval *declaringFunction)
-	{
-		zv::Val declaringClass = callOn(pt_iec_declaring_function_get_declaring_class_site, declaringFunction, PT_LC("getdeclaringclass"), "getDeclaringClass");
-		if (UNEXPECTED(declaringClass.isUndef())) return zv::Val();
-		return callOn(pt_iec_class_get_name_site, declaringClass.raw(), PT_LC("getname"), "getName");
 	}
 
 	/* $function->name->toString() of a ClassMethod / PropertyHook */

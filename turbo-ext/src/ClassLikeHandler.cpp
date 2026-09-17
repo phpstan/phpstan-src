@@ -39,7 +39,6 @@ pt_method_site pt_clh_is_anonymous_site;
 pt_method_site pt_clh_has_class_site;
 pt_method_site pt_clh_get_class_site;
 pt_method_site pt_clh_get_anonymous_class_reflection_site;
-pt_method_site pt_clh_native_start_line_site;
 pt_method_site pt_clh_node_start_line_site;
 pt_method_site pt_clh_node_to_reflection_invoke_site;
 pt_method_site pt_clh_file_reader_read_site;
@@ -80,7 +79,7 @@ zv::Val getAnonymousClassReflection(zval *reflectionProvider, zval *classNode, z
 /* $nativeReflection->getStartLine() */
 zv::Val nativeReflectionStartLine(zval *nativeReflection)
 {
-	return pt_call_method_cached(pt_clh_native_start_line_site, Z_OBJ_P(nativeReflection), PT_LC("getstartline"), 0, NULL);
+	return pt_class_adapter_get_start_line(nativeReflection);
 }
 
 /* $stmt->getStartLine() */

@@ -982,7 +982,7 @@ public:
 			zv::Val nativeReflection = pt_class_reflection_get_native_reflection(thisReflection);
 			if (UNEXPECTED(nativeReflection.isUndef())) return zv::Val();
 			bool nativeFinal;
-			if (UNEXPECTED(!pt_type_call_bool(Z_OBJ_P(nativeReflection.raw()), PT_LC("isfinal"), 0, NULL, nativeFinal))) return zv::Val();
+			if (UNEXPECTED(!pt_class_adapter_is_final(nativeReflection.raw(), nativeFinal))) return zv::Val();
 			if (nativeFinal) return storeSuperType(thisDescriptionStr, descriptionStr, transformed(andMaybe, PT_TRI_YES));
 
 			bool thisOverride;
@@ -3179,7 +3179,7 @@ private:
 			zend_type_error("phpstan_turbo: getNativeReflection() must return an object");
 			return false;
 		}
-		zv::Val startLine = pt_type_call(Z_OBJ_P(nativeReflection.raw()), PT_LC("getstartline"), 0, NULL);
+		zv::Val startLine = pt_class_adapter_get_start_line(nativeReflection.raw());
 		if (UNEXPECTED(startLine.isUndef())) return false;
 		zv::Str line = zv::Str::adopt(zval_get_string(startLine.raw()));
 		smart_str_append(description, line.get());

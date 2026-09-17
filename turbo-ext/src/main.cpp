@@ -624,7 +624,6 @@ static PHP_RINIT_FUNCTION(phpstan_turbo)
 	pt_reflection_access_rinit();
 	pt_mutating_scope_rinit();
 	pt_variable_flow_rinit();
-	pt_php_class_reflection_extension_rinit();
 	pt_engine_rinit();
 
 	return SUCCESS;

@@ -403,6 +403,13 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_ADAPTER_REFLECTION_FUNCTION */ {"adapterReflectionFunction", "PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionFunction"},
 	/* PT_CLASS_BETTER_REFLECTION_CONSTANT */ {"betterReflectionConstant", "PHPStan\\BetterReflection\\Reflection\\ReflectionConstant"},
 	/* PT_CLASS_TEMPLATE_ARGUMENT_SOLVER */ {"templateArgumentSolver", "PHPStan\\Analyser\\Generics\\TemplateArgumentSolver"},
+	/* PT_CLASS_BETTER_REFLECTION_METHOD */ {"betterReflectionMethod", "PHPStan\\BetterReflection\\Reflection\\ReflectionMethod"},
+	/* PT_CLASS_ADAPTER_REFLECTION_PROPERTY */ {"adapterReflectionProperty", "PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionProperty"},
+	/* PT_CLASS_BETTER_REFLECTION_PROPERTY */ {"betterReflectionProperty", "PHPStan\\BetterReflection\\Reflection\\ReflectionProperty"},
+	/* PT_CLASS_BETTER_REFLECTION_NAMED_TYPE */ {"betterReflectionNamedType", "PHPStan\\BetterReflection\\Reflection\\ReflectionNamedType"},
+	/* PT_CLASS_BETTER_REFLECTION_PARAMETER */ {"betterReflectionParameter", "PHPStan\\BetterReflection\\Reflection\\ReflectionParameter"},
+	/* PT_CLASS_INTERNAL_LOCATED_SOURCE */ {"internalLocatedSource", "PHPStan\\BetterReflection\\SourceLocator\\Located\\InternalLocatedSource"},
+	/* PT_CLASS_BETTER_REFLECTION_CLASS_CONSTANT */ {"betterReflectionClassConstant", "PHPStan\\BetterReflection\\Reflection\\ReflectionClassConstant"},
 };
 
 zend_class_entry *pt_class(int idx)

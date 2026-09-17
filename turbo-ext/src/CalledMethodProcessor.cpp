@@ -45,7 +45,6 @@ pt_method_site pt_cmp_get_statement_result_site;
 pt_method_site pt_cmp_get_expr_result_site;
 pt_method_site pt_cmp_get_return_statements_site;
 pt_method_site pt_cmp_return_statement_scope_site;
-pt_method_site pt_cmp_native_start_line_site;
 pt_method_site pt_cmp_node_start_line_site;
 pt_method_site pt_cmp_node_end_line_site;
 pt_method_site pt_cmp_name_to_string_site;
@@ -433,7 +432,7 @@ private:
 			memberCallOnNonObject("getStartLine", nativeReflection.raw());
 			return false;
 		}
-		zv::Val startLine = call0(pt_cmp_native_start_line_site, nativeReflection.raw(), PT_LC("getstartline"));
+		zv::Val startLine = pt_class_adapter_get_start_line(nativeReflection.raw());
 		if (UNEXPECTED(startLine.isUndef())) return false;
 		zv::Val nodeStartLine = call0(pt_cmp_node_start_line_site, node, PT_LC("getstartline"));
 		if (UNEXPECTED(nodeStartLine.isUndef())) return false;

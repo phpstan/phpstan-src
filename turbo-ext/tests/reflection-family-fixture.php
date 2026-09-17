@@ -445,3 +445,28 @@ class UsesDocumented
 	use Documented;
 
 }
+
+/**
+ * Traits reached twice — directly and through another trait, and named twice
+ * in one use — for the trait walks (collectTraits(), getTraits()).
+ */
+trait Twice
+{
+
+	use Greets, Nested;
+
+}
+
+class UsesTwice
+{
+
+	use Twice, Greets;
+
+}
+
+class UsesSameTraitTwice
+{
+
+	use Greets, Greets;
+
+}

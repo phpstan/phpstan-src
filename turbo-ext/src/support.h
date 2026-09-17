@@ -452,6 +452,14 @@ enum {
 	PT_CLASS_ADAPTER_REFLECTION_FUNCTION,
 	PT_CLASS_BETTER_REFLECTION_CONSTANT,
 	PT_CLASS_TEMPLATE_ARGUMENT_SOLVER,
+	/* the BetterReflection adapter readers (BetterReflectionAccess.cpp) */
+	PT_CLASS_BETTER_REFLECTION_METHOD,
+	PT_CLASS_ADAPTER_REFLECTION_PROPERTY,
+	PT_CLASS_BETTER_REFLECTION_PROPERTY,
+	PT_CLASS_BETTER_REFLECTION_NAMED_TYPE,
+	PT_CLASS_BETTER_REFLECTION_PARAMETER,
+	PT_CLASS_INTERNAL_LOCATED_SOURCE,
+	PT_CLASS_BETTER_REFLECTION_CLASS_CONSTANT,
 	PT_CLASS_COUNT
 };
 
@@ -1828,9 +1836,6 @@ zv::Val pt_variable_flow_throwing(zval *type, bool canContinue, bool canContainA
  * its constructor instantiates the native LruCache) */
 extern zend_class_entry *pt_ce_php_class_reflection_extension;
 void pt_register_php_class_reflection_extension();
-/* forgets the per-request class-entry/slot cache of the BetterReflection
- * adapter memo readers */
-void pt_php_class_reflection_extension_rinit();
 
 /* {{{ the narrowing value classes (TypeSpecifierContext.cpp,
  * SpecifiedTypes.cpp) — registered at the END of the sequence */
@@ -4313,6 +4318,101 @@ zv::Val pt_nullsafe_operator_helper_get_nullsafe_shortcircuited_expr_respecting_
  * node, $passFlow NULL or IS_NULL for null; borrowed): the names array or
  * null, UNDEF = pending exception */
 zv::Val pt_loop_written_variable_names_collect(zval *loop, zval *passFlow);
+
+/* }}} */
+
+/* {{{ the BetterReflection adapters' answers (BetterReflectionAccess.cpp)
+ *
+ * $adapter->method() of a vendored Adapter\ReflectionClass /
+ * Adapter\ReflectionEnum / Adapter\ReflectionMethod /
+ * Adapter\ReflectionProperty / Adapter\ReflectionNamedType /
+ * Adapter\ReflectionParameter read from the wrapped BetterReflection
+ * object's properties and filled memos for exactly the classes the readers
+ * know, the method otherwise (every argument borrowed; UNDEF / false =
+ * pending exception) */
+
+/* the ReflectionClass / ReflectionEnum an adapter wraps (NULL for any other
+ * adapter or wrapped class) and its filled $cachedMethods / $cachedProperties
+ * memo (NULL while unfilled), borrowed */
+zend_object *pt_better_reflection_class_of_adapter(zval *adapter);
+zval *pt_better_reflection_class_cached_methods(zend_object *betterReflection);
+zval *pt_better_reflection_class_cached_properties(zend_object *betterReflection);
+zv::Val pt_class_adapter_get_name(zval *adapter);
+[[nodiscard]] bool pt_class_adapter_is_final(zval *adapter, bool &out);
+[[nodiscard]] bool pt_class_adapter_is_abstract(zval *adapter, bool &out);
+[[nodiscard]] bool pt_class_adapter_is_read_only(zval *adapter, bool &out);
+[[nodiscard]] bool pt_class_adapter_is_interface(zval *adapter, bool &out);
+[[nodiscard]] bool pt_class_adapter_is_trait(zval *adapter, bool &out);
+[[nodiscard]] bool pt_class_adapter_is_internal(zval *adapter, bool &out);
+zv::Val pt_class_adapter_get_start_line(zval *adapter);
+zv::Val pt_class_adapter_get_doc_comment(zval *adapter);
+zv::Val pt_class_adapter_get_interface_names(zval *adapter);
+/* the getName() / the getInterfaceNames() (flattened) of each interface
+ * $adapter->getInterfaces() returns */
+zv::Val pt_class_adapter_get_interfaces_names(zval *adapter);
+zv::Val pt_class_adapter_get_interfaces_interface_names(zval *adapter);
+/* array_map(fn ($trait) => $trait->getName(), $adapter->getTraits()) — the
+ * names keyed by getTraits()' keys */
+zv::Val pt_class_adapter_get_trait_names(zval *adapter);
+/* ClassReflection::collectTraits($adapter) mapped to the trait names */
+zv::Val pt_class_adapter_collect_trait_names(zval *adapter);
+/* $adapter->getConstructor()?->getName() */
+zv::Val pt_class_adapter_get_constructor_name(zval *adapter);
+
+/* the ReflectionMethod an Adapter\ReflectionMethod wraps, NULL for any other */
+zend_object *pt_better_reflection_method_of_adapter(zval *adapter);
+zv::Val pt_method_adapter_get_name(zval *adapter);
+[[nodiscard]] bool pt_method_adapter_is_static(zval *adapter, bool &out);
+[[nodiscard]] bool pt_method_adapter_is_public(zval *adapter, bool &out);
+[[nodiscard]] bool pt_method_adapter_is_private(zval *adapter, bool &out);
+[[nodiscard]] bool pt_method_adapter_is_final(zval *adapter, bool &out);
+[[nodiscard]] bool pt_method_adapter_is_abstract(zval *adapter, bool &out);
+[[nodiscard]] bool pt_method_adapter_is_internal(zval *adapter, bool &out);
+[[nodiscard]] bool pt_method_adapter_returns_reference(zval *adapter, bool &out);
+[[nodiscard]] bool pt_method_adapter_is_variadic(zval *adapter, bool &out);
+zv::Val pt_method_adapter_get_doc_comment(zval *adapter);
+
+zv::Val pt_property_adapter_get_name(zval *adapter);
+zv::Val pt_property_adapter_get_better_reflection(zval *adapter);
+[[nodiscard]] bool pt_property_adapter_is_static(zval *adapter, bool &out);
+[[nodiscard]] bool pt_property_adapter_is_public(zval *adapter, bool &out);
+[[nodiscard]] bool pt_property_adapter_is_private(zval *adapter, bool &out);
+[[nodiscard]] bool pt_property_adapter_is_protected(zval *adapter, bool &out);
+[[nodiscard]] bool pt_property_adapter_is_final(zval *adapter, bool &out);
+[[nodiscard]] bool pt_property_adapter_is_protected_set(zval *adapter, bool &out);
+[[nodiscard]] bool pt_property_adapter_is_private_set(zval *adapter, bool &out);
+[[nodiscard]] bool pt_property_adapter_is_abstract(zval *adapter, bool &out);
+[[nodiscard]] bool pt_property_adapter_is_read_only(zval *adapter, bool &out);
+[[nodiscard]] bool pt_property_adapter_is_promoted(zval *adapter, bool &out);
+[[nodiscard]] bool pt_property_adapter_is_virtual(zval *adapter, bool &out);
+zv::Val pt_property_adapter_get_doc_comment(zval *adapter);
+
+zv::Val pt_named_type_adapter_get_name(zval *adapter);
+[[nodiscard]] bool pt_named_type_adapter_allows_null(zval *adapter, bool &out);
+[[nodiscard]] bool pt_named_type_adapter_is_identifier(zval *adapter, bool &out);
+
+zv::Val pt_parameter_adapter_get_name(zval *adapter);
+
+/* array_map(fn ($parameter) => $parameter->getName(), $adapter->getParameters()) of an Adapter\ReflectionMethod */
+zv::Val pt_method_adapter_get_parameter_names(zval *adapter);
+/* $adapter->getBetterReflection() of an Adapter\ReflectionMethod / Adapter\ReflectionProperty */
+zv::Val pt_reflection_adapter_get_better_reflection(zval *adapter);
+/* $member->getDeclaringClass() / ->getImplementingClass() of a BetterReflection
+ * ReflectionMethod / ReflectionProperty */
+zv::Val pt_better_reflection_member_get_declaring_class(zval *member);
+zv::Val pt_better_reflection_member_get_implementing_class(zval *member);
+/* $class->getName() / ->isTrait() of a BetterReflection ReflectionClass */
+zv::Val pt_better_reflection_class_get_name(zval *betterReflectionClass);
+[[nodiscard]] bool pt_better_reflection_class_is_trait(zval *betterReflectionClass, bool &out);
+/* whether the object is exactly an Adapter\ReflectionMethod or Adapter\ReflectionProperty
+ * (whose getDeclaringClass() wraps the member's getImplementingClass()) */
+bool pt_reflection_adapter_is_member_adapter(zval *adapter);
+[[nodiscard]] bool pt_method_adapter_is_constructor(zval *adapter, bool &out);
+/* $adapter->getDeclaringClass()->getName() of an Adapter\ReflectionMethod / Adapter\ReflectionProperty */
+zv::Val pt_member_adapter_get_declaring_class_name(zval *adapter);
+/* $adapter->hasConstant($name) && ($c = $adapter->getReflectionConstant($name)) !== false
+ * ? $c->getDeclaringClass()->getName() : null; false = pending exception */
+[[nodiscard]] bool pt_class_adapter_constant_declaring_class_name(zval *adapter, zend_string *name, zv::Val &out);
 
 /* }}} */
 

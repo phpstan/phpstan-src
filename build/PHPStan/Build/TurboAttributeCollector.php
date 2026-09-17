@@ -157,9 +157,12 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionIntersectionType;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionNamedType;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionProperty;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionUnionType;
+use PHPStan\BetterReflection\Reflection\ReflectionClassConstant;
 use PHPStan\BetterReflection\Reflection\ReflectionConstant;
 use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
+use PHPStan\BetterReflection\SourceLocator\Located\InternalLocatedSource;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprFloatNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprIntegerNode;
@@ -437,6 +440,13 @@ final class TurboAttributeCollector
 		'adapterReflectionParameter' => ReflectionParameter::class,
 		'adapterReflectionFunction' => ReflectionFunction::class,
 		'betterReflectionConstant' => ReflectionConstant::class,
+		'betterReflectionMethod' => \PHPStan\BetterReflection\Reflection\ReflectionMethod::class,
+		'adapterReflectionProperty' => ReflectionProperty::class,
+		'betterReflectionProperty' => \PHPStan\BetterReflection\Reflection\ReflectionProperty::class,
+		'betterReflectionNamedType' => \PHPStan\BetterReflection\Reflection\ReflectionNamedType::class,
+		'betterReflectionParameter' => \PHPStan\BetterReflection\Reflection\ReflectionParameter::class,
+		'internalLocatedSource' => InternalLocatedSource::class,
+		'betterReflectionClassConstant' => ReflectionClassConstant::class,
 	];
 
 	private string $realRoot;

@@ -39,7 +39,6 @@ pt_method_site pt_tuh_trait_to_lower_string_site;
 pt_method_site pt_tuh_adaptation_method_to_lower_string_site;
 pt_method_site pt_tuh_stmt_name_to_lower_string_site;
 pt_method_site pt_tuh_ast_name_to_lower_string_site;
-pt_method_site pt_tuh_native_start_line_site;
 pt_method_site pt_tuh_node_start_line_site;
 pt_method_site pt_tuh_get_sub_node_names_site;
 
@@ -356,7 +355,7 @@ private:
 			memberCallOnNonObject("getStartLine", nativeReflection.raw());
 			return false;
 		}
-		zv::Val startLine = pt_call_method_cached(pt_tuh_native_start_line_site, Z_OBJ_P(nativeReflection.raw()), PT_LC("getstartline"), 0, NULL);
+		zv::Val startLine = pt_class_adapter_get_start_line(nativeReflection.raw());
 		if (UNEXPECTED(startLine.isUndef())) return false;
 		zv::Val nodeStartLine = pt_call_method_cached(pt_tuh_node_start_line_site, Z_OBJ_P(node), PT_LC("getstartline"), 0, NULL);
 		if (UNEXPECTED(nodeStartLine.isUndef())) return false;

@@ -554,6 +554,7 @@ foreach ([
 	'ReflectionFamilyFixture\Mixed_', 'ReflectionFamilyFixture\MixinHolder', 'ReflectionFamilyFixture\SealedBase', 'ReflectionFamilyFixture\ImmutableChild',
 	'ReflectionFamilyFixture\DefaultFlags', 'ReflectionFamilyFixture\NamedFlags', 'ReflectionFamilyFixture\Decorated', 'ReflectionFamilyFixture\Cards',
 	'ReflectionFamilyFixture\Documented', 'ReflectionFamilyFixture\UsesDocumented',
+	'ReflectionFamilyFixture\Twice', 'ReflectionFamilyFixture\UsesTwice', 'ReflectionFamilyFixture\UsesSameTraitTwice',
 	'ArrayObject', 'ArrayAccess', 'Countable', 'Traversable', 'Iterator', 'IteratorAggregate', 'Attribute', 'stdClass', 'BackedEnum', 'UnitEnum',
 	'Exception', 'Throwable', 'Closure', 'DateTimeImmutable', 'SplObjectStorage', 'WeakMap', 'ReflectionClass',
 ] as $rfName) {
@@ -578,7 +579,7 @@ $rfSamples['ImmutableChild final'] = $rfSamples['ReflectionFamilyFixture\Immutab
 
 $rfProbeMethods = ['__construct', '__get', '__set', '__isset', 'area', 'greet', 'secret', 'make', 'base', 'hidden', 'label', 'getIterator', 'count', 'name', 'find', 'extra', 'cases', 'from', 'tryFrom', 'offsetGet', 'getMessage', 'nope', '123', 'Legacy'];
 $rfProbeProperties = ['x', 'pub', 'priv', 'count', 'fromTrait', 'a', 's', 'p', 'c', 'v', 'value', 'name', 'nope', 'message', '123'];
-$rfProbeTraits = ['ReflectionFamilyFixture\Greets', 'ReflectionFamilyFixture\Nested', 'ReflectionFamilyFixture\Documented', 'Nope\Missing'];
+$rfProbeTraits = ['ReflectionFamilyFixture\Greets', 'ReflectionFamilyFixture\Nested', 'ReflectionFamilyFixture\Documented', 'ReflectionFamilyFixture\Twice', 'Nope\Missing'];
 $rfProbeConstants = ['DEFAULT', 'LIMIT', 'NAME', 'INHERITED', 'DOCUMENTED', 'TEMPLATED', 'OLD', 'TYPED', 'FIRST', 'nope', 'TARGET_CLASS'];
 $rfProbeEnumCases = ['Hearts', 'Spades', 'A', 'B', 'Nope'];
 $rfProbeClasses = ['ReflectionFamilyFixture\Base', 'ReflectionFamilyFixture\Shape', 'ReflectionFamilyFixture\Circle', 'ReflectionFamilyFixture\Box', 'ReflectionFamilyFixture\HasName', 'ReflectionFamilyFixture\Dynamic', 'Countable', 'Traversable', 'IteratorAggregate', 'stdClass', 'Throwable', 'Nope\Missing'];

@@ -103,15 +103,15 @@ public:
 
 		/* new Identifier($name) for an identifier, new FullyQualified($name)
 		 * otherwise */
-		zv::Val isIdentifier = pt_type_call(reflection, PT_LC("isidentifier"), 0, NULL);
-		if (UNEXPECTED(isIdentifier.isUndef())) return zv::Val();
-		zv::Val name = pt_type_call(reflection, PT_LC("getname"), 0, NULL);
+		bool isIdentifier;
+		if (UNEXPECTED(!pt_named_type_adapter_is_identifier(reflectionType, isIdentifier))) return zv::Val();
+		zv::Val name = pt_named_type_adapter_get_name(reflectionType);
 		if (UNEXPECTED(name.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(name.raw()).isString())) {
 			zend_type_error("phpstan_turbo: %s::getName() must return string", ZSTR_VAL(reflection->ce->name));
 			return zv::Val();
 		}
-		zv::Val typeNode = pt_type_new(zend_is_true(isIdentifier.raw()) ? PT_CLASS_IDENTIFIER : PT_CLASS_FULLY_QUALIFIED, 1, name.raw());
+		zv::Val typeNode = pt_type_new(isIdentifier ? PT_CLASS_IDENTIFIER : PT_CLASS_FULLY_QUALIFIED, 1, name.raw());
 		if (UNEXPECTED(typeNode.isUndef())) return zv::Val();
 
 		/* ParserNodeTypeToPHPStanType::resolve($typeNode, $selfClass) */
@@ -130,9 +130,9 @@ public:
 		}
 
 		/* $reflectionType->allowsNull() → TypeCombinator::addNull($type) */
-		zv::Val allowsNull = pt_type_call(reflection, PT_LC("allowsnull"), 0, NULL);
-		if (UNEXPECTED(allowsNull.isUndef())) return zv::Val();
-		if (zend_is_true(allowsNull.raw())) {
+		bool allowsNull;
+		if (UNEXPECTED(!pt_named_type_adapter_allows_null(reflectionType, allowsNull))) return zv::Val();
+		if (allowsNull) {
 			type = combinator1(PT_LC("addnull"), type.raw());
 			if (UNEXPECTED(type.isUndef())) return zv::Val();
 		}

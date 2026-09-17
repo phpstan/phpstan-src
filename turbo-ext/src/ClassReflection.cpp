@@ -252,6 +252,18 @@ public:
 		return pt_initializer_expr_type_resolver_get_type(&resolver, expr, context);
 	}
 
+	/* $this->reflection for the adapter readers of BetterReflectionAccess.cpp
+	 * (borrowed); NULL with the Error pending when never written */
+	zval *reflectionAdapter() const
+	{
+		zval *reflection = OBJ_PROP_NUM(self, PT_CR_PROP_REFLECTION);
+		if (UNEXPECTED(Z_TYPE_P(reflection) == IS_UNDEF)) {
+			(void) uninitializedProperty("reflection");
+			return NULL;
+		}
+		return reflection;
+	}
+
 	bool reflectionCallBool(const char *lcname, size_t len, bool &out) const
 	{
 		zv::Val result = reflectionCall(lcname, len, 0, NULL);
@@ -937,7 +949,7 @@ public:
 
 		/* $parentClass->getName() — the adapter's getter, pure: read once
 		 * for the uses the twin makes of it */
-		zv::Val parentName = callOn(parentClass.ref(), PT_LC("getname"), 0, NULL);
+		zv::Val parentName = pt_class_adapter_get_name(parentClass.raw());
 		if (UNEXPECTED(parentName.isUndef())) return zv::Val();
 		zend_string *parentNameStr = zval_get_string(parentName.raw());
 		zv::Str parentNameOwned = zv::Str::adopt(parentNameStr);
@@ -1030,7 +1042,7 @@ public:
 			if (UNEXPECTED(parentClass.isUndef())) return zv::Val();
 			if (parentClass.ref().isFalse()) return zv::Val::null();
 
-			zv::Val parentName = callOn(parentClass.ref(), PT_LC("getname"), 0, NULL);
+			zv::Val parentName = pt_class_adapter_get_name(parentClass.raw());
 			if (UNEXPECTED(parentName.isUndef())) return zv::Val();
 			currentClassName = zv::Str::adopt(zval_get_string(parentName.raw()));
 		}
@@ -1056,7 +1068,9 @@ public:
 	{
 		zv::Ref name = slot(PT_CR_PROP_NAME);
 		if (EXPECTED(!name.isNull())) return zv::Val::copyOf(name);
-		zv::Val computed = reflectionCall(PT_LC("getname"), 0, NULL);
+		zval *reflection = reflectionAdapter();
+		if (UNEXPECTED(reflection == NULL)) return zv::Val();
+		zv::Val computed = pt_class_adapter_get_name(reflection);
 		if (UNEXPECTED(computed.isUndef())) return zv::Val();
 		writeSlot(PT_CR_PROP_NAME, zv::Val::copyOf(computed.ref()));
 		return computed;
@@ -1204,14 +1218,13 @@ public:
 
 			zv::Val nativeReflection = getNativeReflection();
 			if (UNEXPECTED(nativeReflection.isUndef())) return zv::Val();
-			zv::Val interfaces = callOn(nativeReflection.ref(), PT_LC("getinterfaces"), 0, NULL);
-			if (UNEXPECTED(interfaces.isUndef())) return zv::Val();
-			if (interfaces.ref().isArray()) {
-				for (auto entry : zv::ArrRef(interfaces.raw())) {
+			/* foreach ($this->getNativeReflection()->getInterfaces() as $interface) — each asked getName() */
+			zv::Val interfaceNames = pt_class_adapter_get_interfaces_names(nativeReflection.raw());
+			if (UNEXPECTED(interfaceNames.isUndef())) return zv::Val();
+			if (interfaceNames.ref().isArray()) {
+				for (auto entry : zv::ArrRef(interfaceNames.raw())) {
 					distance++;
-					zv::Val interfaceName = callOn(entry.value(), PT_LC("getname"), 0, NULL);
-					if (UNEXPECTED(interfaceName.isUndef())) return zv::Val();
-					zend_string *interfaceNameStr = zval_get_string(interfaceName.raw());
+					zend_string *interfaceNameStr = zval_get_string(entry.value().raw());
 					if (!distances.arrRef().exists(interfaceNameStr)) {
 						distances.set(interfaceNameStr, zv::Val::integer(distance));
 					}
@@ -1230,13 +1243,11 @@ public:
 	 * getClassHierarchyDistances() */
 	bool addTraitDistances(zv::Ref classReflection, zend_long &distance, zv::Arr &distances)
 	{
-		zv::Val traits = collectTraits(classReflection);
-		if (UNEXPECTED(traits.isUndef())) return false;
-		for (auto entry : zv::ArrRef(traits.raw())) {
+		zv::Val traitNames = pt_class_adapter_collect_trait_names(classReflection.deref().raw());
+		if (UNEXPECTED(traitNames.isUndef())) return false;
+		for (auto entry : zv::ArrRef(traitNames.raw())) {
 			distance++;
-			zv::Val traitName = callOn(entry.value(), PT_LC("getname"), 0, NULL);
-			if (UNEXPECTED(traitName.isUndef())) return false;
-			zend_string *traitNameStr = zval_get_string(traitName.raw());
+			zend_string *traitNameStr = zval_get_string(entry.value().raw());
 			bool exists = distances.arrRef().exists(traitNameStr);
 			if (!exists) {
 				distances.set(traitNameStr, zv::Val::integer(distance));
@@ -1267,7 +1278,7 @@ public:
 			zv::Val trait = zv::Val::copyOf(queue[head].ref());
 			/* $trait->getName() — the adapter's getter, pure: read once for
 			 * both uses */
-			zv::Val traitName = callOn(trait.ref(), PT_LC("getname"), 0, NULL);
+			zv::Val traitName = pt_class_adapter_get_name(trait.raw());
 			if (UNEXPECTED(traitName.isUndef())) return zv::Val();
 			zv::Str traitNameStr = zv::Str::adopt(zval_get_string(traitName.raw()));
 			if (traits.arrRef().exists(traitNameStr.get())) continue;
@@ -1690,26 +1701,42 @@ public:
 
 	bool hasConstructor(bool &out)
 	{
-		zv::Val constructor = findConstructor();
-		if (UNEXPECTED(constructor.isUndef())) return false;
-		out = !constructor.isNull();
+		zv::Val constructorName = findConstructorName();
+		if (UNEXPECTED(constructorName.isUndef())) return false;
+		out = !constructorName.isNull();
 		return true;
 	}
 
 	zv::Val getConstructor()
 	{
-		zv::Val constructor = findConstructor();
-		if (UNEXPECTED(constructor.isUndef())) return zv::Val();
-		if (constructor.isNull()) {
+		zv::Val name = findConstructorName();
+		if (UNEXPECTED(name.isUndef())) return zv::Val();
+		if (name.isNull()) {
 			pt_throw_should_not_happen();
 			return zv::Val();
 		}
-		zv::Val name = callOn(constructor.ref(), PT_LC("getname"), 0, NULL);
-		if (UNEXPECTED(name.isUndef())) return zv::Val();
 		zend_string *nameStr = zval_get_string(name.raw());
 		zv::Val method = getNativeMethod(nameStr);
 		zend_string_release(nameStr);
 		return method;
+	}
+
+	/* findConstructor()?->getName(): the name of the adapter's constructor
+	 * when findConstructor() returns it, null otherwise — what hasConstructor()
+	 * and getConstructor() ask of it, without the adapter's method wrapper */
+	zv::Val findConstructorName()
+	{
+		zval *reflection = reflectionAdapter();
+		if (UNEXPECTED(reflection == NULL)) return zv::Val();
+		zv::Val name = pt_class_adapter_get_constructor_name(reflection);
+		if (UNEXPECTED(name.isUndef()) || name.isNull()) return name;
+
+		zv::Val legacy = callService(PT_CR_PROP_PHP_VERSION, "phpVersion", PT_LC("supportslegacyconstructor"), 0, NULL);
+		if (UNEXPECTED(legacy.isUndef())) return zv::Val();
+		if (zend_is_true(legacy.raw())) return name;
+
+		if (UNEXPECTED(Z_TYPE_P(name.raw()) != IS_STRING) || !zend_string_equals_literal_ci(Z_STR_P(name.raw()), "__construct")) return zv::Val::null();
+		return name;
 	}
 
 	/* private; the adapter's ReflectionMethod or null */
@@ -1987,9 +2014,23 @@ public:
 		return phpExtensionCall(phpExtension.ref(), pt_php_class_reflection_extension_get_native_property, PT_LC("getnativeproperty"), propertyName);
 	}
 
-	bool isAbstract(bool &out) const { return reflectionCallBool(PT_LC("isabstract"), out); }
-	bool isInterface(bool &out) const { return reflectionCallBool(PT_LC("isinterface"), out); }
-	bool isTrait(bool &out) const { return reflectionCallBool(PT_LC("istrait"), out); }
+	bool isAbstract(bool &out) const
+	{
+		zval *reflection = reflectionAdapter();
+		return EXPECTED(reflection != NULL) && pt_class_adapter_is_abstract(reflection, out);
+	}
+
+	bool isInterface(bool &out) const
+	{
+		zval *reflection = reflectionAdapter();
+		return EXPECTED(reflection != NULL) && pt_class_adapter_is_interface(reflection, out);
+	}
+
+	bool isTrait(bool &out) const
+	{
+		zval *reflection = reflectionAdapter();
+		return EXPECTED(reflection != NULL) && pt_class_adapter_is_trait(reflection, out);
+	}
 
 	/* $this->reflection instanceof ReflectionEnum && $this->reflection->isEnum()
 	 * — the adapter class looked up without autoloading: an undeclared
@@ -2028,7 +2069,11 @@ public:
 		return zv::Val::string(PT_LC("Class"));
 	}
 
-	bool isReadOnly(bool &out) const { return reflectionCallBool(PT_LC("isreadonly"), out); }
+	bool isReadOnly(bool &out) const
+	{
+		zval *reflection = reflectionAdapter();
+		return EXPECTED(reflection != NULL) && pt_class_adapter_is_read_only(reflection, out);
+	}
 
 	bool isBackedEnum(bool &out) const
 	{
@@ -2469,11 +2514,13 @@ public:
 
 		zv::Val nativeReflection = getNativeReflection();
 		if (UNEXPECTED(nativeReflection.isUndef())) return zv::Val();
-		zv::Val interfaceInterfaces = callOn(nativeReflection.ref(), PT_LC("getinterfaces"), 0, NULL);
-		if (UNEXPECTED(interfaceInterfaces.isUndef())) return zv::Val();
-		if (interfaceInterfaces.ref().isArray()) {
-			for (auto entry : zv::ArrRef(interfaceInterfaces.raw())) {
-				if (UNEXPECTED(!collectInterfaceNames(entry.value(), indirectInterfaceNames))) return zv::Val();
+		/* foreach ($this->getNativeReflection()->getInterfaces() as $interfaceInterface)
+		 * foreach ($interfaceInterface->getInterfaceNames() as $name) $indirectInterfaceNames[] = $name; */
+		zv::Val interfaceInterfaceNames = pt_class_adapter_get_interfaces_interface_names(nativeReflection.raw());
+		if (UNEXPECTED(interfaceInterfaceNames.isUndef())) return zv::Val();
+		if (interfaceInterfaceNames.ref().isArray()) {
+			for (auto entry : zv::ArrRef(interfaceInterfaceNames.raw())) {
+				indirectInterfaceNames.push_back(zv::Str::adopt(zval_get_string(entry.value().raw())));
 			}
 		}
 
@@ -2485,7 +2532,7 @@ public:
 		/* array_diff($this->getNativeReflection()->getInterfaceNames(), $indirectInterfaceNames) */
 		zv::Val nativeReflectionAgain = getNativeReflection();
 		if (UNEXPECTED(nativeReflectionAgain.isUndef())) return zv::Val();
-		zv::Val interfaceNames = callOn(nativeReflectionAgain.ref(), PT_LC("getinterfacenames"), 0, NULL);
+		zv::Val interfaceNames = pt_class_adapter_get_interface_names(nativeReflectionAgain.raw());
 		if (UNEXPECTED(interfaceNames.isUndef())) return zv::Val();
 		zv::Arr immediateInterfaces = zv::Arr::create(4);
 		if (!interfaceNames.ref().isArray()) return zv::Val(std::move(immediateInterfaces));
@@ -2551,7 +2598,7 @@ public:
 	/* foreach ($reflection->getInterfaceNames() as $name) { $names[] = $name; } */
 	static bool collectInterfaceNames(zv::Ref reflection, std::vector<zv::Str> &names)
 	{
-		zv::Val interfaceNames = callOn(reflection, PT_LC("getinterfacenames"), 0, NULL);
+		zv::Val interfaceNames = pt_class_adapter_get_interface_names(reflection.deref().raw());
 		if (UNEXPECTED(interfaceNames.isUndef())) return false;
 		if (!interfaceNames.ref().isArray()) return true;
 		for (auto entry : zv::ArrRef(interfaceNames.raw())) {
@@ -2568,23 +2615,25 @@ public:
 		zv::Val nativeReflection = getNativeReflection();
 		if (UNEXPECTED(nativeReflection.isUndef())) return zv::Val();
 
+		/* the traits as their names, under the keys of the traits array the
+		 * twin maps (the adapters themselves are only asked getName()) */
 		zv::Val source;
 		if (recursive) {
-			zv::Val collected = collectTraits(nativeReflection.ref());
+			/* foreach ($this->collectTraits(...) as $trait) $traits[$trait->getName()] = $trait; */
+			zv::Val collected = pt_class_adapter_collect_trait_names(nativeReflection.raw());
 			if (UNEXPECTED(collected.isUndef())) return zv::Val();
 			zv::Arr keyed = zv::Arr::create(countOf(collected.ref()));
 			if (collected.ref().isArray()) {
 				for (auto entry : zv::ArrRef(collected.raw())) {
-					zv::Val name = callOn(entry.value(), PT_LC("getname"), 0, NULL);
-					if (UNEXPECTED(name.isUndef())) return zv::Val();
-					zend_string *nameStr = zval_get_string(name.raw());
+					zend_string *nameStr = zval_get_string(entry.value().raw());
 					keyed.set(nameStr, zv::Val::copyOf(entry.value()));
 					zend_string_release(nameStr);
 				}
 			}
 			source = zv::Val(std::move(keyed));
 		} else {
-			source = callOn(nativeReflection.ref(), PT_LC("gettraits"), 0, NULL);
+			/* $this->getNativeReflection()->getTraits() */
+			source = pt_class_adapter_get_trait_names(nativeReflection.raw());
 			if (UNEXPECTED(source.isUndef())) return zv::Val();
 		}
 
@@ -2592,9 +2641,7 @@ public:
 		zv::Arr traits = zv::Arr::create(countOf(source.ref()));
 		if (source.ref().isArray()) {
 			for (auto entry : zv::ArrRef(source.raw())) {
-				zv::Val name = callOn(entry.value(), PT_LC("getname"), 0, NULL);
-				if (UNEXPECTED(name.isUndef())) return zv::Val();
-				zend_string *nameStr = zval_get_string(name.raw());
+				zend_string *nameStr = zval_get_string(entry.value().raw());
 				zv::Val classReflection = providerGetClass(nameStr);
 				zend_string_release(nameStr);
 				if (UNEXPECTED(classReflection.isUndef())) return zv::Val();
@@ -2640,24 +2687,14 @@ public:
 	{
 		zv::Val nativeReflection = getNativeReflection();
 		if (UNEXPECTED(nativeReflection.isUndef())) return false;
-		zval arg;
-		ZVAL_STR(&arg, name);
-		bool has;
-		if (UNEXPECTED(!callBool(nativeReflection.ref(), PT_LC("hasconstant"), 1, &arg, has))) return false;
-		if (!has) {
+		/* the adapter's hasConstant(), getReflectionConstant() and the
+		 * constant's getDeclaringClass()->getName() */
+		zv::Val declaringClassName;
+		if (UNEXPECTED(!pt_class_adapter_constant_declaring_class_name(nativeReflection.raw(), name, declaringClassName))) return false;
+		if (declaringClassName.isNull()) {
 			out = false;
 			return true;
 		}
-
-		zv::Val reflectionConstant = callOn(nativeReflection.ref(), PT_LC("getreflectionconstant"), 1, &arg);
-		if (UNEXPECTED(reflectionConstant.isUndef())) return false;
-		if (reflectionConstant.ref().isFalse()) {
-			out = false;
-			return true;
-		}
-
-		zv::Val declaringClassName = constantDeclaringClassName(reflectionConstant.ref());
-		if (UNEXPECTED(declaringClassName.isUndef())) return false;
 		zend_string *nameStr = zval_get_string(declaringClassName.raw());
 		bool ok = providerHasClass(nameStr, out);
 		zend_string_release(nameStr);
@@ -2952,18 +2989,9 @@ public:
 	{
 		zv::Val class_ = getNativeReflection();
 		if (UNEXPECTED(class_.isUndef())) return zv::Val();
-		zv::Val traits = collectTraits(class_.ref());
-		if (UNEXPECTED(traits.isUndef())) return zv::Val();
-		zv::Arr traitNames = zv::Arr::create(countOf(traits.ref()));
-		if (traits.ref().isArray()) {
-			for (auto entry : zv::ArrRef(traits.raw())) {
-				zv::Val name = callOn(entry.value(), PT_LC("getname"), 0, NULL);
-				if (UNEXPECTED(name.isUndef())) return zv::Val();
-				traitNames.push(std::move(name));
-			}
-		}
-
-		zv::Val names = zv::Val(std::move(traitNames));
+		/* array_map(static fn (ReflectionClass $class) => $class->getName(), $this->collectTraits($class)) */
+		zv::Val names = pt_class_adapter_collect_trait_names(class_.raw());
+		if (UNEXPECTED(names.isUndef())) return zv::Val();
 		for (;;) {
 			zv::Val parentClass = callOn(class_.ref(), PT_LC("getparentclass"), 0, NULL);
 			if (UNEXPECTED(parentClass.isUndef())) return zv::Val();
@@ -3191,7 +3219,11 @@ public:
 		return true;
 	}
 
-	bool isBuiltin(bool &out) const { return reflectionCallBool(PT_LC("isinternal"), out); }
+	bool isBuiltin(bool &out) const
+	{
+		zval *reflection = reflectionAdapter();
+		return EXPECTED(reflection != NULL) && pt_class_adapter_is_internal(reflection, out);
+	}
 
 	bool isInternal(bool &out)
 	{
@@ -3846,7 +3878,8 @@ public:
 	zv::Val withFinality(bool override_)
 	{
 		bool finalByKeyword = false;
-		if (UNEXPECTED(!reflectionCallBool(PT_LC("isfinal"), finalByKeyword))) return zv::Val();
+		zval *reflection = reflectionAdapter();
+		if (UNEXPECTED(reflection == NULL) || UNEXPECTED(!pt_class_adapter_is_final(reflection, finalByKeyword))) return zv::Val();
 		if (finalByKeyword) return thisValue();
 
 		zv::Ref finalByKeywordOverride = slot(PT_CR_PROP_FINAL_BY_KEYWORD_OVERRIDE);
@@ -3972,7 +4005,9 @@ public:
 	bool resolveReflectionDocComment()
 	{
 		if (!slot(PT_CR_PROP_REFLECTION_DOC_COMMENT).isBool()) return true;
-		zv::Val docComment = reflectionCall(PT_LC("getdoccomment"), 0, NULL);
+		zval *reflection = reflectionAdapter();
+		if (UNEXPECTED(reflection == NULL)) return false;
+		zv::Val docComment = pt_class_adapter_get_doc_comment(reflection);
 		if (UNEXPECTED(docComment.isUndef())) return false;
 		if (docComment.ref().isFalse()) {
 			writeSlot(PT_CR_PROP_REFLECTION_DOC_COMMENT, zv::Val::null());
@@ -4226,7 +4261,8 @@ public:
 			return true;
 		}
 
-		return reflectionCallBool(PT_LC("isfinal"), out);
+		zval *reflection = reflectionAdapter();
+		return EXPECTED(reflection != NULL) && pt_class_adapter_is_final(reflection, out);
 	}
 
 	bool isGeneric(bool &out)

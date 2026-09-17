@@ -235,6 +235,14 @@ zv::Str callString(zval *object, const char *lcname, size_t len, uint32_t argc =
 	return zv::Str::adopt(zend_string_copy(Z_STR_P(result.raw())));
 }
 
+/* a string getter's answer as an owned string; null with the exception
+ * pending when the getter threw */
+zv::Str stringOf(zv::Val result)
+{
+	if (UNEXPECTED(result.isUndef()) || Z_TYPE_P(result.raw()) != IS_STRING) return zv::Str::adopt(NULL);
+	return zv::Str::copyOf(Z_STR_P(result.raw()));
+}
+
 /* }}} */
 
 /* {{{ the BetterReflection adapter's member memos
@@ -257,104 +265,16 @@ zv::Str callString(zval *object, const char *lcname, size_t len, uint32_t argc =
  * these readers answer from them once they are filled and leave every
  * other case — an unfilled memo, an adapter of some other class, the
  * empty name, the exception getMethod() raises for a missing method — to
- * the adapter's own methods. The offsets are resolved on the declaring
- * class entry, which makes them right for ReflectionEnum too (it extends
- * ReflectionClass, and inherited slots keep their offsets); they are
- * per-request, like every other class-entry cache here. */
+ * the adapter's own methods (the class entries and offsets are the shared
+ * BetterReflection readers', BetterReflectionAccess.cpp). */
 
-struct AdapterSlots
-{
-	bool usable;   /* the class adapter and the two memo offsets are resolved */
-	bool unusable; /* a library whose shape these readers do not know */
-	zend_class_entry *classAdapterCe;
-	uint32_t classAdapterOffset;
-	bool enumResolved;
-	zend_class_entry *enumAdapterCe;
-	uint32_t enumAdapterOffset;
-	zend_class_entry *reflectionClassCe;
-	uint32_t cachedMethodsOffset;
-	uint32_t cachedPropertiesOffset;
-};
-
-AdapterSlots pt_pcre_adapter_slots = { false, false, NULL, 0, false, NULL, 0, NULL, 0, 0 };
-
-/*
- * The classes are looked up without autoloading, so a class that is simply
- * not declared yet is retried on the next call — only a library that
- * declares the classes without the memo properties latches the readers off
- * for the request.
- */
-const AdapterSlots *adapterSlots()
-{
-	if (EXPECTED(pt_pcre_adapter_slots.usable)) return &pt_pcre_adapter_slots;
-	if (pt_pcre_adapter_slots.unusable) return NULL;
-	zend_class_entry *classAdapter = pt_class_loaded(PT_CLASS_ADAPTER_REFLECTION_CLASS);
-	zend_class_entry *reflectionClass = pt_class_loaded(PT_CLASS_BETTER_REFLECTION_CLASS);
-	if (EG(exception) != NULL || classAdapter == NULL || reflectionClass == NULL) return NULL;
-	int32_t classAdapterOffset = pt_instance_prop_offset(classAdapter, PT_LC("betterReflectionClass"));
-	int32_t cachedMethods = pt_instance_prop_offset(reflectionClass, PT_LC("cachedMethods"));
-	int32_t cachedProperties = pt_instance_prop_offset(reflectionClass, PT_LC("cachedProperties"));
-	if (classAdapterOffset < 0 || cachedMethods < 0 || cachedProperties < 0) {
-		/* not the library these readers know: every call goes through the
-		 * adapter's methods */
-		pt_pcre_adapter_slots.unusable = true;
-		return NULL;
-	}
-	pt_pcre_adapter_slots.classAdapterCe = classAdapter;
-	pt_pcre_adapter_slots.classAdapterOffset = (uint32_t) classAdapterOffset;
-	pt_pcre_adapter_slots.reflectionClassCe = reflectionClass;
-	pt_pcre_adapter_slots.cachedMethodsOffset = (uint32_t) cachedMethods;
-	pt_pcre_adapter_slots.cachedPropertiesOffset = (uint32_t) cachedProperties;
-	pt_pcre_adapter_slots.usable = true;
-	return &pt_pcre_adapter_slots;
-}
-
-/* the enum adapter's class entry, resolved on the first enum reflection
- * (the class is usually declared later than the class adapter) */
-zend_class_entry *enumAdapterCe()
-{
-	if (EXPECTED(pt_pcre_adapter_slots.enumResolved)) return pt_pcre_adapter_slots.enumAdapterCe;
-	zend_class_entry *ce = pt_class_loaded(PT_CLASS_REFLECTION_ENUM);
-	if (EG(exception) != NULL || ce == NULL) return NULL;
-	int32_t offset = pt_instance_prop_offset(ce, PT_LC("betterReflectionEnum"));
-	pt_pcre_adapter_slots.enumResolved = true;
-	pt_pcre_adapter_slots.enumAdapterCe = offset < 0 ? NULL : ce;
-	pt_pcre_adapter_slots.enumAdapterOffset = offset < 0 ? 0 : (uint32_t) offset;
-	return pt_pcre_adapter_slots.enumAdapterCe;
-}
-
-/* the better-reflection class behind an adapter, or NULL when the adapter
- * is not one of the two this knows */
-zend_object *betterReflectionOf(zval *adapter)
-{
-	const AdapterSlots *slots = adapterSlots();
-	if (UNEXPECTED(slots == NULL) || Z_TYPE_P(adapter) != IS_OBJECT) return NULL;
-	zend_class_entry *ce = Z_OBJCE_P(adapter);
-	uint32_t offset;
-	if (EXPECTED(ce == slots->classAdapterCe)) {
-		offset = slots->classAdapterOffset;
-	} else if (ce == enumAdapterCe()) {
-		offset = pt_pcre_adapter_slots.enumAdapterOffset;
-	} else {
-		return NULL;
-	}
-	zval *inner = OBJ_PROP(Z_OBJ_P(adapter), offset);
-	ZVAL_DEINDIRECT(inner);
-	if (UNEXPECTED(Z_TYPE_P(inner) != IS_OBJECT) || !instanceof_function(Z_OBJCE_P(inner), slots->reflectionClassCe)) return NULL;
-	return Z_OBJ_P(inner);
-}
-
-/* $betterReflection->cachedMethods / ->cachedProperties once the library
- * filled it, NULL while it is still null */
+/* $betterReflection->cachedMethods / ->cachedProperties behind an adapter
+ * the readers know once the library filled it, NULL while it is still null */
 zval *adapterMemo(zval *adapter, bool methods)
 {
-	zend_object *betterReflection = betterReflectionOf(adapter);
+	zend_object *betterReflection = pt_better_reflection_class_of_adapter(adapter);
 	if (betterReflection == NULL) return NULL;
-	const AdapterSlots *slots = &pt_pcre_adapter_slots;
-	uint32_t offset = methods ? slots->cachedMethodsOffset : slots->cachedPropertiesOffset;
-	zval *memo = OBJ_PROP(betterReflection, offset);
-	ZVAL_DEINDIRECT(memo);
-	return Z_TYPE_P(memo) == IS_ARRAY ? memo : NULL;
+	return methods ? pt_better_reflection_class_cached_methods(betterReflection) : pt_better_reflection_class_cached_properties(betterReflection);
 }
 
 /* $methods[strtolower($name)] ?? null over the lowercased-name memo */
@@ -750,7 +670,9 @@ public:
 	/* the ?string a getDocComment() returns as string|false */
 	static zv::Val docCommentOf(zval *reflection)
 	{
-		zv::Val docComment = call(reflection, PT_LC("getdoccomment"));
+		zv::Val docComment = pt_better_reflection_method_of_adapter(reflection) != NULL
+			? pt_method_adapter_get_doc_comment(reflection)
+			: pt_property_adapter_get_doc_comment(reflection);
 		if (UNEXPECTED(docComment.isUndef())) return zv::Val();
 		if (Z_TYPE_P(docComment.raw()) != IS_STRING) return zv::Val::null();
 		return docComment;
@@ -802,15 +724,13 @@ public:
 		zv::Val propertyReflection = call(nativeReflection.raw(), PT_LC("getproperty"), 1, &requestedNameArg);
 		if (UNEXPECTED(propertyReflection.isUndef())) return zv::Val();
 
-		zv::Str propertyNameStr = callString(propertyReflection.raw(), PT_LC("getname"));
+		zv::Str propertyNameStr = stringOf(pt_property_adapter_get_name(propertyReflection.raw()));
 		if (UNEXPECTED(propertyNameStr.isNull())) return zv::Val();
 		zend_string *propertyName = propertyNameStr.get();
 		zval propertyNameArg;
 		ZVAL_STR(&propertyNameArg, propertyName);
 
-		zv::Val propertyDeclaringClass = call(propertyReflection.raw(), PT_LC("getdeclaringclass"));
-		if (UNEXPECTED(propertyDeclaringClass.isUndef())) return zv::Val();
-		zv::Str declaringClassNameStr = callString(propertyDeclaringClass.raw(), PT_LC("getname"));
+		zv::Str declaringClassNameStr = stringOf(pt_member_adapter_get_declaring_class_name(propertyReflection.raw()));
 		if (UNEXPECTED(declaringClassNameStr.isNull())) return zv::Val();
 		zval declaringClassNameArg;
 		ZVAL_STR(&declaringClassNameArg, declaringClassNameStr.get());
@@ -931,8 +851,7 @@ public:
 		bool isFinal = callBool(classReflection, PT_LC("isfinal"), 0, NULL, ok);
 		if (UNEXPECTED(!ok)) return zv::Val();
 		if (!isFinal) {
-			isFinal = callBool(propertyReflection.raw(), PT_LC("isfinal"), 0, NULL, ok);
-			if (UNEXPECTED(!ok)) return zv::Val();
+			if (UNEXPECTED(!pt_property_adapter_is_final(propertyReflection.raw(), isFinal))) return zv::Val();
 		}
 		bool isAllowedPrivateMutation = false;
 
@@ -944,8 +863,8 @@ public:
 		zv::Val declaringTraitName = findPropertyTrait(propertyReflection.raw());
 		if (UNEXPECTED(declaringTraitName.isUndef())) return zv::Val();
 		zv::Val constructorName = zv::Val::null();
-		bool isPromoted = callBool(propertyReflection.raw(), PT_LC("ispromoted"), 0, NULL, ok);
-		if (UNEXPECTED(!ok)) return zv::Val();
+		bool isPromoted;
+		if (UNEXPECTED(!pt_property_adapter_is_promoted(propertyReflection.raw(), isPromoted))) return zv::Val();
 		if (isPromoted) {
 			bool hasConstructor = callBool(declaringClass, PT_LC("hasconstructor"), 0, NULL, ok);
 			if (UNEXPECTED(!ok)) return zv::Val();
@@ -1038,7 +957,7 @@ public:
 			if (Z_TYPE_P(resolvedConstructorPhpDoc.raw()) != IS_NULL) {
 				zv::Val paramTags = call(resolvedConstructorPhpDoc.raw(), PT_LC("getparamtags"));
 				if (UNEXPECTED(paramTags.isUndef())) return zv::Val();
-				zv::Str reflectionName = callString(propertyReflection.raw(), PT_LC("getname"));
+				zv::Str reflectionName = stringOf(pt_property_adapter_get_name(propertyReflection.raw()));
 				if (UNEXPECTED(reflectionName.isNull())) return zv::Val();
 				zval *paramTag = issetIn(paramTags.raw(), reflectionName.get());
 				if (paramTag != NULL) {
@@ -1053,8 +972,7 @@ public:
 			if (UNEXPECTED(fileName.isUndef())) return zv::Val();
 			bool eligible = Z_TYPE_P(fileName.raw()) != IS_NULL;
 			if (eligible) {
-				eligible = callBool(propertyReflection.raw(), PT_LC("isprivate"), 0, NULL, ok);
-				if (UNEXPECTED(!ok)) return zv::Val();
+				if (UNEXPECTED(!pt_property_adapter_is_private(propertyReflection.raw(), eligible))) return zv::Val();
 			}
 			if (eligible) {
 				eligible = !isPromoted;
@@ -1078,7 +996,7 @@ public:
 				zv::Val declaringName = pt_class_reflection_get_name(Z_OBJ_P(declaringClass));
 				if (UNEXPECTED(declaringName.isUndef())) return zv::Val();
 				if (zend_string_equals(Z_STR_P(constructorDeclaringName.raw()), Z_STR_P(declaringName.raw()))) {
-					zv::Str reflectionName = callString(propertyReflection.raw(), PT_LC("getname"));
+					zv::Str reflectionName = stringOf(pt_property_adapter_get_name(propertyReflection.raw()));
 					if (UNEXPECTED(reflectionName.isNull())) return zv::Val();
 					phpDocType = inferPrivatePropertyType(reflectionName.get(), constructor.raw());
 					if (UNEXPECTED(phpDocType.isUndef())) return zv::Val();
@@ -1105,7 +1023,7 @@ public:
 
 		zv::Val getHook = zv::Val::null();
 		zv::Val setHook = zv::Val::null();
-		zv::Val betterReflection = call(propertyReflection.raw(), PT_LC("getbetterreflection"));
+		zv::Val betterReflection = pt_reflection_adapter_get_better_reflection(propertyReflection.raw());
 		if (UNEXPECTED(betterReflection.isUndef())) return zv::Val();
 		static const char *const hookKinds[] = { "get", "set" };
 		for (int kind = 0; kind < 2; kind++) {
@@ -1175,10 +1093,10 @@ public:
 		}
 
 		// a property the phar build made public for its inlined getters keeps its source visibility here
-		bool isPrivate = callBool(propertyReflection.raw(), PT_LC("isprivate"), 0, NULL, ok);
-		if (UNEXPECTED(!ok)) return zv::Val();
-		bool isPublic = callBool(propertyReflection.raw(), PT_LC("ispublic"), 0, NULL, ok);
-		if (UNEXPECTED(!ok)) return zv::Val();
+		bool isPrivate;
+		if (UNEXPECTED(!pt_property_adapter_is_private(propertyReflection.raw(), isPrivate))) return zv::Val();
+		bool isPublic;
+		if (UNEXPECTED(!pt_property_adapter_is_public(propertyReflection.raw(), isPublic))) return zv::Val();
 		if (isPublic) {
 			bool hasPrivateAttribute;
 			if (UNEXPECTED(!hasAttribute(propertyReflection.raw(), PT_CLASS_PRIVATE_PROPERTY_ATTRIBUTE, hasPrivateAttribute))) return zv::Val();
@@ -1309,8 +1227,8 @@ public:
 	{
 		bool ok;
 		if (!includingAnnotations || declaringIsEnum) return zv::Val::null();
-		bool isStatic = callBool(propertyReflection, PT_LC("isstatic"), 0, NULL, ok);
-		if (UNEXPECTED(!ok)) return zv::Val();
+		bool isStatic;
+		if (UNEXPECTED(!pt_property_adapter_is_static(propertyReflection, isStatic))) return zv::Val();
 		if (isStatic) return zv::Val::null();
 		bool allowsDynamicProperties = callBool(classReflection, PT_LC("allowsdynamicproperties"), 0, NULL, ok);
 		if (UNEXPECTED(!ok)) return zv::Val();
@@ -1333,9 +1251,7 @@ public:
 		 * keyed by the very same name — so this is also
 		 * $declaringClassReflection->getName(), which the twin compares the
 		 * scope's class against below */
-		zv::Val propertyDeclaringClass = call(propertyReflection, PT_LC("getdeclaringclass"));
-		if (UNEXPECTED(propertyDeclaringClass.isUndef())) return zv::Val();
-		zv::Str propertyDeclaringClassName = callString(propertyDeclaringClass.raw(), PT_LC("getname"));
+		zv::Str propertyDeclaringClassName = stringOf(pt_member_adapter_get_declaring_class_name(propertyReflection));
 		if (UNEXPECTED(propertyDeclaringClassName.isNull())) return zv::Val();
 
 		bool nativeIsPublic = callBool(nativeProperty, PT_LC("ispublic"), 0, NULL, ok);
@@ -1429,7 +1345,7 @@ public:
 		if (UNEXPECTED(nativeReflection.isUndef())) return zv::Val();
 		zv::Val nativeMethodReflection = adapterGetMethod(nativeReflection.raw(), methodName);
 		if (UNEXPECTED(nativeMethodReflection.isUndef())) return zv::Val();
-		zv::Str realName = callString(nativeMethodReflection.raw(), PT_LC("getname"));
+		zv::Str realName = stringOf(pt_method_adapter_get_name(nativeMethodReflection.raw()));
 		if (UNEXPECTED(realName.isNull())) return zv::Val();
 
 		zval *cachedByRealName = issetNested(slot(PT_PCRE_PROP_METHODS_INCLUDING_ANNOTATIONS), cacheKey.get(), realName.get());
@@ -1475,7 +1391,7 @@ public:
 		}
 		zv::Val nativeMethodReflection = adapterGetMethod(nativeReflection.raw(), methodName);
 		if (UNEXPECTED(nativeMethodReflection.isUndef())) return zv::Val();
-		zv::Str realName = callString(nativeMethodReflection.raw(), PT_LC("getname"));
+		zv::Str realName = stringOf(pt_method_adapter_get_name(nativeMethodReflection.raw()));
 		if (UNEXPECTED(realName.isNull())) return zv::Val();
 		zval *cachedByRealName = issetNested(slot(PT_PCRE_PROP_NATIVE_METHODS), cacheKey.get(), realName.get());
 		if (cachedByRealName != NULL) return zv::Val::copyOf(zv::Ref(cachedByRealName));
@@ -1505,26 +1421,51 @@ public:
 	 * trait used elsewhere, PHP null otherwise. */
 	static zv::Val findMemberTrait(zval *memberReflection)
 	{
-		bool ok;
-		zv::Val betterReflection = call(memberReflection, PT_LC("getbetterreflection"));
+		zv::Val betterReflection = pt_reflection_adapter_get_better_reflection(memberReflection);
 		if (UNEXPECTED(betterReflection.isUndef())) return zv::Val();
-		zv::Val declaringClass = call(betterReflection.raw(), PT_LC("getdeclaringclass"));
+		zv::Val declaringClass = pt_better_reflection_member_get_declaring_class(betterReflection.raw());
 		if (UNEXPECTED(declaringClass.isUndef())) return zv::Val();
-		bool isTrait = callBool(declaringClass.raw(), PT_LC("istrait"), 0, NULL, ok);
-		if (UNEXPECTED(!ok)) return zv::Val();
+		bool isTrait;
+		if (UNEXPECTED(!pt_better_reflection_class_is_trait(declaringClass.raw(), isTrait))) return zv::Val();
 		if (!isTrait) return zv::Val::null();
-		zv::Val adapterDeclaringClass = call(memberReflection, PT_LC("getdeclaringclass"));
+		bool adapterIsTrait;
+		zv::Val adapterDeclaringClass = adapterDeclaringClassOf(memberReflection, betterReflection.raw(), adapterIsTrait);
 		if (UNEXPECTED(adapterDeclaringClass.isUndef())) return zv::Val();
-		bool adapterIsTrait = callBool(adapterDeclaringClass.raw(), PT_LC("istrait"), 0, NULL, ok);
-		if (UNEXPECTED(!ok)) return zv::Val();
-		zv::Str declaringClassName = callString(declaringClass.raw(), PT_LC("getname"));
+		zv::Str declaringClassName = stringOf(pt_better_reflection_class_get_name(declaringClass.raw()));
 		if (UNEXPECTED(declaringClassName.isNull())) return zv::Val();
 		if (adapterIsTrait) {
-			zv::Str adapterDeclaringClassName = callString(adapterDeclaringClass.raw(), PT_LC("getname"));
+			zv::Str adapterDeclaringClassName = adapterDeclaringClassNameOf(memberReflection, adapterDeclaringClass.raw());
 			if (UNEXPECTED(adapterDeclaringClassName.isNull())) return zv::Val();
 			if (zend_string_equals(adapterDeclaringClassName.get(), declaringClassName.get())) return zv::Val::null();
 		}
 		return zv::Val::adoptString(declaringClassName.take());
+	}
+
+	/* $memberReflection->getDeclaringClass() and its isTrait(): for exactly a
+	 * method / property adapter — `new ReflectionClass($this->betterReflection…
+	 * ->getImplementingClass())` — the wrapped implementing class, asked
+	 * directly; the adapter's getter otherwise. UNDEF = pending exception */
+	static zv::Val adapterDeclaringClassOf(zval *memberReflection, zval *betterReflection, bool &isTrait)
+	{
+		if (EXPECTED(pt_reflection_adapter_is_member_adapter(memberReflection))) {
+			zv::Val implementingClass = pt_better_reflection_member_get_implementing_class(betterReflection);
+			if (UNEXPECTED(implementingClass.isUndef())) return zv::Val();
+			if (UNEXPECTED(!pt_better_reflection_class_is_trait(implementingClass.raw(), isTrait))) return zv::Val();
+			return implementingClass;
+		}
+		zv::Val adapterDeclaringClass = call(memberReflection, PT_LC("getdeclaringclass"));
+		if (UNEXPECTED(adapterDeclaringClass.isUndef())) return zv::Val();
+		bool ok;
+		isTrait = callBool(adapterDeclaringClass.raw(), PT_LC("istrait"), 0, NULL, ok);
+		if (UNEXPECTED(!ok)) return zv::Val();
+		return adapterDeclaringClass;
+	}
+
+	/* ->getName() of what adapterDeclaringClassOf() returned */
+	static zv::Str adapterDeclaringClassNameOf(zval *memberReflection, zval *declaringClass)
+	{
+		if (EXPECTED(pt_reflection_adapter_is_member_adapter(memberReflection))) return stringOf(pt_better_reflection_class_get_name(declaringClass));
+		return callString(declaringClass, PT_LC("getname"));
 	}
 
 	/* $this->signatureMapProvider->$method($className, $methodName) as a bool */
@@ -1538,7 +1479,7 @@ public:
 	zv::Val createMethod(zval *classReflection, zend_string *requestedMethodName, zval *methodReflection, bool includingAnnotations)
 	{
 		bool ok;
-		zv::Str methodNameStr = callString(methodReflection, PT_LC("getname"));
+		zv::Str methodNameStr = stringOf(pt_method_adapter_get_name(methodReflection));
 		if (UNEXPECTED(methodNameStr.isNull())) return zv::Val();
 		zval methodNameArg;
 		ZVAL_STR(&methodNameArg, methodNameStr.get());
@@ -1562,9 +1503,7 @@ public:
 					return zv::Val();
 				}
 
-				zv::Val methodDeclaringClass = call(methodReflection, PT_LC("getdeclaringclass"));
-				if (UNEXPECTED(methodDeclaringClass.isUndef())) return zv::Val();
-				zv::Str distanceDeclaringClass = callString(methodDeclaringClass.raw(), PT_LC("getname"));
+				zv::Str distanceDeclaringClass = stringOf(pt_member_adapter_get_declaring_class_name(methodReflection));
 				if (UNEXPECTED(distanceDeclaringClass.isNull())) return zv::Val();
 				zv::Val methodTrait = findMethodTrait(methodReflection);
 				if (UNEXPECTED(methodTrait.isUndef())) return zv::Val();
@@ -1582,9 +1521,7 @@ public:
 			return getNativeMethod(classReflection, requestedMethodName);
 		}
 
-		zv::Val methodDeclaringClass = call(methodReflection, PT_LC("getdeclaringclass"));
-		if (UNEXPECTED(methodDeclaringClass.isUndef())) return zv::Val();
-		zv::Str declaringClassNameStr = callString(methodDeclaringClass.raw(), PT_LC("getname"));
+		zv::Str declaringClassNameStr = stringOf(pt_member_adapter_get_declaring_class_name(methodReflection));
 		if (UNEXPECTED(declaringClassNameStr.isNull())) return zv::Val();
 		zval declaringClassNameArg;
 		ZVAL_STR(&declaringClassNameArg, declaringClassNameStr.get());
@@ -2123,15 +2060,7 @@ public:
 	/* array_map(static fn (ReflectionParameter $p): string => $p->getName(), $reflection->getParameters()) */
 	static zv::Val parameterNamesOf(zval *methodReflection)
 	{
-		zv::Val parameters = call(methodReflection, PT_LC("getparameters"));
-		if (UNEXPECTED(parameters.isUndef()) || Z_TYPE_P(parameters.raw()) != IS_ARRAY) return zv::Val();
-		zv::Arr names = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(parameters.raw())));
-		for (zv::ArrayEntry entry : zv::ArrRef(parameters.raw())) {
-			zv::Str name = callString(entry.value().raw(), PT_LC("getname"));
-			if (UNEXPECTED(name.isNull())) return zv::Val();
-			names.push(zv::Val::string(name.get()));
-		}
-		return zv::Val(std::move(names));
+		return pt_method_adapter_get_parameter_names(methodReflection);
 	}
 
 	/* Mirrors createUserlandMethodReflection(). */
@@ -2147,7 +2076,7 @@ public:
 			if (UNEXPECTED(deprecatedDescription.isUndef())) return zv::Val();
 		}
 
-		zv::Str methodNameStr = callString(methodReflection, PT_LC("getname"));
+		zv::Str methodNameStr = stringOf(pt_method_adapter_get_name(methodReflection));
 		if (UNEXPECTED(methodNameStr.isNull())) return zv::Val();
 		zval methodNameArg;
 		ZVAL_STR(&methodNameArg, methodNameStr.get());
@@ -2159,22 +2088,21 @@ public:
 		if (UNEXPECTED(stubPhpDocPair.isUndef())) return zv::Val();
 		zv::Val phpDocBlockClassReflection = zv::Val::copyOf(zv::Ref(fileDeclaringClass));
 
-		zv::Val betterReflection = call(methodReflection, PT_LC("getbetterreflection"));
+		zv::Val betterReflection = pt_reflection_adapter_get_better_reflection(methodReflection);
 		if (UNEXPECTED(betterReflection.isUndef())) return zv::Val();
-		zv::Val methodDeclaringClass = call(betterReflection.raw(), PT_LC("getdeclaringclass"));
+		zv::Val methodDeclaringClass = pt_better_reflection_member_get_declaring_class(betterReflection.raw());
 		if (UNEXPECTED(methodDeclaringClass.isUndef())) return zv::Val();
 
 		if (Z_TYPE_P(stubPhpDocPair.raw()) == IS_NULL) {
-			bool isTrait = callBool(methodDeclaringClass.raw(), PT_LC("istrait"), 0, NULL, ok);
-			if (UNEXPECTED(!ok)) return zv::Val();
+			bool isTrait;
+			if (UNEXPECTED(!pt_better_reflection_class_is_trait(methodDeclaringClass.raw(), isTrait))) return zv::Val();
 			if (isTrait) {
-				zv::Val adapterDeclaringClass = call(methodReflection, PT_LC("getdeclaringclass"));
+				bool adapterIsTrait;
+				zv::Val adapterDeclaringClass = adapterDeclaringClassOf(methodReflection, betterReflection.raw(), adapterIsTrait);
 				if (UNEXPECTED(adapterDeclaringClass.isUndef())) return zv::Val();
-				bool adapterIsTrait = callBool(adapterDeclaringClass.raw(), PT_LC("istrait"), 0, NULL, ok);
-				if (UNEXPECTED(!ok)) return zv::Val();
-				zv::Str betterName = callString(methodDeclaringClass.raw(), PT_LC("getname"));
+				zv::Str betterName = stringOf(pt_better_reflection_class_get_name(methodDeclaringClass.raw()));
 				if (UNEXPECTED(betterName.isNull())) return zv::Val();
-				zv::Str adapterName = callString(adapterDeclaringClass.raw(), PT_LC("getname"));
+				zv::Str adapterName = adapterDeclaringClassNameOf(methodReflection, adapterDeclaringClass.raw());
 				if (UNEXPECTED(adapterName.isNull())) return zv::Val();
 				if (!adapterIsTrait || !zend_string_equals(betterName.get(), adapterName.get())) {
 					zv::Val reflectionProvider = call(slot(PT_PCRE_PROP_REFLECTION_PROVIDER_PROVIDER), PT_LC("getreflectionprovider"));
@@ -2236,8 +2164,8 @@ public:
 		}
 
 		zv::Arr phpDocParameterTypes = zv::Arr::create(0);
-		bool isConstructor = callBool(methodReflection, PT_LC("isconstructor"), 0, NULL, ok);
-		if (UNEXPECTED(!ok)) return zv::Val();
+		bool isConstructor;
+		if (UNEXPECTED(!pt_method_adapter_is_constructor(methodReflection, isConstructor))) return zv::Val();
 		if (isConstructor) {
 			zv::Val parameters = call(methodReflection, PT_LC("getparameters"));
 			if (UNEXPECTED(parameters.isUndef()) || Z_TYPE_P(parameters.raw()) != IS_ARRAY) return zv::Val();
@@ -2260,8 +2188,8 @@ public:
 				if (UNEXPECTED(adapterDeclaringClass2.isUndef())) return zv::Val();
 				zv::Val parameterProperty = call(adapterDeclaringClass2.raw(), PT_LC("getproperty"), 1, &parameterNameArg);
 				if (UNEXPECTED(parameterProperty.isUndef())) return zv::Val();
-				bool propertyPromoted = callBool(parameterProperty.raw(), PT_LC("ispromoted"), 0, NULL, ok);
-				if (UNEXPECTED(!ok)) return zv::Val();
+				bool propertyPromoted;
+				if (UNEXPECTED(!pt_property_adapter_is_promoted(parameterProperty.raw(), propertyPromoted))) return zv::Val();
 				if (!propertyPromoted) continue;
 				zv::Val propertyDocComment = docCommentOf(parameterProperty.raw());
 				if (UNEXPECTED(propertyDocComment.isUndef())) return zv::Val();
@@ -2993,11 +2921,6 @@ constexpr const char *pcrePhpVersion = "PHPStan\\Php\\PhpVersion";
 constexpr const char *pcreLruCache = "PHPStan\\Internal\\LruCache";
 
 } // namespace
-
-void pt_php_class_reflection_extension_rinit()
-{
-	pt_pcre_adapter_slots = { false, false, NULL, 0, false, NULL, 0, NULL, 0, 0 };
-}
 
 void pt_register_php_class_reflection_extension()
 {

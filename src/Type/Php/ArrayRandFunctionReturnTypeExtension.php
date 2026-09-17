@@ -60,7 +60,7 @@ final class ArrayRandFunctionReturnTypeExtension implements DynamicFunctionRetur
 		return TypeCombinator::union($keyType, $keysListType);
 	}
 
-	public function getPickedKeyType(Type $arrayType): Type
+	private function getPickedKeyType(Type $arrayType): Type
 	{
 		$arrayKeyType = new UnionType([new IntegerType(), new StringType()]);
 		if ($arrayType->isIterableAtLeastOnce()->no()) {
@@ -74,7 +74,7 @@ final class ArrayRandFunctionReturnTypeExtension implements DynamicFunctionRetur
 	/**
 	 * Picking more than one key returns them re-indexed from zero, keeping their original order.
 	 */
-	public function getPickedKeysListType(Type $arrayType): Type
+	private function getPickedKeysListType(Type $arrayType): Type
 	{
 		return TypeCombinator::intersect(
 			new ArrayType(new IntegerType(), $this->getPickedKeyType($arrayType)),

@@ -2,13 +2,19 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node\Arg;
+use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
+use PhpParser\Node\Name\FullyQualified;
+use PhpParser\Node\Scalar\Int_;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\Type;
 use Random\Randomizer;
+use function array_map;
 use function count;
 use function in_array;
 
@@ -20,14 +26,6 @@ use function in_array;
 #[AutowiredService]
 final class RandomizerMethodReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
-
-	public function __construct(
-		private ArrayRandFunctionReturnTypeExtension $arrayRandExtension,
-		private StrShuffleFunctionReturnTypeExtension $strShuffleExtension,
-		private RandomIntFunctionReturnTypeExtension $randomIntExtension,
-	)
-	{
-	}
 
 	public function getClass(): string
 	{
@@ -51,29 +49,43 @@ final class RandomizerMethodReturnTypeExtension implements DynamicMethodReturnTy
 			return null;
 		}
 
-		$firstArgType = $scope->getType($args[0]->value);
-
 		switch ($methodReflection->getName()) {
 			case 'shuffleArray':
-				return $firstArgType->shuffleArray();
+				return $scope->getType($args[0]->value)->shuffleArray();
 			case 'pickArrayKeys':
-				// $num is validated to be between 1 and the size of the array,
-				// so unlike array_rand() a successful call always returns a list.
-				return $this->arrayRandExtension->getPickedKeysListType($firstArgType);
+				// $num is validated to be between 1 and the size of the array, so unlike
+				// array_rand() a successful call always returns a list of keys - which is
+				// what array_rand() returns when asked for more than one key.
+				return $scope->getType($this->createFuncCall('array_rand', [
+					$args[0]->value,
+					new Int_(2),
+				]));
 			case 'shuffleBytes':
-				return $this->strShuffleExtension->getShuffledStringType($firstArgType);
+				return $scope->getType($this->createFuncCall('str_shuffle', [$args[0]->value]));
 			case 'getInt':
 				if (count($args) < 2) {
 					return null;
 				}
 
-				return $this->randomIntExtension->createRange(
-					$firstArgType->toInteger(),
-					$scope->getType($args[1]->value)->toInteger(),
-				);
+				return $scope->getType($this->createFuncCall('random_int', [
+					$args[0]->value,
+					$args[1]->value,
+				]));
 		}
 
 		return null;
+	}
+
+	/**
+	 * @param non-empty-string $functionName
+	 * @param list<Expr> $argValues
+	 */
+	private function createFuncCall(string $functionName, array $argValues): FuncCall
+	{
+		return new FuncCall(
+			new FullyQualified($functionName),
+			array_map(static fn (Expr $argValue): Arg => new Arg($argValue), $argValues),
+		);
 	}
 
 }

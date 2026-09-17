@@ -44,11 +44,7 @@ final class RandomIntFunctionReturnTypeExtension implements DynamicFunctionRetur
 		return $this->createRange($minType, $maxType);
 	}
 
-	/**
-	 * Widest possible range of integers a random number generator bounded by
-	 * $minType and $maxType can produce.
-	 */
-	public function createRange(Type $minType, Type $maxType): Type
+	private function createRange(Type $minType, Type $maxType): Type
 	{
 		$minValues = array_map(
 			static function (Type $type): ?int {

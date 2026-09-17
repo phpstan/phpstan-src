@@ -358,7 +358,7 @@ zend_string *nameToString(zval *name, zv::Val &hold)
 			if (EXPECTED(Z_TYPE_P(value) == IS_STRING)) return Z_STR_P(value);
 		}
 	}
-	hold = pt_type_call(Z_OBJ_P(name), PT_LC("tostring"), 0, NULL);
+	hold = pt_name_node_to_string(name);
 	if (UNEXPECTED(hold.isUndef())) return NULL;
 	if (UNEXPECTED(Z_TYPE_P(hold.raw()) != IS_STRING)) {
 		zend_type_error("%s::toString(): Return value must be of type string, %s returned", ZSTR_VAL(ce->name), zend_zval_value_name(hold.raw()));
@@ -1619,7 +1619,7 @@ private:
 			if (isA(name, PT_CLASS_SCALAR_STRING)) {
 				zval *value = nodeProp(pt_fch_string_value_site, name, PT_LC("value"));
 				if (UNEXPECTED(value == NULL)) return zv::Val();
-				functionName = pt_type_new(PT_CLASS_NAME, 1, value);
+				functionName = pt_name_node_new(PT_CLASS_NAME, value);
 				if (UNEXPECTED(functionName.isUndef())) return zv::Val();
 			} else if (isA(name, PT_CLASS_FUNC_CALL)) {
 				zval *innerName = nodeProp(pt_fch_inner_name_site, name, PT_LC("name"));

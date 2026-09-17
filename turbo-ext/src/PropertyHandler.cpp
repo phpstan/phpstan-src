@@ -34,7 +34,6 @@ namespace {
 
 pt_method_site pt_ph_parser_node_type_resolve_site;
 pt_method_site pt_ph_var_tag_get_type_site;
-pt_method_site pt_ph_identifier_to_string_site;
 pt_method_site pt_ph_get_attributes_fn_site;
 pt_method_site pt_ph_get_attributes_call_site;
 pt_method_site pt_ph_set_attributes_fn_site;
@@ -304,7 +303,7 @@ private:
 				memberCallOnNonObject("toString", name);
 				return false;
 			}
-			propertyName = pt_call_method_cached(pt_ph_identifier_to_string_site, Z_OBJ_P(name), PT_LC("tostring"), 0, NULL);
+			propertyName = pt_name_node_to_string(name);
 			if (UNEXPECTED(propertyName.isUndef())) return false;
 		}
 

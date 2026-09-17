@@ -63,7 +63,6 @@ pt_method_site pt_nh_node_get_method_reflection_site;
 pt_method_site pt_nh_node_get_statement_result_site;
 pt_method_site pt_nh_node_get_impure_points_site;
 pt_method_site pt_nh_get_object_type_or_class_string_object_type_site;
-pt_method_site pt_nh_name_to_string_site;
 pt_method_site pt_nh_template_get_bound_site;
 pt_method_site pt_nh_template_get_name_site;
 pt_method_site pt_nh_template_get_default_site;
@@ -166,7 +165,7 @@ zv::Val getObjectTypeOrClassStringObjectType(zval *type)
 /* $name->toString() */
 zv::Val nameToString(zval *name)
 {
-	return pt_call_method_cached(pt_nh_name_to_string_site, Z_OBJ_P(name), PT_LC("tostring"), 0, NULL);
+	return pt_name_node_to_string(name);
 }
 
 /* $templateType->getBound() / ->getName() / ->getDefault() */
@@ -511,7 +510,7 @@ public:
 			if (objectClassCount == 1) {
 				zval *objectClass = firstOf(objectClasses.raw(), &null);
 				if (UNEXPECTED(objectClass == NULL)) return zv::Val();
-				zv::Val objectClassName = pt_type_new(PT_CLASS_NAME, 1, objectClass);
+				zv::Val objectClassName = pt_name_node_new(PT_CLASS_NAME, objectClass);
 				if (UNEXPECTED(objectClassName.isUndef())) return zv::Val();
 				zv::Val attributes = syntheticSiteAttributes();
 				zv::Arr noArgs = zv::Arr::empty();
@@ -636,7 +635,7 @@ public:
 				className = pt_class_reflection_get_name(Z_OBJ_P(declaringClass.raw()));
 				if (UNEXPECTED(className.isUndef())) return zv::Val();
 			}
-			zv::Val fullyQualified = pt_type_new(PT_CLASS_FULLY_QUALIFIED, 1, className.raw());
+			zv::Val fullyQualified = pt_name_node_new(PT_CLASS_FULLY_QUALIFIED, className.raw());
 			if (UNEXPECTED(fullyQualified.isUndef())) return zv::Val();
 			zval *args = exprArgs(expr);
 			if (UNEXPECTED(args == NULL)) return zv::Val();
@@ -987,11 +986,11 @@ public:
 		zv::Arr resolvedTypes = zv::Arr::empty();
 		zv::Val methodCall;
 		{
-			zv::Val methodClassName = pt_type_new(PT_CLASS_NAME, 1, resolvedClassName.raw());
+			zv::Val methodClassName = pt_name_node_new(PT_CLASS_NAME, resolvedClassName.raw());
 			if (UNEXPECTED(methodClassName.isUndef())) return zv::Val();
 			zv::Val name = pt_extended_method_reflection_call(constructorMethod.raw(), PT_MR_GET_NAME);
 			if (UNEXPECTED(name.isUndef())) return zv::Val();
-			zv::Val identifier = pt_type_new(PT_CLASS_IDENTIFIER, 1, name.raw());
+			zv::Val identifier = pt_name_node_new(PT_CLASS_IDENTIFIER, name.raw());
 			if (UNEXPECTED(identifier.isUndef())) return zv::Val();
 			zval *args = exprArgs(node);
 			if (UNEXPECTED(args == NULL)) return zv::Val();
@@ -1466,7 +1465,7 @@ private:
 			if (UNEXPECTED(parentDeclaringClass.isUndef())) return zv::Val();
 			zv::Val parentClassName = pt_class_reflection_get_name(Z_OBJ_P(parentDeclaringClass.raw()));
 			if (UNEXPECTED(parentClassName.isUndef())) return zv::Val();
-			zv::Val parentName = pt_type_new(PT_CLASS_NAME, 1, parentClassName.raw());
+			zv::Val parentName = pt_name_node_new(PT_CLASS_NAME, parentClassName.raw());
 			if (UNEXPECTED(parentName.isUndef())) return zv::Val();
 			zval *args = exprArgs(node);
 			if (UNEXPECTED(args == NULL)) return zv::Val();

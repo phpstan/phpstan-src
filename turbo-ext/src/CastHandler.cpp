@@ -84,7 +84,7 @@ zv::Val trueConstFetch()
 	zval name;
 	ZVAL_STRINGL(&name, "true", 4);
 	zv::Val nameValue = zv::Val::adopt(name);
-	zv::Val fullyQualified = pt_type_new(PT_CLASS_FULLY_QUALIFIED, 1, nameValue.raw());
+	zv::Val fullyQualified = pt_name_node_new(PT_CLASS_FULLY_QUALIFIED, nameValue.raw());
 	if (UNEXPECTED(fullyQualified.isUndef())) return zv::Val();
 	return pt_type_new(PT_CLASS_CONST_FETCH, 1, fullyQualified.raw());
 }

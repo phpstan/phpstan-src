@@ -369,9 +369,9 @@ public:
 			if (hasMethod) {
 				zv::Val phpVersion = pt_type_call_static(PT_CLASS_PHP_VERSION_STATIC_ACCESSOR, PT_LC("getinstance"), 0, NULL);
 				if (UNEXPECTED(phpVersion.isUndef())) return -1;
-				zv::Val supportsInstanceMethods = pt_type_call(Z_OBJ_P(phpVersion.raw()), PT_LC("supportscallableinstancemethods"), 0, NULL);
-				if (UNEXPECTED(supportsInstanceMethods.isUndef())) return -1;
-				if (!zend_is_true(supportsInstanceMethods.raw())) {
+				bool supportsInstanceMethods;
+				if (UNEXPECTED(!pt_php_version_answer(phpVersion.raw(), PT_PHP_VERSION_SUPPORTS_CALLABLE_INSTANCE_METHODS, supportsInstanceMethods))) return -1;
+				if (!supportsInstanceMethods) {
 					zv::Val scope = pt_type_new(PT_CLASS_OUT_OF_CLASS_SCOPE, 0, NULL);
 					if (UNEXPECTED(scope.isUndef())) return -1;
 					zv::Args methodArgs{methodName.raw(), scope.raw()};
@@ -1134,7 +1134,7 @@ private:
 	{
 		zval nameZv;
 		ZVAL_STR(&nameZv, name);
-		return pt_type_new(PT_CLASS_NAME, 1, &nameZv);
+		return pt_name_node_new(PT_CLASS_NAME, &nameZv);
 	}
 
 	/* FunctionCallableVariant::createFromVariants($function, $function->getVariants()) */

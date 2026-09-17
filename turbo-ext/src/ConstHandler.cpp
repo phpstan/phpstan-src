@@ -38,13 +38,13 @@ zend_never_inline ZEND_COLD void memberCallOnNonObject(const char *method, zval 
 }
 
 /* $name->toString() */
-zv::Val nodeToString(pt_method_site &site, zval *name)
+zv::Val nodeToString(pt_method_site &, zval *name)
 {
 	if (UNEXPECTED(Z_TYPE_P(name) != IS_OBJECT)) {
 		memberCallOnNonObject("toString", name);
 		return zv::Val();
 	}
-	return pt_call_method_cached(site, Z_OBJ_P(name), PT_LC("tostring"), 0, NULL);
+	return pt_name_node_to_string(name);
 }
 
 } // namespace
@@ -155,7 +155,7 @@ private:
 			nameString = nodeToString(pt_ch_identifier_to_string_site, hold.raw());
 		}
 		if (UNEXPECTED(nameString.isUndef())) return zv::Val();
-		return pt_type_new(PT_CLASS_FULLY_QUALIFIED, 1, nameString.raw());
+		return pt_name_node_new(PT_CLASS_FULLY_QUALIFIED, nameString.raw());
 	}
 };
 

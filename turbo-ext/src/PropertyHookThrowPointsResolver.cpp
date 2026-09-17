@@ -351,21 +351,12 @@ zv::Val pt_property_reflection_get_writable_type(zval *reflection)
 
 namespace {
 
-pt_property_site pt_pv_version_id_site;
-pt_method_site pt_pv_supports_property_hooks_site;
 
 } // namespace
 
 bool pt_php_version_supports_property_hooks(zval *phpVersion, bool &out)
 {
-	if (EXPECTED(isExactly(phpVersion, PT_CLASS_PHP_VERSION))) {
-		zval *versionId = declaredSlot(pt_pv_version_id_site, phpVersion, PT_LC("versionId"));
-		if (EXPECTED(Z_TYPE_P(versionId) == IS_LONG)) {
-			out = Z_LVAL_P(versionId) >= 80400;
-			return true;
-		}
-	}
-	return callBool(pt_pv_supports_property_hooks_site, phpVersion, PT_LC("supportspropertyhooks"), 0, NULL, out);
+	return pt_php_version_answer(phpVersion, PT_PHP_VERSION_SUPPORTS_PROPERTY_HOOKS, out);
 }
 
 /* }}} */

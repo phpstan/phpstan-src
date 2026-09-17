@@ -92,6 +92,7 @@ use PhpParser\Node\Identifier;
 use PhpParser\Node\InterpolatedStringPart;
 use PhpParser\Node\Name;
 use PhpParser\Node\Name\FullyQualified;
+use PhpParser\Node\Name\Relative;
 use PhpParser\Node\Param;
 use PhpParser\Node\PropertyHook;
 use PhpParser\Node\Scalar;
@@ -447,6 +448,7 @@ final class TurboAttributeCollector
 		'betterReflectionParameter' => \PHPStan\BetterReflection\Reflection\ReflectionParameter::class,
 		'internalLocatedSource' => InternalLocatedSource::class,
 		'betterReflectionClassConstant' => ReflectionClassConstant::class,
+		'relativeName' => Relative::class,
 	];
 
 	private string $realRoot;

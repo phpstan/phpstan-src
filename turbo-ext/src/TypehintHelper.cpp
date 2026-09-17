@@ -111,7 +111,7 @@ public:
 			zend_type_error("phpstan_turbo: %s::getName() must return string", ZSTR_VAL(reflection->ce->name));
 			return zv::Val();
 		}
-		zv::Val typeNode = pt_type_new(isIdentifier ? PT_CLASS_IDENTIFIER : PT_CLASS_FULLY_QUALIFIED, 1, name.raw());
+		zv::Val typeNode = isIdentifier ? pt_name_node_new(PT_CLASS_IDENTIFIER, name.raw()) : pt_name_node_new(PT_CLASS_FULLY_QUALIFIED, name.raw());
 		if (UNEXPECTED(typeNode.isUndef())) return zv::Val();
 
 		/* ParserNodeTypeToPHPStanType::resolve($typeNode, $selfClass) */

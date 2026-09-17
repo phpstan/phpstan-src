@@ -34,7 +34,6 @@ constexpr const char *pt_cfh_closure_name = "PHPStan\\Analyser\\ExprHandler\\Con
 
 pt_method_site pt_cfh_resolve_constant_type_site;
 pt_method_site pt_cfh_resolve_constant_site;
-pt_method_site pt_cfh_is_fully_qualified_site;
 
 /* $constantResolver->resolveConstantType($constantName, $constantType) */
 zv::Val resolveConstantType(zval *constantResolver, zval *constantName, zval *constantType)
@@ -61,27 +60,8 @@ zval *exprName(zval *expr) { return nodeProperty(pt_cfh_name_site, expr, PT_LC("
 /* $name->toString() / (string) $name */
 zval *nameString(zval *name) { return nodeProperty(pt_cfh_name_name_site, name, PT_LC("name")); }
 
-/* $name->isFullyQualified(): php-parser's own answer for Name and
- * FullyQualified, the method for anything else; false = pending exception */
-[[nodiscard]] bool isFullyQualified(zval *name, bool &out)
-{
-	zend_class_entry *nameCe = pt_class(PT_CLASS_NAME);
-	if (UNEXPECTED(nameCe == NULL)) return false;
-	if (EXPECTED(Z_OBJCE_P(name) == nameCe)) {
-		out = false;
-		return true;
-	}
-	zend_class_entry *fullyQualifiedCe = pt_class(PT_CLASS_FULLY_QUALIFIED);
-	if (UNEXPECTED(fullyQualifiedCe == NULL)) return false;
-	if (Z_OBJCE_P(name) == fullyQualifiedCe) {
-		out = true;
-		return true;
-	}
-	zv::Val result = pt_call_method_cached(pt_cfh_is_fully_qualified_site, Z_OBJ_P(name), PT_LC("isfullyqualified"), 0, NULL);
-	if (UNEXPECTED(result.isUndef())) return false;
-	out = zend_is_true(result.raw());
-	return true;
-}
+/* $name->isFullyQualified() (NameNodeAccess.cpp); false = pending exception */
+[[nodiscard]] bool isFullyQualified(zval *name, bool &out) { return pt_name_node_is_fully_qualified(name, out); }
 
 /* }}} */
 
@@ -181,7 +161,7 @@ private:
 				zv::Arr partsArray = zv::Arr::create(2);
 				partsArray.push(std::move(parts[0]));
 				partsArray.push(std::move(parts[1]));
-				namespacedName = pt_type_new(PT_CLASS_FULLY_QUALIFIED, 1, partsArray.raw());
+				namespacedName = pt_name_node_new(PT_CLASS_FULLY_QUALIFIED, partsArray.raw());
 				if (UNEXPECTED(namespacedName.isUndef())) return zv::Val();
 			}
 		}
@@ -191,7 +171,7 @@ private:
 			if (UNEXPECTED(name == NULL)) return zv::Val();
 			zval *nameValue = nameString(name);
 			if (UNEXPECTED(nameValue == NULL)) return zv::Val();
-			globalName = pt_type_new(PT_CLASS_FULLY_QUALIFIED, 1, nameValue);
+			globalName = pt_name_node_new(PT_CLASS_FULLY_QUALIFIED, nameValue);
 			if (UNEXPECTED(globalName.isUndef())) return zv::Val();
 		}
 

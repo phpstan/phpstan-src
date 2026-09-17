@@ -69,13 +69,13 @@ zend_never_inline ZEND_COLD void memberCallOnNonObject(const char *method, zval 
 }
 
 /* $node->toLowerString() of a Name / Identifier */
-zv::Val toLowerString(pt_method_site &site, zval *node)
+zv::Val toLowerString(pt_method_site &, zval *node)
 {
 	if (UNEXPECTED(Z_TYPE_P(node) != IS_OBJECT)) {
 		memberCallOnNonObject("toLowerString", node);
 		return zv::Val();
 	}
-	return pt_call_method_cached(site, Z_OBJ_P(node), PT_LC("tolowerstring"), 0, NULL);
+	return pt_name_node_to_lower_string(node);
 }
 
 /* clone $node */
@@ -343,7 +343,7 @@ private:
 			zend_throw_error(NULL, "Typed property %s::$namespacedName must not be accessed before initialization", ZSTR_VAL(Z_OBJCE_P(node)->name));
 			return false;
 		}
-		zend_string *nodeName = zval_try_get_string(namespacedName);
+		zend_string *nodeName = pt_name_node_cast_string(namespacedName);
 		if (UNEXPECTED(nodeName == NULL)) return false;
 		bool sameName = Z_TYPE_P(traitName.raw()) == IS_STRING && zend_string_equals(Z_STR_P(traitName.raw()), nodeName);
 		zend_string_release(nodeName);

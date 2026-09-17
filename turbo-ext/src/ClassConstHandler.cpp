@@ -152,7 +152,7 @@ private:
 		}
 		zv::Val className = pt_class_reflection_get_name(Z_OBJ_P(classReflection.raw()));
 		if (UNEXPECTED(className.isUndef())) return zv::Val();
-		zv::Val name = pt_type_new(PT_CLASS_FULLY_QUALIFIED, 1, className.raw());
+		zv::Val name = pt_name_node_new(PT_CLASS_FULLY_QUALIFIED, className.raw());
 		if (UNEXPECTED(name.isUndef())) return zv::Val();
 		zval *constName = ptsh::readNodeProperty(pt_cch_const_name_site, constNode, PT_LC("name"));
 		if (UNEXPECTED(constName == NULL)) return zv::Val();

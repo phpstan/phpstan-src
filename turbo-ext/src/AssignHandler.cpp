@@ -2190,7 +2190,7 @@ private:
 	static zv::Val newConstFetch(const char *name, size_t len)
 	{
 		zv::Val nameString = zv::Val::string(name, len);
-		AH_VAL(nameNode, pt_type_new(PT_CLASS_NAME, 1, nameString.raw()));
+		AH_VAL(nameNode, pt_name_node_new(PT_CLASS_NAME, nameString.raw()));
 		return pt_type_new(PT_CLASS_CONST_FETCH, 1, nameNode.raw());
 	}
 

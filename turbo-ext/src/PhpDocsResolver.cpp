@@ -101,7 +101,6 @@ pt_method_site pt_pdr_get_params_fn_site;
 pt_method_site pt_pdr_get_params_call_site;
 pt_method_site pt_pdr_get_return_type_fn_site;
 pt_method_site pt_pdr_get_return_type_call_site;
-pt_method_site pt_pdr_to_string_site;
 
 /* the '__construct' literal (module startup) */
 zend_string *pt_pdr_construct = nullptr;
@@ -202,7 +201,7 @@ zv::Val identifierToString(zval *identifier)
 		memberCallOnNonObject("toString", identifier);
 		return zv::Val();
 	}
-	return call0(pt_pdr_to_string_site, identifier, PT_LC("tostring"));
+	return pt_name_node_to_string(identifier);
 }
 
 } // namespace

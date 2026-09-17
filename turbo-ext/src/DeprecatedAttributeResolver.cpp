@@ -76,13 +76,13 @@ zend_never_inline ZEND_COLD bool foreachOnNonArray(zval *value)
 }
 
 /* $name->toString() === $literal; false = pending exception */
-[[nodiscard]] bool nameEquals(pt_method_site &site, zval *name, const char *literal, size_t len, bool &out)
+[[nodiscard]] bool nameEquals(pt_method_site &, zval *name, const char *literal, size_t len, bool &out)
 {
 	if (UNEXPECTED(Z_TYPE_P(name) != IS_OBJECT)) {
 		memberCallOnNonObject("toString", name);
 		return false;
 	}
-	zv::Val string = pt_call_method_cached(site, Z_OBJ_P(name), PT_LC("tostring"), 0, NULL);
+	zv::Val string = pt_name_node_to_string(name);
 	if (UNEXPECTED(string.isUndef())) return false;
 	out = Z_TYPE_P(string.raw()) == IS_STRING && zend_string_equals_cstr(Z_STR_P(string.raw()), literal, len);
 	return true;

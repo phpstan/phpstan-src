@@ -432,7 +432,7 @@ public:
 			if (UNEXPECTED(attributes.isUndef())) return zv::Val();
 			zv::Val name = zv::Val::null();
 			if (!stringKey.isUndef()) {
-				name = pt_type_new(PT_CLASS_IDENTIFIER, 1, stringKey.raw());
+				name = pt_name_node_new(PT_CLASS_IDENTIFIER, stringKey.raw());
 				if (UNEXPECTED(name.isUndef())) return zv::Val();
 			}
 			zv::Args argArgs{value, byRef, unpack, attributes.raw(), name.raw()};

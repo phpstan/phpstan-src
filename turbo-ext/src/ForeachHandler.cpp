@@ -1186,7 +1186,7 @@ private:
 		if (UNEXPECTED(identical.isUndef())) return zv::Val();
 		zval isObject;
 		ZVAL_INTERNED_STR(&isObject, pt_feh_is_object);
-		zv::Val name = pt_type_new(PT_CLASS_FULLY_QUALIFIED, 1, &isObject);
+		zv::Val name = pt_name_node_new(PT_CLASS_FULLY_QUALIFIED, &isObject);
 		if (UNEXPECTED(name.isUndef())) return zv::Val();
 		zv::Val arg = pt_type_new(PT_CLASS_ARG, 1, iteratee);
 		if (UNEXPECTED(arg.isUndef())) return zv::Val();

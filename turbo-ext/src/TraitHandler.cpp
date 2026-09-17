@@ -22,7 +22,6 @@ zend_class_entry *pt_ce_trait_handler = nullptr;
 
 namespace {
 
-pt_method_site pt_th_name_to_string_site;
 pt_property_site pt_th_namespaced_name_site;
 pt_property_site pt_th_name_site;
 
@@ -61,7 +60,7 @@ public:
 		bool error = false;
 		if (ptsh::isInstanceOf(name, PT_CLASS_NAME, error)) {
 			zv::Val nameHold = zv::Val::copyOf(zv::Ref(name));
-			declaredSymbolName = pt_call_method_cached(pt_th_name_to_string_site, Z_OBJ_P(nameHold.raw()), PT_LC("tostring"), 0, NULL);
+			declaredSymbolName = pt_name_node_to_string(nameHold.raw());
 			if (UNEXPECTED(declaredSymbolName.isUndef())) return zv::Val();
 		}
 		if (UNEXPECTED(error)) return zv::Val();

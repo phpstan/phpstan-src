@@ -252,6 +252,16 @@ public:
 		return pt_initializer_expr_type_resolver_get_type(&resolver, expr, context);
 	}
 
+	/* $this->phpVersion-><query>() (PhpVersionAccess.cpp); false = pending exception */
+	bool phpVersionQuery(pt_php_version_query query, bool &out) const
+	{
+		zend_object *phpVersion = service(PT_CR_PROP_PHP_VERSION, "phpVersion");
+		if (UNEXPECTED(phpVersion == NULL)) return false;
+		zval phpVersionZv;
+		ZVAL_OBJ(&phpVersionZv, phpVersion);
+		return pt_php_version_answer(&phpVersionZv, query, out);
+	}
+
 	/* $this->reflection for the adapter readers of BetterReflectionAccess.cpp
 	 * (borrowed); NULL with the Error pending when never written */
 	zval *reflectionAdapter() const
@@ -1310,9 +1320,9 @@ public:
 			return true;
 		}
 
-		zv::Val deprecates = callService(PT_CR_PROP_PHP_VERSION, "phpVersion", PT_LC("deprecatesdynamicproperties"), 0, NULL);
-		if (UNEXPECTED(deprecates.isUndef())) return false;
-		if (!zend_is_true(deprecates.raw())) {
+		bool deprecates;
+		if (UNEXPECTED(!phpVersionQuery(PT_PHP_VERSION_DEPRECATES_DYNAMIC_PROPERTIES, deprecates))) return false;
+		if (!deprecates) {
 			out = true;
 			return true;
 		}
@@ -1731,9 +1741,9 @@ public:
 		zv::Val name = pt_class_adapter_get_constructor_name(reflection);
 		if (UNEXPECTED(name.isUndef()) || name.isNull()) return name;
 
-		zv::Val legacy = callService(PT_CR_PROP_PHP_VERSION, "phpVersion", PT_LC("supportslegacyconstructor"), 0, NULL);
-		if (UNEXPECTED(legacy.isUndef())) return zv::Val();
-		if (zend_is_true(legacy.raw())) return name;
+		bool legacy;
+		if (UNEXPECTED(!phpVersionQuery(PT_PHP_VERSION_SUPPORTS_LEGACY_CONSTRUCTOR, legacy))) return zv::Val();
+		if (legacy) return name;
 
 		if (UNEXPECTED(Z_TYPE_P(name.raw()) != IS_STRING) || !zend_string_equals_literal_ci(Z_STR_P(name.raw()), "__construct")) return zv::Val::null();
 		return name;
@@ -1746,9 +1756,9 @@ public:
 		if (UNEXPECTED(constructor.isUndef())) return zv::Val();
 		if (constructor.isNull()) return zv::Val::null();
 
-		zv::Val legacy = callService(PT_CR_PROP_PHP_VERSION, "phpVersion", PT_LC("supportslegacyconstructor"), 0, NULL);
-		if (UNEXPECTED(legacy.isUndef())) return zv::Val();
-		if (zend_is_true(legacy.raw())) return constructor;
+		bool legacy;
+		if (UNEXPECTED(!phpVersionQuery(PT_PHP_VERSION_SUPPORTS_LEGACY_CONSTRUCTOR, legacy))) return zv::Val();
+		if (legacy) return constructor;
 
 		zv::Val name = callOn(constructor.ref(), PT_LC("getname"), 0, NULL);
 		if (UNEXPECTED(name.isUndef())) return zv::Val();
@@ -3340,7 +3350,7 @@ public:
 				if (key != NULL) {
 					zval identifierArg;
 					ZVAL_STR(&identifierArg, key);
-					name = pt_type_new(PT_CLASS_IDENTIFIER, 1, &identifierArg);
+					name = pt_name_node_new(PT_CLASS_IDENTIFIER, &identifierArg);
 					if (UNEXPECTED(name.isUndef())) return zv::Val();
 				}
 				zval argArgs[5];
@@ -3376,7 +3386,7 @@ public:
 		} else {
 			zval classNameArg;
 			ZVAL_STR(&classNameArg, attributeName);
-			zv::Val class_ = pt_type_new(PT_CLASS_FULLY_QUALIFIED, 1, &classNameArg);
+			zv::Val class_ = pt_name_node_new(PT_CLASS_FULLY_QUALIFIED, &classNameArg);
 			if (UNEXPECTED(class_.isUndef())) return zv::Val();
 			zv::Val constructorName = attributeConstructor.ref().isObject()
 				? pt_extended_method_reflection_call(attributeConstructor.raw(), PT_MR_GET_NAME)

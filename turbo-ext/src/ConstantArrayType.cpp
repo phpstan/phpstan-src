@@ -2333,9 +2333,9 @@ public:
 			}
 
 			if (has == PT_TRI_YES) {
-				zv::Val supports = pt_type_call(Z_OBJ_P(phpVersion.raw()), PT_LC("supportscallableinstancemethods"), 0, NULL);
-				if (UNEXPECTED(supports.isUndef())) return zv::Val();
-				if (!zend_is_true(supports.raw())) {
+				bool supports;
+				if (UNEXPECTED(!pt_php_version_answer(phpVersion.raw(), PT_PHP_VERSION_SUPPORTS_CALLABLE_INSTANCE_METHODS, supports))) return zv::Val();
+				if (!supports) {
 					zend_long isString = pt_type_op_trinary(Z_OBJ_P(classOrObject.raw()), PT_OP_IS_STRING, 0, NULL);
 					if (UNEXPECTED(isString < 0)) return zv::Val();
 					if (isString == PT_TRI_YES) {

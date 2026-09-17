@@ -214,7 +214,7 @@ public:
 			return zv::Val();
 		}
 
-		zv::Val methodName = pt_type_call(Z_OBJ_P(name), PT_LC("tostring"), 0, NULL);
+		zv::Val methodName = pt_name_node_to_string(name);
 		if (UNEXPECTED(methodName.isUndef())) return zv::Val();
 		if (UNEXPECTED(Z_TYPE_P(methodName.raw()) != IS_STRING)) {
 			zend_type_error("PHPStan\\Analyser\\MutatingScope::getMethodReflection(): Argument #2 ($methodName) must be of type string, %s given", zend_zval_value_name(methodName.raw()));

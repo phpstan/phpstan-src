@@ -1228,7 +1228,7 @@ private:
 			if (isName) {
 				zval constructName;
 				ZVAL_STR(&constructName, pt_ah_construct);
-				zv::Val identifier = pt_type_new(PT_CLASS_IDENTIFIER, 1, &constructName);
+				zv::Val identifier = pt_name_node_new(PT_CLASS_IDENTIFIER, &constructName);
 				if (UNEXPECTED(identifier.isUndef())) return zv::Val();
 				zv::Val args = callArgs(callLike);
 				if (UNEXPECTED(args.isUndef())) return zv::Val();

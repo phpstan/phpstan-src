@@ -1372,9 +1372,9 @@ public:
 			(void) uninitializedProperty("phpVersion");
 			return false;
 		}
-		zv::Val supports = pt_type_call(phpVersion.asObject(), PT_LC("supportsreadonlyproperties"), 0, NULL);
-		if (UNEXPECTED(supports.isUndef())) return false;
-		if (!zend_is_true(supports.raw())) {
+		bool supports;
+		if (UNEXPECTED(!pt_php_version_answer(phpVersion.raw(), PT_PHP_VERSION_SUPPORTS_READ_ONLY_PROPERTIES, supports))) return false;
+		if (!supports) {
 			out = false;
 			return true;
 		}
@@ -1994,7 +1994,9 @@ public:
 	/* false = pending exception */
 	[[nodiscard]] bool hasConstant(zend_object *name, bool &out)
 	{
-		zv::Val nameString = pt_type_call(name, PT_LC("tostring"), 0, NULL);
+		zval nameNodeZv;
+		ZVAL_OBJ(&nameNodeZv, name);
+		zv::Val nameString = pt_name_node_to_string(&nameNodeZv);
 		if (UNEXPECTED(nameString.isUndef())) return false;
 		bool isCompilerHaltOffset = Z_TYPE_P(nameString.raw()) == IS_STRING && zend_string_equals_literal(Z_STR_P(nameString.raw()), "__COMPILER_HALT_OFFSET__");
 		if (isCompilerHaltOffset) return fileHasCompilerHaltStatementCalls(out);
@@ -3413,8 +3415,8 @@ public:
 		/* (string) $name */
 		zval nameZv;
 		ZVAL_OBJ(&nameZv, name);
-		zv::Str originalClass = zv::Str::adopt(zval_get_string(&nameZv));
-		if (UNEXPECTED(EG(exception))) return zv::Val();
+		zv::Str originalClass = zv::Str::adopt(pt_name_node_cast_string(&nameZv));
+		if (UNEXPECTED(originalClass.isNull())) return zv::Val();
 		bool inClass;
 		if (UNEXPECTED(!thisIsInClass(inClass))) return zv::Val();
 		if (inClass) {
@@ -3456,7 +3458,9 @@ public:
 	/** @api */
 	zv::Val resolveTypeByName(zend_object *name)
 	{
-		zv::Val lower = pt_type_call(name, PT_LC("tolowerstring"), 0, NULL);
+		zval nameNodeZv;
+		ZVAL_OBJ(&nameNodeZv, name);
+		zv::Val lower = pt_name_node_to_lower_string(&nameNodeZv);
 		if (UNEXPECTED(lower.isUndef())) return zv::Val();
 		if (Z_TYPE_P(lower.raw()) == IS_STRING && zend_string_equals_literal(Z_STR_P(lower.raw()), "static")) {
 			bool inClass;
@@ -3698,7 +3702,7 @@ public:
 		zv::Arr args = zv::Arr::create(1);
 		args.push(std::move(arg));
 		zv::Val checkName = zv::Val::string(check, checkLen);
-		zv::Val fullyQualified = pt_type_new(PT_CLASS_FULLY_QUALIFIED, 1, checkName.raw());
+		zv::Val fullyQualified = pt_name_node_new(PT_CLASS_FULLY_QUALIFIED, checkName.raw());
 		if (UNEXPECTED(fullyQualified.isUndef())) return false;
 		zv::Args argv{fullyQualified.raw(), args.raw()};
 		zv::Val expr = pt_type_new(PT_CLASS_FUNC_CALL, 2, argv);
@@ -3874,7 +3878,7 @@ public:
 	zv::Val getPhpVersion()
 	{
 		zv::Val constantName = zv::Val::string(PT_LC("PHP_VERSION_ID"));
-		zv::Val nameNode = pt_type_new(PT_CLASS_NAME, 1, constantName.raw());
+		zv::Val nameNode = pt_name_node_new(PT_CLASS_NAME, constantName.raw());
 		if (UNEXPECTED(nameNode.isUndef())) return zv::Val();
 		zv::Val constType = getGlobalConstantType(Z_OBJ_P(nameNode.raw()));
 		if (UNEXPECTED(constType.isUndef())) return zv::Val();
@@ -3920,7 +3924,7 @@ public:
 		zval *maxPhpVersion = bounds[1];
 		bool narrowed = minPhpVersion != NULL;
 		if (!narrowed && maxPhpVersion != NULL) {
-			zv::Val maxVersionId = pt_type_call(Z_OBJ_P(maxPhpVersion), PT_LC("getversionid"), 0, NULL);
+			zv::Val maxVersionId = pt_php_version_get_version_id(maxPhpVersion);
 			if (UNEXPECTED(maxVersionId.isUndef())) return zv::Val();
 			narrowed = !(maxVersionId.ref().isLong() && maxVersionId.ref().asLong() == PT_MS_MAX_PHP_VERSION);
 		}
@@ -3928,14 +3932,14 @@ public:
 			zval interval[2];
 			zv::Val minVersionId, maxVersionId;
 			if (minPhpVersion != NULL) {
-				minVersionId = pt_type_call(Z_OBJ_P(minPhpVersion), PT_LC("getversionid"), 0, NULL);
+				minVersionId = pt_php_version_get_version_id(minPhpVersion);
 				if (UNEXPECTED(minVersionId.isUndef())) return zv::Val();
 				ZVAL_COPY_VALUE(&interval[0], minVersionId.raw());
 			} else {
 				ZVAL_LONG(&interval[0], PT_MS_PHP_MIN_ANALYZABLE_VERSION_ID);
 			}
 			if (maxPhpVersion != NULL) {
-				maxVersionId = pt_type_call(Z_OBJ_P(maxPhpVersion), PT_LC("getversionid"), 0, NULL);
+				maxVersionId = pt_php_version_get_version_id(maxPhpVersion);
 				if (UNEXPECTED(maxVersionId.isUndef())) return zv::Val();
 				ZVAL_COPY_VALUE(&interval[1], maxVersionId.raw());
 			} else {
@@ -3948,7 +3952,7 @@ public:
 
 		zv::Ref phpVersion = slot(PT_MS_PROP_PHP_VERSION);
 		if (UNEXPECTED(!phpVersion.isObject())) return uninitializedProperty("phpVersion");
-		zv::Val versionId = pt_type_call(phpVersion.asObject(), PT_LC("getversionid"), 0, NULL);
+		zv::Val versionId = pt_php_version_get_version_id(phpVersion.raw());
 		if (UNEXPECTED(versionId.isUndef())) return zv::Val();
 		zval constantInteger;
 		if (UNEXPECTED(!pt_constant_integer_type_new(&constantInteger, zval_get_long(versionId.raw())))) return zv::Val();
@@ -4029,7 +4033,7 @@ public:
 		/* strtolower((string) $parameter->default->name) === 'null' */
 		zv::Ref name = nodeProp(defaultValue.deref().asObject(), PT_LC("name"));
 		if (UNEXPECTED(name.raw() == NULL)) return false;
-		zend_string *nameString = zval_get_string(name.deref().raw());
+		zend_string *nameString = pt_name_node_cast_string(name.deref().raw());
 		if (UNEXPECTED(nameString == NULL)) return false;
 		zend_string *lower = zend_string_tolower(nameString);
 		zend_string_release(nameString);
@@ -4055,7 +4059,7 @@ public:
 			if (UNEXPECTED(!requireSlot(PT_MS_PROP_IN_CLOSURE_BIND_SCOPE_CLASSES, "inClosureBindScopeClasses"))) return zv::Val();
 			HashTable *bindScopeClasses = Z_ARRVAL_P(slot(PT_MS_PROP_IN_CLOSURE_BIND_SCOPE_CLASSES).raw());
 			if (zend_hash_num_elements(bindScopeClasses) != 0 && !isSingleStringList(bindScopeClasses, PT_LC("static"))) {
-				zv::Val lower = pt_type_call(Z_OBJ_P(type), PT_LC("tolowerstring"), 0, NULL);
+				zv::Val lower = pt_name_node_to_lower_string(type);
 				if (UNEXPECTED(lower.isUndef())) return zv::Val();
 				bool isRelativeName = lower.ref().isString()
 					&& (zend_string_equals_literal(lower.ref().asString(), "static")
@@ -4404,7 +4408,7 @@ public:
 			zend_throw_error(NULL, "Call to a member function toLowerString() on %s", zend_zval_value_name(hookName.deref().raw()));
 			return zv::Val();
 		}
-		zv::Val lowerName = pt_type_call(hookName.deref().asObject(), PT_LC("tolowerstring"), 0, NULL);
+		zv::Val lowerName = pt_name_node_to_lower_string(hookName.deref().raw());
 		if (UNEXPECTED(lowerName.isUndef())) return zv::Val();
 		bool isSet = lowerName.ref().isString() && zend_string_equals_literal(lowerName.ref().asString(), "set");
 		bool isGet = lowerName.ref().isString() && zend_string_equals_literal(lowerName.ref().asString(), "get");
@@ -5060,15 +5064,15 @@ public:
 		}
 	}
 
-	/* $this->phpVersion-><method>() as a bool; false = pending exception */
-	[[nodiscard]] bool phpVersionBool(const char *lcname, size_t len, bool &out)
+	/* $this->phpVersion-><query>() (PhpVersionAccess.cpp); false = pending exception */
+	[[nodiscard]] bool phpVersionQuery(pt_php_version_query query, bool &out)
 	{
 		zv::Ref phpVersion = slot(PT_MS_PROP_PHP_VERSION);
 		if (UNEXPECTED(!phpVersion.isObject())) {
 			(void) uninitializedProperty("phpVersion");
 			return false;
 		}
-		return otherCallBool(phpVersion.asObject(), lcname, len, out);
+		return pt_php_version_answer(phpVersion.raw(), query, out);
 	}
 
 	zv::Val thisGetCurrentExpressionResultStorage()
@@ -5520,7 +5524,7 @@ public:
 			setHolder(nativeTypes, thisKey.get(), node.raw(), nativeType.raw(), PT_TRI_YES);
 
 			bool supportsReadOnlyProperties;
-			if (UNEXPECTED(!phpVersionBool(PT_LC("supportsreadonlyproperties"), supportsReadOnlyProperties))) return zv::Val();
+			if (UNEXPECTED(!phpVersionQuery(PT_PHP_VERSION_SUPPORTS_READ_ONLY_PROPERTIES, supportsReadOnlyProperties))) return zv::Val();
 			if (supportsReadOnlyProperties) {
 				for (auto entry : zv::ArrRef(nonStaticExpressions.raw())) {
 					zend_string *exprString = entry.stringKeyOrNull();
@@ -5606,7 +5610,7 @@ public:
 		bool isFullyQualified;
 		if (UNEXPECTED(!isInstance(name.deref(), PT_CLASS_FULLY_QUALIFIED, isFullyQualified))) return false;
 		if (!isFullyQualified) return true;
-		zv::Val lower = pt_type_call(name.deref().asObject(), PT_LC("tolowerstring"), 0, NULL);
+		zv::Val lower = pt_name_node_to_lower_string(name.deref().raw());
 		if (UNEXPECTED(lower.isUndef())) return false;
 		static const char *const existenceChecks[] = {
 			"class_exists", "interface_exists", "trait_exists", "enum_exists", "function_exists",
@@ -6694,8 +6698,8 @@ public:
 	{
 		zv::Val nameVal = zv::Val::string(name, strlen(name));
 		zv::Val nameNode = fullyQualified
-			? pt_type_new(PT_CLASS_FULLY_QUALIFIED, 1, nameVal.raw())
-			: pt_type_new(PT_CLASS_NAME, 1, nameVal.raw());
+			? pt_name_node_new(PT_CLASS_FULLY_QUALIFIED, nameVal.raw())
+			: pt_name_node_new(PT_CLASS_NAME, nameVal.raw());
 		if (UNEXPECTED(nameNode.isUndef())) return zv::Val();
 		zv::Val arg = pt_type_new(PT_CLASS_ARG, 1, var);
 		if (UNEXPECTED(arg.isUndef())) return zv::Val();
@@ -6769,7 +6773,7 @@ public:
 				zend_throw_error(NULL, "Call to a member function toString() on %s", zend_zval_value_name(name.deref().raw()));
 				return false;
 			}
-			zv::Val nameString = pt_type_call(name.deref().asObject(), PT_LC("tostring"), 0, NULL);
+			zv::Val nameString = pt_name_node_to_string(name.deref().raw());
 			if (UNEXPECTED(nameString.isUndef())) return false;
 			zend_string *raw = zval_get_string(nameString.raw());
 			if (UNEXPECTED(raw == NULL)) return false;
@@ -7126,7 +7130,7 @@ public:
 			return zv::Val();
 		}
 		bool supports;
-		if (UNEXPECTED(!otherCallBool(Z_OBJ_P(phpVersion), PT_LC("supportsreadonlypropertyreinitializationonclone"), supports))) return zv::Val();
+		if (UNEXPECTED(!pt_php_version_answer(phpVersion, PT_PHP_VERSION_SUPPORTS_READONLY_PROPERTY_REINITIALIZATION_ON_CLONE, supports))) return zv::Val();
 		if (!supports) return scope;
 		zv::Val reinitializationExpr = pt_type_new(PT_CLASS_CLONE_REINITIALIZATION_EXPR, 1, &propertyNameZv);
 		if (UNEXPECTED(reinitializationExpr.isUndef())) return zv::Val();
@@ -8541,12 +8545,12 @@ public:
 			if (UNEXPECTED(!isInstance(nameNode.deref(), PT_CLASS_IDENTIFIER, is))) return zv::Val();
 			if (!is) continue;
 			/* static::CONST is late-bound */
-			zv::Val lowerClassName = pt_type_call(classNode.deref().asObject(), PT_LC("tolowerstring"), 0, NULL);
+			zv::Val lowerClassName = pt_name_node_to_lower_string(classNode.deref().raw());
 			if (UNEXPECTED(lowerClassName.isUndef())) return zv::Val();
 			if (Z_TYPE_P(lowerClassName.raw()) == IS_STRING && zend_string_equals_literal(Z_STR_P(lowerClassName.raw()), "static")) continue;
 			zv::Val className = thisResolveName(classNode.deref().raw());
 			if (UNEXPECTED(className.isUndef())) return zv::Val();
-			zv::Val constantName = pt_type_call(nameNode.deref().asObject(), PT_LC("tostring"), 0, NULL);
+			zv::Val constantName = pt_name_node_to_string(nameNode.deref().raw());
 			if (UNEXPECTED(constantName.isUndef())) return zv::Val();
 			zv::Ref constantResolver = slot(PT_MS_PROP_CONSTANT_RESOLVER);
 			if (UNEXPECTED(!constantResolver.isObject())) {
@@ -10024,9 +10028,9 @@ public:
 			(void) uninitializedProperty("phpVersion");
 			return false;
 		}
-		zv::Val supportsAsymmetricVisibility = pt_type_call(phpVersion.asObject(), PT_LC("supportsasymmetricvisibility"), 0, NULL);
-		if (UNEXPECTED(supportsAsymmetricVisibility.isUndef())) return false;
-		if (!zend_is_true(supportsAsymmetricVisibility.raw())) return canAccessClassMember(propertyReflection, out);
+		bool supportsAsymmetricVisibility;
+		if (UNEXPECTED(!pt_php_version_answer(phpVersion.raw(), PT_PHP_VERSION_SUPPORTS_ASYMMETRIC_VISIBILITY, supportsAsymmetricVisibility))) return false;
+		if (!supportsAsymmetricVisibility) return canAccessClassMember(propertyReflection, out);
 
 		return memberAccessibleFromScope(propertyReflection, PT_LC("isprivateset"), out);
 	}
@@ -10867,7 +10871,7 @@ public:
 			zend_throw_error(NULL, "Call to a member function toString() on %s", zend_zval_value_name(name.raw()));
 			return zv::Val();
 		}
-		return pt_type_call(name.asObject(), PT_LC("tostring"), 0, NULL);
+		return pt_name_node_to_string(name.raw());
 	}
 
 	/* the (readable / native) type of a property reflection lookup, an
@@ -10894,15 +10898,17 @@ public:
 	zv::Val getGlobalConstantType(zend_object *name)
 	{
 		/* the namespace only takes part for a name that is not already fully qualified */
-		zv::Val isFullyQualified = pt_type_call(name, PT_LC("isfullyqualified"), 0, NULL);
-		if (UNEXPECTED(isFullyQualified.isUndef())) return zv::Val();
+		zval nameNodeZv;
+		ZVAL_OBJ(&nameNodeZv, name);
+		bool isFullyQualifiedName;
+		if (UNEXPECTED(!pt_name_node_is_fully_qualified(&nameNodeZv, isFullyQualifiedName))) return zv::Val();
 		zv::Val ns = zv::Val::null();
-		if (!zend_is_true(isFullyQualified.raw())) {
+		if (!isFullyQualifiedName) {
 			ns = thisGetNamespace();
 			if (UNEXPECTED(ns.isUndef())) return zv::Val();
 		}
 
-		zv::Val nameString = pt_type_call(name, PT_LC("tostring"), 0, NULL);
+		zv::Val nameString = pt_name_node_to_string(&nameNodeZv);
 		if (UNEXPECTED(nameString.isUndef())) return zv::Val();
 		if (UNEXPECTED(!nameString.ref().isString())) {
 			zend_throw_error(NULL, "phpstan_turbo: Name::toString() did not return a string");
@@ -11047,7 +11053,7 @@ public:
 	/* new ConstFetch(new FullyQualified($nameOrParts)) */
 	static zv::Val newConstFetchOfFullyQualified(zval *nameOrParts)
 	{
-		zv::Val fullyQualified = pt_type_new(PT_CLASS_FULLY_QUALIFIED, 1, nameOrParts);
+		zv::Val fullyQualified = pt_name_node_new(PT_CLASS_FULLY_QUALIFIED, nameOrParts);
 		if (UNEXPECTED(fullyQualified.isUndef())) return zv::Val();
 		return pt_type_new(PT_CLASS_CONST_FETCH, 1, fullyQualified.raw());
 	}

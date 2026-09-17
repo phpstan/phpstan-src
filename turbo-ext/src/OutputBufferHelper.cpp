@@ -122,9 +122,9 @@ public:
 	zv::Val applyLevelDelta(zval *nodeScopeResolver, zval *scopeIn, zend_long delta) const
 	{
 		zv::Val literal = zv::Val::string(PT_LC("ob_get_level"));
-		zv::Val name = pt_type_new(PT_CLASS_NAME, 1, literal.raw());
+		zv::Val name = pt_name_node_new(PT_CLASS_NAME, literal.raw());
 		if (UNEXPECTED(name.isUndef())) return zv::Val();
-		zv::Val fullyQualified = pt_type_new(PT_CLASS_FULLY_QUALIFIED, 1, literal.raw());
+		zv::Val fullyQualified = pt_name_node_new(PT_CLASS_FULLY_QUALIFIED, literal.raw());
 		if (UNEXPECTED(fullyQualified.isUndef())) return zv::Val();
 
 		zv::Val scope = zv::Val::copyOf(zv::Ref(scopeIn));

@@ -679,7 +679,7 @@ public:
 			}
 			zval *var = exprVar(expr);
 			if (UNEXPECTED(var == NULL)) return zv::Val();
-			zv::Val identifier = pt_type_new(PT_CLASS_IDENTIFIER, 1, value.raw());
+			zv::Val identifier = pt_name_node_new(PT_CLASS_IDENTIFIER, value.raw());
 			if (UNEXPECTED(identifier.isUndef())) return zv::Val();
 			zval *args = exprArgs(expr);
 			if (UNEXPECTED(args == NULL)) return zv::Val();

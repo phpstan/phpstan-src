@@ -2553,8 +2553,7 @@ private:
 		if (UNEXPECTED(name == NULL)) return false;
 		zv::Val index; /* UNDEF: the integer $i */
 		if (Z_TYPE_P(name) != IS_NULL) {
-			static pt_method_site toStringSite;
-			index = callOn(toStringSite, name, PT_LC("tostring"), "toString", 0, NULL);
+			index = pt_name_node_to_string(name);
 			if (UNEXPECTED(index.isUndef())) return false;
 			hasName = true;
 		} else if (argStringKey != NULL) {

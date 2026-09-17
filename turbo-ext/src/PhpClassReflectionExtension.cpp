@@ -755,8 +755,8 @@ public:
 		}
 		zval *declaringClass = declaringClassReflection.raw();
 
-		bool supportsEnums = callBool(slot(PT_PCRE_PROP_PHP_VERSION), PT_LC("supportsenums"), 0, NULL, ok);
-		if (UNEXPECTED(!ok)) return zv::Val();
+		bool supportsEnums;
+		if (UNEXPECTED(!pt_php_version_answer(slot(PT_PCRE_PROP_PHP_VERSION), PT_PHP_VERSION_SUPPORTS_ENUMS, supportsEnums))) return zv::Val();
 		bool isNameProperty = zend_string_equals_literal(propertyName, "name");
 		bool isUnitEnumInterfaceNameProperty = supportsEnums
 			&& isNameProperty

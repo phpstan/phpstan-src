@@ -320,7 +320,7 @@ private:
 		if (UNEXPECTED(var == NULL)) return zv::Val();
 		zval name;
 		ZVAL_STR(&name, pt_adfh_offset_get);
-		zv::Val identifier = pt_type_new(PT_CLASS_IDENTIFIER, 1, &name);
+		zv::Val identifier = pt_name_node_new(PT_CLASS_IDENTIFIER, &name);
 		if (UNEXPECTED(identifier.isUndef())) return zv::Val();
 		zval *dim = exprDim(expr);
 		if (UNEXPECTED(dim == NULL)) return zv::Val();

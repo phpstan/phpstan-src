@@ -46,7 +46,6 @@ pt_property_site pt_tch_finally_stmts_site;
 pt_property_site pt_tch_variable_name_site;
 pt_property_site pt_tch_expression_expr_site;
 pt_property_site pt_tch_return_expr_site;
-pt_method_site pt_tch_name_to_string_site;
 
 /* the class names of the twin's `new ObjectType(...)` probes (module
  * startup) */
@@ -57,7 +56,7 @@ zend_string *pt_tch_error_class = nullptr;
 /* $name->toString() */
 zv::Val nameToString(zval *name)
 {
-	return pt_call_method_cached(pt_tch_name_to_string_site, Z_OBJ_P(name), PT_LC("tostring"), 0, NULL);
+	return pt_name_node_to_string(name);
 }
 
 /* new ObjectType($className) */

@@ -174,7 +174,7 @@ private:
 		ZVAL_INTERNED_STR(&thisName, ZSTR_KNOWN(ZEND_STR_THIS));
 		zv::Val variable = pt_type_new(PT_CLASS_VARIABLE, 1, &thisName);
 		if (UNEXPECTED(variable.isUndef())) return zv::Val();
-		zv::Val identifier = pt_type_new(PT_CLASS_IDENTIFIER, 1, name);
+		zv::Val identifier = pt_name_node_new(PT_CLASS_IDENTIFIER, name);
 		if (UNEXPECTED(identifier.isUndef())) return zv::Val();
 		zval args[3];
 		ZVAL_COPY_VALUE(&args[0], variable.raw());

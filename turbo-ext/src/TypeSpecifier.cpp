@@ -751,7 +751,7 @@ private:
 			if (!nameIsIdentifier) return 1;
 			zv::Val calledOnType = scopeType(scope, pt_ts_method_call_var.of(call));
 			if (UNEXPECTED(calledOnType.isUndef())) return -1;
-			zv::Val methodName = pt_type_call(Z_OBJ_P(name), PT_LC("tostring"), 0, NULL);
+			zv::Val methodName = pt_name_node_to_string(name);
 			if (UNEXPECTED(methodName.isUndef())) return -1;
 			zv::Val methodReflection = methodReflectionOf(scope, calledOnType.raw(), methodName.raw());
 			if (UNEXPECTED(methodReflection.isUndef())) return -1;
@@ -772,7 +772,7 @@ private:
 				? pt_mutating_scope_resolve_type_by_name(Z_OBJ_P(scope), Z_OBJ_P(classNode))
 				: scopeType(scope, classNode);
 			if (UNEXPECTED(calledOnType.isUndef())) return -1;
-			zv::Val methodName = pt_type_call(Z_OBJ_P(name), PT_LC("tostring"), 0, NULL);
+			zv::Val methodName = pt_name_node_to_string(name);
 			if (UNEXPECTED(methodName.isUndef())) return -1;
 			zv::Val methodReflection = methodReflectionOf(scope, calledOnType.raw(), methodName.raw());
 			if (UNEXPECTED(methodReflection.isUndef())) return -1;

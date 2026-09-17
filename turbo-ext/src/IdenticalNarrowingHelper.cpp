@@ -789,7 +789,7 @@ private:
 	static zv::Val newBoolConstFetch(bool value)
 	{
 		zv::Val nameString = value ? zv::Val::string(PT_LC("true")) : zv::Val::string(PT_LC("false"));
-		zv::Val name = pt_type_new(PT_CLASS_NAME, 1, nameString.raw());
+		zv::Val name = pt_name_node_new(PT_CLASS_NAME, nameString.raw());
 		if (UNEXPECTED(name.isUndef())) return zv::Val();
 		return pt_type_new(PT_CLASS_CONST_FETCH, 1, name.raw());
 	}

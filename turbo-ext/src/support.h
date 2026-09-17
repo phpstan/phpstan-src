@@ -457,6 +457,8 @@ enum {
 	PT_CLASS_BETTER_REFLECTION_PARAMETER,
 	PT_CLASS_INTERNAL_LOCATED_SOURCE,
 	PT_CLASS_BETTER_REFLECTION_CLASS_CONSTANT,
+	/* the Name readers (NameNodeAccess.cpp) */
+	PT_CLASS_RELATIVE_NAME,
 	PT_CLASS_COUNT
 };
 
@@ -4573,6 +4575,49 @@ enum pt_resolved_php_doc_member
  * exception */
 zv::Val pt_resolved_php_doc_block_call(zval *block, pt_resolved_php_doc_member member);
 [[nodiscard]] bool pt_resolved_php_doc_block_bool(zval *block, pt_resolved_php_doc_member member, bool &out);
+
+/* }}} */
+
+/* {{{ PhpVersion's queries (PhpVersionAccess.cpp) */
+
+/* the PhpVersion queries the engine asks, each a comparison of $versionId
+ * with a constant */
+enum pt_php_version_query
+{
+	PT_PHP_VERSION_SUPPORTS_LEGACY_CONSTRUCTOR = 0,
+	PT_PHP_VERSION_DEPRECATES_DYNAMIC_PROPERTIES,
+	PT_PHP_VERSION_SUPPORTS_CALLABLE_INSTANCE_METHODS,
+	PT_PHP_VERSION_THROWS_ON_STRING_CAST,
+	PT_PHP_VERSION_NON_NUMERIC_STRING_AND_INTEGER_IS_FALSE_ON_LOOSE_COMPARISON,
+	PT_PHP_VERSION_SUPPORTS_READ_ONLY_PROPERTIES,
+	PT_PHP_VERSION_SUPPORTS_READONLY_PROPERTY_REINITIALIZATION_ON_CLONE,
+	PT_PHP_VERSION_SUPPORTS_ASYMMETRIC_VISIBILITY,
+	PT_PHP_VERSION_SUPPORTS_ENUMS,
+	PT_PHP_VERSION_SUPPORTS_PROPERTY_HOOKS,
+	PT_PHP_VERSION_QUERY_COUNT
+};
+/* $phpVersion-><query>() / ->getVersionId(): the $versionId slot of exactly
+ * a PhpVersion, the method otherwise; false / UNDEF = pending exception */
+[[nodiscard]] bool pt_php_version_answer(zval *phpVersion, pt_php_version_query query, bool &out);
+zv::Val pt_php_version_get_version_id(zval *phpVersion);
+
+/* }}} */
+
+/* {{{ php-parser Name's and Identifier's getters (NameNodeAccess.cpp) */
+
+/* (string) $node (an owned string, NULL = pending exception) /
+ * $node->toString() / ->toLowerString() / ->isFullyQualified() of a
+ * php-parser Name or Identifier: the `name` slot (the class's constant for
+ * isFullyQualified()) of exactly a Name, FullyQualified, Relative,
+ * Identifier or VarLikeIdentifier, the conversion / method otherwise */
+zend_string *pt_name_node_cast_string(zval *node);
+zv::Val pt_name_node_to_string(zval *node);
+zv::Val pt_name_node_to_lower_string(zval *node);
+[[nodiscard]] bool pt_name_node_is_fully_qualified(zval *node, bool &out);
+/* new <class-map Name / Identifier class>($name): the slots written in place
+ * for exactly one of those five classes and a non-empty string, the
+ * constructor otherwise; UNDEF = pending exception */
+zv::Val pt_name_node_new(int classIdx, zval *name);
 
 /* }}} */
 

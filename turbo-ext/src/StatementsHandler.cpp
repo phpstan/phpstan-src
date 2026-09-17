@@ -54,8 +54,6 @@ namespace {
 /* {{{ the PHP collaborators (one site each; switch to their direct entries
  * once they are ported) */
 
-pt_method_site pt_sh_to_string_site;
-pt_method_site pt_sh_to_lower_string_site;
 pt_method_site pt_sh_get_return_type_site;
 pt_method_site pt_sh_get_attributes_site;
 pt_method_site pt_sh_get_start_token_pos_site;
@@ -144,8 +142,8 @@ zv::Val isrToPublic(zval *result)
 }
 
 /* $identifier->toString() / $name->toLowerString() */
-zv::Val nameToString(zval *name) { return callOn(pt_sh_to_string_site, name, PT_LC("tostring"), "toString"); }
-zv::Val nameToLowerString(zval *name) { return callOn(pt_sh_to_lower_string_site, name, PT_LC("tolowerstring"), "toLowerString"); }
+zv::Val nameToString(zval *name) { return pt_name_node_to_string(name); }
+zv::Val nameToLowerString(zval *name) { return pt_name_node_to_lower_string(name); }
 
 /* $node->getReturnType() / getAttributes() / getStartTokenPos() /
  * getStartLine() / getSubNodeNames() */

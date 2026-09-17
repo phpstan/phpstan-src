@@ -34,7 +34,6 @@ namespace {
 /* {{{ the PHP collaborators (one site each; switch to their direct entries
  * once they are ported) */
 
-pt_method_site pt_clh_name_to_string_site;
 pt_method_site pt_clh_is_anonymous_site;
 pt_method_site pt_clh_has_class_site;
 pt_method_site pt_clh_get_class_site;
@@ -48,7 +47,7 @@ pt_method_site pt_clh_class_reflection_factory_create_site;
 /* $name->toString() */
 zv::Val nameToString(zval *name)
 {
-	return pt_call_method_cached(pt_clh_name_to_string_site, Z_OBJ_P(name), PT_LC("tostring"), 0, NULL);
+	return pt_name_node_to_string(name);
 }
 
 /* $class->isAnonymous() */
@@ -467,7 +466,7 @@ private:
 		if (!namespaceName.isNull()) {
 			zv::Val name = pt_mutating_scope_get_namespace(Z_OBJ_P(scope));
 			if (UNEXPECTED(name.isUndef())) return zv::Val();
-			zv::Val nameNode = pt_type_new(PT_CLASS_NAME, 1, name.raw());
+			zv::Val nameNode = pt_name_node_new(PT_CLASS_NAME, name.raw());
 			if (UNEXPECTED(nameNode.isUndef())) return zv::Val();
 			namespaceNode = pt_type_new(PT_CLASS_NAMESPACE_STMT, 1, nameNode.raw());
 			if (UNEXPECTED(namespaceNode.isUndef())) return zv::Val();

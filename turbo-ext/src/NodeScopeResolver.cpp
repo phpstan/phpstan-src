@@ -1711,7 +1711,7 @@ private:
 			zend_throw_error(NULL, "Call to a member function toString() on %s", zend_zval_value_name(name));
 			return zv::Val();
 		}
-		return pt_type_call(Z_OBJ_P(name), PT_LC("tostring"), 0, NULL);
+		return pt_name_node_to_string(name);
 	}
 
 	/* processStmtNode()'s statement result with the @throws override */

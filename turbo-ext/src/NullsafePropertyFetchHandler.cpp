@@ -401,7 +401,7 @@ private:
 		if (UNEXPECTED(var == NULL)) return;
 		zv::Val notIdenticalNode;
 		{
-			zv::Val nullName = pt_type_new(PT_CLASS_NAME, 1, zv::Args{pt_npfh_null});
+			zv::Val nullName = pt_name_node_new(PT_CLASS_NAME, zv::Args{pt_npfh_null});
 			if (UNEXPECTED(nullName.isUndef())) return;
 			zv::Val nullConstFetch = pt_type_new(PT_CLASS_CONST_FETCH, 1, nullName.raw());
 			if (UNEXPECTED(nullConstFetch.isUndef())) return;

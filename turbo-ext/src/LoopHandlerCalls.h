@@ -29,7 +29,6 @@ namespace ptlh {
 
 /* {{{ the PHP collaborators */
 
-inline pt_method_site nameToLowerStringSite;
 inline pt_method_site containerGetByTypeSite;
 
 /* LoopWrittenVariableNames::collect($loop, $passFlow) ($passFlow IS_NULL
@@ -42,7 +41,7 @@ inline zv::Val loopWrittenVariableNames(zval *loop, zval *passFlow)
 /* $name->toLowerString() */
 inline zv::Val nameToLowerString(zval *name)
 {
-	return pt_call_method_cached(nameToLowerStringSite, Z_OBJ_P(name), PT_LC("tolowerstring"), 0, NULL);
+	return pt_name_node_to_lower_string(name);
 }
 
 /* $container->getByType($className) for a permanent interned class name */

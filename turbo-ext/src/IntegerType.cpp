@@ -129,9 +129,9 @@ public:
 			zend_type_error("phpstan_turbo: PhpVersion expected, %s given", zend_zval_value_name(phpVersion));
 			return zv::Val();
 		}
-		zv::Val nonNumeric = pt_type_call(Z_OBJ_P(phpVersion), PT_LC("nonnumericstringandintegerisfalseonloosecomparison"), 0, NULL);
-		if (UNEXPECTED(nonNumeric.isUndef())) return zv::Val();
-		if (zend_is_true(nonNumeric.raw())) {
+		bool nonNumeric;
+		if (UNEXPECTED(!pt_php_version_answer(phpVersion, PT_PHP_VERSION_NON_NUMERIC_STRING_AND_INTEGER_IS_FALSE_ON_LOOSE_COMPARISON, nonNumeric))) return zv::Val();
+		if (nonNumeric) {
 			zend_long isString = pt_type_op_trinary(Z_OBJ_P(type), PT_OP_IS_STRING, 0, NULL);
 			if (UNEXPECTED(isString < 0)) return zv::Val();
 			if (isString == PT_TRI_YES) {

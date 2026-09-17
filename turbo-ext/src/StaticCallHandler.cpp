@@ -49,7 +49,6 @@ using namespace ptcall;
 
 pt_method_site pt_sch_is_static_method_supported_site;
 pt_method_site pt_sch_extension_specify_types_site;
-pt_method_site pt_sch_name_to_lower_string_site;
 pt_method_site pt_sch_get_class_string_object_type_site;
 pt_method_site pt_sch_get_object_type_or_class_string_object_type_site;
 pt_method_site pt_sch_get_static_object_type_site;
@@ -79,7 +78,7 @@ zv::Val extensionSpecifyTypes(zval *extension, zval *methodReflection, zval *nor
 /* $name->toLowerString() */
 zv::Val nameToLowerString(zval *name)
 {
-	return pt_call_method_cached(pt_sch_name_to_lower_string_site, Z_OBJ_P(name), PT_LC("tolowerstring"), 0, NULL);
+	return pt_name_node_to_lower_string(name);
 }
 
 /* $type->getClassStringObjectType() / ->getObjectTypeOrClassStringObjectType() */
@@ -497,7 +496,7 @@ public:
 			if (objectClassCount == 1) {
 				zval *objectClass = firstOf(objectClasses.raw(), &null);
 				if (UNEXPECTED(objectClass == NULL)) return zv::Val();
-				zv::Val objectClassName = pt_type_new(PT_CLASS_NAME, 1, objectClass);
+				zv::Val objectClassName = pt_name_node_new(PT_CLASS_NAME, objectClass);
 				if (UNEXPECTED(objectClassName.isUndef())) return zv::Val();
 				zval *currentName = exprName(expr);
 				if (UNEXPECTED(currentName == NULL)) return zv::Val();
@@ -893,7 +892,7 @@ public:
 			}
 			zval *class_ = exprClass(expr);
 			if (UNEXPECTED(class_ == NULL)) return zv::Val();
-			zv::Val identifier = pt_type_new(PT_CLASS_IDENTIFIER, 1, value.raw());
+			zv::Val identifier = pt_name_node_new(PT_CLASS_IDENTIFIER, value.raw());
 			if (UNEXPECTED(identifier.isUndef())) return zv::Val();
 			zval *args = exprArgs(expr);
 			if (UNEXPECTED(args == NULL)) return zv::Val();

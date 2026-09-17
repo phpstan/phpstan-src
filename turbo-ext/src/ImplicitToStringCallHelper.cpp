@@ -34,26 +34,12 @@ zend_string *pt_itsch_to_string = nullptr;
 zend_string *pt_itsch_method_call = nullptr;
 zend_string *pt_itsch_synthetic_site_attribute = nullptr;
 
-pt_property_site pt_itsch_version_id_site;
-pt_method_site pt_itsch_throws_on_string_cast_site;
 
 /* $phpVersion->throwsOnStringCast(): `$this->versionId >= 70400` of exactly
  * the final PhpVersion, the method otherwise; false = pending exception */
 [[nodiscard]] bool throwsOnStringCast(zval *phpVersion, bool &out)
 {
-	zend_class_entry *phpVersionCe = pt_class(PT_CLASS_PHP_VERSION);
-	if (UNEXPECTED(phpVersionCe == NULL)) return false;
-	if (EXPECTED(Z_TYPE_P(phpVersion) == IS_OBJECT && Z_OBJCE_P(phpVersion) == phpVersionCe)) {
-		zval *versionId = pt_property_cached(pt_itsch_version_id_site, Z_OBJ_P(phpVersion), PT_LC("versionId"));
-		if (EXPECTED(versionId != NULL && Z_TYPE_P(versionId) == IS_LONG)) {
-			out = Z_LVAL_P(versionId) >= 70400;
-			return true;
-		}
-	}
-	zv::Val result = pt_call_method_cached(pt_itsch_throws_on_string_cast_site, Z_OBJ_P(phpVersion), PT_LC("throwsonstringcast"), 0, NULL);
-	if (UNEXPECTED(result.isUndef())) return false;
-	out = zend_is_true(result.raw());
-	return true;
+	return pt_php_version_answer(phpVersion, PT_PHP_VERSION_THROWS_ON_STRING_CAST, out);
 }
 
 /* sprintf('call to method %s::%s()', $declaringClassDisplayName, $methodName) */
@@ -210,7 +196,7 @@ private:
 	{
 		zval nameZv;
 		ZVAL_STR(&nameZv, pt_itsch_to_string);
-		zv::Val identifier = pt_type_new(PT_CLASS_IDENTIFIER, 1, &nameZv);
+		zv::Val identifier = pt_name_node_new(PT_CLASS_IDENTIFIER, &nameZv);
 		if (UNEXPECTED(identifier.isUndef())) return zv::Val();
 		zv::Arr attributes = zv::Arr::create(1);
 		attributes.set(pt_itsch_synthetic_site_attribute, zv::Val::boolean(true));

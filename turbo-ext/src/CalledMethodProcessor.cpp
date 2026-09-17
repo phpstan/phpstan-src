@@ -47,7 +47,6 @@ pt_method_site pt_cmp_get_return_statements_site;
 pt_method_site pt_cmp_return_statement_scope_site;
 pt_method_site pt_cmp_node_start_line_site;
 pt_method_site pt_cmp_node_end_line_site;
-pt_method_site pt_cmp_name_to_string_site;
 pt_method_site pt_cmp_get_sub_node_names_site;
 
 /* $object->method() of a PHP collaborator */
@@ -420,7 +419,7 @@ private:
 
 		zv::Val className = pt_class_reflection_get_name(declaringClass);
 		if (UNEXPECTED(className.isUndef())) return false;
-		zend_string *nodeName = zval_try_get_string(namespacedName);
+		zend_string *nodeName = pt_name_node_cast_string(namespacedName);
 		if (UNEXPECTED(nodeName == NULL)) return false;
 		bool sameName = Z_TYPE_P(className.raw()) == IS_STRING && zend_string_equals(Z_STR_P(className.raw()), nodeName);
 		zend_string_release(nodeName);
@@ -464,7 +463,7 @@ private:
 				memberCallOnNonObject("toString", name);
 				return false;
 			}
-			zv::Val stmtName = call0(pt_cmp_name_to_string_site, name, PT_LC("tostring"));
+			zv::Val stmtName = pt_name_node_to_string(name);
 			if (UNEXPECTED(stmtName.isUndef())) return false;
 			zv::Val methodName = pt_extended_method_reflection_call(methodReflection, PT_MR_GET_NAME);
 			if (UNEXPECTED(methodName.isUndef())) return false;

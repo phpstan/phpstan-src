@@ -22,7 +22,6 @@ zend_class_entry *pt_ce_namespace_handler = nullptr;
 
 namespace {
 
-pt_method_site pt_nh_name_to_string_site;
 pt_property_site pt_nh_name_site;
 pt_property_site pt_nh_stmts_site;
 
@@ -55,7 +54,7 @@ public:
 				return zv::Val();
 			}
 			zv::Val nameHold = zv::Val::copyOf(zv::Ref(name));
-			namespaceName = pt_call_method_cached(pt_nh_name_to_string_site, Z_OBJ_P(nameHold.raw()), PT_LC("tostring"), 0, NULL);
+			namespaceName = pt_name_node_to_string(nameHold.raw());
 			if (UNEXPECTED(namespaceName.isUndef())) return zv::Val();
 		} else {
 			namespaceName = zv::Val::string(zend_empty_string);

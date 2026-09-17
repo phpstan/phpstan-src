@@ -231,6 +231,25 @@ class SchedulerTest extends TestCase
 		$this->assertSame(2, $scheduler->scheduleWork(14, array_fill(0, 9, 'file.php'), $callback)->getNumberOfProcesses());
 	}
 
+	public function testAdaptiveWorkerCountIsNeverBelowTheDefault(): void
+	{
+		// the rule exists to stop small runs being starved, never to take workers away
+		// from large ones - sqrt() alone dips under the existing formula between roughly
+		// 400 and 800 files, which measured 13% slower at 600
+		$callback = static fn (string $file): int => 0;
+		foreach ([1, 5, 9, 25, 50, 100, 200, 300, 400, 600, 800, 1424, 4524] as $numberOfFiles) {
+			$files = array_fill(0, $numberOfFiles, 'file.php');
+			$legacy = (new Scheduler(20, Scheduler::AUTO, 2))->scheduleWork(14, $files, $callback);
+			$adaptive = (new Scheduler(20, Scheduler::AUTO, 2, true))->scheduleWork(14, $files, $callback);
+
+			$this->assertGreaterThanOrEqual(
+				$legacy->getNumberOfProcesses(),
+				$adaptive->getNumberOfProcesses(),
+				sprintf('%d files', $numberOfFiles),
+			);
+		}
+	}
+
 	public function testAdaptiveWorkerCountNeverExceedsTheJobCount(): void
 	{
 		// a worker with no job never starts, so the schedule must not claim one

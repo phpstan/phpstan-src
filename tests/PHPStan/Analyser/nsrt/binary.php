@@ -310,7 +310,7 @@ class Foo
 		assertType('1.2', 1.2 ** 1);
 		assertType('(float|int)', $integer ** $integer);
 		assertType('1', 3.2 % 2);
-		assertType('int', $float3 %= 2.4);
+		assertType('int<-1, 1>', $float3 %= 2.4);
 		assertType('float', $float4 **= 2.4);
 		assertType('float', $float5 /= 2.4);
 		assertType('float', $float6 *= 2);

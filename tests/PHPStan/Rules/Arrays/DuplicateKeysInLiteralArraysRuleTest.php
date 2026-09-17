@@ -115,4 +115,18 @@ class DuplicateKeysInLiteralArraysRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14041.php'], []);
 	}
 
+	public function testBug15244(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15244.php'], [
+			[
+				'Array has 2 duplicate keys with value 9223372036854775807 (9223372036854775807, 9223372036854775807).',
+				38,
+			],
+			[
+				'Array has 2 duplicate keys with value 0 (0, 0).',
+				49,
+			],
+		]);
+	}
+
 }

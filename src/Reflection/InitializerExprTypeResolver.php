@@ -1328,7 +1328,12 @@ final class InitializerExprTypeResolver
 		if ($leftType->isInteger()->yes() && $rightType->isInteger()->yes()) {
 			$modType = $getTypeCallback(new BinaryOp\Mod($left, $right));
 			if ($modType->isInteger()->yes() && (new ConstantIntegerType(0))->isSuperTypeOf($modType)->yes()) {
-				return TypeCombinator::remove($result, new FloatType());
+				$withoutFloat = TypeCombinator::remove($result, new FloatType());
+
+				// PHP_INT_MIN / -1 divides without a remainder but still overflows to a float
+				if (!$withoutFloat instanceof NeverType) {
+					return $withoutFloat;
+				}
 			}
 		}
 
@@ -1456,14 +1461,12 @@ final class InitializerExprTypeResolver
 		}
 
 		$maxMagnitude = null;
-		if ($rightType->isInteger()->yes()) {
-			$divisorBounds = $this->getIntegerBounds($rightType);
-			if ($divisorBounds !== null) {
-				$maxMagnitude = self::getMaxModuloMagnitude($divisorBounds[0], $divisorBounds[1]);
-			}
+		$divisorBounds = $this->getIntegerBounds($rightType->toInteger());
+		if ($divisorBounds !== null) {
+			$maxMagnitude = self::getMaxModuloMagnitude($divisorBounds[0], $divisorBounds[1]);
 		}
 
-		[$leftMin, $leftMax] = $this->getIntegerBounds($leftType) ?? [null, null];
+		[$leftMin, $leftMax] = $this->getIntegerBounds($leftType->toInteger()) ?? [null, null];
 		if ($leftMin === null && IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($leftType)->yes()) {
 			$leftMin = 0;
 		}
@@ -1510,7 +1513,12 @@ final class InitializerExprTypeResolver
 			return null;
 		}
 
-		return max(abs($divisorMin), abs($divisorMax)) - 1;
+		$magnitude = max(abs($divisorMin), abs($divisorMax));
+		if ($magnitude === 0) {
+			return null;
+		}
+
+		return $magnitude - 1;
 	}
 
 	/**
@@ -2606,6 +2614,14 @@ final class InitializerExprTypeResolver
 			if ($operand->getValue() < 0) {
 				return new ErrorType();
 			}
+			// an overflowing shift wraps around, which breaks the monotonicity the bounds rely on
+			if (
+				($rangeMin !== null && self::shiftLeftOverflows(intval($rangeMin), $operand->getValue()))
+				|| ($rangeMax !== null && self::shiftLeftOverflows(intval($rangeMax), $operand->getValue()))
+			) {
+				return new IntegerType();
+			}
+
 			$min = $rangeMin !== null ? intval($rangeMin) << $operand->getValue() : null;
 			$max = $rangeMax !== null ? intval($rangeMax) << $operand->getValue() : null;
 		} elseif ($node instanceof Expr\BinaryOp\ShiftRight) {
@@ -2629,6 +2645,15 @@ final class InitializerExprTypeResolver
 		}
 
 		return IntegerRangeType::fromInterval($min, $max);
+	}
+
+	/**
+	 * A left shift that does not fit into an integer wraps around instead of turning
+	 * into a float, so the shifted value no longer preserves the ordering of its operand.
+	 */
+	private static function shiftLeftOverflows(int $value, int $shift): bool
+	{
+		return ($value << $shift) >> $shift !== $value;
 	}
 
 	/**

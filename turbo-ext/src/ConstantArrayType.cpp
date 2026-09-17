@@ -2171,7 +2171,7 @@ public:
 				continue;
 			}
 
-			zv::Val variants = pt_type_call(Z_OBJ_P(method.raw()), PT_LC("getvariants"), 0, NULL);
+			zv::Val variants = pt_extended_method_reflection_call(method.raw(), PT_MR_GET_VARIANTS);
 			if (UNEXPECTED(variants.isUndef())) return zv::Val();
 			ZVAL_COPY_VALUE(&args[0], method.raw());
 			ZVAL_COPY_VALUE(&args[1], variants.raw());
@@ -2348,7 +2348,7 @@ public:
 							zend_type_error("phpstan_turbo: getMethod() must return an object");
 							return zv::Val();
 						}
-						zv::Val isStatic = pt_type_call(Z_OBJ_P(methodReflection.raw()), PT_LC("isstatic"), 0, NULL);
+						zv::Val isStatic = pt_extended_method_reflection_call(methodReflection.raw(), PT_MR_IS_STATIC);
 						if (UNEXPECTED(isStatic.isUndef())) return zv::Val();
 						if (!zend_is_true(isStatic.raw())) continue;
 					} else if (isString == PT_TRI_MAYBE) {

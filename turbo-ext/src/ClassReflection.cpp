@@ -1464,7 +1464,7 @@ public:
 			zv::Val property = phpExtensionCall(phpExtension.ref(), pt_php_class_reflection_extension_get_native_property, PT_LC("getnativeproperty"), propertyName);
 			if (UNEXPECTED(property.isUndef())) return false;
 			bool isStatic;
-			if (UNEXPECTED(!callBool(property.ref(), PT_LC("isstatic"), 0, NULL, isStatic))) return false;
+			if (UNEXPECTED(!pt_class_member_reflection_bool(property.ref().deref().raw(), PT_CMR_IS_STATIC, isStatic))) return false;
 			if (!isStatic) {
 				out = memoSetBool(PT_CR_PROP_HAS_INSTANCE_PROPERTY_CACHE, propertyName, true);
 				return true;
@@ -1483,7 +1483,7 @@ public:
 					zv::Val property = extensionCall(entry.value(), PT_LC("getproperty"), propertyName);
 					if (UNEXPECTED(property.isUndef())) return false;
 					bool isStatic;
-					if (UNEXPECTED(!callBool(property.ref(), PT_LC("isstatic"), 0, NULL, isStatic))) return false;
+					if (UNEXPECTED(!pt_class_member_reflection_bool(property.ref().deref().raw(), PT_CMR_IS_STATIC, isStatic))) return false;
 					if (isStatic) continue;
 					out = memoSetBool(PT_CR_PROP_HAS_INSTANCE_PROPERTY_CACHE, propertyName, true);
 					return true;
@@ -1521,7 +1521,7 @@ public:
 			zv::Val property = phpExtensionCall(phpExtension.ref(), pt_php_class_reflection_extension_get_native_property, PT_LC("getnativeproperty"), propertyName);
 			if (UNEXPECTED(property.isUndef())) return false;
 			bool isStatic;
-			if (UNEXPECTED(!callBool(property.ref(), PT_LC("isstatic"), 0, NULL, isStatic))) return false;
+			if (UNEXPECTED(!pt_class_member_reflection_bool(property.ref().deref().raw(), PT_CMR_IS_STATIC, isStatic))) return false;
 			if (isStatic) {
 				out = memoSetBool(PT_CR_PROP_HAS_STATIC_PROPERTY_CACHE, propertyName, true);
 				return true;
@@ -1896,7 +1896,7 @@ public:
 				zv::Val property = extensionGetProperty(phpExtension.ref(), propertyName, scope);
 				if (UNEXPECTED(property.isUndef())) return zv::Val();
 				bool isStatic;
-				if (UNEXPECTED(!callBool(property.ref(), PT_LC("isstatic"), 0, NULL, isStatic))) return zv::Val();
+				if (UNEXPECTED(!pt_class_member_reflection_bool(property.ref().deref().raw(), PT_CMR_IS_STATIC, isStatic))) return zv::Val();
 				if (!isStatic) {
 					bool canRead;
 					if (UNEXPECTED(!callBool(zv::Ref(scope), PT_LC("canreadproperty"), 1, property.raw(), canRead))) return zv::Val();
@@ -1918,7 +1918,7 @@ public:
 						zv::Val naked = extensionCall(entry.value(), PT_LC("getproperty"), propertyName);
 						if (UNEXPECTED(naked.isUndef())) return zv::Val();
 						bool isStatic;
-						if (UNEXPECTED(!callBool(naked.ref(), PT_LC("isstatic"), 0, NULL, isStatic))) return zv::Val();
+						if (UNEXPECTED(!pt_class_member_reflection_bool(naked.ref().deref().raw(), PT_CMR_IS_STATIC, isStatic))) return zv::Val();
 						if (isStatic) continue;
 
 						zv::Val property = wrapExtendedProperty(propertyName, std::move(naked));
@@ -1967,11 +1967,11 @@ public:
 			zv::Val naked = extensionGetProperty(phpExtension.ref(), propertyName, outOfClassScope.raw());
 			if (UNEXPECTED(naked.isUndef())) return zv::Val();
 			bool isStatic;
-			if (UNEXPECTED(!callBool(naked.ref(), PT_LC("isstatic"), 0, NULL, isStatic))) return zv::Val();
+			if (UNEXPECTED(!pt_class_member_reflection_bool(naked.ref().deref().raw(), PT_CMR_IS_STATIC, isStatic))) return zv::Val();
 			if (isStatic) {
 				zv::Val property = wrapExtendedProperty(propertyName, std::move(naked));
 				if (UNEXPECTED(property.isUndef())) return zv::Val();
-				if (UNEXPECTED(!callBool(property.ref(), PT_LC("isstatic"), 0, NULL, isStatic))) return zv::Val();
+				if (UNEXPECTED(!pt_class_member_reflection_bool(property.ref().deref().raw(), PT_CMR_IS_STATIC, isStatic))) return zv::Val();
 				if (isStatic) {
 					memoSet(PT_CR_PROP_STATIC_PROPERTIES, key, zv::Val::copyOf(property.ref()));
 					return property;
@@ -3360,7 +3360,9 @@ public:
 		if (!hasConstructor_) return zv::Val::null();
 		zv::Val attributeConstructor = crGetConstructor(attributeClass.ref());
 		if (UNEXPECTED(attributeConstructor.isUndef())) return zv::Val();
-		zv::Val attributeConstructorVariant = callOn(attributeConstructor.ref(), PT_LC("getonlyvariant"), 0, NULL);
+		zv::Val attributeConstructorVariant = attributeConstructor.ref().isObject()
+			? pt_extended_method_reflection_call(attributeConstructor.raw(), PT_MR_GET_ONLY_VARIANT)
+			: callOn(attributeConstructor.ref(), PT_LC("getonlyvariant"), 0, NULL);
 		if (UNEXPECTED(attributeConstructorVariant.isUndef())) return zv::Val();
 
 		zv::Val flagType;
@@ -3376,7 +3378,9 @@ public:
 			ZVAL_STR(&classNameArg, attributeName);
 			zv::Val class_ = pt_type_new(PT_CLASS_FULLY_QUALIFIED, 1, &classNameArg);
 			if (UNEXPECTED(class_.isUndef())) return zv::Val();
-			zv::Val constructorName = callOn(attributeConstructor.ref(), PT_LC("getname"), 0, NULL);
+			zv::Val constructorName = attributeConstructor.ref().isObject()
+				? pt_extended_method_reflection_call(attributeConstructor.raw(), PT_MR_GET_NAME)
+				: callOn(attributeConstructor.ref(), PT_LC("getname"), 0, NULL);
 			if (UNEXPECTED(constructorName.isUndef())) return zv::Val();
 			zv::Args staticCallArgs{class_.raw(), constructorName.raw(), arguments.raw()};
 			zv::Val staticCallNode = pt_type_new(PT_CLASS_STATIC_CALL, 3, staticCallArgs);

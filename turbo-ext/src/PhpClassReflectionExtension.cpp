@@ -833,7 +833,7 @@ public:
 				ZVAL_FALSE(&args[17]);
 				ZVAL_FALSE(&args[18]);
 				ZVAL_TRUE(&args[19]);
-				return pt_type_new(PT_CLASS_PHP_PROPERTY_REFLECTION, 20, args);
+				return pt_php_property_reflection_new(args);
 			}
 		}
 
@@ -1142,7 +1142,7 @@ public:
 		ZVAL_TRUE(&args[17]);
 		ZVAL_BOOL(&args[18], isPrivate);
 		ZVAL_BOOL(&args[19], isPublic);
-		zv::Val nativeProperty = pt_type_new(PT_CLASS_PHP_PROPERTY_REFLECTION, 20, args);
+		zv::Val nativeProperty = pt_php_property_reflection_new(args);
 		if (UNEXPECTED(nativeProperty.isUndef())) return zv::Val();
 
 		zv::Val annotationProperty = annotationPropertyFor(classReflection, propertyName, scope, includingAnnotations, declaringIsEnum, propertyReflection.raw(), nativeProperty.raw());
@@ -1202,7 +1202,7 @@ public:
 		ZVAL_BOOL(&annotationArgs[17], annotationWritable);
 		ZVAL_FALSE(&annotationArgs[18]);
 		ZVAL_TRUE(&annotationArgs[19]);
-		return pt_type_new(PT_CLASS_PHP_PROPERTY_REFLECTION, 20, annotationArgs);
+		return pt_php_property_reflection_new(annotationArgs);
 	}
 
 	/* count($reflection->getAttributes(<class-map class>)) > 0 */

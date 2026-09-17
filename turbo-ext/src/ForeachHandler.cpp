@@ -63,7 +63,6 @@ pt_property_site pt_feh_scalar_value_site;
 pt_method_site pt_feh_get_attributes_site;
 pt_method_site pt_feh_set_attributes_site;
 pt_method_site pt_feh_get_doc_comment_site;
-pt_method_site pt_feh_get_throw_type_site;
 
 /* the permanent interned strings of the twin's literals (module startup) */
 zend_string *pt_feh_identical_narrowing_helper_class = nullptr;
@@ -96,7 +95,7 @@ zv::Val getThrowType(zval *method)
 		zend_throw_error(NULL, "Call to a member function getThrowType() on %s", zend_zval_value_name(method));
 		return zv::Val();
 	}
-	return pt_call_method_cached(pt_feh_get_throw_type_site, Z_OBJ_P(method), PT_LC("getthrowtype"), 0, NULL);
+	return pt_extended_method_reflection_call(method, PT_MR_GET_THROW_TYPE);
 }
 
 /* $stmt->getDocComment() === null: NodeAbstract's loop over getComments()

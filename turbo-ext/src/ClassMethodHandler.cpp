@@ -38,8 +38,6 @@ namespace {
 pt_method_site pt_cmh_get_doc_comment_site;
 pt_method_site pt_cmh_get_text_site;
 pt_method_site pt_cmh_parser_node_type_resolve_site;
-pt_method_site pt_cmh_get_declaring_class_site;
-pt_method_site pt_cmh_get_name_site;
 pt_method_site pt_cmh_get_return_node_site;
 pt_method_site pt_cmh_get_statement_result_site;
 pt_method_site pt_cmh_return_statement_get_scope_site;
@@ -66,13 +64,13 @@ zv::Val resolveParserNodeType(zval *type, zval *classReflection)
 /* $methodReflection->getDeclaringClass() */
 zv::Val getDeclaringClass(zval *methodReflection)
 {
-	return pt_call_method_cached(pt_cmh_get_declaring_class_site, Z_OBJ_P(methodReflection), PT_LC("getdeclaringclass"), 0, NULL);
+	return pt_extended_method_reflection_call(methodReflection, PT_MR_GET_DECLARING_CLASS);
 }
 
 /* $methodReflection->getName() */
 zv::Val getMethodName(zval *methodReflection)
 {
-	return pt_call_method_cached(pt_cmh_get_name_site, Z_OBJ_P(methodReflection), PT_LC("getname"), 0, NULL);
+	return pt_extended_method_reflection_call(methodReflection, PT_MR_GET_NAME);
 }
 
 /* $returnAfterFinallyNode->getReturnNode() */

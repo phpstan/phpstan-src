@@ -377,7 +377,7 @@ public:
 					zv::Args methodArgs{methodName.raw(), scope.raw()};
 					zv::Val method = pt_type_call(Z_OBJ_P(classRef.raw()), PT_LC("getmethod"), 2, methodArgs);
 					if (UNEXPECTED(method.isUndef())) return -1;
-					zv::Val isStatic = pt_type_call(Z_OBJ_P(method.raw()), PT_LC("isstatic"), 0, NULL);
+					zv::Val isStatic = Z_TYPE_P(method.raw()) == IS_OBJECT ? pt_extended_method_reflection_call(method.raw(), PT_MR_IS_STATIC) : pt_type_call(Z_OBJ_P(method.raw()), PT_LC("isstatic"), 0, NULL);
 					if (UNEXPECTED(isStatic.isUndef())) return -1;
 					if (!zend_is_true(isStatic.raw())) return PT_TRI_NO;
 				}

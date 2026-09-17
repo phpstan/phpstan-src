@@ -5125,6 +5125,22 @@ zv::Val protoAcceptorCall(zend_object *acceptor, pt_parameters_acceptor_member m
 	return protoChecked(acceptor, lcname, pt_parameters_acceptor_call(&acceptorZv, member), expected);
 }
 
+/* the same for a method / property reflection's getter, through the
+ * reflections' dispatch (a native reflection's body without a frame) */
+zv::Val protoMethodCall(zend_object *method, pt_method_reflection_member member, const char *lcname, ProtoReturn expected)
+{
+	zval methodZv;
+	ZVAL_OBJ(&methodZv, method);
+	return protoChecked(method, lcname, pt_extended_method_reflection_call(&methodZv, member), expected);
+}
+
+zv::Val protoPropertyCall(zend_object *property, pt_property_reflection_member member, const char *lcname, ProtoReturn expected)
+{
+	zval propertyZv;
+	ZVAL_OBJ(&propertyZv, property);
+	return protoChecked(property, lcname, pt_extended_property_reflection_call(&propertyZv, member), expected);
+}
+
 /* $a->equals($b); -1 = pending exception */
 int protoEquals(zval *a, zval *b)
 {
@@ -5310,27 +5326,27 @@ zv::Val protoVariant(PrototypeKind kind, const PrototypeTransformer &transformer
 zv::Val protoTransformMethod(PrototypeKind kind, const PrototypeTransformer &transformer, zval *declaringClass, zend_object *method, zval *assertsCallback)
 {
 	/* $selfOutType = $method->getSelfOutType() !== null ? transform(...) : null */
-	zv::Val selfOut = protoCall(method, PT_LC("getselfouttype"), PROTO_OBJECT_OR_NULL);
+	zv::Val selfOut = protoMethodCall(method, PT_MR_GET_SELF_OUT_TYPE, "getselfouttype", PROTO_OBJECT_OR_NULL);
 	if (UNEXPECTED(selfOut.isUndef())) return zv::Val();
 	zv::Val selfOutType = protoTransformNullable(transformer, selfOut.raw());
 	if (UNEXPECTED(selfOutType.isUndef())) return zv::Val();
-	zv::Val variants = protoCall(method, PT_LC("getvariants"), PROTO_ARRAY);
+	zv::Val variants = protoMethodCall(method, PT_MR_GET_VARIANTS, "getvariants", PROTO_ARRAY);
 	if (UNEXPECTED(variants.isUndef())) return zv::Val();
 	zv::Val mappedVariants = protoMap(variants.raw(), "getVariants()", [&](zend_object *acceptor) { return protoVariant(kind, transformer, acceptor, selfOutType); });
 	if (UNEXPECTED(mappedVariants.isUndef())) return zv::Val();
-	zv::Val namedArgumentsVariants = protoCall(method, PT_LC("getnamedargumentsvariants"), PROTO_ARRAY_OR_NULL);
+	zv::Val namedArgumentsVariants = protoMethodCall(method, PT_MR_GET_NAMED_ARGUMENTS_VARIANTS, "getnamedargumentsvariants", PROTO_ARRAY_OR_NULL);
 	if (UNEXPECTED(namedArgumentsVariants.isUndef())) return zv::Val();
 	zv::Val mappedNamedArgumentsVariants = zv::Val::null();
 	if (!namedArgumentsVariants.isNull()) {
 		mappedNamedArgumentsVariants = protoMap(namedArgumentsVariants.raw(), "getNamedArgumentsVariants()", [&](zend_object *acceptor) { return protoVariant(kind, transformer, acceptor, selfOutType); });
 		if (UNEXPECTED(mappedNamedArgumentsVariants.isUndef())) return zv::Val();
 	}
-	zv::Val throwType = protoCall(method, PT_LC("getthrowtype"), PROTO_OBJECT_OR_NULL);
+	zv::Val throwType = protoMethodCall(method, PT_MR_GET_THROW_TYPE, "getthrowtype", PROTO_OBJECT_OR_NULL);
 	if (UNEXPECTED(throwType.isUndef())) return zv::Val();
 	zv::Val transformedThrowType = protoTransformNullable(transformer, throwType.raw());
 	if (UNEXPECTED(transformedThrowType.isUndef())) return zv::Val();
 	/* $method->getAsserts()->mapTypes($callback) */
-	zv::Val asserts = protoCall(method, PT_LC("getasserts"), PROTO_OBJECT);
+	zv::Val asserts = protoMethodCall(method, PT_MR_GET_ASSERTS, "getasserts", PROTO_OBJECT);
 	if (UNEXPECTED(asserts.isUndef())) return zv::Val();
 	zv::Val mappedAsserts = pt_assertions_map_types(asserts.raw(), assertsCallback);
 	if (UNEXPECTED(mappedAsserts.isUndef())) return zv::Val();
@@ -5344,34 +5360,27 @@ zv::Val protoTransformMethod(PrototypeKind kind, const PrototypeTransformer &tra
  * UNDEF = pending exception */
 zv::Val protoTransformProperty(PrototypeKind kind, const PrototypeTransformer &transformer, zval *declaringClass, zend_object *property)
 {
-	zv::Val readableType = protoCall(property, PT_LC("getreadabletype"), PROTO_OBJECT);
+	zv::Val readableType = protoPropertyCall(property, PT_PROP_GET_READABLE_TYPE, "getreadabletype", PROTO_OBJECT);
 	if (UNEXPECTED(readableType.isUndef())) return zv::Val();
 	zv::Val transformedReadableType = transformer.transform(readableType.raw());
 	if (UNEXPECTED(transformedReadableType.isUndef())) return zv::Val();
-	zv::Val writableType = protoCall(property, PT_LC("getwritabletype"), PROTO_OBJECT);
+	zv::Val writableType = protoPropertyCall(property, PT_PROP_GET_WRITABLE_TYPE, "getwritabletype", PROTO_OBJECT);
 	if (UNEXPECTED(writableType.isUndef())) return zv::Val();
 	/* the Callback twin: $readableType->equals($writableType) ? $transformedReadableType : transform($writableType) */
 	zv::Val transformedWritableType = protoTransformUnlessEqual(kind, transformer, readableType.raw(), transformedReadableType.raw(), writableType.raw());
 	if (UNEXPECTED(transformedWritableType.isUndef())) return zv::Val();
-	zv::Val phpDocType = protoCall(property, PT_LC("getphpdoctype"), PROTO_OBJECT);
+	zv::Val phpDocType = protoPropertyCall(property, PT_PROP_GET_PHP_DOC_TYPE, "getphpdoctype", PROTO_OBJECT);
 	if (UNEXPECTED(phpDocType.isUndef())) return zv::Val();
 	zv::Val transformedPhpDocType = transformer.transform(phpDocType.raw());
 	if (UNEXPECTED(transformedPhpDocType.isUndef())) return zv::Val();
-	zv::Val nativeType = protoCall(property, PT_LC("getnativetype"), PROTO_OBJECT);
+	zv::Val nativeType = protoPropertyCall(property, PT_PROP_GET_NATIVE_TYPE, "getnativetype", PROTO_OBJECT);
 	if (UNEXPECTED(nativeType.isUndef())) return zv::Val();
 	/* the Callback twin: $phpDocType->equals($nativeType) ? $transformedPhpDocType : transform($nativeType) */
 	zv::Val transformedNativeType = protoTransformUnlessEqual(kind, transformer, phpDocType.raw(), transformedPhpDocType.raw(), nativeType.raw());
 	if (UNEXPECTED(transformedNativeType.isUndef())) return zv::Val();
 	zval propertyZv;
 	ZVAL_OBJ(&propertyZv, property);
-	zval args[6];
-	ZVAL_COPY_VALUE(&args[0], declaringClass);
-	ZVAL_COPY_VALUE(&args[1], &propertyZv);
-	ZVAL_COPY_VALUE(&args[2], transformedReadableType.raw());
-	ZVAL_COPY_VALUE(&args[3], transformedWritableType.raw());
-	ZVAL_COPY_VALUE(&args[4], transformedPhpDocType.raw());
-	ZVAL_COPY_VALUE(&args[5], transformedNativeType.raw());
-	return pt_type_new(PT_CLASS_CHANGED_TYPE_PROPERTY_REFLECTION, 6, args);
+	return pt_changed_type_property_reflection_new(declaringClass, &propertyZv, transformedReadableType.raw(), transformedWritableType.raw(), transformedPhpDocType.raw(), transformedNativeType.raw());
 }
 
 /* the shared body of getTransformedMethod() / getTransformedProperty():
@@ -5398,8 +5407,7 @@ zv::Val protoResolved(bool isMethod, PrototypeKind kind, const PrototypeTransfor
 		map = zv::Val::copyOf(zv::Ref(templateTypeMap.raw()));
 	}
 	if (isMethod) return pt_resolved_method_reflection_new(transformed.raw(), map.raw(), callSiteVarianceMap.raw());
-	zv::Args args{transformed.raw(), map.raw(), callSiteVarianceMap.raw()};
-	return pt_type_new(PT_CLASS_RESOLVED_PROPERTY_REFLECTION, 3, args);
+	return pt_resolved_property_reflection_new(transformed.raw(), map.raw(), callSiteVarianceMap.raw());
 }
 
 } // namespace

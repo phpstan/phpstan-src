@@ -8,18 +8,16 @@
  * supported, so it is exported as
  * pt_property_hook_throw_points_resolver_get_throw_points_from_property_hook().
  *
- * The reflection getters it asks — PhpPropertyReflection::getDeclaringClass()
- * / hasHook() / isPrivate() / isFinal() / getHook() and
- * PhpMethodFromParserNodeReflection::isPropertyHook() /
- * getHookedPropertyName() — only return a declared slot of their final
- * classes, so the slots are read in place (a pt_property_site each); the
- * hook's getThrowType() stays a call through a cached method site.
+ * The property reflection's getters — PhpPropertyReflection::getDeclaringClass()
+ * / hasHook() / isPrivate() / isFinal() / getHook() — are the native bodies
+ * reached through the property-reflection dispatch
+ * (pt_extended_property_reflection_call()), the hook's getThrowType() through
+ * the method-reflection one; PhpMethodFromParserNodeReflection::isPropertyHook()
+ * / getHookedPropertyName() only return a declared slot of their final class,
+ * so the slot is read in place (a pt_property_site).
  *
  * The file also carries the property-reflection readers the fetch handlers
- * share (pt_property_reflection_*): the getters of the final
- * ResolvedPropertyReflection / ChangedTypePropertyReflection /
- * PhpPropertyReflection chain that only return a slot (or a filled memo),
- * read in place, and the method through a cached site otherwise.
+ * share (pt_property_reflection_*), now thin names for that dispatch.
  */
 
 #include "support.h"
@@ -38,22 +36,11 @@ namespace {
 
 /* {{{ declared slots of the PHP reflection classes */
 
-pt_property_site pt_phtpr_prop_declaring_class_site;
-pt_property_site pt_phtpr_prop_get_hook_site;
-pt_property_site pt_phtpr_prop_set_hook_site;
-pt_property_site pt_phtpr_prop_private_site;
-pt_property_site pt_phtpr_prop_is_final_site;
 pt_property_site pt_phtpr_method_hook_for_property_site;
 pt_property_site pt_phtpr_fetch_var_site;
 pt_property_site pt_phtpr_fetch_name_site;
 pt_property_site pt_phtpr_variable_name_site;
 pt_property_site pt_phtpr_identifier_name_site;
-pt_method_site pt_phtpr_get_throw_type_site;
-pt_method_site pt_phtpr_get_declaring_class_site;
-pt_method_site pt_phtpr_has_hook_site;
-pt_method_site pt_phtpr_is_private_site;
-pt_method_site pt_phtpr_is_final_site;
-pt_method_site pt_phtpr_get_hook_site;
 pt_method_site pt_phtpr_is_property_hook_site;
 pt_method_site pt_phtpr_get_hooked_property_name_site;
 
@@ -91,60 +78,29 @@ inline bool isExactly(zval *object, int classIdx)
 
 /* }}} */
 
-/* {{{ PhpPropertyReflection getters (the slot of exactly the final class, the
- * method otherwise) */
+/* {{{ PhpPropertyReflection getters (the native bodies through the
+ * property-reflection dispatch of ResolvedPropertyReflection.cpp) */
 
 zv::Val phpPropertyGetDeclaringClass(zval *reflection)
 {
-	if (EXPECTED(isExactly(reflection, PT_CLASS_PHP_PROPERTY_REFLECTION))) {
-		zval *slot = declaredSlot(pt_phtpr_prop_declaring_class_site, reflection, PT_LC("declaringClass"));
-		if (EXPECTED(Z_TYPE_P(slot) == IS_OBJECT)) return zv::Val::copyOf(zv::Ref(slot));
-	}
-	return pt_call_method_cached(pt_phtpr_get_declaring_class_site, Z_OBJ_P(reflection), PT_LC("getdeclaringclass"), 0, NULL);
+	return pt_extended_property_reflection_call(reflection, PT_PROP_GET_DECLARING_CLASS);
 }
 
-/* $reflection->hasHook($hookType): `$hookType === 'get' ? $this->getHook !==
- * null : $this->setHook !== null` */
+/* $reflection->hasHook($hookType) */
 [[nodiscard]] bool phpPropertyHasHook(zval *reflection, zend_string *hookType, bool &out)
 {
-	if (EXPECTED(isExactly(reflection, PT_CLASS_PHP_PROPERTY_REFLECTION))) {
-		bool get = zend_string_equals_literal(hookType, "get");
-		zval *slot = get
-			? declaredSlot(pt_phtpr_prop_get_hook_site, reflection, PT_LC("getHook"))
-			: declaredSlot(pt_phtpr_prop_set_hook_site, reflection, PT_LC("setHook"));
-		if (EXPECTED(Z_TYPE_P(slot) != IS_UNDEF)) {
-			out = Z_TYPE_P(slot) != IS_NULL;
-			return true;
-		}
-	}
-	zval hookTypeZv;
-	ZVAL_STR(&hookTypeZv, hookType);
-	return callBool(pt_phtpr_has_hook_site, reflection, PT_LC("hashook"), 1, &hookTypeZv, out);
+	return pt_extended_property_reflection_has_hook(reflection, hookType, out);
 }
 
 [[nodiscard]] bool phpPropertyIsPrivate(zval *reflection, bool &out)
 {
-	if (EXPECTED(isExactly(reflection, PT_CLASS_PHP_PROPERTY_REFLECTION))) {
-		zval *slot = declaredSlot(pt_phtpr_prop_private_site, reflection, PT_LC("private"));
-		if (EXPECTED(Z_TYPE_P(slot) == IS_TRUE || Z_TYPE_P(slot) == IS_FALSE)) {
-			out = Z_TYPE_P(slot) == IS_TRUE;
-			return true;
-		}
-	}
-	return callBool(pt_phtpr_is_private_site, reflection, PT_LC("isprivate"), 0, NULL, out);
+	return pt_extended_property_reflection_bool(reflection, PT_PROP_IS_PRIVATE, out);
 }
 
-/* $reflection->isFinal()->yes(): TrinaryLogic::createFromBoolean($this->isFinal) */
+/* $reflection->isFinal()->yes() */
 [[nodiscard]] bool phpPropertyIsFinalYes(zval *reflection, bool &out)
 {
-	if (EXPECTED(isExactly(reflection, PT_CLASS_PHP_PROPERTY_REFLECTION))) {
-		zval *slot = declaredSlot(pt_phtpr_prop_is_final_site, reflection, PT_LC("isFinal"));
-		if (EXPECTED(Z_TYPE_P(slot) == IS_TRUE || Z_TYPE_P(slot) == IS_FALSE)) {
-			out = Z_TYPE_P(slot) == IS_TRUE;
-			return true;
-		}
-	}
-	zv::Val isFinal = pt_call_method_cached(pt_phtpr_is_final_site, Z_OBJ_P(reflection), PT_LC("isfinal"), 0, NULL);
+	zv::Val isFinal = pt_extended_property_reflection_call(reflection, PT_PROP_IS_FINAL);
 	if (UNEXPECTED(isFinal.isUndef())) return false;
 	if (UNEXPECTED(!isFinal.ref().isObject())) {
 		zend_throw_error(NULL, "Call to a member function yes() on %s", zend_zval_value_name(isFinal.raw()));
@@ -159,16 +115,7 @@ zv::Val phpPropertyGetDeclaringClass(zval *reflection)
 /* $reflection->getHook($hookType) */
 zv::Val phpPropertyGetHook(zval *reflection, zend_string *hookType)
 {
-	if (EXPECTED(isExactly(reflection, PT_CLASS_PHP_PROPERTY_REFLECTION))) {
-		bool get = zend_string_equals_literal(hookType, "get");
-		zval *slot = get
-			? declaredSlot(pt_phtpr_prop_get_hook_site, reflection, PT_LC("getHook"))
-			: declaredSlot(pt_phtpr_prop_set_hook_site, reflection, PT_LC("setHook"));
-		if (EXPECTED(Z_TYPE_P(slot) == IS_OBJECT)) return zv::Val::copyOf(zv::Ref(slot));
-	}
-	zval hookTypeZv;
-	ZVAL_STR(&hookTypeZv, hookType);
-	return pt_call_method_cached(pt_phtpr_get_hook_site, Z_OBJ_P(reflection), PT_LC("gethook"), 1, &hookTypeZv);
+	return pt_extended_property_reflection_get_hook(reflection, hookType);
 }
 
 /* }}} */
@@ -288,7 +235,7 @@ public:
 			zend_throw_error(NULL, "Call to a member function getThrowType() on %s", zend_zval_value_name(getHook.raw()));
 			return zv::Val();
 		}
-		zv::Val throwType = pt_call_method_cached(pt_phtpr_get_throw_type_site, Z_OBJ_P(getHook.raw()), PT_LC("getthrowtype"), 0, NULL);
+		zv::Val throwType = pt_extended_method_reflection_call(getHook.raw(), PT_MR_GET_THROW_TYPE);
 		if (UNEXPECTED(throwType.isUndef())) return zv::Val();
 
 		if (!throwType.isNull()) {
@@ -362,139 +309,39 @@ using phpstanturbo::PropertyHookThrowPointsResolver;
 
 zv::Val pt_property_hook_throw_points_resolver_get_throw_points_from_property_hook(zval *resolver, zval *scope, zval *propertyFetch, zval *propertyReflection, zend_string *hookName)
 {
-	zend_class_entry *phpPropertyReflectionCe = pt_class(PT_CLASS_PHP_PROPERTY_REFLECTION);
-	if (UNEXPECTED(phpPropertyReflectionCe == NULL)) return zv::Val();
-	if (EXPECTED(Z_OBJCE_P(resolver) == pt_ce_property_hook_throw_points_resolver && Z_TYPE_P(propertyReflection) == IS_OBJECT && instanceof_function(Z_OBJCE_P(propertyReflection), phpPropertyReflectionCe))) {
+	if (EXPECTED(Z_OBJCE_P(resolver) == pt_ce_property_hook_throw_points_resolver && Z_TYPE_P(propertyReflection) == IS_OBJECT && instanceof_function(Z_OBJCE_P(propertyReflection), pt_ce_php_property_reflection))) {
 		return PropertyHookThrowPointsResolver(Z_OBJ_P(resolver)).getThrowPointsFromPropertyHook(scope, propertyFetch, propertyReflection, hookName);
 	}
 	zv::Args argv{scope, propertyFetch, propertyReflection, hookName};
 	return pt_type_call(Z_OBJ_P(resolver), PT_LC("getthrowpointsfrompropertyhook"), 4, argv);
 }
 
-/* {{{ the property-reflection readers */
-
-namespace {
-
-pt_property_site pt_prr_resolved_reflection_site;
-pt_property_site pt_prr_resolved_readable_type_site;
-pt_property_site pt_prr_resolved_writable_type_site;
-pt_property_site pt_prr_changed_declaring_class_site;
-pt_property_site pt_prr_changed_reflection_site;
-pt_property_site pt_prr_changed_readable_type_site;
-pt_property_site pt_prr_changed_writable_type_site;
-pt_property_site pt_prr_changed_native_type_site;
-pt_property_site pt_prr_php_native_type_site;
-pt_property_site pt_prr_php_readable_type_site;
-pt_method_site pt_prr_get_declaring_class_site;
-pt_method_site pt_prr_has_native_type_site;
-pt_method_site pt_prr_get_native_type_site;
-pt_method_site pt_prr_get_readable_type_site;
-pt_method_site pt_prr_get_writable_type_site;
-
-/* the wrapped reflection a getter of the wrapper only forwards to (borrowed),
- * NULL for any other class */
-zval *forwardedReflection(zval *reflection, bool resolved, bool changedType)
-{
-	if (resolved && isExactly(reflection, PT_CLASS_RESOLVED_PROPERTY_REFLECTION)) {
-		zval *inner = declaredSlot(pt_prr_resolved_reflection_site, reflection, PT_LC("reflection"));
-		return Z_TYPE_P(inner) == IS_OBJECT ? inner : NULL;
-	}
-	if (changedType && isExactly(reflection, PT_CLASS_CHANGED_TYPE_PROPERTY_REFLECTION)) {
-		zval *inner = declaredSlot(pt_prr_changed_reflection_site, reflection, PT_LC("reflection"));
-		return Z_TYPE_P(inner) == IS_OBJECT ? inner : NULL;
-	}
-	return NULL;
-}
-
-/* a slot holding an object (a set memo), NULL otherwise */
-inline zval *objectSlot(pt_property_site &site, zval *object, const char *name, size_t len)
-{
-	zval *slot = declaredSlot(site, object, name, len);
-	return Z_TYPE_P(slot) == IS_OBJECT ? slot : NULL;
-}
-
-} // namespace
+/* {{{ the property-reflection readers (the property-reflection dispatch of
+ * ResolvedPropertyReflection.cpp) */
 
 zv::Val pt_property_reflection_get_declaring_class(zval *reflection)
 {
-	for (;;) {
-		zval *inner = forwardedReflection(reflection, true, false);
-		if (inner == NULL) break;
-		reflection = inner;
-	}
-	if (isExactly(reflection, PT_CLASS_CHANGED_TYPE_PROPERTY_REFLECTION)) {
-		zval *slot = objectSlot(pt_prr_changed_declaring_class_site, reflection, PT_LC("declaringClass"));
-		if (EXPECTED(slot != NULL)) return zv::Val::copyOf(zv::Ref(slot));
-	}
-	if (isExactly(reflection, PT_CLASS_PHP_PROPERTY_REFLECTION)) return phpPropertyGetDeclaringClass(reflection);
-	return pt_call_method_cached(pt_prr_get_declaring_class_site, Z_OBJ_P(reflection), PT_LC("getdeclaringclass"), 0, NULL);
+	return pt_extended_property_reflection_call(reflection, PT_PROP_GET_DECLARING_CLASS);
 }
 
 bool pt_property_reflection_has_native_type(zval *reflection, bool &out)
 {
-	for (;;) {
-		zval *inner = forwardedReflection(reflection, true, true);
-		if (inner == NULL) break;
-		reflection = inner;
-	}
-	if (isExactly(reflection, PT_CLASS_PHP_PROPERTY_REFLECTION)) {
-		/* !$this->nativeType instanceof MixedType || $this->nativeType->isExplicitMixed() */
-		zval *nativeType = objectSlot(pt_prr_php_native_type_site, reflection, PT_LC("nativeType"));
-		if (EXPECTED(nativeType != NULL)) {
-			if (!instanceof_function(Z_OBJCE_P(nativeType), pt_ce_mixed_type)) {
-				out = true;
-				return true;
-			}
-			zv::Val explicitMixed = pt_type_call(Z_OBJ_P(nativeType), PT_LC("isexplicitmixed"), 0, NULL);
-			if (UNEXPECTED(explicitMixed.isUndef())) return false;
-			out = zend_is_true(explicitMixed.raw());
-			return true;
-		}
-	}
-	return callBool(pt_prr_has_native_type_site, reflection, PT_LC("hasnativetype"), 0, NULL, out);
+	return pt_extended_property_reflection_bool(reflection, PT_PROP_HAS_NATIVE_TYPE, out);
 }
 
 zv::Val pt_property_reflection_get_native_type(zval *reflection)
 {
-	for (;;) {
-		zval *inner = forwardedReflection(reflection, true, false);
-		if (inner == NULL) break;
-		reflection = inner;
-	}
-	if (isExactly(reflection, PT_CLASS_CHANGED_TYPE_PROPERTY_REFLECTION)) {
-		zval *slot = objectSlot(pt_prr_changed_native_type_site, reflection, PT_LC("nativeType"));
-		if (EXPECTED(slot != NULL)) return zv::Val::copyOf(zv::Ref(slot));
-	} else if (isExactly(reflection, PT_CLASS_PHP_PROPERTY_REFLECTION)) {
-		zval *slot = objectSlot(pt_prr_php_native_type_site, reflection, PT_LC("nativeType"));
-		if (EXPECTED(slot != NULL)) return zv::Val::copyOf(zv::Ref(slot));
-	}
-	return pt_call_method_cached(pt_prr_get_native_type_site, Z_OBJ_P(reflection), PT_LC("getnativetype"), 0, NULL);
+	return pt_extended_property_reflection_call(reflection, PT_PROP_GET_NATIVE_TYPE);
 }
 
 zv::Val pt_property_reflection_get_readable_type(zval *reflection)
 {
-	zval *slot = NULL;
-	if (isExactly(reflection, PT_CLASS_RESOLVED_PROPERTY_REFLECTION)) {
-		slot = objectSlot(pt_prr_resolved_readable_type_site, reflection, PT_LC("readableType"));
-	} else if (isExactly(reflection, PT_CLASS_CHANGED_TYPE_PROPERTY_REFLECTION)) {
-		slot = objectSlot(pt_prr_changed_readable_type_site, reflection, PT_LC("readableType"));
-	} else if (isExactly(reflection, PT_CLASS_PHP_PROPERTY_REFLECTION)) {
-		slot = objectSlot(pt_prr_php_readable_type_site, reflection, PT_LC("readableType"));
-	}
-	if (EXPECTED(slot != NULL)) return zv::Val::copyOf(zv::Ref(slot));
-	return pt_call_method_cached(pt_prr_get_readable_type_site, Z_OBJ_P(reflection), PT_LC("getreadabletype"), 0, NULL);
+	return pt_extended_property_reflection_call(reflection, PT_PROP_GET_READABLE_TYPE);
 }
 
 zv::Val pt_property_reflection_get_writable_type(zval *reflection)
 {
-	zval *slot = NULL;
-	if (isExactly(reflection, PT_CLASS_RESOLVED_PROPERTY_REFLECTION)) {
-		slot = objectSlot(pt_prr_resolved_writable_type_site, reflection, PT_LC("writableType"));
-	} else if (isExactly(reflection, PT_CLASS_CHANGED_TYPE_PROPERTY_REFLECTION)) {
-		slot = objectSlot(pt_prr_changed_writable_type_site, reflection, PT_LC("writableType"));
-	}
-	if (EXPECTED(slot != NULL)) return zv::Val::copyOf(zv::Ref(slot));
-	return pt_call_method_cached(pt_prr_get_writable_type_site, Z_OBJ_P(reflection), PT_LC("getwritabletype"), 0, NULL);
+	return pt_extended_property_reflection_call(reflection, PT_PROP_GET_WRITABLE_TYPE);
 }
 
 /* }}} */

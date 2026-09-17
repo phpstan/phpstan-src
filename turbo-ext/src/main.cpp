@@ -594,6 +594,11 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_richer_scope_get_type_helper();
 	pt_register_nullsafe_operator_helper();
 	pt_register_loop_written_variable_names();
+	/* the property reflections — PhpPropertyReflection first, which
+	 * ChangedTypePropertyReflection and ResolvedPropertyReflection wrap */
+	pt_register_php_property_reflection();
+	pt_register_changed_type_property_reflection();
+	pt_register_resolved_property_reflection();
 
 	return SUCCESS;
 }

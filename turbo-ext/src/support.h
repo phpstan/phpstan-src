@@ -163,8 +163,6 @@ enum {
 	PT_CLASS_REFLECTION_ENUM,
 	PT_CLASS_MEMOIZING_REFLECTION_PROVIDER,
 	PT_CLASS_UNRESOLVABLE_TYPE_RESULT,
-	PT_CLASS_RESOLVED_PROPERTY_REFLECTION,
-	PT_CLASS_CHANGED_TYPE_PROPERTY_REFLECTION,
 	PT_CLASS_UNDEFINED_VARIABLE_EXCEPTION,
 	PT_CLASS_PROPERTY_INITIALIZATION_EXPR,
 	PT_CLASS_POSSIBLY_IMPURE_CALL_EXPR,
@@ -201,7 +199,6 @@ enum {
 	PT_CLASS_VARIABLE_WRITES_NODE,
 	PT_CLASS_VOID_TO_NULL_TRAVERSER,
 	PT_CLASS_ALWAYS_REMEMBERED_EXPR,
-	PT_CLASS_PHP_PROPERTY_REFLECTION,
 	PT_CLASS_NATIVE_METHOD_REFLECTION,
 	PT_CLASS_ENUM_CASES_METHOD_REFLECTION,
 	PT_CLASS_PRIVATE_PROPERTY_ATTRIBUTE,
@@ -4413,6 +4410,113 @@ zv::Val pt_member_adapter_get_declaring_class_name(zval *adapter);
 /* $adapter->hasConstant($name) && ($c = $adapter->getReflectionConstant($name)) !== false
  * ? $c->getDeclaringClass()->getName() : null; false = pending exception */
 [[nodiscard]] bool pt_class_adapter_constant_declaring_class_name(zval *adapter, zend_string *name, zv::Val &out);
+
+/* }}} */
+
+/* {{{ the property reflections (PhpPropertyReflection.cpp,
+ * ChangedTypePropertyReflection.cpp, ResolvedPropertyReflection.cpp) —
+ * registered at the END of the sequence */
+
+extern zend_class_entry *pt_ce_php_property_reflection;
+extern zend_class_entry *pt_ce_changed_type_property_reflection;
+extern zend_class_entry *pt_ce_resolved_property_reflection;
+void pt_register_php_property_reflection();
+void pt_register_changed_type_property_reflection();
+void pt_register_resolved_property_reflection();
+
+/* the ExtendedPropertyReflection interface's methods without arguments */
+enum pt_property_reflection_member
+{
+	PT_PROP_GET_NAME = 0,
+	PT_PROP_GET_DECLARING_CLASS,
+	PT_PROP_IS_STATIC,
+	PT_PROP_IS_PRIVATE,
+	PT_PROP_IS_PUBLIC,
+	PT_PROP_GET_DOC_COMMENT,
+	PT_PROP_GET_READABLE_TYPE,
+	PT_PROP_GET_WRITABLE_TYPE,
+	PT_PROP_CAN_CHANGE_TYPE_AFTER_ASSIGNMENT,
+	PT_PROP_IS_READABLE,
+	PT_PROP_IS_WRITABLE,
+	PT_PROP_IS_DEPRECATED,
+	PT_PROP_GET_DEPRECATED_DESCRIPTION,
+	PT_PROP_IS_INTERNAL,
+	PT_PROP_HAS_PHP_DOC_TYPE,
+	PT_PROP_GET_PHP_DOC_TYPE,
+	PT_PROP_HAS_NATIVE_TYPE,
+	PT_PROP_GET_NATIVE_TYPE,
+	PT_PROP_IS_ABSTRACT,
+	PT_PROP_IS_FINAL_BY_KEYWORD,
+	PT_PROP_IS_FINAL,
+	PT_PROP_IS_VIRTUAL,
+	PT_PROP_IS_PROTECTED_SET,
+	PT_PROP_IS_PRIVATE_SET,
+	PT_PROP_GET_ATTRIBUTES,
+	PT_PROP_IS_DUMMY,
+	PT_PROP_MEMBER_COUNT
+};
+
+/* $property->method() of any property reflection: the native body of a
+ * ResolvedPropertyReflection / ChangedTypePropertyReflection /
+ * PhpPropertyReflection, the method through one cached site per member
+ * otherwise; the answer as the method returns it (bools as PHP bools);
+ * UNDEF = pending exception. _bool coerces the answer; false = pending
+ * exception. The per-class _call entries take that class's body
+ * unconditionally. */
+zv::Val pt_extended_property_reflection_call(zval *property, pt_property_reflection_member member);
+[[nodiscard]] bool pt_extended_property_reflection_bool(zval *property, pt_property_reflection_member member, bool &out);
+/* $property->hasHook($hookType) / ->getHook($hookType) */
+[[nodiscard]] bool pt_extended_property_reflection_has_hook(zval *property, zend_string *hookType, bool &out);
+zv::Val pt_extended_property_reflection_get_hook(zval *property, zend_string *hookType);
+zv::Val pt_php_property_reflection_call(zend_object *property, pt_property_reflection_member member);
+zv::Val pt_changed_type_property_reflection_call(zend_object *property, pt_property_reflection_member member);
+zv::Val pt_resolved_property_reflection_call(zend_object *property, pt_property_reflection_member member);
+[[nodiscard]] bool pt_php_property_reflection_has_hook(zend_object *property, zend_string *hookType, bool &out);
+zv::Val pt_php_property_reflection_get_hook(zend_object *property, zend_string *hookType);
+[[nodiscard]] bool pt_changed_type_property_reflection_has_hook(zend_object *property, zend_string *hookType, bool &out);
+zv::Val pt_changed_type_property_reflection_get_hook(zend_object *property, zend_string *hookType);
+/* PhpPropertyReflection's getters outside the interface */
+[[nodiscard]] bool pt_php_property_reflection_is_hooked(zend_object *property, bool &out);
+[[nodiscard]] bool pt_php_property_reflection_is_promoted(zend_object *property, bool &out);
+[[nodiscard]] bool pt_php_property_reflection_is_read_only(zend_object *property, bool &out);
+zv::Val pt_php_property_reflection_get_native_reflection(zend_object *property);
+/* ->getOriginalReflection() of the two wrappers */
+zv::Val pt_changed_type_property_reflection_get_original_reflection(zend_object *property);
+zv::Val pt_resolved_property_reflection_get_original_reflection(zend_object *property);
+/* new PhpPropertyReflection(...$argv) (the twenty constructor arguments in
+ * order, borrowed) / new ChangedTypePropertyReflection(...) / new
+ * ResolvedPropertyReflection(...); UNDEF = pending exception */
+zv::Val pt_php_property_reflection_new(zval *argv);
+zv::Val pt_changed_type_property_reflection_new(zval *declaringClass, zval *reflection, zval *readableType, zval *writableType, zval *phpDocType, zval *nativeType);
+zv::Val pt_resolved_property_reflection_new(zval *reflection, zval *templateTypeMap, zval *callSiteVarianceMap);
+/* TypehintHelper::decideType($type, $phpDocType) for native callers (borrowed,
+ * NULL or IS_NULL for a null PHPDoc type); UNDEF = pending exception */
+zv::Val pt_typehint_helper_decide_type(zval *type, zval *phpDocType);
+
+/* the ClassMemberReflection interface's methods */
+enum pt_class_member_reflection_member
+{
+	PT_CMR_GET_DECLARING_CLASS = 0,
+	PT_CMR_IS_STATIC,
+	PT_CMR_IS_PRIVATE,
+	PT_CMR_IS_PUBLIC,
+	PT_CMR_GET_DOC_COMMENT,
+	PT_CMR_MEMBER_COUNT
+};
+/* $member->method() of any class member reflection (a property, method or
+ * constant): the property- / method-reflection dispatch for the reflections
+ * it knows, the method through one cached site per member otherwise; UNDEF /
+ * false = pending exception */
+zv::Val pt_class_member_reflection_call(zval *member, pt_class_member_reflection_member which);
+[[nodiscard]] bool pt_class_member_reflection_bool(zval *member, pt_class_member_reflection_member which, bool &out);
+/* whether the class entry is exactly PhpMethodReflection (resolved through the
+ * class map without autoloading) */
+bool pt_is_php_method_reflection(zend_class_entry *ce);
+/* a PhpMethodReflection getter answered from the object's slots, memos and
+ * adapter (PhpMethodReflectionAccess.cpp): 1 = out holds the answer, 0 = the
+ * method must answer (any other object, an unfilled memo, an uninitialized
+ * slot), -1 = pending exception */
+int pt_php_method_reflection_answer(zend_object *method, pt_method_reflection_member member, zv::Val &out);
 
 /* }}} */
 

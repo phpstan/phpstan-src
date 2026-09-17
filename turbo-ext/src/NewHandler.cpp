@@ -60,7 +60,6 @@ pt_method_site pt_nh_find_property_reflection_from_node_site;
 pt_method_site pt_nh_get_writable_type_site;
 pt_method_site pt_nh_node_get_class_reflection_site;
 pt_method_site pt_nh_node_get_method_reflection_site;
-pt_method_site pt_nh_node_method_reflection_get_name_site;
 pt_method_site pt_nh_node_get_statement_result_site;
 pt_method_site pt_nh_node_get_impure_points_site;
 pt_method_site pt_nh_get_object_type_or_class_string_object_type_site;
@@ -145,7 +144,7 @@ zv::Val nodeGetMethodReflection(zval *node)
 
 zv::Val nodeMethodReflectionGetName(zval *methodReflection)
 {
-	return pt_call_method_cached(pt_nh_node_method_reflection_get_name_site, Z_OBJ_P(methodReflection), PT_LC("getname"), 0, NULL);
+	return pt_extended_method_reflection_call(methodReflection, PT_MR_GET_NAME);
 }
 
 zv::Val nodeGetStatementResult(zval *node)

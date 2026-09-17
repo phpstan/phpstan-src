@@ -645,7 +645,7 @@ public:
 				zend_type_error("phpstan_turbo: getNakedProperty() must return an object");
 				return zv::Val();
 			}
-			resolvedClassReflection = pt_type_call(Z_OBJ_P(property.raw()), PT_LC("getdeclaringclass"), 0, NULL);
+			resolvedClassReflection = pt_extended_property_reflection_call(property.raw(), PT_PROP_GET_DECLARING_CLASS);
 			if (UNEXPECTED(resolvedClassReflection.isUndef())) return zv::Val();
 		}
 
@@ -758,7 +758,7 @@ public:
 				zend_type_error("phpstan_turbo: getNakedMethod() must return an object");
 				return zv::Val();
 			}
-			resolvedClassReflection = pt_type_call(Z_OBJ_P(method.raw()), PT_LC("getdeclaringclass"), 0, NULL);
+			resolvedClassReflection = pt_extended_method_reflection_call(method.raw(), PT_MR_GET_DECLARING_CLASS);
 			if (UNEXPECTED(resolvedClassReflection.isUndef())) return zv::Val();
 		}
 
@@ -1462,25 +1462,23 @@ public:
 					return zv::Val();
 				}
 				bool isStatic;
-				if (UNEXPECTED(!pt_type_call_bool(nativeProperty.asObject(), PT_LC("isstatic"), 0, NULL, isStatic))) return zv::Val();
+				if (UNEXPECTED(!pt_property_adapter_is_static(nativeProperty.raw(), isStatic))) return zv::Val();
 				if (isStatic) continue;
 
-				zv::Val nativeDeclaringClass = pt_type_call(nativeProperty.asObject(), PT_LC("getdeclaringclass"), 0, NULL);
-				if (UNEXPECTED(nativeDeclaringClass.isUndef())) return zv::Val();
-				zv::Val nativeDeclaringName = pt_type_call(Z_OBJ_P(nativeDeclaringClass.raw()), PT_LC("getname"), 0, NULL);
+				zv::Val nativeDeclaringName = pt_member_adapter_get_declaring_class_name(nativeProperty.raw());
 				if (UNEXPECTED(nativeDeclaringName.isUndef())) return zv::Val();
 				zv::Val declaringClass = pt_reflection_provider_get_class(Z_OBJ_P(provider.raw()), nativeDeclaringName.raw());
 				if (UNEXPECTED(declaringClass.isUndef())) return zv::Val();
-				zv::Val nativeName = pt_type_call(nativeProperty.asObject(), PT_LC("getname"), 0, NULL);
+				zv::Val nativeName = pt_property_adapter_get_name(nativeProperty.raw());
 				if (UNEXPECTED(nativeName.isUndef())) return zv::Val();
 				zv::Val property = pt_type_call(Z_OBJ_P(declaringClass.raw()), PT_LC("getnativeproperty"), 1, nativeName.raw());
 				if (UNEXPECTED(property.isUndef())) return zv::Val();
 
 				zv::Str keyName = zv::Str::adopt(zval_get_string(nativeName.raw()));
 				bool isPrivate, isProtected = false;
-				if (UNEXPECTED(!pt_type_call_bool(nativeProperty.asObject(), PT_LC("isprivate"), 0, NULL, isPrivate))) return zv::Val();
+				if (UNEXPECTED(!pt_property_adapter_is_private(nativeProperty.raw(), isPrivate))) return zv::Val();
 				if (!isPrivate) {
-					if (UNEXPECTED(!pt_type_call_bool(nativeProperty.asObject(), PT_LC("isprotected"), 0, NULL, isProtected))) return zv::Val();
+					if (UNEXPECTED(!pt_property_adapter_is_protected(nativeProperty.raw(), isProtected))) return zv::Val();
 				}
 				if (isPrivate) {
 					/* sprintf("\0%s\0%s", $declaringClass->getName(), $keyName) */
@@ -1506,7 +1504,7 @@ public:
 				zval key;
 				if (UNEXPECTED(!pt_constant_string_type_new(&key, keyName.get()))) return zv::Val();
 				arrayKeys.push(zv::Val::adopt(key));
-				zv::Val readableType = pt_type_call(Z_OBJ_P(property.raw()), PT_LC("getreadabletype"), 0, NULL);
+				zv::Val readableType = pt_extended_property_reflection_call(property.raw(), PT_PROP_GET_READABLE_TYPE);
 				if (UNEXPECTED(readableType.isUndef())) return zv::Val();
 				arrayValues.push(std::move(readableType));
 			}
@@ -2170,7 +2168,7 @@ public:
 				zend_type_error("phpstan_turbo: getMethod() must return an object");
 				return zv::Val();
 			}
-			zv::Val variants = pt_type_call(Z_OBJ_P(method.raw()), PT_LC("getvariants"), 0, NULL);
+			zv::Val variants = pt_extended_method_reflection_call(method.raw(), PT_MR_GET_VARIANTS);
 			if (UNEXPECTED(variants.isUndef())) return zv::Val();
 			zv::Args args{method.raw(), variants.raw()};
 			return pt_type_call_static(PT_CLASS_FUNCTION_CALLABLE_VARIANT, PT_LC("createfromvariants"), 2, args);
@@ -3000,7 +2998,7 @@ public:
 			zend_type_error("phpstan_turbo: getMethod() must return an object");
 			return zv::Val();
 		}
-		zv::Val variant = pt_type_call(Z_OBJ_P(method.raw()), PT_LC("getonlyvariant"), 0, NULL);
+		zv::Val variant = pt_extended_method_reflection_call(method.raw(), PT_MR_GET_ONLY_VARIANT);
 		if (UNEXPECTED(variant.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(variant.raw()).isObject())) {
 			zend_type_error("phpstan_turbo: getOnlyVariant() must return an object");
@@ -3058,7 +3056,7 @@ private:
 	/* $member->getDeclaringClass()->getName(); UNDEF = pending exception */
 	static zv::Val declaringClassNameOf(zval *member)
 	{
-		zv::Val declaringClass = pt_type_call(Z_OBJ_P(member), PT_LC("getdeclaringclass"), 0, NULL);
+		zv::Val declaringClass = pt_class_member_reflection_call(member, PT_CMR_GET_DECLARING_CLASS);
 		if (UNEXPECTED(declaringClass.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(declaringClass.raw()).isObject())) {
 			zend_type_error("phpstan_turbo: getDeclaringClass() must return an object");
@@ -3331,7 +3329,7 @@ zv::Val pt_object_type_callback_invoke(zend_object *holder)
 				zend_type_error("phpstan_turbo: getMethod() must return an object");
 				return zv::Val();
 			}
-			zv::Val variant = pt_type_call(Z_OBJ_P(method.raw()), PT_LC("getonlyvariant"), 0, NULL);
+			zv::Val variant = pt_extended_method_reflection_call(method.raw(), PT_MR_GET_ONLY_VARIANT);
 			if (UNEXPECTED(variant.isUndef())) return zv::Val();
 			if (UNEXPECTED(!zv::Ref(variant.raw()).isObject())) {
 				zend_type_error("phpstan_turbo: getOnlyVariant() must return an object");

@@ -402,6 +402,11 @@ zv::Val pt_typehint_helper_decide_type_from_reflection(zval *reflectionType, zva
 	return phpstanturbo::TypehintHelper::decideTypeFromReflection(reflectionType, phpDocType, selfClass, isVariadic);
 }
 
+zv::Val pt_typehint_helper_decide_type(zval *type, zval *phpDocType)
+{
+	return phpstanturbo::TypehintHelper::decideType(type, phpDocType);
+}
+
 /* {{{ engine ABI glue: parameter parsing + registration */
 
 void pt_register_typehint_helper()

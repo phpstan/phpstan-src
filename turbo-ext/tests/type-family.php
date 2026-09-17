@@ -6587,6 +6587,10 @@ foreach ([\PHPStan\Reflection\ResolvedMethodReflection::class, \PHPStan\Reflecti
 		'builtin overloaded' => $stringReflectionProvider->getClass(\DateTime::class)->getNativeMethod('setTime'),
 		'dummy' => new \PHPStan\Reflection\Dummy\DummyMethodReflection('__call'),
 	];
+	$methodFixture = $stringReflectionProvider->getClass(\PHPStanTurboTests\MethodReflectionFixture::class);
+	foreach (['__construct', 'create', 'hidden', 'sealed', 'todo', 'nothing', 'pure', 'impure', 'old', 'internalOne', 'byReference', 'positional', 'fluent'] as $methodFixtureMethod) {
+		$innerReflections["php $methodFixtureMethod"] = $methodFixture->getNativeMethod($methodFixtureMethod);
+	}
 	// a wrapped reflection answering the bool alternatives of the interface
 	$boolAnswering = static fn (\PHPStan\Reflection\ExtendedMethodReflection $inner, bool $answer): \PHPStan\Reflection\ExtendedMethodReflection => new class ($inner, $answer) implements \PHPStan\Reflection\ExtendedMethodReflection {
 
@@ -6669,6 +6673,105 @@ foreach ([\PHPStan\Reflection\ResolvedMethodReflection::class, \PHPStan\Reflecti
 	}
 	foreach ($r as $key => $value) {
 		$observations["method reflections $key"] = $value;
+	}
+}
+
+// ---- PhpPropertyReflection / ChangedTypePropertyReflection / ResolvedPropertyReflection ----
+// The property reflections through every getter of the interface (and
+// PhpPropertyReflection's own): the fixture's native properties, the
+// transformed ones the prototypes hand out (ResolvedPropertyReflection over
+// ChangedTypePropertyReflection over PhpPropertyReflection), both wrappers
+// constructed directly over the PHP reflection, a dummy reflection and each
+// other, the hooks' errors, the memoization identities and unconstructed
+// instances
+foreach ([\PHPStan\Reflection\Php\PhpPropertyReflection::class, \PHPStan\Reflection\Dummy\ChangedTypePropertyReflection::class, \PHPStan\Reflection\ResolvedPropertyReflection::class] as $propertyReflectionClass) {
+	$observations['native ' . $propertyReflectionClass] = (new ReflectionMethod($propertyReflectionClass, 'getName'))->isInternal();
+}
+{
+	$r = [];
+	$viewAllProperty = static function (\PHPStan\Reflection\ExtendedPropertyReflection $p) use ($view, $catching): array {
+		$hooks = [];
+		foreach (['get', 'set', 'other'] as $hookType) {
+			$hooks[$hookType] = [$catching(static fn () => $p->hasHook($hookType)), $catching(static fn () => get_class($p->getHook($hookType)))];
+		}
+		$own = [];
+		if ($p instanceof \PHPStan\Reflection\Php\PhpPropertyReflection) {
+			$own = [
+				$catching(static fn () => $p->getDeclaringTrait()?->getName()),
+				$catching(static fn () => $p->isReadOnly()),
+				$catching(static fn () => $p->isReadOnlyByPhpDoc()),
+				$catching(static fn () => $p->isPromoted()),
+				$catching(static fn () => $p->isAllowedPrivateMutation()),
+				$catching(static fn () => get_class($p->getNativeReflection())),
+				$catching(static fn () => $p->isHooked()),
+				$catching(static fn () => $view($p->getResolvedPhpDoc())),
+			];
+		}
+		if ($p instanceof \PHPStan\Reflection\WrapperPropertyReflection) {
+			$own[] = $catching(static fn () => get_class($p->getOriginalReflection()));
+		}
+		return [
+			'class' => get_class($p),
+			'name' => $catching(static fn () => $p->getName()),
+			'declaringClass' => $catching(static fn () => $p->getDeclaringClass()->getName()),
+			'flags' => $catching(static fn () => [$p->isStatic(), $p->isPrivate(), $p->isPublic(), $p->getDocComment(), $p->isReadable(), $p->isWritable(), $p->isProtectedSet(), $p->isPrivateSet()]),
+			'types' => $catching(static fn () => [$view($p->getReadableType()), $view($p->getWritableType()), $p->hasPhpDocType(), $view($p->getPhpDocType()), $p->hasNativeType(), $view($p->getNativeType()), $p->canChangeTypeAfterAssignment()]),
+			'trinaries' => $catching(static fn () => [$view($p->isDeprecated()), $p->getDeprecatedDescription(), $view($p->isInternal()), $view($p->isAbstract()), $view($p->isFinalByKeyword()), $view($p->isFinal()), $view($p->isVirtual()), $view($p->isDummy())]),
+			'attributes' => $catching(static fn () => count($p->getAttributes())),
+			'hooks' => $hooks,
+			'own' => $own,
+			'memo' => $catching(static fn () => [$p->getReadableType() === $p->getReadableType(), $p->getWritableType() === $p->getWritableType(), $p->getNativeType() === $p->getNativeType()]),
+		];
+	};
+	$propertyFixture = $stringReflectionProvider->getClass(\PHPStanTurboTests\PropertyReflectionFixture::class);
+	$genericPropertyFixture = $propertyFixture->withTypes([$int]);
+	$propertyNames = ['counter', 'items', 'label', 'untyped', 'explicitMixed', 'docReadonly', 'old', 'internalOne', 'sibling', 'promoted', 'promotedDoc'];
+	$outOfClass = new \PHPStan\Analyser\OutOfClassScope();
+	$staticToSub = $staticRewriter(new \PHPStan\Type\ObjectType(\PHPStanTurboTests\PropertyReflectionSubFixture::class));
+	foreach ($propertyNames as $propertyName) {
+		$native = $propertyFixture->getNativeProperty($propertyName);
+		$r["native $propertyName"] = $viewAllProperty($native);
+		$r["generic native $propertyName"] = $catching(static fn () => $viewAllProperty($genericPropertyFixture->getNativeProperty($propertyName)));
+		$r["property $propertyName"] = $catching(static fn () => $viewAllProperty($propertyFixture->getProperty($propertyName, $outOfClass)));
+		foreach (['object' => new \PHPStan\Type\ObjectType(\PHPStanTurboTests\PropertyReflectionFixture::class), 'generic' => new \PHPStan\Type\Generic\GenericObjectType(\PHPStanTurboTests\PropertyReflectionFixture::class, [$string]), 'static' => new \PHPStan\Type\StaticType($propertyFixture)] as $calledOnName => $calledOnType) {
+			$prototype = new \PHPStan\Reflection\Type\CalledOnTypeUnresolvedPropertyPrototypeReflection($native, $genericPropertyFixture, false, $calledOnType);
+			$r["transformed $propertyName $calledOnName"] = $catching(static fn () => $viewAllProperty($prototype->getTransformedProperty()));
+		}
+		$callbackPrototype = new \PHPStan\Reflection\Type\CallbackUnresolvedPropertyPrototypeReflection($native, $propertyFixture, true, $staticToSub);
+		$r["callback $propertyName"] = $catching(static fn () => $viewAllProperty($callbackPrototype->getTransformedProperty()));
+	}
+	$templateMaps = ['empty' => \PHPStan\Type\Generic\TemplateTypeMap::createEmpty(), 'fixture' => $genericPropertyFixture->getActiveTemplateTypeMap()];
+	$varianceMaps = ['empty' => \PHPStan\Type\Generic\TemplateTypeVarianceMap::createEmpty(), 'covariant' => new \PHPStan\Type\Generic\TemplateTypeVarianceMap(['T' => \PHPStan\Type\Generic\TemplateTypeVariance::createCovariant()])];
+	$innerProperties = [
+		'php items' => $propertyFixture->getNativeProperty('items'),
+		'php sibling' => $propertyFixture->getNativeProperty('sibling'),
+		'php counter' => $propertyFixture->getNativeProperty('counter'),
+		'dummy' => new \PHPStan\Reflection\Dummy\DummyPropertyReflection('dummy'),
+	];
+	foreach ($innerProperties as $innerName => $inner) {
+		foreach ($templateMaps as $templateMapName => $templateMap) {
+			foreach ($varianceMaps as $varianceMapName => $varianceMap) {
+				$r["resolved over $innerName $templateMapName $varianceMapName"] = $viewAllProperty(new \PHPStan\Reflection\ResolvedPropertyReflection($inner, $templateMap, $varianceMap));
+			}
+		}
+		$changed = new \PHPStan\Reflection\Dummy\ChangedTypePropertyReflection($genericPropertyFixture, $inner, $int, $string, new \PHPStan\Type\MixedType(), new \PHPStan\Type\NeverType(true));
+		$r["changed over $innerName"] = $viewAllProperty($changed);
+		$r["resolved over changed over $innerName"] = $viewAllProperty(new \PHPStan\Reflection\ResolvedPropertyReflection($changed, $templateMaps['fixture'], $varianceMaps['covariant']));
+		$r["changed over resolved over $innerName"] = $viewAllProperty(new \PHPStan\Reflection\Dummy\ChangedTypePropertyReflection($propertyFixture, new \PHPStan\Reflection\ResolvedPropertyReflection($inner, $templateMaps['fixture'], $varianceMaps['empty']), $string, $int, $string, $int));
+	}
+	foreach ([\PHPStan\Reflection\Php\PhpPropertyReflection::class, \PHPStan\Reflection\Dummy\ChangedTypePropertyReflection::class, \PHPStan\Reflection\ResolvedPropertyReflection::class] as $propertyReflectionClass) {
+		$raw = (new \ReflectionClass($propertyReflectionClass))->newInstanceWithoutConstructor();
+		foreach ((new \ReflectionClass($propertyReflectionClass))->getMethods(\ReflectionMethod::IS_PUBLIC) as $publicMethod) {
+			$methodName = $publicMethod->getName();
+			if ($methodName === '__construct') {
+				continue;
+			}
+			$args = $publicMethod->getNumberOfRequiredParameters() > 0 ? ['get'] : [];
+			$r["$propertyReflectionClass unconstructed $methodName"] = $catching(static fn () => $view($raw->$methodName(...$args)));
+		}
+	}
+	foreach ($r as $key => $value) {
+		$observations["property reflections $key"] = $value;
 	}
 }
 

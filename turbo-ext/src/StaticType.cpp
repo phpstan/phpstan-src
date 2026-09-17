@@ -360,7 +360,7 @@ public:
 			return zv::Val();
 		}
 		/* $ancestor = $this->getAncestorWithClassName($naked->getDeclaringClass()->getName()) */
-		zv::Val declaringClass = pt_type_call(Z_OBJ_P(naked.raw()), PT_LC("getdeclaringclass"), 0, NULL);
+		zv::Val declaringClass = pt_class_member_reflection_call(naked.raw(), PT_CMR_GET_DECLARING_CLASS);
 		if (UNEXPECTED(declaringClass.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(declaringClass.raw()).isObject())) {
 			zend_type_error("phpstan_turbo: getDeclaringClass() must return an object");
@@ -380,7 +380,7 @@ public:
 			if (UNEXPECTED(classReflection.isUndef())) return zv::Val();
 		}
 		if (classReflection.isNull()) {
-			classReflection = pt_type_call(Z_OBJ_P(naked.raw()), PT_LC("getdeclaringclass"), 0, NULL);
+			classReflection = pt_class_member_reflection_call(naked.raw(), PT_CMR_GET_DECLARING_CLASS);
 			if (UNEXPECTED(classReflection.isUndef())) return zv::Val();
 		}
 		/* fn (Type $type): Type => $this->transformStaticType($type, $scope) */

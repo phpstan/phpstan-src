@@ -3165,7 +3165,7 @@ private:
 		zv::Val methodName = zv::Val::string(PT_LC("offsetSet"));
 		zv::Args getMethodArgs{methodName.raw(), scope};
 		AH_VAL(method, ahCall(receiverType, PT_LC("getmethod"), 2, getMethodArgs));
-		AH_VAL(variant, ahCall(method.raw(), PT_LC("getonlyvariant"), 0, NULL));
+		AH_VAL(variant, method.ref().isObject() ? pt_extended_method_reflection_call(method.raw(), PT_MR_GET_ONLY_VARIANT) : ahCall(method.raw(), PT_LC("getonlyvariant"), 0, NULL));
 		AH_VAL(parameters, pt_parameters_acceptor_call(variant.raw(), PT_PA_GET_PARAMETERS));
 		HashTable *parametersTable = Z_ARRVAL_P(parameters.raw());
 		zval *parameter0 = zend_hash_index_find(parametersTable, 0);

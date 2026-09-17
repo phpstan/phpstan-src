@@ -373,6 +373,11 @@ zv::Val pt_extended_method_reflection_call(zval *method, pt_method_reflection_me
 	zend_object *object = Z_OBJ_P(method);
 	if (EXPECTED(object->ce == pt_ce_resolved_method_reflection)) return pt_resolved_method_reflection_call(object, member);
 	if (object->ce == pt_ce_changed_type_method_reflection) return pt_changed_type_method_reflection_call(object, member);
+	/* PhpMethodReflection's answers from its slots and memos (PhpMethodReflectionAccess.cpp) */
+	zv::Val answer;
+	int answered = pt_php_method_reflection_answer(object, member, answer);
+	if (answered > 0) return answer;
+	if (UNEXPECTED(answered < 0)) return zv::Val();
 	const MemberName &name = memberNames[member];
 	return pt_call_method_cached(memberSites[member], object, name.lcname, name.len, 0, NULL);
 }

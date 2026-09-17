@@ -1436,9 +1436,9 @@ public:
 				zend_throw_error(NULL, "Call to a member function isReadOnly() on %s", zend_zval_value_name(nativePropertyReflection.raw()));
 				return false;
 			}
-			zv::Val isReadOnly = pt_type_call(Z_OBJ_P(nativePropertyReflection.raw()), PT_LC("isreadonly"), 0, NULL);
-			if (UNEXPECTED(isReadOnly.isUndef())) return false;
-			if (!zend_is_true(isReadOnly.raw())) {
+			bool isReadOnly;
+			if (UNEXPECTED(!pt_property_adapter_is_read_only(nativePropertyReflection.raw(), isReadOnly))) return false;
+			if (!isReadOnly) {
 				out = false;
 				return true;
 			}
@@ -7069,7 +7069,7 @@ public:
 			zend_throw_error(NULL, "Call to a member function getDeclaringClass() on %s", zend_zval_value_name(propertyReflection.raw()));
 			return zv::Val();
 		}
-		zv::Val declaringClass = pt_type_call(propertyReflection.ref().asObject(), PT_LC("getdeclaringclass"), 0, NULL);
+		zv::Val declaringClass = pt_extended_property_reflection_call(propertyReflection.raw(), PT_PROP_GET_DECLARING_CLASS);
 		if (UNEXPECTED(declaringClass.isUndef())) return zv::Val();
 		if (UNEXPECTED(!declaringClass.ref().isObject())) {
 			zend_throw_error(NULL, "Call to a member function getName() on %s", zend_zval_value_name(declaringClass.raw()));
@@ -7219,9 +7219,9 @@ public:
 			return false;
 		}
 		bool isPrivate;
-		if (UNEXPECTED(!otherCallBool(propertyReflection.ref().asObject(), PT_LC("isprivate"), isPrivate))) return false;
+		if (UNEXPECTED(!pt_extended_property_reflection_bool(propertyReflection.raw(), PT_PROP_IS_PRIVATE, isPrivate))) return false;
 		if (!isPrivate) return true;
-		zv::Val declaringClass = pt_type_call(propertyReflection.ref().asObject(), PT_LC("getdeclaringclass"), 0, NULL);
+		zv::Val declaringClass = pt_extended_property_reflection_call(propertyReflection.raw(), PT_PROP_GET_DECLARING_CLASS);
 		if (UNEXPECTED(declaringClass.isUndef())) return false;
 		if (UNEXPECTED(!declaringClass.ref().isObject() || Z_TYPE_P(invalidatingClass) != IS_OBJECT)) {
 			zend_throw_error(NULL, "Call to a member function getName() on %s", zend_zval_value_name(declaringClass.raw()));
@@ -10009,12 +10009,14 @@ public:
 	/** @api (twin 5509) */
 	bool canWriteProperty(zend_object *propertyReflection, bool &out)
 	{
-		zv::Val isPrivateSet = pt_type_call(propertyReflection, PT_LC("isprivateset"), 0, NULL);
-		if (UNEXPECTED(isPrivateSet.isUndef())) return false;
-		if (!zend_is_true(isPrivateSet.raw())) {
-			zv::Val isProtectedSet = pt_type_call(propertyReflection, PT_LC("isprotectedset"), 0, NULL);
-			if (UNEXPECTED(isProtectedSet.isUndef())) return false;
-			if (!zend_is_true(isProtectedSet.raw())) return canAccessClassMember(propertyReflection, out);
+		zval propertyReflectionZv;
+		ZVAL_OBJ(&propertyReflectionZv, propertyReflection);
+		bool isPrivateSet;
+		if (UNEXPECTED(!pt_extended_property_reflection_bool(&propertyReflectionZv, PT_PROP_IS_PRIVATE_SET, isPrivateSet))) return false;
+		if (!isPrivateSet) {
+			bool isProtectedSet;
+			if (UNEXPECTED(!pt_extended_property_reflection_bool(&propertyReflectionZv, PT_PROP_IS_PROTECTED_SET, isProtectedSet))) return false;
+			if (!isProtectedSet) return canAccessClassMember(propertyReflection, out);
 		}
 
 		zv::Ref phpVersion = slot(PT_MS_PROP_PHP_VERSION);
@@ -10034,7 +10036,9 @@ public:
 	{
 		if (UNEXPECTED(!canAccessClassMember(methodReflection, out))) return false;
 		if (out) return true;
-		zv::Val prototype = pt_type_call(methodReflection, PT_LC("getprototype"), 0, NULL);
+		zval methodReflectionZv;
+		ZVAL_OBJ(&methodReflectionZv, methodReflection);
+		zv::Val prototype = pt_extended_method_reflection_call(&methodReflectionZv, PT_MR_GET_PROTOTYPE);
 		if (UNEXPECTED(prototype.isUndef())) return false;
 		zend_object *prototypeObject = requireObject(prototype, "canAccessClassMember");
 		if (UNEXPECTED(prototypeObject == NULL)) return false;
@@ -10047,9 +10051,11 @@ public:
 	/* private (twin 5570) */
 	bool canAccessClassMember(zend_object *classMemberReflection, bool &out)
 	{
-		zv::Val isPublic = pt_type_call(classMemberReflection, PT_LC("ispublic"), 0, NULL);
-		if (UNEXPECTED(isPublic.isUndef())) return false;
-		if (zend_is_true(isPublic.raw())) {
+		zval classMemberReflectionZv;
+		ZVAL_OBJ(&classMemberReflectionZv, classMemberReflection);
+		bool isPublic;
+		if (UNEXPECTED(!pt_class_member_reflection_bool(&classMemberReflectionZv, PT_CMR_IS_PUBLIC, isPublic))) return false;
+		if (isPublic) {
 			out = true;
 			return true;
 		}
@@ -10063,7 +10069,9 @@ public:
 	bool memberAccessibleFromScope(zend_object *memberReflection, const char *privateLcName, size_t privateLen, bool &out)
 	{
 		out = false;
-		zv::Val declaringClass = pt_type_call(memberReflection, PT_LC("getdeclaringclass"), 0, NULL);
+		zval memberReflectionZv;
+		ZVAL_OBJ(&memberReflectionZv, memberReflection);
+		zv::Val declaringClass = pt_class_member_reflection_call(&memberReflectionZv, PT_CMR_GET_DECLARING_CLASS);
 		if (UNEXPECTED(declaringClass.isUndef())) return false;
 		zend_object *declaringClassObject = requireObject(declaringClass, "getName");
 		if (UNEXPECTED(declaringClassObject == NULL)) return false;
@@ -10111,7 +10119,12 @@ public:
 	static bool memberAccessibleFrom(zend_object *classReflection, zend_object *memberReflection, zend_object *declaringClass, const char *privateLcName, size_t privateLen, bool &out)
 	{
 		out = false;
-		zv::Val isPrivate = pt_type_call(memberReflection, privateLcName, privateLen, 0, NULL);
+		zval memberReflectionZv;
+		ZVAL_OBJ(&memberReflectionZv, memberReflection);
+		/* $classMemberReflection->isPrivate() / $propertyReflection->isPrivateSet() */
+		zv::Val isPrivate = privateLen == sizeof("isprivateset") - 1
+			? pt_extended_property_reflection_call(&memberReflectionZv, PT_PROP_IS_PRIVATE_SET)
+			: pt_class_member_reflection_call(&memberReflectionZv, PT_CMR_IS_PRIVATE);
 		if (UNEXPECTED(isPrivate.isUndef())) return false;
 		zv::Val className = pt_class_reflection_get_name(classReflection);
 		if (UNEXPECTED(className.isUndef())) return false;
@@ -10139,7 +10152,7 @@ public:
 			return true;
 		}
 
-		zv::Val memberDeclaringClass = pt_type_call(memberReflection, PT_LC("getdeclaringclass"), 0, NULL);
+		zv::Val memberDeclaringClass = pt_class_member_reflection_call(&memberReflectionZv, PT_CMR_GET_DECLARING_CLASS);
 		if (UNEXPECTED(memberDeclaringClass.isUndef())) return false;
 		zend_object *memberDeclaringClassObject = requireObject(memberDeclaringClass, "isSubclassOfClass");
 		if (UNEXPECTED(memberDeclaringClassObject == NULL)) return false;
@@ -10754,9 +10767,9 @@ public:
 					/* resolved against the (empty) argument list so a template
 					 * inferred from an omitted parameter's default resolves the
 					 * way a walk resolves it */
-					zv::Val variants = pt_type_call(methodObject, PT_LC("getvariants"), 0, NULL);
+					zv::Val variants = pt_extended_method_reflection_call(methodReflection.raw(), PT_MR_GET_VARIANTS);
 					if (UNEXPECTED(variants.isUndef())) return zv::Val();
-					zv::Val namedArgumentsVariants = pt_type_call(methodObject, PT_LC("getnamedargumentsvariants"), 0, NULL);
+					zv::Val namedArgumentsVariants = pt_extended_method_reflection_call(methodReflection.raw(), PT_MR_GET_NAMED_ARGUMENTS_VARIANTS);
 					if (UNEXPECTED(namedArgumentsVariants.isUndef())) return zv::Val();
 					zval selectArgs[4];
 					ZVAL_OBJ(&selectArgs[0], self);
@@ -10865,12 +10878,12 @@ public:
 		zend_object *reflection = requireObject(propertyReflection, native ? "hasNativeType" : "getReadableType");
 		if (UNEXPECTED(reflection == NULL)) return zv::Val();
 		if (native) {
-			zv::Val hasNativeType = pt_type_call(reflection, PT_LC("hasnativetype"), 0, NULL);
-			if (UNEXPECTED(hasNativeType.isUndef())) return zv::Val();
-			if (zend_is_true(hasNativeType.raw())) return pt_type_call(reflection, PT_LC("getnativetype"), 0, NULL);
+			bool hasNativeType;
+			if (UNEXPECTED(!pt_extended_property_reflection_bool(propertyReflection.raw(), PT_PROP_HAS_NATIVE_TYPE, hasNativeType))) return zv::Val();
+			if (hasNativeType) return pt_extended_property_reflection_call(propertyReflection.raw(), PT_PROP_GET_NATIVE_TYPE);
 			return pt_type_new_mixed_type();
 		}
-		return pt_type_call(reflection, PT_LC("getreadabletype"), 0, NULL);
+		return pt_extended_property_reflection_call(propertyReflection.raw(), PT_PROP_GET_READABLE_TYPE);
 	}
 
 	/* }}} */

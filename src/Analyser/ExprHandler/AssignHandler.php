@@ -2545,7 +2545,9 @@ final class AssignHandler implements ExprHandler
 				}
 
 				if ($implicitIndex !== null) {
-					$unpackedIntegerKeysCount = $this->arrayUnpackingHelper->getImplicitIndexCount($scope->getType($arrayItem->value));
+					// the unpacked value was walked as part of the assigned array literal
+					$unpackedType = $nodeScopeResolver->readStoredResult($arrayItem->value, $storage)->getTypeOnScope($scope, $scope->nativeTypesPromoted);
+					$unpackedIntegerKeysCount = $this->arrayUnpackingHelper->getImplicitIndexCount($unpackedType);
 					if ($unpackedIntegerKeysCount === null) {
 						$implicitIndex = null;
 					} else {

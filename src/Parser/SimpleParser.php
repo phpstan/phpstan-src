@@ -2,6 +2,7 @@
 
 namespace PHPStan\Parser;
 
+use PhpParser\Error;
 use PhpParser\ErrorHandler\Collecting;
 use PhpParser\Node;
 use PhpParser\NodeTraverser;
@@ -49,8 +50,12 @@ final class SimpleParser implements Parser
 		$nodeTraverser = new NodeTraverser();
 		$nodeTraverser->addVisitor($this->nameResolver);
 
-		/** @var array<Node\Stmt> */
-		return $nodeTraverser->traverse($nodes);
+		try {
+			/** @var array<Node\Stmt> */
+			return $nodeTraverser->traverse($nodes);
+		} catch (Error $e) {
+			throw new ParserErrorsException([$e], null);
+		}
 	}
 
 }

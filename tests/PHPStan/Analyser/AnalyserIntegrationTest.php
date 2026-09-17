@@ -1318,7 +1318,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		// false positive
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-10358.php');
 		$this->assertCount(1, $errors);
-		$this->assertSame('Cannot use Ns\Foo2 as Foo because the name is already in use', $errors[0]->getMessage());
+		$this->assertSame('Cannot use Ns\Foo2 as Foo because the name is already in use on line 6', $errors[0]->getMessage());
 		$this->assertSame(6, $errors[0]->getLine());
 	}
 
@@ -1614,6 +1614,47 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		// crash
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-15003.php');
 		$this->assertNoErrors($errors);
+	}
+
+	public function testBug15252(): void
+	{
+		// name resolution errors in another file must not be reported as parse errors of this file
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-15252.php');
+		$this->assertCount(4, $errors);
+		$this->assertSame('Instantiated class Bug15252\Helper not found.', $errors[0]->getMessage());
+		$this->assertSame(10, $errors[0]->getLine());
+		$this->assertSame('Call to method name() on an unknown class Bug15252\Helper.', $errors[1]->getMessage());
+		$this->assertSame(12, $errors[1]->getLine());
+		$this->assertSame('Instantiated class Bug15252\InvalidName not found.', $errors[2]->getMessage());
+		$this->assertSame(17, $errors[2]->getLine());
+		$this->assertSame('Call to method name() on an unknown class Bug15252\InvalidName.', $errors[3]->getMessage());
+		$this->assertSame(19, $errors[3]->getLine());
+	}
+
+	public function testBug15252Trait(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-15252-trait-user.php');
+		$this->assertCount(2, $errors);
+		$this->assertSame('Class Bug15252\TraitUser uses unknown trait Bug15252\HelperTrait.', $errors[0]->getMessage());
+		$this->assertSame(8, $errors[0]->getLine());
+		$this->assertSame('Call to an undefined method Bug15252\TraitUser::name().', $errors[1]->getMessage());
+		$this->assertSame(12, $errors[1]->getLine());
+	}
+
+	public function testBug15252AnalysedFileWithDuplicateAlias(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-15252-helper.php');
+		$this->assertCount(1, $errors);
+		$this->assertSame('Cannot use Ns\Foo2 as Foo because the name is already in use on line 6', $errors[0]->getMessage());
+		$this->assertSame(6, $errors[0]->getLine());
+	}
+
+	public function testBug15252AnalysedFileWithInvalidClassName(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-15252-invalid-name.php');
+		$this->assertCount(1, $errors);
+		$this->assertSame("'\\self' is an invalid class name on line 10", $errors[0]->getMessage());
+		$this->assertSame(10, $errors[0]->getLine());
 	}
 
 	/**

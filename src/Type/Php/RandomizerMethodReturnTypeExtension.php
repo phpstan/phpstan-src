@@ -35,7 +35,6 @@ final class RandomizerMethodReturnTypeExtension implements DynamicMethodReturnTy
 			'shuffleArray',
 			'pickArrayKeys',
 			'shuffleBytes',
-			'getBytesFromString',
 			'getInt',
 		], true);
 	}
@@ -58,8 +57,6 @@ final class RandomizerMethodReturnTypeExtension implements DynamicMethodReturnTy
 				return $this->randomArrayKeysReturnTypeHelper->getPickedKeysListType($firstArgType);
 			case 'shuffleBytes':
 				return $this->stringBytesReturnTypeHelper->getReorderedStringType($firstArgType);
-			case 'getBytesFromString':
-				return $this->stringBytesReturnTypeHelper->getNonEmptySelectionStringType($firstArgType);
 			case 'getInt':
 				if (count($args) < 2) {
 					return null;

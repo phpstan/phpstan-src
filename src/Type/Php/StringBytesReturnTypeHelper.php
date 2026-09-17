@@ -10,13 +10,11 @@ use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use function array_merge;
 use function count;
 
 /**
- * Describes strings that are built out of the bytes of another string, either by
- * reordering all of them (strrev(), str_shuffle(), Random\Randomizer::shuffleBytes())
- * or by picking some of them (Random\Randomizer::getBytesFromString()).
+ * Describes strings that are built by reordering the bytes of another string,
+ * as done by strrev(), str_shuffle() and Random\Randomizer::shuffleBytes().
  */
 #[AutowiredService]
 final class StringBytesReturnTypeHelper
@@ -33,35 +31,6 @@ final class StringBytesReturnTypeHelper
 		} elseif ($inputType->isNonEmptyString()->yes()) {
 			$accessoryTypes[] = new AccessoryNonEmptyStringType();
 		}
-
-		$accessoryTypes = array_merge($accessoryTypes, $this->getCaseAccessoryTypes($inputType));
-		if (count($accessoryTypes) === 0) {
-			return null;
-		}
-
-		return TypeCombinator::intersect(new StringType(), ...$accessoryTypes);
-	}
-
-	/**
-	 * Result contains at least one byte of $inputType, each one possibly repeated.
-	 * Non-falsy-ness is not preserved: picking a single byte of '10' can result in '0'.
-	 */
-	public function getNonEmptySelectionStringType(Type $inputType): Type
-	{
-		$accessoryTypes = array_merge(
-			[new AccessoryNonEmptyStringType()],
-			$this->getCaseAccessoryTypes($inputType),
-		);
-
-		return TypeCombinator::intersect(new StringType(), ...$accessoryTypes);
-	}
-
-	/**
-	 * @return list<Type>
-	 */
-	private function getCaseAccessoryTypes(Type $inputType): array
-	{
-		$accessoryTypes = [];
 		if ($inputType->isLowercaseString()->yes()) {
 			$accessoryTypes[] = new AccessoryLowercaseStringType();
 		}
@@ -69,7 +38,11 @@ final class StringBytesReturnTypeHelper
 			$accessoryTypes[] = new AccessoryUppercaseStringType();
 		}
 
-		return $accessoryTypes;
+		if (count($accessoryTypes) === 0) {
+			return null;
+		}
+
+		return TypeCombinator::intersect(new StringType(), ...$accessoryTypes);
 	}
 
 }

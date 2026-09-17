@@ -2269,15 +2269,32 @@ final class AssignHandler implements ExprHandler
 
 	private function isSameOffset(Expr $a, Expr $b): bool
 	{
-		if ($a instanceof Node\Scalar\Int_ && $b instanceof Node\Scalar\Int_) {
-			return $a->value === $b->value;
-		}
+		$aKeyType = $this->getLiteralArrayKeyType($a);
+		if ($aKeyType !== null) {
+			$bKeyType = $this->getLiteralArrayKeyType($b);
 
-		if ($a instanceof Node\Scalar\String_ && $b instanceof Node\Scalar\String_) {
-			return $a->value === $b->value;
+			return $bKeyType !== null && $aKeyType->equals($bKeyType);
 		}
 
 		return $this->isSameVariable($a, $b);
+	}
+
+	/**
+	 * The array key a literal offset ends up as, so that offsets addressing the
+	 * same element compare as equal - `$a[1]`, `$a['1']` and `$a[1.5]` all read
+	 * the same one.
+	 */
+	private function getLiteralArrayKeyType(Expr $expr): ?Type
+	{
+		if (
+			$expr instanceof Node\Scalar\Int_
+			|| $expr instanceof Node\Scalar\String_
+			|| $expr instanceof Node\Scalar\Float_
+		) {
+			return ConstantTypeHelper::getTypeFromValue($expr->value)->toArrayKey();
+		}
+
+		return null;
 	}
 
 	/**

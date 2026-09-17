@@ -167,3 +167,24 @@ function overwriteLastKeyOfDifferentRow(array $matrix): void
 	$matrix[0][array_key_last($matrix[1])] = 5;
 	assertType('non-empty-list<non-empty-array<int<0, max>, int>>&hasOffsetValue(0, non-empty-array<int<0, max>, int>)', $matrix);
 }
+
+/** @param non-empty-list<non-empty-list<int>> $matrix */
+function overwriteLastKeyOfNumericStringRow(array $matrix): void
+{
+	$matrix['0'][array_key_last($matrix[0])] = 5;
+	assertType('non-empty-list<non-empty-list<int>>&hasOffsetValue(0, non-empty-list<int>)', $matrix);
+}
+
+/** @param non-empty-list<non-empty-list<int>> $matrix */
+function overwriteCountMinusOneOfNumericStringRow(array $matrix): void
+{
+	$matrix[0][count($matrix['0']) - 1] = 5;
+	assertType('non-empty-list<non-empty-list<int>>&hasOffsetValue(0, non-empty-list<int>)', $matrix);
+}
+
+/** @param non-empty-list<non-empty-list<int>> $matrix */
+function overwriteLastKeyOfDifferentNumericStringRow(array $matrix): void
+{
+	$matrix['0'][array_key_last($matrix['1'])] = 5;
+	assertType('non-empty-list<non-empty-array<int<0, max>, int>>&hasOffsetValue(0, non-empty-array<int<0, max>, int>)', $matrix);
+}

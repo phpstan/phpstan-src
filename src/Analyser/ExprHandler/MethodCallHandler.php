@@ -118,7 +118,10 @@ final class MethodCallHandler implements ExprHandler
 			}
 		} else {
 			$methodNameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$hasYield = $hasYield || $methodNameResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $methodNameResult->getThrowPoints());
+			$impurePoints = array_merge($impurePoints, $methodNameResult->getImpurePoints());
+			$isAlwaysTerminating = $isAlwaysTerminating || $methodNameResult->isAlwaysTerminating();
 			$scope = $methodNameResult->getScope();
 		}
 

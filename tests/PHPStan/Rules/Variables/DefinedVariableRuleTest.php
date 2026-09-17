@@ -1723,4 +1723,22 @@ class DefinedVariableRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testYieldKeyThrowPoint(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = false;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+		$this->analyse([__DIR__ . '/data/yield-key-throw-point.php'], [
+			[
+				'Undefined variable: $b',
+				17,
+			],
+			[
+				'Undefined variable: $b',
+				30,
+			],
+		]);
+	}
+
 }

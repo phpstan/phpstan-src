@@ -105,6 +105,7 @@ final class FuncCallHandler implements ExprHandler
 		$functionReflection = null;
 		$throwPoints = [];
 		$impurePoints = [];
+		$hasYield = false;
 		$isAlwaysTerminating = false;
 		if ($expr->name instanceof Expr) {
 			// process the dynamic callee name first, then consume its type rather
@@ -120,6 +121,7 @@ final class FuncCallHandler implements ExprHandler
 			}
 
 			$scope = $nameResult->getScope();
+			$hasYield = $nameResult->hasYield();
 			$throwPoints = $nameResult->getThrowPoints();
 			$impurePoints = $nameResult->getImpurePoints();
 			$isAlwaysTerminating = $nameResult->isAlwaysTerminating();
@@ -280,7 +282,7 @@ final class FuncCallHandler implements ExprHandler
 		}
 		$resolvedParametersAcceptor = $argsResult->getResolvedParametersAcceptor();
 		$scope = $argsResult->getScope();
-		$hasYield = $argsResult->hasYield();
+		$hasYield = $hasYield || $argsResult->hasYield();
 		$throwPoints = array_merge($throwPoints, $argsResult->getThrowPoints());
 		$impurePoints = array_merge($impurePoints, $argsResult->getImpurePoints());
 		$isAlwaysTerminating = $isAlwaysTerminating || $argsResult->isAlwaysTerminating();
@@ -316,7 +318,7 @@ final class FuncCallHandler implements ExprHandler
 				);
 				$throwPoints = array_merge($throwPoints, $invokeResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $invokeResult->getImpurePoints());
-				$isAlwaysTerminating = $invokeResult->isAlwaysTerminating();
+				$isAlwaysTerminating = $isAlwaysTerminating || $invokeResult->isAlwaysTerminating();
 			}
 		}
 

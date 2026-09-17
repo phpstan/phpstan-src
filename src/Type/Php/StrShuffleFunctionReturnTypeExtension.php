@@ -11,9 +11,9 @@ use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
 use function count;
 
 #[AutowiredService]
@@ -36,15 +36,9 @@ final class StrShuffleFunctionReturnTypeExtension implements DynamicFunctionRetu
 			return null;
 		}
 
-		return $this->getShuffledStringType($scope->getType($args[0]->value));
-	}
-
-	/**
-	 * Type of a string containing every byte of $inputType exactly once,
-	 * as produced by str_shuffle(), strrev() and Random\Randomizer::shuffleBytes().
-	 */
-	public function getShuffledStringType(Type $inputType): ?Type
-	{
+		// The result contains every byte of the input exactly once,
+		// so it keeps its emptiness and its casing.
+		$inputType = $scope->getType($args[0]->value);
 		$accessoryTypes = [];
 		if ($inputType->isNonFalsyString()->yes()) {
 			$accessoryTypes[] = new AccessoryNonFalsyStringType();
@@ -58,11 +52,13 @@ final class StrShuffleFunctionReturnTypeExtension implements DynamicFunctionRetu
 			$accessoryTypes[] = new AccessoryUppercaseStringType();
 		}
 
-		if (count($accessoryTypes) === 0) {
-			return null;
+		if (count($accessoryTypes) > 0) {
+			$accessoryTypes[] = new StringType();
+
+			return new IntersectionType($accessoryTypes);
 		}
 
-		return TypeCombinator::intersect(new StringType(), ...$accessoryTypes);
+		return null;
 	}
 
 }

@@ -440,11 +440,11 @@ class UnreachableStatementRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/dynamic-name-always-terminating.php'], [
 			[
 				'Unreachable statement - code above always terminates.',
-				21,
+				23,
 			],
 			[
 				'Unreachable statement - code above always terminates.',
-				27,
+				29,
 			],
 		]);
 	}

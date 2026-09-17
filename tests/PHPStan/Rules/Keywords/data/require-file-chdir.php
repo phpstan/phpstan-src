@@ -2,10 +2,9 @@
 
 namespace RequireFileChdir;
 
-chdir('Keywords');
-require_once 'data/include-me-to-prove-you-work.txt';
-require_once 'data/a-file-that-does-not-exist.php';
-require_once __DIR__ . '/a-file-that-does-not-exist.php';
+require_once 'a-file-that-does-not-exist.php';
 
-\chdir('data/bug-15260');
-require_once 'config.php';
+chdir('..');
+
+require_once 'a-file-that-does-not-exist.php';
+require_once __DIR__ . '/a-file-that-does-not-exist.php';

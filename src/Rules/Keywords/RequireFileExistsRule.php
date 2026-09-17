@@ -14,6 +14,7 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\File\FileHelper;
 use PHPStan\File\IncludedFilePathResolver;
 use PHPStan\Node\Printer\ExprPrinter;
+use PHPStan\Parser\IncludeResolutionChangedVisitor;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -64,6 +65,12 @@ final class RequireFileExistsRule implements Rule
 			return [];
 		}
 
+		if ($node->getAttribute(IncludeResolutionChangedVisitor::ATTRIBUTE_NAME) === true) {
+			// A call earlier in the file moved the working directory, changed the include path or
+			// registered a stream wrapper, so the path no longer names a place PHPStan can look at.
+			return [];
+		}
+
 		$errors = [];
 		$usedMagicDirFallback = false;
 		$paths = $this->resolveFilePaths($node->expr, $scope, $usedMagicDirFallback);
@@ -71,14 +78,7 @@ final class RequireFileExistsRule implements Rule
 		foreach ($paths as $path) {
 			$path = $path->getValue();
 
-			$candidatePaths = $this->includedFilePathResolver->resolve($path, $scope, $node);
-			if ($candidatePaths === null) {
-				// The file moves the working directory or the include path somewhere PHPStan cannot
-				// follow, so a relative path could resolve anywhere.
-				continue;
-			}
-
-			if ($this->doesFileExist($candidatePaths)) {
+			if ($this->doesFileExist($path, $scope)) {
 				continue;
 			}
 
@@ -88,18 +88,23 @@ final class RequireFileExistsRule implements Rule
 				$pathExpr = '"' . $path . '"';
 			}
 
-			$errors[] = $this->getErrorMessage($node, $pathExpr, $candidatePaths);
+			$errors[] = $this->getErrorMessage($node, $pathExpr, $this->includedFilePathResolver->resolve($path, $scope));
 		}
 
 		return $errors;
 	}
 
 	/**
-	 * @param list<string> $candidatePaths
+	 * We cannot use `stream_resolve_include_path` as it works based on the calling script.
+	 * This method simulates the behavior of `stream_resolve_include_path` but for the given scope.
+	 * The priority order is the following:
+	 * 	1. The current working directory.
+	 * 	2. The include path.
+	 *  3. The path of the script that is being executed.
 	 */
-	private function doesFileExist(array $candidatePaths): bool
+	private function doesFileExist(string $path, Scope $scope): bool
 	{
-		foreach ($candidatePaths as $candidatePath) {
+		foreach ($this->includedFilePathResolver->resolve($path, $scope) as $candidatePath) {
 			if (is_file($candidatePath)) {
 				return true;
 			}

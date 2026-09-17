@@ -41,12 +41,9 @@ final class IncludedFilePathResolverTest extends PHPStanTestCase
 	{
 		// Compared with forward slashes so the expectations hold on Windows too, where
 		// absolutizePath() joins with a backslash.
-		$resolved = $this->createResolver()->resolve('lorem.php', $this->createScope());
-		$this->assertNotNull($resolved);
-
 		$paths = array_map(
 			static fn (string $path): string => str_replace('\\', '/', $path),
-			$resolved,
+			$this->createResolver()->resolve('lorem.php', $this->createScope()),
 		);
 		$directory = str_replace('\\', '/', __DIR__);
 

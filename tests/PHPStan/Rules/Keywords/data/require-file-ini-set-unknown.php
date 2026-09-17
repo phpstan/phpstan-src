@@ -2,7 +2,8 @@
 
 namespace RequireFileIniSetUnknown;
 
+require_once 'a-file-that-does-not-exist.php';
+
 ini_set($_SERVER['OPTION'], $_SERVER['VALUE']);
 
 require_once 'a-file-that-does-not-exist.php';
-require_once __DIR__ . '/a-file-that-does-not-exist.php';

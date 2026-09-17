@@ -505,7 +505,7 @@ final class DependencyResolver
 			// An included file is a dependency with no symbol to reflect: nothing in it has to be
 			// declared for the including file's analysis to change when it is deleted.
 			foreach ($scope->getType($node->expr)->getConstantStrings() as $constantString) {
-				foreach ($this->includedFilePathResolver->resolve($constantString->getValue(), $scope, $node) ?? [] as $candidatePath) {
+				foreach ($this->includedFilePathResolver->resolve($constantString->getValue(), $scope) as $candidatePath) {
 					if (!is_file($candidatePath)) {
 						continue;
 					}

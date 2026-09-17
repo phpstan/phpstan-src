@@ -45,29 +45,19 @@ final class FileHelper
 	/** @api */
 	public function absolutizePath(string $path): string
 	{
-		if ($this->isAbsolutePath($path)) {
+		if (DIRECTORY_SEPARATOR === '/') {
+			if (str_starts_with($path, '/')) {
+				return $path;
+			}
+		} elseif (substr($path, 1, 1) === ':') {
+			return $path;
+		}
+
+		if (preg_match('~^[a-z0-9+\-.]+://~i', $path) === 1) {
 			return $path;
 		}
 
 		return rtrim($this->getWorkingDirectory(), '/\\') . DIRECTORY_SEPARATOR . ltrim($path, '/\\');
-	}
-
-	/**
-	 * Whether the path already names a single place, so that absolutizing it against any working
-	 * directory is a no-op. Stream wrapper paths like `phar://a/b.php` count: they are not relative
-	 * to anything on the filesystem.
-	 */
-	public function isAbsolutePath(string $path): bool
-	{
-		if (DIRECTORY_SEPARATOR === '/') {
-			if (str_starts_with($path, '/')) {
-				return true;
-			}
-		} elseif (substr($path, 1, 1) === ':') {
-			return true;
-		}
-
-		return preg_match('~^[a-z0-9+\-.]+://~i', $path) === 1;
 	}
 
 	/** @api */

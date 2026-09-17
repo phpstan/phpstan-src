@@ -167,7 +167,6 @@ enum {
 	PT_CLASS_RESOLVED_PROPERTY_REFLECTION,
 	PT_CLASS_CHANGED_TYPE_PROPERTY_REFLECTION,
 	PT_CLASS_UNDEFINED_VARIABLE_EXCEPTION,
-	PT_CLASS_NODE_CALLBACK_SCOPE,
 	PT_CLASS_PROPERTY_INITIALIZATION_EXPR,
 	PT_CLASS_POSSIBLY_IMPURE_CALL_EXPR,
 	PT_CLASS_CONST_FETCH,
@@ -2453,7 +2452,7 @@ zv::Val pt_mutating_scope_invalidate_expression(zend_object *scope, zval *expres
  * pending exception */
 zv::Val pt_expression_result_with_scope(zval *result, zval *scope);
 zv::Val pt_expression_result_get_args_result(zval *result);
-[[nodiscard]] bool pt_expression_result_ask_scope_variable_state_matches(zval *result, zval *scope, bool useNativeTypes, bool &out);
+[[nodiscard]] bool pt_expression_result_ask_scope_variable_state_matches(zval *result, zval *scope, bool useNativeTypes, bool &out, bool ruleFacingAsk = false);
 zv::Val pt_expression_result_at_ask_position(zval *result, zval *scope);
 zv::Val pt_expression_result_on_non_nullability_deviced_scopes(zval *result, zval *beforeScope, zval *scope);
 
@@ -4085,6 +4084,48 @@ zv::Val pt_php_class_reflection_extension_get_native_property(zend_object *exten
 zv::Val pt_php_class_reflection_extension_get_method(zend_object *extension, zval *classReflection, zend_string *methodName);
 [[nodiscard]] bool pt_php_class_reflection_extension_has_native_method(zend_object *extension, zval *classReflection, zend_string *methodName, bool &out);
 zv::Val pt_php_class_reflection_extension_get_native_method(zend_object *extension, zval *classReflection, zend_string *methodName);
+
+/* }}} */
+
+/* {{{ NodeCallbackScope.cpp — registered after MatchHandler (its parent
+ * MutatingScope is registered long before) */
+
+extern zend_class_entry *pt_ce_node_callback_scope;
+void pt_register_node_callback_scope();
+
+/* the native class's bodies for a receiver of exactly that class (the
+ * dispatching pt_mutating_scope_* entries route NodeCallbackScope receivers
+ * here): seedWalkScope() (false = pending exception), getType() /
+ * getNativeType() / getKeepVoidType() ($node an Expr), toWalkScope(),
+ * filterByTruthyValue() / filterByFalseyValue(), pushInFunctionCall() /
+ * popInFunctionCall(), getParentScope(); UNDEF = pending exception */
+[[nodiscard]] bool pt_node_callback_scope_seed_walk_scope(zend_object *scope, zval *walkScope);
+zv::Val pt_node_callback_scope_get_type(zend_object *scope, zend_object *node);
+zv::Val pt_node_callback_scope_get_native_type(zend_object *scope, zend_object *node);
+zv::Val pt_node_callback_scope_get_keep_void_type(zend_object *scope, zend_object *node);
+zv::Val pt_node_callback_scope_to_walk_scope(zend_object *scope);
+zv::Val pt_node_callback_scope_filter_by_value(zend_object *scope, zend_object *expr, bool truthy);
+zv::Val pt_node_callback_scope_push_in_function_call(zend_object *scope, zval *reflection, zval *parameter, bool rememberTypes);
+zv::Val pt_node_callback_scope_pop_in_function_call(zend_object *scope);
+zv::Val pt_node_callback_scope_get_parent_scope(zend_object *scope);
+
+/* WeakReference::create($referent) / $weakReference->get() through the
+ * engine's own methods, resolved once; UNDEF = pending exception */
+zv::Val pt_weak_reference_create(zval *referent);
+zv::Val pt_weak_reference_get(zend_object *weakReference);
+
+/* MutatingScope.cpp — what NodeCallbackScope inherits: the bodies its
+ * overrides wrap (parent::filterBy*Value(), ::pushInFunctionCall(),
+ * ::popInFunctionCall(), ::getParentScope()), findSettledStoredResult(), the
+ * walk-flavour create() of its toWalkScope(); and $scope->filterBy*Value()
+ * dispatched on any scope. UNDEF = pending exception */
+zv::Val pt_mutating_scope_find_settled_stored_result(zend_object *scope, zend_object *node);
+zv::Val pt_mutating_scope_parent_filter_by_value(zend_object *scope, zend_object *expr, bool truthy);
+zv::Val pt_mutating_scope_parent_push_in_function_call(zend_object *scope, zval *reflection, zval *parameter, bool rememberTypes);
+zv::Val pt_mutating_scope_parent_pop_in_function_call(zend_object *scope);
+zv::Val pt_mutating_scope_parent_get_parent_scope(zend_object *scope);
+zv::Val pt_mutating_scope_create_walk_scope(zend_object *scope);
+zv::Val pt_mutating_scope_filter_by_value(zend_object *scope, zend_object *expr, bool truthy);
 
 /* }}} */
 

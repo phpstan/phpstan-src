@@ -131,7 +131,6 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_RESOLVED_PROPERTY_REFLECTION */ {"resolvedPropertyReflection", "PHPStan\\Reflection\\ResolvedPropertyReflection"},
 	/* PT_CLASS_CHANGED_TYPE_PROPERTY_REFLECTION */ {"changedTypePropertyReflection", "PHPStan\\Reflection\\Dummy\\ChangedTypePropertyReflection"},
 	/* PT_CLASS_UNDEFINED_VARIABLE_EXCEPTION */ {"undefinedVariableException", "PHPStan\\Analyser\\UndefinedVariableException"},
-	/* PT_CLASS_NODE_CALLBACK_SCOPE */ {"nodeCallbackScope", "PHPStan\\Analyser\\NodeCallbackScope"},
 	/* PT_CLASS_PROPERTY_INITIALIZATION_EXPR */ {"propertyInitializationExpr", "PHPStan\\Node\\Expr\\PropertyInitializationExpr"},
 	/* PT_CLASS_POSSIBLY_IMPURE_CALL_EXPR */ {"possiblyImpureCallExpr", "PHPStan\\Node\\Expr\\PossiblyImpureCallExpr"},
 	/* PT_CLASS_CONST_FETCH */ {"constFetch", "PhpParser\\Node\\Expr\\ConstFetch"},

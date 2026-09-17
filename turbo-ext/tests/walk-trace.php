@@ -136,6 +136,22 @@ if (($argv[1] ?? '') === '--child') {
 			try {
 				if ($node instanceof Node\Expr) {
 					$line .= ' T=' . $scope->getType($node)->describe($precise) . ' N=' . $scope->getNativeType($node)->describe($precise);
+					if ($scope instanceof MutatingScope) {
+						// the rest of the callback scope's ask paths (NodeCallbackScope):
+						// the void-keeping read, the filtered scopes replaying their
+						// conditions onto stored results, the function-call stack
+						$line .= ' K=' . $scope->getKeepVoidType($node)->describe($precise);
+						if ($node instanceof Node\Expr\Instanceof_ || $node instanceof Node\Expr\BinaryOp\Identical || $node instanceof Node\Expr\BooleanNot) {
+							$truthyScope = $scope->filterByTruthyValue($node);
+							$falseyScope = $scope->filterByFalseyValue($node);
+							$line .= ' FT=' . $truthyScope->getType($node)->describe($precise)
+								. ' FN=' . $falseyScope->getNativeType($node)->describe($precise)
+								. ' FK=' . $truthyScope->getKeepVoidType($node)->describe($precise);
+						}
+						if ($node instanceof Node\Expr\FuncCall || $node instanceof Node\Expr\MethodCall) {
+							$line .= ' P=' . $scope->pushInFunctionCall(null, null, false)->popInFunctionCall()->getType($node)->describe($precise);
+						}
+					}
 				} elseif ($node instanceof Node\Stmt && $scope instanceof MutatingScope) {
 					$line .= ' S=' . json_encode($scope->debug(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
 				}

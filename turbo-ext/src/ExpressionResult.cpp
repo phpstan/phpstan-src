@@ -1193,16 +1193,17 @@ zv::Val pt_expression_result_get_args_result(zval *result)
 	return pt_type_call(Z_OBJ_P(result), PT_LC("getargsresult"), 0, NULL);
 }
 
-bool pt_expression_result_ask_scope_variable_state_matches(zval *result, zval *scope, bool useNativeTypes, bool &out)
+bool pt_expression_result_ask_scope_variable_state_matches(zval *result, zval *scope, bool useNativeTypes, bool &out, bool ruleFacingAsk)
 {
 	if (isNativeResult(result)) {
-		zend_long matches = ExpressionResult(Z_OBJ_P(result)).askScopeVariableStateMatches(scope, useNativeTypes, false);
+		zend_long matches = ExpressionResult(Z_OBJ_P(result)).askScopeVariableStateMatches(scope, useNativeTypes, ruleFacingAsk);
 		if (UNEXPECTED(matches < 0)) return false;
 		out = matches == 1;
 		return true;
 	}
-	zv::Args argv{scope, useNativeTypes};
-	zv::Val value = pt_type_call(Z_OBJ_P(result), PT_LC("askscopevariablestatematches"), 2, argv);
+	/* the twin's call passes the third argument only when it is true */
+	zv::Args argv{scope, useNativeTypes, ruleFacingAsk};
+	zv::Val value = pt_type_call(Z_OBJ_P(result), PT_LC("askscopevariablestatematches"), ruleFacingAsk ? 3 : 2, argv);
 	if (UNEXPECTED(value.isUndef())) return false;
 	out = Z_TYPE_P(value.raw()) == IS_TRUE;
 	return true;

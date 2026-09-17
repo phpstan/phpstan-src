@@ -9,8 +9,8 @@
  *
  * Design: the class, its layout, dispatch and collaborators
  * ---------------------------------------------------------
- * Class shape. Not final: NodeCallbackScope (final, PHP) extends it and a
- * third party may too. The class carries the twin's interfaces (Scope,
+ * Class shape. Not final: NodeCallbackScope (final, native since
+ * NodeCallbackScope.cpp) extends it and a third party may too. The class carries the twin's interfaces (Scope,
  * NodeCallbackInvoker, CollectedDataEmitter), so every one of their
  * methods must be declared here — linking checks that.
  *
@@ -36,8 +36,9 @@
  * pt_type_call() by name otherwise — NodeCallbackScope overrides
  * toNodeCallbackScope/toWalkScope/getType/getNativeType/getParentScope/
  * getScopeType/getScopeNativeType/getKeepVoidType/
- * filterByTruthyValue/filterByFalseyValue/pushInFunctionCall/popInFunctionCall,
- * and a subclass may override anything
+ * filterByTruthyValue/filterByFalseyValue/pushInFunctionCall/popInFunctionCall
+ * (its native bodies are called directly for that class: the
+ * pt_node_callback_scope_* entries), and a subclass may override anything
  * else). Private methods are direct C++ calls, as PHP never dispatches
  * them.
  *
@@ -441,6 +442,8 @@ struct InternalScopeFactorySlots
 	uint32_t expressionResultStorageStack;
 	uint32_t nodeCallback;
 	uint32_t createsNodeCallbackScopes;
+	uint32_t twin;
+	uint32_t origin;
 };
 
 static InternalScopeFactorySlots pt_isf_slots = {};
@@ -466,7 +469,7 @@ static const InternalScopeFactorySlots *internalScopeFactorySlots(zend_object *f
 	if (factory->ce != ce) return NULL;
 	InternalScopeFactorySlots slots;
 	slots.ce = ce;
-	int32_t offsets[PT_ISF_MEMO_COUNT + 5];
+	int32_t offsets[PT_ISF_MEMO_COUNT + 7];
 	for (uint32_t i = 0; i < PT_ISF_MEMO_COUNT; i++) {
 		offsets[i] = pt_instance_prop_offset(ce, pt_isf_memo_names[i], strlen(pt_isf_memo_names[i]));
 	}
@@ -475,7 +478,9 @@ static const InternalScopeFactorySlots *internalScopeFactorySlots(zend_object *f
 	offsets[PT_ISF_MEMO_COUNT + 2] = pt_instance_prop_offset(ce, PT_LC("expressionResultStorageStack"));
 	offsets[PT_ISF_MEMO_COUNT + 3] = pt_instance_prop_offset(ce, PT_LC("nodeCallback"));
 	offsets[PT_ISF_MEMO_COUNT + 4] = pt_instance_prop_offset(ce, PT_LC("createsNodeCallbackScopes"));
-	for (uint32_t i = 0; i < PT_ISF_MEMO_COUNT + 5; i++) {
+	offsets[PT_ISF_MEMO_COUNT + 5] = pt_instance_prop_offset(ce, PT_LC("twin"));
+	offsets[PT_ISF_MEMO_COUNT + 6] = pt_instance_prop_offset(ce, PT_LC("origin"));
+	for (uint32_t i = 0; i < PT_ISF_MEMO_COUNT + 7; i++) {
 		if (UNEXPECTED(offsets[i] < 0)) {
 			/* not the twin this reader knows: every call goes through the method */
 			return NULL;
@@ -489,6 +494,8 @@ static const InternalScopeFactorySlots *internalScopeFactorySlots(zend_object *f
 	slots.expressionResultStorageStack = (uint32_t) offsets[PT_ISF_MEMO_COUNT + 2];
 	slots.nodeCallback = (uint32_t) offsets[PT_ISF_MEMO_COUNT + 3];
 	slots.createsNodeCallbackScopes = (uint32_t) offsets[PT_ISF_MEMO_COUNT + 4];
+	slots.twin = (uint32_t) offsets[PT_ISF_MEMO_COUNT + 5];
+	slots.origin = (uint32_t) offsets[PT_ISF_MEMO_COUNT + 6];
 	pt_isf_slots = slots;
 	return &pt_isf_slots;
 }
@@ -677,13 +684,32 @@ public:
 		return thisCallBool(PT_LC("isreadonlypropertyfetch"), msIsReadonlyPropertyFetch, 2, args, out, [&](bool &o) { return isReadonlyPropertyFetch(Z_OBJ_P(expr), allowOnlyOnThis, o); });
 	}
 
-	zv::Val thisToWalkScope() { return thisCall(PT_LC("towalkscope"), msToWalkScope, 0, NULL, [&]() { return toWalkScope(); }); }
+	/* NodeCallbackScope overrides the next three: its native bodies for that
+	 * (final) class */
+	zv::Val thisToWalkScope()
+	{
+		if (self->ce == pt_ce_node_callback_scope) return pt_node_callback_scope_to_walk_scope(self);
+		return thisCall(PT_LC("towalkscope"), msToWalkScope, 0, NULL, [&]() { return toWalkScope(); });
+	}
 	zv::Val thisGetVariableType(zval *variableName) { return thisCall(PT_LC("getvariabletype"), msGetVariableType, 1, variableName, [&]() { return getVariableType(Z_STR_P(variableName)); }); }
-	zv::Val thisGetType(zval *node) { return thisCall(PT_LC("gettype"), msGetType, 1, node, [&]() { return getType(Z_OBJ_P(node)); }); }
+	zv::Val thisGetType(zval *node)
+	{
+		if (self->ce == pt_ce_node_callback_scope) return pt_node_callback_scope_get_type(self, Z_OBJ_P(node));
+		return thisCall(PT_LC("gettype"), msGetType, 1, node, [&]() { return getType(Z_OBJ_P(node)); });
+	}
 	zv::Val thisObtainResultForNode(zval *node) { return thisCall(PT_LC("obtainresultfornode"), msObtainResultForNode, 1, node, [&]() { return obtainResultForNode(Z_OBJ_P(node)); }); }
 	zv::Val thisWithTemplateArgumentConstraints(zval *constraints) { return thisCall(PT_LC("withtemplateargumentconstraints"), msWithTemplateArgumentConstraints, 1, constraints, [&]() { return withTemplateArgumentConstraints(constraints); }); }
 	zv::Val thisWithoutMemoizedTypes() { return thisCall(PT_LC("withoutmemoizedtypes"), msWithoutMemoizedTypes, 0, NULL, [&]() { return withoutMemoizedTypes(); }); }
-	zv::Val thisGetNativeType(zval *expr) { return thisCall(PT_LC("getnativetype"), msGetNativeType, 1, expr, [&]() { return getNativeType(expr); }); }
+	zv::Val thisGetNativeType(zval *expr)
+	{
+		if (self->ce == pt_ce_node_callback_scope) return pt_node_callback_scope_get_native_type(self, Z_OBJ_P(expr));
+		return thisCall(PT_LC("getnativetype"), msGetNativeType, 1, expr, [&]() { return getNativeType(expr); });
+	}
+	zv::Val thisGetParentScope()
+	{
+		if (self->ce == pt_ce_node_callback_scope) return pt_node_callback_scope_get_parent_scope(self);
+		return thisCall(PT_LC("getparentscope"), msGetParentScope, 0, NULL, [&]() { return getParentScope(); });
+	}
 	zv::Val thisDoNotTreatPhpDocTypesAsCertain() { return thisCall(PT_LC("donottreatphpdoctypesascertain"), msDoNotTreatPhpDocTypesAsCertain, 0, NULL, [&]() { return doNotTreatPhpDocTypesAsCertain(); }); }
 	zv::Val thisResolveName(zval *name) { return thisCall(PT_LC("resolvename"), msResolveName, 1, name, [&]() { return resolveName(Z_OBJ_P(name)); }); }
 	zv::Val thisResolveTypeByName(zval *name) { return thisCall(PT_LC("resolvetypebyname"), msResolveTypeByName, 1, name, [&]() { return resolveTypeByName(Z_OBJ_P(name)); }); }
@@ -791,6 +817,54 @@ public:
 	 * instead of the native class — a run in which the classes create() would
 	 * instantiate are not the native ones. UNDEF = pending exception.
 	 */
+	/* the native NodeCallbackScope when it is declared under the twin's name
+	 * (not under the prefix of the differential tests), NULL otherwise —
+	 * decided once per activation */
+	static zend_class_entry *nodeCallbackScopeClass()
+	{
+		static zend_class_entry *decidedFor = NULL;
+		static zend_class_entry *answer = NULL;
+		zend_class_entry *ce = pt_ce_node_callback_scope;
+		if (EXPECTED(ce == decidedFor)) return answer;
+		decidedFor = ce;
+		answer = ce != NULL && zend_string_equals_literal_ci(ce->name, "PHPStan\\Analyser\\NodeCallbackScope") ? ce : NULL;
+		return answer;
+	}
+
+	/* $factory->toNodeCallbackScopeFactory() / ->toWalkScopeFactory(): a
+	 * LazyInternalScopeFactory answers out of its slots when the answer is
+	 * itself, its created $twin or its live $origin — which is all the
+	 * method does then; anything else (the twin not created yet, another
+	 * InternalScopeFactory) calls the method. UNDEF = pending exception */
+	static zv::Val factoryFlavour(zend_object *factory, bool nodeCallback)
+	{
+		bool error;
+		const InternalScopeFactorySlots *slots = internalScopeFactorySlots(factory, error);
+		if (UNEXPECTED(error)) return zv::Val();
+		if (EXPECTED(slots != NULL)) {
+			zval *creates = OBJ_PROP(factory, slots->createsNodeCallbackScopes);
+			if (EXPECTED(Z_TYPE_P(creates) == IS_TRUE || Z_TYPE_P(creates) == IS_FALSE)) {
+				if ((Z_TYPE_P(creates) == IS_TRUE) == nodeCallback) {
+					zval z;
+					ZVAL_OBJ_COPY(&z, factory);
+					return zv::Val::adopt(z);
+				}
+				/* twin(): $this->twin, then $this->origin->get() */
+				zval *twin = OBJ_PROP(factory, slots->twin);
+				if (Z_TYPE_P(twin) == IS_OBJECT) return zv::Val::copyOf(zv::Ref(twin));
+				zval *origin = OBJ_PROP(factory, slots->origin);
+				if (Z_TYPE_P(origin) == IS_OBJECT) {
+					zv::Val referent = pt_weak_reference_get(Z_OBJ_P(origin));
+					if (UNEXPECTED(referent.isUndef())) return zv::Val();
+					if (!referent.isNull()) return referent;
+				}
+			}
+		}
+		return nodeCallback
+			? pt_type_call(factory, PT_LC("tonodecallbackscopefactory"), 0, NULL)
+			: pt_type_call(factory, PT_LC("towalkscopefactory"), 0, NULL);
+	}
+
 	/* $factory->create(...$args) through the method */
 	static zv::Val factoryCreateCall(zend_object *factory, CreateArgs &args)
 	{
@@ -802,9 +876,11 @@ public:
 		bool error;
 		const InternalScopeFactorySlots *slots = internalScopeFactorySlots(factory, error);
 		if (UNEXPECTED(error)) return zv::Val();
-		zend_class_entry *nodeCallbackScope = slots != NULL ? pt_class_loaded(PT_CLASS_NODE_CALLBACK_SCOPE) : NULL;
+		/* NodeCallbackScope::class is the native class while it carries the
+		 * twin's name — under the prefixed activation of the differential
+		 * tests it is the PHP twin, which the method instantiates */
+		zend_class_entry *nodeCallbackScope = slots != NULL ? nodeCallbackScopeClass() : NULL;
 		if (UNEXPECTED(nodeCallbackScope == NULL || pt_ce_mutating_scope == NULL || nodeCallbackScope->parent != pt_ce_mutating_scope)) {
-			if (UNEXPECTED(slots != NULL && EG(exception) != NULL)) return zv::Val();
 			return factoryCreateCall(factory, args);
 		}
 		for (uint32_t i = 0; i < PT_ISF_MEMO_COUNT; i++) {
@@ -1016,7 +1092,7 @@ public:
 
 		zv::Ref factory = slot(PT_MS_PROP_SCOPE_FACTORY);
 		if (UNEXPECTED(!factory.isObject())) return uninitializedProperty("scopeFactory");
-		zv::Val nodeCallbackScopeFactory = pt_type_call(factory.asObject(), PT_LC("tonodecallbackscopefactory"), 0, NULL);
+		zv::Val nodeCallbackScopeFactory = factoryFlavour(factory.asObject(), true);
 		if (UNEXPECTED(nodeCallbackScopeFactory.isUndef())) return zv::Val();
 		CreateArgs a;
 		if (UNEXPECTED(!fillFromSlots(a))) return zv::Val();
@@ -1027,11 +1103,22 @@ public:
 		}
 		zv::Val nodeCallbackScope = factoryCreate(Z_OBJ_P(nodeCallbackScopeFactory.raw()), a);
 		if (UNEXPECTED(nodeCallbackScope.isUndef())) return zv::Val();
-		bool isNodeCallbackScope;
-		if (UNEXPECTED(!isInstance(nodeCallbackScope.ref(), PT_CLASS_NODE_CALLBACK_SCOPE, isNodeCallbackScope))) return zv::Val();
-		if (isNodeCallbackScope) {
-			zv::Val seeded = pt_type_call(Z_OBJ_P(nodeCallbackScope.raw()), PT_LC("seedwalkscope"), 1, thisZval());
-			if (UNEXPECTED(seeded.isUndef())) return zv::Val();
+		/* if ($nodeCallbackScope instanceof NodeCallbackScope) {
+		 * $nodeCallbackScope->seedWalkScope($this); } — the native class's
+		 * body; the PHP twin (the prefixed activation) by name */
+		if (Z_TYPE_P(nodeCallbackScope.raw()) == IS_OBJECT) {
+			zend_object *created = Z_OBJ_P(nodeCallbackScope.raw());
+			if (EXPECTED(created->ce == pt_ce_node_callback_scope && pt_ce_node_callback_scope != NULL)) {
+				if (UNEXPECTED(!pt_node_callback_scope_seed_walk_scope(created, thisZval()))) return zv::Val();
+			} else if (created->ce != pt_ce_mutating_scope) {
+				zend_string *twinName = zend_string_init(PT_LC("PHPStan\\Analyser\\NodeCallbackScope"), 0);
+				zend_class_entry *twin = zend_lookup_class_ex(twinName, NULL, ZEND_FETCH_CLASS_NO_AUTOLOAD);
+				zend_string_release(twinName);
+				if (twin != NULL && instanceof_function(created->ce, twin)) {
+					zv::Val seeded = pt_type_call(created, PT_LC("seedwalkscope"), 1, thisZval());
+					if (UNEXPECTED(seeded.isUndef())) return zv::Val();
+				}
+			}
 		}
 
 		writeSlot(PT_MS_PROP_NODE_CALLBACK_SCOPE, zv::Val::copyOf(nodeCallbackScope.ref()));
@@ -1039,6 +1126,30 @@ public:
 	}
 
 	zv::Val toWalkScope() { return self_(); }
+
+	/* NodeCallbackScope::toWalkScope()'s
+	 * $this->scopeFactory->toWalkScopeFactory()->create(...) (twin): the walk
+	 * flavour of the factory, this scope's state and the dispatched getters in
+	 * the twin's argument order — $this->getParentScope() last. UNDEF =
+	 * pending exception */
+	zv::Val createWalkScope()
+	{
+		zv::Ref factory = slot(PT_MS_PROP_SCOPE_FACTORY);
+		if (UNEXPECTED(!factory.isObject())) return uninitializedProperty("scopeFactory");
+		zv::Val walkScopeFactory = factoryFlavour(factory.asObject(), false);
+		if (UNEXPECTED(walkScopeFactory.isUndef())) return zv::Val();
+		CreateArgs a;
+		if (UNEXPECTED(!fillFromSlots(a))) return zv::Val();
+		if (UNEXPECTED(!fillDispatched(a, true, true))) return zv::Val();
+		zv::Val parentScope = thisGetParentScope();
+		if (UNEXPECTED(parentScope.isUndef())) return zv::Val();
+		a.setOwned(CreateArgs::PARENT_SCOPE, std::move(parentScope));
+		if (UNEXPECTED(Z_TYPE_P(walkScopeFactory.raw()) != IS_OBJECT)) {
+			zend_throw_error(NULL, "Call to a member function create() on %s", zend_zval_value_name(walkScopeFactory.raw()));
+			return zv::Val();
+		}
+		return factoryCreate(Z_OBJ_P(walkScopeFactory.raw()), a);
+	}
 
 	/** @deprecated */
 	zv::Val toMutatingScope() { return self_(); }
@@ -5075,8 +5186,8 @@ public:
 	/* $other->getType($expr) / ->getNativeType($expr) */
 	static zv::Val otherGetType(zend_object *object, zval *expr, bool native)
 	{
-		if (native) return pt_type_call(object, PT_LC("getnativetype"), 1, expr);
-		return pt_type_call(object, PT_LC("gettype"), 1, expr);
+		if (native) return pt_mutating_scope_get_native_type(object, expr);
+		return pt_mutating_scope_get_type(object, expr);
 	}
 
 	/* }}} */
@@ -11507,11 +11618,13 @@ zend_long pt_mutating_scope_has_expression_type(zend_object *scope, zval *node)
 
 zv::Val pt_mutating_scope_get_type(zend_object *scope, zval *node)
 {
+	if (scope->ce == pt_ce_node_callback_scope) return pt_node_callback_scope_get_type(scope, Z_OBJ_P(node));
 	return pt_this_call(scope, scope->ce == pt_ce_mutating_scope, PT_LC("gettype"), msGetType, 1, node, [&]() { return MutatingScope(scope).getType(Z_OBJ_P(node)); });
 }
 
 zv::Val pt_mutating_scope_get_native_type(zend_object *scope, zval *expr)
 {
+	if (scope->ce == pt_ce_node_callback_scope) return pt_node_callback_scope_get_native_type(scope, Z_OBJ_P(expr));
 	return pt_this_call(scope, scope->ce == pt_ce_mutating_scope, PT_LC("getnativetype"), msGetNativeType, 1, expr, [&]() { return MutatingScope(scope).getNativeType(expr); });
 }
 
@@ -11752,6 +11865,7 @@ zv::Val pt_mutating_scope_get_namespace(zend_object *scope)
 
 zv::Val pt_mutating_scope_push_in_function_call(zend_object *scope, zval *reflection, zval *parameter, bool rememberTypes)
 {
+	if (scope->ce == pt_ce_node_callback_scope) return pt_node_callback_scope_push_in_function_call(scope, reflection, parameter, rememberTypes);
 	if (EXPECTED(PT_MS_NATIVE(scope, PT_LC("pushinfunctioncall"), msPushInFunctionCall))) return MutatingScope(scope).pushInFunctionCall(reflection, parameter, rememberTypes);
 	zv::Args args{reflection, parameter, rememberTypes};
 	return pt_type_call(scope, PT_LC("pushinfunctioncall"), 3, args);
@@ -11759,6 +11873,7 @@ zv::Val pt_mutating_scope_push_in_function_call(zend_object *scope, zval *reflec
 
 zv::Val pt_mutating_scope_pop_in_function_call(zend_object *scope)
 {
+	if (scope->ce == pt_ce_node_callback_scope) return pt_node_callback_scope_pop_in_function_call(scope);
 	if (EXPECTED(PT_MS_NATIVE(scope, PT_LC("popinfunctioncall"), msPopInFunctionCall))) return MutatingScope(scope).popInFunctionCall();
 	return pt_type_call(scope, PT_LC("popinfunctioncall"), 0, NULL);
 }
@@ -11813,6 +11928,11 @@ inline bool msExact(zend_object *scope)
 
 zv::Val pt_mutating_scope_to_node_callback_scope(zend_object *scope)
 {
+	if (scope->ce == pt_ce_node_callback_scope) {
+		zval z;
+		ZVAL_OBJ_COPY(&z, scope);
+		return zv::Val::adopt(z);
+	}
 	if (PT_MS_INHERITS(scope, "tonodecallbackscope")) return MutatingScope(scope).toNodeCallbackScope();
 	return pt_type_call(scope, PT_LC("tonodecallbackscope"), 0, NULL);
 }
@@ -13131,6 +13251,7 @@ void pt_register_mutating_scope()
 
 zv::Val pt_mutating_scope_to_walk_scope(zend_object *scope)
 {
+	if (scope->ce == pt_ce_node_callback_scope) return pt_node_callback_scope_to_walk_scope(scope);
 	if (EXPECTED(scope->ce == pt_ce_mutating_scope || PT_TYPE_METHOD_IS(scope, PT_LC("towalkscope"), msToWalkScope))) return MutatingScope(scope).toWalkScope();
 	return pt_type_call(scope, PT_LC("towalkscope"), 0, NULL);
 }
@@ -13229,6 +13350,11 @@ zv::Val pt_mutating_scope_enter_arrow_function_without_reflection(zend_object *s
 
 zv::Val pt_mutating_scope_get_keep_void_type(zend_object *scope, zval *node)
 {
+	if (scope->ce == pt_ce_node_callback_scope && Z_TYPE_P(node) == IS_OBJECT) {
+		zend_class_entry *exprCe = pt_class(PT_CLASS_EXPR);
+		if (UNEXPECTED(exprCe == NULL)) return zv::Val();
+		if (EXPECTED(instanceof_function(Z_OBJCE_P(node), exprCe))) return pt_node_callback_scope_get_keep_void_type(scope, Z_OBJ_P(node));
+	}
 	zend_class_entry *exprCe = pt_class(PT_CLASS_EXPR);
 	if (UNEXPECTED(exprCe == NULL)) return zv::Val();
 	if (PT_MS_INHERITS(scope, "getkeepvoidtype") && EXPECTED(Z_TYPE_P(node) == IS_OBJECT && instanceof_function(Z_OBJCE_P(node), exprCe))) return MutatingScope(scope).getKeepVoidType(Z_OBJ_P(node));
@@ -13382,6 +13508,7 @@ zv::Val pt_mutating_scope_process_always_iterable_foreach_scope_without_pollute(
 
 zv::Val pt_mutating_scope_get_parent_scope(zend_object *scope)
 {
+	if (scope->ce == pt_ce_node_callback_scope) return pt_node_callback_scope_get_parent_scope(scope);
 	if (PT_MS_INHERITS(scope, "getparentscope")) return MutatingScope(scope).getParentScope();
 	return pt_type_call(scope, PT_LC("getparentscope"), 0, NULL);
 }
@@ -13483,6 +13610,57 @@ zv::Val pt_mutating_scope_remove_type_from_expression(zend_object *scope, zend_o
 	ZVAL_OBJ(&exprZv, expr);
 	zv::Args argv{&exprZv, typeToRemove};
 	return pt_type_call(scope, PT_LC("removetypefromexpression"), 2, argv);
+}
+
+/* }}} */
+
+/* {{{ NodeCallbackScope.cpp's entries: the MutatingScope bodies its
+ * overrides wrap (parent::...), the protected findSettledStoredResult() it
+ * inherits, the walk-flavour create() of its toWalkScope(), and a dispatched
+ * filterBy*Value() on any scope */
+
+zv::Val pt_mutating_scope_find_settled_stored_result(zend_object *scope, zend_object *node)
+{
+	return MutatingScope(scope).findSettledStoredResult(node);
+}
+
+zv::Val pt_mutating_scope_parent_filter_by_value(zend_object *scope, zend_object *expr, bool truthy)
+{
+	return MutatingScope(scope).filterByValue(expr, truthy);
+}
+
+zv::Val pt_mutating_scope_parent_push_in_function_call(zend_object *scope, zval *reflection, zval *parameter, bool rememberTypes)
+{
+	return MutatingScope(scope).pushInFunctionCall(reflection, parameter, rememberTypes);
+}
+
+zv::Val pt_mutating_scope_parent_pop_in_function_call(zend_object *scope)
+{
+	return MutatingScope(scope).popInFunctionCall();
+}
+
+zv::Val pt_mutating_scope_parent_get_parent_scope(zend_object *scope)
+{
+	return MutatingScope(scope).getParentScope();
+}
+
+zv::Val pt_mutating_scope_create_walk_scope(zend_object *scope)
+{
+	return MutatingScope(scope).createWalkScope();
+}
+
+zv::Val pt_mutating_scope_filter_by_value(zend_object *scope, zend_object *expr, bool truthy)
+{
+	if (EXPECTED(scope->ce == pt_ce_mutating_scope)) return MutatingScope(scope).filterByValue(expr, truthy);
+	if (scope->ce == pt_ce_node_callback_scope) return pt_node_callback_scope_filter_by_value(scope, expr, truthy);
+	zend_class_entry *exprCe = pt_class(PT_CLASS_EXPR);
+	if (UNEXPECTED(exprCe == NULL)) return zv::Val();
+	if (EXPECTED(instanceof_function(expr->ce, exprCe))) {
+		if (truthy ? PT_TYPE_METHOD_IS(scope, PT_LC("filterbytruthyvalue"), msFilterByTruthyValue) : PT_TYPE_METHOD_IS(scope, PT_LC("filterbyfalseyvalue"), msFilterByFalseyValue)) return MutatingScope(scope).filterByValue(expr, truthy);
+	}
+	zval exprZv;
+	ZVAL_OBJ(&exprZv, expr);
+	return truthy ? pt_type_call(scope, PT_LC("filterbytruthyvalue"), 1, &exprZv) : pt_type_call(scope, PT_LC("filterbyfalseyvalue"), 1, &exprZv);
 }
 
 /* }}} */

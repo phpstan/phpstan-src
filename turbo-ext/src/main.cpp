@@ -577,6 +577,7 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	/* the assertions — their signatures name the PHP AssertTag and
 	 * ResolvedPhpDocBlock only */
 	pt_register_assertions();
+	pt_register_node_callback_scope();
 
 	return SUCCESS;
 }

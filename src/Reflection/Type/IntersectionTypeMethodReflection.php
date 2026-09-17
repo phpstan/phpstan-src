@@ -283,13 +283,24 @@ final class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 
 		$methodWithMostParameters = $this->methods[0];
 		$maxParameters = 0;
+		$maxIsVariadic = false;
 		foreach ($this->methods as $method) {
 			foreach ($method->getVariants() as $variant) {
-				if (count($variant->getParameters()) <= $maxParameters) {
+				// a variadic signature accepts any number of arguments,
+				// so it always wins over a non-variadic one
+				if ($maxIsVariadic && !$variant->isVariadic()) {
+					continue;
+				}
+
+				if (
+					$maxIsVariadic === $variant->isVariadic()
+					&& count($variant->getParameters()) <= $maxParameters
+				) {
 					continue;
 				}
 
 				$maxParameters = count($variant->getParameters());
+				$maxIsVariadic = $variant->isVariadic();
 				$methodWithMostParameters = $method;
 			}
 		}

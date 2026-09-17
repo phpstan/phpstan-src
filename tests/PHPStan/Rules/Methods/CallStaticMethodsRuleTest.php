@@ -1093,4 +1093,16 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10698.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug15251(): void
+	{
+		$this->checkThisOnly = false;
+		$this->analyse([__DIR__ . '/data/bug-15251.php'], [
+			[
+				'Static method Bug15251\\A::sfoo() invoked with 0 parameters, at least 1 required.',
+				42,
+			],
+		]);
+	}
+
 }

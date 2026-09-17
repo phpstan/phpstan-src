@@ -3037,9 +3037,9 @@ public:
 	zv::Val addTemplateArgumentConstraints(zval *constraints)
 	{
 		if (Z_TYPE_P(constraints) == IS_NULL) return self_();
-		zv::Val isEmpty = pt_type_call(Z_OBJ_P(constraints), PT_LC("isempty"), 0, NULL);
-		if (UNEXPECTED(isEmpty.isUndef())) return zv::Val();
-		if (zend_is_true(isEmpty.raw())) return self_();
+		bool isEmpty;
+		if (UNEXPECTED(!pt_template_argument_constraints_is_empty(constraints, isEmpty))) return zv::Val();
+		if (isEmpty) return self_();
 		if (UNEXPECTED(!requireSlot(PT_MS_PROP_TEMPLATE_ARGUMENT_CONSTRAINTS, "templateArgumentConstraints"))) return zv::Val();
 		zv::Ref current = slot(PT_MS_PROP_TEMPLATE_ARGUMENT_CONSTRAINTS);
 		zv::Val merged;
@@ -3050,7 +3050,7 @@ public:
 				zend_throw_error(NULL, "Call to a member function merge() on %s", zend_zval_value_name(current.raw()));
 				return zv::Val();
 			}
-			merged = pt_type_call(current.asObject(), PT_LC("merge"), 1, constraints);
+			merged = pt_template_argument_constraints_merge(current.raw(), constraints);
 			if (UNEXPECTED(merged.isUndef())) return zv::Val();
 		}
 		return thisWithTemplateArgumentConstraints(merged.raw());

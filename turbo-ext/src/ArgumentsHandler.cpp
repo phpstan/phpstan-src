@@ -465,21 +465,17 @@ zv::Val assignHandlerProcessVirtualAssign(zval *assignHandler, zval *nodeScopeRe
 }
 
 /* TemplateArgumentObserver */
-pt_method_site pt_ah_collect_argument_site;
-pt_method_site pt_ah_collect_call_site;
 
 /* $templateArgumentObserver->collectArgument($parameterType, $argumentType, $isPure) */
 zv::Val templateArgumentObserverCollectArgument(zval *observer, zval *parameterType, zval *argumentType, bool isPure)
 {
-	zv::Args argv{parameterType, argumentType, isPure};
-	return callOn(pt_ah_collect_argument_site, observer, PT_LC("collectargument"), "collectArgument", 3, argv);
+	return pt_template_argument_observer_collect_argument(observer, parameterType, argumentType, isPure);
 }
 
 /* $templateArgumentObserver->collectCall($site, $acceptor, $argumentTypes, $classTemplates) */
 zv::Val templateArgumentObserverCollectCall(zval *observer, zval *site, zval *acceptor, zval *argumentTypes, zval *classTemplates)
 {
-	zv::Args argv{site, acceptor, argumentTypes, classTemplates};
-	return callOn(pt_ah_collect_call_site, observer, PT_LC("collectcall"), "collectCall", 4, argv);
+	return pt_template_argument_observer_collect_call(observer, site, acceptor, argumentTypes, classTemplates);
 }
 
 /* ParametersAcceptorSelector (direct entries) */

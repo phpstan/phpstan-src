@@ -584,6 +584,11 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	/* the initializer expression context — its signatures name the Scope
 	 * interface, ClassReflection, php-parser and BetterReflection classes only */
 	pt_register_initializer_expr_context();
+	/* the template argument inference — the constraints first (the observer's
+	 * and the resolver's signatures name them) */
+	pt_register_template_argument_constraints();
+	pt_register_template_argument_observer();
+	pt_register_template_argument_resolver();
 
 	return SUCCESS;
 }

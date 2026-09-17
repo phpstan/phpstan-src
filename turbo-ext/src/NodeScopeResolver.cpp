@@ -149,9 +149,6 @@ bool staticArrayHas(zval *slot, zend_ulong id)
 pt_method_site pt_nsr_get_by_type_site;
 pt_method_site pt_nsr_normalize_path_site;
 pt_method_site pt_nsr_find_instance_of_site;
-pt_method_site pt_nsr_collect_sites_site;
-pt_method_site pt_nsr_collect_send_site;
-pt_method_site pt_nsr_create_empty_site;
 pt_method_site pt_nsr_enable_from_environment_site;
 pt_method_site pt_nsr_function_get_return_type_site;
 pt_method_site pt_nsr_get_sub_node_names_site;
@@ -255,20 +252,19 @@ zv::Val emptyInternalStatementResult(zval *scope, zval *throwPoints)
 /* $templateArgumentObserver->collectSites($type) */
 zv::Val templateArgumentObserverCollectSites(zval *observer, zval *type)
 {
-	return pt_call_method_cached(pt_nsr_collect_sites_site, Z_OBJ_P(observer), PT_LC("collectsites"), 1, type);
+	return pt_template_argument_observer_collect_sites(observer, type);
 }
 
 /* $templateArgumentObserver->collectSend($declared, $actual) */
 zv::Val templateArgumentObserverCollectSend(zval *observer, zval *declared, zval *actual)
 {
-	zv::Args argv{declared, actual};
-	return pt_call_method_cached(pt_nsr_collect_send_site, Z_OBJ_P(observer), PT_LC("collectsend"), 2, argv);
+	return pt_template_argument_observer_collect_send(observer, declared, actual);
 }
 
 /* TemplateArgumentConstraints::createEmpty() */
 zv::Val templateArgumentConstraintsCreateEmpty()
 {
-	return pt_call_static_cached(pt_nsr_create_empty_site, PT_CLASS_TEMPLATE_ARGUMENT_CONSTRAINTS, PT_LC("createempty"), 0, NULL);
+	return pt_template_argument_constraints_create_empty();
 }
 
 /* TemplateArgumentStats::enableFromEnvironment() */

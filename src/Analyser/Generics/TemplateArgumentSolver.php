@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser\Generics;
 
 use PhpParser\Node\Expr;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
 use PHPStan\Type\NeverType;
@@ -19,6 +20,7 @@ use function count;
 use function spl_object_id;
 
 /** A single solve's memoization; never retained by a scope or a type callback. */
+#[ReferencedByTurboExtension(key: 'templateArgumentSolver')]
 final class TemplateArgumentSolver
 {
 

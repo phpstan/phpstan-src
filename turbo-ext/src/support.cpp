@@ -266,7 +266,6 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_UNREACHABLE_STATEMENT_NODE */ {"unreachableStatementNode", "PHPStan\\Node\\UnreachableStatementNode"},
 	/* PT_CLASS_VAR_TAG_CHANGED_EXPRESSION_TYPE_NODE */ {"varTagChangedExpressionTypeNode", "PHPStan\\Node\\VarTagChangedExpressionTypeNode"},
 	/* PT_CLASS_PROPERTY_HOOK_STATEMENT_NODE */ {"propertyHookStatementNode", "PHPStan\\Node\\PropertyHookStatementNode"},
-	/* PT_CLASS_TEMPLATE_ARGUMENT_CONSTRAINTS */ {"templateArgumentConstraints", "PHPStan\\Analyser\\Generics\\TemplateArgumentConstraints"},
 	/* PT_CLASS_TEMPLATE_ARGUMENT_STATS */ {"templateArgumentStats", "PHPStan\\Analyser\\Generics\\TemplateArgumentStats"},
 	/* PT_CLASS_INVALIDATE_EXPR_NODE */ {"invalidateExprNode", "PHPStan\\Node\\InvalidateExprNode"},
 	/* PT_CLASS_TERNARY_EXPR */ {"ternaryExpr", "PhpParser\\Node\\Expr\\Ternary"},
@@ -405,6 +404,7 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_ADAPTER_REFLECTION_PARAMETER */ {"adapterReflectionParameter", "PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionParameter"},
 	/* PT_CLASS_ADAPTER_REFLECTION_FUNCTION */ {"adapterReflectionFunction", "PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionFunction"},
 	/* PT_CLASS_BETTER_REFLECTION_CONSTANT */ {"betterReflectionConstant", "PHPStan\\BetterReflection\\Reflection\\ReflectionConstant"},
+	/* PT_CLASS_TEMPLATE_ARGUMENT_SOLVER */ {"templateArgumentSolver", "PHPStan\\Analyser\\Generics\\TemplateArgumentSolver"},
 };
 
 zend_class_entry *pt_class(int idx)

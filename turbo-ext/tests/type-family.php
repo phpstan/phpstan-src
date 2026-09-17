@@ -7774,6 +7774,229 @@ PHP;
 	}
 }
 
+// ---- TemplateArgumentConstraints / TemplateArgumentObserver / TemplateArgumentResolver ----
+// The template argument inference of the two-pass body walk over markers of
+// labelled sites: the constraint trees (every fact kind, the synthetic site,
+// merges sharing subtrees, the identities merge() hands back), the observer's
+// sites, sends and lower bounds over generic objects with invariant,
+// covariant and call-site variances, unions, iterables, templates and mixed,
+// collectCall() over a variant's parameters by position, name and variadic
+// tail, and the resolver's frames over the collected facts (the PHP solver
+// on both sides), with the errors of each
+foreach ([\PHPStan\Analyser\Generics\TemplateArgumentConstraints::class => 'isEmpty', \PHPStan\Analyser\Generics\TemplateArgumentObserver::class => 'collectSites', \PHPStan\Analyser\Generics\TemplateArgumentResolver::class => 'resolve'] as $tacClass => $tacMethod) {
+	$observations['native ' . $tacClass] = (new ReflectionMethod($tacClass, $tacMethod))->isInternal();
+}
+{
+	$r = [];
+	$tacCatching = static function (callable $fn): mixed {
+		try {
+			return $fn();
+		} catch (\Throwable $e) {
+			return [get_class($e), preg_replace('~, called in .+ on line \d+$~', '', $e->getMessage())];
+		}
+	};
+	$precise = \PHPStan\Type\VerbosityLevel::precise();
+	$int = new \PHPStan\Type\IntegerType();
+	$string = new \PHPStan\Type\StringType();
+	$mixed = new \PHPStan\Type\MixedType();
+	$inv = \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant();
+	$cov = \PHPStan\Type\Generic\TemplateTypeVariance::createCovariant();
+	$contra = \PHPStan\Type\Generic\TemplateTypeVariance::createContravariant();
+	$bi = \PHPStan\Type\Generic\TemplateTypeVariance::createBivariant();
+	$scopeF = \PHPStan\Type\Generic\TemplateTypeScope::createWithFunction('f');
+	$scopeG = \PHPStan\Type\Generic\TemplateTypeScope::createWithFunction('g');
+	$tT = \PHPStan\Type\Generic\TemplateTypeFactory::create($scopeF, 'T', null, $inv);
+	$tU = \PHPStan\Type\Generic\TemplateTypeFactory::create($scopeF, 'U', $int, $cov);
+	$tV = \PHPStan\Type\Generic\TemplateTypeFactory::create($scopeF, 'V', null, $contra, null, $string);
+	$tW = \PHPStan\Type\Generic\TemplateTypeFactory::create($scopeG, 'W', null, $inv);
+	$tA = \PHPStan\Type\Generic\TemplateTypeFactory::create($scopeF, 'A', null, $inv, new \PHPStan\Type\Generic\TemplateTypeArgumentStrategy());
+	$sites = [];
+	foreach (['s1' => 3, 's2' => 10, 's3' => 25, 'synthetic' => 12] as $label => $position) {
+		$sites[$label] = new \PhpParser\Node\Expr\FuncCall(new \PhpParser\Node\Name($label), [], ['label' => $label, 'startTokenPos' => $position]);
+	}
+	$sites['synthetic']->setAttribute(\PHPStan\Analyser\Generics\TemplateArgumentFrame::SYNTHETIC_SITE_ATTRIBUTE, true);
+	$newMarker = static fn (string $site, \PHPStan\Type\Generic\TemplateType $template, ?\PHPStan\Type\Type $initial = null): \PHPStan\Type\Generic\UnresolvedTemplateArgumentType => new \PHPStan\Type\Generic\UnresolvedTemplateArgumentType($sites[$site], $template, $initial);
+	$markers = [
+		'm1T' => $newMarker('s1', $tT),
+		'm1U' => $newMarker('s1', $tU, new \PHPStan\Type\Constant\ConstantIntegerType(5)),
+		'm2T' => $newMarker('s2', $tT, $string),
+		'm2V' => $newMarker('s2', $tV, new \PHPStan\Type\NeverType()),
+		'm3W' => $newMarker('s3', $tW),
+		'synth' => $newMarker('synthetic', $tT),
+	];
+	$markers['m3T nested'] = $newMarker('s3', $tT, new \PHPStan\Type\Generic\GenericObjectType(\ArrayObject::class, [$int, $markers['m2T']]));
+	$labelOf = static function (mixed $marker) use ($precise): string {
+		if (!$marker instanceof \PHPStan\Type\Generic\UnresolvedTemplateArgumentType) {
+			return get_debug_type($marker);
+		}
+		return $marker->getSite()->getAttribute('label') . '#' . $marker->getTemplateName() . ($marker->getInitialType() !== null ? '=' . $marker->getInitialType()->describe($precise) : '');
+	};
+	$viewFact = static fn (array $fact): array => [$labelOf($fact[0]), $fact[1] === null ? null : $fact[1]->describe($precise), $fact[2] === null ? null : $fact[2]->describe(), $fact[3]];
+	$viewConstraints = static function (mixed $constraints) use ($viewFact): mixed {
+		if (!$constraints instanceof \PHPStan\Analyser\Generics\TemplateArgumentConstraints) {
+			return $constraints;
+		}
+		// the facts first: the twin's generator runs only when iterated
+		$facts = $constraints->getFacts();
+		$facts = array_map($viewFact, is_array($facts) ? $facts : iterator_to_array($facts, false));
+		return [$constraints->isEmpty(), $facts];
+	};
+
+	// the constraint trees
+	$C = \PHPStan\Analyser\Generics\TemplateArgumentConstraints::class;
+	$empty = $C::createEmpty();
+	$trees = ['empty' => $empty];
+	$trees['site'] = $empty->withSite($markers['m1T']);
+	$trees['send'] = $trees['site']->withSend($markers['m2T'], $int, $cov);
+	$trees['lower'] = $empty->withLowerBound($markers['m1U'], $string);
+	$trees['unconstraining'] = $trees['lower']->withUnconstrainingSend($markers['m3W']);
+	$trees['synthetic'] = $empty->withSite($markers['synth']);
+	$trees['merged'] = $trees['send']->merge($trees['unconstraining']);
+	$trees['merged again'] = $trees['merged']->merge($trees['send']);
+	$trees['diamond left'] = $trees['site']->merge($trees['lower']);
+	$trees['diamond right'] = $trees['diamond left']->withSite($markers['m2V']);
+	$trees['diamond'] = $trees['diamond left']->merge($trees['diamond right']);
+	$trees['nested'] = $trees['diamond']->merge($trees['merged'])->withSend($markers['m3T nested'], $string, $contra);
+	foreach ($trees as $name => $tree) {
+		$r["constraints $name"] = $viewConstraints($tree);
+	}
+	$r['constraints identities'] = [
+		$trees['synthetic'] === $empty,
+		$empty->merge($trees['send']) === $trees['send'],
+		$trees['send']->merge($empty) === $trees['send'],
+		$trees['send']->merge($trees['send']) === $trees['send'],
+		$empty->merge($C::createEmpty()) === $empty,
+		$C::createEmpty() !== $C::createEmpty(),
+		$trees['merged']->merge($trees['merged']) === $trees['merged'],
+	];
+	$r['constraints private constructor'] = $tacCatching(static fn () => new $C());
+	$r['constraints reconstructed'] = $tacCatching(static fn () => (static fn () => $this->__construct())->call($trees['send']));
+	$r['constraints private constructor bound'] = $tacCatching(static fn () => $viewConstraints((static fn () => new self(null, null, [$markers['m1T'], null, null, false]))->bindTo(null, $C)()));
+	$raw = (new \ReflectionClass($C))->newInstanceWithoutConstructor();
+	foreach (['isEmpty' => static fn () => $raw->isEmpty(), 'merge' => static fn () => $raw->merge($trees['send']), 'merged into' => static fn () => $trees['send']->merge($raw), 'getFacts' => static fn () => $viewConstraints($raw), 'withSite' => static fn () => $viewConstraints($raw->withSite($markers['m1T']))] as $name => $callback) {
+		$r["constraints uninitialized $name"] = $tacCatching($callback);
+	}
+	$r['constraints wrong marker'] = $tacCatching(static fn () => $empty->withSite($string));
+	$r['constraints wrong merge'] = $tacCatching(static fn () => $empty->merge(new \stdClass()));
+	$r['constraints wrong variance'] = $tacCatching(static fn () => $empty->withSend($markers['m1T'], $int, $int));
+
+	// the observer
+	$observer = new \PHPStan\Analyser\Generics\TemplateArgumentObserver();
+	$ao = static fn (\PHPStan\Type\Type ...$types): \PHPStan\Type\Type => new \PHPStan\Type\Generic\GenericObjectType(\ArrayObject::class, $types);
+	$actuals = [
+		'ao<int, m1T>' => $ao($int, $markers['m1T']),
+		'ao<int, m1U>' => $ao($int, $markers['m1U']),
+		'ai<m2T, m2V>' => new \PHPStan\Type\Generic\GenericObjectType(\ArrayIterator::class, [$markers['m2T'], $markers['m2V']]),
+		'ao<int, m1T>|null' => new \PHPStan\Type\UnionType([$ao($int, $markers['m1T']), new \PHPStan\Type\NullType()]),
+		'array<m1T>' => new \PHPStan\Type\ArrayType($int, $markers['m1T']),
+		'm1T' => $markers['m1T'],
+		'never' => new \PHPStan\Type\NeverType(),
+		'ao<int, string>' => $ao($int, $string),
+		'iterable<m3W>' => new \PHPStan\Type\IterableType($mixed, $markers['m3W']),
+		'object' => new \PHPStan\Type\ObjectWithoutClassType(),
+		'ao<int, ao<int, m1T>>' => $ao($int, $ao($int, $markers['m1T'])),
+		'ao<int, m3T nested>' => $ao($int, $markers['m3T nested']),
+		'ao<synth, m2V>' => $ao($markers['synth'], $markers['m2V']),
+	];
+	$declareds = [
+		'ao<int, string>' => $ao($int, $string),
+		'traversable<int, string>' => new \PHPStan\Type\Generic\GenericObjectType(\Traversable::class, [$int, $string]),
+		'traversable<mixed, mixed>' => new \PHPStan\Type\Generic\GenericObjectType(\Traversable::class, [$mixed, $mixed]),
+		'ao<int, T>' => $ao($int, $tT),
+		'ao<int, A>' => $ao($int, $tA),
+		'ao contravariant' => new \PHPStan\Type\Generic\GenericObjectType(\ArrayObject::class, [$int, $string], null, null, [$contra, $contra]),
+		'ao bivariant' => new \PHPStan\Type\Generic\GenericObjectType(\ArrayObject::class, [$int, $string], null, null, [$bi, $bi]),
+		'ao<int, ao<int, int>>' => $ao($int, $ao($int, $int)),
+		'mixed' => $mixed,
+		'T' => $tT,
+		'ao<int, string>|null' => new \PHPStan\Type\UnionType([$ao($int, $string), new \PHPStan\Type\NullType()]),
+		'array<int, string>' => new \PHPStan\Type\ArrayType($int, $string),
+		'iterable<int, string>' => new \PHPStan\Type\IterableType($int, $string),
+		'callable' => new \PHPStan\Type\CallableType(),
+		'm1T' => $markers['m1T'],
+		'm1T|ao<int, m1T>' => new \PHPStan\Type\UnionType([$markers['m1T'], $ao($int, $markers['m1T'])]),
+		'string|ao<int, m2T>' => new \PHPStan\Type\UnionType([$string, $ao($int, $markers['m2T'])]),
+		'ao<int, m1T>' => $ao($int, $markers['m1T']),
+		'ai<m2T, m2V>' => new \PHPStan\Type\Generic\GenericObjectType(\ArrayIterator::class, [$markers['m2T'], $markers['m2V']]),
+		'iterable<m3W>' => new \PHPStan\Type\IterableType($mixed, $markers['m3W']),
+		'never' => new \PHPStan\Type\NeverType(),
+	];
+	foreach ($actuals as $name => $actual) {
+		$r["observer sites $name"] = $tacCatching(static fn () => $viewConstraints($observer->collectSites($actual)));
+	}
+	foreach ($declareds as $declaredName => $declared) {
+		foreach ($actuals as $actualName => $actual) {
+			$r["observer send $declaredName <- $actualName"] = $tacCatching(static fn () => $viewConstraints($observer->collectSend($declared, $actual)));
+			$r["observer argument $declaredName <- $actualName"] = $tacCatching(static fn () => $viewConstraints($observer->collectArgument($declared, $actual)));
+			$r["observer pure argument $declaredName <- $actualName"] = $tacCatching(static fn () => $viewConstraints($observer->collectArgument($declared, $actual, true)));
+		}
+	}
+	$templateMap = new \PHPStan\Type\Generic\TemplateTypeMap(['T' => $tT, 'U' => $tU]);
+	$parameters = [
+		new \PHPStan\Reflection\Php\DummyParameter('a', $ao($int, $tT), false, null, false, null),
+		new \PHPStan\Reflection\Php\DummyParameter('b', new \PHPStan\Type\UnionType([$tT, new \PHPStan\Type\NullType()]), false, null, false, null),
+		new \PHPStan\Reflection\Php\DummyParameter('c', new \PHPStan\Type\UnionType([$ao($int, $tT), $tU]), false, null, false, null),
+		new \PHPStan\Reflection\Php\DummyParameter('d', new \PHPStan\Type\UnionType([$ao($int, $tW), $ao($int, $tA), $string]), true, null, true, null),
+	];
+	$acceptors = [
+		'plain' => new \PHPStan\Reflection\FunctionVariant($templateMap, null, $parameters, false, $mixed),
+		'variadic' => new \PHPStan\Reflection\FunctionVariant($templateMap, null, $parameters, true, $mixed),
+		'no templates' => new \PHPStan\Reflection\FunctionVariant(\PHPStan\Type\Generic\TemplateTypeMap::createEmpty(), null, $parameters, true, $mixed),
+	];
+	$acceptors['resolved'] = new \PHPStan\Reflection\ResolvedFunctionVariantWithOriginal(new \PHPStan\Reflection\ExtendedFunctionVariant($templateMap, null, [], true, $mixed, $mixed, $mixed), \PHPStan\Type\Generic\TemplateTypeMap::createEmpty(), \PHPStan\Type\Generic\TemplateTypeVarianceMap::createEmpty(), []);
+	$argumentSets = [
+		'none' => [],
+		'no markers' => [$ao($int, $string), $string],
+		'positional' => [$actuals['ao<int, m1T>'], $actuals['ao<int, m1T>|null'], $actuals['ao<int, m1U>'], $actuals['ai<m2T, m2V>'], $actuals['ao<int, m3T nested>']],
+		'named' => ['b' => $actuals['ao<int, m1T>'], 'c' => $actuals['ao<int, m1U>'], 'zz' => $actuals['ao<int, m1T>'], 'a' => $actuals['ao<synth, m2V>']],
+	];
+	foreach ($acceptors as $acceptorName => $acceptor) {
+		foreach ($argumentSets as $argumentsName => $argumentTypes) {
+			foreach (['no class templates' => null, 'class templates' => new \PHPStan\Type\Generic\TemplateTypeMap(['W' => $tW, 'T' => $tU])] as $classTemplatesName => $classTemplates) {
+				$r["observer call $acceptorName $argumentsName $classTemplatesName"] = $tacCatching(static fn () => $viewConstraints($observer->collectCall($sites['s2'], $acceptor, $argumentTypes, $classTemplates)));
+			}
+		}
+	}
+	$r['observer wrong type'] = $tacCatching(static fn () => $observer->collectSites($sites['s1']));
+	$r['observer wrong acceptor'] = $tacCatching(static fn () => $observer->collectCall($sites['s1'], $int, []));
+
+	// the resolver
+	$resolver = new \PHPStan\Analyser\Generics\TemplateArgumentResolver();
+	$parent = new \PHPStan\Analyser\Generics\TemplateArgumentFrame(null, [spl_object_id($sites['s3']) . '#W' => $int]);
+	$viewFrame = static function (mixed $frame) use ($sites, $precise): mixed {
+		if (!$frame instanceof \PHPStan\Analyser\Generics\TemplateArgumentFrame) {
+			return $frame;
+		}
+		$resolutions = [];
+		foreach ($sites as $label => $site) {
+			foreach (['T', 'U', 'V', 'W'] as $name) {
+				$resolved = $frame->resolve($site, $name);
+				$resolutions["$label#$name"] = $resolved === null ? null : $resolved->describe($precise);
+			}
+		}
+		return [$frame->isObserving(), $frame->firstSiteStatementIndex(), [$frame->ownsSiteInStatement(0), $frame->ownsSiteInStatement(1), $frame->ownsSiteInStatement(2), $frame->ownsSiteInStatement(3)], $frame->hasSiteAtOrAfter(2), $resolutions];
+	};
+	$collected = [
+		'send' => $observer->collectSend($declareds['ao<int, string>'], $actuals['ao<int, m1T>']),
+		'argument' => $observer->collectArgument($declareds['traversable<int, string>'], $actuals['ai<m2T, m2V>']),
+		'call' => $observer->collectCall($sites['s2'], $acceptors['plain'], $argumentSets['positional']),
+		'sites' => $observer->collectSites($actuals['ao<int, ao<int, m1T>>']),
+	];
+	foreach ($trees + $collected as $name => $constraints) {
+		foreach (['no parent' => null, 'parent' => $parent] as $parentName => $parentFrame) {
+			foreach (['positions' => [0, 5, 12, 20], 'one position' => [0], 'no positions' => [], 'gapped positions' => [0 => 0, 2 => 12]] as $positionsName => $positions) {
+				$r["resolver $name $parentName $positionsName"] = $tacCatching(static fn () => $viewFrame($resolver->resolve($constraints, $parentFrame, $positions)));
+			}
+		}
+	}
+	$r['resolver wrong constraints'] = $tacCatching(static fn () => $resolver->resolve($int, null, []));
+	$r['resolver wrong parent'] = $tacCatching(static fn () => $resolver->resolve($empty, $int, []));
+
+	foreach ($r as $key => $value) {
+		$observations["template arguments $key"] = $value;
+	}
+}
+
 // observations holding bytes that are not UTF-8 (the invalid-UTF-8 subject's
 // descriptions) go out base64-encoded so json_encode() keeps every byte; the
 // non-finite floats (the NAN and infinity subjects' values) as their names

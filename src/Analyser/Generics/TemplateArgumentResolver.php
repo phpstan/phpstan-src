@@ -3,11 +3,13 @@
 namespace PHPStan\Analyser\Generics;
 
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\TypeCombinator;
 use function count;
 use function spl_object_id;
 
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TemplateArgumentResolver.cpp')]
 final class TemplateArgumentResolver
 {
 

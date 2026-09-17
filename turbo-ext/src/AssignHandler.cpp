@@ -597,31 +597,25 @@ zv::Val shProcessStmtVarAnnotation(zval *handler, zval *nsr, zval *scope, zval *
 /* $templateArgumentObserver->collectSend($declared, $actual) */
 zv::Val taoCollectSend(zval *observer, zval *declared, zval *actual)
 {
-	static pt_method_site site;
-	zv::Args argv{declared, actual};
-	return pt_call_method_cached(site, Z_OBJ_P(observer), PT_LC("collectsend"), 2, argv);
+	return pt_template_argument_observer_collect_send(observer, declared, actual);
 }
 
 /* $templateArgumentObserver->collectArgument($parameterType, $argumentType) */
 zv::Val taoCollectArgument(zval *observer, zval *parameterType, zval *argumentType)
 {
-	static pt_method_site site;
-	zv::Args argv{parameterType, argumentType};
-	return pt_call_method_cached(site, Z_OBJ_P(observer), PT_LC("collectargument"), 2, argv);
+	return pt_template_argument_observer_collect_argument(observer, parameterType, argumentType, false);
 }
 
 /* TemplateArgumentConstraints::createEmpty() */
 zv::Val tacCreateEmpty()
 {
-	static pt_method_site site;
-	return pt_call_static_cached(site, PT_CLASS_TEMPLATE_ARGUMENT_CONSTRAINTS, PT_LC("createempty"), 0, NULL);
+	return pt_template_argument_constraints_create_empty();
 }
 
 /* $constraints->merge($other) */
 zv::Val tacMerge(zval *constraints, zval *other)
 {
-	static pt_method_site site;
-	return pt_call_method_cached(site, Z_OBJ_P(constraints), PT_LC("merge"), 1, other);
+	return pt_template_argument_constraints_merge(constraints, other);
 }
 
 /* $methodThrowPointHelper->getThrowPointsForCallOnType($scope, $context, $calledOnType, $methodCall) */

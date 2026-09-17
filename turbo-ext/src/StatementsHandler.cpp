@@ -67,9 +67,6 @@ pt_method_site pt_sh_get_var_tags_site;
 pt_method_site pt_sh_tag_get_type_site;
 pt_method_site pt_sh_comment_get_text_site;
 pt_method_site pt_sh_function_get_name_site;
-pt_method_site pt_sh_collect_send_site;
-pt_method_site pt_sh_resolve_site;
-pt_method_site pt_sh_create_empty_site;
 pt_method_site pt_sh_stats_increment_site;
 pt_property_site pt_sh_name_site;
 pt_property_site pt_sh_expr_site;
@@ -185,16 +182,14 @@ zv::Val internalThrowPointCreateExplicit(zval *scope, zval *type, zval *node)
 /* $templateArgumentObserver->collectSend($declared, $actual) */
 zv::Val templateArgumentObserverCollectSend(zval *observer, zval *declared, zval *actual)
 {
-	zv::Args argv{declared, actual};
-	return pt_call_method_cached(pt_sh_collect_send_site, Z_OBJ_P(observer), PT_LC("collectsend"), 2, argv);
+	return pt_template_argument_observer_collect_send(observer, declared, actual);
 }
 
 /* $templateArgumentResolver->resolve($constraints, $parentFrame,
  * $statementStartTokenPositions) */
 zv::Val templateArgumentResolverResolve(zval *resolver, zval *constraints, zval *parentFrame, zval *positions)
 {
-	zv::Args argv{constraints, parentFrame, positions};
-	return pt_call_method_cached(pt_sh_resolve_site, Z_OBJ_P(resolver), PT_LC("resolve"), 3, argv);
+	return pt_template_argument_resolver_resolve(resolver, constraints, parentFrame, positions);
 }
 
 /* $frame->firstSiteStatementIndex() / hasSiteAtOrAfter($i) /
@@ -277,7 +272,7 @@ zv::Val frameFirstSiteStatementIndex(zval *frame)
 /* TemplateArgumentConstraints::createEmpty() */
 zv::Val templateArgumentConstraintsCreateEmpty()
 {
-	return pt_call_static_cached(pt_sh_create_empty_site, PT_CLASS_TEMPLATE_ARGUMENT_CONSTRAINTS, PT_LC("createempty"), 0, NULL);
+	return pt_template_argument_constraints_create_empty();
 }
 
 /* TemplateArgumentStats::$enabled; false = pending exception */

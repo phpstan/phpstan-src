@@ -305,7 +305,6 @@ enum {
 	PT_CLASS_UNREACHABLE_STATEMENT_NODE,
 	PT_CLASS_VAR_TAG_CHANGED_EXPRESSION_TYPE_NODE,
 	PT_CLASS_PROPERTY_HOOK_STATEMENT_NODE,
-	PT_CLASS_TEMPLATE_ARGUMENT_CONSTRAINTS,
 	PT_CLASS_TEMPLATE_ARGUMENT_STATS,
 	PT_CLASS_INVALIDATE_EXPR_NODE,
 	/* the assignment handlers (AssignHandler.cpp, AssignOpHandler.cpp) */
@@ -454,6 +453,7 @@ enum {
 	PT_CLASS_ADAPTER_REFLECTION_PARAMETER,
 	PT_CLASS_ADAPTER_REFLECTION_FUNCTION,
 	PT_CLASS_BETTER_REFLECTION_CONSTANT,
+	PT_CLASS_TEMPLATE_ARGUMENT_SOLVER,
 	PT_CLASS_COUNT
 };
 
@@ -4237,6 +4237,53 @@ zv::Val pt_initializer_expr_context_from_reflection_parameter(zval *parameter);
 zv::Val pt_initializer_expr_context_from_stub_parameter(zval *className, zval *stubFile, zval *function);
 zv::Val pt_initializer_expr_context_from_global_constant(zval *constant);
 zv::Val pt_initializer_expr_context_create_empty();
+
+/* }}} */
+
+/* {{{ the template argument inference of the two-pass body walk
+ * (TemplateArgumentConstraints.cpp, TemplateArgumentObserver.cpp,
+ * TemplateArgumentResolver.cpp), registered after the initializer
+ * expression context — their signatures name the Type interface, the
+ * template machinery, TemplateArgumentFrame and PHP classes only */
+
+extern zend_class_entry *pt_ce_template_argument_constraints;
+extern zend_class_entry *pt_ce_template_argument_observer;
+extern zend_class_entry *pt_ce_template_argument_resolver;
+void pt_register_template_argument_constraints();
+void pt_register_template_argument_observer();
+void pt_register_template_argument_resolver();
+/* TemplateArgumentConstraints::createEmpty() (a fresh instance, as the
+ * twin's `new self()`) / $constraints->isEmpty() / ->merge($other) /
+ * ->withSite($marker) / ->withSend($marker, $type, $variance) /
+ * ->withLowerBound($marker, $type) / ->withUnconstrainingSend($marker): the
+ * native body for the native class, the method otherwise (every argument
+ * borrowed; the receiver of the with*() entries an object); false / UNDEF =
+ * pending exception */
+zv::Val pt_template_argument_constraints_create_empty();
+[[nodiscard]] bool pt_template_argument_constraints_is_empty(zval *constraints, bool &out);
+[[nodiscard]] bool pt_template_argument_constraints_is_empty_of(zend_object *constraints, bool &out);
+zv::Val pt_template_argument_constraints_merge(zval *constraints, zval *other);
+zv::Val pt_template_argument_constraints_with_site(zval *constraints, zval *marker);
+zv::Val pt_template_argument_constraints_with_send(zval *constraints, zval *marker, zval *type, zval *variance);
+zv::Val pt_template_argument_constraints_with_lower_bound(zval *constraints, zval *marker, zval *type);
+zv::Val pt_template_argument_constraints_with_unconstraining_send(zval *constraints, zval *marker);
+/* foreach ($constraints->getFacts() as $fact) fn(data, $fact) in the
+ * generator's order without the list (each fact borrowed); fn returns false
+ * for a pending exception; false = pending exception */
+typedef bool (*pt_template_argument_fact_fn)(void *data, zval *fact);
+[[nodiscard]] bool pt_template_argument_constraints_facts(zval *constraints, pt_template_argument_fact_fn fn, void *data);
+/* $observer->collectSites($type) / ->collectSend($declared, $actual) /
+ * ->collectArgument($parameterType, $argumentType, $isPure) /
+ * ->collectCall($site, $acceptor, $argumentTypes, $classTemplates)
+ * ($classTemplates NULL or IS_NULL for null) and
+ * $resolver->resolve($constraints, $parent, $statementStartTokenPositions)
+ * ($parent NULL or IS_NULL for null): the native body for the native
+ * service, the method otherwise (borrowed); UNDEF = pending exception */
+zv::Val pt_template_argument_observer_collect_sites(zval *observer, zval *type);
+zv::Val pt_template_argument_observer_collect_send(zval *observer, zval *declared, zval *actual);
+zv::Val pt_template_argument_observer_collect_argument(zval *observer, zval *parameterType, zval *argumentType, bool isPure);
+zv::Val pt_template_argument_observer_collect_call(zval *observer, zval *site, zval *acceptor, zval *argumentTypes, zval *classTemplates);
+zv::Val pt_template_argument_resolver_resolve(zval *resolver, zval *constraints, zval *parent, zval *statementStartTokenPositions);
 
 /* }}} */
 

@@ -183,6 +183,12 @@ class CallUserFuncRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug15251(): void
+	{
+		$this->analyse([__DIR__ . '/../Methods/data/bug-15251.php'], []);
+	}
+
 	#[RequiresPhp('>= 8.0.0')]
 	public function testConstantParameterCheckCallUserFunc(): void
 	{

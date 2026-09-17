@@ -15,6 +15,7 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClassConstant;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnumBackedCase;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
+use PHPStan\BetterReflection\Reflection\Exception\CircularReference;
 use PHPStan\DependencyInjection\GenerateFactory;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
 use PHPStan\Php\PhpVersion;
@@ -74,7 +75,6 @@ use function in_array;
 use function is_bool;
 use function is_file;
 use function is_int;
-use function reset;
 use function sprintf;
 use function strtolower;
 
@@ -152,6 +152,13 @@ final class ClassReflection
 	private ?array $cachedInterfaces = null;
 
 	private ClassReflection|false|null $cachedParentClass = false;
+
+	/**
+	 * Name of the class the parent class chain loops back to, false when it has not been looked for yet.
+	 *
+	 * @var class-string|false|null
+	 */
+	private string|false|null $circularParentClassName = false;
 
 	/** @var array<string, TypeAlias>|null */
 	private ?array $typeAliases = null;
@@ -244,6 +251,11 @@ final class ClassReflection
 			return $this->cachedParentClass = null;
 		}
 
+		$circularParentClassName = $this->findCircularParentClassName($parentClass->getName());
+		if ($circularParentClassName !== null) {
+			throw CircularReference::fromClassName($circularParentClassName);
+		}
+
 		$extendsTag = $this->getFirstExtendsTag();
 
 		if ($extendsTag !== null && $this->isValidAncestorType($extendsTag->getType(), [$parentClass->getName()])) {
@@ -275,6 +287,46 @@ final class ClassReflection
 		$this->cachedParentClass = $parentReflection;
 
 		return $parentReflection;
+	}
+
+	/**
+	 * BetterReflection only rejects a class extending itself directly. A cycle spanning
+	 * several classes (A extends B, B extends A) reaches this class intact and would make
+	 * every walk over the class hierarchy run forever, so it is detected here instead.
+	 *
+	 * @param class-string $parentClassName
+	 * @return class-string|null Name of the class the chain loops back to
+	 */
+	private function findCircularParentClassName(string $parentClassName): ?string
+	{
+		if (!is_bool($this->circularParentClassName)) {
+			return $this->circularParentClassName;
+		}
+
+		$this->circularParentClassName = null;
+
+		$visitedClassNames = [strtolower($this->getName()) => true];
+		$currentClassName = $parentClassName;
+
+		while (true) {
+			$lowercasedClassName = strtolower($currentClassName);
+			if (array_key_exists($lowercasedClassName, $visitedClassNames)) {
+				return $this->circularParentClassName = $currentClassName;
+			}
+
+			$visitedClassNames[$lowercasedClassName] = true;
+
+			if (!$this->reflectionProvider->hasClass($currentClassName)) {
+				return null;
+			}
+
+			$parentClass = $this->reflectionProvider->getClass($currentClassName)->reflection->getParentClass();
+			if ($parentClass === false) {
+				return null;
+			}
+
+			$currentClassName = $parentClass->getName();
+		}
 	}
 
 	/**
@@ -356,7 +408,7 @@ final class ClassReflection
 			$distances = [
 				$this->getName() => $distance,
 			];
-			$currentClassReflection = $this->getNativeReflection();
+			$currentClassReflection = $this;
 			foreach ($this->collectTraits($this->getNativeReflection()) as $trait) {
 				$distance++;
 				if (array_key_exists($trait->getName(), $distances)) {
@@ -366,14 +418,16 @@ final class ClassReflection
 				$distances[$trait->getName()] = $distance;
 			}
 
-			while ($currentClassReflection->getParentClass() !== false) {
+			// walking the parents through getParentClass() and not through the native
+			// reflection makes a cyclic class hierarchy end in a CircularReference
+			// exception instead of looping forever
+			while (($currentClassReflection = $currentClassReflection->getParentClass()) !== null) {
 				$distance++;
-				$parentClassName = $currentClassReflection->getParentClass()->getName();
+				$parentClassName = $currentClassReflection->getName();
 				if (!array_key_exists($parentClassName, $distances)) {
 					$distances[$parentClassName] = $distance;
 				}
-				$currentClassReflection = $currentClassReflection->getParentClass();
-				foreach ($this->collectTraits($currentClassReflection) as $trait) {
+				foreach ($this->collectTraits($currentClassReflection->getNativeReflection()) as $trait) {
 					$distance++;
 					if (array_key_exists($trait->getName(), $distances)) {
 						continue;
@@ -406,21 +460,21 @@ final class ClassReflection
 		$traitsLeftToAnalyze = $class->getTraits();
 
 		while (count($traitsLeftToAnalyze) !== 0) {
-			$trait = reset($traitsLeftToAnalyze);
-			$traits[] = $trait;
-
-			foreach ($trait->getTraits() as $subTrait) {
-				if (in_array($subTrait, $traits, true)) {
-					continue;
-				}
-
-				$traitsLeftToAnalyze[] = $subTrait;
+			$trait = array_shift($traitsLeftToAnalyze);
+			// traits can use each other in a cycle - compare by name because
+			// the reflection objects are not guaranteed to be identical
+			if (array_key_exists($trait->getName(), $traits)) {
+				continue;
 			}
 
-			array_shift($traitsLeftToAnalyze);
+			$traits[$trait->getName()] = $trait;
+
+			foreach ($trait->getTraits() as $subTrait) {
+				$traitsLeftToAnalyze[] = $subTrait;
+			}
 		}
 
-		return $traits;
+		return array_values($traits);
 	}
 
 	public function allowsDynamicProperties(): bool
@@ -1248,12 +1302,12 @@ final class ClassReflection
 		$traits = array_map(fn (ReflectionClass $trait): ClassReflection => $this->reflectionProvider->getClass($trait->getName()), $traits);
 
 		if ($recursive) {
-			$parentClass = $this->getNativeReflection()->getParentClass();
+			$parentClass = $this->getParentClass();
 
-			if ($parentClass !== false) {
+			if ($parentClass !== null) {
 				return array_merge(
 					$traits,
-					$this->reflectionProvider->getClass($parentClass->getName())->getTraits(true),
+					$parentClass->getTraits(true),
 				);
 			}
 		}
@@ -2165,41 +2219,46 @@ final class ClassReflection
 			$ancestors = [
 				$this->getName() => $this,
 			];
-
-			$addToAncestors = static function (string $name, ClassReflection $classReflection) use (&$ancestors): void {
-				if (array_key_exists($name, $ancestors)) {
-					return;
-				}
-
-				$ancestors[$name] = $classReflection;
-			};
-
-			foreach ($this->getInterfaces() as $interface) {
-				$addToAncestors($interface->getName(), $interface);
-				foreach ($interface->getAncestors() as $name => $ancestor) {
-					$addToAncestors($name, $ancestor);
-				}
-			}
-
-			foreach ($this->getTraits() as $trait) {
-				$addToAncestors($trait->getName(), $trait);
-				foreach ($trait->getAncestors() as $name => $ancestor) {
-					$addToAncestors($name, $ancestor);
-				}
-			}
-
-			$parent = $this->getParentClass();
-			if ($parent !== null) {
-				$addToAncestors($parent->getName(), $parent);
-				foreach ($parent->getAncestors() as $name => $ancestor) {
-					$addToAncestors($name, $ancestor);
-				}
-			}
+			$this->collectAncestors($ancestors);
 
 			$this->ancestors = $ancestors;
 		}
 
 		return $ancestors;
+	}
+
+	/**
+	 * Descends into the interfaces, traits and parent classes, using the collected ancestors
+	 * as the set of already visited classes. Traits can use each other in a cycle, which is a
+	 * fatal error in PHP but must not make this walk run forever.
+	 *
+	 * @param array<string, ClassReflection> $ancestors
+	 */
+	private function collectAncestors(array &$ancestors): void
+	{
+		$addToAncestors = static function (ClassReflection $classReflection) use (&$ancestors): void {
+			if (array_key_exists($classReflection->getName(), $ancestors)) {
+				return;
+			}
+
+			$ancestors[$classReflection->getName()] = $classReflection;
+			$classReflection->collectAncestors($ancestors);
+		};
+
+		foreach ($this->getInterfaces() as $interface) {
+			$addToAncestors($interface);
+		}
+
+		foreach ($this->getTraits() as $trait) {
+			$addToAncestors($trait);
+		}
+
+		$parent = $this->getParentClass();
+		if ($parent === null) {
+			return;
+		}
+
+		$addToAncestors($parent);
 	}
 
 	public function getAncestorWithClassName(string $className): ?self

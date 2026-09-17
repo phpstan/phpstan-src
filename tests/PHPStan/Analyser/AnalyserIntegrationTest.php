@@ -13,6 +13,9 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\RequiresPhp;
+use function array_map;
+use function array_unique;
+use function array_values;
 use function extension_loaded;
 use function sprintf;
 use const PHP_VERSION_ID;
@@ -1022,6 +1025,45 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		// crash
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-8072.php');
 		$this->assertNoErrors($errors);
+	}
+
+	public function testBug8082(): void
+	{
+		// crash
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-8082.php');
+		$this->assertSame(
+			['Reflection error: Circular reference to class "Bug8082\\TraitUsesSelf"'],
+			$this->uniqueErrorMessages($errors),
+		);
+	}
+
+	public function testBug8082TraitCycle(): void
+	{
+		// crash
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-8082-trait-cycle.php');
+		$this->assertSame(
+			['Reflection error: Circular reference to class "Bug8082TraitCycle\\TraitA"'],
+			$this->uniqueErrorMessages($errors),
+		);
+	}
+
+	public function testCircularParentClass(): void
+	{
+		// crash
+		$errors = $this->runAnalyse(__DIR__ . '/data/circular-parent-class.php');
+		$this->assertSame(
+			['Reflection error: Circular reference to class "CircularParentClass\\Foo"'],
+			$this->uniqueErrorMessages($errors),
+		);
+	}
+
+	/**
+	 * @param Error[] $errors
+	 * @return list<string>
+	 */
+	private function uniqueErrorMessages(array $errors): array
+	{
+		return array_values(array_unique(array_map(static fn (Error $error): string => $error->getMessage(), $errors)));
 	}
 
 	public function testBug7787(): void

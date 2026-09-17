@@ -671,3 +671,31 @@ function setTypeSpecifying($value, string $castTo): void
 	settype($value, $castTo);
 	assertType("array|bool|float|int|object|string|null", $value);
 }
+
+function doArrayOffset(): void
+{
+	$a = ['x' => 0];
+	settype($a['x'], 'string');
+	assertType("array{x: '0'}", $a);
+	assertType("'0'", $a['x']);
+
+	$b = ['1', '2'];
+	settype($b[0], 'integer');
+	assertType("array{1, '2'}", $b);
+
+	$c = [['x' => 0]];
+	settype($c[0]['x'], 'bool');
+	assertType('array{array{x: false}}', $c);
+
+	$d = ['x' => 'foo'];
+	settype($d['x'], 'array');
+	assertType("array{x: array{'foo'}}", $d);
+
+	$e = ['x' => 1];
+	settype($e['x'], 'object');
+	assertType('array{x: stdClass}', $e);
+
+	$f = ['x' => 'foo'];
+	settype($f['x'], 'null');
+	assertType('array{x: null}', $f);
+}

@@ -48,9 +48,9 @@ function byRefItemsInsideAndAfterUnpackedArrayLiteral(int $x, int $y): void
 {
 	$a = [...[&$x], &$y];
 	$x = 10;
-	assertType('array{int, int}', $a);
+	assertType('array{10, int}', $a);
 	$y = 20;
-	assertType('array{int, 20}', $a);
+	assertType('array{10, 20}', $a);
 }
 
 /**

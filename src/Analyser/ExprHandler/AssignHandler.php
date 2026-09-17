@@ -63,6 +63,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
+use PHPStan\Type\ArrayUnpackingHelper;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -121,6 +122,7 @@ final class AssignHandler implements ExprHandler
 		private StaticPropertyFetchHandler $staticPropertyFetchHandler,
 		private MethodThrowPointHelper $methodThrowPointHelper,
 		private PropertyHookThrowPointsResolver $propertyHookThrowPointsResolver,
+		private ArrayUnpackingHelper $arrayUnpackingHelper,
 	)
 	{
 	}
@@ -1935,15 +1937,38 @@ final class AssignHandler implements ExprHandler
 
 	private function processArrayByRefItems(MutatingScope $scope, string $rootVarName, Expr\Array_ $arrayExpr, Expr $parentExpr): MutatingScope
 	{
-		$implicitIndex = 0;
+		[$scope] = $this->processArrayByRefItemsWithImplicitIndex($scope, $rootVarName, $arrayExpr, $parentExpr, 0);
+
+		return $scope;
+	}
+
+	/**
+	 * @param int|null $implicitIndex Next implicit index, or null when it cannot be determined
+	 *
+	 * @return array{MutatingScope, int|null}
+	 */
+	private function processArrayByRefItemsWithImplicitIndex(MutatingScope $scope, string $rootVarName, Expr\Array_ $arrayExpr, Expr $parentExpr, ?int $implicitIndex): array
+	{
 		foreach ($arrayExpr->items as $arrayItem) {
 			if ($arrayItem->unpack) {
-				// An unpacked item adds an unknown number of elements, so the
-				// following implicit indices are only predictable when the
-				// unpacked array has a known shape.
-				if ($implicitIndex !== null) {
-					$implicitIndex = $this->advanceImplicitIndexByUnpackedArray($implicitIndex, $scope->getType($arrayItem->value));
+				// Unpacked items are flattened into the surrounding array, so they take up
+				// as many implicit indices as the unpacked value has integer keys.
+				if ($arrayItem->value instanceof Expr\Array_ && $this->isFlattenableUnpackedArray($arrayItem->value)) {
+					[$scope, $implicitIndex] = $this->processArrayByRefItemsWithImplicitIndex($scope, $rootVarName, $arrayItem->value, $parentExpr, $implicitIndex);
+					continue;
 				}
+
+				if ($implicitIndex !== null) {
+					$unpackedIntegerKeysCount = $this->arrayUnpackingHelper->getImplicitIndexCount($scope->getType($arrayItem->value));
+					if ($unpackedIntegerKeysCount === null) {
+						$implicitIndex = null;
+					} else {
+						for ($i = 0; $i < $unpackedIntegerKeysCount && $implicitIndex !== null; $i++) {
+							$implicitIndex = $this->advanceImplicitIndex($implicitIndex);
+						}
+					}
+				}
+
 				continue;
 			}
 
@@ -1974,7 +1999,7 @@ final class AssignHandler implements ExprHandler
 
 			if ($arrayItem->value instanceof Expr\Array_) {
 				$dimFetchExpr = new ArrayDimFetch($parentExpr, $dimExpr);
-				$scope = $this->processArrayByRefItems($scope, $rootVarName, $arrayItem->value, $dimFetchExpr);
+				[$scope] = $this->processArrayByRefItemsWithImplicitIndex($scope, $rootVarName, $arrayItem->value, $dimFetchExpr, 0);
 			}
 
 			if (!$arrayItem->byRef || !$arrayItem->value instanceof Variable || !is_string($arrayItem->value->name)) {
@@ -2001,7 +2026,22 @@ final class AssignHandler implements ExprHandler
 			);
 		}
 
-		return $scope;
+		return [$scope, $implicitIndex];
+	}
+
+	/**
+	 * Unpacking renumbers integer keys, so a by-reference item inside the unpacked array
+	 * literal only stays at the key it's written with if all of its items are keyless.
+	 */
+	private function isFlattenableUnpackedArray(Expr\Array_ $arrayExpr): bool
+	{
+		foreach ($arrayExpr->items as $arrayItem) {
+			if ($arrayItem->key !== null) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	private const ARRAY_DIM_FETCH_WRITE_DEPTH_LIMIT = 5;
@@ -2014,39 +2054,6 @@ final class AssignHandler implements ExprHandler
 	private function advanceImplicitIndex(int $index): ?int
 	{
 		return $index === PHP_INT_MAX ? null : $index + 1;
-	}
-
-	private function advanceImplicitIndexByUnpackedArray(int $implicitIndex, Type $unpackedType): ?int
-	{
-		$constantArrays = $unpackedType->getConstantArrays();
-		if (count($constantArrays) !== 1) {
-			return null;
-		}
-
-		$constantArray = $constantArrays[0];
-		if (count($constantArray->getOptionalKeys()) > 0 || !$constantArray->isUnsealed()->no()) {
-			return null;
-		}
-
-		foreach ($constantArray->getKeyTypes() as $keyType) {
-			// String keys are preserved by unpacking, only integer keys are renumbered
-			if ($keyType->isString()->yes()) {
-				continue;
-			}
-
-			if (!$keyType->isInteger()->yes()) {
-				return null;
-			}
-
-			$nextIndex = $this->advanceImplicitIndex($implicitIndex);
-			if ($nextIndex === null) {
-				return null;
-			}
-
-			$implicitIndex = $nextIndex;
-		}
-
-		return $implicitIndex;
 	}
 
 	/**

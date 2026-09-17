@@ -1,5 +1,6 @@
 parameters:
 	featureToggles:
+		adaptiveParallelWorkerCount: true
 		bleedingEdge: true
 		checkNonStringableDynamicAccess: true
 		checkParameterCastableToNumberFunctions: true

@@ -57,6 +57,20 @@ class RequireFileExistsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testStreamWrapperRegisteredByTheFileItself(): void
+	{
+		$this->analyse([__DIR__ . '/data/require-file-stream-wrapper-registered.php'], [
+			[
+				'Path in require_once() "modulea://sites/default/modulea.php" is not a file or it does not exist.',
+				5,
+			],
+			[
+				'Path in require_once() "moduleb://sites/default/moduleb.php" is not a file or it does not exist.',
+				10,
+			],
+		]);
+	}
+
 	public function testBasicCase(): void
 	{
 		$this->analyse([__DIR__ . '/data/require-file-simple-case.php'], [
@@ -202,6 +216,78 @@ class RequireFileExistsRuleTest extends RuleTestCase
 				15,
 			],
 		]);
+	}
+
+	public function testChdir(): void
+	{
+		$this->analyse([__DIR__ . '/data/require-file-chdir.php'], [
+			[
+				'Path in require_once() "data/a-file-that-does-not-exist.php" is not a file or it does not exist.',
+				7,
+			],
+			[
+				"Path in require_once() __DIR__ . '/a-file-that-does-not-exist.php' is not a file or it does not exist.",
+				8,
+			],
+		]);
+	}
+
+	public function testChdirWithUnknownDirectory(): void
+	{
+		$this->analyse([__DIR__ . '/data/require-file-chdir-unknown.php'], [
+			[
+				'Path in require_once() "a-file-that-does-not-exist.php" is not a file or it does not exist.',
+				5,
+			],
+			[
+				"Path in require_once() __DIR__ . '/a-file-that-does-not-exist.php' is not a file or it does not exist.",
+				10,
+			],
+		]);
+	}
+
+	public function testIncludePathChangedAtRuntime(): void
+	{
+		$this->analyse([__DIR__ . '/data/require-file-include-path.php'], [
+			[
+				'Path in require_once() "a-file-that-does-not-exist.php" is not a file or it does not exist.',
+				7,
+			],
+			[
+				'Path in require_once() "a-file-that-does-not-exist.php" is not a file or it does not exist.',
+				10,
+			],
+		]);
+	}
+
+	public function testIncludePathChangedToUnknownValue(): void
+	{
+		$this->analyse([__DIR__ . '/data/require-file-include-path-unknown.php'], [
+			[
+				'Path in require_once() "a-file-that-does-not-exist.php" is not a file or it does not exist.',
+				5,
+			],
+			[
+				"Path in require_once() __DIR__ . '/a-file-that-does-not-exist.php' is not a file or it does not exist.",
+				10,
+			],
+		]);
+	}
+
+	public function testIniSetWithUnknownOption(): void
+	{
+		$this->analyse([__DIR__ . '/data/require-file-ini-set-unknown.php'], [
+			[
+				"Path in require_once() __DIR__ . '/a-file-that-does-not-exist.php' is not a file or it does not exist.",
+				8,
+			],
+		]);
+	}
+
+	public function testBug15260(): void
+	{
+		$this->currentWorkingDirectory = __DIR__ . '/data/bug-15260/sub';
+		$this->analyse([__DIR__ . '/data/bug-15260/sub/bug-15260.php'], []);
 	}
 
 	public function testInFileExists(): void

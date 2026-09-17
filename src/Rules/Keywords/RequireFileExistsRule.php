@@ -71,7 +71,14 @@ final class RequireFileExistsRule implements Rule
 		foreach ($paths as $path) {
 			$path = $path->getValue();
 
-			if ($this->doesFileExist($path, $scope)) {
+			$candidatePaths = $this->includedFilePathResolver->resolve($path, $scope, $node);
+			if ($candidatePaths === null) {
+				// The file moves the working directory or the include path somewhere PHPStan cannot
+				// follow, so a relative path could resolve anywhere.
+				continue;
+			}
+
+			if ($this->doesFileExist($candidatePaths)) {
 				continue;
 			}
 
@@ -81,23 +88,18 @@ final class RequireFileExistsRule implements Rule
 				$pathExpr = '"' . $path . '"';
 			}
 
-			$errors[] = $this->getErrorMessage($node, $pathExpr, $this->includedFilePathResolver->resolve($path, $scope));
+			$errors[] = $this->getErrorMessage($node, $pathExpr, $candidatePaths);
 		}
 
 		return $errors;
 	}
 
 	/**
-	 * We cannot use `stream_resolve_include_path` as it works based on the calling script.
-	 * This method simulates the behavior of `stream_resolve_include_path` but for the given scope.
-	 * The priority order is the following:
-	 * 	1. The current working directory.
-	 * 	2. The include path.
-	 *  3. The path of the script that is being executed.
+	 * @param list<string> $candidatePaths
 	 */
-	private function doesFileExist(string $path, Scope $scope): bool
+	private function doesFileExist(array $candidatePaths): bool
 	{
-		foreach ($this->includedFilePathResolver->resolve($path, $scope) as $candidatePath) {
+		foreach ($candidatePaths as $candidatePath) {
 			if (is_file($candidatePath)) {
 				return true;
 			}

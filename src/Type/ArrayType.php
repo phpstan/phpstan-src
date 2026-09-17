@@ -47,6 +47,7 @@ use function strtolower;
 use function strtoupper;
 use const CASE_LOWER;
 use const CASE_UPPER;
+use const PHP_INT_MAX;
 
 /** @api */
 #[InstanceofDeprecated(insteadUse: 'Type::isArray() or Type::getArrays()')]
@@ -366,11 +367,17 @@ class ArrayType implements Type
 				/** @var list<ConstantIntegerType> $constantScalars */
 				$constantScalars = $this->keyType->getConstantScalarTypes();
 				if (count($constantScalars) > 0) {
+					$offsetTypes = $constantScalars;
 					foreach ($constantScalars as $constantScalar) {
-						$constantScalars[] = ConstantTypeHelper::getTypeFromValue($constantScalar->getValue() + 1);
+						// an offset past PHP_INT_MAX cannot be assigned, so it's not a possible key
+						if ($constantScalar->getValue() === PHP_INT_MAX) {
+							continue;
+						}
+
+						$offsetTypes[] = new ConstantIntegerType($constantScalar->getValue() + 1);
 					}
 
-					$offsetType = TypeCombinator::union(...$constantScalars);
+					$offsetType = TypeCombinator::union(...$offsetTypes);
 				} else {
 					$offsetType = $this->keyType;
 				}

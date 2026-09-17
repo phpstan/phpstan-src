@@ -39,35 +39,15 @@ namespace {
 
 pt_method_site pt_pdr_get_resolved_php_doc_site;
 pt_method_site pt_pdr_resolve_php_doc_for_method_site;
-pt_method_site pt_pdr_get_var_tags_site;
 pt_method_site pt_pdr_var_tag_get_type_site;
-pt_method_site pt_pdr_get_template_type_map_site;
-pt_method_site pt_pdr_get_params_immediately_invoked_callable_site;
-pt_method_site pt_pdr_get_param_tags_site;
 pt_method_site pt_pdr_param_tag_get_type_site;
-pt_method_site pt_pdr_get_param_closure_this_tags_site;
 pt_method_site pt_pdr_param_closure_this_tag_get_type_site;
-pt_method_site pt_pdr_get_param_out_tags_site;
 pt_method_site pt_pdr_param_out_tag_get_type_site;
-pt_method_site pt_pdr_get_return_tag_site;
 pt_method_site pt_pdr_return_tag_get_type_site;
 pt_method_site pt_pdr_return_tag_is_explicit_site;
-pt_method_site pt_pdr_get_throws_tag_site;
 pt_method_site pt_pdr_throws_tag_get_type_site;
-pt_method_site pt_pdr_get_deprecated_tag_site;
 pt_method_site pt_pdr_deprecated_tag_get_message_site;
-pt_method_site pt_pdr_is_deprecated_site;
-pt_method_site pt_pdr_is_internal_site;
-pt_method_site pt_pdr_is_final_site;
-pt_method_site pt_pdr_is_pure_site;
-pt_method_site pt_pdr_is_allowed_private_mutation_site;
-pt_method_site pt_pdr_accepts_named_arguments_site;
-pt_method_site pt_pdr_is_read_only_site;
-pt_method_site pt_pdr_get_self_out_tag_site;
 pt_method_site pt_pdr_self_out_tag_get_type_site;
-pt_method_site pt_pdr_get_params_pure_unless_callable_is_impure_site;
-pt_method_site pt_pdr_are_all_methods_pure_site;
-pt_method_site pt_pdr_are_all_methods_impure_site;
 
 /* $object->method() of a PHP collaborator */
 inline zv::Val call0(pt_method_site &site, zval *object, const char *lcname, size_t len)
@@ -430,16 +410,16 @@ public:
 				memberCallOnNonObject("getTemplateTypeMap", doc);
 				return false;
 			}
-			templateTypeMap = call0(pt_pdr_get_template_type_map_site, doc, PT_LC("gettemplatetypemap"));
+			templateTypeMap = pt_resolved_php_doc_block_call(doc, PT_RPD_GET_TEMPLATE_TYPE_MAP);
 			if (UNEXPECTED(templateTypeMap.isUndef())) return false;
 			{
-				zv::Val value = call0(pt_pdr_get_params_immediately_invoked_callable_site, doc, PT_LC("getparamsimmediatelyinvokedcallable"));
+				zv::Val value = pt_resolved_php_doc_block_call(doc, PT_RPD_GET_PARAMS_IMMEDIATELY_INVOKED_CALLABLE);
 				if (UNEXPECTED(value.isUndef())) return false;
 				phpDocImmediatelyInvokedCallableParameters = zv::Arr::adoptVal(std::move(value));
 			}
-			if (UNEXPECTED(!collectTagTypes(call0(pt_pdr_get_param_tags_site, doc, PT_LC("getparamtags")), pt_pdr_param_tag_get_type_site, true, scope, classReflection, phpDocParameterTypes))) return false;
-			if (UNEXPECTED(!collectTagTypes(call0(pt_pdr_get_param_closure_this_tags_site, doc, PT_LC("getparamclosurethistags")), pt_pdr_param_closure_this_tag_get_type_site, true, scope, classReflection, phpDocClosureThisTypeParameters))) return false;
-			if (UNEXPECTED(!collectTagTypes(call0(pt_pdr_get_param_out_tags_site, doc, PT_LC("getparamouttags")), pt_pdr_param_out_tag_get_type_site, false, scope, classReflection, phpDocParameterOutTypes))) return false;
+			if (UNEXPECTED(!collectTagTypes(pt_resolved_php_doc_block_call(doc, PT_RPD_GET_PARAM_TAGS), pt_pdr_param_tag_get_type_site, true, scope, classReflection, phpDocParameterTypes))) return false;
+			if (UNEXPECTED(!collectTagTypes(pt_resolved_php_doc_block_call(doc, PT_RPD_GET_PARAM_CLOSURE_THIS_TAGS), pt_pdr_param_closure_this_tag_get_type_site, true, scope, classReflection, phpDocClosureThisTypeParameters))) return false;
+			if (UNEXPECTED(!collectTagTypes(pt_resolved_php_doc_block_call(doc, PT_RPD_GET_PARAM_OUT_TAGS), pt_pdr_param_out_tag_get_type_site, false, scope, classReflection, phpDocParameterOutTypes))) return false;
 			if (isFunctionLike) {
 				zv::Val returnTypeNode = nodeReturnType(node);
 				if (UNEXPECTED(returnTypeNode.isUndef())) return false;
@@ -456,35 +436,35 @@ public:
 					}
 				}
 			}
-			phpDocThrowType = tagType(pt_pdr_get_throws_tag_site, PT_LC("getthrowstag"), doc, pt_pdr_throws_tag_get_type_site, PT_LC("gettype"));
+			phpDocThrowType = tagType(PT_RPD_GET_THROWS_TAG, doc, pt_pdr_throws_tag_get_type_site, PT_LC("gettype"));
 			if (UNEXPECTED(phpDocThrowType.isUndef())) return false;
-			deprecatedDescription = tagType(pt_pdr_get_deprecated_tag_site, PT_LC("getdeprecatedtag"), doc, pt_pdr_deprecated_tag_get_message_site, PT_LC("getmessage"));
+			deprecatedDescription = tagType(PT_RPD_GET_DEPRECATED_TAG, doc, pt_pdr_deprecated_tag_get_message_site, PT_LC("getmessage"));
 			if (UNEXPECTED(deprecatedDescription.isUndef())) return false;
-			isDeprecated = call0(pt_pdr_is_deprecated_site, doc, PT_LC("isdeprecated"));
+			isDeprecated = pt_resolved_php_doc_block_call(doc, PT_RPD_IS_DEPRECATED);
 			if (UNEXPECTED(isDeprecated.isUndef())) return false;
-			isInternal = call0(pt_pdr_is_internal_site, doc, PT_LC("isinternal"));
+			isInternal = pt_resolved_php_doc_block_call(doc, PT_RPD_IS_INTERNAL);
 			if (UNEXPECTED(isInternal.isUndef())) return false;
-			isFinal = call0(pt_pdr_is_final_site, doc, PT_LC("isfinal"));
+			isFinal = pt_resolved_php_doc_block_call(doc, PT_RPD_IS_FINAL);
 			if (UNEXPECTED(isFinal.isUndef())) return false;
-			isPure = call0(pt_pdr_is_pure_site, doc, PT_LC("ispure"));
+			isPure = pt_resolved_php_doc_block_call(doc, PT_RPD_IS_PURE);
 			if (UNEXPECTED(isPure.isUndef())) return false;
-			isAllowedPrivateMutation = call0(pt_pdr_is_allowed_private_mutation_site, doc, PT_LC("isallowedprivatemutation"));
+			isAllowedPrivateMutation = pt_resolved_php_doc_block_call(doc, PT_RPD_IS_ALLOWED_PRIVATE_MUTATION);
 			if (UNEXPECTED(isAllowedPrivateMutation.isUndef())) return false;
-			acceptsNamedArguments = call0(pt_pdr_accepts_named_arguments_site, doc, PT_LC("acceptsnamedarguments"));
+			acceptsNamedArguments = pt_resolved_php_doc_block_call(doc, PT_RPD_ACCEPTS_NAMED_ARGUMENTS);
 			if (UNEXPECTED(acceptsNamedArguments.isUndef())) return false;
 			if (!isReadOnly) {
-				zv::Val readOnly = call0(pt_pdr_is_read_only_site, doc, PT_LC("isreadonly"));
+				zv::Val readOnly = pt_resolved_php_doc_block_call(doc, PT_RPD_IS_READ_ONLY);
 				if (UNEXPECTED(readOnly.isUndef())) return false;
 				isReadOnly = zend_is_true(readOnly.raw());
 			}
 			asserts = createAssertions(doc);
 			if (UNEXPECTED(asserts.isUndef())) return false;
-			selfOutType = tagType(pt_pdr_get_self_out_tag_site, PT_LC("getselfouttag"), doc, pt_pdr_self_out_tag_get_type_site, PT_LC("gettype"));
+			selfOutType = tagType(PT_RPD_GET_SELF_OUT_TAG, doc, pt_pdr_self_out_tag_get_type_site, PT_LC("gettype"));
 			if (UNEXPECTED(selfOutType.isUndef())) return false;
-			varTags = call0(pt_pdr_get_var_tags_site, doc, PT_LC("getvartags"));
+			varTags = pt_resolved_php_doc_block_call(doc, PT_RPD_GET_VAR_TAGS);
 			if (UNEXPECTED(varTags.isUndef())) return false;
 			{
-				zv::Val value = call0(pt_pdr_get_params_pure_unless_callable_is_impure_site, doc, PT_LC("getparamspureunlesscallableisimpure"));
+				zv::Val value = pt_resolved_php_doc_block_call(doc, PT_RPD_GET_PARAMS_PURE_UNLESS_CALLABLE_IS_IMPURE);
 				if (UNEXPECTED(value.isUndef())) return false;
 				phpDocPureUnlessCallableIsImpureParameters = zv::Arr::adoptVal(std::move(value));
 			}
@@ -714,7 +694,7 @@ private:
 			memberCallOnNonObject("getVarTags", paramPhpDoc.raw());
 			return false;
 		}
-		zv::Val varTags = call0(pt_pdr_get_var_tags_site, paramPhpDoc.raw(), PT_LC("getvartags"));
+		zv::Val varTags = pt_resolved_php_doc_block_call(paramPhpDoc.raw(), PT_RPD_GET_VAR_TAGS);
 		if (UNEXPECTED(varTags.isUndef())) return false;
 
 		zval *varTag = NULL;
@@ -787,9 +767,9 @@ private:
 
 	/* $doc->getXTag() !== null ? $doc->getXTag()->getY() : null (the getter
 	 * memoizes, so it is asked once) */
-	static zv::Val tagType(pt_method_site &tagSite, const char *tagLcname, size_t tagLen, zval *doc, pt_method_site &valueSite, const char *valueLcname, size_t valueLen)
+	static zv::Val tagType(pt_resolved_php_doc_member tagMember, zval *doc, pt_method_site &valueSite, const char *valueLcname, size_t valueLen)
 	{
-		zv::Val tag = pt_call_method_cached(tagSite, Z_OBJ_P(doc), tagLcname, tagLen, 0, NULL);
+		zv::Val tag = pt_resolved_php_doc_block_call(doc, tagMember);
 		if (UNEXPECTED(tag.isUndef()) || tag.isNull()) return tag;
 		if (UNEXPECTED(Z_TYPE_P(tag.raw()) != IS_OBJECT)) {
 			memberCallOnNonObject(valueLcname, tag.raw());
@@ -801,7 +781,7 @@ private:
 	/* Mirrors getPhpDocReturnType(). */
 	static zv::Val getPhpDocReturnType(zval *resolvedPhpDoc, zval *nativeReturnType)
 	{
-		zv::Val returnTag = call0(pt_pdr_get_return_tag_site, resolvedPhpDoc, PT_LC("getreturntag"));
+		zv::Val returnTag = pt_resolved_php_doc_block_call(resolvedPhpDoc, PT_RPD_GET_RETURN_TAG);
 		if (UNEXPECTED(returnTag.isUndef()) || returnTag.isNull()) return returnTag;
 		if (UNEXPECTED(Z_TYPE_P(returnTag.raw()) != IS_OBJECT)) {
 			memberCallOnNonObject("getType", returnTag.raw());
@@ -919,7 +899,7 @@ private:
 			memberCallOnNonObject("areAllMethodsPure", classResolvedPhpDoc.raw());
 			return false;
 		}
-		zv::Val allPure = call0(pt_pdr_are_all_methods_pure_site, classResolvedPhpDoc.raw(), PT_LC("areallmethodspure"));
+		zv::Val allPure = pt_resolved_php_doc_block_call(classResolvedPhpDoc.raw(), PT_RPD_ARE_ALL_METHODS_PURE);
 		if (UNEXPECTED(allPure.isUndef())) return false;
 		if (zend_is_true(allPure.raw())) {
 			/* strtolower($functionName ?? '') === '__construct' */
@@ -955,7 +935,7 @@ private:
 			if (isVoid != PT_TRI_YES) isPure = zv::Val::boolean(true);
 			return true;
 		}
-		zv::Val allImpure = call0(pt_pdr_are_all_methods_impure_site, classResolvedPhpDoc.raw(), PT_LC("areallmethodsimpure"));
+		zv::Val allImpure = pt_resolved_php_doc_block_call(classResolvedPhpDoc.raw(), PT_RPD_ARE_ALL_METHODS_IMPURE);
 		if (UNEXPECTED(allImpure.isUndef())) return false;
 		if (zend_is_true(allImpure.raw())) isPure = zv::Val::boolean(false);
 		return true;

@@ -124,6 +124,15 @@ inline zv::Val call(zval *object, const char *lcname, size_t len, uint32_t argc 
 	return pt_type_call(Z_OBJ_P(object), lcname, len, argc, argv);
 }
 
+/* a ResolvedPhpDocBlock getter coerced to bool; false with `ok` cleared on a
+ * pending exception */
+inline bool resolvedPhpDocBool(zval *block, pt_resolved_php_doc_member member, bool &ok)
+{
+	bool out = false;
+	ok = pt_resolved_php_doc_block_bool(block, member, out);
+	return ok && out;
+}
+
 /* $object->method(...$args) coerced to bool; false with `ok` cleared on a
  * pending exception */
 inline bool callBool(zval *object, const char *lcname, size_t len, uint32_t argc, zval *argv, bool &ok)
@@ -904,7 +913,7 @@ public:
 		}
 
 		if (Z_TYPE_P(resolvedPhpDoc.raw()) != IS_NULL) {
-			zv::Val varTags = call(resolvedPhpDoc.raw(), PT_LC("getvartags"));
+			zv::Val varTags = pt_resolved_php_doc_block_call(resolvedPhpDoc.raw(), PT_RPD_GET_VAR_TAGS);
 			if (UNEXPECTED(varTags.isUndef())) return zv::Val();
 			zval *varTag = varTagFor(varTags.raw(), propertyName);
 			if (varTag != NULL) {
@@ -924,7 +933,7 @@ public:
 			}
 
 			if (!isDeprecated) {
-				zv::Val deprecatedTag = call(resolvedPhpDoc.raw(), PT_LC("getdeprecatedtag"));
+				zv::Val deprecatedTag = pt_resolved_php_doc_block_call(resolvedPhpDoc.raw(), PT_RPD_GET_DEPRECATED_TAG);
 				if (UNEXPECTED(deprecatedTag.isUndef())) return zv::Val();
 				if (Z_TYPE_P(deprecatedTag.raw()) != IS_NULL) {
 					deprecatedDescription = call(deprecatedTag.raw(), PT_LC("getmessage"));
@@ -932,20 +941,20 @@ public:
 				} else {
 					deprecatedDescription = zv::Val::null();
 				}
-				isDeprecated = callBool(resolvedPhpDoc.raw(), PT_LC("isdeprecated"), 0, NULL, ok);
+				isDeprecated = resolvedPhpDocBool(resolvedPhpDoc.raw(), PT_RPD_IS_DEPRECATED, ok);
 				if (UNEXPECTED(!ok)) return zv::Val();
 			}
-			isInternal = callBool(resolvedPhpDoc.raw(), PT_LC("isinternal"), 0, NULL, ok);
+			isInternal = resolvedPhpDocBool(resolvedPhpDoc.raw(), PT_RPD_IS_INTERNAL, ok);
 			if (UNEXPECTED(!ok)) return zv::Val();
 			if (!isReadOnlyByPhpDoc) {
-				isReadOnlyByPhpDoc = callBool(resolvedPhpDoc.raw(), PT_LC("isreadonly"), 0, NULL, ok);
+				isReadOnlyByPhpDoc = resolvedPhpDocBool(resolvedPhpDoc.raw(), PT_RPD_IS_READ_ONLY, ok);
 				if (UNEXPECTED(!ok)) return zv::Val();
 			}
 			if (!isFinal) {
-				isFinal = callBool(resolvedPhpDoc.raw(), PT_LC("isfinal"), 0, NULL, ok);
+				isFinal = resolvedPhpDocBool(resolvedPhpDoc.raw(), PT_RPD_IS_FINAL, ok);
 				if (UNEXPECTED(!ok)) return zv::Val();
 			}
-			isAllowedPrivateMutation = callBool(resolvedPhpDoc.raw(), PT_LC("isallowedprivatemutation"), 0, NULL, ok);
+			isAllowedPrivateMutation = resolvedPhpDocBool(resolvedPhpDoc.raw(), PT_RPD_IS_ALLOWED_PRIVATE_MUTATION, ok);
 			if (UNEXPECTED(!ok)) return zv::Val();
 		}
 
@@ -955,7 +964,7 @@ public:
 			zv::Val resolvedConstructorPhpDoc = call(constructor.raw(), PT_LC("getresolvedphpdoc"));
 			if (UNEXPECTED(resolvedConstructorPhpDoc.isUndef())) return zv::Val();
 			if (Z_TYPE_P(resolvedConstructorPhpDoc.raw()) != IS_NULL) {
-				zv::Val paramTags = call(resolvedConstructorPhpDoc.raw(), PT_LC("getparamtags"));
+				zv::Val paramTags = pt_resolved_php_doc_block_call(resolvedConstructorPhpDoc.raw(), PT_RPD_GET_PARAM_TAGS);
 				if (UNEXPECTED(paramTags.isUndef())) return zv::Val();
 				zv::Str reflectionName = stringOf(pt_property_adapter_get_name(propertyReflection.raw()));
 				if (UNEXPECTED(reflectionName.isNull())) return zv::Val();
@@ -1712,9 +1721,9 @@ public:
 					if (UNEXPECTED(templateTypeMap.isUndef())) return zv::Val();
 					zv::Val callSiteVarianceMap = call(phpDocDeclaringClass.raw(), PT_LC("getcallsitevariancemap"));
 					if (UNEXPECTED(callSiteVarianceMap.isUndef())) return zv::Val();
-					zv::Val returnTag = call(currentResolvedPhpDoc.raw(), PT_LC("getreturntag"));
+					zv::Val returnTag = pt_resolved_php_doc_block_call(currentResolvedPhpDoc.raw(), PT_RPD_GET_RETURN_TAG);
 					if (UNEXPECTED(returnTag.isUndef())) return zv::Val();
-					zv::Val immediatelyInvoked = call(currentResolvedPhpDoc.raw(), PT_LC("getparamsimmediatelyinvokedcallable"));
+					zv::Val immediatelyInvoked = pt_resolved_php_doc_block_call(currentResolvedPhpDoc.raw(), PT_RPD_GET_PARAMS_IMMEDIATELY_INVOKED_CALLABLE);
 					if (UNEXPECTED(immediatelyInvoked.isUndef())) return zv::Val();
 					immediatelyInvokedCallableParameters = trinaryMapOf(immediatelyInvoked.raw());
 					if (UNEXPECTED(immediatelyInvokedCallableParameters.isUndef())) return zv::Val();
@@ -1728,12 +1737,12 @@ public:
 						if (UNEXPECTED(phpDocReturnType.isUndef())) return zv::Val();
 					}
 
-					zv::Val closureThisTags = call(currentResolvedPhpDoc.raw(), PT_LC("getparamclosurethistags"));
+					zv::Val closureThisTags = pt_resolved_php_doc_block_call(currentResolvedPhpDoc.raw(), PT_RPD_GET_PARAM_CLOSURE_THIS_TAGS);
 					if (UNEXPECTED(closureThisTags.isUndef())) return zv::Val();
 					closureThisParameters = tagTypeMapOf(closureThisTags.raw());
 					if (UNEXPECTED(closureThisParameters.isUndef())) return zv::Val();
 
-					zv::Val paramTags = call(currentResolvedPhpDoc.raw(), PT_LC("getparamtags"));
+					zv::Val paramTags = pt_resolved_php_doc_block_call(currentResolvedPhpDoc.raw(), PT_RPD_GET_PARAM_TAGS);
 					if (UNEXPECTED(paramTags.isUndef())) return zv::Val();
 					zv::Val contravariantVal = varianceContravariant();
 					if (UNEXPECTED(contravariantVal.isUndef())) return zv::Val();
@@ -1748,7 +1757,7 @@ public:
 						phpDocParameterTypes.set(name, std::move(resolved));
 					}
 
-					zv::Val throwsTag = call(currentResolvedPhpDoc.raw(), PT_LC("getthrowstag"));
+					zv::Val throwsTag = pt_resolved_php_doc_block_call(currentResolvedPhpDoc.raw(), PT_RPD_GET_THROWS_TAG);
 					if (UNEXPECTED(throwsTag.isUndef())) return zv::Val();
 					if (Z_TYPE_P(throwsTag.raw()) != IS_NULL) {
 						throwType = call(throwsTag.raw(), PT_LC("gettype"));
@@ -1757,26 +1766,26 @@ public:
 
 					asserts = kernelStatic(PT_LC("PHPStan\\Reflection\\Assertions"), PT_LC("createfromresolvedphpdocblock"), 1, currentResolvedPhpDoc.raw());
 					if (UNEXPECTED(asserts.isUndef())) return zv::Val();
-					acceptsNamedArguments = callBool(currentResolvedPhpDoc.raw(), PT_LC("acceptsnamedarguments"), 0, NULL, ok);
+					acceptsNamedArguments = resolvedPhpDocBool(currentResolvedPhpDoc.raw(), PT_RPD_ACCEPTS_NAMED_ARGUMENTS, ok);
 					if (UNEXPECTED(!ok)) return zv::Val();
 					if (isPure < 0) {
 						/* isPure() is ?bool: `??=` leaves $isPure null when the
 						 * block says nothing */
-						zv::Val pure = call(currentResolvedPhpDoc.raw(), PT_LC("ispure"));
+						zv::Val pure = pt_resolved_php_doc_block_call(currentResolvedPhpDoc.raw(), PT_RPD_IS_PURE);
 						if (UNEXPECTED(pure.isUndef())) return zv::Val();
 						if (Z_TYPE_P(pure.raw()) != IS_NULL) {
 							isPure = zend_is_true(pure.raw()) ? 1 : 0;
 						}
 					}
 
-					zv::Val selfOutTag = call(currentResolvedPhpDoc.raw(), PT_LC("getselfouttag"));
+					zv::Val selfOutTag = pt_resolved_php_doc_block_call(currentResolvedPhpDoc.raw(), PT_RPD_GET_SELF_OUT_TAG);
 					if (UNEXPECTED(selfOutTag.isUndef())) return zv::Val();
 					if (Z_TYPE_P(selfOutTag.raw()) != IS_NULL) {
 						selfOutType = call(selfOutTag.raw(), PT_LC("gettype"));
 						if (UNEXPECTED(selfOutType.isUndef())) return zv::Val();
 					}
 
-					zv::Val paramOutTags = call(currentResolvedPhpDoc.raw(), PT_LC("getparamouttags"));
+					zv::Val paramOutTags = pt_resolved_php_doc_block_call(currentResolvedPhpDoc.raw(), PT_RPD_GET_PARAM_OUT_TAGS);
 					if (UNEXPECTED(paramOutTags.isUndef())) return zv::Val();
 					zv::Val covariantVal = varianceCovariant();
 					if (UNEXPECTED(covariantVal.isUndef())) return zv::Val();
@@ -1791,10 +1800,10 @@ public:
 						phpDocParameterOutTypes.set(name, std::move(resolved));
 					}
 
-					bool hasPhpDocString = callBool(currentResolvedPhpDoc.raw(), PT_LC("hasphpdocstring"), 0, NULL, ok);
+					bool hasPhpDocString = resolvedPhpDocBool(currentResolvedPhpDoc.raw(), PT_RPD_HAS_PHP_DOC_STRING, ok);
 					if (UNEXPECTED(!ok)) return zv::Val();
 					if (hasPhpDocString) {
-						phpDocComment = call(currentResolvedPhpDoc.raw(), PT_LC("getphpdocstring"));
+						phpDocComment = pt_resolved_php_doc_block_call(currentResolvedPhpDoc.raw(), PT_RPD_GET_PHP_DOC_STRING);
 						if (UNEXPECTED(phpDocComment.isUndef())) return zv::Val();
 					}
 
@@ -1838,12 +1847,12 @@ public:
 			zv::Val classResolvedPhpDoc = call(declaringClass, PT_LC("getresolvedphpdoc"));
 			if (UNEXPECTED(classResolvedPhpDoc.isUndef())) return zv::Val();
 			if (Z_TYPE_P(classResolvedPhpDoc.raw()) != IS_NULL) {
-				bool allPure = callBool(classResolvedPhpDoc.raw(), PT_LC("areallmethodspure"), 0, NULL, ok);
+				bool allPure = resolvedPhpDocBool(classResolvedPhpDoc.raw(), PT_RPD_ARE_ALL_METHODS_PURE, ok);
 				if (UNEXPECTED(!ok)) return zv::Val();
 				if (allPure) {
 					isPure = 1;
 				} else {
-					bool allImpure = callBool(classResolvedPhpDoc.raw(), PT_LC("areallmethodsimpure"), 0, NULL, ok);
+					bool allImpure = resolvedPhpDocBool(classResolvedPhpDoc.raw(), PT_RPD_ARE_ALL_METHODS_IMPURE, ok);
 					if (UNEXPECTED(!ok)) return zv::Val();
 					if (allImpure) {
 						isPure = 0;
@@ -2200,7 +2209,7 @@ public:
 				if (UNEXPECTED(className.isUndef())) return zv::Val();
 				zv::Val propertyDocblock = getResolvedPhpDoc(fileName.raw(), className.raw(), declaringTraitName, &methodNameArg, propertyDocComment.raw());
 				if (UNEXPECTED(propertyDocblock.isUndef())) return zv::Val();
-				zv::Val varTags = call(propertyDocblock.raw(), PT_LC("getvartags"));
+				zv::Val varTags = pt_resolved_php_doc_block_call(propertyDocblock.raw(), PT_RPD_GET_VAR_TAGS);
 				if (UNEXPECTED(varTags.isUndef())) return zv::Val();
 				zval *varTag = varTagFor(varTags.raw(), parameterName.get());
 				if (varTag == NULL) continue;
@@ -2279,17 +2288,17 @@ public:
 		zv::Val phpDocComment = zv::Val::null();
 
 		if (Z_TYPE_P(resolvedPhpDoc.raw()) != IS_NULL) {
-			templateTypeMap = call(resolvedPhpDoc.raw(), PT_LC("gettemplatetypemap"));
+			templateTypeMap = pt_resolved_php_doc_block_call(resolvedPhpDoc.raw(), PT_RPD_GET_TEMPLATE_TYPE_MAP);
 			if (UNEXPECTED(templateTypeMap.isUndef())) return zv::Val();
-			zv::Val immediatelyInvoked = call(resolvedPhpDoc.raw(), PT_LC("getparamsimmediatelyinvokedcallable"));
+			zv::Val immediatelyInvoked = pt_resolved_php_doc_block_call(resolvedPhpDoc.raw(), PT_RPD_GET_PARAMS_IMMEDIATELY_INVOKED_CALLABLE);
 			if (UNEXPECTED(immediatelyInvoked.isUndef())) return zv::Val();
 			immediatelyInvokedCallableParameters = trinaryMapOf(immediatelyInvoked.raw());
 			if (UNEXPECTED(immediatelyInvokedCallableParameters.isUndef())) return zv::Val();
-			zv::Val closureThisTags = call(resolvedPhpDoc.raw(), PT_LC("getparamclosurethistags"));
+			zv::Val closureThisTags = pt_resolved_php_doc_block_call(resolvedPhpDoc.raw(), PT_RPD_GET_PARAM_CLOSURE_THIS_TAGS);
 			if (UNEXPECTED(closureThisTags.isUndef())) return zv::Val();
 			closureThisParameters = tagTypeMapOf(closureThisTags.raw());
 			if (UNEXPECTED(closureThisParameters.isUndef())) return zv::Val();
-			zv::Val pureUnless = call(resolvedPhpDoc.raw(), PT_LC("getparamspureunlesscallableisimpure"));
+			zv::Val pureUnless = pt_resolved_php_doc_block_call(resolvedPhpDoc.raw(), PT_RPD_GET_PARAMS_PURE_UNLESS_CALLABLE_IS_IMPURE);
 			if (UNEXPECTED(pureUnless.isUndef())) return zv::Val();
 			if (Z_TYPE_P(pureUnless.raw()) == IS_ARRAY) {
 				for (zv::ArrayEntry pureEntry : zv::ArrRef(pureUnless.raw())) {
@@ -2301,14 +2310,14 @@ public:
 
 			phpDocReturnType = getPhpDocReturnType(phpDocBlockClassReflection.raw(), resolvedPhpDoc.raw(), nativeReturnType.raw());
 			if (UNEXPECTED(phpDocReturnType.isUndef())) return zv::Val();
-			zv::Val throwsTag = call(resolvedPhpDoc.raw(), PT_LC("getthrowstag"));
+			zv::Val throwsTag = pt_resolved_php_doc_block_call(resolvedPhpDoc.raw(), PT_RPD_GET_THROWS_TAG);
 			if (UNEXPECTED(throwsTag.isUndef())) return zv::Val();
 			if (Z_TYPE_P(throwsTag.raw()) != IS_NULL) {
 				phpDocThrowType = call(throwsTag.raw(), PT_LC("gettype"));
 				if (UNEXPECTED(phpDocThrowType.isUndef())) return zv::Val();
 			}
 
-			zv::Val paramTags = call(resolvedPhpDoc.raw(), PT_LC("getparamtags"));
+			zv::Val paramTags = pt_resolved_php_doc_block_call(resolvedPhpDoc.raw(), PT_RPD_GET_PARAM_TAGS);
 			if (UNEXPECTED(paramTags.isUndef())) return zv::Val();
 			if (Z_TYPE_P(paramTags.raw()) == IS_ARRAY) {
 				for (zv::ArrayEntry tagEntry : zv::ArrRef(paramTags.raw())) {
@@ -2321,7 +2330,7 @@ public:
 				}
 			}
 
-			zv::Val paramOutTags = call(resolvedPhpDoc.raw(), PT_LC("getparamouttags"));
+			zv::Val paramOutTags = pt_resolved_php_doc_block_call(resolvedPhpDoc.raw(), PT_RPD_GET_PARAM_OUT_TAGS);
 			if (UNEXPECTED(paramOutTags.isUndef())) return zv::Val();
 			if (Z_TYPE_P(paramOutTags.raw()) == IS_ARRAY && zend_hash_num_elements(Z_ARRVAL_P(paramOutTags.raw())) > 0) {
 				zv::Val activeTemplateTypeMap = call(phpDocBlockClassReflection.raw(), PT_LC("getactivetemplatetypemap"));
@@ -2343,7 +2352,7 @@ public:
 			}
 
 			if (!isDeprecated) {
-				zv::Val deprecatedTag = call(resolvedPhpDoc.raw(), PT_LC("getdeprecatedtag"));
+				zv::Val deprecatedTag = pt_resolved_php_doc_block_call(resolvedPhpDoc.raw(), PT_RPD_GET_DEPRECATED_TAG);
 				if (UNEXPECTED(deprecatedTag.isUndef())) return zv::Val();
 				if (Z_TYPE_P(deprecatedTag.raw()) != IS_NULL) {
 					deprecatedDescription = call(deprecatedTag.raw(), PT_LC("getmessage"));
@@ -2351,17 +2360,17 @@ public:
 				} else {
 					deprecatedDescription = zv::Val::null();
 				}
-				isDeprecated = callBool(resolvedPhpDoc.raw(), PT_LC("isdeprecated"), 0, NULL, ok);
+				isDeprecated = resolvedPhpDocBool(resolvedPhpDoc.raw(), PT_RPD_IS_DEPRECATED, ok);
 				if (UNEXPECTED(!ok)) return zv::Val();
 			}
-			isInternal = callBool(resolvedPhpDoc.raw(), PT_LC("isinternal"), 0, NULL, ok);
+			isInternal = resolvedPhpDocBool(resolvedPhpDoc.raw(), PT_RPD_IS_INTERNAL, ok);
 			if (UNEXPECTED(!ok)) return zv::Val();
-			isFinal = callBool(resolvedPhpDoc.raw(), PT_LC("isfinal"), 0, NULL, ok);
+			isFinal = resolvedPhpDocBool(resolvedPhpDoc.raw(), PT_RPD_IS_FINAL, ok);
 			if (UNEXPECTED(!ok)) return zv::Val();
 			if (isPure < 0) {
 				/* isPure() is ?bool: `??=` leaves $isPure null when the block
 				 * says nothing */
-				zv::Val pure = call(resolvedPhpDoc.raw(), PT_LC("ispure"));
+				zv::Val pure = pt_resolved_php_doc_block_call(resolvedPhpDoc.raw(), PT_RPD_IS_PURE);
 				if (UNEXPECTED(pure.isUndef())) return zv::Val();
 				if (Z_TYPE_P(pure.raw()) != IS_NULL) {
 					isPure = zend_is_true(pure.raw()) ? 1 : 0;
@@ -2369,18 +2378,18 @@ public:
 			}
 			asserts = kernelStatic(PT_LC("PHPStan\\Reflection\\Assertions"), PT_LC("createfromresolvedphpdocblock"), 1, resolvedPhpDoc.raw());
 			if (UNEXPECTED(asserts.isUndef())) return zv::Val();
-			acceptsNamedArguments = callBool(resolvedPhpDoc.raw(), PT_LC("acceptsnamedarguments"), 0, NULL, ok);
+			acceptsNamedArguments = resolvedPhpDocBool(resolvedPhpDoc.raw(), PT_RPD_ACCEPTS_NAMED_ARGUMENTS, ok);
 			if (UNEXPECTED(!ok)) return zv::Val();
-			zv::Val selfOutTag = call(resolvedPhpDoc.raw(), PT_LC("getselfouttag"));
+			zv::Val selfOutTag = pt_resolved_php_doc_block_call(resolvedPhpDoc.raw(), PT_RPD_GET_SELF_OUT_TAG);
 			if (UNEXPECTED(selfOutTag.isUndef())) return zv::Val();
 			if (Z_TYPE_P(selfOutTag.raw()) != IS_NULL) {
 				selfOutType = call(selfOutTag.raw(), PT_LC("gettype"));
 				if (UNEXPECTED(selfOutType.isUndef())) return zv::Val();
 			}
-			bool hasPhpDocString = callBool(resolvedPhpDoc.raw(), PT_LC("hasphpdocstring"), 0, NULL, ok);
+			bool hasPhpDocString = resolvedPhpDocBool(resolvedPhpDoc.raw(), PT_RPD_HAS_PHP_DOC_STRING, ok);
 			if (UNEXPECTED(!ok)) return zv::Val();
 			if (hasPhpDocString) {
-				phpDocComment = call(resolvedPhpDoc.raw(), PT_LC("getphpdocstring"));
+				phpDocComment = pt_resolved_php_doc_block_call(resolvedPhpDoc.raw(), PT_RPD_GET_PHP_DOC_STRING);
 				if (UNEXPECTED(phpDocComment.isUndef())) return zv::Val();
 			}
 		}
@@ -2389,7 +2398,7 @@ public:
 			zv::Val classResolvedPhpDoc = call(phpDocBlockClassReflection.raw(), PT_LC("getresolvedphpdoc"));
 			if (UNEXPECTED(classResolvedPhpDoc.isUndef())) return zv::Val();
 			if (Z_TYPE_P(classResolvedPhpDoc.raw()) != IS_NULL) {
-				bool allPure = callBool(classResolvedPhpDoc.raw(), PT_LC("areallmethodspure"), 0, NULL, ok);
+				bool allPure = resolvedPhpDocBool(classResolvedPhpDoc.raw(), PT_RPD_ARE_ALL_METHODS_PURE, ok);
 				if (UNEXPECTED(!ok)) return zv::Val();
 				if (allPure) {
 					zv::Str lowered = zv::Str::adopt(zend_string_tolower(methodNameStr.get()));
@@ -2410,7 +2419,7 @@ public:
 						isPure = 1;
 					}
 				} else {
-					bool allImpure = callBool(classResolvedPhpDoc.raw(), PT_LC("areallmethodsimpure"), 0, NULL, ok);
+					bool allImpure = resolvedPhpDocBool(classResolvedPhpDoc.raw(), PT_RPD_ARE_ALL_METHODS_IMPURE, ok);
 					if (UNEXPECTED(!ok)) return zv::Val();
 					if (allImpure) {
 						isPure = 0;
@@ -2484,7 +2493,7 @@ public:
 	zv::Val getPhpDocReturnType(zval *phpDocBlockClassReflection, zval *resolvedPhpDoc, zval *nativeReturnType)
 	{
 		bool ok;
-		zv::Val returnTag = call(resolvedPhpDoc, PT_LC("getreturntag"));
+		zv::Val returnTag = pt_resolved_php_doc_block_call(resolvedPhpDoc, PT_RPD_GET_RETURN_TAG);
 		if (UNEXPECTED(returnTag.isUndef())) return zv::Val();
 		if (Z_TYPE_P(returnTag.raw()) == IS_NULL) return zv::Val::null();
 		zv::Val tagType = call(returnTag.raw(), PT_LC("gettype"));

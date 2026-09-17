@@ -34,7 +34,6 @@ pt_method_site pt_vap_assign_variable_site;
 pt_method_site pt_vap_function_get_name_site;
 pt_method_site pt_vap_get_text_site;
 pt_method_site pt_vap_get_resolved_php_doc_site;
-pt_method_site pt_vap_get_var_tags_site;
 pt_method_site pt_vap_var_tag_get_type_site;
 
 /* $object->method(...$argv) of a value the twin calls a method on: the
@@ -171,7 +170,7 @@ public:
 				ZVAL_COPY_VALUE(&getResolvedPhpDocArgs[4], text.raw());
 				zv::Val resolvedPhpDoc = callOn(pt_vap_get_resolved_php_doc_site, fileTypeMapper, PT_LC("getresolvedphpdoc"), "getResolvedPhpDoc", 5, getResolvedPhpDocArgs);
 				if (UNEXPECTED(resolvedPhpDoc.isUndef())) return zv::Val();
-				zv::Val docVarTags = callOn(pt_vap_get_var_tags_site, resolvedPhpDoc.raw(), PT_LC("getvartags"), "getVarTags");
+				zv::Val docVarTags = pt_resolved_php_doc_block_call(resolvedPhpDoc.raw(), PT_RPD_GET_VAR_TAGS);
 				if (UNEXPECTED(docVarTags.isUndef())) return zv::Val();
 				if (Z_TYPE_P(docVarTags.raw()) != IS_ARRAY) continue;
 				for (auto tag : zv::TableRef(Z_ARRVAL_P(docVarTags.raw()))) {

@@ -62,8 +62,6 @@ pt_method_site pt_sh_get_start_token_pos_site;
 pt_method_site pt_sh_get_start_line_site;
 pt_method_site pt_sh_get_sub_node_names_site;
 pt_method_site pt_sh_get_resolved_php_doc_site;
-pt_method_site pt_sh_get_throws_tag_site;
-pt_method_site pt_sh_get_var_tags_site;
 pt_method_site pt_sh_tag_get_type_site;
 pt_method_site pt_sh_comment_get_text_site;
 pt_method_site pt_sh_function_get_name_site;
@@ -165,8 +163,8 @@ zv::Val fileTypeMapperGetResolvedPhpDoc(zval *fileTypeMapper, zval *argv)
 }
 
 /* $resolvedPhpDoc->getThrowsTag() / getVarTags(); $tag->getType() */
-zv::Val resolvedPhpDocGetThrowsTag(zval *resolvedPhpDoc) { return callOn(pt_sh_get_throws_tag_site, resolvedPhpDoc, PT_LC("getthrowstag"), "getThrowsTag"); }
-zv::Val resolvedPhpDocGetVarTags(zval *resolvedPhpDoc) { return callOn(pt_sh_get_var_tags_site, resolvedPhpDoc, PT_LC("getvartags"), "getVarTags"); }
+zv::Val resolvedPhpDocGetThrowsTag(zval *resolvedPhpDoc) { return pt_resolved_php_doc_block_call(resolvedPhpDoc, PT_RPD_GET_THROWS_TAG); }
+zv::Val resolvedPhpDocGetVarTags(zval *resolvedPhpDoc) { return pt_resolved_php_doc_block_call(resolvedPhpDoc, PT_RPD_GET_VAR_TAGS); }
 zv::Val tagGetType(zval *tag) { return callOn(pt_sh_tag_get_type_site, tag, PT_LC("gettype"), "getType"); }
 
 /* $comment->getText() / $function->getName() */

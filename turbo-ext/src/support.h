@@ -4520,4 +4520,60 @@ int pt_php_method_reflection_answer(zend_object *method, pt_method_reflection_me
 
 /* }}} */
 
+/* {{{ ResolvedPhpDocBlock's memoized answers (ResolvedPhpDocBlockAccess.cpp) */
+
+/* the getters of PHPStan\PhpDoc\ResolvedPhpDocBlock without arguments */
+enum pt_resolved_php_doc_member
+{
+	PT_RPD_GET_VAR_TAGS = 0,
+	PT_RPD_GET_METHOD_TAGS,
+	PT_RPD_GET_PROPERTY_TAGS,
+	PT_RPD_GET_TEMPLATE_TAGS,
+	PT_RPD_GET_EXTENDS_TAGS,
+	PT_RPD_GET_IMPLEMENTS_TAGS,
+	PT_RPD_GET_USES_TAGS,
+	PT_RPD_GET_PARAM_TAGS,
+	PT_RPD_GET_PARAM_OUT_TAGS,
+	PT_RPD_GET_PARAMS_IMMEDIATELY_INVOKED_CALLABLE,
+	PT_RPD_GET_PARAMS_PURE_UNLESS_CALLABLE_IS_IMPURE,
+	PT_RPD_GET_PARAM_CLOSURE_THIS_TAGS,
+	PT_RPD_GET_RETURN_TAG,
+	PT_RPD_GET_THROWS_TAG,
+	PT_RPD_GET_MIXIN_TAGS,
+	PT_RPD_GET_REQUIRE_EXTENDS_TAGS,
+	PT_RPD_GET_REQUIRE_IMPLEMENTS_TAGS,
+	PT_RPD_GET_SEALED_TAGS,
+	PT_RPD_GET_TYPE_ALIAS_TAGS,
+	PT_RPD_GET_TYPE_ALIAS_IMPORT_TAGS,
+	PT_RPD_GET_ASSERT_TAGS,
+	PT_RPD_GET_SELF_OUT_TAG,
+	PT_RPD_GET_DEPRECATED_TAG,
+	PT_RPD_IS_DEPRECATED,
+	PT_RPD_IS_NOT_DEPRECATED,
+	PT_RPD_IS_INTERNAL,
+	PT_RPD_IS_FINAL,
+	PT_RPD_HAS_CONSISTENT_CONSTRUCTOR,
+	PT_RPD_ACCEPTS_NAMED_ARGUMENTS,
+	PT_RPD_GET_TEMPLATE_TYPE_MAP,
+	PT_RPD_IS_PURE,
+	PT_RPD_ARE_ALL_METHODS_PURE,
+	PT_RPD_ARE_ALL_METHODS_IMPURE,
+	PT_RPD_IS_READ_ONLY,
+	PT_RPD_IS_IMMUTABLE,
+	PT_RPD_IS_ALLOWED_PRIVATE_MUTATION,
+	PT_RPD_HAS_PHP_DOC_STRING,
+	PT_RPD_GET_PHP_DOC_STRING,
+	PT_RPD_GET_FILENAME,
+	PT_RPD_GET_NULLABLE_NAME_SCOPE,
+	PT_RPD_MEMBER_COUNT
+};
+/* $block->getter(): the resolved memo or constructor-written slot of exactly
+ * a ResolvedPhpDocBlock, the getter (which resolves and memoizes) otherwise;
+ * UNDEF = pending exception. _bool coerces the answer; false = pending
+ * exception */
+zv::Val pt_resolved_php_doc_block_call(zval *block, pt_resolved_php_doc_member member);
+[[nodiscard]] bool pt_resolved_php_doc_block_bool(zval *block, pt_resolved_php_doc_member member, bool &out);
+
+/* }}} */
+
 #endif /* PHPSTANTURBO_SUPPORT_H */

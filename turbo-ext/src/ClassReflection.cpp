@@ -2780,7 +2780,7 @@ public:
 		bool isFinal_ = false;
 		if (!resolvedPhpDoc.isNull()) {
 			if (!isDeprecated_) {
-				zv::Val deprecatedTag = callOn(resolvedPhpDoc.ref(), PT_LC("getdeprecatedtag"), 0, NULL);
+				zv::Val deprecatedTag = pt_resolved_php_doc_block_call(resolvedPhpDoc.ref().deref().raw(), PT_RPD_GET_DEPRECATED_TAG);
 				if (UNEXPECTED(deprecatedTag.isUndef())) return zv::Val();
 				if (!deprecatedTag.isNull()) {
 					deprecatedDescription = callOn(deprecatedTag.ref(), PT_LC("getmessage"), 0, NULL);
@@ -2788,10 +2788,10 @@ public:
 				} else {
 					deprecatedDescription = zv::Val::null();
 				}
-				if (UNEXPECTED(!callBool(resolvedPhpDoc.ref(), PT_LC("isdeprecated"), 0, NULL, isDeprecated_))) return zv::Val();
+				if (UNEXPECTED(!pt_resolved_php_doc_block_bool(resolvedPhpDoc.ref().deref().raw(), PT_RPD_IS_DEPRECATED, isDeprecated_))) return zv::Val();
 			}
-			if (UNEXPECTED(!callBool(resolvedPhpDoc.ref(), PT_LC("isinternal"), 0, NULL, isInternal_))) return zv::Val();
-			if (UNEXPECTED(!callBool(resolvedPhpDoc.ref(), PT_LC("isfinal"), 0, NULL, isFinal_))) return zv::Val();
+			if (UNEXPECTED(!pt_resolved_php_doc_block_bool(resolvedPhpDoc.ref().deref().raw(), PT_RPD_IS_INTERNAL, isInternal_))) return zv::Val();
+			if (UNEXPECTED(!pt_resolved_php_doc_block_bool(resolvedPhpDoc.ref().deref().raw(), PT_RPD_IS_FINAL, isFinal_))) return zv::Val();
 			phpDocType = resolveConstantVarPhpDocType(resolvedPhpDoc.ref(), nativeType.ref(), declaringClass.ref());
 			if (UNEXPECTED(phpDocType.isUndef())) return zv::Val();
 		}
@@ -2938,7 +2938,7 @@ public:
 	 * resolved against the declaring class's template types */
 	static zv::Val resolveConstantVarPhpDocType(zv::Ref resolvedPhpDoc, zv::Ref nativeType, zv::Ref declaringClass)
 	{
-		zv::Val varTags = callOn(resolvedPhpDoc, PT_LC("getvartags"), 0, NULL);
+		zv::Val varTags = pt_resolved_php_doc_block_call(resolvedPhpDoc.deref().raw(), PT_RPD_GET_VAR_TAGS);
 		if (UNEXPECTED(varTags.isUndef())) return zv::Val();
 		if (!varTags.ref().isArray()) return zv::Val::null();
 		zval *varTag = zend_hash_index_find(varTags.ref().asArrayTable(), 0);
@@ -3027,9 +3027,9 @@ public:
 		if (UNEXPECTED(resolvedPhpDoc.isUndef())) return zv::Val();
 		if (resolvedPhpDoc.isNull()) return zv::Val(zv::Arr::empty());
 
-		zv::Val typeAliasImportTags = callOn(resolvedPhpDoc.ref(), PT_LC("gettypealiasimporttags"), 0, NULL);
+		zv::Val typeAliasImportTags = pt_resolved_php_doc_block_call(resolvedPhpDoc.ref().deref().raw(), PT_RPD_GET_TYPE_ALIAS_IMPORT_TAGS);
 		if (UNEXPECTED(typeAliasImportTags.isUndef())) return zv::Val();
-		zv::Val typeAliasTags = callOn(resolvedPhpDoc.ref(), PT_LC("gettypealiastags"), 0, NULL);
+		zv::Val typeAliasTags = pt_resolved_php_doc_block_call(resolvedPhpDoc.ref().deref().raw(), PT_RPD_GET_TYPE_ALIAS_TAGS);
 		if (UNEXPECTED(typeAliasTags.isUndef())) return zv::Val();
 
 		/* array_map(static fn (TypeAliasTag $tag): TypeAlias => $tag->getTypeAlias(), $typeAliasTags) */
@@ -3182,9 +3182,9 @@ public:
 		if (UNEXPECTED(resolvedPhpDoc.isUndef())) return false;
 		if (!resolvedPhpDoc.isNull()) {
 			bool deprecated;
-			if (UNEXPECTED(!callBool(resolvedPhpDoc.ref(), PT_LC("isdeprecated"), 0, NULL, deprecated))) return false;
+			if (UNEXPECTED(!pt_resolved_php_doc_block_bool(resolvedPhpDoc.ref().deref().raw(), PT_RPD_IS_DEPRECATED, deprecated))) return false;
 			if (deprecated) {
-				zv::Val deprecatedTag = callOn(resolvedPhpDoc.ref(), PT_LC("getdeprecatedtag"), 0, NULL);
+				zv::Val deprecatedTag = pt_resolved_php_doc_block_call(resolvedPhpDoc.ref().deref().raw(), PT_RPD_GET_DEPRECATED_TAG);
 				if (UNEXPECTED(deprecatedTag.isUndef())) return false;
 				zv::Val description = zv::Val::null();
 				if (!deprecatedTag.isNull()) {
@@ -3231,7 +3231,7 @@ public:
 			zv::Val resolvedPhpDoc = getResolvedPhpDoc();
 			if (UNEXPECTED(resolvedPhpDoc.isUndef())) return false;
 			bool internal = false;
-			if (!resolvedPhpDoc.isNull() && UNEXPECTED(!callBool(resolvedPhpDoc.ref(), PT_LC("isinternal"), 0, NULL, internal))) return false;
+			if (!resolvedPhpDoc.isNull() && UNEXPECTED(!pt_resolved_php_doc_block_bool(resolvedPhpDoc.ref().deref().raw(), PT_RPD_IS_INTERNAL, internal))) return false;
 			writeSlot(PT_CR_PROP_IS_INTERNAL, zv::Val::boolean(internal));
 		}
 
@@ -3246,8 +3246,8 @@ public:
 			if (UNEXPECTED(resolvedPhpDoc.isUndef())) return false;
 			bool immutable = false;
 			if (!resolvedPhpDoc.isNull()) {
-				if (UNEXPECTED(!callBool(resolvedPhpDoc.ref(), PT_LC("isimmutable"), 0, NULL, immutable))) return false;
-				if (!immutable && UNEXPECTED(!callBool(resolvedPhpDoc.ref(), PT_LC("isreadonly"), 0, NULL, immutable))) return false;
+				if (UNEXPECTED(!pt_resolved_php_doc_block_bool(resolvedPhpDoc.ref().deref().raw(), PT_RPD_IS_IMMUTABLE, immutable))) return false;
+				if (!immutable && UNEXPECTED(!pt_resolved_php_doc_block_bool(resolvedPhpDoc.ref().deref().raw(), PT_RPD_IS_READ_ONLY, immutable))) return false;
 			}
 			writeSlot(PT_CR_PROP_IS_IMMUTABLE, zv::Val::boolean(immutable));
 
@@ -3270,7 +3270,7 @@ public:
 			zv::Val resolvedPhpDoc = getResolvedPhpDoc();
 			if (UNEXPECTED(resolvedPhpDoc.isUndef())) return false;
 			bool consistent = false;
-			if (!resolvedPhpDoc.isNull() && UNEXPECTED(!callBool(resolvedPhpDoc.ref(), PT_LC("hasconsistentconstructor"), 0, NULL, consistent))) return false;
+			if (!resolvedPhpDoc.isNull() && UNEXPECTED(!pt_resolved_php_doc_block_bool(resolvedPhpDoc.ref().deref().raw(), PT_RPD_HAS_CONSISTENT_CONSTRUCTOR, consistent))) return false;
 			writeSlot(PT_CR_PROP_HAS_CONSISTENT_CONSTRUCTOR, zv::Val::boolean(consistent));
 		}
 
@@ -3284,7 +3284,7 @@ public:
 			zv::Val resolvedPhpDoc = getResolvedPhpDoc();
 			if (UNEXPECTED(resolvedPhpDoc.isUndef())) return false;
 			bool accepts = true;
-			if (!resolvedPhpDoc.isNull() && UNEXPECTED(!callBool(resolvedPhpDoc.ref(), PT_LC("acceptsnamedarguments"), 0, NULL, accepts))) return false;
+			if (!resolvedPhpDoc.isNull() && UNEXPECTED(!pt_resolved_php_doc_block_bool(resolvedPhpDoc.ref().deref().raw(), PT_RPD_ACCEPTS_NAMED_ARGUMENTS, accepts))) return false;
 			writeSlot(PT_CR_PROP_ACCEPTS_NAMED_ARGUMENTS, zv::Val::boolean(accepts));
 		}
 
@@ -3637,7 +3637,7 @@ public:
 			return pt_template_type_map_empty(&empty) ? zv::Val::adopt(empty) : zv::Val();
 		}
 
-		zv::Val templateTags = callOn(resolvedPhpDoc.ref(), PT_LC("gettemplatetags"), 0, NULL);
+		zv::Val templateTags = pt_resolved_php_doc_block_call(resolvedPhpDoc.ref().deref().raw(), PT_RPD_GET_TEMPLATE_TAGS);
 		if (UNEXPECTED(templateTags.isUndef())) return zv::Val();
 		zv::Val className = getName();
 		if (UNEXPECTED(className.isUndef())) return zv::Val();
@@ -3742,7 +3742,7 @@ public:
 			return pt_template_type_variance_map_new(&out, &empty) ? zv::Val::adopt(out) : zv::Val();
 		}
 
-		zv::Val templateTags = callOn(resolvedPhpDoc.ref(), PT_LC("gettemplatetags"), 0, NULL);
+		zv::Val templateTags = pt_resolved_php_doc_block_call(resolvedPhpDoc.ref().deref().raw(), PT_RPD_GET_TEMPLATE_TAGS);
 		if (UNEXPECTED(templateTags.isUndef())) return zv::Val();
 		zv::Arr map = zv::Arr::create(countOf(templateTags.ref()));
 		zend_ulong i = 0;
@@ -3830,7 +3830,7 @@ public:
 		zv::Val resolvedPhpDoc = getResolvedPhpDoc();
 		if (UNEXPECTED(resolvedPhpDoc.isUndef())) return zv::Val();
 		if (resolvedPhpDoc.isNull()) return zv::Val::null();
-		return callOn(resolvedPhpDoc.ref(), PT_LC("gettemplatetags"), 0, NULL);
+		return pt_resolved_php_doc_block_call(resolvedPhpDoc.ref().deref().raw(), PT_RPD_GET_TEMPLATE_TAGS);
 	}
 
 	zv::Val withTypes(zv::Ref types)
@@ -4022,23 +4022,23 @@ public:
 	}
 
 	/* the tag getters: $this->getResolvedPhpDoc()?->get<X>Tags() ?? [] */
-	zv::Val resolvedPhpDocTags(const char *lcname, size_t len)
+	zv::Val resolvedPhpDocTags(pt_resolved_php_doc_member member)
 	{
 		zv::Val resolvedPhpDoc = getResolvedPhpDoc();
 		if (UNEXPECTED(resolvedPhpDoc.isUndef())) return zv::Val();
 		if (resolvedPhpDoc.isNull()) return zv::Val(zv::Arr::empty());
-		return callOn(resolvedPhpDoc.ref(), lcname, len, 0, NULL);
+		return pt_resolved_php_doc_block_call(resolvedPhpDoc.raw(), member);
 	}
 
-	zv::Val getExtendsTags() { return resolvedPhpDocTags(PT_LC("getextendstags")); }
-	zv::Val getImplementsTags() { return resolvedPhpDocTags(PT_LC("getimplementstags")); }
-	zv::Val getTemplateTags() { return resolvedPhpDocTags(PT_LC("gettemplatetags")); }
-	zv::Val getMixinTags() { return resolvedPhpDocTags(PT_LC("getmixintags")); }
-	zv::Val getRequireExtendsTags() { return resolvedPhpDocTags(PT_LC("getrequireextendstags")); }
-	zv::Val getRequireImplementsTags() { return resolvedPhpDocTags(PT_LC("getrequireimplementstags")); }
-	zv::Val getSealedTags() { return resolvedPhpDocTags(PT_LC("getsealedtags")); }
-	zv::Val getPropertyTags() { return resolvedPhpDocTags(PT_LC("getpropertytags")); }
-	zv::Val getMethodTags() { return resolvedPhpDocTags(PT_LC("getmethodtags")); }
+	zv::Val getExtendsTags() { return resolvedPhpDocTags(PT_RPD_GET_EXTENDS_TAGS); }
+	zv::Val getImplementsTags() { return resolvedPhpDocTags(PT_RPD_GET_IMPLEMENTS_TAGS); }
+	zv::Val getTemplateTags() { return resolvedPhpDocTags(PT_RPD_GET_TEMPLATE_TAGS); }
+	zv::Val getMixinTags() { return resolvedPhpDocTags(PT_RPD_GET_MIXIN_TAGS); }
+	zv::Val getRequireExtendsTags() { return resolvedPhpDocTags(PT_RPD_GET_REQUIRE_EXTENDS_TAGS); }
+	zv::Val getRequireImplementsTags() { return resolvedPhpDocTags(PT_RPD_GET_REQUIRE_IMPLEMENTS_TAGS); }
+	zv::Val getSealedTags() { return resolvedPhpDocTags(PT_RPD_GET_SEALED_TAGS); }
+	zv::Val getPropertyTags() { return resolvedPhpDocTags(PT_RPD_GET_PROPERTY_TAGS); }
+	zv::Val getMethodTags() { return resolvedPhpDocTags(PT_RPD_GET_METHOD_TAGS); }
 
 	/* array<string, ClassReflection> */
 	zv::Val getAncestors()
@@ -4227,7 +4227,7 @@ public:
 			zv::Val resolvedPhpDoc = getResolvedPhpDoc();
 			if (UNEXPECTED(resolvedPhpDoc.isUndef())) return false;
 			bool isFinal_ = false;
-			if (!resolvedPhpDoc.isNull() && UNEXPECTED(!callBool(resolvedPhpDoc.ref(), PT_LC("isfinal"), 0, NULL, isFinal_))) return false;
+			if (!resolvedPhpDoc.isNull() && UNEXPECTED(!pt_resolved_php_doc_block_bool(resolvedPhpDoc.ref().deref().raw(), PT_RPD_IS_FINAL, isFinal_))) return false;
 			writeSlot(PT_CR_PROP_IS_FINAL, zv::Val::boolean(isFinal_));
 		}
 

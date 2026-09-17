@@ -63,7 +63,6 @@ pt_property_site pt_feh_scalar_value_site;
 pt_method_site pt_feh_get_attributes_site;
 pt_method_site pt_feh_set_attributes_site;
 pt_method_site pt_feh_get_doc_comment_site;
-pt_method_site pt_feh_get_method_site;
 pt_method_site pt_feh_get_throw_type_site;
 
 /* the permanent interned strings of the twin's literals (module startup) */
@@ -88,7 +87,7 @@ zv::Val getAttributes(zval *node)
 zv::Val getMethod(zval *type, zend_string *name, zval *scope)
 {
 	zv::Args argv{name, scope};
-	return pt_call_method_cached(pt_feh_get_method_site, Z_OBJ_P(type), PT_LC("getmethod"), 2, argv);
+	return pt_type_op(Z_OBJ_P(type), PT_OP_GET_METHOD, 2, argv);
 }
 
 zv::Val getThrowType(zval *method)

@@ -441,8 +441,8 @@ public:
 			zend_type_error("phpstan_turbo: %s() must return an object", prototypeLcname);
 			return zv::Val();
 		}
-		if (isMethod) return pt_type_call(Z_OBJ_P(prototype.raw()), PT_LC("gettransformedmethod"), 0, NULL);
-		return pt_type_call(Z_OBJ_P(prototype.raw()), PT_LC("gettransformedproperty"), 0, NULL);
+		if (isMethod) return pt_type_op(Z_OBJ_P(prototype.raw()), PT_OP_GET_TRANSFORMED_METHOD, 0, NULL);
+		return pt_type_op(Z_OBJ_P(prototype.raw()), PT_OP_GET_TRANSFORMED_PROPERTY, 0, NULL);
 	}
 
 	/* new CallbackUnresolved{Property,Method}PrototypeReflection($member,

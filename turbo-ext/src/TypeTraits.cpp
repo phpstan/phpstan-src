@@ -70,6 +70,23 @@ bool pt_type_method_is(zend_object *object, const char *lcname, size_t len, zif_
 	return fn != NULL && fn->type == ZEND_INTERNAL_FUNCTION && fn->internal_function.handler == handler;
 }
 
+bool pt_type_method_is_resolve(pt_method_is_site &site, zend_object *object, const char *lcname, size_t len, zif_handler handler)
+{
+	bool is = pt_type_method_is(object, lcname, len, handler);
+	site = { object->ce, lcname, (uintptr_t) handler, pt_engine_generation, is };
+	return is;
+}
+
+bool pt_type_method_inherited_resolve(pt_method_is_site &site, zend_object *object, zend_class_entry *base, const char *lcname, size_t len)
+{
+	/* not activated yet: nothing to remember */
+	if (UNEXPECTED(base == NULL)) return false;
+	zend_function *own = (zend_function *) zend_hash_str_find_ptr(&base->function_table, lcname, len);
+	bool is = own != NULL && own->type == ZEND_INTERNAL_FUNCTION && pt_type_method_is(object, lcname, len, own->internal_function.handler);
+	site = { object->ce, lcname, (uintptr_t) base, pt_engine_generation, is };
+	return is;
+}
+
 static zv::Val pt_type_call_fn(zend_function *fn, zend_object *object, zend_class_entry *calledScope, uint32_t argc, zval *argv)
 {
 	zval ret;
@@ -1875,8 +1892,8 @@ zv::Val pt_type_transformed_member(zend_object *self, const char *prototypeLcnam
 		zend_type_error("phpstan_turbo: %s() must return an object", prototypeLcname);
 		return zv::Val();
 	}
-	if (isMethod) return pt_type_call(Z_OBJ_P(prototype.raw()), PT_LC("gettransformedmethod"), 0, NULL);
-	return pt_type_call(Z_OBJ_P(prototype.raw()), PT_LC("gettransformedproperty"), 0, NULL);
+	if (isMethod) return pt_type_op(Z_OBJ_P(prototype.raw()), PT_OP_GET_TRANSFORMED_METHOD, 0, NULL);
+	return pt_type_op(Z_OBJ_P(prototype.raw()), PT_OP_GET_TRANSFORMED_PROPERTY, 0, NULL);
 }
 
 zv::Val pt_type_object_type_for_is_a_check(bool allowString)
@@ -2428,9 +2445,9 @@ static void pt_maybe_object_transformed_member(INTERNAL_FUNCTION_PARAMETERS, con
 		RETURN_THROWS();
 	}
 	if (isMethod) {
-		PT_RETURN_VAL(pt_type_call(Z_OBJ_P(prototype.raw()), PT_LC("gettransformedmethod"), 0, NULL));
+		PT_RETURN_VAL(pt_type_op(Z_OBJ_P(prototype.raw()), PT_OP_GET_TRANSFORMED_METHOD, 0, NULL));
 	}
-	PT_RETURN_VAL(pt_type_call(Z_OBJ_P(prototype.raw()), PT_LC("gettransformedproperty"), 0, NULL));
+	PT_RETURN_VAL(pt_type_op(Z_OBJ_P(prototype.raw()), PT_OP_GET_TRANSFORMED_PROPERTY, 0, NULL));
 }
 
 void pt_type_trait_maybe_object(reg::Class &cls)
@@ -4560,7 +4577,7 @@ public:
 		if (UNEXPECTED(staticVariance == NULL)) return zv::Val();
 		zv::Val resolvedTemplates = pt_type_template_type_helper_resolve_template_types(bound.raw(), map.raw(), varianceMap.raw(), staticVariance, false);
 		if (UNEXPECTED(resolvedTemplates.isUndef())) return zv::Val();
-		zv::Val resolvedBound = pt_type_call_static_ce(pt_ce_type_utils, PT_LC("resolvelateresolvabletypes"), 1, resolvedTemplates.raw());
+		zv::Val resolvedBound = pt_type_utils_resolve_late_resolvable_types(resolvedTemplates.raw());
 		if (UNEXPECTED(resolvedBound.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(resolvedBound.raw()).isObject())) {
 			zend_type_error("phpstan_turbo: TypeUtils::resolveLateResolvableTypes() must return %s", ptcls::type);

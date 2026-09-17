@@ -4055,4 +4055,37 @@ zv::Val pt_assertions_get_asserts(zval *assertions, int which);
 
 /* }}} */
 
+/* {{{ native -> native calls that went through the engine (R1)
+ *
+ * The entries native callers use instead of by-name calls between two
+ * native classes; each takes the C++ body for the native class entry and
+ * calls the method by name for anything else. */
+
+/* ExpressionResult.cpp — $result->canResolveOwnType(); false = pending
+ * exception */
+[[nodiscard]] bool pt_expression_result_can_resolve_own_type(zend_object *result, bool &out);
+
+/* VolatileExpressionHelper.cpp — the three static invalidations over the
+ * tables a MutatingScope hands in (array zvals, separated in place when an
+ * entry is removed, like the twin's by-reference arrays); $functionNames
+ * NULL for the default list, $declaredSymbolName NULL for null; UNDEF =
+ * pending exception */
+bool pt_volatile_expression_helper_invalidate_volatile_function_calls(zval *expressionTypes, zval *nativeExpressionTypes);
+bool pt_volatile_expression_helper_invalidate_superglobals(zval *expressionTypes, zval *nativeExpressionTypes);
+zv::Val pt_volatile_expression_helper_invalidate_negative_existence_checks(zval *scope, zval *expressionTypes, zval *nativeExpressionTypes, HashTable *functionNames, zend_string *declaredSymbolName);
+
+/* PhpClassReflectionExtension.cpp — $extension->hasProperty($classReflection,
+ * $name) / ->getNativeProperty() / ->hasMethod() / ->getMethod() /
+ * ->hasNativeMethod() / ->getNativeMethod(): the C++ bodies for the native
+ * (final) class, the methods by name otherwise (everything borrowed; the
+ * class reflection an object); false / UNDEF = pending exception */
+[[nodiscard]] bool pt_php_class_reflection_extension_has_property(zend_object *extension, zval *classReflection, zend_string *propertyName, bool &out);
+zv::Val pt_php_class_reflection_extension_get_native_property(zend_object *extension, zval *classReflection, zend_string *propertyName);
+[[nodiscard]] bool pt_php_class_reflection_extension_has_method(zend_object *extension, zval *classReflection, zend_string *methodName, bool &out);
+zv::Val pt_php_class_reflection_extension_get_method(zend_object *extension, zval *classReflection, zend_string *methodName);
+[[nodiscard]] bool pt_php_class_reflection_extension_has_native_method(zend_object *extension, zval *classReflection, zend_string *methodName, bool &out);
+zv::Val pt_php_class_reflection_extension_get_native_method(zend_object *extension, zval *classReflection, zend_string *methodName);
+
+/* }}} */
+
 #endif /* PHPSTANTURBO_SUPPORT_H */

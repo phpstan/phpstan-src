@@ -206,8 +206,10 @@ void pt_register_callback_unresolved_property_prototype_reflection()
 	cls.method<&CallbackUnresolvedPropertyPrototypeReflection::doNotResolveTemplateTypeMapToBounds>(sigs::doNotResolveTemplateTypeMapToBounds);
 
 	cls.method<&CallbackUnresolvedPropertyPrototypeReflection::getNakedProperty>(sigs::getNakedProperty);
+	cls.op<PT_OP_GET_NAKED_PROPERTY, &CallbackUnresolvedPropertyPrototypeReflection::getNakedProperty>();
 
 	cls.method<&CallbackUnresolvedPropertyPrototypeReflection::getTransformedProperty>(sigs::getTransformedProperty);
+	cls.op<PT_OP_GET_TRANSFORMED_PROPERTY, &CallbackUnresolvedPropertyPrototypeReflection::getTransformedProperty>();
 
 	cls.method<&CallbackUnresolvedPropertyPrototypeReflection::withFechedOnType, zp::Obj>(sigs::withFechedOnType);
 

@@ -117,6 +117,29 @@ enum pt_type_op_id : uint8_t
 	PT_OP_OR,
 	PT_OP_GET_UNRESOLVED_INSTANCE_PROPERTY_PROTOTYPE,
 	PT_OP_GET_UNRESOLVED_METHOD_PROTOTYPE,
+	/* the third round: the member lookups the engine ports make on a type
+	 * (MutatingScope::getMethodReflection() & co.) */
+	PT_OP_GET_METHOD,
+	PT_OP_GET_INSTANCE_PROPERTY,
+	/* the unresolved member prototypes' and ClassReflection's hot readers —
+	 * the ops are the methods of any native class, not only of types */
+	PT_OP_GET_TRANSFORMED_METHOD,
+	PT_OP_GET_TRANSFORMED_PROPERTY,
+	PT_OP_GET_NAKED_METHOD,
+	PT_OP_GET_NAKED_PROPERTY,
+	PT_OP_GET_ACTIVE_TEMPLATE_TYPE_MAP,
+	PT_OP_GET_CALL_SITE_VARIANCE_MAP,
+	PT_OP_HAS_NATIVE_METHOD,
+	PT_OP_GET_NATIVE_METHOD,
+	PT_OP_HAS_NATIVE_PROPERTY,
+	PT_OP_GET_NATIVE_PROPERTY,
+	PT_OP_IS_FINAL_BY_KEYWORD,
+	PT_OP_IS_FINAL,
+	PT_OP_IS_INTERFACE,
+	PT_OP_IS_TRAIT,
+	PT_OP_IS_BUILTIN,
+	PT_OP_IS,
+	PT_OP_IS_SUBCLASS_OF_CLASS,
 	PT_OP_COUNT,
 };
 

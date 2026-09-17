@@ -73,7 +73,7 @@ zv::Val selectFromArgs(zval *scope, zval *call, zval *methodReflection)
 zv::Val getMethod(zval *type, zval *methodName, zval *scope)
 {
 	zv::Args args{methodName, scope};
-	return pt_type_call(Z_OBJ_P(type), PT_LC("getmethod"), 2, args);
+	return pt_type_op(Z_OBJ_P(type), PT_OP_GET_METHOD, 2, args);
 }
 
 /* }}} */

@@ -274,6 +274,7 @@
 namespace sigs = ptdecl::MutatingScope::sig;
 #include "TypeOps.h"
 #include "AcceptorValues.h"
+#include "AnalyserValues.h"
 
 #include <algorithm>
 #include <vector>
@@ -1546,14 +1547,14 @@ public:
 	{
 		TablePair tables(*this);
 
-		int changed = volatileHelperCall(PT_LC("invalidatevolatilefunctioncalls"), tables, 0, NULL, false);
-		if (UNEXPECTED(changed < 0)) return zv::Val();
-		int superglobals = volatileHelperCall(PT_LC("invalidatesuperglobals"), tables, 0, NULL, false);
-		if (UNEXPECTED(superglobals < 0)) return zv::Val();
+		/* the native helper's bodies directly (the class is final and static):
+		 * the tables are the by-reference arrays */
+		bool changed = pt_volatile_expression_helper_invalidate_volatile_function_calls(tables.expressionTypes.raw(), tables.nativeExpressionTypes.raw());
+		bool superglobals = pt_volatile_expression_helper_invalidate_superglobals(tables.expressionTypes.raw(), tables.nativeExpressionTypes.raw());
 		changed = superglobals || changed;
-		int existence = volatileHelperCall(PT_LC("invalidatenegativeexistencechecks"), tables, 0, NULL, true);
-		if (UNEXPECTED(existence < 0)) return zv::Val();
-		changed = existence || changed;
+		zv::Val existence = pt_volatile_expression_helper_invalidate_negative_existence_checks(thisZval(), tables.expressionTypes.raw(), tables.nativeExpressionTypes.raw(), NULL, NULL);
+		if (UNEXPECTED(existence.isUndef())) return zv::Val();
+		changed = zend_is_true(existence.raw()) || changed;
 
 		if (!changed) return self_();
 		return createWithTables(tables);
@@ -2065,8 +2066,9 @@ public:
 	{
 		bool promoted;
 		if (UNEXPECTED(!scopeNativeTypesPromoted(Z_OBJ_P(scope), promoted))) return zv::Val();
-		zv::Args args{scope, promoted};
-		return pt_type_call(result, PT_LC("gettypeonscope"), 2, args);
+		zval resultZv;
+		ZVAL_OBJ(&resultZv, result);
+		return pt_expression_result_get_type_on_scope(&resultZv, scope, promoted);
 	}
 
 	/* a promoted slot the constructor never wrote: the twin's Error */
@@ -2635,18 +2637,17 @@ public:
 			if (!result.isNull()) {
 				zend_object *resultObject = requireObject(result, "canResolveOwnType");
 				if (UNEXPECTED(resultObject == NULL)) return zv::Val();
-				zv::Val canResolve = pt_type_call(resultObject, PT_LC("canresolveowntype"), 0, NULL);
-				if (UNEXPECTED(canResolve.isUndef())) return zv::Val();
-				if (zend_is_true(canResolve.raw())) {
+				bool canResolve;
+				if (UNEXPECTED(!pt_expression_result_can_resolve_own_type(resultObject, canResolve))) return zv::Val();
+				if (canResolve) {
 					/* a counterfactual ask must re-price the node on that
 					 * scope - the memoized walk-position type answers a
 					 * different question */
 					bool promoted;
 					if (UNEXPECTED(!scopeNativeTypesPromoted(Z_OBJ_P(scope.raw()), promoted))) return zv::Val();
-					zv::Args args{scope.raw(), promoted};
-					zv::Val matches = pt_type_call(resultObject, PT_LC("askscopevariablestatematches"), 2, args);
-					if (UNEXPECTED(matches.isUndef())) return zv::Val();
-					counterfactualAsk = !zend_is_true(matches.raw());
+					bool matches;
+					if (UNEXPECTED(!pt_expression_result_ask_scope_variable_state_matches(result.raw(), scope.raw(), promoted, matches))) return zv::Val();
+					counterfactualAsk = !matches;
 					if (!counterfactualAsk) return typeOnScope(resultObject, scope.raw());
 				}
 			}
@@ -2716,9 +2717,7 @@ public:
 			if (!exprResult.isNull()) {
 				zend_object *resultObject = requireObject(exprResult, "containsNullsafe");
 				if (UNEXPECTED(resultObject == NULL)) return zv::Val();
-				zv::Val contains = pt_type_call(resultObject, PT_LC("containsnullsafe"), 0, NULL);
-				if (UNEXPECTED(contains.isUndef())) return zv::Val();
-				containsNullsafe = zend_is_true(contains.raw());
+				if (UNEXPECTED(!pt_expression_result_contains_nullsafe(exprResult.raw(), containsNullsafe))) return zv::Val();
 			}
 			if (!containsNullsafe) {
 				if (UNEXPECTED(!requireSlot(PT_MS_PROP_NATIVE_TYPES_PROMOTED, "nativeTypesPromoted"))) return zv::Val();
@@ -2744,8 +2743,7 @@ public:
 			if (UNEXPECTED(resultObject == NULL)) return zv::Val();
 			zv::Val phpDoc = typeOnScope(resultObject, scope.raw());
 			if (UNEXPECTED(phpDoc.isUndef())) return zv::Val();
-			zv::Args args{scope.raw(), true};
-			zv::Val native = pt_type_call(resultObject, PT_LC("gettypeonscope"), 2, args);
+			zv::Val native = pt_expression_result_get_type_on_scope(result.raw(), scope.raw(), true);
 			if (UNEXPECTED(native.isUndef())) return zv::Val();
 			return typePair(std::move(phpDoc), std::move(native));
 		}
@@ -2756,8 +2754,7 @@ public:
 		if (UNEXPECTED(resultObject == NULL)) return zv::Val();
 		zv::Val phpDoc = typeOnScope(resultObject, thisZval());
 		if (UNEXPECTED(phpDoc.isUndef())) return zv::Val();
-		zv::Args args{self, true};
-		zv::Val native = pt_type_call(resultObject, PT_LC("gettypeonscope"), 2, args);
+		zv::Val native = pt_expression_result_get_type_on_scope(exprResult.raw(), thisZval(), true);
 		if (UNEXPECTED(native.isUndef())) return zv::Val();
 		return typePair(std::move(phpDoc), std::move(native));
 	}
@@ -6892,8 +6889,7 @@ public:
 
 		zend_object *scopeObject = requireObject(scope, "specifyExpressionType");
 		if (UNEXPECTED(scopeObject == NULL)) return zv::Val();
-		zv::Args args{expr, type, nativeType, pt_trinary_singleton(PT_TRI_YES)};
-		return pt_type_call(scopeObject, PT_LC("specifyexpressiontype"), 4, args);
+		return pt_mutating_scope_specify_expression_type(scopeObject, expr, type, nativeType, pt_trinary_singleton(PT_TRI_YES));
 	}
 
 	/* private (twin 3382): assignExpression() for a value that overwrites
@@ -6943,8 +6939,7 @@ public:
 		if (UNEXPECTED(scope.isUndef())) return zv::Val();
 		zend_object *scopeObject = requireObject(scope, "specifyExpressionType");
 		if (UNEXPECTED(scopeObject == NULL)) return zv::Val();
-		zv::Args specifyArgs{expr, type, nativeType, pt_trinary_singleton(PT_TRI_YES)};
-		return pt_type_call(scopeObject, PT_LC("specifyexpressiontype"), 4, specifyArgs);
+		return pt_mutating_scope_specify_expression_type(scopeObject, Z_OBJ_P(expr), type, nativeType, pt_trinary_singleton(PT_TRI_YES));
 	}
 
 	/* (twin 3785) */
@@ -7769,9 +7764,7 @@ public:
 					if (UNEXPECTED(nameProp.raw() == NULL)) return zv::Val();
 					zv::Ref name = nameProp.deref();
 					if (name.isString()) {
-						zval nameZv;
-						ZVAL_STR(&nameZv, name.asString());
-						zv::Val has = pt_type_call(scopeObject, PT_LC("hasvariabletype"), 1, &nameZv);
+						zv::Val has = pt_mutating_scope_has_variable_type(scopeObject, name.asString());
 						if (UNEXPECTED(has.isUndef())) return zv::Val();
 						zend_long value = pt_type_trinary_value(has.raw());
 						if (UNEXPECTED(value < 0)) return zv::Val();
@@ -8039,13 +8032,13 @@ public:
 			}
 			a.set(property.arg, zv::Ref(value));
 		}
-		zv::Val declareStrictTypes = pt_type_call(scopeObject, PT_LC("isdeclarestricttypes"), 0, NULL);
-		if (UNEXPECTED(declareStrictTypes.isUndef())) return false;
-		a.setBool(CreateArgs::DECLARE_STRICT_TYPES, zend_is_true(declareStrictTypes.raw()));
-		zv::Val function = pt_type_call(scopeObject, PT_LC("getfunction"), 0, NULL);
+		bool declareStrictTypes;
+		if (UNEXPECTED(!pt_mutating_scope_is_declare_strict_types(scopeObject, declareStrictTypes))) return false;
+		a.setBool(CreateArgs::DECLARE_STRICT_TYPES, declareStrictTypes);
+		zv::Val function = pt_mutating_scope_get_function(scopeObject);
 		if (UNEXPECTED(function.isUndef())) return false;
 		a.setOwned(CreateArgs::FUNCTION, std::move(function));
-		zv::Val namespace_ = pt_type_call(scopeObject, PT_LC("getnamespace"), 0, NULL);
+		zv::Val namespace_ = pt_mutating_scope_get_namespace(scopeObject);
 		if (UNEXPECTED(namespace_.isUndef())) return false;
 		a.setOwned(CreateArgs::NAMESPACE_, std::move(namespace_));
 		return true;
@@ -8307,12 +8300,12 @@ public:
 		if (UNEXPECTED(mergedObject == NULL)) return zv::Val();
 		zv::Val constraints;
 		if (otherScope != NULL && Z_TYPE_P(otherScope) == IS_OBJECT) {
-			constraints = pt_type_call(Z_OBJ_P(otherScope), PT_LC("gettemplateargumentconstraints"), 0, NULL);
+			constraints = pt_mutating_scope_get_template_argument_constraints(Z_OBJ_P(otherScope));
 			if (UNEXPECTED(constraints.isUndef())) return zv::Val();
 		} else {
 			constraints = zv::Val::null();
 		}
-		return pt_type_call(mergedObject, PT_LC("addtemplateargumentconstraints"), 1, constraints.raw());
+		return pt_mutating_scope_add_template_argument_constraints(mergedObject, constraints.raw());
 	}
 
 	/* private (twin 4393) */
@@ -8976,9 +8969,9 @@ public:
 		if (UNEXPECTED(generalized.isUndef())) return zv::Val();
 		zend_object *generalizedObject = requireObject(generalized, "addTemplateArgumentConstraints");
 		if (UNEXPECTED(generalizedObject == NULL)) return zv::Val();
-		zv::Val constraints = pt_type_call(otherScope, PT_LC("gettemplateargumentconstraints"), 0, NULL);
+		zv::Val constraints = pt_mutating_scope_get_template_argument_constraints(otherScope);
 		if (UNEXPECTED(constraints.isUndef())) return zv::Val();
-		return pt_type_call(generalizedObject, PT_LC("addtemplateargumentconstraints"), 1, constraints.raw());
+		return pt_mutating_scope_add_template_argument_constraints(generalizedObject, constraints.raw());
 	}
 
 	/* private (twin 4901) */
@@ -10205,7 +10198,7 @@ public:
 		if (UNEXPECTED(type.isUndef())) return zv::Val();
 		if (type.isNull()) return zv::Val::null();
 		zv::Args args{methodName, self};
-		return pt_type_call(Z_OBJ_P(type.raw()), PT_LC("getmethod"), 2, args);
+		return pt_type_op(Z_OBJ_P(type.raw()), PT_OP_GET_METHOD, 2, args);
 	}
 
 	/* (twin 5680) */
@@ -10221,7 +10214,7 @@ public:
 		if (UNEXPECTED(prototype.isUndef())) return zv::Val();
 		zend_object *prototypeObject = requireObject(prototype, "getNakedMethod");
 		if (UNEXPECTED(prototypeObject == NULL)) return zv::Val();
-		return pt_type_call(prototypeObject, PT_LC("getnakedmethod"), 0, NULL);
+		return pt_type_op(prototypeObject, PT_OP_GET_NAKED_METHOD, 0, NULL);
 	}
 
 	/**
@@ -11423,6 +11416,13 @@ static void ZEND_FASTCALL msIsInTrait(INTERNAL_FUNCTION_PARAMETERS)
 	PT_MS_RETURN_BOOL(PT_THIS.isInTrait(out_));
 }
 
+/* whether the scope's method of that (lowercase literal) name is the one
+ * MutatingScope declares: exactly a MutatingScope, or a subclass inheriting
+ * it — NodeCallbackScope for every method it does not override — memoized
+ * per expansion (PT_TYPE_METHOD_INHERITED), so a direct entry takes the
+ * native body for such a receiver without a function-table lookup per call */
+#define PT_MS_INHERITS(scope, lcname) (EXPECTED((scope)->ce == pt_ce_mutating_scope) || PT_TYPE_METHOD_INHERITED((scope), pt_ce_mutating_scope, PT_LC(lcname)))
+
 /* {{{ direct entries for native callers (ClassStatementsGatherer.cpp): the
  * native body while the scope's method is still the native handler (a
  * MutatingScope, or a subclass not overriding it such as NodeCallbackScope),
@@ -11438,7 +11438,7 @@ static bool msCallBool(zend_object *scope, const char *lcname, size_t len, uint3
 
 bool pt_mutating_scope_is_in_expression_assign(zend_object *scope, zend_object *expr, bool &out)
 {
-	if (EXPECTED(pt_type_method_is(scope, PT_LC("isinexpressionassign"), msIsInExpressionAssign))) return MutatingScope(scope).isInExpressionAssign(expr, out);
+	if (EXPECTED(scope->ce == pt_ce_mutating_scope || PT_TYPE_METHOD_IS(scope, PT_LC("isinexpressionassign"), msIsInExpressionAssign))) return MutatingScope(scope).isInExpressionAssign(expr, out);
 	zval exprZv;
 	ZVAL_OBJ(&exprZv, expr);
 	return msCallBool(scope, PT_LC("isinexpressionassign"), 1, &exprZv, out);
@@ -11446,13 +11446,13 @@ bool pt_mutating_scope_is_in_expression_assign(zend_object *scope, zend_object *
 
 bool pt_mutating_scope_is_in_trait(zend_object *scope, bool &out)
 {
-	if (EXPECTED(pt_type_method_is(scope, PT_LC("isintrait"), msIsInTrait))) return MutatingScope(scope).isInTrait(out);
+	if (EXPECTED(scope->ce == pt_ce_mutating_scope || PT_TYPE_METHOD_IS(scope, PT_LC("isintrait"), msIsInTrait))) return MutatingScope(scope).isInTrait(out);
 	return msCallBool(scope, PT_LC("isintrait"), 0, NULL, out);
 }
 
 bool pt_mutating_scope_is_in_anonymous_function(zend_object *scope, bool &out)
 {
-	if (EXPECTED(scope->ce == pt_ce_mutating_scope || pt_type_method_is(scope, PT_LC("isinanonymousfunction"), msIsInAnonymousFunction))) {
+	if (EXPECTED(scope->ce == pt_ce_mutating_scope || PT_TYPE_METHOD_IS(scope, PT_LC("isinanonymousfunction"), msIsInAnonymousFunction))) {
 		out = MutatingScope(scope).isInAnonymousFunction();
 		return true;
 	}
@@ -11461,7 +11461,7 @@ bool pt_mutating_scope_is_in_anonymous_function(zend_object *scope, bool &out)
 
 zv::Val pt_mutating_scope_get_function(zend_object *scope)
 {
-	if (EXPECTED(scope->ce == pt_ce_mutating_scope || pt_type_method_is(scope, PT_LC("getfunction"), msGetFunction))) return MutatingScope(scope).getFunction();
+	if (EXPECTED(scope->ce == pt_ce_mutating_scope || PT_TYPE_METHOD_IS(scope, PT_LC("getfunction"), msGetFunction))) return MutatingScope(scope).getFunction();
 	return pt_type_call(scope, PT_LC("getfunction"), 0, NULL);
 }
 
@@ -11469,13 +11469,13 @@ zv::Val pt_mutating_scope_get_function(zend_object *scope)
  * native body without a lookup, a subclass inheriting the method too */
 zv::Val pt_mutating_scope_do_not_treat_phpdoc_types_as_certain(zend_object *scope)
 {
-	if (EXPECTED(scope->ce == pt_ce_mutating_scope || pt_type_method_is(scope, PT_LC("donottreatphpdoctypesascertain"), msDoNotTreatPhpDocTypesAsCertain))) return MutatingScope(scope).doNotTreatPhpDocTypesAsCertain();
+	if (EXPECTED(scope->ce == pt_ce_mutating_scope || PT_TYPE_METHOD_IS(scope, PT_LC("donottreatphpdoctypesascertain"), msDoNotTreatPhpDocTypesAsCertain))) return MutatingScope(scope).doNotTreatPhpDocTypesAsCertain();
 	return pt_type_call(scope, PT_LC("donottreatphpdoctypesascertain"), 0, NULL);
 }
 
 zv::Val pt_mutating_scope_has_variable_type(zend_object *scope, zend_string *variableName)
 {
-	if (EXPECTED(scope->ce == pt_ce_mutating_scope || pt_type_method_is(scope, PT_LC("hasvariabletype"), msHasVariableType))) return MutatingScope(scope).hasVariableType(variableName);
+	if (EXPECTED(scope->ce == pt_ce_mutating_scope || PT_TYPE_METHOD_IS(scope, PT_LC("hasvariabletype"), msHasVariableType))) return MutatingScope(scope).hasVariableType(variableName);
 	zval nameZv;
 	ZVAL_STR(&nameZv, variableName);
 	return pt_type_call(scope, PT_LC("hasvariabletype"), 1, &nameZv);
@@ -11483,7 +11483,7 @@ zv::Val pt_mutating_scope_has_variable_type(zend_object *scope, zend_string *var
 
 zv::Val pt_mutating_scope_get_variable_type(zend_object *scope, zend_string *variableName)
 {
-	if (EXPECTED(scope->ce == pt_ce_mutating_scope || pt_type_method_is(scope, PT_LC("getvariabletype"), msGetVariableType))) return MutatingScope(scope).getVariableType(variableName);
+	if (EXPECTED(scope->ce == pt_ce_mutating_scope || PT_TYPE_METHOD_IS(scope, PT_LC("getvariabletype"), msGetVariableType))) return MutatingScope(scope).getVariableType(variableName);
 	zval nameZv;
 	ZVAL_STR(&nameZv, variableName);
 	return pt_type_call(scope, PT_LC("getvariabletype"), 1, &nameZv);
@@ -11491,7 +11491,7 @@ zv::Val pt_mutating_scope_get_variable_type(zend_object *scope, zend_string *var
 
 zv::Val pt_mutating_scope_apply_specified_types(zend_object *scope, zval *specifiedTypes)
 {
-	if (EXPECTED(scope->ce == pt_ce_mutating_scope || pt_type_method_is(scope, PT_LC("applyspecifiedtypes"), msApplySpecifiedTypes))) return MutatingScope(scope).applySpecifiedTypes(specifiedTypes);
+	if (EXPECTED(scope->ce == pt_ce_mutating_scope || PT_TYPE_METHOD_IS(scope, PT_LC("applyspecifiedtypes"), msApplySpecifiedTypes))) return MutatingScope(scope).applySpecifiedTypes(specifiedTypes);
 	return pt_type_call(scope, PT_LC("applyspecifiedtypes"), 1, specifiedTypes);
 }
 
@@ -11575,7 +11575,7 @@ zv::Val pt_mutating_scope_merge_with(zend_object *scope, zval *otherScope, bool 
 	if (otherScope != NULL && Z_TYPE_P(otherScope) == IS_NULL) {
 		otherScope = NULL;
 	}
-	if (EXPECTED(scope->ce == pt_ce_mutating_scope || pt_type_method_is(scope, PT_LC("mergewith"), msMergeWith))) {
+	if (EXPECTED(scope->ce == pt_ce_mutating_scope || PT_TYPE_METHOD_IS(scope, PT_LC("mergewith"), msMergeWith))) {
 		/* the handler's Z_PARAM_OBJECT_OF_CLASS_OR_NULL check */
 		if (EXPECTED(otherScope == NULL || instanceof_function(Z_OBJCE_P(otherScope), pt_ce_mutating_scope))) return MutatingScope(scope).mergeWith(otherScope, preserveVacuousConditionals);
 	}
@@ -11612,21 +11612,21 @@ static void ZEND_FASTCALL msSpecifyTypesOfNewWorldHandlerNode(INTERNAL_FUNCTION_
 	PT_RETURN_VAL(PT_THIS.specifyTypesOfNewWorldHandlerNode(Z_OBJ_P(node), context));
 }
 
-static zend_always_inline bool msNative(zend_object *scope, const char *lcname, size_t len, zif_handler handler)
-{
-	return EXPECTED(scope->ce == pt_ce_mutating_scope) || pt_type_method_is(scope, lcname, len, handler);
-}
+/* whether the scope's method is MutatingScope's own handler: exactly a
+ * MutatingScope, or a subclass inheriting it (NodeCallbackScope) — memoized
+ * per expansion (PT_TYPE_METHOD_IS) */
+#define PT_MS_NATIVE(scope, ...) (EXPECTED((scope)->ce == pt_ce_mutating_scope) || PT_TYPE_METHOD_IS((scope), __VA_ARGS__))
 
 zv::Val pt_mutating_scope_filter_type_with_method(zend_object *scope, zval *typeWithMethod, zend_string *methodName)
 {
-	if (EXPECTED(Z_TYPE_P(typeWithMethod) == IS_OBJECT) && msNative(scope, PT_LC("filtertypewithmethod"), msFilterTypeWithMethod)) return MutatingScope(scope).filterTypeWithMethod(typeWithMethod, methodName);
+	if (EXPECTED(Z_TYPE_P(typeWithMethod) == IS_OBJECT) && PT_MS_NATIVE(scope, PT_LC("filtertypewithmethod"), msFilterTypeWithMethod)) return MutatingScope(scope).filterTypeWithMethod(typeWithMethod, methodName);
 	zv::Args args{typeWithMethod, methodName};
 	return pt_type_call(scope, PT_LC("filtertypewithmethod"), 2, args);
 }
 
 zv::Val pt_mutating_scope_get_method_reflection(zend_object *scope, zval *typeWithMethod, zend_string *methodName)
 {
-	if (EXPECTED(Z_TYPE_P(typeWithMethod) == IS_OBJECT) && msNative(scope, PT_LC("getmethodreflection"), &reg::detail::Bound<&MutatingScope::getMethodReflection, zp::Obj, zp::Str>::handle)) return MutatingScope(scope).getMethodReflection(typeWithMethod, methodName);
+	if (EXPECTED(Z_TYPE_P(typeWithMethod) == IS_OBJECT) && PT_MS_NATIVE(scope, PT_LC("getmethodreflection"), &reg::detail::Bound<&MutatingScope::getMethodReflection, zp::Obj, zp::Str>::handle)) return MutatingScope(scope).getMethodReflection(typeWithMethod, methodName);
 	zv::Args args{typeWithMethod, methodName};
 	return pt_type_call(scope, PT_LC("getmethodreflection"), 2, args);
 }
@@ -11635,7 +11635,7 @@ zv::Val pt_mutating_scope_get_state_type(zend_object *scope, zend_object *expr)
 {
 	zend_class_entry *exprCe = pt_class(PT_CLASS_EXPR);
 	if (UNEXPECTED(exprCe == NULL)) return zv::Val();
-	if (EXPECTED(instanceof_function(expr->ce, exprCe)) && msNative(scope, PT_LC("getstatetype"), msGetStateType)) return MutatingScope(scope).getStateType(expr);
+	if (EXPECTED(instanceof_function(expr->ce, exprCe)) && PT_MS_NATIVE(scope, PT_LC("getstatetype"), msGetStateType)) return MutatingScope(scope).getStateType(expr);
 	zval exprZv;
 	ZVAL_OBJ(&exprZv, expr);
 	return pt_type_call(scope, PT_LC("getstatetype"), 1, &exprZv);
@@ -11643,13 +11643,13 @@ zv::Val pt_mutating_scope_get_state_type(zend_object *scope, zend_object *expr)
 
 zv::Val pt_mutating_scope_get_conditional_expressions(zend_object *scope)
 {
-	if (EXPECTED(msNative(scope, PT_LC("getconditionalexpressions"), &reg::detail::Bound<&MutatingScope::getConditionalExpressions>::handle))) return MutatingScope(scope).getConditionalExpressions();
+	if (EXPECTED(PT_MS_NATIVE(scope, PT_LC("getconditionalexpressions"), &reg::detail::Bound<&MutatingScope::getConditionalExpressions>::handle))) return MutatingScope(scope).getConditionalExpressions();
 	return pt_type_call(scope, PT_LC("getconditionalexpressions"), 0, NULL);
 }
 
 zv::Val pt_mutating_scope_get_current_expression_result_storage(zend_object *scope)
 {
-	if (EXPECTED(msNative(scope, PT_LC("getcurrentexpressionresultstorage"), &reg::detail::Bound<&MutatingScope::getCurrentExpressionResultStorage>::handle))) return MutatingScope(scope).getCurrentExpressionResultStorage();
+	if (EXPECTED(PT_MS_NATIVE(scope, PT_LC("getcurrentexpressionresultstorage"), &reg::detail::Bound<&MutatingScope::getCurrentExpressionResultStorage>::handle))) return MutatingScope(scope).getCurrentExpressionResultStorage();
 	return pt_type_call(scope, PT_LC("getcurrentexpressionresultstorage"), 0, NULL);
 }
 
@@ -11657,7 +11657,7 @@ zv::Val pt_mutating_scope_resolve_type_by_name(zend_object *scope, zend_object *
 {
 	zend_class_entry *nameCe = pt_class(PT_CLASS_NAME);
 	if (UNEXPECTED(nameCe == NULL)) return zv::Val();
-	if (EXPECTED(instanceof_function(name->ce, nameCe)) && msNative(scope, PT_LC("resolvetypebyname"), msResolveTypeByName)) return MutatingScope(scope).resolveTypeByName(name);
+	if (EXPECTED(instanceof_function(name->ce, nameCe)) && PT_MS_NATIVE(scope, PT_LC("resolvetypebyname"), msResolveTypeByName)) return MutatingScope(scope).resolveTypeByName(name);
 	zval nameZv;
 	ZVAL_OBJ(&nameZv, name);
 	return pt_type_call(scope, PT_LC("resolvetypebyname"), 1, &nameZv);
@@ -11667,7 +11667,7 @@ zv::Val pt_mutating_scope_specify_types_of_new_world_handler_node(zend_object *s
 {
 	zend_class_entry *exprCe = pt_class(PT_CLASS_EXPR);
 	if (UNEXPECTED(exprCe == NULL)) return zv::Val();
-	if (EXPECTED(instanceof_function(node->ce, exprCe) && Z_TYPE_P(context) == IS_OBJECT) && msNative(scope, PT_LC("specifytypesofnewworldhandlernode"), msSpecifyTypesOfNewWorldHandlerNode)) return MutatingScope(scope).specifyTypesOfNewWorldHandlerNode(node, context);
+	if (EXPECTED(instanceof_function(node->ce, exprCe) && Z_TYPE_P(context) == IS_OBJECT) && PT_MS_NATIVE(scope, PT_LC("specifytypesofnewworldhandlernode"), msSpecifyTypesOfNewWorldHandlerNode)) return MutatingScope(scope).specifyTypesOfNewWorldHandlerNode(node, context);
 	zv::Args args{node, context};
 	return pt_type_call(scope, PT_LC("specifytypesofnewworldhandlernode"), 2, args);
 }
@@ -11675,7 +11675,7 @@ zv::Val pt_mutating_scope_specify_types_of_new_world_handler_node(zend_object *s
 /* the statement handlers' reads (ExpressionHandler.cpp, ...) */
 zv::Val pt_mutating_scope_get_anonymous_function_reflection(zend_object *scope)
 {
-	if (EXPECTED(msNative(scope, PT_LC("getanonymousfunctionreflection"), &reg::detail::Bound<&MutatingScope::getAnonymousFunctionReflection>::handle))) return MutatingScope(scope).getAnonymousFunctionReflection();
+	if (EXPECTED(PT_MS_NATIVE(scope, PT_LC("getanonymousfunctionreflection"), &reg::detail::Bound<&MutatingScope::getAnonymousFunctionReflection>::handle))) return MutatingScope(scope).getAnonymousFunctionReflection();
 	return pt_type_call(scope, PT_LC("getanonymousfunctionreflection"), 0, NULL);
 }
 
@@ -11729,7 +11729,7 @@ zv::Val pt_mutating_scope_enter_class(zend_object *scope, zval *classReflection)
 
 zv::Val pt_mutating_scope_remember_constructor_scope(zend_object *scope)
 {
-	if (EXPECTED(msNative(scope, PT_LC("rememberconstructorscope"), &reg::detail::Bound<&MutatingScope::rememberConstructorScope>::handle))) return MutatingScope(scope).rememberConstructorScope();
+	if (EXPECTED(PT_MS_NATIVE(scope, PT_LC("rememberconstructorscope"), &reg::detail::Bound<&MutatingScope::rememberConstructorScope>::handle))) return MutatingScope(scope).rememberConstructorScope();
 	return pt_type_call(scope, PT_LC("rememberconstructorscope"), 0, NULL);
 }
 
@@ -11742,7 +11742,7 @@ zv::Val pt_mutating_scope_invalidate_existence_check_expressions(zend_object *sc
 
 zv::Val pt_mutating_scope_get_namespace(zend_object *scope)
 {
-	if (EXPECTED(msNative(scope, PT_LC("getnamespace"), msGetNamespace))) return MutatingScope(scope).getNamespace();
+	if (EXPECTED(PT_MS_NATIVE(scope, PT_LC("getnamespace"), msGetNamespace))) return MutatingScope(scope).getNamespace();
 	return pt_type_call(scope, PT_LC("getnamespace"), 0, NULL);
 }
 
@@ -11752,14 +11752,14 @@ zv::Val pt_mutating_scope_get_namespace(zend_object *scope)
 
 zv::Val pt_mutating_scope_push_in_function_call(zend_object *scope, zval *reflection, zval *parameter, bool rememberTypes)
 {
-	if (EXPECTED(msNative(scope, PT_LC("pushinfunctioncall"), msPushInFunctionCall))) return MutatingScope(scope).pushInFunctionCall(reflection, parameter, rememberTypes);
+	if (EXPECTED(PT_MS_NATIVE(scope, PT_LC("pushinfunctioncall"), msPushInFunctionCall))) return MutatingScope(scope).pushInFunctionCall(reflection, parameter, rememberTypes);
 	zv::Args args{reflection, parameter, rememberTypes};
 	return pt_type_call(scope, PT_LC("pushinfunctioncall"), 3, args);
 }
 
 zv::Val pt_mutating_scope_pop_in_function_call(zend_object *scope)
 {
-	if (EXPECTED(msNative(scope, PT_LC("popinfunctioncall"), msPopInFunctionCall))) return MutatingScope(scope).popInFunctionCall();
+	if (EXPECTED(PT_MS_NATIVE(scope, PT_LC("popinfunctioncall"), msPopInFunctionCall))) return MutatingScope(scope).popInFunctionCall();
 	return pt_type_call(scope, PT_LC("popinfunctioncall"), 0, NULL);
 }
 
@@ -11789,8 +11789,9 @@ zv::Val pt_mutating_scope_get_iterable_key_type(zend_object *scope, zval *type)
 /* }}} */
 
 /* {{{ direct entries for the NodeScopeResolver / StatementsHandler /
- * NonNullabilityHelper ports: exactly a MutatingScope takes the native body,
- * anything else (NodeCallbackScope, a third-party subclass) the method
+ * NonNullabilityHelper ports: a MutatingScope, or a subclass inheriting the
+ * method (PT_MS_INHERITS), takes the native body, anything else
+ * (NodeCallbackScope's overrides, a third-party subclass's) the method
  * through its class entry */
 
 namespace {
@@ -11812,128 +11813,128 @@ inline bool msExact(zend_object *scope)
 
 zv::Val pt_mutating_scope_to_node_callback_scope(zend_object *scope)
 {
-	if (msExact(scope)) return MutatingScope(scope).toNodeCallbackScope();
+	if (PT_MS_INHERITS(scope, "tonodecallbackscope")) return MutatingScope(scope).toNodeCallbackScope();
 	return pt_type_call(scope, PT_LC("tonodecallbackscope"), 0, NULL);
 }
 
 bool pt_mutating_scope_push_expression_result_storage(zend_object *scope, zval *storage)
 {
-	if (msExact(scope)) return MutatingScope(scope).pushExpressionResultStorage(storage);
+	if (PT_MS_INHERITS(scope, "pushexpressionresultstorage")) return MutatingScope(scope).pushExpressionResultStorage(storage);
 	return !pt_type_call(scope, PT_LC("pushexpressionresultstorage"), 1, storage).isUndef();
 }
 
 bool pt_mutating_scope_pop_expression_result_storage(zend_object *scope)
 {
-	if (msExact(scope)) return MutatingScope(scope).popExpressionResultStorage();
+	if (PT_MS_INHERITS(scope, "popexpressionresultstorage")) return MutatingScope(scope).popExpressionResultStorage();
 	return !pt_type_call(scope, PT_LC("popexpressionresultstorage"), 0, NULL).isUndef();
 }
 
 zv::Val pt_mutating_scope_exit_first_level_statements(zend_object *scope)
 {
-	if (msExact(scope)) return MutatingScope(scope).exitFirstLevelStatements();
+	if (PT_MS_INHERITS(scope, "exitfirstlevelstatements")) return MutatingScope(scope).exitFirstLevelStatements();
 	return pt_type_call(scope, PT_LC("exitfirstlevelstatements"), 0, NULL);
 }
 
 zv::Val pt_mutating_scope_with_template_argument_frame(zend_object *scope, zval *frame)
 {
-	if (msExact(scope)) return MutatingScope(scope).withTemplateArgumentFrame(frame);
+	if (PT_MS_INHERITS(scope, "withtemplateargumentframe")) return MutatingScope(scope).withTemplateArgumentFrame(frame);
 	return pt_type_call(scope, PT_LC("withtemplateargumentframe"), 1, frame);
 }
 
 zv::Val pt_mutating_scope_with_template_argument_constraints(zend_object *scope, zval *constraints)
 {
-	if (msExact(scope)) return MutatingScope(scope).withTemplateArgumentConstraints(constraints);
+	if (PT_MS_INHERITS(scope, "withtemplateargumentconstraints")) return MutatingScope(scope).withTemplateArgumentConstraints(constraints);
 	return pt_type_call(scope, PT_LC("withtemplateargumentconstraints"), 1, constraints);
 }
 
 zv::Val pt_mutating_scope_get_tracked_expression_type(zend_object *scope, zend_object *expr)
 {
-	if (msExact(scope)) return MutatingScope(scope).getTrackedExpressionType(expr);
+	if (PT_MS_INHERITS(scope, "gettrackedexpressiontype")) return MutatingScope(scope).getTrackedExpressionType(expr);
 	zv::Args argv{expr};
 	return pt_type_call(scope, PT_LC("gettrackedexpressiontype"), 1, argv);
 }
 
 bool pt_mutating_scope_equals(zend_object *scope, zend_object *otherScope, bool &out)
 {
-	if (msExact(scope)) return MutatingScope(scope).equals(otherScope, out);
+	if (PT_MS_INHERITS(scope, "equals")) return MutatingScope(scope).equals(otherScope, out);
 	zv::Args argv{otherScope};
 	return msCallBoolResult(scope, PT_LC("equals"), 1, argv, out);
 }
 
 zv::Val pt_mutating_scope_generalize_with(zend_object *scope, zend_object *otherScope)
 {
-	if (msExact(scope)) return MutatingScope(scope).generalizeWith(otherScope, NULL);
+	if (PT_MS_INHERITS(scope, "generalizewith")) return MutatingScope(scope).generalizeWith(otherScope, NULL);
 	zv::Args argv{otherScope};
 	return pt_type_call(scope, PT_LC("generalizewith"), 1, argv);
 }
 
 zv::Val pt_mutating_scope_get_differing_variable_roots(zend_object *scope, zend_object *other)
 {
-	if (msExact(scope)) return MutatingScope(scope).getDifferingVariableRoots(other);
+	if (PT_MS_INHERITS(scope, "getdifferingvariableroots")) return MutatingScope(scope).getDifferingVariableRoots(other);
 	zv::Args argv{other};
 	return pt_type_call(scope, PT_LC("getdifferingvariableroots"), 1, argv);
 }
 
 zv::Val pt_mutating_scope_with_recorded_statement_delta(zend_object *scope, zend_object *recordedEntry, zend_object *recordedExit)
 {
-	if (msExact(scope)) return MutatingScope(scope).withRecordedStatementDelta(recordedEntry, recordedExit);
+	if (PT_MS_INHERITS(scope, "withrecordedstatementdelta")) return MutatingScope(scope).withRecordedStatementDelta(recordedEntry, recordedExit);
 	zv::Args argv{recordedEntry, recordedExit};
 	return pt_type_call(scope, PT_LC("withrecordedstatementdelta"), 2, argv);
 }
 
 zv::Val pt_mutating_scope_set_allowed_undefined_expression(zend_object *scope, zend_object *expr)
 {
-	if (msExact(scope)) return MutatingScope(scope).setAllowedUndefinedExpression(expr);
+	if (PT_MS_INHERITS(scope, "setallowedundefinedexpression")) return MutatingScope(scope).setAllowedUndefinedExpression(expr);
 	zv::Args argv{expr};
 	return pt_type_call(scope, PT_LC("setallowedundefinedexpression"), 1, argv);
 }
 
 zv::Val pt_mutating_scope_unset_allowed_undefined_expression(zend_object *scope, zend_object *expr)
 {
-	if (msExact(scope)) return MutatingScope(scope).unsetAllowedUndefinedExpression(expr);
+	if (PT_MS_INHERITS(scope, "unsetallowedundefinedexpression")) return MutatingScope(scope).unsetAllowedUndefinedExpression(expr);
 	zv::Args argv{expr};
 	return pt_type_call(scope, PT_LC("unsetallowedundefinedexpression"), 1, argv);
 }
 
 zv::Val pt_mutating_scope_get_anonymous_function_return_type(zend_object *scope)
 {
-	if (msExact(scope)) return MutatingScope(scope).getAnonymousFunctionReturnType();
+	if (PT_MS_INHERITS(scope, "getanonymousfunctionreturntype")) return MutatingScope(scope).getAnonymousFunctionReturnType();
 	return pt_type_call(scope, PT_LC("getanonymousfunctionreturntype"), 0, NULL);
 }
 
 bool pt_mutating_scope_is_in_class(zend_object *scope, bool &out)
 {
-	if (msExact(scope)) return MutatingScope(scope).isInClass(out);
+	if (PT_MS_INHERITS(scope, "isinclass")) return MutatingScope(scope).isInClass(out);
 	return msCallBoolResult(scope, PT_LC("isinclass"), 0, NULL, out);
 }
 
 zv::Val pt_mutating_scope_get_class_reflection(zend_object *scope)
 {
-	if (msExact(scope)) return MutatingScope(scope).getClassReflection();
+	if (PT_MS_INHERITS(scope, "getclassreflection")) return MutatingScope(scope).getClassReflection();
 	return pt_type_call(scope, PT_LC("getclassreflection"), 0, NULL);
 }
 
 zv::Val pt_mutating_scope_get_trait_reflection(zend_object *scope)
 {
-	if (msExact(scope)) return MutatingScope(scope).getTraitReflection();
+	if (PT_MS_INHERITS(scope, "gettraitreflection")) return MutatingScope(scope).getTraitReflection();
 	return pt_type_call(scope, PT_LC("gettraitreflection"), 0, NULL);
 }
 
 zv::Val pt_mutating_scope_get_file(zend_object *scope)
 {
-	if (msExact(scope)) return MutatingScope(scope).getFile();
+	if (PT_MS_INHERITS(scope, "getfile")) return MutatingScope(scope).getFile();
 	return pt_type_call(scope, PT_LC("getfile"), 0, NULL);
 }
 
 bool pt_mutating_scope_can_any_variable_exist(zend_object *scope, bool &out)
 {
-	if (msExact(scope)) return MutatingScope(scope).canAnyVariableExist(out);
+	if (PT_MS_INHERITS(scope, "cananyvariableexist")) return MutatingScope(scope).canAnyVariableExist(out);
 	return msCallBoolResult(scope, PT_LC("cananyvariableexist"), 0, NULL, out);
 }
 
 zv::Val pt_mutating_scope_assign_variable(zend_object *scope, zend_string *variableName, zval *type, zval *nativeType, zval *certainty)
 {
-	if (msExact(scope)) {
+	if (PT_MS_INHERITS(scope, "assignvariable")) {
 		zval intertwinedPropagatedFrom;
 		ZVAL_EMPTY_ARRAY(&intertwinedPropagatedFrom);
 		return MutatingScope(scope).assignVariable(variableName, type, nativeType, certainty, &intertwinedPropagatedFrom);
@@ -11944,14 +11945,14 @@ zv::Val pt_mutating_scope_assign_variable(zend_object *scope, zend_string *varia
 
 zv::Val pt_mutating_scope_assign_expression(zend_object *scope, zend_object *expr, zval *type, zval *nativeType)
 {
-	if (msExact(scope)) return MutatingScope(scope).assignExpression(expr, type, nativeType);
+	if (PT_MS_INHERITS(scope, "assignexpression")) return MutatingScope(scope).assignExpression(expr, type, nativeType);
 	zv::Args argv{expr, type, nativeType};
 	return pt_type_call(scope, PT_LC("assignexpression"), 3, argv);
 }
 
 zv::Val pt_mutating_scope_specify_expression_type(zend_object *scope, zend_object *expr, zval *type, zval *nativeType, zval *certainty)
 {
-	if (msExact(scope)) return MutatingScope(scope).specifyExpressionType(expr, type, nativeType, certainty);
+	if (PT_MS_INHERITS(scope, "specifyexpressiontype")) return MutatingScope(scope).specifyExpressionType(expr, type, nativeType, certainty);
 	zv::Args argv{expr, type, nativeType, certainty};
 	return pt_type_call(scope, PT_LC("specifyexpressiontype"), 4, argv);
 }
@@ -11959,7 +11960,7 @@ zv::Val pt_mutating_scope_specify_expression_type(zend_object *scope, zend_objec
 zv::Val pt_mutating_scope_invalidate_expression(zend_object *scope, zval *expressionToInvalidate, bool requireMoreCharacters, zval *invalidatingClass, bool keepPropertyFetches)
 {
 	if (invalidatingClass != NULL && Z_TYPE_P(invalidatingClass) == IS_NULL) invalidatingClass = NULL;
-	if (msExact(scope)) return MutatingScope(scope).invalidateExpression(expressionToInvalidate, requireMoreCharacters, invalidatingClass, keepPropertyFetches);
+	if (PT_MS_INHERITS(scope, "invalidateexpression")) return MutatingScope(scope).invalidateExpression(expressionToInvalidate, requireMoreCharacters, invalidatingClass, keepPropertyFetches);
 	if (!requireMoreCharacters && invalidatingClass == NULL && !keepPropertyFetches) return pt_type_call(scope, PT_LC("invalidateexpression"), 1, expressionToInvalidate);
 	zval argv[4];
 	ZVAL_COPY_VALUE(&argv[0], expressionToInvalidate);
@@ -11976,20 +11977,20 @@ zv::Val pt_mutating_scope_invalidate_expression(zend_object *scope, zval *expres
 /* the method call handler's (MethodCallHandler.cpp) */
 zv::Val pt_mutating_scope_get_naked_method(zend_object *scope, zval *typeWithMethod, zend_string *methodName)
 {
-	if (msExact(scope)) return MutatingScope(scope).getNakedMethod(typeWithMethod, methodName);
+	if (PT_MS_INHERITS(scope, "getnakedmethod")) return MutatingScope(scope).getNakedMethod(typeWithMethod, methodName);
 	zv::Args argv{typeWithMethod, methodName};
 	return pt_type_call(scope, PT_LC("getnakedmethod"), 2, argv);
 }
 
 zv::Val pt_mutating_scope_invalidate_volatile_expressions(zend_object *scope)
 {
-	if (msExact(scope)) return MutatingScope(scope).invalidateVolatileExpressions();
+	if (PT_MS_INHERITS(scope, "invalidatevolatileexpressions")) return MutatingScope(scope).invalidateVolatileExpressions();
 	return pt_type_call(scope, PT_LC("invalidatevolatileexpressions"), 0, NULL);
 }
 
 zv::Val pt_mutating_scope_enter_closure_call(zend_object *scope, zval *thisType, zval *nativeThisType)
 {
-	if (msExact(scope)) return MutatingScope(scope).enterClosureCall(thisType, nativeThisType);
+	if (PT_MS_INHERITS(scope, "enterclosurecall")) return MutatingScope(scope).enterClosureCall(thisType, nativeThisType);
 	zv::Args argv{thisType, nativeThisType};
 	return pt_type_call(scope, PT_LC("enterclosurecall"), 2, argv);
 }
@@ -11997,74 +11998,74 @@ zv::Val pt_mutating_scope_enter_closure_call(zend_object *scope, zval *thisType,
 zv::Val pt_mutating_scope_restore_original_scope_after_closure_bind(zend_object *scope, zval *originalScope)
 {
 	/* the handler's Z_PARAM_OBJECT_OF_CLASS check */
-	if (msExact(scope) && EXPECTED(instanceof_function(Z_OBJCE_P(originalScope), pt_ce_mutating_scope))) return MutatingScope(scope).restoreOriginalScopeAfterClosureBind(Z_OBJ_P(originalScope));
+	if (PT_MS_INHERITS(scope, "restoreoriginalscopeafterclosurebind") && EXPECTED(instanceof_function(Z_OBJCE_P(originalScope), pt_ce_mutating_scope))) return MutatingScope(scope).restoreOriginalScopeAfterClosureBind(Z_OBJ_P(originalScope));
 	return pt_type_call(scope, PT_LC("restoreoriginalscopeafterclosurebind"), 1, originalScope);
 }
 
 zv::Val pt_mutating_scope_merge_initialized_properties(zend_object *scope, zval *calledMethodScope)
 {
 	/* the handler's Z_PARAM_OBJECT_OF_CLASS check */
-	if (msExact(scope) && EXPECTED(instanceof_function(Z_OBJCE_P(calledMethodScope), pt_ce_mutating_scope))) return MutatingScope(scope).mergeInitializedProperties(Z_OBJ_P(calledMethodScope));
+	if (PT_MS_INHERITS(scope, "mergeinitializedproperties") && EXPECTED(instanceof_function(Z_OBJCE_P(calledMethodScope), pt_ce_mutating_scope))) return MutatingScope(scope).mergeInitializedProperties(Z_OBJ_P(calledMethodScope));
 	return pt_type_call(scope, PT_LC("mergeinitializedproperties"), 1, calledMethodScope);
 }
 
 zv::Val pt_mutating_scope_get_function_name(zend_object *scope)
 {
-	if (msExact(scope)) return MutatingScope(scope).getFunctionName();
+	if (PT_MS_INHERITS(scope, "getfunctionname")) return MutatingScope(scope).getFunctionName();
 	return pt_type_call(scope, PT_LC("getfunctionname"), 0, NULL);
 }
 
 /* the assignment handlers' (AssignHandler.cpp, AssignOpHandler.cpp) */
 zv::Val pt_mutating_scope_enter_expression_assign(zend_object *scope, zend_object *expr, bool isPlainWrite)
 {
-	if (msExact(scope)) return MutatingScope(scope).enterExpressionAssign(expr, isPlainWrite);
+	if (PT_MS_INHERITS(scope, "enterexpressionassign")) return MutatingScope(scope).enterExpressionAssign(expr, isPlainWrite);
 	zv::Args argv{expr, isPlainWrite};
 	return pt_type_call(scope, PT_LC("enterexpressionassign"), 2, argv);
 }
 
 zv::Val pt_mutating_scope_exit_expression_assign(zend_object *scope, zend_object *expr)
 {
-	if (msExact(scope)) return MutatingScope(scope).exitExpressionAssign(expr);
+	if (PT_MS_INHERITS(scope, "exitexpressionassign")) return MutatingScope(scope).exitExpressionAssign(expr);
 	zv::Args argv{expr};
 	return pt_type_call(scope, PT_LC("exitexpressionassign"), 1, argv);
 }
 
 zv::Val pt_mutating_scope_assign_initialized_property(zend_object *scope, zval *fetchedOnType, zend_string *propertyName)
 {
-	if (msExact(scope)) return MutatingScope(scope).assignInitializedProperty(fetchedOnType, propertyName);
+	if (PT_MS_INHERITS(scope, "assigninitializedproperty")) return MutatingScope(scope).assignInitializedProperty(fetchedOnType, propertyName);
 	zv::Args argv{fetchedOnType, propertyName};
 	return pt_type_call(scope, PT_LC("assigninitializedproperty"), 2, argv);
 }
 
 zv::Val pt_mutating_scope_add_conditional_expressions(zend_object *scope, zend_string *exprString, HashTable *conditionalExpressionHolders)
 {
-	if (msExact(scope)) return MutatingScope(scope).addConditionalExpressions(exprString, conditionalExpressionHolders);
+	if (PT_MS_INHERITS(scope, "addconditionalexpressions")) return MutatingScope(scope).addConditionalExpressions(exprString, conditionalExpressionHolders);
 	zv::Args argv{exprString, conditionalExpressionHolders};
 	return pt_type_call(scope, PT_LC("addconditionalexpressions"), 2, argv);
 }
 
 zv::Val pt_mutating_scope_get_static_property_reflection(zend_object *scope, zval *typeWithProperty, zend_string *propertyName)
 {
-	if (msExact(scope)) return MutatingScope(scope).getStaticPropertyReflection(typeWithProperty, propertyName);
+	if (PT_MS_INHERITS(scope, "getstaticpropertyreflection")) return MutatingScope(scope).getStaticPropertyReflection(typeWithProperty, propertyName);
 	zv::Args argv{typeWithProperty, propertyName};
 	return pt_type_call(scope, PT_LC("getstaticpropertyreflection"), 2, argv);
 }
 
 zv::Val pt_mutating_scope_get_defined_variables(zend_object *scope)
 {
-	if (msExact(scope)) return MutatingScope(scope).getDefinedVariables();
+	if (PT_MS_INHERITS(scope, "getdefinedvariables")) return MutatingScope(scope).getDefinedVariables();
 	return pt_type_call(scope, PT_LC("getdefinedvariables"), 0, NULL);
 }
 
 zv::Val pt_mutating_scope_get_maybe_defined_variables(zend_object *scope)
 {
-	if (msExact(scope)) return MutatingScope(scope).getMaybeDefinedVariables();
+	if (PT_MS_INHERITS(scope, "getmaybedefinedvariables")) return MutatingScope(scope).getMaybeDefinedVariables();
 	return pt_type_call(scope, PT_LC("getmaybedefinedvariables"), 0, NULL);
 }
 
 bool pt_mutating_scope_is_declare_strict_types(zend_object *scope, bool &out)
 {
-	if (EXPECTED(msExact(scope) || pt_type_method_is(scope, PT_LC("isdeclarestricttypes"), msIsDeclareStrictTypes))) {
+	if (EXPECTED(PT_MS_INHERITS(scope, "isdeclarestricttypes"))) {
 		out = MutatingScope(scope).isDeclareStrictTypes();
 		return true;
 	}
@@ -12076,7 +12077,7 @@ zv::Val pt_mutating_scope_resolve_name(zend_object *scope, zend_object *name)
 {
 	zend_class_entry *nameCe = pt_class(PT_CLASS_NAME);
 	if (UNEXPECTED(nameCe == NULL)) return zv::Val();
-	if (EXPECTED(instanceof_function(name->ce, nameCe)) && msNative(scope, PT_LC("resolvename"), msResolveName)) return MutatingScope(scope).resolveName(name);
+	if (EXPECTED(instanceof_function(name->ce, nameCe)) && PT_MS_NATIVE(scope, PT_LC("resolvename"), msResolveName)) return MutatingScope(scope).resolveName(name);
 	zval nameZv;
 	ZVAL_OBJ(&nameZv, name);
 	return pt_type_call(scope, PT_LC("resolvename"), 1, &nameZv);
@@ -12088,26 +12089,26 @@ zv::Val pt_mutating_scope_enter_closure_bind(zend_object *scope, zval *thisType,
 	ZVAL_NULL(&nullZv);
 	if (thisType == NULL) thisType = &nullZv;
 	if (nativeThisType == NULL) nativeThisType = &nullZv;
-	if (msExact(scope) && EXPECTED(Z_TYPE_P(scopeClasses) == IS_ARRAY)) return MutatingScope(scope).enterClosureBind(thisType, nativeThisType, scopeClasses);
+	if (PT_MS_INHERITS(scope, "enterclosurebind") && EXPECTED(Z_TYPE_P(scopeClasses) == IS_ARRAY)) return MutatingScope(scope).enterClosureBind(thisType, nativeThisType, scopeClasses);
 	zv::Args argv{thisType, nativeThisType, scopeClasses};
 	return pt_type_call(scope, PT_LC("enterclosurebind"), 3, argv);
 }
 
 zv::Val pt_mutating_scope_after_extract_call(zend_object *scope)
 {
-	if (msExact(scope)) return MutatingScope(scope).afterExtractCall();
+	if (PT_MS_INHERITS(scope, "afterextractcall")) return MutatingScope(scope).afterExtractCall();
 	return pt_type_call(scope, PT_LC("afterextractcall"), 0, NULL);
 }
 
 zv::Val pt_mutating_scope_after_clearstatcache_call(zend_object *scope)
 {
-	if (msExact(scope)) return MutatingScope(scope).afterClearstatcacheCall();
+	if (PT_MS_INHERITS(scope, "afterclearstatcachecall")) return MutatingScope(scope).afterClearstatcacheCall();
 	return pt_type_call(scope, PT_LC("afterclearstatcachecall"), 0, NULL);
 }
 
 zv::Val pt_mutating_scope_after_open_ssl_call(zend_object *scope, zend_string *openSslFunctionName)
 {
-	if (msExact(scope)) return MutatingScope(scope).afterOpenSslCall(openSslFunctionName);
+	if (PT_MS_INHERITS(scope, "afteropensslcall")) return MutatingScope(scope).afterOpenSslCall(openSslFunctionName);
 	zv::Args argv{openSslFunctionName};
 	return pt_type_call(scope, PT_LC("afteropensslcall"), 1, argv);
 }
@@ -13130,7 +13131,7 @@ void pt_register_mutating_scope()
 
 zv::Val pt_mutating_scope_to_walk_scope(zend_object *scope)
 {
-	if (EXPECTED(scope->ce == pt_ce_mutating_scope || pt_type_method_is(scope, PT_LC("towalkscope"), msToWalkScope))) return MutatingScope(scope).toWalkScope();
+	if (EXPECTED(scope->ce == pt_ce_mutating_scope || PT_TYPE_METHOD_IS(scope, PT_LC("towalkscope"), msToWalkScope))) return MutatingScope(scope).toWalkScope();
 	return pt_type_call(scope, PT_LC("towalkscope"), 0, NULL);
 }
 
@@ -13144,14 +13145,14 @@ zv::Val pt_mutating_scope_to_walk_scope(zend_object *scope)
 
 zv::Val pt_mutating_scope_get_instance_property_reflection(zend_object *scope, zval *typeWithProperty, zend_string *propertyName)
 {
-	if (msExact(scope)) return MutatingScope(scope).getInstancePropertyReflection(typeWithProperty, propertyName);
+	if (PT_MS_INHERITS(scope, "getinstancepropertyreflection")) return MutatingScope(scope).getInstancePropertyReflection(typeWithProperty, propertyName);
 	zv::Args argv{typeWithProperty, propertyName};
 	return pt_type_call(scope, PT_LC("getinstancepropertyreflection"), 2, argv);
 }
 
 bool pt_mutating_scope_is_in_write_expression_assign(zend_object *scope, zend_object *expr, bool &out)
 {
-	if (msExact(scope)) return MutatingScope(scope).isInWriteExpressionAssign(expr, out);
+	if (PT_MS_INHERITS(scope, "isinwriteexpressionassign")) return MutatingScope(scope).isInWriteExpressionAssign(expr, out);
 	zval exprZv;
 	ZVAL_OBJ(&exprZv, expr);
 	return msCallBool(scope, PT_LC("isinwriteexpressionassign"), 1, &exprZv, out);
@@ -13180,21 +13181,21 @@ inline zval *msNullOr(zval *value, zval *null)
 
 zv::Val pt_mutating_scope_get_function_type(zend_object *scope, zval *type, bool isNullable, bool isVariadic)
 {
-	if (msExact(scope)) return MutatingScope(scope).getFunctionType(type, isNullable, isVariadic);
+	if (PT_MS_INHERITS(scope, "getfunctiontype")) return MutatingScope(scope).getFunctionType(type, isNullable, isVariadic);
 	zv::Args argv{type, isNullable, isVariadic};
 	return pt_type_call(scope, PT_LC("getfunctiontype"), 3, argv);
 }
 
 bool pt_mutating_scope_is_parameter_value_nullable(zend_object *scope, zval *parameter, bool &out)
 {
-	if (msExact(scope) && EXPECTED(Z_TYPE_P(parameter) == IS_OBJECT)) return MutatingScope(scope).isParameterValueNullable(Z_OBJ_P(parameter), out);
+	if (PT_MS_INHERITS(scope, "isparametervaluenullable") && EXPECTED(Z_TYPE_P(parameter) == IS_OBJECT)) return MutatingScope(scope).isParameterValueNullable(Z_OBJ_P(parameter), out);
 	return msCallBoolResult(scope, PT_LC("isparametervaluenullable"), 1, parameter, out);
 }
 
 zv::Val pt_mutating_scope_get_closure_scope_cache_key(zend_object *scope, zval *relevantRoots)
 {
 	relevantRoots = msNullableArray(relevantRoots);
-	if (msExact(scope) && EXPECTED(relevantRoots == NULL || Z_TYPE_P(relevantRoots) == IS_ARRAY)) return MutatingScope(scope).getClosureScopeCacheKey(relevantRoots);
+	if (PT_MS_INHERITS(scope, "getclosurescopecachekey") && EXPECTED(relevantRoots == NULL || Z_TYPE_P(relevantRoots) == IS_ARRAY)) return MutatingScope(scope).getClosureScopeCacheKey(relevantRoots);
 	zval null = {};
 	ZVAL_NULL(&null);
 	return pt_type_call(scope, PT_LC("getclosurescopecachekey"), 1, msNullOr(relevantRoots, &null));
@@ -13204,7 +13205,7 @@ zv::Val pt_mutating_scope_enter_anonymous_function_without_reflection(zend_objec
 {
 	callableParameters = msNullableArray(callableParameters);
 	nativeCallableParameters = msNullableArray(nativeCallableParameters);
-	if (msExact(scope) && EXPECTED(Z_TYPE_P(closure) == IS_OBJECT && (callableParameters == NULL || Z_TYPE_P(callableParameters) == IS_ARRAY) && (nativeCallableParameters == NULL || Z_TYPE_P(nativeCallableParameters) == IS_ARRAY))) {
+	if (PT_MS_INHERITS(scope, "enteranonymousfunctionwithoutreflection") && EXPECTED(Z_TYPE_P(closure) == IS_OBJECT && (callableParameters == NULL || Z_TYPE_P(callableParameters) == IS_ARRAY) && (nativeCallableParameters == NULL || Z_TYPE_P(nativeCallableParameters) == IS_ARRAY))) {
 		return MutatingScope(scope).enterAnonymousFunctionWithoutReflection(Z_OBJ_P(closure), callableParameters, nativeCallableParameters);
 	}
 	zval null = {};
@@ -13217,7 +13218,7 @@ zv::Val pt_mutating_scope_enter_arrow_function_without_reflection(zend_object *s
 {
 	callableParameters = msNullableArray(callableParameters);
 	nativeCallableParameters = msNullableArray(nativeCallableParameters);
-	if (msExact(scope) && EXPECTED(Z_TYPE_P(arrowFunction) == IS_OBJECT && (callableParameters == NULL || Z_TYPE_P(callableParameters) == IS_ARRAY) && (nativeCallableParameters == NULL || Z_TYPE_P(nativeCallableParameters) == IS_ARRAY))) {
+	if (PT_MS_INHERITS(scope, "enterarrowfunctionwithoutreflection") && EXPECTED(Z_TYPE_P(arrowFunction) == IS_OBJECT && (callableParameters == NULL || Z_TYPE_P(callableParameters) == IS_ARRAY) && (nativeCallableParameters == NULL || Z_TYPE_P(nativeCallableParameters) == IS_ARRAY))) {
 		return MutatingScope(scope).enterArrowFunctionWithoutReflection(Z_OBJ_P(arrowFunction), callableParameters, nativeCallableParameters);
 	}
 	zval null = {};
@@ -13230,7 +13231,7 @@ zv::Val pt_mutating_scope_get_keep_void_type(zend_object *scope, zval *node)
 {
 	zend_class_entry *exprCe = pt_class(PT_CLASS_EXPR);
 	if (UNEXPECTED(exprCe == NULL)) return zv::Val();
-	if (msExact(scope) && EXPECTED(Z_TYPE_P(node) == IS_OBJECT && instanceof_function(Z_OBJCE_P(node), exprCe))) return MutatingScope(scope).getKeepVoidType(Z_OBJ_P(node));
+	if (PT_MS_INHERITS(scope, "getkeepvoidtype") && EXPECTED(Z_TYPE_P(node) == IS_OBJECT && instanceof_function(Z_OBJCE_P(node), exprCe))) return MutatingScope(scope).getKeepVoidType(Z_OBJ_P(node));
 	return pt_type_call(scope, PT_LC("getkeepvoidtype"), 1, node);
 }
 
@@ -13258,7 +13259,7 @@ zv::Val pt_mutating_scope_enter_anonymous_function(zend_object *scope, zval *clo
 {
 	callableParameters = msNullableArray(callableParameters);
 	nativeCallableParameters = msNullableArray(nativeCallableParameters);
-	if (msExact(scope) && EXPECTED(Z_TYPE_P(closure) == IS_OBJECT && (callableParameters == NULL || Z_TYPE_P(callableParameters) == IS_ARRAY) && (nativeCallableParameters == NULL || Z_TYPE_P(nativeCallableParameters) == IS_ARRAY))) {
+	if (PT_MS_INHERITS(scope, "enteranonymousfunction") && EXPECTED(Z_TYPE_P(closure) == IS_OBJECT && (callableParameters == NULL || Z_TYPE_P(callableParameters) == IS_ARRAY) && (nativeCallableParameters == NULL || Z_TYPE_P(nativeCallableParameters) == IS_ARRAY))) {
 		return MutatingScope(scope).enterAnonymousFunction(Z_OBJ_P(closure), callableParameters, nativeCallableParameters);
 	}
 	zval null = {};
@@ -13271,7 +13272,7 @@ zv::Val pt_mutating_scope_enter_arrow_function(zend_object *scope, zval *arrowFu
 {
 	callableParameters = msNullableArray(callableParameters);
 	nativeCallableParameters = msNullableArray(nativeCallableParameters);
-	if (msExact(scope) && EXPECTED(Z_TYPE_P(arrowFunction) == IS_OBJECT && (callableParameters == NULL || Z_TYPE_P(callableParameters) == IS_ARRAY) && (nativeCallableParameters == NULL || Z_TYPE_P(nativeCallableParameters) == IS_ARRAY))) {
+	if (PT_MS_INHERITS(scope, "enterarrowfunction") && EXPECTED(Z_TYPE_P(arrowFunction) == IS_OBJECT && (callableParameters == NULL || Z_TYPE_P(callableParameters) == IS_ARRAY) && (nativeCallableParameters == NULL || Z_TYPE_P(nativeCallableParameters) == IS_ARRAY))) {
 		return MutatingScope(scope).enterArrowFunction(Z_OBJ_P(arrowFunction), callableParameters, nativeCallableParameters);
 	}
 	zval null = {};
@@ -13283,7 +13284,7 @@ zv::Val pt_mutating_scope_enter_arrow_function(zend_object *scope, zval *arrowFu
 zv::Val pt_mutating_scope_process_closure_scope(zend_object *scope, zval *closureScope, zval *prevScope, zval *byRefUses)
 {
 	prevScope = prevScope != NULL && Z_TYPE_P(prevScope) == IS_NULL ? NULL : prevScope;
-	if (msExact(scope) && EXPECTED(Z_TYPE_P(closureScope) == IS_OBJECT && instanceof_function(Z_OBJCE_P(closureScope), pt_ce_mutating_scope) && (prevScope == NULL || (Z_TYPE_P(prevScope) == IS_OBJECT && instanceof_function(Z_OBJCE_P(prevScope), pt_ce_mutating_scope))) && Z_TYPE_P(byRefUses) == IS_ARRAY)) {
+	if (PT_MS_INHERITS(scope, "processclosurescope") && EXPECTED(Z_TYPE_P(closureScope) == IS_OBJECT && instanceof_function(Z_OBJCE_P(closureScope), pt_ce_mutating_scope) && (prevScope == NULL || (Z_TYPE_P(prevScope) == IS_OBJECT && instanceof_function(Z_OBJCE_P(prevScope), pt_ce_mutating_scope))) && Z_TYPE_P(byRefUses) == IS_ARRAY)) {
 		return MutatingScope(scope).processClosureScope(Z_OBJ_P(closureScope), prevScope, Z_ARRVAL_P(byRefUses));
 	}
 	zval null = {};
@@ -13294,7 +13295,7 @@ zv::Val pt_mutating_scope_process_closure_scope(zend_object *scope, zval *closur
 
 zv::Val pt_mutating_scope_with_anonymous_function_reflection(zend_object *scope, zval *anonymousFunctionReflection)
 {
-	if (msExact(scope) && EXPECTED(Z_TYPE_P(anonymousFunctionReflection) == IS_OBJECT && instanceof_function(Z_OBJCE_P(anonymousFunctionReflection), pt_ce_closure_type))) return MutatingScope(scope).withAnonymousFunctionReflection(anonymousFunctionReflection);
+	if (PT_MS_INHERITS(scope, "withanonymousfunctionreflection") && EXPECTED(Z_TYPE_P(anonymousFunctionReflection) == IS_OBJECT && instanceof_function(Z_OBJCE_P(anonymousFunctionReflection), pt_ce_closure_type))) return MutatingScope(scope).withAnonymousFunctionReflection(anonymousFunctionReflection);
 	return pt_type_call(scope, PT_LC("withanonymousfunctionreflection"), 1, anonymousFunctionReflection);
 }
 
@@ -13308,7 +13309,7 @@ zv::Val pt_mutating_scope_with_anonymous_function_reflection(zend_object *scope,
 zv::Val pt_mutating_scope_generalize_with_names(zend_object *scope, zend_object *otherScope, zval *writableVariableNames)
 {
 	if (writableVariableNames != NULL && Z_TYPE_P(writableVariableNames) == IS_NULL) writableVariableNames = NULL;
-	if (msExact(scope) && EXPECTED(otherScope->ce == pt_ce_mutating_scope || instanceof_function(otherScope->ce, pt_ce_mutating_scope)) && EXPECTED(writableVariableNames == NULL || Z_TYPE_P(writableVariableNames) == IS_ARRAY)) {
+	if (PT_MS_INHERITS(scope, "generalizewith") && EXPECTED(otherScope->ce == pt_ce_mutating_scope || instanceof_function(otherScope->ce, pt_ce_mutating_scope)) && EXPECTED(writableVariableNames == NULL || Z_TYPE_P(writableVariableNames) == IS_ARRAY)) {
 		return MutatingScope(scope).generalizeWith(otherScope, writableVariableNames != NULL ? Z_ARRVAL_P(writableVariableNames) : NULL);
 	}
 	zval argv[2];
@@ -13323,7 +13324,7 @@ zv::Val pt_mutating_scope_generalize_with_names(zend_object *scope, zend_object 
 
 zv::Val pt_mutating_scope_enter_foreach(zend_object *scope, zend_object *originalScope, zval *iteratee, zval *iterateeType, zval *nativeIterateeType, zend_string *valueName, zend_string *keyName, bool valueByRef)
 {
-	if (msExact(scope) && EXPECTED(instanceof_function(originalScope->ce, pt_ce_mutating_scope))) return MutatingScope(scope).enterForeach(originalScope, iteratee, iterateeType, nativeIterateeType, valueName, keyName, valueByRef);
+	if (PT_MS_INHERITS(scope, "enterforeach") && EXPECTED(instanceof_function(originalScope->ce, pt_ce_mutating_scope))) return MutatingScope(scope).enterForeach(originalScope, iteratee, iterateeType, nativeIterateeType, valueName, keyName, valueByRef);
 	zval argv[7];
 	ZVAL_OBJ(&argv[0], originalScope);
 	ZVAL_COPY_VALUE(&argv[1], iteratee);
@@ -13341,14 +13342,14 @@ zv::Val pt_mutating_scope_enter_foreach(zend_object *scope, zend_object *origina
 
 zv::Val pt_mutating_scope_enter_foreach_key(zend_object *scope, zend_object *originalScope, zval *iteratee, zval *iterateeType, zval *nativeIterateeType, zend_string *keyName)
 {
-	if (msExact(scope) && EXPECTED(instanceof_function(originalScope->ce, pt_ce_mutating_scope))) return MutatingScope(scope).enterForeachKey(originalScope, iteratee, iterateeType, nativeIterateeType, keyName);
+	if (PT_MS_INHERITS(scope, "enterforeachkey") && EXPECTED(instanceof_function(originalScope->ce, pt_ce_mutating_scope))) return MutatingScope(scope).enterForeachKey(originalScope, iteratee, iterateeType, nativeIterateeType, keyName);
 	zv::Args argv{originalScope, iteratee, iterateeType, nativeIterateeType, keyName};
 	return pt_type_call(scope, PT_LC("enterforeachkey"), 5, argv);
 }
 
 zv::Val pt_mutating_scope_enter_catch_type(zend_object *scope, zval *catchType, zend_string *variableName)
 {
-	if (msExact(scope)) return MutatingScope(scope).enterCatchType(catchType, variableName);
+	if (PT_MS_INHERITS(scope, "entercatchtype")) return MutatingScope(scope).enterCatchType(catchType, variableName);
 	zval argv[2];
 	ZVAL_COPY_VALUE(&argv[0], catchType);
 	if (variableName != NULL) {
@@ -13361,14 +13362,14 @@ zv::Val pt_mutating_scope_enter_catch_type(zend_object *scope, zval *catchType, 
 
 zv::Val pt_mutating_scope_process_finally_scope(zend_object *scope, zend_object *finallyScope, zend_object *originalFinallyScope)
 {
-	if (msExact(scope) && EXPECTED(instanceof_function(finallyScope->ce, pt_ce_mutating_scope) && instanceof_function(originalFinallyScope->ce, pt_ce_mutating_scope))) return MutatingScope(scope).processFinallyScope(finallyScope, originalFinallyScope);
+	if (PT_MS_INHERITS(scope, "processfinallyscope") && EXPECTED(instanceof_function(finallyScope->ce, pt_ce_mutating_scope) && instanceof_function(originalFinallyScope->ce, pt_ce_mutating_scope))) return MutatingScope(scope).processFinallyScope(finallyScope, originalFinallyScope);
 	zv::Args argv{finallyScope, originalFinallyScope};
 	return pt_type_call(scope, PT_LC("processfinallyscope"), 2, argv);
 }
 
 zv::Val pt_mutating_scope_process_always_iterable_foreach_scope_without_pollute(zend_object *scope, zend_object *finalScope)
 {
-	if (msExact(scope) && EXPECTED(instanceof_function(finalScope->ce, pt_ce_mutating_scope))) return MutatingScope(scope).processAlwaysIterableForeachScopeWithoutPollute(finalScope);
+	if (PT_MS_INHERITS(scope, "processalwaysiterableforeachscopewithoutpollute") && EXPECTED(instanceof_function(finalScope->ce, pt_ce_mutating_scope))) return MutatingScope(scope).processAlwaysIterableForeachScopeWithoutPollute(finalScope);
 	zv::Args argv{finalScope};
 	return pt_type_call(scope, PT_LC("processalwaysiterableforeachscopewithoutpollute"), 1, argv);
 }
@@ -13381,26 +13382,26 @@ zv::Val pt_mutating_scope_process_always_iterable_foreach_scope_without_pollute(
 
 zv::Val pt_mutating_scope_get_parent_scope(zend_object *scope)
 {
-	if (msExact(scope)) return MutatingScope(scope).getParentScope();
+	if (PT_MS_INHERITS(scope, "getparentscope")) return MutatingScope(scope).getParentScope();
 	return pt_type_call(scope, PT_LC("getparentscope"), 0, NULL);
 }
 
 zv::Val pt_mutating_scope_enter_trait(zend_object *scope, zval *traitReflection)
 {
 	/* the handler's ClassReflection parameter check */
-	if (msExact(scope) && EXPECTED(Z_TYPE_P(traitReflection) == IS_OBJECT && instanceof_function(Z_OBJCE_P(traitReflection), pt_ce_class_reflection))) return MutatingScope(scope).enterTrait(traitReflection);
+	if (PT_MS_INHERITS(scope, "entertrait") && EXPECTED(Z_TYPE_P(traitReflection) == IS_OBJECT && instanceof_function(Z_OBJCE_P(traitReflection), pt_ce_class_reflection))) return MutatingScope(scope).enterTrait(traitReflection);
 	return pt_type_call(scope, PT_LC("entertrait"), 1, traitReflection);
 }
 
 zv::Val pt_mutating_scope_enter_namespace(zend_object *scope, zval *namespaceName)
 {
-	if (msExact(scope) && EXPECTED(Z_TYPE_P(namespaceName) == IS_STRING)) return MutatingScope(scope).enterNamespace(Z_STR_P(namespaceName));
+	if (PT_MS_INHERITS(scope, "enternamespace") && EXPECTED(Z_TYPE_P(namespaceName) == IS_STRING)) return MutatingScope(scope).enterNamespace(Z_STR_P(namespaceName));
 	return pt_type_call(scope, PT_LC("enternamespace"), 1, namespaceName);
 }
 
 zv::Val pt_mutating_scope_enter_declare_strict_types(zend_object *scope)
 {
-	if (msExact(scope)) return MutatingScope(scope).enterDeclareStrictTypes();
+	if (PT_MS_INHERITS(scope, "enterdeclarestricttypes")) return MutatingScope(scope).enterDeclareStrictTypes();
 	return pt_type_call(scope, PT_LC("enterdeclarestricttypes"), 0, NULL);
 }
 
@@ -13410,7 +13411,7 @@ zv::Val pt_mutating_scope_enter_property_hook(zend_object *scope, zval *hook, zv
 	auto stringOrNull = [](zval *value) { return Z_TYPE_P(value) == IS_STRING || Z_TYPE_P(value) == IS_NULL; };
 	/* the handler's parameter checks; anything else takes the method and its
 	 * coercion or TypeError */
-	if (msExact(scope) && EXPECTED(Z_TYPE_P(hook) == IS_OBJECT && Z_TYPE_P(propertyName) == IS_STRING && objectOrNull(nativePropertyTypeNode) && objectOrNull(phpDocPropertyType) && Z_TYPE_P(phpDocParameterTypes) == IS_ARRAY && objectOrNull(throwType) && stringOrNull(deprecatedDescription) && (Z_TYPE_P(isDeprecated) == IS_TRUE || Z_TYPE_P(isDeprecated) == IS_FALSE) && (Z_TYPE_P(isPure) == IS_TRUE || Z_TYPE_P(isPure) == IS_FALSE || Z_TYPE_P(isPure) == IS_NULL) && stringOrNull(phpDocComment) && objectOrNull(resolvedPhpDocBlock))) {
+	if (PT_MS_INHERITS(scope, "enterpropertyhook") && EXPECTED(Z_TYPE_P(hook) == IS_OBJECT && Z_TYPE_P(propertyName) == IS_STRING && objectOrNull(nativePropertyTypeNode) && objectOrNull(phpDocPropertyType) && Z_TYPE_P(phpDocParameterTypes) == IS_ARRAY && objectOrNull(throwType) && stringOrNull(deprecatedDescription) && (Z_TYPE_P(isDeprecated) == IS_TRUE || Z_TYPE_P(isDeprecated) == IS_FALSE) && (Z_TYPE_P(isPure) == IS_TRUE || Z_TYPE_P(isPure) == IS_FALSE || Z_TYPE_P(isPure) == IS_NULL) && stringOrNull(phpDocComment) && objectOrNull(resolvedPhpDocBlock))) {
 		return MutatingScope(scope).enterPropertyHook(hook, Z_STR_P(propertyName), nativePropertyTypeNode, phpDocPropertyType, phpDocParameterTypes, throwType, deprecatedDescription, Z_TYPE_P(isDeprecated) == IS_TRUE, isPure, phpDocComment, resolvedPhpDocBlock);
 	}
 	zval argv[11];
@@ -13434,7 +13435,7 @@ zv::Val pt_mutating_scope_enter_property_hook(zend_object *scope, zval *hook, zv
 
 zv::Val pt_mutating_scope_obtain_result_for_node(zend_object *scope, zend_object *node)
 {
-	if (EXPECTED(scope->ce == pt_ce_mutating_scope || pt_type_method_is(scope, PT_LC("obtainresultfornode"), msObtainResultForNode))) return MutatingScope(scope).obtainResultForNode(node);
+	if (EXPECTED(scope->ce == pt_ce_mutating_scope || PT_TYPE_METHOD_IS(scope, PT_LC("obtainresultfornode"), msObtainResultForNode))) return MutatingScope(scope).obtainResultForNode(node);
 	zv::Args argv{node};
 	return pt_type_call(scope, PT_LC("obtainresultfornode"), 1, argv);
 }
@@ -13442,11 +13443,12 @@ zv::Val pt_mutating_scope_obtain_result_for_node(zend_object *scope, zend_object
 /* }}} */
 
 /* {{{ the match expression's scope calls (MatchHandler.cpp): the native body
- * for exactly a MutatingScope, the method otherwise */
+ * for a MutatingScope (or a subclass inheriting the method), the method
+ * otherwise */
 
 zv::Val pt_mutating_scope_enter_match(zend_object *scope, zend_object *expr, zval *condType, zval *condNativeType)
 {
-	if (msExact(scope)) {
+	if (PT_MS_INHERITS(scope, "entermatch")) {
 		zend_class_entry *matchCe = pt_class(PT_CLASS_MATCH);
 		if (UNEXPECTED(matchCe == NULL)) return zv::Val();
 		if (EXPECTED(instanceof_function(expr->ce, matchCe) && Z_TYPE_P(condType) == IS_OBJECT && Z_TYPE_P(condNativeType) == IS_OBJECT)) return MutatingScope(scope).enterMatch(expr, condType, condNativeType);
@@ -13459,7 +13461,7 @@ zv::Val pt_mutating_scope_enter_match(zend_object *scope, zend_object *expr, zva
 
 zv::Val pt_mutating_scope_add_type_to_expression(zend_object *scope, zend_object *expr, zval *type)
 {
-	if (msExact(scope)) {
+	if (PT_MS_INHERITS(scope, "addtypetoexpression")) {
 		zend_class_entry *exprCe = pt_class(PT_CLASS_EXPR);
 		if (UNEXPECTED(exprCe == NULL)) return zv::Val();
 		if (EXPECTED(instanceof_function(expr->ce, exprCe) && Z_TYPE_P(type) == IS_OBJECT)) return MutatingScope(scope).addTypeToExpression(expr, type);
@@ -13472,7 +13474,7 @@ zv::Val pt_mutating_scope_add_type_to_expression(zend_object *scope, zend_object
 
 zv::Val pt_mutating_scope_remove_type_from_expression(zend_object *scope, zend_object *expr, zval *typeToRemove)
 {
-	if (msExact(scope)) {
+	if (PT_MS_INHERITS(scope, "removetypefromexpression")) {
 		zend_class_entry *exprCe = pt_class(PT_CLASS_EXPR);
 		if (UNEXPECTED(exprCe == NULL)) return zv::Val();
 		if (EXPECTED(instanceof_function(expr->ce, exprCe) && Z_TYPE_P(typeToRemove) == IS_OBJECT)) return MutatingScope(scope).removeTypeFromExpression(expr, typeToRemove);

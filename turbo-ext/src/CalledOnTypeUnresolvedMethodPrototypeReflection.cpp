@@ -279,8 +279,10 @@ void pt_register_called_on_type_unresolved_method_prototype_reflection()
 	cls.method<&CalledOnTypeUnresolvedMethodPrototypeReflection::doNotResolveTemplateTypeMapToBounds>(sigs::doNotResolveTemplateTypeMapToBounds);
 
 	cls.method<&CalledOnTypeUnresolvedMethodPrototypeReflection::getNakedMethod>(sigs::getNakedMethod);
+	cls.op<PT_OP_GET_NAKED_METHOD, &CalledOnTypeUnresolvedMethodPrototypeReflection::getNakedMethod>();
 
 	cls.method<&CalledOnTypeUnresolvedMethodPrototypeReflection::getTransformedMethod>(sigs::getTransformedMethod);
+	cls.op<PT_OP_GET_TRANSFORMED_METHOD, &CalledOnTypeUnresolvedMethodPrototypeReflection::getTransformedMethod>();
 
 	cls.method<&CalledOnTypeUnresolvedMethodPrototypeReflection::withCalledOnType, zp::Obj>(sigs::withCalledOnType);
 

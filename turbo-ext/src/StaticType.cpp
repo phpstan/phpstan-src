@@ -352,8 +352,8 @@ public:
 			return zv::Val();
 		}
 		zv::Val naked = isMethod
-			? pt_type_call(Z_OBJ_P(prototype.raw()), PT_LC("getnakedmethod"), 0, NULL)
-			: pt_type_call(Z_OBJ_P(prototype.raw()), PT_LC("getnakedproperty"), 0, NULL);
+			? pt_type_op(Z_OBJ_P(prototype.raw()), PT_OP_GET_NAKED_METHOD, 0, NULL)
+			: pt_type_op(Z_OBJ_P(prototype.raw()), PT_OP_GET_NAKED_PROPERTY, 0, NULL);
 		if (UNEXPECTED(naked.isUndef())) return zv::Val();
 		if (UNEXPECTED(!zv::Ref(naked.raw()).isObject())) {
 			zend_type_error("phpstan_turbo: the naked member must be an object");
@@ -1118,6 +1118,7 @@ void pt_register_static_type()
 	cls.method(sigs::getInstanceProperty, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stTransformedMember(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getunresolvedinstancepropertyprototype"), false);
 	});
+	cls.op(PT_OP_GET_INSTANCE_PROPERTY, PT_OP_LAMBDA { return pt_type_transformed_member(self, PT_LC("getunresolvedinstancepropertyprototype"), false, &argv[0], &argv[1]); });
 	cls.method(sigs::getUnresolvedInstancePropertyPrototype, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stUnresolvedPrototype(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getunresolvedinstancepropertyprototype"), false);
 	});
@@ -1147,6 +1148,7 @@ void pt_register_static_type()
 		ZVAL_STR(&nameZv, methodName);
 		PT_RETURN_VAL(PT_THIS.getMethod(&nameZv, scope));
 	});
+	cls.op(PT_OP_GET_METHOD, PT_OP_LAMBDA { return StaticType(self).getMethod(&argv[0], &argv[1]); });
 
 	cls.method(sigs::getUnresolvedMethodPrototype, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stUnresolvedPrototype(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getunresolvedmethodprototype"), true);

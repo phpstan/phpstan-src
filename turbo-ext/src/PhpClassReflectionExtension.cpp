@@ -2898,6 +2898,77 @@ private:
 
 } // namespace phpstanturbo
 
+/* {{{ direct entries for ClassReflection.cpp (support.h): the C++ bodies for
+ * the native (final) class, the methods by name for anything else */
+
+namespace {
+
+zv::Val pcreByName(zend_object *extension, const char *lcname, size_t len, zval *classReflection, zend_string *name)
+{
+	zv::Args args{classReflection, name};
+	return pt_type_call(extension, lcname, len, 2, args);
+}
+
+bool pcreByNameBool(zend_object *extension, const char *lcname, size_t len, zval *classReflection, zend_string *name, bool &out)
+{
+	zv::Val result = pcreByName(extension, lcname, len, classReflection, name);
+	if (UNEXPECTED(result.isUndef())) return false;
+	out = zend_is_true(result.raw());
+	return true;
+}
+
+} // namespace
+
+bool pt_php_class_reflection_extension_has_property(zend_object *extension, zval *classReflection, zend_string *propertyName, bool &out)
+{
+	if (EXPECTED(extension->ce == pt_ce_php_class_reflection_extension)) {
+		bool ok;
+		out = phpstanturbo::PhpClassReflectionExtension(extension).hasProperty(classReflection, propertyName, ok);
+		return ok;
+	}
+	return pcreByNameBool(extension, PT_LC("hasproperty"), classReflection, propertyName, out);
+}
+
+zv::Val pt_php_class_reflection_extension_get_native_property(zend_object *extension, zval *classReflection, zend_string *propertyName)
+{
+	if (EXPECTED(extension->ce == pt_ce_php_class_reflection_extension)) return phpstanturbo::PhpClassReflectionExtension(extension).getNativeProperty(classReflection, propertyName);
+	return pcreByName(extension, PT_LC("getnativeproperty"), classReflection, propertyName);
+}
+
+bool pt_php_class_reflection_extension_has_method(zend_object *extension, zval *classReflection, zend_string *methodName, bool &out)
+{
+	if (EXPECTED(extension->ce == pt_ce_php_class_reflection_extension)) {
+		bool ok;
+		out = phpstanturbo::PhpClassReflectionExtension(extension).hasMethod(classReflection, methodName, ok);
+		return ok;
+	}
+	return pcreByNameBool(extension, PT_LC("hasmethod"), classReflection, methodName, out);
+}
+
+zv::Val pt_php_class_reflection_extension_get_method(zend_object *extension, zval *classReflection, zend_string *methodName)
+{
+	if (EXPECTED(extension->ce == pt_ce_php_class_reflection_extension)) return phpstanturbo::PhpClassReflectionExtension(extension).getMethod(classReflection, methodName);
+	return pcreByName(extension, PT_LC("getmethod"), classReflection, methodName);
+}
+
+bool pt_php_class_reflection_extension_has_native_method(zend_object *extension, zval *classReflection, zend_string *methodName, bool &out)
+{
+	if (EXPECTED(extension->ce == pt_ce_php_class_reflection_extension)) {
+		bool ok;
+		out = phpstanturbo::PhpClassReflectionExtension(extension).hasNativeMethod(classReflection, methodName, ok);
+		return ok;
+	}
+	return pcreByNameBool(extension, PT_LC("hasnativemethod"), classReflection, methodName, out);
+}
+
+zv::Val pt_php_class_reflection_extension_get_native_method(zend_object *extension, zval *classReflection, zend_string *methodName)
+{
+	if (EXPECTED(extension->ce == pt_ce_php_class_reflection_extension)) return phpstanturbo::PhpClassReflectionExtension(extension).getNativeMethod(classReflection, methodName);
+	return pcreByName(extension, PT_LC("getnativemethod"), classReflection, methodName);
+}
+
+/* }}} */
+
 /* {{{ registration — the engine ABI glue */
 
 namespace {

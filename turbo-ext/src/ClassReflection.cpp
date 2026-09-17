@@ -344,6 +344,29 @@ public:
 		return callOn(extension, lcname, len, 2, args);
 	}
 
+	/* the same on the PhpClassReflectionExtension the registry hands out: its
+	 * C++ bodies directly (PhpClassReflectionExtension.cpp), the method by
+	 * name for any other object, the engine's Error for a non-object */
+	template <typename Entry>
+	bool phpExtensionBool(zv::Ref extension, Entry entry, const char *lcname, size_t len, zend_string *memberName, bool &out)
+	{
+		zv::Ref value = extension.deref();
+		if (UNEXPECTED(!value.isObject())) return extensionBool(extension, lcname, len, memberName, out);
+		zval selfZv;
+		ZVAL_OBJ(&selfZv, self);
+		return entry(value.asObject(), &selfZv, memberName, out);
+	}
+
+	template <typename Entry>
+	zv::Val phpExtensionCall(zv::Ref extension, Entry entry, const char *lcname, size_t len, zend_string *memberName)
+	{
+		zv::Ref value = extension.deref();
+		if (UNEXPECTED(!value.isObject())) return extensionCall(extension, lcname, len, memberName);
+		zval selfZv;
+		ZVAL_OBJ(&selfZv, self);
+		return entry(value.asObject(), &selfZv, memberName);
+	}
+
 	/* the reflection provider through the slot readers of ReflectionAccess.cpp */
 	bool providerHasClass(zend_string *className, bool &out) const
 	{
@@ -1361,7 +1384,7 @@ public:
 		zv::Val phpExtension = phpClassReflectionExtension();
 		if (UNEXPECTED(phpExtension.isUndef())) return false;
 		bool has;
-		if (UNEXPECTED(!extensionBool(phpExtension.ref(), PT_LC("hasproperty"), propertyName, has))) return false;
+		if (UNEXPECTED(!phpExtensionBool(phpExtension.ref(), pt_php_class_reflection_extension_has_property, PT_LC("hasproperty"), propertyName, has))) return false;
 		if (has) {
 			out = memoSetBool(PT_CR_PROP_HAS_PROPERTY_CACHE, propertyName, true);
 			return true;
@@ -1415,9 +1438,9 @@ public:
 		zv::Val phpExtension = phpClassReflectionExtension();
 		if (UNEXPECTED(phpExtension.isUndef())) return false;
 		bool has;
-		if (UNEXPECTED(!extensionBool(phpExtension.ref(), PT_LC("hasproperty"), propertyName, has))) return false;
+		if (UNEXPECTED(!phpExtensionBool(phpExtension.ref(), pt_php_class_reflection_extension_has_property, PT_LC("hasproperty"), propertyName, has))) return false;
 		if (has) {
-			zv::Val property = extensionCall(phpExtension.ref(), PT_LC("getnativeproperty"), propertyName);
+			zv::Val property = phpExtensionCall(phpExtension.ref(), pt_php_class_reflection_extension_get_native_property, PT_LC("getnativeproperty"), propertyName);
 			if (UNEXPECTED(property.isUndef())) return false;
 			bool isStatic;
 			if (UNEXPECTED(!callBool(property.ref(), PT_LC("isstatic"), 0, NULL, isStatic))) return false;
@@ -1472,9 +1495,9 @@ public:
 		zv::Val phpExtension = phpClassReflectionExtension();
 		if (UNEXPECTED(phpExtension.isUndef())) return false;
 		bool has;
-		if (UNEXPECTED(!extensionBool(phpExtension.ref(), PT_LC("hasproperty"), propertyName, has))) return false;
+		if (UNEXPECTED(!phpExtensionBool(phpExtension.ref(), pt_php_class_reflection_extension_has_property, PT_LC("hasproperty"), propertyName, has))) return false;
 		if (has) {
-			zv::Val property = extensionCall(phpExtension.ref(), PT_LC("getnativeproperty"), propertyName);
+			zv::Val property = phpExtensionCall(phpExtension.ref(), pt_php_class_reflection_extension_get_native_property, PT_LC("getnativeproperty"), propertyName);
 			if (UNEXPECTED(property.isUndef())) return false;
 			bool isStatic;
 			if (UNEXPECTED(!callBool(property.ref(), PT_LC("isstatic"), 0, NULL, isStatic))) return false;
@@ -1507,7 +1530,7 @@ public:
 		zv::Val phpExtension = phpClassReflectionExtension();
 		if (UNEXPECTED(phpExtension.isUndef())) return false;
 		bool has;
-		if (UNEXPECTED(!extensionBool(phpExtension.ref(), PT_LC("hasmethod"), methodName, has))) return false;
+		if (UNEXPECTED(!phpExtensionBool(phpExtension.ref(), pt_php_class_reflection_extension_has_method, PT_LC("hasmethod"), methodName, has))) return false;
 		if (has) {
 			out = memoSetBool(PT_CR_PROP_HAS_METHOD_CACHE, methodName, true);
 			return true;
@@ -1567,9 +1590,9 @@ public:
 		zv::Val phpExtension = phpClassReflectionExtension();
 		if (UNEXPECTED(phpExtension.isUndef())) return zv::Val();
 		bool has;
-		if (UNEXPECTED(!extensionBool(phpExtension.ref(), PT_LC("hasmethod"), methodName, has))) return zv::Val();
+		if (UNEXPECTED(!phpExtensionBool(phpExtension.ref(), pt_php_class_reflection_extension_has_method, PT_LC("hasmethod"), methodName, has))) return zv::Val();
 		if (has) {
-			zv::Val method = extensionCall(phpExtension.ref(), PT_LC("getmethod"), methodName);
+			zv::Val method = phpExtensionCall(phpExtension.ref(), pt_php_class_reflection_extension_get_method, PT_LC("getmethod"), methodName);
 			if (UNEXPECTED(method.isUndef())) return zv::Val();
 			bool canCall;
 			if (UNEXPECTED(!callBool(zv::Ref(scope), PT_LC("cancallmethod"), 1, method.raw(), canCall))) return zv::Val();
@@ -1639,7 +1662,7 @@ public:
 	{
 		zv::Val phpExtension = phpClassReflectionExtension();
 		if (UNEXPECTED(phpExtension.isUndef())) return false;
-		return extensionBool(phpExtension.ref(), PT_LC("hasnativemethod"), methodName, out);
+		return phpExtensionBool(phpExtension.ref(), pt_php_class_reflection_extension_has_native_method, PT_LC("hasnativemethod"), methodName, out);
 	}
 
 	zv::Val getNativeMethod(zend_string *methodName)
@@ -1652,7 +1675,7 @@ public:
 		}
 		zv::Val phpExtension = phpClassReflectionExtension();
 		if (UNEXPECTED(phpExtension.isUndef())) return zv::Val();
-		return extensionCall(phpExtension.ref(), PT_LC("getnativemethod"), methodName);
+		return phpExtensionCall(phpExtension.ref(), pt_php_class_reflection_extension_get_native_method, PT_LC("getnativemethod"), methodName);
 	}
 
 	bool hasConstructor(bool &out)
@@ -1747,7 +1770,7 @@ public:
 		zv::Val phpExtension = phpClassReflectionExtension();
 		if (UNEXPECTED(phpExtension.isUndef())) return zv::Val();
 		bool has;
-		if (UNEXPECTED(!extensionBool(phpExtension.ref(), PT_LC("hasproperty"), propertyName, has))) return zv::Val();
+		if (UNEXPECTED(!phpExtensionBool(phpExtension.ref(), pt_php_class_reflection_extension_has_property, PT_LC("hasproperty"), propertyName, has))) return zv::Val();
 		if (has) {
 			/* $this->classReflectionExtensionRegistryProvider->getRegistry()->getPhpClassReflectionExtension()->getProperty($this, $propertyName, $scope) */
 			zv::Val freshExtension = phpClassReflectionExtension();
@@ -1783,7 +1806,7 @@ public:
 		}
 
 		/* For BC purpose */
-		if (UNEXPECTED(!extensionBool(phpExtension.ref(), PT_LC("hasproperty"), propertyName, has))) return zv::Val();
+		if (UNEXPECTED(!phpExtensionBool(phpExtension.ref(), pt_php_class_reflection_extension_has_property, PT_LC("hasproperty"), propertyName, has))) return zv::Val();
 		if (has) {
 			zv::Val property = extensionGetProperty(phpExtension.ref(), propertyName, scope);
 			if (UNEXPECTED(property.isUndef())) return zv::Val();
@@ -1831,7 +1854,7 @@ public:
 			zv::Val phpExtension = phpClassReflectionExtension();
 			if (UNEXPECTED(phpExtension.isUndef())) return zv::Val();
 			bool has;
-			if (UNEXPECTED(!extensionBool(phpExtension.ref(), PT_LC("hasproperty"), propertyName, has))) return zv::Val();
+			if (UNEXPECTED(!phpExtensionBool(phpExtension.ref(), pt_php_class_reflection_extension_has_property, PT_LC("hasproperty"), propertyName, has))) return zv::Val();
 			if (has) {
 				zv::Val property = extensionGetProperty(phpExtension.ref(), propertyName, scope);
 				if (UNEXPECTED(property.isUndef())) return zv::Val();
@@ -1900,7 +1923,7 @@ public:
 		zv::Val phpExtension = phpClassReflectionExtension();
 		if (UNEXPECTED(phpExtension.isUndef())) return zv::Val();
 		bool has;
-		if (UNEXPECTED(!extensionBool(phpExtension.ref(), PT_LC("hasproperty"), propertyName, has))) return zv::Val();
+		if (UNEXPECTED(!phpExtensionBool(phpExtension.ref(), pt_php_class_reflection_extension_has_property, PT_LC("hasproperty"), propertyName, has))) return zv::Val();
 		if (has) {
 			zv::Val outOfClassScope = pt_type_new(PT_CLASS_OUT_OF_CLASS_SCOPE, 0, NULL);
 			if (UNEXPECTED(outOfClassScope.isUndef())) return zv::Val();
@@ -1937,7 +1960,7 @@ public:
 	{
 		zv::Val phpExtension = phpClassReflectionExtension();
 		if (UNEXPECTED(phpExtension.isUndef())) return false;
-		return extensionBool(phpExtension.ref(), PT_LC("hasproperty"), propertyName, out);
+		return phpExtensionBool(phpExtension.ref(), pt_php_class_reflection_extension_has_property, PT_LC("hasproperty"), propertyName, out);
 	}
 
 	zv::Val getNativeProperty(zend_string *propertyName)
@@ -1951,7 +1974,7 @@ public:
 
 		zv::Val phpExtension = phpClassReflectionExtension();
 		if (UNEXPECTED(phpExtension.isUndef())) return zv::Val();
-		return extensionCall(phpExtension.ref(), PT_LC("getnativeproperty"), propertyName);
+		return phpExtensionCall(phpExtension.ref(), pt_php_class_reflection_extension_get_native_property, PT_LC("getnativeproperty"), propertyName);
 	}
 
 	bool isAbstract(bool &out) const { return reflectionCallBool(PT_LC("isabstract"), out); }
@@ -4744,12 +4767,15 @@ void pt_register_class_reflection()
 	cls.method<&ClassReflection::hasProperty, zp::Str>(sigs::hasProperty);
 
 	cls.method<&ClassReflection::hasInstanceProperty, zp::Str>(sigs::hasInstanceProperty);
+	cls.op<PT_OP_HAS_INSTANCE_PROPERTY, &ClassReflection::hasInstanceProperty>();
 
 	cls.method<&ClassReflection::hasStaticProperty, zp::Str>(sigs::hasStaticProperty);
 
 	cls.method<&ClassReflection::hasMethod, zp::Str>(sigs::hasMethod);
+	cls.op<PT_OP_HAS_METHOD, &ClassReflection::hasMethod>();
 
 	cls.method<&ClassReflection::getMethod, zp::Str, zp::Obj>(sigs::getMethod);
+	cls.op<PT_OP_GET_METHOD, &ClassReflection::getMethod>();
 
 	cls.method(sigs::wrapExtendedMethod, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *method;
@@ -4765,8 +4791,10 @@ void pt_register_class_reflection()
 	});
 
 	cls.method<&ClassReflection::hasNativeMethod, zp::Str>(sigs::hasNativeMethod);
+	cls.op<PT_OP_HAS_NATIVE_METHOD, &ClassReflection::hasNativeMethod>();
 
 	cls.method<&ClassReflection::getNativeMethod, zp::Str>(sigs::getNativeMethod);
+	cls.op<PT_OP_GET_NATIVE_METHOD, &ClassReflection::getNativeMethod>();
 
 	cls.method<&ClassReflection::hasConstructor>(sigs::hasConstructor);
 
@@ -4786,14 +4814,18 @@ void pt_register_class_reflection()
 	cls.method<&ClassReflection::getStaticProperty, zp::Str>(sigs::getStaticProperty);
 
 	cls.method<&ClassReflection::hasNativeProperty, zp::Str>(sigs::hasNativeProperty);
+	cls.op<PT_OP_HAS_NATIVE_PROPERTY, &ClassReflection::hasNativeProperty>();
 
 	cls.method<&ClassReflection::getNativeProperty, zp::Str>(sigs::getNativeProperty);
+	cls.op<PT_OP_GET_NATIVE_PROPERTY, &ClassReflection::getNativeProperty>();
 
 	cls.method<&ClassReflection::isAbstract>(sigs::isAbstract);
 
 	cls.method<&ClassReflection::isInterface>(sigs::isInterface);
+	cls.op<PT_OP_IS_INTERFACE, &ClassReflection::isInterface>();
 
 	cls.method<&ClassReflection::isTrait>(sigs::isTrait);
+	cls.op<PT_OP_IS_TRAIT, &ClassReflection::isTrait>();
 
 	cls.method<&ClassReflection::isEnum>(sigs::isEnum);
 
@@ -4816,6 +4848,7 @@ void pt_register_class_reflection()
 	cls.method<&ClassReflection::isAnonymous>(sigs::isAnonymous);
 
 	cls.method<&ClassReflection::is, zp::Str>(sigs::is);
+	cls.op<PT_OP_IS, &ClassReflection::is>();
 
 	cls.method<&ClassReflection::isSubclassOf, zp::Str>(sigs::isSubclassOf);
 
@@ -4823,6 +4856,11 @@ void pt_register_class_reflection()
 		zval *classReflection;
 		if (!zp::parse<zp::Obj>(execute_data, classReflection)) RETURN_THROWS();
 		PT_CR_RETURN_BOOL(PT_THIS.isSubclassOfClass(zv::Ref(classReflection), out_));
+	});
+	cls.op(PT_OP_IS_SUBCLASS_OF_CLASS, PT_OP_LAMBDA {
+		bool out;
+		bool ok = ClassReflection(self).isSubclassOfClass(zv::Ref(&argv[0]), out);
+		return pt_op_bool(ok, out);
 	});
 
 	cls.method<&ClassReflection::implementsInterface, zp::Str>(sigs::implementsInterface);
@@ -4883,6 +4921,7 @@ void pt_register_class_reflection()
 	});
 
 	cls.method<&ClassReflection::isBuiltin>(sigs::isBuiltin);
+	cls.op<PT_OP_IS_BUILTIN, &ClassReflection::isBuiltin>();
 
 	cls.method<&ClassReflection::isInternal>(sigs::isInternal);
 
@@ -4905,12 +4944,14 @@ void pt_register_class_reflection()
 	cls.method<&ClassReflection::getTemplateTypeMap>(sigs::getTemplateTypeMap);
 
 	cls.method<&ClassReflection::getActiveTemplateTypeMap>(sigs::getActiveTemplateTypeMap);
+	cls.op<PT_OP_GET_ACTIVE_TEMPLATE_TYPE_MAP, &ClassReflection::getActiveTemplateTypeMap>();
 
 	cls.method<&ClassReflection::getPossiblyIncompleteActiveTemplateTypeMap>(sigs::getPossiblyIncompleteActiveTemplateTypeMap);
 
 	cls.method<&ClassReflection::getDefaultCallSiteVarianceMap>(sigs::getDefaultCallSiteVarianceMap);
 
 	cls.method<&ClassReflection::getCallSiteVarianceMap>(sigs::getCallSiteVarianceMap);
+	cls.op<PT_OP_GET_CALL_SITE_VARIANCE_MAP, &ClassReflection::getCallSiteVarianceMap>();
 
 	cls.method(sigs::typeMapFromList, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *types;
@@ -4990,10 +5031,12 @@ void pt_register_class_reflection()
 
 	/* out of the twin's file order (see the handle class) */
 	cls.method<&ClassReflection::isFinal>(sigs::isFinal);
+	cls.op<PT_OP_IS_FINAL, &ClassReflection::isFinal>();
 
 	cls.method<&ClassReflection::hasFinalByKeywordOverride>(sigs::hasFinalByKeywordOverride);
 
 	cls.method<&ClassReflection::isFinalByKeyword>(sigs::isFinalByKeyword);
+	cls.op<PT_OP_IS_FINAL_BY_KEYWORD, &ClassReflection::isFinalByKeyword>();
 
 	cls.method<&ClassReflection::isGeneric>(sigs::isGeneric);
 

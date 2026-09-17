@@ -329,6 +329,25 @@ private:
 
 using phpstanturbo::VolatileExpressionHelper;
 
+/* {{{ direct entries (support.h) */
+
+bool pt_volatile_expression_helper_invalidate_volatile_function_calls(zval *expressionTypes, zval *nativeExpressionTypes)
+{
+	return VolatileExpressionHelper::invalidateVolatileFunctionCalls(expressionTypes, nativeExpressionTypes);
+}
+
+bool pt_volatile_expression_helper_invalidate_superglobals(zval *expressionTypes, zval *nativeExpressionTypes)
+{
+	return VolatileExpressionHelper::invalidateSuperglobals(expressionTypes, nativeExpressionTypes);
+}
+
+zv::Val pt_volatile_expression_helper_invalidate_negative_existence_checks(zval *scope, zval *expressionTypes, zval *nativeExpressionTypes, HashTable *functionNames, zend_string *declaredSymbolName)
+{
+	return VolatileExpressionHelper::invalidateNegativeExistenceChecks(scope, expressionTypes, nativeExpressionTypes, functionNames, declaredSymbolName);
+}
+
+/* }}} */
+
 /* {{{ engine ABI glue: parameter parsing + registration */
 
 #include "reg.h"

@@ -116,20 +116,50 @@ bool scopeNativeTypesPromoted(zval *scope, bool &out)
 /* $scope->doNotTreatPhpDocTypesAsCertain(); UNDEF = pending exception */
 zv::Val scopeNativeView(zval *scope)
 {
-	return pt_type_call(Z_OBJ_P(scope), PT_LC("donottreatphpdoctypesascertain"), 0, NULL);
+	return pt_mutating_scope_do_not_treat_phpdoc_types_as_certain(Z_OBJ_P(scope));
 }
 
-/* $scope->hasExpressionType($expr)->yes() / $scope->hasVariableType($name)->no():
- * the PT_TRI_* value, -1 = pending exception */
-[[nodiscard]] zend_long scopeTrinary(zval *scope, const char *lcname, size_t len, zval *argument)
+/* $scope->hasExpressionType($expr): the PT_TRI_* value, -1 = pending
+ * exception */
+[[nodiscard]] zend_long scopeHasExpressionType(zval *scope, zval *expr)
 {
-	return pt_type_call_trinary(Z_OBJ_P(scope), lcname, len, 1, argument);
+	return pt_mutating_scope_has_expression_type(Z_OBJ_P(scope), expr);
+}
+
+/* $scope->hasVariableType($name): the PT_TRI_* value, -1 = pending
+ * exception (a name that is not a string — an int array key — goes through
+ * the engine, which coerces it like the by-name call always did) */
+[[nodiscard]] zend_long scopeHasVariableType(zval *scope, zval *name)
+{
+	if (UNEXPECTED(Z_TYPE_P(name) != IS_STRING)) return pt_type_call_trinary(Z_OBJ_P(scope), PT_LC("hasvariabletype"), 1, name);
+	zv::Val result = pt_mutating_scope_has_variable_type(Z_OBJ_P(scope), Z_STR_P(name));
+	if (UNEXPECTED(result.isUndef())) return -1;
+	return pt_type_trinary_value(result.raw());
+}
+
+/* $scope->getVariableType($name); UNDEF = pending exception */
+zv::Val scopeGetVariableType(zval *scope, zval *name)
+{
+	if (UNEXPECTED(Z_TYPE_P(name) != IS_STRING)) return pt_type_call(Z_OBJ_P(scope), PT_LC("getvariabletype"), 1, name);
+	return pt_mutating_scope_get_variable_type(Z_OBJ_P(scope), Z_STR_P(name));
+}
+
+/* $scope->getStateType($expr) / ->getTrackedExpressionType($expr) (the
+ * result's expr, an Expr); UNDEF = pending exception */
+zv::Val scopeGetStateType(zval *scope, zval *expr)
+{
+	return pt_mutating_scope_get_state_type(Z_OBJ_P(scope), Z_OBJ_P(expr));
+}
+
+zv::Val scopeGetTrackedExpressionType(zval *scope, zval *expr)
+{
+	return pt_mutating_scope_get_tracked_expression_type(Z_OBJ_P(scope), Z_OBJ_P(expr));
 }
 
 /* TypeUtils::resolveLateResolvableTypes($type); UNDEF = pending exception */
 zv::Val resolveLateResolvableTypes(zval *type)
 {
-	return pt_type_call_static_ce(pt_ce_type_utils, PT_LC("resolvelateresolvabletypes"), 1, type);
+	return pt_type_utils_resolve_late_resolvable_types(type);
 }
 
 } // namespace
@@ -271,7 +301,7 @@ public:
 		zv::Val type;
 		bool tracked = true;
 		if (reprocessUntrackedLinks) {
-			zend_long has = scopeTrinary(scope, PT_LC("hasexpressiontype"), expr);
+			zend_long has = scopeHasExpressionType(scope, expr);
 			if (UNEXPECTED(has < 0)) return zv::Val();
 			tracked = has == PT_TRI_YES;
 		}
@@ -279,9 +309,9 @@ public:
 			if (useNativeTypes) {
 				zv::Val nativeScope = scopeNativeView(scope);
 				if (UNEXPECTED(nativeScope.isUndef())) return zv::Val();
-				type = pt_type_call(Z_OBJ_P(nativeScope.raw()), PT_LC("getnativetype"), 1, expr);
+				type = pt_mutating_scope_get_native_type(Z_OBJ_P(nativeScope.raw()), expr);
 			} else {
-				type = pt_type_call(Z_OBJ_P(scope), PT_LC("gettype"), 1, expr);
+				type = pt_mutating_scope_get_type(Z_OBJ_P(scope), expr);
 			}
 		} else {
 			type = getTypeOnScope(scope, useNativeTypes);
@@ -335,7 +365,7 @@ public:
 		// beforeScope (typeCallback is set but a holder wins). Read the holder
 		// directly instead of re-entering MutatingScope::getType() - resolving
 		// its late-resolvable types the way that method would have.
-		zv::Val trackedType = pt_type_call(Z_OBJ_P(slot(slots::beforeScope)), PT_LC("gettrackedexpressiontype"), 1, slot(slots::expr));
+		zv::Val trackedType = scopeGetTrackedExpressionType(slot(slots::beforeScope), slot(slots::expr));
 		if (UNEXPECTED(trackedType.isUndef())) return zv::Val();
 		return memoize(slots::cachedType, resolveLateResolvableTypes(trackedType.raw()));
 	}
@@ -373,7 +403,7 @@ public:
 		// Tracked native holder (getNativeType() promotes the scope, so its
 		// expressionTypes are the native ones) - read it directly, resolving its
 		// late-resolvable types the way MutatingScope::getType() would have.
-		zv::Val trackedType = pt_type_call(Z_OBJ_P(nativeScope.raw()), PT_LC("gettrackedexpressiontype"), 1, slot(slots::expr));
+		zv::Val trackedType = scopeGetTrackedExpressionType(nativeScope.raw(), slot(slots::expr));
 		if (UNEXPECTED(trackedType.isUndef())) return zv::Val();
 		return memoize(slots::cachedNativeType, resolveLateResolvableTypes(trackedType.raw()));
 	}
@@ -481,7 +511,7 @@ public:
 			if (authoritative == 1) {
 				// the state read is a value read: resolve late-resolvable types and
 				// project void to null exactly like resolveOwnType() does
-				zv::Val stateType = pt_type_call(Z_OBJ_P(readScope), PT_LC("getstatetype"), 1, slot(slots::expr));
+				zv::Val stateType = scopeGetStateType(readScope, slot(slots::expr));
 				if (UNEXPECTED(stateType.isUndef())) return zv::Val();
 				zv::Val resolved = resolveLateResolvableTypes(stateType.raw());
 				if (UNEXPECTED(resolved.isUndef())) return zv::Val();
@@ -548,16 +578,16 @@ public:
 
 		for (auto entry : zv::TableRef(Z_ARRVAL_P(names.raw()))) {
 			zval *name = entry.value().raw();
-			zend_long askKnows = scopeTrinary(readScope, PT_LC("hasvariabletype"), name);
+			zend_long askKnows = scopeHasVariableType(readScope, name);
 			if (UNEXPECTED(askKnows < 0)) return -1;
-			zend_long positionKnows = scopeTrinary(positionScope, PT_LC("hasvariabletype"), name);
+			zend_long positionKnows = scopeHasVariableType(positionScope, name);
 			if (UNEXPECTED(positionKnows < 0)) return -1;
 			if (ruleFacingAsk) {
 				if (askKnows == PT_TRI_NO) continue;
 				if (positionKnows == PT_TRI_NO) return 0;
-				zv::Val askType = pt_type_call(Z_OBJ_P(readScope), PT_LC("getvariabletype"), 1, name);
+				zv::Val askType = scopeGetVariableType(readScope, name);
 				if (UNEXPECTED(askType.isUndef())) return -1;
-				zv::Val positionType = pt_type_call(Z_OBJ_P(positionScope), PT_LC("getvariabletype"), 1, name);
+				zv::Val positionType = scopeGetVariableType(positionScope, name);
 				if (UNEXPECTED(positionType.isUndef())) return -1;
 				// identity and equality short-circuit the O(keys^2) constant-array
 				// isSuperTypeOf() - unchanged variables are the common ask case
@@ -571,9 +601,9 @@ public:
 			}
 			if (askKnows == PT_TRI_NO && positionKnows == PT_TRI_NO) continue;
 			if (askKnows != positionKnows) return 0;
-			zv::Val askType = pt_type_call(Z_OBJ_P(readScope), PT_LC("getvariabletype"), 1, name);
+			zv::Val askType = scopeGetVariableType(readScope, name);
 			if (UNEXPECTED(askType.isUndef())) return -1;
-			zv::Val positionType = pt_type_call(Z_OBJ_P(positionScope), PT_LC("getvariabletype"), 1, name);
+			zv::Val positionType = scopeGetVariableType(positionScope, name);
 			if (UNEXPECTED(positionType.isUndef())) return -1;
 			if (!pt_types_identical_or_equal(askType.raw(), positionType.raw())) {
 				if (UNEXPECTED(EG(exception))) return -1;
@@ -598,11 +628,11 @@ public:
 
 		zv::Val stateType, nativeStateType;
 		if (fromScope) {
-			stateType = pt_type_call(Z_OBJ_P(scope), PT_LC("getstatetype"), 1, slot(slots::expr));
+			stateType = scopeGetStateType(scope, slot(slots::expr));
 			if (UNEXPECTED(stateType.isUndef())) return zv::Val();
 			zv::Val nativeScope = scopeNativeView(scope);
 			if (UNEXPECTED(nativeScope.isUndef())) return zv::Val();
-			nativeStateType = pt_type_call(Z_OBJ_P(nativeScope.raw()), PT_LC("getstatetype"), 1, slot(slots::expr));
+			nativeStateType = scopeGetStateType(nativeScope.raw(), slot(slots::expr));
 			if (UNEXPECTED(nativeStateType.isUndef())) return zv::Val();
 		}
 
@@ -897,7 +927,7 @@ private:
 		if (UNEXPECTED(variableCe == NULL || closureCe == NULL || arrowFunctionCe == NULL)) return -1;
 		zend_object *expr = Z_OBJ_P(slot(slots::expr));
 		if (instanceof_function(expr->ce, variableCe) || instanceof_function(expr->ce, closureCe) || instanceof_function(expr->ce, arrowFunctionCe)) return 0;
-		zend_long has = scopeTrinary(scope, PT_LC("hasexpressiontype"), slot(slots::expr));
+		zend_long has = scopeHasExpressionType(scope, slot(slots::expr));
 		if (UNEXPECTED(has < 0)) return -1;
 		return has == PT_TRI_YES ? 1 : 0;
 	}
@@ -919,13 +949,13 @@ private:
 		if (instanceof_function(expr->ce, variableCe)) {
 			zv::Ref name = zv::ObjRef(expr).prop(PT_LC("name"));
 			if (name.raw() == NULL || !name.deref().isString()) return 0;
-			zend_long has = scopeTrinary(scope, PT_LC("hasvariabletype"), name.deref().raw());
+			zend_long has = scopeHasVariableType(scope, name.deref().raw());
 			if (UNEXPECTED(has < 0)) return -1;
 			return has != PT_TRI_NO ? 1 : 0;
 		}
 
 		if (instanceof_function(expr->ce, closureCe) || instanceof_function(expr->ce, arrowFunctionCe)) return 0;
-		zend_long has = scopeTrinary(scope, PT_LC("hasexpressiontype"), slot(slots::expr));
+		zend_long has = scopeHasExpressionType(scope, slot(slots::expr));
 		if (UNEXPECTED(has < 0)) return -1;
 		return has == PT_TRI_YES ? 1 : 0;
 	}
@@ -1103,6 +1133,18 @@ zv::Val pt_expression_result_get_native_type(zval *result)
 {
 	if (isNativeResult(result)) return ExpressionResult(Z_OBJ_P(result)).getNativeType();
 	return pt_type_call(Z_OBJ_P(result), PT_LC("getnativetype"), 0, NULL);
+}
+
+bool pt_expression_result_can_resolve_own_type(zend_object *result, bool &out)
+{
+	if (EXPECTED(result->ce == pt_ce_expression_result)) {
+		out = ExpressionResult(result).canResolveOwnType();
+		return true;
+	}
+	zv::Val value = pt_type_call(result, PT_LC("canresolveowntype"), 0, NULL);
+	if (UNEXPECTED(value.isUndef())) return false;
+	out = zend_is_true(value.raw());
+	return true;
 }
 
 zv::Val pt_expression_result_get_type_on_scope(zval *result, zval *scope, bool useNativeTypes)

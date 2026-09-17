@@ -508,8 +508,8 @@ public:
 			zend_type_error("phpstan_turbo: %s() must return an object", prototypeLcname);
 			return zv::Val();
 		}
-		if (isMethod) return pt_type_call(Z_OBJ_P(prototype.raw()), PT_LC("gettransformedmethod"), 0, NULL);
-		return pt_type_call(Z_OBJ_P(prototype.raw()), PT_LC("gettransformedproperty"), 0, NULL);
+		if (isMethod) return pt_type_op(Z_OBJ_P(prototype.raw()), PT_OP_GET_TRANSFORMED_METHOD, 0, NULL);
+		return pt_type_op(Z_OBJ_P(prototype.raw()), PT_OP_GET_TRANSFORMED_PROPERTY, 0, NULL);
 	}
 
 	zv::Val getProperty(zval *propertyName, zval *scope) const { return transformedMember(PT_LC("getunresolvedpropertyprototype"), otGetUnresolvedPropertyPrototype, false, propertyName, scope); }
@@ -635,7 +635,7 @@ public:
 						zend_type_error("phpstan_turbo: getUnresolvedPropertyPrototype() must return an object");
 						return zv::Val();
 					}
-					property = pt_type_call(Z_OBJ_P(ancestorPrototype.raw()), PT_LC("getnakedproperty"), 0, NULL);
+					property = pt_type_op(Z_OBJ_P(ancestorPrototype.raw()), PT_OP_GET_NAKED_PROPERTY, 0, NULL);
 					if (UNEXPECTED(property.isUndef())) return zv::Val();
 				}
 			}
@@ -749,7 +749,7 @@ public:
 					zend_type_error("phpstan_turbo: getUnresolvedMethodPrototype() must return an object");
 					return zv::Val();
 				}
-				method = pt_type_call(Z_OBJ_P(ancestorPrototype.raw()), PT_LC("getnakedmethod"), 0, NULL);
+				method = pt_type_op(Z_OBJ_P(ancestorPrototype.raw()), PT_OP_GET_NAKED_METHOD, 0, NULL);
 				if (UNEXPECTED(method.isUndef())) return zv::Val();
 			}
 		}
@@ -3634,6 +3634,7 @@ void pt_register_object_type()
 	cls.method(sigs::getInstanceProperty, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ot_member(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ObjectType::getInstanceProperty);
 	});
+	cls.op(PT_OP_GET_INSTANCE_PROPERTY, PT_OP_LAMBDA { return ObjectType(self).getInstanceProperty(&argv[0], &argv[1]); });
 	cls.method(sigs::getUnresolvedInstancePropertyPrototype, otGetUnresolvedInstancePropertyPrototype);
 	cls.op(PT_OP_GET_UNRESOLVED_INSTANCE_PROPERTY_PROTOTYPE, PT_OP_LAMBDA { return ObjectType(self).getUnresolvedPropertyPrototype(phpstanturbo::PT_OT_INSTANCE_PROPERTY, argv, &argv[1]); });
 	cls.method(sigs::hasStaticProperty, otHasStaticProperty);
@@ -3718,6 +3719,7 @@ void pt_register_object_type()
 	cls.method(sigs::hasMethod, otHasMethod);
 	cls.op<PT_OP_HAS_METHOD, &ObjectType::hasMethod>();
 	cls.method(sigs::getMethod, otGetMethod);
+	cls.op(PT_OP_GET_METHOD, PT_OP_LAMBDA { return ObjectType(self).getMethod(&argv[0], &argv[1]); });
 	cls.method(sigs::getUnresolvedMethodPrototype, otGetUnresolvedMethodPrototype);
 	cls.op<PT_OP_GET_UNRESOLVED_METHOD_PROTOTYPE, &ObjectType::getUnresolvedMethodPrototype>();
 	cls.method(sigs::canAccessConstants, otYes0);

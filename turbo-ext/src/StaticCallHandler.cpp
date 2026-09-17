@@ -53,7 +53,6 @@ pt_method_site pt_sch_name_to_lower_string_site;
 pt_method_site pt_sch_get_class_string_object_type_site;
 pt_method_site pt_sch_get_object_type_or_class_string_object_type_site;
 pt_method_site pt_sch_get_static_object_type_site;
-pt_method_site pt_sch_get_method_site;
 pt_method_site pt_sch_native_get_properties_site;
 pt_method_site pt_sch_property_is_promoted_site;
 pt_method_site pt_sch_property_get_declaring_class_site;
@@ -104,7 +103,7 @@ zv::Val getStaticObjectType(zval *staticType)
 zv::Val typeGetMethod(zval *type, zval *methodName, zval *scope)
 {
 	zv::Args argv{methodName, scope};
-	return pt_call_method_cached(pt_sch_get_method_site, Z_OBJ_P(type), PT_LC("getmethod"), 2, argv);
+	return pt_type_op(Z_OBJ_P(type), PT_OP_GET_METHOD, 2, argv);
 }
 
 /* $nativeReflection->getProperties($filter) */

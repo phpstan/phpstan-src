@@ -401,12 +401,12 @@ public:
 		if (!isA(root, classes.variable)) return zv::Val::null();
 		zend_string *rootName = variableName(root.asObject());
 		if (rootName == NULL || zend_string_equals_literal(rootName, "this") || pt_is_superglobal_name(rootName)) return zv::Val::null();
-		zval rootNameValue;
-		ZVAL_STR(&rootNameValue, rootName);
-		zend_long hasVariableType = pt_type_call_trinary(Z_OBJ_P(scope), PT_LC("hasvariabletype"), 1, &rootNameValue);
+		zv::Val hasVariableTypeResult = pt_mutating_scope_has_variable_type(Z_OBJ_P(scope), rootName);
+		if (UNEXPECTED(hasVariableTypeResult.isUndef())) return zv::Val();
+		zend_long hasVariableType = pt_type_trinary_value(hasVariableTypeResult.raw());
 		if (UNEXPECTED(hasVariableType < 0)) return zv::Val();
 		if (hasVariableType != PT_TRI_NO) {
-			zv::Val type = pt_type_call(Z_OBJ_P(scope), PT_LC("getvariabletype"), 1, &rootNameValue);
+			zv::Val type = pt_mutating_scope_get_variable_type(Z_OBJ_P(scope), rootName);
 			if (UNEXPECTED(type.isUndef())) return zv::Val();
 			zend_long isArray = trinaryOp(type.raw(), PT_OP_IS_ARRAY);
 			if (UNEXPECTED(isArray < 0)) return zv::Val();

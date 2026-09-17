@@ -92,6 +92,59 @@ inline constexpr reg::Arg constantStringOrIntegerType = reg::obj("", ptcls::cons
  * have overridden */
 bool pt_type_method_is(zend_object *object, const char *lcname, size_t len, zif_handler handler);
 
+/* The same test for one call site, remembered for the last receiver class
+ * the site saw: a receiver of a native subclass that inherits the method
+ * (the native NodeCallbackScope for every MutatingScope method it does not
+ * override) takes the native body with a few compares instead of a
+ * function-table lookup per call. The memo is keyed by the class entry, the
+ * name and the handler (a helper forwarding different names through one
+ * expansion stays correct, only slower), and by the engine's per-request
+ * generation (Engine.cpp), so a class entry freed with its request never
+ * answers for a new one. Declare the site with PT_TYPE_METHOD_IS() — a
+ * static per expansion. */
+struct pt_method_is_site
+{
+	zend_class_entry *ce;
+	const char *lcname;
+	uintptr_t handler;
+	uint32_t generation;
+	bool is;
+};
+
+extern uint32_t pt_engine_generation;
+
+bool pt_type_method_is_resolve(pt_method_is_site &site, zend_object *object, const char *lcname, size_t len, zif_handler handler);
+
+static zend_always_inline bool pt_type_method_is_cached(pt_method_is_site &site, zend_object *object, const char *lcname, size_t len, zif_handler handler)
+{
+	if (EXPECTED(site.ce == object->ce && site.lcname == lcname && site.handler == (uintptr_t) handler && site.generation == pt_engine_generation)) return site.is;
+	return pt_type_method_is_resolve(site, object, lcname, len, handler);
+}
+
+/* pt_type_method_is(object, lcname, len, handler) over a site of its own */
+#define PT_TYPE_METHOD_IS(object, ...) \
+	([&]() -> bool { \
+		static pt_method_is_site pt_method_is_site_; \
+		return pt_type_method_is_cached(pt_method_is_site_, (object), __VA_ARGS__); \
+	}())
+
+/* whether the object's method of that name is the one the native class
+ * entry `base` declares — base itself, or a subclass inheriting the method;
+ * per call site like PT_TYPE_METHOD_IS() (the memo's handler is the base) */
+bool pt_type_method_inherited_resolve(pt_method_is_site &site, zend_object *object, zend_class_entry *base, const char *lcname, size_t len);
+
+static zend_always_inline bool pt_type_method_inherited_cached(pt_method_is_site &site, zend_object *object, zend_class_entry *base, const char *lcname, size_t len)
+{
+	if (EXPECTED(site.ce == object->ce && site.lcname == lcname && site.handler == (uintptr_t) base && site.generation == pt_engine_generation)) return site.is;
+	return pt_type_method_inherited_resolve(site, object, base, lcname, len);
+}
+
+#define PT_TYPE_METHOD_INHERITED(object, base, ...) \
+	([&]() -> bool { \
+		static pt_method_is_site pt_method_is_site_; \
+		return pt_type_method_inherited_cached(pt_method_is_site_, (object), (base), __VA_ARGS__); \
+	}())
+
 /* $object->method(...$args) through the object's own class entry; UNDEF =
  * pending exception */
 zv::Val pt_type_call(zend_object *object, const char *lcname, size_t len, uint32_t argc, zval *argv);
@@ -1243,21 +1296,21 @@ inline zv::Val pt_type_scalar_to_array(zend_object *self)
 template <typename Direct>
 zend_always_inline zv::Val pt_this_call(zend_object *self, bool exact, const char *lcname, size_t len, zif_handler handler, uint32_t argc, zval *argv, Direct direct)
 {
-	if (EXPECTED(exact || pt_type_method_is(self, lcname, len, handler))) return direct();
+	if (EXPECTED(exact || PT_TYPE_METHOD_IS(self, lcname, len, handler))) return direct();
 	return pt_type_call(self, lcname, len, argc, argv);
 }
 
 template <typename Direct>
 [[nodiscard]] zend_always_inline bool pt_this_call_bool(zend_object *self, bool exact, const char *lcname, size_t len, zif_handler handler, uint32_t argc, zval *argv, bool &out, Direct direct)
 {
-	if (EXPECTED(exact || pt_type_method_is(self, lcname, len, handler))) return direct(out);
+	if (EXPECTED(exact || PT_TYPE_METHOD_IS(self, lcname, len, handler))) return direct(out);
 	return pt_type_call_bool(self, lcname, len, argc, argv, out);
 }
 
 template <typename Direct>
 [[nodiscard]] zend_always_inline zend_long pt_this_call_trinary(zend_object *self, bool exact, const char *lcname, size_t len, zif_handler handler, uint32_t argc, zval *argv, Direct direct)
 {
-	if (EXPECTED(exact || pt_type_method_is(self, lcname, len, handler))) return direct();
+	if (EXPECTED(exact || PT_TYPE_METHOD_IS(self, lcname, len, handler))) return direct();
 	return pt_type_call_trinary(self, lcname, len, argc, argv);
 }
 

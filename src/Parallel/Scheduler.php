@@ -91,7 +91,7 @@ final class Scheduler implements DiagnoseExtension
 
 		$desiredNumberOfProcesses = null;
 		if ($this->adaptiveParallelWorkerCount) {
-			$desiredNumberOfProcesses = $this->resolveDesiredNumberOfProcesses(count($files), $cpuCores);
+			$desiredNumberOfProcesses = $this->resolveDesiredNumberOfProcesses(count($files), $numberOfJobs, $cpuCores);
 
 			// the spawn loop stops when the queue runs dry, so a worker without a
 			// job of its own never starts - chunk finely enough to feed them all
@@ -133,7 +133,7 @@ final class Scheduler implements DiagnoseExtension
 	 *
 	 * @return positive-int
 	 */
-	private function resolveDesiredNumberOfProcesses(int $numberOfFiles, int $cpuCores): int
+	private function resolveDesiredNumberOfProcesses(int $numberOfFiles, int $numberOfJobs, int $cpuCores): int
 	{
 		if ($numberOfFiles < 1) {
 			return 1;
@@ -142,7 +142,12 @@ final class Scheduler implements DiagnoseExtension
 		$floor = $numberOfFiles >= self::ADAPTIVE_SECOND_WORKER_FILE_THRESHOLD ? 2 : 1;
 		$fromFileCount = (int) round(self::ADAPTIVE_WORKERS_PER_SQRT_FILE * sqrt($numberOfFiles));
 
-		return max(1, min(max($floor, $fromFileCount), $cpuCores, $numberOfFiles));
+		// never below what the job count alone already justifies: the point is to stop
+		// small runs being starved, not to take workers away from large ones, and
+		// sqrt() dips under the existing formula between roughly 400 and 800 files
+		$fromJobCount = max((int) floor($numberOfJobs / $this->minimumNumberOfJobsPerProcess), 1);
+
+		return max(1, min(max($floor, $fromFileCount, $fromJobCount), $cpuCores, $numberOfFiles));
 	}
 
 	/**

@@ -3753,4 +3753,26 @@ zv::Val pt_clone_handler_resolve_clone_type(zval *exprType);
 
 /* }}} */
 
+/* {{{ the yield handlers (YieldHandler.cpp, YieldFromHandler.cpp —
+ * SimpleExprHandlers.h) and CountNarrowingHelper.cpp — registered at the END
+ * of the sequence */
+
+extern zend_class_entry *pt_ce_yield_handler;
+extern zend_class_entry *pt_ce_yield_from_handler;
+extern zend_class_entry *pt_ce_count_narrowing_helper;
+void pt_register_yield_handler();
+void pt_register_yield_from_handler();
+void pt_register_count_narrowing_helper();
+
+/* $countNarrowingHelper->isNormalCountCall($countFuncCall, $typeToCount,
+ * $scope): the PT_TRI_* value of the answer, -1 = pending exception /
+ * ->specifyCountSize($countFuncCall, $type, $sizeType, $context, $scope,
+ * $rootExpr): a SpecifiedTypes or null, UNDEF = pending exception — the
+ * native bodies for the native class, the methods otherwise (everything
+ * borrowed) */
+zend_long pt_count_narrowing_helper_is_normal_count_call(zval *helper, zval *countFuncCall, zval *typeToCount, zval *scope);
+zv::Val pt_count_narrowing_helper_specify_count_size(zval *helper, zval *countFuncCall, zval *type, zval *sizeType, zval *context, zval *scope, zval *rootExpr);
+
+/* }}} */
+
 #endif /* PHPSTANTURBO_SUPPORT_H */

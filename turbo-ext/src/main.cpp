@@ -530,6 +530,10 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_throw_handler();
 	pt_register_error_suppress_handler();
 	pt_register_pipe_handler();
+	/* the yield handlers and the count() narrowing helper */
+	pt_register_yield_handler();
+	pt_register_yield_from_handler();
+	pt_register_count_narrowing_helper();
 
 	return SUCCESS;
 }

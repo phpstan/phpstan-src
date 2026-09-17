@@ -20,6 +20,7 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
@@ -29,6 +30,7 @@ use function array_merge;
  * @implements ExprHandler<Yield_>
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/YieldHandler.cpp')]
 final class YieldHandler implements ExprHandler
 {
 

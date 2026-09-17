@@ -11,6 +11,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -30,6 +31,7 @@ use const COUNT_NORMAL;
  * createForSubject() instead of TypeSpecifier::create().
  */
 #[AutowiredService]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/CountNarrowingHelper.cpp')]
 final class CountNarrowingHelper
 {
 

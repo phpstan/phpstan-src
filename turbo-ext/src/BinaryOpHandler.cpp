@@ -29,9 +29,9 @@
  * IdenticalNarrowingHelper, DefaultNarrowingHelper, TypeCombinator and the
  * Type kernel are called through their direct entries; the collaborators
  * that stay PHP for now (InitializerExprTypeResolver,
- * RicherScopeGetTypeHelper, CountNarrowingHelper) through the cached method
- * sites in the block below, one helper each; ImplicitToStringCallHelper
- * through its direct entry.
+ * RicherScopeGetTypeHelper) through the cached method sites in the block
+ * below, one helper each; ImplicitToStringCallHelper and CountNarrowingHelper
+ * through their direct entries.
  */
 
 #include "support.h"
@@ -147,8 +147,6 @@ pt_method_site pt_boh_resolve_concat_type_site;
 pt_method_site pt_boh_resolve_equal_type_site;
 pt_method_site pt_boh_get_identical_result_site;
 pt_method_site pt_boh_get_not_identical_result_site;
-pt_method_site pt_boh_specify_count_size_site;
-pt_method_site pt_boh_is_normal_count_call_site;
 pt_method_site pt_boh_operator_type_sites[KIND_OTHER];
 
 /* $implicitToStringCallHelper->processImplicitToStringCall($expr, $scope, $exprResult) */
@@ -213,17 +211,14 @@ zv::Val identicalResult(zval *helper, bool negated, zval *scope, zval *expr, zva
  * $context, $scope, $rootExpr) */
 zv::Val specifyCountSize(zval *helper, zval *argv)
 {
-	return pt_call_method_cached(pt_boh_specify_count_size_site, Z_OBJ_P(helper), PT_LC("specifycountsize"), 6, argv);
+	return pt_count_narrowing_helper_specify_count_size(helper, &argv[0], &argv[1], &argv[2], &argv[3], &argv[4], &argv[5]);
 }
 
 /* $countNarrowingHelper->isNormalCountCall($countFuncCall, $typeToCount, $scope)->yes();
  * -1 = pending exception */
 int isNormalCountCall(zval *helper, zval *countFuncCall, zval *typeToCount, zval *scope)
 {
-	zv::Args argv{countFuncCall, typeToCount, scope};
-	zv::Val trinary = pt_call_method_cached(pt_boh_is_normal_count_call_site, Z_OBJ_P(helper), PT_LC("isnormalcountcall"), 3, argv);
-	if (UNEXPECTED(trinary.isUndef())) return -1;
-	zend_long value = pt_type_trinary_value(trinary.raw());
+	zend_long value = pt_count_narrowing_helper_is_normal_count_call(helper, countFuncCall, typeToCount, scope);
 	if (UNEXPECTED(value < 0)) return -1;
 	return value == PT_TRI_YES ? 1 : 0;
 }

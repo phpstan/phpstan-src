@@ -14,9 +14,9 @@
  *
  * DefaultNarrowingHelper, ExpressionResult, MutatingScope, ExprPrinter,
  * SpecifiedTypes, TypeSpecifierContext, TypeCombinator, the reflection
- * provider's memoized class lookups and the Type classes are called through
- * their direct entries / ops; the collaborators that stay PHP for now
- * (CountNarrowingHelper, RicherScopeGetTypeHelper, ClassReflection::asFinal())
+ * provider's memoized class lookups, CountNarrowingHelper and the Type
+ * classes are called through their direct entries / ops; the collaborators
+ * that stay PHP for now (RicherScopeGetTypeHelper, ClassReflection::asFinal())
  * through the cached method sites in the block below, one helper each.
  *
  * The twin evaluates `$a->unionWith($b)` receiver first, then argument; the
@@ -45,7 +45,6 @@ namespace {
 /* {{{ the PHP collaborators (one site each; switch to their direct entries
  * once they are ported) */
 
-pt_method_site pt_inh_specify_count_size_site;
 pt_method_site pt_inh_get_identical_result_site;
 pt_method_site pt_inh_as_final_site;
 
@@ -60,8 +59,7 @@ zv::Val callOnNonObject(const char *method, zval *value)
  * $context, $scope, $rootExpr) */
 zv::Val specifyCountSize(zval *countNarrowingHelper, zval *countFuncCall, zval *type, zval *sizeType, zval *context, zval *scope, zval *rootExpr)
 {
-	zv::Args argv{countFuncCall, type, sizeType, context, scope, rootExpr};
-	return pt_call_method_cached(pt_inh_specify_count_size_site, Z_OBJ_P(countNarrowingHelper), PT_LC("specifycountsize"), 6, argv);
+	return pt_count_narrowing_helper_specify_count_size(countNarrowingHelper, countFuncCall, type, sizeType, context, scope, rootExpr);
 }
 
 /* $richerScopeGetTypeHelper->getIdenticalResult($scope, $expr, $nodeScopeResolver) */

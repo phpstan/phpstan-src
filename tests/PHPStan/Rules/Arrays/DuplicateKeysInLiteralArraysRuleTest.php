@@ -6,6 +6,8 @@ use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\Printer\Printer;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPStan\Type\ArrayUnpackingHelper;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use function define;
 
 /**
@@ -18,6 +20,7 @@ class DuplicateKeysInLiteralArraysRuleTest extends RuleTestCase
 	{
 		return new DuplicateKeysInLiteralArraysRule(
 			new ExprPrinter(new Printer()),
+			self::getContainer()->getByType(ArrayUnpackingHelper::class),
 		);
 	}
 
@@ -115,6 +118,7 @@ class DuplicateKeysInLiteralArraysRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14041.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug15244(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-15244.php'], [
@@ -135,6 +139,43 @@ class DuplicateKeysInLiteralArraysRuleTest extends RuleTestCase
 			[
 				"Array has 2 duplicate keys with value 'a' ('a', 'a').",
 				20,
+			],
+		]);
+	}
+
+	public function testBug15247(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15247.php'], [
+			[
+				'Array has 2 duplicate keys with value 0 (0, 0).',
+				19,
+			],
+			[
+				'Array has 2 duplicate keys with value 1 (1, 1).',
+				34,
+			],
+			[
+				'Array has 2 duplicate keys with value \'a\' (\'a\', \'a\').',
+				51,
+			],
+			[
+				'Array has 2 duplicate keys with value 9223372036854775807 (9223372036854775807, 9223372036854775807).',
+				66,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug15247Php81(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15247-php81.php'], [
+			[
+				'Array has 2 duplicate keys with value \'a\' (\'a\', \'a\').',
+				14,
+			],
+			[
+				'Array has 2 duplicate keys with value 1 (1, 1).',
+				19,
 			],
 		]);
 	}

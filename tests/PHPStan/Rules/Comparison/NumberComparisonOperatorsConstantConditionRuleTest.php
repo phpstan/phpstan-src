@@ -322,4 +322,9 @@ class NumberComparisonOperatorsConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12167.php'], []);
 	}
 
+	public function testBug15243(): void
+	{
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-15243.php'], []);
+	}
+
 }

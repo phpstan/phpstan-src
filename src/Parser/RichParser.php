@@ -2,6 +2,7 @@
 
 namespace PHPStan\Parser;
 
+use PhpParser\Error;
 use PhpParser\ErrorHandler\Collecting;
 use PhpParser\Node;
 use PhpParser\NodeTraverser;
@@ -102,8 +103,12 @@ final class RichParser implements Parser
 			$nodeTraverser->addVisitor($visitor);
 		}
 
-		/** @var array<Node\Stmt> */
-		$nodes = $nodeTraverser->traverse($nodes);
+		try {
+			/** @var array<Node\Stmt> */
+			$nodes = $nodeTraverser->traverse($nodes);
+		} catch (Error $e) {
+			throw new ParserErrorsException([$e], null);
+		}
 
 		$reversePipeTransformer = new NodeTraverser(new ReversePipeTransformerVisitor());
 		/** @var array<Node\Stmt> */

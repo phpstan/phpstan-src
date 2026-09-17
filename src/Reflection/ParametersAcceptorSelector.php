@@ -845,7 +845,7 @@ final class ParametersAcceptorSelector
 					continue;
 				}
 
-				$isVariadic = $parameters[$i]->isVariadic() || $parameter->isVariadic();
+				$isParameterVariadic = $parameters[$i]->isVariadic() || $parameter->isVariadic();
 				$defaultValueLeft = $parameters[$i]->getDefaultValue();
 				$defaultValueRight = $parameter->getDefaultValue();
 				if ($defaultValueLeft !== null && $defaultValueRight !== null) {
@@ -887,6 +887,26 @@ final class ParametersAcceptorSelector
 					$closureThisType = null;
 				}
 
+				if ($isParameterVariadic) {
+					// the variadic parameter swallows every parameter behind it,
+					// so their types have to be merged into it before they're dropped
+					$droppedParameters = array_merge(
+						array_slice($parameters, $i + 1),
+						array_slice($acceptor->getParameters(), $i + 1),
+					);
+					foreach ($droppedParameters as $droppedParameter) {
+						$type = TypeCombinator::union($type, $droppedParameter->getType());
+						if ($droppedParameter instanceof ExtendedParameterReflection) {
+							$nativeType = TypeCombinator::union($nativeType, $droppedParameter->getNativeType());
+							$phpDocType = TypeCombinator::union($phpDocType, $droppedParameter->getPhpDocType());
+							continue;
+						}
+
+						$nativeType = new MixedType();
+						$phpDocType = TypeCombinator::union($phpDocType, $droppedParameter->getType());
+					}
+				}
+
 				$allowedConstants = $parameters[$i]->getAllowedConstants();
 				if ($allowedConstants !== null) {
 					$otherAllowedConstants = $parameter instanceof ExtendedParameterReflection ? $parameter->getAllowedConstants() : null;
@@ -904,7 +924,7 @@ final class ParametersAcceptorSelector
 					$type,
 					$i + 1 > $minimumNumberOfParameters,
 					$parameters[$i]->passedByReference()->combine($parameter->passedByReference()),
-					$isVariadic,
+					$isParameterVariadic,
 					$defaultValue,
 					$nativeType,
 					$phpDocType,
@@ -916,7 +936,7 @@ final class ParametersAcceptorSelector
 					$pureUnlessCallableIsImpureParameter,
 				);
 
-				if ($isVariadic) {
+				if ($isParameterVariadic) {
 					$parameters = array_slice($parameters, 0, $i + 1);
 					break;
 				}

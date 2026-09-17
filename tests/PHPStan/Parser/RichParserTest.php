@@ -5,6 +5,7 @@ namespace PHPStan\Parser;
 use PHPStan\Analyser\FileAnalyserResult;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
+use function sprintf;
 use const PHP_EOL;
 
 /**
@@ -546,6 +547,72 @@ class RichParserTest extends PHPStanTestCase
 		$lines = $ast[0]->getAttribute('linesToIgnore');
 		$this->assertIsArray($lines);
 		$this->assertCount(0, $lines);
+	}
+
+	public static function dataNameResolutionErrors(): iterable
+	{
+		yield 'duplicate class alias' => [
+			'<?php' . PHP_EOL .
+			'use Ns\Foo;' . PHP_EOL .
+			'use Ns\Foo2 as Foo;',
+			'Cannot use Ns\Foo2 as Foo because the name is already in use',
+			3,
+		];
+
+		yield 'duplicate function alias' => [
+			'<?php' . PHP_EOL .
+			'use function Ns\foo;' . PHP_EOL .
+			'use function Ns\foo2 as foo;',
+			'Cannot use function Ns\foo2 as foo because the name is already in use',
+			3,
+		];
+
+		yield 'duplicate constant alias' => [
+			'<?php' . PHP_EOL .
+			'use const Ns\FOO;' . PHP_EOL .
+			'use const Ns\FOO2 as FOO;',
+			'Cannot use const Ns\FOO2 as FOO because the name is already in use',
+			3,
+		];
+
+		yield 'duplicate alias in group use' => [
+			'<?php' . PHP_EOL .
+			'use Ns\Foo;' . PHP_EOL .
+			'use Ns\{Foo2 as Foo};',
+			'Cannot use Ns\Foo2 as Foo because the name is already in use',
+			3,
+		];
+
+		yield 'invalid class name' => [
+			'<?php' . PHP_EOL .
+			'new \self();',
+			"'\\self' is an invalid class name",
+			2,
+		];
+	}
+
+	/**
+	 * Name resolution errors must be reported as ParserErrorsException so that
+	 * callers looking up symbols in other files can degrade gracefully instead of
+	 * having a PhpParser\Error attributed to the file they are analysing.
+	 */
+	#[DataProvider('dataNameResolutionErrors')]
+	public function testNameResolutionErrors(string $code, string $expectedMessage, int $expectedLine): void
+	{
+		foreach (['currentPhpVersionRichParser', 'currentPhpVersionSimpleDirectParser', 'freshStubParser'] as $serviceName) {
+			/** @var Parser $parser */
+			$parser = self::getContainer()->getService($serviceName);
+
+			try {
+				$parser->parseString($code);
+				$this->fail(sprintf('%s did not throw ParserErrorsException', $serviceName));
+			} catch (ParserErrorsException $e) {
+				$errors = $e->getErrors();
+				$this->assertCount(1, $errors);
+				$this->assertSame($expectedMessage, $errors[0]->getRawMessage());
+				$this->assertSame($expectedLine, $errors[0]->getStartLine());
+			}
+		}
 	}
 
 }

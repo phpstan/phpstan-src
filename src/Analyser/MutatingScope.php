@@ -3357,7 +3357,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				if ($targetRootVar !== null && in_array($targetRootVar, $intertwinedPropagatedFrom, true)) {
 					continue;
 				}
-				$scope = $scope->assignExpression(
+				$scope = $scope->overwriteExpression(
 					$expressionType->getExpr()->getExpr(),
 					$assignedType,
 					$assignedNativeType,
@@ -3366,6 +3366,33 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		}
 
 		return $scope;
+	}
+
+	/**
+	 * assignExpression() for a value that overwrites what an already existing
+	 * offset holds - a byref alias write or a setAlwaysOverwriteTypes()
+	 * specification.
+	 *
+	 * For an `ArrayDimFetch` the new value has to be *written* into the containing
+	 * array. assignExpression() would instead narrow it: specifyExpressionType()
+	 * intersects the parent with HasOffsetValueType(dim, newValue), which
+	 * contradicts - and collapses to `never` - a parent still holding the offset's
+	 * previous (constant) value.
+	 */
+	private function overwriteExpression(Expr $expr, Type $type, Type $nativeType): self
+	{
+		if (!$expr instanceof Expr\ArrayDimFetch || $expr->dim === null) {
+			return $this->assignExpression($expr, $type, $nativeType);
+		}
+
+		$dimType = $this->getType($expr->dim);
+		$scope = $this->overwriteExpression(
+			$expr->var,
+			$this->getType($expr->var)->setExistingOffsetValueType($dimType, $type),
+			$this->getNativeType($expr->var)->setExistingOffsetValueType($dimType, $nativeType),
+		);
+
+		return $scope->specifyExpressionType($expr, $type, $nativeType, TrinaryLogic::createYes());
 	}
 
 	/**
@@ -3382,7 +3409,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 
 		if ($assignedExpr instanceof Expr\ArrayDimFetch && $assignedExpr->dim !== null) {
 			return $this->resolveIntertwinedAssignedType($scope, $rootType, $assignedExpr->var, $rootVariableName, $native)
-				->getOffsetValueType($scope->getType($assignedExpr->dim));
+				->getOffsetValueType($native ? $scope->getNativeType($assignedExpr->dim) : $scope->getType($assignedExpr->dim));
 		}
 
 		if ($assignedExpr instanceof SetExistingOffsetValueTypeExpr) {
@@ -3393,7 +3420,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				? $scope->getNativeType($assignedExpr->getVar())
 				: $scope->getType($assignedExpr->getVar());
 
-			return $iterateeType->setExistingOffsetValueType($scope->getType($assignedExpr->getDim()), $rootType);
+			$dimType = $native
+				? $scope->getNativeType($assignedExpr->getDim())
+				: $scope->getType($assignedExpr->getDim());
+
+			return $iterateeType->setExistingOffsetValueType($dimType, $rootType);
 		}
 
 		throw new ShouldNotHappenException();
@@ -4196,7 +4227,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			$type = $typeSpecification['type'];
 			if ($typeSpecification['sure']) {
 				if ($specifiedTypes->shouldOverwrite()) {
-					$scope = $scope->assignExpression($expr, $type, $type);
+					$scope = $scope->overwriteExpression($expr, $type, $type);
 					$scopeIsWorkingCopy = false;
 				} else {
 					$newType = $trackedType !== null ? TypeCombinator::intersect($type, $trackedType) : $type;

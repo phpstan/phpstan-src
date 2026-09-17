@@ -534,4 +534,22 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8031.php'], []);
 	}
 
+	public function testBug15245(): void
+	{
+		$this->checkNullables = true;
+		$this->checkExplicitMixed = false;
+		$this->analyse([__DIR__ . '/data/bug-15245.php'], [
+			[
+				'Function Bug15245ReturnType\\setInLastRow() should return non-empty-list<list<int>> but returns non-empty-list<array<int, int>>.',
+				24,
+				'array<int, int> might not be a list.',
+			],
+			[
+				'Function Bug15245ReturnType\\setInExistingRow() should return list<list<int>> but returns list<array<int, int>>.',
+				37,
+				'array<int, int> might not be a list.',
+			],
+		]);
+	}
+
 }

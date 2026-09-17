@@ -105,6 +105,7 @@ use function is_int;
 use function is_nan;
 use function is_string;
 use function spl_object_id;
+use const PHP_INT_MAX;
 
 /**
  * @implements ExprHandler<Assign|AssignRef>
@@ -1700,10 +1701,15 @@ final class AssignHandler implements ExprHandler
 
 				if ($keyResult !== null) {
 					$dimType = $keyResult->getTypeOnScope($scope, $scope->nativeTypesPromoted);
+					$nativeDimType = $keyResult->getTypeOnScope($scope, true);
 				} else {
 					$dimType = new ConstantIntegerType($i);
+					$nativeDimType = $dimType;
 				}
-				$getOffsetValueTypeExpr = new TypeExpr($this->readAssignedValueType($nodeScopeResolver, $assignedValueResult, $assignedExpr, $scope)->getOffsetValueType($dimType));
+				$getOffsetValueTypeExpr = new NativeTypeExpr(
+					$this->readAssignedValueType($nodeScopeResolver, $assignedValueResult, $assignedExpr, $scope)->getOffsetValueType($dimType),
+					$this->readAssignedValueType($nodeScopeResolver, $assignedValueResult, $assignedExpr, $scope->doNotTreatPhpDocTypesAsCertain())->getOffsetValueType($nativeDimType),
+				);
 				// store the fabricated result so narrowing walks over the item value
 				// compose from it instead of falling back to on-demand pricing
 				$itemValueResult = $this->virtualExprResultHelper->createTypeExprResult($scope, $getOffsetValueTypeExpr);
@@ -2517,6 +2523,12 @@ final class AssignHandler implements ExprHandler
 	{
 		$implicitIndex = 0;
 		foreach ($arrayExpr->items as $arrayItem) {
+			if ($arrayItem->unpack) {
+				// An unpacked array contributes an unknown number of renumbered
+				// integer keys, so subsequent implicit indices are unpredictable
+				$implicitIndex = null;
+			}
+
 			if ($arrayItem->key !== null) {
 				// the key was walked as part of the assigned array literal
 				$keyType = $nodeScopeResolver->readStoredResult($arrayItem->key, $storage)->getTypeOnScope($scope, $scope->nativeTypesPromoted)->toArrayKey();
@@ -2526,7 +2538,7 @@ final class AssignHandler implements ExprHandler
 					if (count($keyValues) === 1) {
 						$keyValue = $keyValues[0];
 						if (is_int($keyValue) && $keyValue >= $implicitIndex) {
-							$implicitIndex = $keyValue + 1;
+							$implicitIndex = $this->advanceImplicitIndex($keyValue);
 						}
 					} elseif (!$keyType->isInteger()->no()) {
 						// Key could be an integer, but we don't know which one,
@@ -2538,7 +2550,7 @@ final class AssignHandler implements ExprHandler
 				$dimExpr = $arrayItem->key;
 			} elseif ($implicitIndex !== null) {
 				$dimExpr = new Node\Scalar\Int_($implicitIndex);
-				$implicitIndex++;
+				$implicitIndex = $this->advanceImplicitIndex($implicitIndex);
 			} else {
 				$dimExpr = new TypeExpr(new IntegerType());
 			}
@@ -2580,6 +2592,16 @@ final class AssignHandler implements ExprHandler
 	}
 
 	private const ARRAY_DIM_FETCH_WRITE_DEPTH_LIMIT = 5;
+
+	/**
+	 * Null means the next implicit key is unpredictable: PHP throws
+	 * "Cannot add element to the array as the next element is already occupied"
+	 * instead of wrapping the auto-index around to a float.
+	 */
+	private function advanceImplicitIndex(int $index): ?int
+	{
+		return $index === PHP_INT_MAX ? null : $index + 1;
+	}
 
 	/**
 	 * @param non-empty-list<ArrayDimFetch> $dimFetchStack
@@ -2629,7 +2651,7 @@ final class AssignHandler implements ExprHandler
 
 		$lastDimKey = array_key_last($dimFetchStack);
 		$computedContainerValues = [];
-		foreach (array_reverse($offsetTypes) as $i => [$offsetType]) {
+		foreach (array_reverse($offsetTypes) as $i => [$offsetType, $writtenDimFetch]) {
 			/** @var Type $offsetValueType */
 			$offsetValueType = array_pop($offsetValueTypeStack);
 			if (
@@ -2643,12 +2665,19 @@ final class AssignHandler implements ExprHandler
 				}
 			}
 
-			$arrayDimFetch = $dimFetchStack[$i] ?? null;
+			// the link of the chain that is looked up in the scope: the written
+			// dim fetch itself for a one-dimensional write, another link of the
+			// same chain for a nested one
+			$trackedDimFetch = $dimFetchStack[$i] ?? null;
 			if (
 				$offsetType !== null
-				&& $arrayDimFetch !== null
-				&& $scope->hasExpressionType($arrayDimFetch)->yes()
+				&& $trackedDimFetch !== null
+				&& $scope->hasExpressionType($trackedDimFetch)->yes()
 				&& !$offsetValueType->hasOffsetValueType($offsetType)->no()
+				&& (
+					$trackedDimFetch === $writtenDimFetch
+					|| $this->trackedLinkImpliesOffset($offsetValueType, $offsetType)
+				)
 			) {
 				$hasOffsetType = null;
 				if ($offsetType instanceof ConstantStringType || $offsetType instanceof ConstantIntegerType) {
@@ -2691,7 +2720,7 @@ final class AssignHandler implements ExprHandler
 				$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite, $unionValues);
 			}
 
-			if ($arrayDimFetch !== null && $offsetValueType->isList()->yes() && $this->shouldKeepList($nodeScopeResolver, $arrayDimFetch, $scope, $storage, $offsetValueType)) {
+			if ($offsetValueType->isList()->yes() && $this->shouldKeepList($nodeScopeResolver, $writtenDimFetch, $scope, $storage, $offsetValueType)) {
 				$valueToWrite = TypeCombinator::intersect($valueToWrite, new AccessoryArrayListType());
 			}
 
@@ -2780,13 +2809,88 @@ final class AssignHandler implements ExprHandler
 		return false;
 	}
 
+	/**
+	 * A link of the chain other than the written one being tracked does not
+	 * prove the written offset is there. It is the usual evidence when the
+	 * offset comes from the written structure itself, like in
+	 * `foreach ($rows as $k => $v) { $matrix[$i][$k] = ...; }`, so it only
+	 * counts as long as the offset stays within the keys the container can have.
+	 */
+	private function trackedLinkImpliesOffset(Type $offsetValueType, Type $offsetType): bool
+	{
+		if (!$offsetValueType->isArray()->yes()) {
+			return true;
+		}
+
+		return $offsetValueType->getIterableKeyType()->isSuperTypeOf($offsetType)->yes();
+	}
+
+	/**
+	 * Whether both expressions denote the same container - the write target's
+	 * `$container[...]` and the `$container` handed to count()/array_key_last()
+	 * and friends. Only side-effect-free forms are compared, so that reading the
+	 * container twice is guaranteed to yield the same array.
+	 */
 	private function isSameVariable(Expr $a, Expr $b): bool
 	{
-		if ($a instanceof Variable && $b instanceof Variable && is_string($a->name) && is_string($b->name)) {
-			return $a->name === $b->name;
+		if ($a instanceof Variable && $b instanceof Variable) {
+			return is_string($a->name) && is_string($b->name) && $a->name === $b->name;
+		}
+
+		if ($a instanceof PropertyFetch && $b instanceof PropertyFetch) {
+			return $a->name instanceof Node\Identifier
+				&& $b->name instanceof Node\Identifier
+				&& $a->name->toString() === $b->name->toString()
+				&& $this->isSameVariable($a->var, $b->var);
+		}
+
+		if ($a instanceof StaticPropertyFetch && $b instanceof StaticPropertyFetch) {
+			return $a->class instanceof Name
+				&& $b->class instanceof Name
+				&& $a->class->toLowerString() === $b->class->toLowerString()
+				&& $a->name instanceof Node\VarLikeIdentifier
+				&& $b->name instanceof Node\VarLikeIdentifier
+				&& $a->name->toString() === $b->name->toString();
+		}
+
+		if ($a instanceof ArrayDimFetch && $b instanceof ArrayDimFetch) {
+			return $a->dim !== null
+				&& $b->dim !== null
+				&& $this->isSameOffset($a->dim, $b->dim)
+				&& $this->isSameVariable($a->var, $b->var);
 		}
 
 		return false;
+	}
+
+	private function isSameOffset(Expr $a, Expr $b): bool
+	{
+		$aKeyType = $this->getLiteralArrayKeyType($a);
+		if ($aKeyType !== null) {
+			$bKeyType = $this->getLiteralArrayKeyType($b);
+
+			return $bKeyType !== null && $aKeyType->equals($bKeyType);
+		}
+
+		return $this->isSameVariable($a, $b);
+	}
+
+	/**
+	 * The array key a literal offset ends up as, so that offsets addressing the
+	 * same element compare as equal - `$a[1]`, `$a['1']` and `$a[1.5]` all read
+	 * the same one.
+	 */
+	private function getLiteralArrayKeyType(Expr $expr): ?Type
+	{
+		if (
+			$expr instanceof Node\Scalar\Int_
+			|| $expr instanceof Node\Scalar\String_
+			|| $expr instanceof Node\Scalar\Float_
+		) {
+			return ConstantTypeHelper::getTypeFromValue($expr->value)->toArrayKey();
+		}
+
+		return null;
 	}
 
 	/**

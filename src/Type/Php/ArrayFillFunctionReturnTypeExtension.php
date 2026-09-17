@@ -20,6 +20,7 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
+use const PHP_INT_MAX;
 
 #[AutowiredService]
 final class ArrayFillFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -64,6 +65,7 @@ final class ArrayFillFunctionReturnTypeExtension implements DynamicFunctionRetur
 		) {
 			$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 			$nextIndex = $startIndexType->getValue();
+			$overflows = false;
 			for ($i = 0; $i < $numberType->getValue(); $i++) {
 				$arrayBuilder->setOffsetValueType(
 					new ConstantIntegerType($nextIndex),
@@ -71,12 +73,19 @@ final class ArrayFillFunctionReturnTypeExtension implements DynamicFunctionRetur
 				);
 				if ($nextIndex < 0) {
 					$nextIndex = 0;
+				} elseif ($nextIndex === PHP_INT_MAX) {
+					// PHP throws "Cannot add element to the array as the next
+					// element is already occupied" instead of wrapping around.
+					$overflows = $i + 1 < $numberType->getValue();
+					break;
 				} else {
 					$nextIndex++;
 				}
 			}
 
-			return $arrayBuilder->getArray();
+			if (!$overflows) {
+				return $arrayBuilder->getArray();
+			}
 		}
 
 		$resultType = new ArrayType(new IntegerType(), $valueType);

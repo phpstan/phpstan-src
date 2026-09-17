@@ -388,7 +388,7 @@ final class ForeachHandler implements StmtHandler
 						}
 					}
 					$keyLoopTypes[] = $nodeScopeResolver->readScopeStateOrSyntheticType($keyVarExpr, $scopeWithIterableValueType);
-					$keyLoopNativeTypes[] = $nodeScopeResolver->readScopeStateOrSyntheticType($keyVarExpr, $scopeWithIterableValueType);
+					$keyLoopNativeTypes[] = $nodeScopeResolver->readScopeStateOrSyntheticType($keyVarExpr, $scopeWithIterableValueType->doNotTreatPhpDocTypesAsCertain());
 				} else {
 					// No key variable: the narrowed value var is the array element type
 					// directly. Read it by name (assigned, not processExprNode-processed);
@@ -687,6 +687,11 @@ final class ForeachHandler implements StmtHandler
 
 		$nativeConstantArrays = $nativeIterateeType->getConstantArrays();
 		$matchedNativeArrays = count($nativeConstantArrays) === count($constantArrays) ? $nativeConstantArrays : null;
+		// the native fallback must not be the PHPDoc key/value type - the shape the
+		// unrolling is driven by can be PHPDoc-only, in which case natively we only
+		// know what the native iteratee type says about its keys and values
+		$nativeIterateeKeyType = $originalScope->getIterableKeyType($nativeIterateeType);
+		$nativeIterateeValueType = $originalScope->getIterableValueType($nativeIterateeType);
 
 		$valueVarName = $stmt->valueVar->name;
 		$keyVarName = $stmt->keyVar instanceof Variable ? $stmt->keyVar->name : null;
@@ -716,10 +721,10 @@ final class ForeachHandler implements StmtHandler
 
 				$nativeKeyType = $nativeConstantArray !== null && isset($nativeConstantArray->getKeyTypes()[$i])
 					? $nativeConstantArray->getKeyTypes()[$i]
-					: $keyType;
+					: $nativeIterateeKeyType;
 				$nativeValueType = $nativeConstantArray !== null && isset($nativeConstantArray->getValueTypes()[$i])
 					? $nativeConstantArray->getValueTypes()[$i]
-					: $valueType;
+					: $nativeIterateeValueType;
 
 				$iterScope = $chainScope->assignVariable(
 					$valueVarName,

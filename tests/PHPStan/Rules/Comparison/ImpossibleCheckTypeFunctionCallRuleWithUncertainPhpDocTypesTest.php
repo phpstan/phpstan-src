@@ -261,4 +261,9 @@ class ImpossibleCheckTypeFunctionCallRuleWithUncertainPhpDocTypesTest extends Ru
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-11014.php'], []);
 	}
 
+	public function testBug15250(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15250.php'], []);
+	}
+
 }

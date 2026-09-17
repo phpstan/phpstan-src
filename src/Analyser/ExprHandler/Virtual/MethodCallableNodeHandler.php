@@ -51,7 +51,7 @@ final class MethodCallableNodeHandler implements ExprHandler
 		$hasYield = $varResult->hasYield();
 		$throwPoints = $varResult->getThrowPoints();
 		$impurePoints = $varResult->getImpurePoints();
-		$isAlwaysTerminating = false;
+		$isAlwaysTerminating = $varResult->isAlwaysTerminating();
 		$nameResult = null;
 		if ($expr->getName() instanceof Expr) {
 			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->getName(), $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
@@ -59,7 +59,7 @@ final class MethodCallableNodeHandler implements ExprHandler
 			$hasYield = $hasYield || $nameResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $nameResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $nameResult->getImpurePoints());
-			$isAlwaysTerminating = $nameResult->isAlwaysTerminating();
+			$isAlwaysTerminating = $isAlwaysTerminating || $nameResult->isAlwaysTerminating();
 		}
 
 		return $this->expressionResultFactory->create(

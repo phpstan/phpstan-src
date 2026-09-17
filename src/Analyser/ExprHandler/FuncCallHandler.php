@@ -132,6 +132,7 @@ final class FuncCallHandler implements ExprHandler
 		// NodeScopeResolver re-deriving it via Scope::getType().
 		$isEarlyTerminating = $expr->name instanceof Name
 			&& $this->earlyTerminatingHelper->isEarlyTerminatingFunctionCall($expr->name->toString());
+		$hasYield = false;
 		$isAlwaysTerminating = $isEarlyTerminating;
 		$argumentsWalkedAhead = null;
 		if (
@@ -162,6 +163,7 @@ final class FuncCallHandler implements ExprHandler
 			}
 
 			$scope = $nameResult->getScope();
+			$hasYield = $nameResult->hasYield();
 			$throwPoints = $nameResult->getThrowPoints();
 			$impurePoints = $nameResult->getImpurePoints();
 			$isAlwaysTerminating = $nameResult->isAlwaysTerminating();
@@ -340,7 +342,7 @@ final class FuncCallHandler implements ExprHandler
 			$scope = $argsResult->getScope();
 		}
 		$this->argumentsHandler->processDroppedArgs($nodeScopeResolver, $stmt, $expr, $normalizedExpr, $scope, $storage, $context);
-		$hasYield = $argsResult->hasYield();
+		$hasYield = $hasYield || $argsResult->hasYield();
 		$throwPoints = array_merge($throwPoints, $argsResult->getThrowPoints());
 		$impurePoints = array_merge($impurePoints, $argsResult->getImpurePoints());
 		$isAlwaysTerminating = $isAlwaysTerminating || $argsResult->isAlwaysTerminating();
@@ -490,7 +492,7 @@ final class FuncCallHandler implements ExprHandler
 				);
 				$throwPoints = array_merge($throwPoints, $invokeResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $invokeResult->getImpurePoints());
-				$isAlwaysTerminating = $invokeResult->isAlwaysTerminating();
+				$isAlwaysTerminating = $isAlwaysTerminating || $invokeResult->isAlwaysTerminating();
 			}
 		}
 

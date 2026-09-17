@@ -23,7 +23,7 @@ use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\ExtensionsCollection;
-use PHPStan\Node\Expr\TypeExpr;
+use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\InvalidateExprNode;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\Callables\SimpleThrowPoint;
@@ -767,13 +767,20 @@ final class ArgumentsHandler
 							$byRefType = new MixedType();
 						}
 
+						// what the call writes back is described by PHPDoc (@param, @param-out,
+						// a parameter-out extension) - natively only the parameter's own
+						// type declaration is guaranteed
+						$byRefNativeType = $currentParameter instanceof ExtendedParameterReflection
+							? $currentParameter->getNativeType()
+							: $byRefType;
+
 						$scope = $this->assignHandler->processVirtualAssign(
 							$nodeScopeResolver,
 							$scope,
 							$storage,
 							$stmt,
 							$argValue,
-							new TypeExpr($byRefType),
+							new NativeTypeExpr($byRefType, $byRefNativeType),
 							$nodeCallback,
 						)->getScope();
 						$scope = $nodeScopeResolver->lookForUnsetAllowedUndefinedExpressions($scope, $argValue);

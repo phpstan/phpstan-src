@@ -1121,4 +1121,20 @@ class DefinedVariableRuleWithoutLoopPollutionTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8360.php'], []);
 	}
 
+	public function testYieldKeyThrowPoint(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->analyse([__DIR__ . '/data/yield-key-throw-point.php'], [
+			[
+				'Undefined variable: $b',
+				17,
+			],
+			[
+				'Undefined variable: $b',
+				30,
+			],
+		]);
+	}
+
 }

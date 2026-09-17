@@ -65,7 +65,7 @@ final class YieldHandler implements ExprHandler
 		if ($expr->key !== null) {
 			$keyResult = $nodeScopeResolver->processExprNode($stmt, $expr->key, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$scope = $keyResult->getScope();
-			$throwPoints = $keyResult->getThrowPoints();
+			$throwPoints = array_merge($throwPoints, $keyResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $keyResult->getImpurePoints());
 			$isAlwaysTerminating = $keyResult->isAlwaysTerminating();
 		}

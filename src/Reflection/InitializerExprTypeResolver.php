@@ -99,6 +99,7 @@ use PHPStan\Type\UnaryOperatorTypeSpecifyingExtensionRegistry;
 use PHPStan\Type\UnionType;
 use stdClass;
 use Throwable;
+use function abs;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
@@ -122,6 +123,7 @@ use function sprintf;
 use function str_starts_with;
 use function strtolower;
 use const INF;
+use const PHP_INT_MIN;
 
 #[AutowiredService]
 final class InitializerExprTypeResolver
@@ -1453,41 +1455,107 @@ final class InitializerExprTypeResolver
 			}
 		}
 
-		$positiveInt = IntegerRangeType::fromInterval(0, null);
+		$maxMagnitude = null;
 		if ($rightType->isInteger()->yes()) {
-			$rangeMin = null;
-			$rangeMax = null;
-
-			if ($rightType instanceof IntegerRangeType) {
-				$rangeMax = $rightType->getMax() !== null ? $rightType->getMax() - 1 : null;
-			} elseif ($rightType instanceof ConstantIntegerType) {
-				$rangeMax = $rightType->getValue() - 1;
-			} elseif ($rightType instanceof UnionType) {
-				foreach ($rightType->getTypes() as $type) {
-					if ($type instanceof IntegerRangeType) {
-						if ($type->getMax() === null) {
-							$rangeMax = null;
-						} else {
-							$rangeMax = max($rangeMax, $type->getMax());
-						}
-					} elseif ($type instanceof ConstantIntegerType) {
-						$rangeMax = max($rangeMax, $type->getValue() - 1);
-					}
-				}
+			$divisorBounds = $this->getIntegerBounds($rightType);
+			if ($divisorBounds !== null) {
+				$maxMagnitude = self::getMaxModuloMagnitude($divisorBounds[0], $divisorBounds[1]);
 			}
-
-			if ($positiveInt->isSuperTypeOf($leftType)->yes()) {
-				$rangeMin = 0;
-			} elseif ($rangeMax !== null) {
-				$rangeMin = $rangeMax * -1;
-			}
-
-			return IntegerRangeType::fromInterval($rangeMin, $rangeMax);
-		} elseif ($positiveInt->isSuperTypeOf($leftType)->yes()) {
-			return IntegerRangeType::fromInterval(0, null);
 		}
 
-		return new IntegerType();
+		[$leftMin, $leftMax] = $this->getIntegerBounds($leftType) ?? [null, null];
+		if ($leftMin === null && IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($leftType)->yes()) {
+			$leftMin = 0;
+		}
+		if ($leftMax === null && IntegerRangeType::fromInterval(null, 0)->isSuperTypeOf($leftType)->yes()) {
+			$leftMax = 0;
+		}
+
+		// The result has the sign of the dividend and is never bigger in magnitude than either
+		// the dividend or the largest magnitude the divisor can have.
+		if ($leftMax !== null && $leftMax <= 0) {
+			$rangeMax = 0;
+		} elseif ($maxMagnitude === null) {
+			$rangeMax = $leftMax;
+		} elseif ($leftMax === null) {
+			$rangeMax = $maxMagnitude;
+		} else {
+			$rangeMax = min($leftMax, $maxMagnitude);
+		}
+
+		if ($leftMin !== null && $leftMin >= 0) {
+			$rangeMin = 0;
+		} elseif ($maxMagnitude === null) {
+			$rangeMin = $leftMin;
+		} elseif ($leftMin === null) {
+			$rangeMin = -$maxMagnitude;
+		} else {
+			$rangeMin = max($leftMin, -$maxMagnitude);
+		}
+
+		return IntegerRangeType::fromInterval($rangeMin, $rangeMax);
+	}
+
+	/**
+	 * Highest possible absolute value of `$x % $divisor`, which is one less than the largest
+	 * possible absolute value of the divisor. Null when there is no such bound.
+	 *
+	 * A divisor reaching PHP_INT_MIN is reported as unbounded too: `abs(PHP_INT_MIN)` does not
+	 * fit into an integer, and the bound it stands for is PHP_INT_MAX, which is all an unbounded
+	 * result can hold anyway.
+	 */
+	private static function getMaxModuloMagnitude(?int $divisorMin, ?int $divisorMax): ?int
+	{
+		if ($divisorMin === null || $divisorMax === null || $divisorMin === PHP_INT_MIN) {
+			return null;
+		}
+
+		return max(abs($divisorMin), abs($divisorMax)) - 1;
+	}
+
+	/**
+	 * @return array{int|null, int|null}|null Lowest and highest value the type can hold, with null
+	 * for an unbounded side. Null when the type is not built from integer ranges and constants.
+	 */
+	private function getIntegerBounds(Type $type): ?array
+	{
+		$innerTypes = $type instanceof UnionType ? $type->getTypes() : [$type];
+		if ($innerTypes === []) {
+			return null;
+		}
+
+		$min = null;
+		$max = null;
+		$unboundedMin = false;
+		$unboundedMax = false;
+		foreach ($innerTypes as $innerType) {
+			if ($innerType instanceof IntegerRangeType) {
+				$innerMin = $innerType->getMin();
+				$innerMax = $innerType->getMax();
+			} elseif ($innerType instanceof ConstantIntegerType) {
+				$innerMin = $innerType->getValue();
+				$innerMax = $innerMin;
+			} else {
+				return null;
+			}
+
+			if ($innerMin === null) {
+				$unboundedMin = true;
+			} elseif ($min === null || $innerMin < $min) {
+				$min = $innerMin;
+			}
+
+			if ($innerMax === null) {
+				$unboundedMax = true;
+			} elseif ($max === null || $innerMax > $max) {
+				$max = $innerMax;
+			}
+		}
+
+		return [
+			$unboundedMin ? null : $min,
+			$unboundedMax ? null : $max,
+		];
 	}
 
 	/**

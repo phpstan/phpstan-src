@@ -34,8 +34,8 @@ class Foo
 		assertType('int', $i % $unionRange);
 		assertType('int<0, max>', $p % $unionRange);
 
-		assertType('int<-6, 6>', $i % $hybridUnionRange);
-		assertType('int<0, 6>', $p % $hybridUnionRange);
+		assertType('int', $i % $hybridUnionRange);
+		assertType('int<0, max>', $p % $hybridUnionRange);
 
 		assertType('int<0, max>', $zeroOrMore % $mixed);
 

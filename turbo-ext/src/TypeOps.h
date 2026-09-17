@@ -140,6 +140,22 @@ enum pt_type_op_id : uint8_t
 	PT_OP_IS_BUILTIN,
 	PT_OP_IS,
 	PT_OP_IS_SUBCLASS_OF_CLASS,
+	/* the parameter reflections' getters, member reflections' visibility and
+	 * more ClassReflection readers (the call-site census's long tail) */
+	PT_OP_GET_NAME,
+	PT_OP_IS_OPTIONAL,
+	PT_OP_GET_TYPE,
+	PT_OP_PASSED_BY_REFERENCE,
+	PT_OP_IS_VARIADIC,
+	PT_OP_GET_DEFAULT_VALUE,
+	PT_OP_IS_PUBLIC,
+	PT_OP_DO_NOT_RESOLVE_TEMPLATE_TYPE_MAP_TO_BOUNDS,
+	PT_OP_GET_FILE_NAME,
+	PT_OP_GET_PARENT_CLASS,
+	PT_OP_GET_OBJECT_TYPE,
+	PT_OP_GET_TEMPLATE_TYPE_MAP,
+	PT_OP_GET_RESOLVED_PHP_DOC,
+	PT_OP_WITH_TYPES,
 	PT_OP_COUNT,
 };
 

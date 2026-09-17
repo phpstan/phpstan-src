@@ -244,14 +244,20 @@ void pt_register_extended_native_parameter_reflection()
 	});
 
 	cls.method<&ExtendedNativeParameterReflection::getName>(sigs::getName);
+	cls.op<PT_OP_GET_NAME, &ExtendedNativeParameterReflection::getName>();
 	cls.method<&ExtendedNativeParameterReflection::isOptional>(sigs::isOptional);
+	cls.op<PT_OP_IS_OPTIONAL, &ExtendedNativeParameterReflection::isOptional>();
 	cls.method<&ExtendedNativeParameterReflection::getType>(sigs::getType);
+	cls.op<PT_OP_GET_TYPE, &ExtendedNativeParameterReflection::getType>();
 	cls.method<&ExtendedNativeParameterReflection::getPhpDocType>(sigs::getPhpDocType);
 	cls.method<&ExtendedNativeParameterReflection::hasNativeType>(sigs::hasNativeType);
 	cls.method<&ExtendedNativeParameterReflection::getNativeType>(sigs::getNativeType);
 	cls.method<&ExtendedNativeParameterReflection::passedByReference>(sigs::passedByReference);
+	cls.op<PT_OP_PASSED_BY_REFERENCE, &ExtendedNativeParameterReflection::passedByReference>();
 	cls.method<&ExtendedNativeParameterReflection::isVariadic>(sigs::isVariadic);
+	cls.op<PT_OP_IS_VARIADIC, &ExtendedNativeParameterReflection::isVariadic>();
 	cls.method<&ExtendedNativeParameterReflection::getDefaultValue>(sigs::getDefaultValue);
+	cls.op<PT_OP_GET_DEFAULT_VALUE, &ExtendedNativeParameterReflection::getDefaultValue>();
 	cls.method<&ExtendedNativeParameterReflection::getOutType>(sigs::getOutType);
 	cls.method<&ExtendedNativeParameterReflection::isImmediatelyInvokedCallable>(sigs::isImmediatelyInvokedCallable);
 	cls.method<&ExtendedNativeParameterReflection::getClosureThisType>(sigs::getClosureThisType);

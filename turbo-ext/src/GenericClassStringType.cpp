@@ -309,8 +309,10 @@ public:
 	{
 		zv::Val covariant = pt_type_template_type_variance(PT_TEMPLATE_TYPE_VARIANCE_COVARIANT);
 		if (UNEXPECTED(covariant.isUndef())) return zv::Val();
-		zv::Val variance = pt_type_call(Z_OBJ_P(positionVariance), PT_LC("compose"), 1, covariant.raw());
-		if (UNEXPECTED(variance.isUndef())) return zv::Val();
+		/* $positionVariance->compose(...) — the native body for the native class */
+		zval composedVariance;
+		if (UNEXPECTED(!pt_template_type_variance_compose(&composedVariance, positionVariance, covariant.raw()))) return zv::Val();
+		zv::Val variance = zv::Val::adopt(composedVariance);
 		return callOnType(PT_LC("getreferencedtemplatetypes"), 1, variance.raw());
 	}
 

@@ -615,8 +615,10 @@ public:
 				}
 			}
 
-			zv::Val variance = pt_type_call(Z_OBJ_P(positionVariance), PT_LC("compose"), 1, effectiveVariance.raw());
-			if (UNEXPECTED(variance.isUndef())) return zv::Val();
+			/* $positionVariance->compose(...) — the native body for the native class */
+			zval composedVariance;
+			if (UNEXPECTED(!pt_template_type_variance_compose(&composedVariance, positionVariance, effectiveVariance.raw()))) return zv::Val();
+			zv::Val variance = zv::Val::adopt(composedVariance);
 			if (UNEXPECTED(!type.isObject())) {
 				zend_type_error("phpstan_turbo: a type argument must be %s", ptcls::type);
 				return zv::Val();

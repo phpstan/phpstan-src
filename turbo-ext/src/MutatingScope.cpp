@@ -5903,9 +5903,9 @@ public:
 			zend_throw_error(NULL, "Call to a member function no() on %s", zend_zval_value_name(isSuperType.raw()));
 			return zv::Val();
 		}
-		zv::Val no = pt_type_call(isSuperType.ref().asObject(), PT_LC("no"), 0, NULL);
-		if (UNEXPECTED(no.isUndef())) return zv::Val();
-		if (zend_is_true(no.raw())) return zv::Val::copyOf(zv::Ref(nativeType));
+		bool no;
+		if (UNEXPECTED(!resultNo(isSuperType.ref().asObject(), no))) return zv::Val();
+		if (no) return zv::Val::copyOf(zv::Ref(nativeType));
 
 		zv::Args args{nativeType, inferredType};
 		zv::Val result = pt_type_combinator_intersect(2, args);
@@ -5952,8 +5952,8 @@ public:
 	/* $originalScope->getIterableKeyType($type) / ->getIterableValueType($type) */
 	static zv::Val iterableType(zend_object *originalScope, zval *iteratee, bool key)
 	{
-		if (key) return pt_type_call(originalScope, PT_LC("getiterablekeytype"), 1, iteratee);
-		return pt_type_call(originalScope, PT_LC("getiterablevaluetype"), 1, iteratee);
+		if (key) return pt_mutating_scope_get_iterable_key_type(originalScope, iteratee);
+		return pt_mutating_scope_get_iterable_value_type(originalScope, iteratee);
 	}
 
 	/* $scope->assignExpression($expr, $type, $nativeType) on any scope */
@@ -7427,7 +7427,20 @@ public:
 			zend_throw_error(NULL, "Call to a member function no() on %s", zend_zval_value_name(result.raw()));
 			return false;
 		}
-		zv::Val no = pt_type_call(Z_OBJ_P(result.raw()), PT_LC("no"), 0, NULL);
+		return resultNo(Z_OBJ_P(result.raw()), out);
+	}
+
+	/* $result->no() of an IsSuperTypeOfResult: the native result's value, the
+	 * method of anything else; false = pending exception */
+	[[nodiscard]] static bool resultNo(zend_object *result, bool &out)
+	{
+		if (EXPECTED(result->ce == pt_ce_is_super_type_of_result)) {
+			zend_long value = pt_result_value(result);
+			if (UNEXPECTED(value < 0)) return false;
+			out = value == PT_TRI_NO;
+			return true;
+		}
+		zv::Val no = pt_type_call(result, PT_LC("no"), 0, NULL);
 		if (UNEXPECTED(no.isUndef())) return false;
 		out = zend_is_true(no.raw());
 		return true;
@@ -10619,7 +10632,7 @@ public:
 			bool nameIsIdentifier;
 			if (UNEXPECTED(!nodeNameIs(expr, PT_CLASS_IDENTIFIER, nameIsIdentifier))) return zv::Val();
 			if (nameIsIdentifier) {
-				zv::Val propertyReflection = memberReflectionOfFetch(expr, native, PT_LC("getinstancepropertyreflection"));
+				zv::Val propertyReflection = memberReflectionOfFetch(expr, native, false);
 				if (UNEXPECTED(propertyReflection.isUndef())) return zv::Val();
 				return propertyStateType(propertyReflection, native);
 			}
@@ -10733,7 +10746,7 @@ public:
 						if (!stored.isNull()) return native ? thisGetNativeType(&exprZv) : thisGetType(&exprZv);
 					}
 
-					zv::Val methodReflection = memberReflectionOfFetch(expr, native, PT_LC("getmethodreflection"));
+					zv::Val methodReflection = memberReflectionOfFetch(expr, native, true);
 					if (UNEXPECTED(methodReflection.isUndef())) return zv::Val();
 					if (methodReflection.isNull()) return pt_type_new_error_type();
 					zend_object *methodObject = requireObject(methodReflection, "getVariants");
@@ -10808,7 +10821,7 @@ public:
 	}
 
 	/* $this-><method>($this->resolveScopeStateType($expr->var, $native), $expr->name->toString()) */
-	zv::Val memberReflectionOfFetch(zend_object *expr, bool native, const char *lcname, size_t len)
+	zv::Val memberReflectionOfFetch(zend_object *expr, bool native, bool method)
 	{
 		zv::Ref var = nodeProp(expr, PT_LC("var"));
 		if (UNEXPECTED(var.raw() == NULL)) return zv::Val();
@@ -10821,8 +10834,16 @@ public:
 		if (UNEXPECTED(varStateType.isUndef())) return zv::Val();
 		zv::Val nameString = memberNameString(expr);
 		if (UNEXPECTED(nameString.isUndef())) return zv::Val();
+		/* $this->getMethodReflection(...) / ->getInstancePropertyReflection(...):
+		 * the dispatching entries (a string name — memberNameString() —
+		 * and an object type take the native body) */
+		if (EXPECTED(varStateType.ref().isObject() && nameString.ref().isString())) {
+			return method
+				? pt_mutating_scope_get_method_reflection(self, varStateType.raw(), Z_STR_P(nameString.raw()))
+				: pt_mutating_scope_get_instance_property_reflection(self, varStateType.raw(), Z_STR_P(nameString.raw()));
+		}
 		zv::Args args{varStateType.raw(), nameString.raw()};
-		return thisCallByName(lcname, len, 2, args);
+		return method ? thisCallByName(PT_LC("getmethodreflection"), 2, args) : thisCallByName(PT_LC("getinstancepropertyreflection"), 2, args);
 	}
 
 	/* $expr->name->toString() */
@@ -11892,13 +11913,13 @@ zv::Val pt_mutating_scope_restore_this(zend_object *scope, zval *restoreThisScop
 
 zv::Val pt_mutating_scope_get_iterable_value_type(zend_object *scope, zval *type)
 {
-	if (EXPECTED(scope->ce == pt_ce_mutating_scope && Z_TYPE_P(type) == IS_OBJECT)) return MutatingScope(scope).getIterableValueType(type);
+	if (EXPECTED(PT_MS_INHERITS(scope, "getiterablevaluetype") && Z_TYPE_P(type) == IS_OBJECT)) return MutatingScope(scope).getIterableValueType(type);
 	return pt_type_call(scope, PT_LC("getiterablevaluetype"), 1, type);
 }
 
 zv::Val pt_mutating_scope_get_iterable_key_type(zend_object *scope, zval *type)
 {
-	if (EXPECTED(scope->ce == pt_ce_mutating_scope && Z_TYPE_P(type) == IS_OBJECT)) return MutatingScope(scope).getIterableKeyType(type);
+	if (EXPECTED(PT_MS_INHERITS(scope, "getiterablekeytype") && Z_TYPE_P(type) == IS_OBJECT)) return MutatingScope(scope).getIterableKeyType(type);
 	return pt_type_call(scope, PT_LC("getiterablekeytype"), 1, type);
 }
 /* }}} */

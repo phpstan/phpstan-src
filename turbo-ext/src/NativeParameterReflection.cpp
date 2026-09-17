@@ -254,16 +254,22 @@ void pt_register_native_parameter_reflection()
 	});
 
 	cls.method<&NativeParameterReflection::getName>(sigs::getName);
+	cls.op<PT_OP_GET_NAME, &NativeParameterReflection::getName>();
 
 	cls.method<&NativeParameterReflection::isOptional>(sigs::isOptional);
+	cls.op<PT_OP_IS_OPTIONAL, &NativeParameterReflection::isOptional>();
 
 	cls.method<&NativeParameterReflection::getType>(sigs::getType);
+	cls.op<PT_OP_GET_TYPE, &NativeParameterReflection::getType>();
 
 	cls.method<&NativeParameterReflection::passedByReference>(sigs::passedByReference);
+	cls.op<PT_OP_PASSED_BY_REFERENCE, &NativeParameterReflection::passedByReference>();
 
 	cls.method<&NativeParameterReflection::isVariadic>(sigs::isVariadic);
+	cls.op<PT_OP_IS_VARIADIC, &NativeParameterReflection::isVariadic>();
 
 	cls.method<&NativeParameterReflection::getDefaultValue>(sigs::getDefaultValue);
+	cls.op<PT_OP_GET_DEFAULT_VALUE, &NativeParameterReflection::getDefaultValue>();
 
 	cls.method<&NativeParameterReflection::toOptional>(sigs::toOptional);
 

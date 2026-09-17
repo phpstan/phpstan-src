@@ -415,14 +415,20 @@ void pt_register_php_parameter_reflection()
 	});
 
 	cls.method<&PhpParameterReflection::isOptional>(sigs::isOptional);
+	cls.op<PT_OP_IS_OPTIONAL, &PhpParameterReflection::isOptional>();
 	cls.method<&PhpParameterReflection::getName>(sigs::getName);
+	cls.op<PT_OP_GET_NAME, &PhpParameterReflection::getName>();
 	cls.method<&PhpParameterReflection::getType>(sigs::getType);
+	cls.op<PT_OP_GET_TYPE, &PhpParameterReflection::getType>();
 	cls.method<&PhpParameterReflection::passedByReference>(sigs::passedByReference);
+	cls.op<PT_OP_PASSED_BY_REFERENCE, &PhpParameterReflection::passedByReference>();
 	cls.method<&PhpParameterReflection::isVariadic>(sigs::isVariadic);
+	cls.op<PT_OP_IS_VARIADIC, &PhpParameterReflection::isVariadic>();
 	cls.method<&PhpParameterReflection::getPhpDocType>(sigs::getPhpDocType);
 	cls.method<&PhpParameterReflection::hasNativeType>(sigs::hasNativeType);
 	cls.method<&PhpParameterReflection::getNativeType>(sigs::getNativeType);
 	cls.method<&PhpParameterReflection::getDefaultValue>(sigs::getDefaultValue);
+	cls.op<PT_OP_GET_DEFAULT_VALUE, &PhpParameterReflection::getDefaultValue>();
 	cls.method<&PhpParameterReflection::getOutType>(sigs::getOutType);
 	cls.method<&PhpParameterReflection::isImmediatelyInvokedCallable>(sigs::isImmediatelyInvokedCallable);
 	cls.method<&PhpParameterReflection::getClosureThisType>(sigs::getClosureThisType);

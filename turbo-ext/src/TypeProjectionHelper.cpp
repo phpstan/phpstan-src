@@ -38,13 +38,12 @@ public:
 		}
 
 		if (variance == NULL || Z_TYPE_P(variance) != IS_OBJECT) return describedType;
-		zv::Val invariant = pt_type_call(Z_OBJ_P(variance), PT_LC("invariant"), 0, NULL);
-		if (UNEXPECTED(invariant.isUndef())) return zv::Val();
-		if (zend_is_true(invariant.raw())) return describedType;
-
-		zv::Val bivariant = pt_type_call(Z_OBJ_P(variance), PT_LC("bivariant"), 0, NULL);
-		if (UNEXPECTED(bivariant.isUndef())) return zv::Val();
-		if (zend_is_true(bivariant.raw())) return zv::Val::string("*", 1);
+		/* $variance->invariant() / ->bivariant(): the native instance's value
+		 * (the is-queries of the PHP twin in the differential tests) */
+		zend_long varianceValue;
+		if (UNEXPECTED(!pt_template_type_variance_value_of(variance, varianceValue))) return zv::Val();
+		if (varianceValue == PT_TEMPLATE_TYPE_VARIANCE_INVARIANT) return describedType;
+		if (varianceValue == PT_TEMPLATE_TYPE_VARIANCE_BIVARIANT) return zv::Val::string("*", 1);
 
 		/* sprintf('%s %s', $variance->describe(), $describedType) */
 		zv::Val varianceDescription = pt_type_op(Z_OBJ_P(variance), PT_OP_DESCRIBE, 0, NULL);

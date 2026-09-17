@@ -211,6 +211,7 @@ void pt_register_called_on_type_unresolved_property_prototype_reflection()
 	cls.method<&CalledOnTypeUnresolvedPropertyPrototypeReflection::construct, zp::Obj, zp::Obj, zp::Bool, zp::Obj>(sigs::__construct);
 
 	cls.method<&CalledOnTypeUnresolvedPropertyPrototypeReflection::doNotResolveTemplateTypeMapToBounds>(sigs::doNotResolveTemplateTypeMapToBounds);
+	cls.op<PT_OP_DO_NOT_RESOLVE_TEMPLATE_TYPE_MAP_TO_BOUNDS, &CalledOnTypeUnresolvedPropertyPrototypeReflection::doNotResolveTemplateTypeMapToBounds>();
 
 	cls.method<&CalledOnTypeUnresolvedPropertyPrototypeReflection::getNakedProperty>(sigs::getNakedProperty);
 	cls.op<PT_OP_GET_NAKED_PROPERTY, &CalledOnTypeUnresolvedPropertyPrototypeReflection::getNakedProperty>();

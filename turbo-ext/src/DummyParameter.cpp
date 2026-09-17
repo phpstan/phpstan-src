@@ -152,11 +152,17 @@ void pt_register_dummy_parameter()
 	});
 
 	cls.method<&DummyParameter::getName>(sigs::getName);
+	cls.op<PT_OP_GET_NAME, &DummyParameter::getName>();
 	cls.method<&DummyParameter::isOptional>(sigs::isOptional);
+	cls.op<PT_OP_IS_OPTIONAL, &DummyParameter::isOptional>();
 	cls.method<&DummyParameter::getType>(sigs::getType);
+	cls.op<PT_OP_GET_TYPE, &DummyParameter::getType>();
 	cls.method<&DummyParameter::passedByReference>(sigs::passedByReference);
+	cls.op<PT_OP_PASSED_BY_REFERENCE, &DummyParameter::passedByReference>();
 	cls.method<&DummyParameter::isVariadic>(sigs::isVariadic);
+	cls.op<PT_OP_IS_VARIADIC, &DummyParameter::isVariadic>();
 	cls.method<&DummyParameter::getDefaultValue>(sigs::getDefaultValue);
+	cls.op<PT_OP_GET_DEFAULT_VALUE, &DummyParameter::getDefaultValue>();
 
 	cls.shadow(&pt_ce_dummy_parameter);
 }

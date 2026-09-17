@@ -4718,10 +4718,13 @@ void pt_register_class_reflection()
 	cls.method<&ClassReflection::getNativeReflection>(sigs::getNativeReflection);
 
 	cls.method<&ClassReflection::getFileName>(sigs::getFileName);
+	cls.op<PT_OP_GET_FILE_NAME, &ClassReflection::getFileName>();
 
 	cls.method<&ClassReflection::getParentClass>(sigs::getParentClass);
+	cls.op<PT_OP_GET_PARENT_CLASS, &ClassReflection::getParentClass>();
 
 	cls.method<&ClassReflection::getName>(sigs::getName);
+	cls.op<PT_OP_GET_NAME, &ClassReflection::getName>();
 
 	cls.method(sigs::getDisplayName, [](INTERNAL_FUNCTION_PARAMETERS) {
 		bool withTemplateTypes = true;
@@ -4940,8 +4943,10 @@ void pt_register_class_reflection()
 	cls.method<&ClassReflection::getAttributeClassFlags>(sigs::getAttributeClassFlags);
 
 	cls.method<&ClassReflection::getObjectType>(sigs::getObjectType);
+	cls.op<PT_OP_GET_OBJECT_TYPE, &ClassReflection::getObjectType>();
 
 	cls.method<&ClassReflection::getTemplateTypeMap>(sigs::getTemplateTypeMap);
+	cls.op<PT_OP_GET_TEMPLATE_TYPE_MAP, &ClassReflection::getTemplateTypeMap>();
 
 	cls.method<&ClassReflection::getActiveTemplateTypeMap>(sigs::getActiveTemplateTypeMap);
 	cls.op<PT_OP_GET_ACTIVE_TEMPLATE_TYPE_MAP, &ClassReflection::getActiveTemplateTypeMap>();
@@ -4982,6 +4987,11 @@ void pt_register_class_reflection()
 		if (!zp::parse<zp::Arr>(execute_data, types)) RETURN_THROWS();
 		PT_RETURN_VAL(PT_THIS.withTypes(zv::Ref(types)));
 	});
+	cls.op(PT_OP_WITH_TYPES, PT_OP_LAMBDA {
+		/* anything but an array is the handler's TypeError to raise */
+		if (UNEXPECTED(Z_TYPE(argv[0]) != IS_ARRAY)) return pt_type_call_engine(self, PT_LC("withtypes"), argc, argv);
+		return ClassReflection(self).withTypes(zv::Ref(&argv[0]));
+	});
 
 	cls.method(sigs::withVariances, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *variances;
@@ -4996,6 +5006,7 @@ void pt_register_class_reflection()
 	cls.method<&ClassReflection::removeFinalKeywordOverride>(sigs::removeFinalKeywordOverride);
 
 	cls.method<&ClassReflection::getResolvedPhpDoc>(sigs::getResolvedPhpDoc);
+	cls.op<PT_OP_GET_RESOLVED_PHP_DOC, &ClassReflection::getResolvedPhpDoc>();
 
 	cls.method(sigs::getTraitContextResolvedPhpDoc, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *implementingClass;
@@ -5012,6 +5023,7 @@ void pt_register_class_reflection()
 	cls.method<&ClassReflection::getAncestors>(sigs::getAncestors);
 
 	cls.method<&ClassReflection::getAncestorWithClassName, zp::Str>(sigs::getAncestorWithClassName);
+	cls.op<PT_OP_GET_ANCESTOR_WITH_CLASS_NAME, &ClassReflection::getAncestorWithClassName>();
 
 	cls.method<&ClassReflection::getMixinTags>(sigs::getMixinTags);
 

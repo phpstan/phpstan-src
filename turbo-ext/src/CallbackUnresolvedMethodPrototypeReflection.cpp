@@ -210,6 +210,7 @@ void pt_register_callback_unresolved_method_prototype_reflection()
 	});
 
 	cls.method<&CallbackUnresolvedMethodPrototypeReflection::doNotResolveTemplateTypeMapToBounds>(sigs::doNotResolveTemplateTypeMapToBounds);
+	cls.op<PT_OP_DO_NOT_RESOLVE_TEMPLATE_TYPE_MAP_TO_BOUNDS, &CallbackUnresolvedMethodPrototypeReflection::doNotResolveTemplateTypeMapToBounds>();
 
 	cls.method<&CallbackUnresolvedMethodPrototypeReflection::getNakedMethod>(sigs::getNakedMethod);
 	cls.op<PT_OP_GET_NAKED_METHOD, &CallbackUnresolvedMethodPrototypeReflection::getNakedMethod>();

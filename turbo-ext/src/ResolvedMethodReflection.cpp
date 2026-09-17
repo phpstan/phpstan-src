@@ -412,6 +412,7 @@ void pt_register_resolved_method_reflection()
 	cls.method<&ResolvedMethodReflection::isStatic>(sigs::isStatic);
 	cls.method<&ResolvedMethodReflection::isPrivate>(sigs::isPrivate);
 	cls.method<&ResolvedMethodReflection::isPublic>(sigs::isPublic);
+	cls.op<PT_OP_IS_PUBLIC, &ResolvedMethodReflection::isPublic>();
 	cls.method<&ResolvedMethodReflection::getDocComment>(sigs::getDocComment);
 	cls.method<&ResolvedMethodReflection::isDeprecated>(sigs::isDeprecated);
 	cls.method<&ResolvedMethodReflection::getDeprecatedDescription>(sigs::getDeprecatedDescription);

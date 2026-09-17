@@ -80,6 +80,20 @@ const pt_type_op_info pt_type_op_infos[PT_OP_COUNT] = {
 	/* PT_OP_IS_BUILTIN */ { "isbuiltin", sizeof("isbuiltin") - 1, 0, pt_type_op_kinds() },
 	/* PT_OP_IS */ { "is", sizeof("is") - 1, 1, pt_type_op_kinds(PT_OPARG_STRING) },
 	/* PT_OP_IS_SUBCLASS_OF_CLASS */ { "issubclassofclass", sizeof("issubclassofclass") - 1, 1, pt_type_op_kinds(PT_OPARG_OBJECT) },
+	/* PT_OP_GET_NAME */ { "getname", sizeof("getname") - 1, 0, pt_type_op_kinds() },
+	/* PT_OP_IS_OPTIONAL */ { "isoptional", sizeof("isoptional") - 1, 0, pt_type_op_kinds() },
+	/* PT_OP_GET_TYPE */ { "gettype", sizeof("gettype") - 1, 0, pt_type_op_kinds() },
+	/* PT_OP_PASSED_BY_REFERENCE */ { "passedbyreference", sizeof("passedbyreference") - 1, 0, pt_type_op_kinds() },
+	/* PT_OP_IS_VARIADIC */ { "isvariadic", sizeof("isvariadic") - 1, 0, pt_type_op_kinds() },
+	/* PT_OP_GET_DEFAULT_VALUE */ { "getdefaultvalue", sizeof("getdefaultvalue") - 1, 0, pt_type_op_kinds() },
+	/* PT_OP_IS_PUBLIC */ { "ispublic", sizeof("ispublic") - 1, 0, pt_type_op_kinds() },
+	/* PT_OP_DO_NOT_RESOLVE_TEMPLATE_TYPE_MAP_TO_BOUNDS */ { "donotresolvetemplatetypemaptobounds", sizeof("donotresolvetemplatetypemaptobounds") - 1, 0, pt_type_op_kinds() },
+	/* PT_OP_GET_FILE_NAME */ { "getfilename", sizeof("getfilename") - 1, 0, pt_type_op_kinds() },
+	/* PT_OP_GET_PARENT_CLASS */ { "getparentclass", sizeof("getparentclass") - 1, 0, pt_type_op_kinds() },
+	/* PT_OP_GET_OBJECT_TYPE */ { "getobjecttype", sizeof("getobjecttype") - 1, 0, pt_type_op_kinds() },
+	/* PT_OP_GET_TEMPLATE_TYPE_MAP */ { "gettemplatetypemap", sizeof("gettemplatetypemap") - 1, 0, pt_type_op_kinds() },
+	/* PT_OP_GET_RESOLVED_PHP_DOC */ { "getresolvedphpdoc", sizeof("getresolvedphpdoc") - 1, 0, pt_type_op_kinds() },
+	/* PT_OP_WITH_TYPES */ { "withtypes", sizeof("withtypes") - 1, 1, pt_type_op_kinds() },
 };
 
 pt_type_ops_slot pt_type_ops_table[PT_TYPE_OPS_TABLE_SIZE];

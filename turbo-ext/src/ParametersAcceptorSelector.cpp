@@ -27,6 +27,7 @@ namespace sigs = ptdecl::ParametersAcceptorSelector::sig;
 #include "TypeOps.h"
 #include "Engine.h"
 #include "ParameterValues.h"
+#include "AcceptorValues.h"
 #include "zend_closures.h" /* zend_ce_closure */
 
 zend_class_entry *pt_ce_parameters_acceptor_selector = nullptr;
@@ -254,15 +255,6 @@ enum ParameterGetter
 	PG_COUNT,
 };
 
-struct GetterInfo
-{
-	const char *lcname;
-	size_t len;
-	const char *name;
-};
-
-#define PT_PAS_GETTER(lc, name) { lc, sizeof(lc) - 1, name }
-
 /* the PT_PR_* member of each parameter getter */
 const pt_parameter_reflection_member pt_pas_parameter_members[PG_COUNT] = {
 	PT_PR_GET_NAME,
@@ -295,55 +287,29 @@ bool parameterBool(zval *parameter, ParameterGetter getter, bool &out)
 
 enum AcceptorGetter
 {
-	AG_PARAMETERS,
-	AG_VARIADIC,
-	AG_RETURN_TYPE,
-	AG_TEMPLATE_TYPE_MAP,
-	AG_RESOLVED_TEMPLATE_TYPE_MAP,
-	AG_CALL_SITE_VARIANCE_MAP,
-	AG_PHPDOC_RETURN_TYPE,
-	AG_NATIVE_RETURN_TYPE,
-	AG_THROW_POINTS,
-	AG_IS_PURE,
-	AG_IMPURE_POINTS,
-	AG_INVALIDATE_EXPRESSIONS,
-	AG_USED_VARIABLES,
-	AG_ACCEPTS_NAMED_ARGUMENTS,
-	AG_MUST_USE_RETURN_VALUE,
-	AG_ASSERTS,
-	AG_IS_STATIC_CLOSURE,
-	AG_COUNT,
+	AG_PARAMETERS = PT_PA_GET_PARAMETERS,
+	AG_VARIADIC = PT_PA_IS_VARIADIC,
+	AG_RETURN_TYPE = PT_PA_GET_RETURN_TYPE,
+	AG_TEMPLATE_TYPE_MAP = PT_PA_GET_TEMPLATE_TYPE_MAP,
+	AG_RESOLVED_TEMPLATE_TYPE_MAP = PT_PA_GET_RESOLVED_TEMPLATE_TYPE_MAP,
+	AG_CALL_SITE_VARIANCE_MAP = PT_PA_GET_CALL_SITE_VARIANCE_MAP,
+	AG_PHPDOC_RETURN_TYPE = PT_PA_GET_PHPDOC_RETURN_TYPE,
+	AG_NATIVE_RETURN_TYPE = PT_PA_GET_NATIVE_RETURN_TYPE,
+	AG_THROW_POINTS = PT_PA_GET_THROW_POINTS,
+	AG_IS_PURE = PT_PA_IS_PURE,
+	AG_IMPURE_POINTS = PT_PA_GET_IMPURE_POINTS,
+	AG_INVALIDATE_EXPRESSIONS = PT_PA_GET_INVALIDATE_EXPRESSIONS,
+	AG_USED_VARIABLES = PT_PA_GET_USED_VARIABLES,
+	AG_ACCEPTS_NAMED_ARGUMENTS = PT_PA_ACCEPTS_NAMED_ARGUMENTS,
+	AG_MUST_USE_RETURN_VALUE = PT_PA_MUST_USE_RETURN_VALUE,
+	AG_ASSERTS = PT_PA_GET_ASSERTS,
+	AG_IS_STATIC_CLOSURE = PT_PA_IS_STATIC_CLOSURE,
 };
 
-const GetterInfo pt_pas_acceptor_getters[AG_COUNT] = {
-	PT_PAS_GETTER("getparameters", "getParameters"),
-	PT_PAS_GETTER("isvariadic", "isVariadic"),
-	PT_PAS_GETTER("getreturntype", "getReturnType"),
-	PT_PAS_GETTER("gettemplatetypemap", "getTemplateTypeMap"),
-	PT_PAS_GETTER("getresolvedtemplatetypemap", "getResolvedTemplateTypeMap"),
-	PT_PAS_GETTER("getcallsitevariancemap", "getCallSiteVarianceMap"),
-	PT_PAS_GETTER("getphpdocreturntype", "getPhpDocReturnType"),
-	PT_PAS_GETTER("getnativereturntype", "getNativeReturnType"),
-	PT_PAS_GETTER("getthrowpoints", "getThrowPoints"),
-	PT_PAS_GETTER("ispure", "isPure"),
-	PT_PAS_GETTER("getimpurepoints", "getImpurePoints"),
-	PT_PAS_GETTER("getinvalidateexpressions", "getInvalidateExpressions"),
-	PT_PAS_GETTER("getusedvariables", "getUsedVariables"),
-	PT_PAS_GETTER("acceptsnamedarguments", "acceptsNamedArguments"),
-	PT_PAS_GETTER("mustusereturnvalue", "mustUseReturnValue"),
-	PT_PAS_GETTER("getasserts", "getAsserts"),
-	PT_PAS_GETTER("isstaticclosure", "isStaticClosure"),
-};
-
-#undef PT_PAS_GETTER
-
-pt_method_site pt_pas_acceptor_sites[AG_COUNT];
-
-/* $acceptor->getX() */
+/* $acceptor->getX() (AcceptorValues.h) */
 zv::Val acceptorGet(zval *acceptor, AcceptorGetter getter)
 {
-	const GetterInfo &info = pt_pas_acceptor_getters[getter];
-	return callOn(pt_pas_acceptor_sites[getter], acceptor, info.lcname, info.len, info.name, 0, NULL);
+	return pt_parameters_acceptor_call(acceptor, (pt_parameters_acceptor_member) getter);
 }
 
 /* $acceptor->getParameters() as an array; UNDEF = pending exception */
@@ -1142,11 +1108,11 @@ public:
 			ZVAL_COPY_VALUE(&argv[14], pt_trinary_singleton(mustUseReturnValue));
 			ZVAL_NULL(&argv[15]);
 			ZVAL_COPY_VALUE(&argv[16], pt_trinary_singleton(isStaticClosure));
-			return pt_type_new(PT_CLASS_EXTENDED_CALLABLE_FUNCTION_VARIANT, 17, argv);
+			return pt_extended_callable_function_variant_new(17, argv);
 		}
 
 		zv::Args argv{emptyMapHold.raw(), &null, parameterList.raw(), &variadicZv, returnType.raw(), phpDoc, nativeReturnType.raw()};
-		return pt_type_new(PT_CLASS_EXTENDED_FUNCTION_VARIANT, 7, argv);
+		return pt_extended_function_variant_new(7, argv);
 	}
 
 private:
@@ -1471,7 +1437,7 @@ public:
 		for (int k = 0; k < count; k++) {
 			ZVAL_COPY_VALUE(&argv[k], values[k].raw());
 		}
-		return pt_type_new(isCallable ? PT_CLASS_EXTENDED_CALLABLE_FUNCTION_VARIANT : PT_CLASS_EXTENDED_FUNCTION_VARIANT, (uint32_t) count, argv);
+		return isCallable ? pt_extended_callable_function_variant_new((uint32_t) count, argv) : pt_extended_function_variant_new((uint32_t) count, argv);
 	}
 
 	/* array_map(static fn (ParameterReflection $parameter): ExtendedParameterReflection
@@ -1563,7 +1529,7 @@ public:
 			zv::Val callSiteVarianceMap = acceptorGet(acceptor, AG_CALL_SITE_VARIANCE_MAP);
 			if (UNEXPECTED(callSiteVarianceMap.isUndef())) return zv::Val();
 			zv::Args argv{templateTypeMap.raw(), resolvedTemplateTypeMap.raw(), wrapped.raw(), isVariadic.raw(), returnType.raw(), phpDocReturnType.raw(), nativeReturnType.raw(), callSiteVarianceMap.raw()};
-			return pt_type_new(PT_CLASS_EXTENDED_FUNCTION_VARIANT, 8, argv);
+			return pt_extended_function_variant_new(8, argv);
 		}
 
 		zv::Val isVariadic = acceptorGet(acceptor, AG_VARIADIC);
@@ -1574,7 +1540,7 @@ public:
 		if (UNEXPECTED(!pt_template_type_variance_map_empty(&emptyVariances))) return zv::Val();
 		zv::Val emptyVariancesHold = zv::Val::adopt(emptyVariances);
 		zv::Args argv{templateTypeMap.raw(), resolvedTemplateTypeMap.raw(), parameters, isVariadic.raw(), returnType.raw(), emptyVariancesHold.raw()};
-		return pt_type_new(PT_CLASS_FUNCTION_VARIANT, 6, argv);
+		return pt_function_variant_new(6, argv);
 	}
 
 private:
@@ -1834,7 +1800,7 @@ private:
 		}
 		if (UNEXPECTED(variances.isUndef())) return zv::Val();
 		zv::Args argv{templateTypeMap.raw(), resolvedTemplateTypeMap.raw(), parameters, isVariadic.raw(), returnType.raw(), variances.raw()};
-		return pt_type_new(PT_CLASS_FUNCTION_VARIANT, 6, argv);
+		return pt_function_variant_new(6, argv);
 	}
 
 	/* new NativeParameterReflection($parameters[$index]->getName(),

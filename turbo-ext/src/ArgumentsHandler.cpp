@@ -40,6 +40,7 @@ namespace sigs = ptdecl::ArgumentsHandler::sig;
 #include "Engine.h"
 #include "AnalyserValues.h"
 #include "ParameterValues.h"
+#include "AcceptorValues.h"
 
 #include <new>
 
@@ -528,12 +529,6 @@ inline zv::Val selectorSelectFromTypes(zval *types, zval *parametersAcceptors, b
 
 /* the reflections: parameters, their PassedByReference, the acceptors and
  * the callee */
-pt_method_site pt_ah_acceptor_get_parameters_site;
-pt_method_site pt_ah_acceptor_is_variadic_site;
-pt_method_site pt_ah_acceptor_get_return_type_site;
-pt_method_site pt_ah_acceptor_get_original_parameters_acceptor_site;
-pt_method_site pt_ah_acceptor_get_resolved_template_type_map_site;
-pt_method_site pt_ah_acceptor_get_call_site_variance_map_site;
 pt_method_site pt_ah_callee_is_builtin_site;
 
 /* the parameter getters: pt_parameter_reflection_call() (ParameterValues.h —
@@ -608,41 +603,40 @@ zv::Val parameterGetClosureThisType(zval *parameter)
 	return pt_parameter_reflection_call(parameter, PT_PR_GET_CLOSURE_THIS_TYPE);
 }
 
+/* the acceptor getters: pt_parameters_acceptor_call() (AcceptorValues.h) */
+
 /* $acceptor->getParameters() */
 zv::Val acceptorGetParameters(zval *acceptor)
 {
-	return callOn(pt_ah_acceptor_get_parameters_site, acceptor, PT_LC("getparameters"), "getParameters", 0, NULL);
+	return pt_parameters_acceptor_call(acceptor, PT_PA_GET_PARAMETERS);
 }
 
 /* $acceptor->isVariadic(); false = pending exception */
 bool acceptorIsVariadic(zval *acceptor, bool &out)
 {
-	zv::Val result = callOn(pt_ah_acceptor_is_variadic_site, acceptor, PT_LC("isvariadic"), "isVariadic", 0, NULL);
-	if (UNEXPECTED(result.isUndef())) return false;
-	out = zend_is_true(result.raw());
-	return true;
+	return pt_parameters_acceptor_bool(acceptor, PT_PA_IS_VARIADIC, out);
 }
 
 /* $acceptor->getReturnType() */
 zv::Val acceptorGetReturnType(zval *acceptor)
 {
-	return callOn(pt_ah_acceptor_get_return_type_site, acceptor, PT_LC("getreturntype"), "getReturnType", 0, NULL);
+	return pt_parameters_acceptor_call(acceptor, PT_PA_GET_RETURN_TYPE);
 }
 
 /* $acceptor->getOriginalParametersAcceptor() / ->getResolvedTemplateTypeMap() / ->getCallSiteVarianceMap() */
 zv::Val acceptorGetOriginalParametersAcceptor(zval *acceptor)
 {
-	return callOn(pt_ah_acceptor_get_original_parameters_acceptor_site, acceptor, PT_LC("getoriginalparametersacceptor"), "getOriginalParametersAcceptor", 0, NULL);
+	return pt_parameters_acceptor_call(acceptor, PT_PA_GET_ORIGINAL_PARAMETERS_ACCEPTOR);
 }
 
 zv::Val acceptorGetResolvedTemplateTypeMap(zval *acceptor)
 {
-	return callOn(pt_ah_acceptor_get_resolved_template_type_map_site, acceptor, PT_LC("getresolvedtemplatetypemap"), "getResolvedTemplateTypeMap", 0, NULL);
+	return pt_parameters_acceptor_call(acceptor, PT_PA_GET_RESOLVED_TEMPLATE_TYPE_MAP);
 }
 
 zv::Val acceptorGetCallSiteVarianceMap(zval *acceptor)
 {
-	return callOn(pt_ah_acceptor_get_call_site_variance_map_site, acceptor, PT_LC("getcallsitevariancemap"), "getCallSiteVarianceMap", 0, NULL);
+	return pt_parameters_acceptor_call(acceptor, PT_PA_GET_CALL_SITE_VARIANCE_MAP);
 }
 
 /* $functionReflection->isBuiltin() / $classReflection->isBuiltin() (truthiness); false = pending exception */

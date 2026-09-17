@@ -34,6 +34,7 @@
 
 #include "TypeTraits.h"
 #include "generated/ObjectType.h"
+#include "AcceptorValues.h"
 
 namespace slots = ptdecl::ObjectType::slot;
 namespace sigs = ptdecl::ObjectType::sig;
@@ -2117,9 +2118,8 @@ public:
 		if (zv::ArrRef(parametersAcceptors.raw()).size() == 1) {
 			zv::Val first = firstClassName(parametersAcceptors.raw());
 			if (UNEXPECTED(first.isUndef())) return -1;
-			bool trivial;
-			if (UNEXPECTED(!pt_type_instanceof(first.raw(), PT_CLASS_TRIVIAL_PARAMETERS_ACCEPTOR, trivial))) return -1;
-			if (trivial) return PT_TRI_MAYBE;
+			/* $first instanceof TrivialParametersAcceptor (final) */
+			if (Z_TYPE_P(first.raw()) == IS_OBJECT && Z_OBJCE_P(first.raw()) == pt_ce_trivial_parameters_acceptor) return PT_TRI_MAYBE;
 		}
 
 		return PT_TRI_YES;
@@ -2132,7 +2132,7 @@ public:
 		if (UNEXPECTED(name == NULL)) return zv::Val();
 		if (zend_string_equals_literal(name, "Closure")) {
 			zv::Val closureName = zv::Val::string(PT_LC("Closure"));
-			zv::Val acceptor = pt_type_new(PT_CLASS_TRIVIAL_PARAMETERS_ACCEPTOR, 1, closureName.raw());
+			zv::Val acceptor = pt_trivial_parameters_acceptor_new(Z_STR_P(closureName.raw()));
 			if (UNEXPECTED(acceptor.isUndef())) return zv::Val();
 			zv::Arr acceptors = zv::Arr::create(1);
 			acceptors.push(std::move(acceptor));
@@ -3006,7 +3006,7 @@ public:
 			zend_type_error("phpstan_turbo: getOnlyVariant() must return an object");
 			return zv::Val();
 		}
-		return pt_type_call(Z_OBJ_P(variant.raw()), PT_LC("getreturntype"), 0, NULL);
+		return pt_parameters_acceptor_call(variant.raw(), PT_PA_GET_RETURN_TYPE);
 	}
 
 private:
@@ -3209,7 +3209,7 @@ private:
 	/* [new TrivialParametersAcceptor()] */
 	static zv::Val trivialAcceptors()
 	{
-		zv::Val acceptor = pt_type_new(PT_CLASS_TRIVIAL_PARAMETERS_ACCEPTOR, 0, NULL);
+		zv::Val acceptor = pt_trivial_parameters_acceptor_new();
 		if (UNEXPECTED(acceptor.isUndef())) return zv::Val();
 		zv::Arr acceptors = zv::Arr::create(1);
 		acceptors.push(std::move(acceptor));
@@ -3337,7 +3337,7 @@ zv::Val pt_object_type_callback_invoke(zend_object *holder)
 				zend_type_error("phpstan_turbo: getOnlyVariant() must return an object");
 				return zv::Val();
 			}
-			zv::Val parameters = pt_type_call(Z_OBJ_P(variant.raw()), PT_LC("getparameters"), 0, NULL);
+			zv::Val parameters = pt_parameters_acceptor_call(variant.raw(), PT_PA_GET_PARAMETERS);
 			if (UNEXPECTED(parameters.isUndef())) return zv::Val();
 			if (UNEXPECTED(!zv::Ref(parameters.raw()).isArray())) {
 				zend_type_error("phpstan_turbo: getParameters() must return array");

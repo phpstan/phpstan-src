@@ -273,6 +273,7 @@
 
 namespace sigs = ptdecl::MutatingScope::sig;
 #include "TypeOps.h"
+#include "AcceptorValues.h"
 
 #include <algorithm>
 #include <vector>
@@ -10652,7 +10653,7 @@ public:
 					if (native) {
 						bool isExtended;
 						if (UNEXPECTED(!isInstance(variant.ref(), PT_CLASS_EXTENDED_PARAMETERS_ACCEPTOR, isExtended))) return zv::Val();
-						if (isExtended) return pt_type_call(Z_OBJ_P(variant.raw()), PT_LC("getnativereturntype"), 0, NULL);
+						if (isExtended) return pt_parameters_acceptor_call(variant.raw(), PT_PA_GET_NATIVE_RETURN_TYPE);
 					}
 					zval selfZv, siteZv;
 					ZVAL_OBJ(&selfZv, self);

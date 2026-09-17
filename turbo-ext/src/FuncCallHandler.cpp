@@ -978,7 +978,7 @@ private:
 	 * processImmediatelyCalledCallable(); false = pending exception */
 	[[nodiscard]] bool applyCallableAcceptor(zval *expr, zval *parametersAcceptor, zv::Val &scope, zv::Val &throwPoints, zv::Val &impurePoints) const
 	{
-		zv::Val simpleThrowPoints = pt_type_call(Z_OBJ_P(parametersAcceptor), PT_LC("getthrowpoints"), 0, NULL);
+		zv::Val simpleThrowPoints = pt_parameters_acceptor_call(parametersAcceptor, PT_PA_GET_THROW_POINTS);
 		if (UNEXPECTED(simpleThrowPoints.isUndef())) return false;
 		if (UNEXPECTED(Z_TYPE_P(simpleThrowPoints.raw()) != IS_ARRAY)) {
 			zend_type_error("array_map(): Argument #2 ($array) must be of type array, %s given", zend_zval_value_name(simpleThrowPoints.raw()));
@@ -1025,7 +1025,7 @@ private:
 		}
 		if (UNEXPECTED(!arrayMerge(throwPoints, callableThrowPointsHold.raw()))) return false;
 
-		zv::Val simpleImpurePoints = pt_type_call(Z_OBJ_P(parametersAcceptor), PT_LC("getimpurepoints"), 0, NULL);
+		zv::Val simpleImpurePoints = pt_parameters_acceptor_call(parametersAcceptor, PT_PA_GET_IMPURE_POINTS);
 		if (UNEXPECTED(simpleImpurePoints.isUndef())) return false;
 		if (UNEXPECTED(Z_TYPE_P(simpleImpurePoints.raw()) != IS_ARRAY)) {
 			zend_type_error("array_map(): Argument #2 ($array) must be of type array, %s given", zend_zval_value_name(simpleImpurePoints.raw()));
@@ -1944,7 +1944,7 @@ private:
 				if (UNEXPECTED(parametersAcceptor.isUndef())) return zv::Val();
 			}
 			if (isA(parametersAcceptor.raw(), PT_CLASS_CALLABLE_PARAMETERS_ACCEPTOR)) {
-				assertions = typeCall(parametersAcceptor.raw(), PT_LC("getasserts"), "getAsserts", 0, NULL);
+				assertions = pt_parameters_acceptor_call(parametersAcceptor.raw(), PT_PA_GET_ASSERTS);
 				if (UNEXPECTED(assertions.isUndef())) return zv::Val();
 			}
 			if (UNEXPECTED(EG(exception))) return zv::Val();
@@ -2035,7 +2035,8 @@ private:
 		if (UNEXPECTED(variants.isUndef())) return false;
 		if (Z_TYPE_P(variants.raw()) == IS_ARRAY) {
 			for (zv::ArrayEntry entry : zv::ArrRef(variants.raw())) {
-				zend_long variantIsPure = typeCallTrinary(entry.value().deref().raw(), PT_LC("ispure"), "isPure");
+				zv::Val variantPure = pt_parameters_acceptor_call(entry.value().deref().raw(), PT_PA_IS_PURE);
+				zend_long variantIsPure = variantPure.isUndef() ? -1 : pt_type_trinary_value(variantPure.raw());
 				if (UNEXPECTED(variantIsPure < 0)) return false;
 				/* TrinaryLogic::and(): the smallest */
 				isPure = isPure == -2 ? variantIsPure : (variantIsPure < isPure ? variantIsPure : isPure);

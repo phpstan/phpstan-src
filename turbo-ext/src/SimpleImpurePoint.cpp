@@ -25,6 +25,7 @@ namespace sigs = ptdecl::SimpleImpurePoint::sig;
 #include "TypeOps.h"
 #include "Engine.h"
 #include "ParameterValues.h"
+#include "AcceptorValues.h"
 
 zend_class_entry *pt_ce_simple_impure_point = nullptr;
 
@@ -32,8 +33,6 @@ namespace {
 
 /* {{{ the PHP collaborators (one site each) */
 
-pt_method_site pt_sip_get_return_type_site;
-pt_method_site pt_sip_get_parameters_site;
 pt_property_site pt_sip_arg_name_site;
 pt_property_site pt_sip_arg_value_site;
 pt_property_site pt_sip_identifier_name_site;
@@ -41,13 +40,13 @@ pt_property_site pt_sip_identifier_name_site;
 /* $variant->getReturnType() */
 zv::Val variantReturnType(zval *variant)
 {
-	return pt_call_method_cached(pt_sip_get_return_type_site, Z_OBJ_P(variant), PT_LC("getreturntype"), 0, NULL);
+	return pt_parameters_acceptor_call(variant, PT_PA_GET_RETURN_TYPE);
 }
 
 /* $variant->getParameters() */
 zv::Val variantParameters(zval *variant)
 {
-	return pt_call_method_cached(pt_sip_get_parameters_site, Z_OBJ_P(variant), PT_LC("getparameters"), 0, NULL);
+	return pt_parameters_acceptor_call(variant, PT_PA_GET_PARAMETERS);
 }
 
 /* $parameter->isPureUnlessCallableIsImpureParameter() */
@@ -366,7 +365,7 @@ public:
 					zend_throw_error(NULL, "Call to a member function isPure() on %s", zend_zval_value_name(acceptor));
 					return false;
 				}
-				zend_long pure = trinaryOf(pt_type_call(Z_OBJ_P(acceptor), PT_LC("ispure"), 0, NULL));
+				zend_long pure = trinaryOf(pt_parameters_acceptor_call(acceptor, PT_PA_IS_PURE));
 				if (UNEXPECTED(pure < 0)) return false;
 				verdict = pt_trinary_and(verdict, pure);
 			}

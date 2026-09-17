@@ -82,7 +82,9 @@ final class Describer
 		if ($value instanceof ClassReflection) {
 			return 'class:' . $value->getName();
 		}
-		if ($value instanceof \PHPStan\Type\Generic\TemplateTypeMap) {
+		// the native value classes the native side creates under the prefix
+		// (a native function variant's empty resolved map) describe alike
+		if ($value instanceof \PHPStan\Type\Generic\TemplateTypeMap || $value instanceof \PHPStanTurbo\TemplateTypeMap) {
 			return 'map:' . implode(',', array_map(
 				static fn (string $name, \PHPStan\Type\Type $type): string => $name . '=' . $type->describe(VerbosityLevel::precise()),
 				array_keys($value->getTypes()),

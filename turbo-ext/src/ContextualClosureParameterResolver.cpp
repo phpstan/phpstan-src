@@ -30,7 +30,6 @@ zend_string *pt_ccpr_array_map_args = nullptr;
 zend_string *pt_ccpr_immediately_invoked_args = nullptr;
 zend_string *pt_ccpr_item = nullptr;
 
-pt_method_site pt_ccpr_acceptor_get_parameters_site;
 
 /* static fn (Type $innerType) => $innerType->isCallable()->yes() */
 void isCallableYesBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
@@ -226,7 +225,7 @@ private:
 	 * NativeParameterReflection(...), $acceptor->getParameters()) — keys kept */
 	static zv::Val mapToNativeParameters(zval *acceptor)
 	{
-		zv::Val parameters = pt_call_method_cached(pt_ccpr_acceptor_get_parameters_site, Z_OBJ_P(acceptor), PT_LC("getparameters"), 0, NULL);
+		zv::Val parameters = pt_parameters_acceptor_call(acceptor, PT_PA_GET_PARAMETERS);
 		if (UNEXPECTED(parameters.isUndef())) return zv::Val();
 		if (UNEXPECTED(!parameters.ref().isArray())) {
 			zend_type_error("array_map(): Argument #2 ($array) must be of type array, %s given", zend_zval_value_name(parameters.raw()));

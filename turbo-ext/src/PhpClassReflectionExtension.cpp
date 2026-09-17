@@ -2117,7 +2117,7 @@ public:
 		ZVAL_COPY_VALUE(&variantArgs[4], returnType.raw());
 		ZVAL_COPY_VALUE(&variantArgs[5], Z_TYPE_P(phpDocReturnType) == IS_NULL ? mixedReturnType.raw() : phpDocReturnType);
 		ZVAL_COPY_VALUE(&variantArgs[6], nativeReturnType.raw());
-		return pt_type_new(PT_CLASS_EXTENDED_FUNCTION_VARIANT, 7, variantArgs);
+		return pt_extended_function_variant_new(7, variantArgs);
 	}
 
 	/* array_map(static fn (ReflectionParameter $p): string => $p->getName(), $reflection->getParameters()) */

@@ -2171,7 +2171,7 @@ public:
 				trivial = certainty != PT_TRI_YES;
 			}
 			if (trivial) {
-				zv::Val acceptor = pt_type_new(PT_CLASS_TRIVIAL_PARAMETERS_ACCEPTOR, 0, NULL);
+				zv::Val acceptor = pt_trivial_parameters_acceptor_new();
 				if (UNEXPECTED(acceptor.isUndef())) return zv::Val();
 				acceptors.push(std::move(acceptor));
 				continue;

@@ -44,6 +44,7 @@ namespace sigs = ptdecl::DefaultNarrowingHelper::sig;
 #include "TypeOps.h"
 #include "Engine.h"
 #include "ParameterValues.h"
+#include "AcceptorValues.h"
 #include "AnalyserValues.h"
 
 #include "zend_closures.h" /* zend_ce_closure */
@@ -62,11 +63,6 @@ pt_method_site pt_dnh_narrow_offset_key_type_site;
 pt_method_site pt_dnh_get_asserts_site;
 pt_method_site pt_dnh_get_asserts_if_true_site;
 pt_method_site pt_dnh_get_asserts_if_false_site;
-pt_method_site pt_dnh_acceptor_get_parameters_site;
-pt_method_site pt_dnh_acceptor_is_variadic_site;
-pt_method_site pt_dnh_acceptor_get_resolved_template_type_map_site;
-pt_method_site pt_dnh_acceptor_get_original_parameters_acceptor_site;
-pt_method_site pt_dnh_original_acceptor_get_return_type_site;
 pt_method_site pt_dnh_assert_get_parameter_site;
 pt_method_site pt_dnh_assert_get_type_site;
 pt_method_site pt_dnh_assert_get_original_type_site;
@@ -1128,7 +1124,7 @@ public:
 		if (zend_hash_num_elements(Z_ARRVAL_P(asserts.raw())) == 0) return zv::Val::null();
 
 		zv::Arr argsMap = zv::Arr::empty();
-		zv::Val parameters = callNoArgs(pt_dnh_acceptor_get_parameters_site, parametersAcceptor, "getParameters", PT_LC("getparameters"));
+		zv::Val parameters = pt_parameters_acceptor_call(parametersAcceptor, PT_PA_GET_PARAMETERS);
 		if (UNEXPECTED(parameters.isUndef())) return zv::Val();
 		if (UNEXPECTED(!mapArgumentsToParameters(call, parametersAcceptor, parameters.raw(), true, argsMap))) return zv::Val();
 		if (Z_TYPE_P(parameters.raw()) == IS_ARRAY) {
@@ -1198,7 +1194,7 @@ public:
 				zv::Val assertExpr = pt_call_method_cached(pt_dnh_assert_parameter_get_expr_site, Z_OBJ_P(assertParameter2.raw()), PT_LC("getexpr"), 1, parameterExpr);
 				if (UNEXPECTED(assertExpr.isUndef())) return zv::Val();
 
-				zv::Val templateTypeMap = callNoArgs(pt_dnh_acceptor_get_resolved_template_type_map_site, parametersAcceptor, "getResolvedTemplateTypeMap", PT_LC("getresolvedtemplatetypemap"));
+				zv::Val templateTypeMap = pt_parameters_acceptor_call(parametersAcceptor, PT_PA_GET_RESOLVED_TEMPLATE_TYPE_MAP);
 				if (UNEXPECTED(templateTypeMap.isUndef())) return zv::Val();
 				zval containsUnresolvedTemplate;
 				ZVAL_NEW_REF(&containsUnresolvedTemplate, &EG(uninitialized_zval));
@@ -1293,9 +1289,9 @@ public:
 			return zv::Val::null();
 		}
 
-		zv::Val originalAcceptor = callNoArgs(pt_dnh_acceptor_get_original_parameters_acceptor_site, parametersAcceptor, "getOriginalParametersAcceptor", PT_LC("getoriginalparametersacceptor"));
+		zv::Val originalAcceptor = pt_parameters_acceptor_call(parametersAcceptor, PT_PA_GET_ORIGINAL_PARAMETERS_ACCEPTOR);
 		if (UNEXPECTED(originalAcceptor.isUndef())) return zv::Val();
-		zv::Val returnType = callNoArgs(pt_dnh_original_acceptor_get_return_type_site, originalAcceptor.raw(), "getReturnType", PT_LC("getreturntype"));
+		zv::Val returnType = pt_parameters_acceptor_call(originalAcceptor.raw(), PT_PA_GET_RETURN_TYPE);
 		if (UNEXPECTED(returnType.isUndef())) return zv::Val();
 		if (!(Z_TYPE_P(returnType.raw()) == IS_OBJECT && instanceof_function(Z_OBJCE_P(returnType.raw()), pt_ce_conditional_type_for_parameter))) return zv::Val::null();
 
@@ -1330,7 +1326,7 @@ public:
 		zv::Val rightType = zv::Val::adopt(rightZv);
 
 		zv::Val argumentExpr = zv::Val::null();
-		zv::Val parameters = callNoArgs(pt_dnh_acceptor_get_parameters_site, parametersAcceptor, "getParameters", PT_LC("getparameters"));
+		zv::Val parameters = pt_parameters_acceptor_call(parametersAcceptor, PT_PA_GET_PARAMETERS);
 		if (UNEXPECTED(parameters.isUndef())) return zv::Val();
 		zv::Val args = callArgs(call);
 		if (UNEXPECTED(args.isUndef())) return zv::Val();
@@ -1710,7 +1706,7 @@ private:
 			} else {
 				if (!variadicFallback || Z_TYPE_P(parameters) != IS_ARRAY || zend_hash_num_elements(Z_ARRVAL_P(parameters)) == 0) continue;
 				bool variadic;
-				if (UNEXPECTED(!callNoArgsBool(pt_dnh_acceptor_is_variadic_site, parametersAcceptor, "isVariadic", PT_LC("isvariadic"), variadic))) return false;
+				if (UNEXPECTED(!pt_parameters_acceptor_bool(parametersAcceptor, PT_PA_IS_VARIADIC, variadic))) return false;
 				if (!variadic) continue;
 				zval *lastParameter = lastElement(Z_ARRVAL_P(parameters));
 				if (UNEXPECTED(lastParameter == NULL || Z_TYPE_P(lastParameter) != IS_OBJECT)) return !callOnNonObject("getName", lastParameter != NULL ? lastParameter : &EG(uninitialized_zval)).isUndef();

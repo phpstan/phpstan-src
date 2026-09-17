@@ -99,7 +99,6 @@ enum {
 	PT_CLASS_REPORT_UNSAFE_ARRAY_STRING_KEY_CASTING_TOGGLE,
 	PT_CLASS_OUT_OF_CLASS_SCOPE,
 	PT_CLASS_FUNCTION_CALLABLE_VARIANT,
-	PT_CLASS_TRIVIAL_PARAMETERS_ACCEPTOR,
 	PT_CLASS_INACCESSIBLE_METHOD,
 	PT_CLASS_TEMPLATE_TYPE,
 	PT_CLASS_NARROWED_SUBJECT_TYPE,
@@ -166,7 +165,6 @@ enum {
 	PT_CLASS_REFLECTION_ENUM,
 	PT_CLASS_MEMOIZING_REFLECTION_PROVIDER,
 	PT_CLASS_UNRESOLVABLE_TYPE_RESULT,
-	PT_CLASS_EXTENDED_FUNCTION_VARIANT,
 	PT_CLASS_RESOLVED_PROPERTY_REFLECTION,
 	PT_CLASS_CHANGED_TYPE_PROPERTY_REFLECTION,
 	PT_CLASS_UNDEFINED_VARIABLE_EXCEPTION,
@@ -313,7 +311,6 @@ enum {
 	PT_CLASS_PROPERTY_HOOK_STATEMENT_NODE,
 	PT_CLASS_TEMPLATE_ARGUMENT_CONSTRAINTS,
 	PT_CLASS_TEMPLATE_ARGUMENT_STATS,
-	PT_CLASS_RESOLVED_FUNCTION_VARIANT_WITH_ORIGINAL,
 	PT_CLASS_INVALIDATE_EXPR_NODE,
 	/* the assignment handlers (AssignHandler.cpp, AssignOpHandler.cpp) */
 	PT_CLASS_TERNARY_EXPR,
@@ -358,8 +355,6 @@ enum {
 	PT_CLASS_GENERIC_TYPE_TEMPLATE_TRAVERSER,
 	PT_CLASS_ALLOWED_CONSTANTS_RESULT,
 	PT_CLASS_GENERIC_PARAMETERS_ACCEPTOR_RESOLVER,
-	PT_CLASS_FUNCTION_VARIANT,
-	PT_CLASS_EXTENDED_CALLABLE_FUNCTION_VARIANT,
 	/* the function-call cluster (FuncCallHandler.cpp,
 	 * FuncCallScopeEffectsHelper.cpp, FunctionReflectionAccess.cpp) */
 	PT_CLASS_NATIVE_FUNCTION_REFLECTION,
@@ -3955,6 +3950,86 @@ zv::Val pt_extended_native_parameter_reflection_call(zend_object *parameter, pt_
  * types, through the constructor's parameter parsing otherwise; UNDEF =
  * pending exception */
 zv::Val pt_extended_native_parameter_reflection_new(uint32_t argc, zval *argv);
+
+/* }}} */
+
+/* {{{ FunctionVariant.cpp, ExtendedFunctionVariant.cpp,
+ * ExtendedCallableFunctionVariant.cpp, ResolvedFunctionVariantWithOriginal.cpp,
+ * TrivialParametersAcceptor.cpp — the parameters acceptors, registered after
+ * the parameter reflections (the parent variants before their children) */
+
+extern zend_class_entry *pt_ce_function_variant;
+extern zend_class_entry *pt_ce_extended_function_variant;
+extern zend_class_entry *pt_ce_extended_callable_function_variant;
+extern zend_class_entry *pt_ce_resolved_function_variant_with_original;
+extern zend_class_entry *pt_ce_trivial_parameters_acceptor;
+void pt_register_function_variant();
+void pt_register_extended_function_variant();
+void pt_register_extended_callable_function_variant();
+void pt_register_resolved_function_variant_with_original();
+void pt_register_trivial_parameters_acceptor();
+/* the ParametersAcceptor / ExtendedParametersAcceptor / ResolvedFunctionVariant
+ * / CallableParametersAcceptor methods without arguments */
+enum pt_parameters_acceptor_member
+{
+	PT_PA_GET_TEMPLATE_TYPE_MAP = 0,
+	PT_PA_GET_RESOLVED_TEMPLATE_TYPE_MAP,
+	PT_PA_GET_PARAMETERS,
+	PT_PA_IS_VARIADIC,
+	PT_PA_GET_RETURN_TYPE,
+	PT_PA_GET_PHPDOC_RETURN_TYPE,
+	PT_PA_GET_NATIVE_RETURN_TYPE,
+	PT_PA_GET_CALL_SITE_VARIANCE_MAP,
+	PT_PA_GET_ORIGINAL_PARAMETERS_ACCEPTOR,
+	PT_PA_GET_RETURN_TYPE_WITH_UNRESOLVABLE_TEMPLATE_TYPES,
+	PT_PA_GET_THROW_POINTS,
+	PT_PA_IS_PURE,
+	PT_PA_GET_IMPURE_POINTS,
+	PT_PA_GET_INVALIDATE_EXPRESSIONS,
+	PT_PA_GET_USED_VARIABLES,
+	PT_PA_ACCEPTS_NAMED_ARGUMENTS,
+	PT_PA_MUST_USE_RETURN_VALUE,
+	PT_PA_GET_ASSERTS,
+	PT_PA_IS_STATIC_CLOSURE,
+	PT_PA_MEMBER_COUNT
+};
+/* $acceptor-><member>() of any parameters acceptor (borrowed): callers use
+ * the inline pt_parameters_acceptor_call() / _read() / _bool() of
+ * AcceptorValues.h, which read the native variants' slots and filled memos
+ * in place and come here for everything else — the native bodies of the
+ * variant classes, ResolvedFunctionVariantWithOriginal and
+ * TrivialParametersAcceptor, the method through one cached site per member
+ * otherwise (the engine's Error for a non-object); UNDEF = pending
+ * exception. _call_method() is that cached site unconditionally; the
+ * per-class _call entries take the native body (pt_function_variant_call()
+ * for all three FunctionVariant classes) of an object of exactly that
+ * class. */
+zv::Val pt_parameters_acceptor_call_slow(zval *acceptor, pt_parameters_acceptor_member member);
+zv::Val pt_parameters_acceptor_call_method(zend_object *acceptor, pt_parameters_acceptor_member member);
+zv::Val pt_function_variant_call(zend_object *variant, pt_parameters_acceptor_member member);
+zv::Val pt_resolved_function_variant_with_original_call(zend_object *variant, pt_parameters_acceptor_member member);
+zv::Val pt_trivial_parameters_acceptor_call(zend_object *acceptor, pt_parameters_acceptor_member member);
+/* $acceptor->getReturnTypeWithUnresolvedTemplateArguments($site, $frame,
+ * $allowUnresolved) of a ResolvedFunctionVariant (an object; the native body
+ * for the native class, the method otherwise); UNDEF = pending exception */
+zv::Val pt_resolved_function_variant_get_return_type_with_unresolved_template_arguments(zval *acceptor, zval *site, zval *frame, bool allowUnresolved);
+/* new FunctionVariant(...$argv) / new ExtendedFunctionVariant(...$argv) / new
+ * ExtendedCallableFunctionVariant(...$argv) over values as PHP code hands
+ * them (borrowed): directly when they already have the parameter kinds,
+ * through the constructor's parameter parsing otherwise; UNDEF = pending
+ * exception */
+zv::Val pt_function_variant_new(uint32_t argc, zval *argv);
+zv::Val pt_extended_function_variant_new(uint32_t argc, zval *argv);
+zv::Val pt_extended_callable_function_variant_new(uint32_t argc, zval *argv);
+/* the constructor bodies for the subclasses' parent::__construct() (NULL
+ * for the nullable nulls); false = pending exception */
+[[nodiscard]] bool pt_function_variant_construct(zend_object *variant, zval *templateTypeMap, zval *resolvedTemplateTypeMap, zval *parameters, bool isVariadic, zval *returnType, zval *callSiteVarianceMap);
+[[nodiscard]] bool pt_extended_function_variant_construct(zend_object *variant, zval *templateTypeMap, zval *resolvedTemplateTypeMap, zval *parameters, bool isVariadic, zval *returnType, zval *phpDocReturnType, zval *nativeReturnType, zval *callSiteVarianceMap);
+/* new ResolvedFunctionVariantWithOriginal(...) (borrowed, already of the
+ * constructor's parameter types) / new TrivialParametersAcceptor($callableName)
+ * (NULL for the default); UNDEF = pending exception */
+zv::Val pt_resolved_function_variant_with_original_new(zval *parametersAcceptor, zval *resolvedTemplateTypeMap, zval *callSiteVarianceMap, zval *passedArgs);
+zv::Val pt_trivial_parameters_acceptor_new(zend_string *callableName = NULL);
 
 /* }}} */
 

@@ -30,6 +30,7 @@ namespace sigs = ptdecl::AssignHandler::sig;
 #include "TypeTraits.h"
 #include "TypeOps.h"
 #include "Engine.h"
+#include "AcceptorValues.h"
 
 #include <cstring>
 #include <utility>
@@ -3171,7 +3172,7 @@ private:
 		zv::Args getMethodArgs{methodName.raw(), scope};
 		AH_VAL(method, ahCall(receiverType, PT_LC("getmethod"), 2, getMethodArgs));
 		AH_VAL(variant, ahCall(method.raw(), PT_LC("getonlyvariant"), 0, NULL));
-		AH_VAL(parameters, ahCall(variant.raw(), PT_LC("getparameters"), 0, NULL));
+		AH_VAL(parameters, pt_parameters_acceptor_call(variant.raw(), PT_PA_GET_PARAMETERS));
 		HashTable *parametersTable = Z_ARRVAL_P(parameters.raw());
 		zval *parameter0 = zend_hash_index_find(parametersTable, 0);
 		if (keyType != NULL && parameter0 != NULL && Z_TYPE_P(parameter0) != IS_NULL) {

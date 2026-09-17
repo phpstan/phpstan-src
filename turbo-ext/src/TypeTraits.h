@@ -1406,5 +1406,7 @@ zv::Val pt_prototype_resolved_property(phpstanturbo::PrototypeKind kind, const p
  * $resolveUnresolvableTypes = true — the shadowing class's body
  * (TypeUtils.cpp); UNDEF = pending exception */
 zv::Val pt_type_utils_resolve_late_resolvable_types(zval *type);
+/* the same with an explicit $resolveUnresolvableTypes */
+zv::Val pt_type_utils_resolve_late_resolvable_types_ex(zval *type, bool resolveUnresolvableTypes);
 
 #endif /* PHPSTANTURBO_TYPETRAITS_H */

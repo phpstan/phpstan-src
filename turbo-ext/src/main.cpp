@@ -566,6 +566,14 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	 * PHP reflection classes only */
 	pt_register_php_parameter_reflection();
 	pt_register_extended_native_parameter_reflection();
+	/* the parameters acceptors — their signatures name the Type interface,
+	 * the template type maps, TrinaryLogic and PHP classes only; each parent
+	 * before its child */
+	pt_register_function_variant();
+	pt_register_extended_function_variant();
+	pt_register_extended_callable_function_variant();
+	pt_register_resolved_function_variant_with_original();
+	pt_register_trivial_parameters_acceptor();
 
 	return SUCCESS;
 }

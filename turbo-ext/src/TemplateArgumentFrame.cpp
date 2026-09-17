@@ -20,6 +20,7 @@ namespace sigs = ptdecl::TemplateArgumentFrame::sig;
 #include "zv.h"
 #include "TypeTraits.h"
 #include "TypeOps.h"
+#include "AcceptorValues.h"
 
 #include "zend_smart_str.h"
 
@@ -64,7 +65,7 @@ public:
 		zend_class_entry *resolvedFunctionVariantCe = Z_TYPE_P(frame.raw()) == IS_NULL ? NULL : pt_class_loaded(PT_CLASS_RESOLVED_FUNCTION_VARIANT);
 		if (UNEXPECTED(EG(exception))) return zv::Val();
 		if (resolvedFunctionVariantCe == NULL || !instanceof_function(Z_OBJCE_P(acceptor), resolvedFunctionVariantCe)) {
-			return pt_type_call(Z_OBJ_P(acceptor), PT_LC("getreturntype"), 0, NULL);
+			return pt_parameters_acceptor_call(acceptor, PT_PA_GET_RETURN_TYPE);
 		}
 		zval *originalSite = pt_node_attribute(Z_OBJ_P(site), pt_taf_original_site_str);
 		zend_class_entry *exprCe = pt_class(PT_CLASS_EXPR);
@@ -79,8 +80,7 @@ public:
 			if (UNEXPECTED(!pt_mutating_scope_native_types_promoted(Z_OBJ_P(scope), nativeTypesPromoted))) return zv::Val();
 			allow = !nativeTypesPromoted;
 		}
-		zv::Args argv{callSite, frame.raw(), allow};
-		return pt_type_call(Z_OBJ_P(acceptor), PT_LC("getreturntypewithunresolvedtemplatearguments"), 3, argv);
+		return pt_resolved_function_variant_get_return_type_with_unresolved_template_arguments(acceptor, callSite, frame.raw(), allow);
 	}
 
 	/* __construct(private readonly ?self $parent, private readonly ?array

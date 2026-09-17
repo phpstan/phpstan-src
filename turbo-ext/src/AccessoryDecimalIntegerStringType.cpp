@@ -335,7 +335,7 @@ public:
 		bool inverse = false;
 		if (UNEXPECTED(!this->inverse(inverse))) return zv::Val();
 		if (inverse) {
-			zv::Val acceptor = pt_type_new(PT_CLASS_TRIVIAL_PARAMETERS_ACCEPTOR, 0, NULL);
+			zv::Val acceptor = pt_trivial_parameters_acceptor_new();
 			if (UNEXPECTED(acceptor.isUndef())) return zv::Val();
 			zv::Arr acceptors = zv::Arr::create(1);
 			acceptors.push(std::move(acceptor));

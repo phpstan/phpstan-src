@@ -173,8 +173,17 @@ public:
 			if (UNEXPECTED(callSiteVarianceMap == NULL)) return zv::Val();
 			zval passedArgs;
 			ZVAL_EMPTY_ARRAY(&passedArgs);
-			zv::Args argv{entry.value().deref().raw(), resolvedTemplateTypeMap, callSiteVarianceMap, &passedArgs};
-			zv::Val variant = pt_type_new(PT_CLASS_RESOLVED_FUNCTION_VARIANT_WITH_ORIGINAL, 4, argv);
+			zval *original = entry.value().deref().raw();
+			zend_class_entry *extendedAcceptorCe = pt_class(PT_CLASS_EXTENDED_PARAMETERS_ACCEPTOR);
+			if (UNEXPECTED(extendedAcceptorCe == NULL)) return zv::Val();
+			zv::Val variant;
+			if (EXPECTED(Z_TYPE_P(original) == IS_OBJECT && instanceof_function(Z_OBJCE_P(original), extendedAcceptorCe))) {
+				variant = pt_resolved_function_variant_with_original_new(original, resolvedTemplateTypeMap, callSiteVarianceMap, &passedArgs);
+			} else {
+				/* the constructor's TypeError */
+				zv::Args argv{original, resolvedTemplateTypeMap, callSiteVarianceMap, &passedArgs};
+				variant = pt_type_new_ce(pt_ce_resolved_function_variant_with_original, 4, argv);
+			}
 			if (UNEXPECTED(variant.isUndef())) return zv::Val();
 			result.push(std::move(variant));
 		}

@@ -21,6 +21,7 @@ namespace slots = ptdecl::ExpressionContext::slot;
 namespace sigs = ptdecl::ExpressionContext::sig;
 #include "zv.h"
 #include "TypeTraits.h"
+#include "AcceptorValues.h"
 
 zend_class_entry *pt_ce_expression_context = nullptr;
 
@@ -230,15 +231,15 @@ public:
 	 * twin */
 	zv::Val enterAssignRightSideCallArgs(zval *acceptor) const
 	{
-		zv::Val returnType = pt_type_call(Z_OBJ_P(acceptor), PT_LC("getreturntype"), 0, NULL);
+		zv::Val returnType = pt_parameters_acceptor_call(acceptor, PT_PA_GET_RETURN_TYPE);
 		if (UNEXPECTED(returnType.isUndef())) return zv::Val();
 		zv::Val inAssignRightSideType = pt_type_template_type_helper_resolve_to_bounds(returnType.raw());
 		if (UNEXPECTED(inAssignRightSideType.isUndef())) return zv::Val();
 		zend_class_entry *extendedCe = pt_class(PT_CLASS_EXTENDED_PARAMETERS_ACCEPTOR);
 		if (UNEXPECTED(extendedCe == NULL)) return zv::Val();
 		zv::Val nativeReturnType = instanceof_function(Z_OBJCE_P(acceptor), extendedCe)
-			? pt_type_call(Z_OBJ_P(acceptor), PT_LC("getnativereturntype"), 0, NULL)
-			: pt_type_call(Z_OBJ_P(acceptor), PT_LC("getreturntype"), 0, NULL);
+			? pt_parameters_acceptor_call(acceptor, PT_PA_GET_NATIVE_RETURN_TYPE)
+			: pt_parameters_acceptor_call(acceptor, PT_PA_GET_RETURN_TYPE);
 		if (UNEXPECTED(nativeReturnType.isUndef())) return zv::Val();
 		zv::Val inAssignRightSideNativeType = pt_type_template_type_helper_resolve_to_bounds(nativeReturnType.raw());
 		if (UNEXPECTED(inAssignRightSideNativeType.isUndef())) return zv::Val();

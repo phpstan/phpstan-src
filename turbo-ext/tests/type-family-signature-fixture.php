@@ -59,6 +59,40 @@ class SignatureFixture
 	}
 
 	/**
+	 * @template T
+	 * @template U of object
+	 * @param T $value
+	 * @param U $object
+	 * @param-closure-this U $callback
+	 * @param-out T $out
+	 * @return self<T>
+	 */
+	public function wrap(mixed $value, object $object, ?\Closure $callback = null, mixed &$out = null): self
+	{
+		return $this;
+	}
+
+	/**
+	 * @template T
+	 * @param T $value
+	 * @return static<T>
+	 */
+	public function wrapStatic(mixed $value): static
+	{
+		return $this;
+	}
+
+	/**
+	 * @template T
+	 * @param callable(T): void $consumer
+	 * @return T
+	 */
+	public function consume(callable $consumer): mixed
+	{
+		return null;
+	}
+
+	/**
 	 * @phpstan-assert-if-true int $value
 	 * @phpstan-assert !null $other
 	 */

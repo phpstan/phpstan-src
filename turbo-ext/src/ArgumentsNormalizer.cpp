@@ -23,6 +23,7 @@ namespace sigs = ptdecl::ArgumentsNormalizer::sig;
 #include "TypeOps.h"
 #include "Engine.h"
 #include "ParameterValues.h"
+#include "AcceptorValues.h"
 
 zend_class_entry *pt_ce_arguments_normalizer = nullptr;
 
@@ -222,9 +223,7 @@ bool arraysIdentical(zval *a, zval *b)
 
 /* {{{ the PHP collaborators (one site each) */
 
-pt_method_site pt_an_acceptor_get_parameters_site;
 pt_method_site pt_an_get_callable_parameters_acceptors_site;
-pt_method_site pt_an_accepts_named_arguments_site;
 
 /* $parameter->getName() (ParameterValues.h) */
 zv::Val parameterGetName(zval *parameter)
@@ -252,7 +251,7 @@ zv::Val parameterGetDefaultValue(zval *parameter)
 /* $acceptor->getParameters() */
 zv::Val acceptorGetParameters(zval *acceptor)
 {
-	return callOn(pt_an_acceptor_get_parameters_site, acceptor, PT_LC("getparameters"), "getParameters", 0, NULL);
+	return pt_parameters_acceptor_call(acceptor, PT_PA_GET_PARAMETERS);
 }
 
 /* ParametersAcceptorSelector::selectFromArgs($scope, $args, $acceptors, null) */
@@ -494,7 +493,7 @@ private:
 		zend_long acceptsNamedArguments = PT_TRI_YES;
 		if (UNEXPECTED(!requireArray(callableParametersAcceptors.raw(), "foreach() argument"))) return zv::Val();
 		for (zv::ArrayEntry entry : zv::ArrRef(callableParametersAcceptors.raw())) {
-			zv::Val accepts = callOn(pt_an_accepts_named_arguments_site, entry.value().deref().raw(), PT_LC("acceptsnamedarguments"), "acceptsNamedArguments", 0, NULL);
+			zv::Val accepts = pt_parameters_acceptor_call(entry.value().deref().raw(), PT_PA_ACCEPTS_NAMED_ARGUMENTS);
 			if (UNEXPECTED(accepts.isUndef())) return zv::Val();
 			zend_long value = pt_type_trinary_value(accepts.raw());
 			if (UNEXPECTED(value < 0)) return zv::Val();

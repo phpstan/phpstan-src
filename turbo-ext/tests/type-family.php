@@ -7127,6 +7127,187 @@ require_once __DIR__ . '/type-family-signature-fixture.php';
 	}
 }
 
+// ---- FunctionVariant / ExtendedFunctionVariant / ExtendedCallableFunctionVariant / ResolvedFunctionVariantWithOriginal / TrivialParametersAcceptor ----
+// The parameters acceptors: the function variants constructed positionally
+// and with named arguments (a null resolved template map and call-site
+// variance map defaulting to the singletons, the callable variant's null
+// assertions / static flag defaults), PHP subclasses overriding a getter,
+// the constructors' TypeErrors and unconstructed instances;
+// TrivialParametersAcceptor with the default and a given callable name (a new
+// MixedType per query, the impure point's description);
+// ResolvedFunctionVariantWithOriginal over the fixture's templated,
+// conditional, generic-returning and parameter-out / closure-this signatures,
+// built by GenericParametersAcceptorResolver and directly over template maps
+// (inferred, error and unresolved-argument types), call-site variance maps
+// (covariant / contravariant / invariant) and passed arguments: every getter,
+// the memo identities, getReturnTypeWithUnresolvedTemplateArguments() under
+// observing and resolved frames with and without unresolved arguments (and
+// its memo per site / frame / flag), a PHP acceptor handing out parameters
+// that are not ExtendedParameterReflections, and the native dispatch the
+// handlers use (ParametersAcceptorSelector, TemplateArgumentFrame)
+foreach ([\PHPStan\Reflection\FunctionVariant::class => 'getReturnType', \PHPStan\Reflection\ExtendedFunctionVariant::class => 'getNativeReturnType', \PHPStan\Reflection\ExtendedCallableFunctionVariant::class => 'isPure', \PHPStan\Reflection\ResolvedFunctionVariantWithOriginal::class => 'getReturnType', \PHPStan\Reflection\TrivialParametersAcceptor::class => 'getReturnType'] as $acceptorClass => $acceptorMethod) {
+	$observations['native ' . $acceptorClass] = (new ReflectionMethod($acceptorClass, $acceptorMethod))->isInternal();
+}
+if (!class_exists('PHPStanTurboTests\FunctionVariantSubclass', false)) {
+	eval('namespace PHPStanTurboTests; class FunctionVariantSubclass extends \PHPStan\Reflection\FunctionVariant { public function __construct(\PHPStan\Type\Type $returnType) { parent::__construct(\PHPStan\Type\Generic\TemplateTypeMap::createEmpty(), null, [], true, $returnType); } public function getReturnType(): \PHPStan\Type\Type { return new \PHPStan\Type\NullType(); } }');
+	eval('namespace PHPStanTurboTests; class ExtendedFunctionVariantSubclass extends \PHPStan\Reflection\ExtendedFunctionVariant { public function getParameters(): array { return array_reverse(parent::getParameters()); } public function getNativeReturnType(): \PHPStan\Type\Type { return new \PHPStan\Type\StringType(); } }');
+	eval('namespace PHPStanTurboTests; final class PlainParametersAcceptor implements \PHPStan\Reflection\ExtendedParametersAcceptor { public function __construct(private array $parameters, private \PHPStan\Type\Type $returnType) {} public function getTemplateTypeMap(): \PHPStan\Type\Generic\TemplateTypeMap { return \PHPStan\Type\Generic\TemplateTypeMap::createEmpty(); } public function getResolvedTemplateTypeMap(): \PHPStan\Type\Generic\TemplateTypeMap { return \PHPStan\Type\Generic\TemplateTypeMap::createEmpty(); } public function getParameters(): array { return $this->parameters; } public function isVariadic(): bool { return false; } public function getReturnType(): \PHPStan\Type\Type { return $this->returnType; } public function getPhpDocReturnType(): \PHPStan\Type\Type { return $this->returnType; } public function getNativeReturnType(): \PHPStan\Type\Type { return new \PHPStan\Type\MixedType(); } public function getCallSiteVarianceMap(): \PHPStan\Type\Generic\TemplateTypeVarianceMap { return \PHPStan\Type\Generic\TemplateTypeVarianceMap::createEmpty(); } }');
+}
+{
+	$r = [];
+	$emptyMap = \PHPStan\Type\Generic\TemplateTypeMap::createEmpty();
+	$emptyVariances = \PHPStan\Type\Generic\TemplateTypeVarianceMap::createEmpty();
+	$viewAcceptorFull = static function ($acceptor) use ($viewVariant, $view, $catching, $emptyMap, $emptyVariances): array {
+		$r = ['variant' => $catching(static fn () => $viewVariant($acceptor))];
+		$r['identities'] = $catching(static fn () => [$acceptor->getResolvedTemplateTypeMap() === $emptyMap, $acceptor->getTemplateTypeMap() === $acceptor->getTemplateTypeMap(), $acceptor->getParameters() === $acceptor->getParameters(), $acceptor->getReturnType() === $acceptor->getReturnType(), $acceptor instanceof \PHPStan\Reflection\ExtendedParametersAcceptor ? [$acceptor->getCallSiteVarianceMap() === $emptyVariances, $acceptor->getPhpDocReturnType() === $acceptor->getPhpDocReturnType(), $acceptor->getNativeReturnType() === $acceptor->getNativeReturnType()] : null]);
+		if ($acceptor instanceof \PHPStan\Reflection\Callables\CallableParametersAcceptor) {
+			$r['callable'] = $catching(static fn () => [array_map(static fn ($point) => [get_class($point), $point->canContainAnyThrowable(), $point->isExplicit()], $acceptor->getThrowPoints()), $view($acceptor->isPure()), array_map(static fn ($point) => [get_class($point), $point->getIdentifier(), $point->getDescription(), $point->isCertain()], $acceptor->getImpurePoints()), count($acceptor->getInvalidateExpressions()), $acceptor->getUsedVariables(), $view($acceptor->acceptsNamedArguments()), $view($acceptor->mustUseReturnValue()), count($acceptor->getAsserts()->getAll()), $acceptor->getAsserts() === \PHPStan\Reflection\Assertions::createEmpty(), $view($acceptor->isStaticClosure()), $acceptor->getImpurePoints() === $acceptor->getImpurePoints()]);
+		}
+		if ($acceptor instanceof \PHPStan\Reflection\ResolvedFunctionVariant) {
+			$r['resolved'] = $catching(static fn () => [get_class($acceptor->getOriginalParametersAcceptor()), $view($acceptor->getReturnTypeWithUnresolvableTemplateTypes()), $acceptor->getReturnTypeWithUnresolvableTemplateTypes() === $acceptor->getReturnTypeWithUnresolvableTemplateTypes()]);
+		}
+		return $r;
+	};
+	$int = new \PHPStan\Type\IntegerType();
+	$string = new \PHPStan\Type\StringType();
+	$dummy = new \PHPStan\Reflection\Php\DummyParameter('d', $int, false, null, false, null);
+	$extendedDummy = new \PHPStan\Reflection\Php\ExtendedDummyParameter('e', $string, true, null, true, null, $string, $string, $int, \PHPStan\TrinaryLogic::createYes(), null, [], null, \PHPStan\TrinaryLogic::createNo());
+	$variances = new \PHPStan\Type\Generic\TemplateTypeVarianceMap(['T' => \PHPStan\Type\Generic\TemplateTypeVariance::createCovariant()]);
+	$assertions = $stringReflectionProvider->getClass(\PHPStanTurboTests\SignatureFixture::class)->getNativeMethod('asserting')->getAsserts();
+	$acceptors = [
+		'fv' => new \PHPStan\Reflection\FunctionVariant($emptyMap, null, [$dummy], false, $int),
+		'fv full' => new \PHPStan\Reflection\FunctionVariant($emptyMap, new \PHPStan\Type\Generic\TemplateTypeMap(['T' => $int]), [$dummy, $dummy], true, $string, $variances),
+		'fv named' => new \PHPStan\Reflection\FunctionVariant(returnType: $int, isVariadic: false, parameters: [], resolvedTemplateTypeMap: null, templateTypeMap: $emptyMap),
+		'efv' => new \PHPStan\Reflection\ExtendedFunctionVariant($emptyMap, null, [$extendedDummy], false, $int, $string, new \PHPStan\Type\MixedType()),
+		'efv named' => new \PHPStan\Reflection\ExtendedFunctionVariant(nativeReturnType: $int, phpDocReturnType: $int, returnType: $int, isVariadic: true, parameters: [$extendedDummy], resolvedTemplateTypeMap: $emptyMap, templateTypeMap: $emptyMap, callSiteVarianceMap: $variances),
+		'ecfv' => new \PHPStan\Reflection\ExtendedCallableFunctionVariant($emptyMap, null, [$extendedDummy], false, $int, $int, $int, null, [\PHPStan\Reflection\Callables\SimpleThrowPoint::createExplicit(new \PHPStan\Type\ObjectType(\RuntimeException::class), true)], \PHPStan\TrinaryLogic::createNo(), [new \PHPStan\Reflection\Callables\SimpleImpurePoint('functionCall', 'x', true)], [], ['a', 'b'], \PHPStan\TrinaryLogic::createYes(), \PHPStan\TrinaryLogic::createMaybe()),
+		'ecfv full' => new \PHPStan\Reflection\ExtendedCallableFunctionVariant($emptyMap, $emptyMap, [], true, $string, $string, $string, $variances, [], \PHPStan\TrinaryLogic::createYes(), [], [], [], \PHPStan\TrinaryLogic::createNo(), \PHPStan\TrinaryLogic::createYes(), $assertions, \PHPStan\TrinaryLogic::createYes()),
+		'ecfv named' => new \PHPStan\Reflection\ExtendedCallableFunctionVariant(isStatic: null, assertions: null, mustUseReturnValue: \PHPStan\TrinaryLogic::createNo(), acceptsNamedArguments: \PHPStan\TrinaryLogic::createNo(), usedVariables: [], invalidateExpressions: [], impurePoints: [], isPure: \PHPStan\TrinaryLogic::createMaybe(), throwPoints: [], callSiteVarianceMap: null, nativeReturnType: $int, phpDocReturnType: $int, returnType: $int, isVariadic: false, parameters: [], resolvedTemplateTypeMap: null, templateTypeMap: $emptyMap),
+		'trivial' => new \PHPStan\Reflection\TrivialParametersAcceptor(),
+		'trivial named' => new \PHPStan\Reflection\TrivialParametersAcceptor(callableName: 'Closure'),
+		'fv subclass' => new \PHPStanTurboTests\FunctionVariantSubclass($int),
+		'efv subclass' => new \PHPStanTurboTests\ExtendedFunctionVariantSubclass($emptyMap, null, [$extendedDummy, new \PHPStan\Reflection\Php\ExtendedDummyParameter('f', $int, false, null, false, null, $int, $int, null, \PHPStan\TrinaryLogic::createNo(), null, [], null, \PHPStan\TrinaryLogic::createNo())], false, $int, $int, $int),
+	];
+	foreach ($acceptors as $name => $acceptor) {
+		$r["acceptor $name"] = $viewAcceptorFull($acceptor);
+		$r["acceptor $name select"] = $catching(static fn () => $viewVariant(\PHPStan\Reflection\ParametersAcceptorSelector::selectFromTypes([$int], [$acceptor], false)));
+		$r["acceptor $name combine"] = $catching(static fn () => $viewVariant(\PHPStan\Reflection\ParametersAcceptorSelector::combineAcceptors([$acceptor, $acceptor])));
+	}
+	$r['trivial fresh mixed'] = [$acceptors['trivial']->getReturnType() === $acceptors['trivial']->getReturnType(), $acceptors['trivial']->getPhpDocReturnType() === $acceptors['trivial']->getNativeReturnType()];
+
+	// constructor errors and unconstructed instances
+	$r['fv wrong map'] = $catching(static fn () => new \PHPStan\Reflection\FunctionVariant('x', null, [], false, $int));
+	$r['fv wrong return type'] = $catching(static fn () => new \PHPStan\Reflection\FunctionVariant($emptyMap, null, [], false, new \stdClass()));
+	$r['fv wrong variances'] = $catching(static fn () => new \PHPStan\Reflection\FunctionVariant($emptyMap, null, [], false, $int, $emptyMap));
+	$r['efv wrong native'] = $catching(static fn () => new \PHPStan\Reflection\ExtendedFunctionVariant($emptyMap, null, [], false, $int, $int, null));
+	$r['ecfv wrong assertions'] = $catching(static fn () => new \PHPStan\Reflection\ExtendedCallableFunctionVariant($emptyMap, null, [], false, $int, $int, $int, null, [], \PHPStan\TrinaryLogic::createNo(), [], [], [], \PHPStan\TrinaryLogic::createNo(), \PHPStan\TrinaryLogic::createNo(), $emptyMap));
+	$r['ecfv wrong pure'] = $catching(static fn () => new \PHPStan\Reflection\ExtendedCallableFunctionVariant($emptyMap, null, [], false, $int, $int, $int, null, [], $int, [], [], [], \PHPStan\TrinaryLogic::createNo(), \PHPStan\TrinaryLogic::createNo()));
+	$r['trivial wrong name'] = $catching(static fn () => new \PHPStan\Reflection\TrivialParametersAcceptor([]));
+	foreach ([\PHPStan\Reflection\FunctionVariant::class, \PHPStan\Reflection\ExtendedFunctionVariant::class, \PHPStan\Reflection\ExtendedCallableFunctionVariant::class, \PHPStan\Reflection\ResolvedFunctionVariantWithOriginal::class, \PHPStan\Reflection\TrivialParametersAcceptor::class] as $class) {
+		$raw = (new \ReflectionClass($class))->newInstanceWithoutConstructor();
+		foreach (['getTemplateTypeMap', 'getResolvedTemplateTypeMap', 'getCallSiteVarianceMap', 'getParameters', 'isVariadic', 'getReturnType', 'getPhpDocReturnType', 'getNativeReturnType', 'getOriginalParametersAcceptor', 'getReturnTypeWithUnresolvableTemplateTypes', 'getThrowPoints', 'isPure', 'getImpurePoints', 'getInvalidateExpressions', 'getUsedVariables', 'acceptsNamedArguments', 'mustUseReturnValue', 'getAsserts', 'isStaticClosure'] as $method) {
+			if (method_exists($raw, $method)) {
+				$r["unconstructed $class $method"] = $catching(static fn () => $view($raw->$method()));
+			}
+		}
+	}
+
+	// ResolvedFunctionVariantWithOriginal
+	$signatureFixture = $stringReflectionProvider->getClass(\PHPStanTurboTests\SignatureFixture::class);
+	$genericSignatureFixture = $signatureFixture->withTypes([$string]);
+	$site = new \PhpParser\Node\Expr\FuncCall(new \PhpParser\Node\Name('f'));
+	$otherSite = new \PhpParser\Node\Expr\FuncCall(new \PhpParser\Node\Name('g'));
+	$observingFrame = new \PHPStan\Analyser\Generics\TemplateArgumentFrame(null);
+	$resolvedFrame = new \PHPStan\Analyser\Generics\TemplateArgumentFrame(null, [spl_object_id($site) . '#T' => new \PHPStan\Type\Constant\ConstantStringType('resolved')]);
+	$emptyResolvedFrame = new \PHPStan\Analyser\Generics\TemplateArgumentFrame($observingFrame, []);
+	$argTypeSets = [
+		'int' => [new \PHPStan\Type\Constant\ConstantIntegerType(1), new \PHPStan\Type\ObjectType(\stdClass::class)],
+		'string' => [new \PHPStan\Type\Constant\ConstantStringType('s'), new \PHPStan\Type\ObjectType(\ArrayObject::class), new \PHPStan\Type\ClosureType([], $int, false)],
+		'union' => [new \PHPStan\Type\UnionType([$int, $string])],
+		'none' => [],
+	];
+	$viewResolved = static function (\PHPStan\Reflection\ResolvedFunctionVariant $resolved) use ($viewAcceptorFull, $view, $catching, $site, $otherSite, $observingFrame, $resolvedFrame, $emptyResolvedFrame): array {
+		$r = ['full' => $viewAcceptorFull($resolved)];
+		foreach (['observing' => $observingFrame, 'resolved' => $resolvedFrame, 'emptyResolved' => $emptyResolvedFrame] as $frameName => $frame) {
+			foreach ([true, false] as $allow) {
+				$key = "$frameName " . ($allow ? 'allow' : 'deny');
+				$r[$key] = $catching(static function () use ($resolved, $site, $otherSite, $frame, $allow, $view): array {
+					$first = $resolved->getReturnTypeWithUnresolvedTemplateArguments($site, $frame, $allow);
+					$again = $resolved->getReturnTypeWithUnresolvedTemplateArguments($site, $frame, $allow);
+					$other = $resolved->getReturnTypeWithUnresolvedTemplateArguments($otherSite, $frame, $allow);
+					$flipped = $resolved->getReturnTypeWithUnresolvedTemplateArguments($site, $frame, !$allow);
+					return [$view($first), $first === $again, $view($other), $view($flipped), $first === $resolved->getReturnType()];
+				});
+			}
+		}
+		return $r;
+	};
+	foreach (['templated', 'wrap', 'wrapStatic', 'consume', 'defaults', 'byRefAndVariadic', 'callables', 'asserting'] as $methodName) {
+		foreach (['plain' => $signatureFixture, 'generic' => $genericSignatureFixture] as $fixtureName => $fixtureClass) {
+			$variant = $fixtureClass->getNativeMethod($methodName)->getOnlyVariant();
+			foreach ($argTypeSets as $argSetName => $argTypes) {
+				$key = "resolved $methodName $fixtureName $argSetName";
+				$r[$key] = $catching(static fn () => $viewResolved(\PHPStan\Reflection\GenericParametersAcceptorResolver::resolve($argTypes, $variant)));
+			}
+			$method = $fixtureClass->getNativeMethod($methodName);
+			$prototype = new \PHPStan\Reflection\Type\CalledOnTypeUnresolvedMethodPrototypeReflection($method, $fixtureClass, false, new \PHPStan\Type\ObjectType(\PHPStanTurboTests\SignatureFixture::class));
+			$r["transformed $methodName $fixtureName"] = $catching(static fn () => array_map($viewResolved, $prototype->getTransformedMethod()->getVariants()));
+		}
+	}
+	$functionVariant = $stringReflectionProvider->getFunction(new \PhpParser\Node\Name('PHPStanTurboTests\signatureFixtureFunction'), null)->getOnlyVariant();
+	$templateMaps = [
+		'empty' => $emptyMap,
+		'int' => new \PHPStan\Type\Generic\TemplateTypeMap(['T' => new \PHPStan\Type\Constant\ConstantIntegerType(3), 'U' => new \PHPStan\Type\ObjectType(\stdClass::class)]),
+		'error' => new \PHPStan\Type\Generic\TemplateTypeMap(['T' => new \PHPStan\Type\ErrorType()]),
+		'unresolved' => new \PHPStan\Type\Generic\TemplateTypeMap(['T' => new \PHPStan\Type\Generic\UnresolvedTemplateArgumentType($otherSite, \PHPStan\Type\Generic\TemplateTypeFactory::create(\PHPStan\Type\Generic\TemplateTypeScope::createWithFunction('other'), 'X', null, \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()), $int)]),
+	];
+	$varianceMaps = [
+		'empty' => $emptyVariances,
+		'covariant' => new \PHPStan\Type\Generic\TemplateTypeVarianceMap(['T' => \PHPStan\Type\Generic\TemplateTypeVariance::createCovariant()]),
+		'contravariant' => new \PHPStan\Type\Generic\TemplateTypeVarianceMap(['T' => \PHPStan\Type\Generic\TemplateTypeVariance::createContravariant()]),
+		'invariant' => new \PHPStan\Type\Generic\TemplateTypeVarianceMap(['T' => \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant(), 'U' => \PHPStan\Type\Generic\TemplateTypeVariance::createBivariant()]),
+	];
+	$passedArgSets = [
+		'none' => [],
+		'int' => ['$value' => new \PHPStan\Type\Constant\ConstantIntegerType(1), 'value' => $int],
+		'string' => ['$value' => $string],
+	];
+	foreach (['templated' => $signatureFixture->getNativeMethod('templated')->getOnlyVariant(), 'wrap' => $signatureFixture->getNativeMethod('wrap')->getOnlyVariant(), 'wrapStatic' => $signatureFixture->getNativeMethod('wrapStatic')->getOnlyVariant(), 'function' => $functionVariant] as $variantName => $variant) {
+		foreach ($templateMaps as $templateMapName => $templateMap) {
+			foreach ($varianceMaps as $varianceMapName => $varianceMap) {
+				foreach ($passedArgSets as $passedName => $passedArgs) {
+					$resolved = new \PHPStan\Reflection\ResolvedFunctionVariantWithOriginal($variant, $templateMap, $varianceMap, $passedArgs);
+					$r["direct $variantName $templateMapName $varianceMapName $passedName"] = $viewResolved($resolved);
+				}
+			}
+		}
+	}
+	$named = new \PHPStan\Reflection\ResolvedFunctionVariantWithOriginal(passedArgs: [], callSiteVarianceMap: $emptyVariances, resolvedTemplateTypeMap: $templateMaps['int'], parametersAcceptor: $functionVariant);
+	$r['direct named'] = $viewResolved($named);
+	$r['direct over resolved'] = $viewResolved(new \PHPStan\Reflection\ResolvedFunctionVariantWithOriginal($named, $templateMaps['int'], $varianceMaps['covariant'], []));
+	$plainAcceptor = new \PHPStanTurboTests\PlainParametersAcceptor([$dummy], $int);
+	$r['direct over non-extended parameters'] = $catching(static fn () => $viewResolved(new \PHPStan\Reflection\ResolvedFunctionVariantWithOriginal($plainAcceptor, $emptyMap, $emptyVariances, [])));
+	$r['direct over extended parameters'] = $viewResolved(new \PHPStan\Reflection\ResolvedFunctionVariantWithOriginal(new \PHPStanTurboTests\PlainParametersAcceptor([1 => $extendedDummy, 'x' => $extendedDummy], $int), $emptyMap, $emptyVariances, []));
+	$r['direct wrong acceptor'] = $catching(static fn () => new \PHPStan\Reflection\ResolvedFunctionVariantWithOriginal($acceptors['fv'], $emptyMap, $emptyVariances, []));
+	$r['direct wrong map'] = $catching(static fn () => new \PHPStan\Reflection\ResolvedFunctionVariantWithOriginal($functionVariant, $emptyVariances, $emptyVariances, []));
+	$r['direct wrong site'] = $catching(static fn () => $named->getReturnTypeWithUnresolvedTemplateArguments(new \PhpParser\Node\Name('x'), $observingFrame, true));
+	// the private methods through a bound closure (the same private surface)
+	$r['private resolveResolvableTemplateTypes'] = $catching(static fn () => $view((fn () => $this->resolveResolvableTemplateTypes($this->parametersAcceptor->getReturnType(), \PHPStan\Type\Generic\TemplateTypeVariance::createCovariant(), $site, $observingFrame, true))->call($named)));
+	$r['private resolveConditionalTypesForParameter'] = $catching(static fn () => $view((fn () => $this->resolveConditionalTypesForParameter($this->parametersAcceptor->getReturnType()))->call(new \PHPStan\Reflection\ResolvedFunctionVariantWithOriginal($signatureFixture->getNativeMethod('templated')->getOnlyVariant(), $emptyMap, $emptyVariances, $passedArgSets['int']))));
+	// the native dispatch of TemplateArgumentFrame::returnTypeOfCall()
+	$tafScope = $stringContainer->getByType(\PHPStan\Analyser\ScopeFactory::class)->create(\PHPStan\Analyser\ScopeContext::create(__FILE__));
+	foreach (['noFrame' => $tafScope, 'observing' => $tafScope->withTemplateArgumentFrame($observingFrame), 'resolved' => $tafScope->withTemplateArgumentFrame($resolvedFrame)] as $scopeName => $tafScopeVariant) {
+		foreach (['named' => $named, 'fv' => $acceptors['fv'], 'trivial' => $acceptors['trivial']] as $acceptorName => $acceptor) {
+			foreach ([null, true, false] as $allow) {
+				$r["returnTypeOfCall $scopeName $acceptorName " . json_encode($allow)] = $catching(static fn () => $view(\PHPStan\Analyser\Generics\TemplateArgumentFrame::returnTypeOfCall($acceptor, $tafScopeVariant, $site, $allow)));
+			}
+		}
+	}
+	foreach ($r as $key => $value) {
+		$observations["parameters acceptors $key"] = $value;
+	}
+}
+
 // observations holding bytes that are not UTF-8 (the invalid-UTF-8 subject's
 // descriptions) go out base64-encoded so json_encode() keeps every byte; the
 // non-finite floats (the NAN and infinity subjects' values) as their names

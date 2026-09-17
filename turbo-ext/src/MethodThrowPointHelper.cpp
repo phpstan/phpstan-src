@@ -24,6 +24,7 @@ namespace sigs = ptdecl::MethodThrowPointHelper::sig;
 #include "zv.h"
 #include "TypeTraits.h"
 #include "TypeOps.h"
+#include "AcceptorValues.h"
 #include "ParserVisitors.h"
 
 static zend_class_entry *pt_ce_method_throw_point_helper;
@@ -238,7 +239,7 @@ public:
 		if (UNEXPECTED(namedArgumentsVariants.isUndef())) return zv::Val();
 		zv::Val parametersAcceptor = pt_parameters_acceptor_selector_combine_variants_for_normalization(args, variants.raw(), namedArgumentsVariants.raw());
 		if (UNEXPECTED(parametersAcceptor.isUndef())) return zv::Val();
-		zv::Val returnType = callOn(parametersAcceptor.raw(), PT_LC("getreturntype"), "getReturnType", 0, NULL);
+		zv::Val returnType = pt_parameters_acceptor_call(parametersAcceptor.raw(), PT_PA_GET_RETURN_TYPE);
 		if (UNEXPECTED(returnType.isUndef())) return zv::Val();
 		if (UNEXPECTED(Z_TYPE_P(returnType.raw()) != IS_OBJECT)) {
 			zend_type_error("PHPStan\\Analyser\\ExprHandler\\Helper\\MethodThrowPointHelper::getThrowPoint(): Argument #6 ($methodCallReturnType) must be of type PHPStan\\Type\\Type, %s given", zend_zval_value_name(returnType.raw()));

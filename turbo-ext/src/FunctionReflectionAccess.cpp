@@ -7,9 +7,8 @@
  *   getNamedArgumentsVariants() / getThrowType() / getAsserts() (property
  *   slots), isBuiltin() (always true) and hasSideEffects() (the variants'
  *   return types are asked isVoid() natively, then the slot);
- * - FunctionVariant::getReturnType() / getParameters() of an
- *   ExtendedFunctionVariant (ExtendedFunctionVariant::getParameters() is
- *   parent::getParameters());
+ * - ParametersAcceptor::getReturnType() / getParameters()
+ *   (pt_parameters_acceptor_read(), AcceptorValues.h);
  * - ParameterReflection::isOptional() (pt_parameter_reflection_bool());
  * - Assertions::getAll().
  *
@@ -26,6 +25,7 @@
 #include "TypeOps.h"
 #include "Engine.h"
 #include "ParameterValues.h"
+#include "AcceptorValues.h"
 
 namespace {
 
@@ -42,13 +42,6 @@ enum : uint32_t
 	PT_FRA_NFR_SLOT_COUNT,
 };
 
-enum : uint32_t
-{
-	PT_FRA_EFV_RETURN_TYPE = 0,
-	PT_FRA_EFV_PARAMETERS,
-	PT_FRA_EFV_SLOT_COUNT,
-};
-
 /* the instance-property offsets of one class entry, resolved once per
  * request; ce NULL = not resolvable (every call takes the method) */
 struct ClassSlots
@@ -60,7 +53,6 @@ struct ClassSlots
 };
 
 ClassSlots pt_fra_native_function_reflection;
-ClassSlots pt_fra_extended_function_variant;
 ClassSlots pt_fra_assertions;
 ClassSlots pt_fra_memoizing_reflection_provider;
 ClassSlots pt_fra_better_reflection_provider;
@@ -94,7 +86,6 @@ const ClassSlots *slotsOf(ClassSlots &cache, int classIdx, zend_object *object, 
 }
 
 const char *const pt_fra_nfr_names[PT_FRA_NFR_SLOT_COUNT] = { "name", "variants", "namedArgumentsVariants", "throwType", "hasSideEffects", "assertions" };
-const char *const pt_fra_efv_names[PT_FRA_EFV_SLOT_COUNT] = { "returnType", "parameters" };
 const char *const pt_fra_assertions_names[1] = { "asserts" };
 const char *const pt_fra_memoizing_names[1] = { "provider" };
 const char *const pt_fra_better_names[2] = { "resolvedFunctionNames", "functionReflections" };
@@ -216,26 +207,12 @@ zval *pt_function_reflection_has_side_effects(zval *reflection, zv::Val &hold)
 
 zval *pt_parameters_acceptor_return_type(zval *acceptor, zv::Val &hold)
 {
-	if (EXPECTED(Z_TYPE_P(acceptor) == IS_OBJECT)) {
-		const ClassSlots *slots = slotsOf(pt_fra_extended_function_variant, PT_CLASS_EXTENDED_FUNCTION_VARIANT, Z_OBJ_P(acceptor), pt_fra_efv_names, PT_FRA_EFV_SLOT_COUNT);
-		if (EXPECTED(slots != NULL)) {
-			zval *value = initializedSlot(acceptor, slots, PT_FRA_EFV_RETURN_TYPE);
-			if (EXPECTED(value != NULL)) return value;
-		}
-	}
-	return callGetter(acceptor, PT_LC("getreturntype"), "getReturnType", hold);
+	return pt_parameters_acceptor_read(acceptor, PT_PA_GET_RETURN_TYPE, hold);
 }
 
 zval *pt_parameters_acceptor_parameters(zval *acceptor, zv::Val &hold)
 {
-	if (EXPECTED(Z_TYPE_P(acceptor) == IS_OBJECT)) {
-		const ClassSlots *slots = slotsOf(pt_fra_extended_function_variant, PT_CLASS_EXTENDED_FUNCTION_VARIANT, Z_OBJ_P(acceptor), pt_fra_efv_names, PT_FRA_EFV_SLOT_COUNT);
-		if (EXPECTED(slots != NULL)) {
-			zval *value = initializedSlot(acceptor, slots, PT_FRA_EFV_PARAMETERS);
-			if (EXPECTED(value != NULL)) return value;
-		}
-	}
-	return callGetter(acceptor, PT_LC("getparameters"), "getParameters", hold);
+	return pt_parameters_acceptor_read(acceptor, PT_PA_GET_PARAMETERS, hold);
 }
 
 bool pt_parameter_reflection_is_optional(zval *parameter, bool &out)

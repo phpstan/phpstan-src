@@ -20,6 +20,7 @@
 #include "TypeOps.h"
 #include "Engine.h"
 #include "AnalyserValues.h"
+#include "AcceptorValues.h"
 
 #include "zend_smart_str.h"
 
@@ -28,11 +29,6 @@ namespace ptcall {
 /* {{{ the collaborators (the PHP ones one site each; switch to their direct
  * entries once they are ported) */
 
-inline pt_method_site acceptorReturnTypeSite;
-inline pt_method_site resolvedAcceptorReturnTypeSite;
-inline pt_method_site acceptorNativeReturnTypeSite;
-inline pt_method_site acceptorResolvedTemplateTypeMapSite;
-inline pt_method_site acceptorCallSiteVarianceMapSite;
 inline pt_method_site assertionsGetAllSite;
 inline pt_method_site assertionsMapTypesSite;
 inline pt_method_site getConstantStringsSite;
@@ -85,34 +81,35 @@ inline zv::Val reorderCallUserFuncArrayArguments(zval *callUserFuncArrayCall, zv
 	return pt_arguments_normalizer_reorder_call_user_func_array_arguments(callUserFuncArrayCall, scope);
 }
 
-/* $parametersAcceptor->getReturnType() (the structural acceptor) */
+/* $parametersAcceptor->getReturnType() (the structural acceptor) —
+ * AcceptorValues.h */
 inline zv::Val acceptorReturnType(zval *acceptor)
 {
-	return pt_call_method_cached(acceptorReturnTypeSite, Z_OBJ_P(acceptor), PT_LC("getreturntype"), 0, NULL);
+	return pt_parameters_acceptor_call(acceptor, PT_PA_GET_RETURN_TYPE);
 }
 
 /* $resolvedParametersAcceptor->getReturnType() */
 inline zv::Val resolvedAcceptorReturnType(zval *acceptor)
 {
-	return pt_call_method_cached(resolvedAcceptorReturnTypeSite, Z_OBJ_P(acceptor), PT_LC("getreturntype"), 0, NULL);
+	return pt_parameters_acceptor_call(acceptor, PT_PA_GET_RETURN_TYPE);
 }
 
 /* $acceptor->getNativeReturnType() */
 inline zv::Val acceptorNativeReturnType(zval *acceptor)
 {
-	return pt_call_method_cached(acceptorNativeReturnTypeSite, Z_OBJ_P(acceptor), PT_LC("getnativereturntype"), 0, NULL);
+	return pt_parameters_acceptor_call(acceptor, PT_PA_GET_NATIVE_RETURN_TYPE);
 }
 
 /* $acceptor->getResolvedTemplateTypeMap() */
 inline zv::Val acceptorResolvedTemplateTypeMap(zval *acceptor)
 {
-	return pt_call_method_cached(acceptorResolvedTemplateTypeMapSite, Z_OBJ_P(acceptor), PT_LC("getresolvedtemplatetypemap"), 0, NULL);
+	return pt_parameters_acceptor_call(acceptor, PT_PA_GET_RESOLVED_TEMPLATE_TYPE_MAP);
 }
 
 /* $acceptor->getCallSiteVarianceMap() */
 inline zv::Val acceptorCallSiteVarianceMap(zval *acceptor)
 {
-	return pt_call_method_cached(acceptorCallSiteVarianceMapSite, Z_OBJ_P(acceptor), PT_LC("getcallsitevariancemap"), 0, NULL);
+	return pt_parameters_acceptor_call(acceptor, PT_PA_GET_CALL_SITE_VARIANCE_MAP);
 }
 
 /* $argumentsHandler->processArgs(...) with the arguments the twin passes

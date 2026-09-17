@@ -11,6 +11,7 @@
 #include "TypeTraits.h"
 #include "Engine.h"
 #include "ParameterValues.h"
+#include "AcceptorValues.h"
 #include "generated/JustNullableTypeTrait.h"
 #include "generated/NonArrayTypeTrait.h"
 #include "generated/NonCallableTypeTrait.h"
@@ -639,7 +640,7 @@ void pt_type_trait_maybe_callable(reg::Class &cls)
 	cls.traitMethod(sigs::getCallableParametersAcceptors, [](INTERNAL_FUNCTION_PARAMETERS) {
 		PT_ARGS(1, 1);
 		/* [new TrivialParametersAcceptor()] */
-		zv::Val acceptor = pt_type_new(PT_CLASS_TRIVIAL_PARAMETERS_ACCEPTOR, 0, NULL);
+		zv::Val acceptor = pt_trivial_parameters_acceptor_new();
 		if (UNEXPECTED(acceptor.isUndef())) RETURN_THROWS();
 		zv::Arr acceptors = zv::Arr::create(1);
 		acceptors.push(std::move(acceptor));
@@ -5098,6 +5099,15 @@ zv::Val protoParameterCall(zend_object *parameter, pt_parameter_reflection_membe
 	return protoChecked(parameter, lcname, pt_parameter_reflection_call(&parameterZv, member), expected);
 }
 
+/* the same for a parameters acceptor's getter, through
+ * pt_parameters_acceptor_call() (AcceptorValues.h) */
+zv::Val protoAcceptorCall(zend_object *acceptor, pt_parameters_acceptor_member member, const char *lcname, ProtoReturn expected)
+{
+	zval acceptorZv;
+	ZVAL_OBJ(&acceptorZv, acceptor);
+	return protoChecked(acceptor, lcname, pt_parameters_acceptor_call(&acceptorZv, member), expected);
+}
+
 /* $a->equals($b); -1 = pending exception */
 int protoEquals(zval *a, zval *b)
 {
@@ -5216,7 +5226,7 @@ zv::Val protoParameter(PrototypeKind kind, const PrototypeTransformer &transform
  * UNDEF = pending exception */
 zv::Val protoVariant(PrototypeKind kind, const PrototypeTransformer &transformer, zend_object *acceptor, zv::Val &selfOutType)
 {
-	zv::Val originalReturnType = protoCall(acceptor, PT_LC("getreturntype"), PROTO_OBJECT);
+	zv::Val originalReturnType = protoAcceptorCall(acceptor, PT_PA_GET_RETURN_TYPE, "getreturntype", PROTO_OBJECT);
 	if (UNEXPECTED(originalReturnType.isUndef())) return zv::Val();
 	bool returnsThis;
 	pt_type_instanceof_ce(originalReturnType.raw(), pt_ce_this_type, returnsThis);
@@ -5242,19 +5252,19 @@ zv::Val protoVariant(PrototypeKind kind, const PrototypeTransformer &transformer
 			returnType = zv::Val::copyOf(zv::Ref(transformedReturnType.raw()));
 		}
 	}
-	zv::Val phpDocReturnType = protoCall(acceptor, PT_LC("getphpdocreturntype"), PROTO_OBJECT);
+	zv::Val phpDocReturnType = protoAcceptorCall(acceptor, PT_PA_GET_PHPDOC_RETURN_TYPE, "getphpdocreturntype", PROTO_OBJECT);
 	if (UNEXPECTED(phpDocReturnType.isUndef())) return zv::Val();
-	zv::Val nativeReturnType = protoCall(acceptor, PT_LC("getnativereturntype"), PROTO_OBJECT);
+	zv::Val nativeReturnType = protoAcceptorCall(acceptor, PT_PA_GET_NATIVE_RETURN_TYPE, "getnativereturntype", PROTO_OBJECT);
 	if (UNEXPECTED(nativeReturnType.isUndef())) return zv::Val();
-	zv::Val templateTypeMap = protoCall(acceptor, PT_LC("gettemplatetypemap"), PROTO_ANY);
+	zv::Val templateTypeMap = protoAcceptorCall(acceptor, PT_PA_GET_TEMPLATE_TYPE_MAP, "gettemplatetypemap", PROTO_ANY);
 	if (UNEXPECTED(templateTypeMap.isUndef())) return zv::Val();
-	zv::Val resolvedTemplateTypeMap = protoCall(acceptor, PT_LC("getresolvedtemplatetypemap"), PROTO_ANY);
+	zv::Val resolvedTemplateTypeMap = protoAcceptorCall(acceptor, PT_PA_GET_RESOLVED_TEMPLATE_TYPE_MAP, "getresolvedtemplatetypemap", PROTO_ANY);
 	if (UNEXPECTED(resolvedTemplateTypeMap.isUndef())) return zv::Val();
-	zv::Val parameters = protoCall(acceptor, PT_LC("getparameters"), PROTO_ARRAY);
+	zv::Val parameters = protoAcceptorCall(acceptor, PT_PA_GET_PARAMETERS, "getparameters", PROTO_ARRAY);
 	if (UNEXPECTED(parameters.isUndef())) return zv::Val();
 	zv::Val mappedParameters = protoMap(parameters.raw(), "getParameters()", [&](zend_object *parameter) { return protoParameter(kind, transformer, parameter); });
 	if (UNEXPECTED(mappedParameters.isUndef())) return zv::Val();
-	zv::Val variadic = protoCall(acceptor, PT_LC("isvariadic"), PROTO_ANY);
+	zv::Val variadic = protoAcceptorCall(acceptor, PT_PA_IS_VARIADIC, "isvariadic", PROTO_ANY);
 	if (UNEXPECTED(variadic.isUndef())) return zv::Val();
 	/* the Callback twin reuses the transformed return type for an equal
 	 * PHPDoc / native return type; the CalledOnType twin transforms both */
@@ -5263,7 +5273,7 @@ zv::Val protoVariant(PrototypeKind kind, const PrototypeTransformer &transformer
 	if (UNEXPECTED(transformedPhpDocReturnType.isUndef())) return zv::Val();
 	zv::Val transformedNativeReturnType = protoTransformUnlessEqual(kind, transformer, originalReturnType.raw(), transformedOriginal, nativeReturnType.raw());
 	if (UNEXPECTED(transformedNativeReturnType.isUndef())) return zv::Val();
-	zv::Val callSiteVarianceMap = protoCall(acceptor, PT_LC("getcallsitevariancemap"), PROTO_ANY);
+	zv::Val callSiteVarianceMap = protoAcceptorCall(acceptor, PT_PA_GET_CALL_SITE_VARIANCE_MAP, "getcallsitevariancemap", PROTO_ANY);
 	if (UNEXPECTED(callSiteVarianceMap.isUndef())) return zv::Val();
 	zval args[8];
 	ZVAL_COPY_VALUE(&args[0], templateTypeMap.raw());
@@ -5274,7 +5284,7 @@ zv::Val protoVariant(PrototypeKind kind, const PrototypeTransformer &transformer
 	ZVAL_COPY_VALUE(&args[5], transformedPhpDocReturnType.raw());
 	ZVAL_COPY_VALUE(&args[6], transformedNativeReturnType.raw());
 	ZVAL_COPY_VALUE(&args[7], callSiteVarianceMap.raw());
-	return pt_type_new(PT_CLASS_EXTENDED_FUNCTION_VARIANT, 8, args);
+	return pt_extended_function_variant_new(8, args);
 }
 
 /* transformMethodWithStaticType($declaringClass, $method): new

@@ -25,7 +25,6 @@ zend_class_entry *pt_ce_closure_parameter_resolver = nullptr;
 
 namespace {
 
-pt_method_site pt_cpr_acceptor_get_parameters_site;
 
 } // namespace
 
@@ -160,7 +159,7 @@ private:
 			zend_throw_error(NULL, "Call to a member function getParameters() on %s", zend_zval_value_name(acceptor));
 			return zv::Val();
 		}
-		zv::Val callableParameters = pt_call_method_cached(pt_cpr_acceptor_get_parameters_site, Z_OBJ_P(acceptor), PT_LC("getparameters"), 0, NULL);
+		zv::Val callableParameters = pt_parameters_acceptor_call(acceptor, PT_PA_GET_PARAMETERS);
 		if (UNEXPECTED(callableParameters.isUndef())) return zv::Val();
 		if (UNEXPECTED(!callableParameters.ref().isArray())) {
 			zend_error(E_WARNING, "foreach() argument must be of type array|object, %s given", zend_zval_value_name(callableParameters.raw()));

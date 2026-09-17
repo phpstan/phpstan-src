@@ -170,7 +170,6 @@ enum {
 	PT_CLASS_POSSIBLY_IMPURE_CALL_EXPR,
 	PT_CLASS_CONST_FETCH,
 	PT_CLASS_HALT_COMPILER,
-	PT_CLASS_INITIALIZER_EXPR_CONTEXT,
 	PT_CLASS_EXTENDED_PARAMETERS_ACCEPTOR,
 	PT_CLASS_MATCH,
 	PT_CLASS_NULLSAFE_METHOD_CALL,
@@ -451,6 +450,10 @@ enum {
 	PT_CLASS_MAGIC_CONST_TRAIT,
 	PT_CLASS_MAGIC_CONST_PROPERTY,
 	PT_CLASS_TEMPLATE_TAG,
+	PT_CLASS_SCOPE,
+	PT_CLASS_ADAPTER_REFLECTION_PARAMETER,
+	PT_CLASS_ADAPTER_REFLECTION_FUNCTION,
+	PT_CLASS_BETTER_REFLECTION_CONSTANT,
 	PT_CLASS_COUNT
 };
 
@@ -4207,6 +4210,33 @@ zv::Val pt_initializer_expr_type_resolver_get_class_const_fetch_type_by_reflecti
 zv::Val pt_initializer_expr_type_resolver_get_unary_plus_type(zval *resolver, zval *expr, const pt_ietr_get_type &getTypeCallback);
 zv::Val pt_initializer_expr_type_resolver_get_unary_minus_type(zval *resolver, zval *expr, const pt_ietr_get_type &getTypeCallback);
 zv::Val pt_initializer_expr_type_resolver_get_bitwise_not_type(zval *resolver, zval *expr, const pt_ietr_get_type &getTypeCallback);
+
+/* }}} */
+
+/* {{{ InitializerExprContext.cpp — the context a constant expression is
+ * priced in; registered after the assertions (its signatures name the Scope
+ * interface, ClassReflection and PHP classes only) */
+
+extern zend_class_entry *pt_ce_initializer_expr_context;
+void pt_register_initializer_expr_context();
+/* InitializerExprContext::fromScope($scope) / ::fromClassReflection($classReflection)
+ * / ::fromClass($className, $fileName) / ::fromFunction($functionName, $fileName)
+ * / ::fromClassMethod($className, $traitName, $methodName, $fileName) /
+ * ::fromReflectionParameter($parameter) / ::fromStubParameter($className,
+ * $stubFile, $function) / ::fromGlobalConstant($constant) / ::createEmpty()
+ * — every argument borrowed and already of the parameter's type (names
+ * IS_STRING, nullable ones IS_STRING or IS_NULL, objects of the declared
+ * classes); UNDEF = pending exception. The getters are the inline slot
+ * readers of AnalyserValues.h (pt_initializer_expr_context_file(context, hold), ...). */
+zv::Val pt_initializer_expr_context_from_scope(zval *scope);
+zv::Val pt_initializer_expr_context_from_class_reflection(zval *classReflection);
+zv::Val pt_initializer_expr_context_from_class(zval *className, zval *fileName);
+zv::Val pt_initializer_expr_context_from_function(zval *functionName, zval *fileName);
+zv::Val pt_initializer_expr_context_from_class_method(zval *className, zval *traitName, zval *methodName, zval *fileName);
+zv::Val pt_initializer_expr_context_from_reflection_parameter(zval *parameter);
+zv::Val pt_initializer_expr_context_from_stub_parameter(zval *className, zval *stubFile, zval *function);
+zv::Val pt_initializer_expr_context_from_global_constant(zval *constant);
+zv::Val pt_initializer_expr_context_create_empty();
 
 /* }}} */
 

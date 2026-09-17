@@ -4077,7 +4077,7 @@ public:
 					if (hasClass) {
 						zv::Val classReflection = pt_reflection_provider_get_class(provider.asObject(), first);
 						if (UNEXPECTED(classReflection.isUndef())) return zv::Val();
-						zv::Val context = pt_type_call_static(PT_CLASS_INITIALIZER_EXPR_CONTEXT, PT_LC("fromclassreflection"), 1, classReflection.raw());
+						zv::Val context = pt_initializer_expr_context_from_class_reflection(classReflection.raw());
 						if (UNEXPECTED(context.isUndef())) return zv::Val();
 						return initializerExprTypeResolverFunctionType(type, isNullable, context.raw());
 					}
@@ -4085,7 +4085,7 @@ public:
 			}
 		}
 
-		zv::Val context = pt_type_call_static(PT_CLASS_INITIALIZER_EXPR_CONTEXT, PT_LC("fromscope"), 1, thisZval());
+		zv::Val context = pt_initializer_expr_context_from_scope(thisZval());
 		if (UNEXPECTED(context.isUndef())) return zv::Val();
 		return initializerExprTypeResolverFunctionType(type, isNullable, context.raw());
 	}
@@ -4229,7 +4229,7 @@ public:
 			zend_string *name = parameterVariableName(parameter.asObject());
 			if (UNEXPECTED(name == NULL)) return zv::Val();
 			zv::Str ownedName = zv::Str::copyOf(name);
-			zv::Val context = pt_type_call_static(PT_CLASS_INITIALIZER_EXPR_CONTEXT, PT_LC("fromscope"), 1, thisZval());
+			zv::Val context = pt_initializer_expr_context_from_scope(thisZval());
 			if (UNEXPECTED(context.isUndef())) return zv::Val();
 			zv::Ref resolver = slot(PT_MS_PROP_INITIALIZER_EXPR_TYPE_RESOLVER);
 			if (UNEXPECTED(!resolver.isObject())) return uninitializedProperty("initializerExprTypeResolver");
@@ -4291,8 +4291,9 @@ public:
 	{
 		zv::Val file = thisGetFile();
 		if (UNEXPECTED(file.isUndef())) return zv::Val();
-		zv::Args contextArgs{className, file.raw(), functionLike};
-		zv::Val context = pt_type_call_static(PT_CLASS_INITIALIZER_EXPR_CONTEXT, PT_LC("fromstubparameter"), 3, contextArgs);
+		zval functionLikeZv;
+		ZVAL_OBJ(&functionLikeZv, functionLike);
+		zv::Val context = pt_initializer_expr_context_from_stub_parameter(className, file.raw(), &functionLikeZv);
 		if (UNEXPECTED(context.isUndef())) return zv::Val();
 		zv::Ref factory = slot(PT_MS_PROP_ATTRIBUTE_REFLECTION_FACTORY);
 		if (UNEXPECTED(!factory.isObject())) return uninitializedProperty("attributeReflectionFactory");
@@ -10807,7 +10808,7 @@ public:
 			if (UNEXPECTED(!resolver.isObject())) return uninitializedProperty("initializerExprTypeResolver");
 			zval selfZv;
 			ZVAL_OBJ(&selfZv, self);
-			zv::Val context = pt_type_call_static(PT_CLASS_INITIALIZER_EXPR_CONTEXT, PT_LC("fromscope"), 1, &selfZv);
+			zv::Val context = pt_initializer_expr_context_from_scope(&selfZv);
 			if (UNEXPECTED(context.isUndef())) return zv::Val();
 			return pt_initializer_expr_type_resolver_get_type(resolver.raw(), &exprZv, context.raw());
 		}

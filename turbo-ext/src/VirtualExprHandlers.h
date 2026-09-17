@@ -141,7 +141,6 @@ inline zval *nodeRead(NodeProp &prop, zval *node)
 /* {{{ the PHP collaborators (one site each; switch to their direct entries
  * once they are ported) */
 
-inline pt_method_site initializerExprContextFromScopeSite;
 
 /* $initializerExprTypeResolver->createFirstClassCallable($function, $variants, $nativeTypesPromoted) */
 inline zv::Val createFirstClassCallable(zval *initializerExprTypeResolver, zval *function, zval *variants, bool nativeTypesPromoted)
@@ -158,7 +157,7 @@ inline zv::Val getFirstClassCallableType(zval *initializerExprTypeResolver, zval
 /* InitializerExprContext::fromScope($scope) */
 inline zv::Val initializerExprContextFromScope(zval *scope)
 {
-	return pt_call_static_cached(initializerExprContextFromScopeSite, PT_CLASS_INITIALIZER_EXPR_CONTEXT, PT_LC("fromscope"), 1, scope);
+	return pt_initializer_expr_context_from_scope(scope);
 }
 
 /* }}} */

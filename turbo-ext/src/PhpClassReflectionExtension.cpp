@@ -766,8 +766,7 @@ public:
 	/* InitializerExprContext::fromClass($className, $fileName) */
 	static zv::Val initializerExprContextFromClass(zval *className, zval *fileName)
 	{
-		zv::Args args{className, fileName};
-		return pt_type_call_static(PT_CLASS_INITIALIZER_EXPR_CONTEXT, PT_LC("fromclass"), 2, args);
+		return pt_initializer_expr_context_from_class(className, fileName);
 	}
 
 	/* $this->attributeReflectionFactory->fromNativeReflection($reflection->getAttributes(), $context) */
@@ -1920,8 +1919,9 @@ public:
 		if (UNEXPECTED(reflectionProvider.isUndef())) return zv::Val();
 		zv::Val hasSideEffects = isPure < 0 ? trinaryMaybe() : trinaryFromBoolean(isPure != 1);
 		if (UNEXPECTED(hasSideEffects.isUndef())) return zv::Val();
-		zv::Args methodContextArgs{declaringClassNameArg, zv::null, methodNameArg, zv::null};
-		zv::Val context = pt_type_call_static(PT_CLASS_INITIALIZER_EXPR_CONTEXT, PT_LC("fromclassmethod"), 4, methodContextArgs);
+		zval contextNull;
+		ZVAL_NULL(&contextNull);
+		zv::Val context = pt_initializer_expr_context_from_class_method(declaringClassNameArg, &contextNull, methodNameArg, &contextNull);
 		if (UNEXPECTED(context.isUndef())) return zv::Val();
 		zv::Val attributes = attributesOf(methodReflection, context.raw());
 		if (UNEXPECTED(attributes.isUndef())) return zv::Val();
@@ -2517,8 +2517,7 @@ public:
 		if (UNEXPECTED(actualClassName.isUndef())) return zv::Val();
 		zv::Val actualFileName = call(actualDeclaringClass, PT_LC("getfilename"));
 		if (UNEXPECTED(actualFileName.isUndef())) return zv::Val();
-		zv::Args contextArgs{actualClassName.raw(), declaringTraitName, &methodNameArg, actualFileName.raw()};
-		zv::Val context = pt_type_call_static(PT_CLASS_INITIALIZER_EXPR_CONTEXT, PT_LC("fromclassmethod"), 4, contextArgs);
+		zv::Val context = pt_initializer_expr_context_from_class_method(actualClassName.raw(), declaringTraitName, &methodNameArg, actualFileName.raw());
 		if (UNEXPECTED(context.isUndef())) return zv::Val();
 		zv::Val attributes = attributesOf(methodReflection, context.raw());
 		if (UNEXPECTED(attributes.isUndef())) return zv::Val();

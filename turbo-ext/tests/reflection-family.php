@@ -242,30 +242,6 @@ final class DuckUniversalObjectCrates
 }
 
 /**
- * The class-map stand-in for InitializerExprContext: its
- * fromClassReflection() receives the native $this.
- */
-final class DuckInitializerExprContext
-{
-
-	public static function fromClassReflection(mixed $classReflection): \PHPStan\Reflection\InitializerExprContext
-	{
-		return \PHPStan\Reflection\InitializerExprContext::fromClassReflection(Twins::of($classReflection));
-	}
-
-	public static function fromClass(string $className, ?string $fileName): \PHPStan\Reflection\InitializerExprContext
-	{
-		return \PHPStan\Reflection\InitializerExprContext::fromClass($className, $fileName);
-	}
-
-	public static function fromScope(mixed ...$args): \PHPStan\Reflection\InitializerExprContext
-	{
-		return \PHPStan\Reflection\InitializerExprContext::fromScope(...$args);
-	}
-
-}
-
-/**
  * The class-map stand-in for ParserNodeTypeToPHPStanType: the native
  * TypehintHelper hands its resolve() the selfClass it was called with,
  * which is the native $this for a class constant's native type.
@@ -558,7 +534,6 @@ $rfRegistryProvider = $rfContainer->getByType(\PHPStan\DependencyInjection\Refle
 // to the stand-ins for the duration of the test
 \PHPStanTurbo\Runtime::configure([
 	'universalObjectCratesClassReflectionExtension' => DuckUniversalObjectCrates::class,
-	'initializerExprContext' => \ReflectionFamily\DuckInitializerExprContext::class,
 	'enumCaseReflection' => \ReflectionFamily\DuckEnumCaseReflection::class,
 	'realClassClassConstantReflection' => \ReflectionFamily\DuckRealClassClassConstantReflection::class,
 	'parserNodeTypeToPHPStanType' => \ReflectionFamily\DuckParserNodeTypeToPHPStanType::class,
@@ -795,7 +770,6 @@ foreach ($rfSamples as $rfLabel => $rfOriginal) {
 // the class map back to the generated one
 \PHPStanTurbo\Runtime::configure([
 	'universalObjectCratesClassReflectionExtension' => $rfClassMap['universalObjectCratesClassReflectionExtension'],
-	'initializerExprContext' => $rfClassMap['initializerExprContext'],
 	'enumCaseReflection' => $rfClassMap['enumCaseReflection'],
 	'realClassClassConstantReflection' => $rfClassMap['realClassClassConstantReflection'],
 	'parserNodeTypeToPHPStanType' => $rfClassMap['parserNodeTypeToPHPStanType'],

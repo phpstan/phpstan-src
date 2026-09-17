@@ -34,15 +34,13 @@ namespace {
 
 /* {{{ the PHP collaborators (one site each) */
 
-pt_method_site pt_dar_from_stub_parameter_site;
 pt_method_site pt_dar_attr_name_to_string_site;
 pt_method_site pt_dar_arg_name_to_string_site;
 
 /* InitializerExprContext::fromStubParameter($className, $stubFile, $function) */
 zv::Val initializerExprContextFromStubParameter(zval *className, zval *stubFile, zval *function)
 {
-	zv::Args argv{className, stubFile, function};
-	return pt_call_static_cached(pt_dar_from_stub_parameter_site, PT_CLASS_INITIALIZER_EXPR_CONTEXT, PT_LC("fromstubparameter"), 3, argv);
+	return pt_initializer_expr_context_from_stub_parameter(className, stubFile, function);
 }
 
 /* $initializerExprTypeResolver->getType($expr, $context) */

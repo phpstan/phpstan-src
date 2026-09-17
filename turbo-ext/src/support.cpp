@@ -134,7 +134,6 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_POSSIBLY_IMPURE_CALL_EXPR */ {"possiblyImpureCallExpr", "PHPStan\\Node\\Expr\\PossiblyImpureCallExpr"},
 	/* PT_CLASS_CONST_FETCH */ {"constFetch", "PhpParser\\Node\\Expr\\ConstFetch"},
 	/* PT_CLASS_HALT_COMPILER */ {"haltCompiler", "PhpParser\\Node\\Stmt\\HaltCompiler"},
-	/* PT_CLASS_INITIALIZER_EXPR_CONTEXT */ {"initializerExprContext", "PHPStan\\Reflection\\InitializerExprContext"},
 	/* PT_CLASS_EXTENDED_PARAMETERS_ACCEPTOR */ {"extendedParametersAcceptor", "PHPStan\\Reflection\\ExtendedParametersAcceptor"},
 	/* PT_CLASS_MATCH */ {"match", "PhpParser\\Node\\Expr\\Match_"},
 	/* PT_CLASS_NULLSAFE_METHOD_CALL */ {"nullsafeMethodCall", "PhpParser\\Node\\Expr\\NullsafeMethodCall"},
@@ -402,6 +401,10 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_MAGIC_CONST_TRAIT */ {"magicConstTrait", "PhpParser\\Node\\Scalar\\MagicConst\\Trait_"},
 	/* PT_CLASS_MAGIC_CONST_PROPERTY */ {"magicConstProperty", "PhpParser\\Node\\Scalar\\MagicConst\\Property"},
 	/* PT_CLASS_TEMPLATE_TAG */ {"templateTag", "PHPStan\\PhpDoc\\Tag\\TemplateTag"},
+	/* PT_CLASS_SCOPE */ {"scope", "PHPStan\\Analyser\\Scope"},
+	/* PT_CLASS_ADAPTER_REFLECTION_PARAMETER */ {"adapterReflectionParameter", "PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionParameter"},
+	/* PT_CLASS_ADAPTER_REFLECTION_FUNCTION */ {"adapterReflectionFunction", "PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionFunction"},
+	/* PT_CLASS_BETTER_REFLECTION_CONSTANT */ {"betterReflectionConstant", "PHPStan\\BetterReflection\\Reflection\\ReflectionConstant"},
 };
 
 zend_class_entry *pt_class(int idx)

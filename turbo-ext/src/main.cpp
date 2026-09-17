@@ -581,6 +581,9 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	/* the DI service resolving constant expressions — after Assertions and the
 	 * Type family its bodies instantiate */
 	pt_register_initializer_expr_type_resolver();
+	/* the initializer expression context — its signatures name the Scope
+	 * interface, ClassReflection, php-parser and BetterReflection classes only */
+	pt_register_initializer_expr_context();
 
 	return SUCCESS;
 }

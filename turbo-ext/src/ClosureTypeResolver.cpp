@@ -61,7 +61,6 @@ int pt_ctr_resolve_closure_type_depth = 0;
 /* {{{ the PHP collaborators (one site each; switch to their direct entries
  * once they are ported) */
 
-pt_method_site pt_ctr_context_from_scope_site;
 pt_method_site pt_ctr_simple_throw_point_explicit_site;
 pt_method_site pt_ctr_simple_throw_point_implicit_site;
 pt_method_site pt_ctr_stats_increment_site;
@@ -69,7 +68,7 @@ pt_method_site pt_ctr_stats_increment_site;
 /* $this->initializerExprTypeResolver->getType($expr, InitializerExprContext::fromScope($scope)) */
 zv::Val initializerExprType(zval *initializerExprTypeResolver, zval *expr, zval *scope)
 {
-	zv::Val context = pt_call_static_cached(pt_ctr_context_from_scope_site, PT_CLASS_INITIALIZER_EXPR_CONTEXT, PT_LC("fromscope"), 1, scope);
+	zv::Val context = pt_initializer_expr_context_from_scope(scope);
 	if (UNEXPECTED(context.isUndef())) return zv::Val();
 	return pt_initializer_expr_type_resolver_get_type(initializerExprTypeResolver, expr, context.raw());
 }

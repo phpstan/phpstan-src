@@ -4250,6 +4250,7 @@ $covered[\PHPStan\Analyser\EnsuredNonNullabilityResult::class] = true;
 $covered[\PHPStan\Analyser\EnsuredNonNullabilityResultExpression::class] = true;
 $covered[\PHPStan\Analyser\IssetabilityLinkInfo::class] = true;
 $covered[\PHPStan\Analyser\IssetabilityResolution::class] = true;
+$covered[\PHPStan\Reflection\InitializerExprContext::class] = true;
 require __DIR__ . '/analyser-values.php';
 
 // ---- VariableWriteOffset ----

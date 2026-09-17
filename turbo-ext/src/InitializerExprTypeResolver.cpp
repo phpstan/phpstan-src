@@ -698,16 +698,7 @@ pt_method_site pt_ietr_parser_node_type_resolve_site;
 pt_method_site pt_ietr_with_conditional_return_predicate_site;
 pt_method_site pt_ietr_simple_throw_point_create_explicit_site;
 pt_method_site pt_ietr_simple_throw_point_create_implicit_site;
-pt_method_site pt_ietr_context_from_class_site;
-pt_method_site pt_ietr_context_from_class_reflection_site;
 pt_method_site pt_ietr_generalize_precision_more_specific_site;
-pt_method_site pt_ietr_context_get_file_site;
-pt_method_site pt_ietr_context_get_class_name_site;
-pt_method_site pt_ietr_context_get_namespace_site;
-pt_method_site pt_ietr_context_get_trait_name_site;
-pt_method_site pt_ietr_context_get_function_site;
-pt_method_site pt_ietr_context_get_method_site;
-pt_method_site pt_ietr_context_get_property_site;
 
 /* $reflectionProviderProvider->getReflectionProvider() */
 zv::Val reflectionProviderOf(zval *reflectionProviderProvider)
@@ -775,14 +766,13 @@ zv::Val simpleThrowPointCreateImplicit()
 /* InitializerExprContext::fromClass($className, $fileName) */
 zv::Val contextFromClass(zval *className, zval *fileName)
 {
-	zv::Args argv{className, fileName};
-	return pt_call_static_cached(pt_ietr_context_from_class_site, PT_CLASS_INITIALIZER_EXPR_CONTEXT, PT_LC("fromclass"), 2, argv);
+	return pt_initializer_expr_context_from_class(className, fileName);
 }
 
 /* InitializerExprContext::fromClassReflection($classReflection) */
 zv::Val contextFromClassReflection(zval *classReflection)
 {
-	return pt_call_static_cached(pt_ietr_context_from_class_reflection_site, PT_CLASS_INITIALIZER_EXPR_CONTEXT, PT_LC("fromclassreflection"), 1, classReflection);
+	return pt_initializer_expr_context_from_class_reflection(classReflection);
 }
 
 /* GeneralizePrecision::moreSpecific() */
@@ -792,23 +782,27 @@ zv::Val generalizePrecisionMoreSpecific()
 }
 
 /* $context->getFile() / getClassName() / getNamespace() / getTraitName() /
- * getFunction() / getMethod() / getProperty() (a ?string) */
-zv::Val contextGetter(pt_method_site &site, zval *context, const char *lcname, size_t len, const char *name)
+ * getFunction() / getMethod() / getProperty() (a ?string): the slot readers
+ * of the native InitializerExprContext (AnalyserValues.h) */
+zv::Val contextGetter(zval *context, zval *(*reader)(zval *, zv::Val &), const char *name)
 {
 	if (UNEXPECTED(Z_TYPE_P(context) != IS_OBJECT)) {
 		zend_throw_error(NULL, "Call to a member function %s() on %s", name, zend_zval_value_name(context));
 		return zv::Val();
 	}
-	return pt_call_method_cached(site, Z_OBJ_P(context), lcname, len, 0, NULL);
+	zv::Val hold;
+	zval *value = reader(context, hold);
+	if (UNEXPECTED(value == NULL)) return zv::Val();
+	return zv::Val::copyOf(zv::Ref(value));
 }
 
-inline zv::Val contextGetFile(zval *context) { return contextGetter(pt_ietr_context_get_file_site, context, PT_LC("getfile"), "getFile"); }
-inline zv::Val contextGetClassName(zval *context) { return contextGetter(pt_ietr_context_get_class_name_site, context, PT_LC("getclassname"), "getClassName"); }
-inline zv::Val contextGetNamespace(zval *context) { return contextGetter(pt_ietr_context_get_namespace_site, context, PT_LC("getnamespace"), "getNamespace"); }
-inline zv::Val contextGetTraitName(zval *context) { return contextGetter(pt_ietr_context_get_trait_name_site, context, PT_LC("gettraitname"), "getTraitName"); }
-inline zv::Val contextGetFunction(zval *context) { return contextGetter(pt_ietr_context_get_function_site, context, PT_LC("getfunction"), "getFunction"); }
-inline zv::Val contextGetMethod(zval *context) { return contextGetter(pt_ietr_context_get_method_site, context, PT_LC("getmethod"), "getMethod"); }
-inline zv::Val contextGetProperty(zval *context) { return contextGetter(pt_ietr_context_get_property_site, context, PT_LC("getproperty"), "getProperty"); }
+inline zv::Val contextGetFile(zval *context) { return contextGetter(context, pt_initializer_expr_context_file, "getFile"); }
+inline zv::Val contextGetClassName(zval *context) { return contextGetter(context, pt_initializer_expr_context_class_name, "getClassName"); }
+inline zv::Val contextGetNamespace(zval *context) { return contextGetter(context, pt_initializer_expr_context_namespace, "getNamespace"); }
+inline zv::Val contextGetTraitName(zval *context) { return contextGetter(context, pt_initializer_expr_context_trait_name, "getTraitName"); }
+inline zv::Val contextGetFunction(zval *context) { return contextGetter(context, pt_initializer_expr_context_function, "getFunction"); }
+inline zv::Val contextGetMethod(zval *context) { return contextGetter(context, pt_initializer_expr_context_method, "getMethod"); }
+inline zv::Val contextGetProperty(zval *context) { return contextGetter(context, pt_initializer_expr_context_property, "getProperty"); }
 
 /* }}} */
 
@@ -5498,7 +5492,11 @@ bool ietrArgExpr(zval *value, uint32_t arg)
 
 bool ietrArgContext(zval *value, uint32_t arg)
 {
-	return ietrArgClass(value, arg, PT_CLASS_INITIALIZER_EXPR_CONTEXT, "PHPStan\\Reflection\\InitializerExprContext");
+	/* the final native class; under the prefixed activation of the
+	 * differential tests the context factories hand out the PHP twin */
+	if (EXPECTED(Z_TYPE_P(value) == IS_OBJECT && (Z_OBJCE_P(value) == pt_ce_initializer_expr_context || zend_string_equals_literal(Z_OBJCE_P(value)->name, "PHPStan\\Reflection\\InitializerExprContext")))) return true;
+	zend_argument_type_error(arg, "must be of type PHPStan\\Reflection\\InitializerExprContext, %s given", zend_zval_value_name(value));
+	return false;
 }
 
 bool ietrArgNativeClass(zval *value, uint32_t arg, zend_class_entry *ce, const char *typeName, bool nullable = false)

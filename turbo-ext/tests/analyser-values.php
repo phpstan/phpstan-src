@@ -942,6 +942,139 @@ foreach ($avIssetResults['php'] as $label => $described) {
 }
 check(count(array_filter($avIssetResults['php'], static fn ($row) => is_array($row) && ($row['not null'] ?? null) === ['ok', true])) > 5 && count(array_filter($avIssetResults['php'], static fn ($row) => is_array($row) && ($row['not null'] ?? null) === ['ok', null])) > 5 && count(array_filter($avIssetResults['php'], static fn ($row) => is_array($row) && ($row['not null'] ?? null) === ['ok', false])) > 5, 'issetability value classes: the fixture reaches every isSet() verdict');
 
+// ---- InitializerExprContext ----
+// fromScope() over every distinct scope a real walk of its fixture hands the
+// node callback (namespaces, a class using a trait, a property hook, a
+// promoted constructor, closures and functions), the factories over the
+// fixture's reflections and hand-built stub nodes, the getters and the
+// errors. The walk runs the PHP scopes, so the native fromScope() takes its
+// by-name scope paths here; walk-trace.php runs the direct ones.
+$iecFile = __DIR__ . '/initializer-expr-context-fixture.php';
+$iecContainer = $avContainerFactory->create(sys_get_temp_dir() . '/phpstan-turbo-smoke-iec', [$avContainerFactory->getConfigDirectory() . '/config.level8.neon', ...(PHP_VERSION_ID < 80400 ? [__DIR__ . '/php84-syntax.neon'] : [])], [$iecFile]);
+$iecResolver = $iecContainer->getByType(\PHPStan\Analyser\NodeScopeResolver::class);
+$iecResolver->setAnalysedFiles([$iecFile]);
+$iecResolver->resetPerFileAnalysisState();
+$iecContainer->getService('pathRoutingParser')->setAnalysedFiles([$iecFile]);
+/** @var list<\PHPStan\Analyser\Scope> $iecScopes */
+$iecScopes = [];
+$iecSeen = [];
+$iecCallback = static function (\PhpParser\Node $node, \PHPStan\Analyser\Scope $scope) use (&$iecScopes, &$iecSeen): void {
+	if (isset($iecSeen[spl_object_id($scope)])) {
+		return;
+	}
+	$iecSeen[spl_object_id($scope)] = true;
+	$iecScopes[] = $scope;
+};
+$iecResolver->processNodes(
+	$iecContainer->getService('defaultAnalysisParser')->parseFile($iecFile),
+	$iecContainer->getByType(\PHPStan\Analyser\ScopeFactory::class)->create(\PHPStan\Analyser\ScopeContext::create($iecFile), $iecCallback),
+	$iecCallback,
+);
+$iecReflectionProvider = $iecContainer->getByType(\PHPStan\Reflection\ReflectionProvider::class);
+$iecReflector = $iecContainer->getService('betterReflectionReflector');
+$iecHolder = $iecReflectionProvider->getClass(\InitializerExprContextFixture\Inner\Holder::class);
+$iecGreets = $iecReflectionProvider->getClass(\InitializerExprContextFixture\Inner\Greets::class);
+$iecParameters = [
+	'trait method via class' => $iecHolder->getNativeReflection()->getMethod('greet')->getParameters()[0],
+	'trait method' => $iecGreets->getNativeReflection()->getMethod('greet')->getParameters()[0],
+	'static method' => $iecHolder->getNativeReflection()->getMethod('make')->getParameters()[0],
+	'promoted constructor' => $iecHolder->getNativeReflection()->getConstructor()->getParameters()[0],
+	'namespaced function' => (new \PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction($iecReflector->reflectFunction('InitializerExprContextFixture\Inner\helper')))->getParameters()[1],
+	'function' => (new \PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction($iecReflector->reflectFunction('InitializerExprContextFixture\topLevel')))->getParameters()[0],
+	'builtin function' => (new \PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction($iecReflector->reflectFunction('str_pad')))->getParameters()[2],
+	'builtin method' => (new \PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass($iecReflector->reflectClass(\ArrayObject::class)))->getMethod('__construct')->getParameters()[0],
+];
+$iecNamedFunction = static function (?string $namespacedName, bool $initialize = true): \PhpParser\Node\Stmt\Function_ {
+	$function = new \PhpParser\Node\Stmt\Function_(new \PhpParser\Node\Identifier('fn'));
+	if ($initialize) {
+		$function->namespacedName = $namespacedName !== null ? new \PhpParser\Node\Name($namespacedName) : null;
+	}
+	return $function;
+};
+$iecStubNodes = [
+	'method' => new \PhpParser\Node\Stmt\ClassMethod(new \PhpParser\Node\Identifier('run')),
+	'method custom identifier' => new \PhpParser\Node\Stmt\ClassMethod(new class ('run') extends \PhpParser\Node\Identifier {
+
+		public function toString(): string
+		{
+			return 'custom';
+		}
+
+	}),
+	'namespaced function' => $iecNamedFunction('A\B\fn'),
+	'global function' => $iecNamedFunction('fn'),
+	'fully qualified function' => (static function (): \PhpParser\Node\Stmt\Function_ {
+		$function = new \PhpParser\Node\Stmt\Function_(new \PhpParser\Node\Identifier('fn'));
+		$function->namespacedName = new \PhpParser\Node\Name\FullyQualified('A\fn');
+		return $function;
+	})(),
+	'function without namespaced name' => $iecNamedFunction(null),
+	'function uninitialized' => $iecNamedFunction(null, false),
+	'hook' => new \PhpParser\Node\PropertyHook(new \PhpParser\Node\Identifier('get'), null, [], ['propertyName' => 'label']),
+	'hook without property' => new \PhpParser\Node\PropertyHook(new \PhpParser\Node\Identifier('set'), null),
+	'hook int property' => new \PhpParser\Node\PropertyHook(new \PhpParser\Node\Identifier('set'), null, [], ['propertyName' => 5]),
+	'hook array property' => new \PhpParser\Node\PropertyHook(new \PhpParser\Node\Identifier('set'), null, [], ['propertyName' => ['x']]),
+];
+$iecResults = [];
+foreach (['php' => \PHPStan\Reflection\InitializerExprContext::class, 'native' => \PHPStanTurbo\InitializerExprContext::class] as $side => $C) {
+	$r = [];
+	$view = static fn (object $context): array => [$turboNorm(get_class($context)), $context->getFile() !== null ? basename($context->getFile()) : null, $context->getNamespace(), $context->getClassName(), $context->getTraitName(), $context->getFunction(), $context->getMethod(), $context->getProperty()];
+	foreach ($iecScopes as $i => $scope) {
+		$r['scope ' . $i] = $avCatch(static fn () => $view($C::fromScope($scope)));
+	}
+	foreach (['Foo', 'A\B\C', '\Foo', 'Foo\\', '', '\\', 'A\\\\B'] as $name) {
+		$r['fromClass ' . $name] = [
+			$avCatch(static fn () => $view($C::fromClass($name, null))),
+			$avCatch(static fn () => $view($C::fromClass($name, '/tmp/file.php'))),
+		];
+		$r['fromFunction ' . $name] = $avCatch(static fn () => $view($C::fromFunction($name, '/tmp/fn.php')));
+		$r['fromClassMethod ' . $name] = [
+			$avCatch(static fn () => $view($C::fromClassMethod($name, null, 'doIt', null))),
+			$avCatch(static fn () => $view($C::fromClassMethod($name, 'T\Tr', 'doIt', '/tmp/m.php'))),
+		];
+	}
+	$r['fromClassMethod named'] = $avCatch(static fn () => $view($C::fromClassMethod(methodName: 'm', fileName: null, className: 'X\Y', traitName: null)));
+	foreach (['holder' => $iecHolder, 'trait' => $iecGreets, 'builtin' => $iecReflectionProvider->getClass(\ArrayObject::class)] as $label => $classReflection) {
+		$r['fromClassReflection ' . $label] = $avCatch(static fn () => $view($C::fromClassReflection($classReflection)));
+	}
+	foreach ($iecParameters as $label => $parameter) {
+		$r['fromReflectionParameter ' . $label] = $avCatch(static fn () => $view($C::fromReflectionParameter($parameter)));
+	}
+	foreach ($iecStubNodes as $label => $node) {
+		foreach ([null, 'Stub\Klass', '\Bad'] as $className) {
+			$r['fromStubParameter ' . $label . ' ' . var_export($className, true)] = $avCatch(static fn () => $view($C::fromStubParameter($className, '/stubs/x.stub', $node)));
+		}
+	}
+	$r['fromGlobalConstant'] = $avCatch(static fn () => $view($C::fromGlobalConstant($iecReflector->reflectConstant('InitializerExprContextFixture\Inner\ANSWER'))));
+	$r['createEmpty'] = [$view($C::createEmpty()), $C::createEmpty() !== $C::createEmpty()];
+	$r['interfaces'] = [$C::createEmpty() instanceof \PHPStan\Reflection\NamespaceAnswerer];
+
+	// errors
+	$r['private constructor'] = $avCatch(static fn () => new $C(null, null, null, null, null, null, null));
+	foreach (['getFile', 'getClassName', 'getNamespace', 'getTraitName', 'getFunction', 'getMethod', 'getProperty'] as $getter) {
+		$r['uninitialized ' . $getter] = $avCatch(static fn () => (new \ReflectionClass($C))->newInstanceWithoutConstructor()->$getter());
+	}
+	$r['fromClass wrong'] = $avCatch(static fn () => $C::fromClass(1, null));
+	$r['fromStubParameter wrong node'] = $avCatch(static fn () => $C::fromStubParameter(null, 'x', new \PhpParser\Node\Expr\Variable('x')));
+	$r['fromScope wrong'] = $avCatch(static fn () => $C::fromScope(new \stdClass()));
+
+	$iecResults[$side] = $r;
+}
+foreach ($iecResults['php'] as $label => $described) {
+	check($described === ($iecResults['native'][$label] ?? null), "InitializerExprContext parity ($label): " . json_encode($described) . ' vs ' . json_encode($iecResults['native'][$label] ?? null));
+}
+$iecScopeViews = array_filter($iecResults['php'], static fn (string $label): bool => str_starts_with($label, 'scope '), ARRAY_FILTER_USE_KEY);
+$iecScopeJson = json_encode($iecScopeViews);
+check(
+	count($iecScopes) >= 20
+	&& str_contains($iecScopeJson, '"{closure}"')
+	&& str_contains($iecScopeJson, '"InitializerExprContextFixture\\\\Inner\\\\Greets"')
+	&& str_contains($iecScopeJson, '"label"')
+	&& str_contains($iecScopeJson, '"InitializerExprContextFixture\\\\Inner\\\\Holder::make"')
+	&& str_contains($iecScopeJson, '"InitializerExprContextFixture\\\\topLevel"'),
+	'InitializerExprContext: the fixture walk reaches closures, the trait, the property hook, methods and functions (' . count($iecScopes) . ' scopes)',
+);
+
 if (isset($avStandalone)) {
 	echo $failures === 0 ? "ALL OK\n" : "$failures FAILURE(S)\n";
 	exit($failures === 0 ? 0 : 1);

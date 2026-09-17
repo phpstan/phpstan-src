@@ -373,15 +373,6 @@ inline zv::Val nsrReadTypeOfMaybeStored(zval *nodeScopeResolver, zval *expr, zva
 	return pt_node_scope_resolver_read_type_of_maybe_stored(nodeScopeResolver, expr, scope);
 }
 
-/* the array-literal skeleton's PHP collaborators (gatherArrayArgTypeSkeleton()) */
-pt_method_site pt_ah_context_from_scope_site;
-
-/* InitializerExprContext::fromScope($scope) */
-zv::Val initializerExprContextFromScope(zval *scope)
-{
-	return pt_call_static_cached(pt_ah_context_from_scope_site, PT_CLASS_INITIALIZER_EXPR_CONTEXT, PT_LC("fromscope"), 1, scope);
-}
-
 /* ClosureTypeResolver / ClosureParameterResolver (direct entries) */
 
 /* $closureTypeResolver->getClosureType($scope, $expr, $shallow, $storage) */
@@ -1017,7 +1008,7 @@ private:
 	 * resolver. UNDEF = pending exception */
 	zv::Val gatherArrayArgTypeSkeleton(zval *nodeScopeResolver, zval *expr, zval *scope) const
 	{
-		zv::Val initializerContext = initializerExprContextFromScope(scope);
+		zv::Val initializerContext = pt_initializer_expr_context_from_scope(scope);
 		if (UNEXPECTED(initializerContext.isUndef())) return zv::Val();
 		SkeletonFrame frame{self, nodeScopeResolver, scope, initializerContext.raw()};
 		pt_ietr_get_type getTypeCallback{&skeletonType, &frame, &skeletonTypeCallable};

@@ -152,10 +152,13 @@ use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnumBackedCase;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionIntersectionType;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionNamedType;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionUnionType;
+use PHPStan\BetterReflection\Reflection\ReflectionConstant;
 use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprFloatNode;
@@ -431,6 +434,9 @@ final class TurboAttributeCollector
 		'magicConstFunction' => \PhpParser\Node\Scalar\MagicConst\Function_::class,
 		'magicConstTrait' => \PhpParser\Node\Scalar\MagicConst\Trait_::class,
 		'magicConstProperty' => \PhpParser\Node\Scalar\MagicConst\Property::class,
+		'adapterReflectionParameter' => ReflectionParameter::class,
+		'adapterReflectionFunction' => ReflectionFunction::class,
+		'betterReflectionConstant' => ReflectionConstant::class,
 	];
 
 	private string $realRoot;

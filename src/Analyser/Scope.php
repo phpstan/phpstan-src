@@ -18,6 +18,7 @@ use PHPStan\Reflection\NamespaceAnswerer;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeWithClassName;
@@ -44,6 +45,7 @@ use PHPStan\Type\TypeWithClassName;
  * @api
  * @api-do-not-implement
  */
+#[ReferencedByTurboExtension(key: 'scope')]
 interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 {
 

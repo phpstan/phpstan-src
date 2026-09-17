@@ -36,7 +36,6 @@ pt_method_site pt_ppr_get_default_value_expression_site;
 pt_method_site pt_ppr_get_type_site;
 pt_method_site pt_ppr_is_passed_by_reference_site;
 pt_method_site pt_ppr_is_variadic_site;
-pt_method_site pt_ppr_context_from_reflection_parameter_site;
 
 /* $reflection->method() of the adapter parameter */
 inline zv::Val adapterCall(pt_method_site &site, zval *reflection, const char *lcname, size_t len)
@@ -62,7 +61,7 @@ inline zv::Val initializerGetType(zval *resolver, zval *expr, zval *context)
 /* InitializerExprContext::fromReflectionParameter($reflection) */
 inline zv::Val contextFromReflectionParameter(zval *reflection)
 {
-	return pt_call_static_cached(pt_ppr_context_from_reflection_parameter_site, PT_CLASS_INITIALIZER_EXPR_CONTEXT, PT_LC("fromreflectionparameter"), 1, reflection);
+	return pt_initializer_expr_context_from_reflection_parameter(reflection);
 }
 
 /* }}} */

@@ -39,6 +39,7 @@
 #include "generated/EnsuredNonNullabilityResultExpression.h"
 #include "generated/IssetabilityResolution.h"
 #include "generated/IssetabilityLinkInfo.h"
+#include "generated/InitializerExprContext.h"
 
 zv::Val pt_type_call(zend_object *object, const char *lcname, size_t len, uint32_t argc, zval *argv);
 
@@ -668,6 +669,28 @@ PT_AV_ISSETABILITY_LINK_INFO_BOOL(native_has_default_value, nativeHasDefaultValu
 #undef PT_AV_ISSETABILITY_LINK_INFO
 #undef PT_AV_ISSETABILITY_LINK_INFO_REQUIRED
 #undef PT_AV_ISSETABILITY_LINK_INFO_BOOL
+
+/* }}} */
+
+/* {{{ InitializerExprContext: $context->getFile() / ->getClassName() /
+ * ->getNamespace() / ->getTraitName() / ->getFunction() / ->getMethod() /
+ * ->getProperty() — each an IS_STRING or IS_NULL slot */
+
+#define PT_AV_INITIALIZER_EXPR_CONTEXT(reader, slotName, getter) \
+	inline zval *pt_initializer_expr_context_##reader(zval *context, zv::Val &hold) \
+	{ \
+		return ptav::read(context, pt_ce_initializer_expr_context, ptdecl::InitializerExprContext::slot::slotName, PT_LC(getter), hold); \
+	}
+
+PT_AV_INITIALIZER_EXPR_CONTEXT(file, file, "getfile")
+PT_AV_INITIALIZER_EXPR_CONTEXT(class_name, className, "getclassname")
+PT_AV_INITIALIZER_EXPR_CONTEXT(namespace, namespace_, "getnamespace")
+PT_AV_INITIALIZER_EXPR_CONTEXT(trait_name, traitName, "gettraitname")
+PT_AV_INITIALIZER_EXPR_CONTEXT(function, function, "getfunction")
+PT_AV_INITIALIZER_EXPR_CONTEXT(method, method, "getmethod")
+PT_AV_INITIALIZER_EXPR_CONTEXT(property, property, "getproperty")
+
+#undef PT_AV_INITIALIZER_EXPR_CONTEXT
 
 /* }}} */
 

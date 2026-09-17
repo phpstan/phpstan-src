@@ -30,12 +30,11 @@ namespace {
 /* {{{ the PHP collaborators (one site each; switch to their direct entries
  * once they are ported) */
 
-pt_method_site pt_sh_from_scope_site;
 
 /* InitializerExprContext::fromScope($scope) */
 zv::Val initializerExprContextFromScope(zval *scope)
 {
-	return pt_call_static_cached(pt_sh_from_scope_site, PT_CLASS_INITIALIZER_EXPR_CONTEXT, PT_LC("fromscope"), 1, scope);
+	return pt_initializer_expr_context_from_scope(scope);
 }
 
 /* $initializerExprTypeResolver->getType($expr, $context) */

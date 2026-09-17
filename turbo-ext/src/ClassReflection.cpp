@@ -2218,7 +2218,7 @@ public:
 	/* InitializerExprContext::fromClassReflection($this) */
 	zv::Val initializerExprContextFromClassReflection()
 	{
-		return pt_type_call_static(PT_CLASS_INITIALIZER_EXPR_CONTEXT, PT_LC("fromclassreflection"), 1, thisZval());
+		return pt_initializer_expr_context_from_class_reflection(thisZval());
 	}
 
 	/* InitializerExprContext::fromClass($this->getName(), $this->getFileName()) */
@@ -2228,8 +2228,7 @@ public:
 		if (UNEXPECTED(name.isUndef())) return zv::Val();
 		zv::Val fileName = getFileName();
 		if (UNEXPECTED(fileName.isUndef())) return zv::Val();
-		zv::Args args{name.raw(), fileName.raw()};
-		return pt_type_call_static(PT_CLASS_INITIALIZER_EXPR_CONTEXT, PT_LC("fromclass"), 2, args);
+		return pt_initializer_expr_context_from_class(name.raw(), fileName.raw());
 	}
 
 	bool isClass(bool &out)
@@ -2766,8 +2765,7 @@ public:
 		if (UNEXPECTED(attributes.isUndef())) return zv::Val();
 		zv::Val declaringName = crGetName(declaringClass.ref());
 		if (UNEXPECTED(declaringName.isUndef())) return zv::Val();
-		zv::Args contextArgs{declaringName.raw(), fileName.raw()};
-		zv::Val context = pt_type_call_static(PT_CLASS_INITIALIZER_EXPR_CONTEXT, PT_LC("fromclass"), 2, contextArgs);
+		zv::Val context = pt_initializer_expr_context_from_class(declaringName.raw(), fileName.raw());
 		if (UNEXPECTED(context.isUndef())) return zv::Val();
 		zv::Args attributeArgs{attributes.raw(), context.raw()};
 		zv::Val attributeReflections = callService(PT_CR_PROP_ATTRIBUTE_REFLECTION_FACTORY, "attributeReflectionFactory", PT_LC("fromnativereflection"), 2, attributeArgs);

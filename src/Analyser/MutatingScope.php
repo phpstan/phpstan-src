@@ -3002,7 +3002,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 
 		if ($assignedExpr instanceof Expr\ArrayDimFetch && $assignedExpr->dim !== null) {
 			return $this->resolveIntertwinedAssignedType($scope, $rootType, $assignedExpr->var, $rootVariableName, $native)
-				->getOffsetValueType($scope->getType($assignedExpr->dim));
+				->getOffsetValueType($native ? $scope->getNativeType($assignedExpr->dim) : $scope->getType($assignedExpr->dim));
 		}
 
 		if ($assignedExpr instanceof SetExistingOffsetValueTypeExpr) {
@@ -3013,7 +3013,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				? $scope->getNativeType($assignedExpr->getVar())
 				: $scope->getType($assignedExpr->getVar());
 
-			return $iterateeType->setExistingOffsetValueType($scope->getType($assignedExpr->getDim()), $rootType);
+			$dimType = $native
+				? $scope->getNativeType($assignedExpr->getDim())
+				: $scope->getType($assignedExpr->getDim());
+
+			return $iterateeType->setExistingOffsetValueType($dimType, $rootType);
 		}
 
 		throw new ShouldNotHappenException();

@@ -39,7 +39,7 @@ use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Node\ExecutionEndNode;
-use PHPStan\Node\Expr\TypeExpr;
+use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\FunctionCallableNode;
 use PHPStan\Node\FunctionCallExpressionNode;
 use PHPStan\Node\InArrowFunctionNode;
@@ -2303,12 +2303,19 @@ class NodeScopeResolver
 							$byRefType = new MixedType();
 						}
 
+						// what the call writes back is described by PHPDoc (@param, @param-out,
+						// a parameter-out extension) - natively only the parameter's own
+						// type declaration is guaranteed
+						$byRefNativeType = $currentParameter instanceof ExtendedParameterReflection
+							? $currentParameter->getNativeType()
+							: $byRefType;
+
 						$scope = $this->processVirtualAssign(
 							$scope,
 							$storage,
 							$stmt,
 							$argValue,
-							new TypeExpr($byRefType),
+							new NativeTypeExpr($byRefType, $byRefNativeType),
 							$nodeCallback,
 						)->getScope();
 						$scope = $this->lookForUnsetAllowedUndefinedExpressions($scope, $argValue);

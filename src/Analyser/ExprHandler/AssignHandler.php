@@ -47,6 +47,7 @@ use PHPStan\Analyser\VarAnnotationProcessor;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\ExistingArrayDimFetch;
 use PHPStan\Node\Expr\IntertwinedVariableByReferenceWithExpr;
+use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\TypeExpr;
@@ -1327,7 +1328,10 @@ final class AssignHandler implements ExprHandler
 				} else {
 					$dimExpr = $arrayItem->key;
 				}
-				$getOffsetValueTypeExpr = new TypeExpr($scope->getType($assignedExpr)->getOffsetValueType($scope->getType($dimExpr)));
+				$getOffsetValueTypeExpr = new NativeTypeExpr(
+					$scope->getType($assignedExpr)->getOffsetValueType($scope->getType($dimExpr)),
+					$scope->getNativeType($assignedExpr)->getOffsetValueType($scope->getNativeType($dimExpr)),
+				);
 				$itemTarget = $this->prepareTarget(
 					$nodeScopeResolver,
 					$scope,

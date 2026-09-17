@@ -131,7 +131,7 @@ void pt_register_extended_callable_function_variant()
 			Z_PARAM_OBJECT_OF_CLASS(acceptsNamedArguments, pt_ce_trinary)
 			Z_PARAM_OBJECT_OF_CLASS(mustUseReturnValue, pt_ce_trinary)
 			Z_PARAM_OPTIONAL
-			Z_PARAM_OBJECT_OF_CLASS_OR_NULL(assertions, pt_class(PT_CLASS_ASSERTIONS))
+			Z_PARAM_OBJECT_OF_CLASS_OR_NULL(assertions, pt_ce_assertions)
 			Z_PARAM_OBJECT_OF_CLASS_OR_NULL(isStatic, pt_ce_trinary)
 		ZEND_PARSE_PARAMETERS_END();
 		if (UNEXPECTED(!PT_ECFV_THIS.construct(templateTypeMap, resolvedTemplateTypeMap, parameters, isVariadic, returnType, phpDocReturnType, nativeReturnType, callSiteVarianceMap, throwPoints, isPure, impurePoints, invalidateExpressions, usedVariables, acceptsNamedArguments, mustUseReturnValue, assertions, isStatic))) RETURN_THROWS();

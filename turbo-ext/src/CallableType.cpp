@@ -521,7 +521,7 @@ public:
 			zend_type_error("phpstan_turbo: %s::$assertions must be an object", ZSTR_VAL(pt_ce_callable_type->name));
 			return zv::Val();
 		}
-		zv::Val mappedAssertions = pt_type_call(Z_OBJ_P(a), PT_LC("maptypes"), 1, &fci->function_name);
+		zv::Val mappedAssertions = pt_assertions_map_types(a, &fci->function_name);
 		if (UNEXPECTED(mappedAssertions.isUndef())) return zv::Val();
 		return create(traversedParameters.raw(), traversedReturnType.raw(), variadic == 1, map, resolved, tags, pure, mappedAssertions.raw());
 	}

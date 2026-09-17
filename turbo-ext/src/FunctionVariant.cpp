@@ -28,12 +28,6 @@ namespace sigs = ptdecl::FunctionVariant::sig;
 
 zend_class_entry *pt_ce_function_variant = NULL;
 
-namespace {
-
-pt_method_site pt_fv_create_empty_assertions_site;
-
-} // namespace
-
 namespace phpstanturbo {
 
 /* Mirrors PHPStan\Reflection\FunctionVariant; UNDEF = pending exception. */
@@ -218,7 +212,7 @@ zv::Val pt_function_variant_call(zend_object *variant, pt_parameters_acceptor_me
 			 * uninitialized property as null) */
 			zval *assertions = OBJ_PROP_NUM(variant, ecfv::assertions);
 			if (Z_TYPE_P(assertions) > IS_NULL) return zv::Val::copyOf(zv::Ref(assertions));
-			return pt_call_static_cached(pt_fv_create_empty_assertions_site, PT_CLASS_ASSERTIONS, PT_LC("createempty"), 0, NULL);
+			return pt_assertions_create_empty();
 		}
 		case PT_PA_IS_STATIC_CLOSURE: {
 			if (!callable) break;

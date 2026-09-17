@@ -26,8 +26,6 @@ zend_class_entry *pt_ce_trivial_parameters_acceptor = NULL;
 
 namespace {
 
-pt_method_site pt_tpa_create_empty_assertions_site;
-
 /* the interned 'functionCall' / 'callable' literals (module startup) */
 zend_string *pt_tpa_function_call = NULL;
 zend_string *pt_tpa_callable = NULL;
@@ -112,7 +110,7 @@ public:
 	/* Assertions::createEmpty() */
 	zv::Val getAsserts() const
 	{
-		return pt_call_static_cached(pt_tpa_create_empty_assertions_site, PT_CLASS_ASSERTIONS, PT_LC("createempty"), 0, NULL);
+		return pt_assertions_create_empty();
 	}
 
 	zv::Val isStaticClosure() const { return trinary(PT_TRI_MAYBE); }

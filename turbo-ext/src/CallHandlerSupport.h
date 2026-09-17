@@ -29,8 +29,6 @@ namespace ptcall {
 /* {{{ the collaborators (the PHP ones one site each; switch to their direct
  * entries once they are ported) */
 
-inline pt_method_site assertionsGetAllSite;
-inline pt_method_site assertionsMapTypesSite;
 inline pt_method_site getConstantStringsSite;
 
 /* ParametersAcceptorSelector::combineVariantsForNormalization($args, $variants, $namedArgumentsVariants) */
@@ -126,16 +124,19 @@ inline zv::Val processArgs(zval *argumentsHandler, uint32_t argc, zval *argv)
 	return pt_arguments_handler_process_dropped_args(argumentsHandler, &argv[0], &argv[1], &argv[2], &argv[3], &argv[4], &argv[5], &argv[6]);
 }
 
-/* $assertions->getAll() */
+/* $assertions->getAll() (Assertions.cpp) */
 inline zv::Val assertionsGetAll(zval *assertions)
 {
-	return pt_call_method_cached(assertionsGetAllSite, Z_OBJ_P(assertions), PT_LC("getall"), 0, NULL);
+	zv::Val hold;
+	zval *all = pt_assertions_all(assertions, hold);
+	if (UNEXPECTED(all == NULL)) return zv::Val();
+	return hold.isUndef() ? zv::Val::copyOf(zv::Ref(all)) : std::move(hold);
 }
 
 /* $assertions->mapTypes($callable) */
 inline zv::Val assertionsMapTypes(zval *assertions, zval *callable)
 {
-	return pt_call_method_cached(assertionsMapTypesSite, Z_OBJ_P(assertions), PT_LC("maptypes"), 1, callable);
+	return pt_assertions_map_types(assertions, callable);
 }
 
 /* $type->getConstantStrings() */

@@ -60,9 +60,6 @@ namespace {
 
 pt_method_site pt_dnh_nullsafe_shortcircuited_site;
 pt_method_site pt_dnh_narrow_offset_key_type_site;
-pt_method_site pt_dnh_get_asserts_site;
-pt_method_site pt_dnh_get_asserts_if_true_site;
-pt_method_site pt_dnh_get_asserts_if_false_site;
 pt_method_site pt_dnh_assert_get_parameter_site;
 pt_method_site pt_dnh_assert_get_type_site;
 pt_method_site pt_dnh_assert_get_original_type_site;
@@ -1102,18 +1099,18 @@ public:
 		bool matches;
 		if (UNEXPECTED(!ctxNull(context, matches))) return zv::Val();
 		if (matches) {
-			asserts = callNoArgs(pt_dnh_get_asserts_site, assertions, "getAsserts", PT_LC("getasserts"));
+			asserts = pt_assertions_get_asserts(assertions, PT_ASSERTIONS_UNCONDITIONAL);
 		} else {
 			if (UNEXPECTED(!ctxTrue(context, matches))) return zv::Val();
 			if (matches) {
-				asserts = callNoArgs(pt_dnh_get_asserts_if_true_site, assertions, "getAssertsIfTrue", PT_LC("getassertsiftrue"));
+				asserts = pt_assertions_get_asserts(assertions, PT_ASSERTIONS_IF_TRUE);
 			} else {
 				if (UNEXPECTED(!ctxFalse(context, matches))) return zv::Val();
 				if (!matches) {
 					pt_throw_should_not_happen();
 					return zv::Val();
 				}
-				asserts = callNoArgs(pt_dnh_get_asserts_if_false_site, assertions, "getAssertsIfFalse", PT_LC("getassertsiffalse"));
+				asserts = pt_assertions_get_asserts(assertions, PT_ASSERTIONS_IF_FALSE);
 			}
 		}
 		if (UNEXPECTED(asserts.isUndef())) return zv::Val();

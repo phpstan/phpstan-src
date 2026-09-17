@@ -574,6 +574,9 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_extended_callable_function_variant();
 	pt_register_resolved_function_variant_with_original();
 	pt_register_trivial_parameters_acceptor();
+	/* the assertions — their signatures name the PHP AssertTag and
+	 * ResolvedPhpDocBlock only */
+	pt_register_assertions();
 
 	return SUCCESS;
 }

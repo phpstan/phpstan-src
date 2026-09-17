@@ -3342,7 +3342,7 @@ zv::Val pt_callable_template_type_variance_map_empty()
 
 zv::Val pt_callable_assertions_empty()
 {
-	return pt_type_call_static(PT_CLASS_ASSERTIONS, PT_LC("createempty"), 0, NULL);
+	return pt_assertions_create_empty();
 }
 
 zv::Val pt_callable_new_simple_impure_point(const char *identifier, size_t identifierLen, const char *description, size_t descriptionLen, bool certain)
@@ -5315,7 +5315,7 @@ zv::Val protoTransformMethod(PrototypeKind kind, const PrototypeTransformer &tra
 	/* $method->getAsserts()->mapTypes($callback) */
 	zv::Val asserts = protoCall(method, PT_LC("getasserts"), PROTO_OBJECT);
 	if (UNEXPECTED(asserts.isUndef())) return zv::Val();
-	zv::Val mappedAsserts = pt_type_call(Z_OBJ_P(asserts.raw()), PT_LC("maptypes"), 1, assertsCallback);
+	zv::Val mappedAsserts = pt_assertions_map_types(asserts.raw(), assertsCallback);
 	if (UNEXPECTED(mappedAsserts.isUndef())) return zv::Val();
 	zval methodZv;
 	ZVAL_OBJ(&methodZv, method);

@@ -7308,6 +7308,124 @@ if (!class_exists('PHPStanTurboTests\FunctionVariantSubclass', false)) {
 	}
 }
 
+// ---- Assertions ----
+// The assert tag collections: createEmpty()'s singleton, create*() over no,
+// one and many tags (unconditional, if-true, if-false, negated, equality,
+// property / method parameters, integer and string keys), every filter
+// (the kept keys, the negated opposite tags, array_merge()'s renumbering),
+// mapTypes() with closures, a string callable and the identity (the empty
+// result's identity), union() / intersectWith() / intersect() over every
+// pair (the empty operand's identity, the key-matched unions), the
+// fixture's resolved PHPDoc, the method reflections' and the call handlers'
+// mapTypes() through the prototypes, and the errors: the private
+// constructor, a non-AssertTag element meeting the closures, a callable
+// returning a non-Type, a non-callable, wrong operands and an unconstructed
+// instance
+$observations['native ' . \PHPStan\Reflection\Assertions::class] = (new ReflectionMethod(\PHPStan\Reflection\Assertions::class, 'getAll'))->isInternal();
+{
+	$r = [];
+	$viewTag = static fn ($tag): array|string => $tag instanceof \PHPStan\PhpDoc\Tag\AssertTag ? [$tag->getIf(), $tag->getParameter()->describe(), $view($tag->getType()), $tag->isNegated(), $tag->isEquality(), $view($tag->getOriginalType())] : get_debug_type($tag);
+	$viewTags = static fn (array $tags): array => array_map($viewTag, $tags);
+	$viewAssertions = static function (\PHPStan\Reflection\Assertions $a) use ($viewTags, $catching): array {
+		return [
+			'all' => $catching(static fn () => $viewTags($a->getAll())),
+			'asserts' => $catching(static fn () => $viewTags($a->getAsserts())),
+			'ifTrue' => $catching(static fn () => $viewTags($a->getAssertsIfTrue())),
+			'ifFalse' => $catching(static fn () => $viewTags($a->getAssertsIfFalse())),
+			'isEmpty' => $a === \PHPStan\Reflection\Assertions::createEmpty(),
+		];
+	};
+	$int = new \PHPStan\Type\IntegerType();
+	$string = new \PHPStan\Type\StringType();
+	$param = static fn (string $name, ?string $property = null, ?string $method = null) => new \PHPStan\PhpDoc\Tag\AssertTagParameter($name, $property, $method);
+	$tags = [
+		'plain' => new \PHPStan\PhpDoc\Tag\AssertTag(\PHPStan\PhpDoc\Tag\AssertTag::NULL, $int, $param('$a'), false, false, true),
+		'negated' => new \PHPStan\PhpDoc\Tag\AssertTag(\PHPStan\PhpDoc\Tag\AssertTag::NULL, $string, $param('$a'), true, false, true),
+		'ifTrue' => new \PHPStan\PhpDoc\Tag\AssertTag(\PHPStan\PhpDoc\Tag\AssertTag::IF_TRUE, $int, $param('$b', 'prop'), false, false, true),
+		'ifTrueEquality' => new \PHPStan\PhpDoc\Tag\AssertTag(\PHPStan\PhpDoc\Tag\AssertTag::IF_TRUE, new \PHPStan\Type\Constant\ConstantIntegerType(1), $param('$b'), false, true, false),
+		'ifFalse' => new \PHPStan\PhpDoc\Tag\AssertTag(\PHPStan\PhpDoc\Tag\AssertTag::IF_FALSE, $string, $param('$c', null, 'get'), false, false, true),
+		'ifFalseNegated' => new \PHPStan\PhpDoc\Tag\AssertTag(\PHPStan\PhpDoc\Tag\AssertTag::IF_FALSE, $int, $param('$b', 'prop'), true, false, true),
+		'ifTrueAgain' => new \PHPStan\PhpDoc\Tag\AssertTag(\PHPStan\PhpDoc\Tag\AssertTag::IF_TRUE, $string, $param('$b', 'prop'), false, false, true),
+	];
+	$sets = [
+		'empty' => \PHPStan\Reflection\Assertions::createEmpty(),
+		'fromEmpty' => \PHPStan\Reflection\Assertions::createFromAssertTags([]),
+		'one' => \PHPStan\Reflection\Assertions::createFromAssertTags([$tags['plain']]),
+		'all' => \PHPStan\Reflection\Assertions::createFromAssertTags(array_values($tags)),
+		'keyed' => \PHPStan\Reflection\Assertions::createFromAssertTags($tags),
+		'sparse' => \PHPStan\Reflection\Assertions::createFromAssertTags([5 => $tags['ifTrue'], 2 => $tags['ifFalse'], 'x' => $tags['ifFalseNegated']]),
+		'other' => \PHPStan\Reflection\Assertions::createFromAssertTags([$tags['ifTrueAgain'], $tags['negated']]),
+		'fixture' => $stringReflectionProvider->getClass(\PHPStanTurboTests\SignatureFixture::class)->getNativeMethod('asserting')->getAsserts(),
+		'docBlock' => \PHPStan\Reflection\Assertions::createFromResolvedPhpDocBlock($stringReflectionProvider->getClass(\PHPStanTurboTests\SignatureFixture::class)->getNativeMethod('asserting')->getResolvedPhpDoc()),
+		'prototypeFixture' => $stringReflectionProvider->getClass(\PHPStanTurboTests\PrototypeFixture::class)->getNativeMethod('assertStatic')->getAsserts(),
+	];
+	$r['empty identity'] = [\PHPStan\Reflection\Assertions::createEmpty() === $sets['empty'], $sets['fromEmpty'] === $sets['empty'], \PHPStan\Reflection\Assertions::createFromAssertTags([]) === $sets['empty']];
+	$mappers = [
+		'toString' => static fn (\PHPStan\Type\Type $type): \PHPStan\Type\Type => new \PHPStan\Type\StringType(),
+		'identity' => static fn (\PHPStan\Type\Type $type): \PHPStan\Type\Type => $type,
+		'nullable' => '\PHPStan\Type\TypeCombinator::addNull',
+	];
+	foreach ($sets as $name => $set) {
+		$r["set $name"] = $viewAssertions($set);
+		$r["set $name identities"] = [$set->getAll() === $set->getAll(), $set->getAssertsIfTrue() === $set->getAssertsIfTrue()];
+		foreach ($mappers as $mapperName => $mapper) {
+			$r["set $name mapTypes $mapperName"] = $catching(static function () use ($set, $mapper, $viewAssertions): array {
+				$mapped = $set->mapTypes($mapper);
+				return [$viewAssertions($mapped), $mapped === $set];
+			});
+		}
+		foreach ($sets as $otherName => $other) {
+			$r["set $name union $otherName"] = $catching(static function () use ($set, $other, $viewAssertions, $sets): array {
+				$union = $set->union($other);
+				return [$viewAssertions($union), array_search($union, $sets, true)];
+			});
+			$r["set $name intersectWith $otherName"] = $catching(static fn () => array_search($set->intersectWith($other), $sets, true));
+			$r["set $name intersect $otherName"] = $catching(static function () use ($set, $other, $viewAssertions, $sets): array {
+				$intersection = $set->intersect($other);
+				return [$viewAssertions($intersection), array_search($intersection, $sets, true)];
+			});
+		}
+	}
+	// the prototypes' and method reflections' mapTypes() with native callbacks
+	$prototypeFixture = $stringReflectionProvider->getClass(\PHPStanTurboTests\PrototypeFixture::class);
+	$prototype = new \PHPStan\Reflection\Type\CalledOnTypeUnresolvedMethodPrototypeReflection($prototypeFixture->getNativeMethod('assertStatic'), $prototypeFixture, true, new \PHPStan\Type\ObjectType(\PHPStanTurboTests\PrototypeSubFixture::class));
+	$r['prototype asserts'] = $viewAssertions($prototype->getTransformedMethod()->getAsserts());
+	$r['resolved method asserts'] = $viewAssertions((new \PHPStan\Reflection\ResolvedMethodReflection($prototypeFixture->getNativeMethod('assertStatic'), \PHPStan\Type\Generic\TemplateTypeMap::createEmpty(), \PHPStan\Type\Generic\TemplateTypeVarianceMap::createEmpty()))->getAsserts());
+	$r['callable variant asserts'] = $viewAssertions((new \PHPStan\Reflection\ExtendedCallableFunctionVariant(\PHPStan\Type\Generic\TemplateTypeMap::createEmpty(), null, [], false, $int, $int, $int, null, [], \PHPStan\TrinaryLogic::createNo(), [], [], [], \PHPStan\TrinaryLogic::createNo(), \PHPStan\TrinaryLogic::createNo()))->getAsserts());
+	$closureWithAsserts = new \PHPStan\Type\ClosureType([], $int, false, assertions: $sets['all']);
+	$r['closure traverse asserts'] = $catching(static fn () => $view(\PHPStan\Type\TypeTraverser::map($closureWithAsserts, static fn (\PHPStan\Type\Type $type, callable $traverse): \PHPStan\Type\Type => $type instanceof \PHPStan\Type\IntegerType ? new \PHPStan\Type\FloatType() : $traverse($type))));
+
+	// errors
+	$r['private constructor'] = $catching(static fn () => new \PHPStan\Reflection\Assertions([]));
+	$bad = \PHPStan\Reflection\Assertions::createFromAssertTags(['x', $tags['plain']]);
+	foreach (['getAll', 'getAsserts', 'getAssertsIfTrue', 'getAssertsIfFalse'] as $method) {
+		$r["bad element $method"] = $catching(static fn () => $viewTags($bad->$method()));
+	}
+	$r['bad element mapTypes'] = $catching(static fn () => $viewAssertions($bad->mapTypes($mappers['identity'])));
+	$r['bad element intersect'] = $catching(static fn () => $viewAssertions($bad->intersect($sets['all'])));
+	$r['bad element intersected'] = $catching(static fn () => $viewAssertions($sets['all']->intersect($bad)));
+	$r['bad element union'] = $catching(static fn () => $viewAssertions($bad->union($sets['one'])));
+	$r['mapTypes returning a string'] = $catching(static fn () => $viewAssertions($sets['all']->mapTypes(static fn ($type) => 'nope')));
+	$r['mapTypes not callable'] = $catching(static fn () => $sets['all']->mapTypes('no such function'));
+	$r['union wrong operand'] = $catching(static fn () => $sets['all']->union($int));
+	$r['intersect wrong operand'] = $catching(static fn () => $sets['all']->intersect($int));
+	$r['createFromAssertTags wrong'] = $catching(static fn () => \PHPStan\Reflection\Assertions::createFromAssertTags('x'));
+	$r['createFromResolvedPhpDocBlock wrong'] = $catching(static fn () => \PHPStan\Reflection\Assertions::createFromResolvedPhpDocBlock($int));
+	$raw = (new \ReflectionClass(\PHPStan\Reflection\Assertions::class))->newInstanceWithoutConstructor();
+	foreach (['getAll', 'getAsserts', 'getAssertsIfTrue', 'getAssertsIfFalse'] as $method) {
+		$r["unconstructed $method"] = $catching(static fn () => $raw->$method());
+	}
+	$r['unconstructed mapTypes'] = $catching(static fn () => $raw->mapTypes($mappers['identity']));
+	$r['unconstructed union'] = $catching(static fn () => $raw->union($sets['all']));
+	$r['unconstructed intersect'] = $catching(static fn () => $raw->intersect($sets['all']));
+	$r['private getAssertKey'] = $catching(static fn () => (static fn () => self::getAssertKey($tags['ifFalse']))->bindTo(null, \PHPStan\Reflection\Assertions::class)());
+	$r['private create'] = $catching(static fn () => array_search((static fn () => self::create([]))->bindTo(null, \PHPStan\Reflection\Assertions::class)(), $sets, true));
+	$r['empty static'] = (new \ReflectionProperty(\PHPStan\Reflection\Assertions::class, 'empty'))->getValue() === $sets['empty'];
+	foreach ($r as $key => $value) {
+		$observations["assertions $key"] = $value;
+	}
+}
+
 // observations holding bytes that are not UTF-8 (the invalid-UTF-8 subject's
 // descriptions) go out base64-encoded so json_encode() keeps every byte; the
 // non-finite floats (the NAN and infinity subjects' values) as their names

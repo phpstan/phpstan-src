@@ -128,7 +128,6 @@ enum {
 	PT_CLASS_CONST_FETCH_NODE,
 	PT_CLASS_CALLABLE_ASSERTIONS_HELPER,
 	PT_CLASS_CALLABLE_PARAMETERS_ACCEPTOR,
-	PT_CLASS_ASSERTIONS,
 	PT_CLASS_SIMPLE_THROW_POINT,
 	PT_CLASS_EXTENDED_PARAMETER_REFLECTION,
 	PT_CLASS_CLOSURE_CALL_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION,
@@ -442,6 +441,8 @@ enum {
 	PT_CLASS_MATCH_EXPRESSION_ARM_CONDITION,
 	PT_CLASS_MATCH_EXPRESSION_NODE,
 	PT_CLASS_ARRAY_ITEM,
+	PT_CLASS_ASSERT_TAG,
+	PT_CLASS_RESOLVED_PHP_DOC_BLOCK,
 	PT_CLASS_COUNT
 };
 
@@ -4030,6 +4031,27 @@ zv::Val pt_extended_callable_function_variant_new(uint32_t argc, zval *argv);
  * (NULL for the default); UNDEF = pending exception */
 zv::Val pt_resolved_function_variant_with_original_new(zval *parametersAcceptor, zval *resolvedTemplateTypeMap, zval *callSiteVarianceMap, zval *passedArgs);
 zv::Val pt_trivial_parameters_acceptor_new(zend_string *callableName = NULL);
+
+/* }}} */
+
+/* {{{ Assertions.cpp — the @phpstan-assert tags of a function or method,
+ * registered after the parameters acceptors */
+
+extern zend_class_entry *pt_ce_assertions;
+void pt_register_assertions();
+/* Assertions::createEmpty() / ::createFromResolvedPhpDocBlock($phpDocBlock)
+ * (borrowed); UNDEF = pending exception */
+zv::Val pt_assertions_create_empty();
+zv::Val pt_assertions_create_from_resolved_php_doc_block(zval *phpDocBlock);
+/* $assertions->mapTypes($callable) / ->getAsserts() / ->getAssertsIfTrue() /
+ * ->getAssertsIfFalse() (which: PT_ASSERTIONS_*) — the native body for the
+ * native class, the method otherwise (borrowed); UNDEF = pending exception.
+ * $assertions->getAll() is pt_assertions_all(). */
+zv::Val pt_assertions_map_types(zval *assertions, zval *callable);
+#define PT_ASSERTIONS_UNCONDITIONAL 0
+#define PT_ASSERTIONS_IF_TRUE 1
+#define PT_ASSERTIONS_IF_FALSE 2
+zv::Val pt_assertions_get_asserts(zval *assertions, int which);
 
 /* }}} */
 

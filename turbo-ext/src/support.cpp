@@ -92,7 +92,6 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_CONST_FETCH_NODE */ {"constFetchNode", "PHPStan\\PhpDocParser\\Ast\\ConstExpr\\ConstFetchNode"},
 	/* PT_CLASS_CALLABLE_ASSERTIONS_HELPER */ {"callableAssertionsHelper", "PHPStan\\Type\\CallableAssertionsHelper"},
 	/* PT_CLASS_CALLABLE_PARAMETERS_ACCEPTOR */ {"callableParametersAcceptor", "PHPStan\\Reflection\\Callables\\CallableParametersAcceptor"},
-	/* PT_CLASS_ASSERTIONS */ {"assertions", "PHPStan\\Reflection\\Assertions"},
 	/* PT_CLASS_SIMPLE_THROW_POINT */ {"simpleThrowPoint", "PHPStan\\Reflection\\Callables\\SimpleThrowPoint"},
 	/* PT_CLASS_EXTENDED_PARAMETER_REFLECTION */ {"extendedParameterReflection", "PHPStan\\Reflection\\ExtendedParameterReflection"},
 	/* PT_CLASS_CLOSURE_CALL_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION */ {"closureCallUnresolvedMethodPrototypeReflection", "PHPStan\\Reflection\\Php\\ClosureCallUnresolvedMethodPrototypeReflection"},
@@ -393,6 +392,8 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_MATCH_EXPRESSION_ARM_CONDITION */ {"matchExpressionArmCondition", "PHPStan\\Node\\MatchExpressionArmCondition"},
 	/* PT_CLASS_MATCH_EXPRESSION_NODE */ {"matchExpressionNode", "PHPStan\\Node\\MatchExpressionNode"},
 	/* PT_CLASS_ARRAY_ITEM */ {"arrayItem", "PhpParser\\Node\\ArrayItem"},
+	/* PT_CLASS_ASSERT_TAG */ {"assertTag", "PHPStan\\PhpDoc\\Tag\\AssertTag"},
+	/* PT_CLASS_RESOLVED_PHP_DOC_BLOCK */ {"resolvedPhpDocBlock", "PHPStan\\PhpDoc\\ResolvedPhpDocBlock"},
 };
 
 zend_class_entry *pt_class(int idx)

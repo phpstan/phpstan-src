@@ -30,12 +30,10 @@ namespace {
 
 /* {{{ the PHP collaborators (one site each) */
 
-pt_method_site pt_rmr_map_types_site;
-
-/* $assertions->mapTypes($callable) */
+/* $assertions->mapTypes($callable) (Assertions.cpp) */
 zv::Val assertionsMapTypes(zval *assertions, zval *callable)
 {
-	return pt_call_method_cached(pt_rmr_map_types_site, Z_OBJ_P(assertions), PT_LC("maptypes"), 1, callable);
+	return pt_assertions_map_types(assertions, callable);
 }
 
 /* }}} */

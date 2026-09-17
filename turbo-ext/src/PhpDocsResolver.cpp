@@ -63,8 +63,6 @@ pt_method_site pt_pdr_is_pure_site;
 pt_method_site pt_pdr_is_allowed_private_mutation_site;
 pt_method_site pt_pdr_accepts_named_arguments_site;
 pt_method_site pt_pdr_is_read_only_site;
-pt_method_site pt_pdr_create_assertions_site;
-pt_method_site pt_pdr_create_empty_assertions_site;
 pt_method_site pt_pdr_get_self_out_tag_site;
 pt_method_site pt_pdr_self_out_tag_get_type_site;
 pt_method_site pt_pdr_get_params_pure_unless_callable_is_impure_site;
@@ -95,12 +93,12 @@ zv::Val resolvePhpDocForMethod(zval *phpDocInheritanceResolver, zval *classRefle
 /* Assertions::createFromResolvedPhpDocBlock($resolvedPhpDoc) / Assertions::createEmpty() */
 zv::Val createAssertions(zval *resolvedPhpDoc)
 {
-	return pt_call_static_cached(pt_pdr_create_assertions_site, PT_CLASS_ASSERTIONS, PT_LC("createfromresolvedphpdocblock"), 1, resolvedPhpDoc);
+	return pt_assertions_create_from_resolved_php_doc_block(resolvedPhpDoc);
 }
 
 zv::Val createEmptyAssertions()
 {
-	return pt_call_static_cached(pt_pdr_create_empty_assertions_site, PT_CLASS_ASSERTIONS, PT_LC("createempty"), 0, NULL);
+	return pt_assertions_create_empty();
 }
 
 /* }}} */

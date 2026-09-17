@@ -4195,7 +4195,7 @@ public:
 	}
 
 	/* Assertions::createEmpty() */
-	static zv::Val emptyAssertions() { return pt_type_call_static(PT_CLASS_ASSERTIONS, PT_LC("createempty"), 0, NULL); }
+	static zv::Val emptyAssertions() { return pt_assertions_create_empty(); }
 
 	/** @api (twin 2012) */
 	zv::Val enterClassMethod(zval *classMethod, zval *templateTypeMap, zval *phpDocParameterTypes, zval *phpDocReturnType, zval *throwType, zval *deprecatedDescription, bool isDeprecated, bool isInternal, bool isFinal, zval *isPure, bool acceptsNamedArguments, zval *asserts, zval *selfOutType, zval *phpDocComment, zval *parameterOutTypes, zval *immediatelyInvokedCallableParameters, zval *phpDocClosureThisTypeParameters, bool isConstructor, zval *resolvedPhpDocBlock, zval *phpDocPureUnlessCallableIsImpureParameters)

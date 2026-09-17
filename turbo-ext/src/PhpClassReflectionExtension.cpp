@@ -1659,7 +1659,7 @@ public:
 		zv::Arr positionalVariants = zv::Arr::create(1);
 		zv::Val namedVariants = zv::Val::null();
 		zv::Val throwType = zv::Val::null();
-		zv::Val asserts = pt_type_call_static(PT_CLASS_ASSERTIONS, PT_LC("createempty"), 0, NULL);
+		zv::Val asserts = kernelStatic(PT_LC("PHPStan\\Reflection\\Assertions"), PT_LC("createempty"));
 		if (UNEXPECTED(asserts.isUndef())) return zv::Val();
 		bool acceptsNamedArguments = true;
 		zv::Val selfOutType = zv::Val::null();
@@ -1819,7 +1819,7 @@ public:
 						if (UNEXPECTED(throwType.isUndef())) return zv::Val();
 					}
 
-					asserts = pt_type_call_static(PT_CLASS_ASSERTIONS, PT_LC("createfromresolvedphpdocblock"), 1, currentResolvedPhpDoc.raw());
+					asserts = kernelStatic(PT_LC("PHPStan\\Reflection\\Assertions"), PT_LC("createfromresolvedphpdocblock"), 1, currentResolvedPhpDoc.raw());
 					if (UNEXPECTED(asserts.isUndef())) return zv::Val();
 					acceptsNamedArguments = callBool(currentResolvedPhpDoc.raw(), PT_LC("acceptsnamedarguments"), 0, NULL, ok);
 					if (UNEXPECTED(!ok)) return zv::Val();
@@ -2344,7 +2344,7 @@ public:
 		zv::Val phpDocThrowType = zv::Val::null();
 		bool isInternal = false;
 		bool isFinal = false;
-		zv::Val asserts = pt_type_call_static(PT_CLASS_ASSERTIONS, PT_LC("createempty"), 0, NULL);
+		zv::Val asserts = kernelStatic(PT_LC("PHPStan\\Reflection\\Assertions"), PT_LC("createempty"));
 		if (UNEXPECTED(asserts.isUndef())) return zv::Val();
 		bool acceptsNamedArguments = true;
 		zv::Val selfOutType = zv::Val::null();
@@ -2439,7 +2439,7 @@ public:
 					isPure = zend_is_true(pure.raw()) ? 1 : 0;
 				}
 			}
-			asserts = pt_type_call_static(PT_CLASS_ASSERTIONS, PT_LC("createfromresolvedphpdocblock"), 1, resolvedPhpDoc.raw());
+			asserts = kernelStatic(PT_LC("PHPStan\\Reflection\\Assertions"), PT_LC("createfromresolvedphpdocblock"), 1, resolvedPhpDoc.raw());
 			if (UNEXPECTED(asserts.isUndef())) return zv::Val();
 			acceptsNamedArguments = callBool(resolvedPhpDoc.raw(), PT_LC("acceptsnamedarguments"), 0, NULL, ok);
 			if (UNEXPECTED(!ok)) return zv::Val();

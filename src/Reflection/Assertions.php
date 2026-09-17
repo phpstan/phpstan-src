@@ -4,7 +4,7 @@ namespace PHPStan\Reflection;
 
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\Tag\AssertTag;
-use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_filter;
@@ -29,7 +29,7 @@ use function sprintf;
  *
  * @api
  */
-#[ReferencedByTurboExtension(key: 'assertions')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/Assertions.cpp')]
 final class Assertions
 {
 

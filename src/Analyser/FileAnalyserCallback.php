@@ -226,17 +226,17 @@ final class FileAnalyserCallback
 
 		try {
 			$dependencies = $this->dependencyResolver->resolveDependencies($node, $scope);
-			foreach ($dependencies->getFileDependencies($scope->getFile(), $this->analysedFiles) as $dependentFile) {
+			$fileAndPackageDependencies = $dependencies->getFileAndPackageDependencies($scope->getFile(), $this->analysedFiles, $this->packageDependencyResolver);
+			foreach ($fileAndPackageDependencies['analysedFiles'] as $dependentFile) {
 				$this->fileDependencies[] = $dependentFile;
 			}
 			foreach ($dependencies->getFilePaths() as $dependentFile) {
 				$this->fileDependencies[] = $dependentFile;
 			}
-			$nonAnalysedDependencies = $dependencies->getNonAnalysedDependencies($scope->getFile(), $this->analysedFiles, $this->packageDependencyResolver);
-			foreach ($nonAnalysedDependencies['files'] as $dependentFile) {
+			foreach ($fileAndPackageDependencies['nonAnalysedFiles'] as $dependentFile) {
 				$this->fileDependencies[] = $dependentFile;
 			}
-			foreach ($nonAnalysedDependencies['packages'] as $package) {
+			foreach ($fileAndPackageDependencies['packages'] as $package) {
 				$this->filePackageDependencies[] = $package;
 			}
 			if ($dependencies->getExportedNode() !== null) {
@@ -254,15 +254,15 @@ final class FileAnalyserCallback
 			return;
 		}
 
-		$usedTraitDependencies = $this->dependencyResolver->resolveUsedTraitDependencies($node);
-		foreach ($usedTraitDependencies->getFileDependencies($scope->getFile(), $this->analysedFiles) as $dependentFile) {
+		$usedTraitDependencies = $this->dependencyResolver->resolveUsedTraitDependencies($node)
+			->getFileAndPackageDependencies($scope->getFile(), $this->analysedFiles, $this->packageDependencyResolver);
+		foreach ($usedTraitDependencies['analysedFiles'] as $dependentFile) {
 			$this->usedTraitFileDependencies[] = $dependentFile;
 		}
-		$nonAnalysedTraitDependencies = $usedTraitDependencies->getNonAnalysedDependencies($scope->getFile(), $this->analysedFiles, $this->packageDependencyResolver);
-		foreach ($nonAnalysedTraitDependencies['files'] as $dependentFile) {
+		foreach ($usedTraitDependencies['nonAnalysedFiles'] as $dependentFile) {
 			$this->usedTraitFileDependencies[] = $dependentFile;
 		}
-		foreach ($nonAnalysedTraitDependencies['packages'] as $package) {
+		foreach ($usedTraitDependencies['packages'] as $package) {
 			$this->filePackageDependencies[] = $package;
 		}
 	}

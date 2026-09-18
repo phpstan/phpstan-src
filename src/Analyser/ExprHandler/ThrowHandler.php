@@ -51,7 +51,7 @@ final class ThrowHandler implements ExprHandler
 			variableFlow: VariableFlow::sequence($exprResult->getVariableFlow(), VariableFlow::throwing($exprResult->getType(), false)),
 			hasYield: false,
 			isAlwaysTerminating: true,
-			throwPoints: array_merge($exprResult->getThrowPoints(), [InternalThrowPoint::createExplicit($scope, $exprResult->getType(), $expr, false)]),
+			throwPoints: array_merge($exprResult->getThrowPoints(), [InternalThrowPoint::createExplicit($scope, $exprResult->getType(), $expr, false, fromThrowExpr: true)]),
 			impurePoints: $exprResult->getImpurePoints(),
 			typeCallback: static fn (bool $nativeTypesPromoted): Type => new NonAcceptingNeverType(),
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),

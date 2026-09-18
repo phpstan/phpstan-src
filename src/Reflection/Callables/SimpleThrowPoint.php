@@ -24,13 +24,14 @@ final class SimpleThrowPoint
 		private Type $type,
 		private bool $explicit,
 		private bool $canContainAnyThrowable,
+		private bool $fromThrowExpr = false,
 	)
 	{
 	}
 
-	public static function createExplicit(Type $type, bool $canContainAnyThrowable): self
+	public static function createExplicit(Type $type, bool $canContainAnyThrowable, bool $fromThrowExpr = false): self
 	{
-		return new self($type, true, $canContainAnyThrowable);
+		return new self($type, true, $canContainAnyThrowable, $fromThrowExpr);
 	}
 
 	public static function createImplicit(): self
@@ -51,6 +52,15 @@ final class SimpleThrowPoint
 	public function canContainAnyThrowable(): bool
 	{
 		return $this->canContainAnyThrowable;
+	}
+
+	/**
+	 * Whether the throw point comes from a `throw` written in the callable's body,
+	 * as opposed to a throw only declared in PHPDoc.
+	 */
+	public function isFromThrowExpr(): bool
+	{
+		return $this->fromThrowExpr;
 	}
 
 }

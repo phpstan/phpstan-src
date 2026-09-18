@@ -11,6 +11,7 @@ use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\InternalStatementExitPoint;
 use PHPStan\Analyser\InternalStatementResult;
+use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\Scope;
@@ -86,9 +87,10 @@ final class ExpressionHandler implements StmtHandler
 		$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $stmtScope, $storage);
 		// Errors signal programmer mistakes (ValueError, TypeError, DivisionByZeroError...),
 		// nobody calls an otherwise pure expression just to have them thrown, so they
-		// do not make the expression statement meaningful.
+		// do not make the expression statement meaningful. A `throw` written in the
+		// statement is a different story - throwing is the whole point of it.
 		$errorType = new ObjectType(Error::class);
-		$throwPoints = array_filter($result->getThrowPoints(), static fn ($throwPoint) => $throwPoint->isExplicit() && !$errorType->isSuperTypeOf($throwPoint->getType())->yes());
+		$throwPoints = array_filter($result->getThrowPoints(), static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() && ($throwPoint->isFromThrowExpr() || !$errorType->isSuperTypeOf($throwPoint->getType())->yes()));
 		if (
 			count($result->getImpurePoints()) === 0
 			&& count($throwPoints) === 0

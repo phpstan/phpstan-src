@@ -20,6 +20,7 @@ final class InternalThrowPoint
 		private Node $node,
 		private bool $explicit,
 		private bool $canContainAnyThrowable,
+		private bool $fromThrowExpr = false,
 	)
 	{
 	}
@@ -27,7 +28,7 @@ final class InternalThrowPoint
 	public function toPublic(): ThrowPoint
 	{
 		if ($this->explicit) {
-			return ThrowPoint::createExplicit($this->scope, $this->type, $this->node, $this->canContainAnyThrowable);
+			return ThrowPoint::createExplicit($this->scope, $this->type, $this->node, $this->canContainAnyThrowable, $this->fromThrowExpr);
 		}
 
 		return ThrowPoint::createImplicit($this->scope, $this->node, $this->type);
@@ -36,9 +37,9 @@ final class InternalThrowPoint
 	/**
 	 * @param Node\Expr|Node\Stmt $node
 	 */
-	public static function createExplicit(MutatingScope $scope, Type $type, Node $node, bool $canContainAnyThrowable): self
+	public static function createExplicit(MutatingScope $scope, Type $type, Node $node, bool $canContainAnyThrowable, bool $fromThrowExpr = false): self
 	{
-		return new self($scope, $type, $node, true, $canContainAnyThrowable);
+		return new self($scope, $type, $node, true, $canContainAnyThrowable, $fromThrowExpr);
 	}
 
 	/**
@@ -51,7 +52,7 @@ final class InternalThrowPoint
 
 	public static function createFromPublic(ThrowPoint $throwPoint, MutatingScope $scope): self
 	{
-		return new self($scope, $throwPoint->getType(), $throwPoint->getNode(), $throwPoint->isExplicit(), $throwPoint->canContainAnyThrowable());
+		return new self($scope, $throwPoint->getType(), $throwPoint->getNode(), $throwPoint->isExplicit(), $throwPoint->canContainAnyThrowable(), $throwPoint->isFromThrowExpr());
 	}
 
 	public function getScope(): MutatingScope
@@ -82,9 +83,19 @@ final class InternalThrowPoint
 		return $this->canContainAnyThrowable;
 	}
 
+	/**
+	 * Whether the throw point comes from a `throw` written in the analysed code,
+	 * as opposed to a throw inferred from what a called function or an operation
+	 * can throw.
+	 */
+	public function isFromThrowExpr(): bool
+	{
+		return $this->fromThrowExpr;
+	}
+
 	public function subtractCatchType(Type $catchType): self
 	{
-		return new self($this->scope, TypeCombinator::remove($this->type, $catchType), $this->node, $this->explicit, $this->canContainAnyThrowable);
+		return new self($this->scope, TypeCombinator::remove($this->type, $catchType), $this->node, $this->explicit, $this->canContainAnyThrowable, $this->fromThrowExpr);
 	}
 
 }

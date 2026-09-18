@@ -146,26 +146,25 @@ final class PackageDependencyResolver
 	 */
 	public function resolveVersionedExtensionPackage(ClassReflection|FunctionReflection|ConstantReflection $reflection): ?string
 	{
+		// This is called for every dependency of every analysed node, and nearly none of them is one of
+		// these symbols, so the cheap lookup by name goes first - asking whether the symbol is built-in
+		// goes through several layers of reflection.
 		$symbols = $this->getVersionedExtensionSymbols();
 		if ($reflection instanceof ClassReflection) {
-			if (!$reflection->isBuiltin()) {
-				return null;
-			}
 			$extensionName = $symbols['classes'][strtolower($reflection->getName())] ?? null;
+			if ($extensionName === null || !$reflection->isBuiltin()) {
+				return null;
+			}
 		} elseif ($reflection instanceof FunctionReflection) {
-			if (!$reflection->isBuiltin()) {
-				return null;
-			}
 			$extensionName = $symbols['functions'][strtolower($reflection->getName())] ?? null;
-		} else {
-			if (!$reflection->isBuiltin()->yes()) {
+			if ($extensionName === null || !$reflection->isBuiltin()) {
 				return null;
 			}
+		} else {
 			$extensionName = $symbols['constants'][$reflection->getName()] ?? null;
-		}
-
-		if ($extensionName === null) {
-			return null;
+			if ($extensionName === null || !$reflection->isBuiltin()->yes()) {
+				return null;
+			}
 		}
 
 		return 'ext-' . $extensionName;

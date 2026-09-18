@@ -406,7 +406,7 @@ final class ResultCacheManager
 
 			if (in_array('scannedFiles', $diffs, true)) {
 				// Files that are scanned but not analysed are recorded as regular file dependencies
-				// (NodeDependencies::getNonAnalysedDependencies()) along with their exported nodes, so the
+				// (NodeDependencies::getFileAndPackageDependencies()) along with their exported nodes, so the
 				// loop over the not-analysed files below treats an edited one the way the loop above
 				// treats an analysed file: the files depending on it are re-analysed only when its
 				// exported nodes changed, and it is that loop which counts it as changed. What is left
@@ -418,7 +418,7 @@ final class ResultCacheManager
 				// stands in for "declares a new symbol".
 				$changedScannedFiles = $this->getChangedScannedFiles($data['meta'], $meta);
 				foreach ($changedScannedFiles as $changedScannedFile => $change) {
-					// The scanned files getNonAnalysedDependencies() leaves out: nothing would
+					// The scanned files getFileAndPackageDependencies() leaves out: nothing would
 					// re-analyse the files depending on them, so the whole cache has to go.
 					$notTrackedReason = null;
 					if (str_starts_with($changedScannedFile, 'phar://')) {

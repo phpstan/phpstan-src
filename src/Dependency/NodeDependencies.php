@@ -45,52 +45,19 @@ final class NodeDependencies
 	}
 
 	/**
-	 * @param array<string, true> $analysedFiles
-	 * @return string[]
-	 */
-	public function getFileDependencies(string $currentFile, array $analysedFiles): array
-	{
-		$dependencies = [];
-
-		foreach ($this->reflections as $dependencyReflection) {
-			$dependencyFile = $dependencyReflection->getFileName();
-			if ($dependencyFile === null) {
-				continue;
-			}
-			if ($currentFile === $dependencyFile) {
-				continue;
-			}
-
-			$dependencyFile = $this->fileHelper->normalizePath($dependencyFile);
-
-			if ($currentFile === $dependencyFile) {
-				continue;
-			}
-
-			if (!isset($analysedFiles[$dependencyFile])) {
-				continue;
-			}
-
-			$dependencies[$dependencyFile] = $dependencyFile;
-		}
-
-		return array_values($dependencies);
-	}
-
-	/**
-	 * The dependency files getFileDependencies() drops because they are not analysed, split into the
-	 * two ways the result cache tracks them:
+	 * The files and packages this node depends on, resolved in a single pass over its reflections:
 	 *
+	 * - "analysedFiles": dependency files that are analysed themselves.
 	 * - "packages": files of an installed Composer package, resolved to the package name, so that a
 	 *   composer.lock change re-analyses only the files depending on a package whose version changed.
-	 * - "files": the remaining project files - listed in scanFiles/scanDirectories, excluded from the
-	 *   analysis but living in an analysed directory, or simply reached through the autoloader -
+	 * - "nonAnalysedFiles": the remaining project files - listed in scanFiles/scanDirectories, excluded
+	 *   from the analysis but living in an analysed directory, or simply reached through the autoloader -
 	 *   recorded as regular file dependencies, so that editing one of them re-analyses only the files
 	 *   depending on it instead of invalidating the whole result cache. A package installed from a
 	 *   path repository is in both: it is the project's own code, edited without Composer noticing.
 	 *
 	 * Files inside a PHAR belong to the running PHPStan itself and cannot change without its version
-	 * changing, so they are left out of both.
+	 * changing, so they are left out of "packages" and "nonAnalysedFiles".
 	 *
 	 * Built-in symbols of an extension whose stubs differ between its major versions are recorded in
 	 * "packages" too, under the extension's platform package name (ext-<name>), so that selecting a
@@ -99,12 +66,17 @@ final class NodeDependencies
 	 * with the selected version.
 	 *
 	 * @param array<string, true> $analysedFiles
-	 * @return array{packages: list<string>, files: list<string>}
+	 * @return array{analysedFiles: list<string>, nonAnalysedFiles: list<string>, packages: list<string>}
 	 */
-	public function getNonAnalysedDependencies(string $currentFile, array $analysedFiles, PackageDependencyResolver $packageDependencyResolver): array
+	public function getFileAndPackageDependencies(string $currentFile, array $analysedFiles, PackageDependencyResolver $packageDependencyResolver): array
 	{
+		if ($this->reflections === []) {
+			return ['analysedFiles' => [], 'nonAnalysedFiles' => [], 'packages' => []];
+		}
+
+		$analysedDependencies = [];
+		$nonAnalysedDependencies = [];
 		$packages = [];
-		$files = [];
 
 		foreach ($this->reflections as $dependencyReflection) {
 			$extensionPackage = $packageDependencyResolver->resolveVersionedExtensionPackage($dependencyReflection);
@@ -116,23 +88,25 @@ final class NodeDependencies
 			if ($dependencyFile === null) {
 				continue;
 			}
+			if ($currentFile === $dependencyFile) {
+				continue;
+			}
+
+			$normalizedDependencyFile = $this->fileHelper->normalizePath($dependencyFile);
+			if ($currentFile === $normalizedDependencyFile) {
+				continue;
+			}
+
+			if (isset($analysedFiles[$normalizedDependencyFile])) {
+				$analysedDependencies[$normalizedDependencyFile] = $normalizedDependencyFile;
+				continue;
+			}
 
 			if (str_starts_with($dependencyFile, 'phar://')) {
 				continue;
 			}
 
-			$dependencyFile = $this->fileHelper->normalizePath($dependencyFile);
-
-			if ($currentFile === $dependencyFile) {
-				continue;
-			}
-
-			if (isset($analysedFiles[$dependencyFile])) {
-				// already returned by getFileDependencies()
-				continue;
-			}
-
-			$package = $packageDependencyResolver->resolvePackage($dependencyFile);
+			$package = $packageDependencyResolver->resolvePackage($normalizedDependencyFile);
 			if ($package !== null) {
 				$packages[$package] = $package;
 
@@ -146,12 +120,13 @@ final class NodeDependencies
 				}
 			}
 
-			$files[$dependencyFile] = $dependencyFile;
+			$nonAnalysedDependencies[$normalizedDependencyFile] = $normalizedDependencyFile;
 		}
 
 		return [
+			'analysedFiles' => array_values($analysedDependencies),
+			'nonAnalysedFiles' => array_values($nonAnalysedDependencies),
 			'packages' => array_values($packages),
-			'files' => array_values($files),
 		];
 	}
 

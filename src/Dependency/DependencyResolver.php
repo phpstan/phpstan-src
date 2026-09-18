@@ -35,16 +35,16 @@ use PHPStan\Type\ClosureType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Type;
 use function array_key_exists;
-use function array_merge;
 use function count;
 use function in_array;
 use function is_file;
+use function spl_object_id;
 
 #[AutowiredService]
 final class DependencyResolver
 {
 
-	/** @var array<string, list<ClassReflection|FunctionReflection|ConstantReflection>> */
+	/** @var array<string, array<int, ClassReflection|FunctionReflection|ConstantReflection>> reflections keyed by spl_object_id() */
 	private array $classDependencies = [];
 
 	private ExportedNameScopeTracker $nameScopeTracker;
@@ -74,6 +74,9 @@ final class DependencyResolver
 		}
 		$this->nameScopeTracker->enterNode($node);
 
+		// Keyed by spl_object_id(), so that a reflection collected again - every level of a class hierarchy
+		// repeats the interfaces it inherits, and the classes a node references share most of their
+		// ancestors - is kept only once instead of being resolved to its file and package once more.
 		$dependenciesReflections = [];
 		$dependenciesFilePaths = [];
 
@@ -181,7 +184,7 @@ final class DependencyResolver
 			if ($functionName instanceof Node\Name) {
 				try {
 					$functionReflection = $this->getFunctionReflection($functionName, $scope);
-					$dependenciesReflections[] = $functionReflection;
+					$dependenciesReflections[spl_object_id($functionReflection)] = $functionReflection;
 
 					foreach ($functionReflection->getVariants() as $functionVariant) {
 						foreach ($functionVariant->getParameters() as $parameter) {
@@ -408,7 +411,8 @@ final class DependencyResolver
 				!in_array($constantName->toLowerString(), ['true', 'false', 'null'], true)
 				&& $this->reflectionProvider->hasConstant($constantName, $scope)
 			) {
-				$dependenciesReflections[] = $this->reflectionProvider->getConstant($constantName, $scope);
+				$constantReflection = $this->reflectionProvider->getConstant($constantName, $scope);
+				$dependenciesReflections[spl_object_id($constantReflection)] = $constantReflection;
 			}
 		} elseif ($node instanceof Node\Expr\StaticPropertyFetch) {
 			if ($node->class instanceof Node\Name) {
@@ -550,21 +554,13 @@ final class DependencyResolver
 				}
 			}
 		} elseif ($node instanceof StaticMethodCallableNode) {
-			foreach ($this->resolveDependencies(new Node\Expr\StaticCall($node->getClass(), $node->getName()), $scope)->getReflections() as $dependency) {
-				$dependenciesReflections[] = $dependency;
-			}
+			$dependenciesReflections += $this->resolveDependencies(new Node\Expr\StaticCall($node->getClass(), $node->getName()), $scope)->getReflections();
 		} elseif ($node instanceof MethodCallableNode) {
-			foreach ($this->resolveDependencies(new Node\Expr\MethodCall($node->getVar(), $node->getName()), $scope)->getReflections() as $dependency) {
-				$dependenciesReflections[] = $dependency;
-			}
+			$dependenciesReflections += $this->resolveDependencies(new Node\Expr\MethodCall($node->getVar(), $node->getName()), $scope)->getReflections();
 		} elseif ($node instanceof FunctionCallableNode) {
-			foreach ($this->resolveDependencies(new Node\Expr\FuncCall($node->getName()), $scope)->getReflections() as $dependency) {
-				$dependenciesReflections[] = $dependency;
-			}
+			$dependenciesReflections += $this->resolveDependencies(new Node\Expr\FuncCall($node->getName()), $scope)->getReflections();
 		} elseif ($node instanceof InstantiationCallableNode) {
-			foreach ($this->resolveDependencies(new Node\Expr\New_($node->getClass()), $scope)->getReflections() as $dependency) {
-				$dependenciesReflections[] = $dependency;
-			}
+			$dependenciesReflections += $this->resolveDependencies(new Node\Expr\New_($node->getClass()), $scope)->getReflections();
 		}
 
 		return new NodeDependencies($this->fileHelper, $dependenciesReflections, $this->exportedNodeResolver->resolve($node, $this->nameScopeTracker->getNameScope()), $dependenciesFilePaths);
@@ -653,11 +649,11 @@ final class DependencyResolver
 			$this->classDependencies[$className] = $this->buildClassDependencies($className);
 		}
 
-		$dependenciesReflections = array_merge($dependenciesReflections, $this->classDependencies[$className]);
+		$dependenciesReflections += $this->classDependencies[$className];
 	}
 
 	/**
-	 * @return list<ClassReflection|FunctionReflection|ConstantReflection>
+	 * @return array<int, ClassReflection|FunctionReflection|ConstantReflection>
 	 */
 	private function buildClassDependencies(string $className): array
 	{
@@ -809,7 +805,12 @@ final class DependencyResolver
 			$classReflection = $classReflection->getParentClass();
 		} while ($classReflection !== null);
 
-		return $dependencies;
+		$uniqueDependencies = [];
+		foreach ($dependencies as $dependency) {
+			$uniqueDependencies[spl_object_id($dependency)] = $dependency;
+		}
+
+		return $uniqueDependencies;
 	}
 
 	private function getFunctionReflection(Node\Name $nameNode, ?Scope $scope): FunctionReflection

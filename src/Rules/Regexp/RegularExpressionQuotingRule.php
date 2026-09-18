@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Regexp;
 
 use PhpParser\Node;
+use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\BinaryOp\Concat;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
@@ -76,12 +77,42 @@ final class RegularExpressionQuotingRule implements Rule
 		if (!isset($normalizedArgs[0])) {
 			return [];
 		}
-		if (!$normalizedArgs[0]->value instanceof Concat) {
+
+		$patternArg = $normalizedArgs[0]->value;
+
+		// preg_replace, preg_replace_callback and preg_filter also take an array
+		// of patterns, which RegularExpressionPatternRule::extractPatterns()
+		// already reads. Each element is a pattern in its own right.
+		if ($patternArg instanceof Array_) {
+			if (
+				!in_array($functionReflection->getName(), [
+					'preg_filter',
+					'preg_replace',
+					'preg_replace_callback',
+				], true)
+			) {
+				return [];
+			}
+
+			$errors = [];
+			foreach ($patternArg->items as $item) {
+				if (!$item->value instanceof Concat) {
+					continue;
+				}
+
+				$itemDelimiters = $this->regexExpressionHelper->getPatternDelimiters($item->value, $scope);
+				$errors = array_merge($errors, $this->validateQuoteDelimiters($item->value, $scope, $itemDelimiters));
+			}
+
+			return $errors;
+		}
+
+		if (!$patternArg instanceof Concat) {
 			return [];
 		}
 
-		$patternDelimiters = $this->regexExpressionHelper->getPatternDelimiters($normalizedArgs[0]->value, $scope);
-		return $this->validateQuoteDelimiters($normalizedArgs[0]->value, $scope, $patternDelimiters);
+		$patternDelimiters = $this->regexExpressionHelper->getPatternDelimiters($patternArg, $scope);
+		return $this->validateQuoteDelimiters($patternArg, $scope, $patternDelimiters);
 	}
 
 	/**

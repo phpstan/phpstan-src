@@ -7,7 +7,6 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Name\FullyQualified;
-use PhpParser\Node\Scalar\Int_;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\MethodReflection;
@@ -53,13 +52,17 @@ final class RandomizerMethodReturnTypeExtension implements DynamicMethodReturnTy
 			case 'shuffleArray':
 				return $scope->getType($args[0]->value)->shuffleArray();
 			case 'pickArrayKeys':
+				if (count($args) < 2) {
+					return null;
+				}
+
 				// $num is validated to be between 1 and the size of the array, so unlike
-				// array_rand() a successful call always returns a list of keys - which is
-				// what array_rand() returns when asked for more than one key.
+				// array_rand() a successful call always returns an array of keys, even
+				// when a single key is picked - hence the cast to array.
 				return $scope->getType($this->createFuncCall('array_rand', [
 					$args[0]->value,
-					new Int_(2),
-				]));
+					$args[1]->value,
+				]))->toArray();
 			case 'shuffleBytes':
 				return $scope->getType($this->createFuncCall('str_shuffle', [$args[0]->value]));
 			case 'getInt':

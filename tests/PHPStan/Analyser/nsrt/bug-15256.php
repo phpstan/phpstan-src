@@ -44,12 +44,14 @@ class Shuffle
  * @param non-empty-array<string, int> $nonEmptyArray
  * @param list<int> $list
  * @param array<int|string, bool> $mixedKeys
+ * @param positive-int $num
  */
 function arrayMethods(
 	Randomizer $randomizer,
 	array $nonEmptyArray,
 	array $list,
-	array $mixedKeys
+	array $mixedKeys,
+	int $num
 ): void
 {
 	assertType('non-empty-list<int>', $randomizer->shuffleArray($nonEmptyArray));
@@ -62,6 +64,11 @@ function arrayMethods(
 	assertType('non-empty-list<int<0, max>>', $randomizer->pickArrayKeys($list, 2));
 	assertType('non-empty-list<int|string>', $randomizer->pickArrayKeys($mixedKeys, 2));
 	assertType("non-empty-list<'a'|'b'>", $randomizer->pickArrayKeys(['a' => 1, 'b' => 2], 2));
+
+	// Unlike array_rand(), picking a single key still returns an array.
+	assertType('array{string}', $randomizer->pickArrayKeys($nonEmptyArray, 1));
+	assertType("array{'a'}|array{'b'}", $randomizer->pickArrayKeys(['a' => 1, 'b' => 2], 1));
+	assertType('non-empty-list<string>', $randomizer->pickArrayKeys($nonEmptyArray, $num));
 }
 
 /**

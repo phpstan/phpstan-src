@@ -2135,7 +2135,7 @@ class NodeScopeResolver
 				// still complete the gathered data - then it keeps re-walking)
 				$this->container->getByType(ClosureTypeResolver::class)->seedCacheFromClosureWalk($scopeToPass, $arg->value, $closureResult);
 				if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
-					$throwPoints = array_merge($throwPoints, array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $closureResult->getThrowPoints()));
+					$throwPoints = array_merge($throwPoints, array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable(), $throwPoint->isFromThrowExpr()) : InternalThrowPoint::createImplicit($scope, $arg->value), $closureResult->getThrowPoints()));
 					$impurePoints = array_merge($impurePoints, $closureResult->getImpurePoints());
 				}
 
@@ -2227,7 +2227,7 @@ class NodeScopeResolver
 				$this->container->getByType(ClosureTypeResolver::class)->seedCacheFromArrowFunctionWalk($scopeToPass, $arg->value, $processArrowFunctionResult);
 				$arrowFunctionResult = $processArrowFunctionResult->getExpressionResult();
 				if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
-					$throwPoints = array_merge($throwPoints, array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $arrowFunctionResult->getThrowPoints()));
+					$throwPoints = array_merge($throwPoints, array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable(), $throwPoint->isFromThrowExpr()) : InternalThrowPoint::createImplicit($scope, $arg->value), $arrowFunctionResult->getThrowPoints()));
 					$impurePoints = array_merge($impurePoints, $arrowFunctionResult->getImpurePoints());
 				}
 				if ($this->shouldInvalidateCallbackExpressions($parameter)) {
@@ -2264,7 +2264,7 @@ class NodeScopeResolver
 							$deferredInvalidateExpressions[] = [$acceptors[0]->getInvalidateExpressions(), $acceptors[0]->getUsedVariables()];
 						}
 						if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
-							$callableThrowPoints = array_map(static fn (SimpleThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $acceptors[0]->getThrowPoints());
+							$callableThrowPoints = array_map(static fn (SimpleThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable(), $throwPoint->isFromThrowExpr()) : InternalThrowPoint::createImplicit($scope, $arg->value), $acceptors[0]->getThrowPoints());
 							if (!$this->implicitThrows) {
 								$callableThrowPoints = array_values(array_filter($callableThrowPoints, static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit()));
 							}

@@ -139,6 +139,17 @@ class CallToFunctionStatementWithoutSideEffectsRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testThrowExprInCallbackArgument(): void
+	{
+		$this->analyse([__DIR__ . '/data/function-call-statement-no-side-effects-throw-expr.php'], [
+			[
+				'Call to function array_map() on a separate line has no effect.',
+				21,
+			],
+		]);
+	}
+
 	public function testBug4455(): void
 	{
 		require_once __DIR__ . '/data/bug-4455.php';

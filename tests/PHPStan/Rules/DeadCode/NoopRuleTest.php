@@ -159,6 +159,12 @@ class NoopRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug15258(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15258.php'], []);
+	}
+
 	public function testNullsafe(): void
 	{
 		$this->analyse([__DIR__ . '/data/nullsafe-property-fetch-noop.php'], [

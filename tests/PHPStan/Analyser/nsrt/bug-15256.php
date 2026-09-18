@@ -47,6 +47,8 @@ class Shuffle
  * @param list<int> $list
  * @param array<int|string, bool> $mixedKeys
  * @param non-empty-array<numeric-string, int> $numericStringKeys
+ * @param non-empty-array<decimal-int-string, int> $decimalIntStringKeys
+ * @param non-empty-array<non-decimal-int-string, int> $nonDecimalIntStringKeys
  * @param positive-int $num
  */
 function arrayMethods(
@@ -55,6 +57,8 @@ function arrayMethods(
 	array $list,
 	array $mixedKeys,
 	array $numericStringKeys,
+	array $decimalIntStringKeys,
+	array $nonDecimalIntStringKeys,
 	int $num
 ): void
 {
@@ -73,6 +77,12 @@ function arrayMethods(
 	assertType('non-empty-list<int|numeric-string>', $randomizer->pickArrayKeys($numericStringKeys, 2));
 	assertType('non-empty-list<1|2>', $randomizer->pickArrayKeys(['1' => 'a', '2' => 'b'], 2));
 	assertType("non-empty-list<1|'b'>", $randomizer->pickArrayKeys(['1' => 'a', 'b' => 'b'], 2));
+
+	// A decimal-int-string key is always cast to an integer, a non-decimal-int-string one never is.
+	assertType('non-empty-list<int>', $randomizer->pickArrayKeys($decimalIntStringKeys, 2));
+	assertType('non-empty-list<non-decimal-int-string>', $randomizer->pickArrayKeys($nonDecimalIntStringKeys, 2));
+	assertType('array{int}', $randomizer->pickArrayKeys($decimalIntStringKeys, 1));
+	assertType('array{non-decimal-int-string}', $randomizer->pickArrayKeys($nonDecimalIntStringKeys, 1));
 
 	// Unlike array_rand(), picking a single key still returns an array.
 	assertType('array{string}', $randomizer->pickArrayKeys($nonEmptyArray, 1));

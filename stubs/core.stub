@@ -132,8 +132,6 @@ function base64_encode(string $string) : string {}
  */
 function bin2hex(string $string): string {}
 
-function str_shuffle(string $string): string {}
-
 /**
  * @param array<mixed> $result
  * @param-out array<int|string, array<mixed>|string> $result

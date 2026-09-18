@@ -21,6 +21,10 @@ if (PHP_VERSION_ID < 80000) {
 	$includes[] = __DIR__ . '/more-enum-adapter-errors.neon';
 }
 
+if (PHP_VERSION_ID < 80200) {
+	$includes[] = __DIR__ . '/randomizer.neon';
+}
+
 if (PHP_VERSION_ID < 80000) {
 	$includes[] = __DIR__ . '/spl-autoload-functions-pre-php-7.neon';
 } else {

@@ -27,3 +27,14 @@ class reception_formulaire {
     }
 
 }
+
+function nested(mixed $x): void
+{
+	foreach (validate_array($x) ?? [] as $v) {
+		assertType('mixed', $v);
+		assertType('array|null', validate_array($v));
+		foreach (validate_array($v) ?? [] as $w) {
+			assertType('mixed', $w);
+		}
+	}
+}

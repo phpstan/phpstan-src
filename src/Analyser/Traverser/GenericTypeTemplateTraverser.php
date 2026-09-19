@@ -9,6 +9,7 @@ use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
+use PHPStan\Type\NarrowedSubjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverserCallable;
 
@@ -42,7 +43,7 @@ final class GenericTypeTemplateTraverser implements TypeTraverserCallable
 	 */
 	public function traverse(Type $type, callable $traverse): Type
 	{
-		if ($type instanceof TemplateType && !$type->isArgument()) {
+		if ($type instanceof TemplateType && !$type instanceof NarrowedSubjectType && !$type->isArgument()) {
 			$newType = $this->resolvedTemplateTypeMap->getType($type->getName());
 			if ($this->frame === null) {
 				if ($newType === null || $newType instanceof ErrorType) {

@@ -15,6 +15,7 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
+use PHPStan\Type\NarrowedSubjectType;
 use PHPStan\Type\NonAcceptingNeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
@@ -156,7 +157,10 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 	{
 		return $this->returnTypeWithUnresolvableTemplateTypes ??=
 			$this->resolveConditionalTypesForParameter(
-				$this->resolveResolvableTemplateTypes($this->parametersAcceptor->getReturnType(), TemplateTypeVariance::createCovariant()),
+				$this->resolveResolvableTemplateTypes(
+					$this->narrowTemplateTypesInConditionalTypesForParameter($this->parametersAcceptor->getReturnType()),
+					TemplateTypeVariance::createCovariant(),
+				),
 			);
 	}
 
@@ -164,7 +168,10 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 	{
 		return $this->phpDocReturnTypeWithUnresolvableTemplateTypes ??=
 			$this->resolveConditionalTypesForParameter(
-				$this->resolveResolvableTemplateTypes($this->parametersAcceptor->getPhpDocReturnType(), TemplateTypeVariance::createCovariant()),
+				$this->resolveResolvableTemplateTypes(
+					$this->narrowTemplateTypesInConditionalTypesForParameter($this->parametersAcceptor->getPhpDocReturnType()),
+					TemplateTypeVariance::createCovariant(),
+				),
 			);
 	}
 
@@ -206,7 +213,13 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 		$type = TypeUtils::resolveLateResolvableTypes(
 			TemplateTypeHelper::resolveTemplateTypes(
 				$this->resolveConditionalTypesForParameter(
-					$this->resolveResolvableTemplateTypes($this->parametersAcceptor->getReturnType(), TemplateTypeVariance::createCovariant(), $site, $frame, $allowUnresolved),
+					$this->resolveResolvableTemplateTypes(
+						$this->narrowTemplateTypesInConditionalTypesForParameter($this->parametersAcceptor->getReturnType()),
+						TemplateTypeVariance::createCovariant(),
+						$site,
+						$frame,
+						$allowUnresolved,
+					),
 				),
 				$this->resolvedTemplateTypeMap,
 				$this->callSiteVarianceMap,
@@ -252,6 +265,7 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 		$objectCb = function (Type $type, callable $traverse) use ($references, $site, $frame, $allowUnresolved): Type {
 			if (
 				$type instanceof TemplateType
+				&& !$type instanceof NarrowedSubjectType
 				&& !$type->isArgument()
 				&& $type->getScope()->getFunctionName() !== null
 			) {
@@ -299,7 +313,7 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 				return TypeTraverser::map($type, $objectCb);
 			}
 
-			if ($type instanceof TemplateType && !$type->isArgument()) {
+			if ($type instanceof TemplateType && !$type instanceof NarrowedSubjectType && !$type->isArgument()) {
 				$newType = $this->resolvedTemplateTypeMap->getType($type->getName());
 				if ($newType === null || $newType instanceof ErrorType) {
 					return $traverse($type);
@@ -358,6 +372,100 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 		}
 
 		return $frame->resolve($site, $template->getName()) ?? $inferred;
+	}
+
+	/**
+	 * `($param is X ? A : B)` narrows the parameter, and when the parameter alone binds the
+	 * template type it is declared with, that template type too: `@param T $param` makes the
+	 * references to T in the branches `T & X` and `T ~ X` (see
+	 * ConditionalTypeForParameter::narrowTemplateType()). Has to happen before the template
+	 * types resolve, while the references are still recognizable.
+	 */
+	private function narrowTemplateTypesInConditionalTypesForParameter(Type $type): Type
+	{
+		if (!$type->hasTemplateOrLateResolvableType()) {
+			return $type;
+		}
+
+		return TypeTraverser::map($type, function (Type $type, callable $traverse): Type {
+			if ($type instanceof ConditionalTypeForParameter) {
+				$templateType = $this->getTemplateTypeBoundOnlyByParameter($type->getParameterName());
+				if ($templateType !== null) {
+					$type = $type->narrowTemplateType($templateType);
+				}
+			}
+
+			return $traverse($type);
+		});
+	}
+
+	/**
+	 * The template type of the function the parameter is declared as, provided no other
+	 * parameter references it - another parameter could bind it to values a condition on
+	 * this parameter says nothing about. A reference through the bound of another template
+	 * type counts too: `@param class-string<TFormType> $type` with
+	 * `@template TFormType of FormTypeInterface<TData>` binds TData.
+	 */
+	private function getTemplateTypeBoundOnlyByParameter(string $parameterName): ?TemplateType
+	{
+		$templateType = null;
+		foreach ($this->parametersAcceptor->getParameters() as $parameter) {
+			if ('$' . $parameter->getName() !== $parameterName) {
+				continue;
+			}
+			if ($parameter->isVariadic()) {
+				return null;
+			}
+
+			$type = $parameter->getType();
+			if (
+				!$type instanceof TemplateType
+				|| $type instanceof NarrowedSubjectType
+				|| $type->getScope()->getFunctionName() === null
+			) {
+				return null;
+			}
+
+			$templateType = $type;
+			break;
+		}
+
+		if ($templateType === null) {
+			return null;
+		}
+
+		foreach ($this->parametersAcceptor->getParameters() as $parameter) {
+			if ('$' . $parameter->getName() === $parameterName) {
+				continue;
+			}
+
+			if (self::referencesTemplateType($parameter->getType(), $templateType)) {
+				return null;
+			}
+		}
+
+		return $templateType;
+	}
+
+	private static function referencesTemplateType(Type $type, TemplateType $templateType): bool
+	{
+		$references = false;
+		TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($templateType, &$references): Type {
+			if (
+				$type instanceof TemplateType
+				&& $type->getName() === $templateType->getName()
+				&& $type->getScope()->equals($templateType->getScope())
+			) {
+				$references = true;
+
+				return $type;
+			}
+
+			// a template type traverses into its bound
+			return $traverse($type);
+		});
+
+		return $references;
 	}
 
 	private function resolveConditionalTypesForParameter(Type $type): Type

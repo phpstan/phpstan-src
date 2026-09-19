@@ -111,7 +111,7 @@ final class PrintfHelper
 			$parsedPlaceholders[] = new PrintfPlaceholder(
 				sprintf('"%s"', $placeholder[0]) . ($showValueSuffix ? ' (value)' : ''),
 				isset($placeholder['position']) && $placeholder['position'] !== ''
-					? $placeholder['position'] - 1
+					? (int) $placeholder['position'] - 1
 					: $parameterIdx++,
 				$placeholderNumber,
 				$this->getAcceptingTypeBySpecifier($specifier),

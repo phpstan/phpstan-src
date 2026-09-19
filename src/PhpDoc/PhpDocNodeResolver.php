@@ -12,6 +12,7 @@ use PHPStan\PhpDoc\Tag\ImplementsTag;
 use PHPStan\PhpDoc\Tag\MethodTag;
 use PHPStan\PhpDoc\Tag\MethodTagParameter;
 use PHPStan\PhpDoc\Tag\MixinTag;
+use PHPStan\PhpDoc\Tag\ParamClosureScopeTag;
 use PHPStan\PhpDoc\Tag\ParamClosureThisTag;
 use PHPStan\PhpDoc\Tag\ParamOutTag;
 use PHPStan\PhpDoc\Tag\ParamTag;
@@ -47,7 +48,6 @@ use function array_merge;
 use function array_reverse;
 use function count;
 use function in_array;
-use function method_exists;
 use function str_starts_with;
 use function substr;
 
@@ -422,6 +422,27 @@ final class PhpDocNodeResolver
 		}
 
 		return $closureThisTypes;
+	}
+
+	/**
+	 * @return array<string, ParamClosureScopeTag>
+	 */
+	public function resolveParamClosureScopeTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
+	{
+		$closureScopeTypes = [];
+		foreach (['@param-closure-scope', '@phpstan-param-closure-scope'] as $tagName) {
+			foreach ($phpDocNode->getParamClosureScopeTagValues($tagName) as $tagValue) {
+				$parameterName = substr($tagValue->parameterName, 1);
+				$closureScopeTypes[$parameterName] = new ParamClosureScopeTag(
+					TypeCombinator::intersect(
+						$this->typeNodeResolver->resolve($tagValue->type, $nameScope),
+						new ObjectWithoutClassType(),
+					),
+				);
+			}
+		}
+
+		return $closureScopeTypes;
 	}
 
 	public function resolveReturnTag(PhpDocNode $phpDocNode, NameScope $nameScope): ?ReturnTag

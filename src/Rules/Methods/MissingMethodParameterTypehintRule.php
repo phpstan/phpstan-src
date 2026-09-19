@@ -52,6 +52,12 @@ final class MissingMethodParameterTypehintRule implements Rule
 				}
 			}
 
+			if ($parameterReflection->getClosureScopeType() !== null) {
+				foreach ($this->checkMethodParameter($methodReflection, sprintf('@param-closure-scope PHPDoc tag for parameter $%s', $parameterReflection->getName()), $parameterReflection->getClosureScopeType()) as $parameterMessage) {
+					$messages[] = $parameterMessage;
+				}
+			}
+
 			if ($parameterReflection->getOutType() === null) {
 				continue;
 			}

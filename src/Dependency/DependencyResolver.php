@@ -193,11 +193,15 @@ final class DependencyResolver
 									$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 								}
 							}
-							if ($parameter->getClosureThisType() === null) {
-								continue;
+							if ($parameter->getClosureThisType() !== null) {
+								foreach ($parameter->getClosureThisType()->getReferencedClasses() as $referencedClass) {
+									$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+								}
 							}
-							foreach ($parameter->getClosureThisType()->getReferencedClasses() as $referencedClass) {
-								$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+							if ($parameter->getClosureScopeType() !== null) {
+								foreach ($parameter->getClosureScopeType()->getReferencedClasses() as $referencedClass) {
+									$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+								}
 							}
 						}
 					}
@@ -232,11 +236,15 @@ final class DependencyResolver
 									$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 								}
 							}
-							if ($parameter->getClosureThisType() === null) {
-								continue;
+							if ($parameter->getClosureThisType() !== null) {
+								foreach ($parameter->getClosureThisType()->getReferencedClasses() as $referencedClass) {
+									$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+								}
 							}
-							foreach ($parameter->getClosureThisType()->getReferencedClasses() as $referencedClass) {
-								$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+							if ($parameter->getClosureScopeType() !== null) {
+								foreach ($parameter->getClosureScopeType()->getReferencedClasses() as $referencedClass) {
+									$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+								}
 							}
 						}
 					}
@@ -270,11 +278,15 @@ final class DependencyResolver
 									$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 								}
 							}
-							if ($parameter->getClosureThisType() === null) {
-								continue;
+							if ($parameter->getClosureThisType() !== null) {
+								foreach ($parameter->getClosureThisType()->getReferencedClasses() as $referencedClass) {
+									$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+								}
 							}
-							foreach ($parameter->getClosureThisType()->getReferencedClasses() as $referencedClass) {
-								$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+							if ($parameter->getClosureScopeType() !== null) {
+								foreach ($parameter->getClosureScopeType()->getReferencedClasses() as $referencedClass) {
+									$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+								}
 							}
 						}
 					}
@@ -337,17 +349,21 @@ final class DependencyResolver
 							$this->addClassToDependencies($methodReflection->getDeclaringClass()->getName(), $dependenciesReflections);
 							foreach ($methodReflection->getVariants() as $methodVariant) {
 								foreach ($methodVariant->getParameters() as $parameter) {
-									if ($parameter->getOutType() !== null) {
-										foreach ($parameter->getOutType()->getReferencedClasses() as $referencedClass) {
-											$this->addClassToDependencies($referencedClass, $dependenciesReflections);
-										}
+								if ($parameter->getOutType() !== null) {
+									foreach ($parameter->getOutType()->getReferencedClasses() as $referencedClass) {
+										$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 									}
-									if ($parameter->getClosureThisType() === null) {
-										continue;
-									}
+								}
+								if ($parameter->getClosureThisType() !== null) {
 									foreach ($parameter->getClosureThisType()->getReferencedClasses() as $referencedClass) {
 										$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 									}
+								}
+								if ($parameter->getClosureScopeType() !== null) {
+									foreach ($parameter->getClosureScopeType()->getReferencedClasses() as $referencedClass) {
+										$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+									}
+								}
 								}
 							}
 						}
@@ -363,11 +379,15 @@ final class DependencyResolver
 										$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 									}
 								}
-								if ($parameter->getClosureThisType() === null) {
-									continue;
+								if ($parameter->getClosureThisType() !== null) {
+									foreach ($parameter->getClosureThisType()->getReferencedClasses() as $referencedClass) {
+										$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+									}
 								}
-								foreach ($parameter->getClosureThisType()->getReferencedClasses() as $referencedClass) {
-									$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+								if ($parameter->getClosureScopeType() !== null) {
+									foreach ($parameter->getClosureScopeType()->getReferencedClasses() as $referencedClass) {
+										$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+									}
 								}
 							}
 						}
@@ -839,11 +859,15 @@ final class DependencyResolver
 					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 				}
 			}
-			if ($parameter->getClosureThisType() === null) {
-				continue;
+			if ($parameter->getClosureThisType() !== null) {
+				foreach ($parameter->getClosureThisType()->getReferencedClasses() as $referencedClass) {
+					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+				}
 			}
-			foreach ($parameter->getClosureThisType()->getReferencedClasses() as $referencedClass) {
-				$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+			if ($parameter->getClosureScopeType() !== null) {
+				foreach ($parameter->getClosureScopeType()->getReferencedClasses() as $referencedClass) {
+					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+				}
 			}
 		}
 

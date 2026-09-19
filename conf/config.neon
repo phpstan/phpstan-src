@@ -26,6 +26,7 @@ parameters:
 			throwTypeCovariance: false
 	featureToggles:
 		bleedingEdge: false
+		preciseArrayShapeUnpacking: false
 		checkNonStringableDynamicAccess: false
 		checkParameterCastableToNumberFunctions: false
 		skipCheckGenericClasses:

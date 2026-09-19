@@ -16,7 +16,8 @@ parameters:
 		implicitThrows: true
 		reportUncheckedExceptionDeadCatch: true
 		uncheckedExceptionRegexes: []
-		uncheckedExceptionClasses: []
+		uncheckedExceptionClasses:
+			- Error
 		checkedExceptionRegexes: []
 		checkedExceptionClasses: []
 		check:

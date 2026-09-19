@@ -1,0 +1,7 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Class Random\\Randomizer not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: ../src/Type/Php/RandomizerMethodReturnTypeExtension.php

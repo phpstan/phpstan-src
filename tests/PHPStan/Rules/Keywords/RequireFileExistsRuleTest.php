@@ -57,6 +57,18 @@ class RequireFileExistsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testStreamWrapperRegisteredByTheFileItself(): void
+	{
+		// Only the include before the stream_wrapper_register() call is reported: after it, the
+		// file resolves paths through wrappers PHPStan does not have.
+		$this->analyse([__DIR__ . '/data/require-file-stream-wrapper-registered.php'], [
+			[
+				'Path in require_once() "modulea://sites/default/modulea.php" is not a file or it does not exist.',
+				5,
+			],
+		]);
+	}
+
 	public function testBasicCase(): void
 	{
 		$this->analyse([__DIR__ . '/data/require-file-simple-case.php'], [
@@ -202,6 +214,58 @@ class RequireFileExistsRuleTest extends RuleTestCase
 				15,
 			],
 		]);
+	}
+
+	public function testChdir(): void
+	{
+		// The include after the chdir() is not reported: the path is relative to a working
+		// directory the file moved, so it no longer names a place PHPStan can look at. Neither is
+		// the absolute one - the whole file is given up on, which is the point of keeping this
+		// simple.
+		$this->analyse([__DIR__ . '/data/require-file-chdir.php'], [
+			[
+				'Path in require_once() "a-file-that-does-not-exist.php" is not a file or it does not exist.',
+				5,
+			],
+		]);
+	}
+
+	public function testSetIncludePath(): void
+	{
+		$this->analyse([__DIR__ . '/data/require-file-set-include-path.php'], [
+			[
+				'Path in require_once() "a-file-that-does-not-exist.php" is not a file or it does not exist.',
+				5,
+			],
+		]);
+	}
+
+	public function testIniSetIncludePath(): void
+	{
+		// ini_set('memory_limit', ...) and ini_alter('precision', ...) leave include resolution
+		// alone, ini_set('INCLUDE_PATH', ...) does not - the option name is case-insensitive.
+		$this->analyse([__DIR__ . '/data/require-file-include-path.php'], [
+			[
+				'Path in require_once() "a-file-that-does-not-exist.php" is not a file or it does not exist.',
+				8,
+			],
+		]);
+	}
+
+	public function testIniSetWithUnknownOption(): void
+	{
+		// The option could be include_path just as well as anything else.
+		$this->analyse([__DIR__ . '/data/require-file-ini-set-unknown.php'], [
+			[
+				'Path in require_once() "a-file-that-does-not-exist.php" is not a file or it does not exist.',
+				5,
+			],
+		]);
+	}
+
+	public function testBug15260(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15260/sub/bug-15260.php'], []);
 	}
 
 	public function testInFileExists(): void

@@ -1481,6 +1481,34 @@ jobs:
               composer install
               ../../bin/phpstan analyze test.php --level=0
           - script: |
+              # Scope::getPhpVersion() has to honour the composer.json "require.php" range:
+              # https://github.com/phpstan/phpstan/issues/15270
+              cd e2e/composer-php-version-range-7-and-8
+              composer install
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --no-progress --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains '/errors.php:11:Non-capturing catch is supported only on PHP 8.0 and later.' "$OUTPUT"
+              ../bashunit -a contains '/errors.php:23:Named arguments are supported only on PHP 8.0 and later.' "$OUTPUT"
+              ../bashunit -a contains '/errors.php:29:Function ComposerPhpVersionRange7And8Errors\phpdocBoolReturn() never returns false so the return type can be changed to true.' "$OUTPUT"
+              ../bashunit -a not_contains 'no-errors.php' "$OUTPUT"
+              ../bashunit -a not_contains 'php-version-id.php' "$OUTPUT"
+          - script: |
+              cd e2e/composer-php-version-range-7
+              composer install --ignore-platform-reqs
+              ../../bin/phpstan analyse --no-progress
+          - script: |
+              cd e2e/composer-php-version-range-8-0
+              composer install
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --no-progress --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains '/errors.php:16:Missing parameter $j (int) in call to function ComposerPhpVersionRange80Errors\acceptsThreeInts.' "$OUTPUT"
+              ../bashunit -a contains '/errors.php:16:Unpacked argument (...) cannot be followed by a non-unpacked argument.' "$OUTPUT"
+              ../bashunit -a not_contains 'no-errors.php' "$OUTPUT"
+          - script: |
+              cd e2e/composer-php-version-range-8-5
+              composer install --ignore-platform-reqs
+              ../../bin/phpstan analyse --no-progress
+          - script: |
               cd e2e/composer-version-config-invalid
               OUTPUT=$(../bashunit -a exit_code "1" ../../bin/phpstan)
               echo "$OUTPUT"

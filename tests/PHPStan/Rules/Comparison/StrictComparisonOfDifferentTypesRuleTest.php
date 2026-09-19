@@ -1291,4 +1291,15 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testInvariantGenericComparison(): void
+	{
+		$this->analyse([__DIR__ . '/data/invariant-generic-comparison.php'], [
+			[
+				'Strict comparison using === between InvariantGenericComparison\Bag<int> and InvariantGenericComparison\Bag<string> will always evaluate to false.',
+				43,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+		]);
+	}
+
 }

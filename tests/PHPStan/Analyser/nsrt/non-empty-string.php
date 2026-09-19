@@ -182,7 +182,7 @@ class ImplodingStrings
 	{
 		assertType('string', implode($s, $nonEmptyArrayWithStrings));
 		assertType('string', implode('', $nonEmptyArrayWithStrings));
-		assertType('non-falsy-string', implode(' ', $nonEmptyArrayWithStrings));
+		assertType('string', implode(' ', $nonEmptyArrayWithStrings));
 		assertType('string', implode($nonEmptyArrayWithStrings));
 	}
 
@@ -204,7 +204,7 @@ class ImplodingStrings
 	{
 		assertType('non-empty-string', implode($s, $nonEmptyArrayWithNonEmptyStrings));
 		assertType('non-empty-string', implode('', $nonEmptyArrayWithNonEmptyStrings));
-		assertType('non-falsy-string', implode(' ', $nonEmptyArrayWithNonEmptyStrings));
+		assertType('non-empty-string', implode(' ', $nonEmptyArrayWithNonEmptyStrings));
 		assertType('non-empty-string', implode($nonEmptyArrayWithNonEmptyStrings));
 	}
 
@@ -227,7 +227,9 @@ class ImplodingStrings
 			return "xyz";
 		}
 
-		assertType('non-empty-string', implode($glue, $a));
+		// A single-element array drops the glue entirely, so the result can
+		// still be an empty/falsy string even with a non-empty glue.
+		assertType('string', implode($glue, $a));
 	}
 
 	public function sayHello2(int $i): void
@@ -248,7 +250,7 @@ class ImplodingStrings
 			return "xyz";
 		}
 
-		assertType('non-empty-string', join($glue, $a));
+		assertType('string', join($glue, $a));
 	}
 
 }

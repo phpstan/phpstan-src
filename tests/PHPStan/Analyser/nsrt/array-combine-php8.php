@@ -110,7 +110,7 @@ function withUnionConstArraysDifferentArraysCount(): void
 		}
 	}
 
-	assertType("non-empty-array<1|'2'|'3', 'apple'|'avocado'|'banana'|'pear'>", array_combine($a, $b));
+	assertType("non-empty-array<1|2|3, 'apple'|'avocado'|'banana'|'pear'>", array_combine($a, $b));
 }
 
 function withUnionConstArraysAndDifferentFiniteKeysCount(bool $bool): void
@@ -123,7 +123,7 @@ function withUnionConstArraysAndDifferentFiniteKeysCount(bool $bool): void
 		$b = ['apple', 'banana'];
 	}
 
-	assertType("non-empty-array<''|'1'|'2', 'apple'|'avocado'|'banana'>", array_combine($a, $b));
+	assertType("non-empty-array<1|2|'', 'apple'|'avocado'|'banana'>", array_combine($a, $b));
 }
 
 /**
@@ -185,4 +185,14 @@ function onlyKeysUnsealed(array $keys)
 	// succeeds when the keys array also has exactly 2 — the extras can't
 	// exist. Result stays sealed.
 	assertType('array{a: 1, b: 2}', array_combine($keys, [1, 2]));
+}
+
+/**
+ * @param list<'1'|'2'> $constantIntStrings
+ * @param array{0: '1', 1: '2'} $sealedIntStrings
+ */
+function withConstantIntStringKeys(array $constantIntStrings, array $sealedIntStrings): void
+{
+	assertType("array<1|2, '1'|'2'>", array_combine($constantIntStrings, $constantIntStrings));
+	assertType("array{1: '1', 2: '2'}", array_combine($sealedIntStrings, $sealedIntStrings));
 }

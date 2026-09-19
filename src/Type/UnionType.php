@@ -40,6 +40,7 @@ use function array_diff_assoc;
 use function array_fill_keys;
 use function array_intersect;
 use function array_key_exists;
+use function array_keys;
 use function array_map;
 use function array_merge;
 use function array_slice;
@@ -297,9 +298,13 @@ class UnionType implements CompoundType
 			$commonReasons = array_values(array_intersect($commonReasons, $innerResult->reasons));
 		}
 		if ($commonReasons !== null && count($commonReasons) > 0) {
-			// A reason shared by every type in the union is not about any single one of them,
-			// so it's reported once instead of repeated with a 'Type #N from the union' prefix.
-			$result = new AcceptsResult($result->result, $commonReasons);
+			$decorated = [];
+			foreach (array_keys($innerAccepts) as $i) {
+				foreach ($commonReasons as $reason) {
+					$decorated[] = sprintf('Type #%d from the union: %s', $i + 1, $reason);
+				}
+			}
+			$result = new AcceptsResult($result->result, $decorated);
 		}
 
 		if ($type instanceof CompoundType && !$type instanceof CallableType && !$type instanceof TemplateType && !$type instanceof IntersectionType) {

@@ -29,10 +29,12 @@ use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\ConditionalType;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPStan\Type\LateResolvableType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
@@ -279,11 +281,11 @@ final class ResolvedPhpDocBlock
 		$result->implementsTags = $this->getImplementsTags();
 		$result->usesTags = $this->getUsesTags();
 		$result->paramTags = self::mergeParamTags($this->getParamTags(), $parent, $parameterMapping, $parentClass);
-		$result->paramOutTags = self::mergeParamOutTags($this->getParamOutTags(), $parent, $parameterMapping, $parentClass);
+		$result->paramOutTags = self::mergeParamOutTags($this->getParamOutTags(), $parent, $parameterMapping, $parentClass, $result->paramTags);
 		$result->paramsImmediatelyInvokedCallable = self::mergeParamsImmediatelyInvokedCallable($this->getParamsImmediatelyInvokedCallable(), $parent, $parameterMapping);
 		$result->paramsPureUnlessCallableIsImpure = self::mergeParamsPureUnlessCallableIsImpure($this->getParamsPureUnlessCallableIsImpure(), $parent, $parameterMapping);
-		$result->paramClosureThisTags = self::mergeParamClosureThisTags($this->getParamClosureThisTags(), $parent, $parameterMapping, $parentClass);
-		$result->returnTag = self::mergeReturnTags($this->getReturnTag(), $declaringClass, $parent, $parameterMapping, $parentClass);
+		$result->paramClosureThisTags = self::mergeParamClosureThisTags($this->getParamClosureThisTags(), $parent, $parameterMapping, $parentClass, $result->paramTags);
+		$result->returnTag = self::mergeReturnTags($this->getReturnTag(), $declaringClass, $parent, $parameterMapping, $parentClass, $result->paramTags);
 		$result->throwsTag = self::mergeThrowsTags($this->getThrowsTag(), $parent);
 		$result->mixinTags = $this->getMixinTags();
 		$result->requireExtendsTags = $this->getRequireExtendsTags();
@@ -291,7 +293,7 @@ final class ResolvedPhpDocBlock
 		$result->sealedTypeTags = $this->getSealedTags();
 		$result->typeAliasTags = $this->getTypeAliasTags();
 		$result->typeAliasImportTags = $this->getTypeAliasImportTags();
-		$result->assertTags = self::mergeAssertTags($this->getAssertTags(), $parent, $parameterMapping, $parentClass);
+		$result->assertTags = self::mergeAssertTags($this->getAssertTags(), $parent, $parameterMapping, $parentClass, $result->paramTags);
 		$result->selfOutTypeTag = self::mergeSelfOutTypeTags($this->getSelfOutTag(), $parent);
 		$result->deprecatedTag = self::mergeDeprecatedTags($this->getDeprecatedTag(), $this->isNotDeprecated(), $parent);
 		$result->isDeprecated = $result->deprecatedTag !== null;
@@ -929,11 +931,13 @@ final class ResolvedPhpDocBlock
 	{
 		$parentParamTags = $parameterMapping->transformArrayKeysWithParameterNameMapping($parent->getParamTags());
 
+		$inheritedNames = [];
 		foreach ($parentParamTags as $name => $parentParamTag) {
 			if (array_key_exists($name, $paramTags)) {
 				continue;
 			}
 
+			$inheritedNames[] = $name;
 			$paramTags[$name] = self::resolveTemplateTypeInTag(
 				$parentParamTag->withType($parameterMapping->transformConditionalReturnTypeWithParameterNameMapping($parentParamTag->getType())),
 				$parentClass,
@@ -941,19 +945,31 @@ final class ResolvedPhpDocBlock
 			);
 		}
 
+		// conditional types referencing a parameter can be simplified only once all the parameter types are known
+		foreach ($inheritedNames as $name) {
+			$paramTag = $paramTags[$name];
+			$paramTags[$name] = $paramTag->withType(self::simplifyConditionalTypes($paramTag->getType(), $paramTags));
+		}
+
 		return $paramTags;
 	}
 
-	private static function mergeReturnTags(?ReturnTag $returnTag, ClassReflection $classReflection, self $parent, InheritedPhpDocParameterMapping $parameterMapping, ClassReflection $parentClass): ?ReturnTag
+	/**
+	 * @param array<string, ParamTag> $mergedParamTags
+	 */
+	private static function mergeReturnTags(?ReturnTag $returnTag, ClassReflection $classReflection, self $parent, InheritedPhpDocParameterMapping $parameterMapping, ClassReflection $parentClass, array $mergedParamTags): ?ReturnTag
 	{
 		if ($returnTag !== null) {
 			return $returnTag;
 		}
 
-		return self::mergeOneParentReturnTag($returnTag, $classReflection, $parent, $parameterMapping, $parentClass);
+		return self::mergeOneParentReturnTag($returnTag, $classReflection, $parent, $parameterMapping, $parentClass, $mergedParamTags);
 	}
 
-	private static function mergeOneParentReturnTag(?ReturnTag $returnTag, ClassReflection $classReflection, self $parent, InheritedPhpDocParameterMapping $parameterMapping, ClassReflection $parentClass): ?ReturnTag
+	/**
+	 * @param array<string, ParamTag> $mergedParamTags
+	 */
+	private static function mergeOneParentReturnTag(?ReturnTag $returnTag, ClassReflection $classReflection, self $parent, InheritedPhpDocParameterMapping $parameterMapping, ClassReflection $parentClass, array $mergedParamTags): ?ReturnTag
 	{
 		$parentReturnTag = $parent->getReturnTag();
 		if ($parentReturnTag === null) {
@@ -986,14 +1002,16 @@ final class ResolvedPhpDocBlock
 			)->toImplicit(),
 			$parentClass,
 			TemplateTypeVariance::createCovariant(),
+			$mergedParamTags,
 		);
 	}
 
 	/**
 	 * @param array<AssertTag> $assertTags
+	 * @param array<string, ParamTag> $mergedParamTags
 	 * @return array<AssertTag>
 	 */
-	private static function mergeAssertTags(array $assertTags, self $parent, InheritedPhpDocParameterMapping $parameterMapping, ClassReflection $parentClass): array
+	private static function mergeAssertTags(array $assertTags, self $parent, InheritedPhpDocParameterMapping $parameterMapping, ClassReflection $parentClass, array $mergedParamTags): array
 	{
 		if (count($assertTags) > 0) {
 			return $assertTags;
@@ -1006,6 +1024,7 @@ final class ResolvedPhpDocBlock
 				)->toImplicit(),
 				$parentClass,
 				TemplateTypeVariance::createCovariant(),
+				$mergedParamTags,
 			),
 			$parent->getAssertTags(),
 		);
@@ -1049,18 +1068,20 @@ final class ResolvedPhpDocBlock
 
 	/**
 	 * @param array<string, ParamOutTag> $paramOutTags
+	 * @param array<string, ParamTag> $mergedParamTags
 	 * @return array<string, ParamOutTag>
 	 */
-	private static function mergeParamOutTags(array $paramOutTags, self $parent, InheritedPhpDocParameterMapping $parameterMapping, ClassReflection $parentClass): array
+	private static function mergeParamOutTags(array $paramOutTags, self $parent, InheritedPhpDocParameterMapping $parameterMapping, ClassReflection $parentClass, array $mergedParamTags): array
 	{
-		return self::mergeOneParentParamOutTags($paramOutTags, $parent, $parameterMapping, $parentClass);
+		return self::mergeOneParentParamOutTags($paramOutTags, $parent, $parameterMapping, $parentClass, $mergedParamTags);
 	}
 
 	/**
 	 * @param array<string, ParamOutTag> $paramOutTags
+	 * @param array<string, ParamTag> $mergedParamTags
 	 * @return array<string, ParamOutTag>
 	 */
-	private static function mergeOneParentParamOutTags(array $paramOutTags, self $parent, InheritedPhpDocParameterMapping $parameterMapping, ClassReflection $parentClass): array
+	private static function mergeOneParentParamOutTags(array $paramOutTags, self $parent, InheritedPhpDocParameterMapping $parameterMapping, ClassReflection $parentClass, array $mergedParamTags): array
 	{
 		$parentParamOutTags = $parameterMapping->transformArrayKeysWithParameterNameMapping($parent->getParamOutTags());
 
@@ -1073,6 +1094,7 @@ final class ResolvedPhpDocBlock
 				$parentParamTag->withType($parameterMapping->transformConditionalReturnTypeWithParameterNameMapping($parentParamTag->getType())),
 				$parentClass,
 				TemplateTypeVariance::createCovariant(),
+				$mergedParamTags,
 			);
 		}
 
@@ -1137,18 +1159,20 @@ final class ResolvedPhpDocBlock
 
 	/**
 	 * @param array<string, ParamClosureThisTag> $paramsClosureThisTags
+	 * @param array<string, ParamTag> $mergedParamTags
 	 * @return array<string, ParamClosureThisTag>
 	 */
-	private static function mergeParamClosureThisTags(array $paramsClosureThisTags, self $parent, InheritedPhpDocParameterMapping $parameterMapping, ClassReflection $parentClass): array
+	private static function mergeParamClosureThisTags(array $paramsClosureThisTags, self $parent, InheritedPhpDocParameterMapping $parameterMapping, ClassReflection $parentClass, array $mergedParamTags): array
 	{
-		return self::mergeOneParentParamClosureThisTag($paramsClosureThisTags, $parent, $parameterMapping, $parentClass);
+		return self::mergeOneParentParamClosureThisTag($paramsClosureThisTags, $parent, $parameterMapping, $parentClass, $mergedParamTags);
 	}
 
 	/**
 	 * @param array<string, ParamClosureThisTag> $paramsClosureThisTags
+	 * @param array<string, ParamTag> $mergedParamTags
 	 * @return array<string, ParamClosureThisTag>
 	 */
-	private static function mergeOneParentParamClosureThisTag(array $paramsClosureThisTags, self $parent, InheritedPhpDocParameterMapping $parameterMapping, ClassReflection $parentClass): array
+	private static function mergeOneParentParamClosureThisTag(array $paramsClosureThisTags, self $parent, InheritedPhpDocParameterMapping $parameterMapping, ClassReflection $parentClass, array $mergedParamTags): array
 	{
 		$parentClosureThisTags = $parameterMapping->transformArrayKeysWithParameterNameMapping($parent->getParamClosureThisTags());
 
@@ -1163,6 +1187,7 @@ final class ResolvedPhpDocBlock
 				),
 				$parentClass,
 				TemplateTypeVariance::createContravariant(),
+				$mergedParamTags,
 			);
 		}
 
@@ -1181,12 +1206,14 @@ final class ResolvedPhpDocBlock
 	/**
 	 * @template T of TypedTag
 	 * @param T $tag
+	 * @param array<string, ParamTag> $mergedParamTags
 	 * @return T
 	 */
 	private static function resolveTemplateTypeInTag(
 		TypedTag $tag,
 		ClassReflection $classReflection,
 		TemplateTypeVariance $positionVariance,
+		array $mergedParamTags = [],
 	): TypedTag
 	{
 		$type = TemplateTypeHelper::resolveTemplateTypes(
@@ -1195,7 +1222,80 @@ final class ResolvedPhpDocBlock
 			$classReflection->getCallSiteVarianceMap(),
 			$positionVariance,
 		);
+		$type = self::simplifyConditionalTypes($type, $mergedParamTags);
+
 		return $tag->withType($type);
+	}
+
+	/**
+	 * A conditional type inherited from a parent can become decided once the parent's template types
+	 * are substituted with the arguments from the extends/implements/uses tag. Keeping the undecided
+	 * conditional type around would make rules complain about PHPDoc the subclass does not even have.
+	 *
+	 * @param array<string, ParamTag> $mergedParamTags
+	 */
+	private static function simplifyConditionalTypes(Type $type, array $mergedParamTags): Type
+	{
+		if (!$type->hasTemplateOrLateResolvableType()) {
+			return $type;
+		}
+
+		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($mergedParamTags): Type {
+			if ($type instanceof ConditionalType) {
+				// the late static bound type is known only at the call site
+				if (self::containsStaticType($type->getSubject())) {
+					return $traverse($type);
+				}
+
+				if (!$type->isResolvable()) {
+					return $traverse($type);
+				}
+
+				return $traverse($type->resolve());
+			}
+
+			if ($type instanceof ConditionalTypeForParameter) {
+				$parameterName = substr($type->getParameterName(), 1);
+				if (!array_key_exists($parameterName, $mergedParamTags)) {
+					return $traverse($type);
+				}
+
+				$parameterType = $mergedParamTags[$parameterName]->getType();
+				if (self::containsStaticType($parameterType)) {
+					return $traverse($type);
+				}
+
+				// the argument type at the call site is always a subtype of the parameter type,
+				// so only a condition already decided by the parameter type stays decided there
+				$isSuperType = $type->getTarget()->isSuperTypeOf($parameterType);
+				if (!$isSuperType->yes() && !$isSuperType->no()) {
+					return $traverse($type);
+				}
+
+				$conditionalType = $type->toConditional($parameterType);
+				if (!$conditionalType instanceof LateResolvableType) {
+					return $traverse($type);
+				}
+
+				return $traverse($conditionalType->resolve());
+			}
+
+			return $traverse($type);
+		});
+	}
+
+	private static function containsStaticType(Type $type): bool
+	{
+		$containsStaticType = false;
+		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$containsStaticType): Type {
+			if ($type instanceof StaticType) {
+				$containsStaticType = true;
+			}
+
+			return $containsStaticType ? $type : $traverse($type);
+		});
+
+		return $containsStaticType;
 	}
 
 }

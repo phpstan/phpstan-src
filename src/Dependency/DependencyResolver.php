@@ -36,6 +36,7 @@ use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Type;
 use function array_key_exists;
 use function count;
+use function get_class;
 use function in_array;
 use function is_file;
 use function spl_object_id;
@@ -44,8 +45,73 @@ use function spl_object_id;
 final class DependencyResolver
 {
 
+	private const PROFILE_VAR_TAGS = 1;
+
+	private const PROFILE_CHAIN = 2;
+
+	private const PROFILE_EXPORT = 4;
+
+	private const PROFILE_NAME_SCOPE = 8;
+
+	/** Node classes the branch chain in collectNodeDependencies() reacts to */
+	private const CHAIN_NODE_TYPES = [
+		Node\Stmt\Class_::class,
+		Node\Stmt\Interface_::class,
+		Node\Stmt\Enum_::class,
+		InClassMethodNode::class,
+		InPropertyHookNode::class,
+		ClassPropertyNode::class,
+		InFunctionNode::class,
+		Closure::class,
+		Node\Expr\ArrowFunction::class,
+		Node\Expr\FuncCall::class,
+		Node\Expr\MethodCall::class,
+		Node\Expr\PropertyFetch::class,
+		Node\Expr\StaticCall::class,
+		Node\Expr\ClassConstFetch::class,
+		Node\Expr\ConstFetch::class,
+		Node\Expr\StaticPropertyFetch::class,
+		Node\Expr\New_::class,
+		Node\Stmt\Trait_::class,
+		Node\Stmt\TraitUse::class,
+		Node\Expr\Instanceof_::class,
+		Node\Expr\Include_::class,
+		Node\Stmt\Catch_::class,
+		ArrayDimFetch::class,
+		Foreach_::class,
+		Array_::class,
+		StaticMethodCallableNode::class,
+		MethodCallableNode::class,
+		FunctionCallableNode::class,
+		InstantiationCallableNode::class,
+	];
+
+	/**
+	 * Node classes ExportedNodeResolver::resolve() reacts to. A class member is not among them: it is
+	 * exported as part of the class declaring it, through exportClassStatement(), never on its own.
+	 */
+	private const EXPORT_NODE_TYPES = [
+		Node\Stmt\Class_::class,
+		Node\Stmt\Interface_::class,
+		Node\Stmt\Enum_::class,
+		Node\Stmt\Trait_::class,
+		Node\Stmt\Function_::class,
+		Node\Stmt\Const_::class,
+		Node\Expr\FuncCall::class,
+	];
+
+	/** Node classes ExportedNameScopeTracker::enterNode() reacts to */
+	private const NAME_SCOPE_NODE_TYPES = [
+		Node\Stmt\Namespace_::class,
+		Node\Stmt\Use_::class,
+		Node\Stmt\GroupUse::class,
+	];
+
 	/** @var array<string, array<int, ClassReflection|FunctionReflection|ConstantReflection>> reflections keyed by spl_object_id() */
 	private array $classDependencies = [];
+
+	/** @var array<class-string, int> */
+	private array $nodeProfiles = [];
 
 	private ExportedNameScopeTracker $nameScopeTracker;
 
@@ -72,7 +138,12 @@ final class DependencyResolver
 			$this->nameScopeFile = $file;
 			$this->nameScopeTracker->reset();
 		}
-		$this->nameScopeTracker->enterNode($node);
+		$nodeClass = get_class($node);
+		$nodeProfile = $this->nodeProfiles[$nodeClass] ??= $this->resolveNodeProfile($node);
+
+		if (($nodeProfile & self::PROFILE_NAME_SCOPE) !== 0) {
+			$this->nameScopeTracker->enterNode($node);
+		}
 
 		// Keyed by spl_object_id(), so that a reflection collected again - every level of a class hierarchy
 		// repeats the interfaces it inherits, and the classes a node references share most of their
@@ -80,19 +151,29 @@ final class DependencyResolver
 		$dependenciesReflections = [];
 		$dependenciesFilePaths = [];
 
-		if (
-			$node instanceof Node\Stmt
-			&& !$node instanceof VirtualNode
-			&& !$node instanceof Node\Stmt\ClassLike
-			&& !$node instanceof Node\Stmt\ClassMethod
-			&& !$node instanceof Node\Stmt\Function_
-			&& !$node instanceof Node\Stmt\Property
-			&& !$node instanceof Node\Stmt\ClassConst
-			&& !$node instanceof Node\Stmt\Const_
-		) {
+		if (($nodeProfile & self::PROFILE_VAR_TAGS) !== 0 && $node instanceof Node\Stmt) {
 			$this->extractStmtVarTags($node, $scope, $dependenciesReflections);
 		}
 
+		if (($nodeProfile & self::PROFILE_CHAIN) !== 0) {
+			$this->collectNodeDependencies($node, $scope, $dependenciesReflections, $dependenciesFilePaths);
+		}
+
+		$exportedNode = ($nodeProfile & self::PROFILE_EXPORT) !== 0
+			? $this->exportedNodeResolver->resolve($node, $this->nameScopeTracker->getNameScope())
+			: null;
+
+		return new NodeDependencies($this->fileHelper, $dependenciesReflections, $exportedNode, $dependenciesFilePaths);
+	}
+
+	/**
+	 * The node-kind branches. Only entered when resolveNodeProfile() says a branch can match.
+	 *
+	 * @param array<ClassReflection|FunctionReflection|ConstantReflection> $dependenciesReflections
+	 * @param list<string> $dependenciesFilePaths
+	 */
+	private function collectNodeDependencies(Node $node, Scope $scope, array &$dependenciesReflections, array &$dependenciesFilePaths): void
+	{
 		if ($node instanceof Node\Stmt\Class_) {
 			if (isset($node->namespacedName)) {
 				$this->addClassToDependencies($node->namespacedName->toString(), $dependenciesReflections);
@@ -562,8 +643,6 @@ final class DependencyResolver
 		} elseif ($node instanceof InstantiationCallableNode) {
 			$dependenciesReflections += $this->resolveDependencies(new Node\Expr\New_($node->getClass()), $scope)->getReflections();
 		}
-
-		return new NodeDependencies($this->fileHelper, $dependenciesReflections, $this->exportedNodeResolver->resolve($node, $this->nameScopeTracker->getNameScope()), $dependenciesFilePaths);
 	}
 
 	public function resolveUsedTraitDependencies(InClassNode $inClassNode): NodeDependencies
@@ -604,6 +683,45 @@ final class DependencyResolver
 		}
 
 		return $classNames;
+	}
+
+	/**
+	 * Which parts of resolveDependencies() a node of this class can reach. Depends only on the class,
+	 * so it is computed once per class and reused for every node of it.
+	 */
+	private function resolveNodeProfile(Node $node): int
+	{
+		$profile = 0;
+		if (
+			$node instanceof Node\Stmt
+			&& !$node instanceof VirtualNode
+			&& !$node instanceof Node\Stmt\ClassLike
+			&& !$node instanceof Node\Stmt\ClassMethod
+			&& !$node instanceof Node\Stmt\Function_
+			&& !$node instanceof Node\Stmt\Property
+			&& !$node instanceof Node\Stmt\ClassConst
+			&& !$node instanceof Node\Stmt\Const_
+		) {
+			$profile |= self::PROFILE_VAR_TAGS;
+		}
+
+		$lists = [
+			self::PROFILE_CHAIN => self::CHAIN_NODE_TYPES,
+			self::PROFILE_EXPORT => self::EXPORT_NODE_TYPES,
+			self::PROFILE_NAME_SCOPE => self::NAME_SCOPE_NODE_TYPES,
+		];
+		foreach ($lists as $bit => $nodeTypes) {
+			foreach ($nodeTypes as $nodeType) {
+				if (!$node instanceof $nodeType) {
+					continue;
+				}
+
+				$profile |= $bit;
+				break;
+			}
+		}
+
+		return $profile;
 	}
 
 	/**

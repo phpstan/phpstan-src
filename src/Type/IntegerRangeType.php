@@ -728,8 +728,10 @@ class IntegerRangeType extends IntegerType implements CompoundType
 		}
 
 		$types = [];
-		for ($i = $this->min; $i <= $this->max; $i++) {
-			$types[] = new ConstantIntegerType($i);
+		for ($i = 0; $i <= $size; $i++) {
+			// $this->min + $size is $this->max, so nothing here overflows —
+			// unlike $i++ past PHP_INT_MAX, which would turn $i into a float
+			$types[] = new ConstantIntegerType($this->min + $i);
 		}
 
 		return $types;

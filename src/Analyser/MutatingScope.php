@@ -151,8 +151,23 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 
 	private const COMPLEX_UNION_TYPE_MEMBER_LIMIT = 8;
 
+	/** Distinct name/namespace combinations getGlobalConstantType() remembers the expression keys of. */
+	private const GLOBAL_CONSTANT_FETCH_KEYS_LIMIT = 8192;
+
 	/** Magic methods that let the author decide which properties survive a serialize()/unserialize() round trip. */
 	private const CUSTOM_SERIALIZATION_METHODS = ['__sleep', '__serialize', '__unserialize'];
+
+	/**
+	 * Expression keys the constant-fetch nodes of a global constant lookup print
+	 * as, by the name class, name and namespace they are built from. The nodes
+	 * exist only to produce those keys, and a freshly built node can never hit
+	 * the printer's node-attribute cache - so without this every lookup printed
+	 * two or three of them again. PHP_VERSION_ID alone accounted for ~30% of all
+	 * expression-key prints in a self-analysis run.
+	 *
+	 * @var array<string, list<string>>
+	 */
+	private static array $globalConstantFetchKeys = [];
 
 	/**
 	 * @internal accessed by ScopeOps (native and PHP implementations)
@@ -5829,21 +5844,59 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 
 	private function getGlobalConstantType(Name $name): ?Type
 	{
-		$fetches = [];
-		if (!$name->isFullyQualified() && $this->getNamespace() !== null) {
-			$fetches[] = new ConstFetch(new FullyQualified([$this->getNamespace(), $name->toString()]));
-		}
+		// the namespace only takes part for a name that is not already fully qualified
+		$namespace = $name->isFullyQualified() ? null : $this->getNamespace();
+		$nameString = $name->toString();
+		$cacheKey = get_class($name) . "\0" . $nameString . "\0" . ($namespace ?? "\0");
 
-		$fetches[] = new ConstFetch(new FullyQualified($name->toString()));
-		$fetches[] = new ConstFetch($name);
+		$exprStrings = self::$globalConstantFetchKeys[$cacheKey] ?? null;
+		if ($exprStrings === null) {
+			$exprStrings = [];
+			foreach (self::createGlobalConstantFetches($name, $nameString, $namespace) as $constFetch) {
+				$exprStrings[] = $this->getNodeKey($constFetch);
+			}
 
-		foreach ($fetches as $constFetch) {
-			if ($this->hasExpressionType($constFetch)->yes()) {
-				return $this->getType($constFetch);
+			if (count(self::$globalConstantFetchKeys) < self::GLOBAL_CONSTANT_FETCH_KEYS_LIMIT) {
+				self::$globalConstantFetchKeys[$cacheKey] = $exprStrings;
 			}
 		}
 
+		foreach ($exprStrings as $i => $exprString) {
+			// what hasExpressionType() does for a node that is not a Variable: the
+			// key is all it looks at, and the key is exactly what is memoized above
+			$typeHolder = $this->expressionTypes[$exprString] ?? null;
+			if ($typeHolder === null || !$typeHolder->getCertainty()->yes()) {
+				continue;
+			}
+
+			return $this->getType(self::createGlobalConstantFetches($name, $nameString, $namespace)[$i]);
+		}
+
 		return null;
+	}
+
+	/**
+	 * The nodes a global constant name is looked up as, in priority order: the
+	 * current namespace's constant, the global one, then the name as written.
+	 *
+	 * Fresh nodes on every call by design - everything that keys on node identity
+	 * (ExpressionResultStorage, NodeScopeResolver's processed-node guards) must
+	 * keep seeing a node of its own; only the keys they print as are memoized.
+	 *
+	 * @param non-empty-string $nameString
+	 * @return list<ConstFetch>
+	 */
+	private static function createGlobalConstantFetches(Name $name, string $nameString, ?string $namespace): array
+	{
+		$fetches = [];
+		if ($namespace !== null) {
+			$fetches[] = new ConstFetch(new FullyQualified([$namespace, $nameString]));
+		}
+
+		$fetches[] = new ConstFetch(new FullyQualified($nameString));
+		$fetches[] = new ConstFetch($name);
+
+		return $fetches;
 	}
 
 	/**

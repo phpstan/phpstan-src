@@ -5890,24 +5890,34 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	public function getPhpVersion(): PhpVersions
 	{
 		$constType = $this->getGlobalConstantType(new Name('PHP_VERSION_ID'));
-
-		$isOverallPhpVersionRange = false;
-		if (
-			$constType instanceof IntegerRangeType
-			&& $constType->getMin() === ConstantResolver::PHP_MIN_ANALYZABLE_VERSION_ID
-			&& ($constType->getMax() === null || $constType->getMax() === PhpVersionFactory::MAX_PHP_VERSION)
-		) {
-			$isOverallPhpVersionRange = true;
-		}
-
-		if ($constType !== null && !$isOverallPhpVersionRange) {
+		if ($constType !== null && !$this->isOverallPhpVersionRange($constType)) {
 			return new PhpVersions($constType);
 		}
 
 		if (is_array($this->configPhpVersion)) {
 			return new PhpVersions(IntegerRangeType::fromInterval($this->configPhpVersion['min'], $this->configPhpVersion['max']));
 		}
+
+		// Without an explicit phpVersion config the composer.json "require.php" constraint
+		// still narrows PHP_VERSION_ID - honour the very same range here so that
+		// Scope::getPhpVersion() never contradicts the PHP_VERSION_ID constant.
+		$defaultConstType = $this->constantResolver->resolvePredefinedConstant('PHP_VERSION_ID');
+		if ($defaultConstType !== null && !$this->isOverallPhpVersionRange($defaultConstType)) {
+			return new PhpVersions($defaultConstType);
+		}
+
 		return new PhpVersions(new ConstantIntegerType($this->phpVersion->getVersionId()));
+	}
+
+	/**
+	 * Whether the type carries no information about the analysed PHP version,
+	 * i.e. it spans everything PHPStan is able to analyse.
+	 */
+	private function isOverallPhpVersionRange(Type $type): bool
+	{
+		return $type instanceof IntegerRangeType
+			&& $type->getMin() === ConstantResolver::PHP_MIN_ANALYZABLE_VERSION_ID
+			&& ($type->getMax() === null || $type->getMax() === PhpVersionFactory::MAX_PHP_VERSION);
 	}
 
 	public function invokeNodeCallback(Node $node): void

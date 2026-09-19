@@ -4,6 +4,7 @@ namespace PHPStan\Type;
 
 use PHPStan\PhpDocParser\Ast\Type\ConditionalTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\LateResolvableTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
@@ -20,10 +21,6 @@ final class ConditionalType implements CompoundType, LateResolvableType
 	private ?Type $normalizedIf = null;
 
 	private ?Type $normalizedElse = null;
-
-	private ?Type $subjectWithTargetIntersectedType = null;
-
-	private ?Type $subjectWithTargetRemovedType = null;
 
 	public function __construct(
 		private Type $subject,
@@ -195,32 +192,34 @@ final class ConditionalType implements CompoundType, LateResolvableType
 
 	private function getNormalizedIf(): Type
 	{
-		return $this->normalizedIf ??= TypeTraverser::map(
-			$this->if,
-			fn (Type $type, callable $traverse) => $type === $this->subject
-				? (!$this->negated ? $this->getSubjectWithTargetIntersectedType() : $this->getSubjectWithTargetRemovedType())
-				: $traverse($type),
-		);
+		return $this->normalizedIf ??= $this->narrowSubjectIn($this->if, !$this->negated);
 	}
 
 	private function getNormalizedElse(): Type
 	{
-		return $this->normalizedElse ??= TypeTraverser::map(
-			$this->else,
-			fn (Type $type, callable $traverse) => $type === $this->subject
-				? (!$this->negated ? $this->getSubjectWithTargetRemovedType() : $this->getSubjectWithTargetIntersectedType())
-				: $traverse($type),
-		);
+		return $this->normalizedElse ??= $this->narrowSubjectIn($this->else, $this->negated);
 	}
 
-	private function getSubjectWithTargetIntersectedType(): Type
+	/**
+	 * Replaces the references to the subject in a branch with what the branch knows about
+	 * it: `subject & target` where the condition holds, `subject ~ target` where it does not
+	 * (see NarrowedSubjectType).
+	 *
+	 * A branch can only reference the subject while it is a template type. Once the subject
+	 * resolves to a concrete type, an equal type inside the branch is not a mention of it -
+	 * the `mixed` value type of an `array` branch has nothing to do with a `mixed` subject -
+	 * so nothing is narrowed here; the references narrowed earlier follow the resolution on
+	 * their own. Matching by identity instead would still hit such unrelated types whenever
+	 * they happen to share an instance - the turbo extension memoizes TypeCombinator
+	 * results, so each `int|false` resolved from a PHPDoc is the same object.
+	 */
+	private function narrowSubjectIn(Type $branch, bool $conditionHolds): Type
 	{
-		return $this->subjectWithTargetIntersectedType ??= TypeCombinator::intersect($this->subject, $this->target);
-	}
+		if (!$this->subject instanceof TemplateType) {
+			return $branch;
+		}
 
-	private function getSubjectWithTargetRemovedType(): Type
-	{
-		return $this->subjectWithTargetRemovedType ??= TypeCombinator::remove($this->subject, $this->target);
+		return NarrowedSubjectType::narrowReferences($branch, $this->subject, $this->target, $conditionHolds);
 	}
 
 }

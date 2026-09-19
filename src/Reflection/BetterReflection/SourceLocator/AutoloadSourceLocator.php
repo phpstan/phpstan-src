@@ -3,7 +3,6 @@
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
 use Override;
-use ParseError;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
@@ -23,6 +22,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ConstantTypeHelper;
 use ReflectionClass;
 use ReflectionFunction;
+use Throwable;
 use function array_key_exists;
 use function array_keys;
 use function class_exists;
@@ -346,10 +346,15 @@ final class AutoloadSourceLocator implements SourceLocator
 					foreach ($functions as $preExistingAutoloader) {
 						try {
 							$preExistingAutoloader($className);
-						} catch (ParseError) {
-							// the trap served a parse error instead of the empty
-							// script, see FileReadTrapStreamWrapper::stream_read();
-							// the file was recorded before the include compiled it
+						} catch (Throwable) {
+							// Two unrelated throws land here, and neither one means the class was not found.
+							// The trap can serve a parse error instead of the empty script, see
+							// FileReadTrapStreamWrapper::stream_read(). And asking every registered
+							// autoloader for the class is not the order PHP uses, so an autoloader that
+							// throws for names outside its own scope throws here for names it is never
+							// invoked for at runtime. Either exception would abort the analysis of the file
+							// with an internal error, so both are swallowed - the file the autoloader asked
+							// for is recorded by the trap before the throw.
 						}
 
 						/**

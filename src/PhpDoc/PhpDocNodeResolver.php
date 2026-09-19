@@ -38,6 +38,7 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -412,11 +413,14 @@ final class PhpDocNodeResolver
 		foreach (['@param-closure-this', '@phpstan-param-closure-this'] as $tagName) {
 			foreach ($phpDocNode->getParamClosureThisTagValues($tagName) as $tagValue) {
 				$parameterName = substr($tagValue->parameterName, 1);
+				$resolvedType = $this->typeNodeResolver->resolve($tagValue->type, $nameScope);
+				$isOptionalBinding = $resolvedType->isNull()->maybe();
+				$objectType = TypeCombinator::intersect(
+					TypeCombinator::removeNull($resolvedType),
+					new ObjectWithoutClassType(),
+				);
 				$closureThisTypes[$parameterName] = new ParamClosureThisTag(
-					TypeCombinator::intersect(
-						$this->typeNodeResolver->resolve($tagValue->type, $nameScope),
-						new ObjectWithoutClassType(),
-					),
+					$isOptionalBinding ? TypeCombinator::union($objectType, new NullType()) : $objectType,
 				);
 			}
 		}

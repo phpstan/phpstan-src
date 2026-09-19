@@ -178,6 +178,25 @@ class CallToFunctionStatementWithoutSideEffectsRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.3.0')]
+	public function testBug15224(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15224-no-side-effects.php'], [
+			[
+				'Call to function mb_str_pad() on a separate line has no effect.',
+				7,
+			],
+			[
+				'Call to function mb_str_pad() on a separate line has no effect.',
+				8,
+			],
+			[
+				'Call to function mb_str_pad() on a separate line has no effect.',
+				11,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.5.0')]
 	public function testPipeOperator(): void
 	{

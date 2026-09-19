@@ -85,4 +85,9 @@ class OffsetAccessValueAssignmentRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5655b.php'], []);
 	}
 
+	public function testBug10783(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10783.php'], []);
+	}
+
 }

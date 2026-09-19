@@ -82,6 +82,23 @@ class A
 
 /**
  * @template T
+ */
+class Generic
+{
+
+	/**
+	 * @param T $x
+	 * @return ($x is null ? never : T)
+	 */
+	public function classTemplate($x)
+	{
+		throw new \Exception();
+	}
+
+}
+
+/**
+ * @template T
  * @param T $result
  * @return ($result is false ? never : T)
  */
@@ -97,8 +114,9 @@ function throwOnFailure($result)
 /**
  * @param stdClass|false $v
  * @param array{a: int}|string $as
+ * @param Generic<stdClass|null> $g
  */
-function test(A $a, $v, $as, mixed $m, ?stdClass $n): void
+function test(A $a, $v, $as, mixed $m, Generic $g, ?stdClass $n): void
 {
 	assertType('stdClass', $a->throwOnFailure($v));
 	assertType('stdClass', throwOnFailure($v));
@@ -107,6 +125,7 @@ function test(A $a, $v, $as, mixed $m, ?stdClass $n): void
 	assertType('stdClass|false', $a->boundByAnotherParameter($v, []));
 	assertType('stdClass', $a->nullable($n));
 	assertType('array|null', $a->validateArray($as));
+	assertType('stdClass|null', $g->classTemplate($n));
 
 	foreach ($a->validateArray($m) ?? [] as $x) {
 		assertType('mixed', $x);

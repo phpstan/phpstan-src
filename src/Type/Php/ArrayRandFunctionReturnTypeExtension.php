@@ -6,6 +6,8 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -35,34 +37,50 @@ final class ArrayRandFunctionReturnTypeExtension implements DynamicFunctionRetur
 		}
 
 		$firstArgType = $scope->getType($args[0]->value);
-		$isInteger = $firstArgType->getIterableKeyType()->isInteger();
-		$isString = $firstArgType->getIterableKeyType()->isString();
-
-		if ($isInteger->yes()) {
-			$valueType = new IntegerType();
-		} elseif ($isString->yes()) {
-			$valueType = new StringType();
-		} else {
-			$valueType = new UnionType([new IntegerType(), new StringType()]);
-		}
+		$keyType = $this->getPickedKeyType($firstArgType);
 
 		if ($argsCount < 2) {
-			return $valueType;
+			return $keyType;
 		}
 
 		$secondArgType = $scope->getType($args[1]->value);
 
 		$one = new ConstantIntegerType(1);
 		if ($one->isSuperTypeOf($secondArgType)->yes()) {
-			return $valueType;
+			return $keyType;
 		}
+
+		$keysListType = $this->getPickedKeysListType($firstArgType);
 
 		$bigger2 = IntegerRangeType::fromInterval(2, null);
 		if ($bigger2->isSuperTypeOf($secondArgType)->yes()) {
-			return new ArrayType(new IntegerType(), $valueType);
+			return $keysListType;
 		}
 
-		return TypeCombinator::union($valueType, new ArrayType(new IntegerType(), $valueType));
+		return TypeCombinator::union($keyType, $keysListType);
+	}
+
+	private function getPickedKeyType(Type $arrayType): Type
+	{
+		$arrayKeyType = new UnionType([new IntegerType(), new StringType()]);
+		if ($arrayType->isIterableAtLeastOnce()->no()) {
+			// Picking out of an empty array always throws, there's no key to describe.
+			return $arrayKeyType;
+		}
+
+		return TypeCombinator::intersect($arrayType->getIterableKeyType(), $arrayKeyType);
+	}
+
+	/**
+	 * Picking more than one key returns them re-indexed from zero, keeping their original order.
+	 */
+	private function getPickedKeysListType(Type $arrayType): Type
+	{
+		return TypeCombinator::intersect(
+			new ArrayType(new IntegerType(), $this->getPickedKeyType($arrayType)),
+			new AccessoryArrayListType(),
+			new NonEmptyArrayType(),
+		);
 	}
 
 }

@@ -24,7 +24,13 @@ return [
 		'iterator_count' => ['0|positive-int', 'iterator'=>'iterable'],
 		'iterator_to_array' => ['array', 'iterator'=>'iterable', 'use_keys='=>'bool'],
 		'str_split' => ['list<string>', 'str'=>'string', 'split_length='=>'positive-int'],
-		'Random\Randomizer::pickArrayKeys' => ['non-empty-array<int|string>', 'array'=>'non-empty-array', 'num'=>'positive-int'],
+		'Random\Engine\Mt19937::generate' => ['non-empty-string'],
+		'Random\Engine\PcgOneseq128XslRr64::generate' => ['non-empty-string'],
+		'Random\Engine\Secure::generate' => ['non-empty-string'],
+		'Random\Engine\Xoshiro256StarStar::generate' => ['non-empty-string'],
+		'Random\Randomizer::getBytes' => ['non-empty-string', 'length'=>'positive-int'],
+		'Random\Randomizer::nextInt' => ['int<0, max>'],
+		'Random\Randomizer::pickArrayKeys' => ['non-empty-list<int|string>', 'array'=>'non-empty-array', 'num'=>'positive-int'],
 	],
 	'old' => [
 

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
+use Composer\Autoload\ClassLoader;
 use Override;
 use ParseError;
 use PhpParser\Node\Arg;
@@ -31,9 +32,11 @@ use function count;
 use function defined;
 use function function_exists;
 use function interface_exists;
+use function is_array;
 use function is_file;
 use function is_string;
 use function opcache_invalidate;
+use function realpath;
 use function restore_error_handler;
 use function set_error_handler;
 use function spl_autoload_functions;
@@ -333,58 +336,99 @@ final class AutoloadSourceLocator implements SourceLocator
 			return null;
 		}
 
+		$autoloadFunctions = spl_autoload_functions();
+		if ($autoloadFunctions === false) {
+			return null;
+		}
+
 		$this->silenceErrors();
 
 		try {
-			$result = FileReadTrapStreamWrapper::withStreamWrapperOverride(
-				static function () use ($className): ?array {
-					$functions = spl_autoload_functions();
-					if ($functions === false) {
-						return null;
-					}
+			return self::locateThroughAutoloaders($autoloadFunctions, $className);
+		} finally {
+			restore_error_handler();
+		}
+	}
 
-					foreach ($functions as $preExistingAutoloader) {
-						try {
-							$preExistingAutoloader($className);
-						} catch (ParseError) {
-							// the trap served a parse error instead of the empty
-							// script, see FileReadTrapStreamWrapper::stream_read();
-							// the file was recorded before the include compiled it
-						}
+	/**
+	 * Runs the registered autoloaders, in order, to find which file declares a
+	 * class - asking Composer's where it would look instead of letting it get
+	 * there by including the file.
+	 *
+	 * ClassLoader::findFile() answers with the same path loadClass() would
+	 * include, without running anything. Nothing is compiled, so the file cannot
+	 * execute a second time - which it otherwise does whenever OPcache already
+	 * holds the script: the include is then served from the cache without the
+	 * trap being asked for the contents at all, and a file declaring a function
+	 * fatals with "Cannot redeclare". That is the function-per-file layout of
+	 * php-standard-library and azjezz/psl, whose files-autoload bootstrap has
+	 * already loaded every path their PSR-4 prefix also resolves to.
+	 *
+	 * Every other autoloader still runs inside the trap, one at a time so that
+	 * registration order is preserved either way: an autoloader ahead of
+	 * Composer's may well claim a name Composer would resolve elsewhere.
+	 *
+	 * @param list<callable(string): void> $autoloadFunctions
+	 * @return array{string[], string, int|null}|null
+	 */
+	private static function locateThroughAutoloaders(array $autoloadFunctions, string $className): ?array
+	{
+		foreach ($autoloadFunctions as $autoloadFunction) {
+			if (is_array($autoloadFunction) && $autoloadFunction[0] instanceof ClassLoader) {
+				$file = $autoloadFunction[0]->findFile($className);
+				if ($file === false) {
+					continue;
+				}
 
-						/**
-						 * This static variable is populated by the side-effect of the stream wrapper
-						 * trying to read the file path when `include()` is used by an autoloader.
-						 *
-						 * This will not be `null` when the autoloader tried to read a file.
-						 */
-						if (FileReadTrapStreamWrapper::$autoloadLocatedFiles !== []) {
-							return [FileReadTrapStreamWrapper::$autoloadLocatedFiles, $className, null];
-						}
-					}
+				// findFile() concatenates the mapped prefix with the rest of the
+				// name, so its answer can carry ../ segments and mixed
+				// separators. PHP resolves an include path before the trap ever
+				// sees it, and locateIdentifier() matches what lands here against
+				// ReflectionClass::getFileName(), which is resolved too.
+				$resolvedFile = realpath($file);
 
-					return null;
-				},
-			);
-			if ($result === null) {
-				return null;
+				// a class map can outlive the file it points at, and loadClass()
+				// would move on to the next autoloader just the same
+				if ($resolvedFile === false || !is_file($resolvedFile)) {
+					continue;
+				}
+
+				return [[$resolvedFile], $className, null];
 			}
 
-			if (!function_exists('opcache_invalidate')) {
-				return $result;
+			$locatedFiles = FileReadTrapStreamWrapper::withStreamWrapperOverride(
+				static function () use ($autoloadFunction, $className): array {
+					try {
+						$autoloadFunction($className);
+					} catch (ParseError) {
+						// the trap served a parse error instead of the empty
+						// script, see FileReadTrapStreamWrapper::stream_read();
+						// the file was recorded before the include compiled it
+					}
+
+					// populated by the side effect of the stream wrapper being
+					// asked for the file an include() reached for
+					return FileReadTrapStreamWrapper::$autoloadLocatedFiles;
+				},
+			);
+
+			if ($locatedFiles === []) {
+				continue;
 			}
 
 			// the trap's empty script got compiled - and cached, with OPcache
 			// active. Where this call cannot reach the entry, the trap served a
 			// parse error instead, see FileReadTrapStreamWrapper::stream_read()
-			foreach ($result[0] as $file) {
-				opcache_invalidate($file, true);
+			if (function_exists('opcache_invalidate')) {
+				foreach ($locatedFiles as $locatedFile) {
+					opcache_invalidate($locatedFile, true);
+				}
 			}
 
-			return $result;
-		} finally {
-			restore_error_handler();
+			return [$locatedFiles, $className, null];
 		}
+
+		return null;
 	}
 
 	private function silenceErrors(): void

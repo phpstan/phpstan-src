@@ -10,11 +10,11 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@actions/core": "^1.11.1",
-    "@actions/github": "^6.0.1"
+    "@actions/core": "^3.0.0",
+    "@actions/github": "^9.0.0"
   },
   "devDependencies": {
-    "@types/node": "^22.15.29",
-    "typescript": "^5.8.3"
+    "@types/node": "^24.0.0",
+    "typescript": "^7.0.0"
   }
 }

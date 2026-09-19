@@ -137,6 +137,7 @@ final class ExportedTraitNode implements RootExportedNode, JsonSerializable
 				return ExportedTraitUseAdaptation::decode($traitUseAdaptationData['data']);
 			}, $data['traitUseAdaptations']),
 			array_map(static function (array $node): ExportedNode {
+				/** @var class-string<ExportedNode> $nodeType */
 				$nodeType = $node['type'];
 
 				return $nodeType::decode($node['data']);

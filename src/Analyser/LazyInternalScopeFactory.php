@@ -10,6 +10,7 @@ use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\DependencyInjection\GenerateFactory;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\Parser;
+use PHPStan\Php\ConfiguredPhpVersionRangeHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\AttributeReflectionFactory;
 use PHPStan\Reflection\InitializerExprTypeResolver;
@@ -23,9 +24,6 @@ use WeakReference;
 #[GenerateFactory(interface: InternalScopeFactoryFactory::class, resultType: LazyInternalScopeFactory::class)]
 final class LazyInternalScopeFactory implements InternalScopeFactory
 {
-
-	/** @var int|array{min: int, max: int}|null */
-	private int|array|null $phpVersion;
 
 	private Parser $currentSimpleVersionParser;
 
@@ -50,6 +48,8 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 
 	private ?AttributeReflectionFactory $attributeReflectionFactory = null;
 
+	private ?ConfiguredPhpVersionRangeHelper $configuredPhpVersionRangeHelper = null;
+
 	private ?self $twin = null;
 
 	/** @var WeakReference<self>|null */
@@ -65,7 +65,6 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 		?ExpressionResultStorageStack $expressionResultStorageStack = null,
 	)
 	{
-		$this->phpVersion = $this->container->getParameter('phpVersion');
 		$this->currentSimpleVersionParser = $this->container->getService('currentPhpVersionSimpleParser');
 		$this->expressionResultStorageStack = $expressionResultStorageStack ?? new ExpressionResultStorageStack();
 	}
@@ -107,6 +106,7 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 
 		$this->phpVersionType ??= $this->container->getByType(PhpVersion::class);
 		$this->attributeReflectionFactory ??= $this->container->getByType(AttributeReflectionFactory::class);
+		$this->configuredPhpVersionRangeHelper ??= $this->container->getByType(ConfiguredPhpVersionRangeHelper::class);
 
 		return new $className(
 			$this->container,
@@ -123,7 +123,7 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 			$context,
 			$this->phpVersionType,
 			$this->attributeReflectionFactory,
-			$this->phpVersion,
+			$this->configuredPhpVersionRangeHelper,
 			$this->nodeCallback,
 			$declareStrictTypes,
 			$function,

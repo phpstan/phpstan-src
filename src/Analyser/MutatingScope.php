@@ -45,6 +45,7 @@ use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\VirtualNode;
 use PHPStan\Parser\Parser;
+use PHPStan\Php\ConfiguredPhpVersionRangeHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Php\PhpVersionFactory;
 use PHPStan\Php\PhpVersions;
@@ -130,7 +131,6 @@ use function explode;
 use function get_class;
 use function implode;
 use function in_array;
-use function is_array;
 use function is_string;
 use function ltrim;
 use function md5;
@@ -170,7 +170,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	private ?self $scopeWithPromotedNativeTypes = null;
 
 	/**
-	 * @param int|array{min: int, max: int}|null $configPhpVersion
 	 * @param callable(Node $node, Scope $scope): void|null $nodeCallback
 	 * @param array<string, ExpressionTypeHolder> $expressionTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
@@ -196,7 +195,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		protected ScopeContext $context,
 		private PhpVersion $phpVersion,
 		private AttributeReflectionFactory $attributeReflectionFactory,
-		private int|array|null $configPhpVersion,
+		private ConfiguredPhpVersionRangeHelper $configuredPhpVersionRangeHelper,
 		private $nodeCallback = null,
 		private bool $declareStrictTypes = false,
 		private PhpFunctionFromParserNodeReflection|null $function = null,
@@ -5894,16 +5893,19 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			return new PhpVersions($constType);
 		}
 
-		if (is_array($this->configPhpVersion)) {
-			return new PhpVersions(IntegerRangeType::fromInterval($this->configPhpVersion['min'], $this->configPhpVersion['max']));
-		}
-
-		// Without an explicit phpVersion config the composer.json "require.php" constraint
-		// still narrows PHP_VERSION_ID - honour the very same range here so that
+		// The analysed PHP version range comes either from the NEON phpVersion min/max
+		// config or from the composer.json "require.php" constraint - the very same
+		// source ConstantResolver narrows PHP_VERSION_ID with, so that
 		// Scope::getPhpVersion() never contradicts the PHP_VERSION_ID constant.
-		$defaultConstType = $this->constantResolver->resolvePredefinedConstant('PHP_VERSION_ID');
-		if ($defaultConstType !== null && !$this->isOverallPhpVersionRange($defaultConstType)) {
-			return new PhpVersions($defaultConstType);
+		[$minPhpVersion, $maxPhpVersion] = $this->configuredPhpVersionRangeHelper->getVersionRange();
+		if (
+			$minPhpVersion !== null
+			|| ($maxPhpVersion !== null && $maxPhpVersion->getVersionId() !== PhpVersionFactory::MAX_PHP_VERSION)
+		) {
+			return new PhpVersions(IntegerRangeType::fromInterval(
+				$minPhpVersion !== null ? $minPhpVersion->getVersionId() : ConstantResolver::PHP_MIN_ANALYZABLE_VERSION_ID,
+				$maxPhpVersion !== null ? $maxPhpVersion->getVersionId() : null,
+			));
 		}
 
 		return new PhpVersions(new ConstantIntegerType($this->phpVersion->getVersionId()));

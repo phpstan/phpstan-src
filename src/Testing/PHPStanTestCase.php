@@ -120,7 +120,7 @@ abstract class PHPStanTestCase extends TestCase
 				self::getParser(),
 				$container->getByType(PhpVersion::class),
 				$container->getByType(AttributeReflectionFactory::class),
-				$container->getParameter('phpVersion'),
+				$container->getByType(ConfiguredPhpVersionRangeHelper::class),
 				$constantResolver,
 			),
 		);

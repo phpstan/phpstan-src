@@ -165,11 +165,14 @@ final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunction
 	private function createConstantSplitType(Type $delimiterType, Type $stringType, ?Type $limitType): ?Type
 	{
 		$delimiters = [];
+		$hasEmptyDelimiter = false;
 		foreach ($delimiterType->getConstantStrings() as $delimiterString) {
 			$delimiterValue = $delimiterString->getValue();
 			if ($delimiterValue === '') {
-				// explode() does not split on an empty separator, it errors out
-				return null;
+				// explode() does not split on an empty separator: it throws
+				// a ValueError on PHP 8+, and returns false before that
+				$hasEmptyDelimiter = true;
+				continue;
 			}
 
 			$delimiters[] = $delimiterValue;
@@ -222,6 +225,10 @@ final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunction
 					$results[] = $builder->getArray();
 				}
 			}
+		}
+
+		if ($hasEmptyDelimiter && !$this->phpVersion->throwsValueErrorForInternalFunctions()) {
+			$results[] = new ConstantBooleanType(false);
 		}
 
 		return TypeCombinator::union(...$results);

@@ -85,16 +85,20 @@ function withOptionalKeys(): void
  * @param array<int, int|string|bool> $mixed
  * @param list<string> $list
  * @param Baz[] $objectsWithoutToString
+ * @param array<int|decimal-int-string> $decimalIntStringOrInt
+ * @param array<decimal-int-string> $decimalIntString
  */
-function withNotConstantArray(array $foo, array $bar, array $baz, array $floats, array $mixed, array $list, array $objectsWithoutToString): void
+function withNotConstantArray(array $foo, array $bar, array $baz, array $floats, array $mixed, array $list, array $objectsWithoutToString, array $decimalIntStringOrInt, array $decimalIntString): void
 {
 	assertType("array<string, null>", array_fill_keys($foo, null));
 	assertType("array<int, null>", array_fill_keys($bar, null));
 	assertType("array<'foo', null>", array_fill_keys($baz, null));
-	assertType("array<numeric-string&uppercase-string, null>", array_fill_keys($floats, null));
+	assertType("array<int, null>", array_fill_keys($floats, null));
 	assertType("array<bool|int|string, null>", array_fill_keys($mixed, null));
 	assertType('array<string, null>', array_fill_keys($list, null));
 	assertType('*ERROR*', array_fill_keys($objectsWithoutToString, null));
+	assertType('array<int, null>', array_fill_keys($decimalIntStringOrInt, null));
+	assertType('array<int, null>', array_fill_keys($decimalIntString, null));
 
 	if (array_key_exists(17, $mixed)) {
 		assertType('non-empty-array<bool|int|string, null>', array_fill_keys($mixed, null));

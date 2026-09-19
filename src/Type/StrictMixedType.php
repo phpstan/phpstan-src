@@ -17,6 +17,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\TemplateMixedType;
+use PHPStan\Type\Generic\TemplateStrictMixedType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
@@ -61,7 +62,7 @@ class StrictMixedType implements CompoundType
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): AcceptsResult
 	{
-		if ($acceptingType instanceof self) {
+		if ($acceptingType instanceof self && !$acceptingType instanceof TemplateStrictMixedType) {
 			return AcceptsResult::createYes();
 		}
 		if ($acceptingType instanceof MixedType && !$acceptingType instanceof TemplateMixedType) {
@@ -78,7 +79,7 @@ class StrictMixedType implements CompoundType
 
 	public function isSubTypeOf(Type $otherType): IsSuperTypeOfResult
 	{
-		if ($otherType instanceof self) {
+		if ($otherType instanceof self && !$otherType instanceof TemplateStrictMixedType) {
 			return IsSuperTypeOfResult::createYes();
 		}
 		if ($otherType instanceof MixedType && !$otherType instanceof TemplateMixedType) {

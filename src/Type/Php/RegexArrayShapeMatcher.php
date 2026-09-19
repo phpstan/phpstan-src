@@ -347,10 +347,10 @@ final class RegexArrayShapeMatcher
 	 */
 	private function createSubjectValueType(Type $baseType, int $flags, bool $matchesAll, TrinaryLogic $wasMatched): Type
 	{
-		$subjectValueType = TypeCombinator::removeNull($this->getValueType($baseType, $flags, $matchesAll));
+		$subjectValueType = TypeCombinator::removeNull($this->getValueType($baseType, $flags, $matchesAll, false));
 
 		if ($matchesAll) {
-			$subjectValueType = TypeCombinator::removeNull($this->getValueType(new StringType(), $flags, $matchesAll));
+			$subjectValueType = TypeCombinator::removeNull($this->getValueType(new StringType(), $flags, $matchesAll, false));
 
 			if ($this->containsPatternOrder($flags)) {
 				$accessoryTypes = [
@@ -395,6 +395,8 @@ final class RegexArrayShapeMatcher
 
 	private function createGroupValueType(RegexCapturingGroup $captureGroup, TrinaryLogic $wasMatched, int $flags, bool $isTrailingOptional, bool $isLastGroup, bool $matchesAll): Type
 	{
+		$canBeUnmatched = $captureGroup->isOptional() || $captureGroup->isForcedUnmatched();
+
 		if ($matchesAll) {
 			if (
 				(
@@ -414,10 +416,11 @@ final class RegexArrayShapeMatcher
 					TypeCombinator::union($captureGroup->getType(), new ConstantStringType('')),
 					$flags,
 					$matchesAll,
+					$canBeUnmatched,
 				);
 				$groupValueType = TypeCombinator::removeNull($groupValueType);
 			} else {
-				$groupValueType = $this->getValueType($captureGroup->getType(), $flags, $matchesAll);
+				$groupValueType = $this->getValueType($captureGroup->getType(), $flags, $matchesAll, $canBeUnmatched);
 			}
 
 			if (!$isTrailingOptional && $this->containsUnmatchedAsNull($flags, $matchesAll) && !$captureGroup->isOptional()) {
@@ -441,9 +444,10 @@ final class RegexArrayShapeMatcher
 				TypeCombinator::union($captureGroup->getType(), new ConstantStringType('')),
 				$flags,
 				$matchesAll,
+				$canBeUnmatched,
 			);
 		} else {
-			$groupValueType = $this->getValueType($captureGroup->getType(), $flags, $matchesAll);
+			$groupValueType = $this->getValueType($captureGroup->getType(), $flags, $matchesAll, $canBeUnmatched);
 		}
 
 		if ($wasMatched->yes()) {
@@ -491,12 +495,11 @@ final class RegexArrayShapeMatcher
 		return new ConstantIntegerType($key);
 	}
 
-	private function getValueType(Type $baseType, int $flags, bool $matchesAll): Type
+	private function getValueType(Type $baseType, int $flags, bool $matchesAll, bool $canBeUnmatched): Type
 	{
 		$valueType = $baseType;
 
-		// unmatched groups return -1 as offset
-		$offsetType = IntegerRangeType::fromInterval(-1, null);
+		$offsetType = IntegerRangeType::fromInterval($canBeUnmatched ? -1 : 0, null);
 		if ($this->containsUnmatchedAsNull($flags, $matchesAll)) {
 			$valueType = TypeCombinator::addNull($valueType);
 		}

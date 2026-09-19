@@ -9,6 +9,7 @@ use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\Parser;
+use PHPStan\Php\ConfiguredPhpVersionRangeHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\AttributeReflectionFactory;
 use PHPStan\Reflection\InitializerExprTypeResolver;
@@ -24,7 +25,6 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 	private ExpressionResultStorageStack $expressionResultStorageStack;
 
 	/**
-	 * @param int|array{min: int, max: int}|null $configPhpVersion
 	 * @param callable(Node $node, Scope $scope): void|null $nodeCallback
 	 * @param ExtensionsCollection<ExpressionTypeResolverExtension> $expressionTypeResolverExtensions
 	 */
@@ -39,7 +39,7 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 		private Parser $parser,
 		private PhpVersion $phpVersion,
 		private AttributeReflectionFactory $attributeReflectionFactory,
-		private int|array|null $configPhpVersion,
+		private ConfiguredPhpVersionRangeHelper $configuredPhpVersionRangeHelper,
 		private $nodeCallback,
 		private ConstantResolver $constantResolver,
 		private bool $createsNodeCallbackScopes = false,
@@ -90,7 +90,7 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 			$context,
 			$this->phpVersion,
 			$this->attributeReflectionFactory,
-			$this->configPhpVersion,
+			$this->configuredPhpVersionRangeHelper,
 			$this->nodeCallback,
 			$declareStrictTypes,
 			$function,
@@ -135,7 +135,7 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 			$this->parser,
 			$this->phpVersion,
 			$this->attributeReflectionFactory,
-			$this->configPhpVersion,
+			$this->configuredPhpVersionRangeHelper,
 			$this->nodeCallback,
 			$this->constantResolver,
 			$createsNodeCallbackScopes,

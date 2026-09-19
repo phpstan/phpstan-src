@@ -7,6 +7,7 @@ use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\Parser;
+use PHPStan\Php\ConfiguredPhpVersionRangeHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\AttributeReflectionFactory;
 use PHPStan\Reflection\InitializerExprTypeResolver;
@@ -18,7 +19,6 @@ final class DirectInternalScopeFactoryFactory implements InternalScopeFactoryFac
 {
 
 	/**
-	 * @param int|array{min: int, max: int}|null $configPhpVersion
 	 * @param ExtensionsCollection<ExpressionTypeResolverExtension> $expressionTypeResolverExtensions
 	 */
 	public function __construct(
@@ -32,7 +32,7 @@ final class DirectInternalScopeFactoryFactory implements InternalScopeFactoryFac
 		private Parser $parser,
 		private PhpVersion $phpVersion,
 		private AttributeReflectionFactory $attributeReflectionFactory,
-		private int|array|null $configPhpVersion,
+		private ConfiguredPhpVersionRangeHelper $configuredPhpVersionRangeHelper,
 		private ConstantResolver $constantResolver,
 	)
 	{
@@ -54,7 +54,7 @@ final class DirectInternalScopeFactoryFactory implements InternalScopeFactoryFac
 			$this->parser,
 			$this->phpVersion,
 			$this->attributeReflectionFactory,
-			$this->configPhpVersion,
+			$this->configuredPhpVersionRangeHelper,
 			$nodeCallback,
 			$this->constantResolver,
 		);

@@ -114,3 +114,15 @@ function sealedArrayFillKeys(array $sealed, array $unsealed): void
 	assertType("array{1: 'b', 2: 'b', 3: 'b'}", array_fill_keys($sealed, 'b'));
 	assertType("array{1: 'b', 2: 'b', 3: 'b', 0?: 'b'}", array_fill_keys($unsealed, 'b'));
 }
+
+/**
+ * @param list<'1'|'2'> $constantIntStrings
+ * @param array{0: '1', 1: '2'} $sealedIntStrings
+ * @param array{0: '1', ...<int, numeric-string>} $unsealedIntStrings
+ */
+function intStringArrayFillKeys(array $constantIntStrings, array $sealedIntStrings, array $unsealedIntStrings): void
+{
+	assertType("array<1|2, 'b'>", array_fill_keys($constantIntStrings, 'b'));
+	assertType("array{1: 'b', 2: 'b'}", array_fill_keys($sealedIntStrings, 'b'));
+	assertType("array{1: 'b', ...<int|numeric-string, 'b'>}", array_fill_keys($unsealedIntStrings, 'b'));
+}

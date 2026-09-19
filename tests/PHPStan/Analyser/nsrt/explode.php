@@ -51,8 +51,8 @@ function constantSplit(string $delimiterUnion, string $stringUnion, int $limitUn
 	assertType("array{'a', 'b,c'}|array{'a,b,c'}", explode(',', 'a,b,c', $limitUnion));
 	assertType("array{'a', 'b', 'c'}|array{'a', 'b,c'}|array{'a,b,c'}", explode(',', 'a,b,c', $limitRange));
 
-	// the delimiter may be an empty string, which is not a valid split
-	assertType('non-empty-list<lowercase-string>', explode($maybeEmptyDelimiter, 'a,b'));
+	// the empty separator throws a ValueError on PHP 8+, so only the ',' split remains
+	assertType("array{'a', 'b'}", explode($maybeEmptyDelimiter, 'a,b'));
 
 	assertType('non-empty-list<lowercase-string>', explode($unknown, 'a,b'));
 	assertType('non-empty-list<string>', explode(',', $unknown));

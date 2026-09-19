@@ -25,6 +25,7 @@ use Symfony\Component\Console\Helper\ProgressBar;
 
 	define('__PHPSTAN_RUNNING__', true);
 
+	require_once __DIR__ . '/../src/Process/InheritedPhpConfig.php';
 	require_once __DIR__ . '/../src/Turbo/TurboExtensionEnabler.php';
 	require_once __DIR__ . '/../src/Turbo/TurboExtensionSelector.php';
 	require_once __DIR__ . '/../src/Turbo/TurboProcessRestarter.php';

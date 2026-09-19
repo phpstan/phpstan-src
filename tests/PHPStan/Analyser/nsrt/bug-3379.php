@@ -13,5 +13,5 @@ class Foo
 
 function () {
 	echo Foo::URL;
-	assertType('non-falsy-string', Foo::URL);
+	assertType('non-decimal-int-string&non-falsy-string', Foo::URL);
 };

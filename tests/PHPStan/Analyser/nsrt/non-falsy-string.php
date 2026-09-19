@@ -118,17 +118,17 @@ class Foo {
 		// empty array only works as long as no placeholder in the pattern
 		assertType('string', vsprintf($nonFalsey, []));
 		assertType('string', vsprintf($nonFalsey, []));
-		assertType("string", vsprintf('foo', []));
+		assertType("non-decimal-int-string", vsprintf('foo', []));
 
 		assertType("string", vsprintf('%s', ...$arr));
 		assertType("string", vsprintf(...$arr));
-		assertType('non-falsy-string', vsprintf('%sAA%s', [$s, $s]));
+		assertType('non-decimal-int-string&non-falsy-string', vsprintf('%sAA%s', [$s, $s]));
 		assertType('non-falsy-string', vsprintf('%d%d', [$s, $s])); // could be non-falsy-string&numeric-string
 
-		assertType('non-falsy-string', sprintf("%sAA%s", $s, $s));
+		assertType('non-decimal-int-string&non-falsy-string', sprintf("%sAA%s", $s, $s));
 		assertType('non-falsy-string', sprintf("%d%d", $s, $s)); // could be non-falsy-string&numeric-string
-		assertType('non-falsy-string', sprintf("%sAA%s%s%s%s", $s, $s, $s, $s, $s));
-		assertType('non-falsy-string', sprintf("%sAA%s%s%s%s%s", $s, $s, $s, $s, $s, $s));
+		assertType('non-decimal-int-string&non-falsy-string', sprintf("%sAA%s%s%s%s", $s, $s, $s, $s, $s));
+		assertType('non-decimal-int-string&non-falsy-string', sprintf("%sAA%s%s%s%s%s", $s, $s, $s, $s, $s, $s));
 
 		assertType('int<1, max>', strlen($nonFalsey));
 

@@ -102,7 +102,7 @@ class HelloWorld
 
 	public function escapedPercent(int $i) {
 		// https://3v4l.org/2m50L
-		assertType('lowercase-string&non-falsy-string', sprintf("%%d", $i));
+		assertType('lowercase-string&non-decimal-int-string&non-falsy-string', sprintf("%%d", $i));
 	}
 
 	public function vsprintf(array $array)

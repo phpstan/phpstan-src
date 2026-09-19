@@ -30,3 +30,4 @@ parameters:
 		unresolvedTemplateArguments: true
 		unusedVariable: true
 		unusedParameters: true
+		composerPhp64Bit: true

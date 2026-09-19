@@ -13,6 +13,7 @@ use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvi
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\Parser;
 use PHPStan\Php\ComposerPhpVersionFactory;
+use PHPStan\Php\ConfiguredPhpIntSizeHelper;
 use PHPStan\Php\ConfiguredPhpVersionRangeHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\TypeNodeResolver;
@@ -96,7 +97,7 @@ abstract class PHPStanTestCase extends TestCase
 
 		$reflectionProviderProvider = new DirectReflectionProviderProvider($reflectionProvider);
 		$composerPhpVersionFactory = $container->getByType(ComposerPhpVersionFactory::class);
-		$constantResolver = new ConstantResolver($reflectionProviderProvider, $dynamicConstantNames, new ConfiguredPhpVersionRangeHelper(null, $composerPhpVersionFactory), container: $container);
+		$constantResolver = new ConstantResolver($reflectionProviderProvider, $dynamicConstantNames, new ConfiguredPhpVersionRangeHelper(null, $composerPhpVersionFactory), $container->getByType(ConfiguredPhpIntSizeHelper::class), container: $container);
 
 		$initializerExprTypeResolver = new InitializerExprTypeResolver(
 			$constantResolver,

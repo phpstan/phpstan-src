@@ -12,7 +12,9 @@ use function count;
 use function floor;
 use function max;
 use function min;
+use function round;
 use function sprintf;
+use function sqrt;
 use function usort;
 
 #[AutowiredService]
@@ -29,6 +31,20 @@ final class Scheduler implements DiagnoseExtension
 	 */
 	private const AUTO_PROCESSES_LIMIT = 20;
 
+	/**
+	 * Workers per square root of the file count, when the adaptive strategy is on.
+	 *
+	 * A worker's startup is a fixed cost, so the number of files it needs to earn
+	 * its keep grows with the size of the run. Deriving the worker count from
+	 * sqrt(files) encodes that: about 12 files per worker at 25 files, about 40 at
+	 * 400, saturating at the usable core count from roughly 800 files upward - so
+	 * full runs are scheduled exactly as before and only small ones change.
+	 */
+	private const ADAPTIVE_WORKERS_PER_SQRT_FILE = 0.5;
+
+	/** Below this many files a second worker does not pay for its own startup. */
+	private const ADAPTIVE_SECOND_WORKER_FILE_THRESHOLD = 9;
+
 	/** @var array{int, int, int, int, string}|null */
 	private ?array $storedData = null;
 
@@ -44,6 +60,8 @@ final class Scheduler implements DiagnoseExtension
 		private int|string $maximumNumberOfProcesses,
 		#[AutowiredParameter(ref: '%parallel.minimumNumberOfJobsPerProcess%')]
 		private int $minimumNumberOfJobsPerProcess,
+		#[AutowiredParameter(ref: '%featureToggles.adaptiveParallelWorkerCount%')]
+		private bool $adaptiveParallelWorkerCount = false,
 	)
 	{
 	}
@@ -70,6 +88,19 @@ final class Scheduler implements DiagnoseExtension
 		usort($files, static fn (string $a, string $b): int => $fileSizes[$b] <=> $fileSizes[$a]);
 
 		$numberOfJobs = (int) ceil(count($files) / $this->jobSize);
+
+		$desiredNumberOfProcesses = null;
+		if ($this->adaptiveParallelWorkerCount) {
+			$desiredNumberOfProcesses = $this->resolveDesiredNumberOfProcesses(count($files), $numberOfJobs, $cpuCores);
+
+			// the spawn loop stops when the queue runs dry, so a worker without a
+			// job of its own never starts - chunk finely enough to feed them all
+			$numberOfJobs = min(
+				count($files),
+				max($numberOfJobs, $desiredNumberOfProcesses * $this->minimumNumberOfJobsPerProcess),
+			);
+		}
+
 		$stripedJobs = [];
 		foreach ($files as $i => $file) {
 			$stripedJobs[$i % $numberOfJobs][] = $file;
@@ -83,16 +114,40 @@ final class Scheduler implements DiagnoseExtension
 		unset($stripedJob);
 
 		$jobs = array_values($stripedJobs);
-		$numberOfProcesses = min(
-			max((int) floor(count($jobs) / $this->minimumNumberOfJobsPerProcess), 1),
-			$cpuCores,
-		);
+		$numberOfProcesses = $desiredNumberOfProcesses !== null
+			? min($desiredNumberOfProcesses, count($jobs), $cpuCores)
+			: min(
+				max((int) floor(count($jobs) / $this->minimumNumberOfJobsPerProcess), 1),
+				$cpuCores,
+			);
 
 		[$maximumNumberOfProcesses, $decision] = $this->resolveMaximumNumberOfProcesses($cpuCores);
 		$usedNumberOfProcesses = min($numberOfProcesses, $maximumNumberOfProcesses);
 		$this->storedData = [$cpuCores, count($files), count($jobs), $usedNumberOfProcesses, $decision];
 
 		return new Schedule($usedNumberOfProcesses, $jobs);
+	}
+
+	/**
+	 * How many workers the file count justifies, before the configured maximum applies.
+	 *
+	 * @return positive-int
+	 */
+	private function resolveDesiredNumberOfProcesses(int $numberOfFiles, int $numberOfJobs, int $cpuCores): int
+	{
+		if ($numberOfFiles < 1) {
+			return 1;
+		}
+
+		$floor = $numberOfFiles >= self::ADAPTIVE_SECOND_WORKER_FILE_THRESHOLD ? 2 : 1;
+		$fromFileCount = (int) round(self::ADAPTIVE_WORKERS_PER_SQRT_FILE * sqrt($numberOfFiles));
+
+		// never below what the job count alone already justifies: the point is to stop
+		// small runs being starved, not to take workers away from large ones, and
+		// sqrt() dips under the existing formula between roughly 400 and 800 files
+		$fromJobCount = max((int) floor($numberOfJobs / $this->minimumNumberOfJobsPerProcess), 1);
+
+		return max(1, min(max($floor, $fromFileCount, $fromJobCount), $cpuCores, $numberOfFiles));
 	}
 
 	/**

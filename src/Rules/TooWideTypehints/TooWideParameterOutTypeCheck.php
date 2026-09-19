@@ -38,7 +38,7 @@ final class TooWideParameterOutTypeCheck
 	{
 		$finalScope = null;
 		foreach ($executionEnds as $executionEnd) {
-			$endScope = $executionEnd->getStatementResult()->getScope();
+			$endScope = $executionEnd->getStatementResult()->getScope()->toWalkScope();
 			if ($finalScope === null) {
 				$finalScope = $endScope;
 				continue;
@@ -49,11 +49,11 @@ final class TooWideParameterOutTypeCheck
 
 		foreach ($returnStatements as $statement) {
 			if ($finalScope === null) {
-				$finalScope = $statement->getScope();
+				$finalScope = $statement->getScope()->toWalkScope();
 				continue;
 			}
 
-			$finalScope = $finalScope->mergeWith($statement->getScope());
+			$finalScope = $finalScope->mergeWith($statement->getScope()->toWalkScope());
 		}
 
 		if ($finalScope === null) {

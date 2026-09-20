@@ -17,7 +17,6 @@ use PHPStan\Type\NonAcceptingNeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
-use function array_key_exists;
 use function array_map;
 
 final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVariant
@@ -405,19 +404,10 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 
 	private function resolveConditionalTypesForParameter(Type $type): Type
 	{
-		return TypeTraverser::map($type, function (Type $type, callable $traverse): Type {
-			if ($type instanceof ConditionalTypeForParameter && array_key_exists($type->getParameterName(), $this->passedArgs)) {
-				// Traverse children first, then convert — avoids infinite loop when
-				// the passed argument contains ConditionalTypeForParameter with a colliding parameter name.
-				$type = $traverse($type);
-				if ($type instanceof ConditionalTypeForParameter) {
-					return $type->toConditional($this->passedArgs[$type->getParameterName()]);
-				}
-				return $type;
-			}
-
-			return $traverse($type);
-		});
+		return ConditionalTypeForParameter::resolveInType(
+			$type,
+			fn (string $parameterName): ?Type => $this->passedArgs[$parameterName] ?? null,
+		);
 	}
 
 }

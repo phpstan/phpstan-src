@@ -9,9 +9,7 @@ use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ResolvedFunctionVariant;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
-use function array_key_exists;
 use function substr;
 
 /**
@@ -84,63 +82,23 @@ final class ConditionalTypeResolver
 			return $declaredType;
 		}
 
-		$passedArgs = [];
-		foreach (self::collectParameterNames($declaredType) as $parameterName) {
-			$variableName = substr($parameterName, 1);
-			if (!$scope->hasVariableType($variableName)->yes()) {
-				continue;
-			}
+		$declaredType = ConditionalTypeForParameter::resolveInType(
+			$declaredType,
+			static function (string $parameterName) use ($scope): ?Type {
+				$variableName = substr($parameterName, 1);
+				if (!$scope->hasVariableType($variableName)->yes()) {
+					return null;
+				}
 
-			$passedArgs[$parameterName] = $scope->getType(new Variable($variableName));
-		}
-
-		$declaredType = self::mapConditionalTypesForParameter($declaredType, $passedArgs);
+				return $scope->getType(new Variable($variableName));
+			},
+		);
 
 		// A ConditionalType whose subject is a template type cannot be resolved to a single
 		// branch inside the function body (the template is not bound to a concrete type there),
 		// so it is conservatively collapsed to the union of its branches — the broadest type the
 		// declaration permits — rather than left as a Maybe-certain conditional.
 		return TypeUtils::resolveLateResolvableTypes($declaredType, true);
-	}
-
-	/**
-	 * @param array<string, Type> $passedArgs
-	 */
-	private static function mapConditionalTypesForParameter(Type $declaredType, array $passedArgs): Type
-	{
-		if ($passedArgs === []) {
-			return $declaredType;
-		}
-
-		return TypeTraverser::map($declaredType, static function (Type $type, callable $traverse) use ($passedArgs): Type {
-			if ($type instanceof ConditionalTypeForParameter && array_key_exists($type->getParameterName(), $passedArgs)) {
-				$type = $traverse($type);
-				if ($type instanceof ConditionalTypeForParameter) {
-					return $type->toConditional($passedArgs[$type->getParameterName()]);
-				}
-
-				return $type;
-			}
-
-			return $traverse($type);
-		});
-	}
-
-	/**
-	 * @return list<string>
-	 */
-	private static function collectParameterNames(Type $declaredType): array
-	{
-		$names = [];
-		TypeTraverser::map($declaredType, static function (Type $type, callable $traverse) use (&$names): Type {
-			if ($type instanceof ConditionalTypeForParameter) {
-				$names[] = $type->getParameterName();
-			}
-
-			return $traverse($type);
-		});
-
-		return $names;
 	}
 
 }

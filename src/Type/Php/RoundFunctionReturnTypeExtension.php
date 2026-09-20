@@ -29,6 +29,8 @@ use function floor;
 use function in_array;
 use function is_float;
 use function is_int;
+use function is_numeric;
+use function is_string;
 use function round;
 use const PHP_ROUND_HALF_DOWN;
 use const PHP_ROUND_HALF_EVEN;
@@ -173,18 +175,18 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 					$precision = 0;
 				}
 
-if (!isset($args[2]->value)) {
-	$proc = static fn ($name) => round($name, $precision);
-} else {
-	$modeType = $scope->getType($args[2]->value);
-	$mode = $this->resolveRoundMode($modeType);
+				if (!isset($args[2]->value)) {
+					$proc = static fn ($name) => round($name, $precision);
+				} else {
+					$modeType = $scope->getType($args[2]->value);
+					$mode = $this->resolveRoundMode($modeType);
 
-	if ($mode === null) {
-		return null;
-	}
+					if ($mode === null) {
+						return null;
+					}
 
-	$proc = static fn ($name) => round($name, $precision, $mode);
-}
+					$proc = static fn ($name) => round($name, $precision, $mode);
+				}
 			}
 		}
 

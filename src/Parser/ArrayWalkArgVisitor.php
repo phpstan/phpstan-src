@@ -15,13 +15,15 @@ final class ArrayWalkArgVisitor extends NodeVisitorAbstract
 
 	public const ATTRIBUTE_NAME = 'isArrayWalkArg';
 
+	public const PARAMETER_NAMES = ['array', 'callback', 'arg'];
+
 	#[Override]
 	public function enterNode(Node $node): ?Node
 	{
 		if ($node instanceof Node\Expr\FuncCall && $node->name instanceof Node\Name && !$node->isFirstClassCallable()) {
 			$functionName = $node->name->toLowerString();
 			if ($functionName === 'array_walk') {
-				$args = $node->getArgs();
+				$args = ArgumentPositionHelper::getArgsByPosition($node->getArgs(), self::PARAMETER_NAMES);
 				if (isset($args[0])) {
 					$args[0]->setAttribute(self::ATTRIBUTE_NAME, true);
 				}

@@ -3233,6 +3233,81 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			[
 				'Parameter #3 $mode of function round expects int<1, 8>|RoundingMode, 0 given.',
 				12,
+			]
+		]);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug15195(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-15195.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testNamedArgumentsOrderIntrinsic(): void
+	{
+		$this->analyse([__DIR__ . '/data/named-arguments-order-intrinsic.php'], [
+			[
+				'Parameter $callback of function array_filter expects (callable(string): bool)|null, Closure(int): bool given.',
+				14,
+			],
+			[
+				'Parameter $callback of function array_filter expects (callable(string): bool)|null, Closure(int): bool given.',
+				16,
+			],
+			[
+				'Parameter $callback of function array_filter expects (callable(int, string): bool)|null, Closure(string, int): true given.',
+				18,
+			],
+			[
+				'Parameter $callback of function array_map expects (callable(string): mixed)|null, Closure(int): int given.',
+				28,
+			],
+			[
+				'Parameter $callback of function array_walk expects callable(string, int<0, max>): mixed, Closure(int, int): void given.',
+				37,
+			],
+			[
+				'Parameter $callback of function array_walk expects callable(string, int<0, max>, 1.0): mixed, Closure(string, int, string): void given.',
+				39,
+			],
+			[
+				'Parameter $value of function curl_setopt expects 0|2, \'foo\' given.',
+				45,
+			],
+			[
+				'Parameter $options of function curl_setopt_array expects array{81: 0|2}, array{81: \'foo\'} given.',
+				47,
+				'Offset 81 (0|2) does not accept type \'foo\'.',
+			],
+			[
+				'Parameter $array of function implode expects array, string given.',
+				56,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.4.0')]
+	public function testNamedArgumentsOrderArrayFind(): void
+	{
+		$this->analyse([__DIR__ . '/data/named-arguments-order-array-find.php'], [
+			[
+				'Parameter $callback of function array_find expects callable(string, int<0, max>): bool, Closure(int, int): true given.',
+				11,
+			],
+			[
+				'Parameter $callback of function array_find_key expects callable(string, int<0, max>): bool, Closure(int, int): true given.',
+				13,
+			],
+			[
+				'Parameter $callback of function array_any expects callable(string, int<0, max>): bool, Closure(int, int): true given.',
+				15,
+			],
+			[
+				'Parameter $callback of function array_all expects callable(string, int<0, max>): bool, Closure(int, int): true given.',
+				17,
 			],
 		]);
 	}

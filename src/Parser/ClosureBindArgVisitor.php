@@ -17,6 +17,8 @@ final class ClosureBindArgVisitor extends NodeVisitorAbstract
 
 	public const ATTRIBUTE_NAME = 'closureBindArg';
 
+	public const PARAMETER_NAMES = ['closure', 'newThis', 'newScope'];
+
 	#[Override]
 	public function enterNode(Node $node): ?Node
 	{
@@ -30,7 +32,10 @@ final class ClosureBindArgVisitor extends NodeVisitorAbstract
 		) {
 			$args = $node->getArgs();
 			if (count($args) > 1) {
-				$args[0]->setAttribute(self::ATTRIBUTE_NAME, true);
+				$args = ArgumentPositionHelper::getArgsByPosition($args, self::PARAMETER_NAMES);
+				if (isset($args[0])) {
+					$args[0]->setAttribute(self::ATTRIBUTE_NAME, true);
+				}
 			}
 		}
 		return null;

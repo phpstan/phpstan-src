@@ -10,6 +10,7 @@ use PHPStan\Analyser\ArgsResult;
 use PHPStan\Analyser\ArgumentsHandler;
 use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\CalledMethodProcessor;
+use PHPStan\Analyser\ConditionalTypeResolver;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
@@ -333,12 +334,7 @@ final class MethodCallHandler implements ExprHandler
 					$acceptorForGenerics = $resolvedParametersAcceptor ?? $parametersAcceptor;
 					$scope = $scope->assignExpression(
 						$normalizedExpr->var,
-						TemplateTypeHelper::resolveTemplateTypes(
-							$selfOutType,
-							$acceptorForGenerics->getResolvedTemplateTypeMap(),
-							$acceptorForGenerics instanceof ExtendedParametersAcceptor ? $acceptorForGenerics->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
-							TemplateTypeVariance::createCovariant(),
-						),
+						ConditionalTypeResolver::resolveForCall($selfOutType, $acceptorForGenerics, $normalizedExpr->getArgs(), $scope),
 						$varResult->getNativeType(),
 					);
 				}

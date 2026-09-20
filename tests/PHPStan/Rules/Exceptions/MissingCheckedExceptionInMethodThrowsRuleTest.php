@@ -110,4 +110,35 @@ class MissingCheckedExceptionInMethodThrowsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testConditionalThrows(): void
+	{
+		$this->analyse([__DIR__ . '/data/conditional-throws-method.php'], [
+			[
+				'Method ConditionalThrowsMethod\Caller::methodCallZero() throws checked exception Exception but it\'s missing from the PHPDoc @throws tag.',
+				81,
+			],
+			[
+				'Method ConditionalThrowsMethod\Caller::staticCallZero() throws checked exception Exception but it\'s missing from the PHPDoc @throws tag.',
+				93,
+			],
+			[
+				'Method ConditionalThrowsMethod\Caller::constructorZero() throws checked exception Exception but it\'s missing from the PHPDoc @throws tag.',
+				105,
+			],
+			[
+				'Method ConditionalThrowsMethod\Caller::lookupString() throws checked exception Exception but it\'s missing from the PHPDoc @throws tag.',
+				123,
+			],
+			[
+				'Method ConditionalThrowsMethod\Caller::inheritedMethodCallZero() throws checked exception Exception but it\'s missing from the PHPDoc @throws tag.',
+				129,
+			],
+		]);
+	}
+
+	public function testGenericThrows(): void
+	{
+		$this->analyse([__DIR__ . '/data/generic-throws-9497.php'], []);
+	}
+
 }

@@ -7,6 +7,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
+use PHPStan\Rules\NonStringableDynamicAccessCheck;
 use PHPStan\Rules\RestrictedUsage\RestrictedClassNameUsageExtension;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
@@ -23,19 +24,20 @@ class AccessStaticPropertiesInAssignRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = self::createReflectionProvider();
+		$ruleLevelHelper = new RuleLevelHelper(
+			$reflectionProvider,
+			checkNullables: true,
+			checkThisOnly: false,
+			checkUnionTypes: true,
+			checkExplicitMixed: false,
+			checkImplicitMixed: false,
+			checkBenevolentUnionTypes: false,
+			discoveringSymbolsTip: true,
+		);
 		return new AccessStaticPropertiesInAssignRule(
 			new AccessStaticPropertiesCheck(
 				$reflectionProvider,
-				new RuleLevelHelper(
-					$reflectionProvider,
-					checkNullables: true,
-					checkThisOnly: false,
-					checkUnionTypes: true,
-					checkExplicitMixed: false,
-					checkImplicitMixed: false,
-					checkBenevolentUnionTypes: false,
-					discoveringSymbolsTip: true,
-				),
+				$ruleLevelHelper,
 				new ClassNameCheck(
 					new ClassCaseSensitivityCheck($reflectionProvider, true, true),
 					new ClassForbiddenNameCheck(self::getContainer()->getExtensionsCollection(ForbiddenClassNameExtension::class)),
@@ -43,6 +45,7 @@ class AccessStaticPropertiesInAssignRuleTest extends RuleTestCase
 					self::getContainer()->getExtensionsCollection(RestrictedClassNameUsageExtension::class),
 				),
 				new PhpVersion(PHP_VERSION_ID),
+				new NonStringableDynamicAccessCheck($ruleLevelHelper, true),
 				discoveringSymbolsTip: true,
 			),
 		);

@@ -93,6 +93,43 @@ final class ConditionalTypeForParameter implements CompoundType, LateResolvableT
 		return $type;
 	}
 
+	/**
+	 * Replaces every ConditionalTypeForParameter inside $type with the ConditionalType on the
+	 * subject its parameter resolves to. $getSubjectType is called with the parameter name
+	 * including the leading `$`; returning null leaves that conditional unresolved.
+	 *
+	 * Shared by everything that resolves a declared conditional type against concrete
+	 * subjects: ResolvedFunctionVariant (`@return`, `@param`, `@param-out`,
+	 * `@param-closure-this`), TypeSpecifier (`@phpstan-assert`) and ConditionalTypeResolver
+	 * (`@throws`, `@phpstan-self-out`).
+	 *
+	 * @param callable(string): ?Type $getSubjectType
+	 */
+	public static function resolveInType(Type $type, callable $getSubjectType): Type
+	{
+		if (!$type->hasTemplateOrLateResolvableType()) {
+			return $type;
+		}
+
+		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($getSubjectType): Type {
+			if ($type instanceof self) {
+				$subjectType = $getSubjectType($type->getParameterName());
+				if ($subjectType !== null) {
+					// Traverse children first, then convert — avoids infinite loop when
+					// the subject contains a ConditionalTypeForParameter with a colliding parameter name.
+					$type = $traverse($type);
+					if ($type instanceof self) {
+						return $type->toConditional($subjectType);
+					}
+
+					return $type;
+				}
+			}
+
+			return $traverse($type);
+		});
+	}
+
 	public function toConditional(Type $subject): Type
 	{
 		return new ConditionalType(

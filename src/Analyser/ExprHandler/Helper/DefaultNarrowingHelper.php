@@ -49,7 +49,6 @@ use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
-use function array_key_exists;
 use function array_last;
 use function array_map;
 use function array_reverse;
@@ -820,21 +819,17 @@ final class DefaultNarrowingHelper
 
 		foreach ($asserts as $assert) {
 			foreach ($argsMap[substr($assert->getParameter()->getParameterName(), 1)] ?? [] as $parameterExpr) {
-				$assertedType = TypeTraverser::map($assert->getType(), static function (Type $type, callable $traverse) use ($argsMap, $getArgType): Type {
-					if ($type instanceof ConditionalTypeForParameter) {
-						$parameterName = substr($type->getParameterName(), 1);
-						if (array_key_exists($parameterName, $argsMap)) {
-							$type = $traverse($type);
-							if ($type instanceof ConditionalTypeForParameter) {
-								$argType = TypeCombinator::union(...array_map($getArgType, $argsMap[substr($type->getParameterName(), 1)]));
-								return $type->toConditional($argType);
-							}
-							return $type;
+				$assertedType = ConditionalTypeForParameter::resolveInType(
+					$assert->getType(),
+					static function (string $parameterName) use ($argsMap, $getArgType): ?Type {
+						$parameterExprs = $argsMap[substr($parameterName, 1)] ?? null;
+						if ($parameterExprs === null) {
+							return null;
 						}
-					}
 
-					return $traverse($type);
-				});
+						return TypeCombinator::union(...array_map($getArgType, $parameterExprs));
+					},
+				);
 
 				$assertExpr = $assert->getParameter()->getExpr($parameterExpr);
 

@@ -2,7 +2,9 @@
 
 namespace PHPStan\Rules\Variables;
 
+use PHPStan\Rules\NonStringableDynamicAccessCheck;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use function array_merge;
@@ -16,6 +18,19 @@ class DefinedVariableRuleWithoutLoopAndForeachPollutionTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new DefinedVariableRule(
+			new NonStringableDynamicAccessCheck(
+				new RuleLevelHelper(
+					self::createReflectionProvider(),
+					checkNullables: true,
+					checkThisOnly: false,
+					checkUnionTypes: true,
+					checkExplicitMixed: false,
+					checkImplicitMixed: false,
+					checkBenevolentUnionTypes: false,
+					discoveringSymbolsTip: true,
+				),
+				false,
+			),
 			true,
 			true,
 		);

@@ -16,6 +16,7 @@ use PHPStan\Analyser\ArgsResult;
 use PHPStan\Analyser\ArgumentsHandler;
 use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\ClosureProcessor;
+use PHPStan\Analyser\ConditionalTypeResolver;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
@@ -562,6 +563,9 @@ final class FuncCallHandler implements ExprHandler
 		}
 
 		$throwType = $functionReflection->getThrowType();
+		if ($throwType !== null && $parametersAcceptor !== null) {
+			$throwType = ConditionalTypeResolver::resolveForCall($throwType, $parametersAcceptor, $normalizedFuncCall->getArgs(), $scope);
+		}
 		if ($throwType === null) {
 			if ($returnType instanceof NeverType && $returnType->isExplicit()) {
 				$throwType = new ObjectType(Throwable::class);

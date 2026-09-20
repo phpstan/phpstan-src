@@ -7,6 +7,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
+use PHPStan\Rules\NonStringableDynamicAccessCheck;
 use PHPStan\Rules\RestrictedUsage\RestrictedClassNameUsageExtension;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
@@ -29,18 +30,19 @@ class ClassConstantRuleTest extends RuleTestCase
 	{
 		$reflectionProvider = self::createReflectionProvider();
 		$container = self::getContainer();
+		$ruleLevelHelper = new RuleLevelHelper(
+			$reflectionProvider,
+			checkNullables: true,
+			checkThisOnly: false,
+			checkUnionTypes: true,
+			checkExplicitMixed: true,
+			checkImplicitMixed: true,
+			checkBenevolentUnionTypes: false,
+			discoveringSymbolsTip: true,
+		);
 		return new ClassConstantRule(
 			$reflectionProvider,
-			new RuleLevelHelper(
-				$reflectionProvider,
-				checkNullables: true,
-				checkThisOnly: false,
-				checkUnionTypes: true,
-				checkExplicitMixed: true,
-				checkImplicitMixed: true,
-				checkBenevolentUnionTypes: false,
-				discoveringSymbolsTip: true,
-			),
+			$ruleLevelHelper,
 			new ClassNameCheck(
 				new ClassCaseSensitivityCheck($reflectionProvider, checkInternalClassCaseSensitivity: true, checkImportedClassNameCase: $this->checkImportedClassNameCase),
 				new ClassForbiddenNameCheck($container->getExtensionsCollection(ForbiddenClassNameExtension::class)),
@@ -48,7 +50,7 @@ class ClassConstantRuleTest extends RuleTestCase
 				$container->getExtensionsCollection(RestrictedClassNameUsageExtension::class),
 			),
 			new PhpVersion($this->phpVersion),
-			checkNonStringableDynamicAccess: true,
+			new NonStringableDynamicAccessCheck($ruleLevelHelper, true),
 		);
 	}
 

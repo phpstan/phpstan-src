@@ -1742,8 +1742,19 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	{
 		// crash - a variable whose name is an expression is tracked on the scope,
 		// but the scope-state read did not look for it among the tracked expressions
+		//
+		// The reported errors are the sound consequence of `$$n = $o` possibly
+		// writing to $n itself (it does when $n === 'n'), which widens $n to
+		// string|Foo|null and makes the name of every later $$n non-stringable.
 		$errors = $this->runAnalyse(__DIR__ . '/data/variable-variable-disjunction.php');
-		$this->assertNoErrors($errors);
+		$this->assertCount(4, $errors);
+		foreach ($errors as $error) {
+			$this->assertSame(
+				'Variable variable name must be a string, but string|VariableVariableDisjunction\\Foo|null was given.',
+				$error->getMessage(),
+			);
+		}
+		$this->assertSame([14, 14, 14, 15], array_map(static fn (Error $error): ?int => $error->getLine(), $errors));
 	}
 
 	public function testBug15252(): void

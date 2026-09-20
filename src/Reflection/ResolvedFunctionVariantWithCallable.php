@@ -82,6 +82,16 @@ final class ResolvedFunctionVariantWithCallable implements ResolvedFunctionVaria
 		return $this->parametersAcceptor->getReturnType();
 	}
 
+	public function hasBoundArgs(): bool
+	{
+		return $this->parametersAcceptor->hasBoundArgs();
+	}
+
+	public function resolveConditionalTypes(Type $type): Type
+	{
+		return $this->parametersAcceptor->resolveConditionalTypes($type);
+	}
+
 	public function getPhpDocReturnType(): Type
 	{
 		return $this->parametersAcceptor->getPhpDocReturnType();

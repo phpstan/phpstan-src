@@ -5,6 +5,7 @@ namespace PHPStan\Analyser;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\Methods\CallMethodsRule;
 use PHPStan\Rules\Methods\MethodCallCheck;
+use PHPStan\Rules\NonStringableDynamicAccessCheck;
 use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
@@ -49,6 +50,7 @@ class Bug9307CallMethodsRuleTest extends RuleTestCase
 				checkExtraArguments: true,
 				checkMissingTypehints: true,
 			),
+			new NonStringableDynamicAccessCheck($ruleLevelHelper, true),
 		);
 	}
 

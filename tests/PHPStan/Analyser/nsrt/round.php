@@ -13,8 +13,8 @@ if (rand(0, 1)) {
 assertType('123.0', round(123));
 assertType('123.0', round(123.456));
 assertType('float', round($_GET['foo'] / 60));
-assertType('float', round('123'));
-assertType('float', round('123.456'));
+assertType('123.0', round('123'));
+assertType('123.0', round('123.456'));
 assertType('float', round(null));
 assertType('float', round($maybeNull));
 assertType('float', round(true));
@@ -30,8 +30,8 @@ assertType('(float|false)', round($_GET['foo']));
 assertType('123.0', ceil(123));
 assertType('124.0', ceil(123.456));
 assertType('float', ceil($_GET['foo'] / 60));
-assertType('float', ceil('123'));
-assertType('float', ceil('123.456'));
+assertType('123.0', ceil('123'));
+assertType('124.0', ceil('123.456'));
 assertType('float', ceil(null));
 assertType('float', ceil($maybeNull));
 assertType('float', ceil(true));
@@ -47,8 +47,8 @@ assertType('(float|false)', ceil($_GET['foo']));
 assertType('123.0', floor(123));
 assertType('123.0', floor(123.456));
 assertType('float', floor($_GET['foo'] / 60));
-assertType('float', floor('123'));
-assertType('float', floor('123.456'));
+assertType('123.0', floor('123'));
+assertType('123.0', floor('123.456'));
 assertType('float', floor(null));
 assertType('float', floor($maybeNull));
 assertType('float', floor(true));
@@ -132,6 +132,6 @@ function notConstant(float $floatUnion, float $precisionUnion, float $modeUnion,
 	assertType('float', round($floatUnion, $precisionUnion, PHP_ROUND_HALF_UP));
 	assertType('float', round($floatUnion, 0, $modeUnion));
 
-	assertType('float', round($IntOrNumStr));
-	assertType('float', round($floatOrNumStr));
+	assertType('1.0|3.0', round($IntOrNumStr));
+	assertType('1.0|2.0', round($floatOrNumStr));
 }

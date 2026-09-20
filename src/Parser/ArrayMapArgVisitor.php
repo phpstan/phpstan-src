@@ -5,6 +5,7 @@ namespace PHPStan\Parser;
 use Override;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
+use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_slice;
@@ -26,7 +27,7 @@ final class ArrayMapArgVisitor extends NodeVisitorAbstract
 			$functionName = $node->name->toLowerString();
 			if ($functionName === 'array_map') {
 				$args = $node->getArgs();
-				$callbackArg = ArgumentPositionHelper::getArgsByPosition($args, self::PARAMETER_NAMES)[0] ?? null;
+				$callbackArg = ArgumentsNormalizer::getArgsByPosition($args, self::PARAMETER_NAMES)[0] ?? null;
 				if ($callbackArg === null) {
 					return null;
 				}

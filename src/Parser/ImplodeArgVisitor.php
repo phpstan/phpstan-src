@@ -5,6 +5,7 @@ namespace PHPStan\Parser;
 use Override;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
+use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use function in_array;
@@ -24,7 +25,7 @@ final class ImplodeArgVisitor extends NodeVisitorAbstract
 		if ($node instanceof Node\Expr\FuncCall && $node->name instanceof Node\Name && !$node->isFirstClassCallable()) {
 			$functionName = $node->name->toLowerString();
 			if (in_array($functionName, ['implode', 'join'], true)) {
-				$args = ArgumentPositionHelper::getArgsByPosition($node->getArgs(), self::PARAMETER_NAMES);
+				$args = ArgumentsNormalizer::getArgsByPosition($node->getArgs(), self::PARAMETER_NAMES);
 				// implode(array: $a) leaves the first parameter unfilled
 				$markedArg = $args[0] ?? $args[1] ?? null;
 				if ($markedArg !== null) {

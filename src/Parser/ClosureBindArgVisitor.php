@@ -6,6 +6,7 @@ use Override;
 use PhpParser\Node;
 use PhpParser\Node\Identifier;
 use PhpParser\NodeVisitorAbstract;
+use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use function count;
@@ -32,7 +33,7 @@ final class ClosureBindArgVisitor extends NodeVisitorAbstract
 		) {
 			$args = $node->getArgs();
 			if (count($args) > 1) {
-				$args = ArgumentPositionHelper::getArgsByPosition($args, self::PARAMETER_NAMES);
+				$args = ArgumentsNormalizer::getArgsByPosition($args, self::PARAMETER_NAMES);
 				if (isset($args[0])) {
 					$args[0]->setAttribute(self::ATTRIBUTE_NAME, true);
 				}

@@ -6,6 +6,7 @@ use Override;
 use PhpParser\Node;
 use PhpParser\Node\Identifier;
 use PhpParser\NodeVisitorAbstract;
+use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 
@@ -27,7 +28,7 @@ final class ClosureBindToVarVisitor extends NodeVisitorAbstract
 			&& $node->name->toLowerString() === 'bindto'
 			&& !$node->isFirstClassCallable()
 		) {
-			$args = ArgumentPositionHelper::getArgsByPosition($node->getArgs(), self::PARAMETER_NAMES);
+			$args = ArgumentsNormalizer::getArgsByPosition($node->getArgs(), self::PARAMETER_NAMES);
 			if (isset($args[0])) {
 				$args[0]->setAttribute(self::ATTRIBUTE_NAME, $node->var);
 			}

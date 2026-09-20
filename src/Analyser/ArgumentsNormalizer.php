@@ -23,6 +23,7 @@ use PHPStan\Type\Constant\ConstantArrayType;
 use function array_is_list;
 use function array_key_exists;
 use function array_keys;
+use function array_search;
 use function array_values;
 use function count;
 use function is_string;
@@ -303,14 +304,7 @@ final class ArgumentsNormalizer
 			return [];
 		}
 
-		$hasNamedArgs = false;
-		foreach ($callArgs as $arg) {
-			if ($arg->name !== null) {
-				$hasNamedArgs = true;
-				break;
-			}
-		}
-		if (!$hasNamedArgs) {
+		if (!self::hasNamedArgs($callArgs)) {
 			return array_values($callArgs);
 		}
 
@@ -441,6 +435,62 @@ final class ArgumentsNormalizer
 		}
 
 		return $reorderedArgs;
+	}
+
+	/**
+	 * Maps the arguments of a call onto the positions of the callee's parameters,
+	 * leaving out named arguments that don't match any of $parameterNames.
+	 *
+	 * Unlike reorderArgs() this doesn't need a ParametersAcceptor - the caller
+	 * spells out the parameter names it knows about, so it also works in the
+	 * parser visitors, which run before any reflection is available. It also
+	 * returns the original Arg objects instead of copies, which is what makes
+	 * the attributes those visitors set visible on the analysed AST.
+	 *
+	 * @internal
+	 * @param Arg[] $args
+	 * @param list<string> $parameterNames parameter names in signature order
+	 * @return array<int, Arg>
+	 */
+	public static function getArgsByPosition(array $args, array $parameterNames): array
+	{
+		if (!self::hasNamedArgs($args)) {
+			return $args;
+		}
+
+		$argsByPosition = [];
+		foreach ($args as $i => $arg) {
+			if ($arg->name === null) {
+				// positional arguments always precede named ones
+				$argsByPosition[$i] = $arg;
+				continue;
+			}
+
+			$position = array_search($arg->name->toString(), $parameterNames, true);
+			if ($position === false) {
+				continue;
+			}
+
+			$argsByPosition[$position] = $arg;
+		}
+
+		return $argsByPosition;
+	}
+
+	/**
+	 * @param Arg[] $args
+	 */
+	private static function hasNamedArgs(array $args): bool
+	{
+		foreach ($args as $arg) {
+			if ($arg->name === null) {
+				continue;
+			}
+
+			return true;
+		}
+
+		return false;
 	}
 
 	/**

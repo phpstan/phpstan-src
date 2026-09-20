@@ -14,6 +14,7 @@ use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\IdentifierRuleError;
+use PHPStan\Rules\NonStringableDynamicAccessCheck;
 use PHPStan\Rules\Rule;
 use function array_merge;
 
@@ -27,6 +28,7 @@ final class CallMethodsRule implements Rule
 	public function __construct(
 		private MethodCallCheck $methodCallCheck,
 		private FunctionCallParametersCheck $parametersCheck,
+		private NonStringableDynamicAccessCheck $nonStringableDynamicAccessCheck,
 	)
 	{
 	}
@@ -48,6 +50,14 @@ final class CallMethodsRule implements Rule
 				$name = $constantString->getValue();
 				$methodNameScopes[$name] = $scope->filterByTruthyValue(new Identical($node->name, new String_($name)));
 			}
+
+			$errors = array_merge($errors, $this->nonStringableDynamicAccessCheck->checkStringName(
+				$scope,
+				$node->name,
+				'Method name for %s must be a string, but %s was given.',
+				$node->var,
+				'method.nameNotString',
+			));
 		}
 
 		foreach ($methodNameScopes as $methodName => $methodScope) {

@@ -5,11 +5,9 @@ namespace PHPStan\Rules\Classes;
 use PhpParser\Node;
 use PhpParser\Node\Expr\BinaryOp\Identical;
 use PhpParser\Node\Expr\ClassConstFetch;
-use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\String_;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
-use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Php\PhpVersion;
@@ -18,6 +16,7 @@ use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\ClassNameUsageLocation;
 use PHPStan\Rules\IdentifierRuleError;
+use PHPStan\Rules\NonStringableDynamicAccessCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -44,8 +43,7 @@ final class ClassConstantRule implements Rule
 		private RuleLevelHelper $ruleLevelHelper,
 		private ClassNameCheck $classCheck,
 		private PhpVersion $phpVersion,
-		#[AutowiredParameter(ref: '%featureToggles.checkNonStringableDynamicAccess%')]
-		private bool $checkNonStringableDynamicAccess,
+		private NonStringableDynamicAccessCheck $nonStringableDynamicAccessCheck,
 	)
 	{
 	}
@@ -68,25 +66,13 @@ final class ClassConstantRule implements Rule
 				$constantNameScopes[$name] = $scope->filterByTruthyValue(new Identical($node->name, new String_($name)));
 			}
 
-			if ($this->checkNonStringableDynamicAccess) {
-				$nameTypeResult = $this->ruleLevelHelper->findTypeToCheck(
-					$scope,
-					$node->name,
-					'',
-					static fn (Type $type) => $type->isString()->yes(),
-				);
-
-				$nameType = $nameTypeResult->getType();
-				if (!$nameType instanceof ErrorType && !$nameType->isString()->yes()) {
-					$className = $node->class instanceof Name
-						? $scope->resolveName($node->class)
-						: $scope->getType($node->class)->describe(VerbosityLevel::typeOnly());
-
-					$errors[] = RuleErrorBuilder::message(sprintf('Class constant name for %s must be a string, but %s was given.', $className, $nameType->describe(VerbosityLevel::precise())))
-						->identifier('classConstant.nameNotString')
-						->build();
-				}
-			}
+			$errors = array_merge($errors, $this->nonStringableDynamicAccessCheck->checkStringName(
+				$scope,
+				$node->name,
+				'Class constant name for %s must be a string, but %s was given.',
+				$node->class,
+				'classConstant.nameNotString',
+			));
 		}
 
 		foreach ($constantNameScopes as $constantName => $constantScope) {

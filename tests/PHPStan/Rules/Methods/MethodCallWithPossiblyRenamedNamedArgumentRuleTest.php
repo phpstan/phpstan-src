@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Methods;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\Php\PhpClassReflectionExtension;
 use PHPStan\Rules\FunctionCallParametersCheck;
+use PHPStan\Rules\NonStringableDynamicAccessCheck;
 use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
@@ -33,6 +34,7 @@ class MethodCallWithPossiblyRenamedNamedArgumentRuleTest extends RuleTestCase
 			new CallMethodsRule(
 				new MethodCallCheck($reflectionProvider, $ruleLevelHelper, true, true),
 				new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), $reflectionProvider, true, true, true, true),
+				new NonStringableDynamicAccessCheck($ruleLevelHelper, true),
 			),
 			new OverridingMethodRule(
 				$phpVersion,

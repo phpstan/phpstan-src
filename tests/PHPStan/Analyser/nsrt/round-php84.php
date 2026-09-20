@@ -18,3 +18,12 @@ function constantRoundingMode(): void
 
     assertType('10.0', round(9.5, mode: \RoundingMode::HalfAwayFromZero));
 }
+
+
+/**
+ * @param \RoundingMode::HalfEven|\RoundingMode::HalfOdd $mode
+ */
+function nonConstantRoundingMode(\RoundingMode $mode): void
+{
+	assertType('float', round(9.5, 0, $mode));
+}

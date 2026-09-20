@@ -64,8 +64,8 @@ being ≥0.5% faster is. When the estimate is marginal, don't port.
    `Runtime::classRefs()`). Never reference a shadowed class this way — the
    native code holds its class entry (the `shadow(&pt_ce_x)` out-pointer)
    and instantiates it directly.
-5. **Mark the class** with `#[ShadowedByTurboExtension(turboClass:
-   'PHPStanTurbo\Foo', implementation: __DIR__ . '/../turbo-ext/src/Foo.cpp')]`
+5. **Mark the class** with
+   `#[ShadowedByTurboExtension(implementation: __DIR__ . '/../turbo-ext/src/Foo.cpp')]`
    and run `composer dump-autoload` — `build/generate-turbo-manifest.php`
    regenerates the manifest of shadowed pairs in
    `vendor/turbo-shadowed-classes.json` and the class map in

@@ -19,7 +19,7 @@ use function substr;
  * @see https://github.com/composer/composer/pull/10107
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(turboClass: 'PHPStanTurbo\PhpFileCleaner', implementation: __DIR__ . '/../../../../turbo-ext/src/PhpFileCleaner.cpp')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/PhpFileCleaner.cpp')]
 final class PhpFileCleaner
 {
 

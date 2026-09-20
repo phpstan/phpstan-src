@@ -20,7 +20,7 @@ use function str_contains;
 use function strtolower;
 
 #[AutowiredService]
-#[ShadowedByTurboExtension(turboClass: 'PHPStanTurbo\SymbolFinderInFiles', implementation: __DIR__ . '/../../../../turbo-ext/src/SymbolFinderInFiles.cpp')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/SymbolFinderInFiles.cpp')]
 final class SymbolFinderInFiles
 {
 

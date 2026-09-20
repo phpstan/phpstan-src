@@ -43,7 +43,7 @@ use function substr_compare;
 /**
  * Hot scope-table operations extracted from MutatingScope.
  */
-#[ShadowedByTurboExtension(turboClass: 'PHPStanTurbo\ScopeOps', implementation: __DIR__ . '/../../turbo-ext/src/ScopeOps.cpp')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ScopeOps.cpp')]
 final class ScopeOps
 {
 

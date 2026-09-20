@@ -6,7 +6,7 @@ use PhpParser\Node\Expr;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use SplObjectStorage;
 
-#[ShadowedByTurboExtension(turboClass: 'PHPStanTurbo\ExpressionResultStorage', implementation: __DIR__ . '/../../turbo-ext/src/ExpressionResultStorage.cpp')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ExpressionResultStorage.cpp')]
 final class ExpressionResultStorage
 {
 

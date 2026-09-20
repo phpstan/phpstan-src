@@ -21,7 +21,7 @@ use PHPStan\Turbo\ShadowedByTurboExtension;
  *
  * @internal
  */
-#[ShadowedByTurboExtension(turboClass: 'PHPStanTurbo\TypeCombinatorCache', implementation: __DIR__ . '/../../turbo-ext/src/TypeCombinatorCache.cpp')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/TypeCombinatorCache.cpp')]
 final class TypeCombinatorCache
 {
 

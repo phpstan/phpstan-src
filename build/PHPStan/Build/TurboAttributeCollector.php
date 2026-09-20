@@ -71,9 +71,9 @@ final class TurboAttributeCollector
 {
 
 	// Shadowed classes living in vendor/ cannot carry the attribute, so
-	// their pairs are hardcoded. Class name => [test name, .cpp]
+	// their pairs are hardcoded. Class name => .cpp
 	private const VENDORED_PAIRS = [
-		NodeTraverser::class => ['PHPStanTurbo\NodeTraverser', 'turbo-ext/src/NodeTraverser.cpp'],
+		NodeTraverser::class => 'turbo-ext/src/NodeTraverser.cpp',
 	];
 
 	// Classes the native code references that live in vendor/ cannot carry
@@ -183,7 +183,7 @@ final class TurboAttributeCollector
 			$attributes = $reflection->getAttributes(ShadowedByTurboExtension::class);
 			if (count($attributes) > 0) {
 				$attribute = $attributes[0]->newInstance();
-				$pairs[$className] = [$attribute->turboClass, $this->relativize($attribute->implementation)];
+				$pairs[$className] = $this->relativize($attribute->implementation);
 			}
 
 			foreach ($reflection->getAttributes(ReferencedByTurboExtension::class) as $referencedAttribute) {
@@ -201,19 +201,24 @@ final class TurboAttributeCollector
 		ksort($referenced);
 
 		$manifest = [];
-		foreach ($pairs as $className => [$turboClass, $cppFile]) {
+		$byShortName = [];
+		foreach ($pairs as $className => $cppFile) {
 			$reflection = new ReflectionClass($className);
 			$fileName = $reflection->getFileName();
 			if ($fileName === false) {
 				throw new RuntimeException(sprintf('%s has no source file', $className));
 			}
 
-			// The differential tests declare the native class next to the
-			// twin under this name; the extension derives it from the real
-			// name, so the attribute must agree with that rule.
-			if ($turboClass !== 'PHPStanTurbo\\' . $reflection->getShortName()) {
-				throw new RuntimeException(sprintf('%s names its native class %s, expected PHPStanTurbo\\%s', $className, $turboClass, $reflection->getShortName()));
+			// The name the differential tests declare the native class under
+			// next to its twin, derived the way the extension derives it -
+			// so two shadowed classes sharing a short name would arrive at
+			// one native name and silently shadow each other there.
+			$shortName = $reflection->getShortName();
+			if (isset($byShortName[$shortName])) {
+				throw new RuntimeException(sprintf('%s and %s share the short name %s, so both would be declared as PHPStanTurbo\\%s next to their twins', $byShortName[$shortName], $className, $shortName, $shortName));
 			}
+			$byShortName[$shortName] = $className;
+			$turboClass = 'PHPStanTurbo\\' . $shortName;
 
 			$parent = $reflection->getParentClass();
 			$phpFile = $this->relativize($fileName);

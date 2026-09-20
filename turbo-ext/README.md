@@ -90,9 +90,10 @@ The consequences for a port:
   types may still be erased (contravariance allows it).
 - The differential tests run the extension the other way round:
   `tests/activate-prefixed.php` declares the native classes as
-  `PHPStanTurbo\<ShortName>` next to the PHP twins in one process (the
-  attribute's `turboClass` names exactly that), so both sides can be
-  compared.
+  `PHPStanTurbo\<ShortName>` next to the PHP twins in one process, so both
+  sides can be compared. The manifest derives that name the way the
+  extension derives it, and rejects two shadowed classes sharing a short
+  name — they would arrive at one native name.
 
 Class names the native code references at run time come through
 `PHPStanTurbo\Runtime::configure()`: `TurboExtensionEnabler` feeds it the

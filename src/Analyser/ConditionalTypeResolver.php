@@ -15,41 +15,47 @@ use function array_key_exists;
 use function substr;
 
 /**
- * Resolves conditional `@throws` types like `($x is 0 ? Exception : void)` and
- * `(TKey is int ? void : Exception)`.
+ * Resolves conditional types like `($x is 0 ? Exception : void)` and
+ * `(TKey is int ? void : Exception)` declared in PHPDoc tags that live on the
+ * function or method reflection instead of on the ParametersAcceptor - `@throws`
+ * and `@phpstan-self-out`.
  *
- * The same `ConditionalTypeForParameter` and `ConditionalType` representations
- * used for conditional return types are resolved here against either the
- * arguments passed at a call site (so callers see whether the call throws) or
- * against the parameter variables inside the function body (so the body's throw
- * points are matched against the declared `@throws` type).
+ * Tags carried by the ParametersAcceptor (`@return`, `@param`, `@param-out`,
+ * `@param-closure-this`) do not need this: ParametersAcceptorSelector::selectFromArgs()
+ * already hands back a ResolvedFunctionVariant that resolves them. `@phpstan-assert`
+ * does its own resolution in TypeSpecifier because its subjects are argument
+ * expressions rather than types.
+ *
+ * Either side of the resolution is supported: against the arguments passed at a
+ * call site (so callers see the branch their arguments select), or against the
+ * parameter variables inside the function body.
  */
-final class ConditionalThrowTypeResolver
+final class ConditionalTypeResolver
 {
 
 	/**
-	 * Resolves a conditional `@throws` type against a call site. A `ResolvedFunctionVariant`
+	 * Resolves a conditional type against a call site. A `ResolvedFunctionVariant`
 	 * already holds the call's bound arguments and inferred template types and knows how to
 	 * resolve a conditional type the same way it resolves a conditional return type — both
 	 * `ConditionalTypeForParameter` (e.g. `($x is 0 ? Exception : void)`) and `ConditionalType`
 	 * whose subject is a template type (e.g. `(TKey is int ? void : Exception)`).
 	 *
 	 * `ParametersAcceptorSelector::selectFromArgs()` only resolves the variant when the return
-	 * or parameter types are conditional/generic — it does not know about the throws type — so
-	 * when the throws type is the only conditional one, the variant is resolved here from the
-	 * passed arguments via `GenericParametersAcceptorResolver`.
+	 * or parameter types are conditional/generic — it does not know about the types declared by
+	 * the tags resolved here — so the variant is resolved from the passed arguments via
+	 * `GenericParametersAcceptorResolver`.
 	 *
 	 * @param Arg[] $args
 	 */
 	public static function resolveForCall(
-		Type $throwType,
+		Type $declaredType,
 		ParametersAcceptor $parametersAcceptor,
 		array $args,
 		Scope $scope,
 	): Type
 	{
-		if (!$throwType->hasTemplateOrLateResolvableType()) {
-			return $throwType;
+		if (!$declaredType->hasTemplateOrLateResolvableType()) {
+			return $declaredType;
 		}
 
 		// selectFromArgs() may hand back a variant that is not bound to this call's arguments
@@ -66,20 +72,20 @@ final class ConditionalThrowTypeResolver
 
 		$resolvedAcceptor = GenericParametersAcceptorResolver::resolve($argTypes, $originalAcceptor);
 		if (!$resolvedAcceptor instanceof ResolvedFunctionVariant) {
-			return $throwType;
+			return $declaredType;
 		}
 
-		return $resolvedAcceptor->resolveConditionalTypes($throwType);
+		return $resolvedAcceptor->resolveConditionalTypes($declaredType);
 	}
 
-	public static function resolveForScope(Type $throwType, Scope $scope): Type
+	public static function resolveForScope(Type $declaredType, Scope $scope): Type
 	{
-		if (!$throwType->hasTemplateOrLateResolvableType()) {
-			return $throwType;
+		if (!$declaredType->hasTemplateOrLateResolvableType()) {
+			return $declaredType;
 		}
 
 		$passedArgs = [];
-		foreach (self::collectParameterNames($throwType) as $parameterName) {
+		foreach (self::collectParameterNames($declaredType) as $parameterName) {
 			$variableName = substr($parameterName, 1);
 			if (!$scope->hasVariableType($variableName)->yes()) {
 				continue;
@@ -88,25 +94,25 @@ final class ConditionalThrowTypeResolver
 			$passedArgs[$parameterName] = $scope->getType(new Variable($variableName));
 		}
 
-		$throwType = self::mapConditionalTypesForParameter($throwType, $passedArgs);
+		$declaredType = self::mapConditionalTypesForParameter($declaredType, $passedArgs);
 
 		// A ConditionalType whose subject is a template type cannot be resolved to a single
 		// branch inside the function body (the template is not bound to a concrete type there),
-		// so it is conservatively collapsed to the union of its branches — the broadest set of
-		// exceptions the declaration permits — rather than left as a Maybe-certain conditional.
-		return TypeUtils::resolveLateResolvableTypes($throwType, true);
+		// so it is conservatively collapsed to the union of its branches — the broadest type the
+		// declaration permits — rather than left as a Maybe-certain conditional.
+		return TypeUtils::resolveLateResolvableTypes($declaredType, true);
 	}
 
 	/**
 	 * @param array<string, Type> $passedArgs
 	 */
-	private static function mapConditionalTypesForParameter(Type $throwType, array $passedArgs): Type
+	private static function mapConditionalTypesForParameter(Type $declaredType, array $passedArgs): Type
 	{
 		if ($passedArgs === []) {
-			return $throwType;
+			return $declaredType;
 		}
 
-		return TypeTraverser::map($throwType, static function (Type $type, callable $traverse) use ($passedArgs): Type {
+		return TypeTraverser::map($declaredType, static function (Type $type, callable $traverse) use ($passedArgs): Type {
 			if ($type instanceof ConditionalTypeForParameter && array_key_exists($type->getParameterName(), $passedArgs)) {
 				$type = $traverse($type);
 				if ($type instanceof ConditionalTypeForParameter) {
@@ -123,10 +129,10 @@ final class ConditionalThrowTypeResolver
 	/**
 	 * @return list<string>
 	 */
-	private static function collectParameterNames(Type $throwType): array
+	private static function collectParameterNames(Type $declaredType): array
 	{
 		$names = [];
-		TypeTraverser::map($throwType, static function (Type $type, callable $traverse) use (&$names): Type {
+		TypeTraverser::map($declaredType, static function (Type $type, callable $traverse) use (&$names): Type {
 			if ($type instanceof ConditionalTypeForParameter) {
 				$names[] = $type->getParameterName();
 			}

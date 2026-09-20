@@ -863,18 +863,17 @@ final class FunctionDefinitionCheck
 				return [];
 			}
 
-			$originalParts = $originalName->getParts();
+			$originalPartsCount = count($originalName->getParts());
 			$resolvedParts = $typeNode->getParts();
-
-			$originalPartsCount = count($originalParts);
 			$resolvedPartsCount = count($resolvedParts);
 
-			if ($originalPartsCount <= $resolvedPartsCount) {
-				$prefixParts = array_slice($resolvedParts, 0, $resolvedPartsCount - $originalPartsCount);
-				$originalCaseClassName = implode('\\', array_merge($prefixParts, $originalParts));
-			} else {
-				$originalCaseClassName = $originalName->toString();
-			}
+			// the original name takes over the last parts of the resolved name,
+			// the parts it does not cover stay as resolved
+			$prefixParts = $originalPartsCount <= $resolvedPartsCount
+				? array_slice($resolvedParts, 0, $resolvedPartsCount - $originalPartsCount)
+				: [];
+			$prefix = $prefixParts === [] ? '' : implode('\\', $prefixParts) . '\\';
+			$originalCaseClassName = $prefix . $originalName->toString();
 
 			if ($originalCaseClassName === $resolvedName) {
 				return [];

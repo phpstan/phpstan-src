@@ -22,8 +22,4 @@ class Name extends NodeAbstract
     /** @return non-empty-string */
     public function toCodeString() : string {
     }
-
-    /** @return non-empty-list<non-empty-string> */
-    public function getParts() : array {
-    }
 }

@@ -208,6 +208,11 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 		return $this->parametersAcceptor->getNativeReturnType();
 	}
 
+	public function hasBoundArgs(): bool
+	{
+		return $this->passedArgs !== [];
+	}
+
 	public function resolveConditionalTypes(Type $type): Type
 	{
 		return TypeUtils::resolveLateResolvableTypes(

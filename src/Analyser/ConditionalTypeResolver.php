@@ -56,9 +56,16 @@ final class ConditionalTypeResolver
 			return $declaredType;
 		}
 
-		// selectFromArgs() may hand back a variant that is not bound to this call's arguments
-		// (either an unresolved acceptor, or a method variant whose passedArgs are empty),
-		// so always resolve from this call's argument types against the original acceptor.
+		// A variant already bound to this call's arguments has the template types inferred
+		// from everything the call knows - including a closure argument's return type, which
+		// the argument type alone no longer tells - so it resolves the type as it is.
+		if ($parametersAcceptor instanceof ResolvedFunctionVariant && $parametersAcceptor->hasBoundArgs()) {
+			return $parametersAcceptor->resolveConditionalTypes($declaredType);
+		}
+
+		// Otherwise the acceptor is not bound to this call (an unresolved acceptor, or a method
+		// variant resolved only against the generics of the class it is called on), so the
+		// variant is resolved here from this call's argument types.
 		$originalAcceptor = $parametersAcceptor instanceof ResolvedFunctionVariant
 			? $parametersAcceptor->getOriginalParametersAcceptor()
 			: $parametersAcceptor;

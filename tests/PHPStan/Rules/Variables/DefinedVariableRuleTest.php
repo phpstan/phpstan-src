@@ -466,6 +466,35 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9392.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testNullsafeShortCircuitArgs(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->analyse([__DIR__ . '/data/nullsafe-short-circuit-args.php'], [
+			[
+				'Variable $a might not be defined.',
+				37,
+			],
+			[
+				'Variable $b might not be defined.',
+				43,
+			],
+			[
+				'Variable $c might not be defined.',
+				49,
+			],
+			[
+				'Variable $d might not be defined.',
+				55,
+			],
+			[
+				'Variable $e might not be defined.',
+				61,
+			],
+		]);
+	}
+
 	public function testBug14418(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;

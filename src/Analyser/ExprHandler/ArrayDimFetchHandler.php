@@ -104,6 +104,13 @@ final class ArrayDimFetchHandler implements ExprHandler
 		$impurePoints = array_merge($dimResult->getImpurePoints(), $varResult->getImpurePoints());
 
 		$varType = $varResult->getType();
+		// an offset read that is a link in a nullsafe chain may never run - see
+		// MethodCallHandler::processExpr(). The dimension is walked BEFORE the
+		// receiver here, so the short-circuited world is the pre-dimension scope.
+		$mayShortCircuit = $varResult->containsNullsafe() && TypeCombinator::containsNull($varType);
+		if ($mayShortCircuit) {
+			$scope = $scope->mergeWith($beforeScope);
+		}
 		$offsetGetCall = null;
 		if (!$varType->isArray()->yes() && !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->no()) {
 			$throwPoints = array_merge($throwPoints, $this->methodThrowPointHelper->getThrowPointsForCallOnType(
@@ -123,9 +130,17 @@ final class ArrayDimFetchHandler implements ExprHandler
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
-			variableFlow: VariableFlow::sequence($varResult->getVariableFlow(), $dimResult->getVariableFlow(), self::offsetRead($expr, $dimResult, $context), VariableFlowBuilder::throws($expr, $throwPoints)),
+			variableFlow: VariableFlow::sequence(
+				$varResult->getVariableFlow(),
+				// the dimension was not evaluated in the short-circuited world
+				$mayShortCircuit
+					? VariableFlow::choice($dimResult->getVariableFlow(), null)
+					: $dimResult->getVariableFlow(),
+				self::offsetRead($expr, $dimResult, $context),
+				VariableFlowBuilder::throws($expr, $throwPoints),
+			),
 			hasYield: $dimResult->hasYield() || $varResult->hasYield(),
-			isAlwaysTerminating: $dimResult->isAlwaysTerminating() || $varResult->isAlwaysTerminating(),
+			isAlwaysTerminating: (!$mayShortCircuit && $dimResult->isAlwaysTerminating()) || $varResult->isAlwaysTerminating(),
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
 			containsNullsafe: $varResult->containsNullsafe(),

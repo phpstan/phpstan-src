@@ -348,6 +348,27 @@ final class DefaultNarrowingHelper
 	}
 
 	/**
+	 * Whether a plain call whose receiver chain contains a `?->` may not have run
+	 * at all in the branch $context describes: the chain short-circuits to null,
+	 * which is falsey but neither `true` nor `false`. Everything the callee's
+	 * PHPDoc says about the state after the call (@phpstan-assert, conditional
+	 * return types, type-specifying extensions) only holds when it did run, so
+	 * such a branch must not receive that narrowing.
+	 */
+	public function callMayHaveBeenSkipped(?ExpressionResult $receiverResult, Type $receiverType, TypeSpecifierContext $context): bool
+	{
+		if ($receiverResult === null || !$receiverResult->containsNullsafe()) {
+			return false;
+		}
+
+		if (!$context->null() && !$context->falseyButNotFalse()) {
+			return false;
+		}
+
+		return TypeCombinator::containsNull($receiverType);
+	}
+
+	/**
 	 * Whether the constraint (or the subject's own type) rules the nullsafe
 	 * short-circuit null out, so the chain's receivers can narrow not-null.
 	 */

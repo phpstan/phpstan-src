@@ -15,4 +15,6 @@ function constantRoundingMode(): void
 	assertType('float', round(9.5, 0, \RoundingMode::AwayFromZero));
 	assertType('float', round(9.5, 0, \RoundingMode::NegativeInfinity));
 	assertType('float', round(9.5, 0, \RoundingMode::PositiveInfinity));
+
+    assertType('10.0', round(9.5, mode: \RoundingMode::HalfAwayFromZero));
 }

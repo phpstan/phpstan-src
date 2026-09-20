@@ -198,11 +198,21 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 		$returnValueTypes = [];
 
 		foreach ($constantScalarValues as $constantScalarValue) {
-			if (!is_int($constantScalarValue) && !is_float($constantScalarValue)) {
-				return null;
+			if (is_int($constantScalarValue) || is_float($constantScalarValue)) {
+				$returnValueTypes[] = new ConstantFloatType($proc($constantScalarValue));
+				continue;
 			}
 
-			$returnValueTypes[] = new ConstantFloatType($proc($constantScalarValue));
+			if (
+				!$scope->isDeclareStrictTypes()
+				&& is_string($constantScalarValue)
+				&& is_numeric($constantScalarValue)
+			) {
+				$returnValueTypes[] = new ConstantFloatType($proc($constantScalarValue));
+				continue;
+			}
+
+			return null;
 		}
 
 		if (count($returnValueTypes) >= 1) {

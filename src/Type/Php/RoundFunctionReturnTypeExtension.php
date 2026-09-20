@@ -144,13 +144,18 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 			return null;
 		}
 
-		return match ($enumCase->getEnumCaseName()) {
-			'HalfAwayFromZero' => PHP_ROUND_HALF_UP,
-			'HalfTowardsZero' => PHP_ROUND_HALF_DOWN,
-			'HalfEven' => PHP_ROUND_HALF_EVEN,
-			'HalfOdd' => PHP_ROUND_HALF_ODD,
-			default => null,
-		};
+		switch ($enumCase->getEnumCaseName()) {
+			case 'HalfAwayFromZero':
+				return PHP_ROUND_HALF_UP;
+			case 'HalfTowardsZero':
+				return PHP_ROUND_HALF_DOWN;
+			case 'HalfEven':
+				return PHP_ROUND_HALF_EVEN;
+			case 'HalfOdd':
+				return PHP_ROUND_HALF_ODD;
+			default:
+				return null;
+		}
 	}
 
 	/**

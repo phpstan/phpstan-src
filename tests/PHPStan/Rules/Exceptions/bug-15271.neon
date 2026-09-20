@@ -1,4 +1,0 @@
-parameters:
-    exceptions:
-        check:
-            missingCheckedExceptionInThrows: true

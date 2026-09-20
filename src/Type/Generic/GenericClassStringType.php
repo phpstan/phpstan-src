@@ -129,26 +129,20 @@ class GenericClassStringType extends ClassStringType
 			$genericType = $genericType->getBound();
 		}
 
-		// We are transforming constant class-string to ObjectType. But we need to filter out
-		// an uncertainty originating in possible ObjectType's class subtypes.
-		return self::eraseTypeArguments($genericType)->isSuperTypeOf(new ObjectType($className));
-	}
-
-	/**
-	 * A class-string carries a class name and never its type arguments, so the type
-	 * arguments must not take part in the comparison against a constant class-string:
-	 * `X::class` is a value of `class-string<X<int>>` and of `class-string<X<*>>` just
-	 * like it is of `class-string<X>`.
-	 */
-	private static function eraseTypeArguments(Type $type): Type
-	{
-		return TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
+		// A class-string carries a class name and never its type arguments, so the type
+		// arguments must not take part in the comparison: `X::class` is a value of
+		// `class-string<X<int>>` and of `class-string<X<*>>` just like it is of `class-string<X>`.
+		$genericType = TypeTraverser::map($genericType, static function (Type $type, callable $traverse): Type {
 			if ($type instanceof GenericObjectType) {
 				return new ObjectType($type->getClassName(), $type->getSubtractedType());
 			}
 
 			return $traverse($type);
 		});
+
+		// We are transforming constant class-string to ObjectType. But we need to filter out
+		// an uncertainty originating in possible ObjectType's class subtypes.
+		return $genericType->isSuperTypeOf(new ObjectType($className));
 	}
 
 	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult

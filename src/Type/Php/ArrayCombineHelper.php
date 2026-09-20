@@ -98,9 +98,9 @@ final class ArrayCombineHelper
 					return [new NeverType(), TrinaryLogic::createNo()];
 				}
 
-				$keyType = $itemType->toString();
+				$keyType = $itemType->toString()->toArrayKey();
 			} else {
-				$keyType = $itemType;
+				$keyType = $itemType->toArrayKey();
 			}
 		} else {
 			$keyType = new MixedType();

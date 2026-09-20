@@ -104,3 +104,16 @@ function sealedArrayFlip(array $sealed, array $unsealed): void
 	assertType('array{1: int, 2: 1, 3: 2, 0?: int}', array_flip($unsealed));
 	assertType('int', array_flip($unsealed)[1]);
 }
+
+/**
+ * @param list<'1'|'2'> $constantIntStrings
+ * @param list<numeric-string> $numericStrings
+ * @param array{0: '1', 1: '2'} $sealedIntStrings
+ */
+function intStringArrayFlip(array $constantIntStrings, array $numericStrings, array $sealedIntStrings): void
+{
+	assertType('array{1: 0, 2: 1}', array_flip(['1', '2']));
+	assertType('array<1|2, int<0, max>>', array_flip($constantIntStrings));
+	assertType('array<int|numeric-string, int<0, max>>', array_flip($numericStrings));
+	assertType('array{1: 0, 2: 1}', array_flip($sealedIntStrings));
+}

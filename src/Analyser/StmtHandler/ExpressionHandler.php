@@ -23,6 +23,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\NoopExpressionNode;
 use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Node\VariableAssignNode;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use function array_filter;
@@ -104,7 +105,17 @@ final class ExpressionHandler implements StmtHandler
 		$scope = $result->getScope();
 		// the expression statement was just processed; read its narrowing from
 		// the result instead of re-resolving it via specifyTypesInCondition().
-		$scope = $scope->applySpecifiedTypes($result->getSpecifiedTypesForScope($scope, TypeSpecifierContext::createNull()));
+		$specifiedTypes = $result->getSpecifiedTypesForScope($scope, TypeSpecifierContext::createNull());
+		$scope = $scope->applySpecifiedTypes($specifiedTypes);
+
+		if ($specifiedTypes->isEquality()) {
+			// Statement counterpart of ExpressionResult's equality handling:
+			// store the call's true result so a duplicate void assertion statement is
+			// reported as always-true. We assign directly because void calls have no
+			// return value to protect, and intersecting true with void would produce never.
+			$scope = $scope->assignExpression($stmt->expr, new ConstantBooleanType(true), new ConstantBooleanType(true));
+		}
+
 		$hasYield = $result->hasYield();
 		$throwPoints = $result->getThrowPoints();
 		$impurePoints = $result->getImpurePoints();

@@ -871,7 +871,10 @@ final class DefaultNarrowingHelper
 					$subjectResult,
 					$assertedType,
 					$assert->isNegated() ? TypeSpecifierContext::createFalse() : TypeSpecifierContext::createTrue(),
-				)->setRootExpr($containsUnresolvedTemplate || $assert->isEquality() ? $call : null);
+				);
+				if ($containsUnresolvedTemplate || $assert->isEquality()) {
+					$newTypes = $newTypes->setEquality();
+				}
 				$types = $types !== null ? $types->unionWith($newTypes) : $newTypes;
 
 				if (!$context->null() || (!$assertedType->isTrue()->yes() && !$assertedType->isFalse()->yes())) {

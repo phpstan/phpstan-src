@@ -4037,6 +4037,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	public function filterByTruthyValue(Expr $expr): self
 	{
 		$specifiedTypes = $this->typeSpecifier->specifyTypesInCondition($this, $expr, TypeSpecifierContext::createTruthy());
+		if ($specifiedTypes->isEquality() && $this->getType($expr)->isBoolean()->yes()) {
+			$specifiedTypes = $specifiedTypes->unionWith(
+				$this->typeSpecifier->create($expr, new ConstantBooleanType(true), TypeSpecifierContext::createTrue(), $this),
+			);
+		}
 
 		return $this->applySpecifiedTypes($specifiedTypes);
 	}
@@ -4047,6 +4052,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	public function filterByFalseyValue(Expr $expr): self
 	{
 		$specifiedTypes = $this->typeSpecifier->specifyTypesInCondition($this, $expr, TypeSpecifierContext::createFalsey());
+		if ($specifiedTypes->isEquality() && $this->getType($expr)->isBoolean()->yes()) {
+			$specifiedTypes = $specifiedTypes->unionWith(
+				$this->typeSpecifier->create($expr, new ConstantBooleanType(false), TypeSpecifierContext::createTrue(), $this),
+			);
+		}
 
 		return $this->applySpecifiedTypes($specifiedTypes);
 	}

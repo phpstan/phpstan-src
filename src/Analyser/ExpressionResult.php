@@ -4,11 +4,13 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr;
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\Traverser\VoidToNullTraverser;
 use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\DependencyInjection\GenerateFactory;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ExpressionTypeResolverExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
@@ -58,6 +60,7 @@ final class ExpressionResult
 	public function __construct(
 		#[AutowiredExtensions(of: ExpressionTypeResolverExtension::class)]
 		private ExtensionsCollection $expressionTypeResolverExtensions,
+		private DefaultNarrowingHelper $defaultNarrowingHelper,
 		private MutatingScope $scope,
 		private MutatingScope $beforeScope,
 		private Expr $expr,
@@ -117,6 +120,7 @@ final class ExpressionResult
 	{
 		return new self(
 			expressionTypeResolverExtensions: $this->expressionTypeResolverExtensions,
+			defaultNarrowingHelper: $this->defaultNarrowingHelper,
 			scope: $scope,
 			beforeScope: $this->beforeScope,
 			expr: $this->expr,
@@ -260,7 +264,10 @@ final class ExpressionResult
 		}
 
 		return $this->truthyScope = $this->scope->applySpecifiedTypes(
-			$this->getSpecifiedTypes(TypeSpecifierContext::createTruthy(), $this->scope->nativeTypesPromoted),
+			$this->withEqualityCheckResult(
+				$this->getSpecifiedTypes(TypeSpecifierContext::createTruthy(), $this->scope->nativeTypesPromoted),
+				true,
+			),
 		);
 	}
 
@@ -278,8 +285,33 @@ final class ExpressionResult
 		}
 
 		return $this->falseyScope = $this->scope->applySpecifiedTypes(
-			$this->getSpecifiedTypes(TypeSpecifierContext::createFalsey(), $this->scope->nativeTypesPromoted),
+			$this->withEqualityCheckResult(
+				$this->getSpecifiedTypes(TypeSpecifierContext::createFalsey(), $this->scope->nativeTypesPromoted),
+				false,
+			),
 		);
+	}
+
+	/**
+	 * An equality check narrows its operands as a side effect of running, without
+	 * its outcome being determined by them (`@phpstan-assert-if-true =Type`, the
+	 * str_contains()/array_key_exists() extensions). Nothing in such a narrowing
+	 * records what the check itself returned, so the branch scope stores it here -
+	 * that is what makes a duplicate check in the branch report as always-true.
+	 */
+	private function withEqualityCheckResult(SpecifiedTypes $specifiedTypes, bool $value): SpecifiedTypes
+	{
+		if (!$specifiedTypes->isEquality() || !$this->getType()->isBoolean()->yes()) {
+			return $specifiedTypes;
+		}
+
+		return $specifiedTypes->unionWith($this->defaultNarrowingHelper->createSubjectTypes(
+			$this->scope,
+			$this->expr,
+			$this,
+			new ConstantBooleanType($value),
+			TypeSpecifierContext::createTrue(),
+		));
 	}
 
 	public function isAlwaysTerminating(): bool
@@ -750,6 +782,7 @@ final class ExpressionResult
 
 		return new self(
 			expressionTypeResolverExtensions: $this->expressionTypeResolverExtensions,
+			defaultNarrowingHelper: $this->defaultNarrowingHelper,
 			scope: $scope,
 			beforeScope: $scope,
 			expr: $this->expr,
@@ -789,6 +822,7 @@ final class ExpressionResult
 	{
 		return new self(
 			expressionTypeResolverExtensions: $this->expressionTypeResolverExtensions,
+			defaultNarrowingHelper: $this->defaultNarrowingHelper,
 			scope: $scope,
 			beforeScope: $beforeScope,
 			expr: $this->expr,

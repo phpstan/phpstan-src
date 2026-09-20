@@ -308,6 +308,22 @@ class ImpossibleCheckTypeMethodCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10337.php'], []);
 	}
 
+	public function testBug14705(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-14705.php'], [
+			[
+				'Call to method Bug14705\Foo::isValid() with non-empty-string will always evaluate to true.',
+				87,
+				'If Bug14705\Foo::isValid() is impure, add <fg=cyan>@phpstan-impure</> PHPDoc tag above its declaration. Learn more: <fg=cyan>https://phpstan.org/blog/remembering-and-forgetting-returned-values</>',
+			],
+			[
+				'Call to method Bug14705\Foo::assertValid() with non-empty-string will always evaluate to true.',
+				107,
+			],
+		]);
+	}
+
 	public function testInTrait(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

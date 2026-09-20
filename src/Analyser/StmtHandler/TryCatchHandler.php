@@ -142,11 +142,7 @@ final class TryCatchHandler implements StmtHandler
 						if (!$throwPoint->isExplicit()) {
 							continue;
 						}
-						$throwNode = $throwPoint->getNode();
-						if (
-							!$throwNode instanceof Expr\Throw_
-							&& !($throwNode instanceof Node\Stmt\Expression && $throwNode->expr instanceof Expr\Throw_)
-						) {
+						if (!$throwPoint->isFromThrowExpr()) {
 							$onlyExplicitIsThrow = false;
 						}
 

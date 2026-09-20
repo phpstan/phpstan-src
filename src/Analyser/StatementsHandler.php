@@ -794,7 +794,9 @@ final class StatementsHandler
 					return [];
 				}
 
-				return [InternalThrowPoint::createExplicit($scope, $throwsType, $statement, false)];
+				$fromThrowExpr = $statement instanceof Node\Stmt\Expression && $statement->expr instanceof Expr\Throw_;
+
+				return [InternalThrowPoint::createExplicit($scope, $throwsType, $statement, false, $fromThrowExpr)];
 			}
 		}
 

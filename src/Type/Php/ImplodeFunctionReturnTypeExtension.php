@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
@@ -14,8 +15,9 @@ use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\DecimalIntegerStringHelper;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\IntersectionType;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -103,12 +105,52 @@ final class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnT
 			$accessoryTypes[] = new AccessoryUppercaseStringType();
 		}
 
+		if ($this->isNonDecimalIntegerString($arrayType, $valueTypeAsString, $separatorType)) {
+			$accessoryTypes[] = new AccessoryDecimalIntegerStringType(inverse: true);
+		}
+
 		if (count($accessoryTypes) > 0) {
 			$accessoryTypes[] = new StringType();
-			return new IntersectionType($accessoryTypes);
+			return TypeCombinator::intersect(...$accessoryTypes);
 		}
 
 		return new StringType();
+	}
+
+	/**
+	 * The separator ends up surrounded by values, and every value of a non-empty array ends up
+	 * somewhere in the result. So a constant separator or constant value that cannot occur
+	 * inside a decimal-int-string proves the whole result is not one.
+	 */
+	private function isNonDecimalIntegerString(Type $arrayType, Type $valueTypeAsString, Type $separatorType): bool
+	{
+		if (IntegerRangeType::fromInterval(2, null)->isSuperTypeOf($arrayType->getArraySize())->yes()) {
+			if ($this->allConstantStringsCannotBeInside($separatorType, !$valueTypeAsString->isNonEmptyString()->yes())) {
+				return true;
+			}
+		}
+
+		if (!$arrayType->isIterableAtLeastOnce()->yes()) {
+			return false;
+		}
+
+		return $this->allConstantStringsCannotBeInside($valueTypeAsString, true);
+	}
+
+	private function allConstantStringsCannotBeInside(Type $type, bool $restBeforeCanBeEmpty): bool
+	{
+		$constantStrings = $type->getConstantStrings();
+		if (count($constantStrings) === 0) {
+			return false;
+		}
+
+		foreach ($constantStrings as $constantString) {
+			if (DecimalIntegerStringHelper::canBeInside($constantString->getValue(), $restBeforeCanBeEmpty)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	private function inferConstantType(ConstantArrayType $arrayType, ConstantStringType $separatorType, bool $isNonEmpty): ?Type

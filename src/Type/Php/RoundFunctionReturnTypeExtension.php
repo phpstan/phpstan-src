@@ -162,8 +162,7 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 
 		foreach ($constantScalarValues as $constantScalarValue) {
 			if (!is_int($constantScalarValue) && !is_float($constantScalarValue)) {
-				$returnValueTypes = [];
-				break;
+				return null;
 			}
 
 			$returnValueTypes[] = new ConstantFloatType($proc($constantScalarValue));

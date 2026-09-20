@@ -121,10 +121,10 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 	}
 	/**
 	 * @return 1|2|3|4|null
+	 * // Fall back to the default return type for RoundingMode cases
+	 * // without a corresponding PHP_ROUND_HALF_* constant.
 	*/
 	private function resolveRoundMode(Type $modeType): ?int
-
-
 	{
 		$mode = $modeType->getConstantScalarValues();
 

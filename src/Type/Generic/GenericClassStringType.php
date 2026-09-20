@@ -23,6 +23,7 @@ use PHPStan\Type\StaticType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function count;
@@ -111,6 +112,45 @@ class GenericClassStringType extends ClassStringType
 		return $this->type->accepts($objectType, $strictTypes);
 	}
 
+	/**
+	 * Whether a class named $className can be the value behind `class-string<$genericType>`.
+	 *
+	 * @internal
+	 */
+	public static function isValueOfGenericType(Type $genericType, string $className): IsSuperTypeOfResult
+	{
+		if ($genericType instanceof StaticType) {
+			$genericType = $genericType->getStaticObjectType();
+		}
+
+		// Do not use TemplateType's isSuperTypeOf handling directly because it takes ObjectType
+		// uncertainty into account.
+		if ($genericType instanceof TemplateType) {
+			$genericType = $genericType->getBound();
+		}
+
+		// We are transforming constant class-string to ObjectType. But we need to filter out
+		// an uncertainty originating in possible ObjectType's class subtypes.
+		return self::eraseTypeArguments($genericType)->isSuperTypeOf(new ObjectType($className));
+	}
+
+	/**
+	 * A class-string carries a class name and never its type arguments, so the type
+	 * arguments must not take part in the comparison against a constant class-string:
+	 * `X::class` is a value of `class-string<X<int>>` and of `class-string<X<*>>` just
+	 * like it is of `class-string<X>`.
+	 */
+	private static function eraseTypeArguments(Type $type): Type
+	{
+		return TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
+			if ($type instanceof GenericObjectType) {
+				return new ObjectType($type->getClassName(), $type->getSubtractedType());
+			}
+
+			return $traverse($type);
+		});
+	}
+
 	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
 	{
 		if ($type instanceof CompoundType) {
@@ -123,21 +163,7 @@ class GenericClassStringType extends ClassStringType
 				return IsSuperTypeOfResult::createYes();
 			}
 
-			if ($genericType instanceof StaticType) {
-				$genericType = $genericType->getStaticObjectType();
-			}
-
-			// We are transforming constant class-string to ObjectType. But we need to filter out
-			// an uncertainty originating in possible ObjectType's class subtypes.
-			$objectType = new ObjectType($type->getValue());
-
-			// Do not use TemplateType's isSuperTypeOf handling directly because it takes ObjectType
-			// uncertainty into account.
-			if ($genericType instanceof TemplateType) {
-				$isSuperType = $genericType->getBound()->isSuperTypeOf($objectType);
-			} else {
-				$isSuperType = $genericType->isSuperTypeOf($objectType);
-			}
+			$isSuperType = self::isValueOfGenericType($genericType, $type->getValue());
 
 			if (!$type->isClassString()->yes()) {
 				$isSuperType = $isSuperType->and(IsSuperTypeOfResult::createMaybe());

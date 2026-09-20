@@ -575,6 +575,11 @@ class MatchExpressionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug15266(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15266.php'], []);
+	}
+
 	public function testMatchArmComparisonNotSuppressedByImpossibleCheck(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

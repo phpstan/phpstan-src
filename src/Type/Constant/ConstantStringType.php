@@ -33,7 +33,6 @@ use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\GenericClassStringType;
-use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\InstanceofDeprecated;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
@@ -42,7 +41,6 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
-use PHPStan\Type\StaticType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\ConstantScalarTypeTrait;
 use PHPStan\Type\Type;
@@ -166,24 +164,9 @@ class ConstantStringType extends StringType implements ConstantScalarType
 			if ($genericType instanceof MixedType) {
 				return IsSuperTypeOfResult::createMaybe();
 			}
-			if ($genericType instanceof StaticType) {
-				$genericType = $genericType->getStaticObjectType();
-			}
-
-			// We are transforming constant class-string to ObjectType. But we need to filter out
-			// an uncertainty originating in possible ObjectType's class subtypes.
-			$objectType = $this->getObjectType();
-
-			// Do not use TemplateType's isSuperTypeOf handling directly because it takes ObjectType
-			// uncertainty into account.
-			if ($genericType instanceof TemplateType) {
-				$isSuperType = $genericType->getBound()->isSuperTypeOf($objectType);
-			} else {
-				$isSuperType = $genericType->isSuperTypeOf($objectType);
-			}
 
 			// Explicitly handle the uncertainty for Yes & Maybe.
-			if ($isSuperType->yes()) {
+			if (GenericClassStringType::isValueOfGenericType($genericType, $this->value)->yes()) {
 				return IsSuperTypeOfResult::createMaybe();
 			}
 			return IsSuperTypeOfResult::createNo();

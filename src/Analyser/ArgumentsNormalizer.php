@@ -447,7 +447,6 @@ final class ArgumentsNormalizer
 	 * returns the original Arg objects instead of copies, which is what makes
 	 * the attributes those visitors set visible on the analysed AST.
 	 *
-	 * @internal
 	 * @param Arg[] $args
 	 * @param list<string> $parameterNames parameter names in signature order
 	 * @return array<int, Arg>

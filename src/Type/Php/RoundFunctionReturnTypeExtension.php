@@ -118,6 +118,34 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 		return new FloatType();
 	}
 
+	private function resolveRoundMode(Type $modeType): ?int
+	{
+		$mode = $modeType->getConstantScalarValues();
+
+		if (count($mode) === 1 && in_array($mode[0], [
+			PHP_ROUND_HALF_UP,
+			PHP_ROUND_HALF_DOWN,
+			PHP_ROUND_HALF_EVEN,
+			PHP_ROUND_HALF_ODD,
+		], true)) {
+			return $mode[0];
+		}
+
+		$enumCase = $modeType->getEnumCaseObject();
+
+		if ($enumCase === null || $enumCase->getClassName() !== 'RoundingMode') {
+			return null;
+		}
+
+		return match ($enumCase->getEnumCaseName()) {
+			'HalfAwayFromZero' => PHP_ROUND_HALF_UP,
+			'HalfTowardsZero' => PHP_ROUND_HALF_DOWN,
+			'HalfEven' => PHP_ROUND_HALF_EVEN,
+			'HalfOdd' => PHP_ROUND_HALF_ODD,
+			default => null,
+		};
+	}
+
 	/**
 	 * @param Arg[] $args
 	 */
@@ -145,39 +173,18 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 					$precision = 0;
 				}
 
-				if (!isset($args[2]->value)) {
-					$proc = static fn($name) => round($name, $precision);
-				} else {
-					$modeArg = $args[2]->value;
-					$modeType = $scope->getType($modeArg);
-					$mode = $modeType->getConstantScalarValues();
+if (!isset($args[2]->value)) {
+	$proc = static fn ($name) => round($name, $precision);
+} else {
+	$modeType = $scope->getType($args[2]->value);
+	$mode = $this->resolveRoundMode($modeType);
 
+	if ($mode === null) {
+		return null;
+	}
 
-
-					if (count($mode) === 1 && in_array($mode[0], [PHP_ROUND_HALF_UP, PHP_ROUND_HALF_DOWN, PHP_ROUND_HALF_EVEN, PHP_ROUND_HALF_ODD], true)) {
-						$proc = static fn($name) => round($name, $precision, $mode[0]);
-					} else {
-						$enumCase = $modeType->getEnumCaseObject();
-
-						if ($enumCase === null || $enumCase->getClassName() !== 'RoundingMode') {
-							return null;
-						}
-
-						$mode = match ($enumCase->getEnumCaseName()) {
-							'HalfAwayFromZero' => PHP_ROUND_HALF_UP,
-							'HalfTowardsZero' => PHP_ROUND_HALF_DOWN,
-							'HalfEven' => PHP_ROUND_HALF_EVEN,
-							'HalfOdd' => PHP_ROUND_HALF_ODD,
-							default => null,
-						};
-
-						if ($mode === null) {
-							return null;
-						}
-
-						$proc = static fn($name) => round($name, $precision, $mode);
-					}
-				}
+	$proc = static fn ($name) => round($name, $precision, $mode);
+}
 			}
 		}
 

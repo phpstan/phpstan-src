@@ -208,7 +208,7 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 				&& is_string($constantScalarValue)
 				&& is_numeric($constantScalarValue)
 			) {
-				$returnValueTypes[] = new ConstantFloatType($proc($constantScalarValue));
+				$returnValueTypes[] = new ConstantFloatType($proc((float) $constantScalarValue));
 				continue;
 			}
 

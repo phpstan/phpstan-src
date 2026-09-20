@@ -37,6 +37,7 @@ final class NonStringableDynamicAccessCheck
 	 * accepted.
 	 *
 	 * @param Name|Expr|null $classNode the node whose name/type fills the leading `%s` placeholder, or null when the message has none
+	 * @param 'property.nameNotString'|'staticProperty.nameNotString'|'variable.nameNotString' $identifier
 	 * @return list<IdentifierRuleError>
 	 */
 	public function checkStringCastableName(Scope $scope, Expr $name, string $messageFormat, $classNode, string $identifier): array
@@ -67,6 +68,7 @@ final class NonStringableDynamicAccessCheck
 	 * constant names) objects implementing __toString are not accepted.
 	 *
 	 * @param Name|Expr|null $classNode the node whose name/type fills the leading `%s` placeholder, or null when the message has none
+	 * @param 'classConstant.nameNotString'|'method.nameNotString'|'staticMethod.nameNotString' $identifier
 	 * @return list<IdentifierRuleError>
 	 */
 	public function checkStringName(Scope $scope, Expr $name, string $messageFormat, $classNode, string $identifier): array
@@ -91,6 +93,7 @@ final class NonStringableDynamicAccessCheck
 
 	/**
 	 * @param Name|Expr|null $classNode
+	 * @param 'classConstant.nameNotString'|'method.nameNotString'|'property.nameNotString'|'staticMethod.nameNotString'|'staticProperty.nameNotString'|'variable.nameNotString' $identifier
 	 */
 	private function buildError(Scope $scope, Expr $name, Type $nameType, string $messageFormat, $classNode, string $identifier): IdentifierRuleError
 	{

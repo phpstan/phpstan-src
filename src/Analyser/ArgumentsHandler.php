@@ -30,6 +30,8 @@ use PHPStan\Reflection\Callables\SimpleThrowPoint;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\InitializerExprContext;
+use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
@@ -119,6 +121,7 @@ final class ArgumentsHandler
 		private AssignHandler $assignHandler,
 		private ClosureTypeResolver $closureTypeResolver,
 		private ClosureParameterResolver $closureParameterResolver,
+		private InitializerExprTypeResolver $initializerExprTypeResolver,
 	)
 	{
 	}
@@ -235,6 +238,19 @@ final class ArgumentsHandler
 					? $this->gatherClosureArgType($parametersAcceptors, $i, $arg->value, $scope)
 					: $this->closureTypeResolver->getClosureType($scope, $arg->value, true, $storage);
 				$this->addGatheredArgType($gatheredTypes, $gatheredUnpack, $gatheredHasName, $originalArgForGather, $i, $gatheredArgTypeByIndex[$i]);
+			} elseif (
+				$argMetadataIsTypeDriven
+				&& !$arg->unpack
+				&& $arg->value instanceof Expr\Array_
+				&& $this->argConsumesResolvedParameterType($arg->value)
+			) {
+				// An array literal holding closures decides the templates of its own
+				// parameter through its keys and its non-closure values - and those
+				// very templates type the closures nested in it. Pin a SKELETON of the
+				// array (declared closure signatures, scope-known leaves, mixed for
+				// anything that needs a walk) so the per-argument resolution below sees
+				// them; the walk that follows overwrites it with the real type.
+				$gatheredArgTypeByIndex[$i] = $this->gatherArrayArgTypeSkeleton($nodeScopeResolver, $arg->value, $scope);
 			}
 
 			$argMetadataAcceptor = $metadataAcceptor;
@@ -936,6 +952,40 @@ final class ArgumentsHandler
 		}
 
 		return $this->closureParameterResolver->resolveCallableTypeForScope($closureExpr, $scope);
+	}
+
+	/**
+	 * A structural stand-in for an array literal argument that holds closures,
+	 * built without walking anything: a nested array literal recurses, a closure /
+	 * arrow function contributes its DECLARED signature
+	 * (ClosureTypeResolver::getDeclaredClosureType()), and every other key/value
+	 * is priced by the scope state it is already tracked as, falling back to the
+	 * constant-expression resolver (literals, ::class, constants, concatenation)
+	 * and ultimately to mixed. Widening a slot to mixed is safe: a template is
+	 * never resolved below its bound, so the skeleton can only ever sharpen the
+	 * resolution.
+	 *
+	 * Unlike gatherClosureArgType() this type never reaches $gatheredTypes: it
+	 * exists solely to resolve the parameter type the nested closures are typed
+	 * from. The argument's real type replaces it once the walk is done.
+	 */
+	private function gatherArrayArgTypeSkeleton(NodeScopeResolver $nodeScopeResolver, Expr\Array_ $expr, MutatingScope $scope): Type
+	{
+		$initializerContext = InitializerExprContext::fromScope($scope);
+		$getType = function (Expr $inner) use (&$getType, $nodeScopeResolver, $scope, $initializerContext): Type {
+			if ($inner instanceof Expr\Closure || $inner instanceof Expr\ArrowFunction) {
+				return $this->closureTypeResolver->getDeclaredClosureType($scope, $inner);
+			}
+
+			if ($inner instanceof Expr\Array_) {
+				return $this->initializerExprTypeResolver->getArrayType($inner, $getType);
+			}
+
+			return $nodeScopeResolver->findScopeStateType($inner, $scope)
+				?? $this->initializerExprTypeResolver->getType($inner, $initializerContext);
+		};
+
+		return $this->initializerExprTypeResolver->getArrayType($expr, $getType);
 	}
 
 	/**

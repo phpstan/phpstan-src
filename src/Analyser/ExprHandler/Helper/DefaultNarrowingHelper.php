@@ -348,12 +348,8 @@ final class DefaultNarrowingHelper
 	}
 
 	/**
-	 * Whether a plain call whose receiver chain contains a `?->` may not have run
-	 * at all in the branch $context describes: the chain short-circuits to null,
-	 * which is falsey but neither `true` nor `false`. Everything the callee's
-	 * PHPDoc says about the state after the call (@phpstan-assert, conditional
-	 * return types, type-specifying extensions) only holds when it did run, so
-	 * such a branch must not receive that narrowing.
+	 * Whether a call on a `?->` chain may have been skipped in the branch
+	 * $context describes, so nothing the callee declares narrows there.
 	 */
 	public function callMayHaveBeenSkipped(?ExpressionResult $receiverResult, Type $receiverType, TypeSpecifierContext $context): bool
 	{

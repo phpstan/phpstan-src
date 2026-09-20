@@ -85,11 +85,7 @@ final class TypeSpecifierContext
 		return $this->value !== null && (bool) ($this->value & self::CONTEXT_FALSEY);
 	}
 
-	/**
-	 * Whether the branch admits falsey values other than `false` - among them
-	 * `null`, so a strict `false` context answers no while the wider falsey
-	 * context answers yes.
-	 */
+	/** Whether the branch admits falsey values other than `false`, e.g. `null`. */
 	public function falseyButNotFalse(): bool
 	{
 		return $this->value !== null && (bool) ($this->value & self::CONTEXT_FALSEY_BUT_NOT_FALSE);

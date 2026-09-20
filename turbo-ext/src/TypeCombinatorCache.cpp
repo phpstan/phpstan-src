@@ -19,6 +19,13 @@
  * equal argument tuples of the same operation, which is the sharing
  * TypeCombinator itself produces when it returns an operand.
  *
+ * A result that IS one of the operands is not shared at all: TypeCombinator
+ * hands back the operand of the call at hand (union() of one type, remove() of
+ * nothing), and callers test that identity (ArrayType::setExistingOffsetValueType()
+ * treats `union(...) === $this->itemType` as "nothing was written"). Such an
+ * entry records the operand's position instead, and a hit returns the operand
+ * at that position of the new call — the object the PHP implementation returns.
+ *
  * Two structures back this:
  *
  *  - a per-object 128-bit structural hash of every Type, cached in a *weak* map so
@@ -99,7 +106,9 @@ struct Hash128
 
 /* An occupied memo slot borrows its result; result == NULL marks an empty
  * slot, result == MEMO_TOMBSTONE a deleted one (the probe chain must stay
- * intact, so deletion cannot empty a slot). */
+ * intact, so deletion cannot empty a slot). A result that was an operand of
+ * the call carries the operand's position + 1 in the pointer's alignment bits
+ * (0 = a result of its own); the slot stays 24 bytes. */
 struct MemoSlot
 {
 	Hash128 key;
@@ -107,6 +116,18 @@ struct MemoSlot
 };
 
 #define MEMO_TOMBSTONE ((zend_object *) 1)
+
+/* The alignment bits of a zend_object pointer: operand positions up to this
+ * count fit next to the pointer; a call returning a later operand is not
+ * memoized. */
+static constexpr uintptr_t MEMO_OPERAND_TAG_MASK = alignof(zend_object) - 1;
+static constexpr uint32_t MEMO_OPERAND_POSITIONS_LIMIT = (uint32_t) MEMO_OPERAND_TAG_MASK;
+static_assert(MEMO_OPERAND_POSITIONS_LIMIT >= 3, "zend_object pointers must leave alignment bits for the operand position");
+
+static zend_always_inline zend_object *memoSlotObject(const zend_object *result)
+{
+	return (zend_object *) ((uintptr_t) result & ~MEMO_OPERAND_TAG_MASK);
+}
 
 /* Each memoized result object carries this list of the memo keys mapping to
  * it (several keys can produce the same shared instance), held as IS_PTR in
@@ -514,7 +535,7 @@ static void memoInvalidate(const KeyList *list)
 			if (slot->result == NULL) {
 				break;
 			}
-			if (slot->result == list->obj && slot->key.a == key.a && slot->key.b == key.b) {
+			if (slot->result != MEMO_TOMBSTONE && memoSlotObject(slot->result) == list->obj && slot->key.a == key.a && slot->key.b == key.b) {
 				slot->result = MEMO_TOMBSTONE;
 				pt_memo_count--;
 				pt_memo_tombstones++;
@@ -616,6 +637,14 @@ public:
 		if (memoizable) {
 			MemoSlot *slot = memoLookup(key);
 			if (slot != NULL) {
+				uintptr_t operandTag = (uintptr_t) slot->result & MEMO_OPERAND_TAG_MASK;
+				if (operandTag != 0) {
+					/* every argument hashed above is an object */
+					zval *operand = &args[operandTag - 1];
+					ZVAL_DEREF(operand);
+					RETVAL_COPY(operand);
+					return;
+				}
 				GC_ADDREF(slot->result);
 				RETVAL_OBJ(slot->result);
 				return;
@@ -631,6 +660,25 @@ public:
 			return;
 		}
 
+		uintptr_t operandTag = 0;
+		if (memoizable) {
+			/* the operand the result is, by position; one object passed at two
+			 * positions leaves the position a structurally equal call would
+			 * return undecided, so such a call is not memoized */
+			for (uint32_t i = 0; i < argc; i++) {
+				zval *arg = &args[i];
+				ZVAL_DEREF(arg);
+				if (Z_OBJ_P(arg) != Z_OBJ_P(return_value)) {
+					continue;
+				}
+				if (operandTag != 0 || i >= MEMO_OPERAND_POSITIONS_LIMIT) {
+					memoizable = false;
+					break;
+				}
+				operandTag = (uintptr_t) i + 1;
+			}
+		}
+
 		if (memoizable && pt_memo_count < MEMO_ENTRIES_LIMIT) {
 			/* Fresh lookup: the callback re-enters these operations for nested
 			 * types, which may have inserted this very key or grown the table. */
@@ -640,9 +688,9 @@ public:
 					pt_memo_tombstones--;
 				}
 				slot->key = key;
-				slot->result = Z_OBJ_P(return_value);
+				slot->result = (zend_object *) ((uintptr_t) Z_OBJ_P(return_value) | operandTag);
 				pt_memo_count++;
-				memoTrackResult(slot->result, key);
+				memoTrackResult(Z_OBJ_P(return_value), key);
 
 				if ((uint64_t) (pt_memo_count + pt_memo_tombstones) * 4 > (uint64_t) (pt_memo_mask + 1) * 3) {
 					memoGrow();

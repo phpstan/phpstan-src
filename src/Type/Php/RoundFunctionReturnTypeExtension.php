@@ -119,8 +119,12 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 
 		return new FloatType();
 	}
-
+	/**
+	 * @return 1|2|3|4|null
+	*/
 	private function resolveRoundMode(Type $modeType): ?int
+
+
 	{
 		$mode = $modeType->getConstantScalarValues();
 
@@ -221,5 +225,5 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 
 		return null;
 	}
-	
+
 }

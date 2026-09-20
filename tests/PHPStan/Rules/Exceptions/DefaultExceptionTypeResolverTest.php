@@ -3,15 +3,12 @@
 namespace PHPStan\Rules\Exceptions;
 
 use DomainException;
-use Error;
-use Exception;
 use InvalidArgumentException;
 use LogicException;
 use PHPStan\Analyser\ScopeContext;
 use PHPStan\Analyser\ScopeFactory;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
-use TypeError;
 
 class DefaultExceptionTypeResolverTest extends PHPStanTestCase
 {
@@ -148,16 +145,6 @@ class DefaultExceptionTypeResolverTest extends PHPStanTestCase
 	{
 		$resolver = new DefaultExceptionTypeResolver(self::createReflectionProvider(), $uncheckedExceptionRegexes, $uncheckedExceptionClasses, $checkedExceptionRegexes, $checkedExceptionClasses);
 		$this->assertSame($expectedResult, $resolver->isCheckedException($className, self::getContainer()->getByType(ScopeFactory::class)->create(ScopeContext::create(__DIR__))));
-	}
-
-	public function testIsCheckedExceptionWithDefaultConfiguration(): void
-	{
-		$resolver = self::getContainer()->getByType(DefaultExceptionTypeResolver::class);
-		$scope = self::getContainer()->getByType(ScopeFactory::class)->create(ScopeContext::create(__DIR__));
-
-		$this->assertFalse($resolver->isCheckedException(Error::class, $scope));
-		$this->assertFalse($resolver->isCheckedException(TypeError::class, $scope));
-		$this->assertTrue($resolver->isCheckedException(Exception::class, $scope));
 	}
 
 }

@@ -91,17 +91,17 @@ function withNotConstantArray(array $foo, array $bar, array $baz, array $floats,
 	assertType("array<string, null>", array_fill_keys($foo, null));
 	assertType("array<int, null>", array_fill_keys($bar, null));
 	assertType("array<'foo', null>", array_fill_keys($baz, null));
-	assertType("array<numeric-string&uppercase-string, null>", array_fill_keys($floats, null));
-	assertType("array<bool|int|string, null>", array_fill_keys($mixed, null));
+	assertType("array<int|(numeric-string&uppercase-string), null>", array_fill_keys($floats, null));
+	assertType("array<int|string, null>", array_fill_keys($mixed, null));
 	assertType('array<string, null>', array_fill_keys($list, null));
 	assertType('*ERROR*', array_fill_keys($objectsWithoutToString, null));
 
 	if (array_key_exists(17, $mixed)) {
-		assertType('non-empty-array<bool|int|string, null>', array_fill_keys($mixed, null));
+		assertType('non-empty-array<int|string, null>', array_fill_keys($mixed, null));
 	}
 
 	if (array_key_exists(17, $mixed) && $mixed[17] === 'foo') {
-		assertType('non-empty-array<bool|int|string, null>', array_fill_keys($mixed, null));
+		assertType('non-empty-array<int|string, null>', array_fill_keys($mixed, null));
 	}
 }
 
@@ -113,4 +113,16 @@ function sealedArrayFillKeys(array $sealed, array $unsealed): void
 {
 	assertType("array{1: 'b', 2: 'b', 3: 'b'}", array_fill_keys($sealed, 'b'));
 	assertType("array{1: 'b', 2: 'b', 3: 'b', 0?: 'b'}", array_fill_keys($unsealed, 'b'));
+}
+
+/**
+ * @param list<'1'|'2'> $constantIntStrings
+ * @param array{0: '1', 1: '2'} $sealedIntStrings
+ * @param array{0: '1', ...<int, numeric-string>} $unsealedIntStrings
+ */
+function intStringArrayFillKeys(array $constantIntStrings, array $sealedIntStrings, array $unsealedIntStrings): void
+{
+	assertType("array<1|2, 'b'>", array_fill_keys($constantIntStrings, 'b'));
+	assertType("array{1: 'b', 2: 'b'}", array_fill_keys($sealedIntStrings, 'b'));
+	assertType("array{1: 'b', ...<int|numeric-string, 'b'>}", array_fill_keys($unsealedIntStrings, 'b'));
 }

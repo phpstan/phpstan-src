@@ -6,7 +6,11 @@ use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
+use PHPStan\Type\CallableType;
+use PHPStan\Type\ClassStringType;
+use PHPStan\Type\ClosureType;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FloatType;
@@ -51,6 +55,14 @@ final class TemplateTypeFactory
 			return new TemplateObjectType($scope, $strategy, $variance, $name, $bound, $default);
 		}
 
+		if ($bound instanceof ClosureType && ($boundClass === ClosureType::class || $bound instanceof TemplateType)) {
+			return new TemplateClosureType($scope, $strategy, $variance, $name, $bound, $default);
+		}
+
+		if ($bound instanceof CallableType && ($boundClass === CallableType::class || $bound instanceof TemplateType)) {
+			return new TemplateCallableType($scope, $strategy, $variance, $name, $bound, $default);
+		}
+
 		if ($bound instanceof ObjectWithoutClassType && ($boundClass === ObjectWithoutClassType::class || $bound instanceof TemplateType)) {
 			return new TemplateObjectWithoutClassType($scope, $strategy, $variance, $name, $bound, $default);
 		}
@@ -65,6 +77,14 @@ final class TemplateTypeFactory
 
 		if ($bound instanceof ObjectShapeType && ($boundClass === ObjectShapeType::class || $bound instanceof TemplateType)) {
 			return new TemplateObjectShapeType($scope, $strategy, $variance, $name, $bound, $default);
+		}
+
+		if ($bound instanceof GenericClassStringType && ($boundClass === GenericClassStringType::class || $bound instanceof TemplateType)) {
+			return new TemplateGenericClassStringType($scope, $strategy, $variance, $name, $bound, $default);
+		}
+
+		if ($bound instanceof ClassStringType && ($boundClass === ClassStringType::class || $bound instanceof TemplateType)) {
+			return new TemplateClassStringType($scope, $strategy, $variance, $name, $bound, $default);
 		}
 
 		if ($bound instanceof StringType && ($boundClass === StringType::class || $bound instanceof TemplateType)) {
@@ -85,6 +105,10 @@ final class TemplateTypeFactory
 
 		if ($bound instanceof FloatType && ($boundClass === FloatType::class || $bound instanceof TemplateType)) {
 			return new TemplateFloatType($scope, $strategy, $variance, $name, $bound, $default);
+		}
+
+		if ($bound instanceof ConstantFloatType && ($boundClass === ConstantFloatType::class || $bound instanceof TemplateType)) {
+			return new TemplateConstantFloatType($scope, $strategy, $variance, $name, $bound, $default);
 		}
 
 		if ($bound instanceof BooleanType && ($boundClass === BooleanType::class || $bound->isTrue()->yes() || $bound->isFalse()->yes() || $bound instanceof TemplateType)) {

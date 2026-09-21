@@ -114,6 +114,18 @@ class ImpossibleCheckTypeStaticMethodCallRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug15223(): void
+	{
+		$this->treatPhpDocTypesAsCertain = false;
+		$this->analyse([__DIR__ . '/data/bug-15223-static.php'], []);
+	}
+
+	public function testBug15223TreatPhpDocTypesAsCertain(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-15223-static.php'], []);
+	}
+
 	public function testAssertUnresolvedGeneric(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

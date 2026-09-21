@@ -36,6 +36,7 @@ use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\PossiblyImpureCallExpr;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
@@ -308,12 +309,14 @@ final class StaticCallHandler implements ExprHandler
 				$nativeTypesPromoted ? null : $resolvedParametersAcceptor,
 				$argsResult,
 			);
+		$walkMethodReflection = $methodReflection;
 		$specifyTypesCallback = fn (TypeSpecifierContext $specifyContext, bool $nativeTypesPromoted): SpecifiedTypes => $this->specifyTypes(
 			$nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope,
 			$expr,
 			$normalizedExpr,
 			$classResult,
 			$resolvedParametersAcceptor,
+			$walkMethodReflection,
 			$specifyContext,
 			$argsResult,
 		);
@@ -567,7 +570,7 @@ final class StaticCallHandler implements ExprHandler
 	 * @param StaticCall $expr
 	 * @param StaticCall $normalizedExpr
 	 */
-	private function specifyTypes(MutatingScope $scope, Expr $expr, Expr $normalizedExpr, ?ExpressionResult $classResult, ?ParametersAcceptor $resolvedParametersAcceptor, TypeSpecifierContext $context, ?ArgsResult $argsResult = null): SpecifiedTypes
+	private function specifyTypes(MutatingScope $scope, Expr $expr, Expr $normalizedExpr, ?ExpressionResult $classResult, ?ParametersAcceptor $resolvedParametersAcceptor, ?ExtendedMethodReflection $walkMethodReflection, TypeSpecifierContext $context, ?ArgsResult $argsResult = null): SpecifiedTypes
 	{
 		if (!$expr->name instanceof Identifier) {
 			return $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context);
@@ -620,7 +623,11 @@ final class StaticCallHandler implements ExprHandler
 				}
 			}
 
-			$assertions = $staticMethodReflection->getAsserts();
+			// see MethodCallHandler::specifyTypes() - `$obj::m()` resolves its callee
+			// from the receiver type of the asking scope, so a native-types-promoted
+			// ask reads the assertions off the walk's reflection to keep them paired
+			// with the walk's acceptor
+			$assertions = ($scope->nativeTypesPromoted ? $walkMethodReflection ?? $staticMethodReflection : $staticMethodReflection)->getAsserts();
 			if ($assertions->getAll() !== [] && $resolvedParametersAcceptor !== null) {
 				$asserts = $assertions->mapTypes(static fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes(
 					$type,

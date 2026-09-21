@@ -37,6 +37,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\PossiblyImpureCallExpr;
 use PHPStan\Node\InvalidateExprNode;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
@@ -219,12 +220,14 @@ final class MethodCallHandler implements ExprHandler
 				$nativeTypesPromoted ? null : $resolvedParametersAcceptor,
 				$argsResult,
 			);
+		$walkMethodReflection = $methodReflection;
 		$specifyTypesCallback = fn (TypeSpecifierContext $specifyContext, bool $nativeTypesPromoted): SpecifiedTypes => $this->specifyTypes(
 			$nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope,
 			$expr,
 			$normalizedExpr,
 			$varResult,
 			$resolvedParametersAcceptor,
+			$walkMethodReflection,
 			$specifyContext,
 			$argsResult,
 		);
@@ -496,7 +499,7 @@ final class MethodCallHandler implements ExprHandler
 	 * @param MethodCall $expr
 	 * @param MethodCall $normalizedExpr
 	 */
-	private function specifyTypes(MutatingScope $scope, Expr $expr, Expr $normalizedExpr, ExpressionResult $varResult, ?ParametersAcceptor $resolvedParametersAcceptor, TypeSpecifierContext $context, ?ArgsResult $argsResult = null): SpecifiedTypes
+	private function specifyTypes(MutatingScope $scope, Expr $expr, Expr $normalizedExpr, ExpressionResult $varResult, ?ParametersAcceptor $resolvedParametersAcceptor, ?ExtendedMethodReflection $walkMethodReflection, TypeSpecifierContext $context, ?ArgsResult $argsResult = null): SpecifiedTypes
 	{
 		if (!$expr->name instanceof Identifier) {
 			return $this->defaultMethodCallNarrowing($scope, $expr, $varResult, $context);
@@ -542,7 +545,18 @@ final class MethodCallHandler implements ExprHandler
 				}
 			}
 
-			$assertions = $methodReflection->getAsserts();
+			// The assertions are paired with $resolvedParametersAcceptor, which
+			// processArgs() resolved on the walk scope. $methodReflection above is
+			// re-derived from the receiver type of the asking scope, so a
+			// native-types-promoted ask resolves the class-level template types of
+			// the assert types to their bounds while the acceptor's template map -
+			// the one the narrowing checks them for unresolved templates against -
+			// still resolves them from the PHPDoc receiver. The assert would look
+			// resolved while carrying a bound, and `mixed` would be asserted as a
+			// real type. A @phpstan-assert is a PHPDoc claim either way, so the
+			// promoted ask reads it off the walk's reflection: both halves then
+			// describe the same receiver.
+			$assertions = ($scope->nativeTypesPromoted ? $walkMethodReflection ?? $methodReflection : $methodReflection)->getAsserts();
 			if ($assertions->getAll() !== [] && $resolvedParametersAcceptor !== null) {
 				$asserts = $assertions->mapTypes(static fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes(
 					$type,

@@ -195,7 +195,12 @@ non-string inputs fall back to `$parser->parse()`.
 Because the input domain is "all PHP source code", method-level parity is not
 enough here: `tests/parser-corpus.php` parses thousands of files with both
 implementations and requires byte-identical serialized ASTs, identical
-collected errors, and identical token streams. It runs in CI on every build.
+collected errors, and identical token streams. `tests/parser-upstream-corpus.php`
+runs the same comparison over every input of php-parser's own test suite at
+the installed commit (fetched from GitHub, or pass a checkout) — upstream's
+cases cover every grammar rule, error recovery and version-gated behavior,
+including syntax PHPStan's own code does not use yet. Both run in CI on every
+build.
 
 ### Updating php-parser
 
@@ -228,9 +233,11 @@ The CI version job pins the php-parser version the engine was ported against
    reported as warnings — delete them once their replacement is handled.
    Never hand-edit the generated files: CI regenerates and diffs them.
 3. **Verify**: strict build, then `php turbo-ext/tests/parser-corpus.php`
-   until byte-identical over the whole corpus. New PHP syntax is only covered
-   once fixtures using it exist in the repo — PHPStan's own test data for the
-   new syntax provides them; make sure they land before or with the bump.
+   and `php turbo-ext/tests/parser-upstream-corpus.php` until byte-identical
+   over both corpora. The upstream corpus covers the new version's syntax the
+   moment the lock file points at it; the repo corpus only covers it once
+   fixtures using it exist — PHPStan's own test data for the new syntax, or
+   `tests/parser-fixtures/`; make sure they land before or with the bump.
    Then the full test suite and `make phpstan` with the extension loaded,
    and `tests/parser-bench.php` to confirm the speedup held.
 4. **Bump both pins**: `SUPPORTED_PHP_PARSER_VERSION` in the workflow, and —

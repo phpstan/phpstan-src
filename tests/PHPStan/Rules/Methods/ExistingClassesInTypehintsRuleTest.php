@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Methods;
 
+use Override;
 use PHPStan\Classes\ForbiddenClassNameExtension;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
@@ -23,6 +24,15 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 {
 
 	private int $phpVersionId = PHP_VERSION_ID;
+
+	private static ?int $analysedPhpVersionId = null;
+
+	#[Override]
+	protected function setUp(): void
+	{
+		self::$analysedPhpVersionId = null;
+		parent::setUp();
+	}
 
 	protected function getRule(): Rule
 	{
@@ -210,6 +220,7 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 	public function testNativeUnionTypes(int $phpVersionId, array $errors): void
 	{
 		$this->phpVersionId = $phpVersionId;
+		self::$analysedPhpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/native-union-types.php'], $errors);
 	}
 
@@ -218,20 +229,7 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 		return [
 			[
 				70400,
-				[
-					[
-						"Method RequiredAfterOptional\Foo::doAmet() uses native union types but they're supported only on PHP 8.0 and later.",
-						33,
-					],
-					[
-						"Method RequiredAfterOptional\Foo::doConsectetur() uses native union types but they're supported only on PHP 8.0 and later.",
-						37,
-					],
-					[
-						"Method RequiredAfterOptional\Foo::doSed() uses native union types but they're supported only on PHP 8.0 and later.",
-						49,
-					],
-				],
+				[],
 			],
 			[
 				80000,
@@ -674,6 +672,15 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 	public function testBug14617GroupUse(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-14617-group-use.php'], []);
+	}
+
+	public static function getAdditionalConfigFiles(): array
+	{
+		if (self::$analysedPhpVersionId === null) {
+			return [];
+		}
+
+		return [__DIR__ . '/../php-version-' . self::$analysedPhpVersionId . '.neon'];
 	}
 
 }

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Functions;
 
+use Override;
 use PHPStan\Classes\ForbiddenClassNameExtension;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
@@ -24,6 +25,15 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 
 	private int $phpVersionId = PHP_VERSION_ID;
 
+	private static ?int $analysedPhpVersionId = null;
+
+	#[Override]
+	protected function setUp(): void
+	{
+		self::$analysedPhpVersionId = null;
+		parent::setUp();
+	}
+
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = self::createReflectionProvider();
@@ -43,7 +53,6 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 				false,
 				true,
 			),
-			new PhpVersion(PHP_VERSION_ID),
 		);
 	}
 
@@ -91,6 +100,7 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 	public function testNativeUnionTypes(int $phpVersionId, array $errors): void
 	{
 		$this->phpVersionId = $phpVersionId;
+		self::$analysedPhpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/native-union-types.php'], $errors);
 	}
 
@@ -99,20 +109,7 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 		return [
 			[
 				70400,
-				[
-					[
-						"Anonymous function uses native union types but they're supported only on PHP 8.0 and later.",
-						17,
-					],
-					[
-						"Anonymous function uses native union types but they're supported only on PHP 8.0 and later.",
-						19,
-					],
-					[
-						"Anonymous function uses native union types but they're supported only on PHP 8.0 and later.",
-						25,
-					],
-				],
+				[],
 			],
 			[
 				80000,
@@ -341,6 +338,31 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 				15,
 			],
 		]);
+	}
+
+	public function testConditionallyExecutedArrowFunction(): void
+	{
+		$this->phpVersionId = 80100;
+		self::$analysedPhpVersionId = 80100;
+		$this->analyse([__DIR__ . '/data/arrow-function-never-php-versions.php'], [
+			[
+				'Never return type in arrow function is supported only on PHP 8.2 and later.',
+				12,
+			],
+			[
+				'Never return type in arrow function is supported only on PHP 8.2 and later.',
+				15,
+			],
+		]);
+	}
+
+	public static function getAdditionalConfigFiles(): array
+	{
+		if (self::$analysedPhpVersionId === null) {
+			return [];
+		}
+
+		return [__DIR__ . '/../php-version-' . self::$analysedPhpVersionId . '.neon'];
 	}
 
 }

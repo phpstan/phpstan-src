@@ -2,7 +2,7 @@
 
 namespace PHPStan\Rules\Properties;
 
-use PHPStan\Php\PhpVersion;
+use Override;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -13,11 +13,18 @@ use PHPUnit\Framework\Attributes\DataProvider;
 class ReadOnlyPropertyRuleTest extends RuleTestCase
 {
 
-	private int $phpVersionId;
+	private static ?int $analysedPhpVersionId = null;
+
+	#[Override]
+	protected function setUp(): void
+	{
+		self::$analysedPhpVersionId = null;
+		parent::setUp();
+	}
 
 	protected function getRule(): Rule
 	{
-		return new ReadOnlyPropertyRule(new PhpVersion($this->phpVersionId));
+		return new ReadOnlyPropertyRule();
 	}
 
 	public static function dataRule(): array
@@ -86,7 +93,7 @@ class ReadOnlyPropertyRuleTest extends RuleTestCase
 	#[DataProvider('dataRule')]
 	public function testRule(int $phpVersionId, array $errors): void
 	{
-		$this->phpVersionId = $phpVersionId;
+		self::$analysedPhpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/read-only-property.php'], $errors);
 	}
 
@@ -96,8 +103,32 @@ class ReadOnlyPropertyRuleTest extends RuleTestCase
 	#[DataProvider('dataRule')]
 	public function testRuleReadonlyClass(int $phpVersionId, array $errors): void
 	{
-		$this->phpVersionId = $phpVersionId;
+		self::$analysedPhpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/read-only-property-readonly-class.php'], $errors);
+	}
+
+	public function testConditionallyDeclaredClass(): void
+	{
+		self::$analysedPhpVersionId = 80000;
+		$this->analyse([__DIR__ . '/data/read-only-property-php-versions.php'], [
+			[
+				'Readonly properties are supported only on PHP 8.1 and later.',
+				18,
+			],
+			[
+				'Readonly properties are supported only on PHP 8.1 and later.',
+				26,
+			],
+		]);
+	}
+
+	public static function getAdditionalConfigFiles(): array
+	{
+		if (self::$analysedPhpVersionId === null) {
+			return [];
+		}
+
+		return [__DIR__ . '/../php-version-' . self::$analysedPhpVersionId . '.neon'];
 	}
 
 }

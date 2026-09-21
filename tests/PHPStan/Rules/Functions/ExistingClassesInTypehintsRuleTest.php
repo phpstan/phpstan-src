@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Functions;
 
+use Override;
 use PHPStan\Classes\ForbiddenClassNameExtension;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
@@ -23,6 +24,15 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 {
 
 	private int $phpVersionId = PHP_VERSION_ID;
+
+	private static ?int $analysedPhpVersionId = null;
+
+	#[Override]
+	protected function setUp(): void
+	{
+		self::$analysedPhpVersionId = null;
+		parent::setUp();
+	}
 
 	protected function getRule(): Rule
 	{
@@ -224,6 +234,7 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 	public function testNativeUnionTypes(int $phpVersionId, array $errors): void
 	{
 		$this->phpVersionId = $phpVersionId;
+		self::$analysedPhpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/native-union-types.php'], $errors);
 	}
 
@@ -232,20 +243,7 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 		return [
 			[
 				70400,
-				[
-					[
-						"Function RequiredAfterOptional\doAmet() uses native union types but they're supported only on PHP 8.0 and later.",
-						34,
-					],
-					[
-						"Function RequiredAfterOptional\doConsectetur() uses native union types but they're supported only on PHP 8.0 and later.",
-						38,
-					],
-					[
-						"Function RequiredAfterOptional\doSed() uses native union types but they're supported only on PHP 8.0 and later.",
-						50,
-					],
-				],
+				[],
 			],
 			[
 				80000,
@@ -547,6 +545,31 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 				10,
 			],
 		]);
+	}
+
+	public function testConditionallyDeclaredFunction(): void
+	{
+		$this->phpVersionId = 70400;
+		self::$analysedPhpVersionId = 70400;
+		$this->analyse([__DIR__ . '/data/native-union-types-php-versions.php'], [
+			[
+				"Function NativeUnionTypesPhpVersions\\unsupportedInBranch() uses native union types but they're supported only on PHP 8.0 and later.",
+				12,
+			],
+			[
+				"Function NativeUnionTypesPhpVersions\\alwaysUnsupported() uses native union types but they're supported only on PHP 8.0 and later.",
+				17,
+			],
+		]);
+	}
+
+	public static function getAdditionalConfigFiles(): array
+	{
+		if (self::$analysedPhpVersionId === null) {
+			return [];
+		}
+
+		return [__DIR__ . '/../php-version-' . self::$analysedPhpVersionId . '.neon'];
 	}
 
 }

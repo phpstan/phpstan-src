@@ -126,7 +126,7 @@ final class FunctionDefinitionCheck
 			if (
 				!$unionTypeReported
 				&& $param->type instanceof UnionType
-				&& !$this->phpVersion->supportsNativeUnionTypes()
+				&& !$scope->getPhpVersion()->supportsNativeUnionTypes()->yes()
 			) {
 				$errors[] = RuleErrorBuilder::message($unionTypesMessage)
 					->line($param->getStartLine())
@@ -229,7 +229,7 @@ final class FunctionDefinitionCheck
 		if (
 			!$unionTypeReported
 			&& $returnTypeNode instanceof UnionType
-			&& !$this->phpVersion->supportsNativeUnionTypes()
+			&& !$scope->getPhpVersion()->supportsNativeUnionTypes()->yes()
 		) {
 			$errors[] = RuleErrorBuilder::message($unionTypesMessage)
 				->line($returnTypeNode->getStartLine())
@@ -373,7 +373,7 @@ final class FunctionDefinitionCheck
 	{
 		$errors = [];
 		$parameterNodes = $functionNode->getParams();
-		if (!$this->phpVersion->supportsNativeUnionTypes()) {
+		if (!$scope->getPhpVersion()->supportsNativeUnionTypes()->yes()) {
 			$unionTypeReported = false;
 			foreach ($parameterNodes as $parameterNode) {
 				if (!$parameterNode->type instanceof UnionType) {

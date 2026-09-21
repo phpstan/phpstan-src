@@ -2,12 +2,11 @@
 
 namespace PHPStan\Rules\Methods;
 
-use PHPStan\Php\PhpVersion;
+use Override;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<MethodCallableRule>
@@ -15,7 +14,14 @@ use const PHP_VERSION_ID;
 class MethodCallableRuleTest extends RuleTestCase
 {
 
-	private int $phpVersion = PHP_VERSION_ID;
+	private static ?int $analysedPhpVersionId = null;
+
+	#[Override]
+	protected function setUp(): void
+	{
+		self::$analysedPhpVersionId = null;
+		parent::setUp();
+	}
 
 	protected function getRule(): Rule
 	{
@@ -38,7 +44,6 @@ class MethodCallableRuleTest extends RuleTestCase
 				checkFunctionNameCase: true,
 				reportMagicMethods: true,
 			),
-			new PhpVersion($this->phpVersion),
 		);
 	}
 
@@ -89,6 +94,30 @@ class MethodCallableRuleTest extends RuleTestCase
 				53,
 			],
 		]);
+	}
+
+	public function testConditionallyExecutedCode(): void
+	{
+		self::$analysedPhpVersionId = 80000;
+		$this->analyse([__DIR__ . '/data/method-callable-php-versions.php'], [
+			[
+				'First-class callables are supported only on PHP 8.1 and later.',
+				19,
+			],
+			[
+				'First-class callables are supported only on PHP 8.1 and later.',
+				22,
+			],
+		]);
+	}
+
+	public static function getAdditionalConfigFiles(): array
+	{
+		if (self::$analysedPhpVersionId === null) {
+			return [];
+		}
+
+		return [__DIR__ . '/../php-version-' . self::$analysedPhpVersionId . '.neon'];
 	}
 
 }

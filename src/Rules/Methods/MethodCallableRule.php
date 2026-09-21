@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\MethodCallableNode;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
@@ -17,7 +16,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 final class MethodCallableRule implements Rule
 {
 
-	public function __construct(private MethodCallCheck $methodCallCheck, private PhpVersion $phpVersion)
+	public function __construct(private MethodCallCheck $methodCallCheck)
 	{
 	}
 
@@ -28,7 +27,7 @@ final class MethodCallableRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$this->phpVersion->supportsFirstClassCallables()) {
+		if (!$scope->getPhpVersion()->supportsFirstClassCallables()->yes()) {
 			return [
 				RuleErrorBuilder::message('First-class callables are supported only on PHP 8.1 and later.')
 					->nonIgnorable()

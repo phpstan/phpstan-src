@@ -2,7 +2,7 @@
 
 namespace PHPStan\Rules\Properties;
 
-use PHPStan\Php\PhpVersion;
+use Override;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
@@ -14,9 +14,18 @@ use const PHP_VERSION_ID;
 class PropertiesInInterfaceRuleTest extends RuleTestCase
 {
 
+	private static ?int $analysedPhpVersionId = null;
+
+	#[Override]
+	protected function setUp(): void
+	{
+		self::$analysedPhpVersionId = null;
+		parent::setUp();
+	}
+
 	protected function getRule(): Rule
 	{
-		return new PropertiesInInterfaceRule(new PhpVersion(PHP_VERSION_ID));
+		return new PropertiesInInterfaceRule();
 	}
 
 	#[RequiresPhp('< 8.4.0')]
@@ -188,6 +197,30 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 				11,
 			],
 		]);
+	}
+
+	public function testConditionallyDeclaredInterface(): void
+	{
+		self::$analysedPhpVersionId = 80300;
+		$this->analyse([__DIR__ . '/data/properties-in-interface-php-versions.php'], [
+			[
+				'Interfaces can include properties only on PHP 8.4 and later.',
+				18,
+			],
+			[
+				'Interfaces can include properties only on PHP 8.4 and later.',
+				26,
+			],
+		]);
+	}
+
+	public static function getAdditionalConfigFiles(): array
+	{
+		if (self::$analysedPhpVersionId === null) {
+			return [];
+		}
+
+		return [__DIR__ . '/../php-version-' . self::$analysedPhpVersionId . '.neon'];
 	}
 
 }

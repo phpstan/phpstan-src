@@ -5,7 +5,6 @@ namespace PHPStan\Rules\Classes;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
@@ -18,10 +17,6 @@ use function sprintf;
 #[RegisteredRule(level: 0)]
 final class InvalidPromotedPropertiesRule implements Rule
 {
-
-	public function __construct(private PhpVersion $phpVersion)
-	{
-	}
 
 	public function getNodeType(): string
 	{
@@ -50,7 +45,7 @@ final class InvalidPromotedPropertiesRule implements Rule
 			return [];
 		}
 
-		if (!$this->phpVersion->supportsPromotedProperties()) {
+		if (!$scope->getPhpVersion()->supportsPromotedProperties()->yes()) {
 			return [
 				RuleErrorBuilder::message(
 					'Promoted properties are supported only on PHP 8.0 and later.',
@@ -89,7 +84,7 @@ final class InvalidPromotedPropertiesRule implements Rule
 				throw new ShouldNotHappenException();
 			}
 
-			if ($param->isFinal() && !$this->phpVersion->supportsFinalPromotedProperties()) {
+			if ($param->isFinal() && !$scope->getPhpVersion()->supportsFinalPromotedProperties()->yes()) {
 				$errors[] = RuleErrorBuilder::message(
 					'Final promoted properties are supported only on PHP 8.5 and later.',
 				)->identifier('property.invalidPromoted')->nonIgnorable()->line($param->getStartLine())->build();

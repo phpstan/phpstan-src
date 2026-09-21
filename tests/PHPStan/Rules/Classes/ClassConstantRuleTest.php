@@ -2,8 +2,8 @@
 
 namespace PHPStan\Rules\Classes;
 
+use Override;
 use PHPStan\Classes\ForbiddenClassNameExtension;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
@@ -14,7 +14,6 @@ use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<ClassConstantRule>
@@ -22,7 +21,14 @@ use const PHP_VERSION_ID;
 class ClassConstantRuleTest extends RuleTestCase
 {
 
-	private int $phpVersion;
+	private static ?int $analysedPhpVersionId = null;
+
+	#[Override]
+	protected function setUp(): void
+	{
+		self::$analysedPhpVersionId = null;
+		parent::setUp();
+	}
 
 	private bool $checkImportedClassNameCase = false;
 
@@ -49,14 +55,12 @@ class ClassConstantRuleTest extends RuleTestCase
 				$reflectionProvider,
 				$container->getExtensionsCollection(RestrictedClassNameUsageExtension::class),
 			),
-			new PhpVersion($this->phpVersion),
 			new NonStringableDynamicAccessCheck($ruleLevelHelper, true),
 		);
 	}
 
 	public function testClassConstant(): void
 	{
-		$this->phpVersion = PHP_VERSION_ID;
 		$this->analyse(
 			[
 				__DIR__ . '/data/class-constant.php',
@@ -123,7 +127,6 @@ class ClassConstantRuleTest extends RuleTestCase
 
 	public function testClassConstantVisibility(): void
 	{
-		$this->phpVersion = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/class-constant-visibility.php'], [
 			[
 				'Access to private constant PRIVATE_BAR of class ClassConstantVisibility\Bar.',
@@ -192,7 +195,6 @@ class ClassConstantRuleTest extends RuleTestCase
 
 	public function testClassExists(): void
 	{
-		$this->phpVersion = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/class-exists.php'], [
 			[
 				'Class UnknownClass\Bar not found.',
@@ -215,7 +217,6 @@ class ClassConstantRuleTest extends RuleTestCase
 	#[RequiresPhp('>= 8.0.0')]
 	public function testEnumExists(): void
 	{
-		$this->phpVersion = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/enum-exists.php'], [
 			[
 				'Class UnknownEnum\Foo not found.',
@@ -279,13 +280,12 @@ class ClassConstantRuleTest extends RuleTestCase
 	#[DataProvider('dataClassConstantOnExpression')]
 	public function testClassConstantOnExpression(int $phpVersion, array $errors): void
 	{
-		$this->phpVersion = $phpVersion;
+		self::$analysedPhpVersionId = $phpVersion;
 		$this->analyse([__DIR__ . '/data/class-constant-on-expr.php'], $errors);
 	}
 
 	public function testAttributes(): void
 	{
-		$this->phpVersion = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/class-constant-attribute.php'], [
 			[
 				'Access to undefined constant ClassConstantAttribute\Foo::BAR.',
@@ -321,19 +321,16 @@ class ClassConstantRuleTest extends RuleTestCase
 	#[RequiresPhp('>= 8.0.0')]
 	public function testRuleWithNullsafeVariant(): void
 	{
-		$this->phpVersion = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/class-constant-nullsafe.php'], []);
 	}
 
 	public function testBug7675(): void
 	{
-		$this->phpVersion = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/bug-7675.php'], []);
 	}
 
 	public function testBug8034(): void
 	{
-		$this->phpVersion = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/bug-8034.php'], [
 			[
 				'Access to undefined constant static(Bug8034\HelloWorld)::FIELDS.',
@@ -344,7 +341,6 @@ class ClassConstantRuleTest extends RuleTestCase
 
 	public function testClassConstFetchDefined(): void
 	{
-		$this->phpVersion = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/class-const-fetch-defined.php'], [
 			[
 				'Access to undefined constant ClassConstFetchDefined\Foo::TEST.',
@@ -445,7 +441,6 @@ class ClassConstantRuleTest extends RuleTestCase
 	{
 		$tip = 'This is most likely unintentional. Did you mean to type \AClass?';
 
-		$this->phpVersion = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/phpstan-internal-class.php'], [
 			[
 				'Referencing prefixed PHPStan class: _PHPStan_156ee64ba\AClass.',
@@ -458,7 +453,6 @@ class ClassConstantRuleTest extends RuleTestCase
 	#[RequiresPhp('>= 8.2.0')]
 	public function testClassConstantAccessedOnTrait(): void
 	{
-		$this->phpVersion = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/class-constant-accessed-on-trait.php'], [
 			[
 				'Cannot access constant TEST on trait ClassConstantAccessedOnTrait\Foo.',
@@ -470,8 +464,6 @@ class ClassConstantRuleTest extends RuleTestCase
 	#[RequiresPhp('>= 8.3.0')]
 	public function testDynamicAccess(): void
 	{
-		$this->phpVersion = PHP_VERSION_ID;
-
 		$this->analyse([__DIR__ . '/data/dynamic-constant-access.php'], [
 			[
 				'Access to undefined constant ClassConstantDynamicAccess\Foo::FOO.',
@@ -519,8 +511,6 @@ class ClassConstantRuleTest extends RuleTestCase
 	#[RequiresPhp('>= 8.3.0')]
 	public function testStringableDynamicAccess(): void
 	{
-		$this->phpVersion = PHP_VERSION_ID;
-
 		$this->analyse([__DIR__ . '/data/dynamic-constant-stringable-access.php'], [
 			[
 				'Class constant name for ClassConstantDynamicStringableAccess\Foo must be a string, but mixed was given.',
@@ -584,7 +574,6 @@ class ClassConstantRuleTest extends RuleTestCase
 	#[DataProvider('dataBug12827')]
 	public function testBug12827(bool $checkImportedClassNameCase): void
 	{
-		$this->phpVersion = PHP_VERSION_ID;
 		$this->checkImportedClassNameCase = $checkImportedClassNameCase;
 
 		$expectedErrors = [];
@@ -606,7 +595,6 @@ class ClassConstantRuleTest extends RuleTestCase
 	#[RequiresPhp('>= 8.1.0')]
 	public function testBug12827Enum(bool $checkImportedClassNameCase): void
 	{
-		$this->phpVersion = PHP_VERSION_ID;
 		$this->checkImportedClassNameCase = $checkImportedClassNameCase;
 
 		$expectedErrors = [];
@@ -618,6 +606,30 @@ class ClassConstantRuleTest extends RuleTestCase
 		}
 
 		$this->analyse([__DIR__ . '/data/bug-12827-enum.php'], $expectedErrors);
+	}
+
+	public function testConditionallyExecutedClassConstantOnExpression(): void
+	{
+		self::$analysedPhpVersionId = 70400;
+		$this->analyse([__DIR__ . '/data/class-constant-on-expr-php-versions.php'], [
+			[
+				'Accessing ::class constant on an expression is supported only on PHP 8.0 and later.',
+				12,
+			],
+			[
+				'Accessing ::class constant on an expression is supported only on PHP 8.0 and later.',
+				15,
+			],
+		]);
+	}
+
+	public static function getAdditionalConfigFiles(): array
+	{
+		if (self::$analysedPhpVersionId === null) {
+			return [];
+		}
+
+		return [__DIR__ . '/../php-version-' . self::$analysedPhpVersionId . '.neon'];
 	}
 
 }

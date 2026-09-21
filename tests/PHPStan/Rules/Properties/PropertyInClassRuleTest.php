@@ -2,7 +2,7 @@
 
 namespace PHPStan\Rules\Properties;
 
-use PHPStan\Php\PhpVersion;
+use Override;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
@@ -14,9 +14,18 @@ use const PHP_VERSION_ID;
 class PropertyInClassRuleTest extends RuleTestCase
 {
 
+	private static ?int $analysedPhpVersionId = null;
+
+	#[Override]
+	protected function setUp(): void
+	{
+		self::$analysedPhpVersionId = null;
+		parent::setUp();
+	}
+
 	protected function getRule(): Rule
 	{
-		return new PropertyInClassRule(new PhpVersion(PHP_VERSION_ID));
+		return new PropertyInClassRule();
 	}
 
 	#[RequiresPhp('< 8.4.0')]
@@ -302,6 +311,30 @@ class PropertyInClassRuleTest extends RuleTestCase
 		}
 
 		$this->analyse([__DIR__ . '/data/static-properties-asymmetric-visibility-support.php'], $errors);
+	}
+
+	public function testConditionallyDeclaredClass(): void
+	{
+		self::$analysedPhpVersionId = 80300;
+		$this->analyse([__DIR__ . '/data/property-in-class-php-versions.php'], [
+			[
+				'Final properties are supported only on PHP 8.4 and later.',
+				20,
+			],
+			[
+				'Final properties are supported only on PHP 8.4 and later.',
+				28,
+			],
+		]);
+	}
+
+	public static function getAdditionalConfigFiles(): array
+	{
+		if (self::$analysedPhpVersionId === null) {
+			return [];
+		}
+
+		return [__DIR__ . '/../php-version-' . self::$analysedPhpVersionId . '.neon'];
 	}
 
 }

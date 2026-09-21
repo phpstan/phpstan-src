@@ -64,7 +64,6 @@ class TraitAttributesRuleTest extends RuleTestCase
 				),
 				deprecationRulesInstalled: true,
 			),
-			new PhpVersion(PHP_VERSION_ID),
 		);
 	}
 

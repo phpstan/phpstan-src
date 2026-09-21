@@ -2,7 +2,7 @@
 
 namespace PHPStan\Rules\Exceptions;
 
-use PHPStan\Php\PhpVersion;
+use Override;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -13,11 +13,18 @@ use PHPUnit\Framework\Attributes\DataProvider;
 class ThrowExpressionRuleTest extends RuleTestCase
 {
 
-	private PhpVersion $phpVersion;
+	private static ?int $analysedPhpVersionId = null;
+
+	#[Override]
+	protected function setUp(): void
+	{
+		self::$analysedPhpVersionId = null;
+		parent::setUp();
+	}
 
 	protected function getRule(): Rule
 	{
-		return new ThrowExpressionRule($this->phpVersion);
+		return new ThrowExpressionRule();
 	}
 
 	public static function dataRule(): array
@@ -45,8 +52,32 @@ class ThrowExpressionRuleTest extends RuleTestCase
 	#[DataProvider('dataRule')]
 	public function testRule(int $phpVersion, array $expectedErrors): void
 	{
-		$this->phpVersion = new PhpVersion($phpVersion);
+		self::$analysedPhpVersionId = $phpVersion;
 		$this->analyse([__DIR__ . '/data/throw-expr.php'], $expectedErrors);
+	}
+
+	public function testConditionallyExecutedCode(): void
+	{
+		self::$analysedPhpVersionId = 70400;
+		$this->analyse([__DIR__ . '/data/throw-expr-php-versions.php'], [
+			[
+				'Throw expression is supported only on PHP 8.0 and later.',
+				15,
+			],
+			[
+				'Throw expression is supported only on PHP 8.0 and later.',
+				18,
+			],
+		]);
+	}
+
+	public static function getAdditionalConfigFiles(): array
+	{
+		if (self::$analysedPhpVersionId === null) {
+			return [];
+		}
+
+		return [__DIR__ . '/../php-version-' . self::$analysedPhpVersionId . '.neon'];
 	}
 
 }

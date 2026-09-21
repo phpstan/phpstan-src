@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassConst;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
@@ -14,10 +13,6 @@ use PHPStan\Rules\RuleErrorBuilder;
 #[RegisteredRule(level: 0)]
 final class FinalConstantRule implements Rule
 {
-
-	public function __construct(private PhpVersion $phpVersion)
-	{
-	}
 
 	public function getNodeType(): string
 	{
@@ -30,7 +25,7 @@ final class FinalConstantRule implements Rule
 			return [];
 		}
 
-		if ($this->phpVersion->supportsFinalConstants()) {
+		if ($scope->getPhpVersion()->supportsFinalConstants()->yes()) {
 			return [];
 		}
 

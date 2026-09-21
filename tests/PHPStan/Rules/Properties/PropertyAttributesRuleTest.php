@@ -2,8 +2,8 @@
 
 namespace PHPStan\Rules\Properties;
 
+use Override;
 use PHPStan\Classes\ForbiddenClassNameExtension;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
@@ -16,13 +16,21 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<PropertyAttributesRule>
  */
 class PropertyAttributesRuleTest extends RuleTestCase
 {
+
+	private static ?int $analysedPhpVersionId = null;
+
+	#[Override]
+	protected function setUp(): void
+	{
+		self::$analysedPhpVersionId = null;
+		parent::setUp();
+	}
 
 	protected function getRule(): Rule
 	{
@@ -59,7 +67,6 @@ class PropertyAttributesRuleTest extends RuleTestCase
 				),
 				deprecationRulesInstalled: true,
 			),
-			new PhpVersion(PHP_VERSION_ID),
 		);
 	}
 
@@ -106,6 +113,30 @@ class PropertyAttributesRuleTest extends RuleTestCase
 				14,
 			],
 		]);
+	}
+
+	public function testConditionallyDeclaredClass(): void
+	{
+		self::$analysedPhpVersionId = 80400;
+		$this->analyse([__DIR__ . '/data/override-attr-on-property-php-versions.php'], [
+			[
+				'Attribute class Override can be used with properties only on PHP 8.5 and later.',
+				22,
+			],
+			[
+				'Attribute class Override can be used with properties only on PHP 8.5 and later.',
+				31,
+			],
+		]);
+	}
+
+	public static function getAdditionalConfigFiles(): array
+	{
+		if (self::$analysedPhpVersionId === null) {
+			return [];
+		}
+
+		return [__DIR__ . '/../php-version-' . self::$analysedPhpVersionId . '.neon'];
 	}
 
 }

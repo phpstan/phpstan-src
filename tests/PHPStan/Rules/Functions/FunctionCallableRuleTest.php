@@ -2,18 +2,26 @@
 
 namespace PHPStan\Rules\Functions;
 
-use PHPStan\Php\PhpVersion;
+use Override;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<FunctionCallableRule>
  */
 class FunctionCallableRuleTest extends RuleTestCase
 {
+
+	private static ?int $analysedPhpVersionId = null;
+
+	#[Override]
+	protected function setUp(): void
+	{
+		self::$analysedPhpVersionId = null;
+		parent::setUp();
+	}
 
 	protected function getRule(): Rule
 	{
@@ -31,7 +39,6 @@ class FunctionCallableRuleTest extends RuleTestCase
 				checkBenevolentUnionTypes: false,
 				discoveringSymbolsTip: true,
 			),
-			new PhpVersion(PHP_VERSION_ID),
 			true,
 			true,
 		);
@@ -78,6 +85,30 @@ class FunctionCallableRuleTest extends RuleTestCase
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 		]);
+	}
+
+	public function testConditionallyExecutedCode(): void
+	{
+		self::$analysedPhpVersionId = 80000;
+		$this->analyse([__DIR__ . '/data/function-callable-php-versions.php'], [
+			[
+				'First-class callables are supported only on PHP 8.1 and later.',
+				16,
+			],
+			[
+				'First-class callables are supported only on PHP 8.1 and later.',
+				19,
+			],
+		]);
+	}
+
+	public static function getAdditionalConfigFiles(): array
+	{
+		if (self::$analysedPhpVersionId === null) {
+			return [];
+		}
+
+		return [__DIR__ . '/../php-version-' . self::$analysedPhpVersionId . '.neon'];
 	}
 
 }

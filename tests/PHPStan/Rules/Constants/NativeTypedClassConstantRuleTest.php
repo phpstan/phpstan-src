@@ -4,7 +4,6 @@ namespace PHPStan\Rules\Constants;
 
 use PHPStan\Rules\Rule as TRule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<NativeTypedClassConstantRule>

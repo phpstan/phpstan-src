@@ -10,7 +10,6 @@ use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\ClassNameNodePair;
@@ -42,7 +41,6 @@ final class ClassConstantRule implements Rule
 		private ReflectionProvider $reflectionProvider,
 		private RuleLevelHelper $ruleLevelHelper,
 		private ClassNameCheck $classCheck,
-		private PhpVersion $phpVersion,
 		private NonStringableDynamicAccessCheck $nonStringableDynamicAccessCheck,
 	)
 	{
@@ -196,7 +194,7 @@ final class ClassConstantRule implements Rule
 			}
 
 			if (strtolower($constantName) === 'class') {
-				if (!$this->phpVersion->supportsClassConstantOnExpression()) {
+				if (!$scope->getPhpVersion()->supportsClassConstantOnExpression()->yes()) {
 					return [
 						RuleErrorBuilder::message('Accessing ::class constant on an expression is supported only on PHP 8.0 and later.')
 							->identifier('classConstant.notSupported')

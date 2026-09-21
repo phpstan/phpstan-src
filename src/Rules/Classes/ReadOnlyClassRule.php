@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InClassNode;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
@@ -16,10 +15,6 @@ use PHPStan\Rules\RuleErrorBuilder;
 #[RegisteredRule(level: 0)]
 final class ReadOnlyClassRule implements Rule
 {
-
-	public function __construct(private PhpVersion $phpVersion)
-	{
-	}
 
 	public function getNodeType(): string
 	{
@@ -33,7 +28,7 @@ final class ReadOnlyClassRule implements Rule
 			return [];
 		}
 		if ($classReflection->isAnonymous()) {
-			if ($this->phpVersion->supportsReadOnlyAnonymousClasses()) {
+			if ($scope->getPhpVersion()->supportsReadOnlyAnonymousClasses()->yes()) {
 				return [];
 			}
 
@@ -45,7 +40,7 @@ final class ReadOnlyClassRule implements Rule
 			];
 		}
 
-		if ($this->phpVersion->supportsReadOnlyClasses()) {
+		if ($scope->getPhpVersion()->supportsReadOnlyClasses()->yes()) {
 			return [];
 		}
 

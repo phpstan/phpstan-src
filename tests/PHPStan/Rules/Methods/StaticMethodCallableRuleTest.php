@@ -2,8 +2,8 @@
 
 namespace PHPStan\Rules\Methods;
 
+use Override;
 use PHPStan\Classes\ForbiddenClassNameExtension;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
@@ -12,7 +12,6 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<StaticMethodCallableRule>
@@ -20,7 +19,14 @@ use const PHP_VERSION_ID;
 class StaticMethodCallableRuleTest extends RuleTestCase
 {
 
-	private int $phpVersion = PHP_VERSION_ID;
+	private static ?int $analysedPhpVersionId = null;
+
+	#[Override]
+	protected function setUp(): void
+	{
+		self::$analysedPhpVersionId = null;
+		parent::setUp();
+	}
 
 	protected function getRule(): Rule
 	{
@@ -55,7 +61,6 @@ class StaticMethodCallableRuleTest extends RuleTestCase
 				discoveringSymbolsTip: true,
 				reportMagicMethods: true,
 			),
-			new PhpVersion($this->phpVersion),
 		);
 	}
 
@@ -119,6 +124,30 @@ class StaticMethodCallableRuleTest extends RuleTestCase
 	public function testCallsOnGenericClassString(): void
 	{
 		$this->analyse([__DIR__ . '/../Comparison/data/impossible-method-exists-on-generic-class-string.php'], []);
+	}
+
+	public function testConditionallyExecutedCode(): void
+	{
+		self::$analysedPhpVersionId = 80000;
+		$this->analyse([__DIR__ . '/data/static-method-callable-php-versions.php'], [
+			[
+				'First-class callables are supported only on PHP 8.1 and later.',
+				19,
+			],
+			[
+				'First-class callables are supported only on PHP 8.1 and later.',
+				22,
+			],
+		]);
+	}
+
+	public static function getAdditionalConfigFiles(): array
+	{
+		if (self::$analysedPhpVersionId === null) {
+			return [];
+		}
+
+		return [__DIR__ . '/../php-version-' . self::$analysedPhpVersionId . '.neon'];
 	}
 
 }

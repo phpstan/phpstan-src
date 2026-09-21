@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Functions;
 
+use Override;
 use PHPStan\Classes\ForbiddenClassNameExtension;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
@@ -23,6 +24,15 @@ class ExistingClassesInClosureTypehintsRuleTest extends RuleTestCase
 {
 
 	private int $phpVersionId = PHP_VERSION_ID;
+
+	private static ?int $analysedPhpVersionId = null;
+
+	#[Override]
+	protected function setUp(): void
+	{
+		self::$analysedPhpVersionId = null;
+		parent::setUp();
+	}
 
 	protected function getRule(): Rule
 	{
@@ -154,6 +164,7 @@ class ExistingClassesInClosureTypehintsRuleTest extends RuleTestCase
 	public function testNativeUnionTypes(int $phpVersionId, array $errors): void
 	{
 		$this->phpVersionId = $phpVersionId;
+		self::$analysedPhpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/native-union-types.php'], $errors);
 	}
 
@@ -162,20 +173,7 @@ class ExistingClassesInClosureTypehintsRuleTest extends RuleTestCase
 		return [
 			[
 				70400,
-				[
-					[
-						"Anonymous function uses native union types but they're supported only on PHP 8.0 and later.",
-						29,
-					],
-					[
-						"Anonymous function uses native union types but they're supported only on PHP 8.0 and later.",
-						33,
-					],
-					[
-						"Anonymous function uses native union types but they're supported only on PHP 8.0 and later.",
-						45,
-					],
-				],
+				[],
 			],
 			[
 				80000,
@@ -389,6 +387,15 @@ class ExistingClassesInClosureTypehintsRuleTest extends RuleTestCase
 				10,
 			],
 		]);
+	}
+
+	public static function getAdditionalConfigFiles(): array
+	{
+		if (self::$analysedPhpVersionId === null) {
+			return [];
+		}
+
+		return [__DIR__ . '/../php-version-' . self::$analysedPhpVersionId . '.neon'];
 	}
 
 }

@@ -178,7 +178,7 @@ differential coverage (in `$covered` there, or via its dedicated script).
 
 ## The native parser engine
 
-`src/parser/` reimplements php-parser 5.8.0's LALR engine and node building
+`src/parser/` reimplements php-parser 5.9.0's LALR engine and node building
 (`PhpParser\ParserAbstract` + the generated `Parser\Php8`), shadowed through
 the `PHPStan\Parser\ParserRunner` seam. The parsing tables are read at run
 time from the first `Php8` parser object seen — they are generated data, so

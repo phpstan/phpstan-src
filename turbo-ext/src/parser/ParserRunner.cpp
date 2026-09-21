@@ -1,5 +1,5 @@
 /*
- * PHPStanTurbo\ParserRunner — native LALR engine for php-parser 5.8.0.
+ * PHPStanTurbo\ParserRunner — native LALR engine for php-parser 5.9.0.
  * phpstanturbo::ParserEngine mirrors PhpParser\ParserAbstract::parse()/doParse()
  * exactly; the generated reduce actions live in ParserRunnerActions*.cpp, the
  * ported semantic helpers in ParserRunnerHelpers.cpp. PHP twin:

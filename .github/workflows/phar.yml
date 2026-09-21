@@ -22,7 +22,7 @@ permissions:
 env:
   # The php-parser version whose grammar tables and semantic actions the
   # native parser engine (turbo-ext/src/parser/) was ported against.
-  SUPPORTED_PHP_PARSER_VERSION: "v5.8.0"
+  SUPPORTED_PHP_PARSER_VERSION: "v5.9.0"
   # Composer for the turbo container legs, pinned by checksum. The distro
   # composers are unusable there: jammy's 2.2.6 fatals under PHP 8.5, and
   # Alpine's /usr/bin/composer is a shell wrapper hardwired to the

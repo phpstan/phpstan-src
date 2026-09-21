@@ -1,5 +1,5 @@
 /*
- * phpstanturbo::ParserEngine — native port of php-parser 5.8.0's LALR engine
+ * phpstanturbo::ParserEngine — native port of php-parser 5.9.0's LALR engine
  * and node building (vendor/nikic/php-parser: ParserAbstract.php +
  * Parser/Php8.php), structured to mirror ParserAbstract method for method:
  * doParse(), getAttributes(), emitError(), the semantic-action helpers

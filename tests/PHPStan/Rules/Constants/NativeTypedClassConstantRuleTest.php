@@ -33,4 +33,10 @@ class NativeTypedClassConstantRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/native-typed-class-constant.php'], $errors);
 	}
 
+	public function testPhpVersionIdNarrowedScope(): void
+	{
+		$errors = [];
+		$this->analyse([__DIR__ . '/data/native-typed-class-constant-version-id-narrowed.php'], $errors);
+	}
+
 }

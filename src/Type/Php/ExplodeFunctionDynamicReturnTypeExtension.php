@@ -28,10 +28,12 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
+use function array_keys;
 use function count;
 use function explode;
 use function max;
-use const PHP_INT_MAX;
+use function min;
+use function substr_count;
 
 #[AutowiredService]
 final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -187,32 +189,25 @@ final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunction
 			return null;
 		}
 
-		if ($limitType === null) {
-			$limits = [PHP_INT_MAX];
-		} else {
-			$limits = [];
-			foreach ($limitType->getFiniteTypes() as $finiteType) {
-				if (!$finiteType instanceof ConstantIntegerType) {
-					return null;
-				}
-
-				$limits[] = $finiteType->getValue();
-			}
-
-			if (count($limits) === 0) {
-				return null;
-			}
-		}
-
-		if (count($delimiters) * count($strings) * count($limits) > self::CONSTANT_COMBINATION_LIMIT) {
+		if (count($delimiters) * count($strings) > self::CONSTANT_COMBINATION_LIMIT) {
 			return null;
 		}
 
 		$results = [];
 		foreach ($delimiters as $delimiter) {
 			foreach ($strings as $string) {
+				$stringValue = $string->getValue();
+				$limits = $this->getDistinctLimits($limitType, substr_count($stringValue, $delimiter) + 1);
+				if ($limits === null) {
+					return null;
+				}
+
 				foreach ($limits as $limit) {
-					$items = explode($delimiter, $string->getValue(), $limit);
+					if (count($results) >= self::CONSTANT_COMBINATION_LIMIT) {
+						return null;
+					}
+
+					$items = explode($delimiter, $stringValue, $limit);
 					if (count($items) > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
 						return null;
 					}
@@ -232,6 +227,65 @@ final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunction
 		}
 
 		return TypeCombinator::union(...$results);
+	}
+
+	/**
+	 * The limits that lead to different results when splitting a string into
+	 * $partsCount parts, or null when they cannot be enumerated.
+	 *
+	 * Limits are clamped into the [-$partsCount, $partsCount] window because
+	 * every limit above $partsCount produces the full split and every limit at
+	 * or below -$partsCount produces an empty array. That keeps wide and even
+	 * unbounded integer ranges enumerable.
+	 *
+	 * @return list<int>|null
+	 */
+	private function getDistinctLimits(?Type $limitType, int $partsCount): ?array
+	{
+		if ($limitType === null) {
+			return [$partsCount];
+		}
+
+		if (!$limitType->isInteger()->yes()) {
+			return null;
+		}
+
+		$finiteTypes = $limitType->getFiniteTypes();
+		if (count($finiteTypes) > 0) {
+			$clampedLimits = [];
+			foreach ($finiteTypes as $finiteType) {
+				if (!$finiteType instanceof ConstantIntegerType) {
+					return null;
+				}
+
+				$value = $finiteType->getValue();
+				$clampedLimits[max(-$partsCount, min($partsCount, $value))] = true;
+			}
+
+			return array_keys($clampedLimits);
+		}
+
+		$limits = [];
+		for ($limit = -$partsCount; $limit <= $partsCount; $limit++) {
+			if ($limit === -$partsCount) {
+				$candidateLimitType = IntegerRangeType::fromInterval(null, $limit);
+			} elseif ($limit === $partsCount) {
+				$candidateLimitType = IntegerRangeType::fromInterval($limit, null);
+			} else {
+				$candidateLimitType = new ConstantIntegerType($limit);
+			}
+
+			if ($candidateLimitType->isSuperTypeOf($limitType)->no()) {
+				continue;
+			}
+
+			$limits[] = $limit;
+			if (count($limits) > self::CONSTANT_COMBINATION_LIMIT) {
+				return null;
+			}
+		}
+
+		return $limits;
 	}
 
 	/**

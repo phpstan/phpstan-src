@@ -51,6 +51,11 @@ final class PhpVersions
 		return IntegerRangeType::fromInterval(80100, null)->isSuperTypeOf($this->phpVersions)->result;
 	}
 
+	public function supportsNativeTypesInClassConstants(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80300, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
 	public function supportsTrueAndFalseStandaloneType(): TrinaryLogic
 	{
 		return IntegerRangeType::fromInterval(80200, null)->isSuperTypeOf($this->phpVersions)->result;

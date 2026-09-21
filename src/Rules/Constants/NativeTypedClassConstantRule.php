@@ -31,7 +31,7 @@ final class NativeTypedClassConstantRule implements Rule
 			return [];
 		}
 
-		if ($this->phpVersion->supportsNativeTypesInClassConstants()) {
+		if ($scope->getPhpVersion()->supportsNativeTypesInClassConstants()->yes()) {
 			return [];
 		}
 

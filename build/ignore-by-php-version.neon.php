@@ -11,6 +11,7 @@ if (PHP_VERSION_ID >= 80100) {
 } else {
 	$includes[] = __DIR__ . '/enums.neon';
 	$includes[] = __DIR__ . '/readonly-property.neon';
+	$includes[] = __DIR__ . '/turbo-declaration-generator-pre-8.1.neon';
 }
 
 if (PHP_VERSION_ID >= 70400) {

@@ -2,6 +2,8 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Turbo\ReferencedByTurboExtension;
+
 /**
  * A type whose value is known at analysis time — a compile-time constant scalar.
  *
@@ -14,6 +16,7 @@ namespace PHPStan\Type;
  * @api
  */
 #[InstanceofDeprecated(insteadUse: 'Type::isConstantScalarValue() or Type::getConstantScalarTypes() or Type::getConstantScalarValues()')]
+#[ReferencedByTurboExtension(key: 'constantScalarType')]
 interface ConstantScalarType extends Type
 {
 

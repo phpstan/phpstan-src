@@ -392,8 +392,15 @@ public:
 	static zv::Val createConditionalExpressions(zv::TableRef conditional, zv::TableRef ours, zv::TableRef theirs, zv::TableRef merged, zv::TableRef differingKeys)
 	{
 		zend_class_entry *virtualNodeCe = pt_class(PT_CLASS_VIRTUAL_NODE);
-		zend_class_entry *neverTypeCe = pt_class(PT_CLASS_NEVER_TYPE);
-		if (UNEXPECTED(virtualNodeCe == NULL || neverTypeCe == NULL)) return zv::Val();
+		/* the shadowing NeverType (declared at activation, before any
+		 * ScopeOps call can run) */
+		zend_class_entry *neverTypeCe = pt_ce_never_type;
+		if (UNEXPECTED(virtualNodeCe == NULL || neverTypeCe == NULL)) {
+			if (neverTypeCe == NULL && !EG(exception)) {
+				zend_throw_error(NULL, "phpstan_turbo: the shadowing NeverType is not declared");
+			}
+			return zv::Val();
+		}
 
 		/* A guard is only ever consumed paired with a target: a *different* key
 		 * in the first target loop below, any key in the second one. Deriving a

@@ -34,6 +34,16 @@ foreach ($classRefs as $key => $default) {
 // completeness check at the end holds the union against the manifest
 $covered = [];
 
+// The native classes are declared as PHPStanTurbo\* here and instantiate
+// each other under those names (a native TrinaryLogic hands out a native
+// BooleanType); a Type-valued result is compared by class modulo that
+// prefix, mapped from the manifest so a new port needs no edit here.
+$turboNormMap = [];
+foreach ($shadowedClasses as $shadowedClass => $entry) {
+	$turboNormMap[$entry['turboClass']] = $shadowedClass;
+}
+$turboNorm = static fn (string $class): string => strtr($class, $turboNormMap);
+
 // ---- TrinaryLogic ----
 $covered[\PHPStan\TrinaryLogic::class] = true;
 $pYes = TrinaryLogic::createYes();
@@ -55,7 +65,9 @@ foreach (['yes', 'no', 'maybe'] as $k) {
 	check($pAll[$k]->no() === $nAll[$k]->no(), "$k no()");
 	check($pAll[$k]->maybe() === $nAll[$k]->maybe(), "$k maybe()");
 	check($pAll[$k]->describe() === $nAll[$k]->describe(), "$k describe()");
-	check(get_class($pAll[$k]->toBooleanType()) === get_class($nAll[$k]->toBooleanType()), "$k toBooleanType() class");
+	// the native side instantiates the shadowing Boolean classes, declared
+	// as PHPStanTurbo\* here — compare the class modulo that prefix
+	check(get_class($pAll[$k]->toBooleanType()) === $turboNorm(get_class($nAll[$k]->toBooleanType())), "$k toBooleanType() class");
 	check($pAll[$k]->toBooleanType()->describe(\PHPStan\Type\VerbosityLevel::precise()) === $nAll[$k]->toBooleanType()->describe(\PHPStan\Type\VerbosityLevel::precise()), "$k toBooleanType() describe");
 	foreach (['yes', 'no', 'maybe'] as $j) {
 		check($pAll[$k]->and($pAll[$j])->describe() === $nAll[$k]->and($nAll[$j])->describe(), "$k and $j");
@@ -615,6 +627,270 @@ foreach ($scopeOpsClasses as $side => $scopeOpsClass) {
 	check($emptySpecified === [], "ScopeOps matchConditionalExpressions $side: empty specified expressions short-circuit");
 }
 check($matchResults['php'] === $matchResults['native'], 'ScopeOps matchConditionalExpressions: fixed point and remaining conditions');
+
+// ---- ScopeContext ----
+// Needs real ClassReflection instances (the PHP twin type-hints them), so a
+// container is booted here; equals() must compare by getName(), not identity.
+$covered[\PHPStan\Analyser\ScopeContext::class] = true;
+$scContainerFactory = new \PHPStan\DependencyInjection\ContainerFactory(dirname(__DIR__, 2));
+$scContainer = $scContainerFactory->create(sys_get_temp_dir() . '/phpstan-turbo-smoke', [$scContainerFactory->getConfigDirectory() . '/config.level8.neon'], []);
+$scReflectionProvider = $scContainer->getByType(\PHPStan\Reflection\ReflectionProvider::class);
+$scClassA = $scReflectionProvider->getClass(\PHPStan\Type\IntegerType::class);
+$scClassA2 = $scReflectionProvider->getClass(\PHPStan\Type\IntegerType::class);
+$scClassB = $scReflectionProvider->getClass(\PHPStan\Type\StringType::class);
+$scTrait = $scReflectionProvider->getClass(\PHPStan\Type\Traits\ConstantScalarTypeTrait::class);
+$scResults = [];
+foreach (['php' => \PHPStan\Analyser\ScopeContext::class, 'native' => \PHPStanTurbo\ScopeContext::class] as $side => $scClass) {
+	$r = [];
+	$file = $scClass::create('/a.php');
+	$r[] = [$file instanceof $scClass, $file->getFile(), $file->getClassReflection(), $file->getTraitReflection()];
+	$inClass = $file->enterClass($scClassA);
+	$r[] = [$inClass->getFile(), $inClass->getClassReflection() === $scClassA, $inClass->getTraitReflection()];
+	$inTrait = $inClass->enterTrait($scTrait);
+	$r[] = [$inTrait->getClassReflection() === $scClassA, $inTrait->getTraitReflection() === $scTrait];
+	$begun = $inTrait->beginFile();
+	$r[] = [$begun->getFile(), $begun->getClassReflection(), $begun->getTraitReflection()];
+	$contexts = [
+		'file' => $file, 'file2' => $scClass::create('/a.php'), 'other' => $scClass::create('/b.php'),
+		'classA' => $inClass, 'classA2' => $scClass::create('/a.php')->enterClass($scClassA2), 'classB' => $file->enterClass($scClassB),
+		'trait' => $inTrait, 'trait2' => $scClass::create('/a.php')->enterClass($scClassA2)->enterTrait($scTrait), 'traitB' => $file->enterClass($scClassB)->enterTrait($scTrait),
+	];
+	foreach ($contexts as $k1 => $c1) {
+		foreach ($contexts as $k2 => $c2) {
+			$r[] = [$k1, $k2, $c1->equals($c2)];
+		}
+	}
+	foreach ([
+		'class in class' => static fn () => $inClass->enterClass($scClassB),
+		'trait via enterClass' => static fn () => $file->enterClass($scTrait),
+		'trait outside class' => static fn () => $file->enterTrait($scTrait),
+		'non-trait via enterTrait' => static fn () => $inClass->enterTrait($scClassB),
+	] as $label => $fn) {
+		try {
+			$fn();
+			$r[] = [$label, 'no exception'];
+		} catch (\PHPStan\ShouldNotHappenException $e) {
+			$r[] = [$label, $e->getMessage()];
+		}
+	}
+	try {
+		new $scClass('/x.php', null, null);
+		$r[] = 'ctor callable';
+	} catch (\Error $e) {
+		$r[] = ['ctor', get_class($e)];
+	}
+	$scResults[$side] = $r;
+}
+check($scResults['php'] === $scResults['native'], 'ScopeContext parity: ' . json_encode($scResults['php']) . ' vs ' . json_encode($scResults['native']));
+
+// ---- IsSuperTypeOfResult / AcceptsResult ----
+$covered[\PHPStan\Type\IsSuperTypeOfResult::class] = true;
+$covered[\PHPStan\Type\AcceptsResult::class] = true;
+$resultSides = [
+	'php' => [\PHPStan\Type\IsSuperTypeOfResult::class, \PHPStan\Type\AcceptsResult::class, $pAll],
+	'native' => [\PHPStanTurbo\IsSuperTypeOfResult::class, \PHPStanTurbo\AcceptsResult::class, $nAll],
+];
+$resultObservations = [];
+foreach ($resultSides as $side => [$is, $ar, $tri]) {
+	$o = [];
+	$log = [];
+	$lazy = static function (string $s) use (&$log): \Closure {
+		return static function () use ($s, &$log): string {
+			$log[] = $s;
+			return $s;
+		};
+	};
+	// structural view of a result without invoking its lazy reasons
+	$shape = static fn (object $r): array => [$r->result->describe(), $r->reasons, $r instanceof $is ? count($r->lazyReasons) : null];
+	$norm = static fn (string $m): string => str_replace(['PHPStanTurbo\\', 'PHPStan\\Type\\'], '', $m);
+
+	$o['yes identity'] = $is::createYes() === $is::createYes();
+	$o['maybe identity'] = $is::createMaybe() === $is::createMaybe();
+	$o['no identity'] = $is::createNo() === $is::createNo() && $is::createNo([]) === $is::createNo() && $is::createNo([], []) === $is::createNo();
+	$o['fromBoolean'] = $is::createFromBoolean(true) === $is::createYes() && $is::createFromBoolean(false) === $is::createNo();
+	$o['no with reasons is fresh'] = $is::createNo(['x']) !== $is::createNo() && $is::createNo([], [$lazy('l')]) !== $is::createNo();
+	$o['named-arg skip'] = $shape($is::createNo(lazyReasons: [$lazy('n')]));
+	$o['singleton result identity'] = $is::createYes()->result === $tri['yes'] && $is::createNo()->result === $tri['no'] && $is::createMaybe()->result === $tri['maybe'];
+	foreach (['yes' => $is::createYes(), 'maybe' => $is::createMaybe(), 'no' => $is::createNo()] as $k => $r) {
+		$o["$k flags"] = [$r->yes(), $r->maybe(), $r->no(), $r->describe(), $r->reasons, $r->lazyReasons, $r->getReasons()];
+	}
+
+	$a = new $is($tri['no'], ['r1', 'r2'], [$lazy('l1')]);
+	$b = new $is($tri['maybe'], ['r2', 'r3'], [$lazy('l2'), $lazy('r1')]);
+	$c = new $is($tri['yes'], []);
+	$o['props'] = [$a->result === $tri['no'], $a->reasons, count($a->lazyReasons), $c->lazyReasons];
+	$o['getReasons'] = [$a->getReasons(), $b->getReasons(), $c->getReasons()];
+	$o['getReasons log'] = $log;
+	$log = [];
+
+	$o['and'] = [$shape($a->and($b)), $shape($a->and($b, $c)), $shape($a->and()), $shape($c->and($a)), $a->and($b)->getReasons()];
+	$o['or'] = [$shape($a->or($b)), $shape($b->or($c, $a)), $shape($a->or()), $a->or($b)->getReasons()];
+	$o['and/or fresh'] = $a->and() !== $a && $c->and() !== $c && $c->or() !== $c;
+	$log = [];
+	$d = $a->decorateReasons(static fn (string $s): string => "<$s>");
+	$o['decorate keeps lazy lazy'] = $log;
+	$o['decorate'] = [$shape($d), array_map(static fn ($x) => $x instanceof \Closure, $d->lazyReasons), $d->getReasons(), $d->result === $a->result];
+	$o['decorate log'] = $log;
+	$log = [];
+	$o['decorate empty'] = $shape($c->decorateReasons(static fn (string $s): string => $s));
+
+	$o['extremeIdentity'] = [$shape($is::extremeIdentity($a, $b, $c)), $shape($is::extremeIdentity($a, $a)), $shape($is::extremeIdentity($c, $c)), $is::extremeIdentity($a, $b)->getReasons()];
+	$o['maxMin'] = [$shape($is::maxMin($a, $b)), $shape($is::maxMin($a, $c)), $shape($is::maxMin($b, $b)), $is::maxMin($a, $b)->getReasons()];
+	foreach (['extremeIdentity', 'maxMin'] as $m) {
+		try {
+			$is::$m();
+			$o["$m empty"] = 'no throw';
+		} catch (\PHPStan\ShouldNotHappenException) {
+			$o["$m empty"] = 'throws';
+		}
+	}
+	$byName = ['a' => $a, 'b' => $b, 'c' => $c];
+	$cb = static fn (string $n) => $byName[$n];
+	$o['lazyMaxMin'] = [
+		$is::lazyMaxMin(['a', 'b', 'c'], $cb) === $c,
+		$shape($is::lazyMaxMin(['a', 'b'], $cb)),
+		$is::lazyMaxMin(['a', 'b'], $cb)->getReasons(),
+		$shape($is::lazyMaxMin(['b'], $cb)),
+		$shape($is::lazyMaxMin([], $cb)),
+		$is::lazyMaxMin([], $cb) !== $is::createMaybe(),
+		$is::lazyMaxMin(['b', 'b'], $cb)->getReasons(),
+	];
+	$o['negate'] = [$shape($a->negate()), $shape($b->negate()), $shape($c->negate()), $a->negate() !== $a, $a->negate()->getReasons()];
+	$acc = $a->toAcceptsResult();
+	$o['toAcceptsResult'] = [$acc instanceof $ar, $acc->result === $a->result, $acc->reasons, $c->toAcceptsResult() !== $ar::createYes(), $b->toAcceptsResult()->reasons];
+
+	$o['ar singletons'] = [$ar::createYes() === $ar::createYes(), $ar::createNo() === $ar::createNo([]), $ar::createMaybe() === $ar::createMaybe(), $ar::createFromBoolean(true) === $ar::createYes(), $ar::createFromBoolean(false) === $ar::createNo(), $ar::createNo(['q']) !== $ar::createNo(), $ar::createNo(['q'])->reasons, $ar::createYes()->result === $tri['yes']];
+	$x = new $ar($tri['no'], ['a', 'b']);
+	$y = new $ar($tri['maybe'], ['b', 'c']);
+	$z = new $ar($tri['yes'], []);
+	$o['ar flags'] = [[$x->yes(), $x->maybe(), $x->no()], [$y->yes(), $y->maybe(), $y->no()], [$z->yes(), $z->maybe(), $z->no()]];
+	$o['ar and/or'] = [$shape($x->and($y)), $shape($y->and($z)), $shape($x->or($y)), $shape($z->or($x)), $shape($x->and($x))];
+	$o['ar decorate'] = [$shape($x->decorateReasons(static fn (string $s): string => "[$s]")), $shape($z->decorateReasons(static fn (string $s): string => "[$s]"))];
+	$o['ar extremeIdentity/maxMin'] = [$shape($ar::extremeIdentity($x, $y)), $shape($ar::extremeIdentity($z, $z)), $shape($ar::maxMin($x, $y)), $shape($ar::maxMin($x, $z)), $shape($ar::maxMin($y, $y))];
+	foreach (['extremeIdentity', 'maxMin'] as $m) {
+		try {
+			$ar::$m();
+			$o["ar $m empty"] = 'no throw';
+		} catch (\PHPStan\ShouldNotHappenException) {
+			$o["ar $m empty"] = 'throws';
+		}
+	}
+	$arByName = ['x' => $x, 'y' => $y, 'z' => $z];
+	$arCb = static fn (string $n) => $arByName[$n];
+	$o['ar lazyMaxMin'] = [$ar::lazyMaxMin(['x', 'y', 'z'], $arCb) === $z, $shape($ar::lazyMaxMin(['x', 'y'], $arCb)), $shape($ar::lazyMaxMin(['y'], $arCb)), $shape($ar::lazyMaxMin([], $arCb)), $ar::lazyMaxMin([], $arCb) !== $ar::createMaybe()];
+
+	try {
+		$a->reasons = [];
+		$o['readonly write'] = 'no throw';
+	} catch (\Error $e) {
+		$o['readonly write'] = $norm($e->getMessage());
+	}
+	try {
+		$a->__construct($tri['yes'], []);
+		$o['reconstruct'] = 'no throw';
+	} catch (\Error $e) {
+		$o['reconstruct'] = $norm($e->getMessage());
+	}
+	try {
+		(new $is($tri['no'], [], ['not a closure']))->getReasons();
+		$o['lazy type'] = 'no throw';
+	} catch (\TypeError) {
+		$o['lazy type'] = 'TypeError';
+	}
+	$resultObservations[$side] = $o;
+}
+foreach ($resultObservations['php'] as $key => $expected) {
+	check($expected === ($resultObservations['native'][$key] ?? null), "IsSuperTypeOfResult/AcceptsResult $key: " . json_encode($expected) . ' vs ' . json_encode($resultObservations['native'][$key] ?? null));
+}
+
+// ---- the Type ports: BooleanType, ConstantBooleanType, IntegerType, ConstantIntegerType, IntegerRangeType, StringType, ConstantStringType, ClassStringType, GenericClassStringType, FloatType, ConstantFloatType, NullType, VoidType ----
+// A Type never acts alone: its results flow into the PHP compound types and
+// back through `self`-typed statics (IsSuperTypeOfResult::extremeIdentity()),
+// so a native result object meeting the PHP result class in the prefixed
+// declaration used above is a TypeError. The Type ports are therefore
+// compared the way they run: tests/type-family.php observes the whole
+// family under the real names, once as the PHP twins and once with the
+// native classes activated in their place, and the two observation sets
+// must be identical.
+$covered[\PHPStan\Type\BooleanType::class] = true;
+$covered[\PHPStan\Type\Constant\ConstantBooleanType::class] = true;
+$covered[\PHPStan\Type\IntegerType::class] = true;
+$covered[\PHPStan\Type\Constant\ConstantIntegerType::class] = true;
+$covered[\PHPStan\Type\IntegerRangeType::class] = true;
+$covered[\PHPStan\Type\StringType::class] = true;
+$covered[\PHPStan\Type\Constant\ConstantStringType::class] = true;
+$covered[\PHPStan\Type\ClassStringType::class] = true;
+$covered[\PHPStan\Type\Generic\GenericClassStringType::class] = true;
+$covered[\PHPStan\Type\FloatType::class] = true;
+$covered[\PHPStan\Type\Constant\ConstantFloatType::class] = true;
+$covered[\PHPStan\Type\NullType::class] = true;
+$covered[\PHPStan\Type\VoidType::class] = true;
+$covered[\PHPStan\Type\NeverType::class] = true;
+$covered[\PHPStan\Type\MixedType::class] = true;
+$covered[\PHPStan\Type\StrictMixedType::class] = true;
+
+/** @return array<string, mixed> */
+function observeTypeFamily(string $mode): array
+{
+	// Windows CI provides the built DLL path via TURBO_DLL (see phar.yml, as
+	// for arena-smoke.php); everywhere else the .so sits next to the tests.
+	$extension = getenv('TURBO_DLL');
+	if (!is_string($extension) || $extension === '') {
+		$extension = __DIR__ . '/../phpstan_turbo.so';
+	}
+	// either mode peaks near 1 GB, past a stock php.ini's memory_limit, and
+	// its observations run to tens of MB here
+	ini_set('memory_limit', '4G');
+	$cmd = sprintf(
+		'%s -d memory_limit=4G -d extension=%s %s %s',
+		escapeshellarg(PHP_BINARY),
+		escapeshellarg($extension),
+		escapeshellarg(__DIR__ . '/type-family.php'),
+		escapeshellarg($mode),
+	);
+	$process = proc_open($cmd, [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
+	if ($process === false) {
+		fwrite(STDERR, "proc_open failed\n");
+		exit(2);
+	}
+	$stdout = stream_get_contents($pipes[1]);
+	$stderr = stream_get_contents($pipes[2]);
+	fclose($pipes[1]);
+	fclose($pipes[2]);
+	$exitCode = proc_close($process);
+	if ($exitCode !== 0 || $stdout === false) {
+		fwrite(STDERR, sprintf("type-family.php %s failed with exit code %d\n%s%s", $mode, $exitCode, $stdout === false ? '' : $stdout, $stderr));
+		exit(1);
+	}
+	// the observations are the child's last stdout line; a startup notice
+	// (the extension also loaded through php.ini) may precede it
+	$lines = array_values(array_filter(explode("\n", $stdout), static fn (string $line): bool => trim($line) !== ''));
+	try {
+		$observations = json_decode($lines === [] ? '' : $lines[count($lines) - 1], true, 16, JSON_THROW_ON_ERROR);
+	} catch (\JsonException $e) {
+		fwrite(STDERR, sprintf("type-family.php %s printed no observations: %s\n%s%s", $mode, $e->getMessage(), $stdout, $stderr));
+		exit(1);
+	}
+	if (!is_array($observations)) {
+		fwrite(STDERR, sprintf("type-family.php %s printed no observations\n", $mode));
+		exit(1);
+	}
+	return $observations;
+}
+
+$typeFamilyPhp = observeTypeFamily('php');
+$typeFamilyNative = observeTypeFamily('native');
+foreach ([\PHPStan\Type\BooleanType::class, \PHPStan\Type\Constant\ConstantBooleanType::class, \PHPStan\Type\IntegerType::class, \PHPStan\Type\Constant\ConstantIntegerType::class, \PHPStan\Type\IntegerRangeType::class, \PHPStan\Type\StringType::class, \PHPStan\Type\Constant\ConstantStringType::class, \PHPStan\Type\ClassStringType::class, \PHPStan\Type\Generic\GenericClassStringType::class, \PHPStan\Type\FloatType::class, \PHPStan\Type\Constant\ConstantFloatType::class, \PHPStan\Type\NullType::class, \PHPStan\Type\VoidType::class, \PHPStan\Type\NeverType::class, \PHPStan\Type\MixedType::class, \PHPStan\Type\StrictMixedType::class] as $typeClass) {
+	check(($typeFamilyPhp["native $typeClass"] ?? null) === false, "type-family.php php: $typeClass is the PHP twin");
+	check(($typeFamilyNative["native $typeClass"] ?? null) === true, "type-family.php native: $typeClass is the native class");
+	unset($typeFamilyPhp["native $typeClass"], $typeFamilyNative["native $typeClass"]);
+}
+check(count($typeFamilyPhp) > 1000, 'type-family.php: a substantial number of observations (' . count($typeFamilyPhp) . ')');
+check(array_keys($typeFamilyPhp) === array_keys($typeFamilyNative), 'type-family.php: both modes observed the same keys');
+foreach ($typeFamilyPhp as $key => $expected) {
+	$actual = array_key_exists($key, $typeFamilyNative) ? $typeFamilyNative[$key] : '<missing>';
+	check($expected === $actual, "Type family $key: " . json_encode($expected) . ' vs ' . json_encode($actual));
+}
 
 // ---- differential coverage completeness ----
 // Every shadowed class must be exercised by one of the tests/ scripts; the

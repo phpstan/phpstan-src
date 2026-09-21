@@ -2,6 +2,9 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Turbo\ReferencedByTurboExtension;
+
+#[ReferencedByTurboExtension(key: 'subtractableType')]
 interface SubtractableType extends Type
 {
 

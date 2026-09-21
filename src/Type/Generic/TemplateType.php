@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Generic;
 
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\Type;
@@ -10,6 +11,7 @@ use PHPStan\Type\Type;
  * @api
  * @api-do-not-implement
  */
+#[ReferencedByTurboExtension(key: 'templateType')]
 interface TemplateType extends CompoundType
 {
 

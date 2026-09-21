@@ -16,6 +16,7 @@ use PHPStan\Reflection\Type\CallbackUnresolvedPropertyPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\GenericClassStringType;
@@ -28,6 +29,7 @@ use function get_class;
 use function sprintf;
 
 /** @api */
+#[ReferencedByTurboExtension(key: 'staticType')]
 class StaticType implements TypeWithClassName, SubtractableType
 {
 

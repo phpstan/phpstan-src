@@ -2,6 +2,9 @@
 
 namespace PHPStan\Reflection;
 
+use PHPStan\Turbo\ReferencedByTurboExtension;
+
+#[ReferencedByTurboExtension(key: 'reflectionProviderStaticAccessor')]
 final class ReflectionProviderStaticAccessor
 {
 

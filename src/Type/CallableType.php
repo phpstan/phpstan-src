@@ -26,6 +26,7 @@ use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\TemplateType;
@@ -48,6 +49,7 @@ use function count;
 
 /** @api */
 #[InstanceofDeprecated(insteadUse: 'Type::isCallable() and Type::getCallableParametersAcceptors()')]
+#[ReferencedByTurboExtension(key: 'callableType')]
 class CallableType implements CompoundType, CallableParametersAcceptor
 {
 

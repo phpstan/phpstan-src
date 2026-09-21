@@ -20,6 +20,7 @@ use PHPStan\Reflection\Type\CallbackUnresolvedPropertyPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
@@ -45,6 +46,7 @@ use function get_class;
 use function sprintf;
 
 /** @api */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/MixedType.cpp')]
 class MixedType implements CompoundType, SubtractableType
 {
 

@@ -6,6 +6,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -24,6 +25,7 @@ use function get_class;
 
 /** @api */
 #[InstanceofDeprecated(insteadUse: 'Type::isFloat()')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/FloatType.cpp')]
 class FloatType implements Type
 {
 

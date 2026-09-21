@@ -6,6 +6,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
@@ -35,6 +36,7 @@ use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
 #[InstanceofDeprecated(insteadUse: 'Type::isLiteralString()')]
+#[ReferencedByTurboExtension(key: 'accessoryLiteralStringType')]
 class AccessoryLiteralStringType implements CompoundType, AccessoryType
 {
 

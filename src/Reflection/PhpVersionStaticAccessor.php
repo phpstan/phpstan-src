@@ -3,7 +3,9 @@
 namespace PHPStan\Reflection;
 
 use PHPStan\Php\PhpVersion;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
+#[ReferencedByTurboExtension(key: 'phpVersionStaticAccessor')]
 final class PhpVersionStaticAccessor
 {
 

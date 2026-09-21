@@ -4,6 +4,8 @@ namespace PHPStan\Build;
 
 use FilesystemIterator;
 use JsonException;
+use Nette\Utils\RegexpException;
+use Nette\Utils\Strings;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
@@ -30,6 +32,12 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\VariadicPlaceholder;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
+use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprFloatNode;
+use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprIntegerNode;
+use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
+use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use RecursiveDirectoryIterator;
@@ -106,6 +114,14 @@ final class TurboAttributeCollector
 		'nodeVisitorAbstract' => NodeVisitorAbstract::class,
 		'closureExpr' => Closure::class,
 		'arrowFunction' => ArrowFunction::class,
+		'identifierTypeNode' => IdentifierTypeNode::class,
+		'genericTypeNode' => GenericTypeNode::class,
+		'constTypeNode' => ConstTypeNode::class,
+		'constExprIntegerNode' => ConstExprIntegerNode::class,
+		'constExprStringNode' => ConstExprStringNode::class,
+		'netteStrings' => Strings::class,
+		'netteRegexpException' => RegexpException::class,
+		'constExprFloatNode' => ConstExprFloatNode::class,
 	];
 
 	private string $realRoot;

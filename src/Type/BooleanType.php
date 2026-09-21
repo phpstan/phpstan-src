@@ -6,7 +6,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
@@ -23,7 +23,7 @@ use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 
 /** @api */
-#[ReferencedByTurboExtension(key: 'booleanType')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/BooleanType.cpp')]
 #[InstanceofDeprecated(insteadUse: 'Type::isBoolean()')]
 class BooleanType implements Type
 {

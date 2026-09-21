@@ -167,6 +167,29 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	pt_register_expression_result_storage();
 	pt_register_php_file_cleaner();
 	pt_register_symbol_finder_in_files();
+	pt_register_scope_context();
+	pt_register_is_super_type_of_result();
+	pt_register_accepts_result();
+	/* the Type ports go after the result classes their return types name
+	 * (a plan naming a class declared later would make the linker autoload
+	 * the PHP twin); a parent before its child */
+	pt_register_type_traits();
+	pt_register_boolean_type();
+	pt_register_constant_boolean_type();
+	pt_register_integer_type();
+	pt_register_constant_integer_type();
+	pt_register_integer_range_type();
+	pt_register_string_type();
+	pt_register_constant_string_type();
+	pt_register_class_string_type();
+	pt_register_generic_class_string_type();
+	pt_register_float_type();
+	pt_register_constant_float_type();
+	pt_register_null_type();
+	pt_register_void_type();
+	pt_register_never_type();
+	pt_register_mixed_type();
+	pt_register_strict_mixed_type();
 
 	return SUCCESS;
 }
@@ -188,6 +211,10 @@ static PHP_RINIT_FUNCTION(phpstan_turbo)
 	pt_node_traverser_rinit();
 	pt_scope_ops_rinit();
 	pt_type_combinator_cache_rinit();
+	pt_is_super_type_of_result_rinit();
+	pt_accepts_result_rinit();
+	pt_integer_range_type_rinit();
+	pt_constant_string_type_rinit();
 
 	return SUCCESS;
 }
@@ -197,6 +224,8 @@ static PHP_RSHUTDOWN_FUNCTION(phpstan_turbo)
 	pt_scope_ops_rshutdown();
 	pt_node_traverser_rshutdown();
 	pt_type_combinator_cache_rshutdown();
+	pt_is_super_type_of_result_rshutdown();
+	pt_accepts_result_rshutdown();
 	pt_support_rshutdown();
 
 	return SUCCESS;

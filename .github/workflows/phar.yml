@@ -293,6 +293,11 @@ jobs:
           ignore-cache: true
 
       - name: "Smoke test (differential: native vs PHP implementations)"
+        # the Type-family child processes (tests/type-family.php) locate the
+        # extension through TURBO_DLL — its default, turbo-ext/phpstan_turbo.so,
+        # only exists in Makefile builds
+        env:
+          TURBO_DLL: ${{ runner.temp }}/turbo-ext/modules/phpstan_turbo.so
         run: php -d extension="$RUNNER_TEMP/turbo-ext/modules/phpstan_turbo.so" turbo-ext/tests/smoke.php
 
       - name: "Arena smoke test (cross-process shared-memory records)"

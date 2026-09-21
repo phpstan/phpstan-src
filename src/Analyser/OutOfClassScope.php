@@ -8,7 +8,9 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
+#[ReferencedByTurboExtension(key: 'outOfClassScope')]
 final class OutOfClassScope implements ClassMemberAccessAnswerer
 {
 

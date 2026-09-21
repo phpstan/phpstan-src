@@ -4,6 +4,7 @@ namespace PHPStan\Type;
 
 use PHPStan\Php\PhpVersion;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * Marker interface for types that require bidirectional type comparison.
@@ -43,6 +44,7 @@ use PHPStan\TrinaryLogic;
  * @api
  * @api-do-not-implement
  */
+#[ReferencedByTurboExtension(key: 'compoundType')]
 interface CompoundType extends Type
 {
 

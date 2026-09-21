@@ -38,6 +38,13 @@ extern "C" {
 
 #pragma GCC diagnostic pop
 
+#ifdef _WIN32
+/* the engine headers pull in windows.h, whose min() / max() macros would
+ * rewrite every member and call of those names */
+#undef min
+#undef max
+#endif
+
 /* {{{ configurable class references */
 
 typedef struct _pt_class_ref {
@@ -49,8 +56,6 @@ typedef struct _pt_class_ref {
 
 enum {
 	PT_CLASS_TYPE_COMBINATOR = 0,
-	PT_CLASS_BOOLEAN_TYPE,
-	PT_CLASS_CONSTANT_BOOLEAN_TYPE,
 	PT_CLASS_SHOULD_NOT_HAPPEN,
 	PT_CLASS_VERBOSITY_LEVEL,
 	PT_CLASS_VARIABLE,
@@ -83,7 +88,58 @@ enum {
 	PT_CLASS_ARROW_FUNCTION,
 	PT_CLASS_TYPE,
 	PT_CLASS_RECURSION_GUARD,
-	PT_CLASS_NEVER_TYPE,
+	PT_CLASS_UNION_TYPE,
+	PT_CLASS_CONSTANT_ARRAY_TYPE,
+	PT_CLASS_OBJECT_WITHOUT_CLASS_TYPE,
+	PT_CLASS_CLASS_NAME_TO_OBJECT_TYPE_RESULT,
+	PT_CLASS_TEMPLATE_TYPE_MAP,
+	PT_CLASS_IDENTIFIER_TYPE_NODE,
+	PT_CLASS_STATIC_TYPE_FACTORY,
+	PT_CLASS_LOOSE_COMPARISON_HELPER,
+	PT_CLASS_EXPONENTIATE_HELPER,
+	PT_CLASS_COMPOUND_TYPE,
+	PT_CLASS_CONSTANT_SCALAR_TYPE,
+	PT_CLASS_INTERSECTION_TYPE,
+	PT_CLASS_ACCESSORY_DECIMAL_INTEGER_STRING_TYPE,
+	PT_CLASS_ACCESSORY_NON_FALSY_STRING_TYPE,
+	PT_CLASS_INITIALIZER_EXPR_TYPE_RESOLVER,
+	PT_CLASS_GENERIC_TYPE_NODE,
+	PT_CLASS_CONST_TYPE_NODE,
+	PT_CLASS_CONST_EXPR_INTEGER_NODE,
+	PT_CLASS_OBJECT_TYPE,
+	PT_CLASS_REFLECTION_PROVIDER_STATIC_ACCESSOR,
+	PT_CLASS_PHP_VERSION_STATIC_ACCESSOR,
+	PT_CLASS_REPORT_UNSAFE_ARRAY_STRING_KEY_CASTING_TOGGLE,
+	PT_CLASS_ACCESSORY_NON_EMPTY_STRING_TYPE,
+	PT_CLASS_ACCESSORY_LITERAL_STRING_TYPE,
+	PT_CLASS_ACCESSORY_LOWERCASE_STRING_TYPE,
+	PT_CLASS_ACCESSORY_UPPERCASE_STRING_TYPE,
+	PT_CLASS_ACCESSORY_NUMERIC_STRING_TYPE,
+	PT_CLASS_OUT_OF_CLASS_SCOPE,
+	PT_CLASS_FUNCTION_CALLABLE_VARIANT,
+	PT_CLASS_TRIVIAL_PARAMETERS_ACCEPTOR,
+	PT_CLASS_INACCESSIBLE_METHOD,
+	PT_CLASS_STATIC_TYPE,
+	PT_CLASS_TEMPLATE_TYPE,
+	PT_CLASS_TEMPLATE_TYPE_VARIANCE,
+	PT_CLASS_GENERALIZE_PRECISION,
+	PT_CLASS_CONST_EXPR_STRING_NODE,
+	PT_CLASS_NETTE_STRINGS,
+	PT_CLASS_NETTE_REGEXP_EXCEPTION,
+	PT_CLASS_CONST_EXPR_FLOAT_NODE,
+	PT_CLASS_TEMPLATE_MIXED_TYPE,
+	PT_CLASS_SUBTRACTABLE_TYPE,
+	PT_CLASS_ARRAY_TYPE,
+	PT_CLASS_ACCESSORY_ARRAY_LIST_TYPE,
+	PT_CLASS_CALLABLE_TYPE,
+	PT_CLASS_DUMMY_PROPERTY_REFLECTION,
+	PT_CLASS_CALLBACK_UNRESOLVED_PROPERTY_PROTOTYPE_REFLECTION,
+	PT_CLASS_DUMMY_METHOD_REFLECTION,
+	PT_CLASS_CALLBACK_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION,
+	PT_CLASS_DUMMY_CLASS_CONSTANT_REFLECTION,
+	PT_CLASS_BENEVOLENT_UNION_TYPE,
+	PT_CLASS_ITERABLE_TYPE,
+	PT_CLASS_OVERSIZED_ARRAY_TYPE,
 	PT_CLASS_COUNT
 };
 
@@ -121,6 +177,9 @@ extern pt_globals_t pt_globals;
 
 #define PT_G(v) (pt_globals.v)
 
+/* a string literal as the (chars, length) argument pair of the by-name helpers */
+#define PT_LC(literal) literal, sizeof(literal) - 1
+
 /* per-request lifecycle, wired to PHP-CPP's onRequest/onIdle */
 void pt_support_rinit();
 void pt_support_rshutdown();
@@ -133,6 +192,30 @@ extern zend_class_entry *pt_ce_trinary;
 extern zend_class_entry *pt_ce_expr_type_holder;
 extern zend_class_entry *pt_ce_cond_expr_holder;
 extern zend_class_entry *pt_ce_type_combinator_cache;
+extern zend_class_entry *pt_ce_accepts_result;
+extern zend_class_entry *pt_ce_is_super_type_of_result;
+/* the shadowing Type classes (BooleanType.cpp, ConstantBooleanType.cpp,
+ * IntegerType.cpp, ConstantIntegerType.cpp, IntegerRangeType.cpp,
+ * StringType.cpp, ConstantStringType.cpp, ClassStringType.cpp,
+ * GenericClassStringType.cpp) */
+extern zend_class_entry *pt_ce_boolean_type;
+extern zend_class_entry *pt_ce_constant_boolean_type;
+extern zend_class_entry *pt_ce_integer_type;
+extern zend_class_entry *pt_ce_constant_integer_type;
+extern zend_class_entry *pt_ce_integer_range_type;
+extern zend_class_entry *pt_ce_string_type;
+extern zend_class_entry *pt_ce_constant_string_type;
+extern zend_class_entry *pt_ce_class_string_type;
+extern zend_class_entry *pt_ce_generic_class_string_type;
+/* FloatType.cpp, ConstantFloatType.cpp, NullType.cpp, VoidType.cpp */
+extern zend_class_entry *pt_ce_float_type;
+extern zend_class_entry *pt_ce_constant_float_type;
+extern zend_class_entry *pt_ce_null_type;
+extern zend_class_entry *pt_ce_void_type;
+/* the never/mixed family (NeverType.cpp, MixedType.cpp, StrictMixedType.cpp) */
+extern zend_class_entry *pt_ce_never_type;
+extern zend_class_entry *pt_ce_mixed_type;
+extern zend_class_entry *pt_ce_strict_mixed_type;
 
 /* registration hooks, called from the extension's onStartup */
 /* Shadow.cpp — Runtime::activateShadowing() */
@@ -152,6 +235,46 @@ void pt_register_arena_cache();
 void pt_register_expression_result_storage();
 void pt_register_php_file_cleaner();
 void pt_register_symbol_finder_in_files();
+void pt_register_scope_context();
+void pt_register_is_super_type_of_result();
+void pt_register_accepts_result();
+/* the Type ports; registered after the result classes their return types
+ * name (a plan naming a class declared later would make the linker autoload
+ * the PHP twin) — BooleanType before its child ConstantBooleanType,
+ * IntegerType before its children ConstantIntegerType and IntegerRangeType
+ * (and after BooleanType, whose class their toBoolean() return type names) */
+void pt_register_type_traits();
+void pt_register_boolean_type();
+void pt_register_constant_boolean_type();
+void pt_register_integer_type();
+void pt_register_constant_integer_type();
+void pt_register_integer_range_type();
+/* StringType before its children ConstantStringType and ClassStringType,
+ * ClassStringType before its child GenericClassStringType; all after the
+ * integer family, whose classes their bodies instantiate */
+void pt_register_string_type();
+void pt_register_constant_string_type();
+void pt_register_class_string_type();
+void pt_register_generic_class_string_type();
+/* FloatType before its child ConstantFloatType, then NullType and
+ * VoidType; all after the string family, whose classes their bodies
+ * instantiate (FloatType::toString()) */
+void pt_register_float_type();
+void pt_register_constant_float_type();
+void pt_register_null_type();
+void pt_register_void_type();
+/* the never/mixed family after the string family (their bodies instantiate
+ * its classes); NeverType before MixedType (the constructor drops a NeverType
+ * subtracted type), StrictMixedType last (isAcceptedBy() names MixedType) */
+void pt_register_never_type();
+void pt_register_mixed_type();
+void pt_register_strict_mixed_type();
+void pt_integer_range_type_rinit();
+void pt_constant_string_type_rinit();
+void pt_is_super_type_of_result_rinit();
+void pt_is_super_type_of_result_rshutdown();
+void pt_accepts_result_rinit();
+void pt_accepts_result_rshutdown();
 
 /* per-request hooks of individual classes */
 void pt_node_traverser_rinit();
@@ -217,6 +340,62 @@ bool pt_type_combinator_binary(const char *lcname, size_t len, zval *type_a, zva
 /* $type->describe(VerbosityLevel::precise()) */
 bool pt_type_describe_precise(zval *type, zval *result);
 void pt_throw_should_not_happen();
+
+/* the per-request AcceptsResult / IsSuperTypeOfResult singletons for a
+ * PT_TRI_* value (createYes()/createMaybe()/createNo() with no reasons —
+ * createFromBoolean() maps to the yes/no ones); owned copy in *out, false =
+ * pending exception (AcceptsResult.cpp / IsSuperTypeOfResult.cpp) */
+bool pt_accepts_result_singleton(zval *out, zend_long value);
+bool pt_is_super_type_of_result_singleton(zval *out, zend_long value);
+/* $self->and($other) on two AcceptsResult instances; false = pending
+ * exception (AcceptsResult.cpp) */
+[[nodiscard]] bool pt_accepts_result_and(zval *out, zval *self, zval *other);
+/* new AcceptsResult($trinary, $reasons); $reasons is owned and consumed;
+ * false = pending exception (AcceptsResult.cpp) */
+[[nodiscard]] bool pt_accepts_result_create(zval *out, zval *trinary, zval *reasons);
+/* ->result's trinary value of a native result object; -1 with an Error
+ * pending for an object that skipped its constructor (AcceptsResult.cpp) */
+[[nodiscard]] zend_long pt_result_value(zend_object *object);
+
+/* new BooleanType() / new ConstantBooleanType($value) — instances of the
+ * shadowing classes (BooleanType.cpp / ConstantBooleanType.cpp); false =
+ * pending exception */
+bool pt_boolean_type_new(zval *out);
+bool pt_constant_boolean_type_new(zval *out, bool value);
+/* the $value of an instance of the shadowing ConstantBooleanType; false
+ * with an Error pending when uninitialized */
+bool pt_constant_boolean_type_value(zend_object *object, bool &out);
+
+/* new IntegerType() / new ConstantIntegerType($value) — instances of the
+ * shadowing classes (IntegerType.cpp / ConstantIntegerType.cpp); false =
+ * pending exception */
+bool pt_integer_type_new(zval *out);
+bool pt_constant_integer_type_new(zval *out, zend_long value);
+/* the $value of an instance of the shadowing ConstantIntegerType; false
+ * with an Error pending when uninitialized */
+bool pt_constant_integer_type_value(zend_object *object, zend_long &out);
+
+/* new StringType() / new ClassStringType() / new ConstantStringType($value,
+ * $isClassString) — instances of the shadowing classes (StringType.cpp /
+ * ClassStringType.cpp / ConstantStringType.cpp; $value borrowed); false =
+ * pending exception */
+bool pt_string_type_new(zval *out);
+bool pt_class_string_type_new(zval *out);
+bool pt_constant_string_type_new(zval *out, zend_string *value, bool isClassString = false);
+
+/* new FloatType() / new ConstantFloatType($value) / new NullType() /
+ * new VoidType() — instances of the shadowing classes (FloatType.cpp /
+ * ConstantFloatType.cpp / NullType.cpp / VoidType.cpp); false = pending
+ * exception */
+[[nodiscard]] bool pt_float_type_new(zval *out);
+bool pt_constant_float_type_new(zval *out, double value);
+bool pt_null_type_new(zval *out);
+bool pt_void_type_new(zval *out);
+/* new NeverType($isExplicit) / new MixedType($isExplicitMixed, $subtractedType)
+ * — instances of the shadowing classes (NeverType.cpp / MixedType.cpp;
+ * $subtractedType borrowed, NULL for null); false = pending exception */
+[[nodiscard]] bool pt_never_type_new(zval *out, bool isExplicit = false);
+bool pt_mixed_type_new(zval *out, bool isExplicitMixed = false, zval *subtractedType = NULL);
 
 /* }}} */
 

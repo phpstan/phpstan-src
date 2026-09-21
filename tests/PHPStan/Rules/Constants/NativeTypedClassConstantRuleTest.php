@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\Constants;
 
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule as TRule;
 use PHPStan\Testing\RuleTestCase;
 use const PHP_VERSION_ID;
@@ -15,7 +14,7 @@ class NativeTypedClassConstantRuleTest extends RuleTestCase
 
 	protected function getRule(): TRule
 	{
-		return new NativeTypedClassConstantRule(new PhpVersion(PHP_VERSION_ID));
+		return new NativeTypedClassConstantRule();
 	}
 
 	public function testRule(): void

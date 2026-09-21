@@ -98,12 +98,14 @@ final class StaticPropertyFetchHandler implements ExprHandler
 			$isAlwaysTerminating = $classResult->isAlwaysTerminating();
 			$scope = $classResult->getScope();
 		}
-		// `$a?->b::$$name` is a link in a nullsafe chain and may never run - see
-		// MethodCallHandler::processExpr()
-		$mayShortCircuit = $classResult !== null
-			&& $classResult->containsNullsafe()
-			&& TypeCombinator::containsNull($classResult->getType());
+		$mayShortCircuit = false;
 		if ($nameResult !== null) {
+			// `$a?->b::$$name` is a link in a nullsafe chain and may never run - see
+			// MethodCallHandler::processExpr(). Only the dynamic name is skipped with
+			// it, so a plain `::$name` never has to resolve the class expression type.
+			$mayShortCircuit = $classResult !== null
+				&& $classResult->containsNullsafe()
+				&& TypeCombinator::containsNull($classResult->getType());
 			$hasYield = $hasYield || $nameResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $nameResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $nameResult->getImpurePoints());

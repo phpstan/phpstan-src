@@ -82,9 +82,7 @@ final class PropertyFetchHandler implements ExprHandler
 		$impurePoints = $varResult->getImpurePoints();
 		$isAlwaysTerminating = $varResult->isAlwaysTerminating();
 		$scope = $varResult->getScope();
-		// a fetch that is a link in a nullsafe chain may never run - see
-		// MethodCallHandler::processExpr()
-		$mayShortCircuit = $varResult->containsNullsafe() && TypeCombinator::containsNull($varResult->getType());
+		$mayShortCircuit = false;
 		if ($expr->name instanceof Identifier) {
 			if ($this->phpVersion->supportsPropertyHooks()) {
 				$propertyName = $expr->name->toString();
@@ -100,6 +98,10 @@ final class PropertyFetchHandler implements ExprHandler
 				}
 			}
 		} elseif ($nameResult !== null) {
+			// a fetch that is a link in a nullsafe chain may never run - see
+			// MethodCallHandler::processExpr(). Only the dynamic name is skipped
+			// with it, so an Identifier name never has to resolve the receiver type.
+			$mayShortCircuit = $varResult->containsNullsafe() && TypeCombinator::containsNull($varResult->getType());
 			$hasYield = $hasYield || $nameResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $nameResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $nameResult->getImpurePoints());

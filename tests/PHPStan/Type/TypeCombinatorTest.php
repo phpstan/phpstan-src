@@ -93,6 +93,16 @@ class TypeCombinatorTest extends PHPStanTestCase
 				'null',
 			],
 			[
+				new NeverType(),
+				NullType::class,
+				'null',
+			],
+			[
+				new NeverType(true),
+				NullType::class,
+				'null',
+			],
+			[
 				new VoidType(),
 				UnionType::class,
 				'void|null',

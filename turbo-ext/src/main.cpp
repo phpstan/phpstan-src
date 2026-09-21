@@ -41,17 +41,13 @@
 static void ZEND_FASTCALL runtimeConfigure(INTERNAL_FUNCTION_PARAMETERS)
 {
 	HashTable *map;
-	ZEND_PARSE_PARAMETERS_START(1, 1)
-		Z_PARAM_ARRAY_HT(map)
-	ZEND_PARSE_PARAMETERS_END();
+	if (!zp::parse<zp::Ht>(execute_data, map)) RETURN_THROWS();
 
 	zend_string *key;
 	zval *value;
 	ZEND_HASH_FOREACH_STR_KEY_VAL(map, key, value) {
 		ZVAL_DEREF(value);
-		if (key == NULL || Z_TYPE_P(value) != IS_STRING) {
-			continue;
-		}
+		if (key == NULL || Z_TYPE_P(value) != IS_STRING) continue;
 		pt_class_map_configure(key, Z_STR_P(value));
 	} ZEND_HASH_FOREACH_END();
 }
@@ -66,15 +62,9 @@ static void ZEND_FASTCALL runtimeActivateShadowing(INTERNAL_FUNCTION_PARAMETERS)
 {
 	HashTable *twinFiles;
 	zend_string *prefix = NULL;
-	ZEND_PARSE_PARAMETERS_START(1, 2)
-		Z_PARAM_ARRAY_HT(twinFiles)
-		Z_PARAM_OPTIONAL
-		Z_PARAM_STR_OR_NULL(prefix)
-	ZEND_PARSE_PARAMETERS_END();
+	if (!zp::parse<zp::Ht, zp::Opt<zp::StrOrNull>>(execute_data, twinFiles, prefix)) RETURN_THROWS();
 
-	if (!pt_shadow_activate(twinFiles, prefix)) {
-		RETURN_THROWS();
-	}
+	if (!pt_shadow_activate(twinFiles, prefix)) RETURN_THROWS();
 }
 
 /* PHPStanTurbo\Runtime::isShadowing() — whether activateShadowing() ran */
@@ -102,9 +92,7 @@ static void ZEND_FASTCALL runtimeClassRefs(INTERNAL_FUNCTION_PARAMETERS)
 static void ZEND_FASTCALL runtimeEnablePharForkGuard(INTERNAL_FUNCTION_PARAMETERS)
 {
 	zend_string *path;
-	ZEND_PARSE_PARAMETERS_START(1, 1)
-		Z_PARAM_STR(path)
-	ZEND_PARSE_PARAMETERS_END();
+	if (!zp::parse<zp::Str>(execute_data, path)) RETURN_THROWS();
 
 	pt_phar_fork_guard_register(path);
 }
@@ -117,9 +105,7 @@ static void ZEND_FASTCALL runtimeEnablePharForkGuard(INTERNAL_FUNCTION_PARAMETER
 static void ZEND_FASTCALL runtimeTrustTypesUnder(INTERNAL_FUNCTION_PARAMETERS)
 {
 	zend_string *prefix;
-	ZEND_PARSE_PARAMETERS_START(1, 1)
-		Z_PARAM_STR(prefix)
-	ZEND_PARSE_PARAMETERS_END();
+	if (!zp::parse<zp::Str>(execute_data, prefix)) RETURN_THROWS();
 
 	RETURN_BOOL(pt_trusted_types_set_prefix(prefix));
 }

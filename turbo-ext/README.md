@@ -373,13 +373,20 @@ The native sources are C++ that mirrors the PHP implementations they replace:
 each shadowed class is a handle class in `namespace phpstanturbo` with the
 twin's methods (see `src/TrinaryLogic.cpp` for the reference shape), built on
 the zero-cost wrappers in `src/zv.h` — borrowed `zv::Ref` views, owned
-move-only `zv::Val` RAII values, range-for HashTable iteration. The wrappers
+move-only `zv::Val` RAII values, range-for HashTable iteration, `zv::Args`
+argument packs for engine calls — and the shared bodies in `src/TypeTraits.h`
+(a member the ports would otherwise repeat verbatim forwards there). The wrappers
 compile to the same instructions as the raw zend macros (verified by
 interleaved A/B benchmark), so readability costs nothing. Classes register
 through the fluent builder in `src/reg.h`, which emits the raw zend
 structures with raw handler pointers — no per-call trampoline or argument
 boxing; each method's name, flags, signature and parameter-parsing glue live
-together in one declaration.
+together in one declaration. A method that only parses its parameters and
+delegates them is declared by its handle member and parameter kinds
+(`cls.method<&UnionType::accepts, zp::Obj, zp::Bool>(...)`) and gets a
+generated handler; other glue parses with `zp::parse<...>()`. Both expand to
+the engine's own `ZEND_PARSE_PARAMETERS` macros, so the handlers compile to
+what the hand-written glue did.
 Raw zend form remains where an abstraction would not be provably free —
 always with a comment saying so.
 

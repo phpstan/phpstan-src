@@ -4,6 +4,7 @@
  */
 
 #include "support.h"
+#include "generated/CombinationsHelper.h"
 #include "zv.h"
 
 static zend_class_entry *pt_ce_combinations = nullptr;
@@ -121,9 +122,7 @@ private:
 
 			/* odometer: advance the rightmost index, carrying leftwards */
 			for (int64_t j = (int64_t) n - 1; j >= 0; j--) {
-				if (++indices[j] < sizes[j]) {
-					break;
-				}
+				if (++indices[j] < sizes[j]) break;
 				indices[j] = 0;
 			}
 		}
@@ -144,19 +143,16 @@ using phpstanturbo::CombinationsHelper;
 void pt_register_combinations_helper()
 {
 	reg::Class cls("PHPStan\\Internal\\CombinationsHelper");
-	cls.final();
+	ptdecl::CombinationsHelper::declareClass(cls);
+	ptdecl::CombinationsHelper::declareProperties(cls);
 
 	cls.method("combinations", reg::PublicStatic, 1, { reg::arrayArg("arrays") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		HashTable *arrays;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_ARRAY_HT(arrays)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Ht>(execute_data, arrays)) RETURN_THROWS();
 		zval arraysZv;
 		ZVAL_ARR(&arraysZv, arrays);
 		zv::Val result = CombinationsHelper::combinations(zv::ArrRef(&arraysZv));
-		if (UNEXPECTED(result.isUndef())) {
-			RETURN_THROWS();
-		}
+		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
 	});
 

@@ -11,6 +11,9 @@
  */
 
 #include "support.h"
+#include "generated/TrinaryLogic.h"
+
+namespace sigs = ptdecl::TrinaryLogic::sig;
 #include "zv.h"
 
 namespace phpstanturbo {
@@ -95,23 +98,15 @@ public:
 	zv::Val compareTo(zval *thisZv, zval *otherZv) const
 	{
 		TrinaryLogic other(Z_OBJ_P(otherZv));
-		if (value() > other.value()) {
-			return zv::Val::copyOf(zv::Ref(thisZv));
-		}
-		if (other.value() > value()) {
-			return zv::Val::copyOf(zv::Ref(otherZv));
-		}
+		if (value() > other.value()) return zv::Val::copyOf(zv::Ref(thisZv));
+		if (other.value() > value()) return zv::Val::copyOf(zv::Ref(otherZv));
 		return zv::Val::null();
 	}
 
 	const char *describe() const
 	{
-		if (value() == YES) {
-			return "Yes";
-		}
-		if (value() == MAYBE) {
-			return "Maybe";
-		}
+		if (value() == YES) return "Yes";
+		if (value() == MAYBE) return "Maybe";
 		return "No";
 	}
 
@@ -119,9 +114,7 @@ public:
 	 * UNDEF result means a pending exception */
 	zv::Val toBooleanType() const
 	{
-		if (maybe()) {
-			return constructConfigured(PT_CLASS_BOOLEAN_TYPE, NULL, 0);
-		}
+		if (maybe()) return constructConfigured(PT_CLASS_BOOLEAN_TYPE, NULL, 0);
 		zval arg;
 		ZVAL_BOOL(&arg, yes());
 		return constructConfigured(PT_CLASS_CONSTANT_BOOLEAN_TYPE, &arg, 1);
@@ -133,13 +126,9 @@ private:
 	static zv::Val constructConfigured(int classIdx, zval *args, uint32_t argc)
 	{
 		zend_class_entry *ce = pt_class(classIdx);
-		if (UNEXPECTED(ce == NULL)) {
-			return zv::Val();
-		}
+		if (UNEXPECTED(ce == NULL)) return zv::Val();
 		zval obj;
-		if (UNEXPECTED(object_init_ex(&obj, ce) != SUCCESS)) {
-			return zv::Val();
-		}
+		if (UNEXPECTED(object_init_ex(&obj, ce) != SUCCESS)) return zv::Val();
 		if (ce->constructor != NULL) {
 			zend_call_known_instance_method(ce->constructor, Z_OBJ(obj), NULL, argc, args);
 			if (UNEXPECTED(EG(exception))) {
@@ -177,9 +166,7 @@ public:
 		fci.params = &param;
 		fci.named_params = NULL;
 
-		if (UNEXPECTED(zend_call_function(&fci, &fcc) != SUCCESS || EG(exception))) {
-			return zv::Val();
-		}
+		if (UNEXPECTED(zend_call_function(&fci, &fcc) != SUCCESS || EG(exception))) return zv::Val();
 		if (UNEXPECTED(Z_TYPE(retval) != IS_OBJECT || !instanceof_function(Z_OBJCE(retval), pt_ce_trinary))) {
 			zval_ptr_dtor(&retval);
 			zend_type_error("Return value of the callback must be of type %s", ZSTR_VAL(pt_ce_trinary->name));
@@ -194,29 +181,19 @@ public:
 		zend_long thisValue = 0;
 		if (mode != MAX_MIN) {
 			thisValue = TrinaryLogic(Z_OBJ_P(thisZv)).value();
-			if (mode == AND && thisValue == TrinaryLogic::NO) {
-				return zv::Val::copyOf(zv::Ref(thisZv));
-			}
-			if (mode == OR && thisValue == TrinaryLogic::YES) {
-				return zv::Val::copyOf(zv::Ref(thisZv));
-			}
+			if (mode == AND && thisValue == TrinaryLogic::NO) return zv::Val::copyOf(zv::Ref(thisZv));
+			if (mode == OR && thisValue == TrinaryLogic::YES) return zv::Val::copyOf(zv::Ref(thisZv));
 		}
 
 		zend_long acc = mode == OR ? TrinaryLogic::NO : TrinaryLogic::YES;
 
 		for (auto entry : objects) {
 			zv::Val result = callbackResult(entry.value());
-			if (result.isUndef()) {
-				return zv::Val();
-			}
+			if (result.isUndef()) return zv::Val();
 			zend_long resultValue = TrinaryLogic(zv::Ref(result.raw()).asObject()).value();
 
-			if (mode == AND && resultValue == TrinaryLogic::NO) {
-				return result;
-			}
-			if ((mode == OR || mode == MAX_MIN) && resultValue == TrinaryLogic::YES) {
-				return result;
-			}
+			if (mode == AND && resultValue == TrinaryLogic::NO) return result;
+			if ((mode == OR || mode == MAX_MIN) && resultValue == TrinaryLogic::YES) return result;
 
 			if (mode == OR) {
 				acc |= resultValue;
@@ -240,16 +217,12 @@ public:
 		zv::Val last;
 		for (auto entry : objects) {
 			zv::Val result = callbackResult(entry.value());
-			if (result.isUndef()) {
-				return zv::Val();
-			}
+			if (result.isUndef()) return zv::Val();
 			if (last.isUndef()) {
 				last = std::move(result);
 				continue;
 			}
-			if (zv::Ref(result.raw()).asObject() != zv::Ref(last.raw()).asObject()) {
-				return TrinaryLogic::create(TrinaryLogic::MAYBE);
-			}
+			if (zv::Ref(result.raw()).asObject() != zv::Ref(last.raw()).asObject()) return TrinaryLogic::create(TrinaryLogic::MAYBE);
 		}
 		return last;
 	}
@@ -299,9 +272,7 @@ static void pt_trinary_lazy(INTERNAL_FUNCTION_PARAMETERS, LazyEvaluation::Mode m
 	zval objectsZv;
 	ZVAL_ARR(&objectsZv, objects);
 	zv::Val result = LazyEvaluation(fci, fcc).run(mode, ZEND_THIS, zv::ArrRef(&objectsZv));
-	if (UNEXPECTED(result.isUndef())) {
-		RETURN_THROWS();
-	}
+	if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 	result.intoReturnValue(return_value);
 }
 
@@ -318,9 +289,7 @@ static void pt_trinary_variadic_op(INTERNAL_FUNCTION_PARAMETERS, bool extremeIde
 		pt_throw_should_not_happen();
 		RETURN_THROWS();
 	}
-	if (UNEXPECTED(pt_verify_trinary_variadic(operands, count, 1) != SUCCESS)) {
-		RETURN_THROWS();
-	}
+	if (UNEXPECTED(pt_verify_trinary_variadic(operands, count, 1) != SUCCESS)) RETURN_THROWS();
 
 	(extremeIdentity ? TrinaryLogic::extremeIdentity(operands, count) : TrinaryLogic::maxMin(operands, count)).intoReturnValue(return_value);
 }
@@ -337,9 +306,7 @@ static void pt_trinary_and_or(INTERNAL_FUNCTION_PARAMETERS, bool isAnd)
 		Z_PARAM_VARIADIC('+', rest, restCount)
 	ZEND_PARSE_PARAMETERS_END();
 
-	if (UNEXPECTED(pt_verify_trinary_variadic(rest, restCount, 2) != SUCCESS)) {
-		RETURN_THROWS();
-	}
+	if (UNEXPECTED(pt_verify_trinary_variadic(rest, restCount, 2) != SUCCESS)) RETURN_THROWS();
 
 	TrinaryLogic self(Z_OBJ_P(ZEND_THIS));
 	TrinaryLogic operandHandle(operand != NULL ? Z_OBJ_P(operand) : NULL);
@@ -350,15 +317,13 @@ static void pt_trinary_and_or(INTERNAL_FUNCTION_PARAMETERS, bool isAnd)
 void pt_register_trinary_logic()
 {
 	reg::Class cls("PHPStan\\TrinaryLogic");
-	cls.final();
+	ptdecl::TrinaryLogic::declareClass(cls);
 	/* "value" must stay the first declared property (OBJ_PROP_NUM slot 0) */
 	cls.privateLongProperty("value", 0);
 
-	cls.method("__construct", reg::Private, 1, { reg::longArg("value") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_long value;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_LONG(value)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Long>(execute_data, value)) RETURN_THROWS();
 		ZVAL_LONG(OBJ_PROP_NUM(Z_OBJ_P(ZEND_THIS), PT_TRI_PROP_VALUE), value);
 	});
 
@@ -379,9 +344,7 @@ void pt_register_trinary_logic()
 
 	cls.method("createFromBoolean", reg::PublicStatic, 1, { reg::boolArg("value") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		bool value;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_BOOL(value)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Bool>(execute_data, value)) RETURN_THROWS();
 		TrinaryLogic::createFromBoolean(value).intoReturnValue(return_value);
 	});
 
@@ -403,9 +366,7 @@ void pt_register_trinary_logic()
 	cls.method("toBooleanType", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		zv::Val result = TrinaryLogic(Z_OBJ_P(ZEND_THIS)).toBooleanType();
-		if (UNEXPECTED(result.isUndef())) {
-			RETURN_THROWS();
-		}
+		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
 	});
 
@@ -447,9 +408,7 @@ void pt_register_trinary_logic()
 		zval objectsZv;
 		ZVAL_ARR(&objectsZv, objects);
 		zv::Val result = LazyEvaluation(fci, fcc).runExtremeIdentity(zv::ArrRef(&objectsZv));
-		if (UNEXPECTED(result.isUndef())) {
-			RETURN_THROWS();
-		}
+		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
 	});
 

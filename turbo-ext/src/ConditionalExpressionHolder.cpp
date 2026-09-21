@@ -2,12 +2,12 @@
  * PHPStanTurbo\ConditionalExpressionHolder — native implementation of
  * PHPStan\Analyser\ConditionalExpressionHolder.
  *
- * Declared as PHPStan\Analyser\ConditionalExpressionHolder itself at
- * activation (final, like the twin). The getKey() string is built by
- * pt_ceh_key_build() in support.cpp, shared with ScopeOps.
+ * The getKey() string is built by pt_ceh_key_build() in support.cpp, shared
+ * with ScopeOps.
  */
 
 #include "support.h"
+#include "generated/ConditionalExpressionHolder.h"
 #include "zv.h"
 
 namespace phpstanturbo {
@@ -20,7 +20,7 @@ public:
 	explicit ConditionalExpressionHolder(zval *self) : self(self) {}
 
 	/* false = pending exception (the twin throws on empty conditions) */
-	bool construct(zv::ArrRef conditionExpressionTypeHolders, zv::Ref typeHolder)
+	[[nodiscard]] bool construct(zv::ArrRef conditionExpressionTypeHolders, zv::Ref typeHolder)
 	{
 		if (UNEXPECTED(conditionExpressionTypeHolders.size() == 0)) {
 			pt_throw_should_not_happen();
@@ -50,15 +50,11 @@ public:
 		zv::Ref typeHolder = obj.propAt(PT_CEH_PROP_TYPEHOLDER);
 
 		for (auto entry : zv::ArrRef(conds.raw())) {
-			if (UNEXPECTED(!pt_check_holder(entry.value().deref().raw()))) {
-				return zv::Val();
-			}
+			if (UNEXPECTED(!pt_check_holder(entry.value().deref().raw()))) return zv::Val();
 		}
 
 		zend_string *key = pt_ceh_key_build(conds.asArrayTable(), typeHolder.raw());
-		if (UNEXPECTED(key == NULL)) {
-			return zv::Val();
-		}
+		if (UNEXPECTED(key == NULL)) return zv::Val();
 		return zv::Val::adoptString(key);
 	}
 
@@ -79,7 +75,7 @@ using phpstanturbo::ConditionalExpressionHolder;
 void pt_register_conditional_expression_holder()
 {
 	reg::Class cls("PHPStan\\Analyser\\ConditionalExpressionHolder");
-	cls.final();
+	ptdecl::ConditionalExpressionHolder::declareClass(cls);
 	/* conditionExpressionTypeHolders/typeHolder must stay in this order */
 	cls.privateNullProperty("conditionExpressionTypeHolders");
 	cls.privateNullProperty("typeHolder");
@@ -91,9 +87,7 @@ void pt_register_conditional_expression_holder()
 			Z_PARAM_ARRAY(holders)
 			Z_PARAM_OBJECT_OF_CLASS(typeHolder, pt_ce_expr_type_holder)
 		ZEND_PARSE_PARAMETERS_END();
-		if (UNEXPECTED(!ConditionalExpressionHolder(ZEND_THIS).construct(zv::ArrRef(holders), zv::Ref(typeHolder)))) {
-			RETURN_THROWS();
-		}
+		if (UNEXPECTED(!ConditionalExpressionHolder(ZEND_THIS).construct(zv::ArrRef(holders), zv::Ref(typeHolder)))) RETURN_THROWS();
 	});
 
 	cls.method("getConditionExpressionTypeHolders", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -109,9 +103,7 @@ void pt_register_conditional_expression_holder()
 	cls.method("getKey", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		zv::Val key = ConditionalExpressionHolder(ZEND_THIS).getKey();
-		if (UNEXPECTED(key.isUndef())) {
-			RETURN_THROWS();
-		}
+		if (UNEXPECTED(key.isUndef())) RETURN_THROWS();
 		key.intoReturnValue(return_value);
 	});
 

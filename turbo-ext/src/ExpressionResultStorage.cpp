@@ -16,11 +16,13 @@
  * fallback chain) into this one, like the twin's SplObjectStorage::addAll().
  */
 
+#include "generated/ExpressionResultStorage.h"
+
+namespace slots = ptdecl::ExpressionResultStorage::slot;
+namespace sigs = ptdecl::ExpressionResultStorage::sig;
 #include "support.h"
 #include "zv.h"
 
-#define PT_ERS_PROP_EXPRS 0
-#define PT_ERS_PROP_RESULTS 1
 #define PT_ERS_PROP_FALLBACK 2
 
 namespace phpstanturbo {
@@ -35,9 +37,7 @@ public:
 	zv::Val duplicate() const
 	{
 		zval newObj;
-		if (UNEXPECTED(object_init_ex(&newObj, Z_OBJCE_P(self)) != SUCCESS)) {
-			return zv::Val();
-		}
+		if (UNEXPECTED(object_init_ex(&newObj, Z_OBJCE_P(self)) != SUCCESS)) return zv::Val();
 		zv::ObjRef(&newObj).propAtWrite(PT_ERS_PROP_FALLBACK, zv::Val::copyOf(zv::Ref(self)));
 		return zv::Val::adopt(newObj);
 	}
@@ -46,12 +46,12 @@ public:
 	{
 		zv::ObjRef src(other);
 		zv::ObjRef dst(self);
-		zv::ArrRef dstExprs(dst.propAt(PT_ERS_PROP_EXPRS).raw());
-		zv::ArrRef dstResults(dst.propAt(PT_ERS_PROP_RESULTS).raw());
-		for (auto entry : zv::ArrRef(src.propAt(PT_ERS_PROP_EXPRS).raw())) {
+		zv::ArrRef dstExprs(dst.propAt(slots::exprResults).raw());
+		zv::ArrRef dstResults(dst.propAt(slots::fallback).raw());
+		for (auto entry : zv::ArrRef(src.propAt(slots::exprResults).raw())) {
 			dstExprs.setIndex(entry.indexKey(), entry.value());
 		}
-		for (auto entry : zv::ArrRef(src.propAt(PT_ERS_PROP_RESULTS).raw())) {
+		for (auto entry : zv::ArrRef(src.propAt(slots::fallback).raw())) {
 			dstResults.setIndex(entry.indexKey(), entry.value());
 		}
 	}
@@ -60,8 +60,8 @@ public:
 	{
 		zend_ulong id = Z_OBJ_HANDLE_P(expr);
 		zv::ObjRef obj(self);
-		zv::ArrRef(obj.propAt(PT_ERS_PROP_EXPRS).raw()).setIndex(id, zv::Ref(expr));
-		zv::ArrRef(obj.propAt(PT_ERS_PROP_RESULTS).raw()).setIndex(id, zv::Ref(expressionResult));
+		zv::ArrRef(obj.propAt(slots::exprResults).raw()).setIndex(id, zv::Ref(expr));
+		zv::ArrRef(obj.propAt(slots::fallback).raw()).setIndex(id, zv::Ref(expressionResult));
 	}
 
 	zv::Val findExpressionResult(zval *expr) const
@@ -70,15 +70,11 @@ public:
 		zval *cur = self;
 		for (;;) {
 			zv::ObjRef obj(cur);
-			zv::Ref found = zv::ArrRef(obj.propAt(PT_ERS_PROP_RESULTS).raw()).findIndex(id);
-			if (found.raw() != NULL) {
-				return zv::Val::copyOf(found);
-			}
+			zv::Ref found = zv::ArrRef(obj.propAt(slots::fallback).raw()).findIndex(id);
+			if (found.raw() != NULL) return zv::Val::copyOf(found);
 			/* the twin recurses into ?self $fallback; iterate the chain */
 			zval *fallback = obj.propAt(PT_ERS_PROP_FALLBACK).raw();
-			if (Z_TYPE_P(fallback) != IS_OBJECT) {
-				return zv::Val::null();
-			}
+			if (Z_TYPE_P(fallback) != IS_OBJECT) return zv::Val::null();
 			cur = fallback;
 		}
 	}
@@ -98,7 +94,7 @@ using phpstanturbo::ExpressionResultStorage;
 void pt_register_expression_result_storage()
 {
 	reg::Class cls("PHPStan\\Analyser\\ExpressionResultStorage");
-	cls.final();
+	ptdecl::ExpressionResultStorage::declareClass(cls);
 	/* exprsById/resultsById/fallback must stay in this order (OBJ_PROP_NUM
 	 * slots) */
 	cls.privateArrayProperty("exprsById");
@@ -107,41 +103,32 @@ void pt_register_expression_result_storage()
 
 	/* the twin's constructor only initialized its SplObjectStorage; the
 	 * native property defaults already cover that */
-	cls.method("__construct", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 	});
 
 	cls.method("duplicate", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		zv::Val result = ExpressionResultStorage(ZEND_THIS).duplicate();
-		if (UNEXPECTED(result.isUndef())) {
-			RETURN_THROWS();
-		}
+		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
 	});
 
 	cls.method("mergeResults", reg::Public, 1, { reg::any("other") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *other;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(other)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Obj>(execute_data, other)) RETURN_THROWS();
 		ExpressionResultStorage(ZEND_THIS).mergeResults(other);
 	});
 
 	cls.method("storeExpressionResult", reg::Public, 2, { reg::any("expr"), reg::any("expressionResult") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *expr, *expressionResult;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(expr)
-			Z_PARAM_OBJECT(expressionResult)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, expr, expressionResult)) RETURN_THROWS();
 		ExpressionResultStorage(ZEND_THIS).storeExpressionResult(expr, expressionResult);
 	});
 
 	cls.method("findExpressionResult", reg::Public, 1, { reg::any("expr") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *expr;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(expr)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Obj>(execute_data, expr)) RETURN_THROWS();
 		ExpressionResultStorage(ZEND_THIS).findExpressionResult(expr).intoReturnValue(return_value);
 	});
 

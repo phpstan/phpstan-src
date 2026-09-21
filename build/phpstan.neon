@@ -151,6 +151,12 @@ parameters:
 			path: PHPStan/Build/TurboAttributeCollector.php
 			reportUnmatched: false
 		-
+			# called from turbo-ext/bin/generate-declarations.php and
+			# turbo-ext/bin/side-by-side.php, outside the analysed paths
+			identifier: shipmonk.deadMethod
+			path: PHPStan/Build/TurboDeclarationGenerator.php
+			reportUnmatched: false
+		-
 			# called from bin/phpstan before the autoloader, outside the analysed paths
 			identifier: shipmonk.deadMethod
 			message: '#^Unused PHPStan\\Turbo\\TurboProcessRestarter::restartIfSuitable#'

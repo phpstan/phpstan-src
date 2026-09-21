@@ -61,30 +61,22 @@ static int pt_pfg_count = 0;
 static void pt_pfg_prepare(void)
 {
 	pt_pfg_count = 0;
-	if (!pt_pfg_registered) {
-		return;
-	}
+	if (!pt_pfg_registered) return;
 
 	struct stat target;
-	if (stat(pt_pfg_path, &target) != 0) {
-		return;
-	}
+	if (stat(pt_pfg_path, &target) != 0) return;
 
 	/* /dev/fd is a symlink to /proc/self/fd on Linux and native on the BSDs
 	 * and macOS; listing it beats fstat()ing every fd up to the rlimit. */
 	DIR *dir = opendir("/dev/fd");
-	if (dir == NULL) {
-		return;
-	}
+	if (dir == NULL) return;
 	int dir_fd = dirfd(dir);
 
 	struct dirent *entry;
 	while ((entry = readdir(dir)) != NULL && pt_pfg_count < PT_PFG_MAX_FDS) {
 		char *end = NULL;
 		long fd = strtol(entry->d_name, &end, 10);
-		if (end == entry->d_name || *end != '\0' || fd < 0 || fd == dir_fd) {
-			continue;
-		}
+		if (end == entry->d_name || *end != '\0' || fd < 0 || fd == dir_fd) continue;
 
 		struct stat st;
 		if (fstat((int) fd, &st) != 0
@@ -97,14 +89,10 @@ static void pt_pfg_prepare(void)
 		/* A write-mode fd would mean someone is rebuilding the archive —
 		 * swapping its description out from under them is not ours to do. */
 		int fl_flags = fcntl((int) fd, F_GETFL);
-		if (fl_flags == -1 || (fl_flags & O_ACCMODE) != O_RDONLY) {
-			continue;
-		}
+		if (fl_flags == -1 || (fl_flags & O_ACCMODE) != O_RDONLY) continue;
 
 		off_t cursor = lseek((int) fd, 0, SEEK_CUR);
-		if (cursor == (off_t) -1) {
-			continue;
-		}
+		if (cursor == (off_t) -1) continue;
 
 		pt_pfg_table[pt_pfg_count].fd = (int) fd;
 		pt_pfg_table[pt_pfg_count].cursor = cursor;
@@ -140,9 +128,7 @@ static void pt_pfg_child(void)
 
 void pt_phar_fork_guard_register(zend_string *path)
 {
-	if (ZSTR_LEN(path) == 0 || ZSTR_LEN(path) >= sizeof(pt_pfg_path)) {
-		return;
-	}
+	if (ZSTR_LEN(path) == 0 || ZSTR_LEN(path) >= sizeof(pt_pfg_path)) return;
 
 	memcpy(pt_pfg_path, ZSTR_VAL(path), ZSTR_LEN(path) + 1);
 	pt_pfg_registered = true;

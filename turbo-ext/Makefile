@@ -58,7 +58,7 @@ OBJECTS := $(SOURCES:.cpp=.o)
 phpstan_turbo.so: $(OBJECTS)
 	$(CXX) `$(PHP_CONFIG) --ldflags` -shared $(LINK_FLAGS) -o $@ $(OBJECTS)
 
-src/%.o: src/%.cpp src/support.h src/zv.h src/reg.h
+src/%.o: src/%.cpp src/support.h src/zv.h src/reg.h $(wildcard src/generated/*.h)
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 src/main.o: version.stamp

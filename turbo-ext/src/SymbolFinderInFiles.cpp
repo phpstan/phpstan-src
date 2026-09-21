@@ -19,6 +19,9 @@
  */
 
 #include "support.h"
+#include "generated/SymbolFinderInFiles.h"
+
+namespace sigs = ptdecl::SymbolFinderInFiles::sig;
 #include "zv.h"
 #include "SymbolScan.h"
 
@@ -67,18 +70,14 @@ bool SymbolFinderInFiles::readFile(const char *path, size_t pathLen)
 {
 	source.clear();
 
-	if (pathLen == 0 || memchr(path, '\0', pathLen) != NULL) {
-		return false;
-	}
+	if (pathLen == 0 || memchr(path, '\0', pathLen) != NULL) return false;
 
 #ifdef PHP_WIN32
 	int fd = _open(path, _O_RDONLY | _O_BINARY);
 #else
 	int fd = open(path, O_RDONLY);
 #endif
-	if (fd < 0) {
-		return false;
-	}
+	if (fd < 0) return false;
 
 	char chunk[65536];
 	for (;;) {
@@ -96,9 +95,7 @@ bool SymbolFinderInFiles::readFile(const char *path, size_t pathLen)
 			source.clear();
 			return false;
 		}
-		if (got == 0) {
-			break;
-		}
+		if (got == 0) break;
 		source.append(chunk, (size_t) got);
 	}
 
@@ -115,21 +112,15 @@ void SymbolFinderInFiles::scan(bool supportsEnums)
 {
 	symbols.clear();
 
-	if (source.empty()) {
-		return;
-	}
+	if (source.empty()) return;
 
 	CommentStripper stripper(source.data(), source.size(), shortOpenTagEnabled());
 	stripper.strip(stripped);
 
-	if (stripped.empty()) {
-		return;
-	}
+	if (stripped.empty()) return;
 
 	size_t matches = prefilterCount(stripped.data(), stripped.size(), supportsEnums);
-	if (matches == 0) {
-		return;
-	}
+	if (matches == 0) return;
 
 	PhpFileCleaner cleaner(stripped.data(), stripped.size());
 	cleaner.clean((zend_long) matches, cleaned);
@@ -163,9 +154,7 @@ zv::Val SymbolFinderInFiles::findSymbols(HashTable *files, bool supportsEnums)
 
 	for (zv::ArrayEntry file : zv::TableRef(files)) {
 		zv::Ref value = file.value().deref();
-		if (!value.isString()) {
-			continue;
-		}
+		if (!value.isString()) continue;
 
 		zend_string *path = value.asString();
 		if (readFile(ZSTR_VAL(path), ZSTR_LEN(path))) {
@@ -197,25 +186,20 @@ zv::Val SymbolFinderInFiles::findSymbols(HashTable *files, bool supportsEnums)
 void pt_register_symbol_finder_in_files()
 {
 	reg::Class cls("PHPStan\\Reflection\\BetterReflection\\SourceLocator\\SymbolFinderInFiles");
-	cls.final();
+	ptdecl::SymbolFinderInFiles::declareClass(cls);
 
 	/* the arginfo has to keep the real parameter class name: Nette reflects
 	 * this constructor while compiling the container (rule 6) */
-	cls.method("__construct", reg::Public, 1, { reg::obj("cleaner", CLEANER_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *cleaner;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT(cleaner)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Obj>(execute_data, cleaner)) RETURN_THROWS();
 		(void) cleaner;
 	});
 
 	cls.method("findSymbols", reg::Public, 2, { reg::arrayArg("files"), reg::boolArg("supportsEnums") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		HashTable *files;
 		bool supportsEnums;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_ARRAY_HT(files)
-			Z_PARAM_BOOL(supportsEnums)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Ht, zp::Bool>(execute_data, files, supportsEnums)) RETURN_THROWS();
 
 		phpstanturbo::SymbolFinderInFiles finder;
 		finder.findSymbols(files, supportsEnums).intoReturnValue(return_value);

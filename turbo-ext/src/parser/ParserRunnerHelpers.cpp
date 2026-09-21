@@ -43,14 +43,10 @@ static inline char toLowerAscii(char c)
 /* Case-insensitive ASCII equality against a lowercase literal. */
 static bool iequals(zend_string *s, const char *lit, size_t litLen)
 {
-	if (ZSTR_LEN(s) != litLen) {
-		return false;
-	}
+	if (ZSTR_LEN(s) != litLen) return false;
 	const char *v = ZSTR_VAL(s);
 	for (size_t i = 0; i < litLen; i++) {
-		if (toLowerAscii(v[i]) != lit[i]) {
-			return false;
-		}
+		if (toLowerAscii(v[i]) != lit[i]) return false;
 	}
 	return true;
 }
@@ -60,17 +56,13 @@ static bool containsLower(zend_string *hay, const char *needle, size_t nlen)
 {
 	const char *h = ZSTR_VAL(hay);
 	size_t hlen = ZSTR_LEN(hay);
-	if (nlen > hlen) {
-		return false;
-	}
+	if (nlen > hlen) return false;
 	for (size_t i = 0; i + nlen <= hlen; i++) {
 		size_t j = 0;
 		while (j < nlen && toLowerAscii(h[i + j]) == needle[j]) {
 			j++;
 		}
-		if (j == nlen) {
-			return true;
-		}
+		if (j == nlen) return true;
 	}
 	return false;
 }
@@ -84,9 +76,7 @@ static bool isHexDigit(char c)
 static zend_string *nodeNameString(zv::Ref node)
 {
 	zv::Ref n = zv::ObjRef(node.raw()).prop("name", sizeof("name") - 1);
-	if (n.raw() == NULL || !n.isString()) {
-		return NULL;
-	}
+	if (n.raw() == NULL || !n.isString()) return NULL;
 	return n.asString();
 }
 
@@ -179,9 +169,7 @@ static ParsedNum baseToNum(const char *s, size_t len, int base)
 		} else {
 			continue;
 		}
-		if (c >= base) {
-			continue;
-		}
+		if (c >= base) continue;
 		if (mode == 0) {
 			if (num < cutoff || (num == cutoff && c <= cutlim)) {
 				num = num * base + c;
@@ -224,13 +212,9 @@ static zend_long strtolBase(const char *s, size_t len, int base)
 	const zend_ulong limit = neg ? ((zend_ulong) ZEND_LONG_MAX + 1) : (zend_ulong) ZEND_LONG_MAX;
 	for (; i < len; i++) {
 		char ch = s[i];
-		if (ch < '0' || ch > '9') {
-			break;
-		}
+		if (ch < '0' || ch > '9') break;
 		zend_ulong d = (zend_ulong) (ch - '0');
-		if ((int) d >= base) {
-			break;
-		}
+		if ((int) d >= base) break;
 		if (!over) {
 			if (acc > (limit - d) / (zend_ulong) base) {
 				over = true;
@@ -239,12 +223,8 @@ static zend_long strtolBase(const char *s, size_t len, int base)
 			}
 		}
 	}
-	if (over) {
-		return neg ? ZEND_LONG_MIN : ZEND_LONG_MAX;
-	}
-	if (neg) {
-		return (zend_long) (0 - acc);
-	}
+	if (over) return neg ? ZEND_LONG_MIN : ZEND_LONG_MAX;
+	if (neg) return (zend_long) (0 - acc);
 	return (zend_long) acc;
 }
 
@@ -253,9 +233,7 @@ static zend_long strtolBase(const char *s, size_t len, int base)
 /* str_replace($str, '_', '') — returns owned string */
 static zend_string *stripUnderscores(zend_string *in)
 {
-	if (memchr(ZSTR_VAL(in), '_', ZSTR_LEN(in)) == NULL) {
-		return zend_string_copy(in);
-	}
+	if (memchr(ZSTR_VAL(in), '_', ZSTR_LEN(in)) == NULL) return zend_string_copy(in);
 	smart_str out = {};
 	const char *s = ZSTR_VAL(in);
 	size_t n = ZSTR_LEN(in);
@@ -297,9 +275,7 @@ static zend_string *stripTrailingNewline(zend_string *s)
 	} else if (n >= 1 && (v[n - 1] == '\n' || v[n - 1] == '\r')) {
 		cut = 1;
 	}
-	if (cut == 0) {
-		return s;
-	}
+	if (cut == 0) return s;
 	zend_string *r = zend_string_init(v, n - cut, 0);
 	zend_string_release(s);
 	return r;
@@ -387,9 +363,7 @@ zend_string *ParserEngine::parseEscapeSequences(zend_string *strIn, bool hasQuot
 				while (j < 2 && i + 2 + j < n && isHexDigit(s[i + 2 + j])) {
 					j++;
 				}
-				if (j == 0) {
-					break; /* no match: literal backslash */
-				}
+				if (j == 0) break; /* no match: literal backslash */
 				unsigned val = 0;
 				for (size_t t = 0; t < j; t++) {
 					char h = s[i + 2 + t];
@@ -408,21 +382,15 @@ zend_string *ParserEngine::parseEscapeSequences(zend_string *strIn, bool hasQuot
 				continue;
 			}
 			case 'u': {
-				if (!parseUnicodeEscape) {
-					break;
-				}
-				if (i + 2 >= n || s[i + 2] != '{') {
-					break;
-				}
+				if (!parseUnicodeEscape) break;
+				if (i + 2 >= n || s[i + 2] != '{') break;
 				size_t k = i + 3;
 				size_t digits = 0;
 				while (k < n && isHexDigit(s[k])) {
 					k++;
 					digits++;
 				}
-				if (digits == 0 || k >= n || s[k] != '}') {
-					break;
-				}
+				if (digits == 0 || k >= n || s[k] != '}') break;
 				ParsedNum cp = baseToNum(s + i + 3, digits, 16);
 				/* hexdec overflow → PHP_INT_MAX → codePointToUtf8 throws; > 0x10FFFF throws */
 				if (cp.isDouble || cp.lval > 0x10FFFF) {
@@ -467,18 +435,12 @@ zend_string *ParserEngine::parseEscapeSequences(zend_string *strIn, bool hasQuot
 void ParserEngine::parseEscapeSequencesInPart(zv::Ref partNode, const char *quote)
 {
 	NodeClassInfo *cls = resolveNodeClass("Scalar\\String_", true);
-	if (cls == NULL || cls->ce == NULL) {
-		return;
-	}
+	if (cls == NULL || cls->ce == NULL) return;
 	zend_function *fn = (zend_function *) zend_hash_str_find_ptr(
 		&cls->ce->function_table, "parseescapesequences", sizeof("parseescapesequences") - 1);
-	if (fn == NULL) {
-		return;
-	}
+	if (fn == NULL) return;
 	zv::Ref value = prop(partNode, "value");
-	if (value.raw() == NULL) {
-		return;
-	}
+	if (value.raw() == NULL) return;
 	zval args[3];
 	ZVAL_COPY(&args[0], value.raw());
 	ZVAL_STRING(&args[1], quote);
@@ -496,9 +458,7 @@ void ParserEngine::parseEscapeSequencesInPart(zv::Ref partNode, const char *quot
 		abortForPendingException();
 		return;
 	}
-	if (Z_TYPE(retval) == IS_UNDEF) {
-		return;
-	}
+	if (Z_TYPE(retval) == IS_UNDEF) return;
 	propWrite(partNode, "value", zv::Val::adopt(retval));
 }
 
@@ -517,9 +477,7 @@ void ParserEngine::parseEscapeSequencesInPart(zv::Ref partNode, const char *quot
  */
 zend_string *ParserEngine::stripIndentation(zend_string *str, zend_long indentLen, char indentChar, bool newlineAtStart, bool newlineAtEnd, zv::Ref attrsBorrowed)
 {
-	if (indentLen == 0) {
-		return zend_string_copy(str);
-	}
+	if (indentLen == 0) return zend_string_copy(str);
 
 	const char *s = ZSTR_VAL(str);
 	size_t n = ZSTR_LEN(str);
@@ -551,9 +509,7 @@ zend_string *ParserEngine::stripIndentation(zend_string *str, zend_long indentLe
 			}
 			pos = q;
 		}
-		if (pos >= n) {
-			break;
-		}
+		if (pos >= n) break;
 		const char *nl = (const char *) memchr(s + pos, '\n', n - pos);
 		if (nl == NULL) {
 			smart_str_appendl(&out, s + pos, n - pos);
@@ -582,14 +538,10 @@ enum
 static bool isHashbangInlineHtml(zv::Ref stmt)
 {
 	zv::Ref value = zv::ObjRef(stmt.raw()).prop("value", sizeof("value") - 1);
-	if (value.raw() == NULL || !value.isString()) {
-		return false;
-	}
+	if (value.raw() == NULL || !value.isString()) return false;
 	const char *s = Z_STRVAL_P(value.raw());
 	size_t n = Z_STRLEN_P(value.raw());
-	if (n < 3 || s[0] != '#' || s[1] != '!' || s[n - 1] != '\n') {
-		return false;
-	}
+	if (n < 3 || s[0] != '#' || s[1] != '!' || s[n - 1] != '\n') return false;
 	return memchr(s, '\n', n - 1) == NULL;
 }
 
@@ -674,17 +626,11 @@ int ParserEngine::getNamespacingStyle(zv::Ref stmts)
 void ParserEngine::fixupNamespaceAttributes(zv::Ref nsNode)
 {
 	zv::Ref stmts = prop(nsNode, "stmts");
-	if (stmts.raw() == NULL || !stmts.isArray()) {
-		return;
-	}
+	if (stmts.raw() == NULL || !stmts.isArray()) return;
 	uint32_t count = zend_hash_num_elements(stmts.asArrayTable());
-	if (count == 0) {
-		return;
-	}
+	if (count == 0) return;
 	zv::Ref lastStmt = itemAt(stmts, count - 1);
-	if (lastStmt.raw() == NULL || !lastStmt.isObject()) {
-		return;
-	}
+	if (lastStmt.raw() == NULL || !lastStmt.isObject()) return;
 	zv::Arr lastAttrs = getNodeAttributes(lastStmt);
 	static const char *const endKeys[3] = {"endLine", "endFilePos", "endTokenPos"};
 	for (int k = 0; k < 3; k++) {
@@ -833,36 +779,26 @@ zv::Val ParserEngine::handleBuiltinTypes(zv::Ref nameNode)
 zend_long ParserEngine::getFloatCastKind(zv::Ref castTokenText)
 {
 	zend_string *s = castTokenText.asString();
-	if (containsLower(s, "float", 5)) {
-		return 2; /* Double::KIND_FLOAT */
-	}
-	if (containsLower(s, "real", 4)) {
-		return 3; /* Double::KIND_REAL */
-	}
+	if (containsLower(s, "float", 5)) return 2; /* Double::KIND_FLOAT */
+	if (containsLower(s, "real", 4)) return 3; /* Double::KIND_REAL */
 	return 1; /* Double::KIND_DOUBLE */
 }
 
 zend_long ParserEngine::getIntCastKind(zv::Ref castTokenText)
 {
-	if (containsLower(castTokenText.asString(), "integer", 7)) {
-		return 2; /* Cast\Int_::KIND_INTEGER */
-	}
+	if (containsLower(castTokenText.asString(), "integer", 7)) return 2; /* Cast\Int_::KIND_INTEGER */
 	return 1; /* Cast\Int_::KIND_INT */
 }
 
 zend_long ParserEngine::getBoolCastKind(zv::Ref castTokenText)
 {
-	if (containsLower(castTokenText.asString(), "boolean", 7)) {
-		return 2; /* Cast\Bool_::KIND_BOOLEAN */
-	}
+	if (containsLower(castTokenText.asString(), "boolean", 7)) return 2; /* Cast\Bool_::KIND_BOOLEAN */
 	return 1; /* Cast\Bool_::KIND_BOOL */
 }
 
 zend_long ParserEngine::getStringCastKind(zv::Ref castTokenText)
 {
-	if (containsLower(castTokenText.asString(), "binary", 6)) {
-		return 2; /* Cast\String_::KIND_BINARY */
-	}
+	if (containsLower(castTokenText.asString(), "binary", 6)) return 2; /* Cast\String_::KIND_BINARY */
 	return 1; /* Cast\String_::KIND_STRING */
 }
 
@@ -1059,9 +995,7 @@ zv::Val ParserEngine::parseDocString(zv::Ref startTokenRef, zv::Ref contents, zv
 		if (kind == 3 /* KIND_HEREDOC */) {
 			value = parseEscapeSequences(stripped, false, 0, parseUnicodeEscape);
 			zend_string_release(stripped);
-			if (value == NULL) {
-				return zv::Val();
-			}
+			if (value == NULL) return zv::Val();
 		} else {
 			value = stripped;
 		}
@@ -1107,14 +1041,10 @@ zv::Val ParserEngine::parseDocString(zv::Ref startTokenRef, zv::Ref contents, zv
 			setNodeAttribute(part, "rawValue", zv::Val::string(stripped));
 			zend_string *parsed = parseEscapeSequences(stripped, false, 0, parseUnicodeEscape);
 			zend_string_release(stripped);
-			if (parsed == NULL) {
-				return zv::Val();
-			}
+			if (parsed == NULL) return zv::Val();
 			bool isEmpty = ZSTR_LEN(parsed) == 0;
 			propWrite(part, "value", zv::Val::adoptString(parsed));
-			if (isEmpty) {
-				continue;
-			}
+			if (isEmpty) continue;
 		}
 		newContents.push(part);
 	}
@@ -1136,12 +1066,8 @@ int ParserEngine::getCommentBeforeToken(int tokenPos)
 	zend_long tDocComment = tokenIdDocComment();
 	while (--tokenPos >= 0) {
 		const Token *t = &tokens[tokenPos];
-		if (!isDropToken(tables, t->id)) {
-			break;
-		}
-		if ((zend_long) t->id == tComment || (zend_long) t->id == tDocComment) {
-			return tokenPos;
-		}
+		if (!isDropToken(tables, t->id)) break;
+		if ((zend_long) t->id == tComment || (zend_long) t->id == tDocComment) return tokenPos;
 	}
 	return -1;
 }
@@ -1149,9 +1075,7 @@ int ParserEngine::getCommentBeforeToken(int tokenPos)
 zv::Val ParserEngine::maybeCreateZeroLengthNop(int tokenPos)
 {
 	int ci = getCommentBeforeToken(tokenPos);
-	if (ci < 0) {
-		return zv::Val::null();
-	}
+	if (ci < 0) return zv::Val::null();
 	const Token *t = &tokens[ci];
 	const char *text = ZSTR_VAL(t->text);
 	size_t tlen = ZSTR_LEN(t->text);
@@ -1183,9 +1107,7 @@ zv::Val ParserEngine::maybeCreateZeroLengthNop(int tokenPos)
 
 zv::Val ParserEngine::maybeCreateNop(int tokenStartPos, int tokenEndPos)
 {
-	if (getCommentBeforeToken(tokenStartPos) < 0) {
-		return zv::Val::null();
-	}
+	if (getCommentBeforeToken(tokenStartPos) < 0) return zv::Val::null();
 	return newNode("Node\\Stmt\\Nop", getAttributes(tokenStartPos, tokenEndPos));
 }
 
@@ -1205,9 +1127,7 @@ zv::Val ParserEngine::handleHaltCompiler()
 	/* Prevent the lexer from returning any further tokens. */
 	tokenPos = numTokens - 2;
 
-	if (text != NULL) {
-		return zv::Val::string(text);
-	}
+	if (text != NULL) return zv::Val::string(text);
 	return zv::Val::string("", 0);
 }
 
@@ -1247,9 +1167,7 @@ zv::Val ParserEngine::fixupArrayDestructuring(zv::Ref arrayNode)
 			if (value.raw() != NULL && value.isObject()
 					&& isInstanceOf(value, "Node\\Expr\\Array_")) {
 				zv::Val inner = fixupArrayDestructuring(value);
-				if (aborted) {
-					return zv::Val();
-				}
+				if (aborted) return zv::Val();
 				zv::Ref key = prop(item, "key");
 				if (key.raw() != NULL && Z_TYPE_P(key.raw()) == IS_NULL) {
 					key = zv::Ref(NULL);
@@ -1258,9 +1176,7 @@ zv::Val ParserEngine::fixupArrayDestructuring(zv::Ref arrayNode)
 				/* new ArrayItem($fixedUp, $item->key, $item->byRef, $item->getAttributes()) */
 				zv::Val newItem = newNode("Node\\ArrayItem", getNodeAttributes(item),
 					inner, key.raw() != NULL ? Borrowed(key) : Borrowed(nullptr), byRef, zv::Val::boolean(false));
-				if (aborted) {
-					return zv::Val();
-				}
+				if (aborted) return zv::Val();
 				newItems.push(std::move(newItem));
 				continue;
 			}
@@ -1298,16 +1214,12 @@ zv::Val ParserEngine::fixupArrayDestructuring(zv::Ref arrayNode)
 void ParserEngine::postprocessList(zv::Ref listNode)
 {
 	zv::Ref items = prop(listNode, "items");
-	if (items.raw() == NULL || !items.isArray()) {
-		return;
-	}
+	if (items.raw() == NULL || !items.isArray()) return;
 
 	bool any = false;
 	for (auto entry : zv::ArrRef(items.raw())) {
 		zv::Ref item = entry.value();
-		if (!item.isObject()) {
-			continue;
-		}
+		if (!item.isObject()) continue;
 		zv::Ref value = prop(item, "value");
 		if (value.raw() != NULL && value.isObject()
 				&& isInstanceOf(value, "Node\\Expr\\Error")) {
@@ -1315,18 +1227,14 @@ void ParserEngine::postprocessList(zv::Ref listNode)
 			break;
 		}
 	}
-	if (!any) {
-		return;
-	}
+	if (!any) return;
 
 	/* $node->items[$i] = null for the Error placeholders */
 	zv::Arr newItems = dupArray(items);
 	zend_ulong idx;
 	zval *it;
 	ZEND_HASH_FOREACH_NUM_KEY_VAL(newItems.table(), idx, it) {
-		if (Z_TYPE_P(it) != IS_OBJECT) {
-			continue;
-		}
+		if (Z_TYPE_P(it) != IS_OBJECT) continue;
 		zv::Ref value = prop(zv::Ref(it), "value");
 		if (value.raw() != NULL && value.isObject()
 				&& isInstanceOf(value, "Node\\Expr\\Error")) {
@@ -1344,13 +1252,9 @@ void ParserEngine::fixupAlternativeElse(zv::Ref node)
 {
 	/* Make sure a trailing nop statement carrying comments is part of the node. */
 	zv::Ref stmts = prop(node, "stmts");
-	if (stmts.raw() == NULL || !stmts.isArray()) {
-		return;
-	}
+	if (stmts.raw() == NULL || !stmts.isArray()) return;
 	uint32_t numStmts = zend_hash_num_elements(stmts.asArrayTable());
-	if (numStmts == 0) {
-		return;
-	}
+	if (numStmts == 0) return;
 	zv::Ref last = itemAt(stmts, numStmts - 1);
 	if (last.raw() == NULL || !last.isObject()
 			|| !isInstanceOf(last, "Node\\Stmt\\Nop")) {
@@ -1482,9 +1386,7 @@ void ParserEngine::checkTryCatch(zv::Ref node)
 void ParserEngine::checkNamespace(zv::Ref node)
 {
 	zv::Ref stmts = prop(node, "stmts");
-	if (stmts.raw() == NULL || !stmts.isArray()) {
-		return;
-	}
+	if (stmts.raw() == NULL || !stmts.isArray()) return;
 	for (auto entry : zv::ArrRef(stmts.raw())) {
 		zv::Ref stmt = entry.value();
 		if (stmt.isObject() && isInstanceOf(stmt, "Node\\Stmt\\Namespace_")) {
@@ -1495,13 +1397,9 @@ void ParserEngine::checkNamespace(zv::Ref node)
 
 void ParserEngine::checkClassName(zv::Ref name, int namePos)
 {
-	if (name.raw() == NULL || !name.isObject()) {
-		return;
-	}
+	if (name.raw() == NULL || !name.isObject()) return;
 	zend_string *n = nodeNameString(name);
-	if (n == NULL || !isSpecialClassName(n)) {
-		return;
-	}
+	if (n == NULL || !isSpecialClassName(n)) return;
 	zend_string *msg = zend_strpprintf(0, "Cannot use '%s' as class name as it is reserved", ZSTR_VAL(n));
 	emitError(msg, getAttributesAt(namePos));
 	zend_string_release(msg);
@@ -1509,18 +1407,12 @@ void ParserEngine::checkClassName(zv::Ref name, int namePos)
 
 void ParserEngine::checkImplementedInterfaces(zv::Ref interfaces)
 {
-	if (interfaces.raw() == NULL || !interfaces.isArray()) {
-		return;
-	}
+	if (interfaces.raw() == NULL || !interfaces.isArray()) return;
 	for (auto entry : zv::ArrRef(interfaces.raw())) {
 		zv::Ref iface = entry.value();
-		if (!iface.isObject()) {
-			continue;
-		}
+		if (!iface.isObject()) continue;
 		zend_string *n = nodeNameString(iface);
-		if (n == NULL || !isSpecialClassName(n)) {
-			continue;
-		}
+		if (n == NULL || !isSpecialClassName(n)) continue;
 		zend_string *msg = zend_strpprintf(0, "Cannot use '%s' as interface name as it is reserved", ZSTR_VAL(n));
 		emitError(msg, getNodeAttributes(iface));
 		zend_string_release(msg);
@@ -1562,9 +1454,7 @@ void ParserEngine::checkClassMethod(zv::Ref node, int modifierPos)
 	zend_long f = flags.raw() != NULL ? flags.toLong() : 0;
 	zv::Ref name = prop(node, "name");
 	zend_string *n = (name.raw() != NULL && name.isObject()) ? nodeNameString(name) : NULL;
-	if (n == NULL) {
-		return;
-	}
+	if (n == NULL) return;
 
 	if ((f & PN_MOD_STATIC) != 0) {
 		const char *fmt = NULL;
@@ -1607,13 +1497,9 @@ void ParserEngine::checkClassConst(zv::Ref node, int modifierPos)
 void ParserEngine::checkUseUse(zv::Ref node, int namePos)
 {
 	zv::Ref alias = prop(node, "alias");
-	if (alias.raw() == NULL || !alias.isObject()) {
-		return;
-	}
+	if (alias.raw() == NULL || !alias.isObject()) return;
 	zend_string *aliasStr = nodeNameString(alias);
-	if (aliasStr == NULL || !isSpecialClassName(aliasStr)) {
-		return;
-	}
+	if (aliasStr == NULL || !isSpecialClassName(aliasStr)) return;
 	zv::Ref name = prop(node, "name");
 	zend_string *nameStr = (name.raw() != NULL && name.isObject()) ? nodeNameString(name) : NULL;
 	/* sprintf('Cannot use %s as %s because \'%2$s\' is a special class name', ...) */
@@ -1643,13 +1529,9 @@ void ParserEngine::checkEmptyPropertyHookList(zv::Ref hooks, int hookPos)
 void ParserEngine::checkPropertyHook(zv::Ref hook, int paramListPos, bool hasParamList)
 {
 	zv::Ref name = prop(hook, "name");
-	if (name.raw() == NULL || !name.isObject()) {
-		return;
-	}
+	if (name.raw() == NULL || !name.isObject()) return;
 	zend_string *n = nodeNameString(name);
-	if (n == NULL) {
-		return;
-	}
+	if (n == NULL) return;
 	bool isGet = iequals(n, "get", 3);
 	bool isSet = iequals(n, "set", 3);
 	if (!isGet && !isSet) {
@@ -1677,15 +1559,9 @@ void ParserEngine::checkConstantAttributes(zv::Ref node)
 
 void ParserEngine::checkPipeOperatorParentheses(zv::Ref expr)
 {
-	if (!expr.isObject()) {
-		return;
-	}
-	if (!isInstanceOf(expr, "Node\\Expr\\ArrowFunction")) {
-		return;
-	}
-	if (zend_hash_index_exists(&parenthesizedArrowFns, (zend_ulong) Z_OBJ_HANDLE_P(expr.raw()))) {
-		return;
-	}
+	if (!expr.isObject()) return;
+	if (!isInstanceOf(expr, "Node\\Expr\\ArrowFunction")) return;
+	if (zend_hash_index_exists(&parenthesizedArrowFns, (zend_ulong) Z_OBJ_HANDLE_P(expr.raw()))) return;
 	emitError("Arrow functions on the right hand side of |> must be parenthesized", getNodeAttributes(expr));
 }
 
@@ -1718,17 +1594,13 @@ void ParserEngine::addPropertyNameToHooks(zv::Ref node)
 			}
 		}
 	}
-	if (nameVal.isUndef()) {
-		return;
-	}
+	if (nameVal.isUndef()) return;
 
 	zv::Ref hooks = prop(node, "hooks");
 	if (hooks.raw() != NULL && hooks.isArray()) {
 		for (auto entry : zv::ArrRef(hooks.raw())) {
 			zv::Ref hook = entry.value();
-			if (!hook.isObject()) {
-				continue;
-			}
+			if (!hook.isObject()) continue;
 			setNodeAttribute(hook, "propertyName", zv::Val::copyOf(nameVal.ref()));
 		}
 	}
@@ -1777,9 +1649,7 @@ zv::Val ParserEngine::createExitExpr(zv::Ref nameStr, int namePos, zv::Ref args,
 	}
 
 	zv::Val nameNode = newName(nameStr, getAttributesAt(namePos));
-	if (aborted) {
-		return zv::Val();
-	}
+	if (aborted) return zv::Val();
 	return newNode("Node\\Expr\\FuncCall", std::move(attributes), nameNode, args);
 }
 
@@ -1816,9 +1686,7 @@ zend_string *ParserEngine::prepareName(zv::Ref nameVal)
 	}
 	if (nameVal.isObject() && isInstanceOf(nameVal, "Node\\Name")) {
 		zv::Ref inner = prop(nameVal, "name");
-		if (inner.raw() != NULL && inner.isString()) {
-			return zend_string_copy(inner.asString());
-		}
+		if (inner.raw() != NULL && inner.isString()) return zend_string_copy(inner.asString());
 	}
 	fatalError("Expected string, array of parts or Name instance", zv::Arr::empty());
 	return NULL;
@@ -1827,9 +1695,7 @@ zend_string *ParserEngine::prepareName(zv::Ref nameVal)
 zv::Val ParserEngine::newNameVariant(const char *alias, zv::Ref strOrParts, zv::Val attributes)
 {
 	zend_string *prepared = prepareName(strOrParts);
-	if (prepared == NULL) {
-		return zv::Val();
-	}
+	if (prepared == NULL) return zv::Val();
 	/* Name's final ctor only runs prepareName + assigns; constructing with the
 	 * already-prepared string through the prop-slot path is byte-equivalent. */
 	return newNode(alias, std::move(attributes), zv::Val::adoptString(prepared));
@@ -1868,9 +1734,7 @@ zv::Val ParserEngine::stringFromString(zv::Ref raw, zv::Arr attributes, bool par
 		value = parseEscapeSequences(inner, true, '"', parseUnicodeEscape);
 	}
 	zend_string_release(inner);
-	if (value == NULL) {
-		return zv::Val();
-	}
+	if (value == NULL) return zv::Val();
 
 	return newNode("Node\\Scalar\\String_", std::move(attributes), zv::Val::adoptString(value));
 }

@@ -60,9 +60,7 @@ zend_class_entry *pt_class(int idx)
 	zend_class_entry *ce;
 	zend_string *name;
 
-	if (EXPECTED(ref->ce != NULL)) {
-		return ref->ce;
-	}
+	if (EXPECTED(ref->ce != NULL)) return ref->ce;
 
 	if (ref->configured != NULL) {
 		name = zend_string_copy(ref->configured);
@@ -127,9 +125,7 @@ static bool pt_node_class_cache_inited = false;
 
 void pt_init_strs()
 {
-	if (pt_strs_inited) {
-		return;
-	}
+	if (pt_strs_inited) return;
 	pt_str_cache_printer = zend_string_init("phpstan_cache_printer", sizeof("phpstan_cache_printer") - 1, 0);
 	pt_str_contains_super_global = zend_string_init("containsSuperGlobal", sizeof("containsSuperGlobal") - 1, 0);
 	pt_str_array_map_args = zend_string_init("arrayMapArgs", sizeof("arrayMapArgs") - 1, 0);
@@ -209,12 +205,8 @@ zval *pt_trinary_singleton(zend_long value)
 		PT_G(trinary_inited) = true;
 	}
 
-	if (value == PT_TRI_YES) {
-		return &PT_G(trinary_yes);
-	}
-	if (value == PT_TRI_MAYBE) {
-		return &PT_G(trinary_maybe);
-	}
+	if (value == PT_TRI_YES) return &PT_G(trinary_yes);
+	if (value == PT_TRI_MAYBE) return &PT_G(trinary_maybe);
 	return &PT_G(trinary_no);
 }
 
@@ -238,14 +230,10 @@ bool pt_call_type_equals(zval *type_a, zval *type_b)
 	zval ret, args[1];
 	bool result;
 
-	if (UNEXPECTED(fn == NULL)) {
-		return false;
-	}
+	if (UNEXPECTED(fn == NULL)) return false;
 	ZVAL_COPY_VALUE(&args[0], type_b);
 	zend_call_known_function(fn, Z_OBJ_P(type_a), ce, &ret, 1, args, NULL);
-	if (UNEXPECTED(EG(exception))) {
-		return false;
-	}
+	if (UNEXPECTED(EG(exception))) return false;
 	result = Z_TYPE(ret) == IS_TRUE;
 	zval_ptr_dtor(&ret);
 	return result;
@@ -253,9 +241,7 @@ bool pt_call_type_equals(zval *type_a, zval *type_b)
 
 bool pt_types_identical_or_equal(zval *type_a, zval *type_b)
 {
-	if (Z_OBJ_P(type_a) == Z_OBJ_P(type_b)) {
-		return true;
-	}
+	if (Z_OBJ_P(type_a) == Z_OBJ_P(type_b)) return true;
 	return pt_call_type_equals(type_a, type_b);
 }
 
@@ -265,13 +251,9 @@ bool pt_type_combinator_binary(const char *lcname, size_t len, zval *type_a, zva
 	zend_function *fn;
 	zval args[2];
 
-	if (UNEXPECTED(ce == NULL)) {
-		return false;
-	}
+	if (UNEXPECTED(ce == NULL)) return false;
 	fn = pt_find_method(ce, lcname, len);
-	if (UNEXPECTED(fn == NULL)) {
-		return false;
-	}
+	if (UNEXPECTED(fn == NULL)) return false;
 	ZVAL_COPY_VALUE(&args[0], type_a);
 	ZVAL_COPY_VALUE(&args[1], type_b);
 	zend_call_known_function(fn, NULL, ce, result, 2, args, NULL);
@@ -286,25 +268,17 @@ bool pt_type_describe_precise(zval *type, zval *result)
 
 	if (UNEXPECTED(!PT_G(verbosity_inited))) {
 		zend_class_entry *vce = pt_class(PT_CLASS_VERBOSITY_LEVEL);
-		if (UNEXPECTED(vce == NULL)) {
-			return false;
-		}
+		if (UNEXPECTED(vce == NULL)) return false;
 		fn = pt_find_method(vce, "precise", sizeof("precise") - 1);
-		if (UNEXPECTED(fn == NULL)) {
-			return false;
-		}
+		if (UNEXPECTED(fn == NULL)) return false;
 		zend_call_known_function(fn, NULL, vce, &PT_G(verbosity_precise), 0, NULL, NULL);
-		if (UNEXPECTED(EG(exception))) {
-			return false;
-		}
+		if (UNEXPECTED(EG(exception))) return false;
 		PT_G(verbosity_inited) = true;
 	}
 
 	ce = Z_OBJCE_P(type);
 	fn = pt_find_method(ce, "describe", sizeof("describe") - 1);
-	if (UNEXPECTED(fn == NULL)) {
-		return false;
-	}
+	if (UNEXPECTED(fn == NULL)) return false;
 	ZVAL_COPY_VALUE(&args[0], &PT_G(verbosity_precise));
 	zend_call_known_function(fn, Z_OBJ_P(type), ce, result, 1, args, NULL);
 	return !EG(exception);
@@ -313,9 +287,7 @@ bool pt_type_describe_precise(zval *type, zval *result)
 void pt_throw_should_not_happen()
 {
 	zend_class_entry *ce = pt_class(PT_CLASS_SHOULD_NOT_HAPPEN);
-	if (ce == NULL) {
-		return; /* error already thrown */
-	}
+	if (ce == NULL) return; /* error already thrown */
 	zend_throw_exception(ce, "Internal error.", 0);
 }
 
@@ -330,9 +302,7 @@ bool pt_call_scope_bool(zval *scope, const char *lcname, size_t len, uint32_t ar
 		return false;
 	}
 	zend_call_known_function(fn, Z_OBJ_P(scope), ce, &ret, argc, argv, NULL);
-	if (UNEXPECTED(EG(exception))) {
-		return false;
-	}
+	if (UNEXPECTED(EG(exception))) return false;
 	*out = zend_is_true(&ret);
 	zval_ptr_dtor(&ret);
 	return true;
@@ -354,9 +324,7 @@ static void pt_node_class_info_free(zval *zv)
 int32_t pt_instance_prop_offset(zend_class_entry *ce, const char *name, size_t len)
 {
 	zend_property_info *info = (zend_property_info *) zend_hash_str_find_ptr(&ce->properties_info, name, len);
-	if (info == NULL || (info->flags & ZEND_ACC_STATIC) != 0) {
-		return -1;
-	}
+	if (info == NULL || (info->flags & ZEND_ACC_STATIC) != 0) return -1;
 	return (int32_t) info->offset;
 }
 
@@ -371,9 +339,7 @@ pt_node_class_info *pt_get_node_class_info(zend_class_entry *ce)
 	}
 
 	info = (pt_node_class_info *) zend_hash_find_ptr(&pt_node_class_cache, ce->name);
-	if (EXPECTED(info != NULL)) {
-		return info;
-	}
+	if (EXPECTED(info != NULL)) return info;
 
 	info = (pt_node_class_info *) ecalloc(1, sizeof(pt_node_class_info));
 	info->attributes_offset = pt_instance_prop_offset(ce, "attributes", sizeof("attributes") - 1);
@@ -397,12 +363,8 @@ pt_node_class_info *pt_node_class_info_for_object(zend_object *obj)
 	zend_function *fn;
 	zval retval;
 
-	if (info == NULL) {
-		return NULL;
-	}
-	if (info->subnode_offsets != NULL || info->subnode_count == UINT32_MAX) {
-		return info;
-	}
+	if (info == NULL) return NULL;
+	if (info->subnode_offsets != NULL || info->subnode_count == UINT32_MAX) return info;
 
 	fn = (zend_function *) zend_hash_str_find_ptr(&ce->function_table, "getsubnodenames", sizeof("getsubnodenames") - 1);
 	if (fn == NULL || (fn->common.fn_flags & ZEND_ACC_ABSTRACT) != 0) {
@@ -426,9 +388,7 @@ pt_node_class_info *pt_node_class_info_for_object(zend_object *obj)
 		info->subnode_offsets = (uint32_t *) emalloc(sizeof(uint32_t) * (count > 0 ? count : 1));
 		ZEND_HASH_FOREACH_VAL(names, name_zv) {
 			int32_t off;
-			if (Z_TYPE_P(name_zv) != IS_STRING) {
-				continue;
-			}
+			if (Z_TYPE_P(name_zv) != IS_STRING) continue;
 			off = pt_instance_prop_offset(ce, Z_STRVAL_P(name_zv), Z_STRLEN_P(name_zv));
 			if (off >= 0) {
 				info->subnode_offsets[i++] = (uint32_t) off;
@@ -445,14 +405,10 @@ zval *pt_node_attribute(zend_object *node, zend_string *name)
 	pt_node_class_info *info = pt_get_node_class_info(node->ce);
 	zval *attrs;
 
-	if (info == NULL || info->attributes_offset < 0) {
-		return NULL;
-	}
+	if (info == NULL || info->attributes_offset < 0) return NULL;
 	attrs = OBJ_PROP(node, info->attributes_offset);
 	ZVAL_DEREF(attrs);
-	if (Z_TYPE_P(attrs) != IS_ARRAY) {
-		return NULL;
-	}
+	if (Z_TYPE_P(attrs) != IS_ARRAY) return NULL;
 	return zend_hash_find(Z_ARRVAL_P(attrs), name);
 }
 
@@ -461,14 +417,10 @@ bool pt_node_set_attribute(zend_object *node, zend_string *name, zval *value)
 	pt_node_class_info *info = pt_get_node_class_info(node->ce);
 	zval *attrs;
 
-	if (info == NULL || info->attributes_offset < 0) {
-		return false;
-	}
+	if (info == NULL || info->attributes_offset < 0) return false;
 	attrs = OBJ_PROP(node, info->attributes_offset);
 	ZVAL_DEREF(attrs);
-	if (Z_TYPE_P(attrs) != IS_ARRAY) {
-		return false;
-	}
+	if (Z_TYPE_P(attrs) != IS_ARRAY) return false;
 	SEPARATE_ARRAY(attrs);
 	Z_TRY_ADDREF_P(value);
 	zend_hash_update(Z_ARRVAL_P(attrs), name, value);
@@ -511,9 +463,7 @@ static zend_string *pt_node_printed_expr(zend_object *node, zval *expr_printer)
 {
 	pt_node_class_info *info = pt_get_node_class_info(node->ce);
 
-	if (info == NULL) {
-		return NULL;
-	}
+	if (info == NULL) return NULL;
 
 	/* fast path: '$' . $node->name for Variable with a string name */
 	if (info->is_variable && info->name_offset >= 0) {
@@ -530,14 +480,10 @@ static zend_string *pt_node_printed_expr(zend_object *node, zval *expr_printer)
 	}
 
 	zval *attr = pt_node_attribute(node, pt_str_cache_printer);
-	if (attr != NULL && Z_TYPE_P(attr) == IS_STRING) {
-		return zend_string_copy(Z_STR_P(attr));
-	}
+	if (attr != NULL && Z_TYPE_P(attr) == IS_STRING) return zend_string_copy(Z_STR_P(attr));
 
 	zval printed;
-	if (!pt_call_print_expr(expr_printer, node, &printed)) {
-		return NULL;
-	}
+	if (!pt_call_print_expr(expr_printer, node, &printed)) return NULL;
 	return Z_STR(printed); /* take ownership */
 }
 
@@ -550,21 +496,15 @@ zend_string *pt_node_key(zend_object *node, zval *expr_printer)
 	/* the Variable fast path returns before any suffix handling below, same
 	 * as the twin: a Variable node never carries the suffix attributes */
 	pt_node_class_info *info = pt_get_node_class_info(node->ce);
-	if (info == NULL) {
-		return NULL;
-	}
+	if (info == NULL) return NULL;
 	if (info->is_variable && info->name_offset >= 0) {
 		zval *name = OBJ_PROP(node, info->name_offset);
 		ZVAL_DEREF(name);
-		if (Z_TYPE_P(name) == IS_STRING) {
-			return pt_node_printed_expr(node, expr_printer);
-		}
+		if (Z_TYPE_P(name) == IS_STRING) return pt_node_printed_expr(node, expr_printer);
 	}
 
 	key = pt_node_printed_expr(node, expr_printer);
-	if (key == NULL) {
-		return NULL;
-	}
+	if (key == NULL) return NULL;
 
 	/* FunctionLike with arrayMapArgs + startFilePos: append the array_map
 	 * argument suffix exactly like MutatingScope::getNodeKey() */
@@ -591,20 +531,14 @@ zend_string *pt_node_key(zend_object *node, zval *expr_printer)
 						zval *arg_deref = arg;
 						zval *value_prop;
 						ZVAL_DEREF(arg_deref);
-						if (Z_TYPE_P(arg_deref) != IS_OBJECT) {
-							continue;
-						}
+						if (Z_TYPE_P(arg_deref) != IS_OBJECT) continue;
 						{
 							int32_t voff = pt_instance_prop_offset(Z_OBJCE_P(arg_deref), "value", sizeof("value") - 1);
-							if (voff < 0) {
-								continue;
-							}
+							if (voff < 0) continue;
 							value_prop = OBJ_PROP(Z_OBJ_P(arg_deref), voff);
 							ZVAL_DEREF(value_prop);
 						}
-						if (Z_TYPE_P(value_prop) != IS_OBJECT) {
-							continue;
-						}
+						if (Z_TYPE_P(value_prop) != IS_OBJECT) continue;
 						smart_str_appendc(&str, ':');
 						{
 							/* plain printExpr like the twin — NOT the full node
@@ -641,17 +575,11 @@ zend_object *pt_find_first_recursive(zend_object *node, pt_node_matcher matcher,
 	zend_class_entry *node_iface;
 	uint32_t i;
 
-	if (matcher(node, ctx)) {
-		return node;
-	}
-	if (UNEXPECTED(((pt_find_ctx *) ctx)->failed)) {
-		return NULL;
-	}
+	if (matcher(node, ctx)) return node;
+	if (UNEXPECTED(((pt_find_ctx *) ctx)->failed)) return NULL;
 
 	info = pt_node_class_info_for_object(node);
-	if (info == NULL || !PT_HAS_SUBNODES(info)) {
-		return NULL;
-	}
+	if (info == NULL || !PT_HAS_SUBNODES(info)) return NULL;
 
 	node_iface = pt_class(PT_CLASS_NODE);
 	if (UNEXPECTED(node_iface == NULL)) {
@@ -665,9 +593,7 @@ zend_object *pt_find_first_recursive(zend_object *node, pt_node_matcher matcher,
 		if (Z_TYPE_P(val) == IS_OBJECT) {
 			if (instanceof_function(Z_OBJCE_P(val), node_iface)) {
 				zend_object *found = pt_find_first_recursive(Z_OBJ_P(val), matcher, ctx);
-				if (found != NULL || ((pt_find_ctx *) ctx)->failed) {
-					return found;
-				}
+				if (found != NULL || ((pt_find_ctx *) ctx)->failed) return found;
 			}
 		} else if (Z_TYPE_P(val) == IS_ARRAY) {
 			zval *el;
@@ -676,9 +602,7 @@ zend_object *pt_find_first_recursive(zend_object *node, pt_node_matcher matcher,
 				ZVAL_DEREF(el_deref);
 				if (Z_TYPE_P(el_deref) == IS_OBJECT && instanceof_function(Z_OBJCE_P(el_deref), node_iface)) {
 					zend_object *found = pt_find_first_recursive(Z_OBJ_P(el_deref), matcher, ctx);
-					if (found != NULL || ((pt_find_ctx *) ctx)->failed) {
-						return found;
-					}
+					if (found != NULL || ((pt_find_ctx *) ctx)->failed) return found;
 				}
 			} ZEND_HASH_FOREACH_END();
 		}
@@ -715,14 +639,10 @@ static bool pt_superglobal_matcher(zend_object *node, void *ctx)
 	zval *name;
 
 	(void) ctx;
-	if (info == NULL || !info->is_variable || info->name_offset < 0) {
-		return false;
-	}
+	if (info == NULL || !info->is_variable || info->name_offset < 0) return false;
 	name = OBJ_PROP(node, info->name_offset);
 	ZVAL_DEREF(name);
-	if (Z_TYPE_P(name) != IS_STRING) {
-		return false;
-	}
+	if (Z_TYPE_P(name) != IS_STRING) return false;
 	return pt_is_superglobal_name(Z_STR_P(name));
 }
 
@@ -736,9 +656,7 @@ bool pt_expr_contains_superglobal(zend_object *expr)
 	pt_init_strs();
 
 	attr = pt_node_attribute(expr, pt_str_contains_super_global);
-	if (attr != NULL && (Z_TYPE_P(attr) == IS_TRUE || Z_TYPE_P(attr) == IS_FALSE)) {
-		return Z_TYPE_P(attr) == IS_TRUE;
-	}
+	if (attr != NULL && (Z_TYPE_P(attr) == IS_TRUE || Z_TYPE_P(attr) == IS_FALSE)) return Z_TYPE_P(attr) == IS_TRUE;
 
 	memset(&ctx, 0, sizeof(ctx));
 	contains = pt_find_first_recursive(expr, pt_superglobal_matcher, &ctx) != NULL;
@@ -788,14 +706,10 @@ bool pt_holder_and(zval *a, zval *b, zval *result)
 		}
 		return true;
 	}
-	if (UNEXPECTED(EG(exception))) {
-		return false;
-	}
+	if (UNEXPECTED(EG(exception))) return false;
 	{
 		zval union_type;
-		if (UNEXPECTED(!pt_type_combinator_binary("union", sizeof("union") - 1, a_type, b_type, &union_type))) {
-			return false;
-		}
+		if (UNEXPECTED(!pt_type_combinator_binary("union", sizeof("union") - 1, a_type, b_type, &union_type))) return false;
 		pt_holder_create(result, OBJ_PROP_NUM(ao, PT_ETH_PROP_EXPR), &union_type, ac & bc);
 		zval_ptr_dtor(&union_type);
 	}

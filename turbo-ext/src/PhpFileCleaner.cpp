@@ -11,6 +11,9 @@
  */
 
 #include "support.h"
+#include "generated/PhpFileCleaner.h"
+
+namespace sigs = ptdecl::PhpFileCleaner::sig;
 #include "zv.h"
 #include "SymbolScan.h"
 
@@ -23,19 +26,16 @@ static zend_class_entry *pt_ce_php_file_cleaner = nullptr;
 void pt_register_php_file_cleaner()
 {
 	reg::Class cls("PHPStan\\Reflection\\BetterReflection\\SourceLocator\\PhpFileCleaner");
-	cls.final();
+	ptdecl::PhpFileCleaner::declareClass(cls);
 
-	cls.method("__construct", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 	});
 
 	cls.method("clean", reg::Public, 2, { reg::stringArg("contents"), reg::longArg("maxMatches") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *contents;
 		zend_long maxMatches;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_STR(contents)
-			Z_PARAM_LONG(maxMatches)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Str, zp::Long>(execute_data, contents, maxMatches)) RETURN_THROWS();
 
 		phpstanturbo::PhpFileCleaner cleaner(ZSTR_VAL(contents), ZSTR_LEN(contents));
 		std::string cleaned;

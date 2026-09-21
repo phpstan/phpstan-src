@@ -4,10 +4,11 @@
  * zend_internal_arg_info / zend_function_entry structures the PHP_METHOD +
  * ZEND_BEGIN_ARG_INFO_EX + PHP_ME macro triple produced, and hands the
  * engine the raw handler pointers directly — no trampoline, no Php::Value
- * boxing, byte-identical dispatch. Handlers are plain functions or
+ * boxing, byte-identical dispatch. Handlers are plain functions,
  * non-capturing lambdas with the (INTERNAL_FUNCTION_PARAMETERS) signature,
- * so each method is declared exactly once: name, flags, signature and body
- * together at the registration site.
+ * or generated from a handle member and its parameter kinds
+ * (Class::method<M, K...>()), so each method is declared exactly once: name,
+ * flags, signature and body together at the registration site.
  *
  * Two registration paths share the builder:
  * - register_() registers an internal class at module startup (extension-only
@@ -25,10 +26,196 @@
 #define PHPSTANTURBO_REG_H
 
 #include "support.h"
+#include "zv.h"
 
 #include <cstring>
 #include <initializer_list>
+#include <tuple>
+#include <type_traits>
+#include <utility>
 #include <vector>
+
+/* {{{ handler glue shared by every registration site */
+
+/* a zv::Val result into return_value; RETURN_THROWS on UNDEF (pending exception) */
+#define PT_RETURN_VAL(expr) \
+	do { \
+		zv::Val pt_result__ = (expr); \
+		if (UNEXPECTED(pt_result__.isUndef())) { \
+			RETURN_THROWS(); \
+		} \
+		pt_result__.intoReturnValue(return_value); \
+		return; \
+	} while (0)
+
+/* }}} */
+
+/* {{{ zp: typed parameter parsing
+ *
+ * zp::parse<K...>(execute_data, dests...) is the ZEND_PARSE_PARAMETERS_START
+ * ... END block of a glue function written once: each kind K names the
+ * Z_PARAM_* macro its slot expands to, zp::Opt<K> puts Z_PARAM_OPTIONAL in
+ * front of it (the destination keeps its initializer when the argument is
+ * not passed), and the block is the engine's own macros — the code is the
+ * hand-written block's. false = pending exception.
+ */
+namespace zp {
+
+struct Obj { using type = zval *; };            /* Z_PARAM_OBJECT */
+struct ObjOrNull { using type = zval *; };      /* Z_PARAM_OBJECT_OR_NULL */
+struct Bool { using type = bool; };             /* Z_PARAM_BOOL */
+struct Str { using type = zend_string *; };     /* Z_PARAM_STR */
+struct StrOrNull { using type = zend_string *; }; /* Z_PARAM_STR_OR_NULL */
+struct Arr { using type = zval *; };            /* Z_PARAM_ARRAY */
+struct ArrOrNull { using type = zval *; };      /* Z_PARAM_ARRAY_OR_NULL */
+struct Ht { using type = HashTable *; };        /* Z_PARAM_ARRAY_HT */
+struct HtOrNull { using type = HashTable *; };  /* Z_PARAM_ARRAY_HT_OR_NULL */
+struct Zval { using type = zval *; };           /* Z_PARAM_ZVAL */
+struct Long { using type = zend_long; };        /* Z_PARAM_LONG */
+struct Double { using type = double; };         /* Z_PARAM_DOUBLE */
+
+/* a parameter after Z_PARAM_OPTIONAL */
+template <typename K>
+struct Opt : K
+{
+};
+
+namespace detail {
+
+template <typename K>
+struct Base
+{
+	using type = K;
+	static constexpr bool optional = false;
+};
+
+template <typename K>
+struct Base<Opt<K>>
+{
+	using type = K;
+	static constexpr bool optional = true;
+};
+
+template <typename K, typename Kind>
+constexpr bool is = std::is_same_v<typename Base<K>::type, Kind>;
+
+
+} // namespace detail
+
+template <typename... K>
+constexpr uint32_t required()
+{
+	return (0u + ... + (detail::Base<K>::optional ? 0u : 1u));
+}
+
+/* one Z_PARAM_* slot of a ZEND_PARSE_PARAMETERS block, chosen by the kind (the
+ * blocks' required<K...>() counts are parenthesized: the template arguments'
+ * commas would split the macro arguments) */
+#define PT_ZP_SLOT(K, dest) \
+	if constexpr (detail::Base<K>::optional) { \
+		Z_PARAM_OPTIONAL \
+	} \
+	if constexpr (detail::is<K, Obj>) { \
+		Z_PARAM_OBJECT(dest) \
+	} else if constexpr (detail::is<K, ObjOrNull>) { \
+		Z_PARAM_OBJECT_OR_NULL(dest) \
+	} else if constexpr (detail::is<K, Bool>) { \
+		Z_PARAM_BOOL(dest) \
+	} else if constexpr (detail::is<K, Str>) { \
+		Z_PARAM_STR(dest) \
+	} else if constexpr (detail::is<K, StrOrNull>) { \
+		Z_PARAM_STR_OR_NULL(dest) \
+	} else if constexpr (detail::is<K, Arr>) { \
+		Z_PARAM_ARRAY(dest) \
+	} else if constexpr (detail::is<K, ArrOrNull>) { \
+		Z_PARAM_ARRAY_OR_NULL(dest) \
+	} else if constexpr (detail::is<K, Ht>) { \
+		Z_PARAM_ARRAY_HT(dest) \
+	} else if constexpr (detail::is<K, HtOrNull>) { \
+		Z_PARAM_ARRAY_HT_OR_NULL(dest) \
+	} else if constexpr (detail::is<K, Zval>) { \
+		Z_PARAM_ZVAL(dest) \
+	} else if constexpr (detail::is<K, Long>) { \
+		Z_PARAM_LONG(dest) \
+	} else { \
+		static_assert(detail::is<K, Double>, "not a zp kind"); \
+		Z_PARAM_DOUBLE(dest) \
+	}
+
+template <typename K1>
+zend_always_inline bool parse(zend_execute_data *execute_data, typename K1::type &d1)
+{
+	ZEND_PARSE_PARAMETERS_START((required<K1>()), 1)
+		PT_ZP_SLOT(K1, d1)
+	ZEND_PARSE_PARAMETERS_END_EX(return false);
+	return true;
+}
+
+template <typename K1, typename K2>
+zend_always_inline bool parse(zend_execute_data *execute_data, typename K1::type &d1, typename K2::type &d2)
+{
+	ZEND_PARSE_PARAMETERS_START((required<K1, K2>()), 2)
+		PT_ZP_SLOT(K1, d1)
+		PT_ZP_SLOT(K2, d2)
+	ZEND_PARSE_PARAMETERS_END_EX(return false);
+	return true;
+}
+
+template <typename K1, typename K2, typename K3>
+zend_always_inline bool parse(zend_execute_data *execute_data, typename K1::type &d1, typename K2::type &d2, typename K3::type &d3)
+{
+	ZEND_PARSE_PARAMETERS_START((required<K1, K2, K3>()), 3)
+		PT_ZP_SLOT(K1, d1)
+		PT_ZP_SLOT(K2, d2)
+		PT_ZP_SLOT(K3, d3)
+	ZEND_PARSE_PARAMETERS_END_EX(return false);
+	return true;
+}
+
+template <typename K1, typename K2, typename K3, typename K4>
+zend_always_inline bool parse(zend_execute_data *execute_data, typename K1::type &d1, typename K2::type &d2, typename K3::type &d3, typename K4::type &d4)
+{
+	ZEND_PARSE_PARAMETERS_START((required<K1, K2, K3, K4>()), 4)
+		PT_ZP_SLOT(K1, d1)
+		PT_ZP_SLOT(K2, d2)
+		PT_ZP_SLOT(K3, d3)
+		PT_ZP_SLOT(K4, d4)
+	ZEND_PARSE_PARAMETERS_END_EX(return false);
+	return true;
+}
+
+template <typename K1, typename K2, typename K3, typename K4, typename K5>
+zend_always_inline bool parse(zend_execute_data *execute_data, typename K1::type &d1, typename K2::type &d2, typename K3::type &d3, typename K4::type &d4, typename K5::type &d5)
+{
+	ZEND_PARSE_PARAMETERS_START((required<K1, K2, K3, K4, K5>()), 5)
+		PT_ZP_SLOT(K1, d1)
+		PT_ZP_SLOT(K2, d2)
+		PT_ZP_SLOT(K3, d3)
+		PT_ZP_SLOT(K4, d4)
+		PT_ZP_SLOT(K5, d5)
+	ZEND_PARSE_PARAMETERS_END_EX(return false);
+	return true;
+}
+
+template <typename K1, typename K2, typename K3, typename K4, typename K5, typename K6>
+zend_always_inline bool parse(zend_execute_data *execute_data, typename K1::type &d1, typename K2::type &d2, typename K3::type &d3, typename K4::type &d4, typename K5::type &d5, typename K6::type &d6)
+{
+	ZEND_PARSE_PARAMETERS_START((required<K1, K2, K3, K4, K5, K6>()), 6)
+		PT_ZP_SLOT(K1, d1)
+		PT_ZP_SLOT(K2, d2)
+		PT_ZP_SLOT(K3, d3)
+		PT_ZP_SLOT(K4, d4)
+		PT_ZP_SLOT(K5, d5)
+		PT_ZP_SLOT(K6, d6)
+	ZEND_PARSE_PARAMETERS_END_EX(return false);
+	return true;
+}
+
+#undef PT_ZP_SLOT
+
+} // namespace zp
+
+/* }}} */
 
 namespace reg {
 
@@ -48,7 +235,7 @@ struct Arg
 
 /* an optional parameter with its default value's PHP source (e.g. "[]") —
  * without it the engine refuses to skip the parameter via named arguments */
-inline Arg withDefault(Arg arg, const char *defaultValue)
+constexpr Arg withDefault(Arg arg, const char *defaultValue)
 {
 	arg.defaultValue = defaultValue;
 	return arg;
@@ -56,12 +243,12 @@ inline Arg withDefault(Arg arg, const char *defaultValue)
 
 namespace detail {
 
-inline uint32_t flagBits(bool byRef, bool variadic)
+constexpr uint32_t flagBits(bool byRef, bool variadic)
 {
 	return _ZEND_ARG_INFO_FLAGS(byRef ? ZEND_SEND_BY_REF : ZEND_SEND_BY_VAL, variadic ? 1 : 0, 0);
 }
 
-inline uint32_t codeMask(zend_uchar code, bool nullable)
+constexpr uint32_t codeMask(zend_uchar code, bool nullable)
 {
 	uint32_t mask = code == _IS_BOOL ? MAY_BE_BOOL : (uint32_t) (1u << code);
 	return mask | (nullable ? MAY_BE_NULL : 0);
@@ -70,51 +257,74 @@ inline uint32_t codeMask(zend_uchar code, bool nullable)
 } // namespace detail
 
 /* an untyped parameter (ZEND_ARG_INFO) */
-inline Arg any(const char *name, bool byRef = false)
+constexpr Arg any(const char *name, bool byRef = false)
 {
 	return { name, detail::flagBits(byRef, false), nullptr };
 }
 
-inline Arg longArg(const char *name)
+constexpr Arg longArg(const char *name)
 {
 	return { name, detail::codeMask(IS_LONG, false) | detail::flagBits(false, false), nullptr };
 }
 
-inline Arg boolArg(const char *name)
+constexpr Arg boolArg(const char *name)
 {
 	return { name, detail::codeMask(_IS_BOOL, false) | detail::flagBits(false, false), nullptr };
 }
 
-inline Arg stringArg(const char *name, bool nullable = false)
+constexpr Arg stringArg(const char *name, bool nullable = false)
 {
 	return { name, detail::codeMask(IS_STRING, nullable) | detail::flagBits(false, false), nullptr };
 }
 
-inline Arg arrayArg(const char *name)
+constexpr Arg arrayArg(const char *name)
 {
 	return { name, detail::codeMask(IS_ARRAY, false) | detail::flagBits(false, false), nullptr };
 }
 
-inline Arg callableArg(const char *name)
+constexpr Arg callableArg(const char *name)
 {
 	return { name, MAY_BE_CALLABLE | detail::flagBits(false, false), nullptr };
 }
 
-inline Arg objectArg(const char *name, bool nullable = false)
+constexpr Arg objectArg(const char *name, bool nullable = false)
 {
 	return { name, detail::codeMask(IS_OBJECT, nullable) | detail::flagBits(false, false), nullptr };
 }
 
 /* object of a specific class; className must be a persistent literal */
-inline Arg obj(const char *name, const char *className, bool nullable = false)
+constexpr Arg obj(const char *name, const char *className, bool nullable = false)
 {
 	return { name, _ZEND_TYPE_LITERAL_NAME_BIT | (nullable ? MAY_BE_NULL : 0) | detail::flagBits(false, false), className };
 }
 
-inline Arg variadicObj(const char *name, const char *className)
+constexpr Arg variadicObj(const char *name, const char *className)
 {
 	return { name, _ZEND_TYPE_LITERAL_NAME_BIT | detail::flagBits(false, true), className };
 }
+
+/* a parameter or return type the way a generated signature spells it
+ * (turbo-ext/src/generated): the MAY_BE_* mask, a persistent literal class
+ * name ("Foo", "Foo|Bar", "self") or nullptr, by reference / variadic, the
+ * PHP source of the default value or nullptr — the same bits the
+ * descriptors above produce */
+constexpr Arg typed(const char *name, uint32_t mask, const char *className = nullptr, bool byRef = false, bool variadic = false, const char *defaultValue = nullptr)
+{
+	return { name, mask | (className != nullptr ? _ZEND_TYPE_LITERAL_NAME_BIT : 0) | detail::flagBits(byRef, variadic), className, defaultValue };
+}
+
+/* a method's signature as generated from the PHP twin: name, ZEND_ACC_*
+ * flags, the required-parameter count, the parameters' arginfo and the
+ * declared return type (nullptr: none) */
+struct Sig
+{
+	const char *name;
+	uint32_t flags;
+	uint32_t requiredArgs;
+	const Arg *args;
+	uint32_t argc;
+	const Arg *returns;
+};
 
 enum class PropertyKind
 {
@@ -122,7 +332,13 @@ enum class PropertyKind
 	Null,
 	Bool,
 	EmptyArray,
-	PublicReadonlyTyped, /* UNDEF default, defaultValue carries the MAY_BE_* type mask */
+	Typed, /* a typed property with no default (UNDEF, IS_PROP_UNINIT); defaultValue carries the MAY_BE_* type mask, visibility the ZEND_ACC_* flags */
+	TypedNull, /* a typed property defaulting to null (`private ?Foo $x = null`); defaultValue as for Typed */
+	TypedEmptyArray, /* a typed property defaulting to [] (`private array $x = []`); defaultValue as for Typed */
+	TypedClassUnion, /* a `private Foo|Bar $x` union-of-classes typed property with no default; className carries the `|`-separated names, defaultValue as for Typed */
+	TypedBool, /* a `private bool $x = false` typed property with a bool default; defaultValue carries the default (0/1), the type is bool */
+	TypedLong, /* a `private int $x = 0` typed property with an int default; defaultValue carries the default, the type is int */
+	TypedFalse, /* a typed property defaulting to false (`private string|false|null $x = false`, `private Foo|false|null $x = false`); defaultValue carries the MAY_BE_* mask (the scalar members next to a class name), className as for Typed */
 };
 
 struct Property
@@ -131,6 +347,7 @@ struct Property
 	PropertyKind kind;
 	uint32_t visibility;
 	zend_long defaultValue;
+	const char *className = nullptr; /* persistent literal: the class of a class-typed property (Typed* kinds), combined with a MAY_BE_NULL bit in defaultValue for `?Foo` */
 };
 
 struct Constant
@@ -182,12 +399,84 @@ inline void declareMembers(zend_class_entry *ce, const std::vector<Property> &pr
 				zend_declare_property(ce, property.name, len, &emptyArray, property.visibility);
 				break;
 			}
-			case PropertyKind::PublicReadonlyTyped: {
-				zend_string *nameStr = zend_string_init(property.name, len, ce->type == ZEND_INTERNAL_CLASS);
-				zval undef;
-				ZVAL_UNDEF(&undef);
-				zend_type type = ZEND_TYPE_INIT_MASK((uint32_t) property.defaultValue);
-				zend_declare_typed_property(ce, nameStr, &undef, ZEND_ACC_PUBLIC | ZEND_ACC_READONLY, NULL, type);
+			case PropertyKind::Typed:
+			case PropertyKind::TypedNull:
+			case PropertyKind::TypedEmptyArray:
+			case PropertyKind::TypedClassUnion:
+			case PropertyKind::TypedFalse: {
+				bool persistent = ce->type == ZEND_INTERNAL_CLASS;
+				zend_string *nameStr = zend_string_init(property.name, len, persistent);
+				zval defaultValue;
+				if (property.kind == PropertyKind::TypedNull) {
+					ZVAL_NULL(&defaultValue);
+				} else if (property.kind == PropertyKind::TypedEmptyArray) {
+					ZVAL_EMPTY_ARRAY(&defaultValue);
+				} else if (property.kind == PropertyKind::TypedFalse) {
+					ZVAL_FALSE(&defaultValue);
+				} else {
+					ZVAL_UNDEF(&defaultValue);
+				}
+				zend_type type;
+				if (property.kind == PropertyKind::TypedClassUnion) {
+					/* a `Foo|Bar` union of class names, declared the way the
+					 * compiler declares one: a type list of interned names
+					 * with class-entry cache slots (released with the class
+					 * by zend_type_release() — allocated with its
+					 * persistence) */
+					uint32_t count = 1;
+					for (const char *p = property.className; (p = strchr(p, '|')) != NULL; p++) {
+						count++;
+					}
+					zend_type_list *list = (zend_type_list *) pemalloc(ZEND_TYPE_LIST_SIZE(count), persistent);
+					list->num_types = count;
+					const char *start = property.className;
+					for (uint32_t i = 0; i < count; i++) {
+						const char *end = strchr(start, '|');
+						size_t partLen = end != NULL ? (size_t) (end - start) : strlen(start);
+						zend_string *className = zend_new_interned_string(zend_string_init(start, partLen, persistent));
+						zend_alloc_ce_cache(className);
+						list->types[i] = (zend_type) ZEND_TYPE_INIT_CLASS(className, 0, 0);
+						start = end != NULL ? end + 1 : start;
+					}
+					type = (zend_type) ZEND_TYPE_INIT_UNION(list, (property.defaultValue & MAY_BE_NULL) != 0 ? MAY_BE_NULL : 0);
+				} else if (property.className != NULL) {
+					/* a class-typed property, declared the way the compiler
+					 * declares one (zend_compile_single_typename): an interned
+					 * name with a class-entry cache slot; the engine dups it
+					 * for a persistent class. "self" is the declared class,
+					 * as the compiler resolves it (the twin's `private static
+					 * self $x`) */
+					zend_string *className = strcmp(property.className, "self") == 0
+						? zend_string_copy(ce->name)
+						: zend_new_interned_string(zend_string_init(property.className, strlen(property.className), persistent));
+					zend_alloc_ce_cache(className);
+					/* the bits beyond MAY_BE_NULL in defaultValue are the scalar
+					 * members of a `Foo|false|null` union */
+					type = (zend_type) ZEND_TYPE_INIT_CLASS(className, (property.defaultValue & MAY_BE_NULL) != 0, (uint32_t) property.defaultValue & ~(uint32_t) MAY_BE_NULL);
+				} else {
+					type = (zend_type) ZEND_TYPE_INIT_MASK((uint32_t) property.defaultValue);
+				}
+				zend_declare_typed_property(ce, nameStr, &defaultValue, property.visibility, NULL, type);
+				zend_string_release(nameStr);
+				break;
+			}
+			case PropertyKind::TypedBool: {
+				bool persistent = ce->type == ZEND_INTERNAL_CLASS;
+				zend_string *nameStr = zend_string_init(property.name, len, persistent);
+				zval defaultValue;
+				ZVAL_BOOL(&defaultValue, property.defaultValue != 0);
+				zend_type type = (zend_type) ZEND_TYPE_INIT_MASK(MAY_BE_BOOL);
+				zend_declare_typed_property(ce, nameStr, &defaultValue, property.visibility, NULL, type);
+				zend_string_release(nameStr);
+				break;
+			}
+			case PropertyKind::TypedLong: {
+				bool persistent = ce->type == ZEND_INTERNAL_CLASS;
+				zend_string *nameStr = zend_string_init(property.name, len, persistent);
+				zval defaultValue;
+				ZVAL_LONG(&defaultValue, property.defaultValue);
+				zend_type type = (zend_type) ZEND_TYPE_INIT_MASK(MAY_BE_LONG);
+				zend_declare_typed_property(ce, nameStr, &defaultValue, property.visibility, NULL, type);
 				zend_string_release(nameStr);
 				break;
 			}
@@ -204,6 +493,114 @@ inline void declareMembers(zend_class_entry *ce, const std::vector<Property> &pr
 void pt_shadow_plan_add(reg::ShadowPlan &&plan);
 
 namespace reg {
+
+namespace detail {
+
+/* a bound method's return type and the handle class it is a member of
+ * (void for a static member or a free function) */
+template <typename F>
+struct BoundSignature;
+
+template <typename R, typename C, typename... P>
+struct BoundSignature<R (C::*)(P...)>
+{
+	using Return = R;
+	using Class = C;
+	static constexpr size_t arity = sizeof...(P);
+};
+
+template <typename R, typename C, typename... P>
+struct BoundSignature<R (C::*)(P...) const> : BoundSignature<R (C::*)(P...)>
+{
+};
+
+template <typename R, typename... P>
+struct BoundSignature<R (*)(P...)>
+{
+	using Return = R;
+	using Class = void;
+	static constexpr size_t arity = sizeof...(P);
+};
+
+/*
+ * The handler Class::method<M, K...>() registers — what a glue lambda that
+ * only parses its parameters and delegates spells out by hand: the
+ * parameters parsed as the zp kinds K, then M called with them on the $this
+ * handle (directly when M is static or free). A zv::Val result is the
+ * return value (UNDEF = pending exception); a void one leaves null; a bool
+ * one with a trailing `bool &` out parameter is the success flag, the out
+ * parameter the returned bool.
+ */
+template <auto M, typename... K>
+struct Bound
+{
+	using Signature = BoundSignature<decltype(M)>;
+
+	template <typename... A>
+	static zend_always_inline decltype(auto) call(zend_execute_data *execute_data, A &&...args)
+	{
+		if constexpr (std::is_void_v<typename Signature::Class>) {
+			return M(std::forward<A>(args)...);
+		} else {
+			return (typename Signature::Class(Z_OBJ_P(ZEND_THIS)).*M)(std::forward<A>(args)...);
+		}
+	}
+
+	template <typename... A>
+	static zend_always_inline void invoke(zend_execute_data *execute_data, zval *return_value, A &&...args)
+	{
+		using R = typename Signature::Return;
+		if constexpr (std::is_same_v<R, zv::Val>) {
+			PT_RETURN_VAL(call(execute_data, std::forward<A>(args)...));
+		} else if constexpr (std::is_void_v<R>) {
+			call(execute_data, std::forward<A>(args)...);
+		} else {
+			static_assert(std::is_same_v<R, bool> && Signature::arity == sizeof...(K) + 1, "a bound method returns zv::Val, void, or bool with a trailing bool & out parameter");
+			bool out;
+			if (UNEXPECTED(!call(execute_data, std::forward<A>(args)..., out))) RETURN_THROWS();
+			RETURN_BOOL(out);
+		}
+	}
+
+	template <size_t I>
+	using At = std::tuple_element_t<I, std::tuple<K...>>;
+
+	/* the destinations are uninitialized locals, as the declarations above a
+	 * hand-written ZEND_PARSE_PARAMETERS block leave them */
+	static void ZEND_FASTCALL handle(INTERNAL_FUNCTION_PARAMETERS)
+	{
+		if constexpr (sizeof...(K) == 0) {
+			ZEND_PARSE_PARAMETERS_NONE();
+			invoke(execute_data, return_value);
+		} else if constexpr (sizeof...(K) == 1) {
+			typename At<0>::type a0;
+			if (!zp::parse<K...>(execute_data, a0)) RETURN_THROWS();
+			invoke(execute_data, return_value, a0);
+		} else if constexpr (sizeof...(K) == 2) {
+			typename At<0>::type a0;
+			typename At<1>::type a1;
+			if (!zp::parse<K...>(execute_data, a0, a1)) RETURN_THROWS();
+			invoke(execute_data, return_value, a0, a1);
+		} else if constexpr (sizeof...(K) == 3) {
+			typename At<0>::type a0;
+			typename At<1>::type a1;
+			typename At<2>::type a2;
+			if (!zp::parse<K...>(execute_data, a0, a1, a2)) RETURN_THROWS();
+			invoke(execute_data, return_value, a0, a1, a2);
+		} else if constexpr (sizeof...(K) == 4) {
+			typename At<0>::type a0;
+			typename At<1>::type a1;
+			typename At<2>::type a2;
+			typename At<3>::type a3;
+			if (!zp::parse<K...>(execute_data, a0, a1, a2, a3)) RETURN_THROWS();
+			invoke(execute_data, return_value, a0, a1, a2, a3);
+		} else {
+			static_assert(sizeof...(K) <= 4, "bind at most four parameters; write the glue by hand beyond that");
+		}
+	}
+};
+
+} // namespace detail
 
 /*
  * Builder for one class. Usage:
@@ -250,22 +647,25 @@ public:
 	 */
 	Class &method(const char *methodName, uint32_t flags, uint32_t requiredArgs, std::initializer_list<Arg> args, zif_handler handler, const Arg *returns = NULL)
 	{
+		return method(methodName, flags, requiredArgs, args.begin(), args.size(), handler, returns);
+	}
+
+	Class &method(const char *methodName, uint32_t flags, uint32_t requiredArgs, const Arg *args, size_t argc, zif_handler handler, const Arg *returns)
+	{
 		/* arginfo array: slot 0 is the return-info slot carrying the
 		 * required-args count, exactly as ZEND_BEGIN_ARG_INFO_EX emits.
 		 * A declared return type goes in the same slot's type — needed only
 		 * where the engine enforces it (implementing a userland interface). */
-		auto *argInfo = (zend_internal_arg_info *) pemalloc(sizeof(zend_internal_arg_info) * (args.size() + 1), 1);
+		auto *argInfo = (zend_internal_arg_info *) pemalloc(sizeof(zend_internal_arg_info) * (argc + 1), 1);
 		argInfo[0].name = (const char *) (uintptr_t) requiredArgs;
 		argInfo[0].type.ptr = returns != NULL ? (void *) returns->className : NULL;
 		argInfo[0].type.type_mask = returns != NULL ? returns->typeMask : 0;
 		argInfo[0].default_value = NULL;
-		size_t i = 1;
-		for (const Arg &arg : args) {
-			argInfo[i].name = arg.name;
-			argInfo[i].type.ptr = (void *) arg.className;
-			argInfo[i].type.type_mask = arg.typeMask;
-			argInfo[i].default_value = arg.defaultValue;
-			i++;
+		for (size_t i = 0; i < argc; i++) {
+			argInfo[i + 1].name = args[i].name;
+			argInfo[i + 1].type.ptr = (void *) args[i].className;
+			argInfo[i + 1].type.type_mask = args[i].typeMask;
+			argInfo[i + 1].default_value = args[i].defaultValue;
 		}
 
 		zend_function_entry entry;
@@ -273,10 +673,39 @@ public:
 		entry.fname = methodName;
 		entry.handler = handler;
 		entry.arg_info = argInfo;
-		entry.num_args = (uint32_t) args.size();
+		entry.num_args = (uint32_t) argc;
 		entry.flags = flags;
 		entries.push_back(entry);
 		return *this;
+	}
+
+	/*
+	 * A method with a generated handler: the parameters parsed as the zp
+	 * kinds K and delegated to M (see detail::Bound), the required-args
+	 * count derived from the kinds.
+	 */
+	template <auto M, typename... K>
+	Class &method(const char *methodName, uint32_t flags, std::initializer_list<Arg> args, const Arg *returns = NULL)
+	{
+		return method(methodName, flags, zp::required<K...>(), args, &detail::Bound<M, K...>::handle, returns);
+	}
+
+	/* the method of a generated signature (turbo-ext/src/generated) */
+	Class &method(const Sig &sig, zif_handler handler)
+	{
+		return method(sig.name, sig.flags, sig.requiredArgs, sig.args, sig.argc, handler, sig.returns);
+	}
+
+	/* the method of a generated signature with a generated handler; the
+	 * parameter kinds must match the signature — a mismatch (the twin's
+	 * signature changed, the binding did not) refuses to load the module */
+	template <auto M, typename... K>
+	Class &method(const Sig &sig)
+	{
+		if (UNEXPECTED(sig.argc != sizeof...(K) || sig.requiredArgs != zp::required<K...>())) {
+			zend_error_noreturn(E_CORE_ERROR, "phpstan_turbo: %s::%s() binds %u parameter kinds to a signature of %u (%u required)", name, sig.name, (unsigned) sizeof...(K), (unsigned) sig.argc, (unsigned) sig.requiredArgs);
+		}
+		return method(sig.name, sig.flags, sig.requiredArgs, sig.args, sig.argc, &detail::Bound<M, K...>::handle, sig.returns);
 	}
 
 	/* declaration order defines the OBJ_PROP_NUM slot, as with the macros */
@@ -325,7 +754,7 @@ public:
 	 * MAY_BE_* mask */
 	Class &publicReadonlyProperty(const char *propertyName, uint32_t typeMask)
 	{
-		properties.push_back({ propertyName, PropertyKind::PublicReadonlyTyped, ZEND_ACC_PUBLIC | ZEND_ACC_READONLY, (zend_long) typeMask });
+		properties.push_back({ propertyName, PropertyKind::Typed, ZEND_ACC_PUBLIC | ZEND_ACC_READONLY, (zend_long) typeMask });
 		return *this;
 	}
 
@@ -373,6 +802,21 @@ public:
 		plan.out = out;
 		plan.ce = NULL;
 		pt_shadow_plan_add(std::move(plan));
+	}
+
+	/* a typed property of any visibility and shape — the builders above
+	 * are the common cases; this spells the twin's declaration directly:
+	 * visibility is the ZEND_ACC_* flags (ZEND_ACC_PRIVATE | ZEND_ACC_STATIC,
+	 * ZEND_ACC_PUBLIC | ZEND_ACC_READONLY, ...), kind the shape, mask the
+	 * MAY_BE_* type mask (with MAY_BE_NULL for a nullable class type; the
+	 * bool/int default for TypedBool/TypedLong), className the persistent
+	 * literal of a class-typed property ("self" for the declared class) or
+	 * NULL. Promoted constructor properties are declared this way: they
+	 * never carry the parameter's default, so their kind is Typed. */
+	Class &property(const char *propertyName, uint32_t visibility, PropertyKind kind, zend_long mask, const char *className = nullptr)
+	{
+		properties.push_back({ propertyName, kind, visibility, mask, className });
+		return *this;
 	}
 
 private:

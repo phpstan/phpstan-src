@@ -11,6 +11,7 @@
  */
 
 #include "ParserEngine.h"
+#include "../generated/ParserRunner.h"
 #include "ParserRunnerActionsSplit.h"
 
 #pragma GCC diagnostic push
@@ -46,9 +47,7 @@ static bool g_keysReady = false;
 
 static void initAttributeKeys(void)
 {
-	if (g_keysReady) {
-		return;
-	}
+	if (g_keysReady) return;
 	g_key_startLine = zend_string_init("startLine", sizeof("startLine") - 1, 1);
 	g_key_startTokenPos = zend_string_init("startTokenPos", sizeof("startTokenPos") - 1, 1);
 	g_key_startFilePos = zend_string_init("startFilePos", sizeof("startFilePos") - 1, 1);
@@ -98,12 +97,8 @@ ParserEngine::~ParserEngine()
 
 bool ParserEngine::reduce(int rule, int stackPos)
 {
-	if (rule < PN_REDUCE_SPLIT_1) {
-		return reduceRange1(rule, stackPos);
-	}
-	if (rule < PN_REDUCE_SPLIT_2) {
-		return reduceRange2(rule, stackPos);
-	}
+	if (rule < PN_REDUCE_SPLIT_1) return reduceRange1(rule, stackPos);
+	if (rule < PN_REDUCE_SPLIT_2) return reduceRange2(rule, stackPos);
 	return reduceRange3(rule, stackPos);
 }
 
@@ -163,9 +158,7 @@ zv::Arr ParserEngine::getAttributesAt(int stackPos)
 
 zv::Arr ParserEngine::getAttributesForToken(int tokenPos)
 {
-	if (tokenPos < numTokens - 1) {
-		return getAttributes(tokenPos, tokenPos);
-	}
+	if (tokenPos < numTokens - 1) return getAttributes(tokenPos, tokenPos);
 	initAttributeKeys();
 	const Token *token = &tokens[tokenPos];
 	zv::Arr attrs = zv::Arr::create(6);
@@ -198,9 +191,7 @@ zv::Ref ParserEngine::prop(zv::Ref node, const char *name)
 void ParserEngine::propWrite(zv::Ref node, const char *name, zv::Val value)
 {
 	zv::Ref slot = prop(node, name);
-	if (slot.raw() == NULL) {
-		return; /* the Val releases the value */
-	}
+	if (slot.raw() == NULL) return; /* the Val releases the value */
 	zval_ptr_dtor(slot.raw());
 	zval v = value.take();
 	ZVAL_COPY_VALUE(slot.raw(), &v);
@@ -209,9 +200,7 @@ void ParserEngine::propWrite(zv::Ref node, const char *name, zv::Val value)
 zv::Arr ParserEngine::getNodeAttributes(zv::Ref node)
 {
 	zv::Ref attrs = prop(node, "attributes");
-	if (attrs.raw() == NULL || !attrs.isArray()) {
-		return zv::Arr::create(0);
-	}
+	if (attrs.raw() == NULL || !attrs.isArray()) return zv::Arr::create(0);
 	zv::Arr copy;
 	ZVAL_COPY(copy.raw(), attrs.raw());
 	return copy;
@@ -220,9 +209,7 @@ zv::Arr ParserEngine::getNodeAttributes(zv::Ref node)
 void ParserEngine::setNodeAttribute(zv::Ref node, const char *key, zv::Val value)
 {
 	zv::Ref attrs = prop(node, "attributes");
-	if (attrs.raw() == NULL || !attrs.isArray()) {
-		return; /* the Val releases the value */
-	}
+	if (attrs.raw() == NULL || !attrs.isArray()) return; /* the Val releases the value */
 	SEPARATE_ARRAY(attrs.raw());
 	zval v = value.take();
 	zend_hash_str_update(Z_ARRVAL_P(attrs.raw()), key, strlen(key), &v);
@@ -283,9 +270,7 @@ NodeClassInfo *ParserEngine::resolveNodeClass(const char *alias, bool useCtor)
 			ce = lookupClassPrefixed(rel, rl);
 			efree(rel);
 		}
-		if (ce == NULL) {
-			return NULL;
-		}
+		if (ce == NULL) return NULL;
 
 		cls = (NodeClassInfo *) malloc(sizeof(NodeClassInfo));
 		memset(cls, 0, sizeof(*cls));
@@ -314,9 +299,7 @@ NodeClassInfo *ParserEngine::resolveNodeClass(const char *alias, bool useCtor)
 			bool ok = true;
 			for (uint32_t i = 0; i < numArgs; i++) {
 				zend_string *argName = ctor->op_array.arg_info[i].name;
-				if (zend_string_equals_literal(argName, "attributes")) {
-					continue;
-				}
+				if (zend_string_equals_literal(argName, "attributes")) continue;
 				if (nprops >= 16) {
 					ok = false;
 					break;
@@ -425,13 +408,9 @@ void ParserEngine::abortForPendingException()
 
 bool ParserEngine::isInstanceOf(zv::Ref value, const char *alias)
 {
-	if (!value.isObject()) {
-		return false;
-	}
+	if (!value.isObject()) return false;
 	NodeClassInfo *cls = resolveNodeClass(alias, true);
-	if (cls == NULL) {
-		return false;
-	}
+	if (cls == NULL) return false;
 	return instanceof_function(Z_OBJCE_P(value.raw()), cls->ce);
 }
 
@@ -443,9 +422,7 @@ static zval makeErrorObject(zend_string *msg, zval *attrsBorrowed)
 {
 	zval error;
 	object_init_ex(&error, g_errorCe);
-	zval args[2];
-	ZVAL_STR(&args[0], msg);
-	ZVAL_COPY_VALUE(&args[1], attrsBorrowed);
+	zv::Args args{msg, attrsBorrowed};
 	zend_call_known_function(g_errorCe->constructor, Z_OBJ(error), g_errorCe, NULL, 2, args, NULL);
 	return error;
 }
@@ -481,9 +458,7 @@ void ParserEngine::emitError(const char *msg, zv::Val attributes)
 
 void ParserEngine::fatalError(const char *msg, zv::Val attributes)
 {
-	if (aborted) {
-		return; /* the Val releases the attributes */
-	}
+	if (aborted) return; /* the Val releases the attributes */
 	aborted = true;
 	zval m;
 	ZVAL_STRING(&m, msg);
@@ -521,9 +496,7 @@ void ParserEngine::parenthesizedArrowFunctionsAdd(zv::Ref expr)
 static bool readIntProp(zval *obj, const char *name, int *out)
 {
 	zv::Ref slot = zv::ObjRef(obj).prop(name, strlen(name));
-	if (slot.raw() == NULL || !slot.isLong()) {
-		return false;
-	}
+	if (slot.raw() == NULL || !slot.isLong()) return false;
 	*out = (int) slot.asLong();
 	return true;
 }
@@ -537,9 +510,7 @@ static bool readIntProp(zval *obj, const char *name, int *out)
 static bool readIntArrayProp(zval *obj, const char *name, int **out, int *outSize, int *outBias)
 {
 	zv::Ref slot = zv::ObjRef(obj).prop(name, strlen(name));
-	if (slot.raw() == NULL || !slot.isArray()) {
-		return false;
-	}
+	if (slot.raw() == NULL || !slot.isArray()) return false;
 	HashTable *ht = slot.asArrayTable();
 	zend_long maxKey = -1;
 	zend_long minKey = 0;
@@ -548,9 +519,7 @@ static bool readIntArrayProp(zval *obj, const char *name, int **out, int *outSiz
 	zval *v;
 	ZEND_HASH_FOREACH_KEY_VAL(ht, idx, strKey, v) {
 		(void) v;
-		if (strKey != NULL) {
-			return false;
-		}
+		if (strKey != NULL) return false;
 		zend_long key = (zend_long) idx;
 		if (key > maxKey) {
 			maxKey = key;
@@ -559,9 +528,7 @@ static bool readIntArrayProp(zval *obj, const char *name, int **out, int *outSiz
 			minKey = key;
 		}
 	} ZEND_HASH_FOREACH_END();
-	if (minKey < 0 && outBias == NULL) {
-		return false;
-	}
+	if (minKey < 0 && outBias == NULL) return false;
 	int bias = (int) -minKey;
 	int size = (int) (maxKey - minKey) + 1;
 	if (zend_hash_num_elements(ht) == 0) {
@@ -628,16 +595,12 @@ static bool extractTables(zval *parserObj)
 		&& readIntArrayProp(parserObj, "gotoDefault", &t->gotoDefault, &unusedSize, NULL)
 		&& readIntArrayProp(parserObj, "ruleToNonTerminal", &t->ruleToNonTerminal, &unusedSize, NULL)
 		&& readIntArrayProp(parserObj, "ruleToLength", &t->ruleToLength, &t->numRules, NULL);
-	if (!ok) {
-		return false;
-	}
+	if (!ok) return false;
 
 	/* dropTokens: bool array indexed by php token id */
 	{
 		zv::Ref slot = zv::ObjRef(parserObj).prop("dropTokens", sizeof("dropTokens") - 1);
-		if (slot.raw() == NULL || !slot.isArray()) {
-			return false;
-		}
+		if (slot.raw() == NULL || !slot.isArray()) return false;
 		int size = t->phpTokenToSymbolSize > 1024 ? t->phpTokenToSymbolSize : 1024;
 		t->dropTokens = (bool *) malloc(sizeof(bool) * (size_t) size);
 		t->dropTokensSize = size;
@@ -655,9 +618,7 @@ static bool extractTables(zval *parserObj)
 	/* symbolToName: persistent copies for error messages */
 	{
 		zv::Ref slot = zv::ObjRef(parserObj).prop("symbolToName", sizeof("symbolToName") - 1);
-		if (slot.raw() == NULL || !slot.isArray()) {
-			return false;
-		}
+		if (slot.raw() == NULL || !slot.isArray()) return false;
 		HashTable *ht = slot.asArrayTable();
 		int size = (int) zend_hash_num_elements(ht);
 		t->symbolToName = (zend_string **) malloc(sizeof(zend_string *) * (size_t) size);
@@ -678,9 +639,7 @@ static bool extractTables(zval *parserObj)
 	{
 		const char *rel = "PhpParser\\Error";
 		zend_class_entry *errorCe = lookupClassPrefixed(rel, strlen(rel));
-		if (errorCe == NULL) {
-			return false;
-		}
+		if (errorCe == NULL) return false;
 		g_errorCe = errorCe;
 	}
 
@@ -707,9 +666,7 @@ bool ParserEngine::prepareTables(zval *parserObj)
 
 void ParserEngine::growStacks(int needed)
 {
-	if (needed < stackCap) {
-		return;
-	}
+	if (needed < stackCap) return;
 	int newCap = stackCap < 8 ? 16 : stackCap * 2;
 	while (newCap <= needed) {
 		newCap *= 2;
@@ -758,9 +715,7 @@ zend_string *ParserEngine::getErrorMessage(int symbol, int state)
 			idx = t->actionBase[state + t->numNonLeafStates] + sym;
 			found = (idx >= 0 && idx < t->actionTableSize && t->actionCheck[idx] == sym);
 		}
-		if (!found) {
-			continue;
-		}
+		if (!found) continue;
 		if (t->action[idx] != t->unexpectedTokenRule && t->action[idx] != t->defaultAction && sym != t->errorSymbol) {
 			if (numExpected == 4) {
 				tooMany = true;
@@ -860,9 +815,7 @@ zv::Val ParserEngine::doParse()
 						--errorState;
 					}
 
-					if (action < t->numNonLeafStates) {
-						continue;
-					}
+					if (action < t->numNonLeafStates) continue;
 					rule = action - t->numNonLeafStates;
 				} else {
 					rule = -action;
@@ -908,9 +861,7 @@ zv::Val ParserEngine::doParse()
 					}
 					return zv::Val();
 				}
-				if (EG(exception) != NULL) {
-					return zv::Val();
-				}
+				if (EG(exception) != NULL) return zv::Val();
 
 				/* goto - shift nonterminal */
 				int lastTokenEnd = tokenEndStack[stackPos];
@@ -941,9 +892,7 @@ zv::Val ParserEngine::doParse()
 						zend_string *msg = getErrorMessage(symbol, state);
 						emitError(msg, getAttributesForToken(tokenPos));
 						zend_string_release(msg);
-						if (aborted || EG(exception) != NULL) {
-							return zv::Val();
-						}
+						if (aborted || EG(exception) != NULL) return zv::Val();
 					}
 					ZEND_FALLTHROUGH;
 					case 1:
@@ -968,29 +917,21 @@ zv::Val ParserEngine::doParse()
 								tokenEndStack[stackPos] = tokenEndStack[stackPos - 1];
 								break;
 							}
-							if (stackPos <= 0) {
-								return zv::Val();
-							}
+							if (stackPos <= 0) return zv::Val();
 							state = stateStack[--stackPos];
 						}
 						break;
 					}
 					case 3:
-						if (symbol == 0) {
-							return zv::Val();
-						}
+						if (symbol == 0) return zv::Val();
 						symbol = PN_SYMBOL_NONE;
 						discardSymbol = true;
 						break;
 				}
-				if (discardSymbol) {
-					break; /* break 2 in PHP: leave the inner loop */
-				}
+				if (discardSymbol) break; /* break 2 in PHP: leave the inner loop */
 			}
 
-			if (state < t->numNonLeafStates) {
-				break;
-			}
+			if (state < t->numNonLeafStates) break;
 			rule = state - t->numNonLeafStates;
 		}
 	}
@@ -1041,14 +982,10 @@ bool ParserEngine::commentEnterNode(CommentState &st, zend_object *node)
 	int nextCommentPos = st.positions[st.index];
 
 	pt_node_class_info *info = pt_node_class_info_for_object(node);
-	if (info == NULL || info->attributes_offset < 0) {
-		return true;
-	}
+	if (info == NULL || info->attributes_offset < 0) return true;
 	zval *attrs = OBJ_PROP(node, (uint32_t) info->attributes_offset);
 	ZVAL_DEINDIRECT(attrs);
-	if (Z_TYPE_P(attrs) != IS_ARRAY) {
-		return true;
-	}
+	if (Z_TYPE_P(attrs) != IS_ARRAY) return true;
 	zval *startPosZv = zend_hash_find(Z_ARRVAL_P(attrs), g_key_startTokenPos);
 	int pos = (startPosZv != NULL && Z_TYPE_P(startPosZv) == IS_LONG) ? (int) Z_LVAL_P(startPosZv) : -1;
 
@@ -1070,9 +1007,7 @@ bool ParserEngine::commentEnterNode(CommentState &st, zend_object *node)
 				collected++;
 				continue;
 			}
-			if ((zend_long) tok->id != tWhitespace) {
-				break;
-			}
+			if ((zend_long) tok->id != tWhitespace) break;
 		}
 		if (collected > 0) {
 			/* array_reverse */
@@ -1110,20 +1045,12 @@ bool ParserEngine::commentEnterNode(CommentState &st, zend_object *node)
 
 void ParserEngine::commentWalkNode(CommentState &st, zend_object *node)
 {
-	if (st.stopped) {
-		return;
-	}
-	if (!commentEnterNode(st, node)) {
-		return;
-	}
+	if (st.stopped) return;
+	if (!commentEnterNode(st, node)) return;
 	pt_node_class_info *info = pt_node_class_info_for_object(node);
-	if (info == NULL || !PT_HAS_SUBNODES(info)) {
-		return;
-	}
+	if (info == NULL || !PT_HAS_SUBNODES(info)) return;
 	for (uint32_t i = 0; i < info->subnode_count; i++) {
-		if (st.stopped) {
-			return;
-		}
+		if (st.stopped) return;
 		zval *sub = OBJ_PROP(node, info->subnode_offsets[i]);
 		ZVAL_DEINDIRECT(sub);
 		if (Z_TYPE_P(sub) == IS_OBJECT) {
@@ -1138,9 +1065,7 @@ void ParserEngine::commentWalkArray(CommentState &st, HashTable *ht)
 {
 	zval *item;
 	ZEND_HASH_FOREACH_VAL(ht, item) {
-		if (st.stopped) {
-			return;
-		}
+		if (st.stopped) return;
 		ZVAL_DEREF(item);
 		if (Z_TYPE_P(item) == IS_OBJECT) {
 			commentWalkNode(st, Z_OBJ_P(item));
@@ -1160,9 +1085,7 @@ void ParserEngine::annotateComments(zv::Ref stmts)
 			numComments++;
 		}
 	}
-	if (numComments == 0) {
-		return;
-	}
+	if (numComments == 0) return;
 	int *positions = (int *) emalloc(sizeof(int) * (size_t) numComments);
 	int n = 0;
 	for (int i = 0; i < numTokens; i++) {
@@ -1191,15 +1114,11 @@ void ParserEngine::checkCreatedArrays()
 	zval *arrayNode;
 	ZEND_HASH_FOREACH_VAL(&createdArrays, arrayNode) {
 		zv::Ref items = prop(zv::Ref(arrayNode), "items");
-		if (items.raw() == NULL || !items.isArray()) {
-			continue;
-		}
+		if (items.raw() == NULL || !items.isArray()) continue;
 		zval *item;
 		ZEND_HASH_FOREACH_VAL(items.asArrayTable(), item) {
 			ZVAL_DEREF(item);
-			if (Z_TYPE_P(item) != IS_OBJECT) {
-				continue;
-			}
+			if (Z_TYPE_P(item) != IS_OBJECT) continue;
 			zv::Ref value = prop(zv::Ref(item), "value");
 			if (value.raw() != NULL && value.isObject() && isInstanceOf(value, "Expr\\Error")) {
 				emitError("Cannot use empty array elements in arrays", getNodeAttributes(zv::Ref(item)));
@@ -1218,9 +1137,7 @@ bool ParserEngine::buildTokens()
 	int i = 0;
 	zval *tokZv;
 	ZEND_HASH_FOREACH_VAL(ht, tokZv) {
-		if (Z_TYPE_P(tokZv) != IS_OBJECT || i >= num) {
-			return false;
-		}
+		if (Z_TYPE_P(tokZv) != IS_OBJECT || i >= num) return false;
 		zv::ObjRef tok(tokZv);
 		zv::Ref idZv = tok.prop("id", sizeof("id") - 1);
 		zv::Ref textZv = tok.prop("text", sizeof("text") - 1);
@@ -1245,17 +1162,11 @@ bool ParserEngine::parse(zval *code, zval *return_value)
 {
 	/* tokenize via the parser's own lexer (one boundary crossing) */
 	zv::Ref lexer = zv::ObjRef(parserObj).prop("lexer", sizeof("lexer") - 1);
-	if (lexer.raw() == NULL || !lexer.isObject()) {
-		return false;
-	}
+	if (lexer.raw() == NULL || !lexer.isObject()) return false;
 	zend_function *tokenizeFn = pt_find_method(Z_OBJCE_P(lexer.raw()), "tokenize", sizeof("tokenize") - 1);
-	if (tokenizeFn == NULL) {
-		return false;
-	}
+	if (tokenizeFn == NULL) return false;
 	zval tokensLocal;
-	zval args[2];
-	ZVAL_COPY_VALUE(&args[0], code);
-	ZVAL_COPY_VALUE(&args[1], errorHandler);
+	zv::Args args{code, errorHandler};
 	zend_call_known_function(tokenizeFn, Z_OBJ_P(lexer.raw()), Z_OBJCE_P(lexer.raw()), &tokensLocal, 2, args, NULL);
 	if (EG(exception) != NULL) {
 		RETVAL_NULL();
@@ -1282,9 +1193,7 @@ bool ParserEngine::parse(zval *code, zval *return_value)
 		}
 	}
 
-	if (!buildTokens()) {
-		return false;
-	}
+	if (!buildTokens()) return false;
 
 	initAttributeKeys();
 	zv::Val result = doParse();
@@ -1318,21 +1227,16 @@ using phpstanturbo::ParserEngine;
 void pt_register_parser_runner(void)
 {
 	reg::Class cls("PHPStan\\Parser\\ParserRunner");
-	cls.final();
+	ptdecl::ParserRunner::declareClass(cls);
+	ptdecl::ParserRunner::declareProperties(cls);
 
 	cls.method("parse", reg::PublicStatic, 3, { reg::objectArg("parser"), reg::stringArg("sourceCode"), reg::objectArg("errorHandler") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *parserObj, *code, *errorHandler;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
-			Z_PARAM_OBJECT(parserObj)
-			Z_PARAM_ZVAL(code)
-			Z_PARAM_OBJECT(errorHandler)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Obj, zp::Zval, zp::Obj>(execute_data, parserObj, code, errorHandler)) RETURN_THROWS();
 
 		if (Z_TYPE_P(code) == IS_STRING && ParserEngine::prepareTables(parserObj)) {
 			ParserEngine engine(parserObj, errorHandler);
-			if (engine.parse(code, return_value)) {
-				return;
-			}
+			if (engine.parse(code, return_value)) return;
 		}
 
 		/* fallback: delegate to the PHP implementation */
@@ -1341,9 +1245,7 @@ void pt_register_parser_runner(void)
 			pt_throw_should_not_happen();
 			RETURN_THROWS();
 		}
-		zval args[2];
-		ZVAL_COPY_VALUE(&args[0], code);
-		ZVAL_COPY_VALUE(&args[1], errorHandler);
+		zv::Args args{code, errorHandler};
 		zend_call_known_function(parseFn, Z_OBJ_P(parserObj), Z_OBJCE_P(parserObj), return_value, 2, args, NULL);
 	});
 

@@ -22,8 +22,7 @@ being ≥0.5% faster is. When the estimate is marginal, don't port.
    matches nothing — use single quotes). Run the full test suite now, before
    any native work.
 2. **Note its parent and interfaces** — the native class is declared with
-   the twin's real name, final flag, parent and interfaces
-   (`cls.final()`, `cls.parent(...)`, `cls.implements({...})`), and linked
+   the twin's real name, final flag, parent and interfaces, and linked
    like a PHP declaration: interface methods need declared return types, a
    non-final class must dispatch its own non-final methods through the
    object's class entry (a PHP subclass may override them). If it is a DI
@@ -42,9 +41,15 @@ being ≥0.5% faster is. When the estimate is marginal, don't port.
    phpstan_turbo` that mirrors the PHP twin method for method (see
    `TrinaryLogic.cpp` as the reference; `and`/`or` keyword clashes get a
    trailing underscore); registration goes through the `reg::Class` builder
-   in `reg.h` — one `cls.method("name", flags, requiredArgs, { args... },
-   lambda)` declaration per method, where the lambda body is only
-   ZEND_PARSE_PARAMETERS glue + one delegation line (see TrinaryLogic.cpp).
+   in `reg.h` — one declaration per method: a method that only parses its
+   parameters and hands them, in order, to a handle member returning
+   `zv::Val`, `void` or `bool` with a trailing `bool &` out parameter is
+   `cls.method<&Handle::member, zp::Obj, zp::Bool>("name", flags, { args... },
+   returns)` with a generated handler; any other glue is a
+   `cls.method("name", flags, requiredArgs, { args... }, lambda)` whose
+   lambda parses with `zp::parse<zp::Obj, zp::Opt<zp::Bool>>(execute_data,
+   ...)` (the raw ZEND_PARSE_PARAMETERS macros only for kinds zp does not
+   cover). Both expand to the engine's own ZPP macros.
    Never introduce per-call argument boxing in a registration path — raw
    handler pointers only. Use the zero-cost
    wrappers in `zv.h` — borrowed `zv::Ref` views vs owned move-only
@@ -72,6 +77,17 @@ being ≥0.5% faster is. When the estimate is marginal, don't port.
    `vendor/turbo-class-map.php` from the attributes (shadowed classes
    living in vendor/ cannot carry the attribute and are hardcoded in
    `build/TurboAttributeCollector.php`).
+5a. **Generate its declarations**: `php turbo-ext/bin/generate-declarations.php`
+   writes `turbo-ext/src/generated/<Stem>.h` from the twin — `declareClass(cls)`
+   (final/abstract, parent, the directly implemented interfaces),
+   `declareProperties(cls)` (the twin's own properties, exactly) and the
+   `slot::` constants of its instance properties, and `sig::` — each
+   method's name, flags, arginfo and return type. Call both functions first
+   in the registration function and register the methods by signature
+   (`cls.method(sigs::accepts, handler)`, `cls.method<&Handle::accepts,
+   zp::Obj, zp::Bool>(sigs::accepts)`) instead of spelling them out; side-by-side.php
+   fails while a header is stale. A class whose native properties deliberately
+   differ from the twin keeps declaring them by hand.
 6. **Check method parity**: `php bin/side-by-side.php` must pass (it also
    re-derives the generated `vendor/turbo-*` files from the attributes and
    byte-compares them, so a stale autoloader dump fails there).

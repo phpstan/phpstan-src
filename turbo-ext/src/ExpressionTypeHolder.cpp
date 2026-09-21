@@ -13,6 +13,7 @@
  */
 
 #include "support.h"
+#include "generated/ExpressionTypeHolder.h"
 #include "zv.h"
 
 namespace phpstanturbo {
@@ -47,18 +48,16 @@ public:
 	}
 
 	/* false = pending exception */
-	bool equalTypes(zval *other, bool &out) const { return pt_holder_equal_types(self, other, &out); }
+	[[nodiscard]] bool equalTypes(zval *other, bool &out) const { return pt_holder_equal_types(self, other, &out); }
 
 	/* false = pending exception */
-	bool equals(zval *other, bool &out) const { return pt_holder_equals(self, other, &out); }
+	[[nodiscard]] bool equals(zval *other, bool &out) const { return pt_holder_equals(self, other, &out); }
 
 	/* and() — a C++ keyword, hence the underscore; UNDEF = pending exception */
 	zv::Val and_(zval *other) const
 	{
 		zval result;
-		if (UNEXPECTED(!pt_holder_and(self, other, &result))) {
-			return zv::Val();
-		}
+		if (UNEXPECTED(!pt_holder_and(self, other, &result))) return zv::Val();
 		return zv::Val::adopt(result);
 	}
 
@@ -84,7 +83,7 @@ using phpstanturbo::ExpressionTypeHolder;
 void pt_register_expression_type_holder()
 {
 	reg::Class cls("PHPStan\\Analyser\\ExpressionTypeHolder");
-	cls.final();
+	ptdecl::ExpressionTypeHolder::declareClass(cls);
 	/* expr/type/certainty must stay in this order (OBJ_PROP_NUM slots) */
 	cls.privateNullProperty("expr");
 	cls.privateNullProperty("type");
@@ -102,19 +101,13 @@ void pt_register_expression_type_holder()
 
 	cls.method("createYes", reg::PublicStatic, 2, { reg::any("expr"), reg::any("type") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *expr, *type;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(expr)
-			Z_PARAM_OBJECT(type)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, expr, type)) RETURN_THROWS();
 		ExpressionTypeHolder::createYes(expr, type).intoReturnValue(return_value);
 	});
 
 	cls.method("createMaybe", reg::PublicStatic, 2, { reg::any("expr"), reg::any("type") }, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *expr, *type;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_OBJECT(expr)
-			Z_PARAM_OBJECT(type)
-		ZEND_PARSE_PARAMETERS_END();
+		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, expr, type)) RETURN_THROWS();
 		ExpressionTypeHolder::createMaybe(expr, type).intoReturnValue(return_value);
 	});
 
@@ -124,9 +117,7 @@ void pt_register_expression_type_holder()
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_OBJECT_OF_CLASS(other, pt_ce_expr_type_holder)
 		ZEND_PARSE_PARAMETERS_END();
-		if (UNEXPECTED(!ExpressionTypeHolder(ZEND_THIS).equalTypes(other, out))) {
-			RETURN_THROWS();
-		}
+		if (UNEXPECTED(!ExpressionTypeHolder(ZEND_THIS).equalTypes(other, out))) RETURN_THROWS();
 		RETURN_BOOL(out);
 	});
 
@@ -136,9 +127,7 @@ void pt_register_expression_type_holder()
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_OBJECT_OF_CLASS(other, pt_ce_expr_type_holder)
 		ZEND_PARSE_PARAMETERS_END();
-		if (UNEXPECTED(!ExpressionTypeHolder(ZEND_THIS).equals(other, out))) {
-			RETURN_THROWS();
-		}
+		if (UNEXPECTED(!ExpressionTypeHolder(ZEND_THIS).equals(other, out))) RETURN_THROWS();
 		RETURN_BOOL(out);
 	});
 
@@ -148,9 +137,7 @@ void pt_register_expression_type_holder()
 			Z_PARAM_OBJECT_OF_CLASS(other, pt_ce_expr_type_holder)
 		ZEND_PARSE_PARAMETERS_END();
 		zv::Val result = ExpressionTypeHolder(ZEND_THIS).and_(other);
-		if (UNEXPECTED(result.isUndef())) {
-			RETURN_THROWS();
-		}
+		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
 	});
 

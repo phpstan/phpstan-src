@@ -134,6 +134,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 				$expectedType = $args[0];
 				$this->assertInstanceOf(ConstantScalarType::class, $expectedType);
 				$expected = $expectedType->getValue();
+				/** @var Type $actualType */
 				$actualType = $args[1];
 				$actual = $actualType->describe(VerbosityLevel::precise());
 			} else {
@@ -182,7 +183,9 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 				$failureMessage,
 			);
 		} elseif ($assertType === 'variableCertainty') {
+			/** @var TrinaryLogic $expectedCertainty */
 			$expectedCertainty = $args[0];
+			/** @var TrinaryLogic $actualCertainty */
 			$actualCertainty = $args[1];
 			$variableName = $args[2];
 

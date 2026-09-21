@@ -200,6 +200,7 @@ final class FileAssertRule implements Rule
 			];
 		}
 
+		/** @var TrinaryLogic $expectedCertaintyValue */
 		// @phpstan-ignore staticMethod.dynamicName
 		$expectedCertaintyValue = TrinaryLogic::{$certainty->name->toString()}();
 		$variable = $args[1]->value;

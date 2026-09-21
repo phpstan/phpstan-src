@@ -152,6 +152,7 @@ final class RegexGroupParser
 
 	private function updateAlternationAstRemoveVerticalBarsAndAddEmptyToken(TreeNode $ast): void
 	{
+		/** @var TreeNode[] $children */
 		$children = $ast->getChildren();
 
 		foreach ($children as $i => $child) {

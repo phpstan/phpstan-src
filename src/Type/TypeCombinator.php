@@ -966,10 +966,29 @@ final class TypeCombinator
 	 */
 	private static function processArrayAccessoryTypes(array $arrayTypes): array
 	{
+		$arrayTypeCount = count($arrayTypes);
 		$isIterableAtLeastOnce = [];
 		$accessoryTypes = [];
 		foreach ($arrayTypes as $i => $arrayType) {
 			$isIterableAtLeastOnce[] = $arrayType->isIterableAtLeastOnce();
+
+			// A LateResolvableType keeps its intersection behind resolve(), so it contributes
+			// no accessory type of its own. It's only worth resolving when it's merged with
+			// something else - a lone array type comes back out of processArrayTypes() as
+			// itself, and intersecting it with the accessory types of its own result would
+			// only throw away the late-resolvable type.
+			if ($arrayTypeCount > 1 && $arrayType instanceof LateResolvableType) {
+				$arrayType = $arrayType->resolve();
+			}
+
+			if ($arrayType instanceof UnionType) {
+				// Resolving can produce a union: only the accessory types all of its members
+				// have in common describe the union.
+				foreach (self::processArrayAccessoryTypes($arrayType->getTypes()) as $innerType) {
+					$accessoryTypes[self::arrayAccessoryTypeKey($innerType)][$i] = $innerType;
+				}
+				continue;
+			}
 
 			if ($arrayType instanceof IntersectionType) {
 				foreach ($arrayType->getTypes() as $innerType) {
@@ -982,12 +1001,8 @@ final class TypeCombinator
 					if ($innerType instanceof HasOffsetType) {
 						$innerType = new HasOffsetValueType($innerType->getOffsetType(), $arrayType->getIterableValueType());
 					}
-					if ($innerType instanceof HasOffsetValueType) {
-						$accessoryTypes[sprintf('hasOffsetValue(%s)', $innerType->getOffsetType()->describe(VerbosityLevel::cache()))][$i] = $innerType;
-						continue;
-					}
 
-					$accessoryTypes[$innerType->describe(VerbosityLevel::cache())][$i] = $innerType;
+					$accessoryTypes[self::arrayAccessoryTypeKey($innerType)][$i] = $innerType;
 				}
 			}
 
@@ -1012,7 +1027,6 @@ final class TypeCombinator
 		}
 
 		$commonAccessoryTypes = [];
-		$arrayTypeCount = count($arrayTypes);
 		foreach ($accessoryTypes as $accessoryType) {
 			if (count($accessoryType) !== $arrayTypeCount) {
 				$firstKey = array_key_first($accessoryType);
@@ -1037,37 +1051,13 @@ final class TypeCombinator
 		return $commonAccessoryTypes;
 	}
 
-	/**
-	 * Merging several array types together reads their accessory types off their
-	 * IntersectionType members, so a LateResolvableType - which hides its intersection
-	 * behind resolve() - contributes none: a conditional type resolving to `list<int>`
-	 * turned the merge into `array<int<0, max>, int>`. A single array type is left
-	 * alone, because there it is the late-resolvable type itself that comes back out,
-	 * not a merge of anything.
-	 *
-	 * @param list<Type> $arrayTypes
-	 * @return list<Type>
-	 */
-	private static function resolveLateResolvableArrayTypes(array $arrayTypes): array
+	private static function arrayAccessoryTypeKey(Type $accessoryType): string
 	{
-		if (count($arrayTypes) === 1) {
-			return $arrayTypes;
+		if ($accessoryType instanceof HasOffsetValueType) {
+			return sprintf('hasOffsetValue(%s)', $accessoryType->getOffsetType()->describe(VerbosityLevel::cache()));
 		}
 
-		$resolved = [];
-		foreach ($arrayTypes as $arrayType) {
-			if (!$arrayType instanceof LateResolvableType) {
-				$resolved[] = $arrayType;
-				continue;
-			}
-
-			$resolvedType = $arrayType->resolve();
-			foreach ($resolvedType instanceof UnionType ? $resolvedType->getTypes() : [$resolvedType] as $innerType) {
-				$resolved[] = $innerType;
-			}
-		}
-
-		return $resolved;
+		return $accessoryType->describe(VerbosityLevel::cache());
 	}
 
 	/**
@@ -1080,7 +1070,6 @@ final class TypeCombinator
 			return [];
 		}
 
-		$arrayTypes = self::resolveLateResolvableArrayTypes($arrayTypes);
 		$accessoryTypes = self::processArrayAccessoryTypes($arrayTypes);
 
 		if (count($arrayTypes) === 1) {

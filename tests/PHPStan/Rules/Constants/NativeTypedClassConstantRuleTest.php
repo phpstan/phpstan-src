@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Constants;
 
 use PHPStan\Rules\Rule as TRule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<NativeTypedClassConstantRule>
@@ -35,6 +36,21 @@ class NativeTypedClassConstantRuleTest extends RuleTestCase
 	{
 		$errors = [];
 		$this->analyse([__DIR__ . '/data/native-typed-class-constant-version-id-narrowed.php'], $errors);
+	}
+
+	public function testBug13133(): void
+	{
+		$errors = [];
+		if (PHP_VERSION_ID < 80300) {
+			$errors = [
+				[
+					'Class constants with native types are supported only on PHP 8.3 and later.',
+					24,
+				],
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-13133.php'], $errors);
 	}
 
 }

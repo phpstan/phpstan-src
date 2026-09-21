@@ -98,19 +98,37 @@ final class StaticPropertyFetchHandler implements ExprHandler
 			$isAlwaysTerminating = $classResult->isAlwaysTerminating();
 			$scope = $classResult->getScope();
 		}
+		$mayShortCircuit = false;
 		if ($nameResult !== null) {
+			// `$a?->b::$$name` is a link in a nullsafe chain and may never run - see
+			// MethodCallHandler::processExpr(). Only the dynamic name is skipped with
+			// it, so a plain `::$name` never has to resolve the class expression type.
+			$mayShortCircuit = $classResult !== null
+				&& $classResult->containsNullsafe()
+				&& TypeCombinator::containsNull($classResult->getType());
 			$hasYield = $hasYield || $nameResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $nameResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $nameResult->getImpurePoints());
-			$isAlwaysTerminating = $isAlwaysTerminating || $nameResult->isAlwaysTerminating();
+			$isAlwaysTerminating = $isAlwaysTerminating || (!$mayShortCircuit && $nameResult->isAlwaysTerminating());
 			$scope = $nameResult->getScope();
+			if ($mayShortCircuit) {
+				// the dynamic name expression was not evaluated in the
+				// short-circuited world
+				$scope = $scope->mergeWith($classResult->getScope());
+			}
 		}
 
 		return $this->expressionResultFactory->create(
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
-			variableFlow: VariableFlow::sequence($classResult !== null ? $classResult->getVariableFlow() : null, $nameResult !== null ? $nameResult->getVariableFlow() : null, VariableFlowBuilder::throws($expr, $throwPoints)),
+			variableFlow: VariableFlow::sequence(
+				$classResult !== null ? $classResult->getVariableFlow() : null,
+				$nameResult !== null && $mayShortCircuit
+					? VariableFlow::choice($nameResult->getVariableFlow(), null)
+					: ($nameResult !== null ? $nameResult->getVariableFlow() : null),
+				VariableFlowBuilder::throws($expr, $throwPoints),
+			),
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,

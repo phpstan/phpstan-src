@@ -110,11 +110,17 @@ final class StaticCallHandler implements ExprHandler
 			$containsNullsafe = $classResult->containsNullsafe();
 		}
 
+		// `$a?->b::c()` is a link in a nullsafe chain and may never run: the chain
+		// short-circuits to null before the arguments are evaluated and before any
+		// of the call's effects happen. See MethodCallHandler::processExpr().
+		$mayShortCircuit = $classResult !== null
+			&& $containsNullsafe
+			&& TypeCombinator::containsNull($classResult->getType());
 		// A static call configured as early-terminating never returns: give it an
 		// explicit never so the statement's exit point follows from the result type,
 		// instead of NodeScopeResolver re-deriving it via Scope::getType().
 		$isEarlyTerminating = false;
-		if ($expr->name instanceof Identifier) {
+		if ($expr->name instanceof Identifier && !$mayShortCircuit) {
 			$earlyTerminatingClassType = $expr->class instanceof Name
 				? $scope->resolveTypeByName($expr->class)
 				: $classResult->getType();
@@ -247,7 +253,7 @@ final class StaticCallHandler implements ExprHandler
 		if ($parametersAcceptor !== null) {
 			$normalizedExpr = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $expr) ?? $expr;
 			$returnType = $parametersAcceptor->getReturnType();
-			$isAlwaysTerminating = $isAlwaysTerminating || ($returnType instanceof NeverType && $returnType->isExplicit());
+			$isAlwaysTerminating = $isAlwaysTerminating || (!$mayShortCircuit && $returnType instanceof NeverType && $returnType->isExplicit());
 		}
 		$scopeBeforeArgs = $scope;
 		if ($parametersAcceptor !== null && $context->getInAssignRightSideExpr() === $expr) {
@@ -281,7 +287,7 @@ final class StaticCallHandler implements ExprHandler
 		// type; a conditional-return never (e.g. `($x is Foo ? never : string)`)
 		// only resolves to never once the actual argument types are folded in by the
 		// type-driven resolved acceptor.
-		if ($resolvedParametersAcceptor !== null) {
+		if ($resolvedParametersAcceptor !== null && !$mayShortCircuit) {
 			$resolvedReturnType = $resolvedParametersAcceptor->getReturnType();
 			$isAlwaysTerminating = $isAlwaysTerminating || ($resolvedReturnType instanceof NeverType && $resolvedReturnType->isExplicit());
 		}
@@ -429,15 +435,23 @@ final class StaticCallHandler implements ExprHandler
 		$hasYield = $hasYield || $argsResult->hasYield();
 		$throwPoints = array_merge($throwPoints, $argsResult->getThrowPoints());
 		$impurePoints = array_merge($impurePoints, $argsResult->getImpurePoints());
-		$isAlwaysTerminating = $isAlwaysTerminating || $argsResult->isAlwaysTerminating();
+		$isAlwaysTerminating = $isAlwaysTerminating || (!$mayShortCircuit && $argsResult->isAlwaysTerminating());
 
+		$argumentsFlow = VariableFlowBuilder::arguments($expr, $argsResult, $storage);
 		$variableFlow = VariableFlow::sequence(
 			$classResult !== null ? $classResult->getVariableFlow() : null,
 			$nameResult !== null ? $nameResult->getVariableFlow() : null,
-			VariableFlowBuilder::arguments($expr, $argsResult, $storage),
+			// the short-circuited world evaluates none of the arguments
+			$mayShortCircuit ? VariableFlow::choice($argumentsFlow, null) : $argumentsFlow,
 			VariableFlowBuilder::throws($expr, $throwPoints),
 			$isAlwaysTerminating ? VariableFlow::exit(VariableFlow::STOP) : null,
 		);
+
+		// the call's scope effects (@param-out, invalidations) only happened in the
+		// world where the chain did not short-circuit
+		if ($mayShortCircuit) {
+			$scope = $scope->mergeWith($scopeBeforeArgs);
+		}
 
 		return $preliminaryResult->finalize($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints, $variableFlow);
 	}
@@ -571,7 +585,10 @@ final class StaticCallHandler implements ExprHandler
 		}
 
 		$staticMethodReflection = $scope->getMethodReflection($calleeType, $expr->name->name);
-		if ($staticMethodReflection !== null) {
+		// see MethodCallHandler::specifyTypes() - `$a?->b::c()` short-circuits too,
+		// so the branches admitting its null get no callee-derived narrowing
+		$mayHaveBeenSkipped = $this->defaultNarrowingHelper->callMayHaveBeenSkipped($classResult, $calleeType, $context);
+		if ($staticMethodReflection !== null && !$mayHaveBeenSkipped) {
 			$args = $expr->getArgs();
 
 			$referencedClasses = $calleeType->getObjectClassNames();

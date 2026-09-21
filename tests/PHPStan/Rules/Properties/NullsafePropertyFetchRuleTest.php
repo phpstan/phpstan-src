@@ -112,4 +112,11 @@ class NullsafePropertyFetchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6922.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug15016(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-15016.php'], []);
+	}
+
 }

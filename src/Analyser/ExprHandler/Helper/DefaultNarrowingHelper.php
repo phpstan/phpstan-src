@@ -348,6 +348,23 @@ final class DefaultNarrowingHelper
 	}
 
 	/**
+	 * Whether a call on a `?->` chain may have been skipped in the branch
+	 * $context describes, so nothing the callee declares narrows there.
+	 */
+	public function callMayHaveBeenSkipped(?ExpressionResult $receiverResult, Type $receiverType, TypeSpecifierContext $context): bool
+	{
+		if ($receiverResult === null || !$receiverResult->containsNullsafe()) {
+			return false;
+		}
+
+		if (!$context->null() && !$context->falseyButNotFalse()) {
+			return false;
+		}
+
+		return TypeCombinator::containsNull($receiverType);
+	}
+
+	/**
 	 * Whether the constraint (or the subject's own type) rules the nullsafe
 	 * short-circuit null out, so the chain's receivers can narrow not-null.
 	 */

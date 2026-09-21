@@ -414,4 +414,20 @@ class UnreachableStatementRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testNullsafeShortCircuitTerminating(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/nullsafe-short-circuit-terminating.php'], [
+			[
+				'Unreachable statement - code above always terminates.',
+				49,
+			],
+			[
+				'Unreachable statement - code above always terminates.',
+				56,
+			],
+		]);
+	}
+
 }

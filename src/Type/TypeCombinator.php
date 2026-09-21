@@ -1038,6 +1038,39 @@ final class TypeCombinator
 	}
 
 	/**
+	 * Merging several array types together reads their accessory types off their
+	 * IntersectionType members, so a LateResolvableType - which hides its intersection
+	 * behind resolve() - contributes none: a conditional type resolving to `list<int>`
+	 * turned the merge into `array<int<0, max>, int>`. A single array type is left
+	 * alone, because there it is the late-resolvable type itself that comes back out,
+	 * not a merge of anything.
+	 *
+	 * @param list<Type> $arrayTypes
+	 * @return list<Type>
+	 */
+	private static function resolveLateResolvableArrayTypes(array $arrayTypes): array
+	{
+		if (count($arrayTypes) === 1) {
+			return $arrayTypes;
+		}
+
+		$resolved = [];
+		foreach ($arrayTypes as $arrayType) {
+			if (!$arrayType instanceof LateResolvableType) {
+				$resolved[] = $arrayType;
+				continue;
+			}
+
+			$resolvedType = $arrayType->resolve();
+			foreach ($resolvedType instanceof UnionType ? $resolvedType->getTypes() : [$resolvedType] as $innerType) {
+				$resolved[] = $innerType;
+			}
+		}
+
+		return $resolved;
+	}
+
+	/**
 	 * @param list<Type> $arrayTypes
 	 * @return Type[]
 	 */
@@ -1047,6 +1080,7 @@ final class TypeCombinator
 			return [];
 		}
 
+		$arrayTypes = self::resolveLateResolvableArrayTypes($arrayTypes);
 		$accessoryTypes = self::processArrayAccessoryTypes($arrayTypes);
 
 		if (count($arrayTypes) === 1) {

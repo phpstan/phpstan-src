@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Properties;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
@@ -15,7 +16,7 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new PropertiesInInterfaceRule();
+		return new PropertiesInInterfaceRule(new PhpVersion(PHP_VERSION_ID));
 	}
 
 	#[RequiresPhp('< 8.4.0')]
@@ -187,24 +188,6 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 				11,
 			],
 		]);
-	}
-
-	public function testConditionallyDeclaredInterface(): void
-	{
-		$errors = [
-			[
-				'Interfaces can include properties only on PHP 8.4 and later.',
-				18,
-			],
-		];
-		if (PHP_VERSION_ID < 80400) {
-			$errors[] = [
-				'Interfaces can include properties only on PHP 8.4 and later.',
-				26,
-			];
-		}
-
-		$this->analyse([__DIR__ . '/data/properties-in-interface-php-versions.php'], $errors);
 	}
 
 }

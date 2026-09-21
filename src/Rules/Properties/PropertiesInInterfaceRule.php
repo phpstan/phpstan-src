@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\ClassPropertyNode;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
@@ -15,6 +16,10 @@ use PHPStan\Rules\RuleErrorBuilder;
 #[RegisteredRule(level: 0)]
 final class PropertiesInInterfaceRule implements Rule
 {
+
+	public function __construct(private PhpVersion $phpVersion)
+	{
+	}
 
 	public function getNodeType(): string
 	{
@@ -27,7 +32,7 @@ final class PropertiesInInterfaceRule implements Rule
 			return [];
 		}
 
-		if (!$scope->getPhpVersion()->supportsPropertyHooks()->yes()) {
+		if (!$this->phpVersion->supportsPropertyHooks()) {
 			return [
 				RuleErrorBuilder::message('Interfaces can include properties only on PHP 8.4 and later.')
 					->nonIgnorable()

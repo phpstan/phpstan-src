@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\ClassPropertyNode;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
@@ -15,6 +16,10 @@ use PHPStan\Rules\RuleErrorBuilder;
 #[RegisteredRule(level: 0)]
 final class PropertyInClassRule implements Rule
 {
+
+	public function __construct(private PhpVersion $phpVersion)
+	{
+	}
 
 	public function getNodeType(): string
 	{
@@ -31,7 +36,7 @@ final class PropertyInClassRule implements Rule
 
 		if (
 			$node->isFinal()
-			&& !$scope->getPhpVersion()->supportsFinalProperties()->yes()
+			&& !$this->phpVersion->supportsFinalProperties()
 		) {
 			return [
 				RuleErrorBuilder::message('Final properties are supported only on PHP 8.4 and later.')
@@ -159,7 +164,7 @@ final class PropertyInClassRule implements Rule
 				];
 			}
 			if (
-				!$scope->getPhpVersion()->supportsAsymmetricVisibilityForStaticProperties()->yes()
+				!$this->phpVersion->supportsAsymmetricVisibilityForStaticProperties()
 				&& (
 					$node->isPrivateSet()
 					|| $node->isProtectedSet()
@@ -186,7 +191,7 @@ final class PropertyInClassRule implements Rule
 			}
 		}
 
-		if (!$scope->getPhpVersion()->supportsPropertyHooks()->yes()) {
+		if (!$this->phpVersion->supportsPropertyHooks()) {
 			if ($node->hasHooks()) {
 				return [
 					RuleErrorBuilder::message('Property hooks are supported only on PHP 8.4 and later.')

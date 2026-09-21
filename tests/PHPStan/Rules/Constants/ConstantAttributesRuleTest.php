@@ -2,8 +2,8 @@
 
 namespace PHPStan\Rules\Constants;
 
-use Override;
 use PHPStan\Classes\ForbiddenClassNameExtension;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
@@ -18,6 +18,7 @@ use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<ConstantAttributesRule>
@@ -25,14 +26,7 @@ use PHPUnit\Framework\Attributes\RequiresPhp;
 class ConstantAttributesRuleTest extends RuleTestCase
 {
 
-	private static ?int $analysedPhpVersionId = null;
-
-	#[Override]
-	protected function setUp(): void
-	{
-		self::$analysedPhpVersionId = null;
-		parent::setUp();
-	}
+	private int $phpVersion = PHP_VERSION_ID;
 
 	protected function getRule(): Rule
 	{
@@ -73,6 +67,7 @@ class ConstantAttributesRuleTest extends RuleTestCase
 				),
 				deprecationRulesInstalled: true,
 			),
+			new PhpVersion($this->phpVersion),
 		);
 	}
 
@@ -144,17 +139,8 @@ class ConstantAttributesRuleTest extends RuleTestCase
 	#[DataProvider('dataRuleBefore85Runtime')]
 	public function testRuleBefore85Runtime(int $phpVersionId, array $expectedErrors): void
 	{
-		self::$analysedPhpVersionId = $phpVersionId;
+		$this->phpVersion = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/constant-attributes.php'], $expectedErrors);
-	}
-
-	public static function getAdditionalConfigFiles(): array
-	{
-		if (self::$analysedPhpVersionId === null) {
-			return [];
-		}
-
-		return [__DIR__ . '/../php-version-' . self::$analysedPhpVersionId . '.neon'];
 	}
 
 }

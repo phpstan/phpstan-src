@@ -8,6 +8,7 @@ use PHPStan\Analyser\CollectedDataEmitter;
 use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -22,6 +23,7 @@ final class ConstantAttributesRule implements Rule
 
 	public function __construct(
 		private AttributesCheck $attributesCheck,
+		private PhpVersion $phpVersion,
 	)
 	{
 	}
@@ -37,7 +39,7 @@ final class ConstantAttributesRule implements Rule
 			return [];
 		}
 
-		if (!$scope->getPhpVersion()->supportsAttributesOnGlobalConstants()->yes()) {
+		if (!$this->phpVersion->supportsAttributesOnGlobalConstants()) {
 			return [
 				RuleErrorBuilder::message('Attributes on global constants are supported only on PHP 8.5 and later.')
 					->identifier('constant.attributesNotSupported')

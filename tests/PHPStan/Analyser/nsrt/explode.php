@@ -58,3 +58,26 @@ function constantSplit(string $delimiterUnion, string $stringUnion, int $limitUn
 	assertType('non-empty-list<string>', explode(',', $unknown));
 	assertType('list<lowercase-string>', explode(',', 'a,b,c', $unknownLimit));
 }
+
+/**
+ * @param ','|';' $twoDelimiters
+ * @param 'a,b;c'|'x,y;z' $twoStrings
+ * @param int<1, 4> $limitRangeAtLimit
+ * @param int<1, 5> $limitRangeOverLimit
+ * @param 'a'|'b'|'c'|'d'|'e' $fiveDelimiters
+ * @param 'xay'|'xby'|'xcy'|'xdy' $fourStrings
+ */
+function constantSplitLimits(string $twoDelimiters, string $twoStrings, int $limitRangeAtLimit, int $limitRangeOverLimit, string $fiveDelimiters, string $fourStrings): void
+{
+	// 2 delimiters * 2 strings * 4 limits is exactly CONSTANT_COMBINATION_LIMIT combinations
+	assertType("array{'a', 'b;c'}|array{'a,b', 'c'}|array{'a,b;c'}|array{'x', 'y;z'}|array{'x,y', 'z'}|array{'x,y;z'}", explode($twoDelimiters, $twoStrings, $limitRangeAtLimit));
+
+	// one more value in the limit range makes it 20 combinations, so the exact result is not computed
+	assertType('non-empty-list<lowercase-string>', explode($twoDelimiters, $twoStrings, $limitRangeOverLimit));
+
+	// 5 delimiters * 4 strings is over the limit too
+	assertType('non-empty-list<lowercase-string>', explode($fiveDelimiters, $fourStrings));
+
+	// 257 elements is more than ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT
+	assertType('non-empty-list<lowercase-string&uppercase-string>', explode(',', ',,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,'));
+}

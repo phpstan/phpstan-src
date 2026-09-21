@@ -106,11 +106,6 @@ final class PhpVersions
 		return IntegerRangeType::fromInterval(80200, null)->isSuperTypeOf($this->phpVersions)->result;
 	}
 
-	public function supportsNeverReturnTypeInArrowFunction(): TrinaryLogic
-	{
-		return IntegerRangeType::fromInterval(80200, null)->isSuperTypeOf($this->phpVersions)->result;
-	}
-
 	public function supportsDynamicClassConstantFetch(): TrinaryLogic
 	{
 		return IntegerRangeType::fromInterval(80300, null)->isSuperTypeOf($this->phpVersions)->result;
@@ -119,21 +114,6 @@ final class PhpVersions
 	public function supportsReadOnlyAnonymousClasses(): TrinaryLogic
 	{
 		return IntegerRangeType::fromInterval(80300, null)->isSuperTypeOf($this->phpVersions)->result;
-	}
-
-	public function supportsPropertyHooks(): TrinaryLogic
-	{
-		return IntegerRangeType::fromInterval(80400, null)->isSuperTypeOf($this->phpVersions)->result;
-	}
-
-	public function supportsFinalProperties(): TrinaryLogic
-	{
-		return IntegerRangeType::fromInterval(80400, null)->isSuperTypeOf($this->phpVersions)->result;
-	}
-
-	public function supportsAsymmetricVisibilityForStaticProperties(): TrinaryLogic
-	{
-		return IntegerRangeType::fromInterval(80500, null)->isSuperTypeOf($this->phpVersions)->result;
 	}
 
 	public function supportsFinalPromotedProperties(): TrinaryLogic
@@ -147,11 +127,6 @@ final class PhpVersions
 	}
 
 	public function supportsDeprecatedTraits(): TrinaryLogic
-	{
-		return IntegerRangeType::fromInterval(80500, null)->isSuperTypeOf($this->phpVersions)->result;
-	}
-
-	public function supportsOverrideAttributeOnProperty(): TrinaryLogic
 	{
 		return IntegerRangeType::fromInterval(80500, null)->isSuperTypeOf($this->phpVersions)->result;
 	}

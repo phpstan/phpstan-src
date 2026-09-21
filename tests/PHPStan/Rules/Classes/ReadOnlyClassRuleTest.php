@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\Classes;
 
-use Override;
 use PHPStan\Rules\Rule as TRule;
 use PHPStan\Testing\RuleTestCase;
 use const PHP_VERSION_ID;
@@ -12,15 +11,6 @@ use const PHP_VERSION_ID;
  */
 class ReadOnlyClassRuleTest extends RuleTestCase
 {
-
-	private static ?int $analysedPhpVersionId = null;
-
-	#[Override]
-	protected function setUp(): void
-	{
-		self::$analysedPhpVersionId = null;
-		parent::setUp();
-	}
 
 	protected function getRule(): TRule
 	{
@@ -47,30 +37,30 @@ class ReadOnlyClassRuleTest extends RuleTestCase
 
 	public function testConditionallyDeclaredClass(): void
 	{
-		self::$analysedPhpVersionId = 80100;
-		$this->analyse([__DIR__ . '/data/readonly-class-php-versions.php'], [
+		$errors = [
 			[
 				'Readonly classes are supported only on PHP 8.2 and later.',
 				12,
 			],
-			[
+		];
+		if (PHP_VERSION_ID < 80200) {
+			$errors[] = [
 				'Readonly classes are supported only on PHP 8.2 and later.',
 				17,
-			],
-			[
+			];
+		}
+		$errors[] = [
+			'Anonymous readonly classes are supported only on PHP 8.3 and later.',
+			29,
+		];
+		if (PHP_VERSION_ID < 80300) {
+			$errors[] = [
 				'Anonymous readonly classes are supported only on PHP 8.3 and later.',
-				28,
-			],
-		]);
-	}
-
-	public static function getAdditionalConfigFiles(): array
-	{
-		if (self::$analysedPhpVersionId === null) {
-			return [];
+				33,
+			];
 		}
 
-		return [__DIR__ . '/../php-version-' . self::$analysedPhpVersionId . '.neon'];
+		$this->analyse([__DIR__ . '/data/readonly-class-php-versions.php'], $errors);
 	}
 
 }

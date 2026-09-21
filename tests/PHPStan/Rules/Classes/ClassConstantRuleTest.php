@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\Classes;
 
-use Override;
 use PHPStan\Classes\ForbiddenClassNameExtension;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
@@ -14,21 +13,13 @@ use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<ClassConstantRule>
  */
 class ClassConstantRuleTest extends RuleTestCase
 {
-
-	private static ?int $analysedPhpVersionId = null;
-
-	#[Override]
-	protected function setUp(): void
-	{
-		self::$analysedPhpVersionId = null;
-		parent::setUp();
-	}
 
 	private bool $checkImportedClassNameCase = false;
 
@@ -226,61 +217,48 @@ class ClassConstantRuleTest extends RuleTestCase
 		]);
 	}
 
-	public static function dataClassConstantOnExpression(): array
+	public function testClassConstantOnExpression(): void
 	{
-		return [
-			[
-				70400,
+		if (PHP_VERSION_ID < 80000) {
+			$errors = [
 				[
-					[
-						'Accessing ::class constant on an expression is supported only on PHP 8.0 and later.',
-						15,
-					],
-					[
-						'Accessing ::class constant on an expression is supported only on PHP 8.0 and later.',
-						16,
-					],
-					[
-						'Accessing ::class constant on an expression is supported only on PHP 8.0 and later.',
-						17,
-					],
-					[
-						'Accessing ::class constant on an expression is supported only on PHP 8.0 and later.',
-						18,
-					],
-					[
-						'Accessing ::class constant on an expression is supported only on PHP 8.0 and later.',
-						19,
-					],
+					'Accessing ::class constant on an expression is supported only on PHP 8.0 and later.',
+					15,
 				],
-			],
-			[
-				80000,
 				[
-					[
-						'Accessing ::class constant on a dynamic string is not supported in PHP.',
-						16,
-					],
-					[
-						'Cannot access constant class on stdClass|null.',
-						17,
-					],
-					[
-						'Cannot access constant class on string|null.',
-						18,
-					],
+					'Accessing ::class constant on an expression is supported only on PHP 8.0 and later.',
+					16,
 				],
-			],
-		];
-	}
+				[
+					'Accessing ::class constant on an expression is supported only on PHP 8.0 and later.',
+					17,
+				],
+				[
+					'Accessing ::class constant on an expression is supported only on PHP 8.0 and later.',
+					18,
+				],
+				[
+					'Accessing ::class constant on an expression is supported only on PHP 8.0 and later.',
+					19,
+				],
+			];
+		} else {
+			$errors = [
+				[
+					'Accessing ::class constant on a dynamic string is not supported in PHP.',
+					16,
+				],
+				[
+					'Cannot access constant class on stdClass|null.',
+					17,
+				],
+				[
+					'Cannot access constant class on string|null.',
+					18,
+				],
+			];
+		}
 
-	/**
-	 * @param list<array{0: string, 1: int, 2?: string}> $errors
-	 */
-	#[DataProvider('dataClassConstantOnExpression')]
-	public function testClassConstantOnExpression(int $phpVersion, array $errors): void
-	{
-		self::$analysedPhpVersionId = $phpVersion;
 		$this->analyse([__DIR__ . '/data/class-constant-on-expr.php'], $errors);
 	}
 
@@ -610,26 +588,20 @@ class ClassConstantRuleTest extends RuleTestCase
 
 	public function testConditionallyExecutedClassConstantOnExpression(): void
 	{
-		self::$analysedPhpVersionId = 70400;
-		$this->analyse([__DIR__ . '/data/class-constant-on-expr-php-versions.php'], [
+		$errors = [
 			[
 				'Accessing ::class constant on an expression is supported only on PHP 8.0 and later.',
 				12,
 			],
-			[
+		];
+		if (PHP_VERSION_ID < 80000) {
+			$errors[] = [
 				'Accessing ::class constant on an expression is supported only on PHP 8.0 and later.',
 				15,
-			],
-		]);
-	}
-
-	public static function getAdditionalConfigFiles(): array
-	{
-		if (self::$analysedPhpVersionId === null) {
-			return [];
+			];
 		}
 
-		return [__DIR__ . '/../php-version-' . self::$analysedPhpVersionId . '.neon'];
+		$this->analyse([__DIR__ . '/data/class-constant-on-expr-php-versions.php'], $errors);
 	}
 
 }

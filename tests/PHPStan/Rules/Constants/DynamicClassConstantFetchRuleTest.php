@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\Constants;
 
-use Override;
 use PHPStan\Rules\Rule as TRule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
@@ -13,15 +12,6 @@ use const PHP_VERSION_ID;
  */
 class DynamicClassConstantFetchRuleTest extends RuleTestCase
 {
-
-	private static ?int $analysedPhpVersionId = null;
-
-	#[Override]
-	protected function setUp(): void
-	{
-		self::$analysedPhpVersionId = null;
-		parent::setUp();
-	}
 
 	protected function getRule(): TRule
 	{
@@ -85,26 +75,20 @@ class DynamicClassConstantFetchRuleTest extends RuleTestCase
 
 	public function testConditionallyExecutedCode(): void
 	{
-		self::$analysedPhpVersionId = 80200;
-		$this->analyse([__DIR__ . '/data/dynamic-class-constant-fetch-php-versions.php'], [
+		$errors = [
 			[
 				'Fetching class constants with a dynamic name is supported only on PHP 8.3 and later.',
 				19,
 			],
-			[
+		];
+		if (PHP_VERSION_ID < 80300) {
+			$errors[] = [
 				'Fetching class constants with a dynamic name is supported only on PHP 8.3 and later.',
 				22,
-			],
-		]);
-	}
-
-	public static function getAdditionalConfigFiles(): array
-	{
-		if (self::$analysedPhpVersionId === null) {
-			return [];
+			];
 		}
 
-		return [__DIR__ . '/../php-version-' . self::$analysedPhpVersionId . '.neon'];
+		$this->analyse([__DIR__ . '/data/dynamic-class-constant-fetch-php-versions.php'], $errors);
 	}
 
 }

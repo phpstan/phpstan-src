@@ -21,7 +21,12 @@ readonly class AlwaysUnsupported
 function doFoo(): void
 {
 	if (PHP_VERSION_ID >= 80300) {
-		$anonymous = new readonly class {
+		$supportedInBranch = new readonly class {
+		};
+	}
+
+	if (PHP_VERSION_ID < 80300) {
+		$unsupportedInBranch = new readonly class {
 		};
 	}
 

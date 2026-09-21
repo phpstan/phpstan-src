@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\Methods;
 
-use Override;
 use PHPStan\Classes\ForbiddenClassNameExtension;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
@@ -12,21 +11,13 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<StaticMethodCallableRule>
  */
 class StaticMethodCallableRuleTest extends RuleTestCase
 {
-
-	private static ?int $analysedPhpVersionId = null;
-
-	#[Override]
-	protected function setUp(): void
-	{
-		self::$analysedPhpVersionId = null;
-		parent::setUp();
-	}
 
 	protected function getRule(): Rule
 	{
@@ -128,26 +119,20 @@ class StaticMethodCallableRuleTest extends RuleTestCase
 
 	public function testConditionallyExecutedCode(): void
 	{
-		self::$analysedPhpVersionId = 80000;
-		$this->analyse([__DIR__ . '/data/static-method-callable-php-versions.php'], [
+		$errors = [
 			[
 				'First-class callables are supported only on PHP 8.1 and later.',
 				19,
 			],
-			[
+		];
+		if (PHP_VERSION_ID < 80100) {
+			$errors[] = [
 				'First-class callables are supported only on PHP 8.1 and later.',
 				22,
-			],
-		]);
-	}
-
-	public static function getAdditionalConfigFiles(): array
-	{
-		if (self::$analysedPhpVersionId === null) {
-			return [];
+			];
 		}
 
-		return [__DIR__ . '/../php-version-' . self::$analysedPhpVersionId . '.neon'];
+		$this->analyse([__DIR__ . '/data/static-method-callable-php-versions.php'], $errors);
 	}
 
 }

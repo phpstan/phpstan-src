@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\Functions;
 
-use Override;
 use PHPStan\Classes\ForbiddenClassNameExtension;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
@@ -24,15 +23,6 @@ class ExistingClassesInClosureTypehintsRuleTest extends RuleTestCase
 {
 
 	private int $phpVersionId = PHP_VERSION_ID;
-
-	private static ?int $analysedPhpVersionId = null;
-
-	#[Override]
-	protected function setUp(): void
-	{
-		self::$analysedPhpVersionId = null;
-		parent::setUp();
-	}
 
 	protected function getRule(): Rule
 	{
@@ -134,37 +124,22 @@ class ExistingClassesInClosureTypehintsRuleTest extends RuleTestCase
 		]);
 	}
 
-	public static function dataNativeUnionTypes(): array
+	public function testNativeUnionTypes(): void
 	{
-		return [
-			[
-				70400,
+		$errors = [];
+		if (PHP_VERSION_ID < 80000) {
+			$errors = [
 				[
-					[
-						'Anonymous function uses native union types but they\'re supported only on PHP 8.0 and later.',
-						15,
-					],
-					[
-						'Anonymous function uses native union types but they\'re supported only on PHP 8.0 and later.',
-						19,
-					],
+					'Anonymous function uses native union types but they\'re supported only on PHP 8.0 and later.',
+					15,
 				],
-			],
-			[
-				80000,
-				[],
-			],
-		];
-	}
+				[
+					'Anonymous function uses native union types but they\'re supported only on PHP 8.0 and later.',
+					19,
+				],
+			];
+		}
 
-	/**
-	 * @param list<array{0: string, 1: int, 2?: string}> $errors
-	 */
-	#[DataProvider('dataNativeUnionTypes')]
-	public function testNativeUnionTypes(int $phpVersionId, array $errors): void
-	{
-		$this->phpVersionId = $phpVersionId;
-		self::$analysedPhpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/native-union-types.php'], $errors);
 	}
 
@@ -387,15 +362,6 @@ class ExistingClassesInClosureTypehintsRuleTest extends RuleTestCase
 				10,
 			],
 		]);
-	}
-
-	public static function getAdditionalConfigFiles(): array
-	{
-		if (self::$analysedPhpVersionId === null) {
-			return [];
-		}
-
-		return [__DIR__ . '/../php-version-' . self::$analysedPhpVersionId . '.neon'];
 	}
 
 }

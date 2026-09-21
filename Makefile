@@ -139,7 +139,6 @@ lint:
 		--exclude tests/PHPStan/Rules/Variables/data/bug-14352.php \
 		--exclude tests/PHPStan/Rules/Variables/data/bug-14351.php \
 		--exclude tests/PHPStan/Rules/Properties/data/bug-14457.php \
-		--exclude tests/PHPStan/Rules/Properties/data/override-attr-on-property-php-versions.php \
 		src tests
 
 install-paratest:

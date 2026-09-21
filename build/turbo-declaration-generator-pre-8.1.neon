@@ -1,0 +1,9 @@
+parameters:
+	ignoreErrors:
+		-
+			# turbo-ext/bin/generate-declarations.php runs on PHP 8.1+ only: the
+			# generator reflects promoted, readonly and defaulted properties and
+			# tentative return types, which older reflection does not have
+			identifier: method.notFound
+			path: PHPStan/Build/TurboDeclarationGenerator.php
+			reportUnmatched: false

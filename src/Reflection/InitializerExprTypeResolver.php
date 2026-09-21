@@ -123,6 +123,7 @@ use function sprintf;
 use function str_starts_with;
 use function strtolower;
 use const INF;
+use const PHP_INT_MAX;
 use const PHP_INT_MIN;
 
 #[AutowiredService]
@@ -2608,31 +2609,9 @@ final class InitializerExprTypeResolver
 
 			return TypeCombinator::union(IntegerRangeType::fromInterval($min, $max), new FloatType());
 		} elseif ($node instanceof Expr\BinaryOp\ShiftLeft) {
-			if (!$operand instanceof ConstantIntegerType) {
-				return new IntegerType();
-			}
-			if ($operand->getValue() < 0) {
-				return new ErrorType();
-			}
-			// an overflowing shift wraps around, which breaks the monotonicity the bounds rely on
-			if (
-				($rangeMin !== null && self::shiftLeftOverflows(intval($rangeMin), $operand->getValue()))
-				|| ($rangeMax !== null && self::shiftLeftOverflows(intval($rangeMax), $operand->getValue()))
-			) {
-				return new IntegerType();
-			}
-
-			$min = $rangeMin !== null ? intval($rangeMin) << $operand->getValue() : null;
-			$max = $rangeMax !== null ? intval($rangeMax) << $operand->getValue() : null;
+			return self::shiftLeftRange($rangeMin, $rangeMax, $operand, $operandMin, $operandMax);
 		} elseif ($node instanceof Expr\BinaryOp\ShiftRight) {
-			if (!$operand instanceof ConstantIntegerType) {
-				return new IntegerType();
-			}
-			if ($operand->getValue() < 0) {
-				return new ErrorType();
-			}
-			$min = $rangeMin !== null ? intval($rangeMin) >> $operand->getValue() : null;
-			$max = $rangeMax !== null ? intval($rangeMax) >> $operand->getValue() : null;
+			return self::shiftRightRange($rangeMin, $rangeMax, $operand, $operandMin, $operandMax);
 		} else {
 			throw new ShouldNotHappenException();
 		}
@@ -2648,12 +2627,97 @@ final class InitializerExprTypeResolver
 	}
 
 	/**
+	 * Shifting is monotonic in both operands as long as the shift count is not negative and
+	 * the result does not overflow, so the bounds of the result come from the bounds of the
+	 * operands: the lowest value shifted the most and the highest value shifted the least,
+	 * with the direction of "the most" following the sign of the shifted value.
+	 *
+	 * @param ConstantIntegerType|IntegerRangeType $operand
+	 */
+	private static function shiftLeftRange(?int $rangeMin, ?int $rangeMax, Type $operand, ?int $operandMin, ?int $operandMax): Type
+	{
+		$invalidShiftCount = self::invalidShiftCount($operand, $operandMin);
+		if ($invalidShiftCount !== null) {
+			return $invalidShiftCount;
+		}
+
+		// an unbounded shift count always overflows
+		if ($operandMax === null) {
+			return new IntegerType();
+		}
+
+		// an overflowing shift wraps around, which breaks the monotonicity the bounds rely on;
+		// an unbounded value always overflows because PHP_INT_MIN and PHP_INT_MAX do not
+		// survive a shift by one
+		if (
+			self::shiftLeftOverflows($rangeMin ?? PHP_INT_MIN, $operandMax)
+			|| self::shiftLeftOverflows($rangeMax ?? PHP_INT_MAX, $operandMax)
+		) {
+			return new IntegerType();
+		}
+
+		return IntegerRangeType::fromInterval(
+			$rangeMin !== null ? $rangeMin << ($rangeMin >= 0 ? $operandMin : $operandMax) : null,
+			$rangeMax !== null ? $rangeMax << ($rangeMax >= 0 ? $operandMax : $operandMin) : null,
+		);
+	}
+
+	/**
+	 * @param ConstantIntegerType|IntegerRangeType $operand
+	 */
+	private static function shiftRightRange(?int $rangeMin, ?int $rangeMax, Type $operand, ?int $operandMin, ?int $operandMax): Type
+	{
+		$invalidShiftCount = self::invalidShiftCount($operand, $operandMin);
+		if ($invalidShiftCount !== null) {
+			return $invalidShiftCount;
+		}
+
+		return IntegerRangeType::fromInterval(
+			$rangeMin !== null ? self::shiftRight($rangeMin, $rangeMin >= 0 ? $operandMax : $operandMin) : null,
+			$rangeMax !== null ? self::shiftRight($rangeMax, $rangeMax >= 0 ? $operandMin : $operandMax) : null,
+		);
+	}
+
+	/**
+	 * A negative shift count throws, so it produces no value at all. The result is only known
+	 * to be an error when the shift count is certainly negative.
+	 *
+	 * @param ConstantIntegerType|IntegerRangeType $operand
+	 */
+	private static function invalidShiftCount(Type $operand, ?int $operandMin): ?Type
+	{
+		if ($operand instanceof ConstantIntegerType && $operand->getValue() < 0) {
+			return new ErrorType();
+		}
+
+		if ($operandMin === null || $operandMin < 0) {
+			return new IntegerType();
+		}
+
+		return null;
+	}
+
+	/**
 	 * A left shift that does not fit into an integer wraps around instead of turning
 	 * into a float, so the shifted value no longer preserves the ordering of its operand.
 	 */
 	private static function shiftLeftOverflows(int $value, int $shift): bool
 	{
 		return ($value << $shift) >> $shift !== $value;
+	}
+
+	/**
+	 * Shifting right by an unbounded count (null) leaves 0 for a non-negative value
+	 * and -1 for a negative one, which is also what PHP produces for any shift count
+	 * that is at least as large as the integer size.
+	 */
+	private static function shiftRight(int $value, ?int $shift): int
+	{
+		if ($shift === null) {
+			return $value >= 0 ? 0 : -1;
+		}
+
+		return $value >> $shift;
 	}
 
 	/**

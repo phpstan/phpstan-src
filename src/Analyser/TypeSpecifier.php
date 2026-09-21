@@ -55,6 +55,8 @@ use const COUNT_NORMAL;
 final class TypeSpecifier
 {
 
+	private const CONTAINS_CALL_ATTRIBUTE_NAME = 'containsCall';
+
 	/** @var MethodTypeSpecifyingExtension[][]|null */
 	private ?array $methodTypeSpecifyingExtensionsByClass = null;
 
@@ -616,28 +618,52 @@ final class TypeSpecifier
 		return $types;
 	}
 
+	private function expressionContainsNonPureCall(Expr $expr, Scope $scope): bool
+	{
+		// The answer for an expression without any call in it cannot change between
+		// scopes, and most specified expressions (plain variables, property fetches,
+		// constant fetches) are of that shape, so it's remembered on the node itself.
+		if ($expr->getAttribute(self::CONTAINS_CALL_ATTRIBUTE_NAME) === false) {
+			return false;
+		}
+
+		$containsCall = false;
+		$containsNonPureCall = $this->findNonPureCall($expr, $scope, $containsCall);
+		if (!$containsCall) {
+			$expr->setAttribute(self::CONTAINS_CALL_ATTRIBUTE_NAME, false);
+		}
+
+		return $containsNonPureCall;
+	}
+
 	/**
 	 * Depth-first pre-order search for a call that isn't known to be pure, replacing a
 	 * NodeFinder::findFirst() call - this runs for every expression being specified,
 	 * so the traverser/visitor machinery overhead was significant.
+	 *
+	 * $containsCall is set when the sub-tree contains a call of any kind.
 	 */
-	private function expressionContainsNonPureCall(Node $node, Scope $scope): bool
+	private function findNonPureCall(Node $node, Scope $scope, bool &$containsCall): bool
 	{
-		if ($node instanceof Expr\CallLike && $this->callIsNotPure($node, $scope)) {
-			return true;
+		if ($node instanceof Expr\CallLike) {
+			$containsCall = true;
+
+			if ($this->callIsNotPure($node, $scope)) {
+				return true;
+			}
 		}
 
 		foreach ($node->getSubNodeNames() as $subNodeName) {
 			$subNode = $node->$subNodeName;
 			if ($subNode instanceof Node) {
-				if ($this->expressionContainsNonPureCall($subNode, $scope)) {
+				if ($this->findNonPureCall($subNode, $scope, $containsCall)) {
 					return true;
 				}
 			} elseif (is_array($subNode)) {
 				foreach ($subNode as $subNodeItem) {
 					if (
 						$subNodeItem instanceof Node
-						&& $this->expressionContainsNonPureCall($subNodeItem, $scope)
+						&& $this->findNonPureCall($subNodeItem, $scope, $containsCall)
 					) {
 						return true;
 					}

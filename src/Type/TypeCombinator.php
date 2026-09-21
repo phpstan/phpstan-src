@@ -80,10 +80,11 @@ final class TypeCombinator
 
 	public static function addNull(Type $type): Type
 	{
-		$nullType = new NullType();
-
-		if ($nullType->isSuperTypeOf($type)->no()) {
-			return self::union($type, $nullType);
+		// asking the type itself is both cheaper than NullType::isSuperTypeOf()
+		// (UnionType memoizes isNull(), isSubTypeOf() recomputes) and right for
+		// `never`, of which null is a supertype without never containing it.
+		if ($type->isNull()->no()) {
+			return self::union($type, new NullType());
 		}
 
 		return $type;

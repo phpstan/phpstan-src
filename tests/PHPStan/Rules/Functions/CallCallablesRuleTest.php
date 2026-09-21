@@ -449,6 +449,12 @@ class CallCallablesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../Methods/data/bug-15251.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.2.0')]
+	public function testBug15285(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15285.php'], []);
+	}
+
 	#[RequiresPhp('>= 8.0.0')]
 	public function testBug11935WithCheckExplicitMixed(): void
 	{

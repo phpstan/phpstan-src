@@ -2621,6 +2621,12 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		}
 
 		$result = TypeCombinator::intersect($nativeType, $inferredType);
+		if ($result instanceof NeverType) {
+			// the inferred type says no value is ever produced - the native
+			// type's nullability must not resurrect one
+			return $result;
+		}
+
 		if (TypeCombinator::containsNull($nativeType)) {
 			return TypeCombinator::addNull($result);
 		}

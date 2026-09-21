@@ -43,6 +43,7 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 				false,
 				true,
 			),
+			new PhpVersion(PHP_VERSION_ID),
 		);
 	}
 
@@ -313,24 +314,6 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 				15,
 			],
 		]);
-	}
-
-	public function testConditionallyExecutedArrowFunction(): void
-	{
-		$errors = [
-			[
-				'Never return type in arrow function is supported only on PHP 8.2 and later.',
-				12,
-			],
-		];
-		if (PHP_VERSION_ID < 80200) {
-			$errors[] = [
-				'Never return type in arrow function is supported only on PHP 8.2 and later.',
-				15,
-			];
-		}
-
-		$this->analyse([__DIR__ . '/data/arrow-function-never-php-versions.php'], $errors);
 	}
 
 }

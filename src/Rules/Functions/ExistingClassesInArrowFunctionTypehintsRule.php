@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Functions;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\FunctionDefinitionCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -19,7 +20,7 @@ use function array_merge;
 final class ExistingClassesInArrowFunctionTypehintsRule implements Rule
 {
 
-	public function __construct(private FunctionDefinitionCheck $check)
+	public function __construct(private FunctionDefinitionCheck $check, private PhpVersion $phpVersion)
 	{
 	}
 
@@ -31,7 +32,7 @@ final class ExistingClassesInArrowFunctionTypehintsRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$messages = [];
-		if ($node->returnType !== null && !$scope->getPhpVersion()->supportsNeverReturnTypeInArrowFunction()->yes()) {
+		if ($node->returnType !== null && !$this->phpVersion->supportsNeverReturnTypeInArrowFunction()) {
 			$returnType = ParserNodeTypeToPHPStanType::resolve($node->returnType, $scope->isInClass() ? $scope->getClassReflection() : null);
 			if ($returnType instanceof NonAcceptingNeverType) {
 				$messages[] = RuleErrorBuilder::message('Never return type in arrow function is supported only on PHP 8.2 and later.')

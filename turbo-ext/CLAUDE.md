@@ -87,9 +87,10 @@ being ≥0.5% faster is. When the estimate is marginal, don't port.
    arguments can skip them),
    full `make tests` with the extension loaded, and byte-identical analysis
    output with the extension loaded vs. not loaded. Anything touching
-   `src/parser/` additionally runs `turbo-ext/tests/parser-corpus.php`
-   (byte-identical ASTs over the whole corpus); a php-parser version bump in
-   composer.lock requires the same.
+   `src/parser/` additionally runs `turbo-ext/tests/parser-corpus.php` and
+   `turbo-ext/tests/parser-upstream-corpus.php` (byte-identical ASTs over
+   the whole corpus and over php-parser's own test cases); a php-parser
+   version bump in composer.lock requires the same.
 9. **Benchmark** (protocol below). ≤0.5% → revert the port, keep the PHP
    extraction only if it stands on its own.
 10. **Version bump** (only when `turbo-ext/src/` changed): commit the
@@ -168,10 +169,11 @@ Follow README.md's "Updating php-parser" procedure. The agent-relevant traps:
 - `ParserEngine::reduce` dispatches via `PN_REDUCE_SPLIT_1/2` from the generated
   `ParserRunnerActionsSplit.h`; the generator rebalances the three action
   files automatically.
-- The corpus differential (`tests/parser-corpus.php`) is the acceptance bar
-  — byte-identical serialized ASTs, errors, and token streams — and it only
-  proves what the corpus contains: new syntax needs fixtures in the repo
-  before the check means anything for it.
+- The corpus differentials are the acceptance bar — byte-identical
+  serialized ASTs, errors, and token streams. `tests/parser-upstream-corpus.php`
+  runs php-parser's own test cases at the installed commit, so it covers new
+  syntax as soon as the lock file moves; `tests/parser-corpus.php` only
+  proves what the repo contains, so new syntax also needs fixtures here.
 - Finish with both pins: `SUPPORTED_PHP_PARSER_VERSION` in
   `.github/workflows/phar.yml` plus the extension version bump in
   `TurboExtensionEnabler` (`src/parser/` changed).

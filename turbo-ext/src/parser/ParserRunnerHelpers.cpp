@@ -1,5 +1,5 @@
 /*
- * ParserRunnerHelpers.cpp — native ports of php-parser 5.8.0's semantic-action
+ * ParserRunnerHelpers.cpp — native ports of php-parser 5.9.0's semantic-action
  * helper methods (ParserAbstract.php lines 560-1341) plus the Node-side
  * fromString builders they rely on (Int_/String_/Float_::fromString,
  * Name::prepareName, Modifiers::verify*), as phpstanturbo::ParserEngine
@@ -305,7 +305,7 @@ static zend_string *stripTrailingNewline(zend_string *s)
 	return r;
 }
 
-/* String_::codePointToUtf8() — caller guarantees num <= 0x1FFFFF */
+/* String_::codePointToUtf8() — caller guarantees num <= 0x10FFFF */
 static void utf8Append(smart_str *out, zend_ulong num)
 {
 	if (num <= 0x7F) {
@@ -424,8 +424,8 @@ zend_string *ParserEngine::parseEscapeSequences(zend_string *strIn, bool hasQuot
 					break;
 				}
 				ParsedNum cp = baseToNum(s + i + 3, digits, 16);
-				/* hexdec overflow → PHP_INT_MAX → codePointToUtf8 throws; > 0x1FFFFF throws */
-				if (cp.isDouble || cp.lval > 0x1FFFFF) {
+				/* hexdec overflow → PHP_INT_MAX → codePointToUtf8 throws; > 0x10FFFF throws */
+				if (cp.isDouble || cp.lval > 0x10FFFF) {
 					smart_str_free(&out);
 					zend_string_release(str);
 					fatalError("Invalid UTF-8 codepoint escape sequence: Codepoint too large", zv::Arr::empty());

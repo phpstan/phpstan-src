@@ -22,7 +22,7 @@ permissions:
 env:
   # The php-parser version whose grammar tables and semantic actions the
   # native parser engine (turbo-ext/src/parser/) was ported against.
-  SUPPORTED_PHP_PARSER_VERSION: "v5.8.0"
+  SUPPORTED_PHP_PARSER_VERSION: "v5.9.0"
   # Composer for the turbo container legs, pinned by checksum. The distro
   # composers are unusable there: jammy's 2.2.6 fatals under PHP 8.5, and
   # Alpine's /usr/bin/composer is a shell wrapper hardwired to the
@@ -205,7 +205,7 @@ jobs:
           echo "composer.lock: $INSTALLED, native engine ported against: $SUPPORTED_PHP_PARSER_VERSION"
           if [ "$INSTALLED" != "$SUPPORTED_PHP_PARSER_VERSION" ]; then
             echo "::error::nikic/php-parser was updated to $INSTALLED but turbo-ext/src/parser/ was ported against $SUPPORTED_PHP_PARSER_VERSION."
-            echo "::error::Update procedure: diff ParserAbstract.php helpers between the two versions (grammar tables need nothing — they are read at run time), run turbo-ext/bin/generate-parser-actions.php and port any flagged closure bodies via action-overrides/, run turbo-ext/tests/parser-corpus.php until byte-identical, run the full suite, then bump SUPPORTED_PHP_PARSER_VERSION here and the extension version pin."
+            echo "::error::Update procedure: diff ParserAbstract.php helpers between the two versions (grammar tables need nothing — they are read at run time), run turbo-ext/bin/generate-parser-actions.php and port any flagged closure bodies via action-overrides/, run turbo-ext/tests/parser-corpus.php and turbo-ext/tests/parser-upstream-corpus.php until byte-identical, run the full suite, then bump SUPPORTED_PHP_PARSER_VERSION here and the extension version pin."
             exit 1
           fi
 
@@ -526,6 +526,9 @@ jobs:
 
       - name: "Parser corpus (differential: native vs PHP ASTs must be byte-identical)"
         run: php -d extension="$PWD/turbo-ext/phpstan_turbo.so" -d memory_limit=4G turbo-ext/tests/parser-corpus.php
+
+      - name: "Parser upstream corpus (the same differential over php-parser's own test cases)"
+        run: php -d extension="$PWD/turbo-ext/phpstan_turbo.so" turbo-ext/tests/parser-upstream-corpus.php
 
       - name: "Upload extension artifact"
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

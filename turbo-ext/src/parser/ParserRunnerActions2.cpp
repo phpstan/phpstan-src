@@ -292,34 +292,35 @@ bool ParserEngine::reduceRange2(int rule, int stackPos)
 	}
 	/* rule 330 */
 	case 330: {
-		semValue = arrayOf(PN_SEM(3, 2));
+		semValue = zv::Arr::empty();
 		return true;
 	}
 	/* rule 331 */
 	case 331: {
-		semValue = zv::Arr::empty();
+		semValue = PN_SEM(4, 2);
 		return true;
 	}
 	/* rule 332 */
 	case 332: {
-		semValue = PN_SEM(4, 2);
-		return true;
-	}
-	/* rule 333 */
-	case 333: {
 		zv::Val t1 = newNode("Node\\Arg", PN_ATTRS(4, 1, 4), PN_SEM(4, 2), zv::Val::boolean(false), zv::Val::boolean(false), nullptr /* ctor default for omitted $name */);
 		semValue = arrayOf(t1);
 		return true;
 	}
+	/* rule 333 */
+	case 333: {
+		zv::Val t1 = newNode("Node\\Arg", PN_ATTRS(3, 1, 1), PN_SEM(3, 1), zv::Val::boolean(false), zv::Val::boolean(false), nullptr /* ctor default for omitted $name */);
+		semValue = arrayOf(t1, PN_SEM(3, 3));
+		return true;
+	}
 	/* rule 334 */
 	case 334: {
-		semValue = arrayOf(PN_SEM(3, 2));
+		semValue = arrayOf(PN_SEM(1, 1));
 		return true;
 	}
 	/* rule 335 */
 	case 335: {
-		zv::Val t1 = newNode("Node\\Arg", PN_ATTRS(3, 1, 1), PN_SEM(3, 1), zv::Val::boolean(false), zv::Val::boolean(false), nullptr /* ctor default for omitted $name */);
-		semValue = arrayOf(t1, PN_SEM(3, 3));
+		pushOnto(PN_SEM(3, 1), PN_SEM(3, 3));
+		semValue = PN_SEM(3, 1);
 		return true;
 	}
 	/* rule 336 */
@@ -335,33 +336,32 @@ bool ParserEngine::reduceRange2(int rule, int stackPos)
 	}
 	/* rule 338 */
 	case 338: {
-		semValue = newNode("Node\\VariadicPlaceholder", PN_ATTRS(1, 1, 1));
+		semValue = newNode("Node\\Arg", PN_ATTRS(2, 1, 2), PN_SEM(2, 2), zv::Val::boolean(true), zv::Val::boolean(false), nullptr /* ctor default for omitted $name */);
 		return true;
 	}
 	/* rule 339 */
 	case 339: {
-		semValue = arrayOf(PN_SEM(1, 1));
+		semValue = newNode("Node\\Arg", PN_ATTRS(2, 1, 2), PN_SEM(2, 2), zv::Val::boolean(false), zv::Val::boolean(true), nullptr /* ctor default for omitted $name */);
 		return true;
 	}
 	/* rule 340 */
 	case 340: {
-		pushOnto(PN_SEM(3, 1), PN_SEM(3, 3));
-		semValue = PN_SEM(3, 1);
+		semValue = newNode("Node\\VariadicPlaceholder", PN_ATTRS(1, 1, 1));
 		return true;
 	}
 	/* rule 341 */
 	case 341: {
-		semValue = newNode("Node\\Arg", PN_ATTRS(2, 1, 2), PN_SEM(2, 2), zv::Val::boolean(true), zv::Val::boolean(false), nullptr /* ctor default for omitted $name */);
+		semValue = newNode("Node\\ArgPlaceholder", PN_ATTRS(1, 1, 1), nullptr);
 		return true;
 	}
 	/* rule 342 */
 	case 342: {
-		semValue = newNode("Node\\Arg", PN_ATTRS(2, 1, 2), PN_SEM(2, 2), zv::Val::boolean(false), zv::Val::boolean(true), nullptr /* ctor default for omitted $name */);
+		semValue = newNode("Node\\Arg", PN_ATTRS(3, 1, 3), PN_SEM(3, 3), zv::Val::boolean(false), zv::Val::boolean(false), PN_SEM(3, 1));
 		return true;
 	}
 	/* rule 343 */
 	case 343: {
-		semValue = newNode("Node\\Arg", PN_ATTRS(3, 1, 3), PN_SEM(3, 3), zv::Val::boolean(false), zv::Val::boolean(false), PN_SEM(3, 1));
+		semValue = newNode("Node\\ArgPlaceholder", PN_ATTRS(3, 1, 3), PN_SEM(3, 1));
 		return true;
 	}
 	/* rule 344 */

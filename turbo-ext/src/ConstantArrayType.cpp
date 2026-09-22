@@ -420,6 +420,14 @@ static int compareLongBuckets(Bucket *a, Bucket *b)
 	return Z_LVAL(a->val) < Z_LVAL(b->val) ? -1 : (Z_LVAL(a->val) > Z_LVAL(b->val) ? 1 : 0);
 }
 
+/* ksort() over integer keys: their signed order (the keys are unique, so
+ * the algorithm does not matter) */
+static int compareSignedIndexBuckets(Bucket *a, Bucket *b)
+{
+	zend_long left = (zend_long) a->h, right = (zend_long) b->h;
+	return left < right ? -1 : (left > right ? 1 : 0);
+}
+
 static void sortLongs(zv::Arr &ints)
 {
 	ints.separate();
@@ -5304,46 +5312,131 @@ public:
 
 		if (isListValue == PT_TRI_NO) return neverType();
 
-		/* isList is Maybe. In a sealed shape a key past a gap in the 0..n
-		 * sequence (or any non-integer key) can never appear in a list, so
-		 * keep only the contiguous 0..m prefix. Unsealed extras may fill the
-		 * gaps, so keep every key there. */
+		/* isList is Maybe. A list has its keys in ascending order, and one
+		 * that has the key k has every key below k too - positional
+		 * operations on the list trust both, so the keys are put in
+		 * ascending order and the ones below a required key are made
+		 * required. In a sealed shape a key past a gap in the 0..n sequence
+		 * (or any non-integer key) can never appear in a list, so keep only
+		 * the contiguous 0..m prefix. Unsealed extras may fill the gaps, so
+		 * keep every key there, the integer ones first. */
+		uint32_t keyCount = zend_hash_num_elements(Z_ARRVAL_P(k));
+		zv::ScratchTable positionByIndex(keyCount);
+		zv::Arr otherPositions = zv::Arr::create(0);
+		for (zv::ArrayEntry entry : zv::ArrRef(k)) {
+			zval *keyType = entry.value().deref().raw();
+			zval position;
+			ZVAL_LONG(&position, (zend_long) entry.indexKey());
+			if (Z_TYPE_P(keyType) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(keyType), pt_ce_constant_integer_type)) {
+				otherPositions.push(zv::Ref(&position));
+				continue;
+			}
+			zend_long value;
+			if (UNEXPECTED(!pt_constant_integer_get_value(Z_OBJ_P(keyType), value))) return zv::Val();
+			zend_hash_index_update(positionByIndex.table(), (zend_ulong) value, &position);
+		}
+
 		zend_long unsealedness = thisIsUnsealed();
 		if (UNEXPECTED(unsealedness < 0)) return zv::Val();
+		zv::Arr keptPositions = zv::Arr::create(keyCount);
 		if (unsealedness == PT_TRI_NO) {
-			zv::ScratchTable positionByIndex((uint32_t) zend_hash_num_elements(Z_ARRVAL_P(k)));
-			for (zv::ArrayEntry entry : zv::ArrRef(k)) {
-				zval *keyType = entry.value().deref().raw();
-				if (Z_TYPE_P(keyType) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(keyType), pt_ce_constant_integer_type)) continue;
-				zend_long value;
-				if (UNEXPECTED(!pt_constant_integer_get_value(Z_OBJ_P(keyType), value))) return zv::Val();
-				zval position;
-				ZVAL_LONG(&position, (zend_long) entry.indexKey());
-				zend_hash_index_update(positionByIndex.table(), (zend_ulong) value, &position);
-			}
-
-			zv::Arr keptPositions = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(k)));
 			for (zend_long index = 0;; index++) {
 				zval *position = zend_hash_index_find(positionByIndex.table(), (zend_ulong) index);
 				if (position == NULL) break;
 				keptPositions.push(zv::Ref(position));
 			}
-
-			if ((zend_long) keptPositions.arrRef().size() < arrayCount(k)) {
-				zv::Val builder = builderCreateEmpty();
-				if (UNEXPECTED(builder.isUndef())) return zv::Val();
-				for (zv::ArrayEntry entry : keptPositions.arrRef()) {
-					zend_long position = zv::Ref(entry.value().deref().raw()).asLong();
-					zval *keyType = arrayIndexObject(k, position, "keyTypes");
-					zval *valueType = keyType != NULL ? arrayIndexObject(v, position, "valueTypes") : NULL;
-					if (UNEXPECTED(valueType == NULL)) return zv::Val();
-					bool optional;
-					if (UNEXPECTED(!thisIsOptionalKey(position, optional))) return zv::Val();
-					if (UNEXPECTED(!builderSet(builder.raw(), keyType, valueType, optional ? 1 : 0))) return zv::Val();
-				}
-
-				return builderGetArray(builder.raw());
+		} else {
+			/* ksort($positionByIndex); array_merge(array_values(...), $otherPositions) */
+			zend_hash_sort_ex(positionByIndex.table(), zend_sort, compareSignedIndexBuckets, 0);
+			for (zv::ArrayEntry entry : zv::TableRef(positionByIndex.table())) {
+				keptPositions.push(entry.value());
 			}
+			for (zv::ArrayEntry entry : otherPositions.arrRef()) {
+				keptPositions.push(entry.value());
+			}
+		}
+
+		zend_long requiredLength = 0;
+		for (zv::ArrayEntry entry : keptPositions.arrRef()) {
+			zend_long position = entry.value().asLong();
+			zval *keyType = arrayIndexObject(k, position, "keyTypes");
+			if (UNEXPECTED(keyType == NULL)) return zv::Val();
+			if (!instanceof_function(Z_OBJCE_P(keyType), pt_ce_constant_integer_type)) continue;
+			bool optional;
+			if (UNEXPECTED(!thisIsOptionalKey(position, optional))) return zv::Val();
+			if (optional) continue;
+
+			zend_long value;
+			if (UNEXPECTED(!pt_constant_integer_get_value(Z_OBJ_P(keyType), value))) return zv::Val();
+			/* max($requiredLength, $value + 1); at PHP_INT_MAX the twin's
+			 * float compares like the saturated int below */
+			if (value >= requiredLength) requiredLength = value == ZEND_LONG_MAX ? ZEND_LONG_MAX : value + 1;
+		}
+
+		zv::Arr newOptionalKeys = zv::Arr::create(0);
+		for (zv::ArrayEntry entry : keptPositions.arrRef()) {
+			zend_long position = entry.value().asLong();
+			bool optional;
+			if (UNEXPECTED(!thisIsOptionalKey(position, optional))) return zv::Val();
+			if (!optional) continue;
+
+			zval *keyType = arrayIndexObject(k, position, "keyTypes");
+			if (UNEXPECTED(keyType == NULL)) return zv::Val();
+			if (instanceof_function(Z_OBJCE_P(keyType), pt_ce_constant_integer_type)) {
+				zend_long value;
+				if (UNEXPECTED(!pt_constant_integer_get_value(Z_OBJ_P(keyType), value))) return zv::Val();
+				if (value >= 0 && value < requiredLength) continue;
+			}
+
+			zval newPosition;
+			ZVAL_LONG(&newPosition, (zend_long) entry.indexKey());
+			newOptionalKeys.push(zv::Ref(&newPosition));
+		}
+
+		/* $keptPositions !== array_keys($this->keyTypes) */
+		bool reordered = keptPositions.arrRef().size() != keyCount;
+		if (!reordered) {
+			for (zv::ArrayEntry entry : keptPositions.arrRef()) {
+				if (entry.value().asLong() != (zend_long) entry.indexKey()) {
+					reordered = true;
+					break;
+				}
+			}
+		}
+
+		if (reordered || arrayCount(newOptionalKeys.raw()) != arrayCount(o)) {
+			zv::Val builder = builderCreateEmpty();
+			if (UNEXPECTED(builder.isUndef())) return zv::Val();
+			if (UNEXPECTED(!builderCall0(builder.raw(), PT_LC("disablearraydegradation")))) return zv::Val();
+			for (zv::ArrayEntry entry : keptPositions.arrRef()) {
+				zend_long position = entry.value().asLong();
+				zval *keyType = arrayIndexObject(k, position, "keyTypes");
+				zval *valueType = keyType != NULL ? arrayIndexObject(v, position, "valueTypes") : NULL;
+				if (UNEXPECTED(valueType == NULL)) return zv::Val();
+				bool optional = inArrayStrictLong(newOptionalKeys.raw(), (zend_long) entry.indexKey());
+				if (UNEXPECTED(!builderSet(builder.raw(), keyType, valueType, optional ? 1 : 0))) return zv::Val();
+			}
+
+			zv::Val array = builderGetArray(builder.raw());
+			if (UNEXPECTED(array.isUndef())) return zv::Val();
+			zv::Val constantArrays = pt_type_call_array(Z_OBJ_P(array.raw()), PT_LC("getconstantarrays"), 0, NULL);
+			if (UNEXPECTED(constantArrays.isUndef())) return zv::Val();
+			if (arrayCount(constantArrays.raw()) != 1) {
+				pt_throw_should_not_happen();
+				return zv::Val();
+			}
+
+			/* The builder can answer maybe for an optional tail like
+			 * `[0, 1?, 2?]`, but these are the keys of a list. */
+			zval *list = arrayIndexObject(constantArrays.raw(), 0, "constantArrays");
+			if (UNEXPECTED(list == NULL)) return zv::Val();
+			ConstantArrayType listArray(Z_OBJ_P(list));
+			zval *listKeyTypes = listArray.keyTypes();
+			zval *listValueTypes = listKeyTypes != NULL ? listArray.valueTypes() : NULL;
+			zval *listNextAutoIndexes = listValueTypes != NULL ? listArray.nextAutoIndexes() : NULL;
+			zval *listOptionalKeys = listNextAutoIndexes != NULL ? listArray.optionalKeys() : NULL;
+			if (UNEXPECTED(listOptionalKeys == NULL)) return zv::Val();
+			return thisRecreate(listKeyTypes, listValueTypes, listNextAutoIndexes, listOptionalKeys, pt_trinary_singleton(PT_TRI_YES), u);
 		}
 
 		return thisRecreate(k, v, n, o, pt_trinary_singleton(PT_TRI_YES), u);

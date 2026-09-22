@@ -5316,77 +5316,77 @@ public:
 		 * that has the key k has every key below k too - positional
 		 * operations on the list trust both, so the keys are put in
 		 * ascending order and the ones below a required key are made
-		 * required. In a sealed shape a key past a gap in the 0..n sequence
-		 * (or any non-integer key) can never appear in a list, so keep only
-		 * the contiguous 0..m prefix. Unsealed extras may fill the gaps, so
-		 * keep every key there, the integer ones first. */
+		 * required. A list never has a negative or a non-integer key, so
+		 * those are dropped. In a sealed shape a key past a gap in the 0..n
+		 * sequence can never appear in a list either, so only the contiguous
+		 * 0..m prefix is kept; unsealed extras may fill the gaps, so every
+		 * other key is kept there. */
 		uint32_t keyCount = zend_hash_num_elements(Z_ARRVAL_P(k));
 		zv::ScratchTable positionByIndex(keyCount);
-		zv::Arr otherPositions = zv::Arr::create(0);
+		zv::Arr droppedPositions = zv::Arr::create(0);
 		for (zv::ArrayEntry entry : zv::ArrRef(k)) {
 			zval *keyType = entry.value().deref().raw();
 			zval position;
 			ZVAL_LONG(&position, (zend_long) entry.indexKey());
-			if (Z_TYPE_P(keyType) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(keyType), pt_ce_constant_integer_type)) {
-				otherPositions.push(zv::Ref(&position));
+			zend_long value = 0;
+			if (Z_TYPE_P(keyType) == IS_OBJECT && instanceof_function(Z_OBJCE_P(keyType), pt_ce_constant_integer_type)) {
+				if (UNEXPECTED(!pt_constant_integer_get_value(Z_OBJ_P(keyType), value))) return zv::Val();
+			} else {
+				value = -1;
+			}
+			if (value < 0) {
+				droppedPositions.push(zv::Ref(&position));
 				continue;
 			}
-			zend_long value;
-			if (UNEXPECTED(!pt_constant_integer_get_value(Z_OBJ_P(keyType), value))) return zv::Val();
 			zend_hash_index_update(positionByIndex.table(), (zend_ulong) value, &position);
 		}
 
+		/* ksort($positionByIndex) - the kept keys are all non-negative */
+		zend_hash_sort_ex(positionByIndex.table(), zend_sort, compareSignedIndexBuckets, 0);
 		zend_long unsealedness = thisIsUnsealed();
 		if (UNEXPECTED(unsealedness < 0)) return zv::Val();
 		zv::Arr keptPositions = zv::Arr::create(keyCount);
 		if (unsealedness == PT_TRI_NO) {
-			for (zend_long index = 0;; index++) {
-				zval *position = zend_hash_index_find(positionByIndex.table(), (zend_ulong) index);
-				if (position == NULL) break;
-				keptPositions.push(zv::Ref(position));
+			zend_long index = 0;
+			for (zv::ArrayEntry entry : zv::TableRef(positionByIndex.table())) {
+				/* the contiguous 0..m prefix is kept, every key after the
+				 * first gap dropped */
+				if ((zend_long) entry.indexKey() == index) {
+					keptPositions.push(entry.value());
+					index++;
+					continue;
+				}
+				index = -1;
+				droppedPositions.push(entry.value());
 			}
 		} else {
-			/* ksort($positionByIndex); array_merge(array_values(...), $otherPositions) */
-			zend_hash_sort_ex(positionByIndex.table(), zend_sort, compareSignedIndexBuckets, 0);
 			for (zv::ArrayEntry entry : zv::TableRef(positionByIndex.table())) {
 				keptPositions.push(entry.value());
 			}
-			for (zv::ArrayEntry entry : otherPositions.arrRef()) {
-				keptPositions.push(entry.value());
-			}
+		}
+
+		for (zv::ArrayEntry entry : droppedPositions.arrRef()) {
+			bool optional;
+			if (UNEXPECTED(!thisIsOptionalKey(entry.value().asLong(), optional))) return zv::Val();
+			if (!optional) return neverType();
 		}
 
 		zend_long requiredLength = 0;
 		for (zv::ArrayEntry entry : keptPositions.arrRef()) {
-			zend_long position = entry.value().asLong();
-			zval *keyType = arrayIndexObject(k, position, "keyTypes");
-			if (UNEXPECTED(keyType == NULL)) return zv::Val();
-			if (!instanceof_function(Z_OBJCE_P(keyType), pt_ce_constant_integer_type)) continue;
 			bool optional;
-			if (UNEXPECTED(!thisIsOptionalKey(position, optional))) return zv::Val();
+			if (UNEXPECTED(!thisIsOptionalKey(entry.value().asLong(), optional))) return zv::Val();
 			if (optional) continue;
 
-			zend_long value;
-			if (UNEXPECTED(!pt_constant_integer_get_value(Z_OBJ_P(keyType), value))) return zv::Val();
-			/* max($requiredLength, $value + 1); at PHP_INT_MAX the twin's
-			 * float compares like the saturated int below */
-			if (value >= requiredLength) requiredLength = value == ZEND_LONG_MAX ? ZEND_LONG_MAX : value + 1;
+			requiredLength = (zend_long) entry.indexKey() + 1;
 		}
 
+		/* $optionalPositions: $indexByPosition[$position] is the kept
+		 * position itself, $keptPositions being a list */
 		zv::Arr newOptionalKeys = zv::Arr::create(0);
 		for (zv::ArrayEntry entry : keptPositions.arrRef()) {
-			zend_long position = entry.value().asLong();
 			bool optional;
-			if (UNEXPECTED(!thisIsOptionalKey(position, optional))) return zv::Val();
-			if (!optional) continue;
-
-			zval *keyType = arrayIndexObject(k, position, "keyTypes");
-			if (UNEXPECTED(keyType == NULL)) return zv::Val();
-			if (instanceof_function(Z_OBJCE_P(keyType), pt_ce_constant_integer_type)) {
-				zend_long value;
-				if (UNEXPECTED(!pt_constant_integer_get_value(Z_OBJ_P(keyType), value))) return zv::Val();
-				if (value >= 0 && value < requiredLength) continue;
-			}
+			if (UNEXPECTED(!thisIsOptionalKey(entry.value().asLong(), optional))) return zv::Val();
+			if (!optional || (zend_long) entry.indexKey() < requiredLength) continue;
 
 			zval newPosition;
 			ZVAL_LONG(&newPosition, (zend_long) entry.indexKey());

@@ -118,11 +118,12 @@ void pt_register_combinations_helper()
 	ptdecl::CombinationsHelper::declareProperties(cls);
 
 	cls.method("combinations", reg::PublicStatic, 1, { reg::arrayArg("arrays") }, [](INTERNAL_FUNCTION_PARAMETERS) {
-		HashTable *arrays;
-		if (!zp::parse<zp::Ht>(execute_data, arrays)) RETURN_THROWS();
-		zval arraysZv;
-		ZVAL_ARR(&arraysZv, arrays);
-		zv::Val result = CombinationsHelper::combinations(&arraysZv);
+		/* the argument zval as passed: rewrapping its table with ZVAL_ARR
+		 * would mark an immutable array ([] is zend_empty_array) refcounted,
+		 * and the call below would then addref read-only memory */
+		zval *arrays;
+		if (!zp::parse<zp::Arr>(execute_data, arrays)) RETURN_THROWS();
+		zv::Val result = CombinationsHelper::combinations(arrays);
 		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
 	});

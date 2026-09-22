@@ -4658,6 +4658,9 @@ private:
 			bool equal;
 			AH_OK(ahEquals(zend_hash_index_find(Z_ARRVAL_P(values.raw()), 0), rhsType.raw(), equal));
 			if (!equal) return ahNull();
+			bool floatZero;
+			AH_OK(containsFloatZero(zend_hash_index_find(Z_ARRVAL_P(values.raw()), 0), floatZero));
+			if (floatZero) return ahNull();
 		}
 		AH_VAL(nativeValues, ahCall(nativeType.raw(), PT_LC("getfinitetypes"), 0, NULL));
 		if (zend_hash_num_elements(Z_ARRVAL_P(nativeValues.raw())) != 1) return ahNull();
@@ -4666,6 +4669,35 @@ private:
 		AH_OK(ahEquals(zend_hash_index_find(Z_ARRVAL_P(nativeValues.raw()), 0), rhsNativeType.raw(), equal));
 		if (!equal) return ahNull();
 		return pt_expression_result_get_type(rhs);
+	}
+
+	/* (twin 3027); false = pending exception */
+	static bool containsFloatZero(zval *type, bool &result)
+	{
+		result = false;
+		{
+			AH_VALB(scalarValues, ahTypeOp(type, PT_OP_GET_CONSTANT_SCALAR_VALUES, 0, NULL));
+			for (auto entry : zv::TableRef(Z_ARRVAL_P(scalarValues.raw()))) {
+				zval *value = entry.value().deref().raw();
+				// in_array(0.0, ..., true): -0.0 is identical to 0.0, NAN to nothing
+				if (Z_TYPE_P(value) == IS_DOUBLE && Z_DVAL_P(value) == 0.0) {
+					result = true;
+					return true;
+				}
+			}
+		}
+		AH_VALB(constantArrays, ahTypeOp(type, PT_OP_GET_CONSTANT_ARRAYS, 0, NULL));
+		for (auto arrayEntry : zv::TableRef(Z_ARRVAL_P(constantArrays.raw()))) {
+			AH_VALB(valueTypes, ahTypeOp(arrayEntry.value().deref().raw(), PT_OP_GET_VALUE_TYPES, 0, NULL));
+			for (auto entry : zv::TableRef(Z_ARRVAL_P(valueTypes.raw()))) {
+				zval *valueType = entry.value().deref().raw();
+				bool ok = true;
+				pt_engine_with_stack([&]() { ok = containsFloatZero(valueType, result); });
+				AH_OKB(ok);
+				if (result) return true;
+			}
+		}
+		return true;
 	}
 };
 

@@ -18,6 +18,7 @@ class PropertyInClassRuleTest extends RuleTestCase
 		return new PropertyInClassRule();
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
 	public function testPhpVersionNarrowedScope(): void
 	{
 		$errors = [

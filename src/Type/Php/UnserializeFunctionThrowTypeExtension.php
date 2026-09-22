@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -27,10 +26,6 @@ use function preg_match;
 final class UnserializeFunctionThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 {
 
-	public function __construct(private PhpVersion $phpVersion)
-	{
-	}
-
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
 		return $functionReflection->getName() === 'unserialize';
@@ -38,7 +33,7 @@ final class UnserializeFunctionThrowTypeExtension implements DynamicFunctionThro
 
 	public function getThrowTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $funcCall, Scope $scope): ?Type
 	{
-		if (!$this->phpVersion->throwsValueErrorForInternalFunctions()) {
+		if ($scope->getPhpVersion()->throwsValueErrorForInternalFunctions()->no()) {
 			return new VoidType();
 		}
 

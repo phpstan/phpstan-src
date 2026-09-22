@@ -165,3 +165,12 @@ function filterVarThrowOnFailure(string $s): void
 		assertType('int|false', filter_var($s, FILTER_VALIDATE_INT, FILTER_THROW_ON_FAILURE));
 	}
 }
+
+function getClassWithoutArguments(): void
+{
+	if (PHP_VERSION_ID >= 80000) {
+		assertType('*NEVER*', get_class());
+	} else {
+		assertType('false', get_class());
+	}
+}

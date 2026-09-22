@@ -1131,16 +1131,24 @@ function observeTypeFamily(string $mode): array
 		escapeshellarg(__DIR__ . '/type-family.php'),
 		escapeshellarg($mode),
 	);
-	$process = proc_open($cmd, [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
+	// stderr goes to a file: stdout is read to its end first, and a child
+	// blocked on a full stderr pipe never gets there (a Windows pipe holds
+	// 4 KB, less than the warnings the families' edge values provoke)
+	$stderrFile = tempnam(sys_get_temp_dir(), 'phpstan-type-family-');
+	if ($stderrFile === false) {
+		fwrite(STDERR, "tempnam failed\n");
+		exit(2);
+	}
+	$process = proc_open($cmd, [1 => ['pipe', 'w'], 2 => ['file', $stderrFile, 'w']], $pipes);
 	if ($process === false) {
 		fwrite(STDERR, "proc_open failed\n");
 		exit(2);
 	}
 	$stdout = stream_get_contents($pipes[1]);
-	$stderr = stream_get_contents($pipes[2]);
 	fclose($pipes[1]);
-	fclose($pipes[2]);
 	$exitCode = proc_close($process);
+	$stderr = (string) file_get_contents($stderrFile);
+	unlink($stderrFile);
 	if ($exitCode !== 0 || $stdout === false) {
 		fwrite(STDERR, sprintf("type-family.php %s failed with exit code %d\n%s%s", $mode, $exitCode, $stdout === false ? '' : $stdout, $stderr));
 		exit(1);

@@ -102,22 +102,30 @@ function spawnChild(string $mode, string $arenaName): array
 		escapeshellarg($mode),
 		escapeshellarg($arenaName),
 	);
-	$process = proc_open($cmd, [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
+	// stderr goes to a file: waitChild() reads stdout to its end first, and
+	// a child blocked on a full stderr pipe never gets there (a Windows pipe
+	// holds 4 KB)
+	$stderrFile = tempnam(sys_get_temp_dir(), 'phpstan-arena-smoke-');
+	if ($stderrFile === false) {
+		fwrite(STDERR, "tempnam failed\n");
+		exit(2);
+	}
+	$process = proc_open($cmd, [1 => ['pipe', 'w'], 2 => ['file', $stderrFile, 'w']], $pipes);
 	if ($process === false) {
 		fwrite(STDERR, "proc_open failed\n");
 		exit(2);
 	}
-	return [$process, $pipes];
+	return [$process, $pipes, $stderrFile];
 }
 
 function waitChild(array $childHandle): array
 {
-	[$process, $pipes] = $childHandle;
+	[$process, $pipes, $stderrFile] = $childHandle;
 	$stdout = stream_get_contents($pipes[1]);
-	$stderr = stream_get_contents($pipes[2]);
 	fclose($pipes[1]);
-	fclose($pipes[2]);
 	$exitCode = proc_close($process);
+	$stderr = (string) file_get_contents($stderrFile);
+	unlink($stderrFile);
 	return [$exitCode, $stdout, $stderr];
 }
 

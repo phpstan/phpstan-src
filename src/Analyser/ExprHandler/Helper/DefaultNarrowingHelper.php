@@ -23,6 +23,7 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
@@ -153,28 +154,33 @@ final class DefaultNarrowingHelper
 	}
 
 	/**
-	 * The impure gate read off an already-processed result: a call whose own
-	 * execution is (possibly) impure must not get a remembered type. The
-	 * result's impure point is keyed to the very node that was walked, so the
-	 * subject has to be that node and not a rebuilt one.
+	 * The impure gate read off an already-processed result: a value computed
+	 * by a (possibly) impure call - the subject itself or any call nested in
+	 * it, like strlen($record->getName()) - must not get a remembered type.
+	 * The result carries the impure points of its whole subtree.
 	 */
 	private function isSubjectValueRemembered(ExpressionResult $subjectResult, Expr $subject): bool
 	{
-		if (
-			!$subject instanceof Expr\FuncCall
-			&& !$subject instanceof Expr\MethodCall
-			&& !$subject instanceof Expr\StaticCall
-			&& !$subject instanceof Expr\NullsafeMethodCall
-		) {
+		if ($subject instanceof AlwaysRememberedExpr) {
 			return true;
 		}
 
 		foreach ($subjectResult->getImpurePoints() as $impurePoint) {
-			if ($impurePoint->getNode() !== $subject) {
+			$node = $impurePoint->getNode();
+			if (
+				!$node instanceof Expr\FuncCall
+				&& !$node instanceof Expr\MethodCall
+				&& !$node instanceof Expr\StaticCall
+				&& !$node instanceof Expr\NullsafeMethodCall
+			) {
 				continue;
 			}
 
-			return !$impurePoint->isCertain() && $this->rememberPossiblyImpureFunctionValues;
+			if (!$impurePoint->isCertain() && $this->rememberPossiblyImpureFunctionValues) {
+				continue;
+			}
+
+			return false;
 		}
 
 		return true;
@@ -223,6 +229,22 @@ final class DefaultNarrowingHelper
 	public function createSubjectTypes(MutatingScope $s, Expr $subject, ?ExpressionResult $subjectResult, Type $type, TypeSpecifierContext $context): SpecifiedTypes
 	{
 		if ($subjectResult !== null) {
+			// a call handler's createTypesCallback gates only the call itself -
+			// an impure call nested in it (strlen($record->getName())) is read
+			// off the stored result, whose impure points cover the whole subtree;
+			// a nullsafe call is left to its handler, which narrows through its
+			// plain twin and so reaches this gate as a MethodCall
+			if (
+				(
+					$subject instanceof Expr\FuncCall
+					|| $subject instanceof Expr\MethodCall
+					|| $subject instanceof Expr\StaticCall
+				)
+				&& !$this->isSubjectValueRemembered($subjectResult, $subject)
+			) {
+				return $this->createSubjectTypesFromResultState($s, $subject, $subjectResult, $type, $context);
+			}
+
 			$createdTypes = $subjectResult->getCreatedTypesForScope($s, $type, $context);
 			if ($createdTypes !== null) {
 				return $createdTypes;

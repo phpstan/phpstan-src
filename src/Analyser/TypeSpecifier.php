@@ -9,11 +9,14 @@ use PhpParser\Node\Expr\Instanceof_;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticCall;
+use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
+use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\ExtensionClassHelper;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\MethodTypeSpecifyingExtension;
@@ -23,10 +26,13 @@ use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_merge;
+use function is_array;
 
 #[AutowiredService(name: 'typeSpecifier', factory: '@typeSpecifierFactory::create')]
 final class TypeSpecifier
 {
+
+	private const CONTAINS_CALL_ATTRIBUTE_NAME = 'containsCall';
 
 	/** @var MethodTypeSpecifyingExtension[][]|null */
 	private ?array $methodTypeSpecifyingExtensionsByClass = null;
@@ -189,91 +195,17 @@ final class TypeSpecifier
 		if (
 			$expr instanceof FuncCall
 			&& $expr->name instanceof Name
+			&& !$this->reflectionProvider->hasFunction($expr->name, $scope)
 		) {
-			$has = $this->reflectionProvider->hasFunction($expr->name, $scope);
-			if (!$has) {
-				// backwards compatibility with previous behaviour
-				return new SpecifiedTypes([], []);
-			}
-
-			$functionReflection = $this->reflectionProvider->getFunction($expr->name, $scope);
-			$hasSideEffects = $functionReflection->hasSideEffects();
-			if ($hasSideEffects->yes()) {
-				return new SpecifiedTypes([], []);
-			}
-
-			if (!$this->rememberPossiblyImpureFunctionValues && !$hasSideEffects->no()) {
-				return new SpecifiedTypes([], []);
-			}
+			return new SpecifiedTypes([], []);
 		}
 
-		if (
-			$expr instanceof FuncCall
-			&& !$expr->name instanceof Name
-		) {
-			$nameType = $scope->getType($expr->name);
-			if ($nameType->isCallable()->yes()) {
-				$isPure = null;
-				foreach ($nameType->getCallableParametersAcceptors($scope) as $variant) {
-					$variantIsPure = $variant->isPure();
-					$isPure = $isPure === null ? $variantIsPure : $isPure->and($variantIsPure);
-				}
-
-				if ($isPure !== null) {
-					if ($isPure->no()) {
-						return new SpecifiedTypes([], []);
-					}
-
-					if (!$this->rememberPossiblyImpureFunctionValues && !$isPure->yes()) {
-						return new SpecifiedTypes([], []);
-					}
-				}
-			}
-		}
-
-		if (
-			$expr instanceof MethodCall
-			&& $expr->name instanceof Node\Identifier
-		) {
-			$methodName = $expr->name->toString();
-			$calledOnType = $scope->getType($expr->var);
-			$methodReflection = $scope->getMethodReflection($calledOnType, $methodName);
-			if (
-				$methodReflection === null
-				|| $methodReflection->hasSideEffects()->yes()
-				|| (!$this->rememberPossiblyImpureFunctionValues && !$methodReflection->hasSideEffects()->no())
-			) {
-				if (isset($containsNull) && !$containsNull) {
-					return $this->createNullsafeTypes($originalExpr, $scope, $context, $type);
-				}
-
-				return new SpecifiedTypes([], []);
-			}
-		}
-
-		if (
-			$expr instanceof StaticCall
-			&& $expr->name instanceof Node\Identifier
-		) {
-			$methodName = $expr->name->toString();
-			if ($expr->class instanceof Name) {
-				$calledOnType = $scope->resolveTypeByName($expr->class);
-			} else {
-				$calledOnType = $scope->getType($expr->class);
+		if (!($expr instanceof AlwaysRememberedExpr) && $this->expressionContainsNonPureCall($expr, $scope)) {
+			if (isset($containsNull) && !$containsNull) {
+				return $this->createNullsafeTypes($originalExpr, $scope, $context, $type);
 			}
 
-			$methodReflection = $scope->getMethodReflection($calledOnType, $methodName);
-			if (
-				$methodReflection === null
-				|| $methodReflection->hasSideEffects()->yes()
-				|| (!$this->rememberPossiblyImpureFunctionValues && !$methodReflection->hasSideEffects()->no())
-			) {
-				if (isset($containsNull) && !$containsNull) {
-					return $this->createNullsafeTypes($originalExpr, $scope, $context, $type);
-				}
-
-				return new SpecifiedTypes([], []);
-			}
+			return new SpecifiedTypes([], []);
 		}
 
 		$sureTypes = [];
@@ -302,6 +234,132 @@ final class TypeSpecifier
 		}
 
 		return $types;
+	}
+
+	private function expressionContainsNonPureCall(Expr $expr, Scope $scope): bool
+	{
+		// The answer for an expression without any call in it cannot change between
+		// scopes, and most specified expressions (plain variables, property fetches,
+		// constant fetches) are of that shape, so it's remembered on the node itself.
+		if ($expr->getAttribute(self::CONTAINS_CALL_ATTRIBUTE_NAME) === false) {
+			return false;
+		}
+
+		$containsCall = false;
+		$containsNonPureCall = $this->findNonPureCall($expr, $scope, $containsCall);
+		if (!$containsCall) {
+			$expr->setAttribute(self::CONTAINS_CALL_ATTRIBUTE_NAME, false);
+		}
+
+		return $containsNonPureCall;
+	}
+
+	/**
+	 * Depth-first pre-order search for a call that isn't known to be pure, replacing a
+	 * NodeFinder::findFirst() call - this runs for every expression being specified,
+	 * so the traverser/visitor machinery overhead was significant.
+	 *
+	 * $containsCall is set when the sub-tree contains a call of any kind.
+	 */
+	private function findNonPureCall(Node $node, Scope $scope, bool &$containsCall): bool
+	{
+		if ($node instanceof Expr\CallLike) {
+			$containsCall = true;
+
+			if ($this->callIsNotPure($node, $scope)) {
+				return true;
+			}
+		}
+
+		foreach ($node->getSubNodeNames() as $subNodeName) {
+			$subNode = $node->$subNodeName;
+			if ($subNode instanceof Node) {
+				if ($this->findNonPureCall($subNode, $scope, $containsCall)) {
+					return true;
+				}
+			} elseif (is_array($subNode)) {
+				foreach ($subNode as $subNodeItem) {
+					if (
+						$subNodeItem instanceof Node
+						&& $this->findNonPureCall($subNodeItem, $scope, $containsCall)
+					) {
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
+	}
+
+	private function callIsNotPure(Expr\CallLike $call, Scope $scope): bool
+	{
+		if ($call instanceof FuncCall) {
+			if ($call->name instanceof Name) {
+				if (!$this->reflectionProvider->hasFunction($call->name, $scope)) {
+					return false;
+				}
+
+				return $this->isNotPure($this->reflectionProvider->getFunction($call->name, $scope)->hasSideEffects());
+			}
+
+			$nameType = $scope->getType($call->name);
+			if ($nameType->isCallable()->yes()) {
+				$isPure = null;
+				foreach ($nameType->getCallableParametersAcceptors($scope) as $variant) {
+					$variantIsPure = $variant->isPure();
+					$isPure = $isPure === null ? $variantIsPure : $isPure->and($variantIsPure);
+				}
+				if ($isPure !== null) {
+					return $this->isNotPure($isPure->negate());
+				}
+			}
+
+			return false;
+		}
+
+		if ($call instanceof MethodCall) {
+			if (!$call->name instanceof Identifier) {
+				return true;
+			}
+
+			$methodReflection = $scope->getMethodReflection($scope->getType($call->var), $call->name->name);
+			if ($methodReflection === null) {
+				return true;
+			}
+
+			return $this->isNotPure($methodReflection->hasSideEffects());
+		}
+
+		if ($call instanceof StaticCall) {
+			if (!$call->name instanceof Identifier) {
+				return true;
+			}
+
+			if ($call->class instanceof Name) {
+				$calledOnType = $scope->resolveTypeByName($call->class);
+			} else {
+				$calledOnType = $scope->getType($call->class);
+			}
+
+			$methodReflection = $scope->getMethodReflection($calledOnType, $call->name->name);
+			if ($methodReflection === null) {
+				return true;
+			}
+
+			return $this->isNotPure($methodReflection->hasSideEffects());
+		}
+
+		return false;
+	}
+
+	private function isNotPure(TrinaryLogic $hasSideEffects): bool
+	{
+		if ($hasSideEffects->yes()) {
+			return true;
+		}
+
+		return !$this->rememberPossiblyImpureFunctionValues && !$hasSideEffects->no();
 	}
 
 	private function createNullsafeTypes(Expr $expr, Scope $scope, TypeSpecifierContext $context, ?Type $type): SpecifiedTypes

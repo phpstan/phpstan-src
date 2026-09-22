@@ -8460,6 +8460,19 @@ foreach ([\PHPStan\Analyser\RicherScopeGetTypeHelper::class => 'getIdenticalResu
 		$r["extra offset class $offsetClass"] = $misuse(static fn () => (new \PHPStan\Type\ObjectType($offsetClass))->isOffsetAccessible());
 	}
 
+	// a callable parameter compared maybe keeps the lazy reasons of the comparison
+	$sealedShape = [new \PHPStan\Type\NeverType(true), new \PHPStan\Type\NeverType(true)];
+	$acceptingShape = new \PHPStan\Type\Constant\ConstantArrayType([$cs('a'), $cs('b')], [new \PHPStan\Type\IntegerType(), new \PHPStan\Type\IntegerType()], [0], [1], null, $sealedShape);
+	$passedShapes = new \PHPStan\Type\UnionType([
+		new \PHPStan\Type\Constant\ConstantArrayType([$cs('a')], [new \PHPStan\Type\IntegerType()], [0], [], null, $sealedShape),
+		new \PHPStan\Type\Constant\ConstantArrayType([$cs('b')], [new \PHPStan\Type\IntegerType()], [0], [], null, $sealedShape),
+	]);
+	$shapeCallable = static fn (\PHPStan\Type\Type $parameterType) => new \PHPStan\Type\CallableType([new \PHPStan\Reflection\Native\NativeParameterReflection('x', false, $parameterType, \PHPStan\Reflection\PassedByReference::createNo(), false, null)], new \PHPStan\Type\VoidType());
+	foreach ([false, true] as $treatMixedAsAny) {
+		$helperResult = \PHPStan\Type\CallableTypeHelper::isParametersAcceptorSuperTypeOf($shapeCallable($acceptingShape), $shapeCallable($passedShapes), $treatMixedAsAny);
+		$r['callable helper lazy reasons ' . ($treatMixedAsAny ? 'any' : 'strict')] = [$helperResult->result->describe(), $helperResult->getReasons()];
+	}
+
 	// countConstantArrayValueTypes() hands each element to TypeTraverser::map(Type $type, ...)
 	foreach (['string' => 'x', 'object' => new \stdClass()] as $elementName => $element) {
 		$r["combinator countConstantArrayValueTypes $elementName"] = $misuse(static fn () => \PHPStan\Type\TypeCombinator::countConstantArrayValueTypes([new \PHPStan\Type\IntegerType(), $element]));

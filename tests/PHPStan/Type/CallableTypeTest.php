@@ -421,4 +421,28 @@ class CallableTypeTest extends PHPStanTestCase
 		);
 	}
 
+	public function testIsSuperTypeOfKeepsLazyReasonsOfMaybeParameter(): void
+	{
+		$sealed = [new NeverType(true), new NeverType(true)];
+		$acceptingParameterType = new ConstantArrayType([new ConstantStringType('a'), new ConstantStringType('b')], [new IntegerType(), new IntegerType()], optionalKeys: [1], unsealed: $sealed);
+		$passedParameterType = new UnionType([
+			new ConstantArrayType([new ConstantStringType('a')], [new IntegerType()], unsealed: $sealed),
+			new ConstantArrayType([new ConstantStringType('b')], [new IntegerType()], unsealed: $sealed),
+		]);
+		$accepting = new CallableType([new NativeParameterReflection('x', false, $acceptingParameterType, PassedByReference::createNo(), false, null)], new VoidType());
+		$passed = new CallableType([new NativeParameterReflection('x', false, $passedParameterType, PassedByReference::createNo(), false, null)], new VoidType());
+
+		// the passed parameter's isSuperTypeOf() is maybe, with a lazy reason from its array{b: int} member
+		$parameterResult = $passedParameterType->isSuperTypeOf($acceptingParameterType);
+		$this->assertTrue($parameterResult->maybe());
+		$this->assertNotSame([], $parameterResult->lazyReasons);
+
+		$result = $accepting->isSuperTypeOf($passed);
+		$this->assertTrue($result->maybe());
+		$reasons = $result->getReasons();
+		$this->assertCount(2, $reasons);
+		$this->assertSame('Type array{a: int}|array{b: int} of parameter #1 $x of passed callable needs to be same or wider than parameter type array{a: int, b?: int} of accepting callable.', $reasons[0]);
+		$this->assertStringStartsWith('Sealed array shapes array{b: int} and array{a: int, b?: int} cannot be intersected.', $reasons[1]);
+	}
+
 }

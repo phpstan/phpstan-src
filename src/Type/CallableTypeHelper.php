@@ -91,7 +91,7 @@ final class CallableTypeHelper
 						$parameterDescription,
 						$ourParameterType->describe($verbosity),
 					),
-				]));
+				]), $isSuperType->lazyReasons);
 			}
 
 			$result = $result->and($isSuperType);

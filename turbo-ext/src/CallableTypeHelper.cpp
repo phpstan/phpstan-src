@@ -147,13 +147,14 @@ public:
 					ZSTR_VAL(Z_STR_P(parameterDescription.raw())),
 					ZSTR_VAL(Z_STR_P(ourDescription.raw()))
 				));
-				/* new IsSuperTypeOfResult($isSuperType->result, array_merge($isSuperType->reasons, [$reason])) */
-				zv::Val trinary, reasons;
+				/* new IsSuperTypeOfResult($isSuperType->result, array_merge($isSuperType->reasons, [$reason]), $isSuperType->lazyReasons) */
+				zv::Val trinary, reasons, lazyReasons;
 				if (UNEXPECTED(!resultParts(isSuperType.raw(), trinary, reasons))) return zv::Val();
+				if (UNEXPECTED(!lazyReasonsOf(isSuperType.raw(), lazyReasons))) return zv::Val();
 				zv::Arr merged = zv::Arr::create(zv::ArrRef(reasons.raw()).size() + 1);
 				if (UNEXPECTED(!pt_callable_array_merge_into(merged, reasons.raw()))) return zv::Val();
 				merged.push(std::move(reason));
-				isSuperType = create(trinary.raw(), std::move(merged));
+				isSuperType = create(trinary.raw(), std::move(merged), std::move(lazyReasons));
 				if (UNEXPECTED(isSuperType.isUndef())) return zv::Val();
 			}
 
@@ -218,16 +219,50 @@ private:
 		return !result.isUndef();
 	}
 
-	/* new IsSuperTypeOfResult($trinary, $reasons) ($reasons consumed);
-	 * UNDEF = pending exception */
-	static zv::Val create(zval *trinary, zv::Arr reasons)
+	/* new IsSuperTypeOfResult($trinary, $reasons, $lazyReasons) ($reasons
+	 * and $lazyReasons consumed, UNDEF $lazyReasons for none); UNDEF =
+	 * pending exception */
+	static zv::Val create(zval *trinary, zv::Arr reasons, zv::Val lazyReasons = zv::Val())
 	{
 		zval out;
 		zval reasonsRaw = reasons.take();
-		zval lazyReasons;
-		ZVAL_EMPTY_ARRAY(&lazyReasons);
-		if (UNEXPECTED(!pt_result_object_create(&out, pt_ce_is_super_type_of_result, trinary, &reasonsRaw, &lazyReasons))) return zv::Val();
+		zval lazyReasonsRaw;
+		if (lazyReasons.isUndef()) {
+			ZVAL_EMPTY_ARRAY(&lazyReasonsRaw);
+		} else {
+			lazyReasonsRaw = lazyReasons.take();
+		}
+		if (UNEXPECTED(!pt_result_object_create(&out, pt_ce_is_super_type_of_result, trinary, &reasonsRaw, &lazyReasonsRaw))) return zv::Val();
 		return zv::Val::adopt(out);
+	}
+
+	/* $result->lazyReasons of an IsSuperTypeOfResult — the slot of a native
+	 * one, the public property of the PHP twin declared next to it in the
+	 * differential tests; an owned copy, false = pending exception */
+	[[nodiscard]] static bool lazyReasonsOf(zval *result, zv::Val &lazyReasons)
+	{
+		zend_object *object = Z_OBJ_P(result);
+		if (EXPECTED(object->ce == pt_ce_is_super_type_of_result)) {
+			zval *slot = OBJ_PROP_NUM(object, 2);
+			if (UNEXPECTED(Z_TYPE_P(slot) != IS_ARRAY)) {
+				zend_throw_error(NULL, "Typed property %s::$lazyReasons must not be accessed before initialization", ZSTR_VAL(object->ce->name));
+				return false;
+			}
+			lazyReasons = zv::Val::copyOf(zv::Ref(slot));
+			return true;
+		}
+		zval rv;
+		zval *value = zend_read_property(object->ce, object, PT_LC("lazyReasons"), 0, &rv);
+		if (UNEXPECTED(value == NULL || EG(exception))) return false;
+		lazyReasons = zv::Val::copyOf(zv::Ref(value));
+		if (value == &rv) {
+			zval_ptr_dtor(&rv);
+		}
+		if (UNEXPECTED(!zv::Ref(lazyReasons.raw()).isArray())) {
+			zend_type_error("phpstan_turbo: %s must carry an array $lazyReasons", ZSTR_VAL(object->ce->name));
+			return false;
+		}
+		return true;
 	}
 
 	/* new IsSuperTypeOfResult(TrinaryLogic::createNo(), [$reason]) ($reason

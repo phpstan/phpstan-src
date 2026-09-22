@@ -33,6 +33,7 @@ use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\InstanceofDeprecated;
 use PHPStan\Type\IntegerRangeType;
@@ -47,6 +48,7 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\ConstantScalarTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function addcslashes;
@@ -177,15 +179,20 @@ class ConstantStringType extends StringType implements ConstantScalarType
 			// Do not use TemplateType's isSuperTypeOf handling directly because it takes ObjectType
 			// uncertainty into account.
 			if ($genericType instanceof TemplateType) {
-				$isSuperType = $genericType->getBound()->isSuperTypeOf($objectType);
-			} else {
-				$isSuperType = $genericType->isSuperTypeOf($objectType);
+				$genericType = $genericType->getBound();
 			}
 
 			// Explicitly handle the uncertainty for Yes & Maybe.
-			if ($isSuperType->yes()) {
+			if ($genericType->isSuperTypeOf($objectType)->yes()) {
 				return IsSuperTypeOfResult::createMaybe();
 			}
+
+			// A class name does not carry type arguments - compare against the generic type
+			// with its type arguments erased.
+			if (self::eraseTypeArguments($genericType)->isSuperTypeOf($objectType)->yes()) {
+				return IsSuperTypeOfResult::createMaybe();
+			}
+
 			return IsSuperTypeOfResult::createNo();
 		}
 		if ($type instanceof ClassStringType) {
@@ -640,6 +647,17 @@ class ConstantStringType extends StringType implements ConstantScalarType
 	public function getConstant(string $constantName): ClassConstantReflection
 	{
 		return $this->getObjectType()->getConstant($constantName);
+	}
+
+	private static function eraseTypeArguments(Type $type): Type
+	{
+		return TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
+			if ($type instanceof GenericObjectType) {
+				return new ObjectType($type->getClassName(), $type->getSubtractedType());
+			}
+
+			return $traverse($type);
+		});
 	}
 
 	private function getObjectType(): ObjectType

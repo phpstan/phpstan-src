@@ -286,20 +286,28 @@ public:
 			 * because it takes ObjectType uncertainty into account. */
 			bool isTemplate;
 			if (UNEXPECTED(!pt_type_instanceof(genericType.raw(), PT_CLASS_TEMPLATE_TYPE, isTemplate))) return zv::Val();
-			zv::Val isSuperType;
 			if (isTemplate) {
-				zv::Val bound = pt_type_call(Z_OBJ_P(genericType.raw()), PT_LC("getbound"), 0, NULL);
-				if (UNEXPECTED(bound.isUndef())) return zv::Val();
-				isSuperType = pt_type_op(Z_OBJ_P(bound.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, objectType);
-			} else {
-				isSuperType = pt_type_op(Z_OBJ_P(genericType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, objectType);
+				genericType = pt_type_call(Z_OBJ_P(genericType.raw()), PT_LC("getbound"), 0, NULL);
+				if (UNEXPECTED(genericType.isUndef())) return zv::Val();
 			}
+
+			/* Explicitly handle the uncertainty for Yes & Maybe. */
+			zv::Val isSuperType = pt_type_op(Z_OBJ_P(genericType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, objectType);
 			if (UNEXPECTED(isSuperType.isUndef())) return zv::Val();
 			zend_long verdict = pt_type_result_trinary(isSuperType.raw());
 			if (UNEXPECTED(verdict < 0)) return zv::Val();
-
-			/* Explicitly handle the uncertainty for Yes & Maybe. */
 			if (verdict == PT_TRI_YES) return pt_type_is_super_type_of_result(PT_TRI_MAYBE);
+
+			/* A class name does not carry type arguments - compare against
+			 * the generic type with its type arguments erased. */
+			zv::Val erased = eraseTypeArguments(genericType.raw());
+			if (UNEXPECTED(erased.isUndef())) return zv::Val();
+			isSuperType = pt_type_op(Z_OBJ_P(erased.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, objectType);
+			if (UNEXPECTED(isSuperType.isUndef())) return zv::Val();
+			verdict = pt_type_result_trinary(isSuperType.raw());
+			if (UNEXPECTED(verdict < 0)) return zv::Val();
+			if (verdict == PT_TRI_YES) return pt_type_is_super_type_of_result(PT_TRI_MAYBE);
+
 			return pt_type_is_super_type_of_result(PT_TRI_NO);
 		}
 		if (instanceof_function(typeCe, pt_ce_class_string_type)) {
@@ -1099,6 +1107,42 @@ private:
 	{
 		if (EXPECTED(isExact())) return isClassString();
 		return pt_type_call_trinary(self, PT_LC("isclassstring"), 0, NULL);
+	}
+
+	/* self::eraseTypeArguments($type): TypeTraverser::map() replacing each
+	 * GenericObjectType with new ObjectType($type->getClassName(),
+	 * $type->getSubtractedType()); UNDEF = pending exception */
+	static zv::Val eraseTypeArguments(zval *type)
+	{
+		zv::Val callback = pt_type_native_callback(eraseTypeArgumentsVisit, NULL, NULL);
+		if (UNEXPECTED(callback.isUndef())) return zv::Val();
+		return pt_type_traverser_map_of(type, callback.raw());
+	}
+
+	/* the closure: `static function (Type $type, callable $traverse): Type` */
+	static void eraseTypeArgumentsVisit(zval *, zval *, uint32_t argc, zval *argv, zval *return_value)
+	{
+		if (UNEXPECTED(argc < 2 || Z_TYPE(argv[0]) != IS_OBJECT)) {
+			zend_argument_count_error("Too few arguments to function %s::{closure}(), %u passed and exactly 2 expected", ZSTR_VAL(pt_ce_constant_string_type->name), argc);
+			return;
+		}
+		zval *type = &argv[0];
+		if (instanceof_function(Z_OBJCE_P(type), pt_ce_generic_object_type)) {
+			zv::Val className = pt_type_call(Z_OBJ_P(type), PT_LC("getclassname"), 0, NULL);
+			if (UNEXPECTED(className.isUndef())) return;
+			if (UNEXPECTED(Z_TYPE_P(className.raw()) != IS_STRING)) {
+				zend_type_error("phpstan_turbo: ObjectType::__construct(): Argument #1 ($className) must be of type string, %s given", zend_zval_type_name(className.raw()));
+				return;
+			}
+			zv::Val subtractedType = pt_type_call(Z_OBJ_P(type), PT_LC("getsubtractedtype"), 0, NULL);
+			if (UNEXPECTED(subtractedType.isUndef())) return;
+			if (UNEXPECTED(!pt_object_type_new(return_value, Z_STR_P(className.raw()), subtractedType.raw()))) return;
+			return;
+		}
+
+		zv::Val traversed = pt_type_call_callable(&argv[1], 1, type);
+		if (UNEXPECTED(traversed.isUndef())) return;
+		traversed.intoReturnValue(return_value);
 	}
 
 	/* $this->objectType ??= new ObjectType($this->value) — the private

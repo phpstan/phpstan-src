@@ -5,7 +5,6 @@ namespace PHPStan\Reflection\BetterReflection\Type;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionType;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
@@ -22,7 +21,7 @@ final class AdapterReflectionEnumCaseDynamicReturnTypeExtension implements Dynam
 	/**
 	 * @param class-string $class
 	 */
-	public function __construct(private PhpVersion $phpVersion, private string $class)
+	public function __construct(private string $class)
 	{
 	}
 
@@ -41,7 +40,8 @@ final class AdapterReflectionEnumCaseDynamicReturnTypeExtension implements Dynam
 
 	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): ?Type
 	{
-		if ($this->phpVersion->getVersionId() >= 80000) {
+		// The PHP 7 Reflection API returns false where PHP 8 has narrower return types.
+		if (!$scope->getPhpVersion()->hasPhp8ReflectionReturnTypes()->no()) {
 			return null;
 		}
 

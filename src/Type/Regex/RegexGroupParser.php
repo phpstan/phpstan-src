@@ -10,7 +10,6 @@ use Hoa\File\Read;
 use Nette\Utils\RegexpException;
 use Nette\Utils\Strings;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
@@ -55,13 +54,12 @@ final class RegexGroupParser
 	private static array $parsedAst = [];
 
 	public function __construct(
-		private PhpVersion $phpVersion,
 		private RegexExpressionHelper $regexExpressionHelper,
 	)
 	{
 	}
 
-	public function parseGroups(string $regex): ?RegexAstWalkResult
+	public function parseGroups(string $regex, bool $supportsCaptureOnlyNamedGroups): ?RegexAstWalkResult
 	{
 		/** @throws void */
 		self::$parser ??= Llk::load(new Read(__DIR__ . '/../../../resources/RegexGrammar.pp'));
@@ -106,7 +104,7 @@ final class RegexGroupParser
 		$this->updateCapturingAstAddEmptyToken($ast);
 
 		$captureOnlyNamed = false;
-		if ($this->phpVersion->supportsPregCaptureOnlyNamedGroups()) {
+		if ($supportsCaptureOnlyNamedGroups) {
 			$captureOnlyNamed = str_contains($modifiers, 'n');
 		}
 

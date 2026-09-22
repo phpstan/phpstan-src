@@ -85,6 +85,7 @@ final class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionR
 			if ($inputConstantArrayType === null) {
 				$isList = $inputArgType->isList()->yes();
 				$valueType = $this->filterFunctionReturnTypeHelper->getType(
+					$scope,
 					$inputArgType->getIterableValueType(),
 					$filterArgType,
 					null,
@@ -112,7 +113,7 @@ final class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionR
 		} elseif ($filterConstantArrayType === null) {
 			if ($inputConstantArrayType === null) {
 				$isList = $inputArgType->isList()->yes();
-				$valueType = $this->filterFunctionReturnTypeHelper->getType($inputArgType, $filterArgType, null);
+				$valueType = $this->filterFunctionReturnTypeHelper->getType($scope, $inputArgType, $filterArgType, null);
 
 				$arrayType = new ArrayType(
 					$inputArgType->getIterableKeyType(),
@@ -160,7 +161,7 @@ final class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionR
 			}
 
 			[$filterType, $flagsType] = $this->fetchFilter($filterTypesMap[$key] ?? new MixedType());
-			$valueType = $this->filterFunctionReturnTypeHelper->getType($inputType, $filterType, $flagsType);
+			$valueType = $this->filterFunctionReturnTypeHelper->getType($scope, $inputType, $filterType, $flagsType);
 
 			if (in_array($key, $optionalKeys, true)) {
 				if ($addEmpty) {
@@ -186,7 +187,7 @@ final class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionR
 				} else {
 					[$unsealedFilter, $unsealedFlags] = $this->fetchFilter(new MixedType());
 				}
-				$unsealedValueType = $this->filterFunctionReturnTypeHelper->getType($unsealedTypes[1], $unsealedFilter, $unsealedFlags);
+				$unsealedValueType = $this->filterFunctionReturnTypeHelper->getType($scope, $unsealedTypes[1], $unsealedFilter, $unsealedFlags);
 				if ($addEmpty) {
 					$unsealedValueType = TypeCombinator::addNull($unsealedValueType);
 				}

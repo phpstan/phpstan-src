@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -23,7 +22,6 @@ final class OpensslCipherFunctionsReturnTypeExtension implements DynamicFunction
 {
 
 	public function __construct(
-		private PhpVersion $phpVersion,
 		private OpenSslCipherMethodsProvider $cipherMethodsProvider,
 	)
 	{
@@ -36,7 +34,7 @@ final class OpensslCipherFunctionsReturnTypeExtension implements DynamicFunction
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		if (!$this->phpVersion->throwsValueErrorForInternalFunctions()) {
+		if (!$scope->getPhpVersion()->throwsValueErrorForInternalFunctions()->yes()) {
 			return null;
 		}
 

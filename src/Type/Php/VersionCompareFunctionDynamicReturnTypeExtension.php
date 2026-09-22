@@ -7,7 +7,6 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\ConfiguredPhpVersionRangeHelper;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
@@ -47,7 +46,6 @@ final class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicF
 
 	public function __construct(
 		private ConfiguredPhpVersionRangeHelper $phpVersionRangeHelper,
-		private PhpVersion $phpVersion,
 	)
 	{
 	}
@@ -68,6 +66,7 @@ final class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicF
 			return null;
 		}
 
+		$throwsValueError = $scope->getPhpVersion()->throwsValueErrorForInternalFunctions();
 		$version1Strings = $this->getVersionStrings($args[0]->value, $scope);
 		$version2Strings = $this->getVersionStrings($args[1]->value, $scope);
 		$counts = [
@@ -78,7 +77,7 @@ final class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicF
 		if (isset($args[2])) {
 			$operatorStrings = $scope->getType($args[2]->value)->getConstantStrings();
 			$counts[] = count($operatorStrings);
-			$returnType = $this->phpVersion->throwsValueErrorForInternalFunctions()
+			$returnType = $throwsValueError->yes()
 				? new BooleanType()
 				: new BenevolentUnionType([new BooleanType(), new NullType()]);
 		} else {
@@ -105,7 +104,7 @@ final class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicF
 					foreach ($operatorStrings as $operatorString) {
 						$operatorValue = $operatorString->getValue();
 						if (!in_array($operatorValue, self::VALID_OPERATORS, true)) {
-							if (!$this->phpVersion->throwsValueErrorForInternalFunctions()) {
+							if (!$throwsValueError->yes()) {
 								$canBeNull = true;
 							}
 

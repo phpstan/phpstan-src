@@ -871,4 +871,34 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-15249.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testPhpVersionsFromScope(): void
+	{
+		$this->analyse([__DIR__ . '/data/dead-catch-php-versions.php'], [
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				23,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				40,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.3.0')]
+	public function testDateTimePhpVersionsFromScope(): void
+	{
+		$this->analyse([__DIR__ . '/data/dead-catch-date-php-versions.php'], [
+			[
+				'Dead catch - DateInvalidOperationException is never thrown in the try block.',
+				26,
+			],
+			[
+				'Dead catch - DateMalformedStringException is never thrown in the try block.',
+				43,
+			],
+		]);
+	}
+
 }

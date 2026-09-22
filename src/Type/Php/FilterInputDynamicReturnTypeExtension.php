@@ -31,6 +31,7 @@ final class FilterInputDynamicReturnTypeExtension implements DynamicFunctionRetu
 		}
 
 		return $this->filterFunctionReturnTypeHelper->getInputType(
+			$scope,
 			$scope->getType($args[0]->value),
 			$scope->getType($args[1]->value),
 			isset($args[2]) ? $scope->getType($args[2]->value) : null,

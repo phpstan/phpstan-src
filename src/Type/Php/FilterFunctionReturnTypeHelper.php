@@ -3,8 +3,8 @@
 namespace PHPStan\Type\Php;
 
 use PhpParser\Node;
+use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
@@ -52,12 +52,12 @@ final class FilterFunctionReturnTypeHelper
 
 	private ?Type $supportedFilterInputTypes = null;
 
-	public function __construct(private ReflectionProvider $reflectionProvider, private PhpVersion $phpVersion)
+	public function __construct(private ReflectionProvider $reflectionProvider)
 	{
 		$this->flagsString = new ConstantStringType('flags');
 	}
 
-	private function getOffsetValueType(Type $inputType, Type $offsetType, ?Type $filterType, ?Type $flagsType): Type
+	private function getOffsetValueType(Scope $scope, Type $inputType, Type $offsetType, ?Type $filterType, ?Type $flagsType): Type
 	{
 		$hasNullOnFailure = $this->hasFlag('FILTER_NULL_ON_FAILURE', $flagsType);
 		if ($hasNullOnFailure->yes()) {
@@ -73,14 +73,14 @@ final class FilterFunctionReturnTypeHelper
 			return $inexistentOffsetType;
 		}
 
-		$filteredType = $this->getType($inputType->getOffsetValueType($offsetType), $filterType, $flagsType);
+		$filteredType = $this->getType($scope, $inputType->getOffsetValueType($offsetType), $filterType, $flagsType);
 
 		return $hasOffsetValueType->maybe()
 			? TypeCombinator::union($filteredType, $inexistentOffsetType)
 			: $filteredType;
 	}
 
-	public function getInputType(Type $typeType, Type $varNameType, ?Type $filterType, ?Type $flagsType): Type
+	public function getInputType(Scope $scope, Type $typeType, Type $varNameType, ?Type $filterType, ?Type $flagsType): Type
 	{
 		$this->supportedFilterInputTypes ??= TypeCombinator::union(
 			$this->reflectionProvider->getConstant(new Node\Name('INPUT_GET'), null)->getValueType(),
@@ -91,7 +91,7 @@ final class FilterFunctionReturnTypeHelper
 		);
 
 		if (!$typeType->isInteger()->yes() || $this->supportedFilterInputTypes->isSuperTypeOf($typeType)->no()) {
-			if ($this->phpVersion->throwsTypeErrorForInternalFunctions()) {
+			if ($scope->getPhpVersion()->throwsTypeErrorForInternalFunctions()->yes()) {
 				return new NeverType();
 			}
 
@@ -104,10 +104,10 @@ final class FilterFunctionReturnTypeHelper
 			$inputType = new ArrayType(new StringType(), new MixedType());
 		}
 
-		return $this->getOffsetValueType($inputType, $varNameType, $filterType, $flagsType);
+		return $this->getOffsetValueType($scope, $inputType, $varNameType, $filterType, $flagsType);
 	}
 
-	public function getType(Type $inputType, ?Type $filterType, ?Type $flagsType): Type
+	public function getType(Scope $scope, Type $inputType, ?Type $filterType, ?Type $flagsType): Type
 	{
 		$mixedType = new MixedType();
 
@@ -151,9 +151,10 @@ final class FilterFunctionReturnTypeHelper
 
 		$inputIsArray = $inputType->isArray();
 		$hasRequireArrayFlag = $this->hasFlag('FILTER_REQUIRE_ARRAY', $flagsType);
-		$hasThrowOnFailureFlag = $this->phpVersion->hasFilterThrowOnFailureConstant()
-			? $this->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType)
-			: TrinaryLogic::createNo();
+		$phpVersionHasThrowOnFailure = $scope->getPhpVersion()->hasFilterThrowOnFailureConstant();
+		$hasThrowOnFailureFlag = $phpVersionHasThrowOnFailure->no()
+			? TrinaryLogic::createNo()
+			: $phpVersionHasThrowOnFailure->and($this->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType));
 		if ($inputIsArray->no() && $hasRequireArrayFlag->yes()) {
 			if ($hasThrowOnFailureFlag->yes()) {
 				return new ErrorType();
@@ -311,6 +312,10 @@ final class FilterFunctionReturnTypeHelper
 	 */
 	private function getConstant(string $constantName): ?int
 	{
+		if (!$this->reflectionProvider->hasConstant(new Node\Name($constantName), null)) {
+			return null;
+		}
+
 		$constant = $this->reflectionProvider->getConstant(new Node\Name($constantName), null);
 		$valueType = $constant->getValueType();
 		if (!$valueType instanceof ConstantIntegerType) {

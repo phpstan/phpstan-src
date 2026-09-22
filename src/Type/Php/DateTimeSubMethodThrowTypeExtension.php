@@ -7,7 +7,6 @@ use DateTimeImmutable;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\DynamicMethodThrowTypeExtension;
 use PHPStan\Type\ObjectType;
@@ -18,10 +17,6 @@ use function in_array;
 #[AutowiredService]
 final class DateTimeSubMethodThrowTypeExtension implements DynamicMethodThrowTypeExtension
 {
-
-	public function __construct(private PhpVersion $phpVersion)
-	{
-	}
 
 	public function isMethodSupported(MethodReflection $methodReflection): bool
 	{
@@ -35,7 +30,7 @@ final class DateTimeSubMethodThrowTypeExtension implements DynamicMethodThrowTyp
 			return null;
 		}
 
-		if (!$this->phpVersion->hasDateTimeExceptions()) {
+		if ($scope->getPhpVersion()->hasDateTimeExceptions()->no()) {
 			return null;
 		}
 

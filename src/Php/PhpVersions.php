@@ -186,4 +186,81 @@ final class PhpVersions
 		return IntegerRangeType::fromInterval(80500, null)->isSuperTypeOf($this->phpVersions)->result;
 	}
 
+	public function arrayFunctionsReturnNullWithNonArray(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(null, 79999)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function hasDateTimeExceptions(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80300, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function hasStricterRoundFunctions(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80000, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function strSplitReturnsEmptyArray(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80200, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function substrReturnFalseInsteadOfEmptyString(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(null, 79999)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function highlightStringDoesNotReturnFalse(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80400, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function throwsOnInvalidMbStringEncoding(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80000, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function supportsPassNoneEncodings(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(null, 70299)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function hasFilterThrowOnFailureConstant(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80500, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function hasPDOSubclasses(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80400, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function supportsPregUnmatchedAsNull(): TrinaryLogic
+	{
+		// while PREG_UNMATCHED_AS_NULL is defined in php-src since 7.2.x it starts working as expected with 7.4.x
+		// https://3v4l.org/v3HE4
+		return IntegerRangeType::fromInterval(70400, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function supportsAllUnicodeScalarCodePointsInMbSubstituteCharacter(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(70200, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function supportsPregCaptureOnlyNamedGroups(): TrinaryLogic
+	{
+		// https://php.watch/versions/8.2/preg-n-no-capture-modifier
+		return IntegerRangeType::fromInterval(80200, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	/**
+	 * Whether the native Reflection API has its PHP 8 return types, which are narrower
+	 * than the PHP 7 ones (e.g. no `false` for a failed lookup).
+	 */
+	public function hasPhp8ReflectionReturnTypes(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80000, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
 }

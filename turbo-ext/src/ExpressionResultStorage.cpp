@@ -110,10 +110,11 @@ void pt_register_expression_result_storage()
 	reg::Class cls("PHPStan\\Analyser\\ExpressionResultStorage");
 	ptdecl::ExpressionResultStorage::declareClass(cls);
 	/* exprsById/resultsById/fallback must stay in this order (OBJ_PROP_NUM
-	 * slots) */
+	 * slots): the two id-keyed arrays deliberately replace the twin's
+	 * SplObjectStorage $exprResults; $fallback is the twin's `?self` */
 	cls.privateArrayProperty("exprsById");
 	cls.privateArrayProperty("resultsById");
-	cls.privateNullProperty("fallback");
+	cls.property("fallback", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL, "self");
 
 	/* the twin's constructor only initialized its SplObjectStorage; the
 	 * native property defaults already cover that */
@@ -121,7 +122,7 @@ void pt_register_expression_result_storage()
 		ZEND_PARSE_PARAMETERS_NONE();
 	});
 
-	cls.method("duplicate", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::duplicate, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		zv::Val result = ExpressionResultStorage(ZEND_THIS).duplicate();
 		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();

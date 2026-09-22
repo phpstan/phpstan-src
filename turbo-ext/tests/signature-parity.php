@@ -35,7 +35,19 @@ chdir($root);
  */
 $knownDrift = [
 	'PhpParser\\NodeTraverser' => 'pending',
-	'PHPStan\\Analyser\\ExpressionResultStorage' => 'pending',
+];
+
+/**
+ * Single differences a native class keeps on purpose — class => [pattern
+ * matched against the problem text => reason]. A pattern that matches no
+ * problem any more is reported as stale.
+ *
+ * @var array<string, array<string, string>>
+ */
+$deliberateDrift = [
+	'PHPStan\\Analyser\\ExpressionResultStorage' => [
+		'~^property (exprResults is not declared natively|(exprsById|resultsById) is declared natively but not in PHP)$~' => 'the result table is two id-keyed arrays instead of the twin\'s SplObjectStorage',
+	],
 ];
 
 /**
@@ -317,6 +329,21 @@ foreach ($manifest as $twinClass => $entry) {
 		compareMembers('constant', $twinClass, $native['constants'], $twin['constants']),
 	);
 	$compared += count($twin['methods']) + count($twin['properties']) + count($twin['constants']);
+
+	foreach ($deliberateDrift[$twinClass] ?? [] as $pattern => $reason) {
+		$matched = false;
+		foreach ($problems as $i => $problem) {
+			if (preg_match($pattern, $problem) === 1) {
+				printf("~ %s: %s (deliberate: %s)\n", $twinClass, $problem, $reason);
+				unset($problems[$i]);
+				$matched = true;
+			}
+		}
+		if (!$matched) {
+			$problems[] = sprintf('the deliberate difference %s matches nothing any more — remove it from $deliberateDrift', $pattern);
+		}
+	}
+	$problems = array_values($problems);
 
 	if (isset($knownDrift[$twinClass])) {
 		if ($problems === []) {

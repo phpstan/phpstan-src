@@ -8,7 +8,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\FunctionCallableNode;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -29,7 +28,6 @@ final class FunctionCallableRule implements Rule
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private RuleLevelHelper $ruleLevelHelper,
-		private PhpVersion $phpVersion,
 		#[AutowiredParameter]
 		private bool $checkFunctionNameCase,
 		#[AutowiredParameter]
@@ -45,7 +43,7 @@ final class FunctionCallableRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$this->phpVersion->supportsFirstClassCallables()) {
+		if (!$scope->getPhpVersion()->supportsFirstClassCallables()->yes()) {
 			return [
 				RuleErrorBuilder::message('First-class callables are supported only on PHP 8.1 and later.')
 					->nonIgnorable()

@@ -2,10 +2,10 @@
 
 namespace PHPStan\Rules\Properties;
 
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<ReadOnlyPropertyRule>
@@ -13,18 +13,18 @@ use PHPUnit\Framework\Attributes\DataProvider;
 class ReadOnlyPropertyRuleTest extends RuleTestCase
 {
 
-	private int $phpVersionId;
-
 	protected function getRule(): Rule
 	{
-		return new ReadOnlyPropertyRule(new PhpVersion($this->phpVersionId));
+		return new ReadOnlyPropertyRule();
 	}
 
-	public static function dataRule(): array
+	/**
+	 * @return iterable<array{list<array{0: string, 1: int, 2?: string}>}>
+	 */
+	public static function dataRule(): iterable
 	{
-		return [
-			[
-				80000,
+		if (PHP_VERSION_ID < 80100) {
+			yield [
 				[
 					[
 						'Readonly properties are supported only on PHP 8.1 and later.',
@@ -59,22 +59,24 @@ class ReadOnlyPropertyRuleTest extends RuleTestCase
 						23,
 					],
 				],
-			],
+			];
+
+			return;
+		}
+
+		yield [
 			[
-				80100,
 				[
-					[
-						'Readonly property must have a native type.',
-						9,
-					],
-					[
-						'Readonly property cannot have a default value.',
-						10,
-					],
-					[
-						'Readonly property cannot be static.',
-						23,
-					],
+					'Readonly property must have a native type.',
+					9,
+				],
+				[
+					'Readonly property cannot have a default value.',
+					10,
+				],
+				[
+					'Readonly property cannot be static.',
+					23,
 				],
 			],
 		];
@@ -84,9 +86,8 @@ class ReadOnlyPropertyRuleTest extends RuleTestCase
 	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
 	#[DataProvider('dataRule')]
-	public function testRule(int $phpVersionId, array $errors): void
+	public function testRule(array $errors): void
 	{
-		$this->phpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/read-only-property.php'], $errors);
 	}
 
@@ -94,10 +95,27 @@ class ReadOnlyPropertyRuleTest extends RuleTestCase
 	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
 	#[DataProvider('dataRule')]
-	public function testRuleReadonlyClass(int $phpVersionId, array $errors): void
+	public function testRuleReadonlyClass(array $errors): void
 	{
-		$this->phpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/read-only-property-readonly-class.php'], $errors);
+	}
+
+	public function testConditionallyDeclaredClass(): void
+	{
+		$errors = [
+			[
+				'Readonly properties are supported only on PHP 8.1 and later.',
+				18,
+			],
+		];
+		if (PHP_VERSION_ID < 80100) {
+			$errors[] = [
+				'Readonly properties are supported only on PHP 8.1 and later.',
+				26,
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/read-only-property-php-versions.php'], $errors);
 	}
 
 }

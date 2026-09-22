@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Parser\StandaloneThrowExprVisitor;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
@@ -17,10 +16,6 @@ use PHPStan\Rules\RuleErrorBuilder;
 final class ThrowExpressionRule implements Rule
 {
 
-	public function __construct(private PhpVersion $phpVersion)
-	{
-	}
-
 	public function getNodeType(): string
 	{
 		return Node\Expr\Throw_::class;
@@ -28,7 +23,7 @@ final class ThrowExpressionRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if ($this->phpVersion->supportsThrowExpression()) {
+		if ($scope->getPhpVersion()->supportsThrowExpression()->yes()) {
 			return [];
 		}
 

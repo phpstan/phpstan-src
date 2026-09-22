@@ -194,36 +194,22 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 		]);
 	}
 
-	public static function dataNativeUnionTypes(): array
+	public function testNativeUnionTypes(): void
 	{
-		return [
-			[
-				70400,
+		$errors = [];
+		if (PHP_VERSION_ID < 80000) {
+			$errors = [
 				[
-					[
-						'Function NativeUnionTypesSupport\foo() uses native union types but they\'re supported only on PHP 8.0 and later.',
-						5,
-					],
-					[
-						'Function NativeUnionTypesSupport\bar() uses native union types but they\'re supported only on PHP 8.0 and later.',
-						10,
-					],
+					'Function NativeUnionTypesSupport\foo() uses native union types but they\'re supported only on PHP 8.0 and later.',
+					5,
 				],
-			],
-			[
-				80000,
-				[],
-			],
-		];
-	}
+				[
+					'Function NativeUnionTypesSupport\bar() uses native union types but they\'re supported only on PHP 8.0 and later.',
+					10,
+				],
+			];
+		}
 
-	/**
-	 * @param list<array{0: string, 1: int, 2?: string}> $errors
-	 */
-	#[DataProvider('dataNativeUnionTypes')]
-	public function testNativeUnionTypes(int $phpVersionId, array $errors): void
-	{
-		$this->phpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/native-union-types.php'], $errors);
 	}
 
@@ -232,20 +218,7 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 		return [
 			[
 				70400,
-				[
-					[
-						"Function RequiredAfterOptional\doAmet() uses native union types but they're supported only on PHP 8.0 and later.",
-						34,
-					],
-					[
-						"Function RequiredAfterOptional\doConsectetur() uses native union types but they're supported only on PHP 8.0 and later.",
-						38,
-					],
-					[
-						"Function RequiredAfterOptional\doSed() uses native union types but they're supported only on PHP 8.0 and later.",
-						50,
-					],
-				],
+				[],
 			],
 			[
 				80000,
@@ -547,6 +520,24 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 				10,
 			],
 		]);
+	}
+
+	public function testConditionallyDeclaredFunction(): void
+	{
+		$errors = [
+			[
+				"Function NativeUnionTypesPhpVersions\\unsupportedInBranch() uses native union types but they're supported only on PHP 8.0 and later.",
+				12,
+			],
+		];
+		if (PHP_VERSION_ID < 80000) {
+			$errors[] = [
+				"Function NativeUnionTypesPhpVersions\\alwaysUnsupported() uses native union types but they're supported only on PHP 8.0 and later.",
+				17,
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/native-union-types-php-versions.php'], $errors);
 	}
 
 }

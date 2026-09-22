@@ -9,7 +9,6 @@ use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InTraitNode;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -24,7 +23,6 @@ final class TraitAttributesRule implements Rule
 
 	public function __construct(
 		private AttributesCheck $attributesCheck,
-		private PhpVersion $phpVersion,
 	)
 	{
 	}
@@ -36,7 +34,7 @@ final class TraitAttributesRule implements Rule
 
 	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
-		if (!$this->phpVersion->supportsDeprecatedTraits()) {
+		if (!$scope->getPhpVersion()->supportsDeprecatedTraits()->yes()) {
 			if (count($node->getTraitReflection()->getNativeReflection()->getAttributes('Deprecated')) > 0) {
 				return [
 					RuleErrorBuilder::message('Attribute class Deprecated can be used with traits only on PHP 8.5 and later.')

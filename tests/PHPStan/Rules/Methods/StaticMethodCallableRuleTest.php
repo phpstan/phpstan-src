@@ -3,7 +3,6 @@
 namespace PHPStan\Rules\Methods;
 
 use PHPStan\Classes\ForbiddenClassNameExtension;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
@@ -19,8 +18,6 @@ use const PHP_VERSION_ID;
  */
 class StaticMethodCallableRuleTest extends RuleTestCase
 {
-
-	private int $phpVersion = PHP_VERSION_ID;
 
 	protected function getRule(): Rule
 	{
@@ -55,7 +52,6 @@ class StaticMethodCallableRuleTest extends RuleTestCase
 				discoveringSymbolsTip: true,
 				reportMagicMethods: true,
 			),
-			new PhpVersion($this->phpVersion),
 		);
 	}
 
@@ -119,6 +115,24 @@ class StaticMethodCallableRuleTest extends RuleTestCase
 	public function testCallsOnGenericClassString(): void
 	{
 		$this->analyse([__DIR__ . '/../Comparison/data/impossible-method-exists-on-generic-class-string.php'], []);
+	}
+
+	public function testConditionallyExecutedCode(): void
+	{
+		$errors = [
+			[
+				'First-class callables are supported only on PHP 8.1 and later.',
+				19,
+			],
+		];
+		if (PHP_VERSION_ID < 80100) {
+			$errors[] = [
+				'First-class callables are supported only on PHP 8.1 and later.',
+				22,
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/static-method-callable-php-versions.php'], $errors);
 	}
 
 }

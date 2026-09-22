@@ -3,7 +3,6 @@
 namespace PHPStan\Rules\Classes;
 
 use PHPStan\Classes\ForbiddenClassNameExtension;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
@@ -42,7 +41,6 @@ class ClassConstantPhp74RuleTest extends RuleTestCase
 				$reflectionProvider,
 				$container->getExtensionsCollection(RestrictedClassNameUsageExtension::class),
 			),
-			$container->getByType(PhpVersion::class),
 			new NonStringableDynamicAccessCheck($ruleLevelHelper, true),
 		);
 	}

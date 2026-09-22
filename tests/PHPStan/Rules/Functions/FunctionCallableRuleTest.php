@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\Functions;
 
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
@@ -31,7 +30,6 @@ class FunctionCallableRuleTest extends RuleTestCase
 				checkBenevolentUnionTypes: false,
 				discoveringSymbolsTip: true,
 			),
-			new PhpVersion(PHP_VERSION_ID),
 			true,
 			true,
 		);
@@ -78,6 +76,24 @@ class FunctionCallableRuleTest extends RuleTestCase
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 		]);
+	}
+
+	public function testConditionallyExecutedCode(): void
+	{
+		$errors = [
+			[
+				'First-class callables are supported only on PHP 8.1 and later.',
+				16,
+			],
+		];
+		if (PHP_VERSION_ID < 80100) {
+			$errors[] = [
+				'First-class callables are supported only on PHP 8.1 and later.',
+				19,
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/function-callable-php-versions.php'], $errors);
 	}
 
 }

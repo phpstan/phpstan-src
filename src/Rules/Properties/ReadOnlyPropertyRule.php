@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\ClassPropertyNode;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
@@ -16,10 +15,6 @@ use PHPStan\Rules\RuleErrorBuilder;
 #[RegisteredRule(level: 0)]
 final class ReadOnlyPropertyRule implements Rule
 {
-
-	public function __construct(private PhpVersion $phpVersion)
-	{
-	}
 
 	public function getNodeType(): string
 	{
@@ -33,7 +28,7 @@ final class ReadOnlyPropertyRule implements Rule
 		}
 
 		$errors = [];
-		if (!$this->phpVersion->supportsReadOnlyProperties()) {
+		if (!$scope->getPhpVersion()->supportsReadOnlyProperties()->yes()) {
 			 $errors[] = RuleErrorBuilder::message('Readonly properties are supported only on PHP 8.1 and later.')->nonIgnorable()
 				 ->identifier('property.readOnlyNotSupported')
 				 ->build();

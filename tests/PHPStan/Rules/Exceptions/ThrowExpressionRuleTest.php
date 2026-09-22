@@ -2,10 +2,9 @@
 
 namespace PHPStan\Rules\Exceptions;
 
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use PHPUnit\Framework\Attributes\DataProvider;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<ThrowExpressionRule>
@@ -13,40 +12,42 @@ use PHPUnit\Framework\Attributes\DataProvider;
 class ThrowExpressionRuleTest extends RuleTestCase
 {
 
-	private PhpVersion $phpVersion;
-
 	protected function getRule(): Rule
 	{
-		return new ThrowExpressionRule($this->phpVersion);
+		return new ThrowExpressionRule();
 	}
 
-	public static function dataRule(): array
+	public function testRule(): void
 	{
-		return [
-			[
-				70400,
+		$errors = [];
+		if (PHP_VERSION_ID < 80000) {
+			$errors = [
 				[
-					[
-						'Throw expression is supported only on PHP 8.0 and later.',
-						10,
-					],
+					'Throw expression is supported only on PHP 8.0 and later.',
+					10,
 				],
-			],
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/throw-expr.php'], $errors);
+	}
+
+	public function testConditionallyExecutedCode(): void
+	{
+		$errors = [
 			[
-				80000,
-				[],
+				'Throw expression is supported only on PHP 8.0 and later.',
+				18,
 			],
 		];
-	}
+		if (PHP_VERSION_ID < 80000) {
+			$errors[] = [
+				'Throw expression is supported only on PHP 8.0 and later.',
+				24,
+			];
+		}
 
-	/**
-	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
-	 */
-	#[DataProvider('dataRule')]
-	public function testRule(int $phpVersion, array $expectedErrors): void
-	{
-		$this->phpVersion = new PhpVersion($phpVersion);
-		$this->analyse([__DIR__ . '/data/throw-expr.php'], $expectedErrors);
+		$this->analyse([__DIR__ . '/data/throw-expr-php-versions.php'], $errors);
 	}
 
 }

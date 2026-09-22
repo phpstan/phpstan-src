@@ -2,10 +2,9 @@
 
 namespace PHPStan\Rules\Constants;
 
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use PHPUnit\Framework\Attributes\DataProvider;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<FinalConstantRule>
@@ -13,40 +12,42 @@ use PHPUnit\Framework\Attributes\DataProvider;
 class FinalConstantRuleTest extends RuleTestCase
 {
 
-	private int $phpVersionId;
-
 	protected function getRule(): Rule
 	{
-		return new FinalConstantRule(new PhpVersion($this->phpVersionId));
+		return new FinalConstantRule();
 	}
 
-	public static function dataRule(): array
+	public function testRule(): void
 	{
-		return [
-			[
-				80000,
+		$errors = [];
+		if (PHP_VERSION_ID < 80100) {
+			$errors = [
 				[
-					[
-						'Final class constants are supported only on PHP 8.1 and later.',
-						9,
-					],
+					'Final class constants are supported only on PHP 8.1 and later.',
+					9,
 				],
-			],
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/final-constant.php'], $errors);
+	}
+
+	public function testConditionallyDeclaredClass(): void
+	{
+		$errors = [
 			[
-				80100,
-				[],
+				'Final class constants are supported only on PHP 8.1 and later.',
+				18,
 			],
 		];
-	}
+		if (PHP_VERSION_ID < 80100) {
+			$errors[] = [
+				'Final class constants are supported only on PHP 8.1 and later.',
+				26,
+			];
+		}
 
-	/**
-	 * @param list<array{0: string, 1: int, 2?: string}> $errors
-	 */
-	#[DataProvider('dataRule')]
-	public function testRule(int $phpVersionId, array $errors): void
-	{
-		$this->phpVersionId = $phpVersionId;
-		$this->analyse([__DIR__ . '/data/final-constant.php'], $errors);
+		$this->analyse([__DIR__ . '/data/final-constant-php-versions.php'], $errors);
 	}
 
 }

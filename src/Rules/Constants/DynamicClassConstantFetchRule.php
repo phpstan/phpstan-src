@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\ClassConstFetch;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -22,7 +21,7 @@ use function sprintf;
 final class DynamicClassConstantFetchRule implements Rule
 {
 
-	public function __construct(private PhpVersion $phpVersion, private RuleLevelHelper $ruleLevelHelper)
+	public function __construct(private RuleLevelHelper $ruleLevelHelper)
 	{
 	}
 
@@ -37,7 +36,7 @@ final class DynamicClassConstantFetchRule implements Rule
 			return [];
 		}
 
-		if (!$this->phpVersion->supportsDynamicClassConstantFetch()) {
+		if (!$scope->getPhpVersion()->supportsDynamicClassConstantFetch()->yes()) {
 			return [
 				RuleErrorBuilder::message('Fetching class constants with a dynamic name is supported only on PHP 8.3 and later.')
 					->identifier('classConstant.dynamicFetch')

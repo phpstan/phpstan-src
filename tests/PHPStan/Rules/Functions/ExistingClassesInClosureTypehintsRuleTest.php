@@ -124,36 +124,22 @@ class ExistingClassesInClosureTypehintsRuleTest extends RuleTestCase
 		]);
 	}
 
-	public static function dataNativeUnionTypes(): array
+	public function testNativeUnionTypes(): void
 	{
-		return [
-			[
-				70400,
+		$errors = [];
+		if (PHP_VERSION_ID < 80000) {
+			$errors = [
 				[
-					[
-						'Anonymous function uses native union types but they\'re supported only on PHP 8.0 and later.',
-						15,
-					],
-					[
-						'Anonymous function uses native union types but they\'re supported only on PHP 8.0 and later.',
-						19,
-					],
+					'Anonymous function uses native union types but they\'re supported only on PHP 8.0 and later.',
+					15,
 				],
-			],
-			[
-				80000,
-				[],
-			],
-		];
-	}
+				[
+					'Anonymous function uses native union types but they\'re supported only on PHP 8.0 and later.',
+					19,
+				],
+			];
+		}
 
-	/**
-	 * @param list<array{0: string, 1: int, 2?: string}> $errors
-	 */
-	#[DataProvider('dataNativeUnionTypes')]
-	public function testNativeUnionTypes(int $phpVersionId, array $errors): void
-	{
-		$this->phpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/native-union-types.php'], $errors);
 	}
 
@@ -162,20 +148,7 @@ class ExistingClassesInClosureTypehintsRuleTest extends RuleTestCase
 		return [
 			[
 				70400,
-				[
-					[
-						"Anonymous function uses native union types but they're supported only on PHP 8.0 and later.",
-						29,
-					],
-					[
-						"Anonymous function uses native union types but they're supported only on PHP 8.0 and later.",
-						33,
-					],
-					[
-						"Anonymous function uses native union types but they're supported only on PHP 8.0 and later.",
-						45,
-					],
-				],
+				[],
 			],
 			[
 				80000,

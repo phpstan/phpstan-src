@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\Constants;
 
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule as TRule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
@@ -17,7 +16,6 @@ class DynamicClassConstantFetchRuleTest extends RuleTestCase
 	protected function getRule(): TRule
 	{
 		return new DynamicClassConstantFetchRule(
-			self::getContainer()->getByType(PhpVersion::class),
 			new RuleLevelHelper(
 				self::createReflectionProvider(),
 				checkNullables: true,
@@ -73,6 +71,24 @@ class DynamicClassConstantFetchRuleTest extends RuleTestCase
 			];
 		}
 		$this->analyse([__DIR__ . '/data/dynamic-class-constant-fetch.php'], $errors);
+	}
+
+	public function testConditionallyExecutedCode(): void
+	{
+		$errors = [
+			[
+				'Fetching class constants with a dynamic name is supported only on PHP 8.3 and later.',
+				19,
+			],
+		];
+		if (PHP_VERSION_ID < 80300) {
+			$errors[] = [
+				'Fetching class constants with a dynamic name is supported only on PHP 8.3 and later.',
+				22,
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/dynamic-class-constant-fetch-php-versions.php'], $errors);
 	}
 
 }

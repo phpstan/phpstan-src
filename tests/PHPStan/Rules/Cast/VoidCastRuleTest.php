@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\Cast;
 
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
@@ -16,7 +15,7 @@ class VoidCastRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new VoidCastRule(new PhpVersion(PHP_VERSION_ID));
+		return new VoidCastRule();
 	}
 
 	#[RequiresPhp('>= 8.5.0')]
@@ -50,6 +49,24 @@ class VoidCastRuleTest extends RuleTestCase
 			];
 		}
 		$this->analyse([__DIR__ . '/data/void-cast-support.php'], $errors);
+	}
+
+	public function testConditionallyExecutedCode(): void
+	{
+		$errors = [
+			[
+				'The (void) cast is supported only on PHP 8.5 and later.',
+				12,
+			],
+		];
+		if (PHP_VERSION_ID < 80500) {
+			$errors[] = [
+				'The (void) cast is supported only on PHP 8.5 and later.',
+				15,
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/void-cast-php-versions.php'], $errors);
 	}
 
 }

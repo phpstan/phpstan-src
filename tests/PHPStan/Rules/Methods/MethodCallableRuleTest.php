@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\Methods;
 
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
@@ -14,8 +13,6 @@ use const PHP_VERSION_ID;
  */
 class MethodCallableRuleTest extends RuleTestCase
 {
-
-	private int $phpVersion = PHP_VERSION_ID;
 
 	protected function getRule(): Rule
 	{
@@ -38,7 +35,6 @@ class MethodCallableRuleTest extends RuleTestCase
 				checkFunctionNameCase: true,
 				reportMagicMethods: true,
 			),
-			new PhpVersion($this->phpVersion),
 		);
 	}
 
@@ -89,6 +85,24 @@ class MethodCallableRuleTest extends RuleTestCase
 				53,
 			],
 		]);
+	}
+
+	public function testConditionallyExecutedCode(): void
+	{
+		$errors = [
+			[
+				'First-class callables are supported only on PHP 8.1 and later.',
+				19,
+			],
+		];
+		if (PHP_VERSION_ID < 80100) {
+			$errors[] = [
+				'First-class callables are supported only on PHP 8.1 and later.',
+				22,
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/method-callable-php-versions.php'], $errors);
 	}
 
 }

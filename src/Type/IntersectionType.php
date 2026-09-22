@@ -13,6 +13,7 @@ use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\Dummy\DummyMethodReflection;
+use PHPStan\Reflection\Dummy\DummyPropertyReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\InitializerExprTypeResolver;
@@ -665,16 +666,7 @@ class IntersectionType implements CompoundType
 			$propertyPrototypes[] = $type->getUnresolvedPropertyPrototype($propertyName, $scope)->withFechedOnType($this);
 		}
 
-		$propertiesCount = count($propertyPrototypes);
-		if ($propertiesCount === 0) {
-			throw new MissingPropertyFromReflectionException($this->describe(VerbosityLevel::typeOnly()), $propertyName);
-		}
-
-		if ($propertiesCount === 1) {
-			return $propertyPrototypes[0];
-		}
-
-		return new IntersectionTypeUnresolvedPropertyPrototypeReflection($propertyPrototypes);
+		return $this->createUnresolvedPropertyPrototype($propertyName, $propertyPrototypes);
 	}
 
 	public function hasInstanceProperty(string $propertyName): TrinaryLogic
@@ -698,16 +690,7 @@ class IntersectionType implements CompoundType
 			$propertyPrototypes[] = $type->getUnresolvedInstancePropertyPrototype($propertyName, $scope)->withFechedOnType($this);
 		}
 
-		$propertiesCount = count($propertyPrototypes);
-		if ($propertiesCount === 0) {
-			throw new MissingPropertyFromReflectionException($this->describe(VerbosityLevel::typeOnly()), $propertyName);
-		}
-
-		if ($propertiesCount === 1) {
-			return $propertyPrototypes[0];
-		}
-
-		return new IntersectionTypeUnresolvedPropertyPrototypeReflection($propertyPrototypes);
+		return $this->createUnresolvedPropertyPrototype($propertyName, $propertyPrototypes);
 	}
 
 	public function hasStaticProperty(string $propertyName): TrinaryLogic
@@ -729,6 +712,24 @@ class IntersectionType implements CompoundType
 			}
 
 			$propertyPrototypes[] = $type->getUnresolvedStaticPropertyPrototype($propertyName, $scope)->withFechedOnType($this);
+		}
+
+		return $this->createUnresolvedPropertyPrototype($propertyName, $propertyPrototypes);
+	}
+
+	/**
+	 * @param list<UnresolvedPropertyPrototypeReflection> $propertyPrototypes
+	 */
+	private function createUnresolvedPropertyPrototype(string $propertyName, array $propertyPrototypes): UnresolvedPropertyPrototypeReflection
+	{
+		// a member like T of mixed has every property only as a placeholder,
+		// it must not override the property declared by another member
+		$declaredPropertyPrototypes = array_values(array_filter(
+			$propertyPrototypes,
+			static fn (UnresolvedPropertyPrototypeReflection $prototype): bool => !$prototype->getNakedProperty() instanceof DummyPropertyReflection,
+		));
+		if (count($declaredPropertyPrototypes) > 0) {
+			$propertyPrototypes = $declaredPropertyPrototypes;
 		}
 
 		$propertiesCount = count($propertyPrototypes);

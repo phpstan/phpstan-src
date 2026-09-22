@@ -8330,6 +8330,47 @@ foreach ([\PHPStan\Analyser\RicherScopeGetTypeHelper::class => 'getIdenticalResu
 		$r["objectShape traverse returning $valueName describe"] = $misuse(static fn () => $misuseGoodShape->traverse(static fn () => $value)->describe(\PHPStan\Type\VerbosityLevel::precise()), $withMessage);
 	}
 
+	// compound types with a member that is not an object: the twin stores it
+	// and fails at its first use, the native rejects it at construction —
+	// observed through operations the twin fails with a TypeError, and as
+	// "some Error" through those the twin fails with a method call on it
+	foreach ([\PHPStan\Type\IntersectionType::class, \PHPStan\Type\UnionType::class, \PHPStan\Type\BenevolentUnionType::class] as $compoundClass) {
+		foreach (['first' => static fn () => [5, new \PHPStan\Type\IntegerType()], 'second' => static fn () => [new \PHPStan\Type\IntegerType(), 5]] as $position => $members) {
+			foreach ([
+				'describe' => static fn (\PHPStan\Type\Type $t) => $t->describe(\PHPStan\Type\VerbosityLevel::precise()),
+				'isSuperTypeOf' => static fn (\PHPStan\Type\Type $t) => $t->isSuperTypeOf(new \PHPStan\Type\IntegerType()),
+				'isString' => static fn (\PHPStan\Type\Type $t) => $t->isString(),
+				'getIterableValueType' => static fn (\PHPStan\Type\Type $t) => $t->getIterableValueType(),
+				'toPhpDocNode' => static fn (\PHPStan\Type\Type $t) => $t->toPhpDocNode(),
+			] as $method => $call) {
+				$r["compound $compoundClass $position $method"] = $misuse(static fn () => $call(new $compoundClass($members())));
+			}
+			foreach ([
+				'hasTemplateOrLateResolvableType' => static fn (\PHPStan\Type\Type $t) => $t->hasTemplateOrLateResolvableType(),
+				'getOffsetValueType' => static fn (\PHPStan\Type\Type $t) => $t->getOffsetValueType(new \PHPStan\Type\IntegerType()),
+				'union' => static fn (\PHPStan\Type\Type $t) => \PHPStan\Type\TypeCombinator::union($t, new \PHPStan\Type\StringType()),
+			] as $method => $call) {
+				try {
+					$call(new $compoundClass($members()));
+					$r["compound $compoundClass $position $method"] = 'no error';
+				} catch (\Error $e) {
+					$r["compound $compoundClass $position $method"] = 'Error';
+				}
+			}
+		}
+	}
+	// the benevolent union's getOffsetValueType() iterates $this->getTypes(),
+	// which a subclass may override
+	$misuseBenevolent = new class ([new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()]) extends \PHPStan\Type\BenevolentUnionType {
+
+		public function getTypes(): array
+		{
+			return [new \PHPStan\Type\IntegerType(), 5];
+		}
+
+	};
+	$r['benevolent overridden getTypes getOffsetValueType'] = $misuse(static fn () => $misuseBenevolent->getOffsetValueType(new \PHPStan\Type\IntegerType()), true);
+
 	foreach ($r as $key => $value) {
 		$observations["misuse $key"] = $value;
 	}

@@ -341,7 +341,15 @@ public:
 		}
 		for (zv::ArrayEntry entry : zv::ArrRef(typesArg)) {
 			zval *type = entry.value().deref().raw();
-			if (Z_TYPE_P(type) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(type), pt_ce_union_type)) continue;
+			/* a member that is not an object is rejected here: the twin
+			 * stores it unchecked and fails at its first use, but the
+			 * native code reading the members — in this family and in
+			 * every port iterating getTypes() — relies on objects */
+			if (UNEXPECTED(Z_TYPE_P(type) != IS_OBJECT)) {
+				zend_type_error("phpstan_turbo: %s::__construct(): every member must be a %s, %s given", ZSTR_VAL(pt_ce_union_type->name), ptcls::type, zend_zval_value_name(type));
+				return false;
+			}
+			if (!instanceof_function(Z_OBJCE_P(type), pt_ce_union_type)) continue;
 			bool isTemplate;
 			if (UNEXPECTED(!isInstance(type, PT_CLASS_TEMPLATE_TYPE, isTemplate))) return false;
 			if (isTemplate) continue;

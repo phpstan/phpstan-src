@@ -342,7 +342,14 @@ public:
 	explicit IntersectionType(zend_object *self) : self(self) {}
 
 	/* __construct(private array $types): fewer than two members throw;
-	 * false = pending exception */
+	 * false = pending exception.
+	 *
+	 * A member that is not an object is rejected here with a TypeError: the
+	 * twin stores it unchecked and fails at its first use (an Error or,
+	 * through its `Type`-typed closures, a TypeError), but the native code
+	 * reading the members — here and in every port iterating getTypes() —
+	 * relies on them being objects, so one check at construction keeps the
+	 * whole family from dereferencing a scalar */
 	[[nodiscard]] bool construct(zval *typesArg)
 	{
 		zval *typesSlot = OBJ_PROP_NUM(self, slots::types);
@@ -358,6 +365,13 @@ public:
 		if (zend_hash_num_elements(Z_ARRVAL_P(typesArg)) < 2) {
 			throwCannotCreate(typesArg);
 			return false;
+		}
+		for (zv::ArrayEntry entry : zv::ArrRef(typesArg)) {
+			zval *type = entry.value().deref().raw();
+			if (UNEXPECTED(Z_TYPE_P(type) != IS_OBJECT)) {
+				zend_type_error("phpstan_turbo: %s::__construct(): every member must be a %s, %s given", ZSTR_VAL(pt_ce_intersection_type->name), ptcls::type, zend_zval_value_name(type));
+				return false;
+			}
 		}
 		return true;
 	}

@@ -2,9 +2,12 @@
 
 namespace PHPStan\Type;
 
+use DateTimeImmutable;
+use DateTimeInterface;
 use DoctrineIntersectionTypeIsSupertypeOf\Collection;
 use Iterator;
 use ObjectTypeEnums\FooEnum;
+use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
@@ -20,6 +23,9 @@ use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
+use PHPStan\Type\Generic\TemplateTypeFactory;
+use PHPStan\Type\Generic\TemplateTypeScope;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPUnit\Framework\Attributes\DataProvider;
 use stdClass;
 use Test\ClassWithToString;
@@ -972,6 +978,42 @@ class IntersectionTypeTest extends PHPStanTestCase
 		$this->assertCount(1, $constantArrays);
 
 		$this->assertSame('array{class-string|object, non-falsy-string}', $constantArrays[0]->describe(VerbosityLevel::precise()));
+	}
+
+	/**
+	 * @return Iterator<string, array{IntersectionType}>
+	 */
+	public static function dataIntersectionWithTemplateMixed(): Iterator
+	{
+		$templateType = TemplateTypeFactory::create(
+			TemplateTypeScope::createWithFunction('a'),
+			'T',
+			new MixedType(),
+			TemplateTypeVariance::createInvariant(),
+		);
+		$objectType = new ObjectType(DateTimeImmutable::class);
+
+		yield 'template first' => [new IntersectionType([$templateType, $objectType])];
+		yield 'object first' => [new IntersectionType([$objectType, $templateType])];
+	}
+
+	#[DataProvider('dataIntersectionWithTemplateMixed')]
+	public function testMethodOfIntersectionWithTemplateMixed(IntersectionType $type): void
+	{
+		$method = $type->getMethod('modify', new OutOfClassScope());
+		$this->assertSame(DateTimeImmutable::class, $method->getDeclaringClass()->getName());
+
+		$variant = $method->getOnlyVariant();
+		$this->assertFalse($variant->isVariadic());
+		$this->assertCount(1, $variant->getParameters());
+		$this->assertSame('modifier', $variant->getParameters()[0]->getName());
+	}
+
+	#[DataProvider('dataIntersectionWithTemplateMixed')]
+	public function testConstantOfIntersectionWithTemplateMixed(IntersectionType $type): void
+	{
+		$constant = $type->getConstant('ATOM');
+		$this->assertSame(DateTimeInterface::class, $constant->getDeclaringClass()->getName());
 	}
 
 }

@@ -1131,4 +1131,18 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9096.php'], []);
 	}
 
+	public function testIntersectionWithTemplateMixed(): void
+	{
+		$this->analyse([__DIR__ . '/data/intersection-template-mixed-property.php'], [
+			[
+				'Property IntersectionTemplateMixedProperty\\Foo::$prop (int) does not accept string.',
+				20,
+			],
+			[
+				'Static property IntersectionTemplateMixedProperty\\Foo::$staticProp (int) does not accept string.',
+				21,
+			],
+		]);
+	}
+
 }

@@ -491,12 +491,32 @@ public:
 		zval *k = this->keyType();
 		if (UNEXPECTED(k == NULL)) return zv::Val();
 		bool keySame = zv::Ref(keyType.raw()).isObject() && Z_OBJ_P(keyType.raw()) == Z_OBJ_P(k);
-		if (!keySame) return create(keyType.raw(), itemType.raw());
+		if (!keySame) return createChecked(keyType.raw(), itemType.raw());
 		zval *i = this->itemType();
 		if (UNEXPECTED(i == NULL)) return zv::Val();
 		bool itemSame = zv::Ref(itemType.raw()).isObject() && Z_OBJ_P(itemType.raw()) == Z_OBJ_P(i);
-		if (!itemSame) return create(keyType.raw(), itemType.raw());
+		if (!itemSame) return createChecked(keyType.raw(), itemType.raw());
 		return thisValue();
+	}
+
+	/* new self($keyType, $itemType) for values a callback returned: the
+	 * twin's typed `Type` parameters reject anything else with a TypeError;
+	 * UNDEF = pending exception */
+	static zv::Val createChecked(zval *keyType, zval *itemType)
+	{
+		if (UNEXPECTED(!checkType(keyType, 1, "keyType") || !checkType(itemType, 2, "itemType"))) return zv::Val();
+		return create(keyType, itemType);
+	}
+
+	static bool checkType(zval *value, int argNumber, const char *parameter)
+	{
+		bool isType;
+		if (UNEXPECTED(!pt_type_instanceof(value, PT_CLASS_TYPE, isType))) return false;
+		if (UNEXPECTED(!isType)) {
+			zend_type_error("%s::__construct(): Argument #%d ($%s) must be of type %s, %s given", ZSTR_VAL(pt_ce_iterable_type->name), argNumber, parameter, ptcls::type, zend_zval_value_name(value));
+			return false;
+		}
+		return true;
 	}
 
 	/* the Traversable half when the removed type covers every array, the

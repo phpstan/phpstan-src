@@ -8295,6 +8295,11 @@ foreach ([\PHPStan\Analyser\RicherScopeGetTypeHelper::class => 'getIdenticalResu
 	foreach (['string' => 'not-a-type', 'int' => 1, 'object' => new \stdClass(), 'null' => null] as $returnedName => $returned) {
 		$r["traverse objectWithoutClass returning $returnedName"] = $misuse(static fn () => (new \PHPStan\Type\ObjectWithoutClassType(new \PHPStan\Type\StringType()))->traverse(static fn () => $returned));
 		$r["traverse static returning $returnedName"] = $misuse(static fn () => (new \PHPStan\Type\StaticType($misuseStaticReflection, new \PHPStan\Type\StringType()))->traverse(static fn () => $returned));
+		// typed `Type` constructor parameters: never stored, a TypeError right away
+		$misuseIterable = new \PHPStan\Type\IterableType(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType());
+		$r["traverse iterable returning $returnedName"] = $misuse(static fn () => $misuseIterable->traverse(static fn () => $returned)->describe(\PHPStan\Type\VerbosityLevel::precise()));
+		$r["traverse iterable item returning $returnedName"] = $misuse(static fn () => $misuseIterable->traverse(static fn (\PHPStan\Type\Type $t) => $t instanceof \PHPStan\Type\StringType ? $returned : $t)->describe(\PHPStan\Type\VerbosityLevel::precise()));
+		$r["traverseSimultaneously iterable returning $returnedName"] = $misuse(static fn () => $misuseIterable->traverseSimultaneously($misuseIterable, static fn () => $returned)->describe(\PHPStan\Type\VerbosityLevel::precise()));
 	}
 
 	foreach ($r as $key => $value) {

@@ -3,7 +3,6 @@
 namespace PHPStan\Rules\Properties;
 
 use PHPStan\Classes\ForbiddenClassNameExtension;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
@@ -59,7 +58,6 @@ class PropertyAttributesRuleTest extends RuleTestCase
 				),
 				deprecationRulesInstalled: true,
 			),
-			new PhpVersion(PHP_VERSION_ID),
 		);
 	}
 
@@ -85,6 +83,19 @@ class PropertyAttributesRuleTest extends RuleTestCase
 				19,
 			],
 		]);
+	}
+
+	public function testOverrideAttributePhpVersionNarrowedScope(): void
+	{
+		$errors = [];
+		if (PHP_VERSION_ID < 80500) {
+			$errors[] = [
+				'Attribute class Override can be used with properties only on PHP 8.5 and later.',
+				28,
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/override-attr-on-property-php-versions.php'], $errors);
 	}
 
 	#[RequiresPhp('>= 8.5.0')]

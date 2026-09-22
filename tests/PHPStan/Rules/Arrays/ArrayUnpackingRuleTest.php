@@ -2,12 +2,12 @@
 
 namespace PHPStan\Rules\Arrays;
 
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<ArrayUnpackingRule>
@@ -22,7 +22,6 @@ class ArrayUnpackingRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new ArrayUnpackingRule(
-			self::getContainer()->getByType(PhpVersion::class),
 			new RuleLevelHelper(
 				self::createReflectionProvider(),
 				checkNullables: true,
@@ -115,6 +114,26 @@ class ArrayUnpackingRuleTest extends RuleTestCase
 				63,
 			],
 		]);
+	}
+
+	public function testPhpVersionNarrowedScope(): void
+	{
+		$this->checkUnions = true;
+
+		$errors = [
+			[
+				'Array unpacking cannot be used on an array with string keys: array<string, string>',
+				11,
+			],
+		];
+		if (PHP_VERSION_ID < 80100) {
+			$errors[] = [
+				'Array unpacking cannot be used on an array with string keys: array<string, string>',
+				18,
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/array-unpacking-php-versions.php'], $errors);
 	}
 
 	public static function dataRuleOnPHP81(): array

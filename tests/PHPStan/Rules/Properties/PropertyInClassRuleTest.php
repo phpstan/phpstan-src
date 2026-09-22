@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\Properties;
 
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
@@ -16,7 +15,29 @@ class PropertyInClassRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new PropertyInClassRule(new PhpVersion(PHP_VERSION_ID));
+		return new PropertyInClassRule();
+	}
+
+	public function testPhpVersionNarrowedScope(): void
+	{
+		$errors = [
+			[
+				'Final properties are supported only on PHP 8.4 and later.',
+				18,
+			],
+		];
+		if (PHP_VERSION_ID < 80500) {
+			$errors[] = [
+				'Asymmetric visibility for static properties is supported only on PHP 8.5 and later.',
+				35,
+			];
+		}
+		$errors[] = [
+			'Property hooks are supported only on PHP 8.4 and later.',
+			52,
+		];
+
+		$this->analyse([__DIR__ . '/data/property-in-class-php-versions.php'], $errors);
 	}
 
 	#[RequiresPhp('< 8.4.0')]

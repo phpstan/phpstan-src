@@ -2,10 +2,9 @@
 
 namespace PHPStan\Rules\Traits;
 
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\Traits\TraitConstantsCollector;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<ConstantsInTraitsRule>
@@ -13,44 +12,46 @@ use PHPStan\Testing\RuleTestCase;
 class ConstantsInTraitsRuleTest extends RuleTestCase
 {
 
-	private int $phpVersionId;
-
 	protected function getRule(): Rule
 	{
-		return new ConstantsInTraitsRule(new PhpVersion($this->phpVersionId));
+		return new ConstantsInTraitsRule();
 	}
 
-	public static function dataRule(): array
+	public function testRule(): void
 	{
-		return [
-			[
-				80100,
+		$errors = [];
+		if (PHP_VERSION_ID < 80200) {
+			$errors = [
 				[
-					[
-						'Constant is declared inside a trait but is only supported on PHP 8.2 and later.',
-						7,
-					],
-					[
-						'Constant is declared inside a trait but is only supported on PHP 8.2 and later.',
-						8,
-					],
+					'Constant is declared inside a trait but is only supported on PHP 8.2 and later.',
+					7,
 				],
-			],
+				[
+					'Constant is declared inside a trait but is only supported on PHP 8.2 and later.',
+					8,
+				],
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/constants-in-traits.php'], $errors);
+	}
+
+	public function testPhpVersionNarrowedScope(): void
+	{
+		$errors = [
 			[
-				80200,
-				[],
+				'Constant is declared inside a trait but is only supported on PHP 8.2 and later.',
+				12,
 			],
 		];
-	}
+		if (PHP_VERSION_ID < 80200) {
+			$errors[] = [
+				'Constant is declared inside a trait but is only supported on PHP 8.2 and later.',
+				17,
+			];
+		}
 
-	/**
-     * @param list<array{0: string, 1: int, 2?: string}> $errors
-     */
-    #[\PHPUnit\Framework\Attributes\DataProvider('dataRule')]
-    public function testRule(int $phpVersionId, array $errors): void
-	{
-		$this->phpVersionId = $phpVersionId;
-		$this->analyse([__DIR__ . '/data/constants-in-traits.php'], $errors);
+		$this->analyse([__DIR__ . '/data/constants-in-traits-php-versions.php'], $errors);
 	}
 
 }

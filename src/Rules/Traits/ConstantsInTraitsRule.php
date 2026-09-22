@@ -5,7 +5,6 @@ namespace PHPStan\Rules\Traits;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
@@ -15,10 +14,6 @@ use PHPStan\Rules\RuleErrorBuilder;
 #[RegisteredRule(level: 0)]
 final class ConstantsInTraitsRule implements Rule
 {
-
-	public function __construct(private PhpVersion $phpVersion)
-	{
-	}
 
 	public function getNodeType(): string
 	{
@@ -30,7 +25,7 @@ final class ConstantsInTraitsRule implements Rule
 	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if ($this->phpVersion->supportsConstantsInTraits()) {
+		if ($scope->getPhpVersion()->supportsConstantsInTraits()->yes()) {
 			return [];
 		}
 

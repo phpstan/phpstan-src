@@ -20,7 +20,7 @@ use PHPUnit\Framework\Attributes\RequiresPhp;
 /**
  * @extends RuleTestCase<ConstantAttributesRule>
  */
-class ConstantAttributesRuleTest extends RuleTestCase
+class ConstantAttributesRuleConfigPhpTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
@@ -65,42 +65,34 @@ class ConstantAttributesRuleTest extends RuleTestCase
 		);
 	}
 
-	#[RequiresPhp('>= 8.5.0')]
-	public function testRule(): void
+	#[RequiresPhp('< 8.5.0')]
+	public function testRulePhpVersionFromConfig(): void
 	{
 		$this->analyse([__DIR__ . '/data/constant-attributes.php'], [
 			[
-				'Attribute class ConstantAttributes\IncompatibleAttr does not have the constant target.',
+				'ConstantAttributesRule requires PHP 8.5 runtime to check the code.',
+				25,
+			],
+			[
+				'ConstantAttributesRule requires PHP 8.5 runtime to check the code.',
+				28,
+			],
+			[
+				'ConstantAttributesRule requires PHP 8.5 runtime to check the code.',
 				31,
 			],
 			[
-				'Attribute class ConstantAttributes\MyAttr does not have a constructor and must be instantiated without any parameters.',
+				'ConstantAttributesRule requires PHP 8.5 runtime to check the code.',
 				34,
 			],
 		]);
 	}
 
-	#[RequiresPhp('< 8.5.0')]
-	public function testRuleBefore85Runtime(): void
+	public static function getAdditionalConfigFiles(): array
 	{
-		$this->analyse([__DIR__ . '/data/constant-attributes.php'], [
-			[
-				'Attributes on global constants are supported only on PHP 8.5 and later.',
-				25,
-			],
-			[
-				'Attributes on global constants are supported only on PHP 8.5 and later.',
-				28,
-			],
-			[
-				'Attributes on global constants are supported only on PHP 8.5 and later.',
-				31,
-			],
-			[
-				'Attributes on global constants are supported only on PHP 8.5 and later.',
-				34,
-			],
-		]);
+		return [
+			__DIR__ . '/data/constant-attributes-php-version.neon',
+		];
 	}
 
 }

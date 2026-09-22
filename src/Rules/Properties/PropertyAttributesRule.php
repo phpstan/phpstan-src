@@ -9,7 +9,6 @@ use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\ClassPropertyNode;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -24,7 +23,6 @@ final class PropertyAttributesRule implements Rule
 
 	public function __construct(
 		private AttributesCheck $attributesCheck,
-		private PhpVersion $phpVersion,
 	)
 	{
 	}
@@ -36,7 +34,7 @@ final class PropertyAttributesRule implements Rule
 
 	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
-		if (!$this->phpVersion->supportsOverrideAttributeOnProperty()) {
+		if (!$scope->getPhpVersion()->supportsOverrideAttributeOnProperty()->yes()) {
 			$propertyReflection = $node->getClassReflection()->getNativeProperty($node->getName());
 			if (count($propertyReflection->getNativeReflection()->getAttributes('Override')) > 0) {
 				return [

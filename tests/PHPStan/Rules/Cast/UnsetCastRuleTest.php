@@ -2,10 +2,9 @@
 
 namespace PHPStan\Rules\Cast;
 
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use PHPUnit\Framework\Attributes\DataProvider;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<UnsetCastRule>
@@ -13,40 +12,40 @@ use PHPUnit\Framework\Attributes\DataProvider;
 class UnsetCastRuleTest extends RuleTestCase
 {
 
-	private int $phpVersion;
-
 	protected function getRule(): Rule
 	{
-		return new UnsetCastRule(new PhpVersion($this->phpVersion));
+		return new UnsetCastRule();
 	}
 
-	public static function dataRule(): array
+	public function testRule(): void
 	{
-		return [
+		$errors = [];
+		if (PHP_VERSION_ID >= 80000) {
+			$errors[] = [
+				'The (unset) cast is no longer supported in PHP 8.0 and later.',
+				6,
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/unset-cast.php'], $errors);
+	}
+
+	public function testPhpVersionNarrowedScope(): void
+	{
+		$errors = [
 			[
-				70400,
-				[],
-			],
-			[
-				80000,
-				[
-					[
-						'The (unset) cast is no longer supported in PHP 8.0 and later.',
-						6,
-					],
-				],
+				'The (unset) cast is no longer supported in PHP 8.0 and later.',
+				11,
 			],
 		];
-	}
+		if (PHP_VERSION_ID >= 80000) {
+			$errors[] = [
+				'The (unset) cast is no longer supported in PHP 8.0 and later.',
+				14,
+			];
+		}
 
-	/**
-	 * @param list<array{0: string, 1: int, 2?: string}> $errors
-	 */
-	#[DataProvider('dataRule')]
-	public function testRule(int $phpVersion, array $errors): void
-	{
-		$this->phpVersion = $phpVersion;
-		$this->analyse([__DIR__ . '/data/unset-cast.php'], $errors);
+		$this->analyse([__DIR__ . '/data/unset-cast-php-versions.php'], $errors);
 	}
 
 }

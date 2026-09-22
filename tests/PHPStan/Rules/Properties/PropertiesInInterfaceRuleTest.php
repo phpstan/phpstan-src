@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\Properties;
 
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
@@ -16,7 +15,30 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new PropertiesInInterfaceRule(new PhpVersion(PHP_VERSION_ID));
+		return new PropertiesInInterfaceRule();
+	}
+
+	public function testPhpVersionNarrowedScope(): void
+	{
+		// @phpstan-ignore phpstan.skipTestsRequiresPhp
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Property hooks cause syntax error on PHP 7.4');
+		}
+
+		$errors = [
+			[
+				'Interfaces can include properties only on PHP 8.4 and later.',
+				18,
+			],
+		];
+		if (PHP_VERSION_ID < 80400) {
+			$errors[] = [
+				'Interfaces can include properties only on PHP 8.4 and later.',
+				26,
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/properties-in-interface-php-versions.php'], $errors);
 	}
 
 	#[RequiresPhp('< 8.4.0')]

@@ -12,6 +12,7 @@ use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
+use PHPStan\Reflection\Dummy\DummyClassConstantReflection;
 use PHPStan\Reflection\Dummy\DummyMethodReflection;
 use PHPStan\Reflection\Dummy\DummyPropertyReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -804,10 +805,26 @@ class IntersectionType implements CompoundType
 
 	public function getConstant(string $constantName): ClassConstantReflection
 	{
+		$dummyConstant = null;
 		foreach ($this->types as $type) {
-			if ($type->hasConstant($constantName)->yes()) {
-				return $type->getConstant($constantName);
+			if (!$type->hasConstant($constantName)->yes()) {
+				continue;
 			}
+
+			$constant = $type->getConstant($constantName);
+
+			// a member like T of mixed has every constant only as a placeholder,
+			// it must not override the constant declared by another member
+			if ($constant instanceof DummyClassConstantReflection) {
+				$dummyConstant ??= $constant;
+				continue;
+			}
+
+			return $constant;
+		}
+
+		if ($dummyConstant !== null) {
+			return $dummyConstant;
 		}
 
 		throw new MissingConstantFromReflectionException($this->describe(VerbosityLevel::typeOnly()), $constantName);

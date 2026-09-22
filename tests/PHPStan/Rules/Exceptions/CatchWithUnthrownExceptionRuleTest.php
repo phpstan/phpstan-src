@@ -1296,6 +1296,72 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testArrayFillThrowType(): void
+	{
+		$this->analyse([__DIR__ . '/data/array-fill-throw-type.php'], [
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				15,
+			],
+			[
+				'Dead catch - Error is never thrown in the try block.',
+				21,
+			],
+			[
+				'Dead catch - Error is never thrown in the try block.',
+				27,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				52,
+			],
+		]);
+	}
+
+	#[RequiresPhp('< 8.0.0')]
+	public function testArrayFillThrowTypeBeforePhp8(): void
+	{
+		$this->analyse([__DIR__ . '/data/array-fill-throw-type.php'], [
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				15,
+			],
+			[
+				'Dead catch - Error is never thrown in the try block.',
+				21,
+			],
+			[
+				'Dead catch - Error is never thrown in the try block.',
+				27,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				33,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				39,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				45,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				52,
+			],
+			[
+				'Dead catch - Error is never thrown in the try block.',
+				59,
+			],
+			[
+				'Dead catch - Error is never thrown in the try block.',
+				65,
+			],
+		]);
+	}
+
 	public function testDsMapVoidThrowType(): void
 	{
 		$this->analyse([__DIR__ . '/data/ds-map-void-throw-type.php'], [

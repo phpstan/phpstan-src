@@ -74,6 +74,9 @@
 
 #include "support.h"
 #include "generated/PhpClassReflectionExtension.h"
+
+namespace slots = ptdecl::PhpClassReflectionExtension::slot;
+namespace sigs = ptdecl::PhpClassReflectionExtension::sig;
 #include "zv.h"
 #include "TypeTraits.h"
 #include "TypeOps.h"
@@ -82,37 +85,6 @@
 #include <vector>
 
 zend_class_entry *pt_ce_php_class_reflection_extension = nullptr;
-
-/* OBJ_PROP_NUM slots, in the twin's declaration order: the class-body
- * properties first, the promoted constructor properties after them */
-enum : uint32_t
-{
-	PT_PCRE_PROP_MEMBER_CACHE_ORDER = 0,
-	PT_PCRE_PROP_PROPERTIES_INCLUDING_ANNOTATIONS,
-	PT_PCRE_PROP_NATIVE_PROPERTIES,
-	PT_PCRE_PROP_METHODS_INCLUDING_ANNOTATIONS,
-	PT_PCRE_PROP_NATIVE_METHODS,
-	PT_PCRE_PROP_PROPERTY_TYPES_CACHE,
-	PT_PCRE_PROP_INFER_IN_PROCESS,
-	PT_PCRE_PROP_SCOPE_FACTORY,
-	PT_PCRE_PROP_PHP_DOCS_RESOLVER,
-	PT_PCRE_PROP_NODE_SCOPE_RESOLVER,
-	PT_PCRE_PROP_METHOD_REFLECTION_FACTORY,
-	PT_PCRE_PROP_PHP_DOC_INHERITANCE_RESOLVER,
-	PT_PCRE_PROP_DEPRECATION_PROVIDER,
-	PT_PCRE_PROP_ANNOTATIONS_METHODS_EXTENSION,
-	PT_PCRE_PROP_ANNOTATIONS_PROPERTIES_EXTENSION,
-	PT_PCRE_PROP_SIGNATURE_MAP_PROVIDER,
-	PT_PCRE_PROP_PARSER,
-	PT_PCRE_PROP_STUB_PHP_DOC_PROVIDER,
-	PT_PCRE_PROP_REFLECTION_PROVIDER_PROVIDER,
-	PT_PCRE_PROP_FILE_TYPE_MAPPER,
-	PT_PCRE_PROP_ATTRIBUTE_REFLECTION_FACTORY,
-	PT_PCRE_PROP_ALLOWED_CONSTANTS_MAP_PROVIDER,
-	PT_PCRE_PROP_INFER_PRIVATE_PROPERTY_TYPE,
-	PT_PCRE_PROP_PHP_VERSION,
-	PT_PCRE_PROP_COUNT,
-};
 
 namespace {
 
@@ -371,32 +343,32 @@ public:
 	[[nodiscard]] static bool construct(zend_object *object, const ConstructorArgs &a)
 	{
 		static const struct { uint32_t slot; size_t offset; } promoted[] = {
-			{ PT_PCRE_PROP_SCOPE_FACTORY, offsetof(ConstructorArgs, scopeFactory) },
-			{ PT_PCRE_PROP_PHP_DOCS_RESOLVER, offsetof(ConstructorArgs, phpDocsResolver) },
-			{ PT_PCRE_PROP_NODE_SCOPE_RESOLVER, offsetof(ConstructorArgs, nodeScopeResolver) },
-			{ PT_PCRE_PROP_METHOD_REFLECTION_FACTORY, offsetof(ConstructorArgs, methodReflectionFactory) },
-			{ PT_PCRE_PROP_PHP_DOC_INHERITANCE_RESOLVER, offsetof(ConstructorArgs, phpDocInheritanceResolver) },
-			{ PT_PCRE_PROP_DEPRECATION_PROVIDER, offsetof(ConstructorArgs, deprecationProvider) },
-			{ PT_PCRE_PROP_ANNOTATIONS_METHODS_EXTENSION, offsetof(ConstructorArgs, annotationsMethodsClassReflectionExtension) },
-			{ PT_PCRE_PROP_ANNOTATIONS_PROPERTIES_EXTENSION, offsetof(ConstructorArgs, annotationsPropertiesClassReflectionExtension) },
-			{ PT_PCRE_PROP_SIGNATURE_MAP_PROVIDER, offsetof(ConstructorArgs, signatureMapProvider) },
-			{ PT_PCRE_PROP_PARSER, offsetof(ConstructorArgs, parser) },
-			{ PT_PCRE_PROP_STUB_PHP_DOC_PROVIDER, offsetof(ConstructorArgs, stubPhpDocProvider) },
-			{ PT_PCRE_PROP_REFLECTION_PROVIDER_PROVIDER, offsetof(ConstructorArgs, reflectionProviderProvider) },
-			{ PT_PCRE_PROP_FILE_TYPE_MAPPER, offsetof(ConstructorArgs, fileTypeMapper) },
-			{ PT_PCRE_PROP_ATTRIBUTE_REFLECTION_FACTORY, offsetof(ConstructorArgs, attributeReflectionFactory) },
-			{ PT_PCRE_PROP_ALLOWED_CONSTANTS_MAP_PROVIDER, offsetof(ConstructorArgs, allowedConstantsMapProvider) },
-			{ PT_PCRE_PROP_PHP_VERSION, offsetof(ConstructorArgs, phpVersion) },
+			{ slots::scopeFactory, offsetof(ConstructorArgs, scopeFactory) },
+			{ slots::phpDocsResolver, offsetof(ConstructorArgs, phpDocsResolver) },
+			{ slots::nodeScopeResolver, offsetof(ConstructorArgs, nodeScopeResolver) },
+			{ slots::methodReflectionFactory, offsetof(ConstructorArgs, methodReflectionFactory) },
+			{ slots::phpDocInheritanceResolver, offsetof(ConstructorArgs, phpDocInheritanceResolver) },
+			{ slots::deprecationProvider, offsetof(ConstructorArgs, deprecationProvider) },
+			{ slots::annotationsMethodsClassReflectionExtension, offsetof(ConstructorArgs, annotationsMethodsClassReflectionExtension) },
+			{ slots::annotationsPropertiesClassReflectionExtension, offsetof(ConstructorArgs, annotationsPropertiesClassReflectionExtension) },
+			{ slots::signatureMapProvider, offsetof(ConstructorArgs, signatureMapProvider) },
+			{ slots::parser, offsetof(ConstructorArgs, parser) },
+			{ slots::stubPhpDocProvider, offsetof(ConstructorArgs, stubPhpDocProvider) },
+			{ slots::reflectionProviderProvider, offsetof(ConstructorArgs, reflectionProviderProvider) },
+			{ slots::fileTypeMapper, offsetof(ConstructorArgs, fileTypeMapper) },
+			{ slots::attributeReflectionFactory, offsetof(ConstructorArgs, attributeReflectionFactory) },
+			{ slots::allowedConstantsMapProvider, offsetof(ConstructorArgs, allowedConstantsMapProvider) },
+			{ slots::phpVersion, offsetof(ConstructorArgs, phpVersion) },
 		};
 		for (const auto &entry : promoted) {
 			zval *value = *(zval *const *) ((const char *) &a + entry.offset);
 			ZVAL_COPY(OBJ_PROP_NUM(object, entry.slot), value);
 		}
-		ZVAL_BOOL(OBJ_PROP_NUM(object, PT_PCRE_PROP_INFER_PRIVATE_PROPERTY_TYPE), a.inferPrivatePropertyTypeFromConstructor);
+		ZVAL_BOOL(OBJ_PROP_NUM(object, slots::inferPrivatePropertyTypeFromConstructor), a.inferPrivatePropertyTypeFromConstructor);
 
 		zval lru;
 		if (UNEXPECTED(!pt_lru_cache_new(&lru, a.memberCacheKeysMax))) return false;
-		ZVAL_COPY_VALUE(OBJ_PROP_NUM(object, PT_PCRE_PROP_MEMBER_CACHE_ORDER), &lru);
+		ZVAL_COPY_VALUE(OBJ_PROP_NUM(object, slots::memberCacheOrder), &lru);
 		return true;
 	}
 
@@ -407,7 +379,7 @@ public:
 	 */
 	[[nodiscard]] bool touchMemberCacheKey(zend_string *cacheKey)
 	{
-		zval *order = slot(PT_PCRE_PROP_MEMBER_CACHE_ORDER);
+		zval *order = slot(slots::memberCacheOrder);
 		zv::Val current = pt_lru_cache_get(order, cacheKey);
 		if (UNEXPECTED(current.isUndef())) return false;
 		if (Z_TYPE_P(current.raw()) != IS_NULL) return true;
@@ -422,10 +394,10 @@ public:
 			if (UNEXPECTED(Z_TYPE_P(evictKey) != IS_STRING)) continue;
 			/* the key lives in the evicted list, which outlives the loop */
 			zend_string *key = Z_STR_P(evictKey);
-			unsetIn(slot(PT_PCRE_PROP_METHODS_INCLUDING_ANNOTATIONS), key);
-			unsetIn(slot(PT_PCRE_PROP_NATIVE_METHODS), key);
-			unsetIn(slot(PT_PCRE_PROP_PROPERTIES_INCLUDING_ANNOTATIONS), key);
-			unsetIn(slot(PT_PCRE_PROP_NATIVE_PROPERTIES), key);
+			unsetIn(slot(slots::methodsIncludingAnnotations), key);
+			unsetIn(slot(slots::nativeMethods), key);
+			unsetIn(slot(slots::propertiesIncludingAnnotations), key);
+			unsetIn(slot(slots::nativeProperties), key);
 		}
 		return true;
 	}
@@ -468,14 +440,14 @@ public:
 		}
 
 		if (UNEXPECTED(!touchMemberCacheKey(cacheKey.get()))) return zv::Val();
-		zval *cache = slot(PT_PCRE_PROP_PROPERTIES_INCLUDING_ANNOTATIONS);
+		zval *cache = slot(slots::propertiesIncludingAnnotations);
 		zval *cached = issetNested(cache, cacheKey.get(), propertyName);
 		if (cached != NULL) return zv::Val::copyOf(zv::Ref(cached));
 
 		zv::Val property = createProperty(classReflection, propertyName, scope, true);
 		if (UNEXPECTED(property.isUndef())) return zv::Val();
 		zv::Val result = zv::Val::copyOf(zv::Ref(property.raw()));
-		setNested(slot(PT_PCRE_PROP_PROPERTIES_INCLUDING_ANNOTATIONS), cacheKey.get(), propertyName, std::move(property));
+		setNested(slot(slots::propertiesIncludingAnnotations), cacheKey.get(), propertyName, std::move(property));
 		return result;
 	}
 
@@ -487,7 +459,7 @@ public:
 		zv::Str cacheKey = zv::Str::copyOf(Z_STR_P(classCacheKey.raw()));
 		if (UNEXPECTED(!touchMemberCacheKey(cacheKey.get()))) return zv::Val();
 
-		zval *cached = issetNested(slot(PT_PCRE_PROP_NATIVE_PROPERTIES), cacheKey.get(), propertyName);
+		zval *cached = issetNested(slot(slots::nativeProperties), cacheKey.get(), propertyName);
 		if (cached != NULL) return zv::Val::copyOf(zv::Ref(cached));
 
 		zv::Val outOfClassScope = pt_type_new(PT_CLASS_OUT_OF_CLASS_SCOPE, 0, NULL);
@@ -495,7 +467,7 @@ public:
 		zv::Val property = createProperty(classReflection, propertyName, outOfClassScope.raw(), false);
 		if (UNEXPECTED(property.isUndef())) return zv::Val();
 		zv::Val result = zv::Val::copyOf(zv::Ref(property.raw()));
-		setNested(slot(PT_PCRE_PROP_NATIVE_PROPERTIES), cacheKey.get(), propertyName, std::move(property));
+		setNested(slot(slots::nativeProperties), cacheKey.get(), propertyName, std::move(property));
 		return result;
 	}
 
@@ -702,7 +674,7 @@ public:
 	zv::Val getResolvedPhpDoc(zval *fileName, zval *className, zval *traitName, zval *functionName, zval *docComment)
 	{
 		zv::Args args{fileName, className, traitName, functionName, docComment};
-		return call(slot(PT_PCRE_PROP_FILE_TYPE_MAPPER), PT_LC("getresolvedphpdoc"), 5, args);
+		return call(slot(slots::fileTypeMapper), PT_LC("getresolvedphpdoc"), 5, args);
 	}
 
 	/* InitializerExprContext::fromClass($className, $fileName) */
@@ -717,7 +689,7 @@ public:
 		zv::Val attributes = call(reflection, PT_LC("getattributes"));
 		if (UNEXPECTED(attributes.isUndef())) return zv::Val();
 		zv::Args args{attributes.raw(), context};
-		return call(slot(PT_PCRE_PROP_ATTRIBUTE_REFLECTION_FACTORY), PT_LC("fromnativereflection"), 2, args);
+		return call(slot(slots::attributeReflectionFactory), PT_LC("fromnativereflection"), 2, args);
 	}
 
 	/* the first of a @var tag list the twin picks: $varTags[0] when it is
@@ -767,7 +739,7 @@ public:
 		zval *declaringClass = declaringClassReflection.raw();
 
 		bool supportsEnums;
-		if (UNEXPECTED(!pt_php_version_answer(slot(PT_PCRE_PROP_PHP_VERSION), PT_PHP_VERSION_SUPPORTS_ENUMS, supportsEnums))) return zv::Val();
+		if (UNEXPECTED(!pt_php_version_answer(slot(slots::phpVersion), PT_PHP_VERSION_SUPPORTS_ENUMS, supportsEnums))) return zv::Val();
 		bool isNameProperty = zend_string_equals_literal(propertyName, "name");
 		bool isUnitEnumInterfaceNameProperty = supportsEnums
 			&& isNameProperty
@@ -857,7 +829,7 @@ public:
 			}
 		}
 
-		zv::Val deprecation = call(slot(PT_PCRE_PROP_DEPRECATION_PROVIDER), PT_LC("getpropertydeprecation"), 1, propertyReflection.raw());
+		zv::Val deprecation = call(slot(slots::deprecationProvider), PT_LC("getpropertydeprecation"), 1, propertyReflection.raw());
 		if (UNEXPECTED(deprecation.isUndef())) return zv::Val();
 		bool isDeprecated = Z_TYPE_P(deprecation.raw()) != IS_NULL;
 		zv::Val deprecatedDescription = zv::Val::null();
@@ -898,11 +870,11 @@ public:
 
 		if (Z_TYPE_P(constructorName.raw()) == IS_NULL) {
 			zv::Args stubArgs{&declaringClassNameArg, &propertyNameArg};
-			zv::Val currentResolvedPhpDoc = call(slot(PT_PCRE_PROP_STUB_PHP_DOC_PROVIDER), PT_LC("findpropertyphpdoc"), 2, stubArgs);
+			zv::Val currentResolvedPhpDoc = call(slot(slots::stubPhpDocProvider), PT_LC("findpropertyphpdoc"), 2, stubArgs);
 			if (UNEXPECTED(currentResolvedPhpDoc.isUndef())) return zv::Val();
 			if (Z_TYPE_P(currentResolvedPhpDoc.raw()) == IS_NULL && Z_TYPE_P(declaringTraitName.raw()) != IS_NULL) {
 				ZVAL_COPY_VALUE(&stubArgs[0], declaringTraitName.raw());
-				currentResolvedPhpDoc = call(slot(PT_PCRE_PROP_STUB_PHP_DOC_PROVIDER), PT_LC("findpropertyphpdoc"), 2, stubArgs);
+				currentResolvedPhpDoc = call(slot(slots::stubPhpDocProvider), PT_LC("findpropertyphpdoc"), 2, stubArgs);
 				if (UNEXPECTED(currentResolvedPhpDoc.isUndef())) return zv::Val();
 			}
 			if (Z_TYPE_P(currentResolvedPhpDoc.raw()) == IS_NULL && Z_TYPE_P(docComment.raw()) != IS_NULL) {
@@ -914,7 +886,7 @@ public:
 				if (UNEXPECTED(currentResolvedPhpDoc.isUndef())) return zv::Val();
 			}
 			zv::Args resolveArgs{declaringClass, &propertyNameArg, currentResolvedPhpDoc.raw()};
-			resolvedPhpDoc = call(slot(PT_PCRE_PROP_PHP_DOC_INHERITANCE_RESOLVER), PT_LC("resolvephpdocforproperty"), 3, resolveArgs);
+			resolvedPhpDoc = call(slot(slots::phpDocInheritanceResolver), PT_LC("resolvephpdocforproperty"), 3, resolveArgs);
 			if (UNEXPECTED(resolvedPhpDoc.isUndef())) return zv::Val();
 		} else if (Z_TYPE_P(docComment.raw()) != IS_NULL) {
 			zv::Val fileName = call(declaringClass, PT_LC("getfilename"));
@@ -987,7 +959,7 @@ public:
 			}
 		}
 
-		if (Z_TYPE_P(phpDocType.raw()) == IS_NULL && Z_TYPE_P(slot(PT_PCRE_PROP_INFER_PRIVATE_PROPERTY_TYPE)) == IS_TRUE) {
+		if (Z_TYPE_P(phpDocType.raw()) == IS_NULL && Z_TYPE_P(slot(slots::inferPrivatePropertyTypeFromConstructor)) == IS_TRUE) {
 			zv::Val fileName = call(declaringClass, PT_LC("getfilename"));
 			if (UNEXPECTED(fileName.isUndef())) return zv::Val();
 			bool eligible = Z_TYPE_P(fileName.raw()) != IS_NULL;
@@ -1030,7 +1002,7 @@ public:
 		if (UNEXPECTED(nativeType.isUndef())) return zv::Val();
 
 		zv::Val declaringTrait = zv::Val::null();
-		zv::Val reflectionProvider = call(slot(PT_PCRE_PROP_REFLECTION_PROVIDER_PROVIDER), PT_LC("getreflectionprovider"));
+		zv::Val reflectionProvider = call(slot(slots::reflectionProviderProvider), PT_LC("getreflectionprovider"));
 		if (UNEXPECTED(reflectionProvider.isUndef())) return zv::Val();
 		if (Z_TYPE_P(declaringTraitName.raw()) != IS_NULL) {
 			bool hasClass;
@@ -1261,7 +1233,7 @@ public:
 		zval propertyNameArg;
 		ZVAL_STR(&propertyNameArg, propertyName);
 		zv::Args extensionArgs{classReflection, &propertyNameArg};
-		bool hasAnnotationProperty = callBool(slot(PT_PCRE_PROP_ANNOTATIONS_PROPERTIES_EXTENSION), PT_LC("hasproperty"), 2, extensionArgs, ok);
+		bool hasAnnotationProperty = callBool(slot(slots::annotationsPropertiesClassReflectionExtension), PT_LC("hasproperty"), 2, extensionArgs, ok);
 		if (UNEXPECTED(!ok)) return zv::Val();
 		if (!hasAnnotationProperty) return zv::Val::null();
 
@@ -1290,7 +1262,7 @@ public:
 
 		zv::Val hierarchyDistances = call(classReflection, PT_LC("getclasshierarchydistances"));
 		if (UNEXPECTED(hierarchyDistances.isUndef())) return zv::Val();
-		zv::Val annotationProperty = call(slot(PT_PCRE_PROP_ANNOTATIONS_PROPERTIES_EXTENSION), PT_LC("getproperty"), 2, extensionArgs);
+		zv::Val annotationProperty = call(slot(slots::annotationsPropertiesClassReflectionExtension), PT_LC("getproperty"), 2, extensionArgs);
 		if (UNEXPECTED(annotationProperty.isUndef())) return zv::Val();
 		zv::Val annotationDeclaringClass = call(annotationProperty.raw(), PT_LC("getdeclaringclass"));
 		if (UNEXPECTED(annotationDeclaringClass.isUndef())) return zv::Val();
@@ -1358,7 +1330,7 @@ public:
 		if (UNEXPECTED(classCacheKey.isUndef())) return zv::Val();
 		zv::Str cacheKey = zv::Str::copyOf(Z_STR_P(classCacheKey.raw()));
 		if (UNEXPECTED(!touchMemberCacheKey(cacheKey.get()))) return zv::Val();
-		zval *cached = issetNested(slot(PT_PCRE_PROP_METHODS_INCLUDING_ANNOTATIONS), cacheKey.get(), methodName);
+		zval *cached = issetNested(slot(slots::methodsIncludingAnnotations), cacheKey.get(), methodName);
 		if (cached != NULL) return zv::Val::copyOf(zv::Ref(cached));
 
 		zv::Val nativeReflection = pt_class_reflection_get_native_reflection(Z_OBJ_P(classReflection));
@@ -1368,17 +1340,17 @@ public:
 		zv::Str realName = stringOf(pt_method_adapter_get_name(nativeMethodReflection.raw()));
 		if (UNEXPECTED(realName.isNull())) return zv::Val();
 
-		zval *cachedByRealName = issetNested(slot(PT_PCRE_PROP_METHODS_INCLUDING_ANNOTATIONS), cacheKey.get(), realName.get());
+		zval *cachedByRealName = issetNested(slot(slots::methodsIncludingAnnotations), cacheKey.get(), realName.get());
 		if (cachedByRealName != NULL) return zv::Val::copyOf(zv::Ref(cachedByRealName));
 
 		zv::Val method = createMethod(classReflection, methodName, nativeMethodReflection.raw(), true);
 		if (UNEXPECTED(method.isUndef())) return zv::Val();
 		zv::Val result = zv::Val::copyOf(zv::Ref(method.raw()));
 		if (!zend_string_equals(realName.get(), methodName)) {
-			setNested(slot(PT_PCRE_PROP_METHODS_INCLUDING_ANNOTATIONS), cacheKey.get(), realName.get(), zv::Val::copyOf(zv::Ref(method.raw())));
-			setNested(slot(PT_PCRE_PROP_METHODS_INCLUDING_ANNOTATIONS), cacheKey.get(), methodName, std::move(method));
+			setNested(slot(slots::methodsIncludingAnnotations), cacheKey.get(), realName.get(), zv::Val::copyOf(zv::Ref(method.raw())));
+			setNested(slot(slots::methodsIncludingAnnotations), cacheKey.get(), methodName, std::move(method));
 		} else {
-			setNested(slot(PT_PCRE_PROP_METHODS_INCLUDING_ANNOTATIONS), cacheKey.get(), realName.get(), std::move(method));
+			setNested(slot(slots::methodsIncludingAnnotations), cacheKey.get(), realName.get(), std::move(method));
 		}
 		return result;
 	}
@@ -1397,7 +1369,7 @@ public:
 		if (UNEXPECTED(classCacheKey.isUndef())) return zv::Val();
 		zv::Str cacheKey = zv::Str::copyOf(Z_STR_P(classCacheKey.raw()));
 		if (UNEXPECTED(!touchMemberCacheKey(cacheKey.get()))) return zv::Val();
-		zval *cached = issetNested(slot(PT_PCRE_PROP_NATIVE_METHODS), cacheKey.get(), methodName);
+		zval *cached = issetNested(slot(slots::nativeMethods), cacheKey.get(), methodName);
 		if (cached != NULL) return zv::Val::copyOf(zv::Ref(cached));
 
 		zv::Val nativeReflection = pt_class_reflection_get_native_reflection(Z_OBJ_P(classReflection));
@@ -1413,13 +1385,13 @@ public:
 		if (UNEXPECTED(nativeMethodReflection.isUndef())) return zv::Val();
 		zv::Str realName = stringOf(pt_method_adapter_get_name(nativeMethodReflection.raw()));
 		if (UNEXPECTED(realName.isNull())) return zv::Val();
-		zval *cachedByRealName = issetNested(slot(PT_PCRE_PROP_NATIVE_METHODS), cacheKey.get(), realName.get());
+		zval *cachedByRealName = issetNested(slot(slots::nativeMethods), cacheKey.get(), realName.get());
 		if (cachedByRealName != NULL) return zv::Val::copyOf(zv::Ref(cachedByRealName));
 
 		zv::Val method = createMethod(classReflection, methodName, nativeMethodReflection.raw(), false);
 		if (UNEXPECTED(method.isUndef())) return zv::Val();
 		zv::Val result = zv::Val::copyOf(zv::Ref(method.raw()));
-		setNested(slot(PT_PCRE_PROP_NATIVE_METHODS), cacheKey.get(), realName.get(), std::move(method));
+		setNested(slot(slots::nativeMethods), cacheKey.get(), realName.get(), std::move(method));
 		return result;
 	}
 
@@ -1492,7 +1464,7 @@ public:
 	bool signatureMapBool(const char *lcname, size_t len, zval *className, zval *methodName, bool &ok)
 	{
 		zv::Args args{className, methodName};
-		return callBool(slot(PT_PCRE_PROP_SIGNATURE_MAP_PROVIDER), lcname, len, 2, args, ok);
+		return callBool(slot(slots::signatureMapProvider), lcname, len, 2, args, ok);
 	}
 
 	/* Mirrors createMethod(). */
@@ -1506,12 +1478,12 @@ public:
 
 		if (includingAnnotations) {
 			zv::Args extensionArgs{classReflection, &methodNameArg};
-			bool hasAnnotationMethod = callBool(slot(PT_PCRE_PROP_ANNOTATIONS_METHODS_EXTENSION), PT_LC("hasmethod"), 2, extensionArgs, ok);
+			bool hasAnnotationMethod = callBool(slot(slots::annotationsMethodsClassReflectionExtension), PT_LC("hasmethod"), 2, extensionArgs, ok);
 			if (UNEXPECTED(!ok)) return zv::Val();
 			if (hasAnnotationMethod) {
 				zv::Val hierarchyDistances = call(classReflection, PT_LC("getclasshierarchydistances"));
 				if (UNEXPECTED(hierarchyDistances.isUndef())) return zv::Val();
-				zv::Val annotationMethod = call(slot(PT_PCRE_PROP_ANNOTATIONS_METHODS_EXTENSION), PT_LC("getmethod"), 2, extensionArgs);
+				zv::Val annotationMethod = call(slot(slots::annotationsMethodsClassReflectionExtension), PT_LC("getmethod"), 2, extensionArgs);
 				if (UNEXPECTED(annotationMethod.isUndef())) return zv::Val();
 				zv::Val annotationDeclaringClass = call(annotationMethod.raw(), PT_LC("getdeclaringclass"));
 				if (UNEXPECTED(annotationDeclaringClass.isUndef())) return zv::Val();
@@ -1627,7 +1599,7 @@ public:
 		if (UNEXPECTED(!ok)) return zv::Val();
 		if (hasMetadata) {
 			zv::Args metadataArgs{declaringClassNameArg, methodNameArg};
-			zv::Val metadata = call(slot(PT_PCRE_PROP_SIGNATURE_MAP_PROVIDER), PT_LC("getmethodmetadata"), 2, metadataArgs);
+			zv::Val metadata = call(slot(slots::signatureMapProvider), PT_LC("getmethodmetadata"), 2, metadataArgs);
 			if (UNEXPECTED(metadata.isUndef())) return zv::Val();
 			bool hasSideEffects = true;
 			zval *stored = Z_TYPE_P(metadata.raw()) == IS_ARRAY ? zend_hash_str_find(Z_ARRVAL_P(metadata.raw()), PT_LC("hasSideEffects")) : NULL;
@@ -1641,7 +1613,7 @@ public:
 		}
 
 		zv::Args signatureArgs{declaringClassNameArg, methodNameArg, methodReflection};
-		zv::Val signaturesResult = call(slot(PT_PCRE_PROP_SIGNATURE_MAP_PROVIDER), PT_LC("getmethodsignatures"), 3, signatureArgs);
+		zv::Val signaturesResult = call(slot(slots::signatureMapProvider), PT_LC("getmethodsignatures"), 3, signatureArgs);
 		if (UNEXPECTED(!arrayResult(signaturesResult, "PHPStan\\Reflection\\SignatureMap\\SignatureMapProvider::getMethodSignatures"))) return zv::Val();
 
 		/* the twin reads $currentResolvedPhpDoc after the loops: the value
@@ -1723,7 +1695,7 @@ public:
 						reflectionParameterNames.push(zv::Val::string(parameterName.get()));
 					}
 					zv::Args resolveArgs{declaringClass, methodNameArg, fileResolved.raw(), reflectionParameterNames.raw()};
-					currentResolvedPhpDoc = call(slot(PT_PCRE_PROP_PHP_DOC_INHERITANCE_RESOLVER), PT_LC("resolvephpdocformethod"), 4, resolveArgs);
+					currentResolvedPhpDoc = call(slot(slots::phpDocInheritanceResolver), PT_LC("resolvephpdocformethod"), 4, resolveArgs);
 					if (UNEXPECTED(currentResolvedPhpDoc.isUndef())) return zv::Val();
 				}
 
@@ -1872,7 +1844,7 @@ public:
 			}
 		}
 
-		zv::Val reflectionProvider = call(slot(PT_PCRE_PROP_REFLECTION_PROVIDER_PROVIDER), PT_LC("getreflectionprovider"));
+		zv::Val reflectionProvider = call(slot(slots::reflectionProviderProvider), PT_LC("getreflectionprovider"));
 		if (UNEXPECTED(reflectionProvider.isUndef())) return zv::Val();
 		zv::Val hasSideEffects = isPure < 0 ? trinaryMaybe() : trinaryFromBoolean(isPure != 1);
 		if (UNEXPECTED(hasSideEffects.isUndef())) return zv::Val();
@@ -2010,7 +1982,7 @@ public:
 			zv::Val outType = call(parameterSignature, PT_LC("getouttype"));
 			if (UNEXPECTED(outType.isUndef())) return zv::Val();
 			zv::Args allowedConstantsArgs{declaringClassName, methodName, signatureName.get()};
-			zv::Val allowedConstants = call(slot(PT_PCRE_PROP_ALLOWED_CONSTANTS_MAP_PROVIDER), PT_LC("getformethodparameter"), 3, allowedConstantsArgs);
+			zv::Val allowedConstants = call(slot(slots::allowedConstantsMapProvider), PT_LC("getformethodparameter"), 3, allowedConstantsArgs);
 			if (UNEXPECTED(allowedConstants.isUndef())) return zv::Val();
 			zv::Val pureUnlessCallableIsImpure = trinaryNo();
 			if (UNEXPECTED(pureUnlessCallableIsImpure.isUndef())) return zv::Val();
@@ -2087,7 +2059,7 @@ public:
 	zv::Val createUserlandMethodReflection(zval *fileDeclaringClass, zval *actualDeclaringClass, zval *methodReflection, zval *declaringTraitName)
 	{
 		bool ok;
-		zv::Val deprecation = call(slot(PT_PCRE_PROP_DEPRECATION_PROVIDER), PT_LC("getmethoddeprecation"), 1, methodReflection);
+		zv::Val deprecation = call(slot(slots::deprecationProvider), PT_LC("getmethoddeprecation"), 1, methodReflection);
 		if (UNEXPECTED(deprecation.isUndef())) return zv::Val();
 		bool isDeprecated = Z_TYPE_P(deprecation.raw()) != IS_NULL;
 		zv::Val deprecatedDescription = zv::Val::null();
@@ -2125,13 +2097,13 @@ public:
 				zv::Str adapterName = adapterDeclaringClassNameOf(methodReflection, adapterDeclaringClass.raw());
 				if (UNEXPECTED(adapterName.isNull())) return zv::Val();
 				if (!adapterIsTrait || !zend_string_equals(betterName.get(), adapterName.get())) {
-					zv::Val reflectionProvider = call(slot(PT_PCRE_PROP_REFLECTION_PROVIDER_PROVIDER), PT_LC("getreflectionprovider"));
+					zv::Val reflectionProvider = call(slot(slots::reflectionProviderProvider), PT_LC("getreflectionprovider"));
 					if (UNEXPECTED(reflectionProvider.isUndef())) return zv::Val();
 					zval betterNameArg;
 					ZVAL_STR(&betterNameArg, betterName.get());
 					zv::Val traitClass = pt_reflection_provider_get_class(Z_OBJ_P(reflectionProvider.raw()), &betterNameArg);
 					if (UNEXPECTED(traitClass.isUndef())) return zv::Val();
-					zv::Val reflectionProvider2 = call(slot(PT_PCRE_PROP_REFLECTION_PROVIDER_PROVIDER), PT_LC("getreflectionprovider"));
+					zv::Val reflectionProvider2 = call(slot(slots::reflectionProviderProvider), PT_LC("getreflectionprovider"));
 					if (UNEXPECTED(reflectionProvider2.isUndef())) return zv::Val();
 					zval adapterNameArg;
 					ZVAL_STR(&adapterNameArg, adapterName.get());
@@ -2168,11 +2140,11 @@ public:
 		zv::Val inheritanceParameterNames = parameterNamesOf(methodReflection);
 		if (UNEXPECTED(inheritanceParameterNames.isUndef())) return zv::Val();
 		zv::Args resolveArgs{actualDeclaringClass, &methodNameArg, currentResolvedPhpDoc.raw(), inheritanceParameterNames.raw()};
-		zv::Val resolvedPhpDoc = call(slot(PT_PCRE_PROP_PHP_DOC_INHERITANCE_RESOLVER), PT_LC("resolvephpdocformethod"), 4, resolveArgs);
+		zv::Val resolvedPhpDoc = call(slot(slots::phpDocInheritanceResolver), PT_LC("resolvephpdocformethod"), 4, resolveArgs);
 		if (UNEXPECTED(resolvedPhpDoc.isUndef())) return zv::Val();
 
 		zv::Val declaringTrait = zv::Val::null();
-		zv::Val reflectionProvider = call(slot(PT_PCRE_PROP_REFLECTION_PROVIDER_PROVIDER), PT_LC("getreflectionprovider"));
+		zv::Val reflectionProvider = call(slot(slots::reflectionProviderProvider), PT_LC("getreflectionprovider"));
 		if (UNEXPECTED(reflectionProvider.isUndef())) return zv::Val();
 		if (Z_TYPE_P(declaringTraitName) != IS_NULL) {
 			bool hasClass;
@@ -2255,7 +2227,7 @@ public:
 				if (UNEXPECTED(!ok)) return zv::Val();
 				if (!hasMetadata) continue;
 				zv::Args metadataArgs{&ancestorNameArg, &methodNameArg};
-				zv::Val metadata = call(slot(PT_PCRE_PROP_SIGNATURE_MAP_PROVIDER), PT_LC("getmethodmetadata"), 2, metadataArgs);
+				zv::Val metadata = call(slot(slots::signatureMapProvider), PT_LC("getmethodmetadata"), 2, metadataArgs);
 				if (UNEXPECTED(metadata.isUndef())) return zv::Val();
 				bool hasSideEffects = true;
 				zval *stored = Z_TYPE_P(metadata.raw()) == IS_ARRAY ? zend_hash_str_find(Z_ARRVAL_P(metadata.raw()), PT_LC("hasSideEffects")) : NULL;
@@ -2497,7 +2469,7 @@ public:
 		ZVAL_BOOL(&args[19], acceptsNamedArguments);
 		ZVAL_COPY_VALUE(&args[20], attributes.raw());
 		ZVAL_COPY_VALUE(&args[21], pureUnlessCallableIsImpureParameters.raw());
-		return call(slot(PT_PCRE_PROP_METHOD_REFLECTION_FACTORY), PT_LC("create"), 22, args);
+		return call(slot(slots::methodReflectionFactory), PT_LC("create"), 22, args);
 	}
 
 	/* Mirrors getPhpDocReturnType(). */
@@ -2552,7 +2524,7 @@ public:
 		ZVAL_STR(&methodNameArg, methodName);
 
 		zv::Args args{declaringClassName.raw(), implementingClassName.raw(), &methodNameArg, positionalParameterNames};
-		zv::Val resolved = call(slot(PT_PCRE_PROP_STUB_PHP_DOC_PROVIDER), PT_LC("findmethodphpdoc"), 4, args);
+		zv::Val resolved = call(slot(slots::stubPhpDocProvider), PT_LC("findmethodphpdoc"), 4, args);
 		if (UNEXPECTED(resolved.isUndef())) return zv::Val();
 		if (Z_TYPE_P(resolved.raw()) != IS_NULL) {
 			zv::Arr pair = zv::Arr::create(2);
@@ -2561,7 +2533,7 @@ public:
 			return zv::Val(std::move(pair));
 		}
 
-		bool isKnownClass = callBool(slot(PT_PCRE_PROP_STUB_PHP_DOC_PROVIDER), PT_LC("isknownclass"), 1, declaringClassName.raw(), ok);
+		bool isKnownClass = callBool(slot(slots::stubPhpDocProvider), PT_LC("isknownclass"), 1, declaringClassName.raw(), ok);
 		if (UNEXPECTED(!ok)) return zv::Val();
 		if (!isKnownClass) {
 			bool isBuiltin = callBool(declaringClass, PT_LC("isbuiltin"), 0, NULL, ok);
@@ -2582,7 +2554,7 @@ public:
 			if (UNEXPECTED(!ok)) return zv::Val();
 			if (!hasNative) continue;
 			zv::Args ancestorArgs{ancestorName.raw(), ancestorName.raw(), &methodNameArg, positionalParameterNames};
-			zv::Val ancestorResolved = call(slot(PT_PCRE_PROP_STUB_PHP_DOC_PROVIDER), PT_LC("findmethodphpdoc"), 4, ancestorArgs);
+			zv::Val ancestorResolved = call(slot(slots::stubPhpDocProvider), PT_LC("findmethodphpdoc"), 4, ancestorArgs);
 			if (UNEXPECTED(ancestorResolved.isUndef())) return zv::Val();
 			if (Z_TYPE_P(ancestorResolved.raw()) == IS_NULL) continue;
 			if (!isKnownClass) {
@@ -2607,12 +2579,12 @@ public:
 		zv::Val declaringClassName = pt_class_reflection_get_name(Z_OBJ_P(declaringClass.raw()));
 		if (UNEXPECTED(declaringClassName.isUndef())) return zv::Val();
 		zend_string *className = Z_STR_P(declaringClassName.raw());
-		if (issetIn(slot(PT_PCRE_PROP_INFER_IN_PROCESS), className) != NULL) return zv::Val::null();
-		setIn(slot(PT_PCRE_PROP_INFER_IN_PROCESS), className, zv::Val::boolean(true));
+		if (issetIn(slot(slots::inferClassConstructorPropertyTypesInProcess), className) != NULL) return zv::Val::null();
+		setIn(slot(slots::inferClassConstructorPropertyTypesInProcess), className, zv::Val::boolean(true));
 		zv::Val propertyTypes = inferAndCachePropertyTypes(constructor);
 		/* like the twin, the marker is removed on the normal return only */
 		if (UNEXPECTED(propertyTypes.isUndef())) return zv::Val();
-		unsetIn(slot(PT_PCRE_PROP_INFER_IN_PROCESS), className);
+		unsetIn(slot(slots::inferClassConstructorPropertyTypesInProcess), className);
 		zval *found = keyIn(propertyTypes.raw(), propertyName);
 		if (found != NULL) return zv::Val::copyOf(zv::Ref(found));
 		return zv::Val::null();
@@ -2626,14 +2598,14 @@ public:
 		zv::Val declaringClassNameVal = pt_class_reflection_get_name(Z_OBJ_P(declaringClass.raw()));
 		if (UNEXPECTED(declaringClassNameVal.isUndef())) return zv::Val();
 		zv::Str className = zv::Str::copyOf(Z_STR_P(declaringClassNameVal.raw()));
-		zval *cached = issetIn(slot(PT_PCRE_PROP_PROPERTY_TYPES_CACHE), className.get());
+		zval *cached = issetIn(slot(slots::propertyTypesCache), className.get());
 		if (cached != NULL) return zv::Val::copyOf(zv::Ref(cached));
 
 		zv::Val fileName = call(declaringClass.raw(), PT_LC("getfilename"));
 		if (UNEXPECTED(fileName.isUndef())) return zv::Val();
 		if (Z_TYPE_P(fileName.raw()) != IS_STRING) return cachePropertyTypes(className.get(), zv::Val(zv::Arr::empty()));
 
-		zv::Val nodes = call(slot(PT_PCRE_PROP_PARSER), PT_LC("parsefile"), 1, fileName.raw());
+		zv::Val nodes = call(slot(slots::parser), PT_LC("parsefile"), 1, fileName.raw());
 		if (UNEXPECTED(nodes.isUndef())) return zv::Val();
 		zv::Val classNode = findClassNode(className.get(), nodes.raw());
 		if (UNEXPECTED(classNode.isUndef())) return zv::Val();
@@ -2653,7 +2625,7 @@ public:
 
 		zv::Val scopeContext = pt_type_call_static_ce(pt_ce_scope_context, PT_LC("create"), 1, fileName.raw());
 		if (UNEXPECTED(scopeContext.isUndef())) return zv::Val();
-		zv::Val classScope = call(slot(PT_PCRE_PROP_SCOPE_FACTORY), PT_LC("create"), 1, scopeContext.raw());
+		zv::Val classScope = call(slot(slots::scopeFactory), PT_LC("create"), 1, scopeContext.raw());
 		if (UNEXPECTED(classScope.isUndef())) return zv::Val();
 		const char *lastSeparator = zend_memnrstr(ZSTR_VAL(className.get()), "\\", 1, ZSTR_VAL(className.get()) + ZSTR_LEN(className.get()));
 		if (lastSeparator != NULL) {
@@ -2667,7 +2639,7 @@ public:
 		/* [$templateTypeMap, ..., $acceptsNamedArguments, , $phpDocComment, ...,
 		 * $phpDocParameterOutTypes, , , , $phpDocPureUnlessCallableIsImpureParameters] */
 		pt_php_docs phpDocs;
-		if (UNEXPECTED(!pt_php_docs_resolver_get_php_docs(slot(PT_PCRE_PROP_PHP_DOCS_RESOLVER), classScope.raw(), methodNode.raw(), 0x1EFFFu | (1u << 20), phpDocs))) return zv::Val();
+		if (UNEXPECTED(!pt_php_docs_resolver_get_php_docs(slot(slots::phpDocsResolver), classScope.raw(), methodNode.raw(), 0x1EFFFu | (1u << 20), phpDocs))) return zv::Val();
 		zval *docs[PT_PHP_DOCS_COUNT];
 		for (uint32_t i = 0; i < PT_PHP_DOCS_COUNT; i++) docs[i] = &phpDocs.items[i];
 
@@ -2733,7 +2705,7 @@ public:
 			if (assignExprRef.raw() == NULL) continue;
 			zv::Val storage = pt_expression_result_storage_new();
 			if (UNEXPECTED(storage.isUndef())) return zv::Val();
-			zv::Val result = pt_node_scope_resolver_process_expr_on_demand(slot(PT_PCRE_PROP_NODE_SCOPE_RESOLVER), assignExprRef.deref().raw(), methodScope.raw(), storage.raw());
+			zv::Val result = pt_node_scope_resolver_process_expr_on_demand(slot(slots::nodeScopeResolver), assignExprRef.deref().raw(), methodScope.raw(), storage.raw());
 			if (UNEXPECTED(result.isUndef())) return zv::Val();
 			zv::Val propertyType = call(result.raw(), PT_LC("gettype"));
 			if (UNEXPECTED(propertyType.isUndef())) return zv::Val();
@@ -2767,7 +2739,7 @@ public:
 	zv::Val cachePropertyTypes(zend_string *className, zv::Val types)
 	{
 		zv::Val result = zv::Val::copyOf(zv::Ref(types.raw()));
-		setIn(slot(PT_PCRE_PROP_PROPERTY_TYPES_CACHE), className, std::move(types));
+		setIn(slot(slots::propertyTypesCache), className, std::move(types));
 		return result;
 	}
 
@@ -2919,84 +2891,17 @@ zv::Val pt_php_class_reflection_extension_get_native_method(zend_object *extensi
 
 /* {{{ registration — the engine ABI glue */
 
-namespace {
-
-/* the twin's promoted constructor parameter class names (persistent
- * literals; Nette reflects them while it compiles the container) */
-constexpr const char *pcreScopeFactory = "PHPStan\\Analyser\\ScopeFactory";
-constexpr const char *pcrePhpDocsResolver = "PHPStan\\Analyser\\PhpDocsResolver";
-constexpr const char *pcreNodeScopeResolver = "PHPStan\\Analyser\\NodeScopeResolver";
-constexpr const char *pcreMethodReflectionFactory = "PHPStan\\Reflection\\Php\\PhpMethodReflectionFactory";
-constexpr const char *pcrePhpDocInheritanceResolver = "PHPStan\\PhpDoc\\PhpDocInheritanceResolver";
-constexpr const char *pcreDeprecationProvider = "PHPStan\\Reflection\\Deprecation\\DeprecationProvider";
-constexpr const char *pcreAnnotationsMethods = "PHPStan\\Reflection\\Annotations\\AnnotationsMethodsClassReflectionExtension";
-constexpr const char *pcreAnnotationsProperties = "PHPStan\\Reflection\\Annotations\\AnnotationsPropertiesClassReflectionExtension";
-constexpr const char *pcreSignatureMapProvider = "PHPStan\\Reflection\\SignatureMap\\SignatureMapProvider";
-constexpr const char *pcreParser = "PHPStan\\Parser\\Parser";
-constexpr const char *pcreStubPhpDocProvider = "PHPStan\\PhpDoc\\StubPhpDocProvider";
-constexpr const char *pcreReflectionProviderProvider = "PHPStan\\Reflection\\ReflectionProvider\\ReflectionProviderProvider";
-constexpr const char *pcreFileTypeMapper = "PHPStan\\Type\\FileTypeMapper";
-constexpr const char *pcreAttributeReflectionFactory = "PHPStan\\Reflection\\AttributeReflectionFactory";
-constexpr const char *pcreAllowedConstantsMapProvider = "PHPStan\\Reflection\\ParameterAllowedConstantsMapProvider";
-constexpr const char *pcrePhpVersion = "PHPStan\\Php\\PhpVersion";
-constexpr const char *pcreLruCache = "PHPStan\\Internal\\LruCache";
-
-} // namespace
-
 void pt_register_php_class_reflection_extension()
 {
 	reg::Class cls("PHPStan\\Reflection\\Php\\PhpClassReflectionExtension");
 	ptdecl::PhpClassReflectionExtension::declareClass(cls);
-
-	/* the twin's properties in declaration order (the OBJ_PROP_NUM slots) */
-	cls.privateTypedClassProperty("memberCacheOrder", pcreLruCache, false);
-	cls.privateTypedArrayPropertyDefaultEmpty("propertiesIncludingAnnotations");
-	cls.privateTypedArrayPropertyDefaultEmpty("nativeProperties");
-	cls.privateTypedArrayPropertyDefaultEmpty("methodsIncludingAnnotations");
-	cls.privateTypedArrayPropertyDefaultEmpty("nativeMethods");
-	cls.privateTypedArrayPropertyDefaultEmpty("propertyTypesCache");
-	cls.privateTypedArrayPropertyDefaultEmpty("inferClassConstructorPropertyTypesInProcess");
-	cls.privateTypedClassProperty("scopeFactory", pcreScopeFactory, false);
-	cls.privateTypedClassProperty("phpDocsResolver", pcrePhpDocsResolver, false);
-	cls.privateTypedClassProperty("nodeScopeResolver", pcreNodeScopeResolver, false);
-	cls.privateTypedClassProperty("methodReflectionFactory", pcreMethodReflectionFactory, false);
-	cls.privateTypedClassProperty("phpDocInheritanceResolver", pcrePhpDocInheritanceResolver, false);
-	cls.privateTypedClassProperty("deprecationProvider", pcreDeprecationProvider, false);
-	cls.privateTypedClassProperty("annotationsMethodsClassReflectionExtension", pcreAnnotationsMethods, false);
-	cls.privateTypedClassProperty("annotationsPropertiesClassReflectionExtension", pcreAnnotationsProperties, false);
-	cls.privateTypedClassProperty("signatureMapProvider", pcreSignatureMapProvider, false);
-	cls.privateTypedClassProperty("parser", pcreParser, false);
-	cls.privateTypedClassProperty("stubPhpDocProvider", pcreStubPhpDocProvider, false);
-	cls.privateTypedClassProperty("reflectionProviderProvider", pcreReflectionProviderProvider, false);
-	cls.privateTypedClassProperty("fileTypeMapper", pcreFileTypeMapper, false);
-	cls.privateTypedClassProperty("attributeReflectionFactory", pcreAttributeReflectionFactory, false);
-	cls.privateTypedClassProperty("allowedConstantsMapProvider", pcreAllowedConstantsMapProvider, false);
-	cls.privateTypedProperty("inferPrivatePropertyTypeFromConstructor", MAY_BE_BOOL);
-	cls.privateTypedClassProperty("phpVersion", pcrePhpVersion, false);
+	/* the twin's properties in declaration order (the slots:: constants) */
+	ptdecl::PhpClassReflectionExtension::declareProperties(cls);
 
 	/* the DI service's constructor: the parameter class names are the
 	 * twin's exactly — Nette reflects them to autowire the service and
 	 * pairs the two #[AutowiredParameter]s by name (README rule 6) */
-	cls.method("__construct", reg::Public, 18, {
-		reg::obj("scopeFactory", pcreScopeFactory),
-		reg::obj("phpDocsResolver", pcrePhpDocsResolver),
-		reg::obj("nodeScopeResolver", pcreNodeScopeResolver),
-		reg::obj("methodReflectionFactory", pcreMethodReflectionFactory),
-		reg::obj("phpDocInheritanceResolver", pcrePhpDocInheritanceResolver),
-		reg::obj("deprecationProvider", pcreDeprecationProvider),
-		reg::obj("annotationsMethodsClassReflectionExtension", pcreAnnotationsMethods),
-		reg::obj("annotationsPropertiesClassReflectionExtension", pcreAnnotationsProperties),
-		reg::obj("signatureMapProvider", pcreSignatureMapProvider),
-		reg::obj("parser", pcreParser),
-		reg::obj("stubPhpDocProvider", pcreStubPhpDocProvider),
-		reg::obj("reflectionProviderProvider", pcreReflectionProviderProvider),
-		reg::obj("fileTypeMapper", pcreFileTypeMapper),
-		reg::obj("attributeReflectionFactory", pcreAttributeReflectionFactory),
-		reg::obj("allowedConstantsMapProvider", pcreAllowedConstantsMapProvider),
-		reg::boolArg("inferPrivatePropertyTypeFromConstructor"),
-		reg::obj("phpVersion", pcrePhpVersion),
-		reg::longArg("memberCacheKeysMax"),
-	}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ConstructorArgs a;
 		bool inferPrivatePropertyTypeFromConstructor;
 		ZEND_PARSE_PARAMETERS_START(18, 18)
@@ -3023,7 +2928,7 @@ void pt_register_php_class_reflection_extension()
 		if (UNEXPECTED(!phpstanturbo::PhpClassReflectionExtension::construct(Z_OBJ_P(ZEND_THIS), a))) RETURN_THROWS();
 	});
 
-	cls.method("hasProperty", reg::Public, 2, { reg::objectArg("classReflection"), reg::stringArg("propertyName") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::hasProperty, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *classReflection;
 		zend_string *propertyName;
 		if (!zp::parse<zp::Obj, zp::Str>(execute_data, classReflection, propertyName)) RETURN_THROWS();
@@ -3033,7 +2938,7 @@ void pt_register_php_class_reflection_extension()
 		RETURN_BOOL(result);
 	});
 
-	cls.method("getProperty", reg::Public, 3, { reg::objectArg("classReflection"), reg::stringArg("propertyName"), reg::objectArg("scope") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::getProperty, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *classReflection, *scope;
 		zend_string *propertyName;
 		if (!zp::parse<zp::Obj, zp::Str, zp::Obj>(execute_data, classReflection, propertyName, scope)) RETURN_THROWS();
@@ -3042,7 +2947,7 @@ void pt_register_php_class_reflection_extension()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("getNativeProperty", reg::Public, 2, { reg::objectArg("classReflection"), reg::stringArg("propertyName") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::getNativeProperty, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *classReflection;
 		zend_string *propertyName;
 		if (!zp::parse<zp::Obj, zp::Str>(execute_data, classReflection, propertyName)) RETURN_THROWS();
@@ -3051,7 +2956,7 @@ void pt_register_php_class_reflection_extension()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("hasMethod", reg::Public, 2, { reg::objectArg("classReflection"), reg::stringArg("methodName") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::hasMethod, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *classReflection;
 		zend_string *methodName;
 		if (!zp::parse<zp::Obj, zp::Str>(execute_data, classReflection, methodName)) RETURN_THROWS();
@@ -3061,7 +2966,7 @@ void pt_register_php_class_reflection_extension()
 		RETURN_BOOL(result);
 	});
 
-	cls.method("getMethod", reg::Public, 2, { reg::objectArg("classReflection"), reg::stringArg("methodName") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::getMethod, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *classReflection;
 		zend_string *methodName;
 		if (!zp::parse<zp::Obj, zp::Str>(execute_data, classReflection, methodName)) RETURN_THROWS();
@@ -3070,7 +2975,7 @@ void pt_register_php_class_reflection_extension()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("hasNativeMethod", reg::Public, 2, { reg::objectArg("classReflection"), reg::stringArg("methodName") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::hasNativeMethod, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *classReflection;
 		zend_string *methodName;
 		if (!zp::parse<zp::Obj, zp::Str>(execute_data, classReflection, methodName)) RETURN_THROWS();
@@ -3080,7 +2985,7 @@ void pt_register_php_class_reflection_extension()
 		RETURN_BOOL(result);
 	});
 
-	cls.method("getNativeMethod", reg::Public, 2, { reg::objectArg("classReflection"), reg::stringArg("methodName") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::getNativeMethod, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *classReflection;
 		zend_string *methodName;
 		if (!zp::parse<zp::Obj, zp::Str>(execute_data, classReflection, methodName)) RETURN_THROWS();
@@ -3089,12 +2994,7 @@ void pt_register_php_class_reflection_extension()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("createUserlandMethodReflection", reg::Public, 4, {
-		reg::objectArg("fileDeclaringClass"),
-		reg::objectArg("actualDeclaringClass"),
-		reg::objectArg("methodReflection"),
-		reg::stringArg("declaringTraitName", true),
-	}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::createUserlandMethodReflection, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *fileDeclaringClass, *actualDeclaringClass, *methodReflection;
 		zend_string *declaringTraitName;
 		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj, zp::StrOrNull>(execute_data, fileDeclaringClass, actualDeclaringClass, methodReflection, declaringTraitName)) RETURN_THROWS();

@@ -39,7 +39,6 @@ $knownDrift = [
 	'PHPStan\\Analyser\\VariableLivenessResolver' => 'pending',
 	'PHPStan\\Reflection\\BetterReflection\\SourceLocator\\PhpFileCleaner' => 'pending',
 	'PHPStan\\Reflection\\BetterReflection\\SourceLocator\\SymbolFinderInFiles' => 'pending',
-	'PHPStan\\Reflection\\Php\\PhpClassReflectionExtension' => 'pending',
 ];
 
 /**

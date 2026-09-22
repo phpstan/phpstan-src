@@ -4,7 +4,7 @@
     "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
     "This file is @generated automatically"
   ],
-  "content-hash": "1afa7bcd3e2778d82daa430aaa61258a",
+  "content-hash": "5b70eaf93cb95247cf6644585c462ddf",
   "packages": [
     {
       "name": "clue/ndjson-react",
@@ -5163,22 +5163,22 @@
     },
     {
       "name": "phpstan/phpstan-phpunit",
-      "version": "2.0.x-dev",
+      "version": "2.1.x-dev",
       "source": {
         "type": "git",
         "url": "https://github.com/phpstan/phpstan-phpunit.git",
-        "reference": "2297f6c4cc1a05ba45eb9d297ed352a44a7a9364"
+        "reference": "ba569da0c3c4980d32e8cf26d9a0af846432191d"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/phpstan/phpstan-phpunit/zipball/2297f6c4cc1a05ba45eb9d297ed352a44a7a9364",
-        "reference": "2297f6c4cc1a05ba45eb9d297ed352a44a7a9364",
+        "url": "https://api.github.com/repos/phpstan/phpstan-phpunit/zipball/ba569da0c3c4980d32e8cf26d9a0af846432191d",
+        "reference": "ba569da0c3c4980d32e8cf26d9a0af846432191d",
         "shasum": ""
       },
       "require": {
         "phar-io/version": "^3.2",
         "php": "^7.4 || ^8.0",
-        "phpstan/phpstan": "^2.2.6"
+        "phpstan/phpstan": "^2.3.0"
       },
       "conflict": {
         "phpunit/phpunit": "<7.0"
@@ -5216,9 +5216,9 @@
       ],
       "support": {
         "issues": "https://github.com/phpstan/phpstan-phpunit/issues",
-        "source": "https://github.com/phpstan/phpstan-phpunit/tree/2.0.x"
+        "source": "https://github.com/phpstan/phpstan-phpunit/tree/2.1.x"
       },
-      "time": "2026-07-06T17:56:46+00:00"
+      "time": "2026-09-22T19:47:21+00:00"
     },
     {
       "name": "phpstan/phpstan-strict-rules",
@@ -5226,12 +5226,12 @@
       "source": {
         "type": "git",
         "url": "https://github.com/phpstan/phpstan-strict-rules.git",
-        "reference": "49084840349a98b05ba6f4cab11c3ad5f2fd49fe"
+        "reference": "19b5b5bcc9cdf0789acb67e264d0782097e18c08"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/phpstan/phpstan-strict-rules/zipball/49084840349a98b05ba6f4cab11c3ad5f2fd49fe",
-        "reference": "49084840349a98b05ba6f4cab11c3ad5f2fd49fe",
+        "url": "https://api.github.com/repos/phpstan/phpstan-strict-rules/zipball/19b5b5bcc9cdf0789acb67e264d0782097e18c08",
+        "reference": "19b5b5bcc9cdf0789acb67e264d0782097e18c08",
         "shasum": ""
       },
       "require": {
@@ -5271,7 +5271,7 @@
         "issues": "https://github.com/phpstan/phpstan-strict-rules/issues",
         "source": "https://github.com/phpstan/phpstan-strict-rules/tree/2.1.x"
       },
-      "time": "2026-09-11T10:31:00+00:00"
+      "time": "2026-09-22T19:46:32+00:00"
     },
     {
       "name": "phpunit/php-code-coverage",

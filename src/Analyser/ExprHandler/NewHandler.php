@@ -325,7 +325,7 @@ final class NewHandler implements ExprHandler
 				}
 
 				$throwType = $extension->getThrowTypeFromStaticMethodCall($constructorReflection, $normalizedMethodCall, $scope);
-				if ($throwType === null) {
+				if ($throwType === null || $throwType->isVoid()->yes()) {
 					return null;
 				}
 

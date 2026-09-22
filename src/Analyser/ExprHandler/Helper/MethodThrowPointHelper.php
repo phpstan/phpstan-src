@@ -61,7 +61,7 @@ final class MethodThrowPointHelper
 				}
 
 				$throwType = $extension->getThrowTypeFromMethodCall($methodReflection, $normalizedMethodCall, $scope);
-				if ($throwType === null) {
+				if ($throwType === null || $throwType->isVoid()->yes()) {
 					return null;
 				}
 
@@ -74,7 +74,7 @@ final class MethodThrowPointHelper
 				}
 
 				$throwType = $extension->getThrowTypeFromStaticMethodCall($methodReflection, $normalizedMethodCall, $scope);
-				if ($throwType === null) {
+				if ($throwType === null || $throwType->isVoid()->yes()) {
 					return null;
 				}
 

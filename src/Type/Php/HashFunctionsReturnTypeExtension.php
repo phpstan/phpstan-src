@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersions;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
@@ -134,7 +133,11 @@ final class HashFunctionsReturnTypeExtension implements DynamicFunctionReturnTyp
 
 		$neverType = new NeverType();
 		$falseType = new ConstantBooleanType(false);
-		$invalidAlgorithmType = PhpVersions::pickType($throwsValueError, $neverType, $falseType);
+		if ($throwsValueError->yes()) {
+			$invalidAlgorithmType = $neverType;
+		} else {
+			$invalidAlgorithmType = $falseType;
+		}
 
 		$returnTypes = array_map(
 			function (ConstantStringType $type) use ($functionData, $stringReturnType, $invalidAlgorithmType) {

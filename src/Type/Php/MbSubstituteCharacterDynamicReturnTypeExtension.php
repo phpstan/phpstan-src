@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersions;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -63,11 +62,11 @@ final class MbSubstituteCharacterDynamicReturnTypeExtension implements DynamicFu
 		$isInteger = $argType->isInteger();
 
 		if ($isString->no() && $isNull->no() && $isInteger->no()) {
-			return PhpVersions::pickType(
-				$phpVersions->throwsTypeErrorForInternalFunctions(),
-				new NeverType(),
-				new BooleanType(),
-			);
+			if ($phpVersions->throwsTypeErrorForInternalFunctions()->yes()) {
+				return new NeverType();
+			}
+
+			return new BooleanType();
 		}
 
 		if ($isInteger->yes()) {
@@ -78,15 +77,19 @@ final class MbSubstituteCharacterDynamicReturnTypeExtension implements DynamicFu
 			}
 
 			if (!self::isPossiblyInRanges($possibleRanges, $argType)) {
-				return PhpVersions::pickType(
-					$phpVersions->throwsValueErrorForInternalFunctions(),
-					new NeverType(),
-					new ConstantBooleanType(false),
-				);
+				if ($phpVersions->throwsValueErrorForInternalFunctions()->yes()) {
+					return new NeverType();
+				}
+
+				return new ConstantBooleanType(false);
 			}
 		} elseif ($isString->yes()) {
 			if ($argType->isNonEmptyString()->no()) {
-				return PhpVersions::pickType($isEmptyStringValidAlias, new ConstantBooleanType(true), new NeverType());
+				if ($isEmptyStringValidAlias->no()) {
+					return new NeverType();
+				}
+
+				return new ConstantBooleanType(true);
 			}
 
 			if ($phpVersions->isNumericStringValidArgInMbSubstituteCharacter()->no() && $argType->isNumericString()->yes()) {
@@ -116,19 +119,24 @@ final class MbSubstituteCharacterDynamicReturnTypeExtension implements DynamicFu
 					return new BooleanType();
 				}
 
-				return PhpVersions::pickType(
-					$phpVersions->throwsValueErrorForInternalFunctions(),
-					new NeverType(),
-					new ConstantBooleanType(false),
-				);
+				if ($phpVersions->throwsValueErrorForInternalFunctions()->yes()) {
+					return new NeverType();
+				}
+
+				return new ConstantBooleanType(false);
 			}
 		} elseif ($isNull->yes()) {
 			// The $substitute_character arg is nullable in PHP 8+
-			return PhpVersions::pickType(
-				$phpVersions->isNullValidArgInMbSubstituteCharacter(),
-				new ConstantBooleanType(true),
-				new ConstantBooleanType(false),
-			);
+			$isNullValidArg = $phpVersions->isNullValidArgInMbSubstituteCharacter();
+			if ($isNullValidArg->yes()) {
+				return new ConstantBooleanType(true);
+			}
+
+			if ($isNullValidArg->no()) {
+				return new ConstantBooleanType(false);
+			}
+
+			return new BooleanType();
 		}
 
 		return new BooleanType();

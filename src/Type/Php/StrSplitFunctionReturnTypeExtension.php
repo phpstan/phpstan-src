@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersions;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
@@ -65,7 +64,11 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 		if ($splitLengthType instanceof ConstantIntegerType) {
 			$splitLength = $splitLengthType->getValue();
 			if ($splitLength < 1) {
-				return PhpVersions::pickType($throwsValueError, new NeverType(), new ConstantBooleanType(false));
+				if ($throwsValueError->yes()) {
+					return new NeverType();
+				}
+
+				return new ConstantBooleanType(false);
 			}
 		}
 
@@ -78,7 +81,11 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 				if (count($values) === 1) {
 					$encoding = $values[0];
 					if (!$this->isSupportedEncoding($encoding, $phpVersions)) {
-						return PhpVersions::pickType($throwsValueError, new NeverType(), new ConstantBooleanType(false));
+						if ($throwsValueError->yes()) {
+							return new NeverType();
+						}
+
+						return new ConstantBooleanType(false);
 					}
 				}
 			} else {
@@ -99,11 +106,12 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 
 					if ($encoding === null && $value === '') {
 						// Simulate the str_split call with the analysed PHP Version instead of the runtime one.
-						$results[] = PhpVersions::pickType(
-							$returnsEmptyArray,
-							self::createConstantArrayFrom([], $scope),
-							self::createConstantArrayFrom([''], $scope),
-						);
+						if (!$returnsEmptyArray->no()) {
+							$results[] = self::createConstantArrayFrom([], $scope);
+						}
+						if (!$returnsEmptyArray->yes()) {
+							$results[] = self::createConstantArrayFrom([''], $scope);
+						}
 						continue;
 					}
 

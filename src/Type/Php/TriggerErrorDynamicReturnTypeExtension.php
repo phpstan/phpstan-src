@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersions;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -50,11 +49,11 @@ final class TriggerErrorDynamicReturnTypeExtension implements DynamicFunctionRet
 			}
 
 			if (!in_array($errorLevel, [E_USER_WARNING, E_USER_NOTICE, E_USER_DEPRECATED], true)) {
-				return PhpVersions::pickType(
-					$scope->getPhpVersion()->throwsValueErrorForInternalFunctions(),
-					new NeverType(true),
-					new ConstantBooleanType(false),
-				);
+				if ($scope->getPhpVersion()->throwsValueErrorForInternalFunctions()->yes()) {
+					return new NeverType(true);
+				}
+
+				return new ConstantBooleanType(false);
 			}
 
 			return new ConstantBooleanType(true);

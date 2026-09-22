@@ -7,7 +7,6 @@ use DateTimeImmutable;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersions;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\DynamicMethodThrowTypeExtension;
 use PHPStan\Type\NeverType;
@@ -60,11 +59,11 @@ final class DateTimeModifyMethodThrowTypeExtension implements DynamicMethodThrow
 
 	private function exceptionType(Scope $scope): Type
 	{
-		return PhpVersions::pickType(
-			$scope->getPhpVersion()->hasDateTimeExceptions(),
-			new ObjectType('DateMalformedStringException'),
-			new ObjectType('Exception'),
-		);
+		if ($scope->getPhpVersion()->hasDateTimeExceptions()->yes()) {
+			return new ObjectType('DateMalformedStringException');
+		}
+
+		return new ObjectType('Exception');
 	}
 
 }

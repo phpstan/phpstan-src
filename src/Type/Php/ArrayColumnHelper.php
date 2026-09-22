@@ -4,7 +4,6 @@ namespace PHPStan\Type\Php;
 
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersions;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
@@ -220,7 +219,11 @@ final class ArrayColumnHelper
 		$throwsTypeError = $scope->getPhpVersion()->throwsTypeErrorForInternalFunctions();
 		$isArray = $type->isArray();
 		if ($isArray->yes()) {
-			return PhpVersions::pickType($throwsTypeError, new NeverType(), new IntegerType());
+			if ($throwsTypeError->yes()) {
+				return new NeverType();
+			}
+
+			return new IntegerType();
 		}
 		if ($isArray->no()) {
 			return $type->toArrayKey();

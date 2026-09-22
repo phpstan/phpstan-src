@@ -6,7 +6,6 @@ use DateTimeZone;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersions;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
 use PHPStan\Type\NeverType;
@@ -53,11 +52,11 @@ final class DateTimeZoneConstructorThrowTypeExtension implements DynamicStaticMe
 
 	private function exceptionType(Scope $scope): Type
 	{
-		return PhpVersions::pickType(
-			$scope->getPhpVersion()->hasDateTimeExceptions(),
-			new ObjectType('DateInvalidTimeZoneException'),
-			new ObjectType('Exception'),
-		);
+		if ($scope->getPhpVersion()->hasDateTimeExceptions()->yes()) {
+			return new ObjectType('DateInvalidTimeZoneException');
+		}
+
+		return new ObjectType('Exception');
 	}
 
 }

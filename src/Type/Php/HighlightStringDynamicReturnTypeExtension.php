@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersions;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -27,16 +26,18 @@ final class HighlightStringDynamicReturnTypeExtension implements DynamicFunction
 	{
 		$doesNotReturnFalse = $scope->getPhpVersion()->highlightStringDoesNotReturnFalse();
 		$args = $functionCall->getArgs();
-		if (count($args) < 2) {
-			return PhpVersions::pickType($doesNotReturnFalse, new ConstantBooleanType(true), new BooleanType());
+		if (count($args) >= 2) {
+			$returnType = $scope->getType($args[1]->value);
+			if ($returnType->isTrue()->yes()) {
+				return new StringType();
+			}
 		}
 
-		$returnType = $scope->getType($args[1]->value);
-		if ($returnType->isTrue()->yes()) {
-			return new StringType();
+		if ($doesNotReturnFalse->yes()) {
+			return new ConstantBooleanType(true);
 		}
 
-		return PhpVersions::pickType($doesNotReturnFalse, new ConstantBooleanType(true), new BooleanType());
+		return new BooleanType();
 	}
 
 }

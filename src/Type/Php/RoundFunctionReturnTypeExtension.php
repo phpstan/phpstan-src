@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersions;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\BooleanType;
@@ -48,11 +47,13 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 
 		$hasStricterRoundFunctions = $scope->getPhpVersion()->hasStricterRoundFunctions();
 
-		// PHP 8 fatals with a missing parameter, PHP 7 returns null.
-		$noArgsReturnType = PhpVersions::pickType($hasStricterRoundFunctions, new NeverType(true), new NullType());
-
 		if (count($functionCall->getArgs()) < 1) {
-			return $noArgsReturnType;
+			// PHP 8 fatals with a missing parameter, PHP 7 returns null.
+			if ($hasStricterRoundFunctions->yes()) {
+				return new NeverType(true);
+			}
+
+			return new NullType();
 		}
 
 		$firstArgType = $scope->getType($functionCall->getArgs()[0]->value);

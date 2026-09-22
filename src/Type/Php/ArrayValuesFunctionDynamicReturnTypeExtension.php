@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersions;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\NeverType;
@@ -32,7 +31,11 @@ final class ArrayValuesFunctionDynamicReturnTypeExtension implements DynamicFunc
 
 		$arrayType = $scope->getType($args[0]->value);
 		if ($arrayType->isArray()->no()) {
-			return PhpVersions::pickType($scope->getPhpVersion()->arrayFunctionsReturnNullWithNonArray(), new NullType(), new NeverType());
+			if ($scope->getPhpVersion()->arrayFunctionsReturnNullWithNonArray()->no()) {
+				return new NeverType();
+			}
+
+			return new NullType();
 		}
 
 		return $arrayType->getValuesArray();

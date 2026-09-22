@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersions;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
@@ -87,11 +86,12 @@ final class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTyp
 					? $this->substrOrFalse($constantString->getValue(), $offset->getValue(), $length->getValue())
 					: $this->substrOrFalse($constantString->getValue(), $offset->getValue());
 				if ($substr === false) {
-					$results[] = PhpVersions::pickType(
-						$returnsFalseInsteadOfEmptyString,
-						new ConstantBooleanType(false),
-						new ConstantStringType(''),
-					);
+					if (!$returnsFalseInsteadOfEmptyString->no()) {
+						$results[] = new ConstantBooleanType(false);
+					}
+					if (!$returnsFalseInsteadOfEmptyString->yes()) {
+						$results[] = new ConstantStringType('');
+					}
 				} else {
 					$results[] = new ConstantStringType($substr);
 				}

@@ -6,7 +6,6 @@ use DateTime;
 use DateTimeInterface;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
-use PHPStan\Php\PhpVersions;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
@@ -74,11 +73,11 @@ final class DateTimeModifyReturnTypeExtension implements DynamicMethodReturnType
 
 		if ($hasFalse) {
 			if (!$hasDateTime) {
-				return PhpVersions::pickType(
-					$scope->getPhpVersion()->hasDateTimeExceptions(),
-					new NeverType(),
-					new ConstantBooleanType(false),
-				);
+				if ($scope->getPhpVersion()->hasDateTimeExceptions()->yes()) {
+					return new NeverType();
+				}
+
+				return new ConstantBooleanType(false);
 			}
 
 			return null;

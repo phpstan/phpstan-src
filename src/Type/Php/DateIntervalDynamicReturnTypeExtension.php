@@ -6,7 +6,6 @@ use DateInterval;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersions;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
@@ -57,11 +56,11 @@ final class DateIntervalDynamicReturnTypeExtension implements DynamicStaticMetho
 
 		if ($hasFalse) {
 			if (!$hasDateInterval) {
-				return PhpVersions::pickType(
-					$scope->getPhpVersion()->hasDateTimeExceptions(),
-					new NeverType(),
-					new ConstantBooleanType(false),
-				);
+				if ($scope->getPhpVersion()->hasDateTimeExceptions()->yes()) {
+					return new NeverType();
+				}
+
+				return new ConstantBooleanType(false);
 			}
 
 			return null;

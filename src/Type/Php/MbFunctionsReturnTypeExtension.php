@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersions;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\BooleanType;
@@ -66,15 +65,15 @@ final class MbFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeE
 		}
 
 		if (count($results) === 1) {
-			$invalidEncodingReturn = PhpVersions::pickType(
-				$phpVersions->throwsOnInvalidMbStringEncoding(),
-				new NeverType(),
-				new ConstantBooleanType(false),
-			);
+			if ($results[0]) {
+				return TypeCombinator::remove($returnType, new ConstantBooleanType(false));
+			}
 
-			return $results[0]
-				? TypeCombinator::remove($returnType, new ConstantBooleanType(false))
-				: $invalidEncodingReturn;
+			if ($phpVersions->throwsOnInvalidMbStringEncoding()->yes()) {
+				return new NeverType();
+			}
+
+			return new ConstantBooleanType(false);
 		}
 
 		return $returnType;

@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersions;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -31,7 +30,11 @@ final class ArrayReverseFunctionReturnTypeExtension implements DynamicFunctionRe
 
 		$type = $scope->getType($args[0]->value);
 		if ($type->isArray()->no()) {
-			return PhpVersions::pickType($scope->getPhpVersion()->arrayFunctionsReturnNullWithNonArray(), new NullType(), new NeverType());
+			if ($scope->getPhpVersion()->arrayFunctionsReturnNullWithNonArray()->no()) {
+				return new NeverType();
+			}
+
+			return new NullType();
 		}
 
 		$preserveKeysType = isset($args[1]) ? $scope->getType($args[1]->value) : new ConstantBooleanType(false);

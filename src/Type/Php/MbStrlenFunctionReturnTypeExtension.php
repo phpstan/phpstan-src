@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersions;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\ShouldNotHappenException;
@@ -83,7 +82,11 @@ final class MbStrlenFunctionReturnTypeExtension implements DynamicFunctionReturn
 			$encodings = array_unique($encodings);
 
 			if (in_array(self::UNSUPPORTED_ENCODING, $encodings, true) && count($encodings) === 1) {
-				return PhpVersions::pickType($throwsOnInvalidEncoding, new NeverType(), new ConstantBooleanType(false));
+				if ($throwsOnInvalidEncoding->yes()) {
+					return new NeverType();
+				}
+
+				return new ConstantBooleanType(false);
 			}
 		} else { // if there aren't encoding constants, use all available encodings
 			$encodings = array_merge($this->getSupportedEncodings($phpVersions), [self::UNSUPPORTED_ENCODING]);

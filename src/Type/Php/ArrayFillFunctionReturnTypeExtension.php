@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersions;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
@@ -46,7 +45,11 @@ final class ArrayFillFunctionReturnTypeExtension implements DynamicFunctionRetur
 
 		// check against negative-int, which is not allowed
 		if ($isValidNumberType->no()) {
-			return PhpVersions::pickType($throwsValueError, new NeverType(), new ConstantBooleanType(false));
+			if ($throwsValueError->yes()) {
+				return new NeverType();
+			}
+
+			return new ConstantBooleanType(false);
 		}
 
 		$startIndexType = $scope->getType($args[0]->value);

@@ -6,7 +6,6 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
 
 /**
  * Range-aware PHP version check that handles version uncertainty.
@@ -289,25 +288,6 @@ final class PhpVersions
 	public function supportsNativeReflectionAdapterReturnTypes(): TrinaryLogic
 	{
 		return IntegerRangeType::fromInterval(80000, null)->isSuperTypeOf($this->phpVersions)->result;
-	}
-
-	/**
-	 * Resolves a version-dependent type.
-	 *
-	 * When the analysed PHP version range spans both sides of $versionCheck,
-	 * neither branch can be ruled out and the union of both is returned.
-	 */
-	public static function pickType(TrinaryLogic $versionCheck, Type $ifYes, Type $ifNo): Type
-	{
-		if ($versionCheck->yes()) {
-			return $ifYes;
-		}
-
-		if ($versionCheck->no()) {
-			return $ifNo;
-		}
-
-		return TypeCombinator::union($ifYes, $ifNo);
 	}
 
 }

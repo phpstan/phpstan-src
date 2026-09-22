@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Functions;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPStan\Type\Php\PrintfFormatParser;
 use const PHP_VERSION_ID;
 
 /**
@@ -16,7 +17,7 @@ class PrintfParametersRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new PrintfParametersRule(
-			new PrintfHelper(new PhpVersion(PHP_VERSION_ID)),
+			new PrintfFormatParser(new PhpVersion(PHP_VERSION_ID)),
 			self::createReflectionProvider(),
 		);
 	}
@@ -158,6 +159,40 @@ class PrintfParametersRuleTest extends RuleTestCase
 	public function testBug14567(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-14567.php'], []);
+	}
+
+	public function testFormatParser(): void
+	{
+		$this->analyse([__DIR__ . '/data/printf-format-parser.php'], [
+			[
+				'Call to sprintf contains 1 placeholder, 0 values given.',
+				17,
+			],
+			[
+				'Call to sprintf contains 1 placeholder, 0 values given.',
+				18,
+			],
+			[
+				'Call to sprintf contains an invalid placeholder.',
+				20,
+			],
+			[
+				'Call to sprintf contains an invalid placeholder.',
+				21,
+			],
+			[
+				'Call to sprintf contains an invalid placeholder.',
+				22,
+			],
+			[
+				'Call to sprintf contains an invalid placeholder.',
+				23,
+			],
+			[
+				'Call to sscanf contains an invalid placeholder.',
+				25,
+			],
+		]);
 	}
 
 }

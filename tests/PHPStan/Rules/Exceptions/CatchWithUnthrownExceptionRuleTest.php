@@ -957,6 +957,229 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testPrintfThrowType(): void
+	{
+		$this->analyse([
+			__DIR__ . '/data/printf-throw-type.php',
+			__DIR__ . '/data/printf-throw-type-named-args.php',
+		], [
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				17,
+			],
+			[
+				'Dead catch - ArgumentCountError is never thrown in the try block.',
+				19,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				25,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				49,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				57,
+			],
+			[
+				'Dead catch - ArgumentCountError is never thrown in the try block.',
+				59,
+			],
+			[
+				'Dead catch - ArgumentCountError is never thrown in the try block.',
+				67,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				73,
+			],
+			[
+				'Dead catch - ArgumentCountError is never thrown in the try block.',
+				75,
+			],
+			[
+				'Dead catch - ArgumentCountError is never thrown in the try block.',
+				83,
+			],
+			[
+				'Dead catch - ArgumentCountError is never thrown in the try block.',
+				91,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				97,
+			],
+			[
+				'Dead catch - ArgumentCountError is never thrown in the try block.',
+				99,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				106,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				114,
+			],
+			[
+				'Dead catch - ArgumentCountError is never thrown in the try block.',
+				116,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				122,
+			],
+			[
+				'Dead catch - ArgumentCountError is never thrown in the try block.',
+				124,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				130,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				142,
+			],
+		]);
+	}
+
+	#[RequiresPhp('< 8.0.0')]
+	public function testPrintfThrowTypeBeforePhp8(): void
+	{
+		$this->analyse([
+			__DIR__ . '/data/printf-throw-type.php',
+		], [
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				17,
+			],
+			[
+				'Dead catch - ArgumentCountError is never thrown in the try block.',
+				19,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				25,
+			],
+			[
+				'Dead catch - ArgumentCountError is never thrown in the try block.',
+				27,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				33,
+			],
+			[
+				'Dead catch - ArgumentCountError is never thrown in the try block.',
+				35,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				41,
+			],
+			[
+				'Dead catch - ArgumentCountError is never thrown in the try block.',
+				43,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				49,
+			],
+			[
+				'Dead catch - ArgumentCountError is never thrown in the try block.',
+				51,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				57,
+			],
+			[
+				'Dead catch - ArgumentCountError is never thrown in the try block.',
+				59,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				65,
+			],
+			[
+				'Dead catch - ArgumentCountError is never thrown in the try block.',
+				67,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				73,
+			],
+			[
+				'Dead catch - ArgumentCountError is never thrown in the try block.',
+				75,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				81,
+			],
+			[
+				'Dead catch - ArgumentCountError is never thrown in the try block.',
+				83,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				89,
+			],
+			[
+				'Dead catch - ArgumentCountError is never thrown in the try block.',
+				91,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				97,
+			],
+			[
+				'Dead catch - ArgumentCountError is never thrown in the try block.',
+				99,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				106,
+			],
+			[
+				'Dead catch - ArgumentCountError is never thrown in the try block.',
+				108,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				114,
+			],
+			[
+				'Dead catch - ArgumentCountError is never thrown in the try block.',
+				116,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				122,
+			],
+			[
+				'Dead catch - ArgumentCountError is never thrown in the try block.',
+				124,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				130,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				136,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				142,
+			],
+		]);
+	}
+
 	public function testDsMapVoidThrowType(): void
 	{
 		$this->analyse([__DIR__ . '/data/ds-map-void-throw-type.php'], [

@@ -205,3 +205,9 @@ parameters:
 			identifier: property.internalClass
 			count: 3
 			path: ../src/Analyser/Ignore/LineIgnoreFixer.php
+
+		-
+			rawMessage: 'Dead catch - ValueError is never thrown in the try block.'
+			identifier: catch.neverThrown
+			count: 1
+			path: ../src/Type/Php/RangeFunctionArgumentsHelper.php

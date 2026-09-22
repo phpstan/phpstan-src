@@ -3,35 +3,83 @@
 namespace PHPStan\Build;
 
 use PhpParser\Node;
+use PHPStan\Analyser\IgnoreErrorExtension;
 use PHPStan\Analyser\Scope;
-use PHPStan\DependencyInjection\ExtensionInterface;
+use PHPStan\Collectors\Collector;
 use PHPStan\Node\InClassNode;
 use PHPStan\Php\PhpVersion;
-use PHPStan\Reflection\ClassReflection;
+use PHPStan\Rules\RestrictedUsage\RestrictedClassConstantUsageExtension;
+use PHPStan\Rules\RestrictedUsage\RestrictedClassNameUsageExtension;
+use PHPStan\Rules\RestrictedUsage\RestrictedFunctionUsageExtension;
+use PHPStan\Rules\RestrictedUsage\RestrictedMethodUsageExtension;
+use PHPStan\Rules\RestrictedUsage\RestrictedPropertyUsageExtension;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use function array_key_exists;
+use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\DynamicFunctionThrowTypeExtension;
+use PHPStan\Type\DynamicMethodReturnTypeExtension;
+use PHPStan\Type\DynamicMethodThrowTypeExtension;
+use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
+use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
+use PHPStan\Type\ExpressionTypeResolverExtension;
+use PHPStan\Type\FunctionParameterClosureThisExtension;
+use PHPStan\Type\FunctionParameterClosureTypeExtension;
+use PHPStan\Type\FunctionParameterOutTypeExtension;
+use PHPStan\Type\FunctionTypeSpecifyingExtension;
+use PHPStan\Type\MethodParameterClosureThisExtension;
+use PHPStan\Type\MethodParameterClosureTypeExtension;
+use PHPStan\Type\MethodParameterOutTypeExtension;
+use PHPStan\Type\MethodTypeSpecifyingExtension;
+use PHPStan\Type\StaticMethodParameterClosureThisExtension;
+use PHPStan\Type\StaticMethodParameterClosureTypeExtension;
+use PHPStan\Type\StaticMethodParameterOutTypeExtension;
+use PHPStan\Type\StaticMethodTypeSpecifyingExtension;
 use function sprintf;
 
 /**
- * An extension that is handed the call's Scope must read the analysed PHP version from
- * Scope::getPhpVersion(). A DI-injected PhpVersion always answers with the configured version
- * and silently ignores both PHP_VERSION_ID narrowing in the analysed code and configured
- * version ranges.
+ * Every one of these extension interfaces hands the call's Scope to the extension,
+ * so the analysed PHP version must be read from Scope::getPhpVersion(). A DI-injected
+ * PhpVersion always answers with the configured version and silently ignores both
+ * PHP_VERSION_ID narrowing in the analysed code and configured version ranges.
  *
- * Scope-aware extensions are discovered instead of listed: every interface marked with
- * #[ExtensionInterface] that declares a method taking the public Scope counts, so extension
- * interfaces added later are covered automatically. Interfaces taking the engine-internal
- * MutatingScope (ExprHandler, StmtHandler) are not extensions in this sense, and neither is
- * PHPStan\Rules\Rule, whose processNode() takes Scope&NodeCallbackInvoker&CollectedDataEmitter.
+ * The list holds every extension interface with a method taking the public Scope.
+ * Interfaces taking the engine-internal MutatingScope (ExprHandler, StmtHandler) are not
+ * extensions in this sense, and OperatorTypeSpecifyingExtension gets no Scope at all,
+ * so both are absent on purpose. An extension interface added later belongs here too.
  *
  * @implements Rule<InClassNode>
  */
 final class NoInjectedPhpVersionInScopeAwareExtensionRule implements Rule
 {
 
-	/** @var array<string, bool> */
-	private array $scopeAwareExtensions = [];
+	private const SCOPE_AWARE_EXTENSIONS = [
+		DynamicFunctionReturnTypeExtension::class,
+		DynamicMethodReturnTypeExtension::class,
+		DynamicStaticMethodReturnTypeExtension::class,
+		DynamicFunctionThrowTypeExtension::class,
+		DynamicMethodThrowTypeExtension::class,
+		DynamicStaticMethodThrowTypeExtension::class,
+		FunctionTypeSpecifyingExtension::class,
+		MethodTypeSpecifyingExtension::class,
+		StaticMethodTypeSpecifyingExtension::class,
+		FunctionParameterOutTypeExtension::class,
+		MethodParameterOutTypeExtension::class,
+		StaticMethodParameterOutTypeExtension::class,
+		FunctionParameterClosureTypeExtension::class,
+		MethodParameterClosureTypeExtension::class,
+		StaticMethodParameterClosureTypeExtension::class,
+		FunctionParameterClosureThisExtension::class,
+		MethodParameterClosureThisExtension::class,
+		StaticMethodParameterClosureThisExtension::class,
+		RestrictedClassConstantUsageExtension::class,
+		RestrictedClassNameUsageExtension::class,
+		RestrictedFunctionUsageExtension::class,
+		RestrictedMethodUsageExtension::class,
+		RestrictedPropertyUsageExtension::class,
+		ExpressionTypeResolverExtension::class,
+		IgnoreErrorExtension::class,
+		Collector::class,
+	];
 
 	public function getNodeType(): string
 	{
@@ -45,7 +93,16 @@ final class NoInjectedPhpVersionInScopeAwareExtensionRule implements Rule
 			return [];
 		}
 
-		$implementedExtension = $this->findScopeAwareExtension($classReflection);
+		$implementedExtension = null;
+		foreach (self::SCOPE_AWARE_EXTENSIONS as $extensionInterface) {
+			if (!$classReflection->is($extensionInterface)) {
+				continue;
+			}
+
+			$implementedExtension = $extensionInterface;
+			break;
+		}
+
 		if ($implementedExtension === null) {
 			return [];
 		}
@@ -68,57 +125,6 @@ final class NoInjectedPhpVersionInScopeAwareExtensionRule implements Rule
 		}
 
 		return $errors;
-	}
-
-	private function findScopeAwareExtension(ClassReflection $classReflection): ?string
-	{
-		foreach ($classReflection->getInterfaces() as $interface) {
-			if (!$this->isScopeAwareExtension($interface)) {
-				continue;
-			}
-
-			return $interface->getName();
-		}
-
-		return null;
-	}
-
-	private function isScopeAwareExtension(ClassReflection $interface): bool
-	{
-		$interfaceName = $interface->getName();
-		if (!array_key_exists($interfaceName, $this->scopeAwareExtensions)) {
-			$this->scopeAwareExtensions[$interfaceName] = $this->isExtensionInterface($interface)
-				&& $this->acceptsScope($interface);
-		}
-
-		return $this->scopeAwareExtensions[$interfaceName];
-	}
-
-	private function isExtensionInterface(ClassReflection $interface): bool
-	{
-		foreach ($interface->getAttributes() as $attribute) {
-			if ($attribute->getName() === ExtensionInterface::class) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	private function acceptsScope(ClassReflection $interface): bool
-	{
-		foreach ($interface->getNativeReflection()->getMethods() as $nativeMethod) {
-			$method = $interface->getNativeMethod($nativeMethod->getName());
-			foreach ($method->getOnlyVariant()->getParameters() as $parameter) {
-				if ($parameter->getType()->getObjectClassNames() !== [Scope::class]) {
-					continue;
-				}
-
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 }

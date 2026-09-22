@@ -128,6 +128,38 @@ if (!PHPStanTurbo\Runtime::trustTypesUnder($trustedPrefix)) {
 require $trustedPrefix . 'functions.php';
 $ok = check('trusted', TRUSTED_EXPECTED, runCases('TrustedTypesFixture\Trusted')) && $ok;
 
+// opcache.file_cache persists the optimized scripts: stripped op_arrays would
+// outlive this run and be executed by later unarmed runs (--debug, or no
+// extension at all), so arming refuses when a file cache is configured. The
+// setting is INI_SYSTEM, hence a child process.
+$fileCacheDir = sys_get_temp_dir() . '/phpstan-trusted-types-file-cache-' . getmypid();
+@mkdir($fileCacheDir);
+$extension = getenv('TURBO_DLL') ?: dirname(__DIR__) . '/phpstan_turbo.so';
+$armedWithFileCache = exec(sprintf(
+	'%s -d extension=%s -d opcache.enable_cli=1 -d opcache.file_cache=%s -r %s',
+	escapeshellarg(PHP_BINARY),
+	escapeshellarg($extension),
+	escapeshellarg($fileCacheDir),
+	escapeshellarg('var_export(PHPStanTurbo\\Runtime::trustTypesUnder(' . var_export($trustedPrefix, true) . '));'),
+));
+if ($armedWithFileCache !== 'false') {
+	fwrite(STDERR, sprintf("FAIL: trustTypesUnder() must refuse with opcache.file_cache set, got %s\n", var_export($armedWithFileCache, true)));
+	$ok = false;
+}
+$removeTree = static function (string $path) use (&$removeTree): void {
+	if (is_dir($path) && !is_link($path)) {
+		foreach (scandir($path) as $entry) {
+			if ($entry !== '.' && $entry !== '..') {
+				$removeTree($path . '/' . $entry);
+			}
+		}
+		@rmdir($path);
+		return;
+	}
+	@unlink($path);
+};
+$removeTree($fileCacheDir);
+
 if (!$ok) {
 	exit(1);
 }

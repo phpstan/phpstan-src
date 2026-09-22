@@ -256,9 +256,8 @@ public:
 		return exported;
 	}
 
-	/* maybe/no for a GenericClassStringType by whether its generic type (a
-	 * StaticType's object type, a TemplateType's bound; mixed is maybe) is
-	 * a supertype of this value's ObjectType; maybe/no for a
+	/* maybe/no for a GenericClassStringType by whether this value can be a
+	 * value of its generic type (mixed is maybe); maybe/no for a
 	 * ClassStringType by whether this is a class-string; yes/no against
 	 * another ConstantStringType's value; maybe for any other StringType;
 	 * the CompoundType callback; no otherwise; UNDEF = pending exception */
@@ -269,31 +268,10 @@ public:
 			zv::Val genericType = pt_type_call(Z_OBJ_P(type), PT_LC("getgenerictype"), 0, NULL);
 			if (UNEXPECTED(genericType.isUndef())) return zv::Val();
 			if (zv::Ref(genericType.raw()).instanceOf(pt_ce_mixed_type)) return pt_type_is_super_type_of_result(PT_TRI_MAYBE);
-			/* $genericType instanceof StaticType — the shadowing class */
-			bool isStatic = zv::Ref(genericType.raw()).instanceOf(pt_ce_static_type);
-			if (isStatic) {
-				genericType = pt_type_call(Z_OBJ_P(genericType.raw()), PT_LC("getstaticobjecttype"), 0, NULL);
-				if (UNEXPECTED(genericType.isUndef())) return zv::Val();
-			}
 
-			/* We are transforming constant class-string to ObjectType. But
-			 * we need to filter out an uncertainty originating in possible
-			 * ObjectType's class subtypes. */
-			zval *objectType = getObjectType();
-			if (UNEXPECTED(objectType == NULL)) return zv::Val();
-
-			/* Do not use TemplateType's isSuperTypeOf handling directly
-			 * because it takes ObjectType uncertainty into account. */
-			bool isTemplate;
-			if (UNEXPECTED(!pt_type_instanceof(genericType.raw(), PT_CLASS_TEMPLATE_TYPE, isTemplate))) return zv::Val();
-			zv::Val isSuperType;
-			if (isTemplate) {
-				zv::Val bound = pt_type_call(Z_OBJ_P(genericType.raw()), PT_LC("getbound"), 0, NULL);
-				if (UNEXPECTED(bound.isUndef())) return zv::Val();
-				isSuperType = pt_type_op(Z_OBJ_P(bound.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, objectType);
-			} else {
-				isSuperType = pt_type_op(Z_OBJ_P(genericType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, objectType);
-			}
+			zend_string *v = value();
+			if (UNEXPECTED(v == NULL)) return zv::Val();
+			zv::Val isSuperType = pt_generic_class_string_is_value_of_generic_type(genericType.raw(), v);
 			if (UNEXPECTED(isSuperType.isUndef())) return zv::Val();
 			zend_long verdict = pt_type_result_trinary(isSuperType.raw());
 			if (UNEXPECTED(verdict < 0)) return zv::Val();

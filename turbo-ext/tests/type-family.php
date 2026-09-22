@@ -418,8 +418,10 @@ $stringOthers = static fn (string $string, string $constString, string $classStr
 	'stringTrinary' => new $constString(\PHPStan\TrinaryLogic::class),
 	'stringTrinaryClass' => new $constString(\PHPStan\TrinaryLogic::class, true),
 	'stringStrlen' => new $constString('strlen'),
+	'stringArrayObject' => new $constString(\ArrayObject::class, true),
 	'classString' => new $classString(),
 	'genericTrinary' => new $genericClassString(new \PHPStan\Type\ObjectType(\PHPStan\TrinaryLogic::class)),
+	'genericArrayObject' => new $genericClassString(new \PHPStan\Type\Generic\GenericObjectType(\ArrayObject::class, [new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()])),
 	'genericType' => new $genericClassString(new \PHPStan\Type\ObjectType(\PHPStan\Type\Type::class)),
 	'genericNonexistent' => new $genericClassString(new \PHPStan\Type\ObjectType('NonexistentClass')),
 	'genericMixed' => new $genericClassString(new \PHPStan\Type\MixedType()),
@@ -481,6 +483,7 @@ $stringOthers = static fn (string $string, string $constString, string $classStr
 		'constTrinary' => new $constStringClass(\PHPStan\TrinaryLogic::class),
 		'constTrinaryClass' => new $constStringClass(\PHPStan\TrinaryLogic::class, true),
 		'constStrlen' => new $constStringClass('strlen'),
+		'constArrayObject' => new $constStringClass(\ArrayObject::class, true),
 		'constStaticMethod' => new $constStringClass(\PHPStan\TrinaryLogic::class . '::createYes'),
 		'constInstanceMethod' => new $constStringClass(\PHPStan\TrinaryLogic::class . '::yes'),
 		'constMissingMethod' => new $constStringClass(\PHPStan\TrinaryLogic::class . '::nonexistent'),
@@ -499,6 +502,12 @@ $stringOthers = static fn (string $string, string $constString, string $classStr
 		'genericStatic' => new $genericClassStringClass(new \PHPStan\Type\StaticType($stringReflectionProvider->getClass(\PHPStan\TrinaryLogic::class))),
 		'genericTemplate' => new $genericClassStringClass(\PHPStan\Type\Generic\TemplateTypeFactory::create(\PHPStan\Type\Generic\TemplateTypeScope::createWithFunction('foo'), 'T', new \PHPStan\Type\ObjectType(\PHPStan\Type\Type::class), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant())),
 		'genericUnion' => new $genericClassStringClass(new \PHPStan\Type\UnionType([new \PHPStan\Type\ObjectType(\PHPStan\TrinaryLogic::class), new \PHPStan\Type\ObjectType(\PHPStan\Type\VerbosityLevel::class)])),
+		// a class-string never carries type arguments: these must behave
+		// exactly like the unparameterized class-string<ArrayObject>
+		'genericArrayObject' => new $genericClassStringClass(new \PHPStan\Type\Generic\GenericObjectType(\ArrayObject::class, [new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()])),
+		'genericArrayObjectStar' => new $genericClassStringClass(new \PHPStan\Type\Generic\GenericObjectType(\ArrayObject::class, [new \PHPStan\Type\MixedType(), new \PHPStan\Type\MixedType()], null, null, [\PHPStan\Type\Generic\TemplateTypeVariance::createBivariant(), \PHPStan\Type\Generic\TemplateTypeVariance::createBivariant()])),
+		'genericArrayObjectBare' => new $genericClassStringClass(new \PHPStan\Type\ObjectType(\ArrayObject::class)),
+		'genericGenericUnion' => new $genericClassStringClass(new \PHPStan\Type\UnionType([new \PHPStan\Type\Generic\GenericObjectType(\ArrayObject::class, [new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()]), new \PHPStan\Type\Generic\GenericObjectType(\ArrayIterator::class, [new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()])])),
 	];
 	$outOfClassScope = new \PHPStan\Analyser\OutOfClassScope();
 	foreach ($subjects as $name => $subject) {
@@ -597,6 +606,23 @@ $stringOthers = static fn (string $string, string $constString, string $classStr
 		}
 		if ($subject instanceof $genericClassStringClass) {
 			$r["$name getGenericType"] = $view($subject->getGenericType());
+		}
+	}
+	// GenericClassStringType::isValueOfGenericType() — the static behind both
+	// isSuperTypeOf() directions between a class-string and a constant one
+	$isValueOfGenericTypes = [
+		'object' => new \PHPStan\Type\ObjectType(\ArrayObject::class),
+		'generic' => new \PHPStan\Type\Generic\GenericObjectType(\ArrayObject::class, [new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()]),
+		'genericStar' => new \PHPStan\Type\Generic\GenericObjectType(\ArrayObject::class, [new \PHPStan\Type\MixedType(), new \PHPStan\Type\MixedType()], null, null, [\PHPStan\Type\Generic\TemplateTypeVariance::createBivariant(), \PHPStan\Type\Generic\TemplateTypeVariance::createBivariant()]),
+		'genericSubtracted' => new \PHPStan\Type\Generic\GenericObjectType(\ArrayObject::class, [new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()], new \PHPStan\Type\ObjectType(\ArrayIterator::class)),
+		'genericUnion' => new \PHPStan\Type\UnionType([new \PHPStan\Type\Generic\GenericObjectType(\ArrayObject::class, [new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()]), new \PHPStan\Type\Generic\GenericObjectType(\ArrayIterator::class, [new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()])]),
+		'objectWithoutClass' => new \PHPStan\Type\ObjectWithoutClassType(),
+		'static' => new \PHPStan\Type\StaticType($stringReflectionProvider->getClass(\PHPStan\TrinaryLogic::class)),
+		'template' => \PHPStan\Type\Generic\TemplateTypeFactory::create(\PHPStan\Type\Generic\TemplateTypeScope::createWithFunction('foo'), 'T', new \PHPStan\Type\Generic\GenericObjectType(\ArrayObject::class, [new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()]), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()),
+	];
+	foreach ($isValueOfGenericTypes as $genericName => $genericType) {
+		foreach ([\ArrayObject::class, \ArrayIterator::class, \PHPStan\TrinaryLogic::class, 'NonexistentClass', ''] as $className) {
+			$r["isValueOfGenericType $genericName $className"] = $view($genericClassStringClass::isValueOfGenericType($genericType, $className));
 		}
 	}
 	$r['const equals const'] = [(new $constStringClass('a'))->equals(new $constStringClass('a')), (new $constStringClass('a'))->equals(new $constStringClass('b')), (new $constStringClass('a'))->equals(new $constStringClass('a', true))];

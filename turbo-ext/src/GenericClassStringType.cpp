@@ -152,13 +152,56 @@ public:
 		return callOnType(PT_LC("accepts"), 2, args);
 	}
 
+	/* Whether a class named $className can be the value behind
+	 * `class-string<$genericType>`: the generic type (a StaticType's object
+	 * type, a TemplateType's bound) with its type arguments erased, judged
+	 * against ObjectType($className); UNDEF = pending exception */
+	static zv::Val isValueOfGenericType(zval *genericType, zend_string *className)
+	{
+		/* We are transforming constant class-string to ObjectType. But we
+		 * need to filter out an uncertainty originating in possible
+		 * ObjectType's class subtypes. Built up front: $className is a
+		 * by-value parameter of the twin, the borrowed name here would
+		 * have to outlive the calls below. */
+		zval objectTypeRaw;
+		if (UNEXPECTED(!pt_object_type_new(&objectTypeRaw, className))) return zv::Val();
+		zv::Val objectType = zv::Val::adopt(objectTypeRaw);
+
+		zv::Val type = zv::Val::copyOf(zv::Ref(genericType));
+
+		/* $genericType instanceof StaticType — the shadowing class */
+		if (zv::Ref(type.raw()).instanceOf(pt_ce_static_type)) {
+			type = pt_type_call(Z_OBJ_P(type.raw()), PT_LC("getstaticobjecttype"), 0, NULL);
+			if (UNEXPECTED(type.isUndef())) return zv::Val();
+		}
+
+		/* Do not use TemplateType's isSuperTypeOf handling directly
+		 * because it takes ObjectType uncertainty into account. */
+		bool isTemplate;
+		if (UNEXPECTED(!pt_type_instanceof(type.raw(), PT_CLASS_TEMPLATE_TYPE, isTemplate))) return zv::Val();
+		if (isTemplate) {
+			type = pt_type_call(Z_OBJ_P(type.raw()), PT_LC("getbound"), 0, NULL);
+			if (UNEXPECTED(type.isUndef())) return zv::Val();
+		}
+
+		/* A class-string carries a class name and never its type arguments,
+		 * so the type arguments must not take part in the comparison:
+		 * `X::class` is a value of `class-string<X<int>>` and of
+		 * `class-string<X<*>>` just like it is of `class-string<X>`. */
+		zv::Val callback = pt_type_native_callback(eraseTypeArgumentsCallback, NULL, NULL);
+		if (UNEXPECTED(callback.isUndef())) return zv::Val();
+		type = pt_type_traverser_map_of(type.raw(), callback.raw());
+		if (UNEXPECTED(type.isUndef())) return zv::Val();
+
+		return pt_type_op(Z_OBJ_P(type.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, objectType.raw());
+	}
+
 	/* the CompoundType callback; for a ConstantStringType yes under a mixed
-	 * generic type, else the generic type's (a StaticType's object type, a
-	 * TemplateType's bound) verdict on its ObjectType, and'ed with maybe
-	 * unless it is a class-string; the generic types' verdict for another
-	 * GenericClassStringType; the verdict on ObjectWithoutClassType for a
-	 * ClassStringType; maybe for a StringType; no otherwise; UNDEF =
-	 * pending exception */
+	 * generic type, else the verdict of isValueOfGenericType() on its value,
+	 * and'ed with maybe unless it is a class-string; the generic types'
+	 * verdict for another GenericClassStringType; the verdict on
+	 * ObjectWithoutClassType for a ClassStringType; maybe for a StringType;
+	 * no otherwise; UNDEF = pending exception */
 	zv::Val isSuperTypeOf(zval *type) const
 	{
 		bool compound;
@@ -173,34 +216,11 @@ public:
 		if (instanceof_function(typeCe, pt_ce_constant_string_type)) {
 			zval *ownType = this->type();
 			if (UNEXPECTED(ownType == NULL)) return zv::Val();
-			zv::Val genericType = zv::Val::copyOf(zv::Ref(ownType));
-			if (zv::Ref(genericType.raw()).instanceOf(pt_ce_mixed_type)) return pt_type_is_super_type_of_result(PT_TRI_YES);
+			if (zv::Ref(ownType).instanceOf(pt_ce_mixed_type)) return pt_type_is_super_type_of_result(PT_TRI_YES);
 
-			/* $genericType instanceof StaticType — the shadowing class */
-			bool isStatic = zv::Ref(genericType.raw()).instanceOf(pt_ce_static_type);
-			if (isStatic) {
-				genericType = pt_type_call(Z_OBJ_P(genericType.raw()), PT_LC("getstaticobjecttype"), 0, NULL);
-				if (UNEXPECTED(genericType.isUndef())) return zv::Val();
-			}
-
-			/* We are transforming constant class-string to ObjectType. But
-			 * we need to filter out an uncertainty originating in possible
-			 * ObjectType's class subtypes. */
-			zv::Val objectType = objectTypeOfConstantString(Z_OBJ_P(type));
-			if (UNEXPECTED(objectType.isUndef())) return zv::Val();
-
-			/* Do not use TemplateType's isSuperTypeOf handling directly
-			 * because it takes ObjectType uncertainty into account. */
-			bool isTemplate;
-			if (UNEXPECTED(!pt_type_instanceof(genericType.raw(), PT_CLASS_TEMPLATE_TYPE, isTemplate))) return zv::Val();
-			zv::Val isSuperType;
-			if (isTemplate) {
-				zv::Val bound = pt_type_call(Z_OBJ_P(genericType.raw()), PT_LC("getbound"), 0, NULL);
-				if (UNEXPECTED(bound.isUndef())) return zv::Val();
-				isSuperType = pt_type_op(Z_OBJ_P(bound.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, objectType.raw());
-			} else {
-				isSuperType = pt_type_op(Z_OBJ_P(genericType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, objectType.raw());
-			}
+			zv::Val value = pt_constant_string_get_value(Z_OBJ_P(type));
+			if (UNEXPECTED(value.isUndef())) return zv::Val();
+			zv::Val isSuperType = isValueOfGenericType(ownType, zv::Ref(value.raw()).asString());
 			if (UNEXPECTED(isSuperType.isUndef())) return zv::Val();
 
 			zend_long isClassString = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isclassstring"), 0, NULL);
@@ -487,6 +507,62 @@ private:
 		return pt_type_call(self, PT_LC("getgenerictype"), 0, NULL);
 	}
 
+	/* the `static function (Type $type, callable $traverse)` of
+	 * isValueOfGenericType(): a GenericObjectType becomes the ObjectType of
+	 * the class it names, everything else is traversed — stateless, both
+	 * state slots unused */
+	static void eraseTypeArgumentsCallback(zval *state0, zval *state1, uint32_t argc, zval *argv, zval *return_value)
+	{
+		(void) state0;
+		(void) state1;
+		if (UNEXPECTED(argc < 2)) {
+			zend_argument_count_error("Too few arguments to function %s::{closure}(), %u passed and exactly 2 expected", ZSTR_VAL(pt_ce_generic_class_string_type->name), argc);
+			return;
+		}
+		zval *type = &argv[0];
+		zval *traverse = &argv[1];
+		if (Z_TYPE_P(type) == IS_OBJECT && instanceof_function(Z_OBJCE_P(type), pt_ce_generic_object_type)) {
+			zv::Val erased = eraseTypeArguments(Z_OBJ_P(type));
+			if (UNEXPECTED(erased.isUndef())) return;
+			erased.intoReturnValue(return_value);
+			return;
+		}
+
+		(void) pt_type_traverser_traverse(return_value, traverse, type);
+	}
+
+	/* new ObjectType($type->getClassName(), $type->getSubtractedType()) for
+	 * a GenericObjectType — its slots when the object is exactly the native
+	 * class, its methods otherwise (a subclass may override them); UNDEF =
+	 * pending exception */
+	static zv::Val eraseTypeArguments(zend_object *genericObject)
+	{
+		zv::Val classNameHold, subtractedHold;
+		zend_string *className;
+		zval *subtractedType;
+		if (EXPECTED(genericObject->ce == pt_ce_generic_object_type)) {
+			className = pt_object_type_class_name(genericObject);
+			if (UNEXPECTED(className == NULL)) return zv::Val();
+			subtractedType = pt_object_type_subtracted_type(genericObject);
+			if (UNEXPECTED(subtractedType == NULL)) return zv::Val();
+		} else {
+			classNameHold = pt_type_call(genericObject, PT_LC("getclassname"), 0, NULL);
+			if (UNEXPECTED(classNameHold.isUndef())) return zv::Val();
+			if (UNEXPECTED(!zv::Ref(classNameHold.raw()).isString())) {
+				zend_type_error("phpstan_turbo: %s::getClassName() must return string", ZSTR_VAL(genericObject->ce->name));
+				return zv::Val();
+			}
+			className = zv::Ref(classNameHold.raw()).asString();
+			subtractedHold = pt_type_call(genericObject, PT_LC("getsubtractedtype"), 0, NULL);
+			if (UNEXPECTED(subtractedHold.isUndef())) return zv::Val();
+			subtractedType = subtractedHold.raw();
+		}
+
+		zval erased;
+		if (UNEXPECTED(!pt_object_type_new(&erased, className, subtractedType))) return zv::Val();
+		return zv::Val::adopt(erased);
+	}
+
 	/* new ObjectType($type->getValue()) for a ConstantStringType */
 	static zv::Val objectTypeOfConstantString(zend_object *constantString)
 	{
@@ -530,6 +606,11 @@ zv::Val pt_type_new_generic_class_string(zval *type)
 	return GenericClassStringType::create(type);
 }
 
+zv::Val pt_generic_class_string_is_value_of_generic_type(zval *genericType, zend_string *className)
+{
+	return GenericClassStringType::isValueOfGenericType(genericType, className);
+}
+
 /* {{{ engine ABI glue: parameter parsing + registration */
 
 #define PT_THIS GenericClassStringType(Z_OBJ_P(ZEND_THIS))
@@ -567,6 +648,13 @@ void pt_register_generic_class_string_type()
 
 	cls.method<&GenericClassStringType::accepts, zp::Obj, zp::Bool>(sigs::accepts);
 	cls.op(PT_OP_ACCEPTS, PT_OP_LAMBDA { return GenericClassStringType(self).accepts(argv, (Z_TYPE(argv[1]) == IS_TRUE)); });
+
+	cls.method(sigs::isValueOfGenericType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *genericType;
+		zend_string *className;
+		if (!zp::parse<zp::Obj, zp::Str>(execute_data, genericType, className)) RETURN_THROWS();
+		PT_RETURN_VAL(GenericClassStringType::isValueOfGenericType(genericType, className));
+	});
 
 	cls.method<&GenericClassStringType::isSuperTypeOf, zp::Obj>(sigs::isSuperTypeOf);
 	cls.op<PT_OP_IS_SUPER_TYPE_OF, &GenericClassStringType::isSuperTypeOf>();

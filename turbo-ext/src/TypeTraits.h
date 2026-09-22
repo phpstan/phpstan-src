@@ -1085,6 +1085,11 @@ zv::Val pt_template_type_parameter_strategy_accepts(zval *left, zval *right, boo
  * GenericClassStringType.cpp); UNDEF = pending exception */
 zv::Val pt_type_new_generic_class_string(zval *type);
 
+/* GenericClassStringType::isValueOfGenericType($genericType, $className) —
+ * the static method's native body (a `self::` call, never overridden);
+ * UNDEF = pending exception */
+zv::Val pt_generic_class_string_is_value_of_generic_type(zval *genericType, zend_string *className);
+
 /* }}} */
 
 /* the Template*Type twins' shared bodies: new <Class>(...) with the bound

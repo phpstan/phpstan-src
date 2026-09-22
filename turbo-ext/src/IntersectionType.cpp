@@ -111,6 +111,26 @@ static void throwMapped(int classIdx, uint32_t argc, zval *argv)
 	zend_throw_exception_object(&raw);
 }
 
+struct CallableAcceptorCombinationContext
+{
+	zv::Arr result = zv::Arr::create(0);
+};
+
+static bool collectCallableAcceptorCombination(zval *combination, void *opaque)
+{
+	auto *context = static_cast<CallableAcceptorCombinationContext *>(opaque);
+	zv::Val combined = pt_parameters_acceptor_selector_combine_acceptors(combination);
+	if (UNEXPECTED(combined.isUndef())) return false;
+	bool isCallableAcceptor;
+	if (UNEXPECTED(!isInstance(combined.raw(), PT_CLASS_CALLABLE_PARAMETERS_ACCEPTOR, isCallableAcceptor))) return false;
+	if (UNEXPECTED(!isCallableAcceptor)) {
+		throwShouldNotHappen(NULL);
+		return false;
+	}
+	context->result.push(std::move(combined));
+	return true;
+}
+
 /* Class::NAME of a class-map class — a literal class constant, borrowed;
  * NULL = pending exception */
 [[nodiscard]] static zval *classConstant(int classIdx, const char *name, size_t len)
@@ -1828,21 +1848,9 @@ public:
 			acceptors.push(std::move(acceptor));
 			return zv::Val(std::move(acceptors));
 		}
-		zv::Val combinations = pt_combinations_helper_combinations(yesAcceptors.raw());
-		if (UNEXPECTED(combinations.isUndef())) return zv::Val();
-		zv::Arr result = zv::Arr::create(zv::ArrRef(combinations.raw()).size());
-		for (zv::ArrayEntry entry : zv::ArrRef(combinations.raw())) {
-			zv::Val combined = pt_parameters_acceptor_selector_combine_acceptors(entry.value().deref().raw());
-			if (UNEXPECTED(combined.isUndef())) return zv::Val();
-			bool isCallableAcceptor;
-			if (UNEXPECTED(!isInstance(combined.raw(), PT_CLASS_CALLABLE_PARAMETERS_ACCEPTOR, isCallableAcceptor))) return zv::Val();
-			if (UNEXPECTED(!isCallableAcceptor)) {
-				throwShouldNotHappen(NULL);
-				return zv::Val();
-			}
-			result.push(std::move(combined));
-		}
-		return zv::Val(std::move(result));
+		CallableAcceptorCombinationContext context;
+		if (UNEXPECTED(!pt_combinations_helper_for_each(yesAcceptors.raw(), collectCallableAcceptorCombination, &context))) return zv::Val();
+		return zv::Val(std::move(context.result));
 	}
 
 	zend_long isCloneable() const { return intersectResultsCall(PT_LC("iscloneable"), 0, NULL); }

@@ -25,6 +25,35 @@ zend_class_entry *pt_ce_type_utils = nullptr;
 
 namespace phpstanturbo {
 
+struct ConstantArrayCombinationContext
+{
+	zv::Arr result = zv::Arr::create(0);
+};
+
+static bool collectConstantArrayCombination(zval *combination, void *opaque)
+{
+	auto *context = static_cast<ConstantArrayCombinationContext *>(opaque);
+	zv::Val intersected;
+	bool first = true;
+	for (zv::ArrayEntry memberEntry : zv::ArrRef(combination)) {
+		if (first) {
+			intersected = zv::Val::copyOf(memberEntry.value());
+			first = false;
+			continue;
+		}
+		zv::Args args{intersected.raw(), memberEntry.value().raw()};
+		intersected = pt_type_combinator_call(PT_LC("intersect"), 2, args);
+		if (UNEXPECTED(intersected.isUndef())) return false;
+	}
+	if (UNEXPECTED(first)) {
+		zend_throw_error(NULL, "Undefined array key 0");
+		return false;
+	}
+	if (zv::Ref(intersected.raw()).isObject() && instanceof_function(Z_OBJCE_P(intersected.raw()), pt_ce_never_type)) return true;
+	context->result.push(std::move(intersected));
+	return true;
+}
+
 /* Mirrors PHPStan\Type\TypeUtils. */
 class TypeUtils
 {
@@ -220,44 +249,9 @@ public:
 				newTypes.push(std::move(allArrays));
 			}
 
-			zv::Val combinations = pt_combinations_helper_combinations(newTypes.raw());
-			if (UNEXPECTED(combinations.isUndef())) return zv::Val();
-			if (UNEXPECTED(!zv::Ref(combinations.raw()).isArray())) {
-				zend_type_error("phpstan_turbo: CombinationsHelper::combinations() must return a list");
-				return zv::Val();
-			}
-			zv::Arr result = zv::Arr::create(0);
-			for (zv::ArrayEntry combinationEntry : zv::ArrRef(combinations.raw())) {
-				zv::Ref combination = combinationEntry.value();
-				if (UNEXPECTED(!combination.isArray())) {
-					zend_type_error("phpstan_turbo: CombinationsHelper::combinations() must yield lists");
-					return zv::Val();
-				}
-				/* $intersected = $combination[0]; for ($i = 1; ...)
-				 * $intersected = TypeCombinator::intersect($intersected, $combination[$i]) */
-				zv::Val intersected;
-				bool first = true;
-				for (zv::ArrayEntry memberEntry : zv::ArrRef(combination.raw())) {
-					if (first) {
-						intersected = zv::Val::copyOf(memberEntry.value());
-						first = false;
-						continue;
-					}
-					zv::Args args{intersected.raw(), memberEntry.value().raw()};
-					intersected = pt_type_combinator_call(PT_LC("intersect"), 2, args);
-					if (UNEXPECTED(intersected.isUndef())) return zv::Val();
-				}
-				if (UNEXPECTED(first)) {
-					/* $combination[0] of an empty list: the twin's undefined
-					 * offset — a combination always holds one element per
-					 * constant array */
-					zend_throw_error(NULL, "Undefined array key 0");
-					return zv::Val();
-				}
-				if (zv::Ref(intersected.raw()).isObject() && instanceof_function(Z_OBJCE_P(intersected.raw()), pt_ce_never_type)) continue;
-				result.push(std::move(intersected));
-			}
-			return zv::Val(std::move(result));
+			ConstantArrayCombinationContext context;
+			if (UNEXPECTED(!pt_combinations_helper_for_each(newTypes.raw(), collectConstantArrayCombination, &context))) return zv::Val();
+			return zv::Val(std::move(context.result));
 		}
 
 		return listOf(type);

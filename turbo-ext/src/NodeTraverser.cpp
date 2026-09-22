@@ -18,6 +18,7 @@
 
 #include "support.h"
 #include "generated/NodeTraverser.h"
+#include "Engine.h"
 
 namespace slots = ptdecl::NodeTraverser::slot;
 namespace sigs = ptdecl::NodeTraverser::sig;
@@ -366,7 +367,8 @@ private:
 				 * any writer separate first, so the iteration always sees the
 				 * array it started with. */
 				zv::Val arrayGuard = zv::Val::copyOf(zv::Ref(value.raw()));
-				zv::Arr replacement = traverseArray(zv::ArrRef(value.raw()));
+				zv::Arr replacement;
+				pt_engine_with_stack([&]() { replacement = traverseArray(zv::ArrRef(value.raw())); });
 				if (UNEXPECTED(failed)) return;
 				if (!replacement.isUndef()) {
 					value.assign(std::move(replacement));
@@ -447,7 +449,7 @@ private:
 			if (skipToNext) continue;
 
 			if (traverseChildren) {
-				traverseNode(subNode);
+				pt_engine_with_stack([&]() { traverseNode(subNode); });
 				if (UNEXPECTED(failed) || stop) return;
 			}
 
@@ -609,7 +611,7 @@ private:
 			if (skipToNext) continue;
 
 			if (traverseChildren) {
-				traverseNode(node);
+				pt_engine_with_stack([&]() { traverseNode(node); });
 				if (UNEXPECTED(failed) || stop) break;
 			}
 

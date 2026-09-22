@@ -8,9 +8,10 @@
  * merge() run on every scope join and createEmpty() on every observed call
  * (~200K per self-analysis), so native callers reach them through the
  * pt_template_argument_constraints_* entries (support.h). getFacts() is a
- * generator in the twin; natively it materializes the facts into a list in
- * the generator's order, and native consumers walk them without the array
- * through pt_template_argument_constraints_facts() (support.h).
+ * generator in the twin; the public native method materializes the immutable
+ * facts in the same order and returns a generator helper over that list,
+ * while native consumers walk them without the array through
+ * pt_template_argument_constraints_facts() (support.h).
  */
 
 #include "support.h"
@@ -189,7 +190,8 @@ public:
 		return constraints;
 	}
 
-	/* Mirrors getFacts(): the facts in the generator's order, as a list */
+	/* Mirrors getFacts(): materialize the immutable facts, then expose them
+	 * through the same Generator helper as the PHP twin. */
 	zv::Val getFacts() const
 	{
 		zv::Arr facts = zv::Arr::create(0);
@@ -198,7 +200,7 @@ public:
 			return true;
 		});
 		if (UNEXPECTED(!ok)) return zv::Val();
-		return zv::Val(std::move(facts));
+		return pt_type_call_static(PT_CLASS_ITERABLE_HELPER, PT_LC("yieldvalues"), 1, facts.raw());
 	}
 
 	/* The generator's walk: an explicit stack of [node, expanded] pairs, a

@@ -806,10 +806,6 @@ static inline bool pt_intersection_type_instanceof(zval *value, bool &out)
 	return true;
 }
 
-/* CombinationsHelper::combinations($arrays) — the shadowing class's body
- * (CombinationsHelper.cpp); UNDEF = pending exception */
-zv::Val pt_combinations_helper_combinations(zval *arrays);
-
 /* }}} */
 
 /* merged from the parallel port branch */

@@ -6,33 +6,30 @@
 #include "support.h"
 #include "generated/CombinationsHelper.h"
 #include "zv.h"
+#include "TypeTraits.h"
 
 static zend_class_entry *pt_ce_combinations = nullptr;
 
 namespace phpstanturbo {
 
-/* Mirrors PHPStan\Internal\CombinationsHelper. The PHP twin recurses through
- * a generator; the native implementation materializes the full product
- * iteratively, walking an odometer over the input arrays. */
+/* Mirrors PHPStan\Internal\CombinationsHelper. PHP-visible calls use the
+ * twin's lazy generator helper; native consumers walk the same product one
+ * combination at a time without materializing it. */
 class CombinationsHelper
 {
 public:
-	/* caps the result array's pre-allocation hint, not the product itself */
-	static constexpr zend_ulong SIZE_HINT_LIMIT = 1048576;
+	static zv::Val combinations(zval *arrays)
+	{
+		return pt_type_call_static(PT_CLASS_ITERABLE_HELPER, PT_LC("combinations"), 1, arrays);
+	}
 
-	/* combinations() refuses products beyond this instead of letting the
-	 * multiply overflow and silently truncate the result */
-	static constexpr zend_ulong PRODUCT_LIMIT = 1ULL << 32;
-
-	/* UNDEF = pending exception */
-	static zv::Val combinations(zv::ArrRef arrays)
+	/* false = the consumer stopped or a pending exception */
+	static bool forEach(zv::ArrRef arrays, pt_combination_consumer consumer, void *context)
 	{
 		uint32_t n = arrays.size();
 		if (n == 0) {
-			/* combinations([]) yields a single empty combination */
-			zv::Arr result = zv::Arr::create(0);
-			result.push(zv::Arr::create(0));
-			return zv::Val(std::move(result));
+			zv::Arr combination = zv::Arr::create(0);
+			return consumer(combination.raw(), context);
 		}
 
 		/* borrow the inner array of each element (the input owns them) */
@@ -43,7 +40,7 @@ public:
 			if (UNEXPECTED(!element.isArray())) {
 				efree(inner);
 				zend_type_error("PHPStanTurbo\\CombinationsHelper::combinations() expects an array of arrays");
-				return zv::Val();
+				return false;
 			}
 			inner[i++] = element.raw();
 		}
@@ -51,7 +48,6 @@ public:
 		/* flatten each inner array into a raw element-slot vector */
 		uint32_t *sizes = (uint32_t *) emalloc(n * sizeof(uint32_t));
 		zval ***vecs = (zval ***) emalloc(n * sizeof(zval **));
-		zend_ulong total = 1;
 		bool hasEmptyInner = false;
 
 		for (i = 0; i < n; i++) {
@@ -63,23 +59,6 @@ public:
 				vecs[i] = NULL;
 				continue;
 			}
-			if (UNEXPECTED(total > PRODUCT_LIMIT / sizes[i])) {
-				/* The PHP twin is a lazy generator and never materializes the
-				 * product, but every consumer iterates it fully, so a product
-				 * this size is unreachable in practice. Failing loudly beats
-				 * the silent truncation an overflowed multiply would cause. */
-				for (uint32_t k = 0; k < i; k++) {
-					if (vecs[k] != NULL) {
-						efree(vecs[k]);
-					}
-				}
-				efree(vecs);
-				efree(sizes);
-				efree(inner);
-				pt_throw_should_not_happen();
-				return zv::Val();
-			}
-			total *= sizes[i];
 			vecs[i] = (zval **) emalloc(sizes[i] * sizeof(zval *));
 			uint32_t j = 0;
 			for (auto entry : innerArr) {
@@ -89,11 +68,27 @@ public:
 			}
 		}
 
-		zv::Val result;
-		if (hasEmptyInner) {
-			result = zv::Arr::create(0);
-		} else {
-			result = product(vecs, sizes, n, total);
+		bool completed = true;
+		if (!hasEmptyInner) {
+			uint32_t *indices = (uint32_t *) ecalloc(n, sizeof(uint32_t));
+			for (;;) {
+				zv::Arr combination = zv::Arr::create(n);
+				for (i = 0; i < n; i++) {
+					combination.push(zv::Ref(vecs[i][indices[i]]));
+				}
+				if (!consumer(combination.raw(), context)) {
+					completed = false;
+					break;
+				}
+
+				int64_t j = (int64_t) n - 1;
+				for (; j >= 0; j--) {
+					if (++indices[j] < sizes[j]) break;
+					indices[j] = 0;
+				}
+				if (j < 0) break;
+			}
+			efree(indices);
 		}
 
 		for (i = 0; i < n; i++) {
@@ -104,31 +99,7 @@ public:
 		efree(vecs);
 		efree(sizes);
 		efree(inner);
-		return result;
-	}
-
-private:
-	static zv::Val product(zval *const *const *vecs, const uint32_t *sizes, uint32_t n, zend_ulong total)
-	{
-		uint32_t *indices = (uint32_t *) ecalloc(n, sizeof(uint32_t));
-		zv::Arr result = zv::Arr::create((uint32_t) (total > SIZE_HINT_LIMIT ? SIZE_HINT_LIMIT : total));
-
-		for (zend_ulong c = 0; c < total; c++) {
-			zv::Arr comb = zv::Arr::create(n);
-			for (uint32_t i = 0; i < n; i++) {
-				comb.push(zv::Ref(vecs[i][indices[i]]));
-			}
-			result.push(std::move(comb));
-
-			/* odometer: advance the rightmost index, carrying leftwards */
-			for (int64_t j = (int64_t) n - 1; j >= 0; j--) {
-				if (++indices[j] < sizes[j]) break;
-				indices[j] = 0;
-			}
-		}
-
-		efree(indices);
-		return zv::Val(std::move(result));
+		return completed;
 	}
 };
 
@@ -151,7 +122,7 @@ void pt_register_combinations_helper()
 		if (!zp::parse<zp::Ht>(execute_data, arrays)) RETURN_THROWS();
 		zval arraysZv;
 		ZVAL_ARR(&arraysZv, arrays);
-		zv::Val result = CombinationsHelper::combinations(zv::ArrRef(&arraysZv));
+		zv::Val result = CombinationsHelper::combinations(&arraysZv);
 		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
 	});
@@ -163,9 +134,9 @@ void pt_register_combinations_helper()
 
 /* {{{ shared with the compound family (TypeTraits.h) */
 
-zv::Val pt_combinations_helper_combinations(zval *arrays)
+bool pt_combinations_helper_for_each(zval *arrays, pt_combination_consumer consumer, void *context)
 {
-	return CombinationsHelper::combinations(zv::ArrRef(arrays));
+	return CombinationsHelper::forEach(zv::ArrRef(arrays), consumer, context);
 }
 
 /* }}} */

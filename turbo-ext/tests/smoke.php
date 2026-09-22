@@ -158,16 +158,17 @@ $cases = [
 	[[1, 2], [], [3]],
 	[['x' => 1, 'y' => 2], [true, false]],
 	[[1.5, 'str', null], [[], [1]], [7]],
+	[new \ArrayIterator([1, 2]), new \ArrayIterator(['a', 'b'])],
 ];
 foreach ($cases as $i => $case) {
+	$phpIterator = \PHPStan\Internal\CombinationsHelper::combinations($case);
+	$nativeIterator = \PHPStanTurbo\CombinationsHelper::combinations($case);
+	check($phpIterator instanceof \Generator && $nativeIterator instanceof \Generator, "combinations case $i returns Generator");
 	$php = [];
-	foreach (\PHPStan\Internal\CombinationsHelper::combinations($case) as $c) {
+	foreach ($phpIterator as $c) {
 		$php[] = $c;
 	}
-	$native = \PHPStanTurbo\CombinationsHelper::combinations($case);
-	if (!is_array($native)) {
-		$native = iterator_to_array($native, false);
-	}
+	$native = iterator_to_array($nativeIterator, false);
 	check($php === $native, "combinations case $i: " . json_encode($php) . ' vs ' . json_encode($native));
 }
 

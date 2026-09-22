@@ -19,7 +19,7 @@
  *
  * Concurrency is lock-free and write-once:
  *
- *  - allocation is a fetch-add bump cursor in the arena header;
+ *  - allocation is a compare-and-swap bump cursor in the arena header;
  *  - publication is a compare-and-swap of an index slot from 0 to the record
  *    offset, performed only after the record bytes are fully written (release
  *    ordering; readers load slots with acquire ordering). A torn record is
@@ -173,20 +173,25 @@ static zend_always_inline bool atomicCasRelease(uint64_t *cell, uint64_t expecte
 #endif
 }
 
-static zend_always_inline uint64_t atomicFetchAdd(uint64_t *cell, uint64_t add)
-{
-#ifdef _MSC_VER
-	return (uint64_t) InterlockedExchangeAdd64((volatile LONG64 *) cell, (LONG64) add);
-#else
-	return __atomic_fetch_add(cell, add, __ATOMIC_ACQ_REL);
-#endif
-}
-
 /* }}} */
 
 static zend_always_inline uint64_t alignUp8(uint64_t value)
 {
 	return (value + 7) & ~(uint64_t) 7;
+}
+
+static zend_always_inline bool checkedAdd(uint64_t left, uint64_t right, uint64_t *result)
+{
+	if (right > UINT64_MAX - left) return false;
+	*result = left + right;
+	return true;
+}
+
+static zend_always_inline bool checkedAlignUp8(uint64_t value, uint64_t *result)
+{
+	if (value > UINT64_MAX - 7) return false;
+	*result = alignUp8(value);
+	return true;
 }
 
 static uint64_t fnv1a64(const void *data, size_t len)
@@ -639,9 +644,12 @@ struct RecordView
 
 static bool recordAt(uint64_t offset, RecordView *view)
 {
-	if (offset < arenaDataStart() || offset + sizeof(RecordHeader) > pt_arena_total) return false;
+	if (offset < arenaDataStart() || offset > pt_arena_total || sizeof(RecordHeader) > pt_arena_total - offset) return false;
 	const RecordHeader *header = (const RecordHeader *) ((char *) pt_arena_base + offset);
-	uint64_t payloadStart = alignUp8(offset + sizeof(RecordHeader) + header->keyLen);
+	uint64_t keyStart = offset + sizeof(RecordHeader);
+	if (header->keyLen > pt_arena_total - keyStart) return false;
+	uint64_t payloadStart;
+	if (!checkedAlignUp8(keyStart + header->keyLen, &payloadStart)) return false;
 	if (payloadStart > pt_arena_total || header->payloadLen > pt_arena_total - payloadStart) return false;
 	view->header = header;
 	view->key = (const char *) (header + 1);
@@ -671,9 +679,21 @@ static void publishRecord(const char *key, size_t keyLen, uint32_t kind, const W
 {
 	if (pt_arena_base == NULL || keyLen > UINT32_MAX) return;
 
-	uint64_t recordSize = alignUp8(sizeof(RecordHeader) + keyLen) + payload.bytes.size();
-	uint64_t offset = atomicFetchAdd(&arenaHeader()->allocCursor, alignUp8(recordSize));
-	if (offset > pt_arena_total || recordSize > pt_arena_total - offset) return; /* arena full: analysis continues, just unshared */
+	uint64_t payloadOffset;
+	uint64_t recordSize;
+	uint64_t allocationSize;
+	if (!checkedAlignUp8(sizeof(RecordHeader) + (uint64_t) keyLen, &payloadOffset)
+		|| !checkedAdd(payloadOffset, (uint64_t) payload.bytes.size(), &recordSize)
+		|| !checkedAlignUp8(recordSize, &allocationSize)) {
+		return;
+	}
+
+	uint64_t offset;
+	for (;;) {
+		offset = atomicLoadAcquire(&arenaHeader()->allocCursor);
+		if (offset > pt_arena_total || allocationSize > pt_arena_total - offset) return; /* arena full: analysis continues, just unshared */
+		if (atomicCasRelease(&arenaHeader()->allocCursor, offset, offset + allocationSize)) break;
+	}
 
 	/* The callers checked the index before building the payload; check it once
 	 * more before writing it. Building a record takes long enough for another
@@ -690,7 +710,7 @@ static void publishRecord(const char *key, size_t keyLen, uint32_t kind, const W
 	header.payloadLen = payload.bytes.size();
 	memcpy(record, &header, sizeof(header));
 	memcpy(record + sizeof(header), key, keyLen);
-	memcpy(record + alignUp8(sizeof(header) + keyLen), payload.bytes.data(), payload.bytes.size());
+	memcpy(record + payloadOffset, payload.bytes.data(), payload.bytes.size());
 
 	uint64_t hash = fnv1a64(key, keyLen);
 	uint64_t mask = INDEX_SLOT_COUNT - 1;
@@ -844,7 +864,7 @@ static bool hashRecordFind(const RecordView &view, const char *entryKey, size_t 
 		uint64_t entryOffset;
 		memcpy(&entryOffset, slots + ((hash + probe) & mask) * sizeof(uint64_t), sizeof(entryOffset));
 		if (entryOffset == 0) return false;
-		if (entryOffset < entriesStart || entryOffset + sizeof(uint32_t) > payloadLen) return false;
+		if (entryOffset < entriesStart || entryOffset > payloadLen || sizeof(uint32_t) > payloadLen - entryOffset) return false;
 		uint32_t keyLen;
 		memcpy(&keyLen, payload + entryOffset, sizeof(keyLen));
 		if (keyLen > payloadLen - entryOffset - sizeof(uint32_t)) return false;

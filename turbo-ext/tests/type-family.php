@@ -7979,8 +7979,9 @@ foreach ([\PHPStan\Analyser\Generics\TemplateArgumentConstraints::class => 'isEm
 		}
 		// the facts first: the twin's generator runs only when iterated
 		$facts = $constraints->getFacts();
+		$factsType = get_debug_type($facts);
 		$facts = array_map($viewFact, is_array($facts) ? $facts : iterator_to_array($facts, false));
-		return [$constraints->isEmpty(), $facts];
+		return [$constraints->isEmpty(), $factsType, $facts];
 	};
 
 	// the constraint trees

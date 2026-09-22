@@ -1,6 +1,7 @@
 #include "support.h"
 #include "zv.h"
 #include "TypeOps.h"
+#include "Engine.h"
 
 #include <cstring>
 #include <initializer_list>
@@ -408,6 +409,7 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_INTERNAL_LOCATED_SOURCE */ {"internalLocatedSource", "PHPStan\\BetterReflection\\SourceLocator\\Located\\InternalLocatedSource"},
 	/* PT_CLASS_BETTER_REFLECTION_CLASS_CONSTANT */ {"betterReflectionClassConstant", "PHPStan\\BetterReflection\\Reflection\\ReflectionClassConstant"},
 	/* PT_CLASS_RELATIVE_NAME */ {"relativeName", "PhpParser\\Node\\Name\\Relative"},
+	/* PT_CLASS_ITERABLE_HELPER */ {"iterableHelper", "PHPStan\\Internal\\IterableHelper"},
 };
 
 zend_class_entry *pt_class(int idx)
@@ -970,7 +972,8 @@ zend_object *pt_find_first_recursive(zend_object *node, pt_node_matcher matcher,
 		ZVAL_DEREF(val);
 		if (Z_TYPE_P(val) == IS_OBJECT) {
 			if (instanceof_function(Z_OBJCE_P(val), node_iface)) {
-				zend_object *found = pt_find_first_recursive(Z_OBJ_P(val), matcher, ctx);
+				zend_object *found = NULL;
+				pt_engine_with_stack([&]() { found = pt_find_first_recursive(Z_OBJ_P(val), matcher, ctx); });
 				if (found != NULL || ((pt_find_ctx *) ctx)->failed) return found;
 			}
 		} else if (Z_TYPE_P(val) == IS_ARRAY) {
@@ -979,7 +982,8 @@ zend_object *pt_find_first_recursive(zend_object *node, pt_node_matcher matcher,
 				zval *el_deref = el;
 				ZVAL_DEREF(el_deref);
 				if (Z_TYPE_P(el_deref) == IS_OBJECT && instanceof_function(Z_OBJCE_P(el_deref), node_iface)) {
-					zend_object *found = pt_find_first_recursive(Z_OBJ_P(el_deref), matcher, ctx);
+					zend_object *found = NULL;
+					pt_engine_with_stack([&]() { found = pt_find_first_recursive(Z_OBJ_P(el_deref), matcher, ctx); });
 					if (found != NULL || ((pt_find_ctx *) ctx)->failed) return found;
 				}
 			} ZEND_HASH_FOREACH_END();

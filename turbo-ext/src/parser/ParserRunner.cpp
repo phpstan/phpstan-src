@@ -12,6 +12,7 @@
 
 #include "ParserEngine.h"
 #include "../generated/ParserRunner.h"
+#include "../Engine.h"
 #include "ParserRunnerActionsSplit.h"
 
 #pragma GCC diagnostic push
@@ -1054,9 +1055,9 @@ void ParserEngine::commentWalkNode(CommentState &st, zend_object *node)
 		zval *sub = OBJ_PROP(node, info->subnode_offsets[i]);
 		ZVAL_DEINDIRECT(sub);
 		if (Z_TYPE_P(sub) == IS_OBJECT) {
-			commentWalkNode(st, Z_OBJ_P(sub));
+			pt_engine_with_stack([&]() { commentWalkNode(st, Z_OBJ_P(sub)); });
 		} else if (Z_TYPE_P(sub) == IS_ARRAY) {
-			commentWalkArray(st, Z_ARRVAL_P(sub));
+			pt_engine_with_stack([&]() { commentWalkArray(st, Z_ARRVAL_P(sub)); });
 		}
 	}
 }
@@ -1068,9 +1069,9 @@ void ParserEngine::commentWalkArray(CommentState &st, HashTable *ht)
 		if (st.stopped) return;
 		ZVAL_DEREF(item);
 		if (Z_TYPE_P(item) == IS_OBJECT) {
-			commentWalkNode(st, Z_OBJ_P(item));
+			pt_engine_with_stack([&]() { commentWalkNode(st, Z_OBJ_P(item)); });
 		} else if (Z_TYPE_P(item) == IS_ARRAY) {
-			commentWalkArray(st, Z_ARRVAL_P(item));
+			pt_engine_with_stack([&]() { commentWalkArray(st, Z_ARRVAL_P(item)); });
 		}
 	} ZEND_HASH_FOREACH_END();
 }

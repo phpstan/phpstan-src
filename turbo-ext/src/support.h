@@ -459,6 +459,7 @@ enum {
 	PT_CLASS_BETTER_REFLECTION_CLASS_CONSTANT,
 	/* the Name readers (NameNodeAccess.cpp) */
 	PT_CLASS_RELATIVE_NAME,
+	PT_CLASS_ITERABLE_HELPER,
 	PT_CLASS_COUNT
 };
 
@@ -469,6 +470,12 @@ zend_class_entry *pt_class(int idx);
  * an `instanceof` against an undeclared class sees; throws only when the
  * key has neither a configured nor a default name */
 zend_class_entry *pt_class_loaded(int idx);
+
+/* Each CombinationsHelper combination, without materializing the product.
+ * The consumer borrows one list for the duration of the call and returns
+ * false to stop; false from the outer helper means it stopped. */
+using pt_combination_consumer = bool (*)(zval *combination, void *context);
+bool pt_combinations_helper_for_each(zval *arrays, pt_combination_consumer consumer, void *context);
 
 
 /* Called by Runtime::configure() */

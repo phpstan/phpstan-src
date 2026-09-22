@@ -90,7 +90,7 @@ class IntegerRangeType extends IntegerType implements CompoundType
 			return self::fromInterval(null, $value, -1);
 		}
 
-		if ($value > PHP_INT_MAX) {
+		if ($value >= PHP_INT_MAX) {
 			return new IntegerType();
 		}
 
@@ -160,7 +160,7 @@ class IntegerRangeType extends IntegerType implements CompoundType
 			return new IntegerType();
 		}
 
-		if ($value > PHP_INT_MAX) {
+		if ($value >= PHP_INT_MAX) {
 			return new NeverType();
 		}
 

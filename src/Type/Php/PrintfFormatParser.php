@@ -3,7 +3,7 @@
 namespace PHPStan\Type\Php;
 
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
+use PHPStan\Php\PhpVersions;
 use function in_array;
 use function ltrim;
 use function strlen;
@@ -29,10 +29,6 @@ final class PrintfFormatParser
 
 	private const ARG_NUM_NEXT = -1;
 
-	public function __construct(private PhpVersion $phpVersion)
-	{
-	}
-
 	/**
 	 * Returns the argument uses in the order the format consumes them, or null
 	 * when the format throws ValueError for any arguments. Index 0 is the first
@@ -41,7 +37,7 @@ final class PrintfFormatParser
 	 *
 	 * @return list<array{index: int, kind: 'value'|'width'|'precision', specifier: string, placeholder: string, number: int}>|null
 	 */
-	public function parse(string $format): ?array
+	public function parse(string $format, PhpVersions $phpVersions): ?array
 	{
 		$length = strlen($format);
 		$i = 0;
@@ -138,7 +134,7 @@ final class PrintfFormatParser
 			}
 
 			$specifier = $format[$i];
-			if (!$this->isSpecifier($specifier)) {
+			if (!self::isSpecifier($specifier, $phpVersions)) {
 				return null;
 			}
 
@@ -214,13 +210,13 @@ final class PrintfFormatParser
 		return (int) $digits;
 	}
 
-	private function isSpecifier(string $char): bool
+	private static function isSpecifier(string $char, PhpVersions $phpVersions): bool
 	{
 		if (strpos(self::SPECIFIERS, $char) !== false) {
 			return true;
 		}
 
-		return $this->phpVersion->supportsHhPrintfSpecifier() && strpos(self::HH_SPECIFIERS, $char) !== false;
+		return !$phpVersions->supportsHhPrintfSpecifier()->no() && strpos(self::HH_SPECIFIERS, $char) !== false;
 	}
 
 	private static function isDigit(string $char): bool

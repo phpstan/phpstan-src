@@ -1943,6 +1943,23 @@ public:
 		return zv::Val(std::move(result));
 	}
 
+	/* the twin's `static function (Type $type, callable $traverse)`
+	 * TypeTraverser::map() callbacks: too few arguments are an
+	 * ArgumentCountError, a non-object $type the parameter's TypeError;
+	 * false with the error pending */
+	static bool checkTraverseCallbackArguments(uint32_t argc, zval *argv)
+	{
+		if (UNEXPECTED(argc < 2)) {
+			zend_argument_count_error("Too few arguments to function %s::{closure}(), %u passed and exactly 2 expected", ZSTR_VAL(pt_ce_type_combinator->name), argc);
+			return false;
+		}
+		if (UNEXPECTED(Z_TYPE_P(&argv[0]) != IS_OBJECT)) {
+			zend_type_error("%s::{closure}(): Argument #1 ($type) must be of type %s, %s given", ZSTR_VAL(pt_ce_type_combinator->name), ptcls::type, zend_zval_value_name(&argv[0]));
+			return false;
+		}
+		return true;
+	}
+
 	/* the body of optimizeConstantArrays()'s TypeTraverser::map() callback:
 	 * a non-empty ConstantArrayType generalized to an oversized array over
 	 * the union of its (generalized) keys and values, `use (&$isOversized)`
@@ -1950,10 +1967,7 @@ public:
 	static void generalizeOversizedCallback(zval *isOversized, zval *state1, uint32_t argc, zval *argv, zval *return_value)
 	{
 		(void) state1;
-		if (UNEXPECTED(argc < 2 || Z_TYPE_P(&argv[0]) != IS_OBJECT)) {
-			zend_wrong_parameters_count_error(2, 2);
-			return;
-		}
+		if (UNEXPECTED(!checkTraverseCallbackArguments(argc, argv))) return;
 		zval *type = &argv[0];
 		if (!isInstance(type, pt_ce_constant_array_type)) {
 			zv::Val traversed = pt_type_call_callable(&argv[1], 1, type);
@@ -2070,10 +2084,7 @@ public:
 	{
 		(void) state0;
 		(void) state1;
-		if (UNEXPECTED(argc < 2 || Z_TYPE_P(&argv[0]) != IS_OBJECT)) {
-			zend_wrong_parameters_count_error(2, 2);
-			return;
-		}
+		if (UNEXPECTED(!checkTraverseCallbackArguments(argc, argv))) return;
 		zval *type = &argv[0];
 		if (isInstance(type, pt_ce_constant_array_type)) {
 			zend_long atLeastOnce = callTrinary(type, PT_LC("isiterableatleastonce"));
@@ -2293,10 +2304,7 @@ public:
 	static void countValueTypesCallback(zval *count, zval *state1, uint32_t argc, zval *argv, zval *return_value)
 	{
 		(void) state1;
-		if (UNEXPECTED(argc < 2 || Z_TYPE_P(&argv[0]) != IS_OBJECT)) {
-			zend_wrong_parameters_count_error(2, 2);
-			return;
-		}
+		if (UNEXPECTED(!checkTraverseCallbackArguments(argc, argv))) return;
 		zval *type = &argv[0];
 		if (isInstance(type, pt_ce_constant_array_type)) {
 			zv::Val valueTypes = call(type, PT_LC("getvaluetypes"));
@@ -2315,6 +2323,13 @@ public:
 	{
 		zend_long constantArrayValuesCount = 0;
 		for (zv::ArrayEntry entry : zv::ArrRef(types)) {
+			/* TypeTraverser::map()'s `Type $type` parameter */
+			bool isType;
+			if (UNEXPECTED(!pt_type_instanceof(entry.value().raw(), PT_CLASS_TYPE, isType))) return -1;
+			if (UNEXPECTED(!isType)) {
+				zend_type_error("%s::map(): Argument #1 ($type) must be of type %s, %s given", ZSTR_VAL(pt_ce_type_traverser->name), ptcls::type, zend_zval_value_name(entry.value().raw()));
+				return -1;
+			}
 			zval count;
 			ZVAL_LONG(&count, constantArrayValuesCount);
 			zv::Val callback = pt_type_native_callback(countValueTypesCallback, &count, NULL);

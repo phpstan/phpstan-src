@@ -8377,6 +8377,10 @@ foreach ([\PHPStan\Analyser\RicherScopeGetTypeHelper::class => 'getIdenticalResu
 			$r["combinator $method $argsName"] = $misuse(static fn () => \PHPStan\Type\TypeCombinator::$method(...$args));
 		}
 	}
+	// countConstantArrayValueTypes() hands each element to TypeTraverser::map(Type $type, ...)
+	foreach (['string' => 'x', 'object' => new \stdClass()] as $elementName => $element) {
+		$r["combinator countConstantArrayValueTypes $elementName"] = $misuse(static fn () => \PHPStan\Type\TypeCombinator::countConstantArrayValueTypes([new \PHPStan\Type\IntegerType(), $element]));
+	}
 
 	foreach ($r as $key => $value) {
 		$observations["misuse $key"] = $value;

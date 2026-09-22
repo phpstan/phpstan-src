@@ -8377,6 +8377,49 @@ foreach ([\PHPStan\Analyser\RicherScopeGetTypeHelper::class => 'getIdenticalResu
 			$r["combinator $method $argsName"] = $misuse(static fn () => \PHPStan\Type\TypeCombinator::$method(...$args));
 		}
 	}
+	// the identity of TypeCombinator results with the memo on (the PHP
+	// TypeCombinatorCache delegates without memoizing): a result that is an
+	// operand or a member of an operand is that object of the call at hand,
+	// never the one of an earlier structurally equal call (a result of its
+	// own is shared between structurally equal calls by design, so the two
+	// results are not compared with each other)
+	$cacheEnabledProperty = new \ReflectionProperty(\PHPStan\Type\TypeCombinator::class, 'cacheEnabled');
+	$cacheEnabledBefore = $cacheEnabledProperty->getValue();
+	$cacheEnabledProperty->setValue(null, true);
+	try {
+		$memoUnion = static fn () => new \PHPStan\Type\UnionType([new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()]);
+		$memoNullable = static fn () => new \PHPStan\Type\UnionType([new \PHPStan\Type\ObjectType(\stdClass::class), new \PHPStan\Type\NullType()]);
+		$memoIntersection = static fn () => new \PHPStan\Type\IntersectionType([new \PHPStan\Type\StringType(), new \PHPStan\Type\Accessory\AccessoryNonEmptyStringType()]);
+		$memoDuplicate = static fn () => new \PHPStan\Type\UnionType([new \PHPStan\Type\ObjectType(\stdClass::class), new \PHPStan\Type\ObjectType(\Exception::class)]);
+		foreach ([
+			'remove member' => [$memoUnion, static fn (\PHPStan\Type\Type $a) => \PHPStan\Type\TypeCombinator::remove($a, new \PHPStan\Type\StringType())],
+			'removeNull member' => [$memoNullable, static fn (\PHPStan\Type\Type $a) => \PHPStan\Type\TypeCombinator::removeNull($a)],
+			'intersect member' => [$memoUnion, static fn (\PHPStan\Type\Type $a) => \PHPStan\Type\TypeCombinator::intersect($a, new \PHPStan\Type\IntegerType())],
+			'intersect member reversed' => [$memoUnion, static fn (\PHPStan\Type\Type $a) => \PHPStan\Type\TypeCombinator::intersect(new \PHPStan\Type\IntegerType(), $a)],
+			'union operand' => [$memoUnion, static fn (\PHPStan\Type\Type $a) => \PHPStan\Type\TypeCombinator::union($a, new \PHPStan\Type\IntegerType())],
+			'union of members' => [$memoUnion, static fn (\PHPStan\Type\Type $a) => \PHPStan\Type\TypeCombinator::union($a->getTypes()[0], $a->getTypes()[1])],
+			'intersect intersection member' => [$memoIntersection, static fn (\PHPStan\Type\Type $a) => \PHPStan\Type\TypeCombinator::intersect($a, new \PHPStan\Type\StringType())],
+			'remove from duplicate-free union' => [$memoDuplicate, static fn (\PHPStan\Type\Type $a) => \PHPStan\Type\TypeCombinator::remove($a, new \PHPStan\Type\ObjectType(\Exception::class))],
+		] as $memoName => [$memoArgument, $memoOperation]) {
+			$firstArgument = $memoArgument();
+			$secondArgument = $memoArgument();
+			$first = $memoOperation($firstArgument);
+			$second = $memoOperation($secondArgument);
+			$identities = static fn (\PHPStan\Type\Type $result, \PHPStan\Type\Type $argument): array => [
+				'argument' => $result === $argument,
+				'members' => $argument instanceof \PHPStan\Type\UnionType || $argument instanceof \PHPStan\Type\IntersectionType ? array_map(static fn (\PHPStan\Type\Type $member): bool => $member === $result, $argument->getTypes()) : null,
+			];
+			$r["memo $memoName"] = [
+				$view($first),
+				$identities($first, $firstArgument),
+				$identities($second, $secondArgument),
+				$identities($second, $firstArgument),
+			];
+		}
+	} finally {
+		$cacheEnabledProperty->setValue(null, $cacheEnabledBefore);
+	}
+
 	// countConstantArrayValueTypes() hands each element to TypeTraverser::map(Type $type, ...)
 	foreach (['string' => 'x', 'object' => new \stdClass()] as $elementName => $element) {
 		$r["combinator countConstantArrayValueTypes $elementName"] = $misuse(static fn () => \PHPStan\Type\TypeCombinator::countConstantArrayValueTypes([new \PHPStan\Type\IntegerType(), $element]));

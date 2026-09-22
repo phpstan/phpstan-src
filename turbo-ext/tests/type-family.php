@@ -8371,6 +8371,13 @@ foreach ([\PHPStan\Analyser\RicherScopeGetTypeHelper::class => 'getIdenticalResu
 	};
 	$r['benevolent overridden getTypes getOffsetValueType'] = $misuse(static fn () => $misuseBenevolent->getOffsetValueType(new \PHPStan\Type\IntegerType()), true);
 
+	// TypeCombinator's `Type ...$types` entry points
+	foreach (['union', 'doUnion', 'intersect', 'doIntersect'] as $method) {
+		foreach (['string' => ['x'], 'int second' => [new \PHPStan\Type\IntegerType(), 1], 'null' => [null, new \PHPStan\Type\IntegerType()], 'object' => [new \stdClass(), new \PHPStan\Type\IntegerType()], 'object second' => [new \PHPStan\Type\IntegerType(), new \stdClass()]] as $argsName => $args) {
+			$r["combinator $method $argsName"] = $misuse(static fn () => \PHPStan\Type\TypeCombinator::$method(...$args));
+		}
+	}
+
 	foreach ($r as $key => $value) {
 		$observations["misuse $key"] = $value;
 	}

@@ -3985,6 +3985,21 @@ zv::Val pt_type_combinator_call_spread(const char *lcname, size_t len, HashTable
 
 /* {{{ engine ABI glue: parameter parsing + registration */
 
+/* the twin's `Type ...$types` parameter check for the variadic entry
+ * points; false with the engine's TypeError pending */
+static bool requireTypeArguments(uint32_t count, zval *types)
+{
+	for (uint32_t i = 0; i < count; i++) {
+		bool isType;
+		if (UNEXPECTED(!pt_type_instanceof(&types[i], PT_CLASS_TYPE, isType))) return false;
+		if (UNEXPECTED(!isType)) {
+			zend_argument_type_error(i + 1, "must be of type %s, %s given", ptcls::type, zend_zval_value_name(&types[i]));
+			return false;
+		}
+	}
+	return true;
+}
+
 void pt_register_type_combinator()
 {
 
@@ -4029,6 +4044,7 @@ void pt_register_type_combinator()
 		ZEND_PARSE_PARAMETERS_START(0, -1)
 			Z_PARAM_VARIADIC('*', types, count)
 		ZEND_PARSE_PARAMETERS_END();
+		if (UNEXPECTED(!requireTypeArguments(count, types))) RETURN_THROWS();
 		PT_RETURN_VAL(TypeCombinator::union_(count, types));
 	});
 	cls.method(sigs::doUnion, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -4037,6 +4053,7 @@ void pt_register_type_combinator()
 		ZEND_PARSE_PARAMETERS_START(0, -1)
 			Z_PARAM_VARIADIC('*', types, count)
 		ZEND_PARSE_PARAMETERS_END();
+		if (UNEXPECTED(!requireTypeArguments(count, types))) RETURN_THROWS();
 		PT_RETURN_VAL(TypeCombinator::doUnion(count, types));
 	});
 	cls.method(sigs::countConstantArrayValueTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -4052,6 +4069,7 @@ void pt_register_type_combinator()
 		ZEND_PARSE_PARAMETERS_START(0, -1)
 			Z_PARAM_VARIADIC('*', types, count)
 		ZEND_PARSE_PARAMETERS_END();
+		if (UNEXPECTED(!requireTypeArguments(count, types))) RETURN_THROWS();
 		PT_RETURN_VAL(TypeCombinator::intersect(count, types));
 	});
 	cls.method(sigs::doIntersect, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -4060,6 +4078,7 @@ void pt_register_type_combinator()
 		ZEND_PARSE_PARAMETERS_START(0, -1)
 			Z_PARAM_VARIADIC('*', types, count)
 		ZEND_PARSE_PARAMETERS_END();
+		if (UNEXPECTED(!requireTypeArguments(count, types))) RETURN_THROWS();
 		PT_RETURN_VAL(TypeCombinator::doIntersect(count, types));
 	});
 	cls.method(sigs::removeFalsey, [](INTERNAL_FUNCTION_PARAMETERS) {

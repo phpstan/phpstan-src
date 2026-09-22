@@ -21,7 +21,15 @@ final class NoInjectedPhpVersionInScopeAwareExtensionRuleTest extends RuleTestCa
 		$this->analyse([__DIR__ . '/data/php-version-in-extension.php'], [
 			[
 				'PhpVersionInExtension\InjectsPhpVersion implements PHPStan\Type\DynamicFunctionReturnTypeExtension and must not inject PHPStan\Php\PhpVersion - read the analysed PHP version from Scope::getPhpVersion() instead.',
-				14,
+				23,
+			],
+			[
+				'PhpVersionInExtension\InjectsPhpVersionInParameterOutExtension implements PHPStan\Type\MethodParameterOutTypeExtension and must not inject PHPStan\Php\PhpVersion - read the analysed PHP version from Scope::getPhpVersion() instead.',
+				65,
+			],
+			[
+				'PhpVersionInExtension\InjectsPhpVersionInRestrictedUsageExtension implements PHPStan\Rules\RestrictedUsage\RestrictedMethodUsageExtension and must not inject PHPStan\Php\PhpVersion - read the analysed PHP version from Scope::getPhpVersion() instead.',
+				84,
 			],
 		]);
 	}

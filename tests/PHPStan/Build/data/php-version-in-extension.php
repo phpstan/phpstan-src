@@ -4,11 +4,20 @@ declare(strict_types = 1);
 
 namespace PhpVersionInExtension;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ParameterReflection;
+use PHPStan\Rules\RestrictedUsage\RestrictedMethodUsageExtension;
+use PHPStan\Rules\RestrictedUsage\RestrictedUsage;
+use PHPStan\Rules\Rule;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\MethodParameterOutTypeExtension;
 use PHPStan\Type\NullType;
 use PHPStan\Type\OperatorTypeSpecifyingExtension;
 use PHPStan\Type\Type;
@@ -55,6 +64,43 @@ final class ReadsPhpVersionFromScope implements DynamicFunctionReturnTypeExtensi
 
 }
 
+final class InjectsPhpVersionInParameterOutExtension implements MethodParameterOutTypeExtension
+{
+
+	public function __construct(private PhpVersion $phpVersion)
+	{
+	}
+
+	public function isMethodSupported(MethodReflection $methodReflection, ParameterReflection $parameter): bool
+	{
+		return $this->phpVersion->getVersionId() >= 80000;
+	}
+
+	public function getParameterOutTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, ParameterReflection $parameter, Scope $scope): ?Type
+	{
+		return null;
+	}
+
+}
+
+final class InjectsPhpVersionInRestrictedUsageExtension implements RestrictedMethodUsageExtension
+{
+
+	public function __construct(private PhpVersion $phpVersion)
+	{
+	}
+
+	public function isRestrictedMethodUsage(ExtendedMethodReflection $methodReflection, Scope $scope): ?RestrictedUsage
+	{
+		if ($this->phpVersion->getVersionId() >= 80000) {
+			return null;
+		}
+
+		return null;
+	}
+
+}
+
 final class OperatorExtensionWithoutScope implements OperatorTypeSpecifyingExtension
 {
 
@@ -70,6 +116,32 @@ final class OperatorExtensionWithoutScope implements OperatorTypeSpecifyingExten
 	public function specifyType(string $operatorSigil, Type $leftSide, Type $rightSide): Type
 	{
 		return new NullType();
+	}
+
+}
+
+/**
+ * @implements Rule<Node>
+ */
+final class RuleWithInjectedPhpVersion implements Rule
+{
+
+	public function __construct(private PhpVersion $phpVersion)
+	{
+	}
+
+	public function getNodeType(): string
+	{
+		return Node::class;
+	}
+
+	public function processNode(Node $node, Scope $scope): array
+	{
+		if ($this->phpVersion->getVersionId() >= 80000) {
+			return [];
+		}
+
+		return [];
 	}
 
 }

@@ -45,6 +45,16 @@ final class RegexGroupParser
 		'J', // rare modifier too complicated to support
 	];
 
+	/**
+	 * Modifiers that only exist in the PCRE library bundled with newer PHP versions.
+	 * The analysed version can support them while this process runs on an older one,
+	 * so they are stripped before the pattern is compiled here. PHPStan implements their
+	 * effect itself, so removing them does not change the inferred shape.
+	 */
+	private const MODIFIERS_NOT_COMPILABLE_ON_EVERY_RUNTIME = [
+		'n', // PHP 8.2+, https://php.watch/versions/8.2/preg-n-no-capture-modifier
+	];
+
 	// upper bound on the number of constant string literals enumerated from a group,
 	// to avoid combinatorial explosion from nested optional/bounded quantifications
 	private const LITERALS_LIMIT = 100;
@@ -65,22 +75,21 @@ final class RegexGroupParser
 		/** @throws void */
 		self::$parser ??= Llk::load(new Read(__DIR__ . '/../../../resources/RegexGrammar.pp'));
 
+		$modifiers = $this->regexExpressionHelper->getPatternModifiers($regex) ?? '';
+
 		if (array_key_exists($regex, self::$parsedAst)) {
 			$ast = self::$parsedAst[$regex];
 			if ($ast === null) {
 				return null;
 			}
-
-			$modifiers = $this->regexExpressionHelper->getPatternModifiers($regex) ?? '';
 		} else {
 			try {
-				Strings::match('', $regex);
+				Strings::match('', $this->removeModifiersNotCompilableOnEveryRuntime($regex, $modifiers));
 			} catch (RegexpException) {
 				// pattern is invalid, so let the RegularExpressionPatternRule report it
 				return self::$parsedAst[$regex] = null;
 			}
 
-			$modifiers = $this->regexExpressionHelper->getPatternModifiers($regex) ?? '';
 			foreach (self::NOT_SUPPORTED_MODIFIERS as $notSupportedModifier) {
 				if (str_contains($modifiers, $notSupportedModifier)) {
 					return self::$parsedAst[$regex] = null;
@@ -147,6 +156,16 @@ final class RegexGroupParser
 	private function createEmptyTokenTreeNode(TreeNode $parentAst): TreeNode
 	{
 		return new TreeNode('token', ['token' => 'literal', 'value' => '', 'namespace' => 'default'], parent: $parentAst);
+	}
+
+	private function removeModifiersNotCompilableOnEveryRuntime(string $regex, string $modifiers): string
+	{
+		$compilableModifiers = str_replace(self::MODIFIERS_NOT_COMPILABLE_ON_EVERY_RUNTIME, '', $modifiers);
+		if ($compilableModifiers === $modifiers) {
+			return $regex;
+		}
+
+		return substr($regex, 0, strlen($regex) - strlen($modifiers)) . $compilableModifiers;
 	}
 
 	private function updateAlternationAstRemoveVerticalBarsAndAddEmptyToken(TreeNode $ast): void

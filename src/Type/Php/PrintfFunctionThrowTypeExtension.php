@@ -86,7 +86,7 @@ final class PrintfFunctionThrowTypeExtension implements DynamicFunctionThrowType
 		$uses = [];
 		$requiredArgumentsCount = 0;
 		foreach ($formats as $format) {
-			$formatUses = $this->formatParser->parse($format->getValue());
+			$formatUses = $this->formatParser->parse($format->getValue(), $scope->getPhpVersion());
 			if ($formatUses === null) {
 				return $functionReflection->getThrowType();
 			}

@@ -1230,6 +1230,72 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testGetClassThrowType(): void
+	{
+		$this->analyse([__DIR__ . '/data/get-class-throw-type.php'], [
+			[
+				'Dead catch - TypeError is never thrown in the try block.',
+				16,
+			],
+			[
+				'Dead catch - TypeError is never thrown in the try block.',
+				22,
+			],
+			[
+				'Dead catch - Error is never thrown in the try block.',
+				28,
+			],
+			[
+				'Dead catch - Error is never thrown in the try block.',
+				35,
+			],
+			[
+				'Dead catch - TypeError is never thrown in the try block.',
+				55,
+			],
+		]);
+	}
+
+	#[RequiresPhp('< 8.0.0')]
+	public function testGetClassThrowTypeBeforePhp8(): void
+	{
+		$this->analyse([__DIR__ . '/data/get-class-throw-type.php'], [
+			[
+				'Dead catch - TypeError is never thrown in the try block.',
+				16,
+			],
+			[
+				'Dead catch - TypeError is never thrown in the try block.',
+				22,
+			],
+			[
+				'Dead catch - Error is never thrown in the try block.',
+				28,
+			],
+			[
+				'Dead catch - Error is never thrown in the try block.',
+				35,
+			],
+			[
+				'Dead catch - TypeError is never thrown in the try block.',
+				42,
+			],
+			[
+				'Dead catch - TypeError is never thrown in the try block.',
+				48,
+			],
+			[
+				'Dead catch - TypeError is never thrown in the try block.',
+				55,
+			],
+			[
+				'Dead catch - Error is never thrown in the try block.',
+				67,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.4.0')]
 	public function testRoundThrowType(): void
 	{

@@ -2,24 +2,14 @@
 
 namespace PHPStan\Type\Php;
 
-use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
-use PhpParser\Node\Expr\ArrowFunction;
-use PhpParser\Node\Expr\Closure;
-use PhpParser\Node\Expr\Error;
-use PhpParser\Node\Expr\FuncCall;
-use PhpParser\Node\Expr\MethodCall;
-use PhpParser\Node\Expr\StaticCall;
-use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Name;
-use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\TrinaryLogic;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -35,9 +25,7 @@ use PHPStan\Type\TypeUtils;
 use function array_map;
 use function count;
 use function in_array;
-use function is_string;
 use function sprintf;
-use function substr;
 
 #[AutowiredService]
 final class ArrayFilterFunctionReturnTypeHelper
@@ -50,6 +38,7 @@ final class ArrayFilterFunctionReturnTypeHelper
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private PhpVersion $phpVersion,
+		private ArrayPredicateCallbackResolver $predicateCallbackResolver,
 	)
 	{
 	}
@@ -91,62 +80,34 @@ final class ArrayFilterFunctionReturnTypeHelper
 			return new ArrayType($keyType, $itemType);
 		}
 
-		if ($callbackArg instanceof Closure && count($callbackArg->stmts) === 1 && count($callbackArg->params) > 0) {
-			$statement = $callbackArg->stmts[0];
-			if ($statement instanceof Return_ && $statement->expr !== null) {
-				if ($mode === self::USE_ITEM) {
-					$keyVar = null;
-					$itemVar = $callbackArg->params[0]->var;
-				} elseif ($mode === self::USE_KEY) {
-					$keyVar = $callbackArg->params[0]->var;
-					$itemVar = null;
-				} elseif ($mode === self::USE_BOTH) {
-					$keyVar = $callbackArg->params[1]->var ?? null;
-					$itemVar = $callbackArg->params[0]->var;
-				}
-				return $this->filterByTruthyValue($scope, $itemVar, $arrayArgType, $keyVar, $statement->expr);
-			}
-		} elseif ($callbackArg instanceof ArrowFunction && count($callbackArg->params) > 0) {
-			if ($mode === self::USE_ITEM) {
-				$keyVar = null;
-				$itemVar = $callbackArg->params[0]->var;
-			} elseif ($mode === self::USE_KEY) {
-				$keyVar = $callbackArg->params[0]->var;
-				$itemVar = null;
-			} elseif ($mode === self::USE_BOTH) {
-				$keyVar = $callbackArg->params[1]->var ?? null;
-				$itemVar = $callbackArg->params[0]->var;
-			}
-			return $this->filterByTruthyValue($scope, $itemVar, $arrayArgType, $keyVar, $callbackArg->expr);
-		} elseif (
-			($callbackArg instanceof FuncCall || $callbackArg instanceof MethodCall || $callbackArg instanceof StaticCall)
-			&& $callbackArg->isFirstClassCallable()
-		) {
-			[$args, $itemVar, $keyVar] = $this->createDummyArgs($mode);
-			$expr = clone $callbackArg;
-			$expr->args = $args;
-			return $this->filterByTruthyValue($scope, $itemVar, $arrayArgType, $keyVar, $expr);
-		} else {
-			$constantStrings = $scope->getType($callbackArg)->getConstantStrings();
-			if (count($constantStrings) > 0) {
-				$results = [];
-				[$args, $itemVar, $keyVar] = $this->createDummyArgs($mode);
-
-				foreach ($constantStrings as $constantString) {
-					$funcName = self::createFunctionName($constantString->getValue());
-					if ($funcName === null) {
-						$results[] = new ErrorType();
-						continue;
-					}
-
-					$expr = new FuncCall($funcName, $args);
-					$results[] = $this->filterByTruthyValue($scope, $itemVar, $arrayArgType, $keyVar, $expr);
-				}
-				return TypeCombinator::union(...$results);
-			}
+		if (!$scope instanceof MutatingScope) {
+			throw new ShouldNotHappenException();
 		}
 
-		return new ArrayType($keyType, $itemType);
+		if ($mode === self::USE_ITEM) {
+			$mapping = ArrayCallbackParameterMapping::item();
+		} elseif ($mode === self::USE_KEY) {
+			$mapping = ArrayCallbackParameterMapping::key();
+		} else {
+			$mapping = ArrayCallbackParameterMapping::valueAndKey();
+		}
+
+		$predicates = $this->predicateCallbackResolver->resolve($scope, $callbackArg, $mapping);
+		if ($predicates === null) {
+			return new ArrayType($keyType, $itemType);
+		}
+
+		$results = [];
+		foreach ($predicates as $predicate) {
+			if ($predicate->getExpr() === null) {
+				$results[] = new ErrorType();
+				continue;
+			}
+
+			$results[] = $this->filterByTruthyValue($scope, $predicate, $arrayArgType);
+		}
+
+		return TypeCombinator::union(...$results);
 	}
 
 	private function removeFalsey(Type $type): Type
@@ -154,12 +115,8 @@ final class ArrayFilterFunctionReturnTypeHelper
 		return $type->filterArrayRemovingFalsey();
 	}
 
-	private function filterByTruthyValue(Scope $scope, Error|Variable|null $itemVar, Type $arrayType, Error|Variable|null $keyVar, Expr $expr): Type
+	private function filterByTruthyValue(MutatingScope $scope, ArrayCallbackPredicate $predicate, Type $arrayType): Type
 	{
-		if (!$scope instanceof MutatingScope) {
-			throw new ShouldNotHappenException();
-		}
-
 		$constantArrays = $arrayType->getConstantArrays();
 		if (count($constantArrays) > 0) {
 			$results = [];
@@ -168,7 +125,7 @@ final class ArrayFilterFunctionReturnTypeHelper
 				$optionalKeys = $constantArray->getOptionalKeys();
 				foreach ($constantArray->getKeyTypes() as $i => $keyType) {
 					$itemType = $constantArray->getValueTypes()[$i];
-					[$newKeyType, $newItemType, $optional] = $this->processKeyAndItemType($scope, $keyType, $itemType, $itemVar, $keyVar, $expr);
+					[$newKeyType, $newItemType, $optional] = $this->processKeyAndItemType($scope, $keyType, $itemType, $predicate);
 					$optional = $optional || in_array($i, $optionalKeys, true);
 					if ($newKeyType instanceof NeverType || $newItemType instanceof NeverType) {
 						continue;
@@ -184,7 +141,7 @@ final class ArrayFilterFunctionReturnTypeHelper
 				if ($constantArray->isUnsealed()->yes()) {
 					$unsealedTypes = $constantArray->getUnsealedTypes();
 					if ($unsealedTypes !== null) {
-						[$newKey, $newValue] = $this->processKeyAndItemType($scope, $unsealedTypes[0], $unsealedTypes[1], $itemVar, $keyVar, $expr);
+						[$newKey, $newValue] = $this->processKeyAndItemType($scope, $unsealedTypes[0], $unsealedTypes[1], $predicate);
 						// Drop the unsealed slot when the predicate
 						// rejects every possible extra (key or value
 						// narrows to `Never`).
@@ -200,7 +157,7 @@ final class ArrayFilterFunctionReturnTypeHelper
 			return TypeCombinator::union(...$results);
 		}
 
-		[$newKeyType, $newItemType] = $this->processKeyAndItemType($scope, $arrayType->getIterableKeyType(), $arrayType->getIterableValueType(), $itemVar, $keyVar, $expr);
+		[$newKeyType, $newItemType] = $this->processKeyAndItemType($scope, $arrayType->getIterableKeyType(), $arrayType->getIterableValueType(), $predicate);
 
 		if ($newItemType instanceof NeverType || $newKeyType instanceof NeverType) {
 			return new ConstantArrayType([], []);
@@ -212,24 +169,13 @@ final class ArrayFilterFunctionReturnTypeHelper
 	/**
 	 * @return array{Type, Type, bool}
 	 */
-	private function processKeyAndItemType(MutatingScope $scope, Type $keyType, Type $itemType, Error|Variable|null $itemVar, Error|Variable|null $keyVar, Expr $expr): array
+	private function processKeyAndItemType(MutatingScope $scope, Type $keyType, Type $itemType, ArrayCallbackPredicate $predicate): array
 	{
-		$itemVarName = null;
-		if ($itemVar !== null) {
-			if (!$itemVar instanceof Variable || !is_string($itemVar->name)) {
-				throw new ShouldNotHappenException();
-			}
-			$itemVarName = $itemVar->name;
-			$scope = $scope->assignVariable($itemVarName, $itemType, new MixedType(), TrinaryLogic::createYes());
-		}
+		[$scope, $itemVarName, $keyVarName] = $this->predicateCallbackResolver->assignPredicateVariables($scope, $predicate, $itemType, $keyType);
 
-		$keyVarName = null;
-		if ($keyVar !== null) {
-			if (!$keyVar instanceof Variable || !is_string($keyVar->name)) {
-				throw new ShouldNotHappenException();
-			}
-			$keyVarName = $keyVar->name;
-			$scope = $scope->assignVariable($keyVarName, $keyType, new MixedType(), TrinaryLogic::createYes());
+		$expr = $predicate->getExpr();
+		if ($expr === null) {
+			throw new ShouldNotHappenException();
 		}
 
 		$booleanResult = $scope->getType($expr)->toBoolean();
@@ -254,47 +200,6 @@ final class ArrayFilterFunctionReturnTypeHelper
 			$itemVarName !== null ? $truthyScope->getVariableType($itemVarName) : $itemType,
 			$optional,
 		];
-	}
-
-	private static function createFunctionName(string $funcName): ?Name
-	{
-		if ($funcName === '') {
-			return null;
-		}
-
-		if ($funcName[0] === '\\') {
-			$funcName = substr($funcName, 1);
-
-			if ($funcName === '') {
-				return null;
-			}
-
-			return new Name\FullyQualified($funcName);
-		}
-
-		return new Name($funcName);
-	}
-
-	/**
-	 * @param self::USE_* $mode
-	 * @return array{list<Arg>, ?Variable, ?Variable}
-	 */
-	private function createDummyArgs(int $mode): array
-	{
-		if ($mode === self::USE_ITEM) {
-			$itemVar = new Variable('item');
-			$keyVar = null;
-			$args = [new Arg($itemVar)];
-		} elseif ($mode === self::USE_KEY) {
-			$itemVar = null;
-			$keyVar = new Variable('key');
-			$args = [new Arg($keyVar)];
-		} elseif ($mode === self::USE_BOTH) {
-			$itemVar = new Variable('item');
-			$keyVar = new Variable('key');
-			$args = [new Arg($itemVar), new Arg($keyVar)];
-		}
-		return [$args, $itemVar, $keyVar];
 	}
 
 	/**

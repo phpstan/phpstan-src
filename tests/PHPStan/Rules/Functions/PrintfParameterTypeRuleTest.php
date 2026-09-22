@@ -6,6 +6,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPStan\Type\Php\PrintfFormatParser;
 use const PHP_VERSION_ID;
 
 /**
@@ -20,7 +21,7 @@ class PrintfParameterTypeRuleTest extends RuleTestCase
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 		return new PrintfParameterTypeRule(
-			new PrintfHelper(new PhpVersion(PHP_VERSION_ID)),
+			new PrintfFormatParser(new PhpVersion(PHP_VERSION_ID)),
 			$reflectionProvider,
 			new RuleLevelHelper(
 				$reflectionProvider,
@@ -253,6 +254,16 @@ class PrintfParameterTypeRuleTest extends RuleTestCase
 			[
 				'Parameter #2 of function printf is expected to be int by placeholder #1 ("%d"), string given.',
 				99,
+			],
+		]);
+	}
+
+	public function testFormatParser(): void
+	{
+		$this->analyse([__DIR__ . '/data/printf-param-types-format-parser.php'], [
+			[
+				'Parameter #3 of function sprintf is expected to be int by placeholder #1 ("%*2$d" (width)), string given.',
+				7,
 			],
 		]);
 	}

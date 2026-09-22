@@ -21,7 +21,6 @@ final class PrintfPlaceholder
 	/** @phpstan-param 'strict-int'|'int'|'float'|'string'|'mixed' $acceptingType */
 	public function __construct(
 		public readonly string $label,
-		public readonly int $parameterIndex,
 		public readonly int $placeholderNumber,
 		public readonly string $acceptingType,
 	)

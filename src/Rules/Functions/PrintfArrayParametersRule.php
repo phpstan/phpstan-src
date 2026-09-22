@@ -13,6 +13,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\Php\PrintfFormatParser;
 use PHPStan\Type\TypeCombinator;
 use function count;
 use function in_array;
@@ -28,7 +29,7 @@ final class PrintfArrayParametersRule implements Rule
 {
 
 	public function __construct(
-		private PrintfHelper $printfHelper,
+		private PrintfFormatParser $printfFormatParser,
 		private ReflectionProvider $reflectionProvider,
 	)
 	{
@@ -66,8 +67,8 @@ final class PrintfArrayParametersRule implements Rule
 		foreach ($formatArgType->getConstantStrings() as $formatString) {
 			$format = $formatString->getValue();
 
-			$count = $this->printfHelper->getPrintfPlaceholdersCount($format);
-			if ($count === null) {
+			$uses = $this->printfFormatParser->parse($format);
+			if ($uses === null) {
 				return [
 					RuleErrorBuilder::message(sprintf(
 						'Call to %s contains an invalid placeholder.',
@@ -76,7 +77,7 @@ final class PrintfArrayParametersRule implements Rule
 				];
 			}
 
-			$placeHoldersCounts[] = $count;
+			$placeHoldersCounts[] = $this->printfFormatParser->getRequiredArgumentsCount($uses);
 		}
 
 		if ($placeHoldersCounts === []) {

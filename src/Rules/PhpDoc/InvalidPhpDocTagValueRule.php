@@ -14,17 +14,17 @@ use PHPStan\PhpDocParser\Ast\Type\InvalidTypeNode;
 use PHPStan\PhpDocParser\Lexer\Lexer;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\PhpDocParser\Parser\TokenIterator;
-use PHPStan\Rules\Rule;
+use PHPStan\Rules\MultipleNodeTypesRule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function sprintf;
 use function str_starts_with;
 
 /**
- * @implements Rule<NodeAbstract>
+ * @implements MultipleNodeTypesRule<NodeAbstract>
  */
 #[RegisteredRule(level: 2)]
 #[ValidatesStubFiles]
-final class InvalidPhpDocTagValueRule implements Rule
+final class InvalidPhpDocTagValueRule implements MultipleNodeTypesRule
 {
 
 	public function __construct(
@@ -32,6 +32,11 @@ final class InvalidPhpDocTagValueRule implements Rule
 		private PhpDocParser $phpDocParser,
 	)
 	{
+	}
+
+	public function getNodeTypes(): array
+	{
+		return [Node\Stmt::class, Node\PropertyHook::class];
 	}
 
 	public function getNodeType(): string

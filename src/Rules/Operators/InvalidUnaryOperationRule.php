@@ -6,7 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\Expr\TypeExpr;
-use PHPStan\Rules\Rule;
+use PHPStan\Rules\MultipleNodeTypesRule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
@@ -15,16 +15,21 @@ use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
 /**
- * @implements Rule<Node\Expr>
+ * @implements MultipleNodeTypesRule<Node\Expr>
  */
 #[RegisteredRule(level: 2)]
-final class InvalidUnaryOperationRule implements Rule
+final class InvalidUnaryOperationRule implements MultipleNodeTypesRule
 {
 
 	public function __construct(
 		private RuleLevelHelper $ruleLevelHelper,
 	)
 	{
+	}
+
+	public function getNodeTypes(): array
+	{
+		return [Node\Expr\UnaryPlus::class, Node\Expr\UnaryMinus::class, Node\Expr\BitwiseNot::class];
 	}
 
 	public function getNodeType(): string

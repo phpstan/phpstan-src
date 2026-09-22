@@ -7,7 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\Printer\ExprPrinter;
-use PHPStan\Rules\Rule;
+use PHPStan\Rules\MultipleNodeTypesRule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\ShouldNotHappenException;
@@ -20,10 +20,10 @@ use function strpos;
 use function substr;
 
 /**
- * @implements Rule<Node\Expr>
+ * @implements MultipleNodeTypesRule<Node\Expr>
  */
 #[RegisteredRule(level: 2)]
-final class InvalidBinaryOperationRule implements Rule
+final class InvalidBinaryOperationRule implements MultipleNodeTypesRule
 {
 
 	public function __construct(
@@ -31,6 +31,11 @@ final class InvalidBinaryOperationRule implements Rule
 		private RuleLevelHelper $ruleLevelHelper,
 	)
 	{
+	}
+
+	public function getNodeTypes(): array
+	{
+		return [Node\Expr\BinaryOp::class, Node\Expr\AssignOp::class];
 	}
 
 	public function getNodeType(): string

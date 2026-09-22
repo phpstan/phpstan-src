@@ -3,8 +3,10 @@
 namespace PHPStan\Rules;
 
 use PhpParser\Node;
+use function array_values;
 use function class_implements;
 use function class_parents;
+use function spl_object_id;
 
 final class DirectRegistry implements Registry
 {
@@ -21,7 +23,9 @@ final class DirectRegistry implements Registry
 	public function __construct(array $rules)
 	{
 		foreach ($rules as $rule) {
-			$this->rules[$rule->getNodeType()][] = $rule;
+			foreach ($rule instanceof MultipleNodeTypesRule ? $rule->getNodeTypes() : [$rule->getNodeType()] as $nodeType) {
+				$this->rules[$nodeType][] = $rule;
+			}
 		}
 	}
 
@@ -38,11 +42,12 @@ final class DirectRegistry implements Registry
 			$rules = [];
 			foreach ($parentNodeTypes as $parentNodeType) {
 				foreach ($this->rules[$parentNodeType] ?? [] as $rule) {
-					$rules[] = $rule;
+					// a rule that named two ancestors of this node class is still called once
+					$rules[spl_object_id($rule)] = $rule;
 				}
 			}
 
-			$this->cache[$nodeType] = $rules;
+			$this->cache[$nodeType] = array_values($rules);
 		}
 
 		/**

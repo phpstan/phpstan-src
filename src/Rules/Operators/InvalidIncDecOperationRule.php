@@ -6,7 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Php\PhpVersion;
-use PHPStan\Rules\Rule;
+use PHPStan\Rules\MultipleNodeTypesRule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\ShouldNotHappenException;
@@ -27,10 +27,10 @@ use function get_class;
 use function sprintf;
 
 /**
- * @implements Rule<Node\Expr>
+ * @implements MultipleNodeTypesRule<Node\Expr>
  */
 #[RegisteredRule(level: 0)]
-final class InvalidIncDecOperationRule implements Rule
+final class InvalidIncDecOperationRule implements MultipleNodeTypesRule
 {
 
 	public function __construct(
@@ -38,6 +38,11 @@ final class InvalidIncDecOperationRule implements Rule
 		private PhpVersion $phpVersion,
 	)
 	{
+	}
+
+	public function getNodeTypes(): array
+	{
+		return [Node\Expr\PreInc::class, Node\Expr\PostInc::class, Node\Expr\PreDec::class, Node\Expr\PostDec::class];
 	}
 
 	public function getNodeType(): string

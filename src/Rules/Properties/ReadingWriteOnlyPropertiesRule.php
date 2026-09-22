@@ -6,16 +6,16 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
-use PHPStan\Rules\Rule;
+use PHPStan\Rules\MultipleNodeTypesRule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use function sprintf;
 
 /**
- * @implements Rule<Node\Expr>
+ * @implements MultipleNodeTypesRule<Node\Expr>
  */
 #[RegisteredRule(level: 0)]
-final class ReadingWriteOnlyPropertiesRule implements Rule
+final class ReadingWriteOnlyPropertiesRule implements MultipleNodeTypesRule
 {
 
 	public function __construct(
@@ -26,6 +26,11 @@ final class ReadingWriteOnlyPropertiesRule implements Rule
 		private bool $checkThisOnly,
 	)
 	{
+	}
+
+	public function getNodeTypes(): array
+	{
+		return [Node\Expr\PropertyFetch::class, Node\Expr\StaticPropertyFetch::class];
 	}
 
 	public function getNodeType(): string

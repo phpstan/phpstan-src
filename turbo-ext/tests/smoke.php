@@ -4438,7 +4438,39 @@ $lemEngineProbes = $lemProbe(<<<'BODY'
 		'doProcessStmtNodes(stdClass)' => $outcome(static fn () => $doProcess([new \stdClass()])),
 		'doProcessStmtNodes(string)' => $outcome(static fn () => $doProcess(['echo'])),
 		'doProcessStmtNodes(expr)' => $outcome(static fn () => $doProcess([new \PhpParser\Node\Expr\Variable('x')])),
-	];
+	] + (static function () use ($container, $outcome, $scope, $nodeScopeResolver): array {
+		// the @api entry points of TypeSpecifier and PropertyHooksProcessor
+		$typeSpecifier = $container->getByType(\PHPStan\Analyser\TypeSpecifier::class);
+		$expr = new \PhpParser\Node\Expr\Variable('x');
+		$truthy = \PHPStan\Analyser\TypeSpecifierContext::createTruthy();
+		$wrong = new \stdClass();
+		$hooks = $container->getByType(\PHPStan\Analyser\PropertyHooksProcessor::class);
+		$property = new \PhpParser\Node\Stmt\Property(0, [new \PhpParser\Node\PropertyItem('p')]);
+		$storage = new \PHPStan\Analyser\ExpressionResultStorage();
+		$callback = static function (): void {
+		};
+		return [
+			'specifyTypesInCondition(wrong scope)' => $outcome(static fn () => $typeSpecifier->specifyTypesInCondition($wrong, $expr, $truthy)),
+			'specifyTypesInCondition(wrong expr)' => $outcome(static fn () => $typeSpecifier->specifyTypesInCondition($scope, $wrong, $truthy)),
+			'specifyTypesInCondition(wrong context)' => $outcome(static fn () => $typeSpecifier->specifyTypesInCondition($scope, $expr, $wrong)),
+			'specifyDefaultTypes(wrong context)' => $outcome(static fn () => $typeSpecifier->specifyDefaultTypes($scope, $expr, $wrong)),
+			'handleDefaultTruthyOrFalseyContext(wrong context)' => $outcome(static fn () => $typeSpecifier->handleDefaultTruthyOrFalseyContext($wrong, $expr, $scope)),
+			'handleDefaultTruthyOrFalseyContext(wrong scope)' => $outcome(static fn () => $typeSpecifier->handleDefaultTruthyOrFalseyContext($truthy, $expr, $wrong)),
+			'create(wrong expr)' => $outcome(static fn () => $typeSpecifier->create($wrong, new \PHPStan\Type\IntegerType(), $truthy, $scope)),
+			'create(wrong type)' => $outcome(static fn () => $typeSpecifier->create($expr, $wrong, $truthy, $scope)),
+			'create(wrong context)' => $outcome(static fn () => $typeSpecifier->create($expr, new \PHPStan\Type\IntegerType(), $wrong, $scope)),
+			'create(wrong scope)' => $outcome(static fn () => $typeSpecifier->create($expr, new \PHPStan\Type\IntegerType(), $truthy, $wrong)),
+			'processPropertyHooks(wrong resolver)' => $outcome(static fn () => $hooks->processPropertyHooks($wrong, $property, null, null, 'p', [], $scope, $storage, $callback)),
+			'processPropertyHooks(wrong stmt)' => $outcome(static fn () => $hooks->processPropertyHooks($nodeScopeResolver, $expr, null, null, 'p', [], $scope, $storage, $callback)),
+			'processPropertyHooks(wrong type node)' => $outcome(static fn () => $hooks->processPropertyHooks($nodeScopeResolver, $property, $wrong, null, 'p', [], $scope, $storage, $callback)),
+			'processPropertyHooks(type node expr)' => $outcome(static fn () => $hooks->processPropertyHooks($nodeScopeResolver, $property, $expr, null, 'p', [], $scope, $storage, $callback)),
+			'processPropertyHooks(wrong phpdoc type)' => $outcome(static fn () => $hooks->processPropertyHooks($nodeScopeResolver, $property, null, $wrong, 'p', [], $scope, $storage, $callback)),
+			'processPropertyHooks(wrong scope)' => $outcome(static fn () => $hooks->processPropertyHooks($nodeScopeResolver, $property, null, null, 'p', [], $wrong, $storage, $callback)),
+			'processPropertyHooks(wrong storage)' => $outcome(static fn () => $hooks->processPropertyHooks($nodeScopeResolver, $property, null, null, 'p', [], $scope, $wrong, $callback)),
+			'processPropertyHooks(not callable)' => $outcome(static fn () => $hooks->processPropertyHooks($nodeScopeResolver, $property, null, null, 'p', [], $scope, $storage, 'no_such_function')),
+			'processPropertyHooks(fine)' => $outcome(static fn () => $hooks->processPropertyHooks($nodeScopeResolver, $property, new \PhpParser\Node\Identifier('int'), null, 'p', [], $scope, $storage, $callback)),
+		];
+	})();
 BODY);
 $lemEngineNative = $lemEngineProbes['native']['native'] ?? null;
 unset($lemEngineProbes['native']['native'], $lemEngineProbes['php']['native']);

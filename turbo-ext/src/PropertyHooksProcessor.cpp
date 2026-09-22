@@ -347,6 +347,26 @@ bool pt_property_hooks_processor_process_property_hooks(zval *processor, zval *n
 
 #include "reg.h"
 
+namespace {
+
+/* $nativeTypeNode is an Identifier, a Name or a ComplexType; false (with an
+ * exception pending when a class-map lookup failed) otherwise */
+bool isNativeTypeNode(zval *node)
+{
+	zend_class_entry *ce = Z_OBJCE_P(node);
+	zend_class_entry *identifierCe = pt_class(PT_CLASS_IDENTIFIER);
+	zend_class_entry *nameCe = pt_class(PT_CLASS_NAME);
+	if (UNEXPECTED(identifierCe == NULL || nameCe == NULL)) return false;
+	if (instanceof_function(ce, identifierCe) || instanceof_function(ce, nameCe)) return true;
+	/* not loaded: nothing is one */
+	zend_string *name = zend_string_init(ZEND_STRL("PhpParser\\Node\\ComplexType"), 0);
+	zend_class_entry *complexTypeCe = zend_lookup_class_ex(name, NULL, ZEND_FETCH_CLASS_NO_AUTOLOAD);
+	zend_string_release(name);
+	return complexTypeCe != NULL && instanceof_function(ce, complexTypeCe);
+}
+
+} // namespace
+
 void pt_register_property_hooks_processor()
 {
 	pt_php_property_assign = zend_string_init_interned(PT_LC("propertyAssign"), 1);
@@ -367,17 +387,33 @@ void pt_register_property_hooks_processor()
 	cls.method(sigs::processPropertyHooks, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *nodeScopeResolver, *stmt, *nativeTypeNode, *phpDocType, *hooks, *scope, *storage, *nodeCallback;
 		zend_string *propertyName;
+		/* the parameter classes of the twin's signature */
+		zend_class_entry *stmtCe = pt_class(PT_CLASS_STMT);
+		zend_class_entry *typeCe = pt_class(PT_CLASS_TYPE);
+		if (UNEXPECTED(stmtCe == NULL || typeCe == NULL)) RETURN_THROWS();
 		ZEND_PARSE_PARAMETERS_START(9, 9)
-			Z_PARAM_OBJECT(nodeScopeResolver)
-			Z_PARAM_OBJECT(stmt)
+			Z_PARAM_OBJECT_OF_CLASS(nodeScopeResolver, pt_ce_node_scope_resolver)
+			Z_PARAM_OBJECT_OF_CLASS(stmt, stmtCe)
 			Z_PARAM_OBJECT_OR_NULL(nativeTypeNode)
-			Z_PARAM_OBJECT_OR_NULL(phpDocType)
+			Z_PARAM_OBJECT_OF_CLASS_OR_NULL(phpDocType, typeCe)
 			Z_PARAM_STR(propertyName)
 			Z_PARAM_ARRAY(hooks)
-			Z_PARAM_OBJECT(scope)
-			Z_PARAM_OBJECT(storage)
+			Z_PARAM_OBJECT_OF_CLASS(scope, pt_ce_mutating_scope)
+			Z_PARAM_OBJECT_OF_CLASS(storage, pt_ce_expression_result_storage)
 			Z_PARAM_ZVAL(nodeCallback)
 		ZEND_PARSE_PARAMETERS_END();
+		/* Identifier|Name|ComplexType|null — checked in the order the
+		 * engine checks the twin's parameters */
+		if (nativeTypeNode != NULL && UNEXPECTED(!isNativeTypeNode(nativeTypeNode))) {
+			if (!EG(exception)) {
+				zend_argument_type_error(3, "must be of type PhpParser\\Node\\Identifier|PhpParser\\Node\\Name|PhpParser\\Node\\ComplexType|null, %s given", zend_zval_value_name(nativeTypeNode));
+			}
+			RETURN_THROWS();
+		}
+		if (UNEXPECTED(!zend_is_callable(nodeCallback, 0, NULL))) {
+			zend_argument_type_error(9, "must be of type callable, %s given", zend_zval_value_name(nodeCallback));
+			RETURN_THROWS();
+		}
 		zval null;
 		ZVAL_NULL(&null);
 		zval propertyNameZv;

@@ -4363,6 +4363,17 @@ foreach (['php' => '\\PHPStan\\Analyser\\', 'native' => '\\PHPStanTurbo\\'] as $
 		'storage storeExpressionResult(stmt, result)' => $lemOutcome(static fn () => (new $lemStorageClass())->storeExpressionResult(new \PhpParser\Node\Stmt\Nop(), $makeResult())),
 		'storage findExpressionResult(stdClass)' => $lemOutcome(static fn () => (new $lemStorageClass())->findExpressionResult(new \stdClass())),
 		'stack push(stdClass)' => $lemOutcome(static fn () => (new $lemStackClass())->push(new \stdClass())),
+		// ksort() orders a negative integer key first
+		'reorderArgs(negative key)' => $lemOutcome(static function () use ($lemNs): array {
+			$normalizer = $lemNs === '\\PHPStanTurbo\\' ? \PHPStanTurbo\ArgumentsNormalizer::class : \PHPStan\Analyser\ArgumentsNormalizer::class;
+			$args = [
+				-1 => new \PhpParser\Node\Arg(new \PhpParser\Node\Scalar\Int_(10)),
+				0 => new \PhpParser\Node\Arg(new \PhpParser\Node\Scalar\Int_(20)),
+				1 => new \PhpParser\Node\Arg(new \PhpParser\Node\Scalar\Int_(30), false, false, [], new \PhpParser\Node\Identifier('b')),
+			];
+			$reordered = $normalizer::reorderArgs(new \PHPStan\Reflection\TrivialParametersAcceptor(), $args);
+			return $reordered === null ? [] : array_map(static fn (\PhpParser\Node\Arg $arg): int => $arg->value->value, $reordered);
+		}),
 	];
 }
 foreach ($lemResults['php'] as $lemLabel => $lemPhp) {

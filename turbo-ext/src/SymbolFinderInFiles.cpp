@@ -21,6 +21,7 @@
 #include "support.h"
 #include "generated/SymbolFinderInFiles.h"
 
+namespace slots = ptdecl::SymbolFinderInFiles::slot;
 namespace sigs = ptdecl::SymbolFinderInFiles::sig;
 #include "zv.h"
 #include "SymbolScan.h"
@@ -171,22 +172,28 @@ zv::Val SymbolFinderInFiles::findSymbols(HashTable *files, bool supportsEnums)
 
 #include "reg.h"
 
-#define CLEANER_CLASS "PHPStan\\Reflection\\BetterReflection\\SourceLocator\\PhpFileCleaner"
-
 void pt_register_symbol_finder_in_files()
 {
 	reg::Class cls("PHPStan\\Reflection\\BetterReflection\\SourceLocator\\SymbolFinderInFiles");
 	ptdecl::SymbolFinderInFiles::declareClass(cls);
+	ptdecl::SymbolFinderInFiles::declareProperties(cls);
 
 	/* the arginfo has to keep the real parameter class name: Nette reflects
-	 * this constructor while compiling the container (rule 6) */
+	 * this constructor while compiling the container (rule 6). The promoted
+	 * $cleaner is kept like the twin keeps it; findSymbols() cleans with
+	 * the native scanner (PhpFileCleaner is final and shadowed too) */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *cleaner;
 		if (!zp::parse<zp::Obj>(execute_data, cleaner)) RETURN_THROWS();
-		(void) cleaner;
+		zval *slot = OBJ_PROP_NUM(Z_OBJ_P(ZEND_THIS), slots::cleaner);
+		zval previous;
+		ZVAL_COPY_VALUE(&previous, slot);
+		ZVAL_COPY(slot, cleaner);
+		Z_PROP_FLAG_P(slot) = 0;
+		zval_ptr_dtor(&previous);
 	});
 
-	cls.method("findSymbols", reg::Public, 2, { reg::arrayArg("files"), reg::boolArg("supportsEnums") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::findSymbols, [](INTERNAL_FUNCTION_PARAMETERS) {
 		HashTable *files;
 		bool supportsEnums;
 		if (!zp::parse<zp::Ht, zp::Bool>(execute_data, files, supportsEnums)) RETURN_THROWS();

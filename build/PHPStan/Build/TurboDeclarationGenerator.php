@@ -56,10 +56,10 @@ use const PREG_SET_ORDER;
  * Shared by turbo-ext/bin/generate-declarations.php and the drift check in
  * turbo-ext/bin/side-by-side.php.
  *
- * A property whose declaration reg::Class cannot express (a string or
- * non-empty array default, an intersection type, a defaulted union of
- * classes) leaves its class without declareProperties(); the class keeps
- * declaring its properties by hand.
+ * A property whose declaration reg::Class cannot express (a non-empty
+ * array default, a string default of a nullable or union type, an
+ * intersection type, a defaulted union of classes) leaves its class without
+ * declareProperties(); the class keeps declaring its properties by hand.
  */
 final class TurboDeclarationGenerator
 {
@@ -721,6 +721,9 @@ final class TurboDeclarationGenerator
 		}
 		if ($default === false) {
 			return sprintf('cls.property(%s, %s, reg::PropertyKind::TypedFalse, %s%s);', $name, $flags, $mask, $classArg);
+		}
+		if (is_string($default) && $classes === [] && $masks === ['MAY_BE_STRING']) {
+			return sprintf('cls.typedStringProperty(%s, %s, %s);', $name, $flags, $this->cString($default));
 		}
 
 		throw new RuntimeException('a typed default reg::Class cannot declare');

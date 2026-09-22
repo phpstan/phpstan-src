@@ -1180,6 +1180,72 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4.0')]
+	public function testRoundThrowType(): void
+	{
+		$this->analyse([__DIR__ . '/data/round-throw-type.php'], [
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				15,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				21,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				27,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				33,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				39,
+			],
+		]);
+	}
+
+	#[RequiresPhp('< 8.4.0')]
+	public function testRoundThrowTypeBeforePhp84(): void
+	{
+		$this->analyse([__DIR__ . '/data/round-throw-type.php'], [
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				15,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				21,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				27,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				33,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				39,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				45,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				51,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				57,
+			],
+		]);
+	}
+
 	public function testDsMapVoidThrowType(): void
 	{
 		$this->analyse([__DIR__ . '/data/ds-map-void-throw-type.php'], [

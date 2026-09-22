@@ -8276,6 +8276,32 @@ foreach ([\PHPStan\Analyser\RicherScopeGetTypeHelper::class => 'getIdenticalResu
 	}
 }
 
+// ---- lane types: misuse parity ----
+// misuse the twins reject with an exception must raise the same exception
+// natively (never crash): a result is observed by its view, an exception by
+// its class, and by its message where the message does not name a file
+{
+	$misuse = static function (callable $fn, bool $withMessage = false) use ($view): mixed {
+		try {
+			return ['ok', $view($fn())];
+		} catch (\Throwable $e) {
+			return $withMessage ? [get_class($e), $e->getMessage()] : [get_class($e)];
+		}
+	};
+	$r = [];
+	$misuseStaticReflection = $stringReflectionProvider->getClass(\PHPStan\TrinaryLogic::class);
+
+	// traverse() callbacks returning a non-Type into a typed ?Type parameter
+	foreach (['string' => 'not-a-type', 'int' => 1, 'object' => new \stdClass(), 'null' => null] as $returnedName => $returned) {
+		$r["traverse objectWithoutClass returning $returnedName"] = $misuse(static fn () => (new \PHPStan\Type\ObjectWithoutClassType(new \PHPStan\Type\StringType()))->traverse(static fn () => $returned));
+		$r["traverse static returning $returnedName"] = $misuse(static fn () => (new \PHPStan\Type\StaticType($misuseStaticReflection, new \PHPStan\Type\StringType()))->traverse(static fn () => $returned));
+	}
+
+	foreach ($r as $key => $value) {
+		$observations["misuse $key"] = $value;
+	}
+}
+
 // observations holding bytes that are not UTF-8 (the invalid-UTF-8 subject's
 // descriptions) go out base64-encoded so json_encode() keeps every byte; the
 // non-finite floats (the NAN and infinity subjects' values) as their names

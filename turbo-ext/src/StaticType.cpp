@@ -552,7 +552,16 @@ public:
 		if (Z_TYPE(mapped) == IS_OBJECT && Z_OBJ(mapped) == Z_OBJ_P(subtracted)) return thisValue();
 		zval *reflection = classReflection();
 		if (UNEXPECTED(reflection == NULL)) return zv::Val();
-		return create(reflection, Z_TYPE(mapped) == IS_NULL ? NULL : mappedType.raw());
+		if (Z_TYPE(mapped) == IS_NULL) return create(reflection);
+		/* the twin's `new self($this->classReflection, $subtractedType)`
+		 * checks its `?Type` parameter */
+		bool isType;
+		if (UNEXPECTED(!pt_type_instanceof(mappedType.raw(), PT_CLASS_TYPE, isType))) return zv::Val();
+		if (UNEXPECTED(!isType)) {
+			zend_type_error("%s::__construct(): Argument #2 ($subtractedType) must be of type ?%s, %s given", ZSTR_VAL(pt_ce_static_type->name), ptcls::type, zend_zval_value_name(mappedType.raw()));
+			return zv::Val();
+		}
+		return create(reflection, mappedType.raw());
 	}
 
 	/* $this without a subtracted type, new self($this->classReflection)

@@ -251,7 +251,15 @@ public:
 		if (UNEXPECTED(!pt_call_fci(fci, fcc, 1, subtracted, &mapped))) return zv::Val();
 		zv::Val mappedType = zv::Val::adopt(mapped);
 		if (Z_TYPE(mapped) == IS_OBJECT && Z_OBJ(mapped) == Z_OBJ_P(subtracted)) return thisValue();
-		return create(Z_TYPE(mapped) == IS_NULL ? NULL : mappedType.raw());
+		if (Z_TYPE(mapped) == IS_NULL) return create();
+		/* the twin's `new self($subtractedType)` checks its `?Type` parameter */
+		bool isType;
+		if (UNEXPECTED(!pt_type_instanceof(mappedType.raw(), PT_CLASS_TYPE, isType))) return zv::Val();
+		if (UNEXPECTED(!isType)) {
+			zend_type_error("%s::__construct(): Argument #1 ($subtractedType) must be of type ?%s, %s given", ZSTR_VAL(pt_ce_object_without_class_type->name), ptcls::type, zend_zval_value_name(mappedType.raw()));
+			return zv::Val();
+		}
+		return create(mappedType.raw());
 	}
 
 	/* $this without a subtracted type, new self() with one; UNDEF = pending

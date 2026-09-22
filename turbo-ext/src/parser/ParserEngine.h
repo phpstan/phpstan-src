@@ -211,7 +211,7 @@ private:
 
 	/* per-parse trackers (native equivalents of the SplObjectStorages) */
 	HashTable createdArrays;         /* obj handle => zval of Array_ node (owned) */
-	HashTable parenthesizedArrowFns; /* obj handle => null */
+	HashTable parenthesizedArrowFns; /* obj handle => zval of ArrowFunction node (owned) */
 
 	/* ===== the LALR loop (ParserRunner.cpp) ===== */
 

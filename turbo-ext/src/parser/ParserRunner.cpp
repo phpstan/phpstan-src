@@ -69,7 +69,7 @@ ParserEngine::ParserEngine(zval *parserObj, zval *errorHandler)
 	tables = &g_tables;
 	semValue = zv::Val::null();
 	zend_hash_init(&createdArrays, 8, NULL, ZVAL_PTR_DTOR, 0);
-	zend_hash_init(&parenthesizedArrowFns, 8, NULL, NULL, 0);
+	zend_hash_init(&parenthesizedArrowFns, 8, NULL, ZVAL_PTR_DTOR, 0);
 }
 
 ParserEngine::~ParserEngine()
@@ -483,11 +483,14 @@ void ParserEngine::createdArraysRemove(zv::Ref arrayNode)
 	zend_hash_index_del(&createdArrays, Z_OBJ_HANDLE_P(arrayNode.raw()));
 }
 
+/* keeps the node alive like the twin's SplObjectStorage: error recovery can
+ * drop a parenthesized arrow function, and a later one reusing its handle
+ * must not pass for parenthesized */
 void ParserEngine::parenthesizedArrowFunctionsAdd(zv::Ref expr)
 {
-	zval null;
-	ZVAL_NULL(&null);
-	zend_hash_index_update(&parenthesizedArrowFns, Z_OBJ_HANDLE_P(expr.raw()), &null);
+	zval copy;
+	ZVAL_COPY(&copy, expr.raw());
+	zend_hash_index_update(&parenthesizedArrowFns, Z_OBJ_HANDLE_P(expr.raw()), &copy);
 }
 
 /* }}} */

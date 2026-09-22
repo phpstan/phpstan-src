@@ -43,7 +43,6 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 				false,
 				true,
 			),
-			new PhpVersion(PHP_VERSION_ID),
 		);
 	}
 
@@ -286,6 +285,41 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 			];
 		}
 		$this->analyse([__DIR__ . '/data/arrow-function-never.php'], $errors);
+	}
+
+	public function testNeverPhpVersionNarrowedScope(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$errors = [
+				[
+					'Anonymous function has invalid return type ArrowFunctionNeverPhpVersions\\never.',
+					7,
+				],
+				[
+					'Anonymous function has invalid return type ArrowFunctionNeverPhpVersions\\never.',
+					11,
+				],
+				[
+					'Anonymous function has invalid return type ArrowFunctionNeverPhpVersions\\never.',
+					14,
+				],
+			];
+		} else {
+			$errors = [
+				[
+					'Never return type in arrow function is supported only on PHP 8.2 and later.',
+					7,
+				],
+			];
+			if (PHP_VERSION_ID < 80200) {
+				$errors[] = [
+					'Never return type in arrow function is supported only on PHP 8.2 and later.',
+					14,
+				];
+			}
+		}
+
+		$this->analyse([__DIR__ . '/data/arrow-function-never-php-versions.php'], $errors);
 	}
 
 	public function testBug5206(): void

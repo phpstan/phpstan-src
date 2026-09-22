@@ -56,6 +56,51 @@ final class PhpVersions
 		return IntegerRangeType::fromInterval(80300, null)->isSuperTypeOf($this->phpVersions)->result;
 	}
 
+	public function supportsConstantsInTraits(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80200, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function supportsNeverReturnTypeInArrowFunction(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80200, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function supportsArrayUnpackingWithStringKeys(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80100, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function supportsPropertyHooks(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80400, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function supportsFinalProperties(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80400, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function supportsAsymmetricVisibilityForStaticProperties(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80500, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function supportsOverrideAttributeOnProperty(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80500, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function supportsAttributesOnGlobalConstants(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80500, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function supportsUnsetCast(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(null, 79999)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
 	public function supportsTrueAndFalseStandaloneType(): TrinaryLogic
 	{
 		return IntegerRangeType::fromInterval(80200, null)->isSuperTypeOf($this->phpVersions)->result;

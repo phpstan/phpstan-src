@@ -5,7 +5,6 @@ namespace PHPStan\Rules\Cast;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
@@ -16,10 +15,6 @@ use PHPStan\Rules\RuleErrorBuilder;
 final class UnsetCastRule implements Rule
 {
 
-	public function __construct(private PhpVersion $phpVersion)
-	{
-	}
-
 	public function getNodeType(): string
 	{
 		return Node\Expr\Cast\Unset_::class;
@@ -27,7 +22,7 @@ final class UnsetCastRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if ($this->phpVersion->supportsUnsetCast()) {
+		if ($scope->getPhpVersion()->supportsUnsetCast()->yes()) {
 			return [];
 		}
 

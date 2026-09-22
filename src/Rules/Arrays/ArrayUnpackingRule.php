@@ -7,7 +7,6 @@ use PhpParser\Node\ArrayItem;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\Expr\NativeTypeExpr;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -23,7 +22,7 @@ use function sprintf;
 final class ArrayUnpackingRule implements Rule
 {
 
-	public function __construct(private PhpVersion $phpVersion, private RuleLevelHelper $ruleLevelHelper)
+	public function __construct(private RuleLevelHelper $ruleLevelHelper)
 	{
 	}
 
@@ -34,7 +33,7 @@ final class ArrayUnpackingRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if ($node->unpack === false || $this->phpVersion->supportsArrayUnpackingWithStringKeys()) {
+		if ($node->unpack === false || $scope->getPhpVersion()->supportsArrayUnpackingWithStringKeys()->yes()) {
 			return [];
 		}
 

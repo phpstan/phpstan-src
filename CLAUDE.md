@@ -264,6 +264,14 @@ Every threshold, fan-out cap, recursion bound, or collection-size limit must be 
 
 Classes carrying the `PHPStan\Turbo\ShadowedByTurboExtension` attribute are reimplemented natively by the phpstan_turbo extension; the attribute names the `.cpp` file implementing it (`build/generate-turbo-manifest.php` derives the full map into `vendor/turbo-shadowed-classes.json` on composer dump-autoload). The two implementations must behave identically — analysis output is bit-for-bit identical with the extension on or off. When editing such a class, always check whether the `.cpp` mirror in `turbo-ext/` needs the same change; if it does, port it following `turbo-ext/CLAUDE.md` (method parity check, differential smoke test, full test suite with the extension loaded). Any commit touching `turbo-ext/src/` requires the follow-up commit bumping `TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION` to that commit's short SHA — run `make bump-turbo`.
 
+New introduced classes in these categories should be shadowed with a native C++ mirror in the same commit:
+
+* `PHPStan\Type\Type` implementations
+* `PHPStan\Analyser\StmtHandler` and `PHPStan\Analyser\ExprHandler` implementations
+  * Also helper classes called from these handlers and classes of instantiated objects from these handlers
+* Helper classes called from MutatingScope and NodeCallbackScope and classes of instantiated objects from MutatingScope and NodeCallbackScope
+* Rich parser node visitors (`PhpParser\NodeVisitor` implementations)
+
 ### Testing patterns
 
 - **Rule tests**: Extend `RuleTestCase`, implement `getRule()`, call `$this->analyse([__DIR__ . '/data/my-test.php'], [...expected errors...])`. Expected errors are `[message, line]` pairs. Test data files live in `tests/PHPStan/Rules/*/data/`.

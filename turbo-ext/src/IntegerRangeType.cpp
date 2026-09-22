@@ -1425,6 +1425,7 @@ void pt_register_integer_range_type()
 	cls.op<PT_OP_IS_SUPER_TYPE_OF, &IntegerRangeType::isSuperTypeOf>();
 
 	cls.method<&IntegerRangeType::isSubTypeOf, zp::Obj>(sigs::isSubTypeOf);
+	cls.method<&IntegerRangeType::isSubTypeOfUnionWithReason, zp::Obj>(sigs::isSubTypeOfUnionWithReason);
 	cls.op<PT_OP_IS_SUB_TYPE_OF, &IntegerRangeType::isSubTypeOf>();
 
 	cls.method(sigs::isAcceptedBy, [](INTERNAL_FUNCTION_PARAMETERS) {

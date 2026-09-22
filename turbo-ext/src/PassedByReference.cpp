@@ -237,6 +237,12 @@ void pt_register_passed_by_reference()
 		PT_PBR_THIS.construct(value);
 	});
 
+	cls.method(sigs::create, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zend_long value;
+		if (!zp::parse<zp::Long>(execute_data, value)) RETURN_THROWS();
+		pt_pbr_return_object(return_value, PassedByReference::create(value));
+	});
+
 	cls.method(sigs::createNo, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		pt_pbr_return_object(return_value, PassedByReference::create(PassedByReference::NO));

@@ -251,6 +251,17 @@ $intOthers = static fn (string $int, string $constInt, string $range): array => 
 	foreach ($subjects as $name => $subject) {
 		$r["$name class"] = $view($subject);
 		$r["$name instanceof"] = [$subject instanceof \PHPStan\Type\Type, $subject instanceof $intClass, $subject instanceof \PHPStan\Type\ConstantScalarType, $subject instanceof \PHPStan\Type\CompoundType];
+		if ($subject instanceof $rangeClass) {
+			// the private helper isSubTypeOf() hands a union to
+			$unions = [
+				'consts0-10' => new \PHPStan\Type\UnionType(array_map(static fn (int $i) => new $constIntClass($i), range(0, 10))),
+				'consts3-4|string' => new \PHPStan\Type\UnionType([new $constIntClass(3), new $constIntClass(4), new \PHPStan\Type\StringType()]),
+				'range0-5|string' => new \PHPStan\Type\UnionType([$rangeClass::fromInterval(0, 5), new \PHPStan\Type\StringType()]),
+			];
+			foreach ($unions as $unionName => $union) {
+				$r["$name isSubTypeOfUnionWithReason $unionName"] = $view((fn () => $this->isSubTypeOfUnionWithReason($union))->call($subject));
+			}
+		}
 		foreach (['typeOnly' => \PHPStan\Type\VerbosityLevel::typeOnly(), 'value' => \PHPStan\Type\VerbosityLevel::value(), 'precise' => \PHPStan\Type\VerbosityLevel::precise(), 'cache' => \PHPStan\Type\VerbosityLevel::cache()] as $levelName => $level) {
 			$r["$name describe $levelName"] = $subject->describe($level);
 		}
@@ -7716,6 +7727,21 @@ $observations['native PHPStan\Reflection\InitializerExprTypeResolver'] = (new Re
 	}
 	foreach ([0, 1, 5, 200, 1000, PHP_INT_MAX] as $value) {
 		$r["allBitsMask $value"] = $catching(static fn () => $staticPrivate('allBitsMask', $value));
+	}
+	foreach ($operands as $name => $operand) {
+		$r["getIntegerBounds $name"] = $catching(static fn () => $private('getIntegerBounds', $operand));
+	}
+	foreach ($integerOperands as $name => $operand) {
+		$r["getIntegerBounds $name"] = $catching(static fn () => $private('getIntegerBounds', $operand));
+	}
+	foreach ([[null, 5], [-7, 3], [PHP_INT_MIN, 1], [PHP_INT_MIN + 1, 1], [0, 0], [3, null], [-2, -9]] as [$divisorMin, $divisorMax]) {
+		$r['getMaxModuloMagnitude ' . var_export($divisorMin, true) . ' ' . var_export($divisorMax, true)] = $catching(static fn () => $staticPrivate('getMaxModuloMagnitude', $divisorMin, $divisorMax));
+	}
+	foreach ([[1, 1], [1, 62], [1, 63], [PHP_INT_MAX, 1], [-1, 63], [-5, 2], [5, -1], [5, 64]] as [$value, $shift]) {
+		$r["shiftLeftOverflows $value $shift"] = $catching(static fn () => $staticPrivate('shiftLeftOverflows', $value, $shift));
+	}
+	foreach ([1.5, -1.5, INF, -INF, NAN, 1e30, -1e30, (float) PHP_INT_MAX, (float) PHP_INT_MIN, 0.0] as $i => $value) {
+		$r["toIntBound $i"] = $catching(static fn () => $staticPrivate('toIntBound', $value));
 	}
 	foreach ([null, true, 1, 1.5, 'x'] as $i => $value) {
 		$r["getTypeFromValue $i"] = $catching(static fn () => $private('getTypeFromValue', $value));

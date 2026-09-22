@@ -1836,6 +1836,30 @@ public:
 		return true;
 	}
 
+	/* getIntegerBounds() as the private method returns it: the [min, max]
+	 * pair or null; UNDEF = pending exception */
+	zv::Val getIntegerBoundsValue(zval *type) const
+	{
+		bool has = false;
+		NullableLong min = NullableLong::null();
+		NullableLong max = NullableLong::null();
+		if (UNEXPECTED(!getIntegerBounds(type, has, min, max))) return zv::Val();
+		if (!has) return zv::Val::null();
+		zv::Arr pair = zv::Arr::create(2);
+		pair.push(min.toVal());
+		pair.push(max.toVal());
+		return zv::Val(std::move(pair));
+	}
+
+	/* shiftLeftOverflows() for the private method's glue; false = pending
+	 * exception */
+	[[nodiscard]] static bool shiftLeftOverflowsValue(zend_long value, zend_long shift, bool &out)
+	{
+		zval shiftZv;
+		ZVAL_LONG(&shiftZv, shift);
+		return shiftLeftOverflows(value, &shiftZv, out);
+	}
+
 	/* Mirrors getPlusType(). */
 	zv::Val getPlusType(zval *left, zval *right, const pt_ietr_get_type &getTypeCallback) const
 	{
@@ -5725,6 +5749,40 @@ void pt_register_initializer_expr_type_resolver()
 		if (!zp::parse<zp::Obj>(execute_data, type)) RETURN_THROWS();
 		if (UNEXPECTED(!ietrArgType(type, 1))) RETURN_THROWS();
 		PT_RETURN_VAL(InitializerExprTypeResolver::getNonNegativeIntegerBoundsValue(type));
+	});
+
+	cls.method(sigs::getMaxModuloMagnitude, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zend_long divisorMin, divisorMax;
+		bool divisorMinIsNull, divisorMaxIsNull;
+		ZEND_PARSE_PARAMETERS_START(2, 2)
+			Z_PARAM_LONG_OR_NULL(divisorMin, divisorMinIsNull)
+			Z_PARAM_LONG_OR_NULL(divisorMax, divisorMaxIsNull)
+		ZEND_PARSE_PARAMETERS_END();
+		NullableLong magnitude = InitializerExprTypeResolver::getMaxModuloMagnitude(
+			divisorMinIsNull ? NullableLong::null() : NullableLong::of(divisorMin),
+			divisorMaxIsNull ? NullableLong::null() : NullableLong::of(divisorMax));
+		PT_RETURN_VAL(magnitude.toVal());
+	});
+
+	cls.method(sigs::getIntegerBounds, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *type;
+		if (!zp::parse<zp::Obj>(execute_data, type)) RETURN_THROWS();
+		if (UNEXPECTED(!ietrArgType(type, 1))) RETURN_THROWS();
+		PT_RETURN_VAL(IETR_THIS.getIntegerBoundsValue(type));
+	});
+
+	cls.method(sigs::shiftLeftOverflows, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zend_long value, shift;
+		if (!zp::parse<zp::Long, zp::Long>(execute_data, value, shift)) RETURN_THROWS();
+		bool out = false;
+		if (UNEXPECTED(!InitializerExprTypeResolver::shiftLeftOverflowsValue(value, shift, out))) RETURN_THROWS();
+		RETURN_BOOL(out);
+	});
+
+	cls.method(sigs::toIntBound, [](INTERNAL_FUNCTION_PARAMETERS) {
+		double value;
+		if (!zp::parse<zp::Double>(execute_data, value)) RETURN_THROWS();
+		InitializerExprTypeResolver::toIntBound(value, return_value);
 	});
 
 	cls.method(sigs::computeBitwiseAndRange, [](INTERNAL_FUNCTION_PARAMETERS) {

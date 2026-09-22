@@ -36,7 +36,6 @@ chdir($root);
 $knownDrift = [
 	'PhpParser\\NodeTraverser' => 'pending',
 	'PHPStan\\Analyser\\ExpressionResultStorage' => 'pending',
-	'PHPStan\\Analyser\\TypeSpecifierContext' => 'pending',
 	'PHPStan\\Analyser\\VariableLivenessResolver' => 'pending',
 	'PHPStan\\Cache\\ArenaCache' => 'pending',
 	'PHPStan\\Internal\\CombinationsHelper' => 'pending',
@@ -66,13 +65,8 @@ $knownDrift = [
 	'PHPStan\\Parser\\TypeTraverserInstanceofVisitor' => 'pending',
 	'PHPStan\\Reflection\\BetterReflection\\SourceLocator\\PhpFileCleaner' => 'pending',
 	'PHPStan\\Reflection\\BetterReflection\\SourceLocator\\SymbolFinderInFiles' => 'pending',
-	'PHPStan\\Reflection\\InitializerExprContext' => 'pending',
-	'PHPStan\\Reflection\\InitializerExprTypeResolver' => 'pending',
-	'PHPStan\\Reflection\\PassedByReference' => 'pending',
 	'PHPStan\\Reflection\\Php\\PhpClassReflectionExtension' => 'pending',
 	'PHPStan\\Type\\Constant\\ConstantArrayTypeBuilder' => 'pending',
-	'PHPStan\\Type\\Generic\\TemplateTypeVariance' => 'pending',
-	'PHPStan\\Type\\IntegerRangeType' => 'pending',
 	'PHPStan\\Type\\ObjectType' => 'pending',
 	'PHPStan\\Type\\TypeCombinatorCache' => 'pending',
 ];

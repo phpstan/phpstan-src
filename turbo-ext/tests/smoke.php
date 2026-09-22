@@ -1568,6 +1568,23 @@ foreach ($ttvFactories as $ttvLeft) {
 		check($ttvPhp[$ttvLeft]->validPosition($ttvPhp[$ttvRight]) === $ttvNative[$ttvLeft]->validPosition($ttvNative[$ttvRight]), "TemplateTypeVariance $ttvLeft validPosition $ttvRight");
 	}
 }
+
+// the flyweights' private create(): the singleton the public factory hands
+// out, on both sides
+$flyweightCreate = static fn (string $class, ?int $value): object => \Closure::bind(static fn () => $class::create($value), null, $class)();
+$flyweights = [
+	'TemplateTypeVariance' => [\PHPStan\Type\Generic\TemplateTypeVariance::class, \PHPStanTurbo\TemplateTypeVariance::class, [1 => 'createInvariant', 2 => 'createCovariant', 3 => 'createContravariant', 4 => 'createStatic', 5 => 'createBivariant']],
+	'PassedByReference' => [\PHPStan\Reflection\PassedByReference::class, \PHPStanTurbo\PassedByReference::class, [1 => 'createNo', 2 => 'createReadsArgument', 3 => 'createCreatesNewVariable']],
+	'TypeSpecifierContext' => [\PHPStan\Analyser\TypeSpecifierContext::class, \PHPStanTurbo\TypeSpecifierContext::class, [0b0001 => 'createTrue', 0b0011 => 'createTruthy', 0b0100 => 'createFalse', 0b1100 => 'createFalsey', -1 => 'createNull']],
+	'TrinaryLogic' => [\PHPStan\TrinaryLogic::class, \PHPStanTurbo\TrinaryLogic::class, [3 => 'createYes', 1 => 'createMaybe', 0 => 'createNo']],
+];
+foreach ($flyweights as $flyweightName => [$flyweightPhp, $flyweightNative, $flyweightFactories]) {
+	foreach ($flyweightFactories as $flyweightValue => $flyweightFactory) {
+		$flyweightValue = $flyweightValue === -1 ? null : $flyweightValue;
+		check($flyweightCreate($flyweightPhp, $flyweightValue) === $flyweightPhp::$flyweightFactory(), "$flyweightName::create() is $flyweightFactory()'s singleton in PHP");
+		check($flyweightCreate($flyweightNative, $flyweightValue) === $flyweightNative::$flyweightFactory(), "$flyweightName::create() is $flyweightFactory()'s singleton natively");
+	}
+}
 $ttvErrors = static function (string $class): array {
 	$errors = [];
 	try {

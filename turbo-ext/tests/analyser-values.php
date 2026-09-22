@@ -1063,6 +1063,7 @@ foreach (['php' => \PHPStan\Reflection\InitializerExprContext::class, 'native' =
 		$r['scope ' . $i] = $avCatch(static fn () => $view($C::fromScope($scope)));
 	}
 	foreach (['Foo', 'A\B\C', '\Foo', 'Foo\\', '', '\\', 'A\\\\B'] as $name) {
+		$r['parseNamespace ' . $name] = $avCatch(static fn () => \Closure::bind(static fn () => $C::parseNamespace($name), null, $C)());
 		$r['fromClass ' . $name] = [
 			$avCatch(static fn () => $view($C::fromClass($name, null))),
 			$avCatch(static fn () => $view($C::fromClass($name, '/tmp/file.php'))),

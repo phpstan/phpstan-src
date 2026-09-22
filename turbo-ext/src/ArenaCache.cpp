@@ -50,6 +50,8 @@
 
 #include "support.h"
 #include "generated/ArenaCache.h"
+
+namespace sigs = ptdecl::ArenaCache::sig;
 #include "reg.h"
 #include "zv.h"
 
@@ -1177,60 +1179,60 @@ void pt_register_arena_cache()
 	ptdecl::ArenaCache::declareClass(cls);
 	ptdecl::ArenaCache::declareProperties(cls);
 
-	cls.method("create", reg::PublicStatic, 1, { reg::stringArg("runId") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::create, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *runId;
 		if (!zp::parse<zp::Str>(execute_data, runId)) RETURN_THROWS();
 		phpstanturbo::ArenaCache::create(runId, return_value);
 	});
 
-	cls.method("attach", reg::PublicStatic, 1, { reg::stringArg("name") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::attach, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *name;
 		if (!zp::parse<zp::Str>(execute_data, name)) RETURN_THROWS();
 		RETURN_BOOL(phpstanturbo::ArenaCache::attach(name));
 	});
 
-	cls.method("unlinkName", reg::PublicStatic, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::unlinkName, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		phpstanturbo::ArenaCache::unlinkName();
 	});
 
-	cls.method("destroy", reg::PublicStatic, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::destroy, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		phpstanturbo::ArenaCache::destroy();
 	});
 
-	cls.method("hasRecord", reg::PublicStatic, 1, { reg::stringArg("key") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::hasRecord, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *key;
 		if (!zp::parse<zp::Str>(execute_data, key)) RETURN_THROWS();
 		RETURN_BOOL(phpstanturbo::ArenaCache::hasRecord(key));
 	});
 
-	cls.method("lookup", reg::PublicStatic, 1, { reg::stringArg("key") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::lookup, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *key;
 		if (!zp::parse<zp::Str>(execute_data, key)) RETURN_THROWS();
 		phpstanturbo::ArenaCache::lookup(key, return_value);
 	});
 
-	cls.method("publish", reg::PublicStatic, 2, { reg::stringArg("key"), reg::any("value") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::publish, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *key;
 		zval *value;
 		if (!zp::parse<zp::Str, zp::Zval>(execute_data, key, value)) RETURN_THROWS();
 		phpstanturbo::ArenaCache::publish(key, value);
 	});
 
-	cls.method("lookupHash", reg::PublicStatic, 2, { reg::stringArg("recordKey"), reg::stringArg("entryKey") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::lookupHash, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *recordKey, *entryKey;
 		if (!zp::parse<zp::Str, zp::Str>(execute_data, recordKey, entryKey)) RETURN_THROWS();
 		phpstanturbo::ArenaCache::lookupHash(recordKey, entryKey, return_value);
 	});
 
-	cls.method("lookupHashAll", reg::PublicStatic, 1, { reg::stringArg("recordKey") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::lookupHashAll, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *recordKey;
 		if (!zp::parse<zp::Str>(execute_data, recordKey)) RETURN_THROWS();
 		phpstanturbo::ArenaCache::lookupHashAll(recordKey, return_value);
 	});
 
-	cls.method("publishHash", reg::PublicStatic, 2, { reg::stringArg("recordKey"), reg::arrayArg("entries") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::publishHash, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *recordKey;
 		HashTable *entries;
 		if (!zp::parse<zp::Str, zp::Ht>(execute_data, recordKey, entries)) RETURN_THROWS();

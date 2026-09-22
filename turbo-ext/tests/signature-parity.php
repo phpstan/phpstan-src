@@ -37,7 +37,6 @@ $knownDrift = [
 	'PhpParser\\NodeTraverser' => 'pending',
 	'PHPStan\\Analyser\\ExpressionResultStorage' => 'pending',
 	'PHPStan\\Analyser\\VariableLivenessResolver' => 'pending',
-	'PHPStan\\Cache\\ArenaCache' => 'pending',
 	'PHPStan\\Reflection\\BetterReflection\\SourceLocator\\PhpFileCleaner' => 'pending',
 	'PHPStan\\Reflection\\BetterReflection\\SourceLocator\\SymbolFinderInFiles' => 'pending',
 	'PHPStan\\Reflection\\Php\\PhpClassReflectionExtension' => 'pending',

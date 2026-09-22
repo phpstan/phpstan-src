@@ -113,15 +113,6 @@ function dateTimeModify(\DateTime $dt): void
 	}
 }
 
-function pdoConnect(): void
-{
-	if (PHP_VERSION_ID >= 80400) {
-		assertType('PDO\Sqlite', \PDO::connect('sqlite::memory:'));
-	} else {
-		assertType('PDO', \PDO::connect('sqlite::memory:'));
-	}
-}
-
 function bcMath(): void
 {
 	if (PHP_VERSION_ID >= 80000) {

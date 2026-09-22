@@ -5,6 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
 use PHPStan\Type\ObjectType;
@@ -17,9 +18,16 @@ use function str_starts_with;
  * @see https://wiki.php.net/rfc/pdo_driver_specific_subclasses
  * @see https://github.com/php/php-src/pull/12804
  */
+// @phpstan-ignore phpstanBuild.phpVersionInExtension (this rule requires php-src builtin classes, only available in PHP 8.4+)
 #[AutowiredService]
 final class PDOConnectReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
 {
+
+	public function __construct(
+		private PhpVersion $phpVersion,
+	)
+	{
+	}
 
 	public function getClass(): string
 	{
@@ -28,15 +36,12 @@ final class PDOConnectReturnTypeExtension implements DynamicStaticMethodReturnTy
 
 	public function isStaticMethodSupported(MethodReflection $methodReflection): bool
 	{
-		return $methodReflection->getName() === 'connect';
+		return $this->phpVersion->hasPDOSubclasses()
+			&& $methodReflection->getName() === 'connect';
 	}
 
 	public function getTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, Scope $scope): ?Type
 	{
-		if (!$scope->getPhpVersion()->hasPDOSubclasses()->yes()) {
-			return null;
-		}
-
 		if (count($methodCall->getArgs()) < 1) {
 			return null;
 		}

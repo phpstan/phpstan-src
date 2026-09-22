@@ -871,4 +871,14 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-15249.php'], []);
 	}
 
+	public function testDsMapVoidThrowType(): void
+	{
+		$this->analyse([__DIR__ . '/data/ds-map-void-throw-type.php'], [
+			[
+				'Dead catch - Throwable is never thrown in the try block.',
+				12,
+			],
+		]);
+	}
+
 }

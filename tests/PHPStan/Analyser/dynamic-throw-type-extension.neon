@@ -19,3 +19,18 @@ services:
 		tags:
 			- phpstan.dynamicStaticMethodThrowTypeExtension
 
+
+	-
+		class: DynamicThrowTypeExtensionVoid\FunctionThrowTypeExtension
+		tags:
+			- phpstan.dynamicFunctionThrowTypeExtension
+
+	-
+		class: DynamicThrowTypeExtensionVoid\MethodThrowTypeExtension
+		tags:
+			- phpstan.dynamicMethodThrowTypeExtension
+
+	-
+		class: DynamicThrowTypeExtensionVoid\StaticMethodThrowTypeExtension
+		tags:
+			- phpstan.dynamicStaticMethodThrowTypeExtension

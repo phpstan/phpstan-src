@@ -25,14 +25,6 @@ namespace sigs = ptdecl::SymbolFinderInFiles::sig;
 #include "zv.h"
 #include "SymbolScan.h"
 
-#ifdef PHP_WIN32
-#include <io.h>
-#include <fcntl.h>
-#else
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#endif
 
 static zend_class_entry *pt_ce_symbol_finder = nullptr;
 
@@ -55,55 +47,39 @@ private:
 	std::string cleaned;
 	Symbols symbols;
 
-	bool readFile(const char *path, size_t pathLen);
+	bool readFile(zend_string *path);
 	void scan(bool supportsEnums);
 	static void symbolsToArray(const Symbols &symbols, zval *out);
 };
 
 /*
- * The twin reaches the file through php_strip_whitespace(), which goes past
- * the stream wrappers; the locators only ever pass real paths from their own
- * directory walk, so a plain open() is enough — and an unreadable file has to
- * behave like the twin's suppressed warning, i.e. produce no symbols.
+ * The twin reaches the file through php_strip_whitespace(), which opens it
+ * the way the engine opens an included file: PHP's stream layer with the
+ * include path, the include-only checks (a non-regular file is refused,
+ * allow_url_include applies) and every stream wrapper — a phar:// path is a
+ * supported scan case. The same call here keeps all of that, and Windows'
+ * UTF-8 paths, identical. A file that cannot be opened behaves like the
+ * twin's suppressed warning: no symbols.
  */
-bool SymbolFinderInFiles::readFile(const char *path, size_t pathLen)
+bool SymbolFinderInFiles::readFile(zend_string *path)
 {
 	source.clear();
 
-	if (pathLen == 0 || memchr(path, '\0', pathLen) != NULL) return false;
-
-#ifdef PHP_WIN32
-	int fd = _open(path, _O_RDONLY | _O_BINARY);
-#else
-	int fd = open(path, O_RDONLY);
-#endif
-	if (fd < 0) return false;
+	php_stream *stream = php_stream_open_wrapper_ex(ZSTR_VAL(path), "rb", USE_PATH | STREAM_OPEN_FOR_INCLUDE, NULL, NULL);
+	if (stream == NULL) return false;
 
 	char chunk[65536];
 	for (;;) {
-#ifdef PHP_WIN32
-		int got = _read(fd, chunk, sizeof(chunk));
-#else
-		ssize_t got = read(fd, chunk, sizeof(chunk));
-#endif
+		ssize_t got = php_stream_read(stream, chunk, sizeof(chunk));
 		if (got < 0) {
-#ifdef PHP_WIN32
-			_close(fd);
-#else
-			close(fd);
-#endif
+			php_stream_close(stream);
 			source.clear();
 			return false;
 		}
 		if (got == 0) break;
 		source.append(chunk, (size_t) got);
 	}
-
-#ifdef PHP_WIN32
-	_close(fd);
-#else
-	close(fd);
-#endif
+	php_stream_close(stream);
 
 	return true;
 }
@@ -151,28 +127,42 @@ zv::Val SymbolFinderInFiles::findSymbols(HashTable *files, bool supportsEnums)
 {
 	zval result;
 	array_init_size(&result, zend_hash_num_elements(files));
+	zv::Val owned = zv::Val::adopt(result);
 
 	for (zv::ArrayEntry file : zv::TableRef(files)) {
 		zv::Ref value = file.value().deref();
-		if (!value.isString()) continue;
+		/* findSymbolsInFile(string $file, ...) under strict_types */
+		if (!value.isString()) {
+			zend_type_error("%s::findSymbolsInFile(): Argument #1 ($file) must be of type string, %s given", ZSTR_VAL(pt_ce_symbol_finder->name), zend_zval_value_name(value.raw()));
+			return zv::Val();
+		}
 
 		zend_string *path = value.asString();
-		if (readFile(ZSTR_VAL(path), ZSTR_LEN(path))) {
+		/* php_strip_whitespace()'s Z_PARAM_PATH_STR */
+		if (UNEXPECTED(ZSTR_LEN(path) != strlen(ZSTR_VAL(path)))) {
+			zend_value_error("php_strip_whitespace(): Argument #1 ($filename) must not contain any null bytes");
+			return zv::Val();
+		}
+		bool read = readFile(path);
+		/* a user stream wrapper threw: the twin's @ does not catch that */
+		if (UNEXPECTED(EG(exception))) return zv::Val();
+		if (read) {
 			scan(supportsEnums);
 		} else {
 			symbols.clear();
 		}
 
+		/* $result[$file] = ...: a numeric-string path becomes an int key */
 		zval triple;
 		symbolsToArray(symbols, &triple);
-		zend_hash_update(Z_ARRVAL(result), path, &triple);
+		zend_symtable_update(Z_ARRVAL_P(owned.raw()), path, &triple);
 
 		if (source.capacity() > BUFFER_RETENTION_LIMIT) {
 			std::string().swap(source);
 		}
 	}
 
-	return zv::Val::adopt(result);
+	return owned;
 }
 
 } // namespace phpstanturbo
@@ -202,7 +192,9 @@ void pt_register_symbol_finder_in_files()
 		if (!zp::parse<zp::Ht, zp::Bool>(execute_data, files, supportsEnums)) RETURN_THROWS();
 
 		phpstanturbo::SymbolFinderInFiles finder;
-		finder.findSymbols(files, supportsEnums).intoReturnValue(return_value);
+		zv::Val result = finder.findSymbols(files, supportsEnums);
+		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
+		result.intoReturnValue(return_value);
 	});
 
 	cls.shadow(&pt_ce_symbol_finder);

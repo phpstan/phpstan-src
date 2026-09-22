@@ -2599,8 +2599,9 @@ public:
 		if (issetIn(slot(PT_PCRE_PROP_INFER_IN_PROCESS), className) != NULL) return zv::Val::null();
 		setIn(slot(PT_PCRE_PROP_INFER_IN_PROCESS), className, zv::Val::boolean(true));
 		zv::Val propertyTypes = inferAndCachePropertyTypes(constructor);
-		unsetIn(slot(PT_PCRE_PROP_INFER_IN_PROCESS), className);
+		/* like the twin, the marker is removed on the normal return only */
 		if (UNEXPECTED(propertyTypes.isUndef())) return zv::Val();
+		unsetIn(slot(PT_PCRE_PROP_INFER_IN_PROCESS), className);
 		zval *found = keyIn(propertyTypes.raw(), propertyName);
 		if (found != NULL) return zv::Val::copyOf(zv::Ref(found));
 		return zv::Val::null();

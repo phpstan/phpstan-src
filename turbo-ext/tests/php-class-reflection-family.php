@@ -311,7 +311,7 @@ foreach ([
 }
 
 /** @return array{PhpClassReflectionExtension, \PHPStanTurbo\PhpClassReflectionExtension} */
-$pcreBuildSides = static function (bool $infer, int $memberCacheKeysMax) use ($pcreCollaborators): array {
+$pcreBuildSides = static function (bool $infer, int $memberCacheKeysMax, ?\PHPStan\Parser\Parser $parser = null) use ($pcreCollaborators): array {
 	$make = static fn (string $class) => new $class(
 		scopeFactory: $pcreCollaborators['scopeFactory'],
 		phpDocsResolver: $pcreCollaborators['phpDocsResolver'],
@@ -322,7 +322,7 @@ $pcreBuildSides = static function (bool $infer, int $memberCacheKeysMax) use ($p
 		annotationsMethodsClassReflectionExtension: $pcreCollaborators['annotationsMethodsClassReflectionExtension'],
 		annotationsPropertiesClassReflectionExtension: $pcreCollaborators['annotationsPropertiesClassReflectionExtension'],
 		signatureMapProvider: $pcreCollaborators['signatureMapProvider'],
-		parser: $pcreCollaborators['parser'],
+		parser: $parser ?? $pcreCollaborators['parser'],
 		stubPhpDocProvider: $pcreCollaborators['stubPhpDocProvider'],
 		reflectionProviderProvider: $pcreCollaborators['reflectionProviderProvider'],
 		fileTypeMapper: $pcreCollaborators['fileTypeMapper'],
@@ -530,6 +530,51 @@ check(
 		json_encode($pcreEvictionObservations['php']),
 		json_encode($pcreEvictionObservations['native']),
 	),
+);
+// }}}
+
+// {{{ an inference that throws: the twin removes the class's in-process
+// marker on the normal return only, so a later ask infers nothing for it
+$pcreThrowObservations = [];
+foreach (['php', 'native'] as $pcreSide) {
+	$pcreThrowingParser = new class ($pcreCollaborators['parser']) implements \PHPStan\Parser\Parser {
+
+		public bool $armed = true;
+
+		public function __construct(private \PHPStan\Parser\Parser $inner)
+		{
+		}
+
+		public function parseFile(string $file): array
+		{
+			if ($this->armed) {
+				$this->armed = false;
+				throw new \RuntimeException('parser failed');
+			}
+			return $this->inner->parseFile($file);
+		}
+
+		public function parseString(string $sourceCode): array
+		{
+			return $this->inner->parseString($sourceCode);
+		}
+
+	};
+	[$pcrePhpSide, $pcreNativeSide] = $pcreBuildSides(true, 4096, $pcreThrowingParser);
+	$pcreExtension = $pcreSide === 'php' ? $pcrePhpSide : $pcreNativeSide;
+	$pcreThrowClass = $pcreReflectionProvider->getClass('PhpClassReflectionFamilyFixture\FixtureBase');
+	foreach (['first', 'second'] as $pcreAttempt) {
+		try {
+			$pcreThrowObservations[$pcreSide][$pcreAttempt] = $pcreDescriber->describeProperty($pcreExtension->getProperty($pcreThrowClass, 'inferredFromConstructor', $pcreScopes['outOfClass']));
+		} catch (\Throwable $e) {
+			$pcreThrowObservations[$pcreSide][$pcreAttempt] = 'throws ' . $pcreDescriber->normalizeClass(get_class($e)) . ': ' . $e->getMessage();
+		}
+		$pcreThrowObservations[$pcreSide][$pcreAttempt . ' in process'] = (new ReflectionProperty($pcreExtension, 'inferClassConstructorPropertyTypesInProcess'))->getValue($pcreExtension);
+	}
+}
+check(
+	$pcreThrowObservations['php'] === $pcreThrowObservations['native'],
+	'PhpClassReflectionExtension inference after a throwing one: ' . ($pcreFirstDifference($pcreThrowObservations['php'], $pcreThrowObservations['native']) ?? ''),
 );
 // }}}
 

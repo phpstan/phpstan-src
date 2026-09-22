@@ -4402,12 +4402,23 @@ if (__NATIVE__) {
 $containerFactory = new \PHPStan\DependencyInjection\ContainerFactory($root);
 $container = $containerFactory->create(sys_get_temp_dir() . '/phpstan-turbo-smoke-lane-engine', [$containerFactory->getConfigDirectory() . '/config.level8.neon'], []);
 $outcome = static function (callable $callback): array {
+	$warnings = [];
+	set_error_handler(static function (int $level, string $message) use (&$warnings): bool {
+		$warnings[] = [$level, $message];
+		return true;
+	});
 	try {
 		$value = $callback();
-		return ['ok', is_object($value) ? get_class($value) : $value];
+		$result = ['ok', is_object($value) ? get_class($value) : $value];
 	} catch (\Throwable $e) {
-		return [get_class($e), preg_replace('~, called in .*$~', '', $e->getMessage())];
+		$result = [get_class($e), preg_replace('~, called in .*$~', '', $e->getMessage())];
+	} finally {
+		restore_error_handler();
 	}
+	if ($warnings !== []) {
+		$result[] = $warnings;
+	}
+	return $result;
 };
 $scope = $container->getByType(\PHPStan\Analyser\ScopeFactory::class)->create(\PHPStan\Analyser\ScopeContext::create(__FILE__));
 $probes = (static function () use ($container, $outcome, $scope): array {
@@ -4438,6 +4449,11 @@ $lemEngineProbes = $lemProbe(<<<'BODY'
 		'doProcessStmtNodes(stdClass)' => $outcome(static fn () => $doProcess([new \stdClass()])),
 		'doProcessStmtNodes(string)' => $outcome(static fn () => $doProcess(['echo'])),
 		'doProcessStmtNodes(expr)' => $outcome(static fn () => $doProcess([new \PhpParser\Node\Expr\Variable('x')])),
+		// statement nodes built by hand with foreign elements
+		'if with a foreign elseif' => $outcome(static fn () => $doProcess([new \PhpParser\Node\Stmt\If_(new \PhpParser\Node\Expr\Variable('x'), ['elseifs' => ['elseif']])])),
+		'switch with a foreign case' => $outcome(static fn () => $doProcess([new \PhpParser\Node\Stmt\Switch_(new \PhpParser\Node\Expr\Variable('x'), ['case'])])),
+		'try with a foreign catch' => $outcome(static fn () => $doProcess([new \PhpParser\Node\Stmt\TryCatch([], ['catch'])])),
+		'try with a foreign catch type' => $outcome(static fn () => $doProcess([new \PhpParser\Node\Stmt\TryCatch([], [new \PhpParser\Node\Stmt\Catch_(['type'])])])),
 	] + (static function () use ($container, $outcome, $scope, $nodeScopeResolver): array {
 		// the @api entry points of TypeSpecifier and PropertyHooksProcessor
 		$typeSpecifier = $container->getByType(\PHPStan\Analyser\TypeSpecifier::class);

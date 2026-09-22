@@ -169,6 +169,17 @@ zv::Str ancestorMessage(zend_string *declaringClassName, zend_string *className)
 	return zv::Str::adopt(zend_strpprintf(0, "Internal error: Expected to find an ancestor with class name %s on %s, but none was found.", ZSTR_VAL(declaringClassName), ZSTR_VAL(className)));
 }
 
+/* the result of a call declared `: array`; false (an exception pending) when
+ * the call threw or when the callee broke its signature — the engine's
+ * return-type TypeError, which a PHP callee would have thrown itself */
+[[nodiscard]] bool arrayResult(zv::Val &result, const char *method)
+{
+	if (UNEXPECTED(result.isUndef())) return false;
+	if (EXPECTED(Z_TYPE_P(result.raw()) == IS_ARRAY)) return true;
+	zend_type_error("%s(): Return value must be of type array, %s returned", method, zend_zval_value_name(result.raw()));
+	return false;
+}
+
 /* isset($array[$key]) over a symtable-keyed array: the value, or NULL when
  * the key is absent or holds null */
 zval *issetIn(zval *array, zend_string *key)
@@ -776,7 +787,7 @@ public:
 				zv::Val nativeType;
 				if (declaringIsEnum) {
 					zv::Val enumCases = call(classReflection, PT_LC("getenumcases"));
-					if (UNEXPECTED(enumCases.isUndef()) || Z_TYPE_P(enumCases.raw()) != IS_ARRAY) return zv::Val();
+					if (UNEXPECTED(!arrayResult(enumCases, "PHPStan\\Reflection\\ClassReflection::getEnumCases"))) return zv::Val();
 					zv::Arr types = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(enumCases.raw())));
 					for (zv::ArrayEntry entry : zv::ArrRef(enumCases.raw())) {
 						if (isNameProperty) {
@@ -1557,7 +1568,7 @@ public:
 					zv::Val builder = pt_constant_array_type_builder_create_empty();
 					if (UNEXPECTED(builder.isUndef())) return zv::Val();
 					zv::Val enumCases = call(classReflection, PT_LC("getenumcases"));
-					if (UNEXPECTED(enumCases.isUndef()) || Z_TYPE_P(enumCases.raw()) != IS_ARRAY) return zv::Val();
+					if (UNEXPECTED(!arrayResult(enumCases, "PHPStan\\Reflection\\ClassReflection::getEnumCases"))) return zv::Val();
 					zv::Val ownerName = pt_class_reflection_get_name(Z_OBJ_P(classReflection));
 					if (UNEXPECTED(ownerName.isUndef())) return zv::Val();
 					for (zv::ArrayEntry entry : zv::ArrRef(enumCases.raw())) {
@@ -1631,7 +1642,7 @@ public:
 
 		zv::Args signatureArgs{declaringClassNameArg, methodNameArg, methodReflection};
 		zv::Val signaturesResult = call(slot(PT_PCRE_PROP_SIGNATURE_MAP_PROVIDER), PT_LC("getmethodsignatures"), 3, signatureArgs);
-		if (UNEXPECTED(signaturesResult.isUndef()) || Z_TYPE_P(signaturesResult.raw()) != IS_ARRAY) return zv::Val();
+		if (UNEXPECTED(!arrayResult(signaturesResult, "PHPStan\\Reflection\\SignatureMap\\SignatureMapProvider::getMethodSignatures"))) return zv::Val();
 
 		/* the twin reads $currentResolvedPhpDoc after the loops: the value
 		 * the last inner iteration left, or null when none ran */
@@ -2177,7 +2188,7 @@ public:
 		if (UNEXPECTED(!pt_method_adapter_is_constructor(methodReflection, isConstructor))) return zv::Val();
 		if (isConstructor) {
 			zv::Val parameters = call(methodReflection, PT_LC("getparameters"));
-			if (UNEXPECTED(parameters.isUndef()) || Z_TYPE_P(parameters.raw()) != IS_ARRAY) return zv::Val();
+			if (UNEXPECTED(!arrayResult(parameters, "PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionMethod::getParameters"))) return zv::Val();
 			for (zv::ArrayEntry entry : zv::ArrRef(parameters.raw())) {
 				zval *parameter = entry.value().raw();
 				ZVAL_DEREF(parameter);
@@ -2234,7 +2245,7 @@ public:
 		}
 		if (isBuiltin || actualIsEnum) {
 			zv::Val ancestors = call(actualDeclaringClass, PT_LC("getancestors"));
-			if (UNEXPECTED(ancestors.isUndef()) || Z_TYPE_P(ancestors.raw()) != IS_ARRAY) return zv::Val();
+			if (UNEXPECTED(!arrayResult(ancestors, "PHPStan\\Reflection\\ClassReflection::getAncestors"))) return zv::Val();
 			for (zv::ArrayEntry entry : zv::ArrRef(ancestors.raw())) {
 				zend_string *ancestorName = entry.stringKeyOrNull();
 				if (ancestorName == NULL) continue;
@@ -2516,7 +2527,7 @@ public:
 		if (superType) return phpDocReturnType;
 		if (!isUnionType(phpDocReturnType.raw())) return zv::Val::null();
 		zv::Val innerTypes = pt_type_op(Z_OBJ_P(phpDocReturnType.raw()), PT_OP_GET_TYPES, 0, NULL);
-		if (UNEXPECTED(innerTypes.isUndef()) || Z_TYPE_P(innerTypes.raw()) != IS_ARRAY) return zv::Val();
+		if (UNEXPECTED(!arrayResult(innerTypes, "PHPStan\\Type\\UnionType::getTypes"))) return zv::Val();
 		zv::Arr kept = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(innerTypes.raw())));
 		for (zv::ArrayEntry entry : zv::ArrRef(innerTypes.raw())) {
 			bool accepted = isSuperTypeOfYes(nativeReturnType, entry.value().raw(), ok);
@@ -2559,7 +2570,7 @@ public:
 		}
 
 		zv::Val ancestors = call(declaringClass, PT_LC("getancestors"));
-		if (UNEXPECTED(ancestors.isUndef()) || Z_TYPE_P(ancestors.raw()) != IS_ARRAY) return zv::Val();
+		if (UNEXPECTED(!arrayResult(ancestors, "PHPStan\\Reflection\\ClassReflection::getAncestors"))) return zv::Val();
 		for (zv::ArrayEntry entry : zv::ArrRef(ancestors.raw())) {
 			zval *ancestor = entry.value().raw();
 			ZVAL_DEREF(ancestor);
@@ -2783,7 +2794,7 @@ public:
 			}
 			if (!instanceof_function(Z_OBJCE_P(node), namespaceCe) && !instanceof_function(Z_OBJCE_P(node), declareCe)) continue;
 			zv::Val subNodeNames = call(node, PT_LC("getsubnodenames"));
-			if (UNEXPECTED(subNodeNames.isUndef()) || Z_TYPE_P(subNodeNames.raw()) != IS_ARRAY) return zv::Val();
+			if (UNEXPECTED(!arrayResult(subNodeNames, "PhpParser\\Node::getSubNodeNames"))) return zv::Val();
 			for (zv::ArrayEntry nameEntry : zv::ArrRef(subNodeNames.raw())) {
 				zval *subNodeName = nameEntry.value().raw();
 				ZVAL_DEREF(subNodeName);

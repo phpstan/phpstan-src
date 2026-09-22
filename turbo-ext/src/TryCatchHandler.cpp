@@ -195,13 +195,27 @@ public:
 
 		zval *catches = ptsh::readNodeProperty(pt_tch_catches_site, stmt, PT_LC("catches"));
 		if (UNEXPECTED(catches == NULL)) return zv::Val();
-		if (UNEXPECTED(Z_TYPE_P(catches) != IS_ARRAY)) {
+		/* the twin's foreach over something else warns and iterates nothing
+		 * (the typed property holds an array) */
+		bool catchesIterable = Z_TYPE_P(catches) == IS_ARRAY;
+		if (UNEXPECTED(!catchesIterable)) {
 			zend_error(E_WARNING, "foreach() argument must be of type array|object, %s given", zend_zval_value_name(catches));
-			return zv::Val();
+			if (UNEXPECTED(EG(exception))) return zv::Val();
 		}
-		zv::Val catchesHold = zv::Val::copyOf(zv::Ref(catches));
+		zv::Val catchesHold = catchesIterable ? zv::Val::copyOf(zv::Ref(catches)) : zv::Val(zv::Arr::empty());
 		for (auto catchEntry : zv::ArrRef(catchesHold.raw())) {
 			zval *catchNode = catchEntry.value().deref().raw();
+			/* the twin's callNodeCallback() parameter type, for a hand-built
+			 * catch list's foreign element */
+			{
+				bool error = false;
+				if (UNEXPECTED(!ptsh::isInstanceOf(catchNode, PT_CLASS_NODE, error))) {
+					if (!error) {
+						zend_type_error("PHPStan\\Analyser\\NodeScopeResolver::callNodeCallback(): Argument #2 ($node) must be of type PhpParser\\Node, %s given", zend_zval_value_name(catchNode));
+					}
+					return zv::Val();
+				}
+			}
 			if (UNEXPECTED(!pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, catchNode, scope, storage))) return zv::Val();
 
 			zv::Arr originalCatchTypes = zv::Arr::empty();
@@ -209,11 +223,12 @@ public:
 			{
 				zval *types = ptsh::readNodeProperty(pt_tch_catch_types_site, catchNode, PT_LC("types"));
 				if (UNEXPECTED(types == NULL)) return zv::Val();
-				if (UNEXPECTED(Z_TYPE_P(types) != IS_ARRAY)) {
+				bool typesIterable = Z_TYPE_P(types) == IS_ARRAY;
+				if (UNEXPECTED(!typesIterable)) {
 					zend_error(E_WARNING, "foreach() argument must be of type array|object, %s given", zend_zval_value_name(types));
-					return zv::Val();
+					if (UNEXPECTED(EG(exception))) return zv::Val();
 				}
-				zv::Val typesHold = zv::Val::copyOf(zv::Ref(types));
+				zv::Val typesHold = typesIterable ? zv::Val::copyOf(zv::Ref(types)) : zv::Val(zv::Arr::empty());
 				for (auto typeEntry : zv::ArrRef(typesHold.raw())) {
 					zval *catchNodeType = typeEntry.value().deref().raw();
 					if (UNEXPECTED(Z_TYPE_P(catchNodeType) != IS_OBJECT)) {
@@ -568,7 +583,12 @@ public:
 				if (UNEXPECTED(finallyNow == NULL)) return zv::Val();
 				zv::Val finallyHold = zv::Val::copyOf(zv::Ref(finallyNow));
 				if (UNEXPECTED(Z_TYPE_P(finallyHold.raw()) != IS_OBJECT)) {
+					/* the twin reads null stmts with a warning and hands the
+					 * non-node on as the parent */
 					zend_error(E_WARNING, "Attempt to read property \"stmts\" on %s", zend_zval_value_name(finallyHold.raw()));
+					if (!EG(exception)) {
+						zend_type_error("PHPStan\\Analyser\\NodeScopeResolver::processStmtNodesInternal(): Argument #1 ($parentNode) must be of type PhpParser\\Node, %s given", zend_zval_value_name(finallyHold.raw()));
+					}
 					return zv::Val();
 				}
 				zval *finallyStmts = ptsh::readNodeProperty(pt_tch_finally_stmts_site, finallyHold.raw(), PT_LC("stmts"));

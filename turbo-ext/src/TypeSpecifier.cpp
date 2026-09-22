@@ -642,7 +642,10 @@ private:
 		if (containsNull == 0) {
 			zv::Val nullsafeTypes = createNullsafeTypes(originalExpr, scope, context, type);
 			if (UNEXPECTED(nullsafeTypes.isUndef())) return zv::Val();
-			if (UNEXPECTED(Z_TYPE_P(nullsafeTypes.raw()) != IS_OBJECT)) return zv::Val();
+			if (UNEXPECTED(Z_TYPE_P(nullsafeTypes.raw()) != IS_OBJECT)) {
+				zend_throw_error(NULL, "Call to a member function unionWith() on %s", zend_zval_value_name(nullsafeTypes.raw()));
+				return zv::Val();
+			}
 			return pt_specified_types_union_with(Z_OBJ_P(nullsafeTypes.raw()), types.raw());
 		}
 

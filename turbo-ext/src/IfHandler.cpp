@@ -209,7 +209,11 @@ public:
 			for (auto entry : zv::TableRef(iterated.table())) {
 				zval *elseif = entry.value().deref().raw();
 				if (UNEXPECTED(Z_TYPE_P(elseif) != IS_OBJECT)) {
+					/* the twin reads null with a warning and hands it on */
 					zend_error(E_WARNING, "Attempt to read property \"cond\" on %s", zend_zval_value_name(elseif));
+					if (!EG(exception)) {
+						zend_type_error("PHPStan\\Analyser\\NodeScopeResolver::processExprNode(): Argument #2 ($expr) must be of type PhpParser\\Node\\Expr, null given");
+					}
 					return zv::Val();
 				}
 				zval *elseifCond = ptsh::readNodeProperty(pt_ih_elseif_cond_site, elseif, PT_LC("cond"));
@@ -270,7 +274,12 @@ public:
 			if (UNEXPECTED(elseNode == NULL)) return zv::Val();
 			elseHold = zv::Val::copyOf(zv::Ref(elseNode));
 			if (UNEXPECTED(Z_TYPE_P(elseHold.raw()) != IS_OBJECT)) {
+				/* the twin reads null stmts with a warning and hands the
+				 * non-node on as the parent */
 				zend_error(E_WARNING, "Attempt to read property \"stmts\" on %s", zend_zval_value_name(elseHold.raw()));
+				if (!EG(exception)) {
+					zend_type_error("PHPStan\\Analyser\\NodeScopeResolver::processStmtNodesInternal(): Argument #1 ($parentNode) must be of type PhpParser\\Node, %s given", zend_zval_value_name(elseHold.raw()));
+				}
 				return zv::Val();
 			}
 			zval *elseStmts = ptsh::readNodeProperty(pt_ih_else_stmts_site, elseHold.raw(), PT_LC("stmts"));
@@ -384,7 +393,7 @@ private:
 		if (count > 0) {
 			zval *last = zend_hash_index_find(Z_ARRVAL_P(stmts), (zend_ulong) (count - 1));
 			if (UNEXPECTED(last == NULL)) {
-				zend_error(E_WARNING, "Undefined array key %u", count - 1);
+				zend_error(E_WARNING, "Undefined array key " ZEND_LONG_FMT, (zend_long) count - 1);
 				if (UNEXPECTED(EG(exception))) return false;
 				last = &EG(uninitialized_zval);
 			} else {

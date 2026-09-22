@@ -334,7 +334,10 @@ public:
 
 			zval *argValue = nodeProperty(pt_sip_arg_value_site, matchedArg, PT_LC("value"));
 			if (UNEXPECTED(EG(exception))) return false;
-			if (UNEXPECTED(Z_TYPE_P(scope) != IS_OBJECT)) return false;
+			if (UNEXPECTED(Z_TYPE_P(scope) != IS_OBJECT)) {
+				zend_throw_error(NULL, "Call to a member function getType() on %s", zend_zval_value_name(scope));
+				return false;
+			}
 			zv::Val argType = pt_mutating_scope_get_type(Z_OBJ_P(scope), argValue);
 			if (UNEXPECTED(argType.isUndef())) return false;
 			zend_long isNull = pt_type_op_trinary(Z_OBJ_P(argType.raw()), PT_OP_IS_NULL, 0, NULL);

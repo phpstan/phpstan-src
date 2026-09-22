@@ -124,6 +124,7 @@ use function sprintf;
 use function str_starts_with;
 use function strtolower;
 use const INF;
+use const PHP_INT_MAX;
 use const PHP_INT_MIN;
 
 #[AutowiredService]
@@ -2591,10 +2592,10 @@ final class InitializerExprTypeResolver
 			}
 
 			if (is_float($min)) {
-				$min = (int) ceil($min);
+				$min = self::toIntBound(ceil($min));
 			}
 			if (is_float($max)) {
-				$max = (int) floor($max);
+				$max = self::toIntBound(floor($max));
 			}
 
 			// invert maximas on division with negative constants
@@ -2959,6 +2960,29 @@ final class InitializerExprTypeResolver
 		}
 
 		return $classType;
+	}
+
+	/**
+	 * The bound an overflowing float stands for: an int operation whose result
+	 * leaves the int range yields a float there, so the integer part of the
+	 * result reaches no further than the int range does. Casting the float
+	 * instead would wrap the bound around (and warns since PHP 8.5): note that
+	 * PHP_INT_MAX is not representable as a float, so the first float past the
+	 * int range is (float) PHP_INT_MAX itself.
+	 */
+	private static function toIntBound(float $value): ?int
+	{
+		if (!is_finite($value)) {
+			return null;
+		}
+		if ($value >= (float) PHP_INT_MAX) {
+			return PHP_INT_MAX;
+		}
+		if ($value <= (float) PHP_INT_MIN) {
+			return PHP_INT_MIN;
+		}
+
+		return (int) $value;
 	}
 
 	/**

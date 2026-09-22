@@ -1734,6 +1734,23 @@ public:
 		return fromInterval(rangeMin, rangeMax);
 	}
 
+	/* Mirrors toIntBound(): the bound an overflowing float stands for, since
+	 * the values past the int range are floats. ZEND_LONG_MAX is not
+	 * representable as a double, so the first double past the int range is
+	 * (double) ZEND_LONG_MAX itself. */
+	static void toIntBound(double value, zval *out)
+	{
+		if (!std::isfinite(value)) {
+			ZVAL_NULL(out);
+		} else if (value >= (double) ZEND_LONG_MAX) {
+			ZVAL_LONG(out, ZEND_LONG_MAX);
+		} else if (value <= (double) ZEND_LONG_MIN) {
+			ZVAL_LONG(out, ZEND_LONG_MIN);
+		} else {
+			ZVAL_LONG(out, (zend_long) value);
+		}
+	}
+
 	/* private static: the highest possible absolute value of `$x % $divisor`,
 	 * one less than the largest possible absolute value of the divisor; null
 	 * when there is no such bound. A divisor reaching PHP_INT_MIN is reported
@@ -2954,14 +2971,10 @@ public:
 				}
 
 				if (Z_TYPE(min) == IS_DOUBLE) {
-					zval ceiled;
-					ZVAL_DOUBLE(&ceiled, std::ceil(Z_DVAL(min)));
-					ZVAL_LONG(&min, zval_get_long(&ceiled));
+					toIntBound(std::ceil(Z_DVAL(min)), &min);
 				}
 				if (Z_TYPE(max) == IS_DOUBLE) {
-					zval floored;
-					ZVAL_DOUBLE(&floored, std::floor(Z_DVAL(max)));
-					ZVAL_LONG(&max, zval_get_long(&floored));
+					toIntBound(std::floor(Z_DVAL(max)), &max);
 				}
 
 				// invert maximas on division with negative constants

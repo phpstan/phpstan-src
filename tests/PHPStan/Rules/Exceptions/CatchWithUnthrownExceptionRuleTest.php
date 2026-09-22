@@ -871,6 +871,92 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-15249.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testMinMaxThrowType(): void
+	{
+		$this->analyse([__DIR__ . '/data/min-max-throw-type.php'], [
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				18,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				23,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				28,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				33,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				38,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				81,
+			],
+		]);
+	}
+
+	#[RequiresPhp('< 8.0.0')]
+	public function testMinMaxThrowTypeBeforePhp8(): void
+	{
+		$this->analyse([__DIR__ . '/data/min-max-throw-type.php'], [
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				18,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				23,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				28,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				33,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				38,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				43,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				48,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				53,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				58,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				63,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				68,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				81,
+			],
+		]);
+	}
+
 	public function testDsMapVoidThrowType(): void
 	{
 		$this->analyse([__DIR__ . '/data/ds-map-void-throw-type.php'], [

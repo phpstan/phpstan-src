@@ -227,7 +227,9 @@ inline constexpr char strings[] =
 	"array\0" /* 3789 */
 	"hasArrayReference\0" /* 3795 */
 	"rhs\0" /* 3813 */
-	"redundant"; /* 3817 */
+	"redundant\0" /* 3817 */
+	"type\0" /* 3827 */
+	"containsFloatZero"; /* 3832 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 25), /* __construct $templateArgumentObserver */
 	reg::packed(76, 0, 99), /* __construct $varAnnotationProcessor */
@@ -473,6 +475,8 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(1975, 0, 1376), /* redundant $target */
 	reg::packed(1521, 0, 1529), /* redundant $storage */
 	reg::packed(1396, MAY_BE_NULL, 2038), /* redundant return */
+	reg::packed(3827, 0, 2038), /* containsFloatZero $type */
+	reg::packed(1396, MAY_BE_BOOL), /* containsFloatZero return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -519,6 +523,7 @@ inline constexpr sigtab::Sig getLiteralArrayKeyType = { { 3654 /* getLiteralArra
 inline constexpr sigtab::Sig getOriginalPropertyType = { { 3765 /* getOriginalPropertyType */, 3, 234, 3, 237, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig hasArrayReference = { { 3795 /* hasArrayReference */, 1, 238, 1, 239, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig redundant = { { 3817 /* redundant */, 3, 240, 3, 243, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig containsFloatZero = { { 3832 /* containsFloatZero */, 1, 244, 1, 245, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::AssignHandler

@@ -201,6 +201,14 @@ class UnusedVariableRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testRedundantAssignmentOfSignedZero(): void
+	{
+		$this->analyse([__DIR__ . '/data/unused-variable-redundant-signed-zero.php'], [
+			['Value assigned to variable $x is never read before being overwritten.', 12],
+			['Variable $x is assigned value 1.5 but it already has that value.', 58],
+		]);
+	}
+
 	public function testByRefReturn(): void
 	{
 		$this->analyse([__DIR__ . '/data/unused-variable-by-ref-return.php'], [

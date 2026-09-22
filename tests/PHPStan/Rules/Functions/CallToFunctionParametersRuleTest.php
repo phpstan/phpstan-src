@@ -3123,4 +3123,32 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11041.php'], []);
 	}
 
+	public function testArgumentsCountAcceptedByNoVariant(): void
+	{
+		$this->analyse([__DIR__ . '/data/arguments-count-accepted-by-no-variant.php'], [
+			[
+				'Function mt_rand invoked with 1 parameter, 2 required.',
+				12,
+			],
+			[
+				'Function rand invoked with 1 parameter, 2 required.',
+				15,
+			],
+			[
+				'Function mt_rand invoked with 3 parameters, 0-2 required.',
+				16,
+			],
+			[
+				'Function stream_context_set_option invoked with 3 parameters, 4 required.',
+				20,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testLevenshteinArgumentsCount(): void
+	{
+		$this->analyse([__DIR__ . '/data/levenshtein-arguments-count.php'], []);
+	}
+
 }

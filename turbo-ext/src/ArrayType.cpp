@@ -2062,6 +2062,7 @@ void pt_register_array_type()
 	ptdecl::ArrayType::declareClass(cls);
 	/* the slots PT_AT_PROP_*: the three class-body properties first, the
 	 * promoted $itemType after them */
+	cls.privateClassConstantLong("TRUNCATE_ACCESSORIES_LIMIT", PT_AT_TRUNCATE_ACCESSORIES_LIMIT);
 	cls.privateTypedClassProperty("keyType", ptcls::type, false);
 	cls.privateTypedClassPropertyDefaultNull("cachedIterableKeyType", ptcls::type);
 	cls.privateTypedClassPropertyDefaultNull("isList", ptcls::trinaryLogic);

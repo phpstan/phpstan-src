@@ -54,6 +54,40 @@ zend_class_entry *pt_ce_object_type = nullptr;
 /* private const DESCRIPTION_CACHE_LIMIT */
 #define PT_OT_DESCRIPTION_CACHE_LIMIT 1024
 
+/* private const EXTRA_OFFSET_CLASSES: the class constant is built from this
+ * list, and isExtraOffsetAccessibleClass() walks it */
+static const pt_superglobal_name pt_ot_extra_offset_classes[] = {
+	{"DOMNamedNodeMap", sizeof("DOMNamedNodeMap") - 1}, // Only read and existence
+	{"Dom\\NamedNodeMap", sizeof("Dom\\NamedNodeMap") - 1}, // Only read and existence
+	{"DOMNodeList", sizeof("DOMNodeList") - 1}, // Only read and existence
+	{"Dom\\NodeList", sizeof("Dom\\NodeList") - 1}, // Only read and existence
+	{"Dom\\HTMLCollection", sizeof("Dom\\HTMLCollection") - 1}, // Only read and existence
+	{"Dom\\DtdNamedNodeMap", sizeof("Dom\\DtdNamedNodeMap") - 1}, // Only read and existence
+	{"PDORow", sizeof("PDORow") - 1}, // Only read and existence
+	{"ResourceBundle", sizeof("ResourceBundle") - 1}, // Only read
+	{"FFI\\CData", sizeof("FFI\\CData") - 1}, // Very funky and weird
+	{"SimpleXMLElement", sizeof("SimpleXMLElement") - 1},
+	{"Threaded", sizeof("Threaded") - 1},
+};
+
+/* the constant's value: a persistent immutable list of interned strings, as
+ * the engine references a class constant for the process lifetime */
+static void pt_ot_extra_offset_classes_constant(zval *out)
+{
+	size_t count = sizeof(pt_ot_extra_offset_classes) / sizeof(pt_ot_extra_offset_classes[0]);
+	HashTable *list = (HashTable *) pemalloc(sizeof(HashTable), 1);
+	zend_hash_init(list, (uint32_t) count, NULL, NULL, 1);
+	for (size_t i = 0; i < count; i++) {
+		zval value;
+		ZVAL_INTERNED_STR(&value, zend_string_init_interned(pt_ot_extra_offset_classes[i].name, pt_ot_extra_offset_classes[i].len, 1));
+		zend_hash_next_index_insert(list, &value);
+	}
+	GC_ADD_FLAGS(list, IS_ARRAY_IMMUTABLE);
+	GC_SET_REFCOUNT(list, 2);
+	ZVAL_ARR(out, list);
+	Z_TYPE_INFO_P(out) = IS_ARRAY;
+}
+
 /* new IsSuperTypeOfResult($trinary, $reasons) — AcceptsResult.cpp */
 bool pt_result_object_create(zval *out, zend_class_entry *ce, zval *trinary, zval *reasons, zval *lazyReasons);
 
@@ -1846,22 +1880,9 @@ public:
 		if (classReflection.isNull()) return PT_TRI_MAYBE;
 		zend_object *reflection = Z_OBJ_P(classReflection.raw());
 
-		static const char *const extraOffsetClasses[] = {
-			"DOMNamedNodeMap", // Only read and existence
-			"Dom\\NamedNodeMap", // Only read and existence
-			"DOMNodeList", // Only read and existence
-			"Dom\\NodeList", // Only read and existence
-			"Dom\\HTMLCollection", // Only read and existence
-			"Dom\\DtdNamedNodeMap", // Only read and existence
-			"PDORow", // Only read and existence
-			"ResourceBundle", // Only read
-			"FFI\\CData", // Very funky and weird
-			"SimpleXMLElement",
-			"Threaded",
-		};
-		for (const char *extraOffsetClass : extraOffsetClasses) {
+		for (const pt_superglobal_name &extraOffsetClass : pt_ot_extra_offset_classes) {
 			bool is;
-			if (UNEXPECTED(!reflectionIs(reflection, extraOffsetClass, strlen(extraOffsetClass), is))) return -1;
+			if (UNEXPECTED(!reflectionIs(reflection, extraOffsetClass.name, extraOffsetClass.len, is))) return -1;
 			if (is) return PT_TRI_YES;
 		}
 
@@ -3586,6 +3607,7 @@ void pt_register_object_type()
 	ptdecl::ObjectType::declareClass(cls);
 	/* the twin's declaration order defines the PT_OT_PROP_* slots */
 	cls.privateClassConstantLong("DESCRIPTION_CACHE_LIMIT", PT_OT_DESCRIPTION_CACHE_LIMIT);
+	cls.privateClassConstantValue("EXTRA_OFFSET_CLASSES", pt_ot_extra_offset_classes_constant);
 	cls.privateTypedClassProperty("subtractedType", "PHPStan\\Type\\Type", true);
 	/* the static caches, in the twin's declaration order too */
 	cls.privateStaticTypedArrayPropertyDefaultEmpty("superTypes");

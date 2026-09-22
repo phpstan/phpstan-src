@@ -8444,6 +8444,22 @@ foreach ([\PHPStan\Analyser\RicherScopeGetTypeHelper::class => 'getIdenticalResu
 	$constantArrayUnion = static fn () => new \PHPStan\Type\UnionType([new \PHPStan\Type\Constant\ConstantArrayType([$cs('a')], [$ci(1)]), new \PHPStan\Type\Constant\ConstantArrayType([$cs('a')], [$ci(2)])]);
 	$r['intersection getFiniteTypes constant arrays'] = $view((new \PHPStan\Type\IntersectionType([$constantArrayUnion(), $constantArrayUnion()]))->getFiniteTypes());
 
+	// the class constants the Type classes declare, private ones included
+	foreach (array_keys($manifest) as $shadowedClass) {
+		if (!str_starts_with($shadowedClass, 'PHPStan\\Type\\')) {
+			continue;
+		}
+		$constants = [];
+		foreach ((new \ReflectionClass($shadowedClass))->getReflectionConstants() as $constant) {
+			$constants[$constant->getName()] = [$constant->isPrivate() ? 'private' : ($constant->isProtected() ? 'protected' : 'public'), $constant->getValue(), $constant->isFinal(), $constant->getDeclaringClass()->getName()];
+		}
+		$r["class constants $shadowedClass"] = $constants;
+	}
+	// ObjectType's EXTRA_OFFSET_CLASSES, walked by isOffsetAccessible()
+	foreach ([\SimpleXMLElement::class, 'Dom\\NodeList', \DOMNodeList::class, \PDORow::class, \stdClass::class, \ArrayObject::class, \Exception::class] as $offsetClass) {
+		$r["extra offset class $offsetClass"] = $misuse(static fn () => (new \PHPStan\Type\ObjectType($offsetClass))->isOffsetAccessible());
+	}
+
 	// countConstantArrayValueTypes() hands each element to TypeTraverser::map(Type $type, ...)
 	foreach (['string' => 'x', 'object' => new \stdClass()] as $elementName => $element) {
 		$r["combinator countConstantArrayValueTypes $elementName"] = $misuse(static fn () => \PHPStan\Type\TypeCombinator::countConstantArrayValueTypes([new \PHPStan\Type\IntegerType(), $element]));

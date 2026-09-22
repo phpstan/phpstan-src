@@ -82,6 +82,7 @@ use function implode;
 use function in_array;
 use function is_int;
 use function is_string;
+use function ksort;
 use function max;
 use function min;
 use function pow;
@@ -3246,36 +3247,77 @@ class ConstantArrayType implements Type
 			return new NeverType();
 		}
 
-		// isList is Maybe. In a sealed shape a key past a gap in the 0..n sequence
-		// (or any non-integer key) can never appear in a list, so keep only the
-		// contiguous 0..m prefix. Unsealed extras may fill the gaps, so keep every
-		// key there.
-		if ($this->isUnsealed()->no()) {
-			$positionByIndex = [];
-			foreach ($this->keyTypes as $position => $keyType) {
-				if (!$keyType instanceof ConstantIntegerType) {
-					continue;
-				}
-				$positionByIndex[$keyType->getValue()] = $position;
+		// isList is Maybe. A list has its keys in ascending order, and one that
+		// has the key k has every key below k too - positional operations on the
+		// list trust both, so the keys are put in ascending order and the ones
+		// below a required key are made required. In a sealed shape a key past a
+		// gap in the 0..n sequence (or any non-integer key) can never appear in a
+		// list, so keep only the contiguous 0..m prefix. Unsealed extras may fill
+		// the gaps, so keep every key there, the integer ones first.
+		$positionByIndex = [];
+		$otherPositions = [];
+		foreach ($this->keyTypes as $position => $keyType) {
+			if (!$keyType instanceof ConstantIntegerType) {
+				$otherPositions[] = $position;
+				continue;
 			}
+			$positionByIndex[$keyType->getValue()] = $position;
+		}
 
+		if ($this->isUnsealed()->no()) {
 			$keptPositions = [];
 			for ($index = 0; array_key_exists($index, $positionByIndex); $index++) {
 				$keptPositions[] = $positionByIndex[$index];
 			}
+		} else {
+			ksort($positionByIndex);
+			$keptPositions = array_merge(array_values($positionByIndex), $otherPositions);
+		}
 
-			if (count($keptPositions) < count($this->keyTypes)) {
-				$builder = ConstantArrayTypeBuilder::createEmpty();
-				foreach ($keptPositions as $position) {
-					$builder->setOffsetValueType(
-						$this->keyTypes[$position],
-						$this->valueTypes[$position],
-						$this->isOptionalKey($position),
-					);
-				}
-
-				return $builder->getArray();
+		$requiredLength = 0;
+		foreach ($keptPositions as $position) {
+			$keyType = $this->keyTypes[$position];
+			if (!$keyType instanceof ConstantIntegerType || $this->isOptionalKey($position)) {
+				continue;
 			}
+
+			$requiredLength = max($requiredLength, $keyType->getValue() + 1);
+		}
+
+		$optionalKeys = [];
+		foreach ($keptPositions as $newPosition => $position) {
+			if (!$this->isOptionalKey($position)) {
+				continue;
+			}
+
+			$keyType = $this->keyTypes[$position];
+			if ($keyType instanceof ConstantIntegerType && $keyType->getValue() >= 0 && $keyType->getValue() < $requiredLength) {
+				continue;
+			}
+
+			$optionalKeys[] = $newPosition;
+		}
+
+		if ($keptPositions !== array_keys($this->keyTypes) || count($optionalKeys) !== count($this->optionalKeys)) {
+			$builder = ConstantArrayTypeBuilder::createEmpty();
+			$builder->disableArrayDegradation();
+			foreach ($keptPositions as $newPosition => $position) {
+				$builder->setOffsetValueType(
+					$this->keyTypes[$position],
+					$this->valueTypes[$position],
+					in_array($newPosition, $optionalKeys, true),
+				);
+			}
+
+			$constantArrays = $builder->getArray()->getConstantArrays();
+			if (count($constantArrays) !== 1) {
+				throw new ShouldNotHappenException();
+			}
+
+			// The builder can answer maybe for an optional tail like `[0, 1?, 2?]`,
+			// but these are the keys of a list.
+			$list = $constantArrays[0];
+			return $this->recreate($list->keyTypes, $list->valueTypes, $list->nextAutoIndexes, $list->optionalKeys, TrinaryLogic::createYes(), $this->unsealed);
 		}
 
 		return $this->recreate($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, $this->optionalKeys, TrinaryLogic::createYes(), $this->unsealed);

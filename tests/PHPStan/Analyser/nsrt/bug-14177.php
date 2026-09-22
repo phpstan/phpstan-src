@@ -184,7 +184,8 @@ class HelloWorld2
 		unset($c[$int]);
 		assertType('false', array_is_list($a));
 		assertType('bool', array_is_list($b));
-		assertType('bool', array_is_list($c));
+		// the required key 3 makes the keys below it required in a list too
+		assertType('false', array_is_list($c));
 	}
 
 	/**

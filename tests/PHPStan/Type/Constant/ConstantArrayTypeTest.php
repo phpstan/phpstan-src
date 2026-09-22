@@ -1681,6 +1681,90 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 	}
 
 	/**
+	 * @return iterable<string, array{bool, list<array{int|string, Type, bool}>, bool, string, list<int|string>}>
+	 */
+	public static function dataMakeListPutsKeysInAscendingOrderAndRequiresTheOnesBelowARequiredKey(): iterable
+	{
+		foreach ([true, false] as $bleedingEdge) {
+			$suffix = $bleedingEdge ? ' (sealed)' : ' (unsealed === null)';
+
+			yield 'descending keys' . $suffix => [
+				$bleedingEdge,
+				[[1, new IntegerType(), true], [0, new StringType(), true]],
+				false,
+				'list{0?: string, 1?: int}',
+				[0, 1],
+			];
+
+			yield 'optional key below a required one' . $suffix => [
+				$bleedingEdge,
+				[[0, new StringType(), true], [1, new IntegerType(), false]],
+				false,
+				'array{string, int}',
+				[0, 1],
+			];
+		}
+
+		// Unsealed extras may fill the gaps, so a string key and a negative key
+		// stay (after the integer ones and optional), unlike in a sealed shape.
+		yield 'string key after the integer ones (unsealed === null)' => [
+			false,
+			[[1, new IntegerType(), true], ['a', new BooleanType(), true], [0, new StringType(), true]],
+			false,
+			'list{0?: string, 1?: int, a?: bool}',
+			[0, 1, 'a'],
+		];
+
+		yield 'negative key stays optional (unsealed === null)' => [
+			false,
+			[[-1, new BooleanType(), true], [0, new StringType(), true], [1, new IntegerType(), false]],
+			false,
+			'list{-1?: bool, 0: string, 1: int}',
+			[-1, 0, 1],
+		];
+
+		yield 'real extras are kept' => [
+			true,
+			[[1, new IntegerType(), true], [0, new StringType(), true]],
+			true,
+			'list{0?: string, 1?: int, ...<bool>}',
+			[0, 1],
+		];
+	}
+
+	/**
+	 * @param list<array{int|string, Type, bool}> $items
+	 * @param list<int|string> $expectedKeys
+	 */
+	#[DataProvider('dataMakeListPutsKeysInAscendingOrderAndRequiresTheOnesBelowARequiredKey')]
+	public function testMakeListPutsKeysInAscendingOrderAndRequiresTheOnesBelowARequiredKey(
+		bool $bleedingEdge,
+		array $items,
+		bool $unsealed,
+		string $expectedList,
+		array $expectedKeys,
+	): void
+	{
+		BleedingEdgeToggle::withBleedingEdge($bleedingEdge, function () use ($items, $unsealed, $expectedList, $expectedKeys): void {
+			$array = $this->buildShape($items);
+			if ($unsealed) {
+				$builder = ConstantArrayTypeBuilder::createFromConstantArray($array);
+				$builder->makeUnsealed(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new BooleanType());
+				$array = $builder->getArray();
+				$this->assertInstanceOf(ConstantArrayType::class, $array);
+			}
+			$this->assertSame(TrinaryLogic::createMaybe()->describe(), $array->isList()->describe());
+
+			$list = $array->makeList();
+			$this->assertInstanceOf(ConstantArrayType::class, $list);
+			$this->assertSame($expectedList, $list->describe(VerbosityLevel::precise()));
+			$this->assertSame(TrinaryLogic::createYes()->describe(), $list->isList()->describe());
+			$this->assertSame($expectedKeys, array_map(static fn (ConstantIntegerType|ConstantStringType $key): int|string => $key->getValue(), $list->getKeyTypes()));
+			$this->assertSame($array->isUnsealed()->describe(), $list->isUnsealed()->describe());
+		});
+	}
+
+	/**
 	 * @return iterable<string, array{bool, list<array{int|string, Type, bool}>, list<array{int|string, Type, bool}>, TrinaryLogic}>
 	 */
 	public static function dataMergeWithRecomputesListnessOfSealedShape(): iterable

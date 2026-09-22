@@ -261,12 +261,16 @@ public:
 		return isSet(typeCallback.raw(), NULL);
 	}
 
-	/* $inner->isSet($typeCallback, $result) of an inner resolution */
+	/* $inner->isSet($typeCallback, $result) of an inner resolution; the
+	 * native recursion down the chain continues on a fresh C stack segment
+	 * when the current one runs low (the twin recursed on the VM stack) */
 	static zv::Val isSetOf(zval *resolution, zval *typeCallback, zval *result)
 	{
 		if (EXPECTED(Z_TYPE_P(resolution) == IS_OBJECT && Z_OBJCE_P(resolution) == pt_ce_issetability_resolution)) {
 			zv::Val held = zv::Val::copyOf(zv::Ref(resolution));
-			return IssetabilityResolution(Z_OBJ_P(held.raw())).isSet(typeCallback, result);
+			zv::Val isSetResult;
+			pt_engine_with_stack([&]() { isSetResult = IssetabilityResolution(Z_OBJ_P(held.raw())).isSet(typeCallback, result); });
+			return isSetResult;
 		}
 		if (UNEXPECTED(Z_TYPE_P(resolution) != IS_OBJECT)) {
 			zend_throw_error(NULL, "Call to a member function isSet() on %s", zend_zval_value_name(resolution));
@@ -278,12 +282,15 @@ public:
 		return pt_type_call(Z_OBJ_P(resolution), PT_LC("isset"), 2, argv);
 	}
 
-	/* $inner->isSetUndefined() of an inner resolution */
+	/* $inner->isSetUndefined() of an inner resolution (on a fresh C stack
+	 * segment when the current one runs low, like isSetOf()) */
 	static zv::Val isSetUndefinedOf(zval *resolution)
 	{
 		if (EXPECTED(Z_TYPE_P(resolution) == IS_OBJECT && Z_OBJCE_P(resolution) == pt_ce_issetability_resolution)) {
 			zv::Val held = zv::Val::copyOf(zv::Ref(resolution));
-			return IssetabilityResolution(Z_OBJ_P(held.raw())).isSetUndefined();
+			zv::Val isSetResult;
+			pt_engine_with_stack([&]() { isSetResult = IssetabilityResolution(Z_OBJ_P(held.raw())).isSetUndefined(); });
+			return isSetResult;
 		}
 		if (UNEXPECTED(Z_TYPE_P(resolution) != IS_OBJECT)) {
 			zend_throw_error(NULL, "Call to a member function isSetUndefined() on %s", zend_zval_value_name(resolution));

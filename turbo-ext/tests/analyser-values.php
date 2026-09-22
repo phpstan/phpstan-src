@@ -47,6 +47,13 @@ $avContainerFactory = new \PHPStan\DependencyInjection\ContainerFactory(dirname(
 $avContainer = $avContainerFactory->create(sys_get_temp_dir() . '/phpstan-turbo-smoke', [$avContainerFactory->getConfigDirectory() . '/config.level8.neon'], []);
 $avReflectionProvider = $avContainer->getByType(\PHPStan\Reflection\ReflectionProvider::class);
 $avPrecise = \PHPStan\Type\VerbosityLevel::precise();
+// the length of the deep chains below: the native recursions over them run
+// out of the C stack without pt_engine_with_stack(), the twins recurse on the
+// VM stack and do not
+$avDeepChainDepth = 100000;
+// the deep chains stay referenced until shutdown: releasing one mid-run frees
+// it recursively, which runs out of the C stack in the engine itself
+$avDeepChainsKeptAlive = [];
 
 // PHP types for the scopes and the issetability chains: the PHP twins of the
 // links and resolutions type-hint the PHP TrinaryLogic the PHP types answer
@@ -336,6 +343,26 @@ foreach ($avSides as $side => $c) {
 	$r['issetability broken variable'] = $avCatch(static fn () => $broken->resolve($avScope, false, $avN['a']));
 	(new \ReflectionProperty($c['IssetabilityDescriptor'], 'kind'))->setValue($broken, 'something else');
 	$r['issetability broken property'] = $avCatch(static fn () => $broken->resolve($avScope, false, $avN['a']));
+
+	// deep chains (a fresh tree per side: the read variable names are cached
+	// on the nodes)
+	$deepConcat = new \PhpParser\Node\Expr\Variable('a0');
+	for ($i = 1; $i < $avDeepChainDepth; $i++) {
+		$deepConcat = new \PhpParser\Node\Expr\BinaryOp\Concat($deepConcat, new \PhpParser\Node\Expr\Variable('a' . ($i % 3)));
+	}
+	$r['deep read variable names'] = $avCatch(static fn () => $newResult($deepConcat, $avInt)->askScopeVariableStateMatches($avOtherScope, false));
+	$deepDescriptor = $c['IssetabilityDescriptor']::variable('arr');
+	for ($i = 1; $i < $avDeepChainDepth; $i++) {
+		$deepDescriptor = $i % 2 === 0
+			? $c['IssetabilityDescriptor']::offset($newResult($avN['arr'], $avArray, descriptor: $deepDescriptor), $newResult($avN['one'], $avInt))
+			: $c['IssetabilityDescriptor']::property($newResult($avN['arr'], $avArray, descriptor: $deepDescriptor), $resolverFor('parent'), $avN['thisParent']);
+	}
+	$r['deep issetability descriptor'] = $avCatch(static function () use ($deepDescriptor, $avScope, $avN, &$avDeepChainsKeptAlive): bool {
+		$resolution = $deepDescriptor->resolve($avScope, false, $avN['dimA']);
+		$avDeepChainsKeptAlive[] = $resolution;
+		return $resolution->getLink()->isProperty();
+	});
+	$avDeepChainsKeptAlive[] = [$deepConcat, $deepDescriptor];
 
 	$avResults[$side] = $r;
 }
@@ -915,6 +942,19 @@ foreach ($avIssetSides as $side => $c) {
 	$r['resolution uninitialized not empty'] = $avCatch(static fn () => (new \ReflectionClass($R))->newInstanceWithoutConstructor()->notEmpty());
 	$r['resolution uninitialized link'] = $avCatch(static fn () => (new \ReflectionClass($R))->newInstanceWithoutConstructor()->getLink());
 	$r['resolution named'] = $avDescribe(new $R(inner: null, link: $links['leaf']));
+	// every link asks the next one: through isSet() (an accessible offset
+	// holding a verdict) and through isSetUndefined() (inaccessible offsets)
+	$deepResolution = null;
+	$deepUndefinedResolution = null;
+	for ($i = 0; $i < $avDeepChainDepth; $i++) {
+		$deepResolution = new $R($links['offset accessible yes'], $deepResolution);
+		$deepUndefinedResolution = new $R($links['offset not accessible'], $deepUndefinedResolution);
+	}
+	$r['deep resolution'] = [
+		$avCatch(static fn () => $deepResolution->isSet(static fn (): bool => true)),
+		$avCatch(static fn () => $deepUndefinedResolution->isSet(static fn (): bool => true)),
+	];
+	$avDeepChainsKeptAlive[] = [$deepResolution, $deepUndefinedResolution];
 
 	$E = $c['EnsuredNonNullabilityResultExpression'];
 	$expression = new $E($avN['a'], $avNullableInt, $avInt, $avMaybe);

@@ -26,6 +26,7 @@ namespace sigs = ptdecl::IssetabilityDescriptor::sig;
 #include "TypeTraits.h"
 #include "TypeOps.h"
 #include "AnalyserValues.h"
+#include "Engine.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpragmas"
@@ -146,6 +147,16 @@ private:
 		pt_write_slot(self, index, &null);
 	}
 
+	/* $result->getIssetabilityResolution(...) of the inner link's result: the
+	 * native recursion down the chain continues on a fresh C stack segment
+	 * when the current one runs low (the twin recursed on the VM stack) */
+	static zv::Val innerResolution(zval *result, zval *scope, bool useNativeTypes, bool reprocessUntrackedLinks)
+	{
+		zv::Val inner;
+		pt_engine_with_stack([&]() { inner = pt_expression_result_get_issetability_resolution(result, scope, useNativeTypes, reprocessUntrackedLinks); });
+		return inner;
+	}
+
 	/* a nullable slot, borrowed; NULL with the uninitialized-read Error pending */
 	zval *slot(uint32_t index, const char *name) const
 	{
@@ -253,7 +264,7 @@ private:
 		if (UNEXPECTED(isExprTracked < 0)) return zv::Val();
 		zv::Val link = pt_issetability_link_info_offset(isOffsetAccessible.raw(), hasOffsetValue.raw(), isExprTracked == PT_TRI_YES, varType.raw(), dimType.raw(), valueType.raw());
 		if (UNEXPECTED(link.isUndef())) return zv::Val();
-		zv::Val inner = pt_expression_result_get_issetability_resolution(varResult, scope, useNativeTypes, reprocessUntrackedLinks);
+		zv::Val inner = innerResolution(varResult, scope, useNativeTypes, reprocessUntrackedLinks);
 		return newResolution(std::move(link), std::move(inner));
 	}
 
@@ -270,7 +281,7 @@ private:
 		zval *innerResult = slot(slots::innerResult, "innerResult");
 		if (UNEXPECTED(innerResult == NULL)) return zv::Val();
 		zv::Val inner = Z_TYPE_P(innerResult) != IS_NULL
-			? pt_expression_result_get_issetability_resolution(innerResult, scope, useNativeTypes, reprocessUntrackedLinks)
+			? innerResolution(innerResult, scope, useNativeTypes, reprocessUntrackedLinks)
 			: zv::Val::null();
 		if (UNEXPECTED(inner.isUndef())) return zv::Val();
 

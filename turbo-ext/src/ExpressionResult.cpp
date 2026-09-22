@@ -1051,10 +1051,13 @@ private:
 		return zv::Val(std::move(result));
 	}
 
-	/* foreach (self::collectReadVariableNames($subNode) as $name) $names[$name] = true */
+	/* foreach (self::collectReadVariableNames($subNode) as $name) $names[$name] = true
+	 * — the recursion continues on a fresh C stack segment when the current
+	 * one runs low (the twin recursed on the VM stack) */
 	static bool mergeNames(zv::Arr &names, zend_object *subNode)
 	{
-		zv::Val subNames = collectReadVariableNames(subNode);
+		zv::Val subNames;
+		pt_engine_with_stack([&]() { subNames = collectReadVariableNames(subNode); });
 		if (UNEXPECTED(subNames.isUndef())) return false;
 		for (auto entry : zv::TableRef(Z_ARRVAL_P(subNames.raw()))) {
 			zval trueValue;

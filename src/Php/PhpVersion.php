@@ -246,6 +246,11 @@ final class PhpVersion
 		return $this->versionId >= 80000;
 	}
 
+	public function supportsMurmurAndXxHashAlgorithms(): bool
+	{
+		return $this->versionId >= 80100;
+	}
+
 	public function throwsValueErrorForInvalidRoundingMode(): bool
 	{
 		return $this->versionId >= 80400;

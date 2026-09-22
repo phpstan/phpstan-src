@@ -1247,6 +1247,71 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 	}
 
 	#[RequiresPhp('>= 8.0.0')]
+	public function testHashThrowType(): void
+	{
+		$this->analyse([__DIR__ . '/data/hash-throw-type.php'], [
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				15,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				21,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				28,
+			],
+		]);
+	}
+
+	#[RequiresPhp('< 8.0.0')]
+	public function testHashThrowTypeBeforePhp8(): void
+	{
+		$this->analyse([__DIR__ . '/data/hash-throw-type.php'], [
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				15,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				21,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				28,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				34,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				40,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				46,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testHashThrowTypePhp81(): void
+	{
+		$this->analyse([__DIR__ . '/data/hash-throw-type-php81.php'], [
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				12,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				18,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
 	public function testStrSplitThrowType(): void
 	{
 		$this->analyse([__DIR__ . '/data/str-split-throw-type.php'], [

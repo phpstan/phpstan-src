@@ -8,6 +8,7 @@ use PHPStan\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
 use PHPStan\BetterReflection\Reflection\Exception\CircularReference;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\Collectors\CollectedData;
+use PHPStan\Collectors\Collector;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Dependency\PackageDependencyResolver;
@@ -18,6 +19,7 @@ use PHPStan\Node\InTraitNode;
 use PHPStan\Parser\Parser;
 use PHPStan\Rules\FileDependenciesRuleError;
 use PHPStan\Rules\Registry as RuleRegistry;
+use PHPStan\Rules\Rule;
 use function array_keys;
 use function get_class;
 use function sprintf;
@@ -58,6 +60,17 @@ final class FileAnalyserCallback
 	private array $unmatchedLineIgnores;
 
 	/**
+	 * The registries answer per node class and cache that themselves; this keeps the answer for the
+	 * classes met in this file, so that the walk does not ask them again for every node of a class.
+	 *
+	 * @var array<string, array<Rule<Node>>>
+	 */
+	private array $rulesByNodeType = [];
+
+	/** @var array<string, array<Collector<Node, mixed>>> */
+	private array $collectorsByNodeType = [];
+
+	/**
 	 * @param array<string, true> $analysedFiles
 	 * @param callable(Node $node, Scope $scope): void|null $outerNodeCallback
 	 * @param Node\Stmt[] $parserNodes
@@ -84,6 +97,9 @@ final class FileAnalyserCallback
 
 	public function __invoke(Node $node, Scope $scope): void
 	{
+		// read before the instanceof checks below narrow $node: the registries are generic over the
+		// node class, and a narrowed class-string makes what they answer a different Rule<T>
+		$nodeType = get_class($node);
 		if ($node instanceof EmitCollectedDataNode) {
 			$this->fileCollectedData[$scope->getFile()][$node->getCollectorType()][] = $node->getData();
 			return;
@@ -125,8 +141,12 @@ final class FileAnalyserCallback
 			($this->outerNodeCallback)($node, $scope);
 		}
 		$uniquedAnalysedCodeExceptionMessages = [];
-		$nodeType = get_class($node);
-		foreach ($this->ruleRegistry->getRules($nodeType) as $rule) {
+		$rules = $this->rulesByNodeType[$nodeType] ?? null;
+		if ($rules === null) {
+			$rules = $this->ruleRegistry->getRules($nodeType);
+			$this->rulesByNodeType[$nodeType] = $rules;
+		}
+		foreach ($rules as $rule) {
 			try {
 				$ruleErrors = $rule->processNode($node, $scope);
 			} catch (AnalysedCodeException $e) {
@@ -183,7 +203,12 @@ final class FileAnalyserCallback
 			}
 		}
 
-		foreach ($this->collectorRegistry->getCollectors($nodeType) as $collector) {
+		$collectors = $this->collectorsByNodeType[$nodeType] ?? null;
+		if ($collectors === null) {
+			$collectors = $this->collectorRegistry->getCollectors($nodeType);
+			$this->collectorsByNodeType[$nodeType] = $collectors;
+		}
+		foreach ($collectors as $collector) {
 			try {
 				$collectedData = $collector->processNode($node, $scope);
 			} catch (AnalysedCodeException $e) {

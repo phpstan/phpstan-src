@@ -88,6 +88,12 @@ class PropertyAttributesRuleTest extends RuleTestCase
 	public function testOverrideAttributePhpVersionNarrowedScope(): void
 	{
 		$errors = [];
+		if (PHP_VERSION_ID < 80300) {
+			$errors[] = [
+				'Attribute class Override does not have the property target.',
+				18,
+			];
+		}
 		if (PHP_VERSION_ID < 80500) {
 			$errors[] = [
 				'Attribute class Override can be used with properties only on PHP 8.5 and later.',

@@ -1142,7 +1142,13 @@ public:
 		zv::Val name = displayName();
 		if (UNEXPECTED(name.isUndef())) return zv::Val();
 		zv::Val joined = implodeComma(templateTypes.ref());
-		return zv::Val::adoptString(zend_strpprintf(0, "%s<%s>", Z_STRVAL_P(name.raw()), Z_STRVAL_P(joined.raw())));
+		/* binary safe, like the twin's concatenation */
+		smart_str displayName = {};
+		smart_str_appendl(&displayName, Z_STRVAL_P(name.raw()), Z_STRLEN_P(name.raw()));
+		smart_str_appendc(&displayName, '<');
+		smart_str_appendl(&displayName, Z_STRVAL_P(joined.raw()), Z_STRLEN_P(joined.raw()));
+		smart_str_appendc(&displayName, '>');
+		return zv::Val::adoptString(smart_str_extract(&displayName));
 	}
 
 	zv::Val getCacheKey()
@@ -1604,7 +1610,8 @@ public:
 		zv::Val cacheKey = crGetCacheKey(classReflection.ref());
 		if (UNEXPECTED(cacheKey.isUndef())) return zv::Val();
 		zend_string *cacheKeyStr = zval_get_string(cacheKey.raw());
-		zv::Val key = zv::Val::adoptString(zend_strpprintf(0, "%s-%s", ZSTR_VAL(memberName), ZSTR_VAL(cacheKeyStr)));
+		/* sprintf('%s-%s', ...) is binary safe */
+		zv::Val key = zv::Val::adoptString(zend_string_concat3(ZSTR_VAL(memberName), ZSTR_LEN(memberName), "-", 1, ZSTR_VAL(cacheKeyStr), ZSTR_LEN(cacheKeyStr)));
 		zend_string_release(cacheKeyStr);
 		return key;
 	}
@@ -2191,7 +2198,14 @@ public:
 			if (UNEXPECTED(displayName_.isUndef())) return zv::Val();
 			zend_string *displayNameStr = zval_get_string(displayName_.raw());
 			zval message;
-			ZVAL_STR(&message, zend_strpprintf(0, "Enum case %s::%s does not exist.", ZSTR_VAL(displayNameStr), ZSTR_VAL(name)));
+			/* binary safe, like the twin's sprintf() */
+			smart_str text = {};
+			smart_str_appends(&text, "Enum case ");
+			smart_str_append(&text, displayNameStr);
+			smart_str_appends(&text, "::");
+			smart_str_append(&text, name);
+			smart_str_appends(&text, " does not exist.");
+			ZVAL_STR(&message, smart_str_extract(&text));
 			zend_string_release(displayNameStr);
 			throwNew(PT_CLASS_SHOULD_NOT_HAPPEN, 1, &message);
 			zval_ptr_dtor(&message);

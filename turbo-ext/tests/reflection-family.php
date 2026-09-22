@@ -577,11 +577,11 @@ $rfSamples['ConstantsHolder<Circle>'] = $rfSamples['ReflectionFamilyFixture\Cons
 $rfSamples['MixinHolder<int>'] = $rfSamples['ReflectionFamilyFixture\MixinHolder']->withTypes([new \PHPStan\Type\IntegerType()]);
 $rfSamples['ImmutableChild final'] = $rfSamples['ReflectionFamilyFixture\ImmutableChild']->asFinal();
 
-$rfProbeMethods = ['__construct', '__get', '__set', '__isset', 'area', 'greet', 'secret', 'make', 'base', 'hidden', 'label', 'getIterator', 'count', 'name', 'find', 'extra', 'cases', 'from', 'tryFrom', 'offsetGet', 'getMessage', 'nope', '123', 'Legacy'];
-$rfProbeProperties = ['x', 'pub', 'priv', 'count', 'fromTrait', 'a', 's', 'p', 'c', 'v', 'value', 'name', 'nope', 'message', '123'];
+$rfProbeMethods = ['__construct', '__get', '__set', '__isset', 'area', 'greet', 'secret', 'make', 'base', 'hidden', 'label', 'getIterator', 'count', 'name', 'find', 'extra', 'cases', 'from', 'tryFrom', 'offsetGet', 'getMessage', 'nope', '123', 'Legacy', "area\0x"];
+$rfProbeProperties = ['x', 'pub', 'priv', 'count', 'fromTrait', 'a', 's', 'p', 'c', 'v', 'value', 'name', 'nope', 'message', '123', "pub\0x"];
 $rfProbeTraits = ['ReflectionFamilyFixture\Greets', 'ReflectionFamilyFixture\Nested', 'ReflectionFamilyFixture\Documented', 'ReflectionFamilyFixture\Twice', 'Nope\Missing'];
 $rfProbeConstants = ['DEFAULT', 'LIMIT', 'NAME', 'INHERITED', 'DOCUMENTED', 'TEMPLATED', 'OLD', 'TYPED', 'FIRST', 'nope', 'TARGET_CLASS'];
-$rfProbeEnumCases = ['Hearts', 'Spades', 'A', 'B', 'Nope'];
+$rfProbeEnumCases = ['Hearts', 'Spades', 'A', 'B', 'Nope', "Hearts\0x"];
 $rfProbeClasses = ['ReflectionFamilyFixture\Base', 'ReflectionFamilyFixture\Shape', 'ReflectionFamilyFixture\Circle', 'ReflectionFamilyFixture\Box', 'ReflectionFamilyFixture\HasName', 'ReflectionFamilyFixture\Dynamic', 'Countable', 'Traversable', 'IteratorAggregate', 'stdClass', 'Throwable', 'Nope\Missing'];
 // the memo slots the ported methods own (a slot an unported method fills
 // lands in the delegate twin on the native side) and the constructor's

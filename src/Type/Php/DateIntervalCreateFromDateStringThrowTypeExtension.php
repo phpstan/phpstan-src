@@ -38,9 +38,16 @@ final class DateIntervalCreateFromDateStringThrowTypeExtension implements Dynami
 		$constantStrings = $valueType->getConstantStrings();
 
 		foreach ($constantStrings as $constantString) {
+			// createFromDateString() only throws since PHP 8.3, before that it warns and returns false.
+			// The analysed version can be 8.3+ while this process runs on an older one,
+			// so detect the failure through the return value instead of the exception.
 			try {
-				@DateInterval::createFromDateString($constantString->getValue());
+				$result = @DateInterval::createFromDateString($constantString->getValue());
 			} catch (Throwable) {
+				$result = false;
+			}
+
+			if ($result === false) {
 				return $methodReflection->getThrowType();
 			}
 

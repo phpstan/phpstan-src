@@ -248,11 +248,6 @@ final class PhpVersions
 		return IntegerRangeType::fromInterval(70200, null)->isSuperTypeOf($this->phpVersions)->result;
 	}
 
-	public function supportsHhPrintfSpecifier(): TrinaryLogic
-	{
-		return IntegerRangeType::fromInterval(80000, null)->isSuperTypeOf($this->phpVersions)->result;
-	}
-
 	public function supportsPassNoneEncodings(): TrinaryLogic
 	{
 		return IntegerRangeType::fromInterval(null, 70299)->isSuperTypeOf($this->phpVersions)->result;

@@ -4,7 +4,6 @@ namespace PHPStan\Rules\Functions;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
-use PHPStan\Php\PhpVersions;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -95,7 +94,7 @@ final class PrintfParameterTypeRule implements Rule
 
 		$formatString = $formatArgTypeStrings[0];
 		$format = $formatString->getValue();
-		$placeholderMap = $this->getPlaceholders($format, $scope->getPhpVersion());
+		$placeholderMap = $this->getPlaceholders($format);
 		if ($placeholderMap === null) {
 			// Already reported by PrintfParametersRule.
 			return [];
@@ -177,9 +176,9 @@ final class PrintfParameterTypeRule implements Rule
 	/**
 	 * @return array<int, non-empty-list<PrintfPlaceholder>>|null parameter index => placeholders
 	 */
-	private function getPlaceholders(string $format, PhpVersions $phpVersions): ?array
+	private function getPlaceholders(string $format): ?array
 	{
-		$uses = $this->printfFormatParser->parse($format, $phpVersions);
+		$uses = $this->printfFormatParser->parse($format);
 		if ($uses === null) {
 			return null;
 		}

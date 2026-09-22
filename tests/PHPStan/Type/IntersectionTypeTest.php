@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use DateTimeImmutable;
+use DateTimeInterface;
 use DoctrineIntersectionTypeIsSupertypeOf\Collection;
 use Iterator;
 use ObjectTypeEnums\FooEnum;
@@ -1006,6 +1007,13 @@ class IntersectionTypeTest extends PHPStanTestCase
 		$this->assertFalse($variant->isVariadic());
 		$this->assertCount(1, $variant->getParameters());
 		$this->assertSame('modifier', $variant->getParameters()[0]->getName());
+	}
+
+	#[DataProvider('dataIntersectionWithTemplateMixed')]
+	public function testConstantOfIntersectionWithTemplateMixed(IntersectionType $type): void
+	{
+		$constant = $type->getConstant('ATOM');
+		$this->assertSame(DateTimeInterface::class, $constant->getDeclaringClass()->getName());
 	}
 
 }

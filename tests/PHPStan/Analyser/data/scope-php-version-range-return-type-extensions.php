@@ -16,7 +16,7 @@ function bothVersionsPossible(string $s): void
 	assertType('bool', mb_substitute_character(0));
 }
 
-function validOperatorNeverReturnsNull(string $a, string $b): void
+function validOperatorNeverReturnsNull(string $a, string $b, string $s): void
 {
 	// version_compare() only returns null for an invalid operator, so a constant valid one
 	// rules null out no matter which version of the range is analysed.

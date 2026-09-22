@@ -5,7 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
+use PHPStan\Php\PhpVersions;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\NeverType;
@@ -18,10 +18,6 @@ use function count;
 #[AutowiredService]
 final class ArrayIntersectKeyFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
-
-	public function __construct(private PhpVersion $phpVersion)
-	{
-	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -51,7 +47,7 @@ final class ArrayIntersectKeyFunctionReturnTypeExtension implements DynamicFunct
 		$onlyOneArrayGiven = count($argTypes) === 1;
 
 		if ($firstArrayType->isArray()->no() || (!$onlyOneArrayGiven && $otherArraysType->isArray()->no())) {
-			return $this->phpVersion->arrayFunctionsReturnNullWithNonArray() ? new NullType() : new NeverType();
+			return PhpVersions::pickType($scope->getPhpVersion()->arrayFunctionsReturnNullWithNonArray(), new NullType(), new NeverType());
 		}
 
 		if ($onlyOneArrayGiven) {

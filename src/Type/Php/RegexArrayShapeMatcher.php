@@ -5,7 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
+use PHPStan\Php\PhpVersions;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
@@ -47,19 +47,18 @@ final class RegexArrayShapeMatcher
 	public function __construct(
 		private RegexGroupParser $regexGroupParser,
 		private RegexExpressionHelper $regexExpressionHelper,
-		private PhpVersion $phpVersion,
 	)
 	{
 	}
 
 	public function matchAllExpr(Expr $patternExpr, ?Type $flagsType, TrinaryLogic $wasMatched, Scope $scope): ?Type
 	{
-		return $this->matchPatternType($this->getPatternType($patternExpr, $scope), $flagsType, $wasMatched, true);
+		return $this->matchPatternType($this->getPatternType($patternExpr, $scope), $flagsType, $wasMatched, true, $scope->getPhpVersion());
 	}
 
 	public function matchExpr(Expr $patternExpr, ?Type $flagsType, TrinaryLogic $wasMatched, Scope $scope): ?Type
 	{
-		return $this->matchPatternType($this->getPatternType($patternExpr, $scope), $flagsType, $wasMatched, false);
+		return $this->matchPatternType($this->getPatternType($patternExpr, $scope), $flagsType, $wasMatched, false, $scope->getPhpVersion());
 	}
 
 	public function matchSubjectExpr(Expr $patternExpr, Scope $scope): ?Type
@@ -72,7 +71,7 @@ final class RegexArrayShapeMatcher
 
 		$subjectTypes = [];
 		foreach ($constantStrings as $constantString) {
-			$astWalkResult = $this->regexGroupParser->parseGroups($constantString->getValue());
+			$astWalkResult = $this->regexGroupParser->parseGroups($constantString->getValue(), $scope->getPhpVersion());
 			if ($astWalkResult === null) {
 				return null;
 			}
@@ -83,7 +82,7 @@ final class RegexArrayShapeMatcher
 		return TypeCombinator::union(...$subjectTypes);
 	}
 
-	private function matchPatternType(Type $patternType, ?Type $flagsType, TrinaryLogic $wasMatched, bool $matchesAll): ?Type
+	private function matchPatternType(Type $patternType, ?Type $flagsType, TrinaryLogic $wasMatched, bool $matchesAll, PhpVersions $phpVersions): ?Type
 	{
 		if ($wasMatched->no()) {
 			return ConstantArrayTypeBuilder::createEmpty()->getArray();
@@ -107,11 +106,17 @@ final class RegexArrayShapeMatcher
 			if ($flags !== $flagsType->getValue()) {
 				return null;
 			}
+
+			// PREG_UNMATCHED_AS_NULL only behaves as documented since PHP 7.4, so the
+			// analysed version turns it on the same way the emulation flag does
+			if ($phpVersions->supportsPregUnmatchedAsNull()->yes()) {
+				$flags |= self::PREG_UNMATCHED_AS_NULL_ON_72_73;
+			}
 		}
 
 		$matchedTypes = [];
 		foreach ($constantStrings as $constantString) {
-			$matched = $this->matchRegex($constantString->getValue(), $flags, $wasMatched, $matchesAll);
+			$matched = $this->matchRegex($constantString->getValue(), $flags, $wasMatched, $matchesAll, $phpVersions);
 			if ($matched === null) {
 				return null;
 			}
@@ -129,9 +134,9 @@ final class RegexArrayShapeMatcher
 	/**
 	 * @param int-mask<PREG_OFFSET_CAPTURE|PREG_PATTERN_ORDER|PREG_SET_ORDER|PREG_UNMATCHED_AS_NULL|self::PREG_UNMATCHED_AS_NULL_ON_72_73>|null $flags
 	 */
-	private function matchRegex(string $regex, ?int $flags, TrinaryLogic $wasMatched, bool $matchesAll): ?Type
+	private function matchRegex(string $regex, ?int $flags, TrinaryLogic $wasMatched, bool $matchesAll, PhpVersions $phpVersions): ?Type
 	{
-		$astWalkResult = $this->regexGroupParser->parseGroups($regex);
+		$astWalkResult = $this->regexGroupParser->parseGroups($regex, $phpVersions);
 		if ($astWalkResult === null) {
 			// regex could not be parsed by Hoa/Regex
 			return null;
@@ -479,7 +484,7 @@ final class RegexArrayShapeMatcher
 			return ($flags & PREG_UNMATCHED_AS_NULL) !== 0;
 		}
 
-		return ($flags & PREG_UNMATCHED_AS_NULL) !== 0 && (($flags & self::PREG_UNMATCHED_AS_NULL_ON_72_73) !== 0 || $this->phpVersion->supportsPregUnmatchedAsNull());
+		return ($flags & PREG_UNMATCHED_AS_NULL) !== 0 && ($flags & self::PREG_UNMATCHED_AS_NULL_ON_72_73) !== 0;
 	}
 
 	private function getKeyType(int|string $key): Type

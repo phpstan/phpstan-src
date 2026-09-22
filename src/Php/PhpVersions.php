@@ -6,6 +6,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 
 /**
  * Range-aware PHP version check that handles version uncertainty.
@@ -188,9 +189,120 @@ final class PhpVersions
 		return IntegerRangeType::fromInterval(80500, null)->isSuperTypeOf($this->phpVersions)->result;
 	}
 
+	public function arrayFunctionsReturnNullWithNonArray(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(null, 79999)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function hasDateTimeExceptions(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80300, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function hasFilterThrowOnFailureConstant(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80500, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function hasPDOSubclasses(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80400, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function hasStricterRoundFunctions(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80000, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function highlightStringDoesNotReturnFalse(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80400, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function isEmptyStringValidAliasForNoneInMbSubstituteCharacter(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(null, 79999)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function isNullValidArgInMbSubstituteCharacter(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80000, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function isNumericStringValidArgInMbSubstituteCharacter(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(null, 79999)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function strSplitReturnsEmptyArray(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80200, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function substrReturnFalseInsteadOfEmptyString(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(null, 79999)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function supportsAllUnicodeScalarCodePointsInMbSubstituteCharacter(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(70200, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
 	public function supportsHhPrintfSpecifier(): TrinaryLogic
 	{
 		return IntegerRangeType::fromInterval(80000, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function supportsPassNoneEncodings(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(null, 70299)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function supportsPregCaptureOnlyNamedGroups(): TrinaryLogic
+	{
+		// https://php.watch/versions/8.2/preg-n-no-capture-modifier
+		return IntegerRangeType::fromInterval(80200, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function supportsPregUnmatchedAsNull(): TrinaryLogic
+	{
+		// while PREG_UNMATCHED_AS_NULL is defined in php-src since 7.2.x it starts working as expected with 7.4.x
+		// https://3v4l.org/v3HE4
+		return IntegerRangeType::fromInterval(70400, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function throwsOnInvalidMbStringEncoding(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80000, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	/**
+	 * PHPStan's BetterReflection adapters keep their narrowed native return types only on PHP 8+;
+	 * the downgraded PHP 7 build widens them back to the core Reflection ones.
+	 */
+	public function supportsNativeReflectionAdapterReturnTypes(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80000, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	/**
+	 * Resolves a version-dependent type.
+	 *
+	 * When the analysed PHP version range spans both sides of $versionCheck,
+	 * neither branch can be ruled out and the union of both is returned.
+	 */
+	public static function pickType(TrinaryLogic $versionCheck, Type $ifYes, Type $ifNo): Type
+	{
+		if ($versionCheck->yes()) {
+			return $ifYes;
+		}
+
+		if ($versionCheck->no()) {
+			return $ifNo;
+		}
+
+		return TypeCombinator::union($ifYes, $ifNo);
 	}
 
 }

@@ -5,7 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
+use PHPStan\Php\PhpVersions;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
@@ -31,10 +31,6 @@ use function substr;
 final class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
-	public function __construct(private PhpVersion $phpVersion)
-	{
-	}
-
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
 		return in_array($functionReflection->getName(), ['substr', 'mb_substr'], true);
@@ -51,6 +47,7 @@ final class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTyp
 			return null;
 		}
 
+		$returnsFalseInsteadOfEmptyString = $scope->getPhpVersion()->substrReturnFalseInsteadOfEmptyString();
 		$string = $scope->getType($args[0]->value);
 		$offset = $scope->getType($args[1]->value);
 
@@ -90,9 +87,11 @@ final class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTyp
 					? $this->substrOrFalse($constantString->getValue(), $offset->getValue(), $length->getValue())
 					: $this->substrOrFalse($constantString->getValue(), $offset->getValue());
 				if ($substr === false) {
-					$results[] = $this->phpVersion->substrReturnFalseInsteadOfEmptyString()
-						? new ConstantBooleanType(false)
-						: new ConstantStringType('');
+					$results[] = PhpVersions::pickType(
+						$returnsFalseInsteadOfEmptyString,
+						new ConstantBooleanType(false),
+						new ConstantStringType(''),
+					);
 				} else {
 					$results[] = new ConstantStringType($substr);
 				}
@@ -120,7 +119,7 @@ final class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTyp
 		if (count($accessoryTypes) > 0) {
 			$accessoryTypes[] = new StringType();
 
-			if (!$isNotEmpty && $this->phpVersion->substrReturnFalseInsteadOfEmptyString()) {
+			if (!$isNotEmpty && !$returnsFalseInsteadOfEmptyString->no()) {
 				return new UnionType([
 					new ConstantBooleanType(false),
 					new IntersectionType($accessoryTypes),

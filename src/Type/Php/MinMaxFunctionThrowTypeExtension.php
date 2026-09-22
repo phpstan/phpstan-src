@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
@@ -22,10 +21,6 @@ use function in_array;
 final class MinMaxFunctionThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 {
 
-	public function __construct(private PhpVersion $phpVersion)
-	{
-	}
-
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
 		return in_array($functionReflection->getName(), ['min', 'max'], true);
@@ -38,7 +33,7 @@ final class MinMaxFunctionThrowTypeExtension implements DynamicFunctionThrowType
 			return $functionReflection->getThrowType();
 		}
 
-		if (!$this->phpVersion->throwsValueErrorForInternalFunctions()) {
+		if (!$scope->getPhpVersion()->throwsValueErrorForInternalFunctions()->yes()) {
 			return new VoidType();
 		}
 

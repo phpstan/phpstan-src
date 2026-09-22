@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
@@ -26,10 +25,6 @@ use function trim;
 #[AutowiredService]
 final class MbConvertEncodingFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
-
-	public function __construct(private PhpVersion $phpVersion)
-	{
-	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -60,7 +55,7 @@ final class MbConvertEncodingFunctionReturnTypeExtension implements DynamicFunct
 			$result = $initialReturnType;
 		}
 
-		if ($this->phpVersion->throwsValueErrorForInternalFunctions()) {
+		if ($scope->getPhpVersion()->throwsValueErrorForInternalFunctions()->yes()) {
 			if (!isset($args[2])) {
 				return TypeCombinator::remove($result, new ConstantBooleanType(false));
 			}

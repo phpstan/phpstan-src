@@ -8,7 +8,6 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
 use PHPStan\Type\IntegerRangeType;
@@ -43,7 +42,6 @@ final class PrintfFunctionThrowTypeExtension implements DynamicFunctionThrowType
 	private const NEGATIVE_PRECISION_SPECIFIERS = ['g', 'G', 'h', 'H'];
 
 	public function __construct(
-		private PhpVersion $phpVersion,
 		private PrintfFormatParser $formatParser,
 	)
 	{
@@ -56,7 +54,7 @@ final class PrintfFunctionThrowTypeExtension implements DynamicFunctionThrowType
 
 	public function getThrowTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $funcCall, Scope $scope): ?Type
 	{
-		if (!$this->phpVersion->throwsValueErrorForInternalFunctions()) {
+		if ($scope->getPhpVersion()->throwsValueErrorForInternalFunctions()->no()) {
 			return new VoidType();
 		}
 

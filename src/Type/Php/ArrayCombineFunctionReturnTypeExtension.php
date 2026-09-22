@@ -5,7 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
+use PHPStan\Php\PhpVersions;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -20,7 +20,6 @@ final class ArrayCombineFunctionReturnTypeExtension implements DynamicFunctionRe
 
 	public function __construct(
 		private ArrayCombineHelper $arrayCombineHelper,
-		private PhpVersion $phpVersion,
 	)
 	{
 	}
@@ -45,15 +44,12 @@ final class ArrayCombineFunctionReturnTypeExtension implements DynamicFunctionRe
 			return $returnType;
 		}
 
+		$throwsValueError = $scope->getPhpVersion()->throwsValueErrorForInternalFunctions();
 		if ($hasValueError->yes()) {
-			if ($this->phpVersion->throwsValueErrorForInternalFunctions()) {
-				return new NeverType();
-			}
-
-			return new ConstantBooleanType(false);
+			return PhpVersions::pickType($throwsValueError, new NeverType(), new ConstantBooleanType(false));
 		}
 
-		if ($this->phpVersion->throwsValueErrorForInternalFunctions()) {
+		if ($throwsValueError->yes()) {
 			return $returnType;
 		}
 

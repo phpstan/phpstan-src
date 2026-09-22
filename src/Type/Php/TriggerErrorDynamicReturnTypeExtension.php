@@ -5,7 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
+use PHPStan\Php\PhpVersions;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -22,10 +22,6 @@ use const E_USER_WARNING;
 #[AutowiredService]
 final class TriggerErrorDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
-
-	public function __construct(private PhpVersion $phpVersion)
-	{
-	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -54,11 +50,11 @@ final class TriggerErrorDynamicReturnTypeExtension implements DynamicFunctionRet
 			}
 
 			if (!in_array($errorLevel, [E_USER_WARNING, E_USER_NOTICE, E_USER_DEPRECATED], true)) {
-				if ($this->phpVersion->throwsValueErrorForInternalFunctions()) {
-					return new NeverType(true);
-				}
-
-				return new ConstantBooleanType(false);
+				return PhpVersions::pickType(
+					$scope->getPhpVersion()->throwsValueErrorForInternalFunctions(),
+					new NeverType(true),
+					new ConstantBooleanType(false),
+				);
 			}
 
 			return new ConstantBooleanType(true);

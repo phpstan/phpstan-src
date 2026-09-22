@@ -5,7 +5,6 @@ namespace PHPStan\Reflection\PHPStan;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\ObjectType;
@@ -17,7 +16,7 @@ final class NativeReflectionEnumReturnDynamicReturnTypeExtension implements Dyna
 	/**
 	 * @param class-string $className
 	 */
-	public function __construct(private PhpVersion $phpVersion, private string $className, private string $methodName)
+	public function __construct(private string $className, private string $methodName)
 	{
 	}
 
@@ -33,7 +32,7 @@ final class NativeReflectionEnumReturnDynamicReturnTypeExtension implements Dyna
 
 	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): ?Type
 	{
-		if ($this->phpVersion->getVersionId() >= 80000) {
+		if (!$scope->getPhpVersion()->supportsNativeReflectionAdapterReturnTypes()->no()) {
 			return null;
 		}
 

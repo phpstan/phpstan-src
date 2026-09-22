@@ -5,7 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
+use PHPStan\Php\PhpVersions;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -18,10 +18,6 @@ use function strtolower;
 #[AutowiredService]
 final class ArrayKeysFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
-
-	public function __construct(private PhpVersion $phpVersion)
-	{
-	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -37,7 +33,7 @@ final class ArrayKeysFunctionDynamicReturnTypeExtension implements DynamicFuncti
 
 		$arrayType = $scope->getType($args[0]->value);
 		if ($arrayType->isArray()->no()) {
-			return $this->phpVersion->arrayFunctionsReturnNullWithNonArray() ? new NullType() : new NeverType();
+			return PhpVersions::pickType($scope->getPhpVersion()->arrayFunctionsReturnNullWithNonArray(), new NullType(), new NeverType());
 		}
 
 		if (count($args) >= 2) {

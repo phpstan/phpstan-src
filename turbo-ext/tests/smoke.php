@@ -4321,6 +4321,27 @@ check($vwoResults['php']['int'] === ['value', 5] && $vwoResults['php']['numeric 
 // kept by PHP collaborators and called after the call returned
 require __DIR__ . '/initializer-escape.php';
 
+// ---- lane infra ----
+
+// ConstantArrayType::isValidIdentifier() is Nette's Strings::match(): a
+// run-time PCRE failure is its RegexpException with preg_last_error()'s
+// message and code
+$liIdentifierResults = [];
+$liJit = ini_get('pcre.jit');
+$liBacktrackLimit = ini_get('pcre.backtrack_limit');
+ini_set('pcre.jit', '0');
+ini_set('pcre.backtrack_limit', '1');
+foreach (['php' => \PHPStan\Type\Constant\ConstantArrayType::class, 'native' => \PHPStanTurbo\ConstantArrayType::class] as $liSide => $liClass) {
+	try {
+		$liIdentifierResults[$liSide] = $liClass::isValidIdentifier('abcdef');
+	} catch (\Throwable $e) {
+		$liIdentifierResults[$liSide] = [get_class($e), $e->getCode(), $e->getMessage()];
+	}
+}
+ini_set('pcre.jit', $liJit);
+ini_set('pcre.backtrack_limit', $liBacktrackLimit);
+check($liIdentifierResults['php'] === $liIdentifierResults['native'], 'ConstantArrayType::isValidIdentifier() on a PCRE failure: ' . json_encode($liIdentifierResults));
+
 // ---- differential coverage completeness ----
 // Every shadowed class must be exercised by one of the tests/ scripts; the
 // classes not covered above have their own dedicated script.

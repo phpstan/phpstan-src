@@ -53,11 +53,13 @@ bool pt_result_object_create(zval *out, zend_class_entry *ce, zval *trinary, zva
 #define PT_CAT_CASE_LOWER 0
 #define PT_CAT_CASE_UPPER 1
 
-/* isValidIdentifier()'s pattern (interned once) and the internal
- * preg_match() it is matched with (resolved once; the pcre extension
- * caches the compiled pattern per request) */
+/* isValidIdentifier()'s pattern (a permanent interned string, made at
+ * MINIT) and the internal preg_match() / preg_last_error() it is matched
+ * with (internal functions, resolved once; the pcre extension caches the
+ * compiled pattern per request) */
 static zend_string *pt_carr_identifier_regex = nullptr;
 static zend_function *pt_carr_preg_match = nullptr;
+static zend_function *pt_carr_preg_last_error = nullptr;
 
 namespace phpstanturbo {
 
@@ -5678,12 +5680,10 @@ public:
 	 * frames; false = pending exception */
 	[[nodiscard]] static bool isValidIdentifier(zend_string *value, bool &out)
 	{
-		if (UNEXPECTED(pt_carr_identifier_regex == nullptr)) {
-			pt_carr_identifier_regex = zend_string_init_interned(PT_LC("~^(?:[\\\\]?+[a-z_\\x80-\\xFF][0-9a-z_\\x80-\\xFF-]*+)++$~si"), 1);
-		}
-		if (UNEXPECTED(pt_carr_preg_match == nullptr)) {
+		if (UNEXPECTED(pt_carr_preg_match == nullptr || pt_carr_preg_last_error == nullptr)) {
 			pt_carr_preg_match = (zend_function *) zend_hash_str_find_ptr(EG(function_table), PT_LC("preg_match"));
-			if (UNEXPECTED(pt_carr_preg_match == nullptr)) {
+			pt_carr_preg_last_error = (zend_function *) zend_hash_str_find_ptr(EG(function_table), PT_LC("preg_last_error"));
+			if (UNEXPECTED(pt_carr_preg_match == nullptr || pt_carr_preg_last_error == nullptr)) {
 				zend_throw_error(NULL, "phpstan_turbo: preg_match() is not available");
 				return false;
 			}
@@ -5697,17 +5697,46 @@ public:
 			return false;
 		}
 		if (UNEXPECTED(Z_TYPE(matched) != IS_LONG)) {
-			/* preg_match() failed (a backtracking/recursion limit) — Nette
-			 * Strings::match() raises its RegexpException here */
 			zval_ptr_dtor(&matched);
-			zend_class_entry *exceptionCe = pt_class(PT_CLASS_NETTE_REGEXP_EXCEPTION);
-			if (exceptionCe != NULL) {
-				zend_throw_exception(exceptionCe, "preg_match() failed", 0);
-			}
+			throwRegexpException();
 			return false;
 		}
 		out = Z_LVAL(matched) > 0;
 		return true;
+	}
+
+	/* preg_match() failed (a backtracking/recursion limit): Nette's
+	 * Strings::pcre() throws new RegexpException((RegexpException::MESSAGES[$code]
+	 * ?? 'Unknown error') . ' (pattern: ' . $pattern . ')', $code) with
+	 * $code = preg_last_error() */
+	static void throwRegexpException()
+	{
+		zend_class_entry *exceptionCe = pt_class(PT_CLASS_NETTE_REGEXP_EXCEPTION);
+		if (UNEXPECTED(exceptionCe == NULL)) return;
+		zval code;
+		zend_call_known_function(pt_carr_preg_last_error, NULL, NULL, &code, 0, NULL, NULL);
+		if (UNEXPECTED(EG(exception))) return;
+		zend_long codeValue = Z_TYPE(code) == IS_LONG ? Z_LVAL(code) : 0;
+		zval_ptr_dtor(&code);
+
+		const char *reason = "Unknown error";
+		size_t reasonLength = sizeof("Unknown error") - 1;
+		zend_string *constantName = zend_string_init(PT_LC("MESSAGES"), 0);
+		zval *messages = zend_get_class_constant_ex(exceptionCe->name, constantName, exceptionCe, ZEND_FETCH_CLASS_SILENT);
+		zend_string_release(constantName);
+		if (UNEXPECTED(EG(exception))) return;
+		if (messages != NULL && Z_TYPE_P(messages) == IS_ARRAY) {
+			zval *message = zend_hash_index_find(Z_ARRVAL_P(messages), (zend_ulong) codeValue);
+			if (message != NULL && Z_TYPE_P(message) == IS_STRING) {
+				reason = Z_STRVAL_P(message);
+				reasonLength = Z_STRLEN_P(message);
+			}
+		}
+		zend_string *text = zend_string_concat3(reason, reasonLength, PT_LC(" (pattern: "), ZSTR_VAL(pt_carr_identifier_regex), ZSTR_LEN(pt_carr_identifier_regex));
+		zend_string *full = zend_string_concat2(ZSTR_VAL(text), ZSTR_LEN(text), PT_LC(")"));
+		zend_string_release(text);
+		zend_throw_exception(exceptionCe, ZSTR_VAL(full), codeValue);
+		zend_string_release(full);
 	}
 
 	/* [] for an unsealed shape; else every combination of the values'
@@ -7170,6 +7199,8 @@ static void ZEND_FASTCALL catTraverse(INTERNAL_FUNCTION_PARAMETERS)
 
 void pt_register_constant_array_type()
 {
+	pt_carr_identifier_regex = zend_string_init_interned(PT_LC("~^(?:[\\\\]?+[a-z_\\x80-\\xFF][0-9a-z_\\x80-\\xFF-]*+)++$~si"), 1);
+
 	reg::Class cls("PHPStan\\Type\\Constant\\ConstantArrayType");
 	ptdecl::ConstantArrayType::declareClass(cls);
 	/* the slots PT_CAT_PROP_*: the eight class-body properties first, the

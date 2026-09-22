@@ -2,12 +2,10 @@
 
 namespace PHPStan\Rules\Functions;
 
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\Php\PrintfFormatParser;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<PrintfParameterTypeRule>
@@ -21,7 +19,7 @@ class PrintfParameterTypeRuleTest extends RuleTestCase
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 		return new PrintfParameterTypeRule(
-			new PrintfFormatParser(new PhpVersion(PHP_VERSION_ID)),
+			new PrintfFormatParser(),
 			$reflectionProvider,
 			new RuleLevelHelper(
 				$reflectionProvider,

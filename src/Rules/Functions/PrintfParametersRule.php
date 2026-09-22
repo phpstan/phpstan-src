@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\Php\PhpVersions;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -84,7 +85,7 @@ final class PrintfParametersRule implements Rule
 			$format = $formatString->getValue();
 
 			if (in_array($name, ['sprintf', 'printf'], true)) {
-				$tempPlaceHoldersCount = $this->getPrintfPlaceholdersCount($format);
+				$tempPlaceHoldersCount = $this->getPrintfPlaceholdersCount($format, $scope->getPhpVersion());
 			} else {
 				$tempPlaceHoldersCount = $this->getScanfPlaceholdersCount($format);
 			}
@@ -129,9 +130,9 @@ final class PrintfParametersRule implements Rule
 		return [];
 	}
 
-	private function getPrintfPlaceholdersCount(string $format): ?int
+	private function getPrintfPlaceholdersCount(string $format, PhpVersions $phpVersions): ?int
 	{
-		$uses = $this->printfFormatParser->parse($format);
+		$uses = $this->printfFormatParser->parse($format, $phpVersions);
 		if ($uses === null) {
 			return null;
 		}

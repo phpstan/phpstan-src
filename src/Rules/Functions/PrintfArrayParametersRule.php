@@ -67,7 +67,7 @@ final class PrintfArrayParametersRule implements Rule
 		foreach ($formatArgType->getConstantStrings() as $formatString) {
 			$format = $formatString->getValue();
 
-			$uses = $this->printfFormatParser->parse($format);
+			$uses = $this->printfFormatParser->parse($format, $scope->getPhpVersion());
 			if ($uses === null) {
 				return [
 					RuleErrorBuilder::message(sprintf(

@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\Functions;
 
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\Php\PrintfFormatParser;
@@ -17,7 +16,7 @@ class PrintfParametersRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new PrintfParametersRule(
-			new PrintfFormatParser(new PhpVersion(PHP_VERSION_ID)),
+			new PrintfFormatParser(),
 			self::createReflectionProvider(),
 		);
 	}

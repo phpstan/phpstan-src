@@ -25,8 +25,15 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use ValueError;
+use function abs;
 use function count;
+use function floor;
 use function is_array;
+use function is_finite;
+use function is_numeric;
+use function is_string;
+use function max;
+use function min;
 use function range;
 
 #[AutowiredService]
@@ -71,6 +78,12 @@ final class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 						continue;
 					}
 
+					// range() would allocate every item before the length could be checked
+					$rangeLength = self::getRangeLength($startConstant->getValue(), $endConstant->getValue(), $stepConstant->getValue());
+					if ($rangeLength !== null && $rangeLength > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+						return self::getLongRangeType($startConstant, $endConstant, $stepConstant, $stepType);
+					}
+
 					try {
 						$rangeValues = @range($startConstant->getValue(), $endConstant->getValue(), $stepConstant->getValue());
 					} catch (ValueError) {
@@ -83,35 +96,7 @@ final class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 					}
 
 					if (count($rangeValues) > self::RANGE_LENGTH_THRESHOLD) {
-						if (
-							$startConstant instanceof ConstantIntegerType
-							&& $endConstant instanceof ConstantIntegerType
-							&& $stepConstant instanceof ConstantIntegerType
-						) {
-							if ($startConstant->getValue() > $endConstant->getValue()) {
-								$tmp = $startConstant;
-								$startConstant = $endConstant;
-								$endConstant = $tmp;
-							}
-							return self::getNonEmptyListOfType(
-								IntegerRangeType::fromInterval(
-									$startConstant->getValue(),
-									$endConstant->getValue(),
-								),
-							);
-						}
-
-						if ($stepType->isFloat()->yes()) {
-							return self::getNonEmptyListOfType(new FloatType());
-						}
-
-						return self::getNonEmptyListOfType(
-							TypeCombinator::union(
-								$startConstant->generalize(GeneralizePrecision::moreSpecific()),
-								$endConstant->generalize(GeneralizePrecision::moreSpecific()),
-								$stepType->generalize(GeneralizePrecision::moreSpecific()),
-							),
-						);
+						return self::getLongRangeType($startConstant, $endConstant, $stepConstant, $stepType);
 					}
 					$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 					foreach ($rangeValues as $value) {
@@ -159,6 +144,66 @@ final class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 				new FloatType(),
 				new StringType(),
 			]),
+		);
+	}
+
+	/**
+	 * The number of items range() creates for numeric arguments, or null when
+	 * only calling it tells - for a character range, which has at most 256
+	 * items, and for a zero, infinite or NAN argument, for which it throws.
+	 */
+	private static function getRangeLength(int|float|string $start, int|float|string $end, int|float $step): ?float
+	{
+		if (is_string($start) && is_string($end) && !is_numeric($start) && !is_numeric($end)) {
+			return null;
+		}
+
+		// a non-numeric string next to a number is 0
+		$startNumber = is_numeric($start) ? (float) $start : 0.0;
+		$endNumber = is_numeric($end) ? (float) $end : 0.0;
+		$stepNumber = abs((float) $step);
+		if ($stepNumber === 0.0) {
+			return null;
+		}
+
+		$length = abs($endNumber - $startNumber) / $stepNumber;
+		if (!is_finite($length)) {
+			return null;
+		}
+
+		return floor($length) + 1;
+	}
+
+	private static function getLongRangeType(
+		ConstantIntegerType|ConstantFloatType|ConstantStringType $startConstant,
+		ConstantIntegerType|ConstantFloatType|ConstantStringType $endConstant,
+		ConstantIntegerType|ConstantFloatType $stepConstant,
+		Type $stepType,
+	): Type
+	{
+		if (
+			$startConstant instanceof ConstantIntegerType
+			&& $endConstant instanceof ConstantIntegerType
+			&& $stepConstant instanceof ConstantIntegerType
+		) {
+			return self::getNonEmptyListOfType(
+				IntegerRangeType::fromInterval(
+					min($startConstant->getValue(), $endConstant->getValue()),
+					max($startConstant->getValue(), $endConstant->getValue()),
+				),
+			);
+		}
+
+		if ($stepType->isFloat()->yes()) {
+			return self::getNonEmptyListOfType(new FloatType());
+		}
+
+		return self::getNonEmptyListOfType(
+			TypeCombinator::union(
+				$startConstant->generalize(GeneralizePrecision::moreSpecific()),
+				$endConstant->generalize(GeneralizePrecision::moreSpecific()),
+				$stepType->generalize(GeneralizePrecision::moreSpecific()),
+			),
 		);
 	}
 

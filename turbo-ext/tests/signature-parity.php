@@ -27,17 +27,6 @@ $root = dirname(__DIR__, 2);
 chdir($root);
 
 /**
- * Classes whose native declaration still drifts from the twin — class =>
- * reason. Their problems are listed but do not fail the check; an entry
- * whose class matches is reported as stale.
- *
- * @var array<string, string>
- */
-$knownDrift = [
-	'PhpParser\\NodeTraverser' => 'pending',
-];
-
-/**
  * Single differences a native class keeps on purpose — class => [pattern
  * matched against the problem text => reason]. A pattern that matches no
  * problem any more is reported as stale.
@@ -45,6 +34,9 @@ $knownDrift = [
  * @var array<string, array<string, string>>
  */
 $deliberateDrift = [
+	'PhpParser\\NodeTraverser' => [
+		'~^method (traverseNode|traverseArray) is not declared natively$~' => 'traverse() walks the tree in one native call with its visitor plan; the protected recursion steps exist only inside it (neither PHPStan nor php-parser subclasses NodeTraverser)',
+	],
 	'PHPStan\\Analyser\\ExpressionResultStorage' => [
 		'~^property (exprResults is not declared natively|(exprsById|resultsById) is declared natively but not in PHP)$~' => 'the result table is two id-keyed arrays instead of the twin\'s SplObjectStorage',
 	],
@@ -293,7 +285,6 @@ function compareMembers(string $kind, string $className, array $native, array $t
 
 $failed = false;
 $compared = 0;
-$staleDrift = [];
 foreach ($manifest as $twinClass => $entry) {
 	$twin = $twins[$twinClass];
 	$native = $natives[$twinClass];
@@ -345,16 +336,6 @@ foreach ($manifest as $twinClass => $entry) {
 	}
 	$problems = array_values($problems);
 
-	if (isset($knownDrift[$twinClass])) {
-		if ($problems === []) {
-			$staleDrift[] = $twinClass;
-			continue;
-		}
-		foreach ($problems as $problem) {
-			printf("~ %s: %s (known: %s)\n", $twinClass, $problem, $knownDrift[$twinClass]);
-		}
-		continue;
-	}
 	if ($problems === []) {
 		printf("✓ %s\n", $twinClass);
 		continue;
@@ -363,10 +344,6 @@ foreach ($manifest as $twinClass => $entry) {
 	foreach ($problems as $problem) {
 		printf("✗ %s: %s\n", $twinClass, $problem);
 	}
-}
-foreach ($staleDrift as $className) {
-	$failed = true;
-	printf("✗ %s matches its twin — remove it from \$knownDrift\n", $className);
 }
 
 printf($failed ? "FAILED\n" : "OK (%d members compared)\n", $compared);

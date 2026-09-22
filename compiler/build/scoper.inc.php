@@ -2,6 +2,8 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
+$namespaces = require __DIR__ . '/scoper-namespaces.php';
+
 $stubs = [
 	'../../vendor/hoa/consistency/Prelude.php',
 	'../../vendor/composer/InstalledVersions.php',
@@ -213,49 +215,22 @@ return [
 
 			return str_replace(sprintf('%s\\PropertyHookType', $prefix), 'PropertyHookType', $content);
 		},
-		function (string $filePath, string $prefix, string $content): string {
+		function (string $filePath, string $prefix, string $content) use ($namespaces): string {
 			if (strpos($filePath, 'src/') !== 0) {
 				return $content;
 			}
 
-			return str_replace([
-				sprintf('\'%s\\BcMath\\', $prefix),
-				sprintf('\'%s\\Dom\\', $prefix),
-				sprintf('\'%s\\FFI\\', $prefix),
-				sprintf('\'%s\\Ds\\', $prefix),
-			], [
-				'\'BcMath\\',
-				'\'Dom\\',
-				'\'FFI\\',
-				'\'Ds\\',
-			], $content);
-		},
-		function (string $filePath, string $prefix, string $content): string {
-			if (strpos($filePath, 'src/Testing/ErrorFormatterTestCase.php') !== 0) {
-				return $content;
+			$search = [];
+			$replace = [];
+			foreach ($namespaces['unprefixedClassNameStringsInSrc'] as $namespace) {
+				$search[] = sprintf('\'%s\\%s\\', $prefix, $namespace);
+				$replace[] = sprintf('\'%s\\', $namespace);
 			}
 
-			return str_replace(sprintf('new Error(\'%s\\Foobar\\Buz', $prefix), 'new Error(\'Foobar\\Buz', $content);
+			return str_replace($search, $replace, $content);
 		},
 	],
-	'exclude-namespaces' => [
-		'PHPStan',
-		// the native turbo extension's classes — must match the loaded
-		// extension exactly, never prefixed (segment-aware matching means the
-		// PHPStan entry above does not cover this name)
-		'PHPStanTurbo',
-		'PHPUnit',
-		'PhpParser',
-		'Hoa',
-		'Symfony\Polyfill\Php80',
-		'Symfony\Polyfill\Php81',
-		'Symfony\Polyfill\Php83',
-		'Symfony\Polyfill\Php84',
-		'Symfony\Polyfill\Php85',
-		'Symfony\Polyfill\Mbstring',
-		'Symfony\Polyfill\Intl\Normalizer',
-		'Symfony\Polyfill\Intl\Grapheme',
-	],
+	'exclude-namespaces' => $namespaces['excluded'],
 	'expose-global-functions' => false,
 	'expose-global-classes' => false,
 ];

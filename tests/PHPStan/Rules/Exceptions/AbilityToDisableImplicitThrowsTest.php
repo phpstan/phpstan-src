@@ -34,6 +34,12 @@ class AbilityToDisableImplicitThrowsTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.5.0')]
+	public function testFilterFunctionsThrowOnFailure(): void
+	{
+		$this->analyse([__DIR__ . '/data/filter-var-throw-on-failure.php'], []);
+	}
+
 	#[RequiresPhp('>= 8.4.0')]
 	public function testPropertyHooks(): void
 	{

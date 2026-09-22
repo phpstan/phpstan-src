@@ -331,3 +331,50 @@ foreach ($ntSides as $side => $traverserClass) {
 	unset($ast, $traverser);
 }
 check($ntRetained['native'] <= max($ntRetained['php'], 0) + 1024, 'NodeTraverser: a no-op traversal retains no copies: ' . json_encode($ntRetained));
+
+// the recorded splices are array_splice($nodes, $i, 1, $replace) calls, last
+// first: $i is the element's key used as an offset, clamped like
+// array_splice() clamps it, a string key is array_splice()'s TypeError, and
+// every splice renumbers the integer keys
+$ntSplicing = static fn (callable $decide) => new class ($decide) extends \PhpParser\NodeVisitorAbstract {
+
+	public function __construct(private $decide)
+	{
+	}
+
+	public function leaveNode(\PhpParser\Node $node)
+	{
+		return $node instanceof \PhpParser\Node\Stmt\Echo_ ? ($this->decide)($node->exprs[0]->value) : null;
+	}
+
+};
+$ntEchoes = static function (array $keyedValues): array {
+	$nodes = [];
+	foreach ($keyedValues as $key => $value) {
+		$nodes[$key] = new \PhpParser\Node\Stmt\Echo_([new \PhpParser\Node\Scalar\Int_($value)]);
+	}
+	return $nodes;
+};
+$ntShape = static fn (array $nodes): array => array_map(static fn ($n) => $n instanceof \PhpParser\Node\Stmt\Echo_ ? $n->exprs[0]->value : $n->getType(), $nodes);
+$ntRemove = static fn (array $values) => static fn (int $value) => in_array($value, $values, true) ? \PhpParser\NodeVisitor::REMOVE_NODE : null;
+$ntSpliceCases = [
+	'list' => [[1, 2, 3], $ntRemove([2])],
+	'list, two removals' => [[1, 2, 3, 4], $ntRemove([2, 4])],
+	'keys past the end' => [[5 => 1, 6 => 2, 7 => 3], $ntRemove([2])],
+	'keys inside the range' => [[1 => 1, 2 => 2, 0 => 3], $ntRemove([1, 3])],
+	'negative key' => [[0 => 1, -5 => 2, 1 => 3], $ntRemove([2])],
+	'string key' => [[5 => 1, 'k' => 2, 7 => 3], $ntRemove([2, 3])],
+	'string key, no splice' => [['a' => 1, 'b' => 2], $ntRemove([])],
+	'replacement array at a large key' => [[3 => 1, 4 => 2], static fn (int $value) => $value === 1 ? [new \PhpParser\Node\Stmt\Nop(), new \PhpParser\Node\Stmt\Nop()] : null],
+	'string keys kept around an int splice' => [['a' => 1, 0 => 2, 'b' => 3], $ntRemove([2])],
+];
+foreach ($ntSpliceCases as $ntLabel => [$ntKeyed, $ntDecide]) {
+	$ntCompare("splices: $ntLabel (top level)", static function (string $side, string $traverserClass) use ($ntSplicing, $ntEchoes, $ntShape, $ntKeyed, $ntDecide): array {
+		return $ntShape((new $traverserClass($ntSplicing($ntDecide)))->traverse($ntEchoes($ntKeyed)));
+	});
+	$ntCompare("splices: $ntLabel (subnode array)", static function (string $side, string $traverserClass) use ($ntSplicing, $ntEchoes, $ntShape, $ntKeyed, $ntDecide): array {
+		$function = new \PhpParser\Node\Stmt\Function_('f', ['stmts' => $ntEchoes($ntKeyed)]);
+		(new $traverserClass($ntSplicing($ntDecide)))->traverse([$function]);
+		return $ntShape($function->stmts);
+	});
+}

@@ -47,9 +47,12 @@ typedef struct {
 	const pt_native_visitor *native;
 } pt_visitor_plan;
 
-/* The splices recorded by one traverseArray() pass ($doNodes in the twin). */
+/* The splices recorded by one traverseArray() pass ($doNodes in the twin):
+ * the element's position, and its key — what array_splice() is handed */
 typedef struct {
 	zend_ulong pos;
+	zend_string *key; /* owned, NULL for an integer key */
+	zend_ulong index;
 	zval replacement; /* IS_ARRAY (owned) or IS_FALSE for remove */
 } pt_do_node;
 
@@ -59,13 +62,15 @@ typedef struct {
 	uint32_t capacity;
 } pt_do_nodes;
 
-static void pt_do_nodes_push(pt_do_nodes *dn, zend_ulong pos, zval *replacement)
+static void pt_do_nodes_push(pt_do_nodes *dn, zend_ulong pos, zend_string *key, zend_ulong index, zval *replacement)
 {
 	if (dn->count == dn->capacity) {
 		dn->capacity = dn->capacity == 0 ? 4 : dn->capacity * 2;
 		dn->items = (pt_do_node *) erealloc(dn->items, dn->capacity * sizeof(pt_do_node));
 	}
 	dn->items[dn->count].pos = pos;
+	dn->items[dn->count].key = key != NULL ? zend_string_copy(key) : NULL;
+	dn->items[dn->count].index = index;
 	if (replacement != NULL) {
 		ZVAL_COPY(&dn->items[dn->count].replacement, replacement);
 	} else {
@@ -78,6 +83,9 @@ static void pt_do_nodes_free(pt_do_nodes *dn)
 {
 	uint32_t i;
 	for (i = 0; i < dn->count; i++) {
+		if (dn->items[i].key != NULL) {
+			zend_string_release(dn->items[i].key);
+		}
 		zval_ptr_dtor(&dn->items[i].replacement);
 	}
 	if (dn->items != NULL) {
@@ -588,14 +596,14 @@ private:
 					continue;
 				}
 				if (retRef.isArray()) {
-					pt_do_nodes_push(&doNodes, i, retRef.raw());
+					pt_do_nodes_push(&doNodes, i, key, index, retRef.raw());
 					skipToNext = true;
 					break;
 				}
 				if (retRef.isLong()) {
 					zend_long code = retRef.asLong();
 					if (code == REMOVE_NODE) {
-						pt_do_nodes_push(&doNodes, i, NULL);
+						pt_do_nodes_push(&doNodes, i, key, index, NULL);
 						skipToNext = true;
 						break;
 					}
@@ -660,13 +668,13 @@ private:
 					continue;
 				}
 				if (retRef.isArray()) {
-					pt_do_nodes_push(&doNodes, i, retRef.raw());
+					pt_do_nodes_push(&doNodes, i, key, index, retRef.raw());
 					break;
 				}
 				if (retRef.isLong()) {
 					zend_long code = retRef.asLong();
 					if (code == REMOVE_NODE) {
-						pt_do_nodes_push(&doNodes, i, NULL);
+						pt_do_nodes_push(&doNodes, i, key, index, NULL);
 						break;
 					}
 					if (code == STOP_TRAVERSAL) {
@@ -693,8 +701,23 @@ private:
 		}
 
 		zv::Val result = working.isUndef() ? std::move(original) : std::move(working);
-		if (doNodes.count > 0) {
-			/* apply the recorded splices in one rebuild pass */
+		if (doNodes.count > 0 && !zend_array_is_list(Z_ARRVAL_P(result.raw()))) {
+			/* while (list($i, $replace) = array_pop($doNodes))
+			 *     array_splice($nodes, $i, 1, $replace); */
+			for (uint32_t k = doNodes.count; k-- > 0; ) {
+				pt_do_node &splice = doNodes.items[k];
+				if (splice.key != NULL) {
+					zend_type_error("array_splice(): Argument #2 ($offset) must be of type int, string given");
+					failed = true;
+					pt_do_nodes_free(&doNodes);
+					return zv::Val();
+				}
+				zval *replacement = &splice.replacement;
+				result = arraySplice(Z_ARRVAL_P(result.raw()), (zend_long) splice.index, Z_TYPE_P(replacement) == IS_ARRAY ? Z_ARRVAL_P(replacement) : NULL);
+			}
+		} else if (doNodes.count > 0) {
+			/* on a list every key is its position and each splice leaves
+			 * the positions below it alone: one rebuild pass does them all */
 			zv::ArrRef nodes(result.raw());
 			zv::Arr rebuilt = zv::Arr::create(nodes.size());
 			uint32_t cursor = 0;
@@ -719,6 +742,49 @@ private:
 
 		pt_do_nodes_free(&doNodes);
 		return result;
+	}
+
+	/* array_splice($nodes, $offset, 1, $replacement) into a new array: the
+	 * offset clamped like array_splice() does, the integer keys renumbered,
+	 * the string keys kept; NULL replacement = [] */
+	static zv::Val arraySplice(HashTable *nodes, zend_long offset, HashTable *replacement)
+	{
+		zend_long count = (zend_long) zend_hash_num_elements(nodes);
+		if (offset > count) {
+			offset = count;
+		} else if (offset < 0) {
+			offset = count + offset < 0 ? 0 : count + offset;
+		}
+		zend_long length = offset + 1 > count ? count - offset : 1;
+
+		zv::Arr spliced = zv::Arr::create((uint32_t) (count - length + (replacement != NULL ? zend_hash_num_elements(replacement) : 0)));
+		zv::ArrRef out(spliced.raw());
+		auto insertReplacement = [&]() {
+			if (replacement == NULL) return;
+			for (auto entry : zv::TableRef(replacement)) {
+				out.push(entry.value());
+			}
+		};
+		zend_long position = 0;
+		for (auto entry : zv::TableRef(nodes)) {
+			if (position == offset) {
+				insertReplacement();
+			}
+			if (position < offset || position >= offset + length) {
+				zend_string *key = entry.stringKeyOrNull();
+				if (key != NULL) {
+					Z_TRY_ADDREF_P(entry.value().raw());
+					zend_hash_update(out.table(), key, entry.value().raw());
+				} else {
+					out.push(entry.value());
+				}
+			}
+			position++;
+		}
+		if (offset == count) {
+			insertReplacement();
+		}
+		return zv::Val(std::move(spliced));
 	}
 
 	/* $old instanceof Stmt && $new instanceof Expr (and vice versa)

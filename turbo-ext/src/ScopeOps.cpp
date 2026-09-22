@@ -14,6 +14,8 @@
 
 #include "support.h"
 #include "generated/ScopeOps.h"
+
+namespace sigs = ptdecl::ScopeOps::sig;
 #include "zv.h"
 #include "TypeOps.h"
 
@@ -1817,7 +1819,7 @@ void pt_register_scope_ops()
 	ptdecl::ScopeOps::declareClass(cls);
 	ptdecl::ScopeOps::declareProperties(cls);
 
-	cls.method("mergeVariableHolders", reg::PublicStatic, 2, { reg::arrayArg("ourVariableTypeHolders"), reg::arrayArg("theirVariableTypeHolders"), reg::any("differingKeys", true) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::mergeVariableHolders, [](INTERNAL_FUNCTION_PARAMETERS) {
 		HashTable *ours, *theirs;
 		zval *differing_zv = NULL;
 		if (!zp::parse<zp::Ht, zp::Ht, zp::Opt<zp::Zval>>(execute_data, ours, theirs, differing_zv)) RETURN_THROWS();
@@ -1837,7 +1839,7 @@ void pt_register_scope_ops()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("finishMerge", reg::PublicStatic, 5, { reg::arrayArg("mergedExpressionTypes"), reg::arrayArg("ourExpressionTypes"), reg::arrayArg("theirExpressionTypes"), reg::arrayArg("ourNativeExpressionTypes"), reg::arrayArg("theirNativeExpressionTypes") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::finishMerge, [](INTERNAL_FUNCTION_PARAMETERS) {
 		HashTable *merged, *ours_expr, *theirs_expr, *ours_native, *theirs_native;
 		if (!zp::parse<zp::Ht, zp::Ht, zp::Ht, zp::Ht, zp::Ht>(execute_data, merged, ours_expr, theirs_expr, ours_native, theirs_native)) RETURN_THROWS();
 		zv::Val result = ScopeOps::finishMerge(zv::TableRef(merged), zv::TableRef(ours_expr), zv::TableRef(theirs_expr), zv::TableRef(ours_native), zv::TableRef(theirs_native));
@@ -1845,13 +1847,13 @@ void pt_register_scope_ops()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("intersectConditionalExpressions", reg::PublicStatic, 2, { reg::arrayArg("ourConditionalExpressions"), reg::arrayArg("theirConditionalExpressions") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::intersectConditionalExpressions, [](INTERNAL_FUNCTION_PARAMETERS) {
 		HashTable *ours, *theirs;
 		if (!zp::parse<zp::Ht, zp::Ht>(execute_data, ours, theirs)) RETURN_THROWS();
 		ScopeOps::intersectConditionalExpressions(zv::TableRef(ours), zv::TableRef(theirs)).intoReturnValue(return_value);
 	});
 
-	cls.method("invalidateExpressionEntries", reg::PublicStatic, 9, { reg::objectArg("scope"), reg::objectArg("exprPrinter"), reg::stringArg("exprStringToInvalidate"), reg::objectArg("expressionToInvalidate"), reg::boolArg("requireMoreCharacters"), reg::objectArg("invalidatingClass", true), reg::arrayArg("expressionTypes"), reg::arrayArg("nativeExpressionTypes"), reg::arrayArg("conditionalExpressions"), reg::boolArg("keepPropertyFetches") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::invalidateExpressionEntries, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *scope, *expr_printer, *expr_to_invalidate, *invalidating_class = NULL;
 		zend_string *invalidate_str;
 		bool require_more_characters;
@@ -1876,7 +1878,7 @@ void pt_register_scope_ops()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("shouldInvalidateExpression", reg::PublicStatic, 6, { reg::objectArg("scope"), reg::objectArg("exprPrinter"), reg::stringArg("exprStringToInvalidate"), reg::objectArg("exprToInvalidate"), reg::objectArg("expr"), reg::stringArg("exprString"), reg::boolArg("requireMoreCharacters"), reg::objectArg("invalidatingClass", true), reg::boolArg("keepPropertyFetches") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::shouldInvalidateExpression, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *scope, *expr_printer, *expr_to_invalidate, *expr, *invalidating_class = NULL;
 		zend_string *invalidate_str, *expr_string;
 		bool require_more_characters = false;
@@ -1900,7 +1902,7 @@ void pt_register_scope_ops()
 		RETURN_BOOL(result);
 	});
 
-	cls.method("getIntertwinedRefRootVariableName", reg::PublicStatic, 1, { reg::objectArg("expr") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::getIntertwinedRefRootVariableName, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *expr;
 		if (!zp::parse<zp::Obj>(execute_data, expr)) RETURN_THROWS();
 		zv::Val result = ScopeOps::getIntertwinedRefRootVariableName(Z_OBJ_P(expr));
@@ -1908,7 +1910,7 @@ void pt_register_scope_ops()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("matchConditionalExpressions", reg::PublicStatic, 2, { reg::arrayArg("conditionalExpressions"), reg::arrayArg("specifiedExpressions") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::matchConditionalExpressions, [](INTERNAL_FUNCTION_PARAMETERS) {
 		HashTable *conditional, *specified_input;
 		if (!zp::parse<zp::Ht, zp::Ht>(execute_data, conditional, specified_input)) RETURN_THROWS();
 		zv::Val result = ScopeOps::matchConditionalExpressions(zv::TableRef(conditional), zv::TableRef(specified_input));
@@ -1916,7 +1918,7 @@ void pt_register_scope_ops()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("createConditionalExpressions", reg::PublicStatic, 5, { reg::arrayArg("conditionalExpressions"), reg::arrayArg("ourExpressionTypes"), reg::arrayArg("theirExpressionTypes"), reg::arrayArg("mergedExpressionTypes"), reg::arrayArg("differingKeys") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::createConditionalExpressions, [](INTERNAL_FUNCTION_PARAMETERS) {
 		HashTable *conditional, *ours, *theirs, *merged, *differing_keys;
 		if (!zp::parse<zp::Ht, zp::Ht, zp::Ht, zp::Ht, zp::Ht>(execute_data, conditional, ours, theirs, merged, differing_keys)) RETURN_THROWS();
 		zv::Val result = ScopeOps::createConditionalExpressions(zv::TableRef(conditional), zv::TableRef(ours), zv::TableRef(theirs), zv::TableRef(merged), zv::TableRef(differing_keys));
@@ -1924,7 +1926,7 @@ void pt_register_scope_ops()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("nodeKey", reg::PublicStatic, 2, { reg::objectArg("node"), reg::objectArg("exprPrinter") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::nodeKey, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *node, *expr_printer;
 		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, node, expr_printer)) RETURN_THROWS();
 		zv::Val result = ScopeOps::nodeKey(Z_OBJ_P(node), expr_printer);
@@ -1932,7 +1934,7 @@ void pt_register_scope_ops()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("getTypeFromCache", reg::PublicStatic, 3, { reg::objectArg("scope"), reg::objectArg("node"), reg::any("key", true) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::getTypeFromCache, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *scope, *node, *key_out;
 		if (!zp::parse<zp::Obj, zp::Obj, zp::Zval>(execute_data, scope, node, key_out)) RETURN_THROWS();
 		zend_string *key = NULL;
@@ -1949,7 +1951,7 @@ void pt_register_scope_ops()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("hasVariableType", reg::PublicStatic, 2, { reg::objectArg("scope"), reg::stringArg("variableName") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::hasVariableType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *scope;
 		zend_string *variable_name;
 		if (!zp::parse<zp::Obj, zp::Str>(execute_data, scope, variable_name)) RETURN_THROWS();
@@ -1958,7 +1960,7 @@ void pt_register_scope_ops()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("scopeWith", reg::PublicStatic, 9, { reg::objectArg("scope"), reg::arrayArg("expressionTypes"), reg::arrayArg("nativeExpressionTypes"), reg::arrayArg("conditionalExpressions"), reg::arrayArg("currentlyAssignedExpressions"), reg::arrayArg("currentlyAllowedUndefinedExpressions"), reg::arrayArg("inFunctionCallsStack"), reg::boolArg("inFirstLevelStatement"), reg::boolArg("afterExtractCall") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::scopeWith, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *scope;
 		HashTable *expression_types, *native_expression_types, *conditional_expressions;
 		HashTable *currently_assigned, *currently_allowed_undefined, *in_function_calls_stack;
@@ -1979,7 +1981,7 @@ void pt_register_scope_ops()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("invalidateMethodsOnExpression", reg::PublicStatic, 4, { reg::objectArg("exprPrinter"), reg::stringArg("exprStringToInvalidate"), reg::arrayArg("expressionTypes"), reg::arrayArg("nativeExpressionTypes") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::invalidateMethodsOnExpression, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *expr_printer;
 		zend_string *invalidate_str;
 		HashTable *expression_types, *native_expression_types;
@@ -1990,7 +1992,7 @@ void pt_register_scope_ops()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("expressionTypeByKey", reg::PublicStatic, 3, { reg::objectArg("scope"), reg::objectArg("node"), reg::stringArg("exprString") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::expressionTypeByKey, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *scope, *node;
 		zend_string *expr_string;
 		if (!zp::parse<zp::Obj, zp::Obj, zp::Str>(execute_data, scope, node, expr_string)) RETURN_THROWS();
@@ -1999,7 +2001,7 @@ void pt_register_scope_ops()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("hasExpressionType", reg::PublicStatic, 3, { reg::objectArg("scope"), reg::objectArg("node"), reg::objectArg("exprPrinter") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::hasExpressionType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *scope, *node, *expr_printer;
 		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj>(execute_data, scope, node, expr_printer)) RETURN_THROWS();
 		zv::Val result = ScopeOps::hasExpressionType(scope, Z_OBJ_P(node), expr_printer);

@@ -82,6 +82,9 @@ zval *argOf(zval *slot)
 	return Z_TYPE_P(slot) == IS_NULL ? NULL : slot;
 }
 
+/* the constructor's first write of a slot (a typed promoted property is
+ * uninitialized until then): IS_PROP_UNINIT is cleared as the engine's
+ * property write clears it */
 void writeSlot(zend_object *object, uint32_t slot, zval *value)
 {
 	zval *p = OBJ_PROP_NUM(object, slot);
@@ -90,11 +93,14 @@ void writeSlot(zend_object *object, uint32_t slot, zval *value)
 	} else {
 		ZVAL_NULL(p);
 	}
+	Z_PROP_FLAG_P(p) = 0;
 }
 
 void writeBoolSlot(zend_object *object, uint32_t slot, bool value)
 {
-	ZVAL_BOOL(OBJ_PROP_NUM(object, slot), value);
+	zval *p = OBJ_PROP_NUM(object, slot);
+	ZVAL_BOOL(p, value);
+	Z_PROP_FLAG_P(p) = 0;
 }
 
 /* new ShouldNotHappenException($message) */
@@ -217,7 +223,9 @@ public:
 		if (a.specifiedTypes != NULL) {
 			writeSlot(object, slots::specifiedTypes, a.specifiedTypes);
 		} else {
-			ZVAL_EMPTY_ARRAY(OBJ_PROP_NUM(object, slots::specifiedTypes));
+			zval *p = OBJ_PROP_NUM(object, slots::specifiedTypes);
+			ZVAL_EMPTY_ARRAY(p);
+			Z_PROP_FLAG_P(p) = 0;
 		}
 		writeSlot(object, slots::cachedType, a.cachedType);
 		writeSlot(object, slots::cachedNativeType, a.cachedNativeType);
@@ -1496,38 +1504,10 @@ void pt_register_expression_result()
 	reg::Class cls("PHPStan\\Analyser\\ExpressionResult");
 	ptdecl::ExpressionResult::declareClass(cls);
 	cls.privateClassConstantString("READ_VARIABLE_NAMES_ATTRIBUTE", "readVariableNames");
-	/* the twin's properties in declaration order (the OBJ_PROP_NUM slots) */
-	cls.privateNullProperty("typeCallback");
-	cls.privateNullProperty("specifyTypesCallback");
-	cls.privateNullProperty("createTypesCallback");
-	cls.privateTypedClassPropertyDefaultNull("truthyScope", pt_er_scope);
-	cls.privateTypedClassPropertyDefaultNull("falseyScope", pt_er_scope);
-	cls.privateTypedBoolProperty("extensionsDeclined", false);
-	cls.privateTypedClassProperty("expressionTypeResolverExtensions", "PHPStan\\DependencyInjection\\ExtensionsCollection", false);
-	cls.privateTypedClassProperty("defaultNarrowingHelper", "PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper", false);
-	cls.privateTypedClassProperty("scope", pt_er_scope, false);
-	cls.privateTypedClassProperty("beforeScope", pt_er_scope, false);
-	cls.privateTypedClassProperty("expr", "PhpParser\\Node\\Expr", false);
-	cls.privateTypedProperty("hasYield", MAY_BE_BOOL);
-	cls.privateTypedProperty("isAlwaysTerminating", MAY_BE_BOOL);
-	cls.privateTypedProperty("throwPoints", MAY_BE_ARRAY);
-	cls.privateTypedProperty("impurePoints", MAY_BE_ARRAY);
-	cls.privateTypedBoolProperty("containsNullsafe", false);
-	cls.privateTypedClassPropertyDefaultNull("issetabilityDescriptor", "PHPStan\\Analyser\\IssetabilityDescriptor");
-	cls.privateTypedClassPropertyDefaultNull("truthyScopeOverrideResult", pt_er_self);
-	cls.privateTypedClassPropertyDefaultNull("falseyScopeOverrideResult", pt_er_self);
-	cls.privateTypedClassPropertyDefaultNull("type", pt_er_type);
-	cls.privateTypedClassPropertyDefaultNull("nativeType", pt_er_type);
-	cls.privateTypedClassPropertyDefaultNull("argsResult", "PHPStan\\Analyser\\ArgsResult");
-	cls.privateTypedClassPropertyDefaultNull("variableFlow", "PHPStan\\Analyser\\VariableFlow");
-	cls.privateTypedArrayPropertyDefaultEmpty("specifiedTypes");
-	cls.privateTypedClassPropertyDefaultNull("cachedType", pt_er_type);
-	cls.privateTypedClassPropertyDefaultNull("cachedNativeType", pt_er_type);
-	cls.privateTypedClassPropertyDefaultNull("resolvedType", pt_er_type);
-	cls.privateTypedClassPropertyDefaultNull("resolvedNativeType", pt_er_type);
-	cls.privateTypedClassPropertyDefaultNull("projectedType", pt_er_type);
-	cls.privateTypedClassPropertyDefaultNull("projectedNativeType", pt_er_type);
-	cls.privateTypedPropertyDefaultNull("readVariableNames", MAY_BE_ARRAY);
+	/* the twin's properties in declaration order (the OBJ_PROP_NUM slots);
+	 * the promoted ones have no default value, construct() writes every
+	 * slot */
+	ptdecl::ExpressionResult::declareProperties(cls);
 
 	cls.method("__construct", reg::Public, 11, {
 		reg::obj("expressionTypeResolverExtensions", "PHPStan\\DependencyInjection\\ExtensionsCollection"),

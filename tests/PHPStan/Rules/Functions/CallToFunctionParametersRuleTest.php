@@ -3151,4 +3151,19 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/levenshtein-arguments-count.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.4.0')]
+	public function testRoundModePhp84(): void
+	{
+		$this->analyse([__DIR__ . '/data/round-mode-php84.php'], [
+			[
+				'Parameter #3 $mode of function round expects int<1, 8>|RoundingMode, 9 given.',
+				11,
+			],
+			[
+				'Parameter #3 $mode of function round expects int<1, 8>|RoundingMode, 0 given.',
+				12,
+			],
+		]);
+	}
+
 }

@@ -277,6 +277,11 @@ final class PhpVersions
 		return IntegerRangeType::fromInterval(80000, null)->isSuperTypeOf($this->phpVersions)->result;
 	}
 
+	public function throwsValueErrorForInvalidRoundingMode(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80400, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
 	/**
 	 * PHPStan's BetterReflection adapters keep their narrowed native return types only on PHP 8+;
 	 * the downgraded PHP 7 build widens them back to the core Reflection ones.

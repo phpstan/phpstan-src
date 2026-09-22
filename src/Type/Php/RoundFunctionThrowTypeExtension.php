@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
 use PHPStan\Type\IntegerRangeType;
@@ -23,10 +22,6 @@ use function count;
 final class RoundFunctionThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 {
 
-	public function __construct(private PhpVersion $phpVersion)
-	{
-	}
-
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
 		return $functionReflection->getName() === 'round';
@@ -34,7 +29,7 @@ final class RoundFunctionThrowTypeExtension implements DynamicFunctionThrowTypeE
 
 	public function getThrowTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $funcCall, Scope $scope): ?Type
 	{
-		if (!$this->phpVersion->throwsValueErrorForInvalidRoundingMode()) {
+		if ($scope->getPhpVersion()->throwsValueErrorForInvalidRoundingMode()->no()) {
 			return new VoidType();
 		}
 

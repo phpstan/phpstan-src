@@ -67,6 +67,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function array_flip;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
@@ -3250,62 +3251,68 @@ class ConstantArrayType implements Type
 		// isList is Maybe. A list has its keys in ascending order, and one that
 		// has the key k has every key below k too - positional operations on the
 		// list trust both, so the keys are put in ascending order and the ones
-		// below a required key are made required. In a sealed shape a key past a
-		// gap in the 0..n sequence (or any non-integer key) can never appear in a
-		// list, so keep only the contiguous 0..m prefix. Unsealed extras may fill
-		// the gaps, so keep every key there, the integer ones first.
+		// below a required key are made required. A list never has a negative or
+		// a non-integer key, so those are dropped. In a sealed shape a key past a
+		// gap in the 0..n sequence can never appear in a list either, so only the
+		// contiguous 0..m prefix is kept; unsealed extras may fill the gaps, so
+		// every other key is kept there.
 		$positionByIndex = [];
-		$otherPositions = [];
+		$droppedPositions = [];
 		foreach ($this->keyTypes as $position => $keyType) {
-			if (!$keyType instanceof ConstantIntegerType) {
-				$otherPositions[] = $position;
+			if (!$keyType instanceof ConstantIntegerType || $keyType->getValue() < 0) {
+				$droppedPositions[] = $position;
 				continue;
 			}
 			$positionByIndex[$keyType->getValue()] = $position;
 		}
 
+		ksort($positionByIndex);
 		if ($this->isUnsealed()->no()) {
 			$keptPositions = [];
 			for ($index = 0; array_key_exists($index, $positionByIndex); $index++) {
 				$keptPositions[] = $positionByIndex[$index];
+				unset($positionByIndex[$index]);
+			}
+			foreach ($positionByIndex as $position) {
+				$droppedPositions[] = $position;
 			}
 		} else {
-			ksort($positionByIndex);
-			$keptPositions = array_merge(array_values($positionByIndex), $otherPositions);
+			$keptPositions = array_values($positionByIndex);
 		}
 
-		$requiredLength = 0;
-		foreach ($keptPositions as $position) {
-			$keyType = $this->keyTypes[$position];
-			if (!$keyType instanceof ConstantIntegerType || $this->isOptionalKey($position)) {
-				continue;
-			}
-
-			$requiredLength = max($requiredLength, $keyType->getValue() + 1);
-		}
-
-		$optionalKeys = [];
-		foreach ($keptPositions as $newPosition => $position) {
+		foreach ($droppedPositions as $position) {
 			if (!$this->isOptionalKey($position)) {
-				continue;
+				return new NeverType();
 			}
-
-			$keyType = $this->keyTypes[$position];
-			if ($keyType instanceof ConstantIntegerType && $keyType->getValue() >= 0 && $keyType->getValue() < $requiredLength) {
-				continue;
-			}
-
-			$optionalKeys[] = $newPosition;
 		}
 
-		if ($keptPositions !== array_keys($this->keyTypes) || count($optionalKeys) !== count($this->optionalKeys)) {
+		$indexByPosition = array_flip($keptPositions);
+		$requiredLength = 0;
+		foreach ($keptPositions as $index => $position) {
+			if ($this->isOptionalKey($position)) {
+				continue;
+			}
+
+			$requiredLength = $index + 1;
+		}
+
+		$optionalPositions = [];
+		foreach ($keptPositions as $newPosition => $position) {
+			if (!$this->isOptionalKey($position) || $indexByPosition[$position] < $requiredLength) {
+				continue;
+			}
+
+			$optionalPositions[$newPosition] = true;
+		}
+
+		if ($keptPositions !== array_keys($this->keyTypes) || count($optionalPositions) !== count($this->optionalKeys)) {
 			$builder = ConstantArrayTypeBuilder::createEmpty();
 			$builder->disableArrayDegradation();
 			foreach ($keptPositions as $newPosition => $position) {
 				$builder->setOffsetValueType(
 					$this->keyTypes[$position],
 					$this->valueTypes[$position],
-					in_array($newPosition, $optionalKeys, true),
+					isset($optionalPositions[$newPosition]),
 				);
 			}
 

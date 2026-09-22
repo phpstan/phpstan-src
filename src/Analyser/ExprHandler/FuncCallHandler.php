@@ -555,7 +555,7 @@ final class FuncCallHandler implements ExprHandler
 			}
 
 			$throwType = $extension->getThrowTypeFromFunctionCall($functionReflection, $normalizedFuncCall, $scope);
-			if ($throwType === null) {
+			if ($throwType === null || $throwType->isVoid()->yes()) {
 				return null;
 			}
 

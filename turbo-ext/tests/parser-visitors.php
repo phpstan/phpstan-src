@@ -378,3 +378,53 @@ foreach ($ntSpliceCases as $ntLabel => [$ntKeyed, $ntDecide]) {
 		return $ntShape($function->stmts);
 	});
 }
+
+// the LogicException messages: gettype() names, and the node types of an
+// unreasonable replacement
+$ntReturning = static fn (string $hook, callable $decide) => new class ($hook, $decide) extends \PhpParser\NodeVisitorAbstract {
+
+	public function __construct(private string $hook, private $decide)
+	{
+	}
+
+	public function enterNode(\PhpParser\Node $node)
+	{
+		return $this->hook === 'enter' ? ($this->decide)($node) : null;
+	}
+
+	public function leaveNode(\PhpParser\Node $node)
+	{
+		return $this->hook === 'leave' ? ($this->decide)($node) : null;
+	}
+
+};
+$ntInvalidReturns = [
+	'int' => 42,
+	'float' => 1.5,
+	'string' => 'x',
+	'true' => true,
+	'false' => false,
+	'object' => new \stdClass(),
+];
+foreach (['enter', 'leave'] as $ntHook) {
+	foreach ($ntInvalidReturns as $ntLabel => $ntValue) {
+		foreach (['Stmt_Echo' => 'in an array', 'Scalar_Int' => 'in a subnode'] as $ntTarget => $ntWhere) {
+			$ntCompare("$ntHook returning $ntLabel $ntWhere", static function (string $side, string $traverserClass) use ($smokeParser, $ntReturning, $ntHook, $ntValue, $ntTarget): array {
+				$visitor = $ntReturning($ntHook, static fn ($node) => $node->getType() === $ntTarget ? $ntValue : null);
+				return (new $traverserClass($visitor))->traverse($smokeParser->parse('<?php echo 1;'));
+			});
+		}
+	}
+	$ntCompare("$ntHook replacing a statement with an expression", static function (string $side, string $traverserClass) use ($smokeParser, $ntReturning, $ntHook): array {
+		$visitor = $ntReturning($ntHook, static fn ($node) => $node instanceof \PhpParser\Node\Stmt\Echo_ ? new \PhpParser\Node\Expr\Variable('x') : null);
+		return (new $traverserClass($visitor))->traverse($smokeParser->parse('<?php echo 1;'));
+	});
+	$ntCompare("$ntHook replacing an expression with a statement", static function (string $side, string $traverserClass) use ($smokeParser, $ntReturning, $ntHook): array {
+		$visitor = $ntReturning($ntHook, static fn ($node) => $node instanceof \PhpParser\Node\Expr\Variable ? new \PhpParser\Node\Stmt\Nop() : null);
+		return (new $traverserClass($visitor))->traverse($smokeParser->parse('<?php $a;'));
+	});
+	$ntCompare("$ntHook replacing an expression with a statement in an array", static function (string $side, string $traverserClass) use ($ntReturning, $ntHook): array {
+		$visitor = $ntReturning($ntHook, static fn ($node) => $node instanceof \PhpParser\Node\Expr\Variable ? new \PhpParser\Node\Stmt\Nop() : null);
+		return (new $traverserClass($visitor))->traverse([new \PhpParser\Node\Expr\Variable('a')]);
+	});
+}

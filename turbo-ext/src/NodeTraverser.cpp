@@ -93,16 +93,24 @@ static void pt_do_nodes_free(pt_do_nodes *dn)
 	}
 }
 
-static void pt_trav_throw_logic(const char *format, const char *arg)
+static void pt_trav_throw_logic(const char *message)
 {
 	zend_string *name = zend_string_init("LogicException", sizeof("LogicException") - 1, 0);
 	zend_class_entry *ce = zend_lookup_class(name);
 	zend_string_release(name);
 	if (ce == NULL) {
-		zend_throw_error(NULL, format, arg);
+		zend_throw_error(NULL, "%s", message);
 		return;
 	}
-	zend_throw_exception_ex(ce, 0, format, arg);
+	zend_throw_exception(ce, message, 0);
+}
+
+/* "... returned invalid value of type " . gettype($return) */
+static void pt_trav_throw_invalid_return(const char *hook, zval *value)
+{
+	zend_string *message = zend_strpprintf(0, "%s() returned invalid value of type %s", hook, ZSTR_VAL(zend_zval_get_legacy_type(value)));
+	pt_trav_throw_logic(ZSTR_VAL(message));
+	zend_string_release(message);
 }
 
 /* Node subnode info incl. names, resolved lazily per class. */
@@ -436,7 +444,7 @@ private:
 						break;
 					}
 				}
-				pt_trav_throw_logic("enterNode() returned invalid value of type %s", zend_zval_value_name(retRef.raw()));
+				pt_trav_throw_invalid_return("enterNode", retRef.raw());
 				failed = true;
 				return;
 			}
@@ -490,11 +498,11 @@ private:
 					}
 				}
 				if (retRef.isArray()) {
-					pt_trav_throw_logic("leaveNode() may only return an array if the parent structure is an array%s", "");
+					pt_trav_throw_logic("leaveNode() may only return an array if the parent structure is an array");
 					failed = true;
 					return;
 				}
-				pt_trav_throw_logic("leaveNode() returned invalid value of type %s", zend_zval_value_name(retRef.raw()));
+				pt_trav_throw_invalid_return("leaveNode", retRef.raw());
 				failed = true;
 				return;
 			}
@@ -552,7 +560,7 @@ private:
 
 			if (!value.instanceOf(nodeIface)) {
 				if (UNEXPECTED(value.isArray())) {
-					pt_trav_throw_logic("Invalid node structure: Contains nested arrays%s", "");
+					pt_trav_throw_logic("Invalid node structure: Contains nested arrays");
 					failed = true;
 					break;
 				}
@@ -620,12 +628,12 @@ private:
 						break;
 					}
 					if (code == REPLACE_WITH_NULL) {
-						pt_trav_throw_logic("REPLACE_WITH_NULL can not be used if the parent structure is an array%s", "");
+						pt_trav_throw_logic("REPLACE_WITH_NULL can not be used if the parent structure is an array");
 						failed = true;
 						break;
 					}
 				}
-				pt_trav_throw_logic("enterNode() returned invalid value of type %s", zend_zval_value_name(retRef.raw()));
+				pt_trav_throw_invalid_return("enterNode", retRef.raw());
 				failed = true;
 				break;
 			}
@@ -682,12 +690,12 @@ private:
 						break;
 					}
 					if (code == REPLACE_WITH_NULL) {
-						pt_trav_throw_logic("REPLACE_WITH_NULL can not be used if the parent structure is an array%s", "");
+						pt_trav_throw_logic("REPLACE_WITH_NULL can not be used if the parent structure is an array");
 						failed = true;
 						break;
 					}
 				}
-				pt_trav_throw_logic("leaveNode() returned invalid value of type %s", zend_zval_value_name(retRef.raw()));
+				pt_trav_throw_invalid_return("leaveNode", retRef.raw());
 				failed = true;
 				break;
 			}
@@ -797,15 +805,42 @@ private:
 
 		zv::ObjRef oldRef(oldNode);
 		zv::ObjRef newRef(newNode);
-		if (oldRef.instanceOf(stmtCe) && newRef.instanceOf(exprCe)) {
-			pt_trav_throw_logic("Trying to replace statement with expression. Are you missing a Stmt_Expression wrapper?%s", "");
-			return false;
+		bool statementWithExpression = oldRef.instanceOf(stmtCe) && newRef.instanceOf(exprCe);
+		if (!statementWithExpression && !(oldRef.instanceOf(exprCe) && newRef.instanceOf(stmtCe))) return true;
+
+		/* "... ({$old->getType()}) ... ({$new->getType()})" */
+		zv::Val oldType = nodeType(oldNode);
+		if (UNEXPECTED(oldType.isUndef())) return false;
+		zv::Val newType = nodeType(newNode);
+		if (UNEXPECTED(newType.isUndef())) return false;
+		zend_string *message = statementWithExpression
+			? zend_strpprintf(0, "Trying to replace statement (%s) with expression (%s). Are you missing a Stmt_Expression wrapper?", Z_STRVAL_P(oldType.raw()), Z_STRVAL_P(newType.raw()))
+			: zend_strpprintf(0, "Trying to replace expression (%s) with statement (%s)", Z_STRVAL_P(oldType.raw()), Z_STRVAL_P(newType.raw()));
+		pt_trav_throw_logic(ZSTR_VAL(message));
+		zend_string_release(message);
+		return false;
+	}
+
+	/* $node->getType() as a string; UNDEF means a pending exception */
+	static zv::Val nodeType(zend_object *node)
+	{
+		zval type;
+		ZVAL_UNDEF(&type);
+		zend_call_method_with_0_params(node, node->ce, NULL, "gettype", &type);
+		if (UNEXPECTED(EG(exception))) {
+			zval_ptr_dtor(&type);
+			return zv::Val();
 		}
-		if (oldRef.instanceOf(exprCe) && newRef.instanceOf(stmtCe)) {
-			pt_trav_throw_logic("Trying to replace expression with statement%s", "");
-			return false;
+		zv::Val owned = zv::Val::adopt(type);
+		if (Z_TYPE_P(owned.raw()) != IS_STRING) {
+			zend_string *string = zval_get_string(owned.raw());
+			if (UNEXPECTED(EG(exception))) {
+				zend_string_release(string);
+				return zv::Val();
+			}
+			return zv::Val::adoptString(string);
 		}
-		return true;
+		return owned;
 	}
 
 	/* Builds the per-visitor hook plan from $this->visitors; false on error. */

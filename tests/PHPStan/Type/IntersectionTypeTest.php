@@ -32,6 +32,7 @@ use Test\ClassWithToString;
 use Traversable;
 use function count;
 use function sprintf;
+use const PHP_INT_MAX;
 use const PHP_VERSION_ID;
 
 class IntersectionTypeTest extends PHPStanTestCase
@@ -1014,6 +1015,19 @@ class IntersectionTypeTest extends PHPStanTestCase
 	{
 		$constant = $type->getConstant('ATOM');
 		$this->assertSame(DateTimeInterface::class, $constant->getDeclaringClass()->getName());
+	}
+
+	public function testSetOffsetValueTypeOnListWithOffsetAtIntMax(): void
+	{
+		$type = new IntersectionType([
+			new ArrayType(new IntegerType(), new MixedType()),
+			new AccessoryArrayListType(),
+			new HasOffsetType(new ConstantIntegerType(PHP_INT_MAX)),
+		]);
+
+		$result = $type->setOffsetValueType(new ConstantIntegerType(3), new ConstantIntegerType(1));
+		$this->assertTrue($result->isList()->yes());
+		$this->assertSame('non-empty-list&hasOffset(9223372036854775807)&hasOffsetValue(3, 1)', $result->describe(VerbosityLevel::precise()));
 	}
 
 }

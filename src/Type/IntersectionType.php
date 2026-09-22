@@ -71,6 +71,7 @@ use function strcasecmp;
 use function strlen;
 use function substr;
 use function usort;
+use const PHP_INT_MAX;
 
 /** @api */
 #[InstanceofDeprecated]
@@ -1169,7 +1170,9 @@ class IntersectionType implements CompoundType
 						if (!is_int($constantScalarValue)) {
 							continue;
 						}
-						if (IntegerRangeType::fromInterval(0, $constantScalarValue + 1)->isSuperTypeOf($offsetType)->yes()) {
+						// no offset exists past PHP_INT_MAX: the list may grow up to it
+						$maxListOffset = $constantScalarValue < PHP_INT_MAX ? $constantScalarValue + 1 : null;
+						if (IntegerRangeType::fromInterval(0, $maxListOffset)->isSuperTypeOf($offsetType)->yes()) {
 							$result = TypeCombinator::intersect($result, new AccessoryArrayListType());
 							break 2;
 						}

@@ -8420,6 +8420,12 @@ foreach ([\PHPStan\Analyser\RicherScopeGetTypeHelper::class => 'getIdenticalResu
 		$cacheEnabledProperty->setValue(null, $cacheEnabledBefore);
 	}
 
+	// a list with an offset at PHP_INT_MAX: an offset past it cannot exist
+	$intMaxList = new \PHPStan\Type\IntersectionType([new \PHPStan\Type\ArrayType(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\MixedType()), new \PHPStan\Type\Accessory\AccessoryArrayListType(), new \PHPStan\Type\Accessory\HasOffsetType(new \PHPStan\Type\Constant\ConstantIntegerType(PHP_INT_MAX))]);
+	foreach ([3, PHP_INT_MAX, -1] as $offset) {
+		$r["intersection list at PHP_INT_MAX setOffsetValueType $offset"] = $misuse(static fn () => $intMaxList->setOffsetValueType(new \PHPStan\Type\Constant\ConstantIntegerType($offset), new \PHPStan\Type\Constant\ConstantIntegerType(1)), true);
+	}
+
 	// countConstantArrayValueTypes() hands each element to TypeTraverser::map(Type $type, ...)
 	foreach (['string' => 'x', 'object' => new \stdClass()] as $elementName => $element) {
 		$r["combinator countConstantArrayValueTypes $elementName"] = $misuse(static fn () => \PHPStan\Type\TypeCombinator::countConstantArrayValueTypes([new \PHPStan\Type\IntegerType(), $element]));

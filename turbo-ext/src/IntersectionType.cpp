@@ -1634,7 +1634,9 @@ public:
 							for (zv::ArrayEntry valueEntry : zv::ArrRef(values.raw())) {
 								zv::Ref value = valueEntry.value().deref();
 								if (!value.isLong()) continue;
-								zv::Val range = integerRange(NullableLong::of(0), NullableLong::of(value.asLong() + 1));
+								/* no offset exists past PHP_INT_MAX: the list may grow up to it */
+								NullableLong maxListOffset = value.asLong() < ZEND_LONG_MAX ? NullableLong::of(value.asLong() + 1) : NullableLong::null();
+								zv::Val range = integerRange(NullableLong::of(0), maxListOffset);
 								if (UNEXPECTED(range.isUndef())) return zv::Val();
 								zend_long covered = pt_type_call_result_trinary(Z_OBJ_P(range.raw()), PT_LC("issupertypeof"), 1, offsetType);
 								if (UNEXPECTED(covered < 0)) return zv::Val();

@@ -207,7 +207,7 @@ final class PrintfFunctionThrowTypeExtension implements DynamicFunctionThrowType
 
 	/**
 	 * @param list<Arg> $args
-	 * @param list<array{index: int, kind: 'value'|'width'|'precision', specifier: string}> $uses
+	 * @param list<array{index: int, kind: 'value'|'width'|'precision', specifier: string, placeholder: string, number: int}> $uses
 	 */
 	private function areArrayStarArgumentsValid(array $args, array $uses, Scope $scope): bool
 	{

@@ -9,10 +9,13 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\Php\PrintfFormatParser;
+use ValueError;
 use function array_key_exists;
 use function count;
 use function in_array;
 use function sprintf;
+use function sscanf;
 
 /**
  * @implements Rule<Node\Expr\FuncCall>
@@ -35,7 +38,7 @@ final class PrintfParametersRule implements Rule
 	];
 
 	public function __construct(
-		private PrintfHelper $printfHelper,
+		private PrintfFormatParser $printfFormatParser,
 		private ReflectionProvider $reflectionProvider,
 	)
 	{
@@ -81,9 +84,9 @@ final class PrintfParametersRule implements Rule
 			$format = $formatString->getValue();
 
 			if (in_array($name, ['sprintf', 'printf'], true)) {
-				$tempPlaceHoldersCount = $this->printfHelper->getPrintfPlaceholdersCount($format);
+				$tempPlaceHoldersCount = $this->getPrintfPlaceholdersCount($format);
 			} else {
-				$tempPlaceHoldersCount = $this->printfHelper->getScanfPlaceholdersCount($format);
+				$tempPlaceHoldersCount = $this->getScanfPlaceholdersCount($format);
 			}
 
 			if ($tempPlaceHoldersCount === null) {
@@ -124,6 +127,31 @@ final class PrintfParametersRule implements Rule
 		}
 
 		return [];
+	}
+
+	private function getPrintfPlaceholdersCount(string $format): ?int
+	{
+		$uses = $this->printfFormatParser->parse($format);
+		if ($uses === null) {
+			return null;
+		}
+
+		return $this->printfFormatParser->getRequiredArgumentsCount($uses);
+	}
+
+	private function getScanfPlaceholdersCount(string $format): ?int
+	{
+		try {
+			$result = @sscanf('', '%*n' . $format);
+		} catch (ValueError) {
+			return null;
+		}
+
+		if ($result === null) {
+			return null;
+		}
+
+		return count($result);
 	}
 
 }

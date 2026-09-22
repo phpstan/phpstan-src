@@ -14,12 +14,14 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\NullType;
+use PHPStan\Type\Php\PrintfFormatParser;
 use PHPStan\Type\StringAlwaysAcceptingObjectWithToStringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function array_key_exists;
 use function count;
+use function in_array;
 use function sprintf;
 
 /**
@@ -40,7 +42,7 @@ final class PrintfParameterTypeRule implements Rule
 	];
 
 	public function __construct(
-		private PrintfHelper $printfHelper,
+		private PrintfFormatParser $printfFormatParser,
 		private ReflectionProvider $reflectionProvider,
 		private RuleLevelHelper $ruleLevelHelper,
 		private bool $checkStrictPrintfPlaceholderTypes,
@@ -92,7 +94,7 @@ final class PrintfParameterTypeRule implements Rule
 
 		$formatString = $formatArgTypeStrings[0];
 		$format = $formatString->getValue();
-		$placeholderMap = $this->printfHelper->getPrintfPlaceholders($format);
+		$placeholderMap = $this->getPlaceholders($format);
 		if ($placeholderMap === null) {
 			// Already reported by PrintfParametersRule.
 			return [];
@@ -169,6 +171,62 @@ final class PrintfParameterTypeRule implements Rule
 		}
 
 		return $errors;
+	}
+
+	/**
+	 * @return array<int, non-empty-list<PrintfPlaceholder>>|null parameter index => placeholders
+	 */
+	private function getPlaceholders(string $format): ?array
+	{
+		$uses = $this->printfFormatParser->parse($format);
+		if ($uses === null) {
+			return null;
+		}
+
+		$placeholdersWithStar = [];
+		foreach ($uses as $use) {
+			if ($use['kind'] === 'value') {
+				continue;
+			}
+
+			$placeholdersWithStar[$use['number']] = true;
+		}
+
+		$placeholders = [];
+		foreach ($uses as $use) {
+			$label = sprintf('"%s"', $use['placeholder']);
+			if ($use['kind'] !== 'value') {
+				$label .= sprintf(' (%s)', $use['kind']);
+				$acceptingType = 'strict-int';
+			} else {
+				if (isset($placeholdersWithStar[$use['number']])) {
+					$label .= ' (value)';
+				}
+				$acceptingType = $this->getAcceptingTypeBySpecifier($use['specifier']);
+			}
+
+			$placeholders[$use['index']][] = new PrintfPlaceholder($label, $use['number'], $acceptingType);
+		}
+
+		return $placeholders;
+	}
+
+	/** @phpstan-return 'string'|'int'|'float'|'mixed' */
+	private function getAcceptingTypeBySpecifier(string $specifier): string
+	{
+		if ($specifier === 's') {
+			return 'string';
+		}
+
+		if (in_array($specifier, ['d', 'u', 'c', 'o', 'x', 'X', 'b'], true)) {
+			return 'int';
+		}
+
+		if (in_array($specifier, ['e', 'E', 'f', 'F', 'g', 'G', 'h', 'H'], true)) {
+			return 'float';
+		}
+
+		return 'mixed';
 	}
 
 }

@@ -3,6 +3,7 @@
 namespace PHPStan\Type\Php;
 
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Php\PhpVersion;
 use function in_array;
 use function ltrim;
 use function strlen;
@@ -12,6 +13,7 @@ use function substr;
 /**
  * Follows php_formatted_print() in php-src (PHP 8.0+) to tell which arguments
  * a printf-family format consumes, and whether the format itself is invalid.
+ * Before PHP 8.0 only the h and H specifiers are treated differently.
  */
 #[AutowiredService]
 final class PrintfFormatParser
@@ -19,24 +21,32 @@ final class PrintfFormatParser
 
 	private const INT_MAX = 2147483647;
 
-	private const SPECIFIERS = 'sdueEfFgGhHcoxXb%';
+	private const SPECIFIERS = 'sdueEfFgGcoxXb%';
+
+	private const HH_SPECIFIERS = 'hH';
 
 	private const FLAGS = [' ', '0', '-', '+'];
 
 	private const ARG_NUM_NEXT = -1;
 
+	public function __construct(private PhpVersion $phpVersion)
+	{
+	}
+
 	/**
 	 * Returns the argument uses in the order the format consumes them, or null
 	 * when the format throws ValueError for any arguments. Index 0 is the first
 	 * argument after the format; `width` and `precision` are `*` and `.*` uses.
+	 * `number` is the 1-based position of the placeholder in the format.
 	 *
-	 * @return list<array{index: int, kind: 'value'|'width'|'precision', specifier: string}>|null
+	 * @return list<array{index: int, kind: 'value'|'width'|'precision', specifier: string, placeholder: string, number: int}>|null
 	 */
 	public function parse(string $format): ?array
 	{
 		$length = strlen($format);
 		$i = 0;
 		$nextArgument = 0;
+		$placeholderNumber = 0;
 		$uses = [];
 
 		while ($i < $length) {
@@ -128,14 +138,16 @@ final class PrintfFormatParser
 			}
 
 			$specifier = $format[$i];
-			if (strpos(self::SPECIFIERS, $specifier) === false) {
+			if (!$this->isSpecifier($specifier)) {
 				return null;
 			}
 
+			$placeholder = substr($format, $percent, $i - $percent + 1);
+			$placeholderNumber++;
 			foreach ($pending as [$index, $kind]) {
-				$uses[] = ['index' => $index, 'kind' => $kind, 'specifier' => $specifier];
+				$uses[] = ['index' => $index, 'kind' => $kind, 'specifier' => $specifier, 'placeholder' => $placeholder, 'number' => $placeholderNumber];
 			}
-			$uses[] = ['index' => $argument, 'kind' => 'value', 'specifier' => $specifier];
+			$uses[] = ['index' => $argument, 'kind' => 'value', 'specifier' => $specifier, 'placeholder' => $placeholder, 'number' => $placeholderNumber];
 			$i++;
 		}
 
@@ -143,7 +155,7 @@ final class PrintfFormatParser
 	}
 
 	/**
-	 * @param list<array{index: int, kind: 'value'|'width'|'precision', specifier: string}> $uses
+	 * @param list<array{index: int, kind: 'value'|'width'|'precision', specifier: string, placeholder: string, number: int}> $uses
 	 */
 	public function getRequiredArgumentsCount(array $uses): int
 	{
@@ -200,6 +212,15 @@ final class PrintfFormatParser
 		}
 
 		return (int) $digits;
+	}
+
+	private function isSpecifier(string $char): bool
+	{
+		if (strpos(self::SPECIFIERS, $char) !== false) {
+			return true;
+		}
+
+		return $this->phpVersion->supportsHhPrintfSpecifier() && strpos(self::HH_SPECIFIERS, $char) !== false;
 	}
 
 	private static function isDigit(string $char): bool

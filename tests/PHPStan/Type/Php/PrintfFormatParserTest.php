@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Php;
 
+use PHPStan\Php\PhpVersion;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -78,7 +79,7 @@ class PrintfFormatParserTest extends TestCase
 	#[DataProvider('dataRequiredArgumentsCount')]
 	public function testRequiredArgumentsCount(string $format, ?int $expectedCount): void
 	{
-		$parser = new PrintfFormatParser();
+		$parser = new PrintfFormatParser(new PhpVersion(80000));
 		$uses = $parser->parse($format);
 		if ($expectedCount === null) {
 			$this->assertNull($uses);
@@ -91,15 +92,23 @@ class PrintfFormatParserTest extends TestCase
 
 	public function testUses(): void
 	{
-		$parser = new PrintfFormatParser();
+		$parser = new PrintfFormatParser(new PhpVersion(80000));
 		$this->assertSame([
-			['index' => 0, 'kind' => 'width', 'specifier' => 'g'],
-			['index' => 1, 'kind' => 'precision', 'specifier' => 'g'],
-			['index' => 2, 'kind' => 'value', 'specifier' => 'g'],
-			['index' => 0, 'kind' => 'value', 'specifier' => 's'],
-			['index' => 4, 'kind' => 'width', 'specifier' => 'd'],
-			['index' => 3, 'kind' => 'value', 'specifier' => 'd'],
+			['index' => 0, 'kind' => 'width', 'specifier' => 'g', 'placeholder' => '%*.*g', 'number' => 1],
+			['index' => 1, 'kind' => 'precision', 'specifier' => 'g', 'placeholder' => '%*.*g', 'number' => 1],
+			['index' => 2, 'kind' => 'value', 'specifier' => 'g', 'placeholder' => '%*.*g', 'number' => 1],
+			['index' => 0, 'kind' => 'value', 'specifier' => 's', 'placeholder' => '%1$s', 'number' => 2],
+			['index' => 4, 'kind' => 'width', 'specifier' => 'd', 'placeholder' => '%*5$d', 'number' => 3],
+			['index' => 3, 'kind' => 'value', 'specifier' => 'd', 'placeholder' => '%*5$d', 'number' => 3],
 		], $parser->parse('%*.*g %1$s %*5$d'));
+	}
+
+	public function testHhSpecifiersBeforePhp8(): void
+	{
+		$parser = new PrintfFormatParser(new PhpVersion(70400));
+		$this->assertNull($parser->parse('%h'));
+		$this->assertNull($parser->parse('%H'));
+		$this->assertNotNull($parser->parse('%g'));
 	}
 
 }

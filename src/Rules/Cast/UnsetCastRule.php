@@ -22,7 +22,7 @@ final class UnsetCastRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$scope->getPhpVersion()->supportsUnsetCast()->no()) {
+		if ($scope->getPhpVersion()->supportsUnsetCast()->yes()) {
 			return [];
 		}
 

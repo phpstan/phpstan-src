@@ -1,177 +1,400 @@
 <?php declare(strict_types = 1);
 
 /**
- * Compares each shadowed pair's method signatures via reflection: the native
- * class must declare the same shape as the PHP twin — visibility, staticness,
- * parameter names/optionality/by-ref/variadic, and types. Name-level parity
- * is bin/side-by-side.php --check's job; this catches the finer drift (e.g.
- * a renamed parameter would break named arguments only in turbo mode).
+ * Compares each shadowed pair's declaration via reflection under REAL-NAME
+ * activation — the shape PHPStan runs with: the native class must declare
+ * exactly what the PHP twin declares. Checked per class: final/abstract,
+ * parent and interfaces; every method of any visibility (a missing or an
+ * extra one included) with its visibility, static/final/abstract flags,
+ * parameter names, types, optionality, default values, by-ref and variadic
+ * flags, and return type; every property (name, type, default, visibility,
+ * static, readonly) and every class constant (value, visibility, final).
+ * Name-level source parity is bin/side-by-side.php's job; this catches the
+ * finer drift — a renamed parameter or a missing default breaks named
+ * arguments only in turbo mode, an erased or prefixed class name in the
+ * arginfo changes what reflection and the engine's type checks see.
  *
  * Run with the extension loaded and vendor/ installed:
  *   php -d extension=$PWD/turbo-ext/phpstan_turbo.so turbo-ext/tests/signature-parity.php
  *
- * The enabler is deliberately NOT run: the native classes are declared as
- * PHPStanTurbo\* next to the original PHP classes (tests/activate-prefixed.php).
+ * The twins cannot be reflected in a process whose shadowing is active
+ * (their names are the native classes then), so a child process without
+ * activation dumps them (--dump-twins) and this process activates the native
+ * classes under the real names, dumps them the same way and compares.
  */
 
 $root = dirname(__DIR__, 2);
 chdir($root);
 
-['manifest' => $manifest] = require __DIR__ . '/activate-prefixed.php';
+/**
+ * Classes whose native declaration still drifts from the twin — class =>
+ * reason. Their problems are listed but do not fail the check; an entry
+ * whose class matches is reported as stale.
+ *
+ * @var array<string, string>
+ */
+$knownDrift = [
+	'PhpParser\\NodeTraverser' => 'pending',
+	'PHPStan\\Analyser\\ConditionalExpressionHolder' => 'pending',
+	'PHPStan\\Analyser\\ExpressionResult' => 'pending',
+	'PHPStan\\Analyser\\ExpressionResultStorage' => 'pending',
+	'PHPStan\\Analyser\\ExpressionTypeHolder' => 'pending',
+	'PHPStan\\Analyser\\ExprHandler\\AssignHandler' => 'pending',
+	'PHPStan\\Analyser\\ExprHandler\\Helper\\OutputBufferHelper' => 'pending',
+	'PHPStan\\Analyser\\IssetabilityDescriptor' => 'pending',
+	'PHPStan\\Analyser\\IssetabilityLinkInfo' => 'pending',
+	'PHPStan\\Analyser\\MutatingScope' => 'pending',
+	'PHPStan\\Analyser\\ScopeContext' => 'pending',
+	'PHPStan\\Analyser\\ScopeOps' => 'pending',
+	'PHPStan\\Analyser\\StmtHandler\\ForeachHandler' => 'pending',
+	'PHPStan\\Analyser\\TypeSpecifier' => 'pending',
+	'PHPStan\\Analyser\\TypeSpecifierContext' => 'pending',
+	'PHPStan\\Analyser\\VariableLivenessResolver' => 'pending',
+	'PHPStan\\Cache\\ArenaCache' => 'pending',
+	'PHPStan\\Internal\\CombinationsHelper' => 'pending',
+	'PHPStan\\Node\\ClassStatementsGatherer' => 'pending',
+	'PHPStan\\Node\\NodeScanner' => 'pending',
+	'PHPStan\\Node\\Printer\\ExprPrinter' => 'pending',
+	'PHPStan\\Parser\\ArrayFilterArgVisitor' => 'pending',
+	'PHPStan\\Parser\\ArrayFindArgVisitor' => 'pending',
+	'PHPStan\\Parser\\ArrayMapArgVisitor' => 'pending',
+	'PHPStan\\Parser\\ArrayOffsetNormalizingVisitor' => 'pending',
+	'PHPStan\\Parser\\ArrayWalkArgVisitor' => 'pending',
+	'PHPStan\\Parser\\ArrowFunctionArgVisitor' => 'pending',
+	'PHPStan\\Parser\\ClosureArgVisitor' => 'pending',
+	'PHPStan\\Parser\\ClosureBindArgVisitor' => 'pending',
+	'PHPStan\\Parser\\ClosureBindToVarVisitor' => 'pending',
+	'PHPStan\\Parser\\CurlSetOptArgVisitor' => 'pending',
+	'PHPStan\\Parser\\CurlSetOptArrayArgVisitor' => 'pending',
+	'PHPStan\\Parser\\DeclarePositionVisitor' => 'pending',
+	'PHPStan\\Parser\\ImmediatelyInvokedClosureVisitor' => 'pending',
+	'PHPStan\\Parser\\ImplodeArgVisitor' => 'pending',
+	'PHPStan\\Parser\\MagicConstantParamDefaultVisitor' => 'pending',
+	'PHPStan\\Parser\\NewAssignedToPropertyVisitor' => 'pending',
+	'PHPStan\\Parser\\ParentStmtTypesVisitor' => 'pending',
+	'PHPStan\\Parser\\ParserRunner' => 'pending',
+	'PHPStan\\Parser\\TraitCollectingVisitor' => 'pending',
+	'PHPStan\\Parser\\TryCatchTypeVisitor' => 'pending',
+	'PHPStan\\Parser\\TypeTraverserInstanceofVisitor' => 'pending',
+	'PHPStan\\Reflection\\BetterReflection\\SourceLocator\\PhpFileCleaner' => 'pending',
+	'PHPStan\\Reflection\\BetterReflection\\SourceLocator\\SymbolFinderInFiles' => 'pending',
+	'PHPStan\\Reflection\\InitializerExprContext' => 'pending',
+	'PHPStan\\Reflection\\InitializerExprTypeResolver' => 'pending',
+	'PHPStan\\Reflection\\PassedByReference' => 'pending',
+	'PHPStan\\Reflection\\Php\\PhpClassReflectionExtension' => 'pending',
+	'PHPStan\\TrinaryLogic' => 'pending',
+	'PHPStan\\Type\\AcceptsResult' => 'pending',
+	'PHPStan\\Type\\Constant\\ConstantArrayTypeBuilder' => 'pending',
+	'PHPStan\\Type\\Generic\\TemplateTypeVariance' => 'pending',
+	'PHPStan\\Type\\IntegerRangeType' => 'pending',
+	'PHPStan\\Type\\IsSuperTypeOfResult' => 'pending',
+	'PHPStan\\Type\\ObjectType' => 'pending',
+	'PHPStan\\Type\\TypeCombinatorCache' => 'pending',
+];
 
-// Native arginfo deliberately erases most types to none or object: baking
-// class-name strings into the binary would couple it to userland names, and
-// engine-level type checks cost per call.
-// So a native type is checked only when it declares something specific; the
-// PHP twin remains the authority on types either way.
-function isErased(?ReflectionType $type): bool
+/**
+ * @param ReflectionType|null $type
+ */
+function typeString(?ReflectionType $type, string $selfClass): ?string
 {
-	return $type === null || in_array(strtolower((string) $type), ['object', '?object', 'mixed'], true);
+	if ($type === null) {
+		return null;
+	}
+	// from PHP 8.5 reflection names the declaring class for self itself
+	return (string) preg_replace('~(^|\||&|\?|\()self($|\||&|\))~i', '$1' . $selfClass . '$2', (string) $type);
+}
+
+function exportValue(mixed $value): string
+{
+	return var_export($value, true);
 }
 
 /**
- * A native class name means its twin (across all shadowed pairs — a native
- * TrinaryLogic parameter type is equivalent to PHPStan\TrinaryLogic), self means
- * the method's declaring class and static the pair's own class, on either side
- * (from PHP 8.5 reflection names the declaring class for self itself).
- *
- * @param array<string, string> $nativeToTwin
+ * @return array<string, mixed>
  */
-function normalizeType(?ReflectionType $type, array $nativeToTwin, string $selfClass, string $staticClass): string
+function dumpClass(ReflectionClass $class, string $root): array
 {
-	$s = strtolower((string) $type);
-	$s = preg_replace('~(^|\||&|\?)self($|\||&)~', '$1' . $selfClass . '$2', $s);
-	$s = preg_replace('~(^|\||&|\?)static($|\||&)~', '$1' . $staticClass . '$2', $s);
+	$interfaces = $class->getInterfaceNames();
+	sort($interfaces);
+	$parent = $class->getParentClass();
+	$file = $class->getFileName();
+	$dump = [
+		'final' => $class->isFinal(),
+		'abstract' => $class->isAbstract(),
+		'readonly' => method_exists($class, 'isReadOnly') ? $class->isReadOnly() : false,
+		'parent' => $parent === false ? null : $parent->getName(),
+		'interfaces' => $interfaces,
+		// normalized to forward slashes: the manifest stores portable paths
+		'file' => $file === false ? null : str_replace(DIRECTORY_SEPARATOR, '/', substr((string) realpath($file), strlen((string) realpath($root)) + 1)),
+		'methods' => [],
+		'properties' => [],
+		'constants' => [],
+	];
 
-	return strtr($s, $nativeToTwin);
+	foreach ($class->getMethods() as $method) {
+		$declaring = $method->getDeclaringClass()->getName();
+		$params = [];
+		foreach ($method->getParameters() as $parameter) {
+			$default = null;
+			if ($parameter->isDefaultValueAvailable()) {
+				try {
+					$default = $parameter->isDefaultValueConstant()
+						? 'const ' . $parameter->getDefaultValueConstantName()
+						: exportValue($parameter->getDefaultValue());
+				} catch (Throwable $e) {
+					$default = 'unevaluable: ' . $e->getMessage();
+				}
+			}
+			$params[] = [
+				'name' => $parameter->getName(),
+				'type' => typeString($parameter->getType(), $declaring),
+				'optional' => $parameter->isOptional(),
+				'default' => $default,
+				'byRef' => $parameter->isPassedByReference(),
+				'variadic' => $parameter->isVariadic(),
+			];
+		}
+		$dump['methods'][$method->getName()] = [
+			'class' => $declaring,
+			'visibility' => $method->isPrivate() ? 'private' : ($method->isProtected() ? 'protected' : 'public'),
+			'static' => $method->isStatic(),
+			'final' => $method->isFinal(),
+			'abstract' => $method->isAbstract(),
+			'required' => $method->getNumberOfRequiredParameters(),
+			'params' => $params,
+			'return' => typeString($method->getReturnType() ?? $method->getTentativeReturnType(), $declaring),
+		];
+	}
+
+	$defaults = $class->getDefaultProperties();
+	foreach ($class->getProperties() as $property) {
+		$declaring = $property->getDeclaringClass()->getName();
+		$dump['properties'][$property->getName()] = [
+			'class' => $declaring,
+			'visibility' => $property->isPrivate() ? 'private' : ($property->isProtected() ? 'protected' : 'public'),
+			'static' => $property->isStatic(),
+			'readonly' => $property->isReadOnly(),
+			'type' => typeString($property->getType(), $declaring),
+			// a static property's current value would not be its default
+			'default' => $property->hasDefaultValue() ? exportValue($property->isStatic() ? ($defaults[$property->getName()] ?? null) : $property->getDefaultValue()) : null,
+		];
+	}
+
+	foreach ($class->getReflectionConstants() as $constant) {
+		try {
+			$value = exportValue($constant->getValue());
+		} catch (Throwable $e) {
+			$value = 'unevaluable: ' . $e->getMessage();
+		}
+		$dump['constants'][$constant->getName()] = [
+			'class' => $constant->getDeclaringClass()->getName(),
+			'visibility' => $constant->isPrivate() ? 'private' : ($constant->isProtected() ? 'protected' : 'public'),
+			'final' => $constant->isFinal(),
+			'value' => $value,
+		];
+	}
+
+	return $dump;
 }
 
-$nativeToTwin = [];
-foreach ($manifest as $twinClass => $entry) {
-	$nativeToTwin[strtolower($entry['turboClass'])] = strtolower($twinClass);
+/**
+ * @return array<string, array<string, mixed>>
+ */
+function dumpAll(array $manifest, string $root): array
+{
+	$dumps = [];
+	foreach (array_keys($manifest) as $className) {
+		$dumps[$className] = dumpClass(new ReflectionClass($className), $root);
+	}
+
+	return $dumps;
 }
 
-function visibility(ReflectionMethod $m): string
+function loadManifest(string $root): array
 {
-	return $m->isPrivate() ? 'private' : ($m->isProtected() ? 'protected' : 'public');
+	$manifestFile = $root . '/vendor/turbo-shadowed-classes.json';
+	$classMapFile = $root . '/vendor/turbo-class-map.php';
+	if (!is_file($manifestFile) || !is_file($classMapFile)) {
+		fwrite(STDERR, "vendor/turbo-shadowed-classes.json or vendor/turbo-class-map.php does not exist — run composer dump-autoload first\n");
+		exit(2);
+	}
+
+	return [
+		json_decode(file_get_contents($manifestFile), true, 8, JSON_THROW_ON_ERROR),
+		require $classMapFile,
+	];
+}
+
+require_once $root . '/vendor/autoload.php';
+
+if (($argv[1] ?? null) === '--dump-twins') {
+	[$manifest] = loadManifest($root);
+	if (class_exists('PHPStanTurbo\Runtime', false) && \PHPStanTurbo\Runtime::isShadowing()) {
+		fwrite(STDERR, "the twin dump runs with the native classes active\n");
+		exit(2);
+	}
+	echo json_encode(dumpAll($manifest, $root), JSON_THROW_ON_ERROR);
+	exit(0);
+}
+
+if (!extension_loaded('phpstan_turbo')) {
+	fwrite(STDERR, "the phpstan_turbo extension is not loaded\n");
+	exit(2);
+}
+
+[$manifest, $classMap] = loadManifest($root);
+
+// the twins, from a process that never activates the extension (loading it
+// declares nothing under PHPStan's class names)
+$process = proc_open([PHP_BINARY, '-d', 'memory_limit=-1', __FILE__, '--dump-twins'], [1 => ['pipe', 'w'], 2 => STDERR], $pipes);
+if ($process === false) {
+	fwrite(STDERR, "proc_open failed\n");
+	exit(2);
+}
+$twinJson = stream_get_contents($pipes[1]);
+fclose($pipes[1]);
+if (proc_close($process) !== 0) {
+	fwrite(STDERR, "dumping the twins failed\n");
+	exit(2);
+}
+$twins = json_decode($twinJson, true, 64, JSON_THROW_ON_ERROR);
+
+// the natives, under the real names — what TurboExtensionEnabler declares
+$twinFiles = [];
+foreach ($manifest as $className => $entry) {
+	$twinFiles[$className] = $root . '/' . $entry['php'];
+}
+\PHPStanTurbo\Runtime::configure($classMap);
+\PHPStanTurbo\Runtime::activateShadowing($twinFiles);
+$natives = dumpAll($manifest, $root);
+
+/**
+ * @param array<string, mixed> $native
+ * @param array<string, mixed> $twin
+ * @return list<string>
+ */
+function compareMembers(string $kind, string $className, array $native, array $twin): array
+{
+	$problems = [];
+	// A private method is optional natively — the logic behind it lives in
+	// C++ and nothing outside the class can call it — but a class that
+	// declares any of its twin's private methods (for reflection, a
+	// differential test, a private constructor) declares all of them.
+	$privateMethodsMirrored = false;
+	if ($kind === 'method') {
+		foreach ($twin as $name => $twinMember) {
+			if ($twinMember['class'] === $className && $twinMember['visibility'] === 'private' && isset($native[$name])) {
+				$privateMethodsMirrored = true;
+			}
+		}
+	}
+	foreach ($twin as $name => $twinMember) {
+		$nativeMember = $native[$name] ?? null;
+		$own = $twinMember['class'] === $className || ($nativeMember !== null && $nativeMember['class'] === $className);
+		if (!$own) {
+			continue; // inherited from a class checked on its own
+		}
+		if ($nativeMember === null) {
+			if ($kind === 'method' && $twinMember['visibility'] === 'private' && !$privateMethodsMirrored) {
+				continue;
+			}
+			$problems[] = sprintf('%s %s is not declared natively', $kind, $name);
+			continue;
+		}
+		foreach ($twinMember as $key => $twinValue) {
+			if ($key === 'params') {
+				continue;
+			}
+			if ($nativeMember[$key] !== $twinValue) {
+				$problems[] = sprintf('%s %s: %s is %s natively, %s in PHP', $kind, $name, $key, json_encode($nativeMember[$key]), json_encode($twinValue));
+			}
+		}
+		if (!isset($twinMember['params'])) {
+			continue;
+		}
+		if (count($nativeMember['params']) !== count($twinMember['params'])) {
+			$problems[] = sprintf('%s %s: %d parameters natively, %d in PHP', $kind, $name, count($nativeMember['params']), count($twinMember['params']));
+			continue;
+		}
+		foreach ($twinMember['params'] as $i => $twinParam) {
+			foreach ($twinParam as $key => $twinValue) {
+				if ($nativeMember['params'][$i][$key] !== $twinValue) {
+					$problems[] = sprintf('%s %s: parameter #%d ($%s) %s is %s natively, %s in PHP', $kind, $name, $i + 1, $twinParam['name'], $key, json_encode($nativeMember['params'][$i][$key]), json_encode($twinValue));
+				}
+			}
+		}
+	}
+	foreach ($native as $name => $nativeMember) {
+		if (!isset($twin[$name]) && $nativeMember['class'] === $className) {
+			$problems[] = sprintf('%s %s is declared natively but not in PHP', $kind, $name);
+		}
+	}
+
+	return $problems;
 }
 
 $failed = false;
 $compared = 0;
-
+$staleDrift = [];
 foreach ($manifest as $twinClass => $entry) {
-	$nativeClass = $entry['turboClass'];
-	$twin = new ReflectionClass($twinClass);
-	$native = new ReflectionClass($nativeClass);
-
+	$twin = $twins[$twinClass];
+	$native = $natives[$twinClass];
 	$problems = [];
 
-	// the class-level shape the native declaration must repeat: what the
-	// twin declares is what the shadowing class is linked with at activation
-	if ($native->isFinal() !== $twin->isFinal()) {
-		$problems[] = sprintf('is %s natively, %s in PHP', $native->isFinal() ? 'final' : 'not final', $twin->isFinal() ? 'final' : 'not final');
+	if (!(new ReflectionClass($twinClass))->isUserDefined() || !\PHPStanTurbo\Runtime::isShadowing()) {
+		$problems[] = 'is not the shadowing class under real-name activation';
 	}
-	$nativeParent = $native->getParentClass();
-	$twinParent = $twin->getParentClass();
-	$nativeParentName = $nativeParent === false ? null : strtr(strtolower($nativeParent->getName()), $nativeToTwin);
-	if ($nativeParentName !== ($twinParent === false ? null : strtolower($twinParent->getName()))) {
-		$problems[] = sprintf('extends %s natively, %s in PHP', $nativeParent === false ? 'nothing' : $nativeParent->getName(), $twinParent === false ? 'nothing' : $twinParent->getName());
-	}
-	$nativeInterfaces = array_map('strtolower', $native->getInterfaceNames());
-	$twinInterfaces = array_map('strtolower', $twin->getInterfaceNames());
-	sort($nativeInterfaces);
-	sort($twinInterfaces);
-	if ($nativeInterfaces !== $twinInterfaces) {
-		$problems[] = sprintf('implements [%s] natively, [%s] in PHP', implode(', ', $native->getInterfaceNames()), implode(', ', $twin->getInterfaceNames()));
+	foreach (['final', 'abstract', 'readonly', 'parent', 'interfaces'] as $key) {
+		if ($native[$key] !== $twin[$key]) {
+			$problems[] = sprintf('%s is %s natively, %s in PHP', $key, json_encode($native[$key]), json_encode($twin[$key]));
+		}
 	}
 	if (!array_key_exists('final', $entry) || !array_key_exists('parent', $entry)
-		|| $entry['final'] !== $twin->isFinal()
-		|| $entry['parent'] !== ($twinParent === false ? null : $twinParent->getName())
+		|| $entry['final'] !== $twin['final']
+		|| $entry['parent'] !== $twin['parent']
 	) {
 		$problems[] = 'the manifest final/parent entries do not match the class — regenerate with composer dump-autoload';
 	}
-
 	// the manifest must point at the file the class actually lives in
 	// (bin/side-by-side.php parses that file's source as the PHP side)
-	// normalized to forward slashes: the manifest stores portable paths
-	$actualFile = str_replace(DIRECTORY_SEPARATOR, '/', substr(realpath($twin->getFileName()), strlen(realpath($root)) + 1));
-	if ($actualFile !== $entry['php']) {
-		$problems[] = sprintf('lives in %s, but the manifest says %s — regenerate with composer dump-autoload', $actualFile, $entry['php']);
+	if ($twin['file'] !== $entry['php']) {
+		$problems[] = sprintf('lives in %s, but the manifest says %s — regenerate with composer dump-autoload', $twin['file'], $entry['php']);
 	}
-	if (($entry['vendored'] ?? false) !== str_starts_with($actualFile, 'vendor/')) {
-		$problems[] = sprintf('the manifest "vendored" flag does not match the class location %s', $actualFile);
-	}
-	foreach ($native->getMethods() as $nativeMethod) {
-		$name = $nativeMethod->getName();
-		if (!$twin->hasMethod($name)) {
-			continue; // orphan — side-by-side.php --check reports it
-		}
-		$twinMethod = $twin->getMethod($name);
-		$compared++;
-		$nativeSelf = strtr(strtolower($nativeMethod->getDeclaringClass()->getName()), $nativeToTwin);
-		$twinSelf = strtolower($twinMethod->getDeclaringClass()->getName());
-
-		if (visibility($nativeMethod) !== visibility($twinMethod)) {
-			$problems[] = sprintf('%s(): %s natively, %s in PHP', $name, visibility($nativeMethod), visibility($twinMethod));
-		}
-		if ($nativeMethod->isStatic() !== $twinMethod->isStatic()) {
-			$problems[] = sprintf('%s(): static-ness differs', $name);
-		}
-
-		$nativeParams = $nativeMethod->getParameters();
-		$twinParams = $twinMethod->getParameters();
-		if (count($nativeParams) !== count($twinParams)
-			|| $nativeMethod->getNumberOfRequiredParameters() !== $twinMethod->getNumberOfRequiredParameters()
-		) {
-			$problems[] = sprintf(
-				'%s(): %d params (%d required) natively, %d (%d required) in PHP',
-				$name,
-				count($nativeParams),
-				$nativeMethod->getNumberOfRequiredParameters(),
-				count($twinParams),
-				$twinMethod->getNumberOfRequiredParameters(),
-			);
-		} else {
-			foreach ($nativeParams as $i => $nativeParam) {
-				$twinParam = $twinParams[$i];
-				if ($nativeParam->getName() !== $twinParam->getName()) {
-					$problems[] = sprintf('%s(): parameter #%d is $%s natively, $%s in PHP — breaks named arguments', $name, $i + 1, $nativeParam->getName(), $twinParam->getName());
-				}
-				if ($nativeParam->isPassedByReference() !== $twinParam->isPassedByReference()) {
-					$problems[] = sprintf('%s($%s): by-ref differs', $name, $twinParam->getName());
-				}
-				if ($nativeParam->isVariadic() !== $twinParam->isVariadic()) {
-					$problems[] = sprintf('%s($%s): variadic differs', $name, $twinParam->getName());
-				}
-				if (!isErased($nativeParam->getType())) {
-					$nativeType = normalizeType($nativeParam->getType(), $nativeToTwin, $nativeSelf, strtolower($twinClass));
-					$twinType = normalizeType($twinParam->getType(), $nativeToTwin, $twinSelf, strtolower($twinClass));
-					if ($nativeType !== $twinType) {
-						$problems[] = sprintf('%s($%s): type "%s" natively, "%s" in PHP', $name, $twinParam->getName(), $nativeType, $twinType);
-					}
-				}
-			}
-		}
-
-		$nativeReturnType = $nativeMethod->getReturnType() ?? $nativeMethod->getTentativeReturnType();
-		if (!isErased($nativeReturnType)) {
-			$nativeReturn = normalizeType($nativeReturnType, $nativeToTwin, $nativeSelf, strtolower($twinClass));
-			$twinReturn = normalizeType($twinMethod->getReturnType() ?? $twinMethod->getTentativeReturnType(), $nativeToTwin, $twinSelf, strtolower($twinClass));
-			if ($nativeReturn !== $twinReturn) {
-				$problems[] = sprintf('%s(): returns "%s" natively, "%s" in PHP', $name, $nativeReturn, $twinReturn);
-			}
-		}
+	if (($entry['vendored'] ?? false) !== str_starts_with((string) $twin['file'], 'vendor/')) {
+		$problems[] = sprintf('the manifest "vendored" flag does not match the class location %s', $twin['file']);
 	}
 
+	$problems = array_merge(
+		$problems,
+		compareMembers('method', $twinClass, $native['methods'], $twin['methods']),
+		compareMembers('property', $twinClass, $native['properties'], $twin['properties']),
+		compareMembers('constant', $twinClass, $native['constants'], $twin['constants']),
+	);
+	$compared += count($twin['methods']) + count($twin['properties']) + count($twin['constants']);
+
+	if (isset($knownDrift[$twinClass])) {
+		if ($problems === []) {
+			$staleDrift[] = $twinClass;
+			continue;
+		}
+		foreach ($problems as $problem) {
+			printf("~ %s: %s (known: %s)\n", $twinClass, $problem, $knownDrift[$twinClass]);
+		}
+		continue;
+	}
 	if ($problems === []) {
 		printf("✓ %s\n", $twinClass);
 		continue;
 	}
 	$failed = true;
 	foreach ($problems as $problem) {
-		printf("✗ %s::%s\n", $twinClass, $problem);
+		printf("✗ %s: %s\n", $twinClass, $problem);
 	}
 }
+foreach ($staleDrift as $className) {
+	$failed = true;
+	printf("✗ %s matches its twin — remove it from \$knownDrift\n", $className);
+}
 
-printf($failed ? "FAILED\n" : "OK (%d methods compared)\n", $compared);
+printf($failed ? "FAILED\n" : "OK (%d members compared)\n", $compared);
 exit($failed ? 1 : 0);

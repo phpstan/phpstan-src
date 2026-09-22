@@ -3673,8 +3673,46 @@ $compoundOthers = static fn (string $union, string $benevolent, string $intersec
 			$r["$name filterTypes"] = [$view($subject->filterTypes($keepScalars)), $subject->filterTypes(static fn ($t) => true) === $subject, $view($subject->filterTypes($keepNone))];
 		}
 	}
+	// T of mixed has every member only as a placeholder: the member declared
+	// by the other intersected type wins, whichever member comes first
+	foreach ([
+		'templateMixedFirst' => [$compoundTemplateT, new \PHPStan\Type\ObjectType(\Exception::class)],
+		'templateMixedLast' => [new \PHPStan\Type\ObjectType(\Exception::class), $compoundTemplateT],
+		'templateMixedConstantFirst' => [$compoundTemplateT, new \PHPStan\Type\ObjectType(\DateTimeImmutable::class)],
+		'templateMixedConstantLast' => [new \PHPStan\Type\ObjectType(\DateTimeImmutable::class), $compoundTemplateT],
+		'templateMixedOnly' => [$compoundTemplateT, new \PHPStan\Type\Accessory\HasMethodType('__construct')],
+	] as $name => $members) {
+		$subject = new $intersectionClass($members);
+		foreach (['getProperty', 'getInstanceProperty', 'getStaticProperty', 'getMethod', 'getConstant'] as $method) {
+			foreach (['message', '__construct', 'getMessage', 'ATOM', 'MISSING'] as $memberName) {
+				try {
+					$args = $method === 'getConstant' ? [$memberName] : [$memberName, $compoundOutOfClassScope];
+					$member = $subject->$method(...$args);
+					$r["$name $method $memberName"] = [get_class($member), $member->getName(), $member->getDeclaringClass()->getName()];
+					if ($method === 'getMethod') {
+						$variant = $member->getOnlyVariant();
+						$r["$name $method $memberName variant"] = [count($variant->getParameters()), $variant->isVariadic(), $view($variant->getReturnType())];
+					}
+				} catch (\Throwable $e) {
+					$r["$name $method $memberName"] = [get_class($e), $e->getMessage()];
+				}
+			}
+		}
+		foreach (['getUnresolvedPropertyPrototype', 'getUnresolvedInstancePropertyPrototype', 'getUnresolvedStaticPropertyPrototype', 'getUnresolvedMethodPrototype'] as $method) {
+			foreach (['message', '__construct', 'MISSING'] as $memberName) {
+				try {
+					$prototype = $subject->$method($memberName, $compoundOutOfClassScope);
+					$transformed = $method === 'getUnresolvedMethodPrototype' ? $prototype->getTransformedMethod() : $prototype->getTransformedProperty();
+					$naked = $method === 'getUnresolvedMethodPrototype' ? $prototype->getNakedMethod() : $prototype->getNakedProperty();
+					$r["$name $method $memberName"] = [get_class($prototype), get_class($transformed), $transformed->getDeclaringClass()->getName(), get_class($naked)];
+				} catch (\Throwable $e) {
+					$r["$name $method $memberName"] = [get_class($e), $e->getMessage()];
+				}
+			}
+		}
+	}
 	// the family through the combinator, the way the analysis exercises it
-	foreach (['intString', 'nullableInt', 'consts', 'constStringsNullable', 'objects', 'intersections', 'benevolent', 'benevolentConsts', 'templateUnion', 'nonEmptyString', 'nonEmptyList', 'listWithOffsets', 'arrayWithOffsetA', 'oversized', 'objectWithMethod', 'callableArray', 'templateIntersection'] as $name) {
+	foreach (['intString', 'nullableInt', 'consts','constStringsNullable', 'objects', 'intersections', 'benevolent', 'benevolentConsts', 'templateUnion', 'nonEmptyString', 'nonEmptyList', 'listWithOffsets', 'arrayWithOffsetA', 'oversized', 'objectWithMethod', 'callableArray', 'templateIntersection'] as $name) {
 		$subject = $subjects[$name];
 		foreach (['int', 'int1', 'null', 'string', 'stringA', 'union', 'unionNullable', 'unionConsts', 'unionConstMixed', 'benevolent', 'mixed', 'never', 'array', 'arrayIntString', 'list', 'nonEmptyArray', 'nonEmptyList', 'arrayWithOffsetA', 'constArray', 'object', 'objectWithoutClass', 'callable', 'iterable', 'nonEmpty', 'listAccessory', 'hasMethodFoo', 'hasPropertyBar', 'templateT', 'falsey'] as $otherName) {
 			$other = $others[$otherName];

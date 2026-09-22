@@ -1070,8 +1070,10 @@ public:
 	zend_long hasProperty(zval *propertyName) const { return intersectResultsCall(PT_LC("hasproperty"), 1, propertyName); }
 
 	/* getUnresolved*Prototype(): the prototypes of the members having the
-	 * member, fetched on $this; none throws the Missing*FromReflectionException,
-	 * one is returned as is, more are combined; UNDEF = pending exception */
+	 * member, fetched on $this, without the placeholder (Dummy*Reflection)
+	 * ones when another member declares it; none throws the
+	 * Missing*FromReflectionException, one is returned as is, more are
+	 * combined; UNDEF = pending exception */
 	zv::Val unresolvedPrototype(const char *hasLcname, size_t hasLen, const char *prototypeLcname, size_t prototypeLen, const char *withLcname, size_t withLen, int exceptionClass, int combinedClass, bool isMethod, zval *name, zval *scope) const
 	{
 		zval selfZv;
@@ -1091,6 +1093,23 @@ public:
 			zv::Val onType = pt_type_call(Z_OBJ_P(prototype.raw()), withLcname, withLen, 1, &selfZv);
 			if (UNEXPECTED(onType.isUndef())) return zv::Val();
 			prototypes.push(std::move(onType));
+		}
+		/* a member like T of mixed has every member only as a placeholder,
+		 * it must not override the member declared by another member */
+		zv::Arr declaredPrototypes = zv::Arr::create(0);
+		for (zv::ArrayEntry entry : zv::ArrRef(prototypes.raw())) {
+			zend_object *prototype = entry.value().asObject();
+			zv::Val naked = isMethod
+				? pt_type_call(prototype, PT_LC("getnakedmethod"), 0, NULL)
+				: pt_type_call(prototype, PT_LC("getnakedproperty"), 0, NULL);
+			if (UNEXPECTED(naked.isUndef())) return zv::Val();
+			bool isDummy;
+			if (UNEXPECTED(!isInstance(naked.raw(), isMethod ? PT_CLASS_DUMMY_METHOD_REFLECTION : PT_CLASS_DUMMY_PROPERTY_REFLECTION, isDummy))) return zv::Val();
+			if (isDummy) continue;
+			declaredPrototypes.push(entry.value());
+		}
+		if (zend_hash_num_elements(declaredPrototypes.table()) > 0) {
+			prototypes = std::move(declaredPrototypes);
 		}
 		uint32_t found = zend_hash_num_elements(prototypes.table());
 		if (found == 0) {
@@ -1140,19 +1159,34 @@ public:
 	zend_long canAccessConstants() const { return intersectResultsCall(PT_LC("canaccessconstants"), 0, NULL); }
 	zend_long hasConstant(zval *constantName) const { return intersectResultsCall(PT_LC("hasconstant"), 1, constantName); }
 
-	/* the constant of the first member having it; none throws; UNDEF =
+	/* the constant of the first member declaring it, else the first
+	 * placeholder (DummyClassConstantReflection); none throws; UNDEF =
 	 * pending exception */
 	zv::Val getConstant(zval *constantName) const
 	{
 		zval *types = this->types();
 		if (UNEXPECTED(types == NULL)) return zv::Val();
 		zv::Val typesCopy = zv::Val::copyOf(zv::Ref(types));
+		zv::Val dummyConstant;
 		for (zv::ArrayEntry entry : zv::ArrRef(typesCopy.raw())) {
 			zend_object *type = entry.value().deref().asObject();
 			zend_long has = pt_type_call_trinary(type, PT_LC("hasconstant"), 1, constantName);
 			if (UNEXPECTED(has < 0)) return zv::Val();
-			if (has == PT_TRI_YES) return pt_type_call(type, PT_LC("getconstant"), 1, constantName);
+			if (has != PT_TRI_YES) continue;
+			zv::Val constant = pt_type_call(type, PT_LC("getconstant"), 1, constantName);
+			if (UNEXPECTED(constant.isUndef())) return zv::Val();
+			/* a member like T of mixed has every constant only as a
+			 * placeholder, it must not override the constant declared by
+			 * another member */
+			bool isDummy;
+			if (UNEXPECTED(!isInstance(constant.raw(), PT_CLASS_DUMMY_CLASS_CONSTANT_REFLECTION, isDummy))) return zv::Val();
+			if (isDummy) {
+				if (dummyConstant.isUndef()) dummyConstant = std::move(constant);
+				continue;
+			}
+			return constant;
 		}
+		if (!dummyConstant.isUndef()) return dummyConstant;
 		zv::Val typeOnly = verbosityLevel(PT_VERBOSITY_LEVEL_TYPE_ONLY);
 		if (UNEXPECTED(typeOnly.isUndef())) return zv::Val();
 		zv::Val description = thisDescribe(typeOnly.raw());

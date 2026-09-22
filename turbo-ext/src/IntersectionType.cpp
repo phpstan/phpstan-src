@@ -2148,35 +2148,91 @@ public:
 		zval *types = this->types();
 		if (UNEXPECTED(types == NULL)) return zv::Val();
 		zv::Val typesCopy = zv::Val::copyOf(zv::Ref(types));
-		zv::Val typeOnly;
-		std::vector<zv::Val> compare;
+		zv::Val first;
+		std::vector<zv::Val> others;
 		for (zv::ArrayEntry entry : zv::ArrRef(typesCopy.raw())) {
 			zv::Val finiteTypes = pt_type_call_array(entry.value().deref().asObject(), PT_LC("getfinitetypes"), 0, NULL);
 			if (UNEXPECTED(finiteTypes.isUndef())) return zv::Val();
-			zv::Arr oneType = zv::Arr::create(zv::ArrRef(finiteTypes.raw()).size());
-			for (zv::ArrayEntry finiteEntry : zv::ArrRef(finiteTypes.raw())) {
-				zval *finiteType = finiteEntry.value().deref().raw();
-				bool isEnumCase;
-				if (UNEXPECTED(!pt_type_instanceof_ce(finiteType, pt_ce_enum_case_object_type, isEnumCase))) return zv::Val();
-				zv::Val key;
-				if (isEnumCase) {
-					key = enumCaseKey(finiteType);
-				} else {
-					if (typeOnly.isUndef()) {
-						typeOnly = verbosityLevel(PT_VERBOSITY_LEVEL_TYPE_ONLY);
-						if (UNEXPECTED(typeOnly.isUndef())) return zv::Val();
-					}
-					key = describeOf(finiteType, typeOnly.raw());
-				}
-				if (UNEXPECTED(key.isUndef())) return zv::Val();
-				oneType.set(zv::Ref(key.raw()).asString(), zv::Val::copyOf(zv::Ref(finiteType)));
+			zv::Val indexed = indexFiniteTypes(finiteTypes.raw());
+			if (UNEXPECTED(indexed.isUndef())) return zv::Val();
+			if (first.isUndef()) {
+				first = std::move(indexed);
+				continue;
 			}
-			compare.push_back(zv::Val(std::move(oneType)));
+			others.push_back(std::move(indexed));
 		}
-		zv::Val result = intersectKeysOf(compare);
-		if (UNEXPECTED(result.isUndef())) return zv::Val();
+
+		if (first.isUndef()) return zv::Val(zv::Arr::empty());
+
+		zv::Arr result = zv::Arr::create(0);
+		for (zv::ArrayEntry entry : zv::ArrRef(first.raw())) {
+			bool inAll = true;
+			for (zv::Val &other : others) {
+				if (UNEXPECTED(!hasFiniteType(other.raw(), entry.stringKeyOrNull(), entry.value().raw(), inAll))) return zv::Val();
+				if (!inAll) break;
+			}
+			if (inAll) {
+				result.push(entry.value());
+			}
+		}
 		if ((zend_long) zv::ArrRef(result.raw()).size() > PT_INITIALIZER_EXPR_TYPE_RESOLVER_CALCULATE_SCALARS_LIMIT) return zv::Val(zv::Arr::empty());
-		return result;
+		return zv::Val(std::move(result));
+	}
+
+	/* the twin's indexFiniteTypes(): the finite types of one member, one per
+	 * value, in their order — keyed by FiniteTypeSet::key() (never numeric),
+	 * the values it does not key by a list position, deduplicated by
+	 * equals(); UNDEF = pending exception */
+	static zv::Val indexFiniteTypes(zval *finiteTypes)
+	{
+		zv::Arr indexed = zv::Arr::create(zv::ArrRef(finiteTypes).size());
+		for (zv::ArrayEntry entry : zv::ArrRef(finiteTypes)) {
+			zval *finiteType = entry.value().deref().raw();
+			zv::Val key = pt_type_finite_type_set_key(finiteType);
+			if (UNEXPECTED(key.isUndef())) return zv::Val();
+			if (!key.isNull()) {
+				indexed.set(zv::Ref(key.raw()).asString(), zv::Val::copyOf(zv::Ref(finiteType)));
+				continue;
+			}
+			bool replaced = false;
+			for (zv::ArrayEntry existing : zv::ArrRef(indexed.raw())) {
+				if (existing.stringKeyOrNull() != NULL) continue;
+				bool equal;
+				if (UNEXPECTED(!pt_type_op_bool(existing.value().deref().asObject(), PT_OP_EQUALS, 1, finiteType, equal))) return zv::Val();
+				if (!equal) continue;
+				zval copy;
+				ZVAL_COPY(&copy, finiteType);
+				zend_hash_index_update(indexed.table(), existing.indexKey(), &copy);
+				replaced = true;
+				break;
+			}
+			if (!replaced) {
+				indexed.push(zv::Val::copyOf(zv::Ref(finiteType)));
+			}
+		}
+		return zv::Val(std::move(indexed));
+	}
+
+	/* the twin's hasFiniteType(): $key (NULL for a value FiniteTypeSet::key()
+	 * does not key) among $indexed's keys, or an equal unkeyed value; false =
+	 * pending exception */
+	[[nodiscard]] static bool hasFiniteType(zval *indexed, zend_string *key, zval *finiteType, bool &out)
+	{
+		if (key != NULL) {
+			out = zend_symtable_find(Z_ARRVAL_P(indexed), key) != NULL;
+			return true;
+		}
+		for (zv::ArrayEntry other : zv::ArrRef(indexed)) {
+			if (other.stringKeyOrNull() != NULL) continue;
+			bool equal;
+			if (UNEXPECTED(!pt_type_op_bool(other.value().deref().asObject(), PT_OP_EQUALS, 1, finiteType, equal))) return false;
+			if (equal) {
+				out = true;
+				return true;
+			}
+		}
+		out = false;
+		return true;
 	}
 
 	/* whether any member has one; -1 = pending exception */

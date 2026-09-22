@@ -56,6 +56,7 @@ use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use function array_filter;
 use function array_intersect_key;
+use function array_key_exists;
 use function array_map;
 use function array_shift;
 use function array_unique;
@@ -64,6 +65,7 @@ use function count;
 use function implode;
 use function in_array;
 use function is_int;
+use function is_string;
 use function ksort;
 use function sprintf;
 use function str_starts_with;
@@ -1785,26 +1787,89 @@ class IntersectionType implements CompoundType
 
 	public function getFiniteTypes(): array
 	{
-		$compare = [];
+		$first = null;
+		$others = [];
 		foreach ($this->types as $type) {
-			$oneType = [];
-			foreach ($type->getFiniteTypes() as $finiteType) {
-				if ($finiteType instanceof EnumCaseObjectType) {
-					$oneType[$finiteType->getClassName() . '::' . $finiteType->getEnumCaseName()] = $finiteType;
-					continue;
-				}
-				$oneType[$finiteType->describe(VerbosityLevel::typeOnly())] = $finiteType;
+			$indexed = self::indexFiniteTypes($type->getFiniteTypes());
+			if ($first === null) {
+				$first = $indexed;
+				continue;
 			}
-			$compare[] = $oneType;
+
+			$others[] = $indexed;
 		}
 
-		$result = array_values(array_intersect_key(...$compare));
+		if ($first === null) {
+			return [];
+		}
+
+		$result = [];
+		foreach ($first as $key => $finiteType) {
+			foreach ($others as $other) {
+				if (!self::hasFiniteType($other, is_string($key) ? $key : null, $finiteType)) {
+					continue 2;
+				}
+			}
+
+			$result[] = $finiteType;
+		}
 
 		if (count($result) > InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT) {
 			return [];
 		}
 
 		return $result;
+	}
+
+	/**
+	 * The finite types of one member, one per value, in their order: keyed by
+	 * FiniteTypeSet::key(), which never keys by a number, and the values it
+	 * does not key (floats, constant arrays) by a list position, deduplicated
+	 * by equals().
+	 *
+	 * @param list<Type> $finiteTypes
+	 * @return array<int|string, Type>
+	 */
+	private static function indexFiniteTypes(array $finiteTypes): array
+	{
+		$indexed = [];
+		foreach ($finiteTypes as $finiteType) {
+			$key = FiniteTypeSet::key($finiteType);
+			if ($key !== null) {
+				$indexed[$key] = $finiteType;
+				continue;
+			}
+
+			foreach ($indexed as $existingKey => $existing) {
+				if (is_int($existingKey) && $existing->equals($finiteType)) {
+					$indexed[$existingKey] = $finiteType;
+					continue 2;
+				}
+			}
+
+			$indexed[] = $finiteType;
+		}
+
+		return $indexed;
+	}
+
+	/**
+	 * @param array<int|string, Type> $indexed
+	 * @param string|null $key the FiniteTypeSet::key() of $finiteType
+	 */
+	private static function hasFiniteType(array $indexed, ?string $key, Type $finiteType): bool
+	{
+		if ($key !== null) {
+			return array_key_exists($key, $indexed);
+		}
+
+		foreach ($indexed as $otherKey => $other) {
+			if (is_int($otherKey) && $other->equals($finiteType)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**

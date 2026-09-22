@@ -20,6 +20,8 @@ use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Accessory\OversizedArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
@@ -30,6 +32,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use stdClass;
 use Test\ClassWithToString;
 use Traversable;
+use function array_map;
 use function count;
 use function sprintf;
 use const PHP_INT_MAX;
@@ -1015,6 +1018,57 @@ class IntersectionTypeTest extends PHPStanTestCase
 	{
 		$constant = $type->getConstant('ATOM');
 		$this->assertSame(DateTimeInterface::class, $constant->getDeclaringClass()->getName());
+	}
+
+	/**
+	 * @return Iterator<string, array{IntersectionType, list<string>}>
+	 */
+	public static function dataGetFiniteTypes(): Iterator
+	{
+		yield 'integers' => [
+			new IntersectionType([
+				new UnionType([new ConstantIntegerType(1), new ConstantIntegerType(2)]),
+				new UnionType([new ConstantIntegerType(1), new ConstantIntegerType(2), new ConstantIntegerType(3)]),
+			]),
+			['1', '2'],
+		];
+		yield 'strings' => [
+			new IntersectionType([
+				new UnionType([new ConstantStringType('a'), new ConstantStringType('b'), new ConstantStringType('c')]),
+				new UnionType([new ConstantStringType('c'), new ConstantStringType('a')]),
+			]),
+			["'a'", "'c'"],
+		];
+		yield 'floats' => [
+			new IntersectionType([
+				new UnionType([new ConstantFloatType(1.5), new ConstantFloatType(2.5)]),
+				new UnionType([new ConstantFloatType(2.5), new ConstantFloatType(3.5)]),
+			]),
+			['2.5'],
+		];
+		yield 'mixed kinds' => [
+			new IntersectionType([
+				new UnionType([new ConstantIntegerType(1), new ConstantStringType('1'), new ConstantBooleanType(true), new NullType()]),
+				new UnionType([new ConstantStringType('1'), new NullType(), new ConstantIntegerType(2)]),
+			]),
+			["'1'", 'null'],
+		];
+		yield 'disjoint' => [
+			new IntersectionType([
+				new UnionType([new ConstantIntegerType(1), new ConstantIntegerType(2)]),
+				new UnionType([new ConstantIntegerType(3), new ConstantIntegerType(4)]),
+			]),
+			[],
+		];
+	}
+
+	/**
+	 * @param list<string> $expected
+	 */
+	#[DataProvider('dataGetFiniteTypes')]
+	public function testGetFiniteTypes(IntersectionType $type, array $expected): void
+	{
+		$this->assertSame($expected, array_map(static fn (Type $finiteType): string => $finiteType->describe(VerbosityLevel::precise()), $type->getFiniteTypes()));
 	}
 
 	public function testSetOffsetValueTypeOnListWithOffsetAtIntMax(): void

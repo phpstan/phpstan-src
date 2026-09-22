@@ -8426,6 +8426,24 @@ foreach ([\PHPStan\Analyser\RicherScopeGetTypeHelper::class => 'getIdenticalResu
 		$r["intersection list at PHP_INT_MAX setOffsetValueType $offset"] = $misuse(static fn () => $intMaxList->setOffsetValueType(new \PHPStan\Type\Constant\ConstantIntegerType($offset), new \PHPStan\Type\Constant\ConstantIntegerType(1)), true);
 	}
 
+	// an intersection's finite types: the values every member has, told apart by value
+	$ci = static fn (int $v) => new \PHPStan\Type\Constant\ConstantIntegerType($v);
+	$cs = static fn (string $v) => new \PHPStan\Type\Constant\ConstantStringType($v);
+	$cf = static fn (float $v) => new \PHPStan\Type\Constant\ConstantFloatType($v);
+	foreach ([
+		'integers' => [[$ci(1), $ci(2)], [$ci(1), $ci(2), $ci(3)]],
+		'strings' => [[$cs('a'), $cs('b'), $cs('c')], [$cs('c'), $cs('a')]],
+		'floats' => [[$cf(1.5), $cf(2.5)], [$cf(2.5), $cf(3.5)]],
+		'mixed kinds' => [[$ci(1), $cs('1'), new \PHPStan\Type\Constant\ConstantBooleanType(true), new \PHPStan\Type\NullType()], [$cs('1'), new \PHPStan\Type\NullType(), $ci(2)]],
+		'disjoint' => [[$ci(1), $ci(2)], [$ci(3), $ci(4)]],
+		'three members' => [[$ci(1), $ci(2), $ci(3)], [$ci(2), $ci(3)], [$ci(3), $ci(1)]],
+	] as $finiteName => $memberLists) {
+		$finiteIntersection = new \PHPStan\Type\IntersectionType(array_map(static fn (array $members) => new \PHPStan\Type\UnionType($members), $memberLists));
+		$r["intersection getFiniteTypes $finiteName"] = $view($finiteIntersection->getFiniteTypes());
+	}
+	$constantArrayUnion = static fn () => new \PHPStan\Type\UnionType([new \PHPStan\Type\Constant\ConstantArrayType([$cs('a')], [$ci(1)]), new \PHPStan\Type\Constant\ConstantArrayType([$cs('a')], [$ci(2)])]);
+	$r['intersection getFiniteTypes constant arrays'] = $view((new \PHPStan\Type\IntersectionType([$constantArrayUnion(), $constantArrayUnion()]))->getFiniteTypes());
+
 	// countConstantArrayValueTypes() hands each element to TypeTraverser::map(Type $type, ...)
 	foreach (['string' => 'x', 'object' => new \stdClass()] as $elementName => $element) {
 		$r["combinator countConstantArrayValueTypes $elementName"] = $misuse(static fn () => \PHPStan\Type\TypeCombinator::countConstantArrayValueTypes([new \PHPStan\Type\IntegerType(), $element]));

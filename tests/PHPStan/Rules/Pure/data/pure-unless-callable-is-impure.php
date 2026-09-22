@@ -398,3 +398,76 @@ function pureCallingRenamedInheritedMethodWithOpaqueCallback(InheritedMapperRena
 	// makes the call possibly impure.
 	return $mapper->map($cb, $arr);
 }
+
+/**
+ * @pure-unless-callable-is-impure $fun
+ * @param callable(): void $fun
+ */
+function haveFun(callable $fun): void
+{
+	$fun();
+}
+
+/**
+ * @pure-unless-callable-is-impure $fun
+ * @param callable(): void $fun
+ */
+function indirectFun(callable $fun): void
+{
+	haveFun($fun);
+}
+
+/**
+ * @pure-unless-callable-is-impure $fun
+ * @param callable(): void $fun
+ */
+function indirectFunWithDifferentCallback(callable $fun): void
+{
+	haveFun(static function (): void {
+		echo 'side effect';
+	});
+}
+
+/**
+ * @param callable(): void $one
+ * @param callable(): void $two
+ * @pure-unless-callable-is-impure $one
+ * @pure-unless-callable-is-impure $two
+ */
+function haveTwoFuns(callable $one, callable $two): void
+{
+	$one();
+	$two();
+}
+
+/**
+ * @pure-unless-callable-is-impure $fun
+ * @param callable(): void $fun
+ */
+function indirectFunPartialForward(callable $fun): void
+{
+	// only $one receives the forwarded callback
+	haveTwoFuns($fun, static function (): void {
+		echo 'side effect';
+	});
+}
+
+/**
+ * @pure-unless-callable-is-impure $fun
+ * @param callable(int): int $fun
+ * @param list<int> $arr
+ * @return list<int>
+ */
+function indirectBuiltinFun(callable $fun, array $arr): array
+{
+	return array_map($fun, $arr);
+}
+
+/**
+ * @pure-unless-callable-is-impure $fun
+ * @param callable(): void $fun
+ */
+function indirectFunUnpacked(callable $fun): void
+{
+	haveFun(...$fun);
+}

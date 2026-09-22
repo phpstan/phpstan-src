@@ -7,7 +7,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name\FullyQualified;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
+use PHPStan\Php\PhpVersions;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
@@ -28,8 +28,12 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
+use function array_keys;
 use function count;
+use function explode;
 use function max;
+use function min;
+use function substr_count;
 
 #[AutowiredService]
 final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -45,9 +49,11 @@ final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunction
 		'str_ends_with',
 	];
 
-	public function __construct(private PhpVersion $phpVersion)
-	{
-	}
+	/**
+	 * How many delimiter/string/limit combinations may be evaluated when
+	 * constant-folding the call before giving up on the exact result.
+	 */
+	private const CONSTANT_COMBINATION_LIMIT = 16;
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -65,10 +71,11 @@ final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunction
 			return null;
 		}
 
+		$phpVersions = $scope->getPhpVersion();
 		$delimiterType = $scope->getType($args[0]->value);
 		$isEmptyString = (new ConstantStringType(''))->isSuperTypeOf($delimiterType);
 		if ($isEmptyString->yes()) {
-			if ($this->phpVersion->throwsTypeErrorForInternalFunctions()) {
+			if ($phpVersions->throwsTypeErrorForInternalFunctions()->yes()) {
 				return new NeverType();
 			}
 			return new ConstantBooleanType(false);
@@ -90,6 +97,12 @@ final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunction
 		}
 
 		$limitType = isset($args[2]) ? $scope->getType($args[2]->value) : null;
+
+		$constantType = $this->createConstantSplitType($delimiterType, $stringType, $limitType, $phpVersions);
+		if ($constantType !== null) {
+			return $constantType;
+		}
+
 		$delimiterGuaranteedPresent = $this->isDelimiterGuaranteedPresent($args, $scope);
 
 		if ($this->isSingleElementLimit($limitType)) {
@@ -111,7 +124,7 @@ final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunction
 			}
 		}
 
-		if (!$this->phpVersion->throwsValueErrorForInternalFunctions() && $isEmptyString->maybe()) {
+		if (!$phpVersions->throwsValueErrorForInternalFunctions()->yes() && $isEmptyString->maybe()) {
 			$returnType = new UnionType([$returnType, new ConstantBooleanType(false)]);
 		}
 
@@ -142,6 +155,134 @@ final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunction
 		}
 
 		return false;
+	}
+
+	/**
+	 * The exact result of the split when the delimiter, the string and the limit
+	 * are all known constants, or null when it cannot be computed.
+	 */
+	private function createConstantSplitType(Type $delimiterType, Type $stringType, ?Type $limitType, PhpVersions $phpVersions): ?Type
+	{
+		$delimiters = [];
+		$hasEmptyDelimiter = false;
+		foreach ($delimiterType->getConstantStrings() as $delimiterString) {
+			$delimiterValue = $delimiterString->getValue();
+			if ($delimiterValue === '') {
+				// explode() does not split on an empty separator: it throws
+				// a ValueError on PHP 8+, and returns false before that
+				$hasEmptyDelimiter = true;
+				continue;
+			}
+
+			$delimiters[] = $delimiterValue;
+		}
+
+		if (count($delimiters) === 0) {
+			return null;
+		}
+
+		$strings = $stringType->getConstantStrings();
+		if (count($strings) === 0) {
+			return null;
+		}
+
+		if (count($delimiters) * count($strings) > self::CONSTANT_COMBINATION_LIMIT) {
+			return null;
+		}
+
+		$results = [];
+		foreach ($delimiters as $delimiter) {
+			foreach ($strings as $string) {
+				$stringValue = $string->getValue();
+				$limits = $this->getDistinctLimits($limitType, substr_count($stringValue, $delimiter) + 1);
+				if ($limits === null) {
+					return null;
+				}
+
+				foreach ($limits as $limit) {
+					if (count($results) >= self::CONSTANT_COMBINATION_LIMIT) {
+						return null;
+					}
+
+					$items = explode($delimiter, $stringValue, $limit);
+					if (count($items) > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+						return null;
+					}
+
+					$builder = ConstantArrayTypeBuilder::createEmpty();
+					foreach ($items as $i => $item) {
+						$builder->setOffsetValueType(new ConstantIntegerType($i), new ConstantStringType($item));
+					}
+
+					$results[] = $builder->getArray();
+				}
+			}
+		}
+
+		if ($hasEmptyDelimiter && !$phpVersions->throwsValueErrorForInternalFunctions()->yes()) {
+			$results[] = new ConstantBooleanType(false);
+		}
+
+		return TypeCombinator::union(...$results);
+	}
+
+	/**
+	 * The limits that lead to different results when splitting a string into
+	 * $partsCount parts, or null when they cannot be enumerated.
+	 *
+	 * Limits are clamped into the [-$partsCount, $partsCount] window because
+	 * every limit above $partsCount produces the full split and every limit at
+	 * or below -$partsCount produces an empty array. That keeps wide and even
+	 * unbounded integer ranges enumerable.
+	 *
+	 * @return list<int>|null
+	 */
+	private function getDistinctLimits(?Type $limitType, int $partsCount): ?array
+	{
+		if ($limitType === null) {
+			return [$partsCount];
+		}
+
+		if (!$limitType->isInteger()->yes()) {
+			return null;
+		}
+
+		$finiteTypes = $limitType->getFiniteTypes();
+		if (count($finiteTypes) > 0) {
+			$clampedLimits = [];
+			foreach ($finiteTypes as $finiteType) {
+				if (!$finiteType instanceof ConstantIntegerType) {
+					return null;
+				}
+
+				$value = $finiteType->getValue();
+				$clampedLimits[max(-$partsCount, min($partsCount, $value))] = true;
+			}
+
+			return array_keys($clampedLimits);
+		}
+
+		$limits = [];
+		for ($limit = -$partsCount; $limit <= $partsCount; $limit++) {
+			if ($limit === -$partsCount) {
+				$candidateLimitType = IntegerRangeType::fromInterval(null, $limit);
+			} elseif ($limit === $partsCount) {
+				$candidateLimitType = IntegerRangeType::fromInterval($limit, null);
+			} else {
+				$candidateLimitType = new ConstantIntegerType($limit);
+			}
+
+			if ($candidateLimitType->isSuperTypeOf($limitType)->no()) {
+				continue;
+			}
+
+			$limits[] = $limit;
+			if (count($limits) > self::CONSTANT_COMBINATION_LIMIT) {
+				return null;
+			}
+		}
+
+		return $limits;
 	}
 
 	/**

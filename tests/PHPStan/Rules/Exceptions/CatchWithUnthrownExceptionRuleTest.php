@@ -1422,4 +1422,82 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testUnserializeThrowType(): void
+	{
+		$this->analyse([__DIR__ . '/data/unserialize-throw-type.php'], [
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				15,
+			],
+			[
+				'Dead catch - TypeError is never thrown in the try block.',
+				27,
+			],
+			[
+				'Dead catch - TypeError is never thrown in the try block.',
+				33,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				39,
+			],
+		]);
+	}
+
+	#[RequiresPhp('< 8.0.0')]
+	public function testUnserializeThrowTypeBeforePhp8(): void
+	{
+		$this->analyse([__DIR__ . '/data/unserialize-throw-type.php'], [
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				15,
+			],
+			[
+				'Dead catch - TypeError is never thrown in the try block.',
+				21,
+			],
+			[
+				'Dead catch - TypeError is never thrown in the try block.',
+				27,
+			],
+			[
+				'Dead catch - TypeError is never thrown in the try block.',
+				33,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				39,
+			],
+			[
+				'Dead catch - TypeError is never thrown in the try block.',
+				45,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				51,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				57,
+			],
+			[
+				'Dead catch - TypeError is never thrown in the try block.',
+				63,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				69,
+			],
+			[
+				'Dead catch - TypeError is never thrown in the try block.',
+				75,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				81,
+			],
+		]);
+	}
+
 }

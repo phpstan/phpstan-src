@@ -35,16 +35,13 @@ chdir($root);
  */
 $knownDrift = [
 	'PhpParser\\NodeTraverser' => 'pending',
-	'PHPStan\\Analyser\\ConditionalExpressionHolder' => 'pending',
 	'PHPStan\\Analyser\\ExpressionResult' => 'pending',
 	'PHPStan\\Analyser\\ExpressionResultStorage' => 'pending',
-	'PHPStan\\Analyser\\ExpressionTypeHolder' => 'pending',
 	'PHPStan\\Analyser\\ExprHandler\\AssignHandler' => 'pending',
 	'PHPStan\\Analyser\\ExprHandler\\Helper\\OutputBufferHelper' => 'pending',
 	'PHPStan\\Analyser\\IssetabilityDescriptor' => 'pending',
 	'PHPStan\\Analyser\\IssetabilityLinkInfo' => 'pending',
 	'PHPStan\\Analyser\\MutatingScope' => 'pending',
-	'PHPStan\\Analyser\\ScopeContext' => 'pending',
 	'PHPStan\\Analyser\\ScopeOps' => 'pending',
 	'PHPStan\\Analyser\\StmtHandler\\ForeachHandler' => 'pending',
 	'PHPStan\\Analyser\\TypeSpecifier' => 'pending',

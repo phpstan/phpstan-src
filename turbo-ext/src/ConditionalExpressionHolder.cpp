@@ -8,6 +8,8 @@
 
 #include "support.h"
 #include "generated/ConditionalExpressionHolder.h"
+
+namespace sigs = ptdecl::ConditionalExpressionHolder::sig;
 #include "zv.h"
 
 namespace phpstanturbo {
@@ -70,17 +72,14 @@ using phpstanturbo::ConditionalExpressionHolder;
 
 #include "reg.h"
 
-#define ETH_CLASS "PHPStanTurbo\\ExpressionTypeHolder"
 
 void pt_register_conditional_expression_holder()
 {
 	reg::Class cls("PHPStan\\Analyser\\ConditionalExpressionHolder");
 	ptdecl::ConditionalExpressionHolder::declareClass(cls);
-	/* conditionExpressionTypeHolders/typeHolder must stay in this order */
-	cls.privateNullProperty("conditionExpressionTypeHolders");
-	cls.privateNullProperty("typeHolder");
+	ptdecl::ConditionalExpressionHolder::declareProperties(cls);
 
-	cls.method("__construct", reg::Public, 2, { reg::arrayArg("conditionExpressionTypeHolders"), reg::obj("typeHolder", ETH_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *holders;
 		zval *typeHolder;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
@@ -90,17 +89,17 @@ void pt_register_conditional_expression_holder()
 		if (UNEXPECTED(!ConditionalExpressionHolder(ZEND_THIS).construct(zv::ArrRef(holders), zv::Ref(typeHolder)))) RETURN_THROWS();
 	});
 
-	cls.method("getConditionExpressionTypeHolders", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::getConditionExpressionTypeHolders, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		ConditionalExpressionHolder(ZEND_THIS).getConditionExpressionTypeHolders().intoReturnValue(return_value);
 	});
 
-	cls.method("getTypeHolder", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::getTypeHolder, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		ConditionalExpressionHolder(ZEND_THIS).getTypeHolder().intoReturnValue(return_value);
 	});
 
-	cls.method("getKey", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::getKey, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		zv::Val key = ConditionalExpressionHolder(ZEND_THIS).getKey();
 		if (UNEXPECTED(key.isUndef())) RETURN_THROWS();

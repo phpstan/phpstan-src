@@ -958,6 +958,56 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 	}
 
 	#[RequiresPhp('>= 8.0.0')]
+	public function testArrayChunkThrowType(): void
+	{
+		$this->analyse([__DIR__ . '/data/array-chunk-throw-type.php'], [
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				15,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				21,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				46,
+			],
+		]);
+	}
+
+	#[RequiresPhp('< 8.0.0')]
+	public function testArrayChunkThrowTypeBeforePhp8(): void
+	{
+		$this->analyse([__DIR__ . '/data/array-chunk-throw-type.php'], [
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				15,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				21,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				27,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				33,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				39,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				46,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
 	public function testPrintfThrowType(): void
 	{
 		$this->analyse([

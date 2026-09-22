@@ -226,21 +226,24 @@ final class FileAnalyserCallback
 
 		try {
 			$dependencies = $this->dependencyResolver->resolveDependencies($node, $scope);
-			$fileAndPackageDependencies = $dependencies->getFileAndPackageDependencies($scope->getFile(), $this->analysedFiles, $this->packageDependencyResolver);
-			foreach ($fileAndPackageDependencies['analysedFiles'] as $dependentFile) {
-				$this->fileDependencies[] = $dependentFile;
-			}
-			foreach ($dependencies->getFilePaths() as $dependentFile) {
-				$this->fileDependencies[] = $dependentFile;
-			}
-			foreach ($fileAndPackageDependencies['nonAnalysedFiles'] as $dependentFile) {
-				$this->fileDependencies[] = $dependentFile;
-			}
-			foreach ($fileAndPackageDependencies['packages'] as $package) {
-				$this->filePackageDependencies[] = $package;
-			}
-			if ($dependencies->getExportedNode() !== null) {
-				$this->exportedNodes[] = $dependencies->getExportedNode();
+			if ($dependencies !== null) {
+				$fileAndPackageDependencies = $dependencies->getFileAndPackageDependencies($scope->getFile(), $this->analysedFiles, $this->packageDependencyResolver);
+				foreach ($fileAndPackageDependencies['analysedFiles'] as $dependentFile) {
+					$this->fileDependencies[] = $dependentFile;
+				}
+				foreach ($dependencies->getFilePaths() as $dependentFile) {
+					$this->fileDependencies[] = $dependentFile;
+				}
+				foreach ($fileAndPackageDependencies['nonAnalysedFiles'] as $dependentFile) {
+					$this->fileDependencies[] = $dependentFile;
+				}
+				foreach ($fileAndPackageDependencies['packages'] as $package) {
+					$this->filePackageDependencies[] = $package;
+				}
+				$exportedNode = $dependencies->getExportedNode();
+				if ($exportedNode !== null) {
+					$this->exportedNodes[] = $exportedNode;
+				}
 			}
 		} catch (AnalysedCodeException) {
 			// pass

@@ -36,7 +36,6 @@ chdir($root);
 $knownDrift = [
 	'PhpParser\\NodeTraverser' => 'pending',
 	'PHPStan\\Analyser\\ExpressionResultStorage' => 'pending',
-	'PHPStan\\Analyser\\VariableLivenessResolver' => 'pending',
 ];
 
 /**

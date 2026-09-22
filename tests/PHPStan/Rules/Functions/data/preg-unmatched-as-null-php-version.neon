@@ -1,0 +1,4 @@
+parameters:
+    phpVersion:
+        min: 70200
+        max: 80500

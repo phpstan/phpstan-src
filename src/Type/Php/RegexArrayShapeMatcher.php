@@ -106,12 +106,6 @@ final class RegexArrayShapeMatcher
 			if ($flags !== $flagsType->getValue()) {
 				return null;
 			}
-
-			// PREG_UNMATCHED_AS_NULL only behaves as documented since PHP 7.4, so the
-			// analysed version turns it on the same way the emulation flag does
-			if ($phpVersions->supportsPregUnmatchedAsNull()->yes()) {
-				$flags |= self::PREG_UNMATCHED_AS_NULL_ON_72_73;
-			}
 		}
 
 		$matchedTypes = [];
@@ -171,12 +165,13 @@ final class RegexArrayShapeMatcher
 				$flags,
 				$markVerbs,
 				$matchesAll,
+				$phpVersions,
 			);
 
-			if (!$this->containsUnmatchedAsNull($flags, $matchesAll)) {
+			if (!$this->containsUnmatchedAsNull($flags, $matchesAll, $phpVersions)) {
 				// positive match has a subject but not any capturing group
 				$builder = ConstantArrayTypeBuilder::createEmpty();
-				$builder->setOffsetValueType(new ConstantIntegerType(0), $this->createSubjectValueType($subjectBaseType, $flags, $matchesAll, $wasMatched));
+				$builder->setOffsetValueType(new ConstantIntegerType(0), $this->createSubjectValueType($subjectBaseType, $flags, $matchesAll, $wasMatched, $phpVersions));
 
 				$combiType = TypeCombinator::union(
 					$builder->getArray(),
@@ -207,11 +202,11 @@ final class RegexArrayShapeMatcher
 					} elseif ($beforeCurrentCombo && !$group->resetsGroupCounter()) {
 						$comboList = $comboList->forceGroupTypeAndNonOptional(
 							$group,
-							$this->containsUnmatchedAsNull($flags, $matchesAll) ? new NullType() : new ConstantStringType(''),
+							$this->containsUnmatchedAsNull($flags, $matchesAll, $phpVersions) ? new NullType() : new ConstantStringType(''),
 						);
 					} elseif (
 						$group->getAlternationId() === $onlyTopLevelAlternation->getId()
-						&& !$this->containsUnmatchedAsNull($flags, $matchesAll)
+						&& !$this->containsUnmatchedAsNull($flags, $matchesAll, $phpVersions)
 					) {
 						$comboList = $comboList->removeGroup($group);
 					}
@@ -225,13 +220,14 @@ final class RegexArrayShapeMatcher
 					$flags,
 					$markVerbs,
 					$matchesAll,
+					$phpVersions,
 				);
 
 				$combiTypes[] = $combiType;
 			}
 
 			if (
-				!$this->containsUnmatchedAsNull($flags, $matchesAll)
+				!$this->containsUnmatchedAsNull($flags, $matchesAll, $phpVersions)
 				&& (
 					$onlyTopLevelAlternation->getAlternationsCount() !== count($onlyTopLevelAlternation->getGroupCombinations())
 					|| $isOptionalAlternation
@@ -239,7 +235,7 @@ final class RegexArrayShapeMatcher
 			) {
 				// positive match has a subject but not any capturing group
 				$builder = ConstantArrayTypeBuilder::createEmpty();
-				$builder->setOffsetValueType(new ConstantIntegerType(0), $this->createSubjectValueType($subjectBaseType, $flags, $matchesAll, $wasMatched));
+				$builder->setOffsetValueType(new ConstantIntegerType(0), $this->createSubjectValueType($subjectBaseType, $flags, $matchesAll, $wasMatched, $phpVersions));
 
 				$combiTypes[] = $builder->getArray();
 			}
@@ -257,6 +253,7 @@ final class RegexArrayShapeMatcher
 			$flags,
 			$markVerbs,
 			$matchesAll,
+			$phpVersions,
 		);
 	}
 
@@ -271,6 +268,7 @@ final class RegexArrayShapeMatcher
 		int $flags,
 		array $markVerbs,
 		bool $matchesAll,
+		PhpVersions $phpVersions,
 	): Type
 	{
 		$forceList = count($markVerbs) === 0;
@@ -279,7 +277,7 @@ final class RegexArrayShapeMatcher
 		// first item in matches contains the overall match.
 		$builder->setOffsetValueType(
 			$this->getKeyType(0),
-			$this->createSubjectValueType($subjectBaseType, $flags, $matchesAll, $wasMatched),
+			$this->createSubjectValueType($subjectBaseType, $flags, $matchesAll, $wasMatched, $phpVersions),
 			$this->isSubjectOptional($wasMatched, $matchesAll),
 		);
 
@@ -288,8 +286,8 @@ final class RegexArrayShapeMatcher
 		foreach ($captureGroups as $captureGroup) {
 			$isTrailingOptional = $i >= $countGroups - $trailingOptionals;
 			$isLastGroup = $i === $countGroups - 1;
-			$groupValueType = $this->createGroupValueType($captureGroup, $wasMatched, $flags, $isTrailingOptional, $isLastGroup, $matchesAll);
-			$optional = $this->isGroupOptional($captureGroup, $wasMatched, $flags, $isTrailingOptional, $matchesAll);
+			$groupValueType = $this->createGroupValueType($captureGroup, $wasMatched, $flags, $isTrailingOptional, $isLastGroup, $matchesAll, $phpVersions);
+			$optional = $this->isGroupOptional($captureGroup, $wasMatched, $flags, $isTrailingOptional, $matchesAll, $phpVersions);
 
 			if ($captureGroup->isNamed()) {
 				$forceList = false;
@@ -350,12 +348,12 @@ final class RegexArrayShapeMatcher
 	/**
 	 * @param Type $baseType A string type (or string variant) representing the subject of the match
 	 */
-	private function createSubjectValueType(Type $baseType, int $flags, bool $matchesAll, TrinaryLogic $wasMatched): Type
+	private function createSubjectValueType(Type $baseType, int $flags, bool $matchesAll, TrinaryLogic $wasMatched, PhpVersions $phpVersions): Type
 	{
-		$subjectValueType = TypeCombinator::removeNull($this->getValueType($baseType, $flags, $matchesAll));
+		$subjectValueType = TypeCombinator::removeNull($this->getValueType($baseType, $flags, $matchesAll, $phpVersions));
 
 		if ($matchesAll) {
-			$subjectValueType = TypeCombinator::removeNull($this->getValueType(new StringType(), $flags, $matchesAll));
+			$subjectValueType = TypeCombinator::removeNull($this->getValueType(new StringType(), $flags, $matchesAll, $phpVersions));
 
 			if ($this->containsPatternOrder($flags)) {
 				$accessoryTypes = [
@@ -373,10 +371,10 @@ final class RegexArrayShapeMatcher
 		return $subjectValueType;
 	}
 
-	private function isGroupOptional(RegexCapturingGroup $captureGroup, TrinaryLogic $wasMatched, int $flags, bool $isTrailingOptional, bool $matchesAll): bool
+	private function isGroupOptional(RegexCapturingGroup $captureGroup, TrinaryLogic $wasMatched, int $flags, bool $isTrailingOptional, bool $matchesAll, PhpVersions $phpVersions): bool
 	{
 		if ($matchesAll) {
-			if ($isTrailingOptional && !$this->containsUnmatchedAsNull($flags, $matchesAll) && $this->containsSetOrder($flags)) {
+			if ($isTrailingOptional && !$this->containsUnmatchedAsNull($flags, $matchesAll, $phpVersions) && $this->containsSetOrder($flags)) {
 				return true;
 			}
 
@@ -388,7 +386,7 @@ final class RegexArrayShapeMatcher
 		} else {
 			if (!$isTrailingOptional) {
 				$optional = false;
-			} elseif ($this->containsUnmatchedAsNull($flags, $matchesAll)) {
+			} elseif ($this->containsUnmatchedAsNull($flags, $matchesAll, $phpVersions)) {
 				$optional = false;
 			} else {
 				$optional = $captureGroup->isOptional();
@@ -398,19 +396,19 @@ final class RegexArrayShapeMatcher
 		return $optional;
 	}
 
-	private function createGroupValueType(RegexCapturingGroup $captureGroup, TrinaryLogic $wasMatched, int $flags, bool $isTrailingOptional, bool $isLastGroup, bool $matchesAll): Type
+	private function createGroupValueType(RegexCapturingGroup $captureGroup, TrinaryLogic $wasMatched, int $flags, bool $isTrailingOptional, bool $isLastGroup, bool $matchesAll, PhpVersions $phpVersions): Type
 	{
 		if ($matchesAll) {
 			if (
 				(
 					!$this->containsSetOrder($flags)
-					&& !$this->containsUnmatchedAsNull($flags, $matchesAll)
+					&& !$this->containsUnmatchedAsNull($flags, $matchesAll, $phpVersions)
 					&& $captureGroup->isOptional()
 				)
 				||
 				(
 					$this->containsSetOrder($flags)
-					&& !$this->containsUnmatchedAsNull($flags, $matchesAll)
+					&& !$this->containsUnmatchedAsNull($flags, $matchesAll, $phpVersions)
 					&& $captureGroup->isOptional()
 					&& !$isTrailingOptional
 				)
@@ -419,13 +417,14 @@ final class RegexArrayShapeMatcher
 					TypeCombinator::union($captureGroup->getType(), new ConstantStringType('')),
 					$flags,
 					$matchesAll,
+					$phpVersions,
 				);
 				$groupValueType = TypeCombinator::removeNull($groupValueType);
 			} else {
-				$groupValueType = $this->getValueType($captureGroup->getType(), $flags, $matchesAll);
+				$groupValueType = $this->getValueType($captureGroup->getType(), $flags, $matchesAll, $phpVersions);
 			}
 
-			if (!$isTrailingOptional && $this->containsUnmatchedAsNull($flags, $matchesAll) && !$captureGroup->isOptional()) {
+			if (!$isTrailingOptional && $this->containsUnmatchedAsNull($flags, $matchesAll, $phpVersions) && !$captureGroup->isOptional()) {
 				$groupValueType = TypeCombinator::removeNull($groupValueType);
 			}
 
@@ -441,18 +440,19 @@ final class RegexArrayShapeMatcher
 			return $groupValueType;
 		}
 
-		if (!$isLastGroup && !$this->containsUnmatchedAsNull($flags, $matchesAll) && $captureGroup->isOptional()) {
+		if (!$isLastGroup && !$this->containsUnmatchedAsNull($flags, $matchesAll, $phpVersions) && $captureGroup->isOptional()) {
 			$groupValueType = $this->getValueType(
 				TypeCombinator::union($captureGroup->getType(), new ConstantStringType('')),
 				$flags,
 				$matchesAll,
+				$phpVersions,
 			);
 		} else {
-			$groupValueType = $this->getValueType($captureGroup->getType(), $flags, $matchesAll);
+			$groupValueType = $this->getValueType($captureGroup->getType(), $flags, $matchesAll, $phpVersions);
 		}
 
 		if ($wasMatched->yes()) {
-			if (!$isTrailingOptional && $this->containsUnmatchedAsNull($flags, $matchesAll) && !$captureGroup->isOptional()) {
+			if (!$isTrailingOptional && $this->containsUnmatchedAsNull($flags, $matchesAll, $phpVersions) && !$captureGroup->isOptional()) {
 				$groupValueType = TypeCombinator::removeNull($groupValueType);
 			}
 		}
@@ -476,7 +476,7 @@ final class RegexArrayShapeMatcher
 		return ($flags & PREG_SET_ORDER) !== 0;
 	}
 
-	private function containsUnmatchedAsNull(int $flags, bool $matchesAll): bool
+	private function containsUnmatchedAsNull(int $flags, bool $matchesAll, PhpVersions $phpVersions): bool
 	{
 		if ($matchesAll) {
 			// preg_match_all() with PREG_UNMATCHED_AS_NULL works consistently across php-versions
@@ -484,7 +484,9 @@ final class RegexArrayShapeMatcher
 			return ($flags & PREG_UNMATCHED_AS_NULL) !== 0;
 		}
 
-		return ($flags & PREG_UNMATCHED_AS_NULL) !== 0 && ($flags & self::PREG_UNMATCHED_AS_NULL_ON_72_73) !== 0;
+		// an analysed range that still reaches PHP 7.4 has to assume the documented behaviour,
+		// because inferring a string where the group can be null would hide a real null
+		return ($flags & PREG_UNMATCHED_AS_NULL) !== 0 && (($flags & self::PREG_UNMATCHED_AS_NULL_ON_72_73) !== 0 || !$phpVersions->supportsPregUnmatchedAsNull()->no());
 	}
 
 	private function getKeyType(int|string $key): Type
@@ -496,13 +498,13 @@ final class RegexArrayShapeMatcher
 		return new ConstantIntegerType($key);
 	}
 
-	private function getValueType(Type $baseType, int $flags, bool $matchesAll): Type
+	private function getValueType(Type $baseType, int $flags, bool $matchesAll, PhpVersions $phpVersions): Type
 	{
 		$valueType = $baseType;
 
 		// unmatched groups return -1 as offset
 		$offsetType = IntegerRangeType::fromInterval(-1, null);
-		if ($this->containsUnmatchedAsNull($flags, $matchesAll)) {
+		if ($this->containsUnmatchedAsNull($flags, $matchesAll, $phpVersions)) {
 			$valueType = TypeCombinator::addNull($valueType);
 		}
 

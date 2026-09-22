@@ -15,6 +15,8 @@
 #include "ParserVisitors.h"
 #include "generated/ArrayMapArgVisitor.h"
 
+namespace sigs = ptdecl::ArrayMapArgVisitor::sig;
+
 static zend_class_entry *pt_ce_array_map_arg_visitor = nullptr;
 
 static const char pt_array_map_arg_attribute[] = "arrayMapArgs";
@@ -92,7 +94,7 @@ void pt_register_array_map_arg_visitor()
 	ptdecl::ArrayMapArgVisitor::declareProperties(cls);
 	cls.publicClassConstantString("ATTRIBUTE_NAME", pt_array_map_arg_attribute);
 
-	cls.method("enterNode", reg::Public, 1, { reg::obj("node", "PhpParser\\Node") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::enterNode, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *node;
 		if (!zp::parse<zp::Obj>(execute_data, node)) RETURN_THROWS();
 		if (UNEXPECTED(!ArrayMapArgVisitor::enterNode(Z_OBJ_P(ZEND_THIS), Z_OBJ_P(node)))) RETURN_THROWS();

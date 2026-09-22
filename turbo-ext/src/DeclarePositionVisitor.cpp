@@ -16,6 +16,8 @@
 #include "ParserVisitors.h"
 #include "generated/DeclarePositionVisitor.h"
 
+namespace sigs = ptdecl::DeclarePositionVisitor::sig;
+
 static zend_class_entry *pt_ce_declare_position_visitor = nullptr;
 
 /* the class's only property, `private bool $isFirstStatement = true` */
@@ -88,7 +90,7 @@ void pt_register_declare_position_visitor()
 	ptdecl::DeclarePositionVisitor::declareProperties(cls);
 	cls.publicClassConstantString("ATTRIBUTE_NAME", pt_declare_position_attribute);
 
-	cls.method("beforeTraverse", reg::Public, 1, { reg::arrayArg("nodes") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::beforeTraverse, [](INTERNAL_FUNCTION_PARAMETERS) {
 		HashTable *nodes;
 		if (!zp::parse<zp::Ht>(execute_data, nodes)) RETURN_THROWS();
 		(void) nodes;
@@ -96,7 +98,7 @@ void pt_register_declare_position_visitor()
 		RETURN_NULL();
 	});
 
-	cls.method("enterNode", reg::Public, 1, { reg::obj("node", "PhpParser\\Node") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::enterNode, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *node;
 		if (!zp::parse<zp::Obj>(execute_data, node)) RETURN_THROWS();
 		if (UNEXPECTED(!DeclarePositionVisitor::enterNode(Z_OBJ_P(ZEND_THIS), Z_OBJ_P(node)))) RETURN_THROWS();

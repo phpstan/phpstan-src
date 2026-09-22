@@ -16,6 +16,8 @@
 #include "ParserVisitors.h"
 #include "generated/ParentStmtTypesVisitor.h"
 
+namespace sigs = ptdecl::ParentStmtTypesVisitor::sig;
+
 static zend_class_entry *pt_ce_parent_stmt_types_visitor = nullptr;
 
 /* the class's only property, `private array $typeStack = []` */
@@ -95,7 +97,7 @@ void pt_register_parent_stmt_types_visitor()
 	cls.privateTypedArrayPropertyDefaultEmpty("typeStack");
 	cls.publicClassConstantString("ATTRIBUTE_NAME", pt_parent_stmt_types_attribute);
 
-	cls.method("beforeTraverse", reg::Public, 1, { reg::arrayArg("nodes") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::beforeTraverse, [](INTERNAL_FUNCTION_PARAMETERS) {
 		HashTable *nodes;
 		if (!zp::parse<zp::Ht>(execute_data, nodes)) RETURN_THROWS();
 		(void) nodes;
@@ -103,14 +105,14 @@ void pt_register_parent_stmt_types_visitor()
 		RETURN_NULL();
 	});
 
-	cls.method("enterNode", reg::Public, 1, { reg::obj("node", "PhpParser\\Node") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::enterNode, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *node;
 		if (!zp::parse<zp::Obj>(execute_data, node)) RETURN_THROWS();
 		if (UNEXPECTED(!ParentStmtTypesVisitor::enterNode(Z_OBJ_P(ZEND_THIS), Z_OBJ_P(node)))) RETURN_THROWS();
 		RETURN_NULL();
 	});
 
-	cls.method("leaveNode", reg::Public, 1, { reg::obj("node", "PhpParser\\Node") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::leaveNode, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *node;
 		if (!zp::parse<zp::Obj>(execute_data, node)) RETURN_THROWS();
 		if (UNEXPECTED(!ParentStmtTypesVisitor::leaveNode(Z_OBJ_P(ZEND_THIS), Z_OBJ_P(node)))) RETURN_THROWS();

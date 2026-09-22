@@ -14,6 +14,8 @@
 #include "ParserVisitors.h"
 #include "generated/ImplodeArgVisitor.h"
 
+namespace sigs = ptdecl::ImplodeArgVisitor::sig;
+
 static zend_class_entry *pt_ce_implode_arg_visitor = nullptr;
 
 static const char pt_implode_arg_attribute[] = "isImplodeArg";
@@ -71,7 +73,7 @@ void pt_register_implode_arg_visitor()
 	ptdecl::ImplodeArgVisitor::declareProperties(cls);
 	cls.publicClassConstantString("ATTRIBUTE_NAME", pt_implode_arg_attribute);
 
-	cls.method("enterNode", reg::Public, 1, { reg::obj("node", "PhpParser\\Node") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::enterNode, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *node;
 		if (!zp::parse<zp::Obj>(execute_data, node)) RETURN_THROWS();
 		if (UNEXPECTED(!ImplodeArgVisitor::enterNode(Z_OBJ_P(ZEND_THIS), Z_OBJ_P(node)))) RETURN_THROWS();

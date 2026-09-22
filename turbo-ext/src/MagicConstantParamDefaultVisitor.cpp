@@ -14,6 +14,8 @@
 #include "ParserVisitors.h"
 #include "generated/MagicConstantParamDefaultVisitor.h"
 
+namespace sigs = ptdecl::MagicConstantParamDefaultVisitor::sig;
+
 static zend_class_entry *pt_ce_magic_constant_param_default_visitor = nullptr;
 
 static const char pt_magic_constant_param_default_attribute[] = "isMagicConstantParamDefault";
@@ -62,7 +64,7 @@ void pt_register_magic_constant_param_default_visitor()
 	ptdecl::MagicConstantParamDefaultVisitor::declareProperties(cls);
 	cls.publicClassConstantString("ATTRIBUTE_NAME", pt_magic_constant_param_default_attribute);
 
-	cls.method("enterNode", reg::Public, 1, { reg::obj("node", "PhpParser\\Node") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::enterNode, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *node;
 		if (!zp::parse<zp::Obj>(execute_data, node)) RETURN_THROWS();
 		if (UNEXPECTED(!MagicConstantParamDefaultVisitor::enterNode(Z_OBJ_P(ZEND_THIS), Z_OBJ_P(node)))) RETURN_THROWS();

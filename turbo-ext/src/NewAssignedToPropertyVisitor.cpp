@@ -15,6 +15,8 @@
 #include "ParserVisitors.h"
 #include "generated/NewAssignedToPropertyVisitor.h"
 
+namespace sigs = ptdecl::NewAssignedToPropertyVisitor::sig;
+
 static zend_class_entry *pt_ce_new_assigned_to_property_visitor = nullptr;
 
 static const char pt_new_assigned_to_property_attribute[] = "assignedToProperty";
@@ -90,7 +92,7 @@ void pt_register_new_assigned_to_property_visitor()
 	ptdecl::NewAssignedToPropertyVisitor::declareProperties(cls);
 	cls.publicClassConstantString("ATTRIBUTE_NAME", pt_new_assigned_to_property_attribute);
 
-	cls.method("enterNode", reg::Public, 1, { reg::obj("node", "PhpParser\\Node") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::enterNode, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *node;
 		if (!zp::parse<zp::Obj>(execute_data, node)) RETURN_THROWS();
 		if (UNEXPECTED(!NewAssignedToPropertyVisitor::enterNode(Z_OBJ_P(ZEND_THIS), Z_OBJ_P(node)))) RETURN_THROWS();

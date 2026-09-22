@@ -17,6 +17,8 @@
 #include "ParserVisitors.h"
 #include "generated/TryCatchTypeVisitor.h"
 
+namespace sigs = ptdecl::TryCatchTypeVisitor::sig;
+
 static zend_class_entry *pt_ce_try_catch_type_visitor = nullptr;
 
 /* the class's only property, `private array $typeStack = []` */
@@ -152,7 +154,7 @@ void pt_register_try_catch_type_visitor()
 	cls.privateTypedArrayPropertyDefaultEmpty("typeStack");
 	cls.publicClassConstantString("ATTRIBUTE_NAME", pt_try_catch_type_attribute);
 
-	cls.method("beforeTraverse", reg::Public, 1, { reg::arrayArg("nodes") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::beforeTraverse, [](INTERNAL_FUNCTION_PARAMETERS) {
 		HashTable *nodes;
 		if (!zp::parse<zp::Ht>(execute_data, nodes)) RETURN_THROWS();
 		(void) nodes;
@@ -160,14 +162,14 @@ void pt_register_try_catch_type_visitor()
 		RETURN_NULL();
 	});
 
-	cls.method("enterNode", reg::Public, 1, { reg::obj("node", "PhpParser\\Node") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::enterNode, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *node;
 		if (!zp::parse<zp::Obj>(execute_data, node)) RETURN_THROWS();
 		if (UNEXPECTED(!TryCatchTypeVisitor::enterNode(Z_OBJ_P(ZEND_THIS), Z_OBJ_P(node)))) RETURN_THROWS();
 		RETURN_NULL();
 	});
 
-	cls.method("leaveNode", reg::Public, 1, { reg::obj("node", "PhpParser\\Node") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::leaveNode, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *node;
 		if (!zp::parse<zp::Obj>(execute_data, node)) RETURN_THROWS();
 		if (UNEXPECTED(!TryCatchTypeVisitor::leaveNode(Z_OBJ_P(ZEND_THIS), Z_OBJ_P(node)))) RETURN_THROWS();

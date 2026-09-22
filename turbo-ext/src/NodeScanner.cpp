@@ -8,6 +8,8 @@
 
 #include "support.h"
 #include "generated/NodeScanner.h"
+
+namespace sigs = ptdecl::NodeScanner::sig;
 #include "zv.h"
 
 static zend_class_entry *pt_ce_node_scanner;
@@ -56,7 +58,7 @@ void pt_register_node_scanner()
 	ptdecl::NodeScanner::declareClass(cls);
 	ptdecl::NodeScanner::declareProperties(cls);
 
-	cls.method("nodeIsOrContainsYield", reg::PublicStatic, 1, { reg::objectArg("node") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::nodeIsOrContainsYield, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *node;
 		if (!zp::parse<zp::Obj>(execute_data, node)) RETURN_THROWS();
 		bool failed = false;

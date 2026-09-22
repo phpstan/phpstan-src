@@ -12,6 +12,8 @@
 
 #include "ParserEngine.h"
 #include "../generated/ParserRunner.h"
+
+namespace sigs = ptdecl::ParserRunner::sig;
 #include "../Engine.h"
 #include "ParserRunnerActionsSplit.h"
 
@@ -1234,7 +1236,7 @@ void pt_register_parser_runner(void)
 	ptdecl::ParserRunner::declareClass(cls);
 	ptdecl::ParserRunner::declareProperties(cls);
 
-	cls.method("parse", reg::PublicStatic, 3, { reg::objectArg("parser"), reg::stringArg("sourceCode"), reg::objectArg("errorHandler") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::parse, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *parserObj, *code, *errorHandler;
 		if (!zp::parse<zp::Obj, zp::Zval, zp::Obj>(execute_data, parserObj, code, errorHandler)) RETURN_THROWS();
 

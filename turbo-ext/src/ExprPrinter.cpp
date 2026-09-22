@@ -155,7 +155,7 @@ void pt_register_expr_printer()
 		zv::ObjRef(ZEND_THIS).propAtWrite(slots::printer, zv::Val::copyOf(zv::Ref(printer)));
 	});
 
-	cls.method("printExpr", reg::Public, 1, { reg::objectArg("expr") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::printExpr, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *expr;
 		if (!zp::parse<zp::Obj>(execute_data, expr)) RETURN_THROWS();
 		pt_init_strs();

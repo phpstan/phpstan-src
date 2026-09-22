@@ -95,6 +95,32 @@ $fixtures = [
 	'nested braces' => "<?php\nclass A { public function f() { if (true) { } } const C = 1; }\nconst G = 1;\n",
 	'empty file' => "",
 	'only open tag' => "<?php\n",
+	// php_strip_whitespace() is a lexer: inside {$...} a nested "..." is a
+	// separate string, whitespace collapses to one space (newlines too, which
+	// the cleaner's // skip depends on), and after a heredoc's closing label
+	// the next token is written verbatim, a comment included, then "\n"
+	'hash in interpolation' => "<?php\n\$s = \"{\$a[\"#\"]}\"; class HashInterp {}\nfunction afterHash() {}\n",
+	'block comment opener in interpolation' => "<?php\n\$s = \"{\$a[\"/*\"]}\";\nclass CommentInterp {}\n// */\nclass AfterComment {}\n",
+	'line comment opener in interpolation' => "<?php\n\$s = \"{\$a[\"//\"]}\";\nclass Foo {}\n",
+	'single quotes in interpolation' => "<?php\n\$s = \"{\$a['//']}\"; class SlashInterp {}\n",
+	'quote in interpolated single-quoted key' => "<?php\n\$x = \"{\$a['\"']}\"; \$y = '#'; function f1() {}\nfunction f2() {}\n",
+	'heredoc interpolation' => "<?php\n\$s = <<<EOT\n{\$a[\"#\"]}\nEOT;\nclass HeredocInterp {}\n",
+	'comment after heredoc label' => "<?php\n\$x = <<<EOT\nabc\nEOT# class Foo {}\n;\n",
+	'dollar brace interpolation' => "<?php\n\$s = \"\${a[\"#\"]}\"; class DollarBrace {}\n",
+	'nested braces in interpolation' => "<?php\n\$s = \"{\$a[f(function () { return \"#\"; })]}\"; class NestedBraces {}\n",
+	'backtick interpolation' => "<?php\n\$s = `{\$a[\"#\"]}`; class BacktickInterp {}\n",
+	'var offset quote' => "<?php\n\$s = \"\$a[\"]\"; class VarOffset {}\n",
+	'property fetch in string' => "<?php\n\$s = \"\$a->b # \"; class PropertyFetch {}\n",
+	'yield from with comment' => "<?php\nfunction g() { yield /* \" */ from x(); }\nclass AfterYield {}\n\$s = \"\";\n",
+	'cast with spaces' => "<?php\n\$a = (  int  ) \$b; class AfterCast {}\n",
+	'windows newlines' => "<?php\r\n\$a = 1; // x\r\nclass Crlf {}\r\n",
+	'shebang' => "#!/usr/bin/env php\n<?php\nclass Shebang {}\n",
+	'open tag at eof' => "<?php",
+	'unterminated comment' => "<?php\nclass Before {}\n/* class After {}\n",
+	// fuzz-derived
+	'fuzz: heredoc comment between interpolations' => "<?php\nconst C400 = 1; \$x = \"{\$a[\"#\"]}\"; \$x = <<<EOT\nabc\nEOT# c\n;\n\$x = \"{\$a[\"#\"]}\"; function f404() {} \$x = \"\${a}\"; ",
+	'fuzz: interpolations and a quoted key' => "<?php\n\$x = \"{\$a[\"//\"]}\";\nfunction f521() {} \$x = <<<EOT\nabc\nEOT# c\n;\nfunction f523() {} \$x = \"{\$a['\"']}\"; \$x = '/*'; ",
+	'fuzz: var offset, yield from and a heredoc' => "<?php\n\$x = \"\$a[#]\"; yield /* \" */ from x();\n\$x = \"a#b\"; \$x = <<<EOT\n{\$a[\"#\"]} #\nEOT;\n\$x = \"{\$a[\"//\"]}\";\nconst C2135 = 1; ",
 ];
 
 $dir = sys_get_temp_dir() . '/phpstan-symbol-finder-' . getmypid();

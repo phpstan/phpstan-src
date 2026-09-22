@@ -114,7 +114,7 @@ void SymbolFinderInFiles::scan(bool supportsEnums)
 
 	if (source.empty()) return;
 
-	CommentStripper stripper(source.data(), source.size(), shortOpenTagEnabled());
+	CommentStripper stripper(source.data(), source.size(), shortOpenTagEnabled(), skipShebangEnabled());
 	stripper.strip(stripped);
 
 	if (stripped.empty()) return;

@@ -8302,6 +8302,34 @@ foreach ([\PHPStan\Analyser\RicherScopeGetTypeHelper::class => 'getIdenticalResu
 		$r["traverseSimultaneously iterable returning $returnedName"] = $misuse(static fn () => $misuseIterable->traverseSimultaneously($misuseIterable, static fn () => $returned)->describe(\PHPStan\Type\VerbosityLevel::precise()));
 	}
 
+	// ObjectShapeType does not check its array<string, Type> $properties: a
+	// non-Type value fails at the first method called on it
+	$misuseGoodShape = new \PHPStan\Type\ObjectShapeType(['a' => new \PHPStan\Type\StringType()], []);
+	foreach (['string' => 'x', 'int' => 1, 'null' => null, 'object' => new \stdClass()] as $valueName => $value) {
+		// the engine's "Call to a member function" message names no file; an
+		// object without the method is observed by its class only
+		$withMessage = !is_object($value);
+		$badShape = new \PHPStan\Type\ObjectShapeType(['a' => $value], []);
+		foreach ([
+			'getReferencedClasses' => static fn () => $badShape->getReferencedClasses(),
+			'isSuperTypeOf' => static fn () => $badShape->isSuperTypeOf($misuseGoodShape),
+			'equals' => static fn () => $badShape->equals($misuseGoodShape),
+			'inferTemplateTypes' => static fn () => $badShape->inferTemplateTypes($misuseGoodShape),
+			'getReferencedTemplateTypes' => static fn () => $badShape->getReferencedTemplateTypes(\PHPStan\Type\Generic\TemplateTypeVariance::createCovariant()),
+			'describe' => static fn () => $badShape->describe(\PHPStan\Type\VerbosityLevel::precise()),
+			'toPhpDocNode' => static fn () => $badShape->toPhpDocNode(),
+			'hasTemplateOrLateResolvableType' => static fn () => $badShape->hasTemplateOrLateResolvableType(),
+			'union' => static fn () => \PHPStan\Type\TypeCombinator::union($badShape, $misuseGoodShape),
+			'traverse identity' => static fn () => $badShape->traverse(static fn ($t) => $t) === $badShape,
+			'traverseSimultaneously identity' => static fn () => $badShape->traverseSimultaneously($misuseGoodShape, static fn ($t) => $t) === $badShape,
+		] as $method => $call) {
+			$r["objectShape $valueName $method"] = $misuse($call, $withMessage);
+		}
+		// VerbosityLevel::getRecommendedLevelByType()'s typed parameter sees it first
+		$r["objectShape $valueName accepts"] = $misuse(static fn () => $badShape->accepts($misuseGoodShape, true));
+		$r["objectShape traverse returning $valueName describe"] = $misuse(static fn () => $misuseGoodShape->traverse(static fn () => $value)->describe(\PHPStan\Type\VerbosityLevel::precise()), $withMessage);
+	}
+
 	foreach ($r as $key => $value) {
 		$observations["misuse $key"] = $value;
 	}

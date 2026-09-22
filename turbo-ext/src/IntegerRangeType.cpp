@@ -182,7 +182,7 @@ public:
 		if (Z_TYPE_P(value) == IS_LONG) return fromInterval(NullableLong::null(), NullableLong::of(Z_LVAL_P(value)), -1);
 		int againstMax, againstMin;
 		if (UNEXPECTED(!compareToLimits(value, againstMax, againstMin))) return zv::Val();
-		if (againstMax > 0) { /* $value > PHP_INT_MAX */
+		if (againstMax >= 0) { /* $value >= PHP_INT_MAX */
 			return integer();
 		}
 		if (againstMin <= 0) { /* $value <= PHP_INT_MIN */
@@ -236,7 +236,7 @@ public:
 		if (againstMin <= 0) { /* $value <= PHP_INT_MIN */
 			return integer();
 		}
-		if (againstMax > 0) { /* $value > PHP_INT_MAX */
+		if (againstMax >= 0) { /* $value >= PHP_INT_MAX */
 			return never();
 		}
 		zend_long rounded;

@@ -73,6 +73,8 @@
 #include "generated/IntersectionType.h"
 #include "generated/TypeCombinatorCache.h"
 #include "generated/UnionType.h"
+
+namespace sigs = ptdecl::TypeCombinatorCache::sig;
 #include "zv.h"
 
 #include <Zend/zend_weakrefs.h>
@@ -886,13 +888,11 @@ void pt_type_combinator_cache_clear()
 
 void pt_register_type_combinator_cache()
 {
-	static const char *TYPE_CLASS = "PHPStan\\Type\\Type";
-
 	reg::Class cls("PHPStan\\Type\\TypeCombinatorCache");
 	ptdecl::TypeCombinatorCache::declareClass(cls);
 	ptdecl::TypeCombinatorCache::declareProperties(cls);
 
-	cls.method("union", reg::PublicStatic, 0, { reg::variadicObj("types", TYPE_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::union_, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *types;
 		uint32_t count;
 		ZEND_PARSE_PARAMETERS_START(0, -1)
@@ -901,7 +901,7 @@ void pt_register_type_combinator_cache()
 		PT_RETURN_VAL(pt_type_combinator_cache_union(count, types));
 	});
 
-	cls.method("intersect", reg::PublicStatic, 0, { reg::variadicObj("types", TYPE_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::intersect, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *types;
 		uint32_t count;
 		ZEND_PARSE_PARAMETERS_START(0, -1)
@@ -910,13 +910,13 @@ void pt_register_type_combinator_cache()
 		PT_RETURN_VAL(pt_type_combinator_cache_intersect(count, types));
 	});
 
-	cls.method("remove", reg::PublicStatic, 2, { reg::obj("fromType", TYPE_CLASS), reg::obj("typeToRemove", TYPE_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::remove, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *fromType, *typeToRemove;
 		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, fromType, typeToRemove)) RETURN_THROWS();
 		PT_RETURN_VAL(pt_type_combinator_cache_remove(fromType, typeToRemove));
 	});
 
-	cls.method("clearCache", reg::PublicStatic, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::clearCache, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		TypeCombinatorCache::clear();
 	});

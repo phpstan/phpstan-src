@@ -3638,7 +3638,7 @@ void pt_register_object_type()
 		PT_THIS.construct(className, subtractedType, classReflection);
 	});
 
-	cls.method("resetCaches", reg::PublicStatic, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::resetCaches, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		ObjectType::resetCaches();
 	});

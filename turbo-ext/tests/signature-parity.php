@@ -41,9 +41,6 @@ $knownDrift = [
 	'PHPStan\\Reflection\\BetterReflection\\SourceLocator\\PhpFileCleaner' => 'pending',
 	'PHPStan\\Reflection\\BetterReflection\\SourceLocator\\SymbolFinderInFiles' => 'pending',
 	'PHPStan\\Reflection\\Php\\PhpClassReflectionExtension' => 'pending',
-	'PHPStan\\Type\\Constant\\ConstantArrayTypeBuilder' => 'pending',
-	'PHPStan\\Type\\ObjectType' => 'pending',
-	'PHPStan\\Type\\TypeCombinatorCache' => 'pending',
 ];
 
 /**

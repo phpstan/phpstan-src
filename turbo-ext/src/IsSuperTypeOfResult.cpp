@@ -22,6 +22,8 @@
 #include "support.h"
 #include "generated/IsSuperTypeOfResult.h"
 
+namespace sigs = ptdecl::IsSuperTypeOfResult::sig;
+
 namespace slots = ptdecl::IsSuperTypeOfResult::slot;
 #include "zv.h"
 
@@ -478,8 +480,6 @@ void pt_is_super_type_of_result_rshutdown()
 #include "reg.h"
 #include "TypeTraits.h"
 
-#define IS_SUPER_TYPE_OF_RESULT_CLASS "PHPStanTurbo\\IsSuperTypeOfResult"
-#define TRINARY_CLASS "PHPStanTurbo\\TrinaryLogic"
 
 static zend_result pt_verify_is_super_type_of_result_variadic(zval *args, uint32_t count, uint32_t offset)
 {
@@ -579,8 +579,11 @@ void pt_register_is_super_type_of_result()
 {
 	reg::Class cls("PHPStan\\Type\\IsSuperTypeOfResult");
 	ptdecl::IsSuperTypeOfResult::declareClass(cls);
+	/* the static flyweight properties stay unused: the natives keep the
+	 * singletons in the request globals */
+	ptdecl::IsSuperTypeOfResult::declareProperties(cls);
 
-	cls.method("__construct", reg::Public, 2, { reg::obj("result", TRINARY_CLASS), reg::arrayArg("reasons"), reg::withDefault(reg::arrayArg("lazyReasons"), "[]") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *result, *reasons;
 		zval *lazyReasons = NULL;
 		ZEND_PARSE_PARAMETERS_START(2, 3)
@@ -592,33 +595,33 @@ void pt_register_is_super_type_of_result()
 		if (UNEXPECTED(!IsSuperTypeOfResult(Z_OBJ_P(ZEND_THIS)).construct(result, reasons, lazyReasons))) RETURN_THROWS();
 	});
 
-	cls.method("yes", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::yes, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_is_super_type_of_result_bool(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_TRI_YES);
 	});
 
-	cls.method("maybe", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::maybe, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_is_super_type_of_result_bool(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_TRI_MAYBE);
 	});
 
-	cls.method("no", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::no, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_is_super_type_of_result_bool(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_TRI_NO);
 	});
 
-	cls.method("getReasons", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::getReasons, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		zv::Val result = IsSuperTypeOfResult(Z_OBJ_P(ZEND_THIS)).getReasons();
 		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("createYes", reg::PublicStatic, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::createYes, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		zv::Val result = IsSuperTypeOfResult::createYes();
 		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("createNo", reg::PublicStatic, 0, { reg::withDefault(reg::arrayArg("reasons"), "[]"), reg::withDefault(reg::arrayArg("lazyReasons"), "[]") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::createNo, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *reasons = NULL, *lazyReasons = NULL;
 		if (!zp::parse<zp::Opt<zp::Arr>, zp::Opt<zp::Arr>>(execute_data, reasons, lazyReasons)) RETURN_THROWS();
 		zv::Val result = IsSuperTypeOfResult::createNo(reasons, lazyReasons);
@@ -626,14 +629,14 @@ void pt_register_is_super_type_of_result()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("createMaybe", reg::PublicStatic, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::createMaybe, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		zv::Val result = IsSuperTypeOfResult::createMaybe();
 		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("createFromBoolean", reg::PublicStatic, 1, { reg::boolArg("value") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::createFromBoolean, [](INTERNAL_FUNCTION_PARAMETERS) {
 		bool value;
 		if (!zp::parse<zp::Bool>(execute_data, value)) RETURN_THROWS();
 		zv::Val result = IsSuperTypeOfResult::createFromBoolean(value);
@@ -641,26 +644,26 @@ void pt_register_is_super_type_of_result()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("toAcceptsResult", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::toAcceptsResult, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		zv::Val result = IsSuperTypeOfResult(Z_OBJ_P(ZEND_THIS)).toAcceptsResult();
 		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("and", reg::Public, 0, { reg::variadicObj("others", IS_SUPER_TYPE_OF_RESULT_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::and_, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_is_super_type_of_result_and_or(INTERNAL_FUNCTION_PARAM_PASSTHRU, true);
 	});
 	/* the one-operand call native code makes; the operand checked as the
 	 * variadic `self` parameter is */
 	cls.op(PT_OP_AND, PT_OP_LAMBDA { if (UNEXPECTED(pt_verify_is_super_type_of_result_variadic(argv, 1, 1) != SUCCESS)) { return zv::Val(); } return IsSuperTypeOfResult(self).and_(argv, 1); });
 
-	cls.method("or", reg::Public, 0, { reg::variadicObj("others", IS_SUPER_TYPE_OF_RESULT_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::or_, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_is_super_type_of_result_and_or(INTERNAL_FUNCTION_PARAM_PASSTHRU, false);
 	});
 	cls.op(PT_OP_OR, PT_OP_LAMBDA { if (UNEXPECTED(pt_verify_is_super_type_of_result_variadic(argv, 1, 1) != SUCCESS)) { return zv::Val(); } return IsSuperTypeOfResult(self).or_(argv, 1); });
 
-	cls.method("decorateReasons", reg::Public, 1, { reg::callableArg("cb") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::decorateReasons, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_fcall_info fci;
 		zend_fcall_info_cache fcc;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
@@ -671,15 +674,15 @@ void pt_register_is_super_type_of_result()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("extremeIdentity", reg::PublicStatic, 0, { reg::variadicObj("operands", IS_SUPER_TYPE_OF_RESULT_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::extremeIdentity, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_is_super_type_of_result_variadic_op(INTERNAL_FUNCTION_PARAM_PASSTHRU, true);
 	});
 
-	cls.method("maxMin", reg::PublicStatic, 0, { reg::variadicObj("operands", IS_SUPER_TYPE_OF_RESULT_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::maxMin, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_is_super_type_of_result_variadic_op(INTERNAL_FUNCTION_PARAM_PASSTHRU, false);
 	});
 
-	cls.method("lazyMaxMin", reg::PublicStatic, 2, { reg::arrayArg("objects"), reg::callableArg("callback") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::lazyMaxMin, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *objects;
 		zend_fcall_info fci;
 		zend_fcall_info_cache fcc;
@@ -692,23 +695,20 @@ void pt_register_is_super_type_of_result()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("negate", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::negate, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		zv::Val result = IsSuperTypeOfResult(Z_OBJ_P(ZEND_THIS)).negate();
 		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("describe", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::describe, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		const char *described = IsSuperTypeOfResult(Z_OBJ_P(ZEND_THIS)).describe();
 		if (UNEXPECTED(described == NULL)) RETURN_THROWS();
 		RETURN_STRING(described);
 	});
 
-	cls.publicReadonlyProperty("result", MAY_BE_OBJECT);
-	cls.publicReadonlyProperty("reasons", MAY_BE_ARRAY);
-	cls.publicReadonlyProperty("lazyReasons", MAY_BE_ARRAY);
 	cls.shadow(&pt_ce_is_super_type_of_result);
 
 	/* the decorateReasons() lazy-reason holder: an internal detail with no PHP

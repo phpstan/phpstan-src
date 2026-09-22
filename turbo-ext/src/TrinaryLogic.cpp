@@ -229,8 +229,6 @@ using phpstanturbo::TrinaryLogic;
 
 #include "reg.h"
 
-#define TRINARY_CLASS "PHPStanTurbo\\TrinaryLogic"
-
 static zend_result pt_verify_trinary_variadic(zval *args, uint32_t count, uint32_t offset)
 {
 	for (uint32_t i = 0; i < count; i++) {
@@ -306,79 +304,102 @@ void pt_register_trinary_logic()
 {
 	reg::Class cls("PHPStan\\TrinaryLogic");
 	ptdecl::TrinaryLogic::declareClass(cls);
-	/* "value" must stay the first declared property (OBJ_PROP_NUM slot 0) */
-	cls.privateLongProperty("value", 0);
+	/* the twin's `private int $value` is slot 0 (PT_TRI_PROP_VALUE); the
+	 * static registry and flyweight properties stay unused — the natives
+	 * keep the three instances in pt_trinary_singleton() */
+	ptdecl::TrinaryLogic::declareProperties(cls);
+	static_assert(ptdecl::TrinaryLogic::slot::value == PT_TRI_PROP_VALUE);
+	cls.privateClassConstantLong("YES", PT_TRI_YES);
+	cls.privateClassConstantLong("MAYBE", PT_TRI_MAYBE);
+	cls.privateClassConstantLong("NO", PT_TRI_NO);
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_long value;
 		if (!zp::parse<zp::Long>(execute_data, value)) RETURN_THROWS();
-		ZVAL_LONG(OBJ_PROP_NUM(Z_OBJ_P(ZEND_THIS), PT_TRI_PROP_VALUE), value);
+		zval *slot = OBJ_PROP_NUM(Z_OBJ_P(ZEND_THIS), PT_TRI_PROP_VALUE);
+		ZVAL_LONG(slot, value);
+		Z_PROP_FLAG_P(slot) = 0;
 	});
 
-	cls.method("createYes", reg::PublicStatic, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	/* private static create(): the flyweight of a value — a fresh instance
+	 * for a value no singleton carries, as the twin's registry would make */
+	cls.method(sigs::create, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zend_long value;
+		if (!zp::parse<zp::Long>(execute_data, value)) RETURN_THROWS();
+		if (value == PT_TRI_YES || value == PT_TRI_MAYBE || value == PT_TRI_NO) {
+			TrinaryLogic::create(value).intoReturnValue(return_value);
+			return;
+		}
+		object_init_ex(return_value, pt_ce_trinary);
+		zval *slot = OBJ_PROP_NUM(Z_OBJ_P(return_value), PT_TRI_PROP_VALUE);
+		ZVAL_LONG(slot, value);
+		Z_PROP_FLAG_P(slot) = 0;
+	});
+
+	cls.method(sigs::createYes, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		TrinaryLogic::createYes().intoReturnValue(return_value);
 	});
 
-	cls.method("createNo", reg::PublicStatic, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::createNo, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		TrinaryLogic::createNo().intoReturnValue(return_value);
 	});
 
-	cls.method("createMaybe", reg::PublicStatic, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::createMaybe, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		TrinaryLogic::createMaybe().intoReturnValue(return_value);
 	});
 
-	cls.method("createFromBoolean", reg::PublicStatic, 1, { reg::boolArg("value") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::createFromBoolean, [](INTERNAL_FUNCTION_PARAMETERS) {
 		bool value;
 		if (!zp::parse<zp::Bool>(execute_data, value)) RETURN_THROWS();
 		TrinaryLogic::createFromBoolean(value).intoReturnValue(return_value);
 	});
 
-	cls.method("yes", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::yes, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_BOOL(TrinaryLogic(Z_OBJ_P(ZEND_THIS)).yes());
 	});
 
-	cls.method("maybe", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::maybe, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_BOOL(TrinaryLogic(Z_OBJ_P(ZEND_THIS)).maybe());
 	});
 
-	cls.method("no", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::no, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_BOOL(TrinaryLogic(Z_OBJ_P(ZEND_THIS)).no());
 	});
 
-	cls.method("toBooleanType", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::toBooleanType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		zv::Val result = TrinaryLogic(Z_OBJ_P(ZEND_THIS)).toBooleanType();
 		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("and", reg::Public, 0, { reg::obj("operand", TRINARY_CLASS, true), reg::variadicObj("rest", TRINARY_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::and_, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_trinary_and_or(INTERNAL_FUNCTION_PARAM_PASSTHRU, true);
 	});
 
-	cls.method("lazyAnd", reg::Public, 2, { reg::arrayArg("objects"), reg::callableArg("callback") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::lazyAnd, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_trinary_lazy(INTERNAL_FUNCTION_PARAM_PASSTHRU, LazyEvaluation::AND);
 	});
 
-	cls.method("or", reg::Public, 0, { reg::obj("operand", TRINARY_CLASS, true), reg::variadicObj("rest", TRINARY_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::or_, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_trinary_and_or(INTERNAL_FUNCTION_PARAM_PASSTHRU, false);
 	});
 
-	cls.method("lazyOr", reg::Public, 2, { reg::arrayArg("objects"), reg::callableArg("callback") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::lazyOr, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_trinary_lazy(INTERNAL_FUNCTION_PARAM_PASSTHRU, LazyEvaluation::OR);
 	});
 
-	cls.method("extremeIdentity", reg::PublicStatic, 0, { reg::variadicObj("operands", TRINARY_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::extremeIdentity, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_trinary_variadic_op(INTERNAL_FUNCTION_PARAM_PASSTHRU, true);
 	});
 
-	cls.method("lazyExtremeIdentity", reg::PublicStatic, 2, { reg::arrayArg("objects"), reg::callableArg("callback") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::lazyExtremeIdentity, [](INTERNAL_FUNCTION_PARAMETERS) {
 		HashTable *objects;
 		zend_fcall_info fci;
 		zend_fcall_info_cache fcc;
@@ -400,20 +421,20 @@ void pt_register_trinary_logic()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("maxMin", reg::PublicStatic, 0, { reg::variadicObj("operands", TRINARY_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::maxMin, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_trinary_variadic_op(INTERNAL_FUNCTION_PARAM_PASSTHRU, false);
 	});
 
-	cls.method("lazyMaxMin", reg::PublicStatic, 2, { reg::arrayArg("objects"), reg::callableArg("callback") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::lazyMaxMin, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_trinary_lazy(INTERNAL_FUNCTION_PARAM_PASSTHRU, LazyEvaluation::MAX_MIN);
 	});
 
-	cls.method("negate", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::negate, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		TrinaryLogic(Z_OBJ_P(ZEND_THIS)).negate().intoReturnValue(return_value);
 	});
 
-	cls.method("equals", reg::Public, 1, { reg::obj("other", TRINARY_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::equals, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *other;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_OBJECT_OF_CLASS(other, pt_ce_trinary)
@@ -421,7 +442,7 @@ void pt_register_trinary_logic()
 		RETURN_BOOL(TrinaryLogic(Z_OBJ_P(ZEND_THIS)).equals(TrinaryLogic(Z_OBJ_P(other))));
 	});
 
-	cls.method("compareTo", reg::Public, 1, { reg::obj("other", TRINARY_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::compareTo, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *other;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_OBJECT_OF_CLASS(other, pt_ce_trinary)
@@ -429,7 +450,7 @@ void pt_register_trinary_logic()
 		TrinaryLogic(Z_OBJ_P(ZEND_THIS)).compareTo(ZEND_THIS, other).intoReturnValue(return_value);
 	});
 
-	cls.method("describe", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::describe, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_STRING(TrinaryLogic(Z_OBJ_P(ZEND_THIS)).describe());
 	});

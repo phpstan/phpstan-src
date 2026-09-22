@@ -82,12 +82,9 @@ $knownDrift = [
 	'PHPStan\\Reflection\\InitializerExprTypeResolver' => 'pending',
 	'PHPStan\\Reflection\\PassedByReference' => 'pending',
 	'PHPStan\\Reflection\\Php\\PhpClassReflectionExtension' => 'pending',
-	'PHPStan\\TrinaryLogic' => 'pending',
-	'PHPStan\\Type\\AcceptsResult' => 'pending',
 	'PHPStan\\Type\\Constant\\ConstantArrayTypeBuilder' => 'pending',
 	'PHPStan\\Type\\Generic\\TemplateTypeVariance' => 'pending',
 	'PHPStan\\Type\\IntegerRangeType' => 'pending',
-	'PHPStan\\Type\\IsSuperTypeOfResult' => 'pending',
 	'PHPStan\\Type\\ObjectType' => 'pending',
 	'PHPStan\\Type\\TypeCombinatorCache' => 'pending',
 ];

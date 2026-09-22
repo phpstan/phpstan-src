@@ -584,7 +584,9 @@ zval *pt_trinary_singleton(zend_long value)
 		slots[2] = &PT_G(trinary_no);
 		for (int i = 0; i < 3; i++) {
 			object_init_ex(slots[i], impl);
-			ZVAL_LONG(OBJ_PROP_NUM(Z_OBJ_P(slots[i]), PT_TRI_PROP_VALUE), values[i]);
+			zval *value = OBJ_PROP_NUM(Z_OBJ_P(slots[i]), PT_TRI_PROP_VALUE);
+			ZVAL_LONG(value, values[i]);
+			Z_PROP_FLAG_P(value) = 0; /* the typed `int $value` is initialized now */
 		}
 		PT_G(trinary_inited) = true;
 	}

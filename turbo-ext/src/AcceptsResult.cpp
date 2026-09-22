@@ -19,6 +19,8 @@
 
 #include "support.h"
 #include "generated/AcceptsResult.h"
+
+namespace sigs = ptdecl::AcceptsResult::sig;
 #include "zv.h"
 #include "TypeTraits.h"
 
@@ -670,8 +672,6 @@ void pt_accepts_result_rshutdown()
 
 #include "reg.h"
 
-#define ACCEPTS_RESULT_CLASS "PHPStanTurbo\\AcceptsResult"
-#define TRINARY_CLASS "PHPStanTurbo\\TrinaryLogic"
 
 static zend_result pt_verify_accepts_result_variadic(zval *args, uint32_t count, uint32_t offset)
 {
@@ -757,8 +757,11 @@ void pt_register_accepts_result()
 {
 	reg::Class cls("PHPStan\\Type\\AcceptsResult");
 	ptdecl::AcceptsResult::declareClass(cls);
+	/* the static flyweight properties stay unused: the natives keep the
+	 * singletons in the request globals */
+	ptdecl::AcceptsResult::declareProperties(cls);
 
-	cls.method("__construct", reg::Public, 2, { reg::obj("result", TRINARY_CLASS), reg::arrayArg("reasons") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *result, *reasons;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
 			Z_PARAM_OBJECT_OF_CLASS(result, pt_ce_trinary)
@@ -767,26 +770,26 @@ void pt_register_accepts_result()
 		if (UNEXPECTED(!AcceptsResult(Z_OBJ_P(ZEND_THIS)).construct(result, reasons))) RETURN_THROWS();
 	});
 
-	cls.method("yes", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::yes, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_accepts_result_bool(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_TRI_YES);
 	});
 
-	cls.method("maybe", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::maybe, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_accepts_result_bool(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_TRI_MAYBE);
 	});
 
-	cls.method("no", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::no, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_accepts_result_bool(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_TRI_NO);
 	});
 
-	cls.method("createYes", reg::PublicStatic, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::createYes, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		zv::Val result = AcceptsResult::createYes();
 		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("createNo", reg::PublicStatic, 0, { reg::withDefault(reg::arrayArg("reasons"), "[]") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::createNo, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *reasons = NULL;
 		if (!zp::parse<zp::Opt<zp::Arr>>(execute_data, reasons)) RETURN_THROWS();
 		zv::Val result = AcceptsResult::createNo(reasons);
@@ -794,14 +797,14 @@ void pt_register_accepts_result()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("createMaybe", reg::PublicStatic, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::createMaybe, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		zv::Val result = AcceptsResult::createMaybe();
 		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("createFromBoolean", reg::PublicStatic, 1, { reg::boolArg("value") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::createFromBoolean, [](INTERNAL_FUNCTION_PARAMETERS) {
 		bool value;
 		if (!zp::parse<zp::Bool>(execute_data, value)) RETURN_THROWS();
 		zv::Val result = AcceptsResult::createFromBoolean(value);
@@ -809,19 +812,19 @@ void pt_register_accepts_result()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("and", reg::Public, 1, { reg::obj("other", ACCEPTS_RESULT_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::and_, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_accepts_result_and_or(INTERNAL_FUNCTION_PARAM_PASSTHRU, true);
 	});
 	/* the operand's class checked as Z_PARAM_OBJECT_OF_CLASS does; any other
 	 * object takes the engine path, which raises the TypeError */
 	cls.op(PT_OP_AND, PT_OP_LAMBDA { if (UNEXPECTED(!instanceof_function(Z_OBJCE_P(argv), pt_ce_accepts_result))) { return pt_type_call_engine(self, "and", sizeof("and") - 1, 1, argv); } return AcceptsResult(self).and_(argv); });
 
-	cls.method("or", reg::Public, 1, { reg::obj("other", ACCEPTS_RESULT_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::or_, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_accepts_result_and_or(INTERNAL_FUNCTION_PARAM_PASSTHRU, false);
 	});
 	cls.op(PT_OP_OR, PT_OP_LAMBDA { if (UNEXPECTED(!instanceof_function(Z_OBJCE_P(argv), pt_ce_accepts_result))) { return pt_type_call_engine(self, "or", sizeof("or") - 1, 1, argv); } return AcceptsResult(self).or_(argv); });
 
-	cls.method("decorateReasons", reg::Public, 1, { reg::callableArg("cb") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::decorateReasons, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_fcall_info fci;
 		zend_fcall_info_cache fcc;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
@@ -832,15 +835,15 @@ void pt_register_accepts_result()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("extremeIdentity", reg::PublicStatic, 0, { reg::variadicObj("operands", ACCEPTS_RESULT_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::extremeIdentity, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_accepts_result_variadic_op(INTERNAL_FUNCTION_PARAM_PASSTHRU, true);
 	});
 
-	cls.method("maxMin", reg::PublicStatic, 0, { reg::variadicObj("operands", ACCEPTS_RESULT_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::maxMin, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_accepts_result_variadic_op(INTERNAL_FUNCTION_PARAM_PASSTHRU, false);
 	});
 
-	cls.method("lazyMaxMin", reg::PublicStatic, 2, { reg::arrayArg("objects"), reg::callableArg("callback") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::lazyMaxMin, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *objects;
 		zend_fcall_info fci;
 		zend_fcall_info_cache fcc;
@@ -853,8 +856,6 @@ void pt_register_accepts_result()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.publicReadonlyProperty("result", MAY_BE_OBJECT);
-	cls.publicReadonlyProperty("reasons", MAY_BE_ARRAY);
 	cls.shadow(&pt_ce_accepts_result);
 }
 

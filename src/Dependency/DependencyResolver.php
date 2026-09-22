@@ -128,7 +128,11 @@ final class DependencyResolver
 		$this->nameScopeTracker = new ExportedNameScopeTracker();
 	}
 
-	public function resolveDependencies(Node $node, Scope $scope): NodeDependencies
+	/**
+	 * Null when the node depends on nothing and exports nothing, which is most nodes - the caller
+	 * then has nothing to record and skips asking an empty NodeDependencies about it.
+	 */
+	public function resolveDependencies(Node $node, Scope $scope): ?NodeDependencies
 	{
 		// The exported nodes written to the result cache have to record the same PHPDoc scope the
 		// restore computes when it re-reads the file, so both go through the tracker. The nodes
@@ -162,6 +166,10 @@ final class DependencyResolver
 		$exportedNode = ($nodeProfile & self::PROFILE_EXPORT) !== 0
 			? $this->exportedNodeResolver->resolve($node, $this->nameScopeTracker->getNameScope())
 			: null;
+
+		if ($dependenciesReflections === [] && $dependenciesFilePaths === [] && $exportedNode === null) {
+			return null;
+		}
 
 		return new NodeDependencies($this->fileHelper, $dependenciesReflections, $exportedNode, $dependenciesFilePaths);
 	}
@@ -635,13 +643,13 @@ final class DependencyResolver
 				}
 			}
 		} elseif ($node instanceof StaticMethodCallableNode) {
-			$dependenciesReflections += $this->resolveDependencies(new Node\Expr\StaticCall($node->getClass(), $node->getName()), $scope)->getReflections();
+			$this->addCallableDependencies(new Node\Expr\StaticCall($node->getClass(), $node->getName()), $scope, $dependenciesReflections);
 		} elseif ($node instanceof MethodCallableNode) {
-			$dependenciesReflections += $this->resolveDependencies(new Node\Expr\MethodCall($node->getVar(), $node->getName()), $scope)->getReflections();
+			$this->addCallableDependencies(new Node\Expr\MethodCall($node->getVar(), $node->getName()), $scope, $dependenciesReflections);
 		} elseif ($node instanceof FunctionCallableNode) {
-			$dependenciesReflections += $this->resolveDependencies(new Node\Expr\FuncCall($node->getName()), $scope)->getReflections();
+			$this->addCallableDependencies(new Node\Expr\FuncCall($node->getName()), $scope, $dependenciesReflections);
 		} elseif ($node instanceof InstantiationCallableNode) {
-			$dependenciesReflections += $this->resolveDependencies(new Node\Expr\New_($node->getClass()), $scope)->getReflections();
+			$this->addCallableDependencies(new Node\Expr\New_($node->getClass()), $scope, $dependenciesReflections);
 		}
 	}
 
@@ -722,6 +730,21 @@ final class DependencyResolver
 		}
 
 		return $profile;
+	}
+
+	/**
+	 * The callable node stands for the call it would make, and depends on what that call depends on.
+	 *
+	 * @param array<int, ClassReflection|FunctionReflection|ConstantReflection> $dependenciesReflections
+	 */
+	private function addCallableDependencies(Node\Expr $call, Scope $scope, array &$dependenciesReflections): void
+	{
+		$dependencies = $this->resolveDependencies($call, $scope);
+		if ($dependencies === null) {
+			return;
+		}
+
+		$dependenciesReflections += $dependencies->getReflections();
 	}
 
 	/**

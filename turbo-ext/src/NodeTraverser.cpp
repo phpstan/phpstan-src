@@ -243,10 +243,11 @@ public:
 		zv::ArrRef(prop.raw()).push(visitor);
 	}
 
-	void removeVisitor(zv::Ref visitor)
+	/* false means it threw */
+	bool removeVisitor(zv::Ref visitor)
 	{
 		zv::Ref prop = visitorsProp();
-		if (!prop.isArray()) return;
+		if (UNEXPECTED(!prop.isArray())) return throwVisitorsUninitialized();
 
 		/* array_search() with loose comparison, like the PHP implementation */
 		bool found = false;
@@ -261,7 +262,7 @@ public:
 			}
 			pos++;
 		}
-		if (!found) return;
+		if (!found) return true;
 
 		/* array_splice($visitors, $index, 1, []) — reindexes */
 		zv::ArrRef old(prop.raw());
@@ -273,15 +274,14 @@ public:
 			}
 		}
 		prop.assign(std::move(rebuilt));
+		return true;
 	}
 
 	/* traverse(); UNDEF result means a pending exception */
 	zv::Val traverse(HashTable *nodesTable)
 	{
-		zv::ObjRef selfObj(self);
-
 		/* $this->stopTraversal = false */
-		selfObj.propAtWrite(slots::stopTraversal, zv::Val::boolean(false));
+		writeStopTraversal(false);
 
 		if (UNEXPECTED(!buildVisitorPlan())) return zv::Val();
 
@@ -323,7 +323,7 @@ public:
 		}
 
 		/* persist stopTraversal like the PHP implementation */
-		selfObj.propAtWrite(slots::stopTraversal, zv::Val::boolean(stop));
+		writeStopTraversal(stop);
 
 		return zv::Val(std::move(nodes));
 	}
@@ -729,10 +729,7 @@ private:
 	bool buildVisitorPlan()
 	{
 		zv::Ref visitors = visitorsProp();
-		if (UNEXPECTED(!visitors.isArray())) {
-			zend_throw_error(NULL, "phpstan_turbo: NodeTraverser visitors is not an array");
-			return false;
-		}
+		if (UNEXPECTED(!visitors.isArray())) return throwVisitorsUninitialized();
 
 		zend_function *baseEnter = NULL;
 		zend_function *baseLeave = NULL;
@@ -832,6 +829,27 @@ private:
 		return zv::ObjRef(self).propAt(slots::visitors).deref();
 	}
 
+	/* the typed property is an array unless a subclass unset() it: reading
+	 * it then throws the engine's "must not be accessed before
+	 * initialization" Error, as the twin's read does; always false */
+	bool throwVisitorsUninitialized() const
+	{
+		zval rv;
+		zend_read_property(self->ce, self, "visitors", sizeof("visitors") - 1, false, &rv);
+		if (!EG(exception)) {
+			zend_throw_error(NULL, "phpstan_turbo: NodeTraverser visitors is not an array");
+		}
+		return false;
+	}
+
+	/* $this->stopTraversal = $value — a typed property the constructor
+	 * leaves uninitialized, so the write also clears IS_PROP_UNINIT */
+	void writeStopTraversal(bool value)
+	{
+		zv::ObjRef(self).propAtWrite(slots::stopTraversal, zv::Val::boolean(value));
+		Z_PROP_FLAG_P(OBJ_PROP_NUM(self, slots::stopTraversal)) = 0;
+	}
+
 	zend_object *self;
 	pt_visitor_plan *plan = NULL;
 	uint32_t nvisitors = 0;
@@ -855,9 +873,10 @@ void pt_register_node_traverser()
 {
 	reg::Class cls("PhpParser\\NodeTraverser");
 	ptdecl::NodeTraverser::declareClass(cls);
-	/* "visitors" must stay slot 0 and "stopTraversal" slot 1 (PT_NT_PROP_*) */
-	cls.protectedArrayProperty("visitors");
-	cls.protectedBoolProperty("stopTraversal", false);
+	/* `protected array $visitors = []` and `protected bool $stopTraversal`
+	 * (typed, uninitialized until traverse()), exactly the twin's: a
+	 * subclass may redeclare them */
+	ptdecl::NodeTraverser::declareProperties(cls);
 
 	cls.classConstantLong("DONT_TRAVERSE_CHILDREN", NodeTraverser::DONT_TRAVERSE_CHILDREN);
 	cls.classConstantLong("STOP_TRAVERSAL", NodeTraverser::STOP_TRAVERSAL);
@@ -883,7 +902,7 @@ void pt_register_node_traverser()
 	cls.method(sigs::removeVisitor, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *visitor;
 		if (!zp::parse<zp::Obj>(execute_data, visitor)) RETURN_THROWS();
-		NodeTraverser(Z_OBJ_P(ZEND_THIS)).removeVisitor(zv::Ref(visitor));
+		if (UNEXPECTED(!NodeTraverser(Z_OBJ_P(ZEND_THIS)).removeVisitor(zv::Ref(visitor)))) RETURN_THROWS();
 	});
 
 	cls.method(sigs::traverse, [](INTERNAL_FUNCTION_PARAMETERS) {

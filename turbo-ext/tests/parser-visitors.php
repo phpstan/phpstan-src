@@ -170,3 +170,77 @@ foreach ($parserVisitorSnippets as $snippetIndex => $parserVisitorCode) {
 		);
 	}
 }
+
+// ---- NodeTraverser semantics beyond the visitor ports ----
+// Each probe runs once against php-parser's NodeTraverser and once against
+// the native one (a subclass of each is declared from the same source), and
+// the observations must be identical modulo the prefix.
+$ntNormalize = static fn (string $s): string => str_replace(['PHPStanTurbo\\NodeTraverser', '_native'], ['PhpParser\\NodeTraverser', '_php'], $s);
+$ntObserve = static function (callable $probe) use ($ntNormalize): array {
+	try {
+		$result = $probe();
+	} catch (\Throwable $e) {
+		return ['threw', get_class($e), $ntNormalize($e->getMessage())];
+	}
+
+	return ['returned', $ntNormalize(serialize($result))];
+};
+$ntSides = ['php' => \PhpParser\NodeTraverser::class, 'native' => \PHPStanTurbo\NodeTraverser::class];
+$ntCompare = static function (string $label, callable $probeForSide) use ($ntSides, $ntObserve): void {
+	$observed = [];
+	foreach ($ntSides as $side => $traverserClass) {
+		$observed[$side] = $ntObserve(static fn () => $probeForSide($side, $traverserClass));
+	}
+	check($observed['php'] === $observed['native'], "NodeTraverser: $label: " . json_encode($observed));
+};
+
+// the properties are declared like the twin's: `protected array $visitors = []`
+// and `protected bool $stopTraversal` (typed, uninitialized until traverse())
+foreach ($ntSides as $side => $traverserClass) {
+	eval(sprintf(
+		'final class NtRedeclaring_%1$s extends \\%2$s { protected array $visitors = []; protected bool $stopTraversal = false; public function stop(): bool { return $this->stopTraversal; } }
+		final class NtProbing_%1$s extends \\%2$s { public function stop(): bool { return $this->stopTraversal; } public function dropVisitors(): void { unset($this->visitors); } }',
+		$side,
+		$traverserClass,
+	));
+}
+foreach (['visitors', 'stopTraversal'] as $ntProperty) {
+	$ntCompare("declaration of \$$ntProperty", static function (string $side, string $traverserClass) use ($ntProperty): array {
+		$property = new \ReflectionProperty($traverserClass, $ntProperty);
+		return [(string) $property->getType(), $property->hasDefaultValue(), $property->getDefaultValue(), $property->isProtected()];
+	});
+}
+$ntCompare('a subclass redeclaring the typed properties', static function (string $side): array {
+	$class = 'NtRedeclaring_' . $side;
+	$traverser = new $class();
+	return [$traverser->stop(), $traverser->traverse([]), $traverser->stop()];
+});
+$ntCompare('stopTraversal before traverse()', static function (string $side): bool {
+	$class = 'NtProbing_' . $side;
+	return (new $class())->stop();
+});
+$ntCompare('stopTraversal after traverse()', static function (string $side): bool {
+	$class = 'NtProbing_' . $side;
+	$traverser = new $class();
+	$traverser->traverse([]);
+	return $traverser->stop();
+});
+$ntCompare('traverse() with $visitors unset', static function (string $side): array {
+	$class = 'NtProbing_' . $side;
+	$traverser = new $class();
+	$traverser->dropVisitors();
+	return $traverser->traverse([]);
+});
+$ntCompare('removeVisitor() with $visitors unset', static function (string $side): void {
+	$class = 'NtProbing_' . $side;
+	$traverser = new $class();
+	$traverser->dropVisitors();
+	$traverser->removeVisitor(new \PhpParser\NodeVisitor\NameResolver());
+});
+$ntCompare('addVisitor() with $visitors unset', static function (string $side): array {
+	$class = 'NtProbing_' . $side;
+	$traverser = new $class();
+	$traverser->dropVisitors();
+	$traverser->addVisitor(new \PhpParser\NodeVisitor\NodeConnectingVisitor());
+	return $traverser->traverse([new \PhpParser\Node\Stmt\Nop()]);
+});

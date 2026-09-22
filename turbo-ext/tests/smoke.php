@@ -4380,6 +4380,73 @@ foreach ($lemResults['php'] as $lemLabel => $lemPhp) {
 	check($lemPhp === $lemResults['native'][$lemLabel], "misuse parity ($lemLabel): " . json_encode($lemPhp) . ' vs ' . json_encode($lemResults['native'][$lemLabel]));
 }
 
+$lemExtension = getenv('TURBO_DLL');
+if (!is_string($lemExtension) || $lemExtension === '') {
+	$lemExtension = __DIR__ . '/../phpstan_turbo.so';
+}
+// misuse of the engine classes, which cannot be declared next to their twins:
+// the probes run in a child process per implementation (the native classes
+// under their real names, or none), each answering the outcome of every probe
+$lemProbeTemplate = <<<'CHILD'
+<?php declare(strict_types = 1);
+$root = __ROOT__;
+require $root . '/vendor/autoload.php';
+if (__NATIVE__) {
+	$twinFiles = [];
+	foreach (json_decode(file_get_contents($root . '/vendor/turbo-shadowed-classes.json'), true) as $className => $entry) {
+		$twinFiles[$className] = $root . '/' . $entry['php'];
+	}
+	\PHPStanTurbo\Runtime::configure(require $root . '/vendor/turbo-class-map.php');
+	\PHPStanTurbo\Runtime::activateShadowing($twinFiles);
+}
+$containerFactory = new \PHPStan\DependencyInjection\ContainerFactory($root);
+$container = $containerFactory->create(sys_get_temp_dir() . '/phpstan-turbo-smoke-lane-engine', [$containerFactory->getConfigDirectory() . '/config.level8.neon'], []);
+$outcome = static function (callable $callback): array {
+	try {
+		$value = $callback();
+		return ['ok', is_object($value) ? get_class($value) : $value];
+	} catch (\Throwable $e) {
+		return [get_class($e), preg_replace('~, called in .*$~', '', $e->getMessage())];
+	}
+};
+$scope = $container->getByType(\PHPStan\Analyser\ScopeFactory::class)->create(\PHPStan\Analyser\ScopeContext::create(__FILE__));
+$probes = (static function () use ($container, $outcome, $scope): array {
+__BODY__
+})();
+$probes['native'] = (new \ReflectionMethod(\PHPStan\Analyser\StatementsHandler::class, 'doProcessStmtNodes'))->isInternal();
+echo json_encode($probes), "\n";
+CHILD;
+$lemProbe = static function (string $body) use ($lemProbeTemplate, $lemExtension): array {
+	$outcomes = [];
+	foreach (['php' => false, 'native' => true] as $mode => $native) {
+		$script = tempnam(sys_get_temp_dir(), 'phpstan-turbo-lane-engine-');
+		file_put_contents($script, strtr($lemProbeTemplate, ['__ROOT__' => var_export(dirname(__DIR__, 2), true), '__NATIVE__' => $native ? 'true' : 'false', '__BODY__' => $body]));
+		$output = [];
+		exec(sprintf('%s -d memory_limit=-1 -d extension=%s %s 2>&1', escapeshellarg(PHP_BINARY), escapeshellarg($lemExtension), escapeshellarg($script)), $output, $exitCode);
+		unlink($script);
+		$decoded = $exitCode === 0 ? json_decode((string) end($output), true) : null;
+		$outcomes[$mode] = is_array($decoded) ? $decoded : ['exit code' => $exitCode, 'output' => implode("\n", $output)];
+	}
+	return $outcomes;
+};
+$lemEngineProbes = $lemProbe(<<<'BODY'
+	$handler = $container->getByType(\PHPStan\Analyser\StatementsHandler::class);
+	$nodeScopeResolver = $container->getByType(\PHPStan\Analyser\NodeScopeResolver::class);
+	$doProcess = static fn (array $stmts) => $handler->doProcessStmtNodes($nodeScopeResolver, new \PhpParser\Node\Stmt\Nop(), $stmts, $scope, new \PHPStan\Analyser\ExpressionResultStorage(), static function (): void {
+	}, \PHPStan\Analyser\StatementContext::createTopLevel());
+	return [
+		'doProcessStmtNodes(stdClass)' => $outcome(static fn () => $doProcess([new \stdClass()])),
+		'doProcessStmtNodes(string)' => $outcome(static fn () => $doProcess(['echo'])),
+		'doProcessStmtNodes(expr)' => $outcome(static fn () => $doProcess([new \PhpParser\Node\Expr\Variable('x')])),
+	];
+BODY);
+$lemEngineNative = $lemEngineProbes['native']['native'] ?? null;
+unset($lemEngineProbes['native']['native'], $lemEngineProbes['php']['native']);
+check($lemEngineNative === true, 'misuse parity: the engine probes ran the native classes: ' . json_encode($lemEngineProbes['native']));
+foreach ($lemEngineProbes['php'] as $lemLabel => $lemPhp) {
+	check($lemPhp === ($lemEngineProbes['native'][$lemLabel] ?? null), "misuse parity ($lemLabel): " . json_encode($lemPhp) . ' vs ' . json_encode($lemEngineProbes['native'][$lemLabel] ?? $lemEngineProbes['native']));
+}
+
 // ---- differential coverage completeness ----
 // Every shadowed class must be exercised by one of the tests/ scripts; the
 // classes not covered above have their own dedicated script.

@@ -1106,6 +1106,13 @@ private:
 	/* the private processStatementStep() */
 	[[nodiscard]] bool processStatementStep(zval *nodeScopeResolver, zval *parentNode, zval *stmts, zend_long i, zval *stmt, zval *state, zval *storage, zval *nodeCallback, zval *context, bool shouldCheckLastStatement)
 	{
+		/* the twin's `Node\Stmt $stmt` parameter: the caller's list may hold anything */
+		zend_class_entry *stmtCe = pt_class(PT_CLASS_STMT);
+		if (UNEXPECTED(stmtCe == NULL)) return false;
+		if (UNEXPECTED(Z_TYPE_P(stmt) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(stmt), stmtCe))) {
+			zend_type_error("PHPStan\\Analyser\\StatementsHandler::processStatementStep(): Argument #5 ($stmt) must be of type PhpParser\\Node\\Stmt, %s given", zend_zval_value_name(stmt));
+			return false;
+		}
 		zend_object *stateObject = Z_OBJ_P(state);
 		zval *stateScope = OBJ_PROP_NUM(stateObject, stateSlots::scope);
 		if (Z_TYPE_P(OBJ_PROP_NUM(stateObject, stateSlots::alreadyTerminated)) == IS_TRUE) {

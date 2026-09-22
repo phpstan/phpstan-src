@@ -285,8 +285,8 @@ public:
 
 		if (UNEXPECTED(!buildVisitorPlan())) return zv::Val();
 
-		/* work on our own copy of the nodes array */
-		zv::Arr nodes = zv::Arr::adoptTable(zend_array_dup(nodesTable));
+		/* the by-value $nodes parameter */
+		zv::Arr nodes = zv::Arr::copyOfTable(nodesTable);
 
 		/* beforeTraverse */
 		for (uint32_t vi = 0; vi < nvisitors; vi++) {
@@ -300,16 +300,12 @@ public:
 			if (UNEXPECTED(ret.isUndef())) return zv::Val();
 			if (ret.ref().isArray()) {
 				nodes = zv::Arr::adoptVal(std::move(ret));
-				nodes.separate();
 			}
 		}
 
-		nodes.separate();
-		zv::Arr replacement = traverseArray(nodes.arrRef());
+		zv::Val traversed = traverseArray(nodes.ref());
 		if (UNEXPECTED(failed)) return zv::Val();
-		if (!replacement.isUndef()) {
-			nodes = std::move(replacement);
-		}
+		nodes = zv::Arr::adoptVal(std::move(traversed));
 
 		/* afterTraverse, in reverse */
 		for (int64_t vi = (int64_t) nvisitors - 1; vi >= 0; vi--) {
@@ -349,29 +345,20 @@ private:
 			zv::Ref value = zv::Ref(OBJ_PROP(node, info->offsets[i])).deref();
 
 			if (value.isArray()) {
-				/* separate so we can mutate in place */
-				SEPARATE_ARRAY(value.raw());
-				/* Hold a reference to the table for the whole traversal, the
-				 * way the PHP twin's `$subNode = $node->$name` local does.
-				 * traverseArray() walks the buckets in place while the visitor
-				 * hooks in between run arbitrary PHP, and that code can reach
-				 * this very property: PHPStan resolves a PHPDoc from inside
-				 * enterNode(), which re-enters the parser for the file being
-				 * traversed. With the array owned by the property alone,
-				 * assigning to the property - or dropping the node's last
-				 * reference - frees the table under the loop, and a write into
-				 * it reallocates the buckets the iterator holds; the traversal
-				 * then reads freed memory, which surfaces as "Invalid node
-				 * structure: Contains nested arrays" or a segfault. A reference
-				 * of our own keeps the table alive, and being shared it makes
-				 * any writer separate first, so the iteration always sees the
-				 * array it started with. */
-				zv::Val arrayGuard = zv::Val::copyOf(zv::Ref(value.raw()));
-				zv::Arr replacement;
-				pt_engine_with_stack([&]() { replacement = traverseArray(zv::ArrRef(value.raw())); });
+				/* $node->$name = $this->traverseArray($subNode): the traversal
+				 * works on its own reference to the table (the twin's
+				 * $subNode) and writes into a copy made on the first write, so
+				 * nothing - a visitor holding the parent's array, the property
+				 * itself mid-traversal - sees the table change under it, and
+				 * an untouched array (the shared [] included) is never copied */
+				zv::Val result;
+				pt_engine_with_stack([&]() { result = traverseArray(zv::Ref(value.raw())); });
 				if (UNEXPECTED(failed)) return;
-				if (!replacement.isUndef()) {
-					value.assign(std::move(replacement));
+				/* the assignment is skipped only when it would store the table
+				 * the property already holds; a visitor may have reassigned it */
+				zv::Ref current = zv::Ref(OBJ_PROP(node, info->offsets[i])).deref();
+				if (!current.isArray() || Z_ARRVAL_P(current.raw()) != Z_ARRVAL_P(result.raw())) {
+					if (UNEXPECTED(!writeSubnode(node, info->names[i], result.ref()))) return;
 				}
 				if (stop) return;
 				continue;
@@ -506,26 +493,54 @@ private:
 		}
 	}
 
-	/*
-	 * Mirrors traverseArray(): traverses the table behind `nodes` in place
-	 * (the caller passes a separated, exclusively-owned array) and returns
-	 * the rebuilt array when splices (REMOVE_NODE / replacement arrays) were
-	 * recorded, an UNDEF Arr otherwise.
-	 */
-	zv::Arr traverseArray(zv::ArrRef nodes)
+	/* $nodes[$i] = $node on the traversal's copy of the array, made on the
+	 * first write (the twin's local $nodes separating from its foreach) */
+	static void writeElement(zv::Val &working, zv::Val &original, zend_string *key, zend_ulong index, zv::Ref value)
 	{
+		if (working.isUndef()) {
+			zval copy;
+			ZVAL_ARR(&copy, zend_array_dup(Z_ARRVAL_P(original.raw())));
+			working = zv::Val::adopt(copy);
+		}
+		HashTable *table = Z_ARRVAL_P(working.raw());
+		zval *slot = key != NULL ? zend_hash_find(table, key) : zend_hash_index_find(table, index);
+		if (slot != NULL && Z_ISREF_P(slot)) {
+			zv::Ref(Z_REFVAL_P(slot)).assign(zv::Val::copyOf(value));
+			return;
+		}
+		Z_TRY_ADDREF_P(value.raw());
+		if (key != NULL) {
+			zend_hash_update(table, key, value.raw());
+		} else {
+			zend_hash_index_update(table, index, value.raw());
+		}
+	}
+
+	/*
+	 * Mirrors traverseArray(): iterates the array it is handed (holding its
+	 * own reference, like the twin's by-value parameter and foreach), writes
+	 * replacements into a copy made on the first one, applies the recorded
+	 * splices (REMOVE_NODE / replacement arrays) and returns the resulting
+	 * array — the input's own table when nothing changed. UNDEF means a
+	 * pending exception.
+	 */
+	zv::Val traverseArray(zv::Ref nodesZv)
+	{
+		zv::Val original = zv::Val::copyOf(nodesZv);
+		zv::Val working;
 		pt_do_nodes doNodes = {};
 		zend_class_entry *nodeIface = pt_class(PT_CLASS_NODE);
 		if (UNEXPECTED(nodeIface == NULL)) {
 			failed = true;
-			return zv::Arr();
+			return zv::Val();
 		}
 
 		zend_ulong pos = 0;
-		for (auto nodesEntry : nodes) {
+		for (auto nodesEntry : zv::ArrRef(original.raw())) {
 			zend_ulong i = pos++;
-			zv::Ref slot = nodesEntry.value();
-			zv::Ref value = slot.deref();
+			zend_string *key = nodesEntry.stringKeyOrNull();
+			zend_ulong index = nodesEntry.indexKey();
+			zv::Ref value = nodesEntry.value().deref();
 
 			if (!value.instanceOf(nodeIface)) {
 				if (UNEXPECTED(value.isArray())) {
@@ -568,8 +583,8 @@ private:
 						break;
 					}
 					/* $nodes[$i] = $node = $return */
+					writeElement(working, original, key, index, retRef);
 					node = retRef.asObject();
-					slot.assign(std::move(ret));
 					continue;
 				}
 				if (retRef.isArray()) {
@@ -640,8 +655,8 @@ private:
 						failed = true;
 						break;
 					}
+					writeElement(working, original, key, index, retRef);
 					node = retRef.asObject();
-					slot.assign(std::move(ret));
 					continue;
 				}
 				if (retRef.isArray()) {
@@ -674,13 +689,14 @@ private:
 
 		if (UNEXPECTED(failed)) {
 			pt_do_nodes_free(&doNodes);
-			return zv::Arr();
+			return zv::Val();
 		}
 
-		zv::Arr rebuilt;
+		zv::Val result = working.isUndef() ? std::move(original) : std::move(working);
 		if (doNodes.count > 0) {
 			/* apply the recorded splices in one rebuild pass */
-			rebuilt = zv::Arr::create(nodes.size());
+			zv::ArrRef nodes(result.raw());
+			zv::Arr rebuilt = zv::Arr::create(nodes.size());
 			uint32_t cursor = 0;
 			zend_ulong rebuildPos = 0;
 			for (auto nodesEntry : nodes) {
@@ -698,10 +714,11 @@ private:
 				}
 				rebuildPos++;
 			}
+			result = zv::Val(std::move(rebuilt));
 		}
 
 		pt_do_nodes_free(&doNodes);
-		return rebuilt;
+		return result;
 	}
 
 	/* $old instanceof Stmt && $new instanceof Expr (and vice versa)

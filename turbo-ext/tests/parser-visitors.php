@@ -244,3 +244,90 @@ $ntCompare('addVisitor() with $visitors unset', static function (string $side): 
 	$traverser->addVisitor(new \PhpParser\NodeVisitor\NodeConnectingVisitor());
 	return $traverser->traverse([new \PhpParser\Node\Stmt\Nop()]);
 });
+
+// a subnode array is traversed as a copy and assigned back once, after the
+// loop: a visitor holding the parent's array keeps seeing the original, the
+// parent's property keeps the original until the loop ends, and a visitor
+// reassigning the property is overwritten by the traversal result
+$ntMarks = static fn (array $nodes): string => implode(',', array_map(static fn ($n) => $n instanceof \PhpParser\Node ? ($n->getAttribute('r') === true ? 'R' : 'o') : gettype($n), $nodes));
+$ntReplacingVisitor = static fn (callable $onEcho) => new class ($onEcho) extends \PhpParser\NodeVisitorAbstract {
+
+	public ?\PhpParser\Node\Stmt\Function_ $function = null;
+
+	/** @var list<string> */
+	public array $log = [];
+
+	public mixed $held = null;
+
+	public function __construct(private $onEcho)
+	{
+	}
+
+	public function enterNode(\PhpParser\Node $node)
+	{
+		if ($node instanceof \PhpParser\Node\Stmt\Function_) {
+			$this->function = $node;
+			$this->held = $node->stmts;
+			return null;
+		}
+		if ($node instanceof \PhpParser\Node\Stmt\Echo_) {
+			return ($this->onEcho)($this, $node);
+		}
+		return null;
+	}
+
+};
+$ntCompare('replacements in a subnode array a visitor holds', static function (string $side, string $traverserClass) use ($smokeParser, $ntMarks, $ntReplacingVisitor): array {
+	$visitor = $ntReplacingVisitor(static function ($visitor, $node) use ($ntMarks) {
+		$visitor->log[] = $ntMarks($visitor->function->stmts) . ' held=' . $ntMarks($visitor->held);
+		$replacement = clone $node;
+		$replacement->setAttribute('r', true);
+		return $replacement;
+	});
+	$ast = (new $traverserClass($visitor))->traverse($smokeParser->parse('<?php function f() { echo 1; echo 2; echo 3; }'));
+	return [$visitor->log, $ntMarks($ast[0]->stmts), $ntMarks($visitor->held)];
+});
+$ntCompare('a visitor reassigning the subnode array', static function (string $side, string $traverserClass) use ($smokeParser, $ntMarks, $ntReplacingVisitor): array {
+	$visitor = $ntReplacingVisitor(static function ($visitor, $node) {
+		$visitor->function->stmts = [new \PhpParser\Node\Stmt\Nop()];
+		return null;
+	});
+	$ast = (new $traverserClass($visitor))->traverse($smokeParser->parse('<?php function f() { echo 1; echo 2; }'));
+	return array_map(static fn ($n) => $n->getType(), $ast[0]->stmts);
+});
+$ntCompare('a visitor reassigning the subnode array next to a replacement', static function (string $side, string $traverserClass) use ($smokeParser, $ntMarks, $ntReplacingVisitor): array {
+	$visitor = $ntReplacingVisitor(static function ($visitor, $node) {
+		if ($node->exprs[0]->value === 1) {
+			$visitor->function->stmts = [new \PhpParser\Node\Stmt\Nop()];
+			return null;
+		}
+		$replacement = clone $node;
+		$replacement->setAttribute('r', true);
+		return $replacement;
+	});
+	$ast = (new $traverserClass($visitor))->traverse($smokeParser->parse('<?php function f() { echo 1; echo 2; }'));
+	return [array_map(static fn ($n) => $n->getType(), $ast[0]->stmts), $ntMarks($ast[0]->stmts)];
+});
+
+// an untouched subnode array is not copied: the shared [] of the parser's
+// empty lists stays shared, so traversing a cached AST allocates nothing
+$ntRetained = [];
+foreach ($ntSides as $side => $traverserClass) {
+	$ast = $smokeParser->parse(file_get_contents(dirname(__DIR__, 2) . '/src/Analyser/NodeScopeResolver.php'));
+	$traverser = new $traverserClass(new class extends \PhpParser\NodeVisitorAbstract {
+
+		public function enterNode(\PhpParser\Node $node)
+		{
+			return null;
+		}
+
+	});
+	$traverser->traverse([new \PhpParser\Node\Stmt\Nop()]);
+	gc_collect_cycles();
+	$before = memory_get_usage();
+	$ast = $traverser->traverse($ast);
+	gc_collect_cycles();
+	$ntRetained[$side] = memory_get_usage() - $before;
+	unset($ast, $traverser);
+}
+check($ntRetained['native'] <= max($ntRetained['php'], 0) + 1024, 'NodeTraverser: a no-op traversal retains no copies: ' . json_encode($ntRetained));

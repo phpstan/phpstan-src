@@ -8,7 +8,7 @@ use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\AssignOp;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
-use PHPStan\Rules\Rule;
+use PHPStan\Rules\MultipleNodeTypesRule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
@@ -18,14 +18,19 @@ use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
 /**
- * @implements Rule<Expr>
+ * @implements MultipleNodeTypesRule<Expr>
  */
 #[RegisteredRule(level: 3)]
-final class OffsetAccessValueAssignmentRule implements Rule
+final class OffsetAccessValueAssignmentRule implements MultipleNodeTypesRule
 {
 
 	public function __construct(private RuleLevelHelper $ruleLevelHelper)
 	{
+	}
+
+	public function getNodeTypes(): array
+	{
+		return [Assign::class, AssignOp::class, Expr\AssignRef::class];
 	}
 
 	public function getNodeType(): string

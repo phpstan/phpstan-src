@@ -6,7 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
-use PHPStan\Rules\Rule;
+use PHPStan\Rules\MultipleNodeTypesRule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;
@@ -14,10 +14,10 @@ use PHPStan\Type\NeverType;
 use function sprintf;
 
 /**
- * @implements Rule<Node\Expr>
+ * @implements MultipleNodeTypesRule<Node\Expr>
  */
 #[RegisteredRule(level: 3)]
-final class YieldInGeneratorRule implements Rule
+final class YieldInGeneratorRule implements MultipleNodeTypesRule
 {
 
 	public function __construct(
@@ -25,6 +25,11 @@ final class YieldInGeneratorRule implements Rule
 		private bool $reportMaybes,
 	)
 	{
+	}
+
+	public function getNodeTypes(): array
+	{
+		return [Node\Expr\Yield_::class, Node\Expr\YieldFrom::class];
 	}
 
 	public function getNodeType(): string

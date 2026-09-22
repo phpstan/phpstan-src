@@ -46,4 +46,29 @@ class DirectRegistryTest extends PHPStanTestCase
 		$this->assertCount(0, $registry->getRules(Node\Expr\MethodCall::class));
 	}
 
+	public function testGetRulesWithMultipleNodeTypes(): void
+	{
+		$rule = new DummyMultipleNodeTypesRule([Node\Expr\BinaryOp::class, Node\Expr\AssignOp::class]);
+
+		$registry = new DirectRegistry([
+			$rule,
+		]);
+
+		$this->assertSame([$rule], $registry->getRules(Node\Expr\BinaryOp\Plus::class));
+		$this->assertSame([$rule], $registry->getRules(Node\Expr\AssignOp\Plus::class));
+		$this->assertCount(0, $registry->getRules(Node\Expr\FuncCall::class));
+		$this->assertCount(0, $registry->getRules(Node\Expr::class));
+	}
+
+	public function testGetRulesWithNodeTypesOfTheSameNode(): void
+	{
+		$rule = new DummyMultipleNodeTypesRule([Node\Expr::class, Node\Expr\BinaryOp::class]);
+
+		$registry = new DirectRegistry([
+			$rule,
+		]);
+
+		$this->assertSame([$rule], $registry->getRules(Node\Expr\BinaryOp\Plus::class));
+	}
+
 }

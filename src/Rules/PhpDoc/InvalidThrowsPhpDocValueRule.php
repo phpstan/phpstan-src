@@ -8,7 +8,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\Node\InPropertyHookNode;
-use PHPStan\Rules\Rule;
+use PHPStan\Rules\MultipleNodeTypesRule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ConditionalType;
 use PHPStan\Type\ConditionalTypeForParameter;
@@ -22,15 +22,20 @@ use Throwable;
 use function sprintf;
 
 /**
- * @implements Rule<NodeAbstract>
+ * @implements MultipleNodeTypesRule<NodeAbstract>
  */
 #[RegisteredRule(level: 2)]
 #[ValidatesStubFiles]
-final class InvalidThrowsPhpDocValueRule implements Rule
+final class InvalidThrowsPhpDocValueRule implements MultipleNodeTypesRule
 {
 
 	public function __construct(private FileTypeMapper $fileTypeMapper)
 	{
+	}
+
+	public function getNodeTypes(): array
+	{
+		return [Node\Stmt::class, InPropertyHookNode::class];
 	}
 
 	public function getNodeType(): string

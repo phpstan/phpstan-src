@@ -7,17 +7,17 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Rules\IdentifierRuleError;
-use PHPStan\Rules\Rule;
+use PHPStan\Rules\MultipleNodeTypesRule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function array_merge;
 use function in_array;
 use function sprintf;
 
 /**
- * @implements Rule<Node>
+ * @implements MultipleNodeTypesRule<Node>
  */
 #[RegisteredRule(level: 0)]
-final class InvalidTypesInUnionRule implements Rule
+final class InvalidTypesInUnionRule implements MultipleNodeTypesRule
 {
 
 	private const ONLY_STANDALONE_TYPES = [
@@ -25,6 +25,11 @@ final class InvalidTypesInUnionRule implements Rule
 		'never',
 		'void',
 	];
+
+	public function getNodeTypes(): array
+	{
+		return [Node\FunctionLike::class, ClassPropertyNode::class];
+	}
 
 	public function getNodeType(): string
 	{

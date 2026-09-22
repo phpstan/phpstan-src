@@ -9,19 +9,24 @@ use PhpParser\Node\Expr\AssignOp;
 use PhpParser\Node\Expr\AssignRef;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\Rules\MultipleNodeTypesRule;
 use PHPStan\Rules\NullsafeCheck;
-use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
- * @implements Rule<Expr>
+ * @implements MultipleNodeTypesRule<Expr>
  */
 #[RegisteredRule(level: 0)]
-final class InvalidAssignVarRule implements Rule
+final class InvalidAssignVarRule implements MultipleNodeTypesRule
 {
 
 	public function __construct(private NullsafeCheck $nullsafeCheck)
 	{
+	}
+
+	public function getNodeTypes(): array
+	{
+		return [Assign::class, AssignOp::class, AssignRef::class];
 	}
 
 	public function getNodeType(): string

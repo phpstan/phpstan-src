@@ -7,6 +7,8 @@ use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Type\ExtensionClassHelper;
+use function array_values;
+use function spl_object_id;
 
 #[AutowiredService(name: 'registry', as: Registry::class)]
 final class LazyRegistry implements Registry
@@ -44,11 +46,12 @@ final class LazyRegistry implements Registry
 			$rulesFromContainer = $this->getRulesByNodeType();
 			foreach ($parentNodeTypes as $parentNodeType) {
 				foreach ($rulesFromContainer[$parentNodeType] ?? [] as $rule) {
-					$rules[] = $rule;
+					// a rule that named two ancestors of this node class is still called once
+					$rules[spl_object_id($rule)] = $rule;
 				}
 			}
 
-			$this->cache[$nodeType] = $rules;
+			$this->cache[$nodeType] = array_values($rules);
 		}
 
 		/**
@@ -70,7 +73,9 @@ final class LazyRegistry implements Registry
 
 		$rules = [];
 		foreach ($this->rules->getAll() as $rule) {
-			$rules[$rule->getNodeType()][] = $rule;
+			foreach ($rule instanceof MultipleNodeTypesRule ? $rule->getNodeTypes() : [$rule->getNodeType()] as $nodeType) {
+				$rules[$nodeType][] = $rule;
+			}
 		}
 
 		return $this->rulesByNodeType = $rules;

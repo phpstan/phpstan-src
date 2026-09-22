@@ -11,18 +11,18 @@ use PHPStan\Node\VirtualNode;
 use PHPStan\PhpDocParser\Lexer\Lexer;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\PhpDocParser\Parser\TokenIterator;
-use PHPStan\Rules\Rule;
+use PHPStan\Rules\MultipleNodeTypesRule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function in_array;
 use function sprintf;
 use function str_starts_with;
 
 /**
- * @implements Rule<NodeAbstract>
+ * @implements MultipleNodeTypesRule<NodeAbstract>
  */
 #[RegisteredRule(level: 2)]
 #[ValidatesStubFiles]
-final class InvalidPHPStanDocTagRule implements Rule
+final class InvalidPHPStanDocTagRule implements MultipleNodeTypesRule
 {
 
 	private const POSSIBLE_PHPSTAN_TAGS = [
@@ -73,6 +73,11 @@ final class InvalidPHPStanDocTagRule implements Rule
 		private PhpDocParser $phpDocParser,
 	)
 	{
+	}
+
+	public function getNodeTypes(): array
+	{
+		return [Node\Stmt::class, Node\PropertyHook::class];
 	}
 
 	public function getNodeType(): string

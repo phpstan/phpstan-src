@@ -38,32 +38,19 @@ const pt_superglobal_name pt_veh_existence_check_function_names[] = {
 	{ PT_LC("function_exists") },
 };
 
-/* the same lists as the twin's constants: persistent immutable arrays the
- * engine references for the process lifetime */
-HashTable *pt_veh_persistent_list(const pt_superglobal_name *names, size_t count)
-{
-	HashTable *list = (HashTable *) pemalloc(sizeof(HashTable), 1);
-	zend_hash_init(list, (uint32_t) count, NULL, NULL, 1);
-	for (size_t i = 0; i < count; i++) {
-		zval value;
-		ZVAL_INTERNED_STR(&value, zend_string_init_interned(names[i].name, names[i].len, 1));
-		zend_hash_next_index_insert(list, &value);
-	}
-	GC_ADD_FLAGS(list, IS_ARRAY_IMMUTABLE);
-	GC_SET_REFCOUNT(list, 2);
-	return list;
-}
+/* the same lists as the twin's constants (pt_persistent_string_list()),
+ * built once at module startup */
+HashTable *pt_veh_volatile_function_names_list = nullptr;
+HashTable *pt_veh_existence_check_function_names_list = nullptr;
 
 void pt_veh_volatile_function_names_constant(zval *out)
 {
-	ZVAL_ARR(out, pt_veh_persistent_list(pt_veh_volatile_function_names, sizeof(pt_veh_volatile_function_names) / sizeof(pt_veh_volatile_function_names[0])));
-	Z_TYPE_INFO_P(out) = IS_ARRAY;
+	pt_persistent_list_into(out, pt_veh_volatile_function_names_list);
 }
 
 void pt_veh_existence_check_function_names_constant(zval *out)
 {
-	ZVAL_ARR(out, pt_veh_persistent_list(pt_veh_existence_check_function_names, sizeof(pt_veh_existence_check_function_names) / sizeof(pt_veh_existence_check_function_names[0])));
-	Z_TYPE_INFO_P(out) = IS_ARRAY;
+	pt_persistent_list_into(out, pt_veh_existence_check_function_names_list);
 }
 
 /* unset($table[$key]) on the caller's array: separates a shared table
@@ -354,6 +341,9 @@ zv::Val pt_volatile_expression_helper_invalidate_negative_existence_checks(zval 
 
 void pt_register_volatile_expression_helper()
 {
+	pt_veh_volatile_function_names_list = pt_persistent_string_list(pt_veh_volatile_function_names, sizeof(pt_veh_volatile_function_names) / sizeof(pt_veh_volatile_function_names[0]));
+	pt_veh_existence_check_function_names_list = pt_persistent_string_list(pt_veh_existence_check_function_names, sizeof(pt_veh_existence_check_function_names) / sizeof(pt_veh_existence_check_function_names[0]));
+
 	reg::Class cls("PHPStan\\Analyser\\VolatileExpressionHelper");
 	ptdecl::VolatileExpressionHelper::declareClass(cls);
 	ptdecl::VolatileExpressionHelper::declareProperties(cls);

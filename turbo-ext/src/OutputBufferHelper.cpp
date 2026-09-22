@@ -201,11 +201,40 @@ zv::Val pt_output_buffer_helper_apply_level_delta(zval *helper, zval *nodeScopeR
 
 #include "reg.h"
 
+/* the twin's private LEVEL_INCREMENTING_FUNCTIONS and
+ * LEVEL_DECREMENTING_FUNCTIONS (getLevelDelta() compares the same names),
+ * as persistent lists built once at module startup */
+static const pt_superglobal_name pt_obh_level_incrementing_functions[] = {
+	{ PT_LC("ob_start") },
+};
+static const pt_superglobal_name pt_obh_level_decrementing_functions[] = {
+	{ PT_LC("ob_get_clean") },
+	{ PT_LC("ob_get_flush") },
+	{ PT_LC("ob_end_clean") },
+	{ PT_LC("ob_end_flush") },
+};
+static HashTable *pt_obh_level_incrementing_functions_list = nullptr;
+static HashTable *pt_obh_level_decrementing_functions_list = nullptr;
+
+static void pt_obh_level_incrementing_functions_constant(zval *out)
+{
+	pt_persistent_list_into(out, pt_obh_level_incrementing_functions_list);
+}
+
+static void pt_obh_level_decrementing_functions_constant(zval *out)
+{
+	pt_persistent_list_into(out, pt_obh_level_decrementing_functions_list);
+}
+
 void pt_register_output_buffer_helper()
 {
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\Helper\\OutputBufferHelper");
 	ptdecl::OutputBufferHelper::declareClass(cls);
 	ptdecl::OutputBufferHelper::declareProperties(cls);
+	pt_obh_level_incrementing_functions_list = pt_persistent_string_list(pt_obh_level_incrementing_functions, sizeof(pt_obh_level_incrementing_functions) / sizeof(pt_obh_level_incrementing_functions[0]));
+	pt_obh_level_decrementing_functions_list = pt_persistent_string_list(pt_obh_level_decrementing_functions, sizeof(pt_obh_level_decrementing_functions) / sizeof(pt_obh_level_decrementing_functions[0]));
+	cls.privateClassConstantValue("LEVEL_INCREMENTING_FUNCTIONS", pt_obh_level_incrementing_functions_constant);
+	cls.privateClassConstantValue("LEVEL_DECREMENTING_FUNCTIONS", pt_obh_level_decrementing_functions_constant);
 
 	/* the real parameter class name: the DI container autowires the
 	 * service by reflecting the constructor */

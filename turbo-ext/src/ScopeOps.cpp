@@ -23,6 +23,17 @@ namespace sigs = ptdecl::ScopeOps::sig;
 
 static zend_class_entry *pt_ce_scope_ops;
 
+/* the twin's private COMPOSITIONAL_VIRTUAL_KEY_PREFIXES (the list
+ * keyMayHideSubExpressions() walks), a persistent list built once at module
+ * startup */
+static const pt_superglobal_name pt_so_compositional_virtual_key_prefixes[] = {
+	{ PT_LC("__phpstanForeachValueByRef(") },
+	{ PT_LC("__phpstanIntertwinedVariableByReference(") },
+	{ PT_LC("__phpstanPossiblyImpure(") },
+	{ PT_LC("__phpstanPropertyInitialization(") },
+	{ PT_LC("__phpstanRemembered(") },
+};
+
 /* {{{ scopeWith's cached property layout (owned by the request lifecycle) */
 
 typedef struct {
@@ -1420,26 +1431,14 @@ private:
 	 */
 	static bool keyMayHideSubExpressions(zend_string *key)
 	{
-		/* Mirror of ScopeOps::COMPOSITIONAL_VIRTUAL_KEY_PREFIXES - a prefix may
-		 * be listed only when the printer emits every getSubNodeNames() sub-node
-		 * verbatim (or the node walks no sub-nodes at all); the foreach/parameter
-		 * original-value markers hide a synthesized Variable child on purpose. */
-		static const struct { const char *prefix; size_t len; } compositionalPrefixes[] = {
-			{ "__phpstanForeachValueByRef(", sizeof("__phpstanForeachValueByRef(") - 1 },
-			{ "__phpstanIntertwinedVariableByReference(", sizeof("__phpstanIntertwinedVariableByReference(") - 1 },
-			{ "__phpstanPossiblyImpure(", sizeof("__phpstanPossiblyImpure(") - 1 },
-			{ "__phpstanPropertyInitialization(", sizeof("__phpstanPropertyInitialization(") - 1 },
-			{ "__phpstanRemembered(", sizeof("__phpstanRemembered(") - 1 },
-		};
-
 		const char *pos = ZSTR_VAL(key);
 		const char *end = pos + ZSTR_LEN(key);
 		for (;;) {
 			const char *found = zend_memnstr(pos, "__phpstan", sizeof("__phpstan") - 1, end);
 			if (found == NULL) return false;
 			bool isCompositional = false;
-			for (const auto &candidate : compositionalPrefixes) {
-				if ((size_t) (end - found) >= candidate.len && memcmp(found, candidate.prefix, candidate.len) == 0) {
+			for (const pt_superglobal_name &candidate : pt_so_compositional_virtual_key_prefixes) {
+				if ((size_t) (end - found) >= candidate.len && memcmp(found, candidate.name, candidate.len) == 0) {
 					pos = found + candidate.len;
 					isCompositional = true;
 					break;
@@ -1813,11 +1812,21 @@ void pt_scope_ops_rshutdown()
 
 /* }}} */
 
+static HashTable *pt_so_compositional_virtual_key_prefixes_list = nullptr;
+
+static void pt_so_compositional_virtual_key_prefixes_constant(zval *out)
+{
+	pt_persistent_list_into(out, pt_so_compositional_virtual_key_prefixes_list);
+}
+
 void pt_register_scope_ops()
 {
 	reg::Class cls("PHPStan\\Analyser\\ScopeOps");
 	ptdecl::ScopeOps::declareClass(cls);
 	ptdecl::ScopeOps::declareProperties(cls);
+	cls.privateClassConstantString("CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME", "containsSuperGlobal");
+	pt_so_compositional_virtual_key_prefixes_list = pt_persistent_string_list(pt_so_compositional_virtual_key_prefixes, sizeof(pt_so_compositional_virtual_key_prefixes) / sizeof(pt_so_compositional_virtual_key_prefixes[0]));
+	cls.privateClassConstantValue("COMPOSITIONAL_VIRTUAL_KEY_PREFIXES", pt_so_compositional_virtual_key_prefixes_constant);
 
 	cls.method(sigs::mergeVariableHolders, [](INTERNAL_FUNCTION_PARAMETERS) {
 		HashTable *ours, *theirs;

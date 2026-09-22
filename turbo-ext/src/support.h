@@ -1760,6 +1760,20 @@ bool pt_is_superglobal_cstr(const char *name, size_t len);
 typedef struct _pt_superglobal_name { const char *name; size_t len; } pt_superglobal_name;
 const pt_superglobal_name *pt_superglobal_names(size_t *count);
 
+/* A class constant's array-of-strings value (`private const X = ['a', 'b']`):
+ * a persistent immutable list of interned strings the engine references
+ * for the process lifetime. Build it once at module startup (the strings
+ * are permanent interned ones then) and hand it out from the constant's
+ * reg::Class::*ClassConstantValue() builder with pt_persistent_list_into(),
+ * so every activation declares the same list. */
+HashTable *pt_persistent_string_list(const pt_superglobal_name *names, size_t count);
+
+static zend_always_inline void pt_persistent_list_into(zval *out, HashTable *list)
+{
+	ZVAL_ARR(out, list);
+	Z_TYPE_INFO_P(out) = IS_ARRAY;
+}
+
 /* {{{ PhpParser CallLike reads without a call: $call->getRawArgs(),
  * ->isFirstClassCallable() and ->getArgs() of a FuncCall, MethodCall,
  * NullsafeMethodCall, StaticCall or New_ (or a subclass keeping those three

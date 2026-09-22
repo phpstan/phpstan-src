@@ -420,6 +420,9 @@ void pt_register_issetability_descriptor()
 	reg::Class cls("PHPStan\\Analyser\\IssetabilityDescriptor");
 	ptdecl::IssetabilityDescriptor::declareClass(cls);
 	ptdecl::IssetabilityDescriptor::declareProperties(cls);
+	cls.privateClassConstantString("KIND_VARIABLE", "variable");
+	cls.privateClassConstantString("KIND_OFFSET", "offset");
+	cls.privateClassConstantString("KIND_PROPERTY", "property");
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *kind;

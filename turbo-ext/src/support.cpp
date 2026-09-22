@@ -1025,6 +1025,20 @@ const pt_superglobal_name *pt_superglobal_names(size_t *count)
 	return pt_superglobals;
 }
 
+HashTable *pt_persistent_string_list(const pt_superglobal_name *names, size_t count)
+{
+	HashTable *list = (HashTable *) pemalloc(sizeof(HashTable), 1);
+	zend_hash_init(list, (uint32_t) count, NULL, NULL, 1);
+	for (size_t i = 0; i < count; i++) {
+		zval value;
+		ZVAL_INTERNED_STR(&value, zend_string_init_interned(names[i].name, names[i].len, 1));
+		zend_hash_next_index_insert(list, &value);
+	}
+	GC_ADD_FLAGS(list, IS_ARRAY_IMMUTABLE);
+	GC_SET_REFCOUNT(list, 2);
+	return list;
+}
+
 /* {{{ PhpParser CallLike reads */
 
 /* the per-request generation of the engine's caches (Engine.cpp) */

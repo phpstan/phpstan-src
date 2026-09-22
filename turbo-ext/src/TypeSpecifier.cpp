@@ -1028,6 +1028,7 @@ void pt_register_type_specifier()
 	reg::Class cls("PHPStan\\Analyser\\TypeSpecifier");
 	ptdecl::TypeSpecifier::declareClass(cls);
 	ptdecl::TypeSpecifier::declareProperties(cls);
+	cls.privateClassConstantString("CONTAINS_CALL_ATTRIBUTE_NAME", "containsCall");
 
 	/* the DI service's constructor: the generated arginfo names the twin's
 	 * parameter classes exactly (README rule 6) */

@@ -1495,6 +1495,7 @@ void pt_register_expression_result()
 
 	reg::Class cls("PHPStan\\Analyser\\ExpressionResult");
 	ptdecl::ExpressionResult::declareClass(cls);
+	cls.privateClassConstantString("READ_VARIABLE_NAMES_ATTRIBUTE", "readVariableNames");
 	/* the twin's properties in declaration order (the OBJ_PROP_NUM slots) */
 	cls.privateNullProperty("typeCallback");
 	cls.privateNullProperty("specifyTypesCallback");

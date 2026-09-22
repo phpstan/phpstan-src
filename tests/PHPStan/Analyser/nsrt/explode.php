@@ -93,3 +93,18 @@ function constantSplitLimits(string $twoDelimiters, string $twoStrings, int $lim
 	// 257 elements is more than ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT
 	assertType('non-empty-list<lowercase-string&uppercase-string>', explode(',', ',,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,'));
 }
+
+/**
+ * @param ''|',' $maybeEmptyDelimiter
+ */
+function narrowedPhpVersion(string $maybeEmptyDelimiter): void
+{
+	if (PHP_VERSION_ID < 80000) {
+		// before PHP 8 the empty separator makes explode() return false
+		assertType("array{'a', 'b'}|false", explode($maybeEmptyDelimiter, 'a,b'));
+		assertType('false', explode('', 'a,b'));
+	} else {
+		assertType("array{'a', 'b'}", explode($maybeEmptyDelimiter, 'a,b'));
+		assertType('*NEVER*', explode('', 'a,b'));
+	}
+}

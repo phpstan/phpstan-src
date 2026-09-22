@@ -7,7 +7,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name\FullyQualified;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
+use PHPStan\Php\PhpVersions;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
@@ -55,10 +55,6 @@ final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunction
 	 */
 	private const CONSTANT_COMBINATION_LIMIT = 16;
 
-	public function __construct(private PhpVersion $phpVersion)
-	{
-	}
-
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
 		return $functionReflection->getName() === 'explode';
@@ -75,10 +71,11 @@ final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunction
 			return null;
 		}
 
+		$phpVersions = $scope->getPhpVersion();
 		$delimiterType = $scope->getType($args[0]->value);
 		$isEmptyString = (new ConstantStringType(''))->isSuperTypeOf($delimiterType);
 		if ($isEmptyString->yes()) {
-			if ($this->phpVersion->throwsTypeErrorForInternalFunctions()) {
+			if ($phpVersions->throwsTypeErrorForInternalFunctions()->yes()) {
 				return new NeverType();
 			}
 			return new ConstantBooleanType(false);
@@ -101,7 +98,7 @@ final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunction
 
 		$limitType = isset($args[2]) ? $scope->getType($args[2]->value) : null;
 
-		$constantType = $this->createConstantSplitType($delimiterType, $stringType, $limitType);
+		$constantType = $this->createConstantSplitType($delimiterType, $stringType, $limitType, $phpVersions);
 		if ($constantType !== null) {
 			return $constantType;
 		}
@@ -127,7 +124,7 @@ final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunction
 			}
 		}
 
-		if (!$this->phpVersion->throwsValueErrorForInternalFunctions() && $isEmptyString->maybe()) {
+		if (!$phpVersions->throwsValueErrorForInternalFunctions()->yes() && $isEmptyString->maybe()) {
 			$returnType = new UnionType([$returnType, new ConstantBooleanType(false)]);
 		}
 
@@ -164,7 +161,7 @@ final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunction
 	 * The exact result of the split when the delimiter, the string and the limit
 	 * are all known constants, or null when it cannot be computed.
 	 */
-	private function createConstantSplitType(Type $delimiterType, Type $stringType, ?Type $limitType): ?Type
+	private function createConstantSplitType(Type $delimiterType, Type $stringType, ?Type $limitType, PhpVersions $phpVersions): ?Type
 	{
 		$delimiters = [];
 		$hasEmptyDelimiter = false;
@@ -222,7 +219,7 @@ final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunction
 			}
 		}
 
-		if ($hasEmptyDelimiter && !$this->phpVersion->throwsValueErrorForInternalFunctions()) {
+		if ($hasEmptyDelimiter && !$phpVersions->throwsValueErrorForInternalFunctions()->yes()) {
 			$results[] = new ConstantBooleanType(false);
 		}
 

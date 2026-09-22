@@ -32,17 +32,13 @@ typedef struct {
 	int32_t in_function_calls_stack;
 	int32_t in_first_level_statement;
 	int32_t after_extract_call;
-	/* memo props to reset (missing => -1) */
-	int32_t resolved_types;
-	int32_t truthy_scopes;
-	int32_t falsey_scopes;
-	int32_t node_callback_scope;
-	int32_t scope_out_of_first_level;
-	int32_t scope_with_promoted_native;
-	int32_t walk_scope;          /* NodeCallbackScope */
-	int32_t seeded_walk_scope;   /* NodeCallbackScope */
-	int32_t truthy_value_exprs;  /* NodeCallbackScope */
-	int32_t falsey_value_exprs;  /* NodeCallbackScope */
+	/* the per-instance memos to reset: every typed instance property with a
+	 * declared default — the twin builds a new scope, where each of them
+	 * starts at that default. A promoted property never has one (typed; the
+	 * untyped promoted $nodeCallback's implicit null is why untyped ones do
+	 * not count), and the constructor assigns only default-less $namespace */
+	uint32_t memo_count;
+	uint32_t *memo_offsets;
 } pt_scope_offsets;
 
 static HashTable pt_scope_offsets_cache;
@@ -50,7 +46,34 @@ static bool pt_scope_offsets_cache_inited = false;
 
 static void pt_scope_offsets_free(zval *zv)
 {
-	efree(Z_PTR_P(zv));
+	pt_scope_offsets *off = (pt_scope_offsets *) Z_PTR_P(zv);
+	if (off->memo_offsets != NULL) efree(off->memo_offsets);
+	efree(off);
+}
+
+/* collects the memo slots of ce (see pt_scope_offsets::memo_offsets) — every
+ * declaring class of the chain, so a parent's private memos count too */
+static void pt_scope_offsets_collect_memos(zend_class_entry *ce, pt_scope_offsets *off)
+{
+	off->memo_count = 0;
+	off->memo_offsets = ce->default_properties_count > 0
+		? (uint32_t *) safe_emalloc((size_t) ce->default_properties_count, sizeof(uint32_t), 0)
+		: NULL;
+	for (zend_class_entry *declaring = ce; declaring != NULL; declaring = declaring->parent) {
+		for (auto entry : zv::TableRef(&declaring->properties_info)) {
+			zend_property_info *info = (zend_property_info *) Z_PTR_P(entry.value().raw());
+			if (info->ce != declaring || (info->flags & ZEND_ACC_STATIC) != 0 || !ZEND_TYPE_IS_SET(info->type)) continue;
+			if (Z_TYPE(CE_DEFAULT_PROPERTIES_TABLE(ce)[OBJ_PROP_TO_NUM(info->offset)]) == IS_UNDEF) continue;
+			bool seen = false;
+			for (uint32_t i = 0; i < off->memo_count; i++) {
+				if (off->memo_offsets[i] == info->offset) {
+					seen = true;
+					break;
+				}
+			}
+			if (!seen && off->memo_count < (uint32_t) ce->default_properties_count) off->memo_offsets[off->memo_count++] = info->offset;
+		}
+	}
 }
 
 static pt_scope_offsets *pt_scope_offsets_for(zend_class_entry *ce)
@@ -73,16 +96,7 @@ static pt_scope_offsets *pt_scope_offsets_for(zend_class_entry *ce)
 	off->in_function_calls_stack = pt_instance_prop_offset(ce, "inFunctionCallsStack", sizeof("inFunctionCallsStack") - 1);
 	off->in_first_level_statement = pt_instance_prop_offset(ce, "inFirstLevelStatement", sizeof("inFirstLevelStatement") - 1);
 	off->after_extract_call = pt_instance_prop_offset(ce, "afterExtractCall", sizeof("afterExtractCall") - 1);
-	off->resolved_types = pt_instance_prop_offset(ce, "resolvedTypes", sizeof("resolvedTypes") - 1);
-	off->truthy_scopes = pt_instance_prop_offset(ce, "truthyScopes", sizeof("truthyScopes") - 1);
-	off->falsey_scopes = pt_instance_prop_offset(ce, "falseyScopes", sizeof("falseyScopes") - 1);
-	off->node_callback_scope = pt_instance_prop_offset(ce, "nodeCallbackScope", sizeof("nodeCallbackScope") - 1);
-	off->scope_out_of_first_level = pt_instance_prop_offset(ce, "scopeOutOfFirstLevelStatement", sizeof("scopeOutOfFirstLevelStatement") - 1);
-	off->scope_with_promoted_native = pt_instance_prop_offset(ce, "scopeWithPromotedNativeTypes", sizeof("scopeWithPromotedNativeTypes") - 1);
-	off->walk_scope = pt_instance_prop_offset(ce, "walkScope", sizeof("walkScope") - 1);
-	off->seeded_walk_scope = pt_instance_prop_offset(ce, "seededWalkScope", sizeof("seededWalkScope") - 1);
-	off->truthy_value_exprs = pt_instance_prop_offset(ce, "truthyValueExprs", sizeof("truthyValueExprs") - 1);
-	off->falsey_value_exprs = pt_instance_prop_offset(ce, "falseyValueExprs", sizeof("falseyValueExprs") - 1);
+	pt_scope_offsets_collect_memos(ce, off);
 
 	zend_hash_add_ptr(&pt_scope_offsets_cache, ce->name, off);
 	return off;
@@ -258,16 +272,14 @@ public:
 		cloneObj.propAtOffset((uint32_t) off->after_extract_call).assign(zv::Val::boolean(afterExtractCall));
 
 		/* fresh-constructor defaults for per-instance memos */
-		resetToEmptyArray(cloneObj, off->resolved_types);
-		resetToEmptyArray(cloneObj, off->truthy_scopes);
-		resetToEmptyArray(cloneObj, off->falsey_scopes);
-		resetToNull(cloneObj, off->node_callback_scope);
-		resetToNull(cloneObj, off->scope_out_of_first_level);
-		resetToNull(cloneObj, off->scope_with_promoted_native);
-		resetToNull(cloneObj, off->walk_scope);
-		resetToNull(cloneObj, off->seeded_walk_scope);
-		resetToEmptyArray(cloneObj, off->truthy_value_exprs);
-		resetToEmptyArray(cloneObj, off->falsey_value_exprs);
+		zval *defaults = CE_DEFAULT_PROPERTIES_TABLE(Z_OBJCE_P(scope));
+		for (uint32_t i = 0; i < off->memo_count; i++) {
+			uint32_t offset = off->memo_offsets[i];
+			/* the engine's own default-property copy (a persistent default is duplicated) */
+			zval fresh;
+			ZVAL_COPY_OR_DUP(&fresh, &defaults[OBJ_PROP_TO_NUM(offset)]);
+			cloneObj.propAtOffset(offset).assign(zv::Val::adopt(fresh));
+		}
 
 		zval out;
 		ZVAL_OBJ(&out, clone);
@@ -1157,20 +1169,6 @@ private:
 	static void setTableProp(zv::ObjRef obj, int32_t offset, HashTable *value)
 	{
 		obj.propAtOffset((uint32_t) offset).assign(zv::Arr::copyOfTable(value));
-	}
-
-	/* $obj->prop = [] — a memo reset to the fresh-constructor default */
-	static void resetToEmptyArray(zv::ObjRef obj, int32_t offset)
-	{
-		if (offset < 0) return;
-		obj.propAtOffset((uint32_t) offset).assign(zv::Arr::empty());
-	}
-
-	/* $obj->prop = null — a memo reset to the fresh-constructor default */
-	static void resetToNull(zv::ObjRef obj, int32_t offset)
-	{
-		if (offset < 0) return;
-		obj.propAtOffset((uint32_t) offset).assign(zv::Val::null());
 	}
 
 	/* $holder->expr for a checked ExpressionTypeHolder */

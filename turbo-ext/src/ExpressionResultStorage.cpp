@@ -128,21 +128,37 @@ void pt_register_expression_result_storage()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("mergeResults", reg::Public, 1, { reg::any("other") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	/* self $other: the native class exactly (its slots are read directly) */
+	cls.method(sigs::mergeResults, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *other;
-		if (!zp::parse<zp::Obj>(execute_data, other)) RETURN_THROWS();
+		ZEND_PARSE_PARAMETERS_START(1, 1)
+			Z_PARAM_OBJECT_OF_CLASS(other, pt_ce_expression_result_storage)
+		ZEND_PARSE_PARAMETERS_END();
 		ExpressionResultStorage(ZEND_THIS).mergeResults(other);
 	});
 
-	cls.method("storeExpressionResult", reg::Public, 2, { reg::any("expr"), reg::any("expressionResult") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::storeExpressionResult, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *expr, *expressionResult;
-		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, expr, expressionResult)) RETURN_THROWS();
+		zend_class_entry *exprCe = pt_class(PT_CLASS_EXPR);
+		if (UNEXPECTED(exprCe == NULL)) RETURN_THROWS();
+		ZEND_PARSE_PARAMETERS_START(2, 2)
+			Z_PARAM_OBJECT_OF_CLASS(expr, exprCe)
+			Z_PARAM_OBJECT(expressionResult)
+		ZEND_PARSE_PARAMETERS_END();
+		if (UNEXPECTED(!pt_shadow_instanceof(Z_OBJCE_P(expressionResult), pt_ce_expression_result, ZEND_STRL("PHPStan\\Analyser\\ExpressionResult")))) {
+			zend_wrong_parameter_class_error(2, "PHPStan\\Analyser\\ExpressionResult", expressionResult);
+			RETURN_THROWS();
+		}
 		ExpressionResultStorage(ZEND_THIS).storeExpressionResult(expr, expressionResult);
 	});
 
-	cls.method("findExpressionResult", reg::Public, 1, { reg::any("expr") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::findExpressionResult, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *expr;
-		if (!zp::parse<zp::Obj>(execute_data, expr)) RETURN_THROWS();
+		zend_class_entry *exprCe = pt_class(PT_CLASS_EXPR);
+		if (UNEXPECTED(exprCe == NULL)) RETURN_THROWS();
+		ZEND_PARSE_PARAMETERS_START(1, 1)
+			Z_PARAM_OBJECT_OF_CLASS(expr, exprCe)
+		ZEND_PARSE_PARAMETERS_END();
 		ExpressionResultStorage(ZEND_THIS).findExpressionResult(expr).intoReturnValue(return_value);
 	});
 

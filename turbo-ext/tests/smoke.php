@@ -4342,6 +4342,33 @@ ini_set('pcre.jit', $liJit);
 ini_set('pcre.backtrack_limit', $liBacktrackLimit);
 check($liIdentifierResults['php'] === $liIdentifierResults['native'], 'ConstantArrayType::isValidIdentifier() on a PCRE failure: ' . json_encode($liIdentifierResults));
 
+// ---- lane engine: misuse parity ----
+// wrong arguments to the native glue: the twin's TypeError (or other
+// Throwable) must come out, not a crash or a silently accepted value
+$lemOutcome = static function (callable $callback) use ($turboNorm): array {
+	try {
+		$value = $callback();
+		return ['ok', is_object($value) ? $turboNorm(get_class($value)) : $value];
+	} catch (\Throwable $e) {
+		return [get_class($e), $turboNorm(preg_replace('~, called in .*$~', '', $e->getMessage()))];
+	}
+};
+$lemResults = [];
+foreach (['php' => '\\PHPStan\\Analyser\\', 'native' => '\\PHPStanTurbo\\'] as $lemSide => $lemNs) {
+	$lemStorageClass = $lemNs . 'ExpressionResultStorage';
+	$lemStackClass = $lemNs . 'ExpressionResultStorageStack';
+	$lemResults[$lemSide] = [
+		'storage mergeResults(stdClass)' => $lemOutcome(static fn () => (new $lemStorageClass())->mergeResults(new \stdClass())),
+		'storage storeExpressionResult(expr, stdClass)' => $lemOutcome(static fn () => (new $lemStorageClass())->storeExpressionResult(new \PhpParser\Node\Scalar\Int_(1), new \stdClass())),
+		'storage storeExpressionResult(stmt, result)' => $lemOutcome(static fn () => (new $lemStorageClass())->storeExpressionResult(new \PhpParser\Node\Stmt\Nop(), $makeResult())),
+		'storage findExpressionResult(stdClass)' => $lemOutcome(static fn () => (new $lemStorageClass())->findExpressionResult(new \stdClass())),
+		'stack push(stdClass)' => $lemOutcome(static fn () => (new $lemStackClass())->push(new \stdClass())),
+	];
+}
+foreach ($lemResults['php'] as $lemLabel => $lemPhp) {
+	check($lemPhp === $lemResults['native'][$lemLabel], "misuse parity ($lemLabel): " . json_encode($lemPhp) . ' vs ' . json_encode($lemResults['native'][$lemLabel]));
+}
+
 // ---- differential coverage completeness ----
 // Every shadowed class must be exercised by one of the tests/ scripts; the
 // classes not covered above have their own dedicated script.

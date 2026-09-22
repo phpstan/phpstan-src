@@ -563,6 +563,11 @@ extern zend_class_entry *pt_ce_nonexistent_parent_class_type;
 /* Shadow.cpp — Runtime::activateShadowing() */
 bool pt_shadow_activate(HashTable *twinFiles, zend_string *prefix);
 bool pt_shadow_is_active();
+/* ce is the shadowed class nativeCe (or a subclass) — under the prefixed
+ * activation of the differential tests, where nativeCe is PHPStanTurbo\<Short>
+ * and a PHP collaborator creates the real-named PHP twin, that twin counts
+ * too. realName is the shadowed class's real name. */
+[[nodiscard]] bool pt_shadow_instanceof(zend_class_entry *ce, zend_class_entry *nativeCe, const char *realName, size_t realNameLen);
 
 ZEND_COLD void pt_register_trinary_logic();
 ZEND_COLD void pt_register_expression_type_holder();

@@ -97,14 +97,16 @@ function constantSplitLimits(string $twoDelimiters, string $twoStrings, int $lim
 /**
  * @param ''|',' $maybeEmptyDelimiter
  */
-function narrowedPhpVersion(string $maybeEmptyDelimiter): void
+function narrowedPhpVersion(string $maybeEmptyDelimiter, string $unknown): void
 {
 	if (PHP_VERSION_ID < 80000) {
 		// before PHP 8 the empty separator makes explode() return false
 		assertType("array{'a', 'b'}|false", explode($maybeEmptyDelimiter, 'a,b'));
 		assertType('false', explode('', 'a,b'));
+		assertType('non-empty-list<string>|false', explode($maybeEmptyDelimiter, $unknown));
 	} else {
 		assertType("array{'a', 'b'}", explode($maybeEmptyDelimiter, 'a,b'));
 		assertType('*NEVER*', explode('', 'a,b'));
+		assertType('non-empty-list<string>', explode($maybeEmptyDelimiter, $unknown));
 	}
 }

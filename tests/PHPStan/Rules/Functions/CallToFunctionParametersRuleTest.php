@@ -3194,4 +3194,47 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11919.php'], []);
 	}
 
+	public function testArgumentsCountAcceptedByNoVariant(): void
+	{
+		$this->analyse([__DIR__ . '/data/arguments-count-accepted-by-no-variant.php'], [
+			[
+				'Function mt_rand invoked with 1 parameter, 2 required.',
+				12,
+			],
+			[
+				'Function rand invoked with 1 parameter, 2 required.',
+				15,
+			],
+			[
+				'Function mt_rand invoked with 3 parameters, 0-2 required.',
+				16,
+			],
+			[
+				'Function stream_context_set_option invoked with 3 parameters, 4 required.',
+				20,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testLevenshteinArgumentsCount(): void
+	{
+		$this->analyse([__DIR__ . '/data/levenshtein-arguments-count.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.4.0')]
+	public function testRoundModePhp84(): void
+	{
+		$this->analyse([__DIR__ . '/data/round-mode-php84.php'], [
+			[
+				'Parameter #3 $mode of function round expects int<1, 8>|RoundingMode, 9 given.',
+				11,
+			],
+			[
+				'Parameter #3 $mode of function round expects int<1, 8>|RoundingMode, 0 given.',
+				12,
+			],
+		]);
+	}
+
 }

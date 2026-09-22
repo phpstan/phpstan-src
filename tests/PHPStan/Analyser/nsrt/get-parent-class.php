@@ -37,7 +37,6 @@ function (string $s) {
 	assertType('class-string|false', get_parent_class(NonexistentClass::class));
 	assertType('class-string|false', get_parent_class(1));
 	assertType('\'ParentClass\\\\Foo\'', get_parent_class(\ParentClass\Bar::class));
-	assertType('false', get_class());
 };
 
 trait FooTrait

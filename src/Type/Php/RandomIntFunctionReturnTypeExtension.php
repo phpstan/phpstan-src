@@ -10,6 +10,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use function array_map;
 use function assert;
@@ -40,6 +41,13 @@ final class RandomIntFunctionReturnTypeExtension implements DynamicFunctionRetur
 
 		$minType = $scope->getType($args[0]->value)->toInteger();
 		$maxType = $scope->getType($args[1]->value)->toInteger();
+
+		if ($functionReflection->getName() === 'rand') {
+			// rand() swaps the arguments when $min is greater than $max
+			$bothType = TypeCombinator::union($minType, $maxType);
+
+			return $this->createRange($bothType, $bothType);
+		}
 
 		return $this->createRange($minType, $maxType);
 	}

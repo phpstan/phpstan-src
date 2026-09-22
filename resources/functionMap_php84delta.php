@@ -20,9 +20,11 @@ return [
 		'http_clear_last_response_headers' => ['void'],
 		'mb_lcfirst' => ['string', 'string'=>'string', 'encoding='=>'string'],
 		'mb_ucfirst' => ['string', 'string'=>'string', 'encoding='=>'string'],
+		'round' => ['float', 'number'=>'float', 'precision='=>'int', 'mode='=>'int<1, 8>|RoundingMode'],
 		'simplexml_import_dom' => ['SimpleXMLElement|null', 'node'=>'object', 'class_name='=>'string'],
 	],
 	'old' => [
+		'round' => ['float', 'number'=>'float', 'precision='=>'int', 'mode='=>'1|2|3|4'],
 		'simplexml_import_dom' => ['SimpleXMLElement|null', 'node'=>'DOMNode', 'class_name='=>'string'],
 	]
 ];

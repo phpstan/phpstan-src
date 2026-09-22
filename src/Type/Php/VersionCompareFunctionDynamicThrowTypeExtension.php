@@ -8,8 +8,6 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
 use PHPStan\Type\Type;
-use function count;
-use function in_array;
 
 #[AutowiredService]
 final class VersionCompareFunctionDynamicThrowTypeExtension implements DynamicFunctionThrowTypeExtension
@@ -36,15 +34,8 @@ final class VersionCompareFunctionDynamicThrowTypeExtension implements DynamicFu
 		}
 
 		$operatorStrings = $scope->getType($args[2]->value)->getConstantStrings();
-		if (count($operatorStrings) === 0) {
+		if (VersionCompareFunctionDynamicReturnTypeExtension::mightBeInvalidOperator($operatorStrings)) {
 			return $functionReflection->getThrowType();
-		}
-
-		foreach ($operatorStrings as $operatorString) {
-			$operatorValue = $operatorString->getValue();
-			if (!in_array($operatorValue, VersionCompareFunctionDynamicReturnTypeExtension::VALID_OPERATORS, true)) {
-				return $functionReflection->getThrowType();
-			}
 		}
 
 		return null;

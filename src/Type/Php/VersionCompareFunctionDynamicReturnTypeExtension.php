@@ -77,9 +77,9 @@ final class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicF
 		if (isset($args[2])) {
 			$operatorStrings = $scope->getType($args[2]->value)->getConstantStrings();
 			$counts[] = count($operatorStrings);
-			$returnType = $throwsValueError->yes()
-				? new BooleanType()
-				: new BenevolentUnionType([new BooleanType(), new NullType()]);
+			$returnType = !$throwsValueError->yes() && self::mightBeInvalidOperator($operatorStrings)
+				? new BenevolentUnionType([new BooleanType(), new NullType()])
+				: new BooleanType();
 		} else {
 			$returnType = new UnionType([
 				new ConstantIntegerType(-1),
@@ -126,6 +126,27 @@ final class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicF
 		}
 
 		return TypeCombinator::union(...$types);
+	}
+
+	/**
+	 * An invalid operator is the only thing that makes version_compare() return null or throw,
+	 * so a call that certainly passes a valid one does neither, on any analysed version.
+	 *
+	 * @param ConstantStringType[] $operatorStrings
+	 */
+	public static function mightBeInvalidOperator(array $operatorStrings): bool
+	{
+		if (count($operatorStrings) === 0) {
+			return true; // the operator is not a constant string, it might be invalid
+		}
+
+		foreach ($operatorStrings as $operatorString) {
+			if (!in_array($operatorString->getValue(), self::VALID_OPERATORS, true)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**

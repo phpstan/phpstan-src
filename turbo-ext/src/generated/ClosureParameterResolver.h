@@ -28,19 +28,65 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("contextualClosureParameterResolver", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\ContextualClosureParameterResolver");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"nodeScopeResolver\0" /* 0 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 18 */
+	"closureTypeResolver\0" /* 53 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\ClosureTypeResolver\0" /* 73 */
+	"contextualClosureParameterResolver\0" /* 129 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\ContextualClosureParameterResolver\0" /* 164 */
+	"__construct\0" /* 235 */
+	"scope\0" /* 247 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 253 */
+	"expr\0" /* 284 */
+	"PhpParser\\Node\\Expr\\Closure|PhpParser\\Node\\Expr\\ArrowFunction\0" /* 289 */
+	"storage\0" /* 351 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 359 */
+	"callArgs\0" /* 400 */
+	"passedToType\0" /* 409 */
+	"PHPStan\\Type\\Type\0" /* 422 */
+	"nativePassedToType\0" /* 440 */
+	"\0" /* 459 */
+	"PHPStan\\Analyser\\ClosureParameterTypes\0" /* 460 */
+	"resolve\0" /* 499 */
+	"PhpParser\\Node\\Expr\0" /* 507 */
+	"resolveCallableTypeForScope\0" /* 527 */
+	"closureExpr\0" /* 555 */
+	"args\0" /* 567 */
+	"typeGetter\0" /* 572 */
+	"Closure\0" /* 583 */
+	"createCallArgsParameters"; /* 591 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 18), /* __construct $nodeScopeResolver */
+	reg::packed(53, 0, 73), /* __construct $closureTypeResolver */
+	reg::packed(129, 0, 164), /* __construct $contextualClosureParameterResolver */
+	reg::packed(247, 0, 253), /* resolve $scope */
+	reg::packed(284, 0, 289), /* resolve $expr */
+	reg::packed(351, MAY_BE_NULL, 359), /* resolve $storage */
+	reg::packed(400, MAY_BE_NULL | MAY_BE_ARRAY), /* resolve $callArgs */
+	reg::packed(409, MAY_BE_NULL, 422), /* resolve $passedToType */
+	reg::packed(440, MAY_BE_NULL, 422), /* resolve $nativePassedToType */
+	reg::packed(459, 0, 460), /* resolve return */
+	reg::packed(284, 0, 507), /* resolveCallableTypeForScope $expr */
+	reg::packed(247, 0, 253), /* resolveCallableTypeForScope $scope */
+	reg::packed(459, 0, 422), /* resolveCallableTypeForScope return */
+	reg::packed(247, 0, 253), /* createCallArgsParameters $scope */
+	reg::packed(555, 0, 507), /* createCallArgsParameters $closureExpr */
+	reg::packed(567, MAY_BE_ARRAY), /* createCallArgsParameters $args */
+	reg::packed(572, 0, 583), /* createCallArgsParameters $typeGetter */
+	reg::packed(459, MAY_BE_NULL | MAY_BE_ARRAY), /* createCallArgsParameters return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("closureTypeResolver", 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\ClosureTypeResolver"), reg::typed("contextualClosureParameterResolver", 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\ContextualClosureParameterResolver") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 3, __construct_args, 3, nullptr };
-inline constexpr reg::Arg resolve_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("expr", 0, "PhpParser\\Node\\Expr\\Closure|PhpParser\\Node\\Expr\\ArrowFunction"), reg::typed("storage", MAY_BE_NULL, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("callArgs", MAY_BE_NULL | MAY_BE_ARRAY), reg::typed("passedToType", MAY_BE_NULL, "PHPStan\\Type\\Type"), reg::typed("nativePassedToType", MAY_BE_NULL, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg resolve_return = reg::typed("", 0, "PHPStan\\Analyser\\ClosureParameterTypes");
-inline constexpr reg::Sig resolve = { "resolve", ZEND_ACC_PUBLIC, 6, resolve_args, 6, &resolve_return };
-inline constexpr reg::Arg resolveCallableTypeForScope_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope") };
-inline constexpr reg::Arg resolveCallableTypeForScope_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig resolveCallableTypeForScope = { "resolveCallableTypeForScope", ZEND_ACC_PUBLIC, 2, resolveCallableTypeForScope_args, 2, &resolveCallableTypeForScope_return };
-inline constexpr reg::Arg createCallArgsParameters_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("closureExpr", 0, "PhpParser\\Node\\Expr"), reg::typed("args", MAY_BE_ARRAY), reg::typed("typeGetter", 0, "Closure") };
-inline constexpr reg::Arg createCallArgsParameters_return = reg::typed("", MAY_BE_NULL | MAY_BE_ARRAY);
-inline constexpr reg::Sig createCallArgsParameters = { "createCallArgsParameters", ZEND_ACC_PRIVATE, 4, createCallArgsParameters_args, 4, &createCallArgsParameters_return };
+inline constexpr sigtab::Sig __construct = { { 235 /* __construct */, 3, 0, 3, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig resolve = { { 499 /* resolve */, 6, 3, 6, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig resolveCallableTypeForScope = { { 527 /* resolveCallableTypeForScope */, 2, 10, 2, 12, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig createCallArgsParameters = { { 591 /* createCallArgsParameters */, 4, 13, 4, 17, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::ClosureParameterResolver

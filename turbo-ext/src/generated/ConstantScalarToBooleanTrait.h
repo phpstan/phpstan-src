@@ -8,10 +8,21 @@
 
 namespace ptdecl::ConstantScalarToBooleanTrait {
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"\0" /* 0 */
+	"PHPStan\\Type\\BooleanType\0" /* 1 */
+	"toBoolean"; /* 26 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 1), /* toBoolean return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the trait declares itself */
 namespace sig {
-inline constexpr reg::Arg toBoolean_return = reg::typed("", 0, "PHPStan\\Type\\BooleanType");
-inline constexpr reg::Sig toBoolean = { "toBoolean", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toBoolean_return };
+inline constexpr sigtab::Sig toBoolean = { { 26 /* toBoolean */, 0, 0, 0, 0, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ConstantScalarToBooleanTrait

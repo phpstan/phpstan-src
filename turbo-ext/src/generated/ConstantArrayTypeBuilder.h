@@ -44,38 +44,84 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("unsealed", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_NULL | MAY_BE_ARRAY);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"keyTypes\0" /* 0 */
+	"valueTypes\0" /* 9 */
+	"nextAutoIndexes\0" /* 20 */
+	"optionalKeys\0" /* 36 */
+	"isList\0" /* 49 */
+	"PHPStan\\TrinaryLogic\0" /* 56 */
+	"unsealed\0" /* 77 */
+	"__construct\0" /* 86 */
+	"\0" /* 98 */
+	"PHPStan\\Type\\Constant\\ConstantArrayTypeBuilder\0" /* 99 */
+	"createEmpty\0" /* 146 */
+	"startArrayType\0" /* 158 */
+	"PHPStan\\Type\\Constant\\ConstantArrayType\0" /* 173 */
+	"createFromConstantArray\0" /* 213 */
+	"keyType\0" /* 237 */
+	"PHPStan\\Type\\Type\0" /* 245 */
+	"valueType\0" /* 263 */
+	"makeUnsealed\0" /* 273 */
+	"mergeUnsealed\0" /* 286 */
+	"offsetType\0" /* 300 */
+	"optional\0" /* 311 */
+	"false\0" /* 320 */
+	"setOffsetValueType\0" /* 326 */
+	"markNonListKey\0" /* 345 */
+	"oversized\0" /* 360 */
+	"degradeToGeneralArray\0" /* 370 */
+	"disableClosureDegradation\0" /* 392 */
+	"disableArrayDegradation\0" /* 418 */
+	"getArray"; /* 442 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_ARRAY), /* __construct $keyTypes */
+	reg::packed(9, MAY_BE_ARRAY), /* __construct $valueTypes */
+	reg::packed(20, MAY_BE_ARRAY), /* __construct $nextAutoIndexes */
+	reg::packed(36, MAY_BE_ARRAY), /* __construct $optionalKeys */
+	reg::packed(49, 0, 56), /* __construct $isList */
+	reg::packed(77, MAY_BE_NULL | MAY_BE_ARRAY), /* __construct $unsealed */
+	reg::packed(98, 0, 99), /* createEmpty return */
+	reg::packed(158, 0, 173), /* createFromConstantArray $startArrayType */
+	reg::packed(98, 0, 99), /* createFromConstantArray return */
+	reg::packed(237, 0, 245), /* makeUnsealed $keyType */
+	reg::packed(263, 0, 245), /* makeUnsealed $valueType */
+	reg::packed(98, MAY_BE_VOID), /* makeUnsealed return */
+	reg::packed(237, 0, 245), /* mergeUnsealed $keyType */
+	reg::packed(263, 0, 245), /* mergeUnsealed $valueType */
+	reg::packed(98, MAY_BE_VOID), /* mergeUnsealed return */
+	reg::packed(300, MAY_BE_NULL, 245), /* setOffsetValueType $offsetType */
+	reg::packed(263, 0, 245), /* setOffsetValueType $valueType */
+	reg::packed(311, MAY_BE_BOOL, reg::NoString, false, false, 320), /* setOffsetValueType $optional */
+	reg::packed(98, MAY_BE_VOID), /* setOffsetValueType return */
+	reg::packed(311, MAY_BE_BOOL), /* markNonListKey $optional */
+	reg::packed(98, MAY_BE_VOID), /* markNonListKey return */
+	reg::packed(360, MAY_BE_BOOL, reg::NoString, false, false, 320), /* degradeToGeneralArray $oversized */
+	reg::packed(98, MAY_BE_VOID), /* degradeToGeneralArray return */
+	reg::packed(98, MAY_BE_VOID), /* disableClosureDegradation return */
+	reg::packed(98, MAY_BE_VOID), /* disableArrayDegradation return */
+	reg::packed(98, 0, 245), /* getArray return */
+	reg::packed(98, MAY_BE_BOOL), /* isList return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("keyTypes", MAY_BE_ARRAY), reg::typed("valueTypes", MAY_BE_ARRAY), reg::typed("nextAutoIndexes", MAY_BE_ARRAY), reg::typed("optionalKeys", MAY_BE_ARRAY), reg::typed("isList", 0, "PHPStan\\TrinaryLogic"), reg::typed("unsealed", MAY_BE_NULL | MAY_BE_ARRAY) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PRIVATE, 6, __construct_args, 6, nullptr };
-inline constexpr reg::Arg createEmpty_return = reg::typed("", 0, "PHPStan\\Type\\Constant\\ConstantArrayTypeBuilder");
-inline constexpr reg::Sig createEmpty = { "createEmpty", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &createEmpty_return };
-inline constexpr reg::Arg createFromConstantArray_args[] = { reg::typed("startArrayType", 0, "PHPStan\\Type\\Constant\\ConstantArrayType") };
-inline constexpr reg::Arg createFromConstantArray_return = reg::typed("", 0, "PHPStan\\Type\\Constant\\ConstantArrayTypeBuilder");
-inline constexpr reg::Sig createFromConstantArray = { "createFromConstantArray", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, createFromConstantArray_args, 1, &createFromConstantArray_return };
-inline constexpr reg::Arg makeUnsealed_args[] = { reg::typed("keyType", 0, "PHPStan\\Type\\Type"), reg::typed("valueType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg makeUnsealed_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig makeUnsealed = { "makeUnsealed", ZEND_ACC_PUBLIC, 2, makeUnsealed_args, 2, &makeUnsealed_return };
-inline constexpr reg::Arg mergeUnsealed_args[] = { reg::typed("keyType", 0, "PHPStan\\Type\\Type"), reg::typed("valueType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg mergeUnsealed_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig mergeUnsealed = { "mergeUnsealed", ZEND_ACC_PUBLIC, 2, mergeUnsealed_args, 2, &mergeUnsealed_return };
-inline constexpr reg::Arg setOffsetValueType_args[] = { reg::typed("offsetType", MAY_BE_NULL, "PHPStan\\Type\\Type"), reg::typed("valueType", 0, "PHPStan\\Type\\Type"), reg::typed("optional", MAY_BE_BOOL, nullptr, false, false, "false") };
-inline constexpr reg::Arg setOffsetValueType_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig setOffsetValueType = { "setOffsetValueType", ZEND_ACC_PUBLIC, 2, setOffsetValueType_args, 3, &setOffsetValueType_return };
-inline constexpr reg::Arg markNonListKey_args[] = { reg::typed("optional", MAY_BE_BOOL) };
-inline constexpr reg::Arg markNonListKey_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig markNonListKey = { "markNonListKey", ZEND_ACC_PRIVATE, 1, markNonListKey_args, 1, &markNonListKey_return };
-inline constexpr reg::Arg degradeToGeneralArray_args[] = { reg::typed("oversized", MAY_BE_BOOL, nullptr, false, false, "false") };
-inline constexpr reg::Arg degradeToGeneralArray_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig degradeToGeneralArray = { "degradeToGeneralArray", ZEND_ACC_PUBLIC, 0, degradeToGeneralArray_args, 1, &degradeToGeneralArray_return };
-inline constexpr reg::Arg disableClosureDegradation_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig disableClosureDegradation = { "disableClosureDegradation", ZEND_ACC_PUBLIC, 0, nullptr, 0, &disableClosureDegradation_return };
-inline constexpr reg::Arg disableArrayDegradation_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig disableArrayDegradation = { "disableArrayDegradation", ZEND_ACC_PUBLIC, 0, nullptr, 0, &disableArrayDegradation_return };
-inline constexpr reg::Arg getArray_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getArray = { "getArray", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getArray_return };
-inline constexpr reg::Arg isList_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isList = { "isList", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isList_return };
+inline constexpr sigtab::Sig __construct = { { 86 /* __construct */, 6, 0, 6, reg::NoArg, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig createEmpty = { { 146 /* createEmpty */, 0, 6, 0, 6, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createFromConstantArray = { { 213 /* createFromConstantArray */, 1, 7, 1, 8, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig makeUnsealed = { { 273 /* makeUnsealed */, 2, 9, 2, 11, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig mergeUnsealed = { { 286 /* mergeUnsealed */, 2, 12, 2, 14, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig setOffsetValueType = { { 326 /* setOffsetValueType */, 2, 15, 3, 18, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig markNonListKey = { { 345 /* markNonListKey */, 1, 19, 1, 20, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig degradeToGeneralArray = { { 370 /* degradeToGeneralArray */, 0, 21, 1, 22, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig disableClosureDegradation = { { 392 /* disableClosureDegradation */, 0, 23, 0, 23, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig disableArrayDegradation = { { 418 /* disableArrayDegradation */, 0, 24, 0, 24, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getArray = { { 442 /* getArray */, 0, 25, 0, 25, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isList = { { 49 /* isList */, 0, 26, 0, 26, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ConstantArrayTypeBuilder

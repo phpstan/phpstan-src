@@ -30,36 +30,72 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("byRefArguments", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_ARRAY);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"expressionResult\0" /* 0 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 17 */
+	"resolvedParametersAcceptor\0" /* 51 */
+	"PHPStan\\Reflection\\ParametersAcceptor\0" /* 78 */
+	"argResults\0" /* 116 */
+	"byRefArguments\0" /* 127 */
+	"[]\0" /* 142 */
+	"__construct\0" /* 145 */
+	"argValue\0" /* 157 */
+	"PhpParser\\Node\\Expr\0" /* 166 */
+	"\0" /* 186 */
+	"findArgResult\0" /* 187 */
+	"getArgResults\0" /* 201 */
+	"requireArgResult\0" /* 215 */
+	"arg\0" /* 232 */
+	"isPassedByReference\0" /* 236 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 256 */
+	"getScope\0" /* 287 */
+	"hasYield\0" /* 296 */
+	"isAlwaysTerminating\0" /* 305 */
+	"getThrowPoints\0" /* 325 */
+	"getImpurePoints\0" /* 340 */
+	"PHPStan\\Analyser\\ArgsResult\0" /* 356 */
+	"withResolvedParametersAcceptor\0" /* 384 */
+	"getResolvedParametersAcceptor"; /* 415 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 17), /* __construct $expressionResult */
+	reg::packed(51, MAY_BE_NULL, 78), /* __construct $resolvedParametersAcceptor */
+	reg::packed(116, MAY_BE_ARRAY), /* __construct $argResults */
+	reg::packed(127, MAY_BE_ARRAY, reg::NoString, false, false, 142), /* __construct $byRefArguments */
+	reg::packed(157, 0, 166), /* findArgResult $argValue */
+	reg::packed(186, MAY_BE_NULL, 17), /* findArgResult return */
+	reg::packed(186, MAY_BE_ARRAY), /* getArgResults return */
+	reg::packed(157, 0, 166), /* requireArgResult $argValue */
+	reg::packed(186, 0, 17), /* requireArgResult return */
+	reg::packed(232, 0, 166), /* isPassedByReference $arg */
+	reg::packed(186, MAY_BE_BOOL), /* isPassedByReference return */
+	reg::packed(186, 0, 256), /* getScope return */
+	reg::packed(186, MAY_BE_BOOL), /* hasYield return */
+	reg::packed(186, MAY_BE_BOOL), /* isAlwaysTerminating return */
+	reg::packed(186, MAY_BE_ARRAY), /* getThrowPoints return */
+	reg::packed(186, MAY_BE_ARRAY), /* getImpurePoints return */
+	reg::packed(51, MAY_BE_NULL, 78), /* withResolvedParametersAcceptor $resolvedParametersAcceptor */
+	reg::packed(186, 0, 356), /* withResolvedParametersAcceptor return */
+	reg::packed(186, MAY_BE_NULL, 78), /* getResolvedParametersAcceptor return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("expressionResult", 0, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("resolvedParametersAcceptor", MAY_BE_NULL, "PHPStan\\Reflection\\ParametersAcceptor"), reg::typed("argResults", MAY_BE_ARRAY), reg::typed("byRefArguments", MAY_BE_ARRAY, nullptr, false, false, "[]") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 3, __construct_args, 4, nullptr };
-inline constexpr reg::Arg findArgResult_args[] = { reg::typed("argValue", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg findArgResult_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\ExpressionResult");
-inline constexpr reg::Sig findArgResult = { "findArgResult", ZEND_ACC_PUBLIC, 1, findArgResult_args, 1, &findArgResult_return };
-inline constexpr reg::Arg getArgResults_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getArgResults = { "getArgResults", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getArgResults_return };
-inline constexpr reg::Arg requireArgResult_args[] = { reg::typed("argValue", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg requireArgResult_return = reg::typed("", 0, "PHPStan\\Analyser\\ExpressionResult");
-inline constexpr reg::Sig requireArgResult = { "requireArgResult", ZEND_ACC_PUBLIC, 1, requireArgResult_args, 1, &requireArgResult_return };
-inline constexpr reg::Arg isPassedByReference_args[] = { reg::typed("arg", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg isPassedByReference_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isPassedByReference = { "isPassedByReference", ZEND_ACC_PUBLIC, 1, isPassedByReference_args, 1, &isPassedByReference_return };
-inline constexpr reg::Arg getScope_return = reg::typed("", 0, "PHPStan\\Analyser\\MutatingScope");
-inline constexpr reg::Sig getScope = { "getScope", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getScope_return };
-inline constexpr reg::Arg hasYield_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig hasYield = { "hasYield", ZEND_ACC_PUBLIC, 0, nullptr, 0, &hasYield_return };
-inline constexpr reg::Arg isAlwaysTerminating_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isAlwaysTerminating = { "isAlwaysTerminating", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isAlwaysTerminating_return };
-inline constexpr reg::Arg getThrowPoints_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getThrowPoints = { "getThrowPoints", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getThrowPoints_return };
-inline constexpr reg::Arg getImpurePoints_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getImpurePoints = { "getImpurePoints", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getImpurePoints_return };
-inline constexpr reg::Arg withResolvedParametersAcceptor_args[] = { reg::typed("resolvedParametersAcceptor", MAY_BE_NULL, "PHPStan\\Reflection\\ParametersAcceptor") };
-inline constexpr reg::Arg withResolvedParametersAcceptor_return = reg::typed("", 0, "PHPStan\\Analyser\\ArgsResult");
-inline constexpr reg::Sig withResolvedParametersAcceptor = { "withResolvedParametersAcceptor", ZEND_ACC_PUBLIC, 1, withResolvedParametersAcceptor_args, 1, &withResolvedParametersAcceptor_return };
-inline constexpr reg::Arg getResolvedParametersAcceptor_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Reflection\\ParametersAcceptor");
-inline constexpr reg::Sig getResolvedParametersAcceptor = { "getResolvedParametersAcceptor", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getResolvedParametersAcceptor_return };
+inline constexpr sigtab::Sig __construct = { { 145 /* __construct */, 3, 0, 4, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig findArgResult = { { 187 /* findArgResult */, 1, 4, 1, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getArgResults = { { 201 /* getArgResults */, 0, 6, 0, 6, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig requireArgResult = { { 215 /* requireArgResult */, 1, 7, 1, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isPassedByReference = { { 236 /* isPassedByReference */, 1, 9, 1, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getScope = { { 287 /* getScope */, 0, 11, 0, 11, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasYield = { { 296 /* hasYield */, 0, 12, 0, 12, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isAlwaysTerminating = { { 305 /* isAlwaysTerminating */, 0, 13, 0, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getThrowPoints = { { 325 /* getThrowPoints */, 0, 14, 0, 14, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getImpurePoints = { { 340 /* getImpurePoints */, 0, 15, 0, 15, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig withResolvedParametersAcceptor = { { 384 /* withResolvedParametersAcceptor */, 1, 16, 1, 17, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getResolvedParametersAcceptor = { { 415 /* getResolvedParametersAcceptor */, 0, 18, 0, 18, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ArgsResult

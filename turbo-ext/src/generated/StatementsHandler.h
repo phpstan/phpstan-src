@@ -32,61 +32,199 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("unresolvedTemplateArguments", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_BOOL);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"fileTypeMapper\0" /* 0 */
+	"PHPStan\\Type\\FileTypeMapper\0" /* 15 */
+	"templateArgumentObserver\0" /* 43 */
+	"PHPStan\\Analyser\\Generics\\TemplateArgumentObserver\0" /* 68 */
+	"templateArgumentResolver\0" /* 119 */
+	"PHPStan\\Analyser\\Generics\\TemplateArgumentResolver\0" /* 144 */
+	"unresolvedTemplateArguments\0" /* 195 */
+	"__construct\0" /* 223 */
+	"nodeScopeResolver\0" /* 235 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 253 */
+	"nodes\0" /* 288 */
+	"scope\0" /* 294 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 300 */
+	"expressionResultStorage\0" /* 331 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 355 */
+	"nodeCallback\0" /* 396 */
+	"\0" /* 409 */
+	"processNodesWithStorage\0" /* 410 */
+	"parentNode\0" /* 434 */
+	"PhpParser\\Node\0" /* 445 */
+	"bodyStmts\0" /* 460 */
+	"storage\0" /* 470 */
+	"context\0" /* 478 */
+	"PHPStan\\Analyser\\StatementContext\0" /* 486 */
+	"gotoNameMatcher\0" /* 520 */
+	"Closure\0" /* 536 */
+	"mergeBodyScopeEachIteration\0" /* 544 */
+	"resolveBackwardGotoScope\0" /* 572 */
+	"labelName\0" /* 597 */
+	"alreadyTerminated\0" /* 607 */
+	"exitPoints\0" /* 625 */
+	"mergeForwardGotoExitPoints\0" /* 636 */
+	"nextStmts\0" /* 663 */
+	"processUnreachableStatement\0" /* 673 */
+	"earlyBinding\0" /* 701 */
+	"getNextUnreachableStatements\0" /* 714 */
+	"stmts\0" /* 743 */
+	"PHPStan\\Analyser\\InternalStatementResult\0" /* 749 */
+	"doProcessStmtNodes\0" /* 790 */
+	"i\0" /* 809 */
+	"stmt\0" /* 811 */
+	"PhpParser\\Node\\Stmt\0" /* 816 */
+	"state\0" /* 836 */
+	"PHPStan\\Analyser\\StatementListWalkState\0" /* 842 */
+	"shouldCheckLastStatement\0" /* 882 */
+	"processStatementStep\0" /* 907 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 928 */
+	"readEndStatementExprResult\0" /* 962 */
+	"processBodyStmtNodesTwoPass\0" /* 989 */
+	"from\0" /* 1017 */
+	"to\0" /* 1022 */
+	"appendRecordedStatementResults\0" /* 1025 */
+	"PHPStan\\Analyser\\VariableFlow\0" /* 1056 */
+	"getVariableMentionFlow\0" /* 1086 */
+	"variableNames\0" /* 1109 */
+	"statementMentionsAnyVariable\0" /* 1123 */
+	"node\0" /* 1152 */
+	"names\0" /* 1157 */
+	"mentionsEverything\0" /* 1163 */
+	"collectMentionedVariables\0" /* 1182 */
+	"statement\0" /* 1208 */
+	"getOverridingThrowPoints\0" /* 1218 */
+	"defaultExpr\0" /* 1243 */
+	"PhpParser\\Node\\Expr\0" /* 1255 */
+	"processStmtVarAnnotation\0" /* 1275 */
+	"PHPStan\\PhpDoc\\Tag\\VarTag\0" /* 1300 */
+	"findSingleVariableLessVarTag\0" /* 1326 */
+	"PHPStan\\Analyser\\Generics\\TemplateArgumentConstraints\0" /* 1355 */
+	"emitVarTagChangedNode"; /* 1409 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 15), /* __construct $fileTypeMapper */
+	reg::packed(43, 0, 68), /* __construct $templateArgumentObserver */
+	reg::packed(119, 0, 144), /* __construct $templateArgumentResolver */
+	reg::packed(195, MAY_BE_BOOL), /* __construct $unresolvedTemplateArguments */
+	reg::packed(235, 0, 253), /* processNodesWithStorage $nodeScopeResolver */
+	reg::packed(288, MAY_BE_ARRAY), /* processNodesWithStorage $nodes */
+	reg::packed(294, 0, 300), /* processNodesWithStorage $scope */
+	reg::packed(331, 0, 355), /* processNodesWithStorage $expressionResultStorage */
+	reg::packed(396, MAY_BE_CALLABLE), /* processNodesWithStorage $nodeCallback */
+	reg::packed(409, MAY_BE_VOID), /* processNodesWithStorage return */
+	reg::packed(235, 0, 253), /* resolveBackwardGotoScope $nodeScopeResolver */
+	reg::packed(434, 0, 445), /* resolveBackwardGotoScope $parentNode */
+	reg::packed(460, MAY_BE_ARRAY), /* resolveBackwardGotoScope $bodyStmts */
+	reg::packed(294, 0, 300), /* resolveBackwardGotoScope $scope */
+	reg::packed(470, 0, 355), /* resolveBackwardGotoScope $storage */
+	reg::packed(478, 0, 486), /* resolveBackwardGotoScope $context */
+	reg::packed(520, 0, 536), /* resolveBackwardGotoScope $gotoNameMatcher */
+	reg::packed(544, MAY_BE_BOOL), /* resolveBackwardGotoScope $mergeBodyScopeEachIteration */
+	reg::packed(409, 0, 300), /* resolveBackwardGotoScope return */
+	reg::packed(597, MAY_BE_STRING), /* mergeForwardGotoExitPoints $labelName */
+	reg::packed(294, 0, 300), /* mergeForwardGotoExitPoints $scope */
+	reg::packed(607, MAY_BE_BOOL), /* mergeForwardGotoExitPoints $alreadyTerminated */
+	reg::packed(625, MAY_BE_ARRAY), /* mergeForwardGotoExitPoints $exitPoints */
+	reg::packed(409, MAY_BE_ARRAY), /* mergeForwardGotoExitPoints return */
+	reg::packed(235, 0, 253), /* processUnreachableStatement $nodeScopeResolver */
+	reg::packed(663, MAY_BE_ARRAY), /* processUnreachableStatement $nextStmts */
+	reg::packed(294, 0, 300), /* processUnreachableStatement $scope */
+	reg::packed(470, 0, 355), /* processUnreachableStatement $storage */
+	reg::packed(396, MAY_BE_CALLABLE), /* processUnreachableStatement $nodeCallback */
+	reg::packed(409, MAY_BE_VOID), /* processUnreachableStatement return */
+	reg::packed(288, MAY_BE_ARRAY), /* getNextUnreachableStatements $nodes */
+	reg::packed(701, MAY_BE_BOOL), /* getNextUnreachableStatements $earlyBinding */
+	reg::packed(409, MAY_BE_ARRAY), /* getNextUnreachableStatements return */
+	reg::packed(235, 0, 253), /* doProcessStmtNodes $nodeScopeResolver */
+	reg::packed(434, 0, 445), /* doProcessStmtNodes $parentNode */
+	reg::packed(743, MAY_BE_ARRAY), /* doProcessStmtNodes $stmts */
+	reg::packed(294, 0, 300), /* doProcessStmtNodes $scope */
+	reg::packed(470, 0, 355), /* doProcessStmtNodes $storage */
+	reg::packed(396, MAY_BE_CALLABLE), /* doProcessStmtNodes $nodeCallback */
+	reg::packed(478, 0, 486), /* doProcessStmtNodes $context */
+	reg::packed(409, 0, 749), /* doProcessStmtNodes return */
+	reg::packed(235, 0, 253), /* processStatementStep $nodeScopeResolver */
+	reg::packed(434, 0, 445), /* processStatementStep $parentNode */
+	reg::packed(743, MAY_BE_ARRAY), /* processStatementStep $stmts */
+	reg::packed(809, MAY_BE_LONG), /* processStatementStep $i */
+	reg::packed(811, 0, 816), /* processStatementStep $stmt */
+	reg::packed(836, 0, 842), /* processStatementStep $state */
+	reg::packed(470, 0, 355), /* processStatementStep $storage */
+	reg::packed(396, MAY_BE_CALLABLE), /* processStatementStep $nodeCallback */
+	reg::packed(478, 0, 486), /* processStatementStep $context */
+	reg::packed(882, MAY_BE_BOOL), /* processStatementStep $shouldCheckLastStatement */
+	reg::packed(409, MAY_BE_VOID), /* processStatementStep return */
+	reg::packed(811, 0, 816), /* readEndStatementExprResult $stmt */
+	reg::packed(470, 0, 355), /* readEndStatementExprResult $storage */
+	reg::packed(409, MAY_BE_NULL, 928), /* readEndStatementExprResult return */
+	reg::packed(235, 0, 253), /* processBodyStmtNodesTwoPass $nodeScopeResolver */
+	reg::packed(434, 0, 445), /* processBodyStmtNodesTwoPass $parentNode */
+	reg::packed(743, MAY_BE_ARRAY), /* processBodyStmtNodesTwoPass $stmts */
+	reg::packed(294, 0, 300), /* processBodyStmtNodesTwoPass $scope */
+	reg::packed(470, 0, 355), /* processBodyStmtNodesTwoPass $storage */
+	reg::packed(396, MAY_BE_CALLABLE), /* processBodyStmtNodesTwoPass $nodeCallback */
+	reg::packed(478, 0, 486), /* processBodyStmtNodesTwoPass $context */
+	reg::packed(409, 0, 749), /* processBodyStmtNodesTwoPass return */
+	reg::packed(836, 0, 842), /* appendRecordedStatementResults $state */
+	reg::packed(1017, 0, 842), /* appendRecordedStatementResults $from */
+	reg::packed(1022, 0, 842), /* appendRecordedStatementResults $to */
+	reg::packed(409, MAY_BE_VOID), /* appendRecordedStatementResults return */
+	reg::packed(811, 0, 816), /* getVariableMentionFlow $stmt */
+	reg::packed(409, MAY_BE_NULL, 1056), /* getVariableMentionFlow return */
+	reg::packed(811, 0, 816), /* statementMentionsAnyVariable $stmt */
+	reg::packed(1109, MAY_BE_ARRAY), /* statementMentionsAnyVariable $variableNames */
+	reg::packed(409, MAY_BE_BOOL), /* statementMentionsAnyVariable return */
+	reg::packed(1152, 0, 445), /* collectMentionedVariables $node */
+	reg::packed(1157, MAY_BE_ARRAY, reg::NoString, true, false), /* collectMentionedVariables $names */
+	reg::packed(1163, MAY_BE_BOOL, reg::NoString, true, false), /* collectMentionedVariables $mentionsEverything */
+	reg::packed(409, MAY_BE_VOID), /* collectMentionedVariables return */
+	reg::packed(1208, 0, 816), /* getOverridingThrowPoints $statement */
+	reg::packed(294, 0, 300), /* getOverridingThrowPoints $scope */
+	reg::packed(409, MAY_BE_NULL | MAY_BE_ARRAY), /* getOverridingThrowPoints return */
+	reg::packed(235, 0, 253), /* processStmtVarAnnotation $nodeScopeResolver */
+	reg::packed(294, 0, 300), /* processStmtVarAnnotation $scope */
+	reg::packed(470, 0, 355), /* processStmtVarAnnotation $storage */
+	reg::packed(811, 0, 816), /* processStmtVarAnnotation $stmt */
+	reg::packed(1243, MAY_BE_NULL, 1255), /* processStmtVarAnnotation $defaultExpr */
+	reg::packed(396, MAY_BE_CALLABLE), /* processStmtVarAnnotation $nodeCallback */
+	reg::packed(409, 0, 300), /* processStmtVarAnnotation return */
+	reg::packed(294, 0, 300), /* findSingleVariableLessVarTag $scope */
+	reg::packed(811, 0, 816), /* findSingleVariableLessVarTag $stmt */
+	reg::packed(409, MAY_BE_NULL, 1300), /* findSingleVariableLessVarTag return */
+	reg::packed(235, 0, 253), /* emitVarTagChangedNode $nodeScopeResolver */
+	reg::packed(294, 0, 300), /* emitVarTagChangedNode $scope */
+	reg::packed(470, 0, 355), /* emitVarTagChangedNode $storage */
+	reg::packed(811, 0, 816), /* emitVarTagChangedNode $stmt */
+	reg::packed(1243, 0, 1255), /* emitVarTagChangedNode $defaultExpr */
+	reg::packed(396, MAY_BE_CALLABLE), /* emitVarTagChangedNode $nodeCallback */
+	reg::packed(409, 0, 1355), /* emitVarTagChangedNode return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("fileTypeMapper", 0, "PHPStan\\Type\\FileTypeMapper"), reg::typed("templateArgumentObserver", 0, "PHPStan\\Analyser\\Generics\\TemplateArgumentObserver"), reg::typed("templateArgumentResolver", 0, "PHPStan\\Analyser\\Generics\\TemplateArgumentResolver"), reg::typed("unresolvedTemplateArguments", MAY_BE_BOOL) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 4, __construct_args, 4, nullptr };
-inline constexpr reg::Arg processNodesWithStorage_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("nodes", MAY_BE_ARRAY), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("expressionResultStorage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("nodeCallback", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg processNodesWithStorage_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig processNodesWithStorage = { "processNodesWithStorage", ZEND_ACC_PUBLIC, 5, processNodesWithStorage_args, 5, &processNodesWithStorage_return };
-inline constexpr reg::Arg resolveBackwardGotoScope_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("parentNode", 0, "PhpParser\\Node"), reg::typed("bodyStmts", MAY_BE_ARRAY), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("context", 0, "PHPStan\\Analyser\\StatementContext"), reg::typed("gotoNameMatcher", 0, "Closure"), reg::typed("mergeBodyScopeEachIteration", MAY_BE_BOOL) };
-inline constexpr reg::Arg resolveBackwardGotoScope_return = reg::typed("", 0, "PHPStan\\Analyser\\MutatingScope");
-inline constexpr reg::Sig resolveBackwardGotoScope = { "resolveBackwardGotoScope", ZEND_ACC_PRIVATE, 8, resolveBackwardGotoScope_args, 8, &resolveBackwardGotoScope_return };
-inline constexpr reg::Arg mergeForwardGotoExitPoints_args[] = { reg::typed("labelName", MAY_BE_STRING), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("alreadyTerminated", MAY_BE_BOOL), reg::typed("exitPoints", MAY_BE_ARRAY) };
-inline constexpr reg::Arg mergeForwardGotoExitPoints_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig mergeForwardGotoExitPoints = { "mergeForwardGotoExitPoints", ZEND_ACC_PRIVATE, 4, mergeForwardGotoExitPoints_args, 4, &mergeForwardGotoExitPoints_return };
-inline constexpr reg::Arg processUnreachableStatement_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("nextStmts", MAY_BE_ARRAY), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("nodeCallback", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg processUnreachableStatement_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig processUnreachableStatement = { "processUnreachableStatement", ZEND_ACC_PRIVATE, 5, processUnreachableStatement_args, 5, &processUnreachableStatement_return };
-inline constexpr reg::Arg getNextUnreachableStatements_args[] = { reg::typed("nodes", MAY_BE_ARRAY), reg::typed("earlyBinding", MAY_BE_BOOL) };
-inline constexpr reg::Arg getNextUnreachableStatements_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getNextUnreachableStatements = { "getNextUnreachableStatements", ZEND_ACC_PRIVATE, 2, getNextUnreachableStatements_args, 2, &getNextUnreachableStatements_return };
-inline constexpr reg::Arg doProcessStmtNodes_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("parentNode", 0, "PhpParser\\Node"), reg::typed("stmts", MAY_BE_ARRAY), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("nodeCallback", MAY_BE_CALLABLE), reg::typed("context", 0, "PHPStan\\Analyser\\StatementContext") };
-inline constexpr reg::Arg doProcessStmtNodes_return = reg::typed("", 0, "PHPStan\\Analyser\\InternalStatementResult");
-inline constexpr reg::Sig doProcessStmtNodes = { "doProcessStmtNodes", ZEND_ACC_PUBLIC, 7, doProcessStmtNodes_args, 7, &doProcessStmtNodes_return };
-inline constexpr reg::Arg processStatementStep_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("parentNode", 0, "PhpParser\\Node"), reg::typed("stmts", MAY_BE_ARRAY), reg::typed("i", MAY_BE_LONG), reg::typed("stmt", 0, "PhpParser\\Node\\Stmt"), reg::typed("state", 0, "PHPStan\\Analyser\\StatementListWalkState"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("nodeCallback", MAY_BE_CALLABLE), reg::typed("context", 0, "PHPStan\\Analyser\\StatementContext"), reg::typed("shouldCheckLastStatement", MAY_BE_BOOL) };
-inline constexpr reg::Arg processStatementStep_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig processStatementStep = { "processStatementStep", ZEND_ACC_PRIVATE, 10, processStatementStep_args, 10, &processStatementStep_return };
-inline constexpr reg::Arg readEndStatementExprResult_args[] = { reg::typed("stmt", 0, "PhpParser\\Node\\Stmt"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage") };
-inline constexpr reg::Arg readEndStatementExprResult_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\ExpressionResult");
-inline constexpr reg::Sig readEndStatementExprResult = { "readEndStatementExprResult", ZEND_ACC_PRIVATE, 2, readEndStatementExprResult_args, 2, &readEndStatementExprResult_return };
-inline constexpr reg::Arg processBodyStmtNodesTwoPass_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("parentNode", 0, "PhpParser\\Node"), reg::typed("stmts", MAY_BE_ARRAY), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("nodeCallback", MAY_BE_CALLABLE), reg::typed("context", 0, "PHPStan\\Analyser\\StatementContext") };
-inline constexpr reg::Arg processBodyStmtNodesTwoPass_return = reg::typed("", 0, "PHPStan\\Analyser\\InternalStatementResult");
-inline constexpr reg::Sig processBodyStmtNodesTwoPass = { "processBodyStmtNodesTwoPass", ZEND_ACC_PRIVATE, 7, processBodyStmtNodesTwoPass_args, 7, &processBodyStmtNodesTwoPass_return };
-inline constexpr reg::Arg appendRecordedStatementResults_args[] = { reg::typed("state", 0, "PHPStan\\Analyser\\StatementListWalkState"), reg::typed("from", 0, "PHPStan\\Analyser\\StatementListWalkState"), reg::typed("to", 0, "PHPStan\\Analyser\\StatementListWalkState") };
-inline constexpr reg::Arg appendRecordedStatementResults_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig appendRecordedStatementResults = { "appendRecordedStatementResults", ZEND_ACC_PRIVATE, 3, appendRecordedStatementResults_args, 3, &appendRecordedStatementResults_return };
-inline constexpr reg::Arg getVariableMentionFlow_args[] = { reg::typed("stmt", 0, "PhpParser\\Node\\Stmt") };
-inline constexpr reg::Arg getVariableMentionFlow_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\VariableFlow");
-inline constexpr reg::Sig getVariableMentionFlow = { "getVariableMentionFlow", ZEND_ACC_PUBLIC, 1, getVariableMentionFlow_args, 1, &getVariableMentionFlow_return };
-inline constexpr reg::Arg statementMentionsAnyVariable_args[] = { reg::typed("stmt", 0, "PhpParser\\Node\\Stmt"), reg::typed("variableNames", MAY_BE_ARRAY) };
-inline constexpr reg::Arg statementMentionsAnyVariable_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig statementMentionsAnyVariable = { "statementMentionsAnyVariable", ZEND_ACC_PRIVATE, 2, statementMentionsAnyVariable_args, 2, &statementMentionsAnyVariable_return };
-inline constexpr reg::Arg collectMentionedVariables_args[] = { reg::typed("node", 0, "PhpParser\\Node"), reg::typed("names", MAY_BE_ARRAY, nullptr, true, false), reg::typed("mentionsEverything", MAY_BE_BOOL, nullptr, true, false) };
-inline constexpr reg::Arg collectMentionedVariables_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig collectMentionedVariables = { "collectMentionedVariables", ZEND_ACC_PRIVATE, 3, collectMentionedVariables_args, 3, &collectMentionedVariables_return };
-inline constexpr reg::Arg getOverridingThrowPoints_args[] = { reg::typed("statement", 0, "PhpParser\\Node\\Stmt"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope") };
-inline constexpr reg::Arg getOverridingThrowPoints_return = reg::typed("", MAY_BE_NULL | MAY_BE_ARRAY);
-inline constexpr reg::Sig getOverridingThrowPoints = { "getOverridingThrowPoints", ZEND_ACC_PUBLIC, 2, getOverridingThrowPoints_args, 2, &getOverridingThrowPoints_return };
-inline constexpr reg::Arg processStmtVarAnnotation_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("stmt", 0, "PhpParser\\Node\\Stmt"), reg::typed("defaultExpr", MAY_BE_NULL, "PhpParser\\Node\\Expr"), reg::typed("nodeCallback", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg processStmtVarAnnotation_return = reg::typed("", 0, "PHPStan\\Analyser\\MutatingScope");
-inline constexpr reg::Sig processStmtVarAnnotation = { "processStmtVarAnnotation", ZEND_ACC_PUBLIC, 6, processStmtVarAnnotation_args, 6, &processStmtVarAnnotation_return };
-inline constexpr reg::Arg findSingleVariableLessVarTag_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("stmt", 0, "PhpParser\\Node\\Stmt") };
-inline constexpr reg::Arg findSingleVariableLessVarTag_return = reg::typed("", MAY_BE_NULL, "PHPStan\\PhpDoc\\Tag\\VarTag");
-inline constexpr reg::Sig findSingleVariableLessVarTag = { "findSingleVariableLessVarTag", ZEND_ACC_PRIVATE, 2, findSingleVariableLessVarTag_args, 2, &findSingleVariableLessVarTag_return };
-inline constexpr reg::Arg emitVarTagChangedNode_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("stmt", 0, "PhpParser\\Node\\Stmt"), reg::typed("defaultExpr", 0, "PhpParser\\Node\\Expr"), reg::typed("nodeCallback", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg emitVarTagChangedNode_return = reg::typed("", 0, "PHPStan\\Analyser\\Generics\\TemplateArgumentConstraints");
-inline constexpr reg::Sig emitVarTagChangedNode = { "emitVarTagChangedNode", ZEND_ACC_PUBLIC, 6, emitVarTagChangedNode_args, 6, &emitVarTagChangedNode_return };
+inline constexpr sigtab::Sig __construct = { { 223 /* __construct */, 4, 0, 4, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processNodesWithStorage = { { 410 /* processNodesWithStorage */, 5, 4, 5, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig resolveBackwardGotoScope = { { 572 /* resolveBackwardGotoScope */, 8, 10, 8, 18, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig mergeForwardGotoExitPoints = { { 636 /* mergeForwardGotoExitPoints */, 4, 19, 4, 23, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig processUnreachableStatement = { { 673 /* processUnreachableStatement */, 5, 24, 5, 29, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getNextUnreachableStatements = { { 714 /* getNextUnreachableStatements */, 2, 30, 2, 32, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig doProcessStmtNodes = { { 790 /* doProcessStmtNodes */, 7, 33, 7, 40, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processStatementStep = { { 907 /* processStatementStep */, 10, 41, 10, 51, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig readEndStatementExprResult = { { 962 /* readEndStatementExprResult */, 2, 52, 2, 54, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig processBodyStmtNodesTwoPass = { { 989 /* processBodyStmtNodesTwoPass */, 7, 55, 7, 62, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig appendRecordedStatementResults = { { 1025 /* appendRecordedStatementResults */, 3, 63, 3, 66, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getVariableMentionFlow = { { 1086 /* getVariableMentionFlow */, 1, 67, 1, 68, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig statementMentionsAnyVariable = { { 1123 /* statementMentionsAnyVariable */, 2, 69, 2, 71, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig collectMentionedVariables = { { 1182 /* collectMentionedVariables */, 3, 72, 3, 75, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getOverridingThrowPoints = { { 1218 /* getOverridingThrowPoints */, 2, 76, 2, 78, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processStmtVarAnnotation = { { 1275 /* processStmtVarAnnotation */, 6, 79, 6, 85, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig findSingleVariableLessVarTag = { { 1326 /* findSingleVariableLessVarTag */, 2, 86, 2, 88, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig emitVarTagChangedNode = { { 1409 /* emitVarTagChangedNode */, 6, 89, 6, 95, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::StatementsHandler

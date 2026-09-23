@@ -8,13 +8,27 @@
 
 namespace ptdecl::NonCallableTypeTrait {
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"\0" /* 0 */
+	"PHPStan\\TrinaryLogic\0" /* 1 */
+	"isCallable\0" /* 22 */
+	"scope\0" /* 33 */
+	"PHPStan\\Reflection\\ClassMemberAccessAnswerer\0" /* 39 */
+	"getCallableParametersAcceptors"; /* 84 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 1), /* isCallable return */
+	reg::packed(33, 0, 39), /* getCallableParametersAcceptors $scope */
+	reg::packed(0, MAY_BE_ARRAY), /* getCallableParametersAcceptors return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the trait declares itself */
 namespace sig {
-inline constexpr reg::Arg isCallable_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isCallable = { "isCallable", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isCallable_return };
-inline constexpr reg::Arg getCallableParametersAcceptors_args[] = { reg::typed("scope", 0, "PHPStan\\Reflection\\ClassMemberAccessAnswerer") };
-inline constexpr reg::Arg getCallableParametersAcceptors_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getCallableParametersAcceptors = { "getCallableParametersAcceptors", ZEND_ACC_PUBLIC, 1, getCallableParametersAcceptors_args, 1, &getCallableParametersAcceptors_return };
+inline constexpr sigtab::Sig isCallable = { { 22 /* isCallable */, 0, 0, 0, 0, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getCallableParametersAcceptors = { { 84 /* getCallableParametersAcceptors */, 1, 1, 1, 2, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::NonCallableTypeTrait

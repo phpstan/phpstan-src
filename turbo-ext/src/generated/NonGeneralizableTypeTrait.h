@@ -8,11 +8,24 @@
 
 namespace ptdecl::NonGeneralizableTypeTrait {
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"precision\0" /* 0 */
+	"PHPStan\\Type\\GeneralizePrecision\0" /* 10 */
+	"\0" /* 43 */
+	"PHPStan\\Type\\Type\0" /* 44 */
+	"generalize"; /* 62 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 10), /* generalize $precision */
+	reg::packed(43, 0, 44), /* generalize return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the trait declares itself */
 namespace sig {
-inline constexpr reg::Arg generalize_args[] = { reg::typed("precision", 0, "PHPStan\\Type\\GeneralizePrecision") };
-inline constexpr reg::Arg generalize_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig generalize = { "generalize", ZEND_ACC_PUBLIC, 1, generalize_args, 1, &generalize_return };
+inline constexpr sigtab::Sig generalize = { { 62 /* generalize */, 1, 0, 1, 1, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::NonGeneralizableTypeTrait

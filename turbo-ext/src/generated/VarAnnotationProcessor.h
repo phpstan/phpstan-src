@@ -24,13 +24,36 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("fileTypeMapper", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Type\\FileTypeMapper");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"fileTypeMapper\0" /* 0 */
+	"PHPStan\\Type\\FileTypeMapper\0" /* 15 */
+	"__construct\0" /* 43 */
+	"scope\0" /* 55 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 61 */
+	"variableNames\0" /* 92 */
+	"node\0" /* 106 */
+	"PhpParser\\Node\\Stmt\0" /* 111 */
+	"changed\0" /* 131 */
+	"false\0" /* 139 */
+	"\0" /* 145 */
+	"processVarAnnotation"; /* 146 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 15), /* __construct $fileTypeMapper */
+	reg::packed(55, 0, 61), /* processVarAnnotation $scope */
+	reg::packed(92, MAY_BE_ARRAY), /* processVarAnnotation $variableNames */
+	reg::packed(106, 0, 111), /* processVarAnnotation $node */
+	reg::packed(131, MAY_BE_BOOL, reg::NoString, true, false, 139), /* processVarAnnotation $changed */
+	reg::packed(145, 0, 61), /* processVarAnnotation return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("fileTypeMapper", 0, "PHPStan\\Type\\FileTypeMapper") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 1, __construct_args, 1, nullptr };
-inline constexpr reg::Arg processVarAnnotation_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("variableNames", MAY_BE_ARRAY), reg::typed("node", 0, "PhpParser\\Node\\Stmt"), reg::typed("changed", MAY_BE_BOOL, nullptr, true, false, "false") };
-inline constexpr reg::Arg processVarAnnotation_return = reg::typed("", 0, "PHPStan\\Analyser\\MutatingScope");
-inline constexpr reg::Sig processVarAnnotation = { "processVarAnnotation", ZEND_ACC_PUBLIC, 3, processVarAnnotation_args, 4, &processVarAnnotation_return };
+inline constexpr sigtab::Sig __construct = { { 43 /* __construct */, 1, 0, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processVarAnnotation = { { 146 /* processVarAnnotation */, 3, 1, 4, 5, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::VarAnnotationProcessor

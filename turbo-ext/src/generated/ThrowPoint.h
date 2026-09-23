@@ -34,30 +34,72 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("fromThrowExpr", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_BOOL);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"scope\0" /* 0 */
+	"PHPStan\\Analyser\\Scope\0" /* 6 */
+	"type\0" /* 29 */
+	"PHPStan\\Type\\Type\0" /* 34 */
+	"node\0" /* 52 */
+	"PhpParser\\Node\0" /* 57 */
+	"explicit\0" /* 72 */
+	"canContainAnyThrowable\0" /* 81 */
+	"fromThrowExpr\0" /* 104 */
+	"false\0" /* 118 */
+	"__construct\0" /* 124 */
+	"\0" /* 136 */
+	"PHPStan\\Analyser\\ThrowPoint\0" /* 137 */
+	"createExplicit\0" /* 165 */
+	"null\0" /* 180 */
+	"createImplicit\0" /* 185 */
+	"getScope\0" /* 200 */
+	"getType\0" /* 209 */
+	"getNode\0" /* 217 */
+	"isExplicit\0" /* 225 */
+	"isFromThrowExpr\0" /* 236 */
+	"catchType\0" /* 252 */
+	"subtractCatchType"; /* 262 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 6), /* __construct $scope */
+	reg::packed(29, 0, 34), /* __construct $type */
+	reg::packed(52, 0, 57), /* __construct $node */
+	reg::packed(72, MAY_BE_BOOL), /* __construct $explicit */
+	reg::packed(81, MAY_BE_BOOL), /* __construct $canContainAnyThrowable */
+	reg::packed(104, MAY_BE_BOOL, reg::NoString, false, false, 118), /* __construct $fromThrowExpr */
+	reg::packed(0, 0, 6), /* createExplicit $scope */
+	reg::packed(29, 0, 34), /* createExplicit $type */
+	reg::packed(52, 0, 57), /* createExplicit $node */
+	reg::packed(81, MAY_BE_BOOL), /* createExplicit $canContainAnyThrowable */
+	reg::packed(104, MAY_BE_BOOL, reg::NoString, false, false, 118), /* createExplicit $fromThrowExpr */
+	reg::packed(136, 0, 137), /* createExplicit return */
+	reg::packed(0, 0, 6), /* createImplicit $scope */
+	reg::packed(52, 0, 57), /* createImplicit $node */
+	reg::packed(29, MAY_BE_NULL, 34, false, false, 180), /* createImplicit $type */
+	reg::packed(136, 0, 137), /* createImplicit return */
+	reg::packed(136, 0, 6), /* getScope return */
+	reg::packed(136, 0, 34), /* getType return */
+	reg::packed(136, MAY_BE_BOOL), /* isExplicit return */
+	reg::packed(136, MAY_BE_BOOL), /* canContainAnyThrowable return */
+	reg::packed(136, MAY_BE_BOOL), /* isFromThrowExpr return */
+	reg::packed(252, 0, 34), /* subtractCatchType $catchType */
+	reg::packed(136, 0, 137), /* subtractCatchType return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\Scope"), reg::typed("type", 0, "PHPStan\\Type\\Type"), reg::typed("node", 0, "PhpParser\\Node"), reg::typed("explicit", MAY_BE_BOOL), reg::typed("canContainAnyThrowable", MAY_BE_BOOL), reg::typed("fromThrowExpr", MAY_BE_BOOL, nullptr, false, false, "false") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PRIVATE, 5, __construct_args, 6, nullptr };
-inline constexpr reg::Arg createExplicit_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\Scope"), reg::typed("type", 0, "PHPStan\\Type\\Type"), reg::typed("node", 0, "PhpParser\\Node"), reg::typed("canContainAnyThrowable", MAY_BE_BOOL), reg::typed("fromThrowExpr", MAY_BE_BOOL, nullptr, false, false, "false") };
-inline constexpr reg::Arg createExplicit_return = reg::typed("", 0, "PHPStan\\Analyser\\ThrowPoint");
-inline constexpr reg::Sig createExplicit = { "createExplicit", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 4, createExplicit_args, 5, &createExplicit_return };
-inline constexpr reg::Arg createImplicit_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\Scope"), reg::typed("node", 0, "PhpParser\\Node"), reg::typed("type", MAY_BE_NULL, "PHPStan\\Type\\Type", false, false, "null") };
-inline constexpr reg::Arg createImplicit_return = reg::typed("", 0, "PHPStan\\Analyser\\ThrowPoint");
-inline constexpr reg::Sig createImplicit = { "createImplicit", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, createImplicit_args, 3, &createImplicit_return };
-inline constexpr reg::Arg getScope_return = reg::typed("", 0, "PHPStan\\Analyser\\Scope");
-inline constexpr reg::Sig getScope = { "getScope", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getScope_return };
-inline constexpr reg::Arg getType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getType = { "getType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getType_return };
-inline constexpr reg::Sig getNode = { "getNode", ZEND_ACC_PUBLIC, 0, nullptr, 0, nullptr };
-inline constexpr reg::Arg isExplicit_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isExplicit = { "isExplicit", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isExplicit_return };
-inline constexpr reg::Arg canContainAnyThrowable_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig canContainAnyThrowable = { "canContainAnyThrowable", ZEND_ACC_PUBLIC, 0, nullptr, 0, &canContainAnyThrowable_return };
-inline constexpr reg::Arg isFromThrowExpr_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isFromThrowExpr = { "isFromThrowExpr", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isFromThrowExpr_return };
-inline constexpr reg::Arg subtractCatchType_args[] = { reg::typed("catchType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg subtractCatchType_return = reg::typed("", 0, "PHPStan\\Analyser\\ThrowPoint");
-inline constexpr reg::Sig subtractCatchType = { "subtractCatchType", ZEND_ACC_PUBLIC, 1, subtractCatchType_args, 1, &subtractCatchType_return };
+inline constexpr sigtab::Sig __construct = { { 124 /* __construct */, 5, 0, 6, reg::NoArg, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig createExplicit = { { 165 /* createExplicit */, 4, 6, 5, 11, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createImplicit = { { 185 /* createImplicit */, 2, 12, 3, 15, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig getScope = { { 200 /* getScope */, 0, 16, 0, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getType = { { 209 /* getType */, 0, 17, 0, 17, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getNode = { { 217 /* getNode */, 0, 18, 0, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isExplicit = { { 225 /* isExplicit */, 0, 18, 0, 18, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig canContainAnyThrowable = { { 81 /* canContainAnyThrowable */, 0, 19, 0, 19, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isFromThrowExpr = { { 236 /* isFromThrowExpr */, 0, 20, 0, 20, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig subtractCatchType = { { 262 /* subtractCatchType */, 1, 21, 1, 22, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ThrowPoint

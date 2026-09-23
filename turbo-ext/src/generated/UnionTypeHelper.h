@@ -19,14 +19,29 @@ inline void declareProperties(reg::Class &cls)
 	(void) cls;
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"types\0" /* 0 */
+	"\0" /* 6 */
+	"sortTypes\0" /* 7 */
+	"a\0" /* 17 */
+	"b\0" /* 19 */
+	"compareStrings"; /* 21 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_ARRAY), /* sortTypes $types */
+	reg::packed(6, MAY_BE_ARRAY), /* sortTypes return */
+	reg::packed(17, MAY_BE_STRING), /* compareStrings $a */
+	reg::packed(19, MAY_BE_STRING), /* compareStrings $b */
+	reg::packed(6, MAY_BE_LONG), /* compareStrings return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg sortTypes_args[] = { reg::typed("types", MAY_BE_ARRAY) };
-inline constexpr reg::Arg sortTypes_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig sortTypes = { "sortTypes", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, sortTypes_args, 1, &sortTypes_return };
-inline constexpr reg::Arg compareStrings_args[] = { reg::typed("a", MAY_BE_STRING), reg::typed("b", MAY_BE_STRING) };
-inline constexpr reg::Arg compareStrings_return = reg::typed("", MAY_BE_LONG);
-inline constexpr reg::Sig compareStrings = { "compareStrings", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 2, compareStrings_args, 2, &compareStrings_return };
+inline constexpr sigtab::Sig sortTypes = { { 7 /* sortTypes */, 1, 0, 1, 1, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig compareStrings = { { 21 /* compareStrings */, 2, 2, 2, 4, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::UnionTypeHelper

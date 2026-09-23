@@ -25,14 +25,28 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("isFirstStatement", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedBool, 1);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"nodes\0" /* 0 */
+	"\0" /* 6 */
+	"beforeTraverse\0" /* 7 */
+	"node\0" /* 22 */
+	"PhpParser\\Node\0" /* 27 */
+	"enterNode"; /* 42 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_ARRAY), /* beforeTraverse $nodes */
+	reg::packed(6, MAY_BE_NULL | MAY_BE_ARRAY), /* beforeTraverse return */
+	reg::packed(22, 0, 27), /* enterNode $node */
+	reg::packed(6, MAY_BE_NULL, 27), /* enterNode return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg beforeTraverse_args[] = { reg::typed("nodes", MAY_BE_ARRAY) };
-inline constexpr reg::Arg beforeTraverse_return = reg::typed("", MAY_BE_NULL | MAY_BE_ARRAY);
-inline constexpr reg::Sig beforeTraverse = { "beforeTraverse", ZEND_ACC_PUBLIC, 1, beforeTraverse_args, 1, &beforeTraverse_return };
-inline constexpr reg::Arg enterNode_args[] = { reg::typed("node", 0, "PhpParser\\Node") };
-inline constexpr reg::Arg enterNode_return = reg::typed("", MAY_BE_NULL, "PhpParser\\Node");
-inline constexpr reg::Sig enterNode = { "enterNode", ZEND_ACC_PUBLIC, 1, enterNode_args, 1, &enterNode_return };
+inline constexpr sigtab::Sig beforeTraverse = { { 7 /* beforeTraverse */, 1, 0, 1, 1, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig enterNode = { { 42 /* enterNode */, 1, 2, 1, 3, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::DeclarePositionVisitor

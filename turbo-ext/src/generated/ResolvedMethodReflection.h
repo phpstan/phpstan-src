@@ -39,69 +39,124 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("callSiteVarianceMap", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Type\\Generic\\TemplateTypeVarianceMap");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"reflection\0" /* 0 */
+	"PHPStan\\Reflection\\ExtendedMethodReflection\0" /* 11 */
+	"resolvedTemplateTypeMap\0" /* 55 */
+	"PHPStan\\Type\\Generic\\TemplateTypeMap\0" /* 79 */
+	"callSiteVarianceMap\0" /* 116 */
+	"PHPStan\\Type\\Generic\\TemplateTypeVarianceMap\0" /* 136 */
+	"__construct\0" /* 181 */
+	"\0" /* 193 */
+	"getName\0" /* 194 */
+	"PHPStan\\Reflection\\ClassMemberReflection\0" /* 202 */
+	"getPrototype\0" /* 243 */
+	"getVariants\0" /* 256 */
+	"PHPStan\\Reflection\\ExtendedParametersAcceptor\0" /* 268 */
+	"getOnlyVariant\0" /* 314 */
+	"getNamedArgumentsVariants\0" /* 329 */
+	"variants\0" /* 355 */
+	"resolveVariants\0" /* 364 */
+	"PHPStan\\Reflection\\ClassReflection\0" /* 380 */
+	"getDeclaringClass\0" /* 415 */
+	"isStatic\0" /* 433 */
+	"isPrivate\0" /* 442 */
+	"isPublic\0" /* 452 */
+	"getDocComment\0" /* 461 */
+	"PHPStan\\TrinaryLogic\0" /* 475 */
+	"isDeprecated\0" /* 496 */
+	"getDeprecatedDescription\0" /* 509 */
+	"isFinal\0" /* 534 */
+	"isFinalByKeyword\0" /* 542 */
+	"isInternal\0" /* 559 */
+	"isBuiltin\0" /* 570 */
+	"PHPStan\\Type\\Type\0" /* 580 */
+	"getThrowType\0" /* 598 */
+	"hasSideEffects\0" /* 611 */
+	"isPure\0" /* 626 */
+	"getPureUnlessCallableIsImpureParameters\0" /* 633 */
+	"PHPStan\\Reflection\\Assertions\0" /* 673 */
+	"getAsserts\0" /* 703 */
+	"acceptsNamedArguments\0" /* 714 */
+	"getSelfOutType\0" /* 736 */
+	"returnsByReference\0" /* 751 */
+	"isAbstract\0" /* 770 */
+	"getAttributes\0" /* 781 */
+	"mustUseReturnValue\0" /* 795 */
+	"PHPStan\\PhpDoc\\ResolvedPhpDocBlock\0" /* 814 */
+	"getResolvedPhpDoc"; /* 849 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 11), /* __construct $reflection */
+	reg::packed(55, 0, 79), /* __construct $resolvedTemplateTypeMap */
+	reg::packed(116, 0, 136), /* __construct $callSiteVarianceMap */
+	reg::packed(193, MAY_BE_STRING), /* getName return */
+	reg::packed(193, 0, 202), /* getPrototype return */
+	reg::packed(193, MAY_BE_ARRAY), /* getVariants return */
+	reg::packed(193, 0, 268), /* getOnlyVariant return */
+	reg::packed(193, MAY_BE_NULL | MAY_BE_ARRAY), /* getNamedArgumentsVariants return */
+	reg::packed(355, MAY_BE_ARRAY), /* resolveVariants $variants */
+	reg::packed(193, MAY_BE_ARRAY), /* resolveVariants return */
+	reg::packed(193, 0, 380), /* getDeclaringClass return */
+	reg::packed(193, MAY_BE_BOOL), /* isStatic return */
+	reg::packed(193, MAY_BE_BOOL), /* isPrivate return */
+	reg::packed(193, MAY_BE_BOOL), /* isPublic return */
+	reg::packed(193, MAY_BE_NULL | MAY_BE_STRING), /* getDocComment return */
+	reg::packed(193, 0, 475), /* isDeprecated return */
+	reg::packed(193, MAY_BE_NULL | MAY_BE_STRING), /* getDeprecatedDescription return */
+	reg::packed(193, 0, 475), /* isFinal return */
+	reg::packed(193, 0, 475), /* isFinalByKeyword return */
+	reg::packed(193, 0, 475), /* isInternal return */
+	reg::packed(193, 0, 475), /* isBuiltin return */
+	reg::packed(193, MAY_BE_NULL, 580), /* getThrowType return */
+	reg::packed(193, 0, 475), /* hasSideEffects return */
+	reg::packed(193, 0, 475), /* isPure return */
+	reg::packed(193, MAY_BE_ARRAY), /* getPureUnlessCallableIsImpureParameters return */
+	reg::packed(193, 0, 673), /* getAsserts return */
+	reg::packed(193, 0, 475), /* acceptsNamedArguments return */
+	reg::packed(193, MAY_BE_NULL, 580), /* getSelfOutType return */
+	reg::packed(193, 0, 475), /* returnsByReference return */
+	reg::packed(193, 0, 475), /* isAbstract return */
+	reg::packed(193, MAY_BE_ARRAY), /* getAttributes return */
+	reg::packed(193, 0, 475), /* mustUseReturnValue return */
+	reg::packed(193, MAY_BE_NULL, 814), /* getResolvedPhpDoc return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("reflection", 0, "PHPStan\\Reflection\\ExtendedMethodReflection"), reg::typed("resolvedTemplateTypeMap", 0, "PHPStan\\Type\\Generic\\TemplateTypeMap"), reg::typed("callSiteVarianceMap", 0, "PHPStan\\Type\\Generic\\TemplateTypeVarianceMap") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 3, __construct_args, 3, nullptr };
-inline constexpr reg::Arg getName_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig getName = { "getName", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getName_return };
-inline constexpr reg::Arg getPrototype_return = reg::typed("", 0, "PHPStan\\Reflection\\ClassMemberReflection");
-inline constexpr reg::Sig getPrototype = { "getPrototype", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getPrototype_return };
-inline constexpr reg::Arg getVariants_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getVariants = { "getVariants", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getVariants_return };
-inline constexpr reg::Arg getOnlyVariant_return = reg::typed("", 0, "PHPStan\\Reflection\\ExtendedParametersAcceptor");
-inline constexpr reg::Sig getOnlyVariant = { "getOnlyVariant", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getOnlyVariant_return };
-inline constexpr reg::Arg getNamedArgumentsVariants_return = reg::typed("", MAY_BE_NULL | MAY_BE_ARRAY);
-inline constexpr reg::Sig getNamedArgumentsVariants = { "getNamedArgumentsVariants", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getNamedArgumentsVariants_return };
-inline constexpr reg::Arg resolveVariants_args[] = { reg::typed("variants", MAY_BE_ARRAY) };
-inline constexpr reg::Arg resolveVariants_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig resolveVariants = { "resolveVariants", ZEND_ACC_PRIVATE, 1, resolveVariants_args, 1, &resolveVariants_return };
-inline constexpr reg::Arg getDeclaringClass_return = reg::typed("", 0, "PHPStan\\Reflection\\ClassReflection");
-inline constexpr reg::Sig getDeclaringClass = { "getDeclaringClass", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getDeclaringClass_return };
-inline constexpr reg::Arg isStatic_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isStatic = { "isStatic", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isStatic_return };
-inline constexpr reg::Arg isPrivate_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isPrivate = { "isPrivate", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isPrivate_return };
-inline constexpr reg::Arg isPublic_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isPublic = { "isPublic", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isPublic_return };
-inline constexpr reg::Arg getDocComment_return = reg::typed("", MAY_BE_NULL | MAY_BE_STRING);
-inline constexpr reg::Sig getDocComment = { "getDocComment", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getDocComment_return };
-inline constexpr reg::Arg isDeprecated_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isDeprecated = { "isDeprecated", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isDeprecated_return };
-inline constexpr reg::Arg getDeprecatedDescription_return = reg::typed("", MAY_BE_NULL | MAY_BE_STRING);
-inline constexpr reg::Sig getDeprecatedDescription = { "getDeprecatedDescription", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getDeprecatedDescription_return };
-inline constexpr reg::Arg isFinal_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isFinal = { "isFinal", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isFinal_return };
-inline constexpr reg::Arg isFinalByKeyword_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isFinalByKeyword = { "isFinalByKeyword", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isFinalByKeyword_return };
-inline constexpr reg::Arg isInternal_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isInternal = { "isInternal", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isInternal_return };
-inline constexpr reg::Arg isBuiltin_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isBuiltin = { "isBuiltin", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isBuiltin_return };
-inline constexpr reg::Arg getThrowType_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getThrowType = { "getThrowType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getThrowType_return };
-inline constexpr reg::Arg hasSideEffects_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig hasSideEffects = { "hasSideEffects", ZEND_ACC_PUBLIC, 0, nullptr, 0, &hasSideEffects_return };
-inline constexpr reg::Arg isPure_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isPure = { "isPure", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isPure_return };
-inline constexpr reg::Arg getPureUnlessCallableIsImpureParameters_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getPureUnlessCallableIsImpureParameters = { "getPureUnlessCallableIsImpureParameters", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getPureUnlessCallableIsImpureParameters_return };
-inline constexpr reg::Arg getAsserts_return = reg::typed("", 0, "PHPStan\\Reflection\\Assertions");
-inline constexpr reg::Sig getAsserts = { "getAsserts", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getAsserts_return };
-inline constexpr reg::Arg acceptsNamedArguments_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig acceptsNamedArguments = { "acceptsNamedArguments", ZEND_ACC_PUBLIC, 0, nullptr, 0, &acceptsNamedArguments_return };
-inline constexpr reg::Arg getSelfOutType_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getSelfOutType = { "getSelfOutType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getSelfOutType_return };
-inline constexpr reg::Arg returnsByReference_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig returnsByReference = { "returnsByReference", ZEND_ACC_PUBLIC, 0, nullptr, 0, &returnsByReference_return };
-inline constexpr reg::Arg isAbstract_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isAbstract = { "isAbstract", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isAbstract_return };
-inline constexpr reg::Arg getAttributes_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getAttributes = { "getAttributes", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getAttributes_return };
-inline constexpr reg::Arg mustUseReturnValue_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig mustUseReturnValue = { "mustUseReturnValue", ZEND_ACC_PUBLIC, 0, nullptr, 0, &mustUseReturnValue_return };
-inline constexpr reg::Arg getResolvedPhpDoc_return = reg::typed("", MAY_BE_NULL, "PHPStan\\PhpDoc\\ResolvedPhpDocBlock");
-inline constexpr reg::Sig getResolvedPhpDoc = { "getResolvedPhpDoc", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getResolvedPhpDoc_return };
+inline constexpr sigtab::Sig __construct = { { 181 /* __construct */, 3, 0, 3, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getName = { { 194 /* getName */, 0, 3, 0, 3, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getPrototype = { { 243 /* getPrototype */, 0, 4, 0, 4, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getVariants = { { 256 /* getVariants */, 0, 5, 0, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getOnlyVariant = { { 314 /* getOnlyVariant */, 0, 6, 0, 6, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getNamedArgumentsVariants = { { 329 /* getNamedArgumentsVariants */, 0, 7, 0, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig resolveVariants = { { 364 /* resolveVariants */, 1, 8, 1, 9, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getDeclaringClass = { { 415 /* getDeclaringClass */, 0, 10, 0, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isStatic = { { 433 /* isStatic */, 0, 11, 0, 11, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isPrivate = { { 442 /* isPrivate */, 0, 12, 0, 12, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isPublic = { { 452 /* isPublic */, 0, 13, 0, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getDocComment = { { 461 /* getDocComment */, 0, 14, 0, 14, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isDeprecated = { { 496 /* isDeprecated */, 0, 15, 0, 15, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getDeprecatedDescription = { { 509 /* getDeprecatedDescription */, 0, 16, 0, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isFinal = { { 534 /* isFinal */, 0, 17, 0, 17, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isFinalByKeyword = { { 542 /* isFinalByKeyword */, 0, 18, 0, 18, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isInternal = { { 559 /* isInternal */, 0, 19, 0, 19, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isBuiltin = { { 570 /* isBuiltin */, 0, 20, 0, 20, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getThrowType = { { 598 /* getThrowType */, 0, 21, 0, 21, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasSideEffects = { { 611 /* hasSideEffects */, 0, 22, 0, 22, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isPure = { { 626 /* isPure */, 0, 23, 0, 23, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getPureUnlessCallableIsImpureParameters = { { 633 /* getPureUnlessCallableIsImpureParameters */, 0, 24, 0, 24, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getAsserts = { { 703 /* getAsserts */, 0, 25, 0, 25, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig acceptsNamedArguments = { { 714 /* acceptsNamedArguments */, 0, 26, 0, 26, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getSelfOutType = { { 736 /* getSelfOutType */, 0, 27, 0, 27, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig returnsByReference = { { 751 /* returnsByReference */, 0, 28, 0, 28, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isAbstract = { { 770 /* isAbstract */, 0, 29, 0, 29, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getAttributes = { { 781 /* getAttributes */, 0, 30, 0, 30, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig mustUseReturnValue = { { 795 /* mustUseReturnValue */, 0, 31, 0, 31, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getResolvedPhpDoc = { { 849 /* getResolvedPhpDoc */, 0, 32, 0, 32, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ResolvedMethodReflection

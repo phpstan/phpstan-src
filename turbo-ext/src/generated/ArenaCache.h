@@ -19,36 +19,65 @@ inline void declareProperties(reg::Class &cls)
 	(void) cls;
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"runId\0" /* 0 */
+	"\0" /* 6 */
+	"create\0" /* 7 */
+	"name\0" /* 14 */
+	"attach\0" /* 19 */
+	"unlinkName\0" /* 26 */
+	"destroy\0" /* 37 */
+	"key\0" /* 45 */
+	"hasRecord\0" /* 49 */
+	"lookup\0" /* 59 */
+	"value\0" /* 66 */
+	"publish\0" /* 72 */
+	"recordKey\0" /* 80 */
+	"entryKey\0" /* 90 */
+	"lookupHash\0" /* 99 */
+	"lookupHashAll\0" /* 110 */
+	"entries\0" /* 124 */
+	"publishHash"; /* 132 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_STRING), /* create $runId */
+	reg::packed(6, MAY_BE_NULL | MAY_BE_STRING), /* create return */
+	reg::packed(14, MAY_BE_STRING), /* attach $name */
+	reg::packed(6, MAY_BE_BOOL), /* attach return */
+	reg::packed(6, MAY_BE_VOID), /* unlinkName return */
+	reg::packed(6, MAY_BE_VOID), /* destroy return */
+	reg::packed(45, MAY_BE_STRING), /* hasRecord $key */
+	reg::packed(6, MAY_BE_BOOL), /* hasRecord return */
+	reg::packed(45, MAY_BE_STRING), /* lookup $key */
+	reg::packed(6, MAY_BE_ANY), /* lookup return */
+	reg::packed(45, MAY_BE_STRING), /* publish $key */
+	reg::packed(66, 0), /* publish $value */
+	reg::packed(6, MAY_BE_VOID), /* publish return */
+	reg::packed(80, MAY_BE_STRING), /* lookupHash $recordKey */
+	reg::packed(90, MAY_BE_STRING), /* lookupHash $entryKey */
+	reg::packed(6, MAY_BE_ANY), /* lookupHash return */
+	reg::packed(80, MAY_BE_STRING), /* lookupHashAll $recordKey */
+	reg::packed(6, MAY_BE_NULL | MAY_BE_ARRAY), /* lookupHashAll return */
+	reg::packed(80, MAY_BE_STRING), /* publishHash $recordKey */
+	reg::packed(124, MAY_BE_ARRAY), /* publishHash $entries */
+	reg::packed(6, MAY_BE_VOID), /* publishHash return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg create_args[] = { reg::typed("runId", MAY_BE_STRING) };
-inline constexpr reg::Arg create_return = reg::typed("", MAY_BE_NULL | MAY_BE_STRING);
-inline constexpr reg::Sig create = { "create", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, create_args, 1, &create_return };
-inline constexpr reg::Arg attach_args[] = { reg::typed("name", MAY_BE_STRING) };
-inline constexpr reg::Arg attach_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig attach = { "attach", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, attach_args, 1, &attach_return };
-inline constexpr reg::Arg unlinkName_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig unlinkName = { "unlinkName", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &unlinkName_return };
-inline constexpr reg::Arg destroy_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig destroy = { "destroy", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &destroy_return };
-inline constexpr reg::Arg hasRecord_args[] = { reg::typed("key", MAY_BE_STRING) };
-inline constexpr reg::Arg hasRecord_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig hasRecord = { "hasRecord", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, hasRecord_args, 1, &hasRecord_return };
-inline constexpr reg::Arg lookup_args[] = { reg::typed("key", MAY_BE_STRING) };
-inline constexpr reg::Arg lookup_return = reg::typed("", MAY_BE_ANY);
-inline constexpr reg::Sig lookup = { "lookup", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, lookup_args, 1, &lookup_return };
-inline constexpr reg::Arg publish_args[] = { reg::typed("key", MAY_BE_STRING), reg::typed("value", 0) };
-inline constexpr reg::Arg publish_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig publish = { "publish", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, publish_args, 2, &publish_return };
-inline constexpr reg::Arg lookupHash_args[] = { reg::typed("recordKey", MAY_BE_STRING), reg::typed("entryKey", MAY_BE_STRING) };
-inline constexpr reg::Arg lookupHash_return = reg::typed("", MAY_BE_ANY);
-inline constexpr reg::Sig lookupHash = { "lookupHash", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, lookupHash_args, 2, &lookupHash_return };
-inline constexpr reg::Arg lookupHashAll_args[] = { reg::typed("recordKey", MAY_BE_STRING) };
-inline constexpr reg::Arg lookupHashAll_return = reg::typed("", MAY_BE_NULL | MAY_BE_ARRAY);
-inline constexpr reg::Sig lookupHashAll = { "lookupHashAll", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, lookupHashAll_args, 1, &lookupHashAll_return };
-inline constexpr reg::Arg publishHash_args[] = { reg::typed("recordKey", MAY_BE_STRING), reg::typed("entries", MAY_BE_ARRAY) };
-inline constexpr reg::Arg publishHash_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig publishHash = { "publishHash", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, publishHash_args, 2, &publishHash_return };
+inline constexpr sigtab::Sig create = { { 7 /* create */, 1, 0, 1, 1, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig attach = { { 19 /* attach */, 1, 2, 1, 3, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig unlinkName = { { 26 /* unlinkName */, 0, 4, 0, 4, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig destroy = { { 37 /* destroy */, 0, 5, 0, 5, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig hasRecord = { { 49 /* hasRecord */, 1, 6, 1, 7, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig lookup = { { 59 /* lookup */, 1, 8, 1, 9, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig publish = { { 72 /* publish */, 2, 10, 2, 12, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig lookupHash = { { 99 /* lookupHash */, 2, 13, 2, 15, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig lookupHashAll = { { 110 /* lookupHashAll */, 1, 16, 1, 17, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig publishHash = { { 132 /* publishHash */, 2, 18, 2, 20, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::ArenaCache

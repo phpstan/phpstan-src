@@ -19,20 +19,36 @@ inline void declareProperties(reg::Class &cls)
 	(void) cls;
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"\0" /* 0 */
+	"PHPStan\\Type\\Type\0" /* 1 */
+	"falsey\0" /* 19 */
+	"truthy\0" /* 26 */
+	"argv\0" /* 33 */
+	"argc\0" /* 38 */
+	"generalOffsetAccessibleType\0" /* 43 */
+	"intOffsetAccessibleType"; /* 71 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 1), /* falsey return */
+	reg::packed(0, 0, 1), /* truthy return */
+	reg::packed(0, 0, 1), /* argv return */
+	reg::packed(0, 0, 1), /* argc return */
+	reg::packed(0, 0, 1), /* generalOffsetAccessibleType return */
+	reg::packed(0, 0, 1), /* intOffsetAccessibleType return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg falsey_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig falsey = { "falsey", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &falsey_return };
-inline constexpr reg::Arg truthy_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig truthy = { "truthy", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &truthy_return };
-inline constexpr reg::Arg argv_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig argv = { "argv", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &argv_return };
-inline constexpr reg::Arg argc_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig argc = { "argc", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &argc_return };
-inline constexpr reg::Arg generalOffsetAccessibleType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig generalOffsetAccessibleType = { "generalOffsetAccessibleType", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &generalOffsetAccessibleType_return };
-inline constexpr reg::Arg intOffsetAccessibleType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig intOffsetAccessibleType = { "intOffsetAccessibleType", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &intOffsetAccessibleType_return };
+inline constexpr sigtab::Sig falsey = { { 19 /* falsey */, 0, 0, 0, 0, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig truthy = { { 26 /* truthy */, 0, 1, 0, 1, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig argv = { { 33 /* argv */, 0, 2, 0, 2, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig argc = { { 38 /* argc */, 0, 3, 0, 3, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig generalOffsetAccessibleType = { { 43 /* generalOffsetAccessibleType */, 0, 4, 0, 4, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig intOffsetAccessibleType = { { 71 /* intOffsetAccessibleType */, 0, 5, 0, 5, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::StaticTypeFactory

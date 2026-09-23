@@ -26,13 +26,44 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("argumentsHandler", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ArgumentsHandler");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"reflectionProvider\0" /* 0 */
+	"PHPStan\\Reflection\\ReflectionProvider\0" /* 19 */
+	"argumentsHandler\0" /* 57 */
+	"PHPStan\\Analyser\\ArgumentsHandler\0" /* 74 */
+	"__construct\0" /* 108 */
+	"nodeScopeResolver\0" /* 120 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 138 */
+	"stmt\0" /* 173 */
+	"PhpParser\\Node\\Stmt\0" /* 178 */
+	"attrGroups\0" /* 198 */
+	"scope\0" /* 209 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 215 */
+	"storage\0" /* 246 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 254 */
+	"nodeCallback\0" /* 295 */
+	"\0" /* 308 */
+	"processAttributeGroups"; /* 309 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 19), /* __construct $reflectionProvider */
+	reg::packed(57, 0, 74), /* __construct $argumentsHandler */
+	reg::packed(120, 0, 138), /* processAttributeGroups $nodeScopeResolver */
+	reg::packed(173, 0, 178), /* processAttributeGroups $stmt */
+	reg::packed(198, MAY_BE_ARRAY), /* processAttributeGroups $attrGroups */
+	reg::packed(209, 0, 215), /* processAttributeGroups $scope */
+	reg::packed(246, 0, 254), /* processAttributeGroups $storage */
+	reg::packed(295, MAY_BE_CALLABLE), /* processAttributeGroups $nodeCallback */
+	reg::packed(308, MAY_BE_VOID), /* processAttributeGroups return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("reflectionProvider", 0, "PHPStan\\Reflection\\ReflectionProvider"), reg::typed("argumentsHandler", 0, "PHPStan\\Analyser\\ArgumentsHandler") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 2, __construct_args, 2, nullptr };
-inline constexpr reg::Arg processAttributeGroups_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("stmt", 0, "PhpParser\\Node\\Stmt"), reg::typed("attrGroups", MAY_BE_ARRAY), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("nodeCallback", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg processAttributeGroups_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig processAttributeGroups = { "processAttributeGroups", ZEND_ACC_PUBLIC, 6, processAttributeGroups_args, 6, &processAttributeGroups_return };
+inline constexpr sigtab::Sig __construct = { { 108 /* __construct */, 2, 0, 2, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processAttributeGroups = { { 309 /* processAttributeGroups */, 6, 2, 6, 8, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::AttributesHandler

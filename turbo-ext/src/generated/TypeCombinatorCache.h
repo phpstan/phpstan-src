@@ -19,19 +19,37 @@ inline void declareProperties(reg::Class &cls)
 	(void) cls;
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"types\0" /* 0 */
+	"PHPStan\\Type\\Type\0" /* 6 */
+	"\0" /* 24 */
+	"union\0" /* 25 */
+	"intersect\0" /* 31 */
+	"fromType\0" /* 41 */
+	"typeToRemove\0" /* 50 */
+	"remove\0" /* 63 */
+	"clearCache"; /* 70 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 6, false, true), /* union $types */
+	reg::packed(24, 0, 6), /* union return */
+	reg::packed(0, 0, 6, false, true), /* intersect $types */
+	reg::packed(24, 0, 6), /* intersect return */
+	reg::packed(41, 0, 6), /* remove $fromType */
+	reg::packed(50, 0, 6), /* remove $typeToRemove */
+	reg::packed(24, 0, 6), /* remove return */
+	reg::packed(24, MAY_BE_VOID), /* clearCache return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg union__args[] = { reg::typed("types", 0, "PHPStan\\Type\\Type", false, true) };
-inline constexpr reg::Arg union__return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig union_ = { "union", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, union__args, 1, &union__return };
-inline constexpr reg::Arg intersect_args[] = { reg::typed("types", 0, "PHPStan\\Type\\Type", false, true) };
-inline constexpr reg::Arg intersect_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig intersect = { "intersect", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, intersect_args, 1, &intersect_return };
-inline constexpr reg::Arg remove_args[] = { reg::typed("fromType", 0, "PHPStan\\Type\\Type"), reg::typed("typeToRemove", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg remove_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig remove = { "remove", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, remove_args, 2, &remove_return };
-inline constexpr reg::Arg clearCache_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig clearCache = { "clearCache", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &clearCache_return };
+inline constexpr sigtab::Sig union_ = { { 25 /* union */, 0, 0, 1, 1, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig intersect = { { 31 /* intersect */, 0, 2, 1, 3, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig remove = { { 63 /* remove */, 2, 4, 2, 6, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig clearCache = { { 70 /* clearCache */, 0, 7, 0, 7, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::TypeCombinatorCache

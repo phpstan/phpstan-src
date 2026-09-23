@@ -8,26 +8,48 @@
 
 namespace ptdecl::UndecidedComparisonTypeTrait {
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"otherType\0" /* 0 */
+	"PHPStan\\Type\\Type\0" /* 10 */
+	"phpVersion\0" /* 28 */
+	"PHPStan\\Php\\PhpVersion\0" /* 39 */
+	"\0" /* 62 */
+	"PHPStan\\TrinaryLogic\0" /* 63 */
+	"isSmallerThan\0" /* 84 */
+	"isSmallerThanOrEqual\0" /* 98 */
+	"getSmallerType\0" /* 119 */
+	"getSmallerOrEqualType\0" /* 134 */
+	"getGreaterType\0" /* 156 */
+	"getGreaterOrEqualType"; /* 171 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 10), /* isSmallerThan $otherType */
+	reg::packed(28, 0, 39), /* isSmallerThan $phpVersion */
+	reg::packed(62, 0, 63), /* isSmallerThan return */
+	reg::packed(0, 0, 10), /* isSmallerThanOrEqual $otherType */
+	reg::packed(28, 0, 39), /* isSmallerThanOrEqual $phpVersion */
+	reg::packed(62, 0, 63), /* isSmallerThanOrEqual return */
+	reg::packed(28, 0, 39), /* getSmallerType $phpVersion */
+	reg::packed(62, 0, 10), /* getSmallerType return */
+	reg::packed(28, 0, 39), /* getSmallerOrEqualType $phpVersion */
+	reg::packed(62, 0, 10), /* getSmallerOrEqualType return */
+	reg::packed(28, 0, 39), /* getGreaterType $phpVersion */
+	reg::packed(62, 0, 10), /* getGreaterType return */
+	reg::packed(28, 0, 39), /* getGreaterOrEqualType $phpVersion */
+	reg::packed(62, 0, 10), /* getGreaterOrEqualType return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the trait declares itself */
 namespace sig {
-inline constexpr reg::Arg isSmallerThan_args[] = { reg::typed("otherType", 0, "PHPStan\\Type\\Type"), reg::typed("phpVersion", 0, "PHPStan\\Php\\PhpVersion") };
-inline constexpr reg::Arg isSmallerThan_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isSmallerThan = { "isSmallerThan", ZEND_ACC_PUBLIC, 2, isSmallerThan_args, 2, &isSmallerThan_return };
-inline constexpr reg::Arg isSmallerThanOrEqual_args[] = { reg::typed("otherType", 0, "PHPStan\\Type\\Type"), reg::typed("phpVersion", 0, "PHPStan\\Php\\PhpVersion") };
-inline constexpr reg::Arg isSmallerThanOrEqual_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isSmallerThanOrEqual = { "isSmallerThanOrEqual", ZEND_ACC_PUBLIC, 2, isSmallerThanOrEqual_args, 2, &isSmallerThanOrEqual_return };
-inline constexpr reg::Arg getSmallerType_args[] = { reg::typed("phpVersion", 0, "PHPStan\\Php\\PhpVersion") };
-inline constexpr reg::Arg getSmallerType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getSmallerType = { "getSmallerType", ZEND_ACC_PUBLIC, 1, getSmallerType_args, 1, &getSmallerType_return };
-inline constexpr reg::Arg getSmallerOrEqualType_args[] = { reg::typed("phpVersion", 0, "PHPStan\\Php\\PhpVersion") };
-inline constexpr reg::Arg getSmallerOrEqualType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getSmallerOrEqualType = { "getSmallerOrEqualType", ZEND_ACC_PUBLIC, 1, getSmallerOrEqualType_args, 1, &getSmallerOrEqualType_return };
-inline constexpr reg::Arg getGreaterType_args[] = { reg::typed("phpVersion", 0, "PHPStan\\Php\\PhpVersion") };
-inline constexpr reg::Arg getGreaterType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getGreaterType = { "getGreaterType", ZEND_ACC_PUBLIC, 1, getGreaterType_args, 1, &getGreaterType_return };
-inline constexpr reg::Arg getGreaterOrEqualType_args[] = { reg::typed("phpVersion", 0, "PHPStan\\Php\\PhpVersion") };
-inline constexpr reg::Arg getGreaterOrEqualType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getGreaterOrEqualType = { "getGreaterOrEqualType", ZEND_ACC_PUBLIC, 1, getGreaterOrEqualType_args, 1, &getGreaterOrEqualType_return };
+inline constexpr sigtab::Sig isSmallerThan = { { 84 /* isSmallerThan */, 2, 0, 2, 2, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isSmallerThanOrEqual = { { 98 /* isSmallerThanOrEqual */, 2, 3, 2, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getSmallerType = { { 119 /* getSmallerType */, 1, 6, 1, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getSmallerOrEqualType = { { 134 /* getSmallerOrEqualType */, 1, 8, 1, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getGreaterType = { { 156 /* getGreaterType */, 1, 10, 1, 11, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getGreaterOrEqualType = { { 171 /* getGreaterOrEqualType */, 1, 12, 1, 13, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::UndecidedComparisonTypeTrait

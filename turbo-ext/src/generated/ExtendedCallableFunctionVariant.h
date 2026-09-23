@@ -42,28 +42,83 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("isStatic", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_NULL, "PHPStan\\TrinaryLogic");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"templateTypeMap\0" /* 0 */
+	"PHPStan\\Type\\Generic\\TemplateTypeMap\0" /* 16 */
+	"resolvedTemplateTypeMap\0" /* 53 */
+	"parameters\0" /* 77 */
+	"isVariadic\0" /* 88 */
+	"returnType\0" /* 99 */
+	"PHPStan\\Type\\Type\0" /* 110 */
+	"phpDocReturnType\0" /* 128 */
+	"nativeReturnType\0" /* 145 */
+	"callSiteVarianceMap\0" /* 162 */
+	"PHPStan\\Type\\Generic\\TemplateTypeVarianceMap\0" /* 182 */
+	"throwPoints\0" /* 227 */
+	"isPure\0" /* 239 */
+	"PHPStan\\TrinaryLogic\0" /* 246 */
+	"impurePoints\0" /* 267 */
+	"invalidateExpressions\0" /* 280 */
+	"usedVariables\0" /* 302 */
+	"acceptsNamedArguments\0" /* 316 */
+	"mustUseReturnValue\0" /* 338 */
+	"assertions\0" /* 357 */
+	"PHPStan\\Reflection\\Assertions\0" /* 368 */
+	"null\0" /* 398 */
+	"isStatic\0" /* 403 */
+	"__construct\0" /* 412 */
+	"\0" /* 424 */
+	"getThrowPoints\0" /* 425 */
+	"getImpurePoints\0" /* 440 */
+	"getInvalidateExpressions\0" /* 456 */
+	"getUsedVariables\0" /* 481 */
+	"getAsserts\0" /* 498 */
+	"isStaticClosure"; /* 509 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 16), /* __construct $templateTypeMap */
+	reg::packed(53, MAY_BE_NULL, 16), /* __construct $resolvedTemplateTypeMap */
+	reg::packed(77, MAY_BE_ARRAY), /* __construct $parameters */
+	reg::packed(88, MAY_BE_BOOL), /* __construct $isVariadic */
+	reg::packed(99, 0, 110), /* __construct $returnType */
+	reg::packed(128, 0, 110), /* __construct $phpDocReturnType */
+	reg::packed(145, 0, 110), /* __construct $nativeReturnType */
+	reg::packed(162, MAY_BE_NULL, 182), /* __construct $callSiteVarianceMap */
+	reg::packed(227, MAY_BE_ARRAY), /* __construct $throwPoints */
+	reg::packed(239, 0, 246), /* __construct $isPure */
+	reg::packed(267, MAY_BE_ARRAY), /* __construct $impurePoints */
+	reg::packed(280, MAY_BE_ARRAY), /* __construct $invalidateExpressions */
+	reg::packed(302, MAY_BE_ARRAY), /* __construct $usedVariables */
+	reg::packed(316, 0, 246), /* __construct $acceptsNamedArguments */
+	reg::packed(338, 0, 246), /* __construct $mustUseReturnValue */
+	reg::packed(357, MAY_BE_NULL, 368, false, false, 398), /* __construct $assertions */
+	reg::packed(403, MAY_BE_NULL, 246, false, false, 398), /* __construct $isStatic */
+	reg::packed(424, MAY_BE_ARRAY), /* getThrowPoints return */
+	reg::packed(424, 0, 246), /* isPure return */
+	reg::packed(424, MAY_BE_ARRAY), /* getImpurePoints return */
+	reg::packed(424, MAY_BE_ARRAY), /* getInvalidateExpressions return */
+	reg::packed(424, MAY_BE_ARRAY), /* getUsedVariables return */
+	reg::packed(424, 0, 246), /* acceptsNamedArguments return */
+	reg::packed(424, 0, 246), /* mustUseReturnValue return */
+	reg::packed(424, 0, 368), /* getAsserts return */
+	reg::packed(424, 0, 246), /* isStaticClosure return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("templateTypeMap", 0, "PHPStan\\Type\\Generic\\TemplateTypeMap"), reg::typed("resolvedTemplateTypeMap", MAY_BE_NULL, "PHPStan\\Type\\Generic\\TemplateTypeMap"), reg::typed("parameters", MAY_BE_ARRAY), reg::typed("isVariadic", MAY_BE_BOOL), reg::typed("returnType", 0, "PHPStan\\Type\\Type"), reg::typed("phpDocReturnType", 0, "PHPStan\\Type\\Type"), reg::typed("nativeReturnType", 0, "PHPStan\\Type\\Type"), reg::typed("callSiteVarianceMap", MAY_BE_NULL, "PHPStan\\Type\\Generic\\TemplateTypeVarianceMap"), reg::typed("throwPoints", MAY_BE_ARRAY), reg::typed("isPure", 0, "PHPStan\\TrinaryLogic"), reg::typed("impurePoints", MAY_BE_ARRAY), reg::typed("invalidateExpressions", MAY_BE_ARRAY), reg::typed("usedVariables", MAY_BE_ARRAY), reg::typed("acceptsNamedArguments", 0, "PHPStan\\TrinaryLogic"), reg::typed("mustUseReturnValue", 0, "PHPStan\\TrinaryLogic"), reg::typed("assertions", MAY_BE_NULL, "PHPStan\\Reflection\\Assertions", false, false, "null"), reg::typed("isStatic", MAY_BE_NULL, "PHPStan\\TrinaryLogic", false, false, "null") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 15, __construct_args, 17, nullptr };
-inline constexpr reg::Arg getThrowPoints_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getThrowPoints = { "getThrowPoints", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getThrowPoints_return };
-inline constexpr reg::Arg isPure_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isPure = { "isPure", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isPure_return };
-inline constexpr reg::Arg getImpurePoints_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getImpurePoints = { "getImpurePoints", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getImpurePoints_return };
-inline constexpr reg::Arg getInvalidateExpressions_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getInvalidateExpressions = { "getInvalidateExpressions", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getInvalidateExpressions_return };
-inline constexpr reg::Arg getUsedVariables_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getUsedVariables = { "getUsedVariables", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getUsedVariables_return };
-inline constexpr reg::Arg acceptsNamedArguments_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig acceptsNamedArguments = { "acceptsNamedArguments", ZEND_ACC_PUBLIC, 0, nullptr, 0, &acceptsNamedArguments_return };
-inline constexpr reg::Arg mustUseReturnValue_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig mustUseReturnValue = { "mustUseReturnValue", ZEND_ACC_PUBLIC, 0, nullptr, 0, &mustUseReturnValue_return };
-inline constexpr reg::Arg getAsserts_return = reg::typed("", 0, "PHPStan\\Reflection\\Assertions");
-inline constexpr reg::Sig getAsserts = { "getAsserts", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getAsserts_return };
-inline constexpr reg::Arg isStaticClosure_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isStaticClosure = { "isStaticClosure", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isStaticClosure_return };
+inline constexpr sigtab::Sig __construct = { { 412 /* __construct */, 15, 0, 17, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getThrowPoints = { { 425 /* getThrowPoints */, 0, 17, 0, 17, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isPure = { { 239 /* isPure */, 0, 18, 0, 18, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getImpurePoints = { { 440 /* getImpurePoints */, 0, 19, 0, 19, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getInvalidateExpressions = { { 456 /* getInvalidateExpressions */, 0, 20, 0, 20, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getUsedVariables = { { 481 /* getUsedVariables */, 0, 21, 0, 21, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig acceptsNamedArguments = { { 316 /* acceptsNamedArguments */, 0, 22, 0, 22, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig mustUseReturnValue = { { 338 /* mustUseReturnValue */, 0, 23, 0, 23, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getAsserts = { { 498 /* getAsserts */, 0, 24, 0, 24, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isStaticClosure = { { 509 /* isStaticClosure */, 0, 25, 0, 25, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ExtendedCallableFunctionVariant

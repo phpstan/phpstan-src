@@ -19,17 +19,43 @@ inline void declareProperties(reg::Class &cls)
 	(void) cls;
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"expressionTypes\0" /* 0 */
+	"nativeExpressionTypes\0" /* 16 */
+	"\0" /* 38 */
+	"invalidateVolatileFunctionCalls\0" /* 39 */
+	"invalidateSuperglobals\0" /* 71 */
+	"scope\0" /* 94 */
+	"PHPStan\\Analyser\\Scope\0" /* 100 */
+	"functionNames\0" /* 123 */
+	"self::EXISTENCE_CHECK_FUNCTION_NAMES\0" /* 137 */
+	"declaredSymbolName\0" /* 174 */
+	"null\0" /* 193 */
+	"invalidateNegativeExistenceChecks"; /* 198 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_ARRAY, reg::NoString, true, false), /* invalidateVolatileFunctionCalls $expressionTypes */
+	reg::packed(16, MAY_BE_ARRAY, reg::NoString, true, false), /* invalidateVolatileFunctionCalls $nativeExpressionTypes */
+	reg::packed(38, MAY_BE_BOOL), /* invalidateVolatileFunctionCalls return */
+	reg::packed(0, MAY_BE_ARRAY, reg::NoString, true, false), /* invalidateSuperglobals $expressionTypes */
+	reg::packed(16, MAY_BE_ARRAY, reg::NoString, true, false), /* invalidateSuperglobals $nativeExpressionTypes */
+	reg::packed(38, MAY_BE_BOOL), /* invalidateSuperglobals return */
+	reg::packed(94, 0, 100), /* invalidateNegativeExistenceChecks $scope */
+	reg::packed(0, MAY_BE_ARRAY, reg::NoString, true, false), /* invalidateNegativeExistenceChecks $expressionTypes */
+	reg::packed(16, MAY_BE_ARRAY, reg::NoString, true, false), /* invalidateNegativeExistenceChecks $nativeExpressionTypes */
+	reg::packed(123, MAY_BE_ARRAY, reg::NoString, false, false, 137), /* invalidateNegativeExistenceChecks $functionNames */
+	reg::packed(174, MAY_BE_NULL | MAY_BE_STRING, reg::NoString, false, false, 193), /* invalidateNegativeExistenceChecks $declaredSymbolName */
+	reg::packed(38, MAY_BE_BOOL), /* invalidateNegativeExistenceChecks return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg invalidateVolatileFunctionCalls_args[] = { reg::typed("expressionTypes", MAY_BE_ARRAY, nullptr, true, false), reg::typed("nativeExpressionTypes", MAY_BE_ARRAY, nullptr, true, false) };
-inline constexpr reg::Arg invalidateVolatileFunctionCalls_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig invalidateVolatileFunctionCalls = { "invalidateVolatileFunctionCalls", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, invalidateVolatileFunctionCalls_args, 2, &invalidateVolatileFunctionCalls_return };
-inline constexpr reg::Arg invalidateSuperglobals_args[] = { reg::typed("expressionTypes", MAY_BE_ARRAY, nullptr, true, false), reg::typed("nativeExpressionTypes", MAY_BE_ARRAY, nullptr, true, false) };
-inline constexpr reg::Arg invalidateSuperglobals_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig invalidateSuperglobals = { "invalidateSuperglobals", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, invalidateSuperglobals_args, 2, &invalidateSuperglobals_return };
-inline constexpr reg::Arg invalidateNegativeExistenceChecks_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\Scope"), reg::typed("expressionTypes", MAY_BE_ARRAY, nullptr, true, false), reg::typed("nativeExpressionTypes", MAY_BE_ARRAY, nullptr, true, false), reg::typed("functionNames", MAY_BE_ARRAY, nullptr, false, false, "self::EXISTENCE_CHECK_FUNCTION_NAMES"), reg::typed("declaredSymbolName", MAY_BE_NULL | MAY_BE_STRING, nullptr, false, false, "null") };
-inline constexpr reg::Arg invalidateNegativeExistenceChecks_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig invalidateNegativeExistenceChecks = { "invalidateNegativeExistenceChecks", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 3, invalidateNegativeExistenceChecks_args, 5, &invalidateNegativeExistenceChecks_return };
+inline constexpr sigtab::Sig invalidateVolatileFunctionCalls = { { 39 /* invalidateVolatileFunctionCalls */, 2, 0, 2, 2, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig invalidateSuperglobals = { { 71 /* invalidateSuperglobals */, 2, 3, 2, 5, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig invalidateNegativeExistenceChecks = { { 198 /* invalidateNegativeExistenceChecks */, 3, 6, 5, 11, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::VolatileExpressionHelper

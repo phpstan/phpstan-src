@@ -28,64 +28,111 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("value", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_LONG);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"value\0" /* 0 */
+	"__construct\0" /* 6 */
+	"\0" /* 18 */
+	"PHPStan\\TrinaryLogic\0" /* 19 */
+	"createYes\0" /* 40 */
+	"createNo\0" /* 50 */
+	"createMaybe\0" /* 59 */
+	"createFromBoolean\0" /* 71 */
+	"create\0" /* 89 */
+	"yes\0" /* 96 */
+	"maybe\0" /* 100 */
+	"no\0" /* 106 */
+	"PHPStan\\Type\\BooleanType\0" /* 109 */
+	"toBooleanType\0" /* 134 */
+	"operand\0" /* 148 */
+	"null\0" /* 156 */
+	"rest\0" /* 161 */
+	"and\0" /* 166 */
+	"objects\0" /* 170 */
+	"callback\0" /* 178 */
+	"lazyAnd\0" /* 187 */
+	"or\0" /* 195 */
+	"lazyOr\0" /* 198 */
+	"operands\0" /* 205 */
+	"extremeIdentity\0" /* 214 */
+	"lazyExtremeIdentity\0" /* 230 */
+	"maxMin\0" /* 250 */
+	"lazyMaxMin\0" /* 257 */
+	"negate\0" /* 268 */
+	"other\0" /* 275 */
+	"equals\0" /* 281 */
+	"compareTo\0" /* 288 */
+	"describe"; /* 298 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_LONG), /* __construct $value */
+	reg::packed(18, 0, 19), /* createYes return */
+	reg::packed(18, 0, 19), /* createNo return */
+	reg::packed(18, 0, 19), /* createMaybe return */
+	reg::packed(0, MAY_BE_BOOL), /* createFromBoolean $value */
+	reg::packed(18, 0, 19), /* createFromBoolean return */
+	reg::packed(0, MAY_BE_LONG), /* create $value */
+	reg::packed(18, 0, 19), /* create return */
+	reg::packed(18, MAY_BE_BOOL), /* yes return */
+	reg::packed(18, MAY_BE_BOOL), /* maybe return */
+	reg::packed(18, MAY_BE_BOOL), /* no return */
+	reg::packed(18, 0, 109), /* toBooleanType return */
+	reg::packed(148, MAY_BE_NULL, 19, false, false, 156), /* and $operand */
+	reg::packed(161, 0, 19, false, true), /* and $rest */
+	reg::packed(18, 0, 19), /* and return */
+	reg::packed(170, MAY_BE_ARRAY), /* lazyAnd $objects */
+	reg::packed(178, MAY_BE_CALLABLE), /* lazyAnd $callback */
+	reg::packed(18, 0, 19), /* lazyAnd return */
+	reg::packed(148, MAY_BE_NULL, 19, false, false, 156), /* or $operand */
+	reg::packed(161, 0, 19, false, true), /* or $rest */
+	reg::packed(18, 0, 19), /* or return */
+	reg::packed(170, MAY_BE_ARRAY), /* lazyOr $objects */
+	reg::packed(178, MAY_BE_CALLABLE), /* lazyOr $callback */
+	reg::packed(18, 0, 19), /* lazyOr return */
+	reg::packed(205, 0, 19, false, true), /* extremeIdentity $operands */
+	reg::packed(18, 0, 19), /* extremeIdentity return */
+	reg::packed(170, MAY_BE_ARRAY), /* lazyExtremeIdentity $objects */
+	reg::packed(178, MAY_BE_CALLABLE), /* lazyExtremeIdentity $callback */
+	reg::packed(18, 0, 19), /* lazyExtremeIdentity return */
+	reg::packed(205, 0, 19, false, true), /* maxMin $operands */
+	reg::packed(18, 0, 19), /* maxMin return */
+	reg::packed(170, MAY_BE_ARRAY), /* lazyMaxMin $objects */
+	reg::packed(178, MAY_BE_CALLABLE), /* lazyMaxMin $callback */
+	reg::packed(18, 0, 19), /* lazyMaxMin return */
+	reg::packed(18, 0, 19), /* negate return */
+	reg::packed(275, 0, 19), /* equals $other */
+	reg::packed(18, MAY_BE_BOOL), /* equals return */
+	reg::packed(275, 0, 19), /* compareTo $other */
+	reg::packed(18, MAY_BE_NULL, 19), /* compareTo return */
+	reg::packed(18, MAY_BE_STRING), /* describe return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("value", MAY_BE_LONG) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PRIVATE, 1, __construct_args, 1, nullptr };
-inline constexpr reg::Arg createYes_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig createYes = { "createYes", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &createYes_return };
-inline constexpr reg::Arg createNo_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig createNo = { "createNo", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &createNo_return };
-inline constexpr reg::Arg createMaybe_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig createMaybe = { "createMaybe", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &createMaybe_return };
-inline constexpr reg::Arg createFromBoolean_args[] = { reg::typed("value", MAY_BE_BOOL) };
-inline constexpr reg::Arg createFromBoolean_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig createFromBoolean = { "createFromBoolean", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, createFromBoolean_args, 1, &createFromBoolean_return };
-inline constexpr reg::Arg create_args[] = { reg::typed("value", MAY_BE_LONG) };
-inline constexpr reg::Arg create_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig create = { "create", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 1, create_args, 1, &create_return };
-inline constexpr reg::Arg yes_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig yes = { "yes", ZEND_ACC_PUBLIC, 0, nullptr, 0, &yes_return };
-inline constexpr reg::Arg maybe_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig maybe = { "maybe", ZEND_ACC_PUBLIC, 0, nullptr, 0, &maybe_return };
-inline constexpr reg::Arg no_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig no = { "no", ZEND_ACC_PUBLIC, 0, nullptr, 0, &no_return };
-inline constexpr reg::Arg toBooleanType_return = reg::typed("", 0, "PHPStan\\Type\\BooleanType");
-inline constexpr reg::Sig toBooleanType = { "toBooleanType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toBooleanType_return };
-inline constexpr reg::Arg and__args[] = { reg::typed("operand", MAY_BE_NULL, "PHPStan\\TrinaryLogic", false, false, "null"), reg::typed("rest", 0, "PHPStan\\TrinaryLogic", false, true) };
-inline constexpr reg::Arg and__return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig and_ = { "and", ZEND_ACC_PUBLIC, 0, and__args, 2, &and__return };
-inline constexpr reg::Arg lazyAnd_args[] = { reg::typed("objects", MAY_BE_ARRAY), reg::typed("callback", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg lazyAnd_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig lazyAnd = { "lazyAnd", ZEND_ACC_PUBLIC, 2, lazyAnd_args, 2, &lazyAnd_return };
-inline constexpr reg::Arg or__args[] = { reg::typed("operand", MAY_BE_NULL, "PHPStan\\TrinaryLogic", false, false, "null"), reg::typed("rest", 0, "PHPStan\\TrinaryLogic", false, true) };
-inline constexpr reg::Arg or__return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig or_ = { "or", ZEND_ACC_PUBLIC, 0, or__args, 2, &or__return };
-inline constexpr reg::Arg lazyOr_args[] = { reg::typed("objects", MAY_BE_ARRAY), reg::typed("callback", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg lazyOr_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig lazyOr = { "lazyOr", ZEND_ACC_PUBLIC, 2, lazyOr_args, 2, &lazyOr_return };
-inline constexpr reg::Arg extremeIdentity_args[] = { reg::typed("operands", 0, "PHPStan\\TrinaryLogic", false, true) };
-inline constexpr reg::Arg extremeIdentity_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig extremeIdentity = { "extremeIdentity", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, extremeIdentity_args, 1, &extremeIdentity_return };
-inline constexpr reg::Arg lazyExtremeIdentity_args[] = { reg::typed("objects", MAY_BE_ARRAY), reg::typed("callback", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg lazyExtremeIdentity_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig lazyExtremeIdentity = { "lazyExtremeIdentity", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, lazyExtremeIdentity_args, 2, &lazyExtremeIdentity_return };
-inline constexpr reg::Arg maxMin_args[] = { reg::typed("operands", 0, "PHPStan\\TrinaryLogic", false, true) };
-inline constexpr reg::Arg maxMin_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig maxMin = { "maxMin", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, maxMin_args, 1, &maxMin_return };
-inline constexpr reg::Arg lazyMaxMin_args[] = { reg::typed("objects", MAY_BE_ARRAY), reg::typed("callback", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg lazyMaxMin_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig lazyMaxMin = { "lazyMaxMin", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, lazyMaxMin_args, 2, &lazyMaxMin_return };
-inline constexpr reg::Arg negate_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig negate = { "negate", ZEND_ACC_PUBLIC, 0, nullptr, 0, &negate_return };
-inline constexpr reg::Arg equals_args[] = { reg::typed("other", 0, "PHPStan\\TrinaryLogic") };
-inline constexpr reg::Arg equals_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig equals = { "equals", ZEND_ACC_PUBLIC, 1, equals_args, 1, &equals_return };
-inline constexpr reg::Arg compareTo_args[] = { reg::typed("other", 0, "PHPStan\\TrinaryLogic") };
-inline constexpr reg::Arg compareTo_return = reg::typed("", MAY_BE_NULL, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig compareTo = { "compareTo", ZEND_ACC_PUBLIC, 1, compareTo_args, 1, &compareTo_return };
-inline constexpr reg::Arg describe_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig describe = { "describe", ZEND_ACC_PUBLIC, 0, nullptr, 0, &describe_return };
+inline constexpr sigtab::Sig __construct = { { 6 /* __construct */, 1, 0, 1, reg::NoArg, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig createYes = { { 40 /* createYes */, 0, 1, 0, 1, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createNo = { { 50 /* createNo */, 0, 2, 0, 2, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createMaybe = { { 59 /* createMaybe */, 0, 3, 0, 3, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createFromBoolean = { { 71 /* createFromBoolean */, 1, 4, 1, 5, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig create = { { 89 /* create */, 1, 6, 1, 7, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig yes = { { 96 /* yes */, 0, 8, 0, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig maybe = { { 100 /* maybe */, 0, 9, 0, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig no = { { 106 /* no */, 0, 10, 0, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toBooleanType = { { 134 /* toBooleanType */, 0, 11, 0, 11, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig and_ = { { 166 /* and */, 0, 12, 2, 14, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig lazyAnd = { { 187 /* lazyAnd */, 2, 15, 2, 17, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig or_ = { { 195 /* or */, 0, 18, 2, 20, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig lazyOr = { { 198 /* lazyOr */, 2, 21, 2, 23, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig extremeIdentity = { { 214 /* extremeIdentity */, 0, 24, 1, 25, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig lazyExtremeIdentity = { { 230 /* lazyExtremeIdentity */, 2, 26, 2, 28, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig maxMin = { { 250 /* maxMin */, 0, 29, 1, 30, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig lazyMaxMin = { { 257 /* lazyMaxMin */, 2, 31, 2, 33, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig negate = { { 268 /* negate */, 0, 34, 0, 34, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig equals = { { 281 /* equals */, 1, 35, 1, 36, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig compareTo = { { 288 /* compareTo */, 1, 37, 1, 38, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig describe = { { 298 /* describe */, 0, 39, 0, 39, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::TrinaryLogic

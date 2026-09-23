@@ -35,30 +35,89 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("richerScopeGetTypeHelper", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\RicherScopeGetTypeHelper");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"\0" /* 0 */
+	"resetFileAnalysisState\0" /* 1 */
+	"treatPhpDocTypesAsCertain\0" /* 24 */
+	"expressionResultFactory\0" /* 50 */
+	"PHPStan\\Analyser\\ExpressionResultFactory\0" /* 74 */
+	"defaultNarrowingHelper\0" /* 115 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper\0" /* 138 */
+	"identicalNarrowingHelper\0" /* 197 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\IdenticalNarrowingHelper\0" /* 222 */
+	"richerScopeGetTypeHelper\0" /* 283 */
+	"PHPStan\\Analyser\\RicherScopeGetTypeHelper\0" /* 308 */
+	"__construct\0" /* 350 */
+	"expr\0" /* 362 */
+	"PhpParser\\Node\\Expr\0" /* 367 */
+	"supports\0" /* 387 */
+	"PhpParser\\Node\\Expr\\Match_\0" /* 396 */
+	"getCapturedArmScopesAndTypes\0" /* 423 */
+	"nodeScopeResolver\0" /* 452 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 470 */
+	"stmt\0" /* 505 */
+	"PhpParser\\Node\\Stmt\0" /* 510 */
+	"scope\0" /* 530 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 536 */
+	"storage\0" /* 567 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 575 */
+	"nodeCallback\0" /* 616 */
+	"context\0" /* 629 */
+	"PHPStan\\Analyser\\ExpressionContext\0" /* 637 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 672 */
+	"processExpr\0" /* 706 */
+	"conditions\0" /* 718 */
+	"condData\0" /* 729 */
+	"[]\0" /* 738 */
+	"PhpParser\\Node\\Expr\\BinaryOp\\Identical|PhpParser\\Node\\Expr\\FuncCall\0" /* 741 */
+	"getFilteringExprForMatchArm\0" /* 809 */
+	"isScopeConditionallyImpossible\0" /* 837 */
+	"varNames\0" /* 868 */
+	"scopeHasNeverVariable"; /* 877 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_VOID), /* resetFileAnalysisState return */
+	reg::packed(24, MAY_BE_BOOL), /* __construct $treatPhpDocTypesAsCertain */
+	reg::packed(50, 0, 74), /* __construct $expressionResultFactory */
+	reg::packed(115, 0, 138), /* __construct $defaultNarrowingHelper */
+	reg::packed(197, 0, 222), /* __construct $identicalNarrowingHelper */
+	reg::packed(283, 0, 308), /* __construct $richerScopeGetTypeHelper */
+	reg::packed(362, 0, 367), /* supports $expr */
+	reg::packed(0, MAY_BE_BOOL), /* supports return */
+	reg::packed(362, 0, 396), /* getCapturedArmScopesAndTypes $expr */
+	reg::packed(0, MAY_BE_NULL | MAY_BE_ARRAY), /* getCapturedArmScopesAndTypes return */
+	reg::packed(452, 0, 470), /* processExpr $nodeScopeResolver */
+	reg::packed(505, 0, 510), /* processExpr $stmt */
+	reg::packed(362, 0, 367), /* processExpr $expr */
+	reg::packed(530, 0, 536), /* processExpr $scope */
+	reg::packed(567, 0, 575), /* processExpr $storage */
+	reg::packed(616, MAY_BE_CALLABLE), /* processExpr $nodeCallback */
+	reg::packed(629, 0, 637), /* processExpr $context */
+	reg::packed(0, 0, 672), /* processExpr return */
+	reg::packed(362, 0, 396), /* getFilteringExprForMatchArm $expr */
+	reg::packed(718, MAY_BE_ARRAY), /* getFilteringExprForMatchArm $conditions */
+	reg::packed(729, MAY_BE_ARRAY, reg::NoString, false, false, 738), /* getFilteringExprForMatchArm $condData */
+	reg::packed(0, 0, 741), /* getFilteringExprForMatchArm return */
+	reg::packed(530, 0, 536), /* isScopeConditionallyImpossible $scope */
+	reg::packed(0, MAY_BE_BOOL), /* isScopeConditionallyImpossible return */
+	reg::packed(530, 0, 536), /* scopeHasNeverVariable $scope */
+	reg::packed(868, MAY_BE_ARRAY), /* scopeHasNeverVariable $varNames */
+	reg::packed(0, MAY_BE_BOOL), /* scopeHasNeverVariable return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg resetFileAnalysisState_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig resetFileAnalysisState = { "resetFileAnalysisState", ZEND_ACC_PUBLIC, 0, nullptr, 0, &resetFileAnalysisState_return };
-inline constexpr reg::Arg __construct_args[] = { reg::typed("treatPhpDocTypesAsCertain", MAY_BE_BOOL), reg::typed("expressionResultFactory", 0, "PHPStan\\Analyser\\ExpressionResultFactory"), reg::typed("defaultNarrowingHelper", 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper"), reg::typed("identicalNarrowingHelper", 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\IdenticalNarrowingHelper"), reg::typed("richerScopeGetTypeHelper", 0, "PHPStan\\Analyser\\RicherScopeGetTypeHelper") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 5, __construct_args, 5, nullptr };
-inline constexpr reg::Arg supports_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg supports_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig supports = { "supports", ZEND_ACC_PUBLIC, 1, supports_args, 1, &supports_return };
-inline constexpr reg::Arg getCapturedArmScopesAndTypes_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr\\Match_") };
-inline constexpr reg::Arg getCapturedArmScopesAndTypes_return = reg::typed("", MAY_BE_NULL | MAY_BE_ARRAY);
-inline constexpr reg::Sig getCapturedArmScopesAndTypes = { "getCapturedArmScopesAndTypes", ZEND_ACC_PUBLIC, 1, getCapturedArmScopesAndTypes_args, 1, &getCapturedArmScopesAndTypes_return };
-inline constexpr reg::Arg processExpr_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("stmt", 0, "PhpParser\\Node\\Stmt"), reg::typed("expr", 0, "PhpParser\\Node\\Expr"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("nodeCallback", MAY_BE_CALLABLE), reg::typed("context", 0, "PHPStan\\Analyser\\ExpressionContext") };
-inline constexpr reg::Arg processExpr_return = reg::typed("", 0, "PHPStan\\Analyser\\ExpressionResult");
-inline constexpr reg::Sig processExpr = { "processExpr", ZEND_ACC_PUBLIC, 7, processExpr_args, 7, &processExpr_return };
-inline constexpr reg::Arg getFilteringExprForMatchArm_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr\\Match_"), reg::typed("conditions", MAY_BE_ARRAY), reg::typed("condData", MAY_BE_ARRAY, nullptr, false, false, "[]") };
-inline constexpr reg::Arg getFilteringExprForMatchArm_return = reg::typed("", 0, "PhpParser\\Node\\Expr\\BinaryOp\\Identical|PhpParser\\Node\\Expr\\FuncCall");
-inline constexpr reg::Sig getFilteringExprForMatchArm = { "getFilteringExprForMatchArm", ZEND_ACC_PRIVATE, 2, getFilteringExprForMatchArm_args, 3, &getFilteringExprForMatchArm_return };
-inline constexpr reg::Arg isScopeConditionallyImpossible_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope") };
-inline constexpr reg::Arg isScopeConditionallyImpossible_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isScopeConditionallyImpossible = { "isScopeConditionallyImpossible", ZEND_ACC_PRIVATE, 1, isScopeConditionallyImpossible_args, 1, &isScopeConditionallyImpossible_return };
-inline constexpr reg::Arg scopeHasNeverVariable_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("varNames", MAY_BE_ARRAY) };
-inline constexpr reg::Arg scopeHasNeverVariable_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig scopeHasNeverVariable = { "scopeHasNeverVariable", ZEND_ACC_PRIVATE, 2, scopeHasNeverVariable_args, 2, &scopeHasNeverVariable_return };
+inline constexpr sigtab::Sig resetFileAnalysisState = { { 1 /* resetFileAnalysisState */, 0, 0, 0, 0, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig __construct = { { 350 /* __construct */, 5, 1, 5, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig supports = { { 387 /* supports */, 1, 6, 1, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getCapturedArmScopesAndTypes = { { 423 /* getCapturedArmScopesAndTypes */, 1, 8, 1, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processExpr = { { 706 /* processExpr */, 7, 10, 7, 17, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getFilteringExprForMatchArm = { { 809 /* getFilteringExprForMatchArm */, 2, 18, 3, 21, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isScopeConditionallyImpossible = { { 837 /* isScopeConditionallyImpossible */, 1, 22, 1, 23, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig scopeHasNeverVariable = { { 877 /* scopeHasNeverVariable */, 2, 24, 2, 26, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::MatchHandler

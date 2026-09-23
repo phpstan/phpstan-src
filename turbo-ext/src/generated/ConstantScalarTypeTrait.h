@@ -8,36 +8,70 @@
 
 namespace ptdecl::ConstantScalarTypeTrait {
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"type\0" /* 0 */
+	"PHPStan\\Type\\Type\0" /* 5 */
+	"strictTypes\0" /* 23 */
+	"\0" /* 35 */
+	"PHPStan\\Type\\AcceptsResult\0" /* 36 */
+	"accepts\0" /* 63 */
+	"PHPStan\\Type\\IsSuperTypeOfResult\0" /* 71 */
+	"isSuperTypeOf\0" /* 104 */
+	"phpVersion\0" /* 118 */
+	"PHPStan\\Php\\PhpVersion\0" /* 129 */
+	"PHPStan\\Type\\BooleanType\0" /* 152 */
+	"looseCompare\0" /* 177 */
+	"equals\0" /* 190 */
+	"otherType\0" /* 197 */
+	"PHPStan\\TrinaryLogic\0" /* 207 */
+	"isSmallerThan\0" /* 228 */
+	"isSmallerThanOrEqual\0" /* 242 */
+	"isConstantValue\0" /* 263 */
+	"isConstantScalarValue\0" /* 279 */
+	"getConstantScalarTypes\0" /* 301 */
+	"getConstantScalarValues\0" /* 324 */
+	"getFiniteTypes"; /* 348 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 5), /* accepts $type */
+	reg::packed(23, MAY_BE_BOOL), /* accepts $strictTypes */
+	reg::packed(35, 0, 36), /* accepts return */
+	reg::packed(0, 0, 5), /* isSuperTypeOf $type */
+	reg::packed(35, 0, 71), /* isSuperTypeOf return */
+	reg::packed(0, 0, 5), /* looseCompare $type */
+	reg::packed(118, 0, 129), /* looseCompare $phpVersion */
+	reg::packed(35, 0, 152), /* looseCompare return */
+	reg::packed(0, 0, 5), /* equals $type */
+	reg::packed(35, MAY_BE_BOOL), /* equals return */
+	reg::packed(197, 0, 5), /* isSmallerThan $otherType */
+	reg::packed(118, 0, 129), /* isSmallerThan $phpVersion */
+	reg::packed(35, 0, 207), /* isSmallerThan return */
+	reg::packed(197, 0, 5), /* isSmallerThanOrEqual $otherType */
+	reg::packed(118, 0, 129), /* isSmallerThanOrEqual $phpVersion */
+	reg::packed(35, 0, 207), /* isSmallerThanOrEqual return */
+	reg::packed(35, 0, 207), /* isConstantValue return */
+	reg::packed(35, 0, 207), /* isConstantScalarValue return */
+	reg::packed(35, MAY_BE_ARRAY), /* getConstantScalarTypes return */
+	reg::packed(35, MAY_BE_ARRAY), /* getConstantScalarValues return */
+	reg::packed(35, MAY_BE_ARRAY), /* getFiniteTypes return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the trait declares itself */
 namespace sig {
-inline constexpr reg::Arg accepts_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type"), reg::typed("strictTypes", MAY_BE_BOOL) };
-inline constexpr reg::Arg accepts_return = reg::typed("", 0, "PHPStan\\Type\\AcceptsResult");
-inline constexpr reg::Sig accepts = { "accepts", ZEND_ACC_PUBLIC, 2, accepts_args, 2, &accepts_return };
-inline constexpr reg::Arg isSuperTypeOf_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg isSuperTypeOf_return = reg::typed("", 0, "PHPStan\\Type\\IsSuperTypeOfResult");
-inline constexpr reg::Sig isSuperTypeOf = { "isSuperTypeOf", ZEND_ACC_PUBLIC, 1, isSuperTypeOf_args, 1, &isSuperTypeOf_return };
-inline constexpr reg::Arg looseCompare_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type"), reg::typed("phpVersion", 0, "PHPStan\\Php\\PhpVersion") };
-inline constexpr reg::Arg looseCompare_return = reg::typed("", 0, "PHPStan\\Type\\BooleanType");
-inline constexpr reg::Sig looseCompare = { "looseCompare", ZEND_ACC_PUBLIC, 2, looseCompare_args, 2, &looseCompare_return };
-inline constexpr reg::Arg equals_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg equals_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig equals = { "equals", ZEND_ACC_PUBLIC, 1, equals_args, 1, &equals_return };
-inline constexpr reg::Arg isSmallerThan_args[] = { reg::typed("otherType", 0, "PHPStan\\Type\\Type"), reg::typed("phpVersion", 0, "PHPStan\\Php\\PhpVersion") };
-inline constexpr reg::Arg isSmallerThan_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isSmallerThan = { "isSmallerThan", ZEND_ACC_PUBLIC, 2, isSmallerThan_args, 2, &isSmallerThan_return };
-inline constexpr reg::Arg isSmallerThanOrEqual_args[] = { reg::typed("otherType", 0, "PHPStan\\Type\\Type"), reg::typed("phpVersion", 0, "PHPStan\\Php\\PhpVersion") };
-inline constexpr reg::Arg isSmallerThanOrEqual_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isSmallerThanOrEqual = { "isSmallerThanOrEqual", ZEND_ACC_PUBLIC, 2, isSmallerThanOrEqual_args, 2, &isSmallerThanOrEqual_return };
-inline constexpr reg::Arg isConstantValue_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isConstantValue = { "isConstantValue", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isConstantValue_return };
-inline constexpr reg::Arg isConstantScalarValue_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isConstantScalarValue = { "isConstantScalarValue", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isConstantScalarValue_return };
-inline constexpr reg::Arg getConstantScalarTypes_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getConstantScalarTypes = { "getConstantScalarTypes", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getConstantScalarTypes_return };
-inline constexpr reg::Arg getConstantScalarValues_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getConstantScalarValues = { "getConstantScalarValues", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getConstantScalarValues_return };
-inline constexpr reg::Arg getFiniteTypes_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getFiniteTypes = { "getFiniteTypes", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getFiniteTypes_return };
+inline constexpr sigtab::Sig accepts = { { 63 /* accepts */, 2, 0, 2, 2, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isSuperTypeOf = { { 104 /* isSuperTypeOf */, 1, 3, 1, 4, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig looseCompare = { { 177 /* looseCompare */, 2, 5, 2, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig equals = { { 190 /* equals */, 1, 8, 1, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isSmallerThan = { { 228 /* isSmallerThan */, 2, 10, 2, 12, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isSmallerThanOrEqual = { { 242 /* isSmallerThanOrEqual */, 2, 13, 2, 15, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isConstantValue = { { 263 /* isConstantValue */, 0, 16, 0, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isConstantScalarValue = { { 279 /* isConstantScalarValue */, 0, 17, 0, 17, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getConstantScalarTypes = { { 301 /* getConstantScalarTypes */, 0, 18, 0, 18, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getConstantScalarValues = { { 324 /* getConstantScalarValues */, 0, 19, 0, 19, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getFiniteTypes = { { 348 /* getFiniteTypes */, 0, 20, 0, 20, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ConstantScalarTypeTrait

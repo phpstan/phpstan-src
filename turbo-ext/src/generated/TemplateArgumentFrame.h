@@ -28,37 +28,85 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("siteStatementIndexes", ZEND_ACC_PRIVATE | ZEND_ACC_READONLY, reg::PropertyKind::Typed, MAY_BE_ARRAY);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"acceptor\0" /* 0 */
+	"PHPStan\\Reflection\\ParametersAcceptor\0" /* 9 */
+	"scope\0" /* 47 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 53 */
+	"site\0" /* 84 */
+	"PhpParser\\Node\\Expr\0" /* 89 */
+	"allowUnresolved\0" /* 109 */
+	"null\0" /* 125 */
+	"\0" /* 130 */
+	"PHPStan\\Type\\Type\0" /* 131 */
+	"returnTypeOfCall\0" /* 149 */
+	"parent\0" /* 166 */
+	"PHPStan\\Analyser\\Generics\\TemplateArgumentFrame\0" /* 173 */
+	"resolutions\0" /* 221 */
+	"siteStatementIndexes\0" /* 233 */
+	"[]\0" /* 254 */
+	"__construct\0" /* 257 */
+	"isObserving\0" /* 269 */
+	"firstSiteStatementIndex\0" /* 281 */
+	"statementIndex\0" /* 305 */
+	"ownsSiteInStatement\0" /* 320 */
+	"hasSiteAtOrAfter\0" /* 340 */
+	"template\0" /* 357 */
+	"PHPStan\\Type\\Generic\\TemplateType\0" /* 366 */
+	"resolveOrUnconstrained\0" /* 400 */
+	"resolve\0" /* 423 */
+	"resolveUnconstrained\0" /* 431 */
+	"templateName\0" /* 452 */
+	"getResolutionCacheKeySuffix\0" /* 465 */
+	"key"; /* 493 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 9), /* returnTypeOfCall $acceptor */
+	reg::packed(47, 0, 53), /* returnTypeOfCall $scope */
+	reg::packed(84, 0, 89), /* returnTypeOfCall $site */
+	reg::packed(109, MAY_BE_NULL | MAY_BE_BOOL, reg::NoString, false, false, 125), /* returnTypeOfCall $allowUnresolved */
+	reg::packed(130, 0, 131), /* returnTypeOfCall return */
+	reg::packed(166, MAY_BE_NULL, 173), /* __construct $parent */
+	reg::packed(221, MAY_BE_NULL | MAY_BE_ARRAY, reg::NoString, false, false, 125), /* __construct $resolutions */
+	reg::packed(233, MAY_BE_ARRAY, reg::NoString, false, false, 254), /* __construct $siteStatementIndexes */
+	reg::packed(130, MAY_BE_BOOL), /* isObserving return */
+	reg::packed(130, MAY_BE_NULL | MAY_BE_LONG), /* firstSiteStatementIndex return */
+	reg::packed(305, MAY_BE_LONG), /* ownsSiteInStatement $statementIndex */
+	reg::packed(130, MAY_BE_BOOL), /* ownsSiteInStatement return */
+	reg::packed(305, MAY_BE_LONG), /* hasSiteAtOrAfter $statementIndex */
+	reg::packed(130, MAY_BE_BOOL), /* hasSiteAtOrAfter return */
+	reg::packed(84, 0, 89), /* resolveOrUnconstrained $site */
+	reg::packed(357, 0, 366), /* resolveOrUnconstrained $template */
+	reg::packed(130, 0, 131), /* resolveOrUnconstrained return */
+	reg::packed(84, 0, 89), /* resolveUnconstrained $site */
+	reg::packed(357, 0, 366), /* resolveUnconstrained $template */
+	reg::packed(423, MAY_BE_CALLABLE), /* resolveUnconstrained $resolve */
+	reg::packed(130, 0, 131), /* resolveUnconstrained return */
+	reg::packed(84, 0, 89), /* resolve $site */
+	reg::packed(452, MAY_BE_STRING), /* resolve $templateName */
+	reg::packed(130, MAY_BE_NULL, 131), /* resolve return */
+	reg::packed(130, MAY_BE_STRING), /* getResolutionCacheKeySuffix return */
+	reg::packed(84, 0, 89), /* key $site */
+	reg::packed(452, MAY_BE_STRING), /* key $templateName */
+	reg::packed(130, MAY_BE_STRING), /* key return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg returnTypeOfCall_args[] = { reg::typed("acceptor", 0, "PHPStan\\Reflection\\ParametersAcceptor"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("site", 0, "PhpParser\\Node\\Expr"), reg::typed("allowUnresolved", MAY_BE_NULL | MAY_BE_BOOL, nullptr, false, false, "null") };
-inline constexpr reg::Arg returnTypeOfCall_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig returnTypeOfCall = { "returnTypeOfCall", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 3, returnTypeOfCall_args, 4, &returnTypeOfCall_return };
-inline constexpr reg::Arg __construct_args[] = { reg::typed("parent", MAY_BE_NULL, "PHPStan\\Analyser\\Generics\\TemplateArgumentFrame"), reg::typed("resolutions", MAY_BE_NULL | MAY_BE_ARRAY, nullptr, false, false, "null"), reg::typed("siteStatementIndexes", MAY_BE_ARRAY, nullptr, false, false, "[]") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 1, __construct_args, 3, nullptr };
-inline constexpr reg::Arg isObserving_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isObserving = { "isObserving", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isObserving_return };
-inline constexpr reg::Arg firstSiteStatementIndex_return = reg::typed("", MAY_BE_NULL | MAY_BE_LONG);
-inline constexpr reg::Sig firstSiteStatementIndex = { "firstSiteStatementIndex", ZEND_ACC_PUBLIC, 0, nullptr, 0, &firstSiteStatementIndex_return };
-inline constexpr reg::Arg ownsSiteInStatement_args[] = { reg::typed("statementIndex", MAY_BE_LONG) };
-inline constexpr reg::Arg ownsSiteInStatement_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig ownsSiteInStatement = { "ownsSiteInStatement", ZEND_ACC_PUBLIC, 1, ownsSiteInStatement_args, 1, &ownsSiteInStatement_return };
-inline constexpr reg::Arg hasSiteAtOrAfter_args[] = { reg::typed("statementIndex", MAY_BE_LONG) };
-inline constexpr reg::Arg hasSiteAtOrAfter_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig hasSiteAtOrAfter = { "hasSiteAtOrAfter", ZEND_ACC_PUBLIC, 1, hasSiteAtOrAfter_args, 1, &hasSiteAtOrAfter_return };
-inline constexpr reg::Arg resolveOrUnconstrained_args[] = { reg::typed("site", 0, "PhpParser\\Node\\Expr"), reg::typed("template", 0, "PHPStan\\Type\\Generic\\TemplateType") };
-inline constexpr reg::Arg resolveOrUnconstrained_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig resolveOrUnconstrained = { "resolveOrUnconstrained", ZEND_ACC_PUBLIC, 2, resolveOrUnconstrained_args, 2, &resolveOrUnconstrained_return };
-inline constexpr reg::Arg resolveUnconstrained_args[] = { reg::typed("site", 0, "PhpParser\\Node\\Expr"), reg::typed("template", 0, "PHPStan\\Type\\Generic\\TemplateType"), reg::typed("resolve", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg resolveUnconstrained_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig resolveUnconstrained = { "resolveUnconstrained", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 3, resolveUnconstrained_args, 3, &resolveUnconstrained_return };
-inline constexpr reg::Arg resolve_args[] = { reg::typed("site", 0, "PhpParser\\Node\\Expr"), reg::typed("templateName", MAY_BE_STRING) };
-inline constexpr reg::Arg resolve_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig resolve = { "resolve", ZEND_ACC_PUBLIC, 2, resolve_args, 2, &resolve_return };
-inline constexpr reg::Arg getResolutionCacheKeySuffix_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig getResolutionCacheKeySuffix = { "getResolutionCacheKeySuffix", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getResolutionCacheKeySuffix_return };
-inline constexpr reg::Arg key_args[] = { reg::typed("site", 0, "PhpParser\\Node\\Expr"), reg::typed("templateName", MAY_BE_STRING) };
-inline constexpr reg::Arg key_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig key = { "key", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 2, key_args, 2, &key_return };
+inline constexpr sigtab::Sig returnTypeOfCall = { { 149 /* returnTypeOfCall */, 3, 0, 4, 4, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig __construct = { { 257 /* __construct */, 1, 5, 3, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isObserving = { { 269 /* isObserving */, 0, 8, 0, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig firstSiteStatementIndex = { { 281 /* firstSiteStatementIndex */, 0, 9, 0, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig ownsSiteInStatement = { { 320 /* ownsSiteInStatement */, 1, 10, 1, 11, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasSiteAtOrAfter = { { 340 /* hasSiteAtOrAfter */, 1, 12, 1, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig resolveOrUnconstrained = { { 400 /* resolveOrUnconstrained */, 2, 14, 2, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig resolveUnconstrained = { { 431 /* resolveUnconstrained */, 3, 17, 3, 20, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig resolve = { { 423 /* resolve */, 2, 21, 2, 23, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getResolutionCacheKeySuffix = { { 465 /* getResolutionCacheKeySuffix */, 0, 24, 0, 24, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig key = { { 493 /* key */, 2, 25, 2, 27, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::TemplateArgumentFrame

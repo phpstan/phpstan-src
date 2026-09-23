@@ -8,11 +8,26 @@
 
 namespace ptdecl::SubstractableTypeTrait {
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"subtractedType\0" /* 0 */
+	"PHPStan\\Type\\Type\0" /* 15 */
+	"level\0" /* 33 */
+	"PHPStan\\Type\\VerbosityLevel\0" /* 39 */
+	"\0" /* 67 */
+	"describeSubtractedType"; /* 68 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_NULL, 15), /* describeSubtractedType $subtractedType */
+	reg::packed(33, 0, 39), /* describeSubtractedType $level */
+	reg::packed(67, MAY_BE_STRING), /* describeSubtractedType return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the trait declares itself */
 namespace sig {
-inline constexpr reg::Arg describeSubtractedType_args[] = { reg::typed("subtractedType", MAY_BE_NULL, "PHPStan\\Type\\Type"), reg::typed("level", 0, "PHPStan\\Type\\VerbosityLevel") };
-inline constexpr reg::Arg describeSubtractedType_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig describeSubtractedType = { "describeSubtractedType", ZEND_ACC_PUBLIC, 2, describeSubtractedType_args, 2, &describeSubtractedType_return };
+inline constexpr sigtab::Sig describeSubtractedType = { { 68 /* describeSubtractedType */, 2, 0, 2, 2, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::SubstractableTypeTrait

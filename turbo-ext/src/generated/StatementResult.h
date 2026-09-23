@@ -36,31 +36,66 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("endStatements", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_ARRAY);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"scope\0" /* 0 */
+	"PHPStan\\Analyser\\Scope\0" /* 6 */
+	"hasYield\0" /* 29 */
+	"isAlwaysTerminating\0" /* 38 */
+	"exitPoints\0" /* 58 */
+	"throwPoints\0" /* 69 */
+	"impurePoints\0" /* 81 */
+	"endStatements\0" /* 94 */
+	"[]\0" /* 108 */
+	"__construct\0" /* 111 */
+	"\0" /* 123 */
+	"getScope\0" /* 124 */
+	"PHPStan\\Analyser\\StatementResult\0" /* 133 */
+	"filterOutLoopExitPoints\0" /* 166 */
+	"getExitPoints\0" /* 190 */
+	"stmtClass\0" /* 204 */
+	"getExitPointsByType\0" /* 214 */
+	"getExitPointsForOuterLoop\0" /* 234 */
+	"getThrowPoints\0" /* 260 */
+	"getImpurePoints\0" /* 275 */
+	"getEndStatements"; /* 291 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 6), /* __construct $scope */
+	reg::packed(29, MAY_BE_BOOL), /* __construct $hasYield */
+	reg::packed(38, MAY_BE_BOOL), /* __construct $isAlwaysTerminating */
+	reg::packed(58, MAY_BE_ARRAY), /* __construct $exitPoints */
+	reg::packed(69, MAY_BE_ARRAY), /* __construct $throwPoints */
+	reg::packed(81, MAY_BE_ARRAY), /* __construct $impurePoints */
+	reg::packed(94, MAY_BE_ARRAY, reg::NoString, false, false, 108), /* __construct $endStatements */
+	reg::packed(123, 0, 6), /* getScope return */
+	reg::packed(123, MAY_BE_BOOL), /* hasYield return */
+	reg::packed(123, MAY_BE_BOOL), /* isAlwaysTerminating return */
+	reg::packed(123, 0, 133), /* filterOutLoopExitPoints return */
+	reg::packed(123, MAY_BE_ARRAY), /* getExitPoints return */
+	reg::packed(204, MAY_BE_STRING), /* getExitPointsByType $stmtClass */
+	reg::packed(123, MAY_BE_ARRAY), /* getExitPointsByType return */
+	reg::packed(123, MAY_BE_ARRAY), /* getExitPointsForOuterLoop return */
+	reg::packed(123, MAY_BE_ARRAY), /* getThrowPoints return */
+	reg::packed(123, MAY_BE_ARRAY), /* getImpurePoints return */
+	reg::packed(123, MAY_BE_ARRAY), /* getEndStatements return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\Scope"), reg::typed("hasYield", MAY_BE_BOOL), reg::typed("isAlwaysTerminating", MAY_BE_BOOL), reg::typed("exitPoints", MAY_BE_ARRAY), reg::typed("throwPoints", MAY_BE_ARRAY), reg::typed("impurePoints", MAY_BE_ARRAY), reg::typed("endStatements", MAY_BE_ARRAY, nullptr, false, false, "[]") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 6, __construct_args, 7, nullptr };
-inline constexpr reg::Arg getScope_return = reg::typed("", 0, "PHPStan\\Analyser\\Scope");
-inline constexpr reg::Sig getScope = { "getScope", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getScope_return };
-inline constexpr reg::Arg hasYield_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig hasYield = { "hasYield", ZEND_ACC_PUBLIC, 0, nullptr, 0, &hasYield_return };
-inline constexpr reg::Arg isAlwaysTerminating_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isAlwaysTerminating = { "isAlwaysTerminating", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isAlwaysTerminating_return };
-inline constexpr reg::Arg filterOutLoopExitPoints_return = reg::typed("", 0, "PHPStan\\Analyser\\StatementResult");
-inline constexpr reg::Sig filterOutLoopExitPoints = { "filterOutLoopExitPoints", ZEND_ACC_PUBLIC, 0, nullptr, 0, &filterOutLoopExitPoints_return };
-inline constexpr reg::Arg getExitPoints_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getExitPoints = { "getExitPoints", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getExitPoints_return };
-inline constexpr reg::Arg getExitPointsByType_args[] = { reg::typed("stmtClass", MAY_BE_STRING) };
-inline constexpr reg::Arg getExitPointsByType_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getExitPointsByType = { "getExitPointsByType", ZEND_ACC_PUBLIC, 1, getExitPointsByType_args, 1, &getExitPointsByType_return };
-inline constexpr reg::Arg getExitPointsForOuterLoop_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getExitPointsForOuterLoop = { "getExitPointsForOuterLoop", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getExitPointsForOuterLoop_return };
-inline constexpr reg::Arg getThrowPoints_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getThrowPoints = { "getThrowPoints", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getThrowPoints_return };
-inline constexpr reg::Arg getImpurePoints_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getImpurePoints = { "getImpurePoints", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getImpurePoints_return };
-inline constexpr reg::Arg getEndStatements_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getEndStatements = { "getEndStatements", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getEndStatements_return };
+inline constexpr sigtab::Sig __construct = { { 111 /* __construct */, 6, 0, 7, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getScope = { { 124 /* getScope */, 0, 7, 0, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasYield = { { 29 /* hasYield */, 0, 8, 0, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isAlwaysTerminating = { { 38 /* isAlwaysTerminating */, 0, 9, 0, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig filterOutLoopExitPoints = { { 166 /* filterOutLoopExitPoints */, 0, 10, 0, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getExitPoints = { { 190 /* getExitPoints */, 0, 11, 0, 11, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getExitPointsByType = { { 214 /* getExitPointsByType */, 1, 12, 1, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getExitPointsForOuterLoop = { { 234 /* getExitPointsForOuterLoop */, 0, 14, 0, 14, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getThrowPoints = { { 260 /* getThrowPoints */, 0, 15, 0, 15, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getImpurePoints = { { 275 /* getImpurePoints */, 0, 16, 0, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getEndStatements = { { 291 /* getEndStatements */, 0, 17, 0, 17, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::StatementResult

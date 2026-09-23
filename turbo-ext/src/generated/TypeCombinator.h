@@ -19,94 +19,159 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("cacheEnabled", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, reg::PropertyKind::TypedNull, MAY_BE_NULL | MAY_BE_BOOL);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"\0" /* 0 */
+	"clearCache\0" /* 1 */
+	"type\0" /* 12 */
+	"PHPStan\\Type\\Type\0" /* 17 */
+	"addNull\0" /* 35 */
+	"fromType\0" /* 43 */
+	"typeToRemove\0" /* 52 */
+	"remove\0" /* 65 */
+	"canRemoveUnionAtOnce\0" /* 72 */
+	"doRemove\0" /* 93 */
+	"removeNull\0" /* 102 */
+	"containsNull\0" /* 113 */
+	"types\0" /* 126 */
+	"union\0" /* 132 */
+	"doUnion\0" /* 138 */
+	"alreadyNormalized\0" /* 146 */
+	"a\0" /* 164 */
+	"b\0" /* 166 */
+	"isAlreadyNormalized\0" /* 168 */
+	"compareTypesInUnion\0" /* 188 */
+	"getAccessoryCaseStringTypes\0" /* 208 */
+	"downgradeNonFalsyStringToNonEmpty\0" /* 236 */
+	"removeDecimalIntStringAccessory\0" /* 270 */
+	"subtractedType\0" /* 302 */
+	"unionWithSubtractedType\0" /* 317 */
+	"PHPStan\\Type\\SubtractableType\0" /* 341 */
+	"intersectWithSubtractedType\0" /* 371 */
+	"arrayTypes\0" /* 399 */
+	"processArrayAccessoryTypes\0" /* 410 */
+	"processArrayTypes\0" /* 437 */
+	"optimizeConstantArrays\0" /* 455 */
+	"countConstantArrayValueTypes\0" /* 478 */
+	"constantArrays\0" /* 507 */
+	"preserveTaggedUnions\0" /* 522 */
+	"reduceArrays\0" /* 543 */
+	"PHPStan\\Type\\UnionType\0" /* 556 */
+	"intersectFiniteUnions\0" /* 579 */
+	"finiteUnionMembers\0" /* 601 */
+	"intersect\0" /* 620 */
+	"doIntersect\0" /* 630 */
+	"PHPStan\\Type\\Constant\\ConstantArrayType\0" /* 642 */
+	"intersectDefiniteConstantArrays\0" /* 682 */
+	"PHPStan\\Type\\IntersectionType\0" /* 714 */
+	"mergeIntersectionsForUnion\0" /* 744 */
+	"removeFalsey\0" /* 771 */
+	"removeTruthy"; /* 784 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_VOID), /* clearCache return */
+	reg::packed(12, 0, 17), /* addNull $type */
+	reg::packed(0, 0, 17), /* addNull return */
+	reg::packed(43, 0, 17), /* remove $fromType */
+	reg::packed(52, 0, 17), /* remove $typeToRemove */
+	reg::packed(0, 0, 17), /* remove return */
+	reg::packed(43, 0, 17), /* canRemoveUnionAtOnce $fromType */
+	reg::packed(0, MAY_BE_BOOL), /* canRemoveUnionAtOnce return */
+	reg::packed(43, 0, 17), /* doRemove $fromType */
+	reg::packed(52, 0, 17), /* doRemove $typeToRemove */
+	reg::packed(0, 0, 17), /* doRemove return */
+	reg::packed(12, 0, 17), /* removeNull $type */
+	reg::packed(0, 0, 17), /* removeNull return */
+	reg::packed(12, 0, 17), /* containsNull $type */
+	reg::packed(0, MAY_BE_BOOL), /* containsNull return */
+	reg::packed(126, 0, 17, false, true), /* union $types */
+	reg::packed(0, 0, 17), /* union return */
+	reg::packed(126, 0, 17, false, true), /* doUnion $types */
+	reg::packed(0, 0, 17), /* doUnion return */
+	reg::packed(146, MAY_BE_ARRAY), /* isAlreadyNormalized $alreadyNormalized */
+	reg::packed(164, 0, 17), /* isAlreadyNormalized $a */
+	reg::packed(166, 0, 17), /* isAlreadyNormalized $b */
+	reg::packed(0, MAY_BE_BOOL), /* isAlreadyNormalized return */
+	reg::packed(164, 0, 17), /* compareTypesInUnion $a */
+	reg::packed(166, 0, 17), /* compareTypesInUnion $b */
+	reg::packed(0, MAY_BE_NULL | MAY_BE_ARRAY), /* compareTypesInUnion return */
+	reg::packed(12, 0, 17), /* getAccessoryCaseStringTypes $type */
+	reg::packed(0, MAY_BE_ARRAY), /* getAccessoryCaseStringTypes return */
+	reg::packed(12, 0, 17), /* downgradeNonFalsyStringToNonEmpty $type */
+	reg::packed(0, MAY_BE_NULL, 17), /* downgradeNonFalsyStringToNonEmpty return */
+	reg::packed(12, 0, 17), /* removeDecimalIntStringAccessory $type */
+	reg::packed(0, 0, 17), /* removeDecimalIntStringAccessory return */
+	reg::packed(12, 0, 17), /* unionWithSubtractedType $type */
+	reg::packed(302, MAY_BE_NULL, 17), /* unionWithSubtractedType $subtractedType */
+	reg::packed(0, 0, 17), /* unionWithSubtractedType return */
+	reg::packed(164, 0, 341), /* intersectWithSubtractedType $a */
+	reg::packed(166, 0, 17), /* intersectWithSubtractedType $b */
+	reg::packed(0, 0, 17), /* intersectWithSubtractedType return */
+	reg::packed(399, MAY_BE_ARRAY), /* processArrayAccessoryTypes $arrayTypes */
+	reg::packed(0, MAY_BE_ARRAY), /* processArrayAccessoryTypes return */
+	reg::packed(399, MAY_BE_ARRAY), /* processArrayTypes $arrayTypes */
+	reg::packed(0, MAY_BE_ARRAY), /* processArrayTypes return */
+	reg::packed(126, MAY_BE_ARRAY), /* optimizeConstantArrays $types */
+	reg::packed(0, MAY_BE_ARRAY), /* optimizeConstantArrays return */
+	reg::packed(126, MAY_BE_ARRAY), /* countConstantArrayValueTypes $types */
+	reg::packed(0, MAY_BE_LONG), /* countConstantArrayValueTypes return */
+	reg::packed(507, MAY_BE_ARRAY), /* reduceArrays $constantArrays */
+	reg::packed(522, MAY_BE_BOOL), /* reduceArrays $preserveTaggedUnions */
+	reg::packed(0, MAY_BE_ARRAY), /* reduceArrays return */
+	reg::packed(164, 0, 556), /* intersectFiniteUnions $a */
+	reg::packed(166, 0, 556), /* intersectFiniteUnions $b */
+	reg::packed(0, MAY_BE_NULL, 17), /* intersectFiniteUnions return */
+	reg::packed(132, 0, 556), /* finiteUnionMembers $union */
+	reg::packed(0, MAY_BE_NULL | MAY_BE_ARRAY), /* finiteUnionMembers return */
+	reg::packed(126, 0, 17, false, true), /* intersect $types */
+	reg::packed(0, 0, 17), /* intersect return */
+	reg::packed(126, 0, 17, false, true), /* doIntersect $types */
+	reg::packed(0, 0, 17), /* doIntersect return */
+	reg::packed(164, 0, 642), /* intersectDefiniteConstantArrays $a */
+	reg::packed(166, 0, 642), /* intersectDefiniteConstantArrays $b */
+	reg::packed(0, 0, 17), /* intersectDefiniteConstantArrays return */
+	reg::packed(164, 0, 714), /* mergeIntersectionsForUnion $a */
+	reg::packed(166, 0, 714), /* mergeIntersectionsForUnion $b */
+	reg::packed(0, MAY_BE_NULL, 17), /* mergeIntersectionsForUnion return */
+	reg::packed(12, 0, 17), /* removeFalsey $type */
+	reg::packed(0, 0, 17), /* removeFalsey return */
+	reg::packed(12, 0, 17), /* removeTruthy $type */
+	reg::packed(0, 0, 17), /* removeTruthy return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg clearCache_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig clearCache = { "clearCache", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &clearCache_return };
-inline constexpr reg::Arg addNull_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg addNull_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig addNull = { "addNull", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, addNull_args, 1, &addNull_return };
-inline constexpr reg::Arg remove_args[] = { reg::typed("fromType", 0, "PHPStan\\Type\\Type"), reg::typed("typeToRemove", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg remove_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig remove = { "remove", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, remove_args, 2, &remove_return };
-inline constexpr reg::Arg canRemoveUnionAtOnce_args[] = { reg::typed("fromType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg canRemoveUnionAtOnce_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig canRemoveUnionAtOnce = { "canRemoveUnionAtOnce", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 1, canRemoveUnionAtOnce_args, 1, &canRemoveUnionAtOnce_return };
-inline constexpr reg::Arg doRemove_args[] = { reg::typed("fromType", 0, "PHPStan\\Type\\Type"), reg::typed("typeToRemove", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg doRemove_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig doRemove = { "doRemove", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, doRemove_args, 2, &doRemove_return };
-inline constexpr reg::Arg removeNull_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg removeNull_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig removeNull = { "removeNull", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, removeNull_args, 1, &removeNull_return };
-inline constexpr reg::Arg containsNull_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg containsNull_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig containsNull = { "containsNull", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, containsNull_args, 1, &containsNull_return };
-inline constexpr reg::Arg union__args[] = { reg::typed("types", 0, "PHPStan\\Type\\Type", false, true) };
-inline constexpr reg::Arg union__return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig union_ = { "union", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, union__args, 1, &union__return };
-inline constexpr reg::Arg doUnion_args[] = { reg::typed("types", 0, "PHPStan\\Type\\Type", false, true) };
-inline constexpr reg::Arg doUnion_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig doUnion = { "doUnion", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, doUnion_args, 1, &doUnion_return };
-inline constexpr reg::Arg isAlreadyNormalized_args[] = { reg::typed("alreadyNormalized", MAY_BE_ARRAY), reg::typed("a", 0, "PHPStan\\Type\\Type"), reg::typed("b", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg isAlreadyNormalized_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isAlreadyNormalized = { "isAlreadyNormalized", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 3, isAlreadyNormalized_args, 3, &isAlreadyNormalized_return };
-inline constexpr reg::Arg compareTypesInUnion_args[] = { reg::typed("a", 0, "PHPStan\\Type\\Type"), reg::typed("b", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg compareTypesInUnion_return = reg::typed("", MAY_BE_NULL | MAY_BE_ARRAY);
-inline constexpr reg::Sig compareTypesInUnion = { "compareTypesInUnion", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 2, compareTypesInUnion_args, 2, &compareTypesInUnion_return };
-inline constexpr reg::Arg getAccessoryCaseStringTypes_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg getAccessoryCaseStringTypes_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getAccessoryCaseStringTypes = { "getAccessoryCaseStringTypes", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 1, getAccessoryCaseStringTypes_args, 1, &getAccessoryCaseStringTypes_return };
-inline constexpr reg::Arg downgradeNonFalsyStringToNonEmpty_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg downgradeNonFalsyStringToNonEmpty_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig downgradeNonFalsyStringToNonEmpty = { "downgradeNonFalsyStringToNonEmpty", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 1, downgradeNonFalsyStringToNonEmpty_args, 1, &downgradeNonFalsyStringToNonEmpty_return };
-inline constexpr reg::Arg removeDecimalIntStringAccessory_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg removeDecimalIntStringAccessory_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig removeDecimalIntStringAccessory = { "removeDecimalIntStringAccessory", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 1, removeDecimalIntStringAccessory_args, 1, &removeDecimalIntStringAccessory_return };
-inline constexpr reg::Arg unionWithSubtractedType_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type"), reg::typed("subtractedType", MAY_BE_NULL, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg unionWithSubtractedType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig unionWithSubtractedType = { "unionWithSubtractedType", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 2, unionWithSubtractedType_args, 2, &unionWithSubtractedType_return };
-inline constexpr reg::Arg intersectWithSubtractedType_args[] = { reg::typed("a", 0, "PHPStan\\Type\\SubtractableType"), reg::typed("b", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg intersectWithSubtractedType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig intersectWithSubtractedType = { "intersectWithSubtractedType", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 2, intersectWithSubtractedType_args, 2, &intersectWithSubtractedType_return };
-inline constexpr reg::Arg processArrayAccessoryTypes_args[] = { reg::typed("arrayTypes", MAY_BE_ARRAY) };
-inline constexpr reg::Arg processArrayAccessoryTypes_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig processArrayAccessoryTypes = { "processArrayAccessoryTypes", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 1, processArrayAccessoryTypes_args, 1, &processArrayAccessoryTypes_return };
-inline constexpr reg::Arg processArrayTypes_args[] = { reg::typed("arrayTypes", MAY_BE_ARRAY) };
-inline constexpr reg::Arg processArrayTypes_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig processArrayTypes = { "processArrayTypes", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 1, processArrayTypes_args, 1, &processArrayTypes_return };
-inline constexpr reg::Arg optimizeConstantArrays_args[] = { reg::typed("types", MAY_BE_ARRAY) };
-inline constexpr reg::Arg optimizeConstantArrays_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig optimizeConstantArrays = { "optimizeConstantArrays", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 1, optimizeConstantArrays_args, 1, &optimizeConstantArrays_return };
-inline constexpr reg::Arg countConstantArrayValueTypes_args[] = { reg::typed("types", MAY_BE_ARRAY) };
-inline constexpr reg::Arg countConstantArrayValueTypes_return = reg::typed("", MAY_BE_LONG);
-inline constexpr reg::Sig countConstantArrayValueTypes = { "countConstantArrayValueTypes", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, countConstantArrayValueTypes_args, 1, &countConstantArrayValueTypes_return };
-inline constexpr reg::Arg reduceArrays_args[] = { reg::typed("constantArrays", MAY_BE_ARRAY), reg::typed("preserveTaggedUnions", MAY_BE_BOOL) };
-inline constexpr reg::Arg reduceArrays_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig reduceArrays = { "reduceArrays", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 2, reduceArrays_args, 2, &reduceArrays_return };
-inline constexpr reg::Arg intersectFiniteUnions_args[] = { reg::typed("a", 0, "PHPStan\\Type\\UnionType"), reg::typed("b", 0, "PHPStan\\Type\\UnionType") };
-inline constexpr reg::Arg intersectFiniteUnions_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig intersectFiniteUnions = { "intersectFiniteUnions", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 2, intersectFiniteUnions_args, 2, &intersectFiniteUnions_return };
-inline constexpr reg::Arg finiteUnionMembers_args[] = { reg::typed("union", 0, "PHPStan\\Type\\UnionType") };
-inline constexpr reg::Arg finiteUnionMembers_return = reg::typed("", MAY_BE_NULL | MAY_BE_ARRAY);
-inline constexpr reg::Sig finiteUnionMembers = { "finiteUnionMembers", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 1, finiteUnionMembers_args, 1, &finiteUnionMembers_return };
-inline constexpr reg::Arg intersect_args[] = { reg::typed("types", 0, "PHPStan\\Type\\Type", false, true) };
-inline constexpr reg::Arg intersect_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig intersect = { "intersect", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, intersect_args, 1, &intersect_return };
-inline constexpr reg::Arg doIntersect_args[] = { reg::typed("types", 0, "PHPStan\\Type\\Type", false, true) };
-inline constexpr reg::Arg doIntersect_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig doIntersect = { "doIntersect", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, doIntersect_args, 1, &doIntersect_return };
-inline constexpr reg::Arg intersectDefiniteConstantArrays_args[] = { reg::typed("a", 0, "PHPStan\\Type\\Constant\\ConstantArrayType"), reg::typed("b", 0, "PHPStan\\Type\\Constant\\ConstantArrayType") };
-inline constexpr reg::Arg intersectDefiniteConstantArrays_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig intersectDefiniteConstantArrays = { "intersectDefiniteConstantArrays", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 2, intersectDefiniteConstantArrays_args, 2, &intersectDefiniteConstantArrays_return };
-inline constexpr reg::Arg mergeIntersectionsForUnion_args[] = { reg::typed("a", 0, "PHPStan\\Type\\IntersectionType"), reg::typed("b", 0, "PHPStan\\Type\\IntersectionType") };
-inline constexpr reg::Arg mergeIntersectionsForUnion_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig mergeIntersectionsForUnion = { "mergeIntersectionsForUnion", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 2, mergeIntersectionsForUnion_args, 2, &mergeIntersectionsForUnion_return };
-inline constexpr reg::Arg removeFalsey_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg removeFalsey_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig removeFalsey = { "removeFalsey", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, removeFalsey_args, 1, &removeFalsey_return };
-inline constexpr reg::Arg removeTruthy_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg removeTruthy_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig removeTruthy = { "removeTruthy", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, removeTruthy_args, 1, &removeTruthy_return };
+inline constexpr sigtab::Sig clearCache = { { 1 /* clearCache */, 0, 0, 0, 0, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig addNull = { { 35 /* addNull */, 1, 1, 1, 2, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig remove = { { 65 /* remove */, 2, 3, 2, 5, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig canRemoveUnionAtOnce = { { 72 /* canRemoveUnionAtOnce */, 1, 6, 1, 7, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig doRemove = { { 93 /* doRemove */, 2, 8, 2, 10, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig removeNull = { { 102 /* removeNull */, 1, 11, 1, 12, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig containsNull = { { 113 /* containsNull */, 1, 13, 1, 14, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig union_ = { { 132 /* union */, 0, 15, 1, 16, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig doUnion = { { 138 /* doUnion */, 0, 17, 1, 18, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig isAlreadyNormalized = { { 168 /* isAlreadyNormalized */, 3, 19, 3, 22, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig compareTypesInUnion = { { 188 /* compareTypesInUnion */, 2, 23, 2, 25, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig getAccessoryCaseStringTypes = { { 208 /* getAccessoryCaseStringTypes */, 1, 26, 1, 27, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig downgradeNonFalsyStringToNonEmpty = { { 236 /* downgradeNonFalsyStringToNonEmpty */, 1, 28, 1, 29, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig removeDecimalIntStringAccessory = { { 270 /* removeDecimalIntStringAccessory */, 1, 30, 1, 31, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig unionWithSubtractedType = { { 317 /* unionWithSubtractedType */, 2, 32, 2, 34, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig intersectWithSubtractedType = { { 371 /* intersectWithSubtractedType */, 2, 35, 2, 37, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig processArrayAccessoryTypes = { { 410 /* processArrayAccessoryTypes */, 1, 38, 1, 39, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig processArrayTypes = { { 437 /* processArrayTypes */, 1, 40, 1, 41, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig optimizeConstantArrays = { { 455 /* optimizeConstantArrays */, 1, 42, 1, 43, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig countConstantArrayValueTypes = { { 478 /* countConstantArrayValueTypes */, 1, 44, 1, 45, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig reduceArrays = { { 543 /* reduceArrays */, 2, 46, 2, 48, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig intersectFiniteUnions = { { 579 /* intersectFiniteUnions */, 2, 49, 2, 51, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig finiteUnionMembers = { { 601 /* finiteUnionMembers */, 1, 52, 1, 53, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig intersect = { { 620 /* intersect */, 0, 54, 1, 55, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig doIntersect = { { 630 /* doIntersect */, 0, 56, 1, 57, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig intersectDefiniteConstantArrays = { { 682 /* intersectDefiniteConstantArrays */, 2, 58, 2, 60, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig mergeIntersectionsForUnion = { { 744 /* mergeIntersectionsForUnion */, 2, 61, 2, 63, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig removeFalsey = { { 771 /* removeFalsey */, 1, 64, 1, 65, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig removeTruthy = { { 784 /* removeTruthy */, 1, 66, 1, 67, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::TypeCombinator

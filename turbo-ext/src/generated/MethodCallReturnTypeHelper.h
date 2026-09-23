@@ -26,13 +26,46 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("storagePrimer", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\DynamicReturnTypeStoragePrimer");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"dynamicReturnTypeExtensionRegistry\0" /* 0 */
+	"PHPStan\\Type\\DynamicReturnTypeExtensionRegistry\0" /* 35 */
+	"storagePrimer\0" /* 83 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\DynamicReturnTypeStoragePrimer\0" /* 97 */
+	"__construct\0" /* 164 */
+	"scope\0" /* 176 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 182 */
+	"typeWithMethod\0" /* 213 */
+	"PHPStan\\Type\\Type\0" /* 228 */
+	"methodName\0" /* 246 */
+	"methodCall\0" /* 257 */
+	"PhpParser\\Node\\Expr\\MethodCall|PhpParser\\Node\\Expr\\StaticCall\0" /* 268 */
+	"preResolvedAcceptor\0" /* 330 */
+	"PHPStan\\Reflection\\ParametersAcceptor\0" /* 350 */
+	"null\0" /* 388 */
+	"argsResult\0" /* 393 */
+	"PHPStan\\Analyser\\ArgsResult\0" /* 404 */
+	"\0" /* 432 */
+	"methodCallReturnType"; /* 433 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 35), /* __construct $dynamicReturnTypeExtensionRegistry */
+	reg::packed(83, 0, 97), /* __construct $storagePrimer */
+	reg::packed(176, 0, 182), /* methodCallReturnType $scope */
+	reg::packed(213, 0, 228), /* methodCallReturnType $typeWithMethod */
+	reg::packed(246, MAY_BE_STRING), /* methodCallReturnType $methodName */
+	reg::packed(257, 0, 268), /* methodCallReturnType $methodCall */
+	reg::packed(330, MAY_BE_NULL, 350, false, false, 388), /* methodCallReturnType $preResolvedAcceptor */
+	reg::packed(393, MAY_BE_NULL, 404, false, false, 388), /* methodCallReturnType $argsResult */
+	reg::packed(432, MAY_BE_NULL, 228), /* methodCallReturnType return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("dynamicReturnTypeExtensionRegistry", 0, "PHPStan\\Type\\DynamicReturnTypeExtensionRegistry"), reg::typed("storagePrimer", 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\DynamicReturnTypeStoragePrimer") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 2, __construct_args, 2, nullptr };
-inline constexpr reg::Arg methodCallReturnType_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("typeWithMethod", 0, "PHPStan\\Type\\Type"), reg::typed("methodName", MAY_BE_STRING), reg::typed("methodCall", 0, "PhpParser\\Node\\Expr\\MethodCall|PhpParser\\Node\\Expr\\StaticCall"), reg::typed("preResolvedAcceptor", MAY_BE_NULL, "PHPStan\\Reflection\\ParametersAcceptor", false, false, "null"), reg::typed("argsResult", MAY_BE_NULL, "PHPStan\\Analyser\\ArgsResult", false, false, "null") };
-inline constexpr reg::Arg methodCallReturnType_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig methodCallReturnType = { "methodCallReturnType", ZEND_ACC_PUBLIC, 4, methodCallReturnType_args, 6, &methodCallReturnType_return };
+inline constexpr sigtab::Sig __construct = { { 164 /* __construct */, 2, 0, 2, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig methodCallReturnType = { { 433 /* methodCallReturnType */, 4, 2, 6, 8, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::MethodCallReturnTypeHelper

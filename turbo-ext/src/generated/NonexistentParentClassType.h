@@ -34,121 +34,218 @@ inline void registerTraits(reg::Class &cls)
 	pt_type_trait_non_generalizable(cls);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"level\0" /* 0 */
+	"PHPStan\\Type\\VerbosityLevel\0" /* 6 */
+	"\0" /* 34 */
+	"describe\0" /* 35 */
+	"ancestorClassName\0" /* 44 */
+	"templateTypeName\0" /* 62 */
+	"PHPStan\\Type\\Type\0" /* 79 */
+	"getTemplateType\0" /* 97 */
+	"PHPStan\\TrinaryLogic\0" /* 113 */
+	"isObject\0" /* 134 */
+	"getClassStringType\0" /* 143 */
+	"isEnum\0" /* 162 */
+	"canAccessProperties\0" /* 169 */
+	"propertyName\0" /* 189 */
+	"hasProperty\0" /* 202 */
+	"scope\0" /* 214 */
+	"PHPStan\\Reflection\\ClassMemberAccessAnswerer\0" /* 220 */
+	"PHPStan\\Reflection\\ExtendedPropertyReflection\0" /* 265 */
+	"getProperty\0" /* 311 */
+	"PHPStan\\Reflection\\Type\\UnresolvedPropertyPrototypeReflection\0" /* 323 */
+	"getUnresolvedPropertyPrototype\0" /* 385 */
+	"hasInstanceProperty\0" /* 416 */
+	"getInstanceProperty\0" /* 436 */
+	"getUnresolvedInstancePropertyPrototype\0" /* 456 */
+	"hasStaticProperty\0" /* 495 */
+	"getStaticProperty\0" /* 513 */
+	"getUnresolvedStaticPropertyPrototype\0" /* 531 */
+	"canCallMethods\0" /* 568 */
+	"methodName\0" /* 583 */
+	"hasMethod\0" /* 594 */
+	"PHPStan\\Reflection\\ExtendedMethodReflection\0" /* 604 */
+	"getMethod\0" /* 648 */
+	"PHPStan\\Reflection\\Type\\UnresolvedMethodPrototypeReflection\0" /* 658 */
+	"getUnresolvedMethodPrototype\0" /* 718 */
+	"canAccessConstants\0" /* 747 */
+	"constantName\0" /* 766 */
+	"hasConstant\0" /* 779 */
+	"PHPStan\\Reflection\\ClassConstantReflection\0" /* 791 */
+	"getConstant\0" /* 834 */
+	"getConstantStrings\0" /* 846 */
+	"isCloneable\0" /* 865 */
+	"toNumber\0" /* 877 */
+	"toBitwiseNotType\0" /* 886 */
+	"toGetClassResultType\0" /* 903 */
+	"reflectionProvider\0" /* 924 */
+	"PHPStan\\Reflection\\ReflectionProvider\0" /* 943 */
+	"toClassConstantType\0" /* 981 */
+	"PHPStan\\Type\\ClassNameToObjectTypeResult\0" /* 1001 */
+	"toObjectTypeForInstanceofCheck\0" /* 1042 */
+	"objectOrClassType\0" /* 1073 */
+	"allowString\0" /* 1091 */
+	"allowSameClass\0" /* 1103 */
+	"toObjectTypeForIsACheck\0" /* 1118 */
+	"toAbsoluteNumber\0" /* 1142 */
+	"toString\0" /* 1159 */
+	"toInteger\0" /* 1168 */
+	"toFloat\0" /* 1178 */
+	"toArray\0" /* 1186 */
+	"toArrayKey\0" /* 1194 */
+	"strictTypes\0" /* 1205 */
+	"toCoercedArgumentType\0" /* 1217 */
+	"isOffsetAccessLegal\0" /* 1239 */
+	"isScalar\0" /* 1259 */
+	"type\0" /* 1268 */
+	"phpVersion\0" /* 1273 */
+	"PHPStan\\Php\\PhpVersion\0" /* 1284 */
+	"PHPStan\\Type\\BooleanType\0" /* 1307 */
+	"looseCompare\0" /* 1332 */
+	"getEnumCases\0" /* 1345 */
+	"PHPStan\\Type\\Enum\\EnumCaseObjectType\0" /* 1358 */
+	"getEnumCaseObject\0" /* 1395 */
+	"exponent\0" /* 1413 */
+	"exponentiate\0" /* 1422 */
+	"getFiniteTypes\0" /* 1435 */
+	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 1450 */
+	"toPhpDocNode\0" /* 1489 */
+	"hasTemplateOrLateResolvableType"; /* 1502 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 6), /* describe $level */
+	reg::packed(34, MAY_BE_STRING), /* describe return */
+	reg::packed(44, MAY_BE_STRING), /* getTemplateType $ancestorClassName */
+	reg::packed(62, MAY_BE_STRING), /* getTemplateType $templateTypeName */
+	reg::packed(34, 0, 79), /* getTemplateType return */
+	reg::packed(34, 0, 113), /* isObject return */
+	reg::packed(34, 0, 79), /* getClassStringType return */
+	reg::packed(34, 0, 113), /* isEnum return */
+	reg::packed(34, 0, 113), /* canAccessProperties return */
+	reg::packed(189, MAY_BE_STRING), /* hasProperty $propertyName */
+	reg::packed(34, 0, 113), /* hasProperty return */
+	reg::packed(189, MAY_BE_STRING), /* getProperty $propertyName */
+	reg::packed(214, 0, 220), /* getProperty $scope */
+	reg::packed(34, 0, 265), /* getProperty return */
+	reg::packed(189, MAY_BE_STRING), /* getUnresolvedPropertyPrototype $propertyName */
+	reg::packed(214, 0, 220), /* getUnresolvedPropertyPrototype $scope */
+	reg::packed(34, 0, 323), /* getUnresolvedPropertyPrototype return */
+	reg::packed(189, MAY_BE_STRING), /* hasInstanceProperty $propertyName */
+	reg::packed(34, 0, 113), /* hasInstanceProperty return */
+	reg::packed(189, MAY_BE_STRING), /* getInstanceProperty $propertyName */
+	reg::packed(214, 0, 220), /* getInstanceProperty $scope */
+	reg::packed(34, 0, 265), /* getInstanceProperty return */
+	reg::packed(189, MAY_BE_STRING), /* getUnresolvedInstancePropertyPrototype $propertyName */
+	reg::packed(214, 0, 220), /* getUnresolvedInstancePropertyPrototype $scope */
+	reg::packed(34, 0, 323), /* getUnresolvedInstancePropertyPrototype return */
+	reg::packed(189, MAY_BE_STRING), /* hasStaticProperty $propertyName */
+	reg::packed(34, 0, 113), /* hasStaticProperty return */
+	reg::packed(189, MAY_BE_STRING), /* getStaticProperty $propertyName */
+	reg::packed(214, 0, 220), /* getStaticProperty $scope */
+	reg::packed(34, 0, 265), /* getStaticProperty return */
+	reg::packed(189, MAY_BE_STRING), /* getUnresolvedStaticPropertyPrototype $propertyName */
+	reg::packed(214, 0, 220), /* getUnresolvedStaticPropertyPrototype $scope */
+	reg::packed(34, 0, 323), /* getUnresolvedStaticPropertyPrototype return */
+	reg::packed(34, 0, 113), /* canCallMethods return */
+	reg::packed(583, MAY_BE_STRING), /* hasMethod $methodName */
+	reg::packed(34, 0, 113), /* hasMethod return */
+	reg::packed(583, MAY_BE_STRING), /* getMethod $methodName */
+	reg::packed(214, 0, 220), /* getMethod $scope */
+	reg::packed(34, 0, 604), /* getMethod return */
+	reg::packed(583, MAY_BE_STRING), /* getUnresolvedMethodPrototype $methodName */
+	reg::packed(214, 0, 220), /* getUnresolvedMethodPrototype $scope */
+	reg::packed(34, 0, 658), /* getUnresolvedMethodPrototype return */
+	reg::packed(34, 0, 113), /* canAccessConstants return */
+	reg::packed(766, MAY_BE_STRING), /* hasConstant $constantName */
+	reg::packed(34, 0, 113), /* hasConstant return */
+	reg::packed(766, MAY_BE_STRING), /* getConstant $constantName */
+	reg::packed(34, 0, 791), /* getConstant return */
+	reg::packed(34, MAY_BE_ARRAY), /* getConstantStrings return */
+	reg::packed(34, 0, 113), /* isCloneable return */
+	reg::packed(34, 0, 79), /* toNumber return */
+	reg::packed(34, 0, 79), /* toBitwiseNotType return */
+	reg::packed(34, 0, 79), /* toGetClassResultType return */
+	reg::packed(924, 0, 943), /* toClassConstantType $reflectionProvider */
+	reg::packed(34, 0, 79), /* toClassConstantType return */
+	reg::packed(34, 0, 1001), /* toObjectTypeForInstanceofCheck return */
+	reg::packed(1073, 0, 79), /* toObjectTypeForIsACheck $objectOrClassType */
+	reg::packed(1091, MAY_BE_BOOL), /* toObjectTypeForIsACheck $allowString */
+	reg::packed(1103, MAY_BE_BOOL), /* toObjectTypeForIsACheck $allowSameClass */
+	reg::packed(34, 0, 1001), /* toObjectTypeForIsACheck return */
+	reg::packed(34, 0, 79), /* toAbsoluteNumber return */
+	reg::packed(34, 0, 79), /* toString return */
+	reg::packed(34, 0, 79), /* toInteger return */
+	reg::packed(34, 0, 79), /* toFloat return */
+	reg::packed(34, 0, 79), /* toArray return */
+	reg::packed(34, 0, 79), /* toArrayKey return */
+	reg::packed(1205, MAY_BE_BOOL), /* toCoercedArgumentType $strictTypes */
+	reg::packed(34, 0, 79), /* toCoercedArgumentType return */
+	reg::packed(34, 0, 113), /* isOffsetAccessLegal return */
+	reg::packed(34, 0, 113), /* isScalar return */
+	reg::packed(1268, 0, 79), /* looseCompare $type */
+	reg::packed(1273, 0, 1284), /* looseCompare $phpVersion */
+	reg::packed(34, 0, 1307), /* looseCompare return */
+	reg::packed(34, MAY_BE_ARRAY), /* getEnumCases return */
+	reg::packed(34, MAY_BE_NULL, 1358), /* getEnumCaseObject return */
+	reg::packed(1413, 0, 79), /* exponentiate $exponent */
+	reg::packed(34, 0, 79), /* exponentiate return */
+	reg::packed(34, MAY_BE_ARRAY), /* getFiniteTypes return */
+	reg::packed(34, 0, 1450), /* toPhpDocNode return */
+	reg::packed(34, MAY_BE_BOOL), /* hasTemplateOrLateResolvableType return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg describe_args[] = { reg::typed("level", 0, "PHPStan\\Type\\VerbosityLevel") };
-inline constexpr reg::Arg describe_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig describe = { "describe", ZEND_ACC_PUBLIC, 1, describe_args, 1, &describe_return };
-inline constexpr reg::Arg getTemplateType_args[] = { reg::typed("ancestorClassName", MAY_BE_STRING), reg::typed("templateTypeName", MAY_BE_STRING) };
-inline constexpr reg::Arg getTemplateType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getTemplateType = { "getTemplateType", ZEND_ACC_PUBLIC, 2, getTemplateType_args, 2, &getTemplateType_return };
-inline constexpr reg::Arg isObject_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isObject = { "isObject", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isObject_return };
-inline constexpr reg::Arg getClassStringType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getClassStringType = { "getClassStringType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getClassStringType_return };
-inline constexpr reg::Arg isEnum_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isEnum = { "isEnum", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isEnum_return };
-inline constexpr reg::Arg canAccessProperties_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig canAccessProperties = { "canAccessProperties", ZEND_ACC_PUBLIC, 0, nullptr, 0, &canAccessProperties_return };
-inline constexpr reg::Arg hasProperty_args[] = { reg::typed("propertyName", MAY_BE_STRING) };
-inline constexpr reg::Arg hasProperty_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig hasProperty = { "hasProperty", ZEND_ACC_PUBLIC, 1, hasProperty_args, 1, &hasProperty_return };
-inline constexpr reg::Arg getProperty_args[] = { reg::typed("propertyName", MAY_BE_STRING), reg::typed("scope", 0, "PHPStan\\Reflection\\ClassMemberAccessAnswerer") };
-inline constexpr reg::Arg getProperty_return = reg::typed("", 0, "PHPStan\\Reflection\\ExtendedPropertyReflection");
-inline constexpr reg::Sig getProperty = { "getProperty", ZEND_ACC_PUBLIC, 2, getProperty_args, 2, &getProperty_return };
-inline constexpr reg::Arg getUnresolvedPropertyPrototype_args[] = { reg::typed("propertyName", MAY_BE_STRING), reg::typed("scope", 0, "PHPStan\\Reflection\\ClassMemberAccessAnswerer") };
-inline constexpr reg::Arg getUnresolvedPropertyPrototype_return = reg::typed("", 0, "PHPStan\\Reflection\\Type\\UnresolvedPropertyPrototypeReflection");
-inline constexpr reg::Sig getUnresolvedPropertyPrototype = { "getUnresolvedPropertyPrototype", ZEND_ACC_PUBLIC, 2, getUnresolvedPropertyPrototype_args, 2, &getUnresolvedPropertyPrototype_return };
-inline constexpr reg::Arg hasInstanceProperty_args[] = { reg::typed("propertyName", MAY_BE_STRING) };
-inline constexpr reg::Arg hasInstanceProperty_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig hasInstanceProperty = { "hasInstanceProperty", ZEND_ACC_PUBLIC, 1, hasInstanceProperty_args, 1, &hasInstanceProperty_return };
-inline constexpr reg::Arg getInstanceProperty_args[] = { reg::typed("propertyName", MAY_BE_STRING), reg::typed("scope", 0, "PHPStan\\Reflection\\ClassMemberAccessAnswerer") };
-inline constexpr reg::Arg getInstanceProperty_return = reg::typed("", 0, "PHPStan\\Reflection\\ExtendedPropertyReflection");
-inline constexpr reg::Sig getInstanceProperty = { "getInstanceProperty", ZEND_ACC_PUBLIC, 2, getInstanceProperty_args, 2, &getInstanceProperty_return };
-inline constexpr reg::Arg getUnresolvedInstancePropertyPrototype_args[] = { reg::typed("propertyName", MAY_BE_STRING), reg::typed("scope", 0, "PHPStan\\Reflection\\ClassMemberAccessAnswerer") };
-inline constexpr reg::Arg getUnresolvedInstancePropertyPrototype_return = reg::typed("", 0, "PHPStan\\Reflection\\Type\\UnresolvedPropertyPrototypeReflection");
-inline constexpr reg::Sig getUnresolvedInstancePropertyPrototype = { "getUnresolvedInstancePropertyPrototype", ZEND_ACC_PUBLIC, 2, getUnresolvedInstancePropertyPrototype_args, 2, &getUnresolvedInstancePropertyPrototype_return };
-inline constexpr reg::Arg hasStaticProperty_args[] = { reg::typed("propertyName", MAY_BE_STRING) };
-inline constexpr reg::Arg hasStaticProperty_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig hasStaticProperty = { "hasStaticProperty", ZEND_ACC_PUBLIC, 1, hasStaticProperty_args, 1, &hasStaticProperty_return };
-inline constexpr reg::Arg getStaticProperty_args[] = { reg::typed("propertyName", MAY_BE_STRING), reg::typed("scope", 0, "PHPStan\\Reflection\\ClassMemberAccessAnswerer") };
-inline constexpr reg::Arg getStaticProperty_return = reg::typed("", 0, "PHPStan\\Reflection\\ExtendedPropertyReflection");
-inline constexpr reg::Sig getStaticProperty = { "getStaticProperty", ZEND_ACC_PUBLIC, 2, getStaticProperty_args, 2, &getStaticProperty_return };
-inline constexpr reg::Arg getUnresolvedStaticPropertyPrototype_args[] = { reg::typed("propertyName", MAY_BE_STRING), reg::typed("scope", 0, "PHPStan\\Reflection\\ClassMemberAccessAnswerer") };
-inline constexpr reg::Arg getUnresolvedStaticPropertyPrototype_return = reg::typed("", 0, "PHPStan\\Reflection\\Type\\UnresolvedPropertyPrototypeReflection");
-inline constexpr reg::Sig getUnresolvedStaticPropertyPrototype = { "getUnresolvedStaticPropertyPrototype", ZEND_ACC_PUBLIC, 2, getUnresolvedStaticPropertyPrototype_args, 2, &getUnresolvedStaticPropertyPrototype_return };
-inline constexpr reg::Arg canCallMethods_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig canCallMethods = { "canCallMethods", ZEND_ACC_PUBLIC, 0, nullptr, 0, &canCallMethods_return };
-inline constexpr reg::Arg hasMethod_args[] = { reg::typed("methodName", MAY_BE_STRING) };
-inline constexpr reg::Arg hasMethod_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig hasMethod = { "hasMethod", ZEND_ACC_PUBLIC, 1, hasMethod_args, 1, &hasMethod_return };
-inline constexpr reg::Arg getMethod_args[] = { reg::typed("methodName", MAY_BE_STRING), reg::typed("scope", 0, "PHPStan\\Reflection\\ClassMemberAccessAnswerer") };
-inline constexpr reg::Arg getMethod_return = reg::typed("", 0, "PHPStan\\Reflection\\ExtendedMethodReflection");
-inline constexpr reg::Sig getMethod = { "getMethod", ZEND_ACC_PUBLIC, 2, getMethod_args, 2, &getMethod_return };
-inline constexpr reg::Arg getUnresolvedMethodPrototype_args[] = { reg::typed("methodName", MAY_BE_STRING), reg::typed("scope", 0, "PHPStan\\Reflection\\ClassMemberAccessAnswerer") };
-inline constexpr reg::Arg getUnresolvedMethodPrototype_return = reg::typed("", 0, "PHPStan\\Reflection\\Type\\UnresolvedMethodPrototypeReflection");
-inline constexpr reg::Sig getUnresolvedMethodPrototype = { "getUnresolvedMethodPrototype", ZEND_ACC_PUBLIC, 2, getUnresolvedMethodPrototype_args, 2, &getUnresolvedMethodPrototype_return };
-inline constexpr reg::Arg canAccessConstants_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig canAccessConstants = { "canAccessConstants", ZEND_ACC_PUBLIC, 0, nullptr, 0, &canAccessConstants_return };
-inline constexpr reg::Arg hasConstant_args[] = { reg::typed("constantName", MAY_BE_STRING) };
-inline constexpr reg::Arg hasConstant_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig hasConstant = { "hasConstant", ZEND_ACC_PUBLIC, 1, hasConstant_args, 1, &hasConstant_return };
-inline constexpr reg::Arg getConstant_args[] = { reg::typed("constantName", MAY_BE_STRING) };
-inline constexpr reg::Arg getConstant_return = reg::typed("", 0, "PHPStan\\Reflection\\ClassConstantReflection");
-inline constexpr reg::Sig getConstant = { "getConstant", ZEND_ACC_PUBLIC, 1, getConstant_args, 1, &getConstant_return };
-inline constexpr reg::Arg getConstantStrings_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getConstantStrings = { "getConstantStrings", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getConstantStrings_return };
-inline constexpr reg::Arg isCloneable_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isCloneable = { "isCloneable", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isCloneable_return };
-inline constexpr reg::Arg toNumber_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig toNumber = { "toNumber", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toNumber_return };
-inline constexpr reg::Arg toBitwiseNotType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig toBitwiseNotType = { "toBitwiseNotType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toBitwiseNotType_return };
-inline constexpr reg::Arg toGetClassResultType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig toGetClassResultType = { "toGetClassResultType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toGetClassResultType_return };
-inline constexpr reg::Arg toClassConstantType_args[] = { reg::typed("reflectionProvider", 0, "PHPStan\\Reflection\\ReflectionProvider") };
-inline constexpr reg::Arg toClassConstantType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig toClassConstantType = { "toClassConstantType", ZEND_ACC_PUBLIC, 1, toClassConstantType_args, 1, &toClassConstantType_return };
-inline constexpr reg::Arg toObjectTypeForInstanceofCheck_return = reg::typed("", 0, "PHPStan\\Type\\ClassNameToObjectTypeResult");
-inline constexpr reg::Sig toObjectTypeForInstanceofCheck = { "toObjectTypeForInstanceofCheck", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toObjectTypeForInstanceofCheck_return };
-inline constexpr reg::Arg toObjectTypeForIsACheck_args[] = { reg::typed("objectOrClassType", 0, "PHPStan\\Type\\Type"), reg::typed("allowString", MAY_BE_BOOL), reg::typed("allowSameClass", MAY_BE_BOOL) };
-inline constexpr reg::Arg toObjectTypeForIsACheck_return = reg::typed("", 0, "PHPStan\\Type\\ClassNameToObjectTypeResult");
-inline constexpr reg::Sig toObjectTypeForIsACheck = { "toObjectTypeForIsACheck", ZEND_ACC_PUBLIC, 3, toObjectTypeForIsACheck_args, 3, &toObjectTypeForIsACheck_return };
-inline constexpr reg::Arg toAbsoluteNumber_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig toAbsoluteNumber = { "toAbsoluteNumber", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toAbsoluteNumber_return };
-inline constexpr reg::Arg toString_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig toString = { "toString", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toString_return };
-inline constexpr reg::Arg toInteger_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig toInteger = { "toInteger", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toInteger_return };
-inline constexpr reg::Arg toFloat_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig toFloat = { "toFloat", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toFloat_return };
-inline constexpr reg::Arg toArray_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig toArray = { "toArray", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toArray_return };
-inline constexpr reg::Arg toArrayKey_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig toArrayKey = { "toArrayKey", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toArrayKey_return };
-inline constexpr reg::Arg toCoercedArgumentType_args[] = { reg::typed("strictTypes", MAY_BE_BOOL) };
-inline constexpr reg::Arg toCoercedArgumentType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig toCoercedArgumentType = { "toCoercedArgumentType", ZEND_ACC_PUBLIC, 1, toCoercedArgumentType_args, 1, &toCoercedArgumentType_return };
-inline constexpr reg::Arg isOffsetAccessLegal_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isOffsetAccessLegal = { "isOffsetAccessLegal", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isOffsetAccessLegal_return };
-inline constexpr reg::Arg isScalar_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isScalar = { "isScalar", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isScalar_return };
-inline constexpr reg::Arg looseCompare_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type"), reg::typed("phpVersion", 0, "PHPStan\\Php\\PhpVersion") };
-inline constexpr reg::Arg looseCompare_return = reg::typed("", 0, "PHPStan\\Type\\BooleanType");
-inline constexpr reg::Sig looseCompare = { "looseCompare", ZEND_ACC_PUBLIC, 2, looseCompare_args, 2, &looseCompare_return };
-inline constexpr reg::Arg getEnumCases_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getEnumCases = { "getEnumCases", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getEnumCases_return };
-inline constexpr reg::Arg getEnumCaseObject_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Type\\Enum\\EnumCaseObjectType");
-inline constexpr reg::Sig getEnumCaseObject = { "getEnumCaseObject", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getEnumCaseObject_return };
-inline constexpr reg::Arg exponentiate_args[] = { reg::typed("exponent", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg exponentiate_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig exponentiate = { "exponentiate", ZEND_ACC_PUBLIC, 1, exponentiate_args, 1, &exponentiate_return };
-inline constexpr reg::Arg getFiniteTypes_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getFiniteTypes = { "getFiniteTypes", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getFiniteTypes_return };
-inline constexpr reg::Arg toPhpDocNode_return = reg::typed("", 0, "PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode");
-inline constexpr reg::Sig toPhpDocNode = { "toPhpDocNode", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toPhpDocNode_return };
-inline constexpr reg::Arg hasTemplateOrLateResolvableType_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig hasTemplateOrLateResolvableType = { "hasTemplateOrLateResolvableType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &hasTemplateOrLateResolvableType_return };
+inline constexpr sigtab::Sig describe = { { 35 /* describe */, 1, 0, 1, 1, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getTemplateType = { { 97 /* getTemplateType */, 2, 2, 2, 4, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isObject = { { 134 /* isObject */, 0, 5, 0, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getClassStringType = { { 143 /* getClassStringType */, 0, 6, 0, 6, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isEnum = { { 162 /* isEnum */, 0, 7, 0, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig canAccessProperties = { { 169 /* canAccessProperties */, 0, 8, 0, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasProperty = { { 202 /* hasProperty */, 1, 9, 1, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getProperty = { { 311 /* getProperty */, 2, 11, 2, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getUnresolvedPropertyPrototype = { { 385 /* getUnresolvedPropertyPrototype */, 2, 14, 2, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasInstanceProperty = { { 416 /* hasInstanceProperty */, 1, 17, 1, 18, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getInstanceProperty = { { 436 /* getInstanceProperty */, 2, 19, 2, 21, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getUnresolvedInstancePropertyPrototype = { { 456 /* getUnresolvedInstancePropertyPrototype */, 2, 22, 2, 24, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasStaticProperty = { { 495 /* hasStaticProperty */, 1, 25, 1, 26, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getStaticProperty = { { 513 /* getStaticProperty */, 2, 27, 2, 29, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getUnresolvedStaticPropertyPrototype = { { 531 /* getUnresolvedStaticPropertyPrototype */, 2, 30, 2, 32, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig canCallMethods = { { 568 /* canCallMethods */, 0, 33, 0, 33, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasMethod = { { 594 /* hasMethod */, 1, 34, 1, 35, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getMethod = { { 648 /* getMethod */, 2, 36, 2, 38, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getUnresolvedMethodPrototype = { { 718 /* getUnresolvedMethodPrototype */, 2, 39, 2, 41, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig canAccessConstants = { { 747 /* canAccessConstants */, 0, 42, 0, 42, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasConstant = { { 779 /* hasConstant */, 1, 43, 1, 44, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getConstant = { { 834 /* getConstant */, 1, 45, 1, 46, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getConstantStrings = { { 846 /* getConstantStrings */, 0, 47, 0, 47, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isCloneable = { { 865 /* isCloneable */, 0, 48, 0, 48, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toNumber = { { 877 /* toNumber */, 0, 49, 0, 49, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toBitwiseNotType = { { 886 /* toBitwiseNotType */, 0, 50, 0, 50, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toGetClassResultType = { { 903 /* toGetClassResultType */, 0, 51, 0, 51, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toClassConstantType = { { 981 /* toClassConstantType */, 1, 52, 1, 53, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toObjectTypeForInstanceofCheck = { { 1042 /* toObjectTypeForInstanceofCheck */, 0, 54, 0, 54, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toObjectTypeForIsACheck = { { 1118 /* toObjectTypeForIsACheck */, 3, 55, 3, 58, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toAbsoluteNumber = { { 1142 /* toAbsoluteNumber */, 0, 59, 0, 59, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toString = { { 1159 /* toString */, 0, 60, 0, 60, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toInteger = { { 1168 /* toInteger */, 0, 61, 0, 61, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toFloat = { { 1178 /* toFloat */, 0, 62, 0, 62, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toArray = { { 1186 /* toArray */, 0, 63, 0, 63, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toArrayKey = { { 1194 /* toArrayKey */, 0, 64, 0, 64, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toCoercedArgumentType = { { 1217 /* toCoercedArgumentType */, 1, 65, 1, 66, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isOffsetAccessLegal = { { 1239 /* isOffsetAccessLegal */, 0, 67, 0, 67, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isScalar = { { 1259 /* isScalar */, 0, 68, 0, 68, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig looseCompare = { { 1332 /* looseCompare */, 2, 69, 2, 71, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getEnumCases = { { 1345 /* getEnumCases */, 0, 72, 0, 72, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getEnumCaseObject = { { 1395 /* getEnumCaseObject */, 0, 73, 0, 73, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig exponentiate = { { 1422 /* exponentiate */, 1, 74, 1, 75, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getFiniteTypes = { { 1435 /* getFiniteTypes */, 0, 76, 0, 76, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toPhpDocNode = { { 1489 /* toPhpDocNode */, 0, 77, 0, 77, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 1502 /* hasTemplateOrLateResolvableType */, 0, 78, 0, 78, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::NonexistentParentClassType

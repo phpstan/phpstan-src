@@ -27,16 +27,48 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("nativeReturnType", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Type\\Type");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"templateTypeMap\0" /* 0 */
+	"PHPStan\\Type\\Generic\\TemplateTypeMap\0" /* 16 */
+	"resolvedTemplateTypeMap\0" /* 53 */
+	"parameters\0" /* 77 */
+	"isVariadic\0" /* 88 */
+	"returnType\0" /* 99 */
+	"PHPStan\\Type\\Type\0" /* 110 */
+	"phpDocReturnType\0" /* 128 */
+	"nativeReturnType\0" /* 145 */
+	"callSiteVarianceMap\0" /* 162 */
+	"PHPStan\\Type\\Generic\\TemplateTypeVarianceMap\0" /* 182 */
+	"null\0" /* 227 */
+	"__construct\0" /* 232 */
+	"\0" /* 244 */
+	"getParameters\0" /* 245 */
+	"getPhpDocReturnType\0" /* 259 */
+	"getNativeReturnType"; /* 279 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 16), /* __construct $templateTypeMap */
+	reg::packed(53, MAY_BE_NULL, 16), /* __construct $resolvedTemplateTypeMap */
+	reg::packed(77, MAY_BE_ARRAY), /* __construct $parameters */
+	reg::packed(88, MAY_BE_BOOL), /* __construct $isVariadic */
+	reg::packed(99, 0, 110), /* __construct $returnType */
+	reg::packed(128, 0, 110), /* __construct $phpDocReturnType */
+	reg::packed(145, 0, 110), /* __construct $nativeReturnType */
+	reg::packed(162, MAY_BE_NULL, 182, false, false, 227), /* __construct $callSiteVarianceMap */
+	reg::packed(244, MAY_BE_ARRAY), /* getParameters return */
+	reg::packed(244, 0, 110), /* getPhpDocReturnType return */
+	reg::packed(244, 0, 110), /* getNativeReturnType return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("templateTypeMap", 0, "PHPStan\\Type\\Generic\\TemplateTypeMap"), reg::typed("resolvedTemplateTypeMap", MAY_BE_NULL, "PHPStan\\Type\\Generic\\TemplateTypeMap"), reg::typed("parameters", MAY_BE_ARRAY), reg::typed("isVariadic", MAY_BE_BOOL), reg::typed("returnType", 0, "PHPStan\\Type\\Type"), reg::typed("phpDocReturnType", 0, "PHPStan\\Type\\Type"), reg::typed("nativeReturnType", 0, "PHPStan\\Type\\Type"), reg::typed("callSiteVarianceMap", MAY_BE_NULL, "PHPStan\\Type\\Generic\\TemplateTypeVarianceMap", false, false, "null") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 7, __construct_args, 8, nullptr };
-inline constexpr reg::Arg getParameters_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getParameters = { "getParameters", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getParameters_return };
-inline constexpr reg::Arg getPhpDocReturnType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getPhpDocReturnType = { "getPhpDocReturnType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getPhpDocReturnType_return };
-inline constexpr reg::Arg getNativeReturnType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getNativeReturnType = { "getNativeReturnType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getNativeReturnType_return };
+inline constexpr sigtab::Sig __construct = { { 232 /* __construct */, 7, 0, 8, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getParameters = { { 245 /* getParameters */, 0, 8, 0, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getPhpDocReturnType = { { 259 /* getPhpDocReturnType */, 0, 9, 0, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getNativeReturnType = { { 279 /* getNativeReturnType */, 0, 10, 0, 10, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ExtendedFunctionVariant

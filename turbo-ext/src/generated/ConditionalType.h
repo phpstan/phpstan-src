@@ -45,53 +45,104 @@ inline void registerTraits(reg::Class &cls)
 	pt_type_trait_non_generalizable(cls);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"subject\0" /* 0 */
+	"PHPStan\\Type\\Type\0" /* 8 */
+	"target\0" /* 26 */
+	"if\0" /* 33 */
+	"else\0" /* 36 */
+	"negated\0" /* 41 */
+	"__construct\0" /* 49 */
+	"\0" /* 61 */
+	"getSubject\0" /* 62 */
+	"getTarget\0" /* 73 */
+	"getIf\0" /* 83 */
+	"getElse\0" /* 89 */
+	"isNegated\0" /* 97 */
+	"type\0" /* 107 */
+	"PHPStan\\Type\\IsSuperTypeOfResult\0" /* 112 */
+	"isSuperTypeOf\0" /* 145 */
+	"getReferencedClasses\0" /* 159 */
+	"positionVariance\0" /* 180 */
+	"PHPStan\\Type\\Generic\\TemplateTypeVariance\0" /* 197 */
+	"getReferencedTemplateTypes\0" /* 239 */
+	"equals\0" /* 266 */
+	"level\0" /* 273 */
+	"PHPStan\\Type\\VerbosityLevel\0" /* 279 */
+	"describe\0" /* 307 */
+	"isResolvable\0" /* 316 */
+	"getResult\0" /* 329 */
+	"cb\0" /* 339 */
+	"traverse\0" /* 342 */
+	"right\0" /* 351 */
+	"traverseSimultaneously\0" /* 357 */
+	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 380 */
+	"toPhpDocNode\0" /* 419 */
+	"getNormalizedIf\0" /* 432 */
+	"getNormalizedElse\0" /* 448 */
+	"branch\0" /* 466 */
+	"conditionHolds\0" /* 473 */
+	"narrowSubjectIn"; /* 488 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 8), /* __construct $subject */
+	reg::packed(26, 0, 8), /* __construct $target */
+	reg::packed(33, 0, 8), /* __construct $if */
+	reg::packed(36, 0, 8), /* __construct $else */
+	reg::packed(41, MAY_BE_BOOL), /* __construct $negated */
+	reg::packed(61, 0, 8), /* getSubject return */
+	reg::packed(61, 0, 8), /* getTarget return */
+	reg::packed(61, 0, 8), /* getIf return */
+	reg::packed(61, 0, 8), /* getElse return */
+	reg::packed(61, MAY_BE_BOOL), /* isNegated return */
+	reg::packed(107, 0, 8), /* isSuperTypeOf $type */
+	reg::packed(61, 0, 112), /* isSuperTypeOf return */
+	reg::packed(61, MAY_BE_ARRAY), /* getReferencedClasses return */
+	reg::packed(180, 0, 197), /* getReferencedTemplateTypes $positionVariance */
+	reg::packed(61, MAY_BE_ARRAY), /* getReferencedTemplateTypes return */
+	reg::packed(107, 0, 8), /* equals $type */
+	reg::packed(61, MAY_BE_BOOL), /* equals return */
+	reg::packed(273, 0, 279), /* describe $level */
+	reg::packed(61, MAY_BE_STRING), /* describe return */
+	reg::packed(61, MAY_BE_BOOL), /* isResolvable return */
+	reg::packed(61, 0, 8), /* getResult return */
+	reg::packed(339, MAY_BE_CALLABLE), /* traverse $cb */
+	reg::packed(61, 0, 8), /* traverse return */
+	reg::packed(351, 0, 8), /* traverseSimultaneously $right */
+	reg::packed(339, MAY_BE_CALLABLE), /* traverseSimultaneously $cb */
+	reg::packed(61, 0, 8), /* traverseSimultaneously return */
+	reg::packed(61, 0, 380), /* toPhpDocNode return */
+	reg::packed(61, 0, 8), /* getNormalizedIf return */
+	reg::packed(61, 0, 8), /* getNormalizedElse return */
+	reg::packed(466, 0, 8), /* narrowSubjectIn $branch */
+	reg::packed(473, MAY_BE_BOOL), /* narrowSubjectIn $conditionHolds */
+	reg::packed(61, 0, 8), /* narrowSubjectIn return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("subject", 0, "PHPStan\\Type\\Type"), reg::typed("target", 0, "PHPStan\\Type\\Type"), reg::typed("if", 0, "PHPStan\\Type\\Type"), reg::typed("else", 0, "PHPStan\\Type\\Type"), reg::typed("negated", MAY_BE_BOOL) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 5, __construct_args, 5, nullptr };
-inline constexpr reg::Arg getSubject_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getSubject = { "getSubject", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getSubject_return };
-inline constexpr reg::Arg getTarget_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getTarget = { "getTarget", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getTarget_return };
-inline constexpr reg::Arg getIf_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getIf = { "getIf", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getIf_return };
-inline constexpr reg::Arg getElse_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getElse = { "getElse", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getElse_return };
-inline constexpr reg::Arg isNegated_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isNegated = { "isNegated", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isNegated_return };
-inline constexpr reg::Arg isSuperTypeOf_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg isSuperTypeOf_return = reg::typed("", 0, "PHPStan\\Type\\IsSuperTypeOfResult");
-inline constexpr reg::Sig isSuperTypeOf = { "isSuperTypeOf", ZEND_ACC_PUBLIC, 1, isSuperTypeOf_args, 1, &isSuperTypeOf_return };
-inline constexpr reg::Arg getReferencedClasses_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getReferencedClasses = { "getReferencedClasses", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getReferencedClasses_return };
-inline constexpr reg::Arg getReferencedTemplateTypes_args[] = { reg::typed("positionVariance", 0, "PHPStan\\Type\\Generic\\TemplateTypeVariance") };
-inline constexpr reg::Arg getReferencedTemplateTypes_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getReferencedTemplateTypes = { "getReferencedTemplateTypes", ZEND_ACC_PUBLIC, 1, getReferencedTemplateTypes_args, 1, &getReferencedTemplateTypes_return };
-inline constexpr reg::Arg equals_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg equals_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig equals = { "equals", ZEND_ACC_PUBLIC, 1, equals_args, 1, &equals_return };
-inline constexpr reg::Arg describe_args[] = { reg::typed("level", 0, "PHPStan\\Type\\VerbosityLevel") };
-inline constexpr reg::Arg describe_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig describe = { "describe", ZEND_ACC_PUBLIC, 1, describe_args, 1, &describe_return };
-inline constexpr reg::Arg isResolvable_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isResolvable = { "isResolvable", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isResolvable_return };
-inline constexpr reg::Arg getResult_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getResult = { "getResult", ZEND_ACC_PROTECTED, 0, nullptr, 0, &getResult_return };
-inline constexpr reg::Arg traverse_args[] = { reg::typed("cb", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg traverse_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig traverse = { "traverse", ZEND_ACC_PUBLIC, 1, traverse_args, 1, &traverse_return };
-inline constexpr reg::Arg traverseSimultaneously_args[] = { reg::typed("right", 0, "PHPStan\\Type\\Type"), reg::typed("cb", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg traverseSimultaneously_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig traverseSimultaneously = { "traverseSimultaneously", ZEND_ACC_PUBLIC, 2, traverseSimultaneously_args, 2, &traverseSimultaneously_return };
-inline constexpr reg::Arg toPhpDocNode_return = reg::typed("", 0, "PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode");
-inline constexpr reg::Sig toPhpDocNode = { "toPhpDocNode", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toPhpDocNode_return };
-inline constexpr reg::Arg getNormalizedIf_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getNormalizedIf = { "getNormalizedIf", ZEND_ACC_PRIVATE, 0, nullptr, 0, &getNormalizedIf_return };
-inline constexpr reg::Arg getNormalizedElse_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getNormalizedElse = { "getNormalizedElse", ZEND_ACC_PRIVATE, 0, nullptr, 0, &getNormalizedElse_return };
-inline constexpr reg::Arg narrowSubjectIn_args[] = { reg::typed("branch", 0, "PHPStan\\Type\\Type"), reg::typed("conditionHolds", MAY_BE_BOOL) };
-inline constexpr reg::Arg narrowSubjectIn_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig narrowSubjectIn = { "narrowSubjectIn", ZEND_ACC_PRIVATE, 2, narrowSubjectIn_args, 2, &narrowSubjectIn_return };
+inline constexpr sigtab::Sig __construct = { { 49 /* __construct */, 5, 0, 5, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getSubject = { { 62 /* getSubject */, 0, 5, 0, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getTarget = { { 73 /* getTarget */, 0, 6, 0, 6, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getIf = { { 83 /* getIf */, 0, 7, 0, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getElse = { { 89 /* getElse */, 0, 8, 0, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isNegated = { { 97 /* isNegated */, 0, 9, 0, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isSuperTypeOf = { { 145 /* isSuperTypeOf */, 1, 10, 1, 11, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getReferencedClasses = { { 159 /* getReferencedClasses */, 0, 12, 0, 12, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getReferencedTemplateTypes = { { 239 /* getReferencedTemplateTypes */, 1, 13, 1, 14, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig equals = { { 266 /* equals */, 1, 15, 1, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig describe = { { 307 /* describe */, 1, 17, 1, 18, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isResolvable = { { 316 /* isResolvable */, 0, 19, 0, 19, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getResult = { { 329 /* getResult */, 0, 20, 0, 20, ZEND_ACC_PROTECTED } };
+inline constexpr sigtab::Sig traverse = { { 342 /* traverse */, 1, 21, 1, 22, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig traverseSimultaneously = { { 357 /* traverseSimultaneously */, 2, 23, 2, 25, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toPhpDocNode = { { 419 /* toPhpDocNode */, 0, 26, 0, 26, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getNormalizedIf = { { 432 /* getNormalizedIf */, 0, 27, 0, 27, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getNormalizedElse = { { 448 /* getNormalizedElse */, 0, 28, 0, 28, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig narrowSubjectIn = { { 488 /* narrowSubjectIn */, 2, 29, 2, 31, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::ConditionalType

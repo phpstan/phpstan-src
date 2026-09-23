@@ -19,26 +19,58 @@ inline void declareProperties(reg::Class &cls)
 	(void) cls;
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"type\0" /* 0 */
+	"PHPStan\\Type\\Type\0" /* 5 */
+	"standins\0" /* 23 */
+	"PHPStan\\Type\\Generic\\TemplateTypeMap\0" /* 32 */
+	"callSiteVariances\0" /* 69 */
+	"PHPStan\\Type\\Generic\\TemplateTypeVarianceMap\0" /* 87 */
+	"positionVariance\0" /* 132 */
+	"PHPStan\\Type\\Generic\\TemplateTypeVariance\0" /* 149 */
+	"keepErrorTypes\0" /* 191 */
+	"false\0" /* 206 */
+	"\0" /* 212 */
+	"resolveTemplateTypes\0" /* 213 */
+	"resolveToDefaults\0" /* 234 */
+	"resolveToBounds\0" /* 252 */
+	"toArgument\0" /* 268 */
+	"removeFinalByKeywordOverrides\0" /* 279 */
+	"templateType\0" /* 309 */
+	"PHPStan\\Type\\Generic\\TemplateType\0" /* 322 */
+	"generalizeInferredTemplateType"; /* 356 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 5), /* resolveTemplateTypes $type */
+	reg::packed(23, 0, 32), /* resolveTemplateTypes $standins */
+	reg::packed(69, 0, 87), /* resolveTemplateTypes $callSiteVariances */
+	reg::packed(132, 0, 149), /* resolveTemplateTypes $positionVariance */
+	reg::packed(191, MAY_BE_BOOL, reg::NoString, false, false, 206), /* resolveTemplateTypes $keepErrorTypes */
+	reg::packed(212, 0, 5), /* resolveTemplateTypes return */
+	reg::packed(0, 0, 5), /* resolveToDefaults $type */
+	reg::packed(212, 0, 5), /* resolveToDefaults return */
+	reg::packed(0, 0, 5), /* resolveToBounds $type */
+	reg::packed(212, 0, 5), /* resolveToBounds return */
+	reg::packed(0, 0, 5), /* toArgument $type */
+	reg::packed(212, 0, 5), /* toArgument return */
+	reg::packed(0, 0, 5), /* removeFinalByKeywordOverrides $type */
+	reg::packed(212, 0, 5), /* removeFinalByKeywordOverrides return */
+	reg::packed(309, 0, 322), /* generalizeInferredTemplateType $templateType */
+	reg::packed(0, 0, 5), /* generalizeInferredTemplateType $type */
+	reg::packed(212, 0, 5), /* generalizeInferredTemplateType return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg resolveTemplateTypes_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type"), reg::typed("standins", 0, "PHPStan\\Type\\Generic\\TemplateTypeMap"), reg::typed("callSiteVariances", 0, "PHPStan\\Type\\Generic\\TemplateTypeVarianceMap"), reg::typed("positionVariance", 0, "PHPStan\\Type\\Generic\\TemplateTypeVariance"), reg::typed("keepErrorTypes", MAY_BE_BOOL, nullptr, false, false, "false") };
-inline constexpr reg::Arg resolveTemplateTypes_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig resolveTemplateTypes = { "resolveTemplateTypes", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 4, resolveTemplateTypes_args, 5, &resolveTemplateTypes_return };
-inline constexpr reg::Arg resolveToDefaults_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg resolveToDefaults_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig resolveToDefaults = { "resolveToDefaults", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, resolveToDefaults_args, 1, &resolveToDefaults_return };
-inline constexpr reg::Arg resolveToBounds_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg resolveToBounds_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig resolveToBounds = { "resolveToBounds", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, resolveToBounds_args, 1, &resolveToBounds_return };
-inline constexpr reg::Arg toArgument_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg toArgument_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig toArgument = { "toArgument", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, toArgument_args, 1, &toArgument_return };
-inline constexpr reg::Arg removeFinalByKeywordOverrides_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg removeFinalByKeywordOverrides_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig removeFinalByKeywordOverrides = { "removeFinalByKeywordOverrides", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, removeFinalByKeywordOverrides_args, 1, &removeFinalByKeywordOverrides_return };
-inline constexpr reg::Arg generalizeInferredTemplateType_args[] = { reg::typed("templateType", 0, "PHPStan\\Type\\Generic\\TemplateType"), reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg generalizeInferredTemplateType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig generalizeInferredTemplateType = { "generalizeInferredTemplateType", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, generalizeInferredTemplateType_args, 2, &generalizeInferredTemplateType_return };
+inline constexpr sigtab::Sig resolveTemplateTypes = { { 213 /* resolveTemplateTypes */, 4, 0, 5, 5, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig resolveToDefaults = { { 234 /* resolveToDefaults */, 1, 6, 1, 7, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig resolveToBounds = { { 252 /* resolveToBounds */, 1, 8, 1, 9, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig toArgument = { { 268 /* toArgument */, 1, 10, 1, 11, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig removeFinalByKeywordOverrides = { { 279 /* removeFinalByKeywordOverrides */, 1, 12, 1, 13, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig generalizeInferredTemplateType = { { 356 /* generalizeInferredTemplateType */, 2, 14, 2, 16, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::TemplateTypeHelper

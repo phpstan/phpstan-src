@@ -35,27 +35,59 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("defaultValue", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_NULL, "PHPStan\\Type\\Type");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"name\0" /* 0 */
+	"optional\0" /* 5 */
+	"type\0" /* 14 */
+	"PHPStan\\Type\\Type\0" /* 19 */
+	"passedByReference\0" /* 37 */
+	"PHPStan\\Reflection\\PassedByReference\0" /* 55 */
+	"variadic\0" /* 92 */
+	"defaultValue\0" /* 101 */
+	"__construct\0" /* 114 */
+	"\0" /* 126 */
+	"getName\0" /* 127 */
+	"isOptional\0" /* 135 */
+	"getType\0" /* 146 */
+	"isVariadic\0" /* 154 */
+	"getDefaultValue\0" /* 165 */
+	"PHPStan\\Reflection\\Native\\NativeParameterReflection\0" /* 181 */
+	"toOptional\0" /* 233 */
+	"other\0" /* 244 */
+	"union"; /* 250 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_STRING), /* __construct $name */
+	reg::packed(5, MAY_BE_BOOL), /* __construct $optional */
+	reg::packed(14, 0, 19), /* __construct $type */
+	reg::packed(37, 0, 55), /* __construct $passedByReference */
+	reg::packed(92, MAY_BE_BOOL), /* __construct $variadic */
+	reg::packed(101, MAY_BE_NULL, 19), /* __construct $defaultValue */
+	reg::packed(126, MAY_BE_STRING), /* getName return */
+	reg::packed(126, MAY_BE_BOOL), /* isOptional return */
+	reg::packed(126, 0, 19), /* getType return */
+	reg::packed(126, 0, 55), /* passedByReference return */
+	reg::packed(126, MAY_BE_BOOL), /* isVariadic return */
+	reg::packed(126, MAY_BE_NULL, 19), /* getDefaultValue return */
+	reg::packed(126, 0, 181), /* toOptional return */
+	reg::packed(244, 0, 181), /* union $other */
+	reg::packed(126, 0, 181), /* union return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("name", MAY_BE_STRING), reg::typed("optional", MAY_BE_BOOL), reg::typed("type", 0, "PHPStan\\Type\\Type"), reg::typed("passedByReference", 0, "PHPStan\\Reflection\\PassedByReference"), reg::typed("variadic", MAY_BE_BOOL), reg::typed("defaultValue", MAY_BE_NULL, "PHPStan\\Type\\Type") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 6, __construct_args, 6, nullptr };
-inline constexpr reg::Arg getName_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig getName = { "getName", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getName_return };
-inline constexpr reg::Arg isOptional_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isOptional = { "isOptional", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isOptional_return };
-inline constexpr reg::Arg getType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getType = { "getType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getType_return };
-inline constexpr reg::Arg passedByReference_return = reg::typed("", 0, "PHPStan\\Reflection\\PassedByReference");
-inline constexpr reg::Sig passedByReference = { "passedByReference", ZEND_ACC_PUBLIC, 0, nullptr, 0, &passedByReference_return };
-inline constexpr reg::Arg isVariadic_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isVariadic = { "isVariadic", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isVariadic_return };
-inline constexpr reg::Arg getDefaultValue_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getDefaultValue = { "getDefaultValue", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getDefaultValue_return };
-inline constexpr reg::Arg toOptional_return = reg::typed("", 0, "PHPStan\\Reflection\\Native\\NativeParameterReflection");
-inline constexpr reg::Sig toOptional = { "toOptional", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toOptional_return };
-inline constexpr reg::Arg union__args[] = { reg::typed("other", 0, "PHPStan\\Reflection\\Native\\NativeParameterReflection") };
-inline constexpr reg::Arg union__return = reg::typed("", 0, "PHPStan\\Reflection\\Native\\NativeParameterReflection");
-inline constexpr reg::Sig union_ = { "union", ZEND_ACC_PUBLIC, 1, union__args, 1, &union__return };
+inline constexpr sigtab::Sig __construct = { { 114 /* __construct */, 6, 0, 6, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getName = { { 127 /* getName */, 0, 6, 0, 6, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isOptional = { { 135 /* isOptional */, 0, 7, 0, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getType = { { 146 /* getType */, 0, 8, 0, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig passedByReference = { { 37 /* passedByReference */, 0, 9, 0, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isVariadic = { { 154 /* isVariadic */, 0, 10, 0, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getDefaultValue = { { 165 /* getDefaultValue */, 0, 11, 0, 11, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toOptional = { { 233 /* toOptional */, 0, 12, 0, 12, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig union_ = { { 250 /* union */, 1, 13, 1, 14, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::NativeParameterReflection

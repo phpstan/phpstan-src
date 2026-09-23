@@ -25,31 +25,53 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("value", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_LONG);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"value\0" /* 0 */
+	"__construct\0" /* 6 */
+	"\0" /* 18 */
+	"PHPStan\\Reflection\\PassedByReference\0" /* 19 */
+	"create\0" /* 56 */
+	"createNo\0" /* 63 */
+	"createCreatesNewVariable\0" /* 72 */
+	"createReadsArgument\0" /* 97 */
+	"no\0" /* 117 */
+	"yes\0" /* 120 */
+	"other\0" /* 124 */
+	"equals\0" /* 130 */
+	"createsNewVariable\0" /* 137 */
+	"combine"; /* 156 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_LONG), /* __construct $value */
+	reg::packed(0, MAY_BE_LONG), /* create $value */
+	reg::packed(18, 0, 19), /* create return */
+	reg::packed(18, 0, 19), /* createNo return */
+	reg::packed(18, 0, 19), /* createCreatesNewVariable return */
+	reg::packed(18, 0, 19), /* createReadsArgument return */
+	reg::packed(18, MAY_BE_BOOL), /* no return */
+	reg::packed(18, MAY_BE_BOOL), /* yes return */
+	reg::packed(124, 0, 19), /* equals $other */
+	reg::packed(18, MAY_BE_BOOL), /* equals return */
+	reg::packed(18, MAY_BE_BOOL), /* createsNewVariable return */
+	reg::packed(124, 0, 19), /* combine $other */
+	reg::packed(18, 0, 19), /* combine return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("value", MAY_BE_LONG) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PRIVATE, 1, __construct_args, 1, nullptr };
-inline constexpr reg::Arg create_args[] = { reg::typed("value", MAY_BE_LONG) };
-inline constexpr reg::Arg create_return = reg::typed("", 0, "PHPStan\\Reflection\\PassedByReference");
-inline constexpr reg::Sig create = { "create", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 1, create_args, 1, &create_return };
-inline constexpr reg::Arg createNo_return = reg::typed("", 0, "PHPStan\\Reflection\\PassedByReference");
-inline constexpr reg::Sig createNo = { "createNo", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &createNo_return };
-inline constexpr reg::Arg createCreatesNewVariable_return = reg::typed("", 0, "PHPStan\\Reflection\\PassedByReference");
-inline constexpr reg::Sig createCreatesNewVariable = { "createCreatesNewVariable", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &createCreatesNewVariable_return };
-inline constexpr reg::Arg createReadsArgument_return = reg::typed("", 0, "PHPStan\\Reflection\\PassedByReference");
-inline constexpr reg::Sig createReadsArgument = { "createReadsArgument", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &createReadsArgument_return };
-inline constexpr reg::Arg no_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig no = { "no", ZEND_ACC_PUBLIC, 0, nullptr, 0, &no_return };
-inline constexpr reg::Arg yes_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig yes = { "yes", ZEND_ACC_PUBLIC, 0, nullptr, 0, &yes_return };
-inline constexpr reg::Arg equals_args[] = { reg::typed("other", 0, "PHPStan\\Reflection\\PassedByReference") };
-inline constexpr reg::Arg equals_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig equals = { "equals", ZEND_ACC_PUBLIC, 1, equals_args, 1, &equals_return };
-inline constexpr reg::Arg createsNewVariable_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig createsNewVariable = { "createsNewVariable", ZEND_ACC_PUBLIC, 0, nullptr, 0, &createsNewVariable_return };
-inline constexpr reg::Arg combine_args[] = { reg::typed("other", 0, "PHPStan\\Reflection\\PassedByReference") };
-inline constexpr reg::Arg combine_return = reg::typed("", 0, "PHPStan\\Reflection\\PassedByReference");
-inline constexpr reg::Sig combine = { "combine", ZEND_ACC_PUBLIC, 1, combine_args, 1, &combine_return };
+inline constexpr sigtab::Sig __construct = { { 6 /* __construct */, 1, 0, 1, reg::NoArg, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig create = { { 56 /* create */, 1, 1, 1, 2, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createNo = { { 63 /* createNo */, 0, 3, 0, 3, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createCreatesNewVariable = { { 72 /* createCreatesNewVariable */, 0, 4, 0, 4, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createReadsArgument = { { 97 /* createReadsArgument */, 0, 5, 0, 5, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig no = { { 117 /* no */, 0, 6, 0, 6, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig yes = { { 120 /* yes */, 0, 7, 0, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig equals = { { 130 /* equals */, 1, 8, 1, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig createsNewVariable = { { 137 /* createsNewVariable */, 0, 10, 0, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig combine = { { 156 /* combine */, 1, 11, 1, 12, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::PassedByReference

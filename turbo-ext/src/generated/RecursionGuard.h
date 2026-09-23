@@ -19,12 +19,27 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("context", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"type\0" /* 0 */
+	"PHPStan\\Type\\Type\0" /* 5 */
+	"callback\0" /* 23 */
+	"run\0" /* 32 */
+	"runOnObjectIdentity"; /* 36 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 5), /* run $type */
+	reg::packed(23, MAY_BE_CALLABLE), /* run $callback */
+	reg::packed(0, 0, 5), /* runOnObjectIdentity $type */
+	reg::packed(23, MAY_BE_CALLABLE), /* runOnObjectIdentity $callback */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg run_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type"), reg::typed("callback", MAY_BE_CALLABLE) };
-inline constexpr reg::Sig run = { "run", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, run_args, 2, nullptr };
-inline constexpr reg::Arg runOnObjectIdentity_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type"), reg::typed("callback", MAY_BE_CALLABLE) };
-inline constexpr reg::Sig runOnObjectIdentity = { "runOnObjectIdentity", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, runOnObjectIdentity_args, 2, nullptr };
+inline constexpr sigtab::Sig run = { { 32 /* run */, 2, 0, 2, reg::NoArg, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig runOnObjectIdentity = { { 36 /* runOnObjectIdentity */, 2, 2, 2, reg::NoArg, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::RecursionGuard

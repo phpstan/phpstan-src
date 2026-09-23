@@ -8,20 +8,36 @@
 
 namespace ptdecl::ConstantNumericComparisonTypeTrait {
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"phpVersion\0" /* 0 */
+	"PHPStan\\Php\\PhpVersion\0" /* 11 */
+	"\0" /* 34 */
+	"PHPStan\\Type\\Type\0" /* 35 */
+	"getSmallerType\0" /* 53 */
+	"getSmallerOrEqualType\0" /* 68 */
+	"getGreaterType\0" /* 90 */
+	"getGreaterOrEqualType"; /* 105 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 11), /* getSmallerType $phpVersion */
+	reg::packed(34, 0, 35), /* getSmallerType return */
+	reg::packed(0, 0, 11), /* getSmallerOrEqualType $phpVersion */
+	reg::packed(34, 0, 35), /* getSmallerOrEqualType return */
+	reg::packed(0, 0, 11), /* getGreaterType $phpVersion */
+	reg::packed(34, 0, 35), /* getGreaterType return */
+	reg::packed(0, 0, 11), /* getGreaterOrEqualType $phpVersion */
+	reg::packed(34, 0, 35), /* getGreaterOrEqualType return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the trait declares itself */
 namespace sig {
-inline constexpr reg::Arg getSmallerType_args[] = { reg::typed("phpVersion", 0, "PHPStan\\Php\\PhpVersion") };
-inline constexpr reg::Arg getSmallerType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getSmallerType = { "getSmallerType", ZEND_ACC_PUBLIC, 1, getSmallerType_args, 1, &getSmallerType_return };
-inline constexpr reg::Arg getSmallerOrEqualType_args[] = { reg::typed("phpVersion", 0, "PHPStan\\Php\\PhpVersion") };
-inline constexpr reg::Arg getSmallerOrEqualType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getSmallerOrEqualType = { "getSmallerOrEqualType", ZEND_ACC_PUBLIC, 1, getSmallerOrEqualType_args, 1, &getSmallerOrEqualType_return };
-inline constexpr reg::Arg getGreaterType_args[] = { reg::typed("phpVersion", 0, "PHPStan\\Php\\PhpVersion") };
-inline constexpr reg::Arg getGreaterType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getGreaterType = { "getGreaterType", ZEND_ACC_PUBLIC, 1, getGreaterType_args, 1, &getGreaterType_return };
-inline constexpr reg::Arg getGreaterOrEqualType_args[] = { reg::typed("phpVersion", 0, "PHPStan\\Php\\PhpVersion") };
-inline constexpr reg::Arg getGreaterOrEqualType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getGreaterOrEqualType = { "getGreaterOrEqualType", ZEND_ACC_PUBLIC, 1, getGreaterOrEqualType_args, 1, &getGreaterOrEqualType_return };
+inline constexpr sigtab::Sig getSmallerType = { { 53 /* getSmallerType */, 1, 0, 1, 1, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getSmallerOrEqualType = { { 68 /* getSmallerOrEqualType */, 1, 2, 1, 3, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getGreaterType = { { 90 /* getGreaterType */, 1, 4, 1, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getGreaterOrEqualType = { { 105 /* getGreaterOrEqualType */, 1, 6, 1, 7, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ConstantNumericComparisonTypeTrait

@@ -19,20 +19,40 @@ inline void declareProperties(reg::Class &cls)
 	(void) cls;
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"loop\0" /* 0 */
+	"PhpParser\\Node\0" /* 5 */
+	"passFlow\0" /* 20 */
+	"PHPStan\\Analyser\\VariableFlow\0" /* 29 */
+	"\0" /* 59 */
+	"collect\0" /* 60 */
+	"getSyntacticNames\0" /* 68 */
+	"findSyntacticNames\0" /* 86 */
+	"target\0" /* 105 */
+	"PhpParser\\Node\\Expr\0" /* 112 */
+	"getTargetNames"; /* 132 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 5), /* collect $loop */
+	reg::packed(20, MAY_BE_NULL, 29), /* collect $passFlow */
+	reg::packed(59, MAY_BE_NULL | MAY_BE_ARRAY), /* collect return */
+	reg::packed(0, 0, 5), /* getSyntacticNames $loop */
+	reg::packed(59, MAY_BE_NULL | MAY_BE_ARRAY), /* getSyntacticNames return */
+	reg::packed(0, 0, 5), /* findSyntacticNames $loop */
+	reg::packed(59, MAY_BE_NULL | MAY_BE_ARRAY), /* findSyntacticNames return */
+	reg::packed(105, 0, 112), /* getTargetNames $target */
+	reg::packed(59, MAY_BE_NULL | MAY_BE_ARRAY), /* getTargetNames return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg collect_args[] = { reg::typed("loop", 0, "PhpParser\\Node"), reg::typed("passFlow", MAY_BE_NULL, "PHPStan\\Analyser\\VariableFlow") };
-inline constexpr reg::Arg collect_return = reg::typed("", MAY_BE_NULL | MAY_BE_ARRAY);
-inline constexpr reg::Sig collect = { "collect", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, collect_args, 2, &collect_return };
-inline constexpr reg::Arg getSyntacticNames_args[] = { reg::typed("loop", 0, "PhpParser\\Node") };
-inline constexpr reg::Arg getSyntacticNames_return = reg::typed("", MAY_BE_NULL | MAY_BE_ARRAY);
-inline constexpr reg::Sig getSyntacticNames = { "getSyntacticNames", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 1, getSyntacticNames_args, 1, &getSyntacticNames_return };
-inline constexpr reg::Arg findSyntacticNames_args[] = { reg::typed("loop", 0, "PhpParser\\Node") };
-inline constexpr reg::Arg findSyntacticNames_return = reg::typed("", MAY_BE_NULL | MAY_BE_ARRAY);
-inline constexpr reg::Sig findSyntacticNames = { "findSyntacticNames", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 1, findSyntacticNames_args, 1, &findSyntacticNames_return };
-inline constexpr reg::Arg getTargetNames_args[] = { reg::typed("target", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg getTargetNames_return = reg::typed("", MAY_BE_NULL | MAY_BE_ARRAY);
-inline constexpr reg::Sig getTargetNames = { "getTargetNames", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 1, getTargetNames_args, 1, &getTargetNames_return };
+inline constexpr sigtab::Sig collect = { { 60 /* collect */, 2, 0, 2, 2, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig getSyntacticNames = { { 68 /* getSyntacticNames */, 1, 3, 1, 4, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig findSyntacticNames = { { 86 /* findSyntacticNames */, 1, 5, 1, 6, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig getTargetNames = { { 132 /* getTargetNames */, 1, 7, 1, 8, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::LoopWrittenVariableNames

@@ -26,14 +26,31 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("positionVariance", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Type\\Generic\\TemplateTypeVariance");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"type\0" /* 0 */
+	"PHPStan\\Type\\Generic\\TemplateType\0" /* 5 */
+	"positionVariance\0" /* 39 */
+	"PHPStan\\Type\\Generic\\TemplateTypeVariance\0" /* 56 */
+	"__construct\0" /* 98 */
+	"\0" /* 110 */
+	"getType\0" /* 111 */
+	"getPositionVariance"; /* 119 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 5), /* __construct $type */
+	reg::packed(39, 0, 56), /* __construct $positionVariance */
+	reg::packed(110, 0, 5), /* getType return */
+	reg::packed(110, 0, 56), /* getPositionVariance return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Generic\\TemplateType"), reg::typed("positionVariance", 0, "PHPStan\\Type\\Generic\\TemplateTypeVariance") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 2, __construct_args, 2, nullptr };
-inline constexpr reg::Arg getType_return = reg::typed("", 0, "PHPStan\\Type\\Generic\\TemplateType");
-inline constexpr reg::Sig getType = { "getType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getType_return };
-inline constexpr reg::Arg getPositionVariance_return = reg::typed("", 0, "PHPStan\\Type\\Generic\\TemplateTypeVariance");
-inline constexpr reg::Sig getPositionVariance = { "getPositionVariance", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getPositionVariance_return };
+inline constexpr sigtab::Sig __construct = { { 98 /* __construct */, 2, 0, 2, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getType = { { 111 /* getType */, 0, 2, 0, 2, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getPositionVariance = { { 119 /* getPositionVariance */, 0, 3, 0, 3, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::TemplateTypeReference

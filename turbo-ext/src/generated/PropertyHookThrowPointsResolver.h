@@ -24,13 +24,35 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("implicitThrows", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_BOOL);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"implicitThrows\0" /* 0 */
+	"__construct\0" /* 15 */
+	"scope\0" /* 27 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 33 */
+	"propertyFetch\0" /* 64 */
+	"PhpParser\\Node\\Expr\\PropertyFetch\0" /* 78 */
+	"propertyReflection\0" /* 112 */
+	"PHPStan\\Reflection\\Php\\PhpPropertyReflection\0" /* 131 */
+	"hookName\0" /* 176 */
+	"\0" /* 185 */
+	"getThrowPointsFromPropertyHook"; /* 186 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_BOOL), /* __construct $implicitThrows */
+	reg::packed(27, 0, 33), /* getThrowPointsFromPropertyHook $scope */
+	reg::packed(64, 0, 78), /* getThrowPointsFromPropertyHook $propertyFetch */
+	reg::packed(112, 0, 131), /* getThrowPointsFromPropertyHook $propertyReflection */
+	reg::packed(176, MAY_BE_STRING), /* getThrowPointsFromPropertyHook $hookName */
+	reg::packed(185, MAY_BE_ARRAY), /* getThrowPointsFromPropertyHook return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("implicitThrows", MAY_BE_BOOL) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 1, __construct_args, 1, nullptr };
-inline constexpr reg::Arg getThrowPointsFromPropertyHook_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("propertyFetch", 0, "PhpParser\\Node\\Expr\\PropertyFetch"), reg::typed("propertyReflection", 0, "PHPStan\\Reflection\\Php\\PhpPropertyReflection"), reg::typed("hookName", MAY_BE_STRING) };
-inline constexpr reg::Arg getThrowPointsFromPropertyHook_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getThrowPointsFromPropertyHook = { "getThrowPointsFromPropertyHook", ZEND_ACC_PUBLIC, 4, getThrowPointsFromPropertyHook_args, 4, &getThrowPointsFromPropertyHook_return };
+inline constexpr sigtab::Sig __construct = { { 15 /* __construct */, 1, 0, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getThrowPointsFromPropertyHook = { { 186 /* getThrowPointsFromPropertyHook */, 4, 1, 4, 5, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::PropertyHookThrowPointsResolver

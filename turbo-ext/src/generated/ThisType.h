@@ -19,33 +19,68 @@ inline void declareProperties(reg::Class &cls)
 	(void) cls;
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"classReflection\0" /* 0 */
+	"PHPStan\\Reflection\\ClassReflection\0" /* 16 */
+	"subtractedType\0" /* 51 */
+	"PHPStan\\Type\\Type\0" /* 66 */
+	"null\0" /* 84 */
+	"__construct\0" /* 89 */
+	"\0" /* 101 */
+	"PHPStan\\Type\\StaticType\0" /* 102 */
+	"changeBaseClass\0" /* 126 */
+	"level\0" /* 142 */
+	"PHPStan\\Type\\VerbosityLevel\0" /* 148 */
+	"describe\0" /* 176 */
+	"type\0" /* 185 */
+	"PHPStan\\Type\\IsSuperTypeOfResult\0" /* 190 */
+	"isSuperTypeOf\0" /* 223 */
+	"changeSubtractedType\0" /* 237 */
+	"cb\0" /* 258 */
+	"traverse\0" /* 261 */
+	"right\0" /* 270 */
+	"traverseSimultaneously\0" /* 276 */
+	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 299 */
+	"toPhpDocNode\0" /* 338 */
+	"reflectionProvider\0" /* 351 */
+	"PHPStan\\Reflection\\ReflectionProvider\0" /* 370 */
+	"toClassConstantType"; /* 408 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 16), /* __construct $classReflection */
+	reg::packed(51, MAY_BE_NULL, 66, false, false, 84), /* __construct $subtractedType */
+	reg::packed(0, 0, 16), /* changeBaseClass $classReflection */
+	reg::packed(101, 0, 102), /* changeBaseClass return */
+	reg::packed(142, 0, 148), /* describe $level */
+	reg::packed(101, MAY_BE_STRING), /* describe return */
+	reg::packed(185, 0, 66), /* isSuperTypeOf $type */
+	reg::packed(101, 0, 190), /* isSuperTypeOf return */
+	reg::packed(51, MAY_BE_NULL, 66), /* changeSubtractedType $subtractedType */
+	reg::packed(101, 0, 66), /* changeSubtractedType return */
+	reg::packed(258, MAY_BE_CALLABLE), /* traverse $cb */
+	reg::packed(101, 0, 66), /* traverse return */
+	reg::packed(270, 0, 66), /* traverseSimultaneously $right */
+	reg::packed(258, MAY_BE_CALLABLE), /* traverseSimultaneously $cb */
+	reg::packed(101, 0, 66), /* traverseSimultaneously return */
+	reg::packed(101, 0, 299), /* toPhpDocNode return */
+	reg::packed(351, 0, 370), /* toClassConstantType $reflectionProvider */
+	reg::packed(101, 0, 66), /* toClassConstantType return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("classReflection", 0, "PHPStan\\Reflection\\ClassReflection"), reg::typed("subtractedType", MAY_BE_NULL, "PHPStan\\Type\\Type", false, false, "null") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 1, __construct_args, 2, nullptr };
-inline constexpr reg::Arg changeBaseClass_args[] = { reg::typed("classReflection", 0, "PHPStan\\Reflection\\ClassReflection") };
-inline constexpr reg::Arg changeBaseClass_return = reg::typed("", 0, "PHPStan\\Type\\StaticType");
-inline constexpr reg::Sig changeBaseClass = { "changeBaseClass", ZEND_ACC_PUBLIC, 1, changeBaseClass_args, 1, &changeBaseClass_return };
-inline constexpr reg::Arg describe_args[] = { reg::typed("level", 0, "PHPStan\\Type\\VerbosityLevel") };
-inline constexpr reg::Arg describe_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig describe = { "describe", ZEND_ACC_PUBLIC, 1, describe_args, 1, &describe_return };
-inline constexpr reg::Arg isSuperTypeOf_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg isSuperTypeOf_return = reg::typed("", 0, "PHPStan\\Type\\IsSuperTypeOfResult");
-inline constexpr reg::Sig isSuperTypeOf = { "isSuperTypeOf", ZEND_ACC_PUBLIC, 1, isSuperTypeOf_args, 1, &isSuperTypeOf_return };
-inline constexpr reg::Arg changeSubtractedType_args[] = { reg::typed("subtractedType", MAY_BE_NULL, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg changeSubtractedType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig changeSubtractedType = { "changeSubtractedType", ZEND_ACC_PUBLIC, 1, changeSubtractedType_args, 1, &changeSubtractedType_return };
-inline constexpr reg::Arg traverse_args[] = { reg::typed("cb", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg traverse_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig traverse = { "traverse", ZEND_ACC_PUBLIC, 1, traverse_args, 1, &traverse_return };
-inline constexpr reg::Arg traverseSimultaneously_args[] = { reg::typed("right", 0, "PHPStan\\Type\\Type"), reg::typed("cb", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg traverseSimultaneously_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig traverseSimultaneously = { "traverseSimultaneously", ZEND_ACC_PUBLIC, 2, traverseSimultaneously_args, 2, &traverseSimultaneously_return };
-inline constexpr reg::Arg toPhpDocNode_return = reg::typed("", 0, "PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode");
-inline constexpr reg::Sig toPhpDocNode = { "toPhpDocNode", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toPhpDocNode_return };
-inline constexpr reg::Arg toClassConstantType_args[] = { reg::typed("reflectionProvider", 0, "PHPStan\\Reflection\\ReflectionProvider") };
-inline constexpr reg::Arg toClassConstantType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig toClassConstantType = { "toClassConstantType", ZEND_ACC_PUBLIC, 1, toClassConstantType_args, 1, &toClassConstantType_return };
+inline constexpr sigtab::Sig __construct = { { 89 /* __construct */, 1, 0, 2, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig changeBaseClass = { { 126 /* changeBaseClass */, 1, 2, 1, 3, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig describe = { { 176 /* describe */, 1, 4, 1, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isSuperTypeOf = { { 223 /* isSuperTypeOf */, 1, 6, 1, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig changeSubtractedType = { { 237 /* changeSubtractedType */, 1, 8, 1, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig traverse = { { 261 /* traverse */, 1, 10, 1, 11, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig traverseSimultaneously = { { 276 /* traverseSimultaneously */, 2, 12, 2, 14, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toPhpDocNode = { { 338 /* toPhpDocNode */, 0, 15, 0, 15, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toClassConstantType = { { 408 /* toClassConstantType */, 1, 16, 1, 17, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ThisType

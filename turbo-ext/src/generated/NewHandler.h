@@ -43,40 +43,175 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("argumentsHandler", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ArgumentsHandler");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"reflectionProvider\0" /* 0 */
+	"PHPStan\\Reflection\\ReflectionProvider\0" /* 19 */
+	"dynamicStaticMethodThrowTypeExtensions\0" /* 57 */
+	"PHPStan\\DependencyInjection\\ExtensionsCollection\0" /* 96 */
+	"dynamicReturnTypeExtensionRegistry\0" /* 145 */
+	"PHPStan\\Type\\DynamicReturnTypeExtensionRegistry\0" /* 180 */
+	"propertyReflectionFinder\0" /* 228 */
+	"PHPStan\\Rules\\Properties\\PropertyReflectionFinder\0" /* 253 */
+	"implicitThrows\0" /* 303 */
+	"expressionResultFactory\0" /* 318 */
+	"PHPStan\\Analyser\\ExpressionResultFactory\0" /* 342 */
+	"defaultNarrowingHelper\0" /* 383 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper\0" /* 406 */
+	"storagePrimer\0" /* 465 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\DynamicReturnTypeStoragePrimer\0" /* 479 */
+	"container\0" /* 546 */
+	"PHPStan\\DependencyInjection\\Container\0" /* 556 */
+	"argumentsHandler\0" /* 594 */
+	"PHPStan\\Analyser\\ArgumentsHandler\0" /* 611 */
+	"__construct\0" /* 645 */
+	"expr\0" /* 657 */
+	"PhpParser\\Node\\Expr\0" /* 662 */
+	"\0" /* 682 */
+	"supports\0" /* 683 */
+	"nodeScopeResolver\0" /* 692 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 710 */
+	"stmt\0" /* 745 */
+	"PhpParser\\Node\\Stmt\0" /* 750 */
+	"scope\0" /* 770 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 776 */
+	"storage\0" /* 807 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 815 */
+	"nodeCallback\0" /* 856 */
+	"context\0" /* 869 */
+	"PHPStan\\Analyser\\ExpressionContext\0" /* 877 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 912 */
+	"processExpr\0" /* 946 */
+	"className\0" /* 958 */
+	"PhpParser\\Node\\Expr\\New_\0" /* 968 */
+	"processConstructorReflection\0" /* 993 */
+	"constructorReflection\0" /* 1022 */
+	"PHPStan\\Reflection\\ExtendedMethodReflection\0" /* 1044 */
+	"classReflection\0" /* 1088 */
+	"PHPStan\\Reflection\\ClassReflection\0" /* 1104 */
+	"parametersAcceptor\0" /* 1139 */
+	"PHPStan\\Reflection\\ParametersAcceptor\0" /* 1158 */
+	"scopeBeforeArgs\0" /* 1196 */
+	"isDynamic\0" /* 1212 */
+	"getConstructorImpurePoints\0" /* 1222 */
+	"PHPStan\\Reflection\\MethodReflection\0" /* 1249 */
+	"new\0" /* 1285 */
+	"PhpParser\\Node\\Name\0" /* 1289 */
+	"args\0" /* 1309 */
+	"PHPStan\\Analyser\\InternalThrowPoint\0" /* 1314 */
+	"getConstructorThrowPoint\0" /* 1350 */
+	"preResolvedAcceptor\0" /* 1375 */
+	"classExprType\0" /* 1395 */
+	"PHPStan\\Type\\Type\0" /* 1409 */
+	"argsResult\0" /* 1427 */
+	"PHPStan\\Analyser\\ArgsResult\0" /* 1438 */
+	"null\0" /* 1466 */
+	"allowUnresolved\0" /* 1471 */
+	"true\0" /* 1487 */
+	"resolveReturnType\0" /* 1492 */
+	"node\0" /* 1510 */
+	"exactInstantiation\0" /* 1515 */
+	"site\0" /* 1534 */
+	"frame\0" /* 1539 */
+	"PHPStan\\Analyser\\Generics\\TemplateArgumentFrame\0" /* 1545 */
+	"unresolvedArgumentList\0" /* 1593 */
+	"type\0" /* 1616 */
+	"PHPStan\\Type\\Generic\\UnresolvedTemplateArgumentType\0" /* 1621 */
+	"template\0" /* 1673 */
+	"PHPStan\\Type\\Generic\\TemplateType\0" /* 1682 */
+	"rekeyParentTemplateArgument\0" /* 1716 */
+	"resolvedParametersAcceptor\0" /* 1744 */
+	"PHPStan\\Analyser\\TypeSpecifierContext\0" /* 1771 */
+	"PHPStan\\Analyser\\SpecifiedTypes\0" /* 1809 */
+	"specifyTypes"; /* 1841 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 19), /* __construct $reflectionProvider */
+	reg::packed(57, 0, 96), /* __construct $dynamicStaticMethodThrowTypeExtensions */
+	reg::packed(145, 0, 180), /* __construct $dynamicReturnTypeExtensionRegistry */
+	reg::packed(228, 0, 253), /* __construct $propertyReflectionFinder */
+	reg::packed(303, MAY_BE_BOOL), /* __construct $implicitThrows */
+	reg::packed(318, 0, 342), /* __construct $expressionResultFactory */
+	reg::packed(383, 0, 406), /* __construct $defaultNarrowingHelper */
+	reg::packed(465, 0, 479), /* __construct $storagePrimer */
+	reg::packed(546, 0, 556), /* __construct $container */
+	reg::packed(594, 0, 611), /* __construct $argumentsHandler */
+	reg::packed(657, 0, 662), /* supports $expr */
+	reg::packed(682, MAY_BE_BOOL), /* supports return */
+	reg::packed(692, 0, 710), /* processExpr $nodeScopeResolver */
+	reg::packed(745, 0, 750), /* processExpr $stmt */
+	reg::packed(657, 0, 662), /* processExpr $expr */
+	reg::packed(770, 0, 776), /* processExpr $scope */
+	reg::packed(807, 0, 815), /* processExpr $storage */
+	reg::packed(856, MAY_BE_CALLABLE), /* processExpr $nodeCallback */
+	reg::packed(869, 0, 877), /* processExpr $context */
+	reg::packed(682, 0, 912), /* processExpr return */
+	reg::packed(958, MAY_BE_STRING), /* processConstructorReflection $className */
+	reg::packed(657, 0, 968), /* processConstructorReflection $expr */
+	reg::packed(682, MAY_BE_ARRAY), /* processConstructorReflection return */
+	reg::packed(1022, MAY_BE_NULL, 1044), /* getConstructorImpurePoints $constructorReflection */
+	reg::packed(1088, MAY_BE_NULL, 1104), /* getConstructorImpurePoints $classReflection */
+	reg::packed(1139, MAY_BE_NULL, 1158), /* getConstructorImpurePoints $parametersAcceptor */
+	reg::packed(657, 0, 968), /* getConstructorImpurePoints $expr */
+	reg::packed(770, 0, 776), /* getConstructorImpurePoints $scope */
+	reg::packed(1196, 0, 776), /* getConstructorImpurePoints $scopeBeforeArgs */
+	reg::packed(1212, MAY_BE_BOOL), /* getConstructorImpurePoints $isDynamic */
+	reg::packed(682, MAY_BE_ARRAY), /* getConstructorImpurePoints return */
+	reg::packed(1022, 0, 1249), /* getConstructorThrowPoint $constructorReflection */
+	reg::packed(1139, 0, 1158), /* getConstructorThrowPoint $parametersAcceptor */
+	reg::packed(1285, 0, 968), /* getConstructorThrowPoint $new */
+	reg::packed(958, 0, 1289), /* getConstructorThrowPoint $className */
+	reg::packed(1309, MAY_BE_ARRAY), /* getConstructorThrowPoint $args */
+	reg::packed(770, 0, 776), /* getConstructorThrowPoint $scope */
+	reg::packed(869, 0, 877), /* getConstructorThrowPoint $context */
+	reg::packed(682, MAY_BE_NULL, 1314), /* getConstructorThrowPoint return */
+	reg::packed(770, 0, 776), /* resolveReturnType $scope */
+	reg::packed(657, 0, 662), /* resolveReturnType $expr */
+	reg::packed(1375, MAY_BE_NULL, 1158), /* resolveReturnType $preResolvedAcceptor */
+	reg::packed(1395, MAY_BE_NULL, 1409), /* resolveReturnType $classExprType */
+	reg::packed(1427, MAY_BE_NULL, 1438, false, false, 1466), /* resolveReturnType $argsResult */
+	reg::packed(1471, MAY_BE_BOOL, reg::NoString, false, false, 1487), /* resolveReturnType $allowUnresolved */
+	reg::packed(682, 0, 1409), /* resolveReturnType return */
+	reg::packed(770, 0, 776), /* exactInstantiation $scope */
+	reg::packed(1510, 0, 968), /* exactInstantiation $node */
+	reg::packed(958, 0, 1289), /* exactInstantiation $className */
+	reg::packed(1375, MAY_BE_NULL, 1158), /* exactInstantiation $preResolvedAcceptor */
+	reg::packed(1427, MAY_BE_NULL, 1438, false, false, 1466), /* exactInstantiation $argsResult */
+	reg::packed(1471, MAY_BE_BOOL, reg::NoString, false, false, 1487), /* exactInstantiation $allowUnresolved */
+	reg::packed(682, 0, 1409), /* exactInstantiation return */
+	reg::packed(1088, 0, 1104), /* unresolvedArgumentList $classReflection */
+	reg::packed(1534, 0, 968), /* unresolvedArgumentList $site */
+	reg::packed(1539, MAY_BE_NULL, 1545), /* unresolvedArgumentList $frame */
+	reg::packed(1471, MAY_BE_BOOL), /* unresolvedArgumentList $allowUnresolved */
+	reg::packed(682, MAY_BE_ARRAY), /* unresolvedArgumentList return */
+	reg::packed(1616, 0, 1621), /* rekeyParentTemplateArgument $type */
+	reg::packed(1534, 0, 968), /* rekeyParentTemplateArgument $site */
+	reg::packed(1673, 0, 1682), /* rekeyParentTemplateArgument $template */
+	reg::packed(1539, MAY_BE_NULL, 1545), /* rekeyParentTemplateArgument $frame */
+	reg::packed(1471, MAY_BE_BOOL), /* rekeyParentTemplateArgument $allowUnresolved */
+	reg::packed(682, 0, 1409), /* rekeyParentTemplateArgument return */
+	reg::packed(770, 0, 776), /* specifyTypes $scope */
+	reg::packed(657, 0, 662), /* specifyTypes $expr */
+	reg::packed(1744, MAY_BE_NULL, 1158), /* specifyTypes $resolvedParametersAcceptor */
+	reg::packed(869, 0, 1771), /* specifyTypes $context */
+	reg::packed(682, 0, 1809), /* specifyTypes return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("reflectionProvider", 0, "PHPStan\\Reflection\\ReflectionProvider"), reg::typed("dynamicStaticMethodThrowTypeExtensions", 0, "PHPStan\\DependencyInjection\\ExtensionsCollection"), reg::typed("dynamicReturnTypeExtensionRegistry", 0, "PHPStan\\Type\\DynamicReturnTypeExtensionRegistry"), reg::typed("propertyReflectionFinder", 0, "PHPStan\\Rules\\Properties\\PropertyReflectionFinder"), reg::typed("implicitThrows", MAY_BE_BOOL), reg::typed("expressionResultFactory", 0, "PHPStan\\Analyser\\ExpressionResultFactory"), reg::typed("defaultNarrowingHelper", 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper"), reg::typed("storagePrimer", 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\DynamicReturnTypeStoragePrimer"), reg::typed("container", 0, "PHPStan\\DependencyInjection\\Container"), reg::typed("argumentsHandler", 0, "PHPStan\\Analyser\\ArgumentsHandler") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 10, __construct_args, 10, nullptr };
-inline constexpr reg::Arg supports_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg supports_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig supports = { "supports", ZEND_ACC_PUBLIC, 1, supports_args, 1, &supports_return };
-inline constexpr reg::Arg processExpr_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("stmt", 0, "PhpParser\\Node\\Stmt"), reg::typed("expr", 0, "PhpParser\\Node\\Expr"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("nodeCallback", MAY_BE_CALLABLE), reg::typed("context", 0, "PHPStan\\Analyser\\ExpressionContext") };
-inline constexpr reg::Arg processExpr_return = reg::typed("", 0, "PHPStan\\Analyser\\ExpressionResult");
-inline constexpr reg::Sig processExpr = { "processExpr", ZEND_ACC_PUBLIC, 7, processExpr_args, 7, &processExpr_return };
-inline constexpr reg::Arg processConstructorReflection_args[] = { reg::typed("className", MAY_BE_STRING), reg::typed("expr", 0, "PhpParser\\Node\\Expr\\New_") };
-inline constexpr reg::Arg processConstructorReflection_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig processConstructorReflection = { "processConstructorReflection", ZEND_ACC_PRIVATE, 2, processConstructorReflection_args, 2, &processConstructorReflection_return };
-inline constexpr reg::Arg getConstructorImpurePoints_args[] = { reg::typed("constructorReflection", MAY_BE_NULL, "PHPStan\\Reflection\\ExtendedMethodReflection"), reg::typed("classReflection", MAY_BE_NULL, "PHPStan\\Reflection\\ClassReflection"), reg::typed("parametersAcceptor", MAY_BE_NULL, "PHPStan\\Reflection\\ParametersAcceptor"), reg::typed("expr", 0, "PhpParser\\Node\\Expr\\New_"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("scopeBeforeArgs", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("isDynamic", MAY_BE_BOOL) };
-inline constexpr reg::Arg getConstructorImpurePoints_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getConstructorImpurePoints = { "getConstructorImpurePoints", ZEND_ACC_PRIVATE, 7, getConstructorImpurePoints_args, 7, &getConstructorImpurePoints_return };
-inline constexpr reg::Arg getConstructorThrowPoint_args[] = { reg::typed("constructorReflection", 0, "PHPStan\\Reflection\\MethodReflection"), reg::typed("parametersAcceptor", 0, "PHPStan\\Reflection\\ParametersAcceptor"), reg::typed("new", 0, "PhpParser\\Node\\Expr\\New_"), reg::typed("className", 0, "PhpParser\\Node\\Name"), reg::typed("args", MAY_BE_ARRAY), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("context", 0, "PHPStan\\Analyser\\ExpressionContext") };
-inline constexpr reg::Arg getConstructorThrowPoint_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\InternalThrowPoint");
-inline constexpr reg::Sig getConstructorThrowPoint = { "getConstructorThrowPoint", ZEND_ACC_PRIVATE, 7, getConstructorThrowPoint_args, 7, &getConstructorThrowPoint_return };
-inline constexpr reg::Arg resolveReturnType_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("expr", 0, "PhpParser\\Node\\Expr"), reg::typed("preResolvedAcceptor", MAY_BE_NULL, "PHPStan\\Reflection\\ParametersAcceptor"), reg::typed("classExprType", MAY_BE_NULL, "PHPStan\\Type\\Type"), reg::typed("argsResult", MAY_BE_NULL, "PHPStan\\Analyser\\ArgsResult", false, false, "null"), reg::typed("allowUnresolved", MAY_BE_BOOL, nullptr, false, false, "true") };
-inline constexpr reg::Arg resolveReturnType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig resolveReturnType = { "resolveReturnType", ZEND_ACC_PRIVATE, 4, resolveReturnType_args, 6, &resolveReturnType_return };
-inline constexpr reg::Arg exactInstantiation_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("node", 0, "PhpParser\\Node\\Expr\\New_"), reg::typed("className", 0, "PhpParser\\Node\\Name"), reg::typed("preResolvedAcceptor", MAY_BE_NULL, "PHPStan\\Reflection\\ParametersAcceptor"), reg::typed("argsResult", MAY_BE_NULL, "PHPStan\\Analyser\\ArgsResult", false, false, "null"), reg::typed("allowUnresolved", MAY_BE_BOOL, nullptr, false, false, "true") };
-inline constexpr reg::Arg exactInstantiation_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig exactInstantiation = { "exactInstantiation", ZEND_ACC_PRIVATE, 4, exactInstantiation_args, 6, &exactInstantiation_return };
-inline constexpr reg::Arg unresolvedArgumentList_args[] = { reg::typed("classReflection", 0, "PHPStan\\Reflection\\ClassReflection"), reg::typed("site", 0, "PhpParser\\Node\\Expr\\New_"), reg::typed("frame", MAY_BE_NULL, "PHPStan\\Analyser\\Generics\\TemplateArgumentFrame"), reg::typed("allowUnresolved", MAY_BE_BOOL) };
-inline constexpr reg::Arg unresolvedArgumentList_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig unresolvedArgumentList = { "unresolvedArgumentList", ZEND_ACC_PRIVATE, 4, unresolvedArgumentList_args, 4, &unresolvedArgumentList_return };
-inline constexpr reg::Arg rekeyParentTemplateArgument_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Generic\\UnresolvedTemplateArgumentType"), reg::typed("site", 0, "PhpParser\\Node\\Expr\\New_"), reg::typed("template", 0, "PHPStan\\Type\\Generic\\TemplateType"), reg::typed("frame", MAY_BE_NULL, "PHPStan\\Analyser\\Generics\\TemplateArgumentFrame"), reg::typed("allowUnresolved", MAY_BE_BOOL) };
-inline constexpr reg::Arg rekeyParentTemplateArgument_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig rekeyParentTemplateArgument = { "rekeyParentTemplateArgument", ZEND_ACC_PRIVATE, 5, rekeyParentTemplateArgument_args, 5, &rekeyParentTemplateArgument_return };
-inline constexpr reg::Arg specifyTypes_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("expr", 0, "PhpParser\\Node\\Expr"), reg::typed("resolvedParametersAcceptor", MAY_BE_NULL, "PHPStan\\Reflection\\ParametersAcceptor"), reg::typed("context", 0, "PHPStan\\Analyser\\TypeSpecifierContext") };
-inline constexpr reg::Arg specifyTypes_return = reg::typed("", 0, "PHPStan\\Analyser\\SpecifiedTypes");
-inline constexpr reg::Sig specifyTypes = { "specifyTypes", ZEND_ACC_PRIVATE, 4, specifyTypes_args, 4, &specifyTypes_return };
+inline constexpr sigtab::Sig __construct = { { 645 /* __construct */, 10, 0, 10, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig supports = { { 683 /* supports */, 1, 10, 1, 11, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processExpr = { { 946 /* processExpr */, 7, 12, 7, 19, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processConstructorReflection = { { 993 /* processConstructorReflection */, 2, 20, 2, 22, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getConstructorImpurePoints = { { 1222 /* getConstructorImpurePoints */, 7, 23, 7, 30, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getConstructorThrowPoint = { { 1350 /* getConstructorThrowPoint */, 7, 31, 7, 38, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig resolveReturnType = { { 1492 /* resolveReturnType */, 4, 39, 6, 45, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig exactInstantiation = { { 1515 /* exactInstantiation */, 4, 46, 6, 52, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig unresolvedArgumentList = { { 1593 /* unresolvedArgumentList */, 4, 53, 4, 57, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig rekeyParentTemplateArgument = { { 1716 /* rekeyParentTemplateArgument */, 5, 58, 5, 63, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig specifyTypes = { { 1841 /* specifyTypes */, 4, 64, 4, 68, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::NewHandler

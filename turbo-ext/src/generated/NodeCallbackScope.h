@@ -35,55 +35,100 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("askedNativeTypes", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"\0" /* 0 */
+	"PHPStan\\Analyser\\NodeCallbackScope\0" /* 1 */
+	"toNodeCallbackScope\0" /* 36 */
+	"scope\0" /* 56 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 62 */
+	"seedWalkScope\0" /* 93 */
+	"toWalkScope\0" /* 107 */
+	"node\0" /* 119 */
+	"PhpParser\\Node\\Expr\0" /* 124 */
+	"PHPStan\\Type\\Type\0" /* 144 */
+	"getType\0" /* 162 */
+	"doGetType\0" /* 170 */
+	"result\0" /* 180 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 187 */
+	"useNativeTypes\0" /* 221 */
+	"getStoredResultTypeOnThisScope\0" /* 236 */
+	"expr\0" /* 267 */
+	"getScopeType\0" /* 272 */
+	"getScopeNativeType\0" /* 285 */
+	"getNativeType\0" /* 304 */
+	"doGetNativeType\0" /* 318 */
+	"getKeepVoidType\0" /* 334 */
+	"filterByTruthyValue\0" /* 350 */
+	"filterByFalseyValue\0" /* 370 */
+	"PHPStan\\Analyser\\Scope\0" /* 390 */
+	"preprocessScope\0" /* 413 */
+	"reflection\0" /* 429 */
+	"parameter\0" /* 440 */
+	"PHPStan\\Reflection\\ParameterReflection\0" /* 450 */
+	"rememberTypes\0" /* 489 */
+	"pushInFunctionCall\0" /* 503 */
+	"popInFunctionCall\0" /* 522 */
+	"getParentScope"; /* 540 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 1), /* toNodeCallbackScope return */
+	reg::packed(56, 0, 62), /* seedWalkScope $scope */
+	reg::packed(0, MAY_BE_VOID), /* seedWalkScope return */
+	reg::packed(0, 0, 62), /* toWalkScope return */
+	reg::packed(119, 0, 124), /* getType $node */
+	reg::packed(0, 0, 144), /* getType return */
+	reg::packed(119, 0, 124), /* doGetType $node */
+	reg::packed(0, 0, 144), /* doGetType return */
+	reg::packed(180, 0, 187), /* getStoredResultTypeOnThisScope $result */
+	reg::packed(119, 0, 124), /* getStoredResultTypeOnThisScope $node */
+	reg::packed(221, MAY_BE_BOOL), /* getStoredResultTypeOnThisScope $useNativeTypes */
+	reg::packed(0, 0, 144), /* getStoredResultTypeOnThisScope return */
+	reg::packed(267, 0, 124), /* getScopeType $expr */
+	reg::packed(0, 0, 144), /* getScopeType return */
+	reg::packed(267, 0, 124), /* getScopeNativeType $expr */
+	reg::packed(0, 0, 144), /* getScopeNativeType return */
+	reg::packed(267, 0, 124), /* getNativeType $expr */
+	reg::packed(0, 0, 144), /* getNativeType return */
+	reg::packed(267, 0, 124), /* doGetNativeType $expr */
+	reg::packed(0, 0, 144), /* doGetNativeType return */
+	reg::packed(119, 0, 124), /* getKeepVoidType $node */
+	reg::packed(0, 0, 144), /* getKeepVoidType return */
+	reg::packed(267, 0, 124), /* filterByTruthyValue $expr */
+	reg::packed(0, 0, 1), /* filterByTruthyValue return */
+	reg::packed(267, 0, 124), /* filterByFalseyValue $expr */
+	reg::packed(0, 0, 1), /* filterByFalseyValue return */
+	reg::packed(56, 0, 62), /* preprocessScope $scope */
+	reg::packed(0, 0, 390), /* preprocessScope return */
+	reg::packed(429, 0), /* pushInFunctionCall $reflection */
+	reg::packed(440, MAY_BE_NULL, 450), /* pushInFunctionCall $parameter */
+	reg::packed(489, MAY_BE_BOOL), /* pushInFunctionCall $rememberTypes */
+	reg::packed(0, 0, 1), /* pushInFunctionCall return */
+	reg::packed(0, 0, 1), /* popInFunctionCall return */
+	reg::packed(0, MAY_BE_NULL, 62), /* getParentScope return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg toNodeCallbackScope_return = reg::typed("", 0, "PHPStan\\Analyser\\NodeCallbackScope");
-inline constexpr reg::Sig toNodeCallbackScope = { "toNodeCallbackScope", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toNodeCallbackScope_return };
-inline constexpr reg::Arg seedWalkScope_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope") };
-inline constexpr reg::Arg seedWalkScope_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig seedWalkScope = { "seedWalkScope", ZEND_ACC_PUBLIC, 1, seedWalkScope_args, 1, &seedWalkScope_return };
-inline constexpr reg::Arg toWalkScope_return = reg::typed("", 0, "PHPStan\\Analyser\\MutatingScope");
-inline constexpr reg::Sig toWalkScope = { "toWalkScope", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toWalkScope_return };
-inline constexpr reg::Arg getType_args[] = { reg::typed("node", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg getType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getType = { "getType", ZEND_ACC_PUBLIC, 1, getType_args, 1, &getType_return };
-inline constexpr reg::Arg doGetType_args[] = { reg::typed("node", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg doGetType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig doGetType = { "doGetType", ZEND_ACC_PRIVATE, 1, doGetType_args, 1, &doGetType_return };
-inline constexpr reg::Arg getStoredResultTypeOnThisScope_args[] = { reg::typed("result", 0, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("node", 0, "PhpParser\\Node\\Expr"), reg::typed("useNativeTypes", MAY_BE_BOOL) };
-inline constexpr reg::Arg getStoredResultTypeOnThisScope_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getStoredResultTypeOnThisScope = { "getStoredResultTypeOnThisScope", ZEND_ACC_PRIVATE, 3, getStoredResultTypeOnThisScope_args, 3, &getStoredResultTypeOnThisScope_return };
-inline constexpr reg::Arg getScopeType_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg getScopeType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getScopeType = { "getScopeType", ZEND_ACC_PUBLIC, 1, getScopeType_args, 1, &getScopeType_return };
-inline constexpr reg::Arg getScopeNativeType_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg getScopeNativeType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getScopeNativeType = { "getScopeNativeType", ZEND_ACC_PUBLIC, 1, getScopeNativeType_args, 1, &getScopeNativeType_return };
-inline constexpr reg::Arg getNativeType_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg getNativeType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getNativeType = { "getNativeType", ZEND_ACC_PUBLIC, 1, getNativeType_args, 1, &getNativeType_return };
-inline constexpr reg::Arg doGetNativeType_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg doGetNativeType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig doGetNativeType = { "doGetNativeType", ZEND_ACC_PRIVATE, 1, doGetNativeType_args, 1, &doGetNativeType_return };
-inline constexpr reg::Arg getKeepVoidType_args[] = { reg::typed("node", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg getKeepVoidType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getKeepVoidType = { "getKeepVoidType", ZEND_ACC_PUBLIC, 1, getKeepVoidType_args, 1, &getKeepVoidType_return };
-inline constexpr reg::Arg filterByTruthyValue_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg filterByTruthyValue_return = reg::typed("", 0, "PHPStan\\Analyser\\NodeCallbackScope");
-inline constexpr reg::Sig filterByTruthyValue = { "filterByTruthyValue", ZEND_ACC_PUBLIC, 1, filterByTruthyValue_args, 1, &filterByTruthyValue_return };
-inline constexpr reg::Arg filterByFalseyValue_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg filterByFalseyValue_return = reg::typed("", 0, "PHPStan\\Analyser\\NodeCallbackScope");
-inline constexpr reg::Sig filterByFalseyValue = { "filterByFalseyValue", ZEND_ACC_PUBLIC, 1, filterByFalseyValue_args, 1, &filterByFalseyValue_return };
-inline constexpr reg::Arg preprocessScope_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope") };
-inline constexpr reg::Arg preprocessScope_return = reg::typed("", 0, "PHPStan\\Analyser\\Scope");
-inline constexpr reg::Sig preprocessScope = { "preprocessScope", ZEND_ACC_PRIVATE, 1, preprocessScope_args, 1, &preprocessScope_return };
-inline constexpr reg::Arg pushInFunctionCall_args[] = { reg::typed("reflection", 0), reg::typed("parameter", MAY_BE_NULL, "PHPStan\\Reflection\\ParameterReflection"), reg::typed("rememberTypes", MAY_BE_BOOL) };
-inline constexpr reg::Arg pushInFunctionCall_return = reg::typed("", 0, "PHPStan\\Analyser\\NodeCallbackScope");
-inline constexpr reg::Sig pushInFunctionCall = { "pushInFunctionCall", ZEND_ACC_PUBLIC, 3, pushInFunctionCall_args, 3, &pushInFunctionCall_return };
-inline constexpr reg::Arg popInFunctionCall_return = reg::typed("", 0, "PHPStan\\Analyser\\NodeCallbackScope");
-inline constexpr reg::Sig popInFunctionCall = { "popInFunctionCall", ZEND_ACC_PUBLIC, 0, nullptr, 0, &popInFunctionCall_return };
-inline constexpr reg::Arg getParentScope_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\MutatingScope");
-inline constexpr reg::Sig getParentScope = { "getParentScope", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getParentScope_return };
+inline constexpr sigtab::Sig toNodeCallbackScope = { { 36 /* toNodeCallbackScope */, 0, 0, 0, 0, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig seedWalkScope = { { 93 /* seedWalkScope */, 1, 1, 1, 2, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toWalkScope = { { 107 /* toWalkScope */, 0, 3, 0, 3, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getType = { { 162 /* getType */, 1, 4, 1, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig doGetType = { { 170 /* doGetType */, 1, 6, 1, 7, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getStoredResultTypeOnThisScope = { { 236 /* getStoredResultTypeOnThisScope */, 3, 8, 3, 11, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getScopeType = { { 272 /* getScopeType */, 1, 12, 1, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getScopeNativeType = { { 285 /* getScopeNativeType */, 1, 14, 1, 15, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getNativeType = { { 304 /* getNativeType */, 1, 16, 1, 17, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig doGetNativeType = { { 318 /* doGetNativeType */, 1, 18, 1, 19, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getKeepVoidType = { { 334 /* getKeepVoidType */, 1, 20, 1, 21, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig filterByTruthyValue = { { 350 /* filterByTruthyValue */, 1, 22, 1, 23, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig filterByFalseyValue = { { 370 /* filterByFalseyValue */, 1, 24, 1, 25, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig preprocessScope = { { 413 /* preprocessScope */, 1, 26, 1, 27, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig pushInFunctionCall = { { 503 /* pushInFunctionCall */, 3, 28, 3, 31, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig popInFunctionCall = { { 522 /* popInFunctionCall */, 0, 32, 0, 32, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getParentScope = { { 540 /* getParentScope */, 0, 33, 0, 33, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::NodeCallbackScope

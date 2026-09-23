@@ -27,16 +27,53 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("expressionResultFactory", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExpressionResultFactory");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"booleanNarrowingHelper\0" /* 0 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\BooleanNarrowingHelper\0" /* 23 */
+	"expressionResultFactory\0" /* 82 */
+	"PHPStan\\Analyser\\ExpressionResultFactory\0" /* 106 */
+	"__construct\0" /* 147 */
+	"expr\0" /* 159 */
+	"PhpParser\\Node\\Expr\0" /* 164 */
+	"\0" /* 184 */
+	"supports\0" /* 185 */
+	"nodeScopeResolver\0" /* 194 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 212 */
+	"stmt\0" /* 247 */
+	"PhpParser\\Node\\Stmt\0" /* 252 */
+	"scope\0" /* 272 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 278 */
+	"storage\0" /* 309 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 317 */
+	"nodeCallback\0" /* 358 */
+	"context\0" /* 371 */
+	"PHPStan\\Analyser\\ExpressionContext\0" /* 379 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 414 */
+	"processExpr"; /* 448 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 23), /* __construct $booleanNarrowingHelper */
+	reg::packed(82, 0, 106), /* __construct $expressionResultFactory */
+	reg::packed(159, 0, 164), /* supports $expr */
+	reg::packed(184, MAY_BE_BOOL), /* supports return */
+	reg::packed(194, 0, 212), /* processExpr $nodeScopeResolver */
+	reg::packed(247, 0, 252), /* processExpr $stmt */
+	reg::packed(159, 0, 164), /* processExpr $expr */
+	reg::packed(272, 0, 278), /* processExpr $scope */
+	reg::packed(309, 0, 317), /* processExpr $storage */
+	reg::packed(358, MAY_BE_CALLABLE), /* processExpr $nodeCallback */
+	reg::packed(371, 0, 379), /* processExpr $context */
+	reg::packed(184, 0, 414), /* processExpr return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("booleanNarrowingHelper", 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\BooleanNarrowingHelper"), reg::typed("expressionResultFactory", 0, "PHPStan\\Analyser\\ExpressionResultFactory") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 2, __construct_args, 2, nullptr };
-inline constexpr reg::Arg supports_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg supports_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig supports = { "supports", ZEND_ACC_PUBLIC, 1, supports_args, 1, &supports_return };
-inline constexpr reg::Arg processExpr_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("stmt", 0, "PhpParser\\Node\\Stmt"), reg::typed("expr", 0, "PhpParser\\Node\\Expr"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("nodeCallback", MAY_BE_CALLABLE), reg::typed("context", 0, "PHPStan\\Analyser\\ExpressionContext") };
-inline constexpr reg::Arg processExpr_return = reg::typed("", 0, "PHPStan\\Analyser\\ExpressionResult");
-inline constexpr reg::Sig processExpr = { "processExpr", ZEND_ACC_PUBLIC, 7, processExpr_args, 7, &processExpr_return };
+inline constexpr sigtab::Sig __construct = { { 147 /* __construct */, 2, 0, 2, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig supports = { { 185 /* supports */, 1, 2, 1, 3, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processExpr = { { 448 /* processExpr */, 7, 4, 7, 11, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::BooleanAndHandler

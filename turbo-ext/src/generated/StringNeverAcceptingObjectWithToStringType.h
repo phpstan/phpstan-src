@@ -19,14 +19,31 @@ inline void declareProperties(reg::Class &cls)
 	(void) cls;
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"type\0" /* 0 */
+	"PHPStan\\Type\\Type\0" /* 5 */
+	"\0" /* 23 */
+	"PHPStan\\Type\\IsSuperTypeOfResult\0" /* 24 */
+	"isSuperTypeOf\0" /* 57 */
+	"strictTypes\0" /* 71 */
+	"PHPStan\\Type\\AcceptsResult\0" /* 83 */
+	"accepts"; /* 110 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 5), /* isSuperTypeOf $type */
+	reg::packed(23, 0, 24), /* isSuperTypeOf return */
+	reg::packed(0, 0, 5), /* accepts $type */
+	reg::packed(71, MAY_BE_BOOL), /* accepts $strictTypes */
+	reg::packed(23, 0, 83), /* accepts return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg isSuperTypeOf_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg isSuperTypeOf_return = reg::typed("", 0, "PHPStan\\Type\\IsSuperTypeOfResult");
-inline constexpr reg::Sig isSuperTypeOf = { "isSuperTypeOf", ZEND_ACC_PUBLIC, 1, isSuperTypeOf_args, 1, &isSuperTypeOf_return };
-inline constexpr reg::Arg accepts_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type"), reg::typed("strictTypes", MAY_BE_BOOL) };
-inline constexpr reg::Arg accepts_return = reg::typed("", 0, "PHPStan\\Type\\AcceptsResult");
-inline constexpr reg::Sig accepts = { "accepts", ZEND_ACC_PUBLIC, 2, accepts_args, 2, &accepts_return };
+inline constexpr sigtab::Sig isSuperTypeOf = { { 57 /* isSuperTypeOf */, 1, 0, 1, 1, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig accepts = { { 110 /* accepts */, 2, 2, 2, 4, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::StringNeverAcceptingObjectWithToStringType

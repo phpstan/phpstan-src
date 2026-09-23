@@ -19,14 +19,39 @@ inline void declareProperties(reg::Class &cls)
 	(void) cls;
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"reflectionType\0" /* 0 */
+	"ReflectionType\0" /* 15 */
+	"phpDocType\0" /* 30 */
+	"PHPStan\\Type\\Type\0" /* 41 */
+	"null\0" /* 59 */
+	"selfClass\0" /* 64 */
+	"PHPStan\\Reflection\\ClassReflection\0" /* 74 */
+	"isVariadic\0" /* 109 */
+	"false\0" /* 120 */
+	"\0" /* 126 */
+	"decideTypeFromReflection\0" /* 127 */
+	"type\0" /* 152 */
+	"decideType"; /* 157 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_NULL, 15), /* decideTypeFromReflection $reflectionType */
+	reg::packed(30, MAY_BE_NULL, 41, false, false, 59), /* decideTypeFromReflection $phpDocType */
+	reg::packed(64, MAY_BE_NULL, 74, false, false, 59), /* decideTypeFromReflection $selfClass */
+	reg::packed(109, MAY_BE_BOOL, reg::NoString, false, false, 120), /* decideTypeFromReflection $isVariadic */
+	reg::packed(126, 0, 41), /* decideTypeFromReflection return */
+	reg::packed(152, 0, 41), /* decideType $type */
+	reg::packed(30, MAY_BE_NULL, 41), /* decideType $phpDocType */
+	reg::packed(126, 0, 41), /* decideType return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg decideTypeFromReflection_args[] = { reg::typed("reflectionType", MAY_BE_NULL, "ReflectionType"), reg::typed("phpDocType", MAY_BE_NULL, "PHPStan\\Type\\Type", false, false, "null"), reg::typed("selfClass", MAY_BE_NULL, "PHPStan\\Reflection\\ClassReflection", false, false, "null"), reg::typed("isVariadic", MAY_BE_BOOL, nullptr, false, false, "false") };
-inline constexpr reg::Arg decideTypeFromReflection_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig decideTypeFromReflection = { "decideTypeFromReflection", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, decideTypeFromReflection_args, 4, &decideTypeFromReflection_return };
-inline constexpr reg::Arg decideType_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type"), reg::typed("phpDocType", MAY_BE_NULL, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg decideType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig decideType = { "decideType", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, decideType_args, 2, &decideType_return };
+inline constexpr sigtab::Sig decideTypeFromReflection = { { 127 /* decideTypeFromReflection */, 1, 0, 4, 4, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig decideType = { { 157 /* decideType */, 2, 5, 2, 7, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::TypehintHelper

@@ -25,44 +25,76 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("asserts", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_ARRAY);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"asserts\0" /* 0 */
+	"__construct\0" /* 8 */
+	"\0" /* 20 */
+	"getAll\0" /* 21 */
+	"getAsserts\0" /* 28 */
+	"getAssertsIfTrue\0" /* 39 */
+	"getAssertsIfFalse\0" /* 56 */
+	"callable\0" /* 74 */
+	"PHPStan\\Reflection\\Assertions\0" /* 83 */
+	"mapTypes\0" /* 113 */
+	"other\0" /* 122 */
+	"intersectWith\0" /* 128 */
+	"union\0" /* 142 */
+	"intersect\0" /* 148 */
+	"assert\0" /* 158 */
+	"PHPStan\\PhpDoc\\Tag\\AssertTag\0" /* 165 */
+	"getAssertKey\0" /* 194 */
+	"create\0" /* 207 */
+	"createEmpty\0" /* 214 */
+	"phpDocBlock\0" /* 226 */
+	"PHPStan\\PhpDoc\\ResolvedPhpDocBlock\0" /* 238 */
+	"createFromResolvedPhpDocBlock\0" /* 273 */
+	"assertTags\0" /* 303 */
+	"createFromAssertTags"; /* 314 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_ARRAY), /* __construct $asserts */
+	reg::packed(20, MAY_BE_ARRAY), /* getAll return */
+	reg::packed(20, MAY_BE_ARRAY), /* getAsserts return */
+	reg::packed(20, MAY_BE_ARRAY), /* getAssertsIfTrue return */
+	reg::packed(20, MAY_BE_ARRAY), /* getAssertsIfFalse return */
+	reg::packed(74, MAY_BE_CALLABLE), /* mapTypes $callable */
+	reg::packed(20, 0, 83), /* mapTypes return */
+	reg::packed(122, 0, 83), /* intersectWith $other */
+	reg::packed(20, 0, 83), /* intersectWith return */
+	reg::packed(122, 0, 83), /* union $other */
+	reg::packed(20, 0, 83), /* union return */
+	reg::packed(122, 0, 83), /* intersect $other */
+	reg::packed(20, 0, 83), /* intersect return */
+	reg::packed(158, 0, 165), /* getAssertKey $assert */
+	reg::packed(20, MAY_BE_STRING), /* getAssertKey return */
+	reg::packed(0, MAY_BE_ARRAY), /* create $asserts */
+	reg::packed(20, 0, 83), /* create return */
+	reg::packed(20, 0, 83), /* createEmpty return */
+	reg::packed(226, 0, 238), /* createFromResolvedPhpDocBlock $phpDocBlock */
+	reg::packed(20, 0, 83), /* createFromResolvedPhpDocBlock return */
+	reg::packed(303, MAY_BE_ARRAY), /* createFromAssertTags $assertTags */
+	reg::packed(20, 0, 83), /* createFromAssertTags return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("asserts", MAY_BE_ARRAY) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PRIVATE, 1, __construct_args, 1, nullptr };
-inline constexpr reg::Arg getAll_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getAll = { "getAll", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getAll_return };
-inline constexpr reg::Arg getAsserts_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getAsserts = { "getAsserts", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getAsserts_return };
-inline constexpr reg::Arg getAssertsIfTrue_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getAssertsIfTrue = { "getAssertsIfTrue", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getAssertsIfTrue_return };
-inline constexpr reg::Arg getAssertsIfFalse_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getAssertsIfFalse = { "getAssertsIfFalse", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getAssertsIfFalse_return };
-inline constexpr reg::Arg mapTypes_args[] = { reg::typed("callable", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg mapTypes_return = reg::typed("", 0, "PHPStan\\Reflection\\Assertions");
-inline constexpr reg::Sig mapTypes = { "mapTypes", ZEND_ACC_PUBLIC, 1, mapTypes_args, 1, &mapTypes_return };
-inline constexpr reg::Arg intersectWith_args[] = { reg::typed("other", 0, "PHPStan\\Reflection\\Assertions") };
-inline constexpr reg::Arg intersectWith_return = reg::typed("", 0, "PHPStan\\Reflection\\Assertions");
-inline constexpr reg::Sig intersectWith = { "intersectWith", ZEND_ACC_PUBLIC, 1, intersectWith_args, 1, &intersectWith_return };
-inline constexpr reg::Arg union__args[] = { reg::typed("other", 0, "PHPStan\\Reflection\\Assertions") };
-inline constexpr reg::Arg union__return = reg::typed("", 0, "PHPStan\\Reflection\\Assertions");
-inline constexpr reg::Sig union_ = { "union", ZEND_ACC_PUBLIC, 1, union__args, 1, &union__return };
-inline constexpr reg::Arg intersect_args[] = { reg::typed("other", 0, "PHPStan\\Reflection\\Assertions") };
-inline constexpr reg::Arg intersect_return = reg::typed("", 0, "PHPStan\\Reflection\\Assertions");
-inline constexpr reg::Sig intersect = { "intersect", ZEND_ACC_PUBLIC, 1, intersect_args, 1, &intersect_return };
-inline constexpr reg::Arg getAssertKey_args[] = { reg::typed("assert", 0, "PHPStan\\PhpDoc\\Tag\\AssertTag") };
-inline constexpr reg::Arg getAssertKey_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig getAssertKey = { "getAssertKey", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 1, getAssertKey_args, 1, &getAssertKey_return };
-inline constexpr reg::Arg create_args[] = { reg::typed("asserts", MAY_BE_ARRAY) };
-inline constexpr reg::Arg create_return = reg::typed("", 0, "PHPStan\\Reflection\\Assertions");
-inline constexpr reg::Sig create = { "create", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 1, create_args, 1, &create_return };
-inline constexpr reg::Arg createEmpty_return = reg::typed("", 0, "PHPStan\\Reflection\\Assertions");
-inline constexpr reg::Sig createEmpty = { "createEmpty", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &createEmpty_return };
-inline constexpr reg::Arg createFromResolvedPhpDocBlock_args[] = { reg::typed("phpDocBlock", 0, "PHPStan\\PhpDoc\\ResolvedPhpDocBlock") };
-inline constexpr reg::Arg createFromResolvedPhpDocBlock_return = reg::typed("", 0, "PHPStan\\Reflection\\Assertions");
-inline constexpr reg::Sig createFromResolvedPhpDocBlock = { "createFromResolvedPhpDocBlock", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, createFromResolvedPhpDocBlock_args, 1, &createFromResolvedPhpDocBlock_return };
-inline constexpr reg::Arg createFromAssertTags_args[] = { reg::typed("assertTags", MAY_BE_ARRAY) };
-inline constexpr reg::Arg createFromAssertTags_return = reg::typed("", 0, "PHPStan\\Reflection\\Assertions");
-inline constexpr reg::Sig createFromAssertTags = { "createFromAssertTags", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, createFromAssertTags_args, 1, &createFromAssertTags_return };
+inline constexpr sigtab::Sig __construct = { { 8 /* __construct */, 1, 0, 1, reg::NoArg, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getAll = { { 21 /* getAll */, 0, 1, 0, 1, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getAsserts = { { 28 /* getAsserts */, 0, 2, 0, 2, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getAssertsIfTrue = { { 39 /* getAssertsIfTrue */, 0, 3, 0, 3, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getAssertsIfFalse = { { 56 /* getAssertsIfFalse */, 0, 4, 0, 4, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig mapTypes = { { 113 /* mapTypes */, 1, 5, 1, 6, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig intersectWith = { { 128 /* intersectWith */, 1, 7, 1, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig union_ = { { 142 /* union */, 1, 9, 1, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig intersect = { { 148 /* intersect */, 1, 11, 1, 12, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getAssertKey = { { 194 /* getAssertKey */, 1, 13, 1, 14, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig create = { { 207 /* create */, 1, 15, 1, 16, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createEmpty = { { 214 /* createEmpty */, 0, 17, 0, 17, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createFromResolvedPhpDocBlock = { { 273 /* createFromResolvedPhpDocBlock */, 1, 18, 1, 19, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createFromAssertTags = { { 314 /* createFromAssertTags */, 1, 20, 1, 21, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::Assertions

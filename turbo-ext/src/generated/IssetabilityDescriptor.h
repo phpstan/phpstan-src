@@ -36,22 +36,67 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("propertyFetch", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_NULL, "PhpParser\\Node\\Expr");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"kind\0" /* 0 */
+	"variableName\0" /* 5 */
+	"null\0" /* 18 */
+	"varResult\0" /* 23 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 33 */
+	"dimResult\0" /* 67 */
+	"innerResult\0" /* 77 */
+	"reflectionResolver\0" /* 89 */
+	"Closure\0" /* 108 */
+	"propertyFetch\0" /* 116 */
+	"PhpParser\\Node\\Expr\0" /* 130 */
+	"__construct\0" /* 150 */
+	"\0" /* 162 */
+	"PHPStan\\Analyser\\IssetabilityDescriptor\0" /* 163 */
+	"variable\0" /* 203 */
+	"offset\0" /* 212 */
+	"property\0" /* 219 */
+	"scope\0" /* 228 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 234 */
+	"useNativeTypes\0" /* 265 */
+	"expr\0" /* 280 */
+	"reprocessUntrackedLinks\0" /* 285 */
+	"false\0" /* 309 */
+	"PHPStan\\Analyser\\IssetabilityResolution\0" /* 315 */
+	"resolve"; /* 355 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_STRING), /* __construct $kind */
+	reg::packed(5, MAY_BE_NULL | MAY_BE_STRING, reg::NoString, false, false, 18), /* __construct $variableName */
+	reg::packed(23, MAY_BE_NULL, 33, false, false, 18), /* __construct $varResult */
+	reg::packed(67, MAY_BE_NULL, 33, false, false, 18), /* __construct $dimResult */
+	reg::packed(77, MAY_BE_NULL, 33, false, false, 18), /* __construct $innerResult */
+	reg::packed(89, MAY_BE_NULL, 108, false, false, 18), /* __construct $reflectionResolver */
+	reg::packed(116, MAY_BE_NULL, 130, false, false, 18), /* __construct $propertyFetch */
+	reg::packed(5, MAY_BE_STRING), /* variable $variableName */
+	reg::packed(162, 0, 163), /* variable return */
+	reg::packed(23, 0, 33), /* offset $varResult */
+	reg::packed(67, 0, 33), /* offset $dimResult */
+	reg::packed(162, 0, 163), /* offset return */
+	reg::packed(77, MAY_BE_NULL, 33), /* property $innerResult */
+	reg::packed(89, 0, 108), /* property $reflectionResolver */
+	reg::packed(116, 0, 130), /* property $propertyFetch */
+	reg::packed(162, 0, 163), /* property return */
+	reg::packed(228, 0, 234), /* resolve $scope */
+	reg::packed(265, MAY_BE_BOOL), /* resolve $useNativeTypes */
+	reg::packed(280, 0, 130), /* resolve $expr */
+	reg::packed(285, MAY_BE_BOOL, reg::NoString, false, false, 309), /* resolve $reprocessUntrackedLinks */
+	reg::packed(162, 0, 315), /* resolve return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("kind", MAY_BE_STRING), reg::typed("variableName", MAY_BE_NULL | MAY_BE_STRING, nullptr, false, false, "null"), reg::typed("varResult", MAY_BE_NULL, "PHPStan\\Analyser\\ExpressionResult", false, false, "null"), reg::typed("dimResult", MAY_BE_NULL, "PHPStan\\Analyser\\ExpressionResult", false, false, "null"), reg::typed("innerResult", MAY_BE_NULL, "PHPStan\\Analyser\\ExpressionResult", false, false, "null"), reg::typed("reflectionResolver", MAY_BE_NULL, "Closure", false, false, "null"), reg::typed("propertyFetch", MAY_BE_NULL, "PhpParser\\Node\\Expr", false, false, "null") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PRIVATE, 1, __construct_args, 7, nullptr };
-inline constexpr reg::Arg variable_args[] = { reg::typed("variableName", MAY_BE_STRING) };
-inline constexpr reg::Arg variable_return = reg::typed("", 0, "PHPStan\\Analyser\\IssetabilityDescriptor");
-inline constexpr reg::Sig variable = { "variable", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, variable_args, 1, &variable_return };
-inline constexpr reg::Arg offset_args[] = { reg::typed("varResult", 0, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("dimResult", 0, "PHPStan\\Analyser\\ExpressionResult") };
-inline constexpr reg::Arg offset_return = reg::typed("", 0, "PHPStan\\Analyser\\IssetabilityDescriptor");
-inline constexpr reg::Sig offset = { "offset", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, offset_args, 2, &offset_return };
-inline constexpr reg::Arg property_args[] = { reg::typed("innerResult", MAY_BE_NULL, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("reflectionResolver", 0, "Closure"), reg::typed("propertyFetch", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg property_return = reg::typed("", 0, "PHPStan\\Analyser\\IssetabilityDescriptor");
-inline constexpr reg::Sig property = { "property", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 3, property_args, 3, &property_return };
-inline constexpr reg::Arg resolve_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("useNativeTypes", MAY_BE_BOOL), reg::typed("expr", 0, "PhpParser\\Node\\Expr"), reg::typed("reprocessUntrackedLinks", MAY_BE_BOOL, nullptr, false, false, "false") };
-inline constexpr reg::Arg resolve_return = reg::typed("", 0, "PHPStan\\Analyser\\IssetabilityResolution");
-inline constexpr reg::Sig resolve = { "resolve", ZEND_ACC_PUBLIC, 3, resolve_args, 4, &resolve_return };
+inline constexpr sigtab::Sig __construct = { { 150 /* __construct */, 1, 0, 7, reg::NoArg, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig variable = { { 203 /* variable */, 1, 7, 1, 8, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig offset = { { 212 /* offset */, 2, 9, 2, 11, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig property = { { 219 /* property */, 3, 12, 3, 15, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig resolve = { { 355 /* resolve */, 3, 16, 4, 20, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::IssetabilityDescriptor

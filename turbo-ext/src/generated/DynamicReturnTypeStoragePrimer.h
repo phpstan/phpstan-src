@@ -19,11 +19,27 @@ inline void declareProperties(reg::Class &cls)
 	(void) cls;
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"scope\0" /* 0 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 6 */
+	"argsResult\0" /* 37 */
+	"PHPStan\\Analyser\\ArgsResult\0" /* 48 */
+	"\0" /* 76 */
+	"Closure\0" /* 77 */
+	"pushPrimedStorage"; /* 85 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 6), /* pushPrimedStorage $scope */
+	reg::packed(37, MAY_BE_NULL, 48), /* pushPrimedStorage $argsResult */
+	reg::packed(76, 0, 77), /* pushPrimedStorage return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg pushPrimedStorage_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("argsResult", MAY_BE_NULL, "PHPStan\\Analyser\\ArgsResult") };
-inline constexpr reg::Arg pushPrimedStorage_return = reg::typed("", 0, "Closure");
-inline constexpr reg::Sig pushPrimedStorage = { "pushPrimedStorage", ZEND_ACC_PUBLIC, 2, pushPrimedStorage_args, 2, &pushPrimedStorage_return };
+inline constexpr sigtab::Sig pushPrimedStorage = { { 85 /* pushPrimedStorage */, 2, 0, 2, 2, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::DynamicReturnTypeStoragePrimer

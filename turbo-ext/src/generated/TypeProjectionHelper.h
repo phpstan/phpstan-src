@@ -19,11 +19,29 @@ inline void declareProperties(reg::Class &cls)
 	(void) cls;
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"type\0" /* 0 */
+	"PHPStan\\Type\\Type\0" /* 5 */
+	"variance\0" /* 23 */
+	"PHPStan\\Type\\Generic\\TemplateTypeVariance\0" /* 32 */
+	"level\0" /* 74 */
+	"PHPStan\\Type\\VerbosityLevel\0" /* 80 */
+	"\0" /* 108 */
+	"describe"; /* 109 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 5), /* describe $type */
+	reg::packed(23, MAY_BE_NULL, 32), /* describe $variance */
+	reg::packed(74, 0, 80), /* describe $level */
+	reg::packed(108, MAY_BE_STRING), /* describe return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg describe_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type"), reg::typed("variance", MAY_BE_NULL, "PHPStan\\Type\\Generic\\TemplateTypeVariance"), reg::typed("level", 0, "PHPStan\\Type\\VerbosityLevel") };
-inline constexpr reg::Arg describe_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig describe = { "describe", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 3, describe_args, 3, &describe_return };
+inline constexpr sigtab::Sig describe = { { 109 /* describe */, 3, 0, 3, 3, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::TypeProjectionHelper

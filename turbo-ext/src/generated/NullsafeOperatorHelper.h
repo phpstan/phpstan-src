@@ -19,17 +19,34 @@ inline void declareProperties(reg::Class &cls)
 	(void) cls;
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"scope\0" /* 0 */
+	"PHPStan\\Analyser\\Scope\0" /* 6 */
+	"expr\0" /* 29 */
+	"PhpParser\\Node\\Expr\0" /* 34 */
+	"\0" /* 54 */
+	"getNullsafeShortcircuitedExprRespectingScope\0" /* 55 */
+	"getNullsafeShortcircuitedExpr\0" /* 100 */
+	"chainedInto"; /* 130 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 6), /* getNullsafeShortcircuitedExprRespectingScope $scope */
+	reg::packed(29, 0, 34), /* getNullsafeShortcircuitedExprRespectingScope $expr */
+	reg::packed(54, 0, 34), /* getNullsafeShortcircuitedExprRespectingScope return */
+	reg::packed(29, 0, 34), /* getNullsafeShortcircuitedExpr $expr */
+	reg::packed(54, 0, 34), /* getNullsafeShortcircuitedExpr return */
+	reg::packed(29, 0, 34), /* chainedInto $expr */
+	reg::packed(54, MAY_BE_NULL, 34), /* chainedInto return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg getNullsafeShortcircuitedExprRespectingScope_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\Scope"), reg::typed("expr", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg getNullsafeShortcircuitedExprRespectingScope_return = reg::typed("", 0, "PhpParser\\Node\\Expr");
-inline constexpr reg::Sig getNullsafeShortcircuitedExprRespectingScope = { "getNullsafeShortcircuitedExprRespectingScope", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, getNullsafeShortcircuitedExprRespectingScope_args, 2, &getNullsafeShortcircuitedExprRespectingScope_return };
-inline constexpr reg::Arg getNullsafeShortcircuitedExpr_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg getNullsafeShortcircuitedExpr_return = reg::typed("", 0, "PhpParser\\Node\\Expr");
-inline constexpr reg::Sig getNullsafeShortcircuitedExpr = { "getNullsafeShortcircuitedExpr", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, getNullsafeShortcircuitedExpr_args, 1, &getNullsafeShortcircuitedExpr_return };
-inline constexpr reg::Arg chainedInto_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg chainedInto_return = reg::typed("", MAY_BE_NULL, "PhpParser\\Node\\Expr");
-inline constexpr reg::Sig chainedInto = { "chainedInto", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 1, chainedInto_args, 1, &chainedInto_return };
+inline constexpr sigtab::Sig getNullsafeShortcircuitedExprRespectingScope = { { 55 /* getNullsafeShortcircuitedExprRespectingScope */, 2, 0, 2, 2, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig getNullsafeShortcircuitedExpr = { { 100 /* getNullsafeShortcircuitedExpr */, 1, 3, 1, 4, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig chainedInto = { { 130 /* chainedInto */, 1, 5, 1, 6, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::NullsafeOperatorHelper

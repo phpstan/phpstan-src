@@ -27,10 +27,22 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("targetId", ZEND_ACC_PUBLIC | ZEND_ACC_READONLY, reg::PropertyKind::Typed, MAY_BE_NULL | MAY_BE_LONG);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"writeId\0" /* 0 */
+	"targetId\0" /* 8 */
+	"__construct"; /* 17 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_LONG), /* __construct $writeId */
+	reg::packed(8, MAY_BE_NULL | MAY_BE_LONG), /* __construct $targetId */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("writeId", MAY_BE_LONG), reg::typed("targetId", MAY_BE_NULL | MAY_BE_LONG) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 2, __construct_args, 2, nullptr };
+inline constexpr sigtab::Sig __construct = { { 17 /* __construct */, 2, 0, 2, reg::NoArg, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::VariableInputFlow

@@ -33,22 +33,87 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("defaultNarrowingHelper", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"phpVersion\0" /* 0 */
+	"PHPStan\\Php\\PhpVersion\0" /* 11 */
+	"propertyReflectionFinder\0" /* 34 */
+	"PHPStan\\Rules\\Properties\\PropertyReflectionFinder\0" /* 59 */
+	"expressionResultFactory\0" /* 109 */
+	"PHPStan\\Analyser\\ExpressionResultFactory\0" /* 133 */
+	"propertyHookThrowPointsResolver\0" /* 174 */
+	"PHPStan\\Analyser\\PropertyHookThrowPointsResolver\0" /* 206 */
+	"defaultNarrowingHelper\0" /* 255 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper\0" /* 278 */
+	"__construct\0" /* 337 */
+	"expr\0" /* 349 */
+	"PhpParser\\Node\\Expr\0" /* 354 */
+	"\0" /* 374 */
+	"supports\0" /* 375 */
+	"nodeScopeResolver\0" /* 384 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 402 */
+	"stmt\0" /* 437 */
+	"PhpParser\\Node\\Stmt\0" /* 442 */
+	"scope\0" /* 462 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 468 */
+	"storage\0" /* 499 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 507 */
+	"nodeCallback\0" /* 548 */
+	"context\0" /* 561 */
+	"PHPStan\\Analyser\\ExpressionContext\0" /* 569 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 604 */
+	"processExpr\0" /* 638 */
+	"PhpParser\\Node\\Expr\\PropertyFetch\0" /* 650 */
+	"varResult\0" /* 684 */
+	"nameResult\0" /* 694 */
+	"scopeBeforeVar\0" /* 705 */
+	"beforeScope\0" /* 720 */
+	"composeResult\0" /* 732 */
+	"fetchedOnType\0" /* 746 */
+	"PHPStan\\Type\\Type\0" /* 760 */
+	"propertyName\0" /* 778 */
+	"propertyFetch\0" /* 791 */
+	"propertyFetchType"; /* 805 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 11), /* __construct $phpVersion */
+	reg::packed(34, 0, 59), /* __construct $propertyReflectionFinder */
+	reg::packed(109, 0, 133), /* __construct $expressionResultFactory */
+	reg::packed(174, 0, 206), /* __construct $propertyHookThrowPointsResolver */
+	reg::packed(255, 0, 278), /* __construct $defaultNarrowingHelper */
+	reg::packed(349, 0, 354), /* supports $expr */
+	reg::packed(374, MAY_BE_BOOL), /* supports return */
+	reg::packed(384, 0, 402), /* processExpr $nodeScopeResolver */
+	reg::packed(437, 0, 442), /* processExpr $stmt */
+	reg::packed(349, 0, 354), /* processExpr $expr */
+	reg::packed(462, 0, 468), /* processExpr $scope */
+	reg::packed(499, 0, 507), /* processExpr $storage */
+	reg::packed(548, MAY_BE_CALLABLE), /* processExpr $nodeCallback */
+	reg::packed(561, 0, 569), /* processExpr $context */
+	reg::packed(374, 0, 604), /* processExpr return */
+	reg::packed(384, 0, 402), /* composeResult $nodeScopeResolver */
+	reg::packed(349, 0, 650), /* composeResult $expr */
+	reg::packed(684, 0, 604), /* composeResult $varResult */
+	reg::packed(694, MAY_BE_NULL, 604), /* composeResult $nameResult */
+	reg::packed(705, 0, 468), /* composeResult $scopeBeforeVar */
+	reg::packed(720, 0, 468), /* composeResult $beforeScope */
+	reg::packed(374, 0, 604), /* composeResult return */
+	reg::packed(462, 0, 468), /* propertyFetchType $scope */
+	reg::packed(746, 0, 760), /* propertyFetchType $fetchedOnType */
+	reg::packed(778, MAY_BE_STRING), /* propertyFetchType $propertyName */
+	reg::packed(791, 0, 650), /* propertyFetchType $propertyFetch */
+	reg::packed(374, MAY_BE_NULL, 760), /* propertyFetchType return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("phpVersion", 0, "PHPStan\\Php\\PhpVersion"), reg::typed("propertyReflectionFinder", 0, "PHPStan\\Rules\\Properties\\PropertyReflectionFinder"), reg::typed("expressionResultFactory", 0, "PHPStan\\Analyser\\ExpressionResultFactory"), reg::typed("propertyHookThrowPointsResolver", 0, "PHPStan\\Analyser\\PropertyHookThrowPointsResolver"), reg::typed("defaultNarrowingHelper", 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 5, __construct_args, 5, nullptr };
-inline constexpr reg::Arg supports_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg supports_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig supports = { "supports", ZEND_ACC_PUBLIC, 1, supports_args, 1, &supports_return };
-inline constexpr reg::Arg processExpr_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("stmt", 0, "PhpParser\\Node\\Stmt"), reg::typed("expr", 0, "PhpParser\\Node\\Expr"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("nodeCallback", MAY_BE_CALLABLE), reg::typed("context", 0, "PHPStan\\Analyser\\ExpressionContext") };
-inline constexpr reg::Arg processExpr_return = reg::typed("", 0, "PHPStan\\Analyser\\ExpressionResult");
-inline constexpr reg::Sig processExpr = { "processExpr", ZEND_ACC_PUBLIC, 7, processExpr_args, 7, &processExpr_return };
-inline constexpr reg::Arg composeResult_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("expr", 0, "PhpParser\\Node\\Expr\\PropertyFetch"), reg::typed("varResult", 0, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("nameResult", MAY_BE_NULL, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("scopeBeforeVar", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("beforeScope", 0, "PHPStan\\Analyser\\MutatingScope") };
-inline constexpr reg::Arg composeResult_return = reg::typed("", 0, "PHPStan\\Analyser\\ExpressionResult");
-inline constexpr reg::Sig composeResult = { "composeResult", ZEND_ACC_PUBLIC, 6, composeResult_args, 6, &composeResult_return };
-inline constexpr reg::Arg propertyFetchType_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("fetchedOnType", 0, "PHPStan\\Type\\Type"), reg::typed("propertyName", MAY_BE_STRING), reg::typed("propertyFetch", 0, "PhpParser\\Node\\Expr\\PropertyFetch") };
-inline constexpr reg::Arg propertyFetchType_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig propertyFetchType = { "propertyFetchType", ZEND_ACC_PRIVATE, 4, propertyFetchType_args, 4, &propertyFetchType_return };
+inline constexpr sigtab::Sig __construct = { { 337 /* __construct */, 5, 0, 5, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig supports = { { 375 /* supports */, 1, 5, 1, 6, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processExpr = { { 638 /* processExpr */, 7, 7, 7, 14, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig composeResult = { { 732 /* composeResult */, 6, 15, 6, 21, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig propertyFetchType = { { 805 /* propertyFetchType */, 4, 22, 4, 26, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::PropertyFetchHandler

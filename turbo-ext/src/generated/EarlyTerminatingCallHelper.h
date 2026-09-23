@@ -30,16 +30,39 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("earlyTerminatingFunctionCalls", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_ARRAY);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"reflectionProvider\0" /* 0 */
+	"PHPStan\\Reflection\\ReflectionProvider\0" /* 19 */
+	"earlyTerminatingMethodCalls\0" /* 57 */
+	"earlyTerminatingFunctionCalls\0" /* 85 */
+	"__construct\0" /* 115 */
+	"methodName\0" /* 127 */
+	"calledOnType\0" /* 138 */
+	"PHPStan\\Type\\Type\0" /* 151 */
+	"\0" /* 169 */
+	"isEarlyTerminatingMethodCall\0" /* 170 */
+	"functionName\0" /* 199 */
+	"isEarlyTerminatingFunctionCall"; /* 212 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 19), /* __construct $reflectionProvider */
+	reg::packed(57, MAY_BE_ARRAY), /* __construct $earlyTerminatingMethodCalls */
+	reg::packed(85, MAY_BE_ARRAY), /* __construct $earlyTerminatingFunctionCalls */
+	reg::packed(127, MAY_BE_STRING), /* isEarlyTerminatingMethodCall $methodName */
+	reg::packed(138, 0, 151), /* isEarlyTerminatingMethodCall $calledOnType */
+	reg::packed(169, MAY_BE_BOOL), /* isEarlyTerminatingMethodCall return */
+	reg::packed(199, MAY_BE_STRING), /* isEarlyTerminatingFunctionCall $functionName */
+	reg::packed(169, MAY_BE_BOOL), /* isEarlyTerminatingFunctionCall return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("reflectionProvider", 0, "PHPStan\\Reflection\\ReflectionProvider"), reg::typed("earlyTerminatingMethodCalls", MAY_BE_ARRAY), reg::typed("earlyTerminatingFunctionCalls", MAY_BE_ARRAY) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 3, __construct_args, 3, nullptr };
-inline constexpr reg::Arg isEarlyTerminatingMethodCall_args[] = { reg::typed("methodName", MAY_BE_STRING), reg::typed("calledOnType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg isEarlyTerminatingMethodCall_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isEarlyTerminatingMethodCall = { "isEarlyTerminatingMethodCall", ZEND_ACC_PUBLIC, 2, isEarlyTerminatingMethodCall_args, 2, &isEarlyTerminatingMethodCall_return };
-inline constexpr reg::Arg isEarlyTerminatingFunctionCall_args[] = { reg::typed("functionName", MAY_BE_STRING) };
-inline constexpr reg::Arg isEarlyTerminatingFunctionCall_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isEarlyTerminatingFunctionCall = { "isEarlyTerminatingFunctionCall", ZEND_ACC_PUBLIC, 1, isEarlyTerminatingFunctionCall_args, 1, &isEarlyTerminatingFunctionCall_return };
+inline constexpr sigtab::Sig __construct = { { 115 /* __construct */, 3, 0, 3, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isEarlyTerminatingMethodCall = { { 170 /* isEarlyTerminatingMethodCall */, 2, 3, 2, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isEarlyTerminatingFunctionCall = { { 212 /* isEarlyTerminatingFunctionCall */, 1, 6, 1, 7, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::EarlyTerminatingCallHelper

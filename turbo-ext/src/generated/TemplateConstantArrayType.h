@@ -39,13 +39,52 @@ inline void registerTraits(reg::Class &cls)
 	pt_type_trait_undecided_comparison(cls);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"scope\0" /* 0 */
+	"PHPStan\\Type\\Generic\\TemplateTypeScope\0" /* 6 */
+	"templateTypeStrategy\0" /* 45 */
+	"PHPStan\\Type\\Generic\\TemplateTypeStrategy\0" /* 66 */
+	"templateTypeVariance\0" /* 108 */
+	"PHPStan\\Type\\Generic\\TemplateTypeVariance\0" /* 129 */
+	"name\0" /* 171 */
+	"bound\0" /* 176 */
+	"PHPStan\\Type\\Constant\\ConstantArrayType\0" /* 182 */
+	"default\0" /* 222 */
+	"PHPStan\\Type\\Type\0" /* 230 */
+	"__construct\0" /* 248 */
+	"keyTypes\0" /* 260 */
+	"valueTypes\0" /* 269 */
+	"nextAutoIndexes\0" /* 280 */
+	"optionalKeys\0" /* 296 */
+	"isList\0" /* 309 */
+	"PHPStan\\TrinaryLogic\0" /* 316 */
+	"unsealed\0" /* 337 */
+	"\0" /* 346 */
+	"recreate"; /* 347 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 6), /* __construct $scope */
+	reg::packed(45, 0, 66), /* __construct $templateTypeStrategy */
+	reg::packed(108, 0, 129), /* __construct $templateTypeVariance */
+	reg::packed(171, MAY_BE_STRING), /* __construct $name */
+	reg::packed(176, 0, 182), /* __construct $bound */
+	reg::packed(222, MAY_BE_NULL, 230), /* __construct $default */
+	reg::packed(260, MAY_BE_ARRAY), /* recreate $keyTypes */
+	reg::packed(269, MAY_BE_ARRAY), /* recreate $valueTypes */
+	reg::packed(280, MAY_BE_ARRAY), /* recreate $nextAutoIndexes */
+	reg::packed(296, MAY_BE_ARRAY), /* recreate $optionalKeys */
+	reg::packed(309, MAY_BE_NULL, 316), /* recreate $isList */
+	reg::packed(337, MAY_BE_NULL | MAY_BE_ARRAY), /* recreate $unsealed */
+	reg::packed(346, 0, 182), /* recreate return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("scope", 0, "PHPStan\\Type\\Generic\\TemplateTypeScope"), reg::typed("templateTypeStrategy", 0, "PHPStan\\Type\\Generic\\TemplateTypeStrategy"), reg::typed("templateTypeVariance", 0, "PHPStan\\Type\\Generic\\TemplateTypeVariance"), reg::typed("name", MAY_BE_STRING), reg::typed("bound", 0, "PHPStan\\Type\\Constant\\ConstantArrayType"), reg::typed("default", MAY_BE_NULL, "PHPStan\\Type\\Type") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 6, __construct_args, 6, nullptr };
-inline constexpr reg::Arg recreate_args[] = { reg::typed("keyTypes", MAY_BE_ARRAY), reg::typed("valueTypes", MAY_BE_ARRAY), reg::typed("nextAutoIndexes", MAY_BE_ARRAY), reg::typed("optionalKeys", MAY_BE_ARRAY), reg::typed("isList", MAY_BE_NULL, "PHPStan\\TrinaryLogic"), reg::typed("unsealed", MAY_BE_NULL | MAY_BE_ARRAY) };
-inline constexpr reg::Arg recreate_return = reg::typed("", 0, "PHPStan\\Type\\Constant\\ConstantArrayType");
-inline constexpr reg::Sig recreate = { "recreate", ZEND_ACC_PROTECTED, 6, recreate_args, 6, &recreate_return };
+inline constexpr sigtab::Sig __construct = { { 248 /* __construct */, 6, 0, 6, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig recreate = { { 347 /* recreate */, 6, 6, 6, 12, ZEND_ACC_PROTECTED } };
 } // namespace sig
 
 } // namespace ptdecl::TemplateConstantArrayType

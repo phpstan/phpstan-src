@@ -41,72 +41,127 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("sureNotTypes", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_ARRAY);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"sureTypes\0" /* 0 */
+	"[]\0" /* 10 */
+	"sureNotTypes\0" /* 13 */
+	"__construct\0" /* 26 */
+	"\0" /* 38 */
+	"Closure\0" /* 39 */
+	"emptySpecifyCallback\0" /* 47 */
+	"PHPStan\\Analyser\\SpecifiedTypes\0" /* 68 */
+	"setAlwaysOverwriteTypes\0" /* 100 */
+	"setEquality\0" /* 124 */
+	"isEquality\0" /* 136 */
+	"rootExpr\0" /* 147 */
+	"PhpParser\\Node\\Expr\0" /* 156 */
+	"setRootExpr\0" /* 176 */
+	"newConditionalExpressionHolders\0" /* 188 */
+	"setNewConditionalExpressionHolders\0" /* 220 */
+	"recipes\0" /* 255 */
+	"setConditionalExpressionHolderRecipes\0" /* 263 */
+	"getConditionalExpressionHolderRecipes\0" /* 301 */
+	"augment\0" /* 339 */
+	"PHPStan\\Analyser\\DeferredSpecifiedTypesAugment\0" /* 347 */
+	"withDeferredAugment\0" /* 394 */
+	"getDeferredAugments\0" /* 414 */
+	"getSureTypes\0" /* 434 */
+	"getSureNotTypes\0" /* 447 */
+	"getAlternativeTypes\0" /* 463 */
+	"withoutConditionalExpressionHolders\0" /* 483 */
+	"shouldOverwrite\0" /* 519 */
+	"getNewConditionalExpressionHolders\0" /* 535 */
+	"getRootExpr\0" /* 570 */
+	"exprString\0" /* 582 */
+	"removeExpr\0" /* 593 */
+	"other\0" /* 604 */
+	"intersectWith\0" /* 610 */
+	"collectTerms\0" /* 624 */
+	"terms\0" /* 637 */
+	"otherTerms\0" /* 643 */
+	"conjoinTerms\0" /* 654 */
+	"dedupeTerms\0" /* 667 */
+	"widenTerms\0" /* 679 */
+	"unionWith\0" /* 690 */
+	"rootExprA\0" /* 700 */
+	"rootExprB\0" /* 710 */
+	"mergeRootExpr"; /* 720 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_ARRAY, reg::NoString, false, false, 10), /* __construct $sureTypes */
+	reg::packed(13, MAY_BE_ARRAY, reg::NoString, false, false, 10), /* __construct $sureNotTypes */
+	reg::packed(38, 0, 39), /* emptySpecifyCallback return */
+	reg::packed(38, 0, 68), /* setAlwaysOverwriteTypes return */
+	reg::packed(38, 0, 68), /* setEquality return */
+	reg::packed(38, MAY_BE_BOOL), /* isEquality return */
+	reg::packed(147, MAY_BE_NULL, 156), /* setRootExpr $rootExpr */
+	reg::packed(38, 0, 68), /* setRootExpr return */
+	reg::packed(188, MAY_BE_ARRAY), /* setNewConditionalExpressionHolders $newConditionalExpressionHolders */
+	reg::packed(38, 0, 68), /* setNewConditionalExpressionHolders return */
+	reg::packed(255, MAY_BE_ARRAY), /* setConditionalExpressionHolderRecipes $recipes */
+	reg::packed(38, 0, 68), /* setConditionalExpressionHolderRecipes return */
+	reg::packed(38, MAY_BE_ARRAY), /* getConditionalExpressionHolderRecipes return */
+	reg::packed(339, 0, 347), /* withDeferredAugment $augment */
+	reg::packed(38, 0, 68), /* withDeferredAugment return */
+	reg::packed(38, MAY_BE_ARRAY), /* getDeferredAugments return */
+	reg::packed(38, MAY_BE_ARRAY), /* getSureTypes return */
+	reg::packed(38, MAY_BE_ARRAY), /* getSureNotTypes return */
+	reg::packed(38, MAY_BE_ARRAY), /* getAlternativeTypes return */
+	reg::packed(38, 0, 68), /* withoutConditionalExpressionHolders return */
+	reg::packed(38, MAY_BE_BOOL), /* shouldOverwrite return */
+	reg::packed(38, MAY_BE_ARRAY), /* getNewConditionalExpressionHolders return */
+	reg::packed(38, MAY_BE_NULL, 156), /* getRootExpr return */
+	reg::packed(582, MAY_BE_STRING), /* removeExpr $exprString */
+	reg::packed(38, 0, 68), /* removeExpr return */
+	reg::packed(604, 0, 68), /* intersectWith $other */
+	reg::packed(38, 0, 68), /* intersectWith return */
+	reg::packed(582, MAY_BE_LONG | MAY_BE_STRING), /* collectTerms $exprString */
+	reg::packed(38, MAY_BE_NULL | MAY_BE_ARRAY), /* collectTerms return */
+	reg::packed(637, MAY_BE_ARRAY), /* conjoinTerms $terms */
+	reg::packed(643, MAY_BE_ARRAY), /* conjoinTerms $otherTerms */
+	reg::packed(38, MAY_BE_ARRAY), /* conjoinTerms return */
+	reg::packed(637, MAY_BE_ARRAY), /* dedupeTerms $terms */
+	reg::packed(38, MAY_BE_ARRAY), /* dedupeTerms return */
+	reg::packed(637, MAY_BE_ARRAY), /* widenTerms $terms */
+	reg::packed(38, MAY_BE_ARRAY), /* widenTerms return */
+	reg::packed(604, 0, 68), /* unionWith $other */
+	reg::packed(38, 0, 68), /* unionWith return */
+	reg::packed(700, MAY_BE_NULL, 156), /* mergeRootExpr $rootExprA */
+	reg::packed(710, MAY_BE_NULL, 156), /* mergeRootExpr $rootExprB */
+	reg::packed(38, MAY_BE_NULL, 156), /* mergeRootExpr return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("sureTypes", MAY_BE_ARRAY, nullptr, false, false, "[]"), reg::typed("sureNotTypes", MAY_BE_ARRAY, nullptr, false, false, "[]") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 0, __construct_args, 2, nullptr };
-inline constexpr reg::Arg emptySpecifyCallback_return = reg::typed("", 0, "Closure");
-inline constexpr reg::Sig emptySpecifyCallback = { "emptySpecifyCallback", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &emptySpecifyCallback_return };
-inline constexpr reg::Arg setAlwaysOverwriteTypes_return = reg::typed("", 0, "PHPStan\\Analyser\\SpecifiedTypes");
-inline constexpr reg::Sig setAlwaysOverwriteTypes = { "setAlwaysOverwriteTypes", ZEND_ACC_PUBLIC, 0, nullptr, 0, &setAlwaysOverwriteTypes_return };
-inline constexpr reg::Arg setEquality_return = reg::typed("", 0, "PHPStan\\Analyser\\SpecifiedTypes");
-inline constexpr reg::Sig setEquality = { "setEquality", ZEND_ACC_PUBLIC, 0, nullptr, 0, &setEquality_return };
-inline constexpr reg::Arg isEquality_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isEquality = { "isEquality", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isEquality_return };
-inline constexpr reg::Arg setRootExpr_args[] = { reg::typed("rootExpr", MAY_BE_NULL, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg setRootExpr_return = reg::typed("", 0, "PHPStan\\Analyser\\SpecifiedTypes");
-inline constexpr reg::Sig setRootExpr = { "setRootExpr", ZEND_ACC_PUBLIC, 1, setRootExpr_args, 1, &setRootExpr_return };
-inline constexpr reg::Arg setNewConditionalExpressionHolders_args[] = { reg::typed("newConditionalExpressionHolders", MAY_BE_ARRAY) };
-inline constexpr reg::Arg setNewConditionalExpressionHolders_return = reg::typed("", 0, "PHPStan\\Analyser\\SpecifiedTypes");
-inline constexpr reg::Sig setNewConditionalExpressionHolders = { "setNewConditionalExpressionHolders", ZEND_ACC_PUBLIC, 1, setNewConditionalExpressionHolders_args, 1, &setNewConditionalExpressionHolders_return };
-inline constexpr reg::Arg setConditionalExpressionHolderRecipes_args[] = { reg::typed("recipes", MAY_BE_ARRAY) };
-inline constexpr reg::Arg setConditionalExpressionHolderRecipes_return = reg::typed("", 0, "PHPStan\\Analyser\\SpecifiedTypes");
-inline constexpr reg::Sig setConditionalExpressionHolderRecipes = { "setConditionalExpressionHolderRecipes", ZEND_ACC_PUBLIC, 1, setConditionalExpressionHolderRecipes_args, 1, &setConditionalExpressionHolderRecipes_return };
-inline constexpr reg::Arg getConditionalExpressionHolderRecipes_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getConditionalExpressionHolderRecipes = { "getConditionalExpressionHolderRecipes", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getConditionalExpressionHolderRecipes_return };
-inline constexpr reg::Arg withDeferredAugment_args[] = { reg::typed("augment", 0, "PHPStan\\Analyser\\DeferredSpecifiedTypesAugment") };
-inline constexpr reg::Arg withDeferredAugment_return = reg::typed("", 0, "PHPStan\\Analyser\\SpecifiedTypes");
-inline constexpr reg::Sig withDeferredAugment = { "withDeferredAugment", ZEND_ACC_PUBLIC, 1, withDeferredAugment_args, 1, &withDeferredAugment_return };
-inline constexpr reg::Arg getDeferredAugments_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getDeferredAugments = { "getDeferredAugments", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getDeferredAugments_return };
-inline constexpr reg::Arg getSureTypes_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getSureTypes = { "getSureTypes", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getSureTypes_return };
-inline constexpr reg::Arg getSureNotTypes_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getSureNotTypes = { "getSureNotTypes", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getSureNotTypes_return };
-inline constexpr reg::Arg getAlternativeTypes_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getAlternativeTypes = { "getAlternativeTypes", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getAlternativeTypes_return };
-inline constexpr reg::Arg withoutConditionalExpressionHolders_return = reg::typed("", 0, "PHPStan\\Analyser\\SpecifiedTypes");
-inline constexpr reg::Sig withoutConditionalExpressionHolders = { "withoutConditionalExpressionHolders", ZEND_ACC_PUBLIC, 0, nullptr, 0, &withoutConditionalExpressionHolders_return };
-inline constexpr reg::Arg shouldOverwrite_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig shouldOverwrite = { "shouldOverwrite", ZEND_ACC_PUBLIC, 0, nullptr, 0, &shouldOverwrite_return };
-inline constexpr reg::Arg getNewConditionalExpressionHolders_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getNewConditionalExpressionHolders = { "getNewConditionalExpressionHolders", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getNewConditionalExpressionHolders_return };
-inline constexpr reg::Arg getRootExpr_return = reg::typed("", MAY_BE_NULL, "PhpParser\\Node\\Expr");
-inline constexpr reg::Sig getRootExpr = { "getRootExpr", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getRootExpr_return };
-inline constexpr reg::Arg removeExpr_args[] = { reg::typed("exprString", MAY_BE_STRING) };
-inline constexpr reg::Arg removeExpr_return = reg::typed("", 0, "PHPStan\\Analyser\\SpecifiedTypes");
-inline constexpr reg::Sig removeExpr = { "removeExpr", ZEND_ACC_PUBLIC, 1, removeExpr_args, 1, &removeExpr_return };
-inline constexpr reg::Arg intersectWith_args[] = { reg::typed("other", 0, "PHPStan\\Analyser\\SpecifiedTypes") };
-inline constexpr reg::Arg intersectWith_return = reg::typed("", 0, "PHPStan\\Analyser\\SpecifiedTypes");
-inline constexpr reg::Sig intersectWith = { "intersectWith", ZEND_ACC_PUBLIC, 1, intersectWith_args, 1, &intersectWith_return };
-inline constexpr reg::Arg collectTerms_args[] = { reg::typed("exprString", MAY_BE_LONG | MAY_BE_STRING) };
-inline constexpr reg::Arg collectTerms_return = reg::typed("", MAY_BE_NULL | MAY_BE_ARRAY);
-inline constexpr reg::Sig collectTerms = { "collectTerms", ZEND_ACC_PRIVATE, 1, collectTerms_args, 1, &collectTerms_return };
-inline constexpr reg::Arg conjoinTerms_args[] = { reg::typed("terms", MAY_BE_ARRAY), reg::typed("otherTerms", MAY_BE_ARRAY) };
-inline constexpr reg::Arg conjoinTerms_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig conjoinTerms = { "conjoinTerms", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 2, conjoinTerms_args, 2, &conjoinTerms_return };
-inline constexpr reg::Arg dedupeTerms_args[] = { reg::typed("terms", MAY_BE_ARRAY) };
-inline constexpr reg::Arg dedupeTerms_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig dedupeTerms = { "dedupeTerms", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 1, dedupeTerms_args, 1, &dedupeTerms_return };
-inline constexpr reg::Arg widenTerms_args[] = { reg::typed("terms", MAY_BE_ARRAY) };
-inline constexpr reg::Arg widenTerms_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig widenTerms = { "widenTerms", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 1, widenTerms_args, 1, &widenTerms_return };
-inline constexpr reg::Arg unionWith_args[] = { reg::typed("other", 0, "PHPStan\\Analyser\\SpecifiedTypes") };
-inline constexpr reg::Arg unionWith_return = reg::typed("", 0, "PHPStan\\Analyser\\SpecifiedTypes");
-inline constexpr reg::Sig unionWith = { "unionWith", ZEND_ACC_PUBLIC, 1, unionWith_args, 1, &unionWith_return };
-inline constexpr reg::Arg mergeRootExpr_args[] = { reg::typed("rootExprA", MAY_BE_NULL, "PhpParser\\Node\\Expr"), reg::typed("rootExprB", MAY_BE_NULL, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg mergeRootExpr_return = reg::typed("", MAY_BE_NULL, "PhpParser\\Node\\Expr");
-inline constexpr reg::Sig mergeRootExpr = { "mergeRootExpr", ZEND_ACC_PRIVATE, 2, mergeRootExpr_args, 2, &mergeRootExpr_return };
+inline constexpr sigtab::Sig __construct = { { 26 /* __construct */, 0, 0, 2, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig emptySpecifyCallback = { { 47 /* emptySpecifyCallback */, 0, 2, 0, 2, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig setAlwaysOverwriteTypes = { { 100 /* setAlwaysOverwriteTypes */, 0, 3, 0, 3, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig setEquality = { { 124 /* setEquality */, 0, 4, 0, 4, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isEquality = { { 136 /* isEquality */, 0, 5, 0, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig setRootExpr = { { 176 /* setRootExpr */, 1, 6, 1, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig setNewConditionalExpressionHolders = { { 220 /* setNewConditionalExpressionHolders */, 1, 8, 1, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig setConditionalExpressionHolderRecipes = { { 263 /* setConditionalExpressionHolderRecipes */, 1, 10, 1, 11, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getConditionalExpressionHolderRecipes = { { 301 /* getConditionalExpressionHolderRecipes */, 0, 12, 0, 12, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig withDeferredAugment = { { 394 /* withDeferredAugment */, 1, 13, 1, 14, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getDeferredAugments = { { 414 /* getDeferredAugments */, 0, 15, 0, 15, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getSureTypes = { { 434 /* getSureTypes */, 0, 16, 0, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getSureNotTypes = { { 447 /* getSureNotTypes */, 0, 17, 0, 17, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getAlternativeTypes = { { 463 /* getAlternativeTypes */, 0, 18, 0, 18, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig withoutConditionalExpressionHolders = { { 483 /* withoutConditionalExpressionHolders */, 0, 19, 0, 19, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig shouldOverwrite = { { 519 /* shouldOverwrite */, 0, 20, 0, 20, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getNewConditionalExpressionHolders = { { 535 /* getNewConditionalExpressionHolders */, 0, 21, 0, 21, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getRootExpr = { { 570 /* getRootExpr */, 0, 22, 0, 22, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig removeExpr = { { 593 /* removeExpr */, 1, 23, 1, 24, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig intersectWith = { { 610 /* intersectWith */, 1, 25, 1, 26, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig collectTerms = { { 624 /* collectTerms */, 1, 27, 1, 28, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig conjoinTerms = { { 654 /* conjoinTerms */, 2, 29, 2, 31, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig dedupeTerms = { { 667 /* dedupeTerms */, 1, 32, 1, 33, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig widenTerms = { { 679 /* widenTerms */, 1, 34, 1, 35, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig unionWith = { { 690 /* unionWith */, 1, 36, 1, 37, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig mergeRootExpr = { { 720 /* mergeRootExpr */, 2, 38, 2, 40, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::SpecifiedTypes

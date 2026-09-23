@@ -24,19 +24,37 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("cb", ZEND_ACC_PRIVATE, reg::PropertyKind::Null, 0);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"type\0" /* 0 */
+	"PHPStan\\Type\\Type\0" /* 5 */
+	"cb\0" /* 23 */
+	"PHPStan\\Type\\TypeTraverserCallable\0" /* 26 */
+	"\0" /* 61 */
+	"map\0" /* 62 */
+	"__construct\0" /* 66 */
+	"mapInternal\0" /* 78 */
+	"traverseInternal"; /* 90 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 5), /* map $type */
+	reg::packed(23, MAY_BE_CALLABLE, 26), /* map $cb */
+	reg::packed(61, 0, 5), /* map return */
+	reg::packed(23, MAY_BE_CALLABLE, 26), /* __construct $cb */
+	reg::packed(0, 0, 5), /* mapInternal $type */
+	reg::packed(61, 0, 5), /* mapInternal return */
+	reg::packed(0, 0, 5), /* traverseInternal $type */
+	reg::packed(61, 0, 5), /* traverseInternal return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg map_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type"), reg::typed("cb", MAY_BE_CALLABLE, "PHPStan\\Type\\TypeTraverserCallable") };
-inline constexpr reg::Arg map_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig map = { "map", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, map_args, 2, &map_return };
-inline constexpr reg::Arg __construct_args[] = { reg::typed("cb", MAY_BE_CALLABLE, "PHPStan\\Type\\TypeTraverserCallable") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PRIVATE, 1, __construct_args, 1, nullptr };
-inline constexpr reg::Arg mapInternal_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg mapInternal_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig mapInternal = { "mapInternal", ZEND_ACC_PUBLIC, 1, mapInternal_args, 1, &mapInternal_return };
-inline constexpr reg::Arg traverseInternal_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg traverseInternal_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig traverseInternal = { "traverseInternal", ZEND_ACC_PUBLIC, 1, traverseInternal_args, 1, &traverseInternal_return };
+inline constexpr sigtab::Sig map = { { 62 /* map */, 2, 0, 2, 2, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig __construct = { { 66 /* __construct */, 1, 3, 1, reg::NoArg, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig mapInternal = { { 78 /* mapInternal */, 1, 4, 1, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig traverseInternal = { { 90 /* traverseInternal */, 1, 6, 1, 7, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::TypeTraverser

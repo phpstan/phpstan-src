@@ -65,6 +65,9 @@ final class TurboDeclarationGenerator
 {
 
 	/** names a slot constant cannot carry verbatim: C++ keywords and the libc macros of common targets */
+	/** reg::PackedArg / reg::SigData hold 16-bit offsets and indexes; UINT16_MAX is reg::NoString / reg::NoArg */
+	private const PACKED_LIMIT = 65535;
+
 	private const RESERVED = [
 		'alignas', 'alignof', 'and', 'auto', 'bool', 'break', 'case', 'catch', 'char', 'class', 'const', 'continue',
 		'default', 'delete', 'do', 'double', 'else', 'enum', 'explicit', 'export', 'extern', 'false', 'float', 'for',
@@ -240,14 +243,11 @@ final class TurboDeclarationGenerator
 		}
 
 		$signatures = $this->renderSignatures($class);
-		if ($signatures !== []) {
+		if ($signatures['sigs'] !== []) {
 			$out[] = '';
-			$out[] = '/* the signatures of the methods the class declares itself (a used trait\'s are in the trait\'s header) */';
-			$out[] = 'namespace sig {';
-			foreach ($signatures as $line) {
+			foreach ($this->signatureBlock($signatures, 'the signatures of the methods the class declares itself (a used trait\'s are in the trait\'s header)') as $line) {
 				$out[] = $line;
 			}
-			$out[] = '} // namespace sig';
 		}
 
 		$out[] = '';
@@ -277,13 +277,10 @@ final class TurboDeclarationGenerator
 			'',
 			'namespace ptdecl::' . $stem . ' {',
 			'',
-			'/* the signatures of the methods the trait declares itself */',
-			'namespace sig {',
 		];
-		foreach ($this->renderSignatures($trait) as $line) {
+		foreach ($this->signatureBlock($this->renderSignatures($trait), 'the signatures of the methods the trait declares itself') as $line) {
 			$out[] = $line;
 		}
-		$out[] = '} // namespace sig';
 		$out[] = '';
 		$out[] = '} // namespace ptdecl::' . $stem;
 		$out[] = '';
@@ -409,14 +406,40 @@ final class TurboDeclarationGenerator
 
 	/**
 	 * The generated signature of every method declared in the class-like's
-	 * own file (a used trait's methods are declared in the trait's).
+	 * own file (a used trait's methods are declared in the trait's), and
+	 * the string and parameter tables they index into. The records carry
+	 * offsets rather than pointers: a pointer in a constant table is a
+	 * load-time relocation, and these tables were 89% of the extension's
+	 * relocations (see reg::Sig).
 	 *
 	 * @param ReflectionClass<object> $class
-	 * @return list<string>
+	 * @return array{tables: list<string>, sigs: list<string>}
 	 */
 	private function renderSignatures(ReflectionClass $class): array
 	{
-		$lines = [];
+		// the strings in table order, and their offsets by value (keyed with a
+		// prefix: a numeric default like "0" would otherwise become an int key)
+		$strings = [];
+		$offsets = [];
+		$stringsSize = 0;
+		$string = static function (?string $value) use (&$strings, &$offsets, &$stringsSize): string {
+			if ($value === null) {
+				return 'reg::NoString';
+			}
+			$key = 's' . $value;
+			if (!isset($offsets[$key])) {
+				if ($stringsSize >= self::PACKED_LIMIT) {
+					throw new RuntimeException('the signature string table outgrew its 16-bit offsets');
+				}
+				$offsets[$key] = $stringsSize;
+				$strings[] = $value;
+				$stringsSize += strlen($value) + 1;
+			}
+
+			return (string) $offsets[$key];
+		};
+		$table = [];
+		$sigs = [];
 		foreach ($class->getMethods() as $method) {
 			if ($method->getDeclaringClass()->getName() !== $class->getName() || $method->getFileName() !== $class->getFileName()) {
 				continue;
@@ -427,48 +450,86 @@ final class TurboDeclarationGenerator
 				foreach ($method->getParameters() as $parameter) {
 					[$mask, $className] = $this->signatureType($parameter->getType());
 					$default = $parameter->isDefaultValueAvailable() ? $this->defaultSource($parameter) : null;
-					$pieces = [$this->cString($parameter->getName()), $mask];
-					if ($className !== null || $parameter->isPassedByReference() || $parameter->isVariadic() || $default !== null) {
-						$pieces[] = $className !== null ? $this->cString($className) : 'nullptr';
-					}
-					if ($parameter->isPassedByReference() || $parameter->isVariadic() || $default !== null) {
-						$pieces[] = $parameter->isPassedByReference() ? 'true' : 'false';
-						$pieces[] = $parameter->isVariadic() ? 'true' : 'false';
-					}
-					if ($default !== null) {
-						$pieces[] = $this->cString($default);
-					}
-					$args[] = 'reg::typed(' . implode(', ', $pieces) . ')';
+					$args[] = [$parameter->getName(), $mask, $className, $parameter->isPassedByReference(), $parameter->isVariadic(), $default];
 				}
 				$returnType = $method->getReturnType() ?? $method->getTentativeReturnType();
 				$return = null;
 				if ($returnType !== null) {
-					[$mask, $className] = $this->signatureType($returnType);
-					$return = sprintf('reg::typed("", %s%s)', $mask, $className !== null ? ', ' . $this->cString($className) : '');
+					$return = ['', ...$this->signatureType($returnType), false, false, null];
 				}
 			} catch (RuntimeException $e) {
-				$lines[] = sprintf('/* %s(): no signature — %s */', $method->getName(), $e->getMessage());
+				$sigs[] = sprintf('/* %s(): no signature — %s */', $method->getName(), $e->getMessage());
 				continue;
 			}
-			if ($args !== []) {
-				$lines[] = sprintf('inline constexpr reg::Arg %s_args[] = { %s };', $id, implode(', ', $args));
+			$first = count($table);
+			foreach ($return !== null ? [...$args, $return] : $args as [$name, $mask, $className, $byRef, $variadic, $default]) {
+				$pieces = [$string($name), $mask];
+				if ($className !== null || $byRef || $variadic || $default !== null) {
+					$pieces[] = $string($className);
+				}
+				if ($byRef || $variadic || $default !== null) {
+					$pieces[] = $byRef ? 'true' : 'false';
+					$pieces[] = $variadic ? 'true' : 'false';
+				}
+				if ($default !== null) {
+					$pieces[] = $string($default);
+				}
+				$table[] = sprintf("\treg::packed(%s), /* %s%s */", implode(', ', $pieces), $method->getName(), $name !== '' ? ' $' . $name : ' return');
 			}
-			if ($return !== null) {
-				$lines[] = sprintf('inline constexpr reg::Arg %s_return = %s;', $id, $return);
+			if (count($table) >= self::PACKED_LIMIT) {
+				throw new RuntimeException('the signature parameter table outgrew its 16-bit indexes');
 			}
-			$lines[] = sprintf(
-				'inline constexpr reg::Sig %s = { %s, %s, %d, %s, %d, %s };',
+			$sigs[] = sprintf(
+				'inline constexpr sigtab::Sig %s = { { %s /* %s */, %d, %d, %d, %s, %s } };',
 				$id,
-				$this->cString($method->getName()),
-				$this->methodFlags($method),
+				$string($method->getName()),
+				$method->getName(),
 				$method->getNumberOfRequiredParameters(),
-				$args !== [] ? $id . '_args' : 'nullptr',
+				$first,
 				count($args),
-				$return !== null ? '&' . $id . '_return' : 'nullptr',
+				$return !== null ? (string) ($first + count($args)) : 'reg::NoArg',
+				$this->methodFlags($method),
 			);
 		}
+		if ($sigs === []) {
+			return ['tables' => [], 'sigs' => []];
+		}
 
-		return $lines;
+		$tables = ['inline constexpr char strings[] ='];
+		$last = count($strings) - 1;
+		foreach ($strings as $i => $value) {
+			$tables[] = sprintf("\t%s%s /* %d */", $i === $last ? $this->cString($value) : substr($this->cString($value), 0, -1) . '\\0"', $i === $last ? ';' : '', $offsets['s' . $value]);
+		}
+		if ($strings === []) {
+			$tables[] = "\t\"\";";
+		}
+		$tables[] = 'inline constexpr reg::PackedArg args[] = {';
+		foreach ($table !== [] ? $table : ["\treg::packed(0, 0), /* placeholder: C++ has no empty arrays */"] as $line) {
+			$tables[] = $line;
+		}
+		$tables[] = '};';
+		$tables[] = 'using Sig = reg::Sig<strings, args>;';
+
+		return ['tables' => $tables, 'sigs' => $sigs];
+	}
+
+	/**
+	 * @param array{tables: list<string>, sigs: list<string>} $signatures
+	 * @return list<string>
+	 */
+	private function signatureBlock(array $signatures, string $comment): array
+	{
+		return [
+			'/* the string and parameter tables the signatures below index into (see reg::Sig) */',
+			'namespace sigtab {',
+			...$signatures['tables'],
+			'} // namespace sigtab',
+			'',
+			'/* ' . $comment . ' */',
+			'namespace sig {',
+			...$signatures['sigs'],
+			'} // namespace sig',
+		];
 	}
 
 	private function methodFlags(ReflectionMethod $method): string

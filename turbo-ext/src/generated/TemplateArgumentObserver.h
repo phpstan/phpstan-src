@@ -19,41 +19,98 @@ inline void declareProperties(reg::Class &cls)
 	(void) cls;
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"type\0" /* 0 */
+	"PHPStan\\Type\\Type\0" /* 5 */
+	"\0" /* 23 */
+	"PHPStan\\Analyser\\Generics\\TemplateArgumentConstraints\0" /* 24 */
+	"collectSites\0" /* 78 */
+	"containsMarker\0" /* 91 */
+	"declared\0" /* 106 */
+	"actual\0" /* 115 */
+	"collectSend\0" /* 122 */
+	"parameterType\0" /* 134 */
+	"argumentType\0" /* 148 */
+	"isPure\0" /* 161 */
+	"false\0" /* 168 */
+	"collectArgument\0" /* 174 */
+	"site\0" /* 190 */
+	"PhpParser\\Node\\Expr\0" /* 195 */
+	"acceptor\0" /* 215 */
+	"PHPStan\\Reflection\\ParametersAcceptor\0" /* 224 */
+	"argumentTypes\0" /* 262 */
+	"classTemplates\0" /* 276 */
+	"PHPStan\\Type\\Generic\\TemplateTypeMap\0" /* 291 */
+	"null\0" /* 328 */
+	"collectCall\0" /* 333 */
+	"templates\0" /* 345 */
+	"constraints\0" /* 355 */
+	"replaceInferableTemplates\0" /* 367 */
+	"isCallArgument\0" /* 393 */
+	"observeSend\0" /* 408 */
+	"observeArgument\0" /* 420 */
+	"observeLowerBound\0" /* 436 */
+	"declaredArgument\0" /* 454 */
+	"isUninformativeSendTarget\0" /* 471 */
+	"hasOnlyInferableTemplates"; /* 497 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 5), /* collectSites $type */
+	reg::packed(23, 0, 24), /* collectSites return */
+	reg::packed(0, 0, 5), /* containsMarker $type */
+	reg::packed(23, MAY_BE_BOOL), /* containsMarker return */
+	reg::packed(106, 0, 5), /* collectSend $declared */
+	reg::packed(115, 0, 5), /* collectSend $actual */
+	reg::packed(23, 0, 24), /* collectSend return */
+	reg::packed(134, 0, 5), /* collectArgument $parameterType */
+	reg::packed(148, 0, 5), /* collectArgument $argumentType */
+	reg::packed(161, MAY_BE_BOOL, reg::NoString, false, false, 168), /* collectArgument $isPure */
+	reg::packed(23, 0, 24), /* collectArgument return */
+	reg::packed(190, 0, 195), /* collectCall $site */
+	reg::packed(215, 0, 224), /* collectCall $acceptor */
+	reg::packed(262, MAY_BE_ARRAY), /* collectCall $argumentTypes */
+	reg::packed(276, MAY_BE_NULL, 291, false, false, 328), /* collectCall $classTemplates */
+	reg::packed(23, 0, 24), /* collectCall return */
+	reg::packed(0, 0, 5), /* replaceInferableTemplates $type */
+	reg::packed(190, 0, 195), /* replaceInferableTemplates $site */
+	reg::packed(345, 0, 291), /* replaceInferableTemplates $templates */
+	reg::packed(355, 0, 24, true, false), /* replaceInferableTemplates $constraints */
+	reg::packed(23, 0, 5), /* replaceInferableTemplates return */
+	reg::packed(355, 0, 24), /* observeSend $constraints */
+	reg::packed(106, 0, 5), /* observeSend $declared */
+	reg::packed(115, 0, 5), /* observeSend $actual */
+	reg::packed(393, MAY_BE_BOOL, reg::NoString, false, false, 168), /* observeSend $isCallArgument */
+	reg::packed(23, 0, 24), /* observeSend return */
+	reg::packed(355, 0, 24), /* observeArgument $constraints */
+	reg::packed(134, 0, 5), /* observeArgument $parameterType */
+	reg::packed(148, 0, 5), /* observeArgument $argumentType */
+	reg::packed(23, 0, 24), /* observeArgument return */
+	reg::packed(355, 0, 24), /* observeLowerBound $constraints */
+	reg::packed(134, 0, 5), /* observeLowerBound $parameterType */
+	reg::packed(148, 0, 5), /* observeLowerBound $argumentType */
+	reg::packed(23, 0, 24), /* observeLowerBound return */
+	reg::packed(454, 0, 5), /* isUninformativeSendTarget $declaredArgument */
+	reg::packed(23, MAY_BE_BOOL), /* isUninformativeSendTarget return */
+	reg::packed(0, 0, 5), /* hasOnlyInferableTemplates $type */
+	reg::packed(23, MAY_BE_BOOL), /* hasOnlyInferableTemplates return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg collectSites_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg collectSites_return = reg::typed("", 0, "PHPStan\\Analyser\\Generics\\TemplateArgumentConstraints");
-inline constexpr reg::Sig collectSites = { "collectSites", ZEND_ACC_PUBLIC, 1, collectSites_args, 1, &collectSites_return };
-inline constexpr reg::Arg containsMarker_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg containsMarker_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig containsMarker = { "containsMarker", ZEND_ACC_PRIVATE, 1, containsMarker_args, 1, &containsMarker_return };
-inline constexpr reg::Arg collectSend_args[] = { reg::typed("declared", 0, "PHPStan\\Type\\Type"), reg::typed("actual", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg collectSend_return = reg::typed("", 0, "PHPStan\\Analyser\\Generics\\TemplateArgumentConstraints");
-inline constexpr reg::Sig collectSend = { "collectSend", ZEND_ACC_PUBLIC, 2, collectSend_args, 2, &collectSend_return };
-inline constexpr reg::Arg collectArgument_args[] = { reg::typed("parameterType", 0, "PHPStan\\Type\\Type"), reg::typed("argumentType", 0, "PHPStan\\Type\\Type"), reg::typed("isPure", MAY_BE_BOOL, nullptr, false, false, "false") };
-inline constexpr reg::Arg collectArgument_return = reg::typed("", 0, "PHPStan\\Analyser\\Generics\\TemplateArgumentConstraints");
-inline constexpr reg::Sig collectArgument = { "collectArgument", ZEND_ACC_PUBLIC, 2, collectArgument_args, 3, &collectArgument_return };
-inline constexpr reg::Arg collectCall_args[] = { reg::typed("site", 0, "PhpParser\\Node\\Expr"), reg::typed("acceptor", 0, "PHPStan\\Reflection\\ParametersAcceptor"), reg::typed("argumentTypes", MAY_BE_ARRAY), reg::typed("classTemplates", MAY_BE_NULL, "PHPStan\\Type\\Generic\\TemplateTypeMap", false, false, "null") };
-inline constexpr reg::Arg collectCall_return = reg::typed("", 0, "PHPStan\\Analyser\\Generics\\TemplateArgumentConstraints");
-inline constexpr reg::Sig collectCall = { "collectCall", ZEND_ACC_PUBLIC, 3, collectCall_args, 4, &collectCall_return };
-inline constexpr reg::Arg replaceInferableTemplates_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type"), reg::typed("site", 0, "PhpParser\\Node\\Expr"), reg::typed("templates", 0, "PHPStan\\Type\\Generic\\TemplateTypeMap"), reg::typed("constraints", 0, "PHPStan\\Analyser\\Generics\\TemplateArgumentConstraints", true, false) };
-inline constexpr reg::Arg replaceInferableTemplates_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig replaceInferableTemplates = { "replaceInferableTemplates", ZEND_ACC_PRIVATE, 4, replaceInferableTemplates_args, 4, &replaceInferableTemplates_return };
-inline constexpr reg::Arg observeSend_args[] = { reg::typed("constraints", 0, "PHPStan\\Analyser\\Generics\\TemplateArgumentConstraints"), reg::typed("declared", 0, "PHPStan\\Type\\Type"), reg::typed("actual", 0, "PHPStan\\Type\\Type"), reg::typed("isCallArgument", MAY_BE_BOOL, nullptr, false, false, "false") };
-inline constexpr reg::Arg observeSend_return = reg::typed("", 0, "PHPStan\\Analyser\\Generics\\TemplateArgumentConstraints");
-inline constexpr reg::Sig observeSend = { "observeSend", ZEND_ACC_PRIVATE, 3, observeSend_args, 4, &observeSend_return };
-inline constexpr reg::Arg observeArgument_args[] = { reg::typed("constraints", 0, "PHPStan\\Analyser\\Generics\\TemplateArgumentConstraints"), reg::typed("parameterType", 0, "PHPStan\\Type\\Type"), reg::typed("argumentType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg observeArgument_return = reg::typed("", 0, "PHPStan\\Analyser\\Generics\\TemplateArgumentConstraints");
-inline constexpr reg::Sig observeArgument = { "observeArgument", ZEND_ACC_PRIVATE, 3, observeArgument_args, 3, &observeArgument_return };
-inline constexpr reg::Arg observeLowerBound_args[] = { reg::typed("constraints", 0, "PHPStan\\Analyser\\Generics\\TemplateArgumentConstraints"), reg::typed("parameterType", 0, "PHPStan\\Type\\Type"), reg::typed("argumentType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg observeLowerBound_return = reg::typed("", 0, "PHPStan\\Analyser\\Generics\\TemplateArgumentConstraints");
-inline constexpr reg::Sig observeLowerBound = { "observeLowerBound", ZEND_ACC_PRIVATE, 3, observeLowerBound_args, 3, &observeLowerBound_return };
-inline constexpr reg::Arg isUninformativeSendTarget_args[] = { reg::typed("declaredArgument", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg isUninformativeSendTarget_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isUninformativeSendTarget = { "isUninformativeSendTarget", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 1, isUninformativeSendTarget_args, 1, &isUninformativeSendTarget_return };
-inline constexpr reg::Arg hasOnlyInferableTemplates_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg hasOnlyInferableTemplates_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig hasOnlyInferableTemplates = { "hasOnlyInferableTemplates", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 1, hasOnlyInferableTemplates_args, 1, &hasOnlyInferableTemplates_return };
+inline constexpr sigtab::Sig collectSites = { { 78 /* collectSites */, 1, 0, 1, 1, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig containsMarker = { { 91 /* containsMarker */, 1, 2, 1, 3, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig collectSend = { { 122 /* collectSend */, 2, 4, 2, 6, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig collectArgument = { { 174 /* collectArgument */, 2, 7, 3, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig collectCall = { { 333 /* collectCall */, 3, 11, 4, 15, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig replaceInferableTemplates = { { 367 /* replaceInferableTemplates */, 4, 16, 4, 20, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig observeSend = { { 408 /* observeSend */, 3, 21, 4, 25, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig observeArgument = { { 420 /* observeArgument */, 3, 26, 3, 29, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig observeLowerBound = { { 436 /* observeLowerBound */, 3, 30, 3, 33, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isUninformativeSendTarget = { { 471 /* isUninformativeSendTarget */, 1, 34, 1, 35, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig hasOnlyInferableTemplates = { { 497 /* hasOnlyInferableTemplates */, 1, 36, 1, 37, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::TemplateArgumentObserver

@@ -24,13 +24,41 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("attributesHandler", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\AttributesHandler");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"attributesHandler\0" /* 0 */
+	"PHPStan\\Analyser\\AttributesHandler\0" /* 18 */
+	"__construct\0" /* 53 */
+	"nodeScopeResolver\0" /* 65 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 83 */
+	"stmt\0" /* 118 */
+	"PhpParser\\Node\\Stmt\0" /* 123 */
+	"params\0" /* 143 */
+	"scope\0" /* 150 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 156 */
+	"storage\0" /* 187 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 195 */
+	"nodeCallback\0" /* 236 */
+	"\0" /* 249 */
+	"processParams"; /* 250 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 18), /* __construct $attributesHandler */
+	reg::packed(65, 0, 83), /* processParams $nodeScopeResolver */
+	reg::packed(118, 0, 123), /* processParams $stmt */
+	reg::packed(143, MAY_BE_ARRAY), /* processParams $params */
+	reg::packed(150, 0, 156), /* processParams $scope */
+	reg::packed(187, 0, 195), /* processParams $storage */
+	reg::packed(236, MAY_BE_CALLABLE), /* processParams $nodeCallback */
+	reg::packed(249, MAY_BE_VOID), /* processParams return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("attributesHandler", 0, "PHPStan\\Analyser\\AttributesHandler") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 1, __construct_args, 1, nullptr };
-inline constexpr reg::Arg processParams_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("stmt", 0, "PhpParser\\Node\\Stmt"), reg::typed("params", MAY_BE_ARRAY), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("nodeCallback", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg processParams_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig processParams = { "processParams", ZEND_ACC_PUBLIC, 6, processParams_args, 6, &processParams_return };
+inline constexpr sigtab::Sig __construct = { { 53 /* __construct */, 1, 0, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processParams = { { 250 /* processParams */, 6, 1, 6, 7, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ParametersProcessor

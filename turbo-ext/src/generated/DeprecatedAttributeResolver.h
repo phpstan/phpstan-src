@@ -24,13 +24,31 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("initializerExprTypeResolver", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Reflection\\InitializerExprTypeResolver");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"initializerExprTypeResolver\0" /* 0 */
+	"PHPStan\\Reflection\\InitializerExprTypeResolver\0" /* 28 */
+	"__construct\0" /* 75 */
+	"scope\0" /* 87 */
+	"PHPStan\\Analyser\\Scope\0" /* 93 */
+	"stmt\0" /* 116 */
+	"PhpParser\\Node\\Stmt\\Function_|PhpParser\\Node\\Stmt\\ClassMethod|PhpParser\\Node\\PropertyHook\0" /* 121 */
+	"\0" /* 211 */
+	"getDeprecatedAttribute"; /* 212 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 28), /* __construct $initializerExprTypeResolver */
+	reg::packed(87, 0, 93), /* getDeprecatedAttribute $scope */
+	reg::packed(116, 0, 121), /* getDeprecatedAttribute $stmt */
+	reg::packed(211, MAY_BE_ARRAY), /* getDeprecatedAttribute return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("initializerExprTypeResolver", 0, "PHPStan\\Reflection\\InitializerExprTypeResolver") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 1, __construct_args, 1, nullptr };
-inline constexpr reg::Arg getDeprecatedAttribute_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\Scope"), reg::typed("stmt", 0, "PhpParser\\Node\\Stmt\\Function_|PhpParser\\Node\\Stmt\\ClassMethod|PhpParser\\Node\\PropertyHook") };
-inline constexpr reg::Arg getDeprecatedAttribute_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getDeprecatedAttribute = { "getDeprecatedAttribute", ZEND_ACC_PUBLIC, 2, getDeprecatedAttribute_args, 2, &getDeprecatedAttribute_return };
+inline constexpr sigtab::Sig __construct = { { 75 /* __construct */, 1, 0, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getDeprecatedAttribute = { { 212 /* getDeprecatedAttribute */, 2, 1, 2, 3, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::DeprecatedAttributeResolver

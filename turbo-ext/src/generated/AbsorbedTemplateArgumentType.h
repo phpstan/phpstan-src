@@ -20,11 +20,23 @@ inline void declareProperties(reg::Class &cls)
 	(void) cls;
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"type\0" /* 0 */
+	"PHPStan\\Type\\Type\0" /* 5 */
+	"\0" /* 23 */
+	"equals"; /* 24 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 5), /* equals $type */
+	reg::packed(23, MAY_BE_BOOL), /* equals return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg equals_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg equals_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig equals = { "equals", ZEND_ACC_PUBLIC, 1, equals_args, 1, &equals_return };
+inline constexpr sigtab::Sig equals = { { 24 /* equals */, 1, 0, 1, 1, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::AbsorbedTemplateArgumentType

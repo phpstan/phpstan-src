@@ -25,20 +25,38 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("variances", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_ARRAY);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"variances\0" /* 0 */
+	"__construct\0" /* 10 */
+	"\0" /* 22 */
+	"PHPStan\\Type\\Generic\\TemplateTypeVarianceMap\0" /* 23 */
+	"createEmpty\0" /* 68 */
+	"getVariances\0" /* 80 */
+	"name\0" /* 93 */
+	"hasVariance\0" /* 98 */
+	"PHPStan\\Type\\Generic\\TemplateTypeVariance\0" /* 110 */
+	"getVariance"; /* 152 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_ARRAY), /* __construct $variances */
+	reg::packed(22, 0, 23), /* createEmpty return */
+	reg::packed(22, MAY_BE_ARRAY), /* getVariances return */
+	reg::packed(93, MAY_BE_STRING), /* hasVariance $name */
+	reg::packed(22, MAY_BE_BOOL), /* hasVariance return */
+	reg::packed(93, MAY_BE_STRING), /* getVariance $name */
+	reg::packed(22, MAY_BE_NULL, 110), /* getVariance return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("variances", MAY_BE_ARRAY) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 1, __construct_args, 1, nullptr };
-inline constexpr reg::Arg createEmpty_return = reg::typed("", 0, "PHPStan\\Type\\Generic\\TemplateTypeVarianceMap");
-inline constexpr reg::Sig createEmpty = { "createEmpty", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &createEmpty_return };
-inline constexpr reg::Arg getVariances_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getVariances = { "getVariances", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getVariances_return };
-inline constexpr reg::Arg hasVariance_args[] = { reg::typed("name", MAY_BE_STRING) };
-inline constexpr reg::Arg hasVariance_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig hasVariance = { "hasVariance", ZEND_ACC_PUBLIC, 1, hasVariance_args, 1, &hasVariance_return };
-inline constexpr reg::Arg getVariance_args[] = { reg::typed("name", MAY_BE_STRING) };
-inline constexpr reg::Arg getVariance_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Type\\Generic\\TemplateTypeVariance");
-inline constexpr reg::Sig getVariance = { "getVariance", ZEND_ACC_PUBLIC, 1, getVariance_args, 1, &getVariance_return };
+inline constexpr sigtab::Sig __construct = { { 10 /* __construct */, 1, 0, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig createEmpty = { { 68 /* createEmpty */, 0, 1, 0, 1, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig getVariances = { { 80 /* getVariances */, 0, 2, 0, 2, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasVariance = { { 98 /* hasVariance */, 1, 3, 1, 4, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getVariance = { { 152 /* getVariance */, 1, 5, 1, 6, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::TemplateTypeVarianceMap

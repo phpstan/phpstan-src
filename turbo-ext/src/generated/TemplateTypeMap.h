@@ -29,46 +29,83 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("lowerBoundTypes", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_ARRAY);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"types\0" /* 0 */
+	"lowerBoundTypes\0" /* 6 */
+	"[]\0" /* 22 */
+	"__construct\0" /* 25 */
+	"\0" /* 37 */
+	"PHPStan\\Type\\Generic\\TemplateTypeMap\0" /* 38 */
+	"convertToLowerBoundTypes\0" /* 75 */
+	"createEmpty\0" /* 100 */
+	"isEmpty\0" /* 112 */
+	"count\0" /* 120 */
+	"getTypes\0" /* 126 */
+	"name\0" /* 135 */
+	"hasType\0" /* 140 */
+	"PHPStan\\Type\\Type\0" /* 148 */
+	"getType\0" /* 166 */
+	"unsetType\0" /* 174 */
+	"other\0" /* 184 */
+	"union\0" /* 190 */
+	"benevolentUnion\0" /* 196 */
+	"a\0" /* 212 */
+	"b\0" /* 214 */
+	"cb\0" /* 216 */
+	"combine\0" /* 219 */
+	"intersect\0" /* 227 */
+	"map\0" /* 237 */
+	"resolveToBounds"; /* 241 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_ARRAY), /* __construct $types */
+	reg::packed(6, MAY_BE_ARRAY, reg::NoString, false, false, 22), /* __construct $lowerBoundTypes */
+	reg::packed(37, 0, 38), /* convertToLowerBoundTypes return */
+	reg::packed(37, 0, 38), /* createEmpty return */
+	reg::packed(37, MAY_BE_BOOL), /* isEmpty return */
+	reg::packed(37, MAY_BE_LONG), /* count return */
+	reg::packed(37, MAY_BE_ARRAY), /* getTypes return */
+	reg::packed(135, MAY_BE_STRING), /* hasType $name */
+	reg::packed(37, MAY_BE_BOOL), /* hasType return */
+	reg::packed(135, MAY_BE_STRING), /* getType $name */
+	reg::packed(37, MAY_BE_NULL, 148), /* getType return */
+	reg::packed(135, MAY_BE_STRING), /* unsetType $name */
+	reg::packed(37, 0, 38), /* unsetType return */
+	reg::packed(184, 0, 38), /* union $other */
+	reg::packed(37, 0, 38), /* union return */
+	reg::packed(184, 0, 38), /* benevolentUnion $other */
+	reg::packed(37, 0, 38), /* benevolentUnion return */
+	reg::packed(212, 0, 148), /* combine $a */
+	reg::packed(214, 0, 148), /* combine $b */
+	reg::packed(216, MAY_BE_CALLABLE), /* combine $cb */
+	reg::packed(37, 0, 148), /* combine return */
+	reg::packed(184, 0, 38), /* intersect $other */
+	reg::packed(37, 0, 38), /* intersect return */
+	reg::packed(216, MAY_BE_CALLABLE), /* map $cb */
+	reg::packed(37, 0, 38), /* map return */
+	reg::packed(37, 0, 38), /* resolveToBounds return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("types", MAY_BE_ARRAY), reg::typed("lowerBoundTypes", MAY_BE_ARRAY, nullptr, false, false, "[]") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 1, __construct_args, 2, nullptr };
-inline constexpr reg::Arg convertToLowerBoundTypes_return = reg::typed("", 0, "PHPStan\\Type\\Generic\\TemplateTypeMap");
-inline constexpr reg::Sig convertToLowerBoundTypes = { "convertToLowerBoundTypes", ZEND_ACC_PUBLIC, 0, nullptr, 0, &convertToLowerBoundTypes_return };
-inline constexpr reg::Arg createEmpty_return = reg::typed("", 0, "PHPStan\\Type\\Generic\\TemplateTypeMap");
-inline constexpr reg::Sig createEmpty = { "createEmpty", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &createEmpty_return };
-inline constexpr reg::Arg isEmpty_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isEmpty = { "isEmpty", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isEmpty_return };
-inline constexpr reg::Arg count_return = reg::typed("", MAY_BE_LONG);
-inline constexpr reg::Sig count = { "count", ZEND_ACC_PUBLIC, 0, nullptr, 0, &count_return };
-inline constexpr reg::Arg getTypes_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getTypes = { "getTypes", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getTypes_return };
-inline constexpr reg::Arg hasType_args[] = { reg::typed("name", MAY_BE_STRING) };
-inline constexpr reg::Arg hasType_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig hasType = { "hasType", ZEND_ACC_PUBLIC, 1, hasType_args, 1, &hasType_return };
-inline constexpr reg::Arg getType_args[] = { reg::typed("name", MAY_BE_STRING) };
-inline constexpr reg::Arg getType_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getType = { "getType", ZEND_ACC_PUBLIC, 1, getType_args, 1, &getType_return };
-inline constexpr reg::Arg unsetType_args[] = { reg::typed("name", MAY_BE_STRING) };
-inline constexpr reg::Arg unsetType_return = reg::typed("", 0, "PHPStan\\Type\\Generic\\TemplateTypeMap");
-inline constexpr reg::Sig unsetType = { "unsetType", ZEND_ACC_PUBLIC, 1, unsetType_args, 1, &unsetType_return };
-inline constexpr reg::Arg union__args[] = { reg::typed("other", 0, "PHPStan\\Type\\Generic\\TemplateTypeMap") };
-inline constexpr reg::Arg union__return = reg::typed("", 0, "PHPStan\\Type\\Generic\\TemplateTypeMap");
-inline constexpr reg::Sig union_ = { "union", ZEND_ACC_PUBLIC, 1, union__args, 1, &union__return };
-inline constexpr reg::Arg benevolentUnion_args[] = { reg::typed("other", 0, "PHPStan\\Type\\Generic\\TemplateTypeMap") };
-inline constexpr reg::Arg benevolentUnion_return = reg::typed("", 0, "PHPStan\\Type\\Generic\\TemplateTypeMap");
-inline constexpr reg::Sig benevolentUnion = { "benevolentUnion", ZEND_ACC_PUBLIC, 1, benevolentUnion_args, 1, &benevolentUnion_return };
-inline constexpr reg::Arg combine_args[] = { reg::typed("a", 0, "PHPStan\\Type\\Type"), reg::typed("b", 0, "PHPStan\\Type\\Type"), reg::typed("cb", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg combine_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig combine = { "combine", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 3, combine_args, 3, &combine_return };
-inline constexpr reg::Arg intersect_args[] = { reg::typed("other", 0, "PHPStan\\Type\\Generic\\TemplateTypeMap") };
-inline constexpr reg::Arg intersect_return = reg::typed("", 0, "PHPStan\\Type\\Generic\\TemplateTypeMap");
-inline constexpr reg::Sig intersect = { "intersect", ZEND_ACC_PUBLIC, 1, intersect_args, 1, &intersect_return };
-inline constexpr reg::Arg map_args[] = { reg::typed("cb", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg map_return = reg::typed("", 0, "PHPStan\\Type\\Generic\\TemplateTypeMap");
-inline constexpr reg::Sig map = { "map", ZEND_ACC_PUBLIC, 1, map_args, 1, &map_return };
-inline constexpr reg::Arg resolveToBounds_return = reg::typed("", 0, "PHPStan\\Type\\Generic\\TemplateTypeMap");
-inline constexpr reg::Sig resolveToBounds = { "resolveToBounds", ZEND_ACC_PUBLIC, 0, nullptr, 0, &resolveToBounds_return };
+inline constexpr sigtab::Sig __construct = { { 25 /* __construct */, 1, 0, 2, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig convertToLowerBoundTypes = { { 75 /* convertToLowerBoundTypes */, 0, 2, 0, 2, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig createEmpty = { { 100 /* createEmpty */, 0, 3, 0, 3, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig isEmpty = { { 112 /* isEmpty */, 0, 4, 0, 4, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig count = { { 120 /* count */, 0, 5, 0, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getTypes = { { 126 /* getTypes */, 0, 6, 0, 6, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasType = { { 140 /* hasType */, 1, 7, 1, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getType = { { 166 /* getType */, 1, 9, 1, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig unsetType = { { 174 /* unsetType */, 1, 11, 1, 12, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig union_ = { { 190 /* union */, 1, 13, 1, 14, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig benevolentUnion = { { 196 /* benevolentUnion */, 1, 15, 1, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig combine = { { 219 /* combine */, 3, 17, 3, 20, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig intersect = { { 227 /* intersect */, 1, 21, 1, 22, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig map = { { 237 /* map */, 1, 23, 1, 24, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig resolveToBounds = { { 241 /* resolveToBounds */, 0, 25, 0, 25, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::TemplateTypeMap

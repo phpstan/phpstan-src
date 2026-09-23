@@ -19,11 +19,27 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("stmtHandlersByClass", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"stmt\0" /* 0 */
+	"PhpParser\\Node\\Stmt\0" /* 5 */
+	"container\0" /* 25 */
+	"PHPStan\\DependencyInjection\\Container\0" /* 35 */
+	"\0" /* 73 */
+	"PHPStan\\Analyser\\StmtHandler\0" /* 74 */
+	"resolve"; /* 103 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 5), /* resolve $stmt */
+	reg::packed(25, 0, 35), /* resolve $container */
+	reg::packed(73, MAY_BE_NULL, 74), /* resolve return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg resolve_args[] = { reg::typed("stmt", 0, "PhpParser\\Node\\Stmt"), reg::typed("container", 0, "PHPStan\\DependencyInjection\\Container") };
-inline constexpr reg::Arg resolve_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\StmtHandler");
-inline constexpr reg::Sig resolve = { "resolve", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, resolve_args, 2, &resolve_return };
+inline constexpr sigtab::Sig resolve = { { 103 /* resolve */, 2, 0, 2, 2, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::StmtHandlerRegistry

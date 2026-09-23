@@ -37,53 +37,115 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("property", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_NULL | MAY_BE_STRING);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"file\0" /* 0 */
+	"namespace\0" /* 5 */
+	"className\0" /* 15 */
+	"traitName\0" /* 25 */
+	"function\0" /* 35 */
+	"method\0" /* 44 */
+	"property\0" /* 51 */
+	"__construct\0" /* 60 */
+	"scope\0" /* 72 */
+	"PHPStan\\Analyser\\Scope\0" /* 78 */
+	"\0" /* 101 */
+	"PHPStan\\Reflection\\InitializerExprContext\0" /* 102 */
+	"fromScope\0" /* 144 */
+	"name\0" /* 154 */
+	"parseNamespace\0" /* 159 */
+	"classReflection\0" /* 174 */
+	"PHPStan\\Reflection\\ClassReflection\0" /* 190 */
+	"fromClassReflection\0" /* 225 */
+	"fileName\0" /* 245 */
+	"fromClass\0" /* 254 */
+	"functionName\0" /* 264 */
+	"fromFunction\0" /* 277 */
+	"methodName\0" /* 290 */
+	"fromClassMethod\0" /* 301 */
+	"parameter\0" /* 317 */
+	"PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionParameter\0" /* 327 */
+	"fromReflectionParameter\0" /* 391 */
+	"stubFile\0" /* 415 */
+	"PhpParser\\Node\\Stmt\\ClassMethod|PhpParser\\Node\\Stmt\\Function_|PhpParser\\Node\\PropertyHook\0" /* 424 */
+	"fromStubParameter\0" /* 514 */
+	"constant\0" /* 532 */
+	"PHPStan\\BetterReflection\\Reflection\\ReflectionConstant\0" /* 541 */
+	"fromGlobalConstant\0" /* 596 */
+	"createEmpty\0" /* 615 */
+	"getFile\0" /* 627 */
+	"getClassName\0" /* 635 */
+	"getNamespace\0" /* 648 */
+	"getTraitName\0" /* 661 */
+	"getFunction\0" /* 674 */
+	"getMethod\0" /* 686 */
+	"getProperty"; /* 696 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_NULL | MAY_BE_STRING), /* __construct $file */
+	reg::packed(5, MAY_BE_NULL | MAY_BE_STRING), /* __construct $namespace */
+	reg::packed(15, MAY_BE_NULL | MAY_BE_STRING), /* __construct $className */
+	reg::packed(25, MAY_BE_NULL | MAY_BE_STRING), /* __construct $traitName */
+	reg::packed(35, MAY_BE_NULL | MAY_BE_STRING), /* __construct $function */
+	reg::packed(44, MAY_BE_NULL | MAY_BE_STRING), /* __construct $method */
+	reg::packed(51, MAY_BE_NULL | MAY_BE_STRING), /* __construct $property */
+	reg::packed(72, 0, 78), /* fromScope $scope */
+	reg::packed(101, 0, 102), /* fromScope return */
+	reg::packed(154, MAY_BE_STRING), /* parseNamespace $name */
+	reg::packed(101, MAY_BE_NULL | MAY_BE_STRING), /* parseNamespace return */
+	reg::packed(174, 0, 190), /* fromClassReflection $classReflection */
+	reg::packed(101, 0, 102), /* fromClassReflection return */
+	reg::packed(15, MAY_BE_STRING), /* fromClass $className */
+	reg::packed(245, MAY_BE_NULL | MAY_BE_STRING), /* fromClass $fileName */
+	reg::packed(101, 0, 102), /* fromClass return */
+	reg::packed(264, MAY_BE_STRING), /* fromFunction $functionName */
+	reg::packed(245, MAY_BE_NULL | MAY_BE_STRING), /* fromFunction $fileName */
+	reg::packed(101, 0, 102), /* fromFunction return */
+	reg::packed(15, MAY_BE_STRING), /* fromClassMethod $className */
+	reg::packed(25, MAY_BE_NULL | MAY_BE_STRING), /* fromClassMethod $traitName */
+	reg::packed(290, MAY_BE_STRING), /* fromClassMethod $methodName */
+	reg::packed(245, MAY_BE_NULL | MAY_BE_STRING), /* fromClassMethod $fileName */
+	reg::packed(101, 0, 102), /* fromClassMethod return */
+	reg::packed(317, 0, 327), /* fromReflectionParameter $parameter */
+	reg::packed(101, 0, 102), /* fromReflectionParameter return */
+	reg::packed(15, MAY_BE_NULL | MAY_BE_STRING), /* fromStubParameter $className */
+	reg::packed(415, MAY_BE_STRING), /* fromStubParameter $stubFile */
+	reg::packed(35, 0, 424), /* fromStubParameter $function */
+	reg::packed(101, 0, 102), /* fromStubParameter return */
+	reg::packed(532, 0, 541), /* fromGlobalConstant $constant */
+	reg::packed(101, 0, 102), /* fromGlobalConstant return */
+	reg::packed(101, 0, 102), /* createEmpty return */
+	reg::packed(101, MAY_BE_NULL | MAY_BE_STRING), /* getFile return */
+	reg::packed(101, MAY_BE_NULL | MAY_BE_STRING), /* getClassName return */
+	reg::packed(101, MAY_BE_NULL | MAY_BE_STRING), /* getNamespace return */
+	reg::packed(101, MAY_BE_NULL | MAY_BE_STRING), /* getTraitName return */
+	reg::packed(101, MAY_BE_NULL | MAY_BE_STRING), /* getFunction return */
+	reg::packed(101, MAY_BE_NULL | MAY_BE_STRING), /* getMethod return */
+	reg::packed(101, MAY_BE_NULL | MAY_BE_STRING), /* getProperty return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("file", MAY_BE_NULL | MAY_BE_STRING), reg::typed("namespace", MAY_BE_NULL | MAY_BE_STRING), reg::typed("className", MAY_BE_NULL | MAY_BE_STRING), reg::typed("traitName", MAY_BE_NULL | MAY_BE_STRING), reg::typed("function", MAY_BE_NULL | MAY_BE_STRING), reg::typed("method", MAY_BE_NULL | MAY_BE_STRING), reg::typed("property", MAY_BE_NULL | MAY_BE_STRING) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PRIVATE, 7, __construct_args, 7, nullptr };
-inline constexpr reg::Arg fromScope_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\Scope") };
-inline constexpr reg::Arg fromScope_return = reg::typed("", 0, "PHPStan\\Reflection\\InitializerExprContext");
-inline constexpr reg::Sig fromScope = { "fromScope", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, fromScope_args, 1, &fromScope_return };
-inline constexpr reg::Arg parseNamespace_args[] = { reg::typed("name", MAY_BE_STRING) };
-inline constexpr reg::Arg parseNamespace_return = reg::typed("", MAY_BE_NULL | MAY_BE_STRING);
-inline constexpr reg::Sig parseNamespace = { "parseNamespace", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 1, parseNamespace_args, 1, &parseNamespace_return };
-inline constexpr reg::Arg fromClassReflection_args[] = { reg::typed("classReflection", 0, "PHPStan\\Reflection\\ClassReflection") };
-inline constexpr reg::Arg fromClassReflection_return = reg::typed("", 0, "PHPStan\\Reflection\\InitializerExprContext");
-inline constexpr reg::Sig fromClassReflection = { "fromClassReflection", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, fromClassReflection_args, 1, &fromClassReflection_return };
-inline constexpr reg::Arg fromClass_args[] = { reg::typed("className", MAY_BE_STRING), reg::typed("fileName", MAY_BE_NULL | MAY_BE_STRING) };
-inline constexpr reg::Arg fromClass_return = reg::typed("", 0, "PHPStan\\Reflection\\InitializerExprContext");
-inline constexpr reg::Sig fromClass = { "fromClass", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, fromClass_args, 2, &fromClass_return };
-inline constexpr reg::Arg fromFunction_args[] = { reg::typed("functionName", MAY_BE_STRING), reg::typed("fileName", MAY_BE_NULL | MAY_BE_STRING) };
-inline constexpr reg::Arg fromFunction_return = reg::typed("", 0, "PHPStan\\Reflection\\InitializerExprContext");
-inline constexpr reg::Sig fromFunction = { "fromFunction", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, fromFunction_args, 2, &fromFunction_return };
-inline constexpr reg::Arg fromClassMethod_args[] = { reg::typed("className", MAY_BE_STRING), reg::typed("traitName", MAY_BE_NULL | MAY_BE_STRING), reg::typed("methodName", MAY_BE_STRING), reg::typed("fileName", MAY_BE_NULL | MAY_BE_STRING) };
-inline constexpr reg::Arg fromClassMethod_return = reg::typed("", 0, "PHPStan\\Reflection\\InitializerExprContext");
-inline constexpr reg::Sig fromClassMethod = { "fromClassMethod", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 4, fromClassMethod_args, 4, &fromClassMethod_return };
-inline constexpr reg::Arg fromReflectionParameter_args[] = { reg::typed("parameter", 0, "PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionParameter") };
-inline constexpr reg::Arg fromReflectionParameter_return = reg::typed("", 0, "PHPStan\\Reflection\\InitializerExprContext");
-inline constexpr reg::Sig fromReflectionParameter = { "fromReflectionParameter", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, fromReflectionParameter_args, 1, &fromReflectionParameter_return };
-inline constexpr reg::Arg fromStubParameter_args[] = { reg::typed("className", MAY_BE_NULL | MAY_BE_STRING), reg::typed("stubFile", MAY_BE_STRING), reg::typed("function", 0, "PhpParser\\Node\\Stmt\\ClassMethod|PhpParser\\Node\\Stmt\\Function_|PhpParser\\Node\\PropertyHook") };
-inline constexpr reg::Arg fromStubParameter_return = reg::typed("", 0, "PHPStan\\Reflection\\InitializerExprContext");
-inline constexpr reg::Sig fromStubParameter = { "fromStubParameter", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 3, fromStubParameter_args, 3, &fromStubParameter_return };
-inline constexpr reg::Arg fromGlobalConstant_args[] = { reg::typed("constant", 0, "PHPStan\\BetterReflection\\Reflection\\ReflectionConstant") };
-inline constexpr reg::Arg fromGlobalConstant_return = reg::typed("", 0, "PHPStan\\Reflection\\InitializerExprContext");
-inline constexpr reg::Sig fromGlobalConstant = { "fromGlobalConstant", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, fromGlobalConstant_args, 1, &fromGlobalConstant_return };
-inline constexpr reg::Arg createEmpty_return = reg::typed("", 0, "PHPStan\\Reflection\\InitializerExprContext");
-inline constexpr reg::Sig createEmpty = { "createEmpty", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &createEmpty_return };
-inline constexpr reg::Arg getFile_return = reg::typed("", MAY_BE_NULL | MAY_BE_STRING);
-inline constexpr reg::Sig getFile = { "getFile", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getFile_return };
-inline constexpr reg::Arg getClassName_return = reg::typed("", MAY_BE_NULL | MAY_BE_STRING);
-inline constexpr reg::Sig getClassName = { "getClassName", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getClassName_return };
-inline constexpr reg::Arg getNamespace_return = reg::typed("", MAY_BE_NULL | MAY_BE_STRING);
-inline constexpr reg::Sig getNamespace = { "getNamespace", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getNamespace_return };
-inline constexpr reg::Arg getTraitName_return = reg::typed("", MAY_BE_NULL | MAY_BE_STRING);
-inline constexpr reg::Sig getTraitName = { "getTraitName", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getTraitName_return };
-inline constexpr reg::Arg getFunction_return = reg::typed("", MAY_BE_NULL | MAY_BE_STRING);
-inline constexpr reg::Sig getFunction = { "getFunction", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getFunction_return };
-inline constexpr reg::Arg getMethod_return = reg::typed("", MAY_BE_NULL | MAY_BE_STRING);
-inline constexpr reg::Sig getMethod = { "getMethod", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getMethod_return };
-inline constexpr reg::Arg getProperty_return = reg::typed("", MAY_BE_NULL | MAY_BE_STRING);
-inline constexpr reg::Sig getProperty = { "getProperty", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getProperty_return };
+inline constexpr sigtab::Sig __construct = { { 60 /* __construct */, 7, 0, 7, reg::NoArg, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig fromScope = { { 144 /* fromScope */, 1, 7, 1, 8, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig parseNamespace = { { 159 /* parseNamespace */, 1, 9, 1, 10, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig fromClassReflection = { { 225 /* fromClassReflection */, 1, 11, 1, 12, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig fromClass = { { 254 /* fromClass */, 2, 13, 2, 15, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig fromFunction = { { 277 /* fromFunction */, 2, 16, 2, 18, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig fromClassMethod = { { 301 /* fromClassMethod */, 4, 19, 4, 23, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig fromReflectionParameter = { { 391 /* fromReflectionParameter */, 1, 24, 1, 25, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig fromStubParameter = { { 514 /* fromStubParameter */, 3, 26, 3, 29, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig fromGlobalConstant = { { 596 /* fromGlobalConstant */, 1, 30, 1, 31, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createEmpty = { { 615 /* createEmpty */, 0, 32, 0, 32, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig getFile = { { 627 /* getFile */, 0, 33, 0, 33, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getClassName = { { 635 /* getClassName */, 0, 34, 0, 34, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getNamespace = { { 648 /* getNamespace */, 0, 35, 0, 35, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getTraitName = { { 661 /* getTraitName */, 0, 36, 0, 36, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getFunction = { { 674 /* getFunction */, 0, 37, 0, 37, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getMethod = { { 686 /* getMethod */, 0, 38, 0, 38, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getProperty = { { 696 /* getProperty */, 0, 39, 0, 39, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::InitializerExprContext

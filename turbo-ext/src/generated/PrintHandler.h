@@ -29,16 +29,56 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("defaultNarrowingHelper", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"implicitToStringCallHelper\0" /* 0 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\ImplicitToStringCallHelper\0" /* 27 */
+	"expressionResultFactory\0" /* 90 */
+	"PHPStan\\Analyser\\ExpressionResultFactory\0" /* 114 */
+	"defaultNarrowingHelper\0" /* 155 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper\0" /* 178 */
+	"__construct\0" /* 237 */
+	"expr\0" /* 249 */
+	"PhpParser\\Node\\Expr\0" /* 254 */
+	"\0" /* 274 */
+	"supports\0" /* 275 */
+	"nodeScopeResolver\0" /* 284 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 302 */
+	"stmt\0" /* 337 */
+	"PhpParser\\Node\\Stmt\0" /* 342 */
+	"scope\0" /* 362 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 368 */
+	"storage\0" /* 399 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 407 */
+	"nodeCallback\0" /* 448 */
+	"context\0" /* 461 */
+	"PHPStan\\Analyser\\ExpressionContext\0" /* 469 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 504 */
+	"processExpr"; /* 538 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 27), /* __construct $implicitToStringCallHelper */
+	reg::packed(90, 0, 114), /* __construct $expressionResultFactory */
+	reg::packed(155, 0, 178), /* __construct $defaultNarrowingHelper */
+	reg::packed(249, 0, 254), /* supports $expr */
+	reg::packed(274, MAY_BE_BOOL), /* supports return */
+	reg::packed(284, 0, 302), /* processExpr $nodeScopeResolver */
+	reg::packed(337, 0, 342), /* processExpr $stmt */
+	reg::packed(249, 0, 254), /* processExpr $expr */
+	reg::packed(362, 0, 368), /* processExpr $scope */
+	reg::packed(399, 0, 407), /* processExpr $storage */
+	reg::packed(448, MAY_BE_CALLABLE), /* processExpr $nodeCallback */
+	reg::packed(461, 0, 469), /* processExpr $context */
+	reg::packed(274, 0, 504), /* processExpr return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("implicitToStringCallHelper", 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\ImplicitToStringCallHelper"), reg::typed("expressionResultFactory", 0, "PHPStan\\Analyser\\ExpressionResultFactory"), reg::typed("defaultNarrowingHelper", 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 3, __construct_args, 3, nullptr };
-inline constexpr reg::Arg supports_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg supports_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig supports = { "supports", ZEND_ACC_PUBLIC, 1, supports_args, 1, &supports_return };
-inline constexpr reg::Arg processExpr_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("stmt", 0, "PhpParser\\Node\\Stmt"), reg::typed("expr", 0, "PhpParser\\Node\\Expr"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("nodeCallback", MAY_BE_CALLABLE), reg::typed("context", 0, "PHPStan\\Analyser\\ExpressionContext") };
-inline constexpr reg::Arg processExpr_return = reg::typed("", 0, "PHPStan\\Analyser\\ExpressionResult");
-inline constexpr reg::Sig processExpr = { "processExpr", ZEND_ACC_PUBLIC, 7, processExpr_args, 7, &processExpr_return };
+inline constexpr sigtab::Sig __construct = { { 237 /* __construct */, 3, 0, 3, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig supports = { { 275 /* supports */, 1, 3, 1, 4, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processExpr = { { 538 /* processExpr */, 7, 5, 7, 12, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::PrintHandler

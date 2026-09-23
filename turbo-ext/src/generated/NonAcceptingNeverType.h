@@ -19,18 +19,39 @@ inline void declareProperties(reg::Class &cls)
 	(void) cls;
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"__construct\0" /* 0 */
+	"type\0" /* 12 */
+	"PHPStan\\Type\\Type\0" /* 17 */
+	"\0" /* 35 */
+	"PHPStan\\Type\\IsSuperTypeOfResult\0" /* 36 */
+	"isSuperTypeOf\0" /* 69 */
+	"strictTypes\0" /* 83 */
+	"PHPStan\\Type\\AcceptsResult\0" /* 95 */
+	"accepts\0" /* 122 */
+	"level\0" /* 130 */
+	"PHPStan\\Type\\VerbosityLevel\0" /* 136 */
+	"describe"; /* 164 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(12, 0, 17), /* isSuperTypeOf $type */
+	reg::packed(35, 0, 36), /* isSuperTypeOf return */
+	reg::packed(12, 0, 17), /* accepts $type */
+	reg::packed(83, MAY_BE_BOOL), /* accepts $strictTypes */
+	reg::packed(35, 0, 95), /* accepts return */
+	reg::packed(130, 0, 136), /* describe $level */
+	reg::packed(35, MAY_BE_STRING), /* describe return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 0, nullptr, 0, nullptr };
-inline constexpr reg::Arg isSuperTypeOf_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg isSuperTypeOf_return = reg::typed("", 0, "PHPStan\\Type\\IsSuperTypeOfResult");
-inline constexpr reg::Sig isSuperTypeOf = { "isSuperTypeOf", ZEND_ACC_PUBLIC, 1, isSuperTypeOf_args, 1, &isSuperTypeOf_return };
-inline constexpr reg::Arg accepts_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type"), reg::typed("strictTypes", MAY_BE_BOOL) };
-inline constexpr reg::Arg accepts_return = reg::typed("", 0, "PHPStan\\Type\\AcceptsResult");
-inline constexpr reg::Sig accepts = { "accepts", ZEND_ACC_PUBLIC, 2, accepts_args, 2, &accepts_return };
-inline constexpr reg::Arg describe_args[] = { reg::typed("level", 0, "PHPStan\\Type\\VerbosityLevel") };
-inline constexpr reg::Arg describe_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig describe = { "describe", ZEND_ACC_PUBLIC, 1, describe_args, 1, &describe_return };
+inline constexpr sigtab::Sig __construct = { { 0 /* __construct */, 0, 0, 0, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isSuperTypeOf = { { 69 /* isSuperTypeOf */, 1, 0, 1, 1, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig accepts = { { 122 /* accepts */, 2, 2, 2, 4, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig describe = { { 164 /* describe */, 1, 5, 1, 6, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::NonAcceptingNeverType

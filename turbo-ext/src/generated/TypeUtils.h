@@ -19,44 +19,77 @@ inline void declareProperties(reg::Class &cls)
 	(void) cls;
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"type\0" /* 0 */
+	"PHPStan\\Type\\Type\0" /* 5 */
+	"\0" /* 23 */
+	"getConstantIntegers\0" /* 24 */
+	"getIntegerRanges\0" /* 44 */
+	"typeClass\0" /* 61 */
+	"inspectIntersections\0" /* 71 */
+	"stopOnUnmatched\0" /* 92 */
+	"true\0" /* 108 */
+	"map\0" /* 113 */
+	"toBenevolentUnion\0" /* 117 */
+	"toStrictUnion\0" /* 135 */
+	"flattenTypes\0" /* 149 */
+	"PHPStan\\Type\\ThisType\0" /* 162 */
+	"findThisType\0" /* 184 */
+	"findCallableType\0" /* 197 */
+	"getHasPropertyTypes\0" /* 214 */
+	"getAccessoryTypes\0" /* 234 */
+	"containsTemplateType\0" /* 252 */
+	"resolveUnresolvableTypes\0" /* 273 */
+	"resolveLateResolvableTypes"; /* 298 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 5), /* getConstantIntegers $type */
+	reg::packed(23, MAY_BE_ARRAY), /* getConstantIntegers return */
+	reg::packed(0, 0, 5), /* getIntegerRanges $type */
+	reg::packed(23, MAY_BE_ARRAY), /* getIntegerRanges return */
+	reg::packed(61, MAY_BE_STRING), /* map $typeClass */
+	reg::packed(0, 0, 5), /* map $type */
+	reg::packed(71, MAY_BE_BOOL), /* map $inspectIntersections */
+	reg::packed(92, MAY_BE_BOOL, reg::NoString, false, false, 108), /* map $stopOnUnmatched */
+	reg::packed(23, MAY_BE_ARRAY), /* map return */
+	reg::packed(0, 0, 5), /* toBenevolentUnion $type */
+	reg::packed(23, 0, 5), /* toBenevolentUnion return */
+	reg::packed(0, 0, 5), /* toStrictUnion $type */
+	reg::packed(23, 0, 5), /* toStrictUnion return */
+	reg::packed(0, 0, 5), /* flattenTypes $type */
+	reg::packed(23, MAY_BE_ARRAY), /* flattenTypes return */
+	reg::packed(0, 0, 5), /* findThisType $type */
+	reg::packed(23, MAY_BE_NULL, 162), /* findThisType return */
+	reg::packed(0, 0, 5), /* findCallableType $type */
+	reg::packed(23, MAY_BE_NULL, 5), /* findCallableType return */
+	reg::packed(0, 0, 5), /* getHasPropertyTypes $type */
+	reg::packed(23, MAY_BE_ARRAY), /* getHasPropertyTypes return */
+	reg::packed(0, 0, 5), /* getAccessoryTypes $type */
+	reg::packed(23, MAY_BE_ARRAY), /* getAccessoryTypes return */
+	reg::packed(0, 0, 5), /* containsTemplateType $type */
+	reg::packed(23, MAY_BE_BOOL), /* containsTemplateType return */
+	reg::packed(0, 0, 5), /* resolveLateResolvableTypes $type */
+	reg::packed(273, MAY_BE_BOOL, reg::NoString, false, false, 108), /* resolveLateResolvableTypes $resolveUnresolvableTypes */
+	reg::packed(23, 0, 5), /* resolveLateResolvableTypes return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg getConstantIntegers_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg getConstantIntegers_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getConstantIntegers = { "getConstantIntegers", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, getConstantIntegers_args, 1, &getConstantIntegers_return };
-inline constexpr reg::Arg getIntegerRanges_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg getIntegerRanges_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getIntegerRanges = { "getIntegerRanges", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, getIntegerRanges_args, 1, &getIntegerRanges_return };
-inline constexpr reg::Arg map_args[] = { reg::typed("typeClass", MAY_BE_STRING), reg::typed("type", 0, "PHPStan\\Type\\Type"), reg::typed("inspectIntersections", MAY_BE_BOOL), reg::typed("stopOnUnmatched", MAY_BE_BOOL, nullptr, false, false, "true") };
-inline constexpr reg::Arg map_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig map = { "map", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 3, map_args, 4, &map_return };
-inline constexpr reg::Arg toBenevolentUnion_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg toBenevolentUnion_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig toBenevolentUnion = { "toBenevolentUnion", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, toBenevolentUnion_args, 1, &toBenevolentUnion_return };
-inline constexpr reg::Arg toStrictUnion_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg toStrictUnion_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig toStrictUnion = { "toStrictUnion", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, toStrictUnion_args, 1, &toStrictUnion_return };
-inline constexpr reg::Arg flattenTypes_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg flattenTypes_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig flattenTypes = { "flattenTypes", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, flattenTypes_args, 1, &flattenTypes_return };
-inline constexpr reg::Arg findThisType_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg findThisType_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Type\\ThisType");
-inline constexpr reg::Sig findThisType = { "findThisType", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, findThisType_args, 1, &findThisType_return };
-inline constexpr reg::Arg findCallableType_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg findCallableType_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig findCallableType = { "findCallableType", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, findCallableType_args, 1, &findCallableType_return };
-inline constexpr reg::Arg getHasPropertyTypes_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg getHasPropertyTypes_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getHasPropertyTypes = { "getHasPropertyTypes", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, getHasPropertyTypes_args, 1, &getHasPropertyTypes_return };
-inline constexpr reg::Arg getAccessoryTypes_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg getAccessoryTypes_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getAccessoryTypes = { "getAccessoryTypes", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, getAccessoryTypes_args, 1, &getAccessoryTypes_return };
-inline constexpr reg::Arg containsTemplateType_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg containsTemplateType_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig containsTemplateType = { "containsTemplateType", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, containsTemplateType_args, 1, &containsTemplateType_return };
-inline constexpr reg::Arg resolveLateResolvableTypes_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type"), reg::typed("resolveUnresolvableTypes", MAY_BE_BOOL, nullptr, false, false, "true") };
-inline constexpr reg::Arg resolveLateResolvableTypes_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig resolveLateResolvableTypes = { "resolveLateResolvableTypes", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, resolveLateResolvableTypes_args, 2, &resolveLateResolvableTypes_return };
+inline constexpr sigtab::Sig getConstantIntegers = { { 24 /* getConstantIntegers */, 1, 0, 1, 1, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig getIntegerRanges = { { 44 /* getIntegerRanges */, 1, 2, 1, 3, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig map = { { 113 /* map */, 3, 4, 4, 8, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig toBenevolentUnion = { { 117 /* toBenevolentUnion */, 1, 9, 1, 10, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig toStrictUnion = { { 135 /* toStrictUnion */, 1, 11, 1, 12, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig flattenTypes = { { 149 /* flattenTypes */, 1, 13, 1, 14, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig findThisType = { { 184 /* findThisType */, 1, 15, 1, 16, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig findCallableType = { { 197 /* findCallableType */, 1, 17, 1, 18, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig getHasPropertyTypes = { { 214 /* getHasPropertyTypes */, 1, 19, 1, 20, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig getAccessoryTypes = { { 234 /* getAccessoryTypes */, 1, 21, 1, 22, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig containsTemplateType = { { 252 /* containsTemplateType */, 1, 23, 1, 24, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig resolveLateResolvableTypes = { { 298 /* resolveLateResolvableTypes */, 1, 25, 2, 27, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::TypeUtils

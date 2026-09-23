@@ -30,18 +30,42 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("certainty", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\TrinaryLogic");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"expression\0" /* 0 */
+	"PhpParser\\Node\\Expr\0" /* 11 */
+	"originalType\0" /* 31 */
+	"PHPStan\\Type\\Type\0" /* 44 */
+	"originalNativeType\0" /* 62 */
+	"certainty\0" /* 81 */
+	"PHPStan\\TrinaryLogic\0" /* 91 */
+	"__construct\0" /* 112 */
+	"\0" /* 124 */
+	"getExpression\0" /* 125 */
+	"getOriginalType\0" /* 139 */
+	"getOriginalNativeType\0" /* 155 */
+	"getCertainty"; /* 177 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 11), /* __construct $expression */
+	reg::packed(31, 0, 44), /* __construct $originalType */
+	reg::packed(62, 0, 44), /* __construct $originalNativeType */
+	reg::packed(81, 0, 91), /* __construct $certainty */
+	reg::packed(124, 0, 11), /* getExpression return */
+	reg::packed(124, 0, 44), /* getOriginalType return */
+	reg::packed(124, 0, 44), /* getOriginalNativeType return */
+	reg::packed(124, 0, 91), /* getCertainty return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("expression", 0, "PhpParser\\Node\\Expr"), reg::typed("originalType", 0, "PHPStan\\Type\\Type"), reg::typed("originalNativeType", 0, "PHPStan\\Type\\Type"), reg::typed("certainty", 0, "PHPStan\\TrinaryLogic") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 4, __construct_args, 4, nullptr };
-inline constexpr reg::Arg getExpression_return = reg::typed("", 0, "PhpParser\\Node\\Expr");
-inline constexpr reg::Sig getExpression = { "getExpression", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getExpression_return };
-inline constexpr reg::Arg getOriginalType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getOriginalType = { "getOriginalType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getOriginalType_return };
-inline constexpr reg::Arg getOriginalNativeType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getOriginalNativeType = { "getOriginalNativeType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getOriginalNativeType_return };
-inline constexpr reg::Arg getCertainty_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig getCertainty = { "getCertainty", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getCertainty_return };
+inline constexpr sigtab::Sig __construct = { { 112 /* __construct */, 4, 0, 4, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getExpression = { { 125 /* getExpression */, 0, 4, 0, 4, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getOriginalType = { { 139 /* getOriginalType */, 0, 5, 0, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getOriginalNativeType = { { 155 /* getOriginalNativeType */, 0, 6, 0, 6, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getCertainty = { { 177 /* getCertainty */, 0, 7, 0, 7, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::EnsuredNonNullabilityResultExpression

@@ -26,16 +26,53 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("propertyReflectionFinder", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Rules\\Properties\\PropertyReflectionFinder");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"initializerExprTypeResolver\0" /* 0 */
+	"PHPStan\\Reflection\\InitializerExprTypeResolver\0" /* 28 */
+	"propertyReflectionFinder\0" /* 75 */
+	"PHPStan\\Rules\\Properties\\PropertyReflectionFinder\0" /* 100 */
+	"__construct\0" /* 150 */
+	"scope\0" /* 162 */
+	"PHPStan\\Analyser\\Scope\0" /* 168 */
+	"expr\0" /* 191 */
+	"PhpParser\\Node\\Expr\\BinaryOp\\Identical\0" /* 196 */
+	"nodeScopeResolver\0" /* 235 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 253 */
+	"null\0" /* 288 */
+	"leftType\0" /* 293 */
+	"PHPStan\\Type\\Type\0" /* 302 */
+	"rightType\0" /* 320 */
+	"\0" /* 330 */
+	"PHPStan\\Type\\TypeResult\0" /* 331 */
+	"getIdenticalResult\0" /* 355 */
+	"PhpParser\\Node\\Expr\\BinaryOp\\NotIdentical\0" /* 374 */
+	"getNotIdenticalResult"; /* 416 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 28), /* __construct $initializerExprTypeResolver */
+	reg::packed(75, 0, 100), /* __construct $propertyReflectionFinder */
+	reg::packed(162, 0, 168), /* getIdenticalResult $scope */
+	reg::packed(191, 0, 196), /* getIdenticalResult $expr */
+	reg::packed(235, MAY_BE_NULL, 253, false, false, 288), /* getIdenticalResult $nodeScopeResolver */
+	reg::packed(293, MAY_BE_NULL, 302, false, false, 288), /* getIdenticalResult $leftType */
+	reg::packed(320, MAY_BE_NULL, 302, false, false, 288), /* getIdenticalResult $rightType */
+	reg::packed(330, 0, 331), /* getIdenticalResult return */
+	reg::packed(162, 0, 168), /* getNotIdenticalResult $scope */
+	reg::packed(191, 0, 374), /* getNotIdenticalResult $expr */
+	reg::packed(235, MAY_BE_NULL, 253, false, false, 288), /* getNotIdenticalResult $nodeScopeResolver */
+	reg::packed(293, MAY_BE_NULL, 302, false, false, 288), /* getNotIdenticalResult $leftType */
+	reg::packed(320, MAY_BE_NULL, 302, false, false, 288), /* getNotIdenticalResult $rightType */
+	reg::packed(330, 0, 331), /* getNotIdenticalResult return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("initializerExprTypeResolver", 0, "PHPStan\\Reflection\\InitializerExprTypeResolver"), reg::typed("propertyReflectionFinder", 0, "PHPStan\\Rules\\Properties\\PropertyReflectionFinder") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 2, __construct_args, 2, nullptr };
-inline constexpr reg::Arg getIdenticalResult_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\Scope"), reg::typed("expr", 0, "PhpParser\\Node\\Expr\\BinaryOp\\Identical"), reg::typed("nodeScopeResolver", MAY_BE_NULL, "PHPStan\\Analyser\\NodeScopeResolver", false, false, "null"), reg::typed("leftType", MAY_BE_NULL, "PHPStan\\Type\\Type", false, false, "null"), reg::typed("rightType", MAY_BE_NULL, "PHPStan\\Type\\Type", false, false, "null") };
-inline constexpr reg::Arg getIdenticalResult_return = reg::typed("", 0, "PHPStan\\Type\\TypeResult");
-inline constexpr reg::Sig getIdenticalResult = { "getIdenticalResult", ZEND_ACC_PUBLIC, 2, getIdenticalResult_args, 5, &getIdenticalResult_return };
-inline constexpr reg::Arg getNotIdenticalResult_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\Scope"), reg::typed("expr", 0, "PhpParser\\Node\\Expr\\BinaryOp\\NotIdentical"), reg::typed("nodeScopeResolver", MAY_BE_NULL, "PHPStan\\Analyser\\NodeScopeResolver", false, false, "null"), reg::typed("leftType", MAY_BE_NULL, "PHPStan\\Type\\Type", false, false, "null"), reg::typed("rightType", MAY_BE_NULL, "PHPStan\\Type\\Type", false, false, "null") };
-inline constexpr reg::Arg getNotIdenticalResult_return = reg::typed("", 0, "PHPStan\\Type\\TypeResult");
-inline constexpr reg::Sig getNotIdenticalResult = { "getNotIdenticalResult", ZEND_ACC_PUBLIC, 2, getNotIdenticalResult_args, 5, &getNotIdenticalResult_return };
+inline constexpr sigtab::Sig __construct = { { 150 /* __construct */, 2, 0, 2, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getIdenticalResult = { { 355 /* getIdenticalResult */, 2, 2, 5, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getNotIdenticalResult = { { 416 /* getNotIdenticalResult */, 2, 8, 5, 13, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::RicherScopeGetTypeHelper

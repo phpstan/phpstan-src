@@ -39,10 +39,35 @@ inline void registerTraits(reg::Class &cls)
 	pt_type_trait_undecided_comparison(cls);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"scope\0" /* 0 */
+	"PHPStan\\Type\\Generic\\TemplateTypeScope\0" /* 6 */
+	"templateTypeStrategy\0" /* 45 */
+	"PHPStan\\Type\\Generic\\TemplateTypeStrategy\0" /* 66 */
+	"templateTypeVariance\0" /* 108 */
+	"PHPStan\\Type\\Generic\\TemplateTypeVariance\0" /* 129 */
+	"name\0" /* 171 */
+	"bound\0" /* 176 */
+	"PHPStan\\Type\\IntegerType\0" /* 182 */
+	"default\0" /* 207 */
+	"PHPStan\\Type\\Type\0" /* 215 */
+	"__construct"; /* 233 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 6), /* __construct $scope */
+	reg::packed(45, 0, 66), /* __construct $templateTypeStrategy */
+	reg::packed(108, 0, 129), /* __construct $templateTypeVariance */
+	reg::packed(171, MAY_BE_STRING), /* __construct $name */
+	reg::packed(176, 0, 182), /* __construct $bound */
+	reg::packed(207, MAY_BE_NULL, 215), /* __construct $default */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("scope", 0, "PHPStan\\Type\\Generic\\TemplateTypeScope"), reg::typed("templateTypeStrategy", 0, "PHPStan\\Type\\Generic\\TemplateTypeStrategy"), reg::typed("templateTypeVariance", 0, "PHPStan\\Type\\Generic\\TemplateTypeVariance"), reg::typed("name", MAY_BE_STRING), reg::typed("bound", 0, "PHPStan\\Type\\IntegerType"), reg::typed("default", MAY_BE_NULL, "PHPStan\\Type\\Type") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 6, __construct_args, 6, nullptr };
+inline constexpr sigtab::Sig __construct = { { 233 /* __construct */, 6, 0, 6, reg::NoArg, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::TemplateIntegerType

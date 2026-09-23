@@ -32,19 +32,45 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("certain", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_BOOL);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"scope\0" /* 0 */
+	"PHPStan\\Analyser\\Scope\0" /* 6 */
+	"node\0" /* 29 */
+	"PhpParser\\Node\0" /* 34 */
+	"identifier\0" /* 49 */
+	"description\0" /* 60 */
+	"certain\0" /* 72 */
+	"__construct\0" /* 80 */
+	"\0" /* 92 */
+	"getScope\0" /* 93 */
+	"getNode\0" /* 102 */
+	"getIdentifier\0" /* 110 */
+	"getDescription\0" /* 124 */
+	"isCertain"; /* 139 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 6), /* __construct $scope */
+	reg::packed(29, 0, 34), /* __construct $node */
+	reg::packed(49, MAY_BE_STRING), /* __construct $identifier */
+	reg::packed(60, MAY_BE_STRING), /* __construct $description */
+	reg::packed(72, MAY_BE_BOOL), /* __construct $certain */
+	reg::packed(92, 0, 6), /* getScope return */
+	reg::packed(92, MAY_BE_STRING), /* getIdentifier return */
+	reg::packed(92, MAY_BE_STRING), /* getDescription return */
+	reg::packed(92, MAY_BE_BOOL), /* isCertain return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\Scope"), reg::typed("node", 0, "PhpParser\\Node"), reg::typed("identifier", MAY_BE_STRING), reg::typed("description", MAY_BE_STRING), reg::typed("certain", MAY_BE_BOOL) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 5, __construct_args, 5, nullptr };
-inline constexpr reg::Arg getScope_return = reg::typed("", 0, "PHPStan\\Analyser\\Scope");
-inline constexpr reg::Sig getScope = { "getScope", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getScope_return };
-inline constexpr reg::Sig getNode = { "getNode", ZEND_ACC_PUBLIC, 0, nullptr, 0, nullptr };
-inline constexpr reg::Arg getIdentifier_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig getIdentifier = { "getIdentifier", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getIdentifier_return };
-inline constexpr reg::Arg getDescription_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig getDescription = { "getDescription", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getDescription_return };
-inline constexpr reg::Arg isCertain_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isCertain = { "isCertain", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isCertain_return };
+inline constexpr sigtab::Sig __construct = { { 80 /* __construct */, 5, 0, 5, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getScope = { { 93 /* getScope */, 0, 5, 0, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getNode = { { 102 /* getNode */, 0, 6, 0, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getIdentifier = { { 110 /* getIdentifier */, 0, 6, 0, 6, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getDescription = { { 124 /* getDescription */, 0, 7, 0, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isCertain = { { 139 /* isCertain */, 0, 8, 0, 8, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ImpurePoint

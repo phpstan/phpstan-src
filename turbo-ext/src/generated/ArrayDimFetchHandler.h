@@ -31,22 +31,81 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("methodCallReturnTypeHelper", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\MethodCallReturnTypeHelper");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"expressionResultFactory\0" /* 0 */
+	"PHPStan\\Analyser\\ExpressionResultFactory\0" /* 24 */
+	"defaultNarrowingHelper\0" /* 65 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper\0" /* 88 */
+	"methodThrowPointHelper\0" /* 147 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\MethodThrowPointHelper\0" /* 170 */
+	"methodCallReturnTypeHelper\0" /* 229 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\MethodCallReturnTypeHelper\0" /* 256 */
+	"__construct\0" /* 319 */
+	"expr\0" /* 331 */
+	"PhpParser\\Node\\Expr\0" /* 336 */
+	"\0" /* 356 */
+	"supports\0" /* 357 */
+	"nodeScopeResolver\0" /* 366 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 384 */
+	"stmt\0" /* 419 */
+	"PhpParser\\Node\\Stmt\0" /* 424 */
+	"scope\0" /* 444 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 450 */
+	"storage\0" /* 481 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 489 */
+	"nodeCallback\0" /* 530 */
+	"context\0" /* 543 */
+	"PHPStan\\Analyser\\ExpressionContext\0" /* 551 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 586 */
+	"processExpr\0" /* 620 */
+	"PhpParser\\Node\\Expr\\ArrayDimFetch\0" /* 632 */
+	"dimResult\0" /* 666 */
+	"varResult\0" /* 676 */
+	"beforeScope\0" /* 686 */
+	"composeResult\0" /* 698 */
+	"PHPStan\\Analyser\\VariableFlow\0" /* 712 */
+	"offsetRead"; /* 742 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 24), /* __construct $expressionResultFactory */
+	reg::packed(65, 0, 88), /* __construct $defaultNarrowingHelper */
+	reg::packed(147, 0, 170), /* __construct $methodThrowPointHelper */
+	reg::packed(229, 0, 256), /* __construct $methodCallReturnTypeHelper */
+	reg::packed(331, 0, 336), /* supports $expr */
+	reg::packed(356, MAY_BE_BOOL), /* supports return */
+	reg::packed(366, 0, 384), /* processExpr $nodeScopeResolver */
+	reg::packed(419, 0, 424), /* processExpr $stmt */
+	reg::packed(331, 0, 336), /* processExpr $expr */
+	reg::packed(444, 0, 450), /* processExpr $scope */
+	reg::packed(481, 0, 489), /* processExpr $storage */
+	reg::packed(530, MAY_BE_CALLABLE), /* processExpr $nodeCallback */
+	reg::packed(543, 0, 551), /* processExpr $context */
+	reg::packed(356, 0, 586), /* processExpr return */
+	reg::packed(366, 0, 384), /* composeResult $nodeScopeResolver */
+	reg::packed(419, 0, 424), /* composeResult $stmt */
+	reg::packed(331, 0, 632), /* composeResult $expr */
+	reg::packed(666, MAY_BE_NULL, 586), /* composeResult $dimResult */
+	reg::packed(676, 0, 586), /* composeResult $varResult */
+	reg::packed(481, 0, 489), /* composeResult $storage */
+	reg::packed(543, 0, 551), /* composeResult $context */
+	reg::packed(686, 0, 450), /* composeResult $beforeScope */
+	reg::packed(356, 0, 586), /* composeResult return */
+	reg::packed(331, 0, 632), /* offsetRead $expr */
+	reg::packed(666, MAY_BE_NULL, 586), /* offsetRead $dimResult */
+	reg::packed(543, 0, 551), /* offsetRead $context */
+	reg::packed(356, MAY_BE_NULL, 712), /* offsetRead return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("expressionResultFactory", 0, "PHPStan\\Analyser\\ExpressionResultFactory"), reg::typed("defaultNarrowingHelper", 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper"), reg::typed("methodThrowPointHelper", 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\MethodThrowPointHelper"), reg::typed("methodCallReturnTypeHelper", 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\MethodCallReturnTypeHelper") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 4, __construct_args, 4, nullptr };
-inline constexpr reg::Arg supports_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg supports_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig supports = { "supports", ZEND_ACC_PUBLIC, 1, supports_args, 1, &supports_return };
-inline constexpr reg::Arg processExpr_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("stmt", 0, "PhpParser\\Node\\Stmt"), reg::typed("expr", 0, "PhpParser\\Node\\Expr"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("nodeCallback", MAY_BE_CALLABLE), reg::typed("context", 0, "PHPStan\\Analyser\\ExpressionContext") };
-inline constexpr reg::Arg processExpr_return = reg::typed("", 0, "PHPStan\\Analyser\\ExpressionResult");
-inline constexpr reg::Sig processExpr = { "processExpr", ZEND_ACC_PUBLIC, 7, processExpr_args, 7, &processExpr_return };
-inline constexpr reg::Arg composeResult_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("stmt", 0, "PhpParser\\Node\\Stmt"), reg::typed("expr", 0, "PhpParser\\Node\\Expr\\ArrayDimFetch"), reg::typed("dimResult", MAY_BE_NULL, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("varResult", 0, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("context", 0, "PHPStan\\Analyser\\ExpressionContext"), reg::typed("beforeScope", 0, "PHPStan\\Analyser\\MutatingScope") };
-inline constexpr reg::Arg composeResult_return = reg::typed("", 0, "PHPStan\\Analyser\\ExpressionResult");
-inline constexpr reg::Sig composeResult = { "composeResult", ZEND_ACC_PUBLIC, 8, composeResult_args, 8, &composeResult_return };
-inline constexpr reg::Arg offsetRead_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr\\ArrayDimFetch"), reg::typed("dimResult", MAY_BE_NULL, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("context", 0, "PHPStan\\Analyser\\ExpressionContext") };
-inline constexpr reg::Arg offsetRead_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\VariableFlow");
-inline constexpr reg::Sig offsetRead = { "offsetRead", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 3, offsetRead_args, 3, &offsetRead_return };
+inline constexpr sigtab::Sig __construct = { { 319 /* __construct */, 4, 0, 4, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig supports = { { 357 /* supports */, 1, 4, 1, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processExpr = { { 620 /* processExpr */, 7, 6, 7, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig composeResult = { { 698 /* composeResult */, 8, 14, 8, 22, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig offsetRead = { { 742 /* offsetRead */, 3, 23, 3, 26, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::ArrayDimFetchHandler

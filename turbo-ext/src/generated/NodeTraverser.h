@@ -26,28 +26,53 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("stopTraversal", ZEND_ACC_PROTECTED, reg::PropertyKind::Typed, MAY_BE_BOOL);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"visitors\0" /* 0 */
+	"PhpParser\\NodeVisitor\0" /* 9 */
+	"__construct\0" /* 31 */
+	"visitor\0" /* 43 */
+	"\0" /* 51 */
+	"addVisitor\0" /* 52 */
+	"removeVisitor\0" /* 63 */
+	"nodes\0" /* 77 */
+	"traverse\0" /* 83 */
+	"node\0" /* 92 */
+	"PhpParser\\Node\0" /* 97 */
+	"traverseNode\0" /* 112 */
+	"traverseArray\0" /* 125 */
+	"old\0" /* 139 */
+	"new\0" /* 143 */
+	"ensureReplacementReasonable"; /* 147 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 9, false, true), /* __construct $visitors */
+	reg::packed(43, 0, 9), /* addVisitor $visitor */
+	reg::packed(51, MAY_BE_VOID), /* addVisitor return */
+	reg::packed(43, 0, 9), /* removeVisitor $visitor */
+	reg::packed(51, MAY_BE_VOID), /* removeVisitor return */
+	reg::packed(77, MAY_BE_ARRAY), /* traverse $nodes */
+	reg::packed(51, MAY_BE_ARRAY), /* traverse return */
+	reg::packed(92, 0, 97), /* traverseNode $node */
+	reg::packed(51, MAY_BE_VOID), /* traverseNode return */
+	reg::packed(77, MAY_BE_ARRAY), /* traverseArray $nodes */
+	reg::packed(51, MAY_BE_ARRAY), /* traverseArray return */
+	reg::packed(139, 0, 97), /* ensureReplacementReasonable $old */
+	reg::packed(143, 0, 97), /* ensureReplacementReasonable $new */
+	reg::packed(51, MAY_BE_VOID), /* ensureReplacementReasonable return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("visitors", 0, "PhpParser\\NodeVisitor", false, true) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 0, __construct_args, 1, nullptr };
-inline constexpr reg::Arg addVisitor_args[] = { reg::typed("visitor", 0, "PhpParser\\NodeVisitor") };
-inline constexpr reg::Arg addVisitor_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig addVisitor = { "addVisitor", ZEND_ACC_PUBLIC, 1, addVisitor_args, 1, &addVisitor_return };
-inline constexpr reg::Arg removeVisitor_args[] = { reg::typed("visitor", 0, "PhpParser\\NodeVisitor") };
-inline constexpr reg::Arg removeVisitor_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig removeVisitor = { "removeVisitor", ZEND_ACC_PUBLIC, 1, removeVisitor_args, 1, &removeVisitor_return };
-inline constexpr reg::Arg traverse_args[] = { reg::typed("nodes", MAY_BE_ARRAY) };
-inline constexpr reg::Arg traverse_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig traverse = { "traverse", ZEND_ACC_PUBLIC, 1, traverse_args, 1, &traverse_return };
-inline constexpr reg::Arg traverseNode_args[] = { reg::typed("node", 0, "PhpParser\\Node") };
-inline constexpr reg::Arg traverseNode_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig traverseNode = { "traverseNode", ZEND_ACC_PROTECTED, 1, traverseNode_args, 1, &traverseNode_return };
-inline constexpr reg::Arg traverseArray_args[] = { reg::typed("nodes", MAY_BE_ARRAY) };
-inline constexpr reg::Arg traverseArray_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig traverseArray = { "traverseArray", ZEND_ACC_PROTECTED, 1, traverseArray_args, 1, &traverseArray_return };
-inline constexpr reg::Arg ensureReplacementReasonable_args[] = { reg::typed("old", 0, "PhpParser\\Node"), reg::typed("new", 0, "PhpParser\\Node") };
-inline constexpr reg::Arg ensureReplacementReasonable_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig ensureReplacementReasonable = { "ensureReplacementReasonable", ZEND_ACC_PRIVATE, 2, ensureReplacementReasonable_args, 2, &ensureReplacementReasonable_return };
+inline constexpr sigtab::Sig __construct = { { 31 /* __construct */, 0, 0, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig addVisitor = { { 52 /* addVisitor */, 1, 1, 1, 2, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig removeVisitor = { { 63 /* removeVisitor */, 1, 3, 1, 4, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig traverse = { { 83 /* traverse */, 1, 5, 1, 6, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig traverseNode = { { 112 /* traverseNode */, 1, 7, 1, 8, ZEND_ACC_PROTECTED } };
+inline constexpr sigtab::Sig traverseArray = { { 125 /* traverseArray */, 1, 9, 1, 10, ZEND_ACC_PROTECTED } };
+inline constexpr sigtab::Sig ensureReplacementReasonable = { { 147 /* ensureReplacementReasonable */, 2, 11, 2, 13, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::NodeTraverser

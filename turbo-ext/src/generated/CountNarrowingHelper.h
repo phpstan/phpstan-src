@@ -26,16 +26,54 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("exprPrinter", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Node\\Printer\\ExprPrinter");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"defaultNarrowingHelper\0" /* 0 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper\0" /* 23 */
+	"exprPrinter\0" /* 82 */
+	"PHPStan\\Node\\Printer\\ExprPrinter\0" /* 94 */
+	"__construct\0" /* 127 */
+	"countFuncCall\0" /* 139 */
+	"PhpParser\\Node\\Expr\\FuncCall\0" /* 153 */
+	"typeToCount\0" /* 182 */
+	"PHPStan\\Type\\Type\0" /* 194 */
+	"scope\0" /* 212 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 218 */
+	"\0" /* 249 */
+	"PHPStan\\TrinaryLogic\0" /* 250 */
+	"isNormalCountCall\0" /* 271 */
+	"type\0" /* 289 */
+	"sizeType\0" /* 294 */
+	"context\0" /* 303 */
+	"PHPStan\\Analyser\\TypeSpecifierContext\0" /* 311 */
+	"rootExpr\0" /* 349 */
+	"PhpParser\\Node\\Expr\0" /* 358 */
+	"PHPStan\\Analyser\\SpecifiedTypes\0" /* 378 */
+	"specifyCountSize"; /* 410 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 23), /* __construct $defaultNarrowingHelper */
+	reg::packed(82, 0, 94), /* __construct $exprPrinter */
+	reg::packed(139, 0, 153), /* isNormalCountCall $countFuncCall */
+	reg::packed(182, 0, 194), /* isNormalCountCall $typeToCount */
+	reg::packed(212, 0, 218), /* isNormalCountCall $scope */
+	reg::packed(249, 0, 250), /* isNormalCountCall return */
+	reg::packed(139, 0, 153), /* specifyCountSize $countFuncCall */
+	reg::packed(289, 0, 194), /* specifyCountSize $type */
+	reg::packed(294, 0, 194), /* specifyCountSize $sizeType */
+	reg::packed(303, 0, 311), /* specifyCountSize $context */
+	reg::packed(212, 0, 218), /* specifyCountSize $scope */
+	reg::packed(349, 0, 358), /* specifyCountSize $rootExpr */
+	reg::packed(249, MAY_BE_NULL, 378), /* specifyCountSize return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("defaultNarrowingHelper", 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper"), reg::typed("exprPrinter", 0, "PHPStan\\Node\\Printer\\ExprPrinter") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 2, __construct_args, 2, nullptr };
-inline constexpr reg::Arg isNormalCountCall_args[] = { reg::typed("countFuncCall", 0, "PhpParser\\Node\\Expr\\FuncCall"), reg::typed("typeToCount", 0, "PHPStan\\Type\\Type"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope") };
-inline constexpr reg::Arg isNormalCountCall_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isNormalCountCall = { "isNormalCountCall", ZEND_ACC_PUBLIC, 3, isNormalCountCall_args, 3, &isNormalCountCall_return };
-inline constexpr reg::Arg specifyCountSize_args[] = { reg::typed("countFuncCall", 0, "PhpParser\\Node\\Expr\\FuncCall"), reg::typed("type", 0, "PHPStan\\Type\\Type"), reg::typed("sizeType", 0, "PHPStan\\Type\\Type"), reg::typed("context", 0, "PHPStan\\Analyser\\TypeSpecifierContext"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("rootExpr", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg specifyCountSize_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\SpecifiedTypes");
-inline constexpr reg::Sig specifyCountSize = { "specifyCountSize", ZEND_ACC_PUBLIC, 6, specifyCountSize_args, 6, &specifyCountSize_return };
+inline constexpr sigtab::Sig __construct = { { 127 /* __construct */, 2, 0, 2, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isNormalCountCall = { { 271 /* isNormalCountCall */, 3, 2, 3, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig specifyCountSize = { { 410 /* specifyCountSize */, 6, 6, 6, 12, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::CountNarrowingHelper

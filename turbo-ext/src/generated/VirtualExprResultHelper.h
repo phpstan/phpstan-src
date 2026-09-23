@@ -26,16 +26,45 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("defaultNarrowingHelper", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"expressionResultFactory\0" /* 0 */
+	"PHPStan\\Analyser\\ExpressionResultFactory\0" /* 24 */
+	"defaultNarrowingHelper\0" /* 65 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper\0" /* 88 */
+	"__construct\0" /* 147 */
+	"scope\0" /* 159 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 165 */
+	"expr\0" /* 196 */
+	"PHPStan\\Node\\Expr\\TypeExpr|PHPStan\\Node\\Expr\\NativeTypeExpr\0" /* 201 */
+	"\0" /* 261 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 262 */
+	"createTypeExprResult\0" /* 296 */
+	"PHPStan\\Node\\Expr\\UnsetOffsetExpr\0" /* 317 */
+	"varResult\0" /* 351 */
+	"dimResult\0" /* 361 */
+	"createUnsetOffsetExprResult"; /* 371 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 24), /* __construct $expressionResultFactory */
+	reg::packed(65, 0, 88), /* __construct $defaultNarrowingHelper */
+	reg::packed(159, 0, 165), /* createTypeExprResult $scope */
+	reg::packed(196, 0, 201), /* createTypeExprResult $expr */
+	reg::packed(261, 0, 262), /* createTypeExprResult return */
+	reg::packed(159, 0, 165), /* createUnsetOffsetExprResult $scope */
+	reg::packed(196, 0, 317), /* createUnsetOffsetExprResult $expr */
+	reg::packed(351, 0, 262), /* createUnsetOffsetExprResult $varResult */
+	reg::packed(361, 0, 262), /* createUnsetOffsetExprResult $dimResult */
+	reg::packed(261, 0, 262), /* createUnsetOffsetExprResult return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("expressionResultFactory", 0, "PHPStan\\Analyser\\ExpressionResultFactory"), reg::typed("defaultNarrowingHelper", 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 2, __construct_args, 2, nullptr };
-inline constexpr reg::Arg createTypeExprResult_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("expr", 0, "PHPStan\\Node\\Expr\\TypeExpr|PHPStan\\Node\\Expr\\NativeTypeExpr") };
-inline constexpr reg::Arg createTypeExprResult_return = reg::typed("", 0, "PHPStan\\Analyser\\ExpressionResult");
-inline constexpr reg::Sig createTypeExprResult = { "createTypeExprResult", ZEND_ACC_PUBLIC, 2, createTypeExprResult_args, 2, &createTypeExprResult_return };
-inline constexpr reg::Arg createUnsetOffsetExprResult_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("expr", 0, "PHPStan\\Node\\Expr\\UnsetOffsetExpr"), reg::typed("varResult", 0, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("dimResult", 0, "PHPStan\\Analyser\\ExpressionResult") };
-inline constexpr reg::Arg createUnsetOffsetExprResult_return = reg::typed("", 0, "PHPStan\\Analyser\\ExpressionResult");
-inline constexpr reg::Sig createUnsetOffsetExprResult = { "createUnsetOffsetExprResult", ZEND_ACC_PUBLIC, 4, createUnsetOffsetExprResult_args, 4, &createUnsetOffsetExprResult_return };
+inline constexpr sigtab::Sig __construct = { { 147 /* __construct */, 2, 0, 2, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig createTypeExprResult = { { 296 /* createTypeExprResult */, 2, 2, 2, 4, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig createUnsetOffsetExprResult = { { 371 /* createUnsetOffsetExprResult */, 4, 5, 4, 9, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::VirtualExprResultHelper

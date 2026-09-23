@@ -70,70 +70,231 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("phpVersion", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Php\\PhpVersion");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"scopeFactory\0" /* 0 */
+	"PHPStan\\Analyser\\ScopeFactory\0" /* 13 */
+	"phpDocsResolver\0" /* 43 */
+	"PHPStan\\Analyser\\PhpDocsResolver\0" /* 59 */
+	"nodeScopeResolver\0" /* 92 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 110 */
+	"methodReflectionFactory\0" /* 145 */
+	"PHPStan\\Reflection\\Php\\PhpMethodReflectionFactory\0" /* 169 */
+	"phpDocInheritanceResolver\0" /* 219 */
+	"PHPStan\\PhpDoc\\PhpDocInheritanceResolver\0" /* 245 */
+	"deprecationProvider\0" /* 286 */
+	"PHPStan\\Reflection\\Deprecation\\DeprecationProvider\0" /* 306 */
+	"annotationsMethodsClassReflectionExtension\0" /* 357 */
+	"PHPStan\\Reflection\\Annotations\\AnnotationsMethodsClassReflectionExtension\0" /* 400 */
+	"annotationsPropertiesClassReflectionExtension\0" /* 474 */
+	"PHPStan\\Reflection\\Annotations\\AnnotationsPropertiesClassReflectionExtension\0" /* 520 */
+	"signatureMapProvider\0" /* 597 */
+	"PHPStan\\Reflection\\SignatureMap\\SignatureMapProvider\0" /* 618 */
+	"parser\0" /* 671 */
+	"PHPStan\\Parser\\Parser\0" /* 678 */
+	"stubPhpDocProvider\0" /* 700 */
+	"PHPStan\\PhpDoc\\StubPhpDocProvider\0" /* 719 */
+	"reflectionProviderProvider\0" /* 753 */
+	"PHPStan\\Reflection\\ReflectionProvider\\ReflectionProviderProvider\0" /* 780 */
+	"fileTypeMapper\0" /* 845 */
+	"PHPStan\\Type\\FileTypeMapper\0" /* 860 */
+	"attributeReflectionFactory\0" /* 888 */
+	"PHPStan\\Reflection\\AttributeReflectionFactory\0" /* 915 */
+	"allowedConstantsMapProvider\0" /* 961 */
+	"PHPStan\\Reflection\\ParameterAllowedConstantsMapProvider\0" /* 989 */
+	"inferPrivatePropertyTypeFromConstructor\0" /* 1045 */
+	"phpVersion\0" /* 1085 */
+	"PHPStan\\Php\\PhpVersion\0" /* 1096 */
+	"memberCacheKeysMax\0" /* 1119 */
+	"__construct\0" /* 1138 */
+	"cacheKey\0" /* 1150 */
+	"\0" /* 1159 */
+	"touchMemberCacheKey\0" /* 1160 */
+	"classReflection\0" /* 1180 */
+	"PHPStan\\Reflection\\ClassReflection\0" /* 1196 */
+	"propertyName\0" /* 1231 */
+	"hasProperty\0" /* 1244 */
+	"scope\0" /* 1256 */
+	"PHPStan\\Reflection\\ClassMemberAccessAnswerer\0" /* 1262 */
+	"PHPStan\\Reflection\\Php\\PhpPropertyReflection\0" /* 1307 */
+	"getProperty\0" /* 1352 */
+	"getNativeProperty\0" /* 1364 */
+	"includingAnnotations\0" /* 1382 */
+	"createProperty\0" /* 1403 */
+	"methodName\0" /* 1418 */
+	"hasMethod\0" /* 1429 */
+	"PHPStan\\Reflection\\ExtendedMethodReflection\0" /* 1439 */
+	"getMethod\0" /* 1483 */
+	"hasNativeMethod\0" /* 1493 */
+	"getNativeMethod\0" /* 1509 */
+	"methodReflection\0" /* 1525 */
+	"PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionMethod\0" /* 1542 */
+	"createMethod\0" /* 1603 */
+	"fileDeclaringClass\0" /* 1616 */
+	"actualDeclaringClass\0" /* 1635 */
+	"declaringTraitName\0" /* 1656 */
+	"PHPStan\\Reflection\\Php\\PhpMethodReflection\0" /* 1675 */
+	"createUserlandMethodReflection\0" /* 1718 */
+	"declaringClassName\0" /* 1749 */
+	"methodSignature\0" /* 1768 */
+	"PHPStan\\Reflection\\SignatureMap\\FunctionSignature\0" /* 1784 */
+	"phpDocParameterTypes\0" /* 1834 */
+	"phpDocReturnType\0" /* 1855 */
+	"PHPStan\\Type\\Type\0" /* 1872 */
+	"phpDocParameterNameMapping\0" /* 1890 */
+	"phpDocParameterOutTypes\0" /* 1917 */
+	"immediatelyInvokedCallableParameters\0" /* 1941 */
+	"closureThisParameters\0" /* 1978 */
+	"phpDocFromStubs\0" /* 2000 */
+	"usePhpDocParameterNames\0" /* 2016 */
+	"PHPStan\\Reflection\\ExtendedFunctionVariant\0" /* 2040 */
+	"createNativeMethodVariant\0" /* 2083 */
+	"propertyReflection\0" /* 2109 */
+	"PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionProperty\0" /* 2128 */
+	"findPropertyTrait\0" /* 2191 */
+	"findMethodTrait\0" /* 2209 */
+	"constructor\0" /* 2225 */
+	"PHPStan\\Reflection\\MethodReflection\0" /* 2237 */
+	"inferPrivatePropertyType\0" /* 2273 */
+	"inferAndCachePropertyTypes\0" /* 2298 */
+	"className\0" /* 2325 */
+	"nodes\0" /* 2335 */
+	"PhpParser\\Node\\Stmt\\Class_\0" /* 2341 */
+	"findClassNode\0" /* 2368 */
+	"classStatements\0" /* 2382 */
+	"PhpParser\\Node\\Stmt\\ClassMethod\0" /* 2398 */
+	"findConstructorNode\0" /* 2430 */
+	"phpDocBlockClassReflection\0" /* 2450 */
+	"resolvedPhpDoc\0" /* 2477 */
+	"PHPStan\\PhpDoc\\ResolvedPhpDocBlock\0" /* 2492 */
+	"nativeReturnType\0" /* 2527 */
+	"getPhpDocReturnType\0" /* 2544 */
+	"declaringClass\0" /* 2564 */
+	"implementingClass\0" /* 2579 */
+	"positionalParameterNames\0" /* 2597 */
+	"findMethodPhpDocIncludingAncestors"; /* 2622 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 13), /* __construct $scopeFactory */
+	reg::packed(43, 0, 59), /* __construct $phpDocsResolver */
+	reg::packed(92, 0, 110), /* __construct $nodeScopeResolver */
+	reg::packed(145, 0, 169), /* __construct $methodReflectionFactory */
+	reg::packed(219, 0, 245), /* __construct $phpDocInheritanceResolver */
+	reg::packed(286, 0, 306), /* __construct $deprecationProvider */
+	reg::packed(357, 0, 400), /* __construct $annotationsMethodsClassReflectionExtension */
+	reg::packed(474, 0, 520), /* __construct $annotationsPropertiesClassReflectionExtension */
+	reg::packed(597, 0, 618), /* __construct $signatureMapProvider */
+	reg::packed(671, 0, 678), /* __construct $parser */
+	reg::packed(700, 0, 719), /* __construct $stubPhpDocProvider */
+	reg::packed(753, 0, 780), /* __construct $reflectionProviderProvider */
+	reg::packed(845, 0, 860), /* __construct $fileTypeMapper */
+	reg::packed(888, 0, 915), /* __construct $attributeReflectionFactory */
+	reg::packed(961, 0, 989), /* __construct $allowedConstantsMapProvider */
+	reg::packed(1045, MAY_BE_BOOL), /* __construct $inferPrivatePropertyTypeFromConstructor */
+	reg::packed(1085, 0, 1096), /* __construct $phpVersion */
+	reg::packed(1119, MAY_BE_LONG), /* __construct $memberCacheKeysMax */
+	reg::packed(1150, MAY_BE_STRING), /* touchMemberCacheKey $cacheKey */
+	reg::packed(1159, MAY_BE_VOID), /* touchMemberCacheKey return */
+	reg::packed(1180, 0, 1196), /* hasProperty $classReflection */
+	reg::packed(1231, MAY_BE_STRING), /* hasProperty $propertyName */
+	reg::packed(1159, MAY_BE_BOOL), /* hasProperty return */
+	reg::packed(1180, 0, 1196), /* getProperty $classReflection */
+	reg::packed(1231, MAY_BE_STRING), /* getProperty $propertyName */
+	reg::packed(1256, 0, 1262), /* getProperty $scope */
+	reg::packed(1159, 0, 1307), /* getProperty return */
+	reg::packed(1180, 0, 1196), /* getNativeProperty $classReflection */
+	reg::packed(1231, MAY_BE_STRING), /* getNativeProperty $propertyName */
+	reg::packed(1159, 0, 1307), /* getNativeProperty return */
+	reg::packed(1180, 0, 1196), /* createProperty $classReflection */
+	reg::packed(1231, MAY_BE_STRING), /* createProperty $propertyName */
+	reg::packed(1256, 0, 1262), /* createProperty $scope */
+	reg::packed(1382, MAY_BE_BOOL), /* createProperty $includingAnnotations */
+	reg::packed(1159, 0, 1307), /* createProperty return */
+	reg::packed(1180, 0, 1196), /* hasMethod $classReflection */
+	reg::packed(1418, MAY_BE_STRING), /* hasMethod $methodName */
+	reg::packed(1159, MAY_BE_BOOL), /* hasMethod return */
+	reg::packed(1180, 0, 1196), /* getMethod $classReflection */
+	reg::packed(1418, MAY_BE_STRING), /* getMethod $methodName */
+	reg::packed(1159, 0, 1439), /* getMethod return */
+	reg::packed(1180, 0, 1196), /* hasNativeMethod $classReflection */
+	reg::packed(1418, MAY_BE_STRING), /* hasNativeMethod $methodName */
+	reg::packed(1159, MAY_BE_BOOL), /* hasNativeMethod return */
+	reg::packed(1180, 0, 1196), /* getNativeMethod $classReflection */
+	reg::packed(1418, MAY_BE_STRING), /* getNativeMethod $methodName */
+	reg::packed(1159, 0, 1439), /* getNativeMethod return */
+	reg::packed(1180, 0, 1196), /* createMethod $classReflection */
+	reg::packed(1418, MAY_BE_STRING), /* createMethod $methodName */
+	reg::packed(1525, 0, 1542), /* createMethod $methodReflection */
+	reg::packed(1382, MAY_BE_BOOL), /* createMethod $includingAnnotations */
+	reg::packed(1159, 0, 1439), /* createMethod return */
+	reg::packed(1616, 0, 1196), /* createUserlandMethodReflection $fileDeclaringClass */
+	reg::packed(1635, 0, 1196), /* createUserlandMethodReflection $actualDeclaringClass */
+	reg::packed(1525, 0, 1542), /* createUserlandMethodReflection $methodReflection */
+	reg::packed(1656, MAY_BE_NULL | MAY_BE_STRING), /* createUserlandMethodReflection $declaringTraitName */
+	reg::packed(1159, 0, 1675), /* createUserlandMethodReflection return */
+	reg::packed(1749, MAY_BE_STRING), /* createNativeMethodVariant $declaringClassName */
+	reg::packed(1418, MAY_BE_STRING), /* createNativeMethodVariant $methodName */
+	reg::packed(1768, 0, 1784), /* createNativeMethodVariant $methodSignature */
+	reg::packed(1834, MAY_BE_ARRAY), /* createNativeMethodVariant $phpDocParameterTypes */
+	reg::packed(1855, MAY_BE_NULL, 1872), /* createNativeMethodVariant $phpDocReturnType */
+	reg::packed(1890, MAY_BE_ARRAY), /* createNativeMethodVariant $phpDocParameterNameMapping */
+	reg::packed(1917, MAY_BE_ARRAY), /* createNativeMethodVariant $phpDocParameterOutTypes */
+	reg::packed(1941, MAY_BE_ARRAY), /* createNativeMethodVariant $immediatelyInvokedCallableParameters */
+	reg::packed(1978, MAY_BE_ARRAY), /* createNativeMethodVariant $closureThisParameters */
+	reg::packed(2000, MAY_BE_BOOL), /* createNativeMethodVariant $phpDocFromStubs */
+	reg::packed(2016, MAY_BE_BOOL), /* createNativeMethodVariant $usePhpDocParameterNames */
+	reg::packed(1159, 0, 2040), /* createNativeMethodVariant return */
+	reg::packed(2109, 0, 2128), /* findPropertyTrait $propertyReflection */
+	reg::packed(1159, MAY_BE_NULL | MAY_BE_STRING), /* findPropertyTrait return */
+	reg::packed(1525, 0, 1542), /* findMethodTrait $methodReflection */
+	reg::packed(1159, MAY_BE_NULL | MAY_BE_STRING), /* findMethodTrait return */
+	reg::packed(1231, MAY_BE_STRING), /* inferPrivatePropertyType $propertyName */
+	reg::packed(2225, 0, 2237), /* inferPrivatePropertyType $constructor */
+	reg::packed(1159, MAY_BE_NULL, 1872), /* inferPrivatePropertyType return */
+	reg::packed(2225, 0, 2237), /* inferAndCachePropertyTypes $constructor */
+	reg::packed(1159, MAY_BE_ARRAY), /* inferAndCachePropertyTypes return */
+	reg::packed(2325, MAY_BE_STRING), /* findClassNode $className */
+	reg::packed(2335, MAY_BE_ARRAY), /* findClassNode $nodes */
+	reg::packed(1159, MAY_BE_NULL, 2341), /* findClassNode return */
+	reg::packed(1418, MAY_BE_STRING), /* findConstructorNode $methodName */
+	reg::packed(2382, MAY_BE_ARRAY), /* findConstructorNode $classStatements */
+	reg::packed(1159, MAY_BE_NULL, 2398), /* findConstructorNode return */
+	reg::packed(2450, 0, 1196), /* getPhpDocReturnType $phpDocBlockClassReflection */
+	reg::packed(2477, 0, 2492), /* getPhpDocReturnType $resolvedPhpDoc */
+	reg::packed(2527, 0, 1872), /* getPhpDocReturnType $nativeReturnType */
+	reg::packed(1159, MAY_BE_NULL, 1872), /* getPhpDocReturnType return */
+	reg::packed(2564, 0, 1196), /* findMethodPhpDocIncludingAncestors $declaringClass */
+	reg::packed(2579, 0, 1196), /* findMethodPhpDocIncludingAncestors $implementingClass */
+	reg::packed(1418, MAY_BE_STRING), /* findMethodPhpDocIncludingAncestors $methodName */
+	reg::packed(2597, MAY_BE_ARRAY), /* findMethodPhpDocIncludingAncestors $positionalParameterNames */
+	reg::packed(1159, MAY_BE_NULL | MAY_BE_ARRAY), /* findMethodPhpDocIncludingAncestors return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("scopeFactory", 0, "PHPStan\\Analyser\\ScopeFactory"), reg::typed("phpDocsResolver", 0, "PHPStan\\Analyser\\PhpDocsResolver"), reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("methodReflectionFactory", 0, "PHPStan\\Reflection\\Php\\PhpMethodReflectionFactory"), reg::typed("phpDocInheritanceResolver", 0, "PHPStan\\PhpDoc\\PhpDocInheritanceResolver"), reg::typed("deprecationProvider", 0, "PHPStan\\Reflection\\Deprecation\\DeprecationProvider"), reg::typed("annotationsMethodsClassReflectionExtension", 0, "PHPStan\\Reflection\\Annotations\\AnnotationsMethodsClassReflectionExtension"), reg::typed("annotationsPropertiesClassReflectionExtension", 0, "PHPStan\\Reflection\\Annotations\\AnnotationsPropertiesClassReflectionExtension"), reg::typed("signatureMapProvider", 0, "PHPStan\\Reflection\\SignatureMap\\SignatureMapProvider"), reg::typed("parser", 0, "PHPStan\\Parser\\Parser"), reg::typed("stubPhpDocProvider", 0, "PHPStan\\PhpDoc\\StubPhpDocProvider"), reg::typed("reflectionProviderProvider", 0, "PHPStan\\Reflection\\ReflectionProvider\\ReflectionProviderProvider"), reg::typed("fileTypeMapper", 0, "PHPStan\\Type\\FileTypeMapper"), reg::typed("attributeReflectionFactory", 0, "PHPStan\\Reflection\\AttributeReflectionFactory"), reg::typed("allowedConstantsMapProvider", 0, "PHPStan\\Reflection\\ParameterAllowedConstantsMapProvider"), reg::typed("inferPrivatePropertyTypeFromConstructor", MAY_BE_BOOL), reg::typed("phpVersion", 0, "PHPStan\\Php\\PhpVersion"), reg::typed("memberCacheKeysMax", MAY_BE_LONG) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 18, __construct_args, 18, nullptr };
-inline constexpr reg::Arg touchMemberCacheKey_args[] = { reg::typed("cacheKey", MAY_BE_STRING) };
-inline constexpr reg::Arg touchMemberCacheKey_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig touchMemberCacheKey = { "touchMemberCacheKey", ZEND_ACC_PRIVATE, 1, touchMemberCacheKey_args, 1, &touchMemberCacheKey_return };
-inline constexpr reg::Arg hasProperty_args[] = { reg::typed("classReflection", 0, "PHPStan\\Reflection\\ClassReflection"), reg::typed("propertyName", MAY_BE_STRING) };
-inline constexpr reg::Arg hasProperty_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig hasProperty = { "hasProperty", ZEND_ACC_PUBLIC, 2, hasProperty_args, 2, &hasProperty_return };
-inline constexpr reg::Arg getProperty_args[] = { reg::typed("classReflection", 0, "PHPStan\\Reflection\\ClassReflection"), reg::typed("propertyName", MAY_BE_STRING), reg::typed("scope", 0, "PHPStan\\Reflection\\ClassMemberAccessAnswerer") };
-inline constexpr reg::Arg getProperty_return = reg::typed("", 0, "PHPStan\\Reflection\\Php\\PhpPropertyReflection");
-inline constexpr reg::Sig getProperty = { "getProperty", ZEND_ACC_PUBLIC, 3, getProperty_args, 3, &getProperty_return };
-inline constexpr reg::Arg getNativeProperty_args[] = { reg::typed("classReflection", 0, "PHPStan\\Reflection\\ClassReflection"), reg::typed("propertyName", MAY_BE_STRING) };
-inline constexpr reg::Arg getNativeProperty_return = reg::typed("", 0, "PHPStan\\Reflection\\Php\\PhpPropertyReflection");
-inline constexpr reg::Sig getNativeProperty = { "getNativeProperty", ZEND_ACC_PUBLIC, 2, getNativeProperty_args, 2, &getNativeProperty_return };
-inline constexpr reg::Arg createProperty_args[] = { reg::typed("classReflection", 0, "PHPStan\\Reflection\\ClassReflection"), reg::typed("propertyName", MAY_BE_STRING), reg::typed("scope", 0, "PHPStan\\Reflection\\ClassMemberAccessAnswerer"), reg::typed("includingAnnotations", MAY_BE_BOOL) };
-inline constexpr reg::Arg createProperty_return = reg::typed("", 0, "PHPStan\\Reflection\\Php\\PhpPropertyReflection");
-inline constexpr reg::Sig createProperty = { "createProperty", ZEND_ACC_PRIVATE, 4, createProperty_args, 4, &createProperty_return };
-inline constexpr reg::Arg hasMethod_args[] = { reg::typed("classReflection", 0, "PHPStan\\Reflection\\ClassReflection"), reg::typed("methodName", MAY_BE_STRING) };
-inline constexpr reg::Arg hasMethod_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig hasMethod = { "hasMethod", ZEND_ACC_PUBLIC, 2, hasMethod_args, 2, &hasMethod_return };
-inline constexpr reg::Arg getMethod_args[] = { reg::typed("classReflection", 0, "PHPStan\\Reflection\\ClassReflection"), reg::typed("methodName", MAY_BE_STRING) };
-inline constexpr reg::Arg getMethod_return = reg::typed("", 0, "PHPStan\\Reflection\\ExtendedMethodReflection");
-inline constexpr reg::Sig getMethod = { "getMethod", ZEND_ACC_PUBLIC, 2, getMethod_args, 2, &getMethod_return };
-inline constexpr reg::Arg hasNativeMethod_args[] = { reg::typed("classReflection", 0, "PHPStan\\Reflection\\ClassReflection"), reg::typed("methodName", MAY_BE_STRING) };
-inline constexpr reg::Arg hasNativeMethod_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig hasNativeMethod = { "hasNativeMethod", ZEND_ACC_PUBLIC, 2, hasNativeMethod_args, 2, &hasNativeMethod_return };
-inline constexpr reg::Arg getNativeMethod_args[] = { reg::typed("classReflection", 0, "PHPStan\\Reflection\\ClassReflection"), reg::typed("methodName", MAY_BE_STRING) };
-inline constexpr reg::Arg getNativeMethod_return = reg::typed("", 0, "PHPStan\\Reflection\\ExtendedMethodReflection");
-inline constexpr reg::Sig getNativeMethod = { "getNativeMethod", ZEND_ACC_PUBLIC, 2, getNativeMethod_args, 2, &getNativeMethod_return };
-inline constexpr reg::Arg createMethod_args[] = { reg::typed("classReflection", 0, "PHPStan\\Reflection\\ClassReflection"), reg::typed("methodName", MAY_BE_STRING), reg::typed("methodReflection", 0, "PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionMethod"), reg::typed("includingAnnotations", MAY_BE_BOOL) };
-inline constexpr reg::Arg createMethod_return = reg::typed("", 0, "PHPStan\\Reflection\\ExtendedMethodReflection");
-inline constexpr reg::Sig createMethod = { "createMethod", ZEND_ACC_PRIVATE, 4, createMethod_args, 4, &createMethod_return };
-inline constexpr reg::Arg createUserlandMethodReflection_args[] = { reg::typed("fileDeclaringClass", 0, "PHPStan\\Reflection\\ClassReflection"), reg::typed("actualDeclaringClass", 0, "PHPStan\\Reflection\\ClassReflection"), reg::typed("methodReflection", 0, "PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionMethod"), reg::typed("declaringTraitName", MAY_BE_NULL | MAY_BE_STRING) };
-inline constexpr reg::Arg createUserlandMethodReflection_return = reg::typed("", 0, "PHPStan\\Reflection\\Php\\PhpMethodReflection");
-inline constexpr reg::Sig createUserlandMethodReflection = { "createUserlandMethodReflection", ZEND_ACC_PUBLIC, 4, createUserlandMethodReflection_args, 4, &createUserlandMethodReflection_return };
-inline constexpr reg::Arg createNativeMethodVariant_args[] = { reg::typed("declaringClassName", MAY_BE_STRING), reg::typed("methodName", MAY_BE_STRING), reg::typed("methodSignature", 0, "PHPStan\\Reflection\\SignatureMap\\FunctionSignature"), reg::typed("phpDocParameterTypes", MAY_BE_ARRAY), reg::typed("phpDocReturnType", MAY_BE_NULL, "PHPStan\\Type\\Type"), reg::typed("phpDocParameterNameMapping", MAY_BE_ARRAY), reg::typed("phpDocParameterOutTypes", MAY_BE_ARRAY), reg::typed("immediatelyInvokedCallableParameters", MAY_BE_ARRAY), reg::typed("closureThisParameters", MAY_BE_ARRAY), reg::typed("phpDocFromStubs", MAY_BE_BOOL), reg::typed("usePhpDocParameterNames", MAY_BE_BOOL) };
-inline constexpr reg::Arg createNativeMethodVariant_return = reg::typed("", 0, "PHPStan\\Reflection\\ExtendedFunctionVariant");
-inline constexpr reg::Sig createNativeMethodVariant = { "createNativeMethodVariant", ZEND_ACC_PRIVATE, 11, createNativeMethodVariant_args, 11, &createNativeMethodVariant_return };
-inline constexpr reg::Arg findPropertyTrait_args[] = { reg::typed("propertyReflection", 0, "PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionProperty") };
-inline constexpr reg::Arg findPropertyTrait_return = reg::typed("", MAY_BE_NULL | MAY_BE_STRING);
-inline constexpr reg::Sig findPropertyTrait = { "findPropertyTrait", ZEND_ACC_PRIVATE, 1, findPropertyTrait_args, 1, &findPropertyTrait_return };
-inline constexpr reg::Arg findMethodTrait_args[] = { reg::typed("methodReflection", 0, "PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionMethod") };
-inline constexpr reg::Arg findMethodTrait_return = reg::typed("", MAY_BE_NULL | MAY_BE_STRING);
-inline constexpr reg::Sig findMethodTrait = { "findMethodTrait", ZEND_ACC_PRIVATE, 1, findMethodTrait_args, 1, &findMethodTrait_return };
-inline constexpr reg::Arg inferPrivatePropertyType_args[] = { reg::typed("propertyName", MAY_BE_STRING), reg::typed("constructor", 0, "PHPStan\\Reflection\\MethodReflection") };
-inline constexpr reg::Arg inferPrivatePropertyType_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig inferPrivatePropertyType = { "inferPrivatePropertyType", ZEND_ACC_PRIVATE, 2, inferPrivatePropertyType_args, 2, &inferPrivatePropertyType_return };
-inline constexpr reg::Arg inferAndCachePropertyTypes_args[] = { reg::typed("constructor", 0, "PHPStan\\Reflection\\MethodReflection") };
-inline constexpr reg::Arg inferAndCachePropertyTypes_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig inferAndCachePropertyTypes = { "inferAndCachePropertyTypes", ZEND_ACC_PRIVATE, 1, inferAndCachePropertyTypes_args, 1, &inferAndCachePropertyTypes_return };
-inline constexpr reg::Arg findClassNode_args[] = { reg::typed("className", MAY_BE_STRING), reg::typed("nodes", MAY_BE_ARRAY) };
-inline constexpr reg::Arg findClassNode_return = reg::typed("", MAY_BE_NULL, "PhpParser\\Node\\Stmt\\Class_");
-inline constexpr reg::Sig findClassNode = { "findClassNode", ZEND_ACC_PRIVATE, 2, findClassNode_args, 2, &findClassNode_return };
-inline constexpr reg::Arg findConstructorNode_args[] = { reg::typed("methodName", MAY_BE_STRING), reg::typed("classStatements", MAY_BE_ARRAY) };
-inline constexpr reg::Arg findConstructorNode_return = reg::typed("", MAY_BE_NULL, "PhpParser\\Node\\Stmt\\ClassMethod");
-inline constexpr reg::Sig findConstructorNode = { "findConstructorNode", ZEND_ACC_PRIVATE, 2, findConstructorNode_args, 2, &findConstructorNode_return };
-inline constexpr reg::Arg getPhpDocReturnType_args[] = { reg::typed("phpDocBlockClassReflection", 0, "PHPStan\\Reflection\\ClassReflection"), reg::typed("resolvedPhpDoc", 0, "PHPStan\\PhpDoc\\ResolvedPhpDocBlock"), reg::typed("nativeReturnType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg getPhpDocReturnType_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getPhpDocReturnType = { "getPhpDocReturnType", ZEND_ACC_PRIVATE, 3, getPhpDocReturnType_args, 3, &getPhpDocReturnType_return };
-inline constexpr reg::Arg findMethodPhpDocIncludingAncestors_args[] = { reg::typed("declaringClass", 0, "PHPStan\\Reflection\\ClassReflection"), reg::typed("implementingClass", 0, "PHPStan\\Reflection\\ClassReflection"), reg::typed("methodName", MAY_BE_STRING), reg::typed("positionalParameterNames", MAY_BE_ARRAY) };
-inline constexpr reg::Arg findMethodPhpDocIncludingAncestors_return = reg::typed("", MAY_BE_NULL | MAY_BE_ARRAY);
-inline constexpr reg::Sig findMethodPhpDocIncludingAncestors = { "findMethodPhpDocIncludingAncestors", ZEND_ACC_PRIVATE, 4, findMethodPhpDocIncludingAncestors_args, 4, &findMethodPhpDocIncludingAncestors_return };
+inline constexpr sigtab::Sig __construct = { { 1138 /* __construct */, 18, 0, 18, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig touchMemberCacheKey = { { 1160 /* touchMemberCacheKey */, 1, 18, 1, 19, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig hasProperty = { { 1244 /* hasProperty */, 2, 20, 2, 22, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getProperty = { { 1352 /* getProperty */, 3, 23, 3, 26, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getNativeProperty = { { 1364 /* getNativeProperty */, 2, 27, 2, 29, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig createProperty = { { 1403 /* createProperty */, 4, 30, 4, 34, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig hasMethod = { { 1429 /* hasMethod */, 2, 35, 2, 37, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getMethod = { { 1483 /* getMethod */, 2, 38, 2, 40, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasNativeMethod = { { 1493 /* hasNativeMethod */, 2, 41, 2, 43, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getNativeMethod = { { 1509 /* getNativeMethod */, 2, 44, 2, 46, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig createMethod = { { 1603 /* createMethod */, 4, 47, 4, 51, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig createUserlandMethodReflection = { { 1718 /* createUserlandMethodReflection */, 4, 52, 4, 56, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig createNativeMethodVariant = { { 2083 /* createNativeMethodVariant */, 11, 57, 11, 68, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig findPropertyTrait = { { 2191 /* findPropertyTrait */, 1, 69, 1, 70, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig findMethodTrait = { { 2209 /* findMethodTrait */, 1, 71, 1, 72, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig inferPrivatePropertyType = { { 2273 /* inferPrivatePropertyType */, 2, 73, 2, 75, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig inferAndCachePropertyTypes = { { 2298 /* inferAndCachePropertyTypes */, 1, 76, 1, 77, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig findClassNode = { { 2368 /* findClassNode */, 2, 78, 2, 80, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig findConstructorNode = { { 2430 /* findConstructorNode */, 2, 81, 2, 83, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getPhpDocReturnType = { { 2544 /* getPhpDocReturnType */, 3, 84, 3, 87, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig findMethodPhpDocIncludingAncestors = { { 2622 /* findMethodPhpDocIncludingAncestors */, 4, 88, 4, 92, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::PhpClassReflectionExtension

@@ -26,19 +26,51 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("phpDocInheritanceResolver", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\PhpDoc\\PhpDocInheritanceResolver");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"fileTypeMapper\0" /* 0 */
+	"PHPStan\\Type\\FileTypeMapper\0" /* 15 */
+	"phpDocInheritanceResolver\0" /* 43 */
+	"PHPStan\\PhpDoc\\PhpDocInheritanceResolver\0" /* 69 */
+	"__construct\0" /* 110 */
+	"scope\0" /* 122 */
+	"PHPStan\\Analyser\\Scope\0" /* 128 */
+	"node\0" /* 151 */
+	"PhpParser\\Node\\FunctionLike|PhpParser\\Node\\Stmt\\Property\0" /* 156 */
+	"\0" /* 213 */
+	"getPhpDocs\0" /* 214 */
+	"resolvedPhpDoc\0" /* 225 */
+	"PHPStan\\PhpDoc\\ResolvedPhpDocBlock\0" /* 240 */
+	"nativeReturnType\0" /* 275 */
+	"PHPStan\\Type\\Type\0" /* 292 */
+	"getPhpDocReturnType\0" /* 310 */
+	"declaringClass\0" /* 330 */
+	"PHPStan\\Reflection\\ClassReflection\0" /* 345 */
+	"type\0" /* 380 */
+	"transformStaticType"; /* 385 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 15), /* __construct $fileTypeMapper */
+	reg::packed(43, 0, 69), /* __construct $phpDocInheritanceResolver */
+	reg::packed(122, 0, 128), /* getPhpDocs $scope */
+	reg::packed(151, 0, 156), /* getPhpDocs $node */
+	reg::packed(213, MAY_BE_ARRAY), /* getPhpDocs return */
+	reg::packed(225, 0, 240), /* getPhpDocReturnType $resolvedPhpDoc */
+	reg::packed(275, 0, 292), /* getPhpDocReturnType $nativeReturnType */
+	reg::packed(213, MAY_BE_NULL, 292), /* getPhpDocReturnType return */
+	reg::packed(330, 0, 345), /* transformStaticType $declaringClass */
+	reg::packed(380, 0, 292), /* transformStaticType $type */
+	reg::packed(213, 0, 292), /* transformStaticType return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("fileTypeMapper", 0, "PHPStan\\Type\\FileTypeMapper"), reg::typed("phpDocInheritanceResolver", 0, "PHPStan\\PhpDoc\\PhpDocInheritanceResolver") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 2, __construct_args, 2, nullptr };
-inline constexpr reg::Arg getPhpDocs_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\Scope"), reg::typed("node", 0, "PhpParser\\Node\\FunctionLike|PhpParser\\Node\\Stmt\\Property") };
-inline constexpr reg::Arg getPhpDocs_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getPhpDocs = { "getPhpDocs", ZEND_ACC_PUBLIC, 2, getPhpDocs_args, 2, &getPhpDocs_return };
-inline constexpr reg::Arg getPhpDocReturnType_args[] = { reg::typed("resolvedPhpDoc", 0, "PHPStan\\PhpDoc\\ResolvedPhpDocBlock"), reg::typed("nativeReturnType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg getPhpDocReturnType_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getPhpDocReturnType = { "getPhpDocReturnType", ZEND_ACC_PRIVATE, 2, getPhpDocReturnType_args, 2, &getPhpDocReturnType_return };
-inline constexpr reg::Arg transformStaticType_args[] = { reg::typed("declaringClass", 0, "PHPStan\\Reflection\\ClassReflection"), reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg transformStaticType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig transformStaticType = { "transformStaticType", ZEND_ACC_PRIVATE, 2, transformStaticType_args, 2, &transformStaticType_return };
+inline constexpr sigtab::Sig __construct = { { 110 /* __construct */, 2, 0, 2, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getPhpDocs = { { 214 /* getPhpDocs */, 2, 2, 2, 4, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getPhpDocReturnType = { { 310 /* getPhpDocReturnType */, 2, 5, 2, 7, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig transformStaticType = { { 385 /* transformStaticType */, 2, 8, 2, 10, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::PhpDocsResolver

@@ -32,223 +32,371 @@ inline void registerTraits(reg::Class &cls)
 	pt_type_trait_non_generalizable(cls);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"__construct\0" /* 0 */
+	"\0" /* 12 */
+	"getReferencedClasses\0" /* 13 */
+	"getObjectClassNames\0" /* 34 */
+	"getObjectClassReflections\0" /* 54 */
+	"getArrays\0" /* 80 */
+	"getConstantArrays\0" /* 90 */
+	"getConstantStrings\0" /* 108 */
+	"type\0" /* 127 */
+	"PHPStan\\Type\\Type\0" /* 132 */
+	"strictTypes\0" /* 150 */
+	"PHPStan\\Type\\AcceptsResult\0" /* 162 */
+	"accepts\0" /* 189 */
+	"PHPStan\\Type\\IsSuperTypeOfResult\0" /* 197 */
+	"isSuperTypeOf\0" /* 230 */
+	"otherType\0" /* 244 */
+	"isSubTypeOf\0" /* 254 */
+	"acceptingType\0" /* 266 */
+	"isAcceptedBy\0" /* 280 */
+	"equals\0" /* 293 */
+	"level\0" /* 300 */
+	"PHPStan\\Type\\VerbosityLevel\0" /* 306 */
+	"describe\0" /* 334 */
+	"PHPStan\\TrinaryLogic\0" /* 343 */
+	"isOffsetAccessible\0" /* 364 */
+	"isOffsetAccessLegal\0" /* 383 */
+	"offsetType\0" /* 403 */
+	"hasOffsetValueType\0" /* 414 */
+	"getOffsetValueType\0" /* 433 */
+	"valueType\0" /* 452 */
+	"unionValues\0" /* 462 */
+	"true\0" /* 474 */
+	"setOffsetValueType\0" /* 479 */
+	"setExistingOffsetValueType\0" /* 498 */
+	"unsetOffset\0" /* 525 */
+	"filterValueType\0" /* 537 */
+	"strict\0" /* 553 */
+	"getKeysArrayFiltered\0" /* 560 */
+	"getKeysArray\0" /* 581 */
+	"getValuesArray\0" /* 594 */
+	"lengthType\0" /* 609 */
+	"preserveKeys\0" /* 620 */
+	"chunkArray\0" /* 633 */
+	"fillKeysArray\0" /* 644 */
+	"flipArray\0" /* 658 */
+	"otherArraysType\0" /* 668 */
+	"intersectKeyArray\0" /* 684 */
+	"popArray\0" /* 702 */
+	"reverseArray\0" /* 711 */
+	"needleType\0" /* 724 */
+	"null\0" /* 735 */
+	"searchArray\0" /* 740 */
+	"shiftArray\0" /* 752 */
+	"shuffleArray\0" /* 763 */
+	"sliceArray\0" /* 776 */
+	"replacementType\0" /* 787 */
+	"spliceArray\0" /* 803 */
+	"sizeType\0" /* 815 */
+	"truncateListToSize\0" /* 824 */
+	"makeListMaybe\0" /* 843 */
+	"cb\0" /* 857 */
+	"mapValueType\0" /* 860 */
+	"mapKeyType\0" /* 873 */
+	"makeAllArrayKeysOptional\0" /* 884 */
+	"case\0" /* 909 */
+	"changeKeyCaseArray\0" /* 914 */
+	"filterArrayRemovingFalsey\0" /* 933 */
+	"isIterable\0" /* 959 */
+	"isIterableAtLeastOnce\0" /* 970 */
+	"getArraySize\0" /* 992 */
+	"getIterableKeyType\0" /* 1005 */
+	"getFirstIterableKeyType\0" /* 1024 */
+	"getLastIterableKeyType\0" /* 1048 */
+	"getIterableValueType\0" /* 1071 */
+	"getFirstIterableValueType\0" /* 1092 */
+	"getLastIterableValueType\0" /* 1118 */
+	"isArray\0" /* 1143 */
+	"isConstantArray\0" /* 1151 */
+	"isOversizedArray\0" /* 1167 */
+	"isList\0" /* 1184 */
+	"isNull\0" /* 1191 */
+	"isConstantValue\0" /* 1198 */
+	"isConstantScalarValue\0" /* 1214 */
+	"getConstantScalarTypes\0" /* 1236 */
+	"getConstantScalarValues\0" /* 1259 */
+	"isTrue\0" /* 1283 */
+	"isFalse\0" /* 1290 */
+	"isBoolean\0" /* 1298 */
+	"isFloat\0" /* 1308 */
+	"isInteger\0" /* 1316 */
+	"isString\0" /* 1326 */
+	"isNumericString\0" /* 1335 */
+	"isDecimalIntegerString\0" /* 1351 */
+	"isNonEmptyString\0" /* 1374 */
+	"isNonFalsyString\0" /* 1391 */
+	"isLiteralString\0" /* 1408 */
+	"isLowercaseString\0" /* 1424 */
+	"isClassString\0" /* 1442 */
+	"isUppercaseString\0" /* 1456 */
+	"getClassStringObjectType\0" /* 1474 */
+	"getObjectTypeOrClassStringObjectType\0" /* 1499 */
+	"isVoid\0" /* 1536 */
+	"isScalar\0" /* 1543 */
+	"phpVersion\0" /* 1552 */
+	"PHPStan\\Php\\PhpVersion\0" /* 1563 */
+	"PHPStan\\Type\\BooleanType\0" /* 1586 */
+	"looseCompare\0" /* 1611 */
+	"toNumber\0" /* 1624 */
+	"toBitwiseNotType\0" /* 1633 */
+	"toAbsoluteNumber\0" /* 1650 */
+	"toInteger\0" /* 1667 */
+	"toFloat\0" /* 1677 */
+	"toString\0" /* 1685 */
+	"toArray\0" /* 1694 */
+	"toArrayKey\0" /* 1702 */
+	"toCoercedArgumentType\0" /* 1713 */
+	"traverse\0" /* 1735 */
+	"right\0" /* 1744 */
+	"traverseSimultaneously\0" /* 1750 */
+	"exponent\0" /* 1773 */
+	"exponentiate\0" /* 1782 */
+	"getFiniteTypes\0" /* 1795 */
+	"getDefaultBaseType\0" /* 1810 */
+	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 1829 */
+	"toPhpDocNode\0" /* 1868 */
+	"hasTemplateOrLateResolvableType"; /* 1881 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(12, MAY_BE_ARRAY), /* getReferencedClasses return */
+	reg::packed(12, MAY_BE_ARRAY), /* getObjectClassNames return */
+	reg::packed(12, MAY_BE_ARRAY), /* getObjectClassReflections return */
+	reg::packed(12, MAY_BE_ARRAY), /* getArrays return */
+	reg::packed(12, MAY_BE_ARRAY), /* getConstantArrays return */
+	reg::packed(12, MAY_BE_ARRAY), /* getConstantStrings return */
+	reg::packed(127, 0, 132), /* accepts $type */
+	reg::packed(150, MAY_BE_BOOL), /* accepts $strictTypes */
+	reg::packed(12, 0, 162), /* accepts return */
+	reg::packed(127, 0, 132), /* isSuperTypeOf $type */
+	reg::packed(12, 0, 197), /* isSuperTypeOf return */
+	reg::packed(244, 0, 132), /* isSubTypeOf $otherType */
+	reg::packed(12, 0, 197), /* isSubTypeOf return */
+	reg::packed(266, 0, 132), /* isAcceptedBy $acceptingType */
+	reg::packed(150, MAY_BE_BOOL), /* isAcceptedBy $strictTypes */
+	reg::packed(12, 0, 162), /* isAcceptedBy return */
+	reg::packed(127, 0, 132), /* equals $type */
+	reg::packed(12, MAY_BE_BOOL), /* equals return */
+	reg::packed(300, 0, 306), /* describe $level */
+	reg::packed(12, MAY_BE_STRING), /* describe return */
+	reg::packed(12, 0, 343), /* isOffsetAccessible return */
+	reg::packed(12, 0, 343), /* isOffsetAccessLegal return */
+	reg::packed(403, 0, 132), /* hasOffsetValueType $offsetType */
+	reg::packed(12, 0, 343), /* hasOffsetValueType return */
+	reg::packed(403, 0, 132), /* getOffsetValueType $offsetType */
+	reg::packed(12, 0, 132), /* getOffsetValueType return */
+	reg::packed(403, MAY_BE_NULL, 132), /* setOffsetValueType $offsetType */
+	reg::packed(452, 0, 132), /* setOffsetValueType $valueType */
+	reg::packed(462, MAY_BE_BOOL, reg::NoString, false, false, 474), /* setOffsetValueType $unionValues */
+	reg::packed(12, 0, 132), /* setOffsetValueType return */
+	reg::packed(403, 0, 132), /* setExistingOffsetValueType $offsetType */
+	reg::packed(452, 0, 132), /* setExistingOffsetValueType $valueType */
+	reg::packed(12, 0, 132), /* setExistingOffsetValueType return */
+	reg::packed(403, 0, 132), /* unsetOffset $offsetType */
+	reg::packed(12, 0, 132), /* unsetOffset return */
+	reg::packed(537, 0, 132), /* getKeysArrayFiltered $filterValueType */
+	reg::packed(553, 0, 343), /* getKeysArrayFiltered $strict */
+	reg::packed(12, 0, 132), /* getKeysArrayFiltered return */
+	reg::packed(12, 0, 132), /* getKeysArray return */
+	reg::packed(12, 0, 132), /* getValuesArray return */
+	reg::packed(609, 0, 132), /* chunkArray $lengthType */
+	reg::packed(620, 0, 343), /* chunkArray $preserveKeys */
+	reg::packed(12, 0, 132), /* chunkArray return */
+	reg::packed(452, 0, 132), /* fillKeysArray $valueType */
+	reg::packed(12, 0, 132), /* fillKeysArray return */
+	reg::packed(12, 0, 132), /* flipArray return */
+	reg::packed(668, 0, 132), /* intersectKeyArray $otherArraysType */
+	reg::packed(12, 0, 132), /* intersectKeyArray return */
+	reg::packed(12, 0, 132), /* popArray return */
+	reg::packed(620, 0, 343), /* reverseArray $preserveKeys */
+	reg::packed(12, 0, 132), /* reverseArray return */
+	reg::packed(724, 0, 132), /* searchArray $needleType */
+	reg::packed(553, MAY_BE_NULL, 343, false, false, 735), /* searchArray $strict */
+	reg::packed(12, 0, 132), /* searchArray return */
+	reg::packed(12, 0, 132), /* shiftArray return */
+	reg::packed(12, 0, 132), /* shuffleArray return */
+	reg::packed(403, 0, 132), /* sliceArray $offsetType */
+	reg::packed(609, 0, 132), /* sliceArray $lengthType */
+	reg::packed(620, 0, 343), /* sliceArray $preserveKeys */
+	reg::packed(12, 0, 132), /* sliceArray return */
+	reg::packed(403, 0, 132), /* spliceArray $offsetType */
+	reg::packed(609, 0, 132), /* spliceArray $lengthType */
+	reg::packed(787, 0, 132), /* spliceArray $replacementType */
+	reg::packed(12, 0, 132), /* spliceArray return */
+	reg::packed(815, 0, 132), /* truncateListToSize $sizeType */
+	reg::packed(12, 0, 132), /* truncateListToSize return */
+	reg::packed(12, 0, 132), /* makeListMaybe return */
+	reg::packed(857, MAY_BE_CALLABLE), /* mapValueType $cb */
+	reg::packed(12, 0, 132), /* mapValueType return */
+	reg::packed(857, MAY_BE_CALLABLE), /* mapKeyType $cb */
+	reg::packed(12, 0, 132), /* mapKeyType return */
+	reg::packed(12, 0, 132), /* makeAllArrayKeysOptional return */
+	reg::packed(909, MAY_BE_NULL | MAY_BE_LONG), /* changeKeyCaseArray $case */
+	reg::packed(12, 0, 132), /* changeKeyCaseArray return */
+	reg::packed(12, 0, 132), /* filterArrayRemovingFalsey return */
+	reg::packed(12, 0, 343), /* isIterable return */
+	reg::packed(12, 0, 343), /* isIterableAtLeastOnce return */
+	reg::packed(12, 0, 132), /* getArraySize return */
+	reg::packed(12, 0, 132), /* getIterableKeyType return */
+	reg::packed(12, 0, 132), /* getFirstIterableKeyType return */
+	reg::packed(12, 0, 132), /* getLastIterableKeyType return */
+	reg::packed(12, 0, 132), /* getIterableValueType return */
+	reg::packed(12, 0, 132), /* getFirstIterableValueType return */
+	reg::packed(12, 0, 132), /* getLastIterableValueType return */
+	reg::packed(12, 0, 343), /* isArray return */
+	reg::packed(12, 0, 343), /* isConstantArray return */
+	reg::packed(12, 0, 343), /* isOversizedArray return */
+	reg::packed(12, 0, 343), /* isList return */
+	reg::packed(12, 0, 343), /* isNull return */
+	reg::packed(12, 0, 343), /* isConstantValue return */
+	reg::packed(12, 0, 343), /* isConstantScalarValue return */
+	reg::packed(12, MAY_BE_ARRAY), /* getConstantScalarTypes return */
+	reg::packed(12, MAY_BE_ARRAY), /* getConstantScalarValues return */
+	reg::packed(12, 0, 343), /* isTrue return */
+	reg::packed(12, 0, 343), /* isFalse return */
+	reg::packed(12, 0, 343), /* isBoolean return */
+	reg::packed(12, 0, 343), /* isFloat return */
+	reg::packed(12, 0, 343), /* isInteger return */
+	reg::packed(12, 0, 343), /* isString return */
+	reg::packed(12, 0, 343), /* isNumericString return */
+	reg::packed(12, 0, 343), /* isDecimalIntegerString return */
+	reg::packed(12, 0, 343), /* isNonEmptyString return */
+	reg::packed(12, 0, 343), /* isNonFalsyString return */
+	reg::packed(12, 0, 343), /* isLiteralString return */
+	reg::packed(12, 0, 343), /* isLowercaseString return */
+	reg::packed(12, 0, 343), /* isClassString return */
+	reg::packed(12, 0, 343), /* isUppercaseString return */
+	reg::packed(12, 0, 132), /* getClassStringObjectType return */
+	reg::packed(12, 0, 132), /* getObjectTypeOrClassStringObjectType return */
+	reg::packed(12, 0, 343), /* isVoid return */
+	reg::packed(12, 0, 343), /* isScalar return */
+	reg::packed(127, 0, 132), /* looseCompare $type */
+	reg::packed(1552, 0, 1563), /* looseCompare $phpVersion */
+	reg::packed(12, 0, 1586), /* looseCompare return */
+	reg::packed(12, 0, 132), /* toNumber return */
+	reg::packed(12, 0, 132), /* toBitwiseNotType return */
+	reg::packed(12, 0, 132), /* toAbsoluteNumber return */
+	reg::packed(12, 0, 132), /* toInteger return */
+	reg::packed(12, 0, 132), /* toFloat return */
+	reg::packed(12, 0, 132), /* toString return */
+	reg::packed(12, 0, 132), /* toArray return */
+	reg::packed(12, 0, 132), /* toArrayKey return */
+	reg::packed(150, MAY_BE_BOOL), /* toCoercedArgumentType $strictTypes */
+	reg::packed(12, 0, 132), /* toCoercedArgumentType return */
+	reg::packed(857, MAY_BE_CALLABLE), /* traverse $cb */
+	reg::packed(12, 0, 132), /* traverse return */
+	reg::packed(1744, 0, 132), /* traverseSimultaneously $right */
+	reg::packed(857, MAY_BE_CALLABLE), /* traverseSimultaneously $cb */
+	reg::packed(12, 0, 132), /* traverseSimultaneously return */
+	reg::packed(1773, 0, 132), /* exponentiate $exponent */
+	reg::packed(12, 0, 132), /* exponentiate return */
+	reg::packed(12, MAY_BE_ARRAY), /* getFiniteTypes return */
+	reg::packed(12, 0, 132), /* getDefaultBaseType return */
+	reg::packed(12, 0, 1829), /* toPhpDocNode return */
+	reg::packed(12, MAY_BE_BOOL), /* hasTemplateOrLateResolvableType return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 0, nullptr, 0, nullptr };
-inline constexpr reg::Arg getReferencedClasses_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getReferencedClasses = { "getReferencedClasses", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getReferencedClasses_return };
-inline constexpr reg::Arg getObjectClassNames_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getObjectClassNames = { "getObjectClassNames", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getObjectClassNames_return };
-inline constexpr reg::Arg getObjectClassReflections_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getObjectClassReflections = { "getObjectClassReflections", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getObjectClassReflections_return };
-inline constexpr reg::Arg getArrays_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getArrays = { "getArrays", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getArrays_return };
-inline constexpr reg::Arg getConstantArrays_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getConstantArrays = { "getConstantArrays", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getConstantArrays_return };
-inline constexpr reg::Arg getConstantStrings_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getConstantStrings = { "getConstantStrings", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getConstantStrings_return };
-inline constexpr reg::Arg accepts_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type"), reg::typed("strictTypes", MAY_BE_BOOL) };
-inline constexpr reg::Arg accepts_return = reg::typed("", 0, "PHPStan\\Type\\AcceptsResult");
-inline constexpr reg::Sig accepts = { "accepts", ZEND_ACC_PUBLIC, 2, accepts_args, 2, &accepts_return };
-inline constexpr reg::Arg isSuperTypeOf_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg isSuperTypeOf_return = reg::typed("", 0, "PHPStan\\Type\\IsSuperTypeOfResult");
-inline constexpr reg::Sig isSuperTypeOf = { "isSuperTypeOf", ZEND_ACC_PUBLIC, 1, isSuperTypeOf_args, 1, &isSuperTypeOf_return };
-inline constexpr reg::Arg isSubTypeOf_args[] = { reg::typed("otherType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg isSubTypeOf_return = reg::typed("", 0, "PHPStan\\Type\\IsSuperTypeOfResult");
-inline constexpr reg::Sig isSubTypeOf = { "isSubTypeOf", ZEND_ACC_PUBLIC, 1, isSubTypeOf_args, 1, &isSubTypeOf_return };
-inline constexpr reg::Arg isAcceptedBy_args[] = { reg::typed("acceptingType", 0, "PHPStan\\Type\\Type"), reg::typed("strictTypes", MAY_BE_BOOL) };
-inline constexpr reg::Arg isAcceptedBy_return = reg::typed("", 0, "PHPStan\\Type\\AcceptsResult");
-inline constexpr reg::Sig isAcceptedBy = { "isAcceptedBy", ZEND_ACC_PUBLIC, 2, isAcceptedBy_args, 2, &isAcceptedBy_return };
-inline constexpr reg::Arg equals_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg equals_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig equals = { "equals", ZEND_ACC_PUBLIC, 1, equals_args, 1, &equals_return };
-inline constexpr reg::Arg describe_args[] = { reg::typed("level", 0, "PHPStan\\Type\\VerbosityLevel") };
-inline constexpr reg::Arg describe_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig describe = { "describe", ZEND_ACC_PUBLIC, 1, describe_args, 1, &describe_return };
-inline constexpr reg::Arg isOffsetAccessible_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isOffsetAccessible = { "isOffsetAccessible", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isOffsetAccessible_return };
-inline constexpr reg::Arg isOffsetAccessLegal_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isOffsetAccessLegal = { "isOffsetAccessLegal", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isOffsetAccessLegal_return };
-inline constexpr reg::Arg hasOffsetValueType_args[] = { reg::typed("offsetType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg hasOffsetValueType_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig hasOffsetValueType = { "hasOffsetValueType", ZEND_ACC_PUBLIC, 1, hasOffsetValueType_args, 1, &hasOffsetValueType_return };
-inline constexpr reg::Arg getOffsetValueType_args[] = { reg::typed("offsetType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg getOffsetValueType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getOffsetValueType = { "getOffsetValueType", ZEND_ACC_PUBLIC, 1, getOffsetValueType_args, 1, &getOffsetValueType_return };
-inline constexpr reg::Arg setOffsetValueType_args[] = { reg::typed("offsetType", MAY_BE_NULL, "PHPStan\\Type\\Type"), reg::typed("valueType", 0, "PHPStan\\Type\\Type"), reg::typed("unionValues", MAY_BE_BOOL, nullptr, false, false, "true") };
-inline constexpr reg::Arg setOffsetValueType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig setOffsetValueType = { "setOffsetValueType", ZEND_ACC_PUBLIC, 2, setOffsetValueType_args, 3, &setOffsetValueType_return };
-inline constexpr reg::Arg setExistingOffsetValueType_args[] = { reg::typed("offsetType", 0, "PHPStan\\Type\\Type"), reg::typed("valueType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg setExistingOffsetValueType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig setExistingOffsetValueType = { "setExistingOffsetValueType", ZEND_ACC_PUBLIC, 2, setExistingOffsetValueType_args, 2, &setExistingOffsetValueType_return };
-inline constexpr reg::Arg unsetOffset_args[] = { reg::typed("offsetType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg unsetOffset_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig unsetOffset = { "unsetOffset", ZEND_ACC_PUBLIC, 1, unsetOffset_args, 1, &unsetOffset_return };
-inline constexpr reg::Arg getKeysArrayFiltered_args[] = { reg::typed("filterValueType", 0, "PHPStan\\Type\\Type"), reg::typed("strict", 0, "PHPStan\\TrinaryLogic") };
-inline constexpr reg::Arg getKeysArrayFiltered_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getKeysArrayFiltered = { "getKeysArrayFiltered", ZEND_ACC_PUBLIC, 2, getKeysArrayFiltered_args, 2, &getKeysArrayFiltered_return };
-inline constexpr reg::Arg getKeysArray_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getKeysArray = { "getKeysArray", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getKeysArray_return };
-inline constexpr reg::Arg getValuesArray_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getValuesArray = { "getValuesArray", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getValuesArray_return };
-inline constexpr reg::Arg chunkArray_args[] = { reg::typed("lengthType", 0, "PHPStan\\Type\\Type"), reg::typed("preserveKeys", 0, "PHPStan\\TrinaryLogic") };
-inline constexpr reg::Arg chunkArray_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig chunkArray = { "chunkArray", ZEND_ACC_PUBLIC, 2, chunkArray_args, 2, &chunkArray_return };
-inline constexpr reg::Arg fillKeysArray_args[] = { reg::typed("valueType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg fillKeysArray_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig fillKeysArray = { "fillKeysArray", ZEND_ACC_PUBLIC, 1, fillKeysArray_args, 1, &fillKeysArray_return };
-inline constexpr reg::Arg flipArray_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig flipArray = { "flipArray", ZEND_ACC_PUBLIC, 0, nullptr, 0, &flipArray_return };
-inline constexpr reg::Arg intersectKeyArray_args[] = { reg::typed("otherArraysType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg intersectKeyArray_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig intersectKeyArray = { "intersectKeyArray", ZEND_ACC_PUBLIC, 1, intersectKeyArray_args, 1, &intersectKeyArray_return };
-inline constexpr reg::Arg popArray_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig popArray = { "popArray", ZEND_ACC_PUBLIC, 0, nullptr, 0, &popArray_return };
-inline constexpr reg::Arg reverseArray_args[] = { reg::typed("preserveKeys", 0, "PHPStan\\TrinaryLogic") };
-inline constexpr reg::Arg reverseArray_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig reverseArray = { "reverseArray", ZEND_ACC_PUBLIC, 1, reverseArray_args, 1, &reverseArray_return };
-inline constexpr reg::Arg searchArray_args[] = { reg::typed("needleType", 0, "PHPStan\\Type\\Type"), reg::typed("strict", MAY_BE_NULL, "PHPStan\\TrinaryLogic", false, false, "null") };
-inline constexpr reg::Arg searchArray_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig searchArray = { "searchArray", ZEND_ACC_PUBLIC, 1, searchArray_args, 2, &searchArray_return };
-inline constexpr reg::Arg shiftArray_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig shiftArray = { "shiftArray", ZEND_ACC_PUBLIC, 0, nullptr, 0, &shiftArray_return };
-inline constexpr reg::Arg shuffleArray_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig shuffleArray = { "shuffleArray", ZEND_ACC_PUBLIC, 0, nullptr, 0, &shuffleArray_return };
-inline constexpr reg::Arg sliceArray_args[] = { reg::typed("offsetType", 0, "PHPStan\\Type\\Type"), reg::typed("lengthType", 0, "PHPStan\\Type\\Type"), reg::typed("preserveKeys", 0, "PHPStan\\TrinaryLogic") };
-inline constexpr reg::Arg sliceArray_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig sliceArray = { "sliceArray", ZEND_ACC_PUBLIC, 3, sliceArray_args, 3, &sliceArray_return };
-inline constexpr reg::Arg spliceArray_args[] = { reg::typed("offsetType", 0, "PHPStan\\Type\\Type"), reg::typed("lengthType", 0, "PHPStan\\Type\\Type"), reg::typed("replacementType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg spliceArray_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig spliceArray = { "spliceArray", ZEND_ACC_PUBLIC, 3, spliceArray_args, 3, &spliceArray_return };
-inline constexpr reg::Arg truncateListToSize_args[] = { reg::typed("sizeType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg truncateListToSize_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig truncateListToSize = { "truncateListToSize", ZEND_ACC_PUBLIC, 1, truncateListToSize_args, 1, &truncateListToSize_return };
-inline constexpr reg::Arg makeListMaybe_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig makeListMaybe = { "makeListMaybe", ZEND_ACC_PUBLIC, 0, nullptr, 0, &makeListMaybe_return };
-inline constexpr reg::Arg mapValueType_args[] = { reg::typed("cb", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg mapValueType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig mapValueType = { "mapValueType", ZEND_ACC_PUBLIC, 1, mapValueType_args, 1, &mapValueType_return };
-inline constexpr reg::Arg mapKeyType_args[] = { reg::typed("cb", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg mapKeyType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig mapKeyType = { "mapKeyType", ZEND_ACC_PUBLIC, 1, mapKeyType_args, 1, &mapKeyType_return };
-inline constexpr reg::Arg makeAllArrayKeysOptional_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig makeAllArrayKeysOptional = { "makeAllArrayKeysOptional", ZEND_ACC_PUBLIC, 0, nullptr, 0, &makeAllArrayKeysOptional_return };
-inline constexpr reg::Arg changeKeyCaseArray_args[] = { reg::typed("case", MAY_BE_NULL | MAY_BE_LONG) };
-inline constexpr reg::Arg changeKeyCaseArray_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig changeKeyCaseArray = { "changeKeyCaseArray", ZEND_ACC_PUBLIC, 1, changeKeyCaseArray_args, 1, &changeKeyCaseArray_return };
-inline constexpr reg::Arg filterArrayRemovingFalsey_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig filterArrayRemovingFalsey = { "filterArrayRemovingFalsey", ZEND_ACC_PUBLIC, 0, nullptr, 0, &filterArrayRemovingFalsey_return };
-inline constexpr reg::Arg isIterable_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isIterable = { "isIterable", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isIterable_return };
-inline constexpr reg::Arg isIterableAtLeastOnce_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isIterableAtLeastOnce = { "isIterableAtLeastOnce", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isIterableAtLeastOnce_return };
-inline constexpr reg::Arg getArraySize_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getArraySize = { "getArraySize", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getArraySize_return };
-inline constexpr reg::Arg getIterableKeyType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getIterableKeyType = { "getIterableKeyType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getIterableKeyType_return };
-inline constexpr reg::Arg getFirstIterableKeyType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getFirstIterableKeyType = { "getFirstIterableKeyType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getFirstIterableKeyType_return };
-inline constexpr reg::Arg getLastIterableKeyType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getLastIterableKeyType = { "getLastIterableKeyType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getLastIterableKeyType_return };
-inline constexpr reg::Arg getIterableValueType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getIterableValueType = { "getIterableValueType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getIterableValueType_return };
-inline constexpr reg::Arg getFirstIterableValueType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getFirstIterableValueType = { "getFirstIterableValueType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getFirstIterableValueType_return };
-inline constexpr reg::Arg getLastIterableValueType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getLastIterableValueType = { "getLastIterableValueType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getLastIterableValueType_return };
-inline constexpr reg::Arg isArray_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isArray = { "isArray", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isArray_return };
-inline constexpr reg::Arg isConstantArray_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isConstantArray = { "isConstantArray", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isConstantArray_return };
-inline constexpr reg::Arg isOversizedArray_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isOversizedArray = { "isOversizedArray", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isOversizedArray_return };
-inline constexpr reg::Arg isList_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isList = { "isList", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isList_return };
-inline constexpr reg::Arg isNull_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isNull = { "isNull", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isNull_return };
-inline constexpr reg::Arg isConstantValue_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isConstantValue = { "isConstantValue", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isConstantValue_return };
-inline constexpr reg::Arg isConstantScalarValue_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isConstantScalarValue = { "isConstantScalarValue", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isConstantScalarValue_return };
-inline constexpr reg::Arg getConstantScalarTypes_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getConstantScalarTypes = { "getConstantScalarTypes", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getConstantScalarTypes_return };
-inline constexpr reg::Arg getConstantScalarValues_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getConstantScalarValues = { "getConstantScalarValues", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getConstantScalarValues_return };
-inline constexpr reg::Arg isTrue_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isTrue = { "isTrue", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isTrue_return };
-inline constexpr reg::Arg isFalse_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isFalse = { "isFalse", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isFalse_return };
-inline constexpr reg::Arg isBoolean_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isBoolean = { "isBoolean", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isBoolean_return };
-inline constexpr reg::Arg isFloat_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isFloat = { "isFloat", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isFloat_return };
-inline constexpr reg::Arg isInteger_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isInteger = { "isInteger", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isInteger_return };
-inline constexpr reg::Arg isString_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isString = { "isString", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isString_return };
-inline constexpr reg::Arg isNumericString_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isNumericString = { "isNumericString", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isNumericString_return };
-inline constexpr reg::Arg isDecimalIntegerString_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isDecimalIntegerString = { "isDecimalIntegerString", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isDecimalIntegerString_return };
-inline constexpr reg::Arg isNonEmptyString_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isNonEmptyString = { "isNonEmptyString", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isNonEmptyString_return };
-inline constexpr reg::Arg isNonFalsyString_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isNonFalsyString = { "isNonFalsyString", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isNonFalsyString_return };
-inline constexpr reg::Arg isLiteralString_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isLiteralString = { "isLiteralString", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isLiteralString_return };
-inline constexpr reg::Arg isLowercaseString_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isLowercaseString = { "isLowercaseString", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isLowercaseString_return };
-inline constexpr reg::Arg isClassString_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isClassString = { "isClassString", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isClassString_return };
-inline constexpr reg::Arg isUppercaseString_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isUppercaseString = { "isUppercaseString", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isUppercaseString_return };
-inline constexpr reg::Arg getClassStringObjectType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getClassStringObjectType = { "getClassStringObjectType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getClassStringObjectType_return };
-inline constexpr reg::Arg getObjectTypeOrClassStringObjectType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getObjectTypeOrClassStringObjectType = { "getObjectTypeOrClassStringObjectType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getObjectTypeOrClassStringObjectType_return };
-inline constexpr reg::Arg isVoid_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isVoid = { "isVoid", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isVoid_return };
-inline constexpr reg::Arg isScalar_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isScalar = { "isScalar", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isScalar_return };
-inline constexpr reg::Arg looseCompare_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type"), reg::typed("phpVersion", 0, "PHPStan\\Php\\PhpVersion") };
-inline constexpr reg::Arg looseCompare_return = reg::typed("", 0, "PHPStan\\Type\\BooleanType");
-inline constexpr reg::Sig looseCompare = { "looseCompare", ZEND_ACC_PUBLIC, 2, looseCompare_args, 2, &looseCompare_return };
-inline constexpr reg::Arg toNumber_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig toNumber = { "toNumber", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toNumber_return };
-inline constexpr reg::Arg toBitwiseNotType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig toBitwiseNotType = { "toBitwiseNotType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toBitwiseNotType_return };
-inline constexpr reg::Arg toAbsoluteNumber_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig toAbsoluteNumber = { "toAbsoluteNumber", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toAbsoluteNumber_return };
-inline constexpr reg::Arg toInteger_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig toInteger = { "toInteger", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toInteger_return };
-inline constexpr reg::Arg toFloat_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig toFloat = { "toFloat", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toFloat_return };
-inline constexpr reg::Arg toString_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig toString = { "toString", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toString_return };
-inline constexpr reg::Arg toArray_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig toArray = { "toArray", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toArray_return };
-inline constexpr reg::Arg toArrayKey_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig toArrayKey = { "toArrayKey", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toArrayKey_return };
-inline constexpr reg::Arg toCoercedArgumentType_args[] = { reg::typed("strictTypes", MAY_BE_BOOL) };
-inline constexpr reg::Arg toCoercedArgumentType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig toCoercedArgumentType = { "toCoercedArgumentType", ZEND_ACC_PUBLIC, 1, toCoercedArgumentType_args, 1, &toCoercedArgumentType_return };
-inline constexpr reg::Arg traverse_args[] = { reg::typed("cb", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg traverse_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig traverse = { "traverse", ZEND_ACC_PUBLIC, 1, traverse_args, 1, &traverse_return };
-inline constexpr reg::Arg traverseSimultaneously_args[] = { reg::typed("right", 0, "PHPStan\\Type\\Type"), reg::typed("cb", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg traverseSimultaneously_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig traverseSimultaneously = { "traverseSimultaneously", ZEND_ACC_PUBLIC, 2, traverseSimultaneously_args, 2, &traverseSimultaneously_return };
-inline constexpr reg::Arg exponentiate_args[] = { reg::typed("exponent", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg exponentiate_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig exponentiate = { "exponentiate", ZEND_ACC_PUBLIC, 1, exponentiate_args, 1, &exponentiate_return };
-inline constexpr reg::Arg getFiniteTypes_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getFiniteTypes = { "getFiniteTypes", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getFiniteTypes_return };
-inline constexpr reg::Arg getDefaultBaseType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getDefaultBaseType = { "getDefaultBaseType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getDefaultBaseType_return };
-inline constexpr reg::Arg toPhpDocNode_return = reg::typed("", 0, "PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode");
-inline constexpr reg::Sig toPhpDocNode = { "toPhpDocNode", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toPhpDocNode_return };
-inline constexpr reg::Arg hasTemplateOrLateResolvableType_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig hasTemplateOrLateResolvableType = { "hasTemplateOrLateResolvableType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &hasTemplateOrLateResolvableType_return };
+inline constexpr sigtab::Sig __construct = { { 0 /* __construct */, 0, 0, 0, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getReferencedClasses = { { 13 /* getReferencedClasses */, 0, 0, 0, 0, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getObjectClassNames = { { 34 /* getObjectClassNames */, 0, 1, 0, 1, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getObjectClassReflections = { { 54 /* getObjectClassReflections */, 0, 2, 0, 2, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getArrays = { { 80 /* getArrays */, 0, 3, 0, 3, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getConstantArrays = { { 90 /* getConstantArrays */, 0, 4, 0, 4, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getConstantStrings = { { 108 /* getConstantStrings */, 0, 5, 0, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig accepts = { { 189 /* accepts */, 2, 6, 2, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isSuperTypeOf = { { 230 /* isSuperTypeOf */, 1, 9, 1, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isSubTypeOf = { { 254 /* isSubTypeOf */, 1, 11, 1, 12, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isAcceptedBy = { { 280 /* isAcceptedBy */, 2, 13, 2, 15, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig equals = { { 293 /* equals */, 1, 16, 1, 17, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig describe = { { 334 /* describe */, 1, 18, 1, 19, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isOffsetAccessible = { { 364 /* isOffsetAccessible */, 0, 20, 0, 20, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isOffsetAccessLegal = { { 383 /* isOffsetAccessLegal */, 0, 21, 0, 21, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasOffsetValueType = { { 414 /* hasOffsetValueType */, 1, 22, 1, 23, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getOffsetValueType = { { 433 /* getOffsetValueType */, 1, 24, 1, 25, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig setOffsetValueType = { { 479 /* setOffsetValueType */, 2, 26, 3, 29, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig setExistingOffsetValueType = { { 498 /* setExistingOffsetValueType */, 2, 30, 2, 32, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig unsetOffset = { { 525 /* unsetOffset */, 1, 33, 1, 34, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getKeysArrayFiltered = { { 560 /* getKeysArrayFiltered */, 2, 35, 2, 37, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getKeysArray = { { 581 /* getKeysArray */, 0, 38, 0, 38, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getValuesArray = { { 594 /* getValuesArray */, 0, 39, 0, 39, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig chunkArray = { { 633 /* chunkArray */, 2, 40, 2, 42, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig fillKeysArray = { { 644 /* fillKeysArray */, 1, 43, 1, 44, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig flipArray = { { 658 /* flipArray */, 0, 45, 0, 45, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig intersectKeyArray = { { 684 /* intersectKeyArray */, 1, 46, 1, 47, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig popArray = { { 702 /* popArray */, 0, 48, 0, 48, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig reverseArray = { { 711 /* reverseArray */, 1, 49, 1, 50, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig searchArray = { { 740 /* searchArray */, 1, 51, 2, 53, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig shiftArray = { { 752 /* shiftArray */, 0, 54, 0, 54, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig shuffleArray = { { 763 /* shuffleArray */, 0, 55, 0, 55, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig sliceArray = { { 776 /* sliceArray */, 3, 56, 3, 59, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig spliceArray = { { 803 /* spliceArray */, 3, 60, 3, 63, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig truncateListToSize = { { 824 /* truncateListToSize */, 1, 64, 1, 65, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig makeListMaybe = { { 843 /* makeListMaybe */, 0, 66, 0, 66, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig mapValueType = { { 860 /* mapValueType */, 1, 67, 1, 68, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig mapKeyType = { { 873 /* mapKeyType */, 1, 69, 1, 70, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig makeAllArrayKeysOptional = { { 884 /* makeAllArrayKeysOptional */, 0, 71, 0, 71, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig changeKeyCaseArray = { { 914 /* changeKeyCaseArray */, 1, 72, 1, 73, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig filterArrayRemovingFalsey = { { 933 /* filterArrayRemovingFalsey */, 0, 74, 0, 74, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isIterable = { { 959 /* isIterable */, 0, 75, 0, 75, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isIterableAtLeastOnce = { { 970 /* isIterableAtLeastOnce */, 0, 76, 0, 76, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getArraySize = { { 992 /* getArraySize */, 0, 77, 0, 77, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getIterableKeyType = { { 1005 /* getIterableKeyType */, 0, 78, 0, 78, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getFirstIterableKeyType = { { 1024 /* getFirstIterableKeyType */, 0, 79, 0, 79, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getLastIterableKeyType = { { 1048 /* getLastIterableKeyType */, 0, 80, 0, 80, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getIterableValueType = { { 1071 /* getIterableValueType */, 0, 81, 0, 81, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getFirstIterableValueType = { { 1092 /* getFirstIterableValueType */, 0, 82, 0, 82, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getLastIterableValueType = { { 1118 /* getLastIterableValueType */, 0, 83, 0, 83, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isArray = { { 1143 /* isArray */, 0, 84, 0, 84, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isConstantArray = { { 1151 /* isConstantArray */, 0, 85, 0, 85, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isOversizedArray = { { 1167 /* isOversizedArray */, 0, 86, 0, 86, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isList = { { 1184 /* isList */, 0, 87, 0, 87, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isNull = { { 1191 /* isNull */, 0, 88, 0, 88, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isConstantValue = { { 1198 /* isConstantValue */, 0, 89, 0, 89, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isConstantScalarValue = { { 1214 /* isConstantScalarValue */, 0, 90, 0, 90, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getConstantScalarTypes = { { 1236 /* getConstantScalarTypes */, 0, 91, 0, 91, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getConstantScalarValues = { { 1259 /* getConstantScalarValues */, 0, 92, 0, 92, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isTrue = { { 1283 /* isTrue */, 0, 93, 0, 93, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isFalse = { { 1290 /* isFalse */, 0, 94, 0, 94, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isBoolean = { { 1298 /* isBoolean */, 0, 95, 0, 95, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isFloat = { { 1308 /* isFloat */, 0, 96, 0, 96, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isInteger = { { 1316 /* isInteger */, 0, 97, 0, 97, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isString = { { 1326 /* isString */, 0, 98, 0, 98, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isNumericString = { { 1335 /* isNumericString */, 0, 99, 0, 99, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isDecimalIntegerString = { { 1351 /* isDecimalIntegerString */, 0, 100, 0, 100, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isNonEmptyString = { { 1374 /* isNonEmptyString */, 0, 101, 0, 101, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isNonFalsyString = { { 1391 /* isNonFalsyString */, 0, 102, 0, 102, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isLiteralString = { { 1408 /* isLiteralString */, 0, 103, 0, 103, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isLowercaseString = { { 1424 /* isLowercaseString */, 0, 104, 0, 104, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isClassString = { { 1442 /* isClassString */, 0, 105, 0, 105, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isUppercaseString = { { 1456 /* isUppercaseString */, 0, 106, 0, 106, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getClassStringObjectType = { { 1474 /* getClassStringObjectType */, 0, 107, 0, 107, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getObjectTypeOrClassStringObjectType = { { 1499 /* getObjectTypeOrClassStringObjectType */, 0, 108, 0, 108, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isVoid = { { 1536 /* isVoid */, 0, 109, 0, 109, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isScalar = { { 1543 /* isScalar */, 0, 110, 0, 110, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig looseCompare = { { 1611 /* looseCompare */, 2, 111, 2, 113, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toNumber = { { 1624 /* toNumber */, 0, 114, 0, 114, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toBitwiseNotType = { { 1633 /* toBitwiseNotType */, 0, 115, 0, 115, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toAbsoluteNumber = { { 1650 /* toAbsoluteNumber */, 0, 116, 0, 116, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toInteger = { { 1667 /* toInteger */, 0, 117, 0, 117, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toFloat = { { 1677 /* toFloat */, 0, 118, 0, 118, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toString = { { 1685 /* toString */, 0, 119, 0, 119, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toArray = { { 1694 /* toArray */, 0, 120, 0, 120, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toArrayKey = { { 1702 /* toArrayKey */, 0, 121, 0, 121, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toCoercedArgumentType = { { 1713 /* toCoercedArgumentType */, 1, 122, 1, 123, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig traverse = { { 1735 /* traverse */, 1, 124, 1, 125, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig traverseSimultaneously = { { 1750 /* traverseSimultaneously */, 2, 126, 2, 128, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig exponentiate = { { 1782 /* exponentiate */, 1, 129, 1, 130, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getFiniteTypes = { { 1795 /* getFiniteTypes */, 0, 131, 0, 131, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getDefaultBaseType = { { 1810 /* getDefaultBaseType */, 0, 132, 0, 132, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toPhpDocNode = { { 1868 /* toPhpDocNode */, 0, 133, 0, 133, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 1881 /* hasTemplateOrLateResolvableType */, 0, 134, 0, 134, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::NonEmptyArrayType

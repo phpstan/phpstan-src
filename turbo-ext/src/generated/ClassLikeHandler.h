@@ -35,22 +35,78 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("readWritePropertiesExtensions", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\DependencyInjection\\ExtensionsCollection");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"reflector\0" /* 0 */
+	"PHPStan\\BetterReflection\\Reflector\\Reflector\0" /* 10 */
+	"classReflectionFactory\0" /* 55 */
+	"PHPStan\\Reflection\\ClassReflectionFactory\0" /* 78 */
+	"calledMethodProcessor\0" /* 120 */
+	"PHPStan\\Analyser\\CalledMethodProcessor\0" /* 142 */
+	"reflectionProvider\0" /* 181 */
+	"PHPStan\\Reflection\\ReflectionProvider\0" /* 200 */
+	"attributesHandler\0" /* 238 */
+	"PHPStan\\Analyser\\AttributesHandler\0" /* 256 */
+	"readWritePropertiesExtensions\0" /* 291 */
+	"PHPStan\\DependencyInjection\\ExtensionsCollection\0" /* 321 */
+	"__construct\0" /* 370 */
+	"stmt\0" /* 382 */
+	"PhpParser\\Node\\Stmt\0" /* 387 */
+	"\0" /* 407 */
+	"supports\0" /* 408 */
+	"nodeScopeResolver\0" /* 417 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 435 */
+	"scope\0" /* 470 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 476 */
+	"storage\0" /* 507 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 515 */
+	"nodeCallback\0" /* 556 */
+	"context\0" /* 569 */
+	"PHPStan\\Analyser\\StatementContext\0" /* 577 */
+	"PHPStan\\Analyser\\InternalStatementResult\0" /* 611 */
+	"processStmt\0" /* 652 */
+	"PhpParser\\Node\\Stmt\\ClassLike\0" /* 664 */
+	"className\0" /* 694 */
+	"PHPStan\\Analyser\\Scope\0" /* 704 */
+	"PHPStan\\Reflection\\ClassReflection\0" /* 727 */
+	"getCurrentClassReflection\0" /* 762 */
+	"createAstClassReflection"; /* 788 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 10), /* __construct $reflector */
+	reg::packed(55, 0, 78), /* __construct $classReflectionFactory */
+	reg::packed(120, 0, 142), /* __construct $calledMethodProcessor */
+	reg::packed(181, 0, 200), /* __construct $reflectionProvider */
+	reg::packed(238, 0, 256), /* __construct $attributesHandler */
+	reg::packed(291, 0, 321), /* __construct $readWritePropertiesExtensions */
+	reg::packed(382, 0, 387), /* supports $stmt */
+	reg::packed(407, MAY_BE_BOOL), /* supports return */
+	reg::packed(417, 0, 435), /* processStmt $nodeScopeResolver */
+	reg::packed(382, 0, 387), /* processStmt $stmt */
+	reg::packed(470, 0, 476), /* processStmt $scope */
+	reg::packed(507, 0, 515), /* processStmt $storage */
+	reg::packed(556, MAY_BE_CALLABLE), /* processStmt $nodeCallback */
+	reg::packed(569, 0, 577), /* processStmt $context */
+	reg::packed(407, 0, 611), /* processStmt return */
+	reg::packed(382, 0, 664), /* getCurrentClassReflection $stmt */
+	reg::packed(694, MAY_BE_STRING), /* getCurrentClassReflection $className */
+	reg::packed(470, 0, 704), /* getCurrentClassReflection $scope */
+	reg::packed(407, 0, 727), /* getCurrentClassReflection return */
+	reg::packed(382, 0, 664), /* createAstClassReflection $stmt */
+	reg::packed(694, MAY_BE_STRING), /* createAstClassReflection $className */
+	reg::packed(470, 0, 704), /* createAstClassReflection $scope */
+	reg::packed(407, 0, 727), /* createAstClassReflection return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("reflector", 0, "PHPStan\\BetterReflection\\Reflector\\Reflector"), reg::typed("classReflectionFactory", 0, "PHPStan\\Reflection\\ClassReflectionFactory"), reg::typed("calledMethodProcessor", 0, "PHPStan\\Analyser\\CalledMethodProcessor"), reg::typed("reflectionProvider", 0, "PHPStan\\Reflection\\ReflectionProvider"), reg::typed("attributesHandler", 0, "PHPStan\\Analyser\\AttributesHandler"), reg::typed("readWritePropertiesExtensions", 0, "PHPStan\\DependencyInjection\\ExtensionsCollection") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 6, __construct_args, 6, nullptr };
-inline constexpr reg::Arg supports_args[] = { reg::typed("stmt", 0, "PhpParser\\Node\\Stmt") };
-inline constexpr reg::Arg supports_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig supports = { "supports", ZEND_ACC_PUBLIC, 1, supports_args, 1, &supports_return };
-inline constexpr reg::Arg processStmt_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("stmt", 0, "PhpParser\\Node\\Stmt"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("nodeCallback", MAY_BE_CALLABLE), reg::typed("context", 0, "PHPStan\\Analyser\\StatementContext") };
-inline constexpr reg::Arg processStmt_return = reg::typed("", 0, "PHPStan\\Analyser\\InternalStatementResult");
-inline constexpr reg::Sig processStmt = { "processStmt", ZEND_ACC_PUBLIC, 6, processStmt_args, 6, &processStmt_return };
-inline constexpr reg::Arg getCurrentClassReflection_args[] = { reg::typed("stmt", 0, "PhpParser\\Node\\Stmt\\ClassLike"), reg::typed("className", MAY_BE_STRING), reg::typed("scope", 0, "PHPStan\\Analyser\\Scope") };
-inline constexpr reg::Arg getCurrentClassReflection_return = reg::typed("", 0, "PHPStan\\Reflection\\ClassReflection");
-inline constexpr reg::Sig getCurrentClassReflection = { "getCurrentClassReflection", ZEND_ACC_PRIVATE, 3, getCurrentClassReflection_args, 3, &getCurrentClassReflection_return };
-inline constexpr reg::Arg createAstClassReflection_args[] = { reg::typed("stmt", 0, "PhpParser\\Node\\Stmt\\ClassLike"), reg::typed("className", MAY_BE_STRING), reg::typed("scope", 0, "PHPStan\\Analyser\\Scope") };
-inline constexpr reg::Arg createAstClassReflection_return = reg::typed("", 0, "PHPStan\\Reflection\\ClassReflection");
-inline constexpr reg::Sig createAstClassReflection = { "createAstClassReflection", ZEND_ACC_PRIVATE, 3, createAstClassReflection_args, 3, &createAstClassReflection_return };
+inline constexpr sigtab::Sig __construct = { { 370 /* __construct */, 6, 0, 6, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig supports = { { 408 /* supports */, 1, 6, 1, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processStmt = { { 652 /* processStmt */, 6, 8, 6, 14, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getCurrentClassReflection = { { 762 /* getCurrentClassReflection */, 3, 15, 3, 18, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig createAstClassReflection = { { 788 /* createAstClassReflection */, 3, 19, 3, 22, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::ClassLikeHandler

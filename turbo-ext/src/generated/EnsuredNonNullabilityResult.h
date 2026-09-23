@@ -26,14 +26,30 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("specifiedExpressions", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_ARRAY);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"scope\0" /* 0 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 6 */
+	"specifiedExpressions\0" /* 37 */
+	"__construct\0" /* 58 */
+	"\0" /* 70 */
+	"getScope\0" /* 71 */
+	"getSpecifiedExpressions"; /* 80 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 6), /* __construct $scope */
+	reg::packed(37, MAY_BE_ARRAY), /* __construct $specifiedExpressions */
+	reg::packed(70, 0, 6), /* getScope return */
+	reg::packed(70, MAY_BE_ARRAY), /* getSpecifiedExpressions return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("specifiedExpressions", MAY_BE_ARRAY) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 2, __construct_args, 2, nullptr };
-inline constexpr reg::Arg getScope_return = reg::typed("", 0, "PHPStan\\Analyser\\MutatingScope");
-inline constexpr reg::Sig getScope = { "getScope", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getScope_return };
-inline constexpr reg::Arg getSpecifiedExpressions_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getSpecifiedExpressions = { "getSpecifiedExpressions", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getSpecifiedExpressions_return };
+inline constexpr sigtab::Sig __construct = { { 58 /* __construct */, 2, 0, 2, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getScope = { { 71 /* getScope */, 0, 2, 0, 2, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getSpecifiedExpressions = { { 80 /* getSpecifiedExpressions */, 0, 3, 0, 3, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::EnsuredNonNullabilityResult

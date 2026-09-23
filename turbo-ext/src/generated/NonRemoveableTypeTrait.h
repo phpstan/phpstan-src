@@ -8,11 +8,23 @@
 
 namespace ptdecl::NonRemoveableTypeTrait {
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"typeToRemove\0" /* 0 */
+	"PHPStan\\Type\\Type\0" /* 13 */
+	"\0" /* 31 */
+	"tryRemove"; /* 32 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 13), /* tryRemove $typeToRemove */
+	reg::packed(31, MAY_BE_NULL, 13), /* tryRemove return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the trait declares itself */
 namespace sig {
-inline constexpr reg::Arg tryRemove_args[] = { reg::typed("typeToRemove", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg tryRemove_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig tryRemove = { "tryRemove", ZEND_ACC_PUBLIC, 1, tryRemove_args, 1, &tryRemove_return };
+inline constexpr sigtab::Sig tryRemove = { { 32 /* tryRemove */, 1, 0, 1, 1, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::NonRemoveableTypeTrait

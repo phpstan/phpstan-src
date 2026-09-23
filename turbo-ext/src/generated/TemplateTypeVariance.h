@@ -25,49 +25,90 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("value", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_LONG);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"value\0" /* 0 */
+	"__construct\0" /* 6 */
+	"\0" /* 18 */
+	"PHPStan\\Type\\Generic\\TemplateTypeVariance\0" /* 19 */
+	"create\0" /* 61 */
+	"createInvariant\0" /* 68 */
+	"createCovariant\0" /* 84 */
+	"createContravariant\0" /* 100 */
+	"createStatic\0" /* 120 */
+	"createBivariant\0" /* 133 */
+	"invariant\0" /* 149 */
+	"covariant\0" /* 159 */
+	"contravariant\0" /* 169 */
+	"static\0" /* 183 */
+	"bivariant\0" /* 190 */
+	"other\0" /* 200 */
+	"compose\0" /* 206 */
+	"templateType\0" /* 214 */
+	"PHPStan\\Type\\Generic\\TemplateType\0" /* 227 */
+	"a\0" /* 261 */
+	"PHPStan\\Type\\Type\0" /* 263 */
+	"b\0" /* 281 */
+	"strict\0" /* 283 */
+	"false\0" /* 290 */
+	"PHPStan\\Type\\IsSuperTypeOfResult\0" /* 296 */
+	"isValidVariance\0" /* 329 */
+	"equals\0" /* 345 */
+	"validPosition\0" /* 352 */
+	"describe\0" /* 366 */
+	"toPhpDocNodeVariance"; /* 375 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_LONG), /* __construct $value */
+	reg::packed(0, MAY_BE_LONG), /* create $value */
+	reg::packed(18, 0, 19), /* create return */
+	reg::packed(18, 0, 19), /* createInvariant return */
+	reg::packed(18, 0, 19), /* createCovariant return */
+	reg::packed(18, 0, 19), /* createContravariant return */
+	reg::packed(18, 0, 19), /* createStatic return */
+	reg::packed(18, 0, 19), /* createBivariant return */
+	reg::packed(18, MAY_BE_BOOL), /* invariant return */
+	reg::packed(18, MAY_BE_BOOL), /* covariant return */
+	reg::packed(18, MAY_BE_BOOL), /* contravariant return */
+	reg::packed(18, MAY_BE_BOOL), /* static return */
+	reg::packed(18, MAY_BE_BOOL), /* bivariant return */
+	reg::packed(200, 0, 19), /* compose $other */
+	reg::packed(18, 0, 19), /* compose return */
+	reg::packed(214, 0, 227), /* isValidVariance $templateType */
+	reg::packed(261, 0, 263), /* isValidVariance $a */
+	reg::packed(281, 0, 263), /* isValidVariance $b */
+	reg::packed(283, MAY_BE_BOOL, reg::NoString, false, false, 290), /* isValidVariance $strict */
+	reg::packed(18, 0, 296), /* isValidVariance return */
+	reg::packed(200, 0, 19), /* equals $other */
+	reg::packed(18, MAY_BE_BOOL), /* equals return */
+	reg::packed(200, 0, 19), /* validPosition $other */
+	reg::packed(18, MAY_BE_BOOL), /* validPosition return */
+	reg::packed(18, MAY_BE_STRING), /* describe return */
+	reg::packed(18, MAY_BE_STRING), /* toPhpDocNodeVariance return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("value", MAY_BE_LONG) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PRIVATE, 1, __construct_args, 1, nullptr };
-inline constexpr reg::Arg create_args[] = { reg::typed("value", MAY_BE_LONG) };
-inline constexpr reg::Arg create_return = reg::typed("", 0, "PHPStan\\Type\\Generic\\TemplateTypeVariance");
-inline constexpr reg::Sig create = { "create", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 1, create_args, 1, &create_return };
-inline constexpr reg::Arg createInvariant_return = reg::typed("", 0, "PHPStan\\Type\\Generic\\TemplateTypeVariance");
-inline constexpr reg::Sig createInvariant = { "createInvariant", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &createInvariant_return };
-inline constexpr reg::Arg createCovariant_return = reg::typed("", 0, "PHPStan\\Type\\Generic\\TemplateTypeVariance");
-inline constexpr reg::Sig createCovariant = { "createCovariant", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &createCovariant_return };
-inline constexpr reg::Arg createContravariant_return = reg::typed("", 0, "PHPStan\\Type\\Generic\\TemplateTypeVariance");
-inline constexpr reg::Sig createContravariant = { "createContravariant", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &createContravariant_return };
-inline constexpr reg::Arg createStatic_return = reg::typed("", 0, "PHPStan\\Type\\Generic\\TemplateTypeVariance");
-inline constexpr reg::Sig createStatic = { "createStatic", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &createStatic_return };
-inline constexpr reg::Arg createBivariant_return = reg::typed("", 0, "PHPStan\\Type\\Generic\\TemplateTypeVariance");
-inline constexpr reg::Sig createBivariant = { "createBivariant", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &createBivariant_return };
-inline constexpr reg::Arg invariant_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig invariant = { "invariant", ZEND_ACC_PUBLIC, 0, nullptr, 0, &invariant_return };
-inline constexpr reg::Arg covariant_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig covariant = { "covariant", ZEND_ACC_PUBLIC, 0, nullptr, 0, &covariant_return };
-inline constexpr reg::Arg contravariant_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig contravariant = { "contravariant", ZEND_ACC_PUBLIC, 0, nullptr, 0, &contravariant_return };
-inline constexpr reg::Arg static__return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig static_ = { "static", ZEND_ACC_PUBLIC, 0, nullptr, 0, &static__return };
-inline constexpr reg::Arg bivariant_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig bivariant = { "bivariant", ZEND_ACC_PUBLIC, 0, nullptr, 0, &bivariant_return };
-inline constexpr reg::Arg compose_args[] = { reg::typed("other", 0, "PHPStan\\Type\\Generic\\TemplateTypeVariance") };
-inline constexpr reg::Arg compose_return = reg::typed("", 0, "PHPStan\\Type\\Generic\\TemplateTypeVariance");
-inline constexpr reg::Sig compose = { "compose", ZEND_ACC_PUBLIC, 1, compose_args, 1, &compose_return };
-inline constexpr reg::Arg isValidVariance_args[] = { reg::typed("templateType", 0, "PHPStan\\Type\\Generic\\TemplateType"), reg::typed("a", 0, "PHPStan\\Type\\Type"), reg::typed("b", 0, "PHPStan\\Type\\Type"), reg::typed("strict", MAY_BE_BOOL, nullptr, false, false, "false") };
-inline constexpr reg::Arg isValidVariance_return = reg::typed("", 0, "PHPStan\\Type\\IsSuperTypeOfResult");
-inline constexpr reg::Sig isValidVariance = { "isValidVariance", ZEND_ACC_PUBLIC, 3, isValidVariance_args, 4, &isValidVariance_return };
-inline constexpr reg::Arg equals_args[] = { reg::typed("other", 0, "PHPStan\\Type\\Generic\\TemplateTypeVariance") };
-inline constexpr reg::Arg equals_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig equals = { "equals", ZEND_ACC_PUBLIC, 1, equals_args, 1, &equals_return };
-inline constexpr reg::Arg validPosition_args[] = { reg::typed("other", 0, "PHPStan\\Type\\Generic\\TemplateTypeVariance") };
-inline constexpr reg::Arg validPosition_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig validPosition = { "validPosition", ZEND_ACC_PUBLIC, 1, validPosition_args, 1, &validPosition_return };
-inline constexpr reg::Arg describe_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig describe = { "describe", ZEND_ACC_PUBLIC, 0, nullptr, 0, &describe_return };
-inline constexpr reg::Arg toPhpDocNodeVariance_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig toPhpDocNodeVariance = { "toPhpDocNodeVariance", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toPhpDocNodeVariance_return };
+inline constexpr sigtab::Sig __construct = { { 6 /* __construct */, 1, 0, 1, reg::NoArg, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig create = { { 61 /* create */, 1, 1, 1, 2, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createInvariant = { { 68 /* createInvariant */, 0, 3, 0, 3, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createCovariant = { { 84 /* createCovariant */, 0, 4, 0, 4, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createContravariant = { { 100 /* createContravariant */, 0, 5, 0, 5, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createStatic = { { 120 /* createStatic */, 0, 6, 0, 6, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createBivariant = { { 133 /* createBivariant */, 0, 7, 0, 7, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig invariant = { { 149 /* invariant */, 0, 8, 0, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig covariant = { { 159 /* covariant */, 0, 9, 0, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig contravariant = { { 169 /* contravariant */, 0, 10, 0, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig static_ = { { 183 /* static */, 0, 11, 0, 11, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig bivariant = { { 190 /* bivariant */, 0, 12, 0, 12, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig compose = { { 206 /* compose */, 1, 13, 1, 14, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isValidVariance = { { 329 /* isValidVariance */, 3, 15, 4, 19, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig equals = { { 345 /* equals */, 1, 20, 1, 21, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig validPosition = { { 352 /* validPosition */, 1, 22, 1, 23, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig describe = { { 366 /* describe */, 0, 24, 0, 24, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toPhpDocNodeVariance = { { 375 /* toPhpDocNodeVariance */, 0, 25, 0, 25, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::TemplateTypeVariance

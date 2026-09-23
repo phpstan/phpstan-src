@@ -34,26 +34,55 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("weightEvictionFloorCount", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_LONG);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"maxCount\0" /* 0 */
+	"0\0" /* 9 */
+	"maxWeight\0" /* 11 */
+	"weightEvictionFloorCount\0" /* 21 */
+	"__construct\0" /* 46 */
+	"key\0" /* 58 */
+	"\0" /* 62 */
+	"get\0" /* 63 */
+	"value\0" /* 67 */
+	"weight\0" /* 73 */
+	"set\0" /* 80 */
+	"replace\0" /* 84 */
+	"count\0" /* 92 */
+	"all\0" /* 98 */
+	"incomingWeight\0" /* 102 */
+	"evict"; /* 117 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_LONG, reg::NoString, false, false, 9), /* __construct $maxCount */
+	reg::packed(11, MAY_BE_LONG, reg::NoString, false, false, 9), /* __construct $maxWeight */
+	reg::packed(21, MAY_BE_LONG, reg::NoString, false, false, 9), /* __construct $weightEvictionFloorCount */
+	reg::packed(58, MAY_BE_STRING), /* get $key */
+	reg::packed(62, MAY_BE_ANY), /* get return */
+	reg::packed(58, MAY_BE_STRING), /* set $key */
+	reg::packed(67, MAY_BE_ANY), /* set $value */
+	reg::packed(73, MAY_BE_LONG), /* set $weight */
+	reg::packed(62, MAY_BE_ARRAY), /* set return */
+	reg::packed(58, MAY_BE_STRING), /* replace $key */
+	reg::packed(67, MAY_BE_ANY), /* replace $value */
+	reg::packed(62, MAY_BE_VOID), /* replace return */
+	reg::packed(62, MAY_BE_LONG), /* count return */
+	reg::packed(62, MAY_BE_ARRAY), /* all return */
+	reg::packed(102, MAY_BE_LONG), /* evict $incomingWeight */
+	reg::packed(62, MAY_BE_ARRAY), /* evict return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("maxCount", MAY_BE_LONG, nullptr, false, false, "0"), reg::typed("maxWeight", MAY_BE_LONG, nullptr, false, false, "0"), reg::typed("weightEvictionFloorCount", MAY_BE_LONG, nullptr, false, false, "0") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 0, __construct_args, 3, nullptr };
-inline constexpr reg::Arg get_args[] = { reg::typed("key", MAY_BE_STRING) };
-inline constexpr reg::Arg get_return = reg::typed("", MAY_BE_ANY);
-inline constexpr reg::Sig get = { "get", ZEND_ACC_PUBLIC, 1, get_args, 1, &get_return };
-inline constexpr reg::Arg set_args[] = { reg::typed("key", MAY_BE_STRING), reg::typed("value", MAY_BE_ANY), reg::typed("weight", MAY_BE_LONG) };
-inline constexpr reg::Arg set_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig set = { "set", ZEND_ACC_PUBLIC, 3, set_args, 3, &set_return };
-inline constexpr reg::Arg replace_args[] = { reg::typed("key", MAY_BE_STRING), reg::typed("value", MAY_BE_ANY) };
-inline constexpr reg::Arg replace_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig replace = { "replace", ZEND_ACC_PUBLIC, 2, replace_args, 2, &replace_return };
-inline constexpr reg::Arg count_return = reg::typed("", MAY_BE_LONG);
-inline constexpr reg::Sig count = { "count", ZEND_ACC_PUBLIC, 0, nullptr, 0, &count_return };
-inline constexpr reg::Arg all_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig all = { "all", ZEND_ACC_PUBLIC, 0, nullptr, 0, &all_return };
-inline constexpr reg::Arg evict_args[] = { reg::typed("incomingWeight", MAY_BE_LONG) };
-inline constexpr reg::Arg evict_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig evict = { "evict", ZEND_ACC_PRIVATE, 1, evict_args, 1, &evict_return };
+inline constexpr sigtab::Sig __construct = { { 46 /* __construct */, 0, 0, 3, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig get = { { 63 /* get */, 1, 3, 1, 4, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig set = { { 80 /* set */, 3, 5, 3, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig replace = { { 84 /* replace */, 2, 9, 2, 11, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig count = { { 92 /* count */, 0, 12, 0, 12, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig all = { { 98 /* all */, 0, 13, 0, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig evict = { { 117 /* evict */, 1, 14, 1, 15, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::LruCache

@@ -39,13 +39,48 @@ inline void registerTraits(reg::Class &cls)
 	pt_type_trait_template_type(cls);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"scope\0" /* 0 */
+	"PHPStan\\Type\\Generic\\TemplateTypeScope\0" /* 6 */
+	"templateTypeStrategy\0" /* 45 */
+	"PHPStan\\Type\\Generic\\TemplateTypeStrategy\0" /* 66 */
+	"templateTypeVariance\0" /* 108 */
+	"PHPStan\\Type\\Generic\\TemplateTypeVariance\0" /* 129 */
+	"name\0" /* 171 */
+	"bound\0" /* 176 */
+	"PHPStan\\Type\\Generic\\GenericObjectType\0" /* 182 */
+	"default\0" /* 221 */
+	"PHPStan\\Type\\Type\0" /* 229 */
+	"__construct\0" /* 247 */
+	"className\0" /* 259 */
+	"types\0" /* 269 */
+	"subtractedType\0" /* 275 */
+	"variances\0" /* 290 */
+	"[]\0" /* 300 */
+	"\0" /* 303 */
+	"recreate"; /* 304 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 6), /* __construct $scope */
+	reg::packed(45, 0, 66), /* __construct $templateTypeStrategy */
+	reg::packed(108, 0, 129), /* __construct $templateTypeVariance */
+	reg::packed(171, MAY_BE_STRING), /* __construct $name */
+	reg::packed(176, 0, 182), /* __construct $bound */
+	reg::packed(221, MAY_BE_NULL, 229), /* __construct $default */
+	reg::packed(259, MAY_BE_STRING), /* recreate $className */
+	reg::packed(269, MAY_BE_ARRAY), /* recreate $types */
+	reg::packed(275, MAY_BE_NULL, 229), /* recreate $subtractedType */
+	reg::packed(290, MAY_BE_ARRAY, reg::NoString, false, false, 300), /* recreate $variances */
+	reg::packed(303, 0, 182), /* recreate return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("scope", 0, "PHPStan\\Type\\Generic\\TemplateTypeScope"), reg::typed("templateTypeStrategy", 0, "PHPStan\\Type\\Generic\\TemplateTypeStrategy"), reg::typed("templateTypeVariance", 0, "PHPStan\\Type\\Generic\\TemplateTypeVariance"), reg::typed("name", MAY_BE_STRING), reg::typed("bound", 0, "PHPStan\\Type\\Generic\\GenericObjectType"), reg::typed("default", MAY_BE_NULL, "PHPStan\\Type\\Type") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 6, __construct_args, 6, nullptr };
-inline constexpr reg::Arg recreate_args[] = { reg::typed("className", MAY_BE_STRING), reg::typed("types", MAY_BE_ARRAY), reg::typed("subtractedType", MAY_BE_NULL, "PHPStan\\Type\\Type"), reg::typed("variances", MAY_BE_ARRAY, nullptr, false, false, "[]") };
-inline constexpr reg::Arg recreate_return = reg::typed("", 0, "PHPStan\\Type\\Generic\\GenericObjectType");
-inline constexpr reg::Sig recreate = { "recreate", ZEND_ACC_PROTECTED, 3, recreate_args, 4, &recreate_return };
+inline constexpr sigtab::Sig __construct = { { 247 /* __construct */, 6, 0, 6, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig recreate = { { 304 /* recreate */, 3, 6, 4, 10, ZEND_ACC_PROTECTED } };
 } // namespace sig
 
 } // namespace ptdecl::TemplateGenericObjectType

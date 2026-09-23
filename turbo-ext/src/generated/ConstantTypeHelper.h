@@ -19,11 +19,23 @@ inline void declareProperties(reg::Class &cls)
 	(void) cls;
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"value\0" /* 0 */
+	"\0" /* 6 */
+	"PHPStan\\Type\\Type\0" /* 7 */
+	"getTypeFromValue"; /* 25 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0), /* getTypeFromValue $value */
+	reg::packed(6, 0, 7), /* getTypeFromValue return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg getTypeFromValue_args[] = { reg::typed("value", 0) };
-inline constexpr reg::Arg getTypeFromValue_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getTypeFromValue = { "getTypeFromValue", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, getTypeFromValue_args, 1, &getTypeFromValue_return };
+inline constexpr sigtab::Sig getTypeFromValue = { { 25 /* getTypeFromValue */, 1, 0, 1, 1, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::ConstantTypeHelper

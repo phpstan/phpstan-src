@@ -37,20 +37,57 @@ inline void registerTraits(reg::Class &cls)
 	pt_type_trait_template_type(cls);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"scope\0" /* 0 */
+	"PHPStan\\Type\\Generic\\TemplateTypeScope\0" /* 6 */
+	"templateTypeStrategy\0" /* 45 */
+	"PHPStan\\Type\\Generic\\TemplateTypeStrategy\0" /* 66 */
+	"templateTypeVariance\0" /* 108 */
+	"PHPStan\\Type\\Generic\\TemplateTypeVariance\0" /* 129 */
+	"name\0" /* 171 */
+	"bound\0" /* 176 */
+	"PHPStan\\Type\\MixedType\0" /* 182 */
+	"default\0" /* 205 */
+	"PHPStan\\Type\\Type\0" /* 213 */
+	"__construct\0" /* 231 */
+	"type\0" /* 243 */
+	"\0" /* 248 */
+	"PHPStan\\Type\\IsSuperTypeOfResult\0" /* 249 */
+	"isSuperTypeOfMixed\0" /* 282 */
+	"acceptingType\0" /* 301 */
+	"strictTypes\0" /* 315 */
+	"PHPStan\\Type\\AcceptsResult\0" /* 327 */
+	"isAcceptedBy\0" /* 354 */
+	"PHPStan\\Type\\Generic\\TemplateStrictMixedType\0" /* 367 */
+	"toStrictMixedType\0" /* 412 */
+	"getClassStringType"; /* 430 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 6), /* __construct $scope */
+	reg::packed(45, 0, 66), /* __construct $templateTypeStrategy */
+	reg::packed(108, 0, 129), /* __construct $templateTypeVariance */
+	reg::packed(171, MAY_BE_STRING), /* __construct $name */
+	reg::packed(176, 0, 182), /* __construct $bound */
+	reg::packed(205, MAY_BE_NULL, 213), /* __construct $default */
+	reg::packed(243, 0, 182), /* isSuperTypeOfMixed $type */
+	reg::packed(248, 0, 249), /* isSuperTypeOfMixed return */
+	reg::packed(301, 0, 213), /* isAcceptedBy $acceptingType */
+	reg::packed(315, MAY_BE_BOOL), /* isAcceptedBy $strictTypes */
+	reg::packed(248, 0, 327), /* isAcceptedBy return */
+	reg::packed(248, 0, 367), /* toStrictMixedType return */
+	reg::packed(248, 0, 213), /* getClassStringType return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("scope", 0, "PHPStan\\Type\\Generic\\TemplateTypeScope"), reg::typed("templateTypeStrategy", 0, "PHPStan\\Type\\Generic\\TemplateTypeStrategy"), reg::typed("templateTypeVariance", 0, "PHPStan\\Type\\Generic\\TemplateTypeVariance"), reg::typed("name", MAY_BE_STRING), reg::typed("bound", 0, "PHPStan\\Type\\MixedType"), reg::typed("default", MAY_BE_NULL, "PHPStan\\Type\\Type") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 6, __construct_args, 6, nullptr };
-inline constexpr reg::Arg isSuperTypeOfMixed_args[] = { reg::typed("type", 0, "PHPStan\\Type\\MixedType") };
-inline constexpr reg::Arg isSuperTypeOfMixed_return = reg::typed("", 0, "PHPStan\\Type\\IsSuperTypeOfResult");
-inline constexpr reg::Sig isSuperTypeOfMixed = { "isSuperTypeOfMixed", ZEND_ACC_PUBLIC, 1, isSuperTypeOfMixed_args, 1, &isSuperTypeOfMixed_return };
-inline constexpr reg::Arg isAcceptedBy_args[] = { reg::typed("acceptingType", 0, "PHPStan\\Type\\Type"), reg::typed("strictTypes", MAY_BE_BOOL) };
-inline constexpr reg::Arg isAcceptedBy_return = reg::typed("", 0, "PHPStan\\Type\\AcceptsResult");
-inline constexpr reg::Sig isAcceptedBy = { "isAcceptedBy", ZEND_ACC_PUBLIC, 2, isAcceptedBy_args, 2, &isAcceptedBy_return };
-inline constexpr reg::Arg toStrictMixedType_return = reg::typed("", 0, "PHPStan\\Type\\Generic\\TemplateStrictMixedType");
-inline constexpr reg::Sig toStrictMixedType = { "toStrictMixedType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toStrictMixedType_return };
-inline constexpr reg::Arg getClassStringType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getClassStringType = { "getClassStringType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getClassStringType_return };
+inline constexpr sigtab::Sig __construct = { { 231 /* __construct */, 6, 0, 6, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isSuperTypeOfMixed = { { 282 /* isSuperTypeOfMixed */, 1, 6, 1, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isAcceptedBy = { { 354 /* isAcceptedBy */, 2, 8, 2, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toStrictMixedType = { { 412 /* toStrictMixedType */, 0, 11, 0, 11, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getClassStringType = { { 430 /* getClassStringType */, 0, 12, 0, 12, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::TemplateMixedType

@@ -26,30 +26,54 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("functionName", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_NULL | MAY_BE_STRING);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"\0" /* 0 */
+	"PHPStan\\Type\\Generic\\TemplateTypeScope\0" /* 1 */
+	"createWithAnonymousFunction\0" /* 40 */
+	"functionName\0" /* 68 */
+	"createWithFunction\0" /* 81 */
+	"className\0" /* 100 */
+	"createWithMethod\0" /* 110 */
+	"createWithClass\0" /* 127 */
+	"__construct\0" /* 143 */
+	"getClassName\0" /* 155 */
+	"getFunctionName\0" /* 168 */
+	"other\0" /* 184 */
+	"equals\0" /* 190 */
+	"describe"; /* 197 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 1), /* createWithAnonymousFunction return */
+	reg::packed(68, MAY_BE_STRING), /* createWithFunction $functionName */
+	reg::packed(0, 0, 1), /* createWithFunction return */
+	reg::packed(100, MAY_BE_STRING), /* createWithMethod $className */
+	reg::packed(68, MAY_BE_STRING), /* createWithMethod $functionName */
+	reg::packed(0, 0, 1), /* createWithMethod return */
+	reg::packed(100, MAY_BE_STRING), /* createWithClass $className */
+	reg::packed(0, 0, 1), /* createWithClass return */
+	reg::packed(100, MAY_BE_NULL | MAY_BE_STRING), /* __construct $className */
+	reg::packed(68, MAY_BE_NULL | MAY_BE_STRING), /* __construct $functionName */
+	reg::packed(0, MAY_BE_NULL | MAY_BE_STRING), /* getClassName return */
+	reg::packed(0, MAY_BE_NULL | MAY_BE_STRING), /* getFunctionName return */
+	reg::packed(184, 0, 1), /* equals $other */
+	reg::packed(0, MAY_BE_BOOL), /* equals return */
+	reg::packed(0, MAY_BE_STRING), /* describe return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg createWithAnonymousFunction_return = reg::typed("", 0, "PHPStan\\Type\\Generic\\TemplateTypeScope");
-inline constexpr reg::Sig createWithAnonymousFunction = { "createWithAnonymousFunction", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &createWithAnonymousFunction_return };
-inline constexpr reg::Arg createWithFunction_args[] = { reg::typed("functionName", MAY_BE_STRING) };
-inline constexpr reg::Arg createWithFunction_return = reg::typed("", 0, "PHPStan\\Type\\Generic\\TemplateTypeScope");
-inline constexpr reg::Sig createWithFunction = { "createWithFunction", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, createWithFunction_args, 1, &createWithFunction_return };
-inline constexpr reg::Arg createWithMethod_args[] = { reg::typed("className", MAY_BE_STRING), reg::typed("functionName", MAY_BE_STRING) };
-inline constexpr reg::Arg createWithMethod_return = reg::typed("", 0, "PHPStan\\Type\\Generic\\TemplateTypeScope");
-inline constexpr reg::Sig createWithMethod = { "createWithMethod", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, createWithMethod_args, 2, &createWithMethod_return };
-inline constexpr reg::Arg createWithClass_args[] = { reg::typed("className", MAY_BE_STRING) };
-inline constexpr reg::Arg createWithClass_return = reg::typed("", 0, "PHPStan\\Type\\Generic\\TemplateTypeScope");
-inline constexpr reg::Sig createWithClass = { "createWithClass", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, createWithClass_args, 1, &createWithClass_return };
-inline constexpr reg::Arg __construct_args[] = { reg::typed("className", MAY_BE_NULL | MAY_BE_STRING), reg::typed("functionName", MAY_BE_NULL | MAY_BE_STRING) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PRIVATE, 2, __construct_args, 2, nullptr };
-inline constexpr reg::Arg getClassName_return = reg::typed("", MAY_BE_NULL | MAY_BE_STRING);
-inline constexpr reg::Sig getClassName = { "getClassName", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getClassName_return };
-inline constexpr reg::Arg getFunctionName_return = reg::typed("", MAY_BE_NULL | MAY_BE_STRING);
-inline constexpr reg::Sig getFunctionName = { "getFunctionName", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getFunctionName_return };
-inline constexpr reg::Arg equals_args[] = { reg::typed("other", 0, "PHPStan\\Type\\Generic\\TemplateTypeScope") };
-inline constexpr reg::Arg equals_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig equals = { "equals", ZEND_ACC_PUBLIC, 1, equals_args, 1, &equals_return };
-inline constexpr reg::Arg describe_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig describe = { "describe", ZEND_ACC_PUBLIC, 0, nullptr, 0, &describe_return };
+inline constexpr sigtab::Sig createWithAnonymousFunction = { { 40 /* createWithAnonymousFunction */, 0, 0, 0, 0, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createWithFunction = { { 81 /* createWithFunction */, 1, 1, 1, 2, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createWithMethod = { { 110 /* createWithMethod */, 2, 3, 2, 5, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createWithClass = { { 127 /* createWithClass */, 1, 6, 1, 7, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig __construct = { { 143 /* __construct */, 2, 8, 2, reg::NoArg, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getClassName = { { 155 /* getClassName */, 0, 10, 0, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getFunctionName = { { 168 /* getFunctionName */, 0, 11, 0, 11, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig equals = { { 190 /* equals */, 1, 12, 1, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig describe = { { 197 /* describe */, 0, 14, 0, 14, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::TemplateTypeScope

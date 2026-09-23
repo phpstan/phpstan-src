@@ -8,74 +8,132 @@
 
 namespace ptdecl::MaybeArrayTypeTrait {
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"\0" /* 0 */
+	"getArrays\0" /* 1 */
+	"getConstantArrays\0" /* 11 */
+	"PHPStan\\TrinaryLogic\0" /* 29 */
+	"isArray\0" /* 50 */
+	"isConstantArray\0" /* 58 */
+	"isOversizedArray\0" /* 74 */
+	"isList\0" /* 91 */
+	"filterValueType\0" /* 98 */
+	"PHPStan\\Type\\Type\0" /* 114 */
+	"strict\0" /* 132 */
+	"getKeysArrayFiltered\0" /* 139 */
+	"getKeysArray\0" /* 160 */
+	"getValuesArray\0" /* 173 */
+	"lengthType\0" /* 188 */
+	"preserveKeys\0" /* 199 */
+	"chunkArray\0" /* 212 */
+	"valueType\0" /* 223 */
+	"fillKeysArray\0" /* 233 */
+	"flipArray\0" /* 247 */
+	"otherArraysType\0" /* 257 */
+	"intersectKeyArray\0" /* 273 */
+	"popArray\0" /* 291 */
+	"reverseArray\0" /* 300 */
+	"needleType\0" /* 313 */
+	"null\0" /* 324 */
+	"searchArray\0" /* 329 */
+	"shiftArray\0" /* 341 */
+	"shuffleArray\0" /* 352 */
+	"offsetType\0" /* 365 */
+	"sliceArray\0" /* 376 */
+	"replacementType\0" /* 387 */
+	"spliceArray\0" /* 403 */
+	"sizeType\0" /* 415 */
+	"truncateListToSize\0" /* 424 */
+	"makeListMaybe\0" /* 443 */
+	"cb\0" /* 457 */
+	"mapValueType\0" /* 460 */
+	"mapKeyType\0" /* 473 */
+	"makeAllArrayKeysOptional\0" /* 484 */
+	"case\0" /* 509 */
+	"changeKeyCaseArray\0" /* 514 */
+	"filterArrayRemovingFalsey"; /* 533 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_ARRAY), /* getArrays return */
+	reg::packed(0, MAY_BE_ARRAY), /* getConstantArrays return */
+	reg::packed(0, 0, 29), /* isArray return */
+	reg::packed(0, 0, 29), /* isConstantArray return */
+	reg::packed(0, 0, 29), /* isOversizedArray return */
+	reg::packed(0, 0, 29), /* isList return */
+	reg::packed(98, 0, 114), /* getKeysArrayFiltered $filterValueType */
+	reg::packed(132, 0, 29), /* getKeysArrayFiltered $strict */
+	reg::packed(0, 0, 114), /* getKeysArrayFiltered return */
+	reg::packed(0, 0, 114), /* getKeysArray return */
+	reg::packed(0, 0, 114), /* getValuesArray return */
+	reg::packed(188, 0, 114), /* chunkArray $lengthType */
+	reg::packed(199, 0, 29), /* chunkArray $preserveKeys */
+	reg::packed(0, 0, 114), /* chunkArray return */
+	reg::packed(223, 0, 114), /* fillKeysArray $valueType */
+	reg::packed(0, 0, 114), /* fillKeysArray return */
+	reg::packed(0, 0, 114), /* flipArray return */
+	reg::packed(257, 0, 114), /* intersectKeyArray $otherArraysType */
+	reg::packed(0, 0, 114), /* intersectKeyArray return */
+	reg::packed(0, 0, 114), /* popArray return */
+	reg::packed(199, 0, 29), /* reverseArray $preserveKeys */
+	reg::packed(0, 0, 114), /* reverseArray return */
+	reg::packed(313, 0, 114), /* searchArray $needleType */
+	reg::packed(132, MAY_BE_NULL, 29, false, false, 324), /* searchArray $strict */
+	reg::packed(0, 0, 114), /* searchArray return */
+	reg::packed(0, 0, 114), /* shiftArray return */
+	reg::packed(0, 0, 114), /* shuffleArray return */
+	reg::packed(365, 0, 114), /* sliceArray $offsetType */
+	reg::packed(188, 0, 114), /* sliceArray $lengthType */
+	reg::packed(199, 0, 29), /* sliceArray $preserveKeys */
+	reg::packed(0, 0, 114), /* sliceArray return */
+	reg::packed(365, 0, 114), /* spliceArray $offsetType */
+	reg::packed(188, 0, 114), /* spliceArray $lengthType */
+	reg::packed(387, 0, 114), /* spliceArray $replacementType */
+	reg::packed(0, 0, 114), /* spliceArray return */
+	reg::packed(415, 0, 114), /* truncateListToSize $sizeType */
+	reg::packed(0, 0, 114), /* truncateListToSize return */
+	reg::packed(0, 0, 114), /* makeListMaybe return */
+	reg::packed(457, MAY_BE_CALLABLE), /* mapValueType $cb */
+	reg::packed(0, 0, 114), /* mapValueType return */
+	reg::packed(457, MAY_BE_CALLABLE), /* mapKeyType $cb */
+	reg::packed(0, 0, 114), /* mapKeyType return */
+	reg::packed(0, 0, 114), /* makeAllArrayKeysOptional return */
+	reg::packed(509, MAY_BE_NULL | MAY_BE_LONG), /* changeKeyCaseArray $case */
+	reg::packed(0, 0, 114), /* changeKeyCaseArray return */
+	reg::packed(0, 0, 114), /* filterArrayRemovingFalsey return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the trait declares itself */
 namespace sig {
-inline constexpr reg::Arg getArrays_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getArrays = { "getArrays", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getArrays_return };
-inline constexpr reg::Arg getConstantArrays_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getConstantArrays = { "getConstantArrays", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getConstantArrays_return };
-inline constexpr reg::Arg isArray_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isArray = { "isArray", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isArray_return };
-inline constexpr reg::Arg isConstantArray_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isConstantArray = { "isConstantArray", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isConstantArray_return };
-inline constexpr reg::Arg isOversizedArray_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isOversizedArray = { "isOversizedArray", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isOversizedArray_return };
-inline constexpr reg::Arg isList_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isList = { "isList", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isList_return };
-inline constexpr reg::Arg getKeysArrayFiltered_args[] = { reg::typed("filterValueType", 0, "PHPStan\\Type\\Type"), reg::typed("strict", 0, "PHPStan\\TrinaryLogic") };
-inline constexpr reg::Arg getKeysArrayFiltered_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getKeysArrayFiltered = { "getKeysArrayFiltered", ZEND_ACC_PUBLIC, 2, getKeysArrayFiltered_args, 2, &getKeysArrayFiltered_return };
-inline constexpr reg::Arg getKeysArray_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getKeysArray = { "getKeysArray", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getKeysArray_return };
-inline constexpr reg::Arg getValuesArray_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getValuesArray = { "getValuesArray", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getValuesArray_return };
-inline constexpr reg::Arg chunkArray_args[] = { reg::typed("lengthType", 0, "PHPStan\\Type\\Type"), reg::typed("preserveKeys", 0, "PHPStan\\TrinaryLogic") };
-inline constexpr reg::Arg chunkArray_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig chunkArray = { "chunkArray", ZEND_ACC_PUBLIC, 2, chunkArray_args, 2, &chunkArray_return };
-inline constexpr reg::Arg fillKeysArray_args[] = { reg::typed("valueType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg fillKeysArray_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig fillKeysArray = { "fillKeysArray", ZEND_ACC_PUBLIC, 1, fillKeysArray_args, 1, &fillKeysArray_return };
-inline constexpr reg::Arg flipArray_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig flipArray = { "flipArray", ZEND_ACC_PUBLIC, 0, nullptr, 0, &flipArray_return };
-inline constexpr reg::Arg intersectKeyArray_args[] = { reg::typed("otherArraysType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg intersectKeyArray_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig intersectKeyArray = { "intersectKeyArray", ZEND_ACC_PUBLIC, 1, intersectKeyArray_args, 1, &intersectKeyArray_return };
-inline constexpr reg::Arg popArray_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig popArray = { "popArray", ZEND_ACC_PUBLIC, 0, nullptr, 0, &popArray_return };
-inline constexpr reg::Arg reverseArray_args[] = { reg::typed("preserveKeys", 0, "PHPStan\\TrinaryLogic") };
-inline constexpr reg::Arg reverseArray_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig reverseArray = { "reverseArray", ZEND_ACC_PUBLIC, 1, reverseArray_args, 1, &reverseArray_return };
-inline constexpr reg::Arg searchArray_args[] = { reg::typed("needleType", 0, "PHPStan\\Type\\Type"), reg::typed("strict", MAY_BE_NULL, "PHPStan\\TrinaryLogic", false, false, "null") };
-inline constexpr reg::Arg searchArray_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig searchArray = { "searchArray", ZEND_ACC_PUBLIC, 1, searchArray_args, 2, &searchArray_return };
-inline constexpr reg::Arg shiftArray_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig shiftArray = { "shiftArray", ZEND_ACC_PUBLIC, 0, nullptr, 0, &shiftArray_return };
-inline constexpr reg::Arg shuffleArray_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig shuffleArray = { "shuffleArray", ZEND_ACC_PUBLIC, 0, nullptr, 0, &shuffleArray_return };
-inline constexpr reg::Arg sliceArray_args[] = { reg::typed("offsetType", 0, "PHPStan\\Type\\Type"), reg::typed("lengthType", 0, "PHPStan\\Type\\Type"), reg::typed("preserveKeys", 0, "PHPStan\\TrinaryLogic") };
-inline constexpr reg::Arg sliceArray_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig sliceArray = { "sliceArray", ZEND_ACC_PUBLIC, 3, sliceArray_args, 3, &sliceArray_return };
-inline constexpr reg::Arg spliceArray_args[] = { reg::typed("offsetType", 0, "PHPStan\\Type\\Type"), reg::typed("lengthType", 0, "PHPStan\\Type\\Type"), reg::typed("replacementType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg spliceArray_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig spliceArray = { "spliceArray", ZEND_ACC_PUBLIC, 3, spliceArray_args, 3, &spliceArray_return };
-inline constexpr reg::Arg truncateListToSize_args[] = { reg::typed("sizeType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg truncateListToSize_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig truncateListToSize = { "truncateListToSize", ZEND_ACC_PUBLIC, 1, truncateListToSize_args, 1, &truncateListToSize_return };
-inline constexpr reg::Arg makeListMaybe_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig makeListMaybe = { "makeListMaybe", ZEND_ACC_PUBLIC, 0, nullptr, 0, &makeListMaybe_return };
-inline constexpr reg::Arg mapValueType_args[] = { reg::typed("cb", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg mapValueType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig mapValueType = { "mapValueType", ZEND_ACC_PUBLIC, 1, mapValueType_args, 1, &mapValueType_return };
-inline constexpr reg::Arg mapKeyType_args[] = { reg::typed("cb", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg mapKeyType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig mapKeyType = { "mapKeyType", ZEND_ACC_PUBLIC, 1, mapKeyType_args, 1, &mapKeyType_return };
-inline constexpr reg::Arg makeAllArrayKeysOptional_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig makeAllArrayKeysOptional = { "makeAllArrayKeysOptional", ZEND_ACC_PUBLIC, 0, nullptr, 0, &makeAllArrayKeysOptional_return };
-inline constexpr reg::Arg changeKeyCaseArray_args[] = { reg::typed("case", MAY_BE_NULL | MAY_BE_LONG) };
-inline constexpr reg::Arg changeKeyCaseArray_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig changeKeyCaseArray = { "changeKeyCaseArray", ZEND_ACC_PUBLIC, 1, changeKeyCaseArray_args, 1, &changeKeyCaseArray_return };
-inline constexpr reg::Arg filterArrayRemovingFalsey_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig filterArrayRemovingFalsey = { "filterArrayRemovingFalsey", ZEND_ACC_PUBLIC, 0, nullptr, 0, &filterArrayRemovingFalsey_return };
+inline constexpr sigtab::Sig getArrays = { { 1 /* getArrays */, 0, 0, 0, 0, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getConstantArrays = { { 11 /* getConstantArrays */, 0, 1, 0, 1, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isArray = { { 50 /* isArray */, 0, 2, 0, 2, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isConstantArray = { { 58 /* isConstantArray */, 0, 3, 0, 3, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isOversizedArray = { { 74 /* isOversizedArray */, 0, 4, 0, 4, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isList = { { 91 /* isList */, 0, 5, 0, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getKeysArrayFiltered = { { 139 /* getKeysArrayFiltered */, 2, 6, 2, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getKeysArray = { { 160 /* getKeysArray */, 0, 9, 0, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getValuesArray = { { 173 /* getValuesArray */, 0, 10, 0, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig chunkArray = { { 212 /* chunkArray */, 2, 11, 2, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig fillKeysArray = { { 233 /* fillKeysArray */, 1, 14, 1, 15, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig flipArray = { { 247 /* flipArray */, 0, 16, 0, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig intersectKeyArray = { { 273 /* intersectKeyArray */, 1, 17, 1, 18, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig popArray = { { 291 /* popArray */, 0, 19, 0, 19, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig reverseArray = { { 300 /* reverseArray */, 1, 20, 1, 21, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig searchArray = { { 329 /* searchArray */, 1, 22, 2, 24, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig shiftArray = { { 341 /* shiftArray */, 0, 25, 0, 25, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig shuffleArray = { { 352 /* shuffleArray */, 0, 26, 0, 26, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig sliceArray = { { 376 /* sliceArray */, 3, 27, 3, 30, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig spliceArray = { { 403 /* spliceArray */, 3, 31, 3, 34, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig truncateListToSize = { { 424 /* truncateListToSize */, 1, 35, 1, 36, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig makeListMaybe = { { 443 /* makeListMaybe */, 0, 37, 0, 37, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig mapValueType = { { 460 /* mapValueType */, 1, 38, 1, 39, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig mapKeyType = { { 473 /* mapKeyType */, 1, 40, 1, 41, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig makeAllArrayKeysOptional = { { 484 /* makeAllArrayKeysOptional */, 0, 42, 0, 42, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig changeKeyCaseArray = { { 514 /* changeKeyCaseArray */, 1, 43, 1, 44, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig filterArrayRemovingFalsey = { { 533 /* filterArrayRemovingFalsey */, 0, 45, 0, 45, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::MaybeArrayTypeTrait

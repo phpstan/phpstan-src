@@ -19,32 +19,73 @@ inline void declareProperties(reg::Class &cls)
 	(void) cls;
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"callUserFuncCall\0" /* 0 */
+	"PhpParser\\Node\\Expr\\FuncCall\0" /* 17 */
+	"scope\0" /* 46 */
+	"PHPStan\\Analyser\\Scope\0" /* 52 */
+	"\0" /* 75 */
+	"reorderCallUserFuncArguments\0" /* 76 */
+	"callUserFuncArrayCall\0" /* 105 */
+	"reorderCallUserFuncArrayArguments\0" /* 127 */
+	"parametersAcceptor\0" /* 161 */
+	"PHPStan\\Reflection\\ParametersAcceptor\0" /* 180 */
+	"functionCall\0" /* 218 */
+	"reorderFuncArguments\0" /* 231 */
+	"methodCall\0" /* 252 */
+	"PhpParser\\Node\\Expr\\MethodCall\0" /* 263 */
+	"reorderMethodArguments\0" /* 294 */
+	"staticCall\0" /* 317 */
+	"PhpParser\\Node\\Expr\\StaticCall\0" /* 328 */
+	"reorderStaticCallArguments\0" /* 359 */
+	"new\0" /* 386 */
+	"PhpParser\\Node\\Expr\\New_\0" /* 390 */
+	"reorderNewArguments\0" /* 415 */
+	"callArgs\0" /* 435 */
+	"reorderArgs\0" /* 444 */
+	"node\0" /* 456 */
+	"PhpParser\\Node\0" /* 461 */
+	"attributesWithoutPrintedForm"; /* 476 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 17), /* reorderCallUserFuncArguments $callUserFuncCall */
+	reg::packed(46, 0, 52), /* reorderCallUserFuncArguments $scope */
+	reg::packed(75, MAY_BE_NULL | MAY_BE_ARRAY), /* reorderCallUserFuncArguments return */
+	reg::packed(105, 0, 17), /* reorderCallUserFuncArrayArguments $callUserFuncArrayCall */
+	reg::packed(46, 0, 52), /* reorderCallUserFuncArrayArguments $scope */
+	reg::packed(75, MAY_BE_NULL | MAY_BE_ARRAY), /* reorderCallUserFuncArrayArguments return */
+	reg::packed(161, 0, 180), /* reorderFuncArguments $parametersAcceptor */
+	reg::packed(218, 0, 17), /* reorderFuncArguments $functionCall */
+	reg::packed(75, MAY_BE_NULL, 17), /* reorderFuncArguments return */
+	reg::packed(161, 0, 180), /* reorderMethodArguments $parametersAcceptor */
+	reg::packed(252, 0, 263), /* reorderMethodArguments $methodCall */
+	reg::packed(75, MAY_BE_NULL, 263), /* reorderMethodArguments return */
+	reg::packed(161, 0, 180), /* reorderStaticCallArguments $parametersAcceptor */
+	reg::packed(317, 0, 328), /* reorderStaticCallArguments $staticCall */
+	reg::packed(75, MAY_BE_NULL, 328), /* reorderStaticCallArguments return */
+	reg::packed(161, 0, 180), /* reorderNewArguments $parametersAcceptor */
+	reg::packed(386, 0, 390), /* reorderNewArguments $new */
+	reg::packed(75, MAY_BE_NULL, 390), /* reorderNewArguments return */
+	reg::packed(161, 0, 180), /* reorderArgs $parametersAcceptor */
+	reg::packed(435, MAY_BE_ARRAY), /* reorderArgs $callArgs */
+	reg::packed(75, MAY_BE_NULL | MAY_BE_ARRAY), /* reorderArgs return */
+	reg::packed(456, 0, 461), /* attributesWithoutPrintedForm $node */
+	reg::packed(75, MAY_BE_ARRAY), /* attributesWithoutPrintedForm return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg reorderCallUserFuncArguments_args[] = { reg::typed("callUserFuncCall", 0, "PhpParser\\Node\\Expr\\FuncCall"), reg::typed("scope", 0, "PHPStan\\Analyser\\Scope") };
-inline constexpr reg::Arg reorderCallUserFuncArguments_return = reg::typed("", MAY_BE_NULL | MAY_BE_ARRAY);
-inline constexpr reg::Sig reorderCallUserFuncArguments = { "reorderCallUserFuncArguments", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, reorderCallUserFuncArguments_args, 2, &reorderCallUserFuncArguments_return };
-inline constexpr reg::Arg reorderCallUserFuncArrayArguments_args[] = { reg::typed("callUserFuncArrayCall", 0, "PhpParser\\Node\\Expr\\FuncCall"), reg::typed("scope", 0, "PHPStan\\Analyser\\Scope") };
-inline constexpr reg::Arg reorderCallUserFuncArrayArguments_return = reg::typed("", MAY_BE_NULL | MAY_BE_ARRAY);
-inline constexpr reg::Sig reorderCallUserFuncArrayArguments = { "reorderCallUserFuncArrayArguments", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, reorderCallUserFuncArrayArguments_args, 2, &reorderCallUserFuncArrayArguments_return };
-inline constexpr reg::Arg reorderFuncArguments_args[] = { reg::typed("parametersAcceptor", 0, "PHPStan\\Reflection\\ParametersAcceptor"), reg::typed("functionCall", 0, "PhpParser\\Node\\Expr\\FuncCall") };
-inline constexpr reg::Arg reorderFuncArguments_return = reg::typed("", MAY_BE_NULL, "PhpParser\\Node\\Expr\\FuncCall");
-inline constexpr reg::Sig reorderFuncArguments = { "reorderFuncArguments", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, reorderFuncArguments_args, 2, &reorderFuncArguments_return };
-inline constexpr reg::Arg reorderMethodArguments_args[] = { reg::typed("parametersAcceptor", 0, "PHPStan\\Reflection\\ParametersAcceptor"), reg::typed("methodCall", 0, "PhpParser\\Node\\Expr\\MethodCall") };
-inline constexpr reg::Arg reorderMethodArguments_return = reg::typed("", MAY_BE_NULL, "PhpParser\\Node\\Expr\\MethodCall");
-inline constexpr reg::Sig reorderMethodArguments = { "reorderMethodArguments", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, reorderMethodArguments_args, 2, &reorderMethodArguments_return };
-inline constexpr reg::Arg reorderStaticCallArguments_args[] = { reg::typed("parametersAcceptor", 0, "PHPStan\\Reflection\\ParametersAcceptor"), reg::typed("staticCall", 0, "PhpParser\\Node\\Expr\\StaticCall") };
-inline constexpr reg::Arg reorderStaticCallArguments_return = reg::typed("", MAY_BE_NULL, "PhpParser\\Node\\Expr\\StaticCall");
-inline constexpr reg::Sig reorderStaticCallArguments = { "reorderStaticCallArguments", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, reorderStaticCallArguments_args, 2, &reorderStaticCallArguments_return };
-inline constexpr reg::Arg reorderNewArguments_args[] = { reg::typed("parametersAcceptor", 0, "PHPStan\\Reflection\\ParametersAcceptor"), reg::typed("new", 0, "PhpParser\\Node\\Expr\\New_") };
-inline constexpr reg::Arg reorderNewArguments_return = reg::typed("", MAY_BE_NULL, "PhpParser\\Node\\Expr\\New_");
-inline constexpr reg::Sig reorderNewArguments = { "reorderNewArguments", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, reorderNewArguments_args, 2, &reorderNewArguments_return };
-inline constexpr reg::Arg reorderArgs_args[] = { reg::typed("parametersAcceptor", 0, "PHPStan\\Reflection\\ParametersAcceptor"), reg::typed("callArgs", MAY_BE_ARRAY) };
-inline constexpr reg::Arg reorderArgs_return = reg::typed("", MAY_BE_NULL | MAY_BE_ARRAY);
-inline constexpr reg::Sig reorderArgs = { "reorderArgs", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, reorderArgs_args, 2, &reorderArgs_return };
-inline constexpr reg::Arg attributesWithoutPrintedForm_args[] = { reg::typed("node", 0, "PhpParser\\Node") };
-inline constexpr reg::Arg attributesWithoutPrintedForm_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig attributesWithoutPrintedForm = { "attributesWithoutPrintedForm", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 1, attributesWithoutPrintedForm_args, 1, &attributesWithoutPrintedForm_return };
+inline constexpr sigtab::Sig reorderCallUserFuncArguments = { { 76 /* reorderCallUserFuncArguments */, 2, 0, 2, 2, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig reorderCallUserFuncArrayArguments = { { 127 /* reorderCallUserFuncArrayArguments */, 2, 3, 2, 5, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig reorderFuncArguments = { { 231 /* reorderFuncArguments */, 2, 6, 2, 8, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig reorderMethodArguments = { { 294 /* reorderMethodArguments */, 2, 9, 2, 11, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig reorderStaticCallArguments = { { 359 /* reorderStaticCallArguments */, 2, 12, 2, 14, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig reorderNewArguments = { { 415 /* reorderNewArguments */, 2, 15, 2, 17, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig reorderArgs = { { 444 /* reorderArgs */, 2, 18, 2, 20, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig attributesWithoutPrintedForm = { { 476 /* attributesWithoutPrintedForm */, 1, 21, 1, 22, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::ArgumentsNormalizer

@@ -33,28 +33,103 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("polluteScopeWithAlwaysIterableForeach", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_BOOL);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"container\0" /* 0 */
+	"PHPStan\\DependencyInjection\\Container\0" /* 10 */
+	"implicitThrows\0" /* 48 */
+	"varAnnotationProcessor\0" /* 63 */
+	"PHPStan\\Analyser\\VarAnnotationProcessor\0" /* 86 */
+	"assignHandler\0" /* 126 */
+	"PHPStan\\Analyser\\ExprHandler\\AssignHandler\0" /* 140 */
+	"polluteScopeWithAlwaysIterableForeach\0" /* 183 */
+	"__construct\0" /* 221 */
+	"stmt\0" /* 233 */
+	"PhpParser\\Node\\Stmt\0" /* 238 */
+	"\0" /* 258 */
+	"supports\0" /* 259 */
+	"nodeScopeResolver\0" /* 268 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 286 */
+	"scope\0" /* 321 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 327 */
+	"storage\0" /* 358 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 366 */
+	"nodeCallback\0" /* 407 */
+	"context\0" /* 420 */
+	"PHPStan\\Analyser\\StatementContext\0" /* 428 */
+	"PHPStan\\Analyser\\InternalStatementResult\0" /* 462 */
+	"processStmt\0" /* 503 */
+	"originalScope\0" /* 515 */
+	"PhpParser\\Node\\Stmt\\Foreach_\0" /* 529 */
+	"iterateeType\0" /* 558 */
+	"PHPStan\\Type\\Type\0" /* 571 */
+	"nativeIterateeType\0" /* 589 */
+	"enterForeach\0" /* 608 */
+	"originalStorage\0" /* 621 */
+	"tryProcessUnrolledConstantArrayForeach\0" /* 637 */
+	"iteratee\0" /* 676 */
+	"PhpParser\\Node\\Expr\0" /* 685 */
+	"exprType\0" /* 705 */
+	"PHPStan\\Analyser\\InternalThrowPoint\0" /* 714 */
+	"getTraversableForeachThrowPoint\0" /* 750 */
+	"iterableValueType\0" /* 782 */
+	"list\0" /* 800 */
+	"PhpParser\\Node\\Expr\\List_\0" /* 805 */
+	"addDestructureTaggedUnionConditionalHolders"; /* 831 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 10), /* __construct $container */
+	reg::packed(48, MAY_BE_BOOL), /* __construct $implicitThrows */
+	reg::packed(63, 0, 86), /* __construct $varAnnotationProcessor */
+	reg::packed(126, 0, 140), /* __construct $assignHandler */
+	reg::packed(183, MAY_BE_BOOL), /* __construct $polluteScopeWithAlwaysIterableForeach */
+	reg::packed(233, 0, 238), /* supports $stmt */
+	reg::packed(258, MAY_BE_BOOL), /* supports return */
+	reg::packed(268, 0, 286), /* processStmt $nodeScopeResolver */
+	reg::packed(233, 0, 238), /* processStmt $stmt */
+	reg::packed(321, 0, 327), /* processStmt $scope */
+	reg::packed(358, 0, 366), /* processStmt $storage */
+	reg::packed(407, MAY_BE_CALLABLE), /* processStmt $nodeCallback */
+	reg::packed(420, 0, 428), /* processStmt $context */
+	reg::packed(258, 0, 462), /* processStmt return */
+	reg::packed(268, 0, 286), /* enterForeach $nodeScopeResolver */
+	reg::packed(321, 0, 327), /* enterForeach $scope */
+	reg::packed(358, 0, 366), /* enterForeach $storage */
+	reg::packed(515, 0, 327), /* enterForeach $originalScope */
+	reg::packed(233, 0, 529), /* enterForeach $stmt */
+	reg::packed(558, 0, 571), /* enterForeach $iterateeType */
+	reg::packed(589, 0, 571), /* enterForeach $nativeIterateeType */
+	reg::packed(407, MAY_BE_CALLABLE), /* enterForeach $nodeCallback */
+	reg::packed(258, 0, 327), /* enterForeach return */
+	reg::packed(268, 0, 286), /* tryProcessUnrolledConstantArrayForeach $nodeScopeResolver */
+	reg::packed(233, 0, 529), /* tryProcessUnrolledConstantArrayForeach $stmt */
+	reg::packed(515, 0, 327), /* tryProcessUnrolledConstantArrayForeach $originalScope */
+	reg::packed(621, 0, 366), /* tryProcessUnrolledConstantArrayForeach $originalStorage */
+	reg::packed(420, 0, 428), /* tryProcessUnrolledConstantArrayForeach $context */
+	reg::packed(558, 0, 571), /* tryProcessUnrolledConstantArrayForeach $iterateeType */
+	reg::packed(589, 0, 571), /* tryProcessUnrolledConstantArrayForeach $nativeIterateeType */
+	reg::packed(258, MAY_BE_NULL | MAY_BE_ARRAY), /* tryProcessUnrolledConstantArrayForeach return */
+	reg::packed(321, 0, 327), /* getTraversableForeachThrowPoint $scope */
+	reg::packed(676, 0, 685), /* getTraversableForeachThrowPoint $iteratee */
+	reg::packed(705, 0, 571), /* getTraversableForeachThrowPoint $exprType */
+	reg::packed(258, MAY_BE_NULL, 714), /* getTraversableForeachThrowPoint return */
+	reg::packed(321, 0, 327), /* addDestructureTaggedUnionConditionalHolders $scope */
+	reg::packed(782, 0, 571), /* addDestructureTaggedUnionConditionalHolders $iterableValueType */
+	reg::packed(800, 0, 805), /* addDestructureTaggedUnionConditionalHolders $list */
+	reg::packed(258, 0, 327), /* addDestructureTaggedUnionConditionalHolders return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("container", 0, "PHPStan\\DependencyInjection\\Container"), reg::typed("implicitThrows", MAY_BE_BOOL), reg::typed("varAnnotationProcessor", 0, "PHPStan\\Analyser\\VarAnnotationProcessor"), reg::typed("assignHandler", 0, "PHPStan\\Analyser\\ExprHandler\\AssignHandler"), reg::typed("polluteScopeWithAlwaysIterableForeach", MAY_BE_BOOL) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 5, __construct_args, 5, nullptr };
-inline constexpr reg::Arg supports_args[] = { reg::typed("stmt", 0, "PhpParser\\Node\\Stmt") };
-inline constexpr reg::Arg supports_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig supports = { "supports", ZEND_ACC_PUBLIC, 1, supports_args, 1, &supports_return };
-inline constexpr reg::Arg processStmt_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("stmt", 0, "PhpParser\\Node\\Stmt"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("nodeCallback", MAY_BE_CALLABLE), reg::typed("context", 0, "PHPStan\\Analyser\\StatementContext") };
-inline constexpr reg::Arg processStmt_return = reg::typed("", 0, "PHPStan\\Analyser\\InternalStatementResult");
-inline constexpr reg::Sig processStmt = { "processStmt", ZEND_ACC_PUBLIC, 6, processStmt_args, 6, &processStmt_return };
-inline constexpr reg::Arg enterForeach_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("originalScope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("stmt", 0, "PhpParser\\Node\\Stmt\\Foreach_"), reg::typed("iterateeType", 0, "PHPStan\\Type\\Type"), reg::typed("nativeIterateeType", 0, "PHPStan\\Type\\Type"), reg::typed("nodeCallback", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg enterForeach_return = reg::typed("", 0, "PHPStan\\Analyser\\MutatingScope");
-inline constexpr reg::Sig enterForeach = { "enterForeach", ZEND_ACC_PRIVATE, 8, enterForeach_args, 8, &enterForeach_return };
-inline constexpr reg::Arg tryProcessUnrolledConstantArrayForeach_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("stmt", 0, "PhpParser\\Node\\Stmt\\Foreach_"), reg::typed("originalScope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("originalStorage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("context", 0, "PHPStan\\Analyser\\StatementContext"), reg::typed("iterateeType", 0, "PHPStan\\Type\\Type"), reg::typed("nativeIterateeType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg tryProcessUnrolledConstantArrayForeach_return = reg::typed("", MAY_BE_NULL | MAY_BE_ARRAY);
-inline constexpr reg::Sig tryProcessUnrolledConstantArrayForeach = { "tryProcessUnrolledConstantArrayForeach", ZEND_ACC_PRIVATE, 7, tryProcessUnrolledConstantArrayForeach_args, 7, &tryProcessUnrolledConstantArrayForeach_return };
-inline constexpr reg::Arg getTraversableForeachThrowPoint_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("iteratee", 0, "PhpParser\\Node\\Expr"), reg::typed("exprType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg getTraversableForeachThrowPoint_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\InternalThrowPoint");
-inline constexpr reg::Sig getTraversableForeachThrowPoint = { "getTraversableForeachThrowPoint", ZEND_ACC_PRIVATE, 3, getTraversableForeachThrowPoint_args, 3, &getTraversableForeachThrowPoint_return };
-inline constexpr reg::Arg addDestructureTaggedUnionConditionalHolders_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("iterableValueType", 0, "PHPStan\\Type\\Type"), reg::typed("list", 0, "PhpParser\\Node\\Expr\\List_") };
-inline constexpr reg::Arg addDestructureTaggedUnionConditionalHolders_return = reg::typed("", 0, "PHPStan\\Analyser\\MutatingScope");
-inline constexpr reg::Sig addDestructureTaggedUnionConditionalHolders = { "addDestructureTaggedUnionConditionalHolders", ZEND_ACC_PRIVATE, 3, addDestructureTaggedUnionConditionalHolders_args, 3, &addDestructureTaggedUnionConditionalHolders_return };
+inline constexpr sigtab::Sig __construct = { { 221 /* __construct */, 5, 0, 5, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig supports = { { 259 /* supports */, 1, 5, 1, 6, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processStmt = { { 503 /* processStmt */, 6, 7, 6, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig enterForeach = { { 608 /* enterForeach */, 8, 14, 8, 22, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig tryProcessUnrolledConstantArrayForeach = { { 637 /* tryProcessUnrolledConstantArrayForeach */, 7, 23, 7, 30, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getTraversableForeachThrowPoint = { { 750 /* getTraversableForeachThrowPoint */, 3, 31, 3, 34, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig addDestructureTaggedUnionConditionalHolders = { { 831 /* addDestructureTaggedUnionConditionalHolders */, 3, 35, 3, 38, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::ForeachHandler

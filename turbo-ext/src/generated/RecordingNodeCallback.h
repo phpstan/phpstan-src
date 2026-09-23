@@ -24,15 +24,32 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("pairs", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"node\0" /* 0 */
+	"PhpParser\\Node\0" /* 5 */
+	"scope\0" /* 20 */
+	"PHPStan\\Analyser\\Scope\0" /* 26 */
+	"\0" /* 49 */
+	"__invoke\0" /* 50 */
+	"getPairs\0" /* 59 */
+	"count"; /* 68 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 5), /* __invoke $node */
+	reg::packed(20, 0, 26), /* __invoke $scope */
+	reg::packed(49, MAY_BE_VOID), /* __invoke return */
+	reg::packed(49, MAY_BE_ARRAY), /* getPairs return */
+	reg::packed(49, MAY_BE_LONG), /* count return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __invoke_args[] = { reg::typed("node", 0, "PhpParser\\Node"), reg::typed("scope", 0, "PHPStan\\Analyser\\Scope") };
-inline constexpr reg::Arg __invoke_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig __invoke = { "__invoke", ZEND_ACC_PUBLIC, 2, __invoke_args, 2, &__invoke_return };
-inline constexpr reg::Arg getPairs_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getPairs = { "getPairs", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getPairs_return };
-inline constexpr reg::Arg count_return = reg::typed("", MAY_BE_LONG);
-inline constexpr reg::Sig count = { "count", ZEND_ACC_PUBLIC, 0, nullptr, 0, &count_return };
+inline constexpr sigtab::Sig __invoke = { { 50 /* __invoke */, 2, 0, 2, 2, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getPairs = { { 59 /* getPairs */, 0, 3, 0, 3, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig count = { { 68 /* count */, 0, 4, 0, 4, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::RecordingNodeCallback

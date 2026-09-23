@@ -19,10 +19,21 @@ inline void declareProperties(reg::Class &cls)
 	(void) cls;
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"dimType\0" /* 0 */
+	"PHPStan\\Type\\Type\0" /* 8 */
+	"fromType"; /* 26 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 8), /* fromType $dimType */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg fromType_args[] = { reg::typed("dimType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Sig fromType = { "fromType", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, fromType_args, 1, nullptr };
+inline constexpr sigtab::Sig fromType = { { 26 /* fromType */, 1, 0, 1, reg::NoArg, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::VariableWriteOffset

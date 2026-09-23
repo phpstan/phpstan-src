@@ -29,13 +29,34 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("candidates", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_ARRAY);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"nodeScopeResolver\0" /* 0 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 18 */
+	"defaultNarrowingHelper\0" /* 53 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper\0" /* 76 */
+	"candidates\0" /* 135 */
+	"__construct\0" /* 146 */
+	"scope\0" /* 158 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 164 */
+	"\0" /* 195 */
+	"PHPStan\\Analyser\\SpecifiedTypes\0" /* 196 */
+	"evaluate"; /* 228 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 18), /* __construct $nodeScopeResolver */
+	reg::packed(53, 0, 76), /* __construct $defaultNarrowingHelper */
+	reg::packed(135, MAY_BE_ARRAY), /* __construct $candidates */
+	reg::packed(158, 0, 164), /* evaluate $scope */
+	reg::packed(195, MAY_BE_NULL, 196), /* evaluate return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("defaultNarrowingHelper", 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper"), reg::typed("candidates", MAY_BE_ARRAY) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 3, __construct_args, 3, nullptr };
-inline constexpr reg::Arg evaluate_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope") };
-inline constexpr reg::Arg evaluate_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\SpecifiedTypes");
-inline constexpr reg::Sig evaluate = { "evaluate", ZEND_ACC_PUBLIC, 1, evaluate_args, 1, &evaluate_return };
+inline constexpr sigtab::Sig __construct = { { 146 /* __construct */, 3, 0, 3, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig evaluate = { { 228 /* evaluate */, 1, 3, 1, 4, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::DisjunctionBranchUnionAugment

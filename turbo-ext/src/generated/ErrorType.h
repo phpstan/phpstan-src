@@ -24,25 +24,47 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("reason", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_NULL | MAY_BE_STRING);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"reason\0" /* 0 */
+	"null\0" /* 7 */
+	"__construct\0" /* 12 */
+	"\0" /* 24 */
+	"getReason\0" /* 25 */
+	"level\0" /* 35 */
+	"PHPStan\\Type\\VerbosityLevel\0" /* 41 */
+	"describe\0" /* 69 */
+	"PHPStan\\Type\\Type\0" /* 78 */
+	"getIterableKeyType\0" /* 96 */
+	"getIterableValueType\0" /* 115 */
+	"type\0" /* 136 */
+	"subtract\0" /* 141 */
+	"equals"; /* 150 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_NULL | MAY_BE_STRING, reg::NoString, false, false, 7), /* __construct $reason */
+	reg::packed(24, MAY_BE_NULL | MAY_BE_STRING), /* getReason return */
+	reg::packed(35, 0, 41), /* describe $level */
+	reg::packed(24, MAY_BE_STRING), /* describe return */
+	reg::packed(24, 0, 78), /* getIterableKeyType return */
+	reg::packed(24, 0, 78), /* getIterableValueType return */
+	reg::packed(136, 0, 78), /* subtract $type */
+	reg::packed(24, 0, 78), /* subtract return */
+	reg::packed(136, 0, 78), /* equals $type */
+	reg::packed(24, MAY_BE_BOOL), /* equals return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("reason", MAY_BE_NULL | MAY_BE_STRING, nullptr, false, false, "null") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 0, __construct_args, 1, nullptr };
-inline constexpr reg::Arg getReason_return = reg::typed("", MAY_BE_NULL | MAY_BE_STRING);
-inline constexpr reg::Sig getReason = { "getReason", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getReason_return };
-inline constexpr reg::Arg describe_args[] = { reg::typed("level", 0, "PHPStan\\Type\\VerbosityLevel") };
-inline constexpr reg::Arg describe_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig describe = { "describe", ZEND_ACC_PUBLIC, 1, describe_args, 1, &describe_return };
-inline constexpr reg::Arg getIterableKeyType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getIterableKeyType = { "getIterableKeyType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getIterableKeyType_return };
-inline constexpr reg::Arg getIterableValueType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getIterableValueType = { "getIterableValueType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getIterableValueType_return };
-inline constexpr reg::Arg subtract_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg subtract_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig subtract = { "subtract", ZEND_ACC_PUBLIC, 1, subtract_args, 1, &subtract_return };
-inline constexpr reg::Arg equals_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg equals_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig equals = { "equals", ZEND_ACC_PUBLIC, 1, equals_args, 1, &equals_return };
+inline constexpr sigtab::Sig __construct = { { 12 /* __construct */, 0, 0, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getReason = { { 25 /* getReason */, 0, 1, 0, 1, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig describe = { { 69 /* describe */, 1, 2, 1, 3, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getIterableKeyType = { { 96 /* getIterableKeyType */, 0, 4, 0, 4, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getIterableValueType = { { 115 /* getIterableValueType */, 0, 5, 0, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig subtract = { { 141 /* subtract */, 1, 6, 1, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig equals = { { 150 /* equals */, 1, 8, 1, 9, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ErrorType

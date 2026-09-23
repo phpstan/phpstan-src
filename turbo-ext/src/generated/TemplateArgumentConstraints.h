@@ -28,31 +28,66 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("fact", ZEND_ACC_PRIVATE | ZEND_ACC_READONLY, reg::PropertyKind::Typed, MAY_BE_NULL | MAY_BE_ARRAY);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"left\0" /* 0 */
+	"PHPStan\\Analyser\\Generics\\TemplateArgumentConstraints\0" /* 5 */
+	"null\0" /* 59 */
+	"right\0" /* 64 */
+	"fact\0" /* 70 */
+	"__construct\0" /* 75 */
+	"\0" /* 87 */
+	"createEmpty\0" /* 88 */
+	"isEmpty\0" /* 100 */
+	"other\0" /* 108 */
+	"merge\0" /* 114 */
+	"marker\0" /* 120 */
+	"PHPStan\\Type\\Generic\\UnresolvedTemplateArgumentType\0" /* 127 */
+	"withSite\0" /* 179 */
+	"type\0" /* 188 */
+	"PHPStan\\Type\\Type\0" /* 193 */
+	"variance\0" /* 211 */
+	"PHPStan\\Type\\Generic\\TemplateTypeVariance\0" /* 220 */
+	"withSend\0" /* 262 */
+	"withLowerBound\0" /* 271 */
+	"withUnconstrainingSend\0" /* 286 */
+	"getFacts"; /* 309 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_NULL, 5, false, false, 59), /* __construct $left */
+	reg::packed(64, MAY_BE_NULL, 5, false, false, 59), /* __construct $right */
+	reg::packed(70, MAY_BE_NULL | MAY_BE_ARRAY, reg::NoString, false, false, 59), /* __construct $fact */
+	reg::packed(87, 0, 5), /* createEmpty return */
+	reg::packed(87, MAY_BE_BOOL), /* isEmpty return */
+	reg::packed(108, 0, 5), /* merge $other */
+	reg::packed(87, 0, 5), /* merge return */
+	reg::packed(120, 0, 127), /* withSite $marker */
+	reg::packed(87, 0, 5), /* withSite return */
+	reg::packed(120, 0, 127), /* withSend $marker */
+	reg::packed(188, 0, 193), /* withSend $type */
+	reg::packed(211, 0, 220), /* withSend $variance */
+	reg::packed(87, 0, 5), /* withSend return */
+	reg::packed(120, 0, 127), /* withLowerBound $marker */
+	reg::packed(188, 0, 193), /* withLowerBound $type */
+	reg::packed(87, 0, 5), /* withLowerBound return */
+	reg::packed(120, 0, 127), /* withUnconstrainingSend $marker */
+	reg::packed(87, 0, 5), /* withUnconstrainingSend return */
+	reg::packed(87, _ZEND_TYPE_ITERABLE_BIT), /* getFacts return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("left", MAY_BE_NULL, "PHPStan\\Analyser\\Generics\\TemplateArgumentConstraints", false, false, "null"), reg::typed("right", MAY_BE_NULL, "PHPStan\\Analyser\\Generics\\TemplateArgumentConstraints", false, false, "null"), reg::typed("fact", MAY_BE_NULL | MAY_BE_ARRAY, nullptr, false, false, "null") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PRIVATE, 0, __construct_args, 3, nullptr };
-inline constexpr reg::Arg createEmpty_return = reg::typed("", 0, "PHPStan\\Analyser\\Generics\\TemplateArgumentConstraints");
-inline constexpr reg::Sig createEmpty = { "createEmpty", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &createEmpty_return };
-inline constexpr reg::Arg isEmpty_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isEmpty = { "isEmpty", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isEmpty_return };
-inline constexpr reg::Arg merge_args[] = { reg::typed("other", 0, "PHPStan\\Analyser\\Generics\\TemplateArgumentConstraints") };
-inline constexpr reg::Arg merge_return = reg::typed("", 0, "PHPStan\\Analyser\\Generics\\TemplateArgumentConstraints");
-inline constexpr reg::Sig merge = { "merge", ZEND_ACC_PUBLIC, 1, merge_args, 1, &merge_return };
-inline constexpr reg::Arg withSite_args[] = { reg::typed("marker", 0, "PHPStan\\Type\\Generic\\UnresolvedTemplateArgumentType") };
-inline constexpr reg::Arg withSite_return = reg::typed("", 0, "PHPStan\\Analyser\\Generics\\TemplateArgumentConstraints");
-inline constexpr reg::Sig withSite = { "withSite", ZEND_ACC_PUBLIC, 1, withSite_args, 1, &withSite_return };
-inline constexpr reg::Arg withSend_args[] = { reg::typed("marker", 0, "PHPStan\\Type\\Generic\\UnresolvedTemplateArgumentType"), reg::typed("type", 0, "PHPStan\\Type\\Type"), reg::typed("variance", 0, "PHPStan\\Type\\Generic\\TemplateTypeVariance") };
-inline constexpr reg::Arg withSend_return = reg::typed("", 0, "PHPStan\\Analyser\\Generics\\TemplateArgumentConstraints");
-inline constexpr reg::Sig withSend = { "withSend", ZEND_ACC_PUBLIC, 3, withSend_args, 3, &withSend_return };
-inline constexpr reg::Arg withLowerBound_args[] = { reg::typed("marker", 0, "PHPStan\\Type\\Generic\\UnresolvedTemplateArgumentType"), reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg withLowerBound_return = reg::typed("", 0, "PHPStan\\Analyser\\Generics\\TemplateArgumentConstraints");
-inline constexpr reg::Sig withLowerBound = { "withLowerBound", ZEND_ACC_PUBLIC, 2, withLowerBound_args, 2, &withLowerBound_return };
-inline constexpr reg::Arg withUnconstrainingSend_args[] = { reg::typed("marker", 0, "PHPStan\\Type\\Generic\\UnresolvedTemplateArgumentType") };
-inline constexpr reg::Arg withUnconstrainingSend_return = reg::typed("", 0, "PHPStan\\Analyser\\Generics\\TemplateArgumentConstraints");
-inline constexpr reg::Sig withUnconstrainingSend = { "withUnconstrainingSend", ZEND_ACC_PUBLIC, 1, withUnconstrainingSend_args, 1, &withUnconstrainingSend_return };
-inline constexpr reg::Arg getFacts_return = reg::typed("", _ZEND_TYPE_ITERABLE_BIT);
-inline constexpr reg::Sig getFacts = { "getFacts", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getFacts_return };
+inline constexpr sigtab::Sig __construct = { { 75 /* __construct */, 0, 0, 3, reg::NoArg, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig createEmpty = { { 88 /* createEmpty */, 0, 3, 0, 3, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig isEmpty = { { 100 /* isEmpty */, 0, 4, 0, 4, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig merge = { { 114 /* merge */, 1, 5, 1, 6, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig withSite = { { 179 /* withSite */, 1, 7, 1, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig withSend = { { 262 /* withSend */, 3, 9, 3, 12, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig withLowerBound = { { 271 /* withLowerBound */, 2, 13, 2, 15, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig withUnconstrainingSend = { { 286 /* withUnconstrainingSend */, 1, 16, 1, 17, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getFacts = { { 309 /* getFacts */, 0, 18, 0, 18, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::TemplateArgumentConstraints

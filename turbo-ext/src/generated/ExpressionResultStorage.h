@@ -26,20 +26,41 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("fallback", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL, "PHPStan\\Analyser\\ExpressionResultStorage");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"__construct\0" /* 0 */
+	"\0" /* 12 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 13 */
+	"duplicate\0" /* 54 */
+	"other\0" /* 64 */
+	"mergeResults\0" /* 70 */
+	"expr\0" /* 83 */
+	"PhpParser\\Node\\Expr\0" /* 88 */
+	"expressionResult\0" /* 108 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 125 */
+	"storeExpressionResult\0" /* 159 */
+	"findExpressionResult"; /* 181 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(12, 0, 13), /* duplicate return */
+	reg::packed(64, 0, 13), /* mergeResults $other */
+	reg::packed(12, MAY_BE_VOID), /* mergeResults return */
+	reg::packed(83, 0, 88), /* storeExpressionResult $expr */
+	reg::packed(108, 0, 125), /* storeExpressionResult $expressionResult */
+	reg::packed(12, MAY_BE_VOID), /* storeExpressionResult return */
+	reg::packed(83, 0, 88), /* findExpressionResult $expr */
+	reg::packed(12, MAY_BE_NULL, 125), /* findExpressionResult return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 0, nullptr, 0, nullptr };
-inline constexpr reg::Arg duplicate_return = reg::typed("", 0, "PHPStan\\Analyser\\ExpressionResultStorage");
-inline constexpr reg::Sig duplicate = { "duplicate", ZEND_ACC_PUBLIC, 0, nullptr, 0, &duplicate_return };
-inline constexpr reg::Arg mergeResults_args[] = { reg::typed("other", 0, "PHPStan\\Analyser\\ExpressionResultStorage") };
-inline constexpr reg::Arg mergeResults_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig mergeResults = { "mergeResults", ZEND_ACC_PUBLIC, 1, mergeResults_args, 1, &mergeResults_return };
-inline constexpr reg::Arg storeExpressionResult_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr"), reg::typed("expressionResult", 0, "PHPStan\\Analyser\\ExpressionResult") };
-inline constexpr reg::Arg storeExpressionResult_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig storeExpressionResult = { "storeExpressionResult", ZEND_ACC_PUBLIC, 2, storeExpressionResult_args, 2, &storeExpressionResult_return };
-inline constexpr reg::Arg findExpressionResult_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg findExpressionResult_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\ExpressionResult");
-inline constexpr reg::Sig findExpressionResult = { "findExpressionResult", ZEND_ACC_PUBLIC, 1, findExpressionResult_args, 1, &findExpressionResult_return };
+inline constexpr sigtab::Sig __construct = { { 0 /* __construct */, 0, 0, 0, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig duplicate = { { 54 /* duplicate */, 0, 0, 0, 0, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig mergeResults = { { 70 /* mergeResults */, 1, 1, 1, 2, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig storeExpressionResult = { { 159 /* storeExpressionResult */, 2, 3, 2, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig findExpressionResult = { { 181 /* findExpressionResult */, 1, 6, 1, 7, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ExpressionResultStorage

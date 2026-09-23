@@ -26,21 +26,45 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("inner", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_NULL, "PHPStan\\Analyser\\IssetabilityResolution");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"link\0" /* 0 */
+	"PHPStan\\Analyser\\IssetabilityLinkInfo\0" /* 5 */
+	"inner\0" /* 43 */
+	"PHPStan\\Analyser\\IssetabilityResolution\0" /* 49 */
+	"__construct\0" /* 89 */
+	"\0" /* 101 */
+	"getLink\0" /* 102 */
+	"getInner\0" /* 110 */
+	"typeCallback\0" /* 119 */
+	"result\0" /* 132 */
+	"null\0" /* 139 */
+	"isSet\0" /* 144 */
+	"isSetUndefined\0" /* 150 */
+	"notEmpty"; /* 165 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 5), /* __construct $link */
+	reg::packed(43, MAY_BE_NULL, 49), /* __construct $inner */
+	reg::packed(101, 0, 5), /* getLink return */
+	reg::packed(101, MAY_BE_NULL, 49), /* getInner return */
+	reg::packed(119, MAY_BE_CALLABLE), /* isSet $typeCallback */
+	reg::packed(132, MAY_BE_NULL | MAY_BE_BOOL, reg::NoString, false, false, 139), /* isSet $result */
+	reg::packed(101, MAY_BE_NULL | MAY_BE_BOOL), /* isSet return */
+	reg::packed(101, MAY_BE_NULL | MAY_BE_BOOL), /* isSetUndefined return */
+	reg::packed(101, MAY_BE_NULL | MAY_BE_BOOL), /* notEmpty return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("link", 0, "PHPStan\\Analyser\\IssetabilityLinkInfo"), reg::typed("inner", MAY_BE_NULL, "PHPStan\\Analyser\\IssetabilityResolution") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 2, __construct_args, 2, nullptr };
-inline constexpr reg::Arg getLink_return = reg::typed("", 0, "PHPStan\\Analyser\\IssetabilityLinkInfo");
-inline constexpr reg::Sig getLink = { "getLink", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getLink_return };
-inline constexpr reg::Arg getInner_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\IssetabilityResolution");
-inline constexpr reg::Sig getInner = { "getInner", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getInner_return };
-inline constexpr reg::Arg isSet_args[] = { reg::typed("typeCallback", MAY_BE_CALLABLE), reg::typed("result", MAY_BE_NULL | MAY_BE_BOOL, nullptr, false, false, "null") };
-inline constexpr reg::Arg isSet_return = reg::typed("", MAY_BE_NULL | MAY_BE_BOOL);
-inline constexpr reg::Sig isSet = { "isSet", ZEND_ACC_PUBLIC, 1, isSet_args, 2, &isSet_return };
-inline constexpr reg::Arg isSetUndefined_return = reg::typed("", MAY_BE_NULL | MAY_BE_BOOL);
-inline constexpr reg::Sig isSetUndefined = { "isSetUndefined", ZEND_ACC_PRIVATE, 0, nullptr, 0, &isSetUndefined_return };
-inline constexpr reg::Arg notEmpty_return = reg::typed("", MAY_BE_NULL | MAY_BE_BOOL);
-inline constexpr reg::Sig notEmpty = { "notEmpty", ZEND_ACC_PUBLIC, 0, nullptr, 0, &notEmpty_return };
+inline constexpr sigtab::Sig __construct = { { 89 /* __construct */, 2, 0, 2, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getLink = { { 102 /* getLink */, 0, 2, 0, 2, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getInner = { { 110 /* getInner */, 0, 3, 0, 3, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isSet = { { 144 /* isSet */, 1, 4, 2, 6, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isSetUndefined = { { 150 /* isSetUndefined */, 0, 7, 0, 7, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig notEmpty = { { 165 /* notEmpty */, 0, 8, 0, 8, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::IssetabilityResolution

@@ -27,110 +27,200 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("max", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_NULL | MAY_BE_LONG);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"min\0" /* 0 */
+	"max\0" /* 4 */
+	"__construct\0" /* 8 */
+	"shift\0" /* 20 */
+	"0\0" /* 26 */
+	"\0" /* 28 */
+	"PHPStan\\Type\\Type\0" /* 29 */
+	"fromInterval\0" /* 47 */
+	"minA\0" /* 60 */
+	"maxA\0" /* 65 */
+	"minB\0" /* 70 */
+	"maxB\0" /* 75 */
+	"touchingIsDisjoint\0" /* 80 */
+	"true\0" /* 99 */
+	"isDisjoint\0" /* 104 */
+	"value\0" /* 115 */
+	"createAllSmallerThan\0" /* 121 */
+	"createAllSmallerThanOrEqualTo\0" /* 142 */
+	"createAllGreaterThan\0" /* 172 */
+	"createAllGreaterThanOrEqualTo\0" /* 193 */
+	"getMin\0" /* 223 */
+	"getMax\0" /* 230 */
+	"level\0" /* 237 */
+	"PHPStan\\Type\\VerbosityLevel\0" /* 243 */
+	"describe\0" /* 271 */
+	"amount\0" /* 280 */
+	"type\0" /* 287 */
+	"strictTypes\0" /* 292 */
+	"PHPStan\\Type\\AcceptsResult\0" /* 304 */
+	"accepts\0" /* 331 */
+	"PHPStan\\Type\\IsSuperTypeOfResult\0" /* 339 */
+	"isSuperTypeOf\0" /* 372 */
+	"otherType\0" /* 386 */
+	"isSubTypeOf\0" /* 396 */
+	"PHPStan\\Type\\UnionType\0" /* 408 */
+	"isSubTypeOfUnionWithReason\0" /* 431 */
+	"acceptingType\0" /* 458 */
+	"isAcceptedBy\0" /* 472 */
+	"equals\0" /* 485 */
+	"precision\0" /* 492 */
+	"PHPStan\\Type\\GeneralizePrecision\0" /* 502 */
+	"generalize\0" /* 535 */
+	"phpVersion\0" /* 546 */
+	"PHPStan\\Php\\PhpVersion\0" /* 557 */
+	"PHPStan\\TrinaryLogic\0" /* 580 */
+	"isSmallerThan\0" /* 601 */
+	"isSmallerThanOrEqual\0" /* 615 */
+	"isGreaterThan\0" /* 636 */
+	"isGreaterThanOrEqual\0" /* 650 */
+	"getSmallerType\0" /* 671 */
+	"getSmallerOrEqualType\0" /* 686 */
+	"getGreaterType\0" /* 708 */
+	"getGreaterOrEqualType\0" /* 723 */
+	"PHPStan\\Type\\BooleanType\0" /* 745 */
+	"toBoolean\0" /* 770 */
+	"toAbsoluteNumber\0" /* 780 */
+	"toBitwiseNotType\0" /* 797 */
+	"toString\0" /* 814 */
+	"tryUnion\0" /* 823 */
+	"tryIntersect\0" /* 832 */
+	"typeToRemove\0" /* 845 */
+	"tryRemove\0" /* 858 */
+	"exponent\0" /* 868 */
+	"exponentiate\0" /* 877 */
+	"getFiniteTypes\0" /* 890 */
+	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 905 */
+	"toPhpDocNode\0" /* 944 */
+	"looseCompare"; /* 957 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_NULL | MAY_BE_LONG), /* __construct $min */
+	reg::packed(4, MAY_BE_NULL | MAY_BE_LONG), /* __construct $max */
+	reg::packed(0, MAY_BE_NULL | MAY_BE_LONG), /* fromInterval $min */
+	reg::packed(4, MAY_BE_NULL | MAY_BE_LONG), /* fromInterval $max */
+	reg::packed(20, MAY_BE_LONG, reg::NoString, false, false, 26), /* fromInterval $shift */
+	reg::packed(28, 0, 29), /* fromInterval return */
+	reg::packed(60, MAY_BE_NULL | MAY_BE_LONG), /* isDisjoint $minA */
+	reg::packed(65, MAY_BE_NULL | MAY_BE_LONG), /* isDisjoint $maxA */
+	reg::packed(70, MAY_BE_NULL | MAY_BE_LONG), /* isDisjoint $minB */
+	reg::packed(75, MAY_BE_NULL | MAY_BE_LONG), /* isDisjoint $maxB */
+	reg::packed(80, MAY_BE_BOOL, reg::NoString, false, false, 99), /* isDisjoint $touchingIsDisjoint */
+	reg::packed(28, MAY_BE_BOOL), /* isDisjoint return */
+	reg::packed(115, 0), /* createAllSmallerThan $value */
+	reg::packed(28, 0, 29), /* createAllSmallerThan return */
+	reg::packed(115, 0), /* createAllSmallerThanOrEqualTo $value */
+	reg::packed(28, 0, 29), /* createAllSmallerThanOrEqualTo return */
+	reg::packed(115, 0), /* createAllGreaterThan $value */
+	reg::packed(28, 0, 29), /* createAllGreaterThan return */
+	reg::packed(115, 0), /* createAllGreaterThanOrEqualTo $value */
+	reg::packed(28, 0, 29), /* createAllGreaterThanOrEqualTo return */
+	reg::packed(28, MAY_BE_NULL | MAY_BE_LONG), /* getMin return */
+	reg::packed(28, MAY_BE_NULL | MAY_BE_LONG), /* getMax return */
+	reg::packed(237, 0, 243), /* describe $level */
+	reg::packed(28, MAY_BE_STRING), /* describe return */
+	reg::packed(280, MAY_BE_LONG), /* shift $amount */
+	reg::packed(28, 0, 29), /* shift return */
+	reg::packed(287, 0, 29), /* accepts $type */
+	reg::packed(292, MAY_BE_BOOL), /* accepts $strictTypes */
+	reg::packed(28, 0, 304), /* accepts return */
+	reg::packed(287, 0, 29), /* isSuperTypeOf $type */
+	reg::packed(28, 0, 339), /* isSuperTypeOf return */
+	reg::packed(386, 0, 29), /* isSubTypeOf $otherType */
+	reg::packed(28, 0, 339), /* isSubTypeOf return */
+	reg::packed(386, 0, 408), /* isSubTypeOfUnionWithReason $otherType */
+	reg::packed(28, 0, 339), /* isSubTypeOfUnionWithReason return */
+	reg::packed(458, 0, 29), /* isAcceptedBy $acceptingType */
+	reg::packed(292, MAY_BE_BOOL), /* isAcceptedBy $strictTypes */
+	reg::packed(28, 0, 304), /* isAcceptedBy return */
+	reg::packed(287, 0, 29), /* equals $type */
+	reg::packed(28, MAY_BE_BOOL), /* equals return */
+	reg::packed(492, 0, 502), /* generalize $precision */
+	reg::packed(28, 0, 29), /* generalize return */
+	reg::packed(386, 0, 29), /* isSmallerThan $otherType */
+	reg::packed(546, 0, 557), /* isSmallerThan $phpVersion */
+	reg::packed(28, 0, 580), /* isSmallerThan return */
+	reg::packed(386, 0, 29), /* isSmallerThanOrEqual $otherType */
+	reg::packed(546, 0, 557), /* isSmallerThanOrEqual $phpVersion */
+	reg::packed(28, 0, 580), /* isSmallerThanOrEqual return */
+	reg::packed(386, 0, 29), /* isGreaterThan $otherType */
+	reg::packed(546, 0, 557), /* isGreaterThan $phpVersion */
+	reg::packed(28, 0, 580), /* isGreaterThan return */
+	reg::packed(386, 0, 29), /* isGreaterThanOrEqual $otherType */
+	reg::packed(546, 0, 557), /* isGreaterThanOrEqual $phpVersion */
+	reg::packed(28, 0, 580), /* isGreaterThanOrEqual return */
+	reg::packed(546, 0, 557), /* getSmallerType $phpVersion */
+	reg::packed(28, 0, 29), /* getSmallerType return */
+	reg::packed(546, 0, 557), /* getSmallerOrEqualType $phpVersion */
+	reg::packed(28, 0, 29), /* getSmallerOrEqualType return */
+	reg::packed(546, 0, 557), /* getGreaterType $phpVersion */
+	reg::packed(28, 0, 29), /* getGreaterType return */
+	reg::packed(546, 0, 557), /* getGreaterOrEqualType $phpVersion */
+	reg::packed(28, 0, 29), /* getGreaterOrEqualType return */
+	reg::packed(28, 0, 745), /* toBoolean return */
+	reg::packed(28, 0, 29), /* toAbsoluteNumber return */
+	reg::packed(28, 0, 29), /* toBitwiseNotType return */
+	reg::packed(28, 0, 29), /* toString return */
+	reg::packed(386, 0, 29), /* tryUnion $otherType */
+	reg::packed(28, MAY_BE_NULL, 29), /* tryUnion return */
+	reg::packed(386, 0, 29), /* tryIntersect $otherType */
+	reg::packed(28, MAY_BE_NULL, 29), /* tryIntersect return */
+	reg::packed(845, 0, 29), /* tryRemove $typeToRemove */
+	reg::packed(28, MAY_BE_NULL, 29), /* tryRemove return */
+	reg::packed(868, 0, 29), /* exponentiate $exponent */
+	reg::packed(28, 0, 29), /* exponentiate return */
+	reg::packed(28, MAY_BE_ARRAY), /* getFiniteTypes return */
+	reg::packed(28, 0, 905), /* toPhpDocNode return */
+	reg::packed(287, 0, 29), /* looseCompare $type */
+	reg::packed(546, 0, 557), /* looseCompare $phpVersion */
+	reg::packed(28, 0, 745), /* looseCompare return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("min", MAY_BE_NULL | MAY_BE_LONG), reg::typed("max", MAY_BE_NULL | MAY_BE_LONG) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PRIVATE, 2, __construct_args, 2, nullptr };
-inline constexpr reg::Arg fromInterval_args[] = { reg::typed("min", MAY_BE_NULL | MAY_BE_LONG), reg::typed("max", MAY_BE_NULL | MAY_BE_LONG), reg::typed("shift", MAY_BE_LONG, nullptr, false, false, "0") };
-inline constexpr reg::Arg fromInterval_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig fromInterval = { "fromInterval", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, fromInterval_args, 3, &fromInterval_return };
-inline constexpr reg::Arg isDisjoint_args[] = { reg::typed("minA", MAY_BE_NULL | MAY_BE_LONG), reg::typed("maxA", MAY_BE_NULL | MAY_BE_LONG), reg::typed("minB", MAY_BE_NULL | MAY_BE_LONG), reg::typed("maxB", MAY_BE_NULL | MAY_BE_LONG), reg::typed("touchingIsDisjoint", MAY_BE_BOOL, nullptr, false, false, "true") };
-inline constexpr reg::Arg isDisjoint_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isDisjoint = { "isDisjoint", ZEND_ACC_PROTECTED | ZEND_ACC_STATIC, 4, isDisjoint_args, 5, &isDisjoint_return };
-inline constexpr reg::Arg createAllSmallerThan_args[] = { reg::typed("value", 0) };
-inline constexpr reg::Arg createAllSmallerThan_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig createAllSmallerThan = { "createAllSmallerThan", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, createAllSmallerThan_args, 1, &createAllSmallerThan_return };
-inline constexpr reg::Arg createAllSmallerThanOrEqualTo_args[] = { reg::typed("value", 0) };
-inline constexpr reg::Arg createAllSmallerThanOrEqualTo_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig createAllSmallerThanOrEqualTo = { "createAllSmallerThanOrEqualTo", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, createAllSmallerThanOrEqualTo_args, 1, &createAllSmallerThanOrEqualTo_return };
-inline constexpr reg::Arg createAllGreaterThan_args[] = { reg::typed("value", 0) };
-inline constexpr reg::Arg createAllGreaterThan_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig createAllGreaterThan = { "createAllGreaterThan", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, createAllGreaterThan_args, 1, &createAllGreaterThan_return };
-inline constexpr reg::Arg createAllGreaterThanOrEqualTo_args[] = { reg::typed("value", 0) };
-inline constexpr reg::Arg createAllGreaterThanOrEqualTo_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig createAllGreaterThanOrEqualTo = { "createAllGreaterThanOrEqualTo", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, createAllGreaterThanOrEqualTo_args, 1, &createAllGreaterThanOrEqualTo_return };
-inline constexpr reg::Arg getMin_return = reg::typed("", MAY_BE_NULL | MAY_BE_LONG);
-inline constexpr reg::Sig getMin = { "getMin", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getMin_return };
-inline constexpr reg::Arg getMax_return = reg::typed("", MAY_BE_NULL | MAY_BE_LONG);
-inline constexpr reg::Sig getMax = { "getMax", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getMax_return };
-inline constexpr reg::Arg describe_args[] = { reg::typed("level", 0, "PHPStan\\Type\\VerbosityLevel") };
-inline constexpr reg::Arg describe_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig describe = { "describe", ZEND_ACC_PUBLIC, 1, describe_args, 1, &describe_return };
-inline constexpr reg::Arg shift_args[] = { reg::typed("amount", MAY_BE_LONG) };
-inline constexpr reg::Arg shift_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig shift = { "shift", ZEND_ACC_PUBLIC, 1, shift_args, 1, &shift_return };
-inline constexpr reg::Arg accepts_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type"), reg::typed("strictTypes", MAY_BE_BOOL) };
-inline constexpr reg::Arg accepts_return = reg::typed("", 0, "PHPStan\\Type\\AcceptsResult");
-inline constexpr reg::Sig accepts = { "accepts", ZEND_ACC_PUBLIC, 2, accepts_args, 2, &accepts_return };
-inline constexpr reg::Arg isSuperTypeOf_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg isSuperTypeOf_return = reg::typed("", 0, "PHPStan\\Type\\IsSuperTypeOfResult");
-inline constexpr reg::Sig isSuperTypeOf = { "isSuperTypeOf", ZEND_ACC_PUBLIC, 1, isSuperTypeOf_args, 1, &isSuperTypeOf_return };
-inline constexpr reg::Arg isSubTypeOf_args[] = { reg::typed("otherType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg isSubTypeOf_return = reg::typed("", 0, "PHPStan\\Type\\IsSuperTypeOfResult");
-inline constexpr reg::Sig isSubTypeOf = { "isSubTypeOf", ZEND_ACC_PUBLIC, 1, isSubTypeOf_args, 1, &isSubTypeOf_return };
-inline constexpr reg::Arg isSubTypeOfUnionWithReason_args[] = { reg::typed("otherType", 0, "PHPStan\\Type\\UnionType") };
-inline constexpr reg::Arg isSubTypeOfUnionWithReason_return = reg::typed("", 0, "PHPStan\\Type\\IsSuperTypeOfResult");
-inline constexpr reg::Sig isSubTypeOfUnionWithReason = { "isSubTypeOfUnionWithReason", ZEND_ACC_PRIVATE, 1, isSubTypeOfUnionWithReason_args, 1, &isSubTypeOfUnionWithReason_return };
-inline constexpr reg::Arg isAcceptedBy_args[] = { reg::typed("acceptingType", 0, "PHPStan\\Type\\Type"), reg::typed("strictTypes", MAY_BE_BOOL) };
-inline constexpr reg::Arg isAcceptedBy_return = reg::typed("", 0, "PHPStan\\Type\\AcceptsResult");
-inline constexpr reg::Sig isAcceptedBy = { "isAcceptedBy", ZEND_ACC_PUBLIC, 2, isAcceptedBy_args, 2, &isAcceptedBy_return };
-inline constexpr reg::Arg equals_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg equals_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig equals = { "equals", ZEND_ACC_PUBLIC, 1, equals_args, 1, &equals_return };
-inline constexpr reg::Arg generalize_args[] = { reg::typed("precision", 0, "PHPStan\\Type\\GeneralizePrecision") };
-inline constexpr reg::Arg generalize_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig generalize = { "generalize", ZEND_ACC_PUBLIC, 1, generalize_args, 1, &generalize_return };
-inline constexpr reg::Arg isSmallerThan_args[] = { reg::typed("otherType", 0, "PHPStan\\Type\\Type"), reg::typed("phpVersion", 0, "PHPStan\\Php\\PhpVersion") };
-inline constexpr reg::Arg isSmallerThan_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isSmallerThan = { "isSmallerThan", ZEND_ACC_PUBLIC, 2, isSmallerThan_args, 2, &isSmallerThan_return };
-inline constexpr reg::Arg isSmallerThanOrEqual_args[] = { reg::typed("otherType", 0, "PHPStan\\Type\\Type"), reg::typed("phpVersion", 0, "PHPStan\\Php\\PhpVersion") };
-inline constexpr reg::Arg isSmallerThanOrEqual_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isSmallerThanOrEqual = { "isSmallerThanOrEqual", ZEND_ACC_PUBLIC, 2, isSmallerThanOrEqual_args, 2, &isSmallerThanOrEqual_return };
-inline constexpr reg::Arg isGreaterThan_args[] = { reg::typed("otherType", 0, "PHPStan\\Type\\Type"), reg::typed("phpVersion", 0, "PHPStan\\Php\\PhpVersion") };
-inline constexpr reg::Arg isGreaterThan_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isGreaterThan = { "isGreaterThan", ZEND_ACC_PUBLIC, 2, isGreaterThan_args, 2, &isGreaterThan_return };
-inline constexpr reg::Arg isGreaterThanOrEqual_args[] = { reg::typed("otherType", 0, "PHPStan\\Type\\Type"), reg::typed("phpVersion", 0, "PHPStan\\Php\\PhpVersion") };
-inline constexpr reg::Arg isGreaterThanOrEqual_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isGreaterThanOrEqual = { "isGreaterThanOrEqual", ZEND_ACC_PUBLIC, 2, isGreaterThanOrEqual_args, 2, &isGreaterThanOrEqual_return };
-inline constexpr reg::Arg getSmallerType_args[] = { reg::typed("phpVersion", 0, "PHPStan\\Php\\PhpVersion") };
-inline constexpr reg::Arg getSmallerType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getSmallerType = { "getSmallerType", ZEND_ACC_PUBLIC, 1, getSmallerType_args, 1, &getSmallerType_return };
-inline constexpr reg::Arg getSmallerOrEqualType_args[] = { reg::typed("phpVersion", 0, "PHPStan\\Php\\PhpVersion") };
-inline constexpr reg::Arg getSmallerOrEqualType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getSmallerOrEqualType = { "getSmallerOrEqualType", ZEND_ACC_PUBLIC, 1, getSmallerOrEqualType_args, 1, &getSmallerOrEqualType_return };
-inline constexpr reg::Arg getGreaterType_args[] = { reg::typed("phpVersion", 0, "PHPStan\\Php\\PhpVersion") };
-inline constexpr reg::Arg getGreaterType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getGreaterType = { "getGreaterType", ZEND_ACC_PUBLIC, 1, getGreaterType_args, 1, &getGreaterType_return };
-inline constexpr reg::Arg getGreaterOrEqualType_args[] = { reg::typed("phpVersion", 0, "PHPStan\\Php\\PhpVersion") };
-inline constexpr reg::Arg getGreaterOrEqualType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getGreaterOrEqualType = { "getGreaterOrEqualType", ZEND_ACC_PUBLIC, 1, getGreaterOrEqualType_args, 1, &getGreaterOrEqualType_return };
-inline constexpr reg::Arg toBoolean_return = reg::typed("", 0, "PHPStan\\Type\\BooleanType");
-inline constexpr reg::Sig toBoolean = { "toBoolean", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toBoolean_return };
-inline constexpr reg::Arg toAbsoluteNumber_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig toAbsoluteNumber = { "toAbsoluteNumber", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toAbsoluteNumber_return };
-inline constexpr reg::Arg toBitwiseNotType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig toBitwiseNotType = { "toBitwiseNotType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toBitwiseNotType_return };
-inline constexpr reg::Arg toString_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig toString = { "toString", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toString_return };
-inline constexpr reg::Arg tryUnion_args[] = { reg::typed("otherType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg tryUnion_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig tryUnion = { "tryUnion", ZEND_ACC_PUBLIC, 1, tryUnion_args, 1, &tryUnion_return };
-inline constexpr reg::Arg tryIntersect_args[] = { reg::typed("otherType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg tryIntersect_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig tryIntersect = { "tryIntersect", ZEND_ACC_PUBLIC, 1, tryIntersect_args, 1, &tryIntersect_return };
-inline constexpr reg::Arg tryRemove_args[] = { reg::typed("typeToRemove", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg tryRemove_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig tryRemove = { "tryRemove", ZEND_ACC_PUBLIC, 1, tryRemove_args, 1, &tryRemove_return };
-inline constexpr reg::Arg exponentiate_args[] = { reg::typed("exponent", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg exponentiate_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig exponentiate = { "exponentiate", ZEND_ACC_PUBLIC, 1, exponentiate_args, 1, &exponentiate_return };
-inline constexpr reg::Arg getFiniteTypes_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getFiniteTypes = { "getFiniteTypes", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getFiniteTypes_return };
-inline constexpr reg::Arg toPhpDocNode_return = reg::typed("", 0, "PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode");
-inline constexpr reg::Sig toPhpDocNode = { "toPhpDocNode", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toPhpDocNode_return };
-inline constexpr reg::Arg looseCompare_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type"), reg::typed("phpVersion", 0, "PHPStan\\Php\\PhpVersion") };
-inline constexpr reg::Arg looseCompare_return = reg::typed("", 0, "PHPStan\\Type\\BooleanType");
-inline constexpr reg::Sig looseCompare = { "looseCompare", ZEND_ACC_PUBLIC, 2, looseCompare_args, 2, &looseCompare_return };
+inline constexpr sigtab::Sig __construct = { { 8 /* __construct */, 2, 0, 2, reg::NoArg, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig fromInterval = { { 47 /* fromInterval */, 2, 2, 3, 5, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig isDisjoint = { { 104 /* isDisjoint */, 4, 6, 5, 11, ZEND_ACC_PROTECTED | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createAllSmallerThan = { { 121 /* createAllSmallerThan */, 1, 12, 1, 13, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createAllSmallerThanOrEqualTo = { { 142 /* createAllSmallerThanOrEqualTo */, 1, 14, 1, 15, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createAllGreaterThan = { { 172 /* createAllGreaterThan */, 1, 16, 1, 17, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createAllGreaterThanOrEqualTo = { { 193 /* createAllGreaterThanOrEqualTo */, 1, 18, 1, 19, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig getMin = { { 223 /* getMin */, 0, 20, 0, 20, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getMax = { { 230 /* getMax */, 0, 21, 0, 21, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig describe = { { 271 /* describe */, 1, 22, 1, 23, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig shift = { { 20 /* shift */, 1, 24, 1, 25, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig accepts = { { 331 /* accepts */, 2, 26, 2, 28, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isSuperTypeOf = { { 372 /* isSuperTypeOf */, 1, 29, 1, 30, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isSubTypeOf = { { 396 /* isSubTypeOf */, 1, 31, 1, 32, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isSubTypeOfUnionWithReason = { { 431 /* isSubTypeOfUnionWithReason */, 1, 33, 1, 34, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isAcceptedBy = { { 472 /* isAcceptedBy */, 2, 35, 2, 37, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig equals = { { 485 /* equals */, 1, 38, 1, 39, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig generalize = { { 535 /* generalize */, 1, 40, 1, 41, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isSmallerThan = { { 601 /* isSmallerThan */, 2, 42, 2, 44, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isSmallerThanOrEqual = { { 615 /* isSmallerThanOrEqual */, 2, 45, 2, 47, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isGreaterThan = { { 636 /* isGreaterThan */, 2, 48, 2, 50, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isGreaterThanOrEqual = { { 650 /* isGreaterThanOrEqual */, 2, 51, 2, 53, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getSmallerType = { { 671 /* getSmallerType */, 1, 54, 1, 55, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getSmallerOrEqualType = { { 686 /* getSmallerOrEqualType */, 1, 56, 1, 57, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getGreaterType = { { 708 /* getGreaterType */, 1, 58, 1, 59, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getGreaterOrEqualType = { { 723 /* getGreaterOrEqualType */, 1, 60, 1, 61, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toBoolean = { { 770 /* toBoolean */, 0, 62, 0, 62, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toAbsoluteNumber = { { 780 /* toAbsoluteNumber */, 0, 63, 0, 63, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toBitwiseNotType = { { 797 /* toBitwiseNotType */, 0, 64, 0, 64, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toString = { { 814 /* toString */, 0, 65, 0, 65, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig tryUnion = { { 823 /* tryUnion */, 1, 66, 1, 67, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig tryIntersect = { { 832 /* tryIntersect */, 1, 68, 1, 69, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig tryRemove = { { 858 /* tryRemove */, 1, 70, 1, 71, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig exponentiate = { { 877 /* exponentiate */, 1, 72, 1, 73, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getFiniteTypes = { { 890 /* getFiniteTypes */, 0, 74, 0, 74, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toPhpDocNode = { { 944 /* toPhpDocNode */, 0, 75, 0, 75, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig looseCompare = { { 957 /* looseCompare */, 2, 76, 2, 78, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::IntegerRangeType

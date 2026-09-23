@@ -19,11 +19,28 @@ inline void declareProperties(reg::Class &cls)
 	(void) cls;
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"parser\0" /* 0 */
+	"PhpParser\\Parser\0" /* 7 */
+	"sourceCode\0" /* 24 */
+	"errorHandler\0" /* 35 */
+	"PhpParser\\ErrorHandler\0" /* 48 */
+	"\0" /* 71 */
+	"parse"; /* 72 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 7), /* parse $parser */
+	reg::packed(24, MAY_BE_STRING), /* parse $sourceCode */
+	reg::packed(35, 0, 48), /* parse $errorHandler */
+	reg::packed(71, MAY_BE_NULL | MAY_BE_ARRAY), /* parse return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg parse_args[] = { reg::typed("parser", 0, "PhpParser\\Parser"), reg::typed("sourceCode", MAY_BE_STRING), reg::typed("errorHandler", 0, "PhpParser\\ErrorHandler") };
-inline constexpr reg::Arg parse_return = reg::typed("", MAY_BE_NULL | MAY_BE_ARRAY);
-inline constexpr reg::Sig parse = { "parse", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 3, parse_args, 3, &parse_return };
+inline constexpr sigtab::Sig parse = { { 72 /* parse */, 3, 0, 3, 3, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::ParserRunner

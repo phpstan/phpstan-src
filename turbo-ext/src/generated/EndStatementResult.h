@@ -26,14 +26,31 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("result", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\StatementResult");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"statement\0" /* 0 */
+	"PhpParser\\Node\\Stmt\0" /* 10 */
+	"result\0" /* 30 */
+	"PHPStan\\Analyser\\StatementResult\0" /* 37 */
+	"__construct\0" /* 70 */
+	"\0" /* 82 */
+	"getStatement\0" /* 83 */
+	"getResult"; /* 96 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 10), /* __construct $statement */
+	reg::packed(30, 0, 37), /* __construct $result */
+	reg::packed(82, 0, 10), /* getStatement return */
+	reg::packed(82, 0, 37), /* getResult return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("statement", 0, "PhpParser\\Node\\Stmt"), reg::typed("result", 0, "PHPStan\\Analyser\\StatementResult") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 2, __construct_args, 2, nullptr };
-inline constexpr reg::Arg getStatement_return = reg::typed("", 0, "PhpParser\\Node\\Stmt");
-inline constexpr reg::Sig getStatement = { "getStatement", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getStatement_return };
-inline constexpr reg::Arg getResult_return = reg::typed("", 0, "PHPStan\\Analyser\\StatementResult");
-inline constexpr reg::Sig getResult = { "getResult", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getResult_return };
+inline constexpr sigtab::Sig __construct = { { 70 /* __construct */, 2, 0, 2, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getStatement = { { 83 /* getStatement */, 0, 2, 0, 2, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getResult = { { 96 /* getResult */, 0, 3, 0, 3, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::EndStatementResult

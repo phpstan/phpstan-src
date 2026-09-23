@@ -31,58 +31,102 @@ inline void registerTraits(reg::Class &cls)
 	pt_type_trait_constant_scalar(cls);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"value\0" /* 0 */
+	"__construct\0" /* 6 */
+	"\0" /* 18 */
+	"getValue\0" /* 19 */
+	"level\0" /* 28 */
+	"PHPStan\\Type\\VerbosityLevel\0" /* 34 */
+	"describe\0" /* 62 */
+	"phpVersion\0" /* 71 */
+	"PHPStan\\Php\\PhpVersion\0" /* 82 */
+	"PHPStan\\Type\\Type\0" /* 105 */
+	"getSmallerType\0" /* 123 */
+	"getSmallerOrEqualType\0" /* 138 */
+	"getGreaterType\0" /* 160 */
+	"getGreaterOrEqualType\0" /* 175 */
+	"PHPStan\\Type\\BooleanType\0" /* 197 */
+	"toBoolean\0" /* 222 */
+	"toNumber\0" /* 232 */
+	"toBitwiseNotType\0" /* 241 */
+	"toAbsoluteNumber\0" /* 258 */
+	"toString\0" /* 275 */
+	"toInteger\0" /* 284 */
+	"toFloat\0" /* 294 */
+	"toArrayKey\0" /* 302 */
+	"strictTypes\0" /* 313 */
+	"toCoercedArgumentType\0" /* 325 */
+	"PHPStan\\TrinaryLogic\0" /* 347 */
+	"isTrue\0" /* 368 */
+	"isFalse\0" /* 375 */
+	"precision\0" /* 383 */
+	"PHPStan\\Type\\GeneralizePrecision\0" /* 393 */
+	"generalize\0" /* 426 */
+	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 437 */
+	"toPhpDocNode\0" /* 476 */
+	"type\0" /* 489 */
+	"looseCompare"; /* 494 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_BOOL), /* __construct $value */
+	reg::packed(18, MAY_BE_BOOL), /* getValue return */
+	reg::packed(28, 0, 34), /* describe $level */
+	reg::packed(18, MAY_BE_STRING), /* describe return */
+	reg::packed(71, 0, 82), /* getSmallerType $phpVersion */
+	reg::packed(18, 0, 105), /* getSmallerType return */
+	reg::packed(71, 0, 82), /* getSmallerOrEqualType $phpVersion */
+	reg::packed(18, 0, 105), /* getSmallerOrEqualType return */
+	reg::packed(71, 0, 82), /* getGreaterType $phpVersion */
+	reg::packed(18, 0, 105), /* getGreaterType return */
+	reg::packed(71, 0, 82), /* getGreaterOrEqualType $phpVersion */
+	reg::packed(18, 0, 105), /* getGreaterOrEqualType return */
+	reg::packed(18, 0, 197), /* toBoolean return */
+	reg::packed(18, 0, 105), /* toNumber return */
+	reg::packed(18, 0, 105), /* toBitwiseNotType return */
+	reg::packed(18, 0, 105), /* toAbsoluteNumber return */
+	reg::packed(18, 0, 105), /* toString return */
+	reg::packed(18, 0, 105), /* toInteger return */
+	reg::packed(18, 0, 105), /* toFloat return */
+	reg::packed(18, 0, 105), /* toArrayKey return */
+	reg::packed(313, MAY_BE_BOOL), /* toCoercedArgumentType $strictTypes */
+	reg::packed(18, 0, 105), /* toCoercedArgumentType return */
+	reg::packed(18, 0, 347), /* isTrue return */
+	reg::packed(18, 0, 347), /* isFalse return */
+	reg::packed(383, 0, 393), /* generalize $precision */
+	reg::packed(18, 0, 105), /* generalize return */
+	reg::packed(18, 0, 437), /* toPhpDocNode return */
+	reg::packed(489, 0, 105), /* looseCompare $type */
+	reg::packed(71, 0, 82), /* looseCompare $phpVersion */
+	reg::packed(18, 0, 197), /* looseCompare return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("value", MAY_BE_BOOL) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 1, __construct_args, 1, nullptr };
-inline constexpr reg::Arg getValue_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig getValue = { "getValue", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getValue_return };
-inline constexpr reg::Arg describe_args[] = { reg::typed("level", 0, "PHPStan\\Type\\VerbosityLevel") };
-inline constexpr reg::Arg describe_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig describe = { "describe", ZEND_ACC_PUBLIC, 1, describe_args, 1, &describe_return };
-inline constexpr reg::Arg getSmallerType_args[] = { reg::typed("phpVersion", 0, "PHPStan\\Php\\PhpVersion") };
-inline constexpr reg::Arg getSmallerType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getSmallerType = { "getSmallerType", ZEND_ACC_PUBLIC, 1, getSmallerType_args, 1, &getSmallerType_return };
-inline constexpr reg::Arg getSmallerOrEqualType_args[] = { reg::typed("phpVersion", 0, "PHPStan\\Php\\PhpVersion") };
-inline constexpr reg::Arg getSmallerOrEqualType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getSmallerOrEqualType = { "getSmallerOrEqualType", ZEND_ACC_PUBLIC, 1, getSmallerOrEqualType_args, 1, &getSmallerOrEqualType_return };
-inline constexpr reg::Arg getGreaterType_args[] = { reg::typed("phpVersion", 0, "PHPStan\\Php\\PhpVersion") };
-inline constexpr reg::Arg getGreaterType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getGreaterType = { "getGreaterType", ZEND_ACC_PUBLIC, 1, getGreaterType_args, 1, &getGreaterType_return };
-inline constexpr reg::Arg getGreaterOrEqualType_args[] = { reg::typed("phpVersion", 0, "PHPStan\\Php\\PhpVersion") };
-inline constexpr reg::Arg getGreaterOrEqualType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getGreaterOrEqualType = { "getGreaterOrEqualType", ZEND_ACC_PUBLIC, 1, getGreaterOrEqualType_args, 1, &getGreaterOrEqualType_return };
-inline constexpr reg::Arg toBoolean_return = reg::typed("", 0, "PHPStan\\Type\\BooleanType");
-inline constexpr reg::Sig toBoolean = { "toBoolean", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toBoolean_return };
-inline constexpr reg::Arg toNumber_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig toNumber = { "toNumber", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toNumber_return };
-inline constexpr reg::Arg toBitwiseNotType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig toBitwiseNotType = { "toBitwiseNotType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toBitwiseNotType_return };
-inline constexpr reg::Arg toAbsoluteNumber_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig toAbsoluteNumber = { "toAbsoluteNumber", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toAbsoluteNumber_return };
-inline constexpr reg::Arg toString_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig toString = { "toString", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toString_return };
-inline constexpr reg::Arg toInteger_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig toInteger = { "toInteger", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toInteger_return };
-inline constexpr reg::Arg toFloat_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig toFloat = { "toFloat", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toFloat_return };
-inline constexpr reg::Arg toArrayKey_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig toArrayKey = { "toArrayKey", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toArrayKey_return };
-inline constexpr reg::Arg toCoercedArgumentType_args[] = { reg::typed("strictTypes", MAY_BE_BOOL) };
-inline constexpr reg::Arg toCoercedArgumentType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig toCoercedArgumentType = { "toCoercedArgumentType", ZEND_ACC_PUBLIC, 1, toCoercedArgumentType_args, 1, &toCoercedArgumentType_return };
-inline constexpr reg::Arg isTrue_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isTrue = { "isTrue", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isTrue_return };
-inline constexpr reg::Arg isFalse_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isFalse = { "isFalse", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isFalse_return };
-inline constexpr reg::Arg generalize_args[] = { reg::typed("precision", 0, "PHPStan\\Type\\GeneralizePrecision") };
-inline constexpr reg::Arg generalize_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig generalize = { "generalize", ZEND_ACC_PUBLIC, 1, generalize_args, 1, &generalize_return };
-inline constexpr reg::Arg toPhpDocNode_return = reg::typed("", 0, "PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode");
-inline constexpr reg::Sig toPhpDocNode = { "toPhpDocNode", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toPhpDocNode_return };
-inline constexpr reg::Arg looseCompare_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type"), reg::typed("phpVersion", 0, "PHPStan\\Php\\PhpVersion") };
-inline constexpr reg::Arg looseCompare_return = reg::typed("", 0, "PHPStan\\Type\\BooleanType");
-inline constexpr reg::Sig looseCompare = { "looseCompare", ZEND_ACC_PUBLIC, 2, looseCompare_args, 2, &looseCompare_return };
+inline constexpr sigtab::Sig __construct = { { 6 /* __construct */, 1, 0, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getValue = { { 19 /* getValue */, 0, 1, 0, 1, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig describe = { { 62 /* describe */, 1, 2, 1, 3, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getSmallerType = { { 123 /* getSmallerType */, 1, 4, 1, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getSmallerOrEqualType = { { 138 /* getSmallerOrEqualType */, 1, 6, 1, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getGreaterType = { { 160 /* getGreaterType */, 1, 8, 1, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getGreaterOrEqualType = { { 175 /* getGreaterOrEqualType */, 1, 10, 1, 11, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toBoolean = { { 222 /* toBoolean */, 0, 12, 0, 12, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toNumber = { { 232 /* toNumber */, 0, 13, 0, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toBitwiseNotType = { { 241 /* toBitwiseNotType */, 0, 14, 0, 14, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toAbsoluteNumber = { { 258 /* toAbsoluteNumber */, 0, 15, 0, 15, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toString = { { 275 /* toString */, 0, 16, 0, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toInteger = { { 284 /* toInteger */, 0, 17, 0, 17, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toFloat = { { 294 /* toFloat */, 0, 18, 0, 18, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toArrayKey = { { 302 /* toArrayKey */, 0, 19, 0, 19, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toCoercedArgumentType = { { 325 /* toCoercedArgumentType */, 1, 20, 1, 21, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isTrue = { { 368 /* isTrue */, 0, 22, 0, 22, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isFalse = { { 375 /* isFalse */, 0, 23, 0, 23, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig generalize = { { 426 /* generalize */, 1, 24, 1, 25, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toPhpDocNode = { { 476 /* toPhpDocNode */, 0, 26, 0, 26, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig looseCompare = { { 494 /* looseCompare */, 2, 27, 2, 29, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ConstantBooleanType

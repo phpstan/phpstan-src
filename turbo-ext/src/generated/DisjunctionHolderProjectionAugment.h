@@ -35,13 +35,40 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("alternativeKeys", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_ARRAY);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"nodeScopeResolver\0" /* 0 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 18 */
+	"defaultNarrowingHelper\0" /* 53 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper\0" /* 76 */
+	"leftTruthyScope\0" /* 135 */
+	"leftFalseyScope\0" /* 151 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 167 */
+	"rightTruthyScope\0" /* 198 */
+	"alternativeKeys\0" /* 215 */
+	"__construct\0" /* 231 */
+	"scope\0" /* 243 */
+	"\0" /* 249 */
+	"PHPStan\\Analyser\\SpecifiedTypes\0" /* 250 */
+	"evaluate"; /* 282 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 18), /* __construct $nodeScopeResolver */
+	reg::packed(53, 0, 76), /* __construct $defaultNarrowingHelper */
+	reg::packed(135, 0), /* __construct $leftTruthyScope */
+	reg::packed(151, 0, 167), /* __construct $leftFalseyScope */
+	reg::packed(198, 0), /* __construct $rightTruthyScope */
+	reg::packed(215, MAY_BE_ARRAY), /* __construct $alternativeKeys */
+	reg::packed(243, 0, 167), /* evaluate $scope */
+	reg::packed(249, MAY_BE_NULL, 250), /* evaluate return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("defaultNarrowingHelper", 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper"), reg::typed("leftTruthyScope", 0), reg::typed("leftFalseyScope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("rightTruthyScope", 0), reg::typed("alternativeKeys", MAY_BE_ARRAY) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 6, __construct_args, 6, nullptr };
-inline constexpr reg::Arg evaluate_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope") };
-inline constexpr reg::Arg evaluate_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\SpecifiedTypes");
-inline constexpr reg::Sig evaluate = { "evaluate", ZEND_ACC_PUBLIC, 1, evaluate_args, 1, &evaluate_return };
+inline constexpr sigtab::Sig __construct = { { 231 /* __construct */, 6, 0, 6, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig evaluate = { { 282 /* evaluate */, 1, 6, 1, 7, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::DisjunctionHolderProjectionAugment

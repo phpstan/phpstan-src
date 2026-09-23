@@ -24,19 +24,40 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("cleaner", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Reflection\\BetterReflection\\SourceLocator\\PhpFileCleaner");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"cleaner\0" /* 0 */
+	"PHPStan\\Reflection\\BetterReflection\\SourceLocator\\PhpFileCleaner\0" /* 8 */
+	"__construct\0" /* 73 */
+	"files\0" /* 85 */
+	"supportsEnums\0" /* 91 */
+	"\0" /* 105 */
+	"findSymbols\0" /* 106 */
+	"file\0" /* 118 */
+	"findSymbolsInFile\0" /* 123 */
+	"name\0" /* 141 */
+	"normalizeConstantName"; /* 146 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 8), /* __construct $cleaner */
+	reg::packed(85, MAY_BE_ARRAY), /* findSymbols $files */
+	reg::packed(91, MAY_BE_BOOL), /* findSymbols $supportsEnums */
+	reg::packed(105, MAY_BE_ARRAY), /* findSymbols return */
+	reg::packed(118, MAY_BE_STRING), /* findSymbolsInFile $file */
+	reg::packed(91, MAY_BE_BOOL), /* findSymbolsInFile $supportsEnums */
+	reg::packed(105, MAY_BE_ARRAY), /* findSymbolsInFile return */
+	reg::packed(141, MAY_BE_STRING), /* normalizeConstantName $name */
+	reg::packed(105, MAY_BE_STRING), /* normalizeConstantName return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("cleaner", 0, "PHPStan\\Reflection\\BetterReflection\\SourceLocator\\PhpFileCleaner") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 1, __construct_args, 1, nullptr };
-inline constexpr reg::Arg findSymbols_args[] = { reg::typed("files", MAY_BE_ARRAY), reg::typed("supportsEnums", MAY_BE_BOOL) };
-inline constexpr reg::Arg findSymbols_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig findSymbols = { "findSymbols", ZEND_ACC_PUBLIC, 2, findSymbols_args, 2, &findSymbols_return };
-inline constexpr reg::Arg findSymbolsInFile_args[] = { reg::typed("file", MAY_BE_STRING), reg::typed("supportsEnums", MAY_BE_BOOL) };
-inline constexpr reg::Arg findSymbolsInFile_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig findSymbolsInFile = { "findSymbolsInFile", ZEND_ACC_PRIVATE, 2, findSymbolsInFile_args, 2, &findSymbolsInFile_return };
-inline constexpr reg::Arg normalizeConstantName_args[] = { reg::typed("name", MAY_BE_STRING) };
-inline constexpr reg::Arg normalizeConstantName_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig normalizeConstantName = { "normalizeConstantName", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 1, normalizeConstantName_args, 1, &normalizeConstantName_return };
+inline constexpr sigtab::Sig __construct = { { 73 /* __construct */, 1, 0, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig findSymbols = { { 106 /* findSymbols */, 2, 1, 2, 3, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig findSymbolsInFile = { { 123 /* findSymbolsInFile */, 2, 4, 2, 6, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig normalizeConstantName = { { 146 /* normalizeConstantName */, 1, 7, 1, 8, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::SymbolFinderInFiles

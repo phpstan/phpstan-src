@@ -24,13 +24,28 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("printer", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Node\\Printer\\Printer");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"printer\0" /* 0 */
+	"PHPStan\\Node\\Printer\\Printer\0" /* 8 */
+	"__construct\0" /* 37 */
+	"expr\0" /* 49 */
+	"PhpParser\\Node\\Expr\0" /* 54 */
+	"\0" /* 74 */
+	"printExpr"; /* 75 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 8), /* __construct $printer */
+	reg::packed(49, 0, 54), /* printExpr $expr */
+	reg::packed(74, MAY_BE_STRING), /* printExpr return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("printer", 0, "PHPStan\\Node\\Printer\\Printer") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 1, __construct_args, 1, nullptr };
-inline constexpr reg::Arg printExpr_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg printExpr_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig printExpr = { "printExpr", ZEND_ACC_PUBLIC, 1, printExpr_args, 1, &printExpr_return };
+inline constexpr sigtab::Sig __construct = { { 37 /* __construct */, 1, 0, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig printExpr = { { 75 /* printExpr */, 1, 1, 1, 2, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ExprPrinter

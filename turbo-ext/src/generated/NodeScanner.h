@@ -19,11 +19,23 @@ inline void declareProperties(reg::Class &cls)
 	(void) cls;
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"node\0" /* 0 */
+	"PhpParser\\Node\0" /* 5 */
+	"\0" /* 20 */
+	"nodeIsOrContainsYield"; /* 21 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 5), /* nodeIsOrContainsYield $node */
+	reg::packed(20, MAY_BE_BOOL), /* nodeIsOrContainsYield return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg nodeIsOrContainsYield_args[] = { reg::typed("node", 0, "PhpParser\\Node") };
-inline constexpr reg::Arg nodeIsOrContainsYield_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig nodeIsOrContainsYield = { "nodeIsOrContainsYield", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, nodeIsOrContainsYield_args, 1, &nodeIsOrContainsYield_return };
+inline constexpr sigtab::Sig nodeIsOrContainsYield = { { 21 /* nodeIsOrContainsYield */, 1, 0, 1, 1, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::NodeScanner

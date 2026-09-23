@@ -25,37 +25,62 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("value", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_NULL | MAY_BE_LONG);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"value\0" /* 0 */
+	"__construct\0" /* 6 */
+	"\0" /* 18 */
+	"PHPStan\\Analyser\\TypeSpecifierContext\0" /* 19 */
+	"create\0" /* 57 */
+	"createTrue\0" /* 64 */
+	"createTruthy\0" /* 75 */
+	"createFalse\0" /* 88 */
+	"createFalsey\0" /* 100 */
+	"createNull\0" /* 113 */
+	"negate\0" /* 124 */
+	"true\0" /* 131 */
+	"truthy\0" /* 136 */
+	"false\0" /* 143 */
+	"falsey\0" /* 149 */
+	"falseyButNotFalse\0" /* 156 */
+	"null"; /* 174 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_NULL | MAY_BE_LONG), /* __construct $value */
+	reg::packed(0, MAY_BE_NULL | MAY_BE_LONG), /* create $value */
+	reg::packed(18, 0, 19), /* create return */
+	reg::packed(18, 0, 19), /* createTrue return */
+	reg::packed(18, 0, 19), /* createTruthy return */
+	reg::packed(18, 0, 19), /* createFalse return */
+	reg::packed(18, 0, 19), /* createFalsey return */
+	reg::packed(18, 0, 19), /* createNull return */
+	reg::packed(18, 0, 19), /* negate return */
+	reg::packed(18, MAY_BE_BOOL), /* true return */
+	reg::packed(18, MAY_BE_BOOL), /* truthy return */
+	reg::packed(18, MAY_BE_BOOL), /* false return */
+	reg::packed(18, MAY_BE_BOOL), /* falsey return */
+	reg::packed(18, MAY_BE_BOOL), /* falseyButNotFalse return */
+	reg::packed(18, MAY_BE_BOOL), /* null return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("value", MAY_BE_NULL | MAY_BE_LONG) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PRIVATE, 1, __construct_args, 1, nullptr };
-inline constexpr reg::Arg create_args[] = { reg::typed("value", MAY_BE_NULL | MAY_BE_LONG) };
-inline constexpr reg::Arg create_return = reg::typed("", 0, "PHPStan\\Analyser\\TypeSpecifierContext");
-inline constexpr reg::Sig create = { "create", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 1, create_args, 1, &create_return };
-inline constexpr reg::Arg createTrue_return = reg::typed("", 0, "PHPStan\\Analyser\\TypeSpecifierContext");
-inline constexpr reg::Sig createTrue = { "createTrue", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &createTrue_return };
-inline constexpr reg::Arg createTruthy_return = reg::typed("", 0, "PHPStan\\Analyser\\TypeSpecifierContext");
-inline constexpr reg::Sig createTruthy = { "createTruthy", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &createTruthy_return };
-inline constexpr reg::Arg createFalse_return = reg::typed("", 0, "PHPStan\\Analyser\\TypeSpecifierContext");
-inline constexpr reg::Sig createFalse = { "createFalse", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &createFalse_return };
-inline constexpr reg::Arg createFalsey_return = reg::typed("", 0, "PHPStan\\Analyser\\TypeSpecifierContext");
-inline constexpr reg::Sig createFalsey = { "createFalsey", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &createFalsey_return };
-inline constexpr reg::Arg createNull_return = reg::typed("", 0, "PHPStan\\Analyser\\TypeSpecifierContext");
-inline constexpr reg::Sig createNull = { "createNull", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &createNull_return };
-inline constexpr reg::Arg negate_return = reg::typed("", 0, "PHPStan\\Analyser\\TypeSpecifierContext");
-inline constexpr reg::Sig negate = { "negate", ZEND_ACC_PUBLIC, 0, nullptr, 0, &negate_return };
-inline constexpr reg::Arg true__return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig true_ = { "true", ZEND_ACC_PUBLIC, 0, nullptr, 0, &true__return };
-inline constexpr reg::Arg truthy_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig truthy = { "truthy", ZEND_ACC_PUBLIC, 0, nullptr, 0, &truthy_return };
-inline constexpr reg::Arg false__return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig false_ = { "false", ZEND_ACC_PUBLIC, 0, nullptr, 0, &false__return };
-inline constexpr reg::Arg falsey_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig falsey = { "falsey", ZEND_ACC_PUBLIC, 0, nullptr, 0, &falsey_return };
-inline constexpr reg::Arg falseyButNotFalse_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig falseyButNotFalse = { "falseyButNotFalse", ZEND_ACC_PUBLIC, 0, nullptr, 0, &falseyButNotFalse_return };
-inline constexpr reg::Arg null_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig null = { "null", ZEND_ACC_PUBLIC, 0, nullptr, 0, &null_return };
+inline constexpr sigtab::Sig __construct = { { 6 /* __construct */, 1, 0, 1, reg::NoArg, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig create = { { 57 /* create */, 1, 1, 1, 2, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createTrue = { { 64 /* createTrue */, 0, 3, 0, 3, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createTruthy = { { 75 /* createTruthy */, 0, 4, 0, 4, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createFalse = { { 88 /* createFalse */, 0, 5, 0, 5, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createFalsey = { { 100 /* createFalsey */, 0, 6, 0, 6, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createNull = { { 113 /* createNull */, 0, 7, 0, 7, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig negate = { { 124 /* negate */, 0, 8, 0, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig true_ = { { 131 /* true */, 0, 9, 0, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig truthy = { { 136 /* truthy */, 0, 10, 0, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig false_ = { { 143 /* false */, 0, 11, 0, 11, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig falsey = { { 149 /* falsey */, 0, 12, 0, 12, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig falseyButNotFalse = { { 156 /* falseyButNotFalse */, 0, 13, 0, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig null = { { 174 /* null */, 0, 14, 0, 14, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::TypeSpecifierContext

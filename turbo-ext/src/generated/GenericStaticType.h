@@ -32,41 +32,84 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("variances", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_ARRAY);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"classReflection\0" /* 0 */
+	"PHPStan\\Reflection\\ClassReflection\0" /* 16 */
+	"types\0" /* 51 */
+	"subtractedType\0" /* 57 */
+	"PHPStan\\Type\\Type\0" /* 72 */
+	"variances\0" /* 90 */
+	"__construct\0" /* 100 */
+	"\0" /* 112 */
+	"getTypes\0" /* 113 */
+	"getVariances\0" /* 122 */
+	"PHPStan\\Type\\ObjectType\0" /* 135 */
+	"getStaticObjectType\0" /* 159 */
+	"PHPStan\\Type\\StaticType\0" /* 179 */
+	"changeBaseClass\0" /* 203 */
+	"type\0" /* 219 */
+	"PHPStan\\Type\\IsSuperTypeOfResult\0" /* 224 */
+	"isSuperTypeOf\0" /* 257 */
+	"cb\0" /* 271 */
+	"traverse\0" /* 274 */
+	"right\0" /* 283 */
+	"traverseSimultaneously\0" /* 289 */
+	"changeSubtractedType\0" /* 312 */
+	"receivedType\0" /* 333 */
+	"PHPStan\\Type\\Generic\\TemplateTypeMap\0" /* 346 */
+	"inferTemplateTypes\0" /* 383 */
+	"positionVariance\0" /* 402 */
+	"PHPStan\\Type\\Generic\\TemplateTypeVariance\0" /* 419 */
+	"getReferencedTemplateTypes\0" /* 461 */
+	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 488 */
+	"toPhpDocNode\0" /* 527 */
+	"hasTemplateOrLateResolvableType"; /* 540 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 16), /* __construct $classReflection */
+	reg::packed(51, MAY_BE_ARRAY), /* __construct $types */
+	reg::packed(57, MAY_BE_NULL, 72), /* __construct $subtractedType */
+	reg::packed(90, MAY_BE_ARRAY), /* __construct $variances */
+	reg::packed(112, MAY_BE_ARRAY), /* getTypes return */
+	reg::packed(112, MAY_BE_ARRAY), /* getVariances return */
+	reg::packed(112, 0, 135), /* getStaticObjectType return */
+	reg::packed(0, 0, 16), /* changeBaseClass $classReflection */
+	reg::packed(112, 0, 179), /* changeBaseClass return */
+	reg::packed(219, 0, 72), /* isSuperTypeOf $type */
+	reg::packed(112, 0, 224), /* isSuperTypeOf return */
+	reg::packed(271, MAY_BE_CALLABLE), /* traverse $cb */
+	reg::packed(112, 0, 72), /* traverse return */
+	reg::packed(283, 0, 72), /* traverseSimultaneously $right */
+	reg::packed(271, MAY_BE_CALLABLE), /* traverseSimultaneously $cb */
+	reg::packed(112, 0, 72), /* traverseSimultaneously return */
+	reg::packed(57, MAY_BE_NULL, 72), /* changeSubtractedType $subtractedType */
+	reg::packed(112, 0, 72), /* changeSubtractedType return */
+	reg::packed(333, 0, 72), /* inferTemplateTypes $receivedType */
+	reg::packed(112, 0, 346), /* inferTemplateTypes return */
+	reg::packed(402, 0, 419), /* getReferencedTemplateTypes $positionVariance */
+	reg::packed(112, MAY_BE_ARRAY), /* getReferencedTemplateTypes return */
+	reg::packed(112, 0, 488), /* toPhpDocNode return */
+	reg::packed(112, MAY_BE_BOOL), /* hasTemplateOrLateResolvableType return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("classReflection", 0, "PHPStan\\Reflection\\ClassReflection"), reg::typed("types", MAY_BE_ARRAY), reg::typed("subtractedType", MAY_BE_NULL, "PHPStan\\Type\\Type"), reg::typed("variances", MAY_BE_ARRAY) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 4, __construct_args, 4, nullptr };
-inline constexpr reg::Arg getTypes_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getTypes = { "getTypes", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getTypes_return };
-inline constexpr reg::Arg getVariances_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getVariances = { "getVariances", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getVariances_return };
-inline constexpr reg::Arg getStaticObjectType_return = reg::typed("", 0, "PHPStan\\Type\\ObjectType");
-inline constexpr reg::Sig getStaticObjectType = { "getStaticObjectType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getStaticObjectType_return };
-inline constexpr reg::Arg changeBaseClass_args[] = { reg::typed("classReflection", 0, "PHPStan\\Reflection\\ClassReflection") };
-inline constexpr reg::Arg changeBaseClass_return = reg::typed("", 0, "PHPStan\\Type\\StaticType");
-inline constexpr reg::Sig changeBaseClass = { "changeBaseClass", ZEND_ACC_PUBLIC, 1, changeBaseClass_args, 1, &changeBaseClass_return };
-inline constexpr reg::Arg isSuperTypeOf_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg isSuperTypeOf_return = reg::typed("", 0, "PHPStan\\Type\\IsSuperTypeOfResult");
-inline constexpr reg::Sig isSuperTypeOf = { "isSuperTypeOf", ZEND_ACC_PUBLIC, 1, isSuperTypeOf_args, 1, &isSuperTypeOf_return };
-inline constexpr reg::Arg traverse_args[] = { reg::typed("cb", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg traverse_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig traverse = { "traverse", ZEND_ACC_PUBLIC, 1, traverse_args, 1, &traverse_return };
-inline constexpr reg::Arg traverseSimultaneously_args[] = { reg::typed("right", 0, "PHPStan\\Type\\Type"), reg::typed("cb", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg traverseSimultaneously_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig traverseSimultaneously = { "traverseSimultaneously", ZEND_ACC_PUBLIC, 2, traverseSimultaneously_args, 2, &traverseSimultaneously_return };
-inline constexpr reg::Arg changeSubtractedType_args[] = { reg::typed("subtractedType", MAY_BE_NULL, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg changeSubtractedType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig changeSubtractedType = { "changeSubtractedType", ZEND_ACC_PUBLIC, 1, changeSubtractedType_args, 1, &changeSubtractedType_return };
-inline constexpr reg::Arg inferTemplateTypes_args[] = { reg::typed("receivedType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg inferTemplateTypes_return = reg::typed("", 0, "PHPStan\\Type\\Generic\\TemplateTypeMap");
-inline constexpr reg::Sig inferTemplateTypes = { "inferTemplateTypes", ZEND_ACC_PUBLIC, 1, inferTemplateTypes_args, 1, &inferTemplateTypes_return };
-inline constexpr reg::Arg getReferencedTemplateTypes_args[] = { reg::typed("positionVariance", 0, "PHPStan\\Type\\Generic\\TemplateTypeVariance") };
-inline constexpr reg::Arg getReferencedTemplateTypes_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getReferencedTemplateTypes = { "getReferencedTemplateTypes", ZEND_ACC_PUBLIC, 1, getReferencedTemplateTypes_args, 1, &getReferencedTemplateTypes_return };
-inline constexpr reg::Arg toPhpDocNode_return = reg::typed("", 0, "PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode");
-inline constexpr reg::Sig toPhpDocNode = { "toPhpDocNode", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toPhpDocNode_return };
-inline constexpr reg::Arg hasTemplateOrLateResolvableType_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig hasTemplateOrLateResolvableType = { "hasTemplateOrLateResolvableType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &hasTemplateOrLateResolvableType_return };
+inline constexpr sigtab::Sig __construct = { { 100 /* __construct */, 4, 0, 4, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getTypes = { { 113 /* getTypes */, 0, 4, 0, 4, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getVariances = { { 122 /* getVariances */, 0, 5, 0, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getStaticObjectType = { { 159 /* getStaticObjectType */, 0, 6, 0, 6, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig changeBaseClass = { { 203 /* changeBaseClass */, 1, 7, 1, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isSuperTypeOf = { { 257 /* isSuperTypeOf */, 1, 9, 1, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig traverse = { { 274 /* traverse */, 1, 11, 1, 12, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig traverseSimultaneously = { { 289 /* traverseSimultaneously */, 2, 13, 2, 15, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig changeSubtractedType = { { 312 /* changeSubtractedType */, 1, 16, 1, 17, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig inferTemplateTypes = { { 383 /* inferTemplateTypes */, 1, 18, 1, 19, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getReferencedTemplateTypes = { { 461 /* getReferencedTemplateTypes */, 1, 20, 1, 21, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toPhpDocNode = { { 527 /* toPhpDocNode */, 0, 22, 0, 22, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 540 /* hasTemplateOrLateResolvableType */, 0, 23, 0, 23, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::GenericStaticType

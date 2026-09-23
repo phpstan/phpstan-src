@@ -8,25 +8,49 @@
 
 namespace ptdecl::NonOffsetAccessibleTypeTrait {
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"\0" /* 0 */
+	"PHPStan\\TrinaryLogic\0" /* 1 */
+	"isOffsetAccessible\0" /* 22 */
+	"offsetType\0" /* 41 */
+	"PHPStan\\Type\\Type\0" /* 52 */
+	"hasOffsetValueType\0" /* 70 */
+	"getOffsetValueType\0" /* 89 */
+	"valueType\0" /* 108 */
+	"unionValues\0" /* 118 */
+	"true\0" /* 130 */
+	"setOffsetValueType\0" /* 135 */
+	"setExistingOffsetValueType\0" /* 154 */
+	"unsetOffset"; /* 181 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 1), /* isOffsetAccessible return */
+	reg::packed(41, 0, 52), /* hasOffsetValueType $offsetType */
+	reg::packed(0, 0, 1), /* hasOffsetValueType return */
+	reg::packed(41, 0, 52), /* getOffsetValueType $offsetType */
+	reg::packed(0, 0, 52), /* getOffsetValueType return */
+	reg::packed(41, MAY_BE_NULL, 52), /* setOffsetValueType $offsetType */
+	reg::packed(108, 0, 52), /* setOffsetValueType $valueType */
+	reg::packed(118, MAY_BE_BOOL, reg::NoString, false, false, 130), /* setOffsetValueType $unionValues */
+	reg::packed(0, 0, 52), /* setOffsetValueType return */
+	reg::packed(41, 0, 52), /* setExistingOffsetValueType $offsetType */
+	reg::packed(108, 0, 52), /* setExistingOffsetValueType $valueType */
+	reg::packed(0, 0, 52), /* setExistingOffsetValueType return */
+	reg::packed(41, 0, 52), /* unsetOffset $offsetType */
+	reg::packed(0, 0, 52), /* unsetOffset return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the trait declares itself */
 namespace sig {
-inline constexpr reg::Arg isOffsetAccessible_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isOffsetAccessible = { "isOffsetAccessible", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isOffsetAccessible_return };
-inline constexpr reg::Arg hasOffsetValueType_args[] = { reg::typed("offsetType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg hasOffsetValueType_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig hasOffsetValueType = { "hasOffsetValueType", ZEND_ACC_PUBLIC, 1, hasOffsetValueType_args, 1, &hasOffsetValueType_return };
-inline constexpr reg::Arg getOffsetValueType_args[] = { reg::typed("offsetType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg getOffsetValueType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getOffsetValueType = { "getOffsetValueType", ZEND_ACC_PUBLIC, 1, getOffsetValueType_args, 1, &getOffsetValueType_return };
-inline constexpr reg::Arg setOffsetValueType_args[] = { reg::typed("offsetType", MAY_BE_NULL, "PHPStan\\Type\\Type"), reg::typed("valueType", 0, "PHPStan\\Type\\Type"), reg::typed("unionValues", MAY_BE_BOOL, nullptr, false, false, "true") };
-inline constexpr reg::Arg setOffsetValueType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig setOffsetValueType = { "setOffsetValueType", ZEND_ACC_PUBLIC, 2, setOffsetValueType_args, 3, &setOffsetValueType_return };
-inline constexpr reg::Arg setExistingOffsetValueType_args[] = { reg::typed("offsetType", 0, "PHPStan\\Type\\Type"), reg::typed("valueType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg setExistingOffsetValueType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig setExistingOffsetValueType = { "setExistingOffsetValueType", ZEND_ACC_PUBLIC, 2, setExistingOffsetValueType_args, 2, &setExistingOffsetValueType_return };
-inline constexpr reg::Arg unsetOffset_args[] = { reg::typed("offsetType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg unsetOffset_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig unsetOffset = { "unsetOffset", ZEND_ACC_PUBLIC, 1, unsetOffset_args, 1, &unsetOffset_return };
+inline constexpr sigtab::Sig isOffsetAccessible = { { 22 /* isOffsetAccessible */, 0, 0, 0, 0, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasOffsetValueType = { { 70 /* hasOffsetValueType */, 1, 1, 1, 2, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getOffsetValueType = { { 89 /* getOffsetValueType */, 1, 3, 1, 4, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig setOffsetValueType = { { 135 /* setOffsetValueType */, 2, 5, 3, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig setExistingOffsetValueType = { { 154 /* setExistingOffsetValueType */, 2, 9, 2, 11, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig unsetOffset = { { 181 /* unsetOffset */, 1, 12, 1, 13, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::NonOffsetAccessibleTypeTrait

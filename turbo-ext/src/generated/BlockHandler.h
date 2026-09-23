@@ -25,16 +25,46 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("polluteScopeWithBlock", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_BOOL);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"polluteScopeWithBlock\0" /* 0 */
+	"__construct\0" /* 22 */
+	"stmt\0" /* 34 */
+	"PhpParser\\Node\\Stmt\0" /* 39 */
+	"\0" /* 59 */
+	"supports\0" /* 60 */
+	"nodeScopeResolver\0" /* 69 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 87 */
+	"scope\0" /* 122 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 128 */
+	"storage\0" /* 159 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 167 */
+	"nodeCallback\0" /* 208 */
+	"context\0" /* 221 */
+	"PHPStan\\Analyser\\StatementContext\0" /* 229 */
+	"PHPStan\\Analyser\\InternalStatementResult\0" /* 263 */
+	"processStmt"; /* 304 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_BOOL), /* __construct $polluteScopeWithBlock */
+	reg::packed(34, 0, 39), /* supports $stmt */
+	reg::packed(59, MAY_BE_BOOL), /* supports return */
+	reg::packed(69, 0, 87), /* processStmt $nodeScopeResolver */
+	reg::packed(34, 0, 39), /* processStmt $stmt */
+	reg::packed(122, 0, 128), /* processStmt $scope */
+	reg::packed(159, 0, 167), /* processStmt $storage */
+	reg::packed(208, MAY_BE_CALLABLE), /* processStmt $nodeCallback */
+	reg::packed(221, 0, 229), /* processStmt $context */
+	reg::packed(59, 0, 263), /* processStmt return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("polluteScopeWithBlock", MAY_BE_BOOL) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 1, __construct_args, 1, nullptr };
-inline constexpr reg::Arg supports_args[] = { reg::typed("stmt", 0, "PhpParser\\Node\\Stmt") };
-inline constexpr reg::Arg supports_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig supports = { "supports", ZEND_ACC_PUBLIC, 1, supports_args, 1, &supports_return };
-inline constexpr reg::Arg processStmt_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("stmt", 0, "PhpParser\\Node\\Stmt"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("nodeCallback", MAY_BE_CALLABLE), reg::typed("context", 0, "PHPStan\\Analyser\\StatementContext") };
-inline constexpr reg::Arg processStmt_return = reg::typed("", 0, "PHPStan\\Analyser\\InternalStatementResult");
-inline constexpr reg::Sig processStmt = { "processStmt", ZEND_ACC_PUBLIC, 6, processStmt_args, 6, &processStmt_return };
+inline constexpr sigtab::Sig __construct = { { 22 /* __construct */, 1, 0, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig supports = { { 60 /* supports */, 1, 1, 1, 2, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processStmt = { { 304 /* processStmt */, 6, 3, 6, 9, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::BlockHandler

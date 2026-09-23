@@ -32,18 +32,55 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("scopeFactory", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ScopeFactory");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"fileHelper\0" /* 0 */
+	"PHPStan\\File\\FileHelper\0" /* 11 */
+	"parser\0" /* 35 */
+	"PHPStan\\Parser\\Parser\0" /* 42 */
+	"scopeFactory\0" /* 64 */
+	"PHPStan\\Analyser\\ScopeFactory\0" /* 77 */
+	"__construct\0" /* 107 */
+	"nodeScopeResolver\0" /* 119 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 137 */
+	"methodReflection\0" /* 172 */
+	"PHPStan\\Reflection\\MethodReflection\0" /* 189 */
+	"\0" /* 225 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 226 */
+	"processCalledMethod\0" /* 257 */
+	"clearCalledMethodResults\0" /* 277 */
+	"node\0" /* 302 */
+	"storage\0" /* 307 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 315 */
+	"fileName\0" /* 356 */
+	"nodeCallback\0" /* 365 */
+	"processNodesForCalledMethod"; /* 378 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 11), /* __construct $fileHelper */
+	reg::packed(35, 0, 42), /* __construct $parser */
+	reg::packed(64, 0, 77), /* __construct $scopeFactory */
+	reg::packed(119, 0, 137), /* processCalledMethod $nodeScopeResolver */
+	reg::packed(172, 0, 189), /* processCalledMethod $methodReflection */
+	reg::packed(225, MAY_BE_NULL, 226), /* processCalledMethod return */
+	reg::packed(225, MAY_BE_VOID), /* clearCalledMethodResults return */
+	reg::packed(119, 0, 137), /* processNodesForCalledMethod $nodeScopeResolver */
+	reg::packed(302, 0), /* processNodesForCalledMethod $node */
+	reg::packed(307, 0, 315), /* processNodesForCalledMethod $storage */
+	reg::packed(356, MAY_BE_STRING), /* processNodesForCalledMethod $fileName */
+	reg::packed(172, 0, 189), /* processNodesForCalledMethod $methodReflection */
+	reg::packed(365, MAY_BE_CALLABLE), /* processNodesForCalledMethod $nodeCallback */
+	reg::packed(225, MAY_BE_VOID), /* processNodesForCalledMethod return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("fileHelper", 0, "PHPStan\\File\\FileHelper"), reg::typed("parser", 0, "PHPStan\\Parser\\Parser"), reg::typed("scopeFactory", 0, "PHPStan\\Analyser\\ScopeFactory") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 3, __construct_args, 3, nullptr };
-inline constexpr reg::Arg processCalledMethod_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("methodReflection", 0, "PHPStan\\Reflection\\MethodReflection") };
-inline constexpr reg::Arg processCalledMethod_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\MutatingScope");
-inline constexpr reg::Sig processCalledMethod = { "processCalledMethod", ZEND_ACC_PUBLIC, 2, processCalledMethod_args, 2, &processCalledMethod_return };
-inline constexpr reg::Arg clearCalledMethodResults_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig clearCalledMethodResults = { "clearCalledMethodResults", ZEND_ACC_PUBLIC, 0, nullptr, 0, &clearCalledMethodResults_return };
-inline constexpr reg::Arg processNodesForCalledMethod_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("node", 0), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("fileName", MAY_BE_STRING), reg::typed("methodReflection", 0, "PHPStan\\Reflection\\MethodReflection"), reg::typed("nodeCallback", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg processNodesForCalledMethod_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig processNodesForCalledMethod = { "processNodesForCalledMethod", ZEND_ACC_PRIVATE, 6, processNodesForCalledMethod_args, 6, &processNodesForCalledMethod_return };
+inline constexpr sigtab::Sig __construct = { { 107 /* __construct */, 3, 0, 3, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processCalledMethod = { { 257 /* processCalledMethod */, 2, 3, 2, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig clearCalledMethodResults = { { 277 /* clearCalledMethodResults */, 0, 6, 0, 6, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processNodesForCalledMethod = { { 378 /* processNodesForCalledMethod */, 6, 7, 6, 13, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::CalledMethodProcessor

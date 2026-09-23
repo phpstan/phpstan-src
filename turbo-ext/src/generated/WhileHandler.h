@@ -27,16 +27,48 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("treatPhpDocTypesAsCertain", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_BOOL);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"polluteScopeWithLoopInitialAssignments\0" /* 0 */
+	"treatPhpDocTypesAsCertain\0" /* 39 */
+	"__construct\0" /* 65 */
+	"stmt\0" /* 77 */
+	"PhpParser\\Node\\Stmt\0" /* 82 */
+	"\0" /* 102 */
+	"supports\0" /* 103 */
+	"nodeScopeResolver\0" /* 112 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 130 */
+	"scope\0" /* 165 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 171 */
+	"storage\0" /* 202 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 210 */
+	"nodeCallback\0" /* 251 */
+	"context\0" /* 264 */
+	"PHPStan\\Analyser\\StatementContext\0" /* 272 */
+	"PHPStan\\Analyser\\InternalStatementResult\0" /* 306 */
+	"processStmt"; /* 347 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_BOOL), /* __construct $polluteScopeWithLoopInitialAssignments */
+	reg::packed(39, MAY_BE_BOOL), /* __construct $treatPhpDocTypesAsCertain */
+	reg::packed(77, 0, 82), /* supports $stmt */
+	reg::packed(102, MAY_BE_BOOL), /* supports return */
+	reg::packed(112, 0, 130), /* processStmt $nodeScopeResolver */
+	reg::packed(77, 0, 82), /* processStmt $stmt */
+	reg::packed(165, 0, 171), /* processStmt $scope */
+	reg::packed(202, 0, 210), /* processStmt $storage */
+	reg::packed(251, MAY_BE_CALLABLE), /* processStmt $nodeCallback */
+	reg::packed(264, 0, 272), /* processStmt $context */
+	reg::packed(102, 0, 306), /* processStmt return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("polluteScopeWithLoopInitialAssignments", MAY_BE_BOOL), reg::typed("treatPhpDocTypesAsCertain", MAY_BE_BOOL) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 2, __construct_args, 2, nullptr };
-inline constexpr reg::Arg supports_args[] = { reg::typed("stmt", 0, "PhpParser\\Node\\Stmt") };
-inline constexpr reg::Arg supports_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig supports = { "supports", ZEND_ACC_PUBLIC, 1, supports_args, 1, &supports_return };
-inline constexpr reg::Arg processStmt_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("stmt", 0, "PhpParser\\Node\\Stmt"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("nodeCallback", MAY_BE_CALLABLE), reg::typed("context", 0, "PHPStan\\Analyser\\StatementContext") };
-inline constexpr reg::Arg processStmt_return = reg::typed("", 0, "PHPStan\\Analyser\\InternalStatementResult");
-inline constexpr reg::Sig processStmt = { "processStmt", ZEND_ACC_PUBLIC, 6, processStmt_args, 6, &processStmt_return };
+inline constexpr sigtab::Sig __construct = { { 65 /* __construct */, 2, 0, 2, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig supports = { { 103 /* supports */, 1, 2, 1, 3, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processStmt = { { 347 /* processStmt */, 6, 4, 6, 10, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::WhileHandler

@@ -19,14 +19,35 @@ inline void declareProperties(reg::Class &cls)
 	(void) cls;
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"constraints\0" /* 0 */
+	"PHPStan\\Analyser\\Generics\\TemplateArgumentConstraints\0" /* 12 */
+	"parent\0" /* 66 */
+	"PHPStan\\Analyser\\Generics\\TemplateArgumentFrame\0" /* 73 */
+	"statementStartTokenPositions\0" /* 121 */
+	"\0" /* 150 */
+	"resolve\0" /* 151 */
+	"tokenPosition\0" /* 159 */
+	"positions\0" /* 173 */
+	"locateStatement"; /* 183 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 12), /* resolve $constraints */
+	reg::packed(66, MAY_BE_NULL, 73), /* resolve $parent */
+	reg::packed(121, MAY_BE_ARRAY), /* resolve $statementStartTokenPositions */
+	reg::packed(150, 0, 73), /* resolve return */
+	reg::packed(159, MAY_BE_LONG), /* locateStatement $tokenPosition */
+	reg::packed(173, MAY_BE_ARRAY), /* locateStatement $positions */
+	reg::packed(150, MAY_BE_LONG), /* locateStatement return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg resolve_args[] = { reg::typed("constraints", 0, "PHPStan\\Analyser\\Generics\\TemplateArgumentConstraints"), reg::typed("parent", MAY_BE_NULL, "PHPStan\\Analyser\\Generics\\TemplateArgumentFrame"), reg::typed("statementStartTokenPositions", MAY_BE_ARRAY) };
-inline constexpr reg::Arg resolve_return = reg::typed("", 0, "PHPStan\\Analyser\\Generics\\TemplateArgumentFrame");
-inline constexpr reg::Sig resolve = { "resolve", ZEND_ACC_PUBLIC, 3, resolve_args, 3, &resolve_return };
-inline constexpr reg::Arg locateStatement_args[] = { reg::typed("tokenPosition", MAY_BE_LONG), reg::typed("positions", MAY_BE_ARRAY) };
-inline constexpr reg::Arg locateStatement_return = reg::typed("", MAY_BE_LONG);
-inline constexpr reg::Sig locateStatement = { "locateStatement", ZEND_ACC_PRIVATE, 2, locateStatement_args, 2, &locateStatement_return };
+inline constexpr sigtab::Sig resolve = { { 151 /* resolve */, 3, 0, 3, 3, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig locateStatement = { { 183 /* locateStatement */, 2, 4, 2, 6, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::TemplateArgumentResolver

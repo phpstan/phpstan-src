@@ -24,25 +24,77 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("defaultNarrowingHelper", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"defaultNarrowingHelper\0" /* 0 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper\0" /* 23 */
+	"__construct\0" /* 82 */
+	"nodeScopeResolver\0" /* 94 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 112 */
+	"leftTypes\0" /* 147 */
+	"PHPStan\\Analyser\\SpecifiedTypes\0" /* 157 */
+	"rightTypes\0" /* 189 */
+	"leftFilteredScope\0" /* 200 */
+	"rightFilteredScope\0" /* 218 */
+	"types\0" /* 237 */
+	"\0" /* 243 */
+	"PHPStan\\Analyser\\DisjunctionBranchUnionAugment\0" /* 244 */
+	"buildBranchUnionAugment\0" /* 291 */
+	"composeScope\0" /* 315 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 328 */
+	"conditionSpecifiedTypes\0" /* 359 */
+	"holderSpecifiedTypes\0" /* 383 */
+	"holdersFromSureTypes\0" /* 404 */
+	"holderSideIsNegated\0" /* 425 */
+	"nonVariableTargetScope\0" /* 445 */
+	"holderSideExpr\0" /* 468 */
+	"PhpParser\\Node\\Expr\0" /* 483 */
+	"null\0" /* 503 */
+	"PHPStan\\Analyser\\ConditionalExpressionHolderRecipe\0" /* 508 */
+	"buildConditionalHolderRecipe\0" /* 559 */
+	"expr\0" /* 588 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 593 */
+	"findConditionResult\0" /* 627 */
+	"isUnsplittableCompoundHolderSide\0" /* 647 */
+	"isTrackableExpression"; /* 680 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 23), /* __construct $defaultNarrowingHelper */
+	reg::packed(94, 0, 112), /* buildBranchUnionAugment $nodeScopeResolver */
+	reg::packed(147, 0, 157), /* buildBranchUnionAugment $leftTypes */
+	reg::packed(189, 0, 157), /* buildBranchUnionAugment $rightTypes */
+	reg::packed(200, MAY_BE_CALLABLE), /* buildBranchUnionAugment $leftFilteredScope */
+	reg::packed(218, MAY_BE_CALLABLE), /* buildBranchUnionAugment $rightFilteredScope */
+	reg::packed(237, 0, 157), /* buildBranchUnionAugment $types */
+	reg::packed(243, MAY_BE_NULL, 244), /* buildBranchUnionAugment return */
+	reg::packed(315, 0, 328), /* buildConditionalHolderRecipe $composeScope */
+	reg::packed(359, 0, 157), /* buildConditionalHolderRecipe $conditionSpecifiedTypes */
+	reg::packed(383, 0, 157), /* buildConditionalHolderRecipe $holderSpecifiedTypes */
+	reg::packed(404, MAY_BE_BOOL), /* buildConditionalHolderRecipe $holdersFromSureTypes */
+	reg::packed(425, MAY_BE_BOOL), /* buildConditionalHolderRecipe $holderSideIsNegated */
+	reg::packed(445, MAY_BE_NULL, 328), /* buildConditionalHolderRecipe $nonVariableTargetScope */
+	reg::packed(468, MAY_BE_NULL, 483, false, false, 503), /* buildConditionalHolderRecipe $holderSideExpr */
+	reg::packed(243, MAY_BE_NULL, 508), /* buildConditionalHolderRecipe return */
+	reg::packed(315, 0, 328), /* findConditionResult $composeScope */
+	reg::packed(588, 0, 483), /* findConditionResult $expr */
+	reg::packed(243, MAY_BE_NULL, 593), /* findConditionResult return */
+	reg::packed(468, MAY_BE_NULL, 483), /* isUnsplittableCompoundHolderSide $holderSideExpr */
+	reg::packed(425, MAY_BE_BOOL), /* isUnsplittableCompoundHolderSide $holderSideIsNegated */
+	reg::packed(243, MAY_BE_BOOL), /* isUnsplittableCompoundHolderSide return */
+	reg::packed(588, 0, 483), /* isTrackableExpression $expr */
+	reg::packed(243, MAY_BE_BOOL), /* isTrackableExpression return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("defaultNarrowingHelper", 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 1, __construct_args, 1, nullptr };
-inline constexpr reg::Arg buildBranchUnionAugment_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("leftTypes", 0, "PHPStan\\Analyser\\SpecifiedTypes"), reg::typed("rightTypes", 0, "PHPStan\\Analyser\\SpecifiedTypes"), reg::typed("leftFilteredScope", MAY_BE_CALLABLE), reg::typed("rightFilteredScope", MAY_BE_CALLABLE), reg::typed("types", 0, "PHPStan\\Analyser\\SpecifiedTypes") };
-inline constexpr reg::Arg buildBranchUnionAugment_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\DisjunctionBranchUnionAugment");
-inline constexpr reg::Sig buildBranchUnionAugment = { "buildBranchUnionAugment", ZEND_ACC_PUBLIC, 6, buildBranchUnionAugment_args, 6, &buildBranchUnionAugment_return };
-inline constexpr reg::Arg buildConditionalHolderRecipe_args[] = { reg::typed("composeScope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("conditionSpecifiedTypes", 0, "PHPStan\\Analyser\\SpecifiedTypes"), reg::typed("holderSpecifiedTypes", 0, "PHPStan\\Analyser\\SpecifiedTypes"), reg::typed("holdersFromSureTypes", MAY_BE_BOOL), reg::typed("holderSideIsNegated", MAY_BE_BOOL), reg::typed("nonVariableTargetScope", MAY_BE_NULL, "PHPStan\\Analyser\\MutatingScope"), reg::typed("holderSideExpr", MAY_BE_NULL, "PhpParser\\Node\\Expr", false, false, "null") };
-inline constexpr reg::Arg buildConditionalHolderRecipe_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\ConditionalExpressionHolderRecipe");
-inline constexpr reg::Sig buildConditionalHolderRecipe = { "buildConditionalHolderRecipe", ZEND_ACC_PUBLIC, 6, buildConditionalHolderRecipe_args, 7, &buildConditionalHolderRecipe_return };
-inline constexpr reg::Arg findConditionResult_args[] = { reg::typed("composeScope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("expr", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg findConditionResult_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\ExpressionResult");
-inline constexpr reg::Sig findConditionResult = { "findConditionResult", ZEND_ACC_PRIVATE, 2, findConditionResult_args, 2, &findConditionResult_return };
-inline constexpr reg::Arg isUnsplittableCompoundHolderSide_args[] = { reg::typed("holderSideExpr", MAY_BE_NULL, "PhpParser\\Node\\Expr"), reg::typed("holderSideIsNegated", MAY_BE_BOOL) };
-inline constexpr reg::Arg isUnsplittableCompoundHolderSide_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isUnsplittableCompoundHolderSide = { "isUnsplittableCompoundHolderSide", ZEND_ACC_PRIVATE, 2, isUnsplittableCompoundHolderSide_args, 2, &isUnsplittableCompoundHolderSide_return };
-inline constexpr reg::Arg isTrackableExpression_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg isTrackableExpression_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isTrackableExpression = { "isTrackableExpression", ZEND_ACC_PRIVATE, 1, isTrackableExpression_args, 1, &isTrackableExpression_return };
+inline constexpr sigtab::Sig __construct = { { 82 /* __construct */, 1, 0, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig buildBranchUnionAugment = { { 291 /* buildBranchUnionAugment */, 6, 1, 6, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig buildConditionalHolderRecipe = { { 559 /* buildConditionalHolderRecipe */, 6, 8, 7, 15, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig findConditionResult = { { 627 /* findConditionResult */, 2, 16, 2, 18, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isUnsplittableCompoundHolderSide = { { 647 /* isUnsplittableCompoundHolderSide */, 2, 19, 2, 21, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isTrackableExpression = { { 680 /* isTrackableExpression */, 1, 22, 1, 23, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::ConditionalExpressionHolderHelper

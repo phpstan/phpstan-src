@@ -24,64 +24,158 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("kind", ZEND_ACC_PUBLIC | ZEND_ACC_READONLY, reg::PropertyKind::Typed, MAY_BE_STRING);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"kind\0" /* 0 */
+	"__construct\0" /* 5 */
+	"flows\0" /* 17 */
+	"PHPStan\\Analyser\\VariableFlow\0" /* 23 */
+	"\0" /* 53 */
+	"sequence\0" /* 54 */
+	"branches\0" /* 63 */
+	"choice\0" /* 72 */
+	"arrow\0" /* 79 */
+	"PhpParser\\Node\\Expr\\ArrowFunction\0" /* 85 */
+	"body\0" /* 119 */
+	"outputs\0" /* 124 */
+	"name\0" /* 132 */
+	"targetId\0" /* 137 */
+	"null\0" /* 146 */
+	"container\0" /* 151 */
+	"false\0" /* 161 */
+	"offset\0" /* 167 */
+	"read\0" /* 174 */
+	"condition\0" /* 179 */
+	"if\0" /* 189 */
+	"else\0" /* 192 */
+	"truthy\0" /* 197 */
+	"conditional\0" /* 204 */
+	"cases\0" /* 216 */
+	"exhaustive\0" /* 222 */
+	"switch\0" /* 233 */
+	"write\0" /* 240 */
+	"PHPStan\\Node\\Variable\\VariableWrite\0" /* 246 */
+	"redundantType\0" /* 282 */
+	"PHPStan\\Type\\Type\0" /* 296 */
+	"discard\0" /* 314 */
+	"writeId\0" /* 322 */
+	"inputs\0" /* 330 */
+	"escape\0" /* 337 */
+	"mention\0" /* 344 */
+	"all\0" /* 352 */
+	"level\0" /* 356 */
+	"1\0" /* 362 */
+	"exit\0" /* 364 */
+	"type\0" /* 369 */
+	"canContinue\0" /* 374 */
+	"canContainAnyThrowable\0" /* 386 */
+	"throwing\0" /* 409 */
+	"flow\0" /* 418 */
+	"dead\0" /* 423 */
+	"update\0" /* 428 */
+	"atLeastOnce\0" /* 435 */
+	"canExit\0" /* 447 */
+	"canRepeat\0" /* 455 */
+	"true\0" /* 465 */
+	"loop\0" /* 470 */
+	"stmt\0" /* 475 */
+	"PhpParser\\Node\\Stmt\\Foreach_|PhpParser\\Node\\Stmt\\For_\0" /* 480 */
+	"bindings\0" /* 534 */
+	"ownWrites\0" /* 543 */
+	"loopStatement\0" /* 553 */
+	"catches\0" /* 567 */
+	"finally\0" /* 575 */
+	"tryCatch"; /* 583 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_STRING), /* __construct $kind */
+	reg::packed(17, MAY_BE_NULL, 23, false, true), /* sequence $flows */
+	reg::packed(53, MAY_BE_NULL, 23), /* sequence return */
+	reg::packed(63, MAY_BE_NULL, 23, false, true), /* choice $branches */
+	reg::packed(53, MAY_BE_NULL, 23), /* choice return */
+	reg::packed(79, 0, 85), /* arrow $arrow */
+	reg::packed(119, MAY_BE_NULL, 23), /* arrow $body */
+	reg::packed(124, MAY_BE_NULL, 23), /* arrow $outputs */
+	reg::packed(53, 0, 23), /* arrow return */
+	reg::packed(132, MAY_BE_STRING), /* read $name */
+	reg::packed(137, MAY_BE_NULL | MAY_BE_LONG, reg::NoString, false, false, 146), /* read $targetId */
+	reg::packed(151, MAY_BE_BOOL, reg::NoString, false, false, 161), /* read $container */
+	reg::packed(167, 0, reg::NoString, false, false, 146), /* read $offset */
+	reg::packed(53, MAY_BE_NULL, 23), /* read return */
+	reg::packed(179, MAY_BE_NULL, 23), /* conditional $condition */
+	reg::packed(189, MAY_BE_NULL, 23), /* conditional $if */
+	reg::packed(192, MAY_BE_NULL, 23), /* conditional $else */
+	reg::packed(197, MAY_BE_NULL | MAY_BE_BOOL), /* conditional $truthy */
+	reg::packed(53, MAY_BE_NULL, 23), /* conditional return */
+	reg::packed(179, MAY_BE_NULL, 23), /* switch $condition */
+	reg::packed(216, MAY_BE_ARRAY), /* switch $cases */
+	reg::packed(222, MAY_BE_BOOL), /* switch $exhaustive */
+	reg::packed(53, 0, 23), /* switch return */
+	reg::packed(240, 0, 246), /* write $write */
+	reg::packed(282, MAY_BE_NULL, 296, false, false, 146), /* write $redundantType */
+	reg::packed(53, 0, 23), /* write return */
+	reg::packed(240, 0, 246), /* discard $write */
+	reg::packed(53, 0, 23), /* discard return */
+	reg::packed(322, MAY_BE_LONG), /* inputs $writeId */
+	reg::packed(137, MAY_BE_NULL | MAY_BE_LONG), /* inputs $targetId */
+	reg::packed(53, 0, 23), /* inputs return */
+	reg::packed(132, MAY_BE_STRING), /* escape $name */
+	reg::packed(53, 0, 23), /* escape return */
+	reg::packed(132, MAY_BE_STRING), /* mention $name */
+	reg::packed(53, 0, 23), /* mention return */
+	reg::packed(0, MAY_BE_STRING), /* all $kind */
+	reg::packed(53, 0, 23), /* all return */
+	reg::packed(0, MAY_BE_STRING), /* exit $kind */
+	reg::packed(356, MAY_BE_LONG, reg::NoString, false, false, 362), /* exit $level */
+	reg::packed(132, MAY_BE_NULL | MAY_BE_STRING, reg::NoString, false, false, 146), /* exit $name */
+	reg::packed(53, 0, 23), /* exit return */
+	reg::packed(369, 0, 296), /* throwing $type */
+	reg::packed(374, MAY_BE_BOOL), /* throwing $canContinue */
+	reg::packed(386, MAY_BE_BOOL, reg::NoString, false, false, 161), /* throwing $canContainAnyThrowable */
+	reg::packed(53, 0, 23), /* throwing return */
+	reg::packed(418, MAY_BE_NULL, 23), /* dead $flow */
+	reg::packed(53, MAY_BE_NULL, 23), /* dead return */
+	reg::packed(179, MAY_BE_NULL, 23), /* loop $condition */
+	reg::packed(119, MAY_BE_NULL, 23), /* loop $body */
+	reg::packed(428, MAY_BE_NULL, 23), /* loop $update */
+	reg::packed(435, MAY_BE_BOOL), /* loop $atLeastOnce */
+	reg::packed(447, MAY_BE_BOOL), /* loop $canExit */
+	reg::packed(455, MAY_BE_BOOL, reg::NoString, false, false, 465), /* loop $canRepeat */
+	reg::packed(53, 0, 23), /* loop return */
+	reg::packed(475, 0, 480), /* loopStatement $stmt */
+	reg::packed(418, MAY_BE_NULL, 23), /* loopStatement $flow */
+	reg::packed(534, MAY_BE_ARRAY), /* loopStatement $bindings */
+	reg::packed(543, MAY_BE_ARRAY), /* loopStatement $ownWrites */
+	reg::packed(53, MAY_BE_NULL, 23), /* loopStatement return */
+	reg::packed(119, MAY_BE_NULL, 23), /* tryCatch $body */
+	reg::packed(567, MAY_BE_ARRAY), /* tryCatch $catches */
+	reg::packed(575, MAY_BE_NULL, 23), /* tryCatch $finally */
+	reg::packed(53, 0, 23), /* tryCatch return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("kind", MAY_BE_STRING) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PROTECTED, 1, __construct_args, 1, nullptr };
-inline constexpr reg::Arg sequence_args[] = { reg::typed("flows", MAY_BE_NULL, "PHPStan\\Analyser\\VariableFlow", false, true) };
-inline constexpr reg::Arg sequence_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\VariableFlow");
-inline constexpr reg::Sig sequence = { "sequence", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, sequence_args, 1, &sequence_return };
-inline constexpr reg::Arg choice_args[] = { reg::typed("branches", MAY_BE_NULL, "PHPStan\\Analyser\\VariableFlow", false, true) };
-inline constexpr reg::Arg choice_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\VariableFlow");
-inline constexpr reg::Sig choice = { "choice", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, choice_args, 1, &choice_return };
-inline constexpr reg::Arg arrow_args[] = { reg::typed("arrow", 0, "PhpParser\\Node\\Expr\\ArrowFunction"), reg::typed("body", MAY_BE_NULL, "PHPStan\\Analyser\\VariableFlow"), reg::typed("outputs", MAY_BE_NULL, "PHPStan\\Analyser\\VariableFlow") };
-inline constexpr reg::Arg arrow_return = reg::typed("", 0, "PHPStan\\Analyser\\VariableFlow");
-inline constexpr reg::Sig arrow = { "arrow", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 3, arrow_args, 3, &arrow_return };
-inline constexpr reg::Arg read_args[] = { reg::typed("name", MAY_BE_STRING), reg::typed("targetId", MAY_BE_NULL | MAY_BE_LONG, nullptr, false, false, "null"), reg::typed("container", MAY_BE_BOOL, nullptr, false, false, "false"), reg::typed("offset", 0, nullptr, false, false, "null") };
-inline constexpr reg::Arg read_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\VariableFlow");
-inline constexpr reg::Sig read = { "read", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, read_args, 4, &read_return };
-inline constexpr reg::Arg conditional_args[] = { reg::typed("condition", MAY_BE_NULL, "PHPStan\\Analyser\\VariableFlow"), reg::typed("if", MAY_BE_NULL, "PHPStan\\Analyser\\VariableFlow"), reg::typed("else", MAY_BE_NULL, "PHPStan\\Analyser\\VariableFlow"), reg::typed("truthy", MAY_BE_NULL | MAY_BE_BOOL) };
-inline constexpr reg::Arg conditional_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\VariableFlow");
-inline constexpr reg::Sig conditional = { "conditional", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 4, conditional_args, 4, &conditional_return };
-inline constexpr reg::Arg switch__args[] = { reg::typed("condition", MAY_BE_NULL, "PHPStan\\Analyser\\VariableFlow"), reg::typed("cases", MAY_BE_ARRAY), reg::typed("exhaustive", MAY_BE_BOOL) };
-inline constexpr reg::Arg switch__return = reg::typed("", 0, "PHPStan\\Analyser\\VariableFlow");
-inline constexpr reg::Sig switch_ = { "switch", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 3, switch__args, 3, &switch__return };
-inline constexpr reg::Arg write_args[] = { reg::typed("write", 0, "PHPStan\\Node\\Variable\\VariableWrite"), reg::typed("redundantType", MAY_BE_NULL, "PHPStan\\Type\\Type", false, false, "null") };
-inline constexpr reg::Arg write_return = reg::typed("", 0, "PHPStan\\Analyser\\VariableFlow");
-inline constexpr reg::Sig write = { "write", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, write_args, 2, &write_return };
-inline constexpr reg::Arg discard_args[] = { reg::typed("write", 0, "PHPStan\\Node\\Variable\\VariableWrite") };
-inline constexpr reg::Arg discard_return = reg::typed("", 0, "PHPStan\\Analyser\\VariableFlow");
-inline constexpr reg::Sig discard = { "discard", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, discard_args, 1, &discard_return };
-inline constexpr reg::Arg inputs_args[] = { reg::typed("writeId", MAY_BE_LONG), reg::typed("targetId", MAY_BE_NULL | MAY_BE_LONG) };
-inline constexpr reg::Arg inputs_return = reg::typed("", 0, "PHPStan\\Analyser\\VariableFlow");
-inline constexpr reg::Sig inputs = { "inputs", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, inputs_args, 2, &inputs_return };
-inline constexpr reg::Arg escape_args[] = { reg::typed("name", MAY_BE_STRING) };
-inline constexpr reg::Arg escape_return = reg::typed("", 0, "PHPStan\\Analyser\\VariableFlow");
-inline constexpr reg::Sig escape = { "escape", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, escape_args, 1, &escape_return };
-inline constexpr reg::Arg mention_args[] = { reg::typed("name", MAY_BE_STRING) };
-inline constexpr reg::Arg mention_return = reg::typed("", 0, "PHPStan\\Analyser\\VariableFlow");
-inline constexpr reg::Sig mention = { "mention", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, mention_args, 1, &mention_return };
-inline constexpr reg::Arg all_args[] = { reg::typed("kind", MAY_BE_STRING) };
-inline constexpr reg::Arg all_return = reg::typed("", 0, "PHPStan\\Analyser\\VariableFlow");
-inline constexpr reg::Sig all = { "all", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, all_args, 1, &all_return };
-inline constexpr reg::Arg exit_args[] = { reg::typed("kind", MAY_BE_STRING), reg::typed("level", MAY_BE_LONG, nullptr, false, false, "1"), reg::typed("name", MAY_BE_NULL | MAY_BE_STRING, nullptr, false, false, "null") };
-inline constexpr reg::Arg exit_return = reg::typed("", 0, "PHPStan\\Analyser\\VariableFlow");
-inline constexpr reg::Sig exit = { "exit", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, exit_args, 3, &exit_return };
-inline constexpr reg::Arg throwing_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type"), reg::typed("canContinue", MAY_BE_BOOL), reg::typed("canContainAnyThrowable", MAY_BE_BOOL, nullptr, false, false, "false") };
-inline constexpr reg::Arg throwing_return = reg::typed("", 0, "PHPStan\\Analyser\\VariableFlow");
-inline constexpr reg::Sig throwing = { "throwing", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, throwing_args, 3, &throwing_return };
-inline constexpr reg::Arg dead_args[] = { reg::typed("flow", MAY_BE_NULL, "PHPStan\\Analyser\\VariableFlow") };
-inline constexpr reg::Arg dead_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\VariableFlow");
-inline constexpr reg::Sig dead = { "dead", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, dead_args, 1, &dead_return };
-inline constexpr reg::Arg loop_args[] = { reg::typed("condition", MAY_BE_NULL, "PHPStan\\Analyser\\VariableFlow"), reg::typed("body", MAY_BE_NULL, "PHPStan\\Analyser\\VariableFlow"), reg::typed("update", MAY_BE_NULL, "PHPStan\\Analyser\\VariableFlow"), reg::typed("atLeastOnce", MAY_BE_BOOL), reg::typed("canExit", MAY_BE_BOOL), reg::typed("canRepeat", MAY_BE_BOOL, nullptr, false, false, "true") };
-inline constexpr reg::Arg loop_return = reg::typed("", 0, "PHPStan\\Analyser\\VariableFlow");
-inline constexpr reg::Sig loop = { "loop", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 5, loop_args, 6, &loop_return };
-inline constexpr reg::Arg loopStatement_args[] = { reg::typed("stmt", 0, "PhpParser\\Node\\Stmt\\Foreach_|PhpParser\\Node\\Stmt\\For_"), reg::typed("flow", MAY_BE_NULL, "PHPStan\\Analyser\\VariableFlow"), reg::typed("bindings", MAY_BE_ARRAY), reg::typed("ownWrites", MAY_BE_ARRAY) };
-inline constexpr reg::Arg loopStatement_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\VariableFlow");
-inline constexpr reg::Sig loopStatement = { "loopStatement", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 4, loopStatement_args, 4, &loopStatement_return };
-inline constexpr reg::Arg tryCatch_args[] = { reg::typed("body", MAY_BE_NULL, "PHPStan\\Analyser\\VariableFlow"), reg::typed("catches", MAY_BE_ARRAY), reg::typed("finally", MAY_BE_NULL, "PHPStan\\Analyser\\VariableFlow") };
-inline constexpr reg::Arg tryCatch_return = reg::typed("", 0, "PHPStan\\Analyser\\VariableFlow");
-inline constexpr reg::Sig tryCatch = { "tryCatch", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 3, tryCatch_args, 3, &tryCatch_return };
+inline constexpr sigtab::Sig __construct = { { 5 /* __construct */, 1, 0, 1, reg::NoArg, ZEND_ACC_PROTECTED } };
+inline constexpr sigtab::Sig sequence = { { 54 /* sequence */, 0, 1, 1, 2, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig choice = { { 72 /* choice */, 0, 3, 1, 4, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig arrow = { { 79 /* arrow */, 3, 5, 3, 8, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig read = { { 174 /* read */, 1, 9, 4, 13, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig conditional = { { 204 /* conditional */, 4, 14, 4, 18, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig switch_ = { { 233 /* switch */, 3, 19, 3, 22, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig write = { { 240 /* write */, 1, 23, 2, 25, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig discard = { { 314 /* discard */, 1, 26, 1, 27, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig inputs = { { 330 /* inputs */, 2, 28, 2, 30, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig escape = { { 337 /* escape */, 1, 31, 1, 32, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig mention = { { 344 /* mention */, 1, 33, 1, 34, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig all = { { 352 /* all */, 1, 35, 1, 36, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig exit = { { 364 /* exit */, 1, 37, 3, 40, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig throwing = { { 409 /* throwing */, 2, 41, 3, 44, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig dead = { { 423 /* dead */, 1, 45, 1, 46, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig loop = { { 470 /* loop */, 5, 47, 6, 53, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig loopStatement = { { 553 /* loopStatement */, 4, 54, 4, 58, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig tryCatch = { { 583 /* tryCatch */, 3, 59, 3, 62, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::VariableFlow

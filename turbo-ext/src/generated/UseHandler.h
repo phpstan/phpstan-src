@@ -20,14 +20,42 @@ inline void declareProperties(reg::Class &cls)
 	(void) cls;
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"stmt\0" /* 0 */
+	"PhpParser\\Node\\Stmt\0" /* 5 */
+	"\0" /* 25 */
+	"supports\0" /* 26 */
+	"nodeScopeResolver\0" /* 35 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 53 */
+	"scope\0" /* 88 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 94 */
+	"storage\0" /* 125 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 133 */
+	"nodeCallback\0" /* 174 */
+	"context\0" /* 187 */
+	"PHPStan\\Analyser\\StatementContext\0" /* 195 */
+	"PHPStan\\Analyser\\InternalStatementResult\0" /* 229 */
+	"processStmt"; /* 270 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 5), /* supports $stmt */
+	reg::packed(25, MAY_BE_BOOL), /* supports return */
+	reg::packed(35, 0, 53), /* processStmt $nodeScopeResolver */
+	reg::packed(0, 0, 5), /* processStmt $stmt */
+	reg::packed(88, 0, 94), /* processStmt $scope */
+	reg::packed(125, 0, 133), /* processStmt $storage */
+	reg::packed(174, MAY_BE_CALLABLE), /* processStmt $nodeCallback */
+	reg::packed(187, 0, 195), /* processStmt $context */
+	reg::packed(25, 0, 229), /* processStmt return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg supports_args[] = { reg::typed("stmt", 0, "PhpParser\\Node\\Stmt") };
-inline constexpr reg::Arg supports_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig supports = { "supports", ZEND_ACC_PUBLIC, 1, supports_args, 1, &supports_return };
-inline constexpr reg::Arg processStmt_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("stmt", 0, "PhpParser\\Node\\Stmt"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("nodeCallback", MAY_BE_CALLABLE), reg::typed("context", 0, "PHPStan\\Analyser\\StatementContext") };
-inline constexpr reg::Arg processStmt_return = reg::typed("", 0, "PHPStan\\Analyser\\InternalStatementResult");
-inline constexpr reg::Sig processStmt = { "processStmt", ZEND_ACC_PUBLIC, 6, processStmt_args, 6, &processStmt_return };
+inline constexpr sigtab::Sig supports = { { 26 /* supports */, 1, 0, 1, 1, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processStmt = { { 270 /* processStmt */, 6, 2, 6, 8, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::UseHandler

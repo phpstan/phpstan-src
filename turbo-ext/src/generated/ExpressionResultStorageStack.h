@@ -24,15 +24,29 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("stack", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"storage\0" /* 0 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 8 */
+	"\0" /* 49 */
+	"push\0" /* 50 */
+	"pop\0" /* 55 */
+	"getCurrent"; /* 59 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 8), /* push $storage */
+	reg::packed(49, MAY_BE_VOID), /* push return */
+	reg::packed(49, MAY_BE_VOID), /* pop return */
+	reg::packed(49, MAY_BE_NULL, 8), /* getCurrent return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg push_args[] = { reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage") };
-inline constexpr reg::Arg push_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig push = { "push", ZEND_ACC_PUBLIC, 1, push_args, 1, &push_return };
-inline constexpr reg::Arg pop_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig pop = { "pop", ZEND_ACC_PUBLIC, 0, nullptr, 0, &pop_return };
-inline constexpr reg::Arg getCurrent_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\ExpressionResultStorage");
-inline constexpr reg::Sig getCurrent = { "getCurrent", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getCurrent_return };
+inline constexpr sigtab::Sig push = { { 50 /* push */, 1, 0, 1, 1, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig pop = { { 55 /* pop */, 0, 2, 0, 2, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getCurrent = { { 59 /* getCurrent */, 0, 3, 0, 3, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ExpressionResultStorageStack

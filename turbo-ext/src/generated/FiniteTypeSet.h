@@ -28,37 +28,68 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("others", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_ARRAY);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"members\0" /* 0 */
+	"membersByKind\0" /* 8 */
+	"others\0" /* 22 */
+	"__construct\0" /* 29 */
+	"types\0" /* 41 */
+	"\0" /* 47 */
+	"PHPStan\\Type\\FiniteTypeSet\0" /* 48 */
+	"create\0" /* 75 */
+	"type\0" /* 82 */
+	"PHPStan\\Type\\Type\0" /* 87 */
+	"key\0" /* 105 */
+	"kind\0" /* 109 */
+	"getRepresentativesOfOtherKinds\0" /* 114 */
+	"has\0" /* 145 */
+	"isComplete\0" /* 149 */
+	"getMembers\0" /* 160 */
+	"getOthers\0" /* 171 */
+	"other\0" /* 181 */
+	"PHPStan\\TrinaryLogic\0" /* 187 */
+	"containedIn\0" /* 208 */
+	"containedInKey"; /* 220 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_ARRAY), /* __construct $members */
+	reg::packed(8, MAY_BE_ARRAY), /* __construct $membersByKind */
+	reg::packed(22, MAY_BE_ARRAY), /* __construct $others */
+	reg::packed(41, MAY_BE_ARRAY), /* create $types */
+	reg::packed(47, MAY_BE_NULL, 48), /* create return */
+	reg::packed(82, 0, 87), /* key $type */
+	reg::packed(47, MAY_BE_NULL | MAY_BE_STRING), /* key return */
+	reg::packed(82, 0, 87), /* kind $type */
+	reg::packed(47, MAY_BE_STRING), /* kind return */
+	reg::packed(82, 0, 87), /* getRepresentativesOfOtherKinds $type */
+	reg::packed(47, MAY_BE_ARRAY), /* getRepresentativesOfOtherKinds return */
+	reg::packed(105, MAY_BE_STRING), /* has $key */
+	reg::packed(47, MAY_BE_BOOL), /* has return */
+	reg::packed(47, MAY_BE_BOOL), /* isComplete return */
+	reg::packed(47, MAY_BE_ARRAY), /* getMembers return */
+	reg::packed(47, MAY_BE_ARRAY), /* getOthers return */
+	reg::packed(181, 0, 48), /* containedIn $other */
+	reg::packed(47, 0, 187), /* containedIn return */
+	reg::packed(105, MAY_BE_STRING), /* containedInKey $key */
+	reg::packed(47, 0, 187), /* containedInKey return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("members", MAY_BE_ARRAY), reg::typed("membersByKind", MAY_BE_ARRAY), reg::typed("others", MAY_BE_ARRAY) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PRIVATE, 3, __construct_args, 3, nullptr };
-inline constexpr reg::Arg create_args[] = { reg::typed("types", MAY_BE_ARRAY) };
-inline constexpr reg::Arg create_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Type\\FiniteTypeSet");
-inline constexpr reg::Sig create = { "create", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, create_args, 1, &create_return };
-inline constexpr reg::Arg key_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg key_return = reg::typed("", MAY_BE_NULL | MAY_BE_STRING);
-inline constexpr reg::Sig key = { "key", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, key_args, 1, &key_return };
-inline constexpr reg::Arg kind_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg kind_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig kind = { "kind", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 1, kind_args, 1, &kind_return };
-inline constexpr reg::Arg getRepresentativesOfOtherKinds_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg getRepresentativesOfOtherKinds_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getRepresentativesOfOtherKinds = { "getRepresentativesOfOtherKinds", ZEND_ACC_PUBLIC, 1, getRepresentativesOfOtherKinds_args, 1, &getRepresentativesOfOtherKinds_return };
-inline constexpr reg::Arg has_args[] = { reg::typed("key", MAY_BE_STRING) };
-inline constexpr reg::Arg has_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig has = { "has", ZEND_ACC_PUBLIC, 1, has_args, 1, &has_return };
-inline constexpr reg::Arg isComplete_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isComplete = { "isComplete", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isComplete_return };
-inline constexpr reg::Arg getMembers_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getMembers = { "getMembers", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getMembers_return };
-inline constexpr reg::Arg getOthers_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getOthers = { "getOthers", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getOthers_return };
-inline constexpr reg::Arg containedIn_args[] = { reg::typed("other", 0, "PHPStan\\Type\\FiniteTypeSet") };
-inline constexpr reg::Arg containedIn_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig containedIn = { "containedIn", ZEND_ACC_PUBLIC, 1, containedIn_args, 1, &containedIn_return };
-inline constexpr reg::Arg containedInKey_args[] = { reg::typed("key", MAY_BE_STRING) };
-inline constexpr reg::Arg containedInKey_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig containedInKey = { "containedInKey", ZEND_ACC_PUBLIC, 1, containedInKey_args, 1, &containedInKey_return };
+inline constexpr sigtab::Sig __construct = { { 29 /* __construct */, 3, 0, 3, reg::NoArg, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig create = { { 75 /* create */, 1, 3, 1, 4, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig key = { { 105 /* key */, 1, 5, 1, 6, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig kind = { { 109 /* kind */, 1, 7, 1, 8, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig getRepresentativesOfOtherKinds = { { 114 /* getRepresentativesOfOtherKinds */, 1, 9, 1, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig has = { { 145 /* has */, 1, 11, 1, 12, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isComplete = { { 149 /* isComplete */, 0, 13, 0, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getMembers = { { 160 /* getMembers */, 0, 14, 0, 14, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getOthers = { { 171 /* getOthers */, 0, 15, 0, 15, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig containedIn = { { 208 /* containedIn */, 1, 16, 1, 17, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig containedInKey = { { 220 /* containedInKey */, 1, 18, 1, 19, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::FiniteTypeSet

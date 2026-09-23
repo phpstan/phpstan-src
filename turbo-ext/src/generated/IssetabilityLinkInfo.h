@@ -70,74 +70,181 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("leafIsNullsafePropertyFetch", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_BOOL);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"kind\0" /* 0 */
+	"variableName\0" /* 5 */
+	"null\0" /* 18 */
+	"hasVariable\0" /* 23 */
+	"PHPStan\\TrinaryLogic\0" /* 35 */
+	"isOffsetAccessible\0" /* 56 */
+	"hasOffsetValue\0" /* 75 */
+	"hasExpressionTypeOfExpr\0" /* 90 */
+	"false\0" /* 114 */
+	"varType\0" /* 120 */
+	"PHPStan\\Type\\Type\0" /* 128 */
+	"dimType\0" /* 146 */
+	"valueType\0" /* 154 */
+	"propertyReflection\0" /* 164 */
+	"PHPStan\\Rules\\Properties\\FoundPropertyReflection\0" /* 183 */
+	"propertyFetch\0" /* 232 */
+	"PhpParser\\Node\\Expr\0" /* 246 */
+	"reflectionNative\0" /* 266 */
+	"hasNativeType\0" /* 283 */
+	"isVirtual\0" /* 297 */
+	"nativeType\0" /* 307 */
+	"hasExpressionTypeOfFetch\0" /* 318 */
+	"initializedThisProperty\0" /* 343 */
+	"nativeReflectionExists\0" /* 367 */
+	"nativeIsPromoted\0" /* 390 */
+	"nativeIsReadOnly\0" /* 407 */
+	"nativeIsHooked\0" /* 424 */
+	"nativeHasDefaultValue\0" /* 439 */
+	"leafExpr\0" /* 461 */
+	"leafIsNullsafePropertyFetch\0" /* 470 */
+	"__construct\0" /* 498 */
+	"\0" /* 510 */
+	"PHPStan\\Analyser\\IssetabilityLinkInfo\0" /* 511 */
+	"variable\0" /* 549 */
+	"offset\0" /* 558 */
+	"writableType\0" /* 565 */
+	"property\0" /* 578 */
+	"leaf\0" /* 587 */
+	"isVariable\0" /* 592 */
+	"isOffset\0" /* 603 */
+	"isProperty\0" /* 612 */
+	"getVariableName\0" /* 623 */
+	"getHasVariable\0" /* 639 */
+	"getValueType\0" /* 654 */
+	"getIsOffsetAccessible\0" /* 667 */
+	"getHasOffsetValue\0" /* 689 */
+	"getVarType\0" /* 707 */
+	"getDimType\0" /* 718 */
+	"getPropertyReflection\0" /* 729 */
+	"getPropertyFetch\0" /* 751 */
+	"isReflectionNative\0" /* 768 */
+	"getNativeType\0" /* 787 */
+	"isInitializedThisProperty\0" /* 801 */
+	"getLeafExpr"; /* 827 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_STRING), /* __construct $kind */
+	reg::packed(5, MAY_BE_NULL | MAY_BE_STRING, reg::NoString, false, false, 18), /* __construct $variableName */
+	reg::packed(23, MAY_BE_NULL, 35, false, false, 18), /* __construct $hasVariable */
+	reg::packed(56, MAY_BE_NULL, 35, false, false, 18), /* __construct $isOffsetAccessible */
+	reg::packed(75, MAY_BE_NULL, 35, false, false, 18), /* __construct $hasOffsetValue */
+	reg::packed(90, MAY_BE_BOOL, reg::NoString, false, false, 114), /* __construct $hasExpressionTypeOfExpr */
+	reg::packed(120, MAY_BE_NULL, 128, false, false, 18), /* __construct $varType */
+	reg::packed(146, MAY_BE_NULL, 128, false, false, 18), /* __construct $dimType */
+	reg::packed(154, MAY_BE_NULL, 128, false, false, 18), /* __construct $valueType */
+	reg::packed(164, MAY_BE_NULL, 183, false, false, 18), /* __construct $propertyReflection */
+	reg::packed(232, MAY_BE_NULL, 246, false, false, 18), /* __construct $propertyFetch */
+	reg::packed(266, MAY_BE_BOOL, reg::NoString, false, false, 114), /* __construct $reflectionNative */
+	reg::packed(283, MAY_BE_BOOL, reg::NoString, false, false, 114), /* __construct $hasNativeType */
+	reg::packed(297, MAY_BE_NULL, 35, false, false, 18), /* __construct $isVirtual */
+	reg::packed(307, MAY_BE_NULL, 128, false, false, 18), /* __construct $nativeType */
+	reg::packed(318, MAY_BE_BOOL, reg::NoString, false, false, 114), /* __construct $hasExpressionTypeOfFetch */
+	reg::packed(343, MAY_BE_BOOL, reg::NoString, false, false, 114), /* __construct $initializedThisProperty */
+	reg::packed(367, MAY_BE_BOOL, reg::NoString, false, false, 114), /* __construct $nativeReflectionExists */
+	reg::packed(390, MAY_BE_BOOL, reg::NoString, false, false, 114), /* __construct $nativeIsPromoted */
+	reg::packed(407, MAY_BE_BOOL, reg::NoString, false, false, 114), /* __construct $nativeIsReadOnly */
+	reg::packed(424, MAY_BE_BOOL, reg::NoString, false, false, 114), /* __construct $nativeIsHooked */
+	reg::packed(439, MAY_BE_BOOL, reg::NoString, false, false, 114), /* __construct $nativeHasDefaultValue */
+	reg::packed(461, MAY_BE_NULL, 246, false, false, 18), /* __construct $leafExpr */
+	reg::packed(470, MAY_BE_BOOL, reg::NoString, false, false, 114), /* __construct $leafIsNullsafePropertyFetch */
+	reg::packed(5, MAY_BE_STRING), /* variable $variableName */
+	reg::packed(23, 0, 35), /* variable $hasVariable */
+	reg::packed(154, 0, 128), /* variable $valueType */
+	reg::packed(510, 0, 511), /* variable return */
+	reg::packed(56, 0, 35), /* offset $isOffsetAccessible */
+	reg::packed(75, 0, 35), /* offset $hasOffsetValue */
+	reg::packed(90, MAY_BE_BOOL), /* offset $hasExpressionTypeOfExpr */
+	reg::packed(120, 0, 128), /* offset $varType */
+	reg::packed(146, 0, 128), /* offset $dimType */
+	reg::packed(154, 0, 128), /* offset $valueType */
+	reg::packed(510, 0, 511), /* offset return */
+	reg::packed(164, MAY_BE_NULL, 183), /* property $propertyReflection */
+	reg::packed(232, 0, 246), /* property $propertyFetch */
+	reg::packed(266, MAY_BE_BOOL), /* property $reflectionNative */
+	reg::packed(283, MAY_BE_BOOL), /* property $hasNativeType */
+	reg::packed(297, 0, 35), /* property $isVirtual */
+	reg::packed(565, 0, 128), /* property $writableType */
+	reg::packed(307, 0, 128), /* property $nativeType */
+	reg::packed(318, MAY_BE_BOOL), /* property $hasExpressionTypeOfFetch */
+	reg::packed(343, MAY_BE_BOOL), /* property $initializedThisProperty */
+	reg::packed(367, MAY_BE_BOOL), /* property $nativeReflectionExists */
+	reg::packed(390, MAY_BE_BOOL), /* property $nativeIsPromoted */
+	reg::packed(407, MAY_BE_BOOL), /* property $nativeIsReadOnly */
+	reg::packed(424, MAY_BE_BOOL), /* property $nativeIsHooked */
+	reg::packed(439, MAY_BE_BOOL), /* property $nativeHasDefaultValue */
+	reg::packed(510, 0, 511), /* property return */
+	reg::packed(154, 0, 128), /* leaf $valueType */
+	reg::packed(461, 0, 246), /* leaf $leafExpr */
+	reg::packed(470, MAY_BE_BOOL), /* leaf $leafIsNullsafePropertyFetch */
+	reg::packed(510, 0, 511), /* leaf return */
+	reg::packed(510, MAY_BE_BOOL), /* isVariable return */
+	reg::packed(510, MAY_BE_BOOL), /* isOffset return */
+	reg::packed(510, MAY_BE_BOOL), /* isProperty return */
+	reg::packed(510, MAY_BE_STRING), /* getVariableName return */
+	reg::packed(510, 0, 35), /* getHasVariable return */
+	reg::packed(510, 0, 128), /* getValueType return */
+	reg::packed(510, 0, 35), /* getIsOffsetAccessible return */
+	reg::packed(510, 0, 35), /* getHasOffsetValue return */
+	reg::packed(510, MAY_BE_BOOL), /* hasExpressionTypeOfExpr return */
+	reg::packed(510, 0, 128), /* getVarType return */
+	reg::packed(510, 0, 128), /* getDimType return */
+	reg::packed(510, MAY_BE_NULL, 183), /* getPropertyReflection return */
+	reg::packed(510, 0, 246), /* getPropertyFetch return */
+	reg::packed(510, MAY_BE_BOOL), /* isReflectionNative return */
+	reg::packed(510, MAY_BE_BOOL), /* hasNativeType return */
+	reg::packed(510, 0, 35), /* isVirtual return */
+	reg::packed(510, 0, 128), /* getNativeType return */
+	reg::packed(510, MAY_BE_BOOL), /* hasExpressionTypeOfFetch return */
+	reg::packed(510, MAY_BE_BOOL), /* isInitializedThisProperty return */
+	reg::packed(510, MAY_BE_BOOL), /* nativeReflectionExists return */
+	reg::packed(510, MAY_BE_BOOL), /* nativeIsPromoted return */
+	reg::packed(510, MAY_BE_BOOL), /* nativeIsReadOnly return */
+	reg::packed(510, MAY_BE_BOOL), /* nativeIsHooked return */
+	reg::packed(510, MAY_BE_BOOL), /* nativeHasDefaultValue return */
+	reg::packed(510, 0, 246), /* getLeafExpr return */
+	reg::packed(510, MAY_BE_BOOL), /* leafIsNullsafePropertyFetch return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("kind", MAY_BE_STRING), reg::typed("variableName", MAY_BE_NULL | MAY_BE_STRING, nullptr, false, false, "null"), reg::typed("hasVariable", MAY_BE_NULL, "PHPStan\\TrinaryLogic", false, false, "null"), reg::typed("isOffsetAccessible", MAY_BE_NULL, "PHPStan\\TrinaryLogic", false, false, "null"), reg::typed("hasOffsetValue", MAY_BE_NULL, "PHPStan\\TrinaryLogic", false, false, "null"), reg::typed("hasExpressionTypeOfExpr", MAY_BE_BOOL, nullptr, false, false, "false"), reg::typed("varType", MAY_BE_NULL, "PHPStan\\Type\\Type", false, false, "null"), reg::typed("dimType", MAY_BE_NULL, "PHPStan\\Type\\Type", false, false, "null"), reg::typed("valueType", MAY_BE_NULL, "PHPStan\\Type\\Type", false, false, "null"), reg::typed("propertyReflection", MAY_BE_NULL, "PHPStan\\Rules\\Properties\\FoundPropertyReflection", false, false, "null"), reg::typed("propertyFetch", MAY_BE_NULL, "PhpParser\\Node\\Expr", false, false, "null"), reg::typed("reflectionNative", MAY_BE_BOOL, nullptr, false, false, "false"), reg::typed("hasNativeType", MAY_BE_BOOL, nullptr, false, false, "false"), reg::typed("isVirtual", MAY_BE_NULL, "PHPStan\\TrinaryLogic", false, false, "null"), reg::typed("nativeType", MAY_BE_NULL, "PHPStan\\Type\\Type", false, false, "null"), reg::typed("hasExpressionTypeOfFetch", MAY_BE_BOOL, nullptr, false, false, "false"), reg::typed("initializedThisProperty", MAY_BE_BOOL, nullptr, false, false, "false"), reg::typed("nativeReflectionExists", MAY_BE_BOOL, nullptr, false, false, "false"), reg::typed("nativeIsPromoted", MAY_BE_BOOL, nullptr, false, false, "false"), reg::typed("nativeIsReadOnly", MAY_BE_BOOL, nullptr, false, false, "false"), reg::typed("nativeIsHooked", MAY_BE_BOOL, nullptr, false, false, "false"), reg::typed("nativeHasDefaultValue", MAY_BE_BOOL, nullptr, false, false, "false"), reg::typed("leafExpr", MAY_BE_NULL, "PhpParser\\Node\\Expr", false, false, "null"), reg::typed("leafIsNullsafePropertyFetch", MAY_BE_BOOL, nullptr, false, false, "false") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PRIVATE, 1, __construct_args, 24, nullptr };
-inline constexpr reg::Arg variable_args[] = { reg::typed("variableName", MAY_BE_STRING), reg::typed("hasVariable", 0, "PHPStan\\TrinaryLogic"), reg::typed("valueType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg variable_return = reg::typed("", 0, "PHPStan\\Analyser\\IssetabilityLinkInfo");
-inline constexpr reg::Sig variable = { "variable", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 3, variable_args, 3, &variable_return };
-inline constexpr reg::Arg offset_args[] = { reg::typed("isOffsetAccessible", 0, "PHPStan\\TrinaryLogic"), reg::typed("hasOffsetValue", 0, "PHPStan\\TrinaryLogic"), reg::typed("hasExpressionTypeOfExpr", MAY_BE_BOOL), reg::typed("varType", 0, "PHPStan\\Type\\Type"), reg::typed("dimType", 0, "PHPStan\\Type\\Type"), reg::typed("valueType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg offset_return = reg::typed("", 0, "PHPStan\\Analyser\\IssetabilityLinkInfo");
-inline constexpr reg::Sig offset = { "offset", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 6, offset_args, 6, &offset_return };
-inline constexpr reg::Arg property_args[] = { reg::typed("propertyReflection", MAY_BE_NULL, "PHPStan\\Rules\\Properties\\FoundPropertyReflection"), reg::typed("propertyFetch", 0, "PhpParser\\Node\\Expr"), reg::typed("reflectionNative", MAY_BE_BOOL), reg::typed("hasNativeType", MAY_BE_BOOL), reg::typed("isVirtual", 0, "PHPStan\\TrinaryLogic"), reg::typed("writableType", 0, "PHPStan\\Type\\Type"), reg::typed("nativeType", 0, "PHPStan\\Type\\Type"), reg::typed("hasExpressionTypeOfFetch", MAY_BE_BOOL), reg::typed("initializedThisProperty", MAY_BE_BOOL), reg::typed("nativeReflectionExists", MAY_BE_BOOL), reg::typed("nativeIsPromoted", MAY_BE_BOOL), reg::typed("nativeIsReadOnly", MAY_BE_BOOL), reg::typed("nativeIsHooked", MAY_BE_BOOL), reg::typed("nativeHasDefaultValue", MAY_BE_BOOL) };
-inline constexpr reg::Arg property_return = reg::typed("", 0, "PHPStan\\Analyser\\IssetabilityLinkInfo");
-inline constexpr reg::Sig property = { "property", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 14, property_args, 14, &property_return };
-inline constexpr reg::Arg leaf_args[] = { reg::typed("valueType", 0, "PHPStan\\Type\\Type"), reg::typed("leafExpr", 0, "PhpParser\\Node\\Expr"), reg::typed("leafIsNullsafePropertyFetch", MAY_BE_BOOL) };
-inline constexpr reg::Arg leaf_return = reg::typed("", 0, "PHPStan\\Analyser\\IssetabilityLinkInfo");
-inline constexpr reg::Sig leaf = { "leaf", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 3, leaf_args, 3, &leaf_return };
-inline constexpr reg::Arg isVariable_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isVariable = { "isVariable", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isVariable_return };
-inline constexpr reg::Arg isOffset_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isOffset = { "isOffset", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isOffset_return };
-inline constexpr reg::Arg isProperty_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isProperty = { "isProperty", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isProperty_return };
-inline constexpr reg::Arg getVariableName_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig getVariableName = { "getVariableName", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getVariableName_return };
-inline constexpr reg::Arg getHasVariable_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig getHasVariable = { "getHasVariable", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getHasVariable_return };
-inline constexpr reg::Arg getValueType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getValueType = { "getValueType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getValueType_return };
-inline constexpr reg::Arg getIsOffsetAccessible_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig getIsOffsetAccessible = { "getIsOffsetAccessible", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getIsOffsetAccessible_return };
-inline constexpr reg::Arg getHasOffsetValue_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig getHasOffsetValue = { "getHasOffsetValue", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getHasOffsetValue_return };
-inline constexpr reg::Arg hasExpressionTypeOfExpr_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig hasExpressionTypeOfExpr = { "hasExpressionTypeOfExpr", ZEND_ACC_PUBLIC, 0, nullptr, 0, &hasExpressionTypeOfExpr_return };
-inline constexpr reg::Arg getVarType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getVarType = { "getVarType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getVarType_return };
-inline constexpr reg::Arg getDimType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getDimType = { "getDimType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getDimType_return };
-inline constexpr reg::Arg getPropertyReflection_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Rules\\Properties\\FoundPropertyReflection");
-inline constexpr reg::Sig getPropertyReflection = { "getPropertyReflection", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getPropertyReflection_return };
-inline constexpr reg::Arg getPropertyFetch_return = reg::typed("", 0, "PhpParser\\Node\\Expr");
-inline constexpr reg::Sig getPropertyFetch = { "getPropertyFetch", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getPropertyFetch_return };
-inline constexpr reg::Arg isReflectionNative_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isReflectionNative = { "isReflectionNative", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isReflectionNative_return };
-inline constexpr reg::Arg hasNativeType_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig hasNativeType = { "hasNativeType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &hasNativeType_return };
-inline constexpr reg::Arg isVirtual_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isVirtual = { "isVirtual", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isVirtual_return };
-inline constexpr reg::Arg getNativeType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getNativeType = { "getNativeType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getNativeType_return };
-inline constexpr reg::Arg hasExpressionTypeOfFetch_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig hasExpressionTypeOfFetch = { "hasExpressionTypeOfFetch", ZEND_ACC_PUBLIC, 0, nullptr, 0, &hasExpressionTypeOfFetch_return };
-inline constexpr reg::Arg isInitializedThisProperty_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isInitializedThisProperty = { "isInitializedThisProperty", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isInitializedThisProperty_return };
-inline constexpr reg::Arg nativeReflectionExists_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig nativeReflectionExists = { "nativeReflectionExists", ZEND_ACC_PUBLIC, 0, nullptr, 0, &nativeReflectionExists_return };
-inline constexpr reg::Arg nativeIsPromoted_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig nativeIsPromoted = { "nativeIsPromoted", ZEND_ACC_PUBLIC, 0, nullptr, 0, &nativeIsPromoted_return };
-inline constexpr reg::Arg nativeIsReadOnly_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig nativeIsReadOnly = { "nativeIsReadOnly", ZEND_ACC_PUBLIC, 0, nullptr, 0, &nativeIsReadOnly_return };
-inline constexpr reg::Arg nativeIsHooked_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig nativeIsHooked = { "nativeIsHooked", ZEND_ACC_PUBLIC, 0, nullptr, 0, &nativeIsHooked_return };
-inline constexpr reg::Arg nativeHasDefaultValue_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig nativeHasDefaultValue = { "nativeHasDefaultValue", ZEND_ACC_PUBLIC, 0, nullptr, 0, &nativeHasDefaultValue_return };
-inline constexpr reg::Arg getLeafExpr_return = reg::typed("", 0, "PhpParser\\Node\\Expr");
-inline constexpr reg::Sig getLeafExpr = { "getLeafExpr", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getLeafExpr_return };
-inline constexpr reg::Arg leafIsNullsafePropertyFetch_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig leafIsNullsafePropertyFetch = { "leafIsNullsafePropertyFetch", ZEND_ACC_PUBLIC, 0, nullptr, 0, &leafIsNullsafePropertyFetch_return };
+inline constexpr sigtab::Sig __construct = { { 498 /* __construct */, 1, 0, 24, reg::NoArg, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig variable = { { 549 /* variable */, 3, 24, 3, 27, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig offset = { { 558 /* offset */, 6, 28, 6, 34, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig property = { { 578 /* property */, 14, 35, 14, 49, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig leaf = { { 587 /* leaf */, 3, 50, 3, 53, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig isVariable = { { 592 /* isVariable */, 0, 54, 0, 54, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isOffset = { { 603 /* isOffset */, 0, 55, 0, 55, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isProperty = { { 612 /* isProperty */, 0, 56, 0, 56, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getVariableName = { { 623 /* getVariableName */, 0, 57, 0, 57, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getHasVariable = { { 639 /* getHasVariable */, 0, 58, 0, 58, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getValueType = { { 654 /* getValueType */, 0, 59, 0, 59, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getIsOffsetAccessible = { { 667 /* getIsOffsetAccessible */, 0, 60, 0, 60, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getHasOffsetValue = { { 689 /* getHasOffsetValue */, 0, 61, 0, 61, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasExpressionTypeOfExpr = { { 90 /* hasExpressionTypeOfExpr */, 0, 62, 0, 62, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getVarType = { { 707 /* getVarType */, 0, 63, 0, 63, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getDimType = { { 718 /* getDimType */, 0, 64, 0, 64, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getPropertyReflection = { { 729 /* getPropertyReflection */, 0, 65, 0, 65, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getPropertyFetch = { { 751 /* getPropertyFetch */, 0, 66, 0, 66, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isReflectionNative = { { 768 /* isReflectionNative */, 0, 67, 0, 67, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasNativeType = { { 283 /* hasNativeType */, 0, 68, 0, 68, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isVirtual = { { 297 /* isVirtual */, 0, 69, 0, 69, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getNativeType = { { 787 /* getNativeType */, 0, 70, 0, 70, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasExpressionTypeOfFetch = { { 318 /* hasExpressionTypeOfFetch */, 0, 71, 0, 71, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isInitializedThisProperty = { { 801 /* isInitializedThisProperty */, 0, 72, 0, 72, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig nativeReflectionExists = { { 367 /* nativeReflectionExists */, 0, 73, 0, 73, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig nativeIsPromoted = { { 390 /* nativeIsPromoted */, 0, 74, 0, 74, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig nativeIsReadOnly = { { 407 /* nativeIsReadOnly */, 0, 75, 0, 75, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig nativeIsHooked = { { 424 /* nativeIsHooked */, 0, 76, 0, 76, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig nativeHasDefaultValue = { { 439 /* nativeHasDefaultValue */, 0, 77, 0, 77, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getLeafExpr = { { 827 /* getLeafExpr */, 0, 78, 0, 78, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig leafIsNullsafePropertyFetch = { { 470 /* leafIsNullsafePropertyFetch */, 0, 79, 0, 79, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::IssetabilityLinkInfo

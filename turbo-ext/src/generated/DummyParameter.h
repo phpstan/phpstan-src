@@ -34,22 +34,50 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("defaultValue", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_NULL, "PHPStan\\Type\\Type");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"name\0" /* 0 */
+	"type\0" /* 5 */
+	"PHPStan\\Type\\Type\0" /* 10 */
+	"optional\0" /* 28 */
+	"passedByReference\0" /* 37 */
+	"PHPStan\\Reflection\\PassedByReference\0" /* 55 */
+	"variadic\0" /* 92 */
+	"defaultValue\0" /* 101 */
+	"__construct\0" /* 114 */
+	"\0" /* 126 */
+	"getName\0" /* 127 */
+	"isOptional\0" /* 135 */
+	"getType\0" /* 146 */
+	"isVariadic\0" /* 154 */
+	"getDefaultValue"; /* 165 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_STRING), /* __construct $name */
+	reg::packed(5, 0, 10), /* __construct $type */
+	reg::packed(28, MAY_BE_BOOL), /* __construct $optional */
+	reg::packed(37, MAY_BE_NULL, 55), /* __construct $passedByReference */
+	reg::packed(92, MAY_BE_BOOL), /* __construct $variadic */
+	reg::packed(101, MAY_BE_NULL, 10), /* __construct $defaultValue */
+	reg::packed(126, MAY_BE_STRING), /* getName return */
+	reg::packed(126, MAY_BE_BOOL), /* isOptional return */
+	reg::packed(126, 0, 10), /* getType return */
+	reg::packed(126, 0, 55), /* passedByReference return */
+	reg::packed(126, MAY_BE_BOOL), /* isVariadic return */
+	reg::packed(126, MAY_BE_NULL, 10), /* getDefaultValue return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("name", MAY_BE_STRING), reg::typed("type", 0, "PHPStan\\Type\\Type"), reg::typed("optional", MAY_BE_BOOL), reg::typed("passedByReference", MAY_BE_NULL, "PHPStan\\Reflection\\PassedByReference"), reg::typed("variadic", MAY_BE_BOOL), reg::typed("defaultValue", MAY_BE_NULL, "PHPStan\\Type\\Type") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 6, __construct_args, 6, nullptr };
-inline constexpr reg::Arg getName_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig getName = { "getName", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getName_return };
-inline constexpr reg::Arg isOptional_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isOptional = { "isOptional", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isOptional_return };
-inline constexpr reg::Arg getType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getType = { "getType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getType_return };
-inline constexpr reg::Arg passedByReference_return = reg::typed("", 0, "PHPStan\\Reflection\\PassedByReference");
-inline constexpr reg::Sig passedByReference = { "passedByReference", ZEND_ACC_PUBLIC, 0, nullptr, 0, &passedByReference_return };
-inline constexpr reg::Arg isVariadic_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isVariadic = { "isVariadic", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isVariadic_return };
-inline constexpr reg::Arg getDefaultValue_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getDefaultValue = { "getDefaultValue", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getDefaultValue_return };
+inline constexpr sigtab::Sig __construct = { { 114 /* __construct */, 6, 0, 6, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getName = { { 127 /* getName */, 0, 6, 0, 6, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isOptional = { { 135 /* isOptional */, 0, 7, 0, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getType = { { 146 /* getType */, 0, 8, 0, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig passedByReference = { { 37 /* passedByReference */, 0, 9, 0, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isVariadic = { { 154 /* isVariadic */, 0, 10, 0, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getDefaultValue = { { 165 /* getDefaultValue */, 0, 11, 0, 11, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::DummyParameter

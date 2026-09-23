@@ -34,22 +34,52 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("returnType", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Type\\Type");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"templateTypeMap\0" /* 0 */
+	"PHPStan\\Type\\Generic\\TemplateTypeMap\0" /* 16 */
+	"resolvedTemplateTypeMap\0" /* 53 */
+	"parameters\0" /* 77 */
+	"isVariadic\0" /* 88 */
+	"returnType\0" /* 99 */
+	"PHPStan\\Type\\Type\0" /* 110 */
+	"callSiteVarianceMap\0" /* 128 */
+	"PHPStan\\Type\\Generic\\TemplateTypeVarianceMap\0" /* 148 */
+	"null\0" /* 193 */
+	"__construct\0" /* 198 */
+	"\0" /* 210 */
+	"getTemplateTypeMap\0" /* 211 */
+	"getResolvedTemplateTypeMap\0" /* 230 */
+	"getCallSiteVarianceMap\0" /* 257 */
+	"getParameters\0" /* 280 */
+	"getReturnType"; /* 294 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 16), /* __construct $templateTypeMap */
+	reg::packed(53, MAY_BE_NULL, 16), /* __construct $resolvedTemplateTypeMap */
+	reg::packed(77, MAY_BE_ARRAY), /* __construct $parameters */
+	reg::packed(88, MAY_BE_BOOL), /* __construct $isVariadic */
+	reg::packed(99, 0, 110), /* __construct $returnType */
+	reg::packed(128, MAY_BE_NULL, 148, false, false, 193), /* __construct $callSiteVarianceMap */
+	reg::packed(210, 0, 16), /* getTemplateTypeMap return */
+	reg::packed(210, 0, 16), /* getResolvedTemplateTypeMap return */
+	reg::packed(210, 0, 148), /* getCallSiteVarianceMap return */
+	reg::packed(210, MAY_BE_ARRAY), /* getParameters return */
+	reg::packed(210, MAY_BE_BOOL), /* isVariadic return */
+	reg::packed(210, 0, 110), /* getReturnType return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("templateTypeMap", 0, "PHPStan\\Type\\Generic\\TemplateTypeMap"), reg::typed("resolvedTemplateTypeMap", MAY_BE_NULL, "PHPStan\\Type\\Generic\\TemplateTypeMap"), reg::typed("parameters", MAY_BE_ARRAY), reg::typed("isVariadic", MAY_BE_BOOL), reg::typed("returnType", 0, "PHPStan\\Type\\Type"), reg::typed("callSiteVarianceMap", MAY_BE_NULL, "PHPStan\\Type\\Generic\\TemplateTypeVarianceMap", false, false, "null") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 5, __construct_args, 6, nullptr };
-inline constexpr reg::Arg getTemplateTypeMap_return = reg::typed("", 0, "PHPStan\\Type\\Generic\\TemplateTypeMap");
-inline constexpr reg::Sig getTemplateTypeMap = { "getTemplateTypeMap", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getTemplateTypeMap_return };
-inline constexpr reg::Arg getResolvedTemplateTypeMap_return = reg::typed("", 0, "PHPStan\\Type\\Generic\\TemplateTypeMap");
-inline constexpr reg::Sig getResolvedTemplateTypeMap = { "getResolvedTemplateTypeMap", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getResolvedTemplateTypeMap_return };
-inline constexpr reg::Arg getCallSiteVarianceMap_return = reg::typed("", 0, "PHPStan\\Type\\Generic\\TemplateTypeVarianceMap");
-inline constexpr reg::Sig getCallSiteVarianceMap = { "getCallSiteVarianceMap", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getCallSiteVarianceMap_return };
-inline constexpr reg::Arg getParameters_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getParameters = { "getParameters", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getParameters_return };
-inline constexpr reg::Arg isVariadic_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isVariadic = { "isVariadic", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isVariadic_return };
-inline constexpr reg::Arg getReturnType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getReturnType = { "getReturnType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getReturnType_return };
+inline constexpr sigtab::Sig __construct = { { 198 /* __construct */, 5, 0, 6, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getTemplateTypeMap = { { 211 /* getTemplateTypeMap */, 0, 6, 0, 6, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getResolvedTemplateTypeMap = { { 230 /* getResolvedTemplateTypeMap */, 0, 7, 0, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getCallSiteVarianceMap = { { 257 /* getCallSiteVarianceMap */, 0, 8, 0, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getParameters = { { 280 /* getParameters */, 0, 9, 0, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isVariadic = { { 88 /* isVariadic */, 0, 10, 0, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getReturnType = { { 294 /* getReturnType */, 0, 11, 0, 11, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::FunctionVariant

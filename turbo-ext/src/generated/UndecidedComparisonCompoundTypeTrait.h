@@ -8,14 +8,32 @@
 
 namespace ptdecl::UndecidedComparisonCompoundTypeTrait {
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"otherType\0" /* 0 */
+	"PHPStan\\Type\\Type\0" /* 10 */
+	"phpVersion\0" /* 28 */
+	"PHPStan\\Php\\PhpVersion\0" /* 39 */
+	"\0" /* 62 */
+	"PHPStan\\TrinaryLogic\0" /* 63 */
+	"isGreaterThan\0" /* 84 */
+	"isGreaterThanOrEqual"; /* 98 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 10), /* isGreaterThan $otherType */
+	reg::packed(28, 0, 39), /* isGreaterThan $phpVersion */
+	reg::packed(62, 0, 63), /* isGreaterThan return */
+	reg::packed(0, 0, 10), /* isGreaterThanOrEqual $otherType */
+	reg::packed(28, 0, 39), /* isGreaterThanOrEqual $phpVersion */
+	reg::packed(62, 0, 63), /* isGreaterThanOrEqual return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the trait declares itself */
 namespace sig {
-inline constexpr reg::Arg isGreaterThan_args[] = { reg::typed("otherType", 0, "PHPStan\\Type\\Type"), reg::typed("phpVersion", 0, "PHPStan\\Php\\PhpVersion") };
-inline constexpr reg::Arg isGreaterThan_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isGreaterThan = { "isGreaterThan", ZEND_ACC_PUBLIC, 2, isGreaterThan_args, 2, &isGreaterThan_return };
-inline constexpr reg::Arg isGreaterThanOrEqual_args[] = { reg::typed("otherType", 0, "PHPStan\\Type\\Type"), reg::typed("phpVersion", 0, "PHPStan\\Php\\PhpVersion") };
-inline constexpr reg::Arg isGreaterThanOrEqual_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isGreaterThanOrEqual = { "isGreaterThanOrEqual", ZEND_ACC_PUBLIC, 2, isGreaterThanOrEqual_args, 2, &isGreaterThanOrEqual_return };
+inline constexpr sigtab::Sig isGreaterThan = { { 84 /* isGreaterThan */, 2, 0, 2, 2, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isGreaterThanOrEqual = { { 98 /* isGreaterThanOrEqual */, 2, 3, 2, 5, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::UndecidedComparisonCompoundTypeTrait

@@ -24,33 +24,62 @@ inline void declareClass(reg::Class &cls)
 
 /* no declareProperties(): $contents: a typed default reg::Class cannot declare */
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"__construct\0" /* 0 */
+	"contents\0" /* 12 */
+	"maxMatches\0" /* 21 */
+	"\0" /* 32 */
+	"clean\0" /* 33 */
+	"skipToPhp\0" /* 39 */
+	"delimiter\0" /* 49 */
+	"consumeString\0" /* 59 */
+	"skipString\0" /* 73 */
+	"skipComment\0" /* 84 */
+	"skipToNewline\0" /* 96 */
+	"skipHeredoc\0" /* 110 */
+	"char\0" /* 122 */
+	"peek\0" /* 127 */
+	"regex\0" /* 132 */
+	"match\0" /* 138 */
+	"null\0" /* 144 */
+	"offset"; /* 149 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(12, MAY_BE_STRING), /* clean $contents */
+	reg::packed(21, MAY_BE_LONG), /* clean $maxMatches */
+	reg::packed(32, MAY_BE_STRING), /* clean return */
+	reg::packed(32, MAY_BE_VOID), /* skipToPhp return */
+	reg::packed(49, MAY_BE_STRING), /* consumeString $delimiter */
+	reg::packed(32, MAY_BE_STRING), /* consumeString return */
+	reg::packed(49, MAY_BE_STRING), /* skipString $delimiter */
+	reg::packed(32, MAY_BE_VOID), /* skipString return */
+	reg::packed(32, MAY_BE_VOID), /* skipComment return */
+	reg::packed(32, MAY_BE_VOID), /* skipToNewline return */
+	reg::packed(49, MAY_BE_STRING), /* skipHeredoc $delimiter */
+	reg::packed(32, MAY_BE_VOID), /* skipHeredoc return */
+	reg::packed(122, MAY_BE_STRING), /* peek $char */
+	reg::packed(32, MAY_BE_BOOL), /* peek return */
+	reg::packed(132, MAY_BE_STRING), /* match $regex */
+	reg::packed(138, MAY_BE_NULL | MAY_BE_ARRAY, reg::NoString, true, false, 144), /* match $match */
+	reg::packed(149, MAY_BE_NULL | MAY_BE_LONG, reg::NoString, false, false, 144), /* match $offset */
+	reg::packed(32, MAY_BE_BOOL), /* match return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 0, nullptr, 0, nullptr };
-inline constexpr reg::Arg clean_args[] = { reg::typed("contents", MAY_BE_STRING), reg::typed("maxMatches", MAY_BE_LONG) };
-inline constexpr reg::Arg clean_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig clean = { "clean", ZEND_ACC_PUBLIC, 2, clean_args, 2, &clean_return };
-inline constexpr reg::Arg skipToPhp_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig skipToPhp = { "skipToPhp", ZEND_ACC_PRIVATE, 0, nullptr, 0, &skipToPhp_return };
-inline constexpr reg::Arg consumeString_args[] = { reg::typed("delimiter", MAY_BE_STRING) };
-inline constexpr reg::Arg consumeString_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig consumeString = { "consumeString", ZEND_ACC_PRIVATE, 1, consumeString_args, 1, &consumeString_return };
-inline constexpr reg::Arg skipString_args[] = { reg::typed("delimiter", MAY_BE_STRING) };
-inline constexpr reg::Arg skipString_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig skipString = { "skipString", ZEND_ACC_PRIVATE, 1, skipString_args, 1, &skipString_return };
-inline constexpr reg::Arg skipComment_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig skipComment = { "skipComment", ZEND_ACC_PRIVATE, 0, nullptr, 0, &skipComment_return };
-inline constexpr reg::Arg skipToNewline_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig skipToNewline = { "skipToNewline", ZEND_ACC_PRIVATE, 0, nullptr, 0, &skipToNewline_return };
-inline constexpr reg::Arg skipHeredoc_args[] = { reg::typed("delimiter", MAY_BE_STRING) };
-inline constexpr reg::Arg skipHeredoc_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig skipHeredoc = { "skipHeredoc", ZEND_ACC_PRIVATE, 1, skipHeredoc_args, 1, &skipHeredoc_return };
-inline constexpr reg::Arg peek_args[] = { reg::typed("char", MAY_BE_STRING) };
-inline constexpr reg::Arg peek_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig peek = { "peek", ZEND_ACC_PRIVATE, 1, peek_args, 1, &peek_return };
-inline constexpr reg::Arg match_args[] = { reg::typed("regex", MAY_BE_STRING), reg::typed("match", MAY_BE_NULL | MAY_BE_ARRAY, nullptr, true, false, "null"), reg::typed("offset", MAY_BE_NULL | MAY_BE_LONG, nullptr, false, false, "null") };
-inline constexpr reg::Arg match_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig match = { "match", ZEND_ACC_PRIVATE, 1, match_args, 3, &match_return };
+inline constexpr sigtab::Sig __construct = { { 0 /* __construct */, 0, 0, 0, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig clean = { { 33 /* clean */, 2, 0, 2, 2, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig skipToPhp = { { 39 /* skipToPhp */, 0, 3, 0, 3, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig consumeString = { { 59 /* consumeString */, 1, 4, 1, 5, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig skipString = { { 73 /* skipString */, 1, 6, 1, 7, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig skipComment = { { 84 /* skipComment */, 0, 8, 0, 8, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig skipToNewline = { { 96 /* skipToNewline */, 0, 9, 0, 9, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig skipHeredoc = { { 110 /* skipHeredoc */, 1, 10, 1, 11, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig peek = { { 127 /* peek */, 1, 12, 1, 13, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig match = { { 138 /* match */, 1, 14, 3, 17, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::PhpFileCleaner

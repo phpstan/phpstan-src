@@ -47,127 +47,308 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("statementsHandler", ZEND_ACC_PRIVATE | ZEND_ACC_READONLY, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\StatementsHandler");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"container\0" /* 0 */
+	"PHPStan\\DependencyInjection\\Container\0" /* 10 */
+	"templateArgumentObserver\0" /* 48 */
+	"PHPStan\\Analyser\\Generics\\TemplateArgumentObserver\0" /* 73 */
+	"fileHelper\0" /* 124 */
+	"PHPStan\\File\\FileHelper\0" /* 135 */
+	"perFileAnalysisResettables\0" /* 159 */
+	"PHPStan\\DependencyInjection\\ExtensionsCollection\0" /* 186 */
+	"expressionResultFactory\0" /* 235 */
+	"PHPStan\\Analyser\\ExpressionResultFactory\0" /* 259 */
+	"statementsHandler\0" /* 300 */
+	"PHPStan\\Analyser\\StatementsHandler\0" /* 318 */
+	"__construct\0" /* 353 */
+	"files\0" /* 365 */
+	"\0" /* 371 */
+	"setAnalysedFiles\0" /* 372 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\NonNullabilityHelper\0" /* 389 */
+	"getNonNullabilityHelper\0" /* 446 */
+	"resetPerFileAnalysisState\0" /* 470 */
+	"nodes\0" /* 496 */
+	"scope\0" /* 502 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 508 */
+	"nodeCallback\0" /* 539 */
+	"processNodes\0" /* 552 */
+	"storage\0" /* 565 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 573 */
+	"expr\0" /* 614 */
+	"PhpParser\\Node\\Expr\0" /* 619 */
+	"expressionResult\0" /* 639 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 656 */
+	"storeExpressionResult\0" /* 690 */
+	"context\0" /* 712 */
+	"PHPStan\\Analyser\\TypeSpecifierContext\0" /* 720 */
+	"narrowScopeWithCondition\0" /* 758 */
+	"parentNode\0" /* 783 */
+	"PhpParser\\Node\0" /* 794 */
+	"stmts\0" /* 809 */
+	"PHPStan\\Analyser\\StatementContext\0" /* 815 */
+	"PHPStan\\Analyser\\StatementResult\0" /* 849 */
+	"processStmtNodes\0" /* 882 */
+	"PHPStan\\Analyser\\InternalStatementResult\0" /* 899 */
+	"processStmtNodesInternal\0" /* 940 */
+	"stmt\0" /* 965 */
+	"PhpParser\\Node\\Stmt\0" /* 970 */
+	"processStmtNode\0" /* 990 */
+	"fileName\0" /* 1006 */
+	"isAnalysedFile\0" /* 1015 */
+	"isReturningStoredExpressionResults\0" /* 1030 */
+	"isConsumingStoredExpressionResults\0" /* 1065 */
+	"lookForSetAllowedUndefinedExpressions\0" /* 1100 */
+	"lookForUnsetAllowedUndefinedExpressions\0" /* 1138 */
+	"callback\0" /* 1178 */
+	"Closure\0" /* 1187 */
+	"lookForExpressionCallback\0" /* 1195 */
+	"PHPStan\\Analyser\\ExpressionContext\0" /* 1221 */
+	"processExprNodeConsumingStored\0" /* 1256 */
+	"processExprOnDemand\0" /* 1287 */
+	"readStoredResult\0" /* 1307 */
+	"PHPStan\\Type\\Type\0" /* 1324 */
+	"readTypeOfMaybeStored\0" /* 1342 */
+	"findScopeStateType\0" /* 1364 */
+	"readScopeStateOrSyntheticType\0" /* 1383 */
+	"requireScopeStateType\0" /* 1413 */
+	"caller\0" /* 1435 */
+	"guardAgainstUnprocessedRealNode\0" /* 1442 */
+	"processSyntheticOnDemand\0" /* 1474 */
+	"processExprNode\0" /* 1499 */
+	"processExprNodeInternal\0" /* 1515 */
+	"propertyFetch\0" /* 1539 */
+	"PhpParser\\Node\\Expr\\PropertyFetch\0" /* 1553 */
+	"propertyReflection\0" /* 1587 */
+	"PHPStan\\Reflection\\Php\\PhpPropertyReflection\0" /* 1606 */
+	"hookName\0" /* 1651 */
+	"getImpurePointsFromPropertyHook\0" /* 1660 */
+	"isPropertyHookBackingValueAccess\0" /* 1692 */
+	"getAssignedVariables\0" /* 1725 */
+	"loopNode\0" /* 1746 */
+	"bodyStmts\0" /* 1755 */
+	"isReplayableConvergenceBody\0" /* 1765 */
+	"node\0" /* 1793 */
+	"hasContextSensitiveConstruct\0" /* 1798 */
+	"gatherer\0" /* 1827 */
+	"pushNodeGatherer\0" /* 1836 */
+	"popNodeGatherer\0" /* 1853 */
+	"suspendNodeGatherers\0" /* 1869 */
+	"gatherers\0" /* 1890 */
+	"restoreNodeGatherers\0" /* 1900 */
+	"recording\0" /* 1921 */
+	"PHPStan\\Analyser\\RecordingNodeCallback\0" /* 1931 */
+	"replayRecording\0" /* 1970 */
+	"from\0" /* 1986 */
+	"to\0" /* 1991 */
+	"replayRecordingRange\0" /* 1994 */
+	"callNodeCallbackWithExpression\0" /* 2015 */
+	"callNodeCallback\0" /* 2046 */
+	"PHPStan\\Analyser\\Generics\\TemplateArgumentFrame\0" /* 2063 */
+	"observingTemplateArgumentFrame\0" /* 2111 */
+	"returnedResult\0" /* 2142 */
+	"PHPStan\\Analyser\\Generics\\TemplateArgumentConstraints\0" /* 2157 */
+	"collectReturnSend"; /* 2211 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 10), /* __construct $container */
+	reg::packed(48, 0, 73), /* __construct $templateArgumentObserver */
+	reg::packed(124, 0, 135), /* __construct $fileHelper */
+	reg::packed(159, 0, 186), /* __construct $perFileAnalysisResettables */
+	reg::packed(235, 0, 259), /* __construct $expressionResultFactory */
+	reg::packed(300, 0, 318), /* __construct $statementsHandler */
+	reg::packed(365, MAY_BE_ARRAY), /* setAnalysedFiles $files */
+	reg::packed(371, MAY_BE_VOID), /* setAnalysedFiles return */
+	reg::packed(371, 0, 389), /* getNonNullabilityHelper return */
+	reg::packed(371, MAY_BE_VOID), /* resetPerFileAnalysisState return */
+	reg::packed(496, MAY_BE_ARRAY), /* processNodes $nodes */
+	reg::packed(502, 0, 508), /* processNodes $scope */
+	reg::packed(539, MAY_BE_CALLABLE), /* processNodes $nodeCallback */
+	reg::packed(371, MAY_BE_VOID), /* processNodes return */
+	reg::packed(565, 0, 573), /* storeExpressionResult $storage */
+	reg::packed(614, 0, 619), /* storeExpressionResult $expr */
+	reg::packed(639, 0, 656), /* storeExpressionResult $expressionResult */
+	reg::packed(371, MAY_BE_VOID), /* storeExpressionResult return */
+	reg::packed(502, 0, 508), /* narrowScopeWithCondition $scope */
+	reg::packed(614, 0, 619), /* narrowScopeWithCondition $expr */
+	reg::packed(712, 0, 720), /* narrowScopeWithCondition $context */
+	reg::packed(371, 0, 508), /* narrowScopeWithCondition return */
+	reg::packed(783, 0, 794), /* processStmtNodes $parentNode */
+	reg::packed(809, MAY_BE_ARRAY), /* processStmtNodes $stmts */
+	reg::packed(502, 0, 508), /* processStmtNodes $scope */
+	reg::packed(539, MAY_BE_CALLABLE), /* processStmtNodes $nodeCallback */
+	reg::packed(712, 0, 815), /* processStmtNodes $context */
+	reg::packed(371, 0, 849), /* processStmtNodes return */
+	reg::packed(783, 0, 794), /* processStmtNodesInternal $parentNode */
+	reg::packed(809, MAY_BE_ARRAY), /* processStmtNodesInternal $stmts */
+	reg::packed(502, 0, 508), /* processStmtNodesInternal $scope */
+	reg::packed(565, 0, 573), /* processStmtNodesInternal $storage */
+	reg::packed(539, MAY_BE_CALLABLE), /* processStmtNodesInternal $nodeCallback */
+	reg::packed(712, 0, 815), /* processStmtNodesInternal $context */
+	reg::packed(371, 0, 899), /* processStmtNodesInternal return */
+	reg::packed(965, 0, 970), /* processStmtNode $stmt */
+	reg::packed(502, 0, 508), /* processStmtNode $scope */
+	reg::packed(565, 0, 573), /* processStmtNode $storage */
+	reg::packed(539, MAY_BE_CALLABLE), /* processStmtNode $nodeCallback */
+	reg::packed(712, 0, 815), /* processStmtNode $context */
+	reg::packed(371, 0, 899), /* processStmtNode return */
+	reg::packed(1006, MAY_BE_STRING), /* isAnalysedFile $fileName */
+	reg::packed(371, MAY_BE_BOOL), /* isAnalysedFile return */
+	reg::packed(371, MAY_BE_BOOL), /* isReturningStoredExpressionResults return */
+	reg::packed(371, MAY_BE_BOOL), /* isConsumingStoredExpressionResults return */
+	reg::packed(502, 0, 508), /* lookForSetAllowedUndefinedExpressions $scope */
+	reg::packed(614, 0, 619), /* lookForSetAllowedUndefinedExpressions $expr */
+	reg::packed(371, 0, 508), /* lookForSetAllowedUndefinedExpressions return */
+	reg::packed(502, 0, 508), /* lookForUnsetAllowedUndefinedExpressions $scope */
+	reg::packed(614, 0, 619), /* lookForUnsetAllowedUndefinedExpressions $expr */
+	reg::packed(371, 0, 508), /* lookForUnsetAllowedUndefinedExpressions return */
+	reg::packed(502, 0, 508), /* lookForExpressionCallback $scope */
+	reg::packed(614, 0, 619), /* lookForExpressionCallback $expr */
+	reg::packed(1178, 0, 1187), /* lookForExpressionCallback $callback */
+	reg::packed(371, 0, 508), /* lookForExpressionCallback return */
+	reg::packed(965, 0, 970), /* processExprNodeConsumingStored $stmt */
+	reg::packed(614, 0, 619), /* processExprNodeConsumingStored $expr */
+	reg::packed(502, 0, 508), /* processExprNodeConsumingStored $scope */
+	reg::packed(565, 0, 573), /* processExprNodeConsumingStored $storage */
+	reg::packed(539, MAY_BE_CALLABLE), /* processExprNodeConsumingStored $nodeCallback */
+	reg::packed(712, 0, 1221), /* processExprNodeConsumingStored $context */
+	reg::packed(371, 0, 656), /* processExprNodeConsumingStored return */
+	reg::packed(614, 0, 619), /* processExprOnDemand $expr */
+	reg::packed(502, 0, 508), /* processExprOnDemand $scope */
+	reg::packed(565, 0, 573), /* processExprOnDemand $storage */
+	reg::packed(371, 0, 656), /* processExprOnDemand return */
+	reg::packed(614, 0, 619), /* readStoredResult $expr */
+	reg::packed(565, 0, 573), /* readStoredResult $storage */
+	reg::packed(371, 0, 656), /* readStoredResult return */
+	reg::packed(614, 0, 619), /* readTypeOfMaybeStored $expr */
+	reg::packed(502, 0, 508), /* readTypeOfMaybeStored $scope */
+	reg::packed(371, 0, 1324), /* readTypeOfMaybeStored return */
+	reg::packed(614, 0, 619), /* findScopeStateType $expr */
+	reg::packed(502, 0, 508), /* findScopeStateType $scope */
+	reg::packed(371, MAY_BE_NULL, 1324), /* findScopeStateType return */
+	reg::packed(614, 0, 619), /* readScopeStateOrSyntheticType $expr */
+	reg::packed(502, 0, 508), /* readScopeStateOrSyntheticType $scope */
+	reg::packed(371, 0, 1324), /* readScopeStateOrSyntheticType return */
+	reg::packed(614, 0, 619), /* requireScopeStateType $expr */
+	reg::packed(502, 0, 508), /* requireScopeStateType $scope */
+	reg::packed(371, 0, 1324), /* requireScopeStateType return */
+	reg::packed(614, 0, 619), /* guardAgainstUnprocessedRealNode $expr */
+	reg::packed(1435, MAY_BE_STRING), /* guardAgainstUnprocessedRealNode $caller */
+	reg::packed(371, MAY_BE_VOID), /* guardAgainstUnprocessedRealNode return */
+	reg::packed(614, 0, 619), /* processSyntheticOnDemand $expr */
+	reg::packed(502, 0, 508), /* processSyntheticOnDemand $scope */
+	reg::packed(371, 0, 656), /* processSyntheticOnDemand return */
+	reg::packed(965, 0, 970), /* processExprNode $stmt */
+	reg::packed(614, 0, 619), /* processExprNode $expr */
+	reg::packed(502, 0, 508), /* processExprNode $scope */
+	reg::packed(565, 0, 573), /* processExprNode $storage */
+	reg::packed(539, MAY_BE_CALLABLE), /* processExprNode $nodeCallback */
+	reg::packed(712, 0, 1221), /* processExprNode $context */
+	reg::packed(371, 0, 656), /* processExprNode return */
+	reg::packed(965, 0, 970), /* processExprNodeInternal $stmt */
+	reg::packed(614, 0, 619), /* processExprNodeInternal $expr */
+	reg::packed(502, 0, 508), /* processExprNodeInternal $scope */
+	reg::packed(565, 0, 573), /* processExprNodeInternal $storage */
+	reg::packed(539, MAY_BE_CALLABLE), /* processExprNodeInternal $nodeCallback */
+	reg::packed(712, 0, 1221), /* processExprNodeInternal $context */
+	reg::packed(371, 0, 656), /* processExprNodeInternal return */
+	reg::packed(502, 0, 508), /* getImpurePointsFromPropertyHook $scope */
+	reg::packed(1539, 0, 1553), /* getImpurePointsFromPropertyHook $propertyFetch */
+	reg::packed(1587, 0, 1606), /* getImpurePointsFromPropertyHook $propertyReflection */
+	reg::packed(1651, MAY_BE_STRING), /* getImpurePointsFromPropertyHook $hookName */
+	reg::packed(371, MAY_BE_ARRAY), /* getImpurePointsFromPropertyHook return */
+	reg::packed(502, 0, 508), /* isPropertyHookBackingValueAccess $scope */
+	reg::packed(1539, 0, 1553), /* isPropertyHookBackingValueAccess $propertyFetch */
+	reg::packed(371, MAY_BE_BOOL), /* isPropertyHookBackingValueAccess return */
+	reg::packed(614, 0, 619), /* getAssignedVariables $expr */
+	reg::packed(371, MAY_BE_ARRAY), /* getAssignedVariables return */
+	reg::packed(1746, 0, 794), /* isReplayableConvergenceBody $loopNode */
+	reg::packed(1755, MAY_BE_ARRAY), /* isReplayableConvergenceBody $bodyStmts */
+	reg::packed(371, MAY_BE_BOOL), /* isReplayableConvergenceBody return */
+	reg::packed(1793, 0, 794), /* hasContextSensitiveConstruct $node */
+	reg::packed(371, MAY_BE_BOOL), /* hasContextSensitiveConstruct return */
+	reg::packed(1827, MAY_BE_CALLABLE), /* pushNodeGatherer $gatherer */
+	reg::packed(371, MAY_BE_VOID), /* pushNodeGatherer return */
+	reg::packed(371, MAY_BE_VOID), /* popNodeGatherer return */
+	reg::packed(371, MAY_BE_ARRAY), /* suspendNodeGatherers return */
+	reg::packed(1890, MAY_BE_ARRAY), /* restoreNodeGatherers $gatherers */
+	reg::packed(371, MAY_BE_VOID), /* restoreNodeGatherers return */
+	reg::packed(1921, 0, 1931), /* replayRecording $recording */
+	reg::packed(539, MAY_BE_CALLABLE), /* replayRecording $nodeCallback */
+	reg::packed(565, 0, 573), /* replayRecording $storage */
+	reg::packed(502, 0, 508), /* replayRecording $scope */
+	reg::packed(371, MAY_BE_VOID), /* replayRecording return */
+	reg::packed(1921, 0, 1931), /* replayRecordingRange $recording */
+	reg::packed(1986, MAY_BE_LONG), /* replayRecordingRange $from */
+	reg::packed(1991, MAY_BE_LONG), /* replayRecordingRange $to */
+	reg::packed(539, MAY_BE_CALLABLE), /* replayRecordingRange $nodeCallback */
+	reg::packed(565, 0, 573), /* replayRecordingRange $storage */
+	reg::packed(502, 0, 508), /* replayRecordingRange $scope */
+	reg::packed(371, MAY_BE_VOID), /* replayRecordingRange return */
+	reg::packed(539, MAY_BE_CALLABLE), /* callNodeCallbackWithExpression $nodeCallback */
+	reg::packed(614, 0, 794), /* callNodeCallbackWithExpression $expr */
+	reg::packed(502, 0, 508), /* callNodeCallbackWithExpression $scope */
+	reg::packed(565, 0, 573), /* callNodeCallbackWithExpression $storage */
+	reg::packed(712, 0, 1221), /* callNodeCallbackWithExpression $context */
+	reg::packed(371, MAY_BE_VOID), /* callNodeCallbackWithExpression return */
+	reg::packed(539, MAY_BE_CALLABLE), /* callNodeCallback $nodeCallback */
+	reg::packed(1793, 0, 794), /* callNodeCallback $node */
+	reg::packed(502, 0, 508), /* callNodeCallback $scope */
+	reg::packed(565, 0, 573), /* callNodeCallback $storage */
+	reg::packed(371, MAY_BE_VOID), /* callNodeCallback return */
+	reg::packed(502, 0, 508), /* observingTemplateArgumentFrame $scope */
+	reg::packed(371, MAY_BE_NULL, 2063), /* observingTemplateArgumentFrame return */
+	reg::packed(502, 0, 508), /* collectReturnSend $scope */
+	reg::packed(2142, 0, 656), /* collectReturnSend $returnedResult */
+	reg::packed(371, 0, 2157), /* collectReturnSend return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("container", 0, "PHPStan\\DependencyInjection\\Container"), reg::typed("templateArgumentObserver", 0, "PHPStan\\Analyser\\Generics\\TemplateArgumentObserver"), reg::typed("fileHelper", 0, "PHPStan\\File\\FileHelper"), reg::typed("perFileAnalysisResettables", 0, "PHPStan\\DependencyInjection\\ExtensionsCollection"), reg::typed("expressionResultFactory", 0, "PHPStan\\Analyser\\ExpressionResultFactory"), reg::typed("statementsHandler", 0, "PHPStan\\Analyser\\StatementsHandler") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 6, __construct_args, 6, nullptr };
-inline constexpr reg::Arg setAnalysedFiles_args[] = { reg::typed("files", MAY_BE_ARRAY) };
-inline constexpr reg::Arg setAnalysedFiles_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig setAnalysedFiles = { "setAnalysedFiles", ZEND_ACC_PUBLIC, 1, setAnalysedFiles_args, 1, &setAnalysedFiles_return };
-inline constexpr reg::Arg getNonNullabilityHelper_return = reg::typed("", 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\NonNullabilityHelper");
-inline constexpr reg::Sig getNonNullabilityHelper = { "getNonNullabilityHelper", ZEND_ACC_PRIVATE, 0, nullptr, 0, &getNonNullabilityHelper_return };
-inline constexpr reg::Arg resetPerFileAnalysisState_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig resetPerFileAnalysisState = { "resetPerFileAnalysisState", ZEND_ACC_PUBLIC, 0, nullptr, 0, &resetPerFileAnalysisState_return };
-inline constexpr reg::Arg processNodes_args[] = { reg::typed("nodes", MAY_BE_ARRAY), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("nodeCallback", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg processNodes_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig processNodes = { "processNodes", ZEND_ACC_PUBLIC, 3, processNodes_args, 3, &processNodes_return };
-inline constexpr reg::Arg storeExpressionResult_args[] = { reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("expr", 0, "PhpParser\\Node\\Expr"), reg::typed("expressionResult", 0, "PHPStan\\Analyser\\ExpressionResult") };
-inline constexpr reg::Arg storeExpressionResult_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig storeExpressionResult = { "storeExpressionResult", ZEND_ACC_PUBLIC, 3, storeExpressionResult_args, 3, &storeExpressionResult_return };
-inline constexpr reg::Arg narrowScopeWithCondition_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("expr", 0, "PhpParser\\Node\\Expr"), reg::typed("context", 0, "PHPStan\\Analyser\\TypeSpecifierContext") };
-inline constexpr reg::Arg narrowScopeWithCondition_return = reg::typed("", 0, "PHPStan\\Analyser\\MutatingScope");
-inline constexpr reg::Sig narrowScopeWithCondition = { "narrowScopeWithCondition", ZEND_ACC_PUBLIC, 3, narrowScopeWithCondition_args, 3, &narrowScopeWithCondition_return };
-inline constexpr reg::Arg processStmtNodes_args[] = { reg::typed("parentNode", 0, "PhpParser\\Node"), reg::typed("stmts", MAY_BE_ARRAY), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("nodeCallback", MAY_BE_CALLABLE), reg::typed("context", 0, "PHPStan\\Analyser\\StatementContext") };
-inline constexpr reg::Arg processStmtNodes_return = reg::typed("", 0, "PHPStan\\Analyser\\StatementResult");
-inline constexpr reg::Sig processStmtNodes = { "processStmtNodes", ZEND_ACC_PUBLIC, 5, processStmtNodes_args, 5, &processStmtNodes_return };
-inline constexpr reg::Arg processStmtNodesInternal_args[] = { reg::typed("parentNode", 0, "PhpParser\\Node"), reg::typed("stmts", MAY_BE_ARRAY), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("nodeCallback", MAY_BE_CALLABLE), reg::typed("context", 0, "PHPStan\\Analyser\\StatementContext") };
-inline constexpr reg::Arg processStmtNodesInternal_return = reg::typed("", 0, "PHPStan\\Analyser\\InternalStatementResult");
-inline constexpr reg::Sig processStmtNodesInternal = { "processStmtNodesInternal", ZEND_ACC_PUBLIC, 6, processStmtNodesInternal_args, 6, &processStmtNodesInternal_return };
-inline constexpr reg::Arg processStmtNode_args[] = { reg::typed("stmt", 0, "PhpParser\\Node\\Stmt"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("nodeCallback", MAY_BE_CALLABLE), reg::typed("context", 0, "PHPStan\\Analyser\\StatementContext") };
-inline constexpr reg::Arg processStmtNode_return = reg::typed("", 0, "PHPStan\\Analyser\\InternalStatementResult");
-inline constexpr reg::Sig processStmtNode = { "processStmtNode", ZEND_ACC_PUBLIC, 5, processStmtNode_args, 5, &processStmtNode_return };
-inline constexpr reg::Arg isAnalysedFile_args[] = { reg::typed("fileName", MAY_BE_STRING) };
-inline constexpr reg::Arg isAnalysedFile_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isAnalysedFile = { "isAnalysedFile", ZEND_ACC_PUBLIC, 1, isAnalysedFile_args, 1, &isAnalysedFile_return };
-inline constexpr reg::Arg isReturningStoredExpressionResults_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isReturningStoredExpressionResults = { "isReturningStoredExpressionResults", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isReturningStoredExpressionResults_return };
-inline constexpr reg::Arg isConsumingStoredExpressionResults_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isConsumingStoredExpressionResults = { "isConsumingStoredExpressionResults", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isConsumingStoredExpressionResults_return };
-inline constexpr reg::Arg lookForSetAllowedUndefinedExpressions_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("expr", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg lookForSetAllowedUndefinedExpressions_return = reg::typed("", 0, "PHPStan\\Analyser\\MutatingScope");
-inline constexpr reg::Sig lookForSetAllowedUndefinedExpressions = { "lookForSetAllowedUndefinedExpressions", ZEND_ACC_PUBLIC, 2, lookForSetAllowedUndefinedExpressions_args, 2, &lookForSetAllowedUndefinedExpressions_return };
-inline constexpr reg::Arg lookForUnsetAllowedUndefinedExpressions_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("expr", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg lookForUnsetAllowedUndefinedExpressions_return = reg::typed("", 0, "PHPStan\\Analyser\\MutatingScope");
-inline constexpr reg::Sig lookForUnsetAllowedUndefinedExpressions = { "lookForUnsetAllowedUndefinedExpressions", ZEND_ACC_PUBLIC, 2, lookForUnsetAllowedUndefinedExpressions_args, 2, &lookForUnsetAllowedUndefinedExpressions_return };
-inline constexpr reg::Arg lookForExpressionCallback_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("expr", 0, "PhpParser\\Node\\Expr"), reg::typed("callback", 0, "Closure") };
-inline constexpr reg::Arg lookForExpressionCallback_return = reg::typed("", 0, "PHPStan\\Analyser\\MutatingScope");
-inline constexpr reg::Sig lookForExpressionCallback = { "lookForExpressionCallback", ZEND_ACC_PRIVATE, 3, lookForExpressionCallback_args, 3, &lookForExpressionCallback_return };
-inline constexpr reg::Arg processExprNodeConsumingStored_args[] = { reg::typed("stmt", 0, "PhpParser\\Node\\Stmt"), reg::typed("expr", 0, "PhpParser\\Node\\Expr"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("nodeCallback", MAY_BE_CALLABLE), reg::typed("context", 0, "PHPStan\\Analyser\\ExpressionContext") };
-inline constexpr reg::Arg processExprNodeConsumingStored_return = reg::typed("", 0, "PHPStan\\Analyser\\ExpressionResult");
-inline constexpr reg::Sig processExprNodeConsumingStored = { "processExprNodeConsumingStored", ZEND_ACC_PUBLIC, 6, processExprNodeConsumingStored_args, 6, &processExprNodeConsumingStored_return };
-inline constexpr reg::Arg processExprOnDemand_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage") };
-inline constexpr reg::Arg processExprOnDemand_return = reg::typed("", 0, "PHPStan\\Analyser\\ExpressionResult");
-inline constexpr reg::Sig processExprOnDemand = { "processExprOnDemand", ZEND_ACC_PUBLIC, 3, processExprOnDemand_args, 3, &processExprOnDemand_return };
-inline constexpr reg::Arg readStoredResult_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage") };
-inline constexpr reg::Arg readStoredResult_return = reg::typed("", 0, "PHPStan\\Analyser\\ExpressionResult");
-inline constexpr reg::Sig readStoredResult = { "readStoredResult", ZEND_ACC_PUBLIC, 2, readStoredResult_args, 2, &readStoredResult_return };
-inline constexpr reg::Arg readTypeOfMaybeStored_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope") };
-inline constexpr reg::Arg readTypeOfMaybeStored_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig readTypeOfMaybeStored = { "readTypeOfMaybeStored", ZEND_ACC_PUBLIC, 2, readTypeOfMaybeStored_args, 2, &readTypeOfMaybeStored_return };
-inline constexpr reg::Arg findScopeStateType_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope") };
-inline constexpr reg::Arg findScopeStateType_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig findScopeStateType = { "findScopeStateType", ZEND_ACC_PUBLIC, 2, findScopeStateType_args, 2, &findScopeStateType_return };
-inline constexpr reg::Arg readScopeStateOrSyntheticType_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope") };
-inline constexpr reg::Arg readScopeStateOrSyntheticType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig readScopeStateOrSyntheticType = { "readScopeStateOrSyntheticType", ZEND_ACC_PUBLIC, 2, readScopeStateOrSyntheticType_args, 2, &readScopeStateOrSyntheticType_return };
-inline constexpr reg::Arg requireScopeStateType_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope") };
-inline constexpr reg::Arg requireScopeStateType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig requireScopeStateType = { "requireScopeStateType", ZEND_ACC_PUBLIC, 2, requireScopeStateType_args, 2, &requireScopeStateType_return };
-inline constexpr reg::Arg guardAgainstUnprocessedRealNode_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr"), reg::typed("caller", MAY_BE_STRING) };
-inline constexpr reg::Arg guardAgainstUnprocessedRealNode_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig guardAgainstUnprocessedRealNode = { "guardAgainstUnprocessedRealNode", ZEND_ACC_PRIVATE, 2, guardAgainstUnprocessedRealNode_args, 2, &guardAgainstUnprocessedRealNode_return };
-inline constexpr reg::Arg processSyntheticOnDemand_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope") };
-inline constexpr reg::Arg processSyntheticOnDemand_return = reg::typed("", 0, "PHPStan\\Analyser\\ExpressionResult");
-inline constexpr reg::Sig processSyntheticOnDemand = { "processSyntheticOnDemand", ZEND_ACC_PUBLIC, 2, processSyntheticOnDemand_args, 2, &processSyntheticOnDemand_return };
-inline constexpr reg::Arg processExprNode_args[] = { reg::typed("stmt", 0, "PhpParser\\Node\\Stmt"), reg::typed("expr", 0, "PhpParser\\Node\\Expr"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("nodeCallback", MAY_BE_CALLABLE), reg::typed("context", 0, "PHPStan\\Analyser\\ExpressionContext") };
-inline constexpr reg::Arg processExprNode_return = reg::typed("", 0, "PHPStan\\Analyser\\ExpressionResult");
-inline constexpr reg::Sig processExprNode = { "processExprNode", ZEND_ACC_PUBLIC, 6, processExprNode_args, 6, &processExprNode_return };
-inline constexpr reg::Arg processExprNodeInternal_args[] = { reg::typed("stmt", 0, "PhpParser\\Node\\Stmt"), reg::typed("expr", 0, "PhpParser\\Node\\Expr"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("nodeCallback", MAY_BE_CALLABLE), reg::typed("context", 0, "PHPStan\\Analyser\\ExpressionContext") };
-inline constexpr reg::Arg processExprNodeInternal_return = reg::typed("", 0, "PHPStan\\Analyser\\ExpressionResult");
-inline constexpr reg::Sig processExprNodeInternal = { "processExprNodeInternal", ZEND_ACC_PRIVATE, 6, processExprNodeInternal_args, 6, &processExprNodeInternal_return };
-inline constexpr reg::Arg getImpurePointsFromPropertyHook_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("propertyFetch", 0, "PhpParser\\Node\\Expr\\PropertyFetch"), reg::typed("propertyReflection", 0, "PHPStan\\Reflection\\Php\\PhpPropertyReflection"), reg::typed("hookName", MAY_BE_STRING) };
-inline constexpr reg::Arg getImpurePointsFromPropertyHook_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getImpurePointsFromPropertyHook = { "getImpurePointsFromPropertyHook", ZEND_ACC_PUBLIC, 4, getImpurePointsFromPropertyHook_args, 4, &getImpurePointsFromPropertyHook_return };
-inline constexpr reg::Arg isPropertyHookBackingValueAccess_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("propertyFetch", 0, "PhpParser\\Node\\Expr\\PropertyFetch") };
-inline constexpr reg::Arg isPropertyHookBackingValueAccess_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isPropertyHookBackingValueAccess = { "isPropertyHookBackingValueAccess", ZEND_ACC_PRIVATE, 2, isPropertyHookBackingValueAccess_args, 2, &isPropertyHookBackingValueAccess_return };
-inline constexpr reg::Arg getAssignedVariables_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg getAssignedVariables_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getAssignedVariables = { "getAssignedVariables", ZEND_ACC_PUBLIC, 1, getAssignedVariables_args, 1, &getAssignedVariables_return };
-inline constexpr reg::Arg isReplayableConvergenceBody_args[] = { reg::typed("loopNode", 0, "PhpParser\\Node"), reg::typed("bodyStmts", MAY_BE_ARRAY) };
-inline constexpr reg::Arg isReplayableConvergenceBody_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isReplayableConvergenceBody = { "isReplayableConvergenceBody", ZEND_ACC_PUBLIC, 2, isReplayableConvergenceBody_args, 2, &isReplayableConvergenceBody_return };
-inline constexpr reg::Arg hasContextSensitiveConstruct_args[] = { reg::typed("node", 0, "PhpParser\\Node") };
-inline constexpr reg::Arg hasContextSensitiveConstruct_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig hasContextSensitiveConstruct = { "hasContextSensitiveConstruct", ZEND_ACC_PRIVATE, 1, hasContextSensitiveConstruct_args, 1, &hasContextSensitiveConstruct_return };
-inline constexpr reg::Arg pushNodeGatherer_args[] = { reg::typed("gatherer", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg pushNodeGatherer_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig pushNodeGatherer = { "pushNodeGatherer", ZEND_ACC_PUBLIC, 1, pushNodeGatherer_args, 1, &pushNodeGatherer_return };
-inline constexpr reg::Arg popNodeGatherer_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig popNodeGatherer = { "popNodeGatherer", ZEND_ACC_PUBLIC, 0, nullptr, 0, &popNodeGatherer_return };
-inline constexpr reg::Arg suspendNodeGatherers_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig suspendNodeGatherers = { "suspendNodeGatherers", ZEND_ACC_PUBLIC, 0, nullptr, 0, &suspendNodeGatherers_return };
-inline constexpr reg::Arg restoreNodeGatherers_args[] = { reg::typed("gatherers", MAY_BE_ARRAY) };
-inline constexpr reg::Arg restoreNodeGatherers_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig restoreNodeGatherers = { "restoreNodeGatherers", ZEND_ACC_PUBLIC, 1, restoreNodeGatherers_args, 1, &restoreNodeGatherers_return };
-inline constexpr reg::Arg replayRecording_args[] = { reg::typed("recording", 0, "PHPStan\\Analyser\\RecordingNodeCallback"), reg::typed("nodeCallback", MAY_BE_CALLABLE), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope") };
-inline constexpr reg::Arg replayRecording_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig replayRecording = { "replayRecording", ZEND_ACC_PUBLIC, 4, replayRecording_args, 4, &replayRecording_return };
-inline constexpr reg::Arg replayRecordingRange_args[] = { reg::typed("recording", 0, "PHPStan\\Analyser\\RecordingNodeCallback"), reg::typed("from", MAY_BE_LONG), reg::typed("to", MAY_BE_LONG), reg::typed("nodeCallback", MAY_BE_CALLABLE), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope") };
-inline constexpr reg::Arg replayRecordingRange_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig replayRecordingRange = { "replayRecordingRange", ZEND_ACC_PUBLIC, 6, replayRecordingRange_args, 6, &replayRecordingRange_return };
-inline constexpr reg::Arg callNodeCallbackWithExpression_args[] = { reg::typed("nodeCallback", MAY_BE_CALLABLE), reg::typed("expr", 0, "PhpParser\\Node"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("context", 0, "PHPStan\\Analyser\\ExpressionContext") };
-inline constexpr reg::Arg callNodeCallbackWithExpression_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig callNodeCallbackWithExpression = { "callNodeCallbackWithExpression", ZEND_ACC_PUBLIC, 5, callNodeCallbackWithExpression_args, 5, &callNodeCallbackWithExpression_return };
-inline constexpr reg::Arg callNodeCallback_args[] = { reg::typed("nodeCallback", MAY_BE_CALLABLE), reg::typed("node", 0, "PhpParser\\Node"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage") };
-inline constexpr reg::Arg callNodeCallback_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig callNodeCallback = { "callNodeCallback", ZEND_ACC_PUBLIC, 4, callNodeCallback_args, 4, &callNodeCallback_return };
-inline constexpr reg::Arg observingTemplateArgumentFrame_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope") };
-inline constexpr reg::Arg observingTemplateArgumentFrame_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\Generics\\TemplateArgumentFrame");
-inline constexpr reg::Sig observingTemplateArgumentFrame = { "observingTemplateArgumentFrame", ZEND_ACC_PUBLIC, 1, observingTemplateArgumentFrame_args, 1, &observingTemplateArgumentFrame_return };
-inline constexpr reg::Arg collectReturnSend_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("returnedResult", 0, "PHPStan\\Analyser\\ExpressionResult") };
-inline constexpr reg::Arg collectReturnSend_return = reg::typed("", 0, "PHPStan\\Analyser\\Generics\\TemplateArgumentConstraints");
-inline constexpr reg::Sig collectReturnSend = { "collectReturnSend", ZEND_ACC_PUBLIC, 2, collectReturnSend_args, 2, &collectReturnSend_return };
+inline constexpr sigtab::Sig __construct = { { 353 /* __construct */, 6, 0, 6, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig setAnalysedFiles = { { 372 /* setAnalysedFiles */, 1, 6, 1, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getNonNullabilityHelper = { { 446 /* getNonNullabilityHelper */, 0, 8, 0, 8, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig resetPerFileAnalysisState = { { 470 /* resetPerFileAnalysisState */, 0, 9, 0, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processNodes = { { 552 /* processNodes */, 3, 10, 3, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig storeExpressionResult = { { 690 /* storeExpressionResult */, 3, 14, 3, 17, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig narrowScopeWithCondition = { { 758 /* narrowScopeWithCondition */, 3, 18, 3, 21, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processStmtNodes = { { 882 /* processStmtNodes */, 5, 22, 5, 27, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processStmtNodesInternal = { { 940 /* processStmtNodesInternal */, 6, 28, 6, 34, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processStmtNode = { { 990 /* processStmtNode */, 5, 35, 5, 40, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isAnalysedFile = { { 1015 /* isAnalysedFile */, 1, 41, 1, 42, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isReturningStoredExpressionResults = { { 1030 /* isReturningStoredExpressionResults */, 0, 43, 0, 43, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isConsumingStoredExpressionResults = { { 1065 /* isConsumingStoredExpressionResults */, 0, 44, 0, 44, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig lookForSetAllowedUndefinedExpressions = { { 1100 /* lookForSetAllowedUndefinedExpressions */, 2, 45, 2, 47, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig lookForUnsetAllowedUndefinedExpressions = { { 1138 /* lookForUnsetAllowedUndefinedExpressions */, 2, 48, 2, 50, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig lookForExpressionCallback = { { 1195 /* lookForExpressionCallback */, 3, 51, 3, 54, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig processExprNodeConsumingStored = { { 1256 /* processExprNodeConsumingStored */, 6, 55, 6, 61, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processExprOnDemand = { { 1287 /* processExprOnDemand */, 3, 62, 3, 65, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig readStoredResult = { { 1307 /* readStoredResult */, 2, 66, 2, 68, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig readTypeOfMaybeStored = { { 1342 /* readTypeOfMaybeStored */, 2, 69, 2, 71, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig findScopeStateType = { { 1364 /* findScopeStateType */, 2, 72, 2, 74, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig readScopeStateOrSyntheticType = { { 1383 /* readScopeStateOrSyntheticType */, 2, 75, 2, 77, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig requireScopeStateType = { { 1413 /* requireScopeStateType */, 2, 78, 2, 80, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig guardAgainstUnprocessedRealNode = { { 1442 /* guardAgainstUnprocessedRealNode */, 2, 81, 2, 83, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig processSyntheticOnDemand = { { 1474 /* processSyntheticOnDemand */, 2, 84, 2, 86, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processExprNode = { { 1499 /* processExprNode */, 6, 87, 6, 93, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processExprNodeInternal = { { 1515 /* processExprNodeInternal */, 6, 94, 6, 100, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getImpurePointsFromPropertyHook = { { 1660 /* getImpurePointsFromPropertyHook */, 4, 101, 4, 105, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isPropertyHookBackingValueAccess = { { 1692 /* isPropertyHookBackingValueAccess */, 2, 106, 2, 108, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getAssignedVariables = { { 1725 /* getAssignedVariables */, 1, 109, 1, 110, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isReplayableConvergenceBody = { { 1765 /* isReplayableConvergenceBody */, 2, 111, 2, 113, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasContextSensitiveConstruct = { { 1798 /* hasContextSensitiveConstruct */, 1, 114, 1, 115, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig pushNodeGatherer = { { 1836 /* pushNodeGatherer */, 1, 116, 1, 117, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig popNodeGatherer = { { 1853 /* popNodeGatherer */, 0, 118, 0, 118, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig suspendNodeGatherers = { { 1869 /* suspendNodeGatherers */, 0, 119, 0, 119, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig restoreNodeGatherers = { { 1900 /* restoreNodeGatherers */, 1, 120, 1, 121, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig replayRecording = { { 1970 /* replayRecording */, 4, 122, 4, 126, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig replayRecordingRange = { { 1994 /* replayRecordingRange */, 6, 127, 6, 133, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig callNodeCallbackWithExpression = { { 2015 /* callNodeCallbackWithExpression */, 5, 134, 5, 139, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig callNodeCallback = { { 2046 /* callNodeCallback */, 4, 140, 4, 144, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig observingTemplateArgumentFrame = { { 2111 /* observingTemplateArgumentFrame */, 1, 145, 1, 146, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig collectReturnSend = { { 2211 /* collectReturnSend */, 2, 147, 2, 149, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::NodeScopeResolver

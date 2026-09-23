@@ -24,13 +24,34 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("initializerExprTypeResolver", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Reflection\\InitializerExprTypeResolver");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"initializerExprTypeResolver\0" /* 0 */
+	"PHPStan\\Reflection\\InitializerExprTypeResolver\0" /* 28 */
+	"__construct\0" /* 75 */
+	"varExpr\0" /* 87 */
+	"PhpParser\\Node\\Expr\0" /* 95 */
+	"varResult\0" /* 115 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 125 */
+	"increment\0" /* 159 */
+	"\0" /* 169 */
+	"Closure\0" /* 170 */
+	"getTypeCallback"; /* 178 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 28), /* __construct $initializerExprTypeResolver */
+	reg::packed(87, 0, 95), /* getTypeCallback $varExpr */
+	reg::packed(115, 0, 125), /* getTypeCallback $varResult */
+	reg::packed(159, MAY_BE_BOOL), /* getTypeCallback $increment */
+	reg::packed(169, 0, 170), /* getTypeCallback return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("initializerExprTypeResolver", 0, "PHPStan\\Reflection\\InitializerExprTypeResolver") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 1, __construct_args, 1, nullptr };
-inline constexpr reg::Arg getTypeCallback_args[] = { reg::typed("varExpr", 0, "PhpParser\\Node\\Expr"), reg::typed("varResult", 0, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("increment", MAY_BE_BOOL) };
-inline constexpr reg::Arg getTypeCallback_return = reg::typed("", 0, "Closure");
-inline constexpr reg::Sig getTypeCallback = { "getTypeCallback", ZEND_ACC_PUBLIC, 3, getTypeCallback_args, 3, &getTypeCallback_return };
+inline constexpr sigtab::Sig __construct = { { 75 /* __construct */, 1, 0, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getTypeCallback = { { 178 /* getTypeCallback */, 3, 1, 3, 4, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::IncDecTypeHelper

@@ -67,84 +67,170 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("public", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_BOOL);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"declaringClass\0" /* 0 */
+	"PHPStan\\Reflection\\ClassReflection\0" /* 15 */
+	"declaringTrait\0" /* 50 */
+	"nativeType\0" /* 65 */
+	"PHPStan\\Type\\Type\0" /* 76 */
+	"readablePhpDocType\0" /* 94 */
+	"writablePhpDocType\0" /* 113 */
+	"reflection\0" /* 132 */
+	"PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionProperty\0" /* 143 */
+	"getHook\0" /* 206 */
+	"PHPStan\\Reflection\\ExtendedMethodReflection\0" /* 214 */
+	"setHook\0" /* 258 */
+	"resolvedPhpDocBlock\0" /* 266 */
+	"PHPStan\\PhpDoc\\ResolvedPhpDocBlock\0" /* 286 */
+	"deprecatedDescription\0" /* 321 */
+	"isDeprecated\0" /* 343 */
+	"isInternal\0" /* 356 */
+	"isReadOnlyByPhpDoc\0" /* 367 */
+	"isAllowedPrivateMutation\0" /* 386 */
+	"attributes\0" /* 411 */
+	"isFinal\0" /* 422 */
+	"readable\0" /* 430 */
+	"writable\0" /* 439 */
+	"private\0" /* 448 */
+	"public\0" /* 456 */
+	"__construct\0" /* 463 */
+	"\0" /* 475 */
+	"getName\0" /* 476 */
+	"getDeclaringClass\0" /* 484 */
+	"getDeclaringTrait\0" /* 502 */
+	"getDocComment\0" /* 520 */
+	"isStatic\0" /* 534 */
+	"isPrivate\0" /* 543 */
+	"isPublic\0" /* 553 */
+	"isReadOnly\0" /* 562 */
+	"getReadableType\0" /* 573 */
+	"getWritableType\0" /* 589 */
+	"canChangeTypeAfterAssignment\0" /* 605 */
+	"isPromoted\0" /* 634 */
+	"hasPhpDocType\0" /* 645 */
+	"getPhpDocType\0" /* 659 */
+	"hasNativeType\0" /* 673 */
+	"getNativeType\0" /* 687 */
+	"isReadable\0" /* 701 */
+	"isWritable\0" /* 712 */
+	"getDeprecatedDescription\0" /* 723 */
+	"PHPStan\\TrinaryLogic\0" /* 748 */
+	"getNativeReflection\0" /* 769 */
+	"isAbstract\0" /* 789 */
+	"isFinalByKeyword\0" /* 800 */
+	"isVirtual\0" /* 817 */
+	"hookType\0" /* 827 */
+	"hasHook\0" /* 836 */
+	"isHooked\0" /* 844 */
+	"isProtectedSet\0" /* 853 */
+	"isPrivateSet\0" /* 868 */
+	"getAttributes\0" /* 881 */
+	"isDummy\0" /* 895 */
+	"getResolvedPhpDoc"; /* 903 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 15), /* __construct $declaringClass */
+	reg::packed(50, MAY_BE_NULL, 15), /* __construct $declaringTrait */
+	reg::packed(65, 0, 76), /* __construct $nativeType */
+	reg::packed(94, MAY_BE_NULL, 76), /* __construct $readablePhpDocType */
+	reg::packed(113, MAY_BE_NULL, 76), /* __construct $writablePhpDocType */
+	reg::packed(132, 0, 143), /* __construct $reflection */
+	reg::packed(206, MAY_BE_NULL, 214), /* __construct $getHook */
+	reg::packed(258, MAY_BE_NULL, 214), /* __construct $setHook */
+	reg::packed(266, MAY_BE_NULL, 286), /* __construct $resolvedPhpDocBlock */
+	reg::packed(321, MAY_BE_NULL | MAY_BE_STRING), /* __construct $deprecatedDescription */
+	reg::packed(343, MAY_BE_BOOL), /* __construct $isDeprecated */
+	reg::packed(356, MAY_BE_BOOL), /* __construct $isInternal */
+	reg::packed(367, MAY_BE_BOOL), /* __construct $isReadOnlyByPhpDoc */
+	reg::packed(386, MAY_BE_BOOL), /* __construct $isAllowedPrivateMutation */
+	reg::packed(411, MAY_BE_ARRAY), /* __construct $attributes */
+	reg::packed(422, MAY_BE_BOOL), /* __construct $isFinal */
+	reg::packed(430, MAY_BE_BOOL), /* __construct $readable */
+	reg::packed(439, MAY_BE_BOOL), /* __construct $writable */
+	reg::packed(448, MAY_BE_BOOL), /* __construct $private */
+	reg::packed(456, MAY_BE_BOOL), /* __construct $public */
+	reg::packed(475, MAY_BE_STRING), /* getName return */
+	reg::packed(475, 0, 15), /* getDeclaringClass return */
+	reg::packed(475, MAY_BE_NULL, 15), /* getDeclaringTrait return */
+	reg::packed(475, MAY_BE_NULL | MAY_BE_STRING), /* getDocComment return */
+	reg::packed(475, MAY_BE_BOOL), /* isStatic return */
+	reg::packed(475, MAY_BE_BOOL), /* isPrivate return */
+	reg::packed(475, MAY_BE_BOOL), /* isPublic return */
+	reg::packed(475, MAY_BE_BOOL), /* isReadOnly return */
+	reg::packed(475, MAY_BE_BOOL), /* isReadOnlyByPhpDoc return */
+	reg::packed(475, 0, 76), /* getReadableType return */
+	reg::packed(475, 0, 76), /* getWritableType return */
+	reg::packed(475, MAY_BE_BOOL), /* canChangeTypeAfterAssignment return */
+	reg::packed(475, MAY_BE_BOOL), /* isPromoted return */
+	reg::packed(475, MAY_BE_BOOL), /* hasPhpDocType return */
+	reg::packed(475, 0, 76), /* getPhpDocType return */
+	reg::packed(475, MAY_BE_BOOL), /* hasNativeType return */
+	reg::packed(475, 0, 76), /* getNativeType return */
+	reg::packed(475, MAY_BE_BOOL), /* isReadable return */
+	reg::packed(475, MAY_BE_BOOL), /* isWritable return */
+	reg::packed(475, MAY_BE_NULL | MAY_BE_STRING), /* getDeprecatedDescription return */
+	reg::packed(475, 0, 748), /* isDeprecated return */
+	reg::packed(475, 0, 748), /* isInternal return */
+	reg::packed(475, MAY_BE_BOOL), /* isAllowedPrivateMutation return */
+	reg::packed(475, 0, 143), /* getNativeReflection return */
+	reg::packed(475, 0, 748), /* isAbstract return */
+	reg::packed(475, 0, 748), /* isFinalByKeyword return */
+	reg::packed(475, 0, 748), /* isFinal return */
+	reg::packed(475, 0, 748), /* isVirtual return */
+	reg::packed(827, MAY_BE_STRING), /* hasHook $hookType */
+	reg::packed(475, MAY_BE_BOOL), /* hasHook return */
+	reg::packed(475, MAY_BE_BOOL), /* isHooked return */
+	reg::packed(827, MAY_BE_STRING), /* getHook $hookType */
+	reg::packed(475, 0, 214), /* getHook return */
+	reg::packed(475, MAY_BE_BOOL), /* isProtectedSet return */
+	reg::packed(475, MAY_BE_BOOL), /* isPrivateSet return */
+	reg::packed(475, MAY_BE_ARRAY), /* getAttributes return */
+	reg::packed(475, 0, 748), /* isDummy return */
+	reg::packed(475, MAY_BE_NULL, 286), /* getResolvedPhpDoc return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("declaringClass", 0, "PHPStan\\Reflection\\ClassReflection"), reg::typed("declaringTrait", MAY_BE_NULL, "PHPStan\\Reflection\\ClassReflection"), reg::typed("nativeType", 0, "PHPStan\\Type\\Type"), reg::typed("readablePhpDocType", MAY_BE_NULL, "PHPStan\\Type\\Type"), reg::typed("writablePhpDocType", MAY_BE_NULL, "PHPStan\\Type\\Type"), reg::typed("reflection", 0, "PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionProperty"), reg::typed("getHook", MAY_BE_NULL, "PHPStan\\Reflection\\ExtendedMethodReflection"), reg::typed("setHook", MAY_BE_NULL, "PHPStan\\Reflection\\ExtendedMethodReflection"), reg::typed("resolvedPhpDocBlock", MAY_BE_NULL, "PHPStan\\PhpDoc\\ResolvedPhpDocBlock"), reg::typed("deprecatedDescription", MAY_BE_NULL | MAY_BE_STRING), reg::typed("isDeprecated", MAY_BE_BOOL), reg::typed("isInternal", MAY_BE_BOOL), reg::typed("isReadOnlyByPhpDoc", MAY_BE_BOOL), reg::typed("isAllowedPrivateMutation", MAY_BE_BOOL), reg::typed("attributes", MAY_BE_ARRAY), reg::typed("isFinal", MAY_BE_BOOL), reg::typed("readable", MAY_BE_BOOL), reg::typed("writable", MAY_BE_BOOL), reg::typed("private", MAY_BE_BOOL), reg::typed("public", MAY_BE_BOOL) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 20, __construct_args, 20, nullptr };
-inline constexpr reg::Arg getName_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig getName = { "getName", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getName_return };
-inline constexpr reg::Arg getDeclaringClass_return = reg::typed("", 0, "PHPStan\\Reflection\\ClassReflection");
-inline constexpr reg::Sig getDeclaringClass = { "getDeclaringClass", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getDeclaringClass_return };
-inline constexpr reg::Arg getDeclaringTrait_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Reflection\\ClassReflection");
-inline constexpr reg::Sig getDeclaringTrait = { "getDeclaringTrait", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getDeclaringTrait_return };
-inline constexpr reg::Arg getDocComment_return = reg::typed("", MAY_BE_NULL | MAY_BE_STRING);
-inline constexpr reg::Sig getDocComment = { "getDocComment", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getDocComment_return };
-inline constexpr reg::Arg isStatic_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isStatic = { "isStatic", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isStatic_return };
-inline constexpr reg::Arg isPrivate_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isPrivate = { "isPrivate", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isPrivate_return };
-inline constexpr reg::Arg isPublic_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isPublic = { "isPublic", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isPublic_return };
-inline constexpr reg::Arg isReadOnly_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isReadOnly = { "isReadOnly", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isReadOnly_return };
-inline constexpr reg::Arg isReadOnlyByPhpDoc_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isReadOnlyByPhpDoc = { "isReadOnlyByPhpDoc", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isReadOnlyByPhpDoc_return };
-inline constexpr reg::Arg getReadableType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getReadableType = { "getReadableType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getReadableType_return };
-inline constexpr reg::Arg getWritableType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getWritableType = { "getWritableType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getWritableType_return };
-inline constexpr reg::Arg canChangeTypeAfterAssignment_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig canChangeTypeAfterAssignment = { "canChangeTypeAfterAssignment", ZEND_ACC_PUBLIC, 0, nullptr, 0, &canChangeTypeAfterAssignment_return };
-inline constexpr reg::Arg isPromoted_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isPromoted = { "isPromoted", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isPromoted_return };
-inline constexpr reg::Arg hasPhpDocType_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig hasPhpDocType = { "hasPhpDocType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &hasPhpDocType_return };
-inline constexpr reg::Arg getPhpDocType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getPhpDocType = { "getPhpDocType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getPhpDocType_return };
-inline constexpr reg::Arg hasNativeType_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig hasNativeType = { "hasNativeType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &hasNativeType_return };
-inline constexpr reg::Arg getNativeType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getNativeType = { "getNativeType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getNativeType_return };
-inline constexpr reg::Arg isReadable_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isReadable = { "isReadable", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isReadable_return };
-inline constexpr reg::Arg isWritable_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isWritable = { "isWritable", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isWritable_return };
-inline constexpr reg::Arg getDeprecatedDescription_return = reg::typed("", MAY_BE_NULL | MAY_BE_STRING);
-inline constexpr reg::Sig getDeprecatedDescription = { "getDeprecatedDescription", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getDeprecatedDescription_return };
-inline constexpr reg::Arg isDeprecated_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isDeprecated = { "isDeprecated", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isDeprecated_return };
-inline constexpr reg::Arg isInternal_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isInternal = { "isInternal", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isInternal_return };
-inline constexpr reg::Arg isAllowedPrivateMutation_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isAllowedPrivateMutation = { "isAllowedPrivateMutation", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isAllowedPrivateMutation_return };
-inline constexpr reg::Arg getNativeReflection_return = reg::typed("", 0, "PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionProperty");
-inline constexpr reg::Sig getNativeReflection = { "getNativeReflection", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getNativeReflection_return };
-inline constexpr reg::Arg isAbstract_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isAbstract = { "isAbstract", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isAbstract_return };
-inline constexpr reg::Arg isFinalByKeyword_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isFinalByKeyword = { "isFinalByKeyword", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isFinalByKeyword_return };
-inline constexpr reg::Arg isFinal_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isFinal = { "isFinal", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isFinal_return };
-inline constexpr reg::Arg isVirtual_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isVirtual = { "isVirtual", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isVirtual_return };
-inline constexpr reg::Arg hasHook_args[] = { reg::typed("hookType", MAY_BE_STRING) };
-inline constexpr reg::Arg hasHook_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig hasHook = { "hasHook", ZEND_ACC_PUBLIC, 1, hasHook_args, 1, &hasHook_return };
-inline constexpr reg::Arg isHooked_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isHooked = { "isHooked", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isHooked_return };
-inline constexpr reg::Arg getHook_args[] = { reg::typed("hookType", MAY_BE_STRING) };
-inline constexpr reg::Arg getHook_return = reg::typed("", 0, "PHPStan\\Reflection\\ExtendedMethodReflection");
-inline constexpr reg::Sig getHook = { "getHook", ZEND_ACC_PUBLIC, 1, getHook_args, 1, &getHook_return };
-inline constexpr reg::Arg isProtectedSet_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isProtectedSet = { "isProtectedSet", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isProtectedSet_return };
-inline constexpr reg::Arg isPrivateSet_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isPrivateSet = { "isPrivateSet", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isPrivateSet_return };
-inline constexpr reg::Arg getAttributes_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getAttributes = { "getAttributes", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getAttributes_return };
-inline constexpr reg::Arg isDummy_return = reg::typed("", 0, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig isDummy = { "isDummy", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isDummy_return };
-inline constexpr reg::Arg getResolvedPhpDoc_return = reg::typed("", MAY_BE_NULL, "PHPStan\\PhpDoc\\ResolvedPhpDocBlock");
-inline constexpr reg::Sig getResolvedPhpDoc = { "getResolvedPhpDoc", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getResolvedPhpDoc_return };
+inline constexpr sigtab::Sig __construct = { { 463 /* __construct */, 20, 0, 20, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getName = { { 476 /* getName */, 0, 20, 0, 20, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getDeclaringClass = { { 484 /* getDeclaringClass */, 0, 21, 0, 21, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getDeclaringTrait = { { 502 /* getDeclaringTrait */, 0, 22, 0, 22, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getDocComment = { { 520 /* getDocComment */, 0, 23, 0, 23, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isStatic = { { 534 /* isStatic */, 0, 24, 0, 24, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isPrivate = { { 543 /* isPrivate */, 0, 25, 0, 25, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isPublic = { { 553 /* isPublic */, 0, 26, 0, 26, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isReadOnly = { { 562 /* isReadOnly */, 0, 27, 0, 27, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isReadOnlyByPhpDoc = { { 367 /* isReadOnlyByPhpDoc */, 0, 28, 0, 28, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getReadableType = { { 573 /* getReadableType */, 0, 29, 0, 29, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getWritableType = { { 589 /* getWritableType */, 0, 30, 0, 30, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig canChangeTypeAfterAssignment = { { 605 /* canChangeTypeAfterAssignment */, 0, 31, 0, 31, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isPromoted = { { 634 /* isPromoted */, 0, 32, 0, 32, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasPhpDocType = { { 645 /* hasPhpDocType */, 0, 33, 0, 33, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getPhpDocType = { { 659 /* getPhpDocType */, 0, 34, 0, 34, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasNativeType = { { 673 /* hasNativeType */, 0, 35, 0, 35, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getNativeType = { { 687 /* getNativeType */, 0, 36, 0, 36, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isReadable = { { 701 /* isReadable */, 0, 37, 0, 37, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isWritable = { { 712 /* isWritable */, 0, 38, 0, 38, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getDeprecatedDescription = { { 723 /* getDeprecatedDescription */, 0, 39, 0, 39, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isDeprecated = { { 343 /* isDeprecated */, 0, 40, 0, 40, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isInternal = { { 356 /* isInternal */, 0, 41, 0, 41, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isAllowedPrivateMutation = { { 386 /* isAllowedPrivateMutation */, 0, 42, 0, 42, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getNativeReflection = { { 769 /* getNativeReflection */, 0, 43, 0, 43, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isAbstract = { { 789 /* isAbstract */, 0, 44, 0, 44, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isFinalByKeyword = { { 800 /* isFinalByKeyword */, 0, 45, 0, 45, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isFinal = { { 422 /* isFinal */, 0, 46, 0, 46, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isVirtual = { { 817 /* isVirtual */, 0, 47, 0, 47, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasHook = { { 836 /* hasHook */, 1, 48, 1, 49, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isHooked = { { 844 /* isHooked */, 0, 50, 0, 50, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getHook = { { 206 /* getHook */, 1, 51, 1, 52, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isProtectedSet = { { 853 /* isProtectedSet */, 0, 53, 0, 53, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isPrivateSet = { { 868 /* isPrivateSet */, 0, 54, 0, 54, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getAttributes = { { 881 /* getAttributes */, 0, 55, 0, 55, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isDummy = { { 895 /* isDummy */, 0, 56, 0, 56, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getResolvedPhpDoc = { { 903 /* getResolvedPhpDoc */, 0, 57, 0, 57, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::PhpPropertyReflection

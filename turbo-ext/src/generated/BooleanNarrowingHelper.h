@@ -26,25 +26,89 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("defaultNarrowingHelper", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"conditionalExpressionHolderHelper\0" /* 0 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\ConditionalExpressionHolderHelper\0" /* 34 */
+	"defaultNarrowingHelper\0" /* 104 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper\0" /* 127 */
+	"__construct\0" /* 186 */
+	"nodeScopeResolver\0" /* 198 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 216 */
+	"s\0" /* 251 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 253 */
+	"context\0" /* 284 */
+	"PHPStan\\Analyser\\TypeSpecifierContext\0" /* 292 */
+	"rootExpr\0" /* 330 */
+	"PhpParser\\Node\\Expr\0" /* 339 */
+	"leftExpr\0" /* 359 */
+	"leftTypesCallback\0" /* 368 */
+	"leftTruthyScope\0" /* 386 */
+	"leftFalseyScope\0" /* 402 */
+	"rightExpr\0" /* 418 */
+	"rightTypesCallback\0" /* 428 */
+	"rightFalseyScope\0" /* 447 */
+	"\0" /* 464 */
+	"PHPStan\\Analyser\\SpecifiedTypes\0" /* 465 */
+	"specifyConjunction\0" /* 497 */
+	"leftTypeCallback\0" /* 516 */
+	"rightTypeCallback\0" /* 533 */
+	"rightTruthyScope\0" /* 551 */
+	"specifyDisjunction\0" /* 568 */
+	"side\0" /* 587 */
+	"truthinessImpliedByTruthyNarrowing\0" /* 592 */
+	"types\0" /* 627 */
+	"allExpressionsTrackable\0" /* 633 */
+	"expr\0" /* 657 */
+	"isTrackableExpression"; /* 662 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 34), /* __construct $conditionalExpressionHolderHelper */
+	reg::packed(104, 0, 127), /* __construct $defaultNarrowingHelper */
+	reg::packed(198, 0, 216), /* specifyConjunction $nodeScopeResolver */
+	reg::packed(251, 0, 253), /* specifyConjunction $s */
+	reg::packed(284, 0, 292), /* specifyConjunction $context */
+	reg::packed(330, 0, 339), /* specifyConjunction $rootExpr */
+	reg::packed(359, 0, 339), /* specifyConjunction $leftExpr */
+	reg::packed(368, MAY_BE_CALLABLE), /* specifyConjunction $leftTypesCallback */
+	reg::packed(386, MAY_BE_CALLABLE), /* specifyConjunction $leftTruthyScope */
+	reg::packed(402, MAY_BE_CALLABLE), /* specifyConjunction $leftFalseyScope */
+	reg::packed(418, 0, 339), /* specifyConjunction $rightExpr */
+	reg::packed(428, MAY_BE_CALLABLE), /* specifyConjunction $rightTypesCallback */
+	reg::packed(447, MAY_BE_CALLABLE), /* specifyConjunction $rightFalseyScope */
+	reg::packed(464, 0, 465), /* specifyConjunction return */
+	reg::packed(198, 0, 216), /* specifyDisjunction $nodeScopeResolver */
+	reg::packed(251, 0, 253), /* specifyDisjunction $s */
+	reg::packed(284, 0, 292), /* specifyDisjunction $context */
+	reg::packed(330, 0, 339), /* specifyDisjunction $rootExpr */
+	reg::packed(359, 0, 339), /* specifyDisjunction $leftExpr */
+	reg::packed(368, MAY_BE_CALLABLE), /* specifyDisjunction $leftTypesCallback */
+	reg::packed(516, MAY_BE_CALLABLE), /* specifyDisjunction $leftTypeCallback */
+	reg::packed(386, MAY_BE_CALLABLE), /* specifyDisjunction $leftTruthyScope */
+	reg::packed(402, MAY_BE_CALLABLE), /* specifyDisjunction $leftFalseyScope */
+	reg::packed(418, 0, 339), /* specifyDisjunction $rightExpr */
+	reg::packed(428, MAY_BE_CALLABLE), /* specifyDisjunction $rightTypesCallback */
+	reg::packed(533, MAY_BE_CALLABLE), /* specifyDisjunction $rightTypeCallback */
+	reg::packed(551, MAY_BE_CALLABLE), /* specifyDisjunction $rightTruthyScope */
+	reg::packed(464, 0, 465), /* specifyDisjunction return */
+	reg::packed(587, 0, 339), /* truthinessImpliedByTruthyNarrowing $side */
+	reg::packed(464, MAY_BE_BOOL), /* truthinessImpliedByTruthyNarrowing return */
+	reg::packed(627, 0, 465), /* allExpressionsTrackable $types */
+	reg::packed(464, MAY_BE_BOOL), /* allExpressionsTrackable return */
+	reg::packed(657, 0, 339), /* isTrackableExpression $expr */
+	reg::packed(464, MAY_BE_BOOL), /* isTrackableExpression return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("conditionalExpressionHolderHelper", 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\ConditionalExpressionHolderHelper"), reg::typed("defaultNarrowingHelper", 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 2, __construct_args, 2, nullptr };
-inline constexpr reg::Arg specifyConjunction_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("s", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("context", 0, "PHPStan\\Analyser\\TypeSpecifierContext"), reg::typed("rootExpr", 0, "PhpParser\\Node\\Expr"), reg::typed("leftExpr", 0, "PhpParser\\Node\\Expr"), reg::typed("leftTypesCallback", MAY_BE_CALLABLE), reg::typed("leftTruthyScope", MAY_BE_CALLABLE), reg::typed("leftFalseyScope", MAY_BE_CALLABLE), reg::typed("rightExpr", 0, "PhpParser\\Node\\Expr"), reg::typed("rightTypesCallback", MAY_BE_CALLABLE), reg::typed("rightFalseyScope", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg specifyConjunction_return = reg::typed("", 0, "PHPStan\\Analyser\\SpecifiedTypes");
-inline constexpr reg::Sig specifyConjunction = { "specifyConjunction", ZEND_ACC_PUBLIC, 11, specifyConjunction_args, 11, &specifyConjunction_return };
-inline constexpr reg::Arg specifyDisjunction_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("s", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("context", 0, "PHPStan\\Analyser\\TypeSpecifierContext"), reg::typed("rootExpr", 0, "PhpParser\\Node\\Expr"), reg::typed("leftExpr", 0, "PhpParser\\Node\\Expr"), reg::typed("leftTypesCallback", MAY_BE_CALLABLE), reg::typed("leftTypeCallback", MAY_BE_CALLABLE), reg::typed("leftTruthyScope", MAY_BE_CALLABLE), reg::typed("leftFalseyScope", MAY_BE_CALLABLE), reg::typed("rightExpr", 0, "PhpParser\\Node\\Expr"), reg::typed("rightTypesCallback", MAY_BE_CALLABLE), reg::typed("rightTypeCallback", MAY_BE_CALLABLE), reg::typed("rightTruthyScope", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg specifyDisjunction_return = reg::typed("", 0, "PHPStan\\Analyser\\SpecifiedTypes");
-inline constexpr reg::Sig specifyDisjunction = { "specifyDisjunction", ZEND_ACC_PUBLIC, 13, specifyDisjunction_args, 13, &specifyDisjunction_return };
-inline constexpr reg::Arg truthinessImpliedByTruthyNarrowing_args[] = { reg::typed("side", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg truthinessImpliedByTruthyNarrowing_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig truthinessImpliedByTruthyNarrowing = { "truthinessImpliedByTruthyNarrowing", ZEND_ACC_PRIVATE, 1, truthinessImpliedByTruthyNarrowing_args, 1, &truthinessImpliedByTruthyNarrowing_return };
-inline constexpr reg::Arg allExpressionsTrackable_args[] = { reg::typed("types", 0, "PHPStan\\Analyser\\SpecifiedTypes") };
-inline constexpr reg::Arg allExpressionsTrackable_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig allExpressionsTrackable = { "allExpressionsTrackable", ZEND_ACC_PRIVATE, 1, allExpressionsTrackable_args, 1, &allExpressionsTrackable_return };
-inline constexpr reg::Arg isTrackableExpression_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg isTrackableExpression_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isTrackableExpression = { "isTrackableExpression", ZEND_ACC_PRIVATE, 1, isTrackableExpression_args, 1, &isTrackableExpression_return };
+inline constexpr sigtab::Sig __construct = { { 186 /* __construct */, 2, 0, 2, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig specifyConjunction = { { 497 /* specifyConjunction */, 11, 2, 11, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig specifyDisjunction = { { 568 /* specifyDisjunction */, 13, 14, 13, 27, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig truthinessImpliedByTruthyNarrowing = { { 592 /* truthinessImpliedByTruthyNarrowing */, 1, 28, 1, 29, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig allExpressionsTrackable = { { 633 /* allExpressionsTrackable */, 1, 30, 1, 31, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isTrackableExpression = { { 662 /* isTrackableExpression */, 1, 32, 1, 33, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::BooleanNarrowingHelper

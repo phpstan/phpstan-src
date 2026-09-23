@@ -19,11 +19,31 @@ inline void declareProperties(reg::Class &cls)
 	(void) cls;
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"ours\0" /* 0 */
+	"PHPStan\\Reflection\\Callables\\CallableParametersAcceptor\0" /* 5 */
+	"theirs\0" /* 61 */
+	"treatMixedAsAny\0" /* 68 */
+	"strictTypes\0" /* 84 */
+	"true\0" /* 96 */
+	"\0" /* 101 */
+	"PHPStan\\Type\\IsSuperTypeOfResult\0" /* 102 */
+	"isParametersAcceptorSuperTypeOf"; /* 135 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 5), /* isParametersAcceptorSuperTypeOf $ours */
+	reg::packed(61, 0, 5), /* isParametersAcceptorSuperTypeOf $theirs */
+	reg::packed(68, MAY_BE_BOOL), /* isParametersAcceptorSuperTypeOf $treatMixedAsAny */
+	reg::packed(84, MAY_BE_BOOL, reg::NoString, false, false, 96), /* isParametersAcceptorSuperTypeOf $strictTypes */
+	reg::packed(101, 0, 102), /* isParametersAcceptorSuperTypeOf return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg isParametersAcceptorSuperTypeOf_args[] = { reg::typed("ours", 0, "PHPStan\\Reflection\\Callables\\CallableParametersAcceptor"), reg::typed("theirs", 0, "PHPStan\\Reflection\\Callables\\CallableParametersAcceptor"), reg::typed("treatMixedAsAny", MAY_BE_BOOL), reg::typed("strictTypes", MAY_BE_BOOL, nullptr, false, false, "true") };
-inline constexpr reg::Arg isParametersAcceptorSuperTypeOf_return = reg::typed("", 0, "PHPStan\\Type\\IsSuperTypeOfResult");
-inline constexpr reg::Sig isParametersAcceptorSuperTypeOf = { "isParametersAcceptorSuperTypeOf", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 3, isParametersAcceptorSuperTypeOf_args, 4, &isParametersAcceptorSuperTypeOf_return };
+inline constexpr sigtab::Sig isParametersAcceptorSuperTypeOf = { { 135 /* isParametersAcceptorSuperTypeOf */, 3, 0, 4, 4, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::CallableTypeHelper

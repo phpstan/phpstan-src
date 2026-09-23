@@ -28,22 +28,58 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("certain", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_BOOL);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"identifier\0" /* 0 */
+	"description\0" /* 11 */
+	"certain\0" /* 23 */
+	"__construct\0" /* 31 */
+	"function\0" /* 43 */
+	"PHPStan\\Reflection\\FunctionReflection|PHPStan\\Reflection\\ExtendedMethodReflection\0" /* 52 */
+	"variant\0" /* 134 */
+	"PHPStan\\Reflection\\ParametersAcceptor\0" /* 142 */
+	"scope\0" /* 180 */
+	"PHPStan\\Analyser\\Scope\0" /* 186 */
+	"null\0" /* 209 */
+	"args\0" /* 214 */
+	"[]\0" /* 219 */
+	"\0" /* 222 */
+	"PHPStan\\Reflection\\Callables\\SimpleImpurePoint\0" /* 223 */
+	"createFromVariant\0" /* 270 */
+	"PHPStan\\TrinaryLogic\0" /* 288 */
+	"resolvePureUnlessCallableIsImpureVerdict\0" /* 309 */
+	"getIdentifier\0" /* 350 */
+	"getDescription\0" /* 364 */
+	"isCertain"; /* 379 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_STRING), /* __construct $identifier */
+	reg::packed(11, MAY_BE_STRING), /* __construct $description */
+	reg::packed(23, MAY_BE_BOOL), /* __construct $certain */
+	reg::packed(43, 0, 52), /* createFromVariant $function */
+	reg::packed(134, MAY_BE_NULL, 142), /* createFromVariant $variant */
+	reg::packed(180, MAY_BE_NULL, 186, false, false, 209), /* createFromVariant $scope */
+	reg::packed(214, MAY_BE_ARRAY, reg::NoString, false, false, 219), /* createFromVariant $args */
+	reg::packed(222, MAY_BE_NULL, 223), /* createFromVariant return */
+	reg::packed(134, 0, 142), /* resolvePureUnlessCallableIsImpureVerdict $variant */
+	reg::packed(180, 0, 186), /* resolvePureUnlessCallableIsImpureVerdict $scope */
+	reg::packed(214, MAY_BE_ARRAY), /* resolvePureUnlessCallableIsImpureVerdict $args */
+	reg::packed(222, MAY_BE_NULL, 288), /* resolvePureUnlessCallableIsImpureVerdict return */
+	reg::packed(222, MAY_BE_STRING), /* getIdentifier return */
+	reg::packed(222, MAY_BE_STRING), /* getDescription return */
+	reg::packed(222, MAY_BE_BOOL), /* isCertain return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("identifier", MAY_BE_STRING), reg::typed("description", MAY_BE_STRING), reg::typed("certain", MAY_BE_BOOL) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 3, __construct_args, 3, nullptr };
-inline constexpr reg::Arg createFromVariant_args[] = { reg::typed("function", 0, "PHPStan\\Reflection\\FunctionReflection|PHPStan\\Reflection\\ExtendedMethodReflection"), reg::typed("variant", MAY_BE_NULL, "PHPStan\\Reflection\\ParametersAcceptor"), reg::typed("scope", MAY_BE_NULL, "PHPStan\\Analyser\\Scope", false, false, "null"), reg::typed("args", MAY_BE_ARRAY, nullptr, false, false, "[]") };
-inline constexpr reg::Arg createFromVariant_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Reflection\\Callables\\SimpleImpurePoint");
-inline constexpr reg::Sig createFromVariant = { "createFromVariant", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, createFromVariant_args, 4, &createFromVariant_return };
-inline constexpr reg::Arg resolvePureUnlessCallableIsImpureVerdict_args[] = { reg::typed("variant", 0, "PHPStan\\Reflection\\ParametersAcceptor"), reg::typed("scope", 0, "PHPStan\\Analyser\\Scope"), reg::typed("args", MAY_BE_ARRAY) };
-inline constexpr reg::Arg resolvePureUnlessCallableIsImpureVerdict_return = reg::typed("", MAY_BE_NULL, "PHPStan\\TrinaryLogic");
-inline constexpr reg::Sig resolvePureUnlessCallableIsImpureVerdict = { "resolvePureUnlessCallableIsImpureVerdict", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 3, resolvePureUnlessCallableIsImpureVerdict_args, 3, &resolvePureUnlessCallableIsImpureVerdict_return };
-inline constexpr reg::Arg getIdentifier_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig getIdentifier = { "getIdentifier", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getIdentifier_return };
-inline constexpr reg::Arg getDescription_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig getDescription = { "getDescription", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getDescription_return };
-inline constexpr reg::Arg isCertain_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isCertain = { "isCertain", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isCertain_return };
+inline constexpr sigtab::Sig __construct = { { 31 /* __construct */, 3, 0, 3, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig createFromVariant = { { 270 /* createFromVariant */, 2, 3, 4, 7, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig resolvePureUnlessCallableIsImpureVerdict = { { 309 /* resolvePureUnlessCallableIsImpureVerdict */, 3, 8, 3, 11, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig getIdentifier = { { 350 /* getIdentifier */, 0, 12, 0, 12, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getDescription = { { 364 /* getDescription */, 0, 13, 0, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isCertain = { { 379 /* isCertain */, 0, 14, 0, 14, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::SimpleImpurePoint

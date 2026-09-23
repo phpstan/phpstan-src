@@ -26,10 +26,23 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("reasons", ZEND_ACC_PUBLIC | ZEND_ACC_READONLY, reg::PropertyKind::Typed, MAY_BE_ARRAY);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"type\0" /* 0 */
+	"PHPStan\\Type\\Type\0" /* 5 */
+	"reasons\0" /* 23 */
+	"__construct"; /* 31 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 5), /* __construct $type */
+	reg::packed(23, MAY_BE_ARRAY), /* __construct $reasons */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type"), reg::typed("reasons", MAY_BE_ARRAY) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 2, __construct_args, 2, nullptr };
+inline constexpr sigtab::Sig __construct = { { 31 /* __construct */, 2, 0, 2, reg::NoArg, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::TypeResult

@@ -45,58 +45,126 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("passedArgs", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_ARRAY);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"parametersAcceptor\0" /* 0 */
+	"PHPStan\\Reflection\\ExtendedParametersAcceptor\0" /* 19 */
+	"resolvedTemplateTypeMap\0" /* 65 */
+	"PHPStan\\Type\\Generic\\TemplateTypeMap\0" /* 89 */
+	"callSiteVarianceMap\0" /* 126 */
+	"PHPStan\\Type\\Generic\\TemplateTypeVarianceMap\0" /* 146 */
+	"passedArgs\0" /* 191 */
+	"__construct\0" /* 202 */
+	"\0" /* 214 */
+	"PHPStan\\Reflection\\ParametersAcceptor\0" /* 215 */
+	"getOriginalParametersAcceptor\0" /* 253 */
+	"getTemplateTypeMap\0" /* 283 */
+	"getResolvedTemplateTypeMap\0" /* 302 */
+	"getCallSiteVarianceMap\0" /* 329 */
+	"getParameters\0" /* 352 */
+	"isVariadic\0" /* 366 */
+	"PHPStan\\Type\\Type\0" /* 377 */
+	"getReturnTypeWithUnresolvableTemplateTypes\0" /* 395 */
+	"getPhpDocReturnTypeWithUnresolvableTemplateTypes\0" /* 438 */
+	"getReturnType\0" /* 487 */
+	"site\0" /* 501 */
+	"PhpParser\\Node\\Expr\0" /* 506 */
+	"frame\0" /* 526 */
+	"PHPStan\\Analyser\\Generics\\TemplateArgumentFrame\0" /* 532 */
+	"allowUnresolved\0" /* 580 */
+	"getReturnTypeWithUnresolvedTemplateArguments\0" /* 596 */
+	"getPhpDocReturnType\0" /* 641 */
+	"getNativeReturnType\0" /* 661 */
+	"hasBoundArgs\0" /* 681 */
+	"type\0" /* 694 */
+	"resolveConditionalTypes\0" /* 699 */
+	"positionVariance\0" /* 723 */
+	"PHPStan\\Type\\Generic\\TemplateTypeVariance\0" /* 740 */
+	"null\0" /* 782 */
+	"true\0" /* 787 */
+	"resolveResolvableTemplateTypes\0" /* 792 */
+	"template\0" /* 823 */
+	"PHPStan\\Type\\Generic\\TemplateType\0" /* 832 */
+	"inferred\0" /* 866 */
+	"unresolvedOrResolvedTemplateArgument\0" /* 875 */
+	"narrowTemplateTypesInConditionalTypesForParameter\0" /* 912 */
+	"parameterName\0" /* 962 */
+	"getTemplateTypeBoundOnlyByParameter\0" /* 976 */
+	"templateType\0" /* 1012 */
+	"referencesTemplateType\0" /* 1025 */
+	"resolveConditionalTypesForParameter"; /* 1048 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 19), /* __construct $parametersAcceptor */
+	reg::packed(65, 0, 89), /* __construct $resolvedTemplateTypeMap */
+	reg::packed(126, 0, 146), /* __construct $callSiteVarianceMap */
+	reg::packed(191, MAY_BE_ARRAY), /* __construct $passedArgs */
+	reg::packed(214, 0, 215), /* getOriginalParametersAcceptor return */
+	reg::packed(214, 0, 89), /* getTemplateTypeMap return */
+	reg::packed(214, 0, 89), /* getResolvedTemplateTypeMap return */
+	reg::packed(214, 0, 146), /* getCallSiteVarianceMap return */
+	reg::packed(214, MAY_BE_ARRAY), /* getParameters return */
+	reg::packed(214, MAY_BE_BOOL), /* isVariadic return */
+	reg::packed(214, 0, 377), /* getReturnTypeWithUnresolvableTemplateTypes return */
+	reg::packed(214, 0, 377), /* getPhpDocReturnTypeWithUnresolvableTemplateTypes return */
+	reg::packed(214, 0, 377), /* getReturnType return */
+	reg::packed(501, 0, 506), /* getReturnTypeWithUnresolvedTemplateArguments $site */
+	reg::packed(526, 0, 532), /* getReturnTypeWithUnresolvedTemplateArguments $frame */
+	reg::packed(580, MAY_BE_BOOL), /* getReturnTypeWithUnresolvedTemplateArguments $allowUnresolved */
+	reg::packed(214, 0, 377), /* getReturnTypeWithUnresolvedTemplateArguments return */
+	reg::packed(214, 0, 377), /* getPhpDocReturnType return */
+	reg::packed(214, 0, 377), /* getNativeReturnType return */
+	reg::packed(214, MAY_BE_BOOL), /* hasBoundArgs return */
+	reg::packed(694, 0, 377), /* resolveConditionalTypes $type */
+	reg::packed(214, 0, 377), /* resolveConditionalTypes return */
+	reg::packed(694, 0, 377), /* resolveResolvableTemplateTypes $type */
+	reg::packed(723, 0, 740), /* resolveResolvableTemplateTypes $positionVariance */
+	reg::packed(501, MAY_BE_NULL, 506, false, false, 782), /* resolveResolvableTemplateTypes $site */
+	reg::packed(526, MAY_BE_NULL, 532, false, false, 782), /* resolveResolvableTemplateTypes $frame */
+	reg::packed(580, MAY_BE_BOOL, reg::NoString, false, false, 787), /* resolveResolvableTemplateTypes $allowUnresolved */
+	reg::packed(214, 0, 377), /* resolveResolvableTemplateTypes return */
+	reg::packed(823, 0, 832), /* unresolvedOrResolvedTemplateArgument $template */
+	reg::packed(866, 0, 377), /* unresolvedOrResolvedTemplateArgument $inferred */
+	reg::packed(501, 0, 506), /* unresolvedOrResolvedTemplateArgument $site */
+	reg::packed(526, 0, 532), /* unresolvedOrResolvedTemplateArgument $frame */
+	reg::packed(580, MAY_BE_BOOL), /* unresolvedOrResolvedTemplateArgument $allowUnresolved */
+	reg::packed(214, 0, 377), /* unresolvedOrResolvedTemplateArgument return */
+	reg::packed(694, 0, 377), /* narrowTemplateTypesInConditionalTypesForParameter $type */
+	reg::packed(214, 0, 377), /* narrowTemplateTypesInConditionalTypesForParameter return */
+	reg::packed(962, MAY_BE_STRING), /* getTemplateTypeBoundOnlyByParameter $parameterName */
+	reg::packed(214, MAY_BE_NULL, 832), /* getTemplateTypeBoundOnlyByParameter return */
+	reg::packed(694, 0, 377), /* referencesTemplateType $type */
+	reg::packed(1012, 0, 832), /* referencesTemplateType $templateType */
+	reg::packed(214, MAY_BE_BOOL), /* referencesTemplateType return */
+	reg::packed(694, 0, 377), /* resolveConditionalTypesForParameter $type */
+	reg::packed(214, 0, 377), /* resolveConditionalTypesForParameter return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("parametersAcceptor", 0, "PHPStan\\Reflection\\ExtendedParametersAcceptor"), reg::typed("resolvedTemplateTypeMap", 0, "PHPStan\\Type\\Generic\\TemplateTypeMap"), reg::typed("callSiteVarianceMap", 0, "PHPStan\\Type\\Generic\\TemplateTypeVarianceMap"), reg::typed("passedArgs", MAY_BE_ARRAY) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 4, __construct_args, 4, nullptr };
-inline constexpr reg::Arg getOriginalParametersAcceptor_return = reg::typed("", 0, "PHPStan\\Reflection\\ParametersAcceptor");
-inline constexpr reg::Sig getOriginalParametersAcceptor = { "getOriginalParametersAcceptor", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getOriginalParametersAcceptor_return };
-inline constexpr reg::Arg getTemplateTypeMap_return = reg::typed("", 0, "PHPStan\\Type\\Generic\\TemplateTypeMap");
-inline constexpr reg::Sig getTemplateTypeMap = { "getTemplateTypeMap", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getTemplateTypeMap_return };
-inline constexpr reg::Arg getResolvedTemplateTypeMap_return = reg::typed("", 0, "PHPStan\\Type\\Generic\\TemplateTypeMap");
-inline constexpr reg::Sig getResolvedTemplateTypeMap = { "getResolvedTemplateTypeMap", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getResolvedTemplateTypeMap_return };
-inline constexpr reg::Arg getCallSiteVarianceMap_return = reg::typed("", 0, "PHPStan\\Type\\Generic\\TemplateTypeVarianceMap");
-inline constexpr reg::Sig getCallSiteVarianceMap = { "getCallSiteVarianceMap", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getCallSiteVarianceMap_return };
-inline constexpr reg::Arg getParameters_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getParameters = { "getParameters", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getParameters_return };
-inline constexpr reg::Arg isVariadic_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isVariadic = { "isVariadic", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isVariadic_return };
-inline constexpr reg::Arg getReturnTypeWithUnresolvableTemplateTypes_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getReturnTypeWithUnresolvableTemplateTypes = { "getReturnTypeWithUnresolvableTemplateTypes", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getReturnTypeWithUnresolvableTemplateTypes_return };
-inline constexpr reg::Arg getPhpDocReturnTypeWithUnresolvableTemplateTypes_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getPhpDocReturnTypeWithUnresolvableTemplateTypes = { "getPhpDocReturnTypeWithUnresolvableTemplateTypes", ZEND_ACC_PRIVATE, 0, nullptr, 0, &getPhpDocReturnTypeWithUnresolvableTemplateTypes_return };
-inline constexpr reg::Arg getReturnType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getReturnType = { "getReturnType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getReturnType_return };
-inline constexpr reg::Arg getReturnTypeWithUnresolvedTemplateArguments_args[] = { reg::typed("site", 0, "PhpParser\\Node\\Expr"), reg::typed("frame", 0, "PHPStan\\Analyser\\Generics\\TemplateArgumentFrame"), reg::typed("allowUnresolved", MAY_BE_BOOL) };
-inline constexpr reg::Arg getReturnTypeWithUnresolvedTemplateArguments_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getReturnTypeWithUnresolvedTemplateArguments = { "getReturnTypeWithUnresolvedTemplateArguments", ZEND_ACC_PUBLIC, 3, getReturnTypeWithUnresolvedTemplateArguments_args, 3, &getReturnTypeWithUnresolvedTemplateArguments_return };
-inline constexpr reg::Arg getPhpDocReturnType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getPhpDocReturnType = { "getPhpDocReturnType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getPhpDocReturnType_return };
-inline constexpr reg::Arg getNativeReturnType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getNativeReturnType = { "getNativeReturnType", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getNativeReturnType_return };
-inline constexpr reg::Arg hasBoundArgs_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig hasBoundArgs = { "hasBoundArgs", ZEND_ACC_PUBLIC, 0, nullptr, 0, &hasBoundArgs_return };
-inline constexpr reg::Arg resolveConditionalTypes_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg resolveConditionalTypes_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig resolveConditionalTypes = { "resolveConditionalTypes", ZEND_ACC_PUBLIC, 1, resolveConditionalTypes_args, 1, &resolveConditionalTypes_return };
-inline constexpr reg::Arg resolveResolvableTemplateTypes_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type"), reg::typed("positionVariance", 0, "PHPStan\\Type\\Generic\\TemplateTypeVariance"), reg::typed("site", MAY_BE_NULL, "PhpParser\\Node\\Expr", false, false, "null"), reg::typed("frame", MAY_BE_NULL, "PHPStan\\Analyser\\Generics\\TemplateArgumentFrame", false, false, "null"), reg::typed("allowUnresolved", MAY_BE_BOOL, nullptr, false, false, "true") };
-inline constexpr reg::Arg resolveResolvableTemplateTypes_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig resolveResolvableTemplateTypes = { "resolveResolvableTemplateTypes", ZEND_ACC_PRIVATE, 2, resolveResolvableTemplateTypes_args, 5, &resolveResolvableTemplateTypes_return };
-inline constexpr reg::Arg unresolvedOrResolvedTemplateArgument_args[] = { reg::typed("template", 0, "PHPStan\\Type\\Generic\\TemplateType"), reg::typed("inferred", 0, "PHPStan\\Type\\Type"), reg::typed("site", 0, "PhpParser\\Node\\Expr"), reg::typed("frame", 0, "PHPStan\\Analyser\\Generics\\TemplateArgumentFrame"), reg::typed("allowUnresolved", MAY_BE_BOOL) };
-inline constexpr reg::Arg unresolvedOrResolvedTemplateArgument_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig unresolvedOrResolvedTemplateArgument = { "unresolvedOrResolvedTemplateArgument", ZEND_ACC_PRIVATE, 5, unresolvedOrResolvedTemplateArgument_args, 5, &unresolvedOrResolvedTemplateArgument_return };
-inline constexpr reg::Arg narrowTemplateTypesInConditionalTypesForParameter_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg narrowTemplateTypesInConditionalTypesForParameter_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig narrowTemplateTypesInConditionalTypesForParameter = { "narrowTemplateTypesInConditionalTypesForParameter", ZEND_ACC_PRIVATE, 1, narrowTemplateTypesInConditionalTypesForParameter_args, 1, &narrowTemplateTypesInConditionalTypesForParameter_return };
-inline constexpr reg::Arg getTemplateTypeBoundOnlyByParameter_args[] = { reg::typed("parameterName", MAY_BE_STRING) };
-inline constexpr reg::Arg getTemplateTypeBoundOnlyByParameter_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Type\\Generic\\TemplateType");
-inline constexpr reg::Sig getTemplateTypeBoundOnlyByParameter = { "getTemplateTypeBoundOnlyByParameter", ZEND_ACC_PRIVATE, 1, getTemplateTypeBoundOnlyByParameter_args, 1, &getTemplateTypeBoundOnlyByParameter_return };
-inline constexpr reg::Arg referencesTemplateType_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type"), reg::typed("templateType", 0, "PHPStan\\Type\\Generic\\TemplateType") };
-inline constexpr reg::Arg referencesTemplateType_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig referencesTemplateType = { "referencesTemplateType", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 2, referencesTemplateType_args, 2, &referencesTemplateType_return };
-inline constexpr reg::Arg resolveConditionalTypesForParameter_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg resolveConditionalTypesForParameter_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig resolveConditionalTypesForParameter = { "resolveConditionalTypesForParameter", ZEND_ACC_PRIVATE, 1, resolveConditionalTypesForParameter_args, 1, &resolveConditionalTypesForParameter_return };
+inline constexpr sigtab::Sig __construct = { { 202 /* __construct */, 4, 0, 4, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getOriginalParametersAcceptor = { { 253 /* getOriginalParametersAcceptor */, 0, 4, 0, 4, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getTemplateTypeMap = { { 283 /* getTemplateTypeMap */, 0, 5, 0, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getResolvedTemplateTypeMap = { { 302 /* getResolvedTemplateTypeMap */, 0, 6, 0, 6, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getCallSiteVarianceMap = { { 329 /* getCallSiteVarianceMap */, 0, 7, 0, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getParameters = { { 352 /* getParameters */, 0, 8, 0, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isVariadic = { { 366 /* isVariadic */, 0, 9, 0, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getReturnTypeWithUnresolvableTemplateTypes = { { 395 /* getReturnTypeWithUnresolvableTemplateTypes */, 0, 10, 0, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getPhpDocReturnTypeWithUnresolvableTemplateTypes = { { 438 /* getPhpDocReturnTypeWithUnresolvableTemplateTypes */, 0, 11, 0, 11, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getReturnType = { { 487 /* getReturnType */, 0, 12, 0, 12, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getReturnTypeWithUnresolvedTemplateArguments = { { 596 /* getReturnTypeWithUnresolvedTemplateArguments */, 3, 13, 3, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getPhpDocReturnType = { { 641 /* getPhpDocReturnType */, 0, 17, 0, 17, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getNativeReturnType = { { 661 /* getNativeReturnType */, 0, 18, 0, 18, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasBoundArgs = { { 681 /* hasBoundArgs */, 0, 19, 0, 19, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig resolveConditionalTypes = { { 699 /* resolveConditionalTypes */, 1, 20, 1, 21, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig resolveResolvableTemplateTypes = { { 792 /* resolveResolvableTemplateTypes */, 2, 22, 5, 27, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig unresolvedOrResolvedTemplateArgument = { { 875 /* unresolvedOrResolvedTemplateArgument */, 5, 28, 5, 33, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig narrowTemplateTypesInConditionalTypesForParameter = { { 912 /* narrowTemplateTypesInConditionalTypesForParameter */, 1, 34, 1, 35, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getTemplateTypeBoundOnlyByParameter = { { 976 /* getTemplateTypeBoundOnlyByParameter */, 1, 36, 1, 37, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig referencesTemplateType = { { 1025 /* referencesTemplateType */, 2, 38, 2, 40, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig resolveConditionalTypesForParameter = { { 1048 /* resolveConditionalTypesForParameter */, 1, 41, 1, 42, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::ResolvedFunctionVariantWithOriginal

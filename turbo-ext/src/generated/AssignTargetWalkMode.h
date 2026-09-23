@@ -28,24 +28,44 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("issetSemanticsForRead", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_BOOL);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"enterExpressionAssign\0" /* 0 */
+	"producesTargetReadResult\0" /* 22 */
+	"issetSemanticsForRead\0" /* 47 */
+	"__construct\0" /* 69 */
+	"\0" /* 81 */
+	"PHPStan\\Analyser\\AssignTargetWalkMode\0" /* 82 */
+	"assign\0" /* 120 */
+	"virtualAssign\0" /* 127 */
+	"readModifyWrite\0" /* 141 */
+	"coalesceReadModifyWrite"; /* 157 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_BOOL), /* __construct $enterExpressionAssign */
+	reg::packed(22, MAY_BE_BOOL), /* __construct $producesTargetReadResult */
+	reg::packed(47, MAY_BE_BOOL), /* __construct $issetSemanticsForRead */
+	reg::packed(81, 0, 82), /* assign return */
+	reg::packed(81, 0, 82), /* virtualAssign return */
+	reg::packed(81, 0, 82), /* readModifyWrite return */
+	reg::packed(81, 0, 82), /* coalesceReadModifyWrite return */
+	reg::packed(81, MAY_BE_BOOL), /* enterExpressionAssign return */
+	reg::packed(81, MAY_BE_BOOL), /* producesTargetReadResult return */
+	reg::packed(81, MAY_BE_BOOL), /* issetSemanticsForRead return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("enterExpressionAssign", MAY_BE_BOOL), reg::typed("producesTargetReadResult", MAY_BE_BOOL), reg::typed("issetSemanticsForRead", MAY_BE_BOOL) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PRIVATE, 3, __construct_args, 3, nullptr };
-inline constexpr reg::Arg assign_return = reg::typed("", 0, "PHPStan\\Analyser\\AssignTargetWalkMode");
-inline constexpr reg::Sig assign = { "assign", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &assign_return };
-inline constexpr reg::Arg virtualAssign_return = reg::typed("", 0, "PHPStan\\Analyser\\AssignTargetWalkMode");
-inline constexpr reg::Sig virtualAssign = { "virtualAssign", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &virtualAssign_return };
-inline constexpr reg::Arg readModifyWrite_return = reg::typed("", 0, "PHPStan\\Analyser\\AssignTargetWalkMode");
-inline constexpr reg::Sig readModifyWrite = { "readModifyWrite", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &readModifyWrite_return };
-inline constexpr reg::Arg coalesceReadModifyWrite_return = reg::typed("", 0, "PHPStan\\Analyser\\AssignTargetWalkMode");
-inline constexpr reg::Sig coalesceReadModifyWrite = { "coalesceReadModifyWrite", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &coalesceReadModifyWrite_return };
-inline constexpr reg::Arg enterExpressionAssign_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig enterExpressionAssign = { "enterExpressionAssign", ZEND_ACC_PUBLIC, 0, nullptr, 0, &enterExpressionAssign_return };
-inline constexpr reg::Arg producesTargetReadResult_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig producesTargetReadResult = { "producesTargetReadResult", ZEND_ACC_PUBLIC, 0, nullptr, 0, &producesTargetReadResult_return };
-inline constexpr reg::Arg issetSemanticsForRead_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig issetSemanticsForRead = { "issetSemanticsForRead", ZEND_ACC_PUBLIC, 0, nullptr, 0, &issetSemanticsForRead_return };
+inline constexpr sigtab::Sig __construct = { { 69 /* __construct */, 3, 0, 3, reg::NoArg, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig assign = { { 120 /* assign */, 0, 3, 0, 3, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig virtualAssign = { { 127 /* virtualAssign */, 0, 4, 0, 4, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig readModifyWrite = { { 141 /* readModifyWrite */, 0, 5, 0, 5, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig coalesceReadModifyWrite = { { 157 /* coalesceReadModifyWrite */, 0, 6, 0, 6, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig enterExpressionAssign = { { 0 /* enterExpressionAssign */, 0, 7, 0, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig producesTargetReadResult = { { 22 /* producesTargetReadResult */, 0, 8, 0, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig issetSemanticsForRead = { { 47 /* issetSemanticsForRead */, 0, 9, 0, 9, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::AssignTargetWalkMode

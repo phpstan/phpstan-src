@@ -43,31 +43,137 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("argumentsHandler", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ArgumentsHandler");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"methodCallReturnTypeHelper\0" /* 0 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\MethodCallReturnTypeHelper\0" /* 27 */
+	"methodThrowPointHelper\0" /* 90 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\MethodThrowPointHelper\0" /* 113 */
+	"reflectionProvider\0" /* 172 */
+	"PHPStan\\Reflection\\ReflectionProvider\0" /* 191 */
+	"rememberPossiblyImpureFunctionValues\0" /* 229 */
+	"expressionResultFactory\0" /* 266 */
+	"PHPStan\\Analyser\\ExpressionResultFactory\0" /* 290 */
+	"typeSpecifier\0" /* 331 */
+	"PHPStan\\Analyser\\TypeSpecifier\0" /* 345 */
+	"defaultNarrowingHelper\0" /* 376 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper\0" /* 399 */
+	"storagePrimer\0" /* 458 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\DynamicReturnTypeStoragePrimer\0" /* 472 */
+	"earlyTerminatingHelper\0" /* 539 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\EarlyTerminatingCallHelper\0" /* 562 */
+	"argumentsHandler\0" /* 625 */
+	"PHPStan\\Analyser\\ArgumentsHandler\0" /* 642 */
+	"__construct\0" /* 676 */
+	"expr\0" /* 688 */
+	"PhpParser\\Node\\Expr\0" /* 693 */
+	"\0" /* 713 */
+	"supports\0" /* 714 */
+	"nodeScopeResolver\0" /* 723 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 741 */
+	"stmt\0" /* 776 */
+	"PhpParser\\Node\\Stmt\0" /* 781 */
+	"scope\0" /* 801 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 807 */
+	"storage\0" /* 838 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 846 */
+	"nodeCallback\0" /* 887 */
+	"context\0" /* 900 */
+	"PHPStan\\Analyser\\ExpressionContext\0" /* 908 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 943 */
+	"processExpr\0" /* 977 */
+	"reflectionScope\0" /* 989 */
+	"nativeTypesPromoted\0" /* 1005 */
+	"PhpParser\\Node\\Expr\\StaticCall\0" /* 1025 */
+	"classResult\0" /* 1056 */
+	"nameResult\0" /* 1068 */
+	"preResolvedAcceptor\0" /* 1079 */
+	"PHPStan\\Reflection\\ParametersAcceptor\0" /* 1099 */
+	"argsResult\0" /* 1137 */
+	"PHPStan\\Analyser\\ArgsResult\0" /* 1148 */
+	"PHPStan\\Type\\Type\0" /* 1176 */
+	"resolveReturnType\0" /* 1194 */
+	"normalizedExpr\0" /* 1212 */
+	"resolvedParametersAcceptor\0" /* 1227 */
+	"walkMethodReflection\0" /* 1254 */
+	"PHPStan\\Reflection\\ExtendedMethodReflection\0" /* 1275 */
+	"PHPStan\\Analyser\\TypeSpecifierContext\0" /* 1319 */
+	"null\0" /* 1357 */
+	"PHPStan\\Analyser\\SpecifiedTypes\0" /* 1362 */
+	"specifyTypes\0" /* 1394 */
+	"defaultStaticCallNarrowing\0" /* 1407 */
+	"isStaticCallNarrowable\0" /* 1434 */
+	"class\0" /* 1457 */
+	"PhpParser\\Node\\Name\0" /* 1463 */
+	"methodName\0" /* 1483 */
+	"PHPStan\\Type\\TypeWithClassName\0" /* 1494 */
+	"resolveTypeByNameWithLateStaticBinding"; /* 1525 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 27), /* __construct $methodCallReturnTypeHelper */
+	reg::packed(90, 0, 113), /* __construct $methodThrowPointHelper */
+	reg::packed(172, 0, 191), /* __construct $reflectionProvider */
+	reg::packed(229, MAY_BE_BOOL), /* __construct $rememberPossiblyImpureFunctionValues */
+	reg::packed(266, 0, 290), /* __construct $expressionResultFactory */
+	reg::packed(331, 0, 345), /* __construct $typeSpecifier */
+	reg::packed(376, 0, 399), /* __construct $defaultNarrowingHelper */
+	reg::packed(458, 0, 472), /* __construct $storagePrimer */
+	reg::packed(539, 0, 562), /* __construct $earlyTerminatingHelper */
+	reg::packed(625, 0, 642), /* __construct $argumentsHandler */
+	reg::packed(688, 0, 693), /* supports $expr */
+	reg::packed(713, MAY_BE_BOOL), /* supports return */
+	reg::packed(723, 0, 741), /* processExpr $nodeScopeResolver */
+	reg::packed(776, 0, 781), /* processExpr $stmt */
+	reg::packed(688, 0, 693), /* processExpr $expr */
+	reg::packed(801, 0, 807), /* processExpr $scope */
+	reg::packed(838, 0, 846), /* processExpr $storage */
+	reg::packed(887, MAY_BE_CALLABLE), /* processExpr $nodeCallback */
+	reg::packed(900, 0, 908), /* processExpr $context */
+	reg::packed(713, 0, 943), /* processExpr return */
+	reg::packed(989, 0, 807), /* resolveReturnType $reflectionScope */
+	reg::packed(1005, MAY_BE_BOOL), /* resolveReturnType $nativeTypesPromoted */
+	reg::packed(688, 0, 1025), /* resolveReturnType $expr */
+	reg::packed(1056, MAY_BE_NULL, 943), /* resolveReturnType $classResult */
+	reg::packed(1068, MAY_BE_NULL, 943), /* resolveReturnType $nameResult */
+	reg::packed(1079, MAY_BE_NULL, 1099), /* resolveReturnType $preResolvedAcceptor */
+	reg::packed(1137, MAY_BE_NULL, 1148), /* resolveReturnType $argsResult */
+	reg::packed(713, 0, 1176), /* resolveReturnType return */
+	reg::packed(801, 0, 807), /* specifyTypes $scope */
+	reg::packed(688, 0, 693), /* specifyTypes $expr */
+	reg::packed(1212, 0, 693), /* specifyTypes $normalizedExpr */
+	reg::packed(1056, MAY_BE_NULL, 943), /* specifyTypes $classResult */
+	reg::packed(1227, MAY_BE_NULL, 1099), /* specifyTypes $resolvedParametersAcceptor */
+	reg::packed(1254, MAY_BE_NULL, 1275), /* specifyTypes $walkMethodReflection */
+	reg::packed(900, 0, 1319), /* specifyTypes $context */
+	reg::packed(1137, MAY_BE_NULL, 1148, false, false, 1357), /* specifyTypes $argsResult */
+	reg::packed(713, 0, 1362), /* specifyTypes return */
+	reg::packed(801, 0, 807), /* defaultStaticCallNarrowing $scope */
+	reg::packed(688, 0, 693), /* defaultStaticCallNarrowing $expr */
+	reg::packed(1056, MAY_BE_NULL, 943), /* defaultStaticCallNarrowing $classResult */
+	reg::packed(900, 0, 1319), /* defaultStaticCallNarrowing $context */
+	reg::packed(713, 0, 1362), /* defaultStaticCallNarrowing return */
+	reg::packed(801, 0, 807), /* isStaticCallNarrowable $scope */
+	reg::packed(688, 0, 693), /* isStaticCallNarrowable $expr */
+	reg::packed(1056, MAY_BE_NULL, 943), /* isStaticCallNarrowable $classResult */
+	reg::packed(713, MAY_BE_BOOL), /* isStaticCallNarrowable return */
+	reg::packed(801, 0, 807), /* resolveTypeByNameWithLateStaticBinding $scope */
+	reg::packed(1457, 0, 1463), /* resolveTypeByNameWithLateStaticBinding $class */
+	reg::packed(1483, MAY_BE_STRING), /* resolveTypeByNameWithLateStaticBinding $methodName */
+	reg::packed(713, 0, 1494), /* resolveTypeByNameWithLateStaticBinding return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("methodCallReturnTypeHelper", 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\MethodCallReturnTypeHelper"), reg::typed("methodThrowPointHelper", 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\MethodThrowPointHelper"), reg::typed("reflectionProvider", 0, "PHPStan\\Reflection\\ReflectionProvider"), reg::typed("rememberPossiblyImpureFunctionValues", MAY_BE_BOOL), reg::typed("expressionResultFactory", 0, "PHPStan\\Analyser\\ExpressionResultFactory"), reg::typed("typeSpecifier", 0, "PHPStan\\Analyser\\TypeSpecifier"), reg::typed("defaultNarrowingHelper", 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper"), reg::typed("storagePrimer", 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\DynamicReturnTypeStoragePrimer"), reg::typed("earlyTerminatingHelper", 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\EarlyTerminatingCallHelper"), reg::typed("argumentsHandler", 0, "PHPStan\\Analyser\\ArgumentsHandler") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 10, __construct_args, 10, nullptr };
-inline constexpr reg::Arg supports_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg supports_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig supports = { "supports", ZEND_ACC_PUBLIC, 1, supports_args, 1, &supports_return };
-inline constexpr reg::Arg processExpr_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("stmt", 0, "PhpParser\\Node\\Stmt"), reg::typed("expr", 0, "PhpParser\\Node\\Expr"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("nodeCallback", MAY_BE_CALLABLE), reg::typed("context", 0, "PHPStan\\Analyser\\ExpressionContext") };
-inline constexpr reg::Arg processExpr_return = reg::typed("", 0, "PHPStan\\Analyser\\ExpressionResult");
-inline constexpr reg::Sig processExpr = { "processExpr", ZEND_ACC_PUBLIC, 7, processExpr_args, 7, &processExpr_return };
-inline constexpr reg::Arg resolveReturnType_args[] = { reg::typed("reflectionScope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("nativeTypesPromoted", MAY_BE_BOOL), reg::typed("expr", 0, "PhpParser\\Node\\Expr\\StaticCall"), reg::typed("classResult", MAY_BE_NULL, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("nameResult", MAY_BE_NULL, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("preResolvedAcceptor", MAY_BE_NULL, "PHPStan\\Reflection\\ParametersAcceptor"), reg::typed("argsResult", MAY_BE_NULL, "PHPStan\\Analyser\\ArgsResult") };
-inline constexpr reg::Arg resolveReturnType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig resolveReturnType = { "resolveReturnType", ZEND_ACC_PRIVATE, 7, resolveReturnType_args, 7, &resolveReturnType_return };
-inline constexpr reg::Arg specifyTypes_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("expr", 0, "PhpParser\\Node\\Expr"), reg::typed("normalizedExpr", 0, "PhpParser\\Node\\Expr"), reg::typed("classResult", MAY_BE_NULL, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("resolvedParametersAcceptor", MAY_BE_NULL, "PHPStan\\Reflection\\ParametersAcceptor"), reg::typed("walkMethodReflection", MAY_BE_NULL, "PHPStan\\Reflection\\ExtendedMethodReflection"), reg::typed("context", 0, "PHPStan\\Analyser\\TypeSpecifierContext"), reg::typed("argsResult", MAY_BE_NULL, "PHPStan\\Analyser\\ArgsResult", false, false, "null") };
-inline constexpr reg::Arg specifyTypes_return = reg::typed("", 0, "PHPStan\\Analyser\\SpecifiedTypes");
-inline constexpr reg::Sig specifyTypes = { "specifyTypes", ZEND_ACC_PRIVATE, 7, specifyTypes_args, 8, &specifyTypes_return };
-inline constexpr reg::Arg defaultStaticCallNarrowing_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("expr", 0, "PhpParser\\Node\\Expr"), reg::typed("classResult", MAY_BE_NULL, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("context", 0, "PHPStan\\Analyser\\TypeSpecifierContext") };
-inline constexpr reg::Arg defaultStaticCallNarrowing_return = reg::typed("", 0, "PHPStan\\Analyser\\SpecifiedTypes");
-inline constexpr reg::Sig defaultStaticCallNarrowing = { "defaultStaticCallNarrowing", ZEND_ACC_PRIVATE, 4, defaultStaticCallNarrowing_args, 4, &defaultStaticCallNarrowing_return };
-inline constexpr reg::Arg isStaticCallNarrowable_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("expr", 0, "PhpParser\\Node\\Expr"), reg::typed("classResult", MAY_BE_NULL, "PHPStan\\Analyser\\ExpressionResult") };
-inline constexpr reg::Arg isStaticCallNarrowable_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isStaticCallNarrowable = { "isStaticCallNarrowable", ZEND_ACC_PRIVATE, 3, isStaticCallNarrowable_args, 3, &isStaticCallNarrowable_return };
-inline constexpr reg::Arg resolveTypeByNameWithLateStaticBinding_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("class", 0, "PhpParser\\Node\\Name"), reg::typed("methodName", MAY_BE_STRING) };
-inline constexpr reg::Arg resolveTypeByNameWithLateStaticBinding_return = reg::typed("", 0, "PHPStan\\Type\\TypeWithClassName");
-inline constexpr reg::Sig resolveTypeByNameWithLateStaticBinding = { "resolveTypeByNameWithLateStaticBinding", ZEND_ACC_PRIVATE, 3, resolveTypeByNameWithLateStaticBinding_args, 3, &resolveTypeByNameWithLateStaticBinding_return };
+inline constexpr sigtab::Sig __construct = { { 676 /* __construct */, 10, 0, 10, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig supports = { { 714 /* supports */, 1, 10, 1, 11, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processExpr = { { 977 /* processExpr */, 7, 12, 7, 19, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig resolveReturnType = { { 1194 /* resolveReturnType */, 7, 20, 7, 27, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig specifyTypes = { { 1394 /* specifyTypes */, 7, 28, 8, 36, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig defaultStaticCallNarrowing = { { 1407 /* defaultStaticCallNarrowing */, 4, 37, 4, 41, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isStaticCallNarrowable = { { 1434 /* isStaticCallNarrowable */, 3, 42, 3, 45, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig resolveTypeByNameWithLateStaticBinding = { { 1525 /* resolveTypeByNameWithLateStaticBinding */, 3, 46, 3, 49, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::StaticCallHandler

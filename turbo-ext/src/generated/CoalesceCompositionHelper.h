@@ -24,19 +24,67 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("defaultNarrowingHelper", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"defaultNarrowingHelper\0" /* 0 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper\0" /* 23 */
+	"__construct\0" /* 82 */
+	"s\0" /* 94 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 96 */
+	"evaluationScope\0" /* 127 */
+	"leftExpr\0" /* 143 */
+	"PhpParser\\Node\\Expr\0" /* 152 */
+	"leftResult\0" /* 172 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 183 */
+	"rootExpr\0" /* 217 */
+	"context\0" /* 226 */
+	"PHPStan\\Analyser\\TypeSpecifierContext\0" /* 234 */
+	"\0" /* 272 */
+	"PHPStan\\Analyser\\SpecifiedTypes\0" /* 273 */
+	"getFalseySpecifiedTypes\0" /* 305 */
+	"chainResults\0" /* 329 */
+	"getRightSideScopeSpecifiedTypes\0" /* 342 */
+	"nodeScopeResolver\0" /* 374 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 392 */
+	"rightResult\0" /* 427 */
+	"nativeTypesPromoted\0" /* 439 */
+	"PHPStan\\Type\\Type\0" /* 459 */
+	"composeType"; /* 477 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 23), /* __construct $defaultNarrowingHelper */
+	reg::packed(94, 0, 96), /* getFalseySpecifiedTypes $s */
+	reg::packed(127, 0, 96), /* getFalseySpecifiedTypes $evaluationScope */
+	reg::packed(143, 0, 152), /* getFalseySpecifiedTypes $leftExpr */
+	reg::packed(172, 0, 183), /* getFalseySpecifiedTypes $leftResult */
+	reg::packed(217, 0, 152), /* getFalseySpecifiedTypes $rootExpr */
+	reg::packed(226, 0, 234), /* getFalseySpecifiedTypes $context */
+	reg::packed(272, 0, 273), /* getFalseySpecifiedTypes return */
+	reg::packed(94, 0, 96), /* getRightSideScopeSpecifiedTypes $s */
+	reg::packed(143, 0, 152), /* getRightSideScopeSpecifiedTypes $leftExpr */
+	reg::packed(172, 0, 183), /* getRightSideScopeSpecifiedTypes $leftResult */
+	reg::packed(329, MAY_BE_ARRAY), /* getRightSideScopeSpecifiedTypes $chainResults */
+	reg::packed(217, 0, 152), /* getRightSideScopeSpecifiedTypes $rootExpr */
+	reg::packed(272, 0, 273), /* getRightSideScopeSpecifiedTypes return */
+	reg::packed(374, 0, 392), /* composeType $nodeScopeResolver */
+	reg::packed(143, 0, 152), /* composeType $leftExpr */
+	reg::packed(172, 0, 183), /* composeType $leftResult */
+	reg::packed(427, 0, 183), /* composeType $rightResult */
+	reg::packed(127, 0, 96), /* composeType $evaluationScope */
+	reg::packed(329, MAY_BE_ARRAY), /* composeType $chainResults */
+	reg::packed(217, 0, 152), /* composeType $rootExpr */
+	reg::packed(439, MAY_BE_BOOL), /* composeType $nativeTypesPromoted */
+	reg::packed(272, 0, 459), /* composeType return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("defaultNarrowingHelper", 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 1, __construct_args, 1, nullptr };
-inline constexpr reg::Arg getFalseySpecifiedTypes_args[] = { reg::typed("s", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("evaluationScope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("leftExpr", 0, "PhpParser\\Node\\Expr"), reg::typed("leftResult", 0, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("rootExpr", 0, "PhpParser\\Node\\Expr"), reg::typed("context", 0, "PHPStan\\Analyser\\TypeSpecifierContext") };
-inline constexpr reg::Arg getFalseySpecifiedTypes_return = reg::typed("", 0, "PHPStan\\Analyser\\SpecifiedTypes");
-inline constexpr reg::Sig getFalseySpecifiedTypes = { "getFalseySpecifiedTypes", ZEND_ACC_PUBLIC, 6, getFalseySpecifiedTypes_args, 6, &getFalseySpecifiedTypes_return };
-inline constexpr reg::Arg getRightSideScopeSpecifiedTypes_args[] = { reg::typed("s", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("leftExpr", 0, "PhpParser\\Node\\Expr"), reg::typed("leftResult", 0, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("chainResults", MAY_BE_ARRAY), reg::typed("rootExpr", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg getRightSideScopeSpecifiedTypes_return = reg::typed("", 0, "PHPStan\\Analyser\\SpecifiedTypes");
-inline constexpr reg::Sig getRightSideScopeSpecifiedTypes = { "getRightSideScopeSpecifiedTypes", ZEND_ACC_PUBLIC, 5, getRightSideScopeSpecifiedTypes_args, 5, &getRightSideScopeSpecifiedTypes_return };
-inline constexpr reg::Arg composeType_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("leftExpr", 0, "PhpParser\\Node\\Expr"), reg::typed("leftResult", 0, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("rightResult", 0, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("evaluationScope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("chainResults", MAY_BE_ARRAY), reg::typed("rootExpr", 0, "PhpParser\\Node\\Expr"), reg::typed("nativeTypesPromoted", MAY_BE_BOOL) };
-inline constexpr reg::Arg composeType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig composeType = { "composeType", ZEND_ACC_PUBLIC, 8, composeType_args, 8, &composeType_return };
+inline constexpr sigtab::Sig __construct = { { 82 /* __construct */, 1, 0, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getFalseySpecifiedTypes = { { 305 /* getFalseySpecifiedTypes */, 6, 1, 6, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getRightSideScopeSpecifiedTypes = { { 342 /* getRightSideScopeSpecifiedTypes */, 5, 8, 5, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig composeType = { { 477 /* composeType */, 8, 14, 8, 22, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::CoalesceCompositionHelper

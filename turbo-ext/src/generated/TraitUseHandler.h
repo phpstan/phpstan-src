@@ -33,22 +33,80 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("attributesHandler", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\AttributesHandler");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"reflectionProvider\0" /* 0 */
+	"PHPStan\\Reflection\\ReflectionProvider\0" /* 19 */
+	"fileHelper\0" /* 57 */
+	"PHPStan\\File\\FileHelper\0" /* 68 */
+	"parser\0" /* 92 */
+	"PHPStan\\Parser\\Parser\0" /* 99 */
+	"attributesHandler\0" /* 121 */
+	"PHPStan\\Analyser\\AttributesHandler\0" /* 139 */
+	"__construct\0" /* 174 */
+	"stmt\0" /* 186 */
+	"PhpParser\\Node\\Stmt\0" /* 191 */
+	"\0" /* 211 */
+	"supports\0" /* 212 */
+	"nodeScopeResolver\0" /* 221 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 239 */
+	"scope\0" /* 274 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 280 */
+	"storage\0" /* 311 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 319 */
+	"nodeCallback\0" /* 360 */
+	"context\0" /* 373 */
+	"PHPStan\\Analyser\\StatementContext\0" /* 381 */
+	"PHPStan\\Analyser\\InternalStatementResult\0" /* 415 */
+	"processStmt\0" /* 456 */
+	"node\0" /* 468 */
+	"PhpParser\\Node\\Stmt\\TraitUse\0" /* 473 */
+	"classScope\0" /* 502 */
+	"processTraitUse\0" /* 513 */
+	"traitReflection\0" /* 529 */
+	"PHPStan\\Reflection\\ClassReflection\0" /* 545 */
+	"adaptations\0" /* 580 */
+	"processNodesForTraitUse"; /* 592 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 19), /* __construct $reflectionProvider */
+	reg::packed(57, 0, 68), /* __construct $fileHelper */
+	reg::packed(92, 0, 99), /* __construct $parser */
+	reg::packed(121, 0, 139), /* __construct $attributesHandler */
+	reg::packed(186, 0, 191), /* supports $stmt */
+	reg::packed(211, MAY_BE_BOOL), /* supports return */
+	reg::packed(221, 0, 239), /* processStmt $nodeScopeResolver */
+	reg::packed(186, 0, 191), /* processStmt $stmt */
+	reg::packed(274, 0, 280), /* processStmt $scope */
+	reg::packed(311, 0, 319), /* processStmt $storage */
+	reg::packed(360, MAY_BE_CALLABLE), /* processStmt $nodeCallback */
+	reg::packed(373, 0, 381), /* processStmt $context */
+	reg::packed(211, 0, 415), /* processStmt return */
+	reg::packed(221, 0, 239), /* processTraitUse $nodeScopeResolver */
+	reg::packed(468, 0, 473), /* processTraitUse $node */
+	reg::packed(502, 0, 280), /* processTraitUse $classScope */
+	reg::packed(311, 0, 319), /* processTraitUse $storage */
+	reg::packed(360, MAY_BE_CALLABLE), /* processTraitUse $nodeCallback */
+	reg::packed(211, MAY_BE_VOID), /* processTraitUse return */
+	reg::packed(221, 0, 239), /* processNodesForTraitUse $nodeScopeResolver */
+	reg::packed(468, 0), /* processNodesForTraitUse $node */
+	reg::packed(529, 0, 545), /* processNodesForTraitUse $traitReflection */
+	reg::packed(274, 0, 280), /* processNodesForTraitUse $scope */
+	reg::packed(311, 0, 319), /* processNodesForTraitUse $storage */
+	reg::packed(580, MAY_BE_ARRAY), /* processNodesForTraitUse $adaptations */
+	reg::packed(360, MAY_BE_CALLABLE), /* processNodesForTraitUse $nodeCallback */
+	reg::packed(211, MAY_BE_VOID), /* processNodesForTraitUse return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("reflectionProvider", 0, "PHPStan\\Reflection\\ReflectionProvider"), reg::typed("fileHelper", 0, "PHPStan\\File\\FileHelper"), reg::typed("parser", 0, "PHPStan\\Parser\\Parser"), reg::typed("attributesHandler", 0, "PHPStan\\Analyser\\AttributesHandler") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 4, __construct_args, 4, nullptr };
-inline constexpr reg::Arg supports_args[] = { reg::typed("stmt", 0, "PhpParser\\Node\\Stmt") };
-inline constexpr reg::Arg supports_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig supports = { "supports", ZEND_ACC_PUBLIC, 1, supports_args, 1, &supports_return };
-inline constexpr reg::Arg processStmt_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("stmt", 0, "PhpParser\\Node\\Stmt"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("nodeCallback", MAY_BE_CALLABLE), reg::typed("context", 0, "PHPStan\\Analyser\\StatementContext") };
-inline constexpr reg::Arg processStmt_return = reg::typed("", 0, "PHPStan\\Analyser\\InternalStatementResult");
-inline constexpr reg::Sig processStmt = { "processStmt", ZEND_ACC_PUBLIC, 6, processStmt_args, 6, &processStmt_return };
-inline constexpr reg::Arg processTraitUse_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("node", 0, "PhpParser\\Node\\Stmt\\TraitUse"), reg::typed("classScope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("nodeCallback", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg processTraitUse_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig processTraitUse = { "processTraitUse", ZEND_ACC_PRIVATE, 5, processTraitUse_args, 5, &processTraitUse_return };
-inline constexpr reg::Arg processNodesForTraitUse_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("node", 0), reg::typed("traitReflection", 0, "PHPStan\\Reflection\\ClassReflection"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("adaptations", MAY_BE_ARRAY), reg::typed("nodeCallback", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg processNodesForTraitUse_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig processNodesForTraitUse = { "processNodesForTraitUse", ZEND_ACC_PRIVATE, 7, processNodesForTraitUse_args, 7, &processNodesForTraitUse_return };
+inline constexpr sigtab::Sig __construct = { { 174 /* __construct */, 4, 0, 4, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig supports = { { 212 /* supports */, 1, 4, 1, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processStmt = { { 456 /* processStmt */, 6, 6, 6, 12, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processTraitUse = { { 513 /* processTraitUse */, 5, 13, 5, 18, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig processNodesForTraitUse = { { 592 /* processNodesForTraitUse */, 7, 19, 7, 26, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::TraitUseHandler

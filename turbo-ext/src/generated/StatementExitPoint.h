@@ -26,14 +26,31 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("scope", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\Scope");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"statement\0" /* 0 */
+	"PhpParser\\Node\\Stmt\0" /* 10 */
+	"scope\0" /* 30 */
+	"PHPStan\\Analyser\\Scope\0" /* 36 */
+	"__construct\0" /* 59 */
+	"\0" /* 71 */
+	"getStatement\0" /* 72 */
+	"getScope"; /* 85 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 10), /* __construct $statement */
+	reg::packed(30, 0, 36), /* __construct $scope */
+	reg::packed(71, 0, 10), /* getStatement return */
+	reg::packed(71, 0, 36), /* getScope return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("statement", 0, "PhpParser\\Node\\Stmt"), reg::typed("scope", 0, "PHPStan\\Analyser\\Scope") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 2, __construct_args, 2, nullptr };
-inline constexpr reg::Arg getStatement_return = reg::typed("", 0, "PhpParser\\Node\\Stmt");
-inline constexpr reg::Sig getStatement = { "getStatement", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getStatement_return };
-inline constexpr reg::Arg getScope_return = reg::typed("", 0, "PHPStan\\Analyser\\Scope");
-inline constexpr reg::Sig getScope = { "getScope", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getScope_return };
+inline constexpr sigtab::Sig __construct = { { 59 /* __construct */, 2, 0, 2, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getStatement = { { 72 /* getStatement */, 0, 2, 0, 2, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getScope = { { 85 /* getScope */, 0, 3, 0, 3, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::StatementExitPoint

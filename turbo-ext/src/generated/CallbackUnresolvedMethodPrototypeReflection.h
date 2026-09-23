@@ -35,25 +35,56 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("resolveTemplateTypeMapToBounds", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_BOOL);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"methodReflection\0" /* 0 */
+	"PHPStan\\Reflection\\ExtendedMethodReflection\0" /* 17 */
+	"resolvedDeclaringClass\0" /* 61 */
+	"PHPStan\\Reflection\\ClassReflection\0" /* 84 */
+	"resolveTemplateTypeMapToBounds\0" /* 119 */
+	"transformStaticTypeCallback\0" /* 150 */
+	"__construct\0" /* 178 */
+	"\0" /* 190 */
+	"PHPStan\\Reflection\\Type\\UnresolvedMethodPrototypeReflection\0" /* 191 */
+	"doNotResolveTemplateTypeMapToBounds\0" /* 251 */
+	"getNakedMethod\0" /* 287 */
+	"getTransformedMethod\0" /* 302 */
+	"type\0" /* 323 */
+	"PHPStan\\Type\\Type\0" /* 328 */
+	"withCalledOnType\0" /* 346 */
+	"declaringClass\0" /* 363 */
+	"method\0" /* 378 */
+	"transformMethodWithStaticType\0" /* 385 */
+	"transformStaticType"; /* 415 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 17), /* __construct $methodReflection */
+	reg::packed(61, 0, 84), /* __construct $resolvedDeclaringClass */
+	reg::packed(119, MAY_BE_BOOL), /* __construct $resolveTemplateTypeMapToBounds */
+	reg::packed(150, MAY_BE_CALLABLE), /* __construct $transformStaticTypeCallback */
+	reg::packed(190, 0, 191), /* doNotResolveTemplateTypeMapToBounds return */
+	reg::packed(190, 0, 17), /* getNakedMethod return */
+	reg::packed(190, 0, 17), /* getTransformedMethod return */
+	reg::packed(323, 0, 328), /* withCalledOnType $type */
+	reg::packed(190, 0, 191), /* withCalledOnType return */
+	reg::packed(363, 0, 84), /* transformMethodWithStaticType $declaringClass */
+	reg::packed(378, 0, 17), /* transformMethodWithStaticType $method */
+	reg::packed(190, 0, 17), /* transformMethodWithStaticType return */
+	reg::packed(323, 0, 328), /* transformStaticType $type */
+	reg::packed(190, 0, 328), /* transformStaticType return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("methodReflection", 0, "PHPStan\\Reflection\\ExtendedMethodReflection"), reg::typed("resolvedDeclaringClass", 0, "PHPStan\\Reflection\\ClassReflection"), reg::typed("resolveTemplateTypeMapToBounds", MAY_BE_BOOL), reg::typed("transformStaticTypeCallback", MAY_BE_CALLABLE) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 4, __construct_args, 4, nullptr };
-inline constexpr reg::Arg doNotResolveTemplateTypeMapToBounds_return = reg::typed("", 0, "PHPStan\\Reflection\\Type\\UnresolvedMethodPrototypeReflection");
-inline constexpr reg::Sig doNotResolveTemplateTypeMapToBounds = { "doNotResolveTemplateTypeMapToBounds", ZEND_ACC_PUBLIC, 0, nullptr, 0, &doNotResolveTemplateTypeMapToBounds_return };
-inline constexpr reg::Arg getNakedMethod_return = reg::typed("", 0, "PHPStan\\Reflection\\ExtendedMethodReflection");
-inline constexpr reg::Sig getNakedMethod = { "getNakedMethod", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getNakedMethod_return };
-inline constexpr reg::Arg getTransformedMethod_return = reg::typed("", 0, "PHPStan\\Reflection\\ExtendedMethodReflection");
-inline constexpr reg::Sig getTransformedMethod = { "getTransformedMethod", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getTransformedMethod_return };
-inline constexpr reg::Arg withCalledOnType_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg withCalledOnType_return = reg::typed("", 0, "PHPStan\\Reflection\\Type\\UnresolvedMethodPrototypeReflection");
-inline constexpr reg::Sig withCalledOnType = { "withCalledOnType", ZEND_ACC_PUBLIC, 1, withCalledOnType_args, 1, &withCalledOnType_return };
-inline constexpr reg::Arg transformMethodWithStaticType_args[] = { reg::typed("declaringClass", 0, "PHPStan\\Reflection\\ClassReflection"), reg::typed("method", 0, "PHPStan\\Reflection\\ExtendedMethodReflection") };
-inline constexpr reg::Arg transformMethodWithStaticType_return = reg::typed("", 0, "PHPStan\\Reflection\\ExtendedMethodReflection");
-inline constexpr reg::Sig transformMethodWithStaticType = { "transformMethodWithStaticType", ZEND_ACC_PRIVATE, 2, transformMethodWithStaticType_args, 2, &transformMethodWithStaticType_return };
-inline constexpr reg::Arg transformStaticType_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg transformStaticType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig transformStaticType = { "transformStaticType", ZEND_ACC_PRIVATE, 1, transformStaticType_args, 1, &transformStaticType_return };
+inline constexpr sigtab::Sig __construct = { { 178 /* __construct */, 4, 0, 4, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig doNotResolveTemplateTypeMapToBounds = { { 251 /* doNotResolveTemplateTypeMapToBounds */, 0, 4, 0, 4, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getNakedMethod = { { 287 /* getNakedMethod */, 0, 5, 0, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getTransformedMethod = { { 302 /* getTransformedMethod */, 0, 6, 0, 6, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig withCalledOnType = { { 346 /* withCalledOnType */, 1, 7, 1, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig transformMethodWithStaticType = { { 385 /* transformMethodWithStaticType */, 2, 9, 2, 11, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig transformStaticType = { { 415 /* transformStaticType */, 1, 12, 1, 13, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::CallbackUnresolvedMethodPrototypeReflection

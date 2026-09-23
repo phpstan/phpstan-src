@@ -26,16 +26,33 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("typeHolder", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExpressionTypeHolder");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"conditionExpressionTypeHolders\0" /* 0 */
+	"typeHolder\0" /* 31 */
+	"PHPStan\\Analyser\\ExpressionTypeHolder\0" /* 42 */
+	"__construct\0" /* 80 */
+	"\0" /* 92 */
+	"getConditionExpressionTypeHolders\0" /* 93 */
+	"getTypeHolder\0" /* 127 */
+	"getKey"; /* 141 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_ARRAY), /* __construct $conditionExpressionTypeHolders */
+	reg::packed(31, 0, 42), /* __construct $typeHolder */
+	reg::packed(92, MAY_BE_ARRAY), /* getConditionExpressionTypeHolders return */
+	reg::packed(92, 0, 42), /* getTypeHolder return */
+	reg::packed(92, MAY_BE_STRING), /* getKey return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("conditionExpressionTypeHolders", MAY_BE_ARRAY), reg::typed("typeHolder", 0, "PHPStan\\Analyser\\ExpressionTypeHolder") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 2, __construct_args, 2, nullptr };
-inline constexpr reg::Arg getConditionExpressionTypeHolders_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getConditionExpressionTypeHolders = { "getConditionExpressionTypeHolders", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getConditionExpressionTypeHolders_return };
-inline constexpr reg::Arg getTypeHolder_return = reg::typed("", 0, "PHPStan\\Analyser\\ExpressionTypeHolder");
-inline constexpr reg::Sig getTypeHolder = { "getTypeHolder", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getTypeHolder_return };
-inline constexpr reg::Arg getKey_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig getKey = { "getKey", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getKey_return };
+inline constexpr sigtab::Sig __construct = { { 80 /* __construct */, 2, 0, 2, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getConditionExpressionTypeHolders = { { 93 /* getConditionExpressionTypeHolders */, 0, 2, 0, 2, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getTypeHolder = { { 127 /* getTypeHolder */, 0, 3, 0, 3, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getKey = { { 141 /* getKey */, 0, 4, 0, 4, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ConditionalExpressionHolder

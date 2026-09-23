@@ -28,30 +28,56 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("traitReflection", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_NULL, "PHPStan\\Reflection\\ClassReflection");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"file\0" /* 0 */
+	"classReflection\0" /* 5 */
+	"PHPStan\\Reflection\\ClassReflection\0" /* 21 */
+	"traitReflection\0" /* 56 */
+	"__construct\0" /* 72 */
+	"\0" /* 84 */
+	"PHPStan\\Analyser\\ScopeContext\0" /* 85 */
+	"create\0" /* 115 */
+	"beginFile\0" /* 122 */
+	"enterClass\0" /* 132 */
+	"enterTrait\0" /* 143 */
+	"otherContext\0" /* 154 */
+	"equals\0" /* 167 */
+	"getFile\0" /* 174 */
+	"getClassReflection\0" /* 182 */
+	"getTraitReflection"; /* 201 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_STRING), /* __construct $file */
+	reg::packed(5, MAY_BE_NULL, 21), /* __construct $classReflection */
+	reg::packed(56, MAY_BE_NULL, 21), /* __construct $traitReflection */
+	reg::packed(0, MAY_BE_STRING), /* create $file */
+	reg::packed(84, 0, 85), /* create return */
+	reg::packed(84, 0, 85), /* beginFile return */
+	reg::packed(5, 0, 21), /* enterClass $classReflection */
+	reg::packed(84, 0, 85), /* enterClass return */
+	reg::packed(56, 0, 21), /* enterTrait $traitReflection */
+	reg::packed(84, 0, 85), /* enterTrait return */
+	reg::packed(154, 0, 85), /* equals $otherContext */
+	reg::packed(84, MAY_BE_BOOL), /* equals return */
+	reg::packed(84, MAY_BE_STRING), /* getFile return */
+	reg::packed(84, MAY_BE_NULL, 21), /* getClassReflection return */
+	reg::packed(84, MAY_BE_NULL, 21), /* getTraitReflection return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("file", MAY_BE_STRING), reg::typed("classReflection", MAY_BE_NULL, "PHPStan\\Reflection\\ClassReflection"), reg::typed("traitReflection", MAY_BE_NULL, "PHPStan\\Reflection\\ClassReflection") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PRIVATE, 3, __construct_args, 3, nullptr };
-inline constexpr reg::Arg create_args[] = { reg::typed("file", MAY_BE_STRING) };
-inline constexpr reg::Arg create_return = reg::typed("", 0, "PHPStan\\Analyser\\ScopeContext");
-inline constexpr reg::Sig create = { "create", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, create_args, 1, &create_return };
-inline constexpr reg::Arg beginFile_return = reg::typed("", 0, "PHPStan\\Analyser\\ScopeContext");
-inline constexpr reg::Sig beginFile = { "beginFile", ZEND_ACC_PUBLIC, 0, nullptr, 0, &beginFile_return };
-inline constexpr reg::Arg enterClass_args[] = { reg::typed("classReflection", 0, "PHPStan\\Reflection\\ClassReflection") };
-inline constexpr reg::Arg enterClass_return = reg::typed("", 0, "PHPStan\\Analyser\\ScopeContext");
-inline constexpr reg::Sig enterClass = { "enterClass", ZEND_ACC_PUBLIC, 1, enterClass_args, 1, &enterClass_return };
-inline constexpr reg::Arg enterTrait_args[] = { reg::typed("traitReflection", 0, "PHPStan\\Reflection\\ClassReflection") };
-inline constexpr reg::Arg enterTrait_return = reg::typed("", 0, "PHPStan\\Analyser\\ScopeContext");
-inline constexpr reg::Sig enterTrait = { "enterTrait", ZEND_ACC_PUBLIC, 1, enterTrait_args, 1, &enterTrait_return };
-inline constexpr reg::Arg equals_args[] = { reg::typed("otherContext", 0, "PHPStan\\Analyser\\ScopeContext") };
-inline constexpr reg::Arg equals_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig equals = { "equals", ZEND_ACC_PUBLIC, 1, equals_args, 1, &equals_return };
-inline constexpr reg::Arg getFile_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig getFile = { "getFile", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getFile_return };
-inline constexpr reg::Arg getClassReflection_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Reflection\\ClassReflection");
-inline constexpr reg::Sig getClassReflection = { "getClassReflection", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getClassReflection_return };
-inline constexpr reg::Arg getTraitReflection_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Reflection\\ClassReflection");
-inline constexpr reg::Sig getTraitReflection = { "getTraitReflection", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getTraitReflection_return };
+inline constexpr sigtab::Sig __construct = { { 72 /* __construct */, 3, 0, 3, reg::NoArg, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig create = { { 115 /* create */, 1, 3, 1, 4, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig beginFile = { { 122 /* beginFile */, 0, 5, 0, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig enterClass = { { 132 /* enterClass */, 1, 6, 1, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig enterTrait = { { 143 /* enterTrait */, 1, 8, 1, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig equals = { { 167 /* equals */, 1, 10, 1, 11, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getFile = { { 174 /* getFile */, 0, 12, 0, 12, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getClassReflection = { { 182 /* getClassReflection */, 0, 13, 0, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getTraitReflection = { { 201 /* getTraitReflection */, 0, 14, 0, 14, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ScopeContext

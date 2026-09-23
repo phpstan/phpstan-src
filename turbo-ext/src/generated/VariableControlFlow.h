@@ -51,10 +51,56 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("ownWrites", ZEND_ACC_PUBLIC | ZEND_ACC_READONLY, reg::PropertyKind::Typed, MAY_BE_ARRAY);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"kind\0" /* 0 */
+	"children\0" /* 5 */
+	"[]\0" /* 14 */
+	"name\0" /* 17 */
+	"null\0" /* 22 */
+	"type\0" /* 27 */
+	"PHPStan\\Type\\Type\0" /* 32 */
+	"level\0" /* 50 */
+	"1\0" /* 56 */
+	"atLeastOnce\0" /* 58 */
+	"false\0" /* 70 */
+	"canExit\0" /* 76 */
+	"true\0" /* 84 */
+	"catches\0" /* 89 */
+	"arrow\0" /* 97 */
+	"PhpParser\\Node\\Expr\\ArrowFunction\0" /* 103 */
+	"cases\0" /* 137 */
+	"canRepeat\0" /* 143 */
+	"canContainAnyThrowable\0" /* 153 */
+	"stmt\0" /* 176 */
+	"PhpParser\\Node\\Stmt\\Foreach_|PhpParser\\Node\\Stmt\\For_\0" /* 181 */
+	"bindings\0" /* 235 */
+	"ownWrites\0" /* 244 */
+	"__construct"; /* 254 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_STRING), /* __construct $kind */
+	reg::packed(5, MAY_BE_ARRAY, reg::NoString, false, false, 14), /* __construct $children */
+	reg::packed(17, MAY_BE_NULL | MAY_BE_STRING, reg::NoString, false, false, 22), /* __construct $name */
+	reg::packed(27, MAY_BE_NULL, 32, false, false, 22), /* __construct $type */
+	reg::packed(50, MAY_BE_LONG, reg::NoString, false, false, 56), /* __construct $level */
+	reg::packed(58, MAY_BE_BOOL, reg::NoString, false, false, 70), /* __construct $atLeastOnce */
+	reg::packed(76, MAY_BE_BOOL, reg::NoString, false, false, 84), /* __construct $canExit */
+	reg::packed(89, MAY_BE_ARRAY, reg::NoString, false, false, 14), /* __construct $catches */
+	reg::packed(97, MAY_BE_NULL, 103, false, false, 22), /* __construct $arrow */
+	reg::packed(137, MAY_BE_ARRAY, reg::NoString, false, false, 14), /* __construct $cases */
+	reg::packed(143, MAY_BE_BOOL, reg::NoString, false, false, 84), /* __construct $canRepeat */
+	reg::packed(153, MAY_BE_BOOL, reg::NoString, false, false, 70), /* __construct $canContainAnyThrowable */
+	reg::packed(176, MAY_BE_NULL, 181, false, false, 22), /* __construct $stmt */
+	reg::packed(235, MAY_BE_ARRAY, reg::NoString, false, false, 14), /* __construct $bindings */
+	reg::packed(244, MAY_BE_ARRAY, reg::NoString, false, false, 14), /* __construct $ownWrites */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("kind", MAY_BE_STRING), reg::typed("children", MAY_BE_ARRAY, nullptr, false, false, "[]"), reg::typed("name", MAY_BE_NULL | MAY_BE_STRING, nullptr, false, false, "null"), reg::typed("type", MAY_BE_NULL, "PHPStan\\Type\\Type", false, false, "null"), reg::typed("level", MAY_BE_LONG, nullptr, false, false, "1"), reg::typed("atLeastOnce", MAY_BE_BOOL, nullptr, false, false, "false"), reg::typed("canExit", MAY_BE_BOOL, nullptr, false, false, "true"), reg::typed("catches", MAY_BE_ARRAY, nullptr, false, false, "[]"), reg::typed("arrow", MAY_BE_NULL, "PhpParser\\Node\\Expr\\ArrowFunction", false, false, "null"), reg::typed("cases", MAY_BE_ARRAY, nullptr, false, false, "[]"), reg::typed("canRepeat", MAY_BE_BOOL, nullptr, false, false, "true"), reg::typed("canContainAnyThrowable", MAY_BE_BOOL, nullptr, false, false, "false"), reg::typed("stmt", MAY_BE_NULL, "PhpParser\\Node\\Stmt\\Foreach_|PhpParser\\Node\\Stmt\\For_", false, false, "null"), reg::typed("bindings", MAY_BE_ARRAY, nullptr, false, false, "[]"), reg::typed("ownWrites", MAY_BE_ARRAY, nullptr, false, false, "[]") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 1, __construct_args, 15, nullptr };
+inline constexpr sigtab::Sig __construct = { { 254 /* __construct */, 1, 0, 15, reg::NoArg, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::VariableControlFlow

@@ -360,17 +360,58 @@ constexpr Arg typed(const char *name, uint32_t mask, const char *className = nul
 	return { name, mask | (className != nullptr ? _ZEND_TYPE_LITERAL_NAME_BIT : 0) | detail::flagBits(byRef, variadic), className, defaultValue };
 }
 
-/* a method's signature as generated from the PHP twin: name, ZEND_ACC_*
- * flags, the required-parameter count, the parameters' arginfo and the
- * declared return type (nullptr: none) */
-struct Sig
+/*
+ * The generated signatures (turbo-ext/src/generated) hold no pointers: every
+ * pointer in a constant table is a load-time relocation (24 bytes of
+ * .rela.dyn each on ELF, plus the 8-byte slot), and the ~14,000 parameter
+ * and signature records were 89% of the extension's relocations. Each
+ * generated header instead has one string table and one parameter table
+ * (its `sigtab` namespace), the records index into them, and Sig carries
+ * the two tables as template arguments, which compile to PC-relative
+ * addresses in the registration code.
+ */
+constexpr uint16_t NoString = UINT16_MAX; /* nullptr */
+constexpr uint16_t NoArg = UINT16_MAX;    /* no declared return type */
+
+/* Arg, with its strings as offsets into the header's string table */
+struct PackedArg
 {
-	const char *name;
+	uint16_t name;
+	uint16_t className;
+	uint16_t defaultValue;
+	uint32_t typeMask;
+};
+
+/* reg::typed() for a PackedArg: the same bits, from string offsets */
+constexpr PackedArg packed(uint16_t name, uint32_t mask, uint16_t className = NoString, bool byRef = false, bool variadic = false, uint16_t defaultValue = NoString)
+{
+	return { name, className, defaultValue, mask | (className != NoString ? _ZEND_TYPE_LITERAL_NAME_BIT : 0) | detail::flagBits(byRef, variadic) };
+}
+
+/* a method's signature as generated from the PHP twin: name, ZEND_ACC_*
+ * flags, the required-parameter count, its parameters (argc records from
+ * index args of the header's parameter table) and the declared return
+ * type (NoArg: none) */
+struct SigData
+{
+	uint16_t name;
+	uint16_t requiredArgs;
+	uint16_t args;
+	uint16_t argc;
+	uint16_t returns;
 	uint32_t flags;
-	uint32_t requiredArgs;
-	const Arg *args;
-	uint32_t argc;
-	const Arg *returns;
+};
+
+template <const char *Strings, const PackedArg *Args>
+struct Sig : SigData
+{
+	static constexpr const char *strings = Strings;
+	static constexpr const PackedArg *table = Args;
+
+	constexpr const char *methodName() const
+	{
+		return Strings + name;
+	}
 };
 
 enum class PropertyKind
@@ -832,15 +873,27 @@ public:
 			argInfo[i + 1].default_value = args[i].defaultValue;
 		}
 
-		zend_function_entry entry;
-		memset(&entry, 0, sizeof(entry));
-		entry.fname = methodName;
-		entry.handler = handler;
-		entry.arg_info = argInfo;
-		entry.num_args = (uint32_t) argc;
-		entry.flags = flags;
-		entries.push_back(entry);
-		return *this;
+		return addEntry(methodName, flags, argInfo, argc, handler);
+	}
+
+	/* the method of a generated signature, decoded from its header's tables
+	 * (see reg::Sig) into the persistent arginfo the engine keeps */
+	Class &method(const char *strings, const PackedArg *table, const SigData &sig, zif_handler handler)
+	{
+		const auto str = [strings](uint16_t offset) { return offset == NoString ? nullptr : strings + offset; };
+		auto *argInfo = (zend_internal_arg_info *) pemalloc(sizeof(zend_internal_arg_info) * (sig.argc + 1), 1);
+		argInfo[0].name = (const char *) (uintptr_t) sig.requiredArgs;
+		argInfo[0].type.ptr = sig.returns != NoArg ? (void *) str(table[sig.returns].className) : NULL;
+		argInfo[0].type.type_mask = sig.returns != NoArg ? table[sig.returns].typeMask : 0;
+		argInfo[0].default_value = NULL;
+		for (size_t i = 0; i < sig.argc; i++) {
+			const PackedArg &arg = table[sig.args + i];
+			argInfo[i + 1].name = strings + arg.name;
+			argInfo[i + 1].type.ptr = (void *) str(arg.className);
+			argInfo[i + 1].type.type_mask = arg.typeMask;
+			argInfo[i + 1].default_value = str(arg.defaultValue);
+		}
+		return addEntry(strings + sig.name, sig.flags, argInfo, sig.argc, handler);
 	}
 
 	/*
@@ -855,21 +908,22 @@ public:
 	}
 
 	/* the method of a generated signature (turbo-ext/src/generated) */
-	Class &method(const Sig &sig, zif_handler handler)
+	template <const char *S, const PackedArg *A>
+	Class &method(const Sig<S, A> &sig, zif_handler handler)
 	{
-		return method(sig.name, sig.flags, sig.requiredArgs, sig.args, sig.argc, handler, sig.returns);
+		return method(S, A, sig, handler);
 	}
 
 	/* the method of a generated signature with a generated handler; the
 	 * parameter kinds must match the signature — a mismatch (the twin's
 	 * signature changed, the binding did not) refuses to load the module */
-	template <auto M, typename... K>
-	Class &method(const Sig &sig)
+	template <auto M, typename... K, const char *S, const PackedArg *A>
+	Class &method(const Sig<S, A> &sig)
 	{
 		if (UNEXPECTED(sig.argc != sizeof...(K) || sig.requiredArgs != zp::required<K...>())) {
-			zend_error_noreturn(E_CORE_ERROR, "phpstan_turbo: %s::%s() binds %u parameter kinds to a signature of %u (%u required)", name, sig.name, (unsigned) sizeof...(K), (unsigned) sig.argc, (unsigned) sig.requiredArgs);
+			zend_error_noreturn(E_CORE_ERROR, "phpstan_turbo: %s::%s() binds %u parameter kinds to a signature of %u (%u required)", name, sig.methodName(), (unsigned) sizeof...(K), (unsigned) sig.argc, (unsigned) sig.requiredArgs);
 		}
-		return method(sig.name, sig.flags, sig.requiredArgs, sig.args, sig.argc, &detail::Bound<M, K...>::handle, sig.returns);
+		return method(S, A, sig, &detail::Bound<M, K...>::handle);
 	}
 
 	/* whether a method of that name is already declared on the builder
@@ -896,9 +950,10 @@ public:
 		return method(methodName, flags, requiredArgs, args, handler, returns);
 	}
 
-	Class &traitMethod(const Sig &sig, zif_handler handler)
+	template <const char *S, const PackedArg *A>
+	Class &traitMethod(const Sig<S, A> &sig, zif_handler handler)
 	{
-		lastTraitMethodAdded = !hasMethod(sig.name);
+		lastTraitMethodAdded = !hasMethod(sig.methodName());
 		if (!lastTraitMethodAdded) return *this;
 		return method(sig, handler);
 	}
@@ -1243,6 +1298,19 @@ public:
 	}
 
 private:
+	Class &addEntry(const char *methodName, uint32_t methodFlags, zend_internal_arg_info *argInfo, size_t argc, zif_handler handler)
+	{
+		zend_function_entry entry;
+		memset(&entry, 0, sizeof(entry));
+		entry.fname = methodName;
+		entry.handler = handler;
+		entry.arg_info = argInfo;
+		entry.num_args = (uint32_t) argc;
+		entry.flags = methodFlags;
+		entries.push_back(entry);
+		return *this;
+	}
+
 	const char *name;
 	uint32_t flags = 0;
 	const char *parentName = nullptr;

@@ -31,16 +31,56 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("parametersProcessor", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ParametersProcessor");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"deprecatedAttributeResolver\0" /* 0 */
+	"PHPStan\\Analyser\\DeprecatedAttributeResolver\0" /* 28 */
+	"phpDocsResolver\0" /* 73 */
+	"PHPStan\\Analyser\\PhpDocsResolver\0" /* 89 */
+	"attributesHandler\0" /* 122 */
+	"PHPStan\\Analyser\\AttributesHandler\0" /* 140 */
+	"parametersProcessor\0" /* 175 */
+	"PHPStan\\Analyser\\ParametersProcessor\0" /* 195 */
+	"__construct\0" /* 232 */
+	"stmt\0" /* 244 */
+	"PhpParser\\Node\\Stmt\0" /* 249 */
+	"\0" /* 269 */
+	"supports\0" /* 270 */
+	"nodeScopeResolver\0" /* 279 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 297 */
+	"scope\0" /* 332 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 338 */
+	"storage\0" /* 369 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 377 */
+	"nodeCallback\0" /* 418 */
+	"context\0" /* 431 */
+	"PHPStan\\Analyser\\StatementContext\0" /* 439 */
+	"PHPStan\\Analyser\\InternalStatementResult\0" /* 473 */
+	"processStmt"; /* 514 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 28), /* __construct $deprecatedAttributeResolver */
+	reg::packed(73, 0, 89), /* __construct $phpDocsResolver */
+	reg::packed(122, 0, 140), /* __construct $attributesHandler */
+	reg::packed(175, 0, 195), /* __construct $parametersProcessor */
+	reg::packed(244, 0, 249), /* supports $stmt */
+	reg::packed(269, MAY_BE_BOOL), /* supports return */
+	reg::packed(279, 0, 297), /* processStmt $nodeScopeResolver */
+	reg::packed(244, 0, 249), /* processStmt $stmt */
+	reg::packed(332, 0, 338), /* processStmt $scope */
+	reg::packed(369, 0, 377), /* processStmt $storage */
+	reg::packed(418, MAY_BE_CALLABLE), /* processStmt $nodeCallback */
+	reg::packed(431, 0, 439), /* processStmt $context */
+	reg::packed(269, 0, 473), /* processStmt return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("deprecatedAttributeResolver", 0, "PHPStan\\Analyser\\DeprecatedAttributeResolver"), reg::typed("phpDocsResolver", 0, "PHPStan\\Analyser\\PhpDocsResolver"), reg::typed("attributesHandler", 0, "PHPStan\\Analyser\\AttributesHandler"), reg::typed("parametersProcessor", 0, "PHPStan\\Analyser\\ParametersProcessor") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 4, __construct_args, 4, nullptr };
-inline constexpr reg::Arg supports_args[] = { reg::typed("stmt", 0, "PhpParser\\Node\\Stmt") };
-inline constexpr reg::Arg supports_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig supports = { "supports", ZEND_ACC_PUBLIC, 1, supports_args, 1, &supports_return };
-inline constexpr reg::Arg processStmt_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("stmt", 0, "PhpParser\\Node\\Stmt"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("nodeCallback", MAY_BE_CALLABLE), reg::typed("context", 0, "PHPStan\\Analyser\\StatementContext") };
-inline constexpr reg::Arg processStmt_return = reg::typed("", 0, "PHPStan\\Analyser\\InternalStatementResult");
-inline constexpr reg::Sig processStmt = { "processStmt", ZEND_ACC_PUBLIC, 6, processStmt_args, 6, &processStmt_return };
+inline constexpr sigtab::Sig __construct = { { 232 /* __construct */, 4, 0, 4, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig supports = { { 270 /* supports */, 1, 4, 1, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processStmt = { { 514 /* processStmt */, 6, 6, 6, 12, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::FunctionHandler

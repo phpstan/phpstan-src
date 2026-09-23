@@ -28,13 +28,31 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("holdersFromSureTypes", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_BOOL);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"conditionEntries\0" /* 0 */
+	"holderEntries\0" /* 17 */
+	"holdersFromSureTypes\0" /* 31 */
+	"__construct\0" /* 52 */
+	"scope\0" /* 64 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 70 */
+	"\0" /* 101 */
+	"evaluate"; /* 102 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_ARRAY), /* __construct $conditionEntries */
+	reg::packed(17, MAY_BE_ARRAY), /* __construct $holderEntries */
+	reg::packed(31, MAY_BE_BOOL), /* __construct $holdersFromSureTypes */
+	reg::packed(64, 0, 70), /* evaluate $scope */
+	reg::packed(101, MAY_BE_ARRAY), /* evaluate return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("conditionEntries", MAY_BE_ARRAY), reg::typed("holderEntries", MAY_BE_ARRAY), reg::typed("holdersFromSureTypes", MAY_BE_BOOL) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 3, __construct_args, 3, nullptr };
-inline constexpr reg::Arg evaluate_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope") };
-inline constexpr reg::Arg evaluate_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig evaluate = { "evaluate", ZEND_ACC_PUBLIC, 1, evaluate_args, 1, &evaluate_return };
+inline constexpr sigtab::Sig __construct = { { 52 /* __construct */, 3, 0, 3, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig evaluate = { { 102 /* evaluate */, 1, 3, 1, 4, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ConditionalExpressionHolderRecipe

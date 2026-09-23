@@ -486,7 +486,7 @@ function generatedSignatureNames(string $stem): array
 	if (!is_file($header)) {
 		throw new RuntimeException(sprintf('%s does not exist — run php turbo-ext/bin/generate-declarations.php', $header));
 	}
-	preg_match_all('~inline constexpr reg::Sig (\w+) = \{ "(\w+)"~', file_get_contents($header), $m, PREG_SET_ORDER);
+	preg_match_all('~inline constexpr sigtab::Sig (\w+) = \{ \{ \d+ /\* (\w+) \*/~', file_get_contents($header), $m, PREG_SET_ORDER);
 	$names = [];
 	foreach ($m as [, $identifier, $name]) {
 		$names[$identifier] = $name;

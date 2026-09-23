@@ -30,13 +30,58 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("parametersProcessor", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ParametersProcessor");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"deprecatedAttributeResolver\0" /* 0 */
+	"PHPStan\\Analyser\\DeprecatedAttributeResolver\0" /* 28 */
+	"phpDocsResolver\0" /* 73 */
+	"PHPStan\\Analyser\\PhpDocsResolver\0" /* 89 */
+	"attributesHandler\0" /* 122 */
+	"PHPStan\\Analyser\\AttributesHandler\0" /* 140 */
+	"parametersProcessor\0" /* 175 */
+	"PHPStan\\Analyser\\ParametersProcessor\0" /* 195 */
+	"__construct\0" /* 232 */
+	"nodeScopeResolver\0" /* 244 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 262 */
+	"stmt\0" /* 297 */
+	"PhpParser\\Node\\Stmt\0" /* 302 */
+	"nativeTypeNode\0" /* 322 */
+	"PhpParser\\Node\\Identifier|PhpParser\\Node\\Name|PhpParser\\Node\\ComplexType\0" /* 337 */
+	"phpDocType\0" /* 410 */
+	"PHPStan\\Type\\Type\0" /* 421 */
+	"propertyName\0" /* 439 */
+	"hooks\0" /* 452 */
+	"scope\0" /* 458 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 464 */
+	"storage\0" /* 495 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 503 */
+	"nodeCallback\0" /* 544 */
+	"\0" /* 557 */
+	"processPropertyHooks"; /* 558 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 28), /* __construct $deprecatedAttributeResolver */
+	reg::packed(73, 0, 89), /* __construct $phpDocsResolver */
+	reg::packed(122, 0, 140), /* __construct $attributesHandler */
+	reg::packed(175, 0, 195), /* __construct $parametersProcessor */
+	reg::packed(244, 0, 262), /* processPropertyHooks $nodeScopeResolver */
+	reg::packed(297, 0, 302), /* processPropertyHooks $stmt */
+	reg::packed(322, MAY_BE_NULL, 337), /* processPropertyHooks $nativeTypeNode */
+	reg::packed(410, MAY_BE_NULL, 421), /* processPropertyHooks $phpDocType */
+	reg::packed(439, MAY_BE_STRING), /* processPropertyHooks $propertyName */
+	reg::packed(452, MAY_BE_ARRAY), /* processPropertyHooks $hooks */
+	reg::packed(458, 0, 464), /* processPropertyHooks $scope */
+	reg::packed(495, 0, 503), /* processPropertyHooks $storage */
+	reg::packed(544, MAY_BE_CALLABLE), /* processPropertyHooks $nodeCallback */
+	reg::packed(557, MAY_BE_VOID), /* processPropertyHooks return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("deprecatedAttributeResolver", 0, "PHPStan\\Analyser\\DeprecatedAttributeResolver"), reg::typed("phpDocsResolver", 0, "PHPStan\\Analyser\\PhpDocsResolver"), reg::typed("attributesHandler", 0, "PHPStan\\Analyser\\AttributesHandler"), reg::typed("parametersProcessor", 0, "PHPStan\\Analyser\\ParametersProcessor") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 4, __construct_args, 4, nullptr };
-inline constexpr reg::Arg processPropertyHooks_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("stmt", 0, "PhpParser\\Node\\Stmt"), reg::typed("nativeTypeNode", MAY_BE_NULL, "PhpParser\\Node\\Identifier|PhpParser\\Node\\Name|PhpParser\\Node\\ComplexType"), reg::typed("phpDocType", MAY_BE_NULL, "PHPStan\\Type\\Type"), reg::typed("propertyName", MAY_BE_STRING), reg::typed("hooks", MAY_BE_ARRAY), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("nodeCallback", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg processPropertyHooks_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig processPropertyHooks = { "processPropertyHooks", ZEND_ACC_PUBLIC, 9, processPropertyHooks_args, 9, &processPropertyHooks_return };
+inline constexpr sigtab::Sig __construct = { { 232 /* __construct */, 4, 0, 4, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processPropertyHooks = { { 558 /* processPropertyHooks */, 9, 4, 9, 13, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::PropertyHooksProcessor

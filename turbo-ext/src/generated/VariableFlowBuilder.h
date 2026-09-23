@@ -19,32 +19,86 @@ inline void declareProperties(reg::Class &cls)
 	(void) cls;
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"expr\0" /* 0 */
+	"PhpParser\\Node\\Expr\0" /* 5 */
+	"throwPoints\0" /* 25 */
+	"\0" /* 37 */
+	"PHPStan\\Analyser\\VariableFlow\0" /* 38 */
+	"throws\0" /* 68 */
+	"call\0" /* 75 */
+	"PhpParser\\Node\\Expr\\CallLike\0" /* 80 */
+	"argsResult\0" /* 109 */
+	"PHPStan\\Analyser\\ArgsResult\0" /* 120 */
+	"storage\0" /* 148 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 156 */
+	"arguments\0" /* 197 */
+	"node\0" /* 207 */
+	"PhpParser\\Node\0" /* 212 */
+	"child\0" /* 227 */
+	"target\0" /* 233 */
+	"read\0" /* 240 */
+	"targetId\0" /* 245 */
+	"null\0" /* 254 */
+	"targetRead\0" /* 259 */
+	"flow\0" /* 270 */
+	"writes\0" /* 275 */
+	"kind\0" /* 282 */
+	"scope\0" /* 287 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 293 */
+	"redundant\0" /* 324 */
+	"PHPStan\\Type\\Type\0" /* 334 */
+	"targetWrite\0" /* 352 */
+	"PHPStan\\Node\\Variable\\VariableWrite\0" /* 364 */
+	"writeSite\0" /* 400 */
+	"escapeRoot"; /* 410 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 5), /* throws $expr */
+	reg::packed(25, MAY_BE_ARRAY), /* throws $throwPoints */
+	reg::packed(37, MAY_BE_NULL, 38), /* throws return */
+	reg::packed(75, 0, 80), /* arguments $call */
+	reg::packed(109, 0, 120), /* arguments $argsResult */
+	reg::packed(148, 0, 156), /* arguments $storage */
+	reg::packed(37, MAY_BE_NULL, 38), /* arguments return */
+	reg::packed(207, MAY_BE_NULL, 212), /* child $node */
+	reg::packed(148, 0, 156), /* child $storage */
+	reg::packed(37, MAY_BE_NULL, 38), /* child return */
+	reg::packed(233, 0, 5), /* targetRead $target */
+	reg::packed(148, 0, 156), /* targetRead $storage */
+	reg::packed(240, MAY_BE_BOOL), /* targetRead $read */
+	reg::packed(245, MAY_BE_NULL | MAY_BE_LONG, reg::NoString, false, false, 254), /* targetRead $targetId */
+	reg::packed(37, MAY_BE_NULL, 38), /* targetRead return */
+	reg::packed(270, MAY_BE_NULL, 38), /* writes $flow */
+	reg::packed(37, MAY_BE_ARRAY), /* writes return */
+	reg::packed(233, 0, 5), /* targetWrite $target */
+	reg::packed(282, MAY_BE_LONG), /* targetWrite $kind */
+	reg::packed(287, 0, 293), /* targetWrite $scope */
+	reg::packed(148, 0, 156), /* targetWrite $storage */
+	reg::packed(324, MAY_BE_NULL, 334, false, false, 254), /* targetWrite $redundant */
+	reg::packed(37, MAY_BE_NULL, 38), /* targetWrite return */
+	reg::packed(233, 0, 5), /* writeSite $target */
+	reg::packed(282, MAY_BE_LONG), /* writeSite $kind */
+	reg::packed(287, 0, 293), /* writeSite $scope */
+	reg::packed(148, 0, 156), /* writeSite $storage */
+	reg::packed(37, MAY_BE_NULL, 364), /* writeSite return */
+	reg::packed(0, 0, 5), /* escapeRoot $expr */
+	reg::packed(37, MAY_BE_NULL, 38), /* escapeRoot return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg throws_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr"), reg::typed("throwPoints", MAY_BE_ARRAY) };
-inline constexpr reg::Arg throws_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\VariableFlow");
-inline constexpr reg::Sig throws = { "throws", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, throws_args, 2, &throws_return };
-inline constexpr reg::Arg arguments_args[] = { reg::typed("call", 0, "PhpParser\\Node\\Expr\\CallLike"), reg::typed("argsResult", 0, "PHPStan\\Analyser\\ArgsResult"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage") };
-inline constexpr reg::Arg arguments_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\VariableFlow");
-inline constexpr reg::Sig arguments = { "arguments", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 3, arguments_args, 3, &arguments_return };
-inline constexpr reg::Arg child_args[] = { reg::typed("node", MAY_BE_NULL, "PhpParser\\Node"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage") };
-inline constexpr reg::Arg child_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\VariableFlow");
-inline constexpr reg::Sig child = { "child", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, child_args, 2, &child_return };
-inline constexpr reg::Arg targetRead_args[] = { reg::typed("target", 0, "PhpParser\\Node\\Expr"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("read", MAY_BE_BOOL), reg::typed("targetId", MAY_BE_NULL | MAY_BE_LONG, nullptr, false, false, "null") };
-inline constexpr reg::Arg targetRead_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\VariableFlow");
-inline constexpr reg::Sig targetRead = { "targetRead", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 3, targetRead_args, 4, &targetRead_return };
-inline constexpr reg::Arg writes_args[] = { reg::typed("flow", MAY_BE_NULL, "PHPStan\\Analyser\\VariableFlow") };
-inline constexpr reg::Arg writes_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig writes = { "writes", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, writes_args, 1, &writes_return };
-inline constexpr reg::Arg targetWrite_args[] = { reg::typed("target", 0, "PhpParser\\Node\\Expr"), reg::typed("kind", MAY_BE_LONG), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("redundant", MAY_BE_NULL, "PHPStan\\Type\\Type", false, false, "null") };
-inline constexpr reg::Arg targetWrite_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\VariableFlow");
-inline constexpr reg::Sig targetWrite = { "targetWrite", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 4, targetWrite_args, 5, &targetWrite_return };
-inline constexpr reg::Arg writeSite_args[] = { reg::typed("target", 0, "PhpParser\\Node\\Expr"), reg::typed("kind", MAY_BE_LONG), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage") };
-inline constexpr reg::Arg writeSite_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Node\\Variable\\VariableWrite");
-inline constexpr reg::Sig writeSite = { "writeSite", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 4, writeSite_args, 4, &writeSite_return };
-inline constexpr reg::Arg escapeRoot_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg escapeRoot_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\VariableFlow");
-inline constexpr reg::Sig escapeRoot = { "escapeRoot", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, escapeRoot_args, 1, &escapeRoot_return };
+inline constexpr sigtab::Sig throws = { { 68 /* throws */, 2, 0, 2, 2, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig arguments = { { 197 /* arguments */, 3, 3, 3, 6, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig child = { { 227 /* child */, 2, 7, 2, 9, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig targetRead = { { 259 /* targetRead */, 3, 10, 4, 14, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig writes = { { 275 /* writes */, 1, 15, 1, 16, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig targetWrite = { { 352 /* targetWrite */, 4, 17, 5, 22, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig writeSite = { { 400 /* writeSite */, 4, 23, 4, 27, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig escapeRoot = { { 410 /* escapeRoot */, 1, 28, 1, 29, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::VariableFlowBuilder

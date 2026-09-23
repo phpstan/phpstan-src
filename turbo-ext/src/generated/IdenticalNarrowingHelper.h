@@ -32,52 +32,193 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("richerScopeGetTypeHelper", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\RicherScopeGetTypeHelper");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"defaultNarrowingHelper\0" /* 0 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper\0" /* 23 */
+	"reflectionProvider\0" /* 82 */
+	"PHPStan\\Reflection\\ReflectionProvider\0" /* 101 */
+	"countNarrowingHelper\0" /* 139 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\CountNarrowingHelper\0" /* 160 */
+	"exprPrinter\0" /* 217 */
+	"PHPStan\\Node\\Printer\\ExprPrinter\0" /* 229 */
+	"richerScopeGetTypeHelper\0" /* 262 */
+	"PHPStan\\Analyser\\RicherScopeGetTypeHelper\0" /* 287 */
+	"__construct\0" /* 329 */
+	"nodeScopeResolver\0" /* 341 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 359 */
+	"left\0" /* 394 */
+	"PhpParser\\Node\\Expr\0" /* 399 */
+	"right\0" /* 419 */
+	"leftResult\0" /* 425 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 436 */
+	"rightResult\0" /* 470 */
+	"context\0" /* 482 */
+	"PHPStan\\Analyser\\TypeSpecifierContext\0" /* 490 */
+	"evaluationScope\0" /* 528 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 544 */
+	"leftArgResult\0" /* 575 */
+	"rightArgResult\0" /* 589 */
+	"identicalTypeCallback\0" /* 604 */
+	"\0" /* 626 */
+	"PHPStan\\Analyser\\SpecifiedTypes\0" /* 627 */
+	"specifyIdentical\0" /* 659 */
+	"subject\0" /* 676 */
+	"subjectResult\0" /* 684 */
+	"value\0" /* 698 */
+	"specifyAgainstBool\0" /* 704 */
+	"specifyAgainstScalarLiteral\0" /* 723 */
+	"specifyDecidedComparison\0" /* 751 */
+	"PHPStan\\Type\\Type\0" /* 776 */
+	"getTypeFromGettypeStringValue\0" /* 794 */
+	"specifyGeneral\0" /* 824 */
+	"specifyEqual\0" /* 839 */
+	"constantExpr\0" /* 852 */
+	"constantType\0" /* 865 */
+	"subjectArgResult\0" /* 878 */
+	"specifyIdenticalAgainstType\0" /* 895 */
+	"otherType\0" /* 923 */
+	"specifyEqualAgainstConstantSide\0" /* 933 */
+	"call\0" /* 965 */
+	"PhpParser\\Node\\Expr\\FuncCall\0" /* 970 */
+	"argResult\0" /* 999 */
+	"specifyFuncCallFamilies\0" /* 1009 */
+	"side\0" /* 1033 */
+	"storage\0" /* 1038 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 1046 */
+	"captureFirstArgResult\0" /* 1087 */
+	"expr\0" /* 1109 */
+	"literalType\0" /* 1114 */
+	"isScalarLiteral\0" /* 1126 */
+	"isSubjectCoveredAgainstConstant"; /* 1142 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 23), /* __construct $defaultNarrowingHelper */
+	reg::packed(82, 0, 101), /* __construct $reflectionProvider */
+	reg::packed(139, 0, 160), /* __construct $countNarrowingHelper */
+	reg::packed(217, 0, 229), /* __construct $exprPrinter */
+	reg::packed(262, 0, 287), /* __construct $richerScopeGetTypeHelper */
+	reg::packed(341, 0, 359), /* specifyIdentical $nodeScopeResolver */
+	reg::packed(394, 0, 399), /* specifyIdentical $left */
+	reg::packed(419, 0, 399), /* specifyIdentical $right */
+	reg::packed(425, 0, 436), /* specifyIdentical $leftResult */
+	reg::packed(470, 0, 436), /* specifyIdentical $rightResult */
+	reg::packed(482, 0, 490), /* specifyIdentical $context */
+	reg::packed(528, 0, 544), /* specifyIdentical $evaluationScope */
+	reg::packed(575, MAY_BE_NULL, 436), /* specifyIdentical $leftArgResult */
+	reg::packed(589, MAY_BE_NULL, 436), /* specifyIdentical $rightArgResult */
+	reg::packed(604, MAY_BE_CALLABLE), /* specifyIdentical $identicalTypeCallback */
+	reg::packed(626, MAY_BE_NULL, 627), /* specifyIdentical return */
+	reg::packed(676, 0, 399), /* specifyAgainstBool $subject */
+	reg::packed(684, 0, 436), /* specifyAgainstBool $subjectResult */
+	reg::packed(698, MAY_BE_BOOL), /* specifyAgainstBool $value */
+	reg::packed(482, 0, 490), /* specifyAgainstBool $context */
+	reg::packed(528, 0, 544), /* specifyAgainstBool $evaluationScope */
+	reg::packed(626, 0, 627), /* specifyAgainstBool return */
+	reg::packed(394, 0, 399), /* specifyAgainstScalarLiteral $left */
+	reg::packed(419, 0, 399), /* specifyAgainstScalarLiteral $right */
+	reg::packed(425, 0, 436), /* specifyAgainstScalarLiteral $leftResult */
+	reg::packed(470, 0, 436), /* specifyAgainstScalarLiteral $rightResult */
+	reg::packed(482, 0, 490), /* specifyAgainstScalarLiteral $context */
+	reg::packed(528, 0, 544), /* specifyAgainstScalarLiteral $evaluationScope */
+	reg::packed(575, MAY_BE_NULL, 436), /* specifyAgainstScalarLiteral $leftArgResult */
+	reg::packed(589, MAY_BE_NULL, 436), /* specifyAgainstScalarLiteral $rightArgResult */
+	reg::packed(604, MAY_BE_CALLABLE), /* specifyAgainstScalarLiteral $identicalTypeCallback */
+	reg::packed(626, MAY_BE_NULL, 627), /* specifyAgainstScalarLiteral return */
+	reg::packed(394, 0, 399), /* specifyDecidedComparison $left */
+	reg::packed(419, 0, 399), /* specifyDecidedComparison $right */
+	reg::packed(425, 0, 436), /* specifyDecidedComparison $leftResult */
+	reg::packed(470, 0, 436), /* specifyDecidedComparison $rightResult */
+	reg::packed(482, 0, 490), /* specifyDecidedComparison $context */
+	reg::packed(528, 0, 544), /* specifyDecidedComparison $evaluationScope */
+	reg::packed(604, MAY_BE_CALLABLE), /* specifyDecidedComparison $identicalTypeCallback */
+	reg::packed(626, MAY_BE_NULL, 627), /* specifyDecidedComparison return */
+	reg::packed(698, MAY_BE_STRING), /* getTypeFromGettypeStringValue $value */
+	reg::packed(626, MAY_BE_NULL, 776), /* getTypeFromGettypeStringValue return */
+	reg::packed(394, 0, 399), /* specifyGeneral $left */
+	reg::packed(419, 0, 399), /* specifyGeneral $right */
+	reg::packed(425, 0, 436), /* specifyGeneral $leftResult */
+	reg::packed(470, 0, 436), /* specifyGeneral $rightResult */
+	reg::packed(482, 0, 490), /* specifyGeneral $context */
+	reg::packed(528, 0, 544), /* specifyGeneral $evaluationScope */
+	reg::packed(575, MAY_BE_NULL, 436), /* specifyGeneral $leftArgResult */
+	reg::packed(589, MAY_BE_NULL, 436), /* specifyGeneral $rightArgResult */
+	reg::packed(604, MAY_BE_CALLABLE), /* specifyGeneral $identicalTypeCallback */
+	reg::packed(626, MAY_BE_NULL, 627), /* specifyGeneral return */
+	reg::packed(341, 0, 359), /* specifyEqual $nodeScopeResolver */
+	reg::packed(394, 0, 399), /* specifyEqual $left */
+	reg::packed(419, 0, 399), /* specifyEqual $right */
+	reg::packed(425, 0, 436), /* specifyEqual $leftResult */
+	reg::packed(470, 0, 436), /* specifyEqual $rightResult */
+	reg::packed(482, 0, 490), /* specifyEqual $context */
+	reg::packed(528, 0, 544), /* specifyEqual $evaluationScope */
+	reg::packed(575, MAY_BE_NULL, 436), /* specifyEqual $leftArgResult */
+	reg::packed(589, MAY_BE_NULL, 436), /* specifyEqual $rightArgResult */
+	reg::packed(626, MAY_BE_NULL, 627), /* specifyEqual return */
+	reg::packed(676, 0, 399), /* specifyIdenticalAgainstType $subject */
+	reg::packed(684, 0, 436), /* specifyIdenticalAgainstType $subjectResult */
+	reg::packed(852, 0, 399), /* specifyIdenticalAgainstType $constantExpr */
+	reg::packed(865, 0, 776), /* specifyIdenticalAgainstType $constantType */
+	reg::packed(482, 0, 490), /* specifyIdenticalAgainstType $context */
+	reg::packed(528, 0, 544), /* specifyIdenticalAgainstType $evaluationScope */
+	reg::packed(878, MAY_BE_NULL, 436), /* specifyIdenticalAgainstType $subjectArgResult */
+	reg::packed(604, MAY_BE_CALLABLE), /* specifyIdenticalAgainstType $identicalTypeCallback */
+	reg::packed(626, MAY_BE_NULL, 627), /* specifyIdenticalAgainstType return */
+	reg::packed(341, 0, 359), /* specifyEqualAgainstConstantSide $nodeScopeResolver */
+	reg::packed(394, 0, 399), /* specifyEqualAgainstConstantSide $left */
+	reg::packed(419, 0, 399), /* specifyEqualAgainstConstantSide $right */
+	reg::packed(425, 0, 436), /* specifyEqualAgainstConstantSide $leftResult */
+	reg::packed(470, 0, 436), /* specifyEqualAgainstConstantSide $rightResult */
+	reg::packed(676, 0, 399), /* specifyEqualAgainstConstantSide $subject */
+	reg::packed(684, 0, 436), /* specifyEqualAgainstConstantSide $subjectResult */
+	reg::packed(698, MAY_BE_ANY), /* specifyEqualAgainstConstantSide $value */
+	reg::packed(865, 0, 776), /* specifyEqualAgainstConstantSide $constantType */
+	reg::packed(923, 0, 776), /* specifyEqualAgainstConstantSide $otherType */
+	reg::packed(482, 0, 490), /* specifyEqualAgainstConstantSide $context */
+	reg::packed(528, 0, 544), /* specifyEqualAgainstConstantSide $evaluationScope */
+	reg::packed(575, MAY_BE_NULL, 436), /* specifyEqualAgainstConstantSide $leftArgResult */
+	reg::packed(589, MAY_BE_NULL, 436), /* specifyEqualAgainstConstantSide $rightArgResult */
+	reg::packed(604, MAY_BE_CALLABLE), /* specifyEqualAgainstConstantSide $identicalTypeCallback */
+	reg::packed(626, MAY_BE_NULL | MAY_BE_FALSE, 627), /* specifyEqualAgainstConstantSide return */
+	reg::packed(676, 0, 399), /* specifyFuncCallFamilies $subject */
+	reg::packed(684, 0, 436), /* specifyFuncCallFamilies $subjectResult */
+	reg::packed(965, 0, 970), /* specifyFuncCallFamilies $call */
+	reg::packed(852, 0, 399), /* specifyFuncCallFamilies $constantExpr */
+	reg::packed(865, 0, 776), /* specifyFuncCallFamilies $constantType */
+	reg::packed(482, 0, 490), /* specifyFuncCallFamilies $context */
+	reg::packed(528, 0, 544), /* specifyFuncCallFamilies $evaluationScope */
+	reg::packed(999, MAY_BE_NULL, 436), /* specifyFuncCallFamilies $argResult */
+	reg::packed(626, MAY_BE_NULL | MAY_BE_FALSE, 627), /* specifyFuncCallFamilies return */
+	reg::packed(1033, 0, 399), /* captureFirstArgResult $side */
+	reg::packed(1038, 0, 1046), /* captureFirstArgResult $storage */
+	reg::packed(626, MAY_BE_NULL, 436), /* captureFirstArgResult return */
+	reg::packed(1109, 0, 399), /* literalType $expr */
+	reg::packed(626, MAY_BE_NULL, 776), /* literalType return */
+	reg::packed(1109, 0, 399), /* isScalarLiteral $expr */
+	reg::packed(626, MAY_BE_BOOL), /* isScalarLiteral return */
+	reg::packed(676, 0, 399), /* isSubjectCoveredAgainstConstant $subject */
+	reg::packed(626, MAY_BE_BOOL), /* isSubjectCoveredAgainstConstant return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("defaultNarrowingHelper", 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper"), reg::typed("reflectionProvider", 0, "PHPStan\\Reflection\\ReflectionProvider"), reg::typed("countNarrowingHelper", 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\CountNarrowingHelper"), reg::typed("exprPrinter", 0, "PHPStan\\Node\\Printer\\ExprPrinter"), reg::typed("richerScopeGetTypeHelper", 0, "PHPStan\\Analyser\\RicherScopeGetTypeHelper") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 5, __construct_args, 5, nullptr };
-inline constexpr reg::Arg specifyIdentical_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("left", 0, "PhpParser\\Node\\Expr"), reg::typed("right", 0, "PhpParser\\Node\\Expr"), reg::typed("leftResult", 0, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("rightResult", 0, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("context", 0, "PHPStan\\Analyser\\TypeSpecifierContext"), reg::typed("evaluationScope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("leftArgResult", MAY_BE_NULL, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("rightArgResult", MAY_BE_NULL, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("identicalTypeCallback", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg specifyIdentical_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\SpecifiedTypes");
-inline constexpr reg::Sig specifyIdentical = { "specifyIdentical", ZEND_ACC_PUBLIC, 10, specifyIdentical_args, 10, &specifyIdentical_return };
-inline constexpr reg::Arg specifyAgainstBool_args[] = { reg::typed("subject", 0, "PhpParser\\Node\\Expr"), reg::typed("subjectResult", 0, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("value", MAY_BE_BOOL), reg::typed("context", 0, "PHPStan\\Analyser\\TypeSpecifierContext"), reg::typed("evaluationScope", 0, "PHPStan\\Analyser\\MutatingScope") };
-inline constexpr reg::Arg specifyAgainstBool_return = reg::typed("", 0, "PHPStan\\Analyser\\SpecifiedTypes");
-inline constexpr reg::Sig specifyAgainstBool = { "specifyAgainstBool", ZEND_ACC_PRIVATE, 5, specifyAgainstBool_args, 5, &specifyAgainstBool_return };
-inline constexpr reg::Arg specifyAgainstScalarLiteral_args[] = { reg::typed("left", 0, "PhpParser\\Node\\Expr"), reg::typed("right", 0, "PhpParser\\Node\\Expr"), reg::typed("leftResult", 0, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("rightResult", 0, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("context", 0, "PHPStan\\Analyser\\TypeSpecifierContext"), reg::typed("evaluationScope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("leftArgResult", MAY_BE_NULL, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("rightArgResult", MAY_BE_NULL, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("identicalTypeCallback", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg specifyAgainstScalarLiteral_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\SpecifiedTypes");
-inline constexpr reg::Sig specifyAgainstScalarLiteral = { "specifyAgainstScalarLiteral", ZEND_ACC_PRIVATE, 9, specifyAgainstScalarLiteral_args, 9, &specifyAgainstScalarLiteral_return };
-inline constexpr reg::Arg specifyDecidedComparison_args[] = { reg::typed("left", 0, "PhpParser\\Node\\Expr"), reg::typed("right", 0, "PhpParser\\Node\\Expr"), reg::typed("leftResult", 0, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("rightResult", 0, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("context", 0, "PHPStan\\Analyser\\TypeSpecifierContext"), reg::typed("evaluationScope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("identicalTypeCallback", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg specifyDecidedComparison_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\SpecifiedTypes");
-inline constexpr reg::Sig specifyDecidedComparison = { "specifyDecidedComparison", ZEND_ACC_PRIVATE, 7, specifyDecidedComparison_args, 7, &specifyDecidedComparison_return };
-inline constexpr reg::Arg getTypeFromGettypeStringValue_args[] = { reg::typed("value", MAY_BE_STRING) };
-inline constexpr reg::Arg getTypeFromGettypeStringValue_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getTypeFromGettypeStringValue = { "getTypeFromGettypeStringValue", ZEND_ACC_PRIVATE, 1, getTypeFromGettypeStringValue_args, 1, &getTypeFromGettypeStringValue_return };
-inline constexpr reg::Arg specifyGeneral_args[] = { reg::typed("left", 0, "PhpParser\\Node\\Expr"), reg::typed("right", 0, "PhpParser\\Node\\Expr"), reg::typed("leftResult", 0, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("rightResult", 0, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("context", 0, "PHPStan\\Analyser\\TypeSpecifierContext"), reg::typed("evaluationScope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("leftArgResult", MAY_BE_NULL, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("rightArgResult", MAY_BE_NULL, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("identicalTypeCallback", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg specifyGeneral_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\SpecifiedTypes");
-inline constexpr reg::Sig specifyGeneral = { "specifyGeneral", ZEND_ACC_PRIVATE, 9, specifyGeneral_args, 9, &specifyGeneral_return };
-inline constexpr reg::Arg specifyEqual_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("left", 0, "PhpParser\\Node\\Expr"), reg::typed("right", 0, "PhpParser\\Node\\Expr"), reg::typed("leftResult", 0, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("rightResult", 0, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("context", 0, "PHPStan\\Analyser\\TypeSpecifierContext"), reg::typed("evaluationScope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("leftArgResult", MAY_BE_NULL, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("rightArgResult", MAY_BE_NULL, "PHPStan\\Analyser\\ExpressionResult") };
-inline constexpr reg::Arg specifyEqual_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\SpecifiedTypes");
-inline constexpr reg::Sig specifyEqual = { "specifyEqual", ZEND_ACC_PUBLIC, 9, specifyEqual_args, 9, &specifyEqual_return };
-inline constexpr reg::Arg specifyIdenticalAgainstType_args[] = { reg::typed("subject", 0, "PhpParser\\Node\\Expr"), reg::typed("subjectResult", 0, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("constantExpr", 0, "PhpParser\\Node\\Expr"), reg::typed("constantType", 0, "PHPStan\\Type\\Type"), reg::typed("context", 0, "PHPStan\\Analyser\\TypeSpecifierContext"), reg::typed("evaluationScope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("subjectArgResult", MAY_BE_NULL, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("identicalTypeCallback", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg specifyIdenticalAgainstType_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\SpecifiedTypes");
-inline constexpr reg::Sig specifyIdenticalAgainstType = { "specifyIdenticalAgainstType", ZEND_ACC_PUBLIC, 8, specifyIdenticalAgainstType_args, 8, &specifyIdenticalAgainstType_return };
-inline constexpr reg::Arg specifyEqualAgainstConstantSide_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("left", 0, "PhpParser\\Node\\Expr"), reg::typed("right", 0, "PhpParser\\Node\\Expr"), reg::typed("leftResult", 0, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("rightResult", 0, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("subject", 0, "PhpParser\\Node\\Expr"), reg::typed("subjectResult", 0, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("value", MAY_BE_ANY), reg::typed("constantType", 0, "PHPStan\\Type\\Type"), reg::typed("otherType", 0, "PHPStan\\Type\\Type"), reg::typed("context", 0, "PHPStan\\Analyser\\TypeSpecifierContext"), reg::typed("evaluationScope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("leftArgResult", MAY_BE_NULL, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("rightArgResult", MAY_BE_NULL, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("identicalTypeCallback", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg specifyEqualAgainstConstantSide_return = reg::typed("", MAY_BE_NULL | MAY_BE_FALSE, "PHPStan\\Analyser\\SpecifiedTypes");
-inline constexpr reg::Sig specifyEqualAgainstConstantSide = { "specifyEqualAgainstConstantSide", ZEND_ACC_PRIVATE, 15, specifyEqualAgainstConstantSide_args, 15, &specifyEqualAgainstConstantSide_return };
-inline constexpr reg::Arg specifyFuncCallFamilies_args[] = { reg::typed("subject", 0, "PhpParser\\Node\\Expr"), reg::typed("subjectResult", 0, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("call", 0, "PhpParser\\Node\\Expr\\FuncCall"), reg::typed("constantExpr", 0, "PhpParser\\Node\\Expr"), reg::typed("constantType", 0, "PHPStan\\Type\\Type"), reg::typed("context", 0, "PHPStan\\Analyser\\TypeSpecifierContext"), reg::typed("evaluationScope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("argResult", MAY_BE_NULL, "PHPStan\\Analyser\\ExpressionResult") };
-inline constexpr reg::Arg specifyFuncCallFamilies_return = reg::typed("", MAY_BE_NULL | MAY_BE_FALSE, "PHPStan\\Analyser\\SpecifiedTypes");
-inline constexpr reg::Sig specifyFuncCallFamilies = { "specifyFuncCallFamilies", ZEND_ACC_PRIVATE, 8, specifyFuncCallFamilies_args, 8, &specifyFuncCallFamilies_return };
-inline constexpr reg::Arg captureFirstArgResult_args[] = { reg::typed("side", 0, "PhpParser\\Node\\Expr"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage") };
-inline constexpr reg::Arg captureFirstArgResult_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\ExpressionResult");
-inline constexpr reg::Sig captureFirstArgResult = { "captureFirstArgResult", ZEND_ACC_PUBLIC, 2, captureFirstArgResult_args, 2, &captureFirstArgResult_return };
-inline constexpr reg::Arg literalType_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg literalType_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig literalType = { "literalType", ZEND_ACC_PRIVATE, 1, literalType_args, 1, &literalType_return };
-inline constexpr reg::Arg isScalarLiteral_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg isScalarLiteral_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isScalarLiteral = { "isScalarLiteral", ZEND_ACC_PRIVATE, 1, isScalarLiteral_args, 1, &isScalarLiteral_return };
-inline constexpr reg::Arg isSubjectCoveredAgainstConstant_args[] = { reg::typed("subject", 0, "PhpParser\\Node\\Expr") };
-inline constexpr reg::Arg isSubjectCoveredAgainstConstant_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isSubjectCoveredAgainstConstant = { "isSubjectCoveredAgainstConstant", ZEND_ACC_PRIVATE, 1, isSubjectCoveredAgainstConstant_args, 1, &isSubjectCoveredAgainstConstant_return };
+inline constexpr sigtab::Sig __construct = { { 329 /* __construct */, 5, 0, 5, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig specifyIdentical = { { 659 /* specifyIdentical */, 10, 5, 10, 15, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig specifyAgainstBool = { { 704 /* specifyAgainstBool */, 5, 16, 5, 21, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig specifyAgainstScalarLiteral = { { 723 /* specifyAgainstScalarLiteral */, 9, 22, 9, 31, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig specifyDecidedComparison = { { 751 /* specifyDecidedComparison */, 7, 32, 7, 39, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getTypeFromGettypeStringValue = { { 794 /* getTypeFromGettypeStringValue */, 1, 40, 1, 41, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig specifyGeneral = { { 824 /* specifyGeneral */, 9, 42, 9, 51, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig specifyEqual = { { 839 /* specifyEqual */, 9, 52, 9, 61, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig specifyIdenticalAgainstType = { { 895 /* specifyIdenticalAgainstType */, 8, 62, 8, 70, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig specifyEqualAgainstConstantSide = { { 933 /* specifyEqualAgainstConstantSide */, 15, 71, 15, 86, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig specifyFuncCallFamilies = { { 1009 /* specifyFuncCallFamilies */, 8, 87, 8, 95, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig captureFirstArgResult = { { 1087 /* captureFirstArgResult */, 2, 96, 2, 98, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig literalType = { { 1114 /* literalType */, 1, 99, 1, 100, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isScalarLiteral = { { 1126 /* isScalarLiteral */, 1, 101, 1, 102, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isSubjectCoveredAgainstConstant = { { 1142 /* isSubjectCoveredAgainstConstant */, 1, 103, 1, 104, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::IdenticalNarrowingHelper

@@ -24,19 +24,45 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("initializerExprTypeResolver", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Reflection\\InitializerExprTypeResolver");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"initializerExprTypeResolver\0" /* 0 */
+	"PHPStan\\Reflection\\InitializerExprTypeResolver\0" /* 28 */
+	"__construct\0" /* 75 */
+	"functionName\0" /* 87 */
+	"\0" /* 100 */
+	"getLevelDelta\0" /* 101 */
+	"nodeScopeResolver\0" /* 115 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 133 */
+	"scope\0" /* 168 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 174 */
+	"delta\0" /* 205 */
+	"applyLevelDelta\0" /* 211 */
+	"levelType\0" /* 227 */
+	"PHPStan\\Type\\Type\0" /* 237 */
+	"addDelta"; /* 255 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 28), /* __construct $initializerExprTypeResolver */
+	reg::packed(87, MAY_BE_STRING), /* getLevelDelta $functionName */
+	reg::packed(100, MAY_BE_LONG), /* getLevelDelta return */
+	reg::packed(115, 0, 133), /* applyLevelDelta $nodeScopeResolver */
+	reg::packed(168, 0, 174), /* applyLevelDelta $scope */
+	reg::packed(205, MAY_BE_LONG), /* applyLevelDelta $delta */
+	reg::packed(100, 0, 174), /* applyLevelDelta return */
+	reg::packed(227, 0, 237), /* addDelta $levelType */
+	reg::packed(205, MAY_BE_LONG), /* addDelta $delta */
+	reg::packed(100, 0, 237), /* addDelta return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("initializerExprTypeResolver", 0, "PHPStan\\Reflection\\InitializerExprTypeResolver") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 1, __construct_args, 1, nullptr };
-inline constexpr reg::Arg getLevelDelta_args[] = { reg::typed("functionName", MAY_BE_STRING) };
-inline constexpr reg::Arg getLevelDelta_return = reg::typed("", MAY_BE_LONG);
-inline constexpr reg::Sig getLevelDelta = { "getLevelDelta", ZEND_ACC_PUBLIC, 1, getLevelDelta_args, 1, &getLevelDelta_return };
-inline constexpr reg::Arg applyLevelDelta_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("delta", MAY_BE_LONG) };
-inline constexpr reg::Arg applyLevelDelta_return = reg::typed("", 0, "PHPStan\\Analyser\\MutatingScope");
-inline constexpr reg::Sig applyLevelDelta = { "applyLevelDelta", ZEND_ACC_PUBLIC, 3, applyLevelDelta_args, 3, &applyLevelDelta_return };
-inline constexpr reg::Arg addDelta_args[] = { reg::typed("levelType", 0, "PHPStan\\Type\\Type"), reg::typed("delta", MAY_BE_LONG) };
-inline constexpr reg::Arg addDelta_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig addDelta = { "addDelta", ZEND_ACC_PRIVATE, 2, addDelta_args, 2, &addDelta_return };
+inline constexpr sigtab::Sig __construct = { { 75 /* __construct */, 1, 0, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getLevelDelta = { { 101 /* getLevelDelta */, 1, 1, 1, 2, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig applyLevelDelta = { { 211 /* applyLevelDelta */, 3, 3, 3, 6, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig addDelta = { { 255 /* addDelta */, 2, 7, 2, 9, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::OutputBufferHelper

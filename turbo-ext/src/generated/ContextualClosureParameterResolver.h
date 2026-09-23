@@ -24,19 +24,49 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("nodeScopeResolver", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\NodeScopeResolver");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"nodeScopeResolver\0" /* 0 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 18 */
+	"__construct\0" /* 53 */
+	"expr\0" /* 65 */
+	"PhpParser\\Node\\Expr\\Closure|PhpParser\\Node\\Expr\\ArrowFunction\0" /* 70 */
+	"\0" /* 132 */
+	"hasIntrinsicArgs\0" /* 133 */
+	"scope\0" /* 150 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 156 */
+	"storage\0" /* 187 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 195 */
+	"passedToType\0" /* 236 */
+	"PHPStan\\Type\\Type\0" /* 249 */
+	"nativePassedToType\0" /* 267 */
+	"PHPStan\\Analyser\\ClosureParameterTypes\0" /* 286 */
+	"resolve\0" /* 325 */
+	"createPassedToTypeParameters"; /* 333 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 18), /* __construct $nodeScopeResolver */
+	reg::packed(65, 0, 70), /* hasIntrinsicArgs $expr */
+	reg::packed(132, MAY_BE_BOOL), /* hasIntrinsicArgs return */
+	reg::packed(150, 0, 156), /* resolve $scope */
+	reg::packed(65, 0, 70), /* resolve $expr */
+	reg::packed(187, MAY_BE_NULL, 195), /* resolve $storage */
+	reg::packed(236, MAY_BE_NULL, 249), /* resolve $passedToType */
+	reg::packed(267, MAY_BE_NULL, 249), /* resolve $nativePassedToType */
+	reg::packed(132, 0, 286), /* resolve return */
+	reg::packed(150, 0, 156), /* createPassedToTypeParameters $scope */
+	reg::packed(236, MAY_BE_NULL, 249), /* createPassedToTypeParameters $passedToType */
+	reg::packed(132, MAY_BE_NULL | MAY_BE_ARRAY), /* createPassedToTypeParameters return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 1, __construct_args, 1, nullptr };
-inline constexpr reg::Arg hasIntrinsicArgs_args[] = { reg::typed("expr", 0, "PhpParser\\Node\\Expr\\Closure|PhpParser\\Node\\Expr\\ArrowFunction") };
-inline constexpr reg::Arg hasIntrinsicArgs_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig hasIntrinsicArgs = { "hasIntrinsicArgs", ZEND_ACC_PUBLIC, 1, hasIntrinsicArgs_args, 1, &hasIntrinsicArgs_return };
-inline constexpr reg::Arg resolve_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("expr", 0, "PhpParser\\Node\\Expr\\Closure|PhpParser\\Node\\Expr\\ArrowFunction"), reg::typed("storage", MAY_BE_NULL, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("passedToType", MAY_BE_NULL, "PHPStan\\Type\\Type"), reg::typed("nativePassedToType", MAY_BE_NULL, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg resolve_return = reg::typed("", 0, "PHPStan\\Analyser\\ClosureParameterTypes");
-inline constexpr reg::Sig resolve = { "resolve", ZEND_ACC_PUBLIC, 5, resolve_args, 5, &resolve_return };
-inline constexpr reg::Arg createPassedToTypeParameters_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("passedToType", MAY_BE_NULL, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg createPassedToTypeParameters_return = reg::typed("", MAY_BE_NULL | MAY_BE_ARRAY);
-inline constexpr reg::Sig createPassedToTypeParameters = { "createPassedToTypeParameters", ZEND_ACC_PRIVATE, 2, createPassedToTypeParameters_args, 2, &createPassedToTypeParameters_return };
+inline constexpr sigtab::Sig __construct = { { 53 /* __construct */, 1, 0, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasIntrinsicArgs = { { 133 /* hasIntrinsicArgs */, 1, 1, 1, 2, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig resolve = { { 325 /* resolve */, 5, 3, 5, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig createPassedToTypeParameters = { { 333 /* createPassedToTypeParameters */, 2, 9, 2, 11, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::ContextualClosureParameterResolver

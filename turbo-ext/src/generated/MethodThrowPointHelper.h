@@ -28,16 +28,58 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("implicitThrows", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_BOOL);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"dynamicMethodThrowTypeExtensions\0" /* 0 */
+	"PHPStan\\DependencyInjection\\ExtensionsCollection\0" /* 33 */
+	"dynamicStaticMethodThrowTypeExtensions\0" /* 82 */
+	"implicitThrows\0" /* 121 */
+	"__construct\0" /* 136 */
+	"methodReflection\0" /* 148 */
+	"PHPStan\\Reflection\\MethodReflection\0" /* 165 */
+	"parametersAcceptor\0" /* 201 */
+	"PHPStan\\Reflection\\ParametersAcceptor\0" /* 220 */
+	"normalizedMethodCall\0" /* 258 */
+	"PhpParser\\Node\\Expr\\MethodCall|PhpParser\\Node\\Expr\\StaticCall\0" /* 279 */
+	"scope\0" /* 341 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 347 */
+	"context\0" /* 378 */
+	"PHPStan\\Analyser\\ExpressionContext\0" /* 386 */
+	"methodCallReturnType\0" /* 421 */
+	"PHPStan\\Type\\Type\0" /* 442 */
+	"\0" /* 460 */
+	"PHPStan\\Analyser\\InternalThrowPoint\0" /* 461 */
+	"getThrowPoint\0" /* 497 */
+	"calledOnType\0" /* 511 */
+	"methodCall\0" /* 524 */
+	"PhpParser\\Node\\Expr\\MethodCall\0" /* 535 */
+	"getThrowPointsForCallOnType"; /* 566 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 33), /* __construct $dynamicMethodThrowTypeExtensions */
+	reg::packed(82, 0, 33), /* __construct $dynamicStaticMethodThrowTypeExtensions */
+	reg::packed(121, MAY_BE_BOOL), /* __construct $implicitThrows */
+	reg::packed(148, 0, 165), /* getThrowPoint $methodReflection */
+	reg::packed(201, 0, 220), /* getThrowPoint $parametersAcceptor */
+	reg::packed(258, 0, 279), /* getThrowPoint $normalizedMethodCall */
+	reg::packed(341, 0, 347), /* getThrowPoint $scope */
+	reg::packed(378, 0, 386), /* getThrowPoint $context */
+	reg::packed(421, 0, 442), /* getThrowPoint $methodCallReturnType */
+	reg::packed(460, MAY_BE_NULL, 461), /* getThrowPoint return */
+	reg::packed(341, 0, 347), /* getThrowPointsForCallOnType $scope */
+	reg::packed(378, 0, 386), /* getThrowPointsForCallOnType $context */
+	reg::packed(511, 0, 442), /* getThrowPointsForCallOnType $calledOnType */
+	reg::packed(524, 0, 535), /* getThrowPointsForCallOnType $methodCall */
+	reg::packed(460, MAY_BE_ARRAY), /* getThrowPointsForCallOnType return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("dynamicMethodThrowTypeExtensions", 0, "PHPStan\\DependencyInjection\\ExtensionsCollection"), reg::typed("dynamicStaticMethodThrowTypeExtensions", 0, "PHPStan\\DependencyInjection\\ExtensionsCollection"), reg::typed("implicitThrows", MAY_BE_BOOL) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 3, __construct_args, 3, nullptr };
-inline constexpr reg::Arg getThrowPoint_args[] = { reg::typed("methodReflection", 0, "PHPStan\\Reflection\\MethodReflection"), reg::typed("parametersAcceptor", 0, "PHPStan\\Reflection\\ParametersAcceptor"), reg::typed("normalizedMethodCall", 0, "PhpParser\\Node\\Expr\\MethodCall|PhpParser\\Node\\Expr\\StaticCall"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("context", 0, "PHPStan\\Analyser\\ExpressionContext"), reg::typed("methodCallReturnType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg getThrowPoint_return = reg::typed("", MAY_BE_NULL, "PHPStan\\Analyser\\InternalThrowPoint");
-inline constexpr reg::Sig getThrowPoint = { "getThrowPoint", ZEND_ACC_PUBLIC, 6, getThrowPoint_args, 6, &getThrowPoint_return };
-inline constexpr reg::Arg getThrowPointsForCallOnType_args[] = { reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("context", 0, "PHPStan\\Analyser\\ExpressionContext"), reg::typed("calledOnType", 0, "PHPStan\\Type\\Type"), reg::typed("methodCall", 0, "PhpParser\\Node\\Expr\\MethodCall") };
-inline constexpr reg::Arg getThrowPointsForCallOnType_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getThrowPointsForCallOnType = { "getThrowPointsForCallOnType", ZEND_ACC_PUBLIC, 4, getThrowPointsForCallOnType_args, 4, &getThrowPointsForCallOnType_return };
+inline constexpr sigtab::Sig __construct = { { 136 /* __construct */, 3, 0, 3, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getThrowPoint = { { 497 /* getThrowPoint */, 6, 3, 6, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getThrowPointsForCallOnType = { { 566 /* getThrowPointsForCallOnType */, 4, 10, 4, 14, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::MethodThrowPointHelper

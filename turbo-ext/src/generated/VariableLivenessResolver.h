@@ -72,36 +72,83 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("returnsByReference", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedBool, 0);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"__construct\0" /* 0 */
+	"function\0" /* 12 */
+	"PhpParser\\Node\\FunctionLike\0" /* 21 */
+	"flow\0" /* 49 */
+	"PHPStan\\Analyser\\VariableFlow\0" /* 54 */
+	"\0" /* 84 */
+	"PHPStan\\Node\\VariableWritesNode\0" /* 85 */
+	"resolve\0" /* 117 */
+	"dead\0" /* 125 */
+	"false\0" /* 130 */
+	"collect\0" /* 136 */
+	"next\0" /* 144 */
+	"context\0" /* 149 */
+	"PHPStan\\Analyser\\VariableFlowContext\0" /* 157 */
+	"liveBefore\0" /* 194 */
+	"binding\0" /* 205 */
+	"PHPStan\\Node\\Variable\\VariableWrite\0" /* 213 */
+	"armed\0" /* 249 */
+	"bindingProbe\0" /* 255 */
+	"name\0" /* 268 */
+	"write\0" /* 273 */
+	"discard\0" /* 279 */
+	"passBindingProbes\0" /* 287 */
+	"offset\0" /* 305 */
+	"offsetKey\0" /* 312 */
+	"compileAccesses\0" /* 322 */
+	"id\0" /* 338 */
+	"observeWrite\0" /* 341 */
+	"resolveDependencies\0" /* 354 */
+	"resolveCoverage"; /* 374 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(12, 0, 21), /* resolve $function */
+	reg::packed(49, MAY_BE_NULL, 54), /* resolve $flow */
+	reg::packed(84, 0, 85), /* resolve return */
+	reg::packed(49, MAY_BE_NULL, 54), /* collect $flow */
+	reg::packed(125, MAY_BE_BOOL, reg::NoString, false, false, 130), /* collect $dead */
+	reg::packed(84, MAY_BE_VOID), /* collect return */
+	reg::packed(49, MAY_BE_NULL, 54), /* liveBefore $flow */
+	reg::packed(144, MAY_BE_ARRAY), /* liveBefore $next */
+	reg::packed(149, 0, 157), /* liveBefore $context */
+	reg::packed(84, MAY_BE_ARRAY), /* liveBefore return */
+	reg::packed(205, 0, 213), /* bindingProbe $binding */
+	reg::packed(249, MAY_BE_BOOL), /* bindingProbe $armed */
+	reg::packed(84, MAY_BE_STRING), /* bindingProbe return */
+	reg::packed(144, MAY_BE_ARRAY), /* passBindingProbes $next */
+	reg::packed(268, MAY_BE_STRING), /* passBindingProbes $name */
+	reg::packed(273, MAY_BE_NULL, 213), /* passBindingProbes $write */
+	reg::packed(279, MAY_BE_BOOL, reg::NoString, false, false, 130), /* passBindingProbes $discard */
+	reg::packed(84, MAY_BE_ARRAY), /* passBindingProbes return */
+	reg::packed(305, 0), /* offsetKey $offset */
+	reg::packed(84, MAY_BE_STRING), /* offsetKey return */
+	reg::packed(84, MAY_BE_VOID), /* compileAccesses return */
+	reg::packed(338, MAY_BE_LONG), /* observeWrite $id */
+	reg::packed(144, MAY_BE_ARRAY), /* observeWrite $next */
+	reg::packed(84, MAY_BE_VOID), /* observeWrite return */
+	reg::packed(84, MAY_BE_VOID), /* resolveDependencies return */
+	reg::packed(84, MAY_BE_VOID), /* resolveCoverage return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PRIVATE, 0, nullptr, 0, nullptr };
-inline constexpr reg::Arg resolve_args[] = { reg::typed("function", 0, "PhpParser\\Node\\FunctionLike"), reg::typed("flow", MAY_BE_NULL, "PHPStan\\Analyser\\VariableFlow") };
-inline constexpr reg::Arg resolve_return = reg::typed("", 0, "PHPStan\\Node\\VariableWritesNode");
-inline constexpr reg::Sig resolve = { "resolve", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, resolve_args, 2, &resolve_return };
-inline constexpr reg::Arg collect_args[] = { reg::typed("flow", MAY_BE_NULL, "PHPStan\\Analyser\\VariableFlow"), reg::typed("dead", MAY_BE_BOOL, nullptr, false, false, "false") };
-inline constexpr reg::Arg collect_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig collect = { "collect", ZEND_ACC_PRIVATE, 1, collect_args, 2, &collect_return };
-inline constexpr reg::Arg liveBefore_args[] = { reg::typed("flow", MAY_BE_NULL, "PHPStan\\Analyser\\VariableFlow"), reg::typed("next", MAY_BE_ARRAY), reg::typed("context", 0, "PHPStan\\Analyser\\VariableFlowContext") };
-inline constexpr reg::Arg liveBefore_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig liveBefore = { "liveBefore", ZEND_ACC_PRIVATE, 3, liveBefore_args, 3, &liveBefore_return };
-inline constexpr reg::Arg bindingProbe_args[] = { reg::typed("binding", 0, "PHPStan\\Node\\Variable\\VariableWrite"), reg::typed("armed", MAY_BE_BOOL) };
-inline constexpr reg::Arg bindingProbe_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig bindingProbe = { "bindingProbe", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 2, bindingProbe_args, 2, &bindingProbe_return };
-inline constexpr reg::Arg passBindingProbes_args[] = { reg::typed("next", MAY_BE_ARRAY), reg::typed("name", MAY_BE_STRING), reg::typed("write", MAY_BE_NULL, "PHPStan\\Node\\Variable\\VariableWrite"), reg::typed("discard", MAY_BE_BOOL, nullptr, false, false, "false") };
-inline constexpr reg::Arg passBindingProbes_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig passBindingProbes = { "passBindingProbes", ZEND_ACC_PRIVATE, 3, passBindingProbes_args, 4, &passBindingProbes_return };
-inline constexpr reg::Arg offsetKey_args[] = { reg::typed("offset", 0) };
-inline constexpr reg::Arg offsetKey_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig offsetKey = { "offsetKey", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 1, offsetKey_args, 1, &offsetKey_return };
-inline constexpr reg::Arg compileAccesses_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig compileAccesses = { "compileAccesses", ZEND_ACC_PRIVATE, 0, nullptr, 0, &compileAccesses_return };
-inline constexpr reg::Arg observeWrite_args[] = { reg::typed("id", MAY_BE_LONG), reg::typed("next", MAY_BE_ARRAY) };
-inline constexpr reg::Arg observeWrite_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig observeWrite = { "observeWrite", ZEND_ACC_PRIVATE, 2, observeWrite_args, 2, &observeWrite_return };
-inline constexpr reg::Arg resolveDependencies_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig resolveDependencies = { "resolveDependencies", ZEND_ACC_PRIVATE, 0, nullptr, 0, &resolveDependencies_return };
-inline constexpr reg::Arg resolveCoverage_return = reg::typed("", MAY_BE_VOID);
-inline constexpr reg::Sig resolveCoverage = { "resolveCoverage", ZEND_ACC_PRIVATE, 0, nullptr, 0, &resolveCoverage_return };
+inline constexpr sigtab::Sig __construct = { { 0 /* __construct */, 0, 0, 0, reg::NoArg, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig resolve = { { 117 /* resolve */, 2, 0, 2, 2, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig collect = { { 136 /* collect */, 1, 3, 2, 5, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig liveBefore = { { 194 /* liveBefore */, 3, 6, 3, 9, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig bindingProbe = { { 255 /* bindingProbe */, 2, 10, 2, 12, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig passBindingProbes = { { 287 /* passBindingProbes */, 3, 13, 4, 17, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig offsetKey = { { 312 /* offsetKey */, 1, 18, 1, 19, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig compileAccesses = { { 322 /* compileAccesses */, 0, 20, 0, 20, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig observeWrite = { { 341 /* observeWrite */, 2, 21, 2, 23, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig resolveDependencies = { { 354 /* resolveDependencies */, 0, 24, 0, 24, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig resolveCoverage = { { 374 /* resolveCoverage */, 0, 25, 0, 25, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::VariableLivenessResolver

@@ -29,34 +29,68 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("value", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_LONG);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"value\0" /* 0 */
+	"__construct\0" /* 6 */
+	"\0" /* 18 */
+	"getLevelValue\0" /* 19 */
+	"PHPStan\\Type\\VerbosityLevel\0" /* 33 */
+	"typeOnly\0" /* 61 */
+	"precise\0" /* 70 */
+	"cache\0" /* 78 */
+	"isTypeOnly\0" /* 84 */
+	"isValue\0" /* 95 */
+	"isPrecise\0" /* 103 */
+	"isCache\0" /* 113 */
+	"acceptingType\0" /* 121 */
+	"PHPStan\\Type\\Type\0" /* 135 */
+	"acceptedType\0" /* 153 */
+	"null\0" /* 166 */
+	"getRecommendedLevelByType\0" /* 171 */
+	"typeOnlyCallback\0" /* 197 */
+	"valueCallback\0" /* 214 */
+	"preciseCallback\0" /* 228 */
+	"cacheCallback\0" /* 244 */
+	"handle"; /* 258 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_LONG), /* __construct $value */
+	reg::packed(18, MAY_BE_LONG), /* getLevelValue return */
+	reg::packed(18, 0, 33), /* typeOnly return */
+	reg::packed(18, 0, 33), /* value return */
+	reg::packed(18, 0, 33), /* precise return */
+	reg::packed(18, 0, 33), /* cache return */
+	reg::packed(18, MAY_BE_BOOL), /* isTypeOnly return */
+	reg::packed(18, MAY_BE_BOOL), /* isValue return */
+	reg::packed(18, MAY_BE_BOOL), /* isPrecise return */
+	reg::packed(18, MAY_BE_BOOL), /* isCache return */
+	reg::packed(121, 0, 135), /* getRecommendedLevelByType $acceptingType */
+	reg::packed(153, MAY_BE_NULL, 135, false, false, 166), /* getRecommendedLevelByType $acceptedType */
+	reg::packed(18, 0, 33), /* getRecommendedLevelByType return */
+	reg::packed(197, MAY_BE_CALLABLE), /* handle $typeOnlyCallback */
+	reg::packed(214, MAY_BE_CALLABLE), /* handle $valueCallback */
+	reg::packed(228, MAY_BE_NULL | MAY_BE_CALLABLE, reg::NoString, false, false, 166), /* handle $preciseCallback */
+	reg::packed(244, MAY_BE_NULL | MAY_BE_CALLABLE, reg::NoString, false, false, 166), /* handle $cacheCallback */
+	reg::packed(18, MAY_BE_STRING), /* handle return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("value", MAY_BE_LONG) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PRIVATE, 1, __construct_args, 1, nullptr };
-inline constexpr reg::Arg getLevelValue_return = reg::typed("", MAY_BE_LONG);
-inline constexpr reg::Sig getLevelValue = { "getLevelValue", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getLevelValue_return };
-inline constexpr reg::Arg typeOnly_return = reg::typed("", 0, "PHPStan\\Type\\VerbosityLevel");
-inline constexpr reg::Sig typeOnly = { "typeOnly", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &typeOnly_return };
-inline constexpr reg::Arg value_return = reg::typed("", 0, "PHPStan\\Type\\VerbosityLevel");
-inline constexpr reg::Sig value = { "value", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &value_return };
-inline constexpr reg::Arg precise_return = reg::typed("", 0, "PHPStan\\Type\\VerbosityLevel");
-inline constexpr reg::Sig precise = { "precise", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &precise_return };
-inline constexpr reg::Arg cache_return = reg::typed("", 0, "PHPStan\\Type\\VerbosityLevel");
-inline constexpr reg::Sig cache = { "cache", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &cache_return };
-inline constexpr reg::Arg isTypeOnly_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isTypeOnly = { "isTypeOnly", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isTypeOnly_return };
-inline constexpr reg::Arg isValue_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isValue = { "isValue", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isValue_return };
-inline constexpr reg::Arg isPrecise_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isPrecise = { "isPrecise", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isPrecise_return };
-inline constexpr reg::Arg isCache_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isCache = { "isCache", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isCache_return };
-inline constexpr reg::Arg getRecommendedLevelByType_args[] = { reg::typed("acceptingType", 0, "PHPStan\\Type\\Type"), reg::typed("acceptedType", MAY_BE_NULL, "PHPStan\\Type\\Type", false, false, "null") };
-inline constexpr reg::Arg getRecommendedLevelByType_return = reg::typed("", 0, "PHPStan\\Type\\VerbosityLevel");
-inline constexpr reg::Sig getRecommendedLevelByType = { "getRecommendedLevelByType", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, getRecommendedLevelByType_args, 2, &getRecommendedLevelByType_return };
-inline constexpr reg::Arg handle_args[] = { reg::typed("typeOnlyCallback", MAY_BE_CALLABLE), reg::typed("valueCallback", MAY_BE_CALLABLE), reg::typed("preciseCallback", MAY_BE_NULL | MAY_BE_CALLABLE, nullptr, false, false, "null"), reg::typed("cacheCallback", MAY_BE_NULL | MAY_BE_CALLABLE, nullptr, false, false, "null") };
-inline constexpr reg::Arg handle_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig handle = { "handle", ZEND_ACC_PUBLIC, 2, handle_args, 4, &handle_return };
+inline constexpr sigtab::Sig __construct = { { 6 /* __construct */, 1, 0, 1, reg::NoArg, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getLevelValue = { { 19 /* getLevelValue */, 0, 1, 0, 1, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig typeOnly = { { 61 /* typeOnly */, 0, 2, 0, 2, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig value = { { 0 /* value */, 0, 3, 0, 3, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig precise = { { 70 /* precise */, 0, 4, 0, 4, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig cache = { { 78 /* cache */, 0, 5, 0, 5, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig isTypeOnly = { { 84 /* isTypeOnly */, 0, 6, 0, 6, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isValue = { { 95 /* isValue */, 0, 7, 0, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isPrecise = { { 103 /* isPrecise */, 0, 8, 0, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isCache = { { 113 /* isCache */, 0, 9, 0, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getRecommendedLevelByType = { { 171 /* getRecommendedLevelByType */, 1, 10, 2, 12, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig handle = { { 258 /* handle */, 2, 13, 4, 17, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::VerbosityLevel

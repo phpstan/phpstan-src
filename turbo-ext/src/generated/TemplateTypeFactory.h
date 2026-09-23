@@ -19,14 +19,45 @@ inline void declareProperties(reg::Class &cls)
 	(void) cls;
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"scope\0" /* 0 */
+	"PHPStan\\Type\\Generic\\TemplateTypeScope\0" /* 6 */
+	"name\0" /* 45 */
+	"bound\0" /* 50 */
+	"PHPStan\\Type\\Type\0" /* 56 */
+	"variance\0" /* 74 */
+	"PHPStan\\Type\\Generic\\TemplateTypeVariance\0" /* 83 */
+	"strategy\0" /* 125 */
+	"PHPStan\\Type\\Generic\\TemplateTypeStrategy\0" /* 134 */
+	"null\0" /* 176 */
+	"default\0" /* 181 */
+	"\0" /* 189 */
+	"PHPStan\\Type\\Generic\\TemplateType\0" /* 190 */
+	"create\0" /* 224 */
+	"tag\0" /* 231 */
+	"PHPStan\\PhpDoc\\Tag\\TemplateTag\0" /* 235 */
+	"fromTemplateTag"; /* 266 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 6), /* create $scope */
+	reg::packed(45, MAY_BE_STRING), /* create $name */
+	reg::packed(50, MAY_BE_NULL, 56), /* create $bound */
+	reg::packed(74, 0, 83), /* create $variance */
+	reg::packed(125, MAY_BE_NULL, 134, false, false, 176), /* create $strategy */
+	reg::packed(181, MAY_BE_NULL, 56, false, false, 176), /* create $default */
+	reg::packed(189, 0, 190), /* create return */
+	reg::packed(0, 0, 6), /* fromTemplateTag $scope */
+	reg::packed(231, 0, 235), /* fromTemplateTag $tag */
+	reg::packed(189, 0, 190), /* fromTemplateTag return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg create_args[] = { reg::typed("scope", 0, "PHPStan\\Type\\Generic\\TemplateTypeScope"), reg::typed("name", MAY_BE_STRING), reg::typed("bound", MAY_BE_NULL, "PHPStan\\Type\\Type"), reg::typed("variance", 0, "PHPStan\\Type\\Generic\\TemplateTypeVariance"), reg::typed("strategy", MAY_BE_NULL, "PHPStan\\Type\\Generic\\TemplateTypeStrategy", false, false, "null"), reg::typed("default", MAY_BE_NULL, "PHPStan\\Type\\Type", false, false, "null") };
-inline constexpr reg::Arg create_return = reg::typed("", 0, "PHPStan\\Type\\Generic\\TemplateType");
-inline constexpr reg::Sig create = { "create", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 4, create_args, 6, &create_return };
-inline constexpr reg::Arg fromTemplateTag_args[] = { reg::typed("scope", 0, "PHPStan\\Type\\Generic\\TemplateTypeScope"), reg::typed("tag", 0, "PHPStan\\PhpDoc\\Tag\\TemplateTag") };
-inline constexpr reg::Arg fromTemplateTag_return = reg::typed("", 0, "PHPStan\\Type\\Generic\\TemplateType");
-inline constexpr reg::Sig fromTemplateTag = { "fromTemplateTag", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, fromTemplateTag_args, 2, &fromTemplateTag_return };
+inline constexpr sigtab::Sig create = { { 224 /* create */, 4, 0, 6, 6, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig fromTemplateTag = { { 266 /* fromTemplateTag */, 2, 7, 2, 9, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::TemplateTypeFactory

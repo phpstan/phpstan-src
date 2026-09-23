@@ -28,29 +28,55 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("resolveTemplateArguments", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_BOOL);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"isTopLevel\0" /* 0 */
+	"foreachUnrollFactor\0" /* 11 */
+	"1\0" /* 31 */
+	"resolveTemplateArguments\0" /* 33 */
+	"true\0" /* 58 */
+	"__construct\0" /* 63 */
+	"\0" /* 75 */
+	"PHPStan\\Analyser\\StatementContext\0" /* 76 */
+	"createTopLevel\0" /* 110 */
+	"createDeep\0" /* 125 */
+	"getForeachUnrollFactor\0" /* 136 */
+	"shouldResolveTemplateArguments\0" /* 159 */
+	"withoutTemplateArgumentResolution\0" /* 190 */
+	"enterDeep\0" /* 224 */
+	"totalKeys\0" /* 234 */
+	"enterUnrolledForeach"; /* 244 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_BOOL), /* __construct $isTopLevel */
+	reg::packed(11, MAY_BE_LONG, reg::NoString, false, false, 31), /* __construct $foreachUnrollFactor */
+	reg::packed(33, MAY_BE_BOOL, reg::NoString, false, false, 58), /* __construct $resolveTemplateArguments */
+	reg::packed(33, MAY_BE_BOOL, reg::NoString, false, false, 58), /* createTopLevel $resolveTemplateArguments */
+	reg::packed(75, 0, 76), /* createTopLevel return */
+	reg::packed(33, MAY_BE_BOOL, reg::NoString, false, false, 58), /* createDeep $resolveTemplateArguments */
+	reg::packed(75, 0, 76), /* createDeep return */
+	reg::packed(75, MAY_BE_BOOL), /* isTopLevel return */
+	reg::packed(75, MAY_BE_LONG), /* getForeachUnrollFactor return */
+	reg::packed(75, MAY_BE_BOOL), /* shouldResolveTemplateArguments return */
+	reg::packed(75, 0, 76), /* withoutTemplateArgumentResolution return */
+	reg::packed(75, 0, 76), /* enterDeep return */
+	reg::packed(234, MAY_BE_LONG), /* enterUnrolledForeach $totalKeys */
+	reg::packed(75, 0, 76), /* enterUnrolledForeach return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("isTopLevel", MAY_BE_BOOL), reg::typed("foreachUnrollFactor", MAY_BE_LONG, nullptr, false, false, "1"), reg::typed("resolveTemplateArguments", MAY_BE_BOOL, nullptr, false, false, "true") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PRIVATE, 1, __construct_args, 3, nullptr };
-inline constexpr reg::Arg createTopLevel_args[] = { reg::typed("resolveTemplateArguments", MAY_BE_BOOL, nullptr, false, false, "true") };
-inline constexpr reg::Arg createTopLevel_return = reg::typed("", 0, "PHPStan\\Analyser\\StatementContext");
-inline constexpr reg::Sig createTopLevel = { "createTopLevel", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, createTopLevel_args, 1, &createTopLevel_return };
-inline constexpr reg::Arg createDeep_args[] = { reg::typed("resolveTemplateArguments", MAY_BE_BOOL, nullptr, false, false, "true") };
-inline constexpr reg::Arg createDeep_return = reg::typed("", 0, "PHPStan\\Analyser\\StatementContext");
-inline constexpr reg::Sig createDeep = { "createDeep", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, createDeep_args, 1, &createDeep_return };
-inline constexpr reg::Arg isTopLevel_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isTopLevel = { "isTopLevel", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isTopLevel_return };
-inline constexpr reg::Arg getForeachUnrollFactor_return = reg::typed("", MAY_BE_LONG);
-inline constexpr reg::Sig getForeachUnrollFactor = { "getForeachUnrollFactor", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getForeachUnrollFactor_return };
-inline constexpr reg::Arg shouldResolveTemplateArguments_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig shouldResolveTemplateArguments = { "shouldResolveTemplateArguments", ZEND_ACC_PUBLIC, 0, nullptr, 0, &shouldResolveTemplateArguments_return };
-inline constexpr reg::Arg withoutTemplateArgumentResolution_return = reg::typed("", 0, "PHPStan\\Analyser\\StatementContext");
-inline constexpr reg::Sig withoutTemplateArgumentResolution = { "withoutTemplateArgumentResolution", ZEND_ACC_PUBLIC, 0, nullptr, 0, &withoutTemplateArgumentResolution_return };
-inline constexpr reg::Arg enterDeep_return = reg::typed("", 0, "PHPStan\\Analyser\\StatementContext");
-inline constexpr reg::Sig enterDeep = { "enterDeep", ZEND_ACC_PUBLIC, 0, nullptr, 0, &enterDeep_return };
-inline constexpr reg::Arg enterUnrolledForeach_args[] = { reg::typed("totalKeys", MAY_BE_LONG) };
-inline constexpr reg::Arg enterUnrolledForeach_return = reg::typed("", 0, "PHPStan\\Analyser\\StatementContext");
-inline constexpr reg::Sig enterUnrolledForeach = { "enterUnrolledForeach", ZEND_ACC_PUBLIC, 1, enterUnrolledForeach_args, 1, &enterUnrolledForeach_return };
+inline constexpr sigtab::Sig __construct = { { 63 /* __construct */, 1, 0, 3, reg::NoArg, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig createTopLevel = { { 110 /* createTopLevel */, 0, 3, 1, 4, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createDeep = { { 125 /* createDeep */, 0, 5, 1, 6, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig isTopLevel = { { 0 /* isTopLevel */, 0, 7, 0, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getForeachUnrollFactor = { { 136 /* getForeachUnrollFactor */, 0, 8, 0, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig shouldResolveTemplateArguments = { { 159 /* shouldResolveTemplateArguments */, 0, 9, 0, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig withoutTemplateArgumentResolution = { { 190 /* withoutTemplateArgumentResolution */, 0, 10, 0, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig enterDeep = { { 224 /* enterDeep */, 0, 11, 0, 11, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig enterUnrolledForeach = { { 244 /* enterUnrolledForeach */, 1, 12, 1, 13, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::StatementContext

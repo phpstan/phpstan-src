@@ -8,14 +8,30 @@
 
 namespace ptdecl::NonGenericTypeTrait {
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"receivedType\0" /* 0 */
+	"PHPStan\\Type\\Type\0" /* 13 */
+	"\0" /* 31 */
+	"PHPStan\\Type\\Generic\\TemplateTypeMap\0" /* 32 */
+	"inferTemplateTypes\0" /* 69 */
+	"positionVariance\0" /* 88 */
+	"PHPStan\\Type\\Generic\\TemplateTypeVariance\0" /* 105 */
+	"getReferencedTemplateTypes"; /* 147 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 13), /* inferTemplateTypes $receivedType */
+	reg::packed(31, 0, 32), /* inferTemplateTypes return */
+	reg::packed(88, 0, 105), /* getReferencedTemplateTypes $positionVariance */
+	reg::packed(31, MAY_BE_ARRAY), /* getReferencedTemplateTypes return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the trait declares itself */
 namespace sig {
-inline constexpr reg::Arg inferTemplateTypes_args[] = { reg::typed("receivedType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg inferTemplateTypes_return = reg::typed("", 0, "PHPStan\\Type\\Generic\\TemplateTypeMap");
-inline constexpr reg::Sig inferTemplateTypes = { "inferTemplateTypes", ZEND_ACC_PUBLIC, 1, inferTemplateTypes_args, 1, &inferTemplateTypes_return };
-inline constexpr reg::Arg getReferencedTemplateTypes_args[] = { reg::typed("positionVariance", 0, "PHPStan\\Type\\Generic\\TemplateTypeVariance") };
-inline constexpr reg::Arg getReferencedTemplateTypes_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getReferencedTemplateTypes = { "getReferencedTemplateTypes", ZEND_ACC_PUBLIC, 1, getReferencedTemplateTypes_args, 1, &getReferencedTemplateTypes_return };
+inline constexpr sigtab::Sig inferTemplateTypes = { { 69 /* inferTemplateTypes */, 1, 0, 1, 1, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getReferencedTemplateTypes = { { 147 /* getReferencedTemplateTypes */, 1, 2, 1, 3, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::NonGenericTypeTrait

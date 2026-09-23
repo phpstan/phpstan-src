@@ -20,13 +20,32 @@ inline void declareProperties(reg::Class &cls)
 	(void) cls;
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"left\0" /* 0 */
+	"PHPStan\\Type\\Generic\\TemplateType\0" /* 5 */
+	"right\0" /* 39 */
+	"PHPStan\\Type\\Type\0" /* 45 */
+	"strictTypes\0" /* 63 */
+	"\0" /* 75 */
+	"PHPStan\\Type\\AcceptsResult\0" /* 76 */
+	"accepts\0" /* 103 */
+	"isArgument"; /* 111 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 5), /* accepts $left */
+	reg::packed(39, 0, 45), /* accepts $right */
+	reg::packed(63, MAY_BE_BOOL), /* accepts $strictTypes */
+	reg::packed(75, 0, 76), /* accepts return */
+	reg::packed(75, MAY_BE_BOOL), /* isArgument return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg accepts_args[] = { reg::typed("left", 0, "PHPStan\\Type\\Generic\\TemplateType"), reg::typed("right", 0, "PHPStan\\Type\\Type"), reg::typed("strictTypes", MAY_BE_BOOL) };
-inline constexpr reg::Arg accepts_return = reg::typed("", 0, "PHPStan\\Type\\AcceptsResult");
-inline constexpr reg::Sig accepts = { "accepts", ZEND_ACC_PUBLIC, 3, accepts_args, 3, &accepts_return };
-inline constexpr reg::Arg isArgument_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isArgument = { "isArgument", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isArgument_return };
+inline constexpr sigtab::Sig accepts = { { 103 /* accepts */, 3, 0, 3, 3, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isArgument = { { 111 /* isArgument */, 0, 4, 0, 4, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::TemplateTypeArgumentStrategy

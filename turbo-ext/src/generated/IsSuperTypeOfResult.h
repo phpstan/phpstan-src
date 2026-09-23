@@ -31,52 +31,96 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("lazyReasons", ZEND_ACC_PUBLIC | ZEND_ACC_READONLY, reg::PropertyKind::Typed, MAY_BE_ARRAY);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"result\0" /* 0 */
+	"PHPStan\\TrinaryLogic\0" /* 7 */
+	"reasons\0" /* 28 */
+	"lazyReasons\0" /* 36 */
+	"[]\0" /* 48 */
+	"__construct\0" /* 51 */
+	"\0" /* 63 */
+	"yes\0" /* 64 */
+	"maybe\0" /* 68 */
+	"no\0" /* 74 */
+	"getReasons\0" /* 77 */
+	"PHPStan\\Type\\IsSuperTypeOfResult\0" /* 88 */
+	"createYes\0" /* 121 */
+	"createNo\0" /* 131 */
+	"createMaybe\0" /* 140 */
+	"value\0" /* 152 */
+	"createFromBoolean\0" /* 158 */
+	"PHPStan\\Type\\AcceptsResult\0" /* 176 */
+	"toAcceptsResult\0" /* 203 */
+	"others\0" /* 219 */
+	"and\0" /* 226 */
+	"or\0" /* 230 */
+	"cb\0" /* 233 */
+	"decorateReasons\0" /* 236 */
+	"operands\0" /* 252 */
+	"extremeIdentity\0" /* 261 */
+	"maxMin\0" /* 277 */
+	"objects\0" /* 284 */
+	"callback\0" /* 292 */
+	"lazyMaxMin\0" /* 301 */
+	"negate\0" /* 312 */
+	"describe"; /* 319 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 7), /* __construct $result */
+	reg::packed(28, MAY_BE_ARRAY), /* __construct $reasons */
+	reg::packed(36, MAY_BE_ARRAY, reg::NoString, false, false, 48), /* __construct $lazyReasons */
+	reg::packed(63, MAY_BE_BOOL), /* yes return */
+	reg::packed(63, MAY_BE_BOOL), /* maybe return */
+	reg::packed(63, MAY_BE_BOOL), /* no return */
+	reg::packed(63, MAY_BE_ARRAY), /* getReasons return */
+	reg::packed(63, 0, 88), /* createYes return */
+	reg::packed(28, MAY_BE_ARRAY, reg::NoString, false, false, 48), /* createNo $reasons */
+	reg::packed(36, MAY_BE_ARRAY, reg::NoString, false, false, 48), /* createNo $lazyReasons */
+	reg::packed(63, 0, 88), /* createNo return */
+	reg::packed(63, 0, 88), /* createMaybe return */
+	reg::packed(152, MAY_BE_BOOL), /* createFromBoolean $value */
+	reg::packed(63, 0, 88), /* createFromBoolean return */
+	reg::packed(63, 0, 176), /* toAcceptsResult return */
+	reg::packed(219, 0, 88, false, true), /* and $others */
+	reg::packed(63, 0, 88), /* and return */
+	reg::packed(219, 0, 88, false, true), /* or $others */
+	reg::packed(63, 0, 88), /* or return */
+	reg::packed(233, MAY_BE_CALLABLE), /* decorateReasons $cb */
+	reg::packed(63, 0, 88), /* decorateReasons return */
+	reg::packed(252, 0, 88, false, true), /* extremeIdentity $operands */
+	reg::packed(63, 0, 88), /* extremeIdentity return */
+	reg::packed(252, 0, 88, false, true), /* maxMin $operands */
+	reg::packed(63, 0, 88), /* maxMin return */
+	reg::packed(284, MAY_BE_ARRAY), /* lazyMaxMin $objects */
+	reg::packed(292, MAY_BE_CALLABLE), /* lazyMaxMin $callback */
+	reg::packed(63, 0, 88), /* lazyMaxMin return */
+	reg::packed(63, 0, 88), /* negate return */
+	reg::packed(63, MAY_BE_STRING), /* describe return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("result", 0, "PHPStan\\TrinaryLogic"), reg::typed("reasons", MAY_BE_ARRAY), reg::typed("lazyReasons", MAY_BE_ARRAY, nullptr, false, false, "[]") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 2, __construct_args, 3, nullptr };
-inline constexpr reg::Arg yes_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig yes = { "yes", ZEND_ACC_PUBLIC, 0, nullptr, 0, &yes_return };
-inline constexpr reg::Arg maybe_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig maybe = { "maybe", ZEND_ACC_PUBLIC, 0, nullptr, 0, &maybe_return };
-inline constexpr reg::Arg no_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig no = { "no", ZEND_ACC_PUBLIC, 0, nullptr, 0, &no_return };
-inline constexpr reg::Arg getReasons_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getReasons = { "getReasons", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getReasons_return };
-inline constexpr reg::Arg createYes_return = reg::typed("", 0, "PHPStan\\Type\\IsSuperTypeOfResult");
-inline constexpr reg::Sig createYes = { "createYes", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &createYes_return };
-inline constexpr reg::Arg createNo_args[] = { reg::typed("reasons", MAY_BE_ARRAY, nullptr, false, false, "[]"), reg::typed("lazyReasons", MAY_BE_ARRAY, nullptr, false, false, "[]") };
-inline constexpr reg::Arg createNo_return = reg::typed("", 0, "PHPStan\\Type\\IsSuperTypeOfResult");
-inline constexpr reg::Sig createNo = { "createNo", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, createNo_args, 2, &createNo_return };
-inline constexpr reg::Arg createMaybe_return = reg::typed("", 0, "PHPStan\\Type\\IsSuperTypeOfResult");
-inline constexpr reg::Sig createMaybe = { "createMaybe", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, nullptr, 0, &createMaybe_return };
-inline constexpr reg::Arg createFromBoolean_args[] = { reg::typed("value", MAY_BE_BOOL) };
-inline constexpr reg::Arg createFromBoolean_return = reg::typed("", 0, "PHPStan\\Type\\IsSuperTypeOfResult");
-inline constexpr reg::Sig createFromBoolean = { "createFromBoolean", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 1, createFromBoolean_args, 1, &createFromBoolean_return };
-inline constexpr reg::Arg toAcceptsResult_return = reg::typed("", 0, "PHPStan\\Type\\AcceptsResult");
-inline constexpr reg::Sig toAcceptsResult = { "toAcceptsResult", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toAcceptsResult_return };
-inline constexpr reg::Arg and__args[] = { reg::typed("others", 0, "PHPStan\\Type\\IsSuperTypeOfResult", false, true) };
-inline constexpr reg::Arg and__return = reg::typed("", 0, "PHPStan\\Type\\IsSuperTypeOfResult");
-inline constexpr reg::Sig and_ = { "and", ZEND_ACC_PUBLIC, 0, and__args, 1, &and__return };
-inline constexpr reg::Arg or__args[] = { reg::typed("others", 0, "PHPStan\\Type\\IsSuperTypeOfResult", false, true) };
-inline constexpr reg::Arg or__return = reg::typed("", 0, "PHPStan\\Type\\IsSuperTypeOfResult");
-inline constexpr reg::Sig or_ = { "or", ZEND_ACC_PUBLIC, 0, or__args, 1, &or__return };
-inline constexpr reg::Arg decorateReasons_args[] = { reg::typed("cb", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg decorateReasons_return = reg::typed("", 0, "PHPStan\\Type\\IsSuperTypeOfResult");
-inline constexpr reg::Sig decorateReasons = { "decorateReasons", ZEND_ACC_PUBLIC, 1, decorateReasons_args, 1, &decorateReasons_return };
-inline constexpr reg::Arg extremeIdentity_args[] = { reg::typed("operands", 0, "PHPStan\\Type\\IsSuperTypeOfResult", false, true) };
-inline constexpr reg::Arg extremeIdentity_return = reg::typed("", 0, "PHPStan\\Type\\IsSuperTypeOfResult");
-inline constexpr reg::Sig extremeIdentity = { "extremeIdentity", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, extremeIdentity_args, 1, &extremeIdentity_return };
-inline constexpr reg::Arg maxMin_args[] = { reg::typed("operands", 0, "PHPStan\\Type\\IsSuperTypeOfResult", false, true) };
-inline constexpr reg::Arg maxMin_return = reg::typed("", 0, "PHPStan\\Type\\IsSuperTypeOfResult");
-inline constexpr reg::Sig maxMin = { "maxMin", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 0, maxMin_args, 1, &maxMin_return };
-inline constexpr reg::Arg lazyMaxMin_args[] = { reg::typed("objects", MAY_BE_ARRAY), reg::typed("callback", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg lazyMaxMin_return = reg::typed("", 0, "PHPStan\\Type\\IsSuperTypeOfResult");
-inline constexpr reg::Sig lazyMaxMin = { "lazyMaxMin", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 2, lazyMaxMin_args, 2, &lazyMaxMin_return };
-inline constexpr reg::Arg negate_return = reg::typed("", 0, "PHPStan\\Type\\IsSuperTypeOfResult");
-inline constexpr reg::Sig negate = { "negate", ZEND_ACC_PUBLIC, 0, nullptr, 0, &negate_return };
-inline constexpr reg::Arg describe_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig describe = { "describe", ZEND_ACC_PUBLIC, 0, nullptr, 0, &describe_return };
+inline constexpr sigtab::Sig __construct = { { 51 /* __construct */, 2, 0, 3, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig yes = { { 64 /* yes */, 0, 3, 0, 3, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig maybe = { { 68 /* maybe */, 0, 4, 0, 4, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig no = { { 74 /* no */, 0, 5, 0, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getReasons = { { 77 /* getReasons */, 0, 6, 0, 6, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig createYes = { { 121 /* createYes */, 0, 7, 0, 7, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createNo = { { 131 /* createNo */, 0, 8, 2, 10, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createMaybe = { { 140 /* createMaybe */, 0, 11, 0, 11, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createFromBoolean = { { 158 /* createFromBoolean */, 1, 12, 1, 13, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig toAcceptsResult = { { 203 /* toAcceptsResult */, 0, 14, 0, 14, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig and_ = { { 226 /* and */, 0, 15, 1, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig or_ = { { 230 /* or */, 0, 17, 1, 18, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig decorateReasons = { { 236 /* decorateReasons */, 1, 19, 1, 20, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig extremeIdentity = { { 261 /* extremeIdentity */, 0, 21, 1, 22, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig maxMin = { { 277 /* maxMin */, 0, 23, 1, 24, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig lazyMaxMin = { { 301 /* lazyMaxMin */, 2, 25, 2, 27, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig negate = { { 312 /* negate */, 0, 28, 0, 28, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig describe = { { 319 /* describe */, 0, 29, 0, 29, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::IsSuperTypeOfResult

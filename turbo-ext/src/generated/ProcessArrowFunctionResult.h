@@ -32,20 +32,46 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("invalidateExpressions", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_ARRAY);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"expressionResult\0" /* 0 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 17 */
+	"arrowFunctionScope\0" /* 51 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 70 */
+	"closureTypeThrowPoints\0" /* 101 */
+	"closureTypeImpurePoints\0" /* 124 */
+	"invalidateExpressions\0" /* 148 */
+	"__construct\0" /* 170 */
+	"\0" /* 182 */
+	"getExpressionResult\0" /* 183 */
+	"getArrowFunctionScope\0" /* 203 */
+	"getClosureTypeThrowPoints\0" /* 225 */
+	"getClosureTypeImpurePoints\0" /* 251 */
+	"getInvalidateExpressions"; /* 278 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 17), /* __construct $expressionResult */
+	reg::packed(51, 0, 70), /* __construct $arrowFunctionScope */
+	reg::packed(101, MAY_BE_ARRAY), /* __construct $closureTypeThrowPoints */
+	reg::packed(124, MAY_BE_ARRAY), /* __construct $closureTypeImpurePoints */
+	reg::packed(148, MAY_BE_ARRAY), /* __construct $invalidateExpressions */
+	reg::packed(182, 0, 17), /* getExpressionResult return */
+	reg::packed(182, 0, 70), /* getArrowFunctionScope return */
+	reg::packed(182, MAY_BE_ARRAY), /* getClosureTypeThrowPoints return */
+	reg::packed(182, MAY_BE_ARRAY), /* getClosureTypeImpurePoints return */
+	reg::packed(182, MAY_BE_ARRAY), /* getInvalidateExpressions return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("expressionResult", 0, "PHPStan\\Analyser\\ExpressionResult"), reg::typed("arrowFunctionScope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("closureTypeThrowPoints", MAY_BE_ARRAY), reg::typed("closureTypeImpurePoints", MAY_BE_ARRAY), reg::typed("invalidateExpressions", MAY_BE_ARRAY) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 5, __construct_args, 5, nullptr };
-inline constexpr reg::Arg getExpressionResult_return = reg::typed("", 0, "PHPStan\\Analyser\\ExpressionResult");
-inline constexpr reg::Sig getExpressionResult = { "getExpressionResult", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getExpressionResult_return };
-inline constexpr reg::Arg getArrowFunctionScope_return = reg::typed("", 0, "PHPStan\\Analyser\\MutatingScope");
-inline constexpr reg::Sig getArrowFunctionScope = { "getArrowFunctionScope", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getArrowFunctionScope_return };
-inline constexpr reg::Arg getClosureTypeThrowPoints_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getClosureTypeThrowPoints = { "getClosureTypeThrowPoints", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getClosureTypeThrowPoints_return };
-inline constexpr reg::Arg getClosureTypeImpurePoints_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getClosureTypeImpurePoints = { "getClosureTypeImpurePoints", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getClosureTypeImpurePoints_return };
-inline constexpr reg::Arg getInvalidateExpressions_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getInvalidateExpressions = { "getInvalidateExpressions", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getInvalidateExpressions_return };
+inline constexpr sigtab::Sig __construct = { { 170 /* __construct */, 5, 0, 5, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getExpressionResult = { { 183 /* getExpressionResult */, 0, 5, 0, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getArrowFunctionScope = { { 203 /* getArrowFunctionScope */, 0, 6, 0, 6, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getClosureTypeThrowPoints = { { 225 /* getClosureTypeThrowPoints */, 0, 7, 0, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getClosureTypeImpurePoints = { { 251 /* getClosureTypeImpurePoints */, 0, 8, 0, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getInvalidateExpressions = { { 278 /* getInvalidateExpressions */, 0, 9, 0, 9, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ProcessArrowFunctionResult

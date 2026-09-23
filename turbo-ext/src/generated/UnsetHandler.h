@@ -27,19 +27,56 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("assignHandler", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExprHandler\\AssignHandler");
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"stmt\0" /* 0 */
+	"PhpParser\\Node\\Stmt\0" /* 5 */
+	"\0" /* 25 */
+	"supports\0" /* 26 */
+	"container\0" /* 35 */
+	"PHPStan\\DependencyInjection\\Container\0" /* 45 */
+	"assignHandler\0" /* 83 */
+	"PHPStan\\Analyser\\ExprHandler\\AssignHandler\0" /* 97 */
+	"__construct\0" /* 140 */
+	"nodeScopeResolver\0" /* 152 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 170 */
+	"scope\0" /* 205 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 211 */
+	"storage\0" /* 242 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 250 */
+	"nodeCallback\0" /* 291 */
+	"context\0" /* 304 */
+	"PHPStan\\Analyser\\StatementContext\0" /* 312 */
+	"PHPStan\\Analyser\\InternalStatementResult\0" /* 346 */
+	"processStmt\0" /* 387 */
+	"type\0" /* 399 */
+	"PHPStan\\Type\\Type\0" /* 404 */
+	"hasDestructionSideEffects"; /* 422 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, 0, 5), /* supports $stmt */
+	reg::packed(25, MAY_BE_BOOL), /* supports return */
+	reg::packed(35, 0, 45), /* __construct $container */
+	reg::packed(83, 0, 97), /* __construct $assignHandler */
+	reg::packed(152, 0, 170), /* processStmt $nodeScopeResolver */
+	reg::packed(0, 0, 5), /* processStmt $stmt */
+	reg::packed(205, 0, 211), /* processStmt $scope */
+	reg::packed(242, 0, 250), /* processStmt $storage */
+	reg::packed(291, MAY_BE_CALLABLE), /* processStmt $nodeCallback */
+	reg::packed(304, 0, 312), /* processStmt $context */
+	reg::packed(25, 0, 346), /* processStmt return */
+	reg::packed(399, 0, 404), /* hasDestructionSideEffects $type */
+	reg::packed(25, MAY_BE_BOOL), /* hasDestructionSideEffects return */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg supports_args[] = { reg::typed("stmt", 0, "PhpParser\\Node\\Stmt") };
-inline constexpr reg::Arg supports_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig supports = { "supports", ZEND_ACC_PUBLIC, 1, supports_args, 1, &supports_return };
-inline constexpr reg::Arg __construct_args[] = { reg::typed("container", 0, "PHPStan\\DependencyInjection\\Container"), reg::typed("assignHandler", 0, "PHPStan\\Analyser\\ExprHandler\\AssignHandler") };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PUBLIC, 2, __construct_args, 2, nullptr };
-inline constexpr reg::Arg processStmt_args[] = { reg::typed("nodeScopeResolver", 0, "PHPStan\\Analyser\\NodeScopeResolver"), reg::typed("stmt", 0, "PhpParser\\Node\\Stmt"), reg::typed("scope", 0, "PHPStan\\Analyser\\MutatingScope"), reg::typed("storage", 0, "PHPStan\\Analyser\\ExpressionResultStorage"), reg::typed("nodeCallback", MAY_BE_CALLABLE), reg::typed("context", 0, "PHPStan\\Analyser\\StatementContext") };
-inline constexpr reg::Arg processStmt_return = reg::typed("", 0, "PHPStan\\Analyser\\InternalStatementResult");
-inline constexpr reg::Sig processStmt = { "processStmt", ZEND_ACC_PUBLIC, 6, processStmt_args, 6, &processStmt_return };
-inline constexpr reg::Arg hasDestructionSideEffects_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg hasDestructionSideEffects_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig hasDestructionSideEffects = { "hasDestructionSideEffects", ZEND_ACC_PRIVATE, 1, hasDestructionSideEffects_args, 1, &hasDestructionSideEffects_return };
+inline constexpr sigtab::Sig supports = { { 26 /* supports */, 1, 0, 1, 1, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig __construct = { { 140 /* __construct */, 2, 2, 2, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processStmt = { { 387 /* processStmt */, 6, 4, 6, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasDestructionSideEffects = { { 422 /* hasDestructionSideEffects */, 1, 11, 1, 12, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::UnsetHandler

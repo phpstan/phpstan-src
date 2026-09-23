@@ -37,50 +37,94 @@ inline void registerTraits(reg::Class &cls)
 	pt_type_trait_non_generalizable(cls);
 }
 
+/* the string and parameter tables the signatures below index into (see reg::Sig) */
+namespace sigtab {
+inline constexpr char strings[] =
+	"items\0" /* 0 */
+	"unsealed\0" /* 6 */
+	"kind\0" /* 15 */
+	"__construct\0" /* 20 */
+	"\0" /* 32 */
+	"PHPStan\\Type\\Type\0" /* 33 */
+	"create\0" /* 51 */
+	"getReferencedClasses\0" /* 58 */
+	"getObjectClassNames\0" /* 79 */
+	"getObjectClassReflections\0" /* 99 */
+	"positionVariance\0" /* 125 */
+	"PHPStan\\Type\\Generic\\TemplateTypeVariance\0" /* 142 */
+	"getReferencedTemplateTypes\0" /* 184 */
+	"type\0" /* 211 */
+	"equals\0" /* 216 */
+	"level\0" /* 223 */
+	"PHPStan\\Type\\VerbosityLevel\0" /* 229 */
+	"describe\0" /* 257 */
+	"isResolvable\0" /* 266 */
+	"getResult\0" /* 279 */
+	"keyType\0" /* 289 */
+	"toArrayKeyType\0" /* 297 */
+	"getUnsealedKeyType\0" /* 312 */
+	"cb\0" /* 331 */
+	"traverse\0" /* 334 */
+	"right\0" /* 343 */
+	"traverseSimultaneously\0" /* 349 */
+	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 372 */
+	"toPhpDocNode\0" /* 411 */
+	"isImplicitMixed\0" /* 424 */
+	"keyNameNode"; /* 440 */
+inline constexpr reg::PackedArg args[] = {
+	reg::packed(0, MAY_BE_ARRAY), /* __construct $items */
+	reg::packed(6, MAY_BE_NULL | MAY_BE_ARRAY), /* __construct $unsealed */
+	reg::packed(15, MAY_BE_STRING), /* __construct $kind */
+	reg::packed(0, MAY_BE_ARRAY), /* create $items */
+	reg::packed(6, MAY_BE_NULL | MAY_BE_ARRAY), /* create $unsealed */
+	reg::packed(15, MAY_BE_STRING), /* create $kind */
+	reg::packed(32, 0, 33), /* create return */
+	reg::packed(32, MAY_BE_ARRAY), /* getReferencedClasses return */
+	reg::packed(32, MAY_BE_ARRAY), /* getObjectClassNames return */
+	reg::packed(32, MAY_BE_ARRAY), /* getObjectClassReflections return */
+	reg::packed(125, 0, 142), /* getReferencedTemplateTypes $positionVariance */
+	reg::packed(32, MAY_BE_ARRAY), /* getReferencedTemplateTypes return */
+	reg::packed(211, 0, 33), /* equals $type */
+	reg::packed(32, MAY_BE_BOOL), /* equals return */
+	reg::packed(223, 0, 229), /* describe $level */
+	reg::packed(32, MAY_BE_STRING), /* describe return */
+	reg::packed(32, MAY_BE_BOOL), /* isResolvable return */
+	reg::packed(32, 0, 33), /* getResult return */
+	reg::packed(289, 0, 33), /* toArrayKeyType $keyType */
+	reg::packed(32, 0, 33), /* toArrayKeyType return */
+	reg::packed(32, 0, 33), /* getUnsealedKeyType return */
+	reg::packed(331, MAY_BE_CALLABLE), /* traverse $cb */
+	reg::packed(32, 0, 33), /* traverse return */
+	reg::packed(343, 0, 33), /* traverseSimultaneously $right */
+	reg::packed(331, MAY_BE_CALLABLE), /* traverseSimultaneously $cb */
+	reg::packed(32, 0, 33), /* traverseSimultaneously return */
+	reg::packed(32, 0, 372), /* toPhpDocNode return */
+	reg::packed(211, 0, 33), /* isImplicitMixed $type */
+	reg::packed(32, MAY_BE_BOOL), /* isImplicitMixed return */
+	reg::packed(289, 0, 33), /* keyNameNode $keyType */
+};
+using Sig = reg::Sig<strings, args>;
+} // namespace sigtab
+
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr reg::Arg __construct_args[] = { reg::typed("items", MAY_BE_ARRAY), reg::typed("unsealed", MAY_BE_NULL | MAY_BE_ARRAY), reg::typed("kind", MAY_BE_STRING) };
-inline constexpr reg::Sig __construct = { "__construct", ZEND_ACC_PRIVATE, 3, __construct_args, 3, nullptr };
-inline constexpr reg::Arg create_args[] = { reg::typed("items", MAY_BE_ARRAY), reg::typed("unsealed", MAY_BE_NULL | MAY_BE_ARRAY), reg::typed("kind", MAY_BE_STRING) };
-inline constexpr reg::Arg create_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig create = { "create", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC, 3, create_args, 3, &create_return };
-inline constexpr reg::Arg getReferencedClasses_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getReferencedClasses = { "getReferencedClasses", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getReferencedClasses_return };
-inline constexpr reg::Arg getObjectClassNames_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getObjectClassNames = { "getObjectClassNames", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getObjectClassNames_return };
-inline constexpr reg::Arg getObjectClassReflections_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getObjectClassReflections = { "getObjectClassReflections", ZEND_ACC_PUBLIC, 0, nullptr, 0, &getObjectClassReflections_return };
-inline constexpr reg::Arg getReferencedTemplateTypes_args[] = { reg::typed("positionVariance", 0, "PHPStan\\Type\\Generic\\TemplateTypeVariance") };
-inline constexpr reg::Arg getReferencedTemplateTypes_return = reg::typed("", MAY_BE_ARRAY);
-inline constexpr reg::Sig getReferencedTemplateTypes = { "getReferencedTemplateTypes", ZEND_ACC_PUBLIC, 1, getReferencedTemplateTypes_args, 1, &getReferencedTemplateTypes_return };
-inline constexpr reg::Arg equals_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg equals_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig equals = { "equals", ZEND_ACC_PUBLIC, 1, equals_args, 1, &equals_return };
-inline constexpr reg::Arg describe_args[] = { reg::typed("level", 0, "PHPStan\\Type\\VerbosityLevel") };
-inline constexpr reg::Arg describe_return = reg::typed("", MAY_BE_STRING);
-inline constexpr reg::Sig describe = { "describe", ZEND_ACC_PUBLIC, 1, describe_args, 1, &describe_return };
-inline constexpr reg::Arg isResolvable_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isResolvable = { "isResolvable", ZEND_ACC_PUBLIC, 0, nullptr, 0, &isResolvable_return };
-inline constexpr reg::Arg getResult_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getResult = { "getResult", ZEND_ACC_PROTECTED, 0, nullptr, 0, &getResult_return };
-inline constexpr reg::Arg toArrayKeyType_args[] = { reg::typed("keyType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg toArrayKeyType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig toArrayKeyType = { "toArrayKeyType", ZEND_ACC_PRIVATE, 1, toArrayKeyType_args, 1, &toArrayKeyType_return };
-inline constexpr reg::Arg getUnsealedKeyType_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig getUnsealedKeyType = { "getUnsealedKeyType", ZEND_ACC_PRIVATE, 0, nullptr, 0, &getUnsealedKeyType_return };
-inline constexpr reg::Arg traverse_args[] = { reg::typed("cb", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg traverse_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig traverse = { "traverse", ZEND_ACC_PUBLIC, 1, traverse_args, 1, &traverse_return };
-inline constexpr reg::Arg traverseSimultaneously_args[] = { reg::typed("right", 0, "PHPStan\\Type\\Type"), reg::typed("cb", MAY_BE_CALLABLE) };
-inline constexpr reg::Arg traverseSimultaneously_return = reg::typed("", 0, "PHPStan\\Type\\Type");
-inline constexpr reg::Sig traverseSimultaneously = { "traverseSimultaneously", ZEND_ACC_PUBLIC, 2, traverseSimultaneously_args, 2, &traverseSimultaneously_return };
-inline constexpr reg::Arg toPhpDocNode_return = reg::typed("", 0, "PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode");
-inline constexpr reg::Sig toPhpDocNode = { "toPhpDocNode", ZEND_ACC_PUBLIC, 0, nullptr, 0, &toPhpDocNode_return };
-inline constexpr reg::Arg isImplicitMixed_args[] = { reg::typed("type", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Arg isImplicitMixed_return = reg::typed("", MAY_BE_BOOL);
-inline constexpr reg::Sig isImplicitMixed = { "isImplicitMixed", ZEND_ACC_PRIVATE, 1, isImplicitMixed_args, 1, &isImplicitMixed_return };
-inline constexpr reg::Arg keyNameNode_args[] = { reg::typed("keyType", 0, "PHPStan\\Type\\Type") };
-inline constexpr reg::Sig keyNameNode = { "keyNameNode", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, 1, keyNameNode_args, 1, nullptr };
+inline constexpr sigtab::Sig __construct = { { 20 /* __construct */, 3, 0, 3, reg::NoArg, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig create = { { 51 /* create */, 3, 3, 3, 6, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig getReferencedClasses = { { 58 /* getReferencedClasses */, 0, 7, 0, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getObjectClassNames = { { 79 /* getObjectClassNames */, 0, 8, 0, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getObjectClassReflections = { { 99 /* getObjectClassReflections */, 0, 9, 0, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getReferencedTemplateTypes = { { 184 /* getReferencedTemplateTypes */, 1, 10, 1, 11, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig equals = { { 216 /* equals */, 1, 12, 1, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig describe = { { 257 /* describe */, 1, 14, 1, 15, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isResolvable = { { 266 /* isResolvable */, 0, 16, 0, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getResult = { { 279 /* getResult */, 0, 17, 0, 17, ZEND_ACC_PROTECTED } };
+inline constexpr sigtab::Sig toArrayKeyType = { { 297 /* toArrayKeyType */, 1, 18, 1, 19, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getUnsealedKeyType = { { 312 /* getUnsealedKeyType */, 0, 20, 0, 20, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig traverse = { { 334 /* traverse */, 1, 21, 1, 22, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig traverseSimultaneously = { { 349 /* traverseSimultaneously */, 2, 23, 2, 25, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toPhpDocNode = { { 411 /* toPhpDocNode */, 0, 26, 0, 26, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isImplicitMixed = { { 424 /* isImplicitMixed */, 1, 27, 1, 28, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig keyNameNode = { { 440 /* keyNameNode */, 1, 29, 1, reg::NoArg, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::LateResolvableArrayShapeType

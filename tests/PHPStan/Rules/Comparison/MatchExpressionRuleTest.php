@@ -516,6 +516,12 @@ class MatchExpressionRuleTest extends RuleTestCase
 	}
 
 	#[RequiresPhp('>= 8.0.0')]
+	public function testBug15289(): void
+	{
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-15289.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
 	public function testClassStringOfGenericClass(): void
 	{
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/class-string-of-generic-class.php'], []);

@@ -445,8 +445,14 @@ class GenericObjectType extends ObjectType
 
 		// Parent handles sealed type exhaustiveness (returning NeverType when all
 		// allowed subtypes are subtracted, or a single remaining subtype).
-		if (!$result instanceof ObjectType || $result->getClassName() !== $this->getClassName()) {
+		if (!$result instanceof ObjectType) {
 			return $result;
+		}
+
+		// The remaining subtype comes back as the sealed tag names it, without
+		// type arguments, and takes the ones this type implies for it.
+		if ($result->getClassName() !== $this->getClassName()) {
+			return self::specializeSubclass($this, $result);
 		}
 
 		return new self($this->getClassName(), $this->types, $subtractedType, null, $this->variances);

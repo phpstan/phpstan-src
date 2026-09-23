@@ -35,6 +35,9 @@ use const PHP_INT_MIN;
 class IntegerRangeType extends IntegerType implements CompoundType
 {
 
+	/** The first float above PHP_INT_MAX: 2^63 on 64-bit builds, 2^31 on 32-bit ones, exact on both. */
+	private const FLOAT_ABOVE_INT_MAX = PHP_INT_MAX + 1.0;
+
 	private function __construct(private ?int $min, private ?int $max)
 	{
 		parent::__construct();
@@ -92,9 +95,11 @@ class IntegerRangeType extends IntegerType implements CompoundType
 			return self::fromInterval(null, $value, -1);
 		}
 
-		// a float never holds PHP_INT_MAX itself, so the first float past the
-		// int range is (float) PHP_INT_MAX: every int is smaller than that
-		if ($value >= PHP_INT_MAX) {
+		// decided on the ceil() about to be cast: comparing $value with PHP_INT_MAX
+		// converts PHP_INT_MAX to float, which rounds it up to 2^63 on 64-bit builds
+		// but keeps it exact on 32-bit ones, where 2147483647.0 is still in range
+		$ceil = ceil($value);
+		if ($ceil >= self::FLOAT_ABOVE_INT_MAX) {
 			return new IntegerType();
 		}
 
@@ -102,7 +107,7 @@ class IntegerRangeType extends IntegerType implements CompoundType
 			return new NeverType();
 		}
 
-		return self::fromInterval(null, (int) ceil($value), -1);
+		return self::fromInterval(null, (int) $ceil, -1);
 	}
 
 	/**
@@ -164,13 +169,13 @@ class IntegerRangeType extends IntegerType implements CompoundType
 			return new IntegerType();
 		}
 
-		// (float) PHP_INT_MAX is already past the int range, so no int
-		// reaches it
-		if ($value >= PHP_INT_MAX) {
+		// decided on the ceil() about to be cast, like createAllSmallerThan()
+		$ceil = ceil($value);
+		if ($ceil >= self::FLOAT_ABOVE_INT_MAX) {
 			return new NeverType();
 		}
 
-		return self::fromInterval((int) ceil($value), null);
+		return self::fromInterval((int) $ceil, null);
 	}
 
 	public function getMin(): ?int

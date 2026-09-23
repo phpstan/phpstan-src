@@ -293,7 +293,7 @@ zv::Val pt_constant_string_get_value(zend_object *object);
 [[nodiscard]] bool pt_call_fci(zend_fcall_info *fci, zend_fcall_info_cache *fcc, uint32_t argc, zval *argv, zval *retval);
 
 /* module startup: the internal helper classes the trait code needs */
-void pt_register_type_traits();
+ZEND_COLD void pt_register_type_traits();
 
 /* }}} */
 

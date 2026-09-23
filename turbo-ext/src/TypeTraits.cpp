@@ -1350,7 +1350,7 @@ void pt_type_trait_constant_numeric_comparison(reg::Class &cls)
 
 /* {{{ module startup */
 
-static void pt_register_native_callback();
+static ZEND_COLD void pt_register_native_callback();
 
 void pt_register_type_traits()
 {

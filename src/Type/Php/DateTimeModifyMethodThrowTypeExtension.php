@@ -46,9 +46,13 @@ final class DateTimeModifyMethodThrowTypeExtension implements DynamicMethodThrow
 
 		foreach ($constantStrings as $constantString) {
 			try {
-				$dateTime = new DateTime();
-				$dateTime->modify($constantString->getValue());
+				$result = @(new DateTime())->modify($constantString->getValue());
 			} catch (Throwable) {
+				$result = false;
+			}
+
+			// PHP < 8.3 runtime returns false instead of throwing
+			if ($result === false) {
 				return $this->exceptionType();
 			}
 

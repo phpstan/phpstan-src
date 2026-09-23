@@ -44,8 +44,13 @@ final class DateIntervalCreateFromDateStringThrowTypeExtension implements Dynami
 
 		foreach ($constantStrings as $constantString) {
 			try {
-				@DateInterval::createFromDateString($constantString->getValue());
+				$result = @DateInterval::createFromDateString($constantString->getValue());
 			} catch (Throwable) {
+				$result = false;
+			}
+
+			// PHP < 8.3 runtime returns false instead of throwing
+			if ($result === false) {
 				return $methodReflection->getThrowType();
 			}
 

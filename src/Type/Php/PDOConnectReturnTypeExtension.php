@@ -18,7 +18,6 @@ use function str_starts_with;
  * @see https://wiki.php.net/rfc/pdo_driver_specific_subclasses
  * @see https://github.com/php/php-src/pull/12804
  */
-// @phpstan-ignore phpstan.phpVersionInjection (PDO subclasses only exist in the runtime when running on PHP 8.4+)
 #[AutowiredService]
 final class PDOConnectReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
 {

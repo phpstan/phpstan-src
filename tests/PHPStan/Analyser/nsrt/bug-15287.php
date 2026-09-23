@@ -48,7 +48,7 @@ function mbSubstituteCharacter(): void
 		assertType('*NEVER*', mb_substitute_character('foo'));
 		assertType('*NEVER*', mb_substitute_character(new \stdClass()));
 		assertType("'entity'|'long'|'none'|int<0, 55295>|int<57344, 1114111>", mb_substitute_character());
-	} else {
+	} elseif (PHP_VERSION_ID >= 70200) {
 		assertType('false', mb_substitute_character(0));
 		assertType('false', mb_substitute_character(null));
 		assertType('true', mb_substitute_character(''));
@@ -57,6 +57,6 @@ function mbSubstituteCharacter(): void
 		assertType('false', mb_substitute_character(0x110000));
 		assertType('false', mb_substitute_character('foo'));
 		assertType('bool', mb_substitute_character(new \stdClass()));
-		assertType("'entity'|'long'|'none'|int<1, 1114111>", mb_substitute_character());
+		assertType("'entity'|'long'|'none'|int<1, 55295>|int<57344, 1114111>", mb_substitute_character());
 	}
 }

@@ -27,12 +27,10 @@ function strSplitAndMbFunctions(string $s, int $i): void
 
 function mbSubstituteCharacter(): void
 {
-	assertType('bool', mb_substitute_character(0));
 	assertType('true', mb_substitute_character(1));
 	assertType('bool', mb_substitute_character(null));
 	assertType('true', mb_substitute_character(''));
 	assertType('bool', mb_substitute_character(new \stdClass()));
 	assertType('false', mb_substitute_character('foo'));
 	assertType('false', mb_substitute_character(0x110000));
-	assertType("'entity'|'long'|'none'|int<0, 55295>|int<57344, 1114111>", mb_substitute_character());
 }

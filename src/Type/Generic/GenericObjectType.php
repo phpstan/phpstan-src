@@ -25,8 +25,10 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function array_keys;
 use function array_map;
 use function count;
+use function get_class;
 use function implode;
 use function sprintf;
 
@@ -448,6 +450,55 @@ class GenericObjectType extends ObjectType
 		}
 
 		return new self($this->getClassName(), $this->types, $subtractedType, null, $this->variances);
+	}
+
+	/**
+	 * Gives $subclass, a class written without type arguments, the ones
+	 * $supertype implies for it through the class's `@extends` and
+	 * `@implements` tags: Some with Option<int> is Some<int>, Err with
+	 * Result<int, string> is Err<string>.
+	 *
+	 * Returns $subclass unchanged unless $supertype is a generic object type
+	 * without call-site variance, $subclass is a generic subtype of its class,
+	 * and $supertype determines every type argument of $subclass - an explicit
+	 * argument would claim more than is known.
+	 */
+	public static function specializeSubclass(Type $supertype, Type $subclass): Type
+	{
+		if (!$supertype instanceof self || get_class($subclass) !== ObjectType::class) {
+			return $subclass;
+		}
+
+		foreach ($supertype->variances as $variance) {
+			if (!$variance->invariant()) {
+				return $subclass;
+			}
+		}
+
+		$classReflection = $subclass->getClassReflection();
+		if ($classReflection === null || !$classReflection->isGeneric()) {
+			return $subclass;
+		}
+
+		$templateTypeMap = $classReflection->getTemplateTypeMap();
+		$ancestor = (new self($classReflection->getName(), $classReflection->typeMapToList($templateTypeMap)))
+			->getAncestorWithClassName($supertype->getClassName());
+		if ($ancestor === null) {
+			return $subclass;
+		}
+
+		$inferredTypeMap = $ancestor->inferTemplateTypes($supertype);
+		foreach (array_keys($templateTypeMap->getTypes()) as $templateName) {
+			if (!$inferredTypeMap->hasType($templateName)) {
+				return $subclass;
+			}
+		}
+
+		return new self(
+			$classReflection->getName(),
+			$classReflection->typeMapToList($inferredTypeMap),
+			$subclass->getSubtractedType(),
+		);
 	}
 
 	public function toPhpDocNode(): TypeNode

@@ -84,6 +84,11 @@ namespace zp {
 
 struct Obj { using type = zval *; };            /* Z_PARAM_OBJECT */
 struct ObjOrNull { using type = zval *; };      /* Z_PARAM_OBJECT_OR_NULL */
+/* a twin's `Type $x` / `?Type $x` parameter: Z_PARAM_OBJECT_OF_CLASS(_OR_NULL)
+ * against the PHPStan\Type\Type interface — the TypeError the twin's typed
+ * parameter raises for any other object */
+struct TypeObj { using type = zval *; };
+struct TypeObjOrNull { using type = zval *; };
 struct Bool { using type = bool; };             /* Z_PARAM_BOOL */
 struct Str { using type = zend_string *; };     /* Z_PARAM_STR */
 struct StrOrNull { using type = zend_string *; }; /* Z_PARAM_STR_OR_NULL */
@@ -140,6 +145,10 @@ constexpr uint32_t required()
 		Z_PARAM_OBJECT(dest) \
 	} else if constexpr (detail::is<K, ObjOrNull>) { \
 		Z_PARAM_OBJECT_OR_NULL(dest) \
+	} else if constexpr (detail::is<K, TypeObj>) { \
+		Z_PARAM_OBJECT_OF_CLASS(dest, pt_ce_type_interface()) \
+	} else if constexpr (detail::is<K, TypeObjOrNull>) { \
+		Z_PARAM_OBJECT_OF_CLASS_OR_NULL(dest, pt_ce_type_interface()) \
 	} else if constexpr (detail::is<K, Bool>) { \
 		Z_PARAM_BOOL(dest) \
 	} else if constexpr (detail::is<K, Str>) { \

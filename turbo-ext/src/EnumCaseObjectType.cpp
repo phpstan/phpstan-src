@@ -509,7 +509,7 @@ static void ZEND_FASTCALL ecotGetEnumCaseName(INTERNAL_FUNCTION_PARAMETERS)
 static void ZEND_FASTCALL ecotEquals(INTERNAL_FUNCTION_PARAMETERS)
 {
 	zval *type;
-	if (!zp::parse<zp::Obj>(execute_data, type)) RETURN_THROWS();
+	if (!zp::parse<zp::TypeObj>(execute_data, type)) RETURN_THROWS();
 	bool equal;
 	if (UNEXPECTED(!PT_THIS.equals(type, equal))) RETURN_THROWS();
 	RETURN_BOOL(equal);

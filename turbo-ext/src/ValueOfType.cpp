@@ -266,14 +266,14 @@ void pt_register_value_of_type()
 	 * declares $result after it */
 	ptdecl::ValueOfType::declareProperties(cls);
 
-	cls.method<&ValueOfType::construct, zp::Obj>(sigs::__construct);
+	cls.method<&ValueOfType::construct, zp::TypeObj>(sigs::__construct);
 
 	cls.method<&ValueOfType::getReferencedClasses>(sigs::getReferencedClasses);
 	cls.op<PT_OP_GET_REFERENCED_CLASSES, &ValueOfType::getReferencedClasses>();
 
 	cls.method<&ValueOfType::getReferencedTemplateTypes, zp::Obj>(sigs::getReferencedTemplateTypes);
 
-	cls.method<&ValueOfType::equals, zp::Obj>(sigs::equals);
+	cls.method<&ValueOfType::equals, zp::TypeObj>(sigs::equals);
 
 	cls.method<&ValueOfType::describe, zp::Obj>(sigs::describe);
 

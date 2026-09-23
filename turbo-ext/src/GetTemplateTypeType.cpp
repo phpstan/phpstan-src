@@ -279,14 +279,14 @@ void pt_register_get_template_type_type()
 	 * registrar declares $result after them */
 	ptdecl::GetTemplateTypeType::declareProperties(cls);
 
-	cls.method<&GetTemplateTypeType::construct, zp::Obj, zp::Str, zp::Str>(sigs::__construct);
+	cls.method<&GetTemplateTypeType::construct, zp::TypeObj, zp::Str, zp::Str>(sigs::__construct);
 
 	cls.method<&GetTemplateTypeType::getReferencedClasses>(sigs::getReferencedClasses);
 	cls.op<PT_OP_GET_REFERENCED_CLASSES, &GetTemplateTypeType::getReferencedClasses>();
 
 	cls.method<&GetTemplateTypeType::getReferencedTemplateTypes, zp::Obj>(sigs::getReferencedTemplateTypes);
 
-	cls.method<&GetTemplateTypeType::equals, zp::Obj>(sigs::equals);
+	cls.method<&GetTemplateTypeType::equals, zp::TypeObj>(sigs::equals);
 
 	cls.method<&GetTemplateTypeType::describe, zp::Obj>(sigs::describe);
 

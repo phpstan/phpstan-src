@@ -8332,9 +8332,9 @@ foreach ([\PHPStan\Analyser\RicherScopeGetTypeHelper::class => 'getIdenticalResu
 	// non-Type value fails at the first method called on it
 	$misuseGoodShape = new \PHPStan\Type\ObjectShapeType(['a' => new \PHPStan\Type\StringType()], []);
 	foreach (['string' => 'x', 'int' => 1, 'null' => null, 'object' => new \stdClass()] as $valueName => $value) {
-		// the engine's "Call to a member function" message names no file; an
-		// object without the method is observed by its class only
-		$withMessage = !is_object($value);
+		// the engine's "Call to a member function" / "Call to undefined
+		// method" messages name no file
+		$withMessage = true;
 		$badShape = new \PHPStan\Type\ObjectShapeType(['a' => $value], []);
 		foreach ([
 			'getReferencedClasses' => static fn () => $badShape->getReferencedClasses(),
@@ -8502,6 +8502,72 @@ foreach ([\PHPStan\Analyser\RicherScopeGetTypeHelper::class => 'getIdenticalResu
 	// countConstantArrayValueTypes() hands each element to TypeTraverser::map(Type $type, ...)
 	foreach (['string' => 'x', 'object' => new \stdClass()] as $elementName => $element) {
 		$r["combinator countConstantArrayValueTypes $elementName"] = $misuse(static fn () => \PHPStan\Type\TypeCombinator::countConstantArrayValueTypes([new \PHPStan\Type\IntegerType(), $element]));
+	}
+
+	// a non-Type object where the twins declare a Type parameter: the
+	// engine's TypeError at the call, never a half-built object or a quiet
+	// answer (constructors and equals() — the engine path of every class)
+	$nonType = new \stdClass();
+	$misuseTemplate = static fn (\PHPStan\Type\Type $bound, ?object $default) => new \PHPStan\Type\Generic\TemplateMixedType(\PHPStan\Type\Generic\TemplateTypeScope::createWithClass('Foo'), new \PHPStan\Type\Generic\TemplateTypeParameterStrategy(), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant(), 'T', $bound, $default);
+	foreach ([
+		'ArrayType keyType' => static fn () => new \PHPStan\Type\ArrayType($nonType, new \PHPStan\Type\StringType()),
+		'ArrayType itemType' => static fn () => new \PHPStan\Type\ArrayType(new \PHPStan\Type\IntegerType(), $nonType),
+		'IterableType keyType' => static fn () => new \PHPStan\Type\IterableType($nonType, new \PHPStan\Type\StringType()),
+		'IterableType itemType' => static fn () => new \PHPStan\Type\IterableType(new \PHPStan\Type\IntegerType(), $nonType),
+		'KeyOfType' => static fn () => new \PHPStan\Type\KeyOfType($nonType),
+		'ValueOfType' => static fn () => new \PHPStan\Type\ValueOfType($nonType),
+		'NewObjectType' => static fn () => new \PHPStan\Type\NewObjectType($nonType),
+		'OffsetAccessType type' => static fn () => new \PHPStan\Type\OffsetAccessType($nonType, new \PHPStan\Type\IntegerType()),
+		'OffsetAccessType offset' => static fn () => new \PHPStan\Type\OffsetAccessType(new \PHPStan\Type\ArrayType(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()), $nonType),
+		'ClassConstantAccessType' => static fn () => new \PHPStan\Type\ClassConstantAccessType($nonType, 'FOO'),
+		'GetTemplateTypeType' => static fn () => new \PHPStan\Type\Helper\GetTemplateTypeType($nonType, \ArrayAccess::class, 'TKey'),
+		'GenericClassStringType' => static fn () => new \PHPStan\Type\Generic\GenericClassStringType($nonType),
+		'ConditionalType subject' => static fn () => new \PHPStan\Type\ConditionalType($nonType, new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType(), new \PHPStan\Type\NullType(), false),
+		'ConditionalType else' => static fn () => new \PHPStan\Type\ConditionalType(new \PHPStan\Type\MixedType(), new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType(), $nonType, false),
+		'ConditionalTypeForParameter target' => static fn () => new \PHPStan\Type\ConditionalTypeForParameter('$x', $nonType, new \PHPStan\Type\StringType(), new \PHPStan\Type\NullType(), false),
+		'MixedType subtractedType' => static fn () => new \PHPStan\Type\MixedType(false, $nonType),
+		'ObjectType subtractedType' => static fn () => new \PHPStan\Type\ObjectType(\stdClass::class, $nonType),
+		'ObjectWithoutClassType subtractedType' => static fn () => new \PHPStan\Type\ObjectWithoutClassType($nonType),
+		'StaticType subtractedType' => static fn () => new \PHPStan\Type\StaticType($misuseStaticReflection, $nonType),
+		'ThisType subtractedType' => static fn () => new \PHPStan\Type\ThisType($misuseStaticReflection, $nonType),
+		'GenericObjectType subtractedType' => static fn () => new \PHPStan\Type\Generic\GenericObjectType(\ArrayIterator::class, [new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()], $nonType),
+		'GenericStaticType subtractedType' => static fn () => new \PHPStan\Type\Generic\GenericStaticType($misuseStaticReflection, [new \PHPStan\Type\IntegerType()], $nonType, []),
+		'CallableType returnType' => static fn () => new \PHPStan\Type\CallableType(null, $nonType),
+		'ClosureType returnType' => static fn () => new \PHPStan\Type\ClosureType(null, $nonType),
+		'HasOffsetValueType valueType' => static fn () => new \PHPStan\Type\Accessory\HasOffsetValueType(new \PHPStan\Type\Constant\ConstantIntegerType(1), $nonType),
+		'TemplateMixedType default' => static fn () => $misuseTemplate(new \PHPStan\Type\MixedType(true), $nonType),
+		'UnresolvedTemplateArgumentType initialType' => static fn () => new \PHPStan\Type\Generic\UnresolvedTemplateArgumentType(new \PhpParser\Node\Expr\Variable('x'), $misuseTemplate(new \PHPStan\Type\MixedType(true), null), $nonType),
+	] as $argumentName => $construct) {
+		$r["non-Type argument $argumentName"] = $misuse($construct);
+	}
+	foreach ([
+		'string' => new \PHPStan\Type\StringType(),
+		'integer' => new \PHPStan\Type\IntegerType(),
+		'constant string' => new \PHPStan\Type\Constant\ConstantStringType('x'),
+		'object' => new \PHPStan\Type\ObjectType(\stdClass::class),
+		'union' => new \PHPStan\Type\UnionType([new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()]),
+		'array' => new \PHPStan\Type\ArrayType(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()),
+		'mixed' => new \PHPStan\Type\MixedType(),
+	] as $equalsName => $equalsType) {
+		$r["non-Type argument $equalsName equals"] = $misuse(static fn () => $equalsType->equals($nonType));
+	}
+
+	// traverse() callbacks returning a non-Type from the types that rebuild
+	// themselves through their own constructors, and TypeTraverser::map()
+	$misuseParameter = new \PHPStan\Reflection\Native\NativeParameterReflection('a', false, new \PHPStan\Type\IntegerType(), \PHPStan\Reflection\PassedByReference::createNo(), false, null);
+	foreach (['string' => 'not-a-type', 'int' => 1, 'object' => new \stdClass()] as $returnedName => $returned) {
+		foreach ([
+			'callable' => new \PHPStan\Type\CallableType([$misuseParameter], new \PHPStan\Type\StringType()),
+			'closure' => new \PHPStan\Type\ClosureType([$misuseParameter], new \PHPStan\Type\StringType()),
+			'genericObject' => new \PHPStan\Type\Generic\GenericObjectType(\ArrayIterator::class, [new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()]),
+			'union' => new \PHPStan\Type\UnionType([new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()]),
+			'array' => new \PHPStan\Type\ArrayType(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()),
+		] as $traversedName => $traversed) {
+			$r["traverse $traversedName returning $returnedName"] = $misuse(static fn () => $traversed->traverse(static fn () => $returned)->describe(\PHPStan\Type\VerbosityLevel::precise()));
+			$r["traverseSimultaneously $traversedName returning $returnedName"] = $misuse(static fn () => $traversed->traverseSimultaneously($traversed, static fn () => $returned)->describe(\PHPStan\Type\VerbosityLevel::precise()));
+		}
+		$r["TypeTraverser map returning $returnedName"] = $misuse(static fn () => \PHPStan\Type\TypeTraverser::map(new \PHPStan\Type\StringType(), static fn () => $returned));
+		$r["TypeTraverser map inner returning $returnedName"] = $misuse(static fn () => \PHPStan\Type\TypeTraverser::map(new \PHPStan\Type\ArrayType(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()), static fn (\PHPStan\Type\Type $type, callable $traverse) => $type instanceof \PHPStan\Type\ArrayType ? $traverse($type) : $returned)->describe(\PHPStan\Type\VerbosityLevel::precise()));
 	}
 
 	foreach ($r as $key => $value) {

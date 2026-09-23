@@ -600,11 +600,25 @@ zval *pt_trinary_singleton(zend_long value)
 
 /* {{{ userland callback helpers */
 
+ZEND_COLD void pt_throw_undefined_method(zend_class_entry *ce, const char *lcname, size_t len)
+{
+	/* the engine names the method as the call spells it; the natives call
+	 * by lowercase name, so a Type method is spelled as the interface
+	 * declares it */
+	const char *name = lcname;
+	zend_class_entry *typeCe = pt_class_loaded(PT_CLASS_TYPE);
+	if (typeCe != NULL) {
+		zend_function *declared = (zend_function *) zend_hash_str_find_ptr(&typeCe->function_table, lcname, len);
+		if (declared != NULL) name = ZSTR_VAL(declared->common.function_name);
+	}
+	zend_throw_error(NULL, "Call to undefined method %s::%s()", ZSTR_VAL(ce->name), name);
+}
+
 zend_function *pt_find_method(zend_class_entry *ce, const char *lcname, size_t len)
 {
 	zend_function *fn = (zend_function *) zend_hash_str_find_ptr(&ce->function_table, lcname, len);
 	if (UNEXPECTED(fn == NULL)) {
-		zend_throw_error(NULL, "phpstan_turbo: method %s::%s not found", ZSTR_VAL(ce->name), lcname);
+		pt_throw_undefined_method(ce, lcname, len);
 	}
 	return fn;
 }
@@ -662,7 +676,7 @@ bool pt_call_scope_bool(zval *scope, const char *lcname, size_t len, uint32_t ar
 	zval ret;
 
 	if (UNEXPECTED(fn == NULL)) {
-		zend_throw_error(NULL, "phpstan_turbo: method %s::%s not found", ZSTR_VAL(ce->name), lcname);
+		pt_throw_undefined_method(ce, lcname, len);
 		return false;
 	}
 	zend_call_known_function(fn, Z_OBJ_P(scope), ce, &ret, argc, argv, NULL);

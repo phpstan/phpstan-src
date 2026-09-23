@@ -1845,7 +1845,7 @@ public:
 			zval arg;
 			ZVAL_COPY_VALUE(&arg, type);
 			zval newType;
-			if (UNEXPECTED(!pt_call_fci(fci, fcc, 1, &arg, &newType))) return zv::Val();
+			if (UNEXPECTED(!pt_call_type_fci(fci, fcc, 1, &arg, &newType))) return zv::Val();
 			if (Z_TYPE(newType) != IS_OBJECT || Z_OBJ(newType) != Z_OBJ_P(type)) {
 				changed = true;
 			}
@@ -1908,7 +1908,7 @@ public:
 				}
 				zv::Args args{innerType, candidate.raw()};
 				zval newType;
-				if (UNEXPECTED(!pt_call_fci(fci, fcc, 2, args, &newType))) {
+				if (UNEXPECTED(!pt_call_type_fci(fci, fcc, 2, args, &newType))) {
 					ok = false;
 					break;
 				}
@@ -3031,7 +3031,7 @@ void pt_register_union_type()
 
 	cls.method<&UnionType::isAcceptedBy, zp::Obj, zp::Bool>(sigs::isAcceptedBy);
 
-	cls.method<&UnionType::equals, zp::Obj>(sigs::equals);
+	cls.method<&UnionType::equals, zp::TypeObj>(sigs::equals);
 	cls.op<PT_OP_EQUALS, &UnionType::equals>();
 
 	cls.method(sigs::describe, utDescribe);

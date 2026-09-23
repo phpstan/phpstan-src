@@ -277,7 +277,7 @@ public:
 			zval arg;
 			ZVAL_COPY_VALUE(&arg, type);
 			zval newType;
-			if (UNEXPECTED(!pt_call_fci(fci, fcc, 1, &arg, &newType))) return zv::Val();
+			if (UNEXPECTED(!pt_call_type_fci(fci, fcc, 1, &arg, &newType))) return zv::Val();
 			if (Z_TYPE(newType) != IS_OBJECT || Z_OBJ(newType) != Z_OBJ_P(type)) {
 				changed = true;
 			}

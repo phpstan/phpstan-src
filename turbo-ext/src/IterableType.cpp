@@ -853,7 +853,7 @@ void pt_register_iterable_type()
 	/* the slots must stay in this order (PT_IT_PROP_*) */
 	ptdecl::IterableType::declareProperties(cls);
 
-	cls.method<&IterableType::construct, zp::Obj, zp::Obj>(sigs::__construct);
+	cls.method<&IterableType::construct, zp::TypeObj, zp::TypeObj>(sigs::__construct);
 
 	cls.method(sigs::getKeyType, itGetKeyType);
 	cls.method(sigs::getItemType, itGetItemType);
@@ -883,7 +883,7 @@ void pt_register_iterable_type()
 		PT_RETURN_VAL(PT_THIS.isAcceptedBy(acceptingType));
 	});
 
-	cls.method<&IterableType::equals, zp::Obj>(sigs::equals);
+	cls.method<&IterableType::equals, zp::TypeObj>(sigs::equals);
 	cls.op<PT_OP_EQUALS, &IterableType::equals>();
 
 	cls.method<&IterableType::describe, zp::Obj>(sigs::describe);

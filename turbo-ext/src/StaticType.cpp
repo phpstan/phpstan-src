@@ -1052,7 +1052,7 @@ void pt_register_static_type()
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *classReflection, *subtractedType = NULL;
-		if (!zp::parse<zp::Obj, zp::Opt<zp::ObjOrNull>>(execute_data, classReflection, subtractedType)) RETURN_THROWS();
+		if (!zp::parse<zp::Obj, zp::Opt<zp::TypeObjOrNull>>(execute_data, classReflection, subtractedType)) RETURN_THROWS();
 		PT_THIS.construct(classReflection, subtractedType);
 	});
 
@@ -1092,7 +1092,7 @@ void pt_register_static_type()
 	cls.method<&StaticType::isSuperTypeOf, zp::Obj>(sigs::isSuperTypeOf);
 	cls.op<PT_OP_IS_SUPER_TYPE_OF, &StaticType::isSuperTypeOf>();
 
-	cls.method<&StaticType::equals, zp::Obj>(sigs::equals);
+	cls.method<&StaticType::equals, zp::TypeObj>(sigs::equals);
 	cls.op<PT_OP_EQUALS, &StaticType::equals>();
 
 	cls.method<&StaticType::describe, zp::Obj>(sigs::describe);

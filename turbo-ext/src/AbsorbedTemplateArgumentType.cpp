@@ -48,7 +48,7 @@ void pt_register_absorbed_template_argument_type()
 
 	cls.method(sigs::equals, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *type;
-		if (!zp::parse<zp::Obj>(execute_data, type)) RETURN_THROWS();
+		if (!zp::parse<zp::TypeObj>(execute_data, type)) RETURN_THROWS();
 		RETURN_BOOL(AbsorbedTemplateArgumentType::equals(type));
 	});
 

@@ -230,7 +230,7 @@ void pt_register_this_type()
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *classReflection, *subtractedType = NULL;
-		if (!zp::parse<zp::Obj, zp::Opt<zp::ObjOrNull>>(execute_data, classReflection, subtractedType)) RETURN_THROWS();
+		if (!zp::parse<zp::Obj, zp::Opt<zp::TypeObjOrNull>>(execute_data, classReflection, subtractedType)) RETURN_THROWS();
 		PT_THIS.construct(classReflection, subtractedType);
 	});
 

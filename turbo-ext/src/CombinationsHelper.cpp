@@ -41,7 +41,7 @@ public:
 			zv::Ref element = entry.value().deref();
 			if (UNEXPECTED(!element.isArray())) {
 				efree(inner);
-				zend_type_error("PHPStanTurbo\\CombinationsHelper::combinations() expects an array of arrays");
+				zend_type_error("%s::combinations() expects an array of arrays", ZSTR_VAL(pt_ce_combinations->name));
 				return false;
 			}
 			inner[i++] = element.raw();

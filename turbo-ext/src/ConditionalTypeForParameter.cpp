@@ -503,7 +503,7 @@ void pt_register_conditional_type_for_parameter()
 		zend_string *parameterName;
 		zval *target, *ifType, *elseType;
 		bool negated;
-		if (!zp::parse<zp::Str, zp::Obj, zp::Obj, zp::Obj, zp::Bool>(execute_data, parameterName, target, ifType, elseType, negated)) RETURN_THROWS();
+		if (!zp::parse<zp::Str, zp::TypeObj, zp::TypeObj, zp::TypeObj, zp::Bool>(execute_data, parameterName, target, ifType, elseType, negated)) RETURN_THROWS();
 		PT_THIS.construct(parameterName, target, ifType, elseType, negated);
 	});
 
@@ -542,7 +542,7 @@ void pt_register_conditional_type_for_parameter()
 
 	cls.method<&ConditionalTypeForParameter::getReferencedTemplateTypes, zp::Obj>(sigs::getReferencedTemplateTypes);
 
-	cls.method<&ConditionalTypeForParameter::equals, zp::Obj>(sigs::equals);
+	cls.method<&ConditionalTypeForParameter::equals, zp::TypeObj>(sigs::equals);
 
 	cls.method<&ConditionalTypeForParameter::describe, zp::Obj>(sigs::describe);
 

@@ -443,7 +443,7 @@ void pt_register_unresolved_template_argument_type()
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *site, *templateType, *initialType;
-		if (!zp::parse<zp::Obj, zp::Obj, zp::ObjOrNull>(execute_data, site, templateType, initialType)) RETURN_THROWS();
+		if (!zp::parse<zp::Obj, zp::Obj, zp::TypeObjOrNull>(execute_data, site, templateType, initialType)) RETURN_THROWS();
 		if (UNEXPECTED(!PT_THIS.construct(site, templateType, initialType))) RETURN_THROWS();
 	});
 
@@ -459,7 +459,7 @@ void pt_register_unresolved_template_argument_type()
 
 	cls.method<&UnresolvedTemplateArgumentType::unwrapBare, zp::Obj>(sigs::unwrapBare);
 
-	cls.method<&UnresolvedTemplateArgumentType::equals, zp::Obj>(sigs::equals);
+	cls.method<&UnresolvedTemplateArgumentType::equals, zp::TypeObj>(sigs::equals);
 
 	cls.method<&UnresolvedTemplateArgumentType::describe, zp::Obj>(sigs::describe);
 

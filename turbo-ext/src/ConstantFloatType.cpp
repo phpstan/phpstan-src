@@ -247,7 +247,7 @@ void pt_register_constant_float_type()
 		RETURN_DOUBLE(value);
 	});
 
-	cls.method<&ConstantFloatType::equals, zp::Obj>(sigs::equals);
+	cls.method<&ConstantFloatType::equals, zp::TypeObj>(sigs::equals);
 	cls.op<PT_OP_EQUALS, &ConstantFloatType::equals>();
 
 	cls.method<&ConstantFloatType::describe, zp::Obj>(sigs::describe);

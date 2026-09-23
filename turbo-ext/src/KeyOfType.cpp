@@ -198,7 +198,7 @@ void pt_register_key_of_type()
 	 * declares $result after it */
 	ptdecl::KeyOfType::declareProperties(cls);
 
-	cls.method<&KeyOfType::construct, zp::Obj>(sigs::__construct);
+	cls.method<&KeyOfType::construct, zp::TypeObj>(sigs::__construct);
 
 	cls.method<&KeyOfType::getType>(sigs::getType);
 
@@ -207,7 +207,7 @@ void pt_register_key_of_type()
 
 	cls.method<&KeyOfType::getReferencedTemplateTypes, zp::Obj>(sigs::getReferencedTemplateTypes);
 
-	cls.method<&KeyOfType::equals, zp::Obj>(sigs::equals);
+	cls.method<&KeyOfType::equals, zp::TypeObj>(sigs::equals);
 
 	cls.method<&KeyOfType::describe, zp::Obj>(sigs::describe);
 

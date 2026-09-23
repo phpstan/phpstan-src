@@ -1435,7 +1435,7 @@ void pt_register_integer_range_type()
 		PT_RETURN_VAL(PT_THIS.isAcceptedBy(acceptingType));
 	});
 
-	cls.method<&IntegerRangeType::equals, zp::Obj>(sigs::equals);
+	cls.method<&IntegerRangeType::equals, zp::TypeObj>(sigs::equals);
 	cls.op<PT_OP_EQUALS, &IntegerRangeType::equals>();
 
 	cls.method(sigs::generalize, [](INTERNAL_FUNCTION_PARAMETERS) {

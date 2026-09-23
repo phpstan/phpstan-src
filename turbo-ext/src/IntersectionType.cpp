@@ -2022,7 +2022,7 @@ public:
 			zval arg;
 			ZVAL_COPY_VALUE(&arg, type);
 			zval newType;
-			if (UNEXPECTED(!pt_call_fci(fci, fcc, 1, &arg, &newType))) return zv::Val();
+			if (UNEXPECTED(!pt_call_type_fci(fci, fcc, 1, &arg, &newType))) return zv::Val();
 			if (Z_TYPE(newType) != IS_OBJECT || Z_OBJ(newType) != Z_OBJ_P(type)) {
 				changed = true;
 			}
@@ -2058,7 +2058,7 @@ public:
 			if (UNEXPECTED(rightKeyType.isUndef())) return zv::Val();
 			zv::Args keyArgs{innerKeyType.raw(), rightKeyType.raw()};
 			zval newKeyRaw;
-			if (UNEXPECTED(!pt_call_fci(fci, fcc, 2, keyArgs, &newKeyRaw))) return zv::Val();
+			if (UNEXPECTED(!pt_call_type_fci(fci, fcc, 2, keyArgs, &newKeyRaw))) return zv::Val();
 			zv::Val newKeyType = zv::Val::adopt(newKeyRaw);
 			zv::Val innerValueType = callType(Z_OBJ_P(innerType), PT_LC("getiterablevaluetype"), 0, NULL);
 			if (UNEXPECTED(innerValueType.isUndef())) return zv::Val();
@@ -2066,7 +2066,7 @@ public:
 			if (UNEXPECTED(rightValueType.isUndef())) return zv::Val();
 			zv::Args valueArgs{innerValueType.raw(), rightValueType.raw()};
 			zval newValueRaw;
-			if (UNEXPECTED(!pt_call_fci(fci, fcc, 2, valueArgs, &newValueRaw))) return zv::Val();
+			if (UNEXPECTED(!pt_call_type_fci(fci, fcc, 2, valueArgs, &newValueRaw))) return zv::Val();
 			zv::Val newValueType = zv::Val::adopt(newValueRaw);
 			/* $newKeyType === $innerType->getIterableKeyType() && $newValueType === $innerType->getIterableValueType() */
 			zv::Val keyAgain = callType(Z_OBJ_P(innerType), PT_LC("getiterablekeytype"), 0, NULL);
@@ -3254,7 +3254,7 @@ void pt_register_intersection_type()
 	cls.op<PT_OP_IS_SUB_TYPE_OF, &IntersectionType::isSubTypeOf>();
 	cls.method<&IntersectionType::isAcceptedBy, zp::Obj, zp::Bool>(sigs::isAcceptedBy);
 
-	cls.method<&IntersectionType::equals, zp::Obj>(sigs::equals);
+	cls.method<&IntersectionType::equals, zp::TypeObj>(sigs::equals);
 	cls.op<PT_OP_EQUALS, &IntersectionType::equals>();
 
 	cls.method<&IntersectionType::describe, zp::Obj>(sigs::describe);

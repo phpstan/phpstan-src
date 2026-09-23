@@ -3634,7 +3634,7 @@ void pt_register_object_type()
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *className;
 		zval *subtractedType = NULL, *classReflection = NULL;
-		if (!zp::parse<zp::Str, zp::Opt<zp::ObjOrNull>, zp::Opt<zp::ObjOrNull>>(execute_data, className, subtractedType, classReflection)) RETURN_THROWS();
+		if (!zp::parse<zp::Str, zp::Opt<zp::TypeObjOrNull>, zp::Opt<zp::ObjOrNull>>(execute_data, className, subtractedType, classReflection)) RETURN_THROWS();
 		PT_THIS.construct(className, subtractedType, classReflection);
 	});
 
@@ -3682,7 +3682,7 @@ void pt_register_object_type()
 	cls.method(sigs::isSuperTypeOf, otIsSuperTypeOf);
 	cls.op<PT_OP_IS_SUPER_TYPE_OF, &ObjectType::isSuperTypeOf>();
 
-	cls.method<&ObjectType::equals, zp::Obj>(sigs::equals);
+	cls.method<&ObjectType::equals, zp::TypeObj>(sigs::equals);
 	cls.op<PT_OP_EQUALS, &ObjectType::equals>();
 
 	cls.method<&ObjectType::describe, zp::Obj>(sigs::describe);

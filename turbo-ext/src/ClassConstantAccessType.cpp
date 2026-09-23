@@ -217,14 +217,14 @@ void pt_register_class_constant_access_type()
 	 * declares $result after them */
 	ptdecl::ClassConstantAccessType::declareProperties(cls);
 
-	cls.method<&ClassConstantAccessType::construct, zp::Obj, zp::Str>(sigs::__construct);
+	cls.method<&ClassConstantAccessType::construct, zp::TypeObj, zp::Str>(sigs::__construct);
 
 	cls.method<&ClassConstantAccessType::getReferencedClasses>(sigs::getReferencedClasses);
 	cls.op<PT_OP_GET_REFERENCED_CLASSES, &ClassConstantAccessType::getReferencedClasses>();
 
 	cls.method<&ClassConstantAccessType::getReferencedTemplateTypes, zp::Obj>(sigs::getReferencedTemplateTypes);
 
-	cls.method<&ClassConstantAccessType::equals, zp::Obj>(sigs::equals);
+	cls.method<&ClassConstantAccessType::equals, zp::TypeObj>(sigs::equals);
 
 	cls.method<&ClassConstantAccessType::describe, zp::Obj>(sigs::describe);
 

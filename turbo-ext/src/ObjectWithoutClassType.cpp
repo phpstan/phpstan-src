@@ -370,7 +370,7 @@ void pt_register_object_without_class_type()
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *subtractedType = NULL;
-		if (!zp::parse<zp::Opt<zp::ObjOrNull>>(execute_data, subtractedType)) RETURN_THROWS();
+		if (!zp::parse<zp::Opt<zp::TypeObjOrNull>>(execute_data, subtractedType)) RETURN_THROWS();
 		PT_THIS.construct(subtractedType);
 	});
 
@@ -389,7 +389,7 @@ void pt_register_object_without_class_type()
 	cls.method<&ObjectWithoutClassType::isSuperTypeOf, zp::Obj>(sigs::isSuperTypeOf);
 	cls.op<PT_OP_IS_SUPER_TYPE_OF, &ObjectWithoutClassType::isSuperTypeOf>();
 
-	cls.method<&ObjectWithoutClassType::equals, zp::Obj>(sigs::equals);
+	cls.method<&ObjectWithoutClassType::equals, zp::TypeObj>(sigs::equals);
 	cls.op<PT_OP_EQUALS, &ObjectWithoutClassType::equals>();
 
 	cls.method<&ObjectWithoutClassType::describe, zp::Obj>(sigs::describe);

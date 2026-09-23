@@ -7305,7 +7305,7 @@ void pt_register_constant_array_type()
 
 	cls.method(sigs::equals, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *type;
-		if (!zp::parse<zp::Obj>(execute_data, type)) RETURN_THROWS();
+		if (!zp::parse<zp::TypeObj>(execute_data, type)) RETURN_THROWS();
 		PT_RETURN_BOOL_OR_THROW(PT_THIS.equals(type, pt_out__));
 	});
 	cls.op<PT_OP_EQUALS, &ConstantArrayType::equals>();

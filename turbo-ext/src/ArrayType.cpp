@@ -2070,7 +2070,7 @@ void pt_register_array_type()
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *keyType, *itemType;
-		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, keyType, itemType)) RETURN_THROWS();
+		if (!zp::parse<zp::TypeObj, zp::TypeObj>(execute_data, keyType, itemType)) RETURN_THROWS();
 		if (UNEXPECTED(!ArrayType::checkType(keyType, "__construct", 1, "keyType") || !ArrayType::checkType(itemType, "__construct", 2, "itemType"))) {
 			RETURN_THROWS();
 		}
@@ -2103,7 +2103,7 @@ void pt_register_array_type()
 	cls.method<&ArrayType::isSuperTypeOf, zp::Obj>(sigs::isSuperTypeOf);
 	cls.op<PT_OP_IS_SUPER_TYPE_OF, &ArrayType::isSuperTypeOf>();
 
-	cls.method<&ArrayType::equals, zp::Obj>(sigs::equals);
+	cls.method<&ArrayType::equals, zp::TypeObj>(sigs::equals);
 	cls.op<PT_OP_EQUALS, &ArrayType::equals>();
 
 	cls.method<&ArrayType::describe, zp::Obj>(sigs::describe);

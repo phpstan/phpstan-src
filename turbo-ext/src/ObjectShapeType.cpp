@@ -1330,7 +1330,7 @@ void pt_register_object_shape_type()
 
 	cls.method<&ObjectShapeType::isSuperTypeOf, zp::Obj>(sigs::isSuperTypeOf);
 
-	cls.method<&ObjectShapeType::equals, zp::Obj>(sigs::equals);
+	cls.method<&ObjectShapeType::equals, zp::TypeObj>(sigs::equals);
 
 	cls.method<&ObjectShapeType::tryRemove, zp::Obj>(sigs::tryRemove);
 

@@ -648,7 +648,7 @@ public:
 			subtractedType = thisGetSubtractedType();
 			if (UNEXPECTED(subtractedType.isUndef())) return zv::Val();
 			zval result;
-			if (UNEXPECTED(!pt_call_fci(fci, fcc, 1, subtractedType.raw(), &result))) return zv::Val();
+			if (UNEXPECTED(!pt_call_type_fci(fci, fcc, 1, subtractedType.raw(), &result))) return zv::Val();
 			newSubtractedType = zv::Val::adopt(result);
 		} else {
 			newSubtractedType = zv::Val::null();
@@ -661,7 +661,7 @@ public:
 		for (zv::ArrayEntry entry : zv::ArrRef(types)) {
 			zv::Ref type = entry.value().deref();
 			zval result;
-			if (UNEXPECTED(!pt_call_fci(fci, fcc, 1, type.raw(), &result))) return zv::Val();
+			if (UNEXPECTED(!pt_call_type_fci(fci, fcc, 1, type.raw(), &result))) return zv::Val();
 			zv::Val newType = zv::Val::adopt(result);
 			bool same = zend_is_identical(newType.raw(), type.raw());
 			newTypes.push(std::move(newType));
@@ -710,7 +710,7 @@ public:
 			if (UNEXPECTED(rightType.isUndef())) return zv::Val();
 			zv::Args args{leftType.raw(), rightType.raw()};
 			zval result;
-			if (UNEXPECTED(!pt_call_fci(fci, fcc, 2, args, &result))) return zv::Val();
+			if (UNEXPECTED(!pt_call_type_fci(fci, fcc, 2, args, &result))) return zv::Val();
 			zv::Val newType = zv::Val::adopt(result);
 			bool same = zend_is_identical(newType.raw(), leftType.raw());
 			newTypes.push(std::move(newType));
@@ -1077,7 +1077,7 @@ void pt_register_generic_object_type()
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *mainType;
 		zval *types, *subtractedType = NULL, *classReflection = NULL, *variances = NULL;
-		if (!zp::parse<zp::Str, zp::Arr, zp::Opt<zp::ObjOrNull>, zp::Opt<zp::ObjOrNull>, zp::Opt<zp::Arr>>(execute_data, mainType, types, subtractedType, classReflection, variances)) RETURN_THROWS();
+		if (!zp::parse<zp::Str, zp::Arr, zp::Opt<zp::TypeObjOrNull>, zp::Opt<zp::ObjOrNull>, zp::Opt<zp::Arr>>(execute_data, mainType, types, subtractedType, classReflection, variances)) RETURN_THROWS();
 		PT_THIS.construct(mainType, types, subtractedType, classReflection, variances);
 	});
 
@@ -1086,7 +1086,7 @@ void pt_register_generic_object_type()
 	});
 	cls.op<PT_OP_DESCRIBE, &GenericObjectType::describe>();
 
-	cls.method<&GenericObjectType::equals, zp::Obj>(sigs::equals);
+	cls.method<&GenericObjectType::equals, zp::TypeObj>(sigs::equals);
 	cls.op<PT_OP_EQUALS, &GenericObjectType::equals>();
 
 	cls.method(sigs::getReferencedClasses, [](INTERNAL_FUNCTION_PARAMETERS) {

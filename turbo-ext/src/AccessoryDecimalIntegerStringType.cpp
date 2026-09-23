@@ -592,7 +592,7 @@ void pt_register_accessory_decimal_integer_string_type()
 		PT_RETURN_VAL(PT_THIS.isAcceptedBy(acceptingType));
 	});
 
-	cls.method<&AccessoryDecimalIntegerStringType::equals, zp::Obj>(sigs::equals);
+	cls.method<&AccessoryDecimalIntegerStringType::equals, zp::TypeObj>(sigs::equals);
 	cls.op<PT_OP_EQUALS, &AccessoryDecimalIntegerStringType::equals>();
 
 	cls.method(sigs::describe, [](INTERNAL_FUNCTION_PARAMETERS) {

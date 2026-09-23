@@ -517,7 +517,7 @@ public:
 		zv::Val returnType = thisReturnType();
 		if (UNEXPECTED(returnType.isUndef())) return zv::Val();
 		zval traversedReturnTypeRaw;
-		if (UNEXPECTED(!pt_call_fci(fci, fcc, 1, returnType.raw(), &traversedReturnTypeRaw))) return zv::Val();
+		if (UNEXPECTED(!pt_call_type_fci(fci, fcc, 1, returnType.raw(), &traversedReturnTypeRaw))) return zv::Val();
 		zv::Val traversedReturnType = zv::Val::adopt(traversedReturnTypeRaw);
 		int variadic = thisIsVariadic();
 		if (UNEXPECTED(variadic < 0)) return zv::Val();
@@ -568,7 +568,7 @@ public:
 		if (UNEXPECTED(rightReturnType.isUndef())) return zv::Val();
 		zv::Args typeArgs{returnType.raw(), rightReturnType.raw()};
 		zval traversedReturnTypeRaw;
-		if (UNEXPECTED(!pt_call_fci(fci, fcc, 2, typeArgs, &traversedReturnTypeRaw))) return zv::Val();
+		if (UNEXPECTED(!pt_call_type_fci(fci, fcc, 2, typeArgs, &traversedReturnTypeRaw))) return zv::Val();
 		zv::Val traversedReturnType = zv::Val::adopt(traversedReturnTypeRaw);
 		int variadic = thisIsVariadic();
 		if (UNEXPECTED(variadic < 0)) return zv::Val();
@@ -922,7 +922,7 @@ void pt_register_closure_type()
 	cls.method<&ClosureType::isSuperTypeOf, zp::Obj>(sigs::isSuperTypeOf);
 	cls.op<PT_OP_IS_SUPER_TYPE_OF, &ClosureType::isSuperTypeOf>();
 
-	cls.method<&ClosureType::equals, zp::Obj>(sigs::equals);
+	cls.method<&ClosureType::equals, zp::TypeObj>(sigs::equals);
 	cls.op<PT_OP_EQUALS, &ClosureType::equals>();
 
 	cls.method(sigs::describe, cltDescribe);

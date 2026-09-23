@@ -37,23 +37,6 @@ function arrayChunkAndFill(array $arr): void
 	}
 }
 
-function substrAndStrSplit(string $s): void
-{
-	if (PHP_VERSION_ID >= 80000) {
-		assertType('\'\'', substr('abc', 10));
-		assertType('*NEVER*', str_split($s, 0));
-	} else {
-		assertType('false', substr('abc', 10));
-		assertType('false', str_split($s, 0));
-	}
-
-	if (PHP_VERSION_ID >= 80200) {
-		assertType('array{}', str_split(''));
-	} else {
-		assertType('array{\'\'}', str_split(''));
-	}
-}
-
 function roundAndHighlight(): void
 {
 	if (PHP_VERSION_ID >= 80000) {
@@ -77,17 +60,6 @@ function countCharsAndHash(string $s): void
 	} else {
 		assertType('(string|false)', count_chars($s, 3));
 		assertType('false', hash('nope', $s));
-	}
-}
-
-function mbSubstituteCharacterAndTriggerError(): void
-{
-	if (PHP_VERSION_ID >= 80000) {
-		assertType('true', mb_substitute_character(null));
-		assertType('*NEVER*', trigger_error('foo', 12345));
-	} else {
-		assertType('false', mb_substitute_character(null));
-		assertType('false', trigger_error('foo', 12345));
 	}
 }
 

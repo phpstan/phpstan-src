@@ -541,7 +541,7 @@ void pt_register_generic_class_string_type()
 	/* "type" must stay the first declared property (slots::type) */
 	ptdecl::GenericClassStringType::declareProperties(cls);
 
-	cls.method<&GenericClassStringType::construct, zp::Obj>(sigs::__construct);
+	cls.method<&GenericClassStringType::construct, zp::TypeObj>(sigs::__construct);
 
 	cls.method<&GenericClassStringType::getReferencedClasses>(sigs::getReferencedClasses);
 	cls.op<PT_OP_GET_REFERENCED_CLASSES, &GenericClassStringType::getReferencedClasses>();
@@ -597,7 +597,7 @@ void pt_register_generic_class_string_type()
 	cls.method<&GenericClassStringType::getReferencedTemplateTypes, zp::Obj>(sigs::getReferencedTemplateTypes);
 	cls.op<PT_OP_GET_REFERENCED_TEMPLATE_TYPES, &GenericClassStringType::getReferencedTemplateTypes>();
 
-	cls.method<&GenericClassStringType::equals, zp::Obj>(sigs::equals);
+	cls.method<&GenericClassStringType::equals, zp::TypeObj>(sigs::equals);
 	cls.op<PT_OP_EQUALS, &GenericClassStringType::equals>();
 
 	cls.method<&GenericClassStringType::toPhpDocNode>(sigs::toPhpDocNode);

@@ -27,12 +27,16 @@ void pt_register_php_file_cleaner()
 {
 	reg::Class cls("PHPStan\\Reflection\\BetterReflection\\SourceLocator\\PhpFileCleaner");
 	ptdecl::PhpFileCleaner::declareClass(cls);
+	/* the twin's scanner state; the native clean() keeps its own in the C++
+	 * scanner, so the properties stay at their defaults ($rejectChars,
+	 * which the twin's constructor computes, uninitialized) */
+	ptdecl::PhpFileCleaner::declareProperties(cls);
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 	});
 
-	cls.method("clean", reg::Public, 2, { reg::stringArg("contents"), reg::longArg("maxMatches") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::clean, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *contents;
 		zend_long maxMatches;
 		if (!zp::parse<zp::Str, zp::Long>(execute_data, contents, maxMatches)) RETURN_THROWS();

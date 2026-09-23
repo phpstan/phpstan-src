@@ -158,8 +158,12 @@ private:
 	static void transformStaticTypeCallback(zval *thisZv, zval *state1, uint32_t argc, zval *argv, zval *return_value)
 	{
 		(void) state1;
-		if (UNEXPECTED(argc < 1 || Z_TYPE(argv[0]) != IS_OBJECT)) {
+		if (UNEXPECTED(argc < 1)) {
 			zend_argument_count_error("Too few arguments to function %s::{closure}(), %u passed and exactly 1 expected", ZSTR_VAL(pt_ce_called_on_type_unresolved_method_prototype_reflection->name), argc);
+			return;
+		}
+		if (UNEXPECTED(Z_TYPE(argv[0]) != IS_OBJECT)) {
+			zend_type_error("%s::{closure}(): Argument #1 ($type) must be of type %s, %s given", ZSTR_VAL(pt_ce_called_on_type_unresolved_method_prototype_reflection->name), ptcls::type, zend_zval_value_name(&argv[0]));
 			return;
 		}
 		zv::Val result = transformStaticType(Z_OBJ_P(thisZv), &argv[0]);
@@ -175,8 +179,12 @@ private:
 	static void traverse(zval *thisZv, zval *state1, uint32_t argc, zval *argv, zval *return_value)
 	{
 		(void) state1;
-		if (UNEXPECTED(argc < 2 || Z_TYPE(argv[0]) != IS_OBJECT)) {
+		if (UNEXPECTED(argc < 2)) {
 			zend_argument_count_error("Too few arguments to function %s::{closure}(), %u passed and exactly 2 expected", ZSTR_VAL(pt_ce_called_on_type_unresolved_method_prototype_reflection->name), argc);
+			return;
+		}
+		if (UNEXPECTED(Z_TYPE(argv[0]) != IS_OBJECT)) {
+			zend_type_error("%s::{closure}(): Argument #1 ($type) must be of type %s, %s given", ZSTR_VAL(pt_ce_called_on_type_unresolved_method_prototype_reflection->name), ptcls::type, zend_zval_value_name(&argv[0]));
 			return;
 		}
 		CalledOnTypeUnresolvedMethodPrototypeReflection self(Z_OBJ_P(thisZv));

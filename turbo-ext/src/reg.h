@@ -84,6 +84,11 @@ namespace zp {
 
 struct Obj { using type = zval *; };            /* Z_PARAM_OBJECT */
 struct ObjOrNull { using type = zval *; };      /* Z_PARAM_OBJECT_OR_NULL */
+/* a twin's `Type $x` / `?Type $x` parameter: Z_PARAM_OBJECT_OF_CLASS(_OR_NULL)
+ * against the PHPStan\Type\Type interface — the TypeError the twin's typed
+ * parameter raises for any other object */
+struct TypeObj { using type = zval *; };
+struct TypeObjOrNull { using type = zval *; };
 struct Bool { using type = bool; };             /* Z_PARAM_BOOL */
 struct Str { using type = zend_string *; };     /* Z_PARAM_STR */
 struct StrOrNull { using type = zend_string *; }; /* Z_PARAM_STR_OR_NULL */
@@ -140,6 +145,10 @@ constexpr uint32_t required()
 		Z_PARAM_OBJECT(dest) \
 	} else if constexpr (detail::is<K, ObjOrNull>) { \
 		Z_PARAM_OBJECT_OR_NULL(dest) \
+	} else if constexpr (detail::is<K, TypeObj>) { \
+		Z_PARAM_OBJECT_OF_CLASS(dest, pt_ce_type_interface()) \
+	} else if constexpr (detail::is<K, TypeObjOrNull>) { \
+		Z_PARAM_OBJECT_OF_CLASS_OR_NULL(dest, pt_ce_type_interface()) \
 	} else if constexpr (detail::is<K, Bool>) { \
 		Z_PARAM_BOOL(dest) \
 	} else if constexpr (detail::is<K, Str>) { \
@@ -427,6 +436,7 @@ enum class PropertyKind
 	TypedBool, /* a `private bool $x = false` typed property with a bool default; defaultValue carries the default (0/1), the type is bool */
 	TypedLong, /* a `private int $x = 0` typed property with an int default; defaultValue carries the default, the type is int */
 	TypedFalse, /* a typed property defaulting to false (`private string|false|null $x = false`, `private Foo|false|null $x = false`); defaultValue carries the MAY_BE_* mask (the scalar members next to a class name), className as for Typed */
+	TypedString, /* a `private string $x = '...'` typed property with a string default; stringValue carries the default, the type is string */
 };
 
 struct Property
@@ -436,6 +446,7 @@ struct Property
 	uint32_t visibility;
 	zend_long defaultValue;
 	const char *className = nullptr; /* persistent literal: the class of a class-typed property (Typed* kinds), combined with a MAY_BE_NULL bit in defaultValue for `?Foo` */
+	const char *stringValue = nullptr; /* persistent literal: the default of a TypedString property */
 };
 
 struct Constant
@@ -566,6 +577,19 @@ inline void declareMembers(zend_class_entry *ce, const std::vector<Property> &pr
 				zval defaultValue;
 				ZVAL_BOOL(&defaultValue, property.defaultValue != 0);
 				zend_type type = (zend_type) ZEND_TYPE_INIT_MASK(MAY_BE_BOOL);
+				zend_declare_typed_property(ce, nameStr, &defaultValue, property.visibility, NULL, type);
+				zend_string_release(nameStr);
+				break;
+			}
+			case PropertyKind::TypedString: {
+				/* the default interned like a compiled literal: a user class's
+				 * defaults are released with the class, an internal class's
+				 * must persist */
+				bool persistent = ce->type == ZEND_INTERNAL_CLASS;
+				zend_string *nameStr = zend_string_init(property.name, len, persistent);
+				zval defaultValue;
+				ZVAL_STR(&defaultValue, zend_string_init_interned(property.stringValue, strlen(property.stringValue), persistent));
+				zend_type type = (zend_type) ZEND_TYPE_INIT_MASK(MAY_BE_STRING);
 				zend_declare_typed_property(ce, nameStr, &defaultValue, property.visibility, NULL, type);
 				zend_string_release(nameStr);
 				break;
@@ -1212,6 +1236,15 @@ public:
 	Class &privateTypedLongProperty(const char *propertyName, zend_long defaultValue)
 	{
 		properties.push_back({ propertyName, PropertyKind::TypedLong, ZEND_ACC_PRIVATE, defaultValue });
+		return *this;
+	}
+
+	/* a `private string $x = '...'` typed property with a string default of
+	 * any visibility (visibility as for property()); defaultValue is a
+	 * persistent literal */
+	Class &typedStringProperty(const char *propertyName, uint32_t visibility, const char *defaultValue)
+	{
+		properties.push_back({ propertyName, PropertyKind::TypedString, visibility, 0, nullptr, defaultValue });
 		return *this;
 	}
 

@@ -1568,6 +1568,23 @@ foreach ($ttvFactories as $ttvLeft) {
 		check($ttvPhp[$ttvLeft]->validPosition($ttvPhp[$ttvRight]) === $ttvNative[$ttvLeft]->validPosition($ttvNative[$ttvRight]), "TemplateTypeVariance $ttvLeft validPosition $ttvRight");
 	}
 }
+
+// the flyweights' private create(): the singleton the public factory hands
+// out, on both sides
+$flyweightCreate = static fn (string $class, ?int $value): object => \Closure::bind(static fn () => $class::create($value), null, $class)();
+$flyweights = [
+	'TemplateTypeVariance' => [\PHPStan\Type\Generic\TemplateTypeVariance::class, \PHPStanTurbo\TemplateTypeVariance::class, [1 => 'createInvariant', 2 => 'createCovariant', 3 => 'createContravariant', 4 => 'createStatic', 5 => 'createBivariant']],
+	'PassedByReference' => [\PHPStan\Reflection\PassedByReference::class, \PHPStanTurbo\PassedByReference::class, [1 => 'createNo', 2 => 'createReadsArgument', 3 => 'createCreatesNewVariable']],
+	'TypeSpecifierContext' => [\PHPStan\Analyser\TypeSpecifierContext::class, \PHPStanTurbo\TypeSpecifierContext::class, [0b0001 => 'createTrue', 0b0011 => 'createTruthy', 0b0100 => 'createFalse', 0b1100 => 'createFalsey', -1 => 'createNull']],
+	'TrinaryLogic' => [\PHPStan\TrinaryLogic::class, \PHPStanTurbo\TrinaryLogic::class, [3 => 'createYes', 1 => 'createMaybe', 0 => 'createNo']],
+];
+foreach ($flyweights as $flyweightName => [$flyweightPhp, $flyweightNative, $flyweightFactories]) {
+	foreach ($flyweightFactories as $flyweightValue => $flyweightFactory) {
+		$flyweightValue = $flyweightValue === -1 ? null : $flyweightValue;
+		check($flyweightCreate($flyweightPhp, $flyweightValue) === $flyweightPhp::$flyweightFactory(), "$flyweightName::create() is $flyweightFactory()'s singleton in PHP");
+		check($flyweightCreate($flyweightNative, $flyweightValue) === $flyweightNative::$flyweightFactory(), "$flyweightName::create() is $flyweightFactory()'s singleton natively");
+	}
+}
 $ttvErrors = static function (string $class): array {
 	$errors = [];
 	try {
@@ -4320,6 +4337,180 @@ check($vwoResults['php']['int'] === ['value', 5] && $vwoResults['php']['numeric 
 // the stack-backed operand readers the native callers hand the resolver,
 // kept by PHP collaborators and called after the call returned
 require __DIR__ . '/initializer-escape.php';
+
+// ---- lane infra ----
+
+// ConstantArrayType::isValidIdentifier() is Nette's Strings::match(): a
+// run-time PCRE failure is its RegexpException with preg_last_error()'s
+// message and code
+$liIdentifierResults = [];
+$liJit = ini_get('pcre.jit');
+$liBacktrackLimit = ini_get('pcre.backtrack_limit');
+ini_set('pcre.jit', '0');
+ini_set('pcre.backtrack_limit', '1');
+foreach (['php' => \PHPStan\Type\Constant\ConstantArrayType::class, 'native' => \PHPStanTurbo\ConstantArrayType::class] as $liSide => $liClass) {
+	try {
+		$liIdentifierResults[$liSide] = $liClass::isValidIdentifier('abcdef');
+	} catch (\Throwable $e) {
+		$liIdentifierResults[$liSide] = [get_class($e), $e->getCode(), $e->getMessage()];
+	}
+}
+ini_set('pcre.jit', $liJit);
+ini_set('pcre.backtrack_limit', $liBacktrackLimit);
+check($liIdentifierResults['php'] === $liIdentifierResults['native'], 'ConstantArrayType::isValidIdentifier() on a PCRE failure: ' . json_encode($liIdentifierResults));
+
+// ---- lane engine: misuse parity ----
+// wrong arguments to the native glue: the twin's TypeError (or other
+// Throwable) must come out, not a crash or a silently accepted value
+$lemOutcome = static function (callable $callback) use ($turboNorm): array {
+	try {
+		$value = $callback();
+		return ['ok', is_object($value) ? $turboNorm(get_class($value)) : $value];
+	} catch (\Throwable $e) {
+		return [get_class($e), $turboNorm(preg_replace('~, called in .*$~', '', $e->getMessage()))];
+	}
+};
+$lemResults = [];
+foreach (['php' => '\\PHPStan\\Analyser\\', 'native' => '\\PHPStanTurbo\\'] as $lemSide => $lemNs) {
+	$lemStorageClass = $lemNs . 'ExpressionResultStorage';
+	$lemStackClass = $lemNs . 'ExpressionResultStorageStack';
+	$lemResults[$lemSide] = [
+		'storage mergeResults(stdClass)' => $lemOutcome(static fn () => (new $lemStorageClass())->mergeResults(new \stdClass())),
+		'storage storeExpressionResult(expr, stdClass)' => $lemOutcome(static fn () => (new $lemStorageClass())->storeExpressionResult(new \PhpParser\Node\Scalar\Int_(1), new \stdClass())),
+		'storage storeExpressionResult(stmt, result)' => $lemOutcome(static fn () => (new $lemStorageClass())->storeExpressionResult(new \PhpParser\Node\Stmt\Nop(), $makeResult())),
+		'storage findExpressionResult(stdClass)' => $lemOutcome(static fn () => (new $lemStorageClass())->findExpressionResult(new \stdClass())),
+		'stack push(stdClass)' => $lemOutcome(static fn () => (new $lemStackClass())->push(new \stdClass())),
+		// ksort() orders a negative integer key first
+		'reorderArgs(negative key)' => $lemOutcome(static function () use ($lemNs): array {
+			$normalizer = $lemNs === '\\PHPStanTurbo\\' ? \PHPStanTurbo\ArgumentsNormalizer::class : \PHPStan\Analyser\ArgumentsNormalizer::class;
+			$args = [
+				-1 => new \PhpParser\Node\Arg(new \PhpParser\Node\Scalar\Int_(10)),
+				0 => new \PhpParser\Node\Arg(new \PhpParser\Node\Scalar\Int_(20)),
+				1 => new \PhpParser\Node\Arg(new \PhpParser\Node\Scalar\Int_(30), false, false, [], new \PhpParser\Node\Identifier('b')),
+			];
+			$reordered = $normalizer::reorderArgs(new \PHPStan\Reflection\TrivialParametersAcceptor(), $args);
+			return $reordered === null ? [] : array_map(static fn (\PhpParser\Node\Arg $arg): int => $arg->value->value, $reordered);
+		}),
+	];
+}
+foreach ($lemResults['php'] as $lemLabel => $lemPhp) {
+	check($lemPhp === $lemResults['native'][$lemLabel], "misuse parity ($lemLabel): " . json_encode($lemPhp) . ' vs ' . json_encode($lemResults['native'][$lemLabel]));
+}
+
+$lemExtension = getenv('TURBO_DLL');
+if (!is_string($lemExtension) || $lemExtension === '') {
+	$lemExtension = __DIR__ . '/../phpstan_turbo.so';
+}
+// misuse of the engine classes, which cannot be declared next to their twins:
+// the probes run in a child process per implementation (the native classes
+// under their real names, or none), each answering the outcome of every probe
+$lemProbeTemplate = <<<'CHILD'
+<?php declare(strict_types = 1);
+$root = __ROOT__;
+require $root . '/vendor/autoload.php';
+if (__NATIVE__) {
+	$twinFiles = [];
+	foreach (json_decode(file_get_contents($root . '/vendor/turbo-shadowed-classes.json'), true) as $className => $entry) {
+		$twinFiles[$className] = $root . '/' . $entry['php'];
+	}
+	\PHPStanTurbo\Runtime::configure(require $root . '/vendor/turbo-class-map.php');
+	\PHPStanTurbo\Runtime::activateShadowing($twinFiles);
+}
+$containerFactory = new \PHPStan\DependencyInjection\ContainerFactory($root);
+$container = $containerFactory->create(sys_get_temp_dir() . '/phpstan-turbo-smoke-lane-engine', [$containerFactory->getConfigDirectory() . '/config.level8.neon'], []);
+$outcome = static function (callable $callback): array {
+	$warnings = [];
+	set_error_handler(static function (int $level, string $message) use (&$warnings): bool {
+		$warnings[] = [$level, $message];
+		return true;
+	});
+	try {
+		$value = $callback();
+		$result = ['ok', is_object($value) ? get_class($value) : $value];
+	} catch (\Throwable $e) {
+		$result = [get_class($e), preg_replace('~, called in .*$~', '', $e->getMessage())];
+	} finally {
+		restore_error_handler();
+	}
+	if ($warnings !== []) {
+		$result[] = $warnings;
+	}
+	return $result;
+};
+$scope = $container->getByType(\PHPStan\Analyser\ScopeFactory::class)->create(\PHPStan\Analyser\ScopeContext::create(__FILE__));
+$probes = (static function () use ($container, $outcome, $scope): array {
+__BODY__
+})();
+$probes['native'] = (new \ReflectionMethod(\PHPStan\Analyser\StatementsHandler::class, 'doProcessStmtNodes'))->isInternal();
+echo json_encode($probes), "\n";
+CHILD;
+$lemProbe = static function (string $body) use ($lemProbeTemplate, $lemExtension): array {
+	$outcomes = [];
+	foreach (['php' => false, 'native' => true] as $mode => $native) {
+		$script = tempnam(sys_get_temp_dir(), 'phpstan-turbo-lane-engine-');
+		file_put_contents($script, strtr($lemProbeTemplate, ['__ROOT__' => var_export(dirname(__DIR__, 2), true), '__NATIVE__' => $native ? 'true' : 'false', '__BODY__' => $body]));
+		$output = [];
+		exec(sprintf('%s -d memory_limit=-1 -d extension=%s %s 2>&1', escapeshellarg(PHP_BINARY), escapeshellarg($lemExtension), escapeshellarg($script)), $output, $exitCode);
+		unlink($script);
+		$decoded = $exitCode === 0 ? json_decode((string) end($output), true) : null;
+		$outcomes[$mode] = is_array($decoded) ? $decoded : ['exit code' => $exitCode, 'output' => implode("\n", $output)];
+	}
+	return $outcomes;
+};
+$lemEngineProbes = $lemProbe(<<<'BODY'
+	$handler = $container->getByType(\PHPStan\Analyser\StatementsHandler::class);
+	$nodeScopeResolver = $container->getByType(\PHPStan\Analyser\NodeScopeResolver::class);
+	$doProcess = static fn (array $stmts) => $handler->doProcessStmtNodes($nodeScopeResolver, new \PhpParser\Node\Stmt\Nop(), $stmts, $scope, new \PHPStan\Analyser\ExpressionResultStorage(), static function (): void {
+	}, \PHPStan\Analyser\StatementContext::createTopLevel());
+	return [
+		'doProcessStmtNodes(stdClass)' => $outcome(static fn () => $doProcess([new \stdClass()])),
+		'doProcessStmtNodes(string)' => $outcome(static fn () => $doProcess(['echo'])),
+		'doProcessStmtNodes(expr)' => $outcome(static fn () => $doProcess([new \PhpParser\Node\Expr\Variable('x')])),
+		// statement nodes built by hand with foreign elements
+		'if with a foreign elseif' => $outcome(static fn () => $doProcess([new \PhpParser\Node\Stmt\If_(new \PhpParser\Node\Expr\Variable('x'), ['elseifs' => ['elseif']])])),
+		'switch with a foreign case' => $outcome(static fn () => $doProcess([new \PhpParser\Node\Stmt\Switch_(new \PhpParser\Node\Expr\Variable('x'), ['case'])])),
+		'try with a foreign catch' => $outcome(static fn () => $doProcess([new \PhpParser\Node\Stmt\TryCatch([], ['catch'])])),
+		'try with a foreign catch type' => $outcome(static fn () => $doProcess([new \PhpParser\Node\Stmt\TryCatch([], [new \PhpParser\Node\Stmt\Catch_(['type'])])])),
+	] + (static function () use ($container, $outcome, $scope, $nodeScopeResolver): array {
+		// the @api entry points of TypeSpecifier and PropertyHooksProcessor
+		$typeSpecifier = $container->getByType(\PHPStan\Analyser\TypeSpecifier::class);
+		$expr = new \PhpParser\Node\Expr\Variable('x');
+		$truthy = \PHPStan\Analyser\TypeSpecifierContext::createTruthy();
+		$wrong = new \stdClass();
+		$hooks = $container->getByType(\PHPStan\Analyser\PropertyHooksProcessor::class);
+		$property = new \PhpParser\Node\Stmt\Property(0, [new \PhpParser\Node\PropertyItem('p')]);
+		$storage = new \PHPStan\Analyser\ExpressionResultStorage();
+		$callback = static function (): void {
+		};
+		return [
+			'specifyTypesInCondition(wrong scope)' => $outcome(static fn () => $typeSpecifier->specifyTypesInCondition($wrong, $expr, $truthy)),
+			'specifyTypesInCondition(wrong expr)' => $outcome(static fn () => $typeSpecifier->specifyTypesInCondition($scope, $wrong, $truthy)),
+			'specifyTypesInCondition(wrong context)' => $outcome(static fn () => $typeSpecifier->specifyTypesInCondition($scope, $expr, $wrong)),
+			'specifyDefaultTypes(wrong context)' => $outcome(static fn () => $typeSpecifier->specifyDefaultTypes($scope, $expr, $wrong)),
+			'handleDefaultTruthyOrFalseyContext(wrong context)' => $outcome(static fn () => $typeSpecifier->handleDefaultTruthyOrFalseyContext($wrong, $expr, $scope)),
+			'handleDefaultTruthyOrFalseyContext(wrong scope)' => $outcome(static fn () => $typeSpecifier->handleDefaultTruthyOrFalseyContext($truthy, $expr, $wrong)),
+			'create(wrong expr)' => $outcome(static fn () => $typeSpecifier->create($wrong, new \PHPStan\Type\IntegerType(), $truthy, $scope)),
+			'create(wrong type)' => $outcome(static fn () => $typeSpecifier->create($expr, $wrong, $truthy, $scope)),
+			'create(wrong context)' => $outcome(static fn () => $typeSpecifier->create($expr, new \PHPStan\Type\IntegerType(), $wrong, $scope)),
+			'create(wrong scope)' => $outcome(static fn () => $typeSpecifier->create($expr, new \PHPStan\Type\IntegerType(), $truthy, $wrong)),
+			'processPropertyHooks(wrong resolver)' => $outcome(static fn () => $hooks->processPropertyHooks($wrong, $property, null, null, 'p', [], $scope, $storage, $callback)),
+			'processPropertyHooks(wrong stmt)' => $outcome(static fn () => $hooks->processPropertyHooks($nodeScopeResolver, $expr, null, null, 'p', [], $scope, $storage, $callback)),
+			'processPropertyHooks(wrong type node)' => $outcome(static fn () => $hooks->processPropertyHooks($nodeScopeResolver, $property, $wrong, null, 'p', [], $scope, $storage, $callback)),
+			'processPropertyHooks(type node expr)' => $outcome(static fn () => $hooks->processPropertyHooks($nodeScopeResolver, $property, $expr, null, 'p', [], $scope, $storage, $callback)),
+			'processPropertyHooks(wrong phpdoc type)' => $outcome(static fn () => $hooks->processPropertyHooks($nodeScopeResolver, $property, null, $wrong, 'p', [], $scope, $storage, $callback)),
+			'processPropertyHooks(wrong scope)' => $outcome(static fn () => $hooks->processPropertyHooks($nodeScopeResolver, $property, null, null, 'p', [], $wrong, $storage, $callback)),
+			'processPropertyHooks(wrong storage)' => $outcome(static fn () => $hooks->processPropertyHooks($nodeScopeResolver, $property, null, null, 'p', [], $scope, $wrong, $callback)),
+			'processPropertyHooks(not callable)' => $outcome(static fn () => $hooks->processPropertyHooks($nodeScopeResolver, $property, null, null, 'p', [], $scope, $storage, 'no_such_function')),
+			'processPropertyHooks(fine)' => $outcome(static fn () => $hooks->processPropertyHooks($nodeScopeResolver, $property, new \PhpParser\Node\Identifier('int'), null, 'p', [], $scope, $storage, $callback)),
+		];
+	})();
+BODY);
+$lemEngineNative = $lemEngineProbes['native']['native'] ?? null;
+unset($lemEngineProbes['native']['native'], $lemEngineProbes['php']['native']);
+check($lemEngineNative === true, 'misuse parity: the engine probes ran the native classes: ' . json_encode($lemEngineProbes['native']));
+foreach ($lemEngineProbes['php'] as $lemLabel => $lemPhp) {
+	check($lemPhp === ($lemEngineProbes['native'][$lemLabel] ?? null), "misuse parity ($lemLabel): " . json_encode($lemPhp) . ' vs ' . json_encode($lemEngineProbes['native'][$lemLabel] ?? $lemEngineProbes['native']));
+}
 
 // ---- differential coverage completeness ----
 // Every shadowed class must be exercised by one of the tests/ scripts; the

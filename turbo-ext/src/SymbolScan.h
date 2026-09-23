@@ -98,6 +98,13 @@ inline bool shortOpenTagEnabled()
 	return CG(short_tags) != 0;
 }
 
+/* whether the lexer skips a leading "#!" line — the CLI sets it for the
+ * whole request, so php_strip_whitespace() skips it too */
+inline bool skipShebangEnabled()
+{
+	return CG(skip_shebang);
+}
+
 /* first bytes of the keywords the symbol matcher can start a branch on */
 static const struct KeywordStartTable {
 	bool bytes[256];
@@ -474,234 +481,969 @@ inline void PhpFileCleaner::clean(zend_long maxMatches, std::string &out)
 
 
 
-/* {{{ stage 1 — php_strip_whitespace() equivalent */
-
-/* Bytes that can start a construct the stripper must understand. */
-static const struct StripTable {
-	bool bytes[256];
-
-	StripTable() : bytes()
-	{
-		for (const char *p = "?/#'\"`<"; *p != '\0'; p++) {
-			bytes[(unsigned char) *p] = true;
-		}
-	}
-} pt_strip_table;
+/* {{{ stage 1 — php_strip_whitespace() */
 
 /*
- * Removes comments the way php_strip_whitespace() does — emitting nothing in
- * their place, so the bytes around them become adjacent — while copying
- * everything else through verbatim. The twin's stripper also collapses each
- * whitespace run to a single space; that is deliberately not reproduced,
- * because every consumer downstream matches whitespace with \s+ or \s* and
- * cannot tell the difference, and copying spans verbatim is faster.
+ * Produces php_strip_whitespace()'s output byte for byte: zend_strip() over
+ * the engine's lexer. The exact bytes matter — the cleaner skips a // comment
+ * to the next newline and pairs quotes naively, so a newline zend_strip()
+ * collapses into a space, or the "\n" it writes after a heredoc's closing
+ * label, decides which symbols survive. zend_strip() drops comments, writes
+ * one space for a whitespace token (none for a run that only a comment
+ * interrupted), writes every other token verbatim, and after T_END_HEREDOC
+ * writes the next token verbatim unless it is whitespace — a comment
+ * included — followed by "\n".
  *
- * Unlike the cleaner, this stage has to know real lexer rules: # comments
- * (but not #[ attributes), line comments ending at ?>, and backtick strings.
+ * So this is a port of the lexer rules (Zend/zend_language_scanner.l) that
+ * zend_strip() can observe: the states and the state stack (strings with
+ * {$...}/${...} interpolation, heredoc/nowdoc, variable offsets, property
+ * lookups, brace nesting), where whitespace and comments start, the tokens
+ * that swallow whitespace or comments (casts, `yield from`), and the length
+ * of any token that can follow a closing heredoc label. Tokens are otherwise
+ * copied as source spans, coalesced so a run of them is one append.
  */
 class CommentStripper
 {
 public:
-	CommentStripper(const char *contents, size_t len, bool shortOpenTag)
-		: contents(contents), len(len), index(0), shortOpenTag(shortOpenTag) {}
+	CommentStripper(const char *contents, size_t len, bool shortOpenTag, bool skipShebang)
+		: contents(contents), len(len), shortOpenTag(shortOpenTag), skipShebang(skipShebang) {}
 
 	void strip(std::string &out);
 
 private:
+	enum State : unsigned char {
+		INITIAL,
+		IN_SCRIPTING,
+		LOOKING_FOR_PROPERTY,
+		DOUBLE_QUOTES,
+		BACKQUOTE,
+		HEREDOC,
+		NOWDOC,
+		END_HEREDOC,
+		VAR_OFFSET,
+		LOOKING_FOR_VARNAME,
+	};
+
+	enum Kind : unsigned char {
+		END,
+		WHITESPACE,
+		COMMENT,
+		END_HEREDOC_TOKEN,
+		OTHER,
+	};
+
+	struct HeredocLabel {
+		size_t label;
+		size_t length;
+		size_t indentation;
+	};
+
 	const char *contents;
 	size_t len;
-	size_t index;
+	size_t index = 0;
 	bool shortOpenTag;
+	bool skipShebang;
+	State state = INITIAL;
+	std::vector<State> stateStack;
+	std::vector<HeredocLabel> heredocLabels;
 
-	/* length of the open tag at `at`, or 0 if there is none */
-	size_t openTagLength(size_t at) const
+	/* the pending output span [spanStart, spanEnd) of the source */
+	std::string *out = nullptr;
+	size_t spanStart = 0;
+	size_t spanEnd = 0;
+
+	/* the byte at `at`, or the NUL the engine's scan buffer ends with */
+	unsigned char at(size_t at) const
 	{
-		if (at + 1 >= len || contents[at] != '<' || contents[at + 1] != '?') return 0;
-		if (at + 4 < len && equalsIgnoreCase(contents + at + 2, "php", 3)
-			&& (at + 5 >= len || isSpaceByte((unsigned char) contents[at + 5]))
-		) {
-			return 5;
-		}
-		if (at + 2 < len && contents[at + 2] == '=') return 3;
-
-		return shortOpenTag ? 2 : 0;
+		return at < len ? (unsigned char) contents[at] : 0;
 	}
 
-	/* a // or # comment: ends at a newline (left in place, it is whitespace)
-	 * or at ?>, which the caller then handles as the close tag it is */
-	void skipLineComment()
+	static bool isWhitespace(unsigned char c)
 	{
-		while (index < len) {
-			char c = contents[index];
-			if (c == '\n' || c == '\r') return;
-			if (c == '?' && index + 1 < len && contents[index + 1] == '>') return;
-			index++;
-		}
+		return c == ' ' || c == '\t' || c == '\n' || c == '\r';
 	}
 
-	void skipBlockComment()
+	static bool isDigit(unsigned char c)
 	{
-		index += 2;
-		while (index + 1 < len) {
-			if (contents[index] == '*' && contents[index + 1] == '/') {
-				index += 2;
-				return;
+		return c >= '0' && c <= '9';
+	}
+
+	static bool isHexDigit(unsigned char c)
+	{
+		return isDigit(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+	}
+
+	/* re2c's "..." literals are case-insensitive (--case-inverted) */
+	bool matchesIgnoreCase(size_t at, const char *lowercase, size_t n) const
+	{
+		return at + n <= len && equalsIgnoreCase(contents + at, lowercase, n);
+	}
+
+	void pushState(State next)
+	{
+		stateStack.push_back(state);
+		state = next;
+	}
+
+	/* never empty where the lexer pops; IN_SCRIPTING keeps a malformed
+	 * sequence making progress */
+	void popState()
+	{
+		if (stateStack.empty()) {
+			state = IN_SCRIPTING;
+			return;
+		}
+		state = stateStack.back();
+		stateStack.pop_back();
+	}
+
+	void emit(size_t start, size_t length)
+	{
+		if (length == 0) return;
+		if (start == spanEnd) {
+			spanEnd += length;
+			return;
+		}
+		flush();
+		spanStart = start;
+		spanEnd = start + length;
+	}
+
+	void emitByte(char c, size_t sourceAt)
+	{
+		if (sourceAt == spanEnd && sourceAt < len && contents[sourceAt] == c) {
+			spanEnd++;
+			return;
+		}
+		flush();
+		out->push_back(c);
+		spanStart = spanEnd = SIZE_MAX;
+	}
+
+	void flush()
+	{
+		if (spanEnd > spanStart && spanEnd != SIZE_MAX) {
+			out->append(contents + spanStart, spanEnd - spanStart);
+		}
+		spanStart = spanEnd = SIZE_MAX;
+	}
+
+	size_t skipLabel(size_t at) const
+	{
+		while (at < len && isLabelByte((unsigned char) contents[at])) {
+			at++;
+		}
+		return at;
+	}
+
+	/* LNUM: [0-9]+(_[0-9]+)*; false when there is none at `at` */
+	bool skipLnum(size_t &at) const
+	{
+		if (!isDigit(this->at(at))) return false;
+		while (isDigit(this->at(at))) {
+			at++;
+		}
+		while (this->at(at) == '_' && isDigit(this->at(at + 1))) {
+			at++;
+			while (isDigit(this->at(at))) {
+				at++;
 			}
-			index++;
 		}
-		index = len;
+		return true;
 	}
 
-	/* copies a quoted string verbatim; a backslash escapes the next byte,
-	 * which finds the same closing quote as PHP's own rules do */
-	void copyString(char delimiter, std::string &out)
+	/* HNUM/BNUM/ONUM: "0x"[0-9a-fA-F]+(_[0-9a-fA-F]+)* and the like */
+	bool skipPrefixedNumber(size_t &at) const
 	{
-		size_t start = index;
-		index++;
-		while (index < len) {
-			char c = contents[index];
-			if (c == '\\' && index + 1 < len) {
-				index += 2;
-				continue;
-			}
-			index++;
-			if (c == delimiter) break;
+		if (this->at(at) != '0') return false;
+		unsigned char kind = this->at(at + 1);
+		bool (*digit)(unsigned char);
+		if (kind == 'x' || kind == 'X') {
+			digit = [](unsigned char c) { return isHexDigit(c); };
+		} else if (kind == 'b' || kind == 'B') {
+			digit = [](unsigned char c) { return c == '0' || c == '1'; };
+		} else if (kind == 'o' || kind == 'O') {
+			digit = [](unsigned char c) { return c >= '0' && c <= '7'; };
+		} else {
+			return false;
 		}
-		out.append(contents + start, index - start);
+		size_t p = at + 2;
+		if (!digit(this->at(p))) return false;
+		while (digit(this->at(p))) {
+			p++;
+		}
+		while (this->at(p) == '_' && digit(this->at(p + 1))) {
+			p++;
+			while (digit(this->at(p))) {
+				p++;
+			}
+		}
+		at = p;
+		return true;
 	}
 
-	void copyHeredoc(std::string &out);
+	/* LNUM, HNUM, BNUM, ONUM, DNUM, EXPONENT_DNUM — the longest match at
+	 * `at`, which holds a digit or a "." followed by one */
+	size_t skipNumber(size_t at) const
+	{
+		size_t p = at;
+		if (skipPrefixedNumber(p)) return p;
+		bool integer = skipLnum(p);
+		size_t end = p;
+		if (this->at(p) == '.') {
+			size_t fraction = p + 1;
+			if (skipLnum(fraction)) {
+				end = fraction;
+			} else if (integer) {
+				end = p + 1;
+			}
+		}
+		unsigned char e = this->at(end);
+		if (end > at && (e == 'e' || e == 'E')) {
+			size_t exponent = end + 1;
+			if (this->at(exponent) == '+' || this->at(exponent) == '-') {
+				exponent++;
+			}
+			if (skipLnum(exponent)) {
+				end = exponent;
+			}
+		}
+		return end;
+	}
+
+	/* "#" or "//" up to a newline or "?>", neither of which it includes */
+	size_t skipLineComment(size_t at) const
+	{
+		while (at < len) {
+			char c = contents[at];
+			if (c == '\n' || c == '\r') break;
+			if (c == '?' && this->at(at + 1) == '>') break;
+			at++;
+		}
+		return at;
+	}
+
+	/* from "/" "*" to the closing star-slash, or to the end when unterminated */
+	size_t skipBlockComment(size_t at) const
+	{
+		at += 2;
+		while (at < len) {
+			if (contents[at++] == '*' && this->at(at) == '/') {
+				return at + 1;
+			}
+		}
+		return len;
+	}
+
+	/* one {WHITESPACE}|{MULTI_LINE_COMMENT}|{SINGLE_LINE_COMMENT}|{HASH_COMMENT}
+	 * element of the `yield from` rule; false when none starts at `at` */
+	bool skipWhitespaceOrComment(size_t &at) const
+	{
+		unsigned char c = this->at(at);
+		if (at < len && isWhitespace(c)) {
+			while (at < len && isWhitespace((unsigned char) contents[at])) {
+				at++;
+			}
+			return true;
+		}
+		if (c == '/' && this->at(at + 1) == '*') {
+			/* "/" "*" ([^*\x00]* "*"+) ([^*"/"\x00] [^*\x00]* "*"+)* "/" */
+			for (size_t p = at + 2; p < len; p++) {
+				if (contents[p] == '\0') return false;
+				if (contents[p] == '*' && this->at(p + 1) == '/') {
+					at = p + 2;
+					return true;
+				}
+			}
+			return false;
+		}
+		size_t p;
+		if (c == '/' && this->at(at + 1) == '/') {
+			p = at + 2;
+		} else if (c == '#' && this->at(at + 1) != '[' && this->at(at + 1) != '\0') {
+			p = at + 1;
+		} else {
+			return false;
+		}
+		/* [^\x00\n\r]* [\n\r] */
+		while (p < len && contents[p] != '\0' && contents[p] != '\n' && contents[p] != '\r') {
+			p++;
+		}
+		if (p >= len || contents[p] == '\0') return false;
+		at = p + 1;
+		return true;
+	}
+
+	size_t castLength(size_t at) const;
+	size_t yieldFromLength(size_t at) const;
+	bool startHeredoc(size_t at);
+
+	Kind lexInitial();
+	Kind inlineHtml();
+	Kind lexScripting();
+	Kind lexInterpolated();
+	Kind lexVarOffset();
+	Kind next(size_t &start);
 };
 
-inline void CommentStripper::copyHeredoc(std::string &out)
+/* "(" [ \t]* type [ \t]* ")" — the cast tokens keep their inner blanks */
+inline size_t CommentStripper::castLength(size_t at) const
 {
-	size_t p = index + 3;
-	while (p < len && (contents[p] == ' ' || contents[p] == '\t')) {
+	static const char *const casts[] = {
+		"int", "integer", "float", "double", "real", "string", "binary", "array", "object", "bool", "boolean", "unset",
+#if PHP_VERSION_ID >= 80500
+		"void",
+#endif
+	};
+	size_t p = at + 1;
+	while (this->at(p) == ' ' || this->at(p) == '\t') {
 		p++;
 	}
-	char quote = '\0';
-	if (p < len && (contents[p] == '\'' || contents[p] == '"')) {
-		quote = contents[p];
+	size_t word = p;
+	while ((this->at(p) >= 'a' && this->at(p) <= 'z') || (this->at(p) >= 'A' && this->at(p) <= 'Z')) {
 		p++;
 	}
-	if (p >= len || !isLabelStart((unsigned char) contents[p])) {
-		/* not a heredoc after all — let the caller copy the bytes */
-		return;
-	}
-	size_t labelStart = p;
-	p++;
-	while (p < len && isLabelByte((unsigned char) contents[p])) {
-		p++;
-	}
-	size_t labelLen = p - labelStart;
-	if (quote != '\0') {
-		if (p >= len || contents[p] != quote) return;
-		p++;
-	}
-	if (p < len && contents[p] == '\r') {
-		p += (p + 1 < len && contents[p + 1] == '\n') ? 2 : 1;
-	} else if (p < len && contents[p] == '\n') {
-		p += 1;
-	} else {
-		return;
-	}
-
-	size_t bodyStart = p;
-	const char *label = contents + labelStart;
-	while (p < len) {
-		char c = contents[p];
-		if (c == '\t' || c == ' ') {
-			p++;
-			continue;
-		}
-		if (c == label[0]
-			&& p + labelLen <= len
-			&& memcmp(contents + p, label, labelLen) == 0
-			&& (p + labelLen >= len || !isLabelByte((unsigned char) contents[p + labelLen]))
-		) {
-			p += labelLen;
+	size_t wordLength = p - word;
+	bool known = false;
+	for (const char *cast : casts) {
+		if (strlen(cast) == wordLength && equalsIgnoreCase(contents + word, cast, wordLength)) {
+			known = true;
 			break;
 		}
-		while (p < len && contents[p] != '\r' && contents[p] != '\n') {
-			p++;
-		}
-		while (p < len && (contents[p] == '\r' || contents[p] == '\n')) {
-			p++;
-		}
 	}
-	(void) bodyStart;
-
-	out.append(contents + index, p - index);
-	index = p;
+	if (!known) return 0;
+	while (this->at(p) == ' ' || this->at(p) == '\t') {
+		p++;
+	}
+	return this->at(p) == ')' ? p + 1 - at : 0;
 }
 
-inline void CommentStripper::strip(std::string &out)
+/* "yield" {WHITESPACE_OR_COMMENTS} "from" [^a-zA-Z0-9_\x80-\xff] — one
+ * token, whitespace and comments included; 0 when it does not match */
+inline size_t CommentStripper::yieldFromLength(size_t at) const
 {
-	out.clear();
-	out.reserve(len);
+	size_t p = at + 5;
+	if (!skipWhitespaceOrComment(p)) return 0;
+	while (skipWhitespaceOrComment(p)) {
+	}
+	if (!matchesIgnoreCase(p, "from", 4) || isLabelByte(this->at(p + 4))) return 0;
+	return p + 4 - at;
+}
 
-	while (index < len) {
-		/* inline HTML up to the next opening tag, copied verbatim */
-		size_t htmlStart = index;
-		size_t tagLength = 0;
-		while (index < len) {
-			tagLength = openTagLength(index);
-			if (tagLength != 0) break;
-			index++;
+/* b?"<<<" [ \t]* (LABEL | 'LABEL' | "LABEL") NEWLINE; false when `at` does
+ * not start one (the "b" prefix is lexed as a label of its own before) */
+inline bool CommentStripper::startHeredoc(size_t at)
+{
+	size_t p = at + 3;
+	while (this->at(p) == ' ' || this->at(p) == '\t') {
+		p++;
+	}
+	unsigned char quote = this->at(p);
+	if (quote == '\'' || quote == '"') {
+		p++;
+	} else {
+		quote = 0;
+	}
+	if (!isLabelStart(this->at(p))) return false;
+	size_t label = p;
+	p = skipLabel(p);
+	size_t labelLength = p - label;
+	if (quote != 0) {
+		if (this->at(p) != quote) return false;
+		p++;
+	}
+	if (this->at(p) == '\r') {
+		p += this->at(p + 1) == '\n' ? 2 : 1;
+	} else if (this->at(p) == '\n') {
+		p++;
+	} else {
+		return false;
+	}
+
+	index = p;
+	heredocLabels.push_back({label, labelLength, 0});
+	state = quote == '\'' ? NOWDOC : HEREDOC;
+
+	/* the closing label right on the next line */
+	size_t indentation = 0;
+	while (p < len && (contents[p] == ' ' || contents[p] == '\t')) {
+		p++;
+		indentation++;
+	}
+	if (p < len
+		&& labelLength < len - p
+		&& memcmp(contents + p, contents + label, labelLength) == 0
+		&& !isLabelByte(this->at(p + labelLength))
+	) {
+		heredocLabels.back().indentation = indentation;
+		state = END_HEREDOC;
+	}
+	return true;
+}
+
+inline CommentStripper::Kind CommentStripper::lexInitial()
+{
+	if (index >= len) return END;
+	if (at(index) == '<' && at(index + 1) == '?') {
+		if (at(index + 2) == '=') {
+			index += 3;
+			state = IN_SCRIPTING;
+			return OTHER;
 		}
-		out.append(contents + htmlStart, index - htmlStart);
-		if (index >= len) return;
-		out.append(contents + index, tagLength);
-		index += tagLength;
-
-		while (index < len) {
-			char c = contents[index];
-
-			if (c == '?' && index + 1 < len && contents[index + 1] == '>') {
-				out.append("?>", 2);
+		if (matchesIgnoreCase(index + 2, "php", 3)) {
+			unsigned char c = at(index + 5);
+			if (c == ' ' || c == '\t' || c == '\n') {
+				index += 6;
+				state = IN_SCRIPTING;
+				return OTHER;
+			}
+			if (c == '\r') {
+				index += at(index + 6) == '\n' ? 7 : 6;
+				state = IN_SCRIPTING;
+				return OTHER;
+			}
+			if (index + 5 == len) {
+				index += 5;
+				state = IN_SCRIPTING;
+				return OTHER;
+			}
+			if (shortOpenTag) {
 				index += 2;
+				state = IN_SCRIPTING;
+				return OTHER;
+			}
+			index += 5;
+			return inlineHtml();
+		}
+		if (shortOpenTag) {
+			index += 2;
+			state = IN_SCRIPTING;
+			return OTHER;
+		}
+		index += 2;
+		return inlineHtml();
+	}
+	index++;
+	return inlineHtml();
+}
+
+/* T_INLINE_HTML up to the next opening tag the lexer accepts */
+inline CommentStripper::Kind CommentStripper::inlineHtml()
+{
+	for (;;) {
+		const char *lt = index < len ? (const char *) memchr(contents + index, '<', len - index) : NULL;
+		index = lt != NULL ? (size_t) (lt - contents) + 1 : len;
+		if (index >= len) break;
+		if (contents[index] == '?') {
+			if (shortOpenTag
+				|| at(index + 1) == '='
+				|| (matchesIgnoreCase(index + 1, "php", 3) && (index + 4 == len || isWhitespace(at(index + 4))))
+			) {
+				index--;
 				break;
 			}
-
-			if (c == '/' && index + 1 < len && contents[index + 1] == '/') {
-				skipLineComment();
-				continue;
-			}
-
-			if (c == '#') {
-				if (index + 1 < len && contents[index + 1] == '[') {
-					out.append("#[", 2);
-					index += 2;
-					continue;
-				}
-				skipLineComment();
-				continue;
-			}
-
-			if (c == '/' && index + 1 < len && contents[index + 1] == '*') {
-				skipBlockComment();
-				continue;
-			}
-
-			if (c == '\'' || c == '"' || c == '`') {
-				copyString(c, out);
-				continue;
-			}
-
-			if (c == '<' && index + 2 < len && contents[index + 1] == '<' && contents[index + 2] == '<') {
-				size_t before = index;
-				copyHeredoc(out);
-				if (index != before) continue;
-			}
-
-			size_t start = index;
-			index++;
-			while (index < len && !pt_strip_table.bytes[(unsigned char) contents[index]]) {
-				index++;
-			}
-			out.append(contents + start, index - start);
 		}
 	}
+	return OTHER;
+}
+
+inline CommentStripper::Kind CommentStripper::lexScripting()
+{
+	if (index >= len) return END;
+	unsigned char c = at(index);
+	unsigned char c1 = at(index + 1);
+	unsigned char c2 = at(index + 2);
+
+	switch (c) {
+		case ' ':
+		case '\t':
+		case '\n':
+		case '\r':
+			while (index < len && isWhitespace((unsigned char) contents[index])) {
+				index++;
+			}
+			return WHITESPACE;
+		case '#':
+			if (c1 == '[') {
+				index += 2;
+				return OTHER;
+			}
+			index = skipLineComment(index + 1);
+			return COMMENT;
+		case '/':
+			if (c1 == '/') {
+				index = skipLineComment(index + 2);
+				return COMMENT;
+			}
+			if (c1 == '*') {
+				index = skipBlockComment(index);
+				return COMMENT;
+			}
+			index += c1 == '=' ? 2 : 1;
+			return OTHER;
+		case '?':
+			if (c1 == '>') {
+				index += 2;
+				if (at(index) == '\r') {
+					index += at(index + 1) == '\n' ? 2 : 1;
+				} else if (at(index) == '\n') {
+					index++;
+				}
+				state = INITIAL;
+				return OTHER;
+			}
+			if (c1 == '-' && c2 == '>') {
+				index += 3;
+				pushState(LOOKING_FOR_PROPERTY);
+				return OTHER;
+			}
+			if (c1 == '?') {
+				index += c2 == '=' ? 3 : 2;
+				return OTHER;
+			}
+			index++;
+			return OTHER;
+		case '\'':
+			for (index++; index < len; ) {
+				if (contents[index] == '\'') {
+					index++;
+					break;
+				}
+				if (contents[index++] == '\\' && index < len) {
+					index++;
+				}
+			}
+			return OTHER;
+		case '"': {
+			/* the whole string when nothing is interpolated, else just the
+			 * quote and the string's own state */
+			for (size_t p = index + 1; p < len; ) {
+				unsigned char s = (unsigned char) contents[p++];
+				if (s == '"') {
+					index = p;
+					return OTHER;
+				}
+				if (s == '$' && (isLabelStart(at(p)) || at(p) == '{')) break;
+				if (s == '{' && at(p) == '$') break;
+				if (s == '\\' && p < len) {
+					p++;
+				}
+			}
+			index++;
+			state = DOUBLE_QUOTES;
+			return OTHER;
+		}
+		case '`':
+			index++;
+			state = BACKQUOTE;
+			return OTHER;
+		case '<':
+			if (c1 == '<' && c2 == '<' && startHeredoc(index)) return OTHER;
+			if (c1 == '<') {
+				index += c2 == '=' ? 3 : 2;
+			} else if (c1 == '=') {
+				index += c2 == '>' ? 3 : 2;
+			} else {
+				index += c1 == '>' ? 2 : 1;
+			}
+			return OTHER;
+		case '>':
+			if (c1 == '>') {
+				index += c2 == '=' ? 3 : 2;
+			} else {
+				index += c1 == '=' ? 2 : 1;
+			}
+			return OTHER;
+		case '=':
+			if (c1 == '=') {
+				index += c2 == '=' ? 3 : 2;
+			} else {
+				index += c1 == '>' ? 2 : 1;
+			}
+			return OTHER;
+		case '!':
+			if (c1 == '=') {
+				index += c2 == '=' ? 3 : 2;
+			} else {
+				index++;
+			}
+			return OTHER;
+		case '+':
+			index += c1 == '+' || c1 == '=' ? 2 : 1;
+			return OTHER;
+		case '-':
+			if (c1 == '>') {
+				index += 2;
+				pushState(LOOKING_FOR_PROPERTY);
+				return OTHER;
+			}
+			index += c1 == '-' || c1 == '=' ? 2 : 1;
+			return OTHER;
+		case '*':
+			if (c1 == '*') {
+				index += c2 == '=' ? 3 : 2;
+			} else {
+				index += c1 == '=' ? 2 : 1;
+			}
+			return OTHER;
+		case '.':
+			if (c1 == '.' && c2 == '.') {
+				index += 3;
+			} else if (isDigit(c1)) {
+				index = skipNumber(index);
+			} else {
+				index += c1 == '=' ? 2 : 1;
+			}
+			return OTHER;
+		case '%':
+		case '^':
+			index += c1 == '=' ? 2 : 1;
+			return OTHER;
+		case '&':
+			index += c1 == '&' || c1 == '=' ? 2 : 1;
+			return OTHER;
+		case '|':
+#if PHP_VERSION_ID >= 80500
+			index += c1 == '|' || c1 == '=' || c1 == '>' ? 2 : 1;
+#else
+			index += c1 == '|' || c1 == '=' ? 2 : 1;
+#endif
+			return OTHER;
+		case ':':
+			index += c1 == ':' ? 2 : 1;
+			return OTHER;
+		case '(': {
+			size_t cast = castLength(index);
+			index += cast != 0 ? cast : 1;
+			return OTHER;
+		}
+		case '{':
+			index++;
+			pushState(IN_SCRIPTING);
+			return OTHER;
+		case '}':
+			index++;
+			popState();
+			return OTHER;
+		case '$':
+			index = isLabelStart(c1) ? skipLabel(index + 1) : index + 1;
+			return OTHER;
+		case '\\':
+			/* "\\" LABEL ("\\" LABEL)* */
+			index++;
+			while (at(index - 1) == '\\' && isLabelStart(at(index))) {
+				index = skipLabel(index);
+				if (at(index) != '\\' || !isLabelStart(at(index + 1))) break;
+				index++;
+			}
+			return OTHER;
+		default:
+			break;
+	}
+
+	if (isDigit(c)) {
+		index = skipNumber(index);
+		return OTHER;
+	}
+	if (isLabelStart(c)) {
+		size_t end = skipLabel(index);
+		if (end - index == 5 && equalsIgnoreCase(contents + index, "yield", 5)) {
+			size_t yieldFrom = yieldFromLength(index);
+			if (yieldFrom != 0) {
+				end = index + yieldFrom;
+			}
+		}
+		index = end;
+		return OTHER;
+	}
+	/* the other single-byte tokens and T_BAD_CHARACTER */
+	index++;
+	return OTHER;
+}
+
+/* the states of a string's body: "...", `...` and heredoc/nowdoc */
+inline CommentStripper::Kind CommentStripper::lexInterpolated()
+{
+	unsigned char c = at(index);
+	if (state != NOWDOC) {
+		if ((state == DOUBLE_QUOTES && c == '"') || (state == BACKQUOTE && c == '`')) {
+			index++;
+			state = IN_SCRIPTING;
+			return OTHER;
+		}
+		if (c == '$') {
+			unsigned char c1 = at(index + 1);
+			if (isLabelStart(c1)) {
+				size_t p = skipLabel(index + 1);
+				index = p;
+				if (at(p) == '-' && at(p + 1) == '>' && isLabelStart(at(p + 2))) {
+					pushState(LOOKING_FOR_PROPERTY);
+				} else if (at(p) == '?' && at(p + 1) == '-' && at(p + 2) == '>' && isLabelStart(at(p + 3))) {
+					pushState(LOOKING_FOR_PROPERTY);
+				} else if (at(p) == '[') {
+					pushState(VAR_OFFSET);
+				}
+				return OTHER;
+			}
+			if (c1 == '{') {
+				index += 2;
+				pushState(LOOKING_FOR_VARNAME);
+				return OTHER;
+			}
+		}
+		if (c == '{' && at(index + 1) == '$') {
+			index++;
+			pushState(IN_SCRIPTING);
+			return OTHER;
+		}
+	}
+
+	if (index >= len) return END;
+
+	if (state == DOUBLE_QUOTES || state == BACKQUOTE) {
+		char delimiter = state == DOUBLE_QUOTES ? '"' : '`';
+		size_t p = index + 1;
+		if (c == '\\' && p < len) {
+			p++;
+		}
+		while (p < len) {
+			char s = contents[p++];
+			if (s == delimiter) {
+				p--;
+				break;
+			}
+			if (s == '$') {
+				if (isLabelStart(at(p)) || at(p) == '{') {
+					p--;
+					break;
+				}
+				continue;
+			}
+			if (s == '{') {
+				if (at(p) == '$') {
+					p--;
+					break;
+				}
+				continue;
+			}
+			if (s == '\\' && p < len) {
+				p++;
+			}
+		}
+		index = p;
+		return OTHER;
+	}
+
+	/* heredoc and nowdoc bodies: the closing label is looked for at the
+	 * start of each line, after its indentation, and must not end the file */
+	const HeredocLabel &label = heredocLabels.back();
+	size_t p = index;
+	while (p < len) {
+		char s = contents[p++];
+		if (s == '\r' || s == '\n') {
+			if (s == '\r' && at(p) == '\n') {
+				p++;
+			}
+			size_t indentation = 0;
+			while (p < len && (contents[p] == ' ' || contents[p] == '\t')) {
+				p++;
+				indentation++;
+			}
+			if (p == len) break;
+			if (isLabelStart(at(p))
+				&& label.length < len - p
+				&& memcmp(contents + p, contents + label.label, label.length) == 0
+			) {
+				if (isLabelByte(at(p + label.length))) continue;
+				p -= indentation;
+				heredocLabels.back().indentation = indentation;
+				state = END_HEREDOC;
+				break;
+			}
+			continue;
+		}
+		if (state == NOWDOC) continue;
+		if (s == '$') {
+			if (isLabelStart(at(p)) || at(p) == '{') {
+				p--;
+				break;
+			}
+			continue;
+		}
+		if (s == '{') {
+			if (at(p) == '$') {
+				p--;
+				break;
+			}
+			continue;
+		}
+		if (s == '\\' && p < len && contents[p] != '\n' && contents[p] != '\r') {
+			p++;
+		}
+	}
+	index = p;
+	return OTHER;
+}
+
+/* "$var[" inside a string: a single offset, verbatim, up to "]" or the
+ * byte that aborts it (which stays for the string) */
+inline CommentStripper::Kind CommentStripper::lexVarOffset()
+{
+	unsigned char c = at(index);
+	if (isDigit(c)) {
+		size_t p = index;
+		if (!skipPrefixedNumber(p)) {
+			skipLnum(p);
+		}
+		index = p;
+		return OTHER;
+	}
+	if (c == '$' && isLabelStart(at(index + 1))) {
+		index = skipLabel(index + 1);
+		return OTHER;
+	}
+	if (c == ']') {
+		index++;
+		popState();
+		return OTHER;
+	}
+	if (c != 0 && strchr(";:,.|^&+-/*=%!~$<>?@[(){}\"`", c) != NULL) {
+		index++;
+		return OTHER;
+	}
+	if (c != 0 && strchr(" \n\r\t\\'#", c) != NULL) {
+		/* an empty T_ENCAPSED_AND_WHITESPACE */
+		popState();
+		return OTHER;
+	}
+	if (isLabelStart(c)) {
+		index = skipLabel(index);
+		return OTHER;
+	}
+	if (index >= len) return END;
+	index++;
+	return OTHER;
+}
+
+/* lex_scan(): the next token, [start, index) */
+inline CommentStripper::Kind CommentStripper::next(size_t &start)
+{
+	for (;;) {
+		start = index;
+		switch (state) {
+			case INITIAL:
+				return lexInitial();
+			case IN_SCRIPTING:
+				return lexScripting();
+			case LOOKING_FOR_PROPERTY: {
+				unsigned char c = at(index);
+				if (index < len && isWhitespace(c)) return lexScripting();
+				if (c == '-' && at(index + 1) == '>') {
+					index += 2;
+					return OTHER;
+				}
+				if (c == '?' && at(index + 1) == '-' && at(index + 2) == '>') {
+					index += 3;
+					return OTHER;
+				}
+				if (isLabelStart(c)) {
+					index = skipLabel(index);
+					popState();
+					return OTHER;
+				}
+				if (c == '#' || (c == '/' && at(index + 1) == '/')) {
+					index = skipLineComment(index + (c == '#' ? 1 : 2));
+					return COMMENT;
+				}
+				if (c == '/' && at(index + 1) == '*') {
+					index = skipBlockComment(index);
+					return COMMENT;
+				}
+				popState();
+				continue;
+			}
+			case DOUBLE_QUOTES:
+			case BACKQUOTE:
+			case HEREDOC:
+			case NOWDOC:
+				return lexInterpolated();
+			case END_HEREDOC: {
+				HeredocLabel label = heredocLabels.back();
+				heredocLabels.pop_back();
+				index += label.indentation + label.length;
+				state = IN_SCRIPTING;
+				return END_HEREDOC_TOKEN;
+			}
+			case VAR_OFFSET:
+				return lexVarOffset();
+			case LOOKING_FOR_VARNAME: {
+				if (isLabelStart(at(index))) {
+					size_t end = skipLabel(index);
+					if (at(end) == '[' || at(end) == '}') {
+						index = end;
+						popState();
+						pushState(IN_SCRIPTING);
+						return OTHER;
+					}
+				}
+				popState();
+				pushState(IN_SCRIPTING);
+				continue;
+			}
+		}
+	}
+}
+
+/* zend_strip() */
+inline void CommentStripper::strip(std::string &output)
+{
+	output.clear();
+	output.reserve(len);
+	out = &output;
+	spanStart = spanEnd = SIZE_MAX;
+
+	/* <SHEBANG>"#!" .* {NEWLINE} is skipped, not emitted */
+	if (skipShebang && at(0) == '#' && at(1) == '!') {
+		const char *newline = len > 2 ? (const char *) memchr(contents + 2, '\n', len - 2) : NULL;
+		if (newline != NULL) {
+			index = (size_t) (newline - contents) + 1;
+		} else {
+			for (size_t p = len; p > 2; p--) {
+				if (contents[p - 1] == '\r') {
+					index = p;
+					break;
+				}
+			}
+		}
+	}
+
+	bool prevSpace = false;
+	size_t start;
+	for (;;) {
+		Kind kind = next(start);
+		if (kind == END) break;
+		if (kind == WHITESPACE) {
+			if (!prevSpace) {
+				emitByte(' ', start);
+				prevSpace = true;
+			}
+			continue;
+		}
+		if (kind == COMMENT) continue;
+		emit(start, index - start);
+		if (kind == END_HEREDOC_TOKEN) {
+			/* the following token, verbatim unless it is whitespace */
+			if (next(start) != WHITESPACE) {
+				emit(start, index - start);
+			}
+			emitByte('\n', index);
+			prevSpace = true;
+			continue;
+		}
+		prevSpace = false;
+	}
+	flush();
+	out = nullptr;
 }
 
 /* }}} */

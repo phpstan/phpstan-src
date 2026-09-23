@@ -298,7 +298,7 @@ public:
 		zv::Val mappedSubtracted;
 		if (!subtracted.isNull()) {
 			zval mapped;
-			if (UNEXPECTED(!pt_call_fci(fci, fcc, 1, subtracted.raw(), &mapped))) return zv::Val();
+			if (UNEXPECTED(!pt_call_type_fci(fci, fcc, 1, subtracted.raw(), &mapped))) return zv::Val();
 			mappedSubtracted = zv::Val::adopt(mapped);
 		} else {
 			mappedSubtracted = zv::Val::null();
@@ -310,7 +310,7 @@ public:
 		zv::Arr mappedTypes = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(ownTypes)));
 		for (zv::ArrayEntry entry : zv::ArrRef(ownTypes)) {
 			zval newType;
-			if (UNEXPECTED(!pt_call_fci(fci, fcc, 1, entry.value().raw(), &newType))) return zv::Val();
+			if (UNEXPECTED(!pt_call_type_fci(fci, fcc, 1, entry.value().raw(), &newType))) return zv::Val();
 			if (Z_TYPE(newType) != IS_OBJECT || Z_OBJ(newType) != Z_OBJ_P(entry.value().raw())) {
 				typesChanged = true;
 			}
@@ -365,7 +365,7 @@ public:
 			}
 			zv::Args args{entry.value().raw(), rightType};
 			zval newType;
-			if (UNEXPECTED(!pt_call_fci(fci, fcc, 2, args, &newType))) return zv::Val();
+			if (UNEXPECTED(!pt_call_type_fci(fci, fcc, 2, args, &newType))) return zv::Val();
 			if (Z_TYPE(newType) != IS_OBJECT || Z_OBJ(newType) != Z_OBJ_P(entry.value().raw())) {
 				typesChanged = true;
 			}
@@ -567,7 +567,7 @@ void pt_register_generic_static_type()
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *classReflection, *types, *subtractedType, *variances;
-		if (!zp::parse<zp::Obj, zp::Arr, zp::ObjOrNull, zp::Arr>(execute_data, classReflection, types, subtractedType, variances)) RETURN_THROWS();
+		if (!zp::parse<zp::Obj, zp::Arr, zp::TypeObjOrNull, zp::Arr>(execute_data, classReflection, types, subtractedType, variances)) RETURN_THROWS();
 		zval null;
 		if (subtractedType == NULL) {
 			ZVAL_NULL(&null);

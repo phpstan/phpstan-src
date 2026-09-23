@@ -341,7 +341,15 @@ public:
 		}
 		for (zv::ArrayEntry entry : zv::ArrRef(typesArg)) {
 			zval *type = entry.value().deref().raw();
-			if (Z_TYPE_P(type) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(type), pt_ce_union_type)) continue;
+			/* a member that is not an object is rejected here: the twin
+			 * stores it unchecked and fails at its first use, but the
+			 * native code reading the members — in this family and in
+			 * every port iterating getTypes() — relies on objects */
+			if (UNEXPECTED(Z_TYPE_P(type) != IS_OBJECT)) {
+				zend_type_error("phpstan_turbo: %s::__construct(): every member must be a %s, %s given", ZSTR_VAL(pt_ce_union_type->name), ptcls::type, zend_zval_value_name(type));
+				return false;
+			}
+			if (!instanceof_function(Z_OBJCE_P(type), pt_ce_union_type)) continue;
 			bool isTemplate;
 			if (UNEXPECTED(!isInstance(type, PT_CLASS_TEMPLATE_TYPE, isTemplate))) return false;
 			if (isTemplate) continue;
@@ -1837,7 +1845,7 @@ public:
 			zval arg;
 			ZVAL_COPY_VALUE(&arg, type);
 			zval newType;
-			if (UNEXPECTED(!pt_call_fci(fci, fcc, 1, &arg, &newType))) return zv::Val();
+			if (UNEXPECTED(!pt_call_type_fci(fci, fcc, 1, &arg, &newType))) return zv::Val();
 			if (Z_TYPE(newType) != IS_OBJECT || Z_OBJ(newType) != Z_OBJ_P(type)) {
 				changed = true;
 			}
@@ -1900,7 +1908,7 @@ public:
 				}
 				zv::Args args{innerType, candidate.raw()};
 				zval newType;
-				if (UNEXPECTED(!pt_call_fci(fci, fcc, 2, args, &newType))) {
+				if (UNEXPECTED(!pt_call_type_fci(fci, fcc, 2, args, &newType))) {
 					ok = false;
 					break;
 				}
@@ -3023,7 +3031,7 @@ void pt_register_union_type()
 
 	cls.method<&UnionType::isAcceptedBy, zp::Obj, zp::Bool>(sigs::isAcceptedBy);
 
-	cls.method<&UnionType::equals, zp::Obj>(sigs::equals);
+	cls.method<&UnionType::equals, zp::TypeObj>(sigs::equals);
 	cls.op<PT_OP_EQUALS, &UnionType::equals>();
 
 	cls.method(sigs::describe, utDescribe);

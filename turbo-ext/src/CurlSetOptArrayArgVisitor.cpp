@@ -14,6 +14,8 @@
 #include "ParserVisitors.h"
 #include "generated/CurlSetOptArrayArgVisitor.h"
 
+namespace sigs = ptdecl::CurlSetOptArrayArgVisitor::sig;
+
 static zend_class_entry *pt_ce_curl_set_opt_array_arg_visitor = nullptr;
 
 static const char pt_curl_set_opt_array_arg_attribute[] = "isCurlSetOptArrayArg";
@@ -68,7 +70,7 @@ void pt_register_curl_set_opt_array_arg_visitor()
 	ptdecl::CurlSetOptArrayArgVisitor::declareProperties(cls);
 	cls.publicClassConstantString("ATTRIBUTE_NAME", pt_curl_set_opt_array_arg_attribute);
 
-	cls.method("enterNode", reg::Public, 1, { reg::obj("node", "PhpParser\\Node") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::enterNode, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *node;
 		if (!zp::parse<zp::Obj>(execute_data, node)) RETURN_THROWS();
 		if (UNEXPECTED(!CurlSetOptArrayArgVisitor::enterNode(Z_OBJ_P(ZEND_THIS), Z_OBJ_P(node)))) RETURN_THROWS();

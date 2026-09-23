@@ -342,7 +342,14 @@ public:
 	explicit IntersectionType(zend_object *self) : self(self) {}
 
 	/* __construct(private array $types): fewer than two members throw;
-	 * false = pending exception */
+	 * false = pending exception.
+	 *
+	 * A member that is not an object is rejected here with a TypeError: the
+	 * twin stores it unchecked and fails at its first use (an Error or,
+	 * through its `Type`-typed closures, a TypeError), but the native code
+	 * reading the members — here and in every port iterating getTypes() —
+	 * relies on them being objects, so one check at construction keeps the
+	 * whole family from dereferencing a scalar */
 	[[nodiscard]] bool construct(zval *typesArg)
 	{
 		zval *typesSlot = OBJ_PROP_NUM(self, slots::types);
@@ -358,6 +365,13 @@ public:
 		if (zend_hash_num_elements(Z_ARRVAL_P(typesArg)) < 2) {
 			throwCannotCreate(typesArg);
 			return false;
+		}
+		for (zv::ArrayEntry entry : zv::ArrRef(typesArg)) {
+			zval *type = entry.value().deref().raw();
+			if (UNEXPECTED(Z_TYPE_P(type) != IS_OBJECT)) {
+				zend_type_error("phpstan_turbo: %s::__construct(): every member must be a %s, %s given", ZSTR_VAL(pt_ce_intersection_type->name), ptcls::type, zend_zval_value_name(type));
+				return false;
+			}
 		}
 		return true;
 	}
@@ -1620,7 +1634,9 @@ public:
 							for (zv::ArrayEntry valueEntry : zv::ArrRef(values.raw())) {
 								zv::Ref value = valueEntry.value().deref();
 								if (!value.isLong()) continue;
-								zv::Val range = integerRange(NullableLong::of(0), NullableLong::of(value.asLong() + 1));
+								/* no offset exists past PHP_INT_MAX: the list may grow up to it */
+								NullableLong maxListOffset = value.asLong() < ZEND_LONG_MAX ? NullableLong::of(value.asLong() + 1) : NullableLong::null();
+								zv::Val range = integerRange(NullableLong::of(0), maxListOffset);
 								if (UNEXPECTED(range.isUndef())) return zv::Val();
 								zend_long covered = pt_type_call_result_trinary(Z_OBJ_P(range.raw()), PT_LC("issupertypeof"), 1, offsetType);
 								if (UNEXPECTED(covered < 0)) return zv::Val();
@@ -2006,7 +2022,7 @@ public:
 			zval arg;
 			ZVAL_COPY_VALUE(&arg, type);
 			zval newType;
-			if (UNEXPECTED(!pt_call_fci(fci, fcc, 1, &arg, &newType))) return zv::Val();
+			if (UNEXPECTED(!pt_call_type_fci(fci, fcc, 1, &arg, &newType))) return zv::Val();
 			if (Z_TYPE(newType) != IS_OBJECT || Z_OBJ(newType) != Z_OBJ_P(type)) {
 				changed = true;
 			}
@@ -2042,7 +2058,7 @@ public:
 			if (UNEXPECTED(rightKeyType.isUndef())) return zv::Val();
 			zv::Args keyArgs{innerKeyType.raw(), rightKeyType.raw()};
 			zval newKeyRaw;
-			if (UNEXPECTED(!pt_call_fci(fci, fcc, 2, keyArgs, &newKeyRaw))) return zv::Val();
+			if (UNEXPECTED(!pt_call_type_fci(fci, fcc, 2, keyArgs, &newKeyRaw))) return zv::Val();
 			zv::Val newKeyType = zv::Val::adopt(newKeyRaw);
 			zv::Val innerValueType = callType(Z_OBJ_P(innerType), PT_LC("getiterablevaluetype"), 0, NULL);
 			if (UNEXPECTED(innerValueType.isUndef())) return zv::Val();
@@ -2050,7 +2066,7 @@ public:
 			if (UNEXPECTED(rightValueType.isUndef())) return zv::Val();
 			zv::Args valueArgs{innerValueType.raw(), rightValueType.raw()};
 			zval newValueRaw;
-			if (UNEXPECTED(!pt_call_fci(fci, fcc, 2, valueArgs, &newValueRaw))) return zv::Val();
+			if (UNEXPECTED(!pt_call_type_fci(fci, fcc, 2, valueArgs, &newValueRaw))) return zv::Val();
 			zv::Val newValueType = zv::Val::adopt(newValueRaw);
 			/* $newKeyType === $innerType->getIterableKeyType() && $newValueType === $innerType->getIterableValueType() */
 			zv::Val keyAgain = callType(Z_OBJ_P(innerType), PT_LC("getiterablekeytype"), 0, NULL);
@@ -2132,35 +2148,91 @@ public:
 		zval *types = this->types();
 		if (UNEXPECTED(types == NULL)) return zv::Val();
 		zv::Val typesCopy = zv::Val::copyOf(zv::Ref(types));
-		zv::Val typeOnly;
-		std::vector<zv::Val> compare;
+		zv::Val first;
+		std::vector<zv::Val> others;
 		for (zv::ArrayEntry entry : zv::ArrRef(typesCopy.raw())) {
 			zv::Val finiteTypes = pt_type_call_array(entry.value().deref().asObject(), PT_LC("getfinitetypes"), 0, NULL);
 			if (UNEXPECTED(finiteTypes.isUndef())) return zv::Val();
-			zv::Arr oneType = zv::Arr::create(zv::ArrRef(finiteTypes.raw()).size());
-			for (zv::ArrayEntry finiteEntry : zv::ArrRef(finiteTypes.raw())) {
-				zval *finiteType = finiteEntry.value().deref().raw();
-				bool isEnumCase;
-				if (UNEXPECTED(!pt_type_instanceof_ce(finiteType, pt_ce_enum_case_object_type, isEnumCase))) return zv::Val();
-				zv::Val key;
-				if (isEnumCase) {
-					key = enumCaseKey(finiteType);
-				} else {
-					if (typeOnly.isUndef()) {
-						typeOnly = verbosityLevel(PT_VERBOSITY_LEVEL_TYPE_ONLY);
-						if (UNEXPECTED(typeOnly.isUndef())) return zv::Val();
-					}
-					key = describeOf(finiteType, typeOnly.raw());
-				}
-				if (UNEXPECTED(key.isUndef())) return zv::Val();
-				oneType.set(zv::Ref(key.raw()).asString(), zv::Val::copyOf(zv::Ref(finiteType)));
+			zv::Val indexed = indexFiniteTypes(finiteTypes.raw());
+			if (UNEXPECTED(indexed.isUndef())) return zv::Val();
+			if (first.isUndef()) {
+				first = std::move(indexed);
+				continue;
 			}
-			compare.push_back(zv::Val(std::move(oneType)));
+			others.push_back(std::move(indexed));
 		}
-		zv::Val result = intersectKeysOf(compare);
-		if (UNEXPECTED(result.isUndef())) return zv::Val();
+
+		if (first.isUndef()) return zv::Val(zv::Arr::empty());
+
+		zv::Arr result = zv::Arr::create(0);
+		for (zv::ArrayEntry entry : zv::ArrRef(first.raw())) {
+			bool inAll = true;
+			for (zv::Val &other : others) {
+				if (UNEXPECTED(!hasFiniteType(other.raw(), entry.stringKeyOrNull(), entry.value().raw(), inAll))) return zv::Val();
+				if (!inAll) break;
+			}
+			if (inAll) {
+				result.push(entry.value());
+			}
+		}
 		if ((zend_long) zv::ArrRef(result.raw()).size() > PT_INITIALIZER_EXPR_TYPE_RESOLVER_CALCULATE_SCALARS_LIMIT) return zv::Val(zv::Arr::empty());
-		return result;
+		return zv::Val(std::move(result));
+	}
+
+	/* the twin's indexFiniteTypes(): the finite types of one member, one per
+	 * value, in their order — keyed by FiniteTypeSet::key() (never numeric),
+	 * the values it does not key by a list position, deduplicated by
+	 * equals(); UNDEF = pending exception */
+	static zv::Val indexFiniteTypes(zval *finiteTypes)
+	{
+		zv::Arr indexed = zv::Arr::create(zv::ArrRef(finiteTypes).size());
+		for (zv::ArrayEntry entry : zv::ArrRef(finiteTypes)) {
+			zval *finiteType = entry.value().deref().raw();
+			zv::Val key = pt_type_finite_type_set_key(finiteType);
+			if (UNEXPECTED(key.isUndef())) return zv::Val();
+			if (!key.isNull()) {
+				indexed.set(zv::Ref(key.raw()).asString(), zv::Val::copyOf(zv::Ref(finiteType)));
+				continue;
+			}
+			bool replaced = false;
+			for (zv::ArrayEntry existing : zv::ArrRef(indexed.raw())) {
+				if (existing.stringKeyOrNull() != NULL) continue;
+				bool equal;
+				if (UNEXPECTED(!pt_type_op_bool(existing.value().deref().asObject(), PT_OP_EQUALS, 1, finiteType, equal))) return zv::Val();
+				if (!equal) continue;
+				zval copy;
+				ZVAL_COPY(&copy, finiteType);
+				zend_hash_index_update(indexed.table(), existing.indexKey(), &copy);
+				replaced = true;
+				break;
+			}
+			if (!replaced) {
+				indexed.push(zv::Val::copyOf(zv::Ref(finiteType)));
+			}
+		}
+		return zv::Val(std::move(indexed));
+	}
+
+	/* the twin's hasFiniteType(): $key (NULL for a value FiniteTypeSet::key()
+	 * does not key) among $indexed's keys, or an equal unkeyed value; false =
+	 * pending exception */
+	[[nodiscard]] static bool hasFiniteType(zval *indexed, zend_string *key, zval *finiteType, bool &out)
+	{
+		if (key != NULL) {
+			out = zend_symtable_find(Z_ARRVAL_P(indexed), key) != NULL;
+			return true;
+		}
+		for (zv::ArrayEntry other : zv::ArrRef(indexed)) {
+			if (other.stringKeyOrNull() != NULL) continue;
+			bool equal;
+			if (UNEXPECTED(!pt_type_op_bool(other.value().deref().asObject(), PT_OP_EQUALS, 1, finiteType, equal))) return false;
+			if (equal) {
+				out = true;
+				return true;
+			}
+		}
+		out = false;
+		return true;
 	}
 
 	/* whether any member has one; -1 = pending exception */
@@ -3182,7 +3254,7 @@ void pt_register_intersection_type()
 	cls.op<PT_OP_IS_SUB_TYPE_OF, &IntersectionType::isSubTypeOf>();
 	cls.method<&IntersectionType::isAcceptedBy, zp::Obj, zp::Bool>(sigs::isAcceptedBy);
 
-	cls.method<&IntersectionType::equals, zp::Obj>(sigs::equals);
+	cls.method<&IntersectionType::equals, zp::TypeObj>(sigs::equals);
 	cls.op<PT_OP_EQUALS, &IntersectionType::equals>();
 
 	cls.method<&IntersectionType::describe, zp::Obj>(sigs::describe);

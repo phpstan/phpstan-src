@@ -14,7 +14,9 @@
  * The switch lives in the optimizer: opcache lets extensions register
  * passes (zend_optimizer_register_pass) that run at the end of
  * zend_optimize_script(), before the script is persisted, so what shared
- * memory (and a file cache) hold is the stripped code. For every function
+ * memory holds is the stripped code — which is why arming is refused when
+ * opcache.file_cache is set: the stripped code would outlive the run and
+ * reach later unarmed ones. For every function
  * of a script whose filename starts with the trusted prefix — the running
  * phar, handed over by TurboExtensionEnabler::trustOwnTypesIfSuitable():
  *
@@ -210,10 +212,21 @@ static bool pt_tt_register_pass()
 	return true;
 }
 
+/* opcache.file_cache persists what the optimizer produced: the stripped
+ * op_arrays would outlive the armed run, and a later run — a --debug one,
+ * or one without the extension at all — would execute them unchecked */
+static bool pt_tt_file_cache_configured()
+{
+	bool exists = false;
+	const char *fileCache = zend_ini_string_ex("opcache.file_cache", sizeof("opcache.file_cache") - 1, 0, &exists);
+	return exists && fileCache != NULL && fileCache[0] != '\0';
+}
+
 bool pt_trusted_types_set_prefix(zend_string *prefix)
 {
 	PT_G(trusted_types_prefix_len) = 0;
 	if (ZSTR_LEN(prefix) == 0 || ZSTR_LEN(prefix) >= sizeof(PT_G(trusted_types_prefix))) return false;
+	if (pt_tt_file_cache_configured()) return false;
 	if (!pt_tt_register_pass()) return false;
 	memcpy(PT_G(trusted_types_prefix), ZSTR_VAL(prefix), ZSTR_LEN(prefix));
 	PT_G(trusted_types_prefix_len) = ZSTR_LEN(prefix);

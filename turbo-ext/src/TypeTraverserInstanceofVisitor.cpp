@@ -16,6 +16,8 @@
 #include "ParserVisitors.h"
 #include "generated/TypeTraverserInstanceofVisitor.h"
 
+namespace sigs = ptdecl::TypeTraverserInstanceofVisitor::sig;
+
 static zend_class_entry *pt_ce_type_traverser_instanceof_visitor = nullptr;
 
 /* the class's only property, `private int $depth = 0` */
@@ -112,7 +114,7 @@ void pt_register_type_traverser_instanceof_visitor()
 	ptdecl::TypeTraverserInstanceofVisitor::declareProperties(cls);
 	cls.publicClassConstantString("ATTRIBUTE_NAME", pt_type_traverser_instanceof_attribute);
 
-	cls.method("beforeTraverse", reg::Public, 1, { reg::arrayArg("nodes") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::beforeTraverse, [](INTERNAL_FUNCTION_PARAMETERS) {
 		HashTable *nodes;
 		if (!zp::parse<zp::Ht>(execute_data, nodes)) RETURN_THROWS();
 		(void) nodes;
@@ -120,14 +122,14 @@ void pt_register_type_traverser_instanceof_visitor()
 		RETURN_NULL();
 	});
 
-	cls.method("enterNode", reg::Public, 1, { reg::obj("node", "PhpParser\\Node") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::enterNode, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *node;
 		if (!zp::parse<zp::Obj>(execute_data, node)) RETURN_THROWS();
 		if (UNEXPECTED(!TypeTraverserInstanceofVisitor::enterNode(Z_OBJ_P(ZEND_THIS), Z_OBJ_P(node)))) RETURN_THROWS();
 		RETURN_NULL();
 	});
 
-	cls.method("leaveNode", reg::Public, 1, { reg::obj("node", "PhpParser\\Node") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::leaveNode, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *node;
 		if (!zp::parse<zp::Obj>(execute_data, node)) RETURN_THROWS();
 		if (UNEXPECTED(!TypeTraverserInstanceofVisitor::leaveNode(Z_OBJ_P(ZEND_THIS), Z_OBJ_P(node)))) RETURN_THROWS();

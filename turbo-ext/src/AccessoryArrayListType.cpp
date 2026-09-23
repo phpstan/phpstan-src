@@ -397,7 +397,7 @@ void pt_register_accessory_array_list_type()
 
 	cls.method(sigs::equals, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *type;
-		if (!zp::parse<zp::Obj>(execute_data, type)) RETURN_THROWS();
+		if (!zp::parse<zp::TypeObj>(execute_data, type)) RETURN_THROWS();
 		RETURN_BOOL(AccessoryArrayListType::equals(type));
 	});
 	cls.op(PT_OP_EQUALS, PT_OP_LAMBDA { return zv::Val::boolean(AccessoryArrayListType::equals(argv)); });

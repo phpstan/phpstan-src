@@ -14,6 +14,8 @@
 #include "ParserVisitors.h"
 #include "generated/TraitCollectingVisitor.h"
 
+namespace sigs = ptdecl::TraitCollectingVisitor::sig;
+
 static zend_class_entry *pt_ce_trait_collecting_visitor = nullptr;
 
 /* the class's only property, `public array $traits = []` */
@@ -56,7 +58,7 @@ void pt_register_trait_collecting_visitor()
 	/* "traits" must stay slot 0 (PT_TRAIT_COLLECTING_PROP_TRAITS) */
 	ptdecl::TraitCollectingVisitor::declareProperties(cls);
 
-	cls.method("enterNode", reg::Public, 1, { reg::obj("node", "PhpParser\\Node") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::enterNode, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *node;
 		if (!zp::parse<zp::Obj>(execute_data, node)) RETURN_THROWS();
 		if (UNEXPECTED(!TraitCollectingVisitor::enterNode(Z_OBJ_P(ZEND_THIS), Z_OBJ_P(node)))) RETURN_THROWS();

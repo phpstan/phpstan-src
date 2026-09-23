@@ -47,6 +47,17 @@ zv::Val getStartLine(zval *node)
 	return pt_call_method_cached(pt_swh_get_start_line_site, Z_OBJ_P(node), PT_LC("getstartline"), 0, NULL);
 }
 
+/* $caseNode->name of a case list element: a node's property, or — for an
+ * element a hand-built Switch_ holds that is no object — the engine's
+ * warning and null (NULL = the warning turned into an exception) */
+zval *caseProperty(pt_property_site &site, zval *caseNode, const char *name, size_t len)
+{
+	if (EXPECTED(Z_TYPE_P(caseNode) == IS_OBJECT)) return ptsh::readNodeProperty(site, caseNode, name, len);
+	zend_error(E_WARNING, "Attempt to read property \"%s\" on %s", name, zend_zval_value_name(caseNode));
+	if (UNEXPECTED(EG(exception))) return NULL;
+	return &EG(uninitialized_zval);
+}
+
 } // namespace
 
 namespace phpstanturbo {
@@ -118,18 +129,22 @@ public:
 
 		zval *cases = ptsh::readNodeProperty(pt_swh_cases_site, stmt, PT_LC("cases"));
 		if (UNEXPECTED(cases == NULL)) return zv::Val();
-		if (UNEXPECTED(Z_TYPE_P(cases) != IS_ARRAY)) {
-			zend_error(E_WARNING, "foreach() argument must be of type array|object, %s given", zend_zval_value_name(cases));
-			return zv::Val();
+		/* the twin's two foreach loops over something else each warn and
+		 * iterate nothing (the typed property holds an array) */
+		zv::Val casesValue = zv::Val::copyOf(zv::Ref(cases));
+		bool casesIterable = Z_TYPE_P(casesValue.raw()) == IS_ARRAY;
+		if (UNEXPECTED(!casesIterable)) {
+			zend_error(E_WARNING, "foreach() argument must be of type array|object, %s given", zend_zval_value_name(casesValue.raw()));
+			if (UNEXPECTED(EG(exception))) return zv::Val();
 		}
-		zv::Val casesHold = zv::Val::copyOf(zv::Ref(cases));
+		zv::Val casesHold = casesIterable ? zv::Val::copyOf(casesValue.ref()) : zv::Val(zv::Arr::empty());
 		/* the key of the last case with a condition ($lastNonDefaultCaseKey) */
 		bool hasLastNonDefaultCase = false;
 		zend_ulong lastNonDefaultIndex = 0;
 		zend_string *lastNonDefaultKey = NULL;
 		for (auto entry : zv::ArrRef(casesHold.raw())) {
 			zval *caseNode = entry.value().deref().raw();
-			zval *caseCond = ptsh::readNodeProperty(pt_swh_case_cond_site, caseNode, PT_LC("cond"));
+			zval *caseCond = caseProperty(pt_swh_case_cond_site, caseNode, PT_LC("cond"));
 			if (UNEXPECTED(caseCond == NULL)) return zv::Val();
 			if (Z_TYPE_P(caseCond) == IS_NULL) continue;
 			hasLastNonDefaultCase = true;
@@ -137,10 +152,14 @@ public:
 			lastNonDefaultIndex = entry.indexKey();
 		}
 
+		if (UNEXPECTED(!casesIterable)) {
+			zend_error(E_WARNING, "foreach() argument must be of type array|object, %s given", zend_zval_value_name(casesValue.raw()));
+			if (UNEXPECTED(EG(exception))) return zv::Val();
+		}
 		zv::Val branchFinalScopeResult;
 		for (auto entry : zv::ArrRef(casesHold.raw())) {
 			zval *caseNode = entry.value().deref().raw();
-			zval *caseCondSlot = ptsh::readNodeProperty(pt_swh_case_cond_site, caseNode, PT_LC("cond"));
+			zval *caseCondSlot = caseProperty(pt_swh_case_cond_site, caseNode, PT_LC("cond"));
 			if (UNEXPECTED(caseCondSlot == NULL)) return zv::Val();
 			zv::Val caseCond = zv::Val::copyOf(zv::Ref(caseCondSlot));
 			zv::Val branchScope;
@@ -222,9 +241,24 @@ public:
 
 			branchScope = pt_mutating_scope_merge_with(Z_OBJ_P(branchScope.raw()), prevScope.raw());
 			if (UNEXPECTED(branchScope.isUndef())) return zv::Val();
-			zval *caseStmts = ptsh::readNodeProperty(pt_swh_case_stmts_site, caseNode, PT_LC("stmts"));
+			zval *caseStmts = caseProperty(pt_swh_case_stmts_site, caseNode, PT_LC("stmts"));
 			if (UNEXPECTED(caseStmts == NULL)) return zv::Val();
 			zv::Val caseStmtsHold = zv::Val::copyOf(zv::Ref(caseStmts));
+			/* the twin's processStmtNodesInternal() parameter types, for a
+			 * hand-built case list's foreign element */
+			{
+				bool error = false;
+				if (UNEXPECTED(!ptsh::isInstanceOf(caseNode, PT_CLASS_NODE, error))) {
+					if (!error) {
+						zend_type_error("PHPStan\\Analyser\\NodeScopeResolver::processStmtNodesInternal(): Argument #1 ($parentNode) must be of type PhpParser\\Node, %s given", zend_zval_value_name(caseNode));
+					}
+					return zv::Val();
+				}
+				if (UNEXPECTED(Z_TYPE_P(caseStmtsHold.raw()) != IS_ARRAY)) {
+					zend_type_error("PHPStan\\Analyser\\NodeScopeResolver::processStmtNodesInternal(): Argument #2 ($stmts) must be of type array, %s given", zend_zval_value_name(caseStmtsHold.raw()));
+					return zv::Val();
+				}
+			}
 			zv::Val branchScopeResult = pt_node_scope_resolver_process_stmt_nodes_internal(nodeScopeResolver, caseNode, caseStmtsHold.raw(), branchScope.raw(), storage, nodeCallback, context);
 			if (UNEXPECTED(branchScopeResult.isUndef())) return zv::Val();
 			{

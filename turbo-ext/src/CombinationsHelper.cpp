@@ -5,6 +5,8 @@
 
 #include "support.h"
 #include "generated/CombinationsHelper.h"
+
+namespace sigs = ptdecl::CombinationsHelper::sig;
 #include "zv.h"
 #include "TypeTraits.h"
 
@@ -39,7 +41,7 @@ public:
 			zv::Ref element = entry.value().deref();
 			if (UNEXPECTED(!element.isArray())) {
 				efree(inner);
-				zend_type_error("PHPStanTurbo\\CombinationsHelper::combinations() expects an array of arrays");
+				zend_type_error("%s::combinations() expects an array of arrays", ZSTR_VAL(pt_ce_combinations->name));
 				return false;
 			}
 			inner[i++] = element.raw();
@@ -117,7 +119,7 @@ void pt_register_combinations_helper()
 	ptdecl::CombinationsHelper::declareClass(cls);
 	ptdecl::CombinationsHelper::declareProperties(cls);
 
-	cls.method("combinations", reg::PublicStatic, 1, { reg::arrayArg("arrays") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::combinations, [](INTERNAL_FUNCTION_PARAMETERS) {
 		/* the argument zval as passed: rewrapping its table with ZVAL_ARR
 		 * would mark an immutable array ([] is zend_empty_array) refcounted,
 		 * and the call below would then addref read-only memory */

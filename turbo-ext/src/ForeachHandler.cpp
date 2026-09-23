@@ -1968,6 +1968,8 @@ void pt_register_foreach_handler()
 	reg::Class cls("PHPStan\\Analyser\\StmtHandler\\ForeachHandler");
 	ptdecl::ForeachHandler::declareClass(cls);
 	ptdecl::ForeachHandler::declareProperties(cls);
+	cls.privateClassConstantLong("FOREACH_UNROLL_LIMIT", PT_FEH_FOREACH_UNROLL_LIMIT);
+	cls.privateClassConstantLong("FOREACH_UNROLL_NESTED_LIMIT", PT_FEH_FOREACH_UNROLL_NESTED_LIMIT);
 
 	/* the real parameter class names and #[AutowiredParameter] names: the DI
 	 * container autowires the service by reflecting the constructor */

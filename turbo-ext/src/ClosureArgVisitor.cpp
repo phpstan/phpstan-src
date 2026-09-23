@@ -15,6 +15,8 @@
 #include "ParserVisitors.h"
 #include "generated/ClosureArgVisitor.h"
 
+namespace sigs = ptdecl::ClosureArgVisitor::sig;
+
 static zend_class_entry *pt_ce_closure_arg_visitor = nullptr;
 
 static const char pt_closure_arg_attribute[] = "closureCallArgs";
@@ -80,7 +82,7 @@ void pt_register_closure_arg_visitor()
 	ptdecl::ClosureArgVisitor::declareProperties(cls);
 	cls.publicClassConstantString("ATTRIBUTE_NAME", pt_closure_arg_attribute);
 
-	cls.method("enterNode", reg::Public, 1, { reg::obj("node", "PhpParser\\Node") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::enterNode, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *node;
 		if (!zp::parse<zp::Obj>(execute_data, node)) RETURN_THROWS();
 		if (UNEXPECTED(!ClosureArgVisitor::enterNode(Z_OBJ_P(ZEND_THIS), Z_OBJ_P(node)))) RETURN_THROWS();

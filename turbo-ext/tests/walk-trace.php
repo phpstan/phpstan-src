@@ -151,6 +151,15 @@ if (($argv[1] ?? '') === '--child') {
 						if ($node instanceof Node\Expr\FuncCall || $node instanceof Node\Expr\MethodCall) {
 							$line .= ' P=' . $scope->pushInFunctionCall(null, null, false)->popInFunctionCall()->getType($node)->describe($precise);
 						}
+						if ($node instanceof Node\Expr\PropertyFetch) {
+							// a scope a rule derives from the callback scope answers afresh:
+							// the callback scope's asked-type memo (keyed by node, so a
+							// synthetic node the walk never stored) stays behind
+							$synthetic = clone $node;
+							$line .= ' Y=' . $scope->getType($synthetic)->describe($precise)
+								. ' I=' . $scope->invalidateExpression($synthetic)->getType($synthetic)->describe($precise)
+								. ' M=' . $scope->mergeWith($scope->assignExpression($synthetic, new \PHPStan\Type\StringType(), new \PHPStan\Type\StringType()))->getType($synthetic)->describe($precise);
+						}
 					}
 				} elseif ($node instanceof Node\Stmt && $scope instanceof MutatingScope) {
 					$line .= ' S=' . json_encode($scope->debug(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);

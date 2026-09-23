@@ -14,12 +14,25 @@
 
 #include "support.h"
 #include "generated/ScopeOps.h"
+
+namespace sigs = ptdecl::ScopeOps::sig;
 #include "zv.h"
 #include "TypeOps.h"
 
 #include <cstring>
 
 static zend_class_entry *pt_ce_scope_ops;
+
+/* the twin's private COMPOSITIONAL_VIRTUAL_KEY_PREFIXES (the list
+ * keyMayHideSubExpressions() walks), a persistent list built once at module
+ * startup */
+static const pt_superglobal_name pt_so_compositional_virtual_key_prefixes[] = {
+	{ PT_LC("__phpstanForeachValueByRef(") },
+	{ PT_LC("__phpstanIntertwinedVariableByReference(") },
+	{ PT_LC("__phpstanPossiblyImpure(") },
+	{ PT_LC("__phpstanPropertyInitialization(") },
+	{ PT_LC("__phpstanRemembered(") },
+};
 
 /* {{{ scopeWith's cached property layout (owned by the request lifecycle) */
 
@@ -32,17 +45,13 @@ typedef struct {
 	int32_t in_function_calls_stack;
 	int32_t in_first_level_statement;
 	int32_t after_extract_call;
-	/* memo props to reset (missing => -1) */
-	int32_t resolved_types;
-	int32_t truthy_scopes;
-	int32_t falsey_scopes;
-	int32_t node_callback_scope;
-	int32_t scope_out_of_first_level;
-	int32_t scope_with_promoted_native;
-	int32_t walk_scope;          /* NodeCallbackScope */
-	int32_t seeded_walk_scope;   /* NodeCallbackScope */
-	int32_t truthy_value_exprs;  /* NodeCallbackScope */
-	int32_t falsey_value_exprs;  /* NodeCallbackScope */
+	/* the per-instance memos to reset: every typed instance property with a
+	 * declared default — the twin builds a new scope, where each of them
+	 * starts at that default. A promoted property never has one (typed; the
+	 * untyped promoted $nodeCallback's implicit null is why untyped ones do
+	 * not count), and the constructor assigns only default-less $namespace */
+	uint32_t memo_count;
+	uint32_t *memo_offsets;
 } pt_scope_offsets;
 
 static HashTable pt_scope_offsets_cache;
@@ -50,7 +59,34 @@ static bool pt_scope_offsets_cache_inited = false;
 
 static void pt_scope_offsets_free(zval *zv)
 {
-	efree(Z_PTR_P(zv));
+	pt_scope_offsets *off = (pt_scope_offsets *) Z_PTR_P(zv);
+	if (off->memo_offsets != NULL) efree(off->memo_offsets);
+	efree(off);
+}
+
+/* collects the memo slots of ce (see pt_scope_offsets::memo_offsets) — every
+ * declaring class of the chain, so a parent's private memos count too */
+static void pt_scope_offsets_collect_memos(zend_class_entry *ce, pt_scope_offsets *off)
+{
+	off->memo_count = 0;
+	off->memo_offsets = ce->default_properties_count > 0
+		? (uint32_t *) safe_emalloc((size_t) ce->default_properties_count, sizeof(uint32_t), 0)
+		: NULL;
+	for (zend_class_entry *declaring = ce; declaring != NULL; declaring = declaring->parent) {
+		for (auto entry : zv::TableRef(&declaring->properties_info)) {
+			zend_property_info *info = (zend_property_info *) Z_PTR_P(entry.value().raw());
+			if (info->ce != declaring || (info->flags & ZEND_ACC_STATIC) != 0 || !ZEND_TYPE_IS_SET(info->type)) continue;
+			if (Z_TYPE(CE_DEFAULT_PROPERTIES_TABLE(ce)[OBJ_PROP_TO_NUM(info->offset)]) == IS_UNDEF) continue;
+			bool seen = false;
+			for (uint32_t i = 0; i < off->memo_count; i++) {
+				if (off->memo_offsets[i] == info->offset) {
+					seen = true;
+					break;
+				}
+			}
+			if (!seen && off->memo_count < (uint32_t) ce->default_properties_count) off->memo_offsets[off->memo_count++] = info->offset;
+		}
+	}
 }
 
 static pt_scope_offsets *pt_scope_offsets_for(zend_class_entry *ce)
@@ -73,16 +109,7 @@ static pt_scope_offsets *pt_scope_offsets_for(zend_class_entry *ce)
 	off->in_function_calls_stack = pt_instance_prop_offset(ce, "inFunctionCallsStack", sizeof("inFunctionCallsStack") - 1);
 	off->in_first_level_statement = pt_instance_prop_offset(ce, "inFirstLevelStatement", sizeof("inFirstLevelStatement") - 1);
 	off->after_extract_call = pt_instance_prop_offset(ce, "afterExtractCall", sizeof("afterExtractCall") - 1);
-	off->resolved_types = pt_instance_prop_offset(ce, "resolvedTypes", sizeof("resolvedTypes") - 1);
-	off->truthy_scopes = pt_instance_prop_offset(ce, "truthyScopes", sizeof("truthyScopes") - 1);
-	off->falsey_scopes = pt_instance_prop_offset(ce, "falseyScopes", sizeof("falseyScopes") - 1);
-	off->node_callback_scope = pt_instance_prop_offset(ce, "nodeCallbackScope", sizeof("nodeCallbackScope") - 1);
-	off->scope_out_of_first_level = pt_instance_prop_offset(ce, "scopeOutOfFirstLevelStatement", sizeof("scopeOutOfFirstLevelStatement") - 1);
-	off->scope_with_promoted_native = pt_instance_prop_offset(ce, "scopeWithPromotedNativeTypes", sizeof("scopeWithPromotedNativeTypes") - 1);
-	off->walk_scope = pt_instance_prop_offset(ce, "walkScope", sizeof("walkScope") - 1);
-	off->seeded_walk_scope = pt_instance_prop_offset(ce, "seededWalkScope", sizeof("seededWalkScope") - 1);
-	off->truthy_value_exprs = pt_instance_prop_offset(ce, "truthyValueExprs", sizeof("truthyValueExprs") - 1);
-	off->falsey_value_exprs = pt_instance_prop_offset(ce, "falseyValueExprs", sizeof("falseyValueExprs") - 1);
+	pt_scope_offsets_collect_memos(ce, off);
 
 	zend_hash_add_ptr(&pt_scope_offsets_cache, ce->name, off);
 	return off;
@@ -258,16 +285,14 @@ public:
 		cloneObj.propAtOffset((uint32_t) off->after_extract_call).assign(zv::Val::boolean(afterExtractCall));
 
 		/* fresh-constructor defaults for per-instance memos */
-		resetToEmptyArray(cloneObj, off->resolved_types);
-		resetToEmptyArray(cloneObj, off->truthy_scopes);
-		resetToEmptyArray(cloneObj, off->falsey_scopes);
-		resetToNull(cloneObj, off->node_callback_scope);
-		resetToNull(cloneObj, off->scope_out_of_first_level);
-		resetToNull(cloneObj, off->scope_with_promoted_native);
-		resetToNull(cloneObj, off->walk_scope);
-		resetToNull(cloneObj, off->seeded_walk_scope);
-		resetToEmptyArray(cloneObj, off->truthy_value_exprs);
-		resetToEmptyArray(cloneObj, off->falsey_value_exprs);
+		zval *defaults = CE_DEFAULT_PROPERTIES_TABLE(Z_OBJCE_P(scope));
+		for (uint32_t i = 0; i < off->memo_count; i++) {
+			uint32_t offset = off->memo_offsets[i];
+			/* the engine's own default-property copy (a persistent default is duplicated) */
+			zval fresh;
+			ZVAL_COPY_OR_DUP(&fresh, &defaults[OBJ_PROP_TO_NUM(offset)]);
+			cloneObj.propAtOffset(offset).assign(zv::Val::adopt(fresh));
+		}
 
 		zval out;
 		ZVAL_OBJ(&out, clone);
@@ -1159,20 +1184,6 @@ private:
 		obj.propAtOffset((uint32_t) offset).assign(zv::Arr::copyOfTable(value));
 	}
 
-	/* $obj->prop = [] — a memo reset to the fresh-constructor default */
-	static void resetToEmptyArray(zv::ObjRef obj, int32_t offset)
-	{
-		if (offset < 0) return;
-		obj.propAtOffset((uint32_t) offset).assign(zv::Arr::empty());
-	}
-
-	/* $obj->prop = null — a memo reset to the fresh-constructor default */
-	static void resetToNull(zv::ObjRef obj, int32_t offset)
-	{
-		if (offset < 0) return;
-		obj.propAtOffset((uint32_t) offset).assign(zv::Val::null());
-	}
-
 	/* $holder->expr for a checked ExpressionTypeHolder */
 	static zend_object *holderExpr(zv::Ref holder)
 	{
@@ -1420,26 +1431,14 @@ private:
 	 */
 	static bool keyMayHideSubExpressions(zend_string *key)
 	{
-		/* Mirror of ScopeOps::COMPOSITIONAL_VIRTUAL_KEY_PREFIXES - a prefix may
-		 * be listed only when the printer emits every getSubNodeNames() sub-node
-		 * verbatim (or the node walks no sub-nodes at all); the foreach/parameter
-		 * original-value markers hide a synthesized Variable child on purpose. */
-		static const struct { const char *prefix; size_t len; } compositionalPrefixes[] = {
-			{ "__phpstanForeachValueByRef(", sizeof("__phpstanForeachValueByRef(") - 1 },
-			{ "__phpstanIntertwinedVariableByReference(", sizeof("__phpstanIntertwinedVariableByReference(") - 1 },
-			{ "__phpstanPossiblyImpure(", sizeof("__phpstanPossiblyImpure(") - 1 },
-			{ "__phpstanPropertyInitialization(", sizeof("__phpstanPropertyInitialization(") - 1 },
-			{ "__phpstanRemembered(", sizeof("__phpstanRemembered(") - 1 },
-		};
-
 		const char *pos = ZSTR_VAL(key);
 		const char *end = pos + ZSTR_LEN(key);
 		for (;;) {
 			const char *found = zend_memnstr(pos, "__phpstan", sizeof("__phpstan") - 1, end);
 			if (found == NULL) return false;
 			bool isCompositional = false;
-			for (const auto &candidate : compositionalPrefixes) {
-				if ((size_t) (end - found) >= candidate.len && memcmp(found, candidate.prefix, candidate.len) == 0) {
+			for (const pt_superglobal_name &candidate : pt_so_compositional_virtual_key_prefixes) {
+				if ((size_t) (end - found) >= candidate.len && memcmp(found, candidate.name, candidate.len) == 0) {
 					pos = found + candidate.len;
 					isCompositional = true;
 					break;
@@ -1813,13 +1812,23 @@ void pt_scope_ops_rshutdown()
 
 /* }}} */
 
+static HashTable *pt_so_compositional_virtual_key_prefixes_list = nullptr;
+
+static void pt_so_compositional_virtual_key_prefixes_constant(zval *out)
+{
+	pt_persistent_list_into(out, pt_so_compositional_virtual_key_prefixes_list);
+}
+
 void pt_register_scope_ops()
 {
 	reg::Class cls("PHPStan\\Analyser\\ScopeOps");
 	ptdecl::ScopeOps::declareClass(cls);
 	ptdecl::ScopeOps::declareProperties(cls);
+	cls.privateClassConstantString("CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME", "containsSuperGlobal");
+	pt_so_compositional_virtual_key_prefixes_list = pt_persistent_string_list(pt_so_compositional_virtual_key_prefixes, sizeof(pt_so_compositional_virtual_key_prefixes) / sizeof(pt_so_compositional_virtual_key_prefixes[0]));
+	cls.privateClassConstantValue("COMPOSITIONAL_VIRTUAL_KEY_PREFIXES", pt_so_compositional_virtual_key_prefixes_constant);
 
-	cls.method("mergeVariableHolders", reg::PublicStatic, 2, { reg::arrayArg("ourVariableTypeHolders"), reg::arrayArg("theirVariableTypeHolders"), reg::any("differingKeys", true) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::mergeVariableHolders, [](INTERNAL_FUNCTION_PARAMETERS) {
 		HashTable *ours, *theirs;
 		zval *differing_zv = NULL;
 		if (!zp::parse<zp::Ht, zp::Ht, zp::Opt<zp::Zval>>(execute_data, ours, theirs, differing_zv)) RETURN_THROWS();
@@ -1839,7 +1848,7 @@ void pt_register_scope_ops()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("finishMerge", reg::PublicStatic, 5, { reg::arrayArg("mergedExpressionTypes"), reg::arrayArg("ourExpressionTypes"), reg::arrayArg("theirExpressionTypes"), reg::arrayArg("ourNativeExpressionTypes"), reg::arrayArg("theirNativeExpressionTypes") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::finishMerge, [](INTERNAL_FUNCTION_PARAMETERS) {
 		HashTable *merged, *ours_expr, *theirs_expr, *ours_native, *theirs_native;
 		if (!zp::parse<zp::Ht, zp::Ht, zp::Ht, zp::Ht, zp::Ht>(execute_data, merged, ours_expr, theirs_expr, ours_native, theirs_native)) RETURN_THROWS();
 		zv::Val result = ScopeOps::finishMerge(zv::TableRef(merged), zv::TableRef(ours_expr), zv::TableRef(theirs_expr), zv::TableRef(ours_native), zv::TableRef(theirs_native));
@@ -1847,13 +1856,13 @@ void pt_register_scope_ops()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("intersectConditionalExpressions", reg::PublicStatic, 2, { reg::arrayArg("ourConditionalExpressions"), reg::arrayArg("theirConditionalExpressions") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::intersectConditionalExpressions, [](INTERNAL_FUNCTION_PARAMETERS) {
 		HashTable *ours, *theirs;
 		if (!zp::parse<zp::Ht, zp::Ht>(execute_data, ours, theirs)) RETURN_THROWS();
 		ScopeOps::intersectConditionalExpressions(zv::TableRef(ours), zv::TableRef(theirs)).intoReturnValue(return_value);
 	});
 
-	cls.method("invalidateExpressionEntries", reg::PublicStatic, 9, { reg::objectArg("scope"), reg::objectArg("exprPrinter"), reg::stringArg("exprStringToInvalidate"), reg::objectArg("expressionToInvalidate"), reg::boolArg("requireMoreCharacters"), reg::objectArg("invalidatingClass", true), reg::arrayArg("expressionTypes"), reg::arrayArg("nativeExpressionTypes"), reg::arrayArg("conditionalExpressions"), reg::boolArg("keepPropertyFetches") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::invalidateExpressionEntries, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *scope, *expr_printer, *expr_to_invalidate, *invalidating_class = NULL;
 		zend_string *invalidate_str;
 		bool require_more_characters;
@@ -1878,7 +1887,7 @@ void pt_register_scope_ops()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("shouldInvalidateExpression", reg::PublicStatic, 6, { reg::objectArg("scope"), reg::objectArg("exprPrinter"), reg::stringArg("exprStringToInvalidate"), reg::objectArg("exprToInvalidate"), reg::objectArg("expr"), reg::stringArg("exprString"), reg::boolArg("requireMoreCharacters"), reg::objectArg("invalidatingClass", true), reg::boolArg("keepPropertyFetches") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::shouldInvalidateExpression, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *scope, *expr_printer, *expr_to_invalidate, *expr, *invalidating_class = NULL;
 		zend_string *invalidate_str, *expr_string;
 		bool require_more_characters = false;
@@ -1902,7 +1911,7 @@ void pt_register_scope_ops()
 		RETURN_BOOL(result);
 	});
 
-	cls.method("getIntertwinedRefRootVariableName", reg::PublicStatic, 1, { reg::objectArg("expr") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::getIntertwinedRefRootVariableName, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *expr;
 		if (!zp::parse<zp::Obj>(execute_data, expr)) RETURN_THROWS();
 		zv::Val result = ScopeOps::getIntertwinedRefRootVariableName(Z_OBJ_P(expr));
@@ -1910,7 +1919,7 @@ void pt_register_scope_ops()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("matchConditionalExpressions", reg::PublicStatic, 2, { reg::arrayArg("conditionalExpressions"), reg::arrayArg("specifiedExpressions") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::matchConditionalExpressions, [](INTERNAL_FUNCTION_PARAMETERS) {
 		HashTable *conditional, *specified_input;
 		if (!zp::parse<zp::Ht, zp::Ht>(execute_data, conditional, specified_input)) RETURN_THROWS();
 		zv::Val result = ScopeOps::matchConditionalExpressions(zv::TableRef(conditional), zv::TableRef(specified_input));
@@ -1918,7 +1927,7 @@ void pt_register_scope_ops()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("createConditionalExpressions", reg::PublicStatic, 5, { reg::arrayArg("conditionalExpressions"), reg::arrayArg("ourExpressionTypes"), reg::arrayArg("theirExpressionTypes"), reg::arrayArg("mergedExpressionTypes"), reg::arrayArg("differingKeys") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::createConditionalExpressions, [](INTERNAL_FUNCTION_PARAMETERS) {
 		HashTable *conditional, *ours, *theirs, *merged, *differing_keys;
 		if (!zp::parse<zp::Ht, zp::Ht, zp::Ht, zp::Ht, zp::Ht>(execute_data, conditional, ours, theirs, merged, differing_keys)) RETURN_THROWS();
 		zv::Val result = ScopeOps::createConditionalExpressions(zv::TableRef(conditional), zv::TableRef(ours), zv::TableRef(theirs), zv::TableRef(merged), zv::TableRef(differing_keys));
@@ -1926,7 +1935,7 @@ void pt_register_scope_ops()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("nodeKey", reg::PublicStatic, 2, { reg::objectArg("node"), reg::objectArg("exprPrinter") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::nodeKey, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *node, *expr_printer;
 		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, node, expr_printer)) RETURN_THROWS();
 		zv::Val result = ScopeOps::nodeKey(Z_OBJ_P(node), expr_printer);
@@ -1934,7 +1943,7 @@ void pt_register_scope_ops()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("getTypeFromCache", reg::PublicStatic, 3, { reg::objectArg("scope"), reg::objectArg("node"), reg::any("key", true) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::getTypeFromCache, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *scope, *node, *key_out;
 		if (!zp::parse<zp::Obj, zp::Obj, zp::Zval>(execute_data, scope, node, key_out)) RETURN_THROWS();
 		zend_string *key = NULL;
@@ -1951,7 +1960,7 @@ void pt_register_scope_ops()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("hasVariableType", reg::PublicStatic, 2, { reg::objectArg("scope"), reg::stringArg("variableName") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::hasVariableType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *scope;
 		zend_string *variable_name;
 		if (!zp::parse<zp::Obj, zp::Str>(execute_data, scope, variable_name)) RETURN_THROWS();
@@ -1960,7 +1969,7 @@ void pt_register_scope_ops()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("scopeWith", reg::PublicStatic, 9, { reg::objectArg("scope"), reg::arrayArg("expressionTypes"), reg::arrayArg("nativeExpressionTypes"), reg::arrayArg("conditionalExpressions"), reg::arrayArg("currentlyAssignedExpressions"), reg::arrayArg("currentlyAllowedUndefinedExpressions"), reg::arrayArg("inFunctionCallsStack"), reg::boolArg("inFirstLevelStatement"), reg::boolArg("afterExtractCall") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::scopeWith, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *scope;
 		HashTable *expression_types, *native_expression_types, *conditional_expressions;
 		HashTable *currently_assigned, *currently_allowed_undefined, *in_function_calls_stack;
@@ -1981,7 +1990,7 @@ void pt_register_scope_ops()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("invalidateMethodsOnExpression", reg::PublicStatic, 4, { reg::objectArg("exprPrinter"), reg::stringArg("exprStringToInvalidate"), reg::arrayArg("expressionTypes"), reg::arrayArg("nativeExpressionTypes") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::invalidateMethodsOnExpression, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *expr_printer;
 		zend_string *invalidate_str;
 		HashTable *expression_types, *native_expression_types;
@@ -1992,7 +2001,7 @@ void pt_register_scope_ops()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("expressionTypeByKey", reg::PublicStatic, 3, { reg::objectArg("scope"), reg::objectArg("node"), reg::stringArg("exprString") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::expressionTypeByKey, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *scope, *node;
 		zend_string *expr_string;
 		if (!zp::parse<zp::Obj, zp::Obj, zp::Str>(execute_data, scope, node, expr_string)) RETURN_THROWS();
@@ -2001,7 +2010,7 @@ void pt_register_scope_ops()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("hasExpressionType", reg::PublicStatic, 3, { reg::objectArg("scope"), reg::objectArg("node"), reg::objectArg("exprPrinter") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::hasExpressionType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *scope, *node, *expr_printer;
 		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj>(execute_data, scope, node, expr_printer)) RETURN_THROWS();
 		zv::Val result = ScopeOps::hasExpressionType(scope, Z_OBJ_P(node), expr_printer);

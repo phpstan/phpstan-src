@@ -593,7 +593,8 @@ private:
 	/* the ksort() key order of two buckets */
 	static int compareKeys(Bucket *a, Bucket *b)
 	{
-		if (a->key == NULL && b->key == NULL) return a->h < b->h ? -1 : (a->h > b->h ? 1 : 0);
+		/* integer keys compare signed, like ksort() */
+		if (a->key == NULL && b->key == NULL) return (zend_long) a->h < (zend_long) b->h ? -1 : ((zend_long) a->h > (zend_long) b->h ? 1 : 0);
 		zval first, second;
 		if (a->key != NULL) {
 			ZVAL_STR(&first, a->key);

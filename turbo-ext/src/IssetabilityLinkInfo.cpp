@@ -289,6 +289,10 @@ void pt_register_issetability_link_info()
 	reg::Class cls("PHPStan\\Analyser\\IssetabilityLinkInfo");
 	ptdecl::IssetabilityLinkInfo::declareClass(cls);
 	ptdecl::IssetabilityLinkInfo::declareProperties(cls);
+	cls.privateClassConstantString("KIND_VARIABLE", "variable");
+	cls.privateClassConstantString("KIND_OFFSET", "offset");
+	cls.privateClassConstantString("KIND_PROPERTY", "property");
+	cls.privateClassConstantString("KIND_LEAF", "leaf");
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *kind;

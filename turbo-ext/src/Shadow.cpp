@@ -59,6 +59,16 @@ bool pt_shadow_is_active()
 	return pt_shadow_active;
 }
 
+bool pt_shadow_instanceof(zend_class_entry *ce, zend_class_entry *nativeCe, const char *realName, size_t realNameLen)
+{
+	if (EXPECTED(nativeCe != NULL && instanceof_function(ce, nativeCe))) return true;
+	if (nativeCe == NULL || zend_string_equals_cstr(nativeCe->name, realName, realNameLen)) return false;
+	zend_string *name = zend_string_init(realName, realNameLen, 0);
+	zend_class_entry *twin = zend_lookup_class_ex(name, NULL, ZEND_FETCH_CLASS_NO_AUTOLOAD);
+	zend_string_release(name);
+	return twin != NULL && instanceof_function(ce, twin);
+}
+
 static const char *pt_short_name(const char *fqcn)
 {
 	const char *slash = strrchr(fqcn, '\\');

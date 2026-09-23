@@ -642,7 +642,10 @@ private:
 		if (containsNull == 0) {
 			zv::Val nullsafeTypes = createNullsafeTypes(originalExpr, scope, context, type);
 			if (UNEXPECTED(nullsafeTypes.isUndef())) return zv::Val();
-			if (UNEXPECTED(Z_TYPE_P(nullsafeTypes.raw()) != IS_OBJECT)) return zv::Val();
+			if (UNEXPECTED(Z_TYPE_P(nullsafeTypes.raw()) != IS_OBJECT)) {
+				zend_throw_error(NULL, "Call to a member function unionWith() on %s", zend_zval_value_name(nullsafeTypes.raw()));
+				return zv::Val();
+			}
 			return pt_specified_types_union_with(Z_OBJ_P(nullsafeTypes.raw()), types.raw());
 		}
 
@@ -1025,6 +1028,7 @@ void pt_register_type_specifier()
 	reg::Class cls("PHPStan\\Analyser\\TypeSpecifier");
 	ptdecl::TypeSpecifier::declareClass(cls);
 	ptdecl::TypeSpecifier::declareProperties(cls);
+	cls.privateClassConstantString("CONTAINS_CALL_ATTRIBUTE_NAME", "containsCall");
 
 	/* the DI service's constructor: the generated arginfo names the twin's
 	 * parameter classes exactly (README rule 6) */
@@ -1044,10 +1048,58 @@ void pt_register_type_specifier()
 		TypeSpecifier::construct(Z_OBJ_P(ZEND_THIS), exprPrinter, reflectionProvider, functionTypeSpecifyingExtensions, methodTypeSpecifyingExtensions, staticMethodTypeSpecifyingExtensions, rememberPossiblyImpureFunctionValues, container);
 	});
 
-	cls.method<&TypeSpecifier::specifyTypesInCondition, zp::Obj, zp::Obj, zp::Obj>(sigs::specifyTypesInCondition);
-	cls.method<&TypeSpecifier::specifyDefaultTypes, zp::Obj, zp::Obj, zp::Obj>(sigs::specifyDefaultTypes);
-	cls.method<&TypeSpecifier::handleDefaultTruthyOrFalseyContext, zp::Obj, zp::Obj, zp::Obj>(sigs::handleDefaultTruthyOrFalseyContext);
-	cls.method<&TypeSpecifier::create, zp::Obj, zp::Obj, zp::Obj, zp::Obj>(sigs::create);
+	/* the @api entry points check their parameter classes like the twin's
+	 * signatures (the Scope, Expr and Type interfaces through the class map) */
+	cls.method(sigs::specifyTypesInCondition, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *scope, *expr, *context;
+		zend_class_entry *scopeCe = pt_class(PT_CLASS_SCOPE);
+		zend_class_entry *exprCe = pt_class(PT_CLASS_EXPR);
+		if (UNEXPECTED(scopeCe == NULL || exprCe == NULL)) RETURN_THROWS();
+		ZEND_PARSE_PARAMETERS_START(3, 3)
+			Z_PARAM_OBJECT_OF_CLASS(scope, scopeCe)
+			Z_PARAM_OBJECT_OF_CLASS(expr, exprCe)
+			Z_PARAM_OBJECT_OF_CLASS(context, pt_ce_type_specifier_context)
+		ZEND_PARSE_PARAMETERS_END();
+		PT_RETURN_VAL(TypeSpecifier(Z_OBJ_P(ZEND_THIS)).specifyTypesInCondition(scope, expr, context));
+	});
+	cls.method(sigs::specifyDefaultTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *scope, *expr, *context;
+		zend_class_entry *scopeCe = pt_class(PT_CLASS_SCOPE);
+		zend_class_entry *exprCe = pt_class(PT_CLASS_EXPR);
+		if (UNEXPECTED(scopeCe == NULL || exprCe == NULL)) RETURN_THROWS();
+		ZEND_PARSE_PARAMETERS_START(3, 3)
+			Z_PARAM_OBJECT_OF_CLASS(scope, scopeCe)
+			Z_PARAM_OBJECT_OF_CLASS(expr, exprCe)
+			Z_PARAM_OBJECT_OF_CLASS(context, pt_ce_type_specifier_context)
+		ZEND_PARSE_PARAMETERS_END();
+		PT_RETURN_VAL(TypeSpecifier(Z_OBJ_P(ZEND_THIS)).specifyDefaultTypes(scope, expr, context));
+	});
+	cls.method(sigs::handleDefaultTruthyOrFalseyContext, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *context, *expr, *scope;
+		zend_class_entry *scopeCe = pt_class(PT_CLASS_SCOPE);
+		zend_class_entry *exprCe = pt_class(PT_CLASS_EXPR);
+		if (UNEXPECTED(scopeCe == NULL || exprCe == NULL)) RETURN_THROWS();
+		ZEND_PARSE_PARAMETERS_START(3, 3)
+			Z_PARAM_OBJECT_OF_CLASS(context, pt_ce_type_specifier_context)
+			Z_PARAM_OBJECT_OF_CLASS(expr, exprCe)
+			Z_PARAM_OBJECT_OF_CLASS(scope, scopeCe)
+		ZEND_PARSE_PARAMETERS_END();
+		PT_RETURN_VAL(TypeSpecifier(Z_OBJ_P(ZEND_THIS)).handleDefaultTruthyOrFalseyContext(context, expr, scope));
+	});
+	cls.method(sigs::create, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *expr, *type, *context, *scope;
+		zend_class_entry *exprCe = pt_class(PT_CLASS_EXPR);
+		zend_class_entry *typeCe = pt_class(PT_CLASS_TYPE);
+		zend_class_entry *scopeCe = pt_class(PT_CLASS_SCOPE);
+		if (UNEXPECTED(exprCe == NULL || typeCe == NULL || scopeCe == NULL)) RETURN_THROWS();
+		ZEND_PARSE_PARAMETERS_START(4, 4)
+			Z_PARAM_OBJECT_OF_CLASS(expr, exprCe)
+			Z_PARAM_OBJECT_OF_CLASS(type, typeCe)
+			Z_PARAM_OBJECT_OF_CLASS(context, pt_ce_type_specifier_context)
+			Z_PARAM_OBJECT_OF_CLASS(scope, scopeCe)
+		ZEND_PARSE_PARAMETERS_END();
+		PT_RETURN_VAL(TypeSpecifier(Z_OBJ_P(ZEND_THIS)).create(expr, type, context, scope));
+	});
 	cls.method<&TypeSpecifier::getFunctionTypeSpecifyingExtensions>(sigs::getFunctionTypeSpecifyingExtensions);
 	cls.method<&TypeSpecifier::getMethodTypeSpecifyingExtensionsForClass, zp::Str>(sigs::getMethodTypeSpecifyingExtensionsForClass);
 	cls.method<&TypeSpecifier::getStaticMethodTypeSpecifyingExtensionsForClass, zp::Str>(sigs::getStaticMethodTypeSpecifyingExtensionsForClass);

@@ -17,6 +17,7 @@
 #include "generated/ExpressionResultStorageStack.h"
 
 namespace slots = ptdecl::ExpressionResultStorageStack::slot;
+namespace sigs = ptdecl::ExpressionResultStorageStack::sig;
 #include "zv.h"
 
 zend_class_entry *pt_ce_expression_result_storage_stack = nullptr;
@@ -118,18 +119,22 @@ void pt_register_expression_result_storage_stack()
 	ptdecl::ExpressionResultStorageStack::declareClass(cls);
 	cls.privateTypedArrayPropertyDefaultEmpty("stack");
 
-	cls.method("push", reg::Public, 1, { reg::any("storage") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::push, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *storage;
 		if (!zp::parse<zp::Obj>(execute_data, storage)) RETURN_THROWS();
+		if (UNEXPECTED(!pt_shadow_instanceof(Z_OBJCE_P(storage), pt_ce_expression_result_storage, ZEND_STRL("PHPStan\\Analyser\\ExpressionResultStorage")))) {
+			zend_wrong_parameter_class_error(1, "PHPStan\\Analyser\\ExpressionResultStorage", storage);
+			RETURN_THROWS();
+		}
 		ExpressionResultStorageStack(ZEND_THIS).push(storage);
 	});
 
-	cls.method("pop", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::pop, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		if (UNEXPECTED(!ExpressionResultStorageStack(ZEND_THIS).pop())) RETURN_THROWS();
 	});
 
-	cls.method("getCurrent", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::getCurrent, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		ExpressionResultStorageStack(ZEND_THIS).getCurrent().intoReturnValue(return_value);
 	});

@@ -1220,21 +1220,21 @@ void pt_register_constant_array_type_builder()
 		PT_RETURN_VAL(pt_constant_array_type_builder_create_from_constant_array(startArrayType));
 	});
 
-	cls.method("makeUnsealed", reg::Public, 2, { reg::obj("keyType", ptcls::type), reg::obj("valueType", ptcls::type) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::makeUnsealed, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *keyType, *valueType;
 		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, keyType, valueType)) RETURN_THROWS();
 		if (UNEXPECTED(!pt_catb_check_type(keyType, 1) || !pt_catb_check_type(valueType, 2))) RETURN_THROWS();
 		PT_THIS.makeUnsealed(keyType, valueType);
 	});
 
-	cls.method("mergeUnsealed", reg::Public, 2, { reg::obj("keyType", ptcls::type), reg::obj("valueType", ptcls::type) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::mergeUnsealed, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *keyType, *valueType;
 		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, keyType, valueType)) RETURN_THROWS();
 		if (UNEXPECTED(!pt_catb_check_type(keyType, 1) || !pt_catb_check_type(valueType, 2))) RETURN_THROWS();
 		if (UNEXPECTED(!PT_THIS.mergeUnsealed(keyType, valueType))) RETURN_THROWS();
 	});
 
-	cls.method("setOffsetValueType", reg::Public, 2, { reg::obj("offsetType", ptcls::type, true), reg::obj("valueType", ptcls::type), reg::withDefault(reg::boolArg("optional"), "false") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::setOffsetValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *offsetType, *valueType;
 		bool optional = false;
 		if (!zp::parse<zp::ObjOrNull, zp::Obj, zp::Opt<zp::Bool>>(execute_data, offsetType, valueType, optional)) RETURN_THROWS();
@@ -1242,17 +1242,17 @@ void pt_register_constant_array_type_builder()
 		if (UNEXPECTED(!PT_THIS.setOffsetValueType(offsetType, valueType, optional))) RETURN_THROWS();
 	});
 
-	cls.method<&ConstantArrayTypeBuilder::markNonListKey, zp::Bool>("markNonListKey", reg::Private, { reg::boolArg("optional") });
+	cls.method<&ConstantArrayTypeBuilder::markNonListKey, zp::Bool>(sigs::markNonListKey);
 
-	cls.method("degradeToGeneralArray", reg::Public, 0, { reg::withDefault(reg::boolArg("oversized"), "false") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::degradeToGeneralArray, [](INTERNAL_FUNCTION_PARAMETERS) {
 		bool oversized = false;
 		if (!zp::parse<zp::Opt<zp::Bool>>(execute_data, oversized)) RETURN_THROWS();
 		if (UNEXPECTED(!PT_THIS.degradeToGeneralArray(oversized))) RETURN_THROWS();
 	});
 
-	cls.method<&ConstantArrayTypeBuilder::disableClosureDegradation>("disableClosureDegradation", reg::Public, {});
+	cls.method<&ConstantArrayTypeBuilder::disableClosureDegradation>(sigs::disableClosureDegradation);
 
-	cls.method<&ConstantArrayTypeBuilder::disableArrayDegradation>("disableArrayDegradation", reg::Public, {});
+	cls.method<&ConstantArrayTypeBuilder::disableArrayDegradation>(sigs::disableArrayDegradation);
 
 	cls.method<&ConstantArrayTypeBuilder::getArray>(sigs::getArray);
 

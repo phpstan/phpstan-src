@@ -865,7 +865,7 @@ void pt_register_has_offset_value_type()
 		PT_RETURN_VAL(PT_THIS.isAcceptedBy(acceptingType));
 	});
 
-	cls.method<&HasOffsetValueType::equals, zp::Obj>(sigs::equals);
+	cls.method<&HasOffsetValueType::equals, zp::TypeObj>(sigs::equals);
 	cls.op<PT_OP_EQUALS, &HasOffsetValueType::equals>();
 
 	cls.method<&HasOffsetValueType::describe, zp::Obj>(sigs::describe);

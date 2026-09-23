@@ -245,6 +245,15 @@ void pt_register_type_specifier_context()
 		PT_TSC_THIS.construct(isNull ? PT_TSC_NULL : value);
 	});
 
+	cls.method(sigs::create, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zend_long value;
+		bool isNull;
+		ZEND_PARSE_PARAMETERS_START(1, 1)
+			Z_PARAM_LONG_OR_NULL(value, isNull)
+		ZEND_PARSE_PARAMETERS_END();
+		pt_tsc_return_object(return_value, TypeSpecifierContext::create(isNull ? PT_TSC_NULL : value));
+	});
+
 	cls.method(sigs::createTrue, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		pt_tsc_return_object(return_value, TypeSpecifierContext::createTrue());

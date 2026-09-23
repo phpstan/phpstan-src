@@ -235,7 +235,7 @@ void pt_register_offset_access_type()
 	 * declares $result after them */
 	ptdecl::OffsetAccessType::declareProperties(cls);
 
-	cls.method<&OffsetAccessType::construct, zp::Obj, zp::Obj>(sigs::__construct);
+	cls.method<&OffsetAccessType::construct, zp::TypeObj, zp::TypeObj>(sigs::__construct);
 
 	cls.method<&OffsetAccessType::getReferencedClasses>(sigs::getReferencedClasses);
 	cls.op<PT_OP_GET_REFERENCED_CLASSES, &OffsetAccessType::getReferencedClasses>();
@@ -245,7 +245,7 @@ void pt_register_offset_access_type()
 
 	cls.method<&OffsetAccessType::getReferencedTemplateTypes, zp::Obj>(sigs::getReferencedTemplateTypes);
 
-	cls.method<&OffsetAccessType::equals, zp::Obj>(sigs::equals);
+	cls.method<&OffsetAccessType::equals, zp::TypeObj>(sigs::equals);
 
 	cls.method(sigs::describe, [](INTERNAL_FUNCTION_PARAMETERS) {
 		PT_ARGS(1, 1);

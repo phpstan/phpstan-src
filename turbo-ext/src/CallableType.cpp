@@ -507,7 +507,7 @@ public:
 		zv::Val returnType = thisReturnType();
 		if (UNEXPECTED(returnType.isUndef())) return zv::Val();
 		zval traversedReturnTypeRaw;
-		if (UNEXPECTED(!pt_call_fci(fci, fcc, 1, returnType.raw(), &traversedReturnTypeRaw))) return zv::Val();
+		if (UNEXPECTED(!pt_call_type_fci(fci, fcc, 1, returnType.raw(), &traversedReturnTypeRaw))) return zv::Val();
 		zv::Val traversedReturnType = zv::Val::adopt(traversedReturnTypeRaw);
 		int variadic = thisIsVariadic();
 		if (UNEXPECTED(variadic < 0)) return zv::Val();
@@ -571,7 +571,7 @@ public:
 		if (UNEXPECTED(rightReturnType.isUndef())) return zv::Val();
 		zv::Args args{returnType.raw(), rightReturnType.raw()};
 		zval traversedReturnTypeRaw;
-		if (UNEXPECTED(!pt_call_fci(fci, fcc, 2, args, &traversedReturnTypeRaw))) return zv::Val();
+		if (UNEXPECTED(!pt_call_type_fci(fci, fcc, 2, args, &traversedReturnTypeRaw))) return zv::Val();
 		zv::Val traversedReturnType = zv::Val::adopt(traversedReturnTypeRaw);
 		int variadic = thisIsVariadic();
 		if (UNEXPECTED(variadic < 0)) return zv::Val();
@@ -1073,7 +1073,7 @@ void pt_register_callable_type()
 		PT_RETURN_VAL(PT_THIS.isAcceptedBy(acceptingType));
 	});
 
-	cls.method<&CallableType::equals, zp::Obj>(sigs::equals);
+	cls.method<&CallableType::equals, zp::TypeObj>(sigs::equals);
 	cls.op<PT_OP_EQUALS, &CallableType::equals>();
 
 	cls.method<&CallableType::describe, zp::Obj>(sigs::describe);

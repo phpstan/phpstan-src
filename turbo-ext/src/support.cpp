@@ -584,7 +584,9 @@ zval *pt_trinary_singleton(zend_long value)
 		slots[2] = &PT_G(trinary_no);
 		for (int i = 0; i < 3; i++) {
 			object_init_ex(slots[i], impl);
-			ZVAL_LONG(OBJ_PROP_NUM(Z_OBJ_P(slots[i]), PT_TRI_PROP_VALUE), values[i]);
+			zval *value = OBJ_PROP_NUM(Z_OBJ_P(slots[i]), PT_TRI_PROP_VALUE);
+			ZVAL_LONG(value, values[i]);
+			Z_PROP_FLAG_P(value) = 0; /* the typed `int $value` is initialized now */
 		}
 		PT_G(trinary_inited) = true;
 	}
@@ -598,11 +600,25 @@ zval *pt_trinary_singleton(zend_long value)
 
 /* {{{ userland callback helpers */
 
+ZEND_COLD void pt_throw_undefined_method(zend_class_entry *ce, const char *lcname, size_t len)
+{
+	/* the engine names the method as the call spells it; the natives call
+	 * by lowercase name, so a Type method is spelled as the interface
+	 * declares it */
+	const char *name = lcname;
+	zend_class_entry *typeCe = pt_class_loaded(PT_CLASS_TYPE);
+	if (typeCe != NULL) {
+		zend_function *declared = (zend_function *) zend_hash_str_find_ptr(&typeCe->function_table, lcname, len);
+		if (declared != NULL) name = ZSTR_VAL(declared->common.function_name);
+	}
+	zend_throw_error(NULL, "Call to undefined method %s::%s()", ZSTR_VAL(ce->name), name);
+}
+
 zend_function *pt_find_method(zend_class_entry *ce, const char *lcname, size_t len)
 {
 	zend_function *fn = (zend_function *) zend_hash_str_find_ptr(&ce->function_table, lcname, len);
 	if (UNEXPECTED(fn == NULL)) {
-		zend_throw_error(NULL, "phpstan_turbo: method %s::%s not found", ZSTR_VAL(ce->name), lcname);
+		pt_throw_undefined_method(ce, lcname, len);
 	}
 	return fn;
 }
@@ -660,7 +676,7 @@ bool pt_call_scope_bool(zval *scope, const char *lcname, size_t len, uint32_t ar
 	zval ret;
 
 	if (UNEXPECTED(fn == NULL)) {
-		zend_throw_error(NULL, "phpstan_turbo: method %s::%s not found", ZSTR_VAL(ce->name), lcname);
+		pt_throw_undefined_method(ce, lcname, len);
 		return false;
 	}
 	zend_call_known_function(fn, Z_OBJ_P(scope), ce, &ret, argc, argv, NULL);
@@ -1021,6 +1037,20 @@ const pt_superglobal_name *pt_superglobal_names(size_t *count)
 {
 	*count = sizeof(pt_superglobals) / sizeof(pt_superglobals[0]);
 	return pt_superglobals;
+}
+
+HashTable *pt_persistent_string_list(const pt_superglobal_name *names, size_t count)
+{
+	HashTable *list = (HashTable *) pemalloc(sizeof(HashTable), 1);
+	zend_hash_init(list, (uint32_t) count, NULL, NULL, 1);
+	for (size_t i = 0; i < count; i++) {
+		zval value;
+		ZVAL_INTERNED_STR(&value, zend_string_init_interned(names[i].name, names[i].len, 1));
+		zend_hash_next_index_insert(list, &value);
+	}
+	GC_ADD_FLAGS(list, IS_ARRAY_IMMUTABLE);
+	GC_SET_REFCOUNT(list, 2);
+	return list;
 }
 
 /* {{{ PhpParser CallLike reads */

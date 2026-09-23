@@ -541,6 +541,12 @@ void pt_register_template_type_variance()
 		PT_TTV_THIS.construct(value);
 	});
 
+	cls.method(sigs::create, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zend_long value;
+		if (!zp::parse<zp::Long>(execute_data, value)) RETURN_THROWS();
+		pt_ttv_return_singleton(return_value, TemplateTypeVariance::create(value));
+	});
+
 	cls.method(sigs::createInvariant, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		pt_ttv_return_singleton(return_value, TemplateTypeVariance::createInvariant());

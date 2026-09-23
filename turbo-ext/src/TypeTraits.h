@@ -292,6 +292,20 @@ zv::Val pt_constant_string_get_value(zend_object *object);
  * exception (*retval is then released) */
 [[nodiscard]] bool pt_call_fci(zend_fcall_info *fci, zend_fcall_info_cache *fcc, uint32_t argc, zval *argv, zval *retval);
 
+/* pt_call_fci() for a traverse callback whose result the twin passes on
+ * where it declares a Type (a constructor parameter, TypeCombinator): any
+ * other value raises that TypeError here — an object is checked against
+ * the Type interface only when the callable is not native (the native
+ * callables return Types). false = pending exception (*retval is then
+ * released) */
+[[nodiscard]] bool pt_type_callback_result_check(zval *retval);
+[[nodiscard]] inline bool pt_call_type_fci(zend_fcall_info *fci, zend_fcall_info_cache *fcc, uint32_t argc, zval *argv, zval *retval)
+{
+	if (UNEXPECTED(!pt_call_fci(fci, fcc, argc, argv, retval))) return false;
+	if (EXPECTED(Z_TYPE_P(retval) == IS_OBJECT && fcc->function_handler != NULL && fcc->function_handler->type == ZEND_INTERNAL_FUNCTION)) return true;
+	return pt_type_callback_result_check(retval);
+}
+
 /* module startup: the internal helper classes the trait code needs */
 ZEND_COLD void pt_register_type_traits();
 
@@ -957,8 +971,8 @@ zv::Val pt_type_describe_generic_of(const char *identifier, size_t identifierLen
  * UNDEF = pending exception */
 zv::Val pt_type_generic_node_of(const char *identifier, size_t identifierLen, zval *type);
 /* $cb($type) / $cb($type, $right) for a zpp-parsed traverse callback,
- * checked to return an object (the twins' `callable(Type): Type`); UNDEF =
- * pending exception */
+ * checked like pt_call_type_fci() (the twins' `callable(Type): Type`);
+ * UNDEF = pending exception */
 zv::Val pt_type_traverse_call(zend_fcall_info *fci, zend_fcall_info_cache *fcc, zval *type, zval *right = NULL);
 /* `$a === $b` on two type zvals (the twins' identity checks after a
  * traverse) */
@@ -1062,7 +1076,7 @@ struct pt_template_ctor_args
 		Z_PARAM_OBJECT((args).variance) \
 		Z_PARAM_STR((args).name) \
 		Z_PARAM_OBJECT((args).bound) \
-		Z_PARAM_OBJECT_OR_NULL((args).defaultType) \
+		Z_PARAM_OBJECT_OF_CLASS_OR_NULL((args).defaultType, pt_ce_type_interface()) \
 	ZEND_PARSE_PARAMETERS_END(); \
 	if (UNEXPECTED(!pt_template_type_check_bound(EX(func)->common.scope, (args).bound, 5))) { \
 		RETURN_THROWS(); \

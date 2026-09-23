@@ -373,7 +373,7 @@ void pt_register_has_method_type()
 		PT_RETURN_VAL(PT_THIS.isAcceptedBy(acceptingType));
 	});
 
-	cls.method<&HasMethodType::equals, zp::Obj>(sigs::equals);
+	cls.method<&HasMethodType::equals, zp::TypeObj>(sigs::equals);
 
 	cls.method(sigs::describe, [](INTERNAL_FUNCTION_PARAMETERS) {
 		PT_ARGS(1, 1);

@@ -47,9 +47,12 @@ typedef struct {
 	const pt_native_visitor *native;
 } pt_visitor_plan;
 
-/* The splices recorded by one traverseArray() pass ($doNodes in the twin). */
+/* The splices recorded by one traverseArray() pass ($doNodes in the twin):
+ * the element's position, and its key — what array_splice() is handed */
 typedef struct {
 	zend_ulong pos;
+	zend_string *key; /* owned, NULL for an integer key */
+	zend_ulong index;
 	zval replacement; /* IS_ARRAY (owned) or IS_FALSE for remove */
 } pt_do_node;
 
@@ -59,13 +62,15 @@ typedef struct {
 	uint32_t capacity;
 } pt_do_nodes;
 
-static void pt_do_nodes_push(pt_do_nodes *dn, zend_ulong pos, zval *replacement)
+static void pt_do_nodes_push(pt_do_nodes *dn, zend_ulong pos, zend_string *key, zend_ulong index, zval *replacement)
 {
 	if (dn->count == dn->capacity) {
 		dn->capacity = dn->capacity == 0 ? 4 : dn->capacity * 2;
 		dn->items = (pt_do_node *) erealloc(dn->items, dn->capacity * sizeof(pt_do_node));
 	}
 	dn->items[dn->count].pos = pos;
+	dn->items[dn->count].key = key != NULL ? zend_string_copy(key) : NULL;
+	dn->items[dn->count].index = index;
 	if (replacement != NULL) {
 		ZVAL_COPY(&dn->items[dn->count].replacement, replacement);
 	} else {
@@ -78,6 +83,9 @@ static void pt_do_nodes_free(pt_do_nodes *dn)
 {
 	uint32_t i;
 	for (i = 0; i < dn->count; i++) {
+		if (dn->items[i].key != NULL) {
+			zend_string_release(dn->items[i].key);
+		}
 		zval_ptr_dtor(&dn->items[i].replacement);
 	}
 	if (dn->items != NULL) {
@@ -85,16 +93,24 @@ static void pt_do_nodes_free(pt_do_nodes *dn)
 	}
 }
 
-static void pt_trav_throw_logic(const char *format, const char *arg)
+static void pt_trav_throw_logic(const char *message)
 {
 	zend_string *name = zend_string_init("LogicException", sizeof("LogicException") - 1, 0);
 	zend_class_entry *ce = zend_lookup_class(name);
 	zend_string_release(name);
 	if (ce == NULL) {
-		zend_throw_error(NULL, format, arg);
+		zend_throw_error(NULL, "%s", message);
 		return;
 	}
-	zend_throw_exception_ex(ce, 0, format, arg);
+	zend_throw_exception(ce, message, 0);
+}
+
+/* "... returned invalid value of type " . gettype($return) */
+static void pt_trav_throw_invalid_return(const char *hook, zval *value)
+{
+	zend_string *message = zend_strpprintf(0, "%s() returned invalid value of type %s", hook, ZSTR_VAL(zend_zval_get_legacy_type(value)));
+	pt_trav_throw_logic(ZSTR_VAL(message));
+	zend_string_release(message);
 }
 
 /* Node subnode info incl. names, resolved lazily per class. */
@@ -243,10 +259,11 @@ public:
 		zv::ArrRef(prop.raw()).push(visitor);
 	}
 
-	void removeVisitor(zv::Ref visitor)
+	/* false means it threw */
+	bool removeVisitor(zv::Ref visitor)
 	{
 		zv::Ref prop = visitorsProp();
-		if (!prop.isArray()) return;
+		if (UNEXPECTED(!prop.isArray())) return throwVisitorsUninitialized();
 
 		/* array_search() with loose comparison, like the PHP implementation */
 		bool found = false;
@@ -261,7 +278,7 @@ public:
 			}
 			pos++;
 		}
-		if (!found) return;
+		if (!found) return true;
 
 		/* array_splice($visitors, $index, 1, []) — reindexes */
 		zv::ArrRef old(prop.raw());
@@ -273,20 +290,19 @@ public:
 			}
 		}
 		prop.assign(std::move(rebuilt));
+		return true;
 	}
 
 	/* traverse(); UNDEF result means a pending exception */
 	zv::Val traverse(HashTable *nodesTable)
 	{
-		zv::ObjRef selfObj(self);
-
 		/* $this->stopTraversal = false */
-		selfObj.propAtWrite(slots::stopTraversal, zv::Val::boolean(false));
+		writeStopTraversal(false);
 
 		if (UNEXPECTED(!buildVisitorPlan())) return zv::Val();
 
-		/* work on our own copy of the nodes array */
-		zv::Arr nodes = zv::Arr::adoptTable(zend_array_dup(nodesTable));
+		/* the by-value $nodes parameter */
+		zv::Arr nodes = zv::Arr::copyOfTable(nodesTable);
 
 		/* beforeTraverse */
 		for (uint32_t vi = 0; vi < nvisitors; vi++) {
@@ -300,16 +316,12 @@ public:
 			if (UNEXPECTED(ret.isUndef())) return zv::Val();
 			if (ret.ref().isArray()) {
 				nodes = zv::Arr::adoptVal(std::move(ret));
-				nodes.separate();
 			}
 		}
 
-		nodes.separate();
-		zv::Arr replacement = traverseArray(nodes.arrRef());
+		zv::Val traversed = traverseArray(nodes.ref());
 		if (UNEXPECTED(failed)) return zv::Val();
-		if (!replacement.isUndef()) {
-			nodes = std::move(replacement);
-		}
+		nodes = zv::Arr::adoptVal(std::move(traversed));
 
 		/* afterTraverse, in reverse */
 		for (int64_t vi = (int64_t) nvisitors - 1; vi >= 0; vi--) {
@@ -323,7 +335,7 @@ public:
 		}
 
 		/* persist stopTraversal like the PHP implementation */
-		selfObj.propAtWrite(slots::stopTraversal, zv::Val::boolean(stop));
+		writeStopTraversal(stop);
 
 		return zv::Val(std::move(nodes));
 	}
@@ -349,29 +361,20 @@ private:
 			zv::Ref value = zv::Ref(OBJ_PROP(node, info->offsets[i])).deref();
 
 			if (value.isArray()) {
-				/* separate so we can mutate in place */
-				SEPARATE_ARRAY(value.raw());
-				/* Hold a reference to the table for the whole traversal, the
-				 * way the PHP twin's `$subNode = $node->$name` local does.
-				 * traverseArray() walks the buckets in place while the visitor
-				 * hooks in between run arbitrary PHP, and that code can reach
-				 * this very property: PHPStan resolves a PHPDoc from inside
-				 * enterNode(), which re-enters the parser for the file being
-				 * traversed. With the array owned by the property alone,
-				 * assigning to the property - or dropping the node's last
-				 * reference - frees the table under the loop, and a write into
-				 * it reallocates the buckets the iterator holds; the traversal
-				 * then reads freed memory, which surfaces as "Invalid node
-				 * structure: Contains nested arrays" or a segfault. A reference
-				 * of our own keeps the table alive, and being shared it makes
-				 * any writer separate first, so the iteration always sees the
-				 * array it started with. */
-				zv::Val arrayGuard = zv::Val::copyOf(zv::Ref(value.raw()));
-				zv::Arr replacement;
-				pt_engine_with_stack([&]() { replacement = traverseArray(zv::ArrRef(value.raw())); });
+				/* $node->$name = $this->traverseArray($subNode): the traversal
+				 * works on its own reference to the table (the twin's
+				 * $subNode) and writes into a copy made on the first write, so
+				 * nothing - a visitor holding the parent's array, the property
+				 * itself mid-traversal - sees the table change under it, and
+				 * an untouched array (the shared [] included) is never copied */
+				zv::Val result;
+				pt_engine_with_stack([&]() { result = traverseArray(zv::Ref(value.raw())); });
 				if (UNEXPECTED(failed)) return;
-				if (!replacement.isUndef()) {
-					value.assign(std::move(replacement));
+				/* the assignment is skipped only when it would store the table
+				 * the property already holds; a visitor may have reassigned it */
+				zv::Ref current = zv::Ref(OBJ_PROP(node, info->offsets[i])).deref();
+				if (!current.isArray() || Z_ARRVAL_P(current.raw()) != Z_ARRVAL_P(result.raw())) {
+					if (UNEXPECTED(!writeSubnode(node, info->names[i], result.ref()))) return;
 				}
 				if (stop) return;
 				continue;
@@ -441,7 +444,7 @@ private:
 						break;
 					}
 				}
-				pt_trav_throw_logic("enterNode() returned invalid value of type %s", zend_zval_value_name(retRef.raw()));
+				pt_trav_throw_invalid_return("enterNode", retRef.raw());
 				failed = true;
 				return;
 			}
@@ -495,41 +498,69 @@ private:
 					}
 				}
 				if (retRef.isArray()) {
-					pt_trav_throw_logic("leaveNode() may only return an array if the parent structure is an array%s", "");
+					pt_trav_throw_logic("leaveNode() may only return an array if the parent structure is an array");
 					failed = true;
 					return;
 				}
-				pt_trav_throw_logic("leaveNode() returned invalid value of type %s", zend_zval_value_name(retRef.raw()));
+				pt_trav_throw_invalid_return("leaveNode", retRef.raw());
 				failed = true;
 				return;
 			}
 		}
 	}
 
-	/*
-	 * Mirrors traverseArray(): traverses the table behind `nodes` in place
-	 * (the caller passes a separated, exclusively-owned array) and returns
-	 * the rebuilt array when splices (REMOVE_NODE / replacement arrays) were
-	 * recorded, an UNDEF Arr otherwise.
-	 */
-	zv::Arr traverseArray(zv::ArrRef nodes)
+	/* $nodes[$i] = $node on the traversal's copy of the array, made on the
+	 * first write (the twin's local $nodes separating from its foreach) */
+	static void writeElement(zv::Val &working, zv::Val &original, zend_string *key, zend_ulong index, zv::Ref value)
 	{
+		if (working.isUndef()) {
+			zval copy;
+			ZVAL_ARR(&copy, zend_array_dup(Z_ARRVAL_P(original.raw())));
+			working = zv::Val::adopt(copy);
+		}
+		HashTable *table = Z_ARRVAL_P(working.raw());
+		zval *slot = key != NULL ? zend_hash_find(table, key) : zend_hash_index_find(table, index);
+		if (slot != NULL && Z_ISREF_P(slot)) {
+			zv::Ref(Z_REFVAL_P(slot)).assign(zv::Val::copyOf(value));
+			return;
+		}
+		Z_TRY_ADDREF_P(value.raw());
+		if (key != NULL) {
+			zend_hash_update(table, key, value.raw());
+		} else {
+			zend_hash_index_update(table, index, value.raw());
+		}
+	}
+
+	/*
+	 * Mirrors traverseArray(): iterates the array it is handed (holding its
+	 * own reference, like the twin's by-value parameter and foreach), writes
+	 * replacements into a copy made on the first one, applies the recorded
+	 * splices (REMOVE_NODE / replacement arrays) and returns the resulting
+	 * array — the input's own table when nothing changed. UNDEF means a
+	 * pending exception.
+	 */
+	zv::Val traverseArray(zv::Ref nodesZv)
+	{
+		zv::Val original = zv::Val::copyOf(nodesZv);
+		zv::Val working;
 		pt_do_nodes doNodes = {};
 		zend_class_entry *nodeIface = pt_class(PT_CLASS_NODE);
 		if (UNEXPECTED(nodeIface == NULL)) {
 			failed = true;
-			return zv::Arr();
+			return zv::Val();
 		}
 
 		zend_ulong pos = 0;
-		for (auto nodesEntry : nodes) {
+		for (auto nodesEntry : zv::ArrRef(original.raw())) {
 			zend_ulong i = pos++;
-			zv::Ref slot = nodesEntry.value();
-			zv::Ref value = slot.deref();
+			zend_string *key = nodesEntry.stringKeyOrNull();
+			zend_ulong index = nodesEntry.indexKey();
+			zv::Ref value = nodesEntry.value().deref();
 
 			if (!value.instanceOf(nodeIface)) {
 				if (UNEXPECTED(value.isArray())) {
-					pt_trav_throw_logic("Invalid node structure: Contains nested arrays%s", "");
+					pt_trav_throw_logic("Invalid node structure: Contains nested arrays");
 					failed = true;
 					break;
 				}
@@ -568,19 +599,19 @@ private:
 						break;
 					}
 					/* $nodes[$i] = $node = $return */
+					writeElement(working, original, key, index, retRef);
 					node = retRef.asObject();
-					slot.assign(std::move(ret));
 					continue;
 				}
 				if (retRef.isArray()) {
-					pt_do_nodes_push(&doNodes, i, retRef.raw());
+					pt_do_nodes_push(&doNodes, i, key, index, retRef.raw());
 					skipToNext = true;
 					break;
 				}
 				if (retRef.isLong()) {
 					zend_long code = retRef.asLong();
 					if (code == REMOVE_NODE) {
-						pt_do_nodes_push(&doNodes, i, NULL);
+						pt_do_nodes_push(&doNodes, i, key, index, NULL);
 						skipToNext = true;
 						break;
 					}
@@ -597,12 +628,12 @@ private:
 						break;
 					}
 					if (code == REPLACE_WITH_NULL) {
-						pt_trav_throw_logic("REPLACE_WITH_NULL can not be used if the parent structure is an array%s", "");
+						pt_trav_throw_logic("REPLACE_WITH_NULL can not be used if the parent structure is an array");
 						failed = true;
 						break;
 					}
 				}
-				pt_trav_throw_logic("enterNode() returned invalid value of type %s", zend_zval_value_name(retRef.raw()));
+				pt_trav_throw_invalid_return("enterNode", retRef.raw());
 				failed = true;
 				break;
 			}
@@ -640,18 +671,18 @@ private:
 						failed = true;
 						break;
 					}
+					writeElement(working, original, key, index, retRef);
 					node = retRef.asObject();
-					slot.assign(std::move(ret));
 					continue;
 				}
 				if (retRef.isArray()) {
-					pt_do_nodes_push(&doNodes, i, retRef.raw());
+					pt_do_nodes_push(&doNodes, i, key, index, retRef.raw());
 					break;
 				}
 				if (retRef.isLong()) {
 					zend_long code = retRef.asLong();
 					if (code == REMOVE_NODE) {
-						pt_do_nodes_push(&doNodes, i, NULL);
+						pt_do_nodes_push(&doNodes, i, key, index, NULL);
 						break;
 					}
 					if (code == STOP_TRAVERSAL) {
@@ -659,12 +690,12 @@ private:
 						break;
 					}
 					if (code == REPLACE_WITH_NULL) {
-						pt_trav_throw_logic("REPLACE_WITH_NULL can not be used if the parent structure is an array%s", "");
+						pt_trav_throw_logic("REPLACE_WITH_NULL can not be used if the parent structure is an array");
 						failed = true;
 						break;
 					}
 				}
-				pt_trav_throw_logic("leaveNode() returned invalid value of type %s", zend_zval_value_name(retRef.raw()));
+				pt_trav_throw_invalid_return("leaveNode", retRef.raw());
 				failed = true;
 				break;
 			}
@@ -674,13 +705,29 @@ private:
 
 		if (UNEXPECTED(failed)) {
 			pt_do_nodes_free(&doNodes);
-			return zv::Arr();
+			return zv::Val();
 		}
 
-		zv::Arr rebuilt;
-		if (doNodes.count > 0) {
-			/* apply the recorded splices in one rebuild pass */
-			rebuilt = zv::Arr::create(nodes.size());
+		zv::Val result = working.isUndef() ? std::move(original) : std::move(working);
+		if (doNodes.count > 0 && !zend_array_is_list(Z_ARRVAL_P(result.raw()))) {
+			/* while (list($i, $replace) = array_pop($doNodes))
+			 *     array_splice($nodes, $i, 1, $replace); */
+			for (uint32_t k = doNodes.count; k-- > 0; ) {
+				pt_do_node &splice = doNodes.items[k];
+				if (splice.key != NULL) {
+					zend_type_error("array_splice(): Argument #2 ($offset) must be of type int, string given");
+					failed = true;
+					pt_do_nodes_free(&doNodes);
+					return zv::Val();
+				}
+				zval *replacement = &splice.replacement;
+				result = arraySplice(Z_ARRVAL_P(result.raw()), (zend_long) splice.index, Z_TYPE_P(replacement) == IS_ARRAY ? Z_ARRVAL_P(replacement) : NULL);
+			}
+		} else if (doNodes.count > 0) {
+			/* on a list every key is its position and each splice leaves
+			 * the positions below it alone: one rebuild pass does them all */
+			zv::ArrRef nodes(result.raw());
+			zv::Arr rebuilt = zv::Arr::create(nodes.size());
 			uint32_t cursor = 0;
 			zend_ulong rebuildPos = 0;
 			for (auto nodesEntry : nodes) {
@@ -698,10 +745,54 @@ private:
 				}
 				rebuildPos++;
 			}
+			result = zv::Val(std::move(rebuilt));
 		}
 
 		pt_do_nodes_free(&doNodes);
-		return rebuilt;
+		return result;
+	}
+
+	/* array_splice($nodes, $offset, 1, $replacement) into a new array: the
+	 * offset clamped like array_splice() does, the integer keys renumbered,
+	 * the string keys kept; NULL replacement = [] */
+	static zv::Val arraySplice(HashTable *nodes, zend_long offset, HashTable *replacement)
+	{
+		zend_long count = (zend_long) zend_hash_num_elements(nodes);
+		if (offset > count) {
+			offset = count;
+		} else if (offset < 0) {
+			offset = count + offset < 0 ? 0 : count + offset;
+		}
+		zend_long length = offset + 1 > count ? count - offset : 1;
+
+		zv::Arr spliced = zv::Arr::create((uint32_t) (count - length + (replacement != NULL ? zend_hash_num_elements(replacement) : 0)));
+		zv::ArrRef out(spliced.raw());
+		auto insertReplacement = [&]() {
+			if (replacement == NULL) return;
+			for (auto entry : zv::TableRef(replacement)) {
+				out.push(entry.value());
+			}
+		};
+		zend_long position = 0;
+		for (auto entry : zv::TableRef(nodes)) {
+			if (position == offset) {
+				insertReplacement();
+			}
+			if (position < offset || position >= offset + length) {
+				zend_string *key = entry.stringKeyOrNull();
+				if (key != NULL) {
+					Z_TRY_ADDREF_P(entry.value().raw());
+					zend_hash_update(out.table(), key, entry.value().raw());
+				} else {
+					out.push(entry.value());
+				}
+			}
+			position++;
+		}
+		if (offset == count) {
+			insertReplacement();
+		}
+		return zv::Val(std::move(spliced));
 	}
 
 	/* $old instanceof Stmt && $new instanceof Expr (and vice versa)
@@ -714,25 +805,49 @@ private:
 
 		zv::ObjRef oldRef(oldNode);
 		zv::ObjRef newRef(newNode);
-		if (oldRef.instanceOf(stmtCe) && newRef.instanceOf(exprCe)) {
-			pt_trav_throw_logic("Trying to replace statement with expression. Are you missing a Stmt_Expression wrapper?%s", "");
-			return false;
+		bool statementWithExpression = oldRef.instanceOf(stmtCe) && newRef.instanceOf(exprCe);
+		if (!statementWithExpression && !(oldRef.instanceOf(exprCe) && newRef.instanceOf(stmtCe))) return true;
+
+		/* "... ({$old->getType()}) ... ({$new->getType()})" */
+		zv::Val oldType = nodeType(oldNode);
+		if (UNEXPECTED(oldType.isUndef())) return false;
+		zv::Val newType = nodeType(newNode);
+		if (UNEXPECTED(newType.isUndef())) return false;
+		zend_string *message = statementWithExpression
+			? zend_strpprintf(0, "Trying to replace statement (%s) with expression (%s). Are you missing a Stmt_Expression wrapper?", Z_STRVAL_P(oldType.raw()), Z_STRVAL_P(newType.raw()))
+			: zend_strpprintf(0, "Trying to replace expression (%s) with statement (%s)", Z_STRVAL_P(oldType.raw()), Z_STRVAL_P(newType.raw()));
+		pt_trav_throw_logic(ZSTR_VAL(message));
+		zend_string_release(message);
+		return false;
+	}
+
+	/* $node->getType() as a string; UNDEF means a pending exception */
+	static zv::Val nodeType(zend_object *node)
+	{
+		zval type;
+		ZVAL_UNDEF(&type);
+		zend_call_method_with_0_params(node, node->ce, NULL, "gettype", &type);
+		if (UNEXPECTED(EG(exception))) {
+			zval_ptr_dtor(&type);
+			return zv::Val();
 		}
-		if (oldRef.instanceOf(exprCe) && newRef.instanceOf(stmtCe)) {
-			pt_trav_throw_logic("Trying to replace expression with statement%s", "");
-			return false;
+		zv::Val owned = zv::Val::adopt(type);
+		if (Z_TYPE_P(owned.raw()) != IS_STRING) {
+			zend_string *string = zval_get_string(owned.raw());
+			if (UNEXPECTED(EG(exception))) {
+				zend_string_release(string);
+				return zv::Val();
+			}
+			return zv::Val::adoptString(string);
 		}
-		return true;
+		return owned;
 	}
 
 	/* Builds the per-visitor hook plan from $this->visitors; false on error. */
 	bool buildVisitorPlan()
 	{
 		zv::Ref visitors = visitorsProp();
-		if (UNEXPECTED(!visitors.isArray())) {
-			zend_throw_error(NULL, "phpstan_turbo: NodeTraverser visitors is not an array");
-			return false;
-		}
+		if (UNEXPECTED(!visitors.isArray())) return throwVisitorsUninitialized();
 
 		zend_function *baseEnter = NULL;
 		zend_function *baseLeave = NULL;
@@ -832,6 +947,27 @@ private:
 		return zv::ObjRef(self).propAt(slots::visitors).deref();
 	}
 
+	/* the typed property is an array unless a subclass unset() it: reading
+	 * it then throws the engine's "must not be accessed before
+	 * initialization" Error, as the twin's read does; always false */
+	bool throwVisitorsUninitialized() const
+	{
+		zval rv;
+		zend_read_property(self->ce, self, "visitors", sizeof("visitors") - 1, false, &rv);
+		if (!EG(exception)) {
+			zend_throw_error(NULL, "phpstan_turbo: NodeTraverser visitors is not an array");
+		}
+		return false;
+	}
+
+	/* $this->stopTraversal = $value — a typed property the constructor
+	 * leaves uninitialized, so the write also clears IS_PROP_UNINIT */
+	void writeStopTraversal(bool value)
+	{
+		zv::ObjRef(self).propAtWrite(slots::stopTraversal, zv::Val::boolean(value));
+		Z_PROP_FLAG_P(OBJ_PROP_NUM(self, slots::stopTraversal)) = 0;
+	}
+
 	zend_object *self;
 	pt_visitor_plan *plan = NULL;
 	uint32_t nvisitors = 0;
@@ -855,9 +991,10 @@ void pt_register_node_traverser()
 {
 	reg::Class cls("PhpParser\\NodeTraverser");
 	ptdecl::NodeTraverser::declareClass(cls);
-	/* "visitors" must stay slot 0 and "stopTraversal" slot 1 (PT_NT_PROP_*) */
-	cls.protectedArrayProperty("visitors");
-	cls.protectedBoolProperty("stopTraversal", false);
+	/* `protected array $visitors = []` and `protected bool $stopTraversal`
+	 * (typed, uninitialized until traverse()), exactly the twin's: a
+	 * subclass may redeclare them */
+	ptdecl::NodeTraverser::declareProperties(cls);
 
 	cls.classConstantLong("DONT_TRAVERSE_CHILDREN", NodeTraverser::DONT_TRAVERSE_CHILDREN);
 	cls.classConstantLong("STOP_TRAVERSAL", NodeTraverser::STOP_TRAVERSAL);
@@ -883,7 +1020,7 @@ void pt_register_node_traverser()
 	cls.method(sigs::removeVisitor, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *visitor;
 		if (!zp::parse<zp::Obj>(execute_data, visitor)) RETURN_THROWS();
-		NodeTraverser(Z_OBJ_P(ZEND_THIS)).removeVisitor(zv::Ref(visitor));
+		if (UNEXPECTED(!NodeTraverser(Z_OBJ_P(ZEND_THIS)).removeVisitor(zv::Ref(visitor)))) RETURN_THROWS();
 	});
 
 	cls.method(sigs::traverse, [](INTERNAL_FUNCTION_PARAMETERS) {

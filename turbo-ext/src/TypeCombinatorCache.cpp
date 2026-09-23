@@ -16,16 +16,26 @@
  * call sites, and every place in the analyser comparing Type objects by identity
  * - a proxy for "the same reference" that only holds while equal values stay
  * distinct objects - then narrowed or resolved types it never meant to
- * (phpstan/phpstan#15151). The memo only hands one result to the structurally
- * equal argument tuples of the same operation, which is the sharing
- * TypeCombinator itself produces when it returns an operand.
+ * (phpstan/phpstan#15151).
  *
- * A result that IS one of the operands is not shared at all: TypeCombinator
- * hands back the operand of the call at hand (union() of one type, remove() of
- * nothing), and callers test that identity (ArrayType::setExistingOffsetValueType()
- * treats `union(...) === $this->itemType` as "nothing was written"). Such an
- * entry records the operand's position instead, and a hit returns the operand
- * at that position of the new call — the object the PHP implementation returns.
+ * The memo does hand one result object of its own to all the structurally
+ * equal argument tuples of the same operation, where the PHP implementation
+ * computes a fresh object per call — and the objects nested in the shared
+ * result (a new union's members, say) are the ones of the call that computed
+ * it. That sharing is what memoization is; nothing compares such results by
+ * identity with the ones of other calls.
+ *
+ * A result that IS one of the operands, or a member of a union or intersection
+ * operand, is never shared: TypeCombinator hands back that object of the call
+ * at hand (union() of one type, remove() of nothing, removeNull() of `T|null`
+ * returning the `T` member), and callers test that identity
+ * (ArrayType::setExistingOffsetValueType() treats `union(...) === $this->itemType`
+ * as "nothing was written"). An operand result records the operand's position
+ * instead, and a hit returns the operand at that position of the new call; a
+ * member result is marked as one, and a hit returns the member of the new
+ * call's operands with the recorded member's structural hash (unique among
+ * all the operands' members, or the call is not memoized) — in both cases the
+ * object the PHP implementation returns.
  *
  * Two structures back this:
  *
@@ -59,7 +69,12 @@
  */
 
 #include "support.h"
+#include "TypeTraits.h"
+#include "generated/IntersectionType.h"
 #include "generated/TypeCombinatorCache.h"
+#include "generated/UnionType.h"
+
+namespace sigs = ptdecl::TypeCombinatorCache::sig;
 #include "zv.h"
 
 #include <Zend/zend_weakrefs.h>
@@ -109,8 +124,9 @@ struct Hash128
 /* An occupied memo slot borrows its result; result == NULL marks an empty
  * slot, result == MEMO_TOMBSTONE a deleted one (the probe chain must stay
  * intact, so deletion cannot empty a slot). A result that was an operand of
- * the call carries the operand's position + 1 in the pointer's alignment bits
- * (0 = a result of its own); the slot stays 24 bytes. */
+ * the call carries the operand's position + 1 in the pointer's alignment bits,
+ * a result that was a member of an operand MEMO_MEMBER_TAG (0 = a result of
+ * its own); the slot stays 24 bytes. */
 struct MemoSlot
 {
 	Hash128 key;
@@ -119,11 +135,12 @@ struct MemoSlot
 
 #define MEMO_TOMBSTONE ((zend_object *) 1)
 
-/* The alignment bits of a zend_object pointer: operand positions up to this
- * count fit next to the pointer; a call returning a later operand is not
- * memoized. */
+/* The alignment bits of a zend_object pointer: the highest value marks a
+ * member result, operand positions up to the count below it fit next to the
+ * pointer; a call returning a later operand is not memoized. */
 static constexpr uintptr_t MEMO_OPERAND_TAG_MASK = alignof(zend_object) - 1;
-static constexpr uint32_t MEMO_OPERAND_POSITIONS_LIMIT = (uint32_t) MEMO_OPERAND_TAG_MASK;
+static constexpr uintptr_t MEMO_MEMBER_TAG = MEMO_OPERAND_TAG_MASK;
+static constexpr uint32_t MEMO_OPERAND_POSITIONS_LIMIT = (uint32_t) MEMO_MEMBER_TAG - 1;
 static_assert(MEMO_OPERAND_POSITIONS_LIMIT >= 3, "zend_object pointers must leave alignment bits for the operand position");
 
 static zend_always_inline zend_object *memoSlotObject(const zend_object *result)
@@ -388,6 +405,107 @@ static bool hashObject(zend_object *obj, Hash128 &out, uint32_t depth)
 
 /* }}} */
 
+/* {{{ member results */
+
+/* The members of a union or intersection argument (the declared $types
+ * slot, borrowed), NULL for any other argument */
+static zval *argumentMembers(zval *arg)
+{
+	zend_object *obj = Z_OBJ_P(arg);
+	uint32_t slot;
+	if (instanceof_function(obj->ce, pt_ce_union_type)) {
+		slot = ptdecl::UnionType::slot::types;
+	} else if (instanceof_function(obj->ce, pt_ce_intersection_type)) {
+		slot = ptdecl::IntersectionType::slot::types;
+	} else {
+		return NULL;
+	}
+	zval *members = OBJ_PROP_NUM(obj, slot);
+	return Z_TYPE_P(members) == IS_ARRAY ? members : NULL;
+}
+
+/* The structural hash of an argument's member; false when it has none (not
+ * a structurally hashed object, or too deep) */
+static bool memberHash(zval *member, Hash128 &out)
+{
+	ZVAL_DEREF(member);
+	if (Z_TYPE_P(member) != IS_OBJECT || cePlan(Z_OBJCE_P(member)).kind != CE_STRUCTURAL) return false;
+	return hashObject(Z_OBJ_P(member), out, 0);
+}
+
+/* Whether the computed result is a member of a union or intersection
+ * argument, and if so whether a structurally equal call can find the member
+ * it has to return again: the result is a member exactly once, and no other
+ * member of any argument hashes like it. isMember false = not a member (the
+ * result may still be memoized); findable false = do not memoize. */
+static void classifyMemberResult(zend_object *result, zval *args, uint32_t argc, bool &isMember, bool &findable)
+{
+	isMember = false;
+	findable = false;
+	uint32_t occurrences = 0;
+	for (uint32_t i = 0; i < argc; i++) {
+		zval *arg = &args[i];
+		ZVAL_DEREF(arg);
+		zval *members = argumentMembers(arg);
+		if (members == NULL) continue;
+		for (zv::ArrayEntry entry : zv::ArrRef(members)) {
+			zval *member = entry.value().deref().raw();
+			if (Z_TYPE_P(member) == IS_OBJECT && Z_OBJ_P(member) == result) {
+				occurrences++;
+			}
+		}
+	}
+	if (occurrences == 0) return;
+	isMember = true;
+	if (occurrences > 1) return;
+
+	zval resultZv;
+	ZVAL_OBJ(&resultZv, result);
+	Hash128 resultHash;
+	if (!memberHash(&resultZv, resultHash)) return;
+	uint32_t sameHash = 0;
+	for (uint32_t i = 0; i < argc; i++) {
+		zval *arg = &args[i];
+		ZVAL_DEREF(arg);
+		zval *members = argumentMembers(arg);
+		if (members == NULL) continue;
+		for (zv::ArrayEntry entry : zv::ArrRef(members)) {
+			Hash128 h;
+			if (!memberHash(entry.value().raw(), h)) continue;
+			if (h.a == resultHash.a && h.b == resultHash.b) {
+				sameHash++;
+			}
+		}
+	}
+	findable = sameHash == 1;
+}
+
+/* The member of this call's union or intersection arguments hashing like
+ * the recorded member result of a structurally equal call (borrowed), NULL
+ * when there is none */
+static zval *findMemberResult(zend_object *recorded, zval *args, uint32_t argc)
+{
+	zval recordedZv;
+	ZVAL_OBJ(&recordedZv, recorded);
+	Hash128 recordedHash;
+	if (!memberHash(&recordedZv, recordedHash)) return NULL;
+	for (uint32_t i = 0; i < argc; i++) {
+		zval *arg = &args[i];
+		ZVAL_DEREF(arg);
+		zval *members = argumentMembers(arg);
+		if (members == NULL) continue;
+		for (zv::ArrayEntry entry : zv::ArrRef(members)) {
+			zval *member = entry.value().deref().raw();
+			Hash128 h;
+			if (!memberHash(member, h)) continue;
+			if (h.a == recordedHash.a && h.b == recordedHash.b) return member;
+		}
+	}
+	return NULL;
+}
+
+/* }}} */
+
 /* {{{ RecursionGuard
 
  * While RecursionGuard::$context is non-empty, run()/runOnObjectIdentity() short-circuit
@@ -587,16 +705,24 @@ public:
 			MemoSlot *slot = memoLookup(key);
 			if (slot != NULL) {
 				uintptr_t operandTag = (uintptr_t) slot->result & MEMO_OPERAND_TAG_MASK;
-				if (operandTag != 0) {
+				if (operandTag == MEMO_MEMBER_TAG) {
+					/* the member of this call's operands, found by the recorded
+					 * member's hash (unique when the entry was made); computed
+					 * afresh should it be missing */
+					zval *member = findMemberResult(memoSlotObject(slot->result), args, argc);
+					if (EXPECTED(member != NULL)) return zv::Val::copyOf(zv::Ref(member));
+					memoizable = false;
+				} else if (operandTag != 0) {
 					/* every argument hashed above is an object */
 					zval *operand = &args[operandTag - 1];
 					ZVAL_DEREF(operand);
 					return zv::Val::copyOf(zv::Ref(operand));
+				} else {
+					GC_ADDREF(slot->result);
+					zval hit;
+					ZVAL_OBJ(&hit, slot->result);
+					return zv::Val::adopt(hit);
 				}
-				GC_ADDREF(slot->result);
-				zval hit;
-				ZVAL_OBJ(&hit, slot->result);
-				return zv::Val::adopt(hit);
 			}
 		}
 
@@ -617,6 +743,20 @@ public:
 					break;
 				}
 				operandTag = (uintptr_t) i + 1;
+			}
+		}
+		if (memoizable) {
+			/* a member of a union or intersection operand is recorded as one;
+			 * a member that is also an operand, or that a structurally equal
+			 * call could not find again unambiguously, is not memoized */
+			bool isMember, findable;
+			classifyMemberResult(Z_OBJ_P(result.raw()), args, argc, isMember, findable);
+			if (isMember) {
+				if (operandTag != 0 || !findable) {
+					memoizable = false;
+				} else {
+					operandTag = MEMO_MEMBER_TAG;
+				}
 			}
 		}
 
@@ -748,13 +888,11 @@ void pt_type_combinator_cache_clear()
 
 void pt_register_type_combinator_cache()
 {
-	static const char *TYPE_CLASS = "PHPStan\\Type\\Type";
-
 	reg::Class cls("PHPStan\\Type\\TypeCombinatorCache");
 	ptdecl::TypeCombinatorCache::declareClass(cls);
 	ptdecl::TypeCombinatorCache::declareProperties(cls);
 
-	cls.method("union", reg::PublicStatic, 0, { reg::variadicObj("types", TYPE_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::union_, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *types;
 		uint32_t count;
 		ZEND_PARSE_PARAMETERS_START(0, -1)
@@ -763,7 +901,7 @@ void pt_register_type_combinator_cache()
 		PT_RETURN_VAL(pt_type_combinator_cache_union(count, types));
 	});
 
-	cls.method("intersect", reg::PublicStatic, 0, { reg::variadicObj("types", TYPE_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::intersect, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *types;
 		uint32_t count;
 		ZEND_PARSE_PARAMETERS_START(0, -1)
@@ -772,13 +910,13 @@ void pt_register_type_combinator_cache()
 		PT_RETURN_VAL(pt_type_combinator_cache_intersect(count, types));
 	});
 
-	cls.method("remove", reg::PublicStatic, 2, { reg::obj("fromType", TYPE_CLASS), reg::obj("typeToRemove", TYPE_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::remove, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *fromType, *typeToRemove;
 		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, fromType, typeToRemove)) RETURN_THROWS();
 		PT_RETURN_VAL(pt_type_combinator_cache_remove(fromType, typeToRemove));
 	});
 
-	cls.method("clearCache", reg::PublicStatic, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::clearCache, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		TypeCombinatorCache::clear();
 	});

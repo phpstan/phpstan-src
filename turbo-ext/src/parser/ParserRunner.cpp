@@ -12,6 +12,8 @@
 
 #include "ParserEngine.h"
 #include "../generated/ParserRunner.h"
+
+namespace sigs = ptdecl::ParserRunner::sig;
 #include "../Engine.h"
 #include "ParserRunnerActionsSplit.h"
 
@@ -69,7 +71,7 @@ ParserEngine::ParserEngine(zval *parserObj, zval *errorHandler)
 	tables = &g_tables;
 	semValue = zv::Val::null();
 	zend_hash_init(&createdArrays, 8, NULL, ZVAL_PTR_DTOR, 0);
-	zend_hash_init(&parenthesizedArrowFns, 8, NULL, NULL, 0);
+	zend_hash_init(&parenthesizedArrowFns, 8, NULL, ZVAL_PTR_DTOR, 0);
 }
 
 ParserEngine::~ParserEngine()
@@ -483,11 +485,14 @@ void ParserEngine::createdArraysRemove(zv::Ref arrayNode)
 	zend_hash_index_del(&createdArrays, Z_OBJ_HANDLE_P(arrayNode.raw()));
 }
 
+/* keeps the node alive like the twin's SplObjectStorage: error recovery can
+ * drop a parenthesized arrow function, and a later one reusing its handle
+ * must not pass for parenthesized */
 void ParserEngine::parenthesizedArrowFunctionsAdd(zv::Ref expr)
 {
-	zval null;
-	ZVAL_NULL(&null);
-	zend_hash_index_update(&parenthesizedArrowFns, Z_OBJ_HANDLE_P(expr.raw()), &null);
+	zval copy;
+	ZVAL_COPY(&copy, expr.raw());
+	zend_hash_index_update(&parenthesizedArrowFns, Z_OBJ_HANDLE_P(expr.raw()), &copy);
 }
 
 /* }}} */
@@ -1231,7 +1236,7 @@ void pt_register_parser_runner(void)
 	ptdecl::ParserRunner::declareClass(cls);
 	ptdecl::ParserRunner::declareProperties(cls);
 
-	cls.method("parse", reg::PublicStatic, 3, { reg::objectArg("parser"), reg::stringArg("sourceCode"), reg::objectArg("errorHandler") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::parse, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *parserObj, *code, *errorHandler;
 		if (!zp::parse<zp::Obj, zp::Zval, zp::Obj>(execute_data, parserObj, code, errorHandler)) RETURN_THROWS();
 

@@ -198,7 +198,7 @@ void pt_register_new_object_type()
 	 * declares $result after it */
 	ptdecl::NewObjectType::declareProperties(cls);
 
-	cls.method<&NewObjectType::construct, zp::Obj>(sigs::__construct);
+	cls.method<&NewObjectType::construct, zp::TypeObj>(sigs::__construct);
 
 	cls.method<&NewObjectType::getType>(sigs::getType);
 
@@ -207,7 +207,7 @@ void pt_register_new_object_type()
 
 	cls.method<&NewObjectType::getReferencedTemplateTypes, zp::Obj>(sigs::getReferencedTemplateTypes);
 
-	cls.method<&NewObjectType::equals, zp::Obj>(sigs::equals);
+	cls.method<&NewObjectType::equals, zp::TypeObj>(sigs::equals);
 
 	cls.method<&NewObjectType::describe, zp::Obj>(sigs::describe);
 

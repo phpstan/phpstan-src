@@ -828,6 +828,14 @@ void pt_register_initializer_expr_context()
 		PT_IEC_THIS.construct(&args[0], &args[1], &args[2], &args[3], &args[4], &args[5], &args[6]);
 	});
 
+	cls.method(sigs::parseNamespace, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zend_string *name;
+		if (!zp::parse<zp::Str>(execute_data, name)) RETURN_THROWS();
+		zv::Val namespace_;
+		if (UNEXPECTED(!InitializerExprContext::parseNamespace(name, namespace_))) RETURN_THROWS();
+		namespace_.intoReturnValue(return_value);
+	});
+
 	cls.method(sigs::fromScope, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *scope;
 		ZEND_PARSE_PARAMETERS_START(1, 1)

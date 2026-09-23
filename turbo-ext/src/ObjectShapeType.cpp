@@ -43,6 +43,17 @@ static zend_function *pt_object_shape_reason_decorator_invoke = nullptr;
 
 namespace phpstanturbo {
 
+/* a $properties value the twin calls $method() on: the twin's
+ * array<string, Type> is not checked when it is constructed, so a
+ * non-object value surfaces at its first method call as the engine's Error;
+ * NULL with that Error pending */
+static zend_object *propertyTypeObject(zval *value, const char *method)
+{
+	if (EXPECTED(Z_TYPE_P(value) == IS_OBJECT)) return Z_OBJ_P(value);
+	zend_throw_error(NULL, "Call to a member function %s() on %s", method, zend_zval_value_name(value));
+	return NULL;
+}
+
 /* Mirrors PHPStan\Type\ObjectShapeType. State lives in the PHP object's
  * $properties and $optionalProperties. */
 class ObjectShapeType
@@ -84,7 +95,9 @@ public:
 		if (UNEXPECTED(props == NULL)) return zv::Val();
 		zv::Arr classes = zv::Arr::create(0);
 		for (zv::ArrayEntry entry : zv::ArrRef(props)) {
-			zv::Val referenced = pt_type_call(Z_OBJ_P(entry.value().raw()), PT_LC("getreferencedclasses"), 0, NULL);
+			zend_object *propertyType = propertyTypeObject(entry.value().raw(), "getReferencedClasses");
+			if (UNEXPECTED(propertyType == NULL)) return zv::Val();
+			zv::Val referenced = pt_type_call(propertyType, PT_LC("getreferencedclasses"), 0, NULL);
 			if (UNEXPECTED(referenced.isUndef())) return zv::Val();
 			if (UNEXPECTED(!zv::Ref(referenced.raw()).isArray())) {
 				zend_type_error("phpstan_turbo: getReferencedClasses() must return array");
@@ -233,7 +246,14 @@ public:
 
 			zv::Val otherPropertyType = pt_type_call(Z_OBJ_P(otherProperty.raw()), PT_LC("getreadabletype"), 0, NULL);
 			if (UNEXPECTED(otherPropertyType.isUndef())) return zv::Val();
-			/* $verbosity = VerbosityLevel::getRecommendedLevelByType($propertyType, $otherPropertyType) */
+			/* $verbosity = VerbosityLevel::getRecommendedLevelByType($propertyType, $otherPropertyType),
+			 * whose `Type $acceptingType` parameter is the first to see the property type */
+			bool propertyIsType;
+			if (UNEXPECTED(!pt_type_instanceof(propertyType, PT_CLASS_TYPE, propertyIsType))) return zv::Val();
+			if (UNEXPECTED(!propertyIsType)) {
+				zend_type_error("%s::getRecommendedLevelByType(): Argument #1 ($acceptingType) must be of type %s, %s given", ZSTR_VAL(pt_ce_verbosity_level->name), ptcls::type, zend_zval_value_name(propertyType));
+				return zv::Val();
+			}
 			zv::Val verbosity = pt_type_verbosity_recommended(propertyType, otherPropertyType.raw());
 			if (UNEXPECTED(verbosity.isUndef())) return zv::Val();
 			/* $propertyType->accepts($otherPropertyType, $strictTypes)->decorateReasons(...) */
@@ -355,7 +375,9 @@ public:
 
 			zv::Val otherPropertyType = pt_type_call(Z_OBJ_P(otherProperty.raw()), PT_LC("getreadabletype"), 0, NULL);
 			if (UNEXPECTED(otherPropertyType.isUndef())) return zv::Val();
-			zv::Val isSuperType = pt_type_op(Z_OBJ_P(propertyType), PT_OP_IS_SUPER_TYPE_OF, 1, otherPropertyType.raw());
+			zend_object *propertyTypeObj = propertyTypeObject(propertyType, "isSuperTypeOf");
+			if (UNEXPECTED(propertyTypeObj == NULL)) return zv::Val();
+			zv::Val isSuperType = pt_type_op(propertyTypeObj, PT_OP_IS_SUPER_TYPE_OF, 1, otherPropertyType.raw());
 			if (UNEXPECTED(isSuperType.isUndef())) return zv::Val();
 			zend_long isSuperTypeValue = pt_type_result_trinary(isSuperType.raw());
 			if (UNEXPECTED(isSuperTypeValue < 0)) return zv::Val();
@@ -398,7 +420,9 @@ public:
 				out = false;
 				return true;
 			}
-			zv::Val equal = pt_type_op(Z_OBJ_P(entry.value().raw()), PT_OP_EQUALS, 1, other);
+			zend_object *propertyType = propertyTypeObject(entry.value().raw(), "equals");
+			if (UNEXPECTED(propertyType == NULL)) return false;
+			zv::Val equal = pt_type_op(propertyType, PT_OP_EQUALS, 1, other);
 			if (UNEXPECTED(equal.isUndef())) return false;
 			if (!zend_is_true(equal.raw())) {
 				out = false;
@@ -498,7 +522,9 @@ public:
 				if (skip) continue;
 				zv::Val receivedPropertyType = pt_type_call(Z_OBJ_P(receivedProperty.raw()), PT_LC("getreadabletype"), 0, NULL);
 				if (UNEXPECTED(receivedPropertyType.isUndef())) return zv::Val();
-				zv::Val inferred = pt_type_call(Z_OBJ_P(entry.value().raw()), PT_LC("infertemplatetypes"), 1, receivedPropertyType.raw());
+				zend_object *propertyType = propertyTypeObject(entry.value().raw(), "inferTemplateTypes");
+				if (UNEXPECTED(propertyType == NULL)) return zv::Val();
+				zv::Val inferred = pt_type_call(propertyType, PT_LC("infertemplatetypes"), 1, receivedPropertyType.raw());
 				if (UNEXPECTED(inferred.isUndef())) return zv::Val();
 				if (UNEXPECTED(!zv::Ref(typeMap.raw()).isObject())) {
 					zend_type_error("phpstan_turbo: TemplateTypeMap expected");
@@ -527,7 +553,9 @@ public:
 		if (UNEXPECTED(props == NULL)) return zv::Val();
 		zv::Arr references = zv::Arr::create(0);
 		for (zv::ArrayEntry entry : zv::ArrRef(props)) {
-			zv::Val referenced = pt_type_op(Z_OBJ_P(entry.value().raw()), PT_OP_GET_REFERENCED_TEMPLATE_TYPES, 1, variance.raw());
+			zend_object *propertyType = propertyTypeObject(entry.value().raw(), "getReferencedTemplateTypes");
+			if (UNEXPECTED(propertyType == NULL)) return zv::Val();
+			zv::Val referenced = pt_type_op(propertyType, PT_OP_GET_REFERENCED_TEMPLATE_TYPES, 1, variance.raw());
 			if (UNEXPECTED(referenced.isUndef())) return zv::Val();
 			if (UNEXPECTED(!zv::Ref(referenced.raw()).isArray())) {
 				zend_type_error("phpstan_turbo: getReferencedTemplateTypes() must return array");
@@ -558,7 +586,12 @@ public:
 				smart_str_free(&description);
 				return zv::Val();
 			}
-			zv::Val item = pt_type_op(Z_OBJ_P(entry.value().raw()), PT_OP_DESCRIBE, 1, level);
+			zend_object *propertyType = propertyTypeObject(entry.value().raw(), "describe");
+			if (UNEXPECTED(propertyType == NULL)) {
+				smart_str_free(&description);
+				return zv::Val();
+			}
+			zv::Val item = pt_type_op(propertyType, PT_OP_DESCRIBE, 1, level);
 			if (UNEXPECTED(item.isUndef())) {
 				smart_str_free(&description);
 				return zv::Val();
@@ -596,7 +629,7 @@ public:
 		for (zv::ArrayEntry entry : zv::ArrRef(props)) {
 			zval transformed;
 			if (UNEXPECTED(!pt_call_fci(fci, fcc, 1, entry.value().raw(), &transformed))) return zv::Val();
-			if (Z_TYPE(transformed) != IS_OBJECT || Z_OBJ(transformed) != Z_OBJ_P(entry.value().raw())) {
+			if (!zend_is_identical(&transformed, entry.value().raw())) { /* `$transformed !== $propertyType` */
 				stillOriginal = false;
 			}
 			setEntry(mapped, entry, zv::Val::adopt(transformed));
@@ -638,7 +671,7 @@ public:
 			zv::Args cbArgs{entry.value().raw(), rightType.raw()};
 			zval transformed;
 			if (UNEXPECTED(!pt_call_fci(fci, fcc, 2, cbArgs, &transformed))) return zv::Val();
-			if (Z_TYPE(transformed) != IS_OBJECT || Z_OBJ(transformed) != Z_OBJ_P(entry.value().raw())) {
+			if (!zend_is_identical(&transformed, entry.value().raw())) { /* `$transformed !== $propertyType` */
 				stillOriginal = false;
 			}
 			setEntry(mapped, entry, zv::Val::adopt(transformed));
@@ -713,7 +746,9 @@ public:
 			}
 			bool optional;
 			if (UNEXPECTED(!isOptional(&propertyName, optional))) return zv::Val();
-			zv::Val valueNode = pt_type_call(Z_OBJ_P(entry.value().raw()), PT_LC("tophpdocnode"), 0, NULL);
+			zend_object *propertyType = propertyTypeObject(entry.value().raw(), "toPhpDocNode");
+			if (UNEXPECTED(propertyType == NULL)) return zv::Val();
+			zv::Val valueNode = pt_type_call(propertyType, PT_LC("tophpdocnode"), 0, NULL);
 			if (UNEXPECTED(valueNode.isUndef())) return zv::Val();
 			zv::Args args{keyNode.raw(), optional, valueNode.raw()};
 			zv::Val item = pt_type_new(PT_CLASS_OBJECT_SHAPE_ITEM_NODE, 3, args);
@@ -729,7 +764,9 @@ public:
 		zval *props = properties();
 		if (UNEXPECTED(props == NULL)) return false;
 		for (zv::ArrayEntry entry : zv::ArrRef(props)) {
-			zv::Val has = pt_type_op(Z_OBJ_P(entry.value().raw()), PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, 0, NULL);
+			zend_object *propertyType = propertyTypeObject(entry.value().raw(), "hasTemplateOrLateResolvableType");
+			if (UNEXPECTED(propertyType == NULL)) return false;
+			zv::Val has = pt_type_op(propertyType, PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, 0, NULL);
 			if (UNEXPECTED(has.isUndef())) return false;
 			if (zend_is_true(has.raw())) {
 				out = true;
@@ -1293,7 +1330,7 @@ void pt_register_object_shape_type()
 
 	cls.method<&ObjectShapeType::isSuperTypeOf, zp::Obj>(sigs::isSuperTypeOf);
 
-	cls.method<&ObjectShapeType::equals, zp::Obj>(sigs::equals);
+	cls.method<&ObjectShapeType::equals, zp::TypeObj>(sigs::equals);
 
 	cls.method<&ObjectShapeType::tryRemove, zp::Obj>(sigs::tryRemove);
 

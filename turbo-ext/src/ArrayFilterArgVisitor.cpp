@@ -14,6 +14,8 @@
 #include "ParserVisitors.h"
 #include "generated/ArrayFilterArgVisitor.h"
 
+namespace sigs = ptdecl::ArrayFilterArgVisitor::sig;
+
 static zend_class_entry *pt_ce_array_filter_arg_visitor = nullptr;
 
 static const char pt_array_filter_arg_attribute[] = "isArrayFilterArg";
@@ -68,7 +70,7 @@ void pt_register_array_filter_arg_visitor()
 	ptdecl::ArrayFilterArgVisitor::declareProperties(cls);
 	cls.publicClassConstantString("ATTRIBUTE_NAME", pt_array_filter_arg_attribute);
 
-	cls.method("enterNode", reg::Public, 1, { reg::obj("node", "PhpParser\\Node") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::enterNode, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *node;
 		if (!zp::parse<zp::Obj>(execute_data, node)) RETURN_THROWS();
 		if (UNEXPECTED(!ArrayFilterArgVisitor::enterNode(Z_OBJ_P(ZEND_THIS), Z_OBJ_P(node)))) RETURN_THROWS();

@@ -866,7 +866,7 @@ void pt_register_late_resolvable_array_shape_type()
 
 	cls.method<&LateResolvableArrayShapeType::getReferencedTemplateTypes, zp::Obj>(sigs::getReferencedTemplateTypes);
 
-	cls.method<&LateResolvableArrayShapeType::equals, zp::Obj>(sigs::equals);
+	cls.method<&LateResolvableArrayShapeType::equals, zp::TypeObj>(sigs::equals);
 
 	cls.method(sigs::describe, [](INTERNAL_FUNCTION_PARAMETERS) {
 		PT_ARGS(1, 1);

@@ -14,6 +14,8 @@
 
 #include "support.h"
 #include "generated/ExpressionTypeHolder.h"
+
+namespace sigs = ptdecl::ExpressionTypeHolder::sig;
 #include "zv.h"
 
 namespace phpstanturbo {
@@ -77,19 +79,14 @@ using phpstanturbo::ExpressionTypeHolder;
 
 #include "reg.h"
 
-#define ETH_CLASS "PHPStanTurbo\\ExpressionTypeHolder"
-#define TRINARY_CLASS "PHPStanTurbo\\TrinaryLogic"
 
 void pt_register_expression_type_holder()
 {
 	reg::Class cls("PHPStan\\Analyser\\ExpressionTypeHolder");
 	ptdecl::ExpressionTypeHolder::declareClass(cls);
-	/* expr/type/certainty must stay in this order (OBJ_PROP_NUM slots) */
-	cls.privateNullProperty("expr");
-	cls.privateNullProperty("type");
-	cls.privateNullProperty("certainty");
+	ptdecl::ExpressionTypeHolder::declareProperties(cls);
 
-	cls.method("__construct", reg::Public, 3, { reg::any("expr"), reg::any("type"), reg::obj("certainty", TRINARY_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *expr, *type, *certainty;
 		ZEND_PARSE_PARAMETERS_START(3, 3)
 			Z_PARAM_OBJECT(expr)
@@ -99,19 +96,19 @@ void pt_register_expression_type_holder()
 		ExpressionTypeHolder(ZEND_THIS).construct(zv::Ref(expr), zv::Ref(type), zv::Ref(certainty));
 	});
 
-	cls.method("createYes", reg::PublicStatic, 2, { reg::any("expr"), reg::any("type") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::createYes, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *expr, *type;
 		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, expr, type)) RETURN_THROWS();
 		ExpressionTypeHolder::createYes(expr, type).intoReturnValue(return_value);
 	});
 
-	cls.method("createMaybe", reg::PublicStatic, 2, { reg::any("expr"), reg::any("type") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::createMaybe, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *expr, *type;
 		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, expr, type)) RETURN_THROWS();
 		ExpressionTypeHolder::createMaybe(expr, type).intoReturnValue(return_value);
 	});
 
-	cls.method("equalTypes", reg::Public, 1, { reg::obj("other", ETH_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::equalTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *other;
 		bool out;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
@@ -121,7 +118,7 @@ void pt_register_expression_type_holder()
 		RETURN_BOOL(out);
 	});
 
-	cls.method("equals", reg::Public, 1, { reg::obj("other", ETH_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::equals, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *other;
 		bool out;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
@@ -131,7 +128,7 @@ void pt_register_expression_type_holder()
 		RETURN_BOOL(out);
 	});
 
-	cls.method("and", reg::Public, 1, { reg::obj("other", ETH_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::and_, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *other;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
 			Z_PARAM_OBJECT_OF_CLASS(other, pt_ce_expr_type_holder)
@@ -141,17 +138,17 @@ void pt_register_expression_type_holder()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("getExpr", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::getExpr, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		ExpressionTypeHolder(ZEND_THIS).getExpr().intoReturnValue(return_value);
 	});
 
-	cls.method("getType", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::getType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		ExpressionTypeHolder(ZEND_THIS).getType().intoReturnValue(return_value);
 	});
 
-	cls.method("getCertainty", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::getCertainty, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		ExpressionTypeHolder(ZEND_THIS).getCertainty().intoReturnValue(return_value);
 	});

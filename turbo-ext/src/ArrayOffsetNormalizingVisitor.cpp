@@ -17,6 +17,8 @@
 #include "ParserVisitors.h"
 #include "generated/ArrayOffsetNormalizingVisitor.h"
 
+namespace sigs = ptdecl::ArrayOffsetNormalizingVisitor::sig;
+
 static zend_class_entry *pt_ce_array_offset_normalizing_visitor = nullptr;
 
 static const char pt_array_offset_kind_attribute[] = "kind";
@@ -101,7 +103,7 @@ void pt_register_array_offset_normalizing_visitor()
 	ptdecl::ArrayOffsetNormalizingVisitor::declareClass(cls);
 	ptdecl::ArrayOffsetNormalizingVisitor::declareProperties(cls);
 
-	cls.method("enterNode", reg::Public, 1, { reg::obj("node", "PhpParser\\Node") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::enterNode, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *node;
 		if (!zp::parse<zp::Obj>(execute_data, node)) RETURN_THROWS();
 		if (UNEXPECTED(!ArrayOffsetNormalizingVisitor::enterNode(Z_OBJ_P(ZEND_THIS), Z_OBJ_P(node)))) RETURN_THROWS();

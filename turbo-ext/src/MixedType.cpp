@@ -1512,7 +1512,7 @@ void pt_register_mixed_type()
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		bool isExplicitMixed = false;
 		zval *subtractedType = NULL;
-		if (!zp::parse<zp::Opt<zp::Bool>, zp::Opt<zp::ObjOrNull>>(execute_data, isExplicitMixed, subtractedType)) RETURN_THROWS();
+		if (!zp::parse<zp::Opt<zp::Bool>, zp::Opt<zp::TypeObjOrNull>>(execute_data, isExplicitMixed, subtractedType)) RETURN_THROWS();
 		PT_THIS.construct(isExplicitMixed, subtractedType);
 	});
 
@@ -1618,7 +1618,7 @@ void pt_register_mixed_type()
 		PT_RETURN_VAL(MixedType::getCallableParametersAcceptors());
 	});
 
-	cls.method<&MixedType::equals, zp::Obj>(sigs::equals);
+	cls.method<&MixedType::equals, zp::TypeObj>(sigs::equals);
 	cls.op<PT_OP_EQUALS, &MixedType::equals>();
 
 	cls.method<&MixedType::isSubTypeOf, zp::Obj>(sigs::isSubTypeOf);

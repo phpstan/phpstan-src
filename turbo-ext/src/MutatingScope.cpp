@@ -341,6 +341,14 @@ enum : uint32_t
 /* private const GLOBAL_CONSTANT_FETCH_KEYS_LIMIT */
 #define PT_MS_GLOBAL_CONSTANT_FETCH_KEYS_LIMIT 8192
 
+/* the twin's private CUSTOM_SERIALIZATION_METHODS (the serialization check
+ * walks the same names), a persistent list built once at module startup */
+static const pt_superglobal_name pt_ms_custom_serialization_methods[] = {
+	{ PT_LC("__sleep") },
+	{ PT_LC("__serialize") },
+	{ PT_LC("__unserialize") },
+};
+
 /* PHPStan\Analyser\ConstantResolver::PHP_MIN_ANALYZABLE_VERSION_ID and
  * PHPStan\Php\PhpVersionFactory::MAX_PHP_VERSION — the one place the native
  * code reads them from (getPhpVersion()) */
@@ -1313,11 +1321,9 @@ public:
 			return false;
 		}
 		zend_object *reflection = Z_OBJ_P(classReflection.raw());
-		/* self::CUSTOM_SERIALIZATION_METHODS */
-		static const char *const methodNames[] = { "__sleep", "__serialize", "__unserialize" };
-		for (const char *methodName : methodNames) {
+		for (const pt_superglobal_name &methodName : pt_ms_custom_serialization_methods) {
 			bool has;
-			if (UNEXPECTED(!hasNativeMethod(reflection, methodName, has))) return false;
+			if (UNEXPECTED(!hasNativeMethod(reflection, methodName.name, has))) return false;
 			if (has) {
 				out = true;
 				return true;
@@ -12273,6 +12279,13 @@ zv::Val pt_mutating_scope_after_open_ssl_call(zend_object *scope, zend_string *o
 
 /* }}} */
 
+static HashTable *pt_ms_custom_serialization_methods_list = nullptr;
+
+static void pt_ms_custom_serialization_methods_constant(zval *out)
+{
+	pt_persistent_list_into(out, pt_ms_custom_serialization_methods_list);
+}
+
 void pt_register_mutating_scope()
 {
 	using namespace pt_ms;
@@ -12330,6 +12343,10 @@ void pt_register_mutating_scope()
 	 * static takes no OBJ_PROP_NUM slot, and keeping it out of the run above
 	 * keeps that run a literal transcript of the PT_MS_PROP_* enum */
 	cls.privateStaticTypedArrayPropertyDefaultEmpty("globalConstantFetchKeys");
+	cls.privateClassConstantLong("COMPLEX_UNION_TYPE_MEMBER_LIMIT", PT_MS_COMPLEX_UNION_TYPE_MEMBER_LIMIT);
+	cls.privateClassConstantLong("GLOBAL_CONSTANT_FETCH_KEYS_LIMIT", PT_MS_GLOBAL_CONSTANT_FETCH_KEYS_LIMIT);
+	pt_ms_custom_serialization_methods_list = pt_persistent_string_list(pt_ms_custom_serialization_methods, sizeof(pt_ms_custom_serialization_methods) / sizeof(pt_ms_custom_serialization_methods[0]));
+	cls.privateClassConstantValue("CUSTOM_SERIALIZATION_METHODS", pt_ms_custom_serialization_methods_constant);
 	/* }}} */
 
 	cls.method("__construct", reg::Public, 15, {

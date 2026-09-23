@@ -4711,6 +4711,9 @@ void pt_register_assign_handler()
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\AssignHandler");
 	ptdecl::AssignHandler::declareClass(cls);
 	ptdecl::AssignHandler::declareProperties(cls);
+	cls.privateClassConstantLong("TERNARY_ARM_EXCLUDED_VALUES_LIMIT", PT_AH_TERNARY_ARM_EXCLUDED_VALUES_LIMIT);
+	cls.privateClassConstantLong("DERIVED_CONDITIONAL_EXPRESSIONS_LIMIT", PT_AH_DERIVED_CONDITIONAL_EXPRESSIONS_LIMIT);
+	cls.privateClassConstantLong("ARRAY_DIM_FETCH_WRITE_DEPTH_LIMIT", PT_AH_ARRAY_DIM_FETCH_WRITE_DEPTH_LIMIT);
 
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */

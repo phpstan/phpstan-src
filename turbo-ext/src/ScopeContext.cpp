@@ -18,6 +18,7 @@
 #include "generated/ScopeContext.h"
 
 namespace slots = ptdecl::ScopeContext::slot;
+namespace sigs = ptdecl::ScopeContext::sig;
 #include "zv.h"
 #include "TypeTraits.h"
 
@@ -211,7 +212,6 @@ using phpstanturbo::ScopeContext;
 
 #include "reg.h"
 
-#define SCOPE_CONTEXT_CLASS "PHPStanTurbo\\ScopeContext"
 
 void pt_register_scope_context();
 
@@ -219,15 +219,11 @@ void pt_register_scope_context()
 {
 	reg::Class cls("PHPStan\\Analyser\\ScopeContext");
 	ptdecl::ScopeContext::declareClass(cls);
-	/* file/classReflection/traitReflection must stay in this order
-	 * (OBJ_PROP_NUM slots) */
-	cls.privateNullProperty("file");
-	cls.privateNullProperty("classReflection");
-	cls.privateNullProperty("traitReflection");
+	ptdecl::ScopeContext::declareProperties(cls);
 
 	/* private like the twin's: `new ScopeContext(...)` from userland fails
 	 * the same way; the native factories fill the slots without it */
-	cls.method("__construct", reg::Private, 3, { reg::stringArg("file"), reg::objectArg("classReflection", true), reg::objectArg("traitReflection", true) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *file;
 		zval *classReflection, *traitReflection;
 		if (!zp::parse<zp::Str, zp::ObjOrNull, zp::ObjOrNull>(execute_data, file, classReflection, traitReflection)) RETURN_THROWS();
@@ -237,7 +233,7 @@ void pt_register_scope_context()
 		ScopeContext(ZEND_THIS).construct(zv::Ref(&fileZv), zv::Ref(classReflection != NULL ? classReflection : &null), zv::Ref(traitReflection != NULL ? traitReflection : &null));
 	});
 
-	cls.method("create", reg::PublicStatic, 1, { reg::stringArg("file") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::create, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *file;
 		if (!zp::parse<zp::Str>(execute_data, file)) RETURN_THROWS();
 		zval fileZv;
@@ -247,14 +243,14 @@ void pt_register_scope_context()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("beginFile", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::beginFile, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		zv::Val result = ScopeContext(ZEND_THIS).beginFile();
 		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("enterClass", reg::Public, 1, { reg::objectArg("classReflection") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::enterClass, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *classReflection;
 		if (!zp::parse<zp::Obj>(execute_data, classReflection)) RETURN_THROWS();
 		zv::Val result = ScopeContext(ZEND_THIS).enterClass(zv::Ref(classReflection));
@@ -262,7 +258,7 @@ void pt_register_scope_context()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("enterTrait", reg::Public, 1, { reg::objectArg("traitReflection") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::enterTrait, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *traitReflection;
 		if (!zp::parse<zp::Obj>(execute_data, traitReflection)) RETURN_THROWS();
 		zv::Val result = ScopeContext(ZEND_THIS).enterTrait(zv::Ref(traitReflection));
@@ -270,7 +266,7 @@ void pt_register_scope_context()
 		result.intoReturnValue(return_value);
 	});
 
-	cls.method("equals", reg::Public, 1, { reg::obj("otherContext", SCOPE_CONTEXT_CLASS) }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::equals, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *otherContext;
 		bool out;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
@@ -280,17 +276,17 @@ void pt_register_scope_context()
 		RETURN_BOOL(out);
 	});
 
-	cls.method("getFile", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::getFile, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		ScopeContext(ZEND_THIS).getFile().intoReturnValue(return_value);
 	});
 
-	cls.method("getClassReflection", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::getClassReflection, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		ScopeContext(ZEND_THIS).getClassReflection().intoReturnValue(return_value);
 	});
 
-	cls.method("getTraitReflection", reg::Public, 0, {}, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::getTraitReflection, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		ScopeContext(ZEND_THIS).getTraitReflection().intoReturnValue(return_value);
 	});

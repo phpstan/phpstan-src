@@ -328,7 +328,7 @@ void pt_register_has_property_type()
 		PT_RETURN_VAL(PT_THIS.isAcceptedBy(acceptingType));
 	});
 
-	cls.method<&HasPropertyType::equals, zp::Obj>(sigs::equals);
+	cls.method<&HasPropertyType::equals, zp::TypeObj>(sigs::equals);
 
 	cls.method(sigs::describe, [](INTERNAL_FUNCTION_PARAMETERS) {
 		PT_ARGS(1, 1);

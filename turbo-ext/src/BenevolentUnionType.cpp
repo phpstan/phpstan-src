@@ -191,7 +191,14 @@ public:
 		if (UNEXPECTED(types.isUndef())) return zv::Val();
 		zv::Arr valueTypes = zv::Arr::create(0);
 		for (zv::ArrayEntry entry : zv::ArrRef(types.raw())) {
-			zv::Val valueType = callType(entry.value().deref().asObject(), PT_LC("getoffsetvaluetype"), 1, offsetType);
+			/* the members come from $this->getTypes(), which a subclass may
+			 * override: a non-object fails like the twin's method call */
+			zval *innerType = entry.value().deref().raw();
+			if (UNEXPECTED(Z_TYPE_P(innerType) != IS_OBJECT)) {
+				zend_throw_error(NULL, "Call to a member function getOffsetValueType() on %s", zend_zval_value_name(innerType));
+				return zv::Val();
+			}
+			zv::Val valueType = callType(Z_OBJ_P(innerType), PT_LC("getoffsetvaluetype"), 1, offsetType);
 			if (UNEXPECTED(valueType.isUndef())) return zv::Val();
 			bool isError;
 			if (UNEXPECTED(!pt_type_instanceof_ce(valueType.raw(), pt_ce_error_type, isError))) return zv::Val();
@@ -270,7 +277,7 @@ public:
 			zval arg;
 			ZVAL_COPY_VALUE(&arg, type);
 			zval newType;
-			if (UNEXPECTED(!pt_call_fci(fci, fcc, 1, &arg, &newType))) return zv::Val();
+			if (UNEXPECTED(!pt_call_type_fci(fci, fcc, 1, &arg, &newType))) return zv::Val();
 			if (Z_TYPE(newType) != IS_OBJECT || Z_OBJ(newType) != Z_OBJ_P(type)) {
 				changed = true;
 			}

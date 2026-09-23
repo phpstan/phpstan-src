@@ -15,6 +15,8 @@
 #include "ParserVisitors.h"
 #include "generated/ImmediatelyInvokedClosureVisitor.h"
 
+namespace sigs = ptdecl::ImmediatelyInvokedClosureVisitor::sig;
+
 static zend_class_entry *pt_ce_immediately_invoked_closure_visitor = nullptr;
 
 static const char pt_immediately_invoked_closure_attribute[] = "isImmediatelyInvokedClosure";
@@ -76,7 +78,7 @@ void pt_register_immediately_invoked_closure_visitor()
 	cls.publicClassConstantString("ATTRIBUTE_NAME", pt_immediately_invoked_closure_attribute);
 	cls.publicClassConstantString("ARGS_ATTRIBUTE_NAME", pt_immediately_invoked_closure_args_attribute);
 
-	cls.method("enterNode", reg::Public, 1, { reg::obj("node", "PhpParser\\Node") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::enterNode, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *node;
 		if (!zp::parse<zp::Obj>(execute_data, node)) RETURN_THROWS();
 		if (UNEXPECTED(!ImmediatelyInvokedClosureVisitor::enterNode(Z_OBJ_P(ZEND_THIS), Z_OBJ_P(node)))) RETURN_THROWS();

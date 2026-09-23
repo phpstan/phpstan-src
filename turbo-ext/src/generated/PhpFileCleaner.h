@@ -22,7 +22,15 @@ inline void declareClass(reg::Class &cls)
 	cls.final();
 }
 
-/* no declareProperties(): $contents: a typed default reg::Class cannot declare */
+/* the properties the class declares itself, in declaration order (a used trait's come from its registrar) */
+inline void declareProperties(reg::Class &cls)
+{
+	cls.property("typeConfig", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
+	cls.property("rejectChars", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_STRING);
+	cls.typedStringProperty("contents", ZEND_ACC_PRIVATE, "");
+	cls.property("len", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedLong, 0);
+	cls.property("index", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedLong, 0);
+}
 
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
 namespace sigtab {

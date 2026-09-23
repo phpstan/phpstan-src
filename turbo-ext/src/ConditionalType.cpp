@@ -427,7 +427,7 @@ void pt_register_conditional_type()
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *subject, *target, *ifType, *elseType;
 		bool negated;
-		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj, zp::Obj, zp::Bool>(execute_data, subject, target, ifType, elseType, negated)) RETURN_THROWS();
+		if (!zp::parse<zp::TypeObj, zp::TypeObj, zp::TypeObj, zp::TypeObj, zp::Bool>(execute_data, subject, target, ifType, elseType, negated)) RETURN_THROWS();
 		PT_THIS.construct(subject, target, ifType, elseType, negated);
 	});
 
@@ -444,7 +444,7 @@ void pt_register_conditional_type()
 
 	cls.method<&ConditionalType::getReferencedTemplateTypes, zp::Obj>(sigs::getReferencedTemplateTypes);
 
-	cls.method<&ConditionalType::equals, zp::Obj>(sigs::equals);
+	cls.method<&ConditionalType::equals, zp::TypeObj>(sigs::equals);
 
 	cls.method<&ConditionalType::describe, zp::Obj>(sigs::describe);
 

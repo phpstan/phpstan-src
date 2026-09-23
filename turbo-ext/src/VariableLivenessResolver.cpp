@@ -1543,6 +1543,9 @@ void pt_register_variable_liveness_resolver()
 {
 	reg::Class cls("PHPStan\\Analyser\\VariableLivenessResolver");
 	ptdecl::VariableLivenessResolver::declareClass(cls);
+	/* the twin's per-resolution state; resolve() keeps it in C++ and never
+	 * instantiates the class, but the declaration is the twin's */
+	ptdecl::VariableLivenessResolver::declareProperties(cls);
 
 	cls.method(sigs::resolve, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *function, *flow;

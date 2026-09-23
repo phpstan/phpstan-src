@@ -530,7 +530,7 @@ void pt_type_trait_just_nullable(reg::Class &cls)
 
 	cls.traitMethod(sigs::equals, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *type;
-		if (!zp::parse<zp::Obj>(execute_data, type)) RETURN_THROWS();
+		if (!zp::parse<zp::TypeObj>(execute_data, type)) RETURN_THROWS();
 		/* get_class($type) === static::class */
 		RETURN_BOOL(Z_OBJCE_P(type) == PT_THIS_OBJ->ce);
 	});
@@ -1001,7 +1001,7 @@ static bool constantScalarThisEquals(zend_object *self, zend_class_entry *scope,
 static void ZEND_FASTCALL constantScalarEquals(INTERNAL_FUNCTION_PARAMETERS)
 {
 	zval *type;
-	if (!zp::parse<zp::Obj>(execute_data, type)) RETURN_THROWS();
+	if (!zp::parse<zp::TypeObj>(execute_data, type)) RETURN_THROWS();
 	bool equal;
 	if (UNEXPECTED(!constantScalarEqualsImpl(PT_THIS_OBJ, PT_SCOPE, type, equal))) RETURN_THROWS();
 	RETURN_BOOL(equal);
@@ -3256,7 +3256,7 @@ zv::Val pt_callable_traverse_parameters(zval *parameters, zend_fcall_info *fci, 
 		zv::Val type = pt_type_call(param, PT_LC("gettype"), 0, NULL);
 		if (UNEXPECTED(type.isUndef())) return zv::Val();
 		zval mappedTypeRaw;
-		if (UNEXPECTED(!pt_call_fci(fci, fcc, 1, type.raw(), &mappedTypeRaw))) return zv::Val();
+		if (UNEXPECTED(!pt_call_type_fci(fci, fcc, 1, type.raw(), &mappedTypeRaw))) return zv::Val();
 		zv::Val mappedType = zv::Val::adopt(mappedTypeRaw);
 		zv::Val passedByReference = pt_type_call(param, PT_LC("passedbyreference"), 0, NULL);
 		if (UNEXPECTED(passedByReference.isUndef())) return zv::Val();
@@ -3265,7 +3265,7 @@ zv::Val pt_callable_traverse_parameters(zval *parameters, zend_fcall_info *fci, 
 		zv::Val mappedDefault = zv::Val::null();
 		if (!defaultValue.isNull()) {
 			zval mappedDefaultRaw;
-			if (UNEXPECTED(!pt_call_fci(fci, fcc, 1, defaultValue.raw(), &mappedDefaultRaw))) return zv::Val();
+			if (UNEXPECTED(!pt_call_type_fci(fci, fcc, 1, defaultValue.raw(), &mappedDefaultRaw))) return zv::Val();
 			mappedDefault = zv::Val::adopt(mappedDefaultRaw);
 		}
 		zv::Val parameter = pt_callable_new_native_parameter(name.raw(), optional.raw(), mappedType.raw(), passedByReference.raw(), variadic.raw(), mappedDefault.raw());
@@ -3306,7 +3306,7 @@ zv::Val pt_callable_traverse_parameters_simultaneously(zval *leftParameters, zva
 		if (!leftDefaultValue.isNull() && !rightDefaultValue.isNull()) {
 			zv::Args args{leftDefaultValue.raw(), rightDefaultValue.raw()};
 			zval mappedRaw;
-			if (UNEXPECTED(!pt_call_fci(fci, fcc, 2, args, &mappedRaw))) return zv::Val();
+			if (UNEXPECTED(!pt_call_type_fci(fci, fcc, 2, args, &mappedRaw))) return zv::Val();
 			defaultValue = zv::Val::adopt(mappedRaw);
 		}
 		zv::Val name = pt_type_call(leftParam, PT_LC("getname"), 0, NULL);
@@ -3319,7 +3319,7 @@ zv::Val pt_callable_traverse_parameters_simultaneously(zval *leftParameters, zva
 		if (UNEXPECTED(rightType.isUndef())) return zv::Val();
 		zv::Args typeArgs{leftType.raw(), rightType.raw()};
 		zval mappedTypeRaw;
-		if (UNEXPECTED(!pt_call_fci(fci, fcc, 2, typeArgs, &mappedTypeRaw))) return zv::Val();
+		if (UNEXPECTED(!pt_call_type_fci(fci, fcc, 2, typeArgs, &mappedTypeRaw))) return zv::Val();
 		zv::Val mappedType = zv::Val::adopt(mappedTypeRaw);
 		zv::Val passedByReference = pt_type_call(leftParam, PT_LC("passedbyreference"), 0, NULL);
 		if (UNEXPECTED(passedByReference.isUndef())) return zv::Val();
@@ -3666,13 +3666,23 @@ zv::Val pt_type_traverse_call(zend_fcall_info *fci, zend_fcall_info_cache *fcc, 
 		ZVAL_COPY_VALUE(&args[1], right);
 	}
 	zval mapped;
-	if (UNEXPECTED(!pt_call_fci(fci, fcc, right != NULL ? 2 : 1, args, &mapped))) return zv::Val();
-	zv::Val result = zv::Val::adopt(mapped);
-	if (UNEXPECTED(!zv::Ref(result.raw()).isObject())) {
-		zend_type_error("phpstan_turbo: the traverse callback must return %s, %s returned", ptcls::type, zend_zval_value_name(result.raw()));
-		return zv::Val();
+	if (UNEXPECTED(!pt_call_type_fci(fci, fcc, right != NULL ? 2 : 1, args, &mapped))) return zv::Val();
+	return zv::Val::adopt(mapped);
+}
+
+bool pt_type_callback_result_check(zval *retval)
+{
+	if (EXPECTED(Z_TYPE_P(retval) == IS_OBJECT)) {
+		zend_class_entry *typeCe = pt_ce_type_interface();
+		if (UNEXPECTED(typeCe == NULL)) {
+			zval_ptr_dtor(retval);
+			return false;
+		}
+		if (EXPECTED(instanceof_function(Z_OBJCE_P(retval), typeCe))) return true;
 	}
-	return result;
+	zend_type_error("phpstan_turbo: the traverse callback must return %s, %s returned", ptcls::type, zend_zval_value_name(retval));
+	zval_ptr_dtor(retval);
+	return false;
 }
 
 #define PT_LR_THIS LateResolvable(PT_THIS_OBJ, PT_SCOPE)
@@ -4927,7 +4937,7 @@ void pt_type_trait_template_type(reg::Class &cls)
 
 	cls.traitMethod(sigs::equals, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *type;
-		if (!zp::parse<zp::Obj>(execute_data, type)) RETURN_THROWS();
+		if (!zp::parse<zp::TypeObj>(execute_data, type)) RETURN_THROWS();
 		bool equal;
 		if (UNEXPECTED(!PT_TT_THIS.equals(type, equal))) RETURN_THROWS();
 		RETURN_BOOL(equal);

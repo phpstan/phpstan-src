@@ -663,7 +663,7 @@ void pt_register_class_statements_gatherer()
 		RETURN_COPY(OBJ_PROP_NUM(Z_OBJ_P(ZEND_THIS), slots::propertyAssigns));
 	});
 
-	cls.method("__invoke", reg::Public, 2, { reg::obj("node", "PhpParser\\Node"), reg::obj("scope", "PHPStan\\Analyser\\Scope") }, [](INTERNAL_FUNCTION_PARAMETERS) {
+	cls.method(sigs::__invoke, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *node, *scope;
 		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, node, scope)) RETURN_THROWS();
 		if (UNEXPECTED(!ClassStatementsGatherer(Z_OBJ_P(ZEND_THIS)).invoke(node, scope))) RETURN_THROWS();

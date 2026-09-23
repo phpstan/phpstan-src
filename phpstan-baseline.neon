@@ -1393,12 +1393,6 @@ parameters:
 			path: src/Type/IntersectionType.php
 
 		-
-			rawMessage: 'Doing instanceof PHPStan\Type\Enum\EnumCaseObjectType is error-prone and deprecated. Use Type::getEnumCaseObject() or Type::getEnumCases() instead.'
-			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Type/IntersectionType.php
-
-		-
 			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
 			count: 3

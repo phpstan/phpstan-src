@@ -506,6 +506,14 @@ extern pt_globals_t pt_globals;
 
 #define PT_G(v) (pt_globals.v)
 
+/* the PHPStan\Type\Type interface — pt_class(PT_CLASS_TYPE) with its cached
+ * hit inline; NULL with an Error pending when it cannot be resolved */
+inline zend_class_entry *pt_ce_type_interface()
+{
+	zend_class_entry *ce = PT_G(class_refs)[PT_CLASS_TYPE].ce;
+	return EXPECTED(ce != NULL) ? ce : pt_class(PT_CLASS_TYPE);
+}
+
 /* a string literal as the (chars, length) argument pair of the by-name helpers */
 #define PT_LC(literal) literal, sizeof(literal) - 1
 
@@ -563,6 +571,11 @@ extern zend_class_entry *pt_ce_nonexistent_parent_class_type;
 /* Shadow.cpp — Runtime::activateShadowing() */
 bool pt_shadow_activate(HashTable *twinFiles, zend_string *prefix);
 bool pt_shadow_is_active();
+/* ce is the shadowed class nativeCe (or a subclass) — under the prefixed
+ * activation of the differential tests, where nativeCe is PHPStanTurbo\<Short>
+ * and a PHP collaborator creates the real-named PHP twin, that twin counts
+ * too. realName is the shadowed class's real name. */
+[[nodiscard]] bool pt_shadow_instanceof(zend_class_entry *ce, zend_class_entry *nativeCe, const char *realName, size_t realNameLen);
 
 ZEND_COLD void pt_register_trinary_logic();
 ZEND_COLD void pt_register_expression_type_holder();
@@ -713,6 +726,10 @@ static zend_always_inline zend_long pt_holder_certainty_value(zend_object *holde
 
 /* {{{ userland callback helpers */
 
+/* the engine's "Call to undefined method X::y()" Error for a by-name call
+ * (lcname: the lowercase name the natives call by) */
+ZEND_COLD void pt_throw_undefined_method(zend_class_entry *ce, const char *lcname, size_t len);
+/* the method of ce by lowercase name; NULL with that Error pending */
 zend_function *pt_find_method(zend_class_entry *ce, const char *lcname, size_t len);
 bool pt_call_type_equals(zval *type_a, zval *type_b);
 bool pt_types_identical_or_equal(zval *type_a, zval *type_b);
@@ -1754,6 +1771,20 @@ bool pt_is_superglobal_cstr(const char *name, size_t len);
 /* the superglobal names (Scope::SUPERGLOBAL_VARIABLES), in the twin's order */
 typedef struct _pt_superglobal_name { const char *name; size_t len; } pt_superglobal_name;
 const pt_superglobal_name *pt_superglobal_names(size_t *count);
+
+/* A class constant's array-of-strings value (`private const X = ['a', 'b']`):
+ * a persistent immutable list of interned strings the engine references
+ * for the process lifetime. Build it once at module startup (the strings
+ * are permanent interned ones then) and hand it out from the constant's
+ * reg::Class::*ClassConstantValue() builder with pt_persistent_list_into(),
+ * so every activation declares the same list. */
+HashTable *pt_persistent_string_list(const pt_superglobal_name *names, size_t count);
+
+static zend_always_inline void pt_persistent_list_into(zval *out, HashTable *list)
+{
+	ZVAL_ARR(out, list);
+	Z_TYPE_INFO_P(out) = IS_ARRAY;
+}
 
 /* {{{ PhpParser CallLike reads without a call: $call->getRawArgs(),
  * ->isFirstClassCallable() and ->getArgs() of a FuncCall, MethodCall,

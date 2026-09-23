@@ -58,3 +58,28 @@ function nonZeroFloatIsStillRedundant(): void
 	$x = 1.5;
 	sink($x);
 }
+
+function zeroInNestedArray(): void
+{
+	$a = [[-0.0]];
+	sink($a);
+	$a = [[0.0]];
+	sink($a);
+}
+
+function zeroAtNestedOffset(): void
+{
+	$a = ['x' => ['y' => -0.0]];
+	sink($a);
+	$a['x']['y'] = 0.0;
+	sink($a);
+}
+
+function repeatedPositiveZeroIsNotReportedEither(): void
+{
+	// the type of $x cannot tell this 0.0 from a narrowed zero of unknown sign
+	$x = 0.0;
+	sink($x);
+	$x = 0.0;
+	sink($x);
+}

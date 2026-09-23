@@ -198,19 +198,6 @@ final class PhpVersions
 		return IntegerRangeType::fromInterval(80000, null)->isSuperTypeOf($this->phpVersions)->result;
 	}
 
-	public function supportsPregCaptureOnlyNamedGroups(): TrinaryLogic
-	{
-		// https://php.watch/versions/8.2/preg-n-no-capture-modifier
-		return IntegerRangeType::fromInterval(80200, null)->isSuperTypeOf($this->phpVersions)->result;
-	}
-
-	public function supportsPregUnmatchedAsNull(): TrinaryLogic
-	{
-		// while PREG_UNMATCHED_AS_NULL is defined in php-src since 7.2.x it starts working as expected with 7.4.x
-		// https://3v4l.org/v3HE4
-		return IntegerRangeType::fromInterval(70400, null)->isSuperTypeOf($this->phpVersions)->result;
-	}
-
 	/**
 	 * PHPStan's BetterReflection adapters keep their narrowed native return types only on PHP 8+;
 	 * the downgraded PHP 7 build widens them back to the core Reflection ones.

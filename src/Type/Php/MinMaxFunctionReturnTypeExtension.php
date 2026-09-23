@@ -8,6 +8,7 @@ use PhpParser\Node\Expr\Ternary;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -23,6 +24,12 @@ use function in_array;
 #[AutowiredService]
 final class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
+
+	public function __construct(
+		private PhpVersion $phpVersion,
+	)
+	{
+	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -42,7 +49,6 @@ final class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 				return $this->processArrayType(
 					$functionReflection->getName(),
 					$argType,
-					$scope,
 				);
 			}
 
@@ -102,20 +108,19 @@ final class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 		);
 	}
 
-	private function processArrayType(string $functionName, Type $argType, Scope $scope): Type
+	private function processArrayType(string $functionName, Type $argType): Type
 	{
-		$throwsValueError = $scope->getPhpVersion()->throwsValueErrorForInternalFunctions();
 		$constArrayTypes = $argType->getConstantArrays();
 		if (count($constArrayTypes) > 0) {
 			$resultTypes = [];
 			foreach ($constArrayTypes as $constArrayType) {
 				$isIterable = $constArrayType->isIterableAtLeastOnce();
-				if ($isIterable->no() && !$throwsValueError->yes()) {
+				if ($isIterable->no() && !$this->phpVersion->throwsValueErrorForInternalFunctions()) {
 					$resultTypes[] = new ConstantBooleanType(false);
 					continue;
 				}
 				$argumentTypes = [];
-				if (!$isIterable->yes() && !$throwsValueError->yes()) {
+				if (!$isIterable->yes() && !$this->phpVersion->throwsValueErrorForInternalFunctions()) {
 					$argumentTypes[] = new ConstantBooleanType(false);
 				}
 
@@ -138,12 +143,12 @@ final class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 		}
 
 		$isIterable = $argType->isIterableAtLeastOnce();
-		if ($isIterable->no() && !$throwsValueError->yes()) {
+		if ($isIterable->no() && !$this->phpVersion->throwsValueErrorForInternalFunctions()) {
 			return new ConstantBooleanType(false);
 		}
 		$iterableValueType = $argType->getIterableValueType();
 		$argumentTypes = [];
-		if (!$isIterable->yes() && !$throwsValueError->yes()) {
+		if (!$isIterable->yes() && !$this->phpVersion->throwsValueErrorForInternalFunctions()) {
 			$argumentTypes[] = new ConstantBooleanType(false);
 		}
 

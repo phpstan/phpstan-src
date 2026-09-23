@@ -6,6 +6,7 @@ use DateInterval;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
 use PHPStan\Type\NeverType;
@@ -17,6 +18,10 @@ use function count;
 #[AutowiredService]
 final class DateIntervalCreateFromDateStringThrowTypeExtension implements DynamicStaticMethodThrowTypeExtension
 {
+
+	public function __construct(private PhpVersion $phpVersion)
+	{
+	}
 
 	public function isStaticMethodSupported(MethodReflection $methodReflection): bool
 	{
@@ -30,7 +35,7 @@ final class DateIntervalCreateFromDateStringThrowTypeExtension implements Dynami
 			return null;
 		}
 
-		if ($scope->getPhpVersion()->hasDateTimeExceptions()->no()) {
+		if (!$this->phpVersion->hasDateTimeExceptions()) {
 			return null;
 		}
 
@@ -38,16 +43,9 @@ final class DateIntervalCreateFromDateStringThrowTypeExtension implements Dynami
 		$constantStrings = $valueType->getConstantStrings();
 
 		foreach ($constantStrings as $constantString) {
-			// createFromDateString() only throws since PHP 8.3, before that it warns and returns false.
-			// The analysed version can be 8.3+ while this process runs on an older one,
-			// so detect the failure through the return value instead of the exception.
 			try {
-				$result = @DateInterval::createFromDateString($constantString->getValue());
+				@DateInterval::createFromDateString($constantString->getValue());
 			} catch (Throwable) {
-				$result = false;
-			}
-
-			if ($result === false) {
 				return $methodReflection->getThrowType();
 			}
 

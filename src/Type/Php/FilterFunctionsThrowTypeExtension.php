@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
@@ -18,6 +19,7 @@ final class FilterFunctionsThrowTypeExtension implements DynamicFunctionThrowTyp
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
+		private PhpVersion $phpVersion,
 		private FilterFunctionReturnTypeHelper $filterFunctionReturnTypeHelper,
 		private FilterFunctionFlagsHelper $filterFunctionFlagsHelper,
 	)
@@ -38,7 +40,7 @@ final class FilterFunctionsThrowTypeExtension implements DynamicFunctionThrowTyp
 	): ?Type
 	{
 		if (
-			$scope->getPhpVersion()->hasFilterThrowOnFailureConstant()->no()
+			!$this->phpVersion->hasFilterThrowOnFailureConstant()
 			|| !$this->reflectionProvider->hasConstant(new Name\FullyQualified('FILTER_THROW_ON_FAILURE'), null)
 		) {
 			return null;

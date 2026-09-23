@@ -5,13 +5,22 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
 use PHPStan\Type\Type;
+use function count;
+use function in_array;
 
 #[AutowiredService]
 final class VersionCompareFunctionDynamicThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 {
+
+	public function __construct(
+		private PhpVersion $phpVersion,
+	)
+	{
+	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -24,7 +33,7 @@ final class VersionCompareFunctionDynamicThrowTypeExtension implements DynamicFu
 		Scope $scope,
 	): ?Type
 	{
-		if ($scope->getPhpVersion()->throwsValueErrorForInternalFunctions()->no()) {
+		if (!$this->phpVersion->throwsValueErrorForInternalFunctions()) {
 			return null;
 		}
 
@@ -34,8 +43,15 @@ final class VersionCompareFunctionDynamicThrowTypeExtension implements DynamicFu
 		}
 
 		$operatorStrings = $scope->getType($args[2]->value)->getConstantStrings();
-		if (VersionCompareFunctionDynamicReturnTypeExtension::mightBeInvalidOperator($operatorStrings)) {
+		if (count($operatorStrings) === 0) {
 			return $functionReflection->getThrowType();
+		}
+
+		foreach ($operatorStrings as $operatorString) {
+			$operatorValue = $operatorString->getValue();
+			if (!in_array($operatorValue, VersionCompareFunctionDynamicReturnTypeExtension::VALID_OPERATORS, true)) {
+				return $functionReflection->getThrowType();
+			}
 		}
 
 		return null;

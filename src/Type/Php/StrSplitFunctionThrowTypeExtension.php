@@ -5,6 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
 use PHPStan\Type\IntegerRangeType;
@@ -19,6 +20,10 @@ use function count;
 final class StrSplitFunctionThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 {
 
+	public function __construct(private PhpVersion $phpVersion)
+	{
+	}
+
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
 		return $functionReflection->getName() === 'str_split';
@@ -26,7 +31,7 @@ final class StrSplitFunctionThrowTypeExtension implements DynamicFunctionThrowTy
 
 	public function getThrowTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $funcCall, Scope $scope): ?Type
 	{
-		if ($scope->getPhpVersion()->throwsValueErrorForInternalFunctions()->no()) {
+		if (!$this->phpVersion->throwsValueErrorForInternalFunctions()) {
 			return new VoidType();
 		}
 

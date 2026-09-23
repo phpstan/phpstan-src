@@ -7,6 +7,7 @@ use DateTimeImmutable;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\DynamicMethodThrowTypeExtension;
 use PHPStan\Type\NeverType;
@@ -21,6 +22,10 @@ use function in_array;
 final class DateTimeModifyMethodThrowTypeExtension implements DynamicMethodThrowTypeExtension
 {
 
+	public function __construct(private PhpVersion $phpVersion)
+	{
+	}
+
 	public function isMethodSupported(MethodReflection $methodReflection): bool
 	{
 		return $methodReflection->getName() === 'modify' && in_array($methodReflection->getDeclaringClass()->getName(), [DateTime::class, DateTimeImmutable::class], true);
@@ -32,7 +37,7 @@ final class DateTimeModifyMethodThrowTypeExtension implements DynamicMethodThrow
 			return null;
 		}
 
-		if ($scope->getPhpVersion()->hasDateTimeExceptions()->no()) {
+		if (!$this->phpVersion->hasDateTimeExceptions()) {
 			return null;
 		}
 
@@ -40,33 +45,26 @@ final class DateTimeModifyMethodThrowTypeExtension implements DynamicMethodThrow
 		$constantStrings = $valueType->getConstantStrings();
 
 		foreach ($constantStrings as $constantString) {
-			// modify() only throws since PHP 8.3, before that it warns and returns false.
-			// The analysed version can be 8.3+ while this process runs on an older one,
-			// so detect the failure through the return value instead of the exception.
 			try {
 				$dateTime = new DateTime();
-				$result = @$dateTime->modify($constantString->getValue());
+				$dateTime->modify($constantString->getValue());
 			} catch (Throwable) {
-				$result = false;
-			}
-
-			if ($result === false) {
-				return $this->exceptionType($scope);
+				return $this->exceptionType();
 			}
 
 			$valueType = TypeCombinator::remove($valueType, $constantString);
 		}
 
 		if (!$valueType instanceof NeverType) {
-			return $this->exceptionType($scope);
+			return $this->exceptionType();
 		}
 
 		return null;
 	}
 
-	private function exceptionType(Scope $scope): Type
+	private function exceptionType(): Type
 	{
-		if ($scope->getPhpVersion()->hasDateTimeExceptions()->yes()) {
+		if ($this->phpVersion->hasDateTimeExceptions()) {
 			return new ObjectType('DateMalformedStringException');
 		}
 

@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
 use PHPStan\Type\ObjectType;
@@ -34,6 +35,7 @@ final class TriggerErrorFunctionThrowTypeExtension implements DynamicFunctionThr
 	private const NON_FATAL_ERROR_LEVELS = [E_USER_WARNING, E_USER_NOTICE, E_USER_DEPRECATED];
 
 	public function __construct(
+		private PhpVersion $phpVersion,
 		#[AutowiredParameter(ref: '%exceptions.implicitThrows%')]
 		private bool $implicitThrows,
 	)
@@ -63,7 +65,7 @@ final class TriggerErrorFunctionThrowTypeExtension implements DynamicFunctionThr
 				return $errorHandlerThrowType;
 			}
 
-			return $this->getInvalidErrorLevelThrowType($scope);
+			return $this->getInvalidErrorLevelThrowType();
 		}
 
 		$throwTypes = [];
@@ -80,7 +82,7 @@ final class TriggerErrorFunctionThrowTypeExtension implements DynamicFunctionThr
 				continue;
 			}
 
-			$invalidErrorLevelThrowType = $this->getInvalidErrorLevelThrowType($scope);
+			$invalidErrorLevelThrowType = $this->getInvalidErrorLevelThrowType();
 			if ($invalidErrorLevelThrowType === null) {
 				continue;
 			}
@@ -95,9 +97,9 @@ final class TriggerErrorFunctionThrowTypeExtension implements DynamicFunctionThr
 		return TypeCombinator::union(...$throwTypes);
 	}
 
-	private function getInvalidErrorLevelThrowType(Scope $scope): ?Type
+	private function getInvalidErrorLevelThrowType(): ?Type
 	{
-		if ($scope->getPhpVersion()->throwsValueErrorForInternalFunctions()->no()) {
+		if (!$this->phpVersion->throwsValueErrorForInternalFunctions()) {
 			return null;
 		}
 

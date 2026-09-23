@@ -7,6 +7,7 @@ use DateTimeImmutable;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
 use PHPStan\Type\NeverType;
@@ -20,6 +21,10 @@ use function in_array;
 #[AutowiredService]
 final class DateTimeConstructorThrowTypeExtension implements DynamicStaticMethodThrowTypeExtension
 {
+
+	public function __construct(private PhpVersion $phpVersion)
+	{
+	}
 
 	public function isStaticMethodSupported(MethodReflection $methodReflection): bool
 	{
@@ -39,22 +44,22 @@ final class DateTimeConstructorThrowTypeExtension implements DynamicStaticMethod
 			try {
 				new DateTime($constantString->getValue());
 			} catch (Throwable) {
-				return $this->exceptionType($scope);
+				return $this->exceptionType();
 			}
 
 			$valueType = TypeCombinator::remove($valueType, $constantString);
 		}
 
 		if (!$valueType instanceof NeverType) {
-			return $this->exceptionType($scope);
+			return $this->exceptionType();
 		}
 
 		return null;
 	}
 
-	private function exceptionType(Scope $scope): Type
+	private function exceptionType(): Type
 	{
-		if ($scope->getPhpVersion()->hasDateTimeExceptions()->yes()) {
+		if ($this->phpVersion->hasDateTimeExceptions()) {
 			return new ObjectType('DateMalformedStringException');
 		}
 

@@ -5,6 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\ShouldNotHappenException;
@@ -41,6 +42,10 @@ final class MbStrlenFunctionReturnTypeExtension implements DynamicFunctionReturn
 
 	use MbFunctionsReturnTypeExtensionTrait;
 
+	public function __construct(private PhpVersion $phpVersion)
+	{
+	}
+
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
 		return $functionReflection->getName() === 'mb_strlen';
@@ -57,8 +62,6 @@ final class MbStrlenFunctionReturnTypeExtension implements DynamicFunctionReturn
 			return null;
 		}
 
-		$phpVersions = $scope->getPhpVersion();
-		$throwsOnInvalidEncoding = $phpVersions->throwsOnInvalidMbStringEncoding();
 		$encodings = [];
 
 		if (count($args) === 1) {
@@ -73,7 +76,7 @@ final class MbStrlenFunctionReturnTypeExtension implements DynamicFunctionReturn
 
 		if (count($encodings) > 0) {
 			for ($i = 0; $i < count($encodings); $i++) {
-				if ($this->isSupportedEncoding($encodings[$i], $phpVersions)) {
+				if ($this->isSupportedEncoding($encodings[$i])) {
 					continue;
 				}
 				$encodings[$i] = self::UNSUPPORTED_ENCODING;
@@ -82,14 +85,13 @@ final class MbStrlenFunctionReturnTypeExtension implements DynamicFunctionReturn
 			$encodings = array_unique($encodings);
 
 			if (in_array(self::UNSUPPORTED_ENCODING, $encodings, true) && count($encodings) === 1) {
-				if ($throwsOnInvalidEncoding->yes()) {
+				if ($this->phpVersion->throwsOnInvalidMbStringEncoding()) {
 					return new NeverType();
 				}
-
 				return new ConstantBooleanType(false);
 			}
 		} else { // if there aren't encoding constants, use all available encodings
-			$encodings = array_merge($this->getSupportedEncodings($phpVersions), [self::UNSUPPORTED_ENCODING]);
+			$encodings = array_merge($this->getSupportedEncodings(), [self::UNSUPPORTED_ENCODING]);
 		}
 
 		$argType = $scope->getType($args[0]->value);
@@ -100,7 +102,7 @@ final class MbStrlenFunctionReturnTypeExtension implements DynamicFunctionReturn
 			$stringScalar = (string) $constantScalar;
 
 			foreach ($encodings as $encoding) {
-				if (!$this->isSupportedEncoding($encoding, $phpVersions)) {
+				if (!$this->isSupportedEncoding($encoding)) {
 					continue;
 				}
 
@@ -143,7 +145,7 @@ final class MbStrlenFunctionReturnTypeExtension implements DynamicFunctionReturn
 			);
 		}
 
-		if (!$throwsOnInvalidEncoding->yes() && in_array(self::UNSUPPORTED_ENCODING, $encodings, true)) {
+		if (!$this->phpVersion->throwsOnInvalidMbStringEncoding() && in_array(self::UNSUPPORTED_ENCODING, $encodings, true)) {
 			return TypeCombinator::union($range, new ConstantBooleanType(false));
 		}
 		return $range;

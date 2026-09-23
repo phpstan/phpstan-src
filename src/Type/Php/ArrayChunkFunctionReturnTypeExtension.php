@@ -5,6 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -17,6 +18,10 @@ use function count;
 #[AutowiredService]
 final class ArrayChunkFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
+
+	public function __construct(private PhpVersion $phpVersion)
+	{
+	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -32,21 +37,13 @@ final class ArrayChunkFunctionReturnTypeExtension implements DynamicFunctionRetu
 
 		$arrayType = $scope->getType($args[0]->value);
 		if ($arrayType->isArray()->no()) {
-			if ($scope->getPhpVersion()->arrayFunctionsReturnNullWithNonArray()->no()) {
-				return new NeverType();
-			}
-
-			return new NullType();
+			return $this->phpVersion->arrayFunctionsReturnNullWithNonArray() ? new NullType() : new NeverType();
 		}
 
 		$lengthType = $scope->getType($args[1]->value);
 		$negativeOrZero = IntegerRangeType::fromInterval(null, 0);
 		if ($negativeOrZero->isSuperTypeOf($lengthType)->yes()) {
-			if ($scope->getPhpVersion()->throwsValueErrorForInternalFunctions()->yes()) {
-				return new NeverType();
-			}
-
-			return new NullType();
+			return $this->phpVersion->throwsValueErrorForInternalFunctions() ? new NeverType() : new NullType();
 		}
 
 		$preserveKeysType = isset($args[2]) ? $scope->getType($args[2]->value) : new ConstantBooleanType(false);

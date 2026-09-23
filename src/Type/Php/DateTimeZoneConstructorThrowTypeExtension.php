@@ -6,6 +6,7 @@ use DateTimeZone;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
 use PHPStan\Type\NeverType;
@@ -18,6 +19,10 @@ use function count;
 #[AutowiredService]
 final class DateTimeZoneConstructorThrowTypeExtension implements DynamicStaticMethodThrowTypeExtension
 {
+
+	public function __construct(private PhpVersion $phpVersion)
+	{
+	}
 
 	public function isStaticMethodSupported(MethodReflection $methodReflection): bool
 	{
@@ -37,22 +42,22 @@ final class DateTimeZoneConstructorThrowTypeExtension implements DynamicStaticMe
 			try {
 				new DateTimeZone($constantString->getValue());
 			} catch (Throwable) {
-				return $this->exceptionType($scope);
+				return $this->exceptionType();
 			}
 
 			$valueType = TypeCombinator::remove($valueType, $constantString);
 		}
 
 		if (!$valueType instanceof NeverType) {
-			return $this->exceptionType($scope);
+			return $this->exceptionType();
 		}
 
 		return null;
 	}
 
-	private function exceptionType(Scope $scope): Type
+	private function exceptionType(): Type
 	{
-		if ($scope->getPhpVersion()->hasDateTimeExceptions()->yes()) {
+		if ($this->phpVersion->hasDateTimeExceptions()) {
 			return new ObjectType('DateInvalidTimeZoneException');
 		}
 

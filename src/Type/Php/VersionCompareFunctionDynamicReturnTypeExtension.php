@@ -7,6 +7,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\ConfiguredPhpVersionRangeHelper;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
@@ -46,6 +47,7 @@ final class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicF
 
 	public function __construct(
 		private ConfiguredPhpVersionRangeHelper $phpVersionRangeHelper,
+		private PhpVersion $phpVersion,
 	)
 	{
 	}
@@ -66,7 +68,6 @@ final class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicF
 			return null;
 		}
 
-		$throwsValueError = $scope->getPhpVersion()->throwsValueErrorForInternalFunctions();
 		$version1Strings = $this->getVersionStrings($args[0]->value, $scope);
 		$version2Strings = $this->getVersionStrings($args[1]->value, $scope);
 		$counts = [
@@ -77,9 +78,9 @@ final class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicF
 		if (isset($args[2])) {
 			$operatorStrings = $scope->getType($args[2]->value)->getConstantStrings();
 			$counts[] = count($operatorStrings);
-			$returnType = !$throwsValueError->yes() && self::mightBeInvalidOperator($operatorStrings)
-				? new BenevolentUnionType([new BooleanType(), new NullType()])
-				: new BooleanType();
+			$returnType = $this->phpVersion->throwsValueErrorForInternalFunctions()
+				? new BooleanType()
+				: new BenevolentUnionType([new BooleanType(), new NullType()]);
 		} else {
 			$returnType = new UnionType([
 				new ConstantIntegerType(-1),
@@ -104,7 +105,7 @@ final class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicF
 					foreach ($operatorStrings as $operatorString) {
 						$operatorValue = $operatorString->getValue();
 						if (!in_array($operatorValue, self::VALID_OPERATORS, true)) {
-							if (!$throwsValueError->yes()) {
+							if (!$this->phpVersion->throwsValueErrorForInternalFunctions()) {
 								$canBeNull = true;
 							}
 
@@ -126,27 +127,6 @@ final class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicF
 		}
 
 		return TypeCombinator::union(...$types);
-	}
-
-	/**
-	 * An invalid operator is the only thing that makes version_compare() return null or throw,
-	 * so a call that certainly passes a valid one does neither, on any analysed version.
-	 *
-	 * @param ConstantStringType[] $operatorStrings
-	 */
-	public static function mightBeInvalidOperator(array $operatorStrings): bool
-	{
-		if (count($operatorStrings) === 0) {
-			return true; // the operator is not a constant string, it might be invalid
-		}
-
-		foreach ($operatorStrings as $operatorString) {
-			if (!in_array($operatorString->getValue(), self::VALID_OPERATORS, true)) {
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	/**

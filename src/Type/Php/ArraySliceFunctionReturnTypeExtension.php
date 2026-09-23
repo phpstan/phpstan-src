@@ -5,6 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -16,6 +17,10 @@ use function count;
 #[AutowiredService]
 final class ArraySliceFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
+
+	public function __construct(private PhpVersion $phpVersion)
+	{
+	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -31,11 +36,7 @@ final class ArraySliceFunctionReturnTypeExtension implements DynamicFunctionRetu
 
 		$arrayType = $scope->getType($args[0]->value);
 		if ($arrayType->isArray()->no()) {
-			if ($scope->getPhpVersion()->arrayFunctionsReturnNullWithNonArray()->no()) {
-				return new NeverType();
-			}
-
-			return new NullType();
+			return $this->phpVersion->arrayFunctionsReturnNullWithNonArray() ? new NullType() : new NeverType();
 		}
 
 		$offsetType = $scope->getType($args[1]->value);

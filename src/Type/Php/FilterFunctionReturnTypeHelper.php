@@ -4,7 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersions;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
@@ -52,15 +52,15 @@ final class FilterFunctionReturnTypeHelper
 
 	private ?Type $supportedFilterInputTypes = null;
 
-	public function __construct(private ReflectionProvider $reflectionProvider)
+	public function __construct(private ReflectionProvider $reflectionProvider, private PhpVersion $phpVersion)
 	{
 		$this->flagsString = new ConstantStringType('flags');
 	}
 
-	private function getOffsetValueType(Type $inputType, Type $offsetType, ?Type $filterType, ?Type $flagsType, PhpVersions $phpVersions): Type
+	private function getOffsetValueType(Type $inputType, Type $offsetType, ?Type $filterType, ?Type $flagsType): Type
 	{
 		$hasNullOnFailure = $this->hasFlag('FILTER_NULL_ON_FAILURE', $flagsType);
-		if ($this->hasThrowOnFailureFlag($flagsType, $phpVersions)->yes()) {
+		if ($this->hasThrowOnFailureFlag($flagsType)->yes()) {
 			// a missing input value throws instead of being reported through the return value
 			$inexistentOffsetType = new NeverType();
 		} elseif ($hasNullOnFailure->yes()) {
@@ -76,14 +76,14 @@ final class FilterFunctionReturnTypeHelper
 			return $inexistentOffsetType;
 		}
 
-		$filteredType = $this->getType($inputType->getOffsetValueType($offsetType), $filterType, $flagsType, $phpVersions);
+		$filteredType = $this->getType($inputType->getOffsetValueType($offsetType), $filterType, $flagsType);
 
 		return $hasOffsetValueType->maybe()
 			? TypeCombinator::union($filteredType, $inexistentOffsetType)
 			: $filteredType;
 	}
 
-	public function getInputType(Type $typeType, Type $varNameType, ?Type $filterType, ?Type $flagsType, PhpVersions $phpVersions): Type
+	public function getInputType(Type $typeType, Type $varNameType, ?Type $filterType, ?Type $flagsType): Type
 	{
 		$this->supportedFilterInputTypes ??= TypeCombinator::union(
 			$this->reflectionProvider->getConstant(new Node\Name('INPUT_GET'), null)->getValueType(),
@@ -94,7 +94,7 @@ final class FilterFunctionReturnTypeHelper
 		);
 
 		if (!$typeType->isInteger()->yes() || $this->supportedFilterInputTypes->isSuperTypeOf($typeType)->no()) {
-			if ($phpVersions->throwsTypeErrorForInternalFunctions()->yes()) {
+			if ($this->phpVersion->throwsTypeErrorForInternalFunctions()) {
 				return new NeverType();
 			}
 
@@ -107,10 +107,10 @@ final class FilterFunctionReturnTypeHelper
 			$inputType = new ArrayType(new StringType(), new MixedType());
 		}
 
-		return $this->getOffsetValueType($inputType, $varNameType, $filterType, $flagsType, $phpVersions);
+		return $this->getOffsetValueType($inputType, $varNameType, $filterType, $flagsType);
 	}
 
-	public function getType(Type $inputType, ?Type $filterType, ?Type $flagsType, PhpVersions $phpVersions): Type
+	public function getType(Type $inputType, ?Type $filterType, ?Type $flagsType): Type
 	{
 		$mixedType = new MixedType();
 
@@ -154,7 +154,7 @@ final class FilterFunctionReturnTypeHelper
 
 		$inputIsArray = $inputType->isArray();
 		$hasRequireArrayFlag = $this->hasFlag('FILTER_REQUIRE_ARRAY', $flagsType);
-		$hasThrowOnFailureFlag = $this->hasThrowOnFailureFlag($flagsType, $phpVersions);
+		$hasThrowOnFailureFlag = $this->hasThrowOnFailureFlag($flagsType);
 		if ($inputIsArray->no() && $hasRequireArrayFlag->yes()) {
 			if ($hasThrowOnFailureFlag->yes()) {
 				return new ErrorType();
@@ -515,11 +515,11 @@ final class FilterFunctionReturnTypeHelper
 		);
 	}
 
-	private function hasThrowOnFailureFlag(?Type $flagsType, PhpVersions $phpVersions): TrinaryLogic
+	private function hasThrowOnFailureFlag(?Type $flagsType): TrinaryLogic
 	{
-		return $phpVersions->hasFilterThrowOnFailureConstant()->no()
-			? TrinaryLogic::createNo()
-			: $this->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType);
+		return $this->phpVersion->hasFilterThrowOnFailureConstant()
+			? $this->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType)
+			: TrinaryLogic::createNo();
 	}
 
 	private function getFlagsValue(Type $exprType): Type

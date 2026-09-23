@@ -16,6 +16,7 @@ use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
@@ -48,6 +49,7 @@ final class ArrayFilterFunctionReturnTypeHelper
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
+		private PhpVersion $phpVersion,
 	)
 	{
 	}
@@ -68,7 +70,7 @@ final class ArrayFilterFunctionReturnTypeHelper
 		}
 
 		if ($arrayArgType instanceof MixedType) {
-			if ($scope->getPhpVersion()->throwsValueErrorForInternalFunctions()->yes()) {
+			if ($this->phpVersion->throwsValueErrorForInternalFunctions()) {
 				return new ArrayType(new MixedType(), new MixedType());
 			}
 

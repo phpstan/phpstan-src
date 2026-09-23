@@ -10,6 +10,7 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
@@ -28,6 +29,12 @@ final class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTyp
 {
 
 	private TypeSpecifier $typeSpecifier;
+
+	public function __construct(
+		private PhpVersion $phpVersion,
+	)
+	{
+	}
 
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void
 	{
@@ -116,7 +123,7 @@ final class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTyp
 				new ArrayType(new MixedType(), new MixedType()),
 				new HasOffsetType($keyType),
 			]);
-		} elseif ($scope->getPhpVersion()->throwsValueErrorForInternalFunctions()->yes()) {
+		} elseif ($this->phpVersion->throwsValueErrorForInternalFunctions()) {
 			$specifiedTypes = $this->typeSpecifier->create(
 				$array,
 				new HasOffsetType($keyType),

@@ -799,13 +799,16 @@ public:
 	/* Gives $subclass, a class written without type arguments, the ones
 	 * $supertype implies for it through the class's `@extends` and
 	 * `@implements` tags: Some with Option<int> is Some<int>, Err with
-	 * Result<int, string> is Err<string>.
+	 * Result<int, string> is Err<string>. The class of $supertype itself
+	 * takes its arguments and call-site variance as written: X with X<*> is
+	 * X<*>.
 	 *
 	 * Returns $subclass unchanged (the same object) unless $supertype is a
-	 * generic object type without call-site variance, $subclass is a
-	 * generic subtype of its class, and $supertype determines every type
-	 * argument of $subclass - an explicit argument would claim more than is
-	 * known. UNDEF = pending exception */
+	 * generic object type and $subclass is its class or a generic subtype
+	 * of it. A subtype also stays unchanged when $supertype has call-site
+	 * variance or does not determine every type argument of the subtype -
+	 * an explicit argument would claim more than is known. UNDEF = pending
+	 * exception */
 	static zv::Val specializeSubclass(zval *supertype, zval *subclass)
 	{
 		/* $subclass is exactly an ObjectType: the shadowing class carries
@@ -814,8 +817,23 @@ public:
 		if (!zv::Ref(supertype).instanceOf(pt_ce_generic_object_type) || Z_OBJCE_P(subclass) != pt_ce_object_type) return zv::Val::copyOf(zv::Ref(subclass));
 		zend_object *supertypeObject = Z_OBJ_P(supertype);
 
+		/* $subclass->getClassName() — the slot, the object is exactly the
+		 * native class */
+		zend_string *subclassName = pt_object_type_class_name(Z_OBJ_P(subclass));
+		if (UNEXPECTED(subclassName == NULL)) return zv::Val();
+		zv::Val supertypeClassName = pt_type_call(supertypeObject, PT_LC("getclassname"), 0, NULL);
+		if (UNEXPECTED(supertypeClassName.isUndef())) return zv::Val();
 		zval *variances = variancesOf(supertypeObject);
 		if (UNEXPECTED(variances == NULL)) return zv::Val();
+		if (zv::Ref(supertypeClassName.raw()).isString() && zend_string_equals(subclassName, Z_STR_P(supertypeClassName.raw()))) {
+			zval *types = typesOf(supertypeObject);
+			if (UNEXPECTED(types == NULL)) return zv::Val();
+			zval *subtractedType = pt_object_type_subtracted_type(Z_OBJ_P(subclass));
+			if (UNEXPECTED(subtractedType == NULL)) return zv::Val();
+			zend_string *supertypeName = Z_STR_P(supertypeClassName.raw());
+			return create(supertypeName, types, Z_TYPE_P(subtractedType) == IS_NULL ? NULL : subtractedType, NULL, variances);
+		}
+
 		for (zv::ArrayEntry entry : zv::ArrRef(variances)) {
 			zv::Ref variance = entry.value().deref();
 			if (UNEXPECTED(!variance.isObject())) {
@@ -858,8 +876,6 @@ public:
 		}
 		zv::Val bare = create(name.get(), templateTypeList.raw(), NULL, NULL, NULL);
 		if (UNEXPECTED(bare.isUndef())) return zv::Val();
-		zv::Val supertypeClassName = pt_type_call(supertypeObject, PT_LC("getclassname"), 0, NULL);
-		if (UNEXPECTED(supertypeClassName.isUndef())) return zv::Val();
 		zv::Val ancestor = pt_type_call(Z_OBJ_P(bare.raw()), PT_LC("getancestorwithclassname"), 1, supertypeClassName.raw());
 		if (UNEXPECTED(ancestor.isUndef())) return zv::Val();
 		if (ancestor.isNull()) return zv::Val::copyOf(zv::Ref(subclass));

@@ -1286,6 +1286,7 @@ zv::Val pt_type_combinator_cache_union(uint32_t argc, zval *argv);
 zv::Val pt_type_combinator_cache_intersect(uint32_t argc, zval *argv);
 zv::Val pt_type_combinator_cache_remove(zval *fromType, zval *typeToRemove);
 void pt_type_combinator_cache_clear();
+void pt_type_combinator_cache_adopt_class(zend_class_entry *ce, const char *realName);
 
 /* merged from the parallel port branch */
 /* merged from the parallel port branch */

@@ -78,6 +78,9 @@ namespace sigs = ptdecl::TypeCombinatorCache::sig;
 #include "zv.h"
 
 #include <Zend/zend_weakrefs.h>
+#if PHP_VERSION_ID >= 80400
+#include <Zend/zend_lazy_objects.h>
+#endif
 
 /* zend_weakrefs_hash_clean()/_destroy() only exist since PHP 8.5; on 8.4 the
  * same unregister-then-destroy is spelled out with the 8.4-available API. */
@@ -171,6 +174,37 @@ static uint32_t pt_memo_tombstones = 0;
 static uint64_t pt_next_serial = 1;
 static bool pt_cache_inited = false;
 static bool pt_invalidate_active = false;
+
+/* The objects of the structurally hashed classes carry this header in front
+ * of their zend_object (the classes get typeObjectCreate() as their
+ * create_object when they are declared, see
+ * pt_type_combinator_cache_adopt_class()): the object's structural hash once
+ * computed, and the list of memo keys mapping to it as a result. For those
+ * objects it replaces the weak maps pt_type_hashes and pt_memo_results — no
+ * EG(weakrefs) registration and no weak-reference notification when the
+ * object dies, and the lookup is a load instead of a hash probe. An object
+ * without the header (a class with a create_object of its own) keeps using
+ * the weak maps. memoGeneration ties the key list to the memo it was built
+ * against: clear() bumps pt_memo_generation, and a list from an older
+ * generation names slots that no longer exist. */
+struct TypeObjectHeader
+{
+	Hash128 hash;
+	KeyList *memoKeys;
+	uint32_t hashComputed;
+	uint32_t memoGeneration;
+	zend_object std;
+};
+
+static zend_object_handlers pt_type_object_handlers;
+static bool pt_type_object_handlers_inited = false;
+static uint32_t pt_memo_generation = 1;
+
+static zend_always_inline TypeObjectHeader *typeObjectHeader(zend_object *obj)
+{
+	if (obj->handlers != &pt_type_object_handlers) return NULL;
+	return (TypeObjectHeader *) ((char *) obj - offsetof(TypeObjectHeader, std));
+}
 
 
 
@@ -371,10 +405,18 @@ static bool hashObject(zend_object *obj, Hash128 &out, uint32_t depth)
 	 * instance to save nothing. */
 	if (hashZeroSlotObject(obj, out)) return true;
 
-	Hash128 *cached = (Hash128 *) zend_hash_index_find_ptr(&pt_type_hashes, zend_object_to_weakref_key(obj));
-	if (cached != NULL) {
-		out = *cached;
-		return true;
+	TypeObjectHeader *header = typeObjectHeader(obj);
+	if (header != NULL) {
+		if (header->hashComputed) {
+			out = header->hash;
+			return true;
+		}
+	} else {
+		Hash128 *cached = (Hash128 *) zend_hash_index_find_ptr(&pt_type_hashes, zend_object_to_weakref_key(obj));
+		if (cached != NULL) {
+			out = *cached;
+			return true;
+		}
 	}
 
 	CePlan plan = cePlan(obj->ce);
@@ -392,10 +434,15 @@ static bool hashObject(zend_object *obj, Hash128 &out, uint32_t depth)
 	 * as a hole) and u2 is Z_NEXT, the collision chain, overwritten on insert.
 	 * NULL return = already registered by a re-entrant walk; the existing entry
 	 * holds the same bytes (the hash is a pure function of the object's value). */
-	Hash128 *stored = (Hash128 *) emalloc(sizeof(Hash128));
-	*stored = h;
-	if (zend_weakrefs_hash_add_ptr(&pt_type_hashes, obj, stored) == NULL) {
-		efree(stored);
+	if (header != NULL) {
+		header->hash = h;
+		header->hashComputed = 1;
+	} else {
+		Hash128 *stored = (Hash128 *) emalloc(sizeof(Hash128));
+		*stored = h;
+		if (zend_weakrefs_hash_add_ptr(&pt_type_hashes, obj, stored) == NULL) {
+			efree(stored);
+		}
 	}
 
 	out = h;
@@ -623,6 +670,28 @@ static void memoResultDtor(zval *zv)
 
 static void memoTrackResult(zend_object *obj, Hash128 key)
 {
+	TypeObjectHeader *header = typeObjectHeader(obj);
+	if (header != NULL) {
+		KeyList *list = header->memoKeys;
+		if (list == NULL) {
+			list = (KeyList *) emalloc(sizeof(KeyList));
+			list->obj = obj;
+			list->count = 0;
+			list->cap = 4;
+			header->memoKeys = list;
+		} else if (header->memoGeneration != pt_memo_generation) {
+			list->count = 0;
+		}
+		header->memoGeneration = pt_memo_generation;
+		if (list->count == list->cap) {
+			list->cap *= 2;
+			list = (KeyList *) erealloc(list, sizeof(KeyList) + (list->cap - 4) * sizeof(Hash128));
+			header->memoKeys = list;
+		}
+		list->keys[list->count++] = key;
+		return;
+	}
+
 	zval *existing = zend_hash_index_find(&pt_memo_results, zend_object_to_weakref_key(obj));
 	if (existing != NULL) {
 		KeyList *list = (KeyList *) Z_PTR_P(existing);
@@ -662,6 +731,76 @@ static void memoResultsClean()
 	zend_weakrefs_hash_clean(&pt_memo_results);
 #endif
 	pt_invalidate_active = true;
+}
+
+/* }}} */
+
+/* {{{ the header-carrying objects */
+
+static zend_object *typeObjectCreate(zend_class_entry *ce)
+{
+	TypeObjectHeader *header = (TypeObjectHeader *) zend_object_alloc(sizeof(TypeObjectHeader), ce);
+	header->hashComputed = 0;
+	header->memoKeys = NULL;
+	header->memoGeneration = 0;
+	zend_object_std_init(&header->std, ce);
+	object_properties_init(&header->std, ce);
+	header->std.handlers = &pt_type_object_handlers;
+
+	return &header->std;
+}
+
+static void typeObjectFree(zend_object *obj)
+{
+	TypeObjectHeader *header = (TypeObjectHeader *) ((char *) obj - offsetof(TypeObjectHeader, std));
+	if (header->memoKeys != NULL) {
+		if (pt_invalidate_active && header->memoGeneration == pt_memo_generation) {
+			memoInvalidate(header->memoKeys);
+		}
+		efree(header->memoKeys);
+		header->memoKeys = NULL;
+	}
+	zend_object_std_dtor(obj);
+}
+
+/* zend_objects_clone_obj() with the header: the clone is a new object, its
+ * hash is computed afresh and it is nobody's memo result. A lazy object is
+ * cloned by the engine's own handler (zend_lazy_object_clone() is not
+ * exported); that clone has no header and keeps to the weak maps. */
+static zend_object *typeObjectClone(zend_object *old)
+{
+#if PHP_VERSION_ID >= 80400
+	if (UNEXPECTED(zend_object_is_lazy(old))) {
+		return zend_objects_clone_obj(old);
+	}
+#endif
+	TypeObjectHeader *header = (TypeObjectHeader *) zend_object_alloc(sizeof(TypeObjectHeader), old->ce);
+	header->hashComputed = 0;
+	header->memoKeys = NULL;
+	header->memoGeneration = 0;
+	zend_object_std_init(&header->std, old->ce);
+	header->std.handlers = &pt_type_object_handlers;
+	if (old->ce->default_properties_count) {
+		zval *p = header->std.properties_table;
+		zval *end = p + old->ce->default_properties_count;
+		do {
+			ZVAL_UNDEF(p);
+			p++;
+		} while (p != end);
+	}
+	zend_objects_clone_members(&header->std, old);
+
+	return &header->std;
+}
+
+static void typeObjectHandlersInit()
+{
+	if (pt_type_object_handlers_inited) return;
+	memcpy(&pt_type_object_handlers, &std_object_handlers, sizeof(zend_object_handlers));
+	pt_type_object_handlers.offset = offsetof(TypeObjectHeader, std);
+	pt_type_object_handlers.free_obj = typeObjectFree;
+	pt_type_object_handlers.clone_obj = typeObjectClone;
+	pt_type_object_handlers_inited = true;
 }
 
 /* }}} */
@@ -793,6 +932,7 @@ public:
 	{
 		if (!pt_cache_inited) return;
 		memoResultsClean();
+		pt_memo_generation++;
 		if (pt_memo_mask + 1 > MEMO_INITIAL_CAPACITY_LIMIT) {
 			efree(pt_memo_slots);
 			pt_memo_slots = (MemoSlot *) ecalloc(MEMO_INITIAL_CAPACITY_LIMIT, sizeof(MemoSlot));
@@ -879,6 +1019,22 @@ zv::Val pt_type_combinator_cache_remove(zval *fromType, zval *typeToRemove)
 {
 	zv::Args args{fromType, typeToRemove};
 	return TypeCombinatorCache::run(TypeCombinatorCache::REMOVE, TypeCombinatorCache::computeRemove, args, 2);
+}
+
+/* Gives the objects of a structurally hashed shadowing class the header (see
+ * TypeObjectHeader). Called for every class right after activation declares
+ * it; PHP subclasses inherit create_object from it. A class with an allocator
+ * of its own is left alone and keeps the weak maps. */
+void pt_type_combinator_cache_adopt_class(zend_class_entry *ce, const char *realName)
+{
+	if (ce->create_object != NULL) return;
+	size_t len = strlen(realName);
+	bool structural = (len > sizeof("PHPStan\\Type\\") - 1 && memcmp(realName, "PHPStan\\Type\\", sizeof("PHPStan\\Type\\") - 1) == 0)
+		|| (len > sizeof("PHPStan\\Php\\") - 1 && memcmp(realName, "PHPStan\\Php\\", sizeof("PHPStan\\Php\\") - 1) == 0)
+		|| strcmp(realName, "PHPStan\\TrinaryLogic") == 0;
+	if (!structural) return;
+	phpstanturbo::typeObjectHandlersInit();
+	ce->create_object = phpstanturbo::typeObjectCreate;
 }
 
 void pt_type_combinator_cache_clear()

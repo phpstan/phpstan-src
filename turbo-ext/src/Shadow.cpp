@@ -187,6 +187,7 @@ static bool pt_shadow_materialize(reg::ShadowPlan &plan, HashTable *twinFiles, z
 	zend_string_release(lcName);
 
 	plan.ce = linked;
+	pt_type_combinator_cache_adopt_class(linked, plan.name);
 	if (plan.out != NULL) {
 		*plan.out = linked;
 	}

@@ -24,6 +24,7 @@ class DynamicReturnTypeExtensionTypeInferenceTest extends TypeInferenceTestCase
 			yield from self::gatherAssertTypes(__DIR__ . '/data/dynamic-return-enum-closure.php');
 		}
 		yield from self::gatherAssertTypes(__DIR__ . '/data/bug-7391b.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/data/bug-15303.php');
 	}
 
 	/**

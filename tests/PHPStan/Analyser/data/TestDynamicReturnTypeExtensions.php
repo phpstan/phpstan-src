@@ -320,3 +320,70 @@ class BackedEnumGetValueDynamicReturnTypeExtension implements DynamicMethodRetur
 		return $methodReflection->getDeclaringClass()->getBackedEnumType();
 	}
 }
+
+class Bug15303DynamicFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension
+{
+
+	public function isFunctionSupported(\PHPStan\Reflection\FunctionReflection $functionReflection): bool
+	{
+		return in_array($functionReflection->getName(), ['Bug15303\keyBy', 'Bug15303\groupBy'], true);
+	}
+
+	public function getTypeFromFunctionCall(\PHPStan\Reflection\FunctionReflection $functionReflection, \PhpParser\Node\Expr\FuncCall $functionCall, Scope $scope): ?Type
+	{
+		$args = $functionCall->getArgs();
+		$valueType = $scope->getType($args[0]->value)->getIterableValueType();
+		$callback = $args[1]->value;
+		if ($callback instanceof \PhpParser\Node\Expr\Array_) {
+			$lastItem = $callback->items[count($callback->items) - 1];
+			$callback = $lastItem->value;
+		}
+
+		return Bug15303Helper::getKeyedArrayType($scope, $callback, $valueType);
+	}
+
+}
+
+class Bug15303DynamicMethodReturnTypeExtension implements DynamicMethodReturnTypeExtension
+{
+
+	public function getClass(): string
+	{
+		return \Bug15303\Collection::class;
+	}
+
+	public function isMethodSupported(MethodReflection $methodReflection): bool
+	{
+		return $methodReflection->getName() === 'keyBy';
+	}
+
+	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): ?Type
+	{
+		$args = $methodCall->getArgs();
+
+		return Bug15303Helper::getKeyedArrayType($scope, $args[0]->value, new ObjectType(\Bug15303\User::class));
+	}
+
+}
+
+class Bug15303Helper
+{
+
+	public static function getKeyedArrayType(Scope $scope, \PhpParser\Node\Expr $callback, Type $valueType): ?Type
+	{
+		if (!$scope instanceof \PHPStan\Analyser\MutatingScope) {
+			return null;
+		}
+
+		$pushed = $scope->pushInFunctionCall(null, new \PHPStan\Reflection\Php\DummyParameter('callback', new \PHPStan\Type\CallableType([
+			new \PHPStan\Reflection\Native\NativeParameterReflection('param', false, $valueType, \PHPStan\Reflection\PassedByReference::createNo(), false, null),
+		], new \PHPStan\Type\MixedType()), false, \PHPStan\Reflection\PassedByReference::createNo(), false, null), false);
+		$closure = $pushed->getType($callback);
+		if (!$closure instanceof \PHPStan\Type\ClosureType) {
+			return null;
+		}
+
+		return new \PHPStan\Type\ArrayType($closure->getReturnType(), $valueType);
+	}
+
+}

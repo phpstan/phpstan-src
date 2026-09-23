@@ -716,8 +716,9 @@ final class ExpressionResult
 		// it at a foreign position would re-run the whole convergence loop. Its
 		// body variables are not reads of the asking position, and the
 		// position-sensitive TYPE is computed by getClosureType at ask sites.
+		// An ask in a different callable-parameter context re-prices it.
 		if ($this->expr instanceof Expr\Closure || $this->expr instanceof Expr\ArrowFunction) {
-			return true;
+			return ClosureCallContextMatcher::matches($scope->inFunctionCallsStack, $this->beforeScope->inFunctionCallsStack);
 		}
 		$names = $this->getReadVariableNames();
 		if ($names === []) {

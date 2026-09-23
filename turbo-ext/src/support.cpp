@@ -410,6 +410,7 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_BETTER_REFLECTION_CLASS_CONSTANT */ {"betterReflectionClassConstant", "PHPStan\\BetterReflection\\Reflection\\ReflectionClassConstant"},
 	/* PT_CLASS_RELATIVE_NAME */ {"relativeName", "PhpParser\\Node\\Name\\Relative"},
 	/* PT_CLASS_ITERABLE_HELPER */ {"iterableHelper", "PHPStan\\Internal\\IterableHelper"},
+	/* PT_CLASS_CLOSURE_CALL_CONTEXT_MATCHER */ {"closureCallContextMatcher", "PHPStan\\Analyser\\ClosureCallContextMatcher"},
 };
 
 zend_class_entry *pt_class(int idx)

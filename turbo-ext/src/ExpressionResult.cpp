@@ -19,9 +19,11 @@
 
 #include "support.h"
 #include "generated/ExpressionResult.h"
+#include "generated/MutatingScope.h"
 
 namespace slots = ptdecl::ExpressionResult::slot;
 namespace sigs = ptdecl::ExpressionResult::sig;
+namespace msSlots = ptdecl::MutatingScope::slot;
 #include "zv.h"
 #include "TypeTraits.h"
 #include "TypeOps.h"
@@ -40,6 +42,8 @@ namespace {
 
 /* the twin's READ_VARIABLE_NAMES_ATTRIBUTE, a permanent interned string */
 zend_string *pt_er_read_variable_names_attribute = nullptr;
+
+pt_method_site pt_er_closure_call_context_matches_site;
 
 /* the constructor's values: NULL stands for a null argument, the bools are
  * plain, the arrays and objects borrowed */
@@ -551,6 +555,27 @@ public:
 		return askScopeVariableStateMatches(scope, useNativeTypes, false);
 	}
 
+	/* ClosureCallContextMatcher::matches($scope->inFunctionCallsStack,
+	 * $this->beforeScope->inFunctionCallsStack) — the identical stacks of the
+	 * common ask answered here, the rest in the PHP helper; -1 = pending
+	 * exception, else 0/1 */
+	[[nodiscard]] static zend_long closureCallContextMatches(zval *scope, zval *beforeScope)
+	{
+		zval *askStack = OBJ_PROP_NUM(Z_OBJ_P(scope), msSlots::inFunctionCallsStack);
+		zval *positionStack = OBJ_PROP_NUM(Z_OBJ_P(beforeScope), msSlots::inFunctionCallsStack);
+		if (UNEXPECTED(Z_TYPE_P(askStack) == IS_UNDEF || Z_TYPE_P(positionStack) == IS_UNDEF)) {
+			zend_throw_error(NULL, "Typed property PHPStan\\Analyser\\MutatingScope::$inFunctionCallsStack must not be accessed before initialization");
+			return -1;
+		}
+		if (zend_is_identical(askStack, positionStack)) return 1;
+		zval argv[2];
+		ZVAL_COPY_VALUE(&argv[0], askStack);
+		ZVAL_COPY_VALUE(&argv[1], positionStack);
+		zv::Val matches = pt_call_static_cached(pt_er_closure_call_context_matches_site, PT_CLASS_CLOSURE_CALL_CONTEXT_MATCHER, PT_LC("matches"), 2, argv);
+		if (UNEXPECTED(matches.isUndef())) return -1;
+		return matches.ref().isTrue() ? 1 : 0;
+	}
+
 	/* Mirrors askScopeVariableStateMatches(); -1 = pending exception, else 0/1. */
 	[[nodiscard]] zend_long askScopeVariableStateMatches(zval *scope, bool useNativeTypes, bool ruleFacingAsk)
 	{
@@ -562,11 +587,14 @@ public:
 		// it at a foreign position would re-run the whole convergence loop. Its
 		// body variables are not reads of the asking position, and the
 		// position-sensitive TYPE is computed by getClosureType at ask sites.
+		// An ask in a different callable-parameter context re-prices it.
 		zend_class_entry *closureCe = pt_class(PT_CLASS_CLOSURE_EXPR);
 		zend_class_entry *arrowFunctionCe = pt_class(PT_CLASS_ARROW_FUNCTION);
 		if (UNEXPECTED(closureCe == NULL || arrowFunctionCe == NULL)) return -1;
 		zend_object *expr = Z_OBJ_P(slot(slots::expr));
-		if (instanceof_function(expr->ce, closureCe) || instanceof_function(expr->ce, arrowFunctionCe)) return 1;
+		if (instanceof_function(expr->ce, closureCe) || instanceof_function(expr->ce, arrowFunctionCe)) {
+			return closureCallContextMatches(scope, beforeScope);
+		}
 		zv::Val names = getReadVariableNames();
 		if (UNEXPECTED(names.isUndef())) return -1;
 		if (zend_hash_num_elements(Z_ARRVAL_P(names.raw())) == 0) return 1;

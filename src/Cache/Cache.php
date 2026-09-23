@@ -28,7 +28,7 @@ final class Cache
 		// Every entry is also shared across the run's parallel workers
 		// through the shared-memory arena (turbo extension only; the seam is
 		// a no-op otherwise): whichever process loads or saves an entry first
-		// publishes it, and the others skip the include() of the var_export'd
+		// publishes it, and the others skip reading and unserializing the
 		// cache file. The arena's codec covers scalars, arrays and plain
 		// value objects, and interns repeated strings on read like include()
 		// does; payloads it cannot represent just stay per-worker.

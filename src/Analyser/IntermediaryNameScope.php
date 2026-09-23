@@ -119,8 +119,8 @@ final class IntermediaryNameScope
 	/**
 	 * Restores sharing of identical property values and parent scopes after hydration from the file cache.
 	 *
-	 * var_export() used by the cache cannot represent shared references, so every hydrated
-	 * scope carries its own copy of the same uses maps and of the whole parent chain.
+	 * serialize() keeps objects shared within an entry but stores arrays by value, so
+	 * every hydrated scope carries its own copy of the same uses maps.
 	 * Without interning, the name scope map of a file with many members takes up
 	 * many times more memory when loaded from the cache than when freshly created.
 	 *

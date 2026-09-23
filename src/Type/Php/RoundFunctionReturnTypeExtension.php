@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\BooleanType;
@@ -27,10 +26,6 @@ use function in_array;
 final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
-	public function __construct(private PhpVersion $phpVersion)
-	{
-	}
-
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
 		return in_array(
@@ -50,16 +45,15 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 		// PHP 8 can either return a float or fatal.
 		$defaultReturnType = null;
 
-		if ($this->phpVersion->hasStricterRoundFunctions()) {
-			// PHP 8 fatals with a missing parameter.
-			$noArgsReturnType = new NeverType(true);
-		} else {
-			// PHP 7 returns null with a missing parameter.
-			$noArgsReturnType = new NullType();
-		}
+		$hasStricterRoundFunctions = $scope->getPhpVersion()->hasStricterRoundFunctions();
 
 		if (count($functionCall->getArgs()) < 1) {
-			return $noArgsReturnType;
+			// PHP 8 fatals with a missing parameter, PHP 7 returns null.
+			if ($hasStricterRoundFunctions->yes()) {
+				return new NeverType(true);
+			}
+
+			return new NullType();
 		}
 
 		$firstArgType = $scope->getType($functionCall->getArgs()[0]->value);
@@ -68,7 +62,7 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 			return $defaultReturnType;
 		}
 
-		if ($this->phpVersion->hasStricterRoundFunctions()) {
+		if ($hasStricterRoundFunctions->yes()) {
 			if (!$scope->isDeclareStrictTypes()) {
 				$allowed = new UnionType([
 					new IntegerType(),

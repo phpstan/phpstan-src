@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\BooleanType;
@@ -38,10 +37,6 @@ final class MbFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeE
 		'mb_ord' => 2,
 	];
 
-	public function __construct(private PhpVersion $phpVersion)
-	{
-	}
-
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
 		return array_key_exists($functionReflection->getName(), $this->encodingPositionMap);
@@ -61,22 +56,24 @@ final class MbFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeE
 			return TypeCombinator::remove($returnType, new BooleanType());
 		}
 
+		$phpVersions = $scope->getPhpVersion();
 		$strings = $scope->getType($args[$positionEncodingParam - 1]->value)->getConstantStrings();
-		$results = array_unique(array_map(fn (ConstantStringType $encoding): bool => $this->isSupportedEncoding($encoding->getValue()), $strings));
+		$results = array_unique(array_map(fn (ConstantStringType $encoding): bool => $this->isSupportedEncoding($encoding->getValue(), $phpVersions), $strings));
 
 		if ($returnType->equals(new UnionType([new StringType(), new BooleanType()]))) {
 			return count($results) === 1 ? new ConstantBooleanType($results[0]) : new BooleanType();
 		}
 
 		if (count($results) === 1) {
-			$invalidEncodingReturn = new ConstantBooleanType(false);
-			if ($this->phpVersion->throwsOnInvalidMbStringEncoding()) {
-				$invalidEncodingReturn = new NeverType();
+			if ($results[0]) {
+				return TypeCombinator::remove($returnType, new ConstantBooleanType(false));
 			}
 
-			return $results[0]
-				? TypeCombinator::remove($returnType, new ConstantBooleanType(false))
-				: $invalidEncodingReturn;
+			if ($phpVersions->throwsOnInvalidMbStringEncoding()->yes()) {
+				return new NeverType();
+			}
+
+			return new ConstantBooleanType(false);
 		}
 
 		return $returnType;

@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -22,10 +21,6 @@ use function count;
 #[AutowiredService]
 final class CountCharsFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
-
-	public function __construct(private PhpVersion $phpVersion)
-	{
-	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -45,18 +40,19 @@ final class CountCharsFunctionDynamicReturnTypeExtension implements DynamicFunct
 		}
 
 		$modeType = count($args) === 2 ? $scope->getType($args[1]->value) : new ConstantIntegerType(0);
+		$throwsValueError = $scope->getPhpVersion()->throwsValueErrorForInternalFunctions();
 
 		if (IntegerRangeType::fromInterval(0, 2)->isSuperTypeOf($modeType)->yes()) {
 			$arrayType = new ArrayType(new IntegerType(), new IntegerType());
 
-			return $this->phpVersion->throwsValueErrorForInternalFunctions()
+			return $throwsValueError->yes()
 				? $arrayType
 				: TypeUtils::toBenevolentUnion(new UnionType([$arrayType, new ConstantBooleanType(false)]));
 		}
 
 		$stringType = new StringType();
 
-		return $this->phpVersion->throwsValueErrorForInternalFunctions()
+		return $throwsValueError->yes()
 			? $stringType
 			: TypeUtils::toBenevolentUnion(new UnionType([$stringType, new ConstantBooleanType(false)]));
 	}

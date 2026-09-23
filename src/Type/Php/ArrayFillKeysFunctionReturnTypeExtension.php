@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -18,10 +17,6 @@ use function count;
 #[AutowiredService]
 final class ArrayFillKeysFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
-
-	public function __construct(private PhpVersion $phpVersion)
-	{
-	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -37,7 +32,11 @@ final class ArrayFillKeysFunctionReturnTypeExtension implements DynamicFunctionR
 
 		$keysType = $scope->getType($args[0]->value);
 		if ($keysType->isArray()->no()) {
-			return $this->phpVersion->arrayFunctionsReturnNullWithNonArray() ? new NullType() : new NeverType();
+			if ($scope->getPhpVersion()->arrayFunctionsReturnNullWithNonArray()->no()) {
+				return new NeverType();
+			}
+
+			return new NullType();
 		}
 
 		$filled = $keysType->fillKeysArray($scope->getType($args[1]->value));

@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
@@ -28,10 +27,6 @@ final class ArrayFillFunctionReturnTypeExtension implements DynamicFunctionRetur
 
 	private const MAX_SIZE_USE_CONSTANT_ARRAY = 100;
 
-	public function __construct(private PhpVersion $phpVersion)
-	{
-	}
-
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
 		return $functionReflection->getName() === 'array_fill';
@@ -46,12 +41,14 @@ final class ArrayFillFunctionReturnTypeExtension implements DynamicFunctionRetur
 
 		$numberType = $scope->getType($args[1]->value);
 		$isValidNumberType = IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($numberType);
+		$throwsValueError = $scope->getPhpVersion()->throwsValueErrorForInternalFunctions();
 
 		// check against negative-int, which is not allowed
 		if ($isValidNumberType->no()) {
-			if ($this->phpVersion->throwsValueErrorForInternalFunctions()) {
+			if ($throwsValueError->yes()) {
 				return new NeverType();
 			}
+
 			return new ConstantBooleanType(false);
 		}
 
@@ -96,7 +93,7 @@ final class ArrayFillFunctionReturnTypeExtension implements DynamicFunctionRetur
 			$resultType = TypeCombinator::intersect($resultType, new NonEmptyArrayType());
 		}
 
-		if (!$isValidNumberType->yes() && !$this->phpVersion->throwsValueErrorForInternalFunctions()) {
+		if (!$isValidNumberType->yes() && !$throwsValueError->yes()) {
 			$resultType = TypeCombinator::union($resultType, new ConstantBooleanType(false));
 		}
 

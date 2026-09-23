@@ -36,7 +36,7 @@ public:
 	explicit InternalThrowPoint(zend_object *self) : self(self) {}
 
 	/* the private constructor's body */
-	void construct(zval *scope, zval *type, zval *node, bool explicit_, bool canContainAnyThrowable, bool fromThrowExpr) const
+	void construct(zval *scope, zval *type, zval *node, bool explicit_, bool canContainAnyThrowable) const
 	{
 		pt_write_slot(self, slots::scope, scope);
 		pt_write_slot(self, slots::type, type);
@@ -46,16 +46,14 @@ public:
 		pt_write_slot(self, slots::explicit_, &value);
 		ZVAL_BOOL(&value, canContainAnyThrowable);
 		pt_write_slot(self, slots::canContainAnyThrowable, &value);
-		ZVAL_BOOL(&value, fromThrowExpr);
-		pt_write_slot(self, slots::fromThrowExpr, &value);
 	}
 
 	/* new self(...); UNDEF = pending exception */
-	static zv::Val newSelf(zval *scope, zval *type, zval *node, bool explicit_, bool canContainAnyThrowable, bool fromThrowExpr)
+	static zv::Val newSelf(zval *scope, zval *type, zval *node, bool explicit_, bool canContainAnyThrowable)
 	{
 		zval object;
 		if (UNEXPECTED(object_init_ex(&object, pt_ce_internal_throw_point) != SUCCESS)) return zv::Val();
-		InternalThrowPoint(Z_OBJ(object)).construct(scope, type, node, explicit_, canContainAnyThrowable, fromThrowExpr);
+		InternalThrowPoint(Z_OBJ(object)).construct(scope, type, node, explicit_, canContainAnyThrowable);
 		return zv::Val::adopt(object);
 	}
 
@@ -69,9 +67,8 @@ public:
 			zval *type = scope != NULL ? pt_typed_slot(self, slots::type, self->ce, "type") : NULL;
 			zval *node = type != NULL ? pt_typed_slot(self, slots::node, self->ce, "node") : NULL;
 			zval *canContainAnyThrowable = node != NULL ? pt_typed_slot(self, slots::canContainAnyThrowable, self->ce, "canContainAnyThrowable") : NULL;
-			zval *fromThrowExpr = canContainAnyThrowable != NULL ? pt_typed_slot(self, slots::fromThrowExpr, self->ce, "fromThrowExpr") : NULL;
-			if (UNEXPECTED(fromThrowExpr == NULL)) return zv::Val();
-			return pt_throw_point_create_explicit(scope, type, node, Z_TYPE_P(canContainAnyThrowable) == IS_TRUE, Z_TYPE_P(fromThrowExpr) == IS_TRUE);
+			if (UNEXPECTED(canContainAnyThrowable == NULL)) return zv::Val();
+			return pt_throw_point_create_explicit(scope, type, node, Z_TYPE_P(canContainAnyThrowable) == IS_TRUE);
 		}
 
 		zval *node = scope != NULL ? pt_typed_slot(self, slots::node, self->ce, "node") : NULL;
@@ -80,18 +77,18 @@ public:
 		return pt_throw_point_create_implicit(scope, node, type);
 	}
 
-	static zv::Val createExplicit(zval *scope, zval *type, zval *node, bool canContainAnyThrowable, bool fromThrowExpr)
+	static zv::Val createExplicit(zval *scope, zval *type, zval *node, bool canContainAnyThrowable)
 	{
-		return newSelf(scope, type, node, true, canContainAnyThrowable, fromThrowExpr);
+		return newSelf(scope, type, node, true, canContainAnyThrowable);
 	}
 
 	/* $type NULL for null */
 	static zv::Val createImplicit(zval *scope, zval *node, zval *type)
 	{
-		if (type != NULL) return newSelf(scope, type, node, false, true, false);
+		if (type != NULL) return newSelf(scope, type, node, false, true);
 		zv::Val throwable = pt_throw_point_throwable_type();
 		if (UNEXPECTED(throwable.isUndef())) return zv::Val();
-		return newSelf(scope, throwable.raw(), node, false, true, false);
+		return newSelf(scope, throwable.raw(), node, false, true);
 	}
 
 	/* Mirrors createFromPublic(): the getters in the twin's order */
@@ -103,9 +100,8 @@ public:
 			zval *node = type != NULL ? pt_typed_slot(point, publicSlots::node, point->ce, "node") : NULL;
 			zval *explicit_ = node != NULL ? pt_typed_slot(point, publicSlots::explicit_, point->ce, "explicit") : NULL;
 			zval *canContainAnyThrowable = explicit_ != NULL ? pt_typed_slot(point, publicSlots::canContainAnyThrowable, point->ce, "canContainAnyThrowable") : NULL;
-			zval *fromThrowExpr = canContainAnyThrowable != NULL ? pt_typed_slot(point, publicSlots::fromThrowExpr, point->ce, "fromThrowExpr") : NULL;
-			if (UNEXPECTED(fromThrowExpr == NULL)) return zv::Val();
-			return newSelf(scope, type, node, Z_TYPE_P(explicit_) == IS_TRUE, Z_TYPE_P(canContainAnyThrowable) == IS_TRUE, Z_TYPE_P(fromThrowExpr) == IS_TRUE);
+			if (UNEXPECTED(canContainAnyThrowable == NULL)) return zv::Val();
+			return newSelf(scope, type, node, Z_TYPE_P(explicit_) == IS_TRUE, Z_TYPE_P(canContainAnyThrowable) == IS_TRUE);
 		}
 		zv::Val type = pt_type_call(point, PT_LC("gettype"), 0, NULL);
 		if (UNEXPECTED(type.isUndef())) return zv::Val();
@@ -115,9 +111,7 @@ public:
 		if (UNEXPECTED(explicit_.isUndef())) return zv::Val();
 		zv::Val canContainAnyThrowable = pt_type_call(point, PT_LC("cancontainanythrowable"), 0, NULL);
 		if (UNEXPECTED(canContainAnyThrowable.isUndef())) return zv::Val();
-		zv::Val fromThrowExpr = pt_type_call(point, PT_LC("isfromthrowexpr"), 0, NULL);
-		if (UNEXPECTED(fromThrowExpr.isUndef())) return zv::Val();
-		return newSelf(scope, type.raw(), node.raw(), zend_is_true(explicit_.raw()), zend_is_true(canContainAnyThrowable.raw()), zend_is_true(fromThrowExpr.raw()));
+		return newSelf(scope, type.raw(), node.raw(), zend_is_true(explicit_.raw()), zend_is_true(canContainAnyThrowable.raw()));
 	}
 
 	zv::Val getScope() const { return read(slots::scope, "scope"); }
@@ -125,7 +119,6 @@ public:
 	zv::Val getNode() const { return read(slots::node, "node"); }
 	zv::Val isExplicit() const { return read(slots::explicit_, "explicit"); }
 	zv::Val canContainAnyThrowable() const { return read(slots::canContainAnyThrowable, "canContainAnyThrowable"); }
-	zv::Val isFromThrowExpr() const { return read(slots::fromThrowExpr, "fromThrowExpr"); }
 
 	/* Mirrors subtractCatchType(). */
 	zv::Val subtractCatchType(zval *catchType) const
@@ -139,9 +132,7 @@ public:
 		zval *explicit_ = node != NULL ? pt_typed_slot(self, slots::explicit_, self->ce, "explicit") : NULL;
 		zval *canContainAnyThrowable = explicit_ != NULL ? pt_typed_slot(self, slots::canContainAnyThrowable, self->ce, "canContainAnyThrowable") : NULL;
 		if (UNEXPECTED(canContainAnyThrowable == NULL)) return zv::Val();
-		zval *fromThrowExpr = pt_typed_slot(self, slots::fromThrowExpr, self->ce, "fromThrowExpr");
-		if (UNEXPECTED(fromThrowExpr == NULL)) return zv::Val();
-		return newSelf(scope, removed.raw(), node, Z_TYPE_P(explicit_) == IS_TRUE, Z_TYPE_P(canContainAnyThrowable) == IS_TRUE, Z_TYPE_P(fromThrowExpr) == IS_TRUE);
+		return newSelf(scope, removed.raw(), node, Z_TYPE_P(explicit_) == IS_TRUE, Z_TYPE_P(canContainAnyThrowable) == IS_TRUE);
 	}
 
 private:
@@ -161,9 +152,9 @@ using phpstanturbo::InternalThrowPoint;
 
 /* {{{ exported helpers: the shadowing class for native callers */
 
-zv::Val pt_internal_throw_point_create_explicit(zval *scope, zval *type, zval *node, bool canContainAnyThrowable, bool fromThrowExpr)
+zv::Val pt_internal_throw_point_create_explicit(zval *scope, zval *type, zval *node, bool canContainAnyThrowable)
 {
-	return InternalThrowPoint::createExplicit(scope, type, node, canContainAnyThrowable, fromThrowExpr);
+	return InternalThrowPoint::createExplicit(scope, type, node, canContainAnyThrowable);
 }
 
 zv::Val pt_internal_throw_point_create_implicit(zval *scope, zval *node, zval *type)
@@ -206,19 +197,14 @@ void pt_register_internal_throw_point()
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *scope, *type, *node;
-		bool explicit_, canContainAnyThrowable, fromThrowExpr = false;
-		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj, zp::Bool, zp::Bool, zp::Opt<zp::Bool>>(execute_data, scope, type, node, explicit_, canContainAnyThrowable, fromThrowExpr)) RETURN_THROWS();
-		InternalThrowPoint(Z_OBJ_P(ZEND_THIS)).construct(scope, type, node, explicit_, canContainAnyThrowable, fromThrowExpr);
+		bool explicit_, canContainAnyThrowable;
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj, zp::Bool, zp::Bool>(execute_data, scope, type, node, explicit_, canContainAnyThrowable)) RETURN_THROWS();
+		InternalThrowPoint(Z_OBJ_P(ZEND_THIS)).construct(scope, type, node, explicit_, canContainAnyThrowable);
 	});
 
 	cls.method<&InternalThrowPoint::toPublic>(sigs::toPublic);
 
-	cls.method(sigs::createExplicit, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *scope, *type, *node;
-		bool canContainAnyThrowable, fromThrowExpr = false;
-		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj, zp::Bool, zp::Opt<zp::Bool>>(execute_data, scope, type, node, canContainAnyThrowable, fromThrowExpr)) RETURN_THROWS();
-		PT_RETURN_VAL(InternalThrowPoint::createExplicit(scope, type, node, canContainAnyThrowable, fromThrowExpr));
-	});
+	cls.method<&InternalThrowPoint::createExplicit, zp::Obj, zp::Obj, zp::Obj, zp::Bool>(sigs::createExplicit);
 
 	cls.method(sigs::createImplicit, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *scope, *node, *type = NULL;
@@ -237,8 +223,6 @@ void pt_register_internal_throw_point()
 	cls.method<&InternalThrowPoint::isExplicit>(sigs::isExplicit);
 
 	cls.method<&InternalThrowPoint::canContainAnyThrowable>(sigs::canContainAnyThrowable);
-
-	cls.method<&InternalThrowPoint::isFromThrowExpr>(sigs::isFromThrowExpr);
 
 	cls.method<&InternalThrowPoint::subtractCatchType, zp::Obj>(sigs::subtractCatchType);
 

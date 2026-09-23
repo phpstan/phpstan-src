@@ -678,7 +678,6 @@ zv::Val calleeGetNamedArgumentsVariants(zval *reflection)
 pt_method_site pt_ah_simple_throw_point_is_explicit_site;
 pt_method_site pt_ah_simple_throw_point_get_type_site;
 pt_method_site pt_ah_simple_throw_point_can_contain_any_throwable_site;
-pt_method_site pt_ah_simple_throw_point_is_from_throw_expr_site;
 pt_property_site pt_ah_invalidate_expr_node_expr_site;
 
 /* $impurePoint->getIdentifier() / ->getDescription() / ->isCertain(): the
@@ -1685,9 +1684,7 @@ private:
 				if (UNEXPECTED(type == NULL)) return false;
 				bool canContainAnyThrowable = false;
 				if (UNEXPECTED(!pt_internal_throw_point_can_contain_any_throwable(throwPoint, canContainAnyThrowable))) return false;
-				bool fromThrowExpr = false;
-				if (UNEXPECTED(!pt_internal_throw_point_is_from_throw_expr(throwPoint, fromThrowExpr))) return false;
-				mappedPoint = pt_internal_throw_point_create_explicit(scope, type, value, canContainAnyThrowable, fromThrowExpr);
+				mappedPoint = pt_internal_throw_point_create_explicit(scope, type, value, canContainAnyThrowable);
 			} else {
 				mappedPoint = pt_internal_throw_point_create_implicit(scope, value);
 			}
@@ -2057,9 +2054,7 @@ private:
 				if (UNEXPECTED(type.isUndef())) return false;
 				zv::Val canContainAnyThrowable = callOn(pt_ah_simple_throw_point_can_contain_any_throwable_site, throwPoint, PT_LC("cancontainanythrowable"), "canContainAnyThrowable", 0, NULL);
 				if (UNEXPECTED(canContainAnyThrowable.isUndef())) return false;
-				zv::Val fromThrowExpr = callOn(pt_ah_simple_throw_point_is_from_throw_expr_site, throwPoint, PT_LC("isfromthrowexpr"), "isFromThrowExpr", 0, NULL);
-				if (UNEXPECTED(fromThrowExpr.isUndef())) return false;
-				mapped = pt_internal_throw_point_create_explicit(scope, type.raw(), value, zend_is_true(canContainAnyThrowable.raw()), zend_is_true(fromThrowExpr.raw()));
+				mapped = pt_internal_throw_point_create_explicit(scope, type.raw(), value, zend_is_true(canContainAnyThrowable.raw()));
 			} else {
 				mapped = pt_internal_throw_point_create_implicit(scope, value);
 			}

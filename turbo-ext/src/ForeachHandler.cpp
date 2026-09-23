@@ -1787,7 +1787,7 @@ private:
 				zend_long isVoid = typeTrinary(throwType.raw(), PT_OP_IS_VOID, "isVoid");
 				if (UNEXPECTED(isVoid < 0)) return zv::Val();
 				if (isVoid == PT_TRI_YES) return zv::Val::null();
-				return pt_internal_throw_point_create_explicit(scope, throwType.raw(), iteratee, true, false);
+				return pt_internal_throw_point_create_explicit(scope, throwType.raw(), iteratee, true);
 			}
 
 			if (!ptlh::boolSlot(self, slots::implicitThrows)) return zv::Val::null();

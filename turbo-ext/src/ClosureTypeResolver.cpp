@@ -73,11 +73,11 @@ zv::Val initializerExprType(zval *initializerExprTypeResolver, zval *expr, zval 
 	return pt_initializer_expr_type_resolver_get_type(initializerExprTypeResolver, expr, context.raw());
 }
 
-/* SimpleThrowPoint::createExplicit($type, $canContainAnyThrowable, $fromThrowExpr) / ::createImplicit() */
-zv::Val simpleThrowPointExplicit(zval *type, bool canContainAnyThrowable, bool fromThrowExpr)
+/* SimpleThrowPoint::createExplicit($type, $canContainAnyThrowable) / ::createImplicit() */
+zv::Val simpleThrowPointExplicit(zval *type, bool canContainAnyThrowable)
 {
-	zv::Args argv{type, canContainAnyThrowable, fromThrowExpr};
-	return pt_call_static_cached(pt_ctr_simple_throw_point_explicit_site, PT_CLASS_SIMPLE_THROW_POINT, PT_LC("createexplicit"), 3, argv);
+	zv::Args argv{type, canContainAnyThrowable};
+	return pt_call_static_cached(pt_ctr_simple_throw_point_explicit_site, PT_CLASS_SIMPLE_THROW_POINT, PT_LC("createexplicit"), 2, argv);
 }
 
 zv::Val simpleThrowPointImplicit()
@@ -1145,8 +1145,7 @@ private:
 
 	/* array_map(static fn (ThrowPoint $throwPoint) => $throwPoint->isExplicit()
 	 * ? SimpleThrowPoint::createExplicit($throwPoint->getType(),
-	 * $throwPoint->canContainAnyThrowable(), $throwPoint->isFromThrowExpr())
-	 * : SimpleThrowPoint::createImplicit(),
+	 * $throwPoint->canContainAnyThrowable()) : SimpleThrowPoint::createImplicit(),
 	 * $throwPoints) */
 	static zv::Val simpleThrowPointsOf(zval *throwPoints)
 	{
@@ -1169,9 +1168,7 @@ private:
 				if (UNEXPECTED(type == NULL)) return zv::Val();
 				bool canContainAnyThrowable = false;
 				if (UNEXPECTED(!pt_throw_point_can_contain_any_throwable(throwPoint, canContainAnyThrowable))) return zv::Val();
-				bool fromThrowExpr = false;
-				if (UNEXPECTED(!pt_throw_point_is_from_throw_expr(throwPoint, fromThrowExpr))) return zv::Val();
-				simple = simpleThrowPointExplicit(type, canContainAnyThrowable, fromThrowExpr);
+				simple = simpleThrowPointExplicit(type, canContainAnyThrowable);
 			} else {
 				simple = simpleThrowPointImplicit();
 			}

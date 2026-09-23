@@ -676,7 +676,7 @@ public:
 				if (UNEXPECTED(scope.isUndef())) return zv::Val();
 			}
 			MH_VAL(unhandledMatchError, newUnhandledMatchErrorType());
-			MH_VAL(throwPoint, pt_internal_throw_point_create_explicit(scope.raw(), unhandledMatchError.raw(), expr, false, false));
+			MH_VAL(throwPoint, pt_internal_throw_point_create_explicit(scope.raw(), unhandledMatchError.raw(), expr, false));
 			appendTo(throwPoints, std::move(throwPoint));
 		}
 

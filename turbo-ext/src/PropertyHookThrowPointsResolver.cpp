@@ -248,7 +248,7 @@ public:
 			zend_long isVoidValue = pt_type_trinary_value(isVoid.raw());
 			if (UNEXPECTED(isVoidValue < 0)) return zv::Val();
 			if (isVoidValue != PT_TRI_YES) {
-				zv::Val throwPoint = pt_internal_throw_point_create_explicit(scope, throwType.raw(), propertyFetch, true, false);
+				zv::Val throwPoint = pt_internal_throw_point_create_explicit(scope, throwType.raw(), propertyFetch, true);
 				if (UNEXPECTED(throwPoint.isUndef())) return zv::Val();
 				zv::Arr points = zv::Arr::create(1);
 				points.push(std::move(throwPoint));

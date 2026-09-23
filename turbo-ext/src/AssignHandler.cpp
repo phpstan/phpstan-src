@@ -667,7 +667,7 @@ zv::Val itpCreateImplicit(zval *scope, zval *node)
 /* InternalThrowPoint::createExplicit($scope, $type, $node, $canContainAnyThrowable) */
 zv::Val itpCreateExplicit(zval *scope, zval *type, zval *node, bool canContainAnyThrowable)
 {
-	return pt_internal_throw_point_create_explicit(scope, type, node, canContainAnyThrowable, false);
+	return pt_internal_throw_point_create_explicit(scope, type, node, canContainAnyThrowable);
 }
 
 /* AssignTargetWalkMode::assign() / virtualAssign() */

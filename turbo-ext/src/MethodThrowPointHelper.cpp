@@ -45,7 +45,7 @@ NodeProp pt_mtph_method_call_name = PT_NODE_PROP(PT_CLASS_METHOD_CALL, "name");
 /* InternalThrowPoint::createExplicit($scope, $type, $node, $canContainAnyThrowable) */
 zv::Val createExplicit(zval *scope, zval *type, zval *node, bool canContainAnyThrowable)
 {
-	return pt_internal_throw_point_create_explicit(scope, type, node, canContainAnyThrowable, false);
+	return pt_internal_throw_point_create_explicit(scope, type, node, canContainAnyThrowable);
 }
 
 /* InternalThrowPoint::createImplicit($scope, $node) */

@@ -831,7 +831,7 @@ public:
 					if (UNEXPECTED(throwTypeIsVoid < 0)) return zv::Val();
 					if (throwTypeIsVoid == PT_TRI_YES) return zv::Val::null();
 
-					return pt_internal_throw_point_create_explicit(scope, throwType.raw(), new_, false, false);
+					return pt_internal_throw_point_create_explicit(scope, throwType.raw(), new_, false);
 				}
 			}
 		}
@@ -854,7 +854,7 @@ public:
 			zend_long isVoid = pt_type_op_trinary(Z_OBJ_P(throwType.raw()), PT_OP_IS_VOID, 0, NULL);
 			if (UNEXPECTED(isVoid < 0)) return zv::Val();
 			if (isVoid != PT_TRI_YES) {
-				return pt_internal_throw_point_create_explicit(scope, throwType.raw(), new_, true, false);
+				return pt_internal_throw_point_create_explicit(scope, throwType.raw(), new_, true);
 			}
 		} else if (zend_is_true(OBJ_PROP_NUM(self, slots::implicitThrows))) {
 			bool inThrow;

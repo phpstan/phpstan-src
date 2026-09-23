@@ -88,7 +88,7 @@ public:
 		{
 			zv::Val exprType = pt_expression_result_get_type(exprResult.raw());
 			if (UNEXPECTED(exprType.isUndef())) return zv::Val();
-			zv::Val throwPoint = pt_internal_throw_point_create_explicit(scope, exprType.raw(), expr, false, true);
+			zv::Val throwPoint = pt_internal_throw_point_create_explicit(scope, exprType.raw(), expr, false);
 			if (UNEXPECTED(throwPoint.isUndef())) return zv::Val();
 			throwPoints = ptse::mergeOne(child.throwPoints, std::move(throwPoint));
 			if (UNEXPECTED(throwPoints.isUndef())) return zv::Val();

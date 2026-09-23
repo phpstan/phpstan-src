@@ -172,7 +172,7 @@ zv::Val functionGetName(zval *function) { return callOn(pt_sh_function_get_name_
 /* InternalThrowPoint::createExplicit($scope, $type, $node, false) */
 zv::Val internalThrowPointCreateExplicit(zval *scope, zval *type, zval *node)
 {
-	return pt_internal_throw_point_create_explicit(scope, type, node, false, false);
+	return pt_internal_throw_point_create_explicit(scope, type, node, false);
 }
 
 /* $templateArgumentObserver->collectSend($declared, $actual) */

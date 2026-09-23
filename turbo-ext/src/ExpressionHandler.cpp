@@ -33,10 +33,6 @@ namespace {
 pt_property_site pt_exh_expression_expr_site;
 pt_property_site pt_exh_throw_expr_site;
 
-/* the `Error` class name of the twin's `new ObjectType(Error::class)`, a
- * permanent interned string (module startup) */
-zend_string *pt_exh_error_class_name = nullptr;
-
 /* $stmt->expr of the Expression statement (NULL = pending exception) */
 zval *statementExpr(zval *stmt)
 {
@@ -124,15 +120,12 @@ public:
 
 		if (UNEXPECTED(!pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, stmt, stmtScope, storage))) return zv::Val();
 
-		// Errors signal programmer mistakes (ValueError, TypeError, DivisionByZeroError...),
-		// nobody calls an otherwise pure expression just to have them thrown, so they
-		// do not make the expression statement meaningful.
 		zval *resultValue = result.raw();
 		zv::Val throwPointsHold;
 		zval *throwPoints = pt_expression_result_throw_points(resultValue, throwPointsHold);
 		if (UNEXPECTED(throwPoints == NULL)) return zv::Val();
-		uint32_t meaningfulThrowPoints = 0;
-		if (UNEXPECTED(!countMeaningfulThrowPoints(throwPoints, meaningfulThrowPoints))) return zv::Val();
+		uint32_t explicitThrowPoints = 0;
+		if (UNEXPECTED(!countExplicitThrowPoints(throwPoints, explicitThrowPoints))) return zv::Val();
 
 		zv::Val impurePointsHold;
 		zval *impurePoints = pt_expression_result_impure_points(resultValue, impurePointsHold);
@@ -141,7 +134,7 @@ public:
 			zend_type_error("count(): Argument #1 ($value) must be of type Countable|array, %s given", zend_zval_value_name(impurePoints));
 			return zv::Val();
 		}
-		if (zend_hash_num_elements(Z_ARRVAL_P(impurePoints)) == 0 && meaningfulThrowPoints == 0) {
+		if (zend_hash_num_elements(Z_ARRVAL_P(impurePoints)) == 0 && explicitThrowPoints == 0) {
 			expr = statementExpr(stmt);
 			if (UNEXPECTED(expr == NULL)) return zv::Val();
 			bool incDec = ptsh::isInstanceOf(expr, PT_CLASS_POST_INC, error)
@@ -263,17 +256,14 @@ private:
 		return pt_expression_result_with_scope(result.raw(), constrainedScope.raw());
 	}
 
-	/* count(array_filter($throwPoints, static fn ($throwPoint) =>
-	 * $throwPoint->isExplicit() && !$errorType->isSuperTypeOf($throwPoint->getType())->yes())),
-	 * with the twin's `new ObjectType(Error::class)` created on the first
-	 * explicit throw point; false = pending exception */
-	[[nodiscard]] static bool countMeaningfulThrowPoints(zval *throwPoints, uint32_t &count)
+	/* count(array_filter($throwPoints, static fn ($throwPoint) => $throwPoint->isExplicit()));
+	 * false = pending exception */
+	[[nodiscard]] static bool countExplicitThrowPoints(zval *throwPoints, uint32_t &count)
 	{
 		if (UNEXPECTED(Z_TYPE_P(throwPoints) != IS_ARRAY)) {
 			zend_type_error("array_filter(): Argument #1 ($array) must be of type array, %s given", zend_zval_value_name(throwPoints));
 			return false;
 		}
-		zv::Val errorType;
 		for (auto entry : zv::TableRef(Z_ARRVAL_P(throwPoints))) {
 			zval *throwPoint = entry.value().deref().raw();
 			if (UNEXPECTED(Z_TYPE_P(throwPoint) != IS_OBJECT)) {
@@ -282,30 +272,7 @@ private:
 			}
 			bool isExplicit;
 			if (UNEXPECTED(!pt_internal_throw_point_is_explicit(throwPoint, isExplicit))) return false;
-			if (!isExplicit) continue;
-			bool fromThrowExpr;
-			if (UNEXPECTED(!pt_internal_throw_point_is_from_throw_expr(throwPoint, fromThrowExpr))) return false;
-			if (fromThrowExpr) {
-				count++;
-				continue;
-			}
-			if (errorType.isUndef()) {
-				zval errorTypeValue;
-				if (UNEXPECTED(!pt_object_type_new(&errorTypeValue, pt_exh_error_class_name))) return false;
-				errorType = zv::Val::adopt(errorTypeValue);
-			}
-			zv::Val typeHold;
-			zval *type = pt_internal_throw_point_type(throwPoint, typeHold);
-			if (UNEXPECTED(type == NULL)) return false;
-			zv::Val isSuperType = pt_type_op(Z_OBJ_P(errorType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, type);
-			if (UNEXPECTED(isSuperType.isUndef())) return false;
-			if (UNEXPECTED(Z_TYPE_P(isSuperType.raw()) != IS_OBJECT)) {
-				memberCallOnNonObject("yes", isSuperType.raw());
-				return false;
-			}
-			zend_long value = pt_result_value(Z_OBJ_P(isSuperType.raw()));
-			if (UNEXPECTED(value < 0)) return false;
-			if (value != PT_TRI_YES) {
+			if (isExplicit) {
 				count++;
 			}
 		}
@@ -357,8 +324,6 @@ using phpstanturbo::ExpressionHandler;
 
 void pt_register_expression_handler()
 {
-	pt_exh_error_class_name = zend_string_init_interned(PT_LC("Error"), 1);
-
 	reg::Class cls("PHPStan\\Analyser\\StmtHandler\\ExpressionHandler");
 	ptdecl::ExpressionHandler::declareClass(cls);
 	ptdecl::ExpressionHandler::declareProperties(cls);

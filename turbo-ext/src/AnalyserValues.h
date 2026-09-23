@@ -176,11 +176,6 @@ inline bool pt_internal_throw_point_can_contain_any_throwable(zval *throwPoint, 
 	return ptav::readBool(throwPoint, pt_ce_internal_throw_point, ptdecl::InternalThrowPoint::slot::canContainAnyThrowable, PT_LC("cancontainanythrowable"), out);
 }
 
-inline bool pt_internal_throw_point_is_from_throw_expr(zval *throwPoint, bool &out)
-{
-	return ptav::readBool(throwPoint, pt_ce_internal_throw_point, ptdecl::InternalThrowPoint::slot::fromThrowExpr, PT_LC("isfromthrowexpr"), out);
-}
-
 /* }}} */
 
 /* {{{ ArgsResult: $argsResult->findArgResult($argValue) (the stored result
@@ -529,11 +524,6 @@ inline zval *pt_throw_point_type(zval *throwPoint, zv::Val &hold)
 inline bool pt_throw_point_can_contain_any_throwable(zval *throwPoint, bool &out)
 {
 	return ptav::readBool(throwPoint, pt_ce_throw_point, ptdecl::ThrowPoint::slot::canContainAnyThrowable, PT_LC("cancontainanythrowable"), out);
-}
-
-inline bool pt_throw_point_is_from_throw_expr(zval *throwPoint, bool &out)
-{
-	return ptav::readBool(throwPoint, pt_ce_throw_point, ptdecl::ThrowPoint::slot::fromThrowExpr, PT_LC("isfromthrowexpr"), out);
 }
 
 inline zval *pt_impure_point_identifier(zval *impurePoint, zv::Val &hold)

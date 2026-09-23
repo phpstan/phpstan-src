@@ -67,7 +67,6 @@ constexpr uint32_t PT_FCH_POLY_SITE_SLOTS_LIMIT = 1u << PT_FCH_POLY_SITE_SLOT_BI
 pt_method_site pt_fch_throw_point_explicit_site;
 pt_method_site pt_fch_throw_point_type_site;
 pt_method_site pt_fch_throw_point_any_throwable_site;
-pt_method_site pt_fch_throw_point_from_throw_expr_site;
 pt_method_site pt_fch_dynamic_function_return_type_extensions_site;
 pt_method_site pt_fch_find_specified_type_site;
 pt_method_site pt_fch_closure_expr_site;
@@ -996,9 +995,7 @@ private:
 				if (UNEXPECTED(type.isUndef())) return false;
 				zv::Val anyThrowable = callNoArgs(pt_fch_throw_point_any_throwable_site, simpleThrowPoint, PT_LC("cancontainanythrowable"), "canContainAnyThrowable");
 				if (UNEXPECTED(anyThrowable.isUndef())) return false;
-				zv::Val fromThrowExpr = callNoArgs(pt_fch_throw_point_from_throw_expr_site, simpleThrowPoint, PT_LC("isfromthrowexpr"), "isFromThrowExpr");
-				if (UNEXPECTED(fromThrowExpr.isUndef())) return false;
-				throwPoint = pt_internal_throw_point_create_explicit(scope.raw(), type.raw(), expr, zend_is_true(anyThrowable.raw()), zend_is_true(fromThrowExpr.raw()));
+				throwPoint = pt_internal_throw_point_create_explicit(scope.raw(), type.raw(), expr, zend_is_true(anyThrowable.raw()));
 			} else {
 				throwPoint = pt_internal_throw_point_create_implicit(scope.raw(), expr);
 			}
@@ -1377,7 +1374,7 @@ private:
 				if (UNEXPECTED(throwTypeIsVoid < 0)) return zv::Val();
 				if (throwTypeIsVoid == PT_TRI_YES) return zv::Val::null();
 
-				return pt_internal_throw_point_create_explicit(scope, throwType.raw(), normalizedFuncCall, false, false);
+				return pt_internal_throw_point_create_explicit(scope, throwType.raw(), normalizedFuncCall, false);
 			}
 		}
 
@@ -1405,7 +1402,7 @@ private:
 		if (!throwType.isNull()) {
 			zend_long isVoid = typeOpTrinary(throwType.raw(), PT_OP_IS_VOID, "isVoid");
 			if (UNEXPECTED(isVoid < 0)) return zv::Val();
-			if (isVoid != PT_TRI_YES) return pt_internal_throw_point_create_explicit(scope, throwType.raw(), normalizedFuncCall, true, false);
+			if (isVoid != PT_TRI_YES) return pt_internal_throw_point_create_explicit(scope, throwType.raw(), normalizedFuncCall, true);
 		} else if (flag(slots::implicitThrows)) {
 			bool hasRequiredParameters = false;
 			zend_long requiredParameters = 0;

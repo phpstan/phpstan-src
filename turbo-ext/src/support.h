@@ -2104,14 +2104,14 @@ extern zend_class_entry *pt_ce_throw_point;
 ZEND_COLD void pt_register_throw_point();
 /* ThrowPoint::createExplicit($scope, $type, $node, $canContainAnyThrowable) /
  * ThrowPoint::createImplicit($scope, $node, $type) ($type NULL for null) */
-zv::Val pt_throw_point_create_explicit(zval *scope, zval *type, zval *node, bool canContainAnyThrowable, bool fromThrowExpr);
+zv::Val pt_throw_point_create_explicit(zval *scope, zval *type, zval *node, bool canContainAnyThrowable);
 zv::Val pt_throw_point_create_implicit(zval *scope, zval *node, zval *type = NULL);
 
 extern zend_class_entry *pt_ce_internal_throw_point;
 ZEND_COLD void pt_register_internal_throw_point();
 /* InternalThrowPoint::createExplicit(...) / ::createImplicit($scope, $node,
  * $type) ($type NULL for null) / ::createFromPublic($throwPoint, $scope) */
-zv::Val pt_internal_throw_point_create_explicit(zval *scope, zval *type, zval *node, bool canContainAnyThrowable, bool fromThrowExpr);
+zv::Val pt_internal_throw_point_create_explicit(zval *scope, zval *type, zval *node, bool canContainAnyThrowable);
 zv::Val pt_internal_throw_point_create_implicit(zval *scope, zval *node, zval *type = NULL);
 zv::Val pt_internal_throw_point_create_from_public(zval *throwPoint, zval *scope);
 /* $throwPoint->toPublic() / ->subtractCatchType($catchType) (the getters

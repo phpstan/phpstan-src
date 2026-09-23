@@ -527,7 +527,7 @@ public:
 				if (UNEXPECTED(errorType.isUndef())) return zv::Val();
 				leftScope = pt_expression_result_scope(leftResult.raw(), leftScopeHold);
 				if (UNEXPECTED(leftScope == NULL)) return zv::Val();
-				zv::Val throwPoint = pt_internal_throw_point_create_explicit(leftScope, errorType.raw(), expr, false, false);
+				zv::Val throwPoint = pt_internal_throw_point_create_explicit(leftScope, errorType.raw(), expr, false);
 				if (UNEXPECTED(throwPoint.isUndef())) return zv::Val();
 				zv::Arr points = zv::Arr::adoptVal(std::move(throwPoints));
 				points.push(std::move(throwPoint));

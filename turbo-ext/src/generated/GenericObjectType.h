@@ -90,9 +90,12 @@ inline constexpr char strings[] =
 	"changeVariances\0" /* 1115 */
 	"withoutFinalByKeywordOverride\0" /* 1131 */
 	"changeSubtractedType\0" /* 1161 */
-	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 1182 */
-	"toPhpDocNode\0" /* 1221 */
-	"hasTemplateOrLateResolvableType"; /* 1234 */
+	"supertype\0" /* 1182 */
+	"subclass\0" /* 1192 */
+	"specializeSubclass\0" /* 1201 */
+	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 1220 */
+	"toPhpDocNode\0" /* 1259 */
+	"hasTemplateOrLateResolvableType"; /* 1272 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_STRING), /* __construct $mainType */
 	reg::packed(9, MAY_BE_ARRAY), /* __construct $types */
@@ -158,7 +161,10 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(163, 0, 30), /* withoutFinalByKeywordOverride return */
 	reg::packed(15, MAY_BE_NULL, 30), /* changeSubtractedType $subtractedType */
 	reg::packed(163, 0, 30), /* changeSubtractedType return */
-	reg::packed(163, 0, 1182), /* toPhpDocNode return */
+	reg::packed(1182, 0, 30), /* specializeSubclass $supertype */
+	reg::packed(1192, 0, 30), /* specializeSubclass $subclass */
+	reg::packed(163, 0, 30), /* specializeSubclass return */
+	reg::packed(163, 0, 1220), /* toPhpDocNode return */
 	reg::packed(163, MAY_BE_BOOL), /* hasTemplateOrLateResolvableType return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -192,8 +198,9 @@ inline constexpr sigtab::Sig recreate = { { 1106 /* recreate */, 3, 54, 4, 58, Z
 inline constexpr sigtab::Sig changeVariances = { { 1115 /* changeVariances */, 1, 59, 1, 60, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig withoutFinalByKeywordOverride = { { 1131 /* withoutFinalByKeywordOverride */, 0, 61, 0, 61, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig changeSubtractedType = { { 1161 /* changeSubtractedType */, 1, 62, 1, 63, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toPhpDocNode = { { 1221 /* toPhpDocNode */, 0, 64, 0, 64, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 1234 /* hasTemplateOrLateResolvableType */, 0, 65, 0, 65, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig specializeSubclass = { { 1201 /* specializeSubclass */, 2, 64, 2, 66, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig toPhpDocNode = { { 1259 /* toPhpDocNode */, 0, 67, 0, 67, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 1272 /* hasTemplateOrLateResolvableType */, 0, 68, 0, 68, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::GenericObjectType

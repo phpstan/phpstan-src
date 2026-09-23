@@ -453,17 +453,9 @@ public:
 			zv::Val bodyFlowHold;
 			zval *bodyFlow = pt_internal_statement_result_variable_flow(result, bodyFlowHold);
 			if (UNEXPECTED(bodyFlow == NULL)) return zv::Val();
-			if (isIterableAtLeastOnce == PT_TRI_NO) {
-				zv::Args bodyAndUpdate{bodyFlow, update.raw()};
-				zv::Val sequence = pt_variable_flow_sequence(2, bodyAndUpdate);
-				if (UNEXPECTED(sequence.isUndef())) return zv::Val();
-				zv::Val dead = pt_variable_flow_dead(sequence.raw());
-				if (UNEXPECTED(dead.isUndef())) return zv::Val();
-				zv::Args conditionAndDead{condition.raw(), dead.raw()};
-				loopFlow = pt_variable_flow_sequence(2, conditionAndDead);
-			} else {
-				loopFlow = pt_variable_flow_loop(condition.raw(), bodyFlow, update.raw(), isIterableAtLeastOnce == PT_TRI_YES, alwaysIterates != PT_TRI_YES);
-			}
+			// the body may run or not whatever the condition says: a write in
+			// it does not make an earlier write dead, and a usage in it counts
+			loopFlow = pt_variable_flow_loop(condition.raw(), bodyFlow, update.raw(), false, true);
 			if (UNEXPECTED(loopFlow.isUndef())) return zv::Val();
 		}
 		zv::Val initSequence = pt_variable_flow_sequence_list(initFlow.table());

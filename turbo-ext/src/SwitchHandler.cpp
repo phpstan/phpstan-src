@@ -407,7 +407,7 @@ public:
 
 		zv::Val condFlow = pt_expression_result_variable_flow(condResult.raw());
 		if (UNEXPECTED(condFlow.isUndef())) return zv::Val();
-		zv::Val variableFlow = pt_variable_flow_switch(condFlow.raw(), caseFlows.raw(), hasDefaultCase || exhaustive);
+		zv::Val variableFlow = pt_variable_flow_switch(condFlow.raw(), caseFlows.raw(), hasDefaultCase);
 		if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
 		return pt_internal_statement_result_new(finalScope.raw(), hasYield, alwaysTerminating, exitPointsForOuterLoop.raw(), throwPoints.raw(), impurePoints.raw(), NULL, variableFlow.raw());
 	}

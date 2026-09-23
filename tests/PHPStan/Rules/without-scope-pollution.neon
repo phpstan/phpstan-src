@@ -1,0 +1,4 @@
+parameters:
+	polluteScopeWithLoopInitialAssignments: false
+	polluteScopeWithAlwaysIterableForeach: false
+	polluteScopeWithBlock: false

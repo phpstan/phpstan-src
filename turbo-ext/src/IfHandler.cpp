@@ -10,8 +10,8 @@
  * ExpressionResult, MutatingScope, the contexts, VariableFlow, the
  * statement results and NodeScopeResolver are called through their direct
  * entries; the Type queries (toBoolean(), isTrue(), isFalse()) through the
- * native type dispatch. The twin's $flowBranches list of triples is kept as
- * one flat list (condition flow, branch flow, truthy per branch).
+ * native type dispatch. The twin's $flowBranches list of pairs is kept as
+ * one flat list (condition flow, branch flow per branch).
  */
 
 #include "support.h"
@@ -50,13 +50,6 @@ struct ConditionType
 {
 	zend_long isTrue;
 	zend_long isFalse;
-
-	/* the twin's `isTrue()->yes() ? true : (isFalse()->yes() ? false : null)` */
-	int truthy() const
-	{
-		if (isTrue == PT_TRI_YES) return 1;
-		return isFalse == PT_TRI_YES ? 0 : -1;
-	}
 };
 
 /* ($treatPhpDocTypesAsCertain ? $result->getType() : $result->getNativeType())->toBoolean()
@@ -85,18 +78,11 @@ struct ConditionType
 	return true;
 }
 
-/* $flowBranches[] = [$conditionFlow, $branchFlow, $truthy] */
-void pushFlowBranch(zv::Arr &flowBranches, zv::Val conditionFlow, zval *branchFlow, int truthy)
+/* $flowBranches[] = [$conditionFlow, $branchFlow] */
+void pushFlowBranch(zv::Arr &flowBranches, zv::Val conditionFlow, zval *branchFlow)
 {
 	flowBranches.push(std::move(conditionFlow));
 	flowBranches.push(zv::Ref(branchFlow));
-	zval truthyValue;
-	if (truthy < 0) {
-		ZVAL_NULL(&truthyValue);
-	} else {
-		ZVAL_BOOL(&truthyValue, truthy != 0);
-	}
-	flowBranches.push(zv::Val::adopt(truthyValue));
 }
 
 } // namespace
@@ -173,7 +159,7 @@ public:
 			zv::Val branchFlowHold;
 			zval *branchFlow = pt_internal_statement_result_variable_flow(branchResult.raw(), branchFlowHold);
 			if (UNEXPECTED(branchFlow == NULL)) return zv::Val();
-			pushFlowBranch(flowBranches, std::move(conditionFlow), branchFlow, conditionType.truthy());
+			pushFlowBranch(flowBranches, std::move(conditionFlow), branchFlow);
 			if (conditionType.isTrue != PT_TRI_NO) {
 				zv::Val exitPointsHold;
 				zval *branchExitPoints = pt_internal_statement_result_exit_points(branchResult.raw(), exitPointsHold);
@@ -244,7 +230,7 @@ public:
 				zv::Val branchFlowHold;
 				zval *branchFlow = pt_internal_statement_result_variable_flow(branchResult.raw(), branchFlowHold);
 				if (UNEXPECTED(branchFlow == NULL)) return zv::Val();
-				pushFlowBranch(flowBranches, std::move(conditionFlow), branchFlow, elseIfConditionType.truthy());
+				pushFlowBranch(flowBranches, std::move(conditionFlow), branchFlow);
 				if (!ifAlwaysTrue && !lastElseIfConditionIsTrue && elseIfConditionType.isTrue != PT_TRI_NO) {
 					if (UNEXPECTED(!mergeBranch(branchResult.raw(), exitPoints, throwPoints, impurePoints, finalScope, alwaysTerminating, endStatements, elseif, pt_ih_elseif_stmts_site, hasYield))) return zv::Val();
 				}
@@ -314,14 +300,15 @@ public:
 			endStatements.push(std::move(endStatement));
 		}
 
-		/* foreach (array_reverse($flowBranches) as [$conditionFlow, $branchFlow, $truthy]) */
+		// every branch may run in the variable flow, even one the condition's
+		// type rules out: a usage in it counts
+		/* foreach (array_reverse($flowBranches) as [$conditionFlow, $branchFlow]) */
 		HashTable *branches = flowBranches.table();
-		uint32_t branchCount = zend_hash_num_elements(branches) / 3;
+		uint32_t branchCount = zend_hash_num_elements(branches) / 2;
 		for (uint32_t i = branchCount; i-- > 0;) {
-			zval *conditionFlow = zend_hash_index_find(branches, (zend_ulong) i * 3);
-			zval *branchFlow = zend_hash_index_find(branches, (zend_ulong) i * 3 + 1);
-			zval *truthy = zend_hash_index_find(branches, (zend_ulong) i * 3 + 2);
-			zv::Val conditional = pt_variable_flow_conditional(conditionFlow, branchFlow, elseFlow.raw(), Z_TYPE_P(truthy) == IS_NULL ? -1 : (Z_TYPE_P(truthy) == IS_TRUE ? 1 : 0));
+			zval *conditionFlow = zend_hash_index_find(branches, (zend_ulong) i * 2);
+			zval *branchFlow = zend_hash_index_find(branches, (zend_ulong) i * 2 + 1);
+			zv::Val conditional = pt_variable_flow_conditional(conditionFlow, branchFlow, elseFlow.raw());
 			if (UNEXPECTED(conditional.isUndef())) return zv::Val();
 			elseFlow = std::move(conditional);
 		}

@@ -155,7 +155,7 @@ final class VariableLivenessResolver
 		return new VariableWritesNode($function, array_values($self->writes), $self->observedIds + $self->readIds, $self->readIds, $self->coveredIds, $self->overwrittenIds, $self->readNames, $self->redundantTypes, $self->mentionedNames, $self->escapedNames, $self->variableOverwritingLoops, $self->opaque, $self->allNamesMentioned);
 	}
 
-	private function collect(?VariableFlow $flow, bool $dead = false): void
+	private function collect(?VariableFlow $flow): void
 	{
 		if ($flow === null || $flow instanceof VariableInputFlow) {
 			return;
@@ -178,9 +178,6 @@ final class VariableLivenessResolver
 				if ($flow->type !== null) {
 					$this->redundantTypes[$id] = $flow->type;
 				}
-				if ($dead) {
-					$this->readIds[$id] = true;
-				}
 			}
 		}
 		if ($flow->kind === VariableFlow::READ_ALL) {
@@ -199,7 +196,7 @@ final class VariableLivenessResolver
 			throw new ShouldNotHappenException();
 		}
 		foreach ($flow->children as $child) {
-			$this->collect($child, $dead || $flow->kind === VariableFlow::DEAD);
+			$this->collect($child);
 		}
 		if (!$flow instanceof VariableControlFlow) {
 			return;
@@ -218,11 +215,11 @@ final class VariableLivenessResolver
 			$this->escapedNames[$flow->name] = true;
 		}
 		foreach ($flow->cases as [$condition, $body]) {
-			$this->collect($condition, $dead);
-			$this->collect($body, $dead);
+			$this->collect($condition);
+			$this->collect($body);
 		}
 		foreach ($flow->catches as [, $catch]) {
-			$this->collect($catch, $dead);
+			$this->collect($catch);
 		}
 	}
 
@@ -232,7 +229,7 @@ final class VariableLivenessResolver
 	 */
 	private function liveBefore(?VariableFlow $flow, array $next, VariableFlowContext $context): array
 	{
-		if ($flow === null || $flow->kind === VariableFlow::DEAD) {
+		if ($flow === null) {
 			return $next;
 		}
 		if ($flow instanceof VariableInputFlow) {

@@ -61,7 +61,21 @@ public:
 		if (UNEXPECTED(stmts == NULL)) return zv::Val();
 		zv::Val result = pt_node_scope_resolver_process_stmt_nodes_internal(nodeScopeResolver, stmt, stmts, scope, storage, nodeCallback, context);
 		if (UNEXPECTED(result.isUndef())) return zv::Val();
-		if (Z_TYPE_P(OBJ_PROP_NUM(self, slots::polluteScopeWithBlock)) == IS_TRUE) return result;
+		// like a loop body, the variable flow keeps the block optional whatever
+		// polluteScopeWithBlock says: a write inside it does not make an
+		// earlier write of the variable dead
+		zv::Val variableFlow;
+		{
+			zv::Val flowHold;
+			zval *blockFlow = pt_internal_statement_result_variable_flow(result.raw(), flowHold);
+			if (UNEXPECTED(blockFlow == NULL)) return zv::Val();
+			zv::Args branches{blockFlow, zv::null};
+			variableFlow = pt_variable_flow_choice(2, branches);
+			if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
+		}
+		if (Z_TYPE_P(OBJ_PROP_NUM(self, slots::polluteScopeWithBlock)) == IS_TRUE) {
+			return pt_internal_statement_result_with_variable_flow(result.raw(), variableFlow.raw());
+		}
 
 		zval *resultValue = result.raw();
 		zv::Val resultScopeHold;
@@ -83,8 +97,8 @@ public:
 		zval *endStatements = pt_internal_statement_result_end_statements(resultValue, endStatementsHold);
 		if (UNEXPECTED(endStatements == NULL)) return zv::Val();
 
-		// the twin passes no variableFlow (and no endReachable) here
-		return pt_internal_statement_result_new(mergedScope.raw(), hasYield, isAlwaysTerminating, exitPoints, throwPoints, impurePoints, endStatements);
+		// the twin passes no endReachable here
+		return pt_internal_statement_result_new(mergedScope.raw(), hasYield, isAlwaysTerminating, exitPoints, throwPoints, impurePoints, endStatements, Z_TYPE_P(variableFlow.raw()) == IS_NULL ? NULL : variableFlow.raw());
 	}
 
 	/* the statement-handler entry (Engine.h) */

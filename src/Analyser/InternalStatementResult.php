@@ -45,6 +45,14 @@ final class InternalStatementResult
 		return $this->variableFlow;
 	}
 
+	public function withVariableFlow(?VariableFlow $variableFlow): self
+	{
+		$clone = clone $this;
+		$clone->variableFlow = $variableFlow;
+
+		return $clone;
+	}
+
 	/**
 	 * Whether execution can reach the end of the statements. Unlike isAlwaysTerminating(),
 	 * filterOutLoopExitPoints() does not reset it: a loop body left only through

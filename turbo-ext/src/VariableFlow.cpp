@@ -45,7 +45,6 @@ enum pt_vf_kind
 	PT_VF_READ_ALL,
 	PT_VF_MENTION_ALL,
 	PT_VF_OPAQUE,
-	PT_VF_DEAD,
 	PT_VF_RETURN,
 	PT_VF_BREAK,
 	PT_VF_CONTINUE,
@@ -71,7 +70,6 @@ const struct { const char *constant; const char *value; } pt_vf_kinds[PT_VF_KIND
 	{ "READ_ALL", "readAll" },
 	{ "MENTION_ALL", "mentionAll" },
 	{ "OPAQUE", "opaque" },
-	{ "DEAD", "dead" },
 	{ "RETURN", "return" },
 	{ "BREAK", "break" },
 	{ "CONTINUE", "continue" },
@@ -261,27 +259,14 @@ public:
 		return newAccessFlow(PT_VF_READ, name, NULL, NULL, targetId, container, offset);
 	}
 
-	/* Mirrors conditional(); $truthy is IS_TRUE, IS_FALSE or IS_NULL. */
-	static zv::Val conditional(zval *condition, zval *ifFlow, zval *elseFlow, zval *truthy)
+	/* Mirrors conditional(). */
+	static zv::Val conditional(zval *condition, zval *ifFlow, zval *elseFlow)
 	{
 		condition = flowOrNull(condition);
 		ifFlow = flowOrNull(ifFlow);
 		elseFlow = flowOrNull(elseFlow);
-		zv::Val branch;
-		if (Z_TYPE_P(truthy) == IS_TRUE) {
-			zv::Val deadElse = dead(elseFlow);
-			if (UNEXPECTED(deadElse.isUndef())) return zv::Val();
-			zv::Args argv{ifFlow, deadElse.raw()};
-			branch = sequence(2, argv);
-		} else if (Z_TYPE_P(truthy) == IS_FALSE) {
-			zv::Val deadIf = dead(ifFlow);
-			if (UNEXPECTED(deadIf.isUndef())) return zv::Val();
-			zv::Args argv{deadIf.raw(), elseFlow};
-			branch = sequence(2, argv);
-		} else {
-			zv::Args argv{ifFlow, elseFlow};
-			branch = choice(2, argv);
-		}
+		zv::Args branchArgv{ifFlow, elseFlow};
+		zv::Val branch = choice(2, branchArgv);
 		if (UNEXPECTED(branch.isUndef())) return zv::Val();
 		zv::Args argv{condition, branch.raw()};
 		return sequence(2, argv);
@@ -358,17 +343,6 @@ public:
 		a.canExit = canContinue;
 		a.canContainAnyThrowable = canContainAnyThrowable;
 		return newControlFlow(PT_VF_THROW, a);
-	}
-
-	/* Mirrors dead(). */
-	static zv::Val dead(zval *flow)
-	{
-		if (flow == NULL || Z_TYPE_P(flow) == IS_NULL) return zv::Val::null();
-		zval *const flows[1] = { flow };
-		zv::Val children = flowList(1, flows);
-		ControlFlowArgs a;
-		a.children = children.raw();
-		return newControlFlow(PT_VF_DEAD, a);
 	}
 
 	/* Mirrors loop(). */
@@ -525,11 +499,6 @@ zv::Val pt_variable_flow_try_catch(zval *body, zval *catches, zval *finally)
 	return VariableFlow::tryCatch(body, catches, finally);
 }
 
-zv::Val pt_variable_flow_dead(zval *flow)
-{
-	return VariableFlow::dead(flow);
-}
-
 zv::Val pt_variable_flow_throwing(zval *type, bool canContinue, bool canContainAnyThrowable)
 {
 	return VariableFlow::throwing(type, canContinue, canContainAnyThrowable);
@@ -558,15 +527,9 @@ zv::Val pt_variable_flow_exit(pt_variable_flow_exit_kind kind, zend_long level, 
 	return VariableFlow::exit_(pt_vf_kind_strings[kinds[kind]], level, name);
 }
 
-zv::Val pt_variable_flow_conditional(zval *condition, zval *ifFlow, zval *elseFlow, int truthy)
+zv::Val pt_variable_flow_conditional(zval *condition, zval *ifFlow, zval *elseFlow)
 {
-	zval truthyValue;
-	if (truthy < 0) {
-		ZVAL_NULL(&truthyValue);
-	} else {
-		ZVAL_BOOL(&truthyValue, truthy != 0);
-	}
-	return VariableFlow::conditional(condition, ifFlow, elseFlow, &truthyValue);
+	return VariableFlow::conditional(condition, ifFlow, elseFlow);
 }
 
 /* {{{ engine ABI glue: parameter parsing + registration */
@@ -654,21 +617,8 @@ void pt_register_variable_flow()
 
 	cls.method(sigs::conditional, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *condition, *ifFlow, *elseFlow;
-		bool truthy = false;
-		bool truthyIsNull = true;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
-			Z_PARAM_OBJECT_OR_NULL(condition)
-			Z_PARAM_OBJECT_OR_NULL(ifFlow)
-			Z_PARAM_OBJECT_OR_NULL(elseFlow)
-			Z_PARAM_BOOL_OR_NULL(truthy, truthyIsNull)
-		ZEND_PARSE_PARAMETERS_END();
-		zval truthyValue;
-		if (truthyIsNull) {
-			ZVAL_NULL(&truthyValue);
-		} else {
-			ZVAL_BOOL(&truthyValue, truthy);
-		}
-		PT_VF_RETURN(VariableFlow::conditional(condition, ifFlow, elseFlow, &truthyValue));
+		if (!zp::parse<zp::ObjOrNull, zp::ObjOrNull, zp::ObjOrNull>(execute_data, condition, ifFlow, elseFlow)) RETURN_THROWS();
+		PT_VF_RETURN(VariableFlow::conditional(condition, ifFlow, elseFlow));
 	});
 
 	cls.method(sigs::switch_, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -736,12 +686,6 @@ void pt_register_variable_flow()
 		bool canContinue, canContainAnyThrowable = false;
 		if (!zp::parse<zp::Obj, zp::Bool, zp::Opt<zp::Bool>>(execute_data, type, canContinue, canContainAnyThrowable)) RETURN_THROWS();
 		PT_VF_RETURN(VariableFlow::throwing(type, canContinue, canContainAnyThrowable));
-	});
-
-	cls.method(sigs::dead, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *flow;
-		if (!zp::parse<zp::ObjOrNull>(execute_data, flow)) RETURN_THROWS();
-		PT_VF_RETURN(VariableFlow::dead(flow));
 	});
 
 	cls.method(sigs::loop, [](INTERNAL_FUNCTION_PARAMETERS) {

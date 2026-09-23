@@ -10,6 +10,7 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
+use PHPStan\Analyser\VariableFlow;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Turbo\ShadowedByTurboExtension;
@@ -44,8 +45,12 @@ final class BlockHandler implements StmtHandler
 	): InternalStatementResult
 	{
 		$result = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $scope, $storage, $nodeCallback, $context);
+		// like a loop body, the variable flow keeps the block optional whatever
+		// polluteScopeWithBlock says: a write inside it does not make an
+		// earlier write of the variable dead
+		$variableFlow = VariableFlow::choice($result->getVariableFlow(), null);
 		if ($this->polluteScopeWithBlock) {
-			return $result;
+			return $result->withVariableFlow($variableFlow);
 		}
 
 		return new InternalStatementResult(
@@ -56,6 +61,7 @@ final class BlockHandler implements StmtHandler
 			throwPoints: $result->getThrowPoints(),
 			impurePoints: $result->getImpurePoints(),
 			endStatements: $result->getEndStatements(),
+			variableFlow: $variableFlow,
 		);
 	}
 

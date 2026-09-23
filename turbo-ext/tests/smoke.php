@@ -2785,14 +2785,13 @@ foreach (['php' => \PHPStan\Analyser\VariableFlow::class, 'native' => \PHPStanTu
 	$r[] = [$vf::sequence(), $vf::sequence(null, null), $vf::sequence(null, $readA) === $readA, $vfDescribe($vf::sequence($readA, null, $readB)), $vfDescribe($vf::sequence(...[$readA, $readB, $readA]))];
 	$r[] = [$vf::choice(), $vf::choice($readA) === $readA, $vf::choice($readA, $readA) === $readA, $vf::choice(null, null), $vfDescribe($vf::choice($readA, null)), $vfDescribe($vf::choice($readA, $readB, null))];
 	$r[] = [$vfDescribe($vf::arrow($vfArrow, $readA, null)), $vfDescribe($vf::arrow($vfArrow, null, $readB))];
-	$r[] = [$vfDescribe($vf::conditional($readA, $readB, null, true)), $vfDescribe($vf::conditional($readA, $readB, $readA, false)), $vfDescribe($vf::conditional(null, $readB, $readA, null)), $vf::conditional(null, null, null, null), $vfDescribe($vf::conditional($readA, null, null, true))];
+	$r[] = [$vfDescribe($vf::conditional($readA, $readB, null)), $vfDescribe($vf::conditional($readA, $readB, $readA)), $vfDescribe($vf::conditional(null, $readB, $readA)), $vf::conditional(null, null, null), $vfDescribe($vf::conditional($readA, null, null))];
 	$r[] = [$vfDescribe($vf::switch($readA, [[$readB, $readA, false], [null, null, true]], true)), $vfDescribe($vf::switch(null, [], false))];
 	$r[] = [$vfDescribe($vf::write($vfWriteA)), $vfDescribe($vf::write($vfWriteItem, $vfInt)), $vfDescribe($vf::write($vfWriteOffset, null)), $vfDescribe($vf::discard($vfWriteA)), $vfDescribe($vf::discard($vfWriteItem))];
 	$r[] = [$vfDescribe($vf::inputs(11, null)), $vfDescribe($vf::inputs(12, 7))];
 	$r[] = [$vfDescribe($vf::escape('a')), $vfDescribe($vf::escape('this')), $vfDescribe($vf::mention('b')), $vfDescribe($vf::all($vf::READ_ALL)), $vfDescribe($vf::all($vf::MENTION_ALL)), $vfDescribe($vf::all($vf::OPAQUE))];
 	$r[] = [$vfDescribe($vf::exit($vf::RETURN)), $vfDescribe($vf::exit($vf::BREAK, 2)), $vfDescribe($vf::exit($vf::CONTINUE, 1, 'x')), $vfDescribe($vf::exit($vf::STOP, 3, null))];
 	$r[] = [$vfDescribe($vf::throwing($vfInt, true)), $vfDescribe($vf::throwing($vfString, false, true))];
-	$r[] = [$vf::dead(null), $vfDescribe($vf::dead($readA))];
 	$r[] = [$vfDescribe($vf::loop($readA, $readB, null, true, false)), $vfDescribe($vf::loop(null, null, $readA, false, true, false))];
 	$r[] = [$vf::loopStatement($vfForeach, $readA, [], [$vfWriteA]) === $readA, $vf::loopStatement($vfForeach, null, [], []), $vfDescribe($vf::loopStatement($vfForeach, $readA, [$vfWriteA], [$vfWriteA, $vfWriteOffset]))];
 	$r[] = [$vfDescribe($vf::tryCatch($readA, [[$vfInt, $readB], [$vfString, null]], null)), $vfDescribe($vf::tryCatch(null, [], $readB))];
@@ -2849,7 +2848,7 @@ foreach (['php' => 'PHPStan\\Analyser\\', 'native' => 'PHPStanTurbo\\'] as $side
 		'access' => static fn () => new $access('read', 'a'),
 		'sequence' => static fn () => new $sequence('sequence', []),
 		'input' => static fn () => new $input(1, null),
-		'control' => static fn () => new $control('dead'),
+		'control' => static fn () => new $control('return'),
 	] as $label => $make) {
 		$flow = $make();
 		$args = $againArgs[$label];
@@ -3044,7 +3043,7 @@ foreach ($vfbSides as $side => [$builder, $vf, $storageClass]) {
 		$write = $builder::targetWrite($vfbN[$key], \PHPStan\Node\Variable\VariableWrite::KIND_ASSIGN, $vfbScope, $storage);
 		$r[] = [$key, $vfDescribe($write), $vfDescribe($builder::targetWrite($vfbN[$key], \PHPStan\Node\Variable\VariableWrite::KIND_PRE_INC, $vfbScope, $storage, $vfInt)), $vfDescribeWrite($builder::writeSite($vfbN[$key], \PHPStan\Node\Variable\VariableWrite::KIND_ASSIGN, $vfbScope, $storage)), array_map($vfDescribeWrite, $builder::writes($write))];
 	}
-	$r[] = [$builder::writes(null), array_map($vfDescribeWrite, $builder::writes($vf::sequence($vf::write($vfWriteA), $vf::sequence($vf::escape('x'), $vf::write($vfWriteItem)), $vf::dead($vf::write($vfWriteOffset))))), $builder::writes($vf::all($vf::OPAQUE))];
+	$r[] = [$builder::writes(null), array_map($vfDescribeWrite, $builder::writes($vf::sequence($vf::write($vfWriteA), $vf::sequence($vf::escape('x'), $vf::write($vfWriteItem)), $vf::choice($vf::write($vfWriteOffset), null)))), $builder::writes($vf::all($vf::OPAQUE))];
 	foreach (['a', 'this', 'varVar', 'dimArrNested', 'dimCall', 'dimVarVar', 'prop', 'call'] as $key) {
 		$r[] = [$key, $vfDescribe($builder::escapeRoot($vfbN[$key]))];
 	}
@@ -3118,22 +3117,22 @@ $vlrFlows = [
 	),
 	'branches' => $vlrF::sequence(
 		$vlrF::write($vlrWrite('a', 1)),
-		$vlrF::conditional($vlrF::read('a'), $vlrF::write($vlrWrite('d', 2)), $vlrF::write($vlrWrite('d', 3)), null),
+		$vlrF::conditional($vlrF::read('a'), $vlrF::write($vlrWrite('d', 2)), $vlrF::write($vlrWrite('d', 3))),
 		$vlrF::read('d'),
-		$vlrF::conditional(null, $vlrF::write($vlrWrite('x', 4)), $vlrF::write($vlrWrite('x', 5)), true),
-		$vlrF::conditional(null, $vlrF::write($vlrWrite('y', 6)), $vlrF::write($vlrWrite('y', 7)), false),
+		$vlrF::conditional(null, $vlrF::write($vlrWrite('x', 4)), $vlrF::write($vlrWrite('x', 5))),
+		$vlrF::conditional(null, $vlrF::write($vlrWrite('y', 6)), $vlrF::write($vlrWrite('y', 7))),
 		$vlrF::choice($vlrF::read('x'), $vlrF::read('y'), null),
 		$vlrF::switch($vlrF::read('s'), [[$vlrF::read('c1'), $vlrF::sequence($vlrF::write($vlrWrite('sw', 8)), $vlrF::exit($vlrF::BREAK)), false], [null, $vlrF::sequence($vlrF::read('sw'), $vlrF::write($vlrWrite('sw', 9))), true]], false),
 		$vlrF::switch($vlrF::read('s'), [[$vlrF::read('c2'), $vlrF::write($vlrWrite('ex', 10)), false]], true),
 		$vlrF::read('ex'),
-		$vlrF::dead($vlrF::sequence($vlrF::write($vlrWrite('dead', 11)), $vlrF::read('dead'))),
+		$vlrF::sequence($vlrF::write($vlrWrite('seq', 11)), $vlrF::read('seq')),
 		$vlrF::exit($vlrF::RETURN, 1, 'a'),
 		$vlrF::write($vlrWrite('after', 12)),
 	),
 	'loops' => $vlrF::sequence(
 		$vlrF::write($vlrWrite('i', 1)),
 		$vlrF::write($vlrWrite('acc', 2)),
-		$vlrF::loop($vlrF::read('i'), $vlrF::sequence($vlrF::read('acc'), $vlrF::write($vlrWrite('acc', 3)), $vlrF::conditional($vlrF::read('stop'), $vlrF::exit($vlrF::BREAK), $vlrF::exit($vlrF::CONTINUE, 1), null), $vlrF::write($vlrWrite('unreached', 4))), $vlrF::write($vlrWrite('i', 5)), false, true),
+		$vlrF::loop($vlrF::read('i'), $vlrF::sequence($vlrF::read('acc'), $vlrF::write($vlrWrite('acc', 3)), $vlrF::conditional($vlrF::read('stop'), $vlrF::exit($vlrF::BREAK), $vlrF::exit($vlrF::CONTINUE, 1)), $vlrF::write($vlrWrite('unreached', 4))), $vlrF::write($vlrWrite('i', 5)), false, true),
 		$vlrF::read('acc'),
 		$vlrF::loop(null, $vlrF::sequence($vlrF::write($vlrWrite('w', 6)), $vlrF::exit($vlrF::STOP)), null, true, false, false),
 		$vlrF::write($vlrWrite('k', 7)),
@@ -3193,7 +3192,7 @@ $vlrFlows = [
 		$vlrF::read('d'),
 		$vlrF::loop(null, $vlrF::write($vlrWrite('l', 12)), null, false, true),
 		$vlrF::write($vlrWrite('c', 13)),
-		$vlrF::conditional(null, $vlrF::write($vlrWrite('c', 16)), null, null),
+		$vlrF::conditional(null, $vlrF::write($vlrWrite('c', 16)), null),
 		$vlrF::read('c'),
 		$vlrF::write($vlrWrite('r', 14)),
 		$vlrF::arrow($vlrArrow, $vlrF::write($vlrWrite('r', 15)), null),

@@ -60,7 +60,6 @@ enum FlowKind
 	PT_VLR_READ_ALL,
 	PT_VLR_MENTION_ALL,
 	PT_VLR_OPAQUE,
-	PT_VLR_DEAD,
 	PT_VLR_RETURN,
 	PT_VLR_BREAK,
 	PT_VLR_CONTINUE,
@@ -86,7 +85,6 @@ const struct { const char *value; size_t len; FlowKind kind; } pt_vlr_kinds[] = 
 	{ PT_LC("readAll"), PT_VLR_READ_ALL },
 	{ PT_LC("mentionAll"), PT_VLR_MENTION_ALL },
 	{ PT_LC("opaque"), PT_VLR_OPAQUE },
-	{ PT_LC("dead"), PT_VLR_DEAD },
 	{ PT_LC("return"), PT_VLR_RETURN },
 	{ PT_LC("break"), PT_VLR_BREAK },
 	{ PT_LC("continue"), PT_VLR_CONTINUE },
@@ -497,7 +495,7 @@ public:
 		zv::Val body = pt_variable_flow_sequence_list(sequenceArgs.table());
 		if (UNEXPECTED(body.isUndef())) return zv::Val();
 		zval *bodyFlow = Z_TYPE_P(body.raw()) == IS_OBJECT ? body.raw() : NULL;
-		if (UNEXPECTED(!self.collect(bodyFlow, false))) return zv::Val();
+		if (UNEXPECTED(!self.collect(bodyFlow))) return zv::Val();
 		if (countOf(self.writes) != 0 && !self.opaque) {
 			if (UNEXPECTED(!self.compileAccesses())) return zv::Val();
 			Context context;
@@ -640,15 +638,15 @@ private:
 	 * 10000-operand `$a + $a + ...` is a 10000-deep sequence) where the twin
 	 * recursed on the VM stack: the recursion moves to a fresh C stack
 	 * segment when the current one runs low. */
-	bool collect(zval *flowValue, bool dead)
+	bool collect(zval *flowValue)
 	{
-		if (EXPECTED(!pt_engine_stack_low())) return collectBody(flowValue, dead);
+		if (EXPECTED(!pt_engine_stack_low())) return collectBody(flowValue);
 		bool ok = false;
-		pt_engine_with_stack([&]() { ok = collectBody(flowValue, dead); });
+		pt_engine_with_stack([&]() { ok = collectBody(flowValue); });
 		return ok;
 	}
 
-	bool collectBody(zval *flowValue, bool dead)
+	bool collectBody(zval *flowValue)
 	{
 		if (flowValue == NULL) return true;
 		zend_object *flow = Z_OBJ_P(flowValue);
@@ -685,9 +683,6 @@ private:
 					if (Z_TYPE_P(type) != IS_NULL) {
 						setIndex(redundantTypes, view.id, type);
 					}
-					if (dead) {
-						setTrueIndex(readIds, view.id);
-					}
 				}
 			}
 		}
@@ -710,7 +705,7 @@ private:
 		if (UNEXPECTED(children == NULL)) return false;
 		if (Z_TYPE_P(children) == IS_ARRAY) {
 			for (auto entry : zv::TableRef(Z_ARRVAL_P(children))) {
-				if (UNEXPECTED(!collect(flowOf(entry.value().deref().raw()), dead || kind == PT_VLR_DEAD))) return false;
+				if (UNEXPECTED(!collect(flowOf(entry.value().deref().raw())))) return false;
 			}
 		}
 		if (!control) return true;
@@ -752,7 +747,7 @@ private:
 			for (auto entry : zv::TableRef(Z_ARRVAL_P(cases))) {
 				zv::Ref caseEntry = entry.value().deref();
 				if (!caseEntry.isArray()) continue;
-				if (UNEXPECTED(!collect(childAt(caseEntry.asArrayTable(), 0), dead) || !collect(childAt(caseEntry.asArrayTable(), 1), dead))) return false;
+				if (UNEXPECTED(!collect(childAt(caseEntry.asArrayTable(), 0)) || !collect(childAt(caseEntry.asArrayTable(), 1)))) return false;
 			}
 		}
 		zval *catches = slot(flow, slots.controlCatches, "catches");
@@ -761,7 +756,7 @@ private:
 			for (auto entry : zv::TableRef(Z_ARRVAL_P(catches))) {
 				zv::Ref catchEntry = entry.value().deref();
 				if (!catchEntry.isArray()) continue;
-				if (UNEXPECTED(!collect(childAt(catchEntry.asArrayTable(), 1), dead))) return false;
+				if (UNEXPECTED(!collect(childAt(catchEntry.asArrayTable(), 1)))) return false;
 			}
 		}
 		return true;
@@ -783,7 +778,6 @@ private:
 		zend_object *flow = Z_OBJ_P(flowValue);
 		FlowKind kind = kindOfFlow(flow, kindOffsetOf(flow));
 		if (UNEXPECTED(EG(exception))) return zv::Val();
-		if (kind == PT_VLR_DEAD) return next;
 		if (isInput(flow)) {
 			zval *writeIdValue = slot(flow, slots.inputWriteId, "writeId");
 			zval *targetId = slot(flow, slots.inputTargetId, "targetId");

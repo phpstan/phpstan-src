@@ -175,7 +175,7 @@ final class SwitchHandler implements StmtHandler
 			$finalScope = $scopeForBranches->mergeWith($finalScope);
 		}
 
-		return new InternalStatementResult($finalScope, hasYield: $hasYield, isAlwaysTerminating: $alwaysTerminating, exitPoints: $exitPointsForOuterLoop, throwPoints: $throwPoints, impurePoints: $impurePoints, variableFlow: VariableFlow::switch($condResult->getVariableFlow(), $caseFlows, $hasDefaultCase || $exhaustive));
+		return new InternalStatementResult($finalScope, hasYield: $hasYield, isAlwaysTerminating: $alwaysTerminating, exitPoints: $exitPointsForOuterLoop, throwPoints: $throwPoints, impurePoints: $impurePoints, variableFlow: VariableFlow::switch($condResult->getVariableFlow(), $caseFlows, $hasDefaultCase));
 	}
 
 }

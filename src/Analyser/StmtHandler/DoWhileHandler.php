@@ -189,7 +189,8 @@ final class DoWhileHandler implements StmtHandler
 			exitPoints: $bodyScopeResult->getExitPointsForOuterLoop(),
 			throwPoints: array_merge($throwPoints, $bodyScopeResult->getThrowPoints()),
 			impurePoints: array_merge($impurePoints, $bodyScopeResult->getImpurePoints()),
-			variableFlow: VariableFlow::loop(null, $bodyScopeResult->getVariableFlow(), $condResult->getVariableFlow(), true, !$alwaysIterates, !$condResult->getType()->toBoolean()->isFalse()->yes()),
+			// the body runs once, then may repeat or not whatever the condition says
+			variableFlow: VariableFlow::loop(null, $bodyScopeResult->getVariableFlow(), $condResult->getVariableFlow(), true, true),
 		);
 	}
 

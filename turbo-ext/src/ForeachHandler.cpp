@@ -820,7 +820,10 @@ public:
 			zv::Args bodyFlows{bindingFlow.raw(), bodyFlow};
 			zv::Val body = pt_variable_flow_sequence(2, bodyFlows);
 			if (UNEXPECTED(body.isUndef())) return zv::Val();
-			loopFlow = pt_variable_flow_loop(throwingFlow.raw(), body.raw(), NULL, isIterableAtLeastOnce == PT_TRI_YES && polluteScopeWithAlwaysIterableForeach, true);
+			// the body may run or not whatever the iterated type says: a write in it
+			// does not make an earlier write dead, and a read in it counts even
+			// when the iterated value is inferred empty
+			loopFlow = pt_variable_flow_loop(throwingFlow.raw(), body.raw(), NULL, false, true);
 			if (UNEXPECTED(loopFlow.isUndef())) return zv::Val();
 		}
 		zv::Val bindingWrites = pt_variable_flow_builder_writes(bindingFlow.raw());
@@ -858,14 +861,7 @@ public:
 		{
 			zv::Val condFlow = pt_expression_result_variable_flow(condResult.raw());
 			if (UNEXPECTED(condFlow.isUndef())) return zv::Val();
-			zv::Val statementLoopFlow;
-			if (isIterableAtLeastOnce == PT_TRI_NO) {
-				statementLoopFlow = pt_variable_flow_dead(loopFlow.raw());
-				if (UNEXPECTED(statementLoopFlow.isUndef())) return zv::Val();
-			} else {
-				statementLoopFlow = std::move(loopFlow);
-			}
-			zv::Args flows{condFlow.raw(), statementLoopFlow.raw()};
+			zv::Args flows{condFlow.raw(), loopFlow.raw()};
 			variableFlow = pt_variable_flow_sequence(2, flows);
 			if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
 		}

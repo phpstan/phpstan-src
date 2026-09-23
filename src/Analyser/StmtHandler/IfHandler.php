@@ -64,7 +64,7 @@ final class IfHandler implements StmtHandler
 		$alwaysTerminating = true;
 		$hasYield = $condResult->hasYield();
 		$branchScopeStatementResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $condResult->getTruthyScope(), $storage, $nodeCallback, $context);
-		$flowBranches[] = [$condResult->getVariableFlow(), $branchScopeStatementResult->getVariableFlow(), $conditionType->isTrue()->yes() ? true : ($conditionType->isFalse()->yes() ? false : null)];
+		$flowBranches[] = [$condResult->getVariableFlow(), $branchScopeStatementResult->getVariableFlow()];
 		if (!$conditionType->isTrue()->no()) {
 			$exitPoints = $branchScopeStatementResult->getExitPoints();
 			$throwPoints = array_merge($throwPoints, $branchScopeStatementResult->getThrowPoints());
@@ -93,7 +93,7 @@ final class IfHandler implements StmtHandler
 			$throwPoints = array_merge($throwPoints, $condResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $condResult->getImpurePoints());
 			$branchScopeStatementResult = $nodeScopeResolver->processStmtNodesInternal($elseif, $elseif->stmts, $condResult->getTruthyScope(), $storage, $nodeCallback, $context);
-			$flowBranches[] = [$condResult->getVariableFlow(), $branchScopeStatementResult->getVariableFlow(), $elseIfConditionType->isTrue()->yes() ? true : ($elseIfConditionType->isFalse()->yes() ? false : null)];
+			$flowBranches[] = [$condResult->getVariableFlow(), $branchScopeStatementResult->getVariableFlow()];
 			if (
 				!$ifAlwaysTrue
 				&& !$lastElseIfConditionIsTrue
@@ -160,8 +160,10 @@ final class IfHandler implements StmtHandler
 			$endStatements[] = new InternalEndStatementResult($stmt, new InternalStatementResult($finalScope, hasYield: $hasYield, isAlwaysTerminating: $alwaysTerminating, exitPoints: $exitPoints, throwPoints: $throwPoints, impurePoints: $impurePoints));
 		}
 
-		foreach (array_reverse($flowBranches) as [$conditionFlow, $branchFlow, $truthy]) {
-			$elseFlow = VariableFlow::conditional($conditionFlow, $branchFlow, $elseFlow, $truthy);
+		// every branch may run in the variable flow, even one the condition's
+		// type rules out: a usage in it counts
+		foreach (array_reverse($flowBranches) as [$conditionFlow, $branchFlow]) {
+			$elseFlow = VariableFlow::conditional($conditionFlow, $branchFlow, $elseFlow);
 		}
 		return new InternalStatementResult($finalScope, hasYield: $hasYield, isAlwaysTerminating: $alwaysTerminating, exitPoints: $exitPoints, throwPoints: $throwPoints, impurePoints: $impurePoints, endStatements: $endStatements, variableFlow: $elseFlow);
 	}

@@ -89,60 +89,58 @@ inline constexpr char strings[] =
 	"\0" /* 84 */
 	"PHPStan\\Node\\VariableWritesNode\0" /* 85 */
 	"resolve\0" /* 117 */
-	"dead\0" /* 125 */
-	"false\0" /* 130 */
-	"collect\0" /* 136 */
-	"next\0" /* 144 */
-	"context\0" /* 149 */
-	"PHPStan\\Analyser\\VariableFlowContext\0" /* 157 */
-	"liveBefore\0" /* 194 */
-	"binding\0" /* 205 */
-	"PHPStan\\Node\\Variable\\VariableWrite\0" /* 213 */
-	"armed\0" /* 249 */
-	"bindingProbe\0" /* 255 */
-	"name\0" /* 268 */
-	"write\0" /* 273 */
-	"discard\0" /* 279 */
-	"passBindingProbes\0" /* 287 */
-	"offset\0" /* 305 */
-	"offsetKey\0" /* 312 */
-	"compileAccesses\0" /* 322 */
-	"accesses\0" /* 338 */
-	"compileOverwrites\0" /* 347 */
-	"replacedSlot\0" /* 365 */
-	"id\0" /* 378 */
-	"observeWrite\0" /* 381 */
-	"resolveDependencies\0" /* 394 */
-	"resolveCoverage"; /* 414 */
+	"collect\0" /* 125 */
+	"next\0" /* 133 */
+	"context\0" /* 138 */
+	"PHPStan\\Analyser\\VariableFlowContext\0" /* 146 */
+	"liveBefore\0" /* 183 */
+	"binding\0" /* 194 */
+	"PHPStan\\Node\\Variable\\VariableWrite\0" /* 202 */
+	"armed\0" /* 238 */
+	"bindingProbe\0" /* 244 */
+	"name\0" /* 257 */
+	"write\0" /* 262 */
+	"discard\0" /* 268 */
+	"false\0" /* 276 */
+	"passBindingProbes\0" /* 282 */
+	"offset\0" /* 300 */
+	"offsetKey\0" /* 307 */
+	"compileAccesses\0" /* 317 */
+	"accesses\0" /* 333 */
+	"compileOverwrites\0" /* 342 */
+	"replacedSlot\0" /* 360 */
+	"id\0" /* 373 */
+	"observeWrite\0" /* 376 */
+	"resolveDependencies\0" /* 389 */
+	"resolveCoverage"; /* 409 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(12, 0, 21), /* resolve $function */
 	reg::packed(49, MAY_BE_NULL, 54), /* resolve $flow */
 	reg::packed(84, 0, 85), /* resolve return */
 	reg::packed(49, MAY_BE_NULL, 54), /* collect $flow */
-	reg::packed(125, MAY_BE_BOOL, reg::NoString, false, false, 130), /* collect $dead */
 	reg::packed(84, MAY_BE_VOID), /* collect return */
 	reg::packed(49, MAY_BE_NULL, 54), /* liveBefore $flow */
-	reg::packed(144, MAY_BE_ARRAY), /* liveBefore $next */
-	reg::packed(149, 0, 157), /* liveBefore $context */
+	reg::packed(133, MAY_BE_ARRAY), /* liveBefore $next */
+	reg::packed(138, 0, 146), /* liveBefore $context */
 	reg::packed(84, MAY_BE_ARRAY), /* liveBefore return */
-	reg::packed(205, 0, 213), /* bindingProbe $binding */
-	reg::packed(249, MAY_BE_BOOL), /* bindingProbe $armed */
+	reg::packed(194, 0, 202), /* bindingProbe $binding */
+	reg::packed(238, MAY_BE_BOOL), /* bindingProbe $armed */
 	reg::packed(84, MAY_BE_STRING), /* bindingProbe return */
-	reg::packed(144, MAY_BE_ARRAY), /* passBindingProbes $next */
-	reg::packed(268, MAY_BE_STRING), /* passBindingProbes $name */
-	reg::packed(273, MAY_BE_NULL, 213), /* passBindingProbes $write */
-	reg::packed(279, MAY_BE_BOOL, reg::NoString, false, false, 130), /* passBindingProbes $discard */
+	reg::packed(133, MAY_BE_ARRAY), /* passBindingProbes $next */
+	reg::packed(257, MAY_BE_STRING), /* passBindingProbes $name */
+	reg::packed(262, MAY_BE_NULL, 202), /* passBindingProbes $write */
+	reg::packed(268, MAY_BE_BOOL, reg::NoString, false, false, 276), /* passBindingProbes $discard */
 	reg::packed(84, MAY_BE_ARRAY), /* passBindingProbes return */
-	reg::packed(305, 0), /* offsetKey $offset */
+	reg::packed(300, 0), /* offsetKey $offset */
 	reg::packed(84, MAY_BE_STRING), /* offsetKey return */
 	reg::packed(84, MAY_BE_VOID), /* compileAccesses return */
-	reg::packed(268, MAY_BE_STRING), /* compileOverwrites $name */
-	reg::packed(338, MAY_BE_ARRAY), /* compileOverwrites $accesses */
+	reg::packed(257, MAY_BE_STRING), /* compileOverwrites $name */
+	reg::packed(333, MAY_BE_ARRAY), /* compileOverwrites $accesses */
 	reg::packed(84, MAY_BE_VOID), /* compileOverwrites return */
-	reg::packed(273, 0, 213), /* replacedSlot $write */
+	reg::packed(262, 0, 202), /* replacedSlot $write */
 	reg::packed(84, MAY_BE_NULL | MAY_BE_STRING), /* replacedSlot return */
-	reg::packed(378, MAY_BE_LONG), /* observeWrite $id */
-	reg::packed(144, MAY_BE_ARRAY), /* observeWrite $next */
+	reg::packed(373, MAY_BE_LONG), /* observeWrite $id */
+	reg::packed(133, MAY_BE_ARRAY), /* observeWrite $next */
 	reg::packed(84, MAY_BE_VOID), /* observeWrite return */
 	reg::packed(84, MAY_BE_VOID), /* resolveDependencies return */
 	reg::packed(84, MAY_BE_VOID), /* resolveCoverage return */
@@ -154,17 +152,17 @@ using Sig = reg::Sig<strings, args>;
 namespace sig {
 inline constexpr sigtab::Sig __construct = { { 0 /* __construct */, 0, 0, 0, reg::NoArg, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig resolve = { { 117 /* resolve */, 2, 0, 2, 2, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig collect = { { 136 /* collect */, 1, 3, 2, 5, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig liveBefore = { { 194 /* liveBefore */, 3, 6, 3, 9, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig bindingProbe = { { 255 /* bindingProbe */, 2, 10, 2, 12, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig passBindingProbes = { { 287 /* passBindingProbes */, 3, 13, 4, 17, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig offsetKey = { { 312 /* offsetKey */, 1, 18, 1, 19, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig compileAccesses = { { 322 /* compileAccesses */, 0, 20, 0, 20, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig compileOverwrites = { { 347 /* compileOverwrites */, 2, 21, 2, 23, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig replacedSlot = { { 365 /* replacedSlot */, 1, 24, 1, 25, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig observeWrite = { { 381 /* observeWrite */, 2, 26, 2, 28, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig resolveDependencies = { { 394 /* resolveDependencies */, 0, 29, 0, 29, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig resolveCoverage = { { 414 /* resolveCoverage */, 0, 30, 0, 30, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig collect = { { 125 /* collect */, 1, 3, 1, 4, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig liveBefore = { { 183 /* liveBefore */, 3, 5, 3, 8, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig bindingProbe = { { 244 /* bindingProbe */, 2, 9, 2, 11, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig passBindingProbes = { { 282 /* passBindingProbes */, 3, 12, 4, 16, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig offsetKey = { { 307 /* offsetKey */, 1, 17, 1, 18, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig compileAccesses = { { 317 /* compileAccesses */, 0, 19, 0, 19, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig compileOverwrites = { { 342 /* compileOverwrites */, 2, 20, 2, 22, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig replacedSlot = { { 360 /* replacedSlot */, 1, 23, 1, 24, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig observeWrite = { { 376 /* observeWrite */, 2, 25, 2, 27, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig resolveDependencies = { { 389 /* resolveDependencies */, 0, 28, 0, 28, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig resolveCoverage = { { 409 /* resolveCoverage */, 0, 29, 0, 29, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::VariableLivenessResolver

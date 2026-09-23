@@ -329,9 +329,9 @@ final class ForHandler implements StmtHandler
 		}
 		$condition = VariableFlow::sequence(...$conditionFlow);
 		$update = VariableFlow::sequence(...$updateFlow);
-		$loop = $isIterableAtLeastOnce->no()
-			? VariableFlow::sequence($condition, VariableFlow::dead(VariableFlow::sequence($finalScopeResult->getVariableFlow(), $update)))
-			: VariableFlow::loop($condition, $finalScopeResult->getVariableFlow(), $update, $isIterableAtLeastOnce->yes(), !$alwaysIterates->yes());
+		// the body may run or not whatever the condition says: a write in it
+		// does not make an earlier write dead, and a usage in it counts
+		$loop = VariableFlow::loop($condition, $finalScopeResult->getVariableFlow(), $update, false, true);
 		$initWrites = VariableFlowBuilder::writes(VariableFlow::sequence(...$initFlow));
 		$bindings = [];
 		foreach ($initWrites as $write) {

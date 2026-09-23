@@ -1873,7 +1873,6 @@ zv::Val pt_variable_flow_sequence_list(HashTable *flows);
 zv::Val pt_variable_flow_read(zend_string *name, zval *targetId, bool container, zval *offset);
 zv::Val pt_variable_flow_write(zval *write, zval *redundantType);
 zv::Val pt_variable_flow_escape(zend_string *name);
-zv::Val pt_variable_flow_dead(zval *flow);
 zv::Val pt_variable_flow_throwing(zval *type, bool canContinue, bool canContainAnyThrowable);
 
 /* }}} */
@@ -2192,6 +2191,8 @@ zv::Val pt_internal_statement_result_new(zval *scope, bool hasYield, bool isAlwa
  * (the class entry) / ->getExitPointsForOuterLoop() /
  * ->getLoopBackEdgeScope() (the scope or null) / ->toPublic() */
 zv::Val pt_internal_statement_result_filter_out_loop_exit_points(zval *result);
+/* $result->withVariableFlow($variableFlow); $variableFlow NULL for null */
+zv::Val pt_internal_statement_result_with_variable_flow(zval *result, zval *variableFlow);
 zv::Val pt_internal_statement_result_exit_points_by_type(zval *result, zend_class_entry *stmtClass);
 zv::Val pt_internal_statement_result_exit_points_for_outer_loop(zval *result);
 zv::Val pt_internal_statement_result_loop_back_edge_scope(zval *result);
@@ -2792,7 +2793,7 @@ enum pt_variable_flow_exit_kind
 	PT_VARIABLE_FLOW_EXIT_STOP,
 };
 zv::Val pt_variable_flow_exit(pt_variable_flow_exit_kind kind, zend_long level = 1, zend_string *name = NULL);
-zv::Val pt_variable_flow_conditional(zval *condition, zval *ifFlow, zval *elseFlow, int truthy);
+zv::Val pt_variable_flow_conditional(zval *condition, zval *ifFlow, zval *elseFlow);
 
 /* MutatingScope.cpp — $scope->getAnonymousFunctionReflection(): the native
  * body for a MutatingScope (or a subclass inheriting the method), the

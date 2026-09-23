@@ -233,9 +233,9 @@ final class WhileHandler implements StmtHandler
 			exitPoints: $finalScopeResult->getExitPointsForOuterLoop(),
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
-			variableFlow: $neverIterates
-				? VariableFlow::sequence($condResult->getVariableFlow(), VariableFlow::dead($finalScopeResult->getVariableFlow()))
-				: VariableFlow::loop($bodyCondResult->getVariableFlow(), $finalScopeResult->getVariableFlow(), null, $isIterableAtLeastOnce, !$alwaysIterates),
+			// the body may run or not whatever the condition says: a write in
+			// it does not make an earlier write dead, and a usage in it counts
+			variableFlow: VariableFlow::loop($bodyCondResult->getVariableFlow(), $finalScopeResult->getVariableFlow(), null, false, true),
 		);
 	}
 

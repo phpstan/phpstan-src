@@ -33,7 +33,6 @@ abstract class VariableFlow
 	public const READ_ALL = 'readAll';
 	public const MENTION_ALL = 'mentionAll';
 	public const OPAQUE = 'opaque';
-	public const DEAD = 'dead';
 	public const RETURN = 'return';
 	public const BREAK = 'break';
 	public const CONTINUE = 'continue';
@@ -94,16 +93,9 @@ abstract class VariableFlow
 		return new VariableAccessFlow(self::READ, $name, targetId: $targetId, container: $container, offset: $offset);
 	}
 
-	public static function conditional(?self $condition, ?self $if, ?self $else, ?bool $truthy): ?self
+	public static function conditional(?self $condition, ?self $if, ?self $else): ?self
 	{
-		if ($truthy === true) {
-			$branch = self::sequence($if, self::dead($else));
-		} elseif ($truthy === false) {
-			$branch = self::sequence(self::dead($if), $else);
-		} else {
-			$branch = self::choice($if, $else);
-		}
-		return self::sequence($condition, $branch);
+		return self::sequence($condition, self::choice($if, $else));
 	}
 
 	/** @param list<array{self|null, self|null, bool}> $cases */
@@ -153,11 +145,6 @@ abstract class VariableFlow
 	public static function throwing(Type $type, bool $canContinue, bool $canContainAnyThrowable = false): self
 	{
 		return new VariableControlFlow(self::THROW, type: $type, canExit: $canContinue, canContainAnyThrowable: $canContainAnyThrowable);
-	}
-
-	public static function dead(?self $flow): ?self
-	{
-		return $flow === null ? null : new VariableControlFlow(self::DEAD, [$flow]);
 	}
 
 	public static function loop(?self $condition, ?self $body, ?self $update, bool $atLeastOnce, bool $canExit, bool $canRepeat = true): self

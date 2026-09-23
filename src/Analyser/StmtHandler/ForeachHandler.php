@@ -488,7 +488,10 @@ final class ForeachHandler implements StmtHandler
 			VariableFlowBuilder::targetWrite($stmt->valueVar, $stmt->keyVar !== null ? VariableWrite::KIND_FOREACH_VALUE_WITH_KEY : VariableWrite::KIND_FOREACH_VALUE, $finalScope, $storage),
 			$stmt->byRef && $stmt->valueVar instanceof Variable && is_string($stmt->valueVar->name) ? VariableFlow::escape($stmt->valueVar->name) : null,
 		);
-		$loopFlow = VariableFlow::loop($traversableThrowPoint !== null ? VariableFlow::throwing($traversableThrowPoint->getType(), true) : null, VariableFlow::sequence($bindingFlow, $finalScopeResult->getVariableFlow()), null, $isIterableAtLeastOnce->yes() && $this->polluteScopeWithAlwaysIterableForeach, true);
+		// the body may run or not whatever the iterated type says: a write in it
+		// does not make an earlier write dead, and a read in it counts even
+		// when the iterated value is inferred empty
+		$loopFlow = VariableFlow::loop($traversableThrowPoint !== null ? VariableFlow::throwing($traversableThrowPoint->getType(), true) : null, VariableFlow::sequence($bindingFlow, $finalScopeResult->getVariableFlow()), null, false, true);
 		$bindingWrites = VariableFlowBuilder::writes($bindingFlow);
 		$bindings = [];
 		foreach ($bindingWrites as $write) {
@@ -505,7 +508,7 @@ final class ForeachHandler implements StmtHandler
 			exitPoints: $finalScopeResult->getExitPointsForOuterLoop(),
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
-			variableFlow: VariableFlow::sequence($condResult->getVariableFlow(), $isIterableAtLeastOnce->no() ? VariableFlow::dead($loopFlow) : $loopFlow),
+			variableFlow: VariableFlow::sequence($condResult->getVariableFlow(), $loopFlow),
 		);
 	}
 

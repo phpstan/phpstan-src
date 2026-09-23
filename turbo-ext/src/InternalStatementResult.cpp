@@ -233,6 +233,31 @@ public:
 
 	zv::Val getExitPoints() const { return read(slots::exitPoints, "exitPoints"); }
 
+	/* Mirrors withVariableFlow(): clone, then the slot; $variableFlow NULL
+	 * for null */
+	zv::Val withVariableFlow(zval *variableFlow) const
+	{
+		zend_object *clone = self->handlers->clone_obj(self);
+		if (UNEXPECTED(EG(exception))) {
+			if (clone != NULL) {
+				OBJ_RELEASE(clone);
+			}
+			return zv::Val();
+		}
+		zval cloneZv;
+		ZVAL_OBJ(&cloneZv, clone);
+		zv::Val result = zv::Val::adopt(cloneZv);
+		zval value = {};
+		if (variableFlow != NULL) {
+			ZVAL_COPY_VALUE(&value, variableFlow);
+		} else {
+			ZVAL_NULL(&value);
+		}
+		pt_write_slot(clone, slots::variableFlow, &value);
+
+		return result;
+	}
+
 	/* Mirrors getExitPointsByType(); $stmtClass NULL for a class that is not
 	 * declared (matches nothing, as `instanceof` does) */
 	zv::Val getExitPointsByType(zend_class_entry *stmtClass) const
@@ -304,6 +329,15 @@ zv::Val pt_internal_statement_result_new(zval *scope, bool hasYield, bool isAlwa
 /* the twin is final: the native class entry answers natively, anything
  * else (the PHP twin declared next to the native class in the differential
  * tests) through the method */
+zv::Val pt_internal_statement_result_with_variable_flow(zval *result, zval *variableFlow)
+{
+	if (variableFlow != NULL && Z_TYPE_P(variableFlow) == IS_NULL) variableFlow = NULL;
+	if (EXPECTED(Z_OBJCE_P(result) == pt_ce_internal_statement_result)) return InternalStatementResult(Z_OBJ_P(result)).withVariableFlow(variableFlow);
+	zval null;
+	ZVAL_NULL(&null);
+	return pt_type_call(Z_OBJ_P(result), PT_LC("withvariableflow"), 1, variableFlow != NULL ? variableFlow : &null);
+}
+
 zv::Val pt_internal_statement_result_filter_out_loop_exit_points(zval *result)
 {
 	if (EXPECTED(Z_OBJCE_P(result) == pt_ce_internal_statement_result)) return InternalStatementResult(Z_OBJ_P(result)).filterOutLoopExitPoints();
@@ -367,6 +401,8 @@ void pt_register_internal_statement_result()
 	});
 
 	cls.method<&InternalStatementResult::getVariableFlow>(sigs::getVariableFlow);
+
+	cls.method<&InternalStatementResult::withVariableFlow, zp::ObjOrNull>(sigs::withVariableFlow);
 
 	cls.method<&InternalStatementResult::isEndReachable>(sigs::isEndReachable);
 

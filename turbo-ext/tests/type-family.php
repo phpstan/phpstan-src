@@ -8263,7 +8263,6 @@ foreach ([\PHPStan\Analyser\RicherScopeGetTypeHelper::class => 'getIdenticalResu
 		'sequence' => \PHPStan\Analyser\VariableFlow::sequence(\PHPStan\Analyser\VariableFlow::write($write('s1', 4)), \PHPStan\Analyser\VariableFlow::read('s2'), \PHPStan\Analyser\VariableFlow::escape('s3')),
 		'nested' => \PHPStan\Analyser\VariableFlow::loop(\PHPStan\Analyser\VariableFlow::choice(\PHPStan\Analyser\VariableFlow::write($write('c1', 5)), \PHPStan\Analyser\VariableFlow::escape('c2')), \PHPStan\Analyser\VariableFlow::tryCatch(\PHPStan\Analyser\VariableFlow::write($write('t1', 6)), [[new \PHPStan\Type\ObjectType(\Exception::class), \PHPStan\Analyser\VariableFlow::write($write('t2', 7))], [new \PHPStan\Type\ObjectType(\Error::class), null]], \PHPStan\Analyser\VariableFlow::escape('t3')), \PHPStan\Analyser\VariableFlow::switch(\PHPStan\Analyser\VariableFlow::write($write('sw0', 8)), [[\PHPStan\Analyser\VariableFlow::write($write('sw1', 9)), \PHPStan\Analyser\VariableFlow::write($write('sw2', 10)), false], [null, \PHPStan\Analyser\VariableFlow::escape('sw3'), true]], false), false, true),
 		'loop statement' => \PHPStan\Analyser\VariableFlow::loopStatement($foreachStmt, \PHPStan\Analyser\VariableFlow::write($write('ls1', 11)), [$write('b1', 12), $write('b2', 13)], [$write('o1', 14), $write('b1', 15)]),
-		'dead' => \PHPStan\Analyser\VariableFlow::dead(\PHPStan\Analyser\VariableFlow::write($write('dd', 16))),
 		'inputs' => \PHPStan\Analyser\VariableFlow::inputs(1, 2),
 	];
 	foreach ([

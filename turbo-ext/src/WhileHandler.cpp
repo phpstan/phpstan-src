@@ -394,18 +394,11 @@ public:
 			zv::Val bodyFlowHold;
 			zval *bodyFlow = pt_internal_statement_result_variable_flow(result, bodyFlowHold);
 			if (UNEXPECTED(bodyFlow == NULL)) return zv::Val();
-			if (neverIterates) {
-				zv::Val condFlow = pt_expression_result_variable_flow(condResult.raw());
-				if (UNEXPECTED(condFlow.isUndef())) return zv::Val();
-				zv::Val dead = pt_variable_flow_dead(bodyFlow);
-				if (UNEXPECTED(dead.isUndef())) return zv::Val();
-				zv::Args flows{condFlow.raw(), dead.raw()};
-				variableFlow = pt_variable_flow_sequence(2, flows);
-			} else {
-				zv::Val condFlow = pt_expression_result_variable_flow(bodyCondResult.raw());
-				if (UNEXPECTED(condFlow.isUndef())) return zv::Val();
-				variableFlow = pt_variable_flow_loop(condFlow.raw(), bodyFlow, NULL, isIterableAtLeastOnce, !alwaysIterates);
-			}
+			zv::Val condFlow = pt_expression_result_variable_flow(bodyCondResult.raw());
+			if (UNEXPECTED(condFlow.isUndef())) return zv::Val();
+			// the body may run or not whatever the condition says: a write in
+			// it does not make an earlier write dead, and a usage in it counts
+			variableFlow = pt_variable_flow_loop(condFlow.raw(), bodyFlow, NULL, false, true);
 			if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
 		}
 

@@ -323,11 +323,8 @@ public:
 			if (UNEXPECTED(bodyFlow == NULL)) return zv::Val();
 			zv::Val condFlow = pt_expression_result_variable_flow(condResult.raw());
 			if (UNEXPECTED(condFlow.isUndef())) return zv::Val();
-			ptlh::ConditionBoolean phpDocCondBoolean;
-			zv::Val condType = pt_expression_result_get_type(condResult.raw());
-			if (UNEXPECTED(condType.isUndef())) return zv::Val();
-			if (UNEXPECTED(!ptlh::conditionBooleanOfType(condType.raw(), phpDocCondBoolean))) return zv::Val();
-			variableFlow = pt_variable_flow_loop(NULL, bodyFlow, condFlow.raw(), true, !alwaysIterates, phpDocCondBoolean.isFalse != PT_TRI_YES);
+			// the body runs once, then may repeat or not whatever the condition says
+			variableFlow = pt_variable_flow_loop(NULL, bodyFlow, condFlow.raw(), true, true);
 			if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
 		}
 

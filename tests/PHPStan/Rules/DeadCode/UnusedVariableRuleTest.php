@@ -238,9 +238,6 @@ class UnusedVariableRuleTest extends RuleTestCase
 			['Value assigned to variable $value is never read before being overwritten.', 98],
 			['Value assigned to variable $value is never read.', 128],
 			['Variable $value is never read.', 136],
-			['Value assigned to variable $value is never read before being overwritten.', 148],
-			['Value assigned to variable $value is never read.', 160],
-			['Value assigned to variable $value is never read.', 167],
 		]);
 	}
 
@@ -423,6 +420,21 @@ class UnusedVariableRuleTest extends RuleTestCase
 			['Value assigned to $a[\'x\'] is never read before being overwritten.', 104],
 			['Value assigned to $a[\'x\'] is never read.', 112],
 		]);
+	}
+
+	public function testBug15263(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15263.php'], []);
+	}
+
+	public function testInferredBranchesStayPossible(): void
+	{
+		$this->analyse([__DIR__ . '/data/unused-variable-inferred-branches.php'], []);
+	}
+
+	public function testScopePollution(): void
+	{
+		$this->analyse([__DIR__ . '/data/unused-variable-scope-pollution.php'], []);
 	}
 
 	public function testUnsetCallsDestructor(): void

@@ -76,3 +76,26 @@ final class NotAnExtension
 	}
 
 }
+
+final class InjectsNullablePhpVersion implements DynamicFunctionReturnTypeExtension
+{
+
+	/** @var PhpVersion|null */
+	private $phpVersion;
+
+	public function __construct(?PhpVersion $phpVersion)
+	{
+		$this->phpVersion = $phpVersion;
+	}
+
+	public function isFunctionSupported(FunctionReflection $functionReflection): bool
+	{
+		return false;
+	}
+
+	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
+	{
+		return new MixedType();
+	}
+
+}

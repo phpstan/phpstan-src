@@ -23,6 +23,10 @@ final class NoPhpVersionInjectionInScopeAwareExtensionRuleTest extends RuleTestC
 				'NoPhpVersionInjection\InjectsPhpVersion implements PHPStan\Type\DynamicFunctionReturnTypeExtension and should not inject PHPStan\Php\PhpVersion via constructor parameter $phpVersion. Use Scope::getPhpVersion() instead.',
 				13,
 			],
+			[
+				'NoPhpVersionInjection\\InjectsNullablePhpVersion implements PHPStan\\Type\\DynamicFunctionReturnTypeExtension and should not inject PHPStan\\Php\\PhpVersion via constructor parameter $phpVersion. Use Scope::getPhpVersion() instead.',
+				80,
+			],
 		]);
 	}
 

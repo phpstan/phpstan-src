@@ -5177,9 +5177,11 @@ public:
 
 			zv::Val keyValueZv = keyValue(keyType);
 			if (UNEXPECTED(keyValueZv.isUndef())) return zv::Val();
-			optionalKeysCopy.separate();
-			/* iterated over a snapshot: the twin's foreach reads a copy */
+			/* iterated over a snapshot: the twin's foreach reads a copy;
+			 * taken before separating, so the deletes below go into a table
+			 * of their own */
 			zv::Arr snapshot = zv::Arr::copyOfTable(optionalKeysCopy.table());
+			optionalKeysCopy.separate();
 			for (zv::ArrayEntry optionalEntry : snapshot.arrRef()) {
 				zval *key = optionalEntry.value().deref().raw();
 				bool keep = Z_TYPE_P(key) != IS_LONG || i != Z_LVAL_P(key);

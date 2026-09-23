@@ -45,7 +45,7 @@ trait MbFunctionsReturnTypeExtensionTrait
 		$supportedEncodings = $this->supportedEncodings;
 
 		// PHP 7.3 and 7.4 claims 'pass' and its alias 'none' to be supported, but actually 'pass' was removed in 7.3
-		if (!$phpVersion->supportsPassNoneEncodings()->yes()) {
+		if ($phpVersion->supportsPassNoneEncodings()->no()) {
 			$supportedEncodings = array_filter(
 				$supportedEncodings,
 				static fn (string $enc) => !in_array($enc, ['PASS', 'NONE'], true),

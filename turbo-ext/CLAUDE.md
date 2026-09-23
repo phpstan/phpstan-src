@@ -287,10 +287,21 @@ drifts ±1s thermally — never run all A then all B):
 
 ```bash
 bin/phpstan clear-result-cache -c build/phpstan.neon -q
-/usr/bin/time php -d memory_limit=6G -d extension=$PWD/turbo-ext/phpstan_turbo.so bin/phpstan analyse -c build/phpstan.neon --debug -q src
-# baseline runs: drop the -d extension= flag. Nothing disables a loaded
-# extension, so keep it out of php.ini and load it per run instead
+mkdir -p /tmp/turbo-ini && echo "extension=$PWD/turbo-ext/phpstan_turbo.so" > /tmp/turbo-ini/turbo.ini
+PHP_INI_SCAN_DIR=":/tmp/turbo-ini" /usr/bin/time php -d memory_limit=6G bin/phpstan analyse -c build/phpstan.neon --debug -q src
+# baseline runs: drop PHP_INI_SCAN_DIR. Nothing disables a loaded extension,
+# so keep it out of php.ini and load it per run instead
 ```
+
+Never load it with `php -d extension=` for a `bin/phpstan` run: when the
+OPcache settings are not the ones TurboProcessRestarter wants (OPcache off
+for CLI, timestamps validated — the CI images and a default Homebrew PHP
+both), PHPStan re-executes itself, and a command-line `-d extension=` does
+not survive the restart. The run then measures PHP alone, while
+`php -d extension=... -r 'echo phpversion("phpstan_turbo");'` still reports
+the version. Confirm with a quantity that must change: user CPU drops by
+roughly 40% with the extension really active. (The tests under `tests/`
+run no restart, so `-d extension=` is fine there.)
 
 Output identity: `--error-format=raw` runs in both modes must diff empty.
 

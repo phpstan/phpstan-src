@@ -572,9 +572,11 @@ php vendor/bin/phpunit ...
 
 # output identity (clear the result cache between runs!)
 # nothing disables a loaded extension, so keep it out of php.ini and load it
-# per run instead
-php -d extension=$(pwd)/phpstan_turbo.so ../bin/phpstan analyse ... --error-format=raw   # with
-php ../bin/phpstan analyse ... --error-format=raw                                        # without
+# per run instead — through PHP_INI_SCAN_DIR, not -d extension=: PHPStan's
+# OPcache restart re-executes the process and drops command-line -d flags
+mkdir -p /tmp/turbo-ini && echo "extension=$(pwd)/phpstan_turbo.so" > /tmp/turbo-ini/turbo.ini
+PHP_INI_SCAN_DIR=":/tmp/turbo-ini" php ../bin/phpstan analyse ... --error-format=raw   # with
+php ../bin/phpstan analyse ... --error-format=raw                                     # without
 ```
 
 ## History

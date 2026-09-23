@@ -7,6 +7,7 @@ use PhpParser\Node\Expr;
 use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use function in_array;
 use function is_string;
 use function spl_object_id;
@@ -134,7 +135,37 @@ final class VariableFlowBuilder
 			return VariableFlow::sequence(...$writes);
 		}
 		$write = self::writeSite($target, $kind, $scope, $storage);
-		return $write !== null ? VariableFlow::write($write, $redundant) : null;
+		if ($write === null) {
+			return null;
+		}
+		$flow = VariableFlow::write($write, $redundant);
+		$name = $write->getVariableName();
+		if (
+			!$write->isOffsetWrite()
+			&& !$scope->hasVariableType($name)->no()
+			&& self::holdsDestructibleObject($scope->getVariableType($name))
+		) {
+			// the destructor observes the value when the variable releases it -
+			// overwritten, unset or going out of scope - so a variable holding
+			// the object keeps it alive on purpose (a scope guard)
+			return VariableFlow::sequence($flow, VariableFlow::escape($name));
+		}
+
+		return $flow;
+	}
+
+	private static function holdsDestructibleObject(Type $type): bool
+	{
+		if ($type->isObject()->no()) {
+			return false;
+		}
+		foreach (TypeCombinator::removeNull($type)->getObjectClassReflections() as $classReflection) {
+			if ($classReflection->hasNativeMethod('__destruct')) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/** @param VariableWrite::KIND_* $kind */

@@ -441,7 +441,13 @@ class UnusedVariableRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/unused-variable-destructor.php'], [
 			['Variable $unused is never read.', 33],
+			['Variable $object is never read.', 75],
 		]);
+	}
+
+	public function testBug15225(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15225.php'], []);
 	}
 
 	public function testFlowMessages(): void

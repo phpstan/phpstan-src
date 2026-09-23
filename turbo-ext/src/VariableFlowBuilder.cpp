@@ -374,7 +374,69 @@ public:
 		zv::Val write = writeSite(target, kind, scope, storage);
 		if (UNEXPECTED(write.isUndef())) return zv::Val();
 		if (Z_TYPE_P(write.raw()) == IS_NULL) return zv::Val::null();
-		return pt_variable_flow_write(write.raw(), redundant);
+		zv::Val flow = pt_variable_flow_write(write.raw(), redundant);
+		if (UNEXPECTED(flow.isUndef())) return zv::Val();
+		/* a write that is not an offset write: writeSite() made it for a
+		 * plain variable target */
+		if (!instanceof_function(targetObj->ce, classes.variable)) return flow;
+		zend_string *name = variableName(targetObj);
+		if (name == NULL) return flow;
+		zv::Val hasVariableTypeResult = pt_mutating_scope_has_variable_type(Z_OBJ_P(scope), name);
+		if (UNEXPECTED(hasVariableTypeResult.isUndef())) return zv::Val();
+		zend_long hasVariableType = pt_type_trinary_value(hasVariableTypeResult.raw());
+		if (UNEXPECTED(hasVariableType < 0)) return zv::Val();
+		if (hasVariableType == PT_TRI_NO) return flow;
+		zv::Val type = pt_mutating_scope_get_variable_type(Z_OBJ_P(scope), name);
+		if (UNEXPECTED(type.isUndef())) return zv::Val();
+		bool destructible;
+		if (UNEXPECTED(!holdsDestructibleObject(type.raw(), destructible))) return zv::Val();
+		if (!destructible) return flow;
+		// the destructor observes the value when the variable releases it -
+		// overwritten, unset or going out of scope - so a variable holding
+		// the object keeps it alive on purpose (a scope guard)
+		zv::Val escape = pt_variable_flow_escape(name);
+		if (UNEXPECTED(escape.isUndef())) return zv::Val();
+		zv::Args argv{flow.raw(), escape.raw()};
+		return pt_variable_flow_sequence(2, argv);
+	}
+
+	/* Mirrors holdsDestructibleObject(); false = pending exception. */
+	[[nodiscard]] static bool holdsDestructibleObject(zval *type, bool &out)
+	{
+		out = false;
+		if (UNEXPECTED(Z_TYPE_P(type) != IS_OBJECT)) {
+			zend_type_error("phpstan_turbo: expected a Type, got %s", zend_zval_value_name(type));
+			return false;
+		}
+		zend_long isObject = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isobject"), 0, NULL);
+		if (UNEXPECTED(isObject < 0)) return false;
+		if (isObject == PT_TRI_NO) return true;
+		zv::Val withoutNull = pt_type_combinator_remove_null(type);
+		if (UNEXPECTED(withoutNull.isUndef())) return false;
+		if (UNEXPECTED(Z_TYPE_P(withoutNull.raw()) != IS_OBJECT)) {
+			zend_type_error("phpstan_turbo: expected a Type, got %s", zend_zval_value_name(withoutNull.raw()));
+			return false;
+		}
+		zv::Val reflections = pt_type_op(Z_OBJ_P(withoutNull.raw()), PT_OP_GET_OBJECT_CLASS_REFLECTIONS, 0, NULL);
+		if (UNEXPECTED(reflections.isUndef())) return false;
+		if (Z_TYPE_P(reflections.raw()) != IS_ARRAY) return true;
+		zval destructName;
+		ZVAL_STRINGL(&destructName, "__destruct", sizeof("__destruct") - 1);
+		zv::Val destructNameHold = zv::Val::adopt(destructName);
+		for (auto entry : zv::TableRef(Z_ARRVAL_P(reflections.raw()))) {
+			zv::Ref classReflection = entry.value().deref();
+			if (UNEXPECTED(!classReflection.isObject())) {
+				zend_type_error("phpstan_turbo: expected a ClassReflection");
+				return false;
+			}
+			bool hasDestructor;
+			if (UNEXPECTED(!pt_type_call_bool(classReflection.asObject(), PT_LC("hasnativemethod"), 1, destructNameHold.raw(), hasDestructor))) return false;
+			if (hasDestructor) {
+				out = true;
+				return true;
+			}
+		}
+		return true;
 	}
 
 	/* Mirrors writeSite(). */

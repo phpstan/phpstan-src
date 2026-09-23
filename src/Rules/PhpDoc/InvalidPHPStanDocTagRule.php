@@ -64,6 +64,7 @@ final class InvalidPHPStanDocTagRule implements Rule
 		'@phpstan-param-immediately-invoked-callable',
 		'@phpstan-param-later-invoked-callable',
 		'@phpstan-param-closure-this',
+		'@phpstan-param-closure-scope',
 		'@phpstan-all-methods-pure',
 		'@phpstan-all-methods-impure',
 	];

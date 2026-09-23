@@ -62,6 +62,11 @@ final class AnnotationsMethodParameterReflection implements ExtendedParameterRef
 		return null;
 	}
 
+	public function getClosureScopeType(): ?Type
+	{
+		return null;
+	}
+
 	public function passedByReference(): PassedByReference
 	{
 		return $this->passedByReference;

@@ -589,7 +589,15 @@ private:
 	static zend_always_inline void set(zval *slot, const zval *value) { ZVAL_COPY_VALUE(slot, value); }
 	static zend_always_inline void set(zval *slot, zend_object *value) { ZVAL_OBJ(slot, value); }
 	static zend_always_inline void set(zval *slot, zend_string *value) { ZVAL_STR(slot, value); }
-	static zend_always_inline void set(zval *slot, HashTable *value) { ZVAL_ARR(slot, value); }
+	/* immutable tables (a PHP [] literal) are wrapped non-refcounted, like
+	 * ZVAL_EMPTY_ARRAY: the call's addref of its arguments must not touch them */
+	static zend_always_inline void set(zval *slot, HashTable *value)
+	{
+		ZVAL_ARR(slot, value);
+		if (GC_FLAGS(value) & IS_ARRAY_IMMUTABLE) {
+			Z_TYPE_INFO_P(slot) = IS_ARRAY;
+		}
+	}
 	static zend_always_inline void set(zval *slot, bool value) { ZVAL_BOOL(slot, value); }
 	static zend_always_inline void set(zval *slot, zend_long value) { ZVAL_LONG(slot, value); }
 	static zend_always_inline void set(zval *slot, double value) { ZVAL_DOUBLE(slot, value); }

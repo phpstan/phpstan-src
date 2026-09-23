@@ -16,4 +16,10 @@ parameters:
 			rawMessage: 'Call to deprecated method setAccessible() of class ReflectionProperty.'
 			identifier: method.deprecated
 			count: 1
+			path: ../tests/PHPStan/Analyser/StmtHandler/ForeachHandlerTest.php
+
+		-
+			rawMessage: 'Call to deprecated method setAccessible() of class ReflectionProperty.'
+			identifier: method.deprecated
+			count: 1
 			path: ../tests/PHPStan/Type/ObjectTypeTest.php

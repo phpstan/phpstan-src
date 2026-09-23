@@ -178,9 +178,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testBug14548(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-14548.php');
-		$this->assertCount(1, $errors);
-		$this->assertSame('Foreach value variable $priorityName is never read.', $errors[0]->getMessage());
-		$this->assertSame(18, $errors[0]->getLine());
+		$this->assertNoErrors($errors);
 	}
 
 	public function testBug12803(): void
@@ -1041,15 +1039,11 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	{
 		// crash
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7918.php');
-		$this->assertCount(4, $errors);
+		$this->assertCount(2, $errors);
 		$this->assertSame('Foreach key variable $id is never read.', $errors[0]->getMessage());
 		$this->assertSame(33, $errors[0]->getLine());
-		$this->assertSame('Foreach value variable $arr2 is never read.', $errors[1]->getMessage());
-		$this->assertSame(33, $errors[1]->getLine());
-		$this->assertSame('Foreach key variable $id is never read.', $errors[2]->getMessage());
-		$this->assertSame(91, $errors[2]->getLine());
-		$this->assertSame('Foreach value variable $arr2 is never read.', $errors[3]->getMessage());
-		$this->assertSame(91, $errors[3]->getLine());
+		$this->assertSame('Foreach key variable $id is never read.', $errors[1]->getMessage());
+		$this->assertSame(91, $errors[1]->getLine());
 	}
 
 	public function testArrayUnion(): void

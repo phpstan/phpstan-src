@@ -92,6 +92,15 @@ final class UnusedVariableRule implements Rule
 				continue;
 			}
 
+			if (
+				!$node->isRead($write)
+				&& in_array($write->getKind(), [VariableWrite::KIND_CATCH, VariableWrite::KIND_FOREACH_VALUE_WITH_KEY], true)
+			) {
+				// part of the syntax: dropping the variable means a non-capturing
+				// catch, or rewriting the loop over array_keys()
+				continue;
+			}
+
 			$unusedVariable = !isset($namesWithReadWrite[$name]) && !$node->isVariableEverRead($name);
 			$parentId = $write->getParentId();
 			if ($parentId !== null) {
@@ -154,6 +163,7 @@ final class UnusedVariableRule implements Rule
 			case VariableWrite::KIND_POST_DEC:
 				return sprintf('Value of %s after -- %s.', $target, $outcome);
 			case VariableWrite::KIND_FOREACH_VALUE:
+			case VariableWrite::KIND_FOREACH_VALUE_WITH_KEY:
 				return sprintf('Foreach value %s %s.', $target, $outcome);
 			case VariableWrite::KIND_FOREACH_KEY:
 				return sprintf('Foreach key %s %s.', $target, $outcome);
@@ -166,7 +176,7 @@ final class UnusedVariableRule implements Rule
 
 	/**
 	 * @param VariableWrite::KIND_* $kind
-	 * @return 'variable.unused'|'assign.unused'|'assign.unusedFlow'|'preInc.unused'|'preInc.unusedFlow'|'postInc.unused'|'postInc.unusedFlow'|'preDec.unused'|'preDec.unusedFlow'|'postDec.unused'|'postDec.unusedFlow'|'foreach.unusedValue'|'foreach.unusedValueFlow'|'foreach.unusedKey'|'foreach.unusedKeyFlow'|'catch.unusedVariable'|'catch.unusedVariableFlow'
+	 * @return 'variable.unused'|'assign.unused'|'assign.unusedFlow'|'preInc.unused'|'preInc.unusedFlow'|'postInc.unused'|'postInc.unusedFlow'|'preDec.unused'|'preDec.unusedFlow'|'postDec.unused'|'postDec.unusedFlow'|'foreach.unusedValue'|'foreach.unusedValueFlow'|'foreach.unusedKey'|'foreach.unusedKeyFlow'|'catch.unusedVariableFlow'
 	 */
 	private function getIdentifier(int $kind, bool $unusedVariable, bool $read): string
 	{
@@ -190,10 +200,20 @@ final class UnusedVariableRule implements Rule
 				return $read ? 'postDec.unusedFlow' : 'postDec.unused';
 			case VariableWrite::KIND_FOREACH_VALUE:
 				return $read ? 'foreach.unusedValueFlow' : 'foreach.unusedValue';
+			case VariableWrite::KIND_FOREACH_VALUE_WITH_KEY:
+				if (!$read) {
+					throw new ShouldNotHappenException();
+				}
+
+				return 'foreach.unusedValueFlow';
 			case VariableWrite::KIND_FOREACH_KEY:
 				return $read ? 'foreach.unusedKeyFlow' : 'foreach.unusedKey';
 			case VariableWrite::KIND_CATCH:
-				return $read ? 'catch.unusedVariableFlow' : 'catch.unusedVariable';
+				if (!$read) {
+					throw new ShouldNotHappenException();
+				}
+
+				return 'catch.unusedVariableFlow';
 		}
 
 		throw new ShouldNotHappenException(sprintf('Unhandled variable write kind %d', $kind));

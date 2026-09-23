@@ -209,6 +209,7 @@ inline uint32_t countOf(zval *list)
 inline constexpr zend_long PT_LH_WRITE_KIND_FOREACH_VALUE = 9;
 inline constexpr zend_long PT_LH_WRITE_KIND_FOREACH_KEY = 10;
 inline constexpr zend_long PT_LH_WRITE_KIND_CATCH = 11;
+inline constexpr zend_long PT_LH_WRITE_KIND_FOREACH_VALUE_WITH_KEY = 15;
 
 /* $write->isOffsetWrite() and $write->getId() of a VariableWrite (the slots
  * of exactly that class, the getters otherwise); false = pending exception */

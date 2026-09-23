@@ -31,6 +31,7 @@ final class VariableWrite
 	public const KIND_PARAMETER = 12;
 	public const KIND_CLOSURE_USE = 13;
 	public const KIND_ARRAY_LITERAL_ITEM = 14;
+	public const KIND_FOREACH_VALUE_WITH_KEY = 15;
 
 	/**
 	 * @param self::KIND_* $kind

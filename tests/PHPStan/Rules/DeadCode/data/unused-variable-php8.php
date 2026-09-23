@@ -20,7 +20,7 @@ function catchUnused(): void
 {
 	try {
 		sink(1);
-	} catch (\Exception $e) { // unused $e
+	} catch (\Exception $e) { // unused $e - not reported
 	}
 }
 

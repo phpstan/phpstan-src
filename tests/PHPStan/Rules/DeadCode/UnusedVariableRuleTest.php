@@ -71,7 +71,6 @@ class UnusedVariableRuleTest extends RuleTestCase
 			['Variable $a is never read.', 101],
 			['Variable $a is never read.', 113],
 			['Foreach key variable $k is never read.', 119],
-			['Foreach value variable $v is never read.', 126],
 			['Foreach value variable $v is never read.', 133],
 			['Variable $a is never read.', 148],
 			['Value of variable $i after ++ is never read.', 157],
@@ -99,6 +98,7 @@ class UnusedVariableRuleTest extends RuleTestCase
 			['Foreach value variable $v is never read.', 877],
 			['Value of variable $i after ++ is never read.', 885],
 			['Value of variable $i after -- is never read.', 892],
+			['Foreach value $a[\'x\'] is never read.', 915],
 		]);
 	}
 
@@ -106,7 +106,6 @@ class UnusedVariableRuleTest extends RuleTestCase
 	public function testPhp8(): void
 	{
 		$this->analyse([__DIR__ . '/data/unused-variable-php8.php'], [
-			['Catch variable $e is never read.', 23],
 			['Value assigned to variable $nightsFrom is never read.', 98],
 			['Variable $b is never read.', 108],
 			['Variable $b is never read.', 116],
@@ -183,21 +182,9 @@ class UnusedVariableRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('< 8.0.0')]
-	public function testCatchVariableNotReportedBeforePhp80(): void
+	public function testCatchVariableNotReported(): void
 	{
 		$this->analyse([__DIR__ . '/data/unused-variable-catch.php'], []);
-	}
-
-	#[RequiresPhp('>= 8.0.0')]
-	public function testCatchVariableReportedSincePhp80(): void
-	{
-		$this->analyse([__DIR__ . '/data/unused-variable-catch.php'], [
-			[
-				'Catch variable $e is never read.',
-				9,
-			],
-		]);
 	}
 
 	public function testRedundantAssignment(): void

@@ -793,7 +793,7 @@ public:
 			valueRead = pt_variable_flow_builder_target_read(parts.valueVar.raw(), storage, false, NULL);
 			if (UNEXPECTED(valueRead.isUndef())) return zv::Val();
 			ZVAL_COPY_VALUE(&flows[2], valueRead.raw());
-			valueWrite = pt_variable_flow_builder_target_write(parts.valueVar.raw(), ptlh::PT_LH_WRITE_KIND_FOREACH_VALUE, finalScope.raw(), storage, NULL);
+			valueWrite = pt_variable_flow_builder_target_write(parts.valueVar.raw(), parts.keyVar.isNull() ? ptlh::PT_LH_WRITE_KIND_FOREACH_VALUE : ptlh::PT_LH_WRITE_KIND_FOREACH_VALUE_WITH_KEY, finalScope.raw(), storage, NULL);
 			if (UNEXPECTED(valueWrite.isUndef())) return zv::Val();
 			ZVAL_COPY_VALUE(&flows[3], valueWrite.raw());
 			if (parts.byRef && parts.valueVarName != NULL) {

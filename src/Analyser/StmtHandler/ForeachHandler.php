@@ -485,7 +485,7 @@ final class ForeachHandler implements StmtHandler
 			$stmt->keyVar !== null ? VariableFlowBuilder::targetRead($stmt->keyVar, $storage, false) : null,
 			$stmt->keyVar !== null ? VariableFlowBuilder::targetWrite($stmt->keyVar, VariableWrite::KIND_FOREACH_KEY, $finalScope, $storage) : null,
 			VariableFlowBuilder::targetRead($stmt->valueVar, $storage, false),
-			VariableFlowBuilder::targetWrite($stmt->valueVar, VariableWrite::KIND_FOREACH_VALUE, $finalScope, $storage),
+			VariableFlowBuilder::targetWrite($stmt->valueVar, $stmt->keyVar !== null ? VariableWrite::KIND_FOREACH_VALUE_WITH_KEY : VariableWrite::KIND_FOREACH_VALUE, $finalScope, $storage),
 			$stmt->byRef && $stmt->valueVar instanceof Variable && is_string($stmt->valueVar->name) ? VariableFlow::escape($stmt->valueVar->name) : null,
 		);
 		$loopFlow = VariableFlow::loop($traversableThrowPoint !== null ? VariableFlow::throwing($traversableThrowPoint->getType(), true) : null, VariableFlow::sequence($bindingFlow, $finalScopeResult->getVariableFlow()), null, $isIterableAtLeastOnce->yes() && $this->polluteScopeWithAlwaysIterableForeach, true);

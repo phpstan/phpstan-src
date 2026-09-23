@@ -123,7 +123,7 @@ function foreachKeyUnused(array $arr): void
 
 function foreachValueUnused(array $arr): void
 {
-	foreach ($arr as $k => $v) { // unused $v
+	foreach ($arr as $k => $v) { // unused $v, but the key is used - not reported
 		sink($k);
 	}
 }
@@ -890,4 +890,29 @@ function preDecrementLast(): void
 	$i = 10;
 	sink($i);
 	--$i; // unused $i
+}
+
+function foreachValueUnusedWithKeyOverwritesUsedVariable(array $arr): void
+{
+	$v = 1;
+	sink($v);
+	foreach ($arr as $k => $v) { // unused $v, but the key is used - not reported
+		sink($k);
+	}
+}
+
+function foreachDimValueUnusedWithKey(array $arr): void
+{
+	$a = [];
+	foreach ($arr as $k => $a['x']) { // unused $a['x'], but the key is used - not reported
+		sink($k);
+	}
+}
+
+function foreachDimValueUnusedWithoutKey(array $arr): void
+{
+	$a = [];
+	foreach ($arr as $a['x']) { // unused $a['x']
+		sink(1);
+	}
 }

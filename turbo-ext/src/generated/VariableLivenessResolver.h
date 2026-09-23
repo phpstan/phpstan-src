@@ -111,8 +111,9 @@ inline constexpr char strings[] =
 	"replacedSlot\0" /* 360 */
 	"id\0" /* 373 */
 	"observeWrite\0" /* 376 */
-	"resolveDependencies\0" /* 389 */
-	"resolveCoverage"; /* 409 */
+	"observeOverwrite\0" /* 389 */
+	"resolveDependencies\0" /* 406 */
+	"resolveCoverage"; /* 426 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(12, 0, 21), /* resolve $function */
 	reg::packed(49, MAY_BE_NULL, 54), /* resolve $flow */
@@ -142,6 +143,9 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(373, MAY_BE_LONG), /* observeWrite $id */
 	reg::packed(133, MAY_BE_ARRAY), /* observeWrite $next */
 	reg::packed(84, MAY_BE_VOID), /* observeWrite return */
+	reg::packed(373, MAY_BE_LONG), /* observeOverwrite $id */
+	reg::packed(133, MAY_BE_ARRAY), /* observeOverwrite $next */
+	reg::packed(84, MAY_BE_VOID), /* observeOverwrite return */
 	reg::packed(84, MAY_BE_VOID), /* resolveDependencies return */
 	reg::packed(84, MAY_BE_VOID), /* resolveCoverage return */
 };
@@ -161,8 +165,9 @@ inline constexpr sigtab::Sig compileAccesses = { { 317 /* compileAccesses */, 0,
 inline constexpr sigtab::Sig compileOverwrites = { { 342 /* compileOverwrites */, 2, 20, 2, 22, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig replacedSlot = { { 360 /* replacedSlot */, 1, 23, 1, 24, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig observeWrite = { { 376 /* observeWrite */, 2, 25, 2, 27, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig resolveDependencies = { { 389 /* resolveDependencies */, 0, 28, 0, 28, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig resolveCoverage = { { 409 /* resolveCoverage */, 0, 29, 0, 29, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig observeOverwrite = { { 389 /* observeOverwrite */, 2, 28, 2, 30, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig resolveDependencies = { { 406 /* resolveDependencies */, 0, 31, 0, 31, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig resolveCoverage = { { 426 /* resolveCoverage */, 0, 32, 0, 32, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::VariableLivenessResolver

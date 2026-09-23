@@ -3196,6 +3196,12 @@ $vlrFlows = [
 		$vlrF::read('c'),
 		$vlrF::write($vlrWrite('r', 14)),
 		$vlrF::arrow($vlrArrow, $vlrF::write($vlrWrite('r', 15)), null),
+		$vlrF::write($vlrWrite('lit', 17)),
+		$vlrF::write($vlrWrite('lit', 18, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_LITERAL_ITEM, true, 'k', 17)),
+		$vlrF::write($vlrWrite('lit', 19, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, 'k')),
+		$vlrF::read('lit'),
+		$vlrF::loop(null, $vlrF::sequence($vlrF::write($vlrWrite('lp', 20)), $vlrF::write($vlrWrite('lp', 21, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_LITERAL_ITEM, true, 'k', 20))), null, false, true),
+		$vlrF::read('lp', null, false, 'j'),
 	),
 	'read all' => $vlrF::sequence($vlrF::write($vlrWrite('a', 1)), $vlrF::write($vlrWrite('o', 2, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, 'k')), $vlrF::all($vlrF::READ_ALL), $vlrF::write($vlrWrite('b', 3)), $vlrF::mention('c')),
 	'mention all' => $vlrF::sequence($vlrF::write($vlrWrite('a', 1)), $vlrF::all($vlrF::MENTION_ALL)),
@@ -3250,10 +3256,11 @@ foreach ($vlrResults['php'] as $label => $described) {
 }
 // the fixture's own writes (ids below 100): whole, same-offset, dynamic and
 // nested offsets and one-path overwrites; not across unset(), not by the
-// same write in a loop, not by an arrow function's write
+// same write in a loop, not by an arrow function's write; an array literal's
+// item replaced by an offset write, but not by its own literal in a loop
 $vlrOverwritten = array_values(array_filter(array_keys($vlrResults['php']['function / overwrites']['overwrittenWriteIds']), static fn (int $id): bool => $id < 100));
 sort($vlrOverwritten);
-check($vlrOverwritten === [1, 3, 4, 5, 6, 7, 13], 'VariableLivenessResolver: overwrite markers ' . json_encode($vlrOverwritten));
+check($vlrOverwritten === [1, 3, 4, 5, 6, 7, 13, 18], 'VariableLivenessResolver: overwrite markers ' . json_encode($vlrOverwritten));
 check(count($vlrResults['php']['function / loops']['variableOverwritingLoops']) === 2 && $vlrResults['php']['function / read all']['readVariableNames'] !== [], 'VariableLivenessResolver: the fixture exercises binding probes and READ_ALL');
 
 // ---- MutatingScope ----

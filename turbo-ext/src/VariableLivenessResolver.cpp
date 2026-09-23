@@ -816,21 +816,14 @@ private:
 			zend_long id = view.id;
 			if (kind != PT_VLR_DISCARD) {
 				observeWrite(id, next);
+				observeOverwrite(id, next);
 				HashTable *items = innerTable(literalItems, id);
 				if (items != NULL) {
 					for (auto entry : zv::TableRef(items)) {
 						zend_long itemId;
 						if (UNEXPECTED(!writeId(entry.value().deref().raw(), itemId))) return zv::Val();
 						observeWrite(itemId, next);
-					}
-				}
-				HashTable *overwrites = innerTable(overwriteKeys, id);
-				if (overwrites != NULL) {
-					for (auto entry : zv::TableRef(overwrites)) {
-						zend_string *key = entry.stringKeyOrNull();
-						if (key == NULL || !isTrueAt(next, key)) continue;
-						setTrueIndex(overwrittenIds, id);
-						break;
+						observeOverwrite(itemId, next);
 					}
 				}
 			}
@@ -1462,10 +1455,10 @@ private:
 			WriteView view;
 			if (UNEXPECTED(!view.load(write))) return false;
 			zend_long id = view.id;
-			observeOverwrites(id, innerTableByKey(markersBySlot, ZSTR_EMPTY_ALLOC()));
+			observeOverwrites(view, innerTableByKey(markersBySlot, ZSTR_EMPTY_ALLOC()));
 			if (view.offsetWrite && !view.offsetIsNull) {
 				zv::Str offsetSlot = offsetKey(view.offset.raw());
-				observeOverwrites(id, innerTableByKey(markersBySlot, offsetSlot.get()));
+				observeOverwrites(view, innerTableByKey(markersBySlot, offsetSlot.get()));
 			}
 			zv::Str slotName;
 			if (!replacedSlot(view, slotName)) continue;
@@ -1489,14 +1482,19 @@ private:
 		return true;
 	}
 
-	/* The markers of $markers written by another write than $id. */
-	void observeOverwrites(zend_long id, HashTable *markers)
+	/* The markers of $markers written by another write than $write and the
+	 * array literal it is an item of. */
+	void observeOverwrites(const WriteView &write, HashTable *markers)
 	{
 		if (markers == NULL) return;
+		zend_long id = write.id;
 		for (auto entry : zv::TableRef(markers)) {
 			zend_string *marker = entry.stringKeyOrNull();
-			// a loop running the same write again replaces nothing it wrote
-			if (marker == NULL || entry.value().deref().toLong() == id) continue;
+			if (marker == NULL) continue;
+			// a loop running the same write again replaces nothing it
+			// wrote - nor the items of the array literal it assigns
+			zend_long writerId = entry.value().deref().toLong();
+			if (writerId == id || (!write.parentIdIsNull && writerId == write.parentId)) continue;
 			zval *observed = innerSlot(overwriteKeys, id);
 			zval trueValue;
 			ZVAL_TRUE(&trueValue);
@@ -1514,6 +1512,19 @@ private:
 		if (view.offsetIsNull || !view.replacesOffset) return false;
 		slotName = offsetKey(view.offset.raw());
 		return true;
+	}
+
+	/* Mirrors observeOverwrite(). */
+	void observeOverwrite(zend_long id, const zv::Val &next)
+	{
+		HashTable *overwrites = innerTable(overwriteKeys, id);
+		if (overwrites == NULL) return;
+		for (auto entry : zv::TableRef(overwrites)) {
+			zend_string *key = entry.stringKeyOrNull();
+			if (key == NULL || !isTrueAt(next, key)) continue;
+			setTrueIndex(overwrittenIds, id);
+			return;
+		}
 	}
 
 	/* Mirrors observeWrite(). */

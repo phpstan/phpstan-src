@@ -110,13 +110,22 @@ final class UnusedVariableRule implements Rule
 				}
 				$offset = $write->getOffset();
 				$offsetType = is_int($offset) ? new ConstantIntegerType($offset) : new ConstantStringType($offset);
+				if ($node->isRead($write)) {
+					$outcome = 'only flows into values that are never used';
+					$identifier = 'array.unusedOffsetFlow';
+				} elseif ($node->isOverwritten($write)) {
+					$outcome = 'is never read before being overwritten';
+					$identifier = 'array.offsetOverwritten';
+				} else {
+					$outcome = 'is never read';
+					$identifier = 'array.unusedOffset';
+				}
 				$message = sprintf(
 					'Offset %s of array assigned to variable $%s %s.',
 					$offsetType->describe(VerbosityLevel::value()),
 					$name,
-					$node->isRead($write) ? 'only flows into values that are never used' : 'is never read',
+					$outcome,
 				);
-				$identifier = $node->isRead($write) ? 'array.unusedOffsetFlow' : 'array.unusedOffset';
 			} elseif ($write->isOffsetWrite()) {
 				$target = $write->getNode();
 				if (!$target instanceof Node\Expr) {

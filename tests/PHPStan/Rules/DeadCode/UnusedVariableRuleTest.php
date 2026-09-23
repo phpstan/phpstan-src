@@ -335,7 +335,7 @@ class UnusedVariableRuleTest extends RuleTestCase
 			['Offset 1 of array assigned to variable $a is never read.', 50],
 			['Offset 2 of array assigned to variable $a is never read.', 50],
 			['Offset \'y\' of array assigned to variable $a is never read.', 58],
-			['Offset \'x\' of array assigned to variable $a is never read.', 67],
+			['Offset \'x\' of array assigned to variable $a is never read before being overwritten.', 67],
 			['Offset \'y\' of array assigned to variable $a is never read.', 95],
 			['Offset \'y\' of array assigned to variable $a is never read.', 103],
 			['Offset \'z\' of array assigned to variable $a is never read.', 117],
@@ -353,7 +353,7 @@ class UnusedVariableRuleTest extends RuleTestCase
 			['Value assigned to $a[$i] is never read.', 234],
 			['Value assigned to $a[] is never read.', 247],
 			['Value assigned to $a[\'x\'][\'y\'] is never read.', 260],
-			['Offset \'x\' of array assigned to variable $a is never read.', 280],
+			['Offset \'x\' of array assigned to variable $a is never read before being overwritten.', 280],
 			['Value assigned to $a[\'x\'] is never read.', 295],
 			['Value of $a[\'n\'] after ++ is never read.', 315],
 			['Value assigned to $s[0] is never read.', 328],
@@ -435,6 +435,14 @@ class UnusedVariableRuleTest extends RuleTestCase
 	public function testScopePollution(): void
 	{
 		$this->analyse([__DIR__ . '/data/unused-variable-scope-pollution.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug15262(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15262.php'], [
+			['Offset \'success\' of array assigned to variable $result is never read before being overwritten.', 22],
+		]);
 	}
 
 	public function testUnsetCallsDestructor(): void

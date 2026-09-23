@@ -258,15 +258,10 @@ final class VariableLivenessResolver
 			$id = $flow->write->getId();
 			if ($flow->kind !== VariableFlow::DISCARD) {
 				$this->observeWrite($id, $next);
+				$this->observeOverwrite($id, $next);
 				foreach ($this->literalItems[$id] ?? [] as $item) {
 					$this->observeWrite($item->getId(), $next);
-				}
-				foreach (array_keys($this->overwriteKeys[$id] ?? []) as $key) {
-					if (!isset($next[$key])) {
-						continue;
-					}
-					$this->overwrittenIds[$id] = true;
-					break;
+					$this->observeOverwrite($item->getId(), $next);
 				}
 			}
 			foreach (array_keys($this->killedKeys[$id] ?? []) as $key) {
@@ -607,8 +602,9 @@ final class VariableLivenessResolver
 				$observed += $markersBySlot[self::offsetKey($offset)] ?? [];
 			}
 			foreach ($observed as $marker => $writerId) {
-				// a loop running the same write again replaces nothing it wrote
-				if ($writerId === $id) {
+				// a loop running the same write again replaces nothing it
+				// wrote - nor the items of the array literal it assigns
+				if ($writerId === $id || $writerId === $write->getParentId()) {
 					continue;
 				}
 				$this->overwriteKeys[$id][$marker] = true;
@@ -655,6 +651,18 @@ final class VariableLivenessResolver
 			} else {
 				$this->dependencies[$targetId][$id] = true;
 			}
+		}
+	}
+
+	/** @param array<string, true> $next */
+	private function observeOverwrite(int $id, array $next): void
+	{
+		foreach (array_keys($this->overwriteKeys[$id] ?? []) as $key) {
+			if (!isset($next[$key])) {
+				continue;
+			}
+			$this->overwrittenIds[$id] = true;
+			return;
 		}
 	}
 

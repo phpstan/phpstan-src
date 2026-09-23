@@ -4,6 +4,7 @@ namespace PHPStan\Type\Constant;
 
 use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ErrorType;
@@ -12,7 +13,9 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\Attributes\DataProvider;
 use function sprintf;
 use const PHP_INT_MAX;
 
@@ -203,6 +206,54 @@ class ConstantArrayTypeBuilderTest extends PHPStanTestCase
 
 		$builder->setOffsetValueType($oneOrFour, new NullType());
 		$this->assertFalse($builder->isList());
+	}
+
+	/**
+	 * @return iterable<string, array{list<array{Type|null, Type}>, Type, TrinaryLogic, TrinaryLogic}>
+	 */
+	public static function dataIsListAfterUnionOffset(): iterable
+	{
+		$zeroOrOne = new UnionType([new ConstantIntegerType(0), new ConstantIntegerType(1)]);
+		$oneOrTwo = new UnionType([new ConstantIntegerType(1), new ConstantIntegerType(2)]);
+		$fiveOrSix = new UnionType([new ConstantIntegerType(5), new ConstantIntegerType(6)]);
+		$aOrB = new UnionType([new ConstantStringType('a'), new ConstantStringType('b')]);
+		$x = new ConstantStringType('x');
+
+		// [0 => 'x'] is a list, [1 => 'x'] is not
+		yield 'empty array, 0|1' => [[], $zeroOrOne, TrinaryLogic::createMaybe(), TrinaryLogic::createMaybe()];
+
+		// the shape admits [] too, but the non-empty array without the key 0 is not a list
+		yield 'empty array, a|b' => [[], $aOrB, TrinaryLogic::createMaybe(), TrinaryLogic::createNo()];
+
+		// ['x', 'y'] is a list, [0 => 'x', 2 => 'y'] is not
+		yield 'list, 1|2' => [[[null, $x]], $oneOrTwo, TrinaryLogic::createMaybe(), TrinaryLogic::createMaybe()];
+
+		// the shape cannot tell that one of the keys is always written
+		yield 'list, 5|6' => [[[null, $x]], $fiveOrSix, TrinaryLogic::createMaybe(), TrinaryLogic::createMaybe()];
+
+		// overwriting 0 or appending 1 keeps it a list
+		yield 'list, 0|1' => [[[null, $x]], $zeroOrOne, TrinaryLogic::createYes(), TrinaryLogic::createYes()];
+
+		yield 'not a list, 0|1' => [[[new ConstantStringType('a'), $x]], $zeroOrOne, TrinaryLogic::createNo(), TrinaryLogic::createNo()];
+	}
+
+	/**
+	 * @param list<array{Type|null, Type}> $offsets
+	 */
+	#[DataProvider('dataIsListAfterUnionOffset')]
+	public function testIsListAfterUnionOffset(array $offsets, Type $unionOffset, TrinaryLogic $expectedShapeIsList, TrinaryLogic $expectedIsList): void
+	{
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+		foreach ($offsets as [$offsetType, $valueType]) {
+			$builder->setOffsetValueType($offsetType, $valueType);
+		}
+		$builder->setOffsetValueType($unionOffset, new NullType());
+
+		$array = $builder->getArray();
+		$constantArrays = $array->getConstantArrays();
+		$this->assertCount(1, $constantArrays);
+		$this->assertSame($expectedShapeIsList->describe(), $constantArrays[0]->isList()->describe());
+		$this->assertSame($expectedIsList->describe(), $array->isList()->describe());
 	}
 
 	public function testAppendToBuilderWithEmptyNextAutoIndexes(): void

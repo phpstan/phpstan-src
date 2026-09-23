@@ -36,6 +36,7 @@ use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Accessory\OversizedArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -67,6 +68,7 @@ use function array_map;
 use function array_reverse;
 use function get_class;
 use function implode;
+use function is_int;
 use function is_string;
 use function sprintf;
 use const PHP_VERSION_ID;
@@ -6595,6 +6597,54 @@ class TypeCombinatorTest extends PHPStanTestCase
 		yield [new NullType(), true];
 		yield [new UnionType([new IntegerType(), new NullType()]), true];
 		yield [new MixedType(), false];
+	}
+
+	/**
+	 * @return iterable<string, array{bool, list<array{int|string, bool}>, bool, TrinaryLogic}>
+	 */
+	public static function dataIntersectWithNonEmptyArrayRulesOutTheEmptyList(): iterable
+	{
+		foreach ([true, false] as $bleedingEdge) {
+			$suffix = $bleedingEdge ? ' (bleeding edge)' : '';
+
+			// the empty array is the only list these admit
+			yield 'string keys' . $suffix => [$bleedingEdge, [['a', true], ['b', true]], false, TrinaryLogic::createNo()];
+			yield 'integer keys past 0' . $suffix => [$bleedingEdge, [[1, true], [2, true]], false, TrinaryLogic::createNo()];
+
+			// [0 => ...] is a non-empty list
+			yield 'optional key 0' . $suffix => [$bleedingEdge, [[0, true], ['a', true]], false, TrinaryLogic::createMaybe()];
+		}
+
+		// unsealed extras may add the key 0
+		yield 'extras with integer keys' => [true, [['a', true], ['b', true]], true, TrinaryLogic::createMaybe()];
+	}
+
+	/**
+	 * @param list<array{int|string, bool}> $keys
+	 */
+	#[DataProvider('dataIntersectWithNonEmptyArrayRulesOutTheEmptyList')]
+	public function testIntersectWithNonEmptyArrayRulesOutTheEmptyList(bool $bleedingEdge, array $keys, bool $unsealed, TrinaryLogic $expectedIsList): void
+	{
+		BleedingEdgeToggle::withBleedingEdge($bleedingEdge, function () use ($keys, $unsealed, $expectedIsList): void {
+			$builder = ConstantArrayTypeBuilder::createEmpty();
+			foreach ($keys as [$key, $optional]) {
+				$keyType = is_int($key) ? new ConstantIntegerType($key) : new ConstantStringType($key);
+				$builder->setOffsetValueType($keyType, new StringType(), $optional);
+			}
+			if ($unsealed) {
+				$builder->makeUnsealed(new IntegerType(), new StringType());
+			}
+			$array = $builder->getArray();
+			$this->assertSame(TrinaryLogic::createMaybe()->describe(), $array->isList()->describe());
+
+			foreach ([
+				TypeCombinator::intersect($array, new NonEmptyArrayType()),
+				TypeCombinator::intersect(new NonEmptyArrayType(), $array),
+			] as $intersected) {
+				$this->assertSame($expectedIsList->describe(), $intersected->isList()->describe());
+				$this->assertTrue($intersected->isIterableAtLeastOnce()->yes());
+			}
+		});
 	}
 
 }

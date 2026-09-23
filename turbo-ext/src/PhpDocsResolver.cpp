@@ -640,7 +640,7 @@ private:
 				return zv::Val();
 			}
 			names.separate();
-			Z_ADDREF_P(name);
+			Z_TRY_ADDREF_P(name);
 			zend_string *key = entry.stringKeyOrNull();
 			if (key != NULL) {
 				zend_hash_update(names.table(), key, name);

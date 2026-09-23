@@ -231,6 +231,9 @@ jobs:
               cd e2e/bug-15102b
               ../../bin/phpstan analyze
           - script: |
+              cd e2e/bug-15231
+              ../../bin/phpstan analyze
+          - script: |
               cd e2e/bug-15102
               composer install
               ../../bin/phpstan analyze

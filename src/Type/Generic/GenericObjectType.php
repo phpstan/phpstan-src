@@ -462,17 +462,30 @@ class GenericObjectType extends ObjectType
 	 * Gives $subclass, a class written without type arguments, the ones
 	 * $supertype implies for it through the class's `@extends` and
 	 * `@implements` tags: Some with Option<int> is Some<int>, Err with
-	 * Result<int, string> is Err<string>.
+	 * Result<int, string> is Err<string>. The class of $supertype itself
+	 * takes its arguments and call-site variance as written: X with X<*> is
+	 * X<*>.
 	 *
 	 * Returns $subclass unchanged unless $supertype is a generic object type
-	 * without call-site variance, $subclass is a generic subtype of its class,
-	 * and $supertype determines every type argument of $subclass - an explicit
-	 * argument would claim more than is known.
+	 * and $subclass is its class or a generic subtype of it. A subtype also
+	 * stays unchanged when $supertype has call-site variance or does not
+	 * determine every type argument of the subtype - an explicit argument
+	 * would claim more than is known.
 	 */
 	public static function specializeSubclass(Type $supertype, Type $subclass): Type
 	{
 		if (!$supertype instanceof self || get_class($subclass) !== ObjectType::class) {
 			return $subclass;
+		}
+
+		if ($subclass->getClassName() === $supertype->getClassName()) {
+			return new self(
+				$supertype->getClassName(),
+				$supertype->types,
+				$subclass->getSubtractedType(),
+				null,
+				$supertype->variances,
+			);
 		}
 
 		foreach ($supertype->variances as $variance) {

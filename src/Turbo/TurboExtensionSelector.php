@@ -28,9 +28,10 @@ use const PHP_ZTS;
  * installations —
  * a source checkout loads its locally built extension through php.ini
  * instead. Only non-debug builds for PHP >= MINIMUM_PHP_VERSION_ID are
- * shipped; ZTS variants (-zts filename
- * suffix) exist for linux-gnu and Windows so hosts with a thread-safe PHP
- * (like PMMP's bundled build) are covered too. Workers run the regular
+ * shipped; a ZTS variant (-zts filename
+ * suffix) exists for Windows only, where XAMPP, WampServer and Scoop default
+ * to thread-safe PHP — a thread-safe PHP on Linux or macOS finds no binary
+ * and runs without the extension. Workers run the regular
  * entrypoint, so TurboExtensionEnabler still gates activation on the
  * expected extension version.
  *

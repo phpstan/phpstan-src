@@ -20,6 +20,11 @@ permissions:
   contents: read
 
 env:
+  # Turbo binaries phpstan/phpstan used to carry but no compile leg builds any
+  # more (paths under turbo-ext/, shell globs). The commit job deletes them
+  # from the dist; without this, the torn-set guard there would refuse every
+  # version bump, since a retired binary has no freshly built replacement.
+  TURBO_RETIRED_BINARIES: "linux-gnu-x86_64/phpstan_turbo-*-zts.so linux-gnu-arm64/phpstan_turbo-*-zts.so"
   # The php-parser version whose grammar tables and semantic actions the
   # native parser engine (turbo-ext/src/parser/) was ported against.
   SUPPORTED_PHP_PARSER_VERSION: "v5.9.0"
@@ -340,12 +345,13 @@ jobs:
     # separate turbo-compile-musl-arm64 job below: JavaScript-based actions
     # cannot run in Alpine containers on arm64 runners (the runner only
     # ships an x64 musl Node), so that job drives the Alpine container
-    # through docker exec instead of a `container:` leg. The ZTS legs (for
-    # hosts with a thread-safe PHP, like PMMP's bundled build) run directly
-    # on ubuntu-22.04 runners — same glibc floor — because no distro
-    # packages ZTS PHP (neither ppa:ondrej/php nor Alpine); setup-php
-    # provides thread-safe builds. No musl ZTS for the same packaging
-    # reason.
+    # through docker exec instead of a `container:` leg. There are no Linux
+    # ZTS legs: every distro, ppa:ondrej/php, sury, Remi's default `php`, the
+    # official Docker image and setup-php ship an NTS CLI, and thread-safe
+    # PHP on Linux (FrankenPHP, php:*-zts images) is a few percent of hosts —
+    # not worth two binaries per PHP minor. Their binaries are deleted from
+    # phpstan/phpstan by the commit job (TURBO_RETIRED_BINARIES). Windows
+    # keeps its ZTS leg: XAMPP, WampServer and Scoop default to TS PHP.
     # PHP 8.6 has no ondrej/php packages or prebuilt GNU image yet. Use
     # setup-php on Jammy runners, preserving the shipped binary's glibc floor.
     # Alpine's php86 packages are currently only in edge/testing.
@@ -373,16 +379,6 @@ jobs:
             container: "alpine:3.24"
             family: "musl"
             artifact: "phpstan_turbo"
-          - name: "linux-gnu-x86_64"
-            runs-on: "ubuntu-22.04"
-            family: "zts"
-            artifact: "phpstan_turbo"
-            suffix: "-zts"
-          - name: "linux-gnu-arm64"
-            runs-on: "ubuntu-22.04-arm"
-            family: "zts"
-            artifact: "phpstan_turbo"
-            suffix: "-zts"
           # arm64 (Apple Silicon) only: setup-php dropped Intel macOS. An
           # x86_64 PHP — native Intel, or Rosetta on Apple Silicon, which
           # reports x86_64 too — finds no binary: TurboExtensionSelector
@@ -442,19 +438,11 @@ jobs:
           php-version: "${{ matrix.php-version }}"
 
       - name: "Install PHP (GNU runners)"
-        if: matrix.target.family == 'zts' || (matrix.target.family == 'gnu' && matrix.php-version == '8.6')
+        if: matrix.target.family == 'gnu' && matrix.php-version == '8.6'
         uses: "shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240" # v2.37.2
-        env:
-          phpts: "${{ matrix.target.family == 'zts' && 'ts' || 'nts' }}"
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
-
-      # Guards against setup-php silently falling back to an NTS build,
-      # which would ship an NTS binary under the -zts name.
-      - name: "Verify the interpreter is thread-safe"
-        if: matrix.target.family == 'zts'
-        run: "php -r 'exit((bool) PHP_ZTS ? 0 : 1);'"
 
       # The training run of `make pgo` (bin/pgo-train.sh) runs bin/phpstan on
       # the checkout, so the dependencies must be in place before the build.
@@ -467,7 +455,7 @@ jobs:
         if: matrix.target.family != 'macos'
         # checksum-pinned composer, run under the matrix PHP so platform
         # requirements are validated against the interpreter the tests below
-        # run on. COMPOSER_HOME is isolated: on the runner (ZTS) legs,
+        # run on. COMPOSER_HOME is isolated: on the runner (PHP 8.6) legs,
         # setup-php seeds ~/.composer/auth.json with the workflow's GitHub
         # token, which this pinned composer rejects at startup ("github oauth
         # token contains invalid characters") — everything here comes from
@@ -560,7 +548,7 @@ jobs:
       - name: "Upload extension artifact"
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: "${{ matrix.target.artifact }}-${{ matrix.target.name }}-php${{ matrix.php-version }}${{ matrix.target.suffix }}"
+          name: "${{ matrix.target.artifact }}-${{ matrix.target.name }}-php${{ matrix.php-version }}"
           path: "turbo-ext/phpstan_turbo.so"
           if-no-files-found: "error"
 
@@ -1072,6 +1060,10 @@ jobs:
         php-version: ["8.3", "8.4", "8.5", "8.6"]
         ts: ["nts", "zts"]
         script: ["make tests", "make phpstan"]
+        # Linux ships no ZTS binary (see turbo-compile); Windows does
+        exclude:
+          - operating-system: "ubuntu-latest"
+            ts: "zts"
         # macOS runs the shipped ad-hoc-signed arm64 binary; there is no
         # macOS zts build, and 8.3/8.4 coverage comes from the other legs.
         include:
@@ -1683,6 +1675,16 @@ jobs:
               fi
             done
           done
+          # A retired binary still in the dist needs a commit deleting it,
+          # even at an unchanged extension version.
+          for pattern in $TURBO_RETIRED_BINARIES; do
+            for retired in phpstan-dist/turbo-ext/$pattern; do
+              if [[ -f "$retired" ]]; then
+                echo "retired, to be deleted from dist: $retired"
+                RESULT=different
+              fi
+            done
+          done
           echo "result=$RESULT" >> "$GITHUB_OUTPUT"
           echo "version-changed=$VERSION_CHANGED" >> "$GITHUB_OUTPUT"
           echo "version=$EXPECTED" >> "$GITHUB_OUTPUT"
@@ -1734,6 +1736,16 @@ jobs:
           TURBO_VERSION: ${{ steps.turbo-difference.outputs.version }}
           VERSION_CHANGED: ${{ steps.turbo-difference.outputs.version-changed }}
         run: |
+          # Retired targets go first: they have no replacement by design, and
+          # a stale one must not keep shipping (`git add .` stages the deletion).
+          for pattern in $TURBO_RETIRED_BINARIES; do
+            for retired in phpstan-dist/turbo-ext/$pattern; do
+              if [[ -f "$retired" ]]; then
+                echo "deleting retired binary: $retired"
+                rm -f "$retired"
+              fi
+            done
+          done
           # A version bump must refresh EVERY binary the dist carries: staging a
           # partial artifact set and bumping .version anyway would leave the
           # missing platforms on a stale extension the new phar refuses to

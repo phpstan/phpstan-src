@@ -253,11 +253,18 @@ each probed against the compiler in use, since the targets disagree about
 nearly all of them. **Adopt a codegen flag only with its own measurement**
 (interleaved A/B pairs on user CPU) and record the number beside it, the way
 the existing entries do; the full-workload runs have a ~±2% noise floor, so
-screen on a smaller target where the floor is ~0.35%. Measured and rejected
-so far: thin LTO (+1.76% slower), `-O3` (wash), PGO (no longer measurable),
-`-fstrict-flex-arrays=3` (traps on the engine's struct-hack), and
-`-D_GLIBCXX_ASSERTIONS` is absent only because it was never measured on a
-Linux host — the libc++ equivalent was.
+screen on a smaller target where the floor is ~0.35%. Measured on
+2026-09-23 with the extension really loaded (see the protocol below): PGO
+4.0% faster on Linux and 3.6% on macOS (kept); GCC LTO 3.9% faster on top of
+PGO and 15% smaller (adopted for GCC); clang full LTO 1.2% faster but 9%
+larger (not adopted); `-Os` 10.4% slower (rejected); dropping unwind tables,
+section GC, stripping, cold registration and the pointer-free generated
+signatures — size only, no measurable effect on time. Earlier entries —
+thin LTO (+1.76% slower), `-O3` (wash) — were measured loading the extension
+with `-d extension=`, which PHPStan's OPcache restart can silently drop;
+re-measure before relying on them. `-fstrict-flex-arrays=3` traps on the
+engine's struct-hack, and `-D_GLIBCXX_ASSERTIONS` is absent only because it
+was never measured on a Linux host — the libc++ equivalent was.
 
 Static analysis and sanitizers, from the repository root (both gate in CI,
 `.github/workflows/lint.yml`):

@@ -491,6 +491,16 @@ jobs:
         run: |
           make pgo WARN_FLAGS="$(make -s print-warn-flags)" -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || nproc)"
 
+      # Before signing (stripping invalidates a signature) and before the
+      # tests below, so they exercise the exact binary that ships. The
+      # symbol tables are a quarter of the .so; see `strip` in the Makefile.
+      - name: "Strip symbol tables"
+        working-directory: "turbo-ext"
+        run: |
+          ls -l phpstan_turbo.so
+          make strip
+          ls -l phpstan_turbo.so
+
       # On arm64 AMFI refuses to map unsigned code, so the binary must carry
       # at least an ad-hoc signature. The linker applies one itself, but
       # re-sign deliberately instead of relying on that. Quarantine (and thus
@@ -636,6 +646,15 @@ jobs:
         run: |
           docker exec -i -w /work/turbo-ext alpine-build sh -e <<'EOF'
           make pgo WARN_FLAGS="$(make -s print-warn-flags)" -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || nproc)"
+          EOF
+
+      # before the tests below, so they exercise the exact binary that ships
+      - name: "Strip symbol tables"
+        run: |
+          docker exec -i -w /work/turbo-ext alpine-build sh -e <<'EOF'
+          ls -l phpstan_turbo.so
+          make strip
+          ls -l phpstan_turbo.so
           EOF
 
       - name: "Verify the built extension reports the expected version"

@@ -13,6 +13,13 @@
 PHP_CONFIG ?= php-config
 
 CXX ?= c++
+UNAME_S := $(shell uname -s)
+
+# The extension never throws and never walks its own stack (the engine
+# unwinds with longjmp), so it needs no unwind tables: -fno-exceptions alone
+# still leaves .eh_frame for every function, 0.8 MB of the Linux .so. The
+# section flags let the linker drop whatever nothing references.
+SIZE_FLAGS := -fno-asynchronous-unwind-tables -fno-unwind-tables -ffunction-sections -fdata-sections
 # The strict set the CI compile legs build with, defined once here and read
 # by the workflows (`make -s print-warn-flags`) instead of being spelled out
 # in each of them. The three -Wno- exemptions cover third-party macro
@@ -47,6 +54,10 @@ STRICT_WARN_FLAGS := -Wall -Wextra -Werror \
 # warn where the versions CI pins do not, and -Werror would turn that into a
 # build failure for them.
 WARN_FLAGS ?= -Wall
+# -O2, measured against -Os in the CI image (GCC 11.4, arm64, interleaved
+# A/B, user CPU with the extension loaded): -Os with LTO takes the stripped
+# .so from 7.5 MB to 5.0 MB but makes the analysis 10.4% slower (6.7% with
+# PGO), so the size is not worth it.
 # ZEND_ENABLE_STATIC_TSRMLS_CACHE: on ZTS builds EG()/CG() go through the
 # per-thread cache main.cpp defines instead of a ts_resource lookup per
 # access; a no-op on NTS builds.
@@ -54,7 +65,10 @@ CXXFLAGS := $(WARN_FLAGS) -O2 -std=c++17 -fPIC \
 	-DZEND_ENABLE_STATIC_TSRMLS_CACHE=1 \
 	`$(PHP_CONFIG) --includes`
 
-# Profile-guided optimisation. PGO_FLAGS is empty for a plain build; `make
+# Profile-guided optimisation, measured 2026-09-23 with the extension
+# loaded (interleaved A/B, user CPU, n=11): 4.0% faster on Linux (GCC 11.4,
+# t=-6.3), 3.6% on macOS (clang, t=-14.1), for a stripped .so within 1-2%
+# of the same size. PGO_FLAGS is empty for a plain build; `make
 # pgo` drives the two instrumented/optimised builds below with the flags of
 # the compiler in use (clang writes .profraw files merged by llvm-profdata,
 # GCC writes .gcda files next to the objects and reads them back from
@@ -69,6 +83,16 @@ PGO_USE_FLAGS := -fprofile-instr-use=$(PGO_DIR)/turbo.profdata -Wno-profile-inst
 else
 PGO_GEN_FLAGS := -fprofile-generate -fprofile-update=atomic
 PGO_USE_FLAGS := -fprofile-use -fprofile-correction -Wno-missing-profile
+endif
+
+# Link-time optimisation, with GCC (every Linux leg). Measured in the CI
+# image (GCC 11.4, arm64, `make pgo` on both sides, interleaved A/B, user
+# CPU, n=11): 3.9% faster (t=-9.4) and the stripped .so 15% smaller
+# (7.4 -> 6.3 MB). Clang goes the other way on size: full LTO on macOS was
+# 1.2% faster (t=-3.6) but made the stripped .so 9% larger (7.1 -> 7.7 MB),
+# so clang builds stay without it. On the compile and the link line both.
+ifneq ($(CXX_IS_CLANG),1)
+LTO_FLAGS := -flto=auto
 endif
 
 # The extension version is the short SHA of the last commit touching
@@ -98,11 +122,13 @@ CXXFLAGS += -DPHPSTANTURBO_VERSION='"$(PHPSTANTURBO_VERSION)"'
 # GNU ld allows them in shared objects by default, Darwin needs the flag.
 # On Linux, fold libstdc++/libgcc into the .so statically so a distributed
 # binary does not depend on the build host's GLIBCXX_*/GCC_* symbol versions.
-UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Darwin)
-LINK_FLAGS := -undefined dynamic_lookup
+LINK_FLAGS := -undefined dynamic_lookup -Wl,-dead_strip
 else
-LINK_FLAGS := -static-libstdc++ -static-libgcc
+LINK_FLAGS := -static-libstdc++ -static-libgcc -Wl,--gc-sections
+# main.cpp then supplies the terminate handler, keeping libstdc++'s (and its
+# demangler) out of the link
+CXXFLAGS += -DPHPSTANTURBO_STATIC_LIBSTDCXX
 # the loader resolves and write-protects the GOT before handing control over,
 # and the stack is never executable
 LINK_FLAGS += -Wl,-z,relro,-z,now -Wl,-z,noexecstack
@@ -127,6 +153,7 @@ endif
 # (config.m4's phpize path does not carry these, the same way it does not
 # carry the strict warnings: the Makefile is the primary build.)
 CXXFLAGS += -fvisibility=hidden -fvisibility-inlines-hidden -fno-exceptions -fno-rtti
+CXXFLAGS += $(SIZE_FLAGS) $(LTO_FLAGS)
 
 # Hardening. Every flag is probed against the compiler actually in use rather
 # than assumed, because the targets disagree: the CI floor is GCC 11.4, which
@@ -183,11 +210,25 @@ SOURCES := $(wildcard src/*.cpp) $(wildcard src/parser/*.cpp)
 OBJECTS := $(SOURCES:.cpp=.o)
 
 phpstan_turbo.so: $(OBJECTS)
-	$(CXX) `$(PHP_CONFIG) --ldflags` -shared $(LINK_FLAGS) $(PGO_FLAGS) -o $@ $(OBJECTS)
+	$(CXX) `$(PHP_CONFIG) --ldflags` -shared $(LTO_FLAGS) $(LINK_FLAGS) $(PGO_FLAGS) -o $@ $(OBJECTS)
 	@# a shared object links with undefined symbols allowed (the engine's are
 	@# resolved at load time), so a helper declared but never defined only
 	@# surfaces as a jump to NULL at run time — fail the build instead
 	@if nm -u $@ | grep -E 'pt_[a-z_]+|phpstanturbo' > /dev/null; then echo "undefined extension symbols in $@:"; nm -u $@ | grep -E 'pt_[a-z_]+|phpstanturbo'; rm -f $@; exit 1; fi
+
+# The distributed binaries ship without symbol tables: a quarter of the .so
+# (2.4 MB on Linux, 3.2 MB on macOS) that the loader never reads, since the
+# only symbol PHP looks up is get_module, which stays in the dynamic table.
+# Local builds keep them — sample and perf name frames from them. Not a
+# dependency of phpstan_turbo.so on purpose: this runs after `make pgo`, and
+# must never rebuild what that produced with other flags.
+strip:
+	@test -f phpstan_turbo.so || { echo "phpstan_turbo.so is missing — build it first"; exit 1; }
+ifeq ($(UNAME_S),Darwin)
+	strip -x phpstan_turbo.so
+else
+	strip --strip-unneeded phpstan_turbo.so
+endif
 
 # every object depends on every header: the op tables and the trait helper
 # declarations live in TypeOps.h / TypeTraits.h, and a stale object built
@@ -302,7 +343,9 @@ lint: compile_commands.json
 # this build — a bounds violation would abort with no diagnostic, the exact
 # opposite of what a sanitizer run is for. Probed, because the spelling is
 # not available on every compiler this builds with.
-SANITIZE_FLAGS ?= -fsanitize=undefined $(call cxx-supports,-fno-sanitize-trap=all) -fno-omit-frame-pointer
+# The unwind tables SIZE_FLAGS drops come back here for the same reason:
+# print_stacktrace unwinds through them.
+SANITIZE_FLAGS ?= -fsanitize=undefined $(call cxx-supports,-fno-sanitize-trap=all) -fno-omit-frame-pointer -funwind-tables -fasynchronous-unwind-tables
 SANITIZE_TESTS ?= smoke arena-smoke signature-parity parser-corpus
 
 sanitize:
@@ -316,4 +359,4 @@ sanitize:
 	done
 	$(MAKE) clean
 
-.PHONY: clean lint pgo pgo-clean print-clang-tidy-version print-warn-flags sanitize FORCE
+.PHONY: clean lint pgo pgo-clean print-clang-tidy-version print-warn-flags sanitize strip FORCE

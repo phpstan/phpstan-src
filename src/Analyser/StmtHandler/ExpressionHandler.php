@@ -2,7 +2,6 @@
 
 namespace PHPStan\Analyser\StmtHandler;
 
-use Error;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt;
@@ -11,7 +10,6 @@ use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\InternalStatementExitPoint;
 use PHPStan\Analyser\InternalStatementResult;
-use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\Scope;
@@ -25,7 +23,6 @@ use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Node\VariableAssignNode;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\NeverType;
-use PHPStan\Type\ObjectType;
 use function array_filter;
 use function count;
 
@@ -77,12 +74,7 @@ final class ExpressionHandler implements StmtHandler
 		}
 
 		$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $entryScope, $storage);
-		// Errors signal programmer mistakes (ValueError, TypeError, DivisionByZeroError...),
-		// nobody calls an otherwise pure expression just to have them thrown, so they
-		// do not make the expression statement meaningful. A `throw` written in the
-		// statement is a different story - throwing is the whole point of it.
-		$errorType = new ObjectType(Error::class);
-		$throwPoints = array_filter($result->getThrowPoints(), static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() && ($throwPoint->isFromThrowExpr() || !$errorType->isSuperTypeOf($throwPoint->getType())->yes()));
+		$throwPoints = array_filter($result->getThrowPoints(), static fn ($throwPoint) => $throwPoint->isExplicit());
 		if (
 			count($result->getImpurePoints()) === 0
 			&& count($throwPoints) === 0

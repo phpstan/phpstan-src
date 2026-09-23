@@ -113,30 +113,10 @@ class CallToFunctionStatementWithoutSideEffectsRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
 	public function testErrorThrows(): void
 	{
-		$this->analyse([__DIR__ . '/data/function-call-statement-no-side-effects-error-throws.php'], [
-			[
-				'Call to function sprintf() on a separate line has no effect.',
-				22,
-			],
-			[
-				'Call to function strpos() on a separate line has no effect.',
-				23,
-			],
-			[
-				'Call to function intdiv() on a separate line has no effect.',
-				24,
-			],
-			[
-				'Call to function array_combine() on a separate line has no effect.',
-				25,
-			],
-			[
-				'Call to function FunctionCallStatementNoSideEffectsErrorThrows\\pureAndThrowsError() on a separate line has no effect.',
-				27,
-			],
-		]);
+		$this->analyse([__DIR__ . '/data/function-call-statement-no-side-effects-error-throws.php'], []);
 	}
 
 	#[RequiresPhp('>= 8.0.0')]

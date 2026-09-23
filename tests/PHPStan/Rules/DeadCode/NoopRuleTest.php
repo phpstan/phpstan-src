@@ -143,20 +143,7 @@ class NoopRuleTest extends RuleTestCase
 	#[RequiresPhp('>= 8.0.0')]
 	public function testErrorThrows(): void
 	{
-		$this->analyse([__DIR__ . '/data/noop-error-throws.php'], [
-			[
-				'Expression "$a / $b" on a separate line does not do anything.',
-				6,
-			],
-			[
-				'Expression "$a % $b" on a separate line does not do anything.',
-				7,
-			],
-			[
-				'Expression "match ($a) {…" on a separate line does not do anything.',
-				8,
-			],
-		]);
+		$this->analyse([__DIR__ . '/data/noop-error-throws.php'], []);
 	}
 
 	#[RequiresPhp('>= 8.0.0')]

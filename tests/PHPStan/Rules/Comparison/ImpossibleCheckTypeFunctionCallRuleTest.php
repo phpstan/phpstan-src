@@ -585,7 +585,7 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-14705.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug14705Php8(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

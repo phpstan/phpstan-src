@@ -43,6 +43,14 @@ class FilterVarRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.5.0')]
+	public function testRuleNarrowedByPhpVersionId(): void
+	{
+		$this->analyse([__DIR__ . '/data/filter_var_null_and_throw_php_version.php'], [
+			['Cannot use both FILTER_NULL_ON_FAILURE and FILTER_THROW_ON_FAILURE.', 7],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.2.0')]
 	public function testRuleWithGlobalRange(): void
 	{

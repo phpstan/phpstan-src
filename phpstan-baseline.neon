@@ -379,18 +379,6 @@ parameters:
 			path: src/Reflection/BetterReflection/SourceLocator/SkipClassAliasSourceLocator.php
 
 		-
-			rawMessage: 'PHPStan\Reflection\BetterReflection\Type\AdapterReflectionEnumCaseDynamicReturnTypeExtension implements PHPStan\Type\DynamicMethodReturnTypeExtension and must not inject PHPStan\Php\PhpVersion - read the analysed PHP version from Scope::getPhpVersion() instead.'
-			identifier: phpstanBuild.phpVersionInExtension
-			count: 1
-			path: src/Reflection/BetterReflection/Type/AdapterReflectionEnumCaseDynamicReturnTypeExtension.php
-
-		-
-			rawMessage: 'PHPStan\Reflection\BetterReflection\Type\AdapterReflectionEnumDynamicReturnTypeExtension implements PHPStan\Type\DynamicMethodReturnTypeExtension and must not inject PHPStan\Php\PhpVersion - read the analysed PHP version from Scope::getPhpVersion() instead.'
-			identifier: phpstanBuild.phpVersionInExtension
-			count: 1
-			path: src/Reflection/BetterReflection/Type/AdapterReflectionEnumDynamicReturnTypeExtension.php
-
-		-
 			rawMessage: Doing instanceof PHPStan\Type\Generic\GenericObjectType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
 			count: 3
@@ -479,12 +467,6 @@ parameters:
 			identifier: varTag.type
 			count: 6
 			path: src/Reflection/InitializerExprTypeResolver.php
-
-		-
-			rawMessage: 'PHPStan\Reflection\PHPStan\NativeReflectionEnumReturnDynamicReturnTypeExtension implements PHPStan\Type\DynamicMethodReturnTypeExtension and must not inject PHPStan\Php\PhpVersion - read the analysed PHP version from Scope::getPhpVersion() instead.'
-			identifier: phpstanBuild.phpVersionInExtension
-			count: 1
-			path: src/Reflection/PHPStan/NativeReflectionEnumReturnDynamicReturnTypeExtension.php
 
 		-
 			rawMessage: Creating new PHPStan\Php8StubsMap is not covered by backward compatibility promise. The class might change in a minor PHPStan version.
@@ -1565,12 +1547,6 @@ parameters:
 			identifier: phpstanApi.instanceofType
 			count: 2
 			path: src/Type/Php/MinMaxFunctionReturnTypeExtension.php
-
-		-
-			rawMessage: 'PHPStan\Type\Php\PDOConnectReturnTypeExtension implements PHPStan\Type\DynamicStaticMethodReturnTypeExtension and must not inject PHPStan\Php\PhpVersion - read the analysed PHP version from Scope::getPhpVersion() instead.'
-			identifier: phpstanBuild.phpVersionInExtension
-			count: 1
-			path: src/Type/Php/PDOConnectReturnTypeExtension.php
 
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'

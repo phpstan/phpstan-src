@@ -38,4 +38,10 @@ interface Process
 
 	public function bindConnection(ReadableStreamInterface $out, WritableStreamInterface $in): void;
 
+	/**
+	 * The worker's OS process ID, or null before start() or when the process
+	 * failed to come to life.
+	 */
+	public function getPid(): ?int;
+
 }

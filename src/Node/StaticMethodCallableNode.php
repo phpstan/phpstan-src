@@ -6,6 +6,7 @@ use Override;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
@@ -21,7 +22,10 @@ final class StaticMethodCallableNode extends Expr implements VirtualNode
 		private Expr\StaticCall $originalNode,
 	)
 	{
-		parent::__construct($originalNode->getAttributes());
+		// the original's printed expression key must not become this node's
+		$attributes = $originalNode->getAttributes();
+		unset($attributes[ExprPrinter::ATTRIBUTE_CACHE_KEY]);
+		parent::__construct($attributes);
 	}
 
 	/**

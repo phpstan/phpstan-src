@@ -27,6 +27,7 @@ use PHPStan\Analyser\VariableFlow;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\IssetExpressionNode;
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -192,10 +193,14 @@ final class IssetHandler implements ExprHandler
 					// subjects through the conjunction narrowing; the fabricated
 					// Isset_/BooleanAnd nodes are only printed into holder keys,
 					// never walked
-					$makeSubjectTypes = fn (Expr $var, ExpressionResult $varResult): Closure => function (MutatingScope $scope, TypeSpecifierContext $ctx) use ($chainResults, $expr, $var, $varResult): SpecifiedTypes {
+					// the single-subject isset nodes built below must not inherit the
+					// whole isset's printed expression key
+					$subjectAttributes = $expr->getAttributes();
+					unset($subjectAttributes[ExprPrinter::ATTRIBUTE_CACHE_KEY]);
+					$makeSubjectTypes = fn (Expr $var, ExpressionResult $varResult): Closure => function (MutatingScope $scope, TypeSpecifierContext $ctx) use ($chainResults, $expr, $var, $varResult, $subjectAttributes): SpecifiedTypes {
 						$scopedReadType = $this->defaultNarrowingHelper->buildChainTypeReader($chainResults, $scope);
 						if ($ctx->null()) {
-							return $this->defaultNarrowingHelper->specifyDefaultTypes(new Isset_([$var], $expr->getAttributes()), $ctx);
+							return $this->defaultNarrowingHelper->specifyDefaultTypes(new Isset_([$var], $subjectAttributes), $ctx);
 						}
 						if (!$ctx->true()) {
 							return $this->defaultNarrowingHelper->createIssetSingleSubjectNonTrueTypes($scope, $var, $varResult, $scopedReadType, $ctx, $expr);
@@ -211,13 +216,13 @@ final class IssetHandler implements ExprHandler
 						return $foldAccTypes($evaluationScope, $context)->setRootExpr($expr);
 					}
 
-					$accExpr = new Isset_([$expr->vars[0]], $expr->getAttributes());
+					$accExpr = new Isset_([$expr->vars[0]], $subjectAttributes);
 					$accTypes = $makeSubjectTypes($expr->vars[0], $varResults[0]);
 					$accTruthyScope = $afterScope->applySpecifiedTypes($accTypes($afterScope, TypeSpecifierContext::createTruthy()));
 					$accFalseyScope = $afterScope->applySpecifiedTypes($accTypes($afterScope, TypeSpecifierContext::createFalsey()));
 
 					for ($i = 1, $varCount = count($expr->vars); $i < $varCount; $i++) {
-						$rightExprNode = new Isset_([$expr->vars[$i]], $expr->getAttributes());
+						$rightExprNode = new Isset_([$expr->vars[$i]], $subjectAttributes);
 						$rightTypes = $makeSubjectTypes($expr->vars[$i], $varResults[$i]);
 						$rightFalseyScope = $accTruthyScope->applySpecifiedTypes($rightTypes($accTruthyScope, TypeSpecifierContext::createFalsey()));
 

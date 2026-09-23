@@ -15,6 +15,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\Constant\ClassConstantFetch;
 use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\Property\PropertyAssign;
 use PHPStan\Node\Property\PropertyRead;
 use PHPStan\Node\Property\PropertyWrite;
@@ -335,8 +336,10 @@ final class ClassStatementsGatherer
 			if ($param->var->name !== $variableName) {
 				continue;
 			}
+			$attributes = $node->getAttributes();
+			unset($attributes[ExprPrinter::ATTRIBUTE_CACHE_KEY]);
 			$this->propertyUsages[] = new PropertyRead(
-				new PropertyFetch(new Expr\Variable('this'), new Identifier($variableName), $node->getAttributes()),
+				new PropertyFetch(new Expr\Variable('this'), new Identifier($variableName), $attributes),
 				$scope,
 			);
 			return;
@@ -362,8 +365,10 @@ final class ClassStatementsGatherer
 			if ($property->getName() === '') {
 				throw new ShouldNotHappenException();
 			}
+			$attributes = $ancestorConstructorCall->getAttributes();
+			unset($attributes[ExprPrinter::ATTRIBUTE_CACHE_KEY]);
 			$this->propertyUsages[] = new PropertyWrite(
-				new PropertyFetch(new Expr\Variable('this'), new Identifier($property->getName()), $ancestorConstructorCall->getAttributes()),
+				new PropertyFetch(new Expr\Variable('this'), new Identifier($property->getName()), $attributes),
 				$scope,
 				false,
 			);

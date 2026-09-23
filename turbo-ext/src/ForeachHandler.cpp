@@ -388,8 +388,9 @@ public:
 			zv::Args argv{parts.valueVar.raw(), valueTypeExpr.raw()};
 			zv::Val virtualAssign = pt_type_new(PT_CLASS_ASSIGN_EXPR, 2, argv);
 			if (UNEXPECTED(virtualAssign.isUndef())) return zv::Val();
-			zv::Val attributes = getAttributes(parts.valueVar.raw());
-			if (UNEXPECTED(attributes.isUndef())) return zv::Val();
+			zv::Val valueVarAttributes = getAttributes(parts.valueVar.raw());
+			if (UNEXPECTED(valueVarAttributes.isUndef())) return zv::Val();
+			zv::Val attributes = pt_attributes_without_expression_key(valueVarAttributes.raw());
 			if (UNEXPECTED(!setAttributes(virtualAssign.raw(), attributes.raw()))) return zv::Val();
 			if (UNEXPECTED(!pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, virtualAssign.raw(), scope.raw(), originalStorage))) return zv::Val();
 		}

@@ -45,6 +45,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Node\Expr\TypeExpr;
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\ImmediatelyInvokedClosureVisitor;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
@@ -232,6 +233,7 @@ final class FuncCallHandler implements ExprHandler
 				foreach ($clonePropertiesArgTypeConstantArray->getKeyTypes() as $i => $clonePropertyKeyType) {
 					$clonePropertyKeyTypeScalars = $clonePropertyKeyType->getConstantScalarValues();
 					$propertyAttributes = $normalizedExpr->getAttributes();
+					unset($propertyAttributes[ExprPrinter::ATTRIBUTE_CACHE_KEY]);
 					$propertyAttributes['inCloneWith'] = true;
 					if (count($clonePropertyKeyTypeScalars) === 1) {
 						$this->assignHandler->processVirtualAssign(
@@ -485,9 +487,11 @@ final class FuncCallHandler implements ExprHandler
 				&& $nameType->isCallable()->yes()
 				&& (new ObjectType(Closure::class))->isSuperTypeOf($nameType)->no()
 			) {
+				$invokeAttributes = $normalizedExpr->getAttributes();
+				unset($invokeAttributes[ExprPrinter::ATTRIBUTE_CACHE_KEY]);
 				$invokeResult = $nodeScopeResolver->processExprNode(
 					$stmt,
-					new MethodCall($normalizedExpr->name, '__invoke', $normalizedExpr->getArgs(), $normalizedExpr->getAttributes()),
+					new MethodCall($normalizedExpr->name, '__invoke', $normalizedExpr->getArgs(), $invokeAttributes),
 					$scope,
 					$storage,
 					new NoopNodeCallback(),

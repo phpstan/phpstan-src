@@ -1254,6 +1254,11 @@ extern zend_class_entry *pt_ce_type_combinator;
  * do*() entry points directly */
 ZEND_COLD void pt_register_type_combinator();
 namespace zv { class Val; }
+/* A copy of a node's attributes without its printed expression key
+ * (ExprPrinter::ATTRIBUTE_CACHE_KEY): a node built from another node's
+ * attributes must not inherit that node's key. The array is separated only
+ * when the key is present; a non-array passes through. */
+zv::Val pt_attributes_without_expression_key(zval *attributes);
 /* TypeCombinator::<lcname>(...$args) — the public entry points answered in
  * C++ (union, intersect, remove, removeNull, addNull, containsNull,
  * removeFalsey, removeTruthy, countConstantArrayValueTypes, clearCache),

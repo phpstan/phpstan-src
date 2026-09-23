@@ -499,8 +499,9 @@ private:
 			zval *paramName = var != NULL ? pt_csg_variable_name.of(var) : NULL;
 			if (paramName == NULL || Z_TYPE_P(paramName) != IS_STRING) continue;
 			if (!zend_string_equals(Z_STR_P(paramName), Z_STR_P(variableName))) continue;
-			zv::Val attributes = pt_type_call(node, PT_LC("getattributes"), 0, NULL);
-			if (UNEXPECTED(attributes.isUndef())) return false;
+			zv::Val originalAttributes = pt_type_call(node, PT_LC("getattributes"), 0, NULL);
+			if (UNEXPECTED(originalAttributes.isUndef())) return false;
+			zv::Val attributes = pt_attributes_without_expression_key(originalAttributes.raw());
 			zv::Val fetch = thisPropertyFetch(variableName, attributes.raw());
 			if (UNEXPECTED(fetch.isUndef())) return false;
 			return pushNodeScope(slots::propertyUsages, PT_CLASS_PROPERTY_READ, fetch.raw(), scope);
@@ -563,8 +564,9 @@ private:
 			zv::Val name = pt_type_call(Z_OBJ_P(property), PT_LC("getname"), 0, NULL);
 			if (UNEXPECTED(name.isUndef())) return false;
 			if (Z_TYPE_P(name.raw()) == IS_STRING && Z_STRLEN_P(name.raw()) == 0) return throwShouldNotHappen();
-			zv::Val attributes = pt_type_call(ancestorConstructorCall, PT_LC("getattributes"), 0, NULL);
-			if (UNEXPECTED(attributes.isUndef())) return false;
+			zv::Val originalAttributes = pt_type_call(ancestorConstructorCall, PT_LC("getattributes"), 0, NULL);
+			if (UNEXPECTED(originalAttributes.isUndef())) return false;
+			zv::Val attributes = pt_attributes_without_expression_key(originalAttributes.raw());
 			zv::Val fetch = thisPropertyFetch(name.raw(), attributes.raw());
 			if (UNEXPECTED(fetch.isUndef())) return false;
 			if (UNEXPECTED(!pushPropertyWrite(fetch.raw(), scope, false, NULL))) return false;

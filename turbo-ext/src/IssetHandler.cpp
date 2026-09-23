@@ -127,13 +127,15 @@ zv::Val callNarrowing(zval *callable, zval *scope, zend_object *context)
 	return pt_type_call_callable(callable, 2, argv);
 }
 
-/* new Isset_([$var], $attributes) */
+/* new Isset_([$var], $subjectAttributes) — the whole isset's attributes
+ * without its printed expression key */
 zv::Val newIsset(zval *var, zval *attributes)
 {
 	zv::Arr vars = zv::Arr::create(1);
 	vars.push(zv::Ref(var));
 	zv::Val varsValue(std::move(vars));
-	zv::Args argv{varsValue.raw(), attributes};
+	zv::Val subjectAttributes = pt_attributes_without_expression_key(attributes);
+	zv::Args argv{varsValue.raw(), subjectAttributes.raw()};
 	return pt_type_new(PT_CLASS_PARSER_ISSET_EXPR, 2, argv);
 }
 

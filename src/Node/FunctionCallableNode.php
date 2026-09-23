@@ -5,6 +5,7 @@ namespace PHPStan\Node;
 use Override;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Name;
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
@@ -16,7 +17,10 @@ final class FunctionCallableNode extends Expr implements VirtualNode
 
 	public function __construct(private Name|Expr $name, private Expr\FuncCall $originalNode)
 	{
-		parent::__construct($this->originalNode->getAttributes());
+		// the original's printed expression key must not become this node's
+		$attributes = $this->originalNode->getAttributes();
+		unset($attributes[ExprPrinter::ATTRIBUTE_CACHE_KEY]);
+		parent::__construct($attributes);
 	}
 
 	/**

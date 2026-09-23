@@ -734,6 +734,18 @@ pt_node_class_info *pt_get_node_class_info(zend_class_entry *ce)
 	return info;
 }
 
+zv::Val pt_attributes_without_expression_key(zval *attributes)
+{
+	zv::Val copy = zv::Val::copyOf(zv::Ref(attributes).deref());
+	zval *raw = copy.raw();
+	if (Z_TYPE_P(raw) != IS_ARRAY) return copy;
+	pt_init_strs();
+	if (!zend_hash_exists(Z_ARRVAL_P(raw), pt_str_cache_printer)) return copy;
+	SEPARATE_ARRAY(raw);
+	zend_hash_del(Z_ARRVAL_P(raw), pt_str_cache_printer);
+	return copy;
+}
+
 pt_node_class_info *pt_node_class_info_for_object(zend_object *obj)
 {
 	zend_class_entry *ce = obj->ce;

@@ -47,6 +47,7 @@ use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\Expr\OriginalForeachKeyExpr;
 use PHPStan\Node\Expr\OriginalForeachValueExpr;
 use PHPStan\Node\InForeachNode;
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\Node\VariableAssignNode;
 use PHPStan\TrinaryLogic;
@@ -146,7 +147,9 @@ final class ForeachHandler implements StmtHandler
 				$originalScope->getIterableValueType($foreachIterateeType),
 				$originalScope->getIterableValueType($foreachNativeIterateeType),
 			));
-			$virtualAssign->setAttributes($stmt->valueVar->getAttributes());
+			$valueVarAttributes = $stmt->valueVar->getAttributes();
+			unset($valueVarAttributes[ExprPrinter::ATTRIBUTE_CACHE_KEY]);
+			$virtualAssign->setAttributes($valueVarAttributes);
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $virtualAssign, $scope, $storage);
 		}
 

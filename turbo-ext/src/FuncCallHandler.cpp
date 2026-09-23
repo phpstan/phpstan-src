@@ -1098,7 +1098,7 @@ private:
 				if (UNEXPECTED(scalars.isUndef())) return false;
 				zval *attributes = nodeProp(pt_fch_attributes_site, normalizedExpr, PT_LC("attributes"));
 				if (UNEXPECTED(attributes == NULL)) return false;
-				zv::Val propertyAttributes = zv::Val::copyOf(zv::Ref(attributes));
+				zv::Val propertyAttributes = pt_attributes_without_expression_key(attributes);
 				if (Z_TYPE_P(propertyAttributes.raw()) == IS_ARRAY) {
 					zval *raw = propertyAttributes.raw();
 					SEPARATE_ARRAY(raw);
@@ -1329,7 +1329,7 @@ private:
 		if (UNEXPECTED(args.isUndef())) return false;
 		zval *attributes = nodeProp(pt_fch_attributes_site, normalizedExpr, PT_LC("attributes"));
 		if (UNEXPECTED(attributes == NULL)) return false;
-		zv::Val attributesHold = zv::Val::copyOf(zv::Ref(attributes));
+		zv::Val attributesHold = pt_attributes_without_expression_key(attributes);
 		zval invoke;
 		ZVAL_STR(&invoke, pt_fch_invoke);
 		zv::Args callArgv{normalizedName, &invoke, args.raw(), attributesHold.raw()};

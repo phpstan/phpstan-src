@@ -10730,8 +10730,9 @@ public:
 					zv::Ref var = nodeProp(expr, PT_LC("var"));
 					zv::Ref name = nodeProp(expr, PT_LC("name"));
 					if (UNEXPECTED(var.raw() == NULL || name.raw() == NULL)) return zv::Val();
-					zv::Val attributes = pt_type_call(expr, PT_LC("getattributes"), 0, NULL);
-					if (UNEXPECTED(attributes.isUndef())) return zv::Val();
+					zv::Val originalAttributes = pt_type_call(expr, PT_LC("getattributes"), 0, NULL);
+					if (UNEXPECTED(originalAttributes.isUndef())) return zv::Val();
+					zv::Val attributes = pt_attributes_without_expression_key(originalAttributes.raw());
 					zval args[4];
 					ZVAL_COPY_VALUE(&args[0], var.deref().raw());
 					ZVAL_COPY_VALUE(&args[1], name.deref().raw());

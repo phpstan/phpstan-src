@@ -7,6 +7,7 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\BinaryOp\BooleanOr;
 use PhpParser\Node\Expr\BinaryOp\LogicalOr;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
@@ -18,7 +19,10 @@ final class BooleanOrNode extends Expr implements VirtualNode
 
 	public function __construct(private BooleanOr|LogicalOr $originalNode, private Scope $rightScope)
 	{
-		parent::__construct($originalNode->getAttributes());
+		// the original's printed expression key must not become this node's
+		$attributes = $originalNode->getAttributes();
+		unset($attributes[ExprPrinter::ATTRIBUTE_CACHE_KEY]);
+		parent::__construct($attributes);
 	}
 
 	public function getOriginalNode(): BooleanOr|LogicalOr

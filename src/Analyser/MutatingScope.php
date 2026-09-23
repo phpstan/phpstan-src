@@ -3620,7 +3620,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			&& !$expr->isFirstClassCallable()
 			&& $expr->getArgs() === []
 		) {
-			return TypeCombinator::addNull($this->resolveScopeStateType(new Expr\MethodCall($expr->var, $expr->name, attributes: $expr->getAttributes()), $native));
+			$attributes = $expr->getAttributes();
+			unset($attributes[ExprPrinter::ATTRIBUTE_CACHE_KEY]);
+			return TypeCombinator::addNull($this->resolveScopeStateType(new Expr\MethodCall($expr->var, $expr->name, attributes: $attributes), $native));
 		}
 
 		// an argument-less instance call - the shape @phpstan-assert subjects

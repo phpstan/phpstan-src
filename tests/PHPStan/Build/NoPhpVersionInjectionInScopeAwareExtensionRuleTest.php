@@ -20,8 +20,8 @@ final class NoPhpVersionInjectionInScopeAwareExtensionRuleTest extends RuleTestC
 	{
 		$this->analyse([__DIR__ . '/data/no-php-version-injection.php'], [
 			[
-				'NoPhpVersionInjection\InjectsPhpVersion implements PHPStan\Type\DynamicFunctionReturnTypeExtension and should not inject PHPStan\Php\PhpVersion. Use Scope::getPhpVersion() instead.',
-				24,
+				'NoPhpVersionInjection\InjectsPhpVersion implements PHPStan\Type\DynamicFunctionReturnTypeExtension and should not inject PHPStan\Php\PhpVersion via constructor parameter $phpVersion. Use Scope::getPhpVersion() instead.',
+				13,
 			],
 		]);
 	}

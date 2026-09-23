@@ -3,8 +3,6 @@
 namespace PHPStan\Build;
 
 use PhpParser\Node;
-use PhpParser\Node\Name;
-use PhpParser\Node\NullableType;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\InClassNode;
 use PHPStan\Php\PhpVersion;
@@ -25,10 +23,12 @@ use PHPStan\Type\MethodParameterClosureThisExtension;
 use PHPStan\Type\MethodParameterClosureTypeExtension;
 use PHPStan\Type\MethodParameterOutTypeExtension;
 use PHPStan\Type\MethodTypeSpecifyingExtension;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\StaticMethodParameterClosureThisExtension;
 use PHPStan\Type\StaticMethodParameterClosureTypeExtension;
 use PHPStan\Type\StaticMethodParameterOutTypeExtension;
 use PHPStan\Type\StaticMethodTypeSpecifyingExtension;
+use PHPStan\Type\TypeCombinator;
 use function sprintf;
 
 /**
@@ -81,29 +81,25 @@ final class NoPhpVersionInjectionInScopeAwareExtensionRule implements Rule
 			return [];
 		}
 
-		$constructor = $node->getOriginalNode()->getMethod('__construct');
-		if ($constructor === null) {
+		if (!$classReflection->hasConstructor()) {
 			return [];
 		}
 
+		$phpVersionType = new ObjectType(PhpVersion::class);
 		$errors = [];
-		foreach ($constructor->params as $param) {
-			$type = $param->type;
-			if ($type instanceof NullableType) {
-				$type = $type->type;
-			}
-			if (!$type instanceof Name || $type->toString() !== PhpVersion::class) {
+		foreach ($classReflection->getConstructor()->getOnlyVariant()->getParameters() as $parameter) {
+			if (!$phpVersionType->isSuperTypeOf(TypeCombinator::removeNull($parameter->getType()))->yes()) {
 				continue;
 			}
 
 			$errors[] = RuleErrorBuilder::message(sprintf(
-				'%s implements %s and should not inject %s. Use Scope::getPhpVersion() instead.',
+				'%s implements %s and should not inject %s via constructor parameter $%s. Use Scope::getPhpVersion() instead.',
 				$classReflection->getDisplayName(),
 				$implementedExtension,
 				PhpVersion::class,
+				$parameter->getName(),
 			))
 				->identifier('phpstan.phpVersionInjection')
-				->line($param->getStartLine())
 				->build();
 		}
 

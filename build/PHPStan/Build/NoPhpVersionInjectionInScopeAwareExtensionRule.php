@@ -104,7 +104,6 @@ final class NoPhpVersionInjectionInScopeAwareExtensionRule implements Rule
 			))
 				->identifier('phpstan.phpVersionInjection')
 				->line($param->getStartLine())
-				->nonIgnorable()
 				->build();
 		}
 

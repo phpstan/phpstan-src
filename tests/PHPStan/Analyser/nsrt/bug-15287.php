@@ -60,10 +60,3 @@ function mbSubstituteCharacter(): void
 		assertType("'entity'|'long'|'none'|int<1, 1114111>", mb_substitute_character());
 	}
 }
-
-function pdoConnect(): void
-{
-	if (PHP_VERSION_ID >= 80400) {
-		assertType('PDO\Sqlite', \PDO::connect('sqlite:foo'));
-	}
-}

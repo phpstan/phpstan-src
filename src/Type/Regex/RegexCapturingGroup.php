@@ -47,9 +47,9 @@ final class RegexCapturingGroup
 			$this->alternation,
 			$this->inOptionalQuantification,
 			$this->parent,
-			$type,
+			$this->type,
 			$this->forceNonOptional,
-			$this->forceType,
+			$type,
 		);
 	}
 
@@ -104,6 +104,11 @@ final class RegexCapturingGroup
 		return $this->inAlternation()
 			|| $this->inOptionalQuantification
 			|| $this->parent !== null && $this->parent->isOptional();
+	}
+
+	public function isForcedUnmatched(): bool
+	{
+		return $this->forceType !== null;
 	}
 
 	public function inOptionalQuantification(): bool

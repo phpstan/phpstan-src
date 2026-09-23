@@ -2374,11 +2374,12 @@ class NodeScopeResolver
 						// map entry not at all, so it holds only when the written-back type
 						// fits inside it. preg_match() with PREG_OFFSET_CAPTURE writes arrays
 						// into a slot the signature map declares as string[].
-						$byRefNativeType = $currentParameter instanceof ExtendedParameterReflection
-							? $currentParameter->getNativeType()
-							: $byRefType;
-						if (!$byRefNativeType->isSuperTypeOf($byRefType)->yes()) {
-							$byRefNativeType = new MixedType();
+						$byRefNativeType = $byRefType;
+						if ($currentParameter instanceof ExtendedParameterReflection) {
+							$byRefNativeType = $currentParameter->getNativeType();
+							if (!$byRefNativeType->isSuperTypeOf($byRefType)->yes()) {
+								$byRefNativeType = new MixedType();
+							}
 						}
 
 						$scope = $this->processVirtualAssign(

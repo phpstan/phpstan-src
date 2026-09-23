@@ -177,15 +177,25 @@ class ConstantStringType extends StringType implements ConstantScalarType
 			// Do not use TemplateType's isSuperTypeOf handling directly because it takes ObjectType
 			// uncertainty into account.
 			if ($genericType instanceof TemplateType) {
-				$isSuperType = $genericType->getBound()->isSuperTypeOf($objectType);
-			} else {
-				$isSuperType = $genericType->isSuperTypeOf($objectType);
+				$genericType = $genericType->getBound();
 			}
+			$isSuperType = $genericType->isSuperTypeOf($objectType);
 
 			// Explicitly handle the uncertainty for Yes & Maybe.
 			if ($isSuperType->yes()) {
 				return IsSuperTypeOfResult::createMaybe();
 			}
+
+			// The class itself might only be a maybe-supertype because of its type arguments (X<int> vs. X).
+			if ($isSuperType->maybe()) {
+				$lowerValue = strtolower($this->value);
+				foreach ($genericType->getObjectClassNames() as $className) {
+					if (strtolower($className) === $lowerValue) {
+						return IsSuperTypeOfResult::createMaybe();
+					}
+				}
+			}
+
 			return IsSuperTypeOfResult::createNo();
 		}
 		if ($type instanceof ClassStringType) {

@@ -286,20 +286,35 @@ public:
 			 * because it takes ObjectType uncertainty into account. */
 			bool isTemplate;
 			if (UNEXPECTED(!pt_type_instanceof(genericType.raw(), PT_CLASS_TEMPLATE_TYPE, isTemplate))) return zv::Val();
-			zv::Val isSuperType;
 			if (isTemplate) {
-				zv::Val bound = pt_type_call(Z_OBJ_P(genericType.raw()), PT_LC("getbound"), 0, NULL);
-				if (UNEXPECTED(bound.isUndef())) return zv::Val();
-				isSuperType = pt_type_op(Z_OBJ_P(bound.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, objectType);
-			} else {
-				isSuperType = pt_type_op(Z_OBJ_P(genericType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, objectType);
+				genericType = pt_type_call(Z_OBJ_P(genericType.raw()), PT_LC("getbound"), 0, NULL);
+				if (UNEXPECTED(genericType.isUndef())) return zv::Val();
 			}
+			zv::Val isSuperType = pt_type_op(Z_OBJ_P(genericType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, objectType);
 			if (UNEXPECTED(isSuperType.isUndef())) return zv::Val();
 			zend_long verdict = pt_type_result_trinary(isSuperType.raw());
 			if (UNEXPECTED(verdict < 0)) return zv::Val();
 
 			/* Explicitly handle the uncertainty for Yes & Maybe. */
 			if (verdict == PT_TRI_YES) return pt_type_is_super_type_of_result(PT_TRI_MAYBE);
+
+			/* The class itself might only be a maybe-supertype because of
+			 * its type arguments (X<int> vs. X). */
+			if (verdict == PT_TRI_MAYBE) {
+				zend_string *v = value();
+				if (UNEXPECTED(v == NULL)) return zv::Val();
+				zv::Val classNames = pt_type_op(Z_OBJ_P(genericType.raw()), PT_OP_GET_OBJECT_CLASS_NAMES, 0, NULL);
+				if (UNEXPECTED(classNames.isUndef())) return zv::Val();
+				if (zv::Ref(classNames.raw()).isArray()) {
+					for (zv::ArrayEntry entry : zv::ArrRef(classNames.raw())) {
+						zval *className = entry.value().raw();
+						if (Z_TYPE_P(className) == IS_STRING && zend_string_equals_ci(Z_STR_P(className), v)) {
+							return pt_type_is_super_type_of_result(PT_TRI_MAYBE);
+						}
+					}
+				}
+			}
+
 			return pt_type_is_super_type_of_result(PT_TRI_NO);
 		}
 		if (instanceof_function(typeCe, pt_ce_class_string_type)) {

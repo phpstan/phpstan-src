@@ -1365,13 +1365,7 @@ private:
 					zv::Str slotName = offsetKey(view.offset.raw());
 					selectedKeys = emptyArray();
 					HashTable *keys = innerTableByKey(keysBySlot, slotName.get());
-					zval keysValue;
-					if (keys != NULL) {
-						ZVAL_ARR(&keysValue, keys);
-						Z_ADDREF(keysValue);
-					} else {
-						ZVAL_EMPTY_ARRAY(&keysValue);
-					}
+					zval keysValue = (keys != NULL ? zv::Arr::copyOfTable(keys) : zv::Arr::empty()).take();
 					SEPARATE_ARRAY(selectedKeys.raw());
 					zend_hash_update(Z_ARRVAL_P(selectedKeys.raw()), slotName.get(), &keysValue);
 				} else {

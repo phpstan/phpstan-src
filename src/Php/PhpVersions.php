@@ -228,6 +228,11 @@ final class PhpVersions
 		return IntegerRangeType::fromInterval(80000, null)->isSuperTypeOf($this->phpVersions)->result;
 	}
 
+	public function isZeroValidCodePointInMbSubstituteCharacter(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80000, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
 	public function isNumericStringValidArgInMbSubstituteCharacter(): TrinaryLogic
 	{
 		return IntegerRangeType::fromInterval(null, 79999)->isSuperTypeOf($this->phpVersions)->result;

@@ -5,7 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
+use PHPStan\Php\PhpVersions;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -23,10 +23,6 @@ use function strtolower;
 final class MbSubstituteCharacterDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
-	public function __construct(private PhpVersion $phpVersion)
-	{
-	}
-
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
 		return $functionReflection->getName() === 'mb_substitute_character';
@@ -34,24 +30,19 @@ final class MbSubstituteCharacterDynamicReturnTypeExtension implements DynamicFu
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
-		$minCodePoint = $this->phpVersion->getVersionId() < 80000 ? 1 : 0;
-		$maxCodePoint = $this->phpVersion->supportsAllUnicodeScalarCodePointsInMbSubstituteCharacter() ? 0x10FFFF : 0xFFFE;
-		$ranges = [];
+		$phpVersion = $scope->getPhpVersion();
 
-		if ($this->phpVersion->supportsAllUnicodeScalarCodePointsInMbSubstituteCharacter()) {
-			// Surrogates aren't valid in PHP 7.2+
-			$ranges[] = IntegerRangeType::fromInterval($minCodePoint, 0xD7FF);
-			$ranges[] = IntegerRangeType::fromInterval(0xE000, $maxCodePoint);
-		} else {
-			$ranges[] = IntegerRangeType::fromInterval($minCodePoint, $maxCodePoint);
-		}
+		// valid code points on every analysed PHP version
+		$validCodePoints = $this->createCodePointsType($phpVersion, true);
+		// valid code points on at least one analysed PHP version
+		$possibleCodePoints = $this->createCodePointsType($phpVersion, false);
 
 		if (!isset($functionCall->getArgs()[0])) {
 			return TypeCombinator::union(
 				new ConstantStringType('none'),
 				new ConstantStringType('long'),
 				new ConstantStringType('entity'),
-				...$ranges,
+				$possibleCodePoints,
 			);
 		}
 
@@ -61,7 +52,7 @@ final class MbSubstituteCharacterDynamicReturnTypeExtension implements DynamicFu
 		$isInteger = $argType->isInteger();
 
 		if ($isString->no() && $isNull->no() && $isInteger->no()) {
-			if ($this->phpVersion->throwsTypeErrorForInternalFunctions()) {
+			if ($phpVersion->throwsTypeErrorForInternalFunctions()->yes()) {
 				return new NeverType();
 			}
 
@@ -69,20 +60,12 @@ final class MbSubstituteCharacterDynamicReturnTypeExtension implements DynamicFu
 		}
 
 		if ($isInteger->yes()) {
-			$invalidRanges = [];
-
-			foreach ($ranges as $range) {
-				$isInRange = $range->isSuperTypeOf($argType);
-
-				if ($isInRange->yes()) {
-					return new ConstantBooleanType(true);
-				}
-
-				$invalidRanges[] = $isInRange->no();
+			if ($validCodePoints->isSuperTypeOf($argType)->yes()) {
+				return new ConstantBooleanType(true);
 			}
 
-			if ($argType instanceof ConstantIntegerType || !in_array(false, $invalidRanges, true)) {
-				if ($this->phpVersion->throwsValueErrorForInternalFunctions()) {
+			if ($possibleCodePoints->isSuperTypeOf($argType)->no()) {
+				if ($phpVersion->throwsValueErrorForInternalFunctions()->yes()) {
 					return new NeverType();
 				}
 
@@ -91,14 +74,14 @@ final class MbSubstituteCharacterDynamicReturnTypeExtension implements DynamicFu
 		} elseif ($isString->yes()) {
 			if ($argType->isNonEmptyString()->no()) {
 				// The empty string was a valid alias for "none" in PHP < 8.
-				if ($this->phpVersion->isEmptyStringValidAliasForNoneInMbSubstituteCharacter()) {
+				if (!$phpVersion->isEmptyStringValidAliasForNoneInMbSubstituteCharacter()->no()) {
 					return new ConstantBooleanType(true);
 				}
 
 				return new NeverType();
 			}
 
-			if (!$this->phpVersion->isNumericStringValidArgInMbSubstituteCharacter() && $argType->isNumericString()->yes()) {
+			if ($phpVersion->isNumericStringValidArgInMbSubstituteCharacter()->no() && $argType->isNumericString()->yes()) {
 				return new NeverType();
 			}
 
@@ -110,17 +93,18 @@ final class MbSubstituteCharacterDynamicReturnTypeExtension implements DynamicFu
 				}
 
 				if ($argType->isNumericString()->yes()) {
-					$codePoint = (int) $value;
-					$isValid = $codePoint >= $minCodePoint && $codePoint <= $maxCodePoint;
-
-					if ($this->phpVersion->supportsAllUnicodeScalarCodePointsInMbSubstituteCharacter()) {
-						$isValid = $isValid && ($codePoint < 0xD800 || $codePoint > 0xDFFF);
+					$codePoint = new ConstantIntegerType((int) $value);
+					if ($validCodePoints->isSuperTypeOf($codePoint)->yes()) {
+						return new ConstantBooleanType(true);
+					}
+					if ($possibleCodePoints->isSuperTypeOf($codePoint)->no()) {
+						return new ConstantBooleanType(false);
 					}
 
-					return new ConstantBooleanType($isValid);
+					return new BooleanType();
 				}
 
-				if ($this->phpVersion->throwsValueErrorForInternalFunctions()) {
+				if ($phpVersion->throwsValueErrorForInternalFunctions()->yes()) {
 					return new NeverType();
 				}
 
@@ -128,10 +112,39 @@ final class MbSubstituteCharacterDynamicReturnTypeExtension implements DynamicFu
 			}
 		} elseif ($isNull->yes()) {
 			// The $substitute_character arg is nullable in PHP 8+
-			return new ConstantBooleanType($this->phpVersion->isNullValidArgInMbSubstituteCharacter());
+			return $phpVersion->isNullValidArgInMbSubstituteCharacter()->toBooleanType();
 		}
 
 		return new BooleanType();
+	}
+
+	/**
+	 * @param bool $onAllVersions Whether the code points must be valid on every analysed PHP version, or on at least one
+	 */
+	private function createCodePointsType(PhpVersions $phpVersion, bool $onAllVersions): Type
+	{
+		$zeroValid = $phpVersion->isZeroValidCodePointInMbSubstituteCharacter();
+		$supportsAllUnicodeScalars = $phpVersion->supportsAllUnicodeScalarCodePointsInMbSubstituteCharacter();
+
+		if ($onAllVersions) {
+			$minCodePoint = $zeroValid->yes() ? 0 : 1;
+			$maxCodePoint = $supportsAllUnicodeScalars->yes() ? 0x10FFFF : 0xFFFE;
+			$excludeSurrogates = !$supportsAllUnicodeScalars->no();
+		} else {
+			$minCodePoint = $zeroValid->no() ? 1 : 0;
+			$maxCodePoint = $supportsAllUnicodeScalars->no() ? 0xFFFE : 0x10FFFF;
+			$excludeSurrogates = $supportsAllUnicodeScalars->yes();
+		}
+
+		if ($excludeSurrogates) {
+			// Surrogates aren't valid in PHP 7.2+
+			return TypeCombinator::union(
+				IntegerRangeType::fromInterval($minCodePoint, 0xD7FF),
+				IntegerRangeType::fromInterval(0xE000, $maxCodePoint),
+			);
+		}
+
+		return IntegerRangeType::fromInterval($minCodePoint, $maxCodePoint);
 	}
 
 }

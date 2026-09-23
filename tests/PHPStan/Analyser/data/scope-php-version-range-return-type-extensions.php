@@ -14,3 +14,25 @@ function validOperatorNeverReturnsNull(string $a, string $b, string $s): void
 	assertType('(bool|null)', version_compare($a, $b, 'nope'));
 	assertType('(bool|null)', version_compare($a, $b, $s));
 }
+
+function strSplitAndMbFunctions(string $s, int $i): void
+{
+	assertType("array{}|array{''}", str_split(''));
+	assertType('list<string>', str_split($s));
+	assertType('false', str_split($s, 0));
+	assertType('list<string>|false', str_split($s, $i));
+	assertType('false', mb_strlen($s, 'foo'));
+	assertType('false', mb_ord($s, 'foo'));
+}
+
+function mbSubstituteCharacter(): void
+{
+	assertType('bool', mb_substitute_character(0));
+	assertType('true', mb_substitute_character(1));
+	assertType('bool', mb_substitute_character(null));
+	assertType('true', mb_substitute_character(''));
+	assertType('bool', mb_substitute_character(new \stdClass()));
+	assertType('false', mb_substitute_character('foo'));
+	assertType('false', mb_substitute_character(0x110000));
+	assertType("'entity'|'long'|'none'|int<0, 55295>|int<57344, 1114111>", mb_substitute_character());
+}

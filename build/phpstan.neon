@@ -207,6 +207,7 @@ rules:
 	- PHPStan\Build\SkipTestsWithRequiresPhpAttributeRule
 	- PHPStan\Build\MemoizationPropertyRule
 	- PHPStan\Build\OrChainIdenticalComparisonToInArrayRule
+	- PHPStan\Build\NoPhpVersionInjectionInScopeAwareExtensionRule
 
 services:
 	-

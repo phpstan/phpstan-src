@@ -5,10 +5,10 @@ namespace PHPStan\Reflection\BetterReflection\Type;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionType;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
@@ -22,7 +22,7 @@ final class AdapterReflectionEnumCaseDynamicReturnTypeExtension implements Dynam
 	/**
 	 * @param class-string $class
 	 */
-	public function __construct(private PhpVersion $phpVersion, private string $class)
+	public function __construct(private string $class)
 	{
 	}
 
@@ -41,7 +41,7 @@ final class AdapterReflectionEnumCaseDynamicReturnTypeExtension implements Dynam
 
 	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): ?Type
 	{
-		if ($this->phpVersion->getVersionId() >= 80000) {
+		if (IntegerRangeType::fromInterval(80000, null)->isSuperTypeOf($scope->getPhpVersion()->getType())->yes()) {
 			return null;
 		}
 

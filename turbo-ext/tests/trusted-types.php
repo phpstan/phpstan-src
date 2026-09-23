@@ -135,13 +135,25 @@ $ok = check('trusted', TRUSTED_EXPECTED, runCases('TrustedTypesFixture\Trusted')
 $fileCacheDir = sys_get_temp_dir() . '/phpstan-trusted-types-file-cache-' . getmypid();
 @mkdir($fileCacheDir);
 $extension = getenv('TURBO_DLL') ?: dirname(__DIR__) . '/phpstan_turbo.so';
-$armedWithFileCache = exec(sprintf(
-	'%s -d extension=%s -d opcache.enable_cli=1 -d opcache.file_cache=%s -r %s',
-	escapeshellarg(PHP_BINARY),
-	escapeshellarg($extension),
-	escapeshellarg($fileCacheDir),
-	escapeshellarg('var_export(PHPStanTurbo\\Runtime::trustTypesUnder(' . var_export($trustedPrefix, true) . '));'),
-));
+// The file cache path is quoted for the ini parser: the CLI quotes a -d value
+// itself only when it does not start with a letter or digit, and on Windows
+// the temp dir is an 8.3 path whose ~ is an operator in unquoted ini syntax.
+// The quotes are why this is an argument list rather than a shell command:
+// escapeshellarg() on Windows replaces double quotes with spaces.
+$process = proc_open([
+	PHP_BINARY,
+	'-d', 'extension=' . $extension,
+	'-d', 'opcache.enable_cli=1',
+	'-d', 'opcache.file_cache="' . $fileCacheDir . '"',
+	'-r', 'var_export(PHPStanTurbo\\Runtime::trustTypesUnder(' . var_export($trustedPrefix, true) . '));',
+], [1 => ['pipe', 'w']], $pipes);
+if ($process === false) {
+	fwrite(STDERR, "proc_open failed\n");
+	exit(1);
+}
+$armedWithFileCache = trim(stream_get_contents($pipes[1]));
+fclose($pipes[1]);
+proc_close($process);
 if ($armedWithFileCache !== 'false') {
 	fwrite(STDERR, sprintf("FAIL: trustTypesUnder() must refuse with opcache.file_cache set, got %s\n", var_export($armedWithFileCache, true)));
 	$ok = false;

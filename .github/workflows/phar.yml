@@ -311,6 +311,11 @@ jobs:
         run: php -d extension="$RUNNER_TEMP/turbo-ext/modules/phpstan_turbo.so" turbo-ext/tests/exit-immediately.php
 
       - name: "Trusted types (the optimizer pass drops type checks under the prefix only)"
+        # the opcache.file_cache child process locates the extension through
+        # TURBO_DLL — its default, turbo-ext/phpstan_turbo.so, only exists in
+        # Makefile builds
+        env:
+          TURBO_DLL: ${{ runner.temp }}/turbo-ext/modules/phpstan_turbo.so
         run: php -d extension="$RUNNER_TEMP/turbo-ext/modules/phpstan_turbo.so" -d opcache.enable_cli=1 turbo-ext/tests/trusted-types.php
 
       - name: "Signature parity (reflect native classes against the PHP twins)"

@@ -4,7 +4,6 @@ namespace PHPStan\Type\Php;
 
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
@@ -20,12 +19,6 @@ use PHPStan\Type\TypeCombinator;
 #[AutowiredService]
 final class ArrayColumnHelper
 {
-
-	public function __construct(
-		private PhpVersion $phpVersion,
-	)
-	{
-	}
 
 	/**
 	 * @return array{Type, TrinaryLogic}
@@ -74,7 +67,7 @@ final class ArrayColumnHelper
 		}
 
 		$returnKeyType = $this->getReturnIndexType($arrayType, $indexType, $scope);
-		$returnType = new ArrayType($this->castToArrayKeyType($returnKeyType), $returnValueType);
+		$returnType = new ArrayType($this->castToArrayKeyType($returnKeyType, $scope), $returnValueType);
 
 		if ($iterableAtLeastOnce->yes()) {
 			$returnType = TypeCombinator::intersect($returnType, new NonEmptyArrayType());
@@ -113,7 +106,7 @@ final class ArrayColumnHelper
 			}
 
 			if ($keyType !== null) {
-				$keyType = $this->castToArrayKeyType($keyType);
+				$keyType = $this->castToArrayKeyType($keyType, $scope);
 			}
 			$builder->setOffsetValueType($keyType, $valueType, $arrayType->isOptionalKey($i));
 		}
@@ -131,9 +124,9 @@ final class ArrayColumnHelper
 						if ($unsealedKeyFromIndex instanceof NeverType) {
 							$unsealedKey = $unsealedTypes[0];
 						} elseif ($unsealedKeyCertainty->yes()) {
-							$unsealedKey = $this->castToArrayKeyType($unsealedKeyFromIndex);
+							$unsealedKey = $this->castToArrayKeyType($unsealedKeyFromIndex, $scope);
 						} else {
-							$unsealedKey = $this->castToArrayKeyType(TypeCombinator::union($unsealedKeyFromIndex, new IntegerType()));
+							$unsealedKey = $this->castToArrayKeyType(TypeCombinator::union($unsealedKeyFromIndex, new IntegerType()), $scope);
 						}
 					} else {
 						// `null` indexType keeps integer-keyed list semantics —
@@ -221,18 +214,23 @@ final class ArrayColumnHelper
 		return [TypeCombinator::union(...$returnTypes), $certainty];
 	}
 
-	private function castToArrayKeyType(Type $type): Type
+	private function castToArrayKeyType(Type $type, Scope $scope): Type
 	{
+		$throwsTypeError = $scope->getPhpVersion()->throwsTypeErrorForInternalFunctions();
 		$isArray = $type->isArray();
 		if ($isArray->yes()) {
-			return $this->phpVersion->throwsTypeErrorForInternalFunctions() ? new NeverType() : new IntegerType();
+			if ($throwsTypeError->yes()) {
+				return new NeverType();
+			}
+
+			return new IntegerType();
 		}
 		if ($isArray->no()) {
 			return $type->toArrayKey();
 		}
 		$withoutArrayType = TypeCombinator::remove($type, new ArrayType(new MixedType(), new MixedType()));
 		$keyType = $withoutArrayType->toArrayKey();
-		if ($this->phpVersion->throwsTypeErrorForInternalFunctions()) {
+		if ($throwsTypeError->yes()) {
 			return $keyType;
 		}
 		return TypeCombinator::union($keyType, new IntegerType());

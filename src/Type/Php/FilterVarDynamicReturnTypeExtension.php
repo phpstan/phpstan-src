@@ -35,7 +35,7 @@ final class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturn
 		$filterType = isset($args[1]) ? $scope->getType($args[1]->value) : null;
 		$flagsType = isset($args[2]) ? $scope->getType($args[2]->value) : null;
 
-		return $this->filterFunctionReturnTypeHelper->getType($inputType, $filterType, $flagsType);
+		return $this->filterFunctionReturnTypeHelper->getType($inputType, $filterType, $flagsType, $scope->getPhpVersion());
 	}
 
 }

@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
@@ -86,10 +85,6 @@ final class HashFunctionsReturnTypeExtension implements DynamicFunctionReturnTyp
 	/** @var array<int, non-empty-string>|null */
 	private ?array $hashAlgorithms = null;
 
-	public function __construct(private PhpVersion $phpVersion)
-	{
-	}
-
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
 		$name = strtolower($functionReflection->getName());
@@ -125,10 +120,11 @@ final class HashFunctionsReturnTypeExtension implements DynamicFunctionReturnTyp
 		}
 		$stringReturnType = new IntersectionType($stringTypes);
 
+		$throwsValueError = $scope->getPhpVersion()->throwsValueErrorForInternalFunctions();
 		$algorithmType = $scope->getType($args[0]->value);
 		$constantAlgorithmTypes = $algorithmType->getConstantStrings();
 		if (count($constantAlgorithmTypes) === 0) {
-			if ($functionData['possiblyFalse'] || !$this->phpVersion->throwsValueErrorForInternalFunctions()) {
+			if ($functionData['possiblyFalse'] || !$throwsValueError->yes()) {
 				return new BenevolentUnionType([$stringReturnType, new ConstantBooleanType(false)]);
 			}
 
@@ -137,7 +133,11 @@ final class HashFunctionsReturnTypeExtension implements DynamicFunctionReturnTyp
 
 		$neverType = new NeverType();
 		$falseType = new ConstantBooleanType(false);
-		$invalidAlgorithmType = $this->phpVersion->throwsValueErrorForInternalFunctions() ? $neverType : $falseType;
+		if ($throwsValueError->yes()) {
+			$invalidAlgorithmType = $neverType;
+		} else {
+			$invalidAlgorithmType = $falseType;
+		}
 
 		$returnTypes = array_map(
 			function (ConstantStringType $type) use ($functionData, $stringReturnType, $invalidAlgorithmType) {

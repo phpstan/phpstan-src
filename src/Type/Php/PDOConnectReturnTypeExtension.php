@@ -22,7 +22,9 @@ use function str_starts_with;
 final class PDOConnectReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
 {
 
-	public function __construct(private PhpVersion $phpVersion)
+	public function __construct(
+		private PhpVersion $phpVersion,
+	)
 	{
 	}
 
@@ -33,7 +35,8 @@ final class PDOConnectReturnTypeExtension implements DynamicStaticMethodReturnTy
 
 	public function isStaticMethodSupported(MethodReflection $methodReflection): bool
 	{
-		return $this->phpVersion->hasPDOSubclasses() && $methodReflection->getName() === 'connect';
+		return $this->phpVersion->hasPDOSubclasses()
+			&& $methodReflection->getName() === 'connect';
 	}
 
 	public function getTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, Scope $scope): ?Type

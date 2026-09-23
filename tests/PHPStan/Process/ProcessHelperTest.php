@@ -9,9 +9,12 @@ use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
+use function array_map;
 use function escapeshellarg;
+use function implode;
 use function preg_match;
 use function sprintf;
+use const PHP_BINARY;
 use const PHP_OS_FAMILY;
 
 final class ProcessHelperTest extends TestCase
@@ -38,6 +41,21 @@ final class ProcessHelperTest extends TestCase
 	public function testResolveWorkerIniEntries(array $opcacheArgs, string $osFamily, array $expected): void
 	{
 		$this->assertSame($expected, ProcessHelper::resolveWorkerIniEntries($opcacheArgs, $osFamily, 4242, 7));
+	}
+
+	public function testWorkerCommandRepeatsThePhpConfigurationOfTheSpawningProcess(): void
+	{
+		// nothing of a command line is inherited by a child process, so the
+		// php.ini situation and the Xdebug mode of this process have to be
+		// spelled out again - https://github.com/phpstan/phpstan/issues/15189
+		$command = ProcessHelper::getWorkerCommand('bin/phpstan', 'worker', null, ['--port', '1234'], $this->createInput());
+
+		$expectedPrefix = implode(' ', array_map(
+			static fn (string $arg): string => escapeshellarg($arg),
+			[PHP_BINARY, ...InheritedPhpConfig::getArgs()],
+		));
+
+		$this->assertStringStartsWith($expectedPrefix . ' ', $command);
 	}
 
 	public function testWorkerCommandCarriesTheIniEntries(): void

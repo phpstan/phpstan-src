@@ -12,9 +12,7 @@ use function getmypid;
 use function implode;
 use function ini_get;
 use function is_bool;
-use function php_ini_loaded_file;
 use function sprintf;
-use function sys_get_temp_dir;
 use const PHP_BINARY;
 use const PHP_OS_FAMILY;
 
@@ -23,11 +21,11 @@ use const PHP_OS_FAMILY;
  * and SpawnedProcessPromise).
  *
  * Besides the worker command and its options it spells out the PHP
- * configuration the worker runs with. The php.ini is inherited through
- * `-c`, but command-line `-d` entries are not, so whatever the spawning
- * process got that way - the turbo extension and the OPcache setup of the
- * TurboProcessRestarter restart - is repeated here; see
- * resolveWorkerIniEntries() for the set and the reasoning.
+ * configuration the worker runs with. Nothing of a command line is inherited
+ * by a child process, so whatever the spawning process got that way is
+ * repeated here: the php.ini situation it runs with (InheritedPhpConfig), and
+ * the turbo extension and the OPcache setup of the TurboProcessRestarter
+ * restart - see resolveWorkerIniEntries() for that set and the reasoning.
  */
 final class ProcessHelper
 {
@@ -46,15 +44,10 @@ final class ProcessHelper
 		InputInterface $input,
 	): string
 	{
-		$phpIni = php_ini_loaded_file();
-		$phpCmd = $phpIni === false ? escapeshellarg(PHP_BINARY) : sprintf('%s -c %s', escapeshellarg(PHP_BINARY), escapeshellarg($phpIni));
-
-		$processCommandArray = [
-			$phpCmd,
-			'-d',
-			// quote value so PHP will parse it as a string when the path contains a bitwise operator like ~
-			'sys_temp_dir=' . escapeshellarg("'" . sys_get_temp_dir() . "'"),
-		];
+		$processCommandArray = [escapeshellarg(PHP_BINARY)];
+		foreach (InheritedPhpConfig::getArgs() as $inheritedArg) {
+			$processCommandArray[] = escapeshellarg($inheritedArg);
+		}
 
 		if ($input->getOption('memory-limit') === null) {
 			$processCommandArray[] = '-d';

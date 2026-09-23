@@ -114,6 +114,7 @@ final class CallMethodsRule implements Rule
 			'Constant %s is not allowed for %s of method ' . $messagesMethodName . '.',
 			'Constants %s cannot be combined for %s of method ' . $messagesMethodName . '.',
 			'Combining constants with | is not allowed for %s of method ' . $messagesMethodName . '.',
+			'Integer literal %s is not allowed for %s of method ' . $messagesMethodName . '.',
 			!$methodReflection->isPrivate() && !$declaringClass->isFinal() ? [
 				$declaringClass->getName(),
 				$methodReflection->getName(),

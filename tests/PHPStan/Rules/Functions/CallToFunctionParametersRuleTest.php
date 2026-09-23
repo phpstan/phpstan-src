@@ -2913,6 +2913,23 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	}
 
 	#[RequiresPhp('>= 8.0.0')]
+	public function testBug14727(): void
+	{
+		$tip = 'Use constants instead.';
+		$this->analyse([__DIR__ . '/data/bug-14727.php'], [
+			['Integer literal 1 is not allowed for parameter #2 $flags of function json_encode.', 13, $tip],
+			['Integer literal 1 is not allowed for parameter #2 $flags of function json_encode.', 14, $tip],
+			['Integer literal 2 is not allowed for parameter #2 $flags of function json_encode.', 14, $tip],
+			['Integer literal 2 is not allowed for parameter #2 $flags of function json_encode.', 15, $tip],
+			['Integer literal 2 is not allowed for parameter #2 $flags of function json_encode.', 16, $tip],
+			['Integer literal 64 is not allowed for parameter #2 $flags of function json_encode.', 20, $tip],
+			['Integer literal 128 is not allowed for parameter $flags of function json_encode.', 21, $tip],
+			['Integer literal 2 is not allowed for parameter #2 $flags of function array_unique.', 22, $tip],
+			['Integer literal 4194304 is not allowed for parameter #4 $flags of function json_decode.', 24, $tip],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
 	public function testConstantParameterCheck(): void
 	{
 		$this->analyse([__DIR__ . '/data/constant-parameter-check.php'], [
@@ -3226,6 +3243,21 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	public function testRoundModePhp84(): void
 	{
 		$this->analyse([__DIR__ . '/data/round-mode-php84.php'], [
+			[
+				'Integer literal 5 is not allowed for parameter #3 $mode of function round.',
+				8,
+				'Use constants instead.',
+			],
+			[
+				'Integer literal 8 is not allowed for parameter #3 $mode of function round.',
+				9,
+				'Use constants instead.',
+			],
+			[
+				'Integer literal 9 is not allowed for parameter #3 $mode of function round.',
+				11,
+				'Use constants instead.',
+			],
 			[
 				'Parameter #3 $mode of function round expects int<1, 8>|RoundingMode, 9 given.',
 				11,

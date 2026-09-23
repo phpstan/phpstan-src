@@ -373,6 +373,11 @@ class CallCallablesRuleTest extends RuleTestCase
 				'Constant SORT_REGULAR is not allowed for parameter #2 $flags of closure.',
 				10,
 			],
+			[
+				'Integer literal 128 is not allowed for parameter #2 $flags of closure.',
+				13,
+				'Use constants instead.',
+			],
 		]);
 	}
 

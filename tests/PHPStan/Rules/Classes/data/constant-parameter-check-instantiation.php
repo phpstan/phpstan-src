@@ -16,3 +16,6 @@ new \IntlDateFormatter('en_US', \IntlDateFormatter::FULL, \IntlDateFormatter::SH
 
 // IntlDateFormatter::__construct - wrong constant for $dateType
 new \IntlDateFormatter('en_US', \IntlDateFormatter::GREGORIAN, \IntlDateFormatter::SHORT);
+
+// integer literal instead of constant
+new \finfo(16 | FILEINFO_MIME_ENCODING);

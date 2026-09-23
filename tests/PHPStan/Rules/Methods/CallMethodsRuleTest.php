@@ -3329,6 +3329,16 @@ class CallMethodsRuleTest extends RuleTestCase
 				17,
 			],
 			[
+				'Integer literal 5 is not allowed for parameter $mode of method PDOStatement::setFetchMode().',
+				20,
+				'Use constants instead.',
+			],
+			[
+				'Integer literal 5 is not allowed for parameter $mode of method PDOStatement::setFetchMode().',
+				22,
+				'Use constants instead.',
+			],
+			[
 				'Unknown parameter $className in call to method PDOStatement::setFetchMode().',
 				22,
 			],
@@ -4178,6 +4188,11 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Constants PDO::FETCH_ASSOC, PDO::FETCH_NUM cannot be combined for parameter $mode of method PDOStatement::setFetchMode().',
 				31,
+			],
+			[
+				'Integer literal 16 is not allowed for parameter #2 $flags of method finfo::file().',
+				34,
+				'Use constants instead.',
 			],
 		]);
 	}

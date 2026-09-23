@@ -123,6 +123,7 @@ final class CallStaticMethodsRule implements Rule
 			'Constant %s is not allowed for %s of ' . $lowercasedMethodName . '.',
 			'Constants %s cannot be combined for %s of ' . $lowercasedMethodName . '.',
 			'Combining constants with | is not allowed for %s of ' . $lowercasedMethodName . '.',
+			'Integer literal %s is not allowed for %s of ' . $lowercasedMethodName . '.',
 			null,
 		));
 

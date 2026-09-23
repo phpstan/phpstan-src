@@ -144,6 +144,7 @@ final class CallCallablesRule implements Rule
 				'Constant %s is not allowed for %s of ' . $callableDescription . '.',
 				'Constants %s cannot be combined for %s of ' . $callableDescription . '.',
 				'Combining constants with | is not allowed for %s of ' . $callableDescription . '.',
+				'Integer literal %s is not allowed for %s of ' . $callableDescription . '.',
 				null,
 			),
 		);

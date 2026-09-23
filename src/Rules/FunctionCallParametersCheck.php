@@ -98,6 +98,7 @@ final class FunctionCallParametersCheck
 		string $invalidConstantMessage,
 		string $exclusiveConstantsMessage,
 		string $bitmaskNotAllowedMessage,
+		string $integerLiteralMessage,
 		?array $renamedNamedArgumentParameterData,
 	): array
 	{
@@ -453,6 +454,20 @@ final class FunctionCallParametersCheck
 					$parameter instanceof ExtendedParameterReflection
 					&& $scope->getPhpVersion()->supportsNamedArguments()->yes()
 				) {
+					if ($parameter->getAllowedConstants() !== null) {
+						foreach ($this->findNonZeroIntegerLiterals($argumentValue) as $integerLiteral) {
+							$errors[] = RuleErrorBuilder::message(sprintf(
+								$integerLiteralMessage,
+								(string) $integerLiteral->value,
+								lcfirst($this->describeParameter($parameter, $argumentName ?? $i + 1)),
+							))
+								->identifier('argument.integerLiteral')
+								->line($argumentLine)
+								->tip('Use constants instead.')
+								->build();
+						}
+					}
+
 					$constantReflections = $this->resolveConstantReflections($argumentValue, $scope);
 					if ($constantReflections !== null) {
 						if ($parameter->getAllowedConstants() !== null) {
@@ -858,6 +873,29 @@ final class FunctionCallParametersCheck
 		}
 
 		return null;
+	}
+
+	/**
+	 * @return list<Node\Scalar\Int_>
+	 */
+	private function findNonZeroIntegerLiterals(Expr $expr): array
+	{
+		if ($expr instanceof Node\Scalar\Int_) {
+			if ($expr->value === 0) {
+				return [];
+			}
+
+			return [$expr];
+		}
+
+		if ($expr instanceof Expr\BinaryOp\BitwiseOr) {
+			return [
+				...$this->findNonZeroIntegerLiterals($expr->left),
+				...$this->findNonZeroIntegerLiterals($expr->right),
+			];
+		}
+
+		return [];
 	}
 
 	private function callReturnsByReference(Expr $expr, Scope $scope): bool

@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -23,10 +22,6 @@ use function strtolower;
 final class MbSubstituteCharacterDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
-	public function __construct(private PhpVersion $phpVersion)
-	{
-	}
-
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
 		return $functionReflection->getName() === 'mb_substitute_character';
@@ -34,11 +29,12 @@ final class MbSubstituteCharacterDynamicReturnTypeExtension implements DynamicFu
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
-		$minCodePoint = $this->phpVersion->getVersionId() < 80000 ? 1 : 0;
-		$maxCodePoint = $this->phpVersion->supportsAllUnicodeScalarCodePointsInMbSubstituteCharacter() ? 0x10FFFF : 0xFFFE;
+		$phpVersion = $scope->getPhpVersion();
+		$minCodePoint = $phpVersion->isZeroValidCodePointInMbSubstituteCharacter()->yes() ? 0 : 1;
+		$maxCodePoint = $phpVersion->supportsAllUnicodeScalarCodePointsInMbSubstituteCharacter()->yes() ? 0x10FFFF : 0xFFFE;
 		$ranges = [];
 
-		if ($this->phpVersion->supportsAllUnicodeScalarCodePointsInMbSubstituteCharacter()) {
+		if ($phpVersion->supportsAllUnicodeScalarCodePointsInMbSubstituteCharacter()->yes()) {
 			// Surrogates aren't valid in PHP 7.2+
 			$ranges[] = IntegerRangeType::fromInterval($minCodePoint, 0xD7FF);
 			$ranges[] = IntegerRangeType::fromInterval(0xE000, $maxCodePoint);
@@ -61,7 +57,7 @@ final class MbSubstituteCharacterDynamicReturnTypeExtension implements DynamicFu
 		$isInteger = $argType->isInteger();
 
 		if ($isString->no() && $isNull->no() && $isInteger->no()) {
-			if ($this->phpVersion->throwsTypeErrorForInternalFunctions()) {
+			if ($phpVersion->throwsTypeErrorForInternalFunctions()->yes()) {
 				return new NeverType();
 			}
 
@@ -82,7 +78,7 @@ final class MbSubstituteCharacterDynamicReturnTypeExtension implements DynamicFu
 			}
 
 			if ($argType instanceof ConstantIntegerType || !in_array(false, $invalidRanges, true)) {
-				if ($this->phpVersion->throwsValueErrorForInternalFunctions()) {
+				if ($phpVersion->throwsValueErrorForInternalFunctions()->yes()) {
 					return new NeverType();
 				}
 
@@ -91,14 +87,14 @@ final class MbSubstituteCharacterDynamicReturnTypeExtension implements DynamicFu
 		} elseif ($isString->yes()) {
 			if ($argType->isNonEmptyString()->no()) {
 				// The empty string was a valid alias for "none" in PHP < 8.
-				if ($this->phpVersion->isEmptyStringValidAliasForNoneInMbSubstituteCharacter()) {
+				if (!$phpVersion->isEmptyStringValidAliasForNoneInMbSubstituteCharacter()->no()) {
 					return new ConstantBooleanType(true);
 				}
 
 				return new NeverType();
 			}
 
-			if (!$this->phpVersion->isNumericStringValidArgInMbSubstituteCharacter() && $argType->isNumericString()->yes()) {
+			if ($phpVersion->isNumericStringValidArgInMbSubstituteCharacter()->no() && $argType->isNumericString()->yes()) {
 				return new NeverType();
 			}
 
@@ -113,14 +109,14 @@ final class MbSubstituteCharacterDynamicReturnTypeExtension implements DynamicFu
 					$codePoint = (int) $value;
 					$isValid = $codePoint >= $minCodePoint && $codePoint <= $maxCodePoint;
 
-					if ($this->phpVersion->supportsAllUnicodeScalarCodePointsInMbSubstituteCharacter()) {
+					if ($phpVersion->supportsAllUnicodeScalarCodePointsInMbSubstituteCharacter()->yes()) {
 						$isValid = $isValid && ($codePoint < 0xD800 || $codePoint > 0xDFFF);
 					}
 
 					return new ConstantBooleanType($isValid);
 				}
 
-				if ($this->phpVersion->throwsValueErrorForInternalFunctions()) {
+				if ($phpVersion->throwsValueErrorForInternalFunctions()->yes()) {
 					return new NeverType();
 				}
 
@@ -128,7 +124,7 @@ final class MbSubstituteCharacterDynamicReturnTypeExtension implements DynamicFu
 			}
 		} elseif ($isNull->yes()) {
 			// The $substitute_character arg is nullable in PHP 8+
-			return new ConstantBooleanType($this->phpVersion->isNullValidArgInMbSubstituteCharacter());
+			return $phpVersion->isNullValidArgInMbSubstituteCharacter()->toBooleanType();
 		}
 
 		return new BooleanType();

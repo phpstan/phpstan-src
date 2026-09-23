@@ -1543,6 +1543,12 @@ parameters:
 			path: src/Type/Php/MinMaxFunctionReturnTypeExtension.php
 
 		-
+			rawMessage: 'PHPStan\Type\Php\PDOConnectReturnTypeExtension implements PHPStan\Type\DynamicStaticMethodReturnTypeExtension and should not inject PHPStan\Php\PhpVersion via constructor parameter $phpVersion. Use Scope::getPhpVersion() instead.'
+			identifier: phpstan.phpVersionInjection
+			count: 1
+			path: src/Type/Php/PDOConnectReturnTypeExtension.php
+
+		-
 			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 2

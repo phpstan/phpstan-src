@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
@@ -40,10 +39,6 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 
 	use MbFunctionsReturnTypeExtensionTrait;
 
-	public function __construct(private PhpVersion $phpVersion)
-	{
-	}
-
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
 		return in_array($functionReflection->getName(), ['str_split', 'mb_str_split'], true);
@@ -56,6 +51,10 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 			return null;
 		}
 
+		$phpVersion = $scope->getPhpVersion();
+		$throwsValueError = $phpVersion->throwsValueErrorForInternalFunctions();
+		$returnsEmptyArray = $phpVersion->strSplitReturnsEmptyArray();
+
 		if (count($args) >= 2) {
 			$splitLengthType = $scope->getType($args[1]->value);
 		} else {
@@ -65,7 +64,7 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 		if ($splitLengthType instanceof ConstantIntegerType) {
 			$splitLength = $splitLengthType->getValue();
 			if ($splitLength < 1) {
-				return $this->phpVersion->throwsValueErrorForInternalFunctions() ? new NeverType() : new ConstantBooleanType(false);
+				return $throwsValueError->yes() ? new NeverType() : new ConstantBooleanType(false);
 			}
 		}
 
@@ -77,8 +76,8 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 
 				if (count($values) === 1) {
 					$encoding = $values[0];
-					if (!$this->isSupportedEncoding($encoding)) {
-						return $this->phpVersion->throwsValueErrorForInternalFunctions() ? new NeverType() : new ConstantBooleanType(false);
+					if (!$this->isSupportedEncoding($encoding, $scope->getPhpVersion())) {
+						return $throwsValueError->yes() ? new NeverType() : new ConstantBooleanType(false);
 					}
 				}
 			} else {
@@ -99,12 +98,18 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 
 					if ($encoding === null && $value === '') {
 						// Simulate the str_split call with the analysed PHP Version instead of the runtime one.
-						$items = $this->phpVersion->strSplitReturnsEmptyArray() ? [] : [''];
-					} else {
-						$items = $encoding === null
-							? str_split($value, $splitLength)
-							: @mb_str_split($value, $splitLength, $encoding);
+						if (!$returnsEmptyArray->no()) {
+							$results[] = self::createConstantArrayFrom([], $scope);
+						}
+						if (!$returnsEmptyArray->yes()) {
+							$results[] = self::createConstantArrayFrom([''], $scope);
+						}
+						continue;
 					}
+
+					$items = $encoding === null
+						? str_split($value, $splitLength)
+						: @mb_str_split($value, $splitLength, $encoding);
 
 					$results[] = self::createConstantArrayFrom($items, $scope);
 				}
@@ -115,7 +120,7 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 
 		$isInputNonEmptyString = $stringType->isNonEmptyString()->yes();
 
-		if ($isInputNonEmptyString || $this->phpVersion->strSplitReturnsEmptyArray()) {
+		if ($isInputNonEmptyString || $returnsEmptyArray->yes()) {
 			$returnValueType = new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()]);
 		} else {
 			$returnValueType = new StringType();
@@ -126,13 +131,13 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 			// Non-empty-string will return an array with at least an element
 			$isInputNonEmptyString
 			// str_split('', 1) returns [''] on old PHP version and [] on new ones
-			|| ($functionReflection->getName() === 'str_split' && !$this->phpVersion->strSplitReturnsEmptyArray())
+			|| ($functionReflection->getName() === 'str_split' && $returnsEmptyArray->no())
 		) {
 			$returnType = TypeCombinator::intersect($returnType, new NonEmptyArrayType());
 		}
 		if (
 			// Length parameter accepts int<1, max> or throws a ValueError/return false based on PHP Version.
-			!$this->phpVersion->throwsValueErrorForInternalFunctions()
+			!$throwsValueError->yes()
 			&& !IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($splitLengthType)->yes()
 		) {
 			$returnType = new UnionType([$returnType, new ConstantBooleanType(false)]);

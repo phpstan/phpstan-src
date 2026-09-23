@@ -9,7 +9,6 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClassConstant;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionNamedType;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -26,10 +25,6 @@ use function in_array;
 #[AutowiredService]
 final class AdapterReflectionEnumDynamicReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
-
-	public function __construct(private PhpVersion $phpVersion)
-	{
-	}
 
 	public function getClass(): string
 	{
@@ -52,7 +47,7 @@ final class AdapterReflectionEnumDynamicReturnTypeExtension implements DynamicMe
 
 	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): ?Type
 	{
-		if ($this->phpVersion->getVersionId() >= 80000) {
+		if ($scope->getPhpVersion()->hasCorrectReflectionEnumAdapterReturnTypes()->yes()) {
 			return null;
 		}
 

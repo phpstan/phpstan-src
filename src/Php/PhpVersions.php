@@ -228,6 +228,17 @@ final class PhpVersions
 		return IntegerRangeType::fromInterval(80000, null)->isSuperTypeOf($this->phpVersions)->result;
 	}
 
+	public function isZeroValidCodePointInMbSubstituteCharacter(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80000, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	/** On PHP 8.0+ the Reflection* classes extended by the BetterReflection enum adapters declare the correct return types. */
+	public function hasCorrectReflectionEnumAdapterReturnTypes(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80000, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
 	public function isNumericStringValidArgInMbSubstituteCharacter(): TrinaryLogic
 	{
 		return IntegerRangeType::fromInterval(null, 79999)->isSuperTypeOf($this->phpVersions)->result;

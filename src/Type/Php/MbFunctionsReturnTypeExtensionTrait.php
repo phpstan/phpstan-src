@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Php;
 
+use PHPStan\Php\PhpVersions;
 use PHPStan\ShouldNotHappenException;
 use function array_filter;
 use function array_map;
@@ -19,39 +20,39 @@ trait MbFunctionsReturnTypeExtensionTrait
 	/** @var string[]|null */
 	private ?array $supportedEncodings = null;
 
-	private function isSupportedEncoding(string $encoding): bool
+	private function isSupportedEncoding(string $encoding, PhpVersions $phpVersion): bool
 	{
-		return in_array(strtoupper($encoding), $this->getSupportedEncodings(), true);
+		return in_array(strtoupper($encoding), $this->getSupportedEncodings($phpVersion), true);
 	}
 
 	/** @return string[] */
-	private function getSupportedEncodings(): array
+	private function getSupportedEncodings(PhpVersions $phpVersion): array
 	{
-		if (!is_null($this->supportedEncodings)) {
-			return $this->supportedEncodings;
+		if (is_null($this->supportedEncodings)) {
+			$supportedEncodings = [];
+			if (function_exists('mb_list_encodings')) {
+				foreach (mb_list_encodings() as $encoding) {
+					$aliases = @mb_encoding_aliases($encoding);
+					if ($aliases === false) {
+						throw new ShouldNotHappenException();
+					}
+					$supportedEncodings = array_merge($supportedEncodings, $aliases, [$encoding]);
+				}
+			}
+			$this->supportedEncodings = array_map('strtoupper', $supportedEncodings);
 		}
 
-		$supportedEncodings = [];
-		if (function_exists('mb_list_encodings')) {
-			foreach (mb_list_encodings() as $encoding) {
-				$aliases = @mb_encoding_aliases($encoding);
-				if ($aliases === false) {
-					throw new ShouldNotHappenException();
-				}
-				$supportedEncodings = array_merge($supportedEncodings, $aliases, [$encoding]);
-			}
-		}
-		$this->supportedEncodings = array_map('strtoupper', $supportedEncodings);
+		$supportedEncodings = $this->supportedEncodings;
 
 		// PHP 7.3 and 7.4 claims 'pass' and its alias 'none' to be supported, but actually 'pass' was removed in 7.3
-		if (!$this->phpVersion->supportsPassNoneEncodings()) {
-			$this->supportedEncodings = array_filter(
-				$this->supportedEncodings,
+		if ($phpVersion->supportsPassNoneEncodings()->no()) {
+			$supportedEncodings = array_filter(
+				$supportedEncodings,
 				static fn (string $enc) => !in_array($enc, ['PASS', 'NONE'], true),
 			);
 		}
 
-		return $this->supportedEncodings;
+		return $supportedEncodings;
 	}
 
 }

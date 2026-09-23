@@ -621,6 +621,10 @@ zv::Val pt_object_type_to_php_doc_node(zend_object *self);
  * object family's internal callback holder, for
  * RecursionGuard::runOnObjectIdentity(); UNDEF = pending exception */
 zv::Val pt_object_type_referenced_classes_callback(zval *type);
+/* GenericObjectType::specializeSubclass($supertype, $subclass) (both
+ * borrowed objects; $subclass itself when unchanged); UNDEF = pending
+ * exception */
+zv::Val pt_generic_object_type_specialize_subclass(zval *supertype, zval *subclass);
 
 /* merged from the parallel port branch */
 

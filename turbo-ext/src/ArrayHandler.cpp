@@ -522,14 +522,6 @@ private:
 		if (first == NULL || Z_TYPE_P(first) == IS_NULL) return type;
 		zval *second = zend_hash_index_find(Z_ARRVAL_P(items), 1);
 		if (second == NULL || Z_TYPE_P(second) == IS_NULL) return type;
-		if (UNEXPECTED(!type.ref().isObject())) {
-			zend_throw_error(NULL, "Call to a member function isCallable() on %s", zend_zval_value_name(type.raw()));
-			return zv::Val();
-		}
-		zend_long isCallable = pt_type_op_trinary(Z_OBJ_P(type.raw()), PT_OP_IS_CALLABLE, 0, NULL);
-		if (UNEXPECTED(isCallable < 0)) return zv::Val();
-		if (isCallable != PT_TRI_MAYBE) return type;
-
 		zv::Val isCallableCall;
 		{
 			zv::Val name = pt_type_new(PT_CLASS_FULLY_QUALIFIED, 1, zv::Args{pt_arh_is_callable});
@@ -556,6 +548,16 @@ private:
 		zend_long isTrue = pt_type_call_trinary(Z_OBJ_P(trackedType.raw()), PT_LC("istrue"), 0, NULL);
 		if (UNEXPECTED(isTrue < 0)) return zv::Val();
 		if (isTrue != PT_TRI_YES) return type;
+		// isCallable() is asked last - it reflects the class named by the first
+		// item, which is expensive and unnecessary for arrays never narrowed by
+		// is_callable()
+		if (UNEXPECTED(!type.ref().isObject())) {
+			zend_throw_error(NULL, "Call to a member function isCallable() on %s", zend_zval_value_name(type.raw()));
+			return zv::Val();
+		}
+		zend_long isCallable = pt_type_op_trinary(Z_OBJ_P(type.raw()), PT_OP_IS_CALLABLE, 0, NULL);
+		if (UNEXPECTED(isCallable < 0)) return zv::Val();
+		if (isCallable != PT_TRI_MAYBE) return type;
 
 		zval callableType;
 		if (UNEXPECTED(!pt_callable_type_new(&callableType))) return zv::Val();

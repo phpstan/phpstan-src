@@ -1,0 +1,5 @@
+services:
+	-
+		class: PHPStan\Analyser\Bug15292MethodsClassReflectionExtension
+		tags:
+			- phpstan.broker.methodsClassReflectionExtension

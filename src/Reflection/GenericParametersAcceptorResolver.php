@@ -171,16 +171,18 @@ final class GenericParametersAcceptorResolver
 	private static function inferPredicateTemplateTypes(Type $paramType, Type $argType): TemplateTypeMap
 	{
 		$typeMap = TemplateTypeMap::createEmpty();
-		if (!$argType->isCallable()->yes()) {
-			return $typeMap;
-		}
-
 		foreach ($paramType instanceof UnionType ? $paramType->getTypes() : [$paramType] as $innerType) {
 			if (!$innerType instanceof CallableParametersAcceptor) {
 				continue;
 			}
 			if ($innerType->getAsserts()->getAll() === []) {
 				continue;
+			}
+
+			// asked only for parameters with asserts - it reflects the class named by
+			// a callable-like argument
+			if (!$argType->isCallable()->yes()) {
+				return $typeMap;
 			}
 
 			foreach ($argType->getCallableParametersAcceptors(new OutOfClassScope()) as $receivedAcceptor) {

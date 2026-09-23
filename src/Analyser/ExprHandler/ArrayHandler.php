@@ -174,18 +174,21 @@ final class ArrayHandler implements ExprHandler
 				if (
 					count($expr->items) === 2
 					&& isset($expr->items[0], $expr->items[1])
-					&& $type->isCallable()->maybe()
 				) {
 					$isCallableCall = new FuncCall(
 						new FullyQualified('is_callable'),
 						[new Arg($expr)],
 					);
+					// isCallable() is asked last - it reflects the class named by the
+					// first item, which is expensive and unnecessary for arrays never
+					// narrowed by is_callable()
 					if (
 						$beforeScope->hasExpressionType($isCallableCall)->yes()
 						// read the narrowed type from expressionTypes directly (the
 						// synthetic is_callable() call was never processed as a child),
 						// mirroring ConstFetchHandler's narrowed-constant lookup
 						&& $beforeScope->expressionTypes[$beforeScope->getNodeKey($isCallableCall)]->getType()->isTrue()->yes()
+						&& $type->isCallable()->maybe()
 					) {
 						$type = TypeCombinator::intersect($type, new CallableType());
 					}

@@ -670,6 +670,17 @@ final class DependencyResolver
 			return false;
 		}
 
+		// a class constant, property default or enum case value is not called where it is
+		// declared - testing it would reflect whatever class its first item happens to name
+		if (
+			$scope->isInClass()
+			&& $scope->getFunction() === null
+			&& !$scope->isInAnonymousFunction()
+			&& $scope->getFunctionCallStack() === []
+		) {
+			return false;
+		}
+
 		$itemType = $scope->getType($items[0]->value);
 		return $itemType->isClassString()->yes();
 	}

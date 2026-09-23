@@ -654,13 +654,18 @@ final class ArgumentsHandler
 				}
 				$hasYield = $hasYield || $exprResult->hasYield();
 
-				if ($exprType->isCallable()->yes()) {
+				// only callable objects (closures) carry expressions to invalidate - asking
+				// isCallable() of other arguments reflects the classes named by callable-like
+				// strings and arrays, so it is skipped when nothing would come of it
+				$invalidateCallbackExpressions = $this->shouldInvalidateCallbackExpressions($parameter) && !$exprType->isObject()->no();
+				$callCallbackImmediately = $this->callCallbackImmediately($parameter, $parameterType, $calleeReflection);
+				if (($invalidateCallbackExpressions || $callCallbackImmediately) && $exprType->isCallable()->yes()) {
 					$acceptors = $exprType->getCallableParametersAcceptors($scope);
 					if (count($acceptors) === 1) {
-						if ($this->shouldInvalidateCallbackExpressions($parameter)) {
+						if ($invalidateCallbackExpressions) {
 							$deferredInvalidateExpressions[] = [$acceptors[0]->getInvalidateExpressions(), $acceptors[0]->getUsedVariables()];
 						}
-						if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
+						if ($callCallbackImmediately) {
 							$callableThrowPoints = array_map(static fn (SimpleThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable(), $throwPoint->isFromThrowExpr()) : InternalThrowPoint::createImplicit($scope, $arg->value), $acceptors[0]->getThrowPoints());
 							if (!$this->implicitThrows) {
 								$callableThrowPoints = array_values(array_filter($callableThrowPoints, static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit()));

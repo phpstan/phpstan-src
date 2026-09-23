@@ -2030,10 +2030,8 @@ private:
 
 	/* the callable-argument bookkeeping of a non-closure argument whose type
 	 * is callable with a single acceptor; false = pending exception */
-	zend_never_inline bool processCallableArg(Walk &w, zval *value, ArgLocals &a, zval *acceptor) const
+	zend_never_inline bool processCallableArg(Walk &w, zval *value, zval *acceptor, bool invalidateCallback, bool immediately) const
 	{
-		bool invalidateCallback = false;
-		if (UNEXPECTED(!shouldInvalidateCallbackExpressions(a.parameter, invalidateCallback))) return false;
 		if (invalidateCallback) {
 			zv::Val invalidateExpressions = callByName(acceptor, PT_LC("getinvalidateexpressions"), "getInvalidateExpressions", 0, NULL);
 			if (UNEXPECTED(invalidateExpressions.isUndef())) return false;
@@ -2042,8 +2040,6 @@ private:
 			w.deferredInvalidateExpressions.push(std::move(invalidateExpressions));
 			w.deferredUses.push(std::move(usedVariables));
 		}
-		bool immediately = false;
-		if (UNEXPECTED(!callCallbackImmediately(a.parameter, a.parameterType.isUndef() ? NULL : a.parameterType.raw(), w.calleeReflection, immediately))) return false;
 		if (!immediately) return true;
 
 		static pt_method_site throwPointsSite, impurePointsSite;
@@ -2136,18 +2132,36 @@ private:
 		}
 		if (!w.hasYield && UNEXPECTED(!pt_expression_result_has_yield(exprResult, w.hasYield))) return false;
 
-		if (UNEXPECTED(!exprType.ref().isObject())) {
-			zend_throw_error(NULL, "Call to a member function isCallable() on %s", zend_zval_value_name(exprType.raw()));
-			return false;
+		// only callable objects (closures) carry expressions to invalidate - asking
+		// isCallable() of other arguments reflects the classes named by callable-like
+		// strings and arrays, so it is skipped when nothing would come of it
+		bool invalidateCallback = false;
+		if (UNEXPECTED(!shouldInvalidateCallbackExpressions(a.parameter, invalidateCallback))) return false;
+		if (invalidateCallback) {
+			if (UNEXPECTED(!exprType.ref().isObject())) {
+				zend_throw_error(NULL, "Call to a member function isObject() on %s", zend_zval_value_name(exprType.raw()));
+				return false;
+			}
+			zend_long isObject = pt_type_call_trinary(Z_OBJ_P(exprType.raw()), PT_LC("isobject"), 0, NULL);
+			if (UNEXPECTED(isObject < 0)) return false;
+			invalidateCallback = isObject != PT_TRI_NO;
 		}
-		zend_long isCallable = pt_type_op_trinary(Z_OBJ_P(exprType.raw()), PT_OP_IS_CALLABLE, 0, NULL);
-		if (UNEXPECTED(isCallable < 0)) return false;
-		if (isCallable == PT_TRI_YES) {
-			zv::Val acceptors = pt_type_call(Z_OBJ_P(exprType.raw()), PT_LC("getcallableparametersacceptors"), 1, w.scope.raw());
-			if (UNEXPECTED(acceptors.isUndef() || !requireArray(acceptors.raw(), "count(): Argument #1 ($value)"))) return false;
-			if (zend_hash_num_elements(Z_ARRVAL_P(acceptors.raw())) == 1) {
-				zval *acceptor = readIndex(Z_ARRVAL_P(acceptors.raw()), 0);
-				if (UNEXPECTED(acceptor == NULL || !processCallableArg(w, value, a, acceptor))) return false;
+		bool immediately = false;
+		if (UNEXPECTED(!callCallbackImmediately(a.parameter, a.parameterType.isUndef() ? NULL : a.parameterType.raw(), w.calleeReflection, immediately))) return false;
+		if (invalidateCallback || immediately) {
+			if (UNEXPECTED(!exprType.ref().isObject())) {
+				zend_throw_error(NULL, "Call to a member function isCallable() on %s", zend_zval_value_name(exprType.raw()));
+				return false;
+			}
+			zend_long isCallable = pt_type_op_trinary(Z_OBJ_P(exprType.raw()), PT_OP_IS_CALLABLE, 0, NULL);
+			if (UNEXPECTED(isCallable < 0)) return false;
+			if (isCallable == PT_TRI_YES) {
+				zv::Val acceptors = pt_type_call(Z_OBJ_P(exprType.raw()), PT_LC("getcallableparametersacceptors"), 1, w.scope.raw());
+				if (UNEXPECTED(acceptors.isUndef() || !requireArray(acceptors.raw(), "count(): Argument #1 ($value)"))) return false;
+				if (zend_hash_num_elements(Z_ARRVAL_P(acceptors.raw())) == 1) {
+					zval *acceptor = readIndex(Z_ARRVAL_P(acceptors.raw()), 0);
+					if (UNEXPECTED(acceptor == NULL || !processCallableArg(w, value, acceptor, invalidateCallback, immediately))) return false;
+				}
 			}
 		}
 

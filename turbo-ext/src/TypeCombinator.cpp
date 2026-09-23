@@ -2184,8 +2184,20 @@ public:
 		}
 
 		zv::Arr results = zv::Arr::create(countOf(types.raw()));
+		zv::Arr emptyArrays = zv::Arr::create(0);
 		bool eachIsOversized = true;
 		for (zv::ArrayEntry entry : zv::ArrRef(types.raw())) {
+			zend_long isConstantArray = callTrinary(entry.value().raw(), PT_LC("isconstantarray"));
+			PT_FAIL_IF_NEG(isConstantArray);
+			if (isConstantArray == PT_TRI_YES) {
+				zend_long atLeastOnce = callTrinary(entry.value().raw(), PT_LC("isiterableatleastonce"));
+				PT_FAIL_IF_NEG(atLeastOnce);
+				if (atLeastOnce == PT_TRI_NO) {
+					emptyArrays.push(zv::Ref(entry.value().raw()));
+					continue;
+				}
+			}
+
 			zval isOversized;
 			ZVAL_FALSE(&isOversized);
 			zv::Val callback = pt_type_native_callback(generalizeOversizedCallback, &isOversized, NULL);
@@ -2200,7 +2212,7 @@ public:
 			results.push(std::move(result));
 		}
 
-		if (eachIsOversized) {
+		if (eachIsOversized && zend_hash_num_elements(results.table()) > 0) {
 			bool eachIsList = true;
 			TypeList keyTypes;
 			TypeList valueTypes;
@@ -2236,12 +2248,14 @@ public:
 
 			zv::Val oversized = oversizedArrayOf(keyType.raw(), valueType.raw(), eachIsList);
 			PT_FAIL_IF_UNDEF(oversized);
-			zv::Arr single = zv::Arr::create(1);
-			single.push(std::move(oversized));
-			return zv::Val(std::move(single));
+			emptyArrays.push(std::move(oversized));
+			return zv::Val(std::move(emptyArrays));
 		}
 
-		return zv::Val(std::move(results));
+		for (zv::ArrayEntry entry : zv::ArrRef(results.raw())) {
+			emptyArrays.push(zv::Ref(entry.value().raw()));
+		}
+		return zv::Val(std::move(emptyArrays));
 	}
 
 	/* the key signature of a ConstantArrayType the stage-1 grouping and the

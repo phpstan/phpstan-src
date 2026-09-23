@@ -1207,8 +1207,14 @@ final class TypeCombinator
 		}
 
 		$results = [];
+		$emptyArrays = [];
 		$eachIsOversized = true;
 		foreach ($types as $type) {
+			if ($type->isConstantArray()->yes() && $type->isIterableAtLeastOnce()->no()) {
+				$emptyArrays[] = $type;
+				continue;
+			}
+
 			$isOversized = false;
 			$result = TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$isOversized): Type {
 				if (!$type instanceof ConstantArrayType) {
@@ -1290,7 +1296,7 @@ final class TypeCombinator
 			$results[] = $result;
 		}
 
-		if ($eachIsOversized) {
+		if ($eachIsOversized && $results !== []) {
 			$eachIsList = true;
 			$keyTypes = [];
 			$valueTypes = [];
@@ -1317,10 +1323,10 @@ final class TypeCombinator
 			$accessories[] = new NonEmptyArrayType();
 			$accessories[] = new OversizedArrayType();
 
-			return [self::intersect(new ArrayType($keyType, $valueType), ...$accessories)];
+			return [...$emptyArrays, self::intersect(new ArrayType($keyType, $valueType), ...$accessories)];
 		}
 
-		return $results;
+		return [...$emptyArrays, ...$results];
 	}
 
 	/**

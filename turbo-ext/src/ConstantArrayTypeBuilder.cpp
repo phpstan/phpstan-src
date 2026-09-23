@@ -273,6 +273,28 @@ public:
 		return true;
 	}
 
+	/* the private isListAfterAddingKey($keyType): whether the array is a
+	 * list after the key is written to it, when the key is not in the array
+	 * yet - the same rules as for a single constant key; -1 = pending
+	 * exception */
+	[[nodiscard]] zend_long isListAfterAddingKey(zv::Ref keyType)
+	{
+		if (!keyType.instanceOf(pt_ce_constant_integer_type)) return PT_TRI_NO;
+		zval *nextAutoIndexes = arraySlot(slots::nextAutoIndexes, "nextAutoIndexes");
+		if (UNEXPECTED(nextAutoIndexes == NULL)) return -1;
+		if (zend_hash_num_elements(Z_ARRVAL_P(nextAutoIndexes)) == 0) return PT_TRI_NO;
+		zend_long value;
+		if (UNEXPECTED(!pt_constant_integer_get_value(keyType.asObject(), value))) return -1;
+		if (value < 0) return PT_TRI_NO;
+		zend_long min, max;
+		if (UNEXPECTED(!minMax(Z_ARRVAL_P(nextAutoIndexes), min, max))) return -1;
+		zend_long isList = trinary(slots::isList, "isList");
+		if (UNEXPECTED(isList < 0)) return -1;
+		if (value <= min) return isList;
+		if (value <= max) return pt_trinary_and(isList, PT_TRI_MAYBE);
+		return PT_TRI_NO;
+	}
+
 	/* the private markNonListKey($optional) */
 	void markNonListKey(bool optional)
 	{
@@ -583,7 +605,7 @@ private:
 
 	/* a small finite set of constant offsets: each matching key's value
 	 * widened (replaced, for a required write to an optional key), the
-	 * unmatched ones appended optional, the list-ness lost */
+	 * unmatched ones appended optional, the list-ness true to the shape */
 	bool setScalarOffsets(zval *scalarTypes, zval *valueType, bool optional)
 	{
 		zval *valueTypesSlot = arraySlot(slots::valueTypes, "valueTypes");
@@ -636,6 +658,20 @@ private:
 
 		if (zv::ArrRef(unmatchedScalars.raw()).size() == 0) return true;
 
+		/* One of the keys gets written without the shape saying which, and
+		 * the keys it adds are optional, so the array is a list only when
+		 * each outcome is - including the array without them:
+		 * TrinaryLogic::extremeIdentity($this->isList, ...isListAfterAddingKey()) */
+		zend_long isList = trinary(slots::isList, "isList");
+		if (UNEXPECTED(isList < 0)) return false;
+		bool isListAllSame = true;
+		for (zv::ArrayEntry entry : zv::ArrRef(unmatchedScalars.raw())) {
+			zend_long outcome = isListAfterAddingKey(entry.value());
+			if (UNEXPECTED(outcome < 0)) return false;
+			if (outcome != isList) isListAllSame = false;
+		}
+		if (!isListAllSame) isList = PT_TRI_MAYBE;
+
 		for (zv::ArrayEntry entry : zv::ArrRef(unmatchedScalars.raw())) {
 			zv::Ref scalarType = entry.value();
 			if (UNEXPECTED(!pushKeyValue(scalarType.raw(), valueType) || !pushLastKeyOptional())) return false;
@@ -652,7 +688,7 @@ private:
 			zv::ArrRef(nextAutoIndexes).push(zv::Ref(zv::Val::integer(offsetInteger + 1).raw()));
 		}
 
-		setTrinary(slots::isList, PT_TRI_NO);
+		setTrinary(slots::isList, isList);
 		return degradeWhenOverLimit();
 	}
 
@@ -1235,6 +1271,15 @@ PT_MINIT_REGISTRATION(pt_register_constant_array_type_builder)
 		if (!zp::parse<zp::ObjOrNull, zp::Obj, zp::Opt<zp::Bool>>(execute_data, offsetType, valueType, optional)) RETURN_THROWS();
 		if (UNEXPECTED(!pt_catb_check_type(offsetType, 1) || !pt_catb_check_type(valueType, 2))) RETURN_THROWS();
 		if (UNEXPECTED(!PT_THIS.setOffsetValueType(offsetType, valueType, optional))) RETURN_THROWS();
+	});
+
+	cls.method(sigs::isListAfterAddingKey, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *keyType;
+		if (!zp::parse<zp::Obj>(execute_data, keyType)) RETURN_THROWS();
+		if (UNEXPECTED(!pt_catb_check_type(keyType, 1))) RETURN_THROWS();
+		zend_long isList = PT_THIS.isListAfterAddingKey(zv::Ref(keyType));
+		if (UNEXPECTED(isList < 0)) RETURN_THROWS();
+		RETURN_COPY(pt_trinary_singleton(isList));
 	});
 
 	cls.method<&ConstantArrayTypeBuilder::markNonListKey, zp::Bool>(sigs::markNonListKey);

@@ -1057,6 +1057,23 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testArrayIsListAfterUnionKeyWrite(): void
+	{
+		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
+
+		$this->analyse([__DIR__ . '/data/array-is-list-union-key-write.php'], [
+			[
+				'Call to function array_is_list() with non-empty-array{a?: \'x\', b?: \'x\'} will always evaluate to false.',
+				21,
+			],
+			[
+				'Call to function array_is_list() with non-empty-array{a?: string, b?: int} will always evaluate to false.',
+				35,
+				$tipText,
+			],
+		]);
+	}
+
 	public function testBug2730(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-2730.php'], [

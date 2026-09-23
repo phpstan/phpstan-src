@@ -506,6 +506,7 @@ static bool pt_strs_inited = false;
 
 static HashTable pt_node_class_cache;
 static bool pt_node_class_cache_inited = false;
+static HashTable pt_print_kind_ids; /* getType() string -> IS_LONG id, lives with pt_node_class_cache */
 
 void pt_init_strs()
 {
@@ -564,6 +565,7 @@ void pt_support_rshutdown()
 	}
 	if (pt_node_class_cache_inited) {
 		zend_hash_destroy(&pt_node_class_cache);
+		zend_hash_destroy(&pt_print_kind_ids);
 		pt_node_class_cache_inited = false;
 	}
 	pt_native_visitor_index_reset();
@@ -713,6 +715,7 @@ pt_node_class_info *pt_get_node_class_info(zend_class_entry *ce)
 
 	if (!pt_node_class_cache_inited) {
 		zend_hash_init(&pt_node_class_cache, 64, NULL, pt_node_class_info_free, 0);
+		zend_hash_init(&pt_print_kind_ids, 64, NULL, NULL, 0);
 		pt_node_class_cache_inited = true;
 	}
 
@@ -732,6 +735,46 @@ pt_node_class_info *pt_get_node_class_info(zend_class_entry *ce)
 
 	zend_hash_add_ptr(&pt_node_class_cache, ce->name, info);
 	return info;
+}
+
+uint32_t pt_node_print_kind(zend_object *node)
+{
+	pt_node_class_info *info = pt_get_node_class_info(node->ce);
+	if (UNEXPECTED(info == NULL)) return 0;
+	if (EXPECTED(info->print_kind != 0)) return info->print_kind;
+
+	zend_function *fn = (zend_function *) zend_hash_str_find_ptr(&node->ce->function_table, "gettype", sizeof("gettype") - 1);
+	if (UNEXPECTED(fn == NULL)) {
+		zend_throw_error(NULL, "phpstan_turbo: %s has no getType()", ZSTR_VAL(node->ce->name));
+		return 0;
+	}
+	zval type;
+	zend_call_known_function(fn, node, node->ce, &type, 0, NULL, NULL);
+	if (UNEXPECTED(EG(exception))) {
+		zval_ptr_dtor(&type);
+		return 0;
+	}
+	if (UNEXPECTED(Z_TYPE(type) != IS_STRING)) {
+		zval_ptr_dtor(&type);
+		zend_throw_error(NULL, "phpstan_turbo: %s::getType() did not return a string", ZSTR_VAL(node->ce->name));
+		return 0;
+	}
+	/* the printer prints a short list exactly like an array */
+	zend_string *kindName = zend_string_equals_literal(Z_STR(type), "Expr_List") ? ZSTR_INIT_LITERAL("Expr_Array", 0) : zend_string_copy(Z_STR(type));
+	zval_ptr_dtor(&type);
+	zval *known = zend_hash_find(&pt_print_kind_ids, kindName);
+	uint32_t id;
+	if (known != NULL) {
+		id = (uint32_t) Z_LVAL_P(known);
+	} else {
+		id = zend_hash_num_elements(&pt_print_kind_ids) + 1;
+		zval idValue;
+		ZVAL_LONG(&idValue, (zend_long) id);
+		zend_hash_add_new(&pt_print_kind_ids, kindName, &idValue);
+	}
+	zend_string_release(kindName);
+	info->print_kind = id;
+	return id;
 }
 
 zv::Val pt_attributes_without_expression_key(zval *attributes)

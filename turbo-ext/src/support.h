@@ -871,6 +871,9 @@ typedef struct _pt_node_class_info {
 	int32_t attributes_offset;
 	int32_t name_offset;
 	bool is_variable;
+	/* the printer's dispatch kind (getType(), a short List_ counted as an
+	 * Array_ since both print alike), as a small id; 0 = not resolved yet */
+	uint32_t print_kind;
 } pt_node_class_info;
 
 #define PT_HAS_SUBNODES(info) ((info)->subnode_offsets != NULL && (info)->subnode_count != UINT32_MAX)
@@ -891,6 +894,9 @@ extern zend_string *pt_str_start_file_pos;
 void pt_init_strs();
 
 zval *pt_node_attribute(zend_object *node, zend_string *name);
+/* pt_node_class_info::print_kind of the node's class, resolved on first use;
+ * 0 with an exception pending */
+uint32_t pt_node_print_kind(zend_object *node);
 bool pt_node_set_attribute(zend_object *node, zend_string *name, zval *value);
 
 /* the shadowing ExprPrinter (ExprPrinter.cpp) — the miss half of

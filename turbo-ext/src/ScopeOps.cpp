@@ -208,10 +208,47 @@ public:
 			if (name.isString()) return hasVariableType(scope, name.asString());
 		}
 
-		zv::Str key = zv::Str::adopt(pt_node_key(node, exprPrinter));
-		if (UNEXPECTED(key.isNull())) return zv::Val();
 		zval *table = scopeArrayProp(scope, "expressionTypes", sizeof("expressionTypes") - 1);
 		if (UNEXPECTED(table == NULL)) return zv::Val();
+
+		/* A key the node has never been printed for costs a trip through the
+		 * PHP pretty printer, and most such asks answer No. When the table
+		 * holds no expression of the node's print kind, no key in it can equal
+		 * the node's - a printed key determines its kind: PHP syntax its node
+		 * class (a short list, printed like an array, shares the array's
+		 * kind, see pt_node_print_kind()) and every virtual node its own
+		 * __phpstan marker - so the answer is No without printing. The twin
+		 * prints here; only the printer's cache attribute is left unset. */
+		pt_init_strs();
+		zval *cachedKey = pt_node_attribute(node, pt_str_cache_printer);
+		if (cachedKey == NULL || Z_TYPE_P(cachedKey) != IS_STRING) {
+			uint32_t kind = pt_node_print_kind(node);
+			if (UNEXPECTED(kind == 0)) return zv::Val();
+			bool present = false;
+			for (auto entry : zv::ArrRef(table)) {
+				zval *holder = entry.value().deref().raw();
+				if (UNEXPECTED(Z_TYPE_P(holder) != IS_OBJECT)) {
+					present = true;
+					break;
+				}
+				zval *expr = OBJ_PROP_NUM(Z_OBJ_P(holder), PT_ETH_PROP_EXPR);
+				ZVAL_DEREF(expr);
+				if (UNEXPECTED(Z_TYPE_P(expr) != IS_OBJECT)) {
+					present = true;
+					break;
+				}
+				uint32_t entryKind = pt_node_print_kind(Z_OBJ_P(expr));
+				if (UNEXPECTED(entryKind == 0)) return zv::Val();
+				if (entryKind == kind) {
+					present = true;
+					break;
+				}
+			}
+			if (!present) return trinarySingleton(PT_TRI_NO);
+		}
+
+		zv::Str key = zv::Str::adopt(pt_node_key(node, exprPrinter));
+		if (UNEXPECTED(key.isNull())) return zv::Val();
 		zval *found = zend_symtable_find(Z_ARRVAL_P(table), key.get());
 		if (found == NULL) return trinarySingleton(PT_TRI_NO);
 		zv::Ref holder = zv::Ref(found).deref();

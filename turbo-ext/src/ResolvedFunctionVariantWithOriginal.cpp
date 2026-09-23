@@ -246,7 +246,7 @@ public:
 			zv::Val has = pt_type_op(Z_OBJ_P(returnType.raw()), PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, 0, NULL);
 			if (UNEXPECTED(has.isUndef())) return zv::Val();
 			hasTemplate = zend_is_true(has.raw());
-			zval value;
+			zval value = {};
 			ZVAL_BOOL(&value, hasTemplate);
 			pt_write_slot(self, slots::hasTemplateOrLateResolvableReturnType, &value);
 		}

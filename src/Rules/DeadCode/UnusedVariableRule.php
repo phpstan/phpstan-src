@@ -122,11 +122,11 @@ final class UnusedVariableRule implements Rule
 				if (!$target instanceof Node\Expr) {
 					throw new ShouldNotHappenException();
 				}
-				$message = $this->getMessage($write->getKind(), $this->exprPrinter->printExpr($target), false, $node->isRead($write));
-				$identifier = $this->getIdentifier($write->getKind(), false, $node->isRead($write));
+				$message = $this->getMessage($write->getKind(), $this->exprPrinter->printExpr($target), false, $node->isRead($write), $node->isOverwritten($write));
+				$identifier = $this->getIdentifier($write->getKind(), false, $node->isRead($write), $node->isOverwritten($write));
 			} else {
-				$message = $this->getMessage($write->getKind(), 'variable $' . $name, $unusedVariable, $node->isRead($write));
-				$identifier = $this->getIdentifier($write->getKind(), $unusedVariable, $node->isRead($write));
+				$message = $this->getMessage($write->getKind(), 'variable $' . $name, $unusedVariable, $node->isRead($write), $node->isOverwritten($write));
+				$identifier = $this->getIdentifier($write->getKind(), $unusedVariable, $node->isRead($write), $node->isOverwritten($write));
 			}
 			$errors[] = RuleErrorBuilder::message($message)
 				->identifier($identifier)
@@ -140,12 +140,19 @@ final class UnusedVariableRule implements Rule
 	/**
 	 * @param VariableWrite::KIND_* $kind
 	 */
-	private function getMessage(int $kind, string $target, bool $unusedVariable, bool $read): string
+	private function getMessage(int $kind, string $target, bool $unusedVariable, bool $read, bool $overwritten): string
 	{
-		// "never read": nothing looks at the written value; "only flows into
+		// "never read": nothing looks at the written value; "before being
+		// overwritten": another write replaces it first; "only flows into
 		// values that are never used": something reads it, but only to compute
 		// values that never reach a sink themselves
-		$outcome = $read ? 'only flows into values that are never used' : 'is never read';
+		if ($read) {
+			$outcome = 'only flows into values that are never used';
+		} elseif ($overwritten) {
+			$outcome = 'is never read before being overwritten';
+		} else {
+			$outcome = 'is never read';
+		}
 		switch ($kind) {
 			case VariableWrite::KIND_ASSIGN:
 			case VariableWrite::KIND_READ_MODIFY_WRITE:
@@ -176,9 +183,9 @@ final class UnusedVariableRule implements Rule
 
 	/**
 	 * @param VariableWrite::KIND_* $kind
-	 * @return 'variable.unused'|'assign.unused'|'assign.unusedFlow'|'preInc.unused'|'preInc.unusedFlow'|'postInc.unused'|'postInc.unusedFlow'|'preDec.unused'|'preDec.unusedFlow'|'postDec.unused'|'postDec.unusedFlow'|'foreach.unusedValue'|'foreach.unusedValueFlow'|'foreach.unusedKey'|'foreach.unusedKeyFlow'|'catch.unusedVariableFlow'
+	 * @return 'variable.unused'|'assign.unused'|'assign.overwritten'|'assign.unusedFlow'|'preInc.unused'|'preInc.overwritten'|'preInc.unusedFlow'|'postInc.unused'|'postInc.overwritten'|'postInc.unusedFlow'|'preDec.unused'|'preDec.overwritten'|'preDec.unusedFlow'|'postDec.unused'|'postDec.overwritten'|'postDec.unusedFlow'|'foreach.unusedValue'|'foreach.valueOverwritten'|'foreach.unusedValueFlow'|'foreach.unusedKey'|'foreach.keyOverwritten'|'foreach.unusedKeyFlow'|'catch.unusedVariableFlow'
 	 */
-	private function getIdentifier(int $kind, bool $unusedVariable, bool $read): string
+	private function getIdentifier(int $kind, bool $unusedVariable, bool $read, bool $overwritten): string
 	{
 		switch ($kind) {
 			case VariableWrite::KIND_ASSIGN:
@@ -189,17 +196,17 @@ final class UnusedVariableRule implements Rule
 					return 'variable.unused';
 				}
 
-				return $read ? 'assign.unusedFlow' : 'assign.unused';
+				return $read ? 'assign.unusedFlow' : ($overwritten ? 'assign.overwritten' : 'assign.unused');
 			case VariableWrite::KIND_PRE_INC:
-				return $read ? 'preInc.unusedFlow' : 'preInc.unused';
+				return $read ? 'preInc.unusedFlow' : ($overwritten ? 'preInc.overwritten' : 'preInc.unused');
 			case VariableWrite::KIND_POST_INC:
-				return $read ? 'postInc.unusedFlow' : 'postInc.unused';
+				return $read ? 'postInc.unusedFlow' : ($overwritten ? 'postInc.overwritten' : 'postInc.unused');
 			case VariableWrite::KIND_PRE_DEC:
-				return $read ? 'preDec.unusedFlow' : 'preDec.unused';
+				return $read ? 'preDec.unusedFlow' : ($overwritten ? 'preDec.overwritten' : 'preDec.unused');
 			case VariableWrite::KIND_POST_DEC:
-				return $read ? 'postDec.unusedFlow' : 'postDec.unused';
+				return $read ? 'postDec.unusedFlow' : ($overwritten ? 'postDec.overwritten' : 'postDec.unused');
 			case VariableWrite::KIND_FOREACH_VALUE:
-				return $read ? 'foreach.unusedValueFlow' : 'foreach.unusedValue';
+				return $read ? 'foreach.unusedValueFlow' : ($overwritten ? 'foreach.valueOverwritten' : 'foreach.unusedValue');
 			case VariableWrite::KIND_FOREACH_VALUE_WITH_KEY:
 				if (!$read) {
 					throw new ShouldNotHappenException();
@@ -207,7 +214,7 @@ final class UnusedVariableRule implements Rule
 
 				return 'foreach.unusedValueFlow';
 			case VariableWrite::KIND_FOREACH_KEY:
-				return $read ? 'foreach.unusedKeyFlow' : 'foreach.unusedKey';
+				return $read ? 'foreach.unusedKeyFlow' : ($overwritten ? 'foreach.keyOverwritten' : 'foreach.unusedKey');
 			case VariableWrite::KIND_CATCH:
 				if (!$read) {
 					throw new ShouldNotHappenException();

@@ -31,6 +31,7 @@ final class VariableWritesNode extends NodeAbstract implements VirtualNode
 	 * @param array<int, true> $readWriteIds
 	 * @param array<int, true> $usedWriteIds
 	 * @param array<int, true> $coveredWriteIds
+	 * @param array<int, true> $overwrittenWriteIds
 	 * @param array<string, true> $readVariableNames
 	 * @param array<int, Type> $redundantWriteTypes
 	 * @param array<string, true> $referencedVariableNames
@@ -43,6 +44,7 @@ final class VariableWritesNode extends NodeAbstract implements VirtualNode
 		private array $readWriteIds,
 		private array $usedWriteIds,
 		private array $coveredWriteIds,
+		private array $overwrittenWriteIds,
 		private array $readVariableNames,
 		private array $redundantWriteTypes,
 		private array $referencedVariableNames,
@@ -105,6 +107,16 @@ final class VariableWritesNode extends NodeAbstract implements VirtualNode
 	public function flowsIntoNeverReadWrite(VariableWrite $write): bool
 	{
 		return isset($this->coveredWriteIds[$write->getId()]);
+	}
+
+	/**
+	 * Whether some path from the write reaches another write replacing the
+	 * variable (or the written offset) - for a write that is never read, the
+	 * value is replaced before anything looks at it.
+	 */
+	public function isOverwritten(VariableWrite $write): bool
+	{
+		return isset($this->overwrittenWriteIds[$write->getId()]);
 	}
 
 	/** Whether some path from the write reaches a read of the written value. */

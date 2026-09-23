@@ -3062,7 +3062,7 @@ check($vfbResults['php'] === $vfbResults['native over a PHP storage'], 'Variable
 // catch types, which the prefixed declaration cannot mix (see type-family.php).
 $vlrDescribe = static function (\PHPStan\Node\VariableWritesNode $node) use ($vfDescribeWrite): array {
 	$d = [];
-	foreach (['writes', 'readWriteIds', 'usedWriteIds', 'coveredWriteIds', 'readVariableNames', 'redundantWriteTypes', 'referencedVariableNames', 'untrackedVariableNames', 'variableOverwritingLoops', 'opaque', 'allVariableNamesReferenced'] as $property) {
+	foreach (['writes', 'readWriteIds', 'usedWriteIds', 'coveredWriteIds', 'overwrittenWriteIds', 'readVariableNames', 'redundantWriteTypes', 'referencedVariableNames', 'untrackedVariableNames', 'variableOverwritingLoops', 'opaque', 'allVariableNamesReferenced'] as $property) {
 		$value = (new ReflectionProperty($node, $property))->getValue($node);
 		if ($property === 'writes') {
 			$value = array_map($vfDescribeWrite, $value);
@@ -3176,6 +3176,28 @@ $vlrFlows = [
 		$vlrF::write($vlrWrite('o', 10, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, 'k')),
 		$vlrF::escape('o'),
 	),
+	'overwrites' => $vlrF::sequence(
+		$vlrF::write($vlrWrite('a', 1)),
+		$vlrF::write($vlrWrite('a', 2)),
+		$vlrF::read('a'),
+		$vlrF::write($vlrWrite('o', 3, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, 'k')),
+		$vlrF::write($vlrWrite('o', 4, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, 'j')),
+		$vlrF::write($vlrWrite('o', 5, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, 'k')),
+		$vlrF::write($vlrWrite('o', 6, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, null)),
+		$vlrF::write($vlrWrite('o', 7, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, 1, null, false)),
+		$vlrF::write($vlrWrite('o', 8)),
+		$vlrF::read('o'),
+		$vlrF::write($vlrWrite('d', 9)),
+		$vlrF::discard($vlrWrite('d', 10)),
+		$vlrF::write($vlrWrite('d', 11)),
+		$vlrF::read('d'),
+		$vlrF::loop(null, $vlrF::write($vlrWrite('l', 12)), null, false, true),
+		$vlrF::write($vlrWrite('c', 13)),
+		$vlrF::conditional(null, $vlrF::write($vlrWrite('c', 16)), null, null),
+		$vlrF::read('c'),
+		$vlrF::write($vlrWrite('r', 14)),
+		$vlrF::arrow($vlrArrow, $vlrF::write($vlrWrite('r', 15)), null),
+	),
 	'read all' => $vlrF::sequence($vlrF::write($vlrWrite('a', 1)), $vlrF::write($vlrWrite('o', 2, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, 'k')), $vlrF::all($vlrF::READ_ALL), $vlrF::write($vlrWrite('b', 3)), $vlrF::mention('c')),
 	'mention all' => $vlrF::sequence($vlrF::write($vlrWrite('a', 1)), $vlrF::all($vlrF::MENTION_ALL)),
 	'opaque' => $vlrF::sequence($vlrF::write($vlrWrite('a', 1)), $vlrF::all($vlrF::OPAQUE), $vlrF::read('a')),
@@ -3227,6 +3249,12 @@ foreach (['php' => \PHPStan\Analyser\VariableLivenessResolver::class, 'native' =
 foreach ($vlrResults['php'] as $label => $described) {
 	check($described === $vlrResults['native'][$label], "VariableLivenessResolver parity ($label): " . json_encode($described) . ' vs ' . json_encode($vlrResults['native'][$label]));
 }
+// the fixture's own writes (ids below 100): whole, same-offset, dynamic and
+// nested offsets and one-path overwrites; not across unset(), not by the
+// same write in a loop, not by an arrow function's write
+$vlrOverwritten = array_values(array_filter(array_keys($vlrResults['php']['function / overwrites']['overwrittenWriteIds']), static fn (int $id): bool => $id < 100));
+sort($vlrOverwritten);
+check($vlrOverwritten === [1, 3, 4, 5, 6, 7, 13], 'VariableLivenessResolver: overwrite markers ' . json_encode($vlrOverwritten));
 check(count($vlrResults['php']['function / loops']['variableOverwritingLoops']) === 2 && $vlrResults['php']['function / read all']['readVariableNames'] !== [], 'VariableLivenessResolver: the fixture exercises binding probes and READ_ALL');
 
 // ---- MutatingScope ----

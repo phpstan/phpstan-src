@@ -83,6 +83,15 @@ final class VariableLivenessResolver
 	/** @var array<int, true> */
 	private array $coveredIds = [];
 
+	/** @var array<int, string> */
+	private array $overwriteMarkers = [];
+
+	/** @var array<int, array<string, true>> */
+	private array $overwriteKeys = [];
+
+	/** @var array<int, true> */
+	private array $overwrittenIds = [];
+
 	/** @var array<string, true> */
 	private array $allReadKeys = [];
 
@@ -143,7 +152,7 @@ final class VariableLivenessResolver
 			$self->resolveCoverage();
 		}
 
-		return new VariableWritesNode($function, array_values($self->writes), $self->observedIds + $self->readIds, $self->readIds, $self->coveredIds, $self->readNames, $self->redundantTypes, $self->mentionedNames, $self->escapedNames, $self->variableOverwritingLoops, $self->opaque, $self->allNamesMentioned);
+		return new VariableWritesNode($function, array_values($self->writes), $self->observedIds + $self->readIds, $self->readIds, $self->coveredIds, $self->overwrittenIds, $self->readNames, $self->redundantTypes, $self->mentionedNames, $self->escapedNames, $self->variableOverwritingLoops, $self->opaque, $self->allNamesMentioned);
 	}
 
 	private function collect(?VariableFlow $flow, bool $dead = false): void
@@ -255,9 +264,19 @@ final class VariableLivenessResolver
 				foreach ($this->literalItems[$id] ?? [] as $item) {
 					$this->observeWrite($item->getId(), $next);
 				}
+				foreach (array_keys($this->overwriteKeys[$id] ?? []) as $key) {
+					if (!isset($next[$key])) {
+						continue;
+					}
+					$this->overwrittenIds[$id] = true;
+					break;
+				}
 			}
 			foreach (array_keys($this->killedKeys[$id] ?? []) as $key) {
 				unset($next[$key]);
+			}
+			if (isset($this->overwriteMarkers[$id])) {
+				$next[$this->overwriteMarkers[$id]] = true;
 			}
 			return $next;
 		}
@@ -315,6 +334,13 @@ final class VariableLivenessResolver
 				foreach (array_keys($this->nameKeys[$param->var->name] ?? []) as $key) {
 					unset($names[$key]);
 				}
+			}
+			// the arrow function's own writes replace nothing outside of it
+			foreach (array_keys($names) as $key) {
+				if (!str_starts_with($key, "\1")) {
+					continue;
+				}
+				unset($names[$key]);
 			}
 			return $next + $names;
 		}
@@ -541,7 +567,82 @@ final class VariableLivenessResolver
 					}
 				}
 			}
+			$this->compileOverwrites($name, $accesses);
 		}
+	}
+
+	/**
+	 * A write replacing the variable, or one of its offsets, leaves a marker in
+	 * the live set that the previous replacing write of the same slot kills: a
+	 * write finding another write's marker after it reaches that replacement
+	 * on some path, with no replacement in between.
+	 *
+	 * @param list<VariableAccessFlow> $accesses
+	 */
+	private function compileOverwrites(string $name, array $accesses): void
+	{
+		$markersBySlot = [];
+		foreach ($accesses as $markingAccess) {
+			if ($markingAccess->write === null || $markingAccess->kind !== VariableFlow::WRITE) {
+				continue;
+			}
+			$slot = self::replacedSlot($markingAccess->write);
+			if ($slot === null) {
+				continue;
+			}
+			$id = $markingAccess->write->getId();
+			$marker = "\1" . $name . "\0" . $slot . "\0" . $id;
+			$markersBySlot[$slot][$marker] = $id;
+			$this->overwriteMarkers[$id] = $marker;
+		}
+		if ($markersBySlot === []) {
+			return;
+		}
+		foreach ($accesses as $access) {
+			$write = $access->write;
+			if ($write === null) {
+				continue;
+			}
+			$id = $write->getId();
+			$offset = $write->getOffset();
+			$observed = $markersBySlot[''] ?? [];
+			if ($write->isOffsetWrite() && $offset !== null) {
+				$observed += $markersBySlot[self::offsetKey($offset)] ?? [];
+			}
+			foreach ($observed as $marker => $writerId) {
+				// a loop running the same write again replaces nothing it wrote
+				if ($writerId === $id) {
+					continue;
+				}
+				$this->overwriteKeys[$id][$marker] = true;
+			}
+			$slot = self::replacedSlot($write);
+			if ($slot === null) {
+				continue;
+			}
+			foreach ($markersBySlot as $markerSlot => $markers) {
+				if ($slot !== '' && $markerSlot !== $slot) {
+					continue;
+				}
+				foreach (array_keys($markers) as $marker) {
+					$this->killedKeys[$id][$marker] = true;
+				}
+			}
+		}
+	}
+
+	/** The slot a write replaces: '' for the whole variable, null when it keeps the old value. */
+	private static function replacedSlot(VariableWrite $write): ?string
+	{
+		if (!$write->isOffsetWrite()) {
+			return '';
+		}
+		$offset = $write->getOffset();
+		if ($offset === null || !$write->replacesOffset()) {
+			return null;
+		}
+
+		return self::offsetKey($offset);
 	}
 
 	/** @param array<string, true> $next */

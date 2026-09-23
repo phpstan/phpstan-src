@@ -27,14 +27,17 @@ inline constexpr uint32_t inputCopies = 13;
 inline constexpr uint32_t inputSinks = 14;
 inline constexpr uint32_t literalItems = 15;
 inline constexpr uint32_t coveredIds = 16;
-inline constexpr uint32_t allReadKeys = 17;
-inline constexpr uint32_t loopStatements = 18;
-inline constexpr uint32_t ownWriteIds = 19;
-inline constexpr uint32_t variableOverwritingLoops = 20;
-inline constexpr uint32_t opaque = 21;
-inline constexpr uint32_t readsAllVariables = 22;
-inline constexpr uint32_t allNamesMentioned = 23;
-inline constexpr uint32_t returnsByReference = 24;
+inline constexpr uint32_t overwriteMarkers = 17;
+inline constexpr uint32_t overwriteKeys = 18;
+inline constexpr uint32_t overwrittenIds = 19;
+inline constexpr uint32_t allReadKeys = 20;
+inline constexpr uint32_t loopStatements = 21;
+inline constexpr uint32_t ownWriteIds = 22;
+inline constexpr uint32_t variableOverwritingLoops = 23;
+inline constexpr uint32_t opaque = 24;
+inline constexpr uint32_t readsAllVariables = 25;
+inline constexpr uint32_t allNamesMentioned = 26;
+inline constexpr uint32_t returnsByReference = 27;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -62,6 +65,9 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("inputSinks", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("literalItems", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("coveredIds", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
+	cls.property("overwriteMarkers", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
+	cls.property("overwriteKeys", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
+	cls.property("overwrittenIds", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("allReadKeys", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("loopStatements", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("ownWriteIds", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
@@ -101,10 +107,13 @@ inline constexpr char strings[] =
 	"offset\0" /* 305 */
 	"offsetKey\0" /* 312 */
 	"compileAccesses\0" /* 322 */
-	"id\0" /* 338 */
-	"observeWrite\0" /* 341 */
-	"resolveDependencies\0" /* 354 */
-	"resolveCoverage"; /* 374 */
+	"accesses\0" /* 338 */
+	"compileOverwrites\0" /* 347 */
+	"replacedSlot\0" /* 365 */
+	"id\0" /* 378 */
+	"observeWrite\0" /* 381 */
+	"resolveDependencies\0" /* 394 */
+	"resolveCoverage"; /* 414 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(12, 0, 21), /* resolve $function */
 	reg::packed(49, MAY_BE_NULL, 54), /* resolve $flow */
@@ -127,7 +136,12 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(305, 0), /* offsetKey $offset */
 	reg::packed(84, MAY_BE_STRING), /* offsetKey return */
 	reg::packed(84, MAY_BE_VOID), /* compileAccesses return */
-	reg::packed(338, MAY_BE_LONG), /* observeWrite $id */
+	reg::packed(268, MAY_BE_STRING), /* compileOverwrites $name */
+	reg::packed(338, MAY_BE_ARRAY), /* compileOverwrites $accesses */
+	reg::packed(84, MAY_BE_VOID), /* compileOverwrites return */
+	reg::packed(273, 0, 213), /* replacedSlot $write */
+	reg::packed(84, MAY_BE_NULL | MAY_BE_STRING), /* replacedSlot return */
+	reg::packed(378, MAY_BE_LONG), /* observeWrite $id */
 	reg::packed(144, MAY_BE_ARRAY), /* observeWrite $next */
 	reg::packed(84, MAY_BE_VOID), /* observeWrite return */
 	reg::packed(84, MAY_BE_VOID), /* resolveDependencies return */
@@ -146,9 +160,11 @@ inline constexpr sigtab::Sig bindingProbe = { { 255 /* bindingProbe */, 2, 10, 2
 inline constexpr sigtab::Sig passBindingProbes = { { 287 /* passBindingProbes */, 3, 13, 4, 17, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig offsetKey = { { 312 /* offsetKey */, 1, 18, 1, 19, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig compileAccesses = { { 322 /* compileAccesses */, 0, 20, 0, 20, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig observeWrite = { { 341 /* observeWrite */, 2, 21, 2, 23, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig resolveDependencies = { { 354 /* resolveDependencies */, 0, 24, 0, 24, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig resolveCoverage = { { 374 /* resolveCoverage */, 0, 25, 0, 25, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig compileOverwrites = { { 347 /* compileOverwrites */, 2, 21, 2, 23, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig replacedSlot = { { 365 /* replacedSlot */, 1, 24, 1, 25, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig observeWrite = { { 381 /* observeWrite */, 2, 26, 2, 28, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig resolveDependencies = { { 394 /* resolveDependencies */, 0, 29, 0, 29, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig resolveCoverage = { { 414 /* resolveCoverage */, 0, 30, 0, 30, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::VariableLivenessResolver

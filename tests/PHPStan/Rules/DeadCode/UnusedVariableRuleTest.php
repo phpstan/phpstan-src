@@ -35,11 +35,11 @@ class UnusedVariableRuleTest extends RuleTestCase
 				24,
 			],
 			[
-				'Value assigned to variable $before is never read.',
+				'Value assigned to variable $before is never read before being overwritten.',
 				32,
 			],
 			[
-				'Value assigned to variable $before is never read.',
+				'Value assigned to variable $before is never read before being overwritten.',
 				43,
 			],
 			[
@@ -61,9 +61,9 @@ class UnusedVariableRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/unused-variable.php'], [
 			['Variable $a is never read.', 27],
-			['Value assigned to variable $a is never read.', 32],
+			['Value assigned to variable $a is never read before being overwritten.', 32],
 			['Variable $a is never read.', 40],
-			['Value assigned to variable $x is never read.', 46],
+			['Value assigned to variable $x is never read before being overwritten.', 46],
 			['Variable $a is never read.', 70],
 			['Variable $a is never read.', 76],
 			['Variable $a is never read.', 93],
@@ -91,8 +91,8 @@ class UnusedVariableRuleTest extends RuleTestCase
 			['Value assigned to variable $b only flows into values that are never used.', 709],
 			['Value assigned to variable $b only flows into values that are never used.', 719],
 			['Variable $a is never read.', 739],
-			['Value assigned to variable $a is never read.', 744],
-			['Value assigned to variable $tags is never read.', 840],
+			['Value assigned to variable $a is never read before being overwritten.', 744],
+			['Value assigned to variable $tags is never read before being overwritten.', 840],
 			['Value of variable $i after -- is never read.', 864],
 			['Value assigned to variable $x is never read.', 870],
 			['Foreach value variable $v is never read.', 877],
@@ -106,7 +106,7 @@ class UnusedVariableRuleTest extends RuleTestCase
 	public function testPhp8(): void
 	{
 		$this->analyse([__DIR__ . '/data/unused-variable-php8.php'], [
-			['Value assigned to variable $nightsFrom is never read.', 98],
+			['Value assigned to variable $nightsFrom is never read before being overwritten.', 98],
 			['Variable $b is never read.', 108],
 			['Variable $b is never read.', 116],
 		]);
@@ -126,7 +126,7 @@ class UnusedVariableRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-13472.php'], [
 			[
-				'Value assigned to variable $v is never read.',
+				'Value assigned to variable $v is never read before being overwritten.',
 				14,
 			],
 			[
@@ -149,7 +149,7 @@ class UnusedVariableRuleTest extends RuleTestCase
 	public function testBug12012(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-12012.php'], [
-			['Value assigned to variable $s1 is never read.', 10],
+			['Value assigned to variable $s1 is never read before being overwritten.', 10],
 			['Value assigned to variable $s1 is never read.', 12],
 		]);
 	}
@@ -158,7 +158,7 @@ class UnusedVariableRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-11483.php'], [
 			[
-				'Value assigned to variable $hello is never read.',
+				'Value assigned to variable $hello is never read before being overwritten.',
 				9,
 			],
 		]);
@@ -191,12 +191,12 @@ class UnusedVariableRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/unused-variable-redundant.php'], [
 			['Variable $x is assigned value true but it already has that value.', 26],
-			['Value assigned to variable $x is never read.', 42],
+			['Value assigned to variable $x is never read before being overwritten.', 42],
 			['Variable $x is assigned value 1 but it already has that value.', 43],
 			['Variable $x is assigned value null but it already has that value.', 51],
 			['Variable $s is assigned value \'a\' but it already has that value.', 60],
 			['Variable $a is assigned value array{k: 1} but it already has that value.', 69],
-			['Value assigned to variable $x is never read.', 95],
+			['Value assigned to variable $x is never read before being overwritten.', 95],
 			['Variable $x is assigned value 1 but it already has that value.', 118],
 		]);
 	}
@@ -223,7 +223,7 @@ class UnusedVariableRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/unused-variable-dead-branch.php'], [
 			[
-				'Value assigned to variable $x is never read.',
+				'Value assigned to variable $x is never read before being overwritten.',
 				79,
 			],
 		]);
@@ -234,11 +234,11 @@ class UnusedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/unused-variable-result-flow.php'], [
 			['Value assigned to variable $shadowed is never read.', 15],
 			['Value assigned to variable $value is never read.', 16],
-			['Value assigned to variable $value is never read.', 73],
-			['Value assigned to variable $value is never read.', 98],
+			['Value assigned to variable $value is never read before being overwritten.', 73],
+			['Value assigned to variable $value is never read before being overwritten.', 98],
 			['Value assigned to variable $value is never read.', 128],
 			['Variable $value is never read.', 136],
-			['Value assigned to variable $value is never read.', 148],
+			['Value assigned to variable $value is never read before being overwritten.', 148],
 			['Value assigned to variable $value is never read.', 160],
 			['Value assigned to variable $value is never read.', 167],
 		]);
@@ -264,7 +264,7 @@ class UnusedVariableRuleTest extends RuleTestCase
 	public function testBroadCatchesIncludeImplicitThrows(): void
 	{
 		$this->analyse([__DIR__ . '/data/unused-variable-broad-catch.php'], [
-			['Value assigned to variable $file is never read.', 71],
+			['Value assigned to variable $file is never read before being overwritten.', 71],
 		]);
 	}
 
@@ -351,7 +351,7 @@ class UnusedVariableRuleTest extends RuleTestCase
 			['Offset \'y\' of array assigned to variable $a is never read.', 169],
 			['Offset \'y\' of array assigned to variable $a is never read.', 175],
 			['Value assigned to $a[\'x\'] is never read.', 191],
-			['Value assigned to $a[\'x\'] is never read.', 211],
+			['Value assigned to $a[\'x\'] is never read before being overwritten.', 211],
 			['Value assigned to $a[\'x\'] is never read.', 219],
 			['Value assigned to $a[$i] is never read.', 234],
 			['Value assigned to $a[] is never read.', 247],
@@ -365,7 +365,7 @@ class UnusedVariableRuleTest extends RuleTestCase
 			['Value assigned to $a[\'y\'] is never read.', 380],
 			['Foreach value $a[\'x\'] is never read.', 393],
 			['Value assigned to $p[\'x\'] is never read.', 399],
-			['Value assigned to $a[\'x\'] is never read.', 412],
+			['Value assigned to $a[\'x\'] is never read before being overwritten.', 412],
 			['Value assigned to $a[\'x\'] is never read.', 430],
 			['Variable $a is never read.', 444],
 			['Value assigned to variable $a is never read.', 450],
@@ -404,6 +404,25 @@ class UnusedVariableRuleTest extends RuleTestCase
 		$this->assertSame('Value assigned to $a[$i] is never read.', $errors[0]->getMessage());
 		$this->assertSame('assign.unused', $errors[0]->getIdentifier());
 		$this->assertSame(8, $errors[0]->getLine());
+	}
+
+	public function testOverwritten(): void
+	{
+		$this->analyse([__DIR__ . '/data/unused-variable-overwritten.php'], [
+			['Value assigned to variable $a is never read before being overwritten.', 24],
+			['Value assigned to variable $a is never read before being overwritten.', 31],
+			['Value assigned to variable $a is never read.', 41],
+			['Value assigned to variable $a is never read.', 47],
+			['Value assigned to variable $a is never read.', 48],
+			['Value assigned to variable $a is never read.', 56],
+			['Value assigned to variable $a is never read before being overwritten.', 63],
+			['Value of variable $i after ++ is never read before being overwritten.', 72],
+			['Foreach value variable $v is never read before being overwritten.', 79],
+			['Foreach key variable $k is never read before being overwritten.', 87],
+			['Value assigned to $a[\'x\'] is never read before being overwritten.', 96],
+			['Value assigned to $a[\'x\'] is never read before being overwritten.', 104],
+			['Value assigned to $a[\'x\'] is never read.', 112],
+		]);
 	}
 
 	public function testUnsetCallsDestructor(): void

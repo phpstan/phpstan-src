@@ -763,8 +763,9 @@ public:
 		return create(name.get(), types, subtractedType.isNull() ? NULL : subtractedType.raw(), withoutOverride.raw(), variances);
 	}
 
-	/* the parent's sealed-hierarchy verdict when it changes the class, a
-	 * new self with the type arguments otherwise; $subtractedType IS_NULL
+	/* the parent's sealed-hierarchy verdict when it changes the class (a
+	 * remaining subtype given the type arguments this type implies for it),
+	 * a new self with the type arguments otherwise; $subtractedType IS_NULL
 	 * for null; UNDEF = pending exception */
 	zv::Val changeSubtractedType(zval *subtractedType) const
 	{
@@ -774,11 +775,18 @@ public:
 		// Parent handles sealed type exhaustiveness (returning NeverType when all
 		// allowed subtypes are subtracted, or a single remaining subtype).
 		if (!zv::Ref(result.raw()).instanceOf(pt_ce_object_type)) return result;
+
+		// The remaining subtype comes back as the sealed tag names it, without
+		// type arguments, and takes the ones this type implies for it.
 		zv::Val resultClassName = pt_type_call(Z_OBJ_P(result.raw()), PT_LC("getclassname"), 0, NULL);
 		if (UNEXPECTED(resultClassName.isUndef())) return zv::Val();
 		zv::Val className = thisGetClassName();
 		if (UNEXPECTED(className.isUndef())) return zv::Val();
-		if (!zend_is_identical(resultClassName.raw(), className.raw())) return result;
+		if (!zend_is_identical(resultClassName.raw(), className.raw())) {
+			zval selfZv;
+			ZVAL_OBJ(&selfZv, self);
+			return specializeSubclass(&selfZv, result.raw());
+		}
 
 		zval *types = this->types();
 		if (UNEXPECTED(types == NULL)) return zv::Val();

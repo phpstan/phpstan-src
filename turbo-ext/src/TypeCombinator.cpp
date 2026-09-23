@@ -1560,7 +1560,14 @@ public:
 	 * exception */
 	static int subtractableCovers(zval *a, zval *b)
 	{
-		zv::Val withoutSubtracted = call(a, PT_LC("gettypewithoutsubtractedtype"));
+		zv::Val withoutSubtracted;
+		return subtractableCovers(a, b, withoutSubtracted);
+	}
+
+	/* the same, handing out $a->getTypeWithoutSubtractedType() */
+	static int subtractableCovers(zval *a, zval *b, zv::Val &withoutSubtracted)
+	{
+		withoutSubtracted = call(a, PT_LC("gettypewithoutsubtractedtype"));
 		if (UNEXPECTED(withoutSubtracted.isUndef())) return -1;
 		zend_long isSuperType;
 		if (isInstance(withoutSubtracted.raw(), pt_ce_mixed_type) && isInstance(b, pt_ce_mixed_type)) {
@@ -1814,6 +1821,22 @@ public:
 			} else if (isBAlreadySubtracted == PT_TRI_YES) {
 				zv::Val subtracted = remove(aSubtracted.raw(), b);
 				PT_FAIL_IF_UNDEF(subtracted);
+
+				/* The subtracted type counts only within $a, where a class
+				 * written without type arguments has the ones $a implies: in
+				 * Option<int>, a subtracted Some is used up by Some<int>. */
+				zv::Val withoutSubtracted = call(a, PT_LC("gettypewithoutsubtractedtype"));
+				PT_FAIL_IF_UNDEF(withoutSubtracted);
+				zv::Val subtractedWithinA = pt_generic_object_type_specialize_subclass(withoutSubtracted.raw(), aSubtracted.raw());
+				PT_FAIL_IF_UNDEF(subtractedWithinA);
+				if (Z_OBJ_P(subtractedWithinA.raw()) != Z_OBJ_P(aSubtracted.raw())) {
+					zv::Val removedWithinA = remove(subtractedWithinA.raw(), b);
+					PT_FAIL_IF_UNDEF(removedWithinA);
+					if (isInstance(removedWithinA.raw(), pt_ce_never_type)) {
+						subtracted = neverType();
+						PT_FAIL_IF_UNDEF(subtracted);
+					}
+				}
 
 				if (isInstance(subtracted.raw(), pt_ce_never_type)) {
 					subtracted = zv::Val::null();
@@ -3206,10 +3229,10 @@ public:
 
 	/* the SubtractableType arm of doIntersect()'s reduction: whether the
 	 * subtractable's type without its subtracted type is a super type of
-	 * $other; -1 = pending exception */
-	static int subtractableCoversInIntersect(zval *subtractable, zval *other)
+	 * $other, handing out that type; -1 = pending exception */
+	static int subtractableCoversInIntersect(zval *subtractable, zval *other, zv::Val &withoutSubtracted)
 	{
-		return subtractableCovers(subtractable, other);
+		return subtractableCovers(subtractable, other, withoutSubtracted);
 	}
 
 	/* $constantArray->makeOffsetRequired($constantArray->getKeyTypes()[0])
@@ -3573,6 +3596,7 @@ public:
 
 		/* transform IntegerType & ConstantIntegerType to ConstantIntegerType
 		 * transform Child & Parent to Child
+		 * transform Child & Parent<int> to Child<int>
 		 * transform Object & ~null to Object
 		 * transform A & A to A
 		 * transform int[] & string to never
@@ -3584,12 +3608,19 @@ public:
 				int jSubtractable = isInstanceMap(types[j].raw(), PT_CLASS_SUBTRACTABLE_TYPE);
 				PT_FAIL_IF_NEG(jSubtractable);
 				if (jSubtractable) {
-					int covers = subtractableCoversInIntersect(types[j].raw(), types[i].raw());
+					zv::Val typeWithoutSubtractedTypeA;
+					int covers = subtractableCoversInIntersect(types[j].raw(), types[i].raw(), typeWithoutSubtractedTypeA);
 					PT_FAIL_IF_NEG(covers);
 					if (covers) {
+						/* A generic class written without type arguments is a
+						 * subtype of every parameterization of its generic
+						 * ancestors, so it is kept - with the arguments the
+						 * dropped ancestor implies for it. */
+						zv::Val specialized = pt_generic_object_type_specialize_subclass(typeWithoutSubtractedTypeA.raw(), types[i].raw());
+						PT_FAIL_IF_UNDEF(specialized);
 						zv::Val subtracted = call(types[j].raw(), PT_LC("getsubtractedtype"));
 						PT_FAIL_IF_UNDEF(subtracted);
-						zv::Val unioned = unionWithSubtractedType(types[i].raw(), subtracted.raw());
+						zv::Val unioned = unionWithSubtractedType(specialized.raw(), subtracted.raw());
 						PT_FAIL_IF_UNDEF(unioned);
 						types[i] = std::move(unioned);
 						types.erase(types.begin() + (ptrdiff_t) j);
@@ -3602,12 +3633,15 @@ public:
 				int iSubtractable = isInstanceMap(types[i].raw(), PT_CLASS_SUBTRACTABLE_TYPE);
 				PT_FAIL_IF_NEG(iSubtractable);
 				if (iSubtractable) {
-					int covers = subtractableCoversInIntersect(types[i].raw(), types[j].raw());
+					zv::Val typeWithoutSubtractedTypeB;
+					int covers = subtractableCoversInIntersect(types[i].raw(), types[j].raw(), typeWithoutSubtractedTypeB);
 					PT_FAIL_IF_NEG(covers);
 					if (covers) {
+						zv::Val specialized = pt_generic_object_type_specialize_subclass(typeWithoutSubtractedTypeB.raw(), types[j].raw());
+						PT_FAIL_IF_UNDEF(specialized);
 						zv::Val subtracted = call(types[i].raw(), PT_LC("getsubtractedtype"));
 						PT_FAIL_IF_UNDEF(subtracted);
-						zv::Val unioned = unionWithSubtractedType(types[j].raw(), subtracted.raw());
+						zv::Val unioned = unionWithSubtractedType(specialized.raw(), subtracted.raw());
 						PT_FAIL_IF_UNDEF(unioned);
 						types[j] = std::move(unioned);
 						types.erase(types.begin() + (ptrdiff_t) i);

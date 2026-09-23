@@ -45,6 +45,14 @@ extern "C" {
 #undef max
 #endif
 
+/* zend_portability.h silences -Wassume for the rest of the translation unit:
+ * under clang ZEND_ASSERT is __builtin_assume, and the Z_PARAM_* macros
+ * expanding it in our code assume expressions with potential side effects.
+ * The pop above discarded that along with our own exemptions — restore it. */
+#if defined(__clang__)
+#pragma clang diagnostic ignored "-Wassume"
+#endif
+
 /* {{{ configurable class references */
 
 typedef struct _pt_class_ref {

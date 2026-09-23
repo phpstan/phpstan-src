@@ -22,10 +22,8 @@ UNAME_S := $(shell uname -s)
 SIZE_FLAGS := -fno-asynchronous-unwind-tables -fno-unwind-tables -ffunction-sections -fdata-sections
 # The strict set the CI compile legs build with, defined once here and read
 # by the workflows (`make -s print-warn-flags`) instead of being spelled out
-# in each of them. The three -Wno- exemptions cover third-party macro
+# in each of them. The two -Wno- exemptions cover third-party macro
 # expansions, never our own code:
-#   -Wno-assume            zend's parameter-parsing macros expand
-#                          __builtin_assume with (potential) side effects
 #   -Wno-unused-parameter  PHP_METHOD's fixed signature — execute_data and
 #                          return_value are not used by every method
 #   -Wno-unicode           zend arginfo macros stringify namespaced class
@@ -48,7 +46,7 @@ SIZE_FLAGS := -fno-asynchronous-unwind-tables -fno-unwind-tables -ffunction-sect
 #                 shared const empty array to zend_array *. Not ours to fix.
 #   -Wzero-as-null-pointer-constant  3 sites; not worth a gate on its own.
 STRICT_WARN_FLAGS := -Wall -Wextra -Werror \
-	-Wno-assume -Wno-unused-parameter -Wno-unicode \
+	-Wno-unused-parameter -Wno-unicode \
 	-Wsuggest-override -Wnon-virtual-dtor -Wdouble-promotion -Wextra-semi
 # A plain local build stays lenient on purpose: a contributor's compiler may
 # warn where the versions CI pins do not, and -Werror would turn that into a

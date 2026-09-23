@@ -13,7 +13,6 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
-use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\NullType;
@@ -48,7 +47,7 @@ final class AdapterReflectionEnumDynamicReturnTypeExtension implements DynamicMe
 
 	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): ?Type
 	{
-		if (IntegerRangeType::fromInterval(80000, null)->isSuperTypeOf($scope->getPhpVersion()->getType())->yes()) {
+		if ($scope->getPhpVersion()->hasCorrectReflectionEnumAdapterReturnTypes()->yes()) {
 			return null;
 		}
 

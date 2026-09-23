@@ -8,7 +8,6 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionType;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
-use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
@@ -41,7 +40,7 @@ final class AdapterReflectionEnumCaseDynamicReturnTypeExtension implements Dynam
 
 	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): ?Type
 	{
-		if (IntegerRangeType::fromInterval(80000, null)->isSuperTypeOf($scope->getPhpVersion()->getType())->yes()) {
+		if ($scope->getPhpVersion()->hasCorrectReflectionEnumAdapterReturnTypes()->yes()) {
 			return null;
 		}
 

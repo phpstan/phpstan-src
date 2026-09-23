@@ -1730,6 +1730,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				$isConstructor,
 				$this->attributeReflectionFactory->fromAttrGroups($classMethod->attrGroups, InitializerExprContext::fromStubParameter($this->getClassReflection()->getName(), $this->getFile(), $classMethod)),
 				$phpDocPureUnlessCallableIsImpureParameters,
+				$this->phpVersion,
 			),
 			!$classMethod->isStatic(),
 		);
@@ -1821,6 +1822,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				false,
 				$this->attributeReflectionFactory->fromAttrGroups($hook->attrGroups, InitializerExprContext::fromStubParameter($this->getClassReflection()->getName(), $this->getFile(), $hook)),
 				[],
+				$this->phpVersion,
 			),
 			true,
 		);

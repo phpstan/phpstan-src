@@ -94,12 +94,16 @@ private:
 		return pt_constant_array_type_builder_get_array(builder.raw());
 	}
 
-	/* $acc = TypeCombinator::union($acc, $type->generalize($precision)) */
+	/* $acc = TypeCombinator::union($acc, $type->generalize($precision)),
+	 * skipped when the generalized type already equals $acc */
 	static bool unionGeneralized(zv::Val &acc, zv::Val type, zval *precision)
 	{
 		if (UNEXPECTED(type.isUndef())) return false;
 		zv::Val generalized = pt_type_call(Z_OBJ_P(type.raw()), PT_LC("generalize"), 1, precision);
 		if (UNEXPECTED(generalized.isUndef())) return false;
+		int equal = pt_type_call_is_true(Z_OBJ_P(generalized.raw()), PT_LC("equals"), 1, acc.raw());
+		if (UNEXPECTED(equal < 0)) return false;
+		if (equal == 1) return true;
 		zv::Args<2> unionArgs{acc.raw(), generalized.raw()};
 		acc = pt_type_combinator_union(2, unionArgs);
 		return !acc.isUndef();

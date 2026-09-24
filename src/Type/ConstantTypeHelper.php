@@ -82,8 +82,8 @@ final class ConstantTypeHelper
 		$keyType = new NeverType();
 		$valueType = new NeverType();
 		foreach ($value as $k => $v) {
-			$keyType = TypeCombinator::union($keyType, self::getTypeFromValue($k)->generalize($precision));
-			$valueType = TypeCombinator::union($valueType, self::getTypeFromValue($v)->generalize($precision));
+			$keyType = self::unionGeneralized($keyType, self::getTypeFromValue($k), $precision);
+			$valueType = self::unionGeneralized($valueType, self::getTypeFromValue($v), $precision);
 		}
 
 		$accessories = [new NonEmptyArrayType(), new OversizedArrayType()];
@@ -92,6 +92,17 @@ final class ConstantTypeHelper
 		}
 
 		return TypeCombinator::intersect(new ArrayType($keyType, $valueType), ...$accessories);
+	}
+
+	/** Skips the union when the generalized type is already the accumulated one, which is the common case. */
+	private static function unionGeneralized(Type $accumulated, Type $type, GeneralizePrecision $precision): Type
+	{
+		$generalized = $type->generalize($precision);
+		if ($generalized->equals($accumulated)) {
+			return $accumulated;
+		}
+
+		return TypeCombinator::union($accumulated, $generalized);
 	}
 
 }

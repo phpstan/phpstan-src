@@ -25,10 +25,13 @@ inline constexpr char strings[] =
 	"value\0" /* 0 */
 	"\0" /* 6 */
 	"PHPStan\\Type\\Type\0" /* 7 */
-	"getTypeFromValue"; /* 25 */
+	"getTypeFromValue\0" /* 25 */
+	"getOversizedArrayType"; /* 42 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0), /* getTypeFromValue $value */
 	reg::packed(6, 0, 7), /* getTypeFromValue return */
+	reg::packed(0, MAY_BE_ARRAY), /* getOversizedArrayType $value */
+	reg::packed(6, 0, 7), /* getOversizedArrayType return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -36,6 +39,7 @@ using Sig = reg::Sig<strings, args>;
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
 inline constexpr sigtab::Sig getTypeFromValue = { { 25 /* getTypeFromValue */, 1, 0, 1, 1, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig getOversizedArrayType = { { 42 /* getOversizedArrayType */, 1, 2, 1, 3, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::ConstantTypeHelper

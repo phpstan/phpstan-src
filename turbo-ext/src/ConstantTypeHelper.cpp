@@ -6,7 +6,8 @@
  * one static factory. getTypeFromValue() maps a PHP value to its constant
  * type the way the twin's is_*() chain does: the scalars and null to the
  * shadowed constant types, an array through the shadowed
- * ConstantArrayTypeBuilder (direct C++ calls, no engine frames), an enum
+ * ConstantArrayTypeBuilder (direct C++ calls, no engine frames) or, when
+ * larger than ARRAY_COUNT_LIMIT, to a generalized oversized array, an enum
  * case to EnumCaseObjectType, any other object to ObjectType, anything else
  * (a resource) to MixedType.
  *
@@ -61,30 +62,83 @@ private:
 		return zv::Val::adopt(raw);
 	}
 
-	/* the builder over every key/value pair, degraded beforehand when the
-	 * array is larger than ARRAY_COUNT_LIMIT */
+	/* the key type of an array entry */
+	static zv::Val keyTypeOf(zv::ArrayEntry &entry)
+	{
+		zval key;
+		zend_string *stringKey = entry.stringKeyOrNull();
+		if (stringKey != NULL) {
+			ZVAL_STR(&key, stringKey);
+		} else {
+			ZVAL_LONG(&key, (zend_long) entry.indexKey());
+		}
+		return getTypeFromValue(&key);
+	}
+
+	/* the builder over every key/value pair; getOversizedArrayType() when
+	 * the array is larger than ARRAY_COUNT_LIMIT */
 	static zv::Val arrayType(zval *value)
 	{
+		if (zend_hash_num_elements(Z_ARRVAL_P(value)) > PT_CONSTANT_ARRAY_TYPE_BUILDER_ARRAY_COUNT_LIMIT) {
+			return getOversizedArrayType(value);
+		}
 		zv::Val builder = pt_constant_array_type_builder_create_empty();
 		if (UNEXPECTED(builder.isUndef())) return zv::Val();
-		if (zend_hash_num_elements(Z_ARRVAL_P(value)) > PT_CONSTANT_ARRAY_TYPE_BUILDER_ARRAY_COUNT_LIMIT) {
-			if (UNEXPECTED(!pt_constant_array_type_builder_degrade_to_general_array(builder.raw(), true))) return zv::Val();
-		}
 		for (zv::ArrayEntry entry : zv::ArrRef(value)) {
-			zval key;
-			zend_string *stringKey = entry.stringKeyOrNull();
-			if (stringKey != NULL) {
-				ZVAL_STR(&key, stringKey);
-			} else {
-				ZVAL_LONG(&key, (zend_long) entry.indexKey());
-			}
-			zv::Val keyType = getTypeFromValue(&key);
+			zv::Val keyType = keyTypeOf(entry);
 			if (UNEXPECTED(keyType.isUndef())) return zv::Val();
 			zv::Val valueType = getTypeFromValue(entry.value().raw());
 			if (UNEXPECTED(valueType.isUndef())) return zv::Val();
 			if (UNEXPECTED(!pt_constant_array_type_builder_set_offset_value_type(builder.raw(), keyType.raw(), valueType.raw()))) return zv::Val();
 		}
 		return pt_constant_array_type_builder_get_array(builder.raw());
+	}
+
+	/* $acc = TypeCombinator::union($acc, $type->generalize($precision)),
+	 * skipped when the generalized type already equals $acc */
+	static bool unionGeneralized(zv::Val &acc, zv::Val type, zval *precision)
+	{
+		if (UNEXPECTED(type.isUndef())) return false;
+		zv::Val generalized = pt_type_call(Z_OBJ_P(type.raw()), PT_LC("generalize"), 1, precision);
+		if (UNEXPECTED(generalized.isUndef())) return false;
+		int equal = pt_type_call_is_true(Z_OBJ_P(generalized.raw()), PT_LC("equals"), 1, acc.raw());
+		if (UNEXPECTED(equal < 0)) return false;
+		if (equal == 1) return true;
+		zv::Args<2> unionArgs{acc.raw(), generalized.raw()};
+		acc = pt_type_combinator_union(2, unionArgs);
+		return !acc.isUndef();
+	}
+
+	/* non-empty-array<generalized keys, generalized values>&oversized-array,
+	 * plus list when the value is a list */
+	static zv::Val getOversizedArrayType(zval *value)
+	{
+		zv::Val precision = pt_type_call_static(PT_CLASS_GENERALIZE_PRECISION, PT_LC("morespecific"), 0, NULL);
+		if (UNEXPECTED(precision.isUndef())) return zv::Val();
+		zval raw;
+		if (UNEXPECTED(!pt_never_type_new(&raw))) return zv::Val();
+		zv::Val keyType = zv::Val::adopt(raw);
+		if (UNEXPECTED(!pt_never_type_new(&raw))) return zv::Val();
+		zv::Val valueType = zv::Val::adopt(raw);
+		for (zv::ArrayEntry entry : zv::ArrRef(value)) {
+			if (UNEXPECTED(!unionGeneralized(keyType, keyTypeOf(entry), precision.raw()))) return zv::Val();
+			if (UNEXPECTED(!unionGeneralized(valueType, getTypeFromValue(entry.value().raw()), precision.raw()))) return zv::Val();
+		}
+
+		if (UNEXPECTED(!pt_array_type_new(&raw, keyType.raw(), valueType.raw()))) return zv::Val();
+		zv::Val array = zv::Val::adopt(raw);
+		if (UNEXPECTED(!pt_non_empty_array_type_new(&raw))) return zv::Val();
+		zv::Val nonEmpty = zv::Val::adopt(raw);
+		if (UNEXPECTED(!pt_oversized_array_type_new(&raw))) return zv::Val();
+		zv::Val oversized = zv::Val::adopt(raw);
+		if (!zend_array_is_list(Z_ARRVAL_P(value))) {
+			zv::Args<3> intersectArgs{array.raw(), nonEmpty.raw(), oversized.raw()};
+			return pt_type_combinator_intersect(3, intersectArgs);
+		}
+		if (UNEXPECTED(!pt_accessory_array_list_type_new(&raw))) return zv::Val();
+		zv::Val list = zv::Val::adopt(raw);
+		zv::Args<4> intersectArgs{array.raw(), nonEmpty.raw(), oversized.raw(), list.raw()};
+		return pt_type_combinator_intersect(4, intersectArgs);
 	}
 
 	/* new EnumCaseObjectType($class, $value->name) for an enum case, new

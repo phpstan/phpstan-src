@@ -2317,6 +2317,12 @@ for ($i = 0; $i < \PHPStan\Type\Constant\ConstantArrayTypeBuilder::ARRAY_COUNT_L
 	$cthBig[] = $i % 2 === 0 ? $i : 'v' . $i;
 }
 $cthBigNested = ['inner' => $cthBig, 'x' => [$cthBig, 1]];
+$cthBigMap = [];
+$cthBigRows = [];
+for ($i = 0; $i < \PHPStan\Type\Constant\ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT + 1; $i++) {
+	$cthBigMap['k' . $i] = $i;
+	$cthBigRows[] = [$i, 'de', 'Title ' . $i];
+}
 $cthValues = [
 	'int 0' => 0,
 	'int 42' => 42,
@@ -2340,6 +2346,8 @@ $cthValues = [
 	'array negative keys' => [-5 => 'a', -1 => 'b', 0 => 'c'],
 	'array big' => $cthBig,
 	'array big nested' => $cthBigNested,
+	'array big map' => $cthBigMap,
+	'array big rows' => $cthBigRows,
 	'stdClass' => new \stdClass(),
 	'enum case' => SmokeTurboSuit::Hearts,
 	'enum case spades' => SmokeTurboSuit::Spades,

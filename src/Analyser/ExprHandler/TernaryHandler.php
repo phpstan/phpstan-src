@@ -5,7 +5,11 @@ namespace PHPStan\Analyser\ExprHandler;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\BinaryOp\BooleanAnd;
 use PhpParser\Node\Expr\BinaryOp\BooleanOr;
+use PhpParser\Node\Expr\BinaryOp\Identical;
+use PhpParser\Node\Expr\BinaryOp\NotIdentical;
+use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\Ternary;
+use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
@@ -85,19 +89,54 @@ final class TernaryHandler implements ExprHandler
 			return $typeSpecifier->specifyDefaultTypes($scope, $expr, $context);
 		}
 
-		if ($expr->if !== null) {
-			$conditionExpr = new BooleanOr(
-				new BooleanAnd($expr->cond, $expr->if),
-				new BooleanAnd(new Expr\BooleanNot($expr->cond), $expr->else),
-			);
-		} else {
-			$conditionExpr = new BooleanOr(
-				$expr->cond,
-				new BooleanAnd(new Expr\BooleanNot($expr->cond), $expr->else),
-			);
+		if ($context === TypeSpecifierContext::createTruthy() || $context === TypeSpecifierContext::createFalsey()) {
+			if ($expr->if !== null) {
+				$conditionExpr = new BooleanOr(
+					new BooleanAnd($expr->cond, $expr->if),
+					new BooleanAnd(new Expr\BooleanNot($expr->cond), $expr->else),
+				);
+			} else {
+				$conditionExpr = new BooleanOr(
+					$expr->cond,
+					new BooleanAnd(new Expr\BooleanNot($expr->cond), $expr->else),
+				);
+			}
+
+			return $typeSpecifier->specifyTypesInCondition($scope, $conditionExpr, $context)->setRootExpr($expr);
 		}
 
-		return $typeSpecifier->specifyTypesInCondition($scope, $conditionExpr, $context)->setRootExpr($expr);
+		// An exact context (`=== true`, `!== false`, ...) is about the value of the taken arm, not
+		// its truthiness - the boolean rewrite above would read `0 !== false` as `0` being truthy.
+		$ifComparison = $this->createArmComparison($expr->if ?? $expr->cond, $context);
+		$elseComparison = $this->createArmComparison($expr->else, $context);
+		if ($ifComparison === null || $elseComparison === null) {
+			return $typeSpecifier->specifyDefaultTypes($scope, $expr, $context);
+		}
+
+		$conditionExpr = new BooleanOr(
+			new BooleanAnd($expr->cond, $ifComparison),
+			new BooleanAnd(new Expr\BooleanNot($expr->cond), $elseComparison),
+		);
+
+		return $typeSpecifier->specifyTypesInCondition($scope, $conditionExpr, TypeSpecifierContext::createTruthy())->setRootExpr($expr);
+	}
+
+	private function createArmComparison(Expr $arm, TypeSpecifierContext $context): ?Expr
+	{
+		if ($context === TypeSpecifierContext::createTrue()) {
+			return new Identical($arm, new ConstFetch(new Name('true')));
+		}
+		if ($context === TypeSpecifierContext::createFalse()) {
+			return new Identical($arm, new ConstFetch(new Name('false')));
+		}
+		if ($context === TypeSpecifierContext::createTrue()->negate()) {
+			return new NotIdentical($arm, new ConstFetch(new Name('true')));
+		}
+		if ($context === TypeSpecifierContext::createFalse()->negate()) {
+			return new NotIdentical($arm, new ConstFetch(new Name('false')));
+		}
+
+		return null;
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult

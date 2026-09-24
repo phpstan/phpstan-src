@@ -210,6 +210,20 @@ class ParameterCastableToStringRuleTest extends RuleTestCase
 		]));
 	}
 
+	public function testBug15261(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15261.php'], $this->hackParameterNames([
+			[
+				'Parameter #1 $array of function array_diff_assoc expects an array of values castable to string, array<string, stdClass> given.',
+				8,
+			],
+			[
+				'Parameter #2 $arrays of function array_diff_assoc expects an array of values castable to string, array<string, stdClass> given.',
+				9,
+			],
+		]));
+	}
+
 	/**
 	 * @param list<array{0: string, 1: int, 2?: string|null}> $errors
 	 * @return list<array{0: string, 1: int, 2?: string|null}>

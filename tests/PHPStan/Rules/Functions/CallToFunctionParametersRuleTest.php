@@ -3035,6 +3035,17 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug15308(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15308.php'], [
+			[
+				'Constant STR_PAD_LEFT is not allowed for parameter #2 $length of function str_pad.',
+				6,
+			],
+		]);
+	}
+
 	public function testBug4608(): void
 	{
 		$paramName = PHP_VERSION_ID >= 80000 ? 'callback' : 'function';

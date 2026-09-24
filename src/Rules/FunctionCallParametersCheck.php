@@ -110,12 +110,14 @@ final class FunctionCallParametersCheck
 		$functionParametersMinCount = 0;
 		$functionParametersMaxCount = 0;
 		$allowedConstantsTypes = [];
+		$parametersWithAllowedConstants = [];
 		foreach ($parametersAcceptor->getParameters() as $parameter) {
 			if (
 				$parameter instanceof ExtendedParameterReflection
 				&& $parameter->getAllowedConstants() !== null
 			) {
 				$allowedConstantsTypes[] = $parameter->getType();
+				$parametersWithAllowedConstants[] = $parameter;
 			}
 			if (!$parameter->isOptional()) {
 				$functionParametersMinCount++;
@@ -489,6 +491,16 @@ final class FunctionCallParametersCheck
 						} elseif ($isBuiltin && $allowedConstantsType !== null && $allowedConstantsType->isSuperTypeOf($parameterType)->yes()) {
 							foreach ($constantReflections as $constantReflection) {
 								if ($constantReflection->isBuiltin()->no()) {
+									continue;
+								}
+								$allowedForParameter = false;
+								foreach ($parametersWithAllowedConstants as $parameterWithAllowedConstants) {
+									if ($parameterWithAllowedConstants->checkAllowedConstants([$constantReflection])->isOk()) {
+										$allowedForParameter = true;
+										break;
+									}
+								}
+								if (!$allowedForParameter) {
 									continue;
 								}
 								$errors[] = RuleErrorBuilder::message(sprintf(

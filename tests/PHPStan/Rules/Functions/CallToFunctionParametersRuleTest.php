@@ -3004,6 +3004,37 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug15306(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15306.php'], [
+			[
+				'Constants JSON_INVALID_UTF8_IGNORE, JSON_INVALID_UTF8_SUBSTITUTE cannot be combined for parameter #4 $flags of function json_decode.',
+				5,
+			],
+			[
+				'Constants JSON_INVALID_UTF8_IGNORE, JSON_INVALID_UTF8_SUBSTITUTE cannot be combined for parameter #2 $flags of function json_encode.',
+				9,
+			],
+			[
+				'Constants JSON_PARTIAL_OUTPUT_ON_ERROR, JSON_THROW_ON_ERROR cannot be combined for parameter #2 $flags of function json_encode.',
+				10,
+			],
+			[
+				'Constants FILTER_REQUIRE_SCALAR, FILTER_REQUIRE_ARRAY cannot be combined for parameter #3 $options of function filter_var.',
+				14,
+			],
+			[
+				'Constants FILTER_REQUIRE_SCALAR, FILTER_REQUIRE_ARRAY cannot be combined for parameter #4 $options of function filter_input.',
+				16,
+			],
+			[
+				'Constants LOG_NDELAY, LOG_ODELAY cannot be combined for parameter #2 $flags of function openlog.',
+				19,
+			],
+		]);
+	}
+
 	public function testBug4608(): void
 	{
 		$paramName = PHP_VERSION_ID >= 80000 ? 'callback' : 'function';

@@ -1,0 +1,9 @@
+parameters:
+	level: 0
+	tmpDir: tmp
+	paths:
+		- src
+	parallel:
+		jobSize: 1
+		maximumNumberOfProcesses: 2
+		minimumNumberOfJobsPerProcess: 1

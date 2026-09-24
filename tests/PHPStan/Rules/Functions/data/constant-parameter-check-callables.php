@@ -10,4 +10,4 @@ $encode([], JSON_PRETTY_PRINT);
 $encode([], SORT_REGULAR);
 
 // integer literal instead of constant
-$encode([], 128);
+$encode([], 4096);

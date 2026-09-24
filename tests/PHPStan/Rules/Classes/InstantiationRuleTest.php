@@ -708,9 +708,8 @@ class InstantiationRuleTest extends RuleTestCase
 				18,
 			],
 			[
-				'Integer literal 16 is not allowed for parameter #1 $flags of class finfo constructor.',
+				'Integer 4 does not correspond to constants allowed for parameter #1 $flags of class finfo constructor.',
 				21,
-				'Use constants instead.',
 			],
 		]);
 	}

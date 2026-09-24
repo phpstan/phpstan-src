@@ -198,9 +198,8 @@ class CallUserFuncRuleTest extends RuleTestCase
 				9,
 			],
 			[
-				'Integer literal 128 is not allowed for parameter #2 $flags of callable passed to call_user_func().',
+				'Integer 4096 does not correspond to constants allowed for parameter #2 $flags of callable passed to call_user_func().',
 				12,
-				'Use constants instead.',
 			],
 		]);
 	}

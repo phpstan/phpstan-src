@@ -18,4 +18,4 @@ new \IntlDateFormatter('en_US', \IntlDateFormatter::FULL, \IntlDateFormatter::SH
 new \IntlDateFormatter('en_US', \IntlDateFormatter::GREGORIAN, \IntlDateFormatter::SHORT);
 
 // integer literal instead of constant
-new \finfo(16 | FILEINFO_MIME_ENCODING);
+new \finfo(4 | FILEINFO_MIME_ENCODING);

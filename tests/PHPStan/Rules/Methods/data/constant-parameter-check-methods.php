@@ -31,4 +31,4 @@ $stmt->fetch(mode: \PDO::ATTR_ERRMODE);
 $stmt->setFetchMode(mode: \PDO::FETCH_ASSOC | \PDO::FETCH_NUM);
 
 // integer literal instead of constant
-$finfo->file('test.txt', 16);
+$finfo->file('test.txt', 4);

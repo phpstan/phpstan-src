@@ -15,4 +15,4 @@ namespace ConstantParameterCheckStatic;
 \NumberFormatter::create('en_US', \NumberFormatter::TYPE_INT32);
 
 // integer literal instead of constant
-\NumberFormatter::create('en_US', 1);
+\NumberFormatter::create('en_US', 100);

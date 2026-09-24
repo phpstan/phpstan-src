@@ -1063,9 +1063,8 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 				15,
 			],
 			[
-				'Integer literal 1 is not allowed for parameter #2 $style of static method NumberFormatter::create().',
+				'Integer 100 does not correspond to constants allowed for parameter #2 $style of static method NumberFormatter::create().',
 				18,
-				'Use constants instead.',
 			],
 		]);
 	}

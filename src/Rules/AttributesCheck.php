@@ -162,7 +162,7 @@ final class AttributesCheck
 					'Constant %s is not allowed for %s of attribute class ' . $attributeClassName . ' constructor.',
 					'Constants %s cannot be combined for %s of attribute class ' . $attributeClassName . ' constructor.',
 					'Combining constants with | is not allowed for %s of attribute class ' . $attributeClassName . ' constructor.',
-					'Integer literal %s is not allowed for %s of attribute class ' . $attributeClassName . ' constructor.',
+					'Integer %s does not correspond to constants allowed for %s of attribute class ' . $attributeClassName . ' constructor.',
 					null,
 				);
 

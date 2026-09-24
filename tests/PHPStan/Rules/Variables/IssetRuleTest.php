@@ -682,4 +682,11 @@ class IssetRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14421.php'], []);
 	}
 
+	public function testPregMatchOffsetCaptureWithoutTreatPhpDocTypesAsCertain(): void
+	{
+		$this->treatPhpDocTypesAsCertain = false;
+
+		$this->analyse([__DIR__ . '/data/preg-match-offset-capture-isset.php'], []);
+	}
+
 }

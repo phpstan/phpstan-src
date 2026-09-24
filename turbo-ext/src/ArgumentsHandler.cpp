@@ -2540,12 +2540,30 @@ private:
 			}
 
 			// what the call writes back is described by PHPDoc (@param, @param-out,
-			// a parameter-out extension) - natively only the parameter's own
-			// type declaration is guaranteed
+			// a parameter-out extension) - natively only the parameter's own type
+			// can describe it: its declaration, or for a builtin its signature map
+			// entry. PHP checks a declaration only on the way in and a signature
+			// map entry not at all, so it holds only when the written-back type
+			// fits inside it. preg_match() with PREG_OFFSET_CAPTURE writes arrays
+			// into a slot the signature map declares as string[].
 			bool currentIsExtended = false;
 			if (UNEXPECTED(!isA(currentParameter, PT_CLASS_EXTENDED_PARAMETER_REFLECTION, currentIsExtended))) return false;
 			zv::Val byRefNativeType = currentIsExtended ? parameterGetNativeType(currentParameter) : zv::Val::copyOf(byRefType.ref());
 			if (UNEXPECTED(byRefNativeType.isUndef())) return false;
+			if (currentIsExtended) {
+				if (UNEXPECTED(Z_TYPE_P(byRefNativeType.raw()) != IS_OBJECT)) {
+					zend_throw_error(NULL, "Call to a member function isSuperTypeOf() on %s", zend_zval_value_name(byRefNativeType.raw()));
+					return false;
+				}
+				zv::Val fits = pt_type_op(Z_OBJ_P(byRefNativeType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, byRefType.raw());
+				if (UNEXPECTED(fits.isUndef())) return false;
+				zend_long fitsValue = pt_type_result_trinary(fits.raw());
+				if (UNEXPECTED(fitsValue < 0)) return false;
+				if (fitsValue != PT_TRI_YES) {
+					byRefNativeType = pt_type_new_mixed_type();
+					if (UNEXPECTED(byRefNativeType.isUndef())) return false;
+				}
+			}
 
 			zv::Val typeExpr = newNativeTypeExpr(byRefType.raw(), byRefNativeType.raw());
 			if (UNEXPECTED(typeExpr.isUndef())) return false;

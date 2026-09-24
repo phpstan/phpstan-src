@@ -9,6 +9,7 @@ use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
+use function array_last;
 use function count;
 use function strtolower;
 
@@ -36,13 +37,12 @@ final class ClosureCallContextMatcher
 		if ($askStack === $positionStack) {
 			return true;
 		}
-		$depth = count($askStack);
-		if ($depth === 0 || $depth !== count($positionStack)) {
+		if ($askStack === [] || count($askStack) !== count($positionStack)) {
 			return true;
 		}
 
-		[, $askParameter] = $askStack[$depth - 1];
-		[$callee, $positionParameter] = $positionStack[$depth - 1];
+		[, $askParameter] = array_last($askStack);
+		[$callee, $positionParameter] = array_last($positionStack);
 		if ($askParameter === null || $askParameter === $positionParameter) {
 			return true;
 		}

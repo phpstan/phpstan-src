@@ -3,11 +3,24 @@
 namespace PHPStan\Type;
 
 use DependentPhpDocs\Foo;
+use PHPStan\Broker\AnonymousClassNameHelper;
+use PHPStan\Cache\Cache;
+use PHPStan\Cache\CacheItem;
+use PHPStan\Cache\CacheStorage;
+use PHPStan\File\FileContentHasher;
+use PHPStan\File\FileHelper;
+use PHPStan\PhpDoc\PhpDocNodeResolver;
+use PHPStan\PhpDoc\PhpDocStringResolver;
 use PHPStan\PhpDoc\Tag\ReturnTag;
+use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
 use RuntimeException;
+use function array_values;
 use function realpath;
+use function serialize;
+use function substr_count;
+use function unserialize;
 
 class FileTypeMapperTest extends PHPStanTestCase
 {
@@ -208,6 +221,77 @@ class FileTypeMapperTest extends PHPStanTestCase
 		$this->assertSame('AliasCollisionNamespace1\Foo', $doc1->getVarTags()['x']->getType()->describe(VerbosityLevel::precise()));
 		$this->assertArrayHasKey('x', $doc2->getVarTags());
 		$this->assertSame('AliasCollisionNamespace2\Foo', $doc2->getVarTags()['x']->getType()->describe(VerbosityLevel::precise()));
+	}
+
+	public function testNameScopeMapIsStoredInCacheWithSharedValues(): void
+	{
+		$storage = new class implements CacheStorage {
+
+			/** @var array<string, string> */
+			public array $storage = [];
+
+			public function load(string $key, string $variableKey)
+			{
+				if (!isset($this->storage[$key])) {
+					return null;
+				}
+
+				$item = unserialize($this->storage[$key]);
+				if (!$item instanceof CacheItem || !$item->isVariableKeyValid($variableKey)) {
+					return null;
+				}
+
+				return $item->getData();
+			}
+
+			public function save(string $key, string $variableKey, $data): void
+			{
+				$this->storage[$key] = serialize(new CacheItem($variableKey, $data));
+			}
+
+		};
+
+		$fileName = __DIR__ . '/data/bug-15304.php';
+		$writingFileTypeMapper = $this->createFileTypeMapper($storage);
+		$resolved = $writingFileTypeMapper->getResolvedPhpDoc($fileName, 'Bug15304\\Foo', null, 'one', '/** @return ModelOne */');
+		$this->assertNotNull($resolved->getReturnTag());
+		$this->assertSame('Bug15304\\Models\\ModelOne', $resolved->getReturnTag()->getType()->describe(VerbosityLevel::precise()));
+
+		$this->assertCount(1, $storage->storage);
+		$payload = array_values($storage->storage)[0];
+		$this->assertSame(1, substr_count($payload, 'Bug15304\\Models\\ModelThree'));
+		$this->assertSame(1, substr_count($payload, 'Bug15304\\Models\\SOME_CONSTANT'));
+
+		$readingFileTypeMapper = $this->createFileTypeMapper($storage);
+		$resolved = $readingFileTypeMapper->getResolvedPhpDoc($fileName, 'Bug15304\\Foo', null, 'three', '/** @return ModelThree */');
+		$this->assertNotNull($resolved->getReturnTag());
+		$this->assertSame('Bug15304\\Models\\ModelThree', $resolved->getReturnTag()->getType()->describe(VerbosityLevel::precise()));
+
+		$resolved = $readingFileTypeMapper->getResolvedPhpDoc($fileName, 'Bug15304\\Foo', null, 'four', '/**
+	 * @template U
+	 * @param U $u
+	 * @return T|U
+	 */');
+		$this->assertNotNull($resolved->getReturnTag());
+		$this->assertSame('T (class Bug15304\\Foo, parameter)|U (method Bug15304\\Foo::four(), parameter)', $resolved->getReturnTag()->getType()->describe(VerbosityLevel::precise()));
+	}
+
+	private function createFileTypeMapper(CacheStorage $storage): FileTypeMapper
+	{
+		$container = self::getContainer();
+
+		return new FileTypeMapper(
+			$container->getByType(ReflectionProviderProvider::class),
+			$container->getService('defaultAnalysisParser'),
+			$container->getByType(PhpDocStringResolver::class),
+			$container->getByType(PhpDocNodeResolver::class),
+			$container->getByType(AnonymousClassNameHelper::class),
+			$container->getByType(FileHelper::class),
+			new Cache($storage),
+			$container->getByType(FileContentHasher::class),
+			2048,
+			128,
+		);
 	}
 
 }

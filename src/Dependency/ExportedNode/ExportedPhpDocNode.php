@@ -4,6 +4,7 @@ namespace PHPStan\Dependency\ExportedNode;
 
 use JsonSerializable;
 use Override;
+use PHPStan\Dependency\ExportedNameScope;
 use PHPStan\Dependency\ExportedNode;
 use ReturnTypeWillChange;
 
@@ -11,10 +12,10 @@ final class ExportedPhpDocNode implements ExportedNode, JsonSerializable
 {
 
 	/**
-	 * @param array<string, string> $uses alias(string) => fullName(string)
-	 * @param array<string, string> $constUses alias(string) => fullName(string)
+	 * The name scope is shared by all PHPDocs exported from the same part of a file, and serialize()
+	 * keeps shared objects shared, so the result cache stores the uses of a file once, not per PHPDoc.
 	 */
-	public function __construct(private string $phpDocString, private ?string $namespace, private array $uses, private array $constUses)
+	public function __construct(private string $phpDocString, private ExportedNameScope $nameScope)
 	{
 	}
 
@@ -25,9 +26,7 @@ final class ExportedPhpDocNode implements ExportedNode, JsonSerializable
 		}
 
 		return $this->phpDocString === $node->phpDocString
-			&& $this->namespace === $node->namespace
-			&& $this->uses === $node->uses
-			&& $this->constUses === $node->constUses;
+			&& $this->nameScope->equals($node->nameScope);
 	}
 
 	/**
@@ -41,9 +40,9 @@ final class ExportedPhpDocNode implements ExportedNode, JsonSerializable
 			'type' => self::class,
 			'data' => [
 				'phpDocString' => $this->phpDocString,
-				'namespace' => $this->namespace,
-				'uses' => $this->uses,
-				'constUses' => $this->constUses,
+				'namespace' => $this->nameScope->getNamespace(),
+				'uses' => $this->nameScope->getUses(),
+				'constUses' => $this->nameScope->getConstUses(),
 			],
 		];
 	}
@@ -53,7 +52,7 @@ final class ExportedPhpDocNode implements ExportedNode, JsonSerializable
 	 */
 	public static function __set_state(array $properties): self
 	{
-		return new self($properties['phpDocString'], $properties['namespace'], $properties['uses'], $properties['constUses'] ?? []);
+		return new self($properties['phpDocString'], new ExportedNameScope($properties['namespace'], $properties['uses'], $properties['constUses'] ?? []));
 	}
 
 	/**
@@ -61,7 +60,7 @@ final class ExportedPhpDocNode implements ExportedNode, JsonSerializable
 	 */
 	public static function decode(array $data): self
 	{
-		return new self($data['phpDocString'], $data['namespace'], $data['uses'], $data['constUses'] ?? []);
+		return new self($data['phpDocString'], ExportedNameScope::decode($data['namespace'], $data['uses'], $data['constUses'] ?? []));
 	}
 
 }

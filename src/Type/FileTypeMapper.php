@@ -369,7 +369,8 @@ final class FileTypeMapper
 		// (https://github.com/phpstan/phpstan/issues/15037) - a parse that
 		// silently dropped every comment cached PHPDoc-less name-scope maps,
 		// and the content hashes cannot tell them apart from real ones.
-		$variableCacheKey = sprintf('v6-%s', ComposerHelper::getPhpDocParserVersion());
+		// v7: name scope maps are stored dehydrated by IntermediaryNameScope::dehydrateMap()
+		$variableCacheKey = sprintf('v7-%s', ComposerHelper::getPhpDocParserVersion());
 		$cached = $this->loadCachedPhpDocNodeMap($cacheKey, $variableCacheKey);
 		if ($cached === null) {
 			[$nameScopeMap, $files] = $this->createPhpDocNodeMap($fileName, null, null, [], $fileName);
@@ -378,7 +379,7 @@ final class FileTypeMapper
 				$newHash = $this->fileContentHasher->hash($file);
 				$filesWithHashes[$file] = $newHash;
 			}
-			$this->cache->save($cacheKey, $variableCacheKey, [$nameScopeMap, $filesWithHashes]);
+			$this->cache->save($cacheKey, $variableCacheKey, [IntermediaryNameScope::dehydrateMap($nameScopeMap), $filesWithHashes]);
 		} else {
 			[$nameScopeMap] = $cached;
 		}
@@ -415,12 +416,7 @@ final class FileTypeMapper
 			}
 
 			if ($useCache) {
-				$pool = [];
-				foreach ($nameScopeMap as $nameScopeKey => $intermediaryNameScope) {
-					$nameScopeMap[$nameScopeKey] = $intermediaryNameScope->intern($pool);
-				}
-
-				return [$nameScopeMap, array_keys($filesWithHashes)];
+				return [IntermediaryNameScope::hydrateMap($nameScopeMap), array_keys($filesWithHashes)];
 			}
 		}
 

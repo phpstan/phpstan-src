@@ -14,6 +14,8 @@ namespace PHPStan\Dependency;
 final class ExportedNameScope
 {
 
+	private static ?self $lastDecoded = null;
+
 	/**
 	 * @param non-empty-string|null $namespace
 	 * @param array<string, string> $uses alias(string) => fullName(string)
@@ -49,6 +51,33 @@ final class ExportedNameScope
 	public function getConstUses(): array
 	{
 		return $this->constUses;
+	}
+
+	public function equals(self $other): bool
+	{
+		return $this->namespace === $other->namespace
+			&& $this->uses === $other->uses
+			&& $this->constUses === $other->constUses;
+	}
+
+	/**
+	 * Decodes the name scope of a PHPDoc sent by a worker as JSON, where it is repeated for every PHPDoc.
+	 *
+	 * PHPDocs of the same file are decoded one after another, so reusing the previously decoded
+	 * name scope when it is equal lets them share one instance again.
+	 *
+	 * @param non-empty-string|null $namespace
+	 * @param array<string, string> $uses
+	 * @param array<string, string> $constUses
+	 */
+	public static function decode(?string $namespace, array $uses, array $constUses): self
+	{
+		$nameScope = new self($namespace, $uses, $constUses);
+		if (self::$lastDecoded !== null && self::$lastDecoded->equals($nameScope)) {
+			return self::$lastDecoded;
+		}
+
+		return self::$lastDecoded = $nameScope;
 	}
 
 }

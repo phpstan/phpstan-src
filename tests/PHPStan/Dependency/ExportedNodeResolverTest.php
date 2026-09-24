@@ -2,11 +2,19 @@
 
 namespace PHPStan\Dependency;
 
+use JsonException;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\Parser;
 use PHPStan\Reflection\ReflectionProvider\DummyReflectionProvider;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
+use function array_map;
+use function count;
+use function json_decode;
+use function json_encode;
+use function serialize;
+use function substr_count;
+use const JSON_THROW_ON_ERROR;
 
 final class ExportedNodeResolverTest extends PHPStanTestCase
 {
@@ -49,6 +57,36 @@ final class ExportedNodeResolverTest extends PHPStanTestCase
 
 		$this->assertNotSame([], $nodes);
 		$this->assertGreaterThan(0, $reflectionProvider->hasClassCallCount);
+	}
+
+	/**
+	 * @throws JsonException
+	 */
+	public function testUsesAreStoredOncePerFile(): void
+	{
+		$reflectionProvider = new CountingReflectionProvider(new DummyReflectionProvider());
+		$nodes = $this->fetchNodes(__DIR__ . '/../Type/data/bug-15304.php', $reflectionProvider);
+		$this->assertNotSame([], $nodes);
+
+		$serialized = serialize($nodes);
+		$this->assertSame(1, substr_count($serialized, 'Bug15304\\Models\\ModelThree'));
+		$this->assertSame(1, substr_count($serialized, 'Bug15304\\Models\\SOME_CONSTANT'));
+
+		// the nodes sent by a worker as JSON share the name scope again once decoded
+		$decodedNodes = array_map(static function (array $node): ExportedNode {
+			/** @var class-string<RootExportedNode> $class */
+			$class = $node['type'];
+
+			return $class::decode($node['data']);
+		}, json_decode(json_encode($nodes, JSON_THROW_ON_ERROR), true, flags: JSON_THROW_ON_ERROR));
+		$this->assertCount(count($nodes), $decodedNodes);
+		foreach ($nodes as $i => $node) {
+			$this->assertTrue($node->equals($decodedNodes[$i]));
+		}
+
+		$serialized = serialize($decodedNodes);
+		$this->assertSame(1, substr_count($serialized, 'Bug15304\\Models\\ModelThree'));
+		$this->assertSame(1, substr_count($serialized, 'Bug15304\\Models\\SOME_CONSTANT'));
 	}
 
 }

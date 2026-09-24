@@ -281,7 +281,7 @@ final class ExportedNodeResolver
 			return null;
 		}
 
-		return new ExportedPhpDocNode($text, $nameScope->getNamespace(), $nameScope->getUses(), $nameScope->getConstUses());
+		return new ExportedPhpDocNode($text, $nameScope);
 	}
 
 	/**

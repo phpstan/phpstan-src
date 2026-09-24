@@ -3,7 +3,9 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode;
+use function count;
 use function serialize;
+use function spl_object_id;
 
 final class IntermediaryNameScope
 {
@@ -117,51 +119,116 @@ final class IntermediaryNameScope
 	}
 
 	/**
-	 * Restores sharing of identical property values and parent scopes after hydration from the file cache.
+	 * Converts a name scope map into a form for the file cache that stores every distinct
+	 * array (uses, constUses, template tags, type aliases) and every scope only once.
 	 *
-	 * serialize() keeps objects shared within an entry but stores arrays by value, so
-	 * every hydrated scope carries its own copy of the same uses maps.
-	 * Without interning, the name scope map of a file with many members takes up
-	 * many times more memory when loaded from the cache than when freshly created.
+	 * serialize() keeps objects shared but stores arrays by value, so serializing the scopes
+	 * directly makes the cache entry grow with the number of imports times the number of scopes.
 	 *
-	 * @param array<string, self|array<mixed>> $pool
+	 * @param array<string, self> $nameScopeMap
+	 * @return array{list<array<mixed>>, list<array{string|null, int, string|null, string|null, int, int|null, int, bool, int, string|null, array{string, string, string, string|null, string|null}|null}>, array<string, int>}
 	 */
-	public function intern(array &$pool): self
+	public static function dehydrateMap(array $nameScopeMap): array
 	{
-		$key = serialize($this);
-		if (isset($pool[$key])) {
-			/** @var self */
-			return $pool[$key];
+		$arrays = [];
+		$arrayIndexes = [];
+		$scopes = [];
+		$scopeIndexes = [];
+		$map = [];
+		foreach ($nameScopeMap as $key => $nameScope) {
+			$map[$key] = $nameScope->dehydrate($arrays, $arrayIndexes, $scopes, $scopeIndexes);
 		}
 
-		$this->uses = self::internArray($pool, $this->uses);
-		$this->templatePhpDocNodes = self::internArray($pool, $this->templatePhpDocNodes);
-		$this->typeAliasesMap = self::internArray($pool, $this->typeAliasesMap);
-		$this->constUses = self::internArray($pool, $this->constUses);
-		if ($this->parent !== null) {
-			$this->parent = $this->parent->intern($pool);
-		}
-
-		return $pool[$key] = $this;
+		return [$arrays, $scopes, $map];
 	}
 
 	/**
-	 * @template T of array<mixed>
-	 * @param array<string, self|array<mixed>> $pool
-	 * @param T $value
-	 * @return T
+	 * @param array{list<array<mixed>>, list<array{string|null, int, string|null, string|null, int, int|null, int, bool, int, string|null, array{string, string, string, string|null, string|null}|null}>, array<string, int>} $data
+	 * @return array<string, self>
 	 */
-	private static function internArray(array &$pool, array $value): array
+	public static function hydrateMap(array $data): array
 	{
-		$key = 'a:' . serialize($value);
-		if (isset($pool[$key])) {
-			/** @var T */
-			return $pool[$key];
+		[$arrays, $scopeTuples, $map] = $data;
+		$scopes = [];
+		foreach ($scopeTuples as $i => [$namespace, $uses, $className, $functionName, $templatePhpDocNodes, $parent, $typeAliasesMap, $bypassTypeAliases, $constUses, $typeAliasClassName, $traitData]) {
+			/** @var non-empty-string|null $namespace */
+			/** @var array<string, string> $usesArray */
+			$usesArray = $arrays[$uses];
+			/** @var array<string, array{string, TemplateTagValueNode}> $templatePhpDocNodesArray */
+			$templatePhpDocNodesArray = $arrays[$templatePhpDocNodes];
+			/** @var array<string, true> $typeAliasesMapArray */
+			$typeAliasesMapArray = $arrays[$typeAliasesMap];
+			/** @var array<string, string> $constUsesArray */
+			$constUsesArray = $arrays[$constUses];
+			$scopes[$i] = new self(
+				$namespace,
+				$usesArray,
+				$className,
+				$functionName,
+				$templatePhpDocNodesArray,
+				$parent !== null ? $scopes[$parent] : null,
+				$typeAliasesMapArray,
+				$bypassTypeAliases,
+				$constUsesArray,
+				$typeAliasClassName,
+				$traitData,
+			);
 		}
 
-		$pool[$key] = $value;
+		$nameScopeMap = [];
+		foreach ($map as $key => $i) {
+			$nameScopeMap[$key] = $scopes[$i];
+		}
 
-		return $value;
+		return $nameScopeMap;
+	}
+
+	/**
+	 * @param list<array<mixed>> $arrays
+	 * @param array<string, int> $arrayIndexes
+	 * @param list<array{string|null, int, string|null, string|null, int, int|null, int, bool, int, string|null, array{string, string, string, string|null, string|null}|null}> $scopes
+	 * @param array<int, int> $scopeIndexes
+	 */
+	private function dehydrate(array &$arrays, array &$arrayIndexes, array &$scopes, array &$scopeIndexes): int
+	{
+		$objectId = spl_object_id($this);
+		if (isset($scopeIndexes[$objectId])) {
+			return $scopeIndexes[$objectId];
+		}
+
+		$parent = $this->parent?->dehydrate($arrays, $arrayIndexes, $scopes, $scopeIndexes);
+		$scopes[] = [
+			$this->namespace,
+			self::dehydrateArray($arrays, $arrayIndexes, $this->uses),
+			$this->className,
+			$this->functionName,
+			self::dehydrateArray($arrays, $arrayIndexes, $this->templatePhpDocNodes),
+			$parent,
+			self::dehydrateArray($arrays, $arrayIndexes, $this->typeAliasesMap),
+			$this->bypassTypeAliases,
+			self::dehydrateArray($arrays, $arrayIndexes, $this->constUses),
+			$this->typeAliasClassName,
+			$this->traitData,
+		];
+
+		return $scopeIndexes[$objectId] = count($scopes) - 1;
+	}
+
+	/**
+	 * @param list<array<mixed>> $arrays
+	 * @param array<string, int> $arrayIndexes
+	 * @param array<mixed> $value
+	 */
+	private static function dehydrateArray(array &$arrays, array &$arrayIndexes, array $value): int
+	{
+		$key = serialize($value);
+		if (isset($arrayIndexes[$key])) {
+			return $arrayIndexes[$key];
+		}
+
+		$arrays[] = $value;
+
+		return $arrayIndexes[$key] = count($arrays) - 1;
 	}
 
 	/**

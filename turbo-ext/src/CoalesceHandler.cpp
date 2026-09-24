@@ -267,6 +267,54 @@ private:
 
 	static constexpr const char *closureName = "PHPStan\\Analyser\\ExprHandler\\CoalesceHandler::{closure}";
 
+	/* Mirrors isValueOutsideContext(); -1 = pending exception */
+	static int isValueOutsideContext(zval *type, zval *context)
+	{
+		if (Z_TYPE_P(type) == IS_OBJECT && instanceof_function(Z_OBJCE_P(type), pt_ce_never_type)) return 1;
+		if (UNEXPECTED(Z_TYPE_P(type) != IS_OBJECT)) {
+			zend_throw_error(NULL, "Call to a member function isFalse() on %s", zend_zval_value_name(type));
+			return -1;
+		}
+
+		bool contextFalse;
+		if (UNEXPECTED(!pt_type_specifier_context_false(Z_OBJ_P(context), contextFalse))) return -1;
+		if (contextFalse) {
+			zend_long isFalse = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isfalse"), 0, NULL);
+			if (UNEXPECTED(isFalse < 0)) return -1;
+			if (isFalse != PT_TRI_NO) return 0;
+		}
+
+		bool contextTruthy;
+		if (UNEXPECTED(!pt_type_specifier_context_truthy(Z_OBJ_P(context), contextTruthy))) return -1;
+		if (contextTruthy) {
+			int decided = isValueTruthinessDecided(type, true);
+			if (decided <= 0) return decided;
+		}
+
+		bool contextFalseyButNotFalse;
+		if (UNEXPECTED(!pt_type_specifier_context_falsey_but_not_false(Z_OBJ_P(context), contextFalseyButNotFalse))) return -1;
+		if (!contextFalseyButNotFalse) return 1;
+
+		return isValueTruthinessDecided(type, false);
+	}
+
+	/* Mirrors isValueTruthinessDecided(); -1 = pending exception */
+	static int isValueTruthinessDecided(zval *type, bool excludedValue)
+	{
+		zv::Val excludedType = ptoh::constantBoolean(excludedValue);
+		if (UNEXPECTED(excludedType.isUndef())) return -1;
+		zv::Val remainingType = pt_type_combinator_remove(type, excludedType.raw());
+		if (UNEXPECTED(remainingType.isUndef())) return -1;
+		if (Z_TYPE_P(remainingType.raw()) == IS_OBJECT && instanceof_function(Z_OBJCE_P(remainingType.raw()), pt_ce_never_type)) {
+			return 1;
+		}
+
+		ptoh::BooleanOf boolean;
+		if (UNEXPECTED(!boolean.init(remainingType.raw()))) return -1;
+
+		return excludedValue ? boolean.isFalse() : boolean.isTrue();
+	}
+
 	/* static function (Type $type): ?bool — the "set and not null" verdict:
 	 * null when the type may be null, !isNull()->yes() otherwise */
 	static void notNullVerdictBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
@@ -326,6 +374,16 @@ private:
 		bool contextTrue;
 		if (UNEXPECTED(!pt_type_specifier_context_true(Z_OBJ_P(context), contextTrue))) return zv::Val();
 		if (!contextTrue) {
+			// the value is null-coalesced only when no non-null left value
+			// satisfies the context (`?bool ?? false` is falsey for `false` too)
+			zv::Val condType = nativeTypesPromoted ? pt_expression_result_get_native_type(condResult) : pt_expression_result_get_type(condResult);
+			if (UNEXPECTED(condType.isUndef())) return zv::Val();
+			zv::Val leftType = pt_type_combinator_remove_null(condType.raw());
+			if (UNEXPECTED(leftType.isUndef())) return zv::Val();
+			int outside = isValueOutsideContext(leftType.raw(), context);
+			if (UNEXPECTED(outside < 0)) return zv::Val();
+			if (!outside) return pt_specified_types_new_with_root_expr(NULL, NULL, expr);
+
 			zval *left = ptoh::binaryOpLeft(expr);
 			if (UNEXPECTED(left == NULL)) return zv::Val();
 			return pt_coalesce_composition_helper_get_falsey_specified_types(OBJ_PROP_NUM(handler, slots::coalesceCompositionHelper), s.raw(), s.raw(), left, condResult, expr, context);

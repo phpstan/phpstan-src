@@ -275,6 +275,23 @@ public:
 private:
 	zend_object *self;
 
+	/* Mirrors isArmValueTruthinessDecided(); -1 = pending exception */
+	static int isArmValueTruthinessDecided(zval *armType, bool excludedValue)
+	{
+		zv::Val excludedType = ptoh::constantBoolean(excludedValue);
+		if (UNEXPECTED(excludedType.isUndef())) return -1;
+		zv::Val remainingType = pt_type_combinator_remove(armType, excludedType.raw());
+		if (UNEXPECTED(remainingType.isUndef())) return -1;
+		if (Z_TYPE_P(remainingType.raw()) == IS_OBJECT && instanceof_function(Z_OBJCE_P(remainingType.raw()), pt_ce_never_type)) {
+			return 1;
+		}
+
+		ptoh::BooleanOf boolean;
+		if (UNEXPECTED(!boolean.init(remainingType.raw()))) return -1;
+
+		return excludedValue ? boolean.isFalse() : boolean.isTrue();
+	}
+
 	static constexpr const char *closureName = "PHPStan\\Analyser\\ExprHandler\\TernaryHandler::{closure}";
 
 	/* $throwPoints = array_merge($throwPoints, $branchResult->getThrowPoints());
@@ -413,6 +430,52 @@ private:
 		if (!condIsTernary && UNEXPECTED(!pt_type_specifier_context_null(Z_OBJ_P(context), contextNull))) return zv::Val();
 		if (condIsTernary || contextNull) {
 			return pt_default_narrowing_helper_specify_default_types(OBJ_PROP_NUM(handler, slots::defaultNarrowingHelper), expr, context);
+		}
+
+		bool contextTruthy, contextFalsey;
+		if (UNEXPECTED(!pt_type_specifier_context_truthy(Z_OBJ_P(context), contextTruthy))) return zv::Val();
+		if (UNEXPECTED(!pt_type_specifier_context_falsey(Z_OBJ_P(context), contextFalsey))) return zv::Val();
+		zval narrowedContext;
+		if (contextTruthy && contextFalsey) {
+			// `!== false` / `!== true` - the decomposition below only holds
+			// for the value's truthiness, which these contexts decide only
+			// when no arm produces a value on the other side of it
+			bool contextTrue, contextFalse;
+			if (UNEXPECTED(!pt_type_specifier_context_true(Z_OBJ_P(context), contextTrue))) return zv::Val();
+			if (UNEXPECTED(!pt_type_specifier_context_false(Z_OBJ_P(context), contextFalse))) return zv::Val();
+			bool excludedValue = !contextTrue;
+			if (contextTrue == contextFalse) {
+				return pt_default_narrowing_helper_specify_default_types(OBJ_PROP_NUM(handler, slots::defaultNarrowingHelper), expr, context);
+			}
+			zv::Val elseArmType = pt_expression_result_get_type_on_scope(elseResult, elseProcessingScope, nativeTypesPromoted);
+			if (UNEXPECTED(elseArmType.isUndef())) return zv::Val();
+			zval *armIfExpr = NULL;
+			if (Z_TYPE_P(ifResult) != IS_NULL) {
+				armIfExpr = ternaryIf(expr);
+				if (UNEXPECTED(armIfExpr == NULL)) return zv::Val();
+			}
+			zv::Val ifArmType;
+			if (armIfExpr != NULL && Z_TYPE_P(armIfExpr) != IS_NULL) {
+				ifArmType = pt_expression_result_get_type_on_scope(ifResult, ifProcessingScope, nativeTypesPromoted);
+			} else {
+				zv::Val condType = nativeTypesPromoted ? pt_expression_result_get_native_type(ternaryCondResult) : pt_expression_result_get_type(ternaryCondResult);
+				if (UNEXPECTED(condType.isUndef())) return zv::Val();
+				ifArmType = pt_type_combinator_call(PT_LC("removefalsey"), 1, condType.raw());
+			}
+			if (UNEXPECTED(ifArmType.isUndef())) return zv::Val();
+			int decided = isArmValueTruthinessDecided(ifArmType.raw(), excludedValue);
+			if (UNEXPECTED(decided < 0)) return zv::Val();
+			if (decided) {
+				decided = isArmValueTruthinessDecided(elseArmType.raw(), excludedValue);
+				if (UNEXPECTED(decided < 0)) return zv::Val();
+			}
+			if (!decided) {
+				return pt_default_narrowing_helper_specify_default_types(OBJ_PROP_NUM(handler, slots::defaultNarrowingHelper), expr, context);
+			}
+			zend_object *narrowed = excludedValue ? pt_type_specifier_context_create_falsey() : pt_type_specifier_context_create_truthy();
+			if (UNEXPECTED(narrowed == NULL)) return zv::Val();
+			ZVAL_OBJ(&narrowedContext, narrowed);
+			context = &narrowedContext;
 		}
 
 		// cond ? if : else narrows like (cond && if) || (!cond && else),

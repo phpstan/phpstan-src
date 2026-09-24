@@ -25,6 +25,7 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use function array_merge;
 
 /**
@@ -131,6 +132,13 @@ final class CoalesceHandler implements ExprHandler
 
 				$s = $nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope;
 				if (!$context->true()) {
+					// the value is null-coalesced only when no non-null left value
+					// satisfies the context (`?bool ?? false` is falsey for `false` too)
+					$leftType = TypeCombinator::removeNull($nativeTypesPromoted ? $condResult->getNativeType() : $condResult->getType());
+					if (!self::isValueOutsideContext($leftType, $context)) {
+						return (new SpecifiedTypes([], []))->setRootExpr($expr);
+					}
+
 					return $this->coalesceCompositionHelper->getFalseySpecifiedTypes($s, $s, $expr->left, $condResult, $expr, $context);
 				}
 
@@ -169,6 +177,42 @@ final class CoalesceHandler implements ExprHandler
 				return $this->defaultNarrowingHelper->createSubjectTypes($s, $expr, null, $type, $context);
 			},
 		);
+	}
+
+	/**
+	 * Whether no value of the type satisfies the (non-true) context.
+	 */
+	private static function isValueOutsideContext(Type $type, TypeSpecifierContext $context): bool
+	{
+		if ($type instanceof NeverType) {
+			return true;
+		}
+
+		if ($context->false() && !$type->isFalse()->no()) {
+			return false;
+		}
+
+		if ($context->truthy() && !self::isValueTruthinessDecided($type, true)) {
+			return false;
+		}
+
+		return !$context->falseyButNotFalse() || self::isValueTruthinessDecided($type, false);
+	}
+
+	/**
+	 * Whether every value of the type other than the excluded boolean has
+	 * the opposite truthiness.
+	 */
+	private static function isValueTruthinessDecided(Type $type, bool $excludedValue): bool
+	{
+		$remainingType = TypeCombinator::remove($type, new ConstantBooleanType($excludedValue));
+		if ($remainingType instanceof NeverType) {
+			return true;
+		}
+
+		$boolean = $remainingType->toBoolean();
+
+		return $excludedValue ? $boolean->isFalse()->yes() : $boolean->isTrue()->yes();
 	}
 
 }

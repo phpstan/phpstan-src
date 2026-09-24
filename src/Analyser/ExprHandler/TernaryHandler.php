@@ -209,6 +209,27 @@ final class TernaryHandler implements ExprHandler, PerFileAnalysisResettable
 					return $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context);
 				}
 
+				if ($context->truthy() && $context->falsey()) {
+					// `!== false` / `!== true` - the decomposition below only holds
+					// for the value's truthiness, which these contexts decide only
+					// when no arm produces a value on the other side of it
+					$excludedValue = !$context->true();
+					if ($context->true() === $context->false()) {
+						return $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context);
+					}
+					$elseArmType = $elseResult->getTypeOnScope($elseProcessingScope, $nativeTypesPromoted);
+					$ifArmType = $ifResult !== null && $expr->if !== null
+						? $ifResult->getTypeOnScope($ifProcessingScope, $nativeTypesPromoted)
+						: TypeCombinator::removeFalsey($nativeTypesPromoted ? $ternaryCondResult->getNativeType() : $ternaryCondResult->getType());
+					if (
+						!self::isArmValueTruthinessDecided($ifArmType, $excludedValue)
+						|| !self::isArmValueTruthinessDecided($elseArmType, $excludedValue)
+					) {
+						return $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context);
+					}
+					$context = $excludedValue ? TypeSpecifierContext::createFalsey() : TypeSpecifierContext::createTruthy();
+				}
+
 				// cond ? if : else narrows like (cond && if) || (!cond && else),
 				// composed from the walk's results through the boolean helpers -
 				// the fabricated nodes are only printed into holder keys
@@ -330,6 +351,22 @@ final class TernaryHandler implements ExprHandler, PerFileAnalysisResettable
 				)->setRootExpr($expr);
 			},
 		);
+	}
+
+	/**
+	 * Whether every value of the arm other than the excluded boolean has
+	 * the opposite truthiness (an arm of `int|true` under `!== true` does not).
+	 */
+	private static function isArmValueTruthinessDecided(Type $armType, bool $excludedValue): bool
+	{
+		$remainingType = TypeCombinator::remove($armType, new ConstantBooleanType($excludedValue));
+		if ($remainingType instanceof NeverType) {
+			return true;
+		}
+
+		$boolean = $remainingType->toBoolean();
+
+		return $excludedValue ? $boolean->isFalse()->yes() : $boolean->isTrue()->yes();
 	}
 
 }

@@ -2368,11 +2368,19 @@ class NodeScopeResolver
 						}
 
 						// what the call writes back is described by PHPDoc (@param, @param-out,
-						// a parameter-out extension) - natively only the parameter's own
-						// type declaration is guaranteed
-						$byRefNativeType = $currentParameter instanceof ExtendedParameterReflection
-							? $currentParameter->getNativeType()
-							: $byRefType;
+						// a parameter-out extension) - natively only the parameter's own type
+						// can describe it: its declaration, or for a builtin its signature map
+						// entry. PHP checks a declaration only on the way in and a signature
+						// map entry not at all, so it holds only when the written-back type
+						// fits inside it. preg_match() with PREG_OFFSET_CAPTURE writes arrays
+						// into a slot the signature map declares as string[].
+						$byRefNativeType = $byRefType;
+						if ($currentParameter instanceof ExtendedParameterReflection) {
+							$byRefNativeType = $currentParameter->getNativeType();
+							if (!$byRefNativeType->isSuperTypeOf($byRefType)->yes()) {
+								$byRefNativeType = new MixedType();
+							}
+						}
 
 						$scope = $this->processVirtualAssign(
 							$scope,

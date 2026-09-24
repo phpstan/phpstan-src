@@ -25,6 +25,7 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use function array_merge;
 
 /**
@@ -131,6 +132,14 @@ final class CoalesceHandler implements ExprHandler
 
 				$s = $nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope;
 				if (!$context->true()) {
+					// the left side was null only when none of its other values
+					// could have produced the value - `?bool ?? false` is falsey
+					// for a `false` left side too
+					$leftType = TypeCombinator::removeNull($nativeTypesPromoted ? $condResult->getNativeType() : $condResult->getType());
+					if (self::canNonNullLeftSatisfyContext($leftType, $context)) {
+						return (new SpecifiedTypes([], []))->setRootExpr($expr);
+					}
+
 					return $this->coalesceCompositionHelper->getFalseySpecifiedTypes($s, $s, $expr->left, $condResult, $expr, $context);
 				}
 
@@ -169,6 +178,26 @@ final class CoalesceHandler implements ExprHandler
 				return $this->defaultNarrowingHelper->createSubjectTypes($s, $expr, null, $type, $context);
 			},
 		);
+	}
+
+	/**
+	 * For the contexts without the `true` bit: falsey, `=== false` and `!== true`.
+	 */
+	private static function canNonNullLeftSatisfyContext(Type $leftType, TypeSpecifierContext $context): bool
+	{
+		if ($leftType instanceof NeverType) {
+			return false;
+		}
+
+		if ($context === TypeSpecifierContext::createFalsey()) {
+			return !$leftType->toBoolean()->isTrue()->yes();
+		}
+
+		if (!$context->truthy()) {
+			return !$leftType->isFalse()->no();
+		}
+
+		return !$leftType->isTrue()->yes();
 	}
 
 }

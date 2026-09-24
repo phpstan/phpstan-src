@@ -309,6 +309,46 @@ private:
 		specifiedTypes.intoReturnValue(return_value);
 	}
 
+	/* Mirrors canNonNullLeftSatisfyContext() — for the contexts without the
+	 * `true` bit: falsey, `=== false` and `!== true`; false = pending
+	 * exception */
+	[[nodiscard]] static bool canNonNullLeftSatisfyContext(zval *leftType, zval *context, bool &out)
+	{
+		if (UNEXPECTED(Z_TYPE_P(leftType) != IS_OBJECT)) {
+			zend_throw_error(NULL, "Call to a member function isTrue() on %s", zend_zval_value_name(leftType));
+			return false;
+		}
+		if (instanceof_function(Z_OBJCE_P(leftType), pt_ce_never_type)) {
+			out = false;
+			return true;
+		}
+
+		zend_object *falsey = pt_type_specifier_context_create_falsey();
+		if (UNEXPECTED(falsey == NULL)) return false;
+		if (Z_OBJ_P(context) == falsey) {
+			ptoh::BooleanOf boolean;
+			if (UNEXPECTED(!boolean.init(leftType))) return false;
+			int isTrue = boolean.isTrue();
+			if (UNEXPECTED(isTrue < 0)) return false;
+			out = !isTrue;
+			return true;
+		}
+
+		bool truthy;
+		if (UNEXPECTED(!pt_type_specifier_context_truthy(Z_OBJ_P(context), truthy))) return false;
+		if (!truthy) {
+			zend_long isFalse = pt_type_call_trinary(Z_OBJ_P(leftType), PT_LC("isfalse"), 0, NULL);
+			if (UNEXPECTED(isFalse < 0)) return false;
+			out = isFalse != PT_TRI_NO;
+			return true;
+		}
+
+		zend_long isTrue = pt_type_call_trinary(Z_OBJ_P(leftType), PT_LC("istrue"), 0, NULL);
+		if (UNEXPECTED(isTrue < 0)) return false;
+		out = isTrue != PT_TRI_YES;
+		return true;
+	}
+
 	static zv::Val specifyTypes(zval *captures, zval *context, bool nativeTypesPromoted)
 	{
 		zend_object *handler = Z_OBJ(captures[0]);
@@ -326,6 +366,17 @@ private:
 		bool contextTrue;
 		if (UNEXPECTED(!pt_type_specifier_context_true(Z_OBJ_P(context), contextTrue))) return zv::Val();
 		if (!contextTrue) {
+			// the left side was null only when none of its other values
+			// could have produced the value - `?bool ?? false` is falsey
+			// for a `false` left side too
+			zv::Val condType = nativeTypesPromoted ? pt_expression_result_get_native_type(condResult) : pt_expression_result_get_type(condResult);
+			if (UNEXPECTED(condType.isUndef())) return zv::Val();
+			zv::Val leftType = pt_type_combinator_remove_null(condType.raw());
+			if (UNEXPECTED(leftType.isUndef())) return zv::Val();
+			bool canSatisfy;
+			if (UNEXPECTED(!canNonNullLeftSatisfyContext(leftType.raw(), context, canSatisfy))) return zv::Val();
+			if (canSatisfy) return pt_specified_types_new_with_root_expr(NULL, NULL, expr);
+
 			zval *left = ptoh::binaryOpLeft(expr);
 			if (UNEXPECTED(left == NULL)) return zv::Val();
 			return pt_coalesce_composition_helper_get_falsey_specified_types(OBJ_PROP_NUM(handler, slots::coalesceCompositionHelper), s.raw(), s.raw(), left, condResult, expr, context);

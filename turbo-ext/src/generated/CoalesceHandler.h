@@ -59,7 +59,11 @@ inline constexpr char strings[] =
 	"context\0" /* 537 */
 	"PHPStan\\Analyser\\ExpressionContext\0" /* 545 */
 	"PHPStan\\Analyser\\ExpressionResult\0" /* 580 */
-	"processExpr"; /* 614 */
+	"processExpr\0" /* 614 */
+	"leftType\0" /* 626 */
+	"PHPStan\\Type\\Type\0" /* 635 */
+	"PHPStan\\Analyser\\TypeSpecifierContext\0" /* 653 */
+	"canNonNullLeftSatisfyContext"; /* 691 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 21), /* __construct $nonNullabilityHelper */
 	reg::packed(78, 0, 102), /* __construct $expressionResultFactory */
@@ -75,6 +79,9 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(524, MAY_BE_CALLABLE), /* processExpr $nodeCallback */
 	reg::packed(537, 0, 545), /* processExpr $context */
 	reg::packed(350, 0, 580), /* processExpr return */
+	reg::packed(626, 0, 635), /* canNonNullLeftSatisfyContext $leftType */
+	reg::packed(537, 0, 653), /* canNonNullLeftSatisfyContext $context */
+	reg::packed(350, MAY_BE_BOOL), /* canNonNullLeftSatisfyContext return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -84,6 +91,7 @@ namespace sig {
 inline constexpr sigtab::Sig __construct = { { 313 /* __construct */, 4, 0, 4, reg::NoArg, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig supports = { { 351 /* supports */, 1, 4, 1, 5, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig processExpr = { { 614 /* processExpr */, 7, 6, 7, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig canNonNullLeftSatisfyContext = { { 691 /* canNonNullLeftSatisfyContext */, 2, 14, 2, 16, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::CoalesceHandler

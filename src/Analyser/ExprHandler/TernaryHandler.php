@@ -209,6 +209,25 @@ final class TernaryHandler implements ExprHandler, PerFileAnalysisResettable
 					return $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context);
 				}
 
+				// An exact context (`=== true`, `!== false`, ...) asks about the taken
+				// arm's value, not its truthiness - `0 !== false` holds although `0` is
+				// falsey. The decomposition then holds for the arms compared to the
+				// constant (`(cond && if !== false) || ...`) being true, the condition
+				// still read by truthiness.
+				$armContext = null;
+				if ($context !== TypeSpecifierContext::createTruthy() && $context !== TypeSpecifierContext::createFalsey()) {
+					// `=== false` / `!== true` of an arm are false when the arm is
+					// true: a disjunction arm would be split as if it were negated
+					if (
+						!$context->true()
+						&& (self::isDisjunction($expr->if ?? $expr->cond) || self::isDisjunction($expr->else))
+					) {
+						return $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context);
+					}
+					$armContext = $context;
+					$context = TypeSpecifierContext::createTruthy();
+				}
+
 				// cond ? if : else narrows like (cond && if) || (!cond && else),
 				// composed from the walk's results through the boolean helpers -
 				// the fabricated nodes are only printed into holder keys
@@ -240,8 +259,7 @@ final class TernaryHandler implements ExprHandler, PerFileAnalysisResettable
 
 					return new BooleanType();
 				};
-				$elseTypes = static fn (MutatingScope $scope, TypeSpecifierContext $ctx): SpecifiedTypes => $elseResult->getSpecifiedTypesForScope($scope, $ctx);
-				$elseType = static fn (bool $nativeTypesPromoted): Type => $elseResult->getTypeOnScope($elseProcessingScope, $nativeTypesPromoted);
+				[$elseTypes, $elseType, $elseTruthyScope, $elseFalseyScope] = $this->createArmOperand($expr->else, $elseResult, $elseProcessingScope, $elseResult->getScope(), $armContext);
 
 				// the decomposition's branch scopes are the operand walks' own
 				// memoized branch scopes (the evaluation points), not ask-derived;
@@ -251,7 +269,6 @@ final class TernaryHandler implements ExprHandler, PerFileAnalysisResettable
 
 				// right disjunct: !cond && else
 				$bNode = new BooleanAnd($notCondNode, $expr->else);
-				$elseFalseyOnCondFalseyScope = static fn (): MutatingScope => $elseResult->getFalseyScope();
 				$bTypes = fn (MutatingScope $scope, TypeSpecifierContext $ctx): SpecifiedTypes => $this->booleanNarrowingHelper->specifyConjunction(
 					$nodeScopeResolver,
 					$scope,
@@ -263,17 +280,23 @@ final class TernaryHandler implements ExprHandler, PerFileAnalysisResettable
 					$condTruthyScope,
 					$expr->else,
 					$elseTypes,
-					$elseFalseyOnCondFalseyScope,
+					$elseFalseyScope,
 				);
 				$bType = $andVerdict($notCondType, $elseType);
-				$bTruthyScope = static fn (): MutatingScope => $elseResult->getTruthyScope();
 
-				if ($ifResult !== null && $expr->if !== null) {
+				// the short ternary's truthy value is the condition itself - in an
+				// exact context it is compared like an arm: cond && (cond === true)
+				$shortTernaryArm = $armContext !== null && ($ifResult === null || $expr->if === null);
+				if (($ifResult !== null && $expr->if !== null) || $shortTernaryArm) {
 					// left disjunct: cond && if
-					$aNode = new BooleanAnd($expr->cond, $expr->if);
-					$ifTypes = static fn (MutatingScope $scope, TypeSpecifierContext $ctx): SpecifiedTypes => $ifResult->getSpecifiedTypesForScope($scope, $ctx);
-					$ifType = static fn (bool $nativeTypesPromoted): Type => $ifResult->getTypeOnScope($ifProcessingScope, $nativeTypesPromoted);
-					$ifFalseyOnCondTruthyScope = static fn (): MutatingScope => $ifResult->getFalseyScope();
+					if ($ifResult !== null && $expr->if !== null) {
+						$ifExpr = $expr->if;
+						[$ifTypes, $ifType, $ifTruthyScope, $ifFalseyScope] = $this->createArmOperand($expr->if, $ifResult, $ifProcessingScope, $ifResult->getScope(), $armContext);
+					} else {
+						$ifExpr = $expr->cond;
+						[$ifTypes, $ifType, $ifTruthyScope, $ifFalseyScope] = $this->createArmOperand($expr->cond, $ternaryCondResult, $ifProcessingScope, $ifProcessingScope, $armContext);
+					}
+					$aNode = new BooleanAnd($expr->cond, $ifExpr);
 					$aTypes = fn (MutatingScope $scope, TypeSpecifierContext $ctx): SpecifiedTypes => $this->booleanNarrowingHelper->specifyConjunction(
 						$nodeScopeResolver,
 						$scope,
@@ -283,12 +306,11 @@ final class TernaryHandler implements ExprHandler, PerFileAnalysisResettable
 						$condTypes,
 						$condTruthyScope,
 						$condFalseyScope,
-						$expr->if,
+						$ifExpr,
 						$ifTypes,
-						$ifFalseyOnCondTruthyScope,
+						$ifFalseyScope,
 					);
 					$aType = $andVerdict($condType, $ifType);
-					$aTruthyScope = static fn (): MutatingScope => $ifResult->getTruthyScope();
 					// the merged falsey of (cond && if) has no single walk scope -
 					// derived from the evaluation point on first demand, reused across asks
 					$aFalseyScopeThunk = static function () use ($scope, $aTypes, &$aFalseyScope): MutatingScope {
@@ -303,12 +325,12 @@ final class TernaryHandler implements ExprHandler, PerFileAnalysisResettable
 						$aNode,
 						$aTypes,
 						$aType,
-						$aTruthyScope,
+						$ifTruthyScope,
 						$aFalseyScopeThunk,
 						$bNode,
 						$bTypes,
 						$bType,
-						$bTruthyScope,
+						$elseTruthyScope,
 					)->setRootExpr($expr);
 				}
 
@@ -326,10 +348,77 @@ final class TernaryHandler implements ExprHandler, PerFileAnalysisResettable
 					$bNode,
 					$bTypes,
 					$bType,
-					$bTruthyScope,
+					$elseTruthyScope,
 				)->setRootExpr($expr);
 			},
 		);
+	}
+
+	private static function isDisjunction(Expr $expr): bool
+	{
+		return $expr instanceof Expr\BinaryOp\BooleanOr || $expr instanceof Expr\BinaryOp\LogicalOr;
+	}
+
+	/**
+	 * An arm as an operand of the (cond && if) || (!cond && else) decomposition:
+	 * its narrowing, verdict and branch scopes. With an exact context the operand
+	 * is the arm compared to the bool constant, narrowed like the comparison
+	 * node would be - the constant pinned onto the arm plus the arm's own
+	 * narrowing in the bool context - with branch scopes derived from the arm's
+	 * evaluation point.
+	 *
+	 * @return array{callable(MutatingScope, TypeSpecifierContext): SpecifiedTypes, callable(bool): Type, callable(): MutatingScope, callable(): MutatingScope}
+	 */
+	private function createArmOperand(Expr $armExpr, ExpressionResult $armResult, MutatingScope $processingScope, MutatingScope $evaluatedScope, ?TypeSpecifierContext $armContext): array
+	{
+		if ($armContext === null) {
+			return [
+				static fn (MutatingScope $scope, TypeSpecifierContext $ctx): SpecifiedTypes => $armResult->getSpecifiedTypesForScope($scope, $ctx),
+				static fn (bool $nativeTypesPromoted): Type => $armResult->getTypeOnScope($processingScope, $nativeTypesPromoted),
+				static fn (): MutatingScope => $armResult->getTruthyScope(),
+				static fn (): MutatingScope => $armResult->getFalseyScope(),
+			];
+		}
+
+		// `!== true` / `!== false` are the mixed contexts, `=== true` / `=== false` the pure ones
+		$isIdentical = !($armContext->truthy() && $armContext->falsey());
+		$value = $isIdentical ? $armContext->true() : !$armContext->true();
+
+		$types = function (MutatingScope $scope, TypeSpecifierContext $ctx) use ($armExpr, $armResult, $isIdentical, $value): SpecifiedTypes {
+			$identicalContext = $isIdentical ? $ctx : $ctx->negate();
+			$types = $this->defaultNarrowingHelper->createSubjectTypes($scope, $armExpr, $armResult, new ConstantBooleanType($value), $identicalContext);
+
+			// a nullsafe chain that did not produce the constant may have
+			// short-circuited instead
+			if (!$identicalContext->true() && ($armExpr instanceof Expr\NullsafeMethodCall || $armExpr instanceof Expr\NullsafePropertyFetch)) {
+				return $types;
+			}
+
+			$boolContext = $value ? TypeSpecifierContext::createTrue() : TypeSpecifierContext::createFalse();
+
+			return $types->unionWith($armResult->getSpecifiedTypesForScope($scope, $identicalContext->true() ? $boolContext : $boolContext->negate()));
+		};
+
+		return [
+			$types,
+			static function (bool $nativeTypesPromoted) use ($armResult, $processingScope, $isIdentical, $value): Type {
+				$armType = $armResult->getTypeOnScope($processingScope, $nativeTypesPromoted);
+				$matches = $value ? $armType->isTrue() : $armType->isFalse();
+				if (!$isIdentical) {
+					$matches = $matches->negate();
+				}
+				if ($matches->yes()) {
+					return new ConstantBooleanType(true);
+				}
+				if ($matches->no()) {
+					return new ConstantBooleanType(false);
+				}
+
+				return new BooleanType();
+			},
+			static fn (): MutatingScope => $evaluatedScope->applySpecifiedTypes($types($evaluatedScope, TypeSpecifierContext::createTruthy())),
+			static fn (): MutatingScope => $evaluatedScope->applySpecifiedTypes($types($evaluatedScope, TypeSpecifierContext::createFalsey())),
+		];
 	}
 
 }

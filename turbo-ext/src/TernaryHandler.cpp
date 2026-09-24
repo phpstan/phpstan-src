@@ -415,6 +415,46 @@ private:
 			return pt_default_narrowing_helper_specify_default_types(OBJ_PROP_NUM(handler, slots::defaultNarrowingHelper), expr, context);
 		}
 
+		// An exact context (`=== true`, `!== false`, ...) asks about the taken
+		// arm's value, not its truthiness - `0 !== false` holds although `0` is
+		// falsey. The decomposition then holds for the arms compared to the
+		// constant (`(cond && if !== false) || ...`) being true, the condition
+		// still read by truthiness.
+		zval *armContext = NULL;
+		zval truthyContext;
+		zend_object *truthy = pt_type_specifier_context_create_truthy();
+		if (UNEXPECTED(truthy == NULL)) return zv::Val();
+		zend_object *falsey = pt_type_specifier_context_create_falsey();
+		if (UNEXPECTED(falsey == NULL)) return zv::Val();
+		if (Z_OBJ_P(context) != truthy && Z_OBJ_P(context) != falsey) {
+			bool contextTrue;
+			if (UNEXPECTED(!pt_type_specifier_context_true(Z_OBJ_P(context), contextTrue))) return zv::Val();
+			// `=== false` / `!== true` of an arm are false when the arm is
+			// true: a disjunction arm would be split as if it were negated
+			if (!contextTrue) {
+				zval *ifExpr = ternaryIf(expr);
+				if (UNEXPECTED(ifExpr == NULL)) return zv::Val();
+				if (Z_TYPE_P(ifExpr) == IS_NULL) {
+					ifExpr = ternaryCond(expr);
+					if (UNEXPECTED(ifExpr == NULL)) return zv::Val();
+				}
+				int disjunction = isDisjunction(ifExpr);
+				if (UNEXPECTED(disjunction < 0)) return zv::Val();
+				if (!disjunction) {
+					zval *elseExpr = ternaryElse(expr);
+					if (UNEXPECTED(elseExpr == NULL)) return zv::Val();
+					disjunction = isDisjunction(elseExpr);
+					if (UNEXPECTED(disjunction < 0)) return zv::Val();
+				}
+				if (disjunction) {
+					return pt_default_narrowing_helper_specify_default_types(OBJ_PROP_NUM(handler, slots::defaultNarrowingHelper), expr, context);
+				}
+			}
+			armContext = context;
+			ZVAL_OBJ(&truthyContext, truthy);
+			context = &truthyContext;
+		}
+
 		// cond ? if : else narrows like (cond && if) || (!cond && else),
 		// composed from the walk's results through the boolean helpers -
 		// the fabricated nodes are only printed into holder keys
@@ -427,8 +467,13 @@ private:
 		zv::Val condType = pt_native_closure(&resultTypeBody, ternaryCondResult);
 		zv::Val notCondTypes = pt_native_closure(&negatedSpecifiedTypesForScopeBody, ternaryCondResult);
 		zv::Val notCondType = pt_native_closure(&notCondTypeBody, ternaryCondResult);
-		zv::Val elseTypes = pt_native_closure(&specifiedTypesForScopeBody, elseResult);
-		zv::Val elseType = pt_native_closure(&typeOnScopeBody, elseResult, elseProcessingScope);
+		zval *elseExpr = ternaryElse(expr);
+		if (UNEXPECTED(elseExpr == NULL)) return zv::Val();
+		zv::Val elseScopeHold;
+		zval *elseEvaluatedScope = pt_expression_result_scope(elseResult, elseScopeHold);
+		if (UNEXPECTED(elseEvaluatedScope == NULL)) return zv::Val();
+		ArmOperand elseOperand;
+		if (UNEXPECTED(!createArmOperand(handler, elseExpr, elseResult, elseProcessingScope, elseEvaluatedScope, armContext, elseOperand))) return zv::Val();
 
 		// the decomposition's branch scopes are the operand walks' own
 		// memoized branch scopes (the evaluation points), not ask-derived;
@@ -437,15 +482,13 @@ private:
 		zv::Val condFalseyScope = pt_native_closure(&falseyScopeBody, ternaryCondResult);
 
 		// right disjunct: !cond && else
-		zval *elseExpr = ternaryElse(expr);
+		elseExpr = ternaryElse(expr);
 		if (UNEXPECTED(elseExpr == NULL)) return zv::Val();
 		zv::Args bNodeArgv{notCondNode.raw(), elseExpr};
 		zv::Val bNode = pt_type_new(PT_CLASS_BOOLEAN_AND_EXPR, 2, bNodeArgv);
 		if (UNEXPECTED(bNode.isUndef())) return zv::Val();
-		zv::Val elseFalseyOnCondFalseyScope = pt_native_closure(&falseyScopeBody, elseResult);
-		zv::Val bTypes = pt_native_closure(&bTypesBody, handler, nodeScopeResolver, bNode.raw(), notCondNode.raw(), notCondTypes.raw(), condFalseyScope.raw(), condTruthyScope.raw(), expr, elseTypes.raw(), elseFalseyOnCondFalseyScope.raw());
-		zv::Val bType = pt_native_closure(&andVerdictBody, notCondType.raw(), elseType.raw());
-		zv::Val bTruthyScope = pt_native_closure(&truthyScopeBody, elseResult);
+		zv::Val bTypes = pt_native_closure(&bTypesBody, handler, nodeScopeResolver, bNode.raw(), notCondNode.raw(), notCondTypes.raw(), condFalseyScope.raw(), condTruthyScope.raw(), expr, elseOperand.types.raw(), elseOperand.falseyScope.raw());
+		zv::Val bType = pt_native_closure(&andVerdictBody, notCondType.raw(), elseOperand.type.raw());
 
 		zend_object *booleanNarrowingHelper = Z_OBJ_P(OBJ_PROP_NUM(handler, slots::booleanNarrowingHelper));
 		zval *ifExpr = NULL;
@@ -453,22 +496,37 @@ private:
 			ifExpr = ternaryIf(expr);
 			if (UNEXPECTED(ifExpr == NULL)) return zv::Val();
 		}
+		bool fullTernary = ifExpr != NULL && Z_TYPE_P(ifExpr) != IS_NULL;
+		// the short ternary's truthy value is the condition itself - in an
+		// exact context it is compared like an arm: cond && (cond === true)
+		bool shortTernaryArm = armContext != NULL && !fullTernary;
 		zv::Val disjunction;
-		if (ifExpr != NULL && Z_TYPE_P(ifExpr) != IS_NULL) {
+		if (fullTernary || shortTernaryArm) {
 			// left disjunct: cond && if
 			cond = ternaryCond(expr);
 			if (UNEXPECTED(cond == NULL)) return zv::Val();
-			ifExpr = ternaryIf(expr);
-			if (UNEXPECTED(ifExpr == NULL)) return zv::Val();
-			zv::Args aNodeArgv{cond, ifExpr};
+			zval *armExpr;
+			zval *armResult;
+			zval *evaluatedScope;
+			zv::Val ifScopeHold;
+			if (fullTernary) {
+				armExpr = ternaryIf(expr);
+				if (UNEXPECTED(armExpr == NULL)) return zv::Val();
+				armResult = ifResult;
+				evaluatedScope = pt_expression_result_scope(ifResult, ifScopeHold);
+				if (UNEXPECTED(evaluatedScope == NULL)) return zv::Val();
+			} else {
+				armExpr = cond;
+				armResult = ternaryCondResult;
+				evaluatedScope = ifProcessingScope;
+			}
+			ArmOperand ifOperand;
+			if (UNEXPECTED(!createArmOperand(handler, armExpr, armResult, ifProcessingScope, evaluatedScope, armContext, ifOperand))) return zv::Val();
+			zv::Args aNodeArgv{cond, armExpr};
 			zv::Val aNode = pt_type_new(PT_CLASS_BOOLEAN_AND_EXPR, 2, aNodeArgv);
 			if (UNEXPECTED(aNode.isUndef())) return zv::Val();
-			zv::Val ifTypes = pt_native_closure(&specifiedTypesForScopeBody, ifResult);
-			zv::Val ifType = pt_native_closure(&typeOnScopeBody, ifResult, ifProcessingScope);
-			zv::Val ifFalseyOnCondTruthyScope = pt_native_closure(&falseyScopeBody, ifResult);
-			zv::Val aTypes = pt_native_closure(&aTypesBody, handler, nodeScopeResolver, aNode.raw(), expr, condTypes.raw(), condTruthyScope.raw(), condFalseyScope.raw(), ifTypes.raw(), ifFalseyOnCondTruthyScope.raw());
-			zv::Val aType = pt_native_closure(&andVerdictBody, condType.raw(), ifType.raw());
-			zv::Val aTruthyScope = pt_native_closure(&truthyScopeBody, ifResult);
+			zv::Val aTypes = pt_native_closure(&aTypesBody, handler, nodeScopeResolver, aNode.raw(), expr, condTypes.raw(), condTruthyScope.raw(), condFalseyScope.raw(), ifOperand.types.raw(), ifOperand.falseyScope.raw(), armExpr);
+			zv::Val aType = pt_native_closure(&andVerdictBody, condType.raw(), ifOperand.type.raw());
 			// the merged falsey of (cond && if) has no single walk scope -
 			// derived from the evaluation point on first demand, reused across asks
 			zval thunkCaptures[3];
@@ -477,12 +535,12 @@ private:
 			ZVAL_COPY_VALUE(&thunkCaptures[2], aFalseyScope);
 			zv::Val aFalseyScopeThunk = pt_native_closure_new(&aFalseyScopeThunkBody, 3, thunkCaptures, 1u << 2);
 
-			disjunction = pt_boolean_narrowing_helper_specify_disjunction(booleanNarrowingHelper, nodeScopeResolver, s.raw(), context, expr, aNode.raw(), aTypes.raw(), aType.raw(), aTruthyScope.raw(), aFalseyScopeThunk.raw(), bNode.raw(), bTypes.raw(), bType.raw(), bTruthyScope.raw());
+			disjunction = pt_boolean_narrowing_helper_specify_disjunction(booleanNarrowingHelper, nodeScopeResolver, s.raw(), context, expr, aNode.raw(), aTypes.raw(), aType.raw(), ifOperand.truthyScope.raw(), aFalseyScopeThunk.raw(), bNode.raw(), bTypes.raw(), bType.raw(), elseOperand.truthyScope.raw());
 		} else {
 			// short ternary: cond || (!cond && else)
 			cond = ternaryCond(expr);
 			if (UNEXPECTED(cond == NULL)) return zv::Val();
-			disjunction = pt_boolean_narrowing_helper_specify_disjunction(booleanNarrowingHelper, nodeScopeResolver, s.raw(), context, expr, cond, condTypes.raw(), condType.raw(), condTruthyScope.raw(), condFalseyScope.raw(), bNode.raw(), bTypes.raw(), bType.raw(), bTruthyScope.raw());
+			disjunction = pt_boolean_narrowing_helper_specify_disjunction(booleanNarrowingHelper, nodeScopeResolver, s.raw(), context, expr, cond, condTypes.raw(), condType.raw(), condTruthyScope.raw(), condFalseyScope.raw(), bNode.raw(), bTypes.raw(), bType.raw(), elseOperand.truthyScope.raw());
 		}
 		if (UNEXPECTED(disjunction.isUndef())) return zv::Val();
 		if (UNEXPECTED(Z_TYPE_P(disjunction.raw()) != IS_OBJECT)) {
@@ -623,10 +681,10 @@ private:
 	/* fn (MutatingScope $scope, TypeSpecifierContext $ctx): SpecifiedTypes =>
 	 * $this->booleanNarrowingHelper->specifyConjunction($nodeScopeResolver,
 	 * $scope, $ctx, $bNode, $notCondNode, $notCondTypes, $condFalseyScope,
-	 * $condTruthyScope, $expr->else, $elseTypes, $elseFalseyOnCondFalseyScope)
+	 * $condTruthyScope, $expr->else, $elseTypes, $elseFalseyScope)
 	 * — captures: $this, $nodeScopeResolver, $bNode, $notCondNode,
 	 * $notCondTypes, $condFalseyScope, $condTruthyScope, $expr, $elseTypes,
-	 * $elseFalseyOnCondFalseyScope */
+	 * $elseFalseyScope */
 	static void bTypesBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 	{
 		if (UNEXPECTED(!ptoh::requireArgs(argc, 2, closureName))) return;
@@ -640,19 +698,174 @@ private:
 	/* fn (MutatingScope $scope, TypeSpecifierContext $ctx): SpecifiedTypes =>
 	 * $this->booleanNarrowingHelper->specifyConjunction($nodeScopeResolver,
 	 * $scope, $ctx, $aNode, $expr->cond, $condTypes, $condTruthyScope,
-	 * $condFalseyScope, $expr->if, $ifTypes, $ifFalseyOnCondTruthyScope) —
-	 * captures: $this, $nodeScopeResolver, $aNode, $expr, $condTypes,
-	 * $condTruthyScope, $condFalseyScope, $ifTypes, $ifFalseyOnCondTruthyScope */
+	 * $condFalseyScope, $ifExpr, $ifTypes, $ifFalseyScope) — captures: $this,
+	 * $nodeScopeResolver, $aNode, $expr, $condTypes, $condTruthyScope,
+	 * $condFalseyScope, $ifTypes, $ifFalseyScope, $ifExpr */
 	static void aTypesBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 	{
 		if (UNEXPECTED(!ptoh::requireArgs(argc, 2, closureName))) return;
 		zval *cond = ternaryCond(&captures[3]);
 		if (UNEXPECTED(cond == NULL)) return;
-		zval *ifExpr = ternaryIf(&captures[3]);
-		if (UNEXPECTED(ifExpr == NULL)) return;
-		zv::Val specifiedTypes = pt_boolean_narrowing_helper_specify_conjunction(Z_OBJ_P(OBJ_PROP_NUM(Z_OBJ(captures[0]), slots::booleanNarrowingHelper)), &captures[1], &argv[0], &argv[1], &captures[2], cond, &captures[4], &captures[5], &captures[6], ifExpr, &captures[7], &captures[8]);
+		zv::Val specifiedTypes = pt_boolean_narrowing_helper_specify_conjunction(Z_OBJ_P(OBJ_PROP_NUM(Z_OBJ(captures[0]), slots::booleanNarrowingHelper)), &captures[1], &argv[0], &argv[1], &captures[2], cond, &captures[4], &captures[5], &captures[6], &captures[9], &captures[7], &captures[8]);
 		if (UNEXPECTED(specifiedTypes.isUndef())) return;
 		specifiedTypes.intoReturnValue(return_value);
+	}
+
+	/* the four callables createArmOperand() returns */
+	struct ArmOperand
+	{
+		zv::Val types;
+		zv::Val type;
+		zv::Val truthyScope;
+		zv::Val falseyScope;
+	};
+
+	/* Mirrors createArmOperand(); false = pending exception */
+	[[nodiscard]] static bool createArmOperand(zend_object *handler, zval *armExpr, zval *armResult, zval *processingScope, zval *evaluatedScope, zval *armContext, ArmOperand &out)
+	{
+		if (armContext == NULL) {
+			out.types = pt_native_closure(&specifiedTypesForScopeBody, armResult);
+			out.type = pt_native_closure(&typeOnScopeBody, armResult, processingScope);
+			out.truthyScope = pt_native_closure(&truthyScopeBody, armResult);
+			out.falseyScope = pt_native_closure(&falseyScopeBody, armResult);
+			return true;
+		}
+
+		// `!== true` / `!== false` are the mixed contexts, `=== true` / `=== false` the pure ones
+		bool truthy, falsey, isTrue;
+		if (UNEXPECTED(!pt_type_specifier_context_truthy(Z_OBJ_P(armContext), truthy))) return false;
+		if (UNEXPECTED(!pt_type_specifier_context_falsey(Z_OBJ_P(armContext), falsey))) return false;
+		if (UNEXPECTED(!pt_type_specifier_context_true(Z_OBJ_P(armContext), isTrue))) return false;
+		bool isIdentical = !(truthy && falsey);
+		bool value = isIdentical ? isTrue : !isTrue;
+
+		out.types = pt_native_closure(&exactArmTypesBody, handler, armExpr, armResult, isIdentical, value);
+		out.type = pt_native_closure(&exactArmTypeBody, armResult, processingScope, isIdentical, value);
+		zend_object *truthyContext = pt_type_specifier_context_create_truthy();
+		if (UNEXPECTED(truthyContext == NULL)) return false;
+		zend_object *falseyContext = pt_type_specifier_context_create_falsey();
+		if (UNEXPECTED(falseyContext == NULL)) return false;
+		out.truthyScope = pt_native_closure(&derivedScopeBody, evaluatedScope, out.types.raw(), truthyContext);
+		out.falseyScope = pt_native_closure(&derivedScopeBody, evaluatedScope, out.types.raw(), falseyContext);
+		return true;
+	}
+
+	/* $expr instanceof BooleanOr || $expr instanceof LogicalOr (isDisjunction());
+	 * -1 = pending exception */
+	static int isDisjunction(zval *expr)
+	{
+		int is = ptoh::isInstance(expr, PT_CLASS_BOOLEAN_OR_EXPR);
+		if (is != 0) return is;
+		return ptoh::isInstance(expr, PT_CLASS_LOGICAL_OR_EXPR);
+	}
+
+	/* function (MutatingScope $scope, TypeSpecifierContext $ctx) use ($armExpr,
+	 * $armResult, $isIdentical, $value): SpecifiedTypes — the exact arm
+	 * operand's narrowing; captures: $this, $armExpr, $armResult,
+	 * $isIdentical, $value */
+	static void exactArmTypesBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
+	{
+		if (UNEXPECTED(!ptoh::requireArgs(argc, 2, closureName))) return;
+		zval *armExpr = &captures[1];
+		zval *armResult = &captures[2];
+		bool isIdentical = Z_TYPE(captures[3]) == IS_TRUE;
+		bool value = Z_TYPE(captures[4]) == IS_TRUE;
+
+		zv::Val negatedContext;
+		zval *identicalContext = &argv[1];
+		if (!isIdentical) {
+			negatedContext = pt_type_specifier_context_negate(Z_OBJ(argv[1]));
+			if (UNEXPECTED(negatedContext.isUndef())) return;
+			identicalContext = negatedContext.raw();
+		}
+		zv::Val constant = ptoh::constantBoolean(value);
+		if (UNEXPECTED(constant.isUndef())) return;
+		zv::Val types = pt_default_narrowing_helper_create_subject_types(OBJ_PROP_NUM(Z_OBJ(captures[0]), slots::defaultNarrowingHelper), &argv[0], armExpr, armResult, constant.raw(), identicalContext);
+		if (UNEXPECTED(types.isUndef())) return;
+
+		// a nullsafe chain that did not produce the constant may have
+		// short-circuited instead
+		bool identicalTrue;
+		if (UNEXPECTED(!pt_type_specifier_context_true(Z_OBJ_P(identicalContext), identicalTrue))) return;
+		if (!identicalTrue) {
+			int nullsafe = ptoh::isInstance(armExpr, PT_CLASS_NULLSAFE_METHOD_CALL);
+			if (UNEXPECTED(nullsafe < 0)) return;
+			if (!nullsafe) {
+				nullsafe = ptoh::isInstance(armExpr, PT_CLASS_NULLSAFE_PROPERTY_FETCH);
+				if (UNEXPECTED(nullsafe < 0)) return;
+			}
+			if (nullsafe) {
+				types.intoReturnValue(return_value);
+				return;
+			}
+		}
+
+		zend_object *boolContext = value ? pt_type_specifier_context_create_true() : pt_type_specifier_context_create_false();
+		if (UNEXPECTED(boolContext == NULL)) return;
+		zv::Val negatedBoolContext;
+		zval armContext;
+		if (identicalTrue) {
+			ZVAL_OBJ(&armContext, boolContext);
+		} else {
+			negatedBoolContext = pt_type_specifier_context_negate(boolContext);
+			if (UNEXPECTED(negatedBoolContext.isUndef())) return;
+			ZVAL_COPY_VALUE(&armContext, negatedBoolContext.raw());
+		}
+		zv::Val armTypes = pt_expression_result_get_specified_types_for_scope(armResult, &argv[0], &armContext);
+		if (UNEXPECTED(armTypes.isUndef())) return;
+		if (UNEXPECTED(Z_TYPE_P(types.raw()) != IS_OBJECT)) {
+			zend_throw_error(NULL, "Call to a member function unionWith() on %s", zend_zval_value_name(types.raw()));
+			return;
+		}
+		zv::Val unioned = pt_specified_types_union_with(Z_OBJ_P(types.raw()), armTypes.raw());
+		if (UNEXPECTED(unioned.isUndef())) return;
+		unioned.intoReturnValue(return_value);
+	}
+
+	/* static function (bool $nativeTypesPromoted) use ($armResult,
+	 * $processingScope, $isIdentical, $value): Type — the exact arm operand's
+	 * verdict; captures: $armResult, $processingScope, $isIdentical, $value */
+	static void exactArmTypeBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
+	{
+		if (UNEXPECTED(!ptoh::requireArgs(argc, 1, closureName))) return;
+		bool isIdentical = Z_TYPE(captures[2]) == IS_TRUE;
+		bool value = Z_TYPE(captures[3]) == IS_TRUE;
+		zv::Val armType = pt_expression_result_get_type_on_scope(&captures[0], &captures[1], zend_is_true(&argv[0]));
+		if (UNEXPECTED(armType.isUndef())) return;
+		if (UNEXPECTED(Z_TYPE_P(armType.raw()) != IS_OBJECT)) {
+			zend_throw_error(NULL, "Call to a member function %s() on %s", value ? "isTrue" : "isFalse", zend_zval_value_name(armType.raw()));
+			return;
+		}
+		zend_long matches = value ? pt_type_call_trinary(Z_OBJ_P(armType.raw()), PT_LC("istrue"), 0, NULL) : pt_type_call_trinary(Z_OBJ_P(armType.raw()), PT_LC("isfalse"), 0, NULL);
+		if (UNEXPECTED(matches < 0)) return;
+		if (!isIdentical) {
+			matches = matches == PT_TRI_YES ? PT_TRI_NO : (matches == PT_TRI_NO ? PT_TRI_YES : matches);
+		}
+		zv::Val verdict;
+		if (matches == PT_TRI_YES) {
+			verdict = ptoh::constantBoolean(true);
+		} else if (matches == PT_TRI_NO) {
+			verdict = ptoh::constantBoolean(false);
+		} else {
+			verdict = ptoh::booleanType();
+		}
+		if (UNEXPECTED(verdict.isUndef())) return;
+		verdict.intoReturnValue(return_value);
+	}
+
+	/* static fn (): MutatingScope => $evaluatedScope->applySpecifiedTypes(
+	 * $types($evaluatedScope, <ctx>)) — the exact arm operand's branch scope;
+	 * captures: $evaluatedScope, $types, the truthy / falsey context */
+	static void derivedScopeBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
+	{
+		(void) argc;
+		(void) argv;
+		zv::Args typesArgv{&captures[0], &captures[2]};
+		zv::Val types = pt_type_call_callable(&captures[1], 2, typesArgv);
+		if (UNEXPECTED(types.isUndef())) return;
+		zv::Val derivedScope = pt_mutating_scope_apply_specified_types(Z_OBJ(captures[0]), types.raw());
+		if (UNEXPECTED(derivedScope.isUndef())) return;
+		derivedScope.intoReturnValue(return_value);
 	}
 
 	/* static function () use ($scope, $aTypes, &$aFalseyScope): MutatingScope

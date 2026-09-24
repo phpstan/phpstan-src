@@ -60,7 +60,15 @@ inline constexpr char strings[] =
 	"context\0" /* 523 */
 	"PHPStan\\Analyser\\ExpressionContext\0" /* 531 */
 	"PHPStan\\Analyser\\ExpressionResult\0" /* 566 */
-	"processExpr"; /* 600 */
+	"processExpr\0" /* 600 */
+	"isDisjunction\0" /* 612 */
+	"armExpr\0" /* 626 */
+	"armResult\0" /* 634 */
+	"processingScope\0" /* 644 */
+	"evaluatedScope\0" /* 660 */
+	"armContext\0" /* 675 */
+	"PHPStan\\Analyser\\TypeSpecifierContext\0" /* 686 */
+	"createArmOperand"; /* 724 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_VOID), /* resetFileAnalysisState return */
 	reg::packed(24, 0, 48), /* __construct $expressionResultFactory */
@@ -78,6 +86,14 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(510, MAY_BE_CALLABLE), /* processExpr $nodeCallback */
 	reg::packed(523, 0, 531), /* processExpr $context */
 	reg::packed(0, 0, 566), /* processExpr return */
+	reg::packed(265, 0, 270), /* isDisjunction $expr */
+	reg::packed(0, MAY_BE_BOOL), /* isDisjunction return */
+	reg::packed(626, 0, 270), /* createArmOperand $armExpr */
+	reg::packed(634, 0, 566), /* createArmOperand $armResult */
+	reg::packed(644, 0, 430), /* createArmOperand $processingScope */
+	reg::packed(660, 0, 430), /* createArmOperand $evaluatedScope */
+	reg::packed(675, MAY_BE_NULL, 686), /* createArmOperand $armContext */
+	reg::packed(0, MAY_BE_ARRAY), /* createArmOperand return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -89,6 +105,8 @@ inline constexpr sigtab::Sig __construct = { { 253 /* __construct */, 3, 1, 3, r
 inline constexpr sigtab::Sig supports = { { 290 /* supports */, 1, 4, 1, 5, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getCapturedResults = { { 327 /* getCapturedResults */, 1, 6, 1, 7, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig processExpr = { { 600 /* processExpr */, 7, 8, 7, 15, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isDisjunction = { { 612 /* isDisjunction */, 1, 16, 1, 17, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createArmOperand = { { 724 /* createArmOperand */, 5, 18, 5, 23, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::TernaryHandler

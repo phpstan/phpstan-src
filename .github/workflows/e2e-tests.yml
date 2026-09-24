@@ -187,6 +187,19 @@ jobs:
               echo "$OUTPUT"
               ../bashunit -a contains 'Result cache restored.' "$OUTPUT"
           - script: |
+              cd e2e/result-cache-worker-count
+              OUTPUT=$(../../bin/phpstan -vvv 2>&1)
+              echo "$OUTPUT"
+              ../bashunit -a contains 'largest of 2' "$OUTPUT"
+              # Only some files are analysed again, so the result is rebuilt from the cache
+              # and must still report the peak memory of the workers.
+              echo '// changed' >> src/Foo.php
+              echo '// changed' >> src/Bar.php
+              OUTPUT=$(../../bin/phpstan -vvv 2>&1)
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Result cache restored. 2 files will be reanalysed.' "$OUTPUT"
+              ../bashunit -a contains 'largest of 2' "$OUTPUT"
+          - script: |
               cd e2e/result-cache-stale-objects
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan -vvv")
               echo "$OUTPUT"

@@ -6,13 +6,10 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\ShouldNotHappenException;
-use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
-use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -24,7 +21,6 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
-use function array_is_list;
 use function array_map;
 use function array_unique;
 use function count;
@@ -99,10 +95,10 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 					if ($encoding === null && $value === '') {
 						// Simulate the str_split call with the analysed PHP Version instead of the runtime one.
 						if (!$returnsEmptyArray->no()) {
-							$results[] = self::createConstantArrayFrom([], $scope);
+							$results[] = $scope->getTypeFromValue([]);
 						}
 						if (!$returnsEmptyArray->yes()) {
-							$results[] = self::createConstantArrayFrom([''], $scope);
+							$results[] = $scope->getTypeFromValue(['']);
 						}
 						continue;
 					}
@@ -111,7 +107,7 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 						? str_split($value, $splitLength)
 						: @mb_str_split($value, $splitLength, $encoding);
 
-					$results[] = self::createConstantArrayFrom($items, $scope);
+					$results[] = $scope->getTypeFromValue($items);
 				}
 
 				return TypeCombinator::union(...$results);
@@ -144,32 +140,6 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 		}
 
 		return $returnType;
-	}
-
-	/**
-	 * @param string[] $constantArray
-	 */
-	private static function createConstantArrayFrom(array $constantArray, Scope $scope): ConstantArrayType
-	{
-		$keyTypes = [];
-		$valueTypes = [];
-		$isList = true;
-		$i = 0;
-
-		foreach ($constantArray as $key => $value) {
-			$keyType = $scope->getTypeFromValue($key);
-			if (!$keyType instanceof ConstantIntegerType) {
-				throw new ShouldNotHappenException();
-			}
-			$keyTypes[] = $keyType;
-
-			$valueTypes[] = $scope->getTypeFromValue($value);
-
-			$isList = $isList && $key === $i;
-			$i++;
-		}
-
-		return new ConstantArrayType($keyTypes, $valueTypes, $isList ? [$i] : [0], isList: TrinaryLogic::createFromBoolean(array_is_list($constantArray)));
 	}
 
 }

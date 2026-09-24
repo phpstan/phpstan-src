@@ -17,6 +17,7 @@ use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntegerRangeType;
@@ -27,7 +28,6 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use function count;
-use function is_array;
 use function is_int;
 use function is_numeric;
 use function preg_split;
@@ -161,20 +161,7 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 						if ($result === false) {
 							return new ErrorType();
 						}
-						$constantArray = ConstantArrayTypeBuilder::createEmpty();
-						foreach ($result as $key => $value) {
-							if (is_array($value)) {
-								$valueConstantArray = ConstantArrayTypeBuilder::createEmpty();
-								$valueConstantArray->setOffsetValueType(new ConstantIntegerType(0), new ConstantStringType($value[0]));
-								$valueConstantArray->setOffsetValueType(new ConstantIntegerType(1), new ConstantIntegerType($value[1]));
-								$returnInternalValueType = $valueConstantArray->getArray();
-							} else {
-								$returnInternalValueType = new ConstantStringType($value);
-							}
-							$constantArray->setOffsetValueType(new ConstantIntegerType($key), $returnInternalValueType);
-						}
-
-						$resultTypes[] = $constantArray->getArray();
+						$resultTypes[] = ConstantTypeHelper::getTypeFromValue($result);
 					}
 				}
 			}

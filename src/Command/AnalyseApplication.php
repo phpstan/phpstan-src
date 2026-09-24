@@ -344,6 +344,7 @@ final class AnalyseApplication
 			reachedInternalErrorsCountLimit: $analyserResult->hasReachedInternalErrorsCountLimit(),
 			peakMemoryUsageBytes: $analyserResult->getPeakMemoryUsageBytes(),
 			processedFiles: $analyserResult->getProcessedFiles(),
+			workerCount: $analyserResult->getWorkerCount(),
 		);
 	}
 

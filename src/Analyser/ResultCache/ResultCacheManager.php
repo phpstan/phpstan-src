@@ -1211,6 +1211,7 @@ final class ResultCacheManager
 			reachedInternalErrorsCountLimit: $analyserResult->hasReachedInternalErrorsCountLimit(),
 			peakMemoryUsageBytes: $analyserResult->getPeakMemoryUsageBytes(),
 			processedFiles: $analyserResult->getProcessedFiles(),
+			workerCount: $analyserResult->getWorkerCount(),
 		), $saved);
 	}
 

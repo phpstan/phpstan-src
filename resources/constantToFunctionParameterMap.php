@@ -66,6 +66,10 @@ return [
 				'JSON_INVALID_UTF8_IGNORE',
 				'JSON_INVALID_UTF8_SUBSTITUTE',
 			],
+			'exclusiveGroups' => [
+				['JSON_INVALID_UTF8_IGNORE', 'JSON_INVALID_UTF8_SUBSTITUTE'],
+				['JSON_PARTIAL_OUTPUT_ON_ERROR', 'JSON_THROW_ON_ERROR'],
+			],
 		],
 	],
 
@@ -78,6 +82,9 @@ return [
 				'JSON_THROW_ON_ERROR',
 				'JSON_INVALID_UTF8_IGNORE',
 				'JSON_INVALID_UTF8_SUBSTITUTE',
+			],
+			'exclusiveGroups' => [
+				['JSON_INVALID_UTF8_IGNORE', 'JSON_INVALID_UTF8_SUBSTITUTE'],
 			],
 		],
 	],
@@ -659,6 +666,9 @@ return [
 				'FILTER_FLAG_EMAIL_UNICODE',
 				'FILTER_THROW_ON_FAILURE',
 			],
+			'exclusiveGroups' => [
+				['FILTER_REQUIRE_SCALAR', 'FILTER_REQUIRE_ARRAY'],
+			],
 		],
 	],
 
@@ -732,6 +742,9 @@ return [
 				'FILTER_FLAG_HOSTNAME',
 				'FILTER_FLAG_EMAIL_UNICODE',
 				'FILTER_THROW_ON_FAILURE',
+			],
+			'exclusiveGroups' => [
+				['FILTER_REQUIRE_SCALAR', 'FILTER_REQUIRE_ARRAY'],
 			],
 		],
 	],
@@ -1148,6 +1161,9 @@ return [
 				'LOG_NOWAIT',
 				'LOG_PERROR',
 				'LOG_PID',
+			],
+			'exclusiveGroups' => [
+				['LOG_NDELAY', 'LOG_ODELAY'],
 			],
 		],
 		'facility' => [
@@ -2102,6 +2118,9 @@ return [
 				'ZipArchive::CHECKCONS',
 				'ZipArchive::OVERWRITE',
 				'ZipArchive::RDONLY',
+			],
+			'exclusiveGroups' => [
+				['ZipArchive::RDONLY', 'ZipArchive::OVERWRITE'],
 			],
 		],
 	],

@@ -4361,6 +4361,19 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14808.php'], []);
 	}
 
+	public function testBug15306(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-15306.php'], [
+			[
+				'Constants ZipArchive::RDONLY, ZipArchive::OVERWRITE cannot be combined for parameter #2 $flags of method ZipArchive::open().',
+				6,
+			],
+		]);
+	}
+
 	public function testBug14893(): void
 	{
 		$this->checkThisOnly = false;

@@ -416,6 +416,51 @@ public:
 		return pt_specified_types_new_with_root_expr(NULL, sureNotTypes.raw(), expr);
 	}
 
+	/* Mirrors isTypeExcludedByContext(); false = pending exception */
+	[[nodiscard]] bool isTypeExcludedByContext(zval *type, zval *context, bool &out) const
+	{
+		bool truthy;
+		if (UNEXPECTED(!ctxTruthy(context, truthy))) return false;
+		bool falsey;
+		if (UNEXPECTED(!ctxFalsey(context, falsey))) return false;
+		if (truthy && falsey) {
+			bool contextTrue;
+			if (UNEXPECTED(!ctxTrue(context, contextTrue))) return false;
+			bool contextFalse;
+			if (UNEXPECTED(!ctxFalse(context, contextFalse))) return false;
+			if (contextTrue == contextFalse) {
+				out = false;
+				return true;
+			}
+			zval excludedType;
+			if (UNEXPECTED(!pt_constant_boolean_type_new(&excludedType, contextFalse))) return false;
+			zv::Val excludedTypeHold = zv::Val::adopt(excludedType);
+			return isSuperTypeOfYes(excludedTypeHold.raw(), type, out);
+		}
+
+		bool falseyButNotFalse = false;
+		if (!truthy && UNEXPECTED(!ctxFalseyButNotFalse(context, falseyButNotFalse))) return false;
+		if (!truthy && !falseyButNotFalse) {
+			zend_long isFalse = typeTrinaryByName(type, "isFalse", PT_LC("isfalse"));
+			if (UNEXPECTED(isFalse < 0)) return false;
+			out = isFalse == PT_TRI_NO;
+			return true;
+		}
+
+		if (UNEXPECTED(Z_TYPE_P(type) != IS_OBJECT)) {
+			(void) callOnNonObject("toBoolean", type);
+			return false;
+		}
+		zv::Val boolean = pt_type_call(Z_OBJ_P(type), PT_LC("toboolean"), 0, NULL);
+		if (UNEXPECTED(boolean.isUndef())) return false;
+		zend_long verdict = truthy
+			? typeTrinaryByName(boolean.raw(), "isFalse", PT_LC("isfalse"))
+			: typeTrinaryByName(boolean.raw(), "isTrue", PT_LC("istrue"));
+		if (UNEXPECTED(verdict < 0)) return false;
+		out = verdict == PT_TRI_YES;
+		return true;
+	}
+
 	/* Mirrors specifyDefaultTypesWithPlainTwin(). */
 	zv::Val specifyDefaultTypesWithPlainTwin(zval *expr, zval *exprResult, zval *context, zval *s) const
 	{
@@ -2144,6 +2189,16 @@ zv::Val pt_default_narrowing_helper_create_nullsafe_receiver_only_types(zval *he
 	return pt_type_call(Z_OBJ_P(helper), PT_LC("createnullsafereceiveronlytypes"), 5, argv);
 }
 
+bool pt_default_narrowing_helper_is_type_excluded_by_context(zval *helper, zval *type, zval *context, bool &out)
+{
+	if (isNativeHelper(helper)) return DefaultNarrowingHelper(Z_OBJ_P(helper)).isTypeExcludedByContext(type, context, out);
+	zv::Args argv{type, context};
+	zv::Val result = pt_type_call(Z_OBJ_P(helper), PT_LC("istypeexcludedbycontext"), 2, argv);
+	if (UNEXPECTED(result.isUndef())) return false;
+	out = zend_is_true(result.raw());
+	return true;
+}
+
 bool pt_default_narrowing_helper_call_may_have_been_skipped(zval *helper, zval *receiverResult, zval *receiverType, zval *context, bool &out)
 {
 	if (receiverResult != NULL && Z_TYPE_P(receiverResult) == IS_NULL) receiverResult = NULL;
@@ -2245,6 +2300,14 @@ void pt_register_default_narrowing_helper()
 		zval *expr, *context;
 		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, expr, context)) RETURN_THROWS();
 		PT_RETURN_VAL(PT_DNH_THIS.specifyDefaultTypes(expr, context));
+	});
+
+	cls.method(sigs::isTypeExcludedByContext, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *type, *context;
+		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, type, context)) RETURN_THROWS();
+		bool out;
+		if (UNEXPECTED(!PT_DNH_THIS.isTypeExcludedByContext(type, context, out))) RETURN_THROWS();
+		RETURN_BOOL(out);
 	});
 
 	cls.method(sigs::specifyDefaultTypesWithPlainTwin, [](INTERNAL_FUNCTION_PARAMETERS) {

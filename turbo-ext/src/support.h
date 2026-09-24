@@ -2406,6 +2406,9 @@ zv::Val pt_default_narrowing_helper_create_subject_types(zval *helper, zval *s, 
 zv::Val pt_default_narrowing_helper_create_subject_types_from_result_state(zval *helper, zval *s, zval *subject, zval *subjectResult, zval *type, zval *context);
 zv::Val pt_default_narrowing_helper_specify_default_types_with_nullsafe_fan(zval *helper, zval *expr, zval *context, zval *beforeScope, bool nativeTypesPromoted);
 zv::Val pt_default_narrowing_helper_create_nullsafe_receiver_only_types(zval *helper, zval *s, zval *subject, zval *subjectResult, zval *type, zval *context);
+/* $helper->isTypeExcludedByContext($type, $context); false = pending
+ * exception */
+[[nodiscard]] bool pt_default_narrowing_helper_is_type_excluded_by_context(zval *helper, zval *type, zval *context, bool &out);
 /* $helper->callMayHaveBeenSkipped($receiverResult, $receiverType, $context);
  * $receiverResult NULL (or a null zval) for null; false = pending exception */
 [[nodiscard]] bool pt_default_narrowing_helper_call_may_have_been_skipped(zval *helper, zval *receiverResult, zval *receiverType, zval *context, bool &out);

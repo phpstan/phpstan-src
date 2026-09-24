@@ -209,6 +209,10 @@ final class TernaryHandler implements ExprHandler, PerFileAnalysisResettable
 					return $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context);
 				}
 
+				if ($context->truthy() && $context->falsey()) {
+					return $this->specifyMixedContextTypes($expr, $context, $nativeTypesPromoted, $s, $ternaryCondResult, $ifResult, $elseResult, $ifProcessingScope, $elseProcessingScope);
+				}
+
 				// cond ? if : else narrows like (cond && if) || (!cond && else),
 				// composed from the walk's results through the boolean helpers -
 				// the fabricated nodes are only printed into holder keys
@@ -330,6 +334,52 @@ final class TernaryHandler implements ExprHandler, PerFileAnalysisResettable
 				)->setRootExpr($expr);
 			},
 		);
+	}
+
+	/**
+	 * A mixed context (`!== false`, `!== true`) asks about the ternary's value,
+	 * not its truthiness, so the boolean decomposition does not apply: the value
+	 * is in the context when the condition picked an arm whose value is. The
+	 * condition narrows by truthiness, the arms by the context itself.
+	 */
+	private function specifyMixedContextTypes(
+		Ternary $expr,
+		TypeSpecifierContext $context,
+		bool $nativeTypesPromoted,
+		MutatingScope $s,
+		ExpressionResult $ternaryCondResult,
+		?ExpressionResult $ifResult,
+		ExpressionResult $elseResult,
+		MutatingScope $ifProcessingScope,
+		MutatingScope $elseProcessingScope,
+	): SpecifiedTypes
+	{
+		$condType = $nativeTypesPromoted ? $ternaryCondResult->getNativeType() : $ternaryCondResult->getType();
+		$condBooleanType = $condType->toBoolean();
+
+		$ifTypes = $ternaryCondResult->getSpecifiedTypesForScope($s, TypeSpecifierContext::createTruthy());
+		if ($ifResult !== null && $expr->if !== null) {
+			$ifTypes = $ifTypes->unionWith($ifResult->getSpecifiedTypesForScope($ternaryCondResult->getTruthyScope(), $context));
+			$ifExcluded = $condBooleanType->isFalse()->yes()
+				|| $this->defaultNarrowingHelper->isTypeExcludedByContext($ifResult->getTypeOnScope($ifProcessingScope, $nativeTypesPromoted), $context);
+		} else {
+			$ifExcluded = $this->defaultNarrowingHelper->isTypeExcludedByContext(TypeCombinator::removeFalsey($condType), $context);
+		}
+
+		$elseTypes = $ternaryCondResult->getSpecifiedTypesForScope($s, TypeSpecifierContext::createFalsey())
+			->unionWith($elseResult->getSpecifiedTypesForScope($ternaryCondResult->getFalseyScope(), $context));
+		$elseExcluded = $condBooleanType->isTrue()->yes()
+			|| $this->defaultNarrowingHelper->isTypeExcludedByContext($elseResult->getTypeOnScope($elseProcessingScope, $nativeTypesPromoted), $context);
+
+		if ($ifExcluded) {
+			$types = $elseTypes;
+		} elseif ($elseExcluded) {
+			$types = $ifTypes;
+		} else {
+			$types = $ifTypes->intersectWith($elseTypes);
+		}
+
+		return $types->setRootExpr($expr);
 	}
 
 }

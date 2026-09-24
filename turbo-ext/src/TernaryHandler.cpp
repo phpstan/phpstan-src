@@ -415,6 +415,14 @@ private:
 			return pt_default_narrowing_helper_specify_default_types(OBJ_PROP_NUM(handler, slots::defaultNarrowingHelper), expr, context);
 		}
 
+		bool contextTruthy;
+		if (UNEXPECTED(!pt_type_specifier_context_truthy(Z_OBJ_P(context), contextTruthy))) return zv::Val();
+		bool contextFalsey = false;
+		if (contextTruthy && UNEXPECTED(!pt_type_specifier_context_falsey(Z_OBJ_P(context), contextFalsey))) return zv::Val();
+		if (contextTruthy && contextFalsey) {
+			return specifyMixedContextTypes(handler, expr, context, nativeTypesPromoted, s.raw(), ternaryCondResult, ifResult, elseResult, ifProcessingScope, elseProcessingScope);
+		}
+
 		// cond ? if : else narrows like (cond && if) || (!cond && else),
 		// composed from the walk's results through the boolean helpers -
 		// the fabricated nodes are only printed into holder keys
@@ -490,6 +498,83 @@ private:
 			return zv::Val();
 		}
 		return pt_specified_types_set_root_expr(Z_OBJ_P(disjunction.raw()), expr);
+	}
+
+	/* Mirrors specifyMixedContextTypes(); $ifResult a null zval for a short
+	 * ternary */
+	static zv::Val specifyMixedContextTypes(zend_object *handler, zval *expr, zval *context, bool nativeTypesPromoted, zval *s, zval *ternaryCondResult, zval *ifResult, zval *elseResult, zval *ifProcessingScope, zval *elseProcessingScope)
+	{
+		zval *defaultNarrowingHelper = OBJ_PROP_NUM(handler, slots::defaultNarrowingHelper);
+		zv::Val condType = nativeTypesPromoted ? pt_expression_result_get_native_type(ternaryCondResult) : pt_expression_result_get_type(ternaryCondResult);
+		if (UNEXPECTED(condType.isUndef())) return zv::Val();
+		ptoh::BooleanOf condBoolean;
+		if (UNEXPECTED(!condBoolean.init(condType.raw()))) return zv::Val();
+
+		zend_object *truthy = pt_type_specifier_context_create_truthy();
+		if (UNEXPECTED(truthy == NULL)) return zv::Val();
+		zval truthyZval;
+		ZVAL_OBJ(&truthyZval, truthy);
+		zv::Val ifTypes = pt_expression_result_get_specified_types_for_scope(ternaryCondResult, s, &truthyZval);
+		if (UNEXPECTED(ifTypes.isUndef())) return zv::Val();
+		bool ifExcluded = false;
+		zval *ifExpr = NULL;
+		if (Z_TYPE_P(ifResult) != IS_NULL) {
+			ifExpr = ternaryIf(expr);
+			if (UNEXPECTED(ifExpr == NULL)) return zv::Val();
+		}
+		if (ifExpr != NULL && Z_TYPE_P(ifExpr) != IS_NULL) {
+			zv::Val condTruthyScope = pt_expression_result_get_truthy_scope(ternaryCondResult);
+			if (UNEXPECTED(condTruthyScope.isUndef())) return zv::Val();
+			zv::Val ifArmTypes = pt_expression_result_get_specified_types_for_scope(ifResult, condTruthyScope.raw(), context);
+			if (UNEXPECTED(ifArmTypes.isUndef())) return zv::Val();
+			ifTypes = pt_specified_types_union_with(Z_OBJ_P(ifTypes.raw()), ifArmTypes.raw());
+			if (UNEXPECTED(ifTypes.isUndef())) return zv::Val();
+			int condFalse = condBoolean.isFalse();
+			if (UNEXPECTED(condFalse < 0)) return zv::Val();
+			ifExcluded = condFalse != 0;
+			if (!ifExcluded) {
+				zv::Val ifType = pt_expression_result_get_type_on_scope(ifResult, ifProcessingScope, nativeTypesPromoted);
+				if (UNEXPECTED(ifType.isUndef())) return zv::Val();
+				if (UNEXPECTED(!pt_default_narrowing_helper_is_type_excluded_by_context(defaultNarrowingHelper, ifType.raw(), context, ifExcluded))) return zv::Val();
+			}
+		} else {
+			zv::Val condTruthyType = pt_type_combinator_call(PT_LC("removefalsey"), 1, condType.raw());
+			if (UNEXPECTED(condTruthyType.isUndef())) return zv::Val();
+			if (UNEXPECTED(!pt_default_narrowing_helper_is_type_excluded_by_context(defaultNarrowingHelper, condTruthyType.raw(), context, ifExcluded))) return zv::Val();
+		}
+
+		zend_object *falsey = pt_type_specifier_context_create_falsey();
+		if (UNEXPECTED(falsey == NULL)) return zv::Val();
+		zval falseyZval;
+		ZVAL_OBJ(&falseyZval, falsey);
+		zv::Val elseTypes = pt_expression_result_get_specified_types_for_scope(ternaryCondResult, s, &falseyZval);
+		if (UNEXPECTED(elseTypes.isUndef())) return zv::Val();
+		zv::Val condFalseyScope = pt_expression_result_get_falsey_scope(ternaryCondResult);
+		if (UNEXPECTED(condFalseyScope.isUndef())) return zv::Val();
+		zv::Val elseArmTypes = pt_expression_result_get_specified_types_for_scope(elseResult, condFalseyScope.raw(), context);
+		if (UNEXPECTED(elseArmTypes.isUndef())) return zv::Val();
+		elseTypes = pt_specified_types_union_with(Z_OBJ_P(elseTypes.raw()), elseArmTypes.raw());
+		if (UNEXPECTED(elseTypes.isUndef())) return zv::Val();
+		int condTrue = condBoolean.isTrue();
+		if (UNEXPECTED(condTrue < 0)) return zv::Val();
+		bool elseExcluded = condTrue != 0;
+		if (!elseExcluded) {
+			zv::Val elseType = pt_expression_result_get_type_on_scope(elseResult, elseProcessingScope, nativeTypesPromoted);
+			if (UNEXPECTED(elseType.isUndef())) return zv::Val();
+			if (UNEXPECTED(!pt_default_narrowing_helper_is_type_excluded_by_context(defaultNarrowingHelper, elseType.raw(), context, elseExcluded))) return zv::Val();
+		}
+
+		zv::Val types;
+		if (ifExcluded) {
+			types = std::move(elseTypes);
+		} else if (elseExcluded) {
+			types = std::move(ifTypes);
+		} else {
+			types = pt_specified_types_intersect_with(Z_OBJ_P(ifTypes.raw()), elseTypes.raw());
+			if (UNEXPECTED(types.isUndef())) return zv::Val();
+		}
+
+		return pt_specified_types_set_root_expr(Z_OBJ_P(types.raw()), expr);
 	}
 
 	/* static fn (MutatingScope $scope, TypeSpecifierContext $ctx): SpecifiedTypes

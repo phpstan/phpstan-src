@@ -60,7 +60,17 @@ inline constexpr char strings[] =
 	"context\0" /* 523 */
 	"PHPStan\\Analyser\\ExpressionContext\0" /* 531 */
 	"PHPStan\\Analyser\\ExpressionResult\0" /* 566 */
-	"processExpr"; /* 600 */
+	"processExpr\0" /* 600 */
+	"PHPStan\\Analyser\\TypeSpecifierContext\0" /* 612 */
+	"nativeTypesPromoted\0" /* 650 */
+	"s\0" /* 670 */
+	"ternaryCondResult\0" /* 672 */
+	"ifResult\0" /* 690 */
+	"elseResult\0" /* 699 */
+	"ifProcessingScope\0" /* 710 */
+	"elseProcessingScope\0" /* 728 */
+	"PHPStan\\Analyser\\SpecifiedTypes\0" /* 748 */
+	"specifyMixedContextTypes"; /* 780 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_VOID), /* resetFileAnalysisState return */
 	reg::packed(24, 0, 48), /* __construct $expressionResultFactory */
@@ -78,6 +88,16 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(510, MAY_BE_CALLABLE), /* processExpr $nodeCallback */
 	reg::packed(523, 0, 531), /* processExpr $context */
 	reg::packed(0, 0, 566), /* processExpr return */
+	reg::packed(265, 0, 299), /* specifyMixedContextTypes $expr */
+	reg::packed(523, 0, 612), /* specifyMixedContextTypes $context */
+	reg::packed(650, MAY_BE_BOOL), /* specifyMixedContextTypes $nativeTypesPromoted */
+	reg::packed(670, 0, 430), /* specifyMixedContextTypes $s */
+	reg::packed(672, 0, 566), /* specifyMixedContextTypes $ternaryCondResult */
+	reg::packed(690, MAY_BE_NULL, 566), /* specifyMixedContextTypes $ifResult */
+	reg::packed(699, 0, 566), /* specifyMixedContextTypes $elseResult */
+	reg::packed(710, 0, 430), /* specifyMixedContextTypes $ifProcessingScope */
+	reg::packed(728, 0, 430), /* specifyMixedContextTypes $elseProcessingScope */
+	reg::packed(0, 0, 748), /* specifyMixedContextTypes return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -89,6 +109,7 @@ inline constexpr sigtab::Sig __construct = { { 253 /* __construct */, 3, 1, 3, r
 inline constexpr sigtab::Sig supports = { { 290 /* supports */, 1, 4, 1, 5, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getCapturedResults = { { 327 /* getCapturedResults */, 1, 6, 1, 7, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig processExpr = { { 600 /* processExpr */, 7, 8, 7, 15, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig specifyMixedContextTypes = { { 780 /* specifyMixedContextTypes */, 9, 16, 9, 25, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::TernaryHandler

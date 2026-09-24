@@ -323,48 +323,44 @@ private:
 
 		zv::Val s = nativeTypesPromoted ? pt_mutating_scope_do_not_treat_phpdoc_types_as_certain(Z_OBJ_P(beforeScope)) : zv::Val::copyOf(zv::Ref(beforeScope));
 		if (UNEXPECTED(s.isUndef())) return zv::Val();
-		bool contextTrue;
-		if (UNEXPECTED(!pt_type_specifier_context_true(Z_OBJ_P(context), contextTrue))) return zv::Val();
-		if (!contextTrue) {
+		zval *defaultNarrowingHelper = OBJ_PROP_NUM(handler, slots::defaultNarrowingHelper);
+		// a right side that cannot satisfy the context was not the value
+		zv::Val rightType = nativeTypesPromoted ? pt_expression_result_get_native_type(rightResult) : pt_expression_result_get_type(rightResult);
+		if (UNEXPECTED(rightType.isUndef())) return zv::Val();
+		bool rightExcluded;
+		if (UNEXPECTED(!pt_default_narrowing_helper_is_type_excluded_by_context(defaultNarrowingHelper, rightType.raw(), context, rightExcluded))) return zv::Val();
+		if (rightExcluded) {
 			zval *left = ptoh::binaryOpLeft(expr);
 			if (UNEXPECTED(left == NULL)) return zv::Val();
-			return pt_coalesce_composition_helper_get_falsey_specified_types(OBJ_PROP_NUM(handler, slots::coalesceCompositionHelper), s.raw(), s.raw(), left, condResult, expr, context);
-		}
-
-		bool contextFalsey;
-		if (UNEXPECTED(!pt_type_specifier_context_falsey(Z_OBJ_P(context), contextFalsey))) return zv::Val();
-		if (!contextFalsey) {
-			zv::Val falseType = ptoh::constantBoolean(false);
-			if (UNEXPECTED(falseType.isUndef())) return zv::Val();
-			zv::Val rightType = nativeTypesPromoted ? pt_expression_result_get_native_type(rightResult) : pt_expression_result_get_type(rightResult);
-			if (UNEXPECTED(rightType.isUndef())) return zv::Val();
-			if (UNEXPECTED(Z_TYPE_P(rightType.raw()) != IS_OBJECT)) {
-				zend_throw_error(NULL, "Call to a member function toBoolean() on %s", zend_zval_value_name(rightType.raw()));
+			zval nullType;
+			if (UNEXPECTED(!pt_null_type_new(&nullType))) return zv::Val();
+			zv::Val nullTypeHold = zv::Val::adopt(nullType);
+			zend_object *falseContext = pt_type_specifier_context_create_false();
+			if (UNEXPECTED(falseContext == NULL)) return zv::Val();
+			zval falseContextZval = objectZval(falseContext);
+			zv::Val subjectTypes = pt_default_narrowing_helper_create_subject_types(defaultNarrowingHelper, s.raw(), left, condResult, nullTypeHold.raw(), &falseContextZval);
+			if (UNEXPECTED(subjectTypes.isUndef())) return zv::Val();
+			if (UNEXPECTED(Z_TYPE_P(subjectTypes.raw()) != IS_OBJECT)) {
+				zend_throw_error(NULL, "Call to a member function setRootExpr() on %s", zend_zval_value_name(subjectTypes.raw()));
 				return zv::Val();
 			}
-			zv::Val rightBoolean = Z_OBJCE_P(rightType.raw()) == pt_ce_constant_boolean_type ? zv::Val::copyOf(rightType.ref()) : pt_type_call(Z_OBJ_P(rightType.raw()), PT_LC("toboolean"), 0, NULL);
-			if (UNEXPECTED(rightBoolean.isUndef())) return zv::Val();
-			zv::Val superType = pt_type_op(Z_OBJ_P(falseType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, rightBoolean.raw());
-			if (UNEXPECTED(superType.isUndef())) return zv::Val();
-			zend_long verdict = pt_type_result_trinary(superType.raw());
-			if (UNEXPECTED(verdict < 0)) return zv::Val();
-			if (verdict == PT_TRI_YES) {
-				zval *left = ptoh::binaryOpLeft(expr);
-				if (UNEXPECTED(left == NULL)) return zv::Val();
-				zval nullType;
-				if (UNEXPECTED(!pt_null_type_new(&nullType))) return zv::Val();
-				zv::Val nullTypeHold = zv::Val::adopt(nullType);
-				zend_object *falseContext = pt_type_specifier_context_create_false();
-				if (UNEXPECTED(falseContext == NULL)) return zv::Val();
-				zval falseContextZval = objectZval(falseContext);
-				zv::Val subjectTypes = pt_default_narrowing_helper_create_subject_types(OBJ_PROP_NUM(handler, slots::defaultNarrowingHelper), s.raw(), left, condResult, nullTypeHold.raw(), &falseContextZval);
-				if (UNEXPECTED(subjectTypes.isUndef())) return zv::Val();
-				if (UNEXPECTED(Z_TYPE_P(subjectTypes.raw()) != IS_OBJECT)) {
-					zend_throw_error(NULL, "Call to a member function setRootExpr() on %s", zend_zval_value_name(subjectTypes.raw()));
-					return zv::Val();
-				}
-				return pt_specified_types_set_root_expr(Z_OBJ_P(subjectTypes.raw()), expr);
-			}
+			return pt_specified_types_set_root_expr(Z_OBJ_P(subjectTypes.raw()), expr);
+		}
+
+		// nor was a left side none of whose non-null values can
+		zv::Val leftType = nativeTypesPromoted ? pt_expression_result_get_native_type(condResult) : pt_expression_result_get_type(condResult);
+		if (UNEXPECTED(leftType.isUndef())) return zv::Val();
+		zv::Val leftNonNullType = pt_type_combinator_remove_null(leftType.raw());
+		if (UNEXPECTED(leftNonNullType.isUndef())) return zv::Val();
+		bool leftExcluded;
+		if (UNEXPECTED(!pt_default_narrowing_helper_is_type_excluded_by_context(defaultNarrowingHelper, leftNonNullType.raw(), context, leftExcluded))) return zv::Val();
+		if (leftExcluded) {
+			zval *left = ptoh::binaryOpLeft(expr);
+			if (UNEXPECTED(left == NULL)) return zv::Val();
+			zend_object *falsey = pt_type_specifier_context_create_falsey();
+			if (UNEXPECTED(falsey == NULL)) return zv::Val();
+			zval falseyZval = objectZval(falsey);
+			return pt_coalesce_composition_helper_get_falsey_specified_types(OBJ_PROP_NUM(handler, slots::coalesceCompositionHelper), s.raw(), s.raw(), left, condResult, expr, &falseyZval);
 		}
 
 		// The Coalesce condition matched but produced no narrowing; the legacy

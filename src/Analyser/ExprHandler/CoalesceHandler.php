@@ -21,10 +21,10 @@ use PHPStan\Analyser\VariableFlow;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\CoalesceExpressionNode;
 use PHPStan\Turbo\ShadowedByTurboExtension;
-use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use function array_merge;
 
 /**
@@ -130,15 +130,14 @@ final class CoalesceHandler implements ExprHandler
 				}
 
 				$s = $nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope;
-				if (!$context->true()) {
-					return $this->coalesceCompositionHelper->getFalseySpecifiedTypes($s, $s, $expr->left, $condResult, $expr, $context);
+				// a right side that cannot satisfy the context was not the value
+				if ($this->defaultNarrowingHelper->isTypeExcludedByContext($nativeTypesPromoted ? $rightResult->getNativeType() : $rightResult->getType(), $context)) {
+					return $this->defaultNarrowingHelper->createSubjectTypes($s, $expr->left, $condResult, new NullType(), TypeSpecifierContext::createFalse())->setRootExpr($expr);
 				}
 
-				if (
-					!$context->falsey()
-					&& (new ConstantBooleanType(false))->isSuperTypeOf(($nativeTypesPromoted ? $rightResult->getNativeType() : $rightResult->getType())->toBoolean())->yes()
-				) {
-					return $this->defaultNarrowingHelper->createSubjectTypes($s, $expr->left, $condResult, new NullType(), TypeSpecifierContext::createFalse())->setRootExpr($expr);
+				// nor was a left side none of whose non-null values can
+				if ($this->defaultNarrowingHelper->isTypeExcludedByContext(TypeCombinator::removeNull($nativeTypesPromoted ? $condResult->getNativeType() : $condResult->getType()), $context)) {
+					return $this->coalesceCompositionHelper->getFalseySpecifiedTypes($s, $s, $expr->left, $condResult, $expr, TypeSpecifierContext::createFalsey());
 				}
 
 				// The Coalesce condition matched but produced no narrowing; the legacy

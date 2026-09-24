@@ -120,6 +120,32 @@ final class DefaultNarrowingHelper
 	}
 
 	/**
+	 * Whether no value of the type can satisfy the context. The mixed contexts
+	 * of `!== false` and `!== true` rule out only the one bool constant they
+	 * exclude, not a whole truthiness - `0 !== false` holds.
+	 */
+	public function isTypeExcludedByContext(Type $type, TypeSpecifierContext $context): bool
+	{
+		if ($context->truthy() && $context->falsey()) {
+			if ($context->true() === $context->false()) {
+				return false;
+			}
+
+			return (new ConstantBooleanType($context->false()))->isSuperTypeOf($type)->yes();
+		}
+
+		if ($context->truthy()) {
+			return $type->toBoolean()->isFalse()->yes();
+		}
+
+		if ($context->falseyButNotFalse()) {
+			return $type->toBoolean()->isTrue()->yes();
+		}
+
+		return $type->isFalse()->no();
+	}
+
+	/**
 	 * specifyDefaultTypes() for a chain containing a nullsafe: a truthy chain
 	 * did not short-circuit, so its fully plain twin ($a?->b()?->c() ->
 	 * $a->b()->c()) holds the same value and the source reads it that way once

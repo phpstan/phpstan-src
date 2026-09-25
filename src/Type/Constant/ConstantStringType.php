@@ -56,6 +56,7 @@ use function is_float;
 use function is_int;
 use function is_numeric;
 use function key;
+use function ltrim;
 use function strlen;
 use function strtolower;
 use function strtoupper;
@@ -75,6 +76,8 @@ class ConstantStringType extends StringType implements ConstantScalarType
 	private ?ObjectType $objectType = null;
 
 	private ?Type $arrayKeyType = null;
+
+	private ?string $valueAsClassName = null;
 
 	/** @var array<int, string> */
 	private array $cachedDescriptions = [];
@@ -109,7 +112,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 	public function getClassStringObjectType(): Type
 	{
 		if ($this->isClassString()->yes()) {
-			return new ObjectType($this->value);
+			return new ObjectType($this->getValueAsClassName());
 		}
 
 		return new ErrorType();
@@ -311,22 +314,23 @@ class ConstantStringType extends StringType implements ConstantScalarType
 
 	public function toObjectTypeForInstanceofCheck(): ClassNameToObjectTypeResult
 	{
-		return new ClassNameToObjectTypeResult(new ObjectType($this->value), false);
+		return new ClassNameToObjectTypeResult(new ObjectType($this->getValueAsClassName()), false);
 	}
 
 	public function toObjectTypeForIsACheck(Type $objectOrClassType, bool $allowString, bool $allowSameClass): ClassNameToObjectTypeResult
 	{
+		$className = $this->getValueAsClassName();
 		$objectOrClassTypeClassNames = $objectOrClassType->getObjectClassNames();
 		if ($allowString) {
 			foreach ($objectOrClassType->getConstantStrings() as $constantString) {
-				$objectOrClassTypeClassNames[] = $constantString->getValue();
+				$objectOrClassTypeClassNames[] = ltrim($constantString->getValue(), '\\');
 			}
 			$objectOrClassTypeClassNames = array_values(array_unique($objectOrClassTypeClassNames));
 		}
 
 		$uncertainty = false;
 		if (!$allowSameClass) {
-			if ($objectOrClassTypeClassNames === [$this->value]) {
+			if ($objectOrClassTypeClassNames === [$className]) {
 				$isSameClass = true;
 				foreach ($objectOrClassType->getObjectClassReflections() as $classReflection) {
 					if (!$classReflection->isFinal()) {
@@ -343,7 +347,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 			if (
 				// For object, as soon as the exact same type is provided
 				// in the list we cannot be sure of the result
-				in_array($this->value, $objectOrClassTypeClassNames, true)
+				in_array($className, $objectOrClassTypeClassNames, true)
 				// This also occurs for generic class string
 				|| ($allowString && $objectOrClassTypeClassNames === [] && $objectOrClassType->isSuperTypeOf($this)->yes())
 			) {
@@ -354,14 +358,14 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		if ($allowString) {
 			return new ClassNameToObjectTypeResult(
 				new UnionType([
-					new ObjectType($this->value),
-					new GenericClassStringType(new ObjectType($this->value)),
+					new ObjectType($className),
+					new GenericClassStringType(new ObjectType($className)),
 				]),
 				$uncertainty,
 			);
 		}
 
-		return new ClassNameToObjectTypeResult(new ObjectType($this->value), $uncertainty);
+		return new ClassNameToObjectTypeResult(new ObjectType($className), $uncertainty);
 	}
 
 	public function toAbsoluteNumber(): Type
@@ -642,7 +646,15 @@ class ConstantStringType extends StringType implements ConstantScalarType
 
 	private function getObjectType(): ObjectType
 	{
-		return $this->objectType ??= new ObjectType($this->value);
+		return $this->objectType ??= new ObjectType($this->getValueAsClassName());
+	}
+
+	/**
+	 * The value used as a class name: PHP accepts class names with a leading backslash, but the object types don't have it.
+	 */
+	private function getValueAsClassName(): string
+	{
+		return $this->valueAsClassName ??= ltrim($this->value, '\\');
 	}
 
 	public function toPhpDocNode(): TypeNode

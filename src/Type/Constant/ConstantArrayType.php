@@ -1602,7 +1602,8 @@ class ConstantArrayType implements Type
 			$offsetType = $valueType->toArrayKey();
 			$builder->setOffsetValueType(
 				$offsetType,
-				$keyType,
+				// The keys become values, so they're subject to PHP's array key cast.
+				UnsafeArrayStringKeyCastingTraverser::castReadKeyType($keyType),
 				$this->isOptionalKey($i) || count($offsetType->getConstantScalarTypes()) > 1,
 			);
 		}
@@ -1610,7 +1611,7 @@ class ConstantArrayType implements Type
 		if ($this->isUnsealed()->yes() && $this->unsealed !== null) {
 			[$unsealedKey, $unsealedValue] = $this->unsealed;
 			$flippedKey = $unsealedValue->toArrayKey();
-			$flippedValue = $unsealedKey;
+			$flippedValue = UnsafeArrayStringKeyCastingTraverser::castReadKeyType($unsealedKey);
 			// For a non-finite tail key (e.g. `string`), install the
 			// unsealed extras first; setOffsetValueType then widens any
 			// overlapping explicit values with the tail's value type.
@@ -1731,11 +1732,14 @@ class ConstantArrayType implements Type
 		}
 
 		if (count($matches) > 0) {
+			// The found key becomes a value of its own, so it's subject to PHP's
+			// array key cast.
+			$matchedKeyType = TypeCombinator::union(...$matches);
 			if ($hasIdenticalValue) {
-				return TypeCombinator::union(...$matches);
+				return UnsafeArrayStringKeyCastingTraverser::castReadKeyType($matchedKeyType);
 			}
 
-			return TypeCombinator::union(new ConstantBooleanType(false), ...$matches);
+			return UnsafeArrayStringKeyCastingTraverser::unionWithReadKeyType($matchedKeyType, new ConstantBooleanType(false));
 		}
 
 		return new ConstantBooleanType(false);
@@ -2443,7 +2447,7 @@ class ConstantArrayType implements Type
 
 	public function getKeysArrayFiltered(Type $filterValueType, TrinaryLogic $strict): Type
 	{
-		$keysArray = $this->getKeysOrValuesArray($this->keyTypes, $this->unsealed[0] ?? null);
+		$keysArray = $this->getReadKeysArray();
 
 		return new IntersectionType([
 			new ArrayType(
@@ -2456,7 +2460,24 @@ class ConstantArrayType implements Type
 
 	public function getKeysArray(): self
 	{
-		return $this->getKeysOrValuesArray($this->keyTypes, $this->unsealed[0] ?? null);
+		return $this->getReadKeysArray();
+	}
+
+	/**
+	 * The keys as a list of values - they've left the array, so they're subject
+	 * to PHP's array key cast.
+	 */
+	private function getReadKeysArray(): self
+	{
+		$unsealedKeyType = $this->unsealed[0] ?? null;
+
+		return $this->getKeysOrValuesArray(
+			array_map(
+				static fn (Type $keyType): Type => UnsafeArrayStringKeyCastingTraverser::castReadKeyType($keyType),
+				$this->keyTypes,
+			),
+			$unsealedKeyType !== null ? UnsafeArrayStringKeyCastingTraverser::castReadKeyType($unsealedKeyType) : null,
+		);
 	}
 
 	public function getValuesArray(): self

@@ -2913,6 +2913,20 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	}
 
 	#[RequiresPhp('>= 8.0.0')]
+	public function testBug14727(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14727.php'], [
+			['Integer 4096 does not correspond to constants allowed for parameter #2 $flags of function json_encode.', 17],
+			['Integer 4097 does not correspond to constants allowed for parameter #2 $flags of function json_encode.', 18],
+			['Integer 8192 does not correspond to constants allowed for parameter #2 $flags of function json_encode.', 19],
+			['Integer 4096 does not correspond to constants allowed for parameter #2 $flags of function json_encode.', 24],
+			['Integer 4096 does not correspond to constants allowed for parameter $flags of function json_encode.', 25],
+			['Integer 3 does not correspond to constants allowed for parameter #2 $flags of function array_unique.', 27],
+			['Integer 4 does not correspond to constants allowed for parameter #4 $flags of function json_decode.', 30],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
 	public function testConstantParameterCheck(): void
 	{
 		$this->analyse([__DIR__ . '/data/constant-parameter-check.php'], [
@@ -3258,8 +3272,24 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/round-mode-php84.php'], [
 			[
+				'Integer 5 does not correspond to constants allowed for parameter #3 $mode of function round.',
+				8,
+			],
+			[
+				'Integer 8 does not correspond to constants allowed for parameter #3 $mode of function round.',
+				9,
+			],
+			[
+				'Integer 9 does not correspond to constants allowed for parameter #3 $mode of function round.',
+				11,
+			],
+			[
 				'Parameter #3 $mode of function round expects int<1, 8>|RoundingMode, 9 given.',
 				11,
+			],
+			[
+				'Integer 0 does not correspond to constants allowed for parameter #3 $mode of function round.',
+				12,
 			],
 			[
 				'Parameter #3 $mode of function round expects int<1, 8>|RoundingMode, 0 given.',

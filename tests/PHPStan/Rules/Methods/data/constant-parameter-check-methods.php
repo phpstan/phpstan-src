@@ -29,3 +29,6 @@ $stmt->fetch(mode: \PDO::ATTR_ERRMODE);
 
 // PDOStatement::setFetchMode - exclusive base modes via named argument (multi-variant method)
 $stmt->setFetchMode(mode: \PDO::FETCH_ASSOC | \PDO::FETCH_NUM);
+
+// integer literal instead of constant
+$finfo->file('test.txt', 4);

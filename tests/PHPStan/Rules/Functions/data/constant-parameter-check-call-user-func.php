@@ -7,3 +7,6 @@ call_user_func('json_encode', [], JSON_PRETTY_PRINT);
 
 // call_user_func with wrong constant
 call_user_func('json_encode', [], SORT_REGULAR);
+
+// integer literal instead of constant
+call_user_func('json_encode', [], 4096);

@@ -707,6 +707,10 @@ class InstantiationRuleTest extends RuleTestCase
 				'Constant IntlDateFormatter::GREGORIAN is not allowed for parameter #2 $dateType of class IntlDateFormatter constructor.',
 				18,
 			],
+			[
+				'Integer 4 does not correspond to constants allowed for parameter #1 $flags of class finfo constructor.',
+				21,
+			],
 		]);
 	}
 

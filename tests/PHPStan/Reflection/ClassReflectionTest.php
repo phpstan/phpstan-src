@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection;
 
+use ArrayObject;
 use Attribute;
 use Attributes\IsAttribute;
 use Attributes\IsAttribute2;
@@ -31,13 +32,19 @@ use NestedTraits\NoTrait;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\StringType;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
+use WeakReference;
 use WrongClassConstantFile\SecuredRouter;
+use function array_key_first;
 use function array_map;
 use function array_values;
+use function gc_disable;
+use function gc_enable;
+use function gc_enabled;
 
 class ClassReflectionTest extends PHPStanTestCase
 {
@@ -373,6 +380,31 @@ class ClassReflectionTest extends PHPStanTestCase
 		$reflectionProvider = self::createReflectionProvider();
 		$classReflection = $reflectionProvider->getClass($className);
 		$this->assertSame($expected, $classReflection->isDeprecated());
+	}
+
+	public function testAncestorsDoNotKeepClassReflectionAlive(): void
+	{
+		$reflectionProvider = self::createReflectionProvider();
+		$classReflection = $reflectionProvider->getClass(ArrayObject::class)->withTypes([new IntegerType(), new StringType()]);
+
+		$ancestors = $classReflection->getAncestors();
+		$this->assertSame(ArrayObject::class, array_key_first($ancestors));
+		$this->assertSame($classReflection, $ancestors[ArrayObject::class]);
+		$this->assertSame($ancestors, $classReflection->getAncestors());
+		unset($ancestors);
+
+		// PHPStan runs with gc_disable(), so a reference cycle would keep it alive
+		$gcEnabled = gc_enabled();
+		gc_disable();
+		try {
+			$weakReference = WeakReference::create($classReflection);
+			unset($classReflection);
+			$this->assertNull($weakReference->get());
+		} finally {
+			if ($gcEnabled) {
+				gc_enable();
+			}
+		}
 	}
 
 }

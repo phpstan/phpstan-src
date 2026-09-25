@@ -98,11 +98,18 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 			return IsSuperTypeOfResult::createYes();
 		}
 
+		// a compound type can know it is never a list only as a whole,
+		// e.g. a non-empty array that cannot have the key 0
+		$isList = $type->isList();
+		if ($isList->no()) {
+			return IsSuperTypeOfResult::createNo();
+		}
+
 		if ($type instanceof CompoundType) {
 			return $type->isSubTypeOf($this);
 		}
 
-		return new IsSuperTypeOfResult($type->isList(), []);
+		return new IsSuperTypeOfResult($isList, []);
 	}
 
 	public function isSubTypeOf(Type $otherType): IsSuperTypeOfResult

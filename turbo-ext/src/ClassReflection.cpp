@@ -1507,17 +1507,15 @@ public:
 			}
 		}
 
-		/* the twin writes the last two answers into $this->hasPropertyCache
-		 * (not the instance cache) — kept as it is */
 		zv::Val requireExtends = requireExtendsPropertyClassReflectionExtension();
 		if (UNEXPECTED(requireExtends.isUndef())) return false;
 		if (UNEXPECTED(!extensionBool(requireExtends.ref(), PT_LC("hasinstanceproperty"), propertyName, has))) return false;
 		if (has) {
-			out = memoSetBool(PT_CR_PROP_HAS_PROPERTY_CACHE, propertyName, true);
+			out = memoSetBool(PT_CR_PROP_HAS_INSTANCE_PROPERTY_CACHE, propertyName, true);
 			return true;
 		}
 
-		out = memoSetBool(PT_CR_PROP_HAS_PROPERTY_CACHE, propertyName, false);
+		out = memoSetBool(PT_CR_PROP_HAS_INSTANCE_PROPERTY_CACHE, propertyName, false);
 		return true;
 	}
 

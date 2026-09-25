@@ -596,10 +596,10 @@ final class ClassReflection
 		}
 
 		if ($this->classReflectionExtensionRegistryProvider->getRegistry()->getRequireExtendsPropertyClassReflectionExtension()->hasInstanceProperty($this, $propertyName)) {
-			return $this->hasPropertyCache[$propertyName] = true;
+			return $this->hasInstancePropertyCache[$propertyName] = true;
 		}
 
-		return $this->hasPropertyCache[$propertyName] = false;
+		return $this->hasInstancePropertyCache[$propertyName] = false;
 	}
 
 	public function hasStaticProperty(string $propertyName): bool

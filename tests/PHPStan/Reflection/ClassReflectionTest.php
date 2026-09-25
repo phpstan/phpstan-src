@@ -382,6 +382,24 @@ class ClassReflectionTest extends PHPStanTestCase
 		$this->assertSame($expected, $classReflection->isDeprecated());
 	}
 
+	public static function dataHasInstancePropertyDoesNotChangeHasProperty(): iterable
+	{
+		yield ['HasInstancePropertyCache\\Foo', 'staticProp'];
+		yield ['HasInstancePropertyCache\\RequiresBar', 'staticProp'];
+	}
+
+	#[DataProvider('dataHasInstancePropertyDoesNotChangeHasProperty')]
+	public function testHasInstancePropertyDoesNotChangeHasProperty(string $className, string $propertyName): void
+	{
+		$reflectionProvider = self::createReflectionProvider();
+		$classReflection = $reflectionProvider->getClass($className);
+
+		$this->assertFalse($classReflection->hasInstanceProperty($propertyName));
+		$this->assertTrue($classReflection->hasProperty($propertyName));
+		$this->assertTrue($classReflection->hasStaticProperty($propertyName));
+		$this->assertFalse($classReflection->hasInstanceProperty($propertyName));
+	}
+
 	public function testAncestorsDoNotKeepClassReflectionAlive(): void
 	{
 		$reflectionProvider = self::createReflectionProvider();

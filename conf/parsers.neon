@@ -52,8 +52,8 @@ services:
 	pathRoutingParser:
 		class: PHPStan\Parser\PathRoutingParser
 		arguments:
-			currentPhpVersionRichParser: @currentPhpVersionRichParser
-			currentPhpVersionSimpleParser: @currentPhpVersionSimpleParser
+			currentPhpVersionRichParser: @cachedRichParser
+			currentPhpVersionSimpleParser: @cachedSimpleParser
 			php8Parser: @php8Parser
 			singleReflectionFile: %singleReflectionFile%
 		autowired: false
@@ -64,12 +64,27 @@ services:
 			wrappedParser: @defaultAnalysisParser
 		autowired: false
 
-	defaultAnalysisParser:
+	# the cache sits behind the routing: CachedParser keys by source code, so
+	# one cache in front of it would hand the body-stripped AST of a file
+	# outside the analysed paths to an analysed file with the same contents
+	cachedRichParser:
 		class: PHPStan\Parser\CachedParser
 		arguments:
-			originalParser: @pathRoutingParser
+			originalParser: @currentPhpVersionRichParser
 			cachedNodesByStringCountMax: %cache.nodesByStringCountMax%
 			cachedSourceBytesMax: %cache.nodesByStringSourceBytesMax%
+		autowired: false
+
+	cachedSimpleParser:
+		class: PHPStan\Parser\CachedParser
+		arguments:
+			originalParser: @currentPhpVersionSimpleParser
+			cachedNodesByStringCountMax: %cache.nodesByStringCountMax%
+			cachedSourceBytesMax: %cache.nodesByStringSourceBytesMax%
+		autowired: false
+
+	defaultAnalysisParser:
+		factory: @pathRoutingParser
 		autowired: false
 
 	freshStubParser:

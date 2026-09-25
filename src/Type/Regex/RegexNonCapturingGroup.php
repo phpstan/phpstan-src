@@ -36,6 +36,11 @@ final class RegexNonCapturingGroup
 			|| ($this->parent !== null && $this->parent->isOptional());
 	}
 
+	public function inOptionalQuantification(): bool
+	{
+		return $this->inOptionalQuantification;
+	}
+
 	public function isTopLevel(): bool
 	{
 		return $this->parent === null

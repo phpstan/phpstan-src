@@ -32,11 +32,6 @@ use const PHP_VERSION_ID;
 class GenericObjectTypeTest extends PHPStanTestCase
 {
 
-	// Pin the runtime container so a foreign PhpVersion leaked by another test
-	// can't flake the version-dependent data sets (reflected variance of built-in
-	// generics). See https://github.com/phpstan/phpstan/issues/14860
-	protected bool $reinitializeContainerBeforeEachTest = true;
-
 	public static function dataIsSuperTypeOf(): array
 	{
 		return [

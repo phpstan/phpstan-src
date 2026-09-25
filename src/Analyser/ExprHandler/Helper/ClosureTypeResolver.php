@@ -71,9 +71,11 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 	 * throw/impure points with the rest of the file's result graph.
 	 *
 	 * Keyed by the closure node's spl_object_id(), which PHP hands out again
-	 * once a node is freed - a synthetic closure built and dropped mid-file
-	 * (see TernaryHandler::$capturedResults) - so each entry pins the node it
-	 * was built for and findCachedTypes() answers for that very node only.
+	 * once a node is freed - a closure node built or parsed and dropped
+	 * mid-file (a synthetic closure, see TernaryHandler::$capturedResults, or
+	 * one an extension or a test walks through NodeScopeResolver) - so each
+	 * entry pins the node it was built for and findCachedTypes() answers for
+	 * that very node only.
 	 *
 	 * @var array<int, array{expr: Node\Expr\Closure|ArrowFunction, types: array<string, array{returnType: Type, throwPoints: SimpleThrowPoint[], impurePoints: SimpleImpurePoint[], invalidateExpressions: InvalidateExprNode[], usedVariables: string[]}>}>
 	 */

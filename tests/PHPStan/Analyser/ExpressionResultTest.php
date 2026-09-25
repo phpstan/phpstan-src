@@ -2,6 +2,9 @@
 
 namespace PHPStan\Analyser;
 
+use PhpParser\Node\Expr\ArrowFunction;
+use PhpParser\Node\Expr\Exit_;
+use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Scalar\Int_;
 use PhpParser\Node\Stmt;
@@ -196,9 +199,33 @@ class ExpressionResultTest extends PHPStanTestCase
 		if (!$stmts[0] instanceof Stmt\Expression) {
 			throw new ShouldNotHappenException('Expecting code contains a single statement expression, got: ' . get_class($stmts[0]));
 		}
-		$stmt = $stmts[0];
-		$expr = $stmt->expr;
+		$this->assertSame($expectedIsAlwaysTerminating, $this->processExpressionStatement($stmts[0])->isAlwaysTerminating());
+	}
 
+	public function testClosureTypeIsNotReusedForClosureWithRecycledObjectId(): void
+	{
+		/** @var Parser $parser */
+		$parser = self::getContainer()->getService('currentPhpVersionRichParser');
+
+		/** @var Stmt\Expression $generatorStmt */
+		$generatorStmt = $parser->parseString('<?php fn() => yield (exit());')[0];
+		$generatorArrowFunction = $generatorStmt->expr;
+		$this->assertInstanceOf(ArrowFunction::class, $generatorArrowFunction);
+		$this->assertFalse($this->processExpressionStatement($generatorStmt)->isAlwaysTerminating());
+
+		// PHP hands the most recently freed object id to the next allocation - drop the
+		// generator arrow function last, and build the next arrow function right after,
+		// so it gets the same spl_object_id() unless something still holds the first one
+		$exit = new Exit_();
+		unset($generatorStmt);
+		unset($generatorArrowFunction);
+		$arrowFunction = new ArrowFunction(['expr' => $exit], ['isImmediatelyInvokedClosure' => true, 'immediatelyInvokedClosureArgs' => []]);
+
+		$this->assertTrue($this->processExpressionStatement(new Stmt\Expression(new FuncCall($arrowFunction)))->isAlwaysTerminating());
+	}
+
+	private function processExpressionStatement(Stmt\Expression $stmt): ExpressionResult
+	{
 		/** @var NodeScopeResolver $nodeScopeResolver */
 		$nodeScopeResolver = self::getContainer()->getByType(NodeScopeResolver::class);
 		/** @var ScopeFactory $scopeFactory */
@@ -207,16 +234,15 @@ class ExpressionResultTest extends PHPStanTestCase
 			->assignVariable('x', new IntegerType(), new IntegerType(), TrinaryLogic::createYes())
 			->assignVariable('arr', new ArrayType(new MixedType(), new MixedType()), new ArrayType(new MixedType(), new MixedType()), TrinaryLogic::createYes());
 
-		$result = $nodeScopeResolver->processExprNode(
+		return $nodeScopeResolver->processExprNode(
 			$stmt,
-			$expr,
+			$stmt->expr,
 			$scope,
 			new ExpressionResultStorage(),
 			static function (): void {
 			},
 			ExpressionContext::createTopLevel(),
 		);
-		$this->assertSame($expectedIsAlwaysTerminating, $result->isAlwaysTerminating());
 	}
 
 	public function testFinalizePreservesPreliminaryResult(): void

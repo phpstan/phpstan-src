@@ -214,6 +214,11 @@ jobs:
             exit 1
           fi
 
+      - name: "Check the parser actions are generated (regenerate and diff)"
+        run: |
+          php turbo-ext/bin/generate-parser-actions.php
+          git diff --exit-code turbo-ext/src/parser/
+
       - name: "Check TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION against the last commit touching turbo-ext/src"
         run: |
           EXPECTED_SHA="$(git log -1 --format=%H -- turbo-ext/src | cut -c1-7)"
@@ -340,10 +345,15 @@ jobs:
     # untouched, and compiling all of its legs takes up to 12 minutes. For
     # each binary, this finds the newest earlier run that compiled it from
     # identical build inputs (.github/scripts/find-turbo-origins.sh has the
-    # exact conditions), and the compile legs download that binary instead
-    # of building it. Everything else in those legs still runs against it:
-    # the version check and the differential tests compare the native side
-    # with the PHP side of this commit, which may have changed.
+    # exact conditions), and its compile leg skips the build altogether: it
+    # runs on ubuntu-latest, outside any build container, and only carries
+    # that binary over into this run. The binary still goes through the
+    # version check and the differential tests of the turbo-differential
+    # jobs, like a compiled one — they compare the native side with the PHP
+    # side of this commit, which may have changed. A binary reused on a
+    # PHP 8.6 leg was compiled against prerelease headers that may have
+    # moved on since; if it no longer loads, the version check there fails
+    # until the next change to the build inputs compiles it again.
     # Only runs of this workflow triggered by a push to 2.3.x qualify — the
     # same runs whose compiled binaries the commit job stages into
     # phpstan/phpstan — so reusing their artifacts trusts no code the
@@ -381,7 +391,13 @@ jobs:
 
   turbo-compile:
     name: "Compile Turbo Extension"
-    runs-on: ${{ matrix.php-version == '8.6' && matrix.target.family == 'gnu' && (matrix.target.name == 'linux-gnu-arm64' && 'ubuntu-22.04-arm' || 'ubuntu-22.04') || matrix.target.runs-on }}
+    # A leg whose binary turbo-origins found in an earlier run builds
+    # nothing: it runs on ubuntu-latest without a container and carries that
+    # binary over (runs-on and container cannot read env, hence the lookup
+    # of ORIGIN_RUN_ID repeated in both). The tests of every binary, reused
+    # or compiled, run in the turbo-differential jobs, so the commit job,
+    # which needs the binaries, does not wait for them.
+    runs-on: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[format('{0}-{1}-php{2}', matrix.target.artifact, matrix.target.name, matrix.php-version)] && 'ubuntu-latest' || (matrix.php-version == '8.6' && matrix.target.family == 'gnu' && (matrix.target.name == 'linux-gnu-arm64' && 'ubuntu-22.04-arm' || 'ubuntu-22.04') || matrix.target.runs-on) }}
     # Container legs pin the built binaries' userland floor independently of
     # the runner image. The 8.3–8.5 gnu legs run in a prebuilt ubuntu:22.04-based
     # image (.github/turbo-build/Dockerfile, published to GHCR by
@@ -405,7 +421,7 @@ jobs:
     # PHP 8.6 has no ondrej/php packages or prebuilt GNU image yet. Use
     # setup-php on Jammy runners, preserving the shipped binary's glibc floor.
     # Alpine's php86 packages are currently only in edge/testing.
-    container: ${{ matrix.target.family == 'gnu' && matrix.php-version != '8.6' && format('ghcr.io/phpstan/turbo-build:gnu-php{0}', matrix.php-version) || matrix.target.family == 'musl' && matrix.php-version == '8.6' && 'alpine:edge' || matrix.target.container }}
+    container: ${{ !(fromJSON(needs.turbo-origins.outputs.origins || '{}')[format('{0}-{1}-php{2}', matrix.target.artifact, matrix.target.name, matrix.php-version)]) && (matrix.target.family == 'gnu' && matrix.php-version != '8.6' && format('ghcr.io/phpstan/turbo-build:gnu-php{0}', matrix.php-version) || matrix.target.family == 'musl' && matrix.php-version == '8.6' && 'alpine:edge' || matrix.target.container) || '' }}
     needs: turbo-origins
     timeout-minutes: 30
 
@@ -416,6 +432,7 @@ jobs:
     env:
       PHP_MINOR: ${{ matrix.php-version }}
       TURBO_ARTIFACT: "${{ matrix.target.artifact }}-${{ matrix.target.name }}-php${{ matrix.php-version }}"
+      ORIGIN_RUN_ID: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[format('{0}-{1}-php{2}', matrix.target.artifact, matrix.target.name, matrix.php-version)] }}
 
     strategy:
       fail-fast: false
@@ -446,17 +463,31 @@ jobs:
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        if: matrix.target.family == 'macos'
+        if: env.ORIGIN_RUN_ID != '' || matrix.target.family == 'macos'
         uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
         with:
           egress-policy: audit
+
+      # See turbo-origins. The build steps below are all skipped on this leg.
+      - name: "Download the extension compiled from identical build inputs"
+        if: env.ORIGIN_RUN_ID != ''
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ env.TURBO_ARTIFACT }}
+          path: "turbo-ext"
+          run-id: ${{ env.ORIGIN_RUN_ID }}
+          github-token: ${{ github.token }}
+
+      - name: "Record the run that compiled the extension"
+        if: env.ORIGIN_RUN_ID != ''
+        run: echo "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$ORIGIN_RUN_ID" | tee turbo-reused.txt
 
       # The Alpine leg installs PHP and tooling before checkout:
       # actions/checkout needs git inside the container, and the build needs
       # php/php-config symlinks pointing at the matrix PHP version. The GNU
       # container legs have the toolchain baked in; 8.6 uses setup-php below.
       - name: "Install PHP and build tools (Alpine container)"
-        if: matrix.target.family == 'musl'
+        if: env.ORIGIN_RUN_ID == '' && matrix.target.family == 'musl'
         run: |
           V="$(echo "$PHP_MINOR" | tr -d .)"
           if [ "$PHP_MINOR" = "8.6" ]; then
@@ -470,6 +501,7 @@ jobs:
           ln -sf "/usr/bin/php-config$V" /usr/local/bin/php-config
 
       - name: "Checkout"
+        if: env.ORIGIN_RUN_ID == ''
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           persist-credentials: false
@@ -484,17 +516,18 @@ jobs:
       # ("dubious ownership") — which would silently bake the version as
       # "dev" via the Makefile's $(shell git log ...) fallback.
       - name: "Trust the checkout despite the container/host uid mismatch"
+        if: env.ORIGIN_RUN_ID == ''
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: "Install PHP (macOS)"
-        if: matrix.target.family == 'macos'
+        if: env.ORIGIN_RUN_ID == '' && matrix.target.family == 'macos'
         uses: "shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240" # v2.37.2
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
 
       - name: "Install PHP (GNU runners)"
-        if: matrix.target.family == 'gnu' && matrix.php-version == '8.6'
+        if: env.ORIGIN_RUN_ID == '' && matrix.target.family == 'gnu' && matrix.php-version == '8.6'
         uses: "shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240" # v2.37.2
         with:
           coverage: "none"
@@ -503,15 +536,15 @@ jobs:
       # The training run of `make pgo` (bin/pgo-train.sh) runs bin/phpstan on
       # the checkout, so the dependencies must be in place before the build.
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
-        if: matrix.target.family == 'macos'
+        if: env.ORIGIN_RUN_ID == '' && matrix.target.family == 'macos'
         with:
           ignore-cache: true
 
       - name: "Install Composer dependencies (pinned composer)"
-        if: matrix.target.family != 'macos'
+        if: env.ORIGIN_RUN_ID == '' && matrix.target.family != 'macos'
         # checksum-pinned composer, run under the matrix PHP so platform
-        # requirements are validated against the interpreter the tests below
-        # run on. COMPOSER_HOME is isolated: on the runner (PHP 8.6) legs,
+        # requirements are validated against the interpreter the build
+        # trains on. COMPOSER_HOME is isolated: on the runner (PHP 8.6) legs,
         # setup-php seeds ~/.composer/auth.json with the workflow's GitHub
         # token, which this pinned composer rejects at startup ("github oauth
         # token contains invalid characters") — everything here comes from
@@ -522,41 +555,8 @@ jobs:
           COMPOSER_HOME="$(mktemp -d)" php composer.phar install --no-interaction --no-progress
           rm composer.phar
 
-      # See the turbo-origins job. A failed download (an artifact expired
-      # since the lookup) falls back to compiling.
-      - name: "Download the extension compiled from identical build inputs"
-        id: reuse-download
-        if: fromJSON(needs.turbo-origins.outputs.origins || '{}')[env.TURBO_ARTIFACT] != null
-        continue-on-error: true
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: ${{ env.TURBO_ARTIFACT }}
-          path: "turbo-ext"
-          run-id: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[env.TURBO_ARTIFACT] }}
-          github-token: ${{ github.token }}
-
-      # A binary that does not load falls back to compiling too: the 8.6
-      # legs build against prerelease headers, whose module API number can
-      # move between two runs.
-      - name: "Reuse the downloaded extension if it loads with the expected version"
-        id: reuse
-        if: steps.reuse-download.outcome == 'success'
-        env:
-          ORIGIN_RUN_ID: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[env.TURBO_ARTIFACT] }}
-        run: |
-          REPORTED="$(php -d extension="$PWD/turbo-ext/phpstan_turbo.so" -r 'echo phpversion("phpstan_turbo");' 2> /dev/null || true)"
-          EXPECTED="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"
-          if [ "$REPORTED" = "$EXPECTED" ]; then
-            echo "reusing the extension compiled in $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$ORIGIN_RUN_ID"
-            echo "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$ORIGIN_RUN_ID" > turbo-reused.txt
-            echo "reused=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "::warning::the extension compiled in run $ORIGIN_RUN_ID reports '$REPORTED' here, expected '$EXPECTED'; compiling it instead"
-            rm -f turbo-ext/phpstan_turbo.so
-          fi
-
       - name: "Compile phpstan_turbo with strict warnings (profile-guided)"
-        if: steps.reuse.outputs.reused != 'true'
+        if: env.ORIGIN_RUN_ID == ''
         working-directory: "turbo-ext"
         # `make pgo`: an instrumented build, a training run of PHPStan over
         # its own sources with that build loaded, then the final build using
@@ -570,10 +570,11 @@ jobs:
           make pgo WARN_FLAGS="$(make -s print-warn-flags)" -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || nproc)"
 
       # Before signing (stripping invalidates a signature) and before the
-      # tests below, so they exercise the exact binary that ships. The
-      # symbol tables are a quarter of the .so; see `strip` in the Makefile.
+      # upload, so the turbo-differential jobs test the exact binary that
+      # ships. The symbol tables are a quarter of the .so; see `strip`
+      # in the Makefile.
       - name: "Strip symbol tables"
-        if: steps.reuse.outputs.reused != 'true'
+        if: env.ORIGIN_RUN_ID == ''
         working-directory: "turbo-ext"
         run: |
           ls -l phpstan_turbo.so
@@ -587,54 +588,24 @@ jobs:
       # composer/git/curl installs never see it — so an ad-hoc signature is
       # enough and needs no secrets.
       - name: "Ad-hoc sign the extension (macOS)"
-        if: matrix.target.family == 'macos' && steps.reuse.outputs.reused != 'true'
+        if: env.ORIGIN_RUN_ID == '' && matrix.target.family == 'macos'
         working-directory: "turbo-ext"
         run: |
           codesign --force --sign - phpstan_turbo.so
           codesign --verify --verbose=2 phpstan_turbo.so
 
+      # Stays here rather than in turbo-differential: the commit job stages
+      # this binary, and one baked with the wrong version would ship
+      # inactive. A reused binary passed this check in the run compiling it,
+      # and find-turbo-origins.sh only picks runs whose last commit touching
+      # turbo-ext/src, which the version is baked from, matches HEAD's.
       - name: "Verify the built extension reports the expected version"
+        if: env.ORIGIN_RUN_ID == ''
         run: |
           REPORTED="$(php -d extension="$PWD/turbo-ext/phpstan_turbo.so" -r 'echo phpversion("phpstan_turbo");')"
           EXPECTED="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"
           echo "built extension reports: $REPORTED, enabler expects: $EXPECTED"
           [ "$REPORTED" = "$EXPECTED" ]
-
-      - name: "Smoke test (differential: native vs PHP implementations)"
-        run: php -d extension="$PWD/turbo-ext/phpstan_turbo.so" turbo-ext/tests/smoke.php
-
-      # One NodeScopeResolver walk over the default corpus with the native
-      # classes and one with the PHP implementations, in separate processes;
-      # the traces must be identical. It compares the engine ports as the
-      # engine runs them (native calling native under the real class names),
-      # which the prefixed single-process harnesses in smoke.php cannot. One
-      # leg is enough: it checks engine behaviour, not the platform.
-      - name: "Walk trace (differential: whole NodeScopeResolver walks, native vs PHP)"
-        if: matrix.target.family == 'gnu' && matrix.target.name == 'linux-gnu-x86_64' && matrix.php-version == '8.5'
-        run: php -d extension="$PWD/turbo-ext/phpstan_turbo.so" turbo-ext/tests/walk-trace.php --shards="$(nproc)"
-
-      - name: "Arena smoke test (cross-process shared-memory records)"
-        run: php -d extension="$PWD/turbo-ext/phpstan_turbo.so" turbo-ext/tests/arena-smoke.php
-
-      - name: "Forked-worker exit (exitImmediately() ends a child whose teardown would wedge)"
-        run: php -d extension="$PWD/turbo-ext/phpstan_turbo.so" turbo-ext/tests/exit-immediately.php
-
-      - name: "Trusted types (the optimizer pass drops type checks under the prefix only)"
-        run: php -d extension="$PWD/turbo-ext/phpstan_turbo.so" -d opcache.enable_cli=1 turbo-ext/tests/trusted-types.php
-
-      - name: "Signature parity (reflect native classes against the PHP twins)"
-        run: php -d extension="$PWD/turbo-ext/phpstan_turbo.so" turbo-ext/tests/signature-parity.php
-
-      - name: "Parser actions are generated (regenerate and diff)"
-        run: |
-          php turbo-ext/bin/generate-parser-actions.php
-          git diff --exit-code turbo-ext/src/parser/
-
-      - name: "Parser corpus (differential: native vs PHP ASTs must be byte-identical)"
-        run: php -d extension="$PWD/turbo-ext/phpstan_turbo.so" -d memory_limit=4G turbo-ext/tests/parser-corpus.php
-
-      - name: "Parser upstream corpus (the same differential over php-parser's own test cases)"
-        run: php -d extension="$PWD/turbo-ext/phpstan_turbo.so" turbo-ext/tests/parser-upstream-corpus.php
 
       # A reused binary is uploaded again under the same name, so the jobs
       # downstream find every binary in this run.
@@ -648,7 +619,7 @@ jobs:
       # Keeps later runs from reusing the copy above: they take the binary
       # from the run that compiled it (see find-turbo-origins.sh).
       - name: "Mark the extension artifact as reused"
-        if: steps.reuse.outputs.reused == 'true'
+        if: env.ORIGIN_RUN_ID != ''
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: "turbo-reused-${{ env.TURBO_ARTIFACT }}"
@@ -661,10 +632,11 @@ jobs:
     # It cannot be a `container: alpine` leg there: JavaScript-based actions
     # cannot run in Alpine containers on arm64 runners (the runner only
     # ships an x64 musl Node). Instead the workflow steps run on the arm64
-    # host and only the build and test commands run inside a long-lived
-    # Alpine container via docker exec — native arm64, no QEMU. The steps
-    # mirror the musl leg of turbo-compile one for one.
-    runs-on: "ubuntu-24.04-arm"
+    # host and only the build commands run inside a long-lived Alpine
+    # container via docker exec — native arm64, no QEMU. The steps mirror
+    # the musl leg of turbo-compile one for one, including the reuse of a
+    # binary compiled in an earlier run, whose leg runs on ubuntu-latest.
+    runs-on: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[format('phpstan_turbo-linux-musl-arm64-php{0}', matrix.php-version)] && 'ubuntu-latest' || 'ubuntu-24.04-arm' }}
     needs: turbo-origins
     timeout-minutes: 30
 
@@ -675,6 +647,7 @@ jobs:
     env:
       PHP_MINOR: ${{ matrix.php-version }}
       TURBO_ARTIFACT: "phpstan_turbo-linux-musl-arm64-php${{ matrix.php-version }}"
+      ORIGIN_RUN_ID: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[format('phpstan_turbo-linux-musl-arm64-php{0}', matrix.php-version)] }}
 
     strategy:
       fail-fast: false
@@ -687,7 +660,22 @@ jobs:
         with:
           egress-policy: audit
 
+      # See the same two steps in turbo-compile.
+      - name: "Download the extension compiled from identical build inputs"
+        if: env.ORIGIN_RUN_ID != ''
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ env.TURBO_ARTIFACT }}
+          path: "turbo-ext"
+          run-id: ${{ env.ORIGIN_RUN_ID }}
+          github-token: ${{ github.token }}
+
+      - name: "Record the run that compiled the extension"
+        if: env.ORIGIN_RUN_ID != ''
+        run: echo "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$ORIGIN_RUN_ID" | tee turbo-reused.txt
+
       - name: "Checkout"
+        if: env.ORIGIN_RUN_ID == ''
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           persist-credentials: false
@@ -698,6 +686,7 @@ jobs:
           fetch-depth: 0
 
       - name: "Start the Alpine build container"
+        if: env.ORIGIN_RUN_ID == ''
         env:
           ALPINE_IMAGE: ${{ matrix.php-version == '8.6' && 'alpine:edge' || 'alpine:3.24' }}
         run: |
@@ -707,6 +696,7 @@ jobs:
             "$ALPINE_IMAGE" sleep 7200
 
       - name: "Install PHP and build tools"
+        if: env.ORIGIN_RUN_ID == ''
         run: |
           docker exec -i alpine-build sh -e <<'EOF'
           V="$(echo "$PHP_MINOR" | tr -d .)"
@@ -726,11 +716,13 @@ jobs:
       # ownership") — which would silently bake the version as "dev" via
       # the Makefile's $(shell git log ...) fallback.
       - name: "Trust the checkout despite the container/host uid mismatch"
+        if: env.ORIGIN_RUN_ID == ''
         run: docker exec alpine-build git config --global --add safe.directory /work
 
       # The training run of `make pgo` runs bin/phpstan on the checkout, so
       # the dependencies must be in place before the build.
       - name: "Install Composer dependencies (pinned composer)"
+        if: env.ORIGIN_RUN_ID == ''
         run: |
           docker exec -i alpine-build sh -e <<'EOF'
           curl -fsSLo composer.phar "https://getcomposer.org/download/$COMPOSER_VERSION/composer.phar"
@@ -739,45 +731,17 @@ jobs:
           rm composer.phar
           EOF
 
-      # See the same two steps in turbo-compile.
-      - name: "Download the extension compiled from identical build inputs"
-        id: reuse-download
-        if: fromJSON(needs.turbo-origins.outputs.origins || '{}')[env.TURBO_ARTIFACT] != null
-        continue-on-error: true
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: ${{ env.TURBO_ARTIFACT }}
-          path: "turbo-ext"
-          run-id: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[env.TURBO_ARTIFACT] }}
-          github-token: ${{ github.token }}
-
-      - name: "Reuse the downloaded extension if it loads with the expected version"
-        id: reuse
-        if: steps.reuse-download.outcome == 'success'
-        env:
-          ORIGIN_RUN_ID: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[env.TURBO_ARTIFACT] }}
-        run: |
-          REPORTED="$(docker exec alpine-build php -d extension=/work/turbo-ext/phpstan_turbo.so -r 'echo phpversion("phpstan_turbo");' 2> /dev/null || true)"
-          EXPECTED="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"
-          if [ "$REPORTED" = "$EXPECTED" ]; then
-            echo "reusing the extension compiled in $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$ORIGIN_RUN_ID"
-            echo "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$ORIGIN_RUN_ID" > turbo-reused.txt
-            echo "reused=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "::warning::the extension compiled in run $ORIGIN_RUN_ID reports '$REPORTED' here, expected '$EXPECTED'; compiling it instead"
-            rm -f turbo-ext/phpstan_turbo.so
-          fi
-
       - name: "Compile phpstan_turbo with strict warnings (profile-guided)"
-        if: steps.reuse.outputs.reused != 'true'
+        if: env.ORIGIN_RUN_ID == ''
         run: |
           docker exec -i -w /work/turbo-ext alpine-build sh -e <<'EOF'
           make pgo WARN_FLAGS="$(make -s print-warn-flags)" -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || nproc)"
           EOF
 
-      # before the tests below, so they exercise the exact binary that ships
+      # before the upload, so turbo-differential-musl tests the exact binary
+      # that ships
       - name: "Strip symbol tables"
-        if: steps.reuse.outputs.reused != 'true'
+        if: env.ORIGIN_RUN_ID == ''
         run: |
           docker exec -i -w /work/turbo-ext alpine-build sh -e <<'EOF'
           ls -l phpstan_turbo.so
@@ -786,6 +750,7 @@ jobs:
           EOF
 
       - name: "Verify the built extension reports the expected version"
+        if: env.ORIGIN_RUN_ID == ''
         run: |
           docker exec -i alpine-build sh -e <<'EOF'
           REPORTED="$(php -d extension="$PWD/turbo-ext/phpstan_turbo.so" -r 'echo phpversion("phpstan_turbo");')"
@@ -793,31 +758,6 @@ jobs:
           echo "built extension reports: $REPORTED, enabler expects: $EXPECTED"
           [ "$REPORTED" = "$EXPECTED" ]
           EOF
-
-      - name: "Smoke test (differential: native vs PHP implementations)"
-        run: docker exec alpine-build php -d extension=/work/turbo-ext/phpstan_turbo.so turbo-ext/tests/smoke.php
-
-      - name: "Arena smoke test (cross-process shared-memory records)"
-        run: docker exec alpine-build php -d extension=/work/turbo-ext/phpstan_turbo.so turbo-ext/tests/arena-smoke.php
-
-      - name: "Forked-worker exit (exitImmediately() ends a child whose teardown would wedge)"
-        run: docker exec alpine-build php -d extension=/work/turbo-ext/phpstan_turbo.so turbo-ext/tests/exit-immediately.php
-
-      - name: "Trusted types (the optimizer pass drops type checks under the prefix only)"
-        run: docker exec alpine-build php -d extension=/work/turbo-ext/phpstan_turbo.so -d opcache.enable_cli=1 turbo-ext/tests/trusted-types.php
-
-      - name: "Signature parity (reflect native classes against the PHP twins)"
-        run: docker exec alpine-build php -d extension=/work/turbo-ext/phpstan_turbo.so turbo-ext/tests/signature-parity.php
-
-      - name: "Parser actions are generated (regenerate and diff)"
-        run: |
-          docker exec -i alpine-build sh -e <<'EOF'
-          php turbo-ext/bin/generate-parser-actions.php
-          git diff --exit-code turbo-ext/src/parser/
-          EOF
-
-      - name: "Parser corpus (differential: native vs PHP ASTs must be byte-identical)"
-        run: docker exec alpine-build php -d extension=/work/turbo-ext/phpstan_turbo.so -d memory_limit=4G turbo-ext/tests/parser-corpus.php
 
       - name: "Upload extension artifact"
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -827,7 +767,7 @@ jobs:
           if-no-files-found: "error"
 
       - name: "Mark the extension artifact as reused"
-        if: steps.reuse.outputs.reused == 'true'
+        if: env.ORIGIN_RUN_ID != ''
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: "turbo-reused-${{ env.TURBO_ARTIFACT }}"
@@ -860,7 +800,7 @@ jobs:
     # a workflow change. Legs run on linux-gnu-x86_64 only: the token
     # numbering comes from the bison that generated the tarball's parser,
     # not from arch or libc, and per-arch coverage stays with turbo-run
-    # and the compile jobs. No macOS/Windows legs: those runners cannot
+    # and turbo-differential. No macOS/Windows legs: those runners cannot
     # run Linux containers, and no alternative-numbered official build is
     # distributed for either platform today.
     runs-on: "ubuntu-latest"
@@ -989,7 +929,8 @@ jobs:
     # with a newer toolset generation than the core. The windows-2022 image
     # is the one that ships VS2022.
     # PHP 8.6's vs18 development packs need the VS2026 toolchain.
-    runs-on: ${{ matrix.php-version == '8.6' && 'windows-2025-vs2026' || 'windows-2022' }}
+    # A leg reusing a binary (see turbo-compile) runs on ubuntu-latest.
+    runs-on: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[format('phpstan_turbo-windows-x86_64-php{0}{1}', matrix.php-version, matrix.ts == 'zts' && '-zts' || '')] && 'ubuntu-latest' || (matrix.php-version == '8.6' && 'windows-2025-vs2026' || 'windows-2022') }}
     needs: turbo-origins
     timeout-minutes: 40
 
@@ -1002,6 +943,7 @@ jobs:
       # uses (ships bison and the unix tools phpize/configure expect).
       PHP_SDK_COMMIT: "c73faaf1cce914e2fc04da5587132f8f425996af" # php-sdk-2.7.1
       TURBO_ARTIFACT: "phpstan_turbo-windows-x86_64-php${{ matrix.php-version }}${{ matrix.ts == 'zts' && '-zts' || '' }}"
+      ORIGIN_RUN_ID: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[format('phpstan_turbo-windows-x86_64-php{0}{1}', matrix.php-version, matrix.ts == 'zts' && '-zts' || '')] }}
 
     strategy:
       fail-fast: false
@@ -1025,7 +967,25 @@ jobs:
             vs: "vs18"
 
     steps:
+      # See the same two steps in turbo-compile; this leg runs on
+      # ubuntu-latest.
+      - name: "Download the extension compiled from identical build inputs"
+        if: env.ORIGIN_RUN_ID != ''
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ env.TURBO_ARTIFACT }}
+          path: "turbo-ext"
+          run-id: ${{ env.ORIGIN_RUN_ID }}
+          github-token: ${{ github.token }}
+
+      - name: "Record the run that compiled the extension"
+        if: env.ORIGIN_RUN_ID != ''
+        run: |
+          echo "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$ORIGIN_RUN_ID" | tee turbo-reused.txt
+          echo "DLL_PATH=turbo-ext/php_phpstan_turbo.dll" >> "$GITHUB_ENV"
+
       - name: "Checkout"
+        if: env.ORIGIN_RUN_ID == ''
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           persist-credentials: false
@@ -1034,6 +994,7 @@ jobs:
           fetch-depth: 0
 
       - name: "Install PHP"
+        if: env.ORIGIN_RUN_ID == ''
         uses: "shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240" # v2.37.2
         env:
           phpts: "${{ matrix.ts == 'zts' && 'ts' || 'nts' }}"
@@ -1042,46 +1003,14 @@ jobs:
           php-version: "${{ matrix.php-version }}"
 
       - name: "Install the matching PHP 8.6 prerelease runtime"
-        if: matrix.php-version == '8.6'
+        if: env.ORIGIN_RUN_ID == '' && matrix.php-version == '8.6'
         shell: bash
         env:
           MATRIX_TS: ${{ matrix.ts }}
         run: bash .github/scripts/install-php86-windows.sh
 
-      # See the same two steps in turbo-compile. The DLL lands in its own
-      # directory; the version check below finds it there as it finds a
-      # built one under x64/.
-      - name: "Download the extension compiled from identical build inputs"
-        id: reuse-download
-        if: fromJSON(needs.turbo-origins.outputs.origins || '{}')[env.TURBO_ARTIFACT] != null
-        continue-on-error: true
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: ${{ env.TURBO_ARTIFACT }}
-          path: "turbo-ext/reused"
-          run-id: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[env.TURBO_ARTIFACT] }}
-          github-token: ${{ github.token }}
-
-      - name: "Reuse the downloaded extension if it loads with the expected version"
-        id: reuse
-        if: steps.reuse-download.outcome == 'success'
-        shell: bash
-        env:
-          ORIGIN_RUN_ID: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[env.TURBO_ARTIFACT] }}
-        run: |
-          REPORTED="$(php -d extension="$(cygpath -w "$PWD/turbo-ext/reused/php_phpstan_turbo.dll")" -r 'echo phpversion("phpstan_turbo");' 2> /dev/null || true)"
-          EXPECTED="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"
-          if [ "$REPORTED" = "$EXPECTED" ]; then
-            echo "reusing the extension compiled in $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$ORIGIN_RUN_ID"
-            echo "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$ORIGIN_RUN_ID" > turbo-reused.txt
-            echo "reused=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "::warning::the extension compiled in run $ORIGIN_RUN_ID reports '$REPORTED' here, expected '$EXPECTED'; compiling it instead"
-            rm -rf turbo-ext/reused
-          fi
-
       - name: "Compute the extension version and download the build tools"
-        if: steps.reuse.outputs.reused != 'true'
+        if: env.ORIGIN_RUN_ID == ''
         shell: bash
         env:
           MATRIX_TS: ${{ matrix.ts }}
@@ -1106,7 +1035,7 @@ jobs:
           git -C /c/php-sdk checkout -q "$PHP_SDK_COMMIT"
 
       - name: "Set up MSVC environment"
-        if: steps.reuse.outputs.reused != 'true'
+        if: env.ORIGIN_RUN_ID == ''
         uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1.13.0
         with:
           arch: x64
@@ -1114,7 +1043,7 @@ jobs:
           toolset: ${{ matrix.toolset }}
 
       - name: "Build the extension"
-        if: steps.reuse.outputs.reused != 'true'
+        if: env.ORIGIN_RUN_ID == ''
         shell: cmd
         working-directory: turbo-ext
         run: |
@@ -1126,17 +1055,17 @@ jobs:
           if errorlevel 1 exit /b 1
           nmake
 
+      # See the same step in turbo-compile.
       - name: "Verify the built extension reports the expected version"
+        if: env.ORIGIN_RUN_ID == ''
         shell: bash
         env:
           MATRIX_TS: ${{ matrix.ts }}
         run: |
           DLL=$(find turbo-ext -name "php_phpstan_turbo.dll" | head -1)
           [ -n "$DLL" ]
-          TURBO_DLL=$(cygpath -w "$PWD/$DLL")
-          echo "TURBO_DLL=$TURBO_DLL" >> "$GITHUB_ENV"
           echo "DLL_PATH=$DLL" >> "$GITHUB_ENV"
-          REPORTED="$(php -d extension="$TURBO_DLL" -r 'echo phpversion("phpstan_turbo");')"
+          REPORTED="$(php -d extension="$(cygpath -w "$PWD/$DLL")" -r 'echo phpversion("phpstan_turbo");')"
           EXPECTED="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"
           echo "built extension reports: $REPORTED, enabler expects: $EXPECTED"
           [ "$REPORTED" = "$EXPECTED" ]
@@ -1146,34 +1075,6 @@ jobs:
           WANT_ZTS=$([ "$MATRIX_TS" = "zts" ] && echo 1 || echo 0)
           [ "$(php -r 'echo (int) ((bool) PHP_ZTS);')" = "$WANT_ZTS" ]
 
-      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
-        with:
-          ignore-cache: true
-
-      - name: "Smoke test (differential: native vs PHP implementations)"
-        shell: bash
-        run: php -d extension="$TURBO_DLL" turbo-ext/tests/smoke.php
-
-      - name: "Arena smoke test (cross-process shared-memory records)"
-        shell: bash
-        run: php -d extension="$TURBO_DLL" turbo-ext/tests/arena-smoke.php
-
-      - name: "Forked-worker exit (exitImmediately() ends a child whose teardown would wedge)"
-        shell: bash
-        run: php -d extension="$TURBO_DLL" turbo-ext/tests/exit-immediately.php
-
-      - name: "Trusted types (the optimizer pass drops type checks under the prefix only)"
-        shell: bash
-        run: php -d extension="$TURBO_DLL" -d opcache.enable_cli=1 turbo-ext/tests/trusted-types.php
-
-      - name: "Signature parity (reflect native classes against the PHP twins)"
-        shell: bash
-        run: php -d extension="$TURBO_DLL" turbo-ext/tests/signature-parity.php
-
-      - name: "Parser corpus (differential: native vs PHP ASTs must be byte-identical)"
-        shell: bash
-        run: php -d extension="$TURBO_DLL" -d memory_limit=4G turbo-ext/tests/parser-corpus.php
-
       - name: "Upload extension artifact"
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -1182,7 +1083,7 @@ jobs:
           if-no-files-found: "error"
 
       - name: "Mark the extension artifact as reused"
-        if: steps.reuse.outputs.reused == 'true'
+        if: env.ORIGIN_RUN_ID != ''
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: "turbo-reused-${{ env.TURBO_ARTIFACT }}"
@@ -1233,6 +1134,251 @@ jobs:
           name: "turbo-ext-files"
           path: "turbo-ext-dist"
           if-no-files-found: "error"
+
+  turbo-differential:
+    name: "Run with Turbo Extension (differential tests)"
+    # The differential tests (native vs the PHP implementations of this
+    # commit) for every binary the compile jobs hand over, compiled or
+    # reused, under the runtime setup-php installs on the platform the
+    # binary is built for. Kept out of the compile jobs so the commit job,
+    # which only needs the binaries, does not wait for them (see there).
+    # The musl binaries are tested in turbo-differential-musl.
+    needs:
+      - turbo-compile
+      - turbo-compile-windows
+    runs-on: ${{ matrix.runs-on }}
+    timeout-minutes: 30
+
+    defaults:
+      run:
+        shell: bash
+
+    env:
+      TURBO_ARTIFACT: "phpstan_turbo-${{ matrix.target }}-php${{ matrix.php-version }}${{ matrix.ts == 'zts' && '-zts' || '' }}"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ["8.3", "8.4", "8.5", "8.6"]
+        target: ["linux-gnu-x86_64", "linux-gnu-arm64", "macos-arm64", "windows-x86_64"]
+        ts: ["nts", "zts"]
+        # only Windows ships ZTS binaries (see turbo-compile)
+        exclude:
+          - target: "linux-gnu-x86_64"
+            ts: "zts"
+          - target: "linux-gnu-arm64"
+            ts: "zts"
+          - target: "macos-arm64"
+            ts: "zts"
+        include:
+          - target: "linux-gnu-x86_64"
+            runs-on: "ubuntu-latest"
+          - target: "linux-gnu-arm64"
+            runs-on: "ubuntu-24.04-arm"
+          - target: "macos-arm64"
+            runs-on: "macos-latest"
+          # see turbo-run for why windows-latest loads the DLL
+          - target: "windows-x86_64"
+            runs-on: "windows-latest"
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+
+      - name: "Checkout"
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240" # v2.37.2
+        env:
+          phpts: "${{ matrix.ts == 'zts' && 'ts' || 'nts' }}"
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+
+      - name: "Install the matching PHP 8.6 prerelease runtime"
+        if: matrix.target == 'windows-x86_64' && matrix.php-version == '8.6'
+        env:
+          MATRIX_TS: ${{ matrix.ts }}
+        run: bash .github/scripts/install-php86-windows.sh
+
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
+        with:
+          ignore-cache: true
+
+      - name: "Download extension artifact"
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ env.TURBO_ARTIFACT }}
+          path: "turbo-ext"
+
+      # The tests' child processes locate the extension through TURBO_DLL
+      # too; its default, turbo-ext/phpstan_turbo.so, misses the DLL.
+      - name: "Locate the extension"
+        run: |
+          FILE="$(find turbo-ext -maxdepth 1 \( -name phpstan_turbo.so -o -name php_phpstan_turbo.dll \) | head -1)"
+          [ -n "$FILE" ]
+          EXT="$PWD/$FILE"
+          if command -v cygpath > /dev/null; then
+            EXT="$(cygpath -w "$EXT")"
+          fi
+          echo "TURBO_DLL=$EXT" >> "$GITHUB_ENV"
+
+      - name: "Verify the extension reports the expected version"
+        env:
+          MATRIX_TS: ${{ matrix.ts }}
+        run: |
+          REPORTED="$(php -d extension="$TURBO_DLL" -r 'echo phpversion("phpstan_turbo");')"
+          EXPECTED="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"
+          echo "extension reports: $REPORTED, enabler expects: $EXPECTED"
+          [ "$REPORTED" = "$EXPECTED" ]
+          # the loader rejects a ts-mismatched binary, so php loading it above
+          # proves the binary matches the interpreter; assert the interpreter
+          # itself so both sides cannot silently be NTS on the zts legs
+          WANT_ZTS=$([ "$MATRIX_TS" = "zts" ] && echo 1 || echo 0)
+          [ "$(php -r 'echo (int) ((bool) PHP_ZTS);')" = "$WANT_ZTS" ]
+
+      - name: "Smoke test (differential: native vs PHP implementations)"
+        run: php -d extension="$TURBO_DLL" turbo-ext/tests/smoke.php
+
+      # One NodeScopeResolver walk over the default corpus with the native
+      # classes and one with the PHP implementations, in separate processes;
+      # the traces must be identical. It compares the engine ports as the
+      # engine runs them (native calling native under the real class names),
+      # which the prefixed single-process harnesses in smoke.php cannot. One
+      # leg is enough: it checks engine behaviour, not the platform.
+      - name: "Walk trace (differential: whole NodeScopeResolver walks, native vs PHP)"
+        if: matrix.target == 'linux-gnu-x86_64' && matrix.php-version == '8.5'
+        run: php -d extension="$TURBO_DLL" turbo-ext/tests/walk-trace.php --shards="$(nproc)"
+
+      - name: "Arena smoke test (cross-process shared-memory records)"
+        run: php -d extension="$TURBO_DLL" turbo-ext/tests/arena-smoke.php
+
+      - name: "Forked-worker exit (exitImmediately() ends a child whose teardown would wedge)"
+        run: php -d extension="$TURBO_DLL" turbo-ext/tests/exit-immediately.php
+
+      - name: "Trusted types (the optimizer pass drops type checks under the prefix only)"
+        run: php -d extension="$TURBO_DLL" -d opcache.enable_cli=1 turbo-ext/tests/trusted-types.php
+
+      - name: "Signature parity (reflect native classes against the PHP twins)"
+        run: php -d extension="$TURBO_DLL" turbo-ext/tests/signature-parity.php
+
+      - name: "Parser corpus (differential: native vs PHP ASTs must be byte-identical)"
+        run: php -d extension="$TURBO_DLL" -d memory_limit=4G turbo-ext/tests/parser-corpus.php
+
+      - name: "Parser upstream corpus (the same differential over php-parser's own test cases)"
+        if: matrix.target != 'windows-x86_64'
+        run: php -d extension="$TURBO_DLL" turbo-ext/tests/parser-upstream-corpus.php
+
+  turbo-differential-musl:
+    name: "Run with Turbo Extension (differential tests, musl)"
+    # turbo-differential for the musl binaries, in the Alpine environment
+    # they are built in. The commands run through docker exec for the reason
+    # turbo-compile-musl-arm64 gives, on both architectures alike.
+    needs:
+      - turbo-compile
+      - turbo-compile-musl-arm64
+    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
+    timeout-minutes: 30
+
+    env:
+      PHP_MINOR: ${{ matrix.php-version }}
+      TURBO_ARTIFACT: "phpstan_turbo-linux-musl-${{ matrix.arch }}-php${{ matrix.php-version }}"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: ["x86_64", "arm64"]
+        php-version: ["8.3", "8.4", "8.5", "8.6"]
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+
+      - name: "Checkout"
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+
+      # The same container, packages and composer as turbo-compile-musl-arm64.
+      - name: "Start the Alpine container"
+        env:
+          ALPINE_IMAGE: ${{ matrix.php-version == '8.6' && 'alpine:edge' || 'alpine:3.24' }}
+        run: |
+          docker run -d --name alpine-test \
+            -v "$PWD:/work" -w /work \
+            -e PHP_MINOR -e COMPOSER_VERSION -e COMPOSER_PHAR_SHA256 \
+            "$ALPINE_IMAGE" sleep 7200
+
+      - name: "Install PHP and tools"
+        run: |
+          docker exec -i alpine-test sh -e <<'EOF'
+          V="$(echo "$PHP_MINOR" | tr -d .)"
+          if [ "$PHP_MINOR" = "8.6" ]; then
+            echo 'https://dl-cdn.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositories
+          fi
+          apk add --no-cache bash curl git make g++ musl-dev linux-headers patch tar zstd \
+            "php$V" "php$V-dev" "php$V-ctype" "php$V-curl" "php$V-mbstring" \
+            "php$V-tokenizer" "php$V-iconv" "php$V-openssl" "php$V-phar" \
+            "php$V-dom" "php$V-xml" "php$V-xmlwriter" "php$V-simplexml"
+          ln -sf "/usr/bin/php$V" /usr/local/bin/php
+          ln -sf "/usr/bin/php-config$V" /usr/local/bin/php-config
+          EOF
+
+      - name: "Trust the checkout despite the container/host uid mismatch"
+        run: docker exec alpine-test git config --global --add safe.directory /work
+
+      - name: "Install Composer dependencies (pinned composer)"
+        run: |
+          docker exec -i alpine-test sh -e <<'EOF'
+          curl -fsSLo composer.phar "https://getcomposer.org/download/$COMPOSER_VERSION/composer.phar"
+          echo "$COMPOSER_PHAR_SHA256  composer.phar" | sha256sum -c -
+          COMPOSER_HOME="$(mktemp -d)" php composer.phar install --no-interaction --no-progress
+          rm composer.phar
+          EOF
+
+      - name: "Download extension artifact"
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ env.TURBO_ARTIFACT }}
+          path: "turbo-ext"
+
+      - name: "Verify the extension reports the expected version"
+        run: |
+          docker exec -i alpine-test sh -e <<'EOF'
+          REPORTED="$(php -d extension=/work/turbo-ext/phpstan_turbo.so -r 'echo phpversion("phpstan_turbo");')"
+          EXPECTED="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"
+          echo "extension reports: $REPORTED, enabler expects: $EXPECTED"
+          [ "$REPORTED" = "$EXPECTED" ]
+          EOF
+
+      - name: "Smoke test (differential: native vs PHP implementations)"
+        run: docker exec alpine-test php -d extension=/work/turbo-ext/phpstan_turbo.so turbo-ext/tests/smoke.php
+
+      - name: "Arena smoke test (cross-process shared-memory records)"
+        run: docker exec alpine-test php -d extension=/work/turbo-ext/phpstan_turbo.so turbo-ext/tests/arena-smoke.php
+
+      - name: "Forked-worker exit (exitImmediately() ends a child whose teardown would wedge)"
+        run: docker exec alpine-test php -d extension=/work/turbo-ext/phpstan_turbo.so turbo-ext/tests/exit-immediately.php
+
+      - name: "Trusted types (the optimizer pass drops type checks under the prefix only)"
+        run: docker exec alpine-test php -d extension=/work/turbo-ext/phpstan_turbo.so -d opcache.enable_cli=1 turbo-ext/tests/trusted-types.php
+
+      - name: "Signature parity (reflect native classes against the PHP twins)"
+        run: docker exec alpine-test php -d extension=/work/turbo-ext/phpstan_turbo.so turbo-ext/tests/signature-parity.php
+
+      - name: "Parser corpus (differential: native vs PHP ASTs must be byte-identical)"
+        run: docker exec alpine-test php -d extension=/work/turbo-ext/phpstan_turbo.so -d memory_limit=4G turbo-ext/tests/parser-corpus.php
+
+      - name: "Parser upstream corpus (the same differential over php-parser's own test cases)"
+        if: matrix.arch == 'x86_64'
+        run: docker exec alpine-test php -d extension=/work/turbo-ext/phpstan_turbo.so turbo-ext/tests/parser-upstream-corpus.php
 
   turbo-run:
     name: "Run with Turbo Extension"
@@ -1749,22 +1895,25 @@ jobs:
   commit:
     name: "Commit PHAR"
     if: "github.repository_owner == 'phpstan' && (github.ref == 'refs/heads/2.3.x' || startsWith(github.ref, 'refs/tags/'))"
-    # Gated on every job that produces or validates the committed bits: the
-    # compile jobs build the staged binaries, or reuse ones compiled from
-    # identical build inputs (see turbo-origins), and run the differential
-    # test batteries per leg; turbo-version guards the version constant the
-    # staging logic compares, turbo-phpize the build system. The
-    # "Run with Turbo Extension" jobs (turbo-run, turbo-docker-run) are
-    # deliberately not gates: they produce nothing the commit consumes,
-    # their full-suite runs would delay every dev phar by their duration,
-    # and a red leg caused by environment drift (the floating docker-library
-    # tags) would skip the commit and halt phar publication while the
-    # binaries already in dist are equally affected — nothing protective
-    # gained. They still fail the workflow loudly for follow-up.
+    # Gated on every job that produces the committed bits or the version
+    # constant they are staged by: the compile jobs build the staged
+    # binaries (or carry over ones compiled from identical build inputs,
+    # see turbo-origins) and check the version they report; turbo-version
+    # guards the version constant the staging logic compares. The jobs
+    # that only test those bits are deliberately not gates: the
+    # "Run with Turbo Extension" jobs (turbo-differential,
+    # turbo-differential-musl, turbo-run, turbo-docker-run) and
+    # turbo-phpize, whose build nothing ships (PIE
+    # builds from the phpstan/turbo-ext subsplit). They produce nothing the
+    # commit consumes, waiting for them would delay every dev phar by their
+    # duration, and a red leg caused by environment drift (the floating
+    # docker-library tags, the PHP 8.6 prerelease) would skip the commit and
+    # halt phar publication while the binaries already in dist are equally
+    # affected — nothing protective gained. They still fail the workflow
+    # loudly for follow-up.
     needs:
       - compiler-tests
       - turbo-version
-      - turbo-phpize
       - turbo-compile
       - turbo-compile-musl-arm64
       - turbo-compile-windows

@@ -35,7 +35,7 @@ env:
   COMPOSER_VERSION: "2.9.2"
   COMPOSER_PHAR_SHA256: "471f2d857abf0ec18af7b055e61472214d91adb24f9bdbbb864c1c64faad7dd6"
   # setup-php installs an 8.6 nightly, which has no matching Windows devel pack.
-  PHP86_WINDOWS_VERSION: "8.6.0beta3"
+  PHP86_WINDOWS_VERSION: "8.6.0RC2"
 
 jobs:
   compiler-tests:
@@ -397,9 +397,9 @@ jobs:
     # of ORIGIN_RUN_ID repeated in both). The tests of every binary, reused
     # or compiled, run in the turbo-differential jobs, so the commit job,
     # which needs the binaries, does not wait for them.
-    runs-on: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[format('{0}-{1}-php{2}', matrix.target.artifact, matrix.target.name, matrix.php-version)] && 'ubuntu-latest' || (matrix.php-version == '8.6' && matrix.target.family == 'gnu' && (matrix.target.name == 'linux-gnu-arm64' && 'ubuntu-22.04-arm' || 'ubuntu-22.04') || matrix.target.runs-on) }}
+    runs-on: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[format('{0}-{1}-php{2}', matrix.target.artifact, matrix.target.name, matrix.php-version)] && 'ubuntu-latest' || matrix.target.runs-on }}
     # Container legs pin the built binaries' userland floor independently of
-    # the runner image. The 8.3–8.5 gnu legs run in a prebuilt ubuntu:22.04-based
+    # the runner image. The gnu legs run in a prebuilt ubuntu:22.04-based
     # image (.github/turbo-build/Dockerfile, published to GHCR by
     # turbo-build-image.yml) with the PHP toolchain baked in: the glibc
     # symbol floor stays at 2.34 (RHEL 9, Ubuntu 22.04+, Debian 12+) and the
@@ -418,10 +418,9 @@ jobs:
     # not worth two binaries per PHP minor. Their binaries are deleted from
     # phpstan/phpstan by the commit job (TURBO_RETIRED_BINARIES). Windows
     # keeps its ZTS leg: XAMPP, WampServer and Scoop default to TS PHP.
-    # PHP 8.6 has no ondrej/php packages or prebuilt GNU image yet. Use
-    # setup-php on Jammy runners, preserving the shipped binary's glibc floor.
-    # Alpine's php86 packages are currently only in edge/testing.
-    container: ${{ !(fromJSON(needs.turbo-origins.outputs.origins || '{}')[format('{0}-{1}-php{2}', matrix.target.artifact, matrix.target.name, matrix.php-version)]) && (matrix.target.family == 'gnu' && matrix.php-version != '8.6' && format('ghcr.io/phpstan/turbo-build:gnu-php{0}', matrix.php-version) || matrix.target.family == 'musl' && matrix.php-version == '8.6' && 'alpine:edge' || matrix.target.container) || '' }}
+    # The gnu-php8.6 image builds the official 8.6 prerelease tarball (see the
+    # Dockerfile). Alpine's php86 packages are currently only in edge/testing.
+    container: ${{ !(fromJSON(needs.turbo-origins.outputs.origins || '{}')[format('{0}-{1}-php{2}', matrix.target.artifact, matrix.target.name, matrix.php-version)]) && (matrix.target.family == 'gnu' && format('ghcr.io/phpstan/turbo-build:gnu-php{0}', matrix.php-version) || matrix.target.family == 'musl' && matrix.php-version == '8.6' && 'alpine:edge' || matrix.target.container) || '' }}
     needs: turbo-origins
     timeout-minutes: 30
 
@@ -485,7 +484,7 @@ jobs:
       # The Alpine leg installs PHP and tooling before checkout:
       # actions/checkout needs git inside the container, and the build needs
       # php/php-config symlinks pointing at the matrix PHP version. The GNU
-      # container legs have the toolchain baked in; 8.6 uses setup-php below.
+      # container legs have the toolchain baked in.
       - name: "Install PHP and build tools (Alpine container)"
         if: env.ORIGIN_RUN_ID == '' && matrix.target.family == 'musl'
         run: |
@@ -526,13 +525,6 @@ jobs:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
 
-      - name: "Install PHP (GNU runners)"
-        if: env.ORIGIN_RUN_ID == '' && matrix.target.family == 'gnu' && matrix.php-version == '8.6'
-        uses: "shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240" # v2.37.2
-        with:
-          coverage: "none"
-          php-version: "${{ matrix.php-version }}"
-
       # The training run of `make pgo` (bin/pgo-train.sh) runs bin/phpstan on
       # the checkout, so the dependencies must be in place before the build.
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
@@ -544,15 +536,11 @@ jobs:
         if: env.ORIGIN_RUN_ID == '' && matrix.target.family != 'macos'
         # checksum-pinned composer, run under the matrix PHP so platform
         # requirements are validated against the interpreter the build
-        # trains on. COMPOSER_HOME is isolated: on the runner (PHP 8.6) legs,
-        # setup-php seeds ~/.composer/auth.json with the workflow's GitHub
-        # token, which this pinned composer rejects at startup ("github oauth
-        # token contains invalid characters") — everything here comes from
-        # packagist dists, no auth needed.
+        # trains on
         run: |
           curl -fsSLo composer.phar "https://getcomposer.org/download/$COMPOSER_VERSION/composer.phar"
           echo "$COMPOSER_PHAR_SHA256  composer.phar" | sha256sum -c -
-          COMPOSER_HOME="$(mktemp -d)" php composer.phar install --no-interaction --no-progress
+          php composer.phar install --no-interaction --no-progress
           rm composer.phar
 
       - name: "Compile phpstan_turbo with strict warnings (profile-guided)"
@@ -1142,11 +1130,15 @@ jobs:
     # reused, under the runtime setup-php installs on the platform the
     # binary is built for. Kept out of the compile jobs so the commit job,
     # which only needs the binaries, does not wait for them (see there).
-    # The musl binaries are tested in turbo-differential-musl.
+    # The musl binaries are tested in turbo-differential-musl. The linux-gnu
+    # 8.6 legs run in the image the binary is compiled in instead: setup-php's
+    # Linux 8.6 is a nightly snapshot that can predate the release the binary
+    # targets, and a module API mismatch refuses to load it at all.
     needs:
       - turbo-compile
       - turbo-compile-windows
     runs-on: ${{ matrix.runs-on }}
+    container: ${{ matrix.container || '' }}
     timeout-minutes: 30
 
     defaults:
@@ -1180,9 +1172,16 @@ jobs:
           # see turbo-run for why windows-latest loads the DLL
           - target: "windows-x86_64"
             runs-on: "windows-latest"
+          - target: "linux-gnu-x86_64"
+            php-version: "8.6"
+            container: "ghcr.io/phpstan/turbo-build:gnu-php8.6"
+          - target: "linux-gnu-arm64"
+            php-version: "8.6"
+            container: "ghcr.io/phpstan/turbo-build:gnu-php8.6"
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
+        if: ${{ !matrix.container }}
         uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
         with:
           egress-policy: audit
@@ -1193,6 +1192,7 @@ jobs:
           persist-credentials: false
 
       - name: "Install PHP"
+        if: ${{ !matrix.container }}
         uses: "shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240" # v2.37.2
         env:
           phpts: "${{ matrix.ts == 'zts' && 'ts' || 'nts' }}"
@@ -1207,8 +1207,17 @@ jobs:
         run: bash .github/scripts/install-php86-windows.sh
 
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
+        if: ${{ !matrix.container }}
         with:
           ignore-cache: true
+
+      - name: "Install Composer dependencies (pinned composer)"
+        if: ${{ matrix.container }}
+        run: |
+          curl -fsSLo composer.phar "https://getcomposer.org/download/$COMPOSER_VERSION/composer.phar"
+          echo "$COMPOSER_PHAR_SHA256  composer.phar" | sha256sum -c -
+          php composer.phar install --no-interaction --no-progress
+          rm composer.phar
 
       - name: "Download extension artifact"
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -1407,6 +1416,13 @@ jobs:
         exclude:
           - operating-system: "ubuntu-latest"
             ts: "zts"
+          # setup-php's Linux 8.6 is a nightly snapshot that can predate the
+          # release the binary is compiled against (on 2026-09-25 it still
+          # had the module API 8.6.0RC2 replaced), and a module API mismatch
+          # refuses to load the extension at all. turbo-docker-run runs the
+          # same checks with this binary in the official 8.6 prerelease image.
+          - operating-system: "ubuntu-latest"
+            php-version: "8.6"
         # macOS runs the shipped ad-hoc-signed arm64 binary; there is no
         # macOS zts build, and 8.3/8.4 coverage comes from the other legs.
         include:

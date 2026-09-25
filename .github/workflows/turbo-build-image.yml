@@ -3,7 +3,7 @@
 name: "Build Turbo compile images"
 
 # Builds .github/turbo-build/Dockerfile natively on x86_64 and arm64
-# runners and publishes ghcr.io/phpstan/turbo-build:gnu-php{8.3,8.4,8.5}
+# runners and publishes ghcr.io/phpstan/turbo-build:gnu-php{8.3,8.4,8.5,8.6}
 # as multi-arch manifests. The turbo-compile gnu legs in phar.yml run in
 # these images, so their only network dependency is a GHCR pull — no apt,
 # no ports.ubuntu.com, no PPA at compile time.
@@ -45,7 +45,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ["8.3", "8.4", "8.5"]
+        php-version: ["8.3", "8.4", "8.5", "8.6"]
         platform:
           - arch: "amd64"
             runs-on: "ubuntu-latest"
@@ -97,7 +97,7 @@ jobs:
 
     strategy:
       matrix:
-        php-version: ["8.3", "8.4", "8.5"]
+        php-version: ["8.3", "8.4", "8.5", "8.6"]
 
     env:
       TAG: "ghcr.io/phpstan/turbo-build:gnu-php${{ matrix.php-version }}"

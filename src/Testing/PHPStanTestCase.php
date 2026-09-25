@@ -114,6 +114,7 @@ abstract class PHPStanTestCase extends TestCase
 			$container->getByType(UnaryOperatorTypeSpecifyingExtensionRegistry::class),
 			new OversizedArrayBuilder(),
 			$container->getParameter('usePathConstantsAsConstantString'),
+			$container->getParameter('featureToggles')['preciseArrayShapeUnpacking'],
 		);
 
 		return new ScopeFactory(

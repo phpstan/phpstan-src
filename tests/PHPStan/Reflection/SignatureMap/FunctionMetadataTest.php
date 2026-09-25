@@ -20,6 +20,7 @@ class FunctionMetadataTest extends PHPStanTestCase
 			Expect::structure([
 				'hasSideEffects' => Expect::bool(),
 				'pureUnlessCallableIsImpureParameters' => Expect::arrayOf(Expect::bool(), Expect::string()),
+				'pureUnlessParameterPassedParameters' => Expect::arrayOf(Expect::bool(), Expect::string()),
 			])
 				->assert(static fn ($v) => count((array) $v) > 0, 'Metadata entries must not be empty.')
 				->required(),

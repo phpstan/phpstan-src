@@ -58,3 +58,12 @@ class AboveReturn
 	}
 
 }
+
+/**
+ * @param-out int $count
+ * @phpstan-pure-unless-callable-is-impure $callback
+ * @phpstan-pure-unless-parameter-passed $count
+ */
+function withPurityTags(callable $callback, int &$count = 0): void
+{
+}

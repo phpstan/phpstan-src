@@ -15,8 +15,11 @@
 # - whose head commit is an ancestor of HEAD
 # - whose build inputs (BUILD_INPUT_PATHS, and the compile jobs' definitions
 #   in phar.yml) are identical to HEAD's
+# - whose last commit touching turbo-ext/src is HEAD's: the binaries bake
+#   their version from it, and a reused leg does not load its binary to
+#   check that (a change reverted in between leaves the sources identical)
 # - for each artifact separately: the run uploaded it (the upload is the
-#   last step of a compile leg, after the differential tests) and did not
+#   last step of a compile leg, after the version check) and did not
 #   mark it as reused itself (turbo-reused-<artifact name>) — so a binary is
 #   always taken from the run that compiled it, never from a chain of runs
 #   that passed it along, and it stops being reused when that run's
@@ -53,6 +56,7 @@ if [ -z "${BRANCH:-}" ] || [ -z "${GITHUB_REPOSITORY:-}" ]; then
 fi
 
 head="$(git rev-parse HEAD)" || finish
+head_version="$(git log -1 --format=%H "$head" -- turbo-ext/src)" || finish
 if ! head_jobs="$(git show "$head:$WORKFLOW_PATH" | yq -o=json "$COMPILE_JOBS_QUERY")"; then
 	echo "::warning::could not read the compile jobs of $WORKFLOW_PATH; compiling everything"
 	finish
@@ -86,6 +90,10 @@ while read -r run_id sha; do
 	fi
 	if ! git diff --quiet "$sha" "$head" -- "${BUILD_INPUT_PATHS[@]}"; then
 		echo "run $run_id: build inputs differ at $sha"
+		continue
+	fi
+	if [ "$(git log -1 --format=%H "$sha" -- turbo-ext/src)" != "$head_version" ]; then
+		echo "run $run_id: the last commit touching turbo-ext/src differs at $sha"
 		continue
 	fi
 	if ! run_jobs="$(git show "$sha:$WORKFLOW_PATH" | yq -o=json "$COMPILE_JOBS_QUERY")" || [ "$run_jobs" != "$head_jobs" ]; then

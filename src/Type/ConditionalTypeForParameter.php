@@ -115,19 +115,38 @@ final class ConditionalTypeForParameter implements CompoundType, LateResolvableT
 			if ($type instanceof self) {
 				$subjectType = $getSubjectType($type->getParameterName());
 				if ($subjectType !== null) {
-					// Traverse children first, then convert — avoids infinite loop when
+					// Resolve the branches first, then convert — avoids infinite loop when
 					// the subject contains a ConditionalTypeForParameter with a colliding parameter name.
-					$type = $traverse($type);
-					if ($type instanceof self) {
-						return $type->toConditional($subjectType);
-					}
-
-					return $type;
+					return $type->resolveWithSubject($subjectType, $getSubjectType);
 				}
 			}
 
 			return $traverse($type);
 		});
+	}
+
+	/**
+	 * A condition on the same parameter nested in a branch sees the subject as the branch
+	 * knows it: `subject & target` where this condition holds, `subject ~ target` where it
+	 * does not. `($key is Model ? A : ($key is Arrayable ? B : C))` asks whether the
+	 * non-Model part of the argument is Arrayable.
+	 *
+	 * @param callable(string): ?Type $getSubjectType
+	 */
+	private function resolveWithSubject(Type $subject, callable $getSubjectType): Type
+	{
+		$target = self::resolveInType($this->target, $getSubjectType);
+		$getNarrowedSubjectType = fn (bool $conditionHolds): callable => fn (string $parameterName): ?Type => $parameterName === $this->parameterName
+			? ($conditionHolds ? TypeCombinator::intersect($subject, $target) : TypeCombinator::remove($subject, $target))
+			: $getSubjectType($parameterName);
+
+		return new ConditionalType(
+			$subject,
+			$target,
+			self::resolveInType($this->getNormalizedIf(), $getNarrowedSubjectType(!$this->negated)),
+			self::resolveInType($this->getNormalizedElse(), $getNarrowedSubjectType($this->negated)),
+			$this->negated,
+		);
 	}
 
 	public function toConditional(Type $subject): Type

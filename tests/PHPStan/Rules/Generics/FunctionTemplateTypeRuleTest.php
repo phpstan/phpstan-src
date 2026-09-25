@@ -80,6 +80,14 @@ class FunctionTemplateTypeRuleTest extends RuleTestCase
 				'PHPDoc tag @template V for function FunctionTemplateType\requiredAfterOptional() does not have a default type but follows an optional @template U.',
 				120,
 			],
+			[
+				'PHPDoc tag @template T for function FunctionTemplateType\voidBound() with bound type void is not supported.',
+				174,
+			],
+			[
+				'PHPDoc tag @template T for function FunctionTemplateType\neverBound() with bound type never is not supported.',
+				180,
+			],
 		]);
 	}
 

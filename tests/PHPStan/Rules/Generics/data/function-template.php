@@ -121,3 +121,75 @@ function requiredAfterOptional()
 {
 
 }
+
+/** @template T of callable */
+function callableBound()
+{
+
+}
+
+/** @template T of callable(int): string */
+function parametrizedCallableBound()
+{
+
+}
+
+/** @template T of \Closure */
+function closureBound()
+{
+
+}
+
+/** @template T of \Closure(int): string */
+function parametrizedClosureBound()
+{
+
+}
+
+/** @template T of class-string */
+function classStringBound()
+{
+
+}
+
+/** @template T of class-string<\Exception> */
+function genericClassStringBound()
+{
+
+}
+
+/** @template T of 1.5 */
+function constantFloatBound()
+{
+
+}
+
+/** @template T of int<0, 10> */
+function integerRangeBound()
+{
+
+}
+
+/** @template T of void */
+function voidBound()
+{
+
+}
+
+/** @template T of never */
+function neverBound()
+{
+
+}
+
+/** @template T of true */
+function trueBound()
+{
+
+}
+
+/** @template T of false */
+function falseBound()
+{
+
+}

@@ -510,6 +510,11 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug15273(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15273.php'], []);
+	}
+
 	public function testExplainUnresolvable(): void
 	{
 		$this->analyse([__DIR__ . '/data/explain-unresolvable-method-parameter.php'], [

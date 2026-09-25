@@ -625,12 +625,6 @@ parameters:
 			path: src/Rules/Generics/GenericAncestorsCheck.php
 
 		-
-			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
-			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Rules/Generics/TemplateTypeCheck.php
-
-		-
 			rawMessage: 'Method PHPStan\Rules\LazyRegistry::getRulesByNodeType() return type with generic interface PHPStan\Rules\Rule does not specify its types: TNodeType'
 			identifier: missingType.generics
 			count: 1
@@ -1150,7 +1144,37 @@ parameters:
 			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
 			count: 3
+			path: src/Type/Generic/TemplateCallableType.php
+
+		-
+			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
+			identifier: phpstanApi.instanceofType
+			count: 3
+			path: src/Type/Generic/TemplateClassStringType.php
+
+		-
+			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
+			identifier: phpstanApi.instanceofType
+			count: 3
+			path: src/Type/Generic/TemplateClosureType.php
+
+		-
+			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
+			identifier: phpstanApi.instanceofType
+			count: 3
 			path: src/Type/Generic/TemplateConstantArrayType.php
+
+		-
+			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
+			identifier: phpstanApi.instanceofType
+			count: 3
+			path: src/Type/Generic/TemplateConstantFloatType.php
+
+		-
+			rawMessage: 'Method PHPStan\Type\Generic\TemplateConstantFloatType::toPhpDocNode() should return PHPStan\PhpDocParser\Ast\Type\ConstTypeNode but returns PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode.'
+			identifier: return.type
+			count: 1
+			path: src/Type/Generic/TemplateConstantFloatType.php
 
 		-
 			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
@@ -1175,6 +1199,12 @@ parameters:
 			identifier: phpstanApi.instanceofType
 			count: 3
 			path: src/Type/Generic/TemplateFloatType.php
+
+		-
+			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
+			identifier: phpstanApi.instanceofType
+			count: 3
+			path: src/Type/Generic/TemplateGenericClassStringType.php
 
 		-
 			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
@@ -1261,6 +1291,18 @@ parameters:
 			path: src/Type/Generic/TemplateTypeFactory.php
 
 		-
+			rawMessage: 'Doing instanceof PHPStan\Type\CallableType is error-prone and deprecated. Use Type::isCallable() and Type::getCallableParametersAcceptors() instead.'
+			identifier: phpstanApi.instanceofType
+			count: 1
+			path: src/Type/Generic/TemplateTypeFactory.php
+
+		-
+			rawMessage: 'Doing instanceof PHPStan\Type\ClassStringType is error-prone and deprecated. Use Type::isClassStringType() instead.'
+			identifier: phpstanApi.instanceofType
+			count: 1
+			path: src/Type/Generic/TemplateTypeFactory.php
+
+		-
 			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantArrayType is error-prone and deprecated. Use Type::getConstantArrays() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 1
@@ -1274,6 +1316,12 @@ parameters:
 
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\FloatType is error-prone and deprecated. Use Type::isFloat() instead.'
+			identifier: phpstanApi.instanceofType
+			count: 1
+			path: src/Type/Generic/TemplateTypeFactory.php
+
+		-
+			rawMessage: 'Doing instanceof PHPStan\Type\Generic\GenericClassStringType is error-prone and deprecated. Use Type::isClassStringType() and Type::getClassStringObjectType() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 1
 			path: src/Type/Generic/TemplateTypeFactory.php

@@ -197,12 +197,12 @@ final class RegexArrayShapeMatcher
 				foreach ($comboList as $group) {
 					if (in_array($group->getId(), $groupCombo, true)) {
 						$isOptionalAlternation = $group->inOptionalAlternation();
-						$comboList = $comboList->forceGroupNonOptional($group);
+						$comboList = $comboList->forceGroupAlternationBranchMatched($group);
 						$beforeCurrentCombo = false;
 					} elseif ($beforeCurrentCombo && !$group->resetsGroupCounter()) {
 						$comboList = $comboList->forceGroupTypeAndNonOptional(
 							$group,
-							$this->containsUnmatchedAsNull($flags, $matchesAll) ? new NullType() : new ConstantStringType(''),
+							$this->getUnmatchedGroupType($flags),
 						);
 					} elseif (
 						$group->getAlternationId() === $onlyTopLevelAlternation->getId()
@@ -438,7 +438,7 @@ final class RegexArrayShapeMatcher
 
 		if (!$isLastGroup && !$this->containsUnmatchedAsNull($flags, $matchesAll) && $captureGroup->isOptional()) {
 			$groupValueType = $this->getValueType(
-				TypeCombinator::union($captureGroup->getType(), new ConstantStringType('')),
+				TypeCombinator::union($captureGroup->getType(), $this->getUnmatchedGroupType($flags)),
 				$flags,
 				$matchesAll,
 			);
@@ -480,6 +480,21 @@ final class RegexArrayShapeMatcher
 		}
 
 		return ($flags & PREG_UNMATCHED_AS_NULL) !== 0 && (($flags & self::PREG_UNMATCHED_AS_NULL_ON_72_73) !== 0 || $this->phpVersion->supportsPregUnmatchedAsNull());
+	}
+
+	/**
+	 * Type of an unmatched group followed by a matched one.
+	 *
+	 * PHP 7.2 and 7.3 already report it as null with PREG_UNMATCHED_AS_NULL,
+	 * only the trailing unmatched groups are omitted there.
+	 */
+	private function getUnmatchedGroupType(int $flags): Type
+	{
+		if (($flags & PREG_UNMATCHED_AS_NULL) !== 0) {
+			return new NullType();
+		}
+
+		return new ConstantStringType('');
 	}
 
 	private function getKeyType(int|string $key): Type

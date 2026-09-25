@@ -16,6 +16,7 @@ final class RegexCapturingGroup
 		private readonly Type $type,
 		private readonly bool $forceNonOptional = false,
 		private readonly ?Type $forceType = null,
+		private readonly bool $forceAlternationBranchMatched = false,
 	)
 	{
 	}
@@ -36,6 +37,26 @@ final class RegexCapturingGroup
 			$this->type,
 			true,
 			$this->forceType,
+			$this->forceAlternationBranchMatched,
+		);
+	}
+
+	/**
+	 * Unlike forceNonOptional(), the group stays optional when it is optional
+	 * within its alternation branch, e.g. because of a `?` quantifier.
+	 */
+	public function forceAlternationBranchMatched(): self
+	{
+		return new self(
+			$this->id,
+			$this->name,
+			$this->alternation,
+			$this->inOptionalQuantification,
+			$this->parent,
+			$this->type,
+			$this->forceNonOptional,
+			$this->forceType,
+			true,
 		);
 	}
 
@@ -50,6 +71,7 @@ final class RegexCapturingGroup
 			$type,
 			$this->forceNonOptional,
 			$this->forceType,
+			$this->forceAlternationBranchMatched,
 		);
 	}
 
@@ -64,6 +86,7 @@ final class RegexCapturingGroup
 			$this->type,
 			$this->forceNonOptional,
 			$this->forceType,
+			$this->forceAlternationBranchMatched,
 		);
 	}
 
@@ -101,9 +124,30 @@ final class RegexCapturingGroup
 			return false;
 		}
 
+		if ($this->forceAlternationBranchMatched) {
+			return $this->isOptionalWithinAlternationBranch();
+		}
+
 		return $this->inAlternation()
 			|| $this->inOptionalQuantification
 			|| $this->parent !== null && $this->parent->isOptional();
+	}
+
+	private function isOptionalWithinAlternationBranch(): bool
+	{
+		if ($this->inOptionalQuantification) {
+			return true;
+		}
+
+		$parent = $this->parent;
+		while ($parent !== null && $parent->getAlternationId() === $this->getAlternationId()) {
+			if ($parent->inOptionalQuantification()) {
+				return true;
+			}
+			$parent = $parent->getParent();
+		}
+
+		return false;
 	}
 
 	public function inOptionalQuantification(): bool

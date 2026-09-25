@@ -72,27 +72,28 @@ inline constexpr char strings[] =
 	"getSubjectType\0" /* 251 */
 	"resolveInType\0" /* 266 */
 	"subject\0" /* 280 */
-	"toConditional\0" /* 288 */
-	"PHPStan\\Type\\IsSuperTypeOfResult\0" /* 302 */
-	"isSuperTypeOf\0" /* 335 */
-	"getReferencedClasses\0" /* 349 */
-	"positionVariance\0" /* 370 */
-	"PHPStan\\Type\\Generic\\TemplateTypeVariance\0" /* 387 */
-	"getReferencedTemplateTypes\0" /* 429 */
-	"equals\0" /* 456 */
-	"level\0" /* 463 */
-	"PHPStan\\Type\\VerbosityLevel\0" /* 469 */
-	"describe\0" /* 497 */
-	"isResolvable\0" /* 506 */
-	"getResult\0" /* 519 */
-	"cb\0" /* 529 */
-	"traverse\0" /* 532 */
-	"right\0" /* 541 */
-	"traverseSimultaneously\0" /* 547 */
-	"getNormalizedIf\0" /* 570 */
-	"getNormalizedElse\0" /* 586 */
-	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 604 */
-	"toPhpDocNode"; /* 643 */
+	"resolveWithSubject\0" /* 288 */
+	"toConditional\0" /* 307 */
+	"PHPStan\\Type\\IsSuperTypeOfResult\0" /* 321 */
+	"isSuperTypeOf\0" /* 354 */
+	"getReferencedClasses\0" /* 368 */
+	"positionVariance\0" /* 389 */
+	"PHPStan\\Type\\Generic\\TemplateTypeVariance\0" /* 406 */
+	"getReferencedTemplateTypes\0" /* 448 */
+	"equals\0" /* 475 */
+	"level\0" /* 482 */
+	"PHPStan\\Type\\VerbosityLevel\0" /* 488 */
+	"describe\0" /* 516 */
+	"isResolvable\0" /* 525 */
+	"getResult\0" /* 538 */
+	"cb\0" /* 548 */
+	"traverse\0" /* 551 */
+	"right\0" /* 560 */
+	"traverseSimultaneously\0" /* 566 */
+	"getNormalizedIf\0" /* 589 */
+	"getNormalizedElse\0" /* 605 */
+	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 623 */
+	"toPhpDocNode"; /* 662 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_STRING), /* __construct $parameterName */
 	reg::packed(14, 0, 21), /* __construct $target */
@@ -111,27 +112,30 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(246, 0, 21), /* resolveInType $type */
 	reg::packed(251, MAY_BE_CALLABLE), /* resolveInType $getSubjectType */
 	reg::packed(67, 0, 21), /* resolveInType return */
+	reg::packed(280, 0, 21), /* resolveWithSubject $subject */
+	reg::packed(251, MAY_BE_CALLABLE), /* resolveWithSubject $getSubjectType */
+	reg::packed(67, 0, 21), /* resolveWithSubject return */
 	reg::packed(280, 0, 21), /* toConditional $subject */
 	reg::packed(67, 0, 21), /* toConditional return */
 	reg::packed(246, 0, 21), /* isSuperTypeOf $type */
-	reg::packed(67, 0, 302), /* isSuperTypeOf return */
+	reg::packed(67, 0, 321), /* isSuperTypeOf return */
 	reg::packed(67, MAY_BE_ARRAY), /* getReferencedClasses return */
-	reg::packed(370, 0, 387), /* getReferencedTemplateTypes $positionVariance */
+	reg::packed(389, 0, 406), /* getReferencedTemplateTypes $positionVariance */
 	reg::packed(67, MAY_BE_ARRAY), /* getReferencedTemplateTypes return */
 	reg::packed(246, 0, 21), /* equals $type */
 	reg::packed(67, MAY_BE_BOOL), /* equals return */
-	reg::packed(463, 0, 469), /* describe $level */
+	reg::packed(482, 0, 488), /* describe $level */
 	reg::packed(67, MAY_BE_STRING), /* describe return */
 	reg::packed(67, MAY_BE_BOOL), /* isResolvable return */
 	reg::packed(67, 0, 21), /* getResult return */
-	reg::packed(529, MAY_BE_CALLABLE), /* traverse $cb */
+	reg::packed(548, MAY_BE_CALLABLE), /* traverse $cb */
 	reg::packed(67, 0, 21), /* traverse return */
-	reg::packed(541, 0, 21), /* traverseSimultaneously $right */
-	reg::packed(529, MAY_BE_CALLABLE), /* traverseSimultaneously $cb */
+	reg::packed(560, 0, 21), /* traverseSimultaneously $right */
+	reg::packed(548, MAY_BE_CALLABLE), /* traverseSimultaneously $cb */
 	reg::packed(67, 0, 21), /* traverseSimultaneously return */
 	reg::packed(67, 0, 21), /* getNormalizedIf return */
 	reg::packed(67, 0, 21), /* getNormalizedElse return */
-	reg::packed(67, 0, 604), /* toPhpDocNode return */
+	reg::packed(67, 0, 623), /* toPhpDocNode return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -147,19 +151,20 @@ inline constexpr sigtab::Sig isNegated = { { 109 /* isNegated */, 0, 9, 0, 9, ZE
 inline constexpr sigtab::Sig changeParameterName = { { 160 /* changeParameterName */, 1, 10, 1, 11, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig narrowTemplateType = { { 227 /* narrowTemplateType */, 1, 12, 1, 13, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig resolveInType = { { 266 /* resolveInType */, 2, 14, 2, 16, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig toConditional = { { 288 /* toConditional */, 1, 17, 1, 18, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isSuperTypeOf = { { 335 /* isSuperTypeOf */, 1, 19, 1, 20, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getReferencedClasses = { { 349 /* getReferencedClasses */, 0, 21, 0, 21, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getReferencedTemplateTypes = { { 429 /* getReferencedTemplateTypes */, 1, 22, 1, 23, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig equals = { { 456 /* equals */, 1, 24, 1, 25, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig describe = { { 497 /* describe */, 1, 26, 1, 27, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isResolvable = { { 506 /* isResolvable */, 0, 28, 0, 28, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getResult = { { 519 /* getResult */, 0, 29, 0, 29, ZEND_ACC_PROTECTED } };
-inline constexpr sigtab::Sig traverse = { { 532 /* traverse */, 1, 30, 1, 31, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig traverseSimultaneously = { { 547 /* traverseSimultaneously */, 2, 32, 2, 34, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getNormalizedIf = { { 570 /* getNormalizedIf */, 0, 35, 0, 35, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getNormalizedElse = { { 586 /* getNormalizedElse */, 0, 36, 0, 36, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig toPhpDocNode = { { 643 /* toPhpDocNode */, 0, 37, 0, 37, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig resolveWithSubject = { { 288 /* resolveWithSubject */, 2, 17, 2, 19, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig toConditional = { { 307 /* toConditional */, 1, 20, 1, 21, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isSuperTypeOf = { { 354 /* isSuperTypeOf */, 1, 22, 1, 23, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getReferencedClasses = { { 368 /* getReferencedClasses */, 0, 24, 0, 24, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getReferencedTemplateTypes = { { 448 /* getReferencedTemplateTypes */, 1, 25, 1, 26, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig equals = { { 475 /* equals */, 1, 27, 1, 28, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig describe = { { 516 /* describe */, 1, 29, 1, 30, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isResolvable = { { 525 /* isResolvable */, 0, 31, 0, 31, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getResult = { { 538 /* getResult */, 0, 32, 0, 32, ZEND_ACC_PROTECTED } };
+inline constexpr sigtab::Sig traverse = { { 551 /* traverse */, 1, 33, 1, 34, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig traverseSimultaneously = { { 566 /* traverseSimultaneously */, 2, 35, 2, 37, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getNormalizedIf = { { 589 /* getNormalizedIf */, 0, 38, 0, 38, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getNormalizedElse = { { 605 /* getNormalizedElse */, 0, 39, 0, 39, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig toPhpDocNode = { { 662 /* toPhpDocNode */, 0, 40, 0, 40, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ConditionalTypeForParameter

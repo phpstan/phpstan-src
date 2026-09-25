@@ -14,9 +14,12 @@
  * The class is final, so the trait's isSuperTypeOfDefault() is a direct C++
  * call; toConditional() instantiates the shadowing ConditionalType. Another
  * instance's private slots are read directly, as the twin does from inside
- * the class. NarrowedSubjectType::narrowReferences() stays PHP.
+ * the class. NarrowedSubjectType::narrowReferences() stays PHP. The
+ * subject lookups resolveWithSubject() hands down to the branches are
+ * native closures.
  */
 
+#include "Engine.h"
 #include "TypeTraits.h"
 #include "generated/ConditionalTypeForParameter.h"
 
@@ -29,9 +32,12 @@ zend_class_entry *pt_ce_conditional_type_for_parameter = nullptr;
 #define PT_CTFP_CLASS "PHPStan\\Type\\ConditionalTypeForParameter"
 #if PHP_VERSION_ID >= 80400
 #define PT_CTFP_CLOSURE(method, line) PT_CTFP_CLASS "::{closure:" PT_CTFP_CLASS "::" method "():" line "}"
+/* a closure created by a closure of the method, both on the same line */
+#define PT_CTFP_NESTED_CLOSURE(method, line) PT_CTFP_CLASS "::{closure:{closure:" PT_CTFP_CLASS "::" method "():" line "}:" line "}"
 #else
 /* PHP 8.3 names a closure by its namespace alone */
 #define PT_CTFP_CLOSURE(method, line) PT_CTFP_CLASS "::PHPStan\\Type\\{closure}"
+#define PT_CTFP_NESTED_CLOSURE(method, line) PT_CTFP_CLOSURE(method, line)
 #endif
 
 
@@ -139,6 +145,35 @@ public:
 		if (UNEXPECTED(!negated(isNegated))) return zv::Val();
 		zval raw;
 		if (UNEXPECTED(!pt_conditional_type_new(&raw, subject, t, normalizedIf.raw(), normalizedElse.raw(), isNegated))) return zv::Val();
+		return zv::Val::adopt(raw);
+	}
+
+	/* A condition on the same parameter nested in a branch sees the subject
+	 * as the branch knows it: `subject & target` where this condition holds,
+	 * `subject ~ target` where it does not. new ConditionalType($subject,
+	 * <the target, resolved>, <the normalized branches, resolved with the
+	 * narrowed subject lookups>, $this->negated); the outer lookup is
+	 * $getSubjectType, or $passedArgs when given (see resolveInType());
+	 * UNDEF = pending exception */
+	zv::Val resolveWithSubject(zval *subject, zval *getSubjectType, zval *passedArgs) const
+	{
+		zval *name = parameterName();
+		zval *t = name != NULL ? target() : NULL;
+		if (UNEXPECTED(t == NULL)) return zv::Val();
+		zv::Val resolvedTarget = resolveInType(t, getSubjectType, passedArgs);
+		if (UNEXPECTED(resolvedTarget.isUndef())) return zv::Val();
+		bool isNegated;
+		if (UNEXPECTED(!negated(isNegated))) return zv::Val();
+		zv::Val normalizedIf = getNormalizedIf();
+		if (UNEXPECTED(normalizedIf.isUndef())) return zv::Val();
+		zv::Val ifType = resolveInNarrowed(normalizedIf.raw(), name, subject, resolvedTarget.raw(), !isNegated, getSubjectType, passedArgs);
+		if (UNEXPECTED(ifType.isUndef())) return zv::Val();
+		zv::Val normalizedElse = getNormalizedElse();
+		if (UNEXPECTED(normalizedElse.isUndef())) return zv::Val();
+		zv::Val elseType = resolveInNarrowed(normalizedElse.raw(), name, subject, resolvedTarget.raw(), isNegated, getSubjectType, passedArgs);
+		if (UNEXPECTED(elseType.isUndef())) return zv::Val();
+		zval raw;
+		if (UNEXPECTED(!pt_conditional_type_new(&raw, subject, resolvedTarget.raw(), ifType.raw(), elseType.raw(), isNegated))) return zv::Val();
 		return zv::Val::adopt(raw);
 	}
 
@@ -335,6 +370,50 @@ private:
 		return computed;
 	}
 
+	/* $getSubjectType($parameterName) — from $passedArgs when given (the
+	 * `$this->passedArgs[$name] ?? null` lookup of
+	 * ResolvedFunctionVariantWithOriginal), else by calling $getSubjectType;
+	 * UNDEF = pending exception */
+	static zv::Val subjectTypeOf(zval *name, zval *getSubjectType, zval *passedArgs)
+	{
+		if (passedArgs != NULL && Z_TYPE_P(passedArgs) == IS_ARRAY) {
+			zval *found = zend_symtable_find(Z_ARRVAL_P(passedArgs), Z_STR_P(name));
+			return found != NULL ? zv::Val::copyOf(zv::Ref(found).deref()) : zv::Val::null();
+		}
+		return pt_type_call_callable(getSubjectType, 1, name);
+	}
+
+	/* fn (string $parameterName): ?Type => $parameterName === $this->parameterName
+	 * ? ($conditionHolds ? TypeCombinator::intersect($subject, $target) :
+	 * TypeCombinator::remove($subject, $target)) : $getSubjectType($parameterName)
+	 * of resolveWithSubject() — captures: the parameter name, $subject,
+	 * $target, $conditionHolds, and the outer lookup as resolveInType() takes
+	 * it: the callable and the passed-arguments table (null = call the
+	 * callable) */
+	static void narrowedSubjectTypeBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
+	{
+		if (UNEXPECTED(argc < 1)) {
+			zend_throw_error(zend_ce_argument_count_error, "Too few arguments to function " PT_CTFP_NESTED_CLOSURE("resolveWithSubject", "141") "(), 0 passed and exactly 1 expected");
+			return;
+		}
+		zval *name = &argv[0];
+		if (UNEXPECTED(Z_TYPE_P(name) != IS_STRING)) {
+			zend_type_error(PT_CTFP_NESTED_CLOSURE("resolveWithSubject", "141") "(): Argument #1 ($parameterName) must be of type string, %s given", zend_zval_value_name(name));
+			return;
+		}
+		zv::Val subjectType;
+		if (zend_string_equals(Z_STR_P(name), Z_STR(captures[0]))) {
+			zv::Args args{&captures[1], &captures[2]};
+			subjectType = Z_TYPE(captures[3]) == IS_TRUE
+				? pt_type_combinator_call(PT_LC("intersect"), 2, args)
+				: pt_type_combinator_call(PT_LC("remove"), 2, args);
+		} else {
+			subjectType = subjectTypeOf(name, &captures[4], Z_TYPE(captures[5]) == IS_ARRAY ? &captures[5] : NULL);
+		}
+		if (UNEXPECTED(subjectType.isUndef())) return;
+		subjectType.intoReturnValue(return_value);
+	}
+
 	/* the `static function (Type $type, callable $traverse) use ($getSubjectType)`
 	 * of resolveInType() — state0 the callable, state1 the passed-arguments
 	 * table that stands in for it (NULL = call the callable) */
@@ -349,33 +428,29 @@ private:
 		if (Z_TYPE_P(type) == IS_OBJECT && instanceof_function(Z_OBJCE_P(type), pt_ce_conditional_type_for_parameter)) {
 			zval *name = slot(Z_OBJ_P(type), slots::parameterName, "parameterName");
 			if (UNEXPECTED(name == NULL)) return;
-			zv::Val subjectType;
-			if (passedArgs != NULL && Z_TYPE_P(passedArgs) == IS_ARRAY) {
-				/* $this->passedArgs[$parameterName] ?? null */
-				zval *found = zend_symtable_find(Z_ARRVAL_P(passedArgs), Z_STR_P(name));
-				subjectType = found != NULL ? zv::Val::copyOf(zv::Ref(found).deref()) : zv::Val::null();
-			} else {
-				subjectType = pt_type_call_callable(getSubjectType, 1, name);
-				if (UNEXPECTED(subjectType.isUndef())) return;
-			}
+			zv::Val subjectType = subjectTypeOf(name, getSubjectType, passedArgs);
+			if (UNEXPECTED(subjectType.isUndef())) return;
 			if (!subjectType.isNull()) {
-				/* traverse children first, then convert — avoids an infinite loop
-				 * when the subject contains a ConditionalTypeForParameter with a
-				 * colliding parameter name */
-				zval traversed;
-				if (UNEXPECTED(!pt_type_traverser_traverse(&traversed, traverse, type))) return;
-				zv::Val traversedHold = zv::Val::adopt(traversed);
-				if (Z_TYPE(traversed) == IS_OBJECT && instanceof_function(Z_OBJCE(traversed), pt_ce_conditional_type_for_parameter)) {
-					zv::Val conditional = ConditionalTypeForParameter(Z_OBJ(traversed)).toConditional(subjectType.raw());
-					if (UNEXPECTED(conditional.isUndef())) return;
-					conditional.intoReturnValue(return_value);
-					return;
-				}
-				traversedHold.intoReturnValue(return_value);
+				/* resolve the branches first, then convert — avoids an infinite
+				 * loop when the subject contains a ConditionalTypeForParameter
+				 * with a colliding parameter name */
+				zv::Val conditional = ConditionalTypeForParameter(Z_OBJ_P(type)).resolveWithSubject(subjectType.raw(), getSubjectType, passedArgs);
+				if (UNEXPECTED(conditional.isUndef())) return;
+				conditional.intoReturnValue(return_value);
 				return;
 			}
 		}
 		(void) pt_type_traverser_traverse(return_value, traverse, type);
+	}
+
+	/* self::resolveInType($branch, $getNarrowedSubjectType($conditionHolds))
+	 * of resolveWithSubject(); UNDEF = pending exception */
+	static zv::Val resolveInNarrowed(zval *branch, zval *name, zval *subject, zval *target, bool conditionHolds, zval *getSubjectType, zval *passedArgs)
+	{
+		zval null;
+		ZVAL_NULL(&null);
+		zv::Val lookup = pt_native_closure(&narrowedSubjectTypeBody, name, subject, target, conditionHolds, getSubjectType != NULL ? getSubjectType : &null, passedArgs != NULL ? passedArgs : &null);
+		return resolveInType(branch, lookup.raw(), NULL);
 	}
 
 	static zv::Val copyOfSlot(zval *p)
@@ -528,6 +603,19 @@ PT_MINIT_REGISTRATION(pt_register_conditional_type_for_parameter)
 			RETURN_THROWS();
 		}
 		PT_RETURN_VAL(ConditionalTypeForParameter::resolveInType(type, getSubjectType, NULL));
+	});
+
+	cls.method(sigs::resolveWithSubject, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *subject, *getSubjectType;
+		ZEND_PARSE_PARAMETERS_START(2, 2)
+			Z_PARAM_OBJECT_OF_CLASS(subject, pt_class(PT_CLASS_TYPE))
+			Z_PARAM_ZVAL(getSubjectType)
+		ZEND_PARSE_PARAMETERS_END();
+		if (UNEXPECTED(!zend_is_callable(getSubjectType, 0, NULL))) {
+			zend_argument_type_error(2, "must be of type callable, %s given", zend_zval_value_name(getSubjectType));
+			RETURN_THROWS();
+		}
+		PT_RETURN_VAL(PT_THIS.resolveWithSubject(subject, getSubjectType, NULL));
 	});
 
 	cls.method<&ConditionalTypeForParameter::toConditional, zp::Obj>(sigs::toConditional);

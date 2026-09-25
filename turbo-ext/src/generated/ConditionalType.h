@@ -80,11 +80,13 @@ inline constexpr char strings[] =
 	"traverseSimultaneously\0" /* 357 */
 	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 380 */
 	"toPhpDocNode\0" /* 419 */
-	"getNormalizedIf\0" /* 432 */
-	"getNormalizedElse\0" /* 448 */
-	"branch\0" /* 466 */
-	"conditionHolds\0" /* 473 */
-	"narrowSubjectIn"; /* 488 */
+	"PHPStan\\Type\\ConditionalType\0" /* 432 */
+	"withNormalizedBranches\0" /* 461 */
+	"getNormalizedIf\0" /* 484 */
+	"getNormalizedElse\0" /* 500 */
+	"branch\0" /* 518 */
+	"conditionHolds\0" /* 525 */
+	"narrowSubjectIn"; /* 540 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 8), /* __construct $subject */
 	reg::packed(26, 0, 8), /* __construct $target */
@@ -113,10 +115,15 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(339, MAY_BE_CALLABLE), /* traverseSimultaneously $cb */
 	reg::packed(61, 0, 8), /* traverseSimultaneously return */
 	reg::packed(61, 0, 380), /* toPhpDocNode return */
+	reg::packed(0, 0, 8), /* withNormalizedBranches $subject */
+	reg::packed(26, 0, 8), /* withNormalizedBranches $target */
+	reg::packed(33, 0, 8), /* withNormalizedBranches $if */
+	reg::packed(36, 0, 8), /* withNormalizedBranches $else */
+	reg::packed(61, 0, 432), /* withNormalizedBranches return */
 	reg::packed(61, 0, 8), /* getNormalizedIf return */
 	reg::packed(61, 0, 8), /* getNormalizedElse return */
-	reg::packed(466, 0, 8), /* narrowSubjectIn $branch */
-	reg::packed(473, MAY_BE_BOOL), /* narrowSubjectIn $conditionHolds */
+	reg::packed(518, 0, 8), /* narrowSubjectIn $branch */
+	reg::packed(525, MAY_BE_BOOL), /* narrowSubjectIn $conditionHolds */
 	reg::packed(61, 0, 8), /* narrowSubjectIn return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -140,9 +147,10 @@ inline constexpr sigtab::Sig getResult = { { 329 /* getResult */, 0, 20, 0, 20, 
 inline constexpr sigtab::Sig traverse = { { 342 /* traverse */, 1, 21, 1, 22, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig traverseSimultaneously = { { 357 /* traverseSimultaneously */, 2, 23, 2, 25, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig toPhpDocNode = { { 419 /* toPhpDocNode */, 0, 26, 0, 26, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getNormalizedIf = { { 432 /* getNormalizedIf */, 0, 27, 0, 27, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getNormalizedElse = { { 448 /* getNormalizedElse */, 0, 28, 0, 28, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig narrowSubjectIn = { { 488 /* narrowSubjectIn */, 2, 29, 2, 31, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig withNormalizedBranches = { { 461 /* withNormalizedBranches */, 4, 27, 4, 31, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getNormalizedIf = { { 484 /* getNormalizedIf */, 0, 32, 0, 32, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getNormalizedElse = { { 500 /* getNormalizedElse */, 0, 33, 0, 33, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig narrowSubjectIn = { { 540 /* narrowSubjectIn */, 2, 34, 2, 36, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::ConditionalType

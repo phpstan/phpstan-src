@@ -5182,6 +5182,47 @@ $lateOthers = static fn (array $subjects): array => [
 		$subjects['condIntIsInt']->equals($subjects['condIntIsIntNegated']),
 		$subjects['condParamIsInt']->equals($subjects['condParamIsIntNegated']),
 	]);
+	// a traversed conditional keeps the mapped normalized branches as its
+	// own: a chain of conditions on the same template type, narrowed level
+	// by level, then resolved
+	$condChain = new \PHPStan\Type\ConditionalType($lateTKey, new \PHPStan\Type\Constant\ConstantIntegerType(1), new \PHPStan\Type\StringType(), new \PHPStan\Type\ConditionalType($lateTKey, new \PHPStan\Type\IntegerType(), $lateTKey, new \PHPStan\Type\ConditionalType($lateTKey, new \PHPStan\Type\Constant\ConstantStringType('a'), new \PHPStan\Type\BooleanType(), $lateTKey, false), false), false);
+	$toTKeyValue = static fn (\PHPStan\Type\Type $value): callable => static function (\PHPStan\Type\Type $t, callable $traverse) use ($value): \PHPStan\Type\Type {
+		return $t instanceof \PHPStan\Type\Generic\TemplateType && !$t instanceof \PHPStan\Type\NarrowedSubjectType && $t->getName() === 'TKey' ? $value : $traverse($t);
+	};
+	foreach (['int1' => new \PHPStan\Type\Constant\ConstantIntegerType(1), 'int2' => new \PHPStan\Type\Constant\ConstantIntegerType(2), 'stringA' => new \PHPStan\Type\Constant\ConstantStringType('a'), 'stringB' => new \PHPStan\Type\Constant\ConstantStringType('b'), 'union' => $others['union']] as $valueName => $value) {
+		$r["cond chain resolve $valueName"] = $attempt(static function () use ($condChain, $toTKeyValue, $value): array {
+			$resolved = \PHPStan\Type\TypeTraverser::map($condChain, $toTKeyValue($value));
+
+			return [$resolved, $resolved instanceof \PHPStan\Type\LateResolvableType ? $resolved->resolve() : $resolved, \PHPStan\Type\TypeUtils::resolveLateResolvableTypes($resolved)];
+		});
+	}
+	$r['cond chain traverse'] = $attempt(static function () use ($condChain, $toInt, $resolveTemplates): array {
+		$traversed = $condChain->traverse($resolveTemplates);
+
+		return [$traversed, $traversed->getIf(), $traversed->getElse(), $traversed->traverse(static fn (\PHPStan\Type\Type $t): \PHPStan\Type\Type => $t) === $traversed, $condChain->traverse($toInt), $condChain->traverseSimultaneously($condChain, static fn ($a, $b) => $b)];
+	});
+	// nested conditions on the same parameter resolved with the subject
+	// narrowed by the enclosing condition, conditions on other parameters
+	// with the outer lookup
+	$condParamNested = new \PHPStan\Type\ConditionalTypeForParameter('$x', new \PHPStan\Type\IntegerType(), new \PHPStan\Type\ConditionalTypeForParameter('$x', new \PHPStan\Type\Constant\ConstantIntegerType(1), new \PHPStan\Type\Constant\ConstantStringType('one'), new \PHPStan\Type\Constant\ConstantStringType('int'), false), new \PHPStan\Type\ConditionalTypeForParameter('$x', new \PHPStan\Type\StringType(), new \PHPStan\Type\ConditionalTypeForParameter('$y', new \PHPStan\Type\NullType(), new \PHPStan\Type\Constant\ConstantStringType('string-y-null'), new \PHPStan\Type\Constant\ConstantStringType('string-y'), false), new \PHPStan\Type\Constant\ConstantStringType('other'), false), false);
+	$condParamNestedNegated = new \PHPStan\Type\ConditionalTypeForParameter('$x', new \PHPStan\Type\NullType(), new \PHPStan\Type\ConditionalTypeForParameter('$x', new \PHPStan\Type\StringType(), new \PHPStan\Type\Constant\ConstantStringType('string'), new \PHPStan\Type\Constant\ConstantStringType('not-string'), false), new \PHPStan\Type\Constant\ConstantStringType('null'), true);
+	$condParamSubjects = [
+		'int|string|null' => new \PHPStan\Type\UnionType([new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType(), new \PHPStan\Type\NullType()]),
+		'1|string' => new \PHPStan\Type\UnionType([new \PHPStan\Type\Constant\ConstantIntegerType(1), new \PHPStan\Type\StringType()]),
+		'string|null' => new \PHPStan\Type\UnionType([new \PHPStan\Type\StringType(), new \PHPStan\Type\NullType()]),
+		'float' => new \PHPStan\Type\FloatType(),
+	];
+	foreach (['nested' => $condParamNested, 'nestedNegated' => $condParamNestedNegated] as $condName => $cond) {
+		foreach ($condParamSubjects as $subjectName => $subjectType) {
+			foreach (['y null' => new \PHPStan\Type\NullType(), 'y int' => new \PHPStan\Type\IntegerType(), 'y unknown' => null] as $yName => $yType) {
+				$r["cond param $condName resolveInType $subjectName $yName"] = $attempt(static function () use ($cond, $subjectType, $yType): array {
+					$resolved = \PHPStan\Type\ConditionalTypeForParameter::resolveInType(new \PHPStan\Type\UnionType([$cond, new \PHPStan\Type\ArrayType(new \PHPStan\Type\IntegerType(), $cond)]), static fn (string $name): ?\PHPStan\Type\Type => $name === '$x' ? $subjectType : ($name === '$y' ? $yType : null));
+
+					return [$resolved, \PHPStan\Type\TypeUtils::resolveLateResolvableTypes($resolved)];
+				});
+			}
+		}
+	}
 	// the observation-pass marker
 	foreach (['unresolvedNull', 'unresolvedInt', 'unresolvedIntSiteB', 'unresolvedDefault', 'unresolvedArrayOfT', 'unresolvedEnum'] as $name) {
 		$marker = $subjects[$name];

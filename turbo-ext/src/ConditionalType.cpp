@@ -230,6 +230,21 @@ public:
 		return pt_type_new(PT_CLASS_CONDITIONAL_TYPE_NODE, 5, args);
 	}
 
+	/* new self() whose normalized branches are the branches passed in: they
+	 * are images of normalized branches, so the references to the subject in
+	 * them have already been narrowed and follow whatever the subject maps
+	 * to; UNDEF = pending exception */
+	zv::Val withNormalizedBranches(zval *subject, zval *target, zval *ifType, zval *elseType) const
+	{
+		bool isNegated;
+		if (UNEXPECTED(!negated(isNegated))) return zv::Val();
+		zv::Val type = create(subject, target, ifType, elseType, isNegated);
+		if (UNEXPECTED(type.isUndef())) return zv::Val();
+		pt_write_slot(Z_OBJ_P(type.raw()), slots::normalizedIf, ifType);
+		pt_write_slot(Z_OBJ_P(type.raw()), slots::normalizedElse, elseType);
+		return type;
+	}
+
 	/* $this->normalizedIf ??= $this->narrowSubjectIn($this->if, !$this->negated) */
 	zv::Val getNormalizedIf() const { return normalized(slots::normalizedIf, slots::if_, "if", true); }
 
@@ -390,9 +405,7 @@ private:
 		if (pt_type_same_object(s, subject.raw()) && pt_type_same_object(t, target.raw()) && pt_type_same_object(normalizedIf.raw(), ifType.raw()) && pt_type_same_object(normalizedElse.raw(), elseType.raw())) {
 			return thisValue();
 		}
-		bool isNegated;
-		if (UNEXPECTED(!negated(isNegated))) return zv::Val();
-		return create(subject.raw(), target.raw(), ifType.raw(), elseType.raw(), isNegated);
+		return withNormalizedBranches(subject.raw(), target.raw(), ifType.raw(), elseType.raw());
 	}
 };
 
@@ -473,6 +486,8 @@ PT_MINIT_REGISTRATION(pt_register_conditional_type)
 	});
 
 	cls.method<&ConditionalType::toPhpDocNode>(sigs::toPhpDocNode);
+
+	cls.method<&ConditionalType::withNormalizedBranches, zp::TypeObj, zp::TypeObj, zp::TypeObj, zp::TypeObj>(sigs::withNormalizedBranches);
 
 	cls.method<&ConditionalType::getNormalizedIf>(sigs::getNormalizedIf);
 	cls.method<&ConditionalType::getNormalizedElse>(sigs::getNormalizedElse);

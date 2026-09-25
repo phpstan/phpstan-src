@@ -15,6 +15,6 @@ interface ExportedNode
 	/**
 	 * @param mixed[] $data
 	 */
-	public static function decode(array $data): self;
+	public static function decode(array $data, ExportedNodeDecoder $decoder): self;
 
 }

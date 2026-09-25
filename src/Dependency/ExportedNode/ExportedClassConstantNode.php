@@ -5,6 +5,7 @@ namespace PHPStan\Dependency\ExportedNode;
 use JsonSerializable;
 use Override;
 use PHPStan\Dependency\ExportedNode;
+use PHPStan\Dependency\ExportedNodeDecoder;
 use PHPStan\ShouldNotHappenException;
 use ReturnTypeWillChange;
 use function array_map;
@@ -59,16 +60,16 @@ final class ExportedClassConstantNode implements ExportedNode, JsonSerializable
 	/**
 	 * @param mixed[] $data
 	 */
-	public static function decode(array $data): self
+	public static function decode(array $data, ExportedNodeDecoder $decoder): self
 	{
 		return new self(
 			$data['name'],
 			$data['value'],
-			array_map(static function (array $attributeData): ExportedAttributeNode {
+			array_map(static function (array $attributeData) use ($decoder): ExportedAttributeNode {
 				if ($attributeData['type'] !== ExportedAttributeNode::class) {
 					throw new ShouldNotHappenException();
 				}
-				return ExportedAttributeNode::decode($attributeData['data']);
+				return ExportedAttributeNode::decode($attributeData['data'], $decoder);
 			}, $data['attributes']),
 		);
 	}

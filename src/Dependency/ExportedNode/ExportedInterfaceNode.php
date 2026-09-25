@@ -5,6 +5,7 @@ namespace PHPStan\Dependency\ExportedNode;
 use JsonSerializable;
 use Override;
 use PHPStan\Dependency\ExportedNode;
+use PHPStan\Dependency\ExportedNodeDecoder;
 use PHPStan\Dependency\RootExportedNode;
 use ReturnTypeWillChange;
 use function array_map;
@@ -89,16 +90,16 @@ final class ExportedInterfaceNode implements RootExportedNode, JsonSerializable
 	/**
 	 * @param mixed[] $data
 	 */
-	public static function decode(array $data): self
+	public static function decode(array $data, ExportedNodeDecoder $decoder): self
 	{
 		return new self(
 			$data['name'],
-			$data['phpDoc'] !== null ? ExportedPhpDocNode::decode($data['phpDoc']['data']) : null,
+			$data['phpDoc'] !== null ? ExportedPhpDocNode::decode($data['phpDoc']['data'], $decoder) : null,
 			$data['extends'],
-			array_map(static function (array $node): ExportedNode {
+			array_map(static function (array $node) use ($decoder): ExportedNode {
 				$nodeType = $node['type'];
 
-				return $nodeType::decode($node['data']);
+				return $nodeType::decode($node['data'], $decoder);
 			}, $data['statements']),
 		);
 	}

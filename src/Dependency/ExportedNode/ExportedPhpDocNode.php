@@ -4,17 +4,19 @@ namespace PHPStan\Dependency\ExportedNode;
 
 use JsonSerializable;
 use Override;
+use PHPStan\Analyser\NamespaceUses;
 use PHPStan\Dependency\ExportedNode;
+use PHPStan\Dependency\ExportedNodeDecoder;
 use ReturnTypeWillChange;
 
 final class ExportedPhpDocNode implements ExportedNode, JsonSerializable
 {
 
 	/**
-	 * @param array<string, string> $uses alias(string) => fullName(string)
-	 * @param array<string, string> $constUses alias(string) => fullName(string)
+	 * The NamespaceUses is shared by the PHPDocs written under the same use statements, so the
+	 * result cache stores the imports of a file once instead of once per PHPDoc.
 	 */
-	public function __construct(private string $phpDocString, private ?string $namespace, private array $uses, private array $constUses)
+	public function __construct(private string $phpDocString, private NamespaceUses $namespaceUses)
 	{
 	}
 
@@ -25,9 +27,7 @@ final class ExportedPhpDocNode implements ExportedNode, JsonSerializable
 		}
 
 		return $this->phpDocString === $node->phpDocString
-			&& $this->namespace === $node->namespace
-			&& $this->uses === $node->uses
-			&& $this->constUses === $node->constUses;
+			&& $this->namespaceUses->equals($node->namespaceUses);
 	}
 
 	/**
@@ -41,9 +41,9 @@ final class ExportedPhpDocNode implements ExportedNode, JsonSerializable
 			'type' => self::class,
 			'data' => [
 				'phpDocString' => $this->phpDocString,
-				'namespace' => $this->namespace,
-				'uses' => $this->uses,
-				'constUses' => $this->constUses,
+				'namespace' => $this->namespaceUses->getNamespace(),
+				'uses' => $this->namespaceUses->getUses(),
+				'constUses' => $this->namespaceUses->getConstUses(),
 			],
 		];
 	}
@@ -53,15 +53,15 @@ final class ExportedPhpDocNode implements ExportedNode, JsonSerializable
 	 */
 	public static function __set_state(array $properties): self
 	{
-		return new self($properties['phpDocString'], $properties['namespace'], $properties['uses'], $properties['constUses'] ?? []);
+		return new self($properties['phpDocString'], $properties['namespaceUses']);
 	}
 
 	/**
 	 * @param mixed[] $data
 	 */
-	public static function decode(array $data): self
+	public static function decode(array $data, ExportedNodeDecoder $decoder): self
 	{
-		return new self($data['phpDocString'], $data['namespace'], $data['uses'], $data['constUses'] ?? []);
+		return new self($data['phpDocString'], $decoder->getNamespaceUses($data['namespace'], $data['uses'], $data['constUses']));
 	}
 
 }

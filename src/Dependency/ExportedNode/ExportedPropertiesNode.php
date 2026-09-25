@@ -5,6 +5,7 @@ namespace PHPStan\Dependency\ExportedNode;
 use JsonSerializable;
 use Override;
 use PHPStan\Dependency\ExportedNode;
+use PHPStan\Dependency\ExportedNodeDecoder;
 use PHPStan\ShouldNotHappenException;
 use ReturnTypeWillChange;
 use function array_map;
@@ -126,11 +127,11 @@ final class ExportedPropertiesNode implements JsonSerializable, ExportedNode
 	/**
 	 * @param mixed[] $data
 	 */
-	public static function decode(array $data): self
+	public static function decode(array $data, ExportedNodeDecoder $decoder): self
 	{
 		return new self(
 			$data['names'],
-			$data['phpDoc'] !== null ? ExportedPhpDocNode::decode($data['phpDoc']['data']) : null,
+			$data['phpDoc'] !== null ? ExportedPhpDocNode::decode($data['phpDoc']['data'], $decoder) : null,
 			$data['type'],
 			$data['public'],
 			$data['private'],
@@ -142,17 +143,17 @@ final class ExportedPropertiesNode implements JsonSerializable, ExportedNode
 			$data['protectedSet'],
 			$data['privateSet'],
 			$data['virtual'],
-			array_map(static function (array $attributeData): ExportedAttributeNode {
+			array_map(static function (array $attributeData) use ($decoder): ExportedAttributeNode {
 				if ($attributeData['type'] !== ExportedAttributeNode::class) {
 					throw new ShouldNotHappenException();
 				}
-				return ExportedAttributeNode::decode($attributeData['data']);
+				return ExportedAttributeNode::decode($attributeData['data'], $decoder);
 			}, $data['attributes']),
-			array_map(static function (array $attributeData): ExportedPropertyHookNode {
+			array_map(static function (array $attributeData) use ($decoder): ExportedPropertyHookNode {
 				if ($attributeData['type'] !== ExportedPropertyHookNode::class) {
 					throw new ShouldNotHappenException();
 				}
-				return ExportedPropertyHookNode::decode($attributeData['data']);
+				return ExportedPropertyHookNode::decode($attributeData['data'], $decoder);
 			}, $data['hooks']),
 		);
 	}

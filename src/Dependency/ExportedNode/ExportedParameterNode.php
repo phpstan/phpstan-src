@@ -5,6 +5,7 @@ namespace PHPStan\Dependency\ExportedNode;
 use JsonSerializable;
 use Override;
 use PHPStan\Dependency\ExportedNode;
+use PHPStan\Dependency\ExportedNodeDecoder;
 use PHPStan\ShouldNotHappenException;
 use ReturnTypeWillChange;
 use function array_map;
@@ -107,7 +108,7 @@ final class ExportedParameterNode implements ExportedNode, JsonSerializable
 	/**
 	 * @param mixed[] $data
 	 */
-	public static function decode(array $data): self
+	public static function decode(array $data, ExportedNodeDecoder $decoder): self
 	{
 		return new self(
 			$data['name'],
@@ -115,13 +116,13 @@ final class ExportedParameterNode implements ExportedNode, JsonSerializable
 			$data['byRef'],
 			$data['variadic'],
 			$data['hasDefault'],
-			array_map(static function (array $attributeData): ExportedAttributeNode {
+			array_map(static function (array $attributeData) use ($decoder): ExportedAttributeNode {
 				if ($attributeData['type'] !== ExportedAttributeNode::class) {
 					throw new ShouldNotHappenException();
 				}
-				return ExportedAttributeNode::decode($attributeData['data']);
+				return ExportedAttributeNode::decode($attributeData['data'], $decoder);
 			}, $data['attributes']),
-			isset($data['phpDoc']) ? ExportedPhpDocNode::decode($data['phpDoc']['data']) : null,
+			isset($data['phpDoc']) ? ExportedPhpDocNode::decode($data['phpDoc']['data'], $decoder) : null,
 			$data['flags'] ?? 0,
 		);
 	}

@@ -5,6 +5,7 @@ namespace PHPStan\Dependency\ExportedNode;
 use JsonSerializable;
 use Override;
 use PHPStan\Dependency\ExportedNode;
+use PHPStan\Dependency\ExportedNodeDecoder;
 use PHPStan\Dependency\RootExportedNode;
 use PHPStan\ShouldNotHappenException;
 use ReturnTypeWillChange;
@@ -124,28 +125,28 @@ final class ExportedTraitNode implements RootExportedNode, JsonSerializable
 	/**
 	 * @param mixed[] $data
 	 */
-	public static function decode(array $data): self
+	public static function decode(array $data, ExportedNodeDecoder $decoder): self
 	{
 		return new self(
 			$data['name'],
-			$data['phpDoc'] !== null ? ExportedPhpDocNode::decode($data['phpDoc']['data']) : null,
+			$data['phpDoc'] !== null ? ExportedPhpDocNode::decode($data['phpDoc']['data'], $decoder) : null,
 			$data['usedTraits'],
-			array_map(static function (array $traitUseAdaptationData): ExportedTraitUseAdaptation {
+			array_map(static function (array $traitUseAdaptationData) use ($decoder): ExportedTraitUseAdaptation {
 				if ($traitUseAdaptationData['type'] !== ExportedTraitUseAdaptation::class) {
 					throw new ShouldNotHappenException();
 				}
-				return ExportedTraitUseAdaptation::decode($traitUseAdaptationData['data']);
+				return ExportedTraitUseAdaptation::decode($traitUseAdaptationData['data'], $decoder);
 			}, $data['traitUseAdaptations']),
-			array_map(static function (array $node): ExportedNode {
+			array_map(static function (array $node) use ($decoder): ExportedNode {
 				$nodeType = $node['type'];
 
-				return $nodeType::decode($node['data']);
+				return $nodeType::decode($node['data'], $decoder);
 			}, $data['statements']),
-			array_map(static function (array $attributeData): ExportedAttributeNode {
+			array_map(static function (array $attributeData) use ($decoder): ExportedAttributeNode {
 				if ($attributeData['type'] !== ExportedAttributeNode::class) {
 					throw new ShouldNotHappenException();
 				}
-				return ExportedAttributeNode::decode($attributeData['data']);
+				return ExportedAttributeNode::decode($attributeData['data'], $decoder);
 			}, $data['attributes']),
 		);
 	}

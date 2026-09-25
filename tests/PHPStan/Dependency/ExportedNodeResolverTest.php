@@ -2,11 +2,18 @@
 
 namespace PHPStan\Dependency;
 
+use JsonException;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\Parser;
 use PHPStan\Reflection\ReflectionProvider\DummyReflectionProvider;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
+use function array_map;
+use function json_decode;
+use function json_encode;
+use function serialize;
+use function substr_count;
+use const JSON_THROW_ON_ERROR;
 
 final class ExportedNodeResolverTest extends PHPStanTestCase
 {
@@ -49,6 +56,42 @@ final class ExportedNodeResolverTest extends PHPStanTestCase
 
 		$this->assertNotSame([], $nodes);
 		$this->assertGreaterThan(0, $reflectionProvider->hasClassCallCount);
+	}
+
+	/**
+	 * @throws JsonException
+	 */
+	public function testUsesAreStoredOncePerFile(): void
+	{
+		$reflectionProvider = new CountingReflectionProvider(new DummyReflectionProvider());
+		$nodes = $this->fetchNodes(__DIR__ . '/data/exported-phpdoc-namespace-uses.php', $reflectionProvider);
+		$this->assertCount(2, $nodes);
+		$this->assertUsesStoredOnce($nodes);
+
+		// a parallel worker sends the nodes as JSON, which repeats the uses for every PHPDoc
+		$decoder = new ExportedNodeDecoder();
+		$decodedNodes = array_map(static function (array $node) use ($decoder): ExportedNode {
+			/** @var class-string<RootExportedNode> $class */
+			$class = $node['type'];
+
+			return $class::decode($node['data'], $decoder);
+		}, json_decode(json_encode($nodes, JSON_THROW_ON_ERROR), true, flags: JSON_THROW_ON_ERROR));
+		$this->assertCount(2, $decodedNodes);
+		foreach ($nodes as $i => $node) {
+			$this->assertTrue($node->equals($decodedNodes[$i]));
+		}
+		$this->assertUsesStoredOnce($decodedNodes);
+	}
+
+	/**
+	 * @param ExportedNode[] $nodes
+	 */
+	private function assertUsesStoredOnce(array $nodes): void
+	{
+		$serialized = serialize($nodes);
+		$this->assertSame(1, substr_count($serialized, 'ExportedPhpDocNamespaceUses\\Models\\ModelOne'));
+		$this->assertSame(1, substr_count($serialized, 'ExportedPhpDocNamespaceUses\\Models\\ModelTwo'));
+		$this->assertSame(1, substr_count($serialized, 'ExportedPhpDocNamespaceUses\\Models\\SOME_CONSTANT'));
 	}
 
 }

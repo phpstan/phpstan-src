@@ -153,7 +153,7 @@ final class ConditionalType implements CompoundType, LateResolvableType
 			return $this;
 		}
 
-		return new self($subject, $target, $if, $else, $this->negated);
+		return $this->withNormalizedBranches($subject, $target, $if, $else);
 	}
 
 	public function traverseSimultaneously(Type $right, callable $cb): Type
@@ -176,7 +176,7 @@ final class ConditionalType implements CompoundType, LateResolvableType
 			return $this;
 		}
 
-		return new self($subject, $target, $if, $else, $this->negated);
+		return $this->withNormalizedBranches($subject, $target, $if, $else);
 	}
 
 	public function toPhpDocNode(): TypeNode
@@ -188,6 +188,21 @@ final class ConditionalType implements CompoundType, LateResolvableType
 			$this->else->toPhpDocNode(),
 			$this->negated,
 		);
+	}
+
+	/**
+	 * The branches passed in are images of normalized branches, so the references to the
+	 * subject in them have already been narrowed, and follow whatever the subject maps to.
+	 * Normalizing them again against the mapped subject would narrow unrelated types that
+	 * happen to equal it, and re-traverse every conditional type nested in the branches.
+	 */
+	private function withNormalizedBranches(Type $subject, Type $target, Type $if, Type $else): self
+	{
+		$type = new self($subject, $target, $if, $else, $this->negated);
+		$type->normalizedIf = $if;
+		$type->normalizedElse = $else;
+
+		return $type;
 	}
 
 	private function getNormalizedIf(): Type

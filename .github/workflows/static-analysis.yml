@@ -66,6 +66,14 @@ jobs:
         with:
           php-version: "${{ matrix.php-version }}"
 
+      # temporary, for a throwaway draft PR: why do ubuntu 8.2+ jobs spawn workers?
+      - name: "Diagnose worker mechanism"
+        shell: bash
+        run: |
+          php bin/phpstan diagnose || true
+          php --ini
+          php -r 'var_dump(["pcntl_fork" => function_exists("pcntl_fork"), "opcache_get_status" => function_exists("opcache_get_status") ? opcache_get_status(false) : "n/a", "opcache.enable_cli" => ini_get("opcache.enable_cli"), "opcache.jit" => ini_get("opcache.jit")]);'
+
       # separate limit since some PHP8.1 only behavior is less efficient
       - name: "PHPStan"
         run: "php bin/phpstan clear-result-cache -q && php -d memory_limit=599M bin/phpstan -v"

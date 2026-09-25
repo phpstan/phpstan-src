@@ -9,6 +9,7 @@ use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Foreach_;
+use PHPStan\Analyser\NamespaceUsesTracker;
 use PHPStan\Analyser\Scope;
 use PHPStan\Broker\ClassNotFoundException;
 use PHPStan\Broker\FunctionNotFoundException;
@@ -100,7 +101,7 @@ final class DependencyResolver
 		Node\Expr\FuncCall::class,
 	];
 
-	/** Node classes ExportedNameScopeTracker::enterNode() reacts to */
+	/** Node classes NamespaceUsesTracker::enterNode() reacts to */
 	private const NAME_SCOPE_NODE_TYPES = [
 		Node\Stmt\Namespace_::class,
 		Node\Stmt\Use_::class,
@@ -113,7 +114,7 @@ final class DependencyResolver
 	/** @var array<class-string, int> */
 	private array $nodeProfiles = [];
 
-	private ExportedNameScopeTracker $nameScopeTracker;
+	private NamespaceUsesTracker $nameScopeTracker;
 
 	private ?string $nameScopeFile = null;
 
@@ -125,7 +126,7 @@ final class DependencyResolver
 		private FileTypeMapper $fileTypeMapper,
 	)
 	{
-		$this->nameScopeTracker = new ExportedNameScopeTracker();
+		$this->nameScopeTracker = new NamespaceUsesTracker();
 	}
 
 	/**
@@ -164,7 +165,7 @@ final class DependencyResolver
 		}
 
 		$exportedNode = ($nodeProfile & self::PROFILE_EXPORT) !== 0
-			? $this->exportedNodeResolver->resolve($node, $this->nameScopeTracker->getNameScope())
+			? $this->exportedNodeResolver->resolve($node, $this->nameScopeTracker->getNamespaceUses())
 			: null;
 
 		if ($dependenciesReflections === [] && $dependenciesFilePaths === [] && $exportedNode === null) {

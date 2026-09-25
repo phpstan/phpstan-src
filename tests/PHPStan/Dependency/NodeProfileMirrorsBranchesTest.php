@@ -41,7 +41,7 @@ final class NodeProfileMirrorsBranchesTest extends PHPStanTestCase
 		];
 		yield 'the PHPDoc name scope' => [
 			'NAME_SCOPE_NODE_TYPES',
-			__DIR__ . '/../../../src/Dependency/ExportedNameScopeTracker.php',
+			__DIR__ . '/../../../src/Analyser/NamespaceUsesTracker.php',
 			'enterNode',
 		];
 	}

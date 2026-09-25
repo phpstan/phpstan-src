@@ -7,7 +7,7 @@
   "rangeStrategy": "update-lockfile",
   "rebaseWhen": "conflicted",
   "baseBranches": [
-    "2.2.x"
+    "2.3.x"
   ],
   "packageRules": [
     {
@@ -22,7 +22,7 @@
       ],
       "enabled": true,
       "matchBaseBranches": [
-        "2.1.x"
+        "2.3.x"
       ]
     },
     {

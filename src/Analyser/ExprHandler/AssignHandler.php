@@ -3012,11 +3012,31 @@ final class AssignHandler implements ExprHandler
 			$nativeType = $nativeType->getOffsetValueType($nativeOffset);
 		}
 		$values = $type->getFiniteTypes();
-		if (count($values) !== 1 || !$values[0]->equals($rhs->getType())) {
+		if (count($values) !== 1 || !$values[0]->equals($rhs->getType()) || self::containsFloatZero($values[0])) {
 			return null;
 		}
 		$nativeValues = $nativeType->getFiniteTypes();
 		return count($nativeValues) === 1 && $nativeValues[0]->equals($rhs->getNativeType()) ? $rhs->getType() : null;
+	}
+
+	/**
+	 * 0.0 and -0.0 are identical (`===`) but distinguishable (`(string)`, `fdiv()`),
+	 * and `$f === 0.0` narrows $f to 0.0 while it may still hold -0.0, so a type
+	 * holding a float zero cannot prove that assigning it again changes nothing.
+	 */
+	private static function containsFloatZero(Type $type): bool
+	{
+		if (in_array(0.0, $type->getConstantScalarValues(), true)) {
+			return true;
+		}
+		foreach ($type->getConstantArrays() as $array) {
+			foreach ($array->getValueTypes() as $valueType) {
+				if (self::containsFloatZero($valueType)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 }

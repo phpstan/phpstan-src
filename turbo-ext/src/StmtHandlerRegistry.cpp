@@ -65,6 +65,14 @@ namespace phpstanturbo {
 class StmtHandlerRegistry
 {
 public:
+	/* Mirrors clearCache(): self::$stmtHandlersByClass = [] (ContainerFactory drops the
+	 * memo whenever another container takes over, as a freed container's
+	 * spl_object_id() is handed out again) */
+	static void clearCache()
+	{
+		zv::Ref(handlersByClassSlot()).assign(zv::Val(zv::Arr::empty()));
+	}
+
 	/* Mirrors resolve(): the handler or null; UNDEF = pending exception */
 	static zv::Val resolve(zend_object *stmt, zval *container)
 	{
@@ -170,6 +178,11 @@ PT_MINIT_REGISTRATION(pt_register_stmt_handler_registry)
 	reg::Class cls("PHPStan\\Analyser\\StmtHandlerRegistry");
 	ptdecl::StmtHandlerRegistry::declareClass(cls);
 	ptdecl::StmtHandlerRegistry::declareProperties(cls);
+
+	cls.method(sigs::clearCache, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		StmtHandlerRegistry::clearCache();
+	});
 
 	cls.method(sigs::resolve, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *stmt, *container;

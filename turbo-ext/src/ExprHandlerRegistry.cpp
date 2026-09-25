@@ -201,6 +201,14 @@ namespace phpstanturbo {
 class ExprHandlerRegistry
 {
 public:
+	/* Mirrors clearCache(): self::$exprHandlersByClass = [] (ContainerFactory drops the
+	 * memo whenever another container takes over, as a freed container's
+	 * spl_object_id() is handed out again) */
+	static void clearCache()
+	{
+		zv::Ref(handlersByClassSlot()).assign(zv::Val(zv::Arr::empty()));
+	}
+
 	/* Mirrors resolve(): the handler or null; UNDEF = pending exception */
 	static zv::Val resolve(zend_object *expr, zval *container)
 	{
@@ -282,6 +290,11 @@ PT_MINIT_REGISTRATION(pt_register_expr_handler_registry)
 	reg::Class cls("PHPStan\\Analyser\\ExprHandlerRegistry");
 	ptdecl::ExprHandlerRegistry::declareClass(cls);
 	ptdecl::ExprHandlerRegistry::declareProperties(cls);
+
+	cls.method(sigs::clearCache, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		ExprHandlerRegistry::clearCache();
+	});
 
 	cls.method(sigs::resolve, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *expr, *container;

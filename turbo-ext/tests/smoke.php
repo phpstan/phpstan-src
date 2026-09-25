@@ -4019,12 +4019,20 @@ foreach (['php' => [\PHPStan\Analyser\ExprHandlerRegistry::class, \PHPStan\Analy
 	};
 	$r['expr memo'] = $memo($ehrClass, 'exprHandlersByClass');
 	$r['stmt memo'] = $memo($shrClass, 'stmtHandlersByClass');
+	// clearCache() empties the memo, which the next resolve() fills again
+	$ehrClass::clearCache();
+	$r['memo after expr clearCache'] = [$memo($ehrClass, 'exprHandlersByClass'), $memo($shrClass, 'stmtHandlersByClass')];
+	$shrClass::clearCache();
+	$r['memo after stmt clearCache'] = [$memo($ehrClass, 'exprHandlersByClass'), $memo($shrClass, 'stmtHandlersByClass')];
+	$r['resolve after clearCache'] = [get_class($ehrClass::resolve($hrExprs['variable'], $hrSecondContainer)), get_class($shrClass::resolve($hrStmts['echo'], $hrSecondContainer))];
+	$r['memo after resolve after clearCache'] = [$memo($ehrClass, 'exprHandlersByClass'), $memo($shrClass, 'stmtHandlersByClass')];
 	$hrResults[$side] = $r;
 }
 foreach ($hrResults['php'] as $label => $described) {
 	check($described === ($hrResults['native'][$label] ?? null), "ExprHandlerRegistry/StmtHandlerRegistry parity ($label): " . json_encode($described) . ' vs ' . json_encode($hrResults['native'][$label] ?? null));
 }
 check(count($hrResults['php']['expr memo']) === 2 && count($hrResults['php']['stmt memo']) === 2, 'handler registries: the fixture exercises two containers');
+check($hrResults['php']['memo after expr clearCache'][0] === [] && $hrResults['php']['memo after expr clearCache'][1] !== [] && $hrResults['php']['memo after stmt clearCache'] === [[], []] && count($hrResults['php']['memo after resolve after clearCache'][0]) === 1 && count($hrResults['php']['memo after resolve after clearCache'][1]) === 1, 'handler registries: clearCache() empties only its own memo');
 
 // ---- ScalarHandler / VariableHandler and their native closures ----
 // walk-trace.php compares the handler ports as the engine runs them; here the

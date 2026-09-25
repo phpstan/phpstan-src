@@ -74,6 +74,8 @@ jobs:
         run: |
           php bin/phpstan diagnose || true
           php --ini
+          php -r 'var_dump(["disable_functions" => ini_get("disable_functions"), "pcntl loaded" => extension_loaded("pcntl"), "posix loaded" => extension_loaded("posix")]);'
+          php -d disable_functions= -r 'var_dump(["pcntl_fork with disable_functions cleared" => function_exists("pcntl_fork")]);'
           php -r 'var_dump(["pcntl_fork" => function_exists("pcntl_fork"), "opcache_get_status" => function_exists("opcache_get_status") ? opcache_get_status(false) : "n/a", "opcache.enable_cli" => ini_get("opcache.enable_cli"), "opcache.jit" => ini_get("opcache.jit")]);'
 
       # separate limit since some PHP8.1 only behavior is less efficient

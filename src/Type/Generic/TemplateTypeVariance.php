@@ -234,11 +234,11 @@ final class TemplateTypeVariance
 		}
 
 		if ($this->covariant()) {
-			return $a->isSuperTypeOf($b);
+			return self::compareTypeArguments($a, $b);
 		}
 
 		if ($this->contravariant()) {
-			return $b->isSuperTypeOf($a);
+			return self::compareTypeArguments($b, $a);
 		}
 
 		if ($this->bivariant()) {
@@ -246,6 +246,19 @@ final class TemplateTypeVariance
 		}
 
 		throw new ShouldNotHappenException();
+	}
+
+	/**
+	 * The "exactly this class" flavour of a `new Foo()` value cannot be written in a
+	 * PHPDoc type argument, and `Foo` with the flavour is only a maybe-supertype of a
+	 * plain `Foo`. Comparing the two directly would make a type argument carrying the
+	 * flavour unmatchable against the very same written type - the invariant branch
+	 * above does not have the problem because equals() ignores the flavour.
+	 */
+	private static function compareTypeArguments(Type $super, Type $sub): IsSuperTypeOfResult
+	{
+		return TemplateTypeHelper::removeFinalByKeywordOverrides($super)
+			->isSuperTypeOf(TemplateTypeHelper::removeFinalByKeywordOverrides($sub));
 	}
 
 	public function equals(self $other): bool

@@ -204,6 +204,28 @@ final class IgnoredErrorHelperResult
 			$traitContexts = $error->getTraitContexts();
 			if (count($traitContexts) > 0) {
 				$errorTraitFilePath = $error->getTraitFilePath();
+
+				// An entry scoped to the trait file hides the deduplicated error for every
+				// using class: it takes precedence over the class-scoped entries, which then
+				// account only for the errors reported in the class files themselves. This
+				// is what --generate-baseline records when a using class has its own
+				// occurrence of the same error (same message and identifier).
+				if ($errorTraitFilePath !== null) {
+					$normalizedTraitFilePath = $this->fileHelper->normalizePath($errorTraitFilePath);
+					if (isset($this->ignoreErrorsByFile[$normalizedTraitFilePath])) {
+						$matchingTraitFileIgnoreErrors = $ignoreErrorsByFileAndIdentifier[$normalizedTraitFilePath][$identifierKey]
+							??= self::filterIgnoreErrorsByIdentifier($this->ignoreErrorsByFile[$normalizedTraitFilePath], $identifier);
+						foreach ($matchingTraitFileIgnoreErrors as $ignoreError) {
+							$i = $ignoreError['index'];
+							$ignore = $ignoreError['ignoreError'];
+							if (!$processIgnoreError($error, $i, $ignore)) {
+								$ignoredErrors[] = [$error, $ignore];
+								continue 2;
+							}
+						}
+					}
+				}
+
 				$remainingContexts = $traitContexts;
 				foreach (array_keys($traitContexts) as $contextFilePath) {
 					$contextError = $error->asReportedInTraitContext($contextFilePath);

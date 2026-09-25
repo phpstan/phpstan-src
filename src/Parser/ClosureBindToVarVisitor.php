@@ -6,6 +6,7 @@ use Override;
 use PhpParser\Node;
 use PhpParser\Node\Identifier;
 use PhpParser\NodeVisitorAbstract;
+use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 
@@ -16,6 +17,8 @@ final class ClosureBindToVarVisitor extends NodeVisitorAbstract
 
 	public const ATTRIBUTE_NAME = 'closureBindToVar';
 
+	public const PARAMETER_NAMES = ['newThis', 'newScope'];
+
 	#[Override]
 	public function enterNode(Node $node): ?Node
 	{
@@ -25,7 +28,7 @@ final class ClosureBindToVarVisitor extends NodeVisitorAbstract
 			&& $node->name->toLowerString() === 'bindto'
 			&& !$node->isFirstClassCallable()
 		) {
-			$args = $node->getArgs();
+			$args = ArgumentsNormalizer::getArgsByPosition($node->getArgs(), self::PARAMETER_NAMES);
 			if (isset($args[0])) {
 				$args[0]->setAttribute(self::ATTRIBUTE_NAME, $node->var);
 			}

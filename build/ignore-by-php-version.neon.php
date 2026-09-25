@@ -6,11 +6,14 @@ if (PHP_VERSION_ID >= 80000) {
 } else {
 	$includes[] = __DIR__ . '/baseline-pre-8.0.neon';
 }
-if (PHP_VERSION_ID >= 80100) {
-	$includes[] = __DIR__ . '/../vendor/shipmonk/dead-code-detector/rules.neon';
-} else {
+if (PHP_VERSION_ID < 80100) {
 	$includes[] = __DIR__ . '/enums.neon';
 	$includes[] = __DIR__ . '/readonly-property.neon';
+}
+
+// PHP 8.1's serialize() does not trim its buffer, so the rule's cache keys cost 4 KB each
+if (PHP_VERSION_ID >= 80200) {
+	$includes[] = __DIR__ . '/../vendor/shipmonk/dead-code-detector/rules.neon';
 }
 
 if (PHP_VERSION_ID >= 70400) {

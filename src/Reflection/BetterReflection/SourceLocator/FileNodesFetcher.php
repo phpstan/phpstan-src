@@ -9,7 +9,6 @@ use PHPStan\File\FileReader;
 use PHPStan\Internal\LruCache;
 use PHPStan\Parser\Parser;
 use PHPStan\Parser\ParserErrorsException;
-use function strlen;
 
 #[AutowiredService]
 final class FileNodesFetcher
@@ -19,6 +18,10 @@ final class FileNodesFetcher
 	 * Every located symbol keeps its file's contents in its LocatedSource, and the
 	 * locators fetch a file once per symbol. Handing out one string per unchanged
 	 * file keeps a large stub file in memory once instead of once per symbol.
+	 *
+	 * Only the entry count is bounded: the symbols located from a file keep its
+	 * contents alive anyway, so evicting a large file would free nothing and only
+	 * bring the duplicates back.
 	 */
 	private const CONTENTS_COUNT_LIMIT = 256;
 
@@ -44,7 +47,7 @@ final class FileNodesFetcher
 		if ($previousContents === $contents) {
 			$contents = $previousContents;
 		} else {
-			$this->contentsByFile->set($fileName, $contents, strlen($contents));
+			$this->contentsByFile->set($fileName, $contents, 0);
 		}
 
 		try {

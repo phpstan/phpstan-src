@@ -12,6 +12,7 @@ use PHPStan\Analyser\InternalError;
 use PHPStan\Cache\ArenaCache;
 use PHPStan\Command\CommandHelper;
 use PHPStan\Command\Output;
+use PHPStan\Dependency\ExportedNodeDecoder;
 use PHPStan\Dependency\RootExportedNode;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -371,10 +372,11 @@ final class ParallelAnalyser
 					if (count($fileExportedNodes) === 0) {
 						continue;
 					}
-					$exportedNodes[$file] = array_map(static function (array $node): RootExportedNode {
+					$decoder = new ExportedNodeDecoder();
+					$exportedNodes[$file] = array_map(static function (array $node) use ($decoder): RootExportedNode {
 						$class = $node['type'];
 
-						return $class::decode($node['data']);
+						return $class::decode($node['data'], $decoder);
 					}, $fileExportedNodes);
 				}
 

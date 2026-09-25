@@ -56,4 +56,14 @@ final class NamespaceUses
 		return $this->constUses;
 	}
 
+	public function equals(self $other): bool
+	{
+		return $this === $other
+			|| (
+				$this->namespace === $other->namespace
+				&& $this->uses === $other->uses
+				&& $this->constUses === $other->constUses
+			);
+	}
+
 }

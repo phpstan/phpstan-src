@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace PHPStan\Dependency;
+namespace PHPStan\Analyser;
 
 use PhpParser\Node;
 use function sprintf;
@@ -17,7 +17,7 @@ use function strtolower;
  * cleared when a namespace is entered rather than when it is left. Namespace blocks cover every
  * statement of a file, so nothing can observe the difference.
  */
-final class ExportedNameScopeTracker
+final class NamespaceUsesTracker
 {
 
 	/** @var non-empty-string|null */
@@ -29,14 +29,14 @@ final class ExportedNameScopeTracker
 	/** @var array<string, string> */
 	private array $constUses = [];
 
-	private ?ExportedNameScope $nameScope = null;
+	private ?NamespaceUses $namespaceUses = null;
 
 	public function reset(): void
 	{
 		$this->namespace = null;
 		$this->uses = [];
 		$this->constUses = [];
-		$this->nameScope = null;
+		$this->namespaceUses = null;
 	}
 
 	public function enterNode(Node $node): void
@@ -70,12 +70,12 @@ final class ExportedNameScopeTracker
 			return;
 		}
 
-		$this->nameScope = null;
+		$this->namespaceUses = null;
 	}
 
-	public function getNameScope(): ExportedNameScope
+	public function getNamespaceUses(): NamespaceUses
 	{
-		return $this->nameScope ??= new ExportedNameScope($this->namespace, $this->uses, $this->constUses);
+		return $this->namespaceUses ??= new NamespaceUses($this->namespace, $this->uses, $this->constUses);
 	}
 
 }

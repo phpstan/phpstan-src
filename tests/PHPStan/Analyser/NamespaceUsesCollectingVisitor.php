@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace PHPStan\Dependency;
+namespace PHPStan\Analyser;
 
 use Override;
 use PhpParser\Node;
@@ -9,18 +9,18 @@ use PhpParser\NodeVisitorAbstract;
 /**
  * Records the name scope in effect at every class declaration of a file.
  */
-final class ExportedNameScopeCollectingVisitor extends NodeVisitorAbstract
+final class NamespaceUsesCollectingVisitor extends NodeVisitorAbstract
 {
 
-	/** @var array<string, ExportedNameScope> */
+	/** @var array<string, NamespaceUses> */
 	private array $scopes = [];
 
-	public function __construct(private ExportedNameScopeTracker $tracker)
+	public function __construct(private NamespaceUsesTracker $tracker)
 	{
 	}
 
 	/**
-	 * @return array<string, ExportedNameScope>
+	 * @return array<string, NamespaceUses>
 	 */
 	public function getScopes(): array
 	{
@@ -32,7 +32,7 @@ final class ExportedNameScopeCollectingVisitor extends NodeVisitorAbstract
 	{
 		$this->tracker->enterNode($node);
 		if ($node instanceof Node\Stmt\Class_ && isset($node->namespacedName)) {
-			$this->scopes[$node->namespacedName->toString()] = $this->tracker->getNameScope();
+			$this->scopes[$node->namespacedName->toString()] = $this->tracker->getNamespaceUses();
 		}
 
 		return null;

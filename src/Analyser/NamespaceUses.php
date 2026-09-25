@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace PHPStan\Dependency;
+namespace PHPStan\Analyser;
 
 /**
  * The namespace and the use statements in effect at a point in a file.
@@ -11,7 +11,7 @@ namespace PHPStan\Dependency;
  * in it - far more than the exported nodes need, and it happens in the main process during a
  * result cache restore, in front of the analysis.
  */
-final class ExportedNameScope
+final class NamespaceUses
 {
 
 	/**

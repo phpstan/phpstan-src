@@ -6,6 +6,7 @@ use Override;
 use PhpParser\Node;
 use PhpParser\NodeVisitor;
 use PhpParser\NodeVisitorAbstract;
+use PHPStan\Analyser\NamespaceUsesTracker;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\ShouldNotHappenException;
 
@@ -19,7 +20,7 @@ final class ExportedNodeVisitor extends NodeVisitorAbstract
 	/** @var RootExportedNode[] */
 	private array $currentNodes = [];
 
-	private ExportedNameScopeTracker $nameScopeTracker;
+	private NamespaceUsesTracker $nameScopeTracker;
 
 	/**
 	 * ExportedNodeVisitor constructor.
@@ -27,7 +28,7 @@ final class ExportedNodeVisitor extends NodeVisitorAbstract
 	 */
 	public function __construct(private ExportedNodeResolver $exportedNodeResolver)
 	{
-		$this->nameScopeTracker = new ExportedNameScopeTracker();
+		$this->nameScopeTracker = new NamespaceUsesTracker();
 	}
 
 	public function reset(string $fileName): void
@@ -52,7 +53,7 @@ final class ExportedNodeVisitor extends NodeVisitorAbstract
 			throw new ShouldNotHappenException();
 		}
 		$this->nameScopeTracker->enterNode($node);
-		$exportedNode = $this->exportedNodeResolver->resolve($node, $this->nameScopeTracker->getNameScope());
+		$exportedNode = $this->exportedNodeResolver->resolve($node, $this->nameScopeTracker->getNamespaceUses());
 		if ($exportedNode !== null) {
 			$this->currentNodes[] = $exportedNode;
 		}

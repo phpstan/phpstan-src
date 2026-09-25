@@ -1,24 +1,24 @@
 <?php declare(strict_types = 1);
 
-namespace PHPStan\Dependency;
+namespace PHPStan\Analyser;
 
 use PhpParser\NodeTraverser;
 use PHPStan\Parser\Parser;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\FileTypeMapper;
 
-final class ExportedNameScopeTrackerTest extends PHPStanTestCase
+final class NamespaceUsesTrackerTest extends PHPStanTestCase
 {
 
 	/**
-	 * @return array<string, ExportedNameScope> class name => the scope in effect at its declaration
+	 * @return array<string, NamespaceUses> class name => the scope in effect at its declaration
 	 */
 	private function collectScopes(string $file): array
 	{
 		/** @var Parser $parser */
 		$parser = self::getContainer()->getService('defaultAnalysisParser');
 
-		$visitor = new ExportedNameScopeCollectingVisitor(new ExportedNameScopeTracker());
+		$visitor = new NamespaceUsesCollectingVisitor(new NamespaceUsesTracker());
 		$traverser = new NodeTraverser();
 		$traverser->addVisitor($visitor);
 		$traverser->traverse($parser->parseFile($file));
@@ -28,7 +28,7 @@ final class ExportedNameScopeTrackerTest extends PHPStanTestCase
 
 	public function testTracksNamespacesAndUses(): void
 	{
-		$file = __DIR__ . '/data/name-scope.php';
+		$file = __DIR__ . '/data/namespace-uses.php';
 		$scopes = $this->collectScopes($file);
 
 		$first = $scopes['NameScopeA\First'];
@@ -56,7 +56,7 @@ final class ExportedNameScopeTrackerTest extends PHPStanTestCase
 
 	public function testMatchesFileTypeMapper(): void
 	{
-		$file = __DIR__ . '/data/name-scope.php';
+		$file = __DIR__ . '/data/namespace-uses.php';
 		$fileTypeMapper = self::getContainer()->getByType(FileTypeMapper::class);
 
 		foreach ($this->collectScopes($file) as $className => $trackedScope) {

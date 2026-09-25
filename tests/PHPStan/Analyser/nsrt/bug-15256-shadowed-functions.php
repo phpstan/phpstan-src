@@ -72,7 +72,7 @@ function shadowedFunctions(
 	assertType("'shadowed'", str_shuffle($nonEmptyString));
 	assertType('999', random_int(1, 10));
 
-	assertType('non-empty-list<string>', $randomizer->pickArrayKeys($nonEmptyArray, 2));
+	assertType('array{(int|string), (int|string)}', $randomizer->pickArrayKeys($nonEmptyArray, 2));
 	assertType('non-empty-string', $randomizer->shuffleBytes($nonEmptyString));
 	assertType('int<1, 10>', $randomizer->getInt(1, 10));
 }

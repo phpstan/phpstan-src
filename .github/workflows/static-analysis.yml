@@ -53,7 +53,9 @@ jobs:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
           ini-file: development
-          extensions: mbstring
+          # pcntl and posix let parallel analysis fork its workers, like it does for
+          # most Linux users; without them the 8.2+ jobs spawn them instead
+          extensions: "${{ matrix.operating-system == 'ubuntu-latest' && 'mbstring, pcntl, posix' || 'mbstring' }}"
 
       - name: "Downgrade PHPUnit"
         if: matrix.php-version == '7.4' || matrix.php-version == '8.0' || matrix.php-version == '8.1'

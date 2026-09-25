@@ -48,13 +48,18 @@ final class RegexGroupList implements Countable, IteratorAggregate
 		return $this->cloneAndReParentList($group, $type);
 	}
 
-	private function cloneAndReParentList(RegexCapturingGroup $target, ?Type $type = null): self
+	public function forceGroupAlternationBranchMatched(RegexCapturingGroup $group): self
+	{
+		return $this->cloneAndReParentList($group, null, true);
+	}
+
+	private function cloneAndReParentList(RegexCapturingGroup $target, ?Type $type = null, bool $alternationBranchOnly = false): self
 	{
 		$groups = [];
 		$forcedGroup = null;
 		foreach ($this->groups as $i => $group) {
 			if ($group->getId() === $target->getId()) {
-				$forcedGroup = $group->forceNonOptional();
+				$forcedGroup = $alternationBranchOnly ? $group->forceAlternationBranchMatched() : $group->forceNonOptional();
 				if ($type !== null) {
 					$forcedGroup = $forcedGroup->forceType($type);
 				}

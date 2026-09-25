@@ -4067,21 +4067,34 @@ public:
 	/* array<string, ClassReflection> */
 	zv::Val getAncestors()
 	{
-		zv::Ref memo = slot(PT_CR_PROP_ANCESTORS);
-		if (!memo.isNull()) return zv::Val::copyOf(memo);
-
 		zv::Val name = getName();
 		if (UNEXPECTED(name.isUndef())) return zv::Val();
-		zv::Arr ancestors = zv::Arr::create(8);
-		zend_string *nameStr = zval_get_string(name.raw());
+		zv::Str nameStr = zv::Str::adopt(zval_get_string(name.raw()));
 		zval self_;
 		ZVAL_OBJ(&self_, self);
-		ancestors.set(nameStr, zv::Val::copyOf(zv::Ref(&self_)));
-		zend_string_release(nameStr);
+
+		zv::Ref memo = slot(PT_CR_PROP_ANCESTORS);
+		if (!memo.isNull()) {
+			/* [$this->getName() => $this] + $this->ancestors */
+			zv::Arr ancestors = zv::Arr::create(zend_hash_num_elements(memo.asArrayTable()) + 1);
+			ancestors.set(nameStr.get(), zv::Val::copyOf(zv::Ref(&self_)));
+			for (zv::ArrayEntry entry : zv::ArrRef(memo.raw())) {
+				ancestors.set(entry.stringKey(), zv::Val::copyOf(entry.value()));
+			}
+			return zv::Val(std::move(ancestors));
+		}
+
+		zv::Arr ancestors = zv::Arr::create(8);
+		ancestors.set(nameStr.get(), zv::Val::copyOf(zv::Ref(&self_)));
 
 		if (UNEXPECTED(!collectAncestors(ancestors))) return zv::Val();
 
-		writeSlot(PT_CR_PROP_ANCESTORS, zv::Val::copyOf(ancestors.ref()));
+		// the cached array must not contain $this: that would be a reference
+		// cycle, and with gc_disable() a ClassReflection the reflection provider
+		// does not keep, like a withTypes() copy, would then never be freed
+		zv::Arr cached = zv::Arr::adoptTable(zend_array_dup(ancestors.table()));
+		zend_symtable_del(cached.table(), nameStr.get());
+		writeSlot(PT_CR_PROP_ANCESTORS, zv::Val(std::move(cached)));
 
 		return zv::Val(std::move(ancestors));
 	}

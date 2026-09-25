@@ -67,6 +67,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function array_flip;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
@@ -82,6 +83,7 @@ use function implode;
 use function in_array;
 use function is_int;
 use function is_string;
+use function ksort;
 use function max;
 use function min;
 use function pow;
@@ -3246,36 +3248,83 @@ class ConstantArrayType implements Type
 			return new NeverType();
 		}
 
-		// isList is Maybe. In a sealed shape a key past a gap in the 0..n sequence
-		// (or any non-integer key) can never appear in a list, so keep only the
-		// contiguous 0..m prefix. Unsealed extras may fill the gaps, so keep every
-		// key there.
-		if ($this->isUnsealed()->no()) {
-			$positionByIndex = [];
-			foreach ($this->keyTypes as $position => $keyType) {
-				if (!$keyType instanceof ConstantIntegerType) {
-					continue;
-				}
-				$positionByIndex[$keyType->getValue()] = $position;
+		// isList is Maybe. A list has its keys in ascending order, and one that
+		// has the key k has every key below k too - positional operations on the
+		// list trust both, so the keys are put in ascending order and the ones
+		// below a required key are made required. A list never has a negative or
+		// a non-integer key, so those are dropped. In a sealed shape a key past a
+		// gap in the 0..n sequence can never appear in a list either, so only the
+		// contiguous 0..m prefix is kept; unsealed extras may fill the gaps, so
+		// every other key is kept there.
+		$positionByIndex = [];
+		$droppedPositions = [];
+		foreach ($this->keyTypes as $position => $keyType) {
+			if (!$keyType instanceof ConstantIntegerType || $keyType->getValue() < 0) {
+				$droppedPositions[] = $position;
+				continue;
 			}
+			$positionByIndex[$keyType->getValue()] = $position;
+		}
 
+		ksort($positionByIndex);
+		if ($this->isUnsealed()->no()) {
 			$keptPositions = [];
 			for ($index = 0; array_key_exists($index, $positionByIndex); $index++) {
 				$keptPositions[] = $positionByIndex[$index];
+				unset($positionByIndex[$index]);
+			}
+			foreach ($positionByIndex as $position) {
+				$droppedPositions[] = $position;
+			}
+		} else {
+			$keptPositions = array_values($positionByIndex);
+		}
+
+		foreach ($droppedPositions as $position) {
+			if (!$this->isOptionalKey($position)) {
+				return new NeverType();
+			}
+		}
+
+		$indexByPosition = array_flip($keptPositions);
+		$requiredLength = 0;
+		foreach ($keptPositions as $index => $position) {
+			if ($this->isOptionalKey($position)) {
+				continue;
 			}
 
-			if (count($keptPositions) < count($this->keyTypes)) {
-				$builder = ConstantArrayTypeBuilder::createEmpty();
-				foreach ($keptPositions as $position) {
-					$builder->setOffsetValueType(
-						$this->keyTypes[$position],
-						$this->valueTypes[$position],
-						$this->isOptionalKey($position),
-					);
-				}
+			$requiredLength = $index + 1;
+		}
 
-				return $builder->getArray();
+		$optionalPositions = [];
+		foreach ($keptPositions as $newPosition => $position) {
+			if (!$this->isOptionalKey($position) || $indexByPosition[$position] < $requiredLength) {
+				continue;
 			}
+
+			$optionalPositions[$newPosition] = true;
+		}
+
+		if ($keptPositions !== array_keys($this->keyTypes) || count($optionalPositions) !== count($this->optionalKeys)) {
+			$builder = ConstantArrayTypeBuilder::createEmpty();
+			$builder->disableArrayDegradation();
+			foreach ($keptPositions as $newPosition => $position) {
+				$builder->setOffsetValueType(
+					$this->keyTypes[$position],
+					$this->valueTypes[$position],
+					isset($optionalPositions[$newPosition]),
+				);
+			}
+
+			$constantArrays = $builder->getArray()->getConstantArrays();
+			if (count($constantArrays) !== 1) {
+				throw new ShouldNotHappenException();
+			}
+
+			// The builder can answer maybe for an optional tail like `[0, 1?, 2?]`,
+			// but these are the keys of a list.
+			$list = $constantArrays[0];
+			return $this->recreate($list->keyTypes, $list->valueTypes, $list->nextAutoIndexes, $list->optionalKeys, TrinaryLogic::createYes(), $this->unsealed);
 		}
 
 		return $this->recreate($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, $this->optionalKeys, TrinaryLogic::createYes(), $this->unsealed);

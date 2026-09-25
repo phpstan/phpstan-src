@@ -5,7 +5,12 @@ namespace PHPStan\Analyser;
 /**
  * The namespace and the use statements in effect at a point in a file.
  *
- * This is everything an ExportedPhpDocNode records about the scope a PHPDoc was written in, and
+ * NamespaceUsesTracker hands out one instance until the next namespace or use statement, so
+ * everything created under the same imports shares it. serialize() keeps shared objects shared
+ * but writes arrays by value - the name scope map FileTypeMapper stores in the file cache
+ * therefore holds the imports of a file once instead of once per class, function and method.
+ *
+ * It is also everything an ExportedPhpDocNode records about the scope a PHPDoc was written in, and
  * all of it is read straight off the AST by ExportedNodeVisitor. Asking FileTypeMapper for a
  * NameScope instead would build the name scope map of the whole file, which resolves every PHPDoc
  * in it - far more than the exported nodes need, and it happens in the main process during a

@@ -7,6 +7,7 @@ use PhpParser\Comment\Doc;
 use PhpParser\Node;
 use PHPStan\Analyser\IntermediaryNameScope;
 use PHPStan\Analyser\NameScope;
+use PHPStan\Analyser\NamespaceUsesTracker;
 use PHPStan\BetterReflection\Util\GetLastDocComment;
 use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\Cache\Cache;
@@ -50,7 +51,6 @@ use function md5;
 use function sprintf;
 use function str_contains;
 use function str_starts_with;
-use function strtolower;
 
 #[AutowiredService]
 final class FileTypeMapper
@@ -369,7 +369,9 @@ final class FileTypeMapper
 		// (https://github.com/phpstan/phpstan/issues/15037) - a parse that
 		// silently dropped every comment cached PHPDoc-less name-scope maps,
 		// and the content hashes cannot tell them apart from real ones.
-		$variableCacheKey = sprintf('v6-%s', ComposerHelper::getPhpDocParserVersion());
+		// v7: IntermediaryNameScope refers to a NamespaceUses shared with the other name scopes
+		// created under the same use statements
+		$variableCacheKey = sprintf('v7-%s', ComposerHelper::getPhpDocParserVersion());
 		$cached = $this->loadCachedPhpDocNodeMap($cacheKey, $variableCacheKey);
 		if ($cached === null) {
 			[$nameScopeMap, $files] = $this->createPhpDocNodeMap($fileName, null, null, [], $fileName);
@@ -415,11 +417,6 @@ final class FileTypeMapper
 			}
 
 			if ($useCache) {
-				$pool = [];
-				foreach ($nameScopeMap as $nameScopeKey => $intermediaryNameScope) {
-					$nameScopeMap[$nameScopeKey] = $intermediaryNameScope->intern($pool);
-				}
-
 				return [$nameScopeMap, array_keys($filesWithHashes)];
 			}
 		}
@@ -449,7 +446,7 @@ final class FileTypeMapper
 			$classStack[] = $traitUseClass;
 			$typeAliasStack[] = [];
 		}
-		$namespace = null;
+		$namespaceUsesTracker = new NamespaceUsesTracker();
 
 		$traitFound = false;
 
@@ -457,11 +454,10 @@ final class FileTypeMapper
 
 		/** @var array<string|null> $functionStack */
 		$functionStack = [];
-		$uses = [];
-		$constUses = [];
 		$this->processNodes(
 			$this->phpParser->parseFile($fileName),
-			function (Node $node) use ($fileName, $lookForTrait, &$traitFound, $traitMethodAliases, $originalClassFileName, $activeTraitResolutions, &$nameScopeMap, &$typeMapStack, &$typeAliasStack, &$classStack, &$namespace, &$functionStack, &$uses, &$constUses, &$files): ?int {
+			function (Node $node) use ($fileName, $lookForTrait, &$traitFound, $traitMethodAliases, $originalClassFileName, $activeTraitResolutions, &$nameScopeMap, &$typeMapStack, &$typeAliasStack, &$classStack, $namespaceUsesTracker, &$functionStack, &$files): ?int {
+				$namespaceUsesTracker->enterNode($node);
 				if ($node instanceof Node\Stmt\ClassLike) {
 					if ($traitFound && $fileName === $originalClassFileName) {
 						return self::SKIP_NODE;
@@ -490,7 +486,7 @@ final class FileTypeMapper
 							if ($traitFound) {
 								return self::SKIP_NODE;
 							}
-							$className = ltrim(sprintf('%s\\%s', $namespace, $node->name->name), '\\');
+							$className = ltrim(sprintf('%s\\%s', $namespaceUsesTracker->getNamespaceUses()->getNamespace(), $node->name->name), '\\');
 						}
 						$classStack[] = $className;
 						$functionStack[] = null;
@@ -502,7 +498,7 @@ final class FileTypeMapper
 						$functionStack[] = $node->name->name;
 					}
 				} elseif ($node instanceof Node\Stmt\Function_) {
-					$functionStack[] = ltrim(sprintf('%s\\%s', $namespace, $node->name->name), '\\');
+					$functionStack[] = ltrim(sprintf('%s\\%s', $namespaceUsesTracker->getNamespaceUses()->getNamespace(), $node->name->name), '\\');
 				} elseif ($node instanceof Node\PropertyHook) {
 					$propertyName = $node->getAttribute('propertyName');
 					if ($propertyName !== null) {
@@ -535,14 +531,12 @@ final class FileTypeMapper
 						$parentNameScope = array_last($typeMapStack);
 
 						$typeMapStack[] = new IntermediaryNameScope(
-							$namespace,
-							$uses,
+							$namespaceUsesTracker->getNamespaceUses(),
 							$className,
 							$functionName,
 							$this->chooseTemplateTagValueNodesByPriority($phpDocNode->getTags()),
 							$parentNameScope,
 							array_last($typeAliasStack) ?? [],
-							constUses: $constUses,
 							typeAliasClassName: $lookForTrait,
 						);
 					} elseif ($node instanceof Node\Stmt\ClassLike) {
@@ -550,14 +544,12 @@ final class FileTypeMapper
 					} else {
 						$parentNameScope = array_last($typeMapStack);
 						$typeMapStack[] = new IntermediaryNameScope(
-							$namespace,
-							$uses,
+							$namespaceUsesTracker->getNamespaceUses(),
 							$className,
 							$functionName,
 							[],
 							$parentNameScope,
 							array_last($typeAliasStack) ?? [],
-							constUses: $constUses,
 							typeAliasClassName: $lookForTrait,
 						);
 					}
@@ -582,14 +574,12 @@ final class FileTypeMapper
 					$parentNameScope = array_last($typeMapStack);
 					$typeAliasesMap = array_last($typeAliasStack) ?? [];
 					$nameScopeMap[$nameScopeKey] = new IntermediaryNameScope(
-						$namespace,
-						$uses,
+						$namespaceUsesTracker->getNamespaceUses(),
 						$className,
 						$functionName,
 						$parentNameScope !== null ? $parentNameScope->getTemplatePhpDocNodes() : [],
 						$parentNameScope !== null ? $parentNameScope->getParent() : null,
 						$typeAliasesMap,
-						constUses: $constUses,
 						typeAliasClassName: $lookForTrait,
 					);
 				}
@@ -602,28 +592,7 @@ final class FileTypeMapper
 					return null;
 				}
 
-				if ($node instanceof Node\Stmt\Namespace_) {
-					$namespace = $node->name !== null ? (string) $node->name : null;
-				} elseif ($node instanceof Node\Stmt\Use_) {
-					if ($node->type === Node\Stmt\Use_::TYPE_NORMAL) {
-						foreach ($node->uses as $use) {
-							$uses[strtolower($use->getAlias()->name)] = (string) $use->name;
-						}
-					} elseif ($node->type === Node\Stmt\Use_::TYPE_CONSTANT) {
-						foreach ($node->uses as $use) {
-							$constUses[strtolower($use->getAlias()->name)] = (string) $use->name;
-						}
-					}
-				} elseif ($node instanceof Node\Stmt\GroupUse) {
-					$prefix = (string) $node->prefix;
-					foreach ($node->uses as $use) {
-						if ($node->type === Node\Stmt\Use_::TYPE_NORMAL || $use->type === Node\Stmt\Use_::TYPE_NORMAL) {
-							$uses[strtolower($use->getAlias()->name)] = sprintf('%s\\%s', $prefix, (string) $use->name);
-						} elseif ($node->type === Node\Stmt\Use_::TYPE_CONSTANT || $use->type === Node\Stmt\Use_::TYPE_CONSTANT) {
-							$constUses[strtolower($use->getAlias()->name)] = sprintf('%s\\%s', $prefix, (string) $use->name);
-						}
-					}
-				} elseif ($node instanceof Node\Stmt\TraitUse) {
+				if ($node instanceof Node\Stmt\TraitUse) {
 					$traitMethodAliases = [];
 					foreach ($node->adaptations as $traitUseAdaptation) {
 						if (!$traitUseAdaptation instanceof Node\Stmt\TraitUseAdaptation\Alias) {
@@ -694,7 +663,7 @@ final class FileTypeMapper
 
 				return null;
 			},
-			static function (Node $node, $callbackResult) use (&$namespace, &$functionStack, &$classStack, &$typeAliasStack, &$uses, &$typeMapStack, &$constUses): void {
+			static function (Node $node, $callbackResult) use (&$functionStack, &$classStack, &$typeAliasStack, &$typeMapStack): void {
 				if ($node instanceof Node\Stmt\ClassLike) {
 					if (count($classStack) === 0) {
 						throw new ShouldNotHappenException();
@@ -712,10 +681,6 @@ final class FileTypeMapper
 					}
 
 					array_pop($functionStack);
-				} elseif ($node instanceof Node\Stmt\Namespace_) {
-					$namespace = null;
-					$uses = [];
-					$constUses = [];
 				} elseif ($node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Stmt\Function_) {
 					if (count($functionStack) === 0) {
 						throw new ShouldNotHappenException();

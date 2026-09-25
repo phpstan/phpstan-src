@@ -2220,18 +2220,20 @@ final class ClassReflection
 	 */
 	public function getAncestors(): array
 	{
-		$ancestors = $this->ancestors;
-
-		if ($ancestors === null) {
+		if ($this->ancestors === null) {
 			$ancestors = [
 				$this->getName() => $this,
 			];
 			$this->collectAncestors($ancestors);
 
+			// the cached array must not contain $this: that would be a reference
+			// cycle, and with gc_disable() a ClassReflection the reflection provider
+			// does not keep, like a withTypes() copy, would then never be freed
+			unset($ancestors[$this->getName()]);
 			$this->ancestors = $ancestors;
 		}
 
-		return $ancestors;
+		return [$this->getName() => $this] + $this->ancestors;
 	}
 
 	/**

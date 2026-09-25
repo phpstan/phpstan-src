@@ -129,6 +129,13 @@ class GenericClassStringType extends ClassStringType
 			// an uncertainty originating in possible ObjectType's class subtypes.
 			$objectType = new ObjectType($type->getValue());
 
+			// A class name carries no type arguments, so it is compared in the
+			// parameterization the generic type implies for its class.
+			$objectType = GenericObjectType::specializeSubclass(
+				$genericType instanceof TemplateType ? $genericType->getBound() : $genericType,
+				$objectType,
+			);
+
 			// Do not use TemplateType's isSuperTypeOf handling directly because it takes ObjectType
 			// uncertainty into account.
 			if ($genericType instanceof TemplateType) {

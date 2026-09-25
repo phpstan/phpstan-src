@@ -24,8 +24,8 @@ use PHPStan\Broker\ConstantNotFoundException;
 use PHPStan\Broker\FunctionNotFoundException;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\NonAutowiredService;
+use PHPStan\File\DeduplicatingFileReader;
 use PHPStan\File\FileHelper;
-use PHPStan\File\FileReader;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\Parser\AnonymousClassVisitor;
 use PHPStan\Php\PhpVersion;
@@ -108,6 +108,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 		private RelativePathHelper $relativePathHelper,
 		private AnonymousClassNameHelper $anonymousClassNameHelper,
 		private FileHelper $fileHelper,
+		private DeduplicatingFileReader $deduplicatingFileReader,
 		private PhpStormStubsSourceStubber $phpstormStubsSourceStubber,
 		private AttributeReflectionFactory $attributeReflectionFactory,
 		#[AutowiredParameter(ref: '%universalObjectCratesClasses%')]
@@ -213,7 +214,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 		$reflectionClass = \PHPStan\BetterReflection\Reflection\ReflectionClass::createFromNode(
 			$this->reflector,
 			$classNode,
-			new LocatedSource(FileReader::read($scopeFile), $className, $scopeFile),
+			new LocatedSource($this->deduplicatingFileReader->read($scopeFile), $className, $scopeFile),
 			null,
 		);
 

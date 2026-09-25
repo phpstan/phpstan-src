@@ -5,8 +5,7 @@ namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 use PhpParser\NodeTraverser;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\File\FileReader;
-use PHPStan\Internal\LruCache;
+use PHPStan\File\DeduplicatingFileReader;
 use PHPStan\Parser\Parser;
 use PHPStan\Parser\ParserErrorsException;
 
@@ -14,27 +13,13 @@ use PHPStan\Parser\ParserErrorsException;
 final class FileNodesFetcher
 {
 
-	/**
-	 * Every located symbol keeps its file's contents in its LocatedSource, and the
-	 * locators fetch a file once per symbol. Handing out one string per unchanged
-	 * file keeps a large stub file in memory once instead of once per symbol.
-	 *
-	 * Only the entry count is bounded: the symbols located from a file keep its
-	 * contents alive anyway, so evicting a large file would free nothing and only
-	 * bring the duplicates back.
-	 */
-	private const CONTENTS_COUNT_LIMIT = 256;
-
-	/** @var LruCache<string> path => contents */
-	private LruCache $contentsByFile;
-
 	public function __construct(
 		private CachingVisitor $cachingVisitor,
 		#[AutowiredParameter(ref: '@defaultAnalysisParser')]
 		private Parser $parser,
+		private DeduplicatingFileReader $fileReader,
 	)
 	{
-		$this->contentsByFile = new LruCache(self::CONTENTS_COUNT_LIMIT);
 	}
 
 	public function fetchNodes(string $fileName): FetchedNodesResult
@@ -42,13 +27,7 @@ final class FileNodesFetcher
 		$nodeTraverser = new NodeTraverser();
 		$nodeTraverser->addVisitor($this->cachingVisitor);
 
-		$contents = FileReader::read($fileName);
-		$previousContents = $this->contentsByFile->get($fileName);
-		if ($previousContents === $contents) {
-			$contents = $previousContents;
-		} else {
-			$this->contentsByFile->set($fileName, $contents, 0);
-		}
+		$contents = $this->fileReader->read($fileName);
 
 		try {
 			$ast = $this->parser->parseFile($fileName);

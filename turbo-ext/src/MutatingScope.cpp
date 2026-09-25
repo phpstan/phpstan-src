@@ -3085,7 +3085,7 @@ public:
 		return thisDuplicateWith(args);
 	}
 
-	/* The variables rooting the tracked expressions whose state differs
+	/* The variables spelled by the tracked expressions whose state differs
 	 * between this scope and $other; null when a differing entry has no
 	 * variable root. $other is an instance of this class (a subclass
 	 * included) — its slots are read directly. */
@@ -3139,10 +3139,9 @@ public:
 			for (auto entry : zv::TableRef(table.ours)) {
 				zval *theirHolders = findByEntryKey(table.theirs, entry);
 				if (theirHolders != NULL && Z_TYPE_P(theirHolders) != IS_NULL && zend_is_identical(theirHolders, entry.value().raw())) continue;
-				zend_string *key = entryKeyString(entry, "getVariableRootOfExpressionKey", "key");
+				zend_string *key = entryKeyString(entry, "getVariablesOfExpressionKey", "key");
 				if (UNEXPECTED(key == NULL)) return zv::Val();
-				zv::Str root = getVariableRootOfExpressionKey(key);
-				if (root.isNull()) {
+				if (!addVariablesOfExpressionKey(roots, key)) {
 					zv::Ref holders = entry.value().deref();
 					if (UNEXPECTED(!holders.isArray())) {
 						zend_error(E_WARNING, "foreach() argument must be of type array|object, %s given", zend_zval_value_name(holders.raw()));
@@ -3163,7 +3162,6 @@ public:
 					}
 					continue;
 				}
-				roots.set(root.get(), zv::Val::boolean(true));
 			}
 		}
 
@@ -3175,39 +3173,52 @@ public:
 		return zv::Val(std::move(keys));
 	}
 
-	/* $root = self::getVariableRootOfExpressionKey($key); `noRoot` when
-	 * it is null (the caller returns null), else $roots[$root] = true;
-	 * false = pending exception */
+	/* $variables = self::getVariablesOfExpressionKey($key); `noRoot` when
+	 * it is null (the caller returns null), else $roots[$variable] = true
+	 * for each; false = pending exception */
 	[[nodiscard]] static bool addVariableRoot(zv::Arr &roots, const zv::ArrayEntry &entry, bool &noRoot)
 	{
-		zend_string *key = entryKeyString(entry, "getVariableRootOfExpressionKey", "key");
+		zend_string *key = entryKeyString(entry, "getVariablesOfExpressionKey", "key");
 		if (UNEXPECTED(key == NULL)) return false;
-		zv::Str root = getVariableRootOfExpressionKey(key);
-		noRoot = root.isNull();
-		if (!noRoot) {
-			roots.set(root.get(), zv::Val::boolean(true));
-		}
+		noRoot = !addVariablesOfExpressionKey(roots, key);
 		return true;
 	}
 
-	/* private static: preg_match('/^\$([a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*)/'); NULL for no match */
-	static zv::Str getVariableRootOfExpressionKey(zend_string *key)
+	static bool isVariableNameStart(unsigned char c)
+	{
+		return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_' || c >= 0x80;
+	}
+
+	/* private static getVariablesOfExpressionKey(): false when the key is not
+	 * rooted in a variable (preg_match('/^\$[a-zA-Z_\x80-\xff]/') fails), else
+	 * $roots[$variable] = true for each preg_match_all(
+	 * '/\$([a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*)/') match */
+	static bool addVariablesOfExpressionKey(zv::Arr &roots, zend_string *key)
 	{
 		const unsigned char *s = (const unsigned char *) ZSTR_VAL(key);
 		size_t n = ZSTR_LEN(key);
-		if (n < 2 || s[0] != '$') return zv::Str();
-		unsigned char c = s[1];
-		if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_' || c >= 0x80)) return zv::Str();
-		size_t end = 2;
-		while (end < n) {
-			c = s[end];
-			if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_' || c >= 0x80) {
-				end++;
-			} else {
-				break;
+		if (n < 2 || s[0] != '$' || !isVariableNameStart(s[1])) return false;
+		size_t i = 0;
+		while (i + 1 < n) {
+			if (s[i] != '$' || !isVariableNameStart(s[i + 1])) {
+				i++;
+				continue;
 			}
+			size_t end = i + 2;
+			while (end < n) {
+				unsigned char c = s[end];
+				if (isVariableNameStart(c) || (c >= '0' && c <= '9')) {
+					end++;
+				} else {
+					break;
+				}
+			}
+			zend_string *name = zend_string_init((const char *) s + i + 1, end - i - 1, 0);
+			roots.set(name, zv::Val::boolean(true));
+			zend_string_release(name);
+			i = end;
 		}
-		return zv::Str::adopt(zend_string_init((const char *) s + 1, end - 1, 0));
+		return true;
 	}
 
 	/* This scope after a statement whose recorded walk stands. */

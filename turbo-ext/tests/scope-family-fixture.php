@@ -51,6 +51,21 @@ final class Holder
 		return $this->name;
 	}
 
+	public function find(string $key): ?string
+	{
+		return $key === '' ? null : $key;
+	}
+
+	public function lookup(self $other, string $key): string
+	{
+		if ($other->find($key) === null) {
+			return '';
+		}
+		$key = 'b';
+
+		return $key . $other->find($key);
+	}
+
 	public function stat(string $path): void
 	{
 		if (is_file($path) && \file_exists($path)) {

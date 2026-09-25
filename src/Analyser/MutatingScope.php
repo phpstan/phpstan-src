@@ -136,6 +136,7 @@ use function is_string;
 use function ltrim;
 use function md5;
 use function preg_match;
+use function preg_match_all;
 use function spl_object_id;
 use function sprintf;
 use function str_starts_with;
@@ -1542,10 +1543,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	}
 
 	/**
-	 * The variables rooting the tracked expressions whose state differs between
-	 * this scope and $other - a statement mentioning none of them walks the same
-	 * on both - or null when a differing entry has no variable root (a static
-	 * property, a class constant fetch).
+	 * The variables spelled by the tracked expressions whose state differs
+	 * between this scope and $other - a statement mentioning none of them walks
+	 * the same on both - or null when a differing entry has no variable root (a
+	 * static property, a class constant fetch). Every variable of an entry counts,
+	 * not just its root: assigning $b invalidates $a->get($b).
 	 *
 	 * @return list<string>|null
 	 */
@@ -1565,21 +1567,25 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				if ($theirHolder !== null && ($theirHolder === $holder || $holder->equals($theirHolder))) {
 					continue;
 				}
-				$root = self::getVariableRootOfExpressionKey($key);
-				if ($root === null) {
+				$variables = self::getVariablesOfExpressionKey($key);
+				if ($variables === null) {
 					return null;
 				}
-				$roots[$root] = true;
+				foreach ($variables as $variable) {
+					$roots[$variable] = true;
+				}
 			}
 			foreach ($theirs as $key => $holder) {
 				if (isset($ours[$key]) || $holder->getExpr() instanceof PossiblyImpureCallExpr) {
 					continue;
 				}
-				$root = self::getVariableRootOfExpressionKey($key);
-				if ($root === null) {
+				$variables = self::getVariablesOfExpressionKey($key);
+				if ($variables === null) {
 					return null;
 				}
-				$roots[$root] = true;
+				foreach ($variables as $variable) {
+					$roots[$variable] = true;
+				}
 			}
 		}
 		$conditionalTables = [
@@ -1591,8 +1597,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 				if (isset($theirs[$key]) && $theirs[$key] === $holders) {
 					continue;
 				}
-				$root = self::getVariableRootOfExpressionKey($key);
-				if ($root === null) {
+				$variables = self::getVariablesOfExpressionKey($key);
+				if ($variables === null) {
 					foreach ($holders as $holder) {
 						if (!$holder->getTypeHolder()->getExpr() instanceof PossiblyImpureCallExpr) {
 							return null;
@@ -1600,18 +1606,28 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 					}
 					continue;
 				}
-				$roots[$root] = true;
+				foreach ($variables as $variable) {
+					$roots[$variable] = true;
+				}
 			}
 		}
 
 		return array_keys($roots);
 	}
 
-	private static function getVariableRootOfExpressionKey(string $key): ?string
+	/**
+	 * The variables an expression key spells, or null when the key is not
+	 * rooted in a variable.
+	 *
+	 * @return list<string>|null
+	 */
+	private static function getVariablesOfExpressionKey(string $key): ?array
 	{
-		if (preg_match('/^\$([a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*)/', $key, $matches) !== 1) {
+		if (preg_match('/^\$[a-zA-Z_\x80-\xff]/', $key) !== 1) {
 			return null;
 		}
+
+		preg_match_all('/\$([a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*)/', $key, $matches);
 
 		return $matches[1];
 	}

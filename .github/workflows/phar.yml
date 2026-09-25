@@ -334,6 +334,51 @@ jobs:
           make -C "$RUNNER_TEMP/turbo-ext" install INSTALL_ROOT="$RUNNER_TEMP/install-root"
           find "$RUNNER_TEMP/install-root" -name 'phpstan_turbo.so' | grep .
 
+  turbo-origins:
+    name: "Find Reusable Turbo Extension Builds"
+    # Most pushes and pull requests leave the extension's build inputs
+    # untouched, and compiling all of its legs takes up to 12 minutes. For
+    # each binary, this finds the newest earlier run that compiled it from
+    # identical build inputs (.github/scripts/find-turbo-origins.sh has the
+    # exact conditions), and the compile legs download that binary instead
+    # of building it. Everything else in those legs still runs against it:
+    # the version check and the differential tests compare the native side
+    # with the PHP side of this commit, which may have changed.
+    # Only runs of this workflow triggered by a push to 2.3.x qualify — the
+    # same runs whose compiled binaries the commit job stages into
+    # phpstan/phpstan — so reusing their artifacts trusts no code the
+    # distributed binaries do not already depend on. actions/cache was ruled
+    # out for that reason: any workflow running on 2.3.x can write entries
+    # into the branch's cache, one this workflow would then restore.
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 5
+
+    permissions:
+      contents: read # actions/checkout of this repository
+      actions: read # lists the earlier runs of this workflow and their artifacts
+
+    outputs:
+      origins: ${{ steps.find.outputs.origins }}
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+
+      - name: "Checkout"
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+          fetch-depth: 0 # the earlier runs' commits are diffed against HEAD
+
+      - name: "Find the newest build of each binary from identical build inputs"
+        id: find
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: "2.3.x"
+        run: bash .github/scripts/find-turbo-origins.sh
+
   turbo-compile:
     name: "Compile Turbo Extension"
     runs-on: ${{ matrix.php-version == '8.6' && matrix.target.family == 'gnu' && (matrix.target.name == 'linux-gnu-arm64' && 'ubuntu-22.04-arm' || 'ubuntu-22.04') || matrix.target.runs-on }}
@@ -361,10 +406,16 @@ jobs:
     # setup-php on Jammy runners, preserving the shipped binary's glibc floor.
     # Alpine's php86 packages are currently only in edge/testing.
     container: ${{ matrix.target.family == 'gnu' && matrix.php-version != '8.6' && format('ghcr.io/phpstan/turbo-build:gnu-php{0}', matrix.php-version) || matrix.target.family == 'musl' && matrix.php-version == '8.6' && 'alpine:edge' || matrix.target.container }}
+    needs: turbo-origins
     timeout-minutes: 30
+
+    permissions:
+      contents: read # actions/checkout of this repository
+      actions: read # downloads a reused binary from an earlier run, see turbo-origins
 
     env:
       PHP_MINOR: ${{ matrix.php-version }}
+      TURBO_ARTIFACT: "${{ matrix.target.artifact }}-${{ matrix.target.name }}-php${{ matrix.php-version }}"
 
     strategy:
       fail-fast: false
@@ -471,7 +522,41 @@ jobs:
           COMPOSER_HOME="$(mktemp -d)" php composer.phar install --no-interaction --no-progress
           rm composer.phar
 
+      # See the turbo-origins job. A failed download (an artifact expired
+      # since the lookup) falls back to compiling.
+      - name: "Download the extension compiled from identical build inputs"
+        id: reuse-download
+        if: fromJSON(needs.turbo-origins.outputs.origins || '{}')[env.TURBO_ARTIFACT] != null
+        continue-on-error: true
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ env.TURBO_ARTIFACT }}
+          path: "turbo-ext"
+          run-id: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[env.TURBO_ARTIFACT] }}
+          github-token: ${{ github.token }}
+
+      # A binary that does not load falls back to compiling too: the 8.6
+      # legs build against prerelease headers, whose module API number can
+      # move between two runs.
+      - name: "Reuse the downloaded extension if it loads with the expected version"
+        id: reuse
+        if: steps.reuse-download.outcome == 'success'
+        env:
+          ORIGIN_RUN_ID: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[env.TURBO_ARTIFACT] }}
+        run: |
+          REPORTED="$(php -d extension="$PWD/turbo-ext/phpstan_turbo.so" -r 'echo phpversion("phpstan_turbo");' 2> /dev/null || true)"
+          EXPECTED="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"
+          if [ "$REPORTED" = "$EXPECTED" ]; then
+            echo "reusing the extension compiled in $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$ORIGIN_RUN_ID"
+            echo "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$ORIGIN_RUN_ID" > turbo-reused.txt
+            echo "reused=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::the extension compiled in run $ORIGIN_RUN_ID reports '$REPORTED' here, expected '$EXPECTED'; compiling it instead"
+            rm -f turbo-ext/phpstan_turbo.so
+          fi
+
       - name: "Compile phpstan_turbo with strict warnings (profile-guided)"
+        if: steps.reuse.outputs.reused != 'true'
         working-directory: "turbo-ext"
         # `make pgo`: an instrumented build, a training run of PHPStan over
         # its own sources with that build loaded, then the final build using
@@ -488,6 +573,7 @@ jobs:
       # tests below, so they exercise the exact binary that ships. The
       # symbol tables are a quarter of the .so; see `strip` in the Makefile.
       - name: "Strip symbol tables"
+        if: steps.reuse.outputs.reused != 'true'
         working-directory: "turbo-ext"
         run: |
           ls -l phpstan_turbo.so
@@ -501,7 +587,7 @@ jobs:
       # composer/git/curl installs never see it — so an ad-hoc signature is
       # enough and needs no secrets.
       - name: "Ad-hoc sign the extension (macOS)"
-        if: matrix.target.family == 'macos'
+        if: matrix.target.family == 'macos' && steps.reuse.outputs.reused != 'true'
         working-directory: "turbo-ext"
         run: |
           codesign --force --sign - phpstan_turbo.so
@@ -550,11 +636,23 @@ jobs:
       - name: "Parser upstream corpus (the same differential over php-parser's own test cases)"
         run: php -d extension="$PWD/turbo-ext/phpstan_turbo.so" turbo-ext/tests/parser-upstream-corpus.php
 
+      # A reused binary is uploaded again under the same name, so the jobs
+      # downstream find every binary in this run.
       - name: "Upload extension artifact"
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: "${{ matrix.target.artifact }}-${{ matrix.target.name }}-php${{ matrix.php-version }}"
+          name: ${{ env.TURBO_ARTIFACT }}
           path: "turbo-ext/phpstan_turbo.so"
+          if-no-files-found: "error"
+
+      # Keeps later runs from reusing the copy above: they take the binary
+      # from the run that compiled it (see find-turbo-origins.sh).
+      - name: "Mark the extension artifact as reused"
+        if: steps.reuse.outputs.reused == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: "turbo-reused-${{ env.TURBO_ARTIFACT }}"
+          path: "turbo-reused.txt"
           if-no-files-found: "error"
 
   turbo-compile-musl-arm64:
@@ -567,10 +665,16 @@ jobs:
     # Alpine container via docker exec — native arm64, no QEMU. The steps
     # mirror the musl leg of turbo-compile one for one.
     runs-on: "ubuntu-24.04-arm"
+    needs: turbo-origins
     timeout-minutes: 30
+
+    permissions:
+      contents: read # actions/checkout of this repository
+      actions: read # downloads a reused binary from an earlier run, see turbo-origins
 
     env:
       PHP_MINOR: ${{ matrix.php-version }}
+      TURBO_ARTIFACT: "phpstan_turbo-linux-musl-arm64-php${{ matrix.php-version }}"
 
     strategy:
       fail-fast: false
@@ -635,7 +739,37 @@ jobs:
           rm composer.phar
           EOF
 
+      # See the same two steps in turbo-compile.
+      - name: "Download the extension compiled from identical build inputs"
+        id: reuse-download
+        if: fromJSON(needs.turbo-origins.outputs.origins || '{}')[env.TURBO_ARTIFACT] != null
+        continue-on-error: true
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ env.TURBO_ARTIFACT }}
+          path: "turbo-ext"
+          run-id: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[env.TURBO_ARTIFACT] }}
+          github-token: ${{ github.token }}
+
+      - name: "Reuse the downloaded extension if it loads with the expected version"
+        id: reuse
+        if: steps.reuse-download.outcome == 'success'
+        env:
+          ORIGIN_RUN_ID: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[env.TURBO_ARTIFACT] }}
+        run: |
+          REPORTED="$(docker exec alpine-build php -d extension=/work/turbo-ext/phpstan_turbo.so -r 'echo phpversion("phpstan_turbo");' 2> /dev/null || true)"
+          EXPECTED="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"
+          if [ "$REPORTED" = "$EXPECTED" ]; then
+            echo "reusing the extension compiled in $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$ORIGIN_RUN_ID"
+            echo "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$ORIGIN_RUN_ID" > turbo-reused.txt
+            echo "reused=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::the extension compiled in run $ORIGIN_RUN_ID reports '$REPORTED' here, expected '$EXPECTED'; compiling it instead"
+            rm -f turbo-ext/phpstan_turbo.so
+          fi
+
       - name: "Compile phpstan_turbo with strict warnings (profile-guided)"
+        if: steps.reuse.outputs.reused != 'true'
         run: |
           docker exec -i -w /work/turbo-ext alpine-build sh -e <<'EOF'
           make pgo WARN_FLAGS="$(make -s print-warn-flags)" -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || nproc)"
@@ -643,6 +777,7 @@ jobs:
 
       # before the tests below, so they exercise the exact binary that ships
       - name: "Strip symbol tables"
+        if: steps.reuse.outputs.reused != 'true'
         run: |
           docker exec -i -w /work/turbo-ext alpine-build sh -e <<'EOF'
           ls -l phpstan_turbo.so
@@ -687,8 +822,16 @@ jobs:
       - name: "Upload extension artifact"
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: "phpstan_turbo-linux-musl-arm64-php${{ matrix.php-version }}"
+          name: ${{ env.TURBO_ARTIFACT }}
           path: "turbo-ext/phpstan_turbo.so"
+          if-no-files-found: "error"
+
+      - name: "Mark the extension artifact as reused"
+        if: steps.reuse.outputs.reused == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: "turbo-reused-${{ env.TURBO_ARTIFACT }}"
+          path: "turbo-reused.txt"
           if-no-files-found: "error"
 
   turbo-docker-run:
@@ -847,12 +990,18 @@ jobs:
     # is the one that ships VS2022.
     # PHP 8.6's vs18 development packs need the VS2026 toolchain.
     runs-on: ${{ matrix.php-version == '8.6' && 'windows-2025-vs2026' || 'windows-2022' }}
+    needs: turbo-origins
     timeout-minutes: 40
+
+    permissions:
+      contents: read # actions/checkout of this repository
+      actions: read # downloads a reused binary from an earlier run, see turbo-origins
 
     env:
       # php/php-sdk-binary-tools — the toolchain every PHP Windows build
       # uses (ships bison and the unix tools phpize/configure expect).
       PHP_SDK_COMMIT: "c73faaf1cce914e2fc04da5587132f8f425996af" # php-sdk-2.7.1
+      TURBO_ARTIFACT: "phpstan_turbo-windows-x86_64-php${{ matrix.php-version }}${{ matrix.ts == 'zts' && '-zts' || '' }}"
 
     strategy:
       fail-fast: false
@@ -899,7 +1048,40 @@ jobs:
           MATRIX_TS: ${{ matrix.ts }}
         run: bash .github/scripts/install-php86-windows.sh
 
+      # See the same two steps in turbo-compile. The DLL lands in its own
+      # directory; the version check below finds it there as it finds a
+      # built one under x64/.
+      - name: "Download the extension compiled from identical build inputs"
+        id: reuse-download
+        if: fromJSON(needs.turbo-origins.outputs.origins || '{}')[env.TURBO_ARTIFACT] != null
+        continue-on-error: true
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ env.TURBO_ARTIFACT }}
+          path: "turbo-ext/reused"
+          run-id: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[env.TURBO_ARTIFACT] }}
+          github-token: ${{ github.token }}
+
+      - name: "Reuse the downloaded extension if it loads with the expected version"
+        id: reuse
+        if: steps.reuse-download.outcome == 'success'
+        shell: bash
+        env:
+          ORIGIN_RUN_ID: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[env.TURBO_ARTIFACT] }}
+        run: |
+          REPORTED="$(php -d extension="$(cygpath -w "$PWD/turbo-ext/reused/php_phpstan_turbo.dll")" -r 'echo phpversion("phpstan_turbo");' 2> /dev/null || true)"
+          EXPECTED="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"
+          if [ "$REPORTED" = "$EXPECTED" ]; then
+            echo "reusing the extension compiled in $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$ORIGIN_RUN_ID"
+            echo "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$ORIGIN_RUN_ID" > turbo-reused.txt
+            echo "reused=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::the extension compiled in run $ORIGIN_RUN_ID reports '$REPORTED' here, expected '$EXPECTED'; compiling it instead"
+            rm -rf turbo-ext/reused
+          fi
+
       - name: "Compute the extension version and download the build tools"
+        if: steps.reuse.outputs.reused != 'true'
         shell: bash
         env:
           MATRIX_TS: ${{ matrix.ts }}
@@ -924,6 +1106,7 @@ jobs:
           git -C /c/php-sdk checkout -q "$PHP_SDK_COMMIT"
 
       - name: "Set up MSVC environment"
+        if: steps.reuse.outputs.reused != 'true'
         uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1.13.0
         with:
           arch: x64
@@ -931,6 +1114,7 @@ jobs:
           toolset: ${{ matrix.toolset }}
 
       - name: "Build the extension"
+        if: steps.reuse.outputs.reused != 'true'
         shell: cmd
         working-directory: turbo-ext
         run: |
@@ -993,8 +1177,16 @@ jobs:
       - name: "Upload extension artifact"
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: "phpstan_turbo-windows-x86_64-php${{ matrix.php-version }}${{ matrix.ts == 'zts' && '-zts' || '' }}"
+          name: ${{ env.TURBO_ARTIFACT }}
           path: "${{ env.DLL_PATH }}"
+          if-no-files-found: "error"
+
+      - name: "Mark the extension artifact as reused"
+        if: steps.reuse.outputs.reused == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: "turbo-reused-${{ env.TURBO_ARTIFACT }}"
+          path: "turbo-reused.txt"
           if-no-files-found: "error"
 
   turbo-artifact:
@@ -1558,8 +1750,9 @@ jobs:
     name: "Commit PHAR"
     if: "github.repository_owner == 'phpstan' && (github.ref == 'refs/heads/2.3.x' || startsWith(github.ref, 'refs/tags/'))"
     # Gated on every job that produces or validates the committed bits: the
-    # compile jobs build the staged binaries (and run the differential test
-    # batteries per leg), turbo-version guards the version constant the
+    # compile jobs build the staged binaries, or reuse ones compiled from
+    # identical build inputs (see turbo-origins), and run the differential
+    # test batteries per leg; turbo-version guards the version constant the
     # staging logic compares, turbo-phpize the build system. The
     # "Run with Turbo Extension" jobs (turbo-run, turbo-docker-run) are
     # deliberately not gates: they produce nothing the commit consumes,
